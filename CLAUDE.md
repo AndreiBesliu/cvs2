@@ -19,8 +19,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 - Prompt-ul de pornire, exact: `docs/PROMPT-START.md`.
 - Planul: `C:\Users\besli\Desktop\MyWork\Apps\PlanNou-CNC\Plan-CNC-Studio-2.pdf`, aceleași date structurat în
-  `CERCETARE-DETALIATA.json` (secțiunile `old`, `spec`, `ref`, `arch`). Sunt în Google Drive; se citesc de
-  acolo, nu se copiază aici. LECTII.md le verifică, nu le ia de bune.
+  `CERCETARE-DETALIATA.json` (secțiunile `old`, `spec`, `ref`, `arch`). Se citesc de acolo, nu se
+  copiază aici. LECTII.md le verifică, nu le ia de bune.
 - Proiectul vechi, **referință, nu șablon**: `C:\Users\besli\Desktop\MyWork\Apps\CNCVectorStudio`, GitHub
   `AndreiBesliu/CncVectorStudio`. Algoritmii verificați acolo (G-code, offset, V-carve, inlay, import, sender,
   simulare) se pot porta după ce owner-ul a văzut ce și de ce. Arhitectura nu se copiază.
@@ -41,7 +41,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 - **Pauze curate.** La „pauză”: stop imediat, totul comis (branch WIP dacă nu e gata).
 - **Întrebările se strâng și se pun grupat**, cu recomandarea în față. Ce decide owner-ul se scrie aici sau
   în brief.
-- **Codul stă în afara Google Drive** (aici, `C:\dev\cncvs2`), sincronizat prin GitHub.
+- **Repo-ul stă în `MyWork\Apps\cncvs2`, adică în Google Drive.** E decizia owner-ului din 05.10.2026, deși
+  prompt-ul de pornire cerea altfel. Drive-ul a mai readus fișiere vechi peste munca nouă, așa că git e
+  sursa de adevăr:
+  - commit des și push pe GitHub după fiecare felie, de îndată ce există remote;
+  - un fișier care pare readus la o versiune veche se verifică întâi cu `git status` / `git diff`, înaintea
+    oricărei alte acțiuni.
 - **Din prima zi:** en + ro prin `t()`, cu paritate verificată de compilator; ErrorBoundary; secretele NU se
   lipesc în chat (owner-ul le pune în `.env.local` sau în Secret Manager); niciodată `git add -A` (stage
   explicit, apoi `git status` + `git show --stat`); deploy pe test liber, pe live doar cu confirmarea
@@ -49,7 +54,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
-- 05.10.2026: repo-ul stă în `C:\dev\cncvs2`, git local, ramura `main`. Remote-ul GitHub se decide la interviu.
+- 05.10.2026: repo-ul stă în `C:\Users\besli\Desktop\MyWork\Apps\cncvs2`. A fost mutat din `C:\dev\cncvs2` la
+  cererea owner-ului, ca să lucrăm din `Apps`. Git local, ramura `main`; remote-ul GitHub se decide la interviu.
 
 ## De decis la interviu (Faza 1)
 
