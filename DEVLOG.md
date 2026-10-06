@@ -62,3 +62,22 @@ utilizării (40–60 %), și a confirmat tranșa a doua după prima.
 Sinteza și corecturile le-am făcut în conversația principală, fără agenți.
 
 **Următorul pas:** Faza 1, interviul. Pornește de la `LECTII.md` §7.
+
+## 2026-10-06 — Faza 1: interviul (Model: Claude Opus 5.5)
+
+**Prompt:** „acum”, după oferta de a porni interviul. Au fost șapte tranșe de întrebări, plus două formulare de
+triaj; răspunsurile au venit pe rând.
+
+**Făcut:**
+- `BRIEF.md` completat cu toate deciziile:
+  - produsul, felul de lucru, platforma, partea comercială;
+  - infrastructura, mașinile, simularea, planșele;
+  - triajul funcțiilor și ordinea pragului.
+- `ACOPERIRE-ARTCAM-DESKPROTO.md`: etapele a 48 de rânduri schimbate prin decizia owner-ului, fiecare marcată
+  „decis 06.10; era …”. v1 are acum 64 de rânduri, față de 22.
+- `CLAUDE.md`: Faza 1 e încheiată și are un rezumat al deciziilor.
+- Repo-ul public `AndreiBesliu/cvs2`: `docs/faza0` a fost scos din istorie înainte de primul push și e ignorat
+  de git.
+- Proiectul vechi: ramura goală `laterala` ștearsă, cu acordul owner-ului.
+
+**Următorul pas:** Faza 2, arhitectura în plan mode, cu prototipul planșelor (A și D) înainte de aprobare.

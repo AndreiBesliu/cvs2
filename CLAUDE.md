@@ -13,9 +13,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 - **Faza 0: încheiată.** Concluziile sunt în `LECTII.md`. Citește-l înainte de orice decizie de arhitectură sau
   de proces. Rapoartele cu surse (module, planșe, cronologie, verificări) sunt în `docs/faza0/`, **doar local**:
   sunt ignorate de git, fiindcă repo-ul e public și ele descriu găuri ale aplicației vechi, încă live.
-- **Interviul (Faza 1) e în lucru.** Răspunsurile se trec în `BRIEF.md`.
-- **Urmează Faza 1, interviul.** Brief-ul se completează aici, pe măsură ce owner-ul răspunde. Pornește de la
-  `LECTII.md` §7. Apoi vine Faza 2, arhitectura, în plan mode. **Fără cod până la aprobarea planului.**
+- **Faza 1 (interviul): încheiată pe 06.10.2026.** Toate deciziile sunt în `BRIEF.md`. Citește-l împreună cu
+  `LECTII.md` înainte de Faza 2.
+- **Urmează Faza 2: arhitectura, în plan mode.** **Fără cod până la aprobarea planului.** Faza 2 conține:
+  - prototipul clicabil al planșelor, cu variantele A și D pe 8 scenarii, încercat de owner înainte de aprobare;
+  - sondele pentru alegerile riscante;
+  - estimarea pe etape săptămânale, din durate măsurate.
 - **După planul aprobat: evaluarea portării** (decizia owner-ului din 06.10.2026). Owner-ul primește un răspuns
   la întrebarea „ce din codul vechi se poate integra eficient și bine în codul nou”. Detaliile sunt la
   „Decizii luate”.
@@ -82,17 +85,31 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Regula: nimic portat nu intră fără probele noi ale proiectului (oracol, martor). Ce trece în codul nou e
   re-probat acolo, nu crezut pe cuvânt.
 
-## De decis la interviu (Faza 1)
+## Deciziile interviului (06.10.2026), pe scurt
 
-Bucla de bază și „v1 merge” pentru un străin · sistemul de planșe (2–3 variante desenate, modelul de date
-abia după prototip) · funcțiile candidate v1 / v1.x / mai târziu · modelul de business · limbile și
-platforma · mașinile țintă și axa a 4-a · ordinea pragului ArtCAM + DeskProto · infrastructura (GitHub,
-Firebase `cncvectorstudio` / `cncvectorstudio-test`, domeniul, Stripe).
+Detaliile sunt în `BRIEF.md`; dacă ceva de aici o contrazice, `BRIEF.md` câștigă.
 
-Din `LECTII.md` §7, se mai adaugă:
-- ce înseamnă „gata” pentru o funcție care mișcă mașina (placa de probă);
-- cine alege următoarea felie (owner-ul alege ținta, nu registrul);
-- limita listei pentru owner;
-- proiecte Firebase noi într-o regiune UE sau refolosirea celor vechi (baza veche e în `nam5`);
-- ritmul publicării;
-- PWA sau desktop.
+- **Produsul**
+  - Pentru **ateliere de producție**.
+  - **v1 = tot pragul marcat v1**: 64 de rânduri, după triaj, plus 8 funcții.
+  - Se lansează abia la **v1 complet**, fără beta.
+- **Ritmul**
+  - Asistentul alege feliile din planul aprobat, iar owner-ul aprobă la sfârșitul fiecărei **etape de ~1
+    săptămână**.
+  - Fiecare etapă se încheie cu o **placă de probă** tăiată de owner.
+  - Pe live se publică la sfârșitul etapei, cu confirmarea owner-ului.
+- **Platforma și limbile:** **PWA web**, care pornește offline; en + ro.
+- **Comercial**
+  - Mai multe niveluri, toate cu abonament. Ce conține fiecare se decide înainte de codul de facturare.
+  - Probă de 14 zile fără card.
+  - Exportul se blochează prin convenție în client; cloud-ul și AI-ul se blochează pe server.
+  - Stripe: aceleași produse ca în ediția întâi. Contul live e blocat pe CAEN.
+- **Infrastructura**
+  - Aceleași proiecte Firebase (`cncvectorstudio` / `cncvectorstudio-test`), cu codul vechi șters la primul
+    deploy nou. Înainte de deploy se face un export Firestore.
+  - Domeniul și numele rămân: `cncvectorstudio.com`, CNC Vector Studio.
+- **Mașinile**
+  - Familia GRBL, cu sender, plus posturi probate pentru NcStudio, Richauto/Syntec și Mach3.
+  - Axa A separată; axa a 4-a e în v1.x.
+- **Simularea:** un nucleu folosit de ecran și de teste, plus un oracol separat.
+- **Planșele:** prototip cu variantele A și D în Faza 2, înainte de aprobarea planului.
