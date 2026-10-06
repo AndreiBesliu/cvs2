@@ -15,6 +15,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   proces.
 - **Urmează Faza 1, interviul.** Brief-ul se completează aici, pe măsură ce owner-ul răspunde. Pornește de la
   `LECTII.md` §7. Apoi vine Faza 2, arhitectura, în plan mode. **Fără cod până la aprobarea planului.**
+- **După planul aprobat: evaluarea portării** (decizia owner-ului din 06.10.2026). Owner-ul primește un răspuns
+  la întrebarea „ce din codul vechi se poate integra eficient și bine în codul nou”. Detaliile sunt la
+  „Decizii luate”.
 
 ## Surse
 
@@ -57,6 +60,22 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 - 05.10.2026: repo-ul stă în `C:\Users\besli\Desktop\MyWork\Apps\cncvs2`. A fost mutat din `C:\dev\cncvs2` la
   cererea owner-ului, ca să lucrăm din `Apps`. Git local, ramura `main`; remote-ul GitHub se decide la interviu.
+- 06.10.2026: **portarea din codul vechi se evaluează abia după interviu și după planul aprobat**, față de
+  arhitectura nouă, nu înainte. Evaluarea se scrie în `docs/PORTARE.md`, iar owner-ul decide pe ea. Fiecare
+  candidat (lista de pornire e `LECTII.md` §3.2) primește un verdict:
+  - **portat aproape neschimbat;**
+  - **adaptat la interfețele noi;**
+  - **rescris, cu vechiul ca referință și ca martor;**
+  - **lăsat.**
+
+  Verdictul se sprijină pe patru lucruri:
+  1. ce dovadă de calitate are în vechi (oracol, valori pe hârtie sau doar structură);
+  2. cât se potrivește cu modelul de date, IR-ul și straturile noi;
+  3. cât costă adaptarea față de rescriere;
+  4. riscurile, inclusiv licențele (de exemplu `marchingsquares` e AGPL-3.0, cu excepție condiționată).
+
+  Regula: nimic portat nu intră fără probele noi ale proiectului (oracol, martor). Ce trece în codul nou e
+  re-probat acolo, nu crezut pe cuvânt.
 
 ## De decis la interviu (Faza 1)
 

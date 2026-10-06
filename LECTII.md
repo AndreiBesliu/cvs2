@@ -700,7 +700,9 @@ Le adaug la lista din `CLAUDE.md`. Recomandarea mea e prima:
    corpus (§4.6).
 7. **Ritmul publicării.** Recomandarea: fără deploy pe producție la fiecare task; pe test oricând; pe live la
    sfârșitul unei etape, cu confirmarea owner-ului.
-8. **Ce algoritmi din vechi se portează.** Lista e în §3.2; owner-ul vede ce și de ce în Faza 2.
+8. **Ce algoritmi din vechi se portează.** Hotărât pe 06.10: după interviu și după planul aprobat, owner-ul
+   primește o evaluare dedicată, `docs/PORTARE.md`, făcută față de arhitectura nouă și pornind de la lista din
+   §3.2. Fiecare candidat primește unul dintre verdictele: portat, adaptat, rescris cu vechiul ca martor, lăsat.
 9. **Regula de umplere și modelul de curbă.** Sunt decizii tehnice cu efect vizibil pentru om: de exemplu
    `nonzero` față de `evenodd`. Se decid în Faza 2, cu o sondă.
 10. **Desktop / offline.** Recomandarea: PWA din prima zi (vechiul service worker a mers); shell nativ abia după
