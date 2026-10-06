@@ -8,12 +8,13 @@ DeskProto; peste el construim. Owner: Andrei.
 **De ce de la zero:** în proiectul vechi progresul devenise prea greu, iar procesul de dezvoltare părea
 haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect de la început.
 
-## Stare (05.10.2026)
+## Stare (06.10.2026)
 
-- **Faza 0 — LECTII.md: planificată, NEPORNITĂ.** Planul workflow-ului e în `docs/FAZA0-PLAN.md`. Pornește
-  doar cu acordul owner-ului și cu cifrele din panoul lui de utilizare.
-- Urmează Faza 1 (interviul, brief-ul se completează aici pe măsură ce răspunde) și Faza 2 (arhitectura, în
-  plan mode). **Fără cod până la aprobarea planului.**
+- **Faza 0: încheiată.** Concluziile sunt în `LECTII.md`. Rapoartele cu surse, pe module, planșe, cronologie
+  și verificări, sunt în `docs/faza0/`. Citește `LECTII.md` înainte de orice decizie de arhitectură sau de
+  proces.
+- **Urmează Faza 1, interviul.** Brief-ul se completează aici, pe măsură ce owner-ul răspunde. Pornește de la
+  `LECTII.md` §7. Apoi vine Faza 2, arhitectura, în plan mode. **Fără cod până la aprobarea planului.**
 
 ## Surse
 
@@ -63,3 +64,11 @@ Bucla de bază și „v1 merge” pentru un străin · sistemul de planșe (2–
 abia după prototip) · funcțiile candidate v1 / v1.x / mai târziu · modelul de business · limbile și
 platforma · mașinile țintă și axa a 4-a · ordinea pragului ArtCAM + DeskProto · infrastructura (GitHub,
 Firebase `cncvectorstudio` / `cncvectorstudio-test`, domeniul, Stripe).
+
+Din `LECTII.md` §7, se mai adaugă:
+- ce înseamnă „gata” pentru o funcție care mișcă mașina (placa de probă);
+- cine alege următoarea felie (owner-ul alege ținta, nu registrul);
+- limita listei pentru owner;
+- proiecte Firebase noi într-o regiune UE sau refolosirea celor vechi (baza veche e în `nam5`);
+- ritmul publicării;
+- PWA sau desktop.

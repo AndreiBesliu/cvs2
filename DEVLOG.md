@@ -28,3 +28,37 @@ iar owner-ul a ales: proiectul se mută în `Apps\cncvs2`, deci în Google Drive
 `C:\dev`, care rămăsese gol. În `CLAUDE.md`, regula „codul stă în afara Google Drive” a fost înlocuită de
 decizia nouă și de plasa ei: git e sursa de adevăr, cu push pe GitHub după fiecare felie, de îndată ce
 există remote.
+
+## 2026-10-06 — Faza 0: LECTII.md (Model: Claude Opus 5.5)
+
+**Prompt:** „neata! Go!”. Owner-ul a ales varianta completă (31 de agenți), rulată în două tranșe din cauza
+utilizării (40–60 %), și a confirmat tranșa a doua după prima.
+
+**Făcut:**
+- `LECTII.md`, cu cele cinci părți cerute (inventar, defecte și cauze, ce merită păstrat, arhitectura altfel,
+  planșele), plus §2.3 („de ce a devenit greu și haotic”), §6 (corecturile la JSON) și §7 (ce ajunge la
+  interviu).
+- Rapoartele cu surse sunt în `docs/faza0/`:
+  - 00: metricile din git;
+  - 01–13: modulele;
+  - 14–15: planșele;
+  - 21–28: cronologia completă a DEVLOG-ului;
+  - 31–36: verificarea adversarială a `old.lessons`, `old.metrics` și `old.decisions`;
+  - 40: toate corecturile la JSON;
+  - 41–42: criticii ciornei.
+- Metricile mele din git au fost corectate de cronologie: fișierul temporar din W24 și artefactul `git add -A`
+  din W30.
+- După fiecare tranșă am verificat proiectul vechi: neatins de fiecare dată (HEAD `d850c7b`, arbore curat).
+
+**Măsurat** (pentru estimările viitoare):
+
+| Tranșa | Agenți | Tokeni | Durată | Estimat |
+|---|---:|---:|---:|---:|
+| 1 (module + planșe) | 15 | 5,73 M | 27 min | 4,5 M |
+| 2 (cronologie + verificare) | 14 | 3,96 M | 12 min | 5,2 M |
+| critici | 2 | 0,61 M | 12 min | 0,6 M |
+| **Total** | **31** | **10,3 M** | **~51 min de workflow** | **8 M inițial (7–10 M), 11,5 M revizuit după tranșa 1** |
+
+Sinteza și corecturile le-am făcut în conversația principală, fără agenți.
+
+**Următorul pas:** Faza 1, interviul. Pornește de la `LECTII.md` §7.
