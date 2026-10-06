@@ -10,9 +10,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Stare (06.10.2026)
 
-- **Faza 0: încheiată.** Concluziile sunt în `LECTII.md`. Rapoartele cu surse, pe module, planșe, cronologie
-  și verificări, sunt în `docs/faza0/`. Citește `LECTII.md` înainte de orice decizie de arhitectură sau de
-  proces.
+- **Faza 0: încheiată.** Concluziile sunt în `LECTII.md`. Citește-l înainte de orice decizie de arhitectură sau
+  de proces. Rapoartele cu surse (module, planșe, cronologie, verificări) sunt în `docs/faza0/`, **doar local**:
+  sunt ignorate de git, fiindcă repo-ul e public și ele descriu găuri ale aplicației vechi, încă live.
+- **Interviul (Faza 1) e în lucru.** Răspunsurile se trec în `BRIEF.md`.
 - **Urmează Faza 1, interviul.** Brief-ul se completează aici, pe măsură ce owner-ul răspunde. Pornește de la
   `LECTII.md` §7. Apoi vine Faza 2, arhitectura, în plan mode. **Fără cod până la aprobarea planului.**
 - **După planul aprobat: evaluarea portării** (decizia owner-ului din 06.10.2026). Owner-ul primește un răspuns
@@ -59,7 +60,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 ## Decizii luate
 
 - 05.10.2026: repo-ul stă în `C:\Users\besli\Desktop\MyWork\Apps\cncvs2`. A fost mutat din `C:\dev\cncvs2` la
-  cererea owner-ului, ca să lucrăm din `Apps`. Git local, ramura `main`; remote-ul GitHub se decide la interviu.
+  cererea owner-ului, ca să lucrăm din `Apps`. Git local, ramura `main`.
+- 06.10.2026: remote-ul e **`AndreiBesliu/cvs2`, public**, ales de owner. Se aplică două reguli:
+  - `docs/faza0/` nu intră niciodată în repo; a fost scos și din istorie înainte de primul push;
+  - înainte de orice push se verifică să nu plece nimic care descrie găuri ale aplicației vechi încă live, și
+    niciun secret.
 - 06.10.2026: **portarea din codul vechi se evaluează abia după interviu și după planul aprobat**, față de
   arhitectura nouă, nu înainte. Evaluarea se scrie în `docs/PORTARE.md`, iar owner-ul decide pe ea. Fiecare
   candidat (lista de pornire e `LECTII.md` §3.2) primește un verdict:

@@ -9,7 +9,8 @@ cu 29 de agenți, pe module și cronologic, iar ciorna a trecut prin doi critici
 **Ce am verificat:** afirmațiile din `CERCETARE-DETALIATA.json`, la sursele lor.
 
 **Rapoartele detaliate, cu surse `fișier:linie` / `sha`:** în [`docs/faza0/`](docs/faza0/). Documentul ăsta
-trage concluziile; dovezile stau în rapoarte.
+trage concluziile; dovezile stau în rapoarte. Rapoartele există **doar local** (în Drive), nu în repo-ul public:
+descriu găuri de securitate ale aplicației vechi, care încă rulează pe live.
 
 > Marcaje: **[măsurat]** = cifră din git, din cod sau dintr-un test al proiectului vechi. **[dedus]** = citit în
 > cod, nerulat. Tot restul are sursa în raportul citat.
