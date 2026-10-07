@@ -485,3 +485,33 @@ gazdă, CSP.
   - ciclurile din cavalier au fost găsite de regula lor; nu le-am ascuns, au primit regula fațadei.
 
 **Următorul pas:** felia 1.5, IR-ul pe N axe, montajul (4 colțuri) și postul GRBL v0.
+
+## 2026-10-07 — Etapa 1, felia 1.5: IR-ul, montajul și postul GRBL v0 (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua si testez putin mai incolo” (continuare). **Started:** 15:28. **Completed:** 15:37.
+**Clasa:** R2 (I11, I20). **Estimarea:** 1 felie. **Treceri:** 3.
+
+**Făcut:**
+- **`src/ir/ir.ts`**: programul de mișcări, în coordonatele documentului (T8), pe o listă de axe (T22). Axa A există
+  în tipuri, dar postul o refuză explicit în v1.
+- **`src/ir/montaj.ts`**: cele 4 colțuri de origine, ca translații, plus Z0 sus sau jos, într-o singură
+  transformare aplicată doar de post.
+- **`src/cam/traseu.ts`**: trecerile profilului devin IR, iar arcele rămân arce.
+- **`src/post/`**:
+  - contractul ca date: `GRBL_11`, cu sursa și starea fiecărui câmp, din s8 A.1;
+  - formatorul: 3 zecimale, punctul mereu, fără „-0.000”;
+  - postul unic, cu antetul care setează tot ce e modal, I/J din startul rotunjit (strategia B), arcele împărțite la
+    180° și garda de coardă / unghi;
+  - plafonul de 70 de octeți și exportul cu SHA-256.
+- **Pe hârtie:**
+  - cele 4 colțuri pe foaia 140 × 100: (20, 20) → (20, 20), (−120, 20), (−120, −80), (20, −80);
+  - Z0 jos: Z-3 → Z15;
+  - gaura Ø30 cu Ø6 dă arce cu raza 12; insula 100 × 60 + R3 dă marginile 17 … 123 × 17 … 83.
+- **Defecte prinse de teste:**
+  1. `toFixed` scrie numerele uriașe ca „1e+60”. Acum o valoare peste 10⁹ e refuzată, ca motiv, nu ca excepție.
+  2. Garda de rază punea o singură coardă G1 în locul unui arc cu raza peste 10 m: abatere de ~8 mm pe un arc de 1 m.
+     Acum ies segmente G1 pe cercul exact, cu săgeata ≤ 0,001 mm, numărate ca aproximare declarată (T2).
+  3. G0 spre poziția curentă: nu se mai scrie.
+- 65 de teste unitare.
+
+**Următorul pas:** felia 1.6, oracolul G-code din s4, cu poarta invariantelor 1, 3, 5, 6, 7 și 8.
