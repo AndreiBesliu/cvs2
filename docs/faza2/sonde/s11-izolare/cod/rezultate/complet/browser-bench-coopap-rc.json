@@ -1,0 +1,103 @@
+{
+ "mode": "coopap-rc",
+ "parts": [
+  "coi",
+  "blur"
+ ],
+ "reps": {
+  "blur": 9,
+  "dc": 7,
+  "s4": 7
+ },
+ "workers": 16,
+ "n": 4000,
+ "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+ "crossOriginIsolated": false,
+ "sab_in_pagina": false,
+ "hardwareConcurrency": 32,
+ "webgl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+ "software_renderer": false,
+ "webgpu": {
+  "vendor": "nvidia",
+  "architecture": "ampere",
+  "isFallbackAdapter": false
+ },
+ "worker_crossOriginIsolated": false,
+ "teren_ms": 702,
+ "blur": {
+  "sigma": 4,
+  "raza_kernel": 12,
+  "ref_1fir_ms": 840,
+  "hartie": {
+   "S": 10.009172595445069,
+   "varf_impuls_izolat": 0.009981680019227371,
+   "impulsuri": 240
+  },
+  "oracol": {
+   "b_transfer": {
+    "eroare_max": 2.3090744108444916e-9,
+    "puncte_peste_toleranta": 0,
+    "suma_iesirii": 240.00000124538929,
+    "toleranta": 1e-7
+   },
+   "c_banda_proprie": {
+    "eroare_max": 2.3090744108444916e-9,
+    "puncte_peste_toleranta": 0,
+    "suma_iesirii": 240.00000124538929,
+    "toleranta": 1e-7
+   },
+   "CONTROL_b_halo_minus_1": {
+    "eroare_max": 0.00011088612035288839,
+    "puncte_peste_toleranta": 750,
+    "suma_iesirii": 239.96670471478865,
+    "toleranta": 1e-7
+   },
+   "CONTROL_c_halo_minus_1": {
+    "eroare_max": 0.00011088612035288839,
+    "puncte_peste_toleranta": 750,
+    "suma_iesirii": 239.96670471478865,
+    "toleranta": 1e-7
+   }
+  },
+  "bit_b_vs_ref": {
+   "diferite": 0,
+   "primul_index": -1
+  },
+  "bit_c_vs_ref": {
+   "diferite": 0,
+   "primul_index": -1
+  },
+  "ms": {
+   "a_sab": null,
+   "b_transfer": 110.8,
+   "b_transfer_benzi_inapoi": 103.4,
+   "b_copiere_intrare": 9,
+   "c_banda_proprie": 115.2
+  },
+  "ms_toate": {
+   "a_sab": [],
+   "b_transfer": [
+    91.7,
+    93.7,
+    108.1,
+    113,
+    110.8,
+    110.7,
+    117.4,
+    111.8,
+    115.1
+   ],
+   "c_banda_proprie": [
+    115.2,
+    111,
+    118.4,
+    97.9,
+    122.9,
+    170.8,
+    108.8,
+    107.1,
+    168.9
+   ]
+  }
+ }
+}

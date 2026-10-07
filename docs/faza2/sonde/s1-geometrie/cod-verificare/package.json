@@ -1,0 +1,15 @@
+{
+  "name": "verificare-v1-geometrie",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Verificare adversariala (Faza 2, transa 1b) a sondei s1-geometrie. Cod aruncabil. Se ruleaza ca subdosar v1/ al unei copii a lui ../cod (codul s1: geom.mjs).",
+  "scripts": {
+    "masoara": "node masoara-v1.mjs"
+  },
+  "dependencies": {
+    "cavalier-contours-js": "0.1.1",
+    "opentype.js": "2.0.0",
+    "pathkit-wasm": "1.0.0"
+  }
+}

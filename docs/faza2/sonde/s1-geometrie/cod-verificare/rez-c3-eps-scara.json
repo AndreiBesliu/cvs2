@@ -1,0 +1,121 @@
+[
+ {
+  "pas": 0.1,
+  "amplitudine": 0.01,
+  "L": 0.10198039027185571,
+  "thetaGrade": 22.619864948040426,
+  "LxLxsin": 0.004000000000000001,
+  "paralelFals": false,
+  "abatereaPrezisa": 0,
+  "bucle": 1,
+  "inchise": true,
+  "semicercuri": 0,
+  "abatereMax": 6.661338147750939e-15,
+  "ms": 32.278400000000005
+ },
+ {
+  "pas": 0.01,
+  "amplitudine": 0.002,
+  "L": 0.01077032961426901,
+  "thetaGrade": 43.60281897270362,
+  "LxLxsin": 0.00008000000000000002,
+  "paralelFals": false,
+  "abatereaPrezisa": 0,
+  "bucle": 2,
+  "inchise": false,
+  "semicercuri": 0,
+  "abatereMax": 0.00006299275088128553,
+  "ms": 5711.1574
+ },
+ {
+  "pas": 0.005,
+  "amplitudine": 0.001,
+  "L": 0.005385164807134505,
+  "thetaGrade": 43.60281897270362,
+  "LxLxsin": 0.000020000000000000005,
+  "paralelFals": false,
+  "abatereaPrezisa": 0,
+  "bucle": 5,
+  "inchise": false,
+  "semicercuri": 0,
+  "abatereMax": 0.00009448959500613086,
+  "ms": 44196.668099999995
+ },
+ {
+  "pas": 0.003,
+  "amplitudine": 0.001,
+  "L": 0.0036055512754639895,
+  "thetaGrade": 67.38013505195957,
+  "LxLxsin": 0.000012,
+  "paralelFals": false,
+  "abatereaPrezisa": 0,
+  "bucle": 8,
+  "inchise": false,
+  "semicercuri": 0,
+  "abatereMax": 0.00009070995721316422,
+  "ms": 232734.0349
+ },
+ {
+  "pas": 0.002,
+  "amplitudine": 0.0005,
+  "L": 0.00223606797749979,
+  "thetaGrade": 53.13010235415598,
+  "LxLxsin": 0.000004,
+  "paralelFals": true,
+  "abatereaPrezisa": 1.4720811585775593,
+  "err": "Set maximum size exceeded",
+  "ms": 11995.940799999982
+ },
+ {
+  "control": "fara zgomot",
+  "bucle": 1,
+  "inchise": true,
+  "semicercuri": 0,
+  "abatereMax": 6.661338147750939e-15,
+  "ms": 0.32419999997364357
+ },
+ {
+  "cerc": 1,
+  "N": 600,
+  "L": 0.01047192766283916,
+  "LxLxsin": 0.00000114834913462747,
+  "bucle": 1,
+  "inchise": true,
+  "semicercuri": 598,
+  "abatereMax": 0.016412329752192978,
+  "ms": 1.6941000000224449
+ },
+ {
+  "cerc": 10,
+  "N": 600,
+  "L": 0.10471927662839159,
+  "LxLxsin": 0.00011483491346274698,
+  "bucle": 1,
+  "inchise": true,
+  "semicercuri": 0,
+  "abatereMax": 3.9968028886505635e-15,
+  "ms": 2.1177000000025146
+ },
+ {
+  "cerc": 10,
+  "N": 5000,
+  "L": 0.012566369787525143,
+  "LxLxsin": 1.9844009241289186e-7,
+  "bucle": 1,
+  "inchise": true,
+  "semicercuri": 5000,
+  "abatereMax": 0.0019942844844709207,
+  "ms": 10.49880000000121
+ },
+ {
+  "cerc": 100,
+  "N": 5000,
+  "L": 0.12566369787525145,
+  "LxLxsin": 0.000019844009241289193,
+  "bucle": 1,
+  "inchise": true,
+  "semicercuri": 0,
+  "abatereMax": 2.930988785010413e-14,
+  "ms": 14.635699999984354
+ }
+]

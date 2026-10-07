@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compatibilitate izolare</title>
+<style>
+  :root { --bg: #f4f2ee; --fg: #1d1d1b; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #1b1b1a; --fg: #ecebe7; } }
+  body { margin: 0; padding: 8px 16px; background: var(--bg); color: var(--fg); font: 13px/1.4 system-ui, sans-serif; }
+  .f1 { font-family: Lobster, serif; } .f2 { font-family: Pacifico, serif; }
+  pre { white-space: pre-wrap; }
+  button { margin: 4px 8px 4px 0; padding: 8px 12px; }
+</style>
+</head>
+<body>
+<button id="bPopup">popup simplu</button>
+<button id="bAuthPopup">signInWithPopup</button>
+<button id="bAuthRedirect">signInWithRedirect</button>
+<p class="f1">Lobster</p><p class="f2">Pacifico</p>
+<pre id="log">pornesc...</pre>
+<script type="module" src="./compat.js"></script>
+</body>
+</html>

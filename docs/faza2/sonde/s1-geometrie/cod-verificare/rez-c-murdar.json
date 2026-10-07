@@ -1,0 +1,713 @@
+[
+ {
+  "caz": "verificare index rapid",
+  "diferentaMax": 0
+ },
+ {
+  "caz": "elipsa 5000 segmente",
+  "nivel": 3.175,
+  "status": "ok",
+  "ms": 20.75019999999995,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 5000,
+  "nan": false,
+  "iesireAdevar": 0.000010027504875331772,
+  "puncteAdevar": 15000,
+  "adevarIesire": 0.000008614764384572261,
+  "ariiIesire": [
+   14201.587889236349
+  ]
+ },
+ {
+  "caz": "elipsa 5000 segmente",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 24.321500000000015,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 10000,
+  "nan": false,
+  "iesireAdevar": 0.003987313167852058,
+  "puncteAdevar": 15000,
+  "adevarIesire": 1.9275436241663204e-12,
+  "ariiIesire": [
+   17277.708459980724
+  ]
+ },
+ {
+  "caz": "elipsa 5000 segmente",
+  "nivel": 20,
+  "status": "ok",
+  "ms": 10.833599999999933,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 5000,
+  "nan": false,
+  "iesireAdevar": 0.00009474716739532596,
+  "puncteAdevar": 12723,
+  "adevarIesire": 0.0000947457803668394,
+  "ariiIesire": [
+   7276.151827197251
+  ]
+ },
+ {
+  "caz": "elipsa 5000 segmente",
+  "nivel": 30,
+  "status": "ok",
+  "ms": 53.542099999998754,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 3752,
+  "nan": false,
+  "iesireAdevar": 0.00005143511306116011,
+  "puncteAdevar": 10311,
+  "adevarIesire": 0.00004933364228274398,
+  "ariiIesire": [
+   4004.244873287674
+  ]
+ },
+ {
+  "caz": "timp elipsa 5000",
+  "nivel": 3.175,
+  "msMedian": 7.036700000000565,
+  "msToate": [
+   10.491799999999785,
+   10.813599999999497,
+   13.804599999999482,
+   6.796199999998862,
+   5.034700000000157,
+   5.20509999999922,
+   7.036700000000565
+  ]
+ },
+ {
+  "caz": "timp elipsa 5000",
+  "nivel": -3.175,
+  "msMedian": 11.66439999999966,
+  "msToate": [
+   12.441999999999098,
+   11.66439999999966,
+   9.005300000000716,
+   10.039699999999357,
+   12.695700000000215,
+   9.521199999999226,
+   15.319800000001123
+  ]
+ },
+ {
+  "caz": "ondulata 5000 segmente",
+  "nivel": 3.175,
+  "status": "ok",
+  "ms": 11.314700000000812,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 7057,
+  "nan": false,
+  "iesireAdevar": 0.0047226668971029895,
+  "puncteAdevar": 14272,
+  "adevarIesire": 0.00001148802471639593,
+  "ariiIesire": [
+   6753.633142607952
+  ]
+ },
+ {
+  "caz": "ondulata 5000 segmente",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 33.94410000000062,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 7733,
+  "nan": false,
+  "iesireAdevar": 0.004526803560374937,
+  "puncteAdevar": 13934,
+  "adevarIesire": 0.000012644182284658215,
+  "ariiIesire": [
+   9246.959493853692
+  ]
+ },
+ {
+  "caz": "ondulata 5000 segmente",
+  "nivel": 6,
+  "status": "ok",
+  "ms": 29.124799999997776,
+  "selfIntersects": null,
+  "bucle": 2,
+  "varfuri": 4497,
+  "nan": false,
+  "iesireAdevar": 0.007863433508945583,
+  "puncteAdevar": 11766,
+  "adevarIesire": 27.793025319217563,
+  "ariiIesire": [
+   null,
+   null
+  ]
+ },
+ {
+  "caz": "ondulata 5000 segmente",
+  "nivel": -6,
+  "status": "ok",
+  "ms": 31.098599999997532,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 7093,
+  "nan": false,
+  "iesireAdevar": 0.008554589405417978,
+  "puncteAdevar": 11966,
+  "adevarIesire": 0.00001933972259274161,
+  "ariiIesire": [
+   10433.20817596105
+  ]
+ },
+ {
+  "caz": "timp ondulata 5000",
+  "nivel": 3.175,
+  "msMedian": 7.068100000000413,
+  "msToate": [
+   10.889500000001135,
+   7.813899999997375,
+   12.069299999999203,
+   6.345400000001973,
+   6.509200000000419,
+   7.068100000000413,
+   5.594500000002881
+  ]
+ },
+ {
+  "caz": "elipsa cu 100 de varfuri duplicate",
+  "nivel": 3.175,
+  "status": "ok",
+  "ms": 4.010999999998603,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 5000,
+  "nan": false,
+  "iesireAdevar": 0.000010027504875331772,
+  "puncteAdevar": 15000,
+  "adevarIesire": 0.000008614764384572261,
+  "ariiIesire": [
+   14201.587889236349
+  ]
+ },
+ {
+  "caz": "elipsa cu 100 de varfuri duplicate",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 10.70509999999922,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 10000,
+  "nan": false,
+  "iesireAdevar": 0.003987313167852058,
+  "puncteAdevar": 15000,
+  "adevarIesire": 1.9275436241663204e-12,
+  "ariiIesire": [
+   17277.708459980724
+  ]
+ },
+ {
+  "caz": "patrat cu arc de lungime zero",
+  "nivel": 3.175,
+  "status": "ok",
+  "ms": 0.48040000000037253,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 4,
+  "nan": false,
+  "iesireAdevar": 1.3322676295501878e-14,
+  "puncteAdevar": 12,
+  "adevarIesire": 3.552713678800501e-15,
+  "ariiIesire": [
+   2312.7945451212972
+  ]
+ },
+ {
+  "caz": "patrat cu arc de lungime zero",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.43449999999575084,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 8,
+  "nan": false,
+  "iesireAdevar": 1.3322676295501878e-14,
+  "puncteAdevar": 12,
+  "adevarIesire": 7.105427357601002e-15,
+  "ariiIesire": [
+   3628.741098595487
+  ]
+ },
+ {
+  "caz": "patrat cu varf aproape dublu (1e-9)",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.07489999999961583,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 8,
+  "nan": false,
+  "iesireAdevar": 9.999991945619513e-10,
+  "puncteAdevar": 15,
+  "adevarIesire": 7.499991738789622e-10,
+  "ariiIesire": [
+   3166.669217443593
+  ]
+ },
+ {
+  "caz": "patrat cu varf aproape dublu (1e-7)",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.08539999999629799,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 8,
+  "nan": false,
+  "iesireAdevar": 1.0000000250087737e-7,
+  "puncteAdevar": 12,
+  "adevarIesire": 7.500000265281416e-8,
+  "ariiIesire": [
+   3166.669217443593
+  ]
+ },
+ {
+  "caz": "patrat cu varf aproape dublu (0.000001)",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.06430000000545988,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 8,
+  "nan": false,
+  "iesireAdevar": 9.999998429321977e-7,
+  "puncteAdevar": 13,
+  "adevarIesire": 7.49999998106432e-7,
+  "ariiIesire": [
+   3166.669217443593
+  ]
+ },
+ {
+  "caz": "dreptunghi cu laturi-arc bulge 1e-9",
+  "nivel": 3.175,
+  "status": "ok",
+  "ms": 0.030900000005203765,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 4,
+  "nan": false,
+  "iesireAdevar": 7.629394529473643e-7,
+  "puncteAdevar": 0,
+  "adevarIesire": null,
+  "ariiIesire": [
+   5024.322500000001
+  ]
+ },
+ {
+  "caz": "dreptunghi cu laturi-arc bulge 1e-9",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.040300000000570435,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 8,
+  "nan": false,
+  "iesireAdevar": 0.000002606210045996704,
+  "puncteAdevar": 0,
+  "adevarIesire": null,
+  "ariiIesire": [
+   7047.669217443594
+  ]
+ },
+ {
+  "caz": "dreptunghi cu laturi-arc bulge 1e-8",
+  "nivel": 3.175,
+  "status": "ok",
+  "ms": 0.33889999999519205,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 4,
+  "nan": false,
+  "iesireAdevar": 6.675720216620107e-7,
+  "puncteAdevar": 0,
+  "adevarIesire": null,
+  "ariiIesire": [
+   5024.322467764617
+  ]
+ },
+ {
+  "caz": "dreptunghi cu laturi-arc bulge 1e-8",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.4068000000042957,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 8,
+  "nan": false,
+  "iesireAdevar": 3.0011266360929767e-7,
+  "puncteAdevar": 0,
+  "adevarIesire": null,
+  "ariiIesire": [
+   7047.669232702382
+  ]
+ },
+ {
+  "caz": "dreptunghi cu laturi-arc bulge 1e-7",
+  "nivel": 3.175,
+  "status": "ok",
+  "ms": 0.07210000000486616,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 4,
+  "nan": false,
+  "iesireAdevar": 7.152557390810443e-8,
+  "puncteAdevar": 0,
+  "adevarIesire": null,
+  "ariiIesire": [
+   5024.323399285005
+  ]
+ },
+ {
+  "caz": "dreptunghi cu laturi-arc bulge 1e-7",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.0650999999998021,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 8,
+  "nan": false,
+  "iesireAdevar": 1.7881393254981504e-8,
+  "puncteAdevar": 0,
+  "adevarIesire": null,
+  "ariiIesire": [
+   7047.67012534152
+  ]
+ },
+ {
+  "caz": "dreptunghi cu laturi-arc bulge 0.000001",
+  "nivel": 3.175,
+  "status": "ok",
+  "ms": 0.04850000000442378,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 4,
+  "nan": false,
+  "iesireAdevar": 6.705522359595761e-9,
+  "puncteAdevar": 12,
+  "adevarIesire": 1.1175870895385742e-8,
+  "ariiIesire": [
+   5024.3314881765455
+  ]
+ },
+ {
+  "caz": "dreptunghi cu laturi-arc bulge 0.000001",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.05069999999977881,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 8,
+  "nan": false,
+  "iesireAdevar": 2.9802320611338473e-9,
+  "puncteAdevar": 12,
+  "adevarIesire": 0,
+  "ariiIesire": [
+   7047.678284738542
+  ]
+ },
+ {
+  "caz": "latura din 10 arce bulge +-1e-7",
+  "nivel": 3.175,
+  "status": "ok",
+  "ms": 0.08119999999325955,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 13,
+  "nan": false,
+  "iesireAdevar": 1.1920929132713809e-8,
+  "puncteAdevar": 19,
+  "adevarIesire": 3.725290298461914e-9,
+  "ariiIesire": [
+   5024.322499960029
+  ]
+ },
+ {
+  "caz": "latura din 10 arce bulge +-1e-7",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.11080000000220025,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 17,
+  "nan": false,
+  "iesireAdevar": 1.0430812658057675e-8,
+  "puncteAdevar": 19,
+  "adevarIesire": 3.725290298461914e-9,
+  "ariiIesire": [
+   7047.669217339286
+  ]
+ },
+ {
+  "caz": "patrat cu colturi r=0,001",
+  "nivel": 3.175,
+  "status": "ok",
+  "ms": 0.10850000000209548,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 4,
+  "nan": false,
+  "iesireAdevar": 4.440892098500626e-15,
+  "puncteAdevar": 12,
+  "adevarIesire": 7.105427357601002e-15,
+  "ariiIesire": [
+   1905.3225000000004
+  ]
+ },
+ {
+  "caz": "patrat cu colturi r=0,001",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.4154000000053202,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 8,
+  "nan": false,
+  "iesireAdevar": 4.6838088962886104e-12,
+  "puncteAdevar": 24,
+  "adevarIesire": 4.68158845023936e-12,
+  "ariiIesire": [
+   3166.6637656985636
+  ]
+ },
+ {
+  "caz": "patrat cu colturi r=0,001",
+  "nivel": 0.0005,
+  "status": "ok",
+  "ms": 0.29499999999825377,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 8,
+  "nan": false,
+  "iesireAdevar": 9.51246460073607e-15,
+  "puncteAdevar": 24,
+  "adevarIesire": 1.1711660287405667e-14,
+  "ariiIesire": [
+   2499.900000785398
+  ]
+ },
+ {
+  "caz": "patrat cu colturi r=0,001",
+  "nivel": 0.002,
+  "status": "ok",
+  "ms": 0.3107000000018161,
+  "selfIntersects": null,
+  "bucle": 0,
+  "varfuri": 0,
+  "nan": false,
+  "iesireAdevar": null,
+  "puncteAdevar": 12,
+  "adevarIesire": null,
+  "ariiIesire": []
+ },
+ {
+  "caz": "patrat cu colturi r=0,001",
+  "nivel": -0.0005,
+  "status": "ok",
+  "ms": 0.19180000000051223,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 8,
+  "nan": false,
+  "iesireAdevar": 1.701980570367745e-14,
+  "puncteAdevar": 24,
+  "adevarIesire": 1.6441925945742675e-14,
+  "ariiIesire": [
+   2500.0999990685837
+  ]
+ },
+ {
+  "caz": "cerc r=0.001",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.14259999999922002,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 2,
+  "nan": false,
+  "iesireAdevar": 8.881784197001252e-16,
+  "puncteAdevar": 6,
+  "adevarIesire": 8.881784197001252e-16,
+  "ariiIesire": [
+   31.689169698536553
+  ]
+ },
+ {
+  "caz": "cerc r=0.001",
+  "nivel": 0.0005,
+  "status": "ok",
+  "ms": 0.15970000000379514,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 2,
+  "nan": false,
+  "iesireAdevar": 1.0842021724855044e-19,
+  "puncteAdevar": 6,
+  "adevarIesire": 0,
+  "ariiIesire": [
+   7.853981633974483e-7
+  ]
+ },
+ {
+  "caz": "cerc r=0.001",
+  "nivel": 0.002,
+  "status": "ok",
+  "ms": 0.0786999999982072,
+  "selfIntersects": null,
+  "bucle": 0,
+  "varfuri": 0,
+  "nan": false,
+  "iesireAdevar": null,
+  "puncteAdevar": 0,
+  "adevarIesire": null,
+  "ariiIesire": []
+ },
+ {
+  "caz": "cerc r=0.00001",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.06410000000323635,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 2,
+  "nan": false,
+  "iesireAdevar": 1.3322676295501878e-15,
+  "puncteAdevar": 6,
+  "adevarIesire": 4.440892098500626e-16,
+  "ariiIesire": [
+   31.669416935041255
+  ]
+ },
+ {
+  "caz": "cerc r=0.00001",
+  "nivel": 0.000005,
+  "status": "ok",
+  "ms": 0.09639999999490101,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 0,
+  "nan": false,
+  "iesireAdevar": 0,
+  "puncteAdevar": 6,
+  "adevarIesire": null,
+  "ariiIesire": [
+   0
+  ]
+ },
+ {
+  "caz": "cerc r=0.00001",
+  "nivel": 0.00002,
+  "status": "ok",
+  "ms": 0.061100000006263144,
+  "selfIntersects": null,
+  "bucle": 1,
+  "varfuri": 0,
+  "nan": false,
+  "iesireAdevar": 0,
+  "puncteAdevar": 0,
+  "adevarIesire": null,
+  "ariiIesire": [
+   0
+  ]
+ },
+ {
+  "caz": "cerc r=0.000004",
+  "nivel": -3.175,
+  "status": "ok",
+  "ms": 0.02749999999650754,
+  "selfIntersects": null,
+  "bucle": 0,
+  "varfuri": 0,
+  "nan": false,
+  "iesireAdevar": null,
+  "puncteAdevar": 6,
+  "adevarIesire": null,
+  "ariiIesire": []
+ },
+ {
+  "caz": "cerc r=0.000004",
+  "nivel": 0.000002,
+  "status": "ok",
+  "ms": 0.009500000000116415,
+  "selfIntersects": null,
+  "bucle": 0,
+  "varfuri": 0,
+  "nan": false,
+  "iesireAdevar": null,
+  "puncteAdevar": 6,
+  "adevarIesire": null,
+  "ariiIesire": []
+ },
+ {
+  "caz": "cerc r=0.000004",
+  "nivel": 0.000008,
+  "status": "ok",
+  "ms": 0.00969999999506399,
+  "selfIntersects": null,
+  "bucle": 0,
+  "varfuri": 0,
+  "nan": false,
+  "iesireAdevar": null,
+  "puncteAdevar": 0,
+  "adevarIesire": null,
+  "ariiIesire": []
+ },
+ {
+  "caz": "optul (8) implicit",
+  "nivel": 1,
+  "status": "ok",
+  "ms": 7.236899999988964,
+  "selfIntersects": true,
+  "bucle": 1,
+  "arii": [
+   1122.060283545101
+  ],
+  "iesireLaDistantaL": 9.992007221626409e-15
+ },
+ {
+  "caz": "optul (8) implicit",
+  "nivel": -1,
+  "status": "ok",
+  "ms": 5.445800000001327,
+  "selfIntersects": true,
+  "bucle": 1,
+  "arii": [
+   -1122.060283545101
+  ],
+  "iesireLaDistantaL": 9.769962616701378e-15
+ },
+ {
+  "caz": "optul (8) handleSelfIntersects",
+  "nivel": 1,
+  "status": "ok",
+  "ms": 7.687000000005355,
+  "selfIntersects": true,
+  "bucle": 2,
+  "arii": [
+   null,
+   1122.060283545101
+  ],
+  "iesireLaDistantaL": 9.992007221626409e-15
+ },
+ {
+  "caz": "optul (8) handleSelfIntersects",
+  "nivel": -1,
+  "status": "ok",
+  "ms": 4.526299999997718,
+  "selfIntersects": true,
+  "bucle": 2,
+  "arii": [
+   -1122.060283545101,
+   null
+  ],
+  "iesireLaDistantaL": 1.1435297153639112e-14
+ }
+]

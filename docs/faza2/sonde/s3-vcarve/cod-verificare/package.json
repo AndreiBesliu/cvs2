@@ -1,0 +1,21 @@
+{
+  "name": "s3-vcarve-sonda",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Sonda aruncabila: V-carve pe axa mediala (cncvs2, Faza 2)",
+  "scripts": {
+    "masoara": "node masoara.mjs"
+  },
+  "dependencies": {
+    "@expo-google-fonts/eb-garamond": "^0.4.3",
+    "@expo-google-fonts/roboto": "^0.4.3",
+    "clipper-lib": "^6.4.2",
+    "d3-delaunay": "^6.0.4",
+    "delaunator": "^5.1.0",
+    "flo-mat": "^4.1.5",
+    "opentype.js": "^2.0.0",
+    "robust-predicates": "^3.0.3",
+    "voron8": "^3.4.2"
+  }
+}

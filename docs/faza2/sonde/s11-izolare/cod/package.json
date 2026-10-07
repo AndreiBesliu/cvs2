@@ -1,0 +1,16 @@
+{
+  "name": "s11-izolare-sonda",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sonda aruncabila s11-izolare (cncvs2 Faza 2): SharedArrayBuffer vs transfer; izolarea cross-origin cu Firebase Auth, reCAPTCHA Enterprise, Stripe Checkout, Google Fonts",
+  "scripts": {
+    "masoara": "node masoara.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "firebase": "^12.0.0",
+    "firebase-tools": "15.32.1",
+    "playwright-core": "1.63.0"
+  }
+}

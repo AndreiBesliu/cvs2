@@ -1,0 +1,186 @@
+{
+ "fitter": [
+  {
+   "tol": 0.002,
+   "patratice": 1682,
+   "arce": 7172,
+   "abatereMax": 0.002010670067221735,
+   "raport": 1.0053350336108675,
+   "unde": "Arial e"
+  },
+  {
+   "tol": 0.01,
+   "patratice": 1682,
+   "arce": 4846,
+   "abatereMax": 0.00996125469572452,
+   "raport": 0.9961254695724521,
+   "unde": "Gabriola @"
+  }
+ ],
+ "cubiceGrele": [
+  {
+   "caz": "cusp (varf ascutit)",
+   "segmente": 44,
+   "arce": 44,
+   "abatereMax": 0.0018557212813247643,
+   "raport": 0.9278606406623822,
+   "gol": 2.929642751054232e-14,
+   "nan": false,
+   "razaMax": 90.19903621357919,
+   "ms": 0.19750000000931323
+  },
+  {
+   "caz": "bucla (autointersectie)",
+   "segmente": 48,
+   "arce": 48,
+   "abatereMax": 0.0019152802869666934,
+   "raport": 0.9576401434833467,
+   "gol": 3.552713678800501e-14,
+   "nan": false,
+   "razaMax": 100.10240882276837,
+   "ms": 0.22849999999743886
+  },
+  {
+   "caz": "P1 = P0 (tangenta nedefinita la capat)",
+   "segmente": 28,
+   "arce": 28,
+   "abatereMax": 0.0013281354330840162,
+   "raport": 0.664067716542008,
+   "gol": 1.1234667099445444e-14,
+   "nan": false,
+   "razaMax": 55.31598911215525,
+   "ms": 0.13190000000759028
+  },
+  {
+   "caz": "P1 = P0 si P2 = P3",
+   "segmente": 2,
+   "arce": 0,
+   "abatereMax": 2.842170943040401e-14,
+   "raport": 1.4210854715202004e-11,
+   "gol": 0,
+   "nan": false,
+   "razaMax": 0,
+   "ms": 0.007799999992130324
+  },
+  {
+   "caz": "aproape dreapta (control la 1e-6)",
+   "segmente": 4,
+   "arce": 2,
+   "abatereMax": 3.608439212860314e-8,
+   "raport": 0.000018042196064301568,
+   "gol": 1.6143946813646718e-8,
+   "nan": false,
+   "razaMax": 60000000.216000415,
+   "ms": 0.04749999998603016
+  },
+  {
+   "caz": "coliniara cu intoarcere (merge inapoi)",
+   "segmente": 2,
+   "arce": 0,
+   "abatereMax": 2.1316282072803006e-14,
+   "raport": 1.0658141036401503e-11,
+   "gol": 0,
+   "nan": false,
+   "razaMax": 0,
+   "ms": 0.009600000019418076
+  },
+  {
+   "caz": "inflexiune dubla (S strans)",
+   "segmente": 52,
+   "arce": 52,
+   "abatereMax": 0.0015735697163574542,
+   "raport": 0.7867848581787271,
+   "gol": 3.552713678800501e-14,
+   "nan": false,
+   "razaMax": 104.64651857266779,
+   "ms": 0.27479999998467974
+  },
+  {
+   "caz": "minuscula (0,01 mm)",
+   "segmente": 4,
+   "arce": 4,
+   "abatereMax": 0.00010705006613915234,
+   "raport": 0.05352503306957617,
+   "gol": 4.271261210083258e-18,
+   "nan": false,
+   "razaMax": 0.011945211280389724,
+   "ms": 0.020900000003166497
+  },
+  {
+   "caz": "uriasa (2 440 mm)",
+   "segmente": 128,
+   "arce": 128,
+   "abatereMax": 0.0017352083263924446,
+   "raport": 0.8676041631962222,
+   "gol": 3.1295077013210636e-11,
+   "nan": false,
+   "razaMax": 101322.74812511819,
+   "ms": 0.6987999999837484
+  }
+ ],
+ "gcode": [
+  {
+   "caz": "buzunar Arial B 200 mm",
+   "arce": 780,
+   "error33": 0,
+   "maxIJ": 334.0862,
+   "maxDeltaR": 0.0001068115234375,
+   "exemple": []
+  },
+  {
+   "caz": "laturi-arc bulge 1e-9",
+   "razaMaxArc": 3.1750000000000003,
+   "arce": 4,
+   "error33": 0,
+   "maxIJ": 3.175,
+   "maxDeltaR": 0.0000030994415283203125,
+   "exemple": []
+  },
+  {
+   "caz": "laturi-arc bulge 1e-8",
+   "razaMaxArc": 2500000004.4908895,
+   "arce": 8,
+   "error33": 0,
+   "maxIJ": 2500000004.4909,
+   "maxDeltaR": 0.0000030994415283203125,
+   "exemple": []
+  },
+  {
+   "caz": "laturi-arc bulge 1e-7",
+   "razaMaxArc": 250000003.17500252,
+   "arce": 8,
+   "error33": 0,
+   "maxIJ": 250000003.175,
+   "maxDeltaR": 0.0000030994415283203125,
+   "exemple": []
+  },
+  {
+   "caz": "laturi-arc bulge 0.000001",
+   "razaMaxArc": 25000003.175685555,
+   "arce": 8,
+   "error33": 0,
+   "maxIJ": 25000003.1756,
+   "maxDeltaR": 0.0000030994415283203125,
+   "exemple": []
+  },
+  {
+   "caz": "laturi-arc bulge 0.00001",
+   "razaMaxArc": 2500003.17525,
+   "arce": 8,
+   "error33": 0,
+   "maxIJ": 2500003.1747,
+   "maxDeltaR": 0.0000030994415283203125,
+   "exemple": []
+  },
+  {
+   "caz": "cubica aproape dreapta (300 mm, sageata 0,01)",
+   "razaMaxArc": 3000000.1092816344,
+   "arce": 4,
+   "error33": 0,
+   "maxIJ": 3000000.1083,
+   "maxDeltaR": 0,
+   "exemple": []
+  }
+ ],
+ "controlGrbl": true
+}

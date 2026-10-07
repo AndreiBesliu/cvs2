@@ -1,0 +1,2342 @@
+{
+ "gpu": "rtx",
+ "gpu_args": [],
+ "plan": "timed",
+ "vsync": false,
+ "browsere": [
+  {
+   "dpr": 1,
+   "rate": 1,
+   "version": "154.0.4258.62",
+   "status": [
+    "Canvas: Hardware accelerated",
+    "Compositing: Hardware accelerated",
+    "Rasterization: Hardware accelerated",
+    "WebGL: Hardware accelerated",
+    "WebGPU: Hardware accelerated"
+   ],
+   "active": "NVIDIA GeForce RTX 3060"
+  },
+  {
+   "dpr": 1.5,
+   "rate": 1,
+   "version": "154.0.4258.62",
+   "status": [
+    "Canvas: Hardware accelerated",
+    "Compositing: Hardware accelerated",
+    "Rasterization: Hardware accelerated",
+    "WebGL: Hardware accelerated",
+    "WebGPU: Hardware accelerated"
+   ],
+   "active": "NVIDIA GeForce RTX 3060"
+  }
+ ],
+ "rulari": [
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 0,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.28,
+   "r": "c2d",
+   "n": 0,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 0,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 1.5,
+    "p95": 2.3,
+    "max": 3.5
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 0.7,
+    "p95": 1.2,
+    "max": 2
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 10,
+   "calib_ms": 41.4,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan",
+    "lw": "dev"
+   },
+   "rate": 1,
+   "durata_s": 2.826,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 51,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 1306,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 15.9,
+    "p95": 33.5,
+    "max": 35.2
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 15.9,
+    "p95": 20.1,
+    "max": 23
+   },
+   "cadre_peste_16_7ms": 14,
+   "heapMB": 38,
+   "calib_ms": 40.9,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan",
+    "lw": "dev",
+    "sync": 0
+   },
+   "rate": 1,
+   "durata_s": 3.743,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 52,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 1331,
+   "sync": false,
+   "interval_ms": {
+    "n": 60,
+    "med": 17.8,
+    "p95": 63.8,
+    "max": 69.9
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.2
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 36,
+   "calib_ms": 40.6,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2dcull",
+    "n": 50000,
+    "mode": "pan",
+    "lw": "dev"
+   },
+   "rate": 1,
+   "durata_s": 6.174,
+   "r": "c2dcull",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 284,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 134,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 68,
+    "p95": 87.2,
+    "max": 89
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 68.1,
+    "p95": 78.3,
+    "max": 85.4
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 98,
+   "calib_ms": 41.3,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2dcull",
+    "n": 50000,
+    "mode": "pan",
+    "lw": "dev",
+    "sync": 0
+   },
+   "rate": 1,
+   "durata_s": 10.593,
+   "r": "c2dcull",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 227,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 111,
+   "sync": false,
+   "interval_ms": {
+    "n": 60,
+    "med": 140.7,
+    "p95": 179.6,
+    "max": 192.4
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 0.1,
+    "p95": 0.2,
+    "max": 0.3
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 101,
+   "calib_ms": 40.1,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 1000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.306,
+   "r": "gl",
+   "n": 0,
+   "tp": 1000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 84,
+   "vboMB": 11.444,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 1.2,
+    "p95": 1.6,
+    "max": 1.8
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 1.1,
+    "p95": 1.5,
+    "max": 1.8
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 23,
+   "calib_ms": 39.8,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 2000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.399,
+   "r": "gl",
+   "n": 0,
+   "tp": 2000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 131,
+   "vboMB": 22.888,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 1.9,
+    "p95": 2.2,
+    "max": 3.4
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 1.8,
+    "p95": 2.2,
+    "max": 3.4
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 34,
+   "calib_ms": 39.5,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.766,
+   "r": "gl",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 309,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 4.1,
+    "p95": 4.5,
+    "max": 8.9
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 4,
+    "p95": 4.4,
+    "max": 8.9
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 67,
+   "calib_ms": 39.8,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "glstrip",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.633,
+   "r": "glstrip",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 336,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 2.1,
+    "p95": 2.4,
+    "max": 7.8
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 2,
+    "p95": 2.4,
+    "max": 7.7
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 68,
+   "calib_ms": 41.5,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 0,
+    "hf": 1,
+    "hfup": 1,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.324,
+   "r": "gl",
+   "n": 0,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 171,
+   "hfUploadMs": 13.9,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 0.5,
+    "p95": 0.7,
+    "max": 1.5
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 0.5,
+    "p95": 0.7,
+    "max": 1.3
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 43,
+   "calib_ms": 39.3,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 1.777,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 217,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 540,
+   "hfUploadMs": 5.2,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 9.1,
+    "p95": 9.8,
+    "max": 14.3
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 9,
+    "p95": 9.7,
+    "max": 14.3
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 172,
+   "calib_ms": 39.5,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "zoom"
+   },
+   "rate": 1,
+   "durata_s": 1.801,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "zoom",
+   "dpr": 1,
+   "genMs": 235,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 541,
+   "hfUploadMs": 6.5,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 9.1,
+    "p95": 9.6,
+    "max": 11.2
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 8.9,
+    "p95": 9.4,
+    "max": 11
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 173,
+   "calib_ms": 39.8,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "rate": 1,
+   "durata_s": 0.069,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.04,
+   "abatere_p95_px": 0.036,
+   "abatere_medie_px": -0.001,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.04,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 90
+   },
+   "rate": 1,
+   "durata_s": 0.056,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 90,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 641,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.088,
+   "abatere_p95_px": 0.086,
+   "abatere_medie_px": -0.011,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.088,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 0
+   },
+   "rate": 1,
+   "durata_s": 0.06,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 0,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.087,
+   "abatere_p95_px": 0.086,
+   "abatere_medie_px": -0.023,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.087,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixi",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "rate": 1,
+   "durata_s": 0.175,
+   "r": "pixi",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 92,
+   "abatere_max_px": 29.264,
+   "abatere_p95_px": 29.177,
+   "abatere_medie_px": -28.296,
+   "prezis_max_px": 29.149,
+   "rezidual_fata_de_prezis_max_px": 0.137,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 0,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.361,
+   "r": "c2d",
+   "n": 0,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 0,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 1.8,
+    "p95": 3.4,
+    "max": 4.7
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 1.6,
+    "p95": 2,
+    "max": 2.6
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 10,
+   "calib_ms": 40.6,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan",
+    "lw": "dev"
+   },
+   "rate": 1,
+   "durata_s": 3.363,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 51,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 1250,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 23.5,
+    "p95": 31,
+    "max": 46.8
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 24,
+    "p95": 29.7,
+    "max": 38.8
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 35,
+   "calib_ms": 40.1,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan",
+    "lw": "dev",
+    "sync": 0
+   },
+   "rate": 1,
+   "durata_s": 3.344,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 54,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 1254,
+   "sync": false,
+   "interval_ms": {
+    "n": 60,
+    "med": 17.6,
+    "p95": 52.2,
+    "max": 61.9
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.2
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 36,
+   "calib_ms": 43.1,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2dcull",
+    "n": 50000,
+    "mode": "pan",
+    "lw": "dev"
+   },
+   "rate": 1,
+   "durata_s": 7.513,
+   "r": "c2dcull",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 246,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 113,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 94.8,
+    "p95": 117.6,
+    "max": 121.4
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 93,
+    "p95": 114,
+    "max": 121.5
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 102,
+   "calib_ms": 40.3,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2dcull",
+    "n": 50000,
+    "mode": "pan",
+    "lw": "dev",
+    "sync": 0
+   },
+   "rate": 1,
+   "durata_s": 9.574,
+   "r": "c2dcull",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 205,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 116,
+   "sync": false,
+   "interval_ms": {
+    "n": 60,
+    "med": 124.1,
+    "p95": 149.7,
+    "max": 187.1
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 0.2,
+    "p95": 0.2,
+    "max": 0.3
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 99,
+   "calib_ms": 40.1,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan",
+    "lw": "css"
+   },
+   "rate": 1,
+   "durata_s": 11.952,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 58,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 1231,
+   "sync": true,
+   "interval_ms": {
+    "n": 26,
+    "med": 352.8,
+    "p95": 385.4,
+    "max": 395.7
+   },
+   "cadru_ms": {
+    "n": 26,
+    "med": 350.7,
+    "p95": 385.7,
+    "max": 388.4
+   },
+   "cadre_peste_16_7ms": 26,
+   "heapMB": 36,
+   "calib_ms": 41.9,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan",
+    "lw": "css",
+    "sync": 0
+   },
+   "rate": 1,
+   "durata_s": 15.23,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 57,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 1295,
+   "sync": false,
+   "interval_ms": {
+    "n": 28,
+    "med": 351,
+    "p95": 732.7,
+    "max": 2173.2
+   },
+   "cadru_ms": {
+    "n": 28,
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 26,
+   "calib_ms": 40.6,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 1000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.338,
+   "r": "gl",
+   "n": 0,
+   "tp": 1000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 83,
+   "vboMB": 11.444,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 1.3,
+    "p95": 1.8,
+    "max": 2.3
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 1.3,
+    "p95": 1.7,
+    "max": 2.3
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 23,
+   "calib_ms": 40.2,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 2000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.453,
+   "r": "gl",
+   "n": 0,
+   "tp": 2000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 139,
+   "vboMB": 22.888,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 2.3,
+    "p95": 2.7,
+    "max": 4.2
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 2.2,
+    "p95": 2.7,
+    "max": 4.1
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 34,
+   "calib_ms": 39.8,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.841,
+   "r": "gl",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 315,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 4.9,
+    "p95": 5.4,
+    "max": 9.6
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 4.8,
+    "p95": 5.4,
+    "max": 9.6
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 68,
+   "calib_ms": 39.8,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "glstrip",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.632,
+   "r": "glstrip",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 314,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 2.3,
+    "p95": 2.7,
+    "max": 7.5
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 2.2,
+    "p95": 2.7,
+    "max": 7.5
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 67,
+   "calib_ms": 40.2,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 0,
+    "hf": 1,
+    "hfup": 1,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.36,
+   "r": "gl",
+   "n": 0,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 185,
+   "hfUploadMs": 14.2,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 0.6,
+    "p95": 0.9,
+    "max": 1.4
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 0.5,
+    "p95": 0.8,
+    "max": 1.4
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 42,
+   "calib_ms": 39.9,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 2.513,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 238,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 588,
+   "hfUploadMs": 6.8,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 16.1,
+    "p95": 32.2,
+    "max": 34.8
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 16,
+    "p95": 18.4,
+    "max": 21
+   },
+   "cadre_peste_16_7ms": 15,
+   "heapMB": 172,
+   "calib_ms": 40,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "zoom"
+   },
+   "rate": 1,
+   "durata_s": 2.554,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "zoom",
+   "dpr": 1.5,
+   "genMs": 239,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 631,
+   "hfUploadMs": 6.9,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 16.4,
+    "p95": 17.9,
+    "max": 33.4
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 16.2,
+    "p95": 17.5,
+    "max": 20.4
+   },
+   "cadre_peste_16_7ms": 16,
+   "heapMB": 172,
+   "calib_ms": 41.7,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "rate": 1,
+   "durata_s": 0.074,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1.5,
+   "canvas": [
+    1921,
+    1081
+   ],
+   "puncte": 541,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.043,
+   "abatere_p95_px": 0.041,
+   "abatere_medie_px": 0.008,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.043,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 90
+   },
+   "rate": 1,
+   "durata_s": 0.063,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 90,
+   "dpr": 1.5,
+   "canvas": [
+    1921,
+    1081
+   ],
+   "puncte": 961,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.088,
+   "abatere_p95_px": 0.086,
+   "abatere_medie_px": -0.009,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.088,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 0
+   },
+   "rate": 1,
+   "durata_s": 0.064,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 0,
+   "dpr": 1.5,
+   "canvas": [
+    1921,
+    1081
+   ],
+   "puncte": 541,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.088,
+   "abatere_p95_px": 0.086,
+   "abatere_medie_px": -0.014,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.088,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixi",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "rate": 1,
+   "durata_s": 0.176,
+   "r": "pixi",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1.5,
+   "canvas": [
+    1921,
+    1081
+   ],
+   "puncte": 541,
+   "nVarfuri": 92,
+   "abatere_max_px": 44.204,
+   "abatere_p95_px": 44.093,
+   "abatere_medie_px": -42.794,
+   "prezis_max_px": 43.723,
+   "rezidual_fata_de_prezis_max_px": 0.486,
+   "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "rtx"
+  }
+ ],
+ "durata_totala_s": 98.729
+}

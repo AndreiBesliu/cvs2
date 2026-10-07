@@ -1,0 +1,770 @@
+{
+ "data": "2026-10-07T07:16:05.689Z",
+ "browser": "154.0.4258.62",
+ "moduri": [
+  {
+   "mod": "none",
+   "cereri_esuate": [
+    {
+     "url": "https://b.stripecdn.com/stripethirdparty-srv/assets/v33.1/PrivacyCompliance.html",
+     "err": "net::ERR_ABORTED"
+    },
+    {
+     "url": "https://b.stripecdn.com/stripethirdparty-srv/assets/v33.1/GoogleTagManager.html",
+     "err": "net::ERR_ABORTED"
+    }
+   ],
+   "consola": [
+    "iframe_alta_origine_cu_CORP_COEP {\"ok\":true,\"a_raspuns\":true,\"coi_in_cadru\":false,\"ms\":111}"
+   ],
+   "start": {
+    "mode": "none",
+    "phase": "start",
+    "url": "http://127.0.0.1:5187/m/none/web/compat.html?emu=19987",
+    "crossOriginIsolated": false,
+    "sab": false,
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+    "fb_sdk_pachet_aceeasi_origine": {
+     "ok": true,
+     "sdk": "firebase ok",
+     "ms": 46
+    },
+    "fb_sdk_cdn_gstatic": {
+     "ok": true,
+     "initializeApp": "function",
+     "ms": 252
+    },
+    "auth_email_parola_emulator": {
+     "ok": true,
+     "uid": true,
+     "ms": 53
+    },
+    "gapi_script_auth": {
+     "ok": true,
+     "incarcat": true,
+     "ms": 210
+    },
+    "recaptcha_enterprise_script": {
+     "ok": true,
+     "enterprise": true,
+     "ready": true,
+     "iframe_uri": 0,
+     "ms": 1946
+    },
+    "fonturi_google_fara_crossorigin": {
+     "ok": true,
+     "font_incarcat": true,
+     "ms": 371
+    },
+    "fonturi_google_crossorigin": {
+     "ok": true,
+     "font_incarcat": true,
+     "ms": 212
+    },
+    "stripe_js_script": {
+     "ok": true,
+     "Stripe": "function",
+     "iframe_uri": 1,
+     "ms": 2248
+    },
+    "stripe_js_script_crossorigin": {
+     "ok": true,
+     "Stripe": "function",
+     "ms": 160
+    },
+    "iframe_alta_origine_fara_antete": {
+     "ok": true,
+     "a_raspuns": true,
+     "coi_in_cadru": false,
+     "ms": 106
+    },
+    "iframe_alta_origine_cu_CORP_COEP": {
+     "ok": true,
+     "a_raspuns": true,
+     "coi_in_cadru": false,
+     "ms": 111
+    },
+    "iframe_aceeasi_origine_fara_antete": {
+     "ok": true,
+     "a_raspuns": true,
+     "coi_in_cadru": false,
+     "ms": 101
+    }
+   },
+   "cadre": [
+    "http://127.0.0.1:5187/m/none/web/compat.html",
+    "https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html",
+    "",
+    "http://localhost:5187/plain/web/frame.html",
+    "http://localhost:5187/corp/web/frame.html",
+    "http://127.0.0.1:5187/plain/web/frame.html"
+   ],
+   "popup_simplu": {
+    "handle_null": false,
+    "closed_imediat": false,
+    "closed_dupa_2_5s": false,
+    "mesaj_de_la_popup": true
+   },
+   "auth_popup_fereastra": {
+    "url": "http://127.0.0.1:19987/emulator/auth/handler",
+    "clic": "ok",
+    "dupa": "fereastra s-a inchis singura"
+   },
+   "auth_signInWithPopup": {
+    "ok": true,
+    "email": true,
+    "provider": "google.com",
+    "ms": 2189
+   },
+   "auth_redirect_widget": {
+    "url": "http://127.0.0.1:19987/emulator/auth/handler",
+    "clic": "ok"
+   },
+   "auth_redirect": {
+    "coi": false,
+    "marker": "redirect-none",
+    "rezultat": {
+     "ok": true,
+     "user": true,
+     "email": true,
+     "provider": "google.com",
+     "ms": 110
+    }
+   },
+   "stripe_ajuns": {
+    "url": "https://stripe.com/en-ro/payments/checkout",
+    "titlu": "Stripe Checkout | Checkout Pages for Your Website"
+   },
+   "stripe_intoarcere": {
+    "coi": false,
+    "marker": "stripe-none",
+    "sab": "ReferenceError: SharedArrayBuffer is not defined"
+   },
+   "stripe_inapoi": {
+    "url": "http://127.0.0.1:5187/m/none/web/compat.html",
+    "coi": false,
+    "marker": "stripe-none",
+    "sab": false
+   }
+  },
+  {
+   "mod": "coep-rc",
+   "cereri_esuate": [
+    {
+     "url": "https://js.stripe.com/v3/",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE.NotSameOriginAfterDefaultedToSameOriginByCoep"
+    },
+    {
+     "url": "http://localhost:5187/plain/web/frame.html",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE"
+    },
+    {
+     "url": "https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE"
+    },
+    {
+     "url": "http://127.0.0.1:5187/plain/web/frame.html",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE"
+    },
+    {
+     "url": "http://127.0.0.1:19987/emulator/auth/iframe",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE"
+    },
+    {
+     "url": "http://127.0.0.1:19987/emulator/auth/iframe",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE"
+    }
+   ],
+   "consola": [
+    "mod coep-rc faza start crossOriginIsolated true SAB true",
+    "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOriginAfterDefaultedToSameOriginByCoep",
+    "iframe_alta_origine_cu_CORP_COEP {\"ok\":true,\"a_raspuns\":true,\"coi_in_cadru\":false,\"ms\":106}",
+    "mod coep-rc faza redirect crossOriginIsolated true SAB true",
+    "mod coep-rc faza stripe crossOriginIsolated true SAB true",
+    "mod coep-rc faza stripe crossOriginIsolated true SAB true"
+   ],
+   "start": {
+    "mode": "coep-rc",
+    "phase": "start",
+    "url": "http://127.0.0.1:5187/m/coep-rc/web/compat.html?emu=19987",
+    "crossOriginIsolated": true,
+    "sab": true,
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+    "fb_sdk_pachet_aceeasi_origine": {
+     "ok": true,
+     "sdk": "firebase ok",
+     "ms": 34
+    },
+    "fb_sdk_cdn_gstatic": {
+     "ok": true,
+     "initializeApp": "function",
+     "ms": 235
+    },
+    "auth_email_parola_emulator": {
+     "ok": true,
+     "uid": true,
+     "ms": 11
+    },
+    "gapi_script_auth": {
+     "ok": true,
+     "incarcat": true,
+     "ms": 212
+    },
+    "recaptcha_enterprise_script": {
+     "ok": true,
+     "enterprise": true,
+     "ready": true,
+     "iframe_uri": 0,
+     "ms": 1911
+    },
+    "fonturi_google_fara_crossorigin": {
+     "ok": true,
+     "font_incarcat": true,
+     "ms": 374
+    },
+    "fonturi_google_crossorigin": {
+     "ok": true,
+     "font_incarcat": true,
+     "ms": 212
+    },
+    "stripe_js_script": {
+     "ok": false,
+     "err": "script blocat sau eroare de retea",
+     "ms": 136
+    },
+    "stripe_js_script_crossorigin": {
+     "ok": true,
+     "Stripe": "function",
+     "ms": 171
+    },
+    "iframe_alta_origine_fara_antete": {
+     "ok": false,
+     "err": "cadrul nu a raspuns in 4 s (blocat?)",
+     "ms": 4160
+    },
+    "iframe_alta_origine_cu_CORP_COEP": {
+     "ok": true,
+     "a_raspuns": true,
+     "coi_in_cadru": false,
+     "ms": 106
+    },
+    "iframe_aceeasi_origine_fara_antete": {
+     "ok": false,
+     "err": "cadrul nu a raspuns in 4 s (blocat?)",
+     "ms": 4207
+    }
+   },
+   "cadre": [
+    "http://127.0.0.1:5187/m/coep-rc/web/compat.html",
+    "null/",
+    "null/",
+    "http://localhost:5187/corp/web/frame.html",
+    "null/"
+   ],
+   "popup_simplu": {
+    "handle_null": false,
+    "closed_imediat": false,
+    "closed_dupa_2_5s": true,
+    "mesaj_de_la_popup": false
+   },
+   "auth_popup_fereastra": {
+    "url": "http://127.0.0.1:19987/emulator/auth/handler",
+    "clic": "ok",
+    "dupa": "Error: Auth Emulator Internal Error: No matching frame\n    at assert (http://127.0.0.1:19987/emulator/auth/handler?apiKey=demo-api-key&appName=%5BDEFAULT%5D&aut"
+   },
+   "auth_signInWithPopup": {
+    "ok": false,
+    "err": "auth/popup-closed-by-user",
+    "ms": 10211
+   },
+   "auth_redirect_widget": {
+    "url": "http://127.0.0.1:19987/emulator/auth/handler",
+    "clic": "ok"
+   },
+   "auth_redirect": {
+    "coi": true,
+    "marker": "redirect-coep-rc",
+    "rezultat": {
+     "ok": false,
+     "err": "timeout 30000 ms",
+     "ms": 30002
+    }
+   },
+   "stripe_ajuns": {
+    "url": "https://stripe.com/en-ro/payments/checkout",
+    "titlu": "Stripe Checkout | Checkout Pages for Your Website"
+   },
+   "stripe_intoarcere": {
+    "coi": true,
+    "marker": "stripe-coep-rc",
+    "sab": true
+   },
+   "stripe_inapoi": {
+    "url": "http://127.0.0.1:5187/m/coep-rc/web/compat.html",
+    "coi": true,
+    "marker": "stripe-coep-rc",
+    "sab": true
+   }
+  },
+  {
+   "mod": "coep-cl",
+   "cereri_esuate": [
+    {
+     "url": "http://localhost:5187/plain/web/frame.html",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE"
+    },
+    {
+     "url": "https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE"
+    },
+    {
+     "url": "https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE"
+    },
+    {
+     "url": "http://127.0.0.1:5187/plain/web/frame.html",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE"
+    },
+    {
+     "url": "http://127.0.0.1:19987/emulator/auth/iframe",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE"
+    },
+    {
+     "url": "http://127.0.0.1:19987/emulator/auth/iframe",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE"
+    },
+    {
+     "url": "https://b.stripecdn.com/stripethirdparty-srv/assets/v33.1/PrivacyCompliance.html",
+     "err": "net::ERR_ABORTED"
+    },
+    {
+     "url": "https://b.stripecdn.com/stripethirdparty-srv/assets/v33.1/GoogleTagManager.html",
+     "err": "net::ERR_ABORTED"
+    }
+   ],
+   "consola": [
+    "mod coep-cl faza start crossOriginIsolated true SAB true",
+    "iframe_alta_origine_cu_CORP_COEP {\"ok\":true,\"a_raspuns\":true,\"coi_in_cadru\":false,\"ms\":102}",
+    "mod coep-cl faza redirect crossOriginIsolated true SAB true",
+    "mod coep-cl faza stripe crossOriginIsolated true SAB true",
+    "mod coep-cl faza stripe crossOriginIsolated true SAB true"
+   ],
+   "start": {
+    "mode": "coep-cl",
+    "phase": "start",
+    "url": "http://127.0.0.1:5187/m/coep-cl/web/compat.html?emu=19987",
+    "crossOriginIsolated": true,
+    "sab": true,
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+    "fb_sdk_pachet_aceeasi_origine": {
+     "ok": true,
+     "sdk": "firebase ok",
+     "ms": 31
+    },
+    "fb_sdk_cdn_gstatic": {
+     "ok": true,
+     "initializeApp": "function",
+     "ms": 253
+    },
+    "auth_email_parola_emulator": {
+     "ok": true,
+     "uid": true,
+     "ms": 8
+    },
+    "gapi_script_auth": {
+     "ok": true,
+     "incarcat": true,
+     "ms": 209
+    },
+    "recaptcha_enterprise_script": {
+     "ok": true,
+     "enterprise": true,
+     "ready": true,
+     "iframe_uri": 0,
+     "ms": 3139
+    },
+    "fonturi_google_fara_crossorigin": {
+     "ok": true,
+     "font_incarcat": true,
+     "ms": 415
+    },
+    "fonturi_google_crossorigin": {
+     "ok": true,
+     "font_incarcat": true,
+     "ms": 218
+    },
+    "stripe_js_script": {
+     "ok": true,
+     "Stripe": "function",
+     "iframe_uri": 1,
+     "ms": 3440
+    },
+    "stripe_js_script_crossorigin": {
+     "ok": true,
+     "Stripe": "function",
+     "ms": 140
+    },
+    "iframe_alta_origine_fara_antete": {
+     "ok": false,
+     "err": "cadrul nu a raspuns in 4 s (blocat?)",
+     "ms": 4202
+    },
+    "iframe_alta_origine_cu_CORP_COEP": {
+     "ok": true,
+     "a_raspuns": true,
+     "coi_in_cadru": false,
+     "ms": 102
+    },
+    "iframe_aceeasi_origine_fara_antete": {
+     "ok": false,
+     "err": "cadrul nu a raspuns in 4 s (blocat?)",
+     "ms": 4200
+    }
+   },
+   "cadre": [
+    "http://127.0.0.1:5187/m/coep-cl/web/compat.html",
+    "null/",
+    "null/",
+    "null/",
+    "http://localhost:5187/corp/web/frame.html",
+    "null/"
+   ],
+   "popup_simplu": {
+    "handle_null": false,
+    "closed_imediat": false,
+    "closed_dupa_2_5s": true,
+    "mesaj_de_la_popup": false
+   },
+   "auth_popup_fereastra": {
+    "url": "http://127.0.0.1:19987/emulator/auth/handler",
+    "clic": "ok",
+    "dupa": "Error: Auth Emulator Internal Error: No matching frame\n    at assert (http://127.0.0.1:19987/emulator/auth/handler?apiKey=demo-api-key&appName=%5BDEFAULT%5D&aut"
+   },
+   "auth_signInWithPopup": {
+    "ok": false,
+    "err": "auth/popup-closed-by-user",
+    "ms": 10217
+   },
+   "auth_redirect_widget": {
+    "url": "http://127.0.0.1:19987/emulator/auth/handler",
+    "clic": "ok"
+   },
+   "auth_redirect": {
+    "coi": true,
+    "marker": "redirect-coep-cl",
+    "rezultat": {
+     "ok": false,
+     "err": "timeout 30000 ms",
+     "ms": 30002
+    }
+   },
+   "stripe_ajuns": {
+    "url": "https://stripe.com/en-ro/payments/checkout",
+    "titlu": "Stripe Checkout | Checkout Pages for Your Website"
+   },
+   "stripe_intoarcere": {
+    "coi": true,
+    "marker": "stripe-coep-cl",
+    "sab": true
+   },
+   "stripe_inapoi": {
+    "url": "http://127.0.0.1:5187/m/coep-cl/web/compat.html",
+    "coi": true,
+    "marker": "stripe-coep-cl",
+    "sab": true
+   }
+  },
+  {
+   "mod": "dip-rc",
+   "cereri_esuate": [
+    {
+     "url": "https://js.stripe.com/v3/",
+     "err": "net::ERR_BLOCKED_BY_RESPONSE.NotSameOriginAfterDefaultedToSameOriginByDip"
+    },
+    {
+     "url": "https://b.stripecdn.com/stripethirdparty-srv/assets/v33.1/PrivacyCompliance.html",
+     "err": "net::ERR_ABORTED"
+    },
+    {
+     "url": "https://b.stripecdn.com/stripethirdparty-srv/assets/v33.1/GoogleTagManager.html",
+     "err": "net::ERR_ABORTED"
+    }
+   ],
+   "consola": [
+    "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOriginAfterDefaultedToSameOriginByDip",
+    "iframe_alta_origine_cu_CORP_COEP {\"ok\":true,\"a_raspuns\":true,\"coi_in_cadru\":false,\"ms\":112}"
+   ],
+   "start": {
+    "mode": "dip-rc",
+    "phase": "start",
+    "url": "http://127.0.0.1:5187/m/dip-rc/web/compat.html?emu=19987",
+    "crossOriginIsolated": true,
+    "sab": true,
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+    "fb_sdk_pachet_aceeasi_origine": {
+     "ok": true,
+     "sdk": "firebase ok",
+     "ms": 31
+    },
+    "fb_sdk_cdn_gstatic": {
+     "ok": true,
+     "initializeApp": "function",
+     "ms": 255
+    },
+    "auth_email_parola_emulator": {
+     "ok": true,
+     "uid": true,
+     "ms": 9
+    },
+    "gapi_script_auth": {
+     "ok": true,
+     "incarcat": true,
+     "ms": 210
+    },
+    "recaptcha_enterprise_script": {
+     "ok": true,
+     "enterprise": true,
+     "ready": true,
+     "iframe_uri": 0,
+     "ms": 1944
+    },
+    "fonturi_google_fara_crossorigin": {
+     "ok": true,
+     "font_incarcat": true,
+     "ms": 369
+    },
+    "fonturi_google_crossorigin": {
+     "ok": true,
+     "font_incarcat": true,
+     "ms": 202
+    },
+    "stripe_js_script": {
+     "ok": false,
+     "err": "script blocat sau eroare de retea",
+     "ms": 108
+    },
+    "stripe_js_script_crossorigin": {
+     "ok": true,
+     "Stripe": "function",
+     "ms": 152
+    },
+    "iframe_alta_origine_fara_antete": {
+     "ok": true,
+     "a_raspuns": true,
+     "coi_in_cadru": false,
+     "ms": 216
+    },
+    "iframe_alta_origine_cu_CORP_COEP": {
+     "ok": true,
+     "a_raspuns": true,
+     "coi_in_cadru": false,
+     "ms": 112
+    },
+    "iframe_aceeasi_origine_fara_antete": {
+     "ok": true,
+     "a_raspuns": true,
+     "coi_in_cadru": false,
+     "ms": 105
+    }
+   },
+   "cadre": [
+    "http://127.0.0.1:5187/m/dip-rc/web/compat.html",
+    "http://localhost:5187/plain/web/frame.html",
+    "http://localhost:5187/corp/web/frame.html",
+    "http://127.0.0.1:5187/plain/web/frame.html"
+   ],
+   "popup_simplu": {
+    "handle_null": false,
+    "closed_imediat": false,
+    "closed_dupa_2_5s": false,
+    "mesaj_de_la_popup": true
+   },
+   "auth_popup_fereastra": {
+    "url": "http://127.0.0.1:19987/emulator/auth/handler",
+    "clic": "ok",
+    "dupa": "fereastra s-a inchis singura"
+   },
+   "auth_signInWithPopup": {
+    "ok": true,
+    "email": true,
+    "provider": "google.com",
+    "ms": 2892
+   },
+   "auth_redirect_widget": {
+    "url": "http://127.0.0.1:19987/emulator/auth/handler",
+    "clic": "ok"
+   },
+   "auth_redirect": {
+    "coi": true,
+    "marker": "redirect-dip-rc",
+    "rezultat": {
+     "ok": true,
+     "user": true,
+     "email": true,
+     "provider": "google.com",
+     "ms": 204
+    }
+   },
+   "stripe_ajuns": {
+    "url": "https://stripe.com/en-ro/payments/checkout",
+    "titlu": "Stripe Checkout | Checkout Pages for Your Website"
+   },
+   "stripe_intoarcere": {
+    "coi": true,
+    "marker": "stripe-dip-rc",
+    "sab": true
+   },
+   "stripe_inapoi": {
+    "url": "http://127.0.0.1:5187/m/dip-rc/web/compat.html",
+    "coi": true,
+    "marker": "stripe-dip-rc",
+    "sab": true
+   }
+  },
+  {
+   "mod": "dip-cl",
+   "cereri_esuate": [
+    {
+     "url": "https://b.stripecdn.com/stripethirdparty-srv/assets/v33.1/PrivacyCompliance.html",
+     "err": "net::ERR_ABORTED"
+    },
+    {
+     "url": "https://b.stripecdn.com/stripethirdparty-srv/assets/v33.1/GoogleTagManager.html",
+     "err": "net::ERR_ABORTED"
+    }
+   ],
+   "consola": [
+    "iframe_alta_origine_cu_CORP_COEP {\"ok\":true,\"a_raspuns\":true,\"coi_in_cadru\":false,\"ms\":114}"
+   ],
+   "start": {
+    "mode": "dip-cl",
+    "phase": "start",
+    "url": "http://127.0.0.1:5187/m/dip-cl/web/compat.html?emu=19987",
+    "crossOriginIsolated": true,
+    "sab": true,
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+    "fb_sdk_pachet_aceeasi_origine": {
+     "ok": true,
+     "sdk": "firebase ok",
+     "ms": 12
+    },
+    "fb_sdk_cdn_gstatic": {
+     "ok": true,
+     "initializeApp": "function",
+     "ms": 253
+    },
+    "auth_email_parola_emulator": {
+     "ok": true,
+     "uid": true,
+     "ms": 8
+    },
+    "gapi_script_auth": {
+     "ok": true,
+     "incarcat": true,
+     "ms": 202
+    },
+    "recaptcha_enterprise_script": {
+     "ok": true,
+     "enterprise": true,
+     "ready": true,
+     "iframe_uri": 0,
+     "ms": 1922
+    },
+    "fonturi_google_fara_crossorigin": {
+     "ok": true,
+     "font_incarcat": true,
+     "ms": 361
+    },
+    "fonturi_google_crossorigin": {
+     "ok": true,
+     "font_incarcat": true,
+     "ms": 207
+    },
+    "stripe_js_script": {
+     "ok": true,
+     "Stripe": "function",
+     "iframe_uri": 1,
+     "ms": 2263
+    },
+    "stripe_js_script_crossorigin": {
+     "ok": true,
+     "Stripe": "function",
+     "ms": 161
+    },
+    "iframe_alta_origine_fara_antete": {
+     "ok": true,
+     "a_raspuns": true,
+     "coi_in_cadru": false,
+     "ms": 106
+    },
+    "iframe_alta_origine_cu_CORP_COEP": {
+     "ok": true,
+     "a_raspuns": true,
+     "coi_in_cadru": false,
+     "ms": 114
+    },
+    "iframe_aceeasi_origine_fara_antete": {
+     "ok": true,
+     "a_raspuns": true,
+     "coi_in_cadru": false,
+     "ms": 103
+    }
+   },
+   "cadre": [
+    "http://127.0.0.1:5187/m/dip-cl/web/compat.html",
+    "https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html",
+    "http://localhost:5187/plain/web/frame.html",
+    "http://localhost:5187/corp/web/frame.html",
+    "",
+    "http://127.0.0.1:5187/plain/web/frame.html"
+   ],
+   "popup_simplu": {
+    "handle_null": false,
+    "closed_imediat": false,
+    "closed_dupa_2_5s": false,
+    "mesaj_de_la_popup": true
+   },
+   "auth_popup_fereastra": {
+    "url": "http://127.0.0.1:19987/emulator/auth/handler",
+    "clic": "ok",
+    "dupa": "fereastra s-a inchis singura"
+   },
+   "auth_signInWithPopup": {
+    "ok": true,
+    "email": true,
+    "provider": "google.com",
+    "ms": 1280
+   },
+   "auth_redirect_widget": {
+    "url": "http://127.0.0.1:19987/emulator/auth/handler",
+    "clic": "ok"
+   },
+   "auth_redirect": {
+    "coi": true,
+    "marker": "redirect-dip-cl",
+    "rezultat": {
+     "ok": true,
+     "user": true,
+     "email": true,
+     "provider": "google.com",
+     "ms": 209
+    }
+   },
+   "stripe_ajuns": {
+    "url": "https://stripe.com/en-ro/payments/checkout",
+    "titlu": "Stripe Checkout | Checkout Pages for Your Website"
+   },
+   "stripe_intoarcere": {
+    "coi": true,
+    "marker": "stripe-dip-cl",
+    "sab": true
+   },
+   "stripe_inapoi": {
+    "url": "http://127.0.0.1:5187/m/dip-cl/web/compat.html",
+    "coi": true,
+    "marker": "stripe-dip-cl",
+    "sab": true
+   }
+  }
+ ]
+}

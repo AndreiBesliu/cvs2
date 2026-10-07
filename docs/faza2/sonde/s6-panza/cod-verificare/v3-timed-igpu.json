@@ -1,0 +1,2344 @@
+{
+ "gpu": "igpu",
+ "gpu_args": [
+  "--force_low_power_gpu"
+ ],
+ "plan": "timed",
+ "vsync": false,
+ "browsere": [
+  {
+   "dpr": 1,
+   "rate": 1,
+   "version": "154.0.4258.62",
+   "status": [
+    "Canvas: Hardware accelerated",
+    "Compositing: Hardware accelerated",
+    "Rasterization: Hardware accelerated",
+    "WebGL: Hardware accelerated",
+    "WebGPU: Hardware accelerated"
+   ],
+   "active": "AMD Radeon(TM) Graphics"
+  },
+  {
+   "dpr": 1.5,
+   "rate": 1,
+   "version": "154.0.4258.62",
+   "status": [
+    "Canvas: Hardware accelerated",
+    "Compositing: Hardware accelerated",
+    "Rasterization: Hardware accelerated",
+    "WebGL: Hardware accelerated",
+    "WebGPU: Hardware accelerated"
+   ],
+   "active": "AMD Radeon(TM) Graphics"
+  }
+ ],
+ "rulari": [
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 0,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.606,
+   "r": "c2d",
+   "n": 0,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 0,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 2.2,
+    "p95": 2.6,
+    "max": 2.8
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 0.6,
+    "p95": 0.9,
+    "max": 0.9
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 10,
+   "calib_ms": 40.3,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan",
+    "lw": "dev"
+   },
+   "rate": 1,
+   "durata_s": 2.962,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 56,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 1311,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 16.5,
+    "p95": 34.6,
+    "max": 36
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 16.5,
+    "p95": 22.3,
+    "max": 23.8
+   },
+   "cadre_peste_16_7ms": 27,
+   "heapMB": 35,
+   "calib_ms": 41.4,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan",
+    "lw": "dev",
+    "sync": 0
+   },
+   "rate": 1,
+   "durata_s": 4.071,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 62,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 1347,
+   "sync": false,
+   "interval_ms": {
+    "n": 60,
+    "med": 24.8,
+    "p95": 68.5,
+    "max": 71.2
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.2
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 36,
+   "calib_ms": 41.7,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2dcull",
+    "n": 50000,
+    "mode": "pan",
+    "lw": "dev"
+   },
+   "rate": 1,
+   "durata_s": 7.558,
+   "r": "c2dcull",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 307,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 154,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 92.9,
+    "p95": 101.3,
+    "max": 103.5
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 91.7,
+    "p95": 100.4,
+    "max": 102.2
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 101,
+   "calib_ms": 41.2,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2dcull",
+    "n": 50000,
+    "mode": "pan",
+    "lw": "dev",
+    "sync": 0
+   },
+   "rate": 1,
+   "durata_s": 11.644,
+   "r": "c2dcull",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 280,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 141,
+   "sync": false,
+   "interval_ms": {
+    "n": 52,
+    "med": 180.6,
+    "p95": 210.7,
+    "max": 241.8
+   },
+   "cadru_ms": {
+    "n": 52,
+    "med": 0.2,
+    "p95": 0.2,
+    "max": 0.3
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 101,
+   "calib_ms": 40.7,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 1000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.917,
+   "r": "gl",
+   "n": 0,
+   "tp": 1000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 103,
+   "vboMB": 11.444,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 8,
+    "p95": 8.4,
+    "max": 15.7
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 7.8,
+    "p95": 8.3,
+    "max": 15.5
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 23,
+   "calib_ms": 47.1,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 2000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 1.468,
+   "r": "gl",
+   "n": 0,
+   "tp": 2000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 169,
+   "vboMB": 22.888,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 14.3,
+    "p95": 14.8,
+    "max": 31
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 14.2,
+    "p95": 14.6,
+    "max": 24.7
+   },
+   "cadre_peste_16_7ms": 1,
+   "heapMB": 34,
+   "calib_ms": 45.5,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 3.279,
+   "r": "gl",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 421,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 33.5,
+    "p95": 35,
+    "max": 51.5
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 33.3,
+    "p95": 33.8,
+    "max": 42.4
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 67,
+   "calib_ms": 46.2,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "glstrip",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 1.184,
+   "r": "glstrip",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 410,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 7.5,
+    "p95": 8.4,
+    "max": 13.7
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 7.3,
+    "p95": 7.9,
+    "max": 13.5
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 67,
+   "calib_ms": 44.4,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 0,
+    "hf": 1,
+    "hfup": 1,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.515,
+   "r": "gl",
+   "n": 0,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 229,
+   "hfUploadMs": 12.8,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 1.6,
+    "p95": 1.8,
+    "max": 5.8
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 1.5,
+    "p95": 1.7,
+    "max": 5.7
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 43,
+   "calib_ms": 46.1,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 4.971,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 288,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 749,
+   "hfUploadMs": 3.6,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 44.1,
+    "p95": 51,
+    "max": 59.6
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 44.2,
+    "p95": 49.8,
+    "max": 62.1
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 172,
+   "calib_ms": 45.1,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "zoom"
+   },
+   "rate": 1,
+   "durata_s": 4.202,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "zoom",
+   "dpr": 1,
+   "genMs": 305,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 809,
+   "hfUploadMs": 4,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 32.5,
+    "p95": 35,
+    "max": 49.8
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 32.2,
+    "p95": 34.6,
+    "max": 40.9
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 172,
+   "calib_ms": 45.3,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "rate": 1,
+   "durata_s": 0.092,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.051,
+   "abatere_p95_px": 0.036,
+   "abatere_medie_px": 0,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.051,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 90
+   },
+   "rate": 1,
+   "durata_s": 0.087,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 90,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 641,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.088,
+   "abatere_p95_px": 0.086,
+   "abatere_medie_px": -0.011,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.088,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 0
+   },
+   "rate": 1,
+   "durata_s": 0.081,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 0,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.5,
+   "abatere_p95_px": 0.086,
+   "abatere_medie_px": -0.022,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.5,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixi",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "rate": 1,
+   "durata_s": 0.233,
+   "r": "pixi",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 92,
+   "abatere_max_px": 29.27,
+   "abatere_p95_px": 29.178,
+   "abatere_medie_px": -28.298,
+   "prezis_max_px": 29.149,
+   "rezidual_fata_de_prezis_max_px": 0.137,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 0,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.866,
+   "r": "c2d",
+   "n": 0,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 0,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 3.5,
+    "p95": 5.9,
+    "max": 17
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 1.3,
+    "p95": 1.7,
+    "max": 2
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 10,
+   "calib_ms": 44.7,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan",
+    "lw": "dev"
+   },
+   "rate": 1,
+   "durata_s": 4.171,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 71,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 1588,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 26.9,
+    "p95": 35.5,
+    "max": 51
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 28.7,
+    "p95": 35.1,
+    "max": 38.7
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 38,
+   "calib_ms": 46.4,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan",
+    "lw": "dev",
+    "sync": 0
+   },
+   "rate": 1,
+   "durata_s": 4.374,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 64,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 1545,
+   "sync": false,
+   "interval_ms": {
+    "n": 60,
+    "med": 22.1,
+    "p95": 74,
+    "max": 87.5
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 26,
+   "calib_ms": 42,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2dcull",
+    "n": 50000,
+    "mode": "pan",
+    "lw": "dev"
+   },
+   "rate": 1,
+   "durata_s": 10.295,
+   "r": "c2dcull",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 274,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 158,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 140.6,
+    "p95": 154.3,
+    "max": 157.5
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 140.4,
+    "p95": 146.6,
+    "max": 149
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 102,
+   "calib_ms": 44.8,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2dcull",
+    "n": 50000,
+    "mode": "pan",
+    "lw": "dev",
+    "sync": 0
+   },
+   "rate": 1,
+   "durata_s": 11.743,
+   "r": "c2dcull",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 312,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "dev",
+   "buildMs": 152,
+   "sync": false,
+   "interval_ms": {
+    "n": 55,
+    "med": 171,
+    "p95": 324.9,
+    "max": 354.5
+   },
+   "cadru_ms": {
+    "n": 55,
+    "med": 0.2,
+    "p95": 0.3,
+    "max": 0.3
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 102,
+   "calib_ms": 44.6,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan",
+    "lw": "css"
+   },
+   "rate": 1,
+   "durata_s": 12.166,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 67,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 1535,
+   "sync": true,
+   "interval_ms": {
+    "n": 24,
+    "med": 387.2,
+    "p95": 454.3,
+    "max": 462.9
+   },
+   "cadru_ms": {
+    "n": 24,
+    "med": 383.5,
+    "p95": 445.4,
+    "max": 452.3
+   },
+   "cadre_peste_16_7ms": 24,
+   "heapMB": 26,
+   "calib_ms": 43.7,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan",
+    "lw": "css",
+    "sync": 0
+   },
+   "rate": 1,
+   "durata_s": 15.805,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 59,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 1277,
+   "sync": false,
+   "interval_ms": {
+    "n": 28,
+    "med": 348.3,
+    "p95": 786.4,
+    "max": 2159
+   },
+   "cadru_ms": {
+    "n": 28,
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 35,
+   "calib_ms": 40.7,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 1000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 1.235,
+   "r": "gl",
+   "n": 0,
+   "tp": 1000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 81,
+   "vboMB": 11.444,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 12.7,
+    "p95": 13.6,
+    "max": 14.1
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 12.5,
+    "p95": 13.2,
+    "max": 13.8
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 23,
+   "calib_ms": 39.7,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 2000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 2.03,
+   "r": "gl",
+   "n": 0,
+   "tp": 2000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 155,
+   "vboMB": 22.888,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 21.6,
+    "p95": 23.5,
+    "max": 25
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 21.5,
+    "p95": 22.8,
+    "max": 23.5
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 33,
+   "calib_ms": 40.6,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 4.266,
+   "r": "gl",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 321,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 46.9,
+    "p95": 50.1,
+    "max": 51.1
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 46.8,
+    "p95": 49.3,
+    "max": 51.4
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 67,
+   "calib_ms": 39.4,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "glstrip",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 1.216,
+   "r": "glstrip",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 339,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 9,
+    "p95": 9.6,
+    "max": 16.9
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 8.8,
+    "p95": 9.3,
+    "max": 16.6
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 67,
+   "calib_ms": 40.7,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "gl",
+    "n": 0,
+    "tp": 0,
+    "hf": 1,
+    "hfup": 1,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 0.454,
+   "r": "gl",
+   "n": 0,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 177,
+   "hfUploadMs": 12.1,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 1.8,
+    "p95": 2.3,
+    "max": 2.8
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 1.7,
+    "p95": 2.2,
+    "max": 2.9
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 42,
+   "calib_ms": 40.3,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "pan"
+   },
+   "rate": 1,
+   "durata_s": 6.282,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 205,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 585,
+   "hfUploadMs": 3.6,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 64.5,
+    "p95": 69.5,
+    "max": 72.1
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 64.3,
+    "p95": 67.9,
+    "max": 72
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 174,
+   "calib_ms": 41.2,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 60,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "zoom"
+   },
+   "rate": 1,
+   "durata_s": 4.84,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "zoom",
+   "dpr": 1.5,
+   "genMs": 249,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 719,
+   "hfUploadMs": 4.1,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 60,
+    "med": 40.5,
+    "p95": 47,
+    "max": 53
+   },
+   "cadru_ms": {
+    "n": 60,
+    "med": 39.7,
+    "p95": 45.7,
+    "max": 51.3
+   },
+   "cadre_peste_16_7ms": 60,
+   "heapMB": 172,
+   "calib_ms": 42.4,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "rate": 1,
+   "durata_s": 0.094,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1.5,
+   "canvas": [
+    1921,
+    1081
+   ],
+   "puncte": 541,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.043,
+   "abatere_p95_px": 0.041,
+   "abatere_medie_px": 0.008,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.043,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 90
+   },
+   "rate": 1,
+   "durata_s": 0.089,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 90,
+   "dpr": 1.5,
+   "canvas": [
+    1921,
+    1081
+   ],
+   "puncte": 961,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.088,
+   "abatere_p95_px": 0.086,
+   "abatere_medie_px": -0.009,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.088,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 0
+   },
+   "rate": 1,
+   "durata_s": 0.067,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 0,
+   "dpr": 1.5,
+   "canvas": [
+    1921,
+    1081
+   ],
+   "puncte": 541,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.5,
+   "abatere_p95_px": 0.086,
+   "abatere_medie_px": -0.013,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.5,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixi",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "rate": 1,
+   "durata_s": 0.224,
+   "r": "pixi",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1.5,
+   "canvas": [
+    1921,
+    1081
+   ],
+   "puncte": 541,
+   "nVarfuri": 92,
+   "abatere_max_px": 44.204,
+   "abatere_p95_px": 44.093,
+   "abatere_medie_px": -42.796,
+   "prezis_max_px": 43.723,
+   "rezidual_fata_de_prezis_max_px": 0.486,
+   "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr_cerut": 1.5,
+   "gpu": "igpu"
+  }
+ ],
+ "durata_totala_s": 135.236
+}

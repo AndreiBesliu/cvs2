@@ -1,0 +1,14 @@
+{
+  "name": "s12-formate",
+  "version": "1.0.0",
+  "description": "Sonda s12-formate (aruncabila): EPS cu un interpretor PostScript minim, fata de Ghostscript",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "scripts": {
+    "masoara": "node src/masoara.mjs"
+  },
+  "dependencies": {
+    "wmf": "1.0.2"
+  }
+}

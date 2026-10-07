@@ -1,0 +1,128 @@
+{
+ "mode": "coep-cl",
+ "parts": [
+  "coi",
+  "blur"
+ ],
+ "reps": {
+  "blur": 9,
+  "dc": 7,
+  "s4": 7
+ },
+ "workers": 16,
+ "n": 4000,
+ "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+ "crossOriginIsolated": true,
+ "sab_in_pagina": true,
+ "hardwareConcurrency": 32,
+ "webgl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+ "software_renderer": false,
+ "webgpu": {
+  "vendor": "nvidia",
+  "architecture": "ampere",
+  "isFallbackAdapter": false
+ },
+ "worker_crossOriginIsolated": true,
+ "sab_postMessage_merge": true,
+ "teren_ms": 661,
+ "blur": {
+  "sigma": 4,
+  "raza_kernel": 12,
+  "ref_1fir_ms": 810,
+  "hartie": {
+   "S": 10.009172595445069,
+   "varf_impuls_izolat": 0.009981680019227371,
+   "impulsuri": 240
+  },
+  "oracol": {
+   "a_sab": {
+    "eroare_max": 2.3090744108444916e-9,
+    "puncte_peste_toleranta": 0,
+    "suma_iesirii": 240.00000124538929,
+    "toleranta": 1e-7
+   },
+   "b_transfer": {
+    "eroare_max": 2.3090744108444916e-9,
+    "puncte_peste_toleranta": 0,
+    "suma_iesirii": 240.00000124538929,
+    "toleranta": 1e-7
+   },
+   "c_banda_proprie": {
+    "eroare_max": 2.3090744108444916e-9,
+    "puncte_peste_toleranta": 0,
+    "suma_iesirii": 240.00000124538929,
+    "toleranta": 1e-7
+   },
+   "CONTROL_b_halo_minus_1": {
+    "eroare_max": 0.00011088612035288839,
+    "puncte_peste_toleranta": 750,
+    "suma_iesirii": 239.96670471478865,
+    "toleranta": 1e-7
+   },
+   "CONTROL_c_halo_minus_1": {
+    "eroare_max": 0.00011088612035288839,
+    "puncte_peste_toleranta": 750,
+    "suma_iesirii": 239.96670471478865,
+    "toleranta": 1e-7
+   }
+  },
+  "bit_a_vs_ref": {
+   "diferite": 0,
+   "primul_index": -1
+  },
+  "bit_b_vs_ref": {
+   "diferite": 0,
+   "primul_index": -1
+  },
+  "bit_c_vs_ref": {
+   "diferite": 0,
+   "primul_index": -1
+  },
+  "ms": {
+   "a_sab": 92.9,
+   "b_transfer": 110.88,
+   "b_transfer_benzi_inapoi": 102.34,
+   "b_copiere_intrare": 8.48,
+   "c_banda_proprie": 110.92
+  },
+  "ms_toate": {
+   "a_sab": [
+    87.35,
+    92.13,
+    97.91,
+    114.41,
+    92.37,
+    93.09,
+    92.76,
+    100.44,
+    92.9
+   ],
+   "b_transfer": [
+    107.93,
+    619.38,
+    551.87,
+    111.66,
+    109.83,
+    109.42,
+    116.4,
+    108.09,
+    110.88
+   ],
+   "c_banda_proprie": [
+    139.06,
+    177.57,
+    222.71,
+    106.68,
+    110.92,
+    105.01,
+    181.62,
+    100.75,
+    107.59
+   ]
+  },
+  "raport": {
+   "b_pe_a": 1.19,
+   "c_pe_a": 1.19
+  }
+ }
+}

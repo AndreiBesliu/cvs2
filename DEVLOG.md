@@ -142,3 +142,22 @@ ArtCAM, AutoCAD / Aspire / VCarve, Inkscape / Illustrator, CorelDRAW. Vectorii r
 
 **Următorul pas:** tranșa 1b, adică verificatorii adversariali și două sonde mici. Owner-ul încearcă
 prototipul planșelor și pachetul de export.
+
+## 2026-10-07 — Faza 2, tranșa 1b: verificatori adversariali + două sonde mici (Model: Claude Opus 5.5)
+
+**Prompt:** continuarea Fazei 2, din planul prezentat owner-ului: tranșa 1, apoi verificatorii țintiți
+(~2 M), apoi arhitectura (~2,5 M). Ultracode activ.
+
+**Făcut:** 5 agenți în paralel.
+
+| Agentul | Verdictul | Ce schimbă |
+|---|---|---|
+| v1 geometria (`s1-geometrie/VERIFICARE.md`) | se păstrează, cu gărzi | Offsetul cavalier:<br>- cade pe polilinii dense (47/240 la 5 000 de segmente);<br>- un epsilon greșit dă semicercuri;<br>- formele sub 0,005 mm dispar;<br>- portul JS nu are reparațiile din Rust 0.8/0.9.<br><br>PathKit (înghețat din 2022, nu din 2025) derivă în lanț; re-ancorarea R3 după fiecare operație o aduce la 3,3e-13 mm |
+| v2 V-carve (`s3-vcarve/VERIFICARE.md`) | se păstrează, cu gărzi | Cifrele-titlu ale s3 erau la h = 0,02, nu 0,05: la 0,05, plăcuța iese cu 0,0163 mm sub ideal.<br>- Legalizarea pe treceri se oprește tăcut la plafon; Lawson pe stivă: 0,08 s față de 16–19 s.<br>- Muchiile „aproape comune” cer vindecarea intrării.<br>- Incrustația cere adâncime de start |
+| v3 pânza pe iGPU (`s6-panza/VERIFICARE.md`) | hibridul rămâne, schimbat | Vectorii exacți se desenează într-un worker, pe pânză software, și se predau ca ImageBitmap (clicul se vede în 24 ms).<br>- Pe iGPU, traseele dense merg ca LINE_STRIP.<br>- Metoda s6 măsura rasterul software, din cauza citirii de 1 pixel |
+| s11 izolarea | fără izolare cross-origin în v1 | COOP + COEP strică login-ul Google (popup și redirect).<br>- Transferul costă × 1,10–1,23 la blur și × 0,97 la finisare.<br>- Dacă va trebui SAB: Document-Isolation-Policy |
+| s12 formatele | tabel de decizie pentru owner | EPS printr-un interpretor propriu limitat (Illustrator CS6 citit exact, 0,0048 pt).<br>- DWG doar ca mesaj în v1 (ODA costă 7 500 $ primul an).<br>- WMF / EMF printr-un cititor propriu.<br>- DGK / PIC fără specificație publică |
+
+**Măsurat:** 5 agenți, **2,18 M tokeni** (estimat 2,2 M), **87 min** (estimat 45–60, deci +45 % față de capătul de sus).
+
+**Următorul pas:** tranșa 2, arhitectura: 3 propuneri independente și estimatorul.

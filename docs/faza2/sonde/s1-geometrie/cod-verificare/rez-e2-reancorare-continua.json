@@ -1,0 +1,36 @@
+[
+ {
+  "scenariu": "placa 2440 (0..2440)",
+  "ms": 181.2474,
+  "nepotriviteCumulat": 0,
+  "ambigueCumulat": 0,
+  "varfuriFaraIntersectieCumulat": 0,
+  "golMax": 3.745874558263964e-12,
+  "abatereFrontiera": 3.339550858072471e-13,
+  "abatereCentruArc": 2.5421149729252077e-13,
+  "abatereRazaArc": 0,
+  "arce": 197,
+  "conice": 0,
+  "linii": 117,
+  "contururi": 16,
+  "puncteAdevar": 3347,
+  "adevarIesire": 2.4158453015843406e-13
+ },
+ {
+  "scenariu": "detaliu 100 mm",
+  "ms": 146.96279999999996,
+  "nepotriviteCumulat": 0,
+  "ambigueCumulat": 0,
+  "varfuriFaraIntersectieCumulat": 0,
+  "golMax": 1.551136925266137e-13,
+  "abatereFrontiera": 7.216449660063518e-15,
+  "abatereCentruArc": 3.552713678800501e-15,
+  "abatereRazaArc": 0,
+  "arce": 187,
+  "conice": 0,
+  "linii": 117,
+  "contururi": 16,
+  "puncteAdevar": 3347,
+  "adevarIesire": 7.993605777301127e-15
+ }
+]

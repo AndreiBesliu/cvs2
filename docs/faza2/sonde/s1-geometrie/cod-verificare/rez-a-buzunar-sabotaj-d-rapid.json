@@ -1,0 +1,237 @@
+{
+ "tolBiarc": 0.002,
+ "sabotaj": "d",
+ "secunde": 11.095680699999999,
+ "rezultate": [
+  {
+   "font": "Arial",
+   "ch": "B",
+   "H": 200,
+   "Rmax": 15.864140415635672,
+   "nAsteptat": 5,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 3.175,
+     "direct": {
+      "D": 3.175,
+      "nCcw": 1,
+      "nCw": 2,
+      "seg": 198,
+      "arce": 189,
+      "iesireAdevar": 0.033690254900287986,
+      "puncteAfara": 0,
+      "gol": 8.987733679556355e-14,
+      "puncteAdevar": 1554,
+      "adevarIesire": 0.033589523249311526,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 396,
+      "orientareTotal": 396,
+      "componenteGrila": 1
+     },
+     "iterativ": {
+      "D": 3.175,
+      "nCcw": 1,
+      "nCw": 2,
+      "seg": 198,
+      "arce": 189,
+      "iesireAdevar": 0.033690254900287986,
+      "puncteAfara": 0,
+      "gol": 8.987733679556355e-14,
+      "puncteAdevar": 1554,
+      "adevarIesire": 0.033589523249311526,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 396,
+      "orientareTotal": 396,
+      "componenteGrila": 1
+     }
+    },
+    {
+     "k": 1,
+     "D": 5.715,
+     "direct": {
+      "D": 5.715,
+      "nCcw": 1,
+      "nCw": 2,
+      "seg": 198,
+      "arce": 189,
+      "iesireAdevar": 0.05909028671170269,
+      "puncteAfara": 0,
+      "gol": 7.105427357601002e-14,
+      "puncteAdevar": 1578,
+      "adevarIesire": 0.05908958497906269,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 396,
+      "orientareTotal": 396,
+      "componenteGrila": 1
+     },
+     "iterativ": {
+      "D": 5.715,
+      "nCcw": 1,
+      "nCw": 2,
+      "seg": 198,
+      "arce": 189,
+      "iesireAdevar": 0.05909028671168137,
+      "puncteAfara": 0,
+      "gol": 8.526512829121202e-14,
+      "puncteAdevar": 1578,
+      "adevarIesire": 0.05908958497903427,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 396,
+      "orientareTotal": 396,
+      "componenteGrila": 1
+     }
+    },
+    {
+     "k": 2,
+     "D": 8.254999999999999,
+     "direct": {
+      "D": 8.254999999999999,
+      "nCcw": 1,
+      "nCw": 2,
+      "seg": 198,
+      "arce": 189,
+      "iesireAdevar": 0.08449029238842698,
+      "puncteAfara": 0,
+      "gol": 1.1718571004216928e-13,
+      "puncteAdevar": 1598,
+      "adevarIesire": 0.0844722792783017,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 396,
+      "orientareTotal": 396,
+      "componenteGrila": 1
+     },
+     "iterativ": {
+      "D": 8.254999999999999,
+      "nCcw": 1,
+      "nCw": 2,
+      "seg": 198,
+      "arce": 189,
+      "iesireAdevar": 0.0844902924166302,
+      "puncteAfara": 0,
+      "gol": 1.1718571004216928e-13,
+      "puncteAdevar": 1598,
+      "adevarIesire": 0.08447227930455625,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 396,
+      "orientareTotal": 396,
+      "componenteGrila": 1
+     }
+    },
+    {
+     "k": 3,
+     "D": 10.795,
+     "direct": {
+      "D": 10.795,
+      "nCcw": 1,
+      "nCw": 0,
+      "seg": 182,
+      "arce": 173,
+      "iesireAdevar": 0.10989028007918655,
+      "puncteAfara": 0,
+      "gol": 8.644125458514251e-14,
+      "puncteAdevar": 1502,
+      "adevarIesire": 0.10988558045112029,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 364,
+      "orientareTotal": 364,
+      "componenteGrila": 4
+     },
+     "iterativ": {
+      "D": 10.795,
+      "nCcw": 1,
+      "nCw": 0,
+      "seg": 182,
+      "arce": 173,
+      "iesireAdevar": 0.10989028011630708,
+      "puncteAfara": 0,
+      "gol": 7.105427357601002e-14,
+      "puncteAdevar": 1502,
+      "adevarIesire": 0.10988558048681085,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 364,
+      "orientareTotal": 364,
+      "componenteGrila": 4
+     }
+    },
+    {
+     "k": 4,
+     "D": 13.335,
+     "direct": {
+      "D": 13.335,
+      "nCcw": 5,
+      "nCw": 0,
+      "seg": 36,
+      "arce": 31,
+      "iesireAdevar": 0.13517782073611073,
+      "puncteAfara": 0,
+      "gol": 5.728578676879116e-14,
+      "puncteAdevar": 196,
+      "adevarIesire": 8.000261768125425,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 72,
+      "orientareTotal": 72,
+      "componenteGrila": 15
+     },
+     "iterativ": {
+      "D": 13.335,
+      "nCcw": 5,
+      "nCw": 0,
+      "seg": 36,
+      "arce": 31,
+      "iesireAdevar": 0.1351778207355867,
+      "puncteAfara": 0,
+      "gol": 2.929642751054232e-14,
+      "puncteAdevar": 196,
+      "adevarIesire": 8.000261768149123,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 72,
+      "orientareTotal": 72,
+      "componenteGrila": 15
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     6.930900000000008,
+     1.5690999999999917
+    ],
+    [
+     2.18119999999999,
+     1.735400000000027
+    ],
+    [
+     1.6980000000003201,
+     1.487199999999575
+    ],
+    [
+     2.3320000000003347,
+     1.2476999999998952
+    ],
+    [
+     1.1644999999989523,
+     1.4417000000012195
+    ],
+    [
+     0.9772999999986496,
+     0.21880000000055588
+    ]
+   ],
+   "msIntrare": 4.821900000000028,
+   "nDirect": 5,
+   "nIterativ": 5,
+   "maxIesireAdevar": 0.13517782073611073,
+   "maxAdevarIesire": 8.000261768149123,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 3248,
+   "golMax": 1.1718571004216928e-13,
+   "componenteDiferite": [
+    "k=3: cavalier 1, grila 4",
+    "k=4: cavalier 5, grila 15"
+   ],
+   "numarOk": true
+  }
+ ]
+}

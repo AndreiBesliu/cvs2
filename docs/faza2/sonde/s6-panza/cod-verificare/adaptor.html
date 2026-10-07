@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ro">
+<head><meta charset="utf-8"><title>v3 adaptor</title><link rel="icon" href="data:,"></head>
+<body>
+<script type="module">
+// v3-panza-igpu (ARUNCABIL): ce adaptor folosește fiecare cale de randare, citit din pagină.
+const gl = (pp) => {
+  const c = document.createElement('canvas'); const g = c.getContext('webgl2', pp ? { powerPreference: pp } : {});
+  if (!g) return null; const e = g.getExtension('WEBGL_debug_renderer_info');
+  return e ? g.getParameter(e.UNMASKED_RENDERER_WEBGL) : '(fără WEBGL_debug_renderer_info)';
+};
+const gpu = async (pp) => {
+  try { if (!navigator.gpu) return null; const a = await navigator.gpu.requestAdapter(pp ? { powerPreference: pp } : {}); if (!a) return 'adaptor null';
+    const i = a.info || {}; return { vendor: i.vendor, architecture: i.architecture, device: i.device, description: i.description, isFallback: !!(i.isFallbackAdapter || a.isFallbackAdapter) };
+  } catch (e) { return 'eroare ' + e; }
+};
+window.__result = (async () => ({
+  webgl_implicit: gl(null), webgl_low_power: gl('low-power'), webgl_high_perf: gl('high-performance'),
+  webgpu_implicit: await gpu(null), webgpu_low_power: await gpu('low-power'), webgpu_high_perf: await gpu('high-performance'),
+  dpr: devicePixelRatio, ua: navigator.userAgent,
+}))();
+</script>
+</body>
+</html>

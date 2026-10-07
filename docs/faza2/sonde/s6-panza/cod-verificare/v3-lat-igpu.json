@@ -1,0 +1,521 @@
+{
+ "gpu": "igpu",
+ "args": [
+  "--force_low_power_gpu",
+  "--disable-features=CalculateNativeWinOcclusion,Translate,msForceBrowserSignIn,PaintHolding",
+  "--disable-renderer-backgrounding",
+  "--disable-background-timer-throttling",
+  "--disable-backgrounding-occluded-windows",
+  "--force-device-scale-factor=1",
+  "--window-position=0,0",
+  "--window-size=1400,860"
+ ],
+ "dur": 6000,
+ "dpr": 1,
+ "rulari": [
+  {
+   "mode": "idle",
+   "rate": 1,
+   "gpu": "igpu",
+   "ready": {
+    "mode": "idle",
+    "n": 50000,
+    "dpr": 1,
+    "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "calib_main_ms": 41.80000001192093
+   },
+   "clicks_trimise": 23,
+   "miscari_trimise": 117,
+   "pointerdown": {
+    "n": 23,
+    "delay_ms": {
+     "n": 23,
+     "med": 0.2,
+     "p95": 1.3,
+     "max": 2.1
+    },
+    "handler_ms": {
+     "n": 23,
+     "med": 0.2,
+     "p95": 0.4,
+     "max": 1.4
+    },
+    "to_raf_ms": {
+     "n": 23,
+     "med": 0.7,
+     "p95": 11.1,
+     "max": 16.8
+    },
+    "hit_ok": 23
+   },
+   "event_timing": {
+    "n_peste_16ms": 16,
+    "din_total": 23,
+    "delay_ms": {
+     "n": 16,
+     "med": 0.2,
+     "p95": 1.3,
+     "max": 2.1
+    },
+    "duration_ms": {
+     "n": 16,
+     "med": 16,
+     "p95": 24,
+     "max": 32
+    }
+   },
+   "pointermove_delay_ms": {
+    "n": 117,
+    "med": 11.3,
+    "p95": 16.8,
+    "max": 18.2
+   },
+   "longtask": {
+    "n": 0,
+    "total_ms": 0,
+    "max_ms": 0
+   },
+   "durata_ms": 6316,
+   "calib_main_dupa_ms": 39.70000001788139
+  },
+  {
+   "mode": "busy",
+   "rate": 1,
+   "gpu": "igpu",
+   "ready": {
+    "mode": "busy",
+    "n": 50000,
+    "dpr": 1,
+    "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "calib_main_ms": 39.80000001192093
+   },
+   "clicks_trimise": 10,
+   "miscari_trimise": 57,
+   "pointerdown": {
+    "n": 10,
+    "delay_ms": {
+     "n": 10,
+     "med": 51.6,
+     "p95": 62,
+     "max": 62
+    },
+    "handler_ms": {
+     "n": 10,
+     "med": 0.2,
+     "p95": 1.5,
+     "max": 1.5
+    },
+    "to_raf_ms": {
+     "n": 10,
+     "med": 52,
+     "p95": 62.3,
+     "max": 62.3
+    },
+    "hit_ok": 10
+   },
+   "event_timing": {
+    "n_peste_16ms": 8,
+    "din_total": 10,
+    "delay_ms": {
+     "n": 8,
+     "med": 57.6,
+     "p95": 62,
+     "max": 62
+    },
+    "duration_ms": {
+     "n": 8,
+     "med": 64,
+     "p95": 80,
+     "max": 80
+    }
+   },
+   "pointermove_delay_ms": {
+    "n": 57,
+    "med": 52.1,
+    "p95": 104.4,
+    "max": 199.8
+   },
+   "longtask": {
+    "n": 58,
+    "total_ms": 5800,
+    "max_ms": 100
+   },
+   "durata_ms": 6365,
+   "calib_main_dupa_ms": 40.5
+  },
+  {
+   "mode": "main",
+   "rate": 1,
+   "gpu": "igpu",
+   "ready": {
+    "mode": "main",
+    "n": 50000,
+    "dpr": 1,
+    "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "calib_main_ms": 41.400000005960464,
+    "buildMs": 115.2999999821186
+   },
+   "clicks_trimise": 7,
+   "miscari_trimise": 33,
+   "frames": 49,
+   "rec_ms": {
+    "n": 49,
+    "med": 0.1,
+    "p95": 0.2,
+    "max": 0.4
+   },
+   "interval_ms": {
+    "n": 48,
+    "med": 133.2,
+    "p95": 250,
+    "max": 283.4
+   },
+   "pointerdown": {
+    "n": 7,
+    "delay_ms": {
+     "n": 7,
+     "med": 93.9,
+     "p95": 233.5,
+     "max": 233.5
+    },
+    "handler_ms": {
+     "n": 7,
+     "med": 0.2,
+     "p95": 1.2,
+     "max": 1.2
+    },
+    "to_raf_ms": {
+     "n": 7,
+     "med": 94.3,
+     "p95": 235,
+     "max": 235
+    },
+    "hit_ok": 7
+   },
+   "event_timing": {
+    "n_peste_16ms": 6,
+    "din_total": 7,
+    "delay_ms": {
+     "n": 6,
+     "med": 106.4,
+     "p95": 233.4,
+     "max": 233.4
+    },
+    "duration_ms": {
+     "n": 6,
+     "med": 456,
+     "p95": 504,
+     "max": 504
+    }
+   },
+   "pointermove_delay_ms": {
+    "n": 33,
+    "med": 111.4,
+    "p95": 238.5,
+    "max": 271.6
+   },
+   "longtask": {
+    "n": 39,
+    "total_ms": 5588,
+    "max_ms": 269
+   },
+   "durata_ms": 6366,
+   "calib_main_dupa_ms": 40.099999994039536
+  },
+  {
+   "mode": "worker",
+   "rate": 1,
+   "gpu": "igpu",
+   "ready": {
+    "mode": "worker",
+    "n": 50000,
+    "dpr": 1,
+    "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "calib_main_ms": 41.099999994039536,
+    "worker_init": {
+     "cmd": "ready",
+     "calib_ms": 40.69999998807907,
+     "genMs": 203.39999997615814,
+     "buildMs": 124.40000000596046,
+     "shapes": 50010,
+     "W": 1281,
+     "H": 721
+    }
+   },
+   "clicks_trimise": 10,
+   "miscari_trimise": 63,
+   "cmd": "stormDone",
+   "frames": 45,
+   "rec_ms": {
+    "n": 45,
+    "med": 0.2,
+    "p95": 0.4,
+    "max": 0.5
+   },
+   "interval_ms": {
+    "n": 44,
+    "med": 133.3,
+    "p95": 300,
+    "max": 333.4
+   },
+   "tib_ms": {
+    "n": 0
+   },
+   "calib_ms": 41.400000005960464,
+   "pointerdown": {
+    "n": 10,
+    "delay_ms": {
+     "n": 10,
+     "med": 0.3,
+     "p95": 0.5,
+     "max": 0.5
+    },
+    "handler_ms": {
+     "n": 10,
+     "med": 0.4,
+     "p95": 93.5,
+     "max": 93.5
+    },
+    "to_raf_ms": {
+     "n": 10,
+     "med": 53.1,
+     "p95": 155.8,
+     "max": 155.8
+    },
+    "hit_ok": 10
+   },
+   "event_timing": {
+    "n_peste_16ms": 10,
+    "din_total": 10,
+    "delay_ms": {
+     "n": 10,
+     "med": 0.3,
+     "p95": 0.4,
+     "max": 0.4
+    },
+    "duration_ms": {
+     "n": 10,
+     "med": 296,
+     "p95": 344,
+     "max": 344
+    }
+   },
+   "pointermove_delay_ms": {
+    "n": 63,
+    "med": 16.1,
+    "p95": 146.6,
+    "max": 197.3
+   },
+   "longtask": {
+    "n": 1,
+    "total_ms": 94,
+    "max_ms": 94
+   },
+   "durata_ms": 6372,
+   "calib_main_dupa_ms": 40.900000005960464
+  },
+  {
+   "mode": "workerbmp",
+   "rate": 1,
+   "gpu": "igpu",
+   "ready": {
+    "mode": "workerbmp",
+    "n": 50000,
+    "dpr": 1,
+    "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "calib_main_ms": 42.099999994039536,
+    "worker_init": {
+     "cmd": "ready",
+     "calib_ms": 41.5,
+     "genMs": 242.59999999403954,
+     "buildMs": 142.60000002384186,
+     "shapes": 50010,
+     "W": 1281,
+     "H": 721
+    }
+   },
+   "clicks_trimise": 10,
+   "miscari_trimise": 57,
+   "cmd": "stormDone",
+   "frames": 47,
+   "rec_ms": {
+    "n": 47,
+    "med": 0.3,
+    "p95": 0.4,
+    "max": 0.5
+   },
+   "interval_ms": {
+    "n": 46,
+    "med": 133.1,
+    "p95": 263.4,
+    "max": 272.7
+   },
+   "tib_ms": {
+    "n": 47,
+    "med": 120.8,
+    "p95": 237.2,
+    "max": 252.3
+   },
+   "calib_ms": 40.39999997615814,
+   "transfer": {
+    "msg_ms": {
+     "n": 47,
+     "med": 0.1,
+     "p95": 0.2,
+     "max": 0.6
+    },
+    "tfib_ms": {
+     "n": 47,
+     "med": 0,
+     "p95": 0.1,
+     "max": 0.4
+    },
+    "post_to_raf_ms": {
+     "n": 47,
+     "med": 7.1,
+     "p95": 125.1,
+     "max": 132.9
+    }
+   },
+   "pointerdown": {
+    "n": 10,
+    "delay_ms": {
+     "n": 10,
+     "med": 0.3,
+     "p95": 0.6,
+     "max": 0.6
+    },
+    "handler_ms": {
+     "n": 10,
+     "med": 0.2,
+     "p95": 1,
+     "max": 1
+    },
+    "to_raf_ms": {
+     "n": 10,
+     "med": 66.8,
+     "p95": 94.8,
+     "max": 94.8
+    },
+    "hit_ok": 10
+   },
+   "event_timing": {
+    "n_peste_16ms": 10,
+    "din_total": 10,
+    "delay_ms": {
+     "n": 10,
+     "med": 0.3,
+     "p95": 0.4,
+     "max": 0.4
+    },
+    "duration_ms": {
+     "n": 10,
+     "med": 272,
+     "p95": 352,
+     "max": 352
+    }
+   },
+   "pointermove_delay_ms": {
+    "n": 57,
+    "med": 59.1,
+    "p95": 136,
+    "max": 181.5
+   },
+   "longtask": {
+    "n": 0,
+    "total_ms": 0,
+    "max_ms": 0
+   },
+   "durata_ms": 6440,
+   "calib_main_dupa_ms": 40.69999998807907
+  },
+  {
+   "mode": "slices",
+   "rate": 1,
+   "gpu": "igpu",
+   "ready": {
+    "mode": "slices",
+    "n": 50000,
+    "dpr": 1,
+    "gl_renderer": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "calib_main_ms": 41.70000001788139,
+    "buildMs": 140,
+    "segBudget": 25000
+   },
+   "clicks_trimise": 18,
+   "miscari_trimise": 93,
+   "frames": 269,
+   "rec_ms": {
+    "n": 269,
+    "med": 0,
+    "p95": 1,
+    "max": 4
+   },
+   "interval_ms": {
+    "n": 268,
+    "med": 16.7,
+    "p95": 16.9,
+    "max": 150.1
+   },
+   "redesen_complet_ms": {
+    "n": 13,
+    "med": 450.2,
+    "p95": 466.8,
+    "max": 466.9
+   },
+   "redesene_complete": 13,
+   "pointerdown": {
+    "n": 18,
+    "delay_ms": {
+     "n": 18,
+     "med": 0.3,
+     "p95": 0.4,
+     "max": 0.4
+    },
+    "handler_ms": {
+     "n": 18,
+     "med": 0.3,
+     "p95": 0.4,
+     "max": 1.2
+    },
+    "to_raf_ms": {
+     "n": 18,
+     "med": 14.1,
+     "p95": 126.8,
+     "max": 158.6
+    },
+    "hit_ok": 18
+   },
+   "event_timing": {
+    "n_peste_16ms": 18,
+    "din_total": 18,
+    "delay_ms": {
+     "n": 18,
+     "med": 0.2,
+     "p95": 0.3,
+     "max": 0.4
+    },
+    "duration_ms": {
+     "n": 18,
+     "med": 32,
+     "p95": 136,
+     "max": 168
+    }
+   },
+   "pointermove_delay_ms": {
+    "n": 93,
+    "med": 16.2,
+    "p95": 88.7,
+    "max": 144.1
+   },
+   "longtask": {
+    "n": 0,
+    "total_ms": 0,
+    "max_ms": 0
+   },
+   "durata_ms": 6313,
+   "calib_main_dupa_ms": 40.80000001192093
+  }
+ ],
+ "browser": "154.0.4258.62"
+}

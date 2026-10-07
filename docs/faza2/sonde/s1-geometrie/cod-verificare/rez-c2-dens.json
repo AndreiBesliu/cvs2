@@ -1,0 +1,190 @@
+[
+ {
+  "curba": "ondulata",
+  "N": 200,
+  "optiuni": "implicite",
+  "total": 240,
+  "deschise": 0,
+  "exceptii": 0,
+  "goaleExterior": 0,
+  "ms": 164.9241,
+  "exemple": []
+ },
+ {
+  "curba": "ondulata",
+  "N": 1000,
+  "optiuni": "implicite",
+  "total": 240,
+  "deschise": 0,
+  "exceptii": 0,
+  "goaleExterior": 0,
+  "ms": 517.1622,
+  "exemple": []
+ },
+ {
+  "curba": "ondulata",
+  "N": 5000,
+  "optiuni": "implicite",
+  "total": 240,
+  "deschise": 25,
+  "exceptii": 22,
+  "goaleExterior": 0,
+  "ms": 4109.1548999999995,
+  "exemple": [
+   "d=-3.5: 1 rezultate, 1 deschise",
+   "d=-4: exceptie view data must be valid for source",
+   "d=5.5: 1 rezultate, 1 deschise",
+   "d=-5.5: 2 rezultate, 2 deschise",
+   "d=5.75: exceptie view data must be valid for source",
+   "d=6: 2 rezultate, 2 deschise"
+  ]
+ },
+ {
+  "curba": "elipsa",
+  "N": 200,
+  "optiuni": "implicite",
+  "total": 240,
+  "deschise": 0,
+  "exceptii": 0,
+  "goaleExterior": 0,
+  "ms": 39.009900000000016,
+  "exemple": []
+ },
+ {
+  "curba": "elipsa",
+  "N": 1000,
+  "optiuni": "implicite",
+  "total": 240,
+  "deschise": 0,
+  "exceptii": 1,
+  "goaleExterior": 0,
+  "ms": 239.98599999999988,
+  "exemple": [
+   "d=25.5: exceptie view data must be valid for source"
+  ]
+ },
+ {
+  "curba": "elipsa",
+  "N": 5000,
+  "optiuni": "implicite",
+  "total": 240,
+  "deschise": 0,
+  "exceptii": 2,
+  "goaleExterior": 0,
+  "ms": 1665.9524000000001,
+  "exemple": [
+   "d=26.25: exceptie view data must be valid for source",
+   "d=29.75: exceptie view data must be valid for source"
+  ]
+ },
+ {
+  "curba": "floare",
+  "N": 200,
+  "optiuni": "implicite",
+  "total": 240,
+  "deschise": 0,
+  "exceptii": 0,
+  "goaleExterior": 0,
+  "ms": 70.74439999999959,
+  "exemple": []
+ },
+ {
+  "curba": "floare",
+  "N": 1000,
+  "optiuni": "implicite",
+  "total": 240,
+  "deschise": 0,
+  "exceptii": 1,
+  "goaleExterior": 0,
+  "ms": 393.27160000000003,
+  "exemple": [
+   "d=7: exceptie view data must be valid for source"
+  ]
+ },
+ {
+  "curba": "floare",
+  "N": 5000,
+  "optiuni": "implicite",
+  "total": 240,
+  "deschise": 0,
+  "exceptii": 17,
+  "goaleExterior": 0,
+  "ms": 3316.0051000000003,
+  "exemple": [
+   "d=-3: exceptie view data must be valid for source",
+   "d=7: exceptie view data must be valid for source",
+   "d=-7.25: exceptie view data must be valid for source",
+   "d=9.5: exceptie view data must be valid for source",
+   "d=10.5: exceptie view data must be valid for source",
+   "d=-12.75: exceptie view data must be valid for source"
+  ]
+ },
+ {
+  "curba": "ondulata",
+  "N": 5000,
+  "optiuni": "handleSelfIntersects",
+  "total": 240,
+  "deschise": 25,
+  "exceptii": 22,
+  "goaleExterior": 0,
+  "ms": 4950.925500000001,
+  "exemple": [
+   "d=-3.5: 1 rezultate, 1 deschise",
+   "d=-4: exceptie view data must be valid for source",
+   "d=5.5: 1 rezultate, 1 deschise",
+   "d=-5.5: 2 rezultate, 2 deschise",
+   "d=5.75: exceptie view data must be valid for source",
+   "d=6: 2 rezultate, 2 deschise"
+  ]
+ },
+ {
+  "curba": "ondulata",
+  "N": 5000,
+  "optiuni": "eps x0,01",
+  "total": 240,
+  "deschise": 2,
+  "exceptii": 27,
+  "goaleExterior": 0,
+  "ms": 4119.589399999999,
+  "exemple": [
+   "d=-10.5: exceptie view data must be valid for source",
+   "d=-11.25: 2 rezultate, 2 deschise",
+   "d=12: exceptie view data must be valid for source",
+   "d=-12: 2 rezultate, 2 deschise",
+   "d=12.5: exceptie view data must be valid for source",
+   "d=13: exceptie view data must be valid for source"
+  ]
+ },
+ {
+  "curba": "ondulata",
+  "N": 5000,
+  "optiuni": "eps x10",
+  "total": 240,
+  "deschise": 25,
+  "exceptii": 178,
+  "goaleExterior": 1,
+  "ms": 2776.1385999999984,
+  "exemple": [
+   "d=-2.5: gol (offset exterior!)",
+   "d=-2.75: exceptie view data must be valid for source",
+   "d=-3: exceptie view data must be valid for source",
+   "d=-3.25: 1 rezultate, 1 deschise",
+   "d=-3.5: exceptie view data must be valid for source",
+   "d=-3.75: exceptie view data must be valid for source"
+  ]
+ },
+ {
+  "curba": "ondulata biarce",
+  "N": 952,
+  "optiuni": "implicite",
+  "total": 240,
+  "deschise": 2,
+  "exceptii": 0,
+  "goaleExterior": 0,
+  "ms": 566.1666000000005,
+  "exemple": [
+   "d=7.25: 3 rezultate, 2 deschise",
+   "d=-12: 2 rezultate, 1 deschise"
+  ]
+ }
+]

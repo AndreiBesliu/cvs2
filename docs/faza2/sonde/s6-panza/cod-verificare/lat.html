@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>v3 latenta</title>
+<link rel="icon" href="data:,">
+<script type="importmap">
+{ "imports": {
+  "flatbush": "/node_modules/flatbush/index.js",
+  "flatqueue": "/node_modules/flatqueue/index.js",
+  "opentype.js": "/node_modules/opentype.js/dist/opentype.mjs"
+} }
+</script>
+<style>
+  html, body { margin: 0; padding: 0; background: #ddd; overflow: hidden; }
+  #stage { position: absolute; left: 37px; top: 23px; width: 1281px; height: 721px; background: #fff; }
+  #stage canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+  #log { position: absolute; left: 4px; top: 750px; font: 12px monospace; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="log"></div>
+<script type="module" src="./lat.mjs"></script>
+</body>
+</html>

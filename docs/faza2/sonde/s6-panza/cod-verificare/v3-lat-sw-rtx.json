@@ -1,0 +1,276 @@
+{
+ "gpu": "rtx",
+ "args": [
+  "--disable-features=CalculateNativeWinOcclusion,Translate,msForceBrowserSignIn,PaintHolding",
+  "--disable-renderer-backgrounding",
+  "--disable-background-timer-throttling",
+  "--disable-backgrounding-occluded-windows",
+  "--force-device-scale-factor=1",
+  "--window-position=0,0",
+  "--window-size=1400,860"
+ ],
+ "dur": 6000,
+ "dpr": 1,
+ "rulari": [
+  {
+   "mode": "idle",
+   "rate": 1,
+   "gpu": "rtx",
+   "ready": {
+    "mode": "idle",
+    "n": 50000,
+    "dpr": 1,
+    "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "calib_main_ms": 45.5
+   },
+   "clicks_trimise": 22,
+   "miscari_trimise": 114,
+   "pointerdown": {
+    "n": 22,
+    "delay_ms": {
+     "n": 22,
+     "med": 0.3,
+     "p95": 0.4,
+     "max": 0.6
+    },
+    "handler_ms": {
+     "n": 22,
+     "med": 0.3,
+     "p95": 0.4,
+     "max": 1.8
+    },
+    "to_raf_ms": {
+     "n": 22,
+     "med": 0.8,
+     "p95": 12.3,
+     "max": 16.1
+    },
+    "hit_ok": 22
+   },
+   "event_timing": {
+    "n_peste_16ms": 14,
+    "din_total": 22,
+    "delay_ms": {
+     "n": 14,
+     "med": 0.2,
+     "p95": 0.4,
+     "max": 0.4
+    },
+    "duration_ms": {
+     "n": 14,
+     "med": 16,
+     "p95": 32,
+     "max": 32
+    }
+   },
+   "pointermove_delay_ms": {
+    "n": 114,
+    "med": 9.6,
+    "p95": 16.5,
+    "max": 16.8
+   },
+   "longtask": {
+    "n": 0,
+    "total_ms": 0,
+    "max_ms": 0
+   },
+   "durata_ms": 6316,
+   "calib_main_dupa_ms": 44.70000001788139
+  },
+  {
+   "mode": "mainsw",
+   "rate": 1,
+   "gpu": "rtx",
+   "ready": {
+    "mode": "mainsw",
+    "n": 50000,
+    "dpr": 1,
+    "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "calib_main_ms": 45.30000001192093,
+    "buildMs": 150.69999998807907
+   },
+   "clicks_trimise": 8,
+   "miscari_trimise": 39,
+   "frames": 60,
+   "rec_ms": {
+    "n": 60,
+    "med": 0.2,
+    "p95": 0.3,
+    "max": 0.5
+   },
+   "interval_ms": {
+    "n": 59,
+    "med": 100.1,
+    "p95": 116.7,
+    "max": 116.8
+   },
+   "pointerdown": {
+    "n": 8,
+    "delay_ms": {
+     "n": 8,
+     "med": 43.4,
+     "p95": 73.1,
+     "max": 73.1
+    },
+    "handler_ms": {
+     "n": 8,
+     "med": 0.3,
+     "p95": 1.4,
+     "max": 1.4
+    },
+    "to_raf_ms": {
+     "n": 8,
+     "med": 43.9,
+     "p95": 73.5,
+     "max": 73.5
+    },
+    "hit_ok": 8
+   },
+   "event_timing": {
+    "n_peste_16ms": 8,
+    "din_total": 8,
+    "delay_ms": {
+     "n": 8,
+     "med": 43.4,
+     "p95": 73.1,
+     "max": 73.1
+    },
+    "duration_ms": {
+     "n": 8,
+     "med": 176,
+     "p95": 184,
+     "max": 184
+    }
+   },
+   "pointermove_delay_ms": {
+    "n": 39,
+    "med": 97.3,
+    "p95": 113.4,
+    "max": 115.5
+   },
+   "longtask": {
+    "n": 60,
+    "total_ms": 6190,
+    "max_ms": 125
+   },
+   "durata_ms": 6422,
+   "calib_main_dupa_ms": 45
+  },
+  {
+   "mode": "workersw",
+   "rate": 1,
+   "gpu": "rtx",
+   "ready": {
+    "mode": "workersw",
+    "n": 50000,
+    "dpr": 1,
+    "gl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "calib_main_ms": 44.599999994039536,
+    "worker_init": {
+     "cmd": "ready",
+     "calib_ms": 45.39999997615814,
+     "genMs": 254.40000000596046,
+     "buildMs": 163.59999999403954,
+     "shapes": 50010,
+     "W": 1281,
+     "H": 721
+    }
+   },
+   "clicks_trimise": 21,
+   "miscari_trimise": 111,
+   "cmd": "stormDone",
+   "frames": 49,
+   "rec_ms": {
+    "n": 49,
+    "med": 0.8,
+    "p95": 1,
+    "max": 1.1
+   },
+   "interval_ms": {
+    "n": 48,
+    "med": 120.5,
+    "p95": 133.5,
+    "max": 165.9
+   },
+   "tib_ms": {
+    "n": 49,
+    "med": 117.2,
+    "p95": 128.7,
+    "max": 218.2
+   },
+   "calib_ms": 45.5,
+   "transfer": {
+    "msg_ms": {
+     "n": 49,
+     "med": 0.1,
+     "p95": 0.2,
+     "max": 0.2
+    },
+    "tfib_ms": {
+     "n": 49,
+     "med": 0,
+     "p95": 0.1,
+     "max": 0.1
+    },
+    "post_to_raf_ms": {
+     "n": 49,
+     "med": 0.4,
+     "p95": 14.8,
+     "max": 15.4
+    }
+   },
+   "pointerdown": {
+    "n": 21,
+    "delay_ms": {
+     "n": 21,
+     "med": 0.3,
+     "p95": 0.5,
+     "max": 1.2
+    },
+    "handler_ms": {
+     "n": 21,
+     "med": 0.2,
+     "p95": 0.4,
+     "max": 1.6
+    },
+    "to_raf_ms": {
+     "n": 21,
+     "med": 0.8,
+     "p95": 14.9,
+     "max": 15.3
+    },
+    "hit_ok": 21
+   },
+   "event_timing": {
+    "n_peste_16ms": 16,
+    "din_total": 21,
+    "delay_ms": {
+     "n": 16,
+     "med": 0.3,
+     "p95": 0.3,
+     "max": 1.2
+    },
+    "duration_ms": {
+     "n": 16,
+     "med": 24,
+     "p95": 32,
+     "max": 48
+    }
+   },
+   "pointermove_delay_ms": {
+    "n": 111,
+    "med": 13.6,
+    "p95": 16.4,
+    "max": 16.8
+   },
+   "longtask": {
+    "n": 0,
+    "total_ms": 0,
+    "max_ms": 0
+   },
+   "durata_ms": 6416,
+   "calib_main_dupa_ms": 45.900000005960464
+  }
+ ],
+ "browser": "154.0.4258.62"
+}

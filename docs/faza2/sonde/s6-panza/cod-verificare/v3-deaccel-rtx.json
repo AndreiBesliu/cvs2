@@ -1,0 +1,111 @@
+{
+ "gpu": "rtx",
+ "gpu_args": [],
+ "plan": "deaccel",
+ "vsync": false,
+ "browsere": [
+  {
+   "dpr": 1,
+   "rate": 1,
+   "version": "154.0.4258.62",
+   "status": [
+    "Canvas: Hardware accelerated",
+    "Compositing: Hardware accelerated",
+    "Rasterization: Hardware accelerated",
+    "WebGL: Hardware accelerated",
+    "WebGPU: Hardware accelerated"
+   ],
+   "active": "NVIDIA GeForce RTX 3060"
+  }
+ ],
+ "rulari": [
+  {
+   "q": {
+    "page": "deaccel"
+   },
+   "rate": 1,
+   "durata_s": 0.926,
+   "dpr": 1,
+   "implicit": [
+    76.5,
+    5,
+    8.8,
+    6.7,
+    5.1,
+    5.7,
+    5.3,
+    5.4,
+    5.6,
+    5.3,
+    5.3,
+    5.4
+   ],
+   "implicit_umpleri": [
+    50.5,
+    48.5,
+    46,
+    45.7,
+    51.7,
+    49.9,
+    53.6,
+    47.6,
+    47.5,
+    47.7,
+    53.9,
+    48.4
+   ],
+   "willReadFrequently": [
+    4.5,
+    1.1,
+    0.8,
+    1.1,
+    0.8,
+    0.7,
+    0.7,
+    0.8,
+    0.8,
+    0.9,
+    0.8,
+    0.8
+   ],
+   "willReadFrequently_umpleri": [
+    38.2,
+    4.8,
+    11.3,
+    56.5,
+    7.9,
+    1.6,
+    2.1,
+    2.5,
+    1.1,
+    1.2,
+    1.2,
+    1.4
+   ],
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  },
+  {
+   "q": {
+    "page": "info"
+   },
+   "rate": 1,
+   "durata_s": 0.139,
+   "webgl2": true,
+   "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "vendor": "Google Inc. (NVIDIA)",
+   "maxTex": 16384,
+   "dpr": 1,
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+   "webgpu": {
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "",
+    "description": ""
+   },
+   "dpr_cerut": 1,
+   "gpu": "rtx"
+  }
+ ],
+ "durata_totala_s": 4.103
+}

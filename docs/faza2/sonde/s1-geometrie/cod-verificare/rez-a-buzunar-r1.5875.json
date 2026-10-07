@@ -1,0 +1,1060 @@
+{
+ "tolBiarc": 0.002,
+ "sabotaj": null,
+ "secunde": 20.268455000000003,
+ "rezultate": [
+  {
+   "font": "Arial",
+   "ch": "B",
+   "H": 30,
+   "Rmax": 2.379621044810402,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 1,
+      "nCw": 0,
+      "seg": 113,
+      "arce": 104,
+      "iesireAdevar": 0.0018533508146931776,
+      "puncteAfara": 0,
+      "gol": 1.1374233532693354e-14,
+      "puncteAdevar": 2218,
+      "adevarIesire": 0.0018511403276786353,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 1,
+      "orientareTotal": 226,
+      "componenteGrila": 5
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 1,
+      "nCw": 0,
+      "seg": 113,
+      "arce": 104,
+      "iesireAdevar": 0.0018533508146931776,
+      "puncteAfara": 0,
+      "gol": 1.1374233532693354e-14,
+      "puncteAdevar": 2218,
+      "adevarIesire": 0.0018511403276786353,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 1,
+      "orientareTotal": 226,
+      "componenteGrila": 5
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     7.250700000000052,
+     2.045599999999922
+    ],
+    [
+     2.0833000000000084,
+     1.1110999999998512
+    ]
+   ],
+   "msIntrare": 3.5891000000000304,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.0018533508146931776,
+   "maxAdevarIesire": 0.0018511403276786353,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 2,
+   "golMax": 1.1374233532693354e-14,
+   "componenteDiferite": [
+    "k=0: cavalier 1, grila 5"
+   ],
+   "numarOk": true
+  },
+  {
+   "font": "Arial",
+   "ch": "g",
+   "H": 30,
+   "Rmax": 2.3104669124723785,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 93,
+      "arce": 89,
+      "iesireAdevar": 0.0017587053744312353,
+      "puncteAfara": 0,
+      "gol": 1.0658141036401503e-14,
+      "puncteAdevar": 1288,
+      "adevarIesire": 0.001753568137694117,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 4,
+      "orientareTotal": 186,
+      "componenteGrila": 20
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 93,
+      "arce": 89,
+      "iesireAdevar": 0.0017587053744312353,
+      "puncteAfara": 0,
+      "gol": 1.0658141036401503e-14,
+      "puncteAdevar": 1288,
+      "adevarIesire": 0.001753568137694117,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 4,
+      "orientareTotal": 186,
+      "componenteGrila": 20
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     2.1561000000001513,
+     2.1641999999997097
+    ],
+    [
+     0.8097999999999956,
+     0.6282000000001062
+    ]
+   ],
+   "msIntrare": 0.9920000000001892,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.0017587053744312353,
+   "maxAdevarIesire": 0.001753568137694117,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 8,
+   "golMax": 1.0658141036401503e-14,
+   "componenteDiferite": [
+    "k=0: cavalier 3, grila 20"
+   ],
+   "numarOk": true
+  },
+  {
+   "font": "Arial",
+   "ch": "&",
+   "H": 30,
+   "Rmax": 2.401640680242347,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 124,
+      "arce": 119,
+      "iesireAdevar": 0.0016815146289395067,
+      "puncteAfara": 0,
+      "gol": 1.293207299340885e-14,
+      "puncteAdevar": 1900,
+      "adevarIesire": 0.001669513695466307,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 14,
+      "orientareTotal": 248,
+      "componenteGrila": 25
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 124,
+      "arce": 119,
+      "iesireAdevar": 0.0016815146289395067,
+      "puncteAfara": 0,
+      "gol": 1.293207299340885e-14,
+      "puncteAdevar": 1900,
+      "adevarIesire": 0.001669513695466307,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 14,
+      "orientareTotal": 248,
+      "componenteGrila": 25
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     2.25019999999995,
+     2.275000000000091
+    ],
+    [
+     1.8825999999999112,
+     0.7561999999998079
+    ]
+   ],
+   "msIntrare": 1.8046999999996842,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.0016815146289395067,
+   "maxAdevarIesire": 0.001669513695466307,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 28,
+   "golMax": 1.293207299340885e-14,
+   "componenteDiferite": [
+    "k=0: cavalier 3, grila 25"
+   ],
+   "numarOk": true
+  },
+  {
+   "font": "Arial",
+   "ch": "S",
+   "H": 30,
+   "Rmax": 1.9396743839832822,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 1,
+      "nCw": 0,
+      "seg": 149,
+      "arce": 147,
+      "iesireAdevar": 0.001857411805798792,
+      "puncteAfara": 0,
+      "gol": 2.7114910356960118e-14,
+      "puncteAdevar": 2008,
+      "adevarIesire": 0.0018569072486371851,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 0,
+      "orientareTotal": 298,
+      "componenteGrila": 1
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 1,
+      "nCw": 0,
+      "seg": 149,
+      "arce": 147,
+      "iesireAdevar": 0.001857411805798792,
+      "puncteAfara": 0,
+      "gol": 2.7114910356960118e-14,
+      "puncteAdevar": 2008,
+      "adevarIesire": 0.0018569072486371851,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 0,
+      "orientareTotal": 298,
+      "componenteGrila": 1
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     1.5991000000003623,
+     1.4942999999993845
+    ],
+    [
+     1.1086999999997715,
+     0.7914000000000669
+    ]
+   ],
+   "msIntrare": 1.8554999999996653,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.001857411805798792,
+   "maxAdevarIesire": 0.0018569072486371851,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 0,
+   "golMax": 2.7114910356960118e-14,
+   "componenteDiferite": [],
+   "numarOk": true
+  },
+  {
+   "font": "Times New Roman",
+   "ch": "B",
+   "H": 30,
+   "Rmax": 2.575254022893499,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 4,
+      "nCw": 0,
+      "seg": 80,
+      "arce": 75,
+      "iesireAdevar": 0.001975866992644626,
+      "puncteAfara": 0,
+      "gol": 5.0242958677880805e-15,
+      "puncteAdevar": 1342,
+      "adevarIesire": 0.0019756276254092597,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 2,
+      "orientareTotal": 160,
+      "componenteGrila": 8
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 4,
+      "nCw": 0,
+      "seg": 80,
+      "arce": 75,
+      "iesireAdevar": 0.001975866992644626,
+      "puncteAfara": 0,
+      "gol": 5.0242958677880805e-15,
+      "puncteAdevar": 1342,
+      "adevarIesire": 0.0019756276254092597,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 2,
+      "orientareTotal": 160,
+      "componenteGrila": 8
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     1.8316999999997279,
+     1.214100000000144
+    ],
+    [
+     1.4385000000002037,
+     0.5857999999998356
+    ]
+   ],
+   "msIntrare": 1.5282999999999447,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.001975866992644626,
+   "maxAdevarIesire": 0.0019756276254092597,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 4,
+   "golMax": 5.0242958677880805e-15,
+   "componenteDiferite": [
+    "k=0: cavalier 4, grila 8"
+   ],
+   "numarOk": true
+  },
+  {
+   "font": "Times New Roman",
+   "ch": "g",
+   "H": 30,
+   "Rmax": 1.9025265670966909,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 4,
+      "nCw": 0,
+      "seg": 100,
+      "arce": 99,
+      "iesireAdevar": 0.0019048118650901724,
+      "puncteAfara": 0,
+      "gol": 4.296434007659337e-14,
+      "puncteAdevar": 730,
+      "adevarIesire": 0.0018201880342116894,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 5,
+      "orientareTotal": 200,
+      "componenteGrila": 13
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 4,
+      "nCw": 0,
+      "seg": 100,
+      "arce": 99,
+      "iesireAdevar": 0.0019048118650901724,
+      "puncteAfara": 0,
+      "gol": 4.296434007659337e-14,
+      "puncteAdevar": 730,
+      "adevarIesire": 0.0018201880342116894,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 5,
+      "orientareTotal": 200,
+      "componenteGrila": 13
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     2.5923000000002503,
+     1.6409000000003289
+    ],
+    [
+     2.115799999999581,
+     0.5516999999999825
+    ]
+   ],
+   "msIntrare": 1.7174999999997453,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.0019048118650901724,
+   "maxAdevarIesire": 0.0018201880342116894,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 10,
+   "golMax": 4.296434007659337e-14,
+   "componenteDiferite": [
+    "k=0: cavalier 4, grila 13"
+   ],
+   "numarOk": true
+  },
+  {
+   "font": "Times New Roman",
+   "ch": "&",
+   "H": 30,
+   "Rmax": 2.3794676022266366,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 86,
+      "arce": 85,
+      "iesireAdevar": 0.0017901636876691551,
+      "puncteAfara": 0,
+      "gol": 6.355287432313019e-14,
+      "puncteAdevar": 1198,
+      "adevarIesire": 0.0017754147702788714,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 2,
+      "orientareTotal": 172,
+      "componenteGrila": 3
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 86,
+      "arce": 85,
+      "iesireAdevar": 0.0017901636876691551,
+      "puncteAfara": 0,
+      "gol": 6.355287432313019e-14,
+      "puncteAdevar": 1198,
+      "adevarIesire": 0.0017754147702788714,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 2,
+      "orientareTotal": 172,
+      "componenteGrila": 3
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     1.7692000000006374,
+     1.5407999999988533
+    ],
+    [
+     1.560300000001007,
+     0.44989999999961583
+    ]
+   ],
+   "msIntrare": 1.8748000000014144,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.0017901636876691551,
+   "maxAdevarIesire": 0.0017754147702788714,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 4,
+   "golMax": 6.355287432313019e-14,
+   "componenteDiferite": [],
+   "numarOk": true
+  },
+  {
+   "font": "Times New Roman",
+   "ch": "S",
+   "H": 30,
+   "Rmax": 2.325666689646639,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 72,
+      "arce": 70,
+      "iesireAdevar": 0.001983017292318534,
+      "puncteAfara": 0,
+      "gol": 4.7664655742347644e-14,
+      "puncteAdevar": 752,
+      "adevarIesire": 0.0019792801301701246,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 7,
+      "orientareTotal": 144,
+      "componenteGrila": 3
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 72,
+      "arce": 70,
+      "iesireAdevar": 0.001983017292318534,
+      "puncteAfara": 0,
+      "gol": 4.7664655742347644e-14,
+      "puncteAdevar": 752,
+      "adevarIesire": 0.0019792801301701246,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 7,
+      "orientareTotal": 144,
+      "componenteGrila": 3
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     1.2562999999991007,
+     1.16150000000016
+    ],
+    [
+     1.0115999999998166,
+     0.9132000000008702
+    ]
+   ],
+   "msIntrare": 1.6867999999994936,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.001983017292318534,
+   "maxAdevarIesire": 0.0019792801301701246,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 14,
+   "golMax": 4.7664655742347644e-14,
+   "componenteDiferite": [],
+   "numarOk": true
+  },
+  {
+   "font": "Segoe Script",
+   "ch": "B",
+   "H": 30,
+   "Rmax": 2.0977591579290316,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 7,
+      "nCw": 0,
+      "seg": 176,
+      "arce": 174,
+      "iesireAdevar": 0.001952613395442615,
+      "puncteAfara": 0,
+      "gol": 2.5668202664787205e-13,
+      "puncteAdevar": 832,
+      "adevarIesire": 0.0019376443906713448,
+      "orientareInversata": 2,
+      "orientareNeconcludenta": 22,
+      "orientareTotal": 352,
+      "componenteGrila": 14
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 7,
+      "nCw": 0,
+      "seg": 176,
+      "arce": 174,
+      "iesireAdevar": 0.001952613395442615,
+      "puncteAfara": 0,
+      "gol": 2.5668202664787205e-13,
+      "puncteAdevar": 832,
+      "adevarIesire": 0.0019376443906713448,
+      "orientareInversata": 2,
+      "orientareNeconcludenta": 22,
+      "orientareTotal": 352,
+      "componenteGrila": 14
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     2.9323999999996886,
+     1.9030000000002474
+    ],
+    [
+     1.1314999999995052,
+     0.9722999999994499
+    ]
+   ],
+   "msIntrare": 2.7590000000000146,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.001952613395442615,
+   "maxAdevarIesire": 0.0019376443906713448,
+   "puncteAfara": 0,
+   "orientareInversata": 4,
+   "orientareNeconcludenta": 44,
+   "golMax": 2.5668202664787205e-13,
+   "componenteDiferite": [
+    "k=0: cavalier 7, grila 14"
+   ],
+   "numarOk": true
+  },
+  {
+   "font": "Segoe Script",
+   "ch": "g",
+   "H": 30,
+   "Rmax": 2.081904870611317,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 36,
+      "arce": 36,
+      "iesireAdevar": 0.0014228055873359846,
+      "puncteAfara": 0,
+      "gol": 2.842170943040401e-14,
+      "puncteAdevar": 176,
+      "adevarIesire": 0.0014233776078285132,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 5,
+      "orientareTotal": 72,
+      "componenteGrila": 5
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 36,
+      "arce": 36,
+      "iesireAdevar": 0.0014228055873359846,
+      "puncteAfara": 0,
+      "gol": 2.842170943040401e-14,
+      "puncteAdevar": 176,
+      "adevarIesire": 0.0014233776078285132,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 5,
+      "orientareTotal": 72,
+      "componenteGrila": 5
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     1.2938999999987573,
+     0.7041000000008353
+    ],
+    [
+     1.281699999999546,
+     0.25500000000101863
+    ]
+   ],
+   "msIntrare": 1.6239999999997963,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.0014228055873359846,
+   "maxAdevarIesire": 0.0014233776078285132,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 10,
+   "golMax": 2.842170943040401e-14,
+   "componenteDiferite": [
+    "k=0: cavalier 3, grila 5"
+   ],
+   "numarOk": true
+  },
+  {
+   "font": "Segoe Script",
+   "ch": "&",
+   "H": 30,
+   "Rmax": 1.9399499273498126,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 5,
+      "nCw": 0,
+      "seg": 82,
+      "arce": 80,
+      "iesireAdevar": 0.001780686602792736,
+      "puncteAfara": 0,
+      "gol": 6.355287432313019e-14,
+      "puncteAdevar": 492,
+      "adevarIesire": 0.001621589202771112,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 19,
+      "orientareTotal": 164,
+      "componenteGrila": 13
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 5,
+      "nCw": 0,
+      "seg": 82,
+      "arce": 80,
+      "iesireAdevar": 0.001780686602792736,
+      "puncteAfara": 0,
+      "gol": 6.355287432313019e-14,
+      "puncteAdevar": 492,
+      "adevarIesire": 0.001621589202771112,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 19,
+      "orientareTotal": 164,
+      "componenteGrila": 13
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     3.1446999999989202,
+     3.299300000000585
+    ],
+    [
+     2.6111000000000786,
+     0.5553999999992811
+    ]
+   ],
+   "msIntrare": 3.32970000000023,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.001780686602792736,
+   "maxAdevarIesire": 0.001621589202771112,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 38,
+   "golMax": 6.355287432313019e-14,
+   "componenteDiferite": [
+    "k=0: cavalier 5, grila 13"
+   ],
+   "numarOk": true
+  },
+  {
+   "font": "Segoe Script",
+   "ch": "S",
+   "H": 30,
+   "Rmax": 1.6930400435882336,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 107,
+      "arce": 107,
+      "iesireAdevar": 0.0017514695821274628,
+      "puncteAfara": 0,
+      "gol": 8.526512829121202e-14,
+      "puncteAdevar": 836,
+      "adevarIesire": 0.0017444572149196702,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 20,
+      "orientareTotal": 214,
+      "componenteGrila": 52
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 107,
+      "arce": 107,
+      "iesireAdevar": 0.0017514695821274628,
+      "puncteAfara": 0,
+      "gol": 8.526512829121202e-14,
+      "puncteAdevar": 836,
+      "adevarIesire": 0.0017444572149196702,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 20,
+      "orientareTotal": 214,
+      "componenteGrila": 52
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     1.396600000000035,
+     1.8459000000002561
+    ],
+    [
+     1.1200000000026193,
+     0.5255999999972119
+    ]
+   ],
+   "msIntrare": 1.4933000000000902,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.0017514695821274628,
+   "maxAdevarIesire": 0.0017444572149196702,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 40,
+   "golMax": 8.526512829121202e-14,
+   "componenteDiferite": [
+    "k=0: cavalier 3, grila 52"
+   ],
+   "numarOk": true
+  },
+  {
+   "font": "Gabriola",
+   "ch": "B",
+   "H": 30,
+   "Rmax": 1.8486951274449201,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 4,
+      "nCw": 0,
+      "seg": 50,
+      "arce": 50,
+      "iesireAdevar": 0.0015839466601399455,
+      "puncteAfara": 0,
+      "gol": 5.025742656690393e-12,
+      "puncteAdevar": 452,
+      "adevarIesire": 0.001563914260378052,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 6,
+      "orientareTotal": 100,
+      "componenteGrila": 10
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 4,
+      "nCw": 0,
+      "seg": 50,
+      "arce": 50,
+      "iesireAdevar": 0.0015839466601399455,
+      "puncteAfara": 0,
+      "gol": 5.025742656690393e-12,
+      "puncteAdevar": 452,
+      "adevarIesire": 0.001563914260378052,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 6,
+      "orientareTotal": 100,
+      "componenteGrila": 10
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     1.355600000002596,
+     1.5486999999993714
+    ],
+    [
+     1.226200000000972,
+     0.23849999999947613
+    ]
+   ],
+   "msIntrare": 1.3368000000009488,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.0015839466601399455,
+   "maxAdevarIesire": 0.001563914260378052,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 12,
+   "golMax": 5.025742656690393e-12,
+   "componenteDiferite": [
+    "k=0: cavalier 4, grila 10"
+   ],
+   "numarOk": true
+  },
+  {
+   "font": "Gabriola",
+   "ch": "g",
+   "H": 30,
+   "Rmax": 1.5329576890533365,
+   "nAsteptat": 0,
+   "ambiguu": false,
+   "niveluri": [],
+   "timpiMs": [
+    [
+     2.5207999999984168,
+     1.3456000000005588
+    ]
+   ],
+   "msIntrare": 2.0908999999992375,
+   "nDirect": 0,
+   "nIterativ": 0,
+   "maxIesireAdevar": 0,
+   "maxAdevarIesire": 0,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 0,
+   "golMax": 0,
+   "componenteDiferite": [],
+   "numarOk": true
+  },
+  {
+   "font": "Gabriola",
+   "ch": "&",
+   "H": 30,
+   "Rmax": 1.752233836565404,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 23,
+      "arce": 23,
+      "iesireAdevar": 0.0019060483425343833,
+      "puncteAfara": 0,
+      "gol": 3.972054645195637e-15,
+      "puncteAdevar": 208,
+      "adevarIesire": 0.0019062182373854597,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 3,
+      "orientareTotal": 46,
+      "componenteGrila": 6
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 3,
+      "nCw": 0,
+      "seg": 23,
+      "arce": 23,
+      "iesireAdevar": 0.0019060483425343833,
+      "puncteAfara": 0,
+      "gol": 3.972054645195637e-15,
+      "puncteAdevar": 208,
+      "adevarIesire": 0.0019062182373854597,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 3,
+      "orientareTotal": 46,
+      "componenteGrila": 6
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     1.0375999999996566,
+     1.2894999999989523
+    ],
+    [
+     0.8702000000012049,
+     0.12050000000090222
+    ]
+   ],
+   "msIntrare": 1.3064999999987776,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.0019060483425343833,
+   "maxAdevarIesire": 0.0019062182373854597,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 6,
+   "golMax": 3.972054645195637e-15,
+   "componenteDiferite": [
+    "k=0: cavalier 3, grila 6"
+   ],
+   "numarOk": true
+  },
+  {
+   "font": "Gabriola",
+   "ch": "S",
+   "H": 30,
+   "Rmax": 1.845662228757195,
+   "nAsteptat": 1,
+   "ambiguu": false,
+   "niveluri": [
+    {
+     "k": 0,
+     "D": 1.5875,
+     "direct": {
+      "D": 1.5875,
+      "nCcw": 1,
+      "nCw": 0,
+      "seg": 46,
+      "arce": 46,
+      "iesireAdevar": 0.0009233213432982001,
+      "puncteAfara": 0,
+      "gol": 7.479706905907086e-14,
+      "puncteAdevar": 486,
+      "adevarIesire": 0.0009086950425452045,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 2,
+      "orientareTotal": 92,
+      "componenteGrila": 1
+     },
+     "iterativ": {
+      "D": 1.5875,
+      "nCcw": 1,
+      "nCw": 0,
+      "seg": 46,
+      "arce": 46,
+      "iesireAdevar": 0.0009233213432982001,
+      "puncteAfara": 0,
+      "gol": 7.479706905907086e-14,
+      "puncteAdevar": 486,
+      "adevarIesire": 0.0009086950425452045,
+      "orientareInversata": 0,
+      "orientareNeconcludenta": 2,
+      "orientareTotal": 92,
+      "componenteGrila": 1
+     }
+    }
+   ],
+   "timpiMs": [
+    [
+     0.9556999999986147,
+     0.7413999999989755
+    ],
+    [
+     0.43840000000272994,
+     0.0977999999995518
+    ]
+   ],
+   "msIntrare": 1.1256000000030326,
+   "nDirect": 1,
+   "nIterativ": 1,
+   "maxIesireAdevar": 0.0009233213432982001,
+   "maxAdevarIesire": 0.0009086950425452045,
+   "puncteAfara": 0,
+   "orientareInversata": 0,
+   "orientareNeconcludenta": 4,
+   "golMax": 7.479706905907086e-14,
+   "componenteDiferite": [],
+   "numarOk": true
+  }
+ ]
+}

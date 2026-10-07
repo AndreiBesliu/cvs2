@@ -1,0 +1,174 @@
+[
+ {
+  "label": "M0 implicit",
+  "args": [],
+  "browser": "154.0.4258.62",
+  "chrome_gpu": {
+   "gpu_lines": [],
+   "luid_mentions": [
+    "LUID={0",
+    "LUID={0",
+    "LUID={0"
+   ],
+   "gl_renderer": [],
+   "feature_status": [],
+   "raw_len": 74391,
+   "raw_head": "",
+   "raw_gpu_section": "GPU0 :VENDOR= 0x10de, DEVICE=0x2504 [NVIDIA GeForce RTX 3060], SUBSYS=0x881d1043, REV=161, LUID={0,231807}, DRIVER_VENDOR=NVIDIA, DRIVER_VERSION=32.0.16.1692 *ACTIVE*GPU1 :VENDOR= 0x1002, DEVICE=0x164e [AMD Radeon(TM) Graphics], SUBSYS=0x7e261462, REV=193, LUID={0,237016}, DRIVER_VERSION=32.0.21045.9003GPU2 :VENDOR= 0x1414, DEVICE=0x008c [Microsoft Basic Render Driver], LUID={0,236956}, DRIVER_VERSION=10.0.26100.9278Optimus :falseAMD switchable :falseDesktop compositing :Aero GlassDirect composition :trueSupports overlays :trueYUY2 overlay support :SCALINGNV12 overlay support :SCALINGBGRA8 overlay support :SCALINGRGB10A2 overlay support :SCALINGP010 overlay support :SCALINGDirect"
+  },
+  "pagina": {
+   "webgl_implicit": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgl_low_power": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgl_high_perf": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgpu_implicit": {
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "",
+    "description": "",
+    "isFallback": false
+   },
+   "webgpu_low_power": {
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "",
+    "description": "",
+    "isFallback": false
+   },
+   "webgpu_high_perf": {
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "",
+    "description": "",
+    "isFallback": false
+   },
+   "dpr": 1,
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0"
+  }
+ },
+ {
+  "label": "M4 --force_low_power_gpu",
+  "args": [
+   "--force_low_power_gpu"
+  ],
+  "browser": "154.0.4258.62",
+  "chrome_gpu": {
+   "gpu_lines": [],
+   "luid_mentions": [
+    "LUID={0",
+    "LUID={0",
+    "LUID={0"
+   ],
+   "gl_renderer": [],
+   "feature_status": [],
+   "raw_len": 20220,
+   "raw_head": "",
+   "raw_gpu_section": "GPU0 :VENDOR= 0x10de, DEVICE=0x2504 [NVIDIA GeForce RTX 3060], SUBSYS=0x881d1043, REV=161, LUID={0,231807}, DRIVER_VENDOR=AMD, DRIVER_VERSION=32.0.16.1692GPU1 :VENDOR= 0x1002, DEVICE=0x164e [AMD Radeon(TM) Graphics], SUBSYS=0x7e261462, REV=193, LUID={0,237016}, DRIVER_VERSION=32.0.21045.9003 *ACTIVE*GPU2 :VENDOR= 0x1414, DEVICE=0x008c [Microsoft Basic Render Driver], LUID={0,236956}, DRIVER_VERSION=10.0.26100.9278Optimus :falseAMD switchable :falseDesktop compositing :Aero GlassDirect composition :trueSupports overlays :trueYUY2 overlay support :SOFTWARENV12 overlay support :SOFTWAREBGRA8 overlay support :SOFTWARERGB10A2 overlay support :SOFTWAREP010 overlay support :SOFTWAREDire"
+  },
+  "pagina": {
+   "webgl_implicit": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgl_low_power": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgl_high_perf": "ANGLE (AMD, AMD Radeon(TM) Graphics (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgpu_implicit": {
+    "vendor": "amd",
+    "architecture": "rdna-2",
+    "device": "",
+    "description": "",
+    "isFallback": false
+   },
+   "webgpu_low_power": {
+    "vendor": "amd",
+    "architecture": "rdna-2",
+    "device": "",
+    "description": "",
+    "isFallback": false
+   },
+   "webgpu_high_perf": {
+    "vendor": "amd",
+    "architecture": "rdna-2",
+    "device": "",
+    "description": "",
+    "isFallback": false
+   },
+   "dpr": 1,
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0"
+  }
+ },
+ {
+  "label": "M5 --use-angle=d3d11",
+  "args": [
+   "--use-angle=d3d11"
+  ],
+  "browser": "154.0.4258.62",
+  "chrome_gpu": {
+   "gpu_lines": [],
+   "luid_mentions": [
+    "LUID={0",
+    "LUID={0",
+    "LUID={0"
+   ],
+   "gl_renderer": [],
+   "feature_status": [],
+   "raw_len": 73865,
+   "raw_head": "",
+   "raw_gpu_section": "GPU0 :VENDOR= 0x10de, DEVICE=0x2504 [NVIDIA GeForce RTX 3060], SUBSYS=0x881d1043, REV=161, LUID={0,231807}, DRIVER_VENDOR=NVIDIA, DRIVER_VERSION=32.0.16.1692 *ACTIVE*GPU1 :VENDOR= 0x1002, DEVICE=0x164e [AMD Radeon(TM) Graphics], SUBSYS=0x7e261462, REV=193, LUID={0,237016}, DRIVER_VERSION=32.0.21045.9003GPU2 :VENDOR= 0x1414, DEVICE=0x008c [Microsoft Basic Render Driver], LUID={0,236956}, DRIVER_VERSION=10.0.26100.9278Optimus :falseAMD switchable :falseDesktop compositing :Aero GlassDirect composition :trueSupports overlays :trueYUY2 overlay support :SCALINGNV12 overlay support :SCALINGBGRA8 overlay support :SCALINGRGB10A2 overlay support :SCALINGP010 overlay support :SCALINGDirect"
+  },
+  "pagina": {
+   "webgl_implicit": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgl_low_power": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgl_high_perf": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgpu_implicit": {
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "",
+    "description": "",
+    "isFallback": false
+   },
+   "webgpu_low_power": {
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "",
+    "description": "",
+    "isFallback": false
+   },
+   "webgpu_high_perf": {
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "",
+    "description": "",
+    "isFallback": false
+   },
+   "dpr": 1,
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0"
+  }
+ },
+ {
+  "label": "M6 --use-webgpu-power-preference=force-low-power",
+  "args": [
+   "--use-webgpu-power-preference=force-low-power"
+  ],
+  "browser": "154.0.4258.62",
+  "chrome_gpu": {
+   "gpu_lines": [],
+   "luid_mentions": [
+    "LUID={0",
+    "LUID={0",
+    "LUID={0"
+   ],
+   "gl_renderer": [],
+   "feature_status": [],
+   "raw_len": 74437,
+   "raw_head": "",
+   "raw_gpu_section": "GPU0 :VENDOR= 0x10de, DEVICE=0x2504 [NVIDIA GeForce RTX 3060], SUBSYS=0x881d1043, REV=161, LUID={0,231807}, DRIVER_VENDOR=NVIDIA, DRIVER_VERSION=32.0.16.1692 *ACTIVE*GPU1 :VENDOR= 0x1002, DEVICE=0x164e [AMD Radeon(TM) Graphics], SUBSYS=0x7e261462, REV=193, LUID={0,237016}, DRIVER_VERSION=32.0.21045.9003GPU2 :VENDOR= 0x1414, DEVICE=0x008c [Microsoft Basic Render Driver], LUID={0,236956}, DRIVER_VERSION=10.0.26100.9278Optimus :falseAMD switchable :falseDesktop compositing :Aero GlassDirect composition :trueSupports overlays :trueYUY2 overlay support :SCALINGNV12 overlay support :SCALINGBGRA8 overlay support :SCALINGRGB10A2 overlay support :SCALINGP010 overlay support :SCALINGDirect"
+  },
+  "pagina": {
+   "webgl_implicit": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgl_low_power": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgl_high_perf": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "webgpu_implicit": "adaptor null",
+   "webgpu_low_power": "adaptor null",
+   "webgpu_high_perf": "adaptor null",
+   "dpr": 1,
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0"
+  }
+ }
+]

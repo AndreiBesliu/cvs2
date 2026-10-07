@@ -1,0 +1,251 @@
+{
+ "mode": "coep-rc",
+ "parts": [
+  "coi",
+  "blur",
+  "dc",
+  "s4"
+ ],
+ "reps": {
+  "blur": 7,
+  "dc": 5,
+  "s4": 5
+ },
+ "workers": 16,
+ "n": 4000,
+ "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+ "crossOriginIsolated": true,
+ "sab_in_pagina": true,
+ "hardwareConcurrency": 32,
+ "webgl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+ "software_renderer": false,
+ "webgpu": {
+  "vendor": "nvidia",
+  "architecture": "ampere",
+  "isFallbackAdapter": false
+ },
+ "worker_crossOriginIsolated": true,
+ "sab_postMessage_merge": true,
+ "teren_ms": 677,
+ "blur": {
+  "sigma": 4,
+  "raza_kernel": 12,
+  "ref_1fir_ms": 793,
+  "hartie": {
+   "S": 10.009172595445069,
+   "varf_impuls_izolat": 0.009981680019227371,
+   "impulsuri": 240
+  },
+  "oracol": {
+   "a_sab": {
+    "eroare_max": 2.3090744108444916e-9,
+    "puncte_peste_toleranta": 0,
+    "suma_iesirii": 240.00000124538929,
+    "toleranta": 1e-7
+   },
+   "b_transfer": {
+    "eroare_max": 2.3090744108444916e-9,
+    "puncte_peste_toleranta": 0,
+    "suma_iesirii": 240.00000124538929,
+    "toleranta": 1e-7
+   },
+   "c_banda_proprie": {
+    "eroare_max": 2.3090744108444916e-9,
+    "puncte_peste_toleranta": 0,
+    "suma_iesirii": 240.00000124538929,
+    "toleranta": 1e-7
+   },
+   "CONTROL_b_halo_minus_1": {
+    "eroare_max": 0.00011088612035288839,
+    "puncte_peste_toleranta": 750,
+    "suma_iesirii": 239.96670471478865,
+    "toleranta": 1e-7
+   },
+   "CONTROL_c_halo_minus_1": {
+    "eroare_max": 0.00011088612035288839,
+    "puncte_peste_toleranta": 750,
+    "suma_iesirii": 239.96670471478865,
+    "toleranta": 1e-7
+   }
+  },
+  "bit_a_vs_ref": {
+   "diferite": 0,
+   "primul_index": -1
+  },
+  "bit_b_vs_ref": {
+   "diferite": 0,
+   "primul_index": -1
+  },
+  "bit_c_vs_ref": {
+   "diferite": 0,
+   "primul_index": -1
+  },
+  "ms": {
+   "a_sab": 87.47,
+   "b_transfer": 127.13,
+   "b_transfer_benzi_inapoi": 119.18,
+   "b_copiere_intrare": 8.18,
+   "c_banda_proprie": 102.07
+  },
+  "ms_toate": {
+   "a_sab": [
+    78.6,
+    87.47,
+    144.02,
+    112.06,
+    87,
+    82.38,
+    90.83
+   ],
+   "b_transfer": [
+    153.76,
+    517,
+    420.07,
+    127.13,
+    94.07,
+    102.76,
+    103.04
+   ],
+   "c_banda_proprie": [
+    172.44,
+    447.58,
+    171.69,
+    99.28,
+    98.47,
+    100.61,
+    102.07
+   ]
+  },
+  "raport": {
+   "b_pe_a": 1.45,
+   "c_pe_a": 1.17
+  }
+ },
+ "dc": {
+  "linii": 667,
+  "puncte_CL": 2668000,
+  "offseturi": 3071,
+  "halo_randuri": 30,
+  "scula": "bila R3",
+  "varfuri": 370,
+  "oracol": {
+   "a_sab": {
+    "eroare_max": 2.3649883473808586e-7,
+    "scobitura_max": 2.3649883473808586e-7,
+    "puncte_peste_toleranta": 0,
+    "toleranta": 0.000001
+   },
+   "b_transfer": {
+    "eroare_max": 2.3649883473808586e-7,
+    "scobitura_max": 2.3649883473808586e-7,
+    "puncte_peste_toleranta": 0,
+    "toleranta": 0.000001
+   },
+   "c_banda_proprie": {
+    "eroare_max": 2.3649883473808586e-7,
+    "scobitura_max": 2.3649883473808586e-7,
+    "puncte_peste_toleranta": 0,
+    "toleranta": 0.000001
+   },
+   "CONTROL_b_halo_minus_1": {
+    "eroare_max": 2.545435605731785,
+    "scobitura_max": 2.545435605731785,
+    "puncte_peste_toleranta": 520,
+    "toleranta": 0.000001
+   },
+   "CONTROL_c_halo_minus_1": {
+    "eroare_max": 2.545435605731785,
+    "scobitura_max": 2.545435605731785,
+    "puncte_peste_toleranta": 130,
+    "toleranta": 0.000001
+   }
+  },
+  "bit_b_vs_ref_3linii": 0,
+  "bit_a_vs_b": {
+   "diferite": 0,
+   "primul_index": -1
+  },
+  "bit_c_vs_b": {
+   "diferite": 0,
+   "primul_index": -1
+  },
+  "ms": {
+   "a_sab": 2326.85,
+   "b_transfer": 2324.34,
+   "b_copiere_intrare": 9.25,
+   "c_banda_proprie": 2305.05
+  },
+  "ms_toate": {
+   "a_sab": [
+    2327.5,
+    2283.75,
+    2314.56,
+    2326.85,
+    2358.47
+   ],
+   "b_transfer": [
+    2301.44,
+    2324.34,
+    2343.21,
+    2359.37,
+    2303.06
+   ],
+   "c_banda_proprie": [
+    2363.59,
+    2305.05,
+    2231.86,
+    2364.48,
+    2237.54
+   ]
+  },
+  "raport": {
+   "b_pe_a": 1,
+   "c_pe_a": 0.99
+  }
+ },
+ "s4": {
+  "mutari": 194208,
+  "celula": 0.1,
+  "amprenta_asteptata_s4": "b00917a30715ff44",
+  "amprente": {
+   "a_mutari_in_sab": "b00917a30715ff44",
+   "b_mutari_copiate": "b00917a30715ff44",
+   "b2_mutari_filtrate_transferate": "b00917a30715ff44",
+   "CONTROL_filtru_fara_raza_sculei": "f87f1d888447afbe"
+  },
+  "dale": 27519,
+  "ms": {
+   "a_mutari_in_sab": 410.56,
+   "b_mutari_copiate": 539.63,
+   "b2_filtrate_transferate": 508.46,
+   "b2_din_care_filtrare": 124.22
+  },
+  "ms_toate": {
+   "a": [
+    489.31,
+    453.56,
+    376.41,
+    363.83,
+    410.56
+   ],
+   "b": [
+    550.22,
+    451.73,
+    420.06,
+    543.34,
+    539.63
+   ],
+   "b2": [
+    470.57,
+    508.46,
+    586.81,
+    580,
+    498.02
+   ]
+  },
+  "raport": {
+   "b_pe_a": 1.31,
+   "b2_pe_a": 1.24
+  }
+ }
+}

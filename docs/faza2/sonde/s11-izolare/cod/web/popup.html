@@ -1,0 +1,6 @@
+<!doctype html><html lang="ro"><head><meta charset="utf-8"><title>popup</title></head>
+<body><p>popup</p><script>
+const hasOpener = !!window.opener;
+if (hasOpener) window.opener.postMessage({ s11: 'popup-ok', origin: location.origin }, '*');
+fetch('http://127.0.0.1:5187/rezultat?nume=popup-' + (new URLSearchParams(location.search).get('mod') || 'x'), { method: 'POST', mode: 'no-cors', body: JSON.stringify({ hasOpener, origin: location.origin }) });
+</script></body></html>
