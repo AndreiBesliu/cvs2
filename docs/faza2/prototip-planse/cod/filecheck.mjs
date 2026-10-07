@@ -1,0 +1,20 @@
+import { chromium } from 'playwright-core';
+const browser = await chromium.launch({ channel: 'msedge', headless: true });
+const ctx = await browser.newContext({ viewport: { width: 1280, height: 780 } });
+const page = await ctx.newPage(); const errs = [];
+page.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') errs.push(m.text()); }); page.on('pageerror', e => errs.push(e.message));
+const URL = 'file:///C:/Users/besli/Desktop/MyWork/Apps/cncvs2/docs/faza2/prototip-planse/index.html';
+await page.goto(URL);
+console.log('secure context:', await page.evaluate(() => window.isSecureContext));
+await page.click('[data-scen="3"]'); await page.click('#vD');
+await page.fill('#note', 'pe file:// merge?');
+await page.reload(); await page.click('[data-scen="3"]'); await page.click('#vD');
+console.log('notita dupa reincarcare:', JSON.stringify(await page.inputValue('#note')));
+await page.click('#bCopy'); await page.waitForTimeout(200);
+const dlgOpen = await page.evaluate(() => document.getElementById('dlg').open);
+const box = dlgOpen ? await page.inputValue('#copyBox') : '';
+let clip = ''; try { clip = await page.evaluate(() => navigator.clipboard.readText()); } catch (e) { clip = 'n/a: ' + e.message.split('\n')[0]; }
+console.log('fereastra de rezerva deschisa:', dlgOpen, '| text in fereastra contine notita:', /pe file:\/\/ merge\?/.test(box), '| clipboard:', clip.slice(0, 60));
+console.log('toast:', await page.evaluate(() => window.__proto.summary().toast));
+await page.fill('#note', ''); console.log('erori consola:', errs);
+await browser.close();

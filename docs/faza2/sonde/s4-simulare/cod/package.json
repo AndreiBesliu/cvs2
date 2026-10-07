@@ -1,0 +1,17 @@
+{
+  "name": "s4-simulare-sonda",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Sonda aruncabila: nucleu de simulare (heightfield pe dale) + oracol separat",
+  "scripts": {
+    "corpus": "node test/run-corpus.mjs",
+    "bench": "node bench/bench-node.mjs",
+    "masoara": "node masoara.mjs"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.28.20",
+    "opentype.js": "^2.0.0",
+    "playwright-core": "^1.63.0"
+  }
+}

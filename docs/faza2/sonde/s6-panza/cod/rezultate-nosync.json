@@ -1,0 +1,284 @@
+{
+ "masina": {
+  "chrome_gpu": [
+   "Canvas: Hardware accelerated",
+   "Compositing: Hardware accelerated",
+   "Rasterization: Hardware accelerated",
+   "Video Decode: Hardware accelerated",
+   "WebGL: Hardware accelerated",
+   "WebGPU: Hardware accelerated"
+  ],
+  "browser": "154.0.4258.62"
+ },
+ "rulari": [
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2dbmp",
+    "n": 50000,
+    "mode": "pan",
+    "ib": 1,
+    "sync": 0
+   },
+   "durata_s": 0.455,
+   "r": "c2dbmp",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 221,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 120,
+   "sync": false,
+   "exactMs": 11,
+   "interval_ms": {
+    "n": 120,
+    "med": 0.1,
+    "p95": 0.2,
+    "max": 0.2
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 104,
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2dbmp",
+    "n": 50000,
+    "mode": "pan",
+    "ib": 1
+   },
+   "durata_s": 2.23,
+   "r": "c2dbmp",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 238,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 117,
+   "sync": true,
+   "exactMs": 10.6,
+   "interval_ms": {
+    "n": 120,
+    "med": 11.6,
+    "p95": 13.8,
+    "max": 15.9
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 11.4,
+    "p95": 12.9,
+    "max": 14
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 103,
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "pan",
+    "sync": 0
+   },
+   "durata_s": 1.643,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 225,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 660,
+   "hfUploadMs": 7.1,
+   "vboMB": 57.22,
+   "sync": false,
+   "interval_ms": {
+    "n": 120,
+    "med": 0.1,
+    "p95": 0.4,
+    "max": 462.6
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 0.1,
+    "p95": 0.2,
+    "max": 176.7
+   },
+   "cadre_peste_16_7ms": 1,
+   "heapMB": 172,
+   "dpr_cerut": 1.5
+  }
+ ],
+ "durata_totala_s": 7.718
+}

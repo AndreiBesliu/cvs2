@@ -1,0 +1,486 @@
+{
+ "n": 508,
+ "seed": 12345,
+ "stride": 1,
+ "secunde": 177.37081320000001,
+ "res": {
+  "cavalier-contours-js 0.1.1": {
+   "total": 508,
+   "ok": 353,
+   "topologie": 0,
+   "exceptie": 0,
+   "blocaj": 0,
+   "nesuportat": 155,
+   "ms": 329.5640999999563,
+   "exemple": [],
+   "peFam": {
+    "linie+arc": {
+     "total": 150,
+     "ok": 150,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "glifa TTF": {
+     "total": 150,
+     "ok": 0,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 150
+    },
+    "offset": {
+     "total": 150,
+     "ok": 150,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "degenerat": {
+     "total": 58,
+     "ok": 53,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 5
+    }
+   }
+  },
+  "@flatten-js/core 1.6.14 + polygon-offset 1.1.4": {
+   "total": 508,
+   "ok": 324,
+   "topologie": 7,
+   "exceptie": 15,
+   "blocaj": 0,
+   "nesuportat": 162,
+   "ms": 1225.8685999999154,
+   "exemple": [
+    "glifa-g-6: topologie (101 pct)",
+    "glifa-B-15: exceptie Unresolved boundary conflict in boolean operation",
+    "glifa-g-21: exceptie Unresolved boundary conflict in boolean operation",
+    "glifa-B-30: exceptie Unresolved boundary conflict in boolean operation",
+    "glifa-g-36: topologie (228 pct)",
+    "glifa-®-39: exceptie Unresolved boundary conflict in boolean operation",
+    "glifa-®-54: exceptie Unresolved boundary conflict in boolean operation",
+    "glifa-B-60: exceptie Unresolved boundary conflict in boolean operation",
+    "glifa-&-63: topologie (292 pct)",
+    "glifa-®-69: exceptie Unresolved boundary conflict in boolean operation",
+    "glifa-&-78: topologie (234 pct)",
+    "glifa-®-84: exceptie Unresolved boundary conflict in boolean operation"
+   ],
+   "peFam": {
+    "linie+arc": {
+     "total": 150,
+     "ok": 150,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "glifa TTF": {
+     "total": 150,
+     "ok": 128,
+     "topologie": 7,
+     "exceptie": 15,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "offset": {
+     "total": 150,
+     "ok": 0,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 150
+    },
+    "degenerat": {
+     "total": 58,
+     "ok": 46,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 12
+    }
+   }
+  },
+  "makerjs 0.19.2": {
+   "total": 508,
+   "ok": 356,
+   "topologie": 31,
+   "exceptie": 0,
+   "blocaj": 0,
+   "nesuportat": 121,
+   "ms": 86672.85910000003,
+   "exemple": [
+    "stea-106: topologie (8 pct)",
+    "stea-146: topologie (40 pct)",
+    "offset-stea-4: topologie (658 pct)",
+    "offset-glifa-12: topologie (360 pct)",
+    "offset-stea-16: topologie (413 pct)",
+    "offset-glifa-24: topologie (271 pct)",
+    "offset-glifa-33: topologie (103 pct)",
+    "offset-glifa-36: topologie (491 pct)",
+    "offset-stea-40: topologie (321 pct)",
+    "offset-glifa-48: topologie (676 pct)",
+    "offset-stea-52: topologie (827 pct)",
+    "offset-glifa-60: topologie (420 pct)"
+   ],
+   "peFam": {
+    "linie+arc": {
+     "total": 150,
+     "ok": 111,
+     "topologie": 2,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 37
+    },
+    "glifa TTF": {
+     "total": 150,
+     "ok": 114,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 36
+    },
+    "offset": {
+     "total": 150,
+     "ok": 87,
+     "topologie": 25,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 38
+    },
+    "degenerat": {
+     "total": 58,
+     "ok": 44,
+     "topologie": 4,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 10
+    }
+   }
+  },
+  "paper 0.12.18 + paperjs-offset 2.2.1": {
+   "total": 508,
+   "ok": 484,
+   "topologie": 23,
+   "exceptie": 0,
+   "blocaj": 1,
+   "nesuportat": 0,
+   "ms": 24750.205499999895,
+   "exemple": [
+    "offset-stea-10: topologie (15 pct)",
+    "offset-rrect-17: topologie (2 pct)",
+    "offset-glifa-18: topologie (1 pct)",
+    "offset-glifa-21: topologie (1 pct)",
+    "offset-stea-22: topologie (1 pct)",
+    "offset-stea-25: topologie (2 pct)",
+    "offset-stea-28: topologie (1 pct)",
+    "offset-stea-34: topologie (3 pct)",
+    "offset-stea-40: topologie (1 pct)",
+    "offset-stea-46: topologie (2 pct)",
+    "offset-rrect-50: topologie (2 pct)",
+    "offset-glifa-57: topologie (1 pct)"
+   ],
+   "peFam": {
+    "linie+arc": {
+     "total": 150,
+     "ok": 150,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "glifa TTF": {
+     "total": 150,
+     "ok": 150,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "offset": {
+     "total": 150,
+     "ok": 126,
+     "topologie": 23,
+     "exceptie": 0,
+     "blocaj": 1,
+     "nesuportat": 0
+    },
+    "degenerat": {
+     "total": 58,
+     "ok": 58,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    }
+   }
+  },
+  "Skia PathOps (canvaskit-wasm 0.42.0, build full)": {
+   "total": 508,
+   "ok": 507,
+   "topologie": 1,
+   "exceptie": 0,
+   "blocaj": 0,
+   "nesuportat": 0,
+   "ms": 172.95579999980703,
+   "exemple": [
+    "cerc-mic-dispare: topologie (4 pct)"
+   ],
+   "peFam": {
+    "linie+arc": {
+     "total": 150,
+     "ok": 150,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "glifa TTF": {
+     "total": 150,
+     "ok": 150,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "offset": {
+     "total": 150,
+     "ok": 150,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "degenerat": {
+     "total": 58,
+     "ok": 57,
+     "topologie": 1,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    }
+   }
+  },
+  "clipper2-ts 2.0.1 (aplatizare 0.001 mm)": {
+   "total": 508,
+   "ok": 507,
+   "topologie": 1,
+   "exceptie": 0,
+   "blocaj": 0,
+   "nesuportat": 0,
+   "ms": 1970.304000000001,
+   "exemple": [
+    "glifa-offset-mic-&: topologie (1 pct)"
+   ],
+   "peFam": {
+    "linie+arc": {
+     "total": 150,
+     "ok": 150,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "glifa TTF": {
+     "total": 150,
+     "ok": 150,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "offset": {
+     "total": 150,
+     "ok": 150,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "degenerat": {
+     "total": 58,
+     "ok": 57,
+     "topologie": 1,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    }
+   }
+  },
+  "CONTROL: intoarce A neschimbat": {
+   "total": 508,
+   "ok": 42,
+   "topologie": 466,
+   "exceptie": 0,
+   "blocaj": 0,
+   "nesuportat": 0,
+   "ms": 0.9642999999778112,
+   "exemple": [
+    "stea-0: topologie (96 pct)",
+    "stea-1: topologie (354 pct)",
+    "stea-2: topologie (250 pct)",
+    "stea-3: topologie (128 pct)",
+    "stea-4: topologie (232 pct)",
+    "stea-5: topologie (730 pct)",
+    "stea-6: topologie (533 pct)",
+    "stea-7: topologie (369 pct)",
+    "stea-8: topologie (251 pct)",
+    "stea-9: topologie (728 pct)",
+    "stea-10: topologie (271 pct)",
+    "stea-11: topologie (347 pct)"
+   ],
+   "peFam": {
+    "linie+arc": {
+     "total": 150,
+     "ok": 6,
+     "topologie": 144,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "glifa TTF": {
+     "total": 150,
+     "ok": 16,
+     "topologie": 134,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "offset": {
+     "total": 150,
+     "ok": 0,
+     "topologie": 150,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "degenerat": {
+     "total": 58,
+     "ok": 20,
+     "topologie": 38,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    }
+   }
+  },
+  "CONTROL: cavalier fara ultimul contur": {
+   "total": 508,
+   "ok": 232,
+   "topologie": 121,
+   "exceptie": 0,
+   "blocaj": 0,
+   "nesuportat": 155,
+   "ms": 258.8967999995816,
+   "exemple": [
+    "stea-2: topologie (553 pct)",
+    "stea-3: topologie (2 pct)",
+    "stea-6: topologie (35 pct)",
+    "stea-7: topologie (48 pct)",
+    "stea-11: topologie (2 pct)",
+    "stea-14: topologie (289 pct)",
+    "stea-15: topologie (1 pct)",
+    "stea-18: topologie (52 pct)",
+    "stea-19: topologie (102 pct)",
+    "stea-22: topologie (224 pct)",
+    "stea-23: topologie (24 pct)",
+    "stea-26: topologie (508 pct)"
+   ],
+   "peFam": {
+    "linie+arc": {
+     "total": 150,
+     "ok": 95,
+     "topologie": 55,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "glifa TTF": {
+     "total": 150,
+     "ok": 0,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 150
+    },
+    "offset": {
+     "total": 150,
+     "ok": 100,
+     "topologie": 50,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "degenerat": {
+     "total": 58,
+     "ok": 37,
+     "topologie": 16,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 5
+    }
+   }
+  },
+  "CONTROL: offset cu d*1.02": {
+   "total": 508,
+   "ok": 277,
+   "topologie": 76,
+   "exceptie": 0,
+   "blocaj": 0,
+   "nesuportat": 155,
+   "ms": 215.36510000012947,
+   "exemple": [
+    "offset-stea-1: topologie (1 pct)",
+    "offset-rrect-2: topologie (2 pct)",
+    "offset-glifa-3: topologie (1 pct)",
+    "offset-rrect-5: topologie (4 pct)",
+    "offset-stea-7: topologie (4 pct)",
+    "offset-glifa-9: topologie (2 pct)",
+    "offset-stea-10: topologie (4 pct)",
+    "offset-stea-13: topologie (1 pct)",
+    "offset-rrect-14: topologie (4 pct)",
+    "offset-glifa-15: topologie (4 pct)",
+    "offset-rrect-17: topologie (2 pct)",
+    "offset-glifa-18: topologie (1 pct)"
+   ],
+   "peFam": {
+    "linie+arc": {
+     "total": 150,
+     "ok": 150,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "glifa TTF": {
+     "total": 150,
+     "ok": 0,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 150
+    },
+    "offset": {
+     "total": 150,
+     "ok": 74,
+     "topologie": 76,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 0
+    },
+    "degenerat": {
+     "total": 58,
+     "ok": 53,
+     "topologie": 0,
+     "exceptie": 0,
+     "blocaj": 0,
+     "nesuportat": 5
+    }
+   }
+  }
+ }
+}

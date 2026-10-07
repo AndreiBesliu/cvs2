@@ -277,7 +277,8 @@ reală se reface în Faza 2, pe etape săptămânale.
 
 ### 16.1 Adminul intră în v1 [decis 07.10]
 
-- **Ce:** un panou de admin „ca și acum”, adică cu funcțiile adminului din ediția întâi. Acolo avea 13 file:
+- **Ce:** un panou de admin „ca și acum”, adică cu funcțiile adminului din ediția întâi. Acolo avea 12 file
+  (cifra 13 din `docs/faza0/10` era o numărătoare greșită, corectată de sonda din `docs/faza2/admin`):
   - Puls, utilizatori, venituri, analiză, CAM;
   - tichete, crash-uri, config, AI, audit;
   - admini (cu rolurile support / admin / owner), operare.

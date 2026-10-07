@@ -1,0 +1,234 @@
+{
+ "N": 50000,
+ "scena": {
+  "shapes": 50010,
+  "segs": 501991,
+  "lines": 166251,
+  "arcs": 42647,
+  "cubics": 293093,
+  "kinds": {
+   "sheet": 1,
+   "circle": 8151,
+   "rrect": 5015,
+   "glyph": 17361,
+   "tiny": 731,
+   "arc": 5506,
+   "blob": 3795,
+   "zigzag": 5688,
+   "donut": 1876,
+   "coincident": 934,
+   "tangent": 942,
+   "p-circle": 1,
+   "p-tiny": 1,
+   "p-arc": 1,
+   "p-seg": 1,
+   "p-parab": 1,
+   "p-tan1": 1,
+   "p-tan2": 1,
+   "p-sqA": 1,
+   "p-sqB": 1,
+   "p-rrect": 1
+  }
+ },
+ "generare_ms": 204,
+ "oracol_pe_hartie": [
+  {
+   "ce": "parabola y=x^2, punct (0,1): sqrt(3)/2",
+   "got": 0.8660254037844386,
+   "want": 0.8660254037844386,
+   "ok": true
+  },
+  {
+   "ce": "parabola y=x^2, punct (0,-2): 2",
+   "got": 2,
+   "want": 2,
+   "ok": true
+  },
+  {
+   "ce": "cerc r=40, punct la 43 de centru: 3",
+   "got": 3,
+   "want": 3,
+   "ok": true
+  },
+  {
+   "ce": "segment (0,0)-(3,4), punct (3,0): 12/5",
+   "got": 2.4,
+   "want": 2.4,
+   "ok": true
+  },
+  {
+   "ce": "arc r=30 0..120 grade, punct pe raza la 200 grade, d=10: distanța la capătul cel mai apropiat",
+   "got": 29.93010346456961,
+   "want": 29.93010346456961,
+   "ok": true
+  },
+  {
+   "ce": "Cardano (t-1)(t-2)(t-3): 1,2,3",
+   "got": "0.9999999999999998,2,3",
+   "want": "1,2,3",
+   "ok": true
+  }
+ ],
+ "constructie_index_ms": {
+  "rbush_med": 19.8972,
+  "flatbush_med": 7.4005
+ },
+ "hit": [
+  {
+   "zoom": "placa intreaga (0,6 px/mm)",
+   "tol_mm": 8.333333,
+   "interogari": 2000,
+   "lovituri": 2000,
+   "candidati_median": 142,
+   "candidati_p95": 195,
+   "rbush_ms": {
+    "med": 0.1301,
+    "p95": 0.218,
+    "max": 1.8721
+   },
+   "flatbush_ms": {
+    "med": 0.047,
+    "p95": 0.0885,
+    "max": 0.47
+   },
+   "scanare_ms": {
+    "med": 0.6078,
+    "p95": 1.3834,
+    "max": 3.5795
+   },
+   "rbush_vs_flatbush_diferente": 0,
+   "index_vs_scanare_diferente": 0
+  },
+  {
+   "zoom": "4 px/mm",
+   "tol_mm": 1.25,
+   "interogari": 2000,
+   "lovituri": 1983,
+   "candidati_median": 115,
+   "candidati_p95": 163,
+   "rbush_ms": {
+    "med": 0.111,
+    "p95": 0.179,
+    "max": 0.6607
+   },
+   "flatbush_ms": {
+    "med": 0.0389,
+    "p95": 0.0688,
+    "max": 0.4235
+   },
+   "scanare_ms": {
+    "med": 0.5957,
+    "p95": 0.8685,
+    "max": 1.6054
+   },
+   "rbush_vs_flatbush_diferente": 0,
+   "index_vs_scanare_diferente": 0
+  },
+  {
+   "zoom": "40 px/mm",
+   "tol_mm": 0.125,
+   "interogari": 2000,
+   "lovituri": 1509,
+   "candidati_median": 112,
+   "candidati_p95": 158,
+   "rbush_ms": {
+    "med": 0.1185,
+    "p95": 0.1899,
+    "max": 0.6467
+   },
+   "flatbush_ms": {
+    "med": 0.0416,
+    "p95": 0.0685,
+    "max": 0.3726
+   },
+   "scanare_ms": {
+    "med": 0.6951,
+    "p95": 0.9348,
+    "max": 3.2574
+   },
+   "rbush_vs_flatbush_diferente": 0,
+   "index_vs_scanare_diferente": 0
+  }
+ ],
+ "oracol_analitic": {
+  "interogari": 6000,
+  "id_gresit": 0,
+  "err_max_mm": 5.693223670277803e-13,
+  "pe_tip": {
+   "p-circle": {
+    "n": 600,
+    "err_max_mm": 7.105427357601002e-15,
+    "id_gresit": 0
+   },
+   "p-tiny": {
+    "n": 600,
+    "err_max_mm": 8.881784197001252e-16,
+    "id_gresit": 0
+   },
+   "p-arc": {
+    "n": 600,
+    "err_max_mm": 7.105427357601002e-15,
+    "id_gresit": 0
+   },
+   "p-seg": {
+    "n": 600,
+    "err_max_mm": 1.0302869668521453e-13,
+    "id_gresit": 0
+   },
+   "p-parab": {
+    "n": 600,
+    "err_max_mm": 5.693223670277803e-13,
+    "id_gresit": 0
+   },
+   "p-tan1": {
+    "n": 600,
+    "err_max_mm": 3.552713678800501e-15,
+    "id_gresit": 0
+   },
+   "p-tan2": {
+    "n": 600,
+    "err_max_mm": 7.105427357601002e-15,
+    "id_gresit": 0
+   },
+   "p-sqA": {
+    "n": 600,
+    "err_max_mm": 0,
+    "id_gresit": 0
+   },
+   "p-sqB": {
+    "n": 600,
+    "err_max_mm": 0,
+    "id_gresit": 0
+   },
+   "p-rrect": {
+    "n": 600,
+    "err_max_mm": 1.6564527527407336e-13,
+    "id_gresit": 0
+   }
+  },
+  "joc_0_001mm": {
+   "punct": [
+    770.0002,
+    1290
+   ],
+   "ales": "p-tan1",
+   "d_mm": 0.0001999999999497959,
+   "asteptat": "p-tan1",
+   "d_asteptat_mm": 0.0002
+  }
+ },
+ "interior": {
+  "evenodd": {
+   "n": 20000,
+   "gresit": 0
+  },
+  "nonzero": {
+   "n": 20000,
+   "gresit": 0
+  },
+  "lat_ms": {
+   "med": 0.0007,
+   "p95": 0.005
+  }
+ }
+}

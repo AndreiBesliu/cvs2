@@ -1,0 +1,201 @@
+{
+ "quick": false,
+ "n": 4000,
+ "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+ "crossOriginIsolated": true,
+ "hardwareConcurrency": 32,
+ "deviceMemory": 32,
+ "webgl": {
+  "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "vendor": "Google Inc. (NVIDIA)",
+  "maxTextureSize": 16384,
+  "floatLinear": true,
+  "colorBufferFloat": true
+ },
+ "software_renderer": false,
+ "webgpu": {
+  "vendor": "nvidia",
+  "architecture": "ampere",
+  "device": "",
+  "description": "",
+  "isFallbackAdapter": false,
+  "limits": {
+   "maxBufferSize": 2147483648,
+   "maxStorageBufferBindingSize": 2147483644,
+   "maxTextureDimension2D": 16384,
+   "maxComputeWorkgroupsPerDimension": 65535
+  },
+  "features": [
+   "depth32float-stencil8",
+   "rg11b10ufloat-renderable",
+   "bgra8unorm-storage",
+   "texture-formats-tier1",
+   "texture-compression-bc",
+   "dual-source-blending",
+   "core-features-and-limits",
+   "float32-filterable",
+   "indirect-first-instance",
+   "float32-blendable",
+   "subgroup-size-control",
+   "depth-clip-control",
+   "texture-compression-bc-sliced-3d",
+   "texture-formats-tier2",
+   "clip-distances",
+   "timestamp-query",
+   "shader-f16",
+   "primitive-index",
+   "texture-component-swizzle",
+   "subgroups"
+  ]
+ },
+ "float16Array": true,
+ "teren_generare_ms": 733,
+ "combinare_cpu_ms": {
+  "add": 12.81,
+  "max": 14.65,
+  "min": 15.03
+ },
+ "blur_cpu_1fir_ms": 892.97,
+ "blur_workeri_ms": {
+  "4": 283.74,
+  "8": 163.26,
+  "16": 83.28
+ },
+ "blur_workeri_vs_cpu_maxdiff": 0,
+ "webgpu_upload_64MB_ms": 119.83,
+ "blur_webgpu_ms": 35.04,
+ "webgpu_readback_64MB_ms": 45.7,
+ "blur_webgpu_vs_cpu_maxdiff": 0.00000476837158203125,
+ "combinare_max_webgpu_ms_rezident": 3,
+ "dropcutter": {
+  "bila R3": {
+   "linii": 667,
+   "puncte_CL": 2668000,
+   "offseturi": 3071,
+   "webgpu_ms": 90.02,
+   "cpu_1fir_ms_pe_linie": 40.5,
+   "cpu_1fir_ms_estimat_tot": 27045,
+   "workeri16_ms_tot": 2209,
+   "webgpu_vs_cpu_maxdiff": 4.80052236184747e-7,
+   "workeri_vs_webgpu_maxdiff": 9.5367431640625e-7
+  },
+  "dreapta R3": {
+   "linii": 667,
+   "puncte_CL": 2668000,
+   "offseturi": 3071,
+   "webgpu_ms": 87.91,
+   "cpu_1fir_ms_pe_linie": 40,
+   "cpu_1fir_ms_estimat_tot": 26712,
+   "workeri16_ms_tot": 2282,
+   "webgpu_vs_cpu_maxdiff": 0,
+   "workeri_vs_webgpu_maxdiff": 0
+  },
+  "V90 R3": {
+   "linii": 667,
+   "puncte_CL": 2668000,
+   "offseturi": 3071,
+   "webgpu_ms": 93.23,
+   "cpu_1fir_ms_pe_linie": 49.8,
+   "cpu_1fir_ms_estimat_tot": 33212,
+   "workeri16_ms_tot": 2210,
+   "webgpu_vs_cpu_maxdiff": 4.5774560319955526e-7,
+   "workeri_vs_webgpu_maxdiff": 0
+  }
+ },
+ "webgl_upload_complet_ms": 43.5,
+ "afisare": {
+  "repaus_2d": {
+   "cadre": 179,
+   "interval_median_ms": 16.67,
+   "interval_p95_ms": 16.73,
+   "cadre_peste_20ms": 1,
+   "cpu_median_ms": 0.03,
+   "cpu_p95_ms": 0.08,
+   "fps_median": 60
+  },
+  "2d_pensula_adauga": {
+   "cadre": 179,
+   "interval_median_ms": 16.67,
+   "interval_p95_ms": 16.72,
+   "cadre_peste_20ms": 0,
+   "cpu_median_ms": 0.43,
+   "cpu_p95_ms": 0.58,
+   "fps_median": 60
+  },
+  "2d_pensula_neteda": {
+   "cadre": 179,
+   "interval_median_ms": 16.67,
+   "interval_p95_ms": 16.73,
+   "cadre_peste_20ms": 0,
+   "cpu_median_ms": 1.38,
+   "cpu_p95_ms": 1.69,
+   "fps_median": 60
+  },
+  "3d_1000x1000_pensula": {
+   "cadre": 179,
+   "interval_median_ms": 16.67,
+   "interval_p95_ms": 16.72,
+   "cadre_peste_20ms": 0,
+   "cpu_median_ms": 0.42,
+   "cpu_p95_ms": 0.55,
+   "fps_median": 60
+  },
+  "3d_2000x2000_pensula": {
+   "cadre": 179,
+   "interval_median_ms": 16.67,
+   "interval_p95_ms": 16.72,
+   "cadre_peste_20ms": 0,
+   "cpu_median_ms": 0.42,
+   "cpu_p95_ms": 0.5,
+   "fps_median": 60
+  },
+  "3d_4000x4000_pensula": {
+   "cadre": 179,
+   "interval_median_ms": 16.67,
+   "interval_p95_ms": 16.71,
+   "cadre_peste_20ms": 0,
+   "cpu_median_ms": 0.42,
+   "cpu_p95_ms": 0.55,
+   "fps_median": 60
+  },
+  "3d_4000x4000_x2": {
+   "cadre": 179,
+   "interval_median_ms": 16.67,
+   "interval_p95_ms": 16.71,
+   "cadre_peste_20ms": 0,
+   "cpu_median_ms": 0.42,
+   "cpu_p95_ms": 0.54,
+   "fps_median": 60
+  },
+  "3d_4000x4000_x4": {
+   "cadre": 179,
+   "interval_median_ms": 33.32,
+   "interval_p95_ms": 50.01,
+   "cadre_peste_20ms": 138,
+   "cpu_median_ms": 0.41,
+   "cpu_p95_ms": 0.5,
+   "fps_median": 30
+  },
+  "3d_4000x4000_x8": {
+   "cadre": 179,
+   "interval_median_ms": 66.66,
+   "interval_p95_ms": 116.65,
+   "cadre_peste_20ms": 168,
+   "cpu_median_ms": 0.44,
+   "cpu_p95_ms": 0.54,
+   "fps_median": 15
+  },
+  "2d_x32": {
+   "cadre": 179,
+   "interval_median_ms": 16.67,
+   "interval_p95_ms": 16.75,
+   "cadre_peste_20ms": 4,
+   "cpu_median_ms": 0.47,
+   "cpu_p95_ms": 0.57,
+   "fps_median": 60
+  }
+ },
+ "pensula_adauga_r64_cpu_ms": 0.27,
+ "pensula_neteda_r64_cpu_ms": 1.06,
+ "pensula_adauga_r200_cpu_ms": 2.61
+}

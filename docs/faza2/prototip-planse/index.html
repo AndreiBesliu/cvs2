@@ -1,0 +1,1392 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototip planșe A/D</title>
+<link rel="icon" href="data:,">
+<meta name="description" content="Prototip clicabil, aruncabil: variantele A și D ale sistemului de planșe, pe cele 8 scenarii din LECTII.md §5.7. Fără motor CAM, fără rețea.">
+<style>
+:root{
+  --bg:#f3f0e8; --panel:#ffffff; --panel-2:#f7f4ee; --ink:#1e1b16; --muted:#6a6458; --line:#dcd5c8;
+  --accent:#1f5fd1; --accent-soft:rgba(31,95,209,.10); --on-accent:#ffffff;
+  --warn:#b45309; --danger:#c62828; --ok:#2e7d32; --violet:#7c3aed; --ghost:#0f766e;
+  --canvas:#e6e1d6; --wood:#e9d5b0; --wood-edge:#9c7b4f; --part:#f6e9cf; --part-edge:#2a241c;
+  --groove:#1f5fd1; --pocket:rgba(31,95,209,.28); --pocket-edge:#1f5fd1; --engrave:#3a2d1f; --engrave-fill:rgba(58,45,31,.10);
+  --relief1:#a56a32; --relief2:#f6dcae; --drill:#6d2a12; --pin:#0f766e;
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151410; --panel:#1f1d18; --panel-2:#27241e; --ink:#ede8dd; --muted:#a8a091; --line:#3b372f;
+    --accent:#6ea2ff; --accent-soft:rgba(110,162,255,.14); --on-accent:#0b1220;
+    --warn:#f59e0b; --danger:#f87171; --ok:#4ade80; --violet:#b69cff; --ghost:#2dd4bf;
+    --canvas:#23211c; --wood:#5c4a30; --wood-edge:#c6a26c; --part:#735e3f; --part-edge:#f3ead8;
+    --groove:#8fb6ff; --pocket:rgba(143,182,255,.30); --pocket-edge:#8fb6ff; --engrave:#fff4de; --engrave-fill:rgba(255,244,222,.10);
+    --relief1:#d9a86e; --relief2:#7a5630; --drill:#fca5a5; --pin:#2dd4bf;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151410; --panel:#1f1d18; --panel-2:#27241e; --ink:#ede8dd; --muted:#a8a091; --line:#3b372f;
+  --accent:#6ea2ff; --accent-soft:rgba(110,162,255,.14); --on-accent:#0b1220;
+  --warn:#f59e0b; --danger:#f87171; --ok:#4ade80; --violet:#b69cff; --ghost:#2dd4bf;
+  --canvas:#23211c; --wood:#5c4a30; --wood-edge:#c6a26c; --part:#735e3f; --part-edge:#f3ead8;
+  --groove:#8fb6ff; --pocket:rgba(143,182,255,.30); --pocket-edge:#8fb6ff; --engrave:#fff4de; --engrave-fill:rgba(255,244,222,.10);
+  --relief1:#d9a86e; --relief2:#7a5630; --drill:#fca5a5; --pin:#2dd4bf;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,"Segoe UI",Roboto,Arial,sans-serif;display:flex;flex-direction:column;height:100vh;overflow-x:clip}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+button.on{background:var(--accent-soft);border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:default}
+input,select,textarea{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 6px;min-width:0}
+textarea{width:100%;resize:vertical}
+.muted{color:var(--muted)}
+header.top{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);box-shadow:var(--shadow)}
+.brand{display:flex;flex-direction:column;line-height:1.2;margin-right:auto}
+.brand b{font-size:15px}
+.brand span{font-size:12px}
+.variant{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.variant button{border:0;border-radius:0;padding:7px 12px;background:var(--panel)}
+.variant button[aria-checked="true"]{background:var(--accent);color:var(--on-accent);font-weight:600}
+.tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chk{display:flex;gap:4px;align-items:center;font-size:13px}
+.layout{flex:1;display:grid;grid-template-columns:310px minmax(0,1fr) 300px;min-height:0}
+aside{background:var(--panel);overflow:auto;min-width:0}
+aside.scen{border-right:1px solid var(--line);padding:10px 12px}
+aside.insp{border-left:1px solid var(--line);padding:10px 12px}
+main.stage{display:flex;flex-direction:column;min-width:0;min-height:0}
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 10px;background:var(--panel);border-bottom:1px solid var(--line)}
+#crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:2px;margin-right:auto}
+#crumbs button{border:0;background:transparent;padding:2px 6px;border-radius:4px}
+#crumbs button.cur{background:var(--accent-soft);font-weight:600}
+#crumbs .sep{color:var(--muted)}
+.chip{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;background:var(--panel-2);color:var(--muted)}
+.chip.lit{border-color:var(--violet);color:var(--violet)}
+.banner{padding:7px 10px;background:color-mix(in srgb,var(--violet) 14%,var(--panel));border-bottom:1px solid var(--violet);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:6px 10px;background:var(--panel-2);border-bottom:1px solid var(--line)}
+.toolbar .sep{width:1px;background:var(--line);margin:0 2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg span{padding:5px 8px;font-size:13px;color:var(--muted)}
+.seg button{border:0;border-radius:0}
+.cvwrap{position:relative;flex:1;min-height:340px}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;background:var(--canvas);touch-action:none;user-select:none;-webkit-user-select:none}
+.toast{cursor:pointer;position:absolute;left:10px;right:10px;bottom:10px;max-width:640px;margin:auto;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:8px 12px;box-shadow:var(--shadow);font-size:13px}
+.status{padding:5px 10px;font-size:12px;background:var(--panel);border-top:1px solid var(--line);color:var(--muted);min-height:28px}
+.status .w{color:var(--danger)}
+h2{font-size:16px;margin:4px 0 6px}
+h3{font-size:14px;margin:10px 0 6px}
+h4{font-size:13px;margin:12px 0 4px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.crit{font-size:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px}
+.slist{list-style:none;padding:0;margin:0 0 8px;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.slist button{width:100%;text-align:left;font-size:13px;padding:4px 7px}
+.card{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--panel-2)}
+.card p{margin:6px 0}
+.vtag{font-size:12px;font-weight:400;color:var(--muted)}
+.card details{font-size:13px;margin:6px 0}
+.card textarea{min-height:90px}
+.conc{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;font-size:12px}
+.conc .c{border:1px solid var(--line);border-radius:999px;padding:1px 8px;background:var(--panel)}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+.f{display:grid;grid-template-columns:62px 1fr;gap:6px;align-items:center;margin:4px 0;font-size:13px}
+.f input,.f select{width:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.anch{display:grid;grid-template-columns:repeat(3,26px);gap:3px}
+.anch button{width:26px;height:22px;padding:0;font-size:11px}
+.note{font-size:12px;color:var(--muted);margin:4px 0}
+.box{border:1px solid var(--line);border-radius:8px;padding:8px;margin:8px 0;background:var(--panel-2)}
+.box.violet{border-color:var(--violet)}
+ul.plain{list-style:none;padding:0;margin:4px 0}
+ul.plain li{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:3px 0;border-bottom:1px dashed var(--line);font-size:13px}
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);max-width:min(560px,94vw);padding:14px 16px}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+dialog menu{display:flex;justify-content:flex-end;gap:8px;padding:0;margin:12px 0 0}
+dialog table{border-collapse:collapse;font-size:12px;width:100%}
+dialog td,dialog th{border:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+/* svg */
+#cv .sheet{fill:var(--wood);stroke:var(--wood-edge);stroke-width:1.2px;vector-effect:non-scaling-stroke}
+#cv .sheet.drop{stroke:var(--accent);stroke-width:3px}
+#cv .sheet.on{stroke:var(--accent);stroke-width:2.5px}
+#cv .sheet-label{fill:var(--ink);font-family:system-ui,"Segoe UI",sans-serif;cursor:pointer}
+#cv .sheet-label.on{fill:var(--accent);font-weight:700}
+#cv .o{fill:var(--part);stroke:var(--part-edge);stroke-width:1.6px;vector-effect:non-scaling-stroke}
+#cv .ring{fill:none;stroke-width:1.3px;vector-effect:non-scaling-stroke}
+#cv .sh{vector-effect:non-scaling-stroke;stroke-width:1.3px;pointer-events:all}
+#cv .role-cut.sh{fill:var(--part);stroke:var(--part-edge);stroke-width:1.6px}
+#cv .role-groove{fill:none;stroke:var(--groove);stroke-dasharray:6 3}
+#cv .sh.role-groove{pointer-events:none}
+#cv .role-pocket{fill:var(--pocket);stroke:var(--pocket-edge)}
+#cv .role-engrave{fill:var(--engrave-fill);stroke:var(--engrave)}
+#cv text.sh{fill:var(--engrave);stroke:none;text-anchor:middle;dominant-baseline:central;font-family:system-ui,"Segoe UI",sans-serif;font-weight:600}
+#cv text.sh.long{fill:var(--danger)}
+#cv .role-relief{fill:url(#gRelief);stroke:var(--relief1)}
+#cv .role-drill{fill:var(--drill);stroke:var(--drill)}
+#cv .role-pin{fill:none;stroke:var(--pin);stroke-width:2px}
+#cv .hit{fill:transparent;stroke:none;pointer-events:all}
+#cv .hitstroke{fill:none;stroke:transparent;stroke-width:10px;vector-effect:non-scaling-stroke;pointer-events:stroke}
+#cv .dim{opacity:.28}
+#cv .face-through{opacity:.45;stroke-dasharray:3 3;fill-opacity:.25}
+#cv .face-other{opacity:.25}
+#cv .pin circle{fill:var(--panel);stroke:var(--pin);stroke-width:2px;vector-effect:non-scaling-stroke}
+#cv .pin path{stroke:var(--pin);stroke-width:1.5px;vector-effect:non-scaling-stroke}
+#cv .flipaxis{stroke:var(--pin);stroke-width:1px;stroke-dasharray:8 5;vector-effect:non-scaling-stroke}
+#cv .selbox{fill:none;stroke:var(--accent);stroke-width:1.6px;vector-effect:non-scaling-stroke}
+#cv .sib{fill:none;stroke:var(--violet);stroke-width:1.6px;stroke-dasharray:5 3;vector-effect:non-scaling-stroke}
+#cv .handle{fill:var(--panel);stroke:var(--accent);stroke-width:1.4px;vector-effect:non-scaling-stroke;cursor:pointer}
+#cv .handle.multi{stroke:var(--violet);fill:var(--violet)}
+#cv .warnbox{fill:none;stroke:var(--danger);stroke-width:1.6px;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}
+#cv .warnbox.warn{stroke:var(--warn);fill:color-mix(in srgb,var(--warn) 18%,transparent)}
+#cv .wlabel{fill:var(--danger);font-family:system-ui,sans-serif;font-weight:600}
+#cv .wlabel.warn{fill:var(--warn)}
+#cv .aline{stroke:var(--ghost);stroke-width:1.2px;stroke-dasharray:3 3;vector-effect:non-scaling-stroke;fill:none}
+#cv .adot{fill:var(--ghost)}
+#cv .alabel{fill:var(--ghost);font-family:system-ui,sans-serif;font-weight:600}
+#cv .ghost{fill:none;stroke:var(--ghost);stroke-width:1.6px;stroke-dasharray:6 4;vector-effect:non-scaling-stroke}
+#cv .glabel{fill:var(--ghost);font-family:system-ui,sans-serif;font-weight:700}
+#cv .marq{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1px;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}
+#cv .hatch{stroke:var(--pocket-edge);stroke-width:.6px;vector-effect:non-scaling-stroke}
+@media (max-width:980px){
+  body{display:block;height:auto;min-height:100vh}
+  .layout{display:flex;flex-direction:column}
+  aside{overflow:visible}
+  aside.scen{border-right:0;border-bottom:1px solid var(--line);order:1}
+  main.stage{order:2}
+  aside.insp{border-left:0;border-top:1px solid var(--line);order:3}
+  .cvwrap{flex:none;height:62vh;min-height:300px}
+  .brand{margin-right:0;width:100%}
+  .brand span{display:none}
+  header.top{padding:6px 10px;gap:6px 10px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><b>Prototip planșe: A sau D?</b><span class="muted">CNC Vector Studio 2 · aruncabil · fără motor CAM, fără rețea</span></div>
+  <div class="variant" role="radiogroup" aria-label="Varianta">
+    <button id="vA" role="radio" data-variant="A" aria-checked="true">A · Planșa e pânza</button>
+    <button id="vD" role="radio" data-variant="D" aria-checked="false">D · Piese pe foi</button>
+  </div>
+  <div class="tools">
+    <button id="bUndo" title="Anulează (Ctrl+Z)" aria-label="Anulează">↶</button>
+    <button id="bRedo" title="Refă (Ctrl+Y)" aria-label="Refă">↷</button>
+    <button id="bFit" title="Arată tot">Încadrează</button>
+    <label class="chk" title="Mutările se lipesc din 5 în 5 mm pe planșă/foaie și din 1 în 1 mm înăuntru"><input type="checkbox" id="cSnap" checked> Lipire la grilă</label>
+    <button id="bHelp">Gesturi</button>
+  </div>
+</header>
+<div class="layout">
+  <aside class="scen" id="scen" aria-label="Scenarii"></aside>
+  <main class="stage">
+    <div class="crumbs"><nav id="crumbs" aria-label="Unde ești"></nav><span id="level2" class="chip"></span></div>
+    <div id="banner" class="banner" hidden></div>
+    <div class="toolbar" id="toolbar"></div>
+    <div class="cvwrap"><svg id="cv" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" aria-label="Pânza"></svg><div id="toast" class="toast" hidden role="status"></div></div>
+    <div id="status" class="status"></div>
+  </main>
+  <aside class="insp" aria-label="Proprietăți"><div id="insp"></div><div id="lib"></div></aside>
+</div>
+<dialog id="dlg"><form method="dialog" id="dlgForm"></form></dialog>
+<noscript>Prototipul are nevoie de JavaScript.</noscript>
+<script>
+(function () {
+'use strict';
+/* ============ 0. Unelte mici ============ */
+const $ = (s, el) => (el || document).querySelector(s);
+const clone = o => JSON.parse(JSON.stringify(o));
+const r2 = v => Math.round(v * 100) / 100;
+const r1 = v => Math.round(v * 10) / 10;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = v => { const x = parseFloat(String(v).replace(',', '.')); return isFinite(x) ? x : NaN; };
+const plur = (n, one, many) => n === 1 ? '1 ' + one : n + ' ' + ((n !== 0 && (n % 100 === 0 || n % 100 >= 20)) ? 'de ' : '') + many;
+const Mx = {
+  t: (x, y) => [1, 0, 0, 1, x, y],
+  s: (x, y) => [x, 0, 0, y, 0, 0],
+  r: d => { const a = d * Math.PI / 180; const c = Math.round(Math.cos(a) * 1e9) / 1e9, s = Math.round(Math.sin(a) * 1e9) / 1e9; return [c, s, -s, c, 0, 0]; },
+  mul: (m, n) => [m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1], m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3], m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5]],
+  inv: m => { const d = m[0] * m[3] - m[1] * m[2]; return [m[3] / d, -m[1] / d, -m[2] / d, m[0] / d, (m[2] * m[5] - m[3] * m[4]) / d, (m[1] * m[4] - m[0] * m[5]) / d]; },
+  ap: (m, x, y) => [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]],
+  str: m => 'matrix(' + m.map(v => +(+v).toFixed(5)).join(' ') + ')',
+};
+function aabb(m, b) {
+  const p = [[b.x, b.y], [b.x + b.w, b.y], [b.x, b.y + b.h], [b.x + b.w, b.y + b.h]].map(q => Mx.ap(m, q[0], q[1]));
+  const xs = p.map(q => q[0]), ys = p.map(q => q[1]); const x = Math.min(...xs), y = Math.min(...ys);
+  return { x, y, w: Math.max(...xs) - x, h: Math.max(...ys) - y };
+}
+function union(a, b) { if (!a) return b; if (!b) return a; const x = Math.min(a.x, b.x), y = Math.min(a.y, b.y); return { x, y, w: Math.max(a.x + a.w, b.x + b.w) - x, h: Math.max(a.y + a.h, b.y + b.h) - y }; }
+function interBox(a, b) { const x = Math.max(a.x, b.x), y = Math.max(a.y, b.y); const w = Math.min(a.x + a.w, b.x + b.w) - x, h = Math.min(a.y + a.h, b.y + b.h) - y; return (w > 0.05 && h > 0.05) ? { x, y, w, h } : null; }
+
+/* ============ 1. Cuvintele ============ */
+const VOC = {
+  A: { sheet: 'Planșa', sheetN: 'planșă', sheetLc: 'planșa', sheets: 'Planșe', all: 'Toate planșele', concept: 'Planșă', newSheet: '+ Planșă' },
+  D: { sheet: 'Foaia', sheetN: 'foaie', sheetLc: 'foaia', sheets: 'Foi', all: 'Toate foile', concept: 'Foaie', newSheet: '+ Foaie' },
+};
+const ROLES = { cut: 'Tăiere (contur)', groove: 'Canelură', pocket: 'Buzunar', engrave: 'Gravare', relief: 'Relief', drill: 'Găurire', pin: 'Știft de aliniere' };
+const ANCH = ['nw', 'n', 'ne', 'w', 'c', 'e', 'sw', 's', 'se'];
+const ANCH_RO = { nw: 'colțul stânga-sus', n: 'marginea de sus (centrat)', ne: 'colțul dreapta-sus', w: 'marginea din stânga (centrat)', c: 'centru', e: 'marginea din dreapta (centrat)', sw: 'colțul stânga-jos', s: 'marginea de jos (centrat)', se: 'colțul dreapta-jos' };
+const ANCH_SYM = { nw: '↖', n: '↑', ne: '↗', w: '←', c: '•', e: '→', sw: '↙', s: '↓', se: '↘' };
+
+/* ============ 2. Constructori de noduri ============ */
+const estW = (s, size) => r2(Math.max(size * 0.8, 0.6 * size * [...String(s)].length));
+function T(id, name, cx, cy, text, size, ex) { const w = estW(text, size), h = r2(size * 1.25); return Object.assign({ id, type: 'text', name, x: r2(cx - w / 2), y: r2(cy - h / 2), w, h, text, size, role: 'engrave' }, ex || {}); }
+function Rc(id, name, x, y, w, h, role, ex) { return Object.assign({ id, type: 'rect', name, x, y, w, h, r: 0, role }, ex || {}); }
+function El(id, name, cx, cy, w, h, role, ex) { return Object.assign({ id, type: 'ellipse', name, x: r2(cx - w / 2), y: r2(cy - h / 2), w, h, role }, ex || {}); }
+function G(id, name, x, y, children, ex) { return Object.assign({ id, type: 'group', name, x, y, children }, ex || {}); }
+function F(id, name, w, h, r, insets, children, ex) { return Object.assign({ id, type: 'group', name, x: 0, y: 0, w, h, role: 'cut', frame: { r, insets }, children }, ex || {}); }
+function setTextGeom(n, keep) {
+  const cx = n.x + n.w / 2, cy = n.y + n.h / 2, x0 = n.x, y0 = n.y;
+  n.w = estW(n.text, n.size); n.h = r2(n.size * 1.25);
+  if (keep === 'tl') { n.x = x0; n.y = y0; } else { n.x = r2(cx - n.w / 2); n.y = r2(cy - n.h / 2); }
+}
+
+/* ============ 3. Scenariile (din LECTII.md §5.7) ============ */
+const CSV30 = ['nume', 'Ana', 'Andrei', 'Bianca', 'Cristian', 'Diana', 'Elena', 'Florin', 'Gabriela', 'Horia', 'Ioana', 'Ionuț', 'Larisa', 'Mihai', 'Mara', 'Nicoleta', 'Ovidiu', 'Paula', 'Radu', 'Sorina', 'Tudor', 'Ștefan', 'Teodora', 'Vlad', 'Valentina', 'Adrian', 'Carmen', 'Dan', 'Irina', 'Marius', 'Oana'].join('\n');
+const plate1 = (txt) => F('placuta', 'Plăcuță', 300, 200, 12, [{ d: 10, role: 'groove' }], [
+  T('text', 'Text', 150, 108, txt || 'Bine ați venit', 24, { anchor: 'c' }),
+  El('gaura', 'Gaură de agățat', 150, 28, 8, 8, 'drill', { anchor: 'n' }),
+]);
+const plate3 = () => F('placuta', 'Plăcuță', 300, 200, 12, [{ d: 10, role: 'groove' }], [
+  G('logo', 'Logo', 110, 28, [
+    El('cerc', 'Cerc', 20, 30, 40, 40, 'engrave'),
+    G('frunze', 'Frunze', 46, 0, [
+      El('frunza1', 'Frunza 1', 17, 9, 34, 16, 'engrave'),
+      El('frunza2', 'Frunza 2', 17, 41, 34, 16, 'engrave'),
+    ]),
+  ], { anchor: 'n' }),
+  T('text', 'Text', 150, 148, 'Atelier de lemn', 22, { anchor: 's' }),
+]);
+const suport4 = () => F('suport', 'Suport', 150, 100, 10, [], [El('buzunar', 'Buzunar', 75, 50, 70, 70, 'pocket', { anchor: 'c' })]);
+const suport5 = () => F('suport', 'Suport', 150, 100, 10, [{ d: 6, role: 'groove' }], [T('text', 'Text', 75, 50, 'CAFÉ', 22, { anchor: 'c' })]);
+const placutaNume = () => F('placuta', 'Plăcuță cu nume', 180, 60, 6, [{ d: 5, role: 'groove' }], [T('nume', 'Nume', 90, 30, '{nume}', 20, { anchor: 'c' })]);
+const usita = () => F('usita', 'Ușiță', 300, 200, 4, [], [El('relief', 'Relief (floare)', 150, 100, 180, 110, 'relief', { anchor: 'c', face: 'fata' })]);
+const GRID9 = [[10, 10], [170, 10], [330, 10], [10, 120], [170, 120], [330, 120], [10, 230], [170, 230], [330, 230]];
+
+const SCEN = [
+  { n: 1, title: 'Plăcuța mărită',
+    task: v => 'Plăcuța de 300×200 mm are ramă cu canelură la 10 mm, un text și o gaură de agățat. Mărește-o la 400 mm lățime: trage de mânerul din dreapta sau scrie 400 la L.',
+    hint: v => 'Un clic alege plăcuța. Liniile punctate verzi arată de ce margine se ține fiecare lucru din ramă. Când scrii 400 la L, vezi conturul fantomă înainte de Enter.',
+    observe: 'Poți spune, înainte de clic, unde ajung canelura, textul și gaura? Mărimea lor nu se schimbă: doar tu schimbi mărimi.',
+    spec: () => ({ sheets: [{ w: 600, h: 400, items: [{ x: 40, y: 40, node: plate1() }] }] }) },
+  { n: 2, title: 'Gesturile pe ramă',
+    task: v => 'Dublu-clic pe text (intri în ramă) și mută-l mai jos. Escape. Apoi Ctrl+D pe ramă. Apoi alege rama originală și apasă Delete.',
+    hint: v => 'Firul de sus arată unde ești. Ctrl+D și Delete lucrează pe ce e ales, cu tot ce e în el.',
+    observe: 'Primești același răspuns la toate trei? Rama se poartă ca un singur obiect, cu tot ce e în ea?',
+    spec: () => ({ sheets: [{ w: 600, h: 400, items: [{ x: 40, y: 40, node: plate1('Atelier') }] }] }) },
+  { n: 3, title: 'Grup în grup',
+    task: v => 'Logo-ul din plăcuță e un grup în care e alt grup (frunzele). Intră pe două niveluri (dublu-clic pe cerc, apoi încă un dublu-clic pe cerc), mută cercul, apoi ieși cu Escape până sus.',
+    hint: v => 'Ce nu e în nivelul tău se estompează. Poți sări și cu un clic pe firul de sus. Ctrl+G grupează ce ai ales; Ctrl+Shift+G desface.',
+    observe: 'Ieși cu Escape fără să te rătăcești? Firul de sus îți arată mereu unde ești?',
+    spec: () => ({ sheets: [{ w: 600, h: 400, items: [{ x: 40, y: 40, node: plate3() }] }] }) },
+  { n: 4, title: 'Suporturi pe foaie',
+    task: v => v === 'A'
+      ? 'Fă 12 suporturi și așază-le pe rânduri pe planșa de 600×400; ce nu încape trece pe planșa 2. Apoi mută unul de pe planșa 2 înapoi pe planșa 1, în fâșia liberă din dreapta.'
+      : 'Fă 12 suporturi și așază-le pe rânduri pe foaia de 600×400; ce nu încape trece pe foaia 2. Apoi mută unul de pe foaia 2 înapoi pe foaia 1, în fâșia liberă din dreapta.',
+    hint: v => (v === 'A' ? 'Alege suportul și apasă «Multiplică…» (12). ' : 'Alege suportul și apasă «Încă…» (12). ') + 'Fâșia din dreapta are 100 mm: suportul încape doar rotit (R).',
+    observe: 'Câte concepte ai avut de numit? Lista de dedesubt le numără pe cele pe care le-ai folosit.',
+    spec: () => ({ sheets: [{ w: 600, h: 400, items: [{ x: 10, y: 10, node: suport4() }] }] }) },
+  { n: 5, title: 'Piesa-sursă editată',
+    task: v => v === 'A'
+      ? 'Ai 12 suporturi cu «CAFÉ». Schimbă textul în «CEAI» pe toate. Apoi fă ca un singur suport să scrie «ZAHĂR».'
+      : 'Ai 12 suporturi cu «CAFÉ», toate din aceeași piesă. Schimbă textul în «CEAI» pe toate. Apoi fă ca un singur suport să scrie «ZAHĂR».',
+    hint: v => v === 'A'
+      ? 'În A nu există piesă-sursă: fiecare suport e o copie. Dublu-clic pe un suport, clic pe text, scrie în panoul din dreapta.'
+      : 'Dublu-clic pe un suport intră în piesă (vezi banda violet). Pentru unul singur: «Desprinde» în panoul din dreapta.',
+    observe: 'E clar când schimbi unul și când le schimbi pe toate?',
+    spec: () => ({ inst: 'scenariul pornește cu 12 instanțe', parts: { s: suport5() }, sheets: [
+      { w: 600, h: 400, items: GRID9.map(([x, y]) => ({ x, y, ref: 's' })) },
+      { w: 600, h: 400, items: GRID9.slice(0, 3).map(([x, y]) => ({ x, y, ref: 's' })) }] }) },
+  { n: 6, title: 'Plăcuțe din CSV',
+    task: v => 'Fă 30 de plăcuțe cu numele din lista CSV (alege plăcuța, apoi «Din CSV…»). Apoi mărește textul pe toate și corectează un singur nume.',
+    hint: v => v === 'A'
+      ? 'În A fiecare rând din CSV devine o copie, cu numele scris în ea.'
+      : 'În D fiecare rând devine o instanță: numele stă pe instanță (panoul din dreapta), forma și fontul stau pe piesă (dublu-clic).',
+    observe: 'Unde stă numele: pe fiecare plăcuță sau pe piesă? Ți se pare firesc?',
+    spec: () => ({ sheets: [{ w: 600, h: 400, items: [{ x: 10, y: 10, node: placutaNume() }] }] }) },
+  { n: 7, title: 'Două fețe',
+    task: v => 'Ușița are relief pe față. Pune pe spate un buzunar de 120×80 mm. Apoi mută ușița și uită-te la spate.',
+    hint: v => v === 'A'
+      ? 'În A nu există fețe: «Duplică planșa oglindit» face o planșă-copie, fără legătură cu prima. Pe ea ștergi relieful, pui buzunarul și, de mână, știfturile (cerc cu rolul «Știft»), la fel pe amândouă.'
+      : 'În D apasă «Fața: Jos». Foaia capătă fața de jos (dedesubt), cu două știfturi pe axa de întoarcere. Intră în ușiță (dublu-clic) și adaugă un dreptunghi: merge pe spate.',
+    observe: 'Ți se par mai firești două planșe oglindite, cu știfturi puse de tine (A), sau aceeași foaie cu fața de jos (D)?',
+    spec: () => ({ sheets: [{ w: 600, h: 400, items: [{ x: 80, y: 100, node: usita() }] }] }) },
+  { n: 8, title: 'Semnul unic',
+    task: v => 'Fă un semn de 1200×400 mm; placa vine deja tăiată la mărime. Fă ' + (v === 'A' ? 'planșa' : 'foaia') + ' 1200×400 (clic pe ea), scrie «ATELIER» și pune o canelură de chenar la 20 mm de margine.',
+    hint: v => 'Clic pe ' + (v === 'A' ? 'planșă' : 'foaie') + ' (sau pe numele ei) arată mărimea în dreapta. «+ Text» și «+ Dreptunghi» pun obiecte noi; rolul «Canelură» se alege din listă.',
+    observe: 'Apare al doilea nivel (piese, instanțe) fără să-l ceri?',
+    spec: () => ({ sheets: [{ w: 600, h: 400, items: [] }] }) },
+];
+
+/* ============ 4. Starea ============ */
+const UI = { v: 'A', scen: 1, states: {}, view: { x: 0, y: 0, k: 1 }, drag: null, ghost: null, space: false, toastTimer: 0, lastCopy: '' };
+const skey = (v, n) => n + v;
+function cur() { const k = skey(UI.v, UI.scen); if (!UI.states[k]) UI.states[k] = fresh(UI.v, UI.scen); return UI.states[k]; }
+function fresh(v, n) { const doc = build(v, SCEN[n - 1].spec()); return { doc, ctx: [], sel: [], sheetSel: null, undo: [], redo: [], concepts: doc.show.inst ? ['Piesă', 'Instanță'] : [], toast: '' }; }
+function build(v, spec) {
+  const doc = { v, seq: 1000, sheets: [], parts: {}, show: { inst: v === 'D' && !!spec.inst, why: (v === 'D' && spec.inst) || '' }, face: 'fata' };
+  const refs = {};
+  spec.sheets.forEach((s, i) => {
+    const sh = { id: 's' + (i + 1), name: VOC[v].sheet + ' ' + (i + 1), w: s.w, h: s.h, t: s.t || 18, flip: null, items: [] };
+    s.items.forEach((it, j) => {
+      const pid = 'p' + (i + 1) + '_' + (j + 1);
+      const node = clone(it.ref ? spec.parts[it.ref] : it.node);
+      if (v === 'A') sh.items.push({ id: pid, x: it.x, y: it.y, rot: 0, node });
+      else {
+        let partId = it.ref ? refs[it.ref] : null;
+        if (!partId) { partId = 'k' + (Object.keys(doc.parts).length + 1); doc.parts[partId] = { id: partId, name: node.name, root: node }; if (it.ref) refs[it.ref] = partId; }
+        sh.items.push({ id: pid, x: it.x, y: it.y, rot: 0, partId, fields: {} });
+      }
+    });
+    doc.sheets.push(sh);
+  });
+  return doc;
+}
+const nid = (doc, p) => (p || 'n') + (++doc.seq);
+function addPart(doc, root, name) { const id = nid(doc, 'k'); doc.parts[id] = { id, name: name || root.name || 'Piesă', root }; return id; }
+function copyName(doc, base) { const names = new Set(Object.values(doc.parts).map(p => p.name)); const b = base.replace(/ \d+$/, ''); for (let i = 2; ; i++) if (!names.has(b + ' ' + i)) return b + ' ' + i; }
+function rootOf(doc, pl) { return doc.v === 'A' ? pl.node : doc.parts[pl.partId].root; }
+function findPl(doc, pid) { for (const sh of doc.sheets) { const i = sh.items.findIndex(p => p.id === pid); if (i >= 0) return { pl: sh.items[i], sheet: sh, idx: i }; } return null; }
+function allPls(doc) { const out = []; for (const sh of doc.sheets) for (const pl of sh.items) out.push({ pl, sheet: sh }); return out; }
+function instCount(doc, partId) { let n = 0; for (const sh of doc.sheets) for (const pl of sh.items) if (pl.partId === partId) n++; return n; }
+function instIndex(doc, pl) { let n = 0; for (const sh of doc.sheets) for (const p of sh.items) if (p.partId === pl.partId) { n++; if (p === pl) return n; } return n; }
+function resolve(doc, path) {
+  const f = findPl(doc, path[0]); if (!f) return null;
+  let node = rootOf(doc, f.pl); const chain = [node];
+  for (let i = 1; i < path.length; i++) { node = (node.children || []).find(c => c.id === path[i]); if (!node) return null; chain.push(node); }
+  return { pl: f.pl, sheet: f.sheet, node, chain };
+}
+function localBBox(n) { if (n.type === 'group' && !n.frame) { let b = null; for (const c of n.children) b = union(b, nodeBBox(c)); return b || { x: 0, y: 0, w: 0, h: 0 }; } return { x: 0, y: 0, w: n.w, h: n.h }; }
+function nodeBBox(n) { if (n.type === 'group' && !n.frame) { const b = localBBox(n); return { x: b.x + n.x, y: b.y + n.y, w: b.w, h: b.h }; } return { x: n.x, y: n.y, w: n.w, h: n.h }; }
+function plMatrix(doc, pl) {
+  const root = rootOf(doc, pl);
+  let m = Mx.mul(Mx.t(pl.x, pl.y), Mx.r(pl.rot || 0));
+  if (pl.mx) { const lb = localBBox(root); const cx = lb.x + lb.w / 2; m = Mx.mul(m, Mx.mul(Mx.t(cx, 0), Mx.mul(Mx.s(-1, 1), Mx.t(-cx, 0)))); }
+  return m;
+}
+function plBBox(doc, pl) { return aabb(plMatrix(doc, pl), localBBox(rootOf(doc, pl))); }
+function views(doc) {
+  const out = []; let ox = 0;
+  for (const sh of doc.sheets) {
+    out.push({ sheet: sh, kind: 'top', ox, oy: 0, m: Mx.t(ox, 0) });
+    if (sh.flip) { const oy = sh.h + 110; out.push({ sheet: sh, kind: 'bottom', ox, oy, m: Mx.mul(Mx.t(ox + sh.w, oy), Mx.s(-1, 1)) }); }
+    ox += sh.w + 90;
+  }
+  return out;
+}
+const topView = (doc, sid) => views(doc).find(v => v.kind === 'top' && v.sheet.id === sid);
+function pathMatrix(doc, path, vw) {
+  const r = resolve(doc, path); if (!r) return null;
+  const v = vw || topView(doc, r.sheet.id);
+  let m = Mx.mul(v.m, Mx.mul(Mx.t(r.pl.x, r.pl.y), Mx.r(r.pl.rot || 0)));
+  if (r.pl.mx) { const lb = localBBox(rootOf(doc, r.pl)); const cx = lb.x + lb.w / 2; m = Mx.mul(m, Mx.mul(Mx.t(cx, 0), Mx.mul(Mx.s(-1, 1), Mx.t(-cx, 0)))); }
+  for (const n of r.chain) if (n.x || n.y) m = Mx.mul(m, Mx.t(n.x, n.y));
+  return m;
+}
+function unitAt(st, p) { const c = st.ctx; if (!c.length) return p[0]; if (p.length > c.length && c.every((id, i) => p[i] === id)) return p[c.length]; return null; }
+const isPrefix = (p, c) => p.length <= c.length && p.every((id, i) => c[i] === id);
+function unitRef(doc, ctx, u) {
+  if (!ctx.length) { const f = findPl(doc, u); if (!f) return null; return { pl: f.pl, sheet: f.sheet, node: rootOf(doc, f.pl), root: true, replace: n => { if (doc.v === 'A') f.pl.node = n; else doc.parts[f.pl.partId].root = n; } }; }
+  const r = resolve(doc, ctx); if (!r) return null; const cn = r.node; const i = (cn.children || []).findIndex(c => c.id === u); if (i < 0) return null;
+  return { pl: r.pl, sheet: r.sheet, node: cn.children[i], parent: cn, root: false, replace: n => { cn.children[i] = n; } };
+}
+function unitBBox(st, u) { const doc = st.doc; if (!st.ctx.length) { const f = findPl(doc, u); return f ? plBBox(doc, f.pl) : null; } const ref = unitRef(doc, st.ctx, u); return ref ? nodeBBox(ref.node) : null; }
+function unitWorldBBox(st, u) {
+  const doc = st.doc;
+  if (!st.ctx.length) { const f = findPl(doc, u); if (!f) return null; const v = topView(doc, f.sheet.id); const b = plBBox(doc, f.pl); return { x: b.x + v.ox, y: b.y + v.oy, w: b.w, h: b.h }; }
+  const b = unitBBox(st, u); return b ? aabb(pathMatrix(doc, st.ctx), b) : null;
+}
+function setUnitTopLeft(st, u, x, y) {
+  const b = unitBBox(st, u); const ref = unitRef(st.doc, st.ctx, u); if (!b || !ref) return;
+  if (ref.root) { ref.pl.x = r2(ref.pl.x + x - b.x); ref.pl.y = r2(ref.pl.y + y - b.y); } else { ref.node.x = r2(ref.node.x + x - b.x); ref.node.y = r2(ref.node.y + y - b.y); }
+}
+function unitPos(st, u) { const ref = unitRef(st.doc, st.ctx, u); if (!ref) return null; return ref.root ? { x: ref.pl.x, y: ref.pl.y } : { x: ref.node.x, y: ref.node.y }; }
+function setUnitPos(st, u, x, y) { const ref = unitRef(st.doc, st.ctx, u); if (!ref) return; if (ref.root) { ref.pl.x = r2(x); ref.pl.y = r2(y); } else { ref.node.x = r2(x); ref.node.y = r2(y); } }
+function textOf(doc, n, pl) { const s = n.text; if (doc.v !== 'D' || !pl || !pl.fields) return s; return s.replace(/\{(\w+)\}/g, (m0, k) => (pl.fields[k] !== undefined && pl.fields[k] !== '') ? pl.fields[k] : m0); }
+function walk(n, fn, path) { fn(n, path); if (n.children) for (const c of n.children) walk(c, fn, path.concat(c.id)); }
+function reid(doc, n) { n.id = nid(doc, 'n'); if (n.children) n.children.forEach(c => reid(doc, c)); return n; }
+function dedupe(doc, root) { const seen = new Set(); walk(root, n => { if (seen.has(n.id)) n.id = nid(doc, 'n'); seen.add(n.id); }, []); }
+function computeAnchor(frame, c) { const b = nodeBBox(c); const cx = b.x + b.w / 2, cy = b.y + b.h / 2; const hx = cx < frame.w / 3 ? 'w' : cx > frame.w * 2 / 3 ? 'e' : ''; const vy = cy < frame.h / 3 ? 'n' : cy > frame.h * 2 / 3 ? 's' : ''; return (vy + hx) || 'c'; }
+function anchorF(a) { a = a || 'c'; return { fx: a.includes('w') ? 0 : a.includes('e') ? 1 : 0.5, fy: a.includes('n') ? 0 : a.includes('s') ? 1 : 0.5 }; }
+function resizeFrameTo(n, nw, nh) {
+  const dw = nw - n.w, dh = nh - n.h;
+  for (const c of n.children) { const f = anchorF(c.anchor); c.x = r2(c.x + dw * f.fx); c.y = r2(c.y + dh * f.fy); }
+  n.w = r2(nw); n.h = r2(nh);
+}
+function scaleNode(n, s) {
+  if (n.type === 'text') { n.size = r2(n.size * s); n.w = r2(n.w * s); n.h = r2(n.h * s); return; }
+  if (n.type === 'group') {
+    if (n.frame) { n.w = r2(n.w * s); n.h = r2(n.h * s); n.frame.r = r2(n.frame.r * s); n.frame.insets.forEach(i => { i.d = r2(i.d * s); }); }
+    for (const c of n.children) { c.x = r2(c.x * s); c.y = r2(c.y * s); scaleNode(c, s); } return;
+  }
+  n.w = r2(n.w * s); n.h = r2(n.h * s); n.r = r2((n.r || 0) * s);
+}
+const minFrame = n => Math.max(4, 2 * Math.max(0, ...n.frame.insets.map(i => i.d)) + 2);
+function applyBox(st, u, node0, b0, nb, h) {
+  const ref = unitRef(st.doc, st.ctx, u); if (!ref) return;
+  const n = clone(node0);
+  if (n.type === 'group' && n.frame) {
+    const m = minFrame(n);
+    if (nb.w < m) { if (h.includes('w')) nb.x = b0.x + b0.w - m; nb.w = m; }
+    if (nb.h < m) { if (h.includes('n')) nb.y = b0.y + b0.h - m; nb.h = m; }
+    resizeFrameTo(n, nb.w, nb.h);
+  } else if (n.type === 'rect' || n.type === 'ellipse') { n.w = r2(Math.max(nb.w, 0.5)); n.h = r2(Math.max(nb.h, 0.5)); }
+  else {
+    let s = (h === 'e' || h === 'w') ? nb.w / b0.w : (h === 'n' || h === 's') ? nb.h / b0.h : Math.max(nb.w / b0.w, nb.h / b0.h);
+    s = Math.max(s, 0.05); scaleNode(n, s);
+    const W = b0.w * s, H = b0.h * s;
+    nb = { x: h.includes('w') ? b0.x + b0.w - W : (h === 'n' || h === 's') ? b0.x + (b0.w - W) / 2 : b0.x,
+           y: h.includes('n') ? b0.y + b0.h - H : (h === 'e' || h === 'w') ? b0.y + (b0.h - H) / 2 : b0.y, w: W, h: H };
+  }
+  ref.replace(n);
+  setUnitTopLeft(st, u, nb.x, nb.y);
+}
+
+/* ============ 5. Concepte, anulare, mesaje ============ */
+function useConcept(name) { const st = cur(); if (!st.concepts.includes(name)) st.concepts.push(name); }
+function snap(st) { return { doc: JSON.stringify(st.doc), ctx: st.ctx.slice(), sel: st.sel.slice(), sheetSel: st.sheetSel }; }
+function restore(st, s) { st.doc = JSON.parse(s.doc); st.ctx = s.ctx; st.sel = s.sel; st.sheetSel = s.sheetSel; }
+function commit(fn) {
+  const st = cur(); const s = snap(st);
+  let res; try { res = fn(st.doc, st); } catch (err) { restore(st, s); console.error(err); toast('Eroare în prototip: ' + err.message); render(); return; }
+  if (res === false) { restore(st, s); render(); return; }
+  st.undo.push(s); if (st.undo.length > 200) st.undo.shift(); st.redo = []; validate(st); render();
+}
+function undo() { const st = cur(); if (!st.undo.length) return; st.redo.push(snap(st)); restore(st, st.undo.pop()); validate(st); UI.ghost = null; render(); }
+function redo() { const st = cur(); if (!st.redo.length) return; st.undo.push(snap(st)); restore(st, st.redo.pop()); validate(st); UI.ghost = null; render(); }
+function validate(st) {
+  while (st.ctx.length) { const r = resolve(st.doc, st.ctx); if (r && r.node.type === 'group') break; st.ctx.pop(); }
+  st.sel = st.sel.filter(u => !!unitRef(st.doc, st.ctx, u));
+  if (st.sheetSel && !st.doc.sheets.some(s => s.id === st.sheetSel)) st.sheetSel = null;
+}
+function toast(msg) {
+  const st = cur(); st.toast = msg; const el = $('#toast'); el.textContent = msg; el.hidden = false;
+  clearTimeout(UI.toastTimer); UI.toastTimer = setTimeout(() => { el.hidden = true; }, 7000);
+}
+function reveal(doc, why) { if (doc.v !== 'D' || doc.show.inst) return; doc.show.inst = true; doc.show.why = why; useConcept('Piesă'); useConcept('Instanță'); }
+function targetSheet(st) {
+  const doc = st.doc;
+  if (st.sheetSel) return doc.sheets.find(s => s.id === st.sheetSel);
+  const id = st.ctx.length ? st.ctx[0] : (st.sel.length && !st.ctx.length ? st.sel[0] : null);
+  if (id) { const f = findPl(doc, id); if (f) return f.sheet; }
+  return doc.sheets[0];
+}
+function rootUnit(st) {
+  if (st.ctx.length) return st.ctx[0];
+  if (st.sel.length === 1) return st.sel[0];
+  const all = allPls(st.doc); return all.length === 1 ? all[0].pl.id : null;
+}
+
+/* ============ 6. Comenzile ============ */
+function escapeLevel() {
+  const st = cur(); UI.ghost = null;
+  if (st.ctx.length) { const last = st.ctx[st.ctx.length - 1]; st.ctx = st.ctx.slice(0, -1); st.sel = [last]; st.sheetSel = null; render(); return; }
+  if (st.sel.length || st.sheetSel) { st.sel = []; st.sheetSel = null; render(); }
+}
+function enterUnit(u, path) {
+  const st = cur(), doc = st.doc; const ref = unitRef(doc, st.ctx, u); if (!ref) return;
+  const n = ref.node;
+  if (n.type !== 'group') { if (n.type === 'text') { st.sel = [u]; render(); const f = $('#insp [data-f="text"]'); if (f) { f.focus(); f.select(); } } return; }
+  st.ctx = st.ctx.length ? st.ctx.concat(u) : [u];
+  st.sel = (path && path.length > st.ctx.length && st.ctx.every((id, i) => path[i] === id)) ? [path[st.ctx.length]] : [];
+  st.sheetSel = null;
+  useConcept(n.frame ? 'Ramă' : 'Grup');
+  if (doc.v === 'D' && st.ctx.length === 1 && doc.show.inst && instCount(doc, ref.pl.partId) > 1) useConcept('Piesă');
+  render();
+}
+function duplicate() {
+  const st = cur(); if (!st.sel.length) { toast('Alege întâi ce vrei să copiezi.'); return; }
+  commit(doc => {
+    const out = [];
+    if (!st.ctx.length) {
+      for (const id of st.sel) {
+        const f = findPl(doc, id); if (!f) continue; let np;
+        if (doc.v === 'A') np = { id: nid(doc, 'p'), x: f.pl.x + 20, y: f.pl.y + 20, rot: f.pl.rot, mx: f.pl.mx, node: clone(f.pl.node) };
+        else { const part = doc.parts[f.pl.partId]; const k = addPart(doc, clone(part.root), copyName(doc, part.name)); np = { id: nid(doc, 'p'), x: f.pl.x + 20, y: f.pl.y + 20, rot: f.pl.rot, partId: k, fields: clone(f.pl.fields || {}) }; }
+        f.sheet.items.splice(f.sheet.items.indexOf(f.pl) + 1, 0, np); out.push(np.id);
+      }
+      if (doc.v === 'D') toast(doc.show.inst ? 'Ctrl+D a făcut o copie separată: o piesă nouă. Pentru copii legate (care se schimbă împreună) folosește «Încă…».' : 'Ctrl+D a făcut o copie separată, cu tot ce e în ea. Pentru copii legate, care se schimbă împreună, există «Încă…».');
+      else toast('Ctrl+D a făcut o copie separată, cu tot ce e în ea.');
+    } else {
+      const cn = resolve(doc, st.ctx).node;
+      for (const id of st.sel) { const i = cn.children.findIndex(c => c.id === id); if (i < 0) continue; const c = reid(doc, clone(cn.children[i])); c.x = r2(c.x + 10); c.y = r2(c.y + 10); if (cn.frame && !c.anchorManual) c.anchor = computeAnchor(cn, c); cn.children.splice(i + 1, 0, c); out.push(c.id); }
+      toast('Copie, în același loc din arbore.');
+    }
+    st.sel = out; useConcept('Copie');
+  });
+}
+function del() {
+  const st = cur();
+  if (!st.sel.length) { if (st.sheetSel) delSheet(st.sheetSel); return; }
+  commit(doc => {
+    if (!st.ctx.length) {
+      for (const id of st.sel) { const f = findPl(doc, id); if (!f) continue; f.sheet.items.splice(f.sheet.items.indexOf(f.pl), 1); if (doc.v === 'D' && !doc.show.inst && instCount(doc, f.pl.partId) === 0) delete doc.parts[f.pl.partId]; }
+    } else { const cn = resolve(doc, st.ctx).node; cn.children = cn.children.filter(c => !st.sel.includes(c.id)); }
+    st.sel = [];
+  });
+}
+function delSheet(sid) {
+  const st = cur(); const sh = st.doc.sheets.find(s => s.id === sid); if (!sh) return;
+  if (sh.items.length) { toast(VOC[st.doc.v].sheet + ' nu e goală: mută sau șterge întâi ce e pe ea.'); return; }
+  if (st.doc.sheets.length === 1) { toast('E singura ' + VOC[st.doc.v].sheetN + '.'); return; }
+  commit(doc => { doc.sheets = doc.sheets.filter(s => s.id !== sid); st.sheetSel = null; });
+}
+function groupSel() {
+  const st = cur(); if (st.sel.length < 2) { toast('Alege cel puțin două obiecte (Shift+clic sau trage un dreptunghi pe fundal), apoi Ctrl+G.'); return; }
+  commit(doc => {
+    if (!st.ctx.length) {
+      const fs = st.sel.map(id => findPl(doc, id)).filter(Boolean); const sh = fs[0].sheet;
+      if (fs.some(f => f.sheet !== sh)) { toast('Obiectele sunt pe ' + VOC[doc.v].sheets.toLowerCase() + ' diferite.'); return false; }
+      if (fs.some(f => f.pl.rot || f.pl.mx)) { toast('În prototip, gruparea merge doar pe obiecte nerotite.'); return false; }
+      if (doc.v === 'D' && fs.some(f => instCount(doc, f.pl.partId) > 1)) { toast('Una dintre ele e instanță a unei piese cu mai multe instanțe. Desprinde-o întâi.'); return false; }
+      const bbs = fs.map(f => plBBox(doc, f.pl)); const minx = Math.min(...bbs.map(b => b.x)), miny = Math.min(...bbs.map(b => b.y));
+      const kids = fs.map(f => { const n = clone(rootOf(doc, f.pl)); n.x = r2((n.x || 0) + f.pl.x - minx); n.y = r2((n.y || 0) + f.pl.y - miny); delete n.anchor; return n; });
+      const at = Math.min(...fs.map(f => sh.items.indexOf(f.pl)));
+      for (const f of fs) { sh.items.splice(sh.items.indexOf(f.pl), 1); if (doc.v === 'D') delete doc.parts[f.pl.partId]; }
+      const g = G(nid(doc, 'g'), 'Grup', 0, 0, kids); dedupe(doc, g);
+      const pl = doc.v === 'A' ? { id: nid(doc, 'p'), x: r2(minx), y: r2(miny), rot: 0, node: g } : { id: nid(doc, 'p'), x: r2(minx), y: r2(miny), rot: 0, partId: addPart(doc, g, 'Grup'), fields: {} };
+      sh.items.splice(at, 0, pl); st.sel = [pl.id];
+    } else {
+      const cn = resolve(doc, st.ctx).node; const kids = cn.children.filter(c => st.sel.includes(c.id));
+      const b = kids.map(nodeBBox).reduce(union, null); const at = cn.children.findIndex(c => st.sel.includes(c.id));
+      const g = G(nid(doc, 'g'), 'Grup', r2(b.x), r2(b.y), kids.map(c => { c.x = r2(c.x - b.x); c.y = r2(c.y - b.y); delete c.anchor; return c; }));
+      if (cn.frame) g.anchor = computeAnchor(cn, g);
+      cn.children = cn.children.filter(c => !st.sel.includes(c.id)); cn.children.splice(at, 0, g); st.sel = [g.id];
+    }
+    useConcept('Grup');
+  });
+}
+function frameParts(doc, n) { // o ramă desfăcută: conturul și inelele devin forme simple
+  const out = [Rc(nid(doc, 'n'), (n.name || 'Ramă') + ' (contur)', 0, 0, n.w, n.h, n.role || 'cut', { r: n.frame.r })];
+  for (const i of n.frame.insets) out.push(Rc(nid(doc, 'n'), 'Inel ' + i.d + ' mm', i.d, i.d, r2(n.w - 2 * i.d), r2(n.h - 2 * i.d), i.role, { r: Math.max(n.frame.r - i.d, 0) }));
+  return out.concat(n.children);
+}
+function ungroupSel() {
+  const st = cur(); if (!st.sel.length) return;
+  commit(doc => {
+    let did = false; const out = [];
+    if (!st.ctx.length) {
+      for (const id of st.sel) {
+        const f = findPl(doc, id); if (!f) continue; const root = rootOf(doc, f.pl);
+        if (root.type !== 'group') { out.push(id); continue; }
+        if (f.pl.rot || f.pl.mx) { toast('În prototip, desfacerea merge doar pe obiecte nerotite.'); out.push(id); continue; }
+        if (doc.v === 'D' && instCount(doc, f.pl.partId) > 1) { toast('Piesa are mai multe instanțe: desfă-o din interior sau desprinde întâi instanța.'); out.push(id); continue; }
+        const kids = (root.frame ? frameParts(doc, root) : root.children).map(clone);
+        const at = f.sheet.items.indexOf(f.pl); f.sheet.items.splice(at, 1); if (doc.v === 'D') delete doc.parts[f.pl.partId];
+        kids.forEach((c, j) => {
+          const x = r2(f.pl.x + (root.x || 0) + c.x), y = r2(f.pl.y + (root.y || 0) + c.y); c.x = 0; c.y = 0; delete c.anchor;
+          const pl = doc.v === 'A' ? { id: nid(doc, 'p'), x, y, rot: 0, node: c } : { id: nid(doc, 'p'), x, y, rot: 0, partId: addPart(doc, c), fields: {} };
+          f.sheet.items.splice(at + j, 0, pl); out.push(pl.id);
+        });
+        did = true;
+      }
+    } else {
+      const cn = resolve(doc, st.ctx).node;
+      for (const id of st.sel) {
+        const i = cn.children.findIndex(c => c.id === id); const g = cn.children[i];
+        if (!g || g.type !== 'group') { out.push(id); continue; }
+        const kids = (g.frame ? frameParts(doc, g) : g.children).map(c => { c.x = r2(c.x + g.x); c.y = r2(c.y + g.y); if (cn.frame) c.anchor = computeAnchor(cn, c); else delete c.anchor; return c; });
+        cn.children.splice(i, 1, ...kids); kids.forEach(c => out.push(c.id)); did = true;
+      }
+    }
+    st.sel = out; if (!did) return false;
+  });
+}
+function rotatePl(doc, pl) { const b0 = plBBox(doc, pl); pl.rot = ((pl.rot || 0) + 90) % 360; const b1 = plBBox(doc, pl); pl.x = r2(pl.x + (b0.x + b0.w / 2) - (b1.x + b1.w / 2)); pl.y = r2(pl.y + (b0.y + b0.h / 2) - (b1.y + b1.h / 2)); }
+function rotateSel() {
+  const st = cur(); if (!st.sel.length) return;
+  if (st.ctx.length) { toast('În prototip, R rotește doar obiectele de pe ' + VOC[st.doc.v].sheetLc + ' (ieși cu Escape).'); return; }
+  commit(doc => { for (const id of st.sel) { const f = findPl(doc, id); if (f) rotatePl(doc, f.pl); } });
+}
+function nudge(dx, dy) { const st = cur(); if (!st.sel.length) return; commit(() => { for (const u of st.sel) { const p = unitPos(st, u); setUnitPos(st, u, p.x + dx, p.y + dy); } finishMoveRules(st, st.sel); }); }
+function selectAll() { const st = cur(); st.sheetSel = null; st.sel = !st.ctx.length ? allPls(st.doc).map(o => o.pl.id) : resolve(st.doc, st.ctx).node.children.map(c => c.id); render(); }
+function packRows(doc, ids, startIdx) {
+  const m = 10, g = 10; const S = doc.sheets; const W0 = S[startIdx].w, H0 = S[startIdx].h;
+  const items = []; for (const id of ids) { const f = findPl(doc, id); if (f) { f.sheet.items.splice(f.sheet.items.indexOf(f.pl), 1); items.push({ pl: f.pl, home: f.sheet }); } }
+  let si = startIdx, x = m, y = m, rowH = 0; const count = {}; const created = []; const misfit = [];
+  for (const it of items) {
+    const pl = it.pl; let sh = S[si]; const b = plBBox(doc, pl);
+    if (b.w > sh.w - 2 * m || b.h > sh.h - 2 * m) { it.home.items.push(pl); misfit.push(pl); continue; }
+    if (x + b.w > sh.w - m) { x = m; y += rowH + g; rowH = 0; }
+    if (y + b.h > sh.h - m) {
+      si++;
+      if (!S[si] || S[si].items.length) { const ns = { id: nid(doc, 's'), name: VOC[doc.v].sheet + ' ' + (S.length + 1), w: W0, h: H0, t: S[startIdx].t, flip: null, items: [] }; S.splice(si, 0, ns); created.push(ns.name); }
+      sh = S[si]; x = m; y = m; rowH = 0;
+    }
+    pl.x = r2(pl.x + x - b.x); pl.y = r2(pl.y + y - b.y); sh.items.push(pl);
+    count[sh.name] = (count[sh.name] || 0) + 1; x += b.w + g; rowH = Math.max(rowH, b.h);
+  }
+  return { count, created, misfit };
+}
+function packMsg(doc, res, n) {
+  const parts = Object.entries(res.count).map(([k, v]) => v + ' pe ' + k + (res.created.includes(k) ? ' (nouă)' : ''));
+  let s = 'Am așezat ' + n + ' pe rânduri, după dreptunghiul fiecăruia: ' + parts.join(', ') + '. Nimic nu s-a rotit sau micșorat.';
+  if (res.misfit.length) s += ' ' + res.misfit.length + ' nu încap pe o ' + VOC[doc.v].sheetN + ' de mărimea asta: au rămas pe loc.';
+  return s;
+}
+function arrange() {
+  const st = cur(); const doc = st.doc;
+  let ids, start;
+  if (!st.ctx.length && st.sel.length) { ids = st.sel.slice(); start = doc.sheets.indexOf(findPl(doc, ids[0]).sheet); }
+  else { ids = allPls(doc).map(o => o.pl.id); start = 0; }
+  if (!ids.length) { toast('Nu e nimic de așezat.'); return; }
+  commit(d => { const res = packRows(d, ids, start); st.ctx = []; st.sel = ids; useConcept('Așezare pe rânduri'); if (res.created.length) useConcept(VOC[d.v].concept); toast(packMsg(d, res, ids.length)); });
+}
+function multiply(total, pack) {
+  const st = cur(); const pid = rootUnit(st); if (!pid) { toast('Alege întâi un obiect de pe ' + VOC[st.doc.v].sheetLc + '.'); return; }
+  total = Math.max(2, Math.min(300, Math.round(total)));
+  commit(doc => {
+    const f = findPl(doc, pid); const ids = [pid]; const b = plBBox(doc, f.pl);
+    const have = doc.v === 'D' ? instCount(doc, f.pl.partId) : 1;
+    if (total <= have) { toast('Piesa are deja ' + plur(have, 'instanță', 'instanțe') + '.'); return false; }
+    for (let i = 1; i <= total - have; i++) {
+      const np = doc.v === 'A' ? { id: nid(doc, 'p'), x: f.pl.x + i * (b.w + 10), y: f.pl.y, rot: f.pl.rot, mx: f.pl.mx, node: clone(f.pl.node) }
+        : { id: nid(doc, 'p'), x: f.pl.x + i * (b.w + 10), y: f.pl.y, rot: f.pl.rot, partId: f.pl.partId, fields: clone(f.pl.fields || {}) };
+      f.sheet.items.push(np); ids.push(np.id);
+    }
+    st.ctx = []; st.sel = [pid];
+    if (doc.v === 'D') { reveal(doc, '«Încă…» ×' + total); toast('Acum sunt ' + plur(total, 'instanță', 'instanțe') + ' ale piesei «' + doc.parts[f.pl.partId].name + '». Un clic ia o instanță; dublu-clic intră în piesă și schimbă toate instanțele.'); }
+    else { useConcept('Copie'); toast('Acum sunt ' + plur(total, 'copie', 'copii') + ' separate. Dacă schimbi una, celelalte rămân la fel.'); }
+    if (pack) { const res = packRows(doc, ids, doc.sheets.indexOf(f.sheet)); useConcept('Așezare pe rânduri'); if (res.created.length) useConcept(VOC[doc.v].concept); toast(cur().toast + ' ' + packMsg(doc, res, ids.length)); }
+  });
+}
+function parseCsv(txt) {
+  const lines = String(txt).split(/\r?\n/).map(l => l.trim()).filter(Boolean); if (lines.length < 2) return null;
+  const sep = lines[0].includes(';') ? ';' : ','; const head = lines[0].split(sep).map(s => s.trim());
+  return { head, rows: lines.slice(1).map(l => { const c = l.split(sep); const o = {}; head.forEach((h, i) => { o[h] = (c[i] || '').trim(); }); return o; }) };
+}
+function placeholders(root) { const set = new Set(); walk(root, n => { if (n.type === 'text') String(n.text).replace(/\{(\w+)\}/g, (m0, k) => { set.add(k); return m0; }); }, []); return [...set]; }
+function fromCsv(txt, pack) {
+  const st = cur(); const pid = rootUnit(st); if (!pid) { toast('Alege întâi plăcuța-model de pe ' + VOC[st.doc.v].sheetLc + '.'); return; }
+  const csv = parseCsv(txt); if (!csv || !csv.rows.length) { toast('CSV-ul e gol: primul rând are numele coloanelor, apoi câte un rând pe plăcuță.'); return; }
+  commit(doc => {
+    const f = findPl(doc, pid); const root = rootOf(doc, f.pl); const keys = placeholders(root).filter(k => csv.head.includes(k));
+    if (!keys.length) { toast('Textul plăcuței nu are niciun {câmp} care să se potrivească cu o coloană din CSV (de ex. {nume}).'); return false; }
+    const ids = []; const b = plBBox(doc, f.pl); const tpl = doc.v === 'A' ? clone(f.pl.node) : null; // modelul, înainte să-l completăm
+    csv.rows.forEach((row, i) => {
+      let pl;
+      if (doc.v === 'A') {
+        const node = i === 0 ? f.pl.node : clone(tpl);
+        walk(node, n => { if (n.type === 'text' && /\{\w+\}/.test(n.text)) { n.text = n.text.replace(/\{(\w+)\}/g, (m0, k) => row[k] !== undefined ? row[k] : m0); setTextGeom(n); } }, []);
+        if (i === 0) pl = f.pl; else { pl = { id: nid(doc, 'p'), x: f.pl.x + i * (b.w + 10), y: f.pl.y, rot: f.pl.rot, node }; f.sheet.items.push(pl); }
+      } else {
+        if (i === 0) pl = f.pl; else { pl = { id: nid(doc, 'p'), x: f.pl.x + i * (b.w + 10), y: f.pl.y, rot: f.pl.rot, partId: f.pl.partId, fields: {} }; f.sheet.items.push(pl); }
+        pl.fields = {}; for (const k of keys) pl.fields[k] = row[k];
+      }
+      ids.push(pl.id);
+    });
+    st.ctx = []; st.sel = [pid]; useConcept('Câmp {…}');
+    if (doc.v === 'D') { reveal(doc, '«Din CSV…» ×' + csv.rows.length); toast('Am făcut ' + plur(csv.rows.length, 'instanță', 'instanțe') + ' ale piesei «' + doc.parts[f.pl.partId].name + '». Numele stă pe fiecare instanță; forma și fontul stau pe piesă.'); }
+    else { useConcept('Copie'); toast('Am făcut ' + plur(csv.rows.length, 'copie', 'copii') + ', fiecare cu numele scris în ea. Fiecare e separată.'); }
+    if (pack) { const res = packRows(doc, ids, doc.sheets.indexOf(f.sheet)); useConcept('Așezare pe rânduri'); if (res.created.length) useConcept(VOC[doc.v].concept); toast(cur().toast + ' ' + packMsg(doc, res, ids.length)); }
+  });
+}
+function detach(pid) {
+  commit(doc => {
+    const f = findPl(doc, pid); if (!f || doc.v !== 'D') return false; const part = doc.parts[f.pl.partId];
+    const k = addPart(doc, clone(part.root), copyName(doc, part.name)); f.pl.partId = k; useConcept('Desprindere');
+    toast('Instanța a devenit piesa separată «' + doc.parts[k].name + '». Ce schimbi în ea nu mai atinge celelalte.');
+  });
+}
+function addInstance(partId) {
+  commit(doc => {
+    const pls = allPls(doc).filter(o => o.pl.partId === partId); const sh = pls.length ? pls[pls.length - 1].sheet : targetSheet(cur());
+    const last = pls.length ? pls[pls.length - 1].pl : null; const b = last ? plBBox(doc, last) : { x: 10, y: 10, w: 0, h: 0 };
+    const np = { id: nid(doc, 'p'), x: last ? last.x + b.w + 10 : 10, y: last ? last.y : 10, rot: last ? last.rot : 0, partId, fields: last ? clone(last.fields || {}) : {} };
+    sh.items.push(np); cur().ctx = []; cur().sel = [np.id]; reveal(doc, '«+1» în lista de piese');
+    toast('Încă o instanță a piesei «' + doc.parts[partId].name + '». Dacă iese din ' + VOC[doc.v].sheetLc + ', «Așază pe rânduri» o pune la loc.');
+  });
+}
+function insertShape(kind) {
+  const st = cur();
+  commit(doc => {
+    let node;
+    const mk = (cx, cy, root) => {
+      const role = root ? (kind === 'text' ? 'engrave' : 'cut') : (doc.v === 'D' && doc.face === 'spate' ? 'pocket' : (kind === 'text' ? 'engrave' : 'engrave'));
+      if (kind === 'rect') return Rc(nid(doc, 'n'), 'Dreptunghi', r2(cx - 50), r2(cy - 30), 100, 60, role);
+      if (kind === 'ellipse') return El(nid(doc, 'n'), 'Cerc', cx, cy, 40, 40, role);
+      return T(nid(doc, 'n'), 'Text', cx, cy, 'Text', root ? 40 : 18);
+    };
+    if (!st.ctx.length) {
+      const sh = targetSheet(st); node = mk(0, 0, true); const b = nodeBBox(node); node.x = 0; node.y = 0;
+      if (doc.v === 'D' && doc.face === 'spate') node.face = 'spate';
+      const x = r2(sh.w / 2 - b.w / 2), y = r2(sh.h / 2 - b.h / 2);
+      const pl = doc.v === 'A' ? { id: nid(doc, 'p'), x, y, rot: 0, node } : { id: nid(doc, 'p'), x, y, rot: 0, partId: addPart(doc, node), fields: {} };
+      sh.items.push(pl); st.sel = [pl.id]; st.sheetSel = null;
+    } else {
+      const cn = resolve(doc, st.ctx).node; const lb = cn.frame ? { x: 0, y: 0, w: cn.w, h: cn.h } : localBBox(cn);
+      node = mk(lb.x + lb.w / 2, lb.y + lb.h / 2, false);
+      if (doc.v === 'D') node.face = doc.face === 'spate' ? 'spate' : 'fata';
+      if (cn.frame) node.anchor = computeAnchor(cn, node);
+      cn.children.push(node); st.sel = [node.id];
+      if (doc.v === 'D' && doc.face === 'spate') toast('Elementul nou e pe spate (fața de jos). Îl vezi întreg pe vederea de dedesubt; aici apare punctat.');
+    }
+  });
+}
+function addSheet() {
+  commit(doc => { const last = doc.sheets[doc.sheets.length - 1]; const ns = { id: nid(doc, 's'), name: VOC[doc.v].sheet + ' ' + (doc.sheets.length + 1), w: last.w, h: last.h, t: last.t, flip: null, items: [] }; doc.sheets.push(ns); cur().sheetSel = ns.id; cur().sel = []; cur().ctx = []; useConcept(VOC[doc.v].concept); });
+}
+function mirrorSheetA() {
+  const st = cur(); const sh0 = targetSheet(st);
+  commit(doc => {
+    const sh = doc.sheets.find(s => s.id === sh0.id);
+    const ns = { id: nid(doc, 's'), name: 'Planșa ' + (doc.sheets.length + 1) + ' (spate)', w: sh.w, h: sh.h, t: sh.t, flip: null, items: [] };
+    for (const pl of sh.items) {
+      const b = plBBox(doc, pl); const np = { id: nid(doc, 'p'), x: pl.x, y: pl.y, rot: (360 - (pl.rot || 0)) % 360, mx: !pl.mx, node: clone(pl.node) };
+      const b2 = plBBox(doc, np); np.x = r2(np.x + (sh.w - (b.x + b.w)) - b2.x); np.y = r2(np.y + b.y - b2.y); ns.items.push(np);
+    }
+    doc.sheets.splice(doc.sheets.indexOf(sh) + 1, 0, ns); st.sheetSel = ns.id; st.sel = []; st.ctx = [];
+    useConcept('Planșă'); useConcept('Copie'); useConcept('Oglindire');
+    toast('«' + ns.name + '» e o copie oglindită a planșei, fără legătură cu ea. Șterge ce nu se taie pe spate, adaugă buzunarul și pune știfturile de mână, în aceleași locuri pe amândouă.');
+  });
+}
+function setFace(face) {
+  const st = cur(); const doc0 = st.doc; if (doc0.v !== 'D') return;
+  if (face === doc0.face && (face === 'fata' || targetSheet(st).flip)) return;
+  const sid = targetSheet(st).id;
+  commit(doc => {
+    const sh = doc.sheets.find(s => s.id === sid);
+    if (face === 'spate' && !sh.flip) {
+      sh.flip = { pins: [{ x: r2(sh.w / 2), y: 25, d: 8 }, { x: r2(sh.w / 2), y: r2(sh.h - 25), d: 8 }] };
+      useConcept('Fața de jos'); useConcept('Știft');
+      toast(sh.name + ' are acum și fața de jos: o vezi dedesubt, întoarsă stânga↔dreapta, cu două știfturi pe axa de întoarcere. Ce adaugi acum într-o piesă merge pe spate.');
+    }
+    doc.face = face;
+  });
+}
+function moveToSheet(pid, sid) {
+  commit(doc => { const f = findPl(doc, pid); const to = doc.sheets.find(s => s.id === sid); if (!f || !to || f.sheet === to) return false; f.sheet.items.splice(f.sheet.items.indexOf(f.pl), 1); to.items.push(f.pl); useConcept(VOC[doc.v].concept); toast('Mutat pe ' + to.name + ', în același loc față de colțul ei.'); });
+}
+function finishMoveRules(st, units) {
+  if (!st.ctx.length) return;
+  const cn = resolve(st.doc, st.ctx).node; if (!cn.frame) return;
+  for (const u of units) { const c = cn.children.find(x => x.id === u); if (c && !c.anchorManual) c.anchor = computeAnchor(cn, c); }
+}
+
+/* ============ 7. Avertismente (niciodată reparate în tăcere) ============ */
+function warnings(doc) {
+  const out = [];
+  for (const sh of doc.sheets) {
+    const v = topView(doc, sh.id); const bbs = sh.items.map(pl => ({ pl, b: plBBox(doc, pl) }));
+    for (const { pl, b } of bbs) {
+      const over = Math.max(-b.x, -b.y, b.x + b.w - sh.w, b.y + b.h - sh.h);
+      const nm = nameOfPl(doc, pl);
+      if (over > 0.05) out.push({ cls: '', m: v.m, b, msg: nm + ' iese din ' + sh.name + ' cu ' + r1(over) + ' mm' });
+      const root = rootOf(doc, pl);
+      walk(root, (n, path) => {
+        if (n.type !== 'group' || !n.frame) return;
+        const fm = pathMatrix(doc, [pl.id].concat(path));
+        for (const c of n.children) { const cb = nodeBBox(c); const o = Math.max(-cb.x, -cb.y, cb.x + cb.w - n.w, cb.y + cb.h - n.h); if (o > 0.05) out.push({ cls: '', m: fm, b: cb, msg: (c.name || 'Element') + ' iese din «' + (n.name || 'ramă') + '» cu ' + r1(o) + ' mm' }); }
+        for (const ins of n.frame.insets) if (n.w - 2 * ins.d <= 0 || n.h - 2 * ins.d <= 0) out.push({ cls: '', m: fm, b: { x: 0, y: 0, w: n.w, h: n.h }, msg: 'Inelul de ' + ins.d + ' mm nu mai încape în «' + (n.name || 'ramă') + '»' });
+        if (doc.v === 'D' && pl.fields) for (const c of n.children) if (c.type === 'text' && /\{\w+\}/.test(c.text)) {
+          const str = textOf(doc, c, pl); const need = estW(str, c.size); const room = n.w - 2 * Math.max(0, ...n.frame.insets.map(i => i.d));
+          if (str !== c.text && need > room) out.push({ cls: '', m: fm, b: nodeBBox(c), msg: '«' + str + '» nu încape în «' + (n.name || 'ramă') + '» (' + r1(need) + ' mm, loc ' + r1(room) + ' mm)' });
+        }
+      }, []);
+      if (doc.v === 'D' && !sh.flip) { let back = false; walk(root, n => { if (n.face === 'spate') back = true; }, []); if (back) out.push({ cls: 'warn', m: v.m, b, msg: nm + ' are elemente pe spate, dar ' + sh.name + ' n-are fața de jos' }); }
+    }
+    // suprapunerea contează doar între lucruri care se decupează (au contur de tăiere); gravurile pe același semn se pot suprapune
+    for (let i = 0; i < bbs.length; i++) for (let j = i + 1; j < bbs.length; j++) { if (!hasCut(rootOf(doc, bbs[i].pl)) || !hasCut(rootOf(doc, bbs[j].pl))) continue; const ib = interBox(bbs[i].b, bbs[j].b); if (ib) out.push({ cls: 'warn', m: v.m, b: ib, msg: nameOfPl(doc, bbs[i].pl) + ' și ' + nameOfPl(doc, bbs[j].pl) + ' se suprapun pe ' + sh.name }); }
+  }
+  return out;
+}
+function hasCut(n) { if (n.type === 'group') return !!n.frame || n.children.some(hasCut); return n.role === 'cut'; }
+function nameOfPl(doc, pl) { const r = rootOf(doc, pl); if (doc.v === 'D') return '«' + doc.parts[pl.partId].name + '»'; return '«' + (r.name || r.type) + '»'; }
+
+/* ============ 8. Desenul ============ */
+const svg = $('#cv');
+function c2w(cx, cy) { const r = svg.getBoundingClientRect(); return [UI.view.x + (cx - r.left) / UI.view.k, UI.view.y + (cy - r.top) / UI.view.k]; }
+function w2c(wx, wy) { const r = svg.getBoundingClientRect(); return [r.left + (wx - UI.view.x) * UI.view.k, r.top + (wy - UI.view.y) * UI.view.k]; }
+function setViewBox() { const r = svg.getBoundingClientRect(); svg.setAttribute('viewBox', [UI.view.x, UI.view.y, Math.max(1, r.width) / UI.view.k, Math.max(1, r.height) / UI.view.k].map(v => +v.toFixed(4)).join(' ')); }
+function fit() {
+  const doc = cur().doc; let b = null;
+  for (const v of views(doc)) b = union(b, { x: v.ox, y: v.oy - 30, w: v.sheet.w, h: v.sheet.h + 30 });
+  for (const o of allPls(doc)) { const v = topView(doc, o.sheet.id); const pb = plBBox(doc, o.pl); b = union(b, { x: pb.x + v.ox, y: pb.y + v.oy, w: pb.w, h: pb.h }); }
+  const r = svg.getBoundingClientRect(); const W = Math.max(200, r.width), H = Math.max(200, r.height); const pad = 30;
+  const k = Math.min(W / (b.w + 2 * pad), H / (b.h + 2 * pad));
+  UI.view.k = k; UI.view.x = b.x - (W / k - b.w) / 2; UI.view.y = b.y - (H / k - b.h) / 2; setViewBox();
+}
+function faceCls(doc, n, vw) {
+  if (doc.v !== 'D' || n.type === 'group') return '';
+  const back = n.face === 'spate';
+  if (vw.kind === 'bottom') return back ? '' : ' face-through';
+  if (doc.face === 'spate' && doc.sheets.some(s => s.flip)) return back ? '' : ' face-other';
+  return back ? ' face-through' : '';
+}
+function relation(path, ctx) { if (!ctx.length) return 'in'; if (path.length > ctx.length && ctx.every((id, i) => path[i] === id)) return 'in'; if (isPrefix(path, ctx)) return 'anc'; return 'out'; }
+function renderNode(doc, st, n, path, pl, vw, dimAbove) {
+  const dp = esc(path.join('/')); let dim = '';
+  if (!dimAbove && vw.kind === 'top' && st.ctx.length > 1 && st.ctx[0] === pl.id && relation(path, st.ctx) === 'out') { dim = ' dim'; dimAbove = true; }
+  const fc = faceCls(doc, n, vw);
+  const dpa = vw.kind === 'top' ? ` data-path="${dp}"` : '';
+  if (n.type === 'group') {
+    let s = `<g class="grp${dim}"${n.x || n.y ? ` transform="translate(${n.x} ${n.y})"` : ''}>`;
+    if (n.frame) {
+      s += `<rect${dpa} class="o" x="0" y="0" width="${n.w}" height="${n.h}" rx="${n.frame.r}"/>`;
+      for (const ins of n.frame.insets) { const w = r2(n.w - 2 * ins.d), h = r2(n.h - 2 * ins.d); if (w > 0 && h > 0) s += `<rect class="ring role-${ins.role}" x="${ins.d}" y="${ins.d}" width="${w}" height="${h}" rx="${Math.max(n.frame.r - ins.d, 0)}" pointer-events="none"/>`; }
+    }
+    for (const c of n.children) s += renderNode(doc, st, c, path.concat(c.id), pl, vw, dimAbove);
+    return s + '</g>';
+  }
+  const cls = `sh role-${n.role}${fc}${dim}`;
+  if (n.type === 'rect') {
+    const base = `x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="${n.r || 0}"`;
+    if (n.role === 'groove') return `<rect class="${cls}" ${base}/><rect${dpa} class="hitstroke" ${base}/>`;
+    return `<rect${dpa} class="${cls}" ${base}/>`;
+  }
+  if (n.type === 'ellipse') {
+    const base = `cx="${r2(n.x + n.w / 2)}" cy="${r2(n.y + n.h / 2)}" rx="${r2(n.w / 2)}" ry="${r2(n.h / 2)}"`;
+    if (n.role === 'groove' || n.role === 'pin') return `<ellipse class="${cls}" ${base}/><ellipse${dpa} class="hitstroke" ${base}/>` + (n.role === 'pin' ? `<path class="${cls}" d="M${r2(n.x)} ${r2(n.y + n.h / 2)}H${r2(n.x + n.w)}M${r2(n.x + n.w / 2)} ${r2(n.y)}V${r2(n.y + n.h)}" pointer-events="none"/>` : '');
+    return `<ellipse${dpa} class="${cls}" ${base}/>`;
+  }
+  if (n.type === 'text') {
+    const str = textOf(doc, n, pl); const long = doc.v === 'D' && str !== n.text && estW(str, n.size) > n.w * 1.6;
+    return `<rect${dpa} class="hit${dim}" x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}"/><text${dpa} class="${cls}${long ? ' long' : ''}" x="${r2(n.x + n.w / 2)}" y="${r2(n.y + n.h / 2)}" font-size="${n.size}">${esc(str)}</text>`;
+  }
+  return '';
+}
+function renderSVG() {
+  const st = cur(), doc = st.doc, k = UI.view.k; const fs = 12 / k; const vws = views(doc);
+  let s = `<defs><radialGradient id="gRelief" cx="50%" cy="45%" r="60%"><stop offset="0" style="stop-color:var(--relief2)"/><stop offset="1" style="stop-color:var(--relief1)"/></radialGradient></defs>`;
+  for (const vw of vws) {
+    const sh = vw.sheet; const top = vw.kind === 'top';
+    const drop = UI.drag && UI.drag.mode === 'move' && UI.drag.drop === sh.id && top;
+    const lab = top ? `${esc(sh.name)} · ${sh.w}×${sh.h}×${sh.t} mm` : `${esc(sh.name)} · fața de jos, întoarsă stânga↔dreapta (doar vedere)`;
+    s += `<text class="sheet-label${st.sheetSel === sh.id && top ? ' on' : ''}"${top ? ` data-sheet-label="${sh.id}"` : ''} x="${vw.ox}" y="${r2(vw.oy - 8 / k)}" font-size="${r2(fs * 1.1)}">${lab}</text>`;
+    s += `<g class="view v-${vw.kind}" transform="${Mx.str(vw.m)}"${top ? '' : ' pointer-events="none"'}>`;
+    s += `<rect class="sheet${drop ? ' drop' : ''}${st.sheetSel === sh.id && top ? ' on' : ''}"${top ? ` data-sheet="${sh.id}"` : ''} x="0" y="0" width="${sh.w}" height="${sh.h}"/>`;
+    for (const pl of sh.items) {
+      const inCtx = !st.ctx.length || st.ctx[0] === pl.id;
+      s += `<g class="pl${!inCtx && top ? ' dim' : ''}" transform="${Mx.str(plMatrix(doc, pl))}">` + renderNode(doc, st, rootOf(doc, pl), [pl.id], pl, vw, !inCtx) + '</g>';
+    }
+    if (sh.flip) {
+      if (top) s += `<line class="flipaxis" x1="${sh.w / 2}" y1="0" x2="${sh.w / 2}" y2="${sh.h}"/>`;
+      for (const p of sh.flip.pins) s += `<g class="pin"><circle cx="${p.x}" cy="${p.y}" r="${p.d / 2}"/><path d="M${p.x - p.d} ${p.y}H${p.x + p.d}M${p.x} ${p.y - p.d}V${p.y + p.d}"/></g>`;
+    }
+    s += '</g>';
+  }
+  s += renderOverlay(st, fs);
+  svg.innerHTML = s;
+  setViewBox();
+}
+function boxSvg(cls, b, extra) { return `<rect class="${cls}" x="${r2(b.x)}" y="${r2(b.y)}" width="${r2(Math.max(b.w, 0.01))}" height="${r2(Math.max(b.h, 0.01))}"${extra || ''}/>`; }
+function anchorsSvg(frame, m, fs) {
+  let s = `<g transform="${Mx.str(m)}">`;
+  for (const c of frame.children) {
+    const b = nodeBBox(c); const a = c.anchor || 'c'; const f = anchorF(a);
+    const ax = f.fx * frame.w, ay = f.fy * frame.h, cx = b.x + f.fx * b.w, cy = b.y + f.fy * b.h;
+    s += `<line class="aline" x1="${r2(ax)}" y1="${r2(ay)}" x2="${r2(cx)}" y2="${r2(cy)}"/><circle class="adot" cx="${r2(ax)}" cy="${r2(ay)}" r="${r2(3 / UI.view.k * 1.2)}"/>`;
+    const parts = []; if (f.fx === 0) parts.push('←' + r1(b.x)); if (f.fx === 1) parts.push(r1(frame.w - b.x - b.w) + '→'); if (f.fy === 0) parts.push('↑' + r1(b.y)); if (f.fy === 1) parts.push(r1(frame.h - b.y - b.h) + '↓');
+    const lab = a === 'c' ? 'centru' : parts.join(' ');
+    s += `<text class="alabel" x="${r2((ax + cx) / 2 + 4 / UI.view.k)}" y="${r2((ay + cy) / 2 - 4 / UI.view.k)}" font-size="${r2(fs * 0.85)}">${esc(lab)}</text>`;
+  }
+  frame.frame.insets.forEach((ins, i) => { s += `<text class="alabel" x="${r2(ins.d + 3 / UI.view.k)}" y="${r2(ins.d + fs * (1 + i))}" font-size="${r2(fs * 0.8)}">inel ${ins.d} mm</text>`; });
+  return s + '</g>';
+}
+function renderOverlay(st, fs) {
+  const doc = st.doc, k = UI.view.k; let s = '<g class="ovl" pointer-events="none">';
+  // avertismente
+  const ws = warnings(doc); st.warn = ws;
+  for (const w of ws) s += `<g transform="${Mx.str(w.m)}">${boxSvg('warnbox ' + w.cls, w.b)}</g>`;
+  // instanțele-surori (D)
+  if (doc.v === 'D' && doc.show.inst) {
+    let partId = null, self = null;
+    if (st.ctx.length) { const f = findPl(doc, st.ctx[0]); if (f) { partId = f.pl.partId; self = f.pl.id; } }
+    else if (st.sel.length === 1) { const f = findPl(doc, st.sel[0]); if (f) { partId = f.pl.partId; self = f.pl.id; } }
+    if (partId && instCount(doc, partId) > 1) for (const o of allPls(doc)) if (o.pl.partId === partId && o.pl.id !== self) { const v = topView(doc, o.sheet.id); const b = plBBox(doc, o.pl); s += boxSvg('sib', { x: b.x + v.ox - 2 / k, y: b.y + v.oy - 2 / k, w: b.w + 4 / k, h: b.h + 4 / k }); }
+  }
+  // selecția
+  let handles = '';
+  if (st.ctx.length) {
+    const m = pathMatrix(doc, st.ctx); const cn = resolve(doc, st.ctx).node;
+    s += `<g transform="${Mx.str(m)}">`;
+    for (const u of st.sel) { const b = unitBBox(st, u); if (b) s += boxSvg('selbox', b); }
+    s += '</g>';
+    if (cn.frame && (UI.drag && UI.drag.mode === 'resize' ? false : true)) s += anchorsSvg(cn, m, fs);
+    if (st.sel.length === 1) {
+      const ref = unitRef(doc, st.ctx, st.sel[0]); const b = unitBBox(st, st.sel[0]);
+      if (ref && ref.node.frame) s += anchorsSvg(ref.node, Mx.mul(m, Mx.t(ref.node.x, ref.node.y)), fs);
+      if (b) handles = `<g transform="${Mx.str(m)}">` + handlesSvg(b, false) + '</g>';
+    }
+  } else {
+    for (const u of st.sel) { const b = unitWorldBBox(st, u); if (b) s += boxSvg('selbox', { x: b.x - 1 / k, y: b.y - 1 / k, w: b.w + 2 / k, h: b.h + 2 / k }); }
+    if (st.sel.length === 1) {
+      const f = findPl(doc, st.sel[0]);
+      if (f) {
+        const root = rootOf(doc, f.pl); const v = topView(doc, f.sheet.id);
+        if (root.frame && !f.pl.mx) s += anchorsSvg(root, Mx.mul(v.m, plMatrix(doc, f.pl)), fs);
+        if (!f.pl.rot && !f.pl.mx) { const b = unitWorldBBox(st, st.sel[0]); const multi = doc.v === 'D' && doc.show.inst && instCount(doc, f.pl.partId) > 1; handles = handlesSvg(b, multi); }
+      }
+    }
+  }
+  // fantoma (L/Î tastate)
+  if (UI.ghost && st.sel.length === 1 && st.sel[0] === UI.ghost.u) {
+    const ref = unitRef(doc, st.ctx, UI.ghost.u);
+    if (ref && ref.node.frame) {
+      const g = clone(ref.node); resizeFrameTo(g, UI.ghost.w, UI.ghost.h);
+      let m; if (ref.root) { const v = topView(doc, ref.sheet.id); m = Mx.mul(v.m, plMatrix(doc, ref.pl)); } else m = Mx.mul(pathMatrix(doc, st.ctx), Mx.t(ref.node.x, ref.node.y));
+      s += `<g transform="${Mx.str(m)}">` + boxSvg('ghost', { x: 0, y: 0, w: g.w, h: g.h }, ` rx="${g.frame.r}"`);
+      for (const ins of g.frame.insets) s += boxSvg('ghost', { x: ins.d, y: ins.d, w: g.w - 2 * ins.d, h: g.h - 2 * ins.d });
+      for (const c of g.children) s += boxSvg('ghost', nodeBBox(c));
+      s += `<text class="glabel" x="0" y="${r2(g.h + fs * 1.4)}" font-size="${r2(fs)}">Previzualizare ${r1(g.w)}×${r1(g.h)}: Enter aplică, Escape renunță</text></g>`;
+    }
+  }
+  if (UI.drag && UI.drag.mode === 'marquee' && UI.drag.moved) { const d = UI.drag; s += boxSvg('marq', { x: Math.min(d.wx, d.x2), y: Math.min(d.wy, d.y2), w: Math.abs(d.x2 - d.wx), h: Math.abs(d.y2 - d.wy) }); }
+  // etichetele avertismentelor (scurte, lângă cutie)
+  const seen = new Set();
+  for (const w of ws) { if (seen.has(w.msg)) continue; seen.add(w.msg); const b = aabb(w.m, w.b); s += `<text class="wlabel ${w.cls}" x="${r2(b.x)}" y="${r2(b.y + b.h + fs * 1.1)}" font-size="${r2(fs * 0.85)}">⚠ ${esc(w.msg)}</text>`; }
+  s += '</g>';
+  return s + handles;
+}
+function handlesSvg(b, multi) {
+  const k = UI.view.k; const hs = 9 / k; const pts = { nw: [0, 0], n: [0.5, 0], ne: [1, 0], e: [1, 0.5], se: [1, 1], s: [0.5, 1], sw: [0, 1], w: [0, 0.5] };
+  let s = '<g class="handles">';
+  for (const [h, [fx, fy]] of Object.entries(pts)) s += `<rect data-handle="${h}" class="handle${multi ? ' multi' : ''}" x="${r2(b.x + fx * b.w - hs / 2)}" y="${r2(b.y + fy * b.h - hs / 2)}" width="${r2(hs)}" height="${r2(hs)}"/>`;
+  return s + '</g>';
+}
+
+/* ============ 9. Panourile din jur ============ */
+function renderCrumbs() {
+  const st = cur(), doc = st.doc; const items = [];
+  if (!st.ctx.length) items.push({ label: doc.sheets.length === 1 ? doc.sheets[0].name : VOC[doc.v].all, lvl: 0 });
+  else {
+    const r = resolve(doc, st.ctx); items.push({ label: r.sheet.name, lvl: 0 });
+    r.chain.forEach((n, i) => {
+      let label = n.name || n.type;
+      if (i === 0 && doc.v === 'D' && doc.show.inst) { const c = instCount(doc, r.pl.partId); label = doc.parts[r.pl.partId].name + ' · piesă (' + plur(c, 'instanță', 'instanțe') + ')'; }
+      items.push({ label, lvl: i + 1 });
+    });
+  }
+  $('#crumbs').innerHTML = items.map((p, i) => `<button data-lvl="${p.lvl}"${i === items.length - 1 ? ' class="cur" aria-current="true"' : ''}>${esc(p.label)}</button>`).join('<span class="sep">›</span>');
+  const chip = $('#level2');
+  if (doc.v === 'A') { chip.textContent = 'A: un singur nivel; planșa e pânza'; chip.className = 'chip'; }
+  else { const flips = doc.sheets.filter(s => s.flip).map(s => s.name); chip.textContent = (doc.show.inst ? 'Nivelul 2 (piese, instanțe): vizibil, apărut la ' + doc.show.why : 'Nivelul 2 (piese, instanțe): ascuns') + (flips.length ? ' · fața de jos: ' + flips.join(', ') : ''); chip.className = 'chip' + (doc.show.inst || flips.length ? ' lit' : ''); }
+}
+function renderBanner() {
+  const st = cur(), doc = st.doc; const el = $('#banner'); let h = '';
+  if (doc.v === 'D' && doc.show.inst) {
+    let f = null; if (st.ctx.length) f = findPl(doc, st.ctx[0]);
+    const resizing = UI.drag && UI.drag.mode === 'resize' && !st.ctx.length;
+    if (resizing) f = findPl(doc, st.sel[0]);
+    if (f) { const c = instCount(doc, f.pl.partId); const nm = doc.parts[f.pl.partId].name;
+      if (c > 1 && resizing) h = `<b>Schimbi mărimea piesei «${esc(nm)}»:</b> se schimbă toate cele ${plur(c, 'instanță', 'instanțe')} (conturate cu violet).`;
+      else if (c > 1) h = `<span><b>Editezi piesa «${esc(nm)}»:</b> ce schimbi apare pe toate cele ${plur(c, 'instanță', 'instanțe')} (conturate cu violet).</span><button data-act="detach-ctx">Doar aceasta: desprinde-o</button>`; }
+  }
+  el.innerHTML = h; el.hidden = !h;
+}
+function renderToolbar() {
+  const st = cur(), doc = st.doc, D = doc.v === 'D';
+  let h = `<button data-act="ins-rect">+ Dreptunghi</button><button data-act="ins-ellipse">+ Cerc</button><button data-act="ins-text">+ Text</button><span class="sep"></span>`;
+  h += `<button data-act="group" title="Ctrl+G">Grupează</button><button data-act="ungroup" title="Ctrl+Shift+G">Desface</button><span class="sep"></span>`;
+  h += `<button data-act="arrange" title="Pe rânduri, după dreptunghiul fiecăruia; surplusul trece pe ${VOC[doc.v].sheetLc} următoare">Așază pe rânduri</button>`;
+  h += D ? `<button data-act="more">Încă… ${doc.show.inst ? '(instanțe)' : '(copii legate)'}</button>` : `<button data-act="more">Multiplică…</button>`;
+  h += `<button data-act="csv">Din CSV…</button><span class="sep"></span><button data-act="add-sheet">${VOC[doc.v].newSheet}</button>`;
+  if (D) h += `<span class="seg" role="group" aria-label="Fața"><span>Fața:</span><button data-act="face-fata" class="${doc.face === 'fata' ? 'on' : ''}">Sus</button><button data-act="face-spate" class="${doc.face === 'spate' ? 'on' : ''}">Jos</button></span>`;
+  else h += `<button data-act="mirror-sheet">Duplică planșa oglindit</button>`;
+  $('#toolbar').innerHTML = h;
+  $('#bUndo').disabled = !st.undo.length; $('#bRedo').disabled = !st.redo.length;
+}
+function fld(label, f, val, type, extra) { return `<label class="f"><span>${label}</span><input data-f="${f}" type="${type || 'number'}" step="any" value="${esc(val)}"${extra || ''}></label>`; }
+function inspector() {
+  const st = cur(), doc = st.doc, voc = VOC[doc.v]; let h = '';
+  if (st.sheetSel) {
+    const sh = doc.sheets.find(s => s.id === st.sheetSel);
+    h += `<h3>${esc(sh.name)} <span class="muted">(${voc.sheetN}${doc.v === 'A' ? ' = materialul și pânza' : ' = materialul'})</span></h3>`;
+    h += fld('Nume', 'name', sh.name, 'text') + `<div class="grid2">${fld('L (mm)', 'w', sh.w)}${fld('Î (mm)', 'h', sh.h)}</div>` + fld('Grosime', 't', sh.t);
+    h += `<p class="note">Pe ${voc.sheetLc} sunt ${plur(sh.items.length, 'obiect', 'obiecte')}. Dacă o micșorezi, nimic nu se micșorează odată cu ea: vezi doar avertismente.</p>`;
+    h += `<div class="row">${doc.v === 'A' ? '<button data-act="mirror-sheet">Duplică planșa oglindit</button>' : (sh.flip ? '<button data-act="unflip">Scoate fața de jos</button>' : '<button data-act="face-spate">Adaugă fața de jos</button>')}<button data-act="del-sheet">Șterge ${voc.sheetLc}</button></div>`;
+  } else if (st.sel.length > 1) {
+    h += `<h3>${plur(st.sel.length, 'obiect ales', 'obiecte alese')}</h3><div class="row"><button data-act="group">Grupează (Ctrl+G)</button>${!st.ctx.length ? '<button data-act="arrange">Așază pe rânduri</button>' : ''}<button data-act="dup">Ctrl+D</button><button data-act="del">Șterge</button></div>`;
+  } else if (st.sel.length === 1) {
+    const u = st.sel[0]; const ref = unitRef(doc, st.ctx, u); const n = ref.node; const b = unitBBox(st, u);
+    const kind = n.type === 'group' ? (n.frame ? 'Ramă' : 'Grup') : n.type === 'text' ? 'Text' : n.type === 'rect' ? 'Dreptunghi' : 'Cerc / elipsă';
+    const multi = doc.v === 'D' && ref.root && doc.show.inst && instCount(doc, ref.pl.partId) > 1;
+    h += `<h3>${kind} «${esc(n.name || '')}»</h3>`;
+    if (ref.root && doc.v === 'D' && doc.show.inst) {
+      const c = instCount(doc, ref.pl.partId);
+      h += `<div class="box violet"><b>Instanță a piesei «${esc(doc.parts[ref.pl.partId].name)}»</b> — ${instIndex(doc, ref.pl)} din ${c}.<div class="row"><button data-act="part-edit">Editează piesa (${c === 1 ? 'singura instanță' : 'toate ' + c})</button>${c > 1 ? '<button data-act="detach">Desprinde: doar aceasta</button>' : ''}<button data-act="more">Încă…</button></div>`;
+      const keys = placeholders(n);
+      if (keys.length) h += `<p class="note">Valorile de mai jos stau pe această instanță. Forma, fontul și mărimea stau pe piesă.</p>` + keys.map(k2 => fld('{' + esc(k2) + '}', 'field:' + k2, (ref.pl.fields || {})[k2] || '', 'text')).join('');
+      h += `</div>`;
+    }
+    const rot = ref.root && (ref.pl.rot || ref.pl.mx);
+    h += `<div class="grid2">${fld('X', 'x', r1(b.x))}${fld('Y', 'y', r1(b.y))}${fld('L', 'w', r1(b.w), 'number', rot ? ' disabled' : '')}${fld('Î', 'h', r1(b.h), 'number', rot ? ' disabled' : '')}</div>`;
+    if (multi) h += `<p class="note">L și Î sunt mărimea piesei: dacă le schimbi, se schimbă toate cele ${instCount(doc, ref.pl.partId)}.</p>`;
+    if (rot) h += `<p class="note">Rotit${ref.pl.mx ? ' / oglindit' : ''}: în prototip, mărimea se schimbă din interior sau înainte de rotire.</p>`;
+    if (n.frame) {
+      h += `<p class="note">Când mărești rama, ce e în ea își păstrează mărimea și distanța față de marginea de care se ține (liniile verzi). Inelele rămân la aceeași distanță de contur.</p>`;
+      h += `<h4>Inele (contururi paralele)</h4>` + n.frame.insets.map((ins, i) => `<div class="row"><input data-f="ins:${i}" type="number" step="any" value="${ins.d}" style="width:70px" aria-label="Distanța inelului ${i + 1}"> mm <select data-f="insrole:${i}">${Object.entries(ROLES).map(([k2, v]) => `<option value="${k2}"${k2 === ins.role ? ' selected' : ''}>${v}</option>`).join('')}</select><button data-act="ins-del" data-i="${i}" aria-label="Scoate inelul">×</button></div>`).join('') + `<button data-act="ins-add">+ inel</button>`;
+    }
+    if (n.type === 'text') { h += fld('Text', 'text', n.text, 'text') + fld('Mărime', 'size', n.size); if (doc.v === 'D' && /\{\w+\}/.test(n.text)) h += `<p class="note">Acoladele marchează un câmp: fiecare instanță își pune valoarea ei.</p>`; }
+    if (n.type !== 'group') h += `<label class="f"><span>Rol</span><select data-f="role">${Object.entries(ROLES).map(([k2, v]) => `<option value="${k2}"${k2 === n.role ? ' selected' : ''}>${v}</option>`).join('')}</select></label>`;
+    if (!ref.root && ref.parent && ref.parent.frame) {
+      const a = n.anchor || 'c';
+      h += `<h4>Se ține de</h4><div class="row"><div class="anch" role="group" aria-label="Ancora">${ANCH.map(x => `<button data-act="anchor" data-a="${x}" class="${x === a ? 'on' : ''}" title="${ANCH_RO[x]}">${ANCH_SYM[x]}</button>`).join('')}</div><span class="note">${ANCH_RO[a]}${n.anchorManual ? ' (aleasă de tine)' : ' (din locul unde l-ai pus)'}</span></div>`;
+    }
+    if (doc.v === 'D' && !ref.root && n.type !== 'group' && (doc.sheets.some(s => s.flip) || n.face === 'spate')) h += `<label class="f"><span>Fața</span><select data-f="face"><option value="fata"${n.face !== 'spate' ? ' selected' : ''}>față (sus)</option><option value="spate"${n.face === 'spate' ? ' selected' : ''}>spate (jos)</option></select></label>`;
+    if (ref.root) {
+      h += `<div class="row"><span class="note">Rotire: ${ref.pl.rot || 0}°${ref.pl.mx ? ', oglindit' : ''}</span><button data-act="rot">↻ 90° (R)</button></div>`;
+      if (doc.sheets.length > 1) h += `<label class="f"><span>Pe ${voc.sheetLc}</span><select data-f="sheet">${doc.sheets.map(s => `<option value="${s.id}"${s === ref.sheet ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select></label>`;
+      if (doc.v === 'D' && !doc.show.inst) h += `<div class="row"><button data-act="more">Încă… (copii legate)</button></div>`;
+    }
+    if (n.type === 'group') h += `<p class="note">Dublu-clic intră în ${n.frame ? 'ramă' : 'grup'}. Ctrl+D și Delete iau tot ce e în ${n.frame ? 'ea' : 'el'}.</p>`;
+  } else {
+    if (st.ctx.length) { const r = resolve(doc, st.ctx); h += `<h3>Ești în «${esc(r.node.name || '')}»</h3><p class="note">Clic alege ce e înăuntru. Escape iese un nivel. Ce e în afară e estompat.</p>`; }
+    else h += `<h3>Nimic ales</h3><p class="note">Clic alege. Dublu-clic intră. Escape iese. Trage pe fundal ca să alegi mai multe. Rotița mărește; trage în afara ${voc.sheets.toLowerCase()} ca să muți vederea.</p>`;
+  }
+  h += `<h4>${voc.sheets}</h4><ul class="plain">` + doc.sheets.map(sh => `<li><button data-act="sheet-sel" data-sheet="${sh.id}">${esc(sh.name)}</button><span class="muted">${sh.w}×${sh.h} · ${plur(sh.items.length, 'obiect', 'obiecte')}${sh.flip ? ' · cu fața de jos' : ''}</span></li>`).join('') + '</ul>';
+  $('#insp').innerHTML = h;
+}
+function library() {
+  const st = cur(), doc = st.doc; const el = $('#lib');
+  if (doc.v !== 'D' || !doc.show.inst) { el.innerHTML = ''; el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = `<h4>Piese</h4><p class="note">Al doilea nivel a apărut la: ${esc(doc.show.why)}.</p><ul class="plain">` + Object.values(doc.parts).map(p => {
+    const c = instCount(doc, p.id); const on = new Set(allPls(doc).filter(o => o.pl.partId === p.id).map(o => o.sheet.name));
+    return `<li><b>${esc(p.name)}</b> <span class="muted">×${c}${on.size ? ' · ' + [...on].join(', ') : ''}</span><button data-act="lib-edit" data-part="${p.id}"${c ? '' : ' disabled'}>Editează</button><button data-act="lib-add" data-part="${p.id}">+1</button></li>`;
+  }).join('') + '</ul>';
+}
+function renderStatus() {
+  const st = cur(); const ws = st.warn || []; const uniq = [...new Set(ws.map(w => w.msg))];
+  $('#status').innerHTML = uniq.length ? `<span class="w">⚠ ${plur(uniq.length, 'avertisment', 'avertismente')}:</span> ${uniq.slice(0, 3).map(esc).join(' · ')}${uniq.length > 3 ? ' …' : ''}` : 'Fără avertismente. Nimic nu se micșorează și nu se reașază singur.';
+}
+
+/* ============ 10. Scenariile și notițele ============ */
+const NKEY = 'cncvs2-prototip-planse-notite-v1';
+let NOTES = {}; let storageOK = true;
+try { NOTES = JSON.parse(localStorage.getItem(NKEY) || '{}') || {}; } catch (e) { storageOK = false; NOTES = {}; }
+function saveNotes() { try { localStorage.setItem(NKEY, JSON.stringify(NOTES)); storageOK = true; } catch (e) { storageOK = false; } const w = $('#noteWarn'); if (w) w.hidden = storageOK; }
+function renderScen() {
+  const sc = SCEN[UI.scen - 1], v = UI.v;
+  let h = `<div class="crit"><b>Cum se folosește:</b> alege un scenariu, fă sarcina în A, apoi în D (comutatorul de sus), scrie ce ai simțit, iar la final apasă «Copiază notițele» și trimite textul.<br><b>Criteriul de decizie</b> (LECTII §5.7): dacă 1, 2 și 8 cer două niveluri vizibile → <b>A</b>. Dacă 4–7 contează pentru tine în v1 → <b>D</b>.</div>`;
+  h += `<ol class="slist">` + SCEN.map(s => `<li><button data-scen="${s.n}" class="${s.n === UI.scen ? 'on' : ''}">${s.n}. ${esc(s.title)}${(NOTES[s.n + 'A'] || NOTES[s.n + 'D']) ? ' ✎' : ''}</button></li>`).join('') + '</ol>';
+  h += `<section class="card"><h2>${sc.n}. ${esc(sc.title)} <span class="vtag">varianta ${v}</span></h2><p>${esc(sc.task(v))}</p><details><summary>Indiciu</summary><p>${esc(sc.hint(v))}</p></details><p><b>Ce observăm:</b> ${esc(sc.observe)}</p>`;
+  h += `<div class="row"><button data-act="reset" class="primary">Reset scenariu</button><span class="note">pornește din nou scenariul ${sc.n}, varianta ${v}</span></div>`;
+  h += `<label for="note"><b>Notițele tale</b> (scenariul ${sc.n}, varianta ${v})</label><textarea id="note" placeholder="Ce ți s-a părut firesc, ce te-a încurcat…">${esc(NOTES[sc.n + v] || '')}</textarea><p id="noteWarn" class="note" ${storageOK ? 'hidden' : ''}>Browserul nu lasă salvarea: copiază notițele înainte să închizi pagina.</p>`;
+  h += `<div id="conc" class="conc"></div></section><div class="row"><button id="bCopy" data-act="copy-notes">Copiază notițele</button><span class="note">toate scenariile, A și D</span></div>`;
+  $('#scen').innerHTML = h;
+  $('#note').addEventListener('input', e => { NOTES[UI.scen + UI.v] = e.target.value; saveNotes(); });
+  renderConcepts();
+}
+function renderConcepts() { const st = cur(); const el = $('#conc'); if (!el) return; el.innerHTML = `<span>Concepte numite aici: <b>${st.concepts.length}</b></span>` + st.concepts.map(c => `<span class="c">${esc(c)}</span>`).join(''); }
+function notesText() {
+  const L = ['Prototip planșe A/D: notițele owner-ului', 'Data: ' + new Date().toLocaleString('ro-RO'), ''];
+  for (const s of SCEN) {
+    L.push('== ' + s.n + '. ' + s.title + ' ==');
+    for (const v of ['A', 'D']) { const t = (NOTES[s.n + v] || '').trim(); const st = UI.states[skey(v, s.n)]; L.push('[' + v + '] ' + (t || '(fără notițe)')); if (st && st.concepts.length) L.push('    concepte numite: ' + st.concepts.length + ' (' + st.concepts.join(', ') + ')'); }
+    L.push('');
+  }
+  return L.join('\n');
+}
+async function copyNotes() {
+  const txt = notesText(); UI.lastCopy = txt;
+  try { if (!navigator.clipboard) throw new Error('fără clipboard'); await navigator.clipboard.writeText(txt); toast('Notițele sunt copiate. Le poți lipi într-un mesaj.'); return; } catch (e) { /* cade pe fereastra de rezervă */ }
+  openDialog(`<h3>Copiază notițele</h3><p class="note">Browserul n-a lăsat copierea automată. Textul e deja selectat: apasă Ctrl+C.</p><textarea id="copyBox" rows="14">${esc(txt)}</textarea><menu><button value="ok" class="primary">Închide</button></menu>`);
+  const ta = $('#copyBox'); ta.focus(); ta.select(); try { document.execCommand('copy'); } catch (e) { /* nimic */ }
+}
+
+/* ============ 11. Ferestrele ============ */
+const dlg = $('#dlg'); let dlgOk = null;
+function openDialog(html, onOk) { $('#dlgForm').innerHTML = html; dlgOk = onOk || null; dlg.returnValue = ''; dlg.showModal(); }
+// OK rulează sincron, la clic (și la Enter, care apasă butonul implicit); Escape doar închide
+$('#dlgForm').addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('button[value]'); if (!b) return;
+  e.preventDefault(); const f = dlgOk; dlgOk = null;
+  try { if (b.value === 'ok' && f) f(); } finally { dlg.close(b.value); }
+});
+dlg.addEventListener('close', () => { dlgOk = null; });
+function askMore() {
+  const st = cur(), doc = st.doc; const pid = rootUnit(st); if (!pid) { toast('Alege întâi un obiect de pe ' + VOC[doc.v].sheetLc + '.'); return; }
+  const D = doc.v === 'D'; const have = D ? instCount(doc, findPl(doc, pid).pl.partId) : 1;
+  openDialog(`<h3>${D ? 'Încă… (copii legate)' : 'Multiplică (copii separate)'}</h3><p class="note">${D ? 'Toate vor fi aceeași piesă: când editezi piesa, se schimbă toate. Una anume se poate desprinde oricând.' + (have > 1 ? ' Acum are ' + have + '.' : '') : 'Fiecare copie e separată: dacă schimbi una, celelalte rămân la fel.'}</p>
+  <label class="f"><span>În total</span><input id="dN" type="number" min="2" max="300" value="${D && have > 1 ? have + 1 : 12}"></label>
+  <label class="row"><input id="dPack" type="checkbox" checked> Așază-le pe rânduri (ce nu încape trece pe ${VOC[doc.v].sheetLc} următoare)</label>
+  <menu><button value="ok" class="primary" id="dOk">Fă-le</button><button value="cancel">Renunță</button></menu>`, () => multiply(num($('#dN').value), $('#dPack').checked));
+  setTimeout(() => { const i = $('#dN'); if (i) i.select(); }, 0);
+}
+function askCsv() {
+  const st = cur(), doc = st.doc; const pid = rootUnit(st); if (!pid) { toast('Alege întâi plăcuța-model de pe ' + VOC[doc.v].sheetLc + '.'); return; }
+  const D = doc.v === 'D';
+  openDialog(`<h3>Din CSV (plăcuțe cu date diferite)</h3><p class="note">${D ? 'Fiecare rând devine o instanță a piesei. Valoarea stă pe instanță; forma și fontul stau pe piesă.' : 'Fiecare rând devine o copie separată, cu textul scris în ea.'} Textul care conține <b>{nume}</b> se completează din coloana „nume”.</p>
+  <textarea id="dCsv" rows="9" aria-label="Lista CSV">${esc(CSV30)}</textarea>
+  <label class="row"><input id="dPack" type="checkbox" checked> Așază-le pe rânduri</label>
+  <menu><button value="ok" class="primary" id="dOk">Fă plăcuțele</button><button value="cancel">Renunță</button></menu>`, () => fromCsv($('#dCsv').value, $('#dPack').checked));
+}
+function showHelp() {
+  const D = cur().doc.v === 'D';
+  openDialog(`<h3>Gesturile (la fel în A și în D, înăuntrul unei piese)</h3>
+  <table><tr><th>Gest</th><th>Element</th><th>Grup</th><th>Ramă (grup cu contur)</th>${D ? '<th>Instanță (D, nivelul 2)</th>' : ''}</tr>
+  <tr><td>Clic</td><td>elementul</td><td>tot grupul</td><td>rama, cu tot ce e în ea</td>${D ? '<td>instanța întreagă; surorile se conturează violet</td>' : ''}</tr>
+  <tr><td>Dublu-clic</td><td>text: îl editezi</td><td>intri în grup</td><td>intri în ramă</td>${D ? '<td>intri în piesă: schimbi toate instanțele</td>' : ''}</tr>
+  <tr><td>Escape</td><td colspan="${D ? 4 : 3}">ieși un nivel (sau golești alegerea, dacă ești sus)</td></tr>
+  <tr><td>Trage</td><td>mută</td><td>mută tot</td><td>mută tot</td>${D ? '<td>mută instanța, și pe altă foaie</td>' : ''}</tr>
+  <tr><td>Ctrl+D</td><td>copie</td><td>copie cu tot</td><td>copie cu tot conținutul</td>${D ? '<td>copie separată (piesă nouă); copii legate: «Încă…»</td>' : ''}</tr>
+  <tr><td>Delete</td><td>șterge</td><td>șterge tot grupul</td><td>șterge rama cu conținut</td>${D ? '<td>șterge instanța; piesa rămâne în listă</td>' : ''}</tr>
+  <tr><td>Mânere</td><td>mărimea lui</td><td>scalează tot</td><td>mărește rama; conținutul își păstrează mărimea și ancora</td>${D ? '<td>mărimea piesei = toate instanțele</td>' : ''}</tr>
+  <tr><td>R</td><td colspan="${D ? 4 : 3}">rotire cu 90°, doar pe ce e direct pe ${D ? 'foaie' : 'planșă'}</td></tr>
+  <tr><td>Ctrl+G / Ctrl+Shift+G</td><td colspan="${D ? 4 : 3}">grupează / desface (și grup în grup)</td></tr>
+  <tr><td>Ctrl+Z / Ctrl+Y</td><td colspan="${D ? 4 : 3}">anulează / refă</td></tr></table>
+  <p class="note">${D ? 'Cuvintele lui D: foaie (materialul, cu fețe), piesă (se definește o dată), instanță (o piesă așezată pe o foaie), grup, ramă. Piesa și instanța apar abia când ceri «Încă…», «Din CSV…» sau un «+1».' : 'Cuvintele lui A: planșă (materialul și pânza), grup, ramă. Repetarea face copii separate.'}</p>
+  <menu><button value="ok" class="primary">Închide</button></menu>`);
+}
+
+/* ============ 12. Mouse și tastatură ============ */
+function pick(e) {
+  const st = cur(); const els = document.elementsFromPoint(e.clientX, e.clientY);
+  let inside = null, outside = null, prefix = false;
+  for (const el of els) {
+    if (!svg.contains(el) || !el.getAttribute) continue; const dp = el.getAttribute('data-path'); if (!dp) continue;
+    const p = dp.split('/'); const u = unitAt(st, p);
+    if (u === null) { if (isPrefix(p, st.ctx)) prefix = true; else if (!outside) outside = p; continue; }
+    const b = unitWorldBBox(st, u); const area = b ? b.w * b.h : Infinity;
+    if (!inside || area < inside.area - 1e-6) inside = { unit: u, path: p, area };
+  }
+  if (inside) return inside; if (prefix) return { prefix: true }; if (outside) return { outside: true, path: outside }; return null;
+}
+const snapStep = st => $('#cSnap').checked ? (!st.ctx.length ? 5 : 1) : 0;
+function sheetAtWorld(doc, wx, wy) { for (const v of views(doc)) if (v.kind === 'top' && wx >= v.ox && wx <= v.ox + v.sheet.w && wy >= v.oy && wy <= v.oy + v.sheet.h) return v.sheet.id; return null; }
+function startMove(st, e, wx, wy) {
+  const start = {}; for (const u of st.sel) start[u] = unitPos(st, u);
+  const b0 = unitBBox(st, st.sel[0]);
+  UI.drag = { mode: 'move', sx: e.clientX, sy: e.clientY, wx, wy, moved: false, snap: snap(st), start, bx: b0 ? b0.x : 0, by: b0 ? b0.y : 0 };
+}
+svg.addEventListener('pointerdown', e => {
+  if (e.button === 2) return;
+  const st = cur(); const [wx, wy] = c2w(e.clientX, e.clientY);
+  try { svg.setPointerCapture(e.pointerId); } catch (err) { /* nimic */ }
+  if (e.button === 1 || UI.space) { UI.drag = { mode: 'pan', sx: e.clientX, sy: e.clientY, vx: UI.view.x, vy: UI.view.y, click: false }; e.preventDefault(); return; }
+  // Dublu-clicul e detectat aici, nu din evenimentul „dblclick”: pânza se redesenează la apăsare,
+  // iar browserul nu mai trimite dblclick când elementul de sub cursor a fost înlocuit.
+  const now = performance.now(); const L = UI.lastDown;
+  const isDouble = L && now - L.t < 450 && Math.hypot(e.clientX - L.x, e.clientY - L.y) < 6 && !L.moved;
+  UI.lastDown = { t: now, x: e.clientX, y: e.clientY, moved: false };
+  if (isDouble) { UI.lastDown = null; const pk2 = pick(e); if (pk2 && pk2.unit) { UI.drag = null; enterUnit(pk2.unit, pk2.path); return; } }
+  const h = e.target.closest && e.target.closest('[data-handle]');
+  if (h && st.sel.length === 1) {
+    const u = st.sel[0]; const ref = unitRef(st.doc, st.ctx, u);
+    UI.drag = { mode: 'resize', h: h.getAttribute('data-handle'), u, b0: unitBBox(st, u), node0: clone(ref.node), snap: snap(st), moved: false, sheetId: ref.sheet.id };
+    return;
+  }
+  const pk = pick(e); UI.ghost = null;
+  if (pk && (pk.unit || pk.outside)) {
+    if (pk.outside) { // ieșim doar cât e nevoie: până la nivelul comun
+      let L = 0; while (L < st.ctx.length && L < pk.path.length - 1 && st.ctx[L] === pk.path[L]) L++;
+      st.ctx = st.ctx.slice(0, L); st.sel = []; pk.unit = unitAt(st, pk.path);
+    }
+    st.sheetSel = null;
+    if (e.shiftKey) { st.sel = st.sel.includes(pk.unit) ? st.sel.filter(x => x !== pk.unit) : st.sel.concat(pk.unit); render(); return; }
+    if (!st.sel.includes(pk.unit)) st.sel = [pk.unit];
+    startMove(st, e, wx, wy); render(); return;
+  }
+  const sh = e.target.closest && e.target.closest('[data-sheet],[data-sheet-label]');
+  if (sh || (pk && pk.prefix)) { UI.drag = { mode: 'marquee', wx, wy, x2: wx, y2: wy, sx: e.clientX, sy: e.clientY, moved: false, sheet: sh ? (sh.getAttribute('data-sheet') || sh.getAttribute('data-sheet-label')) : null, inCtx: !!(pk && pk.prefix), label: !!(sh && sh.hasAttribute('data-sheet-label')) }; return; }
+  UI.drag = { mode: 'pan', sx: e.clientX, sy: e.clientY, vx: UI.view.x, vy: UI.view.y, click: true };
+});
+window.addEventListener('pointermove', e => {
+  const d = UI.drag; if (!d) return; const st = cur();
+  if (UI.lastDown && Math.hypot(e.clientX - UI.lastDown.x, e.clientY - UI.lastDown.y) >= 6) UI.lastDown.moved = true;
+  if (d.mode === 'pan') { if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > 3) d.click = false; UI.view.x = d.vx - (e.clientX - d.sx) / UI.view.k; UI.view.y = d.vy - (e.clientY - d.sy) / UI.view.k; setViewBox(); return; }
+  const [wx, wy] = c2w(e.clientX, e.clientY);
+  if (d.mode === 'move') {
+    if (!d.moved && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 3) return; d.moved = true;
+    let dx, dy;
+    if (!st.ctx.length) { dx = wx - d.wx; dy = wy - d.wy; } else { const mi = Mx.inv(pathMatrix(st.doc, st.ctx)); const a = Mx.ap(mi, d.wx, d.wy), b = Mx.ap(mi, wx, wy); dx = b[0] - a[0]; dy = b[1] - a[1]; }
+    const g = snapStep(st); if (g) { dx = Math.round((d.bx + dx) / g) * g - d.bx; dy = Math.round((d.by + dy) / g) * g - d.by; }
+    for (const u of st.sel) { const p0 = d.start[u]; if (p0) setUnitPos(st, u, p0.x + dx, p0.y + dy); }
+    d.drop = !st.ctx.length ? sheetAtWorld(st.doc, wx, wy) : null;
+    renderSVG(); return;
+  }
+  if (d.mode === 'resize') {
+    d.moved = true; const doc = st.doc; let px, py;
+    if (!st.ctx.length) { const v = topView(doc, d.sheetId); px = wx - v.ox; py = wy - v.oy; } else { const p = Mx.ap(Mx.inv(pathMatrix(doc, st.ctx)), wx, wy); px = p[0]; py = p[1]; }
+    const g = snapStep(st); if (g) { px = Math.round(px / g) * g; py = Math.round(py / g) * g; }
+    const b = d.b0; let x1 = b.x, y1 = b.y, x2 = b.x + b.w, y2 = b.y + b.h;
+    if (d.h.includes('w')) x1 = Math.min(px, x2 - 1); if (d.h.includes('e')) x2 = Math.max(px, x1 + 1);
+    if (d.h.includes('n')) y1 = Math.min(py, y2 - 1); if (d.h.includes('s')) y2 = Math.max(py, y1 + 1);
+    applyBox(st, d.u, d.node0, b, { x: x1, y: y1, w: x2 - x1, h: y2 - y1 }, d.h);
+    renderSVG(); inspector(); renderBanner(); return;
+  }
+  if (d.mode === 'marquee') { d.x2 = wx; d.y2 = wy; if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > 3) d.moved = true; renderSVG(); }
+});
+window.addEventListener('pointerup', () => {
+  const d = UI.drag; if (!d) return; UI.drag = null; const st = cur();
+  if (d.mode === 'pan') { if (d.click) { st.sel = []; st.sheetSel = null; st.ctx = []; render(); } return; }
+  if (d.mode === 'move') {
+    if (d.moved) {
+      if (!st.ctx.length) {
+        for (const u of st.sel) {
+          const f = findPl(st.doc, u); if (!f) continue; const v = topView(st.doc, f.sheet.id); const b = plBBox(st.doc, f.pl);
+          const to = sheetAtWorld(st.doc, b.x + b.w / 2 + v.ox, b.y + b.h / 2 + v.oy);
+          if (to && to !== f.sheet.id) { const tv = topView(st.doc, to); f.sheet.items.splice(f.sheet.items.indexOf(f.pl), 1); f.pl.x = r2(f.pl.x + v.ox - tv.ox); f.pl.y = r2(f.pl.y + v.oy - tv.oy); tv.sheet.items.push(f.pl); useConcept(VOC[st.doc.v].concept); toast('Mutat pe ' + tv.sheet.name + '.'); }
+        }
+      } else finishMoveRules(st, st.sel);
+      st.undo.push(d.snap); st.redo = [];
+    }
+    render(); return;
+  }
+  if (d.mode === 'resize') {
+    if (d.moved) { st.undo.push(d.snap); st.redo = []; const n = unitRef(st.doc, st.ctx, d.u); if (n && n.node.frame) useConcept('Ramă'); }
+    render(); return;
+  }
+  if (d.mode === 'marquee') {
+    if (!d.moved) { if (d.inCtx) { st.sel = []; } else if (st.ctx.length) { st.ctx = []; st.sel = []; } else { st.sel = []; st.sheetSel = d.sheet; if (d.sheet) useConcept(VOC[st.doc.v].concept); } }
+    else {
+      const m = { x: Math.min(d.wx, d.x2), y: Math.min(d.wy, d.y2), w: Math.abs(d.x2 - d.wx), h: Math.abs(d.y2 - d.wy) };
+      const units = !st.ctx.length ? allPls(st.doc).map(o => o.pl.id) : resolve(st.doc, st.ctx).node.children.map(c => c.id);
+      st.sel = units.filter(u => { const b = unitWorldBBox(st, u); return b && interBox(b, m); }); st.sheetSel = null;
+    }
+    render();
+  }
+});
+svg.addEventListener('wheel', e => {
+  e.preventDefault(); const [wx, wy] = c2w(e.clientX, e.clientY); const f = Math.exp(-e.deltaY * 0.0015);
+  const k = Math.min(60, Math.max(0.05, UI.view.k * f)); const r = svg.getBoundingClientRect();
+  UI.view.k = k; UI.view.x = wx - (e.clientX - r.left) / k; UI.view.y = wy - (e.clientY - r.top) / k; renderSVG();
+}, { passive: false });
+document.addEventListener('keydown', e => {
+  UI.lastDown = null; // o tastă între două clicuri nu mai face din ele un dublu-clic
+  if (dlg.open) return;
+  const t = e.target; const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+  if (e.key === 'Escape') { if (typing) { if ('defaultValue' in t && t.tagName === 'INPUT') t.value = t.defaultValue; t.blur(); UI.ghost = null; render(); return; } e.preventDefault(); escapeLevel(); return; }
+  if (typing) return;
+  const mod = e.ctrlKey || e.metaKey; const k = e.key.toLowerCase();
+  if (e.key === ' ') { UI.space = true; e.preventDefault(); return; }
+  if (mod && k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if (mod && (k === 'y' || (k === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+  else if (mod && k === 'd') { e.preventDefault(); duplicate(); }
+  else if (mod && k === 'g') { e.preventDefault(); if (e.shiftKey) ungroupSel(); else groupSel(); }
+  else if (mod && k === 'a') { e.preventDefault(); selectAll(); }
+  else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); del(); }
+  else if (!mod && k === 'r') { e.preventDefault(); rotateSel(); }
+  else if (e.key.startsWith('Arrow')) { e.preventDefault(); const s = e.shiftKey ? 10 : 1; nudge(e.key === 'ArrowLeft' ? -s : e.key === 'ArrowRight' ? s : 0, e.key === 'ArrowUp' ? -s : e.key === 'ArrowDown' ? s : 0); }
+});
+document.addEventListener('keyup', e => { if (e.key === ' ') UI.space = false; });
+
+/* ============ 13. Butoanele și câmpurile ============ */
+function act(a, el) {
+  const st = cur();
+  switch (a) {
+    case 'ins-rect': return insertShape('rect');
+    case 'ins-ellipse': return insertShape('ellipse');
+    case 'ins-text': return insertShape('text');
+    case 'group': return groupSel();
+    case 'ungroup': return ungroupSel();
+    case 'arrange': return arrange();
+    case 'more': return askMore();
+    case 'csv': return askCsv();
+    case 'add-sheet': return addSheet();
+    case 'mirror-sheet': return mirrorSheetA();
+    case 'face-fata': return setFace('fata');
+    case 'face-spate': return setFace('spate');
+    case 'unflip': return commit(doc => { const sh = doc.sheets.find(s => s.id === st.sheetSel); if (!sh) return false; sh.flip = null; if (!doc.sheets.some(s => s.flip)) doc.face = 'fata'; });
+    case 'del-sheet': return delSheet(st.sheetSel);
+    case 'dup': return duplicate();
+    case 'del': return del();
+    case 'rot': return rotateSel();
+    case 'sheet-sel': st.sheetSel = el.getAttribute('data-sheet'); st.sel = []; st.ctx = []; useConcept(VOC[st.doc.v].concept); return render();
+    case 'part-edit': if (st.sel.length === 1 && !st.ctx.length) enterUnit(st.sel[0], null); return;
+    case 'detach': if (st.sel.length === 1 && !st.ctx.length) detach(st.sel[0]); return;
+    case 'detach-ctx': if (st.ctx.length) detach(st.ctx[0]); return;
+    case 'lib-edit': { const pid = el.getAttribute('data-part'); const o = allPls(st.doc).find(x => x.pl.partId === pid); if (o) { st.ctx = []; st.sel = [o.pl.id]; enterUnit(o.pl.id, null); } return; }
+    case 'lib-add': return addInstance(el.getAttribute('data-part'));
+    case 'anchor': { const a2 = el.getAttribute('data-a'); return commit(doc => { const ref = unitRef(doc, st.ctx, st.sel[0]); if (!ref) return false; ref.node.anchor = a2; ref.node.anchorManual = true; }); }
+    case 'ins-add': return commit(doc => { const ref = unitRef(doc, st.ctx, st.sel[0]); if (!ref || !ref.node.frame) return false; const last = ref.node.frame.insets[ref.node.frame.insets.length - 1]; ref.node.frame.insets.push({ d: last ? last.d + 10 : 10, role: 'groove' }); });
+    case 'ins-del': { const i = +el.getAttribute('data-i'); return commit(doc => { const ref = unitRef(doc, st.ctx, st.sel[0]); if (!ref || !ref.node.frame) return false; ref.node.frame.insets.splice(i, 1); }); }
+    case 'reset': { UI.states[skey(UI.v, UI.scen)] = fresh(UI.v, UI.scen); UI.ghost = null; renderScen(); render(); fit(); renderSVG(); return toast('Scenariul ' + UI.scen + ' pornește din nou (varianta ' + UI.v + ').'); }
+    case 'copy-notes': return copyNotes();
+  }
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-act]'); if (b && !b.disabled && !b.closest('dialog')) { act(b.getAttribute('data-act'), b); return; }
+  const s = e.target.closest && e.target.closest('[data-scen]'); if (s) { UI.scen = +s.getAttribute('data-scen'); UI.ghost = null; renderScen(); render(); fit(); renderSVG(); return; }
+  const v = e.target.closest && e.target.closest('[data-variant]'); if (v) { setVariant(v.getAttribute('data-variant')); return; }
+  const c = e.target.closest && e.target.closest('#crumbs [data-lvl]'); if (c) { const st = cur(); const L = +c.getAttribute('data-lvl'); if (L < st.ctx.length) { const from = st.ctx[L]; st.ctx = st.ctx.slice(0, L); st.sel = [from]; st.sheetSel = null; UI.ghost = null; render(); } }
+});
+function applyField(f, raw) {
+  const st = cur(); UI.ghost = null;
+  if (st.sheetSel) {
+    return commit(doc => { const sh = doc.sheets.find(s => s.id === st.sheetSel); if (!sh) return false; if (f === 'name') { sh.name = String(raw).trim() || sh.name; return; } const v = num(raw); if (!(v > 0)) return false; if (f === 'w') sh.w = v; else if (f === 'h') sh.h = v; else if (f === 't') sh.t = v; else return false; if (sh.flip) { sh.flip.pins = [{ x: r2(sh.w / 2), y: 25, d: 8 }, { x: r2(sh.w / 2), y: r2(sh.h - 25), d: 8 }]; } useConcept(VOC[doc.v].concept); });
+  }
+  if (st.sel.length !== 1) return;
+  const u = st.sel[0];
+  commit(doc => {
+    const ref = unitRef(doc, st.ctx, u); if (!ref) return false; const n = ref.node; const b = unitBBox(st, u);
+    if (f === 'x' || f === 'y') { const v = num(raw); if (!isFinite(v)) return false; setUnitTopLeft(st, u, f === 'x' ? v : b.x, f === 'y' ? v : b.y); if (!ref.root) finishMoveRules(st, [u]); return; }
+    if (f === 'w' || f === 'h') { const v = num(raw); if (!(v > 0)) return false; applyBox(st, u, clone(n), b, { x: b.x, y: b.y, w: f === 'w' ? v : b.w, h: f === 'h' ? v : b.h }, f === 'w' ? 'e' : 's'); if (n.frame) useConcept('Ramă'); return; }
+    if (f === 'text') { if (String(raw) === n.text) return false; n.text = String(raw); setTextGeom(n); return; }
+    if (f === 'size') { const v = num(raw); if (!(v > 0)) return false; n.size = v; setTextGeom(n); return; }
+    if (f === 'role') { n.role = raw; if (raw === 'pin') useConcept('Știft'); return; }
+    if (f === 'face') { n.face = raw; if (raw === 'spate') useConcept('Fața de jos'); return; }
+    if (f === 'sheet') { const to = doc.sheets.find(s => s.id === raw); if (!to || to === ref.sheet) return false; ref.sheet.items.splice(ref.sheet.items.indexOf(ref.pl), 1); to.items.push(ref.pl); useConcept(VOC[doc.v].concept); return; }
+    if (f.startsWith('field:')) { const k = f.slice(6); ref.pl.fields = ref.pl.fields || {}; ref.pl.fields[k] = String(raw); useConcept('Instanță'); useConcept('Câmp {…}'); return; }
+    if (f.startsWith('ins:')) { const v = num(raw); if (!(v >= 0)) return false; n.frame.insets[+f.slice(4)].d = v; return; }
+    if (f.startsWith('insrole:')) { n.frame.insets[+f.slice(8)].role = raw; return; }
+    if (f === 'name') { n.name = raw; return; }
+    return false;
+  });
+}
+const insp = $('#insp');
+insp.addEventListener('change', e => { const f = e.target.getAttribute('data-f'); if (f) applyField(f, e.target.value); });
+insp.addEventListener('keydown', e => { if (e.key === 'Enter') { const f = e.target.getAttribute('data-f'); if (f && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); } } });
+insp.addEventListener('input', e => {
+  const f = e.target.getAttribute('data-f'); if (f !== 'w' && f !== 'h') return;
+  const st = cur(); if (st.sel.length !== 1) return; const ref = unitRef(st.doc, st.ctx, st.sel[0]); if (!ref || !ref.node.frame) return;
+  const v = num(e.target.value); if (!(v > 0)) return;
+  UI.ghost = { u: st.sel[0], w: f === 'w' ? v : ref.node.w, h: f === 'h' ? v : ref.node.h }; renderSVG();
+});
+function setVariant(v) {
+  if (v !== 'A' && v !== 'D') return; UI.v = v; UI.ghost = null;
+  $('#vA').setAttribute('aria-checked', String(v === 'A')); $('#vD').setAttribute('aria-checked', String(v === 'D'));
+  renderScen(); render(); fit(); renderSVG();
+}
+$('#bUndo').addEventListener('click', undo); $('#bRedo').addEventListener('click', redo);
+$('#bFit').addEventListener('click', () => { fit(); renderSVG(); });
+$('#bHelp').addEventListener('click', showHelp);
+$('#toast').addEventListener('click', () => { $('#toast').hidden = true; });
+window.addEventListener('resize', () => { setViewBox(); renderSVG(); });
+
+/* ============ 14. Totul împreună ============ */
+function layoutSig(doc) { return UI.v + UI.scen + '|' + doc.sheets.map(s => s.id + ':' + s.w + 'x' + s.h + (s.flip ? 'f' : '')).join('|'); }
+function render() {
+  renderSVG(); renderCrumbs(); renderBanner(); renderToolbar(); inspector(); library(); renderStatus(); renderConcepts();
+  const sig = layoutSig(cur().doc); if (sig !== UI.sig) { UI.sig = sig; fit(); renderSVG(); } // foaie nouă, mărime nouă sau fața de jos: arată tot
+}
+
+/* Cârlige pentru testele Playwright: doar citire și coordonate, fără scurtături de gesturi. */
+function countNodes(doc) { let n = 0; const cnt = r => walk(r, () => { n++; }, []); if (doc.v === 'A') allPls(doc).forEach(o => cnt(o.pl.node)); else Object.values(doc.parts).forEach(p => cnt(p.root)); return n; }
+window.__proto = {
+  summary() {
+    const st = cur(), doc = st.doc;
+    const texts = (r, pl) => { const out = []; walk(r, n => { if (n.type === 'text') out.push(textOf(doc, n, pl)); }, []); return out; };
+    return {
+      v: doc.v, scen: UI.scen, ctx: st.ctx.slice(), sel: st.sel.slice(), sheetSel: st.sheetSel, showInst: !!doc.show.inst, why: doc.show.why, face: doc.face,
+      crumbs: $('#crumbs').textContent, banner: $('#banner').hidden ? '' : $('#banner').textContent, lib: $('#lib').hidden ? '' : $('#lib').textContent, chip: $('#level2').textContent,
+      sheets: doc.sheets.map(sh => ({ id: sh.id, name: sh.name, w: sh.w, h: sh.h, flip: !!sh.flip, pins: sh.flip ? sh.flip.pins.map(p => ({ x: p.x, y: p.y })) : [],
+        items: sh.items.map(pl => { const b = plBBox(doc, pl); return { id: pl.id, x: r2(pl.x), y: r2(pl.y), rot: pl.rot || 0, mx: !!pl.mx, partId: pl.partId || null, fields: pl.fields ? clone(pl.fields) : null, bbox: { x: r2(b.x), y: r2(b.y), w: r2(b.w), h: r2(b.h) }, texts: texts(rootOf(doc, pl), pl) }; }) })),
+      parts: doc.v === 'D' ? Object.values(doc.parts).map(p => ({ id: p.id, name: p.name, count: instCount(doc, p.id) })) : [],
+      nodes: countNodes(doc), placements: allPls(doc).length, concepts: st.concepts.slice(), warnings: [...new Set((st.warn || []).map(w => w.msg))], toast: st.toast,
+      undo: st.undo.length, ghost: UI.ghost ? clone(UI.ghost) : null, storageOK,
+    };
+  },
+  node(path) { const r = resolve(cur().doc, path); return r ? clone(r.node) : null; },
+  part(partId) { const p = cur().doc.parts[partId]; return p ? clone(p) : null; },
+  /* punctul (lx, ly) din spațiul de coordonate al copiilor nodului de la `path`, în lume / pe ecran */
+  worldOf(path, lx, ly, kind) { const doc = cur().doc; const r = resolve(doc, path); if (!r) return null; const vw = views(doc).find(v => v.sheet.id === r.sheet.id && v.kind === (kind || 'top')); return Mx.ap(pathMatrix(doc, path, vw), lx, ly); },
+  clientOf(path, lx, ly, kind) { const w = this.worldOf(path, lx, ly, kind); return w ? w2c(w[0], w[1]) : null; },
+  clientOfSheet(sid, x, y, kind) { const doc = cur().doc; const v = views(doc).find(q => q.sheet.id === sid && q.kind === (kind || 'top')); const p = Mx.ap(v.m, x, y); return w2c(p[0], p[1]); },
+  clientOfWorld(x, y) { return w2c(x, y); },
+  k() { return UI.view.k; },
+  notesText,
+  lastCopy() { return UI.lastCopy; },
+};
+
+renderScen(); render(); fit(); renderSVG();
+})();
+</script>
+</body>
+</html>

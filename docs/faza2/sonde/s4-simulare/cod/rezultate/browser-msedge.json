@@ -1,0 +1,96 @@
+{
+ "browser": "msedge",
+ "env": {
+  "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "webgpu": {
+   "vendor": "nvidia",
+   "architecture": "ampere",
+   "device": "",
+   "description": "",
+   "maxStorageBufferBindingSize": 2147483644,
+   "maxBufferSize": 2147483648
+  },
+  "coi": true,
+  "cores": 32
+ },
+ "cpu2d_025": {
+  "which": "2d",
+  "cell": 0.25,
+  "mutari": 194208,
+  "ms_median": 761,
+  "ms_toate": [
+   780,
+   696,
+   761
+  ],
+  "hash": "a589e7d3091176b8",
+  "hash_intrare": "ed21ad5e"
+ },
+ "cpu2d_01": {
+  "which": "2d",
+  "cell": 0.1,
+  "mutari": 194208,
+  "ms_median": 3456,
+  "ms_toate": [
+   3456,
+   3329,
+   3659
+  ],
+  "hash": "b00917a30715ff44",
+  "hash_intrare": "ed21ad5e"
+ },
+ "cpu3d_subset": {
+  "which": "3d",
+  "cell": 0.1,
+  "mutari": 1000399,
+  "ms_median": 7274,
+  "ms_toate": [
+   7274,
+   7766,
+   7024
+  ],
+  "hash": "2aa0c5b086544eed",
+  "hash_intrare": "475bb542"
+ },
+ "gpu3d_subset": {
+  "mutari": 1000399,
+  "W": 35,
+  "ms_gpu_median": 163,
+  "ms_gpu_toate": [
+   108,
+   157,
+   167,
+   167,
+   163
+  ],
+  "ms_citire_grila": 34,
+  "ms_cpu_1fir_aceeasi_pagina": 7198,
+  "celule": 9241600,
+  "celule_identice_bit": 9129110,
+  "celule_dif_peste_1um": 0,
+  "celule_dif_peste_10um": 0,
+  "dif_max_um": 0.11,
+  "celule_taiate_cpu": 1902361,
+  "celule_taiate_gpu": 1902361
+ },
+ "gpu3d_full": {
+  "mutari": 5004500,
+  "W": 35,
+  "ms_gpu_median": 631,
+  "ms_gpu_toate": [
+   631,
+   637,
+   628
+  ],
+  "ms_citire_grila": 28,
+  "ms_cpu_1fir_aceeasi_pagina": 35761,
+  "celule": 9241600,
+  "celule_identice_bit": 8281565,
+  "celule_dif_peste_1um": 0,
+  "celule_dif_peste_10um": 0,
+  "dif_max_um": 0.18,
+  "celule_taiate_cpu": 9180351,
+  "celule_taiate_gpu": 9180351
+ }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "s5-relief-sonda",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sonda aruncabila s5-relief (cncvs2 Faza 2): relief 4000x4000, drop-cutter, bas-relief, memorie, GPU vs CPU",
+  "scripts": {
+    "masoara": "node masoara.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.63.0"
+  }
+}

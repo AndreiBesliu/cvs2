@@ -1,0 +1,70 @@
+{
+ "celula 0.25": {
+  "celule": 48216000,
+  "celule_taiate": 9265788,
+  "proc_taiat": 19.2,
+  "MB_dens_f32": 184,
+  "dala16": {
+   "dale": 54438,
+   "MB_f32": 53,
+   "MB_f32_uniforme_comprimate": 36,
+   "MB_u16": 18,
+   "eficienta": "66%"
+  },
+  "dala32": {
+   "dale": 18945,
+   "MB_f32": 74,
+   "MB_f32_uniforme_comprimate": 58,
+   "MB_u16": 29,
+   "eficienta": "48%"
+  },
+  "dala64": {
+   "dale": 7409,
+   "MB_f32": 116,
+   "MB_f32_uniforme_comprimate": 101,
+   "MB_u16": 50,
+   "eficienta": "31%"
+  },
+  "dala128": {
+   "dale": 2406,
+   "MB_f32": 150,
+   "MB_f32_uniforme_comprimate": 140,
+   "MB_u16": 70,
+   "eficienta": "24%"
+  }
+ },
+ "celula 0.1": {
+  "celule": 301350000,
+  "celule_taiate": 57888963,
+  "proc_taiat": 19.2,
+  "MB_dens_f32": 1150,
+  "dala16": {
+   "dale": 278000,
+   "MB_f32": 271,
+   "MB_f32_uniforme_comprimate": 112,
+   "MB_u16": 56,
+   "eficienta": "81%"
+  },
+  "dala32": {
+   "dale": 82841,
+   "MB_f32": 324,
+   "MB_f32_uniforme_comprimate": 193,
+   "MB_u16": 96,
+   "eficienta": "68%"
+  },
+  "dala64": {
+   "dale": 27519,
+   "MB_f32": 430,
+   "MB_f32_uniforme_comprimate": 329,
+   "MB_u16": 165,
+   "eficienta": "51%"
+  },
+  "dala128": {
+   "dale": 9878,
+   "MB_f32": 617,
+   "MB_f32_uniforme_comprimate": 525,
+   "MB_u16": 262,
+   "eficienta": "36%"
+  }
+ }
+}

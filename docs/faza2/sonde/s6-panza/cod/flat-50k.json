@@ -1,0 +1,37 @@
+[
+ {
+  "px_pe_mm": 0.5,
+  "tol_mm": 0.5,
+  "segmente_toata_scena": 868039,
+  "ms_median_5": 59.1,
+  "MB_float32_xy": 6.6
+ },
+ {
+  "px_pe_mm": 4,
+  "tol_mm": 0.0625,
+  "segmente_toata_scena": 1885443,
+  "ms_median_5": 78.8,
+  "MB_float32_xy": 14.4
+ },
+ {
+  "px_pe_mm": 32,
+  "tol_mm": 0.00781,
+  "segmente_toata_scena": 4715898,
+  "ms_median_5": 142,
+  "MB_float32_xy": 36
+ },
+ {
+  "px_pe_mm": 250,
+  "tol_mm": 0.001,
+  "segmente_toata_scena": 12578148,
+  "ms_median_5": 290.4,
+  "MB_float32_xy": 96
+ },
+ {
+  "px_pe_mm": 1000,
+  "tol_mm": 0.00025,
+  "segmente_toata_scena": 24820429,
+  "ms_median_5": 623,
+  "MB_float32_xy": 189.4
+ }
+]

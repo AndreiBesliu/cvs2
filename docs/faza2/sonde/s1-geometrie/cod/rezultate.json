@@ -1,0 +1,2212 @@
+{
+ "masina": {
+  "cpu": "AMD Ryzen 9 7950X 16-Core Processor            ",
+  "nuclee": 32,
+  "node": "v26.10.0"
+ },
+ "mod": "rapid",
+ "T1": [
+  {
+   "test": "T1 offset cerc",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "r=50 d=3",
+   "entitati": "2A /1c",
+   "errArieRel": 0,
+   "errPerimRel": 0,
+   "abatereMax": 2.3583322672493523e-7,
+   "ms": 1.7980000000000018
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "r=50 d=-3",
+   "entitati": "2A /1c",
+   "errArieRel": 0,
+   "errPerimRel": 0,
+   "abatereMax": 2.659389201354498e-7,
+   "ms": 0.31869999999997844
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "r=1220 d=3.175",
+   "entitati": "2A /1c",
+   "errArieRel": 0,
+   "errPerimRel": 0,
+   "abatereMax": 3.7260590964554e-8,
+   "ms": 0.21810000000004948
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "r=0.5 d=0.01",
+   "entitati": "2A /1c",
+   "errArieRel": 0,
+   "errPerimRel": 0,
+   "abatereMax": 1.5933367827867436e-8,
+   "ms": 0.27309999999999945
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "r=0.05 d=-0.01",
+   "entitati": "2A /1c",
+   "errArieRel": -1.7255613506203974e-16,
+   "errPerimRel": 0,
+   "abatereMax": 1.249675904378833e-9,
+   "ms": 0.288599999999974
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "r=50 d=3",
+   "eroare": "edge.isSegment is not a function"
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "r=50 d=-3",
+   "eroare": "edge.isSegment is not a function"
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "r=1220 d=3.175",
+   "eroare": "edge.isSegment is not a function"
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "r=0.5 d=0.01",
+   "eroare": "edge.isSegment is not a function"
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "r=0.05 d=-0.01",
+   "eroare": "edge.isSegment is not a function"
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "makerjs 0.19.2",
+   "caz": "r=50 d=3",
+   "entitati": "2A /1c",
+   "errArieRel": 0,
+   "errPerimRel": 0,
+   "abatereMax": 2.3583321961950787e-7,
+   "ms": 4.38559999999984
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "makerjs 0.19.2",
+   "caz": "r=50 d=-3",
+   "entitati": "2A /1c",
+   "errArieRel": 0,
+   "errPerimRel": 0,
+   "abatereMax": 2.659389144708099e-7,
+   "ms": 1.087099999999964
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "makerjs 0.19.2",
+   "caz": "r=1220 d=3.175",
+   "entitati": "2A /1c",
+   "errArieRel": 0,
+   "errPerimRel": 0,
+   "abatereMax": 3.726033448088078e-8,
+   "ms": 1.081899999999905
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "makerjs 0.19.2",
+   "caz": "r=0.5 d=0.01",
+   "entitati": "2A /1c",
+   "errArieRel": 0,
+   "errPerimRel": 0,
+   "abatereMax": 1.593336776596022e-8,
+   "ms": 0.995200000000068
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "makerjs 0.19.2",
+   "caz": "r=0.05 d=-0.01",
+   "entitati": "2A /1c",
+   "errArieRel": -1.7255613506203974e-16,
+   "errPerimRel": 0,
+   "abatereMax": 1.249675904378833e-9,
+   "ms": 0.9048999999999978
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "r=50 d=3",
+   "entitati": "8C /1c",
+   "errArieRel": -0.0013013261787109985,
+   "errPerimRel": -0.0006446899132018589,
+   "abatereMax": 0.09918608194586291,
+   "ms": 11.515100000000075
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "r=50 d=-3",
+   "entitati": "8C /1c",
+   "errArieRel": 0.0020498706938027267,
+   "errPerimRel": 0.0010391999526678307,
+   "abatereMax": 0.12643658035369754,
+   "ms": 5.617599999999584
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "r=1220 d=3.175",
+   "entitati": "8C /1c",
+   "errArieRel": 0.00020773794554723835,
+   "errPerimRel": 0.00010404455568985955,
+   "abatereMax": 0.2689873182755491,
+   "ms": 2.121599999999944
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "r=0.5 d=0.01",
+   "entitati": "8C /1c",
+   "errArieRel": -0.00026651304893562217,
+   "errPerimRel": -0.0001329285390702493,
+   "abatereMax": 0.00023980512369979653,
+   "ms": 2.143999999999778
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "r=0.05 d=-0.01",
+   "entitati": "8L /1c",
+   "errArieRel": -0.13639121905991103,
+   "errPerimRel": -0.04557734578398402,
+   "abatereMax": 0.0038060233744356695,
+   "ms": 15.523999999999887
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full) precision=100",
+   "caz": "r=50 d=3",
+   "entitati": "32Q /1c",
+   "errArieRel": 0.000012661665635868833,
+   "errPerimRel": 0.000006339751803038761,
+   "abatereMax": 0.0007517716380860406,
+   "ms": 6.231600000000071
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full) precision=100",
+   "caz": "r=50 d=-3",
+   "entitati": "32Q /1c",
+   "errArieRel": 0.000012680058747941798,
+   "errPerimRel": 0.000006348944770392663,
+   "abatereMax": 0.0006681539256803148,
+   "ms": 0.5633000000002539
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full) precision=100",
+   "caz": "r=1220 d=3.175",
+   "entitati": "64Q /1c",
+   "errArieRel": 7.90542118432727e-7,
+   "errPerimRel": 3.9541074209099104e-7,
+   "abatereMax": 0.0011116085108824336,
+   "ms": 1.1432999999997264
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full) precision=100",
+   "caz": "r=0.5 d=0.01",
+   "entitati": "8Q /1c",
+   "errArieRel": 0.0032962144164653973,
+   "errPerimRel": 0.0016849593617862947,
+   "abatereMax": 0.0015992898912222664,
+   "ms": 1.0878999999999905
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full) precision=100",
+   "caz": "r=0.05 d=-0.01",
+   "entitati": "4Q /1c",
+   "errArieRel": 0.06103290651410001,
+   "errPerimRel": 0.03337725978160367,
+   "abatereMax": 0.002426405475763574,
+   "ms": 0.27680000000009386
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "r=50 d=3",
+   "entitati": "996L /1c",
+   "errArieRel": -0.00002440597364314656,
+   "errPerimRel": -0.000006632926335270784,
+   "abatereMax": 0.0009956057150404263,
+   "ms": 7.73909999999978
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "r=50 d=-3",
+   "entitati": "498L /1c",
+   "errArieRel": -0.000029095667657403558,
+   "errPerimRel": -0.000007915260162890506,
+   "abatereMax": 0.0009964123893766441,
+   "ms": 6.836899999999332
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "r=1220 d=3.175",
+   "entitati": "4908L /1c",
+   "errArieRel": -0.0000010883705306957699,
+   "errPerimRel": -2.731548201788123e-7,
+   "abatereMax": 0.0010008244887558249,
+   "ms": 8.60779999999977
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "r=0.5 d=0.01",
+   "entitati": "100L /1c",
+   "errArieRel": -0.0025541788951144295,
+   "errPerimRel": -0.0006579321900153549,
+   "abatereMax": 0.0009872247661858364,
+   "ms": 0.5091000000002168
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "r=0.05 d=-0.01",
+   "entitati": "16L /1c",
+   "errArieRel": -0.03506965916281351,
+   "errPerimRel": -0.011301376624363839,
+   "abatereMax": 0.0009617038553800389,
+   "ms": 0.529700000000048
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "r=50 d=3",
+   "entitati": "2L+1A /1c",
+   "errArieRel": -0.0000021775223519970164,
+   "errPerimRel": -0.0000010775768730332434,
+   "abatereMax": 0.0009950000000031878,
+   "ms": 35.25540000000001
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "r=50 d=-3",
+   "entitati": "1L+1A /1c",
+   "errArieRel": -0.0000025930014937692857,
+   "errPerimRel": -0.0000012831807538277039,
+   "abatereMax": 0.0009950000000031878,
+   "ms": 18.41229999999996
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "r=1220 d=3.175",
+   "entitati": "2L+2A /1c",
+   "errArieRel": -4.319187383995381e-9,
+   "errPerimRel": -1.9387079413859024e-9,
+   "abatereMax": 0.0009996899898396805,
+   "ms": 473.2386999999999
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "r=0.5 d=0.01",
+   "entitati": "2L+1A /1c",
+   "errArieRel": -0.0001272331914474423,
+   "errPerimRel": -0.00005123450223713881,
+   "abatereMax": 0.0009870000000000712,
+   "ms": 2.3314000000000306
+  },
+  {
+   "test": "T1 offset cerc",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "r=0.05 d=-0.01",
+   "entitati": "1L+1A /1c",
+   "errArieRel": -0.011403785953314422,
+   "errPerimRel": -0.005323762381452043,
+   "abatereMax": 0.0009614914218114209,
+   "ms": 0.23720000000048458
+  }
+ ],
+ "T2": [
+  {
+   "test": "T2 intrare",
+   "lib": "model propriu (rotire exacta)",
+   "caz": "rrect 100x60 r8 rotit 30°",
+   "entitati": "4L+4A /1c",
+   "abatereMax": 3.552713678800501e-14,
+   "errArieRel": 3.0596643483543126e-16
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "d=3",
+   "entitati": "4L+4A /1c",
+   "errArieRel": -1.319612868612093e-16,
+   "errPerimRel": 1.7484093982311453e-16,
+   "abatereMax": 6.355287432313019e-14,
+   "ms": 1.137499999999818
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "d=-3",
+   "entitati": "4L+4A /1c",
+   "errArieRel": -1.7993620286317987e-16,
+   "errPerimRel": 0,
+   "abatereMax": 6.355287432313019e-14,
+   "ms": 0.42330000000038126
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "d=-10",
+   "entitati": "4L /1c",
+   "errArieRel": 1.4210854715202004e-16,
+   "errPerimRel": 0,
+   "abatereMax": 3.1776437161565096e-14,
+   "ms": 1.1166000000002896
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "d=3",
+   "eroare": "edge.isSegment is not a function"
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "d=-3",
+   "eroare": "edge.isSegment is not a function"
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "d=-10",
+   "eroare": "edge.isSegment is not a function"
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "makerjs 0.19.2",
+   "caz": "d=3",
+   "entitati": "4L+4A /1c",
+   "errArieRel": 2.1141715709964635e-10,
+   "errPerimRel": 8.306570662338295e-11,
+   "abatereMax": 1.8783125875550214e-8,
+   "ms": 7.619399999999587
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "makerjs 0.19.2",
+   "caz": "d=-3",
+   "entitati": "4L+4A /1c",
+   "errArieRel": -0.000007883364982819308,
+   "errPerimRel": -0.000005390308102357708,
+   "abatereMax": 6.423750537126725e-7,
+   "ms": 5.23660000000018
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "makerjs 0.19.2",
+   "caz": "d=-10",
+   "entitati": "4L /1c",
+   "errArieRel": 2.1011932460623937e-9,
+   "errPerimRel": 1.206631120946137e-9,
+   "abatereMax": 1.2716586184069456e-7,
+   "ms": 6.263299999999617
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "d=3",
+   "entitati": "4L+9C /1c",
+   "errArieRel": -0.0006450582445569425,
+   "errPerimRel": -0.0011597197737266314,
+   "abatereMax": 0.11063192476728458,
+   "ms": 4.699799999999414
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "d=-3",
+   "entitati": "36L /1c",
+   "errArieRel": -0.00018436796773198328,
+   "errPerimRel": -0.0004472461810383611,
+   "abatereMax": 0.04034151715790315,
+   "ms": 33.848399999999856
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "d=-10",
+   "entitati": "4L /1c",
+   "errArieRel": 1.4210854715202004e-16,
+   "errPerimRel": -2.3684757858670006e-16,
+   "abatereMax": 5.684341886080802e-14,
+   "ms": 4.979999999999563
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full) precision=100",
+   "caz": "d=3",
+   "entitati": "4L+16Q /1c",
+   "errArieRel": 0.000011184124576674556,
+   "errPerimRel": 0.000021722986112340205,
+   "abatereMax": 0.002427781216562508,
+   "ms": 1.402900000000045
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full) precision=100",
+   "caz": "d=-3",
+   "entitati": "4L+16Q /1c",
+   "errArieRel": 0.0000030316295338498144,
+   "errPerimRel": 0.00001116019259170062,
+   "abatereMax": 0.0011036303522731217,
+   "ms": 0.348800000000665
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full) precision=100",
+   "caz": "d=-10",
+   "entitati": "4L /1c",
+   "errArieRel": -5.310252618073719e-8,
+   "errPerimRel": -2.272026170165494e-8,
+   "abatereMax": 0.00000534300737342619,
+   "ms": 0.8106999999999971
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "d=3",
+   "entitati": "408L /1c",
+   "errArieRel": -0.000006374340251750033,
+   "errPerimRel": -0.00000870673665275978,
+   "abatereMax": 0.0009877767798673887,
+   "ms": 0.6707999999998719
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "d=-3",
+   "entitati": "204L /1c",
+   "errArieRel": -0.000004848050104703788,
+   "errPerimRel": -0.000012503387990568353,
+   "abatereMax": 0.000988272488037012,
+   "ms": 1.7575999999999112
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "d=-10",
+   "entitati": "4L /1c",
+   "errArieRel": -2.530483982354781e-8,
+   "errPerimRel": -1.1610753366160982e-8,
+   "abatereMax": 0.0000014592778246255114,
+   "ms": 31.6238000000003
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "d=3",
+   "entitati": "4L+5A /1c",
+   "errArieRel": -0.00000190847575186281,
+   "errPerimRel": -0.000003656105068547665,
+   "abatereMax": 0.0003064130416003185,
+   "ms": 2.0369000000000597
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "d=-3",
+   "entitati": "7L+9A /1c",
+   "errArieRel": -0.0000020864486192547506,
+   "errPerimRel": -0.000007282592294069813,
+   "abatereMax": 0.0009873826368179568,
+   "ms": 1.837800000000243
+  },
+  {
+   "test": "T2 offset rrect rotit",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "d=-10",
+   "entitati": "4L /1c",
+   "errArieRel": -2.530483982354781e-8,
+   "errPerimRel": -1.1610753366160982e-8,
+   "abatereMax": 0.0000014592778246255114,
+   "ms": 9.91070000000036
+  }
+ ],
+ "T3": [
+  {
+   "test": "T3 offset deschis, o parte",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "L-arc-L-colt, d=2 (dreapta)",
+   "entitati": "3L+2A /1c",
+   "abatereMax": 1.199040866595169e-14,
+   "gol": 7.105427357601002e-15,
+   "lungime": 126.87065612267332,
+   "lungimeHartie": 126.8706561226733
+  },
+  {
+   "test": "T3 offset deschis, o parte",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "L-arc-L-colt, d=-2 (stanga)",
+   "entitati": "3L+1A /1c",
+   "abatereMax": 8.659739592076221e-15,
+   "gol": 0,
+   "lungime": 116.48114833504708,
+   "lungimeHartie": 116.48097061435918
+  },
+  {
+   "test": "T3 offset deschis, o parte",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "d=2",
+   "entitati": "3L+3C /1c",
+   "abatereMax": 0.07248229130837736,
+   "gol": 0
+  },
+  {
+   "test": "T3 offset deschis, o parte",
+   "lib": "Clipper2 / Skia",
+   "caz": "-",
+   "nota": "offsetul deschis inconjoara linia pe ambele parti (EndType/stroke); nu exista offset pe o singura parte [citit]"
+  }
+ ],
+ "T4": [
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "c=30 union",
+   "entitati": "4A /1c",
+   "errArieAbs": 0,
+   "errArieRel": 0,
+   "abatereMax": 1.4210854715202004e-14,
+   "ms": 1.16990000000078
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "c=30 inter",
+   "entitati": "4A /1c",
+   "errArieAbs": -4.547473508864641e-13,
+   "errArieRel": -4.113377551486041e-16,
+   "abatereMax": 1.4210854715202004e-14,
+   "ms": 0.2837999999992462
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "c=30 diff",
+   "entitati": "4A /1c",
+   "errArieAbs": 2.2737367544323206e-13,
+   "errArieRel": 1.3204807965606438e-16,
+   "abatereMax": 1.4210854715202004e-14,
+   "ms": 0.44030000000020664
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "c=30 xor",
+   "entitati": "8A /2c",
+   "errArieAbs": 9.094947017729282e-13,
+   "errArieRel": 2.6409615931212877e-16,
+   "abatereMax": 1.4210854715202004e-14,
+   "ms": 0.45820000000003347
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "c=59.999 union",
+   "entitati": "4A /1c",
+   "errArieAbs": 1.9099388737231493e-11,
+   "errArieRel": 3.3775136130057278e-15,
+   "abatereMax": 2.1316282072803006e-14,
+   "ms": 0.2199000000000524
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "c=59.999 inter",
+   "entitati": "4A /1c",
+   "errArieAbs": -1.8812507107668353e-11,
+   "errArieRel": -8.146074233686653e-8,
+   "abatereMax": 1.4210854715202004e-14,
+   "ms": 0.12919999999940046
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "c=59.999 diff",
+   "entitati": "4A /1c",
+   "errArieAbs": 1.864464138634503e-11,
+   "errArieRel": 6.594193513740552e-15,
+   "abatereMax": 1.4210854715202004e-14,
+   "ms": 0.12709999999970023
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "c=59.999 xor",
+   "entitati": "8A /2c",
+   "errArieAbs": 3.8198777474462986e-11,
+   "errArieRel": 6.7550275018805656e-15,
+   "abatereMax": 2.1316282072803006e-14,
+   "ms": 0.2908000000006723
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "c=60.001 union",
+   "entitati": "4A /2c",
+   "errArieAbs": 9.094947017729282e-13,
+   "errArieRel": 1.608339750033897e-16,
+   "abatereMax": 2.842170943040401e-14,
+   "ms": 0.188600000000406
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "c=60.001 inter",
+   "entitati": " /0c",
+   "errArieAbs": 0,
+   "errArieRel": null,
+   "abatereMax": 0,
+   "ms": 0.07899999999972351
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "c=60.001 diff",
+   "entitati": "2A /1c",
+   "errArieAbs": 0,
+   "errArieRel": 0,
+   "abatereMax": 1.0658141036401503e-14,
+   "ms": 0.054799999999886495
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "c=60.001 xor",
+   "entitati": "4A /2c",
+   "errArieAbs": 9.094947017729282e-13,
+   "errArieRel": 1.608339750033897e-16,
+   "abatereMax": 2.842170943040401e-14,
+   "ms": 0.05860000000029686
+  },
+  {
+   "test": "T4 muchie comuna",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "patrat ∪ patrat (latura comuna)",
+   "entitati": "8L /2c",
+   "errArieAbs": 0
+  },
+  {
+   "test": "T4 cerc identic",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "C ∪ C",
+   "entitati": "2A /1c",
+   "errArieAbs": 0
+  },
+  {
+   "test": "T4 detaliu 0,01 pe 2440",
+   "lib": "cavalier-contours-js 0.1.1",
+   "caz": "placa ∪ cerc r=0,01",
+   "entitati": "5L+1A /1c",
+   "corect": true
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "c=30 union",
+   "entitati": "4A /1c",
+   "errArieAbs": 0,
+   "errArieRel": 0,
+   "abatereMax": 1.0658141036401503e-14,
+   "ms": 4.875500000000102
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "c=30 inter",
+   "entitati": "4A /1c",
+   "errArieAbs": 0,
+   "errArieRel": 0,
+   "abatereMax": 7.105427357601002e-15,
+   "ms": 1.3295000000007349
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "c=30 diff",
+   "entitati": "4A /1c",
+   "errArieAbs": 2.2737367544323206e-13,
+   "errArieRel": 1.3204807965606438e-16,
+   "abatereMax": 7.105427357601002e-15,
+   "ms": 1.148099999999431
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "c=30 xor",
+   "entitati": "8A /2c",
+   "errArieAbs": 0,
+   "errArieRel": 0,
+   "abatereMax": 1.0658141036401503e-14,
+   "ms": 2.1148999999995794
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "c=59.999 union",
+   "entitati": "4A /1c",
+   "errArieAbs": 1.9099388737231493e-11,
+   "errArieRel": 3.3775136130057278e-15,
+   "abatereMax": 1.4210854715202004e-14,
+   "ms": 0.7932000000000698
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "c=59.999 inter",
+   "entitati": "4A /1c",
+   "errArieAbs": -1.9249490890160814e-11,
+   "errArieRel": -8.335294219663417e-8,
+   "abatereMax": 3.552713678800501e-15,
+   "ms": 0.5745999999999185
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "c=59.999 diff",
+   "entitati": "4A /1c",
+   "errArieAbs": 1.9099388737231493e-11,
+   "errArieRel": 6.7550275018805656e-15,
+   "abatereMax": 7.105427357601002e-15,
+   "ms": 0.5561999999990803
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "c=59.999 xor",
+   "entitati": "8A /2c",
+   "errArieAbs": 3.728928277269006e-11,
+   "errArieRel": 6.594193513740552e-15,
+   "abatereMax": 1.4210854715202004e-14,
+   "ms": 1.8323999999993248
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "c=60.001 union",
+   "entitati": "4A /2c",
+   "errArieAbs": 0,
+   "errArieRel": 0,
+   "abatereMax": 1.4210854715202004e-14,
+   "ms": 0.2309000000004744
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "c=60.001 inter",
+   "entitati": " /0c",
+   "errArieAbs": 0,
+   "errArieRel": null,
+   "abatereMax": 0,
+   "ms": 0.39470000000073924
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "c=60.001 diff",
+   "entitati": "2A /1c",
+   "errArieAbs": 0,
+   "errArieRel": 0,
+   "abatereMax": 7.105427357601002e-15,
+   "ms": 0.2088000000003376
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "c=60.001 xor",
+   "entitati": "4A /2c",
+   "errArieAbs": 0,
+   "errArieRel": 0,
+   "abatereMax": 1.4210854715202004e-14,
+   "ms": 0.5190999999995256
+  },
+  {
+   "test": "T4 muchie comuna",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "patrat ∪ patrat (latura comuna)",
+   "entitati": "6L /1c",
+   "errArieAbs": 0
+  },
+  {
+   "test": "T4 cerc identic",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "C ∪ C",
+   "entitati": "2A /1c",
+   "errArieAbs": 0
+  },
+  {
+   "test": "T4 detaliu 0,01 pe 2440",
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "caz": "placa ∪ cerc r=0,01",
+   "entitati": "5L+1A /1c",
+   "corect": true
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "makerjs 0.19.2",
+   "caz": "c=30 union",
+   "entitati": "4A /1c",
+   "errArieAbs": 0,
+   "errArieRel": 0,
+   "abatereMax": 5.860034235638523e-9,
+   "ms": 0.7851000000009662
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "makerjs 0.19.2",
+   "caz": "c=30 inter",
+   "entitati": "4A /1c",
+   "errArieAbs": -2.2737367544323206e-13,
+   "errArieRel": -2.0566887757430205e-16,
+   "abatereMax": 7.105427357601002e-15,
+   "ms": 0.46410000000105356
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "makerjs 0.19.2",
+   "caz": "c=30 diff",
+   "entitati": "4A /1c",
+   "errArieAbs": 2.2737367544323206e-13,
+   "errArieRel": 1.3204807965606438e-16,
+   "abatereMax": 5.860034235638523e-9,
+   "ms": 0.2870999999995547
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "makerjs 0.19.2",
+   "caz": "c=30 xor",
+   "eroare": "NESUPORTAT: maker: xor nu exista direct"
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "makerjs 0.19.2",
+   "caz": "c=59.999 union",
+   "entitati": "4A /1c",
+   "errArieAbs": 2.000888343900442e-11,
+   "errArieRel": 3.5383475945774293e-15,
+   "abatereMax": 1.4210854715202004e-14,
+   "ms": 0.2775999999994383
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "makerjs 0.19.2",
+   "caz": "c=59.999 inter",
+   "entitati": "4A /1c",
+   "errArieAbs": -1.921129921811371e-11,
+   "errArieRel": -8.318756700563822e-8,
+   "abatereMax": 4.72628158831867e-10,
+   "ms": 0.44939999999951397
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "makerjs 0.19.2",
+   "caz": "c=59.999 diff",
+   "entitati": "4A /1c",
+   "errArieAbs": 1.9554136088117957e-11,
+   "errArieRel": 6.915861490020579e-15,
+   "abatereMax": 4.72628158831867e-10,
+   "ms": 0.2466999999996915
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "makerjs 0.19.2",
+   "caz": "c=59.999 xor",
+   "eroare": "NESUPORTAT: maker: xor nu exista direct"
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "makerjs 0.19.2",
+   "caz": "c=60.001 union",
+   "entitati": "4A /2c",
+   "errArieAbs": 0,
+   "errArieRel": 0,
+   "abatereMax": 1.4210854715202004e-14,
+   "ms": 0.1805000000003929
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "makerjs 0.19.2",
+   "caz": "c=60.001 inter",
+   "entitati": " /0c",
+   "errArieAbs": 0,
+   "errArieRel": null,
+   "abatereMax": 0,
+   "ms": 0.19689999999900465
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "makerjs 0.19.2",
+   "caz": "c=60.001 diff",
+   "entitati": "2A /1c",
+   "errArieAbs": 0,
+   "errArieRel": 0,
+   "abatereMax": 7.105427357601002e-15,
+   "ms": 0.11369999999988067
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "makerjs 0.19.2",
+   "caz": "c=60.001 xor",
+   "eroare": "NESUPORTAT: maker: xor nu exista direct"
+  },
+  {
+   "test": "T4 muchie comuna",
+   "lib": "makerjs 0.19.2",
+   "caz": "patrat ∪ patrat (latura comuna)",
+   "entitati": "6L /1c",
+   "errArieAbs": 0
+  },
+  {
+   "test": "T4 cerc identic",
+   "lib": "makerjs 0.19.2",
+   "caz": "C ∪ C",
+   "entitati": "2A /1c",
+   "errArieAbs": 0
+  },
+  {
+   "test": "T4 detaliu 0,01 pe 2440",
+   "lib": "makerjs 0.19.2",
+   "caz": "placa ∪ cerc r=0,01",
+   "entitati": "5L+1A /1c",
+   "corect": true
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "c=30 union",
+   "entitati": "8C /1c",
+   "errArieAbs": 1.1294351329734127,
+   "errArieRel": 0.0002482638384272983,
+   "abatereMax": 0.008175900213945653,
+   "ms": 1.0846000000001368
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "c=30 inter",
+   "entitati": "4C /1c",
+   "errArieAbs": 0.45398719049421743,
+   "errArieRel": 0.0004106501586872061,
+   "abatereMax": 0.008175900065882757,
+   "ms": 1.015400000000227
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "c=30 diff",
+   "entitati": "6C /1c",
+   "errArieAbs": 0.33772397002599064,
+   "errArieRel": 0.0001961344100578981,
+   "abatereMax": 0.008175900213945653,
+   "ms": 0.5039999999989959
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "c=30 xor",
+   "entitati": "12C /2c",
+   "errArieAbs": 0.6754479424789679,
+   "errArieRel": 0.0001961344107626387,
+   "abatereMax": 0.008175900213945653,
+   "ms": 0.4493000000002212
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "c=59.999 union",
+   "entitati": "8C /1c",
+   "errArieAbs": 1.5834198401671529,
+   "errArieRel": 0.0002800101164935566,
+   "abatereMax": 0.00817590073447505,
+   "ms": 0.3912000000000262
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "c=59.999 inter",
+   "entitati": "4C /1c",
+   "errArieAbs": 0.0000024791879962293706,
+   "errArieRel": 0.010735224891060465,
+   "abatereMax": 0.000010738038476176825,
+   "ms": 0.3819999999996071
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "c=59.999 diff",
+   "entitati": "6C /1c",
+   "errArieAbs": 0.7917087129321771,
+   "errArieRel": 0.0002800097009864061,
+   "abatereMax": 0.008175900734347152,
+   "ms": 0.3297000000002299
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "c=59.999 xor",
+   "entitati": "12C /2c",
+   "errArieAbs": 1.5834173609746358,
+   "errArieRel": 0.00028000968951138354,
+   "abatereMax": 0.008175900734347152,
+   "ms": 0.6093999999993684
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "c=60.001 union",
+   "entitati": "8C /2c",
+   "errArieAbs": 1.5834223200836277,
+   "errArieRel": 0.0002800105436037185,
+   "abatereMax": 0.008175900213959864,
+   "ms": 0.3157000000010157
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "c=60.001 inter",
+   "entitati": " /0c",
+   "errArieAbs": 0,
+   "errArieRel": null,
+   "abatereMax": 0,
+   "ms": 0.5488000000004831
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "c=60.001 diff",
+   "entitati": "4C /1c",
+   "errArieAbs": 0.7917111600418139,
+   "errArieRel": 0.0002800105436037185,
+   "abatereMax": 0.008175900213945653,
+   "ms": 0.2556000000004133
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "c=60.001 xor",
+   "entitati": "8C /2c",
+   "errArieAbs": 1.5834223200836277,
+   "errArieRel": 0.0002800105436037185,
+   "abatereMax": 0.008175900213959864,
+   "ms": 0.2978999999995722
+  },
+  {
+   "test": "T4 muchie comuna",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "patrat ∪ patrat (latura comuna)",
+   "entitati": "4L /1c",
+   "errArieAbs": 0
+  },
+  {
+   "test": "T4 cerc identic",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "C ∪ C",
+   "entitati": "4C /1c",
+   "errArieAbs": 0.5497994166955777
+  },
+  {
+   "test": "T4 detaliu 0,01 pe 2440",
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "caz": "placa ∪ cerc r=0,01",
+   "entitati": "5L+2C /1c",
+   "corect": true
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "c=30 union",
+   "entitati": "8A /1c",
+   "errArieAbs": -0.000049053945076593664,
+   "errArieRel": -1.0782665014727941e-8,
+   "abatereMax": 0.0000030357510709677626,
+   "ms": 0.6656000000002678
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "c=30 inter",
+   "entitati": "4A /1c",
+   "errArieAbs": -0.000014379745607584482,
+   "errArieRel": -1.3007073633967294e-8,
+   "abatereMax": 0.0000024127926323558313,
+   "ms": 0.31489999999939755
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "c=30 diff",
+   "entitati": "6A /1c",
+   "errArieAbs": 0.000007521737188653788,
+   "errArieRel": 4.368275920698283e-9,
+   "abatereMax": 0.0000030357510816259037,
+   "ms": 0.28249999999934516
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "c=30 xor",
+   "entitati": "12A /2c",
+   "errArieAbs": -0.00003467419901426183,
+   "errArieRel": -1.0068582883484725e-8,
+   "abatereMax": 0.0000024127926323558313,
+   "ms": 0.22229999999944994
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "c=59.999 union",
+   "entitati": "8A /1c",
+   "errArieAbs": -0.000031931709600030445,
+   "errArieRel": -5.646766257519591e-9,
+   "abatereMax": 0.0000013683513913065326,
+   "ms": 0.3220999999994092
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "c=59.999 inter",
+   "entitati": "4A /1c",
+   "errArieAbs": -3.7705640032470455e-7,
+   "errArieRel": -0.0016327060554729034,
+   "abatereMax": 0.0000013124105002759734,
+   "ms": 0.23359999999956926
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "c=59.999 diff",
+   "entitati": "6A /1c",
+   "errArieAbs": 0.000011253699540247908,
+   "errArieRel": 3.98018234709717e-9,
+   "abatereMax": 0.0000013683513913065326,
+   "ms": 0.1073000000014872
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "c=59.999 xor",
+   "entitati": "12A /2c",
+   "errArieAbs": -0.00003155465310555883,
+   "errArieRel": -5.5800882549932304e-9,
+   "abatereMax": 0.000001357822320358082,
+   "ms": 0.13919999999961874
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "c=60.001 union",
+   "entitati": "8A /2c",
+   "errArieAbs": 2.7284841053187847e-12,
+   "errArieRel": 4.825019250101691e-16,
+   "abatereMax": 5.493164074721335e-7,
+   "ms": 0.24769999999989523
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "c=60.001 inter",
+   "entitati": " /0c",
+   "errArieAbs": 0,
+   "errArieRel": null,
+   "abatereMax": 0,
+   "ms": 0.18659999999908905
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "c=60.001 diff",
+   "entitati": "4A /1c",
+   "errArieAbs": 9.094947017729282e-13,
+   "errArieRel": 3.216679500067794e-16,
+   "abatereMax": 1.0658141036401503e-14,
+   "ms": 0.07780000000093423
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "c=60.001 xor",
+   "entitati": "8A /2c",
+   "errArieAbs": 2.7284841053187847e-12,
+   "errArieRel": 4.825019250101691e-16,
+   "abatereMax": 5.493164074721335e-7,
+   "ms": 0.12200000000120781
+  },
+  {
+   "test": "T4 muchie comuna",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "patrat ∪ patrat (latura comuna)",
+   "entitati": "5L /1c",
+   "errArieAbs": 0
+  },
+  {
+   "test": "T4 cerc identic",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "C ∪ C",
+   "entitati": "4A /1c",
+   "errArieAbs": 6.821210263296962e-13
+  },
+  {
+   "test": "T4 detaliu 0,01 pe 2440",
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "caz": "placa ∪ cerc r=0,01",
+   "entitati": "5L+2A /1c",
+   "corect": true
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "c=30 union",
+   "entitati": "516L /1c",
+   "errArieAbs": -0.1665711193527386,
+   "errArieRel": -0.00003661439621837583,
+   "abatereMax": 0.0009941075418176126,
+   "ms": 2.2800999999999476
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "c=30 inter",
+   "entitati": "260L /1c",
+   "errArieAbs": -0.08313644290228694,
+   "errArieRel": -0.00007520034526381386,
+   "abatereMax": 0.0009941075418176126,
+   "ms": 0.8505999999997584
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "c=30 diff",
+   "entitati": "388L /1c",
+   "errArieAbs": -0.041717338226817446,
+   "errArieRel": -0.00002422749419199636,
+   "abatereMax": 0.0009941075418176126,
+   "ms": 0.8513999999995576
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "c=30 xor",
+   "entitati": "776L /2c",
+   "errArieAbs": -0.08343467645227065,
+   "errArieRel": -0.000024227494191600213,
+   "abatereMax": 0.0009941075418176126,
+   "ms": 1.0119999999988067
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "c=59.999 union",
+   "entitati": "772L /1c",
+   "errArieAbs": -0.24953804176493577,
+   "errArieRel": -0.00004412801606477125,
+   "abatereMax": 0.000994107541824718,
+   "ms": 0.8415000000004511
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "c=59.999 inter",
+   "entitati": "4L /1c",
+   "errArieAbs": -0.0001695025491370572,
+   "errArieRel": -0.733969342930775,
+   "abatereMax": 0.00043709060131646993,
+   "ms": 0.5488000000004831
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "c=59.999 diff",
+   "entitati": "388L /1c",
+   "errArieAbs": -0.1246842696054955,
+   "errArieRel": -0.000044098043231885076,
+   "abatereMax": 0.0009941075418176126,
+   "ms": 0.5697000000000116
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "c=59.999 xor",
+   "entitati": "776L /2c",
+   "errArieAbs": -0.2493685392100815,
+   "errArieRel": -0.00004409804323172424,
+   "abatereMax": 0.000994107541824718,
+   "ms": 0.6333999999988009
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "c=60.001 union",
+   "entitati": "772L /2c",
+   "errArieAbs": -0.24970753659181355,
+   "errArieRel": -0.000044157987528763845,
+   "abatereMax": 0.0009941075418176126,
+   "ms": 0.6230999999988853
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "c=60.001 inter",
+   "entitati": " /0c",
+   "errArieAbs": 0,
+   "errArieRel": null,
+   "abatereMax": 0,
+   "ms": 0.4248999999999796
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "c=60.001 diff",
+   "entitati": "386L /1c",
+   "errArieAbs": -0.12485376829272354,
+   "errArieRel": -0.00004415798752763801,
+   "abatereMax": 0.0009941075418176126,
+   "ms": 0.4684999999990396
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "c=60.001 xor",
+   "entitati": "772L /2c",
+   "errArieAbs": -0.24970753659181355,
+   "errArieRel": -0.000044157987528763845,
+   "abatereMax": 0.0009941075418176126,
+   "ms": 0.5313000000005559
+  },
+  {
+   "test": "T4 muchie comuna",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "patrat ∪ patrat (latura comuna)",
+   "entitati": "6L /1c",
+   "errArieAbs": 0
+  },
+  {
+   "test": "T4 cerc identic",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "C ∪ C",
+   "entitati": "352L /1c",
+   "errArieAbs": -0.10427344881350109
+  },
+  {
+   "test": "T4 detaliu 0,01 pe 2440",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "caz": "placa ∪ cerc r=0,01",
+   "entitati": "9L /1c",
+   "corect": true
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "c=30 union",
+   "entitati": "4L+3A /1c",
+   "errArieAbs": -0.0009367691900479258,
+   "errArieRel": -2.0591347661504352e-7,
+   "abatereMax": 0.0009933954920526844,
+   "ms": 10.683599999998478
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "c=30 inter",
+   "entitati": "4L+2A /1c",
+   "errArieAbs": -0.0003299153599982674,
+   "errArieRel": -2.984220651449435e-7,
+   "abatereMax": 0.0008817078645435572,
+   "ms": 1.771600000000035
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "c=30 diff",
+   "entitati": "4L+3A /1c",
+   "errArieAbs": -0.00030203406663531496,
+   "errArieRel": -1.7540737032182357e-7,
+   "abatereMax": 0.0009933954920526844,
+   "ms": 4.981600000000981
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "c=30 xor",
+   "entitati": "8L+6A /2c",
+   "errArieAbs": -0.0005806557346659247,
+   "errArieRel": -1.6860895298114617e-7,
+   "abatereMax": 0.0009933954920526844,
+   "ms": 5.367999999998574
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "c=59.999 union",
+   "entitati": "4L+4A /1c",
+   "errArieAbs": -0.0010247072705169558,
+   "errArieRel": -1.8120803776145543e-7,
+   "abatereMax": 0.000993416174615902,
+   "ms": 8.41990000000078
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "c=59.999 inter",
+   "entitati": "4L /1c",
+   "errArieAbs": -0.0001695025491370572,
+   "errArieRel": -0.733969342930775,
+   "abatereMax": 0.00043709060131646993,
+   "ms": 0.33209999999962747
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "c=59.999 diff",
+   "entitati": "1L+3A /1c",
+   "errArieAbs": -0.0005332009855010256,
+   "errArieRel": -1.885812876339904e-7,
+   "abatereMax": 0.000993416174615902,
+   "ms": 3.403700000000754
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "c=59.999 xor",
+   "entitati": "2L+6A /2c",
+   "errArieAbs": -0.0010211937351414235,
+   "errArieRel": -1.805867156413605e-7,
+   "abatereMax": 0.000993416174615902,
+   "ms": 6.51050000000032
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "c=60.001 union",
+   "entitati": "4A /2c",
+   "errArieAbs": -0.0000639019490336068,
+   "errArieRel": -1.1300345624338763e-8,
+   "abatereMax": 4.4662809983719853e-7,
+   "ms": 10.366199999998571
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "c=60.001 inter",
+   "entitati": " /0c",
+   "errArieAbs": 0,
+   "errArieRel": null,
+   "abatereMax": 0,
+   "ms": 0.3194000000003143
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "c=60.001 diff",
+   "entitati": "2A /1c",
+   "errArieAbs": -0.0000319509754262981,
+   "errArieRel": -1.1300345946006713e-8,
+   "abatereMax": 4.466280891790575e-7,
+   "ms": 5.510000000000218
+  },
+  {
+   "test": "T4 boolean cercuri",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "c=60.001 xor",
+   "entitati": "4A /2c",
+   "errArieAbs": -0.0000639019490336068,
+   "errArieRel": -1.1300345624338763e-8,
+   "abatereMax": 4.4662809983719853e-7,
+   "ms": 10.09780000000137
+  },
+  {
+   "test": "T4 muchie comuna",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "patrat ∪ patrat (latura comuna)",
+   "entitati": "6L /1c",
+   "errArieAbs": 0
+  },
+  {
+   "test": "T4 cerc identic",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "C ∪ C",
+   "entitati": "2A /1c",
+   "errArieAbs": -0.0000033548644751135726
+  },
+  {
+   "test": "T4 detaliu 0,01 pe 2440",
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm, refit arce 0.001)",
+   "caz": "placa ∪ cerc r=0,01",
+   "entitati": "5L+1A /1c",
+   "corect": true
+  }
+ ],
+ "T5": [
+  {
+   "test": "T5 rotire 30°",
+   "lib": "model propriu",
+   "caz": "rrect 100x60 r8",
+   "entitati": "4L+4A /1c",
+   "abatereMax": 3.552713678800501e-14
+  },
+  {
+   "test": "T5 scalare 2x1",
+   "lib": "conica (exact)",
+   "caz": "cerc r=50",
+   "entitati": "4K /1c",
+   "abatereMax": 3.351623381340333e-14
+  },
+  {
+   "test": "T5 scalare 2x1",
+   "lib": "cubice κ (aprox.)",
+   "caz": "cerc r=50, tol 0.01",
+   "entitati": "8C /1c",
+   "abatereMax": 0.00040834488772762057
+  },
+  {
+   "test": "T5 scalare 2x1",
+   "lib": "biarce proprii (aprox.)",
+   "caz": "cerc r=50, tol 0.01",
+   "entitati": "64A /1c",
+   "abatereMax": 0.005772671991197284,
+   "gol": 4.7664655742347644e-14
+  },
+  {
+   "test": "T5 scalare 2x1",
+   "lib": "cubice κ (aprox.)",
+   "caz": "cerc r=50, tol 0.001",
+   "entitati": "8C /1c",
+   "abatereMax": 0.00040834488772762057
+  },
+  {
+   "test": "T5 scalare 2x1",
+   "lib": "biarce proprii (aprox.)",
+   "caz": "cerc r=50, tol 0.001",
+   "entitati": "120A /1c",
+   "abatereMax": 0.0006462960791894481,
+   "gol": 4.441322100732e-14
+  },
+  {
+   "test": "T5 scalare 2x1",
+   "lib": "conica (exact)",
+   "caz": "cerc r=1220",
+   "entitati": "4K /1c",
+   "abatereMax": 9.349578789476378e-13
+  },
+  {
+   "test": "T5 scalare 2x1",
+   "lib": "cubice κ (aprox.)",
+   "caz": "cerc r=1220, tol 0.01",
+   "entitati": "8C /1c",
+   "abatereMax": 0.00996361526028014
+  },
+  {
+   "test": "T5 scalare 2x1",
+   "lib": "biarce proprii (aprox.)",
+   "caz": "cerc r=1220, tol 0.01",
+   "entitati": "192A /1c",
+   "abatereMax": 0.007563739743373917,
+   "gol": 1.1368683772161603e-12
+  },
+  {
+   "test": "T5 scalare 2x1",
+   "lib": "cubice κ (aprox.)",
+   "caz": "cerc r=1220, tol 0.001",
+   "entitati": "16C /1c",
+   "abatereMax": 0.00016019224765372926
+  },
+  {
+   "test": "T5 scalare 2x1",
+   "lib": "biarce proprii (aprox.)",
+   "caz": "cerc r=1220, tol 0.001",
+   "entitati": "384A /1c",
+   "abatereMax": 0.0008968129933441798,
+   "gol": 1.8749713606747085e-12
+  },
+  {
+   "test": "T5 cerc ca 4 cubice",
+   "lib": "reprezentarea paper.js",
+   "caz": "r=50",
+   "entitati": "4C /1c",
+   "abatereMax": 0.01362650035656543
+  },
+  {
+   "test": "T5 cerc ca 4 cubice",
+   "lib": "reprezentarea paper.js",
+   "caz": "r=1220",
+   "entitati": "4C /1c",
+   "abatereMax": 0.3324866087002647
+  }
+ ],
+ "T6": [
+  {
+   "test": "T6 offset cubica",
+   "lib": "bezier-js 6.1.4 offset()",
+   "caz": "C (fara inflexiune) d=3",
+   "entitati": "4C /1c",
+   "abatereMax": 0.03633932229819248,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "paperjs-offset 2.2.1",
+   "caz": "C (fara inflexiune) d=3",
+   "entitati": "7C /1c",
+   "abatereMax": 0.19615832966297075,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "propriu Tiller-Hanson, tol 0.01",
+   "caz": "C (fara inflexiune) d=3",
+   "entitati": "14C /1c",
+   "abatereMax": 0.006636390166989248,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "propriu Tiller-Hanson, tol 0.001",
+   "caz": "C (fara inflexiune) d=3",
+   "entitati": "48C /1c",
+   "abatereMax": 0.0007939905997091934,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "biarce proprii (tol 0.01) + offset exact cavalier",
+   "caz": "C (fara inflexiune) d=3",
+   "entitati": "28A /1c",
+   "abatereMax": 0.00579457338360001,
+   "gol": 1.5888218580782548e-14,
+   "arceIntrare": 28
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "biarce proprii (tol 0.001) + offset exact cavalier",
+   "caz": "C (fara inflexiune) d=3",
+   "entitati": "56A /1c",
+   "abatereMax": 0.0006549432453617499,
+   "gol": 3.1776437161565096e-14,
+   "arceIntrare": 56
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "bezier-js 6.1.4 offset()",
+   "caz": "C (fara inflexiune) d=-3",
+   "entitati": "4C /1c",
+   "abatereMax": 0.03287071649608462,
+   "gol": 3.552713678800501e-15
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "paperjs-offset 2.2.1",
+   "caz": "C (fara inflexiune) d=-3",
+   "entitati": "4C /1c",
+   "abatereMax": 2.831147553192143,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "propriu Tiller-Hanson, tol 0.01",
+   "caz": "C (fara inflexiune) d=-3",
+   "entitati": "14C /1c",
+   "abatereMax": 0.0066362494177063525,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "propriu Tiller-Hanson, tol 0.001",
+   "caz": "C (fara inflexiune) d=-3",
+   "entitati": "48C /1c",
+   "abatereMax": 0.000794091046892204,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "biarce proprii (tol 0.01) + offset exact cavalier",
+   "caz": "C (fara inflexiune) d=-3",
+   "entitati": "28A /1c",
+   "abatereMax": 0.005794572880001514,
+   "gol": 2.842170943040401e-14,
+   "arceIntrare": 28
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "biarce proprii (tol 0.001) + offset exact cavalier",
+   "caz": "C (fara inflexiune) d=-3",
+   "entitati": "56A /1c",
+   "abatereMax": 0.0006549448765698074,
+   "gol": 2.842170943040401e-14,
+   "arceIntrare": 56
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "bezier-js 6.1.4 offset()",
+   "caz": "S (cu inflexiune) d=3",
+   "entitati": "4C /1c",
+   "abatereMax": 0.04402429183710321,
+   "gol": 1.7763568394002505e-15
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "paperjs-offset 2.2.1",
+   "caz": "S (cu inflexiune) d=3",
+   "entitati": "4C /1c",
+   "abatereMax": 3.070326257300112,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "propriu Tiller-Hanson, tol 0.01",
+   "caz": "S (cu inflexiune) d=3",
+   "entitati": "10C /1c",
+   "abatereMax": 0.008426212791416976,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "propriu Tiller-Hanson, tol 0.001",
+   "caz": "S (cu inflexiune) d=3",
+   "entitati": "42C /1c",
+   "abatereMax": 0.0008989629675486555,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "biarce proprii (tol 0.01) + offset exact cavalier",
+   "caz": "S (cu inflexiune) d=3",
+   "entitati": "32A /1c",
+   "abatereMax": 0.003893066544318202,
+   "gol": 3.2155493553843715e-13,
+   "arceIntrare": 32
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "biarce proprii (tol 0.001) + offset exact cavalier",
+   "caz": "S (cu inflexiune) d=3",
+   "entitati": "64A /1c",
+   "abatereMax": 0.00046616614688810287,
+   "gol": 6.915300366811401e-13,
+   "arceIntrare": 64
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "bezier-js 6.1.4 offset()",
+   "caz": "S (cu inflexiune) d=-3",
+   "entitati": "4C /1c",
+   "abatereMax": 0.04402429183710588,
+   "gol": 1.7763568394002505e-15
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "paperjs-offset 2.2.1",
+   "caz": "S (cu inflexiune) d=-3",
+   "entitati": "7C /1c",
+   "abatereMax": 0.23376308814865032,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "propriu Tiller-Hanson, tol 0.01",
+   "caz": "S (cu inflexiune) d=-3",
+   "entitati": "10C /1c",
+   "abatereMax": 0.008426212791421417,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "propriu Tiller-Hanson, tol 0.001",
+   "caz": "S (cu inflexiune) d=-3",
+   "entitati": "42C /1c",
+   "abatereMax": 0.000898962967546435,
+   "gol": 0
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "biarce proprii (tol 0.01) + offset exact cavalier",
+   "caz": "S (cu inflexiune) d=-3",
+   "entitati": "32A /1c",
+   "abatereMax": 0.0038930665443035473,
+   "gol": 3.410605131648481e-13,
+   "arceIntrare": 32
+  },
+  {
+   "test": "T6 offset cubica",
+   "lib": "biarce proprii (tol 0.001) + offset exact cavalier",
+   "caz": "S (cu inflexiune) d=-3",
+   "entitati": "64A /1c",
+   "abatereMax": 0.00046616614695471625,
+   "gol": 3.0611117876642906e-13,
+   "arceIntrare": 64
+  }
+ ],
+ "T7": {
+  "n": 102,
+  "res": {
+   "cavalier-contours-js 0.1.1": {
+    "total": 102,
+    "ok": 71,
+    "topologie": 0,
+    "exceptie": 0,
+    "blocaj": 0,
+    "nesuportat": 31,
+    "ms": 67.27680000001965,
+    "exemple": [],
+    "peFam": {
+     "linie+arc": {
+      "total": 30,
+      "ok": 30,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "glifa TTF": {
+      "total": 30,
+      "ok": 0,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 30
+     },
+     "offset": {
+      "total": 30,
+      "ok": 30,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "degenerat": {
+      "total": 12,
+      "ok": 11,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 1
+     }
+    }
+   },
+   "@flatten-js/core 1.6.14 + polygon-offset 1.1.4": {
+    "total": 102,
+    "ok": 65,
+    "topologie": 0,
+    "exceptie": 4,
+    "blocaj": 0,
+    "nesuportat": 33,
+    "ms": 207.70170000001053,
+    "exemple": [
+     "glifa-B-15: exceptie Unresolved boundary conflict in boolean operation",
+     "glifa-B-30: exceptie Unresolved boundary conflict in boolean operation",
+     "glifa-B-60: exceptie Unresolved boundary conflict in boolean operation",
+     "glifa-B-135: exceptie Unresolved boundary conflict in boolean operation"
+    ],
+    "peFam": {
+     "linie+arc": {
+      "total": 30,
+      "ok": 30,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "glifa TTF": {
+      "total": 30,
+      "ok": 26,
+      "topologie": 0,
+      "exceptie": 4,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "offset": {
+      "total": 30,
+      "ok": 0,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 30
+     },
+     "degenerat": {
+      "total": 12,
+      "ok": 9,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 3
+     }
+    }
+   },
+   "makerjs 0.19.2": {
+    "total": 102,
+    "ok": 75,
+    "topologie": 4,
+    "exceptie": 0,
+    "blocaj": 0,
+    "nesuportat": 23,
+    "ms": 8181.355099999964,
+    "exemple": [
+     "offset-stea-40: topologie (321 pct)",
+     "offset-glifa-60: topologie (420 pct)",
+     "offset-stea-100: topologie (805 pct)",
+     "offset-glifa-120: topologie (155 pct)"
+    ],
+    "peFam": {
+     "linie+arc": {
+      "total": 30,
+      "ok": 23,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 7
+     },
+     "glifa TTF": {
+      "total": 30,
+      "ok": 23,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 7
+     },
+     "offset": {
+      "total": 30,
+      "ok": 18,
+      "topologie": 4,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 8
+     },
+     "degenerat": {
+      "total": 12,
+      "ok": 11,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 1
+     }
+    }
+   },
+   "paper 0.12.18 + paperjs-offset 2.2.1": {
+    "total": 102,
+    "ok": 96,
+    "topologie": 6,
+    "exceptie": 0,
+    "blocaj": 0,
+    "nesuportat": 0,
+    "ms": 741.1218000000044,
+    "exemple": [
+     "offset-stea-10: topologie (15 pct)",
+     "offset-stea-25: topologie (2 pct)",
+     "offset-stea-40: topologie (1 pct)",
+     "offset-rrect-50: topologie (2 pct)",
+     "offset-stea-85: topologie (1 pct)",
+     "offset-stea-100: topologie (9 pct)"
+    ],
+    "peFam": {
+     "linie+arc": {
+      "total": 30,
+      "ok": 30,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "glifa TTF": {
+      "total": 30,
+      "ok": 30,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "offset": {
+      "total": 30,
+      "ok": 24,
+      "topologie": 6,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "degenerat": {
+      "total": 12,
+      "ok": 12,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     }
+    }
+   },
+   "Skia PathOps (canvaskit-wasm 0.42.0, build full)": {
+    "total": 102,
+    "ok": 102,
+    "topologie": 0,
+    "exceptie": 0,
+    "blocaj": 0,
+    "nesuportat": 0,
+    "ms": 39.610299999989365,
+    "exemple": [],
+    "peFam": {
+     "linie+arc": {
+      "total": 30,
+      "ok": 30,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "glifa TTF": {
+      "total": 30,
+      "ok": 30,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "offset": {
+      "total": 30,
+      "ok": 30,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "degenerat": {
+      "total": 12,
+      "ok": 12,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     }
+    }
+   },
+   "clipper2-ts 2.0.1 (aplatizare 0.001 mm)": {
+    "total": 102,
+    "ok": 102,
+    "topologie": 0,
+    "exceptie": 0,
+    "blocaj": 0,
+    "nesuportat": 0,
+    "ms": 257.5106999999989,
+    "exemple": [],
+    "peFam": {
+     "linie+arc": {
+      "total": 30,
+      "ok": 30,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "glifa TTF": {
+      "total": 30,
+      "ok": 30,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "offset": {
+      "total": 30,
+      "ok": 30,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     },
+     "degenerat": {
+      "total": 12,
+      "ok": 12,
+      "topologie": 0,
+      "exceptie": 0,
+      "blocaj": 0,
+      "nesuportat": 0
+     }
+    }
+   }
+  }
+ },
+ "T8": [
+  {
+   "lib": "cavalier-contours-js 0.1.1",
+   "offset1000_ms": 14.776200000000244,
+   "unire975_ms": 67.09619999999995,
+   "repetari": 3,
+   "entitatiOffset": 5000,
+   "erori": 0,
+   "ariaReuniunilor": 420182.33273063204
+  },
+  {
+   "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+   "offset1000_ms": 37.89229999999952,
+   "unire975_ms": 648.5330000000031,
+   "repetari": 3,
+   "entitatiOffset": 0,
+   "erori": 1000,
+   "ariaReuniunilor": 420182.33273063396
+  },
+  {
+   "lib": "makerjs 0.19.2",
+   "offset1000_ms": 2160.7822000000015,
+   "unire975_ms": 2141.2625000000044,
+   "repetari": 3,
+   "entitatiOffset": 5000,
+   "erori": 0,
+   "ariaReuniunilor": 420182.3326123558
+  },
+  {
+   "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+   "offset1000_ms": 574.7387999999992,
+   "unire975_ms": 1379.5357999999978,
+   "repetari": 3,
+   "entitatiOffset": 8122,
+   "erori": 0,
+   "ariaReuniunilor": 420210.4570524004
+  },
+  {
+   "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+   "offset1000_ms": 57.57770000000164,
+   "unire975_ms": 153.0952000000034,
+   "repetari": 3,
+   "entitatiOffset": 22000,
+   "erori": 0,
+   "ariaReuniunilor": 420181.9722780574
+  },
+  {
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+   "offset1000_ms": 111.05559999999969,
+   "unire975_ms": 1005.0429999999978,
+   "repetari": 3,
+   "entitatiOffset": 372000,
+   "erori": 0,
+   "ariaReuniunilor": 420165.0959636025
+  },
+  {
+   "lib": "clipper2-ts 2.0.1 (aplatizare 0.01 mm)",
+   "offset1000_ms": 42.84870000000228,
+   "unire975_ms": 369.5636999999988,
+   "repetari": 3,
+   "entitatiOffset": 124000,
+   "erori": 0,
+   "ariaReuniunilor": 420019.1949704974
+  }
+ ],
+ "secunde": 62.6422131
+}

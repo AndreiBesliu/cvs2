@@ -1,0 +1,13 @@
+{
+  "name": "s10-prototip-planse",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sonda aruncabila Faza 2 / s10: prototipul clicabil al planselor (variantele A si D, 8 scenarii). Doar unealta de test (playwright-core) e dependinta; prototipul e un singur HTML fara biblioteci.",
+  "scripts": {
+    "masoara": "node test-planse.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.63.0"
+  }
+}

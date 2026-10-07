@@ -1,0 +1,4208 @@
+{
+ "masina": {
+  "chrome_gpu": [
+   "Canvas: Hardware accelerated",
+   "Compositing: Hardware accelerated",
+   "Rasterization: Hardware accelerated",
+   "Video Decode: Hardware accelerated",
+   "WebGL: Hardware accelerated",
+   "WebGPU: Hardware accelerated"
+  ],
+  "browser": "154.0.4258.62"
+ },
+ "rulari": [
+  {
+   "q": {
+    "page": "info"
+   },
+   "durata_s": 0.133,
+   "webgl2": true,
+   "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "vendor": "Google Inc. (NVIDIA)",
+   "maxTex": 16384,
+   "dpr": 1,
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+   "webgpu": {
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "",
+    "description": ""
+   },
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2d",
+    "n": 0,
+    "mode": "pan"
+   },
+   "durata_s": 0.327,
+   "r": "c2d",
+   "n": 0,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 0,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 1.7,
+    "p95": 2.4,
+    "max": 3.1
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 0.7,
+    "p95": 0.9,
+    "max": 1.2
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 10,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "pan"
+   },
+   "durata_s": 4.429,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 58,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 1328,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 22.9,
+    "p95": 33.2,
+    "max": 35.4
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 22.6,
+    "p95": 24.9,
+    "max": 25.5
+   },
+   "cadre_peste_16_7ms": 99,
+   "heapMB": 38,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2d",
+    "n": 50000,
+    "mode": "pan"
+   },
+   "durata_s": 46.081,
+   "r": "c2d",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 278,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 36666,
+   "sync": true,
+   "interval_ms": {
+    "n": 57,
+    "med": 116.4,
+    "p95": 136.4,
+    "max": 142.7
+   },
+   "cadru_ms": {
+    "n": 57,
+    "med": 118.6,
+    "p95": 128.7,
+    "max": 144.5
+   },
+   "cadre_peste_16_7ms": 57,
+   "heapMB": 96,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2d",
+    "n": 50000,
+    "mode": "pan",
+    "sync": 0
+   },
+   "durata_s": 44.99,
+   "r": "c2d",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 317,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 35576,
+   "sync": false,
+   "interval_ms": {
+    "n": 54,
+    "med": 121.5,
+    "p95": 140.1,
+    "max": 156.6
+   },
+   "cadru_ms": {
+    "n": 54,
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 98,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2d",
+    "n": 10000,
+    "mode": "zoom"
+   },
+   "durata_s": 3.876,
+   "r": "c2d",
+   "n": 10000,
+   "tp": 0,
+   "mode": "zoom",
+   "dpr": 1,
+   "genMs": 61,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 1422,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 10.9,
+    "p95": 34.1,
+    "max": 116.6
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 10.9,
+    "p95": 22.1,
+    "max": 109.5
+   },
+   "cadre_peste_16_7ms": 32,
+   "heapMB": 36,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2dcull",
+    "n": 50000,
+    "mode": "pan"
+   },
+   "durata_s": 9.579,
+   "r": "c2dcull",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 276,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 139,
+   "sync": true,
+   "interval_ms": {
+    "n": 71,
+    "med": 99.7,
+    "p95": 114.5,
+    "max": 120.9
+   },
+   "cadru_ms": {
+    "n": 71,
+    "med": 99.8,
+    "p95": 106.1,
+    "max": 109.6
+   },
+   "cadre_peste_16_7ms": 71,
+   "heapMB": 104,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2dcull",
+    "n": 50000,
+    "mode": "zoom"
+   },
+   "durata_s": 6.712,
+   "r": "c2dcull",
+   "n": 50000,
+   "tp": 0,
+   "mode": "zoom",
+   "dpr": 1,
+   "genMs": 232,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 142,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 16.1,
+    "p95": 99.3,
+    "max": 223.8
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 16,
+    "p95": 94.5,
+    "max": 208.6
+   },
+   "cadre_peste_16_7ms": 59,
+   "heapMB": 104,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2dbmp",
+    "n": 50000,
+    "mode": "pan"
+   },
+   "durata_s": 1.68,
+   "r": "c2dbmp",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 232,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 134,
+   "sync": true,
+   "exactMs": 198.2,
+   "interval_ms": {
+    "n": 120,
+    "med": 6.7,
+    "p95": 8.3,
+    "max": 10.6
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 6.6,
+    "p95": 7.9,
+    "max": 10.3
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 103,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2dbmp",
+    "n": 50000,
+    "mode": "zoom"
+   },
+   "durata_s": 1.382,
+   "r": "c2dbmp",
+   "n": 50000,
+   "tp": 0,
+   "mode": "zoom",
+   "dpr": 1,
+   "genMs": 203,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 110,
+   "sync": true,
+   "exactMs": 169,
+   "interval_ms": {
+    "n": 120,
+    "med": 5.7,
+    "p95": 6.7,
+    "max": 9.5
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 5.5,
+    "p95": 6.6,
+    "max": 8.4
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 100,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "pixi",
+    "n": 10000,
+    "mode": "pan"
+   },
+   "durata_s": 0.577,
+   "r": "pixi",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 49,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 134,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 1.1,
+    "p95": 1.6,
+    "max": 1.9
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 1,
+    "p95": 1.6,
+    "max": 1.9
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 81,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "pixi",
+    "n": 50000,
+    "mode": "pan"
+   },
+   "durata_s": 1.031,
+   "r": "pixi",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 239,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 238,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 2.3,
+    "p95": 2.7,
+    "max": 3
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 2.2,
+    "p95": 2.7,
+    "max": 3
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 334,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "pixi",
+    "n": 50000,
+    "mode": "zoom"
+   },
+   "durata_s": 0.866,
+   "r": "pixi",
+   "n": 50000,
+   "tp": 0,
+   "mode": "zoom",
+   "dpr": 1,
+   "genMs": 234,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 248,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 0.9,
+    "p95": 1.7,
+    "max": 2.1
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 0.8,
+    "p95": 1.7,
+    "max": 2
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 333,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "pixium",
+    "n": 50000,
+    "mode": "pan"
+   },
+   "durata_s": 5.116,
+   "r": "pixium",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 225,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 2623,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 9,
+    "p95": 9.4,
+    "max": 9.6
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 8.9,
+    "p95": 9.3,
+    "max": 9.5
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 2224,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "ck",
+    "n": 10000,
+    "mode": "pan"
+   },
+   "durata_s": 4.245,
+   "r": "ck",
+   "n": 10000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 59,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 163,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 28,
+    "p95": 30.2,
+    "max": 34
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 27.6,
+    "p95": 30.1,
+    "max": 32.5
+   },
+   "cadre_peste_16_7ms": 120,
+   "heapMB": 40,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "ck",
+    "n": 50000,
+    "mode": "pan"
+   },
+   "durata_s": 9.806,
+   "r": "ck",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 262,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 408,
+   "sync": true,
+   "interval_ms": {
+    "n": 38,
+    "med": 158.2,
+    "p95": 205,
+    "max": 247.5
+   },
+   "cadru_ms": {
+    "n": 38,
+    "med": 158.9,
+    "p95": 198.6,
+    "max": 255.2
+   },
+   "cadre_peste_16_7ms": 38,
+   "heapMB": 85,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "ck",
+    "n": 50000,
+    "mode": "zoom"
+   },
+   "durata_s": 9.864,
+   "r": "ck",
+   "n": 50000,
+   "tp": 0,
+   "mode": "zoom",
+   "dpr": 1,
+   "genMs": 277,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 396,
+   "sync": true,
+   "interval_ms": {
+    "n": 95,
+    "med": 44.1,
+    "p95": 136.1,
+    "max": 508.6
+   },
+   "cadru_ms": {
+    "n": 95,
+    "med": 43.9,
+    "p95": 139.8,
+    "max": 518.7
+   },
+   "cadre_peste_16_7ms": 95,
+   "heapMB": 87,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "gl",
+    "n": 0,
+    "tp": 1000000,
+    "mode": "pan"
+   },
+   "durata_s": 0.508,
+   "r": "gl",
+   "n": 0,
+   "tp": 1000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 85,
+   "vboMB": 11.444,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 1.2,
+    "p95": 4.5,
+    "max": 6
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 1.1,
+    "p95": 4,
+    "max": 4.6
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 23,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "gl",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan"
+   },
+   "durata_s": 0.963,
+   "r": "gl",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 315,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 4,
+    "p95": 4.5,
+    "max": 8.7
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 3.9,
+    "p95": 4.3,
+    "max": 8.7
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 68,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "gl",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "zoom"
+   },
+   "durata_s": 0.972,
+   "r": "gl",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "zoom",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 320,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 3.9,
+    "p95": 4.3,
+    "max": 10.6
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 3.8,
+    "p95": 4.3,
+    "max": 10.4
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 68,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "gl",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan",
+    "sync": 0
+   },
+   "durata_s": 0.423,
+   "r": "gl",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 329,
+   "vboMB": 57.22,
+   "sync": false,
+   "interval_ms": {
+    "n": 120,
+    "med": 0.1,
+    "p95": 0.3,
+    "max": 1
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.1
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 67,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "glstrip",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan"
+   },
+   "durata_s": 0.732,
+   "r": "glstrip",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 314,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 2.2,
+    "p95": 2.7,
+    "max": 9.1
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 2.1,
+    "p95": 2.6,
+    "max": 9
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 67,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "gl",
+    "n": 0,
+    "tp": 0,
+    "hf": 1,
+    "hfup": 1,
+    "mode": "pan"
+   },
+   "durata_s": 0.356,
+   "r": "gl",
+   "n": 0,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 168,
+   "hfUploadMs": 15.2,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 0.5,
+    "p95": 0.8,
+    "max": 1.4
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 0.5,
+    "p95": 0.8,
+    "max": 1.2
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 43,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 10000,
+    "tp": 1000000,
+    "hf": 1,
+    "hfup": 1,
+    "mode": "pan"
+   },
+   "durata_s": 5.275,
+   "r": "hybrid",
+   "n": 10000,
+   "tp": 1000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 54,
+   "scena": {
+    "shapes": 10010,
+    "segs": 101312,
+    "lines": 33640,
+    "arcs": 8643,
+    "cubics": 59029,
+    "kinds": {
+     "sheet": 1,
+     "circle": 1633,
+     "rrect": 1012,
+     "glyph": 3443,
+     "tiny": 152,
+     "arc": 1073,
+     "blob": 742,
+     "zigzag": 1182,
+     "donut": 377,
+     "coincident": 213,
+     "tangent": 172,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 258,
+   "hfUploadMs": 7,
+   "vboMB": 11.444,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 37,
+    "p95": 48.6,
+    "max": 52.1
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 36.7,
+    "p95": 46.4,
+    "max": 50.1
+   },
+   "cadre_peste_16_7ms": 120,
+   "heapMB": 72,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "mode": "pan"
+   },
+   "durata_s": 10.004,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 257,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 619,
+   "hfUploadMs": 5.6,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 54,
+    "med": 120.7,
+    "p95": 148.1,
+    "max": 268.7
+   },
+   "cadru_ms": {
+    "n": 54,
+    "med": 120.5,
+    "p95": 153.3,
+    "max": 276.6
+   },
+   "cadre_peste_16_7ms": 54,
+   "heapMB": 90,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "mode": "pan"
+   },
+   "durata_s": 2.805,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 246,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 705,
+   "hfUploadMs": 7,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 9.7,
+    "p95": 10.6,
+    "max": 26.5
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 9.6,
+    "p95": 10.4,
+    "max": 19.9
+   },
+   "cadre_peste_16_7ms": 1,
+   "heapMB": 172,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "mode": "zoom"
+   },
+   "durata_s": 2.604,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "zoom",
+   "dpr": 1,
+   "genMs": 237,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 716,
+   "hfUploadMs": 6.3,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 9.6,
+    "p95": 10.7,
+    "max": 25.8
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 9.4,
+    "p95": 10.5,
+    "max": 21.7
+   },
+   "cadre_peste_16_7ms": 1,
+   "heapMB": 172,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "durata_s": 0.058,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.04,
+   "abatere_p95_px": 0.036,
+   "abatere_medie_px": -0.001,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.04,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 90
+   },
+   "durata_s": 0.053,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 90,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 641,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.088,
+   "abatere_p95_px": 0.086,
+   "abatere_medie_px": -0.011,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.088,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 0
+   },
+   "durata_s": 0.061,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 0,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.087,
+   "abatere_p95_px": 0.086,
+   "abatere_medie_px": -0.023,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.087,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixi",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "durata_s": 0.13,
+   "r": "pixi",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 92,
+   "abatere_max_px": 29.264,
+   "abatere_p95_px": 29.177,
+   "abatere_medie_px": -28.296,
+   "prezis_max_px": 29.149,
+   "rezidual_fata_de_prezis_max_px": 0.137,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixi",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 90
+   },
+   "durata_s": 0.128,
+   "r": "pixi",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 90,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 641,
+   "nVarfuri": 92,
+   "abatere_max_px": 17.898,
+   "abatere_p95_px": 16.994,
+   "abatere_medie_px": -9.578,
+   "prezis_max_px": 17.765,
+   "rezidual_fata_de_prezis_max_px": 0.215,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixi",
+    "zoom": 1000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 0
+   },
+   "durata_s": 0.133,
+   "r": "pixi",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 0,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 92,
+   "abatere_max_px": 11.065,
+   "abatere_p95_px": 10.47,
+   "abatere_medie_px": -5.732,
+   "prezis_max_px": 11.002,
+   "rezidual_fata_de_prezis_max_px": 0.214,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixiarc",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "durata_s": 0.132,
+   "r": "pixiarc",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 44,
+   "abatere_max_px": 127.512,
+   "abatere_p95_px": 127.448,
+   "abatere_medie_px": -126.066,
+   "prezis_max_px": 127.394,
+   "rezidual_fata_de_prezis_max_px": 0.142,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixiarc",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 90
+   },
+   "durata_s": 0.141,
+   "r": "pixiarc",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 90,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 641,
+   "nVarfuri": 44,
+   "abatere_max_px": 41.594,
+   "abatere_p95_px": 39.8,
+   "abatere_medie_px": -21.55,
+   "prezis_max_px": 41.674,
+   "rezidual_fata_de_prezis_max_px": 0.233,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixiarc",
+    "zoom": 1000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 0
+   },
+   "durata_s": 0.126,
+   "r": "pixiarc",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 0,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 44,
+   "abatere_max_px": 24.371,
+   "abatere_p95_px": 23.316,
+   "abatere_medie_px": -12.475,
+   "prezis_max_px": 24.451,
+   "rezidual_fata_de_prezis_max_px": 0.222,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixium",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "durata_s": 0.126,
+   "r": "pixium",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 2912,
+   "abatere_max_px": 0.167,
+   "abatere_p95_px": 0.137,
+   "abatere_medie_px": -0.028,
+   "prezis_max_px": 0.029,
+   "rezidual_fata_de_prezis_max_px": 0.15,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixium",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 90
+   },
+   "durata_s": 0.118,
+   "r": "pixium",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 90,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 641,
+   "nVarfuri": 2912,
+   "abatere_max_px": 0.219,
+   "abatere_p95_px": 0.179,
+   "abatere_medie_px": -0.007,
+   "prezis_max_px": 0.029,
+   "rezidual_fata_de_prezis_max_px": 0.219,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixium",
+    "zoom": 1000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 0
+   },
+   "durata_s": 0.131,
+   "r": "pixium",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 0,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 2912,
+   "abatere_max_px": 0.281,
+   "abatere_p95_px": 0.197,
+   "abatere_medie_px": 0.043,
+   "prezis_max_px": 0.029,
+   "rezidual_fata_de_prezis_max_px": 0.296,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "ck",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "durata_s": 0.129,
+   "r": "ck",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.042,
+   "abatere_p95_px": 0.036,
+   "abatere_medie_px": -0.001,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.042,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "ck",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 90
+   },
+   "durata_s": 0.138,
+   "r": "ck",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 90,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 641,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.5,
+   "abatere_p95_px": 0.086,
+   "abatere_medie_px": -0.01,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.5,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "ck",
+    "zoom": 1000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 0
+   },
+   "durata_s": 0.14,
+   "r": "ck",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 0,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.087,
+   "abatere_p95_px": 0.086,
+   "abatere_medie_px": -0.023,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.087,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "gl01",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "durata_s": 0.067,
+   "r": "gl01",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 158,
+   "abatere_max_px": 9.964,
+   "abatere_p95_px": 9.765,
+   "abatere_medie_px": -6.551,
+   "prezis_max_px": 9.848,
+   "rezidual_fata_de_prezis_max_px": 0.134,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "gl01",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 90
+   },
+   "durata_s": 0.056,
+   "r": "gl01",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 90,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 641,
+   "nVarfuri": 158,
+   "abatere_max_px": 9.996,
+   "abatere_p95_px": 9.986,
+   "abatere_medie_px": -8.626,
+   "prezis_max_px": 9.884,
+   "rezidual_fata_de_prezis_max_px": 0.113,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "gl01",
+    "zoom": 1000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 0
+   },
+   "durata_s": 0.053,
+   "r": "gl01",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 0,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 158,
+   "abatere_max_px": 6.051,
+   "abatere_p95_px": 5.538,
+   "abatere_medie_px": -3.155,
+   "prezis_max_px": 5.863,
+   "rezidual_fata_de_prezis_max_px": 0.213,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "gl001",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "durata_s": 0.06,
+   "r": "gl001",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 497,
+   "abatere_max_px": 1.124,
+   "abatere_p95_px": 1.065,
+   "abatere_medie_px": -0.739,
+   "prezis_max_px": 0.999,
+   "rezidual_fata_de_prezis_max_px": 0.143,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "gl001",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 90
+   },
+   "durata_s": 0.058,
+   "r": "gl001",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 90,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 641,
+   "nVarfuri": 497,
+   "abatere_max_px": 1.198,
+   "abatere_p95_px": 1.084,
+   "abatere_medie_px": -0.663,
+   "prezis_max_px": 0.999,
+   "rezidual_fata_de_prezis_max_px": 0.211,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "gl001",
+    "zoom": 1000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 0
+   },
+   "durata_s": 0.055,
+   "r": "gl001",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 0,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 497,
+   "abatere_max_px": 1.203,
+   "abatere_p95_px": 1.096,
+   "abatere_medie_px": -0.71,
+   "prezis_max_px": 0.999,
+   "rezidual_fata_de_prezis_max_px": 0.209,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 10000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 37
+   },
+   "durata_s": 0.056,
+   "r": "c2d",
+   "zoom_px_per_mm": 10000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.624,
+   "abatere_p95_px": 0.62,
+   "abatere_medie_px": -0.587,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.624,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "ck",
+    "zoom": 10000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 37
+   },
+   "durata_s": 0.143,
+   "r": "ck",
+   "zoom_px_per_mm": 10000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.621,
+   "abatere_p95_px": 0.618,
+   "abatere_medie_px": -0.584,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.621,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixium",
+    "zoom": 10000,
+    "cx": 2390,
+    "cy": 1170,
+    "theta": 37
+   },
+   "durata_s": 0.134,
+   "r": "pixium",
+   "zoom_px_per_mm": 10000,
+   "centru_mm": [
+    2390,
+    1170
+   ],
+   "theta_grade": 37,
+   "dpr": 1,
+   "canvas": [
+    1281,
+    721
+   ],
+   "puncte": 361,
+   "nVarfuri": 2912,
+   "abatere_max_px": 2.209,
+   "abatere_p95_px": 2.125,
+   "abatere_medie_px": -1.741,
+   "prezis_max_px": 0.291,
+   "rezidual_fata_de_prezis_max_px": 2.125,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "fill"
+   },
+   "durata_s": 0.233,
+   "dpr": 1,
+   "reguli": {
+    "nonzero": {
+     "puncte": 5428,
+     "ecran_vs_nucleu": 0,
+     "ecran_vs_isPointInPath": 0,
+     "nucleu_vs_isPointInPath": 0,
+     "pe_forma": {
+      "gogoasa-aceeasi-orientare": {
+       "n": 709,
+       "pline": 564
+      },
+      "gogoasa-orientari-opuse": {
+       "n": 707,
+       "pline": 407
+      },
+      "pentagrama": {
+       "n": 696,
+       "pline": 207
+      },
+      "doua-cercuri-suprapuse": {
+       "n": 698,
+       "pline": 594
+      },
+      "glifa": {
+       "n": 2618,
+       "pline": 1119
+      }
+     }
+    },
+    "evenodd": {
+     "puncte": 5418,
+     "ecran_vs_nucleu": 0,
+     "ecran_vs_isPointInPath": 0,
+     "nucleu_vs_isPointInPath": 0,
+     "pe_forma": {
+      "gogoasa-aceeasi-orientare": {
+       "n": 694,
+       "pline": 396
+      },
+      "gogoasa-orientari-opuse": {
+       "n": 704,
+       "pline": 443
+      },
+      "pentagrama": {
+       "n": 697,
+       "pline": 146
+      },
+      "doua-cercuri-suprapuse": {
+       "n": 701,
+       "pline": 420
+      },
+      "glifa": {
+       "n": 2622,
+       "pline": 1093
+      }
+     }
+    }
+   },
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "click",
+    "n": 20000
+   },
+   "durata_s": 0.412,
+   "n": 20010,
+   "dpr": 1,
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "clicuri": 120,
+   "evenimente": 120,
+   "pointerType": "mouse",
+   "corecte": 120,
+   "gresite": 0,
+   "eroare_coordonata_max_px_css": 0,
+   "hit_ms": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.3
+   },
+   "eveniment_la_rezultat_ms": {
+    "med": 0.1,
+    "p95": 0.2,
+    "max": 1
+   },
+   "exemple_gresite": [],
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "info"
+   },
+   "durata_s": 0.256,
+   "webgl2": true,
+   "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "vendor": "Google Inc. (NVIDIA)",
+   "maxTex": 16384,
+   "dpr": 1.25,
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+   "webgpu": {
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "",
+    "description": ""
+   },
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2d",
+    "n": 50000,
+    "mode": "pan"
+   },
+   "durata_s": 43.557,
+   "r": "c2d",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.25,
+   "genMs": 254,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.25,
+    "naive": [
+     1601,
+     901
+    ],
+    "exact": [
+     1602,
+     901
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 33446,
+   "sync": true,
+   "interval_ms": {
+    "n": 0,
+    "med": null,
+    "p95": null,
+    "max": null
+   },
+   "cadru_ms": {
+    "n": 0,
+    "med": null,
+    "p95": null,
+    "max": null
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 98,
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "pixi",
+    "n": 50000,
+    "mode": "pan"
+   },
+   "durata_s": 1.212,
+   "r": "pixi",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.25,
+   "genMs": 267,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.25,
+    "naive": [
+     1601,
+     901
+    ],
+    "exact": [
+     1602,
+     901
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 309,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 2.2,
+    "p95": 2.8,
+    "max": 4
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 2.1,
+    "p95": 2.6,
+    "max": 3.7
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 334,
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "ck",
+    "n": 50000,
+    "mode": "pan"
+   },
+   "durata_s": 12.538,
+   "r": "ck",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.25,
+   "genMs": 282,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.25,
+    "naive": [
+     1601,
+     901
+    ],
+    "exact": [
+     1602,
+     901
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 1540,
+   "sync": true,
+   "interval_ms": {
+    "n": 0,
+    "med": null,
+    "p95": null,
+    "max": null
+   },
+   "cadru_ms": {
+    "n": 0,
+    "med": null,
+    "p95": null,
+    "max": null
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 96,
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "gl",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan"
+   },
+   "durata_s": 1.201,
+   "r": "gl",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.25,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.25,
+    "naive": [
+     1601,
+     901
+    ],
+    "exact": [
+     1602,
+     901
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 413,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 4.3,
+    "p95": 4.7,
+    "max": 6.2
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 4.2,
+    "p95": 4.6,
+    "max": 6.1
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 67,
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "mode": "pan"
+   },
+   "durata_s": 3.28,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.25,
+   "genMs": 249,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.25,
+    "naive": [
+     1601,
+     901
+    ],
+    "exact": [
+     1602,
+     901
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 647,
+   "hfUploadMs": 5.1,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 13.7,
+    "p95": 15,
+    "max": 31.6
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 13.5,
+    "p95": 14.9,
+    "max": 20.3
+   },
+   "cadre_peste_16_7ms": 3,
+   "heapMB": 172,
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "durata_s": 0.095,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1.25,
+   "canvas": [
+    1602,
+    901
+   ],
+   "puncte": 451,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.039,
+   "abatere_p95_px": 0.036,
+   "abatere_medie_px": 0.003,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.039,
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixi",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "durata_s": 0.135,
+   "r": "pixi",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1.25,
+   "canvas": [
+    1602,
+    901
+   ],
+   "puncte": 0,
+   "nVarfuri": 92,
+   "abatere_max_px": null,
+   "abatere_p95_px": null,
+   "abatere_medie_px": null,
+   "prezis_max_px": null,
+   "rezidual_fata_de_prezis_max_px": null,
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "fill"
+   },
+   "durata_s": 0.22,
+   "dpr": 1.25,
+   "reguli": {
+    "nonzero": {
+     "puncte": 5536,
+     "ecran_vs_nucleu": 0,
+     "ecran_vs_isPointInPath": 0,
+     "nucleu_vs_isPointInPath": 0,
+     "pe_forma": {
+      "gogoasa-aceeasi-orientare": {
+       "n": 717,
+       "pline": 571
+      },
+      "gogoasa-orientari-opuse": {
+       "n": 716,
+       "pline": 411
+      },
+      "pentagrama": {
+       "n": 709,
+       "pline": 214
+      },
+      "doua-cercuri-suprapuse": {
+       "n": 709,
+       "pline": 604
+      },
+      "glifa": {
+       "n": 2685,
+       "pline": 1157
+      }
+     }
+    },
+    "evenodd": {
+     "puncte": 5539,
+     "ecran_vs_nucleu": 0,
+     "ecran_vs_isPointInPath": 0,
+     "nucleu_vs_isPointInPath": 0,
+     "pe_forma": {
+      "gogoasa-aceeasi-orientare": {
+       "n": 708,
+       "pline": 406
+      },
+      "gogoasa-orientari-opuse": {
+       "n": 714,
+       "pline": 448
+      },
+      "pentagrama": {
+       "n": 706,
+       "pline": 150
+      },
+      "doua-cercuri-suprapuse": {
+       "n": 712,
+       "pline": 425
+      },
+      "glifa": {
+       "n": 2699,
+       "pline": 1127
+      }
+     }
+    }
+   },
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "click",
+    "n": 20000
+   },
+   "durata_s": 0.421,
+   "n": 20010,
+   "dpr": 1.25,
+   "canvas": {
+    "dpr": 1.25,
+    "naive": [
+     1601,
+     901
+    ],
+    "exact": [
+     1602,
+     901
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "clicuri": 120,
+   "evenimente": 120,
+   "pointerType": "mouse",
+   "corecte": 120,
+   "gresite": 0,
+   "eroare_coordonata_max_px_css": 0,
+   "hit_ms": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.2
+   },
+   "eveniment_la_rezultat_ms": {
+    "med": 0.1,
+    "p95": 0.2,
+    "max": 0.7
+   },
+   "exemple_gresite": [],
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "info"
+   },
+   "durata_s": 0.27,
+   "webgl2": true,
+   "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "vendor": "Google Inc. (NVIDIA)",
+   "maxTex": 16384,
+   "dpr": 1.5,
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+   "webgpu": {
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "",
+    "description": ""
+   },
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2d",
+    "n": 50000,
+    "mode": "pan"
+   },
+   "durata_s": 45.257,
+   "r": "c2d",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 232,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 34887,
+   "sync": true,
+   "interval_ms": {
+    "n": 0,
+    "med": null,
+    "p95": null,
+    "max": null
+   },
+   "cadru_ms": {
+    "n": 0,
+    "med": null,
+    "p95": null,
+    "max": null
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 101,
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "pixi",
+    "n": 50000,
+    "mode": "pan"
+   },
+   "durata_s": 1.281,
+   "r": "pixi",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 223,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 315,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 3,
+    "p95": 3.7,
+    "max": 4.9
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 2.8,
+    "p95": 3.4,
+    "max": 4.5
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 333,
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "ck",
+    "n": 50000,
+    "mode": "pan"
+   },
+   "durata_s": 11.838,
+   "r": "ck",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 248,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 1915,
+   "sync": true,
+   "interval_ms": {
+    "n": 0,
+    "med": null,
+    "p95": null,
+    "max": null
+   },
+   "cadru_ms": {
+    "n": 0,
+    "med": null,
+    "p95": null,
+    "max": null
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 98,
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "gl",
+    "n": 0,
+    "tp": 5000000,
+    "mode": "pan"
+   },
+   "durata_s": 1.44,
+   "r": "gl",
+   "n": 0,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 0,
+   "scena": null,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 392,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 5,
+    "p95": 6.2,
+    "max": 10.7
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 4.9,
+    "p95": 6,
+    "max": 10.1
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 68,
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "mode": "pan"
+   },
+   "durata_s": 4.716,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 241,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "buildMs": 611,
+   "hfUploadMs": 10.3,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 23,
+    "p95": 35.1,
+    "max": 36
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 22.1,
+    "p95": 32.8,
+    "max": 35.4
+   },
+   "cadre_peste_16_7ms": 117,
+   "heapMB": 172,
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "c2d",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "durata_s": 0.093,
+   "r": "c2d",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1.5,
+   "canvas": [
+    1921,
+    1081
+   ],
+   "puncte": 541,
+   "nVarfuri": "exact",
+   "abatere_max_px": 0.043,
+   "abatere_p95_px": 0.041,
+   "abatere_medie_px": 0.008,
+   "prezis_max_px": 0,
+   "rezidual_fata_de_prezis_max_px": 0.043,
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "fid",
+    "r": "pixi",
+    "zoom": 1000,
+    "cx": 150,
+    "cy": 150,
+    "theta": 37
+   },
+   "durata_s": 0.173,
+   "r": "pixi",
+   "zoom_px_per_mm": 1000,
+   "centru_mm": [
+    150,
+    150
+   ],
+   "theta_grade": 37,
+   "dpr": 1.5,
+   "canvas": [
+    1921,
+    1081
+   ],
+   "puncte": 541,
+   "nVarfuri": 92,
+   "abatere_max_px": 43.504,
+   "abatere_p95_px": 43.392,
+   "abatere_medie_px": -42.093,
+   "prezis_max_px": 43.723,
+   "rezidual_fata_de_prezis_max_px": 0.486,
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "fill"
+   },
+   "durata_s": 0.253,
+   "dpr": 1.5,
+   "reguli": {
+    "nonzero": {
+     "puncte": 5625,
+     "ecran_vs_nucleu": 0,
+     "ecran_vs_isPointInPath": 0,
+     "nucleu_vs_isPointInPath": 0,
+     "pe_forma": {
+      "gogoasa-aceeasi-orientare": {
+       "n": 723,
+       "pline": 575
+      },
+      "gogoasa-orientari-opuse": {
+       "n": 722,
+       "pline": 416
+      },
+      "pentagrama": {
+       "n": 719,
+       "pline": 220
+      },
+      "doua-cercuri-suprapuse": {
+       "n": 720,
+       "pline": 611
+      },
+      "glifa": {
+       "n": 2741,
+       "pline": 1180
+      }
+     }
+    },
+    "evenodd": {
+     "puncte": 5615,
+     "ecran_vs_nucleu": 0,
+     "ecran_vs_isPointInPath": 0,
+     "nucleu_vs_isPointInPath": 0,
+     "pe_forma": {
+      "gogoasa-aceeasi-orientare": {
+       "n": 712,
+       "pline": 408
+      },
+      "gogoasa-orientari-opuse": {
+       "n": 718,
+       "pline": 449
+      },
+      "pentagrama": {
+       "n": 715,
+       "pline": 155
+      },
+      "doua-cercuri-suprapuse": {
+       "n": 718,
+       "pline": 428
+      },
+      "glifa": {
+       "n": 2752,
+       "pline": 1156
+      }
+     }
+    }
+   },
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "click",
+    "n": 20000
+   },
+   "durata_s": 0.423,
+   "n": 20010,
+   "dpr": 1.5,
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "clicuri": 120,
+   "evenimente": 118,
+   "pointerType": "mouse",
+   "corecte": 49,
+   "gresite": 71,
+   "eroare_coordonata_max_px_css": 0,
+   "hit_ms": {
+    "med": 0,
+    "p95": 0.1,
+    "max": 0.2
+   },
+   "eveniment_la_rezultat_ms": {
+    "med": 0.1,
+    "p95": 0.2,
+    "max": 0.9
+   },
+   "exemple_gresite": [
+    {
+     "t": {
+      "x": 105.61153205460869,
+      "y": 410.64311773190275,
+      "wx": 87.48922564368695,
+      "wy": 1311.7144941855222,
+      "want": -1,
+      "wd": null
+     },
+     "e": {
+      "clientX": 245.31651306152344,
+      "clientY": 384.30780029296875,
+      "pointerType": "mouse",
+      "wx": 199.25321044921873,
+      "wy": 1290.646240234375,
+      "id": 20001,
+      "d": 0.9775834515022769,
+      "hitMs": 0,
+      "dispatchToHandledMs": 0
+     }
+    },
+    {
+     "t": {
+      "x": 245.31651471033695,
+      "y": 384.3078115279554,
+      "wx": 199.25321176826958,
+      "wy": 1290.6462492223643,
+      "want": 20001,
+      "wd": 0.9775883355211904
+     },
+     "e": {
+      "clientX": 349.7154235839844,
+      "clientY": 390.38861083984375,
+      "pointerType": "mouse",
+      "wx": 282.7723388671875,
+      "wy": 1295.510888671875,
+      "id": -1,
+      "d": null,
+      "hitMs": 0,
+      "dispatchToHandledMs": 0.09999999403953552
+     }
+    },
+    {
+     "t": {
+      "x": 714.1967550152913,
+      "y": 420.0894748692517,
+      "wx": 574.357404012233,
+      "wy": 1319.2715798954014,
+      "want": -1,
+      "wd": null
+     },
+     "e": {
+      "clientX": 908.97412109375,
+      "clientY": 396.4090576171875,
+      "pointerType": "mouse",
+      "wx": 730.179296875,
+      "wy": 1300.32724609375,
+      "id": 20005,
+      "d": 2.3497714585689273,
+      "hitMs": 0,
+      "dispatchToHandledMs": 0
+     }
+    },
+    {
+     "t": {
+      "x": 908.9741230674554,
+      "y": 396.40906050009653,
+      "wx": 730.1792984539643,
+      "wy": 1300.3272484000772,
+      "want": 20005,
+      "wd": 2.3497711239717134
+     },
+     "e": {
+      "clientX": 1008.7142944335938,
+      "clientY": 371.6873474121094,
+      "pointerType": "mouse",
+      "wx": 809.971435546875,
+      "wy": 1280.5498779296875,
+      "id": 20006,
+      "d": 2.093508165877548,
+      "hitMs": 0,
+      "dispatchToHandledMs": 0.09999999403953552
+     }
+    },
+    {
+     "t": {
+      "x": 1008.7143091599271,
+      "y": 371.68730769329704,
+      "wx": 809.9714473279416,
+      "wy": 1280.5498461546376,
+      "want": 20006,
+      "wd": 2.0935324060936225
+     },
+     "e": {
+      "clientX": 1072.2451171875,
+      "clientY": 394.1952819824219,
+      "pointerType": "mouse",
+      "wx": 860.79609375,
+      "wy": 1298.5562255859375,
+      "id": 20007,
+      "d": 1.4437744140625455,
+      "hitMs": 0,
+      "dispatchToHandledMs": 0
+     }
+    }
+   ],
+   "dpr_cerut": 1.5
+  }
+ ],
+ "durata_totala_s": 320.121
+}

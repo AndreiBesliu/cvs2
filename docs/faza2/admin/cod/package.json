@@ -1,0 +1,12 @@
+{
+  "name": "s9-admin-sonda",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Sonda aruncabila s9-admin: App Check + roluri pe emulatorul de functii (fara cloud).",
+  "scripts": {
+    "masoara": "node run.mjs"
+  },
+  "devDependencies": {
+    "firebase-tools": "15.32.1"
+  }
+}

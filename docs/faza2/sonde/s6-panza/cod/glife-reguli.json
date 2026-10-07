@@ -1,0 +1,32 @@
+{
+ "glifa": {
+  "puncte": 108000,
+  "pline_nonzero": 45515,
+  "pline_evenodd": 45515,
+  "difera": 0
+ },
+ "gogoasa-aceeasi-orientare": {
+  "puncte": 4000,
+  "pline_nonzero": 3116,
+  "pline_evenodd": 2359,
+  "difera": 757
+ },
+ "gogoasa-orientari-opuse": {
+  "puncte": 4000,
+  "pline_nonzero": 2361,
+  "pline_evenodd": 2361,
+  "difera": 0
+ },
+ "pentagrama": {
+  "puncte": 4000,
+  "pline_nonzero": 1281,
+  "pline_evenodd": 900,
+  "difera": 381
+ },
+ "doua-cercuri-suprapuse": {
+  "puncte": 4000,
+  "pline_nonzero": 3366,
+  "pline_evenodd": 2543,
+  "difera": 823
+ }
+}

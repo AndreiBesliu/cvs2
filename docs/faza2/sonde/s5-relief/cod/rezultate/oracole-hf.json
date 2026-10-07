@@ -1,0 +1,1222 @@
+{
+ "cl": [
+  {
+   "surf": "plan z=0x+0y+5",
+   "tool": "bila R3",
+   "A_nod": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "plan z=0x+0y+5",
+   "tool": "dreapta R3",
+   "A_nod": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "plan z=0x+0y+5",
+   "tool": "V90 R6",
+   "A_nod": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "plan z=0x+0y+5",
+   "tool": "V60 R6",
+   "A_nod": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "plan z=0.5773502691896257x+0y+2",
+   "tool": "bila R3",
+   "A_nod": {
+    "scobitura_max_mm": 9.52e-7,
+    "surplus_mediu_mm": 9.162e-10,
+    "surplus_max_mm": 9.528e-7,
+    "eroare_noduri_max_mm": 9.528e-7,
+    "sub_model_in_noduri_mm": 9.52e-7
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.05774,
+    "surplus_max_mm": 0.05774,
+    "eroare_noduri_max_mm": 0.05774,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1148,
+    "surplus_max_mm": 0.1148,
+    "eroare_noduri_max_mm": 0.1148,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "plan z=0.5773502691896257x+0y+2",
+   "tool": "dreapta R3",
+   "A_nod": {
+    "scobitura_max_mm": 9.52e-7,
+    "surplus_mediu_mm": 3.816e-9,
+    "surplus_max_mm": 9.528e-7,
+    "eroare_noduri_max_mm": 9.528e-7,
+    "sub_model_in_noduri_mm": 9.52e-7
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.05774,
+    "surplus_max_mm": 0.05774,
+    "eroare_noduri_max_mm": 0.05774,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0866,
+    "surplus_max_mm": 0.08661,
+    "eroare_noduri_max_mm": 0.08661,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "plan z=0.5773502691896257x+0y+2",
+   "tool": "V90 R6",
+   "A_nod": {
+    "scobitura_max_mm": 9.52e-7,
+    "surplus_mediu_mm": 6.188e-9,
+    "surplus_max_mm": 9.528e-7,
+    "eroare_noduri_max_mm": 9.528e-7,
+    "sub_model_in_noduri_mm": 9.52e-7
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.05774,
+    "surplus_max_mm": 0.05774,
+    "eroare_noduri_max_mm": 0.05774,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.09434,
+    "surplus_max_mm": 0.09434,
+    "eroare_noduri_max_mm": 0.09434,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "plan z=0.5773502691896257x+0y+2",
+   "tool": "V60 R6",
+   "A_nod": {
+    "scobitura_max_mm": 9.52e-7,
+    "surplus_mediu_mm": 6.188e-9,
+    "surplus_max_mm": 9.528e-7,
+    "eroare_noduri_max_mm": 9.528e-7,
+    "sub_model_in_noduri_mm": 9.52e-7
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.05774,
+    "surplus_max_mm": 0.05774,
+    "eroare_noduri_max_mm": 0.05774,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0866,
+    "surplus_max_mm": 0.08661,
+    "eroare_noduri_max_mm": 0.08661,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "plan z=0.3x+0.4y+3",
+   "tool": "bila R3",
+   "A_nod": {
+    "scobitura_max_mm": 0.0001554,
+    "surplus_mediu_mm": -0.0001536,
+    "surplus_max_mm": -0.0001517,
+    "eroare_noduri_max_mm": 0.0001554,
+    "sub_model_in_noduri_mm": 0.0001554
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.06985,
+    "surplus_max_mm": 0.06985,
+    "eroare_noduri_max_mm": 0.06985,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.09952,
+    "surplus_max_mm": 0.09952,
+    "eroare_noduri_max_mm": 0.09952,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "plan z=0.3x+0.4y+3",
+   "tool": "dreapta R3",
+   "A_nod": {
+    "scobitura_max_mm": 0.000001831,
+    "surplus_mediu_mm": 1.868e-10,
+    "surplus_max_mm": 0.000001831,
+    "eroare_noduri_max_mm": 0.000001831,
+    "sub_model_in_noduri_mm": 0.000001831
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.07,
+    "surplus_max_mm": 0.07,
+    "eroare_noduri_max_mm": 0.07,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.095,
+    "surplus_max_mm": 0.095,
+    "eroare_noduri_max_mm": 0.095,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "plan z=0.3x+0.4y+3",
+   "tool": "V90 R6",
+   "A_nod": {
+    "scobitura_max_mm": 9.155e-7,
+    "surplus_mediu_mm": 1.367e-9,
+    "surplus_max_mm": 0.000001831,
+    "eroare_noduri_max_mm": 0.000001831,
+    "sub_model_in_noduri_mm": 9.155e-7
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.07,
+    "surplus_max_mm": 0.07,
+    "eroare_noduri_max_mm": 0.07,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.065,
+    "surplus_max_mm": 0.065,
+    "eroare_noduri_max_mm": 0.065,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "plan z=0.3x+0.4y+3",
+   "tool": "V60 R6",
+   "A_nod": {
+    "scobitura_max_mm": 9.155e-7,
+    "surplus_mediu_mm": 1.367e-9,
+    "surplus_max_mm": 0.000001831,
+    "eroare_noduri_max_mm": 0.000001831,
+    "sub_model_in_noduri_mm": 9.155e-7
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.07,
+    "surplus_max_mm": 0.07,
+    "eroare_noduri_max_mm": 0.07,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.065,
+    "surplus_max_mm": 0.065,
+    "eroare_noduri_max_mm": 0.065,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "semisfera R20",
+   "tool": "bila R3",
+   "A_nod": {
+    "scobitura_max_mm": 0.03051,
+    "surplus_mediu_mm": -0.001061,
+    "surplus_max_mm": 0.09636,
+    "eroare_noduri_max_mm": 0.02701,
+    "sub_model_in_noduri_mm": 0.02701
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1128,
+    "surplus_max_mm": 0.9026,
+    "eroare_noduri_max_mm": 0.8255,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1872,
+    "surplus_max_mm": 1.343,
+    "eroare_noduri_max_mm": 1.343,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "semisfera R20",
+   "tool": "dreapta R3",
+   "A_nod": {
+    "scobitura_max_mm": 0.2908,
+    "surplus_mediu_mm": -0.009394,
+    "surplus_max_mm": 0.5449,
+    "eroare_noduri_max_mm": 0.2862,
+    "sub_model_in_noduri_mm": 0.2862
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.09568,
+    "surplus_max_mm": 2.269,
+    "eroare_noduri_max_mm": 1.841,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1481,
+    "surplus_max_mm": 2.827,
+    "eroare_noduri_max_mm": 2.489,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "semisfera R20",
+   "tool": "V90 R6",
+   "A_nod": {
+    "scobitura_max_mm": 0.02382,
+    "surplus_mediu_mm": -0.0009538,
+    "surplus_max_mm": 9.495e-7,
+    "eroare_noduri_max_mm": 0.02369,
+    "sub_model_in_noduri_mm": 0.02369
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0895,
+    "surplus_max_mm": 0.2742,
+    "eroare_noduri_max_mm": 0.2742,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1342,
+    "surplus_max_mm": 0.4212,
+    "eroare_noduri_max_mm": 0.4212,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "semisfera R20",
+   "tool": "V60 R6",
+   "A_nod": {
+    "scobitura_max_mm": 0.002997,
+    "surplus_mediu_mm": -0.0001531,
+    "surplus_max_mm": 0.02975,
+    "eroare_noduri_max_mm": 0.002997,
+    "sub_model_in_noduri_mm": 0.002997
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1121,
+    "surplus_max_mm": 0.2449,
+    "eroare_noduri_max_mm": 0.2449,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1564,
+    "surplus_max_mm": 0.3867,
+    "eroare_noduri_max_mm": 0.3867,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "cilindru R15",
+   "tool": "bila R3",
+   "A_nod": {
+    "scobitura_max_mm": 0.06319,
+    "surplus_mediu_mm": -0.0008217,
+    "surplus_max_mm": 0.1047,
+    "eroare_noduri_max_mm": 0.06319,
+    "sub_model_in_noduri_mm": 0.06319
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.06829,
+    "surplus_max_mm": 0.4888,
+    "eroare_noduri_max_mm": 0.4805,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1376,
+    "surplus_max_mm": 0.9796,
+    "eroare_noduri_max_mm": 0.9194,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "cilindru R15",
+   "tool": "dreapta R3",
+   "A_nod": {
+    "scobitura_max_mm": 0.4334,
+    "surplus_mediu_mm": -0.001633,
+    "surplus_max_mm": 4.643e-7,
+    "eroare_noduri_max_mm": 4.643e-7,
+    "sub_model_in_noduri_mm": 4.49e-7
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.06748,
+    "surplus_max_mm": 1.729,
+    "eroare_noduri_max_mm": 1.729,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1042,
+    "surplus_max_mm": 2.116,
+    "eroare_noduri_max_mm": 2.116,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "cilindru R15",
+   "tool": "V90 R6",
+   "A_nod": {
+    "scobitura_max_mm": 0.0005371,
+    "surplus_mediu_mm": -0.00007196,
+    "surplus_max_mm": 4.643e-7,
+    "eroare_noduri_max_mm": 0.000004202,
+    "sub_model_in_noduri_mm": 0.000004202
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.06914,
+    "surplus_max_mm": 0.1569,
+    "eroare_noduri_max_mm": 0.1569,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1291,
+    "surplus_max_mm": 0.2838,
+    "eroare_noduri_max_mm": 0.2838,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "cilindru R15",
+   "tool": "V60 R6",
+   "A_nod": {
+    "scobitura_max_mm": 0.0006485,
+    "surplus_mediu_mm": -0.000007675,
+    "surplus_max_mm": 0.02662,
+    "eroare_noduri_max_mm": 0.00002451,
+    "sub_model_in_noduri_mm": 0.00002451
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.08019,
+    "surplus_max_mm": 0.1732,
+    "eroare_noduri_max_mm": 0.1732,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.146,
+    "surplus_max_mm": 0.346,
+    "eroare_noduri_max_mm": 0.346,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "perete 0.01 mm x 5 mm",
+   "tool": "bila R3",
+   "A_nod": {
+    "scobitura_max_mm": 5,
+    "surplus_mediu_mm": -0.6034,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 5,
+    "sub_model_in_noduri_mm": 5
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 5,
+    "surplus_mediu_mm": -0.6034,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 5,
+    "sub_model_in_noduri_mm": 5
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.03351,
+    "surplus_max_mm": 2.937,
+    "eroare_noduri_max_mm": 2.937,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "perete 0.01 mm x 5 mm",
+   "tool": "dreapta R3",
+   "A_nod": {
+    "scobitura_max_mm": 5,
+    "surplus_mediu_mm": -0.6926,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 5,
+    "sub_model_in_noduri_mm": 5
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 5,
+    "surplus_mediu_mm": -0.6926,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 5,
+    "sub_model_in_noduri_mm": 5
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.03312,
+    "surplus_max_mm": 5,
+    "eroare_noduri_max_mm": 5,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "perete 0.01 mm x 5 mm",
+   "tool": "V90 R6",
+   "A_nod": {
+    "scobitura_max_mm": 5,
+    "surplus_mediu_mm": -0.6697,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 4.997,
+    "sub_model_in_noduri_mm": 4.997
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 5,
+    "surplus_mediu_mm": -0.6697,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 4.997,
+    "sub_model_in_noduri_mm": 4.997
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.03876,
+    "surplus_max_mm": 0.153,
+    "eroare_noduri_max_mm": 0.153,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "perete 0.01 mm x 5 mm",
+   "tool": "V60 R6",
+   "A_nod": {
+    "scobitura_max_mm": 5,
+    "surplus_mediu_mm": -0.3872,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 4.995,
+    "sub_model_in_noduri_mm": 4.995
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 5,
+    "surplus_mediu_mm": -0.3872,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 4.995,
+    "sub_model_in_noduri_mm": 4.995
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.03876,
+    "surplus_max_mm": 0.265,
+    "eroare_noduri_max_mm": 0.265,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "canal 30 grade",
+   "tool": "bila R3",
+   "A_nod": {
+    "scobitura_max_mm": 0.01387,
+    "surplus_mediu_mm": -0.0005301,
+    "surplus_max_mm": 2.203e-7,
+    "eroare_noduri_max_mm": 0.01374,
+    "sub_model_in_noduri_mm": 0.01374
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.02157,
+    "surplus_max_mm": 0.05774,
+    "eroare_noduri_max_mm": 0.05774,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.04348,
+    "surplus_max_mm": 0.1148,
+    "eroare_noduri_max_mm": 0.1148,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "canal 30 grade",
+   "tool": "dreapta R3",
+   "A_nod": {
+    "scobitura_max_mm": 0.01305,
+    "surplus_mediu_mm": -0.00003173,
+    "surplus_max_mm": 2.203e-7,
+    "eroare_noduri_max_mm": 2.203e-7,
+    "sub_model_in_noduri_mm": 2.042e-7
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.01622,
+    "surplus_max_mm": 0.05774,
+    "eroare_noduri_max_mm": 0.05774,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.02427,
+    "surplus_max_mm": 0.0866,
+    "eroare_noduri_max_mm": 0.0866,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "canal 30 grade",
+   "tool": "V90 R6",
+   "A_nod": {
+    "scobitura_max_mm": 0.01305,
+    "surplus_mediu_mm": -0.00003683,
+    "surplus_max_mm": 2.203e-7,
+    "eroare_noduri_max_mm": 2.203e-7,
+    "sub_model_in_noduri_mm": 2.042e-7
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0267,
+    "surplus_max_mm": 0.05774,
+    "eroare_noduri_max_mm": 0.05774,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.04368,
+    "surplus_max_mm": 0.09434,
+    "eroare_noduri_max_mm": 0.09434,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "canal 30 grade",
+   "tool": "V60 R6",
+   "A_nod": {
+    "scobitura_max_mm": 0.01305,
+    "surplus_mediu_mm": -0.00003683,
+    "surplus_max_mm": 2.203e-7,
+    "eroare_noduri_max_mm": 2.203e-7,
+    "sub_model_in_noduri_mm": 2.042e-7
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0267,
+    "surplus_max_mm": 0.05774,
+    "eroare_noduri_max_mm": 0.05774,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.04012,
+    "surplus_max_mm": 0.0866,
+    "eroare_noduri_max_mm": 0.0866,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "canal 60 grade",
+   "tool": "bila R3",
+   "A_nod": {
+    "scobitura_max_mm": 0.02094,
+    "surplus_mediu_mm": -0.0009776,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0.0198,
+    "sub_model_in_noduri_mm": 0.0198
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.01183,
+    "surplus_max_mm": 0.1732,
+    "eroare_noduri_max_mm": 0.1732,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.02206,
+    "surplus_max_mm": 0.3435,
+    "eroare_noduri_max_mm": 0.3435,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "canal 60 grade",
+   "tool": "dreapta R3",
+   "A_nod": {
+    "scobitura_max_mm": 0.01878,
+    "surplus_mediu_mm": -0.0000457,
+    "surplus_max_mm": 2.203e-7,
+    "eroare_noduri_max_mm": 2.203e-7,
+    "sub_model_in_noduri_mm": 1.435e-7
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.002642,
+    "surplus_max_mm": 0.1732,
+    "eroare_noduri_max_mm": 0.1732,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.003639,
+    "surplus_max_mm": 0.2598,
+    "eroare_noduri_max_mm": 0.2598,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "canal 60 grade",
+   "tool": "V90 R6",
+   "A_nod": {
+    "scobitura_max_mm": 0.01325,
+    "surplus_mediu_mm": -0.002404,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0.01325,
+    "sub_model_in_noduri_mm": 0.01325
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.01551,
+    "surplus_max_mm": 0.08675,
+    "eroare_noduri_max_mm": 0.08675,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.03032,
+    "surplus_max_mm": 0.1731,
+    "eroare_noduri_max_mm": 0.1731,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "canal 60 grade",
+   "tool": "V60 R6",
+   "A_nod": {
+    "scobitura_max_mm": 0.01878,
+    "surplus_mediu_mm": -0.00005299,
+    "surplus_max_mm": 2.203e-7,
+    "eroare_noduri_max_mm": 2.203e-7,
+    "sub_model_in_noduri_mm": 0
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.02668,
+    "surplus_max_mm": 0.1732,
+    "eroare_noduri_max_mm": 0.1732,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.05307,
+    "surplus_max_mm": 0.3464,
+    "eroare_noduri_max_mm": 0.3464,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "canal 90 grade",
+   "tool": "bila R3",
+   "A_nod": {
+    "scobitura_max_mm": 0.0004312,
+    "surplus_mediu_mm": -0.000006465,
+    "surplus_max_mm": 8.882e-16,
+    "eroare_noduri_max_mm": 8.882e-16,
+    "sub_model_in_noduri_mm": 0
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0001519,
+    "surplus_max_mm": 0.01517,
+    "eroare_noduri_max_mm": 0.01517,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0002069,
+    "surplus_max_mm": 0.02147,
+    "eroare_noduri_max_mm": 0.02147,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "canal 90 grade",
+   "tool": "dreapta R3",
+   "A_nod": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 0,
+    "eroare_noduri_max_mm": 0,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "canal 90 grade",
+   "tool": "V90 R6",
+   "A_nod": {
+    "scobitura_max_mm": 3.553e-15,
+    "surplus_mediu_mm": 0,
+    "surplus_max_mm": 3.553e-15,
+    "eroare_noduri_max_mm": 2.665e-15,
+    "sub_model_in_noduri_mm": 2.665e-15
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.002406,
+    "surplus_max_mm": 0.1,
+    "eroare_noduri_max_mm": 0.1,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.003342,
+    "surplus_max_mm": 0.15,
+    "eroare_noduri_max_mm": 0.15,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "canal 90 grade",
+   "tool": "V60 R6",
+   "A_nod": {
+    "scobitura_max_mm": 5.329e-15,
+    "surplus_mediu_mm": 4.897e-18,
+    "surplus_max_mm": 5.329e-15,
+    "eroare_noduri_max_mm": 5.329e-15,
+    "sub_model_in_noduri_mm": 4.441e-15
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.004167,
+    "surplus_max_mm": 0.1732,
+    "eroare_noduri_max_mm": 0.1732,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.005788,
+    "surplus_max_mm": 0.2598,
+    "eroare_noduri_max_mm": 0.2598,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "inel 5-12 (gaura)",
+   "tool": "bila R3",
+   "A_nod": {
+    "scobitura_max_mm": 1.141,
+    "surplus_mediu_mm": -0.0009922,
+    "surplus_max_mm": 0.9375,
+    "eroare_noduri_max_mm": 1.141,
+    "sub_model_in_noduri_mm": 1.141
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.04698,
+    "surplus_max_mm": 1.866,
+    "eroare_noduri_max_mm": 1.768,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0644,
+    "surplus_max_mm": 2.068,
+    "eroare_noduri_max_mm": 1.967,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "inel 5-12 (gaura)",
+   "tool": "dreapta R3",
+   "A_nod": {
+    "scobitura_max_mm": 4,
+    "surplus_mediu_mm": 0.002649,
+    "surplus_max_mm": 3.75,
+    "eroare_noduri_max_mm": 4,
+    "sub_model_in_noduri_mm": 4
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0948,
+    "surplus_max_mm": 4,
+    "eroare_noduri_max_mm": 4,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1022,
+    "surplus_max_mm": 4,
+    "eroare_noduri_max_mm": 4,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "inel 5-12 (gaura)",
+   "tool": "V90 R6",
+   "A_nod": {
+    "scobitura_max_mm": 0.09958,
+    "surplus_mediu_mm": -0.003619,
+    "surplus_max_mm": 0.01163,
+    "eroare_noduri_max_mm": 0.09958,
+    "sub_model_in_noduri_mm": 0.09958
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.03465,
+    "surplus_max_mm": 0.1314,
+    "eroare_noduri_max_mm": 0.1314,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.05406,
+    "surplus_max_mm": 0.2186,
+    "eroare_noduri_max_mm": 0.2186,
+    "sub_model_in_noduri_mm": 0
+   }
+  },
+  {
+   "surf": "inel 5-12 (gaura)",
+   "tool": "V60 R6",
+   "A_nod": {
+    "scobitura_max_mm": 0.1725,
+    "surplus_mediu_mm": -0.002994,
+    "surplus_max_mm": 0.02019,
+    "eroare_noduri_max_mm": 0.1725,
+    "sub_model_in_noduri_mm": 0.1725
+   },
+   "B_nod_vecini": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.02865,
+    "surplus_max_mm": 0.2265,
+    "eroare_noduri_max_mm": 0.225,
+    "sub_model_in_noduri_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.04643,
+    "surplus_max_mm": 0.3786,
+    "eroare_noduri_max_mm": 0.3786,
+    "sub_model_in_noduri_mm": 0
+   }
+  }
+ ],
+ "sweep": [
+  {
+   "celula_mm": 0.05,
+   "surf": "semisfera R20",
+   "tool": "bila R3",
+   "scobitura_max_mm": 0,
+   "surplus_mediu_mm": 0.0725,
+   "surplus_max_mm": 0.299
+  },
+  {
+   "celula_mm": 0.05,
+   "surf": "canal 60 grade",
+   "tool": "bila R3",
+   "scobitura_max_mm": 0,
+   "surplus_mediu_mm": 0.0116,
+   "surplus_max_mm": 0.1725
+  },
+  {
+   "celula_mm": 0.05,
+   "surf": "semisfera R20",
+   "tool": "V90 R6",
+   "scobitura_max_mm": 0,
+   "surplus_mediu_mm": 0.0516,
+   "surplus_max_mm": 0.101
+  },
+  {
+   "celula_mm": 0.1,
+   "surf": "semisfera R20",
+   "tool": "bila R3",
+   "scobitura_max_mm": 0,
+   "surplus_mediu_mm": 0.1407,
+   "surplus_max_mm": 0.542
+  },
+  {
+   "celula_mm": 0.1,
+   "surf": "canal 60 grade",
+   "tool": "bila R3",
+   "scobitura_max_mm": 0,
+   "surplus_mediu_mm": 0.0221,
+   "surplus_max_mm": 0.3435
+  },
+  {
+   "celula_mm": 0.1,
+   "surf": "semisfera R20",
+   "tool": "V90 R6",
+   "scobitura_max_mm": 0,
+   "surplus_mediu_mm": 0.1019,
+   "surplus_max_mm": 0.2021
+  },
+  {
+   "celula_mm": 0.2,
+   "surf": "semisfera R20",
+   "tool": "bila R3",
+   "scobitura_max_mm": 0,
+   "surplus_mediu_mm": 0.2638,
+   "surplus_max_mm": 0.9533
+  },
+  {
+   "celula_mm": 0.2,
+   "surf": "canal 60 grade",
+   "tool": "bila R3",
+   "scobitura_max_mm": 0,
+   "surplus_mediu_mm": 0.0411,
+   "surplus_max_mm": 0.6813
+  },
+  {
+   "celula_mm": 0.2,
+   "surf": "semisfera R20",
+   "tool": "V90 R6",
+   "scobitura_max_mm": 0,
+   "surplus_mediu_mm": 0.1978,
+   "surplus_max_mm": 0.4026
+  },
+  {
+   "celula_mm": 0.61,
+   "surf": "semisfera R20",
+   "tool": "bila R3",
+   "scobitura_max_mm": 0,
+   "surplus_mediu_mm": 0.6538,
+   "surplus_max_mm": 1.8875
+  },
+  {
+   "celula_mm": 0.61,
+   "surf": "canal 60 grade",
+   "tool": "bila R3",
+   "scobitura_max_mm": 0,
+   "surplus_mediu_mm": 0.1047,
+   "surplus_max_mm": 1.9186
+  },
+  {
+   "celula_mm": 0.61,
+   "surf": "semisfera R20",
+   "tool": "V90 R6",
+   "scobitura_max_mm": 0,
+   "surplus_mediu_mm": 0.5252,
+   "surplus_max_mm": 1.2262
+  }
+ ],
+ "scallop": [
+  {
+   "R": 3,
+   "pas_lateral_mm": 1,
+   "panta_transversala_grade": 0,
+   "formula_mm": 0.04196,
+   "simulat_cu_CL_exact_mm": 0.04196,
+   "simulat_cu_CL_grila_C_mm": 0.04196
+  },
+  {
+   "R": 3,
+   "pas_lateral_mm": 1,
+   "panta_transversala_grade": 20,
+   "formula_mm": 0.050616,
+   "simulat_cu_CL_exact_mm": 0.050576,
+   "simulat_cu_CL_grila_C_mm": 0.086859
+  },
+  {
+   "R": 3,
+   "pas_lateral_mm": 0.5,
+   "panta_transversala_grade": 0,
+   "formula_mm": 0.010435,
+   "simulat_cu_CL_exact_mm": 0.010435,
+   "simulat_cu_CL_grila_C_mm": 0.010435
+  },
+  {
+   "R": 3,
+   "pas_lateral_mm": 0.5,
+   "panta_transversala_grade": 20,
+   "formula_mm": 0.012578,
+   "simulat_cu_CL_exact_mm": 0.012577,
+   "simulat_cu_CL_grila_C_mm": 0.030776
+  },
+  {
+   "R": 1.5,
+   "pas_lateral_mm": 0.3,
+   "panta_transversala_grade": 0,
+   "formula_mm": 0.007519,
+   "simulat_cu_CL_exact_mm": 0.007519,
+   "simulat_cu_CL_grila_C_mm": 0.007519
+  },
+  {
+   "R": 1.5,
+   "pas_lateral_mm": 0.3,
+   "panta_transversala_grade": 20,
+   "formula_mm": 0.009064,
+   "simulat_cu_CL_exact_mm": 0.009061,
+   "simulat_cu_CL_grila_C_mm": 0.019923
+  },
+  {
+   "R": 6.35,
+   "pas_lateral_mm": 2,
+   "panta_transversala_grade": 0,
+   "formula_mm": 0.079234,
+   "simulat_cu_CL_exact_mm": 0.079234,
+   "simulat_cu_CL_grila_C_mm": 0.079234
+  },
+  {
+   "R": 6.35,
+   "pas_lateral_mm": 2,
+   "panta_transversala_grade": 20,
+   "formula_mm": 0.09557,
+   "simulat_cu_CL_exact_mm": 0.095547,
+   "simulat_cu_CL_grila_C_mm": 0.167855
+  }
+ ],
+ "volume": [
+  {
+   "celula_mm": 0.5,
+   "volum_analitic_mm3": 16755.161,
+   "volum_noduri_mm3": 16751.561,
+   "eroare_rel_noduri": -0.0002148,
+   "volum_max_celula_mm3": 17391.83,
+   "eroare_rel_max_celula": 0.038,
+   "greutate_stejar_g": 12.56
+  },
+  {
+   "celula_mm": 0.2,
+   "volum_analitic_mm3": 16755.161,
+   "volum_noduri_mm3": 16754.557,
+   "eroare_rel_noduri": -0.00003606,
+   "volum_max_celula_mm3": 17007.712,
+   "eroare_rel_max_celula": 0.01507,
+   "greutate_stejar_g": 12.57
+  },
+  {
+   "celula_mm": 0.1,
+   "volum_analitic_mm3": 16755.161,
+   "volum_noduri_mm3": 16754.889,
+   "eroare_rel_noduri": -0.00001624,
+   "volum_max_celula_mm3": 16881.171,
+   "eroare_rel_max_celula": 0.007521,
+   "greutate_stejar_g": 12.57
+  },
+  {
+   "celula_mm": 0.05,
+   "volum_analitic_mm3": 16755.161,
+   "volum_noduri_mm3": 16755.112,
+   "eroare_rel_noduri": -0.000002893,
+   "volum_max_celula_mm3": 16818.075,
+   "eroare_rel_max_celula": 0.003755,
+   "greutate_stejar_g": 12.57
+  }
+ ],
+ "quant": [
+  {
+   "inaltime_max_mm": 20,
+   "uint16_pas_mm": 0.0003052,
+   "uint16_eroare_max_mm": 0.0001526,
+   "f16_disponibil_in_node": true,
+   "f16_eroare_max_mm": 0.007811
+  },
+  {
+   "inaltime_max_mm": 60,
+   "uint16_pas_mm": 0.0009155,
+   "uint16_eroare_max_mm": 0.0004578,
+   "f16_disponibil_in_node": true,
+   "f16_eroare_max_mm": 0.01563
+  }
+ ]
+}

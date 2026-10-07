@@ -1,0 +1,644 @@
+{
+  "summary": {
+    "cells": 63,
+    "reps": 5,
+    "calls": 315,
+    "mismatches": 0,
+    "unstable": 0,
+    "gapEmulatorVsProductie": 30,
+    "ownerBlockedNoAppCheck": 1,
+    "dummyAppIdSeen": true
+  },
+  "table": [
+    {
+      "cell": "openPing|absent|none",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|absent|garbageAuth",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|absent|user",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|absent|support",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|absent|admin",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|absent|owner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|absent|forgedOwner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|dummy|none",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|dummy|garbageAuth",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|dummy|user",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|dummy|support",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|dummy|admin",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|dummy|owner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|dummy|forgedOwner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|malformed|none",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|malformed|garbageAuth",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|malformed|user",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|malformed|support",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|malformed|admin",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|malformed|owner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 200,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "openPing|malformed|forgedOwner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": null,
+      "medianMs": 3,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|absent|none",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|absent|garbageAuth",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|absent|user",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|absent|support",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|absent|admin",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|absent|owner",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|absent|forgedOwner",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|dummy|none",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|dummy|garbageAuth",
+      "expected": 403,
+      "measured": "403",
+      "prod": 401,
+      "err": "PERMISSION_DENIED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|dummy|user",
+      "expected": 403,
+      "measured": "403",
+      "prod": 401,
+      "err": "PERMISSION_DENIED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|dummy|support",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|dummy|admin",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|dummy|owner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|dummy|forgedOwner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|malformed|none",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|malformed|garbageAuth",
+      "expected": 403,
+      "measured": "403",
+      "prod": 401,
+      "err": "PERMISSION_DENIED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|malformed|user",
+      "expected": 403,
+      "measured": "403",
+      "prod": 401,
+      "err": "PERMISSION_DENIED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|malformed|support",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|malformed|admin",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|malformed|owner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "supportPing|malformed|forgedOwner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|absent|none",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|absent|garbageAuth",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|absent|user",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|absent|support",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|absent|admin",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|absent|owner",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|absent|forgedOwner",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|dummy|none",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|dummy|garbageAuth",
+      "expected": 403,
+      "measured": "403",
+      "prod": 401,
+      "err": "PERMISSION_DENIED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|dummy|user",
+      "expected": 403,
+      "measured": "403",
+      "prod": 401,
+      "err": "PERMISSION_DENIED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|dummy|support",
+      "expected": 403,
+      "measured": "403",
+      "prod": 401,
+      "err": "PERMISSION_DENIED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|dummy|admin",
+      "expected": 403,
+      "measured": "403",
+      "prod": 401,
+      "err": "PERMISSION_DENIED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|dummy|owner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|dummy|forgedOwner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": "1:000000000000:web:s9sonda",
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|malformed|none",
+      "expected": 401,
+      "measured": "401",
+      "prod": 401,
+      "err": "UNAUTHENTICATED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|malformed|garbageAuth",
+      "expected": 403,
+      "measured": "403",
+      "prod": 401,
+      "err": "PERMISSION_DENIED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|malformed|user",
+      "expected": 403,
+      "measured": "403",
+      "prod": 401,
+      "err": "PERMISSION_DENIED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|malformed|support",
+      "expected": 403,
+      "measured": "403",
+      "prod": 401,
+      "err": "PERMISSION_DENIED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|malformed|admin",
+      "expected": 403,
+      "measured": "403",
+      "prod": 401,
+      "err": "PERMISSION_DENIED",
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|malformed|owner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    },
+    {
+      "cell": "ownerPing|malformed|forgedOwner",
+      "expected": 200,
+      "measured": "200",
+      "prod": 401,
+      "err": null,
+      "appId": null,
+      "medianMs": 2,
+      "ok": true
+    }
+  ]
+}

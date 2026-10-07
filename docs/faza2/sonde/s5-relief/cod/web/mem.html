@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sonda memorie</title>
+<style>
+  :root { --bg: #f4f2ee; --fg: #1d1d1b; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #1b1b1a; --fg: #ecebe7; } }
+  body { margin: 0; padding: 8px 16px; background: var(--bg); color: var(--fg); font: 13px/1.4 system-ui, sans-serif; }
+</style>
+</head>
+<body>
+<pre id="log">memorie...</pre>
+<script type="module">
+const P = new URLSearchParams(location.search), cap = +(P.get('cap') || 32);
+const R = { cap_straturi: cap, crossOriginIsolated: self.crossOriginIsolated };
+const log = (s) => { console.log(s); document.getElementById('log').textContent += '\n' + s; };
+const now = () => performance.now();
+// 1) straturi Float32 4000x4000 (64 MB), atinse (fill), pana la eroare sau plafon
+{
+  const layers = []; const t0 = now(); let err = null; const per = [];
+  for (let k = 0; k < cap; k++) {
+    const t = now();
+    try { const a = new Float32Array(4000 * 4000); a.fill(k + 1); layers.push(a); } catch (e) { err = String(e); break; }
+    per.push(now() - t);
+  }
+  let ok = true; for (let k = 0; k < layers.length; k++) if (layers[k][12345678] !== k + 1) ok = false;
+  R.straturi_alocate = layers.length; R.GB = +(layers.length * 0.064).toFixed(2); R.eroare_alocare = err; R.continut_verificat = ok;
+  R.ms_pe_strat_median = +per.sort((a, b) => a - b)[Math.floor(per.length / 2)].toFixed(1); R.ms_total = Math.round(now() - t0);
+  if (performance.measureUserAgentSpecificMemory) { try { const m = await performance.measureUserAgentSpecificMemory(); R.memorie_raportata_GB = +(m.bytes / 1e9).toFixed(2); } catch (e) { R.memorie_raportata_err = String(e); } }
+  log(JSON.stringify(R)); layers.length = 0;
+}
+// 2) cel mai mare ArrayBuffer unic (neatins), dupa eliberarea straturilor (gc expus prin --js-flags=--expose-gc)
+R.gc_disponibil = typeof gc === 'function'; if (R.gc_disponibil) { gc(); gc(); }
+R.arraybuffer_unic = {};
+for (const [name, sz] of [['1 GiB', 2 ** 30], ['1,5 GiB', 1.5 * 2 ** 30], ['2 GiB - 64 KiB', 2 ** 31 - 65536], ['2 GiB', 2 ** 31], ['4 GiB + 8', 2 ** 32 + 8]]) {
+  try { let b = new ArrayBuffer(sz); R.arraybuffer_unic[name] = b.byteLength === sz ? 'ok' : 'lungime gresita'; b = null; if (R.gc_disponibil) gc(); } catch (e) { R.arraybuffer_unic[name] = String(e).slice(0, 80); }
+}
+// 3) wasm32: memoria maxima 65536 pagini = 4 GiB
+try { const m = new WebAssembly.Memory({ initial: 1, maximum: 65536 }); const t = now(); m.grow(65535); R.wasm32_octeti_dupa_grow = m.buffer.byteLength; R.wasm32_grow_ms = +(now() - t).toFixed(1); } catch (e) { R.wasm32_err = String(e); }
+try { new WebAssembly.Memory({ initial: 1, maximum: 65537 }); R.wasm32_peste_4GiB = 'acceptat (neasteptat)'; } catch (e) { R.wasm32_peste_4GiB = 'refuzat: ' + String(e).slice(0, 120); }
+// 4) memory64 (adrese pe 64 de biti): creare si crestere peste 4 GiB (5 GiB), neatinsa
+const tries = [
+  ['address i64 + BigInt', () => new WebAssembly.Memory({ address: 'i64', initial: 1n, maximum: 131072n }), (m) => m.grow(81919n)],
+  ['address i64 + number', () => new WebAssembly.Memory({ address: 'i64', initial: 1, maximum: 131072 }), (m) => m.grow(81919)],
+  ['index i64 + BigInt', () => new WebAssembly.Memory({ index: 'i64', initial: 1n, maximum: 131072n }), (m) => m.grow(81919n)],
+];
+R.memory64 = {};
+for (const [name, mk, grow] of tries) {
+  try { const m = mk(); try { grow(m); R.memory64[name] = 'crestere la ' + (m.buffer.byteLength / 2 ** 30).toFixed(2) + ' GiB'; } catch (e) { R.memory64[name] = 'creat, crestere refuzata: ' + String(e).slice(0, 120); } } catch (e) { R.memory64[name] = 'refuzat: ' + String(e).slice(0, 120); }
+}
+R.float16Array = typeof Float16Array !== 'undefined';
+log(JSON.stringify(R));
+await fetch('/rezultat?nume=mem', { method: 'POST', body: JSON.stringify(R, null, 1) });
+window.__done = true;
+</script>
+</body>
+</html>

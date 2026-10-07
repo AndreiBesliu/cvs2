@@ -1,0 +1,96 @@
+{
+ "node": "v26.10.0",
+ "cpu": "AMD Ryzen 9 7950X 16-Core Processor            ",
+ "threads": 32,
+ "load1": 0,
+ "rez": {
+  "2d@0.25": {
+   "mutari": 194208,
+   "ms_median": 620,
+   "ms_toate": [
+    678,
+    620,
+    592,
+    594,
+    729
+   ],
+   "mutari_pe_s": 313340,
+   "hash": "a589e7d3091176b8",
+   "celule": 48216000,
+   "dale_alocate": "7409/11858",
+   "MB_dens": 183.9,
+   "MB_rar": 115.8,
+   "dale_uniforme": 954,
+   "MB_rar_cu_uniforme_comprimate": 100.9
+  },
+  "2d@0.1": {
+   "mutari": 194208,
+   "ms_median": 3941,
+   "ms_toate": [
+    3941,
+    3806,
+    4069,
+    3986,
+    3855
+   ],
+   "mutari_pe_s": 49283,
+   "hash": "b00917a30715ff44",
+   "celule": 301350000,
+   "dale_alocate": "27519/73919",
+   "MB_dens": 1149.6,
+   "MB_rar": 430,
+   "dale_uniforme": 6435,
+   "MB_rar_cu_uniforme_comprimate": 329.5
+  },
+  "3d-subset@0.1": {
+   "mutari": 1000399,
+   "ms_median": 8466,
+   "ms_toate": [
+    8189,
+    8730,
+    8264,
+    8466,
+    8578
+   ],
+   "mutari_pe_s": 118165,
+   "hash": "2aa0c5b086544eed"
+  },
+  "3d-complet@0.1-1fir": {
+   "mutari": 5004500,
+   "ms": 42901,
+   "mutari_pe_s": 116652,
+   "hash": "337e209a07a0b6bb",
+   "MB_rar": 36,
+   "dale": "2304/2304"
+  },
+  "fire=1": {
+   "2d@0.1_ms": 4306,
+   "2d_hash_identic": true,
+   "3d@0.1_ms": 41739,
+   "3d_hash": "337e209a07a0b6bb",
+   "3d_hash_identic": true
+  },
+  "fire=4": {
+   "2d@0.1_ms": 1213,
+   "2d_hash_identic": true,
+   "3d@0.1_ms": 12014,
+   "3d_hash": "337e209a07a0b6bb",
+   "3d_hash_identic": true
+  },
+  "fire=8": {
+   "2d@0.1_ms": 678,
+   "2d_hash_identic": true,
+   "3d@0.1_ms": 6892,
+   "3d_hash": "337e209a07a0b6bb",
+   "3d_hash_identic": true
+  },
+  "fire=16": {
+   "2d@0.1_ms": 508,
+   "2d_hash_identic": true,
+   "3d@0.1_ms": 4276,
+   "3d_hash": "337e209a07a0b6bb",
+   "3d_hash_identic": true
+  }
+ },
+ "load1_end": 0
+}

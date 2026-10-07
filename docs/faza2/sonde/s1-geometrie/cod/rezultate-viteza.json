@@ -1,0 +1,65 @@
+[
+ {
+  "lib": "cavalier-contours-js 0.1.1",
+  "offset1000_ms": 8.12869999999998,
+  "unire975_ms": 38.82060000000001,
+  "repetari": 5,
+  "entitatiOffset": 5000,
+  "erori": 0,
+  "ariaReuniunilor": 420182.33273063204
+ },
+ {
+  "lib": "@flatten-js/core 1.6.14 + polygon-offset 1.1.4",
+  "offset1000_ms": 22.08730000000014,
+  "unire975_ms": 524.1579000000002,
+  "repetari": 5,
+  "entitatiOffset": 0,
+  "erori": 1000,
+  "ariaReuniunilor": 420182.33273063396
+ },
+ {
+  "lib": "makerjs 0.19.2",
+  "offset1000_ms": 2066.6916999999994,
+  "unire975_ms": 2014.5442999999996,
+  "repetari": 5,
+  "entitatiOffset": 5000,
+  "erori": 0,
+  "ariaReuniunilor": 420182.3326123558
+ },
+ {
+  "lib": "paper 0.12.18 + paperjs-offset 2.2.1",
+  "offset1000_ms": 559.736399999998,
+  "unire975_ms": 1314.2554000000018,
+  "repetari": 5,
+  "entitatiOffset": 8122,
+  "erori": 0,
+  "ariaReuniunilor": 420210.4570524004
+ },
+ {
+  "lib": "Skia PathOps (canvaskit-wasm 0.42.0, build full)",
+  "offset1000_ms": 39.03620000000228,
+  "unire975_ms": 166.3631000000023,
+  "repetari": 5,
+  "entitatiOffset": 22000,
+  "erori": 0,
+  "ariaReuniunilor": 420181.9722780574
+ },
+ {
+  "lib": "clipper2-ts 2.0.1 (aplatizare 0.001 mm)",
+  "offset1000_ms": 107.4326000000001,
+  "unire975_ms": 931.6174000000028,
+  "repetari": 5,
+  "entitatiOffset": 372000,
+  "erori": 0,
+  "ariaReuniunilor": 420165.0959636025
+ },
+ {
+  "lib": "clipper2-ts 2.0.1 (aplatizare 0.01 mm)",
+  "offset1000_ms": 36.12580000000162,
+  "unire975_ms": 284.113400000002,
+  "repetari": 5,
+  "entitatiOffset": 124000,
+  "erori": 0,
+  "ariaReuniunilor": 420019.1949704974
+ }
+]

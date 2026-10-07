@@ -1,0 +1,931 @@
+{
+  "data": "2026-10-07T06:21:57.727Z",
+  "browser": "msedge (headless) 154.0.4258.62",
+  "durata_s": 9.3,
+  "verificari": 122,
+  "trecute": 122,
+  "picate": [],
+  "metrici": {
+    "1A": {
+      "gesturi": 2,
+      "concepte": 1,
+      "lista": [
+        "Ramă"
+      ],
+      "noduri": 3,
+      "plasari": 1,
+      "ms": 250
+    },
+    "2A": {
+      "gesturi": 6,
+      "concepte": 2,
+      "lista": [
+        "Ramă",
+        "Copie"
+      ],
+      "noduri": 3,
+      "plasari": 1,
+      "ms": 244
+    },
+    "3A": {
+      "gesturi": 15,
+      "concepte": 2,
+      "lista": [
+        "Ramă",
+        "Grup"
+      ],
+      "noduri": 7,
+      "plasari": 1,
+      "ms": 289
+    },
+    "4A": {
+      "gesturi": 7,
+      "concepte": 3,
+      "lista": [
+        "Copie",
+        "Așezare pe rânduri",
+        "Planșă"
+      ],
+      "noduri": 24,
+      "plasari": 12,
+      "ms": 272
+    },
+    "5A": {
+      "gesturi": 26,
+      "concepte": 1,
+      "lista": [
+        "Ramă"
+      ],
+      "noduri": 24,
+      "plasari": 12,
+      "ms": 277
+    },
+    "6A": {
+      "gesturi": 9,
+      "concepte": 5,
+      "lista": [
+        "Câmp {…}",
+        "Copie",
+        "Așezare pe rânduri",
+        "Planșă",
+        "Ramă"
+      ],
+      "noduri": 60,
+      "plasari": 30,
+      "ms": 185
+    },
+    "7A": {
+      "gesturi": 39,
+      "concepte": 5,
+      "lista": [
+        "Planșă",
+        "Copie",
+        "Oglindire",
+        "Ramă",
+        "Știft"
+      ],
+      "noduri": 8,
+      "plasari": 6,
+      "ms": 736
+    },
+    "8A": {
+      "gesturi": 11,
+      "concepte": 1,
+      "lista": [
+        "Planșă"
+      ],
+      "noduri": 2,
+      "plasari": 2,
+      "ms": 165
+    },
+    "1D": {
+      "gesturi": 2,
+      "concepte": 1,
+      "lista": [
+        "Ramă"
+      ],
+      "noduri": 3,
+      "plasari": 1,
+      "ms": 223
+    },
+    "2D": {
+      "gesturi": 6,
+      "concepte": 2,
+      "lista": [
+        "Ramă",
+        "Copie"
+      ],
+      "noduri": 3,
+      "plasari": 1,
+      "ms": 228
+    },
+    "3D": {
+      "gesturi": 15,
+      "concepte": 2,
+      "lista": [
+        "Ramă",
+        "Grup"
+      ],
+      "noduri": 7,
+      "plasari": 1,
+      "ms": 293
+    },
+    "4D": {
+      "gesturi": 7,
+      "concepte": 4,
+      "lista": [
+        "Piesă",
+        "Instanță",
+        "Așezare pe rânduri",
+        "Foaie"
+      ],
+      "noduri": 2,
+      "plasari": 12,
+      "ms": 272
+    },
+    "5D": {
+      "gesturi": 6,
+      "concepte": 4,
+      "lista": [
+        "Piesă",
+        "Instanță",
+        "Ramă",
+        "Desprindere"
+      ],
+      "noduri": 4,
+      "plasari": 12,
+      "ms": 101
+    },
+    "6D": {
+      "gesturi": 9,
+      "concepte": 6,
+      "lista": [
+        "Câmp {…}",
+        "Piesă",
+        "Instanță",
+        "Așezare pe rânduri",
+        "Foaie",
+        "Ramă"
+      ],
+      "noduri": 2,
+      "plasari": 30,
+      "ms": 166
+    },
+    "7D": {
+      "gesturi": 9,
+      "concepte": 3,
+      "lista": [
+        "Fața de jos",
+        "Știft",
+        "Ramă"
+      ],
+      "noduri": 3,
+      "plasari": 1,
+      "ms": 302
+    },
+    "8D": {
+      "gesturi": 11,
+      "concepte": 1,
+      "lista": [
+        "Foaie"
+      ],
+      "noduri": 2,
+      "plasari": 2,
+      "ms": 162
+    }
+  },
+  "toate": [
+    {
+      "s": 1,
+      "v": "A",
+      "check": "clic alege rama întreagă (un singur obiect)",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "A",
+      "check": "previzualizare înainte de Enter: fantoma 400×200",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "A",
+      "check": "conturul fantomă e desenat (contur + inel + 2 elemente)",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "A",
+      "check": "Escape în câmp renunță: fără fantomă, rama tot 300",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "A",
+      "check": "rama: 400×200 (oracol: mânerul dus la x=440, stânga fixă la 40)",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "A",
+      "check": "canelura desenată: 380×180 la 10 mm (oracol 400−2·10, 200−2·10)",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "A",
+      "check": "textul: centrul la x=200 (oracol 400/2), mărimea 24 neschimbată",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "A",
+      "check": "gaura: Ø8, centru (200, 28): rămâne sus, nu crește",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "A",
+      "check": "plăcuța rămâne la (40, 40) pe planșă",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "A",
+      "check": "fără avertismente",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "A",
+      "check": "dublu-clic intră în ramă și alege textul",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "A",
+      "check": "firul arată «… › Plăcuță»",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "A",
+      "check": "doar textul s-a mutat, 20 mm în jos",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "A",
+      "check": "rama a rămas 300×200 la (40, 40)",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "A",
+      "check": "Escape iese și alege rama",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "A",
+      "check": "Ctrl+D: o ramă nouă, cu tot conținutul (2 elemente, aceleași locuri)",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "A",
+      "check": "copia e la +20 mm și e aleasă",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "A",
+      "check": "clic pe marginea originalului (în afara copiei) alege originalul",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "A",
+      "check": "Delete: dispare rama cu tot ce e în ea; nimic nu rămâne pe planșă",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "A",
+      "check": "primul dublu-clic: în ramă, alege logo-ul",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "A",
+      "check": "al doilea dublu-clic: în logo, alege cercul; firul arată «… › Plăcuță › Logo»",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "A",
+      "check": "cercul s-a mutat +10 mm; frunzele și logo-ul nu",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "A",
+      "check": "Escape 1: înapoi în ramă, logo ales",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "A",
+      "check": "Escape 2: sus, rama aleasă",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "A",
+      "check": "Escape 3: nimic ales",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "A",
+      "check": "trei niveluri: Plăcuță › Logo › Frunze, frunza 1 aleasă",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "A",
+      "check": "clic pe fir sare direct în ramă",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "A",
+      "check": "Ctrl+G pe logo + text: grup nou, cu logo-ul (grup în grup în grup) înăuntru",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "A",
+      "check": "Ctrl+Z desface gruparea",
+      "ok": true
+    },
+    {
+      "s": 4,
+      "v": "A",
+      "check": "rânduri: 9 pe prima, 3 pe a doua (oracol 3×3 + 3)",
+      "ok": true
+    },
+    {
+      "s": 4,
+      "v": "A",
+      "check": "pozițiile = grila pe hârtie (x 10/170/330, y 10/120/230), nimic rotit sau micșorat",
+      "ok": true
+    },
+    {
+      "s": 4,
+      "v": "A",
+      "check": "A: 12 copii separate (24 de noduri stocate)",
+      "ok": true
+    },
+    {
+      "s": 4,
+      "v": "A",
+      "check": "R: rotit 90°, cutia 100×150 în jurul aceluiași centru (405, 60)",
+      "ok": true
+    },
+    {
+      "s": 4,
+      "v": "A",
+      "check": "mutat înapoi pe prima, în fâșia din dreapta: cutia (490, 10, 100, 150)",
+      "ok": true
+    },
+    {
+      "s": 4,
+      "v": "A",
+      "check": "acum 10 + 2, fără suprapuneri și fără nimic ieșit din planșă",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "A",
+      "check": "pornește cu 12 suporturi «CAFÉ» (9 + 3)",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "A",
+      "check": "dublu-clic pe un suport intră în el și alege textul",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "A",
+      "check": "A: nicio bandă (nu există piesă-sursă)",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "A",
+      "check": "A: s-a schimbat doar copia editată (1 «CEAI», 11 «CAFÉ»)",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "A",
+      "check": "A: după încă 11 editări, toate 12 «CEAI»",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "A",
+      "check": "rezultat: 11 «CEAI» și 1 «ZAHĂR»",
+      "ok": true
+    },
+    {
+      "s": 6,
+      "v": "A",
+      "check": "30 de plăcuțe: 15 + 15 (oracol 3×5 pe foaie)",
+      "ok": true
+    },
+    {
+      "s": 6,
+      "v": "A",
+      "check": "numele în ordinea din CSV",
+      "ok": true
+    },
+    {
+      "s": 6,
+      "v": "A",
+      "check": "A: 30 de copii, 60 de noduri stocate, numele scris în copie",
+      "ok": true
+    },
+    {
+      "s": 6,
+      "v": "A",
+      "check": "A: s-a mărit doar copia editată (1 × 26, 29 × 20)",
+      "ok": true
+    },
+    {
+      "s": 6,
+      "v": "A",
+      "check": "un singur nume corectat (Diana → Mihaela), restul neatinse",
+      "ok": true
+    },
+    {
+      "s": 7,
+      "v": "A",
+      "check": "A: planșa 2 e o copie oglindită: ușița la x 220..520",
+      "ok": true
+    },
+    {
+      "s": 7,
+      "v": "A",
+      "check": "A: în copie, dublu-clic alege relieful",
+      "ok": true
+    },
+    {
+      "s": 7,
+      "v": "A",
+      "check": "A: copia are buzunarul, originalul își păstrează relieful",
+      "ok": true
+    },
+    {
+      "s": 7,
+      "v": "A",
+      "check": "A: 2 știfturi pe fiecare planșă, puse de mână",
+      "ok": true
+    },
+    {
+      "s": 7,
+      "v": "A",
+      "check": "A: muți ușița pe planșa 1 (+50) → spatele NU o urmează (nealiniere 50 mm)",
+      "ok": true
+    },
+    {
+      "s": 7,
+      "v": "A",
+      "check": "A: nealinierea nu dă niciun avertisment (A nu știe că sunt aceeași piesă)",
+      "ok": true
+    },
+    {
+      "s": 8,
+      "v": "A",
+      "check": "planșa are 1200×400",
+      "ok": true
+    },
+    {
+      "s": 8,
+      "v": "A",
+      "check": "canelura de chenar la 20 mm: cutia (20, 20, 1160, 360) (oracol 1200−2·20, 400−2·20)",
+      "ok": true
+    },
+    {
+      "s": 8,
+      "v": "A",
+      "check": "textul «ATELIER» e pe planșă, fără avertismente",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "D",
+      "check": "clic alege rama întreagă (un singur obiect)",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "D",
+      "check": "previzualizare înainte de Enter: fantoma 400×200",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "D",
+      "check": "conturul fantomă e desenat (contur + inel + 2 elemente)",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "D",
+      "check": "Escape în câmp renunță: fără fantomă, rama tot 300",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "D",
+      "check": "rama: 400×200 (oracol: mânerul dus la x=440, stânga fixă la 40)",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "D",
+      "check": "canelura desenată: 380×180 la 10 mm (oracol 400−2·10, 200−2·10)",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "D",
+      "check": "textul: centrul la x=200 (oracol 400/2), mărimea 24 neschimbată",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "D",
+      "check": "gaura: Ø8, centru (200, 28): rămâne sus, nu crește",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "D",
+      "check": "plăcuța rămâne la (40, 40) pe foaie",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "D",
+      "check": "fără avertismente",
+      "ok": true
+    },
+    {
+      "s": 1,
+      "v": "D",
+      "check": "D: nivelul 2 rămâne ascuns (fără listă de piese)",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "D",
+      "check": "dublu-clic intră în ramă și alege textul",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "D",
+      "check": "firul arată «… › Plăcuță»",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "D",
+      "check": "doar textul s-a mutat, 20 mm în jos",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "D",
+      "check": "rama a rămas 300×200 la (40, 40)",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "D",
+      "check": "Escape iese și alege rama",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "D",
+      "check": "Ctrl+D: o ramă nouă, cu tot conținutul (2 elemente, aceleași locuri)",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "D",
+      "check": "copia e la +20 mm și e aleasă",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "D",
+      "check": "clic pe marginea originalului (în afara copiei) alege originalul",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "D",
+      "check": "Delete: dispare rama cu tot ce e în ea; nimic nu rămâne pe foaie",
+      "ok": true
+    },
+    {
+      "s": 2,
+      "v": "D",
+      "check": "D: nivelul 2 rămâne ascuns după Ctrl+D și Delete",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "D",
+      "check": "primul dublu-clic: în ramă, alege logo-ul",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "D",
+      "check": "al doilea dublu-clic: în logo, alege cercul; firul arată «… › Plăcuță › Logo»",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "D",
+      "check": "cercul s-a mutat +10 mm; frunzele și logo-ul nu",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "D",
+      "check": "Escape 1: înapoi în ramă, logo ales",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "D",
+      "check": "Escape 2: sus, rama aleasă",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "D",
+      "check": "Escape 3: nimic ales",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "D",
+      "check": "trei niveluri: Plăcuță › Logo › Frunze, frunza 1 aleasă",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "D",
+      "check": "clic pe fir sare direct în ramă",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "D",
+      "check": "Ctrl+G pe logo + text: grup nou, cu logo-ul (grup în grup în grup) înăuntru",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "D",
+      "check": "Ctrl+Z desface gruparea",
+      "ok": true
+    },
+    {
+      "s": 3,
+      "v": "D",
+      "check": "D: nivelul 2 rămâne ascuns",
+      "ok": true
+    },
+    {
+      "s": 4,
+      "v": "D",
+      "check": "rânduri: 9 pe prima, 3 pe a doua (oracol 3×3 + 3)",
+      "ok": true
+    },
+    {
+      "s": 4,
+      "v": "D",
+      "check": "pozițiile = grila pe hârtie (x 10/170/330, y 10/120/230), nimic rotit sau micșorat",
+      "ok": true
+    },
+    {
+      "s": 4,
+      "v": "D",
+      "check": "D: o piesă cu 12 instanțe (2 noduri stocate), nivelul 2 apare la cerere",
+      "ok": true
+    },
+    {
+      "s": 4,
+      "v": "D",
+      "check": "R: rotit 90°, cutia 100×150 în jurul aceluiași centru (405, 60)",
+      "ok": true
+    },
+    {
+      "s": 4,
+      "v": "D",
+      "check": "mutat înapoi pe prima, în fâșia din dreapta: cutia (490, 10, 100, 150)",
+      "ok": true
+    },
+    {
+      "s": 4,
+      "v": "D",
+      "check": "acum 10 + 2, fără suprapuneri și fără nimic ieșit din foaie",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "D",
+      "check": "pornește cu 12 suporturi «CAFÉ» (9 + 3)",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "D",
+      "check": "dublu-clic pe un suport intră în el și alege textul",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "D",
+      "check": "D: banda spune clar că editezi piesa, cu toate cele 12 instanțe",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "D",
+      "check": "D: un singur gest a schimbat toate 12 în «CEAI»",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "D",
+      "check": "D: «Desprinde» face o piesă separată (11 + 1)",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "D",
+      "check": "D: în piesa desprinsă nu mai apare banda «toate»",
+      "ok": true
+    },
+    {
+      "s": 5,
+      "v": "D",
+      "check": "rezultat: 11 «CEAI» și 1 «ZAHĂR»",
+      "ok": true
+    },
+    {
+      "s": 6,
+      "v": "D",
+      "check": "30 de plăcuțe: 15 + 15 (oracol 3×5 pe foaie)",
+      "ok": true
+    },
+    {
+      "s": 6,
+      "v": "D",
+      "check": "numele în ordinea din CSV",
+      "ok": true
+    },
+    {
+      "s": 6,
+      "v": "D",
+      "check": "D: o piesă, 30 de instanțe, numele stă pe instanță",
+      "ok": true
+    },
+    {
+      "s": 6,
+      "v": "D",
+      "check": "D: banda arată că mărimea se schimbă pe toate 30",
+      "ok": true
+    },
+    {
+      "s": 6,
+      "v": "D",
+      "check": "D: un gest → textul are 26 pe toate 30",
+      "ok": true
+    },
+    {
+      "s": 6,
+      "v": "D",
+      "check": "un singur nume corectat (Diana → Mihaela), restul neatinse",
+      "ok": true
+    },
+    {
+      "s": 7,
+      "v": "D",
+      "check": "D: «Fața: Jos» dă foii fața de jos, cu 2 știfturi pe axa x=300",
+      "ok": true
+    },
+    {
+      "s": 7,
+      "v": "D",
+      "check": "D: apare doar fața (instanțele rămân ascunse)",
+      "ok": true
+    },
+    {
+      "s": 7,
+      "v": "D",
+      "check": "D: buzunarul 120×80 e în ușiță, pe spate, cu rolul «buzunar»",
+      "ok": true
+    },
+    {
+      "s": 7,
+      "v": "D",
+      "check": "D: pe fața de jos buzunarul apare oglindit la x 310..430, y 670..750",
+      "ok": true
+    },
+    {
+      "s": 7,
+      "v": "D",
+      "check": "D: muți ușița +50 mm sus → spatele o urmează: buzunarul la x 260..380",
+      "ok": true
+    },
+    {
+      "s": 7,
+      "v": "D",
+      "check": "D: fără avertismente",
+      "ok": true
+    },
+    {
+      "s": 8,
+      "v": "D",
+      "check": "foaia are 1200×400",
+      "ok": true
+    },
+    {
+      "s": 8,
+      "v": "D",
+      "check": "canelura de chenar la 20 mm: cutia (20, 20, 1160, 360) (oracol 1200−2·20, 400−2·20)",
+      "ok": true
+    },
+    {
+      "s": 8,
+      "v": "D",
+      "check": "textul «ATELIER» e pe foaie, fără avertismente",
+      "ok": true
+    },
+    {
+      "s": 8,
+      "v": "D",
+      "check": "D: al doilea nivel NU a apărut (fără piese/instanțe vizibile)",
+      "ok": true
+    },
+    {
+      "s": 0,
+      "v": "-",
+      "check": "notița rămâne după reîncărcare (localStorage)",
+      "ok": true
+    },
+    {
+      "s": 0,
+      "v": "-",
+      "check": "«Copiază notițele» pune tot textul în clipboard (8 scenarii, A și D)",
+      "ok": true
+    },
+    {
+      "s": 0,
+      "v": "-",
+      "check": "tema întunecată schimbă fundalul (body are fundal explicit)",
+      "ok": true
+    },
+    {
+      "s": 0,
+      "v": "-",
+      "check": "telefon (390 px): fără derulare orizontală, comutatorul A/D vizibil, pânza are loc",
+      "ok": true
+    },
+    {
+      "s": 0,
+      "v": "-",
+      "check": "telefon: comutatorul A/D rămâne vizibil și după derulare (antet lipit)",
+      "ok": true
+    },
+    {
+      "s": 0,
+      "v": "-",
+      "check": "fără erori sau avertismente în consolă",
+      "ok": true
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "sonda-s1-geometrie",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sonda aruncabila Faza 2 / s1-geometrie: modelul de curba si operatiile exacte",
+  "scripts": {
+    "masoara": "node masoara.mjs",
+    "masoara:rapid": "node masoara.mjs --rapid",
+    "robustete-cu-controale": "node robustete-cu-controale.mjs",
+    "gcode-demo": "node gcode-demo.mjs",
+    "cubice": "node cubice-raman-cubice.mjs",
+    "pathkit": "node pathkit-verificare.mjs"
+  },
+  "dependencies": {
+    "@flatten-js/core": "1.6.14",
+    "@flatten-js/polygon-offset": "1.1.4",
+    "bezier-js": "6.1.4",
+    "canvaskit-wasm": "0.42.0",
+    "cavalier-contours-js": "0.1.1",
+    "clipper2-ts": "2.0.1-18",
+    "flo-bezier3": "8.1.1",
+    "makerjs": "0.19.2",
+    "opentype.js": "2.0.0",
+    "paper": "0.12.18",
+    "paperjs-offset": "2.2.1",
+    "pathkit-wasm": "1.0.0"
+  }
+}

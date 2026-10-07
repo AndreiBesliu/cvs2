@@ -1,0 +1,54 @@
+{
+ "n": 4000,
+ "cicluri": 8,
+ "oracol_poisson": {
+  "n": 1024,
+  "eroare_max_mm": 7.649e-7,
+  "amplitudine_mm": 7.316,
+  "reziduu_relativ_pe_ciclu": [
+   0.0445,
+   0.00261,
+   0.0014,
+   0.00124,
+   0.000862,
+   0.000698,
+   0.000617,
+   0.000578,
+   0.000557,
+   0.000542,
+   0.000532,
+   0.000534
+  ],
+  "ms": 572
+ },
+ "citire_ms": 89,
+ "triunghiuri": 1380000,
+ "raster_ms": 344,
+ "adancime_model_mm": 97,
+ "gradienti_ms": 71,
+ "identitate": {
+  "eroare_max_mm": 0.0002295,
+  "reziduu_relativ_pe_ciclu": [
+   0.00983,
+   0.00046,
+   0.0000287,
+   0.00000218,
+   6.7e-7,
+   5.54e-7,
+   5.16e-7,
+   4.79e-7
+  ],
+  "poisson_ms": 6399,
+  "ms_pe_ciclu": 800
+ },
+ "compresie": {
+  "prag_panta": 10,
+  "a": 4,
+  "adancime_tinta_mm": 8,
+  "adancime_obtinuta_mm": 8,
+  "factor_compresie": 12.1,
+  "pregatire_ms": 552,
+  "poisson_ms": 6796,
+  "reziduu_relativ_final": 0.000114
+ }
+}

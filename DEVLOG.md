@@ -99,3 +99,46 @@ vectori reali”
 - `CLAUDE.md`: rezumatul deciziilor are cele două adăugiri.
 
 **Următorul pas:** Faza 2, tranșa 1 (sondele, inventarul adminului, prototipul planșelor).
+
+## 2026-10-07 — Faza 2, tranșa 1: sondele (Model: Claude Opus 5.5)
+
+**Prompt:** răspunsurile la formular. Tranșa 1: „Pornește acum (Recomandat)”. Programele-țintă pentru export:
+ArtCAM, AutoCAD / Aspire / VCarve, Inkscape / Illustrator, CorelDRAW. Vectorii reali: „Da, exact asta”.
+
+**Făcut:** 10 agenți în paralel, fiecare cu raportul lui în `docs/faza2/` și cu codul de probă în `cod/`.
+
+| Sonda | Ce a decis | Cifra-cheie |
+|---|---|---|
+| s1 geometria | calea = linie, arc, cubică; boolean cu Skia PathOps (PathKit); offset cu cavalier_contours; biarce proprii | cercul decalat rămâne 2 arce; litera B: 131 de linii G-code față de 467 aplatizate |
+| s2 export / import | DXF „exact” R2007 + „compatibil” R12; SVG, PDF, EPS; import DXF / SVG / PDF | 108/108 la export, 65/65 la import, cu cititori independenți; pachet de probă pentru owner |
+| s3 V-carve | axa medială din Voronoi pe puncte dese (delaunator + legalizare robustă) | plăcuța de 6 mm: 8 222 de linii față de 161 842 |
+| s4 simularea | nucleu CPU în TypeScript, dale rare, workere; GPU doar desenează | identic bit cu bit Node = Edge; 0 celule greșite pe 16 piese pe hârtie |
+| s5 relieful | Float32 pe dale; câmp conservativ pentru CAM 3D; WebGPU pentru operațiile globale | 0 scobituri pe corpus; finisare 2,67 M de puncte în 90 ms pe GPU |
+| s6 pânza | hibrid: WebGL2 pentru trasee și simulare, Canvas2D exact pentru vectori | 0 cadre pierdute la 60 Hz cu 50 k vectori + 5 M segmente |
+| s7 datele | valibot; OPFS + IndexedDB; zip determinist; undo ca jurnal; PWA cu actualizare oferită | salvarea supraviețuiește căderii; zip identic octet cu octet |
+| s8 posturile | un post condus de contracte de dialect ca date, cu sursă pe câmp | 3 zecimale în mm ajung pentru regula de arc a GRBL (200 000 de arce) |
+| admin | 12 file (nu 13), 5 tranșe legate de drum, 12–17 felii | cauza lui 401 pe test: App Check, nu contul |
+| prototipul planșelor | A și D pe 8 scenarii, 122 de verificări, 6 sabotaje prinse | D: 6 gesturi față de 26 (scen. 5), 9 față de 39 (scen. 7) |
+
+**Măsurat:**
+- Tranșa: 10 agenți, **4,19 M tokeni**, **80 min**. Estimarea fusese ~6 M și 60–75 min.
+- **Re-măsurat de mine, serial, pe mașina liberă** (comanda `masoara` a fiecărei sonde, 09:46–09:56): **toate
+  cele 10 s-au reprodus.**
+  - s1: tabelele T1–T8 identice, ordinea bibliotecilor neschimbată; cavalier 1 000 de offseturi în 11 ms.
+  - s2: 108/108 la export, 65/65 la import. Prima rulare picase din cauza mediului: din venv-ul din Temp
+    dispăruse `python.exe` (refăcut cu `venv --upgrade`).
+  - s3: plăcuța 8 222 de linii, abatere sub ideal 0,0131 mm, peste ideal 0,0016 mm; flo-mat tot 4 excepții + o
+    agățare.
+  - s4: amprentele Node = Edge identice; jobul 2D la 0,25 mm în 563 ms; WASM / JS = 1,00.
+  - s5: 0 scobituri cu câmpul conservativ; blur WebGPU 32 ms față de 92 ms pe 16 workere.
+  - s6: hibridul 8,8 ms pe cadru (median); redesenul exact pe 50 k forme în 66 ms.
+    - Martorul pozitiv de procesor din proba la 60 Hz **nu mai pică** pe mașina liberă: 10 k forme se
+      redesenează exact sub un cadru. Martorul de GPU pică în continuare.
+    - Concluzia rămâne, dar bugetul real de redesen e mai bun decât cel din raport, măsurat sub încărcare.
+  - s7: PWA 9/9 cu martorul picat.
+  - s8: tabelul de arce identic.
+  - s9: 63/63 de celule, 0 nepotriviri.
+  - s10: 122/122.
+
+**Următorul pas:** tranșa 1b, adică verificatorii adversariali și două sonde mici. Owner-ul încearcă
+prototipul planșelor și pachetul de export.

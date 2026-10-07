@@ -1,0 +1,1090 @@
+{
+ "masina": {
+  "chrome_gpu": [
+   "Canvas: Hardware accelerated",
+   "Compositing: Hardware accelerated",
+   "Rasterization: Hardware accelerated",
+   "Video Decode: Hardware accelerated",
+   "WebGL: Hardware accelerated",
+   "WebGPU: Hardware accelerated"
+  ],
+  "browser": "154.0.4258.62"
+ },
+ "rulari": [
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2dbmp",
+    "n": 50000,
+    "mode": "pan",
+    "ib": 1
+   },
+   "durata_s": 1.535,
+   "r": "c2dbmp",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 198,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 130,
+   "sync": true,
+   "exactMs": 11.8,
+   "interval_ms": {
+    "n": 120,
+    "med": 6.2,
+    "p95": 7.2,
+    "max": 11.7
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 6,
+    "p95": 6.8,
+    "max": 11.7
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 101,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2dbmp",
+    "n": 50000,
+    "mode": "zoom",
+    "ib": 1
+   },
+   "durata_s": 1.63,
+   "r": "c2dbmp",
+   "n": 50000,
+   "tp": 0,
+   "mode": "zoom",
+   "dpr": 1,
+   "genMs": 234,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 125,
+   "sync": true,
+   "exactMs": 11,
+   "interval_ms": {
+    "n": 120,
+    "med": 7.1,
+    "p95": 8.5,
+    "max": 15.7
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 6.9,
+    "p95": 8.3,
+    "max": 16
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 99,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "pan"
+   },
+   "durata_s": 2.809,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1,
+   "genMs": 235,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 615,
+   "hfUploadMs": 6.6,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 10.8,
+    "p95": 12.4,
+    "max": 26.7
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 10.5,
+    "p95": 12.6,
+    "max": 18.8
+   },
+   "cadre_peste_16_7ms": 2,
+   "heapMB": 172,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "zoom"
+   },
+   "durata_s": 2.721,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "zoom",
+   "dpr": 1,
+   "genMs": 248,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1,
+    "naive": [
+     1281,
+     721
+    ],
+    "exact": [
+     1281,
+     721
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 692,
+   "hfUploadMs": 7.7,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 10.5,
+    "p95": 11.6,
+    "max": 27.2
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 10.3,
+    "p95": 11.3,
+    "max": 20.7
+   },
+   "cadre_peste_16_7ms": 1,
+   "heapMB": 172,
+   "dpr_cerut": 1
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2dbmp",
+    "n": 50000,
+    "mode": "pan",
+    "ib": 1
+   },
+   "durata_s": 1.999,
+   "r": "c2dbmp",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.25,
+   "genMs": 265,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.25,
+    "naive": [
+     1601,
+     901
+    ],
+    "exact": [
+     1602,
+     901
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 148,
+   "sync": true,
+   "exactMs": 11.4,
+   "interval_ms": {
+    "n": 120,
+    "med": 8.6,
+    "p95": 10,
+    "max": 16
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 8.4,
+    "p95": 9.6,
+    "max": 15.8
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 101,
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2dbmp",
+    "n": 50000,
+    "mode": "zoom",
+    "ib": 1
+   },
+   "durata_s": 1.935,
+   "r": "c2dbmp",
+   "n": 50000,
+   "tp": 0,
+   "mode": "zoom",
+   "dpr": 1.25,
+   "genMs": 239,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.25,
+    "naive": [
+     1601,
+     901
+    ],
+    "exact": [
+     1602,
+     901
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 123,
+   "sync": true,
+   "exactMs": 17.7,
+   "interval_ms": {
+    "n": 120,
+    "med": 9.2,
+    "p95": 10.6,
+    "max": 15.7
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 9.1,
+    "p95": 10.2,
+    "max": 14.2
+   },
+   "cadre_peste_16_7ms": 0,
+   "heapMB": 99,
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "pan"
+   },
+   "durata_s": 3.337,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.25,
+   "genMs": 248,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.25,
+    "naive": [
+     1601,
+     901
+    ],
+    "exact": [
+     1602,
+     901
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 606,
+   "hfUploadMs": 6.5,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 14.5,
+    "p95": 16.2,
+    "max": 32.5
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 14.2,
+    "p95": 15.5,
+    "max": 21
+   },
+   "cadre_peste_16_7ms": 3,
+   "heapMB": 172,
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "zoom"
+   },
+   "durata_s": 3.434,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "zoom",
+   "dpr": 1.25,
+   "genMs": 324,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.25,
+    "naive": [
+     1601,
+     901
+    ],
+    "exact": [
+     1602,
+     901
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 723,
+   "hfUploadMs": 7,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 14.8,
+    "p95": 16.5,
+    "max": 32.3
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 14.6,
+    "p95": 16.2,
+    "max": 24.9
+   },
+   "cadre_peste_16_7ms": 4,
+   "heapMB": 172,
+   "dpr_cerut": 1.25
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2dbmp",
+    "n": 50000,
+    "mode": "pan",
+    "ib": 1
+   },
+   "durata_s": 2.516,
+   "r": "c2dbmp",
+   "n": 50000,
+   "tp": 0,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 238,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 122,
+   "sync": true,
+   "exactMs": 11.4,
+   "interval_ms": {
+    "n": 120,
+    "med": 12.3,
+    "p95": 17.1,
+    "max": 28.8
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 12.2,
+    "p95": 16.7,
+    "max": 18.9
+   },
+   "cadre_peste_16_7ms": 6,
+   "heapMB": 103,
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "c2dbmp",
+    "n": 50000,
+    "mode": "zoom",
+    "ib": 1
+   },
+   "durata_s": 2.452,
+   "r": "c2dbmp",
+   "n": 50000,
+   "tp": 0,
+   "mode": "zoom",
+   "dpr": 1.5,
+   "genMs": 218,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 119,
+   "sync": true,
+   "exactMs": 11.4,
+   "interval_ms": {
+    "n": 120,
+    "med": 13.1,
+    "p95": 15,
+    "max": 30.3
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 12.9,
+    "p95": 14.7,
+    "max": 22.6
+   },
+   "cadre_peste_16_7ms": 1,
+   "heapMB": 96,
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "pan"
+   },
+   "durata_s": 4.28,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "pan",
+   "dpr": 1.5,
+   "genMs": 233,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 744,
+   "hfUploadMs": 5.7,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 20.2,
+    "p95": 35.1,
+    "max": 36.4
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 19.8,
+    "p95": 22.2,
+    "max": 28.2
+   },
+   "cadre_peste_16_7ms": 120,
+   "heapMB": 172,
+   "dpr_cerut": 1.5
+  },
+  {
+   "q": {
+    "page": "bench",
+    "frames": 120,
+    "r": "hybrid",
+    "n": 50000,
+    "tp": 5000000,
+    "hf": 1,
+    "hfup": 1,
+    "bmp": 1,
+    "ib": 1,
+    "mode": "zoom"
+   },
+   "durata_s": 4.054,
+   "r": "hybrid",
+   "n": 50000,
+   "tp": 5000000,
+   "mode": "zoom",
+   "dpr": 1.5,
+   "genMs": 237,
+   "scena": {
+    "shapes": 50010,
+    "segs": 501991,
+    "lines": 166251,
+    "arcs": 42647,
+    "cubics": 293093,
+    "kinds": {
+     "sheet": 1,
+     "circle": 8151,
+     "rrect": 5015,
+     "glyph": 17361,
+     "tiny": 731,
+     "arc": 5506,
+     "blob": 3795,
+     "zigzag": 5688,
+     "donut": 1876,
+     "coincident": 934,
+     "tangent": 942,
+     "p-circle": 1,
+     "p-tiny": 1,
+     "p-arc": 1,
+     "p-seg": 1,
+     "p-parab": 1,
+     "p-tan1": 1,
+     "p-tan2": 1,
+     "p-sqA": 1,
+     "p-sqB": 1,
+     "p-rrect": 1
+    }
+   },
+   "canvas": {
+    "dpr": 1.5,
+    "naive": [
+     1922,
+     1082
+    ],
+    "exact": [
+     1921,
+     1081
+    ],
+    "cssRect": {
+     "x": 37,
+     "y": 23,
+     "width": 1281,
+     "height": 721,
+     "top": 23,
+     "right": 1318,
+     "bottom": 744,
+     "left": 37
+    }
+   },
+   "lw": "css",
+   "buildMs": 729,
+   "hfUploadMs": 6.8,
+   "vboMB": 57.22,
+   "sync": true,
+   "interval_ms": {
+    "n": 120,
+    "med": 19.7,
+    "p95": 35.7,
+    "max": 36.6
+   },
+   "cadru_ms": {
+    "n": 120,
+    "med": 19.2,
+    "p95": 21.1,
+    "max": 31.5
+   },
+   "cadre_peste_16_7ms": 118,
+   "heapMB": 172,
+   "dpr_cerut": 1.5
+  }
+ ],
+ "durata_totala_s": 39.369
+}

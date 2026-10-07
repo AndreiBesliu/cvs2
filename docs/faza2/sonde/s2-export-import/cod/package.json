@@ -1,0 +1,27 @@
+{
+  "name": "s2-export-import",
+  "version": "1.0.0",
+  "description": "Sonda s2-export-import (aruncabila)",
+  "main": "index.js",
+  "scripts": {
+    "masoara": "node src/masoara.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@tarikjabiri/dxf": "^2.9.0",
+    "@xmldom/xmldom": "^0.9.12",
+    "dxf": "^5.3.1",
+    "dxf-parser": "^1.1.2",
+    "dxf-writer": "^1.18.4",
+    "jspdf": "^4.2.1",
+    "opentype.js": "^2.0.0",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.4.299",
+    "svg-pathdata": "^9.0.0",
+    "svgpath": "^2.6.0"
+  },
+  "private": true
+}

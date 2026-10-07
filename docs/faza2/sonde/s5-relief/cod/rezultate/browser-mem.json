@@ -1,0 +1,28 @@
+{
+ "cap_straturi": 78,
+ "crossOriginIsolated": true,
+ "straturi_alocate": 78,
+ "GB": 4.99,
+ "eroare_alocare": null,
+ "continut_verificat": true,
+ "ms_pe_strat_median": 19,
+ "ms_total": 1465,
+ "memorie_raportata_GB": 4.99,
+ "gc_disponibil": true,
+ "arraybuffer_unic": {
+  "1 GiB": "ok",
+  "1,5 GiB": "ok",
+  "2 GiB - 64 KiB": "RangeError: Array buffer allocation failed",
+  "2 GiB": "RangeError: Array buffer allocation failed",
+  "4 GiB + 8": "RangeError: Array buffer allocation failed"
+ },
+ "wasm32_octeti_dupa_grow": 4294967296,
+ "wasm32_grow_ms": 5.2,
+ "wasm32_peste_4GiB": "refuzat: RangeError: WebAssembly.Memory(): Property 'maximum': value 65537 is above the upper bound 65536",
+ "memory64": {
+  "address i64 + BigInt": "crestere la 5.00 GiB",
+  "address i64 + number": "refuzat: TypeError: Cannot convert 1 to a BigInt",
+  "index i64 + BigInt": "refuzat: TypeError: Cannot convert a BigInt value to a number"
+ },
+ "float16Array": true
+}

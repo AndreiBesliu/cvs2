@@ -1,0 +1,81 @@
+[
+  {
+    "id": "control",
+    "what": "copia nemodificată",
+    "exit": 0,
+    "picate": 0,
+    "verdict": "VERDE (corect)",
+    "exemple": []
+  },
+  {
+    "id": "M1-micsorare",
+    "what": "rama mărită scalează și conținutul (defectul vechi „mărime schimbată în tăcere”)",
+    "exit": 1,
+    "picate": 4,
+    "verdict": "PRINS",
+    "exemple": [
+      "1A: textul: centrul la x=200 (oracol 400/2), mărimea 24 neschimbată",
+      "1A: gaura: Ø8, centru (200, 28): rămâne sus, nu crește",
+      "1D: textul: centrul la x=200 (oracol 400/2), mărimea 24 neschimbată"
+    ]
+  },
+  {
+    "id": "M2-rama-goala",
+    "what": "Ctrl+D pe ramă copiază doar conturul (defectul vechi P1)",
+    "exit": 1,
+    "picate": 4,
+    "verdict": "PRINS",
+    "exemple": [
+      "2A: Ctrl+D: o ramă nouă, cu tot conținutul (2 elemente, aceleași locuri)",
+      "2A: Delete: dispare rama cu tot ce e în ea; nimic nu rămâne pe planșă",
+      "2D: Ctrl+D: o ramă nouă, cu tot conținutul (2 elemente, aceleași locuri)"
+    ]
+  },
+  {
+    "id": "M3-instante-copii",
+    "what": "D: fiecare instanță primește propria copie a piesei (instanțe care sunt de fapt copii)",
+    "exit": 1,
+    "picate": 4,
+    "verdict": "PRINS",
+    "exemple": [
+      "4D: D: o piesă cu 12 instanțe (2 noduri stocate), nivelul 2 apare la cerere",
+      "5D: D: banda spune clar că editezi piesa, cu toate cele 12 instanțe",
+      "5D: D: un singur gest a schimbat toate 12 în «CEAI»"
+    ]
+  },
+  {
+    "id": "M4-fara-varsare",
+    "what": "așezarea nu varsă pe foaia următoare (defectul vechi P6)",
+    "exit": 1,
+    "picate": 6,
+    "verdict": "PRINS",
+    "exemple": [
+      "4A: rânduri: 9 pe prima, 3 pe a doua (oracol 3×3 + 3)",
+      "4A: scenariul a rulat fără excepție",
+      "6A: 30 de plăcuțe: 15 + 15 (oracol 3×5 pe foaie)"
+    ]
+  },
+  {
+    "id": "M5-spate-neoglindit",
+    "what": "D: fața de jos nu e oglindită",
+    "exit": 1,
+    "picate": 2,
+    "verdict": "PRINS",
+    "exemple": [
+      "7D: D: pe fața de jos buzunarul apare oglindit la x 310..430, y 670..750",
+      "7D: D: muți ușița +50 mm sus → spatele o urmează: buzunarul la x 260..380"
+    ]
+  },
+  {
+    "id": "M6-escape-sare",
+    "what": "Escape iese direct sus, din orice nivel",
+    "exit": 1,
+    "picate": 4,
+    "verdict": "PRINS",
+    "exemple": [
+      "3A: Escape 1: înapoi în ramă, logo ales",
+      "3A: Escape 2: sus, rama aleasă",
+      "3D: Escape 1: înapoi în ramă, logo ales"
+    ]
+  }
+]

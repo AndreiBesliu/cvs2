@@ -1,0 +1,301 @@
+{
+ "hemi": [
+  {
+   "tool": "bila R3",
+   "triunghiuri": 65520,
+   "degenerate_sarite": 360,
+   "rho_min": 19.998477,
+   "Rs": 20,
+   "puncte": 2000,
+   "in_afara_intervalului": 0,
+   "abatere_max_fata_de_sfera_mm": 0.008871,
+   "us_pe_punct": 57.8
+  },
+  {
+   "tool": "dreapta R3",
+   "triunghiuri": 65520,
+   "degenerate_sarite": 360,
+   "rho_min": 19.998477,
+   "Rs": 20,
+   "puncte": 2000,
+   "in_afara_intervalului": 0,
+   "abatere_max_fata_de_sfera_mm": 0.02427,
+   "us_pe_punct": 39.7
+  },
+  {
+   "tool": "V90 R6",
+   "triunghiuri": 65520,
+   "degenerate_sarite": 360,
+   "rho_min": 19.998477,
+   "Rs": 20,
+   "puncte": 2000,
+   "in_afara_intervalului": 0,
+   "abatere_max_fata_de_sfera_mm": 0.004249,
+   "us_pe_punct": 181.8
+  },
+  {
+   "tool": "V60 R6",
+   "triunghiuri": 65520,
+   "degenerate_sarite": 360,
+   "rho_min": 19.998477,
+   "Rs": 20,
+   "puncte": 2000,
+   "in_afara_intervalului": 0,
+   "abatere_max_fata_de_sfera_mm": 0.002536,
+   "us_pe_punct": 112.5
+  }
+ ],
+ "plan": [
+  {
+   "caz": "plan 30 grade",
+   "tool": "bila R3",
+   "eroare_max_mm": 4.441e-15
+  },
+  {
+   "caz": "plan 30 grade",
+   "tool": "dreapta R3",
+   "eroare_max_mm": 7.105e-15
+  },
+  {
+   "caz": "plan 30 grade",
+   "tool": "V90 R6",
+   "eroare_max_mm": 7.105e-15
+  },
+  {
+   "caz": "plan 30 grade",
+   "tool": "V60 R6",
+   "eroare_max_mm": 7.105e-15
+  },
+  {
+   "caz": "plan 45 grade (flanc V90 paralel)",
+   "tool": "bila R3",
+   "eroare_max_mm": 1.421e-14
+  },
+  {
+   "caz": "plan 45 grade (flanc V90 paralel)",
+   "tool": "dreapta R3",
+   "eroare_max_mm": 1.066e-14
+  },
+  {
+   "caz": "plan 45 grade (flanc V90 paralel)",
+   "tool": "V90 R6",
+   "eroare_max_mm": 1.776e-14
+  },
+  {
+   "caz": "plan 45 grade (flanc V90 paralel)",
+   "tool": "V60 R6",
+   "eroare_max_mm": 1.066e-14
+  },
+  {
+   "caz": "plan 45+1e-6 grade",
+   "tool": "bila R3",
+   "eroare_max_mm": 1.776e-14
+  },
+  {
+   "caz": "plan 45+1e-6 grade",
+   "tool": "dreapta R3",
+   "eroare_max_mm": 1.776e-14
+  },
+  {
+   "caz": "plan 45+1e-6 grade",
+   "tool": "V90 R6",
+   "eroare_max_mm": 1.599e-14
+  },
+  {
+   "caz": "plan 45+1e-6 grade",
+   "tool": "V60 R6",
+   "eroare_max_mm": 2.132e-14
+  },
+  {
+   "caz": "plan orizontal (fata coincidenta cu talpa dreapta)",
+   "tool": "bila R3",
+   "eroare_max_mm": 0
+  },
+  {
+   "caz": "plan orizontal (fata coincidenta cu talpa dreapta)",
+   "tool": "dreapta R3",
+   "eroare_max_mm": 0
+  },
+  {
+   "caz": "plan orizontal (fata coincidenta cu talpa dreapta)",
+   "tool": "V90 R6",
+   "eroare_max_mm": 0
+  },
+  {
+   "caz": "plan orizontal (fata coincidenta cu talpa dreapta)",
+   "tool": "V60 R6",
+   "eroare_max_mm": 0
+  }
+ ],
+ "gouge": [
+  {
+   "caz": "semisfera plasa",
+   "tool": "bila R3",
+   "celula_mm": 0.1,
+   "A_nod": {
+    "scobitura_max_mm": 0.02145,
+    "surplus_mediu_mm": -0.001,
+    "surplus_max_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1553,
+    "surplus_max_mm": 0.8243
+   }
+  },
+  {
+   "caz": "semisfera plasa",
+   "tool": "dreapta R3",
+   "celula_mm": 0.1,
+   "A_nod": {
+    "scobitura_max_mm": 0.08855,
+    "surplus_mediu_mm": -0.0048,
+    "surplus_max_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1073,
+    "surplus_max_mm": 0.7092
+   }
+  },
+  {
+   "caz": "semisfera plasa",
+   "tool": "V90 R6",
+   "celula_mm": 0.1,
+   "A_nod": {
+    "scobitura_max_mm": 0.007364,
+    "surplus_mediu_mm": -0.0005,
+    "surplus_max_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1233,
+    "surplus_max_mm": 0.2865
+   }
+  },
+  {
+   "caz": "semisfera plasa",
+   "tool": "V60 R6",
+   "celula_mm": 0.1,
+   "A_nod": {
+    "scobitura_max_mm": 0.005121,
+    "surplus_mediu_mm": -0.0003,
+    "surplus_max_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1534,
+    "surplus_max_mm": 0.375
+   }
+  },
+  {
+   "caz": "perete 0,01 mm (plasa)",
+   "tool": "bila R3",
+   "celula_mm": 0.1,
+   "A_nod": {
+    "scobitura_max_mm": 5,
+    "surplus_mediu_mm": -1.1905,
+    "surplus_max_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0661,
+    "surplus_max_mm": 2.9367
+   }
+  },
+  {
+   "caz": "perete 0,01 mm (plasa)",
+   "tool": "dreapta R3",
+   "celula_mm": 0.1,
+   "A_nod": {
+    "scobitura_max_mm": 5,
+    "surplus_mediu_mm": -1.3665,
+    "surplus_max_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0653,
+    "surplus_max_mm": 5
+   }
+  },
+  {
+   "caz": "perete 0,01 mm (plasa)",
+   "tool": "V90 R6",
+   "celula_mm": 0.1,
+   "A_nod": {
+    "scobitura_max_mm": 5,
+    "surplus_mediu_mm": -1.1386,
+    "surplus_max_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0659,
+    "surplus_max_mm": 0.153
+   }
+  },
+  {
+   "caz": "perete 0,01 mm (plasa)",
+   "tool": "V60 R6",
+   "celula_mm": 0.1,
+   "A_nod": {
+    "scobitura_max_mm": 5,
+    "surplus_mediu_mm": -0.6584,
+    "surplus_max_mm": 0
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.0659,
+    "surplus_max_mm": 0.265
+   }
+  },
+  {
+   "caz": "scena 1,4M (plasa)",
+   "tool": "bila R3",
+   "A_nod": {
+    "scobitura_max_mm": 0.3305,
+    "surplus_mediu_mm": 0.0093
+   },
+   "C_celula_segment": {
+    "scobitura_max_mm": 0,
+    "surplus_mediu_mm": 0.1985
+   }
+  }
+ ],
+ "scena": {
+  "citire_stl_ms": 95,
+  "triunghiuri": 1380000,
+  "stl_MB": 69,
+  "raster_nod_4000_ms": 389,
+  "raster_conservativ_4000_ms": 6318,
+  "conservativ_minus_nod_mediu_mm": 0.04367,
+  "conservativ_minus_nod_max_mm": 77.669,
+  "index_ms": 106,
+  "bila R3": {
+   "plasa_CL_pe_s": 7758,
+   "triunghiuri_vizitate_pe_punct": 5162,
+   "evaluate_pe_punct": 77,
+   "grila_CL_pe_s_1fir": 24229,
+   "offseturi": 11787,
+   "grila_C_sub_plasa_in_noduri_mm": 0,
+   "surplus_mediu_grila_C_mm": 0.218
+  },
+  "dreapta R3": {
+   "plasa_CL_pe_s": 9259,
+   "triunghiuri_vizitate_pe_punct": 5162,
+   "evaluate_pe_punct": 38,
+   "grila_CL_pe_s_1fir": 22958,
+   "offseturi": 11787,
+   "grila_C_sub_plasa_in_noduri_mm": 0,
+   "surplus_mediu_grila_C_mm": 0.2055
+  },
+  "V90 R6": {
+   "plasa_CL_pe_s": 3114,
+   "triunghiuri_vizitate_pe_punct": 14342,
+   "evaluate_pe_punct": 88,
+   "grila_CL_pe_s_1fir": 4456,
+   "offseturi": 46207,
+   "grila_C_sub_plasa_in_noduri_mm": 0,
+   "surplus_mediu_grila_C_mm": 0.1497
+  }
+ }
+}

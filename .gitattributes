@@ -2,3 +2,14 @@
 *.png binary
 *.jpg binary
 *.pdf binary
+# Fisierele de schimb si de masina se pastreaza octet cu octet (hash, fixturi de aur, pachetele de proba).
+*.dxf -text
+*.eps -text
+*.nc -text
+*.gcode -text
+*.tap -text
+*.stl binary
+*.ttf binary
+*.otf binary
+*.zip binary
+*.wasm binary

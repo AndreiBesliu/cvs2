@@ -1,0 +1,524 @@
+{
+ "poison": "",
+ "fail": 1,
+ "rez": [
+  {
+   "id": "sant-plat",
+   "mutari": 1,
+   "celule": 960000,
+   "ms_nucleu": 12.2,
+   "zmin": -3,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 960000,
+    "gresite": 0,
+    "eroare_max_mm": 0,
+    "egalitati_pe_muchie": 0
+   },
+   "oracol": {
+    "ms": 233,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0,
+    "proc_celule_dif": 0
+   },
+   "dale": "45/247"
+  },
+  {
+   "id": "sant-bila",
+   "mutari": 1,
+   "celule": 960000,
+   "ms_nucleu": 4.1,
+   "zmin": -1.999896,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 960000,
+    "gresite": 0,
+    "eroare_max_mm": 5.96e-8,
+    "egalitati_pe_muchie": 0
+   },
+   "sectiune_bila": {
+    "R_ajustat": 3,
+    "R_hartie": 3,
+    "centru_y": 20,
+    "centru_z": 1,
+    "puncte": 114
+   },
+   "oracol": {
+    "ms": 2338,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 5.96e-8,
+    "proc_celule_dif": 0
+   },
+   "dale": "45/247"
+  },
+  {
+   "id": "sant-v90",
+   "mutari": 1,
+   "celule": 960000,
+   "ms_nucleu": 4.6,
+   "zmin": -1.975,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 960000,
+    "gresite": 0,
+    "eroare_max_mm": 5.95e-8,
+    "egalitati_pe_muchie": 0
+   },
+   "unghi_V": {
+    "grade_masurat": 90,
+    "grade_hartie": 90,
+    "pante": [
+     -1,
+     1
+    ]
+   },
+   "oracol": {
+    "ms": 526,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 5.95e-8,
+    "proc_celule_dif": 0
+   },
+   "dale": "30/247"
+  },
+  {
+   "id": "sant-v60",
+   "mutari": 1,
+   "celule": 960000,
+   "ms_nucleu": 0.8,
+   "zmin": -1.456699,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 960000,
+    "gresite": 0,
+    "eroare_max_mm": 5.92e-8,
+    "egalitati_pe_muchie": 0
+   },
+   "unghi_V": {
+    "grade_masurat": 60,
+    "grade_hartie": 60,
+    "pante": [
+     -1.73205,
+     1.73205
+    ]
+   },
+   "oracol": {
+    "ms": 243,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 5.92e-8,
+    "proc_celule_dif": 0
+   },
+   "dale": "27/247"
+  },
+  {
+   "id": "arc-g3",
+   "mutari": 1,
+   "celule": 2560000,
+   "ms_nucleu": 9.6,
+   "zmin": -3,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 2560000,
+    "gresite": 0,
+    "eroare_max_mm": 0,
+    "egalitati_pe_muchie": 0
+   },
+   "latime_radiala_mm": {
+    "30°": 6.013,
+    "45°": 6.013,
+    "60°": 6.013,
+    "90°": 6,
+    "120°": 6.013
+   },
+   "oracol": {
+    "ms": 846,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0,
+    "proc_celule_dif": 0
+   },
+   "dale": "47/625"
+  },
+  {
+   "id": "arc-g2-R",
+   "mutari": 1,
+   "celule": 2560000,
+   "ms_nucleu": 5.2,
+   "zmin": -3,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 2560000,
+    "gresite": 0,
+    "eroare_max_mm": 0,
+    "egalitati_pe_muchie": 0
+   },
+   "oracol": {
+    "ms": 909,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0,
+    "proc_celule_dif": 0
+   },
+   "identic_cu": "arc-g3: DA",
+   "dale": "47/625"
+  },
+  {
+   "id": "cerc-complet",
+   "mutari": 1,
+   "celule": 1440000,
+   "ms_nucleu": 3.3,
+   "zmin": -3,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 1440000,
+    "gresite": 0,
+    "eroare_max_mm": 0,
+    "egalitati_pe_muchie": 0
+   },
+   "oracol": {
+    "ms": 2041,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0,
+    "proc_celule_dif": 0
+   },
+   "dale": "86/361"
+  },
+  {
+   "id": "arc-mare-R-neg",
+   "mutari": 1,
+   "celule": 1440000,
+   "ms_nucleu": 8.2,
+   "zmin": -3,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 1440000,
+    "gresite": 0,
+    "eroare_max_mm": 0,
+    "egalitati_pe_muchie": 0
+   },
+   "oracol": {
+    "ms": 1471,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0,
+    "proc_celule_dif": 0
+   },
+   "dale": "72/361"
+  },
+  {
+   "id": "plonjare-plata",
+   "mutari": 1,
+   "celule": 640000,
+   "ms_nucleu": 1.5,
+   "zmin": -5,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 640000,
+    "gresite": 0,
+    "eroare_max_mm": 0,
+    "egalitati_pe_muchie": 0
+   },
+   "oracol": {
+    "ms": 200,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0,
+    "proc_celule_dif": 0
+   },
+   "dale": "8/169"
+  },
+  {
+   "id": "plonjare-bila",
+   "mutari": 1,
+   "celule": 640000,
+   "ms_nucleu": 2,
+   "zmin": -3.999792,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 640000,
+    "gresite": 0,
+    "eroare_max_mm": 1.19e-7,
+    "egalitati_pe_muchie": 0
+   },
+   "oracol": {
+    "ms": 411,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 1.19e-7,
+    "proc_celule_dif": 0
+   },
+   "dale": "8/169"
+  },
+  {
+   "id": "rampa-plata",
+   "mutari": 1,
+   "celule": 960000,
+   "ms_nucleu": 1.5,
+   "zmin": -3,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 960000,
+    "gresite": 0,
+    "eroare_max_mm": 1.19e-7,
+    "egalitati_pe_muchie": 0
+   },
+   "oracol": {
+    "ms": 665,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0.000615,
+    "proc_celule_dif": 0
+   },
+   "dale": "36/247"
+  },
+  {
+   "id": "rampa-bila",
+   "mutari": 1,
+   "celule": 960000,
+   "ms_nucleu": 8.8,
+   "zmin": -2.999792,
+   "inv_adancime": "ok",
+   "oracol": {
+    "ms": 1630,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0.0000257,
+    "proc_celule_dif": 0
+   },
+   "dale": "27/247"
+  },
+  {
+   "id": "rampa-v90",
+   "mutari": 2,
+   "celule": 960000,
+   "ms_nucleu": 5.5,
+   "zmin": -2.984927,
+   "inv_adancime": "ok",
+   "oracol": {
+    "ms": 938,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 46,
+    "dif_max_mm": 0.00308,
+    "proc_celule_dif": 0.0048
+   },
+   "dale": "28/247"
+  },
+  {
+   "id": "elice",
+   "mutari": 1,
+   "celule": 640000,
+   "ms_nucleu": 16.6,
+   "zmin": -2,
+   "inv_adancime": "ok",
+   "oracol": {
+    "ms": 1240,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0.000199,
+    "proc_celule_dif": 0
+   },
+   "dale": "61/169"
+  },
+  {
+   "id": "profil-h(r)",
+   "mutari": 1,
+   "celule": 960000,
+   "ms_nucleu": 10,
+   "zmin": -2,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 960000,
+    "gresite": 0,
+    "eroare_max_mm": 5.95e-8,
+    "egalitati_pe_muchie": 0
+   },
+   "oracol": {
+    "ms": 3281,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 5.95e-8,
+    "proc_celule_dif": 0
+   },
+   "dale": "47/247"
+  },
+  {
+   "id": "profil-rampa",
+   "mutari": 1,
+   "celule": 960000,
+   "ms_nucleu": 358.7,
+   "zmin": -2.5,
+   "inv_adancime": "ok",
+   "oracol": {
+    "ms": 1832,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 35437,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0.00094,
+    "proc_celule_dif": 0
+   },
+   "dale": "39/247"
+  },
+  {
+   "id": "mic-0.01",
+   "mutari": 1,
+   "celule": 500000,
+   "ms_nucleu": 0.2,
+   "zmin": -0.008268,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 500000,
+    "gresite": 0,
+    "eroare_max_mm": 1.45e-10,
+    "egalitati_pe_muchie": 0
+   },
+   "oracol": {
+    "ms": 18,
+    "pas_esantion_mm": 0.00025,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 1.45e-10,
+    "proc_celule_dif": 0
+   },
+   "dale": "14/128"
+  },
+  {
+   "id": "mare-2440",
+   "mutari": 2,
+   "celule": 47628800,
+   "ms_nucleu": 7.1,
+   "zmin": -3,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 148724,
+    "gresite": 0,
+    "eroare_max_mm": 0,
+    "egalitati_pe_muchie": 0
+   },
+   "dale": "254/11781"
+  },
+  {
+   "id": "tangent",
+   "mutari": 3,
+   "celule": 1440000,
+   "ms_nucleu": 9.7,
+   "zmin": -3,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 1440000,
+    "gresite": 0,
+    "eroare_max_mm": 0,
+    "egalitati_pe_muchie": 0
+   },
+   "oracol": {
+    "ms": 1610,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0,
+    "proc_celule_dif": 0
+   },
+   "dale": "78/361"
+  },
+  {
+   "id": "aproape-coincident",
+   "mutari": 2,
+   "celule": 960000,
+   "ms_nucleu": 3.3,
+   "zmin": -3,
+   "inv_adancime": "ok",
+   "hartie": {
+    "celule": 960000,
+    "gresite": 0,
+    "eroare_max_mm": 0,
+    "egalitati_pe_muchie": 0
+   },
+   "oracol": {
+    "ms": 1785,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0,
+    "proc_celule_dif": 0
+   },
+   "dale": "75/247"
+  },
+  {
+   "id": "dublat",
+   "mutari": 2,
+   "celule": 960000,
+   "ms_nucleu": 2.1,
+   "zmin": -3,
+   "inv_adancime": "ok",
+   "oracol": {
+    "ms": 1663,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 0,
+    "dif_max_mm": 0,
+    "proc_celule_dif": 0
+   },
+   "identic_cu": "sant-plat: DA",
+   "dale": "45/247"
+  },
+  {
+   "id": "litere-Bg",
+   "mutari": 2191,
+   "celule": 1400000,
+   "ms_nucleu": 13.2,
+   "zmin": -0.499999,
+   "inv_adancime": "ok",
+   "oracol": {
+    "ms": 339,
+    "pas_esantion_mm": 0.00625,
+    "nucleu_mai_sus": 0,
+    "nucleu_mai_jos_1um": 686,
+    "dif_max_mm": 0.00514,
+    "proc_celule_dif": 0.049
+   },
+   "dale": "120/352"
+  }
+ ],
+ "hashes": {
+  "sant-plat": "d964464caa9cf847",
+  "sant-bila": "f5f3093c8b4b3e6f",
+  "sant-v90": "814d136a397a71b5",
+  "sant-v60": "7c211a8e1fc5b82d",
+  "arc-g3": "a23078d513028b68",
+  "arc-g2-R": "a23078d513028b68",
+  "cerc-complet": "5158d98b0287c570",
+  "arc-mare-R-neg": "e6d4bcae1bec82d1",
+  "plonjare-plata": "84916abf1744c97c",
+  "plonjare-bila": "0e3c29c3711b2804",
+  "rampa-plata": "afe2a34d4cfdca66",
+  "rampa-bila": "92a5fbefba5872de",
+  "rampa-v90": "4e24ec6e6bf746c9",
+  "elice": "684009fc2290eeee",
+  "profil-h(r)": "8d2fad89c9746528",
+  "profil-rampa": "603aa084da201ad1",
+  "mic-0.01": "4eb381b2b2f47c99",
+  "mare-2440": "97717f17111d01a4",
+  "tangent": "887c20295471e59c",
+  "aproape-coincident": "6f859cfdd0bbf7fc",
+  "dublat": "d964464caa9cf847",
+  "litere-Bg": "cdb2e02e27b0328b"
+ }
+}

@@ -1,0 +1,7 @@
+ezdxf==1.4.4
+fonttools==4.66.1
+numpy==2.5.3
+pdfminer.six==20260107
+pymupdf==1.28.2
+reportlab==5.0.1
+svgelements==1.9.6
