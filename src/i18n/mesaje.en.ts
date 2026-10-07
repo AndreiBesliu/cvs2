@@ -61,4 +61,12 @@ export const en = {
   'export.inchide': 'Close',
   'export.gata': { one: 'Downloaded: {n} line, SHA-256 {sha}', other: 'Downloaded: {n} lines, SHA-256 {sha}' },
   'export.eroare': 'The export failed: {motiv}',
+  'export.iesire.titlu': 'The bit goes past the sheet:',
+  'export.iesire.stanga': '{mm} mm on the left',
+  'export.iesire.dreapta': '{mm} mm on the right',
+  'export.iesire.jos': '{mm} mm at the bottom',
+  'export.iesire.sus': '{mm} mm at the top',
+  'export.iesire.unde': 'Where: {etichete}',
+  'export.iesire.confirma': 'I checked that nothing is in the way there (clamps, screws): the bit may cut outside the sheet. The confirmation is written in the program header.',
+  'avertisment.iese-din-foaie': '{descriere} goes past the sheet',
 } as const satisfies Readonly<Record<string, Mesaj>>;

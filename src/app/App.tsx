@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'reac
 import { Panza } from '../canvas/Panza.tsx';
 import { t } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
+import { avertismente } from '../model/avertismente.ts';
 import { documentNou, type ElementDoc } from '../model/document.ts';
 import { istoricNou, type Istoric } from '../model/jurnal.ts';
 import { creeazaRegistru, ruleaza, stare } from '../ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../ui/actiuniDocument.ts';
 import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type RezultatExport } from '../ui/actiuniExport.ts';
-import { DialogExport } from '../ui/DialogExport.tsx';
+import { DialogExport, type StareExport } from '../ui/DialogExport.tsx';
 import { useLimba } from '../ui/useLimba.ts';
 import type { RezultatConfig } from './config.ts';
 import { listaDesen } from './desen.ts';
@@ -61,7 +62,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
   const registru = useMemo(() => creeazaRegistru(ACTIUNI_DOCUMENT, () => true), []);
   const registruExport = useMemo(() => creeazaRegistru(ACTIUNI_EXPORT, () => true), []);
   const [dialogExport, setDialogExport] = useState(false);
-  const [stareExport, setStareExport] = useState<{ ok: true; linii: number; sha256: string } | { ok: false; motiv: string } | null>(null);
+  const [stareExport, setStareExport] = useState<StareExport | null>(null);
   const contextExport = (p?: ParametriExport): ContextExport => ({
     document: () => curenta.current.istoric.doc,
     parametri: () => p ?? { origine: 'stanga-jos', z0: 'sus', diametruScula: 6, elemente: new Map() },
@@ -70,12 +71,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
         descarca(r.program.octeti, `cncvs2-${p?.origine ?? 'stanga-jos'}.${r.program.extensie}`);
         setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256 });
       } else {
-        setStareExport({ ok: false, motiv: r.motiv });
+        setStareExport('cereConfirmare' in r ? { ok: false, motiv: r.motiv, cereConfirmare: r.cereConfirmare } : { ok: false, motiv: r.motiv });
       }
     },
   });
   // Lista de desen se reface doar când se schimbă documentul: o listă nouă la fiecare randare ar cere un redesen inutil.
   const forme = useMemo(() => listaDesen(istoric.doc), [istoric.doc]);
+  // Avertismentele: tot după fiecare schimbare a documentului; se arată în bara de jos, niciodată pe pânză.
+  const avert = useMemo(() => avertismente(istoric.doc), [istoric.doc]);
 
   const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
@@ -166,10 +169,23 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
           stare={stareExport}
           onExporta={(p) => { ruleaza(registruExport, 'export.gcode', contextExport(p)); }}
           onInchide={() => { setDialogExport(false); }}
+          onReseteaza={() => { setStareExport(null); }}
         />
       )}
       <footer>
         <span data-testid="selectie">{selectat ? t('stare.selectie', { descriere: descriere(selectat) }) : t('stare.nimic-selectat')}</span>
+        {avert.length > 0 && (
+          <span className="avertismente">
+            {avert.map((a) => {
+              const e = doc.elemente.find((x) => x.id === a.id);
+              return (
+                <span key={a.id} className="avertisment-bara" data-testid="avertisment">
+                  {t('avertisment.iese-din-foaie', { descriere: e ? descriere(e) : a.id })}
+                </span>
+              );
+            })}
+          </span>
+        )}
         <span data-testid="jurnal">{t('jurnal.intrari', { n: intrari })}</span>
       </footer>
     </div>

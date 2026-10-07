@@ -26,7 +26,17 @@ Bugetul unei felii e ~½ zi activă, până la prima măsurătoare (`PLAN.md` §
 | 1.8 | Pânza v0: stratul de vectori în worker, pe pânză software; pan, zoom, selecție și mutare prin acțiuni; oracolul pânzei (marginea cercului) | I7 | R2 | 1.7 |
 | 1.9 | Instanța de test (exportul Firestore confirmat de owner, apoi doar hosting) și fișa plăcii 1, cu programele A și B | I13 | R2 | 1.6, 1.8 |
 
-Sunt 9 felii, cât spune planul pentru o etapă (8–9).
+| 1.10 | Ieșirea din foaie (cerința owner-ului de la încercarea prototipului, `BRIEF.md` §16.3): avertismentul în bara de jos, niciodată pe pânză; exportul cere confirmare când discul frezei trece de marginea foii, iar confirmarea se scrie în antet; oracolul independent refuză tăierea în afara foii fără declarație | I12, I20 | R2 | 1.9c |
+
+Planul spune 8–9 felii pe etapă. Felia 1.10 a venit din încercarea owner-ului: exportul publicat pe canal tăia în
+afara foii fără să întrebe.
+
+**Contractul declarației** (felia 1.10), scris aici ca postul și oracolul să-l implementeze independent:
+- două comentarii în antet, după `(scula …)` și înaintea primei mișcări: `(CONFIRMAT: freza iese din foaie)` și
+  `(iesire mm: st 5.000 dr 0.000 jos 0.000 sus 0.000)`;
+- valorile spun cât trece discul frezei de fiecare latură a foii cât taie (G1, G2, G3 sub fața de sus), în coordonatele
+  documentului, cu 3 zecimale;
+- fără ieșire, antetul nu se schimbă, deci fișierele de aur rămân octet cu octet.
 
 ## Placa 1
 

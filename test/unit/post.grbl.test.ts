@@ -167,3 +167,30 @@ test('exportul: aceiași octeți la fiecare rulare, iar SHA-256 e cel calculat i
   assert.equal(a.exportat.sha256, createHash('sha256').update(a.exportat.octeti).digest('hex'));
   assert.equal(a.exportat.extensie, 'nc');
 });
+
+test('ieșirea confirmată: exact cele două linii ale contractului, după comentariul sculei; fără ea, antetul nu se schimbă', () => {
+  const p = program([{ tip: 'rapida', la: { X: 20, Y: 20 } }, { tip: 'taiere', la: { Z: -3 }, avans: 300 }]);
+  const fara = text(p).split('\n');
+  const r = posteaza(p, montaj('dreapta-sus'), GRBL_11, { ...OPT, iesireConfirmata: { stanga: 5, dreapta: 0, jos: 0.0004, sus: 1234.5675 } });
+  assert.ok(r.ok, r.ok ? '' : r.motiv);
+  if (!r.ok) return;
+  const cu = r.text.split('\n');
+  const i = cu.findIndex((l) => l.startsWith('(scula '));
+  assert.equal(cu[i + 1], '(CONFIRMAT: freza iese din foaie)');
+  assert.equal(cu[i + 2], '(iesire mm: st 5.000 dr 0.000 jos 0.000 sus 1234.568)');
+  assert.equal(cu[i + 3], 'G90 G17 G21 G94');
+  // Fără ieșire: nicio linie de declarație (fișierele de aur rămân octet cu octet).
+  assert.ok(!fara.some((l) => l.includes('CONFIRMAT') || l.startsWith('(iesire')));
+  assert.equal(r.linii, fara.filter((l) => l !== '').length + 2);
+});
+
+test('ieșirea confirmată: o valoare negativă sau nefinită e refuzată, iar o linie care n-ar încăpea nu se taie în tăcere', () => {
+  const p = program([{ tip: 'rapida', la: { X: 20, Y: 20 } }]);
+  for (const v of [-1, Number.NaN, Number.POSITIVE_INFINITY]) {
+    assert.equal(posteaza(p, montaj('stanga-jos'), GRBL_11, { ...OPT, iesireConfirmata: { stanga: v, dreapta: 0, jos: 0, sus: 0 } }).ok, false, String(v));
+  }
+  // 4 × 9 999 999,999 mm: linia trece de 70 de octeți, deci exportul cade cu motiv, nu scrie o declarație ciuntită.
+  const mare = 9_999_999.999;
+  const r = posteaza(p, montaj('stanga-jos'), GRBL_11, { ...OPT, iesireConfirmata: { stanga: mare, dreapta: mare, jos: mare, sus: mare } });
+  assert.equal(r.ok, false);
+});

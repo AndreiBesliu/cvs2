@@ -170,6 +170,15 @@ Lista e derivată din răspunsuri și se confirmă în planul din Faza 2.
 - **Aprobarea planului** [07.10]: owner-ul a aprobat `PLAN.md` fără modelul de planșe, pe care îl alege **după ce
   încearcă prototipul, înainte de etapa 1**. Etapa 1 nu pornește fără alegere, fiindcă schema planșelor se îngheață
   acolo. Recomandarea e D.
+- **Încercarea prototipului** [07.10, seara]: notițele întocmai sunt în
+  `docs/faza2/prototip-planse/notite-owner-2026-10-07.md`.
+  - Scenariile 1–4 și 6, în A: „se comportă bine”, „foarte ok”, „pare ok”, „a funcționat”.
+  - Scenariul 5, în D: „da, e clar”.
+  - Scenariul 7: „ori D, ori să fie legate în oglindă în A”. Fețele legate sunt exact modelul lui D (fața de jos
+    aparține foii).
+  - Scenariul 8: „nu înțeleg scenariul și scopul lui”. E controlul pentru lucrul simplu: verifică doar că D nu cere
+    al doilea nivel la un semn unic. N-a cerut, și s-a purtat ca A (11 gesturi în ambele).
+  - **Alegerea explicită A / D rămâne deschisă.** Notițele arată spre D. Cerințele noi de la scenariul 1 sunt în §16.3.
 
 ## 10. Funcțiile candidate: v1 / v1.x / mai târziu
 
@@ -347,6 +356,26 @@ Cum am înțeles cerința (**confirmată de owner pe 07.10**, în formularul de 
 - DXF-ul scria totul pe stratul „0”.
 
 **În Faza 2:** o sondă dedicată. Rândul de export e trecut în `ACOPERIRE-ARTCAM-DESKPROTO.md`, la A.
+
+### 16.3 Ce a cerut owner-ul la încercarea prototipului de planșe [decis 07.10]
+
+Din notițele de la scenariul 1 (`docs/faza2/prototip-planse/notite-owner-2026-10-07.md`). Valabile oricare ar fi
+alegerea A / D.
+
+1. **Selecția se vede doar prin culoarea vectorului.** Mânerele de transformare (tragere de colțuri și laturi) apar doar
+   când e aleasă unealta de transformare.
+   - Pânza din etapa 1 face deja așa: selecția schimbă doar culoarea, fără cutie și fără mânere.
+   - Unealta de transformare vine cu editorul (etapa 6, „Transformare și copiere”).
+2. **O formă poate ieși din foaie intenționat, iar freza o urmează și în afara foii.** Exportul cere atunci confirmare.
+   - Făcut în felia 1.10, din etapa 1. Confirmarea se cere când discul frezei trece de marginea foii cât taie. Se
+     măsoară pe traseu, nu pe vector, fiindcă acolo pot fi cleme.
+   - Confirmarea acoperă exact ieșirea arătată. Altă freză, alt profil sau o formă mutată cer o confirmare nouă.
+   - Se scrie în antetul programului, ca s-o vadă și cel de la mașină. Oracolul independent refuză orice program care
+     taie în afara foii fără declarație.
+3. **Avertismentele nu apar pe pânză**, fiindcă „încarcă spațiul de lucru”. Stau în bara de jos și apar cu roșu în
+   lista de vectori.
+   - Bara de jos le arată din felia 1.10.
+   - Lista de vectori vine cu arborele planșelor (felia 1.7, după alegerea A / D). Acolo avertismentele apar cu roșu.
 
 ## 17. Întrebări deschise
 

@@ -15,6 +15,20 @@ export type Pozitie = { readonly [K in Axa]?: number };
 
 export type SensArc = 'trigonometric' | 'orar';
 
+/**
+ * Baleiajul cu semn al unui arc, de la `start` la `capat` în jurul centrului: în (0, 2π] trigonometric, în [−2π, 0) orar.
+ * Startul egal cu capătul înseamnă cercul întreg. O singură definiție, folosită de post (pe coordonatele mașinii) și de
+ * CAM (pe ale documentului).
+ */
+export function baleiajArc(
+  start: { readonly x: number; readonly y: number }, capat: { readonly x: number; readonly y: number },
+  centru: { readonly x: number; readonly y: number }, trigonometric: boolean,
+): number {
+  let b = Math.atan2(capat.y - centru.y, capat.x - centru.x) - Math.atan2(start.y - centru.y, start.x - centru.x);
+  if (trigonometric) { while (b <= 1e-12) b += 2 * Math.PI; } else { while (b >= -1e-12) b -= 2 * Math.PI; }
+  return b;
+}
+
 export type Miscare =
   /** G0: deplasare rapidă, prin aer. */
   | { readonly tip: 'rapida'; readonly la: Pozitie }

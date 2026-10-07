@@ -1,4 +1,4 @@
-import type { Miscare, Pozitie, Program } from '../ir/ir.ts';
+import { baleiajArc, type Miscare, type Pozitie, type Program } from '../ir/ir.ts';
 import { aplicaMontaj, oglindeste, transformareMontaj, type Montaj } from '../ir/montaj.ts';
 import type { Contract } from './contract.ts';
 import { numar, rotunjit, textAscii } from './numere.ts';
@@ -15,6 +15,15 @@ export type RezultatPost =
 export type OptiuniPost = {
   /** Cât așteaptă axul după pornire până la turație, în secunde: un parametru al mașinii (s8 §5.5). */
   readonly asteptareAx: number;
+  /**
+   * Ieșirea din foaie, confirmată de om (decizia owner-ului din 07.10.2026). Se scrie în antet, ca s-o vadă și cel de la
+   * mașină. Contractul cu oracolul (`test/oracles/poarta.ts`, invarianta 5) e exact:
+   * - `(CONFIRMAT: freza iese din foaie)`;
+   * - `(iesire mm: st 5.000 dr 0.000 jos 0.000 sus 0.000)`: cât trece discul frezei de fiecare latură a foii, cât taie, în
+   *   coordonatele documentului, cu 3 zecimale.
+   * Postul doar scrie: măsurătoarea și confirmarea sunt ale exportului.
+   */
+  readonly iesireConfirmata?: { readonly stanga: number; readonly dreapta: number; readonly jos: number; readonly sus: number };
 };
 
 /** Plafonul programului pe artefact (T23). Se reglează cu capacitatea senderului, în etapa 3. */
@@ -129,8 +138,7 @@ function scrie(program: Program, montaj: Montaj, k: Contract, optiuni: OptiuniPo
     const trig = (mv.sens === 'trigonometric') !== oglindit;
     const raza = Math.hypot(s.x - c.x, s.y - c.y);
     const u0 = Math.atan2(s.y - c.y, s.x - c.x);
-    let baleiaj = Math.atan2(e.y - c.y, e.x - c.x) - u0;
-    if (trig) { while (baleiaj <= 1e-12) baleiaj += 2 * Math.PI; } else { while (baleiaj >= -1e-12) baleiaj -= 2 * Math.PI; }
+    const baleiaj = baleiajArc(s, e, c, trig);
     const bucati = Math.max(1, Math.ceil(Math.abs(baleiaj) / k.arc.baleiajMaxim - 1e-9));
     const zStart = doc.z;
     for (let i = 1; i <= bucati; i++) {
@@ -182,6 +190,16 @@ function scrie(program: Program, montaj: Montaj, k: Contract, optiuni: OptiuniPo
   comentariu(`post ${k.nume}`);
   comentariu(`origine ${montaj.origine}, Z0 ${montaj.z0}, foaia ${n(foaie.latime)} x ${n(foaie.inaltime)} x ${n(foaie.grosime)} mm`);
   comentariu(`scula T${program.scula.numar} ${program.scula.nume} D${n(program.scula.diametru)}`);
+  if (optiuni.iesireConfirmata) {
+    const { stanga, dreapta, jos, sus } = optiuni.iesireConfirmata;
+    for (const v of [stanga, dreapta, jos, sus]) {
+      if (!(v >= 0)) throw new EroarePost(`ieșirea din foaie nu poate fi ${v} mm`);
+    }
+    const { deschidere, inchidere } = k.comentariu;
+    // Prin `adauga`, nu prin `comentariu`: linia contractului nu se taie niciodată în tăcere; prea lungă, exportul cade.
+    adauga(`${deschidere}CONFIRMAT: freza iese din foaie${inchidere}`);
+    adauga(`${deschidere}iesire mm: st ${numar(stanga, 3)} dr ${numar(dreapta, 3)} jos ${numar(jos, 3)} sus ${numar(sus, 3)}${inchidere}`);
+  }
   for (const l of k.antet) adauga(l);
   adauga(k.wcs);
 

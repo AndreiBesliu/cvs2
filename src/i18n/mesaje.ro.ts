@@ -73,4 +73,12 @@ export const ro = {
     other: 'Descărcat: {n} de linii, SHA-256 {sha}',
   },
   'export.eroare': 'Exportul n-a mers: {motiv}',
+  'export.iesire.titlu': 'Freza iese din foaie:',
+  'export.iesire.stanga': '{mm} mm la stânga',
+  'export.iesire.dreapta': '{mm} mm la dreapta',
+  'export.iesire.jos': '{mm} mm jos',
+  'export.iesire.sus': '{mm} mm sus',
+  'export.iesire.unde': 'Unde: {etichete}',
+  'export.iesire.confirma': 'Am verificat că acolo nu e nimic în cale (cleme, șuruburi): freza poate tăia și în afara foii. Confirmarea se scrie în antetul programului.',
+  'avertisment.iese-din-foaie': '{descriere} iese din foaie',
 } as const satisfies DictionarRo;

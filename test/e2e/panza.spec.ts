@@ -1,20 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
 import { judecaCerc, type Cerneala } from '../oracles/panza.ts';
+import { vedere } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
-
-type VederePanza = { scara: number; tx: number; ty: number; dpr: number };
-
-/** Așteaptă ca ultima cerere trimisă workerului să fie și cea afișată, apoi citește vederea. */
-async function vedere(page: Page): Promise<VederePanza> {
-  const panza = page.getByTestId('panza');
-  await expect.poll(async () => {
-    const [c, a] = await Promise.all([panza.getAttribute('data-cerere'), panza.getAttribute('data-afisata')]);
-    return c !== null && c === a && c !== '0';
-  }).toBe(true);
-  const nr = async (n: string): Promise<number> => Number(await panza.getAttribute(n));
-  return { scara: await nr('data-scara'), tx: await nr('data-tx'), ty: await nr('data-ty'), dpr: await nr('data-dpr') };
-}
 
 /**
  * Cerneala unui dreptunghi al pânzei: pe fiecare pixel, cât diferă de culoarea foii, 0…1 (1 = culoarea liniei plină).
