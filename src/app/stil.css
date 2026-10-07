@@ -157,3 +157,75 @@ footer {
   border: 1px solid var(--margine);
   border-radius: 6px;
 }
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.35);
+  z-index: 10;
+}
+
+.dialog-cutie {
+  background: var(--fundal);
+  color: var(--text);
+  border: 1px solid var(--margine);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  max-width: min(46rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+}
+
+.dialog h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.dialog .campuri {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.dialog label {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.9rem;
+}
+
+.dialog table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.dialog th,
+.dialog td {
+  text-align: left;
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid var(--margine);
+}
+
+.dialog input,
+.dialog select {
+  font: inherit;
+  max-width: 9rem;
+}
+
+.dialog .nota {
+  color: var(--text-slab);
+  font-size: 0.85rem;
+}
+
+.dialog .butoane {
+  display: flex;
+  gap: 0.5rem;
+}
+
+[data-testid='export-stare'] {
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+}

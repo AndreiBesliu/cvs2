@@ -6,6 +6,8 @@ import { documentNou, type ElementDoc } from '../model/document.ts';
 import { istoricNou, type Istoric } from '../model/jurnal.ts';
 import { creeazaRegistru, ruleaza, stare } from '../ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../ui/actiuniDocument.ts';
+import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type RezultatExport } from '../ui/actiuniExport.ts';
+import { DialogExport } from '../ui/DialogExport.tsx';
 import { useLimba } from '../ui/useLimba.ts';
 import type { RezultatConfig } from './config.ts';
 import { listaDesen } from './desen.ts';
@@ -21,6 +23,16 @@ type Props = {
 /** Diagnosticul `?diagnostic=eroare-de-randare` aruncă la randare, ca ErrorBoundary-ul să se poată proba pe build. */
 function EroareProvocata(): never {
   throw new Error('Eroare de randare provocată (diagnostic)');
+}
+
+/** Descarcă octeții exacți ai programului: același fișier, același hash. */
+function descarca(octeti: Uint8Array<ArrayBuffer>, nume: string): void {
+  const url = URL.createObjectURL(new Blob([octeti], { type: 'text/plain' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nume;
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); }, 10_000);
 }
 
 /** Foaia documentului nou: bucata minimă a plăcii 1. */
@@ -47,6 +59,21 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
   const curenta = useRef({ istoric, selectie });
   curenta.current = { istoric, selectie };
   const registru = useMemo(() => creeazaRegistru(ACTIUNI_DOCUMENT, () => true), []);
+  const registruExport = useMemo(() => creeazaRegistru(ACTIUNI_EXPORT, () => true), []);
+  const [dialogExport, setDialogExport] = useState(false);
+  const [stareExport, setStareExport] = useState<{ ok: true; linii: number; sha256: string } | { ok: false; motiv: string } | null>(null);
+  const contextExport = (p?: ParametriExport): ContextExport => ({
+    document: () => curenta.current.istoric.doc,
+    parametri: () => p ?? { origine: 'stanga-jos', z0: 'sus', diametruScula: 6, elemente: new Map() },
+    rezultat: (r: RezultatExport) => {
+      if (r.ok) {
+        descarca(r.program.octeti, `cncvs2-${p?.origine ?? 'stanga-jos'}.${r.program.extensie}`);
+        setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256 });
+      } else {
+        setStareExport({ ok: false, motiv: r.motiv });
+      }
+    },
+  });
   // Lista de desen se reface doar când se schimbă documentul: o listă nouă la fiecare randare ar cere un redesen inutil.
   const forme = useMemo(() => listaDesen(istoric.doc), [istoric.doc]);
 
@@ -110,6 +137,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
             </button>
           );
         })}
+        {(() => {
+          const s = stare(registruExport, 'export.gcode', contextExport());
+          return (
+            <button type="button" disabled={!s.ok} title={s.ok ? undefined : t(s.motiv)} data-actiune="export.gcode"
+              onClick={() => { setStareExport(null); setDialogExport(true); }}>
+              {t('actiune.exporta-gcode')}
+            </button>
+          );
+        })()}
       </div>
       {!config.ok && <p role="status" className="avertisment">{t('eroare.config', { motiv: config.motiv })}</p>}
       <Panza
@@ -119,6 +155,19 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
         onClic={(x, y, toleranta) => { ruleaza(registru, 'selectie.la-punct', context({ punct: () => ({ x, y, toleranta }) })); }}
         onMutare={(dx, dy) => { ruleaza(registru, 'document.muta-selectia', context({ deplasare: () => ({ dx, dy }) })); }}
       />
+      {dialogExport && (
+        <DialogExport
+          elemente={doc.elemente.map((e) => ({
+            id: e.id,
+            descriere: descriere(e),
+            // Aceleași implicite ca `parametriImpliciti` din `src/cam/job.ts`, scrise aici ca pachetul de pornire să nu tragă CAM-ul.
+            implicit: e.forma.tip === 'cerc' ? { latura: 'interior', adancime: 8, pas: 4 } : { latura: 'exterior', adancime: 3, pas: 3 },
+          }))}
+          stare={stareExport}
+          onExporta={(p) => { ruleaza(registruExport, 'export.gcode', contextExport(p)); }}
+          onInchide={() => { setDialogExport(false); }}
+        />
+      )}
       <footer>
         <span data-testid="selectie">{selectat ? t('stare.selectie', { descriere: descriere(selectat) }) : t('stare.nimic-selectat')}</span>
         <span data-testid="jurnal">{t('jurnal.intrari', { n: intrari })}</span>

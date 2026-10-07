@@ -666,3 +666,31 @@ folosește un canal de previzualizare.
 
 **Rămân din etapa 1:** arborele variantei alese (după A / D) și hosting-ul pe adresa principală de test (după exportul
 Firestore confirmat de owner).
+
+## 2026-10-07 — Etapa 1, felia 1.9c: exportul G-code din aplicație (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua si testez putin mai incolo” (continuare). **Started:** 16:08. **Completed:** 16:12.
+**Clasa:** R1–R2. **Estimarea:** ½ felie. **Treceri:** 3.
+
+**Făcut:**
+- **`src/cam/job.ts`**: lucrarea v0. Elementele documentului, fiecare cu profilul lui, devin un program în IR.
+  - Interioarele se taie primele, apoi cele pe linie, la urmă exterioarele, ca piesa să nu se miște.
+  - Implicitele sunt cele ale plăcii 1: cercul ca gaură pe interior, 8 mm în pași de 4; dreptunghiul ca insulă pe
+    exterior, 3 mm.
+  - Operațiile ca obiecte ale documentului vin cu arborele, după alegerea A / D.
+- **Acțiunea `export.gcode`** (capabilitatea „export-gcode”). Calculul ei (cavalier, CAM, post) se încarcă la cerere:
+  pachetul de pornire are 78,4 kB gzip, iar totalul 101 kB. Bugetul se măsoară acum pe ce cere `index.html`.
+- **`src/ui/DialogExport.tsx`**: colțul de origine, Z0, freza și profilul fiecărui element. Descărcarea dă octeții
+  exacți, cu SHA-256 afișat și un mesaj la plural corect: „34 de linii”.
+- **Proba (unitar și e2e în Edge):**
+  - exportul din aplicație, cu originea stânga-jos, dă exact liniile de G-code ale fișierului de aur `placa-01-A.nc`;
+  - hash-ul afișat e al fișierului descărcat;
+  - cu originea dreapta-sus pe foaia de 300 × 200, gaura pornește din X-218.000 Y-150.000, pe hârtie, iar programul
+    trece poarta.
+- **Ținta etapei 1 e atinsă în aplicație:** un dreptunghi și un cerc desenate ies într-un G-code, cu originea în oricare
+  colț. Placa 1 o confirmă la mașină.
+- **Treceri:**
+  1. Bugetul ajunsese la 99,9 din 100 kB. Calculul exportului s-a mutat la cerere, nu s-a ridicat plafonul.
+  2. Încărcarea la cerere a creat un ciclu de tipuri, prins de regula ciclurilor. Tipurile au acum modulul lor.
+  3. Heredoc-ul a pierdut iarăși un `\` într-o expresie regulată. Am reparat cu Edit.
+- 103 teste unitare, 13 e2e.

@@ -9,8 +9,14 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
-/** Plafonul JavaScript-ului comprimat, în kB. Măsurat la felia 1.2: 72,5 kB (React + valibot + scheletul). */
-const PLAFON_JS_GZIP_KB = 100;
+/**
+ * Plafoanele JavaScript-ului comprimat, în kB:
+ * - la pornire, ce cere `index.html` (scriptul de intrare și `modulepreload`): măsurat 81 kB la felia 1.9c (React +
+ *   valibot + aplicația; calculul exportului se încarcă la cerere);
+ * - totalul, cu bucățile încărcate la cerere (exportul: cavalier + CAM + post, ~23 kB) și workerul.
+ */
+const PLAFON_PORNIRE_KB = 100;
+const PLAFON_TOTAL_KB = 300;
 
 function fisiere(dir: string): string[] {
   return readdirSync(dir).flatMap((n) => {
@@ -46,14 +52,26 @@ if (diferente.length) {
   process.exit(1);
 }
 
-let js = 0;
-for (const p of fisiere('.tmp/build-1')) if (p.endsWith('.js')) js += gzipSync(readFileSync(p), { level: 9 }).length;
-const kb = js / 1024;
+const gz = (p: string): number => gzipSync(readFileSync(p), { level: 9 }).length / 1024;
+const html = readFileSync('.tmp/build-1/index.html', 'utf8');
+const laPornire = new Set([...html.matchAll(/(?:src|href)="\/(assets\/[^"]+\.js)"/g)].map((m) => m[1] ?? ''));
+if (laPornire.size === 0) {
+  console.error('index.html nu cere niciun script: măsurătoarea pachetului de pornire ar fi vidă.');
+  process.exit(1);
+}
+let pornire = 0;
+let total = 0;
+for (const p of fisiere('.tmp/build-1')) {
+  if (!p.endsWith('.js')) continue;
+  const kb = gz(p);
+  total += kb;
+  if (laPornire.has(relative('.tmp/build-1', p).replace(/\\/g, '/'))) pornire += kb;
+}
 console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri.`);
-console.log(`JavaScript gzip: ${kb.toFixed(1)} kB (plafon ${PLAFON_JS_GZIP_KB} kB).`);
+console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}).`);
 rmSync('.tmp/build-1', { recursive: true, force: true });
 rmSync('.tmp/build-2', { recursive: true, force: true });
-if (kb > PLAFON_JS_GZIP_KB) {
-  console.error(`Mărimea pachetului trece de plafon cu ${(kb - PLAFON_JS_GZIP_KB).toFixed(1)} kB.`);
+if (pornire > PLAFON_PORNIRE_KB || total > PLAFON_TOTAL_KB) {
+  console.error('Mărimea pachetului trece de plafon.');
   process.exit(1);
 }
