@@ -177,3 +177,36 @@ export function esantioane(m: Mutare, pas: number): Punct3[] {
     return [cx + raza * Math.cos(u), cy + raza * Math.sin(u), z0 + ((z1 - z0) * k) / n] as const;
   });
 }
+
+/**
+ * Punctele care mărginesc EXACT, în XY, partea unei mișcări aflată sub fața de sus a materialului. `laDoc` duce cotele
+ * mașinii în document (o translație; fața de sus e z = 0 acolo). Eșantioanele nu ajung: un arc mai scurt decât pasul
+ * are doar capetele, iar vârful lui dintre ele se pierde; „primul eșantion de sub fața de sus” ratează trecerea.
+ * - Pe dreaptă și pe arc (și elicoidal), z e liniar în fracțiunea parcursă: trecerea prin z = 0 se calculează exact.
+ * - Pe arc se adaugă punctele cardinale ale cercului (0, π/2, π, 3π/2) din porțiunea de sub fața de sus, cu centrul,
+ *   raza și unghiul văzute de GRBL (`regulaArcGrbl`, pe cotele mașinii). Cutia punctelor e cutia porțiunii, la orice rază.
+ * O mișcare care nu coboară sub −`tol` n-are parte sub fața de sus: listă goală. Cu startul necunoscut, doar capătul.
+ */
+export function marginiSubSuprafata(m: Mutare, laDoc: (p: Punct3) => Punct3, tol: number): Punct3[] {
+  const a = laDoc(m.a), b = laDoc(m.b);
+  if (!m.startCunoscut) return b[2] < -tol ? [b] : [];
+  const za = a[2], zb = b[2];
+  if (Math.min(za, zb) >= -tol) return [];
+  // Fracțiunile [s0, s1] ale mișcării aflate la z ≤ 0: intră prin fața de sus (za > 0) sau iese prin ea (zb > 0).
+  const s0 = za > 0 ? za / (za - zb) : 0;
+  const s1 = zb > 0 ? za / (za - zb) : 1;
+  const z = (s: number): number => za + (zb - za) * s;
+  if (m.cod === 0 || m.cod === 1) {
+    const pe = (s: number): Punct3 => [a[0] + (b[0] - a[0]) * s, a[1] + (b[1] - a[1]) * s, z(s)];
+    return [s0 === 0 ? a : pe(s0), s1 === 1 ? b : pe(s1)];
+  }
+  const { unghi, raza } = regulaArcGrbl(m);
+  const cx = a[0] + (m.i ?? 0), cy = a[1] + (m.j ?? 0);
+  const u0 = Math.atan2(a[1] - cy, a[0] - cx);
+  const pe = (u: number): Punct3 => [cx + raza * Math.cos(u), cy + raza * Math.sin(u), z((u - u0) / unghi)];
+  const ua = u0 + unghi * s0, ub = u0 + unghi * s1;
+  const rez: Punct3[] = [s0 === 0 ? a : pe(ua), s1 === 1 ? b : pe(ub)];
+  const sfert = Math.PI / 2;
+  for (let k = Math.ceil(Math.min(ua, ub) / sfert); k * sfert <= Math.max(ua, ub); k++) rez.push(pe(k * sfert));
+  return rez;
+}

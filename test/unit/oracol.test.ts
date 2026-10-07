@@ -192,8 +192,10 @@ test('5, arcul: vârful semicercului, nu capetele lui, trece de marginea de sus 
   assert.deepEqual(poarta(cuAntet([A, B('0.000', '0.000', '0.000', '3.000')], prog(...ARC_SUS)), CTX), []);
   assert.deepEqual(invariante(prog(...ARC_SUS)), [5]);
   assert.deepEqual(mesaje5(prog(...ARC_SUS)), ['tăiere în afara foii, nedeclarată: sus 3.000 mm']);
-  // Declarat după capete (sus 0.000), arcul e prins.
-  assert.deepEqual(invariante(cuAntet([A, B('0.000', '0.000', '0.000', '0.000')], prog(...ARC_SUS))), [5]);
+  // Declarat după capete (sus 0.000), arcul e prins: nepotrivirea, nu doar declarația goală (1.10b).
+  const dupaCapete = cuAntet([A, B('0.000', '0.000', '0.000', '0.000')], prog(...ARC_SUS));
+  assert.deepEqual(invariante(dupaCapete), [5]);
+  assert.match(mesaje5(dupaCapete).join('|'), /nu corespunde: sus declarat 0\.000, măsurat 3\.000/);
 });
 
 test('5, discul tangent la margine nu iese: centrul la x = R trece fără declarație; la 2.997 iese cu 0.003', () => {
@@ -228,4 +230,99 @@ test('5, originea dreapta-sus cu Z0 jos: alte cote de mașină, aceeași ieșire
     .replaceAll('Z5.000', 'Z23.000');
   assert.deepEqual(poarta(cuAntet(DECL_ST, masina), ctx), []);
   assert.deepEqual(mesaje5(masina, ctx), ['tăiere în afara foii, nedeclarată: st 2.000 mm']);
+});
+
+// ── 1.10b, după recenzia adversarială: margini exacte, rapide în afara foii, declarația goală, trecerea prin fața de sus ──
+
+test('5, arcul mai scurt decât pasul de eșantionare: punctul lui din stânga iese cu 0.010, deși capetele nu ies', () => {
+  // Din (3, 50.025) în (3, 49.975), centrul (3.025, 50), raza 0.025·√2 = 0.0353553; G3 de la 135° la 225° trece prin
+  // 180°: x = 3.025 − 0.0353553 = 2.9896447, deci st = 3 − 2.9896447 = 0.0103553. Capetele au x = 3.000 (st 0).
+  // Eșantioanele: n = ⌈0.0353553·π/2 / 0.0625⌉ = 1, adică doar capetele: vârful se pierdea.
+  const arc = prog('G0 X3.000 Y50.025', 'G1 Z-2.000 F300.0', 'G3 X3.000 Y49.975 I0.025 J-0.025 F1000.0');
+  assert.deepEqual(mesaje5(arc), ['tăiere în afara foii, nedeclarată: st 0.010 mm']);
+  // |0.010 − 0.0103553| = 0.0004 ≤ 0.005
+  assert.deepEqual(poarta(cuAntet([A, B('0.010', '0.000', '0.000', '0.000')], arc), CTX), []);
+});
+
+test('5 și 8, gaura Ø6.1 cu freza Ø6, la 1 mm peste marginea de sus: sus 1.000 și cutia exactă', () => {
+  // Traseul (interior): cercul de rază 3.05 − 3 = 0.05 în jurul (70, 97.95), două semicercuri G3 cu I = ∓0.050. Vârful
+  // traseului e (70, 98.000), deci sus = 98 + 3 − 100 = 1.000 (gaura însăși ajunge la 97.95 + 3.05 = 101). Eșantioanele
+  // (n = ⌈π·0.05 / 0.0625⌉ = 3, la 0°, 60°, 120°, 180°) dădeau 97.95 + 0.05·sin 60° = 97.9933, deci 0.993: fals „nu
+  // corespunde”. Cutia centrului: 69.95…70.05 × 97.90…98.00, cu punctele de la 90° și 270°.
+  const gaura = prog('G0 X70.050 Y97.950', 'G1 Z-2.000 F300.0', 'G3 X69.950 Y97.950 I-0.050 J0.000 F1000.0', 'G3 X70.050 Y97.950 I0.050 J0.000');
+  const cadru = { minX: 69.95, maxX: 70.05, minY: 97.9, maxY: 98 };
+  assert.deepEqual(poarta(cuAntet([A, B('0.000', '0.000', '0.000', '1.000')], gaura), { ...CTX, cadru }), []);
+  assert.deepEqual(mesaje5(gaura), ['tăiere în afara foii, nedeclarată: sus 1.000 mm']);
+});
+
+test('5, rapida sub fața de sus cu discul în afara foii e prinsă, pe fiecare mișcare', () => {
+  // La x = −10: st = 3 + 10 = 13.000. Antetul are 5 linii: G0 X-10 e linia 6, G0 Z-17 linia 7, G0 Y60 linia 8; ridicarea
+  // finală G0 Z5 (linia 9) e pe verticală, scutită.
+  assert.deepEqual(poarta(prog('G0 X-10.000 Y50.000', 'G0 Z-17.000', 'G0 Y60.000'), CTX), [
+    { invarianta: 5, linia: 7, mesaj: 'rapidă sub fața de sus în afara foii: st 13.000 mm' },
+    { invarianta: 5, linia: 8, mesaj: 'rapidă sub fața de sus în afara foii: st 13.000 mm' },
+  ]);
+  // Prima mișcare (startul necunoscut): doar capătul contează; (−10, 50, −2) e sub fața de sus, cu st = 13.000.
+  const intra = `${['G90 G17 G21 G94', 'G54', 'G0 X-10.000 Y50.000 Z-2.000'].join('\n')}\n`;
+  assert.deepEqual(poarta(intra, CTX), [{ invarianta: 5, linia: 3, mesaj: 'rapidă sub fața de sus în afara foii: st 13.000 mm' }]);
+});
+
+test('5, o declarație de ieșire nu permite rapida în afara foii; ridicarea verticală din tăietură e scutită', () => {
+  // Tăietura declarată (st 2.000) se ridică pe verticală la (1, 20): scutită. Apoi o rapidă la Z-2 pe x = −4:
+  // st = 3 + 4 = 7.000. Liniile: 2 comentarii + 2 de declarație + 5 de antet = 9; IESE_ST 10…15; G0 Z5 16; G0 X-4 17;
+  // G0 Z-2 18; G0 Y80 19; ridicarea finală 20, scutită.
+  const t = cuAntet(DECL_ST, prog(...IESE_ST, 'G0 Z5.000', 'G0 X-4.000 Y20.000', 'G0 Z-2.000', 'G0 Y80.000'));
+  assert.deepEqual(poarta(t, CTX), [
+    { invarianta: 5, linia: 18, mesaj: 'rapidă sub fața de sus în afara foii: st 7.000 mm' },
+    { invarianta: 5, linia: 19, mesaj: 'rapidă sub fața de sus în afara foii: st 7.000 mm' },
+  ]);
+  // Ridicarea oblică din tăietură (Y crește, pe fanta deja tăiată la x = 1) intră în spațiu nou: discul la x = 1 iese cu
+  // st = 3 − 1 = 2.000; prinsă pe linia 16. Aceeași ridicare pe verticală: programul trece.
+  assert.deepEqual(poarta(cuAntet(DECL_ST, prog(...IESE_ST, 'G0 Y25.000 Z5.000')), CTX), [
+    { invarianta: 5, linia: 16, mesaj: 'rapidă sub fața de sus în afara foii: st 2.000 mm' },
+  ]);
+  assert.deepEqual(poarta(cuAntet(DECL_ST, prog(...IESE_ST, 'G0 Z5.000')), CTX), []);
+});
+
+test('5, declarația goală (toate laturile 0.000) e prinsă; cea mai mică declarație nevidă, 0.001, trece în toleranță', () => {
+  const goala = [A, B('0.000', '0.000', '0.000', '0.000')];
+  assert.deepEqual(mesaje5(cuAntet(goala, CURAT)), ['declarație de ieșire goală: toate laturile 0.000']);
+  assert.deepEqual(mesaje5(cuAntet(goala, prog(...IESE_ST))), [
+    'declarație de ieșire goală: toate laturile 0.000; declarația de ieșire nu corespunde: st declarat 0.000, măsurat 2.000',
+  ]);
+  // Zona 0.0005…0.002: aplicația declară, poarta măsoară cel mult 0.002 (aici 0): |0.001 − 0| ≤ 0.005, trece.
+  assert.deepEqual(poarta(cuAntet([A, B('0.000', '0.000', '0.000', '0.001')], CURAT), CTX), []);
+});
+
+test('5, rampa prin fața de sus: contează doar partea de sub ea, cu trecerea exactă (st 9.000 pe foaia 300 × 200)', () => {
+  // Din (−10, 50, 0.5) în (10, 50, −2): z = 0 la t = 0.5 / 2.5 = 0.2, deci x = −10 + 20·0.2 = −6 și st = 3 + 6 = 9.000.
+  // Toată mișcarea ar da 3 + 10 = 13.000; primul eșantion de sub fața de sus (t = 65/320, x = −5.9375) dădea 8.9375.
+  const ctx: ContextPoarta = { ...CTX, foaie: { latime: 300, inaltime: 200, grosime: 18 } };
+  const rampa = prog('G0 X-10.000 Y50.000', 'G1 Z0.500 F300.0', 'G1 X10.000 Y50.000 Z-2.000 F1000.0');
+  assert.deepEqual(poarta(cuAntet([A, B('9.000', '0.000', '0.000', '0.000')], rampa), ctx), []);
+  assert.deepEqual(mesaje5(rampa, ctx), ['tăiere în afara foii, nedeclarată: st 9.000 mm']);
+  assert.deepEqual(mesaje5(cuAntet([A, B('13.000', '0.000', '0.000', '0.000')], rampa), ctx), [
+    'declarația de ieșire nu corespunde: st declarat 13.000, măsurat 9.000',
+  ]);
+  // Cu Z0 jos, fața de sus e Z18 pe mașină: aceeași rampă (Z18.5 → Z16) dă tot 9.000.
+  const jos = rampa.replaceAll('Z5.000', 'Z23.000').replace('Z0.500', 'Z18.500').replace('Z-2.000', 'Z16.000');
+  assert.deepEqual(poarta(cuAntet([A, B('9.000', '0.000', '0.000', '0.000')], jos), { ...ctx, z0: 'jos' }), []);
+  // Rampa de ieșire, invers: din (10, 50, −2) în (−10, 50, 0.5); z = −2 + 2.5·t = 0 la t = 0.8, x = 10 − 16 = −6: tot 9.000.
+  const iesireRampa = prog('G0 X10.000 Y50.000', 'G1 Z-2.000 F300.0', 'G1 X-10.000 Y50.000 Z0.500 F1000.0');
+  assert.deepEqual(poarta(cuAntet([A, B('9.000', '0.000', '0.000', '0.000')], iesireRampa), ctx), []);
+  assert.deepEqual(mesaje5(iesireRampa, ctx), ['tăiere în afara foii, nedeclarată: st 9.000 mm']);
+});
+
+test('5 și 8, arcul elicoidal prin fața de sus: trecerea e la unghiul unde z = 0, nu la primul eșantion', () => {
+  // G3 din (145, 50, 1) în (125, 50, −2), centrul (135, 50), raza 10, de la 0° prin 90° la 180°; z = 1 − 3·φ/π, deci
+  // z = 0 la φ = 60°: (135 + 10·cos 60°, 50 + 10·sin 60°) = (140, 58.660). Partea de sub fața de sus (60°…180°) are
+  // x în 125…140 (trecerea), y în 50…60 (vârful de la 90°), deci dr = 140 + 3 − 140 = 3.000, restul 0.
+  // Tot arcul ar da 145 + 3 − 140 = 8.000; primul eșantion de sub (k = 168 din 503, φ = 60.12°) dădea 2.982.
+  const elice = prog('G0 X145.000 Y50.000', 'G1 Z1.000 F300.0', 'G3 X125.000 Y50.000 Z-2.000 I-10.000 J0.000 F1000.0');
+  const cadru = { minX: 125, maxX: 140, minY: 50, maxY: 60 };
+  assert.deepEqual(poarta(cuAntet([A, B('0.000', '3.000', '0.000', '0.000')], elice), { ...CTX, cadru }), []);
+  assert.deepEqual(mesaje5(elice), ['tăiere în afara foii, nedeclarată: dr 3.000 mm']);
+  assert.deepEqual(mesaje5(cuAntet([A, B('0.000', '8.000', '0.000', '0.000')], elice)), [
+    'declarația de ieșire nu corespunde: dr declarat 8.000, măsurat 3.000',
+  ]);
 });
