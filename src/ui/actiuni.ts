@@ -1,5 +1,5 @@
 import type { Capabilitate } from '../../shared/capabilitati.ts';
-import type { Cheie } from '../i18n/t.ts';
+import type { CheieSimpla } from '../i18n/t.ts';
 
 /**
  * Registrul de acțiuni (`PLAN.md` §3.2): singura ușă a interfeței spre domeniu. Barele, meniurile, tastatura,
@@ -10,9 +10,9 @@ import type { Cheie } from '../i18n/t.ts';
  */
 export type Actiune<C> = {
   readonly id: string;
-  readonly eticheta: Cheie;
+  readonly eticheta: CheieSimpla;
   readonly capabilitate: Capabilitate;
-  readonly activa: (ctx: C) => true | Cheie;
+  readonly activa: (ctx: C) => true | CheieSimpla;
   readonly ruleaza: (ctx: C) => void;
 };
 
@@ -21,7 +21,7 @@ export type Registru<C> = {
   readonly areCapabilitate: (c: Capabilitate) => boolean;
 };
 
-export type RezultatActiune = { readonly ok: true } | { readonly ok: false; readonly motiv: Cheie };
+export type RezultatActiune = { readonly ok: true } | { readonly ok: false; readonly motiv: CheieSimpla };
 
 export function creeazaRegistru<C>(lista: readonly Actiune<C>[], areCapabilitate: (c: Capabilitate) => boolean): Registru<C> {
   const actiuni = new Map<string, Actiune<C>>();

@@ -602,3 +602,40 @@ folosește un canal de previzualizare.
 - **Trecere:** `Omit` nu merge pe tipurile valibot cu semnătură de index, deci elementul nou are un tip explicit.
 
 **Următorul pas:** felia 1.8, pânza v0. Persistența în IndexedDB și arborele vin după alegerea A / D.
+
+## 2026-10-07 — Etapa 1, felia 1.8: pânza v0 (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua si testez putin mai incolo” (continuare). **Started:** 15:51. **Completed:** 16:02.
+**Clasa:** R2 (I7 parțial). **Estimarea:** 1 felie. **Treceri:** 4.
+
+**Făcut:**
+- **`src/canvas/lucrator.ts`**: workerul de desen (T13).
+  - desenează pe pânză software (`willReadFrequently`), în coordonatele documentului, cu Y în sus;
+  - arcele sunt exacte (`arc()`), iar linia are un pixel fizic;
+  - dintre cererile care vin una după alta, o desenează doar pe ultima;
+  - predă imaginea ca ImageBitmap.
+- **`src/canvas/Panza.tsx`**: pânza `bitmaprenderer`.
+  - Potrivirea pe foaie se face la prima mărime reală.
+  - Zoomul merge în jurul cursorului, între 0,01 și 1 000 px/mm. Pan-ul, cu butonul din mijloc sau cu Space + tragere.
+  - Clicul și tragerea trimit gestul aplicației, care îl rulează prin registru.
+- **`src/canvas/protocol.ts`**: protocolul pânzei, ca date. Pânza nu importă domeniul.
+- **`src/geom/distanta.ts`**: distanța exactă la L / A și `inRegiune` evenodd cu arce exacte (ADR 0003).
+  - raza ridicată cu ε ca să nu treacă prin vârfuri;
+  - gaura orientată ca exteriorul rămâne gaură.
+- **`src/app/desen.ts`**: documentul devine lista de desen. **`src/model/forme.ts`**: conturul elementului.
+- **Acțiunea `selectie.la-punct`**: cel mai de sus element, pe contur în toleranță sau înăuntru.
+- **Aplicația:** bara de acțiuni din registru (cu motivul ca titlu pe butoanele inactive), pânza, linia de stare cu
+  selecția și scurtăturile Delete, Ctrl+Z și Ctrl+Y.
+- **Oracolul pânzei** (`test/oracles/panza.ts`, din s6):
+  - pe 720 de normale la cerc, centrul ponderat al liniei stă la ≤ 0,5 px de cercul de pe hârtie, fără goluri;
+  - controalele pică: raza × 1,01 și centrul mutat cu 1 px.
+- **E2e în Edge:** oracolul, clicul (cel de deasupra câștigă), tragerea cu poziția exactă în linia de stare, anularea și
+  refacerea, pan-ul, limita de zoom și motivul pe butonul inactiv. 11 teste e2e, 98 unitare.
+- **Treceri:**
+  1. „ResizeObserver loop” ajungea în jurnalul de erori. Pânza a ieșit din layout (poziționare absolută), iar lucrul se
+     face în cadrul următor.
+  2. Grila de 5 rânduri lăsa pânza cu înălțimea 0 când lipsea avertismentul. Acum layout-ul e o coloană flex.
+  3. Decupajul testului ieșea din pânză, iar negrul transparent părea cerneală. Acum decupajul e limitat și verificat.
+  4. Un prag fix de cerneală e prea brutal pentru linia antialiasată. Acum se ia centrul ponderat pe normală, ca în s6.
+
+**Următorul pas:** canalul de previzualizare pe instanța de test, ca owner-ul să poată încerca desenul.

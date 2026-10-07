@@ -5,6 +5,10 @@
   --text-slab: #5a6470;
   --accent: #b86b0e;
   --margine: #d8d3c8;
+  --panza-fundal: #e9e6df;
+  --panza-foaie: #fbfaf7;
+  --panza-linie: #1d232b;
+  --panza-selectie: #c25e00;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
 }
@@ -16,6 +20,10 @@
     --text-slab: #a3abb5;
     --accent: #f2a33a;
     --margine: #333a43;
+    --panza-fundal: #0f1215;
+    --panza-foaie: #1c2127;
+    --panza-linie: #e8e4dc;
+    --panza-selectie: #f2a33a;
   }
 }
 
@@ -29,6 +37,68 @@ main {
   max-width: 48rem;
   margin: 0 auto;
   padding: 1.5rem 1rem;
+}
+
+/* Coloană flex: pânza ia tot ce rămâne, oricâte rânduri ar apărea deasupra ei (avertismentul e opțional). */
+.aplicatie {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.aplicatie > header {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--margine);
+}
+
+.aplicatie .instanta {
+  color: var(--text-slab);
+  font-size: 0.9rem;
+  margin-right: auto;
+}
+
+.bara {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--margine);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.panza-cutie {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panza {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+.aplicatie > footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding: 0.4rem 1rem;
+  border-top: 1px solid var(--margine);
+}
+
+.avertisment {
+  margin: 0;
+  padding: 0.4rem 1rem;
+  color: var(--accent);
 }
 
 header {

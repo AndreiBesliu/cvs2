@@ -6,7 +6,8 @@ export type Cheie = keyof typeof en;
 
 /** Cheile al căror mesaj e plural: nu se pot cere fără `n`. */
 type CheiePlural = { [K in Cheie]: (typeof en)[K] extends string ? never : K }[Cheie];
-type CheieSimpla = Exclude<Cheie, CheiePlural>;
+/** Cheile fără plural: etichete, motive, titluri. */
+export type CheieSimpla = Exclude<Cheie, CheiePlural>;
 type Parametri = Readonly<Record<string, string | number>>;
 
 const DICTIONARE: Readonly<Record<Limba, Readonly<Record<Cheie, Mesaj>>>> = { ro, en };

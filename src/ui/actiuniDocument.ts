@@ -1,6 +1,22 @@
+import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
 import type { Document, ElementDoc, FormaDoc } from '../model/document.ts';
+import { conturElement } from '../model/forme.ts';
 import { anuleaza, executa, reface, type Istoric } from '../model/jurnal.ts';
 import type { Actiune } from './actiuni.ts';
+
+/**
+ * Elementul de sub un punct al documentului: cel mai de sus care are conturul la cel mult `toleranta` mm sau punctul
+ * înăuntru (regula evenodd). Sau null.
+ */
+export function elementLa(doc: Document, x: number, y: number, toleranta: number): string | null {
+  for (let i = doc.elemente.length - 1; i >= 0; i--) {
+    const e = doc.elemente[i];
+    if (!e) continue;
+    const c = conturElement(e);
+    if (distantaLaContur({ x, y }, c) <= toleranta || inRegiune({ x, y }, [c])) return e.id;
+  }
+  return null;
+}
 
 /**
  * Acțiunile documentului din etapa 1: adaugă dreptunghiul și cercul, mută și șterge selecția, anulează și reface.
@@ -13,6 +29,8 @@ export type ContextDocument = {
   readonly selecteaza: (ids: readonly string[]) => void;
   /** Deplasarea cerută pentru „mută”, în mm (gestul o pune aici înainte de rulare). */
   readonly deplasare?: () => { readonly dx: number; readonly dy: number };
+  /** Punctul clicului, în mm, cu toleranța lui (câțiva pixeli, în mm la zoomul curent). */
+  readonly punct?: () => { readonly x: number; readonly y: number; readonly toleranta: number };
 };
 
 const IDENTITATE = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
@@ -33,6 +51,18 @@ function adauga(ctx: ContextDocument, forma: FormaDoc, e: number, f: number): vo
 }
 
 export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
+  {
+    id: 'selectie.la-punct',
+    eticheta: 'actiune.selecteaza',
+    capabilitate: 'desen',
+    activa: (ctx) => (ctx.punct ? true : 'motiv.niciun-punct'),
+    ruleaza: (ctx) => {
+      const p = ctx.punct?.();
+      if (!p) return;
+      const id = elementLa(ctx.istoric().doc, p.x, p.y, p.toleranta);
+      ctx.selecteaza(id ? [id] : []);
+    },
+  },
   {
     id: 'document.adauga-dreptunghi',
     eticheta: 'actiune.adauga-dreptunghi',
