@@ -33,7 +33,9 @@ Se completează în Faza 1, pe măsură ce răspunde owner-ul. Structura e cea d
   - axa a 4-a și fețele multiple, cu posturi A/B;
   - finisare 3D: alte strategii, pas din creastă, rest machining 3D;
   - punți 3D, avans adaptat, piese 3D mari pe dale;
-  - posturile pentru alte controlere decât cele din §12.
+  - posturile pentru alte controlere decât cele din §12;
+  - G-code de laser pentru familia GRBL [decis 07.10];
+  - citirea nativă a DWG-ului, de decis după cerere reală [decis 07.10; în v1, DWG e doar mesaj].
 - **v2:** nesting după formă și cu fibra, vectori decorativi, clipart vectorial, asistent pentru mobilier,
   frezare inversă, gravură pe suprafață 3D, scripting, imagini latente, imprimare 3D.
 - **Mai târziu:** generatoare de produse, AI, import IGES/STEP, portret din fotografie, 5 axe, inele și bijuterii.
@@ -56,7 +58,12 @@ Se completează în Faza 1, pe măsură ce răspunde owner-ul. Structura e cea d
 - **Lansarea** [decis 06.10]: **atelierele folosesc aplicația abia la v1 complet**, fără beta înainte. Până
   atunci, singura judecată din afara codului e a owner-ului.
   - Plasa: plăcile de probă săptămânale și demo-ul de la sfârșitul fiecărei etape.
-  - Riscul e trecut la §14.
+  - Riscul e trecut la §15.
+- **Proba închisă** [decis 07.10, după estimarea din Faza 2, `PLAN.md` §8.1]:
+  - **Ce:** din săptămâna 15, după etapa 14, **1–2 ateliere prietene** folosesc aplicația doar pentru 2D (profil,
+    buzunar, V-carve, incrustații, foi, sender), cu **conturi invitate și fără plată**.
+  - **Lansarea publică** rămâne la v1 complet.
+  - **Costul:** ~1 felie pe săptămână, pentru răspunsuri și reparații.
 - **Ce se blochează** [decis 06.10]:
   - **exportul G-code și senderul, prin convenție în aplicație.** O verificare de licență în client se poate
     ocoli; e acceptat conștient, fiindcă PWA-ul offline generează G-code-ul local;
@@ -160,6 +167,9 @@ Lista e derivată din răspunsuri și se confirmă în planul din Faza 2.
   - Owner-ul o încearcă, iar planul se aprobă cu modelul de planșe ales.
   - Cost estimat: 1–2 zile.
 - **Rândul de prag „Sheets + Multi-Plate”** [decis 06.10]: **v1**.
+- **Aprobarea planului** [07.10]: owner-ul a aprobat `PLAN.md` fără modelul de planșe, pe care îl alege **după ce
+  încearcă prototipul, înainte de etapa 1**. Etapa 1 nu pornește fără alegere, fiindcă schema planșelor se îngheață
+  acolo. Recomandarea e D.
 
 ## 10. Funcțiile candidate: v1 / v1.x / mai târziu
 
@@ -244,6 +254,13 @@ reală se reface în Faza 2, pe etape săptămânale.
   - **Pas pentru owner:** găsește câte un atelier cu NcStudio, Richauto/Syntec și Mach3 care să ruleze
     fișierele de probă. Pe mașina proprie există doar familia GRBL.
 - **Senderul** lucrează doar cu familia GRBL. Pentru celelalte controlere, aplicația doar exportă.
+- **Laserul owner-ului** [07.10]: o mașină separată, cu controler **Ruida (CO2)**, folosită cu RDWorks sau LightBurn.
+  - Rândul de laser din v1 se face ca **export vectorial pentru LightBurn / RDWorks**: straturi pe culori, câte una pentru
+    fiecare setare de putere și viteză, cu feliile pe Z ca straturi sau fișiere.
+  - Se probează pe laserul owner-ului.
+  - Nu se scrie cod Ruida propriu: formatul nu e documentat public, iar regula exclude reverse engineering-ul.
+- **Găurirea cu mai multe burghie** [decis 07.10]: owner-ul n-are bancă de burghie, așa că se acceptă pe simulare și pe
+  octeții postului (excepție scrisă de la regula plăcii din §8).
 
 ## 13. Simularea și oracolul
 
@@ -266,8 +283,10 @@ reală se reface în Faza 2, pe etape săptămânale.
 - **v1 e mare** (64 de rânduri de prag plus 8 funcții din triaj), iar lansarea vine abia la v1 complet. Drumul
   lung fără utilizatori externi e riscul principal.
   - Plasa: etape săptămânale, fiecare cu o placă de probă și o aprobare.
-  - Faza 2 trebuie să arate, cu estimare din durate măsurate, cât durează drumul.
-  - Dacă estimarea iese prea lungă, owner-ul poate reconsidera beta-ul sau v1.
+  - Estimarea din Faza 2 (`PLAN.md` §6): P50 ~33 de săptămâni (sfârșitul lui mai – mijlocul lui iunie 2027), P90 ~64
+    (~sfârșitul lui decembrie 2027).
+  - Reacția owner-ului [07.10]: **proba închisă după etapa 14** (§4). Întrebarea revine la tampoanele T2 și T3 și la
+    orice recalibrare care mută P50 cu peste 20 %.
 - **Posturile pentru NcStudio, Richauto/Syntec și Mach3** cer ateliere externe care să ruleze fișierele de
   probă.
 - **Regiunea mixtă a proiectelor Firebase** refolosite (`nam5` cu `europe-central2`).

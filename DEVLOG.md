@@ -235,3 +235,36 @@ de ordine și de text, niciuna de arhitectură.
 **Totalul Fazei 2 în agenți:** 10,16 M tokeni.
 
 **Următorul pas:** plan mode și aprobarea owner-ului, cu răspunsurile de la §8.1.
+
+## 2026-10-07 — Planul aprobat (Faza 2 încheiată) (Model: Claude Opus 5.5)
+
+**Prompt:** aprobarea în plan mode, cu răspunsurile owner-ului la întrebările de la `PLAN.md` §8.1:
+- A / D: „Încerc întâi prototipul”, apoi „Aprob restul; A / D înainte de etapa 1”;
+- beta: „Probă închisă după etapa 14 (Recomandat)”;
+- importul: toate patru recomandările;
+- fără placă: „1 si am deja masina separat cu laser in atelierul meu”;
+- laserul: „Ruida (CO2), RDWorks / LightBurn”.
+
+**Făcut:**
+- `PLAN.md`: starea „aprobat, fără A / D”. Actualizate:
+  - §0, §8.1 (cu răspunsurile) și §8.3;
+  - T18 (exportul pentru laser);
+  - etapele 14, 17, 24–26;
+  - amendamentele 14 (proba închisă) și 15 (laserul);
+  - §6 (+~18 felii pentru proba închisă, deci ~283 de felii de plan).
+- `BRIEF.md`:
+  - §2: G-code-ul de laser GRBL și DWG nativ trec în v1.x;
+  - §4: proba închisă;
+  - §9: aprobarea fără A / D;
+  - §12: laserul Ruida și găurirea multiplă pe simulare;
+  - §15: estimarea și reacția owner-ului.
+- `ACOPERIRE-ARTCAM-DESKPROTO.md`:
+  - rândurile A4 (importul decis), A5 (EPS da, AI nu), B13 (găurirea multiplă pe simulare) și B14 (laserul ca export
+    pentru LightBurn / RDWorks);
+  - DGK / PIC trecute la „Scoase la reverificare”, cu motivul;
+  - nota GPU din „Ce înseamnă pentru arhitectură”, aliniată la T11.
+- `CLAUDE.md`: starea (Faza 2 încheiată, pasul 0 următor) și regulile de proces pe scurt; decizia din 07.10 la
+  „Decizii luate”.
+
+**Următorul pas:** pasul 0. Întâi `docs/PORTARE.md` pentru candidații etapelor 1–3, apoi ADR-urile. Etapa 1 pornește
+după alegerea A / D.

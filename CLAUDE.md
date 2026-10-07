@@ -8,20 +8,35 @@ DeskProto; peste el construim. Owner: Andrei.
 **De ce de la zero:** în proiectul vechi progresul devenise prea greu, iar procesul de dezvoltare părea
 haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect de la început.
 
-## Stare (06.10.2026)
+## Stare (07.10.2026)
 
-- **Faza 0: încheiată.** Concluziile sunt în `LECTII.md`. Citește-l înainte de orice decizie de arhitectură sau
-  de proces. Rapoartele cu surse (module, planșe, cronologie, verificări) sunt în `docs/faza0/`, **doar local**:
+- **Faza 0: încheiată.** Concluziile sunt în `LECTII.md`. Rapoartele cu surse sunt în `docs/faza0/`, **doar local**:
   sunt ignorate de git, fiindcă repo-ul e public și ele descriu găuri ale aplicației vechi, încă live.
-- **Faza 1 (interviul): încheiată pe 06.10.2026.** Toate deciziile sunt în `BRIEF.md`. Citește-l împreună cu
-  `LECTII.md` înainte de Faza 2.
-- **Urmează Faza 2: arhitectura, în plan mode.** **Fără cod până la aprobarea planului.** Faza 2 conține:
-  - prototipul clicabil al planșelor, cu variantele A și D pe 8 scenarii, încercat de owner înainte de aprobare;
-  - sondele pentru alegerile riscante;
-  - estimarea pe etape săptămânale, din durate măsurate.
-- **După planul aprobat: evaluarea portării** (decizia owner-ului din 06.10.2026). Owner-ul primește un răspuns
-  la întrebarea „ce din codul vechi se poate integra eficient și bine în codul nou”. Detaliile sunt la
-  „Decizii luate”.
+- **Faza 1 (interviul): încheiată pe 06.10.2026.** Toate deciziile sunt în `BRIEF.md`.
+- **Faza 2: încheiată pe 07.10.2026.** **`PLAN.md` e aprobat** de owner, fără modelul de planșe (A / D), pe care îl
+  alege după prototip, **înainte de etapa 1**.
+  - `PLAN.md` e autoritatea pentru arhitectură (deciziile T1–T23), pentru ordinea etapelor și pentru regulile de proces
+    (§5.1).
+  - Dovezile sunt în `docs/faza2/`: sonde, verificări, propuneri (doar istoric), estimare, critici.
+  - Deciziile de la aprobare sunt în `PLAN.md` §8.1 și în `BRIEF.md` (§4 proba închisă, §12 laserul).
+- **Urmează pasul 0** (`PLAN.md` §5.2), fără cod de produs:
+  - `docs/PORTARE.md` (decizia owner-ului din 06.10), întâi pentru candidații etapelor 1–3;
+  - ADR-urile, din T1–T23.
+
+  Apoi **etapa 1** (`PLAN.md` §5.3), după alegerea A / D.
+
+**Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
+- **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa
+  curentă; fișa etapei se scrie în `docs/etape/etapa-NN.md`.
+- **Depășirea:** la peste 1,5 × bugetul, felia se parchează pe o ramură WIP, întrebarea intră în lista grupată pentru
+  owner, iar lucrul continuă cu o felie independentă. Oprire completă doar pentru o felie care mișcă mașina, sau la a
+  doua depășire din aceeași etapă.
+- **Placa de probă** închide etapa. Live doar după placă și cu confirmarea owner-ului. Recalibrarea vine după etapa 3,
+  apoi la fiecare etapă.
+- **Începutul fiecărei sesiuni:** starea lui `main` și a ultimei rulări de noapte din CI. Nicio rulare de noapte în
+  26 h = roșu. Un CI roșu pe `main` e incidentul numărul unu.
+- **O singură sesiune scrie în repo** la un moment dat; celelalte lucrează în worktree-uri sau doar citesc.
+- **DEVLOG-ul e scurt:** `Started` / `Completed`, cu promptul exact și modelul.
 
 ## Surse
 
@@ -84,6 +99,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
   Regula: nimic portat nu intră fără probele noi ale proiectului (oracol, martor). Ce trece în codul nou e
   re-probat acolo, nu crezut pe cuvânt.
+
+- 07.10.2026: **`PLAN.md` aprobat** (fără A / D, de ales înainte de etapa 1).
+  - **Proba închisă** după etapa 14: 1–2 ateliere prietene, doar 2D, conturi invitate, fără plată. Lansarea publică
+    rămâne la v1 complet.
+  - **Importul:** DGK / PIC scoase din prag; DWG doar mesaj în v1; EPS și AI ≤ 8 prin cititor propriu, limitat; WMF
+    propriu. **Exportul AI: nu.**
+  - **Fără placă:** găurirea multiplă se acceptă pe simulare și pe octeții postului.
+  - **Laserul** owner-ului e Ruida (CO2), deci rândul de laser din v1 e un export vectorial pentru LightBurn / RDWorks,
+    fără cod Ruida propriu. G-code-ul de laser GRBL trece în v1.x.
 
 ## Deciziile interviului (06.10.2026), pe scurt
 

@@ -1,7 +1,8 @@
 # PLANUL v1: CNC Vector Studio, ediția a doua
 
-**Stare: spre aprobare, Faza 2, 07.10.2026.** Versiunea a doua a ciornei, după cei trei critici independenți
-(`docs/faza2/arhitectura/critica-*.md`).
+**Stare: aprobat de owner pe 07.10.2026, fără modelul de planșe (A / D).** Modelul îl alege după ce încearcă
+prototipul, înainte de etapa 1. Deciziile de la aprobare sunt la §8.1. E versiunea a doua a ciornei, după cei trei
+critici independenți (`docs/faza2/arhitectura/critica-*.md`).
 
 **Autoritatea:**
 - După aprobare, acest fișier e autoritatea pentru arhitectură, ordinea etapelor și regulile de proces.
@@ -53,11 +54,14 @@ concluzie, nerulată. Sursele sunt în `docs/faza2/`:
 
   Planul are 30 de etape + 3 săptămâni-tampon (§5.4). Prima recalibrare, din duratele noastre reale, vine **după
   etapa 3**. Dacă P50 se mută cu peste 20 %, primești noua cifră, pârghiile și întrebarea despre beta, din nou.
-- **Ce iau de la tine la aprobare** (§8.1):
-  - **A sau D** (recomand D);
-  - **beta sau v1 complet;**
-  - **schimbările de prag** la import (DGK / PIC, DWG, EPS) și exportul AI;
-  - **acceptarea fără placă** pentru găurirea multiplă (și laserul, dacă n-ai laser).
+- **Deciziile de la aprobare (07.10, §8.1):**
+  - **A / D se alege înainte de etapa 1;** recomand D;
+  - **proba închisă după etapa 14:** 1–2 ateliere prietene, doar 2D, conturi invitate, fără plată. Lansarea publică
+    rămâne la v1 complet;
+  - **DGK / PIC scoase din prag; DWG doar mesaj; EPS și AI vechi printr-un cititor propriu; WMF propriu; fără export
+    AI;**
+  - **găurirea multiplă** se acceptă pe simulare și pe octeții postului;
+  - **laserul se probează pe laserul tău Ruida**, printr-un export vectorial pentru LightBurn / RDWorks.
 
   Restul are implicit (§8.2), plus coada ta de acțiuni (§8.3).
 
@@ -320,7 +324,7 @@ verificarea.
 | T15 | **Workerele nu țin date între joburi** (bazin fără stare + worker de randare). **Mă abat de la s11 §5.2**, care recomanda date ținute în workere: costul măsurat e același, iar varianta fără stare n-are invalidare de cache și recuperare | același cost la blur și la finisare [măsurat, s11 §4.1–4.2] | memoria temporară (+64 MB pe operație la 4000²) devine problemă pe un laptop de 8 GB, sau re-simularea se simte (+60–190 ms) → relieful și simularea primesc worker-proprietar; trecerea e locală, fiindcă nucleele lucrează deja pe benzi |
 | T16 | **Datele:** valibot (o declarație → tip + validator cu limite, necunoscutele păstrate, fără `eval`), JSON canonic, migrări pure, undo ca jurnal de comenzi cu valorile vechi și noi | 10/10 defecte la calea exactă, 318 ms sub CSP strict, 3,3 KB gzip; o comandă de undo = ~190 B, față de 96 MB pentru o copie completă [măsurat, s7] | — |
 | T17 | **PWA:** Vite + vite-plugin-pwa, cu actualizarea oferită și blocată cât rulează un job; CSP fără `unsafe-eval`, probat pe build-ul servit | 9/9 pași offline, martorul pică [măsurat, s7 §4.7] | — |
-| T18 | **Importul și exportul:** câte o ușă pe format, toate spre același model.<br>- **Export DXF R2007 „exact”:** CIRCLE, ARC, ELLIPSE, LWPOLYLINE cu bulge, SPLINE, straturile = rolurile;<br>- **SVG** în mm;<br>- **PDF** cu straturi;<br>- **EPS**, dacă îl vrei;<br>- scriitorul **R12** e gata (~80 de linii) și intră doar dacă un program de-al tău nu deschide R2007 | export 108/108 și import 65/65, recitite de programe independente [măsurat, s2] | pachetul tău de probă (§8.3) |
+| T18 | **Importul și exportul:** câte o ușă pe format, toate spre același model.<br>- **Export DXF R2007 „exact”:** CIRCLE, ARC, ELLIPSE, LWPOLYLINE cu bulge, SPLINE, straturile = rolurile;<br>- **SVG** în mm;<br>- **PDF** cu straturi;<br>- **EPS** (implicit da);<br>- scriitorul **R12** e gata (~80 de linii) și intră doar dacă un program de-al tău nu deschide R2007;<br>- **laserul:** export vectorial pentru LightBurn / RDWorks (laserul tău are Ruida), cu straturi pe culori de putere și viteză și cu feliile pe Z; G-code de laser pentru GRBL în v1.x | export 108/108 și import 65/65, recitite de programe independente [măsurat, s2] | pachetul tău de probă (§8.3) |
 | T19 | **Textul:** „înălțimea textului” = înălțimea majusculei, verificată pe conturul lui H; glifele se normalizează; GSUB are rezervă literă cu literă | „20 mm” = 20,000000 mm pe litera N [măsurat, s2] | — |
 | T20 | **Senderul:**<br>- sesiune Web Serial cu tranzacții, flux cu numărarea caracterelor;<br>- trimite exact octeții exportați, cu hash;<br>- bariera M6;<br>- procedurile sunt mașini de stare pure;<br>- emulatorul GRBL și transcrierile sunt fixturi | ediția întâi: linia ≥ 128 de caractere bloca fluxul; reluarea avea drept oracol propria funcție [citit, `LECTII.md` §1] | proba din etapa 3: dacă planificatorul GRBL rămâne gol sub încărcare, senderul se mută într-un worker |
 | T21 | **Stack-ul:**<br>- TypeScript 7 strict; React 19, subțire peste acțiuni;<br>- fără bibliotecă de stare, de rutare sau de CSS;<br>- `node --test` (Vitest doar dacă fricțiunea e măsurată);<br>- Playwright pe Edge, pe `dist/`;<br>- Python doar în CI | toate sondele au rulat cu `node` simplu [citit, §7 al fiecărei sonde]; Chromium-ul Playwright nu pornește pe mașina asta, Edge da [măsurat] | — |
@@ -696,10 +700,10 @@ ateliere.**
 | 12 | 11 | **Planșele:** piese, foi, instanțe, Multi-Plate, lista de tăiere | Sheets + Multi-Plate; §10 Listă de tăiere | așezarea pe rânduri, vărsarea pe foaia 2, plăcuțele din CSV | da |
 | 13 | 12 | Incrustațiile | Inlay în V și cu pereți drepți | dopul intră; jocul pe linia de lipire | da |
 | 14 | 13 | Mașina, partea a doua | Senderul (complet); §10 Senzor de lungime, Colțul XY, Override + jurnal, Planarea | senzorul, palparea XY, reluarea, planarea | da |
-| 15 | 14 | Conturile, dreptul de acces, proba de 14 zile | admin **P2** | regresia pe live, dintr-un cont în probă | da |
+| 15 | 14 | Conturile, dreptul de acces, proba de 14 zile; poarta devine „personal + invitați” | admin **P2** | regresia pe live, dintr-un cont în probă | da; **proba închisă pornește în săptămâna 15** |
 | 16 | 15 | Tichetele, configurarea, fișa de lucru, șabloanele, copiile în cloud | Șabloane + lot; §10 Fișa de lucru; admin **P2+** | șablonul aplicat în lot pe 3 nume | da |
 | 17 | 16 | Caneluri, teșire, Raised Round, freze desenate | Caneluri / bevel / Raised Round; Freze de profil desenate; Biblioteca de freze (completă) | canelura, încrucișarea, roundover | da |
-| 18 | 17 | Textura din freză, ghilotina (grila și așezarea aliniată), burghiele multiple, laserul 2D | Textura din freză; Ghilotină + drillbanks (după §8.1) | textura, grila ghilotină; laserul, dacă ai | da; runda 3 la ateliere |
+| 18 | 17 | Textura din freză, ghilotina (grila și așezarea aliniată), burghiele multiple, exportul pentru laser (LightBurn / RDWorks) | Textura din freză; Ghilotină + drillbanks (găurirea multiplă pe simulare și pe octeți) | textura, grila ghilotină; tăietura și gravura pe laserul tău Ruida | da; runda 3 la ateliere |
 | 19 | 18 | **Relieful 1:** nucleul, relieful din imagine, prelucrarea 3D din relief | Relief din imagine; Alinierea pixelilor; Litofanie; Combinarea; Rezoluția 4000²; Straturi; Relief ↔ 16 biți (Degroșarea și Finisarea pornesc, pe relief) | pana de gri, calota, litofania | da |
 | 20 | 19 | Relieful 2: editorul de forme, textul, operațiile, analiza | Editor de forme; Relief din text; Operații; Estompare și pante; Analiza; Suprafață / volum / greutate | cupola, rotunjitul, planul înclinat, greutatea | da |
 | 21 | 20 | **3D din modele:** import, câmp conservativ, zone, decupare | Import 3D; Zone; Decupare 3D; **Degroșare 3D; Finisare paralelă** (închise pe STL) | STL-ul de referință în trepte + semisfera | da |
@@ -707,9 +711,9 @@ ateliere.**
 | 23 | 21 | 3D avansat; extrudare, sweep, spin, turn | Coliziunea cu mandrina; Zonele inaccesibile; Model înalt din felii; Extrudare; Two Rail / Spin / Turn | modelul din felii, profilul extrudat, rozeta | da |
 | 24 | 22 | Relieful 3: îmbinări, straturi bitmap, sculptura, anvelopa | Îmbinări; Straturi bitmap; Sculptare; Deformare în anvelopă | îmbinările, textul în anvelopă | da |
 | 25 | 23 | Relieful 4: două fețe, bas-relieful, conturul | Relief pe două fețe + întoarcere; Bas-relief din STL; Conturul vectorial al reliefului | gaura prin față + lamajul din spate | da |
-| 26 | 24 | Relieful 5: texturi, export STL, biblioteca, laserul 3D | Texturi; Export STL / OBJ; Clipart de relief; Laser (după §8.1) | țesătura, STL-ul închis | da |
-| 27 | 25 | Trasarea din imagine; EPS și AI vechi (după §8.1) | Trasare din imagine (importul avansează) | logoul trasat; un EPS real | da |
-| 28 | 26 | Importul, partea 2: Corel, WMF (+ EMF peste prag), DWG după §8.1 | Import 2D, în forma decisă de tine | fișierele tale reale | da |
+| 26 | 24 | Relieful 5: texturi, export STL, biblioteca, laserul 3D (felii exportate pentru LightBurn / RDWorks) | Texturi; Export STL / OBJ; Clipart de relief; Laser | țesătura, STL-ul închis; o piesă în felii pe laserul tău | da |
+| 27 | 25 | Trasarea din imagine; EPS și AI vechi, cu cititor propriu | Trasare din imagine (importul avansează) | logoul trasat; un EPS real | da |
+| 28 | 26 | Importul, partea 2: Corel, WMF (+ EMF peste prag), DWG ca mesaj | Import 2D (fără DGK / PIC, scoase pe 07.10) | fișierele tale reale | da |
 | 29 | 27 | **Facturarea** (Stripe în mod de test) și partea legală | admin **P3** | regresia dintr-un cont plătit (test) și dintr-unul cu proba expirată | da |
 | 30 | 28 | Cele două interfețe, ghidul de pornire | Două interfețe; §10 Ghid la prima pornire; admin **P4** | un job făcut doar prin asistent | da |
 | 31 | T3 | **Tampon** | — | placa de regresie | da |
@@ -750,6 +754,12 @@ Aceste reguli se aplică la scrierea fișelor etapelor 5–30. Propunerea rămâ
 12. **Contractele grblHAL și FluidNC:** le probezi tu pe controlerul axei A (T0, T1, T2, T4), în etapa 4 sau imediat ce
     ai controlerul.
 13. **Primele 4 etape** sunt scrise la §5.3 și înlocuiesc detaliul din propunere.
+14. **Proba închisă** (decizia de la aprobare):
+    - din etapa 14, poarta e „personal + invitați”;
+    - din săptămâna 15, ~1 felie pe săptămână merge pe răspunsurile și reparațiile pentru atelierele din probă;
+    - la T2 și T3, întrebarea despre lansare revine cu cifrele din probă.
+15. **Laserul:** export vectorial pentru LightBurn / RDWorks, cu straturi pe culori de putere și viteză și feliile pe
+    Z. Placa se taie pe laserul Ruida al owner-ului.
 
 ### 5.6 Momentele-cheie și drumul critic
 
@@ -848,6 +858,8 @@ Mărimile au clase de risc: R1 × 1,3, R2 × 1,6 și R3 × 2,2 la P90.
   etape e ~15 felii.
 - **Potrivirea cu P50** ține doar prin echivalența de la §5.1 (o felie de plan ≈ 1,17 felii de estimator). Prima
   recalibrare o verifică.
+- **Proba închisă** (decisă la aprobare) adaugă ~1 felie pe săptămână din săptămâna 15, adică ~18 felii (~2
+  săptămâni). Mărimea devine ~283 de felii de plan. Recalibrarea măsoară costul real.
 
 ### 6.2 Ce mută rezultatul
 
@@ -926,6 +938,18 @@ sunt deschise dacă ești de acord.
 
 ### 8.1 La aprobare: îmi trebuie răspunsul tău explicit
 
+**Răspunsurile tale (07.10, la aprobare):**
+
+| # | Decizia | Răspunsul |
+|---:|---|---|
+| 1 | A sau D | **înainte de etapa 1**, după ce încerci prototipul; etapa 1 nu pornește fără alegere |
+| 2 | Beta sau v1 complet | **probă închisă după etapa 14** (din săptămâna 15) |
+| 3 | Rândul de import și exportul AI | **toate patru recomandările**: DGK / PIC scoase, DWG doar mesaj, EPS și AI vechi cu cititor propriu, fără export AI |
+| 4 | Fără placă | **găurirea multiplă** pe simulare și pe octeți; **laserul pe laserul tău Ruida (CO2)**, printr-un export vectorial pentru LightBurn / RDWorks |
+| 5 | Posturile neprobate la etapa 26 | implicitul: niciunul nu iese neprobat fără decizia ta de atunci |
+
+Textul întrebărilor, așa cum au fost puse:
+
 1. **Planșele: A sau D?** Recomand **D** (prototipul, scenariile 5 și 7).
    - `BRIEF.md` §9 cere ca planul să se aprobe cu modelul ales, fiindcă schema planșelor se îngheață în etapa 1.
    - Plus trei alegeri ale prototipului, toate cu varianta din prototip ca recomandare:
@@ -985,7 +1009,7 @@ sunt deschise dacă ești de acord.
 
 | Acțiunea | Starea | Termen |
 |---|---|---|
-| Aprobarea planului, cu §8.1 (după ce încerci prototipul) | **deschisă** | acum |
+| Alegerea A / D, după ce încerci prototipul (planul e aprobat pe 07.10, fără ea) | **deschisă** | înainte de etapa 1 |
 | Lista de cumpărături pentru plăci: MDF 18 / 12 / 6; frezele plate Ø6 și Ø3,175, V60, V90, bilă Ø6, un roundover; șubler, șubler de adâncime, lere de rază și de joc, comparator; placa de contact pentru Z | **deschisă** | etapa 1 (placa de contact: etapa 3) |
 | Atelierele: câte unul pentru NcStudio, RichAuto, Syntec, Mach3 / Mach4, cu versiunea controlerului | **deschisă** | căutarea în săptămâna 1, confirmările până la sfârșitul etapei 2 |
 | PITR pe live | **deschisă** | înainte de etapa 3 |

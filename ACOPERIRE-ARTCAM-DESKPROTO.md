@@ -22,8 +22,8 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Vectori, noduri, boolean, offset, aliniere | S | v1 | de făcut | — |
 | Text, text pe cale, fonturi | S | v1 | de făcut | — |
 | Verificarea și repararea vectorilor: deschiși, duplicați, intersecții, bucle, noduri prea apropiate | S | v1 | de făcut | — |
-| Import 2D: DXF, AI / EPS (S+D); SVG (D); PDF vectorial, DWG, WMF, DGK / PIC (S) | S+D | v1 | de făcut | — |
-| Export 2D cu vectori reali: DXF, SVG, PDF (EPS / AI de decis), la scara exactă, cu cercuri, arce și curbe păstrate ca entități și cu straturile păstrate; deschis editabil în alte programe (rând nou, cerut de owner; `BRIEF.md` §16.2) | S | v1 (decis 07.10) | de făcut | — |
+| Import 2D: DXF, AI / EPS (S+D); SVG (D); PDF vectorial, DWG, WMF, DGK / PIC (S) | S+D | v1 (decis 07.10: DXF, SVG, PDF și AI compatibil PDF; EPS și AI ≤ 8 prin cititor propriu limitat, cu refuz explicit; WMF; DWG doar mesaj în v1, nativ de decis în v1.x; DGK / PIC scoase, vezi „Scoase la reverificare”) | de făcut | — |
+| Export 2D cu vectori reali: DXF, SVG, PDF (EPS da, AI nu: decis 07.10), la scara exactă, cu cercuri, arce și curbe păstrate ca entități și cu straturile păstrate; deschis editabil în alte programe (rând nou, cerut de owner; `BRIEF.md` §16.2) | S | v1 (decis 07.10) | de făcut | — |
 | Cote (nici ArtCAM nu le are: doar rigle și măsurare) | peste prag | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Deformare în anvelopă (între două curbe), pentru vectori și reliefuri | S | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Trasare din imagine (bitmap → vectori) | S | v1 (decis 06.10; era v1.x) | de făcut | — |
@@ -49,8 +49,8 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Freze de profil desenate de utilizator; roundover cu offset față de interior | S | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Transformarea traseelor calculate: mutare, rotire, oglindire, copiere, unire | S | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Traseu de textură direct din forma frezei, fără relief | S | v1 (decis 06.10; era v2) | de făcut | — |
-| Tăieri ghilotină (grilă de tăieturi drepte, nesting aliniat); găurire cu mai multe burghie simultan (drillbanks) | S | v1 (decis 06.10; era v2) | de făcut | — |
-| Laser: tăiere / gravare, plus laser 3D în felii pe Z | S+D | v1 (decis 06.10; era v2) | de făcut | — |
+| Tăieri ghilotină (grilă de tăieturi drepte, nesting aliniat); găurire cu mai multe burghie simultan (drillbanks) | S | v1 (decis 06.10; era v2; 07.10: găurirea multiplă se acceptă pe simulare și pe octeții postului, fiindcă owner-ul n-are bancă de burghie) | de făcut | — |
+| Laser: tăiere / gravare, plus laser 3D în felii pe Z | S+D | v1 (decis 06.10; era v2; 07.10: laserul owner-ului are controler Ruida, deci ieșirea e export vectorial pentru LightBurn / RDWorks, cu feliile pe Z ca straturi sau fișiere; G-code de laser pentru GRBL în v1.x) | de făcut | — |
 | Asistent 2D pentru mobilier: CSV + DXF pe straturi → nesting, șabloane, rapoarte, etichete | S | v2 | de făcut | — |
 
 ## C. Modelare de relief 2.5D / 3D
@@ -136,6 +136,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Capabilitate | De ce |
 |---|---|
 | Relief generat cu AI, din text sau din imagine | Nu apare nici în documentația ArtCAM (help-ul ArtCAM 2018, manualul ArtCAM 2012), nici la DeskProto (tabelul de ediții, noutățile pe versiuni). Venea dintr-o sursă care nu mai e referință pentru prag. Cel mai apropiat lucru din ArtCAM e Face Wizard (relief de portret din fotografie de profil, automat, fără AI), pe care l-am adăugat ca rând separat. Dacă owner-ul vrea totuși relief generat cu AI, rândul se poate pune înapoi ca «peste prag». |
+| Import DGK și PIC (formatele Delcam / ArtCAM, din rândul «Import 2D») | Decis de owner pe 07.10. N-au specificație publică (sonda `docs/faza2/sonde/s12-formate`), iar regula „fără reverse engineering” le exclude. În atelierele de lemn practic nu circulă. |
 | Import EMF ca vectori (parte din rândul «Import 2D») | ArtCAM 2018 citește EMF doar ca imagine, la importul de relief; ca vectori citește WMF, nu EMF. DeskProto nu citește EMF. Rândul de import rămâne, fără EMF. |
 | Felii după vector sau desenate manual (variantă din rândul «Model mai înalt decât freza: construit din felii») | Nu apare nici în ArtCAM 2018, nici în DeskProto: Slice Reliefs din ArtCAM taie relieful doar după grosimea feliei sau după numărul de felii, iar DeskProto face feliile din limitele pe Z ale fiecărui «part». Rândul rămâne, fără această variantă. |
 | Formularea veche a rândului «Nișe: inele și bijuterii, imagini latente» (atribuită altui program) | Nu se scoate capabilitatea, ci doar formularea: ArtCAM 2018 are și uneltele pentru inele și pietre, și imaginile latente (documentate în ajutorul lui). Rândul e înlocuit de două rânduri cu dovezi ArtCAM, «Inele și bijuterii» și «Imagini latente în relief», tot în grupa G, unde owner-ul decide etapa sau le scoate explicit. |
@@ -143,8 +144,9 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 ## Ce înseamnă pentru arhitectură, din prima zi
 - **Modelul de date** are de la început, pe lângă vectori, **reliefuri** (hărți de înălțime), **modele 3D** (mesh-uri)
   și **montaje de prelucrare** (fața, axa, originea, știfturile).
-- **Nucleul** știe operații pe hărți de înălțime, calculate pe GPU (WebGL / WebGPU), și transformă mesh-urile în hărți
-  de înălțime și invers.
+- **Nucleul** știe operații pe hărți de înălțime și transformă mesh-urile în hărți de înălțime și invers. *(Planul
+  aprobat pe 07.10, decizia T11: în v1 calculul rulează pe procesor, în workere; GPU-ul doar desenează. Calculul pe GPU
+  e candidat în v1.x.)*
 - **Motorul CAM** are strategii 2D, 2.5D și 3D, pe 3 axe, apoi pe axa a 4-a. Lucrează cu freze cu geometrie reală.
 - **Simularea** e pe hartă de înălțime pentru 3 axe și pe cilindru pentru rotativ, cu montaje multiple.
 - **Post-procesoarele** suportă axele A / B și indexarea.
