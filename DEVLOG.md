@@ -290,3 +290,18 @@ ceva din codul vechi se poate integra eficient si bine in codul nou”. Pasul 0 
 - `PLAN.md`: §5.3 (etapele 2 și 3) și §8.3, cu trimiteri la `docs/PORTARE.md`.
 
 **Următorul pas:** ADR-urile din T1–T23, în `docs/adr/`.
+
+## 2026-10-07 — Pasul 0: ADR-urile din T1–T23 (Model: Claude Opus 5.5)
+
+**Prompt:** pasul 0 din `PLAN.md` §5.2 și §9: „ADR-urile, din tabelul de la §3.5”.
+
+**Făcut:**
+- `docs/adr/`: ADR 0001–0023 (unul pe decizie, T1–T23) și indexul `README.md`, cu regulile:
+  - un ADR acceptat nu se editează;
+  - o decizie se schimbă printr-un ADR nou, care îl înlocuiește pe cel vechi;
+  - numerotarea continuă de la 0024.
+- Fiecare ADR are aceleași secțiuni: problema, decizia, dovada cu sursa, ce am respins, ce impune, când se redeschide.
+  Conținutul vine doar din `PLAN.md` (§3.1–§3.6, §4.1, §5.3) și din rapoartele sondelor; nimic nou decis.
+- `PLAN.md` §3.5 trimite la ADR-uri. `CLAUDE.md`: pasul 0 încheiat, iar la surse apar ADR-urile și `docs/PORTARE.md`.
+
+**Următorul pas:** etapa 1, după alegerea A / D. Până atunci, nimic nu se scrie în `src/`.

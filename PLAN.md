@@ -303,7 +303,8 @@ Strat de interacțiune:   mânere, selecție, previzualizarea uneltei (Canvas2D 
 ### 3.5 Deciziile tehnice
 
 Fiecare decizie are dovada ei și condiția în care se redeschide. Când o verificare a contrazis sonda, a câștigat
-verificarea.
+verificarea. Fiecare rând are ADR-ul lui în `docs/adr/` (0001 = T1, …, 0023 = T23). O decizie se schimbă doar printr-un
+ADR nou, iar rândul de aici trimite la el.
 
 | # | Decizia | Dovada | Se redeschide dacă |
 |---:|---|---|---|

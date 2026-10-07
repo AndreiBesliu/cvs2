@@ -19,11 +19,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
     (§5.1).
   - Dovezile sunt în `docs/faza2/`: sonde, verificări, propuneri (doar istoric), estimare, critici.
   - Deciziile de la aprobare sunt în `PLAN.md` §8.1 și în `BRIEF.md` (§4 proba închisă, §12 laserul).
-- **Urmează pasul 0** (`PLAN.md` §5.2), fără cod de produs:
-  - `docs/PORTARE.md` (decizia owner-ului din 06.10), întâi pentru candidații etapelor 1–3;
-  - ADR-urile, din T1–T23.
-
-  Apoi **etapa 1** (`PLAN.md` §5.3), după alegerea A / D.
+- **Pasul 0: încheiat pe 07.10.2026** (`PLAN.md` §5.2), fără cod de produs:
+  - `docs/PORTARE.md`: verdictele pentru candidații etapelor 1–3. Se aplică la pornirea etapei 1, dacă owner-ul nu
+    obiectează; restul candidaților se judecă înaintea etapei lor;
+  - `docs/adr/`: ADR 0001–0023, câte unul pe decizie (T1–T23). O decizie se schimbă doar printr-un ADR nou.
+- **Urmează etapa 1** (`PLAN.md` §5.3), după alegerea A / D (`BRIEF.md` §9). Fișa ei se scrie în
+  `docs/etape/etapa-01.md`.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa
@@ -41,6 +42,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 ## Surse
 
 - Prompt-ul de pornire, exact: `docs/PROMPT-START.md`.
+- Deciziile de arhitectură: `docs/adr/`, citite înainte de a redeschide orice decizie. Portarea din codul vechi:
+  `docs/PORTARE.md`.
 - Planul: `C:\Users\besli\Desktop\MyWork\Apps\PlanNou-CNC\Plan-CNC-Studio-2.pdf`, aceleași date structurat în
   `CERCETARE-DETALIATA.json` (secțiunile `old`, `spec`, `ref`, `arch`). Se citesc de acolo, nu se
   copiază aici. LECTII.md le verifică, nu le ia de bune.
