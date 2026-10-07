@@ -305,3 +305,28 @@ ceva din codul vechi se poate integra eficient si bine in codul nou”. Pasul 0 
 - `PLAN.md` §3.5 trimite la ADR-uri. `CLAUDE.md`: pasul 0 încheiat, iar la surse apar ADR-urile și `docs/PORTARE.md`.
 
 **Următorul pas:** etapa 1, după alegerea A / D. Până atunci, nimic nu se scrie în `src/`.
+
+## 2026-10-07 — Pasul 0: verificarea lui PORTARE.md și a ADR-urilor (Model: Claude Opus 5.5)
+
+**Prompt:** „cum verific?”
+
+**Făcut:**
+- Codul vechi a rulat pe o copie a lui `d850c7b` (`git archive` + joncțiune spre `node_modules`), cu runner-ul lui. Repo-ul
+  vechi a rămas neatins.
+  - Suitele vechi: urechile 88 / 88, intrările 77 / 77 (594 de variante), bariera 23 + 20, reluarea 76, registrul probei
+    100. Toate verzi.
+  - Sonda pentru supracursă confirmă defectul vechi: cu urechi de 2 mm, puntea iese de 1,7 mm la supracursa implicită
+    de 0,3 mm și de 1,5 mm la 0,5 mm.
+- **Corectat în `docs/PORTARE.md`**, după măsurători:
+  - reluarea are 76 de verificări, nu 51 (cifra din Faza 0 era mai veche);
+  - bariera are 43, nu 42;
+  - din textele GRBL, doar 3 din 46 sunt aproape copiate din CSV-ul GPL (err1, err20, err22). Se rescriu doar ele;
+    restul trec. Verdictul anterior, „textele nu trec”, era prea larg;
+  - partea a 7-a a testului registrului citește textul surselor, deci nu trece (`PLAN.md` §3.3).
+- `docs/PORTARE.md` §6, „Cum am verificat”, iar uneltele sunt în `docs/pasul0/verificare/`:
+  - `verifica_documente.py`: trimiterile la codul vechi, numerele din ADR-uri, legăturile. Iese 0 probleme. Controlul
+    negativ, cu 4 greșeli puse intenționat, le prinde pe toate;
+  - `compara_grbl.py`: textele GRBL. CSV-urile GPL nu intră în repo;
+  - `test-zz-sonda-supracursa.ts`: sonda, doar pentru copia veche.
+
+**Următorul pas:** etapa 1, după alegerea A / D.

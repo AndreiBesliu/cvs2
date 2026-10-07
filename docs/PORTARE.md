@@ -62,7 +62,7 @@ Ce știau ei despre controlere a ajuns deja în contractele sondei s8 și în `L
 | Bugetul de toleranță | 2 | **rescris** | un singur loc pentru cifre, refuzul lui 0, proba pe rezultat | drumurile gândite pentru Clipper și aplatizare |
 | Fluxul GRBL și bariera `M6` / `M0` | 3 | **rescris, cu vechiul ca martor** | 11 reguli de protocol; scenariile testului, ca transcrieri; portul care își ține singur socoteala | clasa cu steaguri; numărarea în unități UTF-16; preambulul scris de sender |
 | Ajutoarele GRBL (status, răspunsuri, override, jog, zero, `M6`) | 3 | **adaptat** | parsarea și comenzile, trecute pe N axe și pe WCS explicit | `sanitizeProgram` |
-| Dicționarul de coduri GRBL | 3 | **adaptat** | numerele, remediile, gravitatea confirmării | textele: parafrazează documentația GRBL (GPL-3.0) |
+| Dicționarul de coduri GRBL | 3 | **adaptat** | numerele, remediile, gravitatea confirmării; 43 din cele 46 de texte | 3 texte aproape copiate din documentația GRBL (GPL-3.0) |
 | Registrul probei | 14 (cu o grijă la comutarea din 3) | **portat aproape neschimbat** | tot modulul, cu hash-ul identic bit cu bit | comentariul de antet, care contrazice codul |
 
 ## 3. Candidații, pe rând
@@ -101,8 +101,11 @@ Ce știau ei despre controlere a ajuns deja în contractele sondei s8 și în `L
   - un flanc pe arc devine elice (G2 / G3 cu Z);
   - cu rampa se compune ca în vechi: Z = cel mai puțin adânc dintre cele două.
 - **Supracursa:** în vechi, vârful urechii se măsura de la adâncimea totală. La o tăiere prin material cu supracursă,
-  puntea ieșea mai subțire cu toată supracursa. Aici se măsoară de la fundul materialului (placa 2 cere grosimea
-  **2,0** ±0,2).
+  puntea ieșea mai subțire cu toată supracursa.
+  - Măsurat pe 07.10, pe o copie a codului vechi (§6): placa de 18 mm, urechi cerute de 2 mm.
+  - Cu supracursa implicită de 0,3 mm, puntea iese de **1,7 mm**. Cu 0,5 mm, iese de **1,5 mm**.
+  - Aici se măsoară de la fundul materialului (placa 2 cere grosimea **2,0** ±0,2).
+  - Până la aplicația nouă, în cea veche: înălțimea urechii = cât vrei + supracursa.
 
 **Costul:** profilul trece în câteva minute. Rescris, ar trebui refăcute deciziile pe care hârtia le-a probat deja.
 Emitentul trebuia oricum scris din nou, pe IR.
@@ -232,8 +235,10 @@ a etapei 10 (conversia în arce).
 - O piesă reală, tăiată pe mașina ta.
 - Din 23.09, portul fals își ține singur socoteala octeților. Înainte, plasa ferestrei era oarbă prin construcție:
   număra cu aceeași sumă pe care o otrăvea.
-- Bariera: 42 de verificări pe programul real din export și 9 / 9 otrăvuri prinse, dar nimic pe fier.
-- Reluarea: 51 de verificări, însă oracolul de echivalență era chiar `applyLine`, adică funcția testată.
+- Bariera: 43 de verificări pe programul real din export (23 în `test-machine.ts` și 20 în
+  `test-machine-bariera-store.ts`) și 9 / 9 otrăvuri prinse, dar nimic pe fier.
+- Reluarea: 76 de verificări în `test-machine-resume.ts`, însă simulatorul care le judecă e chiar `applyLine`, adică
+  funcția testată.
 
 **Potrivirea:** slabă pentru clasă, bună pentru reguli.
 - Clasa ține starea în steaguri (`streaming`, `paused`, `bariera`, `lostResumePoint`), iar `streaming` a avut două
@@ -314,8 +319,11 @@ Li se adaugă cele 100 000 de linii fără pierderi și linia de 80 de caractere
   - gravitatea confirmării.
 
   Toate trei sunt ale noastre.
-- **Textele nu trec.** Cel puțin unul (`err1`) parafrazează aproape cuvânt cu cuvânt CSV-ul din `gnea/grbl`, care e
-  GPL-3.0. Se scriu din nou, în cuvintele noastre, în en și ro.
+- **Textele trec, cu excepția a trei.** Le-am comparat pe toate 46 cu CSV-ul din `gnea/grbl`, care e GPL-3.0 (§6):
+  - `err1`, `err20` și `err22` sunt aproape copiate (asemănare 0,96, 0,89 și 0,75), deci se scriu din nou;
+  - restul sunt în cuvintele noastre: 35 din 46 au asemănarea sub 0,5.
+
+  Traducerea în ro le urmează.
 - Contractele grblHAL și FluidNC își aduc propriile coduri.
 
 ### 3.6 Registrul probei (etapa 14, cu o grijă la comutarea din etapa 3)
@@ -324,8 +332,12 @@ Li se adaugă cele 100 000 de linii fără pierderi și linia de 80 de caractere
 - `functions/trialLedger.js` (589 de linii: funcții pure, plus operațiile cu baza injectată);
 - testul: `scripts/test-trial-ledger.ts` (728 de linii, pe un Firestore în memorie).
 
-**Dovada veche: bună pe modulul pur.** Calea reală cerea App Check, deci n-a putut fi exersată pe instanța de test.
-Aici, tokenul de debug există pe test (etapa 3), așa că se poate.
+**Dovada veche: bună pe modulul pur.**
+- 100 de verificări, verzi pe 07.10 (§6).
+- Calea reală cerea App Check, deci n-a putut fi exersată pe instanța de test. Aici, tokenul de debug există pe test
+  (etapa 3), așa că se poate.
+- Partea a 7-a a testului citește textul surselor (`functions/index.js`, `firestore.rules`). Ea nu trece:
+  `PLAN.md` §3.3 interzice testele care citesc sursa.
 
 **De ce aproape neschimbat:** pe live, colecția `trialLedger` ține deja chei calculate cu `normalizeEmail` și
 `TRIAL_LEDGER_KEY`. HMAC-ul nu se poate inversa, deci intrările vechi nu se pot migra. Ele rămân valabile doar dacă noul
@@ -403,3 +415,55 @@ DGK și PIC, scoase din prag pe 07.10. **Recomandarea mea, ca implicit:**
   - textele codurilor GRBL se scriu din nou (§3.5);
   - comutarea primește cele patru puncte ale registrului probei (§3.6).
 - **Etapa 1** pornește fără nimic portat.
+
+## 6. Cum am verificat (07.10.2026)
+
+Nimic de mai sus nu se sprijină doar pe citit. Uneltele sunt în `docs/pasul0/verificare/` și se pot rula din nou
+(`CITESTE.md` de acolo).
+
+**Codul vechi, rulat.**
+- Copia: `d850c7b`, scoasă cu `git archive` într-un dosar temporar, cu `node_modules` legat printr-o joncțiune.
+- Repo-ul vechi a rămas neatins (`git status` curat).
+- Suitele au rulat cu runner-ul lui (`node scripts/run-tests.mjs <filtre>`):
+
+| Suita veche | Rezultatul |
+|---|---|
+| `test-urechi-profil.ts` | 88 de verificări, 0 picate |
+| `test-lead-material-pastrat.ts` | 77 de verificări, 0 picate, pe 594 de variante |
+| `test-machine.ts` | verde; bariera are 23 de verificări |
+| `test-machine-bariera-store.ts` | 20 de verificări, 0 picate |
+| `test-machine-resume.ts` | 76 de verificări, verzi |
+| `test-trial-ledger.ts` | 100 de verificări, 0 picate |
+
+**Sonda pentru supracursă** (`test-zz-sonda-supracursa.ts`, rulată doar în copie): un dreptunghi de 100 × 60 tăiat prin
+placa de 18 mm, cu urechi cerute de 2 mm.
+
+| Supracursa | Palierul urechii | Puntea rămasă |
+|---:|---:|---:|
+| 0 | Z−16,000 | 2,000 mm |
+| 0,3 (implicit) | Z−16,300 | 1,700 mm |
+| 0,5 | Z−16,500 | 1,500 mm |
+
+**Textele GRBL** (`compara_grbl.py`): cele 46 de texte vechi, comparate cu CSV-urile oficiale din `gnea/grbl`:
+
+| Asemănarea cu textul GRBL | Texte |
+|---|---:|
+| ≥ 0,9 | 1 |
+| ≥ 0,75 | 3 |
+| ≥ 0,5 | 11 |
+
+**Documentele** (`verifica_documente.py`):
+- fiecare trimitere `fișier:linii` la codul vechi există la `d850c7b` și conține funcțiile numite;
+- fiecare număr de linii declarat e cel real;
+- fiecare număr din ADR-uri apare în sursele lor (`PLAN.md`, `LECTII.md`, `BRIEF.md`, rapoartele Fazei 2);
+- legăturile relative duc la fișiere care există.
+
+Rezultatul: 0 probleme.
+
+**Controlul negativ.** Am rulat aceeași unealtă pe o copie stricată intenționat, cu patru greșeli:
+- o trimitere mutată;
+- un număr de linii greșit;
+- un număr inventat într-un ADR;
+- o legătură ruptă.
+
+Le-a prins pe toate patru.
