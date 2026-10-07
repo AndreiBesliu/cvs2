@@ -583,10 +583,12 @@ Confirmă: matricea originii, sensul arcelor, oracolul G-code. **Live:** nu.
 1. **Gărzile cavalier:** curățarea intrării și validarea structurală a ieșirii, cu corpusul curat din s1 / s1-V în CI.
 2. **Regiunea păstrată, cu oracolul întâi** (invarianta 2); profilul pe orice contur (exterior, interior, pe linie,
    deschis pe o parte); sensul de tăiere.
-3. **Urechile** ca modificator Z(s), portate cu cele 88 de verificări pe hârtie.
+3. **Urechile** ca modificator Z(s), portate cu cele 88 de verificări pe hârtie. Vârful urechii se măsoară de la fundul
+   materialului, nu de la adâncimea cu supracursă (`docs/PORTARE.md` §3.1).
 4. **Intrările și ieșirile** alese față de regiunea păstrată, plus rampa (portate).
 5. **Dog-bone și T-bone.**
-6. **Importul SVG**, cu fațada PathKit minimă (reuniunea + R3) pentru normalizarea `nonzero` de la ușă:
+6. **Importul SVG**, cu biarcele (T6) și bugetul de toleranță (`docs/PORTARE.md` §3.3) și cu fațada PathKit minimă
+   (reuniunea + R3) pentru normalizarea `nonzero` de la ușă:
    - DOMParser inert;
    - unități, viewBox, transformări;
    - plafonul de mărime.
@@ -635,7 +637,9 @@ nouă, fără alt program, pachetul GRBL pe mașina ta, iar aplicația ajunge pe
    - pe test se instalează întâi build-ul vechi, apoi cel nou;
    - se verifică preluarea de către service worker, stocarea veche neatinsă și revenirea din istoricul de hosting;
    - pe live: PITR activ, exportul Firestore, lista funcțiilor vechi de șters (arătată ție), lista extensiilor înainte
-     și după.
+     și după;
+   - registrul probei: secretul `TRIAL_LEDGER_KEY` și colecția `trialLedger` rămân; cel mai vechi `expiresAt` se
+     citește de pe live, ca termen pentru curățare (`docs/PORTARE.md` §3.6).
 9. **Pachetul T0–T7 pentru GRBL**, generat de post din IR; fișa plăcii 3; **prima recalibrare**.
 
 **Placa 3** (fișierele T din s8 Anexa B, pe GRBL 1.1h, prin senderul nou):
@@ -1015,7 +1019,8 @@ Textul întrebărilor, așa cum au fost puse:
 | PITR pe live | **deschisă** | înainte de etapa 3 |
 | Pașii lungi deja în curs: entitatea juridică + adresa de firmă, DNS-ul pentru e-mail, CAEN | **în curs**, pornite în săptămânile 1–2 | DNS: etapa 15; entitatea și Termenii: etapa 25; CAEN: extern |
 | Confirmi exportul Firestore pe test | se deschide la etapa 1 | etapa 1 |
-| `docs/PORTARE.md`: verdictele pentru candidații etapelor 1–3 | se deschide la pasul 0 | etapa 1 |
+| `docs/PORTARE.md`: verdictele pentru candidații etapelor 1–3 | **scris pe 07.10**; se aplică la pornirea etapei 1, dacă nu obiectezi | etapa 1 |
+| Formatul `.tdb`: biblioteca ta trece o dată, din aplicația veche, prin CSV (`docs/PORTARE.md` §4) | se deschide la etapa 4 | etapa 5 |
 | Fișierele tale reale: 30–50 de fișiere primite în ultimele luni, mai ales din CorelDRAW; doar local, ignorate de git | se deschide în săptămâna 2 | etapa 9 (EPS: etapa 25) |
 | Pachetul de export deschis în programele tale (`docs/faza2/sonde/s2-export-import/pachet-owner/CITESTE.md`) | se deschide în săptămâna 2 | etapa 9 |
 | Copia locală a aplicației vechi, verificată pe calculatorul de la mașină (decizia 8) | se deschide în săptămâna 2 | etapa 3 |

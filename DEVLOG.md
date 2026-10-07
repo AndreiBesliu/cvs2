@@ -268,3 +268,25 @@ de ordine și de text, niciuna de arhitectură.
 
 **Următorul pas:** pasul 0. Întâi `docs/PORTARE.md` pentru candidații etapelor 1–3, apoi ADR-urile. Etapa 1 pornește
 după alegerea A / D.
+
+## 2026-10-07 — Pasul 0: `docs/PORTARE.md` pentru etapele 1–3 (Model: Claude Opus 5.5)
+
+**Prompt:** cererea owner-ului din 06.10, exact: „vreau ca dupa interviu, si dupa ce avem planul, sa imi spui atunci daca
+ceva din codul vechi se poate integra eficient si bine in codul nou”. Pasul 0 din `PLAN.md` §5.2.
+
+**Făcut:**
+- `docs/PORTARE.md`: verdictele pentru candidații etapelor 1–3, citiți în codul vechi la `d850c7b`, fără ca el să fie
+  atins. Pentru restul candidaților din `LECTII.md` §3.2, doar ce se vede de acum.
+  - **adaptat:** urechile (profilul), alegerea intrărilor și rampa, ajutoarele GRBL, dicționarul de coduri;
+  - **rescris, cu vechiul ca martor:** biarcele, bugetul de toleranță, fluxul GRBL cu bariera;
+  - **portat aproape neschimbat:** registrul probei, fiindcă hash-ul trebuie să rămână identic bit cu bit.
+- Găsite pe drum:
+  - biarcele și bugetul lipseau din lista etapei 2, deși importul SVG le cere;
+  - în vechi, puntea urechii ieșea subțiată de supracursă; aici se măsoară de la fundul materialului;
+  - textele codurilor GRBL din vechi parafrazează documentația GRBL (GPL-3.0), deci se scriu din nou;
+  - la comutarea din etapa 3, secretul și colecția registrului probei trebuie păstrate;
+  - cititorul `.tdb` vine din reverse engineering, ca DGK / PIC. Implicit: lăsat, iar biblioteca owner-ului trece o
+    singură dată, prin CSV.
+- `PLAN.md`: §5.3 (etapele 2 și 3) și §8.3, cu trimiteri la `docs/PORTARE.md`.
+
+**Următorul pas:** ADR-urile din T1–T23, în `docs/adr/`.
