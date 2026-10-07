@@ -550,3 +550,28 @@ gazdă, CSP.
 **Următorul pas:** felia 1.7 (documentul v0) cere alegerea A / D. Fără ea merg cu ce nu depinde de arbore:
 - instanța de test (canalul de previzualizare);
 - fișa plăcii 1, cu programele A și B.
+
+## 2026-10-07 — Etapa 1, felia 1.9a: fișa plăcii 1 și programele A / B (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua si testez putin mai incolo” (continuare). **Started:** 15:43. **Completed:** 15:46.
+**Clasa:** R1. **Estimarea:** ½ felie. **Treceri:** 1.
+
+**Făcut:**
+- **`test/placi/placa-01/genereaza.ts`**: insula 100 × 60 (profil exterior, 3 mm) și gaura Ø30 în centrul ei (profil
+  interior, 8 mm în două treceri de 4), pe MDF 18 cu freza Ø6.
+  - Fișierul A are zero XY stânga-jos, fișierul B dreapta-sus. Insula stă la 20 mm de colțul de origine.
+  - Fișierele de aur sunt `placa-01-A.nc` și `placa-01-B.nc`, câte 34 de linii, fiecare cu SHA-256.
+- **`docs/etape/placa-01.md`**: fișa pentru owner.
+  - ce îi trebuie: MDF de cel puțin 300 × 200 și freza Ø6;
+  - cum fixează zero-ul și cum verifică hash-ul în PowerShell;
+  - regimul;
+  - cele 9 cote, cu toleranțele lor.
+- **`test/unit/placa01.test.ts`**:
+  - postul de acum produce exact octeții de aur;
+  - fișa poartă hash-urile;
+  - ambele fișiere trec poarta;
+  - cotele de mașină sunt pe hârtie: (82, 50) la A și (−58, −50) la B.
+- 79 de teste.
+
+**Restul feliei 1.9:** hosting-ul pe instanța de test așteaptă exportul Firestore confirmat de owner. Până atunci se
+folosește un canal de previzualizare.
