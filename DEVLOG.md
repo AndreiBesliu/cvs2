@@ -330,3 +330,25 @@ ceva din codul vechi se poate integra eficient si bine in codul nou”. Pasul 0 
   - `test-zz-sonda-supracursa.ts`: sonda, doar pentru copia veche.
 
 **Următorul pas:** etapa 1, după alegerea A / D.
+
+## 2026-10-07 — Prototipul A / D pe instanța de test (Model: Claude Opus 5.5)
+
+**Prompt:** „Aveam impresia ca o sa testam pe instanta de test din firebase. Aici:
+https://cncvectorstudio-test.firebaseapp.com/”
+
+**Făcut:**
+- Adresa principală de test servește încă aplicația veche (publicată pe 25.09). Planul o înlocuiește în etapa 1, după
+  exportul Firestore confirmat de owner. Ca s-o las neatinsă, prototipul a mers pe un **canal de previzualizare** al
+  proiectului `cncvectorstudio-test`.
+  - Comanda: `firebase hosting:channel:deploy planse-ad --project test --expires 30d`, rulată dintr-un dosar temporar
+    care conține doar prototipul (`docs/faza2/prototip-planse/index.html`, identic, cu același SHA-256);
+  - antetele: `no-cache` și `noindex`.
+- Adresa: <https://cncvectorstudio-test--planse-ad-m9ycx3rc.web.app>. Expiră pe 06.11.2026.
+- Verificat:
+  - adresa principală are același Etag și aceeași dată ca înainte, deci aplicația veche e neatinsă;
+  - în browser, pagina se încarcă fără erori în consolă, iar comutarea pe D și scenariul 4 merg;
+  - o notiță rămâne după reîncărcare (apoi am șters-o).
+- `PLAN.md` §8.3: adresa trece în rândul A / D. `CLAUDE.md`: regula „owner-ul testează pe instanța de test, după un
+  link”.
+
+**Următorul pas:** alegerea A / D a owner-ului, apoi etapa 1.

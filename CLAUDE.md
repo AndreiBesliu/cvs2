@@ -62,6 +62,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   toleranță. Mutații (otrăvuri) țintite, pe modulele critice, în fundal. Restul: teste normale + bancul vizual.
 - **Felii care se termină cu ceva ce owner-ul poate încerca**, fiecare cu commit. La final: ce merge, cum
   testează, ce a rămas deschis.
+- **Owner-ul testează pe instanța de test, după un link, nu din fișiere locale** (cererea lui din 07.10).
+  - Proiectul Firebase e `cncvectorstudio-test`, cu adresa principală <https://cncvectorstudio-test.firebaseapp.com/>.
+  - De la etapa 1, fiecare felie se publică acolo, după exportul Firestore confirmat de owner (`PLAN.md` §5.3).
+  - Până atunci, adresa principală servește aplicația veche. Ce trebuie încercat mai devreme (de exemplu prototipul
+    A / D) merge pe un canal de previzualizare (`firebase hosting:channel:deploy <canal> --project test`), care nu
+    atinge adresa principală.
 - **Workflow-uri multi-agent doar cu acordul owner-ului**, cu durata și costul în tokeni spuse înainte.
 - **Estimări din durate măsurate.** O felie care depășește estimarea cu peste 50 % → stop și întreabă.
 - **Pauze curate.** La „pauză”: stop imediat, totul comis (branch WIP dacă nu e gata).

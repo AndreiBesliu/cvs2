@@ -1014,7 +1014,7 @@ Textul întrebărilor, așa cum au fost puse:
 
 | Acțiunea | Starea | Termen |
 |---|---|---|
-| Alegerea A / D, după ce încerci prototipul (planul e aprobat pe 07.10, fără ea) | **deschisă** | înainte de etapa 1 |
+| Alegerea A / D, după ce încerci prototipul (planul e aprobat pe 07.10, fără ea). Prototipul e pe instanța de test: <https://cncvectorstudio-test--planse-ad-m9ycx3rc.web.app> (canal de previzualizare, expiră pe 06.11.2026) | **deschisă** | înainte de etapa 1 |
 | Lista de cumpărături pentru plăci: MDF 18 / 12 / 6; frezele plate Ø6 și Ø3,175, V60, V90, bilă Ø6, un roundover; șubler, șubler de adâncime, lere de rază și de joc, comparator; placa de contact pentru Z | **deschisă** | etapa 1 (placa de contact: etapa 3) |
 | Atelierele: câte unul pentru NcStudio, RichAuto, Syntec, Mach3 / Mach4, cu versiunea controlerului | **deschisă** | căutarea în săptămâna 1, confirmările până la sfârșitul etapei 2 |
 | PITR pe live | **deschisă** | înainte de etapa 3 |
