@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Depasire, IesireFoaie, ParametriExport } from './actiuniExportTipuri.ts';
 import { useLimba } from './useLimba.ts';
@@ -26,9 +26,13 @@ const LATURI_FOAIE: ReadonlyArray<readonly [keyof Depasire, CheieSimpla]> = [
   ['stanga', 'export.iesire.stanga'], ['dreapta', 'export.iesire.dreapta'], ['jos', 'export.iesire.jos'], ['sus', 'export.iesire.sus'],
 ];
 
-/** Laturile pe care freza iese din foaie, cu cât, în cuvinte; cu 3 zecimale, ca în antetul programului. */
-function laturi(d: Depasire): string {
-  return LATURI_FOAIE.filter(([k]) => d[k] > 0).map(([k, cheie]) => t(cheie, { mm: d[k].toFixed(3) })).join(', ');
+/**
+ * Laturile pe care freza iese din foaie, cu cât, în cuvinte. Cu 3 zecimale, ca în antet, dar scrise după limbă: în română
+ * punctul ar citi „26.000 mm” ca douăzeci și șase de mii.
+ */
+function laturi(d: Depasire, limba: string): string {
+  const f = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  return LATURI_FOAIE.filter(([k]) => d[k] > 0).map(([k, cheie]) => t(cheie, { mm: f.format(d[k]) })).join(', ');
 }
 
 const COLTURI = ['stanga-jos', 'dreapta-jos', 'dreapta-sus', 'stanga-sus'] as const;
@@ -45,20 +49,35 @@ const pozitiv = (x: number): boolean => Number.isFinite(x) && x > 0;
 
 /** Exportul G-code v0: colțul de origine, Z0, freza și profilul fiecărui element. Parametrii trăiesc doar în dialog. */
 export function DialogExport({ elemente, onExporta, onInchide, onReseteaza, stare }: Props) {
-  useLimba();
+  const limba = useLimba();
   const [origine, setOrigine] = useState<(typeof COLTURI)[number]>('stanga-jos');
   const [z0, setZ0] = useState<'sus' | 'jos'>('sus');
   const [diametru, setDiametru] = useState(6);
   const [param, setParam] = useState<Record<string, ParametriElement>>(() => Object.fromEntries(elemente.map((e) => [e.id, e.implicit])));
-  const [confirmat, setConfirmat] = useState(false);
   const cere = stare && !stare.ok ? stare.cereConfirmare : undefined;
+  /**
+   * Ieșirea bifată: chiar obiectul primit de la export, nu un „da” general. Orice cerere nouă (alt traseu, alți parametri,
+   * sau doar un export repetat) e alt obiect, deci vine nebifată: fiecare program care taie în afara foii are bifa lui.
+   * Documentul nu se poate schimba sub dialog: aplicația e inertă, iar scrierile în document sunt oprite (`App.tsx`).
+   */
+  const [confirmata, setConfirmata] = useState<IesireFoaie | null>(null);
+  const bifat = cere !== undefined && confirmata === cere;
+  const cutie = useRef<HTMLDivElement>(null);
+  const cerereVizibila = useRef<HTMLDivElement>(null);
+  // La deschidere, focusul intră în dialog (butonul care l-a deschis rămâne sub el, inert).
+  useEffect(() => { cutie.current?.focus(); }, []);
+  // Când apare cererea, focusul trece pe textul ei, nu pe bifă: butonul Exportă devine inactiv și focusul ar cădea pe
+  // pagină, iar pe bifă un al doilea Space ar bifa-o fără ca omul s-o fi citit. Bifa e la un Tab distanță.
+  useEffect(() => { if (cere) cerereVizibila.current?.focus(); }, [cere]);
   const valid = pozitiv(diametru) && elemente.every((e) => {
     const p = param[e.id];
     return p !== undefined && pozitiv(p.adancime) && pozitiv(p.pas);
   });
-  /** Orice parametru schimbat ia înapoi confirmarea: ieșirea confirmată era a parametrilor vechi. */
+  /**
+   * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
+   * vine oricum nebifată.
+   */
   const schimbat = (): void => {
-    setConfirmat(false);
     onReseteaza();
   };
   const schimba = (id: string, p: Partial<ParametriElement>): void => {
@@ -71,7 +90,7 @@ export function DialogExport({ elemente, onExporta, onInchide, onReseteaza, star
 
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="export-titlu">
-      <div className="dialog-cutie">
+      <div className="dialog-cutie" ref={cutie} tabIndex={-1}>
         <h2 id="export-titlu">{t('export.titlu')}</h2>
         <div className="campuri">
           <label>
@@ -117,22 +136,24 @@ export function DialogExport({ elemente, onExporta, onInchide, onReseteaza, star
         </table>
         <p className="nota">{t('export.regim')}</p>
         {cere && (
-          <div className="confirmare-iesire" role="alert" data-testid="iesire-foaie">
-            <p><strong>{t('export.iesire.titlu')}</strong> {laturi(cere.depasire)}.</p>
-            <p>{t('export.iesire.unde', { etichete: cere.etichete.join('; ') })}</p>
+          <div className="confirmare-iesire" data-testid="iesire-foaie" ref={cerereVizibila} tabIndex={-1}>
+            <div role="alert">
+              <p><strong>{t('export.iesire.titlu')}</strong> {laturi(cere.depasire, limba)}.</p>
+              <p>{t('export.iesire.unde', { etichete: cere.elemente.map((id) => elemente.find((e) => e.id === id)?.descriere ?? id).join('; ') })}</p>
+            </div>
             <label>
-              <input type="checkbox" checked={confirmat} data-camp="confirma-iesire"
-                onChange={(e) => { setConfirmat(e.target.checked); }} />
+              <input type="checkbox" checked={bifat} data-camp="confirma-iesire"
+                onChange={(e) => { setConfirmata(e.target.checked ? cere : null); }} />
               {t('export.iesire.confirma')}
             </label>
           </div>
         )}
         <div className="butoane">
-          <button type="button" disabled={!valid || (cere !== undefined && !confirmat)} data-buton="exporta"
+          <button type="button" disabled={!valid || (cere !== undefined && !bifat)} data-buton="exporta"
             onClick={() => {
               onExporta({
                 origine, z0, diametruScula: diametru, elemente: new Map(Object.entries(param)),
-                ...(cere && confirmat ? { confirmareIesire: cere.depasire } : {}),
+                ...(cere && bifat ? { confirmareIesire: cere } : {}),
               });
             }}>
             {t('export.exporta')}

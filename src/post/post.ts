@@ -138,7 +138,10 @@ function scrie(program: Program, montaj: Montaj, k: Contract, optiuni: OptiuniPo
     const trig = (mv.sens === 'trigonometric') !== oglindit;
     const raza = Math.hypot(s.x - c.x, s.y - c.y);
     const u0 = Math.atan2(s.y - c.y, s.x - c.x);
-    const baleiaj = baleiajArc(s, e, c, trig);
+    // Baleiajul se calculează o dată, pe coordonatele DOCUMENTULUI, ca la CAM (`src/cam/iesire.ts`): pe coordonatele
+    // mașinii, alte numere ar putea trece pragul cercului întreg altfel. Oglindirea îi schimbă doar semnul.
+    const baleiajDoc = baleiajArc(startDoc, capatDoc, mv.centru, mv.sens === 'trigonometric');
+    const baleiaj = oglindit ? -baleiajDoc : baleiajDoc;
     const bucati = Math.max(1, Math.ceil(Math.abs(baleiaj) / k.arc.baleiajMaxim - 1e-9));
     const zStart = doc.z;
     for (let i = 1; i <= bucati; i++) {

@@ -101,8 +101,9 @@ export type Depasire = { readonly stanga: number; readonly dreapta: number; read
 /** Sub o miime de micron, o depășire e zgomot numeric (offsetul unui contur lipit de margine), nu o ieșire. */
 export const TOLERANTA_DEPASIRE = 1e-6;
 
-export function depasire(c: Cutie, latime: number, inaltime: number): Depasire {
-  const d = (v: number): number => (v > TOLERANTA_DEPASIRE ? v : 0);
+/** `prag`: sub el, o depășire e 0 (implicit, zgomotul numeric). */
+export function depasire(c: Cutie, latime: number, inaltime: number, prag = TOLERANTA_DEPASIRE): Depasire {
+  const d = (v: number): number => (v > prag ? v : 0);
   return { stanga: d(-c.minX), dreapta: d(c.maxX - latime), jos: d(-c.minY), sus: d(c.maxY - inaltime) };
 }
 

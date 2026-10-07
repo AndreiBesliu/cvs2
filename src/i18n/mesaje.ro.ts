@@ -81,4 +81,9 @@ export const ro = {
   'export.iesire.unde': 'Unde: {etichete}',
   'export.iesire.confirma': 'Am verificat că acolo nu e nimic în cale (cleme, șuruburi): freza poate tăia și în afara foii. Confirmarea se scrie în antetul programului.',
   'avertisment.iese-din-foaie': '{descriere} iese din foaie',
+  'avertisment.forme-ies-din-foaie': {
+    one: '{n} formă iese din foaie',
+    few: '{n} forme ies din foaie',
+    other: '{n} de forme ies din foaie',
+  },
 } as const satisfies DictionarRo;

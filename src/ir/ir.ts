@@ -42,8 +42,11 @@ export type Miscare =
   | { readonly tip: 'ax-pornit'; readonly turatie: number }
   | { readonly tip: 'ax-oprit' }
   | { readonly tip: 'pauza'; readonly secunde: number }
-  /** O etichetă de lucrare (intrare, punte, finisaj…), scrisă ca comentariu. */
-  | { readonly tip: 'eticheta'; readonly text: string };
+  /**
+   * O etichetă de lucrare (intrare, punte, finisaj…), scrisă ca comentariu. `element`: id-ul elementului documentului
+   * căruia îi aparțin mișcările de după ea, pentru mesajele interfeței; postul nu-l scrie.
+   */
+  | { readonly tip: 'eticheta'; readonly text: string; readonly element?: string };
 
 export type Scula = { readonly numar: number; readonly nume: string; readonly diametru: number };
 

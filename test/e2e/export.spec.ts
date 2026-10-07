@@ -79,8 +79,18 @@ test('freza iese din foaie: avertismentul stă în bara de jos, iar exportul cer
   await expect(bloc).toContainText('Freza iese din foaie:');
   await expect(bloc).toContainText('mm la stânga');
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
-  // Un parametru schimbat ia înapoi confirmarea: blocul dispare, iar exportul următor întreabă din nou, nebifat.
+  // Focusul trece pe textul cererii (butonul devenit inactiv l-ar fi lăsat pe pagină), iar bifa e la un Tab distanță.
+  await expect(bloc).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('[data-camp="confirma-iesire"]')).toBeFocused();
+  // Cu dialogul deschis, tastatura nu schimbă documentul din spatele lui: Ctrl+Z și Delete nu fac nimic.
   await page.locator('[data-camp="confirma-iesire"]').check();
+  await page.locator('#export-titlu').click();
+  await page.keyboard.press('Control+z');
+  await page.keyboard.press('Delete');
+  await expect(page.getByTestId('selectie')).toHaveText(stare);
+  await expect(page.locator('[data-camp="confirma-iesire"]')).toBeChecked();
+  // Un parametru schimbat ia înapoi confirmarea: blocul dispare, iar exportul următor întreabă din nou, nebifat.
   await page.locator('[data-camp="origine"]').selectOption('dreapta-sus');
   await expect(bloc).toHaveCount(0);
   await page.locator('[data-buton="exporta"]').click();
@@ -107,4 +117,84 @@ test('freza iese din foaie: avertismentul stă în bara de jos, iar exportul cer
   expect(poarta(text, ctx)).toEqual([]);
   const fara = text.split('\n').filter((l) => !l.startsWith('(CONFIRMAT') && !l.startsWith('(iesire mm')).join('\n');
   expect(poarta(fara, ctx).map((i) => i.invarianta)).toContain(5);
+
+  // Un al doilea export, cu aceiași parametri, întreabă din nou, nebifat: fiecare program are bifa lui.
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(bloc).toBeVisible();
+  await expect(page.locator('[data-camp="confirma-iesire"]')).not.toBeChecked();
+  await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
+  expect(descarcari).toBe(1);
+});
+
+/** Trage forma de sub punctul (x, y) mm cu dx mm pe orizontală. */
+async function trage(page: Page, x: number, y: number, dx: number): Promise<void> {
+  const v = await vedere(page);
+  const la = await ecran(page, v);
+  const a = la(x, y);
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(a.x + (dx / 2) * v.scara, a.y, { steps: 4 });
+  await page.mouse.move(a.x + dx * v.scara, a.y, { steps: 4 });
+  await page.mouse.up();
+}
+
+test('un rezultat de export întârziat, venit după schimbarea unui parametru, nu se arată și nu se descarcă', async ({ page }) => {
+  // Calculul exportului se încarcă la cerere: îl întârziem 1,5 s, ca rezultatul cu freza veche să vină după schimbare.
+  await page.route('**/assets/actiuniExportCalcul-*.js', async (route) => {
+    await new Promise((r) => { setTimeout(r, 1500); });
+    await route.continue();
+  });
+  let descarcari = 0;
+  page.on('download', () => { descarcari++; });
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await trage(page, 70, 50, -40);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await page.locator('[data-buton="exporta"]').click();
+  await page.locator('[data-camp="diametru"]').fill('8');
+  // Rezultatul cu Ø6 sosește și e aruncat: nicio cerere de confirmare, nicio descărcare.
+  await page.waitForTimeout(2500);
+  await expect(page.getByTestId('iesire-foaie')).toHaveCount(0);
+  expect(descarcari).toBe(0);
+  // Exportul cu Ø8 întreabă de ieșirea lui, nebifată.
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(page.getByTestId('iesire-foaie')).toBeVisible();
+  await expect(page.locator('[data-camp="confirma-iesire"]')).not.toBeChecked();
+});
+
+test('mai multe forme în afara foii: un singur rând în bara de jos, cu lista în titlu', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  // Primul (cel de deasupra) spre stânga; al doilea, apucat de unde nu-l mai acoperă primul (X 110), spre dreapta.
+  await trage(page, 70, 50, -40);
+  await trage(page, 110, 50, 230);
+  const a = page.getByTestId('avertisment');
+  await expect(a).toHaveCount(1);
+  await expect(a).toHaveText('2 forme ies din foaie');
+  const titlu = (await a.getAttribute('title')) ?? '';
+  expect(titlu.split('\n')).toHaveLength(2);
+});
+
+test('sub dialog, aplicația e inertă: Shift+Tab nu iese din dialog, iar două Space-uri pe Exportă nu bifează confirmarea', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await trage(page, 70, 50, -40);
+  const stare = (await page.getByTestId('selectie').textContent()) ?? '';
+  await page.locator('[data-actiune="export.gcode"]').click();
+  // La deschidere, focusul intră în dialog.
+  expect(await page.evaluate(() => Boolean(document.activeElement?.closest('.dialog')))).toBe(true);
+  // Oricâte Shift+Tab, focusul nu ajunge în aplicația din spate (la Anulează / Reface din bară): e inertă.
+  for (let i = 0; i < 12; i++) {
+    await page.keyboard.press('Shift+Tab');
+    expect(await page.evaluate(() => Boolean(document.activeElement?.closest('.aplicatie')))).toBe(false);
+  }
+  await expect(page.getByTestId('selectie')).toHaveText(stare);
+  // Space pe Exportă pornește exportul; al doilea Space, oricât de repede, nu bifează confirmarea.
+  await page.locator('[data-buton="exporta"]').focus();
+  await page.keyboard.press('Space');
+  await page.keyboard.press('Space');
+  await expect(page.getByTestId('iesire-foaie')).toBeVisible();
+  await page.keyboard.press('Space');
+  await expect(page.locator('[data-camp="confirma-iesire"]')).not.toBeChecked();
 });

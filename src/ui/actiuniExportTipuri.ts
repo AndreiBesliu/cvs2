@@ -1,6 +1,5 @@
 import type { IesireFoaie } from '../cam/iesire.ts';
 import type { ParametriElement } from '../cam/job.ts';
-import type { Depasire } from '../geom/cutie.ts';
 import type { ColtOrigine } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
 import type { ProgramExportat } from '../post/export.ts';
@@ -18,10 +17,11 @@ export type ParametriExport = {
   readonly diametruScula: number;
   readonly elemente: ReadonlyMap<string, ParametriElement>;
   /**
-   * Ieșirea din foaie pe care omul a văzut-o și a confirmat-o. Exportul trece doar dacă e exact cea calculată acum: altă
-   * freză, alt profil sau o formă mutată cer o confirmare nouă.
+   * Ieșirea din foaie pe care omul a văzut-o și a confirmat-o, așa cum a primit-o de la export. Trece doar dacă e exact cea
+   * calculată acum, pe același traseu (amprenta): altă freză, alt profil sau o formă mutată cer o confirmare nouă, chiar
+   * cu aceleași numere.
    */
-  readonly confirmareIesire?: Depasire;
+  readonly confirmareIesire?: IesireFoaie;
 };
 
 export type RezultatExport =

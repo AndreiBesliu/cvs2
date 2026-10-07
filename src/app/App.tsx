@@ -63,10 +63,16 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
   const registruExport = useMemo(() => creeazaRegistru(ACTIUNI_EXPORT, () => true), []);
   const [dialogExport, setDialogExport] = useState(false);
   const [stareExport, setStareExport] = useState<StareExport | null>(null);
-  const contextExport = (p?: ParametriExport): ContextExport => ({
+  /**
+   * Numărul ultimei cereri de export. Un rezultat întârziat (calculul se încarcă la cerere) e al altor parametri dacă între
+   * timp s-a pornit alt export, s-a schimbat un parametru sau s-a închis dialogul: nu se afișează și nu se descarcă.
+   */
+  const cerereExport = useRef(0);
+  const contextExport = (p?: ParametriExport, cerere = cerereExport.current): ContextExport => ({
     document: () => curenta.current.istoric.doc,
     parametri: () => p ?? { origine: 'stanga-jos', z0: 'sus', diametruScula: 6, elemente: new Map() },
     rezultat: (r: RezultatExport) => {
+      if (cerere !== cerereExport.current) return;
       if (r.ok) {
         descarca(r.program.octeti, `cncvs2-${p?.origine ?? 'stanga-jos'}.${r.program.extensie}`);
         setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256 });
@@ -92,6 +98,18 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
     document.documentElement.lang = limbaActiva;
   }, [limbaActiva]);
 
+  /**
+   * Ușa unică a acțiunilor de document. Cât e deschis dialogul de export, nicio acțiune nu rulează, oricare ar fi calea:
+   * o scurtătură, un buton atins cu Tab sau o tragere pornită înainte de dialog. Confirmarea unei ieșiri din foaie rămâne
+   * a desenului pe care omul îl vede.
+   */
+  const dialogDeschis = useRef(false);
+  dialogDeschis.current = dialogExport;
+  const ruleazaDocument = (id: string, ctx: ContextDocument): void => {
+    if (dialogDeschis.current) return;
+    ruleaza(registru, id, ctx);
+  };
+
   useEffect(() => {
     const tasta = (e: KeyboardEvent): void => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -102,7 +120,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
             : null;
       if (!id) return;
       e.preventDefault();
-      ruleaza(registru, id, context());
+      ruleazaDocument(id, context());
     };
     window.addEventListener('keydown', tasta);
     return () => { window.removeEventListener('keydown', tasta); };
@@ -116,48 +134,68 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
   const selectat = selectie.length === 1 ? doc.elemente.find((e) => e.id === selectie[0]) : undefined;
 
   return (
-    <div className="aplicatie">
-      <header>
-        <h1>{t('app.titlu')}</h1>
-        <span data-testid="instanta" className="instanta">{t('app.instanta', { nume: instanta })}</span>
-        <nav aria-label={t('app.limba')}>
-          {LIMBI.map((l) => (
-            <button key={l} type="button" aria-pressed={l === limbaActiva} onClick={() => { alegeLimba(l); }}>
-              {l.toUpperCase()}
-            </button>
-          ))}
-        </nav>
-      </header>
-      <div className="bara" role="toolbar" aria-label={t('bara.actiuni')}>
-        {BARA.map((id) => {
-          const s = stare(registru, id, context());
-          const a = registru.actiuni.get(id);
-          if (!a) return null;
-          return (
-            <button key={id} type="button" disabled={!s.ok} title={s.ok ? undefined : t(s.motiv)} data-actiune={id}
-              onClick={() => { ruleaza(registru, id, context()); }}>
-              {t(a.eticheta)}
-            </button>
-          );
-        })}
-        {(() => {
-          const s = stare(registruExport, 'export.gcode', contextExport());
-          return (
-            <button type="button" disabled={!s.ok} title={s.ok ? undefined : t(s.motiv)} data-actiune="export.gcode"
-              onClick={() => { setStareExport(null); setDialogExport(true); }}>
-              {t('actiune.exporta-gcode')}
-            </button>
-          );
-        })()}
+    <>
+      {/* Sub dialog, aplicația e inertă: nici Tab, nici clicul nu mai ajung la bară sau la pânză. */}
+      <div className="aplicatie" inert={dialogExport}>
+        <header>
+          <h1>{t('app.titlu')}</h1>
+          <span data-testid="instanta" className="instanta">{t('app.instanta', { nume: instanta })}</span>
+          <nav aria-label={t('app.limba')}>
+            {LIMBI.map((l) => (
+              <button key={l} type="button" aria-pressed={l === limbaActiva} onClick={() => { alegeLimba(l); }}>
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </nav>
+        </header>
+        <div className="bara" role="toolbar" aria-label={t('bara.actiuni')}>
+          {BARA.map((id) => {
+            const s = stare(registru, id, context());
+            const a = registru.actiuni.get(id);
+            if (!a) return null;
+            return (
+              <button key={id} type="button" disabled={!s.ok} title={s.ok ? undefined : t(s.motiv)} data-actiune={id}
+                onClick={() => { ruleazaDocument(id, context()); }}>
+                {t(a.eticheta)}
+              </button>
+            );
+          })}
+          {(() => {
+            const s = stare(registruExport, 'export.gcode', contextExport());
+            return (
+              <button type="button" disabled={!s.ok} title={s.ok ? undefined : t(s.motiv)} data-actiune="export.gcode"
+                onClick={() => { setStareExport(null); setDialogExport(true); }}>
+                {t('actiune.exporta-gcode')}
+              </button>
+            );
+          })()}
+        </div>
+        {!config.ok && <p role="status" className="avertisment">{t('eroare.config', { motiv: config.motiv })}</p>}
+        <Panza
+          forme={forme}
+          foaie={doc.foaie}
+          selectie={selectie}
+          onClic={(x, y, toleranta) => { ruleazaDocument('selectie.la-punct', context({ punct: () => ({ x, y, toleranta }) })); }}
+          onMutare={(dx, dy) => { ruleazaDocument('document.muta-selectia', context({ deplasare: () => ({ dx, dy }) })); }}
+        />
+        <footer>
+          <span data-testid="selectie">{selectat ? t('stare.selectie', { descriere: descriere(selectat) }) : t('stare.nimic-selectat')}</span>
+          {avert.length > 0 && (() => {
+            // Un singur rând, oricâte avertismente: bara nu crește peste pânză. Lista întreagă stă în titlu (și, când va
+            // exista, cu roșu în lista de vectori).
+            const toate = avert.map((a) => {
+              const e = doc.elemente.find((x) => x.id === a.id);
+              return t('avertisment.iese-din-foaie', { descriere: e ? descriere(e) : a.id });
+            });
+            return (
+              <span className="avertisment-bara" data-testid="avertisment" title={toate.join('\n')}>
+                {toate.length === 1 ? toate[0] : t('avertisment.forme-ies-din-foaie', { n: toate.length })}
+              </span>
+            );
+          })()}
+          <span data-testid="jurnal">{t('jurnal.intrari', { n: intrari })}</span>
+        </footer>
       </div>
-      {!config.ok && <p role="status" className="avertisment">{t('eroare.config', { motiv: config.motiv })}</p>}
-      <Panza
-        forme={forme}
-        foaie={doc.foaie}
-        selectie={selectie}
-        onClic={(x, y, toleranta) => { ruleaza(registru, 'selectie.la-punct', context({ punct: () => ({ x, y, toleranta }) })); }}
-        onMutare={(dx, dy) => { ruleaza(registru, 'document.muta-selectia', context({ deplasare: () => ({ dx, dy }) })); }}
-      />
       {dialogExport && (
         <DialogExport
           elemente={doc.elemente.map((e) => ({
@@ -167,27 +205,11 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
             implicit: e.forma.tip === 'cerc' ? { latura: 'interior', adancime: 8, pas: 4 } : { latura: 'exterior', adancime: 3, pas: 3 },
           }))}
           stare={stareExport}
-          onExporta={(p) => { ruleaza(registruExport, 'export.gcode', contextExport(p)); }}
-          onInchide={() => { setDialogExport(false); }}
-          onReseteaza={() => { setStareExport(null); }}
+          onExporta={(p) => { ruleaza(registruExport, 'export.gcode', contextExport(p, ++cerereExport.current)); }}
+          onInchide={() => { cerereExport.current++; setDialogExport(false); }}
+          onReseteaza={() => { cerereExport.current++; setStareExport(null); }}
         />
       )}
-      <footer>
-        <span data-testid="selectie">{selectat ? t('stare.selectie', { descriere: descriere(selectat) }) : t('stare.nimic-selectat')}</span>
-        {avert.length > 0 && (
-          <span className="avertismente">
-            {avert.map((a) => {
-              const e = doc.elemente.find((x) => x.id === a.id);
-              return (
-                <span key={a.id} className="avertisment-bara" data-testid="avertisment">
-                  {t('avertisment.iese-din-foaie', { descriere: e ? descriere(e) : a.id })}
-                </span>
-              );
-            })}
-          </span>
-        )}
-        <span data-testid="jurnal">{t('jurnal.intrari', { n: intrari })}</span>
-      </footer>
-    </div>
+    </>
   );
 }

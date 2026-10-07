@@ -367,14 +367,17 @@ alegerea A / D.
    - Pânza din etapa 1 face deja așa: selecția schimbă doar culoarea, fără cutie și fără mânere.
    - Unealta de transformare vine cu editorul (etapa 6, „Transformare și copiere”).
 2. **O formă poate ieși din foaie intenționat, iar freza o urmează și în afara foii.** Exportul cere atunci confirmare.
-   - Făcut în felia 1.10, din etapa 1. Confirmarea se cere când discul frezei trece de marginea foii cât taie. Se
-     măsoară pe traseu, nu pe vector, fiindcă acolo pot fi cleme.
-   - Confirmarea acoperă exact ieșirea arătată. Altă freză, alt profil sau o formă mutată cer o confirmare nouă.
+   - Făcut în felia 1.10, din etapa 1. Confirmarea se cere când discul frezei trece de marginea foii cât taie, adică pe
+     porțiunea de sub fața de sus a fiecărei tăieri. Se măsoară pe traseu, nu pe vector, fiindcă acolo pot fi cleme.
+     Sub 0,0005 mm (jumătate din rezoluția programului) nu se cere nimic.
+   - Confirmarea acoperă exact traseul arătat. Altă freză, alt profil, o formă mutată sau chiar un export repetat cer o
+     bifă nouă. Cât e deschis dialogul, tastatura nu schimbă desenul din spatele lui.
    - Se scrie în antetul programului, ca s-o vadă și cel de la mașină. Oracolul independent refuză orice program care
-     taie în afara foii fără declarație.
+     taie în afara foii fără declarație și orice rapidă sub fața de sus în afara foii, cu sau fără declarație.
 3. **Avertismentele nu apar pe pânză**, fiindcă „încarcă spațiul de lucru”. Stau în bara de jos și apar cu roșu în
    lista de vectori.
-   - Bara de jos le arată din felia 1.10.
+   - Bara de jos le arată din felia 1.10: un singur rând (cu mai multe forme, „N forme ies din foaie”, iar lista în
+     titlu), ca bara să nu crească peste pânză.
    - Lista de vectori vine cu arborele planșelor (felia 1.7, după alegerea A / D). Acolo avertismentele apar cu roșu.
 
 ## 17. Întrebări deschise

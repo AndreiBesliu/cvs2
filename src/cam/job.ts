@@ -41,11 +41,18 @@ export function programDinDocument(
     .sort((a, b) => ORDINE[a.p.latura] - ORDINE[b.p.latura] || a.i - b.i);
   const miscari: Miscare[] = [];
   for (const { e, p } of elemente) {
+    // Mai adânc decât foaia înseamnă în masa de sacrificiu (sau în masa mașinii). Supracursa unei tăieri prin material
+    // vine cu profilul complet (etapa 2); până atunci, cel mult grosimea foii.
+    if (p.adancime > doc.foaie.grosime + 1e-9) {
+      return { ok: false, motiv: `${e.id}: adâncimea ${p.adancime} mm trece de grosimea foii (${doc.foaie.grosime} mm)` };
+    }
     const pr = profil(conturElement(e), { latura: p.latura, diametruScula: scula.diametru, adancime: p.adancime, pas: p.pas });
     if (!pr.ok) return { ok: false, motiv: `${e.id}: ${pr.motiv}` };
     const tr = traseuProfil(pr.treceri, regim);
     if (!tr.ok) return { ok: false, motiv: `${e.id}: ${tr.motiv}` };
-    miscari.push({ tip: 'eticheta', text: `${e.id}: ${e.forma.tip}, ${p.latura}, ${p.adancime} mm` }, ...tr.miscari);
+    miscari.push({ tip: 'eticheta', text: `${e.id}: ${e.forma.tip}, ${p.latura}, ${p.adancime} mm`, element: e.id });
+    // Fără `push(...listă)`: o listă foarte lungă depășește stiva de argumente.
+    for (const m of tr.miscari) miscari.push(m);
   }
   return { ok: true, program: { axe: AXE_XYZ, scula, turatie: regim.turatie, zSigur: regim.zSigur, miscari } };
 }

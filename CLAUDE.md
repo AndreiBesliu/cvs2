@@ -25,7 +25,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - `docs/adr/`: ADR 0001–0023, câte unul pe decizie (T1–T23). O decizie se schimbă doar printr-un ADR nou.
 - **Etapa 1 e în lucru din 07.10**, pornită la cererea owner-ului („Continua si testez putin mai incolo”), fără alegerea
   A / D. Fișa și jurnalul feliilor sunt în `docs/etape/etapa-01.md`.
-  - Gata: 1.1–1.6, 1.7a (documentul fără arbore), 1.8 (pânza) și 1.9a (placa 1, programele A și B).
+  - Gata: 1.1–1.6, 1.7a (documentul fără arbore), 1.8 (pânza), 1.9a (placa 1, programele A și B), 1.9b–c (canalul,
+    exportul din aplicație) și 1.10 (ieșirea din foaie: avertisment în bara de jos, confirmare la export, `BRIEF.md`
+    §16.3).
+  - Owner-ul a încercat prototipul planșelor pe 07.10: notițele arată spre D, cuvântul lui e încă deschis (`BRIEF.md` §9).
   - Rămân:
     - 1.7, arborele variantei alese, ca migrare v1 → v2, după alegerea A / D;
     - 1.9, hosting pe adresa principală de test, după exportul Firestore confirmat de owner.

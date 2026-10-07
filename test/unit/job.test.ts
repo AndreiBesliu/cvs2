@@ -43,3 +43,17 @@ test('un document gol și o sculă care nu încape dau motivul, nu un program', 
   const r = programDinDocument(doc(300, 200), new Map([['e2', { latura: 'interior', adancime: 3, pas: 3 }]]), { ...SCULA, diametru: 40 });
   assert.match(r.ok ? '' : r.motiv, /e2: scula nu încape/);
 });
+
+test('mai adânc decât foaia (în masa de sacrificiu) e refuzat; exact grosimea foii trece', () => {
+  const d = doc(300, 200);
+  const prea = programDinDocument(d, new Map([['e1', { latura: 'exterior', adancime: 30, pas: 5 }]]), SCULA);
+  assert.match(prea.ok ? '' : prea.motiv, /e1: adâncimea 30 mm trece de grosimea foii \(18 mm\)/);
+  assert.ok(programDinDocument(d, new Map([['e1', { latura: 'exterior', adancime: 18, pas: 6 }]]), SCULA).ok);
+});
+
+test('un pas absurd de mic e refuzat cu motiv, nu cu stiva depășită; o mie de treceri încă trec', () => {
+  const d = doc(300, 200);
+  const mic = programDinDocument(d, new Map([['e1', { latura: 'exterior', adancime: 3, pas: 0.0002 }]]), SCULA);
+  assert.match(mic.ok ? '' : mic.motiv, /e1: 15000 treceri/);
+  assert.ok(programDinDocument(d, new Map([['e1', { latura: 'exterior', adancime: 10, pas: 0.01 }]]), SCULA).ok);
+});

@@ -232,15 +232,17 @@ footer {
   font-size: 0.85rem;
 }
 
-/* Avertismentele: în bara de jos, cu roșu; niciodată pe pânză (owner-ul, 07.10). */
-.avertismente {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-}
-
+/* Avertismentele: în bara de jos, cu roșu, pe un singur rând; niciodată pe pânză (owner-ul, 07.10). */
 .avertisment-bara {
   color: var(--rosu);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dialog-cutie:focus {
+  outline: none;
 }
 
 .dialog .confirmare-iesire {

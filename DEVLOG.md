@@ -694,3 +694,54 @@ Firestore confirmat de owner).
   2. Încărcarea la cerere a creat un ciclu de tipuri, prins de regula ciclurilor. Tipurile au acum modulul lor.
   3. Heredoc-ul a pierdut iarăși un `\` într-o expresie regulată. Am reparat cu Edit.
 - 103 teste unitare, 13 e2e.
+
+## 2026-10-07 — Etapa 1, felia 1.10: ieșirea din foaie (Model: Claude Opus 5.5)
+
+**Prompt:** „am incercat sa fac testul tau” + notițele din prototipul planșelor (întocmai în
+`docs/faza2/prototip-planse/notite-owner-2026-10-07.md`). **Started:** 21:59. **Completed:** 23:24.
+**Clasa:** R2 (mișcă mașina: exportul). **Estimarea:** nespusă dinainte. **Treceri:** 3.
+
+**Din notițe** (`BRIEF.md` §9, §16.3):
+- A / D: spre D (scenariul 5 „da e clar”, scenariul 7 „ori D, ori legate în oglindă în A”); cuvântul explicit e încă
+  deschis.
+- Trei cerințe: selecția doar prin culoare (pânza o face deja); formele pot ieși din foaie, cu confirmare la export;
+  avertismentele nu pe pânză, ci în bara de jos și, cu roșu, în lista de vectori (aceasta vine cu arborele).
+
+**Făcut:**
+- **`src/geom/cutie.ts`**: cutia exactă (arcul prin punctele de pe axe, cubica prin extremele ei) și depășirea față de
+  foaie.
+- **`src/model/avertismente.ts`**: o singură funcție de avertismente, care nu scrie nimic în document; bara de jos arată
+  un rând („N forme ies din foaie”, cu lista în titlu).
+- **`src/cam/iesire.ts`**: cât trece discul frezei de foaie cât taie, doar pe porțiunea de sub fața de sus (rampele și
+  elicele se taie exact la Z 0), cu pragul de jumătate din rezoluția postului și amprenta traseului.
+- **Exportul** (`actiuniExportCalcul.ts`, `DialogExport.tsx`): refuză până când omul bifează exact cererea arătată;
+  confirmarea e legată de obiectul cererii și de amprentă; antetul primește `(CONFIRMAT: freza iese din foaie)` și
+  `(iesire mm: st … dr … jos … sus …)`. Fără ieșire, octeții nu se schimbă (fișierele de aur rămân).
+- **Sub dialog**, aplicația e `inert`, iar acțiunile de document trec printr-o singură ușă, oprită cât e dialogul deschis.
+  Rezultatele întârziate ale exportului se aruncă.
+- **Baleiajul arcelor** se calculează o dată, pe coordonatele documentului (`baleiajArc` în `src/ir/ir.ts`), pentru CAM
+  și post.
+- **Două gărzi găsite de reverificare, mai vechi decât felia:** adâncimea peste grosimea foii e refuzată (până la
+  supracursa din etapa 2); peste 1 000 de treceri pe o formă e refuzat (pasul de 0,0002 mm dădea stiva depășită).
+- **Oracolul** (sesiune independentă, commit-urile `018f218` și `75bddb9`): invarianta 5 cere declarația exactă,
+  măsoară cu margini exacte, refuză declarația goală, incompletă, repetată sau târzie și orice rapidă sub fața de sus în
+  afara foii. 46 de sabotaje, toate prinse.
+
+**Proba:**
+- grila de acord aplicație ↔ oracol (192 de cazuri, în ambele sensuri);
+- e2e în Edge: confirmarea, Ctrl+Z și Delete sub dialog, Shift+Tab, Space dublu, rezultatul întârziat, al doilea export,
+  rezumatul din bară;
+- 23 de otrăvuri pe aplicație, toate prinse, cu controlul verde înainte;
+- recenzia adversarială (4 lentile + 6 verificatori, ~1,45 M tokeni, 15 min): 17 constatări, reparate;
+- reverificarea (1 agent, ~0,25 M): nicio ocolire a confirmării, 4 constatări mai mici, reparate.
+- 147 de teste unitare, 17 e2e; pornirea are 80,2 kB gzip.
+
+**Treceri:**
+1. Implementarea; heredoc-ul a pierdut iarăși `\n`-uri în teste (reparat cu Edit).
+2. Recenzia a găsit ocolirile confirmării: bifa boolean, documentul schimbat sub dialog, rezultatul întârziat. Le-a
+   găsit și în oracol: arcele mici eșantionate doar la capete, rapidele în afara foii, declarația goală.
+3. Reverificarea: Shift+Tab spre bară, Space dublu pe bifă, adâncimea peste foaie, pasul absurd.
+
+**Rămâne deschis:** cuvântul A / D (plus cele trei alegeri din D); felia 1.7 după el; hosting-ul pe adresa principală
+de test, după exportul Firestore confirmat; placa 1. Motivele exportului care vin din CAM sunt încă doar în română
+(gol mai vechi, din 1.9c).

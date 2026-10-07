@@ -69,4 +69,5 @@ export const en = {
   'export.iesire.unde': 'Where: {etichete}',
   'export.iesire.confirma': 'I checked that nothing is in the way there (clamps, screws): the bit may cut outside the sheet. The confirmation is written in the program header.',
   'avertisment.iese-din-foaie': '{descriere} goes past the sheet',
+  'avertisment.forme-ies-din-foaie': { one: '{n} shape goes past the sheet', other: '{n} shapes go past the sheet' },
 } as const satisfies Readonly<Record<string, Mesaj>>;
