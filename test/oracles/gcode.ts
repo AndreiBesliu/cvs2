@@ -36,7 +36,22 @@ export type Eveniment =
   | { readonly tip: 'ax'; readonly pornit: boolean; readonly turatie: number; readonly linia: number }
   | { readonly tip: 'pauza'; readonly secunde: number; readonly linia: number };
 
-export type Citire = { readonly evenimente: readonly Eveniment[]; readonly probleme: readonly Problema[] };
+/**
+ * Un comentariu, cu linia lui: `(…)` cu tot cu paranteze, sau `;…` până la capătul liniei. Mișcările nu-l văd; îl
+ * citesc declarațiile din antet (invarianta 5: ieșirea confirmată din foaie).
+ */
+export type Comentariu = {
+  readonly linia: number;
+  readonly text: string;
+  /** Comentariul e linia întreagă, fără nimic înainte sau după (nici spații). */
+  readonly singur: boolean;
+};
+
+export type Citire = {
+  readonly evenimente: readonly Eveniment[];
+  readonly probleme: readonly Problema[];
+  readonly comentarii: readonly Comentariu[];
+};
 
 const CODOR = new TextEncoder();
 
@@ -47,6 +62,7 @@ const CODOR = new TextEncoder();
 export function citeste(text: string): Citire {
   const evenimente: Eveniment[] = [];
   const probleme: Problema[] = [];
+  const comentarii: Comentariu[] = [];
   let x = 0, y = 0, z = 0;
   let cunoscutXY = false;
   let cunoscutZ = false;
@@ -61,10 +77,14 @@ export function citeste(text: string): Citire {
     if (CODOR.encode(brut).length > LINIA_MAXIMA) problema(`linia are peste ${LINIA_MAXIMA} de octeți`);
     if (/[^\x20-\x7e]/.test(brut)) problema('caracter în afara ASCII');
 
-    // Faza 1: cuvintele liniei, fără comentarii.
+    // Faza 1: cuvintele liniei, fără comentarii. Comentariile se păstrează deoparte, cu linia lor.
+    for (const c of brut.matchAll(/\([^)]*\)/g)) comentarii.push({ linia: nr, text: c[0], singur: c[0] === brut });
     let linie = brut.replace(/\([^)]*\)/g, ' ');
     const pv = linie.indexOf(';');
-    if (pv >= 0) linie = linie.slice(0, pv);
+    if (pv >= 0) {
+      comentarii.push({ linia: nr, text: linie.slice(pv), singur: linie.slice(pv) === brut });
+      linie = linie.slice(0, pv);
+    }
     if (/[()]/.test(linie)) problema('paranteză de comentariu neînchisă');
     const cuvinte = [...linie.matchAll(/([A-Za-z])\s*([-+]?[\d.]+)/g)].map((m) => [(m[1] ?? '').toUpperCase(), m[2] ?? ''] as const);
     const ramas = linie.replace(/([A-Za-z])\s*([-+]?[\d.]+)/g, '').trim();
@@ -115,7 +135,7 @@ export function citeste(text: string): Citire {
     if (areXY) cunoscutXY = true;
     if (val['Z'] !== undefined) cunoscutZ = true;
   });
-  return { evenimente, probleme };
+  return { evenimente, probleme, comentarii };
 }
 
 /**
