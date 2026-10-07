@@ -442,3 +442,46 @@ gazdă, CSP.
   - licențele se iau din lanțul de dependențe.
 
 **Următorul pas:** CI-ul pe GitHub, verde și la prima rulare de noapte. Apoi felia 1.4, geometria v0.
+
+## 2026-10-07 — Etapa 1, felia 1.4: geometria v0 și cavalier adus în repo (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua si testez putin mai incolo” (continuare). **Started:** 15:15. **Completed:** 15:28.
+**Clasa:** R2 (I10a, I10c parțial). **Estimarea:** 1 felie. **Treceri:** 3.
+
+**Făcut:**
+- **`src/geom/contur.ts`**:
+  - conturul L / A / C, cu `bulge` (T1);
+  - aria cu semn, exactă: arcul prin coardă + segment de cerc, cubica prin Gauss–Legendre pe 3 noduri, exactă pentru
+    gradul 5;
+  - inversarea, dreptunghiul (cu sau fără colțuri rotunjite) și cercul ca două arce.
+- **`src/geom/matrice.ts`**:
+  - matricea afină, cu rotiri exacte la multipli de 90°;
+  - arcele trec doar prin similitudini, iar matricea neuniformă e refuzată (T2);
+  - oglindirea schimbă semnul bulge-ului.
+- **`src/geom/offset.ts`:** fațada de offset peste cavalier. Conturul e adus întâi în sens trigonometric, iar orice
+  eșec iese ca motiv: „scula nu încape…”.
+- **`src/geom/cavalier/`**: `cavalier-contours-js` `v0.1.1` (`2e126aa`), adus din sursa TypeScript.
+  - Importurile `.js` au trecut la `.ts`, plus 118 `!` doar pentru tipuri, pe 109 linii.
+  - Comparația linie cu linie cu originalul nu arată nimic altceva.
+  - Martorul `test/unit/cavalier.martor.test.ts` dă ieșiri identice, bit cu bit, cu pachetul npm, pe 100 de cazuri.
+  - Proveniența și ce urmează (gărzile, testul „paralele”, reparațiile Rust) sunt în `PROVENIENTA.md`.
+- **`src/cam/profil.ts`:** profilul exterior, interior sau pe linie, cu treceri egale, fiecare ≤ pasul (invarianta 1).
+  8 mm cu pasul 4 dau [4, 8].
+- **Valori pe hârtie:**
+  - cercurile R ± d au aceeași rază, din 2 arce, cu același centru;
+  - dreptunghiul 100 × 60 + 3 are aria 6 000 + 960 + 9π, cu arcele R3 centrate în colțuri;
+  - dreptunghiul − 3 dă 94 × 54, cu vârfurile exacte.
+
+  În total, 50 de teste.
+- **Regulile de import:**
+  - mașina are capcana ei, deci lista „fără capcană” e goală;
+  - ciclurile interne ale lui cavalier (6) sunt scoase din regula ciclurilor;
+  - regula nouă `cavalier-doar-prin-fatada` are capcana ei;
+  - rezultatul: 12 reguli, 12 capcane.
+- **CI-ul:** imaginea e fixată la `ubuntu-24.04`, fiindcă `ubuntu-latest` trece pe Ubuntu 26 chiar pe 19.10.
+- **Treceri:**
+  - reparatorul automat a pus `!` în partea stângă a unor atribuiri; le-am mutat de mână;
+  - două importuri doar pentru efect aveau încă `.js`;
+  - ciclurile din cavalier au fost găsite de regula lor; nu le-am ascuns, au primit regula fațadei.
+
+**Următorul pas:** felia 1.5, IR-ul pe N axe, montajul (4 colțuri) și postul GRBL v0.

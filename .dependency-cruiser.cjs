@@ -14,9 +14,17 @@ module.exports = {
     {
       name: 'fara-cicluri',
       severity: 'error',
-      comment: 'Fără dependențe circulare.',
-      from: {},
+      comment: 'Fără dependențe circulare în codul nostru. Cavalier, adus în repo, are cicluri interne (registrele care rup '
+        + 'ciclul de rulare); ele rămân închise acolo, prin regula fațadei de mai jos.',
+      from: { pathNot: '^src/geom/cavalier/' },
       to: { circular: true },
+    },
+    {
+      name: 'cavalier-doar-prin-fatada',
+      severity: 'error',
+      comment: 'Codul cavalier se folosește doar prin fațada src/geom/offset.ts (T5, ADR 0005).',
+      from: { path: '^(src|test/capcane)/', pathNot: '^src/geom/(cavalier/|offset\.ts$)' },
+      to: { path: '^src/geom/cavalier/' },
     },
     {
       name: 'oracolele-fara-src',

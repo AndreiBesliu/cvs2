@@ -25,12 +25,12 @@ const ASTEPTATE: ReadonlyArray<readonly [string, string]> = [
   ['post-doar-ir', 'test/capcane/post/importa-app.ts'],
   ['sim-doar-ir', 'test/capcane/sim/importa-app.ts'],
   ['functiile-doar-shared', 'test/capcane/functions/importa-src.ts'],
+  ['masina-fara-post-si-document', 'test/capcane/machine/importa-geom.ts'],
+  ['cavalier-doar-prin-fatada', 'test/capcane/geom/importa-cavalier.ts'],
 ];
 
 /** Regulile care încă n-au capcană, fiecare cu motivul. Lista trebuie să se golească. */
-const FARA_CAPCANA: Readonly<Record<string, string>> = {
-  'masina-fara-post-si-document': 'ținta ei (src/post, src/model, src/cam, src/geom) nu există încă; capcana vine în felia 1.4',
-};
+const FARA_CAPCANA: Readonly<Record<string, string>> = {};
 
 type Raport = {
   summary: {

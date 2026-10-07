@@ -1,0 +1,53 @@
+import type { Contur } from '../geom/contur.ts';
+import { offsetInchis } from '../geom/offset.ts';
+
+/**
+ * Profilul v0 (etapa 1): conturul decalat cu raza sculei, pe exterior sau pe interior, sau chiar linia, pe treceri de
+ * adâncime. Urechile, intrările, sensul de tăiere și regiunea păstrată vin în etapa 2.
+ */
+export type Latura = 'exterior' | 'interior' | 'pe-linie';
+
+export type ParametriProfil = {
+  readonly latura: Latura;
+  readonly diametruScula: number;
+  /** Adâncimea totală, în mm, pozitivă (în jos de la suprafață). */
+  readonly adancime: number;
+  /** Cât scoate cel mult o trecere, în mm. */
+  readonly pas: number;
+};
+
+export type Trecere = { readonly adancime: number; readonly contururi: readonly Contur[] };
+
+export type RezultatProfil =
+  | { readonly ok: true; readonly treceri: readonly Trecere[] }
+  | { readonly ok: false; readonly motiv: string };
+
+const pozitivFinit = (x: number): boolean => Number.isFinite(x) && x > 0;
+
+/**
+ * Adâncimile trecerilor, egal împărțite: n = ⌈adâncime / pas⌉ treceri de adâncime / n fiecare, ultima exact la adâncime.
+ * Nicio trecere nu scoate mai mult decât pasul (invarianta 1). 8 mm cu pasul 4 dau [4, 8]; 10 mm cu pasul 4, trei de 3,33.
+ */
+export function adancimiTreceri(adancime: number, pas: number): readonly number[] | string {
+  if (!pozitivFinit(adancime)) return `adâncimea trebuie să fie un număr pozitiv (${adancime})`;
+  if (!pozitivFinit(pas)) return `pasul trebuie să fie un număr pozitiv (${pas})`;
+  const n = Math.max(1, Math.ceil(adancime / pas - 1e-9));
+  return Array.from({ length: n }, (_, i) => (i + 1 === n ? adancime : ((i + 1) * adancime) / n));
+}
+
+export function profil(contur: Contur, p: ParametriProfil): RezultatProfil {
+  if (!pozitivFinit(p.diametruScula)) return { ok: false, motiv: `diametrul sculei trebuie să fie pozitiv (${p.diametruScula})` };
+  const adancimi = adancimiTreceri(p.adancime, p.pas);
+  if (typeof adancimi === 'string') return { ok: false, motiv: adancimi };
+
+  let contururi: readonly Contur[];
+  if (p.latura === 'pe-linie') {
+    contururi = [contur];
+  } else {
+    const raza = p.diametruScula / 2;
+    const o = offsetInchis(contur, p.latura === 'exterior' ? raza : -raza);
+    if (!o.ok) return o;
+    contururi = o.contururi;
+  }
+  return { ok: true, treceri: adancimi.map((adancime) => ({ adancime, contururi })) };
+}
