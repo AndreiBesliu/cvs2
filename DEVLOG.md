@@ -639,3 +639,30 @@ folosește un canal de previzualizare.
   4. Un prag fix de cerneală e prea brutal pentru linia antialiasată. Acum se ia centrul ponderat pe normală, ca în s6.
 
 **Următorul pas:** canalul de previzualizare pe instanța de test, ca owner-ul să poată încerca desenul.
+
+## 2026-10-07 — Etapa 1, felia 1.9b: publicarea pe canalul de previzualizare (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua si testez putin mai incolo” (continuare). **Started:** 16:02. **Completed:** 16:08.
+**Clasa:** R1 (I13 parțial). **Estimarea:** ½ felie. **Treceri:** 1.
+
+**Făcut:**
+- **`firebase.json`**, generat de `scripts/firebase-json.ts` din sursa unică `shared/csp.ts`:
+  - CSP-ul merge și ca antet HTTP, cu `frame-ancestors 'none'`;
+  - `no-cache` pe `/`, `/index.html` și `/config.json`, ca trei căi separate, fiindcă antetele se potrivesc pe calea
+    cererii;
+  - cache-ul imuabil e pe `/assets/**`.
+
+  Un test cere ca fișierul din repo să fie exact cel generat.
+- **`.firebaserc`** are doar aliasul `test`. Un `firebase deploy` fără `--project` n-are deci țintă implicită.
+- **`scripts/publica-canal.ts`**: copiază `dist/` în `.tmp/publicare/` și pune `config.json` cu instanța „test”.
+  Publică doar pe canal, cu `--project test`, iar build-ul nu se schimbă.
+- **Canalul `etapa-01`**: <https://cncvectorstudio-test--etapa-01-bfzodaf1.web.app>, valabil până pe 06.11.2026.
+  Verificat în browser:
+  - apare „Instance: test”, deci configul e citit de la gazdă;
+  - dreptunghiul și cercul se adaugă și se desenează;
+  - selecția apare în linia de stare;
+  - consola n-are erori.
+- `CLAUDE.md`: starea etapei 1 și comanda de publicare pe canal.
+
+**Rămân din etapa 1:** arborele variantei alese (după A / D) și hosting-ul pe adresa principală de test (după exportul
+Firestore confirmat de owner).

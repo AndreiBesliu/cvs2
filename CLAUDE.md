@@ -23,8 +23,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - `docs/PORTARE.md`: verdictele pentru candidații etapelor 1–3. Se aplică la pornirea etapei 1, dacă owner-ul nu
     obiectează; restul candidaților se judecă înaintea etapei lor;
   - `docs/adr/`: ADR 0001–0023, câte unul pe decizie (T1–T23). O decizie se schimbă doar printr-un ADR nou.
-- **Urmează etapa 1** (`PLAN.md` §5.3), după alegerea A / D (`BRIEF.md` §9). Fișa ei se scrie în
-  `docs/etape/etapa-01.md`.
+- **Etapa 1 e în lucru din 07.10**, pornită la cererea owner-ului („Continua si testez putin mai incolo”), fără alegerea
+  A / D. Fișa și jurnalul feliilor sunt în `docs/etape/etapa-01.md`.
+  - Gata: 1.1–1.6, 1.7a (documentul fără arbore), 1.8 (pânza) și 1.9a (placa 1, programele A și B).
+  - Rămân:
+    - 1.7, arborele variantei alese, ca migrare v1 → v2, după alegerea A / D;
+    - 1.9, hosting pe adresa principală de test, după exportul Firestore confirmat de owner.
+  - Până atunci, aplicația se încearcă pe canalul `etapa-01`: `npm run build && node scripts/publica-canal.ts etapa-01`.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa
