@@ -27,6 +27,7 @@ const ASTEPTATE: ReadonlyArray<readonly [string, string]> = [
   ['functiile-doar-shared', 'test/capcane/functions/importa-src.ts'],
   ['masina-fara-post-si-document', 'test/capcane/machine/importa-geom.ts'],
   ['cavalier-doar-prin-fatada', 'test/capcane/geom/importa-cavalier.ts'],
+  ['interfata-prin-actiuni', 'test/capcane/ui/importa-model.ts'],
 ];
 
 /** Regulile care încă n-au capcană, fiecare cu motivul. Lista trebuie să se golească. */

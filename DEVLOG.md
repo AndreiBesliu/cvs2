@@ -575,3 +575,30 @@ gazdă, CSP.
 
 **Restul feliei 1.9:** hosting-ul pe instanța de test așteaptă exportul Firestore confirmat de owner. Până atunci se
 folosește un canal de previzualizare.
+
+## 2026-10-07 — Etapa 1, felia 1.7a: documentul v1, jurnalul și registrul de acțiuni, fără arbore (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua si testez putin mai incolo” (continuare). **Started:** 15:46. **Completed:** 15:51.
+**Clasa:** R1–R2 (I3, I5, I6). **Estimarea:** 1 felie. **Treceri:** 2.
+
+**Făcut:**
+- **`shared/capabilitati.ts`**: catalogul unic, comun clientului și serverului: desen, cam, export-gcode,
+  export-vectori, mașina.
+- **`src/model/document.ts`**: schema v1 în valibot, cu foaia și elementele (dreptunghi și cerc parametrice, cu matrice).
+  - Primul nivel e comun variantelor A și D. Arborele variantei alese vine ca migrare v1 → v2.
+  - Plafoanele stau pe artefact, iar câmpurile necunoscute se păstrează.
+- **`src/model/incarcare.ts`**: ușa unică de încărcare.
+  - O versiune mai nouă e refuzată. Una mai veche trece prin migrările pure, cu „lipsește migrarea” dacă una lipsește.
+  - Plus JSON canonic, cu cheile sortate și numerele nefinite refuzate.
+- **`src/model/jurnal.ts`**: jurnalul de comenzi (adaugă / șterge / înlocuiește, cu valorile vechi și noi).
+  Anularea și refacerea sunt pure, cu un plafon de 500.
+- **`src/ui/actiuni.ts`** + **`actiuniDocument.ts`**: registrul de acțiuni.
+  - Capabilitatea e obligatorie. `activa` dă adevărat sau cheia `t()` a motivului.
+  - Acțiunile: adaugă dreptunghi / cerc, mută / șterge selecția, anulează / reface.
+- **Regula nouă** `interfata-prin-actiuni`: `ui`, `canvas` și `admin` nu importă domeniul în afara registrului.
+  Are capcana ei, deci sunt 13 reguli cu 13 capcane.
+- **Testele:** 13 pentru model și jurnal, 6 pentru acțiuni. Fără capabilitate, acțiunea nu rulează și nu schimbă
+  nimic. În total, 92 de teste.
+- **Trecere:** `Omit` nu merge pe tipurile valibot cu semnătură de index, deci elementul nou are un tip explicit.
+
+**Următorul pas:** felia 1.8, pânza v0. Persistența în IndexedDB și arborele vin după alegerea A / D.

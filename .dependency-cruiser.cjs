@@ -90,6 +90,14 @@ module.exports = {
       to: { path: '^src/(post|model|cam|geom)/' },
     },
     {
+      name: 'interfata-prin-actiuni',
+      severity: 'error',
+      comment: 'Interfața, pânza și adminul ajung la domeniu doar prin registrul de acțiuni (src/ui/actiuni*) și prin '
+        + 'protocolul workerelor (PLAN.md 3.3).',
+      from: { path: '^(src|test/capcane)/(ui|canvas|admin)/', pathNot: '^src/ui/actiuni' },
+      to: { path: '^src/(model|geom|cam|ir|post|sim|machine)/' },
+    },
+    {
       name: 'functiile-doar-shared',
       severity: 'error',
       comment: 'Funcțiile Firebase importă doar catalogul comun.',
