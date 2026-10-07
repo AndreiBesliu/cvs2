@@ -161,3 +161,77 @@ prototipul planșelor și pachetul de export.
 **Măsurat:** 5 agenți, **2,18 M tokeni** (estimat 2,2 M), **87 min** (estimat 45–60, deci +45 % față de capătul de sus).
 
 **Următorul pas:** tranșa 2, arhitectura: 3 propuneri independente și estimatorul.
+
+## 2026-10-07 — Faza 2, tranșa 2: propunerile de arhitectură, estimarea și ciorna planului (Model: Claude Opus 5.5)
+
+**Prompt:** continuarea Fazei 2, din planul prezentat owner-ului.
+
+**Făcut:**
+- 4 agenți în paralel, în `docs/faza2/arhitectura/`:
+  - **trei propuneri independente:** „corectitudine” (26 de etape, 212 felii), „valoare” (31 de etape, 218,5 felii),
+    „simplitate” (30 de etape + 3 tampoane, 254 de felii);
+  - **estimatorul**, din ritmul măsurat al ediției întâi: P50 ~33 de săptămâni (~28.05.2027), P80 ~50, P90 ~64
+    (~27.12.2027).
+- Toate trei propunerile au convers pe deciziile mari:
+  - fără calcul pe GPU în v1;
+  - fără izolare cross-origin;
+  - `evenodd` cu normalizare la intrare;
+  - elipsa ca formă exactă, nu ca primitivă;
+  - V-carve fără Clipper;
+  - pânza cu worker software;
+  - D ca ipoteză;
+  - EPS cu interpretor propriu, după decizia owner-ului.
+- `PLAN.md`, ciorna mea:
+  - scheletul pe etape e din „simplitate”, spina de dovadă din „corectitudine”, deciziile cu implicit din
+    „valoare”;
+  - 21 de decizii tehnice, fiecare cu dovada și condiția de redeschidere;
+  - 22 de decizii ale owner-ului.
+
+**Măsurat:** 4 agenți, **2,35 M tokeni** (estimat 1,8 M, deci +31 %), **37 min** (estimat 45–60).
+
+**Totalul Fazei 2 până aici:** 4,19 + 2,18 + 2,35 = **8,72 M tokeni** în agenți, fără conversația principală.
+
+**Următorul pas:** 3 critici pe ciornă (~0,9 M), corecturile, apoi aprobarea owner-ului în plan mode.
+
+## 2026-10-07 — Faza 2: criticii pe ciorna planului și `PLAN.md` v2 (Model: Claude Opus 5.5)
+
+**Prompt:** continuarea Fazei 2 (criticii erau anunțați owner-ului înainte de prezentarea planului).
+
+**Criticii:** 3 agenți, **1,44 M tokeni** (estimat 0,9 M, deci +60 %), **30 min**. Rapoartele sunt în
+`docs/faza2/arhitectura/critica-{acoperire,cifre,proces}.md`. Au găsit 3 probleme blocante și ~30 importante, toate
+de ordine și de text, niciuna de arhitectură.
+
+**Ce s-a schimbat în `PLAN.md` v2:**
+- **Blocantele:**
+  - întrebarea „beta sau v1 complet” (`BRIEF.md` §15) e pusă acum, la §8.1, iar riscul principal e în §7;
+  - A / D se decide la aprobare (`BRIEF.md` §9);
+  - o singură unitate, felia de plan: ~½ zi activă ≈ 1,17 felii ale estimatorului. Formula de recalibrare e scrisă
+    întreagă, fără să scadă de două ori placa. Prima recalibrare vine după etapa 3, care are un articol R3.
+- **Cerințe ale owner-ului care lipseau:**
+  - N axe din prima zi (T22);
+  - registrul de acțiuni cu capabilitățile, din etapa 1;
+  - cele 7 contracte de post, cu cine le probează;
+  - calibrarea pe lemn aliniată la `BRIEF.md` §13;
+  - inventarul adminului pe 12 file, în plan;
+  - configurarea din `BRIEF.md` §7, pornită în săptămânile 1–2.
+- **Fezabilitatea:**
+  - etapa 1 a fost tăiată la drumul minim până la placă, iar stratul WebGL2 a trecut în etapa 2;
+  - proba de mediu în Drive e prima felie;
+  - plăcile 1–2 se taie cu senderul de azi;
+  - în etapa 3 intră felia de comutare, cu aplicația veche, PITR și repo-ul vechi;
+  - regulile pentru plăcile picate sau întârziate;
+  - coada owner-ului are cel mult 5 rânduri deschise, cu stare.
+- **Dovada:**
+  - invariantele intră pe etape, iar 1, 3 și 5–8 sunt din etapa 1;
+  - bancul vizual intră în etapa 2, unealta de otrăvuri în etapa 4;
+  - sesiunile independente au calendar și buget;
+  - semantica roșului pe niveluri de CI;
+  - registrul de defecte are gravitate.
+- **Cifrele:** etichetele [măsurat] / [citit] corectate; T2 declară toate cazurile de aproximare; calendarul (lansarea
+  ~20.06.2027 la ritmul nominal) e lângă P50; rândul R3 × 2,2 adăugat la sensibilitate.
+- **Detaliul etapelor 1–4** stă în plan (§5.3). Pentru 5–30, plecăm de la tabelul §5.4 și de la amendamentele §5.5.
+  Propunerile rămân doar istoric.
+
+**Totalul Fazei 2 în agenți:** 10,16 M tokeni.
+
+**Următorul pas:** plan mode și aprobarea owner-ului, cu răspunsurile de la §8.1.

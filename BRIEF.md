@@ -298,7 +298,7 @@ reală se reface în Faza 2, pe etape săptămânale.
 
 ### 16.2 Desenul lucrează cu vectori reali și îi exportă ca vectori reali [decis 07.10]
 
-Cum am înțeles cerința (de confirmat în planul din Faza 2):
+Cum am înțeles cerința (**confirmată de owner pe 07.10**, în formularul de la pornirea Fazei 2: „Da, exact asta”):
 1. **Geometria rămâne exactă prin orice operație.** Orice formă desenată, importată sau editată rămâne linie, arc
    sau curbă la:
    - transformare, inclusiv rotire și scalare neuniformă;
