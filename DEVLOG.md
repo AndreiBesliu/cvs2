@@ -352,3 +352,33 @@ https://cncvectorstudio-test.firebaseapp.com/”
   link”.
 
 **Următorul pas:** alegerea A / D a owner-ului, apoi etapa 1.
+
+## 2026-10-07 — Etapa 1, felia 1.1: fișa etapei și proba de mediu în Drive (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua si testez putin mai incolo”. Etapa 1 pornește fără alegerea A / D: feliile care nu depind de
+modelul de planșe merg înainte, iar documentul v0 așteaptă (`docs/etape/etapa-01.md`).
+
+**Started:** ~14:50. **Completed:** 14:57. **Clasa:** R1 (I1). **Estimarea:** 1 felie. **Treceri:** 2.
+
+**Făcut:**
+- `docs/etape/etapa-01.md`: 9 felii, cu articolul și clasa fiecăreia, plus fișa plăcii 1 și jurnalul feliilor.
+- Scheletul minim, cu versiunile fixate:
+  - Vite 8.3.3, TypeScript 7.0.2 (compilatorul nativ), React 19.3;
+  - `node --test` pe `.ts`, fără transpilare;
+  - Playwright 1.63 pe Edge, peste `dist/` servit de `vite preview`.
+- **Proba de mediu**, de două ori, de la `npm ci`:
+
+  | Pasul | Durata |
+  |---|---:|
+  | `npm ci` | 8 s |
+  | `tsc` | 2,8 s |
+  | testele unitare | 2,8 s |
+  | build | 2,9 s |
+  | e2e în Edge | 8 s |
+
+  `dist/` iese identic în ambele rulări, iar `git status` arată doar fișierele noi. Drive n-a readus nimic, deci nu e
+  nevoie de joncțiune și nici de ADR-ul ei.
+- **A doua trecere:** e2e-ul a prins un 404 pe `favicon.ico`. L-am reparat cu o iconiță, nu cu un filtru în test.
+
+**Următorul pas:** felia 1.2, scheletul: `t()` en / ro cu paritate, ErrorBoundary + jurnalul local, configul de la
+gazdă, CSP.

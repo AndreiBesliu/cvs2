@@ -3,6 +3,9 @@ dist/
 .env.local
 .env.*.local
 *.log
+test-results/
+playwright-report/
+.tmp/
 
 # Rapoartele Fazei 0: doar local (descriu gauri de securitate ale aplicatiei vechi, inca live)
 docs/faza0/
