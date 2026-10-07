@@ -382,3 +382,34 @@ modelul de planșe merg înainte, iar documentul v0 așteaptă (`docs/etape/etap
 
 **Următorul pas:** felia 1.2, scheletul: `t()` en / ro cu paritate, ErrorBoundary + jurnalul local, configul de la
 gazdă, CSP.
+
+## 2026-10-07 — Etapa 1, felia 1.2: scheletul (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua si testez putin mai incolo” (continuare). **Started:** 14:57. **Completed:** 15:05.
+**Clasa:** R1 (I1, I2). **Estimarea:** 1 felie. **Treceri:** 2.
+
+**Făcut:**
+- **`t()` en / ro** (`src/i18n/`):
+  - `mesaje.en.ts` definește cheile, iar `mesaje.ro.ts` le satisface exact;
+  - compilatorul refuză o cheie lipsă, o cheie în plus și un plural românesc fără `few`. Controalele sunt directive
+    `@ts-expect-error` în `test/unit/i18n.test.ts`, probate și invers: fără directivă, `tsc` dă `TS2741`;
+  - pluralele urmează CLDR: 0 erori, 1 eroare, 2–19 erori, 20 de erori, 101 erori.
+- **ErrorBoundary și jurnalul local** (`src/app/`):
+  - jurnalul păstrează ultimele 50 de intrări, cu mesajele și stivele tăiate;
+  - un depozit care aruncă sau e stricat nu pierde eroarea: ea trece în memorie;
+  - ecranul de eroare are „Copiază raportul”, „Reîncarcă” și raportul afișat;
+  - erorile ferestrei și promisiunile respinse intră și ele în jurnal.
+- **Configul de la gazdă:** `/config.json`, validat cu valibot. Un config lipsă sau greșit devine un motiv afișat,
+  nu o aplicație oprită.
+- **CSP-ul** stă o singură dată, în `shared/csp.ts`, și intră doar în build. Serverul de dezvoltare are nevoie de
+  scripturile inline ale lui React.
+- **E2e în Edge, 7 teste:**
+  - sub CSP-ul din build, Edge refuză `eval`, iar martorul fără CSP îl execută;
+  - aplicația nu raportează nicio încălcare;
+  - limba pornește după browser și rămâne după reîncărcare;
+  - diagnosticul `?diagnostic=eroare-de-randare` (oprit pe live) arată ecranul de eroare, raportul se copiază, iar
+    jurnalul se păstrează după reîncărcare.
+- 19 teste unitare.
+- **A doua trecere:** tipul importului de CSS (`declare module '*.css'`).
+
+**Următorul pas:** felia 1.3, CI-ul rapid și cârligul `git add -A`.

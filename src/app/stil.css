@@ -1,0 +1,89 @@
+:root {
+  color-scheme: light dark;
+  --fundal: #f6f4ef;
+  --text: #1d232b;
+  --text-slab: #5a6470;
+  --accent: #b86b0e;
+  --margine: #d8d3c8;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundal: #161a1f;
+    --text: #e8e4dc;
+    --text-slab: #a3abb5;
+    --accent: #f2a33a;
+    --margine: #333a43;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--fundal);
+  color: var(--text);
+}
+
+main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--margine);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+button[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+nav {
+  display: flex;
+  gap: 0.4rem;
+}
+
+footer {
+  margin-top: 2rem;
+  color: var(--text-slab);
+  font-size: 0.9rem;
+}
+
+.ecran-eroare .butoane {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.ecran-eroare textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.8rem;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--margine);
+  border-radius: 6px;
+}
