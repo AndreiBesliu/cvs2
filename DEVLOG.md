@@ -515,3 +515,38 @@ gazdă, CSP.
 - 65 de teste unitare.
 
 **Următorul pas:** felia 1.6, oracolul G-code din s4, cu poarta invariantelor 1, 3, 5, 6, 7 și 8.
+
+## 2026-10-07 — Etapa 1, felia 1.6: oracolul G-code și poarta invariantelor (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua si testez putin mai incolo” (continuare). **Started:** 15:37. **Completed:** 15:43.
+**Clasa:** R2 (I11, I12 parțial). **Estimarea:** 1 felie. **Treceri:** 2.
+
+**Făcut:**
+- **`test/oracles/gcode.ts`** (zero importuri din `src/`, cu regula de import și capcana ei):
+  - parserul propriu al textului;
+  - propria copie a codurilor GRBL 1.1 (s8 A.1);
+  - regula de arc GRBL rescrisă în float32, cu `error:33` și cercul fals.
+- **`test/oracles/poarta.ts`**: poarta invariantelor din etapa 1, pe un câmp de înălțimi al materialului, ca oracolul
+  din s4:
+  - **1**: pasul;
+  - **3**: rapidele prin material;
+  - **5**: sub fața de jos și în afara foii;
+  - **6**: codurile, 70 de octeți, punctul zecimal, arcul după rotunjire, fără G91 / G20 / R;
+  - **7**: axul pornit și pauza de pornire, înaintea oricărei tăieri;
+  - **8**: cutia tăieturilor în document, pe hârtie.
+- **Otrăvurile:** câte una pentru fiecare invariantă, în programe scrise de mână. Toate pică pe invarianta lor, iar
+  programul curat trece (`test/unit/oracol.test.ts`).
+- **Lanțul întreg trece poarta:**
+  - gaura Ø30 cu cutia 58 … 82 × 38 … 62;
+  - insula cu cutia 17 … 123 × 17 … 83;
+  - insula pe 4 colțuri × Z0 sus și jos.
+
+  Programul de stânga-jos, judecat ca dreapta-sus, e prins de invarianta 8.
+- **A doua trecere:** oracolul presupunea scula în (0, 0, 0) al mașinii la pornire. Cu Z0 jos, punctul acela e sub
+  material, deci prima ridicare părea o rapidă prin el. Acum mișcarea cu startul necunoscut se judecă doar la capăt.
+  Un control nou arată că un G0 care se termină în material e prins în continuare.
+- 75 de teste.
+
+**Următorul pas:** felia 1.7 (documentul v0) cere alegerea A / D. Fără ea merg cu ce nu depinde de arbore:
+- instanța de test (canalul de previzualizare);
+- fișa plăcii 1, cu programele A și B.

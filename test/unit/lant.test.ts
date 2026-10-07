@@ -1,17 +1,21 @@
 /**
- * Lanțul întreg, pe placa 1: conturul → profilul (offset + treceri) → IR → postul GRBL. Valorile sunt pe hârtie.
- * Oracolul independent (felia 1.6) citește apoi programul fără nimic din `src/`.
+ * Lanțul întreg, pe placa 1: conturul → profilul (offset + treceri) → IR → postul GRBL → poarta invariantelor.
+ * Valorile sunt pe hârtie. Poarta (`test/oracles/poarta.ts`) citește programul fără nimic din `src/`.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { profil } from '../../src/cam/profil.ts';
 import { traseuProfil } from '../../src/cam/traseu.ts';
-import { conturCerc, conturDreptunghi } from '../../src/geom/contur.ts';
+import { conturCerc, conturDreptunghi, type Contur } from '../../src/geom/contur.ts';
 import { AXE_XYZ, type Program } from '../../src/ir/ir.ts';
+import { COLTURI, type Montaj } from '../../src/ir/montaj.ts';
 import { GRBL_11 } from '../../src/post/contracte/grbl11.ts';
 import { posteaza } from '../../src/post/post.ts';
+import { poarta, type ContextPoarta } from '../oracles/poarta.ts';
 
-function gcode(c: ReturnType<typeof conturCerc>, latura: 'exterior' | 'interior', adancime: number, pas: number): string {
+const FOAIA = { latime: 140, inaltime: 100, grosime: 18 };
+
+function gcode(c: Contur, latura: 'exterior' | 'interior', adancime: number, pas: number, montaj: Montaj): string {
   const p = profil(c, { latura, diametruScula: 6, adancime, pas });
   assert.ok(p.ok, p.ok ? '' : p.motiv);
   if (!p.ok) return '';
@@ -21,13 +25,19 @@ function gcode(c: ReturnType<typeof conturCerc>, latura: 'exterior' | 'interior'
   const program: Program = {
     axe: AXE_XYZ, scula: { numar: 1, nume: 'freza plata', diametru: 6 }, turatie: 18000, zSigur: 5, miscari: t.miscari,
   };
-  const r = posteaza(program, { foaie: { latime: 140, inaltime: 100, grosime: 18 }, origine: 'stanga-jos', z0: 'sus' }, GRBL_11, { asteptareAx: 3 });
+  const r = posteaza(program, montaj, GRBL_11, { asteptareAx: 3 });
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   return r.ok ? r.text : '';
 }
 
-test('gaura Ø30 cu freza Ø6, 8 mm în două treceri: arce G3 cu raza 12, la Z-4 și Z-8', () => {
-  const t = gcode(conturCerc(70, 50, 15), 'interior', 8, 4);
+const STANGA_JOS: Montaj = { foaie: FOAIA, origine: 'stanga-jos', z0: 'sus' };
+const contextPentru = (m: Montaj, pas: number, cadru: ContextPoarta['cadru']): ContextPoarta => ({
+  foaie: m.foaie, origine: m.origine, z0: m.z0, diametruScula: 6, pas, supracursa: 0, asteptareAx: 3,
+  ...(cadru ? { cadru } : {}),
+});
+
+test('gaura Ø30 cu freza Ø6, 8 mm în două treceri: arce G3 cu raza 12, la Z-4 și Z-8, și poarta trece', () => {
+  const t = gcode(conturCerc(70, 50, 15), 'interior', 8, 4, STANGA_JOS);
   const linii = t.split('\n');
   assert.ok(linii.includes('G1 Z-4.000 F300.0') && linii.includes('G1 Z-8.000 F300.0'), t);
   // Un G0 spre poziția curentă nu se scrie: după ridicare, nu urmează încă o ridicare la același Z.
@@ -39,24 +49,35 @@ test('gaura Ø30 cu freza Ø6, 8 mm în două treceri: arce G3 cu raza 12, la Z-
     const j = Number(/J(-?[\d.]+)/.exec(a)?.[1]);
     assert.ok(Math.abs(Math.hypot(i, j) - 12) <= 0.0015, `${a}: raza ${Math.hypot(i, j)}`);
   }
+  assert.deepEqual(poarta(t, contextPentru(STANGA_JOS, 4, { minX: 58, maxX: 82, minY: 38, maxY: 62 })), []);
 });
 
-test('insula 100 × 60 pe exterior, o trecere de 3: patru laturi G1 și patru colțuri G3 de R3', () => {
-  const t = gcode(conturDreptunghi(20, 20, 100, 60), 'exterior', 3, 3);
-  const linii = t.split('\n');
-  assert.ok(linii.includes('G1 Z-3.000 F300.0'), t);
-  const colturi = linii.filter((l) => /^G3 /.test(l));
+test('insula 100 × 60 pe exterior, o trecere de 3: patru colțuri G3 de R3, cutia 17…123 × 17…83, poarta trece', () => {
+  const t = gcode(conturDreptunghi(20, 20, 100, 60), 'exterior', 3, 3, STANGA_JOS);
+  const colturi = t.split('\n').filter((l) => /^G3 /.test(l));
   assert.equal(colturi.length, 4, colturi.join('\n'));
   for (const a of colturi) {
     const i = Number(/I(-?[\d.]+)/.exec(a)?.[1]);
     const j = Number(/J(-?[\d.]+)/.exec(a)?.[1]);
     assert.ok(Math.abs(Math.hypot(i, j) - 3) <= 0.0015, a);
   }
-  // Marginile traseului, pe hârtie: insula 20..120 × 20..80, decalată cu raza 3.
-  const xs = linii.filter((l) => /^G[0123] .*X/.test(l)).map((l) => Number(/X(-?[\d.]+)/.exec(l)?.[1]));
-  const ys = linii.filter((l) => /^G[0123] .*Y/.test(l)).map((l) => Number(/Y(-?[\d.]+)/.exec(l)?.[1]));
-  assert.equal(Math.min(...xs), 17);
-  assert.equal(Math.max(...xs), 123);
-  assert.equal(Math.min(...ys), 17);
-  assert.equal(Math.max(...ys), 83);
+  assert.deepEqual(poarta(t, contextPentru(STANGA_JOS, 3, { minX: 17, maxX: 123, minY: 17, maxY: 83 })), []);
+});
+
+test('invarianta 8 pe cele 4 colțuri, cu Z0 sus și jos: aceeași cutie pe hârtie, în document, pentru toate opt', () => {
+  const cadru = { minX: 17, maxX: 123, minY: 17, maxY: 83 };
+  for (const origine of COLTURI) {
+    for (const z0 of ['sus', 'jos'] as const) {
+      const m: Montaj = { foaie: FOAIA, origine, z0 };
+      const t = gcode(conturDreptunghi(20, 20, 100, 60), 'exterior', 3, 3, m);
+      assert.deepEqual(poarta(t, contextPentru(m, 3, cadru)), [], `${origine}, Z0 ${z0}`);
+    }
+  }
+});
+
+test('controlul invariantei 8: programul de stânga-jos, judecat ca dreapta-sus, e prins', () => {
+  const t = gcode(conturDreptunghi(20, 20, 100, 60), 'exterior', 3, 3, STANGA_JOS);
+  const gresit: Montaj = { ...STANGA_JOS, origine: 'dreapta-sus' };
+  const inv = poarta(t, contextPentru(gresit, 3, { minX: 17, maxX: 123, minY: 17, maxY: 83 })).map((i) => i.invarianta);
+  assert.ok(inv.includes(8), JSON.stringify(inv));
 });
