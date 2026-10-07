@@ -36,6 +36,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   apoi la fiecare etapă.
 - **Începutul fiecărei sesiuni:** starea lui `main` și a ultimei rulări de noapte din CI. Nicio rulare de noapte în
   26 h = roșu. Un CI roșu pe `main` e incidentul numărul unu.
+  - Comenzile: `gh run list --workflow rapid.yml --branch main --limit 1` și
+    `gh run list --workflow complet.yml --limit 1`.
+  - Local, tot nivelul rapid: `npm run rapid`. E2e-ul în Edge: `npm run build && npm run e2e`.
+- **Cârligul `.claude/hooks/fara-add-all.ts`** refuză `git add -A` / `--all` / `-u` / `.` și `git commit -a` în
+  sesiunile deschise în `cncvs2`. O sesiune deschisă din `Apps` nu-l încarcă, deci acolo regula rămâne disciplină.
 - **O singură sesiune scrie în repo** la un moment dat; celelalte lucrează în worktree-uri sau doar citesc.
 - **DEVLOG-ul e scurt:** `Started` / `Completed`, cu promptul exact și modelul.
 

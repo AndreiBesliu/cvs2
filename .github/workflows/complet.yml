@@ -1,0 +1,32 @@
+# Nivelul complet (PLAN.md §4.4): în fiecare noapte și înaintea fiecărui deploy pe test (pornit de mână).
+# O sesiune nouă începe cu starea ultimei rulări de aici: nicio rulare în 26 de ore înseamnă roșu.
+name: complet
+
+on:
+  schedule:
+    - cron: '23 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  complet:
+    name: Nivelul complet
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - name: Nivelul rapid
+        run: npm run rapid
+      - name: Edge, pentru e2e
+        run: npx playwright install --with-deps msedge
+      - name: Build-ul servit
+        run: npm run build
+      - name: E2e pe dist/, în Edge
+        run: npm run e2e

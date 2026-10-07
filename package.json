@@ -13,8 +13,11 @@
     "preview": "vite preview --port 4173 --strictPort",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --test \"test/unit/**/*.test.ts\"",
-    "e2e": "playwright test",
-    "rapid": "npm run typecheck && npm test && npm run build"
+    "importuri": "node scripts/verifica-importuri.ts",
+    "licente": "node scripts/verifica-licente.ts",
+    "determinism": "node scripts/build-determinist.ts",
+    "rapid": "npm run typecheck && npm run importuri && npm test && npm run determinism && npm run licente",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "react": "19.3.0",
@@ -23,10 +26,12 @@
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
+    "@swc/core": "1.16.13",
     "@types/node": "26.6.4",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.2",
+    "dependency-cruiser": "18.5.0",
     "typescript": "7.0.2",
     "vite": "8.3.3"
   }

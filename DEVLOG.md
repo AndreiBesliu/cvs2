@@ -413,3 +413,32 @@ gazdă, CSP.
 - **A doua trecere:** tipul importului de CSS (`declare module '*.css'`).
 
 **Următorul pas:** felia 1.3, CI-ul rapid și cârligul `git add -A`.
+
+## 2026-10-07 — Etapa 1, felia 1.3: CI-ul rapid și cârligul împotriva adăugării totale (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua si testez putin mai incolo” (continuare). **Started:** 15:05. **Completed:** 15:15.
+**Clasa:** R1 (I1, I6). **Estimarea:** 1 felie. **Treceri:** 3.
+
+**Făcut:**
+- **Regulile de import** (`.dependency-cruiser.cjs`, `PLAN.md` §3.3):
+  - sunt 11 reguli, iar fiecare are o capcană în `test/capcane/`;
+  - `scripts/verifica-importuri.ts` cere EXACT încălcările capcanelor;
+  - controalele: o regulă cu calea stricată și un import interzis adăugat în cod real pică amândouă;
+  - regula mașinii primește capcana în felia 1.4, când apare `src/geom`;
+  - `dependency-cruiser` 18.5 nu suportă TypeScript 7 (vedea 0 module), deci citește prin swc.
+- **Build-ul determinist:** două build-uri identice, octet cu octet. Bugetul: JS gzip 69,9 kB, cu plafonul de 100 kB.
+- **Licențele:** dependențele de rulare se iau din lanțul lor din lockfile, nu din marcajul `dev`, fiindcă npm nu
+  marchează ca `dev` binarele opționale ale lui TypeScript 7. Sunt 4 dependențe, toate MIT, plus testul listei albe.
+- **Cârligul** `.claude/hooks/fara-add-all.ts`, înregistrat în `.claude/settings.json` pentru Bash și PowerShell:
+  - refuză `git add -A` / `--all` / `-u` / `.` / `:/` și `git commit -a`, oriunde într-o comandă compusă;
+  - nu se uită în corpul heredoc-urilor, deci un mesaj de commit care pomenește regula trece;
+  - 15 comenzi refuzate și 11 permise sunt testate, plus scriptul rulat pe stdin, cum îl rulează Claude Code.
+- **Workflow-urile:**
+  - `rapid`, la fiecare push, cu excepția commit-urilor numai `.md`;
+  - `complet`, noaptea și la cerere, cu nivelul rapid plus e2e în Edge pe `dist/`.
+- **Treceri:**
+  - ciclul e raportat o singură dată, nu de două ori;
+  - binarul lui `dependency-cruiser` nu e în `exports`;
+  - licențele se iau din lanțul de dependențe.
+
+**Următorul pas:** CI-ul pe GitHub, verde și la prima rulare de noapte. Apoi felia 1.4, geometria v0.

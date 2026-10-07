@@ -1,0 +1,39 @@
+# Nivelul rapid (PLAN.md §4.4): la fiecare push, ≤ 5 minute. Un roșu blochează commit-ul următor.
+# Commit-urile care ating doar .md nu-l pornesc.
+name: rapid
+
+on:
+  push:
+    paths-ignore: ['**.md']
+  pull_request:
+    paths-ignore: ['**.md']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rapid-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rapid:
+    name: Nivelul rapid
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - name: Tipurile (tsc)
+        run: npm run typecheck
+      - name: Regulile de import, cu capcanele
+        run: npm run importuri
+      - name: Testele unitare
+        run: npm test
+      - name: Build-ul determinist și mărimea pachetului
+        run: npm run determinism
+      - name: Licențele dependențelor de rulare
+        run: npm run licente
