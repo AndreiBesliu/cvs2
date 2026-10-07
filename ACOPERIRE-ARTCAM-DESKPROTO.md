@@ -23,6 +23,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Text, text pe cale, fonturi | S | v1 | de făcut | — |
 | Verificarea și repararea vectorilor: deschiși, duplicați, intersecții, bucle, noduri prea apropiate | S | v1 | de făcut | — |
 | Import 2D: DXF, AI / EPS (S+D); SVG (D); PDF vectorial, DWG, WMF, DGK / PIC (S) | S+D | v1 | de făcut | — |
+| Export 2D cu vectori reali: DXF, SVG, PDF (EPS / AI de decis), la scara exactă, cu cercuri, arce și curbe păstrate ca entități și cu straturile păstrate; deschis editabil în alte programe (rând nou, cerut de owner; `BRIEF.md` §16.2) | S | v1 (decis 07.10) | de făcut | — |
 | Cote (nici ArtCAM nu le are: doar rigle și măsurare) | peste prag | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Deformare în anvelopă (între două curbe), pentru vectori și reliefuri | S | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Trasare din imagine (bitmap → vectori) | S | v1 (decis 06.10; era v1.x) | de făcut | — |

@@ -140,6 +140,8 @@ Lista e derivată din răspunsuri și se confirmă în planul din Faza 2.
 - Plata funcționează: Stripe live, după CAEN. Dacă CAEN întârzie, owner-ul decide lansarea fără încasare.
 - Partea legală e completă: entitatea juridică, adresa de contact de firmă și Termenii.
 - Backup cu alarmă, jurnal de erori de server, costul AI pe apel (dacă AI-ul există), en + ro complet.
+- Adminul din §16.1 e complet pentru v1 și se poate exersa pe instanța de test.
+- Exportul vectorial din §16.2 e probat cu cititor independent și deschis de owner în programele lui.
 
 ## 9. Sistemul de planșe
 
@@ -199,6 +201,9 @@ era …”.
 | mai târziu | 5 | 4 |
 
 Total: 87 de rânduri.
+
+Pe 07.10 s-a adăugat un rând v1: exportul cu vectori reali (§16.2). Acum v1 are **65** de rânduri, iar totalul e
+88.
 
 **Mutat în v1:**
 - **A:** cote, deformare în anvelopă, trasare din imagine, tăierea și conversia vectorilor, foi multiple +
@@ -268,6 +273,61 @@ reală se reface în Faza 2, pe etape săptămânale.
 - **Regiunea mixtă a proiectelor Firebase** refolosite (`nam5` cu `europe-central2`).
 - **Stripe live** depinde de deblocarea CAEN, fără dată.
 
-## 16. Întrebări deschise
+## 16. Cerințe adăugate după interviu
+
+### 16.1 Adminul intră în v1 [decis 07.10]
+
+- **Ce:** un panou de admin „ca și acum”, adică cu funcțiile adminului din ediția întâi. Acolo avea 13 file:
+  - Puls, utilizatori, venituri, analiză, CAM;
+  - tichete, crash-uri, config, AI, audit;
+  - admini (cu rolurile support / admin / owner), operare.
+
+  Fila AI vine abia odată cu AI-ul, care e „mai târziu” (§2).
+- **Când:** decide asistentul, în planul pe etape din Faza 2. Owner-ul aprobă planul.
+- **Inventarul exact** (ce face fiecare filă în vechi, ce intră în v1 și ce se lasă) se face în Faza 2, din
+  codul vechi, și se trece în plan.
+- **Ce nu se repetă** (din `docs/faza0/10`):
+  - un singur fișier-monolit pentru tot adminul;
+  - funcțiile de admin care pe test dau 401, deci se pot exersa doar pe live;
+  - bancul vizual verde pe sabotaje;
+  - costul fără detaliere per utilizator;
+  - crash-urile văzute doar de la cei care au consimțit.
+- **Ce se adaugă față de vechi:** panoul de publicare test → live, decis în ediția întâi și nefăcut niciodată.
+  Observabilitatea din `LECTII.md` §4.11 (jurnalul de erori de server, panoul de diagnoză) stă tot în admin.
+
+### 16.2 Desenul lucrează cu vectori reali și îi exportă ca vectori reali [decis 07.10]
+
+Cum am înțeles cerința (de confirmat în planul din Faza 2):
+1. **Geometria rămâne exactă prin orice operație.** Orice formă desenată, importată sau editată rămâne linie, arc
+   sau curbă la:
+   - transformare, inclusiv rotire și scalare neuniformă;
+   - conversie în cale;
+   - unire, boolean, offset;
+   - text în curbe;
+   - editare de noduri.
+
+   Un cerc rămâne cerc, nu poligon cu 64 de laturi. Un dreptunghi rotunjit își păstrează colțurile după rotire.
+2. **Exportul scrie entități reale, nu puncte.** Formatele sunt SVG, DXF și PDF; EPS / AI se decid în plan.
+   - Cercul iese cerc, arcul iese arc, curba iese curbă.
+   - Scara în mm e exactă.
+   - Straturile și rolurile se păstrează.
+   - Fișierul se deschide editabil în alte programe: ArtCAM, Inkscape, Illustrator / Corel, AutoCAD / LibreCAD.
+3. **Unde aproximarea e inevitabilă, e mică și declarată.** De exemplu, offsetul unei curbe Bézier nu mai e o
+   curbă Bézier. Atunci se folosesc puține curbe sau arce, sub o toleranță declarată, nu sute de segmente.
+4. **Proba:**
+   - un oracol cu cititor independent: fișierul exportat e recitit de alt program și comparat cu valori pe
+     hârtie (raze, lungimi, arii, numărul de entități);
+   - în plus, owner-ul deschide fișierele de probă în programele lui, la placa etapei.
+
+**De ce:** în ediția întâi (`LECTII.md` §1, `docs/faza0/01` și `06`):
+- rotirea făcea din cerc un poligon cu 64 de laturi și ascuțea colțurile rotunjite;
+- „convertește în cale” pierdea arcele;
+- offsetul deschis ignora arcele;
+- Clipper aplatiza tot și ghicea arcele înapoi;
+- DXF-ul scria totul pe stratul „0”.
+
+**În Faza 2:** o sondă dedicată. Rândul de export e trecut în `ACOPERIRE-ARTCAM-DESKPROTO.md`, la A.
+
+## 17. Întrebări deschise
 
 - (niciuna; interviul s-a încheiat pe 06.10)

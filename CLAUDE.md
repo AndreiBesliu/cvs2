@@ -91,7 +91,7 @@ Detaliile sunt în `BRIEF.md`; dacă ceva de aici o contrazice, `BRIEF.md` câș
 
 - **Produsul**
   - Pentru **ateliere de producție**.
-  - **v1 = tot pragul marcat v1**: 64 de rânduri, după triaj, plus 8 funcții.
+  - **v1 = tot pragul marcat v1**: 64 de rânduri după triaj (65 din 07.10), plus 8 funcții.
   - Se lansează abia la **v1 complet**, fără beta.
 - **Ritmul**
   - Asistentul alege feliile din planul aprobat, iar owner-ul aprobă la sfârșitul fiecărei **etape de ~1
@@ -113,3 +113,7 @@ Detaliile sunt în `BRIEF.md`; dacă ceva de aici o contrazice, `BRIEF.md` câș
   - Axa A separată; axa a 4-a e în v1.x.
 - **Simularea:** un nucleu folosit de ecran și de teste, plus un oracol separat.
 - **Planșele:** prototip cu variantele A și D în Faza 2, înainte de aprobarea planului.
+- **Adăugate pe 07.10** (`BRIEF.md` §16):
+  - **adminul intră în v1**, „ca și acum”; momentul îl alege asistentul în planul pe etape;
+  - **desenul lucrează și exportă vectori reali**: cercul rămâne cerc prin orice operație, iar exportul scrie
+    entități reale la scară exactă, probate cu un cititor independent. Pragul are acum v1 = 65 de rânduri.

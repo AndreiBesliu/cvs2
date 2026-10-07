@@ -81,3 +81,21 @@ triaj; răspunsurile au venit pe rând.
 - Proiectul vechi: ramura goală `laterala` ștearsă, cu acordul owner-ului.
 
 **Următorul pas:** Faza 2, arhitectura în plan mode, cu prototipul planșelor (A și D) înainte de aprobare.
+
+## 2026-10-07 — Două cerințe adăugate după interviu (Model: Claude Opus 5.5)
+
+**Prompt:** „mai am de mentionat 2 lucruri, o sa vreau si un admin, ca si acum, si il vreau in v1. dar decizi tu
+cand este momentul pentru el. si vreau sa ne asiguram ca avem un sistem de desen care deseneaza si exporta
+vectori reali”
+
+**Făcut:**
+- `BRIEF.md` §16:
+  - 16.1, adminul în v1, cu momentul ales de asistent în planul pe etape;
+  - 16.2, vectorii reali: ce înseamnă, cum se probează și de ce.
+
+  §8 (gata la lansare) are două rânduri noi.
+- `ACOPERIRE-ARTCAM-DESKPROTO.md`: rând nou la A, exportul 2D cu vectori reali, v1. Acum v1 are 65 de rânduri,
+  iar totalul e 88.
+- `CLAUDE.md`: rezumatul deciziilor are cele două adăugiri.
+
+**Următorul pas:** Faza 2, tranșa 1 (sondele, inventarul adminului, prototipul planșelor).
