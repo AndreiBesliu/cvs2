@@ -826,3 +826,40 @@ poligoane oarecare; exportul Firestore pe test (la owner) înaintea deploy-ului 
 - **`scripts/publica-test.ts`** (doar hosting, proiectul numit explicit), cu pregătirea comună cu canalul.
 - **Publicat și verificat:** https://cncvectorstudio-test.firebaseapp.com/ servește aplicația nouă, instanța „test”,
   consola curată. Funcțiile aplicației vechi rulează încă pe test (deploy-ul a fost doar de hosting).
+
+## 2026-10-08 — Etapa 2, felia 2.2: operațiile în document (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, continua”. **Started:** 19:01. **Clasa:** R2 (exportul citește operațiile). **Estimarea:** ~½–1 zi activă,
+plus oracolul independent și recenzia.
+
+**Ce intră:** ADR 0025 (documentul v3, cu migrarea v2 → v3); operațiile de profil în piesă; exportul le citește din
+document; dialogul de export le arată și le scrie la Exportă, ca o singură comandă.
+
+**Completed:** 22:45. **Treceri:** 6.
+
+**Făcut:**
+- **Documentul v3** (`src/model/document.ts`, ADR 0025): `Piesa.operatii` (profil: noduri, sculă, latură, adâncime, pas),
+  cu plafoanele de 100 000 de operații și 100 000 de tăieturi; un singur adevăr pentru plafoane (`plafonDepasit`), folosit
+  și de ușă, și de Adaugă / Ctrl+D.
+- **Migrarea v2 → v3** (`src/model/incarcare.ts`): o operație pe element, în preordine, cu implicitele de până acum
+  (cercul interior 8/4, dreptunghiul exterior 3/3, T1 Ø6); o piesă v2 cu un câmp `operatii` e refuzată cu motiv.
+- **Tăieturile** (`taieturiFoaie`): latura, apoi instanța, operația, nodul. **Exportul** (`src/cam/job.ts`) le citește
+  din document; o singură sculă pe program (număr + diametru), adâncimea cel mult grosimea foii.
+- **Dialogul de export:** câte un rând pe operație; valorile se scriu în document la Exportă, ca o singură comandă;
+  numere cu punct sau virgulă (`src/ui/numar.ts`), cu motivul spus când nu se poate exporta; frezele amestecate spuse pe
+  față și aduse la una singură. Fila care citește urmează scriitorul (valorile operațiilor, nu montajul); o versiune pe
+  care n-o poate deschide o trece în `necitita` (nu scrie, nu exportă, lasă blocarea).
+- O formă nouă primește freza foii.
+
+**Proba:**
+- oracolul v3, scris de o sesiune independentă doar din ADR (`test/oracles/document*.ts`, `document.oracol.test.ts`):
+  752 de teste de legătură verzi; 38 de sabotaje pe oracol, toate prinse (0,45 M tokeni, 70 min);
+- recenzia adversarială: 4 lentile care reproduc în Edge + 17 verificatori, **3,0 M tokeni, 100 min** (anunțasem ~1,5 M
+  și 15–25 min, sub propriul tabel de costuri: am greșit estimarea); 15 constatări confirmate, toate reparate;
+- reverificarea remedierilor (1 agent, 0,30 M, 36 min): 7 / 7 reparate; 6 probleme noi mici, 5 reparate;
+- otrăvuri: 51 pe instantaneu + 33 pe codul final, cu controlul verde înainte, în worktree în afara Drive-ului, arborele
+  curat la final; toate prinse în afară de un mutant echivalent; 5 goluri închise cu teste noi;
+- 1022 de teste unitare, 35 e2e în Edge; pornirea are 91,0 kB gzip; fișierele de aur ale plăcii 1 neschimbate.
+
+**Rămâne deschis:** motivele refuzurilor din CAM (acum și „altă sculă”) sunt doar în română (gol mai vechi, din 1.9c);
+schimbarea sculei (etapa 3); placa 1, la owner.
