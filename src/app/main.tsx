@@ -48,7 +48,7 @@ const config = await incarcaConfig(window.fetch.bind(window));
 if (!config.ok) jurnal.adauga('config', config.motiv);
 // Proiectul din browser se deschide înainte de prima randare: o comandă dată între timp ar fi acoperită de el.
 const proiect = await deschideProiect();
-if (proiect.mod === 'nu-se-deschide') jurnal.adauga('proiect', proiect.motiv);
+if (proiect.mod === 'nu-se-deschide' || proiect.mod === 'fara-memorie') jurnal.adauga('proiect', proiect.motiv);
 
 const context = (): Context => ({
   aplicatia: 'CNC Vector Studio',

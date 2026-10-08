@@ -22,7 +22,7 @@ Bugetul unei felii e ~½ zi activă, până la prima măsurătoare (`PLAN.md` §
 | 1.4 | Geometria v0: L / A / C cu bulge, transformările exacte, cavalier adus în repo, profilul exterior și interior pe dreptunghi și cerc, cu treceri pe adâncime | I10a, I10c | R2 | 1.3 |
 | 1.5 | IR-ul v0 pe N axe, montajul (4 colțuri, Z0 sus sau jos, o singură matrice) și postul GRBL v0 (3 zecimale, I / J din startul rotunjit, gărzile, antetul, 70 de octeți, SHA-256) | I11, I20 | R2 | 1.4 |
 | 1.6 | Oracolul G-code din s4 în `test/oracles/`, cu valorile pe hârtie pentru cele 4 colțuri, regula de arc GRBL și poarta invariantelor 1, 3, 5, 6, 7, 8 | I11, I12 | R2 | 1.5 |
-| 1.7 | Documentul v0: schema valibot cu versiune și o singură ușă de încărcare, arborele variantei alese, jurnalul de comenzi, IndexedDB în tranzacție, registrul de acțiuni cu capabilitatea pe fiecare acțiune | I3, I5, I6 | R1–R2 | **alegerea A / D** |
+| 1.7 | Documentul v0: schema valibot cu versiune și o singură ușă de încărcare, arborele variantei alese, jurnalul de comenzi, IndexedDB în tranzacție, registrul de acțiuni cu capabilitatea pe fiecare acțiune; plus lista de vectori, cu avertismentele cu roșu (`BRIEF.md` §16.3) | I3, I5, I6 | R1–R2 | alegerea A / D: **D**, pe 08.10 (ADR 0024) |
 | 1.8 | Pânza v0: stratul de vectori în worker, pe pânză software; pan, zoom, selecție și mutare prin acțiuni; oracolul pânzei (marginea cercului) | I7 | R2 | 1.7 |
 | 1.9 | Instanța de test (exportul Firestore confirmat de owner, apoi doar hosting) și fișa plăcii 1, cu programele A și B | I13 | R2 | 1.6, 1.8 |
 

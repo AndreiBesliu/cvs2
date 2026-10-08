@@ -178,7 +178,16 @@ Lista e derivată din răspunsuri și se confirmă în planul din Faza 2.
     aparține foii).
   - Scenariul 8: „nu înțeleg scenariul și scopul lui”. E controlul pentru lucrul simplu: verifică doar că D nu cere
     al doilea nivel la un semn unic. N-a cerut, și s-a purtat ca A (11 gesturi în ambele).
-  - **Alegerea explicită A / D rămâne deschisă.** Notițele arată spre D. Cerințele noi de la scenariul 1 sunt în §16.3.
+  - Cerințele noi de la scenariul 1 sunt în §16.3.
+- **Alegerea** [decis 08.10]: **D**, cuvântul owner-ului: „D, ok la toate”. „La toate” acoperă cele trei alegeri din
+  prototip și cele două implicite de la felia 1.10:
+  1. piesă e orice lucru pus pe foaie (în spate, o piesă cu o singură instanță; nivelul doi rămâne ascuns până e cerut);
+  2. Ctrl+D face o copie separată (o piesă nouă); copiile legate le face doar «Încă…»;
+  3. mânerele unei instanțe cu surori schimbă piesa, deci toate instanțele, cu banda de avertizare;
+  4. confirmarea la export se cere când discul frezei trece de marginea foii;
+  5. adâncimea e cel mult grosimea foii.
+
+  Contractul documentului (schema v2) e în `docs/adr/0024-planse-varianta-d.md`; felia 1.7 îl pune în aplicație.
 
 ## 10. Funcțiile candidate: v1 / v1.x / mai târziu
 
@@ -378,7 +387,8 @@ alegerea A / D.
    lista de vectori.
    - Bara de jos le arată din felia 1.10: un singur rând (cu mai multe forme, „N forme ies din foaie”, iar lista în
      titlu), ca bara să nu crească peste pânză.
-   - Lista de vectori vine cu arborele planșelor (felia 1.7, după alegerea A / D). Acolo avertismentele apar cu roșu.
+   - Lista de vectori a venit cu felia 1.7 (08.10): ce stă pe foaie, iar o formă care iese din foaie apare cu roșu, cu
+     avertismentul în titlu.
 
 ## 17. Întrebări deschise
 

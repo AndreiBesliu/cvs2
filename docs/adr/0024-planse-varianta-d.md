@@ -46,6 +46,40 @@ schimbă fără un ADR nou.
 - **Un câmp nou cu sens** (de exemplu fața de jos, montajele, sculele) **intră doar cu o schemă nouă și o migrare.**
   Câmpurile necunoscute se păstrează, dar o versiune mai veche nu trebuie să taie fără să înțeleagă un câmp.
 
+**Precizările contractului** (08.10, în aceeași felie, după întrebările oracolului independent și înainte de încheierea
+feliei; ele fac parte din contract):
+1. **Adâncimea** se numără în niveluri, cu rădăcina pe nivelul 1: 32 de niveluri trec, 33 nu.
+2. **Plafoanele de noduri și de instanțe** sunt totaluri pe document; grupurile se numără ca noduri.
+3. **Compunerea** se face de sus în jos: `M = matricea instanței`, apoi, pentru fiecare nod de pe drum, `M = M ∘ nod`
+   (`compune(M, nod)`). Rotirea care nu e multiplu de 90° folosește `cos(r·π/180)` și `sin(r·π/180)`, cu `r` adus în
+   [0, 360).
+4. **Mărimile** sunt strict pozitive (laturile, raza, stocul), iar `razaColt` ≥ 0, ca în v1, și cel mult jumătate din
+   latura mai mică a dreptunghiului. `rev` e un întreg sigur (0 … `Number.MAX_SAFE_INTEGER`). `nume` are cel mult 200 de
+   caractere; `campuri` are cel mult 200 de chei, fiecare cheie cel mult 200 de caractere, fiecare valoare cel mult
+   10 000.
+5. **Lumea e mărginită**, ca nimic să nu ajungă Infinity sau NaN pe pânză ori în CAM:
+   - matricea compusă a fiecărui nod față de rădăcina piesei are toți coeficienții finiți, `|a|, |b|, |c|, |d|` ≤ 10 000
+     și `|e|, |f|` ≤ 10 000 000 mm;
+   - `|x|, |y|` ale instanței ≤ 10 000 000 mm;
+   - elementele în lume ale tuturor foilor (instanțele înmulțite cu elementele pieselor lor) sunt cel mult 100 000,
+     cât era plafonul de elemente din v1: pânza, CAM-ul, avertismentele și lista sunt liniare în ele;
+   - o formă cu arce (cercul, dreptunghiul rotunjit) stă doar sub o matrice compusă care e similitudine (rotire, scalare
+     uniformă, eventual oglindire), cu toleranța 1e-12 relativă la scară. Elipsa (ADR 0002) intră mai târziu, cu o
+     schemă nouă;
+   - tot JSON-ul documentului, cu câmpurile necunoscute, are cel mult 200 de niveluri de imbricare.
+
+   Un document v1 cu valori peste aceste margini e refuzat la migrare, cu motivul, nu tăiat. Comenzile aplicației nu
+   pot produce un document peste plafoane: o acțiune care l-ar trece e inactivă, cu motivul ei.
+6. **Migrarea păstrează și câmpurile necunoscute ale matricei** (`matrice: { …matricea v1, e: 0, f: 0 }`).
+7. **Ciocnirile de nume în migrare se refuză, cu motiv:** un document v1 cu un câmp de sus numit `piese` sau `foi`, sau
+   cu un element care are un câmp `tip`, nu se poate migra fără să-l piardă. Un câmp necunoscut `copii` pe un element
+   rămâne doar un câmp (nu e arbore).
+8. **Lucrurile goale sunt valide:** un grup fără copii, o foaie fără instanțe, o piesă fără instanțe. Regula „ștergerea
+   ultimei instanțe ia și piesa” e a comenzilor, nu a ușii.
+9. **Cheile `__proto__`, `constructor` și `prototype`** (câmpuri necunoscute, chei din `campuri`) se păstrează ca date:
+   ușa întoarce o copie a documentului validat, nu ieșirea validatorului, care le-ar scoate tăcut.
+10. **Un document v2 valid trece prin ușă neschimbat**, fără valori implicite adăugate; JSON-ul canonic scrie −0 ca `0`.
+
 **Dovada:**
 - [măsurat, prototipul] Scenariul 5 cere 6 gesturi în D și 26 în A, iar scenariul 7 cere 9 în D și 39 în A. În A, spatele
   rămânea decalat cu 50 mm, fără avertisment. La 12 suporturi, D ține 2 noduri, iar A 24.

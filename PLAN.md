@@ -947,7 +947,7 @@ sunt deschise dacă ești de acord.
 
 | # | Decizia | Răspunsul |
 |---:|---|---|
-| 1 | A sau D | **înainte de etapa 1**, după ce încerci prototipul; etapa 1 nu pornește fără alegere |
+| 1 | A sau D | **D, decis pe 08.10** (ADR 0024), cu cele trei alegeri din prototip |
 | 2 | Beta sau v1 complet | **probă închisă după etapa 14** (din săptămâna 15) |
 | 3 | Rândul de import și exportul AI | **toate patru recomandările**: DGK / PIC scoase, DWG doar mesaj, EPS și AI vechi cu cititor propriu, fără export AI |
 | 4 | Fără placă | **găurirea multiplă** pe simulare și pe octeți; **laserul pe laserul tău Ruida (CO2)**, printr-un export vectorial pentru LightBurn / RDWorks |
@@ -1014,7 +1014,7 @@ Textul întrebărilor, așa cum au fost puse:
 
 | Acțiunea | Starea | Termen |
 |---|---|---|
-| Alegerea A / D, după ce încerci prototipul (planul e aprobat pe 07.10, fără ea). Prototipul e pe instanța de test: <https://cncvectorstudio-test--planse-ad-m9ycx3rc.web.app> (canal de previzualizare, expiră pe 06.11.2026) | **încercat pe 07.10**: notițele arată spre D (`BRIEF.md` §9); aștept cuvântul tău, plus cele trei alegeri din D | felia 1.7 |
+| Alegerea A / D, după ce încerci prototipul (planul e aprobat pe 07.10, fără ea). Prototipul e pe instanța de test: <https://cncvectorstudio-test--planse-ad-m9ycx3rc.web.app> (canal de previzualizare, expiră pe 06.11.2026) | **închisă pe 08.10: D**, cu cele trei alegeri din prototip (ADR 0024) | felia 1.7 |
 | Lista de cumpărături pentru plăci: MDF 18 / 12 / 6; frezele plate Ø6 și Ø3,175, V60, V90, bilă Ø6, un roundover; șubler, șubler de adâncime, lere de rază și de joc, comparator; placa de contact pentru Z | **deschisă** | etapa 1 (placa de contact: etapa 3) |
 | Atelierele: câte unul pentru NcStudio, RichAuto, Syntec, Mach3 / Mach4, cu versiunea controlerului | **deschisă** | căutarea în săptămâna 1, confirmările până la sfârșitul etapei 2 |
 | PITR pe live | **deschisă** | înainte de etapa 3 |

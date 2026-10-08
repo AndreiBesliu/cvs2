@@ -1,5 +1,5 @@
 import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
-import type { Document, FormaDoc, Instanta, Piesa } from '../model/document.ts';
+import { noduriPiesa, numara, PLAFON, type Document, type FormaDoc, type Instanta, type Piesa } from '../model/document.ts';
 import { conturElement } from '../model/forme.ts';
 import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie } from '../model/lume.ts';
@@ -83,6 +83,46 @@ function adauga(ctx: ContextDocument, forma: FormaDoc, x: number, y: number): vo
 /** Acțiunile care schimbă documentul sunt oprite într-o filă care doar citește. */
 const scrie = (ctx: ContextDocument): true | 'motiv.doar-citire' => (ctx.doarCitire?.() ? 'motiv.doar-citire' : true);
 
+/**
+ * Un document nou trebuie să treacă și el de ușă (ADR 0024, precizarea 5): o acțiune care ar trece de plafoane e inactivă,
+ * altfel aplicația ar salva un proiect pe care, la redeschidere, nu l-ar mai putea încărca.
+ */
+function incape(doc: Document, plus: { readonly noduri: number; readonly instante: number; readonly elementeLume: number }): boolean {
+  const n = numara(doc);
+  return n.noduri + plus.noduri <= PLAFON.noduri && n.instante + plus.instante <= PLAFON.instante
+    && n.elementeLume + plus.elementeLume <= PLAFON.elementeLume;
+}
+
+/** Cât adaugă o copie separată a fiecărei instanțe alese: piesa ei întreagă și o instanță. */
+function cresteCopia(ctx: ContextDocument): { noduri: number; instante: number; elementeLume: number } {
+  const doc = ctx.istoric().doc;
+  const alese = new Set(ctx.selectie());
+  const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  const plus = { noduri: 0, instante: 0, elementeLume: 0 };
+  for (const i of foaieCurenta(doc).instante) {
+    const p = alese.has(i.id) ? piese.get(i.piesa) : undefined;
+    if (!p) continue;
+    const noduri = noduriPiesa(p.radacina);
+    plus.noduri += noduri.length;
+    plus.instante += 1;
+    plus.elementeLume += noduri.filter((x) => x.nod.tip === 'element').length;
+  }
+  return plus;
+}
+
+const poateAdauga = (ctx: ContextDocument): true | 'motiv.doar-citire' | 'motiv.plafon' => {
+  const s = scrie(ctx);
+  if (s !== true) return s;
+  return incape(ctx.istoric().doc, { noduri: 1, instante: 1, elementeLume: 1 }) ? true : 'motiv.plafon';
+};
+
+/** Selecția păstrează doar instanțele care există încă (după o anulare, o refacere sau o ștergere). */
+function curataSelectia(ctx: ContextDocument): void {
+  const existente = new Set(foaieCurenta(ctx.istoric().doc).instante.map((i) => i.id));
+  const sel = ctx.selectie();
+  if (sel.some((id) => !existente.has(id))) ctx.selecteaza(sel.filter((id) => existente.has(id)));
+}
+
 export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   {
     id: 'selectie.la-punct',
@@ -110,7 +150,7 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
     id: 'document.adauga-dreptunghi',
     eticheta: 'actiune.adauga-dreptunghi',
     capabilitate: 'desen',
-    activa: scrie,
+    activa: poateAdauga,
     ruleaza: (ctx) => {
       adauga(ctx, { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 0 }, 20, 20);
     },
@@ -119,7 +159,7 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
     id: 'document.adauga-cerc',
     eticheta: 'actiune.adauga-cerc',
     capabilitate: 'desen',
-    activa: scrie,
+    activa: poateAdauga,
     ruleaza: (ctx) => {
       adauga(ctx, { tip: 'cerc', raza: 15 }, 70, 50);
     },
@@ -148,7 +188,12 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
     id: 'document.duplica-selectia',
     eticheta: 'actiune.duplica-selectia',
     capabilitate: 'desen',
-    activa: (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie' : scrie(ctx)),
+    activa: (ctx) => {
+      if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      return incape(ctx.istoric().doc, cresteCopia(ctx)) ? true : 'motiv.plafon';
+    },
     ruleaza: (ctx) => {
       let h = ctx.istoric();
       const alese = new Set(ctx.selectie());
@@ -218,14 +263,14 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
     eticheta: 'actiune.anuleaza',
     capabilitate: 'desen',
     activa: (ctx) => (ctx.istoric().trecut.length === 0 ? 'motiv.nimic-de-anulat' : scrie(ctx)),
-    ruleaza: (ctx) => { ctx.scrie(anuleaza(ctx.istoric())); },
+    ruleaza: (ctx) => { ctx.scrie(anuleaza(ctx.istoric())); curataSelectia(ctx); },
   },
   {
     id: 'istoric.reface',
     eticheta: 'actiune.reface',
     capabilitate: 'desen',
     activa: (ctx) => (ctx.istoric().viitor.length === 0 ? 'motiv.nimic-de-refacut' : scrie(ctx)),
-    ruleaza: (ctx) => { ctx.scrie(reface(ctx.istoric())); },
+    ruleaza: (ctx) => { ctx.scrie(reface(ctx.istoric())); curataSelectia(ctx); },
   },
 ];
 

@@ -318,13 +318,19 @@ footer {
   margin: 0;
 }
 
+/* Pe ecran îngust, lista trece sub pânză și cedează ea prima: pânza își păstrează înălțimea (sub 100 px n-ar porni). */
 @media (max-width: 40rem) {
   .lucru {
     flex-direction: column;
   }
 
+  .lucru > .panza-cutie {
+    flex: 1 0 10rem;
+  }
+
   .lista-vectori {
-    flex: 0 0 auto;
+    flex: 0 1 auto;
+    min-height: 0;
     max-height: 30vh;
     border-left: 0;
     border-top: 1px solid var(--margine);

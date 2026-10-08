@@ -22,8 +22,9 @@ function motivSchema(issues: readonly v.BaseIssue<unknown>[]): string {
 /**
  * v1 → v2 (ADR 0024): fiecare element devine o piesă cu o singură instanță, ambele cu id-ul elementului. Translația
  * matricei trece pe instanță, restul rămâne pe element, deci matricea în lume e numeric aceeași (instanța are rotirea 0).
- * Câmpurile necunoscute rămân: ale elementului pe elementul-rădăcină, ale foii pe `stoc`, cele de sus pe document.
- * Un câmp necunoscut de sus numit `piese` sau `foi` ar fi acoperit: v1 nu l-a scris niciodată.
+ * Câmpurile necunoscute rămân: ale elementului pe elementul-rădăcină, ale matricei pe matrice, ale foii pe `stoc`, cele
+ * de sus pe document. Primește intrarea BRUTĂ, deja validată: ieșirea valibot ar fi scos tăcut cheile `__proto__`,
+ * `constructor` și `prototype`.
  */
 function v1v2(doc: DocumentV1): Brut {
   const { schema: _schema, rev, foaie, elemente, ...restDoc } = doc;
@@ -49,7 +50,14 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   1: (brut) => {
     const r = v.safeParse(SchemaDocumentV1, brut);
     if (!r.success) return { ok: false, motiv: `documentul v1 nu respectă schema${motivSchema(r.issues)}` };
-    return { ok: true, doc: v1v2(r.output) };
+    // Un câmp necunoscut cu numele unui câmp din v2 s-ar pierde în migrare: refuzat, cu motiv, nu acoperit (ADR 0024).
+    for (const k of ['piese', 'foi'] as const) {
+      if (Object.hasOwn(brut, k)) return { ok: false, motiv: `documentul v1 are câmpul „${k}”, pe care v2 îl folosește: nu se poate migra fără să-l piardă` };
+    }
+    const elemente = (brut as unknown as DocumentV1).elemente;
+    const ciocnire = elemente.find((e) => Object.hasOwn(e, 'tip'));
+    if (ciocnire) return { ok: false, motiv: `elementul v1 ${ciocnire.id} are câmpul „tip”, pe care v2 îl folosește: nu se poate migra fără să-l piardă` };
+    return { ok: true, doc: v1v2(brut as unknown as DocumentV1) };
   },
 };
 
@@ -69,15 +77,34 @@ function arboreInMargini(doc: Brut): string | null {
       if (!x || typeof x.nod !== 'object' || x.nod === null) continue;
       if (x.adancime > PLAFON.adancime) return `o piesă trece de ${PLAFON.adancime} de niveluri`;
       if (++noduri > PLAFON.noduri) return `documentul trece de ${PLAFON.noduri} de noduri`;
-      const copii = (x.nod as Brut)['copii'];
+      // Doar grupurile au copii: un câmp necunoscut `copii` pe un element nu e arbore.
+      const copii = (x.nod as Brut)['tip'] === 'grup' ? (x.nod as Brut)['copii'] : undefined;
       if (Array.isArray(copii)) for (const c of copii) stiva.push({ nod: c, adancime: x.adancime + 1 });
     }
   }
   return null;
 }
 
+/** Câte niveluri de imbricare are o valoare JSON (documentul însuși e nivelul 1). Iterativ, oprit la `max + 1`. */
+function imbricare(x: unknown, max: number): number {
+  let cel = 0;
+  const stiva: Array<{ readonly v: unknown; readonly n: number }> = [{ v: x, n: 1 }];
+  while (stiva.length > 0) {
+    const e = stiva.pop();
+    if (!e || typeof e.v !== 'object' || e.v === null) continue;
+    cel = Math.max(cel, e.n);
+    if (cel > max) return cel;
+    for (const c of Object.values(e.v)) if (typeof c === 'object' && c !== null) stiva.push({ v: c, n: e.n + 1 });
+  }
+  return cel;
+}
+
 export function incarca(brut: unknown): RezultatIncarcare {
   if (typeof brut !== 'object' || brut === null || Array.isArray(brut)) return { ok: false, motiv: 'documentul nu e un obiect' };
+  // Un câmp necunoscut foarte adânc ar trece de schemă (care nu coboară în el) și ar umple stiva la JSON-ul canonic.
+  if (imbricare(brut, PLAFON.imbricareJson) > PLAFON.imbricareJson) {
+    return { ok: false, motiv: `documentul are peste ${PLAFON.imbricareJson} de niveluri de imbricare` };
+  }
   let doc = brut as Brut;
   const versiune = doc['schema'];
   if (typeof versiune !== 'number' || !Number.isInteger(versiune) || versiune < 1) {
@@ -93,11 +120,18 @@ export function incarca(brut: unknown): RezultatIncarcare {
     if (!r.ok) return r;
     doc = r.doc;
   }
+  // Migrarea poate adânci documentul (un câmp al foii v1 ajunge pe `foi[0].stoc`): imbricarea se judecă și pe rezultat,
+  // altfel ușa ar primi acum un document pe care nu l-ar mai redeschide după salvare.
+  if (versiune < VERSIUNE_SCHEMA && imbricare(doc, PLAFON.imbricareJson) > PLAFON.imbricareJson) {
+    return { ok: false, motiv: `documentul migrat are peste ${PLAFON.imbricareJson} de niveluri de imbricare` };
+  }
   const margini = arboreInMargini(doc);
   if (margini) return { ok: false, motiv: `documentul nu respectă schema: ${margini}` };
   const r = v.safeParse(SchemaDocument, doc);
   if (!r.success) return { ok: false, motiv: `documentul nu respectă schema${motivSchema(r.issues)}` };
-  return { ok: true, doc: r.output };
+  // Documentul întors e o copie a intrării validate, nu ieșirea valibot: aceea scoate tăcut cheile `__proto__`,
+  // `constructor` și `prototype`, iar contractul păstrează câmpurile necunoscute. Copia le ține ca date simple.
+  return { ok: true, doc: structuredClone(doc) as Document };
 }
 
 /** JSON canonic: cheile sortate la fiecare nivel, deci același document dă aceiași octeți (și același hash). */

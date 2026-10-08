@@ -121,6 +121,35 @@ test('ștergerea a două instanțe e un singur pas: anularea le pune înapoi pe 
   assert.deepEqual(ctx.h().doc.piese, inainte.piese);
 });
 
+test('plafoanele: Adaugă și Ctrl+D sunt inactive când documentul ar trece de ele (altfel n-ar mai putea fi redeschis)', () => {
+  const r = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
+  const ctx = context();
+  // O piesă cu 60 000 de elemente: încă o copie ar trece de 100 000 de noduri și de elemente în lume.
+  const radacina = { tip: 'grup' as const, id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, copii: Array.from({ length: 60_000 }, (_, k) => ({
+    tip: 'element' as const, id: `n${k}`, forma: { tip: 'cerc' as const, raza: 1 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 },
+  })) };
+  const doc = ctx.h().doc;
+  ctx.scrie(istoricNou({ ...doc, piese: [{ id: 'p', radacina }], foi: [{ id: 'f1', stoc: doc.foi[0]!.stoc, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }] }));
+  ctx.selecteaza(['i']);
+  assert.deepEqual(stare(r, 'document.duplica-selectia', ctx), { ok: false, motiv: 'motiv.plafon' });
+  assert.deepEqual(stare(r, 'document.adauga-cerc', ctx), { ok: true }, 'un element în plus încă încape');
+  // La 99 999 + 1 noduri, încă un cerc ar trece.
+  const mare = { ...radacina, copii: radacina.copii.slice(0, 1).concat(Array.from({ length: 99_998 }, (_, k) => ({ ...radacina.copii[0]!, id: `m${k}` }))) };
+  ctx.scrie(istoricNou({ ...ctx.h().doc, piese: [{ id: 'p', radacina: mare }] }));
+  assert.deepEqual(stare(r, 'document.adauga-cerc', ctx), { ok: false, motiv: 'motiv.plafon' });
+});
+
+test('anularea și refacerea scot din selecție instanțele care nu mai sunt pe foaie', () => {
+  const r = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
+  const ctx = context();
+  ruleaza(r, 'document.adauga-cerc', ctx);
+  ruleaza(r, 'document.duplica-selectia', ctx);
+  assert.deepEqual(ctx.sel(), ['e2']);
+  ruleaza(r, 'istoric.anuleaza', ctx);
+  assert.deepEqual(ctx.sel(), [], 'copia anulată nu rămâne selectată');
+  assert.deepEqual(stare(r, 'document.duplica-selectia', ctx), { ok: false, motiv: 'motiv.nicio-selectie' });
+});
+
 test('o filă care doar citește: nicio acțiune care schimbă documentul nu rulează; selecția merge', () => {
   const r = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
   const ctx = context();

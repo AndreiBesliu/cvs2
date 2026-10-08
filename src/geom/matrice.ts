@@ -20,9 +20,12 @@ export function scalare(sx: number, sy: number = sx): Matrice {
   return { a: sx, b: 0, c: 0, d: sy, e: 0, f: 0 };
 }
 
-/** Rotirea în grade, trigonometric. La multiplii de 90°, sinusul și cosinusul sunt exacte (0 și ±1, nu 6·10⁻¹⁷). */
+/**
+ * Rotirea în grade, trigonometric. La multiplii de 90°, sinusul și cosinusul sunt exacte (0 și ±1, nu 6·10⁻¹⁷). Un unghi
+ * deja în [0, 360) se folosește neschimbat: `((r % 360) + 360) % 360` i-ar schimba ultimii biți (0,1 → 0,10000000000002274).
+ */
 export function rotatie(grade: number): Matrice {
-  const r = ((grade % 360) + 360) % 360;
+  const r = grade >= 0 && grade < 360 ? grade : ((grade % 360) + 360) % 360;
   const exacte: Readonly<Record<number, readonly [number, number]>> = { 0: [1, 0], 90: [0, 1], 180: [-1, 0], 270: [0, -1] };
   const [cos, sin] = exacte[r] ?? [Math.cos((r * Math.PI) / 180), Math.sin((r * Math.PI) / 180)];
   return { a: cos, b: sin, c: -sin, d: cos, e: 0, f: 0 };

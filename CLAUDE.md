@@ -8,13 +8,13 @@ DeskProto; peste el construim. Owner: Andrei.
 **De ce de la zero:** în proiectul vechi progresul devenise prea greu, iar procesul de dezvoltare părea
 haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect de la început.
 
-## Stare (07.10.2026)
+## Stare (08.10.2026)
 
 - **Faza 0: încheiată.** Concluziile sunt în `LECTII.md`. Rapoartele cu surse sunt în `docs/faza0/`, **doar local**:
   sunt ignorate de git, fiindcă repo-ul e public și ele descriu găuri ale aplicației vechi, încă live.
 - **Faza 1 (interviul): încheiată pe 06.10.2026.** Toate deciziile sunt în `BRIEF.md`.
-- **Faza 2: încheiată pe 07.10.2026.** **`PLAN.md` e aprobat** de owner, fără modelul de planșe (A / D), pe care îl
-  alege după prototip, **înainte de etapa 1**.
+- **Faza 2: încheiată pe 07.10.2026.** **`PLAN.md` e aprobat** de owner. Modelul de planșe e **D**, ales pe 08.10 după
+  prototip (ADR 0024, `BRIEF.md` §9).
   - `PLAN.md` e autoritatea pentru arhitectură (deciziile T1–T23), pentru ordinea etapelor și pentru regulile de proces
     (§5.1).
   - Dovezile sunt în `docs/faza2/`: sonde, verificări, propuneri (doar istoric), estimare, critici.
@@ -25,13 +25,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - `docs/adr/`: ADR 0001–0023, câte unul pe decizie (T1–T23). O decizie se schimbă doar printr-un ADR nou.
 - **Etapa 1 e în lucru din 07.10**, pornită la cererea owner-ului („Continua si testez putin mai incolo”), fără alegerea
   A / D. Fișa și jurnalul feliilor sunt în `docs/etape/etapa-01.md`.
-  - Gata: 1.1–1.6, 1.7a (documentul fără arbore), 1.8 (pânza), 1.9a (placa 1, programele A și B), 1.9b–c (canalul,
-    exportul din aplicație) și 1.10 (ieșirea din foaie: avertisment în bara de jos, confirmare la export, `BRIEF.md`
-    §16.3).
-  - Owner-ul a încercat prototipul planșelor pe 07.10: notițele arată spre D, cuvântul lui e încă deschis (`BRIEF.md` §9).
+  - Gata: 1.1–1.6, 1.7a (documentul fără arbore), 1.7 (documentul v2, varianta D: piese și instanțe, migrarea
+    v1 → v2, IndexedDB cu un singur scriitor, lista de vectori), 1.8 (pânza), 1.9a (placa 1, programele A și B), 1.9b–c
+    (canalul, exportul din aplicație) și 1.10 (ieșirea din foaie: avertisment în bara de jos, confirmare la export,
+    `BRIEF.md` §16.3).
   - Rămân:
-    - 1.7, arborele variantei alese, ca migrare v1 → v2, după alegerea A / D;
-    - 1.9, hosting pe adresa principală de test, după exportul Firestore confirmat de owner.
+    - 1.9, hosting pe adresa principală de test, după exportul Firestore confirmat de owner;
+    - placa 1, tăiată de owner.
   - Până atunci, aplicația se încearcă pe canalul `etapa-01`: `npm run build && node scripts/publica-canal.ts etapa-01`.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
@@ -122,6 +122,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Regula: nimic portat nu intră fără probele noi ale proiectului (oracol, martor). Ce trece în codul nou e
   re-probat acolo, nu crezut pe cuvânt.
 
+- 08.10.2026: **planșele: D** („D, ok la toate”), cu cele trei alegeri din prototip. Contractul documentului v2 e în ADR
+  0024; un câmp nou cu sens intră doar cu schemă nouă și migrare.
 - 07.10.2026: **`PLAN.md` aprobat** (fără A / D, de ales înainte de etapa 1).
   - **Proba închisă** după etapa 14: 1–2 ateliere prietene, doar 2D, conturi invitate, fără plată. Lansarea publică
     rămâne la v1 complet.
@@ -158,7 +160,7 @@ Detaliile sunt în `BRIEF.md`; dacă ceva de aici o contrazice, `BRIEF.md` câș
   - Familia GRBL, cu sender, plus posturi probate pentru NcStudio, Richauto/Syntec și Mach3.
   - Axa A separată; axa a 4-a e în v1.x.
 - **Simularea:** un nucleu folosit de ecran și de teste, plus un oracol separat.
-- **Planșele:** prototip cu variantele A și D în Faza 2, înainte de aprobarea planului.
+- **Planșele:** prototip cu variantele A și D în Faza 2; owner-ul a ales **D** pe 08.10 (ADR 0024).
 - **Adăugate pe 07.10** (`BRIEF.md` §16):
   - **adminul intră în v1**, „ca și acum”; momentul îl alege asistentul în planul pe etape;
   - **desenul lucrează și exportă vectori reali**: cercul rămâne cerc prin orice operație, iar exportul scrie
