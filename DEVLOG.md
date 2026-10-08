@@ -785,3 +785,12 @@ avertismentele cu roșu (`BRIEF.md` §16.3).
 
 **Rămâne deschis:** hosting-ul pe adresa principală de test, după exportul Firestore confirmat; placa 1. Motivele
 exportului care vin din CAM sunt încă doar în română (gol mai vechi, din 1.9c).
+
+## 2026-10-08 — Etapa 2, felia 2.1: gărzile offsetului (Model: Claude Opus 5.5)
+
+**Prompt:** „confirm deploy pe firebase test si poti sa continui”. **Started:** 16:08.
+**Clasa:** R2 (offsetul e drumul sculei). **Estimarea:** ~½ zi activă, plus oracolul independent.
+
+**Etapa 2 pornită** la cuvântul owner-ului, înaintea plăcii 1 (fișa: `docs/etape/etapa-02.md`). **Deploy-ul pe adresa
+principală de test** așteaptă exportul Firestore: `gcloud` e instalat fără cont autentificat, iar backup-ul săptămânal
+de pe test n-are bucket (`BACKUP_BUCKET not set`). Variantele i-au fost puse owner-ului.
