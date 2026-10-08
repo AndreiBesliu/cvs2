@@ -813,3 +813,16 @@ de pe test n-are bucket (`BACKUP_BUCKET not set`). Variantele i-au fost puse own
 
 **Rămâne deschis:** reparațiile lui cavalier (ADR 0005) și biarcele (felia 2.7) pentru cele 2 refuzuri din 213 pe
 poligoane oarecare; exportul Firestore pe test (la owner) înaintea deploy-ului pe adresa principală.
+
+## 2026-10-08 — Etapa 1, felia 1.9: hosting pe adresa principală de test (Model: Claude Opus 5.5)
+
+**Prompt:** „gata” (exportul Firestore terminat de owner). **Started:** 18:20. **Completed:** 18:45.
+
+- **Exportul Firestore** de pe `cncvectorstudio-test`: făcut de owner din consolă, în bucket-ul nou
+  `cncvectorstudio-test-backup` (`us-central1`), dosarul `2026-10-08-inainte-de-cncvs2`. Primul export a fost refuzat:
+  baza e în `nam5`, iar bucket-ul aplicației în `europe-central2`.
+- **`public/sw.js`**, opritorul workerului aplicației vechi (înregistrat de ea la `/sw.js`, cu cache-urile `cncvs-`):
+  se instalează imediat, șterge cache-urile vechi, se dezînregistrează, fără să reîncarce vreo filă. Servit `no-cache`.
+- **`scripts/publica-test.ts`** (doar hosting, proiectul numit explicit), cu pregătirea comună cu canalul.
+- **Publicat și verificat:** https://cncvectorstudio-test.firebaseapp.com/ servește aplicația nouă, instanța „test”,
+  consola curată. Funcțiile aplicației vechi rulează încă pe test (deploy-ul a fost doar de hosting).

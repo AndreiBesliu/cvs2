@@ -29,10 +29,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
     v1 → v2, IndexedDB cu un singur scriitor, lista de vectori), 1.8 (pânza), 1.9a (placa 1, programele A și B), 1.9b–c
     (canalul, exportul din aplicație) și 1.10 (ieșirea din foaie: avertisment în bara de jos, confirmare la export,
     `BRIEF.md` §16.3).
-  - Rămân:
-    - 1.9, hosting pe adresa principală de test, după exportul Firestore confirmat de owner;
-    - placa 1, tăiată de owner.
-  - Până atunci, aplicația se încearcă pe canalul `etapa-01`: `npm run build && node scripts/publica-canal.ts etapa-01`.
+  - 1.9 încheiată pe 08.10: exportul Firestore de pe proiectul de test e făcut (owner-ul, în bucket-ul
+    `cncvectorstudio-test-backup`, `us-central1`), iar adresa principală de test servește aplicația nouă:
+    `npm run build && node scripts/publica-test.ts` (doar hosting). `public/sw.js` oprește workerul aplicației vechi.
+  - Rămâne placa 1, tăiată de owner.
+- **Etapa 2 e în lucru din 08.10** (fișa: `docs/etape/etapa-02.md`), pornită înaintea plăcii 1 la cuvântul owner-ului.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa
@@ -77,10 +78,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   testează, ce a rămas deschis.
 - **Owner-ul testează pe instanța de test, după un link, nu din fișiere locale** (cererea lui din 07.10).
   - Proiectul Firebase e `cncvectorstudio-test`, cu adresa principală <https://cncvectorstudio-test.firebaseapp.com/>.
-  - De la etapa 1, fiecare felie se publică acolo, după exportul Firestore confirmat de owner (`PLAN.md` §5.3).
-  - Până atunci, adresa principală servește aplicația veche. Ce trebuie încercat mai devreme (de exemplu prototipul
-    A / D) merge pe un canal de previzualizare (`firebase hosting:channel:deploy <canal> --project test`), care nu
-    atinge adresa principală.
+  - Din 08.10, fiecare felie se publică acolo: `npm run build && node scripts/publica-test.ts`. Un canal de
+    previzualizare (`node scripts/publica-canal.ts <canal>`) rămâne pentru ce nu trebuie să ajungă pe adresa principală.
+  - Funcțiile aplicației vechi rulează încă pe proiectul de test (deploy-ul a fost doar de hosting); lista lor de șters i
+    se arată owner-ului în etapa 3 (`PLAN.md` §5.3).
 - **Workflow-uri multi-agent doar cu acordul owner-ului**, cu durata și costul în tokeni spuse înainte.
 - **Estimări din durate măsurate.** O felie care depășește estimarea cu peste 50 % → stop și întreabă.
 - **Pauze curate.** La „pauză”: stop imediat, totul comis (branch WIP dacă nu e gata).

@@ -1019,7 +1019,7 @@ Textul întrebărilor, așa cum au fost puse:
 | Atelierele: câte unul pentru NcStudio, RichAuto, Syntec, Mach3 / Mach4, cu versiunea controlerului | **deschisă** | căutarea în săptămâna 1, confirmările până la sfârșitul etapei 2 |
 | PITR pe live | **deschisă** | înainte de etapa 3 |
 | Pașii lungi deja în curs: entitatea juridică + adresa de firmă, DNS-ul pentru e-mail, CAEN | **în curs**, pornite în săptămânile 1–2 | DNS: etapa 15; entitatea și Termenii: etapa 25; CAEN: extern |
-| Confirmi exportul Firestore pe test | se deschide la etapa 1 | etapa 1 |
+| Confirmi exportul Firestore pe test | **făcut pe 08.10** (bucket-ul `cncvectorstudio-test-backup`, `us-central1`); adresa principală de test servește aplicația nouă | etapa 1 |
 | `docs/PORTARE.md`: verdictele pentru candidații etapelor 1–3 | **scris pe 07.10**; se aplică la pornirea etapei 1, dacă nu obiectezi | etapa 1 |
 | Formatul `.tdb`: biblioteca ta trece o dată, din aplicația veche, prin CSV (`docs/PORTARE.md` §4) | se deschide la etapa 4 | etapa 5 |
 | Fișierele tale reale: 30–50 de fișiere primite în ultimele luni, mai ales din CorelDRAW; doar local, ignorate de git | se deschide în săptămâna 2 | etapa 9 (EPS: etapa 25) |
