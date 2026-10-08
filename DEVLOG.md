@@ -794,3 +794,22 @@ exportului care vin din CAM sunt încă doar în română (gol mai vechi, din 1.
 **Etapa 2 pornită** la cuvântul owner-ului, înaintea plăcii 1 (fișa: `docs/etape/etapa-02.md`). **Deploy-ul pe adresa
 principală de test** așteaptă exportul Firestore: `gcloud` e instalat fără cont autentificat, iar backup-ul săptămânal
 de pe test n-are bucket (`BACKUP_BUCKET not set`). Variantele i-au fost puse owner-ului.
+
+**Completed:** 17:15. **Treceri:** 4.
+
+**Făcut:**
+- **Fișa etapei 2** (`docs/etape/etapa-02.md`): 10 felii, placa 2 și contractul gărzilor offsetului.
+- **Gărzile** (`src/geom/offset.ts`): rezoluția de 0,01 mm; intrarea curățată fără să-și schimbe forma (arcele de peste
+  180° împărțite pe același cerc, arcele plate devin linii, segmentele sub 1e-6 mm scoase, vârfurile în plus pe o latură
+  dreaptă scoase); refuz cu motiv pentru conturul autointersectat (toleranța 1e-6), mai mic decât rezoluția sau cu
+  cubice, și la d = 0; ieșirea verificată singură (`verificaIesire`): fiecare punct la |d| de intrare, pe partea cerută,
+  fără atingeri, insulele trigonometric și găurile orar; a doua încercare la |d| + 1e-4 mm, apoi refuz.
+
+**Proba:**
+- oracolul independent (`test/oracles/offset.ts`, din contract): 83/83 pe aplicație, cu abaterea în ambele sensuri
+  ≤ 0,002 mm; la primul contact a prins un offset greșit și tăcut (haltera);
+- 19 otrăvuri pe fațadă, 18 prinse; cea scăpată e un mutant echivalent (coarda în loc de curbă, după împărțirea arcelor);
+- 624 de teste unitare, 26 e2e; fișierele de aur ale plăcii 1 neschimbate.
+
+**Rămâne deschis:** reparațiile lui cavalier (ADR 0005) și biarcele (felia 2.7) pentru cele 2 refuzuri din 213 pe
+poligoane oarecare; exportul Firestore pe test (la owner) înaintea deploy-ului pe adresa principală.

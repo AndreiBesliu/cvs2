@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LINIE, arc, arieCuSemn, conturCerc, conturDreptunghi, type Contur, type Varf } from '../../src/geom/contur.ts';
-import { DISTANTA_MINIMA, curataIntrare, offsetInchis } from '../../src/geom/offset.ts';
+import { DISTANTA_MINIMA, curataIntrare, offsetInchis, verificaIesire } from '../../src/geom/offset.ts';
 
 const v = (x: number, y: number, s: Varf['s'] = LINIE): Varf => ({ p: { x, y }, s });
 const inchis = (...varfuri: Varf[]): Contur => ({ inchis: true, varfuri });
@@ -110,4 +110,47 @@ test('un cerc scris ca un singur arc de aproape 360° nu se „curăță” la n
   assert.ok(c.ok, c.ok ? '' : c.motiv);
   if (c.ok) assert.ok(Math.abs(arieCuSemn(c.contur) - Math.PI * 100) < 1e-4);
   assert.ok(offsetInchis(cerc, -3).ok);
+});
+
+test('gâtul lat exact cât 2d: cavalier dă un contur care se atinge singur, a doua încercare (|d| + 1e-4) dă cele două insule', () => {
+  // Două pătrate de 20 × 20 legate de un gât de 10 × 2; spre interior cu 1, gâtul dispare exact.
+  const gat = inchis(v(0, -10), v(20, -10), v(20, -1), v(30, -1), v(30, -10), v(50, -10), v(50, 10), v(30, 10), v(30, 1), v(20, 1), v(20, 10), v(0, 10));
+  const r = offsetInchis(gat, -1);
+  assert.ok(r.ok, motiv(r));
+  if (!r.ok) return;
+  assert.equal(r.contururi.length, 2);
+  // Fiecare insulă e pătratul de 18 × 18, plus ce intră în gât între cele două arce de rază d din colțurile intrânde:
+  // puțin peste 324, iar cele două insule sunt simetrice.
+  const [a, b] = r.contururi.map((c) => arieCuSemn(c));
+  assert.ok(a !== undefined && b !== undefined && Math.abs(a - b) < 1e-6, `${a} ${b}`);
+  assert.ok(a !== undefined && a > 324 && a < 325, String(a));
+});
+
+test('un contur mai mic decât rezoluția (0,01 mm) e refuzat, chiar dacă e un pătrat curat', () => {
+  assert.match(motiv(offsetInchis(inchis(v(0, 0), v(0.005, 0), v(0.005, 0.005), v(0, 0.005)), 1)), /mai mic decât rezoluția/);
+  assert.ok(offsetInchis(inchis(v(0, 0), v(0.02, 0), v(0.02, 0.02), v(0, 0.02)), 1).ok, 'la 0,02 mm trece');
+});
+
+test('verificarea ieșirii prinde ce n-ar trebui să iasă niciodată din offset', () => {
+  // Intrarea: pătratul 0..10, trigonometric. Offsetul corect cu 1 spre exterior are colțuri R1.
+  const corect = offsetInchis(patrat, 1);
+  assert.ok(corect.ok);
+  if (!corect.ok) return;
+  assert.equal(verificaIesire(patrat, 1, corect.contururi), null);
+  const interior = inchis(v(1, 1), v(9, 1), v(9, 9), v(1, 9));
+  // partea greșită: pătratul interior are punctele la 1 de margine, dar înăuntru
+  assert.match(verificaIesire(patrat, 1, [interior]) ?? '', /partea greșită/);
+  // distanța greșită: pătratul 0,5..9,5 e la 0,5, nu la 1
+  assert.match(verificaIesire(patrat, -1, [inchis(v(0.5, 0.5), v(9.5, 0.5), v(9.5, 9.5), v(0.5, 9.5))]) ?? '', /punct la 0\.5000 mm/);
+  // orientarea greșită: insula corectă, parcursă orar
+  const orar = { inchis: true, varfuri: [...interior.varfuri].reverse() };
+  assert.match(verificaIesire(patrat, -1, [orar]) ?? '', /sensul greșit/);
+  // două contururi care se ating: două pătrate la 1 de intrare, lipite pe o latură (exclus de distanță altfel), așa că
+  // se verifică direct pe două copii ale aceluiași contur corect
+  assert.match(verificaIesire(patrat, -1, [interior, interior]) ?? '', /se ating/);
+  // deschis, gol, cubică
+  assert.match(verificaIesire(patrat, -1, [{ inchis: false, varfuri: interior.varfuri }]) ?? '', /deschis/);
+  assert.match(verificaIesire(patrat, -1, []) ?? '', /scula nu încape/);
+  assert.match(verificaIesire(patrat, 1, []) ?? '', /niciun contur/);
+  assert.match(verificaIesire(patrat, -1, [inchis(v(1, 1, { tip: 'C', c1: { x: 3, y: 1 }, c2: { x: 7, y: 1 } }), v(9, 1), v(9, 9), v(1, 9))]) ?? '', /cubică/);
 });

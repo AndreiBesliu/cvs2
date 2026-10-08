@@ -44,7 +44,8 @@ primul contact cu oracolul (08.10).
   - un vârf între două linii se scoate dacă stă la mai puțin de 1e-6 mm de dreapta dintre vecinii lui și între ei (un
     vârf în plus pe o latură dreaptă), nu dacă ar întoarce drumul înapoi.
 - **Intrarea care nu se poate decala e refuzată cu motiv:** mai puțin de 2 vârfuri distincte (cercul are 2, cu două
-  arce de 180°), aria zero (de exemplu două vârfuri legate doar de linii), sau un contur care se autointersectează: două
+  arce de 180°), un contur mai mic decât rezoluția (diagonala cutiei vârfurilor sub 0,01 mm), sau un contur care se
+  autointersectează (aria zero, de exemplu două vârfuri legate doar de linii, e un caz al lui): două
   segmente neînvecinate care se ating, două segmente vecine care se suprapun pe o lungime, sau două segmente vecine care
   se taie și în alt punct decât vârful lor comun. Aria și orientarea se calculează exact, cu arcele (nu pe coarde).
 - **Ieșirea se verifică singură, nu doar ca formă:**
@@ -58,7 +59,9 @@ primul contact cu oracolul (08.10).
     loc;
   - **orientarea:** insulele merg în sens trigonometric, găurile în sens orar (adâncimea de includere pară = insulă).
 
-  La o verificare picată se încearcă o dată cu |d| + 1e-6, apoi se refuză cu motiv. **Niciodată un traseu tăcut greșit:**
+  La o verificare picată se încearcă o dată cu |d| + 1e-4 mm, apoi se refuză cu motiv. Pasul trece de pragul de
+  topologie pe care îl decide epsilon-ul lui cavalier (s1-V §5.4): la un gât lat exact cât 2d, cavalier dă un contur care
+  se atinge singur, iar la 1e-4 mai încolo, cele două insule corecte (măsurat pe 08.10). 0,1 µm e sub rezoluția postului. **Niciodată un traseu tăcut greșit:**
   pentru orice intrare validă, aplicația dă fie offsetul corect, fie un refuz cu motiv.
 - **Ce trebuie să reușească:** cercurile, dreptunghiurile (rotunjite sau nu, rotite), haltera și inelul cu fantă din
   s1, la scările 1–2 440 mm, adică formele cu care se lucrează azi și cele de pe placa 2.
@@ -99,3 +102,4 @@ Se închide profilul (B1, B2). Importul SVG (A4) se închide pe partea lui de SV
 
 | # | Started | Completed | Treceri | Nota |
 |---|---|---|---:|---|
+| 2.1 | 08.10 16:08 | 08.10 17:15 | 4 | Gărzile offsetului, după contractul din fișă (versiunea 2). Oracolul l-a scris o sesiune independentă, doar din contract: 83 de teste de legătură, 22 de sabotaje pe oracol și 12 stricăciuni ale aplicației, toate prinse. **La primul contact a găsit un offset greșit și tăcut:** la halteră, exteriorul de 1 mm ieșea la 0,15 mm de intrare (arcele de peste 180°, pe care cavalier nu le primește); plus inelul refuzat degeaba și poligoanele dese refuzate de toleranța implicită a lui cavalier (1e-5). Ieșirea se verifică acum singură: distanța fiecărui punct, partea, atingerile, orientarea. Refuzuri pe „corect sau refuzat”: 2 din 213 (cavalier se taie singur pe un poligon de scara 1; se abate cu 0,017 mm pe o polilinie densă). La un gât lat exact cât 2d, a doua încercare cu +1e-4 mm dă cele două insule corecte. 19 otrăvuri pe fațadă, 18 prinse (cea scăpată, coarda în loc de curbă, e echivalentă după împărțirea arcelor mari). **Treceri:** (1) gărzile; (2) oracolul: haltera, inelul, poligoanele dese, apoi contractul v2 (zece pericole ale lui); (3) curățarea ieșirii muta arcele, deci rămân segmentele scurte reale; (4) otrăvurile: verificările ieșirii n-aveau caz care să le declanșeze, deci au devenit testabile direct. 624 de teste unitare, 26 e2e. |

@@ -11,9 +11,10 @@ import { distantaLaContur, inRegiune } from './distanta.ts';
  * - **intrarea se curăță fără să-și schimbe forma** (arcele de peste 180° împărțite, arcele plate devenite linii, vârfuri
  *   repetate, vârfuri în plus pe o latură dreaptă), iar cea care nu se poate decala (degenerată, autointersectată, cu
  *   cubice) e refuzată cu motiv. Și la distanța 0;
- * - **ieșirea se verifică singură:** fiecare punct al traseului stă la |d| de intrare, pe partea cerută; niciun contur nu
- *   se atinge pe el însuși sau pe altul; insulele merg trigonometric, găurile orar. La o verificare picată se încearcă o
- *   dată cu distanța mărită cu 1e-6 mm, apoi se refuză.
+ * - **ieșirea se verifică singură** (`verificaIesire`): fiecare punct al traseului stă la |d| de intrare, pe partea
+ *   cerută; niciun contur nu se atinge pe el însuși sau pe altul; insulele merg trigonometric, găurile orar. La o
+ *   verificare picată se încearcă o dată cu |d| + 1e-4 mm: la un prag de topologie (un gât lat exact cât 2d), epsilon-ul
+ *   lui cavalier decide, iar 0,1 µm mai încolo rezultatul e cel corect (s1-V §5.4; măsurat pe 08.10). Apoi se refuză.
  */
 export type RezultatOffset =
   | { readonly ok: true; readonly contururi: readonly Contur[] }
@@ -27,8 +28,8 @@ export const DISTANTA_MINIMA = REZOLUTIE / 2;
 export const EPS_ATINGERE = 1e-6;
 /** Un arc mai plat de atât e o linie (s1-V §5.6). */
 const BULGE_MINIM = 1e-6;
-/** Sub atât (mm²), conturul n-are arie. */
-const ARIE_MINIMA = 1e-9;
+/** Pasul celei de-a doua încercări: peste pragul de topologie decis de epsilon, sub rezoluția postului (1 µm). */
+const PAS_REINCERCARE = 1e-4;
 /** Cât poate diferi distanța unui punct al traseului de |d| (mm): sub rezoluția declarată, cu loc pentru rotunjiri. */
 const TOLERANTA_DISTANTA = 2e-3;
 
@@ -170,7 +171,12 @@ export function curataIntrare(c: Contur): Curatare {
     return { ok: false, motiv: `conturul nu se poate citi: ${e instanceof Error ? e.message : String(e)}` };
   }
   if (autointersectat) return { ok: false, motiv: 'conturul se autointersectează: nu se poate decala' };
-  if (Math.abs(arieCuSemn(curat)) <= ARIE_MINIMA) return { ok: false, motiv: 'conturul n-are arie (vârfurile stau pe o linie)' };
+  // Un contur închis care nu se autointersectează are arie; unul mai mic decât rezoluția nu se poate însă garanta.
+  const xs = varfuri.map((v) => v.p.x);
+  const ys = varfuri.map((v) => v.p.y);
+  if (Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) < REZOLUTIE) {
+    return { ok: false, motiv: `conturul e mai mic decât rezoluția declarată (${REZOLUTIE} mm)` };
+  }
   return { ok: true, contur: curat };
 }
 
@@ -183,23 +189,23 @@ function curataIesire(c: Contur): Contur {
   return { inchis: c.inchis, varfuri: unesteVarfuri(c.varfuri, EPS_ATINGERE) };
 }
 
-/** Ce e greșit în ieșire, sau null. Ieșirea se verifică pe ea însăși față de intrare, nu doar ca formă. */
-function problemaIesire(intrare: Contur, d: number, iesire: readonly Contur[]): string | null {
+/**
+ * Ce e greșit în ieșirea offsetului `d` al conturului `intrare` (curățat, trigonometric), sau null. Ieșirea se verifică pe
+ * ea însăși față de intrare, nu doar ca formă. Aria nu se mai verifică separat: o curbă închisă cu toate punctele la
+ * exact |d| de intrare, pe partea cerută, e chiar curba de nivel, deci aria ei crește afară și scade înăuntru de la sine.
+ */
+export function verificaIesire(intrare: Contur, d: number, iesire: readonly Contur[]): string | null {
   if (iesire.length === 0) return d < 0 ? 'scula nu încape: offsetul interior dispare' : 'offsetul exterior n-a dat niciun contur';
-  let arie = 0;
   for (const c of iesire) {
     if (!c.inchis) return 'offsetul a dat un contur deschis';
     if (c.varfuri.length < 2) return 'offsetul a dat un contur cu mai puțin de două vârfuri';
     for (const v of c.varfuri) {
+      if (v.s.tip === 'C') return 'offsetul a dat o cubică';
       if (!Number.isFinite(v.p.x) || !Number.isFinite(v.p.y) || (v.s.tip === 'A' && !Number.isFinite(v.s.bulge))) {
         return 'offsetul a dat o coordonată nefinită';
       }
     }
-    arie += arieCuSemn(c);
   }
-  const arieIntrare = Math.abs(arieCuSemn(intrare));
-  if (d > 0 && !(arie > arieIntrare)) return 'offsetul exterior n-a crescut aria';
-  if (d < 0 && !(arie > 0 && arie < arieIntrare)) return 'offsetul interior n-a micșorat aria';
   // Fiecare punct al traseului (vârfurile și mijloacele segmentelor) stă la |d| de intrare, pe partea cerută.
   for (const c of iesire) {
     for (let i = 0; i < c.varfuri.length; i++) {
@@ -244,7 +250,7 @@ function incearca(intrare: Contur, d: number): RezultatOffset {
     return { ok: false, motiv: `offsetul a eșuat: ${e instanceof Error ? e.message : String(e)}` };
   }
   const contururi = rezultat.map((pl) => curataIesire(dinCavalier(pl)));
-  const problema = problemaIesire(intrare, d, contururi);
+  const problema = verificaIesire(intrare, d, contururi);
   return problema ? { ok: false, motiv: problema } : { ok: true, contururi };
 }
 
@@ -268,7 +274,7 @@ export function offsetInchis(contur: Contur, distanta: number): RezultatOffset {
     if (prima.ok) return prima;
     // Interiorul care dispare nu e un accident numeric: scula chiar nu încape.
     if (prima.motiv.startsWith('scula nu încape')) return prima;
-    const aDoua = incearca(trig, distanta + Math.sign(distanta) * 1e-6);
+    const aDoua = incearca(trig, distanta + Math.sign(distanta) * PAS_REINCERCARE);
     return aDoua.ok ? aDoua : { ok: false, motiv: `${prima.motiv} (și la a doua încercare)` };
   } catch (e) {
     return { ok: false, motiv: `offsetul a eșuat: ${e instanceof Error ? e.message : String(e)}` };
