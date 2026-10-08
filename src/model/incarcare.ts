@@ -61,30 +61,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   },
 };
 
-/**
- * Plafoanele arborelui, verificate iterativ ÎNAINTE de schemă: parserul e recursiv, iar un document cu 100 000 de
- * niveluri i-ar umple stiva. Un ciclu (posibil doar din cod) se oprește și el la plafonul de adâncime.
- */
-function arboreInMargini(doc: Brut): string | null {
-  const piese = doc['piese'];
-  if (!Array.isArray(piese)) return null;
-  let noduri = 0;
-  for (const p of piese) {
-    const radacina = typeof p === 'object' && p !== null ? (p as Brut)['radacina'] : undefined;
-    const stiva: Array<{ nod: unknown; adancime: number }> = [{ nod: radacina, adancime: 1 }];
-    while (stiva.length > 0) {
-      const x = stiva.pop();
-      if (!x || typeof x.nod !== 'object' || x.nod === null) continue;
-      if (x.adancime > PLAFON.adancime) return `o piesă trece de ${PLAFON.adancime} de niveluri`;
-      if (++noduri > PLAFON.noduri) return `documentul trece de ${PLAFON.noduri} de noduri`;
-      // Doar grupurile au copii: un câmp necunoscut `copii` pe un element nu e arbore.
-      const copii = (x.nod as Brut)['tip'] === 'grup' ? (x.nod as Brut)['copii'] : undefined;
-      if (Array.isArray(copii)) for (const c of copii) stiva.push({ nod: c, adancime: x.adancime + 1 });
-    }
-  }
-  return null;
-}
-
 /** Câte niveluri de imbricare are o valoare JSON (documentul însuși e nivelul 1). Iterativ, oprit la `max + 1`. */
 function imbricare(x: unknown, max: number): number {
   let cel = 0;
@@ -125,8 +101,6 @@ export function incarca(brut: unknown): RezultatIncarcare {
   if (versiune < VERSIUNE_SCHEMA && imbricare(doc, PLAFON.imbricareJson) > PLAFON.imbricareJson) {
     return { ok: false, motiv: `documentul migrat are peste ${PLAFON.imbricareJson} de niveluri de imbricare` };
   }
-  const margini = arboreInMargini(doc);
-  if (margini) return { ok: false, motiv: `documentul nu respectă schema: ${margini}` };
   const r = v.safeParse(SchemaDocument, doc);
   if (!r.success) return { ok: false, motiv: `documentul nu respectă schema${motivSchema(r.issues)}` };
   // Documentul întors e o copie a intrării validate, nu ieșirea valibot: aceea scoate tăcut cheile `__proto__`,

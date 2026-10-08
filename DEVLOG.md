@@ -756,3 +756,32 @@ plus oracolul independent și recenzia adversarială.
 funcție, citită de pânză, CAM și avertismente); comenzile pe instanțe și piese (Ctrl+D = copie separată, ștergerea
 ultimei instanțe ia și piesa); IndexedDB în tranzacție, cu un singur scriitor între file; lista de vectori, cu
 avertismentele cu roșu (`BRIEF.md` §16.3).
+
+**Completed:** 15:10. **Treceri:** 4.
+
+**Făcut:**
+- **ADR 0024:** decizia owner-ului (D, cu cele trei alegeri din prototip) și contractul documentului v2, cu 10 precizări
+  scrise în aceeași felie, după întrebările oracolului și ale recenziei (adâncimea, compunerea, lumea mărginită, formele
+  cu arce doar sub similitudini, ciocnirile din migrare, cheile `__proto__`, imbricarea JSON).
+- **Modelul:** schema v2 (`document.ts`), schema v1 înghețată ca intrare a migrării (`schemaV1.ts`), ușa cu migrarea
+  exactă (`incarcare.ts`), elementele în lume (`lume.ts`), jurnalul pe instanțe și piese, cu `lot`.
+- **Acțiunile:** selecția ține instanțe; Ctrl+D = copie separată la +20 / −20; ștergerea ultimei instanțe ia piesa;
+  Adaugă și Ctrl+D inactive peste plafoane; anularea curăță selecția.
+- **Salvarea** (`proiectLocal.ts`): IndexedDB `cncvs2-proiecte`, versiunile `[proiect, rev]` (ultimele 20), scriitor unic
+  cu Web Locks, revizia comparată la scriere (fără Web Locks, a doua filă trece în conflict, nu acoperă), fila care
+  citește ținută la zi prin BroadcastChannel și promovată când scriitorul se închide; un proiect care nu se deschide nu se
+  acoperă.
+- **Lista de vectori** (`ListaVectori.tsx`), cu roșu pentru formele care ies din foaie; pe telefon, lista cedează prima.
+
+**Proba:**
+- oracolul independent (`test/oracles/document.ts`, scris doar din ADR): 371 de teste de legătură, verzi; 51 de sabotaje
+  pe oracol, 50 prinse;
+- recenzia adversarială: 15 constatări confirmate, reparate; 2 infirmate;
+- 32 de otrăvuri pe aplicație (unitare și e2e), 31 prinse, cu controlul verde înainte și restaurarea verificată prin hash;
+  cea scăpată (verificarea iterativă a arborelui) era redundantă după plafonul de imbricare și a fost scoasă;
+- 530 de teste unitare, 26 e2e în Edge (salvarea la reîncărcare, a doua filă ținută la zi și promovată, conflictul fără
+  Web Locks, proiectul care nu se deschide, migrarea unui v1 salvat, lista cu roșu, Ctrl+D, telefonul, tăierea la 20 de
+  versiuni); pornirea are 88,2 kB gzip.
+
+**Rămâne deschis:** hosting-ul pe adresa principală de test, după exportul Firestore confirmat; placa 1. Motivele
+exportului care vin din CAM sunt încă doar în română (gol mai vechi, din 1.9c).

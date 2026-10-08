@@ -75,8 +75,9 @@ const SchemaForma = v.variant('tip', [
 ]);
 
 const SchemaElement = v.looseObject({ tip: v.literal('element'), id: Id, nume: Nume, forma: SchemaForma, matrice: SchemaMatrice });
-// Arborele e recursiv; adâncimea și numărul de noduri le mărginește ușa înainte de schemă (`incarcare.ts`), ca un
-// document de 100 000 de niveluri să nu umple stiva parserului.
+// Arborele e recursiv; ușa mărginește imbricarea întregului JSON (200 de niveluri) înainte de schemă (`incarcare.ts`),
+// ca un document de 100 000 de niveluri să nu umple stiva parserului. Adâncimea arborelui și nodurile le judecă apoi
+// `problemaDeAnsamblu`, iterativ.
 const SchemaNod: v.GenericSchema<unknown, Nod> = v.variant('tip', [
   SchemaElement,
   v.looseObject({
