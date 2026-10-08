@@ -6,14 +6,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import type { Document } from '../../src/model/document.ts';
-import { docDin, ID, type FormaSimpla } from './ajutor-document.ts';
+import { cuDiametru, cuOperatie, docDin, ID, type FormaSimpla } from './ajutor-document.ts';
 import { calculeazaExport } from '../../src/ui/actiuniExportCalcul.ts';
 import type { IesireFoaie, ParametriExport } from '../../src/ui/actiuniExportTipuri.ts';
 
 const insula = (x: number): FormaSimpla => ({ id: 'e1', forma: { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 0 }, matrice: { ...ID, e: x, f: 20 } });
 const gaura: FormaSimpla = { id: 'e2', forma: { tip: 'cerc', raza: 15 }, matrice: { ...ID, e: 70, f: 50 } };
 const doc = (...elemente: FormaSimpla[]): Document => docDin({ latime: 300, inaltime: 200, grosime: 18 }, ...elemente);
-const P: ParametriExport = { origine: 'stanga-jos', z0: 'sus', diametruScula: 6, elemente: new Map() };
+const P: ParametriExport = { origine: 'stanga-jos', z0: 'sus' };
 const faraComentarii = (t: string): string[] => t.split('\n').filter((l) => l !== '' && !l.startsWith('('));
 
 test('fără ieșire: exportul e cel de dinainte (liniile plăcii 1 A), fără nicio declarație', async () => {
@@ -44,7 +44,7 @@ async function cerere(d: Document, p: ParametriExport): Promise<IesireFoaie> {
 
 test('confirmarea acoperă doar ieșirea văzută: alta (freza Ø8, deci 7 mm în loc de 5) cere din nou confirmare', async () => {
   const vazuta = await cerere(doc(insula(1)), P);
-  const r = await calculeazaExport(doc(insula(1)), { ...P, diametruScula: 8, confirmareIesire: vazuta });
+  const r = await calculeazaExport(cuDiametru(doc(insula(1)), 8), { ...P, confirmareIesire: vazuta });
   assert.ok(!r.ok && 'cereConfirmare' in r);
   if (r.ok || !('cereConfirmare' in r)) return;
   // Freza Ø8 (R4): centrul la 1 − 4 = −3, discul la −7.
@@ -97,7 +97,7 @@ test('pragul e rezoluția postului: sub 0,0005 mm nu se cere nimic, peste el se 
   const r = await calculeazaExport(doc(insula(5.999)), { ...P, confirmareIesire: vazuta });
   assert.ok(r.ok && r.program.text.includes('(iesire mm: st 0.001 dr 0.000 jos 0.000 sus 0.000)'));
   // O adâncime de 0,0004 mm iese Z0.000 la 3 zecimale: nu e o tăiere, deci nicio ieșire de confirmat.
-  const fara = await calculeazaExport(doc(insula(1)), { ...P, elemente: new Map([['e1/e1', { latura: 'exterior', adancime: 0.0004, pas: 0.0004 }]]) });
+  const fara = await calculeazaExport(cuOperatie(doc(insula(1)), 'e1', { latura: 'exterior', adancime: 0.0004, pas: 0.0004 }), P);
   assert.ok(fara.ok, fara.ok ? '' : fara.motiv);
 });
 
@@ -115,9 +115,10 @@ test('acordul cu oracolul independent: pe o grilă de poziții, freze, profile �
       for (const latura of ['exterior', 'interior', 'pe-linie'] as const) {
         for (const diametruScula of [3.175, 6]) {
           for (const [origine, z0] of [['stanga-jos', 'sus'], ['dreapta-sus', 'jos']] as const) {
-            const p: ParametriExport = { ...P, origine, z0, diametruScula, elemente: new Map([['e1/e1', { latura, adancime: 3, pas: 3 }]]) };
-            let r = await calculeazaExport(doc(e), p);
-            if (!r.ok && 'cereConfirmare' in r) r = await calculeazaExport(doc(e), { ...p, confirmareIesire: r.cereConfirmare });
+            const p: ParametriExport = { ...P, origine, z0 };
+            const d = cuDiametru(cuOperatie(doc(e), 'e1', { latura, adancime: 3, pas: 3 }), diametruScula);
+            let r = await calculeazaExport(d, p);
+            if (!r.ok && 'cereConfirmare' in r) r = await calculeazaExport(d, { ...p, confirmareIesire: r.cereConfirmare });
             assert.ok(r.ok, r.ok ? '' : `${forma} ${x},${y} ${latura} Ø${diametruScula}: ${r.motiv}`);
             if (!r.ok) continue;
             const ctx = {

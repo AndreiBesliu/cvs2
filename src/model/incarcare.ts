@@ -43,8 +43,51 @@ function v1v2(doc: DocumentV1): Brut {
 }
 
 /**
+ * v2 → v3 (ADR 0025): fiecare piesă primește câte o operație de profil pe fiecare element al ei, în preordine, cu exact
+ * implicitele cu care aplicația v2 exporta. ÎNGHEȚATĂ: are propria copie a implicitelor (operația implicită a aplicației
+ * poate evolua, migrarea nu). Lucrează defensiv pe orice formă: nu adaugă nimic din ce schema v3 n-ar refuza oricum, iar
+ * v3 conține toate regulile v2, deci un v2 stricat rămâne stricat și e refuzat după migrare.
+ */
+function v2v3(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  if (!Array.isArray(piese)) return { ok: true, doc: { ...doc, schema: 3 } };
+  const noi: unknown[] = [];
+  for (const p of piese) {
+    if (typeof p !== 'object' || p === null || Array.isArray(p)) {
+      noi.push(p);
+      continue;
+    }
+    const piesa = p as Brut;
+    if (Object.hasOwn(piesa, 'operatii')) {
+      return { ok: false, motiv: `piesa v2 ${String(piesa['id'])} are câmpul „operatii”, pe care v3 îl folosește: nu se poate migra fără să-l piardă` };
+    }
+    const operatii: Brut[] = [];
+    const stiva: unknown[] = [piesa['radacina']];
+    while (stiva.length > 0) {
+      const nod = stiva.pop();
+      if (typeof nod !== 'object' || nod === null) continue;
+      const n = nod as Brut;
+      if (n['tip'] === 'element') {
+        const forma = n['forma'] as Brut | undefined;
+        const scula = { numar: 1, nume: 'freza plata', diametru: 6 };
+        if (forma?.['tip'] === 'cerc') {
+          operatii.push({ id: n['id'], tip: 'profil', noduri: [n['id']], scula, latura: 'interior', adancime: 8, pas: 4 });
+        } else if (forma?.['tip'] === 'dreptunghi') {
+          operatii.push({ id: n['id'], tip: 'profil', noduri: [n['id']], scula, latura: 'exterior', adancime: 3, pas: 3 });
+        }
+      } else if (n['tip'] === 'grup' && Array.isArray(n['copii'])) {
+        for (let k = n['copii'].length - 1; k >= 0; k--) stiva.push(n['copii'][k]);
+      }
+    }
+    noi.push({ ...piesa, operatii });
+  }
+  return { ok: true, doc: { ...doc, schema: 3, piese: noi } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
- * își validează intrarea cu schema înghețată a versiunii ei, ca să lucreze doar pe forma pe care o promite.
+ * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 lucrează
+ * defensiv, iar schema v3 (care conține toate regulile v2) judecă rezultatul.
  */
 export const MIGRARI: Readonly<Record<number, Migrare>> = {
   1: (brut) => {
@@ -59,6 +102,7 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
     if (ciocnire) return { ok: false, motiv: `elementul v1 ${ciocnire.id} are câmpul „tip”, pe care v2 îl folosește: nu se poate migra fără să-l piardă` };
     return { ok: true, doc: v1v2(brut as unknown as DocumentV1) };
   },
+  2: v2v3,
 };
 
 /** Câte niveluri de imbricare are o valoare JSON (documentul însuși e nivelul 1). Iterativ, oprit la `max + 1`. */

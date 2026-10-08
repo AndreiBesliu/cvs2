@@ -3,13 +3,13 @@ import { Panza } from '../canvas/Panza.tsx';
 import { t } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { avertismente } from '../model/avertismente.ts';
-import { documentNou, type Document } from '../model/document.ts';
+import { documentNou, type Document, type Operatie } from '../model/document.ts';
 import { istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
 import { creeazaRegistru, ruleaza, stare } from '../ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../ui/actiuniDocument.ts';
 import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type RezultatExport } from '../ui/actiuniExport.ts';
-import { DialogExport, type StareExport } from '../ui/DialogExport.tsx';
+import { DialogExport, type CerereExport, type OperatieExport, type StareExport } from '../ui/DialogExport.tsx';
 import { ListaVectori, type RandLista } from '../ui/ListaVectori.tsx';
 import { useLimba } from '../ui/useLimba.ts';
 import type { RezultatConfig } from './config.ts';
@@ -72,10 +72,14 @@ function descriereInstanta(elemente: readonly ElementLume[], nume: string | unde
  * Cum lucrează fila cu proiectul salvat. Se poate schimba: o filă care citea devine scriitor când cealaltă se închide, iar
  * una care scria trece în `conflict` dacă altă filă a salvat între timp.
  */
-type ModFila = ProiectDeschis['mod'] | 'conflict';
+type ModFila = ProiectDeschis['mod'] | 'conflict' | 'necitita';
+
+/** Modurile în care fila nu scrie documentul: altă filă scrie, a scris între timp, sau a scris ce fila asta nu citește. */
+const doarCiteste = (mod: ModFila): boolean => mod === 'doar-citire' || mod === 'conflict' || mod === 'necitita';
 
 /** Ce spune bara de jos despre salvare. */
-function mesajProiect(mod: ModFila, p: ProiectDeschis): string | null {
+function mesajProiect(mod: ModFila, p: ProiectDeschis, motivNecitit: string): string | null {
+  if (mod === 'necitita') return t('depozit.necitita', { motiv: motivNecitit });
   if (mod === 'doar-citire') return t('depozit.doar-citire');
   if (mod === 'conflict') return t('depozit.conflict');
   if (mod === 'fara-memorie') return t('depozit.fara-memorie');
@@ -94,6 +98,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
   const [selectie, setSelectie] = useState<readonly string[]>([]);
   const [eroareSalvare, setEroareSalvare] = useState<string | null>(null);
   const [mod, setMod] = useState<ModFila>(proiect.mod);
+  const [motivNecitit, setMotivNecitit] = useState('');
   const depozit = useRef<DepozitProiect | null>(proiect.mod === 'scriitor' ? proiect.depozit : null);
   /** Ultimul document venit din bază (la deschidere sau de la fila care scrie): nu se salvează înapoi. */
   const dinBaza = useRef<Document>(docPornire);
@@ -101,9 +106,32 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
   const curenta = useRef({ istoric, selectie });
   curenta.current = { istoric, selectie };
 
-  /** Un document venit din bază înlocuiește istoricul; selecția păstrează doar instanțele care există în el. */
+  const [dialogExport, setDialogExport] = useState(false);
+  const [stareExport, setStareExport] = useState<StareExport | null>(null);
+  /**
+   * Numărul ultimei cereri de export. Un rezultat întârziat (calculul se încarcă la cerere) e al altor parametri dacă între
+   * timp s-a pornit alt export, s-a schimbat un parametru sau s-a închis dialogul: nu se afișează și nu se descarcă.
+   */
+  const cerereExport = useRef(0);
+  /** Un export pornit, al cărui rezultat n-a venit încă (calculul se încarcă la cerere). */
+  const exportInCurs = useRef(false);
+  /**
+   * Câte documente au venit din bază de la pornire. Dialogul de export ia de aici valorile operațiilor din nou: o versiune
+   * nouă (de la fila care scrie, sau la preluarea scrierii) le înlocuiește pe cele vechi. Propria scriere a dialogului nu
+   * trece pe aici.
+   */
+  const [bazaNoua, setBazaNoua] = useState(0);
+
+  /**
+   * Un document venit din bază înlocuiește istoricul; selecția păstrează doar instanțele care există în el. Un export în
+   * curs era al documentului vechi: se aruncă, și se spune, ca omul să nu aștepte un fișier care nu mai vine.
+   */
   const dinBazaNou = (d: Document): void => {
     dinBaza.current = d;
+    cerereExport.current++;
+    setStareExport(exportInCurs.current ? { ok: false, motiv: t('export.proiect-schimbat') } : null);
+    exportInCurs.current = false;
+    setBazaNoua((n) => n + 1);
     const h = istoricNou(d);
     const existente = new Set(d.foi[0]?.instante.map((i) => i.id) ?? []);
     const sel = curenta.current.selectie.filter((id) => existente.has(id));
@@ -123,23 +151,21 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
         else dinBaza.current = curenta.current.istoric.doc;
         setMod('scriitor');
       },
+      laNecitita: (motiv) => {
+        setMotivNecitit(motiv);
+        setMod('necitita');
+      },
     });
     // `dinBazaNou` lucrează doar cu referințe și setteri, deci prima lui versiune e și ultima.
   }, [proiect]);
   const registru = useMemo(() => creeazaRegistru(ACTIUNI_DOCUMENT, () => true), []);
   const registruExport = useMemo(() => creeazaRegistru(ACTIUNI_EXPORT, () => true), []);
-  const [dialogExport, setDialogExport] = useState(false);
-  const [stareExport, setStareExport] = useState<StareExport | null>(null);
-  /**
-   * Numărul ultimei cereri de export. Un rezultat întârziat (calculul se încarcă la cerere) e al altor parametri dacă între
-   * timp s-a pornit alt export, s-a schimbat un parametru sau s-a închis dialogul: nu se afișează și nu se descarcă.
-   */
-  const cerereExport = useRef(0);
   const contextExport = (p?: ParametriExport, cerere = cerereExport.current): ContextExport => ({
     document: () => curenta.current.istoric.doc,
-    parametri: () => p ?? { origine: 'stanga-jos', z0: 'sus', diametruScula: 6, elemente: new Map() },
+    parametri: () => p ?? { origine: 'stanga-jos', z0: 'sus' },
     rezultat: (r: RezultatExport) => {
       if (cerere !== cerereExport.current) return;
+      exportInCurs.current = false;
       if (r.ok) {
         descarca(r.program.octeti, `cncvs2-${p?.origine ?? 'stanga-jos'}.${r.program.extensie}`);
         setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256 });
@@ -190,12 +216,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'alese'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'alese' | 'operatiiNoi'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
     selecteaza: (ids) => { curenta.current = { ...curenta.current, selectie: ids }; setSelectie(ids); },
-    doarCitire: () => mod === 'doar-citire' || mod === 'conflict',
+    doarCitire: () => doarCiteste(mod),
     ...extra,
   });
 
@@ -259,7 +285,81 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
     avertisment: avertInstanta.get(i.id)?.join('\n') ?? null,
     selectat: alese.has(i.id),
   }));
-  const mesaj = mesajProiect(mod, proiect);
+  const mesaj = mesajProiect(mod, proiect, motivNecitit);
+
+  /**
+   * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
+   * ei element în prima instanță a piesei. Freza e comună tuturor, până la schimbarea sculei. Se calculează doar cu
+   * dialogul deschis, liniar (o hartă a pieselor, o mulțime a celor văzute), o dată pe document și pe limbă.
+   */
+  const exportFoaie = useMemo(() => {
+    if (!dialogExport) return null;
+    const piese = new Map(doc.piese.map((p) => [p.id, p]));
+    const vazute = new Set<string>();
+    const lista: Array<{ readonly piesa: Document['piese'][number]; readonly instanta: string }> = [];
+    for (const i of doc.foi[0]?.instante ?? []) {
+      const p = vazute.has(i.piesa) ? undefined : piese.get(i.piesa);
+      if (!p) continue;
+      vazute.add(p.id);
+      lista.push({ piesa: p, instanta: i.id });
+    }
+    const randuriOp: OperatieExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.map((o) => {
+      const e = harti.dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
+      const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
+      return {
+        cheie: `${piesa.id}/${o.id}`,
+        descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
+        valori: { latura: o.latura, adancime: o.adancime, pas: o.pas },
+      };
+    }));
+    const operatii = lista.flatMap(({ piesa }) => piesa.operatii);
+    return {
+      piese: lista,
+      randuri: randuriOp,
+      diametru: operatii[0]?.scula.diametru ?? 6,
+      // Freza la care Exportă aduce toate operațiile: numărul primei, cu diametrul din dialog.
+      numar: operatii[0]?.scula.numar ?? 1,
+      freze: [...new Map(operatii.map((o) => [`${o.scula.numar}/${o.scula.diametru}`, { numar: o.scula.numar, diametru: o.scula.diametru }])).values()],
+      descrieri: new Map(lume.map((e) => [e.idLume, descriere(e)])),
+    };
+  }, [dialogExport, doc, harti, lume, limbaActiva]);
+
+  /**
+   * Exportă: întâi valorile din dialog intră în document, ca o singură comandă (se salvează, Ctrl+Z le scoate), apoi
+   * exportul citește documentul. Scrierea trece pe lângă ușa oprită sub dialog: e chiar gestul dialogului. Într-o filă
+   * care doar citește, acțiunea e inactivă, iar dialogul n-a lăsat nimic de schimbat.
+   */
+  const exporta = (c: CerereExport): void => {
+    // Fila care n-a putut citi ultima versiune ar exporta una veche: refuză, cu motivul din bara de jos, în dialog.
+    if (mod === 'necitita') {
+      setStareExport({ ok: false, motiv: t('depozit.necitita', { motiv: motivNecitit }) });
+      return;
+    }
+    const noi = new Map<string, Operatie[]>();
+    const numar = exportFoaie?.numar ?? 1;
+    for (const { piesa } of exportFoaie?.piese ?? []) {
+      noi.set(piesa.id, piesa.operatii.map((o) => {
+        const v = c.valori.get(`${piesa.id}/${o.id}`);
+        return { ...o, ...(v ?? {}), scula: { ...o.scula, numar, diametru: c.diametru } };
+      }));
+    }
+    const scris = ruleaza(registru, 'document.aplica-operatii', context({ operatiiNoi: () => noi }));
+    // Doar citirea nu oprește exportul (operațiile din document rămân cele de exportat); orice alt refuz, da.
+    if (!scris.ok && scris.motiv !== 'motiv.doar-citire') {
+      setStareExport({ ok: false, motiv: t(scris.motiv) });
+      return;
+    }
+    const { origine, z0 } = c;
+    exportInCurs.current = true;
+    const r = ruleaza(registruExport, 'export.gcode', contextExport({
+      origine, z0, ...(c.confirmareIesire ? { confirmareIesire: c.confirmareIesire } : {}),
+    }, ++cerereExport.current));
+    // Un export refuzat înainte de calcul (nimic de exportat, nicio operație) spune de ce, nu lasă rezultatul vechi.
+    if (!r.ok) {
+      exportInCurs.current = false;
+      setStareExport({ ok: false, motiv: t(r.motiv) });
+    }
+  };
 
   return (
     <>
@@ -334,18 +434,18 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
           <span data-testid="jurnal">{t('jurnal.intrari', { n: intrari })}</span>
         </footer>
       </div>
-      {dialogExport && (
+      {dialogExport && exportFoaie && (
         <DialogExport
-          elemente={lume.map((e) => ({
-            id: e.idLume,
-            descriere: descriere(e),
-            // Aceleași implicite ca `parametriImpliciti` din `src/cam/job.ts`, scrise aici ca pachetul de pornire să nu tragă CAM-ul.
-            implicit: e.forma.tip === 'cerc' ? { latura: 'interior', adancime: 8, pas: 4 } : { latura: 'exterior', adancime: 3, pas: 3 },
-          }))}
+          baza={bazaNoua}
+          operatii={exportFoaie.randuri}
+          diametru={exportFoaie.diametru}
+          freze={exportFoaie.freze}
+          descrieri={exportFoaie.descrieri}
+          doarCitire={doarCiteste(mod)}
           stare={stareExport}
-          onExporta={(p) => { ruleaza(registruExport, 'export.gcode', contextExport(p, ++cerereExport.current)); }}
-          onInchide={() => { cerereExport.current++; setDialogExport(false); }}
-          onReseteaza={() => { cerereExport.current++; setStareExport(null); }}
+          onExporta={(c) => { exporta(c); }}
+          onInchide={() => { cerereExport.current++; exportInCurs.current = false; setDialogExport(false); }}
+          onReseteaza={() => { cerereExport.current++; exportInCurs.current = false; setStareExport(null); }}
         />
       )}
     </>

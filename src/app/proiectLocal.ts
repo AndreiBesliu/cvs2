@@ -35,6 +35,11 @@ export type Urmarire = {
   readonly laVersiune: (doc: Document) => void;
   /** Fila care scria s-a închis: fila asta devine scriitorul, de la ultima versiune salvată. */
   readonly laScriitor: (depozit: DepozitProiect, doc: Document | null) => void;
+  /**
+   * Ultima versiune salvată nu se poate deschide aici (de exemplu, a scris-o o versiune mai nouă a aplicației). Fila nu
+   * mai scrie și o spune; dacă primise blocarea, o eliberează, ca o filă care o poate citi să devină scriitorul.
+   */
+  readonly laNecitita: (motiv: string) => void;
 };
 
 export type ProiectDeschis =
@@ -188,14 +193,18 @@ async function deschide(idb: IDBFactory, expirat: () => boolean): Promise<Proiec
       const oprire = new AbortController();
       let blocareTinuta: Blocare | null = null;
       let oprit = false;
-      const reciteste = async (): Promise<{ v: Versiune | null; doc: Document | null } | null> => {
+      const reciteste = async (): Promise<{ ok: true; v: Versiune | null; doc: Document | null } | { ok: false; motiv: string }> => {
         const v = await citeste(db);
         const r = documentDin(v);
-        return r.ok ? { v, doc: r.doc } : null;
+        return r.ok ? { ok: true, v, doc: r.doc } : r;
       };
       if (canal) {
         canal.onmessage = () => {
-          void reciteste().then((r) => { if (r?.doc && !oprit) u.laVersiune(r.doc); }, () => undefined);
+          void reciteste().then((r) => {
+            if (oprit) return;
+            if (!r.ok) u.laNecitita(r.motiv);
+            else if (r.doc) u.laVersiune(r.doc);
+          }, () => undefined);
         };
       }
       // Când fila care scrie se închide, blocarea vine aici: fila asta devine scriitorul, de la ultima versiune.
@@ -204,7 +213,15 @@ async function deschide(idb: IDBFactory, expirat: () => boolean): Promise<Proiec
         if (oprit) { b.elibereaza(); return; }
         blocareTinuta = b;
         const r = await reciteste();
-        if (!r || oprit) return;
+        if (oprit) return;
+        if (!r.ok) {
+          // Fila asta n-ar putea scrie fără să acopere o versiune pe care n-o înțelege: lasă blocarea altei file.
+          b.elibereaza();
+          blocareTinuta = null;
+          if (canal) canal.onmessage = null;
+          u.laNecitita(r.motiv);
+          return;
+        }
         // De-acum fila asta scrie: nu mai ascultă versiunile altora.
         if (canal) canal.onmessage = null;
         u.laScriitor(depozit(db, r.v?.rev ?? null, canal), r.doc);

@@ -1,17 +1,15 @@
-import type { Document, FormaDoc } from '../model/document.ts';
+import type { Document } from '../model/document.ts';
 import { conturElement } from '../model/forme.ts';
-import { elementeFoaie } from '../model/lume.ts';
+import { taieturiFoaie } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
-import { profil, type Latura } from './profil.ts';
+import { profil } from './profil.ts';
 import { traseuProfil } from './traseu.ts';
 
 /**
- * Lucrarea v0: elementele în lume ale primei foi (`elementeFoaie`, ADR 0024), fiecare cu profilul lui, într-un singur
- * program în IR. Operațiile ca obiecte ale piesei vin cu editorul de operații; până atunci, parametrii stau în dialogul de
- * export, pe id-ul în lume (`<instanță>/<element>`).
+ * Lucrarea: tăieturile primei foi (`taieturiFoaie`, ADR 0025), adică operațiile pieselor pe elementele lor, în fiecare
+ * instanță, în ordinea de tăiere a contractului (întâi interioarele, la urmă exterioarele), într-un singur program în IR.
+ * Parametrii și scula vin din operații, nu din dialog. O singură sculă pe program până la schimbarea sculei (etapa 3).
  */
-export type ParametriElement = { readonly latura: Latura; readonly adancime: number; readonly pas: number };
-
 export type Regim = {
   readonly turatie: number;
   readonly avans: number;
@@ -21,40 +19,32 @@ export type Regim = {
 
 export const REGIM_IMPLICIT: Regim = { turatie: 18000, avans: 1000, avansPlonjare: 300, zSigur: 5 };
 
-/** Parametrii impliciți, ca pe placa 1: dreptunghiul e o insulă (exterior, 3 mm), cercul o gaură (interior, 8 mm în 2). */
-export function parametriImpliciti(e: { readonly forma: FormaDoc }): ParametriElement {
-  return e.forma.tip === 'cerc' ? { latura: 'interior', adancime: 8, pas: 4 } : { latura: 'exterior', adancime: 3, pas: 3 };
-}
-
-/** Ordinea de tăiere: întâi interioarele, apoi cele pe linie, la urmă exterioarele, ca piesa să nu se miște sub sculă. */
-const ORDINE: Readonly<Record<Latura, number>> = { interior: 0, 'pe-linie': 1, exterior: 2 };
-
 export type RezultatJob = { readonly ok: true; readonly program: Program } | { readonly ok: false; readonly motiv: string };
 
-export function programDinDocument(
-  doc: Document,
-  parametri: ReadonlyMap<string, ParametriElement>,
-  scula: Scula,
-  regim: Regim = REGIM_IMPLICIT,
-): RezultatJob {
+export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT): RezultatJob {
   const foaie = doc.foi[0];
-  const lume = elementeFoaie(doc, 0);
-  if (!foaie || lume.length === 0) return { ok: false, motiv: 'documentul n-are nicio formă de tăiat' };
-  const elemente = lume
-    .map((e, i) => ({ e, i, p: parametri.get(e.idLume) ?? parametriImpliciti(e) }))
-    .sort((a, b) => ORDINE[a.p.latura] - ORDINE[b.p.latura] || a.i - b.i);
+  if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
+  const taieturi = taieturiFoaie(doc, 0);
+  if (taieturi.length === 0) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
+  const prima = taieturi[0];
+  if (!prima) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
+  const scula: Scula = { numar: prima.scula.numar, nume: prima.scula.nume, diametru: prima.scula.diametru };
+  const alta = taieturi.find((t) => t.scula.numar !== scula.numar || t.scula.diametru !== scula.diametru);
+  if (alta) {
+    return { ok: false, motiv: `${alta.idLume}: altă sculă (T${alta.scula.numar}, Ø${alta.scula.diametru}) decât T${scula.numar}, Ø${scula.diametru}; schimbarea sculei vine în etapa 3` };
+  }
   const miscari: Miscare[] = [];
-  for (const { e, p } of elemente) {
+  for (const t of taieturi) {
     // Mai adânc decât foaia înseamnă în masa de sacrificiu (sau în masa mașinii). Supracursa unei tăieri prin material
-    // vine cu profilul complet (etapa 2); până atunci, cel mult grosimea foii.
-    if (p.adancime > foaie.stoc.grosime + 1e-9) {
-      return { ok: false, motiv: `${e.idLume}: adâncimea ${p.adancime} mm trece de grosimea foii (${foaie.stoc.grosime} mm)` };
+    // vine cu profilul complet; până atunci, cel mult grosimea foii.
+    if (t.adancime > foaie.stoc.grosime + 1e-9) {
+      return { ok: false, motiv: `${t.idLume}: adâncimea ${t.adancime} mm trece de grosimea foii (${foaie.stoc.grosime} mm)` };
     }
-    const pr = profil(conturElement(e), { latura: p.latura, diametruScula: scula.diametru, adancime: p.adancime, pas: p.pas });
-    if (!pr.ok) return { ok: false, motiv: `${e.idLume}: ${pr.motiv}` };
+    const pr = profil(conturElement(t), { latura: t.latura, diametruScula: scula.diametru, adancime: t.adancime, pas: t.pas });
+    if (!pr.ok) return { ok: false, motiv: `${t.idLume}: ${pr.motiv}` };
     const tr = traseuProfil(pr.treceri, regim);
-    if (!tr.ok) return { ok: false, motiv: `${e.idLume}: ${tr.motiv}` };
-    miscari.push({ tip: 'eticheta', text: `${e.idLume}: ${e.forma.tip}, ${p.latura}, ${p.adancime} mm`, element: e.idLume });
+    if (!tr.ok) return { ok: false, motiv: `${t.idLume}: ${tr.motiv}` };
+    miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, ${t.latura}, ${t.adancime} mm`, element: t.idLume });
     // Fără `push(...listă)`: o listă foarte lungă depășește stiva de argumente.
     for (const m of tr.miscari) miscari.push(m);
   }

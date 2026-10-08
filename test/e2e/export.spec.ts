@@ -198,3 +198,21 @@ test('sub dialog, aplicația e inertă: Shift+Tab nu iese din dialog, iar două 
   await page.keyboard.press('Space');
   await expect(page.locator('[data-camp="confirma-iesire"]')).not.toBeChecked();
 });
+
+test('virgula zecimală: „2,5” înseamnă 2,5 mm, nu 25; un text care nu e număr oprește exportul, cu motivul spus', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const pas = page.locator('[data-operatie="e1/e1"] input').nth(1);
+  await pas.fill('abc');
+  await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
+  await expect(page.getByTestId('export-invalid')).toContainText('cu punct sau cu virgulă');
+  await expect(pas).toHaveAttribute('aria-invalid', 'true');
+  await pas.fill('2,5');
+  await expect(page.getByTestId('export-invalid')).toHaveCount(0);
+  const d = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const text = readFileSync(await (await d).path(), 'ascii');
+  // Gaura de 8 mm cu pasul de cel mult 2,5: patru treceri egale, la −2, −4, −6 și −8 (cu „25” ar fi fost una singură).
+  for (const z of ['Z-2.000', 'Z-4.000', 'Z-6.000', 'Z-8.000']) expect(text).toContain(z);
+});

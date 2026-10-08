@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { esteCapabilitate } from '../../shared/capabilitati.ts';
 import { traduce } from '../../src/i18n/t.ts';
-import { documentNou } from '../../src/model/document.ts';
+import { documentNou, type Operatie } from '../../src/model/document.ts';
 import { istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import { creeazaRegistru, ruleaza, stare } from '../../src/ui/actiuni.ts';
@@ -129,13 +129,13 @@ test('plafoanele: Adaugă și Ctrl+D sunt inactive când documentul ar trece de 
     tip: 'element' as const, id: `n${k}`, forma: { tip: 'cerc' as const, raza: 1 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 },
   })) };
   const doc = ctx.h().doc;
-  ctx.scrie(istoricNou({ ...doc, piese: [{ id: 'p', radacina }], foi: [{ id: 'f1', stoc: doc.foi[0]!.stoc, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }] }));
+  ctx.scrie(istoricNou({ ...doc, piese: [{ id: 'p', radacina, operatii: [] }], foi: [{ id: 'f1', stoc: doc.foi[0]!.stoc, instante: [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }] }] }));
   ctx.selecteaza(['i']);
   assert.deepEqual(stare(r, 'document.duplica-selectia', ctx), { ok: false, motiv: 'motiv.plafon' });
   assert.deepEqual(stare(r, 'document.adauga-cerc', ctx), { ok: true }, 'un element în plus încă încape');
   // La 99 999 + 1 noduri, încă un cerc ar trece.
   const mare = { ...radacina, copii: radacina.copii.slice(0, 1).concat(Array.from({ length: 99_998 }, (_, k) => ({ ...radacina.copii[0]!, id: `m${k}` }))) };
-  ctx.scrie(istoricNou({ ...ctx.h().doc, piese: [{ id: 'p', radacina: mare }] }));
+  ctx.scrie(istoricNou({ ...ctx.h().doc, piese: [{ id: 'p', radacina: mare, operatii: [] }] }));
   assert.deepEqual(stare(r, 'document.adauga-cerc', ctx), { ok: false, motiv: 'motiv.plafon' });
 });
 
@@ -161,4 +161,118 @@ test('o filă care doar citește: nicio acțiune care schimbă documentul nu rul
   assert.equal(lume(ctx.h()).length, 1);
   assert.deepEqual(ruleaza(r, 'selectie.din-lista', { ...citire, alese: () => ['e1', 'nu-exista'] }), { ok: true });
   assert.deepEqual(ctx.sel(), ['e1'], 'din listă se aleg doar instanțe care există');
+});
+
+test('Aplică operațiile (ADR 0025): o singură comandă cu valorile noi; nimic când nu se schimbă nimic; refuzat peste margini, cu altă structură sau doar citind', () => {
+  const r = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
+  const ctx = context();
+  ruleaza(r, 'document.adauga-cerc', ctx);
+  ruleaza(r, 'document.adauga-dreptunghi', ctx);
+  const inainte = ctx.h();
+  const [cerc, dr] = inainte.doc.piese;
+  assert.ok(cerc && dr);
+  assert.deepEqual(cerc.operatii.map((o) => [o.latura, o.adancime, o.pas]), [['interior', 8, 4]], 'cercul nou vine cu operația implicită');
+  const cu = (noi: Map<string, readonly Operatie[]>): ContextDocument => ({ ...ctx, operatiiNoi: () => noi });
+  // Fără schimbare: nicio comandă, deci nimic de anulat în plus.
+  assert.deepEqual(ruleaza(r, 'document.aplica-operatii', cu(new Map([[cerc.id, cerc.operatii], [dr.id, dr.operatii]]))), { ok: true });
+  assert.equal(ctx.h(), inainte);
+  // Două piese schimbate: un singur pas în istoric, anulat dintr-un Ctrl+Z.
+  const noi = new Map<string, readonly Operatie[]>([
+    [cerc.id, cerc.operatii.map((o) => ({ ...o, adancime: 5, scula: { ...o.scula, diametru: 3.175 } }))],
+    [dr.id, dr.operatii.map((o) => ({ ...o, latura: 'pe-linie' as const, scula: { ...o.scula, diametru: 3.175 } }))],
+  ]);
+  assert.deepEqual(ruleaza(r, 'document.aplica-operatii', cu(noi)), { ok: true });
+  assert.equal(ctx.h().trecut.length, inainte.trecut.length + 1);
+  assert.deepEqual(ctx.h().doc.piese.map((p) => p.operatii.map((o) => [o.latura, o.adancime, o.scula.diametru])), [[['interior', 5, 3.175]], [['pe-linie', 3, 3.175]]]);
+  ruleaza(r, 'istoric.anuleaza', ctx);
+  assert.deepEqual(ctx.h().doc.piese, inainte.doc.piese);
+  // Peste marginile schemei (un proiect salvat așa nu s-ar mai deschide): inactivă, cu motiv, fără scriere.
+  const doar = ctx.h();
+  const op: Operatie | undefined = cerc.operatii[0];
+  assert.ok(op);
+  const rele: Array<Partial<Operatie>> = [{ adancime: 1000.5 }, { pas: 0 }, { scula: { ...op.scula, diametru: 150 } }, { adancime: Number.NaN }];
+  for (const rau of rele) {
+    const peste: Map<string, readonly Operatie[]> = new Map([[cerc.id, [{ ...op, ...rau }]]]);
+    assert.deepEqual(ruleaza(r, 'document.aplica-operatii', cu(peste)), { ok: false, motiv: 'motiv.operatie-invalida' }, JSON.stringify(rau));
+  }
+  // Altă structură (alt nod, altă operație, una în plus, o piesă necunoscută): dialogul schimbă doar valori.
+  const structuri: Array<Map<string, readonly Operatie[]>> = [
+    new Map([[cerc.id, [{ ...op, noduri: [dr.id] }]]]),
+    new Map([[cerc.id, [{ ...op, id: 'alta' }]]]),
+    new Map([[cerc.id, [op, { ...op, id: 'a-doua' }]]]),
+    new Map([['nu-exista', [op]]]),
+  ];
+  for (const alta of structuri) {
+    assert.deepEqual(stare(r, 'document.aplica-operatii', cu(alta)), { ok: false, motiv: 'motiv.operatie-invalida' });
+  }
+  assert.equal(ctx.h(), doar);
+  // Fila care doar citește nu scrie; fără operații noi, acțiunea n-are pe ce lucra.
+  assert.deepEqual(stare(r, 'document.aplica-operatii', { ...cu(noi), doarCitire: () => true }), { ok: false, motiv: 'motiv.doar-citire' });
+  assert.deepEqual(stare(r, 'document.aplica-operatii', ctx), { ok: false, motiv: 'motiv.nimic-ales' });
+});
+
+test('o formă nouă ia freza foii când e una singură; cu freze amestecate, cea implicită (Ø6)', () => {
+  const r = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
+  const ctx = context();
+  ruleaza(r, 'document.adauga-cerc', ctx);
+  const [cerc] = ctx.h().doc.piese;
+  assert.ok(cerc);
+  const fina = { numar: 2, nume: 'freza fina', diametru: 3.175 };
+  ruleaza(r, 'document.aplica-operatii', { ...ctx, operatiiNoi: () => new Map([[cerc.id, cerc.operatii.map((o) => ({ ...o, scula: fina }))]]) });
+  ruleaza(r, 'document.adauga-dreptunghi', ctx);
+  const dr = ctx.h().doc.piese[1];
+  assert.deepEqual(dr?.operatii.map((o) => o.scula), [fina], 'dreptunghiul nou are freza cercului');
+  assert.notEqual(dr?.operatii[0]?.scula, fina, 'o copie, nu același obiect');
+  // Același număr și diametru, alt nume: pentru mașină e aceeași freză (cum compară și exportul), deci se păstrează.
+  ruleaza(r, 'document.aplica-operatii', { ...ctx, operatiiNoi: () => new Map([[dr!.id, dr!.operatii.map((o) => ({ ...o, scula: { ...fina, nume: 'alt nume' } }))]]) });
+  ruleaza(r, 'document.adauga-cerc', ctx);
+  assert.deepEqual(ctx.h().doc.piese[2]?.operatii.map((o) => [o.scula.numar, o.scula.diametru]), [[2, 3.175]]);
+  ruleaza(r, 'istoric.anuleaza', ctx);
+  // Două freze pe foaie: nu se ghicește una, forma nouă vine cu implicita.
+  ruleaza(r, 'document.aplica-operatii', { ...ctx, operatiiNoi: () => new Map([[dr!.id, dr!.operatii.map((o) => ({ ...o, scula: { ...fina, diametru: 8 } }))]]) });
+  ruleaza(r, 'document.adauga-cerc', ctx);
+  assert.deepEqual(ctx.h().doc.piese[2]?.operatii.map((o) => o.scula), [{ numar: 1, nume: 'freza plata', diametru: 6 }]);
+});
+
+test('plafonul operațiilor la Adaugă și Ctrl+D: o piesă fără instanțe le ține aproape de 100 000, fără tăieturi', () => {
+  const r = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
+  const ctx = context();
+  ruleaza(r, 'document.adauga-cerc', ctx);
+  const doc = ctx.h().doc;
+  const [cerc] = doc.piese;
+  assert.ok(cerc);
+  const op = cerc.operatii[0];
+  assert.ok(op);
+  // Piesa „orfana” n-are instanțe: 99 999 de operații numărate la plafon, dar nicio tăietură în lume. Cu cercul, exact 100 000.
+  const orfana = { id: 'orfana', radacina: { ...cerc.radacina, id: 'n' }, operatii: Array.from({ length: 99_999 }, (_, k) => ({ ...op, id: `o${k}`, noduri: ['n'] })) };
+  ctx.scrie(istoricNou({ ...doc, piese: [...doc.piese, orfana] }));
+  ctx.selecteaza([cerc.id]);
+  assert.deepEqual(stare(r, 'document.duplica-selectia', ctx), { ok: false, motiv: 'motiv.plafon' }, 'copia ar avea 100 001 de operații');
+  assert.deepEqual(stare(r, 'document.adauga-dreptunghi', ctx), { ok: false, motiv: 'motiv.plafon' }, 'și forma nouă');
+  // Cu o operație mai puțin la orfană, încape exact.
+  ctx.scrie(istoricNou({ ...doc, piese: [...doc.piese, { ...orfana, operatii: orfana.operatii.slice(1) }] }));
+  assert.deepEqual(stare(r, 'document.duplica-selectia', ctx), { ok: true });
+});
+
+test('plafonul tăieturilor la Ctrl+D: un element cu două operații, pus de 50 000 de ori, e exact la 100 000', () => {
+  const r = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
+  const ctx = context();
+  ruleaza(r, 'document.adauga-cerc', ctx);
+  const doc = ctx.h().doc;
+  const [cerc] = doc.piese;
+  const op = cerc?.operatii[0];
+  assert.ok(cerc && op);
+  const piesa = { ...cerc, operatii: [op, { ...op, id: 'a-doua', latura: 'pe-linie' as const }] };
+  const foaie = doc.foi[0]!;
+  const cu = (n: number) => istoricNou({
+    ...doc, piese: [piesa], foi: [{ ...foaie, instante: Array.from({ length: n }, (_, k) => ({ id: `i${k}`, piesa: cerc.id, x: 0, y: 0, rotire: 0 })) }],
+  });
+  // 50 000 de instanțe × 2 tăieturi = 100 000; elementele în lume, instanțele și operațiile sunt departe de plafon.
+  ctx.scrie(cu(50_000));
+  ctx.selecteaza(['i0']);
+  assert.deepEqual(stare(r, 'document.duplica-selectia', ctx), { ok: false, motiv: 'motiv.plafon' }, 'copia ar aduce încă 2 tăieturi');
+  assert.deepEqual(stare(r, 'document.adauga-cerc', ctx), { ok: false, motiv: 'motiv.plafon' }, 'și forma nouă, încă una');
+  ctx.scrie(cu(49_999));
+  ctx.selecteaza(['i0']);
+  assert.deepEqual(stare(r, 'document.duplica-selectia', ctx), { ok: true }, '99 998 + 2 încape');
 });

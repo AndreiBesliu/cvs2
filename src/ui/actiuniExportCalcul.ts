@@ -20,7 +20,7 @@ function aceeasiIesire(a: IesireFoaie | undefined, b: IesireFoaie): boolean {
 export async function calculeazaExport(doc: Document, p: ParametriExport): Promise<RezultatExport> {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
-  const job = programDinDocument(doc, p.elemente, { numar: 1, nume: 'freza plata', diametru: p.diametruScula });
+  const job = programDinDocument(doc);
   if (!job.ok) return job;
   const iesire = iesireDinFoaie(job.program, foaie.stoc);
   if (iesire) {

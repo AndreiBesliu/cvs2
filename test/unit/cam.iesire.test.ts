@@ -15,10 +15,11 @@ const dreptunghi = (id: string, x: number, y: number): FormaSimpla =>
   ({ id, forma: { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 0 }, matrice: { ...ID, e: x, f: y } });
 const cerc = (id: string, x: number, y: number, raza = 15): FormaSimpla => ({ id, forma: { tip: 'cerc', raza }, matrice: { ...ID, e: x, f: y } });
 const doc = (...elemente: FormaSimpla[]): Document => docDin({ latime: 300, inaltime: 200, grosime: 18 }, ...elemente);
+/** Scula programelor scrise de mână de mai jos. */
 const SCULA = { numar: 1, nume: 'freza plata', diametru: 6 };
 
 function program(d: Document): Program {
-  const j = programDinDocument(d, new Map(), SCULA);
+  const j = programDinDocument(d);
   if (!j.ok) throw new Error(j.motiv);
   return j.program;
 }

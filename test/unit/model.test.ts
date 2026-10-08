@@ -9,7 +9,7 @@ import { docDin, ID, lume } from './ajutor-document.ts';
 const FOAIA = { latime: 140, inaltime: 100, grosime: 18 };
 const dreptunghi = (id: string) => ({ id, forma: { tip: 'dreptunghi' as const, latime: 100, inaltime: 60, razaColt: 0 }, matrice: { ...ID, e: 20, f: 20 } });
 const cerc = (id: string) => ({ id, forma: { tip: 'cerc' as const, raza: 15 }, matrice: { ...ID, e: 70, f: 50 } });
-const piesa = (id: string): Piesa => ({ id, radacina: { tip: 'element', id, forma: { tip: 'cerc', raza: 15 }, matrice: { ...ID } } });
+const piesa = (id: string): Piesa => ({ id, radacina: { tip: 'element', id, forma: { tip: 'cerc', raza: 15 }, matrice: { ...ID } }, operatii: [] });
 const instanta = (id: string, p = id, x = 0, y = 0): Instanta => ({ id, piesa: p, x, y, rotire: 0 });
 
 /** Documentul brut, cu o schimbare făcută pe o copie: pentru documente pe care schema trebuie să le refuze. */
@@ -24,7 +24,7 @@ test('un document valid trece prin ușa unică, neschimbat', () => {
   const r = incarca(JSON.parse(JSON.stringify(d)));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (r.ok) assert.deepEqual(r.doc, d);
-  assert.equal(VERSIUNE_SCHEMA, 2);
+  assert.equal(VERSIUNE_SCHEMA, 3);
 });
 
 test('ușa refuză, cu motiv: ce nu e obiect, fără versiune, dintr-o versiune mai nouă, cu valori absurde', () => {
@@ -50,7 +50,7 @@ test('arborele: id-uri de noduri unice în piesă (nu în document), adâncimea 
   const el = (id: string): Nod => ({ tip: 'element', id, forma: { tip: 'cerc', raza: 5 }, matrice: { ...ID } });
   const cu = (radacini: Nod[]): Document => ({
     ...documentNou(FOAIA),
-    piese: radacini.map((radacina, i) => ({ id: `p${i}`, radacina })),
+    piese: radacini.map((radacina, i) => ({ id: `p${i}`, radacina, operatii: [] })),
     foi: [{ id: 'f1', stoc: FOAIA, instante: radacini.map((_, i) => instanta(`i${i}`, `p${i}`)) }],
   });
   assert.ok(incarca(cu([grup('g', [el('a'), grup('h', [el('b')])]), el('a')])).ok, 'același id de nod în două piese e voie');
@@ -79,6 +79,7 @@ test('elementele în lume: instanța ∘ grupurile ∘ elementul, în preordine,
           { tip: 'element', id: 'b', forma: { tip: 'cerc', raza: 2 }, matrice: { ...ID } },
         ],
       },
+      operatii: [],
     }],
     foi: [{ id: 'f1', stoc: FOAIA, instante: [{ id: 'i', piesa: 'p', x: 100, y: 50, rotire: 90 }] }],
   };
@@ -91,7 +92,7 @@ test('elementele în lume: instanța ∘ grupurile ∘ elementul, în preordine,
   assert.deepEqual([b?.matrice.e, b?.matrice.f], [100, 60]);
 });
 
-test('migrarea v1 → v2: o piesă și o instanță pe element, cu id-ul lui; geometria în lume, aceeași; câmpurile necunoscute rămân', () => {
+test('migrarea v1 → v2 → v3: o piesă și o instanță pe element, cu id-ul lui; geometria în lume, aceeași; câmpurile necunoscute rămân', () => {
   const v1 = {
     schema: 1, rev: 7, extra: 'sus',
     foaie: { ...FOAIA, fibra: 'x' },
@@ -104,7 +105,7 @@ test('migrarea v1 → v2: o piesă și o instanță pe element, cu id-ul lui; ge
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
   const d = r.doc;
-  assert.equal(d.schema, 2);
+  assert.equal(d.schema, 3);
   assert.equal(d.rev, 7);
   assert.equal(d['extra'], 'sus');
   assert.deepEqual(d.foi, [{ id: 'f1', stoc: { ...FOAIA, fibra: 'x' }, instante: [
@@ -113,6 +114,7 @@ test('migrarea v1 → v2: o piesă și o instanță pe element, cu id-ul lui; ge
   assert.deepEqual(d.piese[0], {
     id: 'e1', nume: 'ușița',
     radacina: { tip: 'element', id: 'e1', forma: v1.elemente[0]?.forma, matrice: { a: 0, b: 1, c: -1, d: 0, e: 0, f: 0 }, strat: 3 },
+    operatii: [{ id: 'e1', tip: 'profil', noduri: ['e1'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'exterior', adancime: 3, pas: 3 }],
   });
   assert.equal('nume' in (d.piese[1] ?? {}), false, 'fără nume, piesa n-are câmpul');
   const lumi = elementeFoaie(d);
@@ -204,7 +206,7 @@ test('lumea e mărginită: scara și translația compuse în piesă, instanța, 
   const grup = (id: string, scara: number, copii: Nod[]): Nod => ({ tip: 'grup', id, matrice: { ...ID, a: scara, d: scara }, copii });
   const el: Nod = { tip: 'element', id: 'el', forma: { tip: 'cerc', raza: 1 }, matrice: { ...ID } };
   const cu = (radacina: Nod, x = 0): Document => ({
-    ...documentNou(FOAIA), piese: [{ id: 'p', radacina }], foi: [{ id: 'f1', stoc: FOAIA, instante: [instanta('i', 'p', x, 0)] }],
+    ...documentNou(FOAIA), piese: [{ id: 'p', radacina, operatii: [] }], foi: [{ id: 'f1', stoc: FOAIA, instante: [instanta('i', 'p', x, 0)] }],
   });
   // Fiecare scară locală e mică (100), dar compuse dau 10 000 (trece) și 1 000 000 (nu trece).
   assert.ok(incarca(cu(grup('a', 100, [grup('b', 100, [el])]))).ok, 'scara compusă 10 000');
@@ -216,7 +218,7 @@ test('lumea e mărginită: scara și translația compuse în piesă, instanța, 
   const multe: Nod = { tip: 'grup', id: 'g', matrice: { ...ID }, copii: Array.from({ length: 1000 }, (_, k) => ({ ...el, id: `e${k}` })) };
   const d: Document = {
     ...documentNou(FOAIA),
-    piese: [{ id: 'p', radacina: multe }, piesa('q')],
+    piese: [{ id: 'p', radacina: multe, operatii: [] }, piesa('q')],
     foi: [{ id: 'f1', stoc: FOAIA, instante: Array.from({ length: 100 }, (_, k) => instanta(`i${k}`, 'p')) }],
   };
   assert.ok(incarca(d).ok, '100 × 1 000 = 100 000 de elemente în lume');
@@ -244,7 +246,7 @@ test('migrarea refuză ciocnirile de nume și matricile v1 peste margini; câmpu
 });
 
 test('cheile __proto__, constructor și prototype rămân date: ușa nu le scoate și nu schimbă prototipul', () => {
-  const text = '{"schema":2,"rev":0,"__proto__":{"x":1},"piese":[{"id":"p","constructor":3,"radacina":{"tip":"element","id":"a","forma":{"tip":"cerc","raza":1},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}}}],"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[{"id":"i","piesa":"p","x":0,"y":0,"rotire":0,"campuri":{"__proto__":"v","prototype":"w"}}]}]}';
+  const text = '{"schema":3,"rev":0,"__proto__":{"x":1},"piese":[{"id":"p","constructor":3,"operatii":[],"radacina":{"tip":"element","id":"a","forma":{"tip":"cerc","raza":1},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}}}],"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[{"id":"i","piesa":"p","x":0,"y":0,"rotire":0,"campuri":{"__proto__":"v","prototype":"w"}}]}]}';
   const r = incarca(JSON.parse(text));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
@@ -257,7 +259,7 @@ test('cheile __proto__, constructor și prototype rămân date: ușa nu le scoat
 test('ușa refuză ce consumatorii n-ar putea desena: raza colțului peste jumătate de latură, arce sub o matrice neuniformă, JSON prea adânc, rev nesigur', () => {
   const cu = (forma: Record<string, unknown>, matrice: Record<string, number> = { ...ID }) => ({
     ...documentNou(FOAIA),
-    piese: [{ id: 'p', radacina: { tip: 'element', id: 'a', forma, matrice } }],
+    piese: [{ id: 'p', radacina: { tip: 'element', id: 'a', forma, matrice }, operatii: [] }],
     foi: [{ id: 'f1', stoc: FOAIA, instante: [instanta('i', 'p')] }],
   });
   assert.ok(incarca(cu({ tip: 'dreptunghi', latime: 10, inaltime: 12, razaColt: 5 })).ok, 'raza exact jumătate');
@@ -269,4 +271,114 @@ test('ușa refuză ce consumatorii n-ar putea desena: raza colțului peste jumă
   for (let i = 0; i < 300; i++) adanc = { x: adanc };
   assert.match((() => { const r = incarca({ ...cu({ tip: 'cerc', raza: 5 }), extra: adanc }); return r.ok ? '' : r.motiv; })(), /niveluri de imbricare/);
   assert.equal(incarca({ ...cu({ tip: 'cerc', raza: 5 }), rev: 2 ** 53 }).ok, false, 'rev peste întregul sigur');
+});
+
+/** Un document v2, ca pe disc înainte de ADR 0025: piese fără operații. */
+const v2 = (piese: unknown[], instante: unknown[], extra: Record<string, unknown> = {}): Record<string, unknown> =>
+  ({ schema: 2, rev: 4, piese, foi: [{ id: 'f1', stoc: FOAIA, instante }], ...extra });
+const el2 = (id: string, forma: Record<string, unknown>, e = 0): Record<string, unknown> => ({ tip: 'element', id, forma, matrice: { ...ID, e } });
+const SCULA_IMPLICITA = { numar: 1, nume: 'freza plata', diametru: 6 };
+
+test('migrarea v2 → v3 (ADR 0025): o operație pe element, cu id-ul lui, în preordine; cercul interior 8/4, dreptunghiul exterior 3/3', () => {
+  const brut = v2([
+    { id: 'p', nume: 'raft', alt: 1, radacina: { tip: 'grup', id: 'g', matrice: { ...ID }, copii: [
+      el2('d', { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }),
+      { tip: 'grup', id: 'h', matrice: { ...ID }, copii: [el2('c', { tip: 'cerc', raza: 3 }, 10)] },
+      el2('e', { tip: 'cerc', raza: 2 }, 20),
+    ] } },
+    { id: 'gol', radacina: { tip: 'grup', id: 'g', matrice: { ...ID }, copii: [] } },
+  ], [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }], { extra: 'sus' });
+  const r = incarca(structuredClone(brut));
+  assert.ok(r.ok, r.ok ? '' : r.motiv);
+  if (!r.ok) return;
+  assert.equal(r.doc.schema, 3);
+  assert.equal(r.doc.rev, 4);
+  assert.equal(r.doc['extra'], 'sus');
+  const [p, gol] = r.doc.piese;
+  assert.equal(p?.['alt'], 1, 'câmpurile necunoscute ale piesei rămân');
+  assert.deepEqual(p?.operatii, [
+    { id: 'd', tip: 'profil', noduri: ['d'], scula: SCULA_IMPLICITA, latura: 'exterior', adancime: 3, pas: 3 },
+    { id: 'c', tip: 'profil', noduri: ['c'], scula: SCULA_IMPLICITA, latura: 'interior', adancime: 8, pas: 4 },
+    { id: 'e', tip: 'profil', noduri: ['e'], scula: SCULA_IMPLICITA, latura: 'interior', adancime: 8, pas: 4 },
+  ]);
+  assert.deepEqual(gol?.operatii, [], 'o piesă fără elemente n-are operații');
+  // Arborele și foile nu se schimbă; migrarea e deterministă, iar documentul migrat trece neschimbat prin ușă.
+  assert.deepEqual(p?.radacina, (brut['piese'] as Array<Record<string, unknown>>)[0]?.['radacina']);
+  const r2 = incarca(structuredClone(brut));
+  assert.ok(r2.ok && jsonCanonic(r2.doc) === jsonCanonic(r.doc));
+  const r3 = incarca(JSON.parse(JSON.stringify(r.doc)));
+  assert.ok(r3.ok && jsonCanonic(r3.doc) === jsonCanonic(r.doc));
+});
+
+test('migrarea v2 → v3 refuză o piesă care are deja câmpul „operatii” (s-ar pierde), oricare i-ar fi valoarea', () => {
+  for (const valoare of [[], 'x', null]) {
+    const r = incarca(v2([{ id: 'p', operatii: valoare, radacina: el2('a', { tip: 'cerc', raza: 1 }) }], [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }]));
+    assert.match(r.ok ? '' : r.motiv, /piesa v2 p are câmpul „operatii”/, JSON.stringify(valoare));
+  }
+  // Un document v2 stricat rămâne refuzat după migrare, de schema v3.
+  assert.equal(incarca(v2([{ id: 'p', radacina: el2('a', { tip: 'cerc', raza: -1 }) }], [{ id: 'i', piesa: 'p', x: 0, y: 0, rotire: 0 }])).ok, false);
+  assert.equal(incarca(v2('nu' as unknown as unknown[], [])).ok, false);
+});
+
+test('operațiile v3: id unic în piesă, noduri distincte, doar elemente ale piesei; valorile în margini', () => {
+  const d = docDin(FOAIA, cerc('e1'));
+  const ok = (f: (x: any) => void): boolean => incarca(stricat(d, f)).ok;
+  const motiv = (f: (x: any) => void): string => { const r = incarca(stricat(d, f)); return r.ok ? '' : r.motiv; };
+  assert.ok(ok(() => {}), 'documentul de bază');
+  assert.ok(ok((x) => { x.piese[0].operatii = []; }), 'o piesă fără operații e voie');
+  assert.ok(ok((x) => { x.piese[0].operatii.push({ ...x.piese[0].operatii[0], id: 'o2', latura: 'pe-linie' }); }), 'două operații pe același element');
+  assert.match(motiv((x) => { x.piese[0].operatii.push({ ...x.piese[0].operatii[0] }); }), /două operații cu id-ul e1/);
+  assert.match(motiv((x) => { x.piese[0].operatii[0].noduri = ['e1', 'e1']; }), /referă un nod de două ori/);
+  assert.match(motiv((x) => { x.piese[0].operatii[0].noduri = ['lipsa']; }), /referă lipsa, care nu e un element al piesei/);
+  assert.equal(ok((x) => { x.piese[0].operatii[0].noduri = []; }), false, 'fără noduri');
+  assert.equal(ok((x) => { x.piese[0].operatii[0].tip = 'buzunar'; }), false, 'alt tip decât profil');
+  assert.equal(ok((x) => { x.piese[0].operatii[0].latura = 'stanga'; }), false, 'latura necunoscută');
+  assert.equal(ok((x) => { delete x.piese[0].operatii; }), false, 'v3 fără câmpul operatii');
+  for (const [camp, rau, bun] of [
+    ['adancime', 0, 1000], ['adancime', 1000.5, 0.001], ['pas', 0, 1000], ['pas', Number.NaN, 0.5],
+  ] as const) {
+    assert.equal(ok((x) => { x.piese[0].operatii[0][camp] = rau; }), false, `${camp} = ${rau}`);
+    assert.ok(ok((x) => { x.piese[0].operatii[0][camp] = bun; }), `${camp} = ${bun}`);
+  }
+  for (const [camp, rau, bun] of [
+    ['diametru', 0, 100], ['diametru', 100.1, 0.1], ['numar', 0, 999], ['numar', 1.5, 1], ['numar', 1000, 7],
+  ] as const) {
+    assert.equal(ok((x) => { x.piese[0].operatii[0].scula[camp] = rau; }), false, `scula.${camp} = ${rau}`);
+    assert.ok(ok((x) => { x.piese[0].operatii[0].scula[camp] = bun; }), `scula.${camp} = ${bun}`);
+  }
+  assert.equal(ok((x) => { x.piese[0].operatii[0].scula.nume = 'x'.repeat(PLAFON.numeLungime + 1); }), false, 'numele sculei prea lung');
+});
+
+test('o operație pe un grup e refuzată: se taie doar elementele (ADR 0025)', () => {
+  const d: Document = {
+    ...documentNou(FOAIA),
+    piese: [{ id: 'p', radacina: { tip: 'grup', id: 'g', matrice: { ...ID }, copii: [{ tip: 'element', id: 'a', forma: { tip: 'cerc', raza: 1 }, matrice: { ...ID } }] }, operatii: [] }],
+    foi: [{ id: 'f1', stoc: FOAIA, instante: [instanta('i', 'p')] }],
+  };
+  const op = { id: 'o', tip: 'profil', scula: SCULA_IMPLICITA, latura: 'interior', adancime: 1, pas: 1 };
+  assert.ok(incarca(stricat(d, (x) => { x.piese[0].operatii = [{ ...op, noduri: ['a'] }]; })).ok);
+  const r = incarca(stricat(d, (x) => { x.piese[0].operatii = [{ ...op, noduri: ['g'] }]; }));
+  assert.match(r.ok ? '' : r.motiv, /referă g, care nu e un element al piesei/);
+});
+
+test(`plafoanele v3: cel mult ${PLAFON.operatii} de operații și ${PLAFON.taieturi} de tăieturi (operație × nod × instanță)`, () => {
+  const op = (id: string) => ({ id, tip: 'profil' as const, noduri: ['a'], scula: SCULA_IMPLICITA, latura: 'interior' as const, adancime: 1, pas: 1 });
+  const radacina: Nod = { tip: 'element', id: 'a', forma: { tip: 'cerc', raza: 1 }, matrice: { ...ID } };
+  // Două operații pe un singur element, puse de 50 000 de ori: 100 000 de tăieturi (trece), cu încă o instanță 100 002.
+  const cu = (n: number): Document => ({
+    ...documentNou(FOAIA),
+    piese: [{ id: 'p', radacina, operatii: [op('o1'), op('o2')] }],
+    foi: [{ id: 'f1', stoc: FOAIA, instante: Array.from({ length: n }, (_, k) => instanta(`i${k}`, 'p')) }],
+  });
+  assert.ok(incarca(cu(50_000)).ok, '100 000 de tăieturi');
+  const peste = incarca(cu(50_001));
+  assert.match(peste.ok ? '' : peste.motiv, /tăieturi/);
+  // 100 001 de operații pe un element.
+  const multe: Document = {
+    ...documentNou(FOAIA),
+    piese: [{ id: 'p', radacina, operatii: Array.from({ length: PLAFON.operatii + 1 }, (_, k) => op(`o${k}`)) }],
+    foi: [{ id: 'f1', stoc: FOAIA, instante: [] }],
+  };
+  const r = incarca(multe);
+  assert.match(r.ok ? '' : r.motiv, /operații/);
 });

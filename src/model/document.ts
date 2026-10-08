@@ -2,15 +2,16 @@ import * as v from 'valibot';
 import { compune, esteSimilitudine, IDENTITATE } from '../geom/matrice.ts';
 
 /**
- * Documentul v2 (T16, ADR 0016), varianta D a planșelor (ADR 0024, decizia owner-ului din 08.10.2026): piese cu arbore
- * propriu, puse ca instanțe pe foi. Contractul întreg e în ADR 0024; oracolul independent (`test/oracles/document.ts`)
- * îl citește de acolo, nu de aici.
+ * Documentul v3 (T16, ADR 0016): varianta D a planșelor (ADR 0024, decizia owner-ului din 08.10.2026), adică piese cu
+ * arbore propriu, puse ca instanțe pe foi, plus operațiile piesei (ADR 0025): profilul stă în piesă și se taie la fel în
+ * fiecare instanță. Contractul întreg e în cele două ADR-uri; oracolul independent (`test/oracles/document.ts`) îl
+ * citește de acolo, nu de aici.
  *
  * Câmpurile necunoscute se păstrează, ca un document scris de o versiune mai nouă să nu piardă date trecând printr-una
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 2;
+export const VERSIUNE_SCHEMA = 3;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -36,6 +37,18 @@ export const PLAFON = {
    * v1: pânza, CAM-ul, avertismentele și lista sunt liniare în ele.
    */
   elementeLume: 100_000,
+  /** Operațiile tuturor pieselor. */
+  operatii: 100_000,
+  /** Nodurile pe care le referă o singură operație. */
+  noduriOperatie: 10_000,
+  /** Tăieturile în lume: peste instanțele tuturor foilor, referințele din operațiile piesei lor (ADR 0025). */
+  taieturi: 100_000,
+  /** Numărul sculei, cum îl scrie postul (`T<n>`). */
+  numarScula: 999,
+  /** Diametrul sculei, în mm. */
+  diametruScula: 100,
+  /** Adâncimea și pasul unei operații, în mm (cât grosimea maximă a unei foi). */
+  adancimeOperatie: 1_000,
 } as const;
 
 export type Matrice = { a: number; b: number; c: number; d: number; e: number; f: number };
@@ -47,13 +60,19 @@ export type ElementNod = {
 };
 export type GrupNod = { tip: 'grup'; id: string; nume?: string; matrice: Matrice; copii: Nod[]; [cheie: string]: unknown };
 export type Nod = ElementNod | GrupNod;
-export type Piesa = { id: string; nume?: string; radacina: Nod; [cheie: string]: unknown };
+export type Scula = { numar: number; nume: string; diametru: number; [cheie: string]: unknown };
+export type Latura = 'exterior' | 'interior' | 'pe-linie';
+export type Operatie = {
+  id: string; tip: 'profil'; noduri: string[]; scula: Scula; latura: Latura; adancime: number; pas: number;
+  [cheie: string]: unknown;
+};
+export type Piesa = { id: string; nume?: string; radacina: Nod; operatii: Operatie[]; [cheie: string]: unknown };
 export type Stoc = { latime: number; inaltime: number; grosime: number; [cheie: string]: unknown };
 export type Instanta = {
   id: string; piesa: string; x: number; y: number; rotire: number; campuri?: Record<string, string>; [cheie: string]: unknown;
 };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; [cheie: string]: unknown };
-export type Document = { schema: 2; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 3; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 const finit = v.pipe(v.number(), v.finite());
 const pozitiv = (max: number) => v.pipe(v.number(), v.finite(), v.gtValue(0), v.maxValue(max));
@@ -89,7 +108,20 @@ const SchemaNod: v.GenericSchema<unknown, Nod> = v.variant('tip', [
   }),
 ]) as v.GenericSchema<unknown, Nod>;
 
-const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod });
+const SchemaOperatie = v.looseObject({
+  id: Id,
+  tip: v.literal('profil'),
+  noduri: v.pipe(v.array(Id), v.minLength(1), v.maxLength(PLAFON.noduriOperatie)),
+  scula: v.looseObject({
+    numar: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(PLAFON.numarScula)),
+    nume: v.pipe(v.string(), v.maxLength(PLAFON.numeLungime)),
+    diametru: pozitiv(PLAFON.diametruScula),
+  }),
+  latura: v.picklist(['exterior', 'interior', 'pe-linie']),
+  adancime: pozitiv(PLAFON.adancimeOperatie),
+  pas: pozitiv(PLAFON.adancimeOperatie),
+});
+const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
 const SchemaInstanta = v.looseObject({
   id: Id,
   piesa: Id,
@@ -155,9 +187,15 @@ function areArce(f: FormaDoc): boolean {
 }
 
 /** Cât ocupă documentul din plafoanele lui: nodurile, instanțele și elementele în lume. */
-export function numara(d: Document): { readonly noduri: number; readonly instante: number; readonly elementeLume: number } {
+export type Numaratoare = {
+  readonly noduri: number; readonly instante: number; readonly elementeLume: number; readonly operatii: number; readonly taieturi: number;
+};
+
+export function numara(d: Document): Numaratoare {
   const elementePiesa = new Map<string, number>();
+  const referintePiesa = new Map<string, number>();
   let noduri = 0;
+  let operatii = 0;
   for (const p of d.piese) {
     let elemente = 0;
     for (const { nod } of noduriPiesa(p.radacina)) {
@@ -165,57 +203,84 @@ export function numara(d: Document): { readonly noduri: number; readonly instant
       if (nod.tip === 'element') elemente++;
     }
     elementePiesa.set(p.id, elemente);
+    operatii += p.operatii.length;
+    referintePiesa.set(p.id, p.operatii.reduce((s, o) => s + o.noduri.length, 0));
   }
   let instante = 0;
   let elementeLume = 0;
+  let taieturi = 0;
   for (const f of d.foi) {
     for (const i of f.instante) {
       instante++;
       elementeLume += elementePiesa.get(i.piesa) ?? 0;
+      taieturi += referintePiesa.get(i.piesa) ?? 0;
     }
   }
-  return { noduri, instante, elementeLume };
+  return { noduri, instante, elementeLume, operatii, taieturi };
+}
+
+/**
+ * Primul plafon de ansamblu depășit, cu motivul, sau null. Un singur adevăr pentru ușă (documentul încărcat) și pentru
+ * acțiuni (documentul care ar rezulta): ce adaugă interfața trebuie să se poată redeschide.
+ */
+export function plafonDepasit(n: Numaratoare): string | null {
+  if (n.noduri > PLAFON.noduri) return `documentul are ${n.noduri} de noduri, peste ${PLAFON.noduri}`;
+  if (n.operatii > PLAFON.operatii) return `documentul are ${n.operatii} de operații, peste ${PLAFON.operatii}`;
+  if (n.instante > PLAFON.instante) return `documentul are ${n.instante} de instanțe, peste ${PLAFON.instante}`;
+  if (n.elementeLume > PLAFON.elementeLume) return `foile au ${n.elementeLume} de elemente în lume, peste ${PLAFON.elementeLume}`;
+  if (n.taieturi > PLAFON.taieturi) return `foile au ${n.taieturi} de tăieturi în lume, peste ${PLAFON.taieturi}`;
+  return null;
+}
+
+/** Problema operațiilor unei piese (ADR 0025), sau null: id-uri unice în piesă, noduri distincte, toate elemente ale ei. */
+function problemaOperatii(p: Piesa, elemente: ReadonlySet<string>): string | null {
+  const ids = new Set<string>();
+  for (const o of p.operatii) {
+    if (ids.has(o.id)) return `piesa ${p.id} are două operații cu id-ul ${o.id}`;
+    ids.add(o.id);
+    if (new Set(o.noduri).size !== o.noduri.length) return `operația ${o.id} din piesa ${p.id} referă un nod de două ori`;
+    const lipsa = o.noduri.find((n) => !elemente.has(n));
+    if (lipsa !== undefined) return `operația ${o.id} din piesa ${p.id} referă ${lipsa}, care nu e un element al piesei`;
+  }
+  return null;
 }
 
 /** Ce cere contractul peste forma fiecărui câmp: unicitatea, referințele și plafoanele de ansamblu. */
 function problemaDeAnsamblu(d: Document): string | null {
-  const piese = new Map<string, number>();
-  let noduri = 0;
+  const piese = new Set<string>();
   for (const p of d.piese) {
     if (piese.has(p.id)) return `două piese au id-ul ${p.id}`;
     const ids = new Set<string>();
-    let elemente = 0;
+    const idsElemente = new Set<string>();
     for (const { nod, adancime } of noduriPiesa(p.radacina)) {
       if (adancime > PLAFON.adancime) return `piesa ${p.id} trece de ${PLAFON.adancime} de niveluri`;
       if (ids.has(nod.id)) return `piesa ${p.id} are două noduri cu id-ul ${nod.id}`;
       ids.add(nod.id);
-      noduri++;
-      if (nod.tip === 'element') elemente++;
+      if (nod.tip === 'element') idsElemente.add(nod.id);
     }
-    piese.set(p.id, elemente);
-  }
-  if (noduri > PLAFON.noduri) return `documentul are ${noduri} de noduri, peste ${PLAFON.noduri}`;
-  for (const p of d.piese) {
-    const m = matriciInMargini(p);
-    if (m) return m;
+    piese.add(p.id);
+    const op = problemaOperatii(p, idsElemente);
+    if (op) return op;
   }
   const foi = new Set<string>();
   const instante = new Set<string>();
-  let elementeLume = 0;
   for (const f of d.foi) {
     if (foi.has(f.id)) return `două foi au id-ul ${f.id}`;
     foi.add(f.id);
     for (const i of f.instante) {
       if (instante.has(i.id)) return `două instanțe au id-ul ${i.id}`;
       instante.add(i.id);
-      const elemente = piese.get(i.piesa);
-      if (elemente === undefined) return `instanța ${i.id} trimite la piesa lipsă ${i.piesa}`;
+      if (!piese.has(i.piesa)) return `instanța ${i.id} trimite la piesa lipsă ${i.piesa}`;
       if (Math.max(Math.abs(i.x), Math.abs(i.y)) > PLAFON.translatie) return `instanța ${i.id} stă la peste ${PLAFON.translatie} mm`;
-      elementeLume += elemente;
     }
   }
-  if (instante.size > PLAFON.instante) return `documentul are ${instante.size} de instanțe, peste ${PLAFON.instante}`;
-  if (elementeLume > PLAFON.elementeLume) return `foile au ${elementeLume} de elemente în lume, peste ${PLAFON.elementeLume}`;
+  // Id-urile și referințele sunt în regulă, deci numărătoarea e cea a documentului: aceeași pe care o folosesc acțiunile.
+  const plafon = plafonDepasit(numara(d));
+  if (plafon) return plafon;
+  for (const p of d.piese) {
+    const m = matriciInMargini(p);
+    if (m) return m;
+  }
   return null;
 }
 
@@ -232,6 +297,24 @@ export const SchemaDocument: v.GenericSchema<unknown, Document> = v.pipe(
     if (p) addIssue({ message: p });
   }),
 ) as v.GenericSchema<unknown, Document>;
+
+/**
+ * Operația implicită a unei forme noi (Adaugă): profilul cu care se taie placa 1 — cercul e o gaură (interior, 8 mm în
+ * 2 treceri), dreptunghiul o insulă (exterior, 3 mm), cu freza plată Ø6. Migrarea v2 → v3 are propria copie, înghețată.
+ */
+export function operatieImplicita(nod: string, forma: FormaDoc, scula: Operatie['scula'] = { numar: 1, nume: 'freza plata', diametru: 6 }): Operatie {
+  return forma.tip === 'cerc'
+    ? { id: nod, tip: 'profil', noduri: [nod], scula, latura: 'interior', adancime: 8, pas: 4 }
+    : { id: nod, tip: 'profil', noduri: [nod], scula, latura: 'exterior', adancime: 3, pas: 3 };
+}
+
+/**
+ * O operație care trece de schema v3: forma și marginile valorilor (adâncimea, pasul, scula). Referințele și unicitatea
+ * le judecă documentul întreg, la ușă. O scriere din interfață o cere înainte, ca proiectul salvat să se poată redeschide.
+ */
+export function operatieInMargini(o: unknown): boolean {
+  return v.safeParse(SchemaOperatie, o).success;
+}
 
 /** Un document nou, gol, cu o foaie. */
 export function documentNou(stoc: { latime: number; inaltime: number; grosime: number }): Document {

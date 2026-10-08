@@ -1,5 +1,5 @@
 import { compune, rotatie, type Matrice } from '../geom/matrice.ts';
-import type { Document, FormaDoc, Instanta, Nod } from './document.ts';
+import type { Document, FormaDoc, Instanta, Nod, Operatie } from './document.ts';
 
 /**
  * Elementele în lume ale unei foi (ADR 0024): singurul loc care desface piesele și instanțele în forme așezate pe foaie.
@@ -58,4 +58,44 @@ export function elementeFoaie(doc: Document, indexFoaie = 0): ElementLume[] {
     for (const e of elementeInstanta(p.radacina, i, matriceInstanta(i))) rez.push(e);
   }
   return rez;
+}
+
+/**
+ * O tăietură în lume: o operație a piesei, pe un element al ei, într-o instanță (ADR 0025). Id-ul în lume e al
+ * elementului; o operație poate tăia un element, iar un element poate fi tăiat de mai multe operații.
+ */
+export type Taietura = ElementLume & {
+  readonly operatie: string;
+  readonly latura: Operatie['latura'];
+  readonly adancime: number;
+  readonly pas: number;
+  readonly scula: Operatie['scula'];
+};
+
+const ORDINE_LATURA: Readonly<Record<Operatie['latura'], number>> = { interior: 0, 'pe-linie': 1, exterior: 2 };
+
+/**
+ * Tăieturile unei foi, în ordinea de tăiere a contractului: întâi interioarele, apoi cele pe linie, la urmă exterioarele
+ * (piesa nu se mișcă sub sculă); în aceeași clasă, instanțele în ordinea foii, operațiile în ordinea piesei, nodurile în
+ * ordinea operației. Elementele fără operație nu se taie.
+ */
+export function taieturiFoaie(doc: Document, indexFoaie = 0): Taietura[] {
+  const foaie = doc.foi[indexFoaie];
+  if (!foaie) return [];
+  const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  const rez: Taietura[] = [];
+  for (const i of foaie.instante) {
+    const p = piese.get(i.piesa);
+    if (!p || p.operatii.length === 0) continue;
+    const elemente = new Map(elementeInstanta(p.radacina, i, matriceInstanta(i)).map((e) => [e.nod, e]));
+    for (const o of p.operatii) {
+      for (const n of o.noduri) {
+        const e = elemente.get(n);
+        if (!e) continue;
+        rez.push({ ...e, operatie: o.id, latura: o.latura, adancime: o.adancime, pas: o.pas, scula: o.scula });
+      }
+    }
+  }
+  // Sortarea e stabilă: în aceeași clasă rămâne ordinea de mai sus.
+  return rez.sort((a, b) => ORDINE_LATURA[a.latura] - ORDINE_LATURA[b.latura]);
 }

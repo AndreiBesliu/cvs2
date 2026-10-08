@@ -1,14 +1,17 @@
 import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
-import { noduriPiesa, numara, PLAFON, type Document, type FormaDoc, type Instanta, type Piesa } from '../model/document.ts';
+import {
+  noduriPiesa, numara, operatieImplicita, operatieInMargini, plafonDepasit, PLAFON, type Document, type FormaDoc, type Instanta,
+  type Numaratoare, type Operatie, type Piesa,
+} from '../model/document.ts';
 import { conturElement } from '../model/forme.ts';
 import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { Actiune } from './actiuni.ts';
 
 /**
- * Acțiunile documentului din etapa 1, pe documentul v2 (ADR 0024). Ce stă pe foaie sunt instanțe; cât timp nivelul doi e
- * ascuns, fiecare are piesa ei, iar selecția ține id-uri de instanțe. Contextul e starea curentă și felul în care se scrie
- * înapoi; acțiunile sunt pure față de restul interfeței.
+ * Acțiunile documentului, pe documentul v3 (ADR 0024, ADR 0025). Ce stă pe foaie sunt instanțe; cât timp nivelul doi e
+ * ascuns, fiecare are piesa ei, iar selecția ține id-uri de instanțe. O formă nouă vine cu operația ei implicită.
+ * Contextul e starea curentă și felul în care se scrie înapoi; acțiunile sunt pure față de restul interfeței.
  */
 export type ContextDocument = {
   readonly istoric: () => Istoric;
@@ -23,6 +26,8 @@ export type ContextDocument = {
   readonly punct?: () => { readonly x: number; readonly y: number; readonly toleranta: number };
   /** Instanțele alese din lista de vectori. */
   readonly alese?: () => readonly string[];
+  /** Operațiile noi ale pieselor, după id-ul piesei, din dialogul de export (se scriu toate într-un singur pas). */
+  readonly operatiiNoi?: () => ReadonlyMap<string, readonly Operatie[]>;
 };
 
 /** Foaia pe care se lucrează; Multi-Plate (mai multe foi pe ecran) vine în etapa 11. */
@@ -68,10 +73,31 @@ function pas(comenzi: readonly Comanda[]): Comanda | null {
   return comenzi.length === 1 && comenzi[0] ? comenzi[0] : { tip: 'lot', comenzi };
 }
 
+/**
+ * Freza operațiilor de pe foaie, dacă e una singură, altfel nimic. „Aceeași” înseamnă ce compară și exportul: numărul și
+ * diametrul (numele nu schimbă ce face mașina). O formă nouă o primește: un program are o singură sculă, iar o formă
+ * adăugată după ce omul a ales Ø3,175 n-are de ce să vină cu Ø6.
+ */
+function sculaFoii(doc: Document): Operatie['scula'] | undefined {
+  const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  let scula: Operatie['scula'] | undefined;
+  for (const i of foaieCurenta(doc).instante) {
+    for (const o of piese.get(i.piesa)?.operatii ?? []) {
+      if (!scula) scula = o.scula;
+      else if (o.scula.numar !== scula.numar || o.scula.diametru !== scula.diametru) return undefined;
+    }
+  }
+  return scula ? { numar: scula.numar, nume: scula.nume, diametru: scula.diametru } : undefined;
+}
+
 function adauga(ctx: ContextDocument, forma: FormaDoc, x: number, y: number): void {
   const h = ctx.istoric();
   const id = idNou(h.doc);
-  const piesa: Piesa = { id, radacina: { tip: 'element', id, forma, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } } };
+  const scula = sculaFoii(h.doc);
+  const piesa: Piesa = {
+    id, radacina: { tip: 'element', id, forma, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+    operatii: [scula ? operatieImplicita(id, forma, scula) : operatieImplicita(id, forma)],
+  };
   const instanta: Instanta = { id, piesa: id, x, y, rotire: 0 };
   const foaie = foaieCurenta(h.doc);
   ctx.scrie(executa(h, {
@@ -84,21 +110,41 @@ function adauga(ctx: ContextDocument, forma: FormaDoc, x: number, y: number): vo
 const scrie = (ctx: ContextDocument): true | 'motiv.doar-citire' => (ctx.doarCitire?.() ? 'motiv.doar-citire' : true);
 
 /**
+ * Dialogul schimbă doar valorile operațiilor existente: aceleași operații, în aceeași ordine, pe aceleași noduri. Așa
+ * referințele, unicitatea și plafoanele rămân cum le-a lăsat ușa; valorile noi trebuie doar să fie în marginile schemei.
+ */
+function operatiiAcceptate(doc: Document, noi: ReadonlyMap<string, readonly Operatie[]>): boolean {
+  const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  for (const [id, operatii] of noi) {
+    const vechi = piese.get(id)?.operatii;
+    if (!vechi || vechi.length !== operatii.length) return false;
+    for (const [k, o] of operatii.entries()) {
+      const v = vechi[k];
+      if (!v || o.id !== v.id || o.tip !== v.tip || o.noduri.length !== v.noduri.length || o.noduri.some((n, j) => n !== v.noduri[j])) return false;
+      if (!operatieInMargini(o)) return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Un document nou trebuie să treacă și el de ușă (ADR 0024, precizarea 5): o acțiune care ar trece de plafoane e inactivă,
  * altfel aplicația ar salva un proiect pe care, la redeschidere, nu l-ar mai putea încărca.
  */
-function incape(doc: Document, plus: { readonly noduri: number; readonly instante: number; readonly elementeLume: number }): boolean {
+function incape(doc: Document, plus: Numaratoare): boolean {
   const n = numara(doc);
-  return n.noduri + plus.noduri <= PLAFON.noduri && n.instante + plus.instante <= PLAFON.instante
-    && n.elementeLume + plus.elementeLume <= PLAFON.elementeLume;
+  return plafonDepasit({
+    noduri: n.noduri + plus.noduri, instante: n.instante + plus.instante, elementeLume: n.elementeLume + plus.elementeLume,
+    operatii: n.operatii + plus.operatii, taieturi: n.taieturi + plus.taieturi,
+  }) === null;
 }
 
-/** Cât adaugă o copie separată a fiecărei instanțe alese: piesa ei întreagă și o instanță. */
-function cresteCopia(ctx: ContextDocument): { noduri: number; instante: number; elementeLume: number } {
+/** Cât adaugă o copie separată a fiecărei instanțe alese: piesa ei întreagă, cu operațiile ei, și o instanță. */
+function cresteCopia(ctx: ContextDocument): Numaratoare {
   const doc = ctx.istoric().doc;
   const alese = new Set(ctx.selectie());
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
-  const plus = { noduri: 0, instante: 0, elementeLume: 0 };
+  const plus = { noduri: 0, instante: 0, elementeLume: 0, operatii: 0, taieturi: 0 };
   for (const i of foaieCurenta(doc).instante) {
     const p = alese.has(i.id) ? piese.get(i.piesa) : undefined;
     if (!p) continue;
@@ -106,6 +152,8 @@ function cresteCopia(ctx: ContextDocument): { noduri: number; instante: number; 
     plus.noduri += noduri.length;
     plus.instante += 1;
     plus.elementeLume += noduri.filter((x) => x.nod.tip === 'element').length;
+    plus.operatii += p.operatii.length;
+    plus.taieturi += p.operatii.reduce((s, o) => s + o.noduri.length, 0);
   }
   return plus;
 }
@@ -113,7 +161,7 @@ function cresteCopia(ctx: ContextDocument): { noduri: number; instante: number; 
 const poateAdauga = (ctx: ContextDocument): true | 'motiv.doar-citire' | 'motiv.plafon' => {
   const s = scrie(ctx);
   if (s !== true) return s;
-  return incape(ctx.istoric().doc, { noduri: 1, instante: 1, elementeLume: 1 }) ? true : 'motiv.plafon';
+  return incape(ctx.istoric().doc, { noduri: 1, instante: 1, elementeLume: 1, operatii: 1, taieturi: 1 }) ? true : 'motiv.plafon';
 };
 
 /** Selecția păstrează doar instanțele care există încă (după o anulare, o refacere sau o ștergere). */
@@ -256,6 +304,32 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
       const c = pas(comenzi);
       if (c) ctx.scrie(executa(h, c));
       ctx.selecteaza([]);
+    },
+  },
+  {
+    // Dialogul de export scrie operațiile pieselor (ADR 0025) la Exportă: o singură comandă, deci un singur Ctrl+Z.
+    // Doar piesele ale căror operații s-au schimbat; numărul operațiilor nu se schimbă, deci plafoanele rămân.
+    id: 'document.aplica-operatii',
+    eticheta: 'actiune.aplica-operatii',
+    capabilitate: 'desen',
+    activa: (ctx) => {
+      if (!ctx.operatiiNoi) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      return operatiiAcceptate(ctx.istoric().doc, ctx.operatiiNoi()) ? true : 'motiv.operatie-invalida';
+    },
+    ruleaza: (ctx) => {
+      const noi = ctx.operatiiNoi?.();
+      if (!noi || !operatiiAcceptate(ctx.istoric().doc, noi)) return;
+      const h = ctx.istoric();
+      const comenzi: Comanda[] = [];
+      for (const vechi of h.doc.piese) {
+        const operatii = noi.get(vechi.id);
+        if (!operatii || JSON.stringify(operatii) === JSON.stringify(vechi.operatii)) continue;
+        comenzi.push({ tip: 'inlocuieste-piesa', vechi, nou: { ...vechi, operatii: operatii.map((o) => structuredClone(o)) } });
+      }
+      const c = pas(comenzi);
+      if (c) ctx.scrie(executa(h, c));
     },
   },
   {
