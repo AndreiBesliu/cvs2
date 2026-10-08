@@ -1,16 +1,20 @@
 /**
- * CAZURILE oracolului documentului v2 (ADR 0024), cu ZERO importuri din `src/`:
+ * CAZURILE oracolului documentului (ADR 0024 + ADR 0025, documentul v3), cu ZERO importuri din `src/`:
  * - `CAZURI_HARTIE`: documente v2 cu punctele în lume calculate de mână, pe hârtie, scrise ca numere (nu calculate
- *   aici). Coordonatele sunt întregi sau puteri ale lui 2, ca egalitatea să fie exactă (`===`);
- * - `MIGRARI_HARTIE`: documente v1 cu documentul v2 cerut de contract, scris de mână;
- * - `CORPUS_V1`: documente v1 valide, scrise de mână (capcanele) și generate cu un PRNG propriu, determinist;
- * - `REFUZATE_V1`: documente v1 pe care ușa le refuză (margini, formă, ciocniri, adâncime, schema 1), fiecare cu
- *   singura categorie pe care o raportează `verificaV1`;
- * - `OTRAVURI_V2`: documente v2 nevalide, fiecare cu singura categorie pe care trebuie s-o raporteze oracolul;
- * - `VALIDE_DIFICILE`: documente v2 valide care seamănă cu niște otrăvuri.
+ *   aici). Coordonatele sunt întregi sau puteri ale lui 2, ca egalitatea să fie exactă (`===`). La ușă se migrează la
+ *   v3, iar geometria nu se schimbă;
+ * - `CAZURI_TAIETURI`: documente v3 (și unul v2) cu lista tăieturilor unei foi scrisă de mână, câmp cu câmp, ca literal;
+ * - `MIGRARI_HARTIE` (v1 → v3, în lanț) și `MIGRARI_V2_HARTIE` (v2 → v3): documentul cerut de contracte, scris de mână;
+ * - `CORPUS_V1`, `CORPUS_V2`, `CORPUS_V3`: documente valide, scrise de mână (capcanele) și generate cu un PRNG propriu,
+ *   determinist; v1 și v2 trebuie să se migreze la v3;
+ * - `REFUZATE_V1`, `REFUZATE_V2`: documente vechi pe care ușa le refuză, fiecare cu singura categorie raportată;
+ * - `OTRAVURI_V2`, `OTRAVURI_V3`: documente nevalide, fiecare cu singura categorie pe care trebuie s-o raporteze
+ *   oracolul (`OTRAVURI_V3` = otrăvurile v2 aduse la forma v3, plus cele ale operațiilor);
+ * - `VALIDE_DIFICILE` (v2) și `VALIDE_DIFICILE_V3`: documente valide care seamănă cu niște otrăvuri.
  */
 import type {
-  CategorieO, DocV1O, DocV2O, ElementO, ElementV1O, FoaieO, GrupO, InstantaO, Liber, MatriceO, NodO, PiesaO, PunctO,
+  CategorieO, DocV1O, DocV2O, DocV3O, ElementO, ElementV1O, FoaieO, GrupO, InstantaO, LaturaO, Liber, MatriceO, NodO,
+  OperatieO, PiesaO, PiesaV3O, PunctO, SculaO, TaieturaO,
 } from './document.ts';
 
 type MatriceScrisa = { -readonly [K in keyof MatriceO]: number };
@@ -39,8 +43,19 @@ const foaie = (id: string, instante: InstantaO[]): FoaieO => ({
 });
 const doc = (piese: PiesaO[], foi: FoaieO[]): DocV2O => ({ schema: 2, rev: 0, piese, foi });
 
+// v3.
+/** Scula implicită a migrării și a celor mai multe cazuri. */
+const S1 = (): SculaO => ({ numar: 1, nume: 'freza plata', diametru: 6 });
+const S2 = (): SculaO => ({ numar: 2, nume: 'V 90', diametru: 3.175 });
+const S3 = (): SculaO => ({ numar: 3, nume: 'freza 8', diametru: 8 });
+const op = (id: string, noduri: string[], latura: LaturaO, adancime = 3, pas = 3, scula: SculaO = S1()): OperatieO => ({
+  id, tip: 'profil', noduri, scula, latura, adancime, pas,
+});
+const piesa3 = (id: string, radacina: NodO, operatii: OperatieO[]): PiesaV3O => ({ id, radacina, operatii });
+const doc3 = (piese: PiesaV3O[], foi: FoaieO[]): DocV3O => ({ schema: 3, rev: 0, piese, foi });
+
 // ---------------------------------------------------------------------------------------------------------------
-// Pe hârtie.
+// Pe hârtie: geometria (documente v2; ușa le migrează, geometria rămâne).
 
 export type PunctHartie = { readonly idLume: string; readonly punctLocal: PunctO; readonly punctLume: PunctO };
 export type CazHartie = {
@@ -298,13 +313,243 @@ export const CAZURI_HARTIE: readonly CazHartie[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
-// Migrări pe hârtie: documentul v2 scris de mână, din textul contractului.
+// Pe hârtie: tăieturile (ADR 0025). Fiecare tăietură e scrisă de mână, câmp cu câmp; matricele sunt calculate pe
+// hârtie (comentariile), cu rotiri exacte, ca egalitatea să fie `===` (−0 = 0).
 
-export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1: DocV1O; readonly v2: Liber }> = [
+export type CazTaieturi = {
+  readonly nume: string;
+  /** Un v3; T08 e un v2, ale cărui tăieturi vin din operațiile implicite ale migrării. */
+  readonly doc: DocV3O | DocV2O;
+  readonly indexFoaie: number;
+  /** Toate tăieturile foii, în ordine. */
+  readonly taieturi: readonly TaieturaO[];
+};
+
+/** O tăietură scrisă de mână (fiecare argument e o valoare literală; `idLume` se scrie, nu se calculează). */
+const t = (
+  idLume: string, instanta: string, piesaT: string, operatie: string, nod: string, latura: LaturaO,
+  adancime: number, pas: number, scula: SculaO, forma: Liber, matrice: MatriceO,
+): TaieturaO => ({ idLume, instanta, piesa: piesaT, operatie, nod, latura, adancime, pas, scula, forma, matrice });
+
+/** T05: trei piese (una fără operații), două foi. */
+const docT05 = (): DocV3O => doc3(
+  [
+    piesa3('pA', el('e', I(), cerc(4)), [op('o', ['e'], 'interior', 6, 3)]),
+    piesa3('pB', grup('g', T(5, 5), [el('x', T(1, 0)), el('y', T(0, 1))]), [op('k', ['y', 'x'], 'exterior', 18, 6, S3())]),
+    piesa3('pC', el('z', I()), []),
+  ],
+  [
+    foaie('f1', [inst('iA1', 'pA', 0, 0, 0)]),
+    foaie('f2', [inst('iB', 'pB', 100, 0, 270), inst('iC', 'pC', 0, 0, 0), inst('iA2', 'pA', 50, 50, 90)]),
+  ],
+);
+
+/** T07: un element fără operație nu se taie; trei foi. */
+const docT07 = (): DocV3O => doc3(
+  [piesa3('pX', el('e', T(3, 4)), [op('o', ['e'], 'exterior')]), piesa3('pY', el('e', I(), cerc()), [])],
+  [
+    foaie('f1', [inst('iY', 'pY', 0, 0, 0)]),
+    foaie('f2', []),
+    foaie('f3', [inst('iX', 'pX', 10, 10, 0), inst('iY2', 'pY', 0, 0, 0)]),
+  ],
+);
+
+export const CAZURI_TAIETURI: readonly CazTaieturi[] = [
+  {
+    // Instanța: T(100, 50). r = T(10, 0) → (110, 50); c = T(0, 10) → (100, 60); l = T(5, 5) → (105, 55).
+    // Operațiile, în ordinea piesei: ext, pe linie, int; tăieturile: int, pe linie, ext.
+    nume: 'T01 ordinea claselor: interior, pe-linie, exterior (operațiile piesei sunt invers)',
+    doc: doc3(
+      [piesa3(
+        'p1',
+        grup('g', I(), [el('r', T(10, 0)), el('c', T(0, 10), cerc()), el('l', T(5, 5))]),
+        [op('o-ext', ['r'], 'exterior', 18, 6), op('o-lin', ['l'], 'pe-linie', 2, 1), op('o-int', ['c'], 'interior', 10, 5)],
+      )],
+      [foaie('f1', [inst('i1', 'p1', 100, 50, 0)])],
+    ),
+    indexFoaie: 0,
+    taieturi: [
+      t('i1/c', 'i1', 'p1', 'o-int', 'c', 'interior', 10, 5, S1(), cerc(), M(1, 0, 0, 1, 100, 60)),
+      t('i1/l', 'i1', 'p1', 'o-lin', 'l', 'pe-linie', 2, 1, S1(), dr(), M(1, 0, 0, 1, 105, 55)),
+      t('i1/r', 'i1', 'p1', 'o-ext', 'r', 'exterior', 18, 6, S1(), dr(), M(1, 0, 0, 1, 110, 50)),
+    ],
+  },
+  {
+    // i2 = T(200, 100) ∘ R90 = (0, 1, −1, 0, 200, 100): a = T(10, 0) → (200 − 0, 100 + 10) = (200, 110);
+    // b = T(0, 20) → (200 − 20, 100 + 0) = (180, 100). În clasă: i1 (g1, g2), apoi i2 (g1, g2), nu g1 pe ambele.
+    nume: 'T02 două instanțe ale aceleiași piese, două operații în aceeași clasă: instanța înaintea operației',
+    doc: doc3(
+      [piesa3(
+        'p1',
+        grup('g', I(), [el('a', T(10, 0), cerc()), el('b', T(0, 20), cerc(3)), el('r', I(), dr())]),
+        [op('g1', ['a'], 'interior', 5, 5), op('g2', ['b'], 'interior', 6, 3), op('contur', ['r'], 'exterior', 18, 6)],
+      )],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0), inst('i2', 'p1', 200, 100, 90)])],
+    ),
+    indexFoaie: 0,
+    taieturi: [
+      t('i1/a', 'i1', 'p1', 'g1', 'a', 'interior', 5, 5, S1(), cerc(), M(1, 0, 0, 1, 10, 0)),
+      t('i1/b', 'i1', 'p1', 'g2', 'b', 'interior', 6, 3, S1(), cerc(3), M(1, 0, 0, 1, 0, 20)),
+      t('i2/a', 'i2', 'p1', 'g1', 'a', 'interior', 5, 5, S1(), cerc(), M(0, 1, -1, 0, 200, 110)),
+      t('i2/b', 'i2', 'p1', 'g2', 'b', 'interior', 6, 3, S1(), cerc(3), M(0, 1, -1, 0, 180, 100)),
+      t('i1/r', 'i1', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(), M(1, 0, 0, 1, 0, 0)),
+      t('i2/r', 'i2', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(), M(0, 1, -1, 0, 200, 100)),
+    ],
+  },
+  {
+    // Instanța T(10, 20) ∘ R180 = (−1, 0, −0, −1, 10, 20); rădăcina e elementul (identitate). Trei tăieturi cu același
+    // idLume, câte una pe operație; operația „r” are id-ul nodului (spații de nume separate).
+    nume: 'T03 trei operații pe același element (clase diferite, altă sculă la marcaj): același idLume de trei ori',
+    doc: doc3(
+      [piesa3(
+        'p1',
+        el('r', I(), dr(100, 50, 0)),
+        [op('marcaj', ['r'], 'pe-linie', 1, 1, S2()), op('decupare', ['r'], 'exterior', 18, 6), op('r', ['r'], 'interior', 0.5, 0.5)],
+      )],
+      [foaie('f1', [inst('i1', 'p1', 10, 20, 180)])],
+    ),
+    indexFoaie: 0,
+    taieturi: [
+      t('i1/r', 'i1', 'p1', 'r', 'r', 'interior', 0.5, 0.5, S1(), dr(100, 50, 0), M(-1, 0, 0, -1, 10, 20)),
+      t('i1/r', 'i1', 'p1', 'marcaj', 'r', 'pe-linie', 1, 1, S2(), dr(100, 50, 0), M(-1, 0, 0, -1, 10, 20)),
+      t('i1/r', 'i1', 'p1', 'decupare', 'r', 'exterior', 18, 6, S1(), dr(100, 50, 0), M(-1, 0, 0, -1, 10, 20)),
+    ],
+  },
+  {
+    // G = T(1000, 0); H = G ∘ R90 = (0, 1, −1, 0, 1000, 0); n1 = H ∘ T(10, 0) = (0, 1, −1, 0, 1000, 10);
+    // n2 = G ∘ T(0, 5) = (1, 0, 0, 1, 1000, 5); n3 = G. Preordinea e n1, n2, n3, n4; operația cere n2, apoi n1. n4 n-are
+    // operație.
+    nume: 'T04 o operație cu două noduri: în ordinea operației (n2, n1), nu în preordine; un element fără operație',
+    doc: doc3(
+      [piesa3(
+        'p1',
+        grup('G', T(1000, 0), [
+          grup('H', M(0, 1, -1, 0, 0, 0), [el('n1', T(10, 0), cerc(2))]),
+          el('n2', T(0, 5), cerc(2)),
+          el('n3', I(), dr()),
+          el('n4', T(7, 7), dr()),
+        ]),
+        [op('gauri', ['n2', 'n1'], 'interior', 12, 4), op('o3', ['n3'], 'exterior', 18, 9)],
+      )],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ),
+    indexFoaie: 0,
+    taieturi: [
+      t('i1/n2', 'i1', 'p1', 'gauri', 'n2', 'interior', 12, 4, S1(), cerc(2), M(1, 0, 0, 1, 1000, 5)),
+      t('i1/n1', 'i1', 'p1', 'gauri', 'n1', 'interior', 12, 4, S1(), cerc(2), M(0, 1, -1, 0, 1000, 10)),
+      t('i1/n3', 'i1', 'p1', 'o3', 'n3', 'exterior', 18, 9, S1(), dr(), M(1, 0, 0, 1, 1000, 0)),
+    ],
+  },
+  {
+    // iA2 = T(50, 50) ∘ R90 = (0, 1, −1, 0, 50, 50). iB = T(100, 0) ∘ R270 = (0, −1, 1, 0, 100, 0);
+    // g = iB ∘ T(5, 5) = (0, −1, 1, 0, 105, −5); x = g ∘ T(1, 0) = (…, 105, −6); y = g ∘ T(0, 1) = (…, 106, −5).
+    // iC (piesa fără operații) nu dă nimic; iA1 stă pe prima foaie.
+    nume: 'T05 a doua foaie (indexFoaie 1): rotiri 90 și 270, o piesă fără operații, altă sculă',
+    doc: docT05(),
+    indexFoaie: 1,
+    taieturi: [
+      t('iA2/e', 'iA2', 'pA', 'o', 'e', 'interior', 6, 3, S1(), cerc(4), M(0, 1, -1, 0, 50, 50)),
+      t('iB/y', 'iB', 'pB', 'k', 'y', 'exterior', 18, 6, S3(), dr(), M(0, -1, 1, 0, 106, -5)),
+      t('iB/x', 'iB', 'pB', 'k', 'x', 'exterior', 18, 6, S3(), dr(), M(0, -1, 1, 0, 105, -6)),
+    ],
+  },
+  {
+    nume: 'T05b prima foaie a aceluiași document nu vede foaia a doua',
+    doc: docT05(),
+    indexFoaie: 0,
+    taieturi: [t('iA1/e', 'iA1', 'pA', 'o', 'e', 'interior', 6, 3, S1(), cerc(4), M(1, 0, 0, 1, 0, 0))],
+  },
+  {
+    // Instanțele: z9, a1, m5 (nu după id); operațiile lui pZ: z, b, a (nu după id). m = T(1, 0), a = T(2, 0), k = I.
+    nume: 'T06 ordinea foii și a piesei, nu a id-urilor; două piese întrețesute în aceeași clasă',
+    doc: doc3(
+      [
+        piesa3(
+          'pZ',
+          grup('G', I(), [el('m', T(1, 0), cerc(1)), el('a', T(2, 0))]),
+          [op('z', ['a'], 'pe-linie', 1, 1), op('b', ['m'], 'interior', 4, 2), op('a', ['m'], 'interior', 2, 2)],
+        ),
+        piesa3('pA', el('k', I()), [op('k', ['k'], 'interior', 3, 3)]),
+      ],
+      [foaie('f1', [inst('z9', 'pZ', 0, 0, 0), inst('a1', 'pA', 1000, 0, 0), inst('m5', 'pZ', 0, 500, 0)])],
+    ),
+    indexFoaie: 0,
+    taieturi: [
+      t('z9/m', 'z9', 'pZ', 'b', 'm', 'interior', 4, 2, S1(), cerc(1), M(1, 0, 0, 1, 1, 0)),
+      t('z9/m', 'z9', 'pZ', 'a', 'm', 'interior', 2, 2, S1(), cerc(1), M(1, 0, 0, 1, 1, 0)),
+      t('a1/k', 'a1', 'pA', 'k', 'k', 'interior', 3, 3, S1(), dr(), M(1, 0, 0, 1, 1000, 0)),
+      t('m5/m', 'm5', 'pZ', 'b', 'm', 'interior', 4, 2, S1(), cerc(1), M(1, 0, 0, 1, 1, 500)),
+      t('m5/m', 'm5', 'pZ', 'a', 'm', 'interior', 2, 2, S1(), cerc(1), M(1, 0, 0, 1, 1, 500)),
+      t('z9/a', 'z9', 'pZ', 'z', 'a', 'pe-linie', 1, 1, S1(), dr(), M(1, 0, 0, 1, 2, 0)),
+      t('m5/a', 'm5', 'pZ', 'z', 'a', 'pe-linie', 1, 1, S1(), dr(), M(1, 0, 0, 1, 2, 500)),
+    ],
+  },
+  {
+    nume: 'T07a o foaie cu o singură instanță, a unei piese fără operații: nicio tăietură',
+    doc: docT07(),
+    indexFoaie: 0,
+    taieturi: [],
+  },
+  {
+    nume: 'T07b o foaie fără instanțe: nicio tăietură',
+    doc: docT07(),
+    indexFoaie: 1,
+    taieturi: [],
+  },
+  {
+    // iX = T(10, 10); e = T(3, 4) → (13, 14). iY2 (fără operații) nu dă nimic.
+    nume: 'T07c doar elementul cu operație se taie',
+    doc: docT07(),
+    indexFoaie: 2,
+    taieturi: [t('iX/e', 'iX', 'pX', 'o', 'e', 'exterior', 3, 3, S1(), dr(), M(1, 0, 0, 1, 13, 14))],
+  },
+  {
+    // Un v2: migrarea dă r → exterior 3 3, c → interior 8 4, c2 → interior 8 4, scula { 1, 'freza plata', 6 }.
+    // i1 = T(100, 100): c = T(20, 10) → (120, 110), r = I → (100, 100). i2 = R90: c2 = (0, 1, −1, 0, 0, 0).
+    nume: 'T08 dintr-un v2: operațiile implicite ale migrării, cercurile întâi',
+    doc: doc(
+      [piesa('p1', grup('g', I(), [el('r', I()), el('c', T(20, 10), cerc())])), piesa('p2', el('c2', I(), cerc(3)))],
+      [foaie('f1', [inst('i1', 'p1', 100, 100, 0), inst('i2', 'p2', 0, 0, 90)])],
+    ),
+    indexFoaie: 0,
+    taieturi: [
+      t('i1/c', 'i1', 'p1', 'c', 'c', 'interior', 8, 4, { numar: 1, nume: 'freza plata', diametru: 6 }, cerc(), M(1, 0, 0, 1, 120, 110)),
+      t('i2/c2', 'i2', 'p2', 'c2', 'c2', 'interior', 8, 4, { numar: 1, nume: 'freza plata', diametru: 6 }, cerc(3), M(0, 1, -1, 0, 0, 0)),
+      t('i1/r', 'i1', 'p1', 'r', 'r', 'exterior', 3, 3, { numar: 1, nume: 'freza plata', diametru: 6 }, dr(), M(1, 0, 0, 1, 100, 100)),
+    ],
+  },
+  {
+    // g = (−1, 0, 0, 1, 50, 0) (oglindire). i1 (identitate): r = g ∘ T(10, 0) = (−1, 0, 0, 1, 40, 0), determinant −1;
+    // c = g ∘ (1, 0, 0, −1, 0, 30) = (−1, 0, −0, −1, 50, 30). i2 = R90 + (0, 100): g → (−0, −1, −1, 0, 0, 150);
+    // r → (−0, −1, −1, 0, 0, 140), determinant −1; c → (−0, −1, 1, −0, −30, 150).
+    // Latura e a formei: sub oglindire, „exterior” rămâne afară (CAM-ul nu are voie să o întoarcă după sensul conturului).
+    nume: 'T09 oglindire în arbore (determinant −1): latura rămâne a formei, matricea se dă așa cum e',
+    doc: doc3(
+      [piesa3(
+        'p1',
+        grup('g', M(-1, 0, 0, 1, 50, 0), [el('r', T(10, 0), dr(20, 10, 2)), el('c', M(1, 0, 0, -1, 0, 30), cerc(5))]),
+        [op('contur', ['r'], 'exterior', 18, 6), op('gaura', ['c'], 'interior', 18, 6)],
+      )],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0), inst('i2', 'p1', 0, 100, 90)])],
+    ),
+    indexFoaie: 0,
+    taieturi: [
+      t('i1/c', 'i1', 'p1', 'gaura', 'c', 'interior', 18, 6, S1(), cerc(5), M(-1, 0, 0, -1, 50, 30)),
+      t('i2/c', 'i2', 'p1', 'gaura', 'c', 'interior', 18, 6, S1(), cerc(5), M(0, -1, 1, 0, -30, 150)),
+      t('i1/r', 'i1', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(20, 10, 2), M(-1, 0, 0, 1, 40, 0)),
+      t('i2/r', 'i2', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(20, 10, 2), M(0, -1, -1, 0, 0, 140)),
+    ],
+  },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Migrări pe hârtie: documentul v3 scris de mână, din textul contractelor (v1 → v2 → v3, în lanț).
+
+export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1: DocV1O; readonly v3: Liber }> = [
   {
     nume: 'M01 gol',
     v1: { schema: 1, rev: 0, foaie: { latime: 100, inaltime: 100, grosime: 10 }, elemente: [] },
-    v2: { schema: 2, rev: 0, piese: [], foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 10 }, instante: [] }] },
+    v3: { schema: 3, rev: 0, piese: [], foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 10 }, instante: [] }] },
   },
   {
     nume: 'M02 două elemente, nume, câmpuri necunoscute pe toate nivelurile',
@@ -316,8 +561,8 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
         { id: 'b', forma: { tip: 'cerc', raza: 10 }, matrice: M(1, 0, 0, 1, -5, 0) },
       ],
     },
-    v2: {
-      schema: 2, rev: 7, autor: 'A',
+    v3: {
+      schema: 3, rev: 7, autor: 'A',
       piese: [
         {
           id: 'a', nume: 'Raft',
@@ -325,8 +570,19 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
             tip: 'element', id: 'a', forma: { tip: 'dreptunghi', latime: 100, inaltime: 50, razaColt: 5 },
             matrice: { a: 0, b: 1, c: -1, d: 0, e: 0, f: 0 }, strat: 'sus',
           },
+          operatii: [{
+            id: 'a', tip: 'profil', noduri: ['a'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
+            latura: 'exterior', adancime: 3, pas: 3,
+          }],
         },
-        { id: 'b', radacina: { tip: 'element', id: 'b', forma: { tip: 'cerc', raza: 10 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } } },
+        {
+          id: 'b',
+          radacina: { tip: 'element', id: 'b', forma: { tip: 'cerc', raza: 10 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+          operatii: [{
+            id: 'b', tip: 'profil', noduri: ['b'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
+            latura: 'interior', adancime: 8, pas: 4,
+          }],
+        },
       ],
       foi: [{
         id: 'f1',
@@ -344,11 +600,15 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
       foaie: { latime: 50, inaltime: 60, grosime: 3, id: 'X', nume: 'Placa', instante: 'nu' },
       elemente: [{ id: 'f1', forma: { tip: 'cerc', raza: 2 }, matrice: M(1, 0, 0, 1, 7, 8), x: 99, rotire: 45, piesa: 'q' }],
     },
-    v2: {
-      schema: 2, rev: 3,
+    v3: {
+      schema: 3, rev: 3,
       piese: [{
         id: 'f1',
         radacina: { tip: 'element', id: 'f1', forma: { tip: 'cerc', raza: 2 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, x: 99, rotire: 45, piesa: 'q' },
+        operatii: [{
+          id: 'f1', tip: 'profil', noduri: ['f1'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
+          latura: 'interior', adancime: 8, pas: 4,
+        }],
       }],
       foi: [{
         id: 'f1',
@@ -369,22 +629,206 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
         copii: [{ tip: 'element', id: 'x' }],
       }],
     },
-    v2: {
-      schema: 2, rev: 5,
+    v3: {
+      schema: 3, rev: 5,
       piese: [{
         id: 'a',
         radacina: {
           tip: 'element', id: 'a', forma: { tip: 'cerc', raza: 1 },
           matrice: { a: 2, b: 0, c: 0, d: 2, e: 0, f: 0, nota: 'm' }, copii: [{ tip: 'element', id: 'x' }],
         },
+        operatii: [{
+          id: 'a', tip: 'profil', noduri: ['a'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
+          latura: 'interior', adancime: 8, pas: 4,
+        }],
       }],
       foi: [{ id: 'f1', stoc: { latime: 10, inaltime: 10, grosime: 1 }, instante: [{ id: 'a', piesa: 'a', x: 3, y: -4, rotire: 0 }] }],
+    },
+  },
+  {
+    // Un câmp necunoscut „operatii” pe elementul v1 ajunge pe RĂDĂCINA piesei (un nod), nu pe piesă: nu e o ciocnire,
+    // iar operațiile piesei sunt cele implicite. Unul de sus rămâne sus.
+    nume: 'M05 câmpul operatii pe elementul v1 și pe primul nivel (nu e ciocnire în lanț)',
+    v1: {
+      schema: 1, rev: 2, operatii: 'sus',
+      foaie: { latime: 10, inaltime: 10, grosime: 1 },
+      elemente: [{ id: 'e', forma: { tip: 'dreptunghi', latime: 4, inaltime: 2, razaColt: 0 }, matrice: M(1, 0, 0, 1, 1, 1), operatii: [{ id: 'x' }] }],
+    },
+    v3: {
+      schema: 3, rev: 2, operatii: 'sus',
+      piese: [{
+        id: 'e',
+        radacina: {
+          tip: 'element', id: 'e', forma: { tip: 'dreptunghi', latime: 4, inaltime: 2, razaColt: 0 },
+          matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, operatii: [{ id: 'x' }],
+        },
+        operatii: [{
+          id: 'e', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
+          latura: 'exterior', adancime: 3, pas: 3,
+        }],
+      }],
+      foi: [{ id: 'f1', stoc: { latime: 10, inaltime: 10, grosime: 1 }, instante: [{ id: 'e', piesa: 'e', x: 1, y: 1, rotire: 0 }] }],
+    },
+  },
+];
+
+/** Migrări v2 → v3 pe hârtie (ADR 0025): o operație pe element, în preordine, cu implicitele formei. */
+export const MIGRARI_V2_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v2: DocV2O; readonly v3: Liber }> = [
+  {
+    nume: 'MV01 un cerc: interior, 8, 4',
+    v2: {
+      schema: 2, rev: 5,
+      piese: [{ id: 'p1', radacina: { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 10 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } } }],
+      foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 18 }, instante: [{ id: 'i1', piesa: 'p1', x: 50, y: 50, rotire: 0 }] }],
+    },
+    v3: {
+      schema: 3, rev: 5,
+      piese: [{
+        id: 'p1',
+        radacina: { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 10 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+        operatii: [{
+          id: 'c', tip: 'profil', noduri: ['c'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
+          latura: 'interior', adancime: 8, pas: 4,
+        }],
+      }],
+      foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 18 }, instante: [{ id: 'i1', piesa: 'p1', x: 50, y: 50, rotire: 0 }] }],
+    },
+  },
+  {
+    nume: 'MV02 un dreptunghi rotunjit, cu nume și câmpuri necunoscute: exterior, 3, 3',
+    v2: {
+      schema: 2, rev: 11, autor: 'A',
+      piese: [{
+        id: 'raft', nume: 'Raft', culoare: 'stejar',
+        radacina: {
+          tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 600, inaltime: 300, razaColt: 10 },
+          matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, strat: 'sus',
+        },
+      }],
+      foi: [{
+        id: 'f1', stoc: { latime: 2000, inaltime: 1000, grosime: 18 },
+        instante: [{ id: 'i1', piesa: 'raft', x: 0, y: 0, rotire: 90, campuri: { cod: 'R1' } }],
+      }],
+    },
+    v3: {
+      schema: 3, rev: 11, autor: 'A',
+      piese: [{
+        id: 'raft', nume: 'Raft', culoare: 'stejar',
+        radacina: {
+          tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 600, inaltime: 300, razaColt: 10 },
+          matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, strat: 'sus',
+        },
+        operatii: [{
+          id: 'r', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
+          latura: 'exterior', adancime: 3, pas: 3,
+        }],
+      }],
+      foi: [{
+        id: 'f1', stoc: { latime: 2000, inaltime: 1000, grosime: 18 },
+        instante: [{ id: 'i1', piesa: 'raft', x: 0, y: 0, rotire: 90, campuri: { cod: 'R1' } }],
+      }],
+    },
+  },
+  {
+    nume: 'MV03 un grup cu două elemente (dreptunghi, apoi cerc): operațiile în preordine, nu în ordinea claselor',
+    v2: {
+      schema: 2, rev: 0,
+      piese: [{
+        id: 'p1',
+        radacina: {
+          tip: 'grup', id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 },
+          copii: [
+            { tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+            { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 5 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 20, f: 10 } },
+          ],
+        },
+      }],
+      foi: [{ id: 'f1', stoc: { latime: 2000, inaltime: 1000, grosime: 18 }, instante: [] }],
+    },
+    v3: {
+      schema: 3, rev: 0,
+      piese: [{
+        id: 'p1',
+        radacina: {
+          tip: 'grup', id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 },
+          copii: [
+            { tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+            { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 5 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 20, f: 10 } },
+          ],
+        },
+        operatii: [
+          {
+            id: 'r', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
+            latura: 'exterior', adancime: 3, pas: 3,
+          },
+          {
+            id: 'c', tip: 'profil', noduri: ['c'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
+            latura: 'interior', adancime: 8, pas: 4,
+          },
+        ],
+      }],
+      foi: [{ id: 'f1', stoc: { latime: 2000, inaltime: 1000, grosime: 18 }, instante: [] }],
+    },
+  },
+  {
+    // Preordinea: n5, n3, n1, n4, n2. „operatii” mai apare sus, pe foaie, pe instanță și pe un nod: nu e ciocnire.
+    nume: 'MV04 arbore pe trei niveluri (preordine), o piesă cu grupul gol, câmpul operatii în alte locuri',
+    v2: {
+      schema: 2, rev: 9, operatii: null,
+      piese: [
+        {
+          id: 'p1',
+          radacina: grup('G0', I(), [
+            el('n5', T(1, 0), cerc()),
+            grup('G1', T(0, 10), [
+              { ...el('n3', T(2, 0)), operatii: ['n3'] },
+              grup('G2', T(0, 100), [el('n1', T(3, 0), cerc())]),
+              el('n4', T(4, 0)),
+            ]),
+            el('n2', T(5, 0), cerc()),
+          ]),
+        },
+        { id: 'gol', radacina: grup('g', I(), []) },
+      ],
+      foi: [{
+        id: 'f1', operatii: 'foaie', stoc: { latime: 2000, inaltime: 1000, grosime: 18 },
+        instante: [{ id: 'i1', piesa: 'p1', x: 0, y: 0, rotire: 0, operatii: 7 }, { id: 'i2', piesa: 'gol', x: 0, y: 0, rotire: 0 }],
+      }],
+    },
+    v3: {
+      schema: 3, rev: 9, operatii: null,
+      piese: [
+        {
+          id: 'p1',
+          radacina: grup('G0', I(), [
+            el('n5', T(1, 0), cerc()),
+            grup('G1', T(0, 10), [
+              { ...el('n3', T(2, 0)), operatii: ['n3'] },
+              grup('G2', T(0, 100), [el('n1', T(3, 0), cerc())]),
+              el('n4', T(4, 0)),
+            ]),
+            el('n2', T(5, 0), cerc()),
+          ]),
+          operatii: [
+            { id: 'n5', tip: 'profil', noduri: ['n5'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4 },
+            { id: 'n3', tip: 'profil', noduri: ['n3'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'exterior', adancime: 3, pas: 3 },
+            { id: 'n1', tip: 'profil', noduri: ['n1'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4 },
+            { id: 'n4', tip: 'profil', noduri: ['n4'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'exterior', adancime: 3, pas: 3 },
+            { id: 'n2', tip: 'profil', noduri: ['n2'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4 },
+          ],
+        },
+        { id: 'gol', radacina: grup('g', I(), []), operatii: [] },
+      ],
+      foi: [{
+        id: 'f1', operatii: 'foaie', stoc: { latime: 2000, inaltime: 1000, grosime: 18 },
+        instante: [{ id: 'i1', piesa: 'p1', x: 0, y: 0, rotire: 0, operatii: 7 }, { id: 'i2', piesa: 'gol', x: 0, y: 0, rotire: 0 }],
+      }],
     },
   },
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
-// Corpusul v1: valid după schema 1 (`src/model/document.ts`, citit doar pentru format și plafoane).
+// Corpusul v1: valid după schema 1 (`src/model/document.ts` din etapa 1, citit doar pentru format și plafoane).
 
 export type CazV1 = { readonly nume: string; readonly doc: DocV1O };
 
@@ -524,9 +968,22 @@ const SCRISE_DE_MANA: readonly CazV1[] = [
     ]),
   },
   {
-    // Un câmp de sus rămâne la același nivel după migrare: 1 + 199 = 200 de niveluri și în v1, și în v2.
+    // Un câmp de sus rămâne la același nivel după migrare: 1 + 199 = 200 de niveluri în v1, în v2 și în v3.
     nume: 'C27 JSON adânc de exact 200 de niveluri (un câmp de sus)',
     doc: { ...v1([elV1('e1', I())]), adanc: adanc(199) },
+  },
+  {
+    // ADR 0025, în lanț: câmpul elementului ajunge pe rădăcina piesei (un nod), deci piesa v2 n-are „operatii”.
+    nume: 'C28 un câmp necunoscut operatii pe element și pe primul nivel (nu e ciocnire în lanț)',
+    doc: v1([elV1('e1', T(1, 1), dr(), { operatii: [{ id: 'o', latura: 'interior' }] }), elV1('e2', I(), cerc())], { operatii: 'sus' }),
+  },
+  {
+    // Câmpuri cu numele parametrilor pe element și în formă: migrarea nu le citește, implicitele vin din `forma.tip`.
+    nume: 'C29 câmpuri latura, adancime, pas, scula pe element și în formă (ignorate de migrare)',
+    doc: v1([
+      elV1('c', T(5, 5), { tip: 'cerc', raza: 2, latura: 'exterior', adancime: 30 }, { latura: 'pe-linie', pas: 99, scula: { numar: 7 } }),
+      elV1('d', T(9, 9), { tip: 'dreptunghi', latime: 4, inaltime: 4, razaColt: 0, latura: 'interior' }),
+    ]),
   },
 ];
 
@@ -676,13 +1133,308 @@ const GENERATE: readonly CazV1[] = [
 export const CORPUS_V1: readonly CazV1[] = [...SCRISE_DE_MANA, ...GENERATE];
 
 /**
- * Plafonul v1 (100 000 de elemente) dă exact plafonul de elemente în lume v2 (precizarea 5): încape. Stă separat de
- * corpus, ca testele lui de idempotență să nu-l încarce de opt ori.
+ * Plafonul v1 (100 000 de elemente) dă exact plafonul de elemente în lume v2 (precizarea 5) și, în lanț, exact
+ * plafoanele v3: 100 000 de operații și 100 000 de tăieturi. Stă separat de corpus, ca testele lui de idempotență să
+ * nu-l încarce de opt ori.
  */
 export const V1_LA_PLAFON: CazV1 = {
-  nume: 'V1 la plafon: 100 000 de elemente (100 000 de elemente în lume)',
-  doc: v1(Array.from({ length: 100_000 }, (_, k) => elV1(`e${k}`, T(k % 1000, Math.floor(k / 1000))))),
+  nume: 'V1 la plafon: 100 000 de elemente (100 000 de elemente în lume, de operații și de tăieturi)',
+  doc: v1(Array.from({ length: 100_000 }, (_, k) => elV1(`e${k}`, T(k % 1000, Math.floor(k / 1000)), k % 2 === 0 ? dr() : cerc()))),
 };
+
+// ---------------------------------------------------------------------------------------------------------------
+// Corpusul v2: documente v2 valide, care trebuie să se migreze la v3.
+
+export type CazV2 = { readonly nume: string; readonly doc: DocV2O };
+
+/** Un lanț de `niveluri` noduri: grupuri, cu un element la capăt. Rădăcina e nivelul 1. */
+const lant = (niveluri: number, pas: MatriceO = I()): NodO => {
+  let nod: NodO = el('frunza', I());
+  for (let k = niveluri - 1; k >= 1; k--) nod = grup(`g${k}`, { ...pas }, [nod]);
+  return nod;
+};
+
+const SCRISE_V2: readonly CazV2[] = [
+  { nume: 'V2-01 gol: nicio piesă, o foaie fără instanțe', doc: doc([], [foaie('f1', [])]) },
+  {
+    nume: 'V2-02 arbore pe trei niveluri: operațiile în preordine (n5, n3, n1, n4, n2), nu pe niveluri sau după id',
+    doc: doc(
+      [piesa('pZ', grup('G0', I(), [
+        el('n5', T(1, 0), cerc()),
+        grup('G1', T(0, 10), [el('n3', T(2, 0)), grup('G2', T(0, 100), [el('n1', T(3, 0), cerc())]), el('n4', T(4, 0))]),
+        el('n2', T(5, 0)),
+      ]))],
+      [foaie('f1', [inst('z9', 'pZ', 0, 0, 0), inst('a1', 'pZ', 1000, 0, 90)])],
+    ),
+  },
+  {
+    nume: 'V2-03 câmpul operatii sus, pe foaie, pe stoc, pe instanță, pe un grup, pe un element și în formă (nu e ciocnire)',
+    doc: {
+      ...doc(
+        [piesa('p1', { ...grup('g', I(), [{ ...el('e', I(), { ...cerc(), operatii: 1 }), operatii: [] }]), operatii: 'grup' })],
+        [{ ...foaie('f1', [{ ...inst('i1', 'p1', 0, 0, 0), operatii: { a: 1 } }]), operatii: true, stoc: { latime: 10, inaltime: 10, grosime: 1, operatii: 'stoc' } }],
+      ),
+      operatii: [{ id: 'sus', tip: 'profil' }],
+    },
+  },
+  {
+    nume: 'V2-04 câmpuri numite latura, adancime, pas, scula, noduri pe element și în formă (migrarea nu le citește)',
+    doc: doc(
+      [piesa('p1', grup('g', I(), [
+        { ...el('c', T(3, 3), { ...cerc(2), latura: 'exterior', adancime: 30, pas: 30 }), latura: 'pe-linie', scula: { numar: 9, diametru: 1 } },
+        { ...el('d', I(), { ...dr(), latura: 'interior', noduri: ['c'] }), adancime: 0.1 },
+      ]))],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ),
+  },
+  {
+    nume: 'V2-05 o piesă fără instanțe primește tot operații; o piesă cu grupul gol primește lista goală',
+    doc: doc(
+      [piesa('p1', el('e', I(), cerc())), piesa('p2', grup('g', I(), [el('a', I()), el('b', T(1, 1), cerc())])), piesa('gol', grup('g', I(), []))],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0), inst('i2', 'gol', 5, 5, 0)])],
+    ),
+  },
+  {
+    nume: 'V2-06 dreptunghi rotunjit (arce) e tot exterior 3 3; cerc sub oglindire și rotire cu scalare e tot interior',
+    doc: doc(
+      [piesa('p1', grup('g', M(-1, 0, 0, 1, 0, 0), [el('r', T(10, 0), dr(40, 20, 10)), el('c', M(0, 2, -2, 0, 5, 5), cerc(3))]))],
+      [foaie('f1', [inst('i1', 'p1', 100, 100, 180)])],
+    ),
+  },
+  {
+    nume: 'V2-07 același id de element în două piese, egal cu id-ul piesei, al instanței și al foii',
+    doc: doc(
+      [piesa('x', el('x', I(), cerc())), piesa('y', grup('g', I(), [el('x', I()), el('y', T(2, 2), cerc())]))],
+      [foaie('x', [inst('x', 'x', 0, 0, 0), inst('y', 'y', 10, 0, 270)])],
+    ),
+  },
+  {
+    nume: 'V2-08 chei __proto__, constructor, prototype pe document, pe piesă, pe nod (din JSON.parse)',
+    doc: JSON.parse(
+      '{"schema":2,"rev":3,"__proto__":"d","piese":[{"id":"p1","constructor":"c","prototype":"p","radacina":'
+      + '{"tip":"grup","id":"g","__proto__":{"a":1},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0},"copii":['
+      + '{"tip":"element","id":"e","constructor":"Ion","forma":{"tip":"cerc","raza":5},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":1,"f":1}}]}}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":10},"instante":[{"id":"i1","piesa":"p1","x":0,"y":0,"rotire":0,'
+      + '"campuri":{"__proto__":"x"}}]}]}',
+    ) as DocV2O,
+  },
+  {
+    nume: 'V2-09 rev 2^53 − 1 păstrat; nume pe piesă, pe nod, pe foaie',
+    doc: {
+      ...doc(
+        [{ ...piesa('p1', { ...el('e', I()), nume: 'Ușă' }), nume: 'Dulap' }],
+        [{ ...foaie('f1', [inst('i1', 'p1', 0, 0, 0)]), nume: 'Placa 1' }],
+      ),
+      rev: Number.MAX_SAFE_INTEGER,
+    },
+  },
+  {
+    // ADR 0025: adâncimea față de grosimea foii o judecă CAM-ul, nu ușa. Implicitul cercului (8) e mai mare decât foaia.
+    nume: 'V2-10 o foaie de 3 mm cu cercuri: operațiile implicite au adâncimea 8 (ușa le primește, CAM-ul judecă)',
+    doc: doc(
+      [piesa('p1', grup('g', I(), [el('c1', T(10, 10), cerc(4)), el('c2', T(30, 10), cerc(4))]))],
+      [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 3 }, instante: [inst('i1', 'p1', 0, 0, 0)] }],
+    ),
+  },
+  {
+    nume: 'V2-11 un element pe nivelul 32 (31 de grupuri): operația lui e ultima în preordine',
+    doc: doc(
+      [piesa('p1', grup('r', I(), [el('sus', I(), cerc()), lant(31, T(1, 0))]))],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ),
+  },
+  {
+    nume: 'V2-12 multe foi și instanțe, rotiri neexacte (89,9; 0,1; −0)',
+    doc: doc(
+      [piesa('p1', grup('g', I(), [el('a', T(1, 0)), el('b', T(0, 1), cerc())])), piesa('p2', el('c', I(), cerc(1)))],
+      [
+        foaie('f1', [inst('i1', 'p1', 0, 0, 89.9), inst('i2', 'p2', 5, 5, 0.1)]),
+        foaie('f2', [inst('i3', 'p1', 0, 0, -0), inst('i4', 'p1', 50, 50, 270), inst('i5', 'p2', 0, 0, 359.999999)]),
+        foaie('f3', []),
+      ],
+    ),
+  },
+];
+
+const CHEI_DOC_V2 = ['autor', 'meta', 'operatii', 'note'] as const;
+const CHEI_PIESA_V2 = ['culoare', 'note', 'cod'] as const;
+const CHEI_NOD_V2 = ['strat', 'note', 'operatii', 'latura', 'adancime'] as const;
+const CHEI_FORMA_V2 = ['nota', 'latura', 'pas'] as const;
+const CHEI_FOAIE_V2 = ['material', 'operatii', 'note'] as const;
+const CHEI_INSTANTA_V2 = ['legata', 'operatii', 'note'] as const;
+const POOL_ID = ['a', 'b', 'c', 'e1', 'e2', 'g', 'p1', 'i1', 'f1', 'x', '0', '-', '_', ID_64] as const;
+
+/**
+ * Un document v2 din sămânță, valid: piese cu arbori (grupuri sub similitudini cu scara în [0,5; 2], cel mult 5
+ * niveluri), forme cu arce doar sub similitudini, câmpuri necunoscute (și unele numite „operatii”, dar NICIODATĂ pe
+ * piesă), id-uri din același bazin în piese, noduri, foi și instanțe. Cu `mare`, mai multe piese și instanțe.
+ */
+export function genereazaV2(samanta: number, mare = false): DocV2O {
+  const r = aleator(samanta);
+  const intreg = (min: number, max: number): number => min + Math.floor(r() * (max - min + 1));
+  const alege = <V>(lista: readonly V[]): V => lista[Math.floor(r() * lista.length)] as V;
+  const idDin = (folosite: Set<string>): string => {
+    for (;;) {
+      const s = r() < 0.5 ? alege(POOL_ID) : Array.from({ length: intreg(1, 8) }, () => ID_64[intreg(0, 63)]).join('');
+      if (!folosite.has(s)) { folosite.add(s); return s; }
+    }
+  };
+  const valoare = (adancime: number): unknown => {
+    const tip = intreg(0, adancime > 2 ? 3 : 5);
+    if (tip === 0) return null;
+    if (tip === 1) return r() < 0.5;
+    if (tip === 2) return alege([0, -0, 1.5, -7, 1e300]);
+    if (tip === 3) return Array.from({ length: intreg(0, 5) }, () => alege(LITERE_NUME.split(''))).join('');
+    if (tip === 4) return Array.from({ length: intreg(0, 3) }, () => valoare(adancime + 1));
+    return Object.fromEntries(Array.from({ length: intreg(0, 3) }, (_, k) => [`k${k}`, valoare(adancime + 1)]));
+  };
+  const extra = (chei: readonly string[], p: number): Liber => {
+    const o: Liber = {};
+    for (const k of chei) if (r() < p) o[k] = valoare(0);
+    return o;
+  };
+  const translatie = (): number => alege([() => (r() - 0.5) * 2e4, () => intreg(-10_000, 10_000), () => 0, () => -0, () => (r() - 0.5) * 1e-6])();
+  /** Similitudine cu scara în [0,5; 2]; produsul s · cos se folosește de două ori, deci e exactă. */
+  const similitudine = (): MatriceO => {
+    const x = translatie();
+    const y = translatie();
+    const fel = intreg(0, 4);
+    if (fel === 0) return M(1, 0, 0, 1, x, y);
+    if (fel === 1) return alege([M(0, 1, -1, 0, x, y), M(-1, 0, 0, -1, x, y), M(0, -1, 1, 0, x, y), M(-1, 0, 0, 1, x, y), M(1, 0, 0, -1, x, y)]);
+    const s = alege([1, 0.5 + r() * 1.5, 2]);
+    if (fel === 4) return M(s, 0, 0, s, x, y);
+    const u = r() * 2 * Math.PI;
+    const cos = s * Math.cos(u);
+    const sin = s * Math.sin(u);
+    return fel === 2 ? M(cos, sin, -sin, cos, x, y) : M(cos, sin, sin, -cos, x, y);
+  };
+  /** Orice matrice cu coeficienții în [−4, 4] (doar sub un dreptunghi drept). */
+  const oarecare = (): MatriceO => {
+    const x = translatie();
+    const y = translatie();
+    const fel = intreg(0, 2);
+    if (fel === 0) return M((r() - 0.5) * 8, 0, 0, (r() - 0.5) * 8, x, y);
+    if (fel === 1) return M(1, 0, (r() - 0.5) * 4, 1, x, y);
+    return M((r() - 0.5) * 8, (r() - 0.5) * 8, (r() - 0.5) * 8, (r() - 0.5) * 8, x, y);
+  };
+  const dimensiune = (max: number): number => (r() < 0.1 ? max : (1 - r()) * max);
+  const forma = (): Liber => {
+    const baza: Liber = r() < 0.55
+      ? (() => {
+        const latime = dimensiune(1000);
+        const inaltime = dimensiune(1000);
+        return { tip: 'dreptunghi', latime, inaltime, razaColt: r() < 0.4 ? 0 : r() * Math.min(latime, inaltime) / 2 };
+      })()
+      : { tip: 'cerc', raza: dimensiune(1000) };
+    return { ...extra(CHEI_FORMA_V2, 0.1), ...baza };
+  };
+  const arbore = (folosite: Set<string>, nivel: number, buget: { n: number }): NodO => {
+    buget.n--;
+    const id = idDin(folosite);
+    const nume = r() < 0.15 ? { nume: Array.from({ length: intreg(0, 12) }, () => alege(LITERE_NUME.split(''))).join('') } : {};
+    if (nivel < 5 && buget.n > 0 && r() < (nivel === 1 ? 0.7 : 0.4)) {
+      const copii: NodO[] = [];
+      const k = intreg(nivel === 1 ? 1 : 0, 4);
+      for (let j = 0; j < k && buget.n > 0; j++) copii.push(arbore(folosite, nivel + 1, buget));
+      return { ...extra(CHEI_NOD_V2, 0.1), ...nume, tip: 'grup', id, matrice: similitudine(), copii };
+    }
+    const f = forma();
+    const arce = f['tip'] === 'cerc' || (f['razaColt'] as number) > 0;
+    return { ...extra(CHEI_NOD_V2, 0.1), ...nume, tip: 'element', id, forma: f, matrice: arce || r() < 0.5 ? similitudine() : oarecare() };
+  };
+  const idPiese = new Set<string>();
+  const piese: PiesaO[] = Array.from({ length: mare ? 40 : intreg(0, 5) }, () => {
+    const id = idDin(idPiese);
+    const p: PiesaO = { ...extra(CHEI_PIESA_V2, 0.15), id, radacina: arbore(new Set(), 1, { n: mare ? 60 : intreg(1, 15) }) };
+    if (r() < 0.2) p.nume = Array.from({ length: intreg(0, 20) }, () => alege(LITERE_NUME.split(''))).join('');
+    return p;
+  });
+  const idFoi = new Set<string>();
+  const idInstante = new Set<string>();
+  const foi: FoaieO[] = Array.from({ length: mare ? 3 : intreg(1, 3) }, () => ({
+    ...extra(CHEI_FOAIE_V2, 0.2),
+    id: idDin(idFoi),
+    stoc: { latime: dimensiune(10_000), inaltime: dimensiune(10_000), grosime: dimensiune(1_000) },
+    instante: piese.length === 0 ? [] : Array.from({ length: intreg(0, mare ? 60 : 5) }, () => {
+      const i: InstantaO = {
+        ...extra(CHEI_INSTANTA_V2, 0.15),
+        id: idDin(idInstante),
+        piesa: alege(piese).id,
+        x: r() < 0.05 ? alege([10_000_000, -10_000_000]) : translatie(),
+        y: r() < 0.05 ? alege([10_000_000, -10_000_000]) : translatie(),
+        rotire: alege([0, 90, 180, 270, -0, r() * 360, 359.999999, 0.1]),
+      };
+      if (r() < 0.2) i.campuri = { cod: 'A1', bucati: String(intreg(1, 9)) };
+      return i;
+    }),
+  }));
+  return { ...extra(CHEI_DOC_V2, 0.3), schema: 2, rev: intreg(0, 1_000_000), piese, foi };
+}
+
+const GENERATE_V2: readonly CazV2[] = [
+  ...Array.from({ length: 16 }, (_, k) => ({ nume: `GV2-${String(k + 1).padStart(2, '0')} generat, sămânța ${4000 + k}`, doc: genereazaV2(4000 + k) })),
+  { nume: 'GV2-17 generat mare: 40 de piese, 3 foi, sămânța 99', doc: genereazaV2(99, true) },
+];
+
+export const CORPUS_V2: readonly CazV2[] = [...SCRISE_V2, ...GENERATE_V2];
+
+/**
+ * Un document v3 din sămânță, valid: geometria lui `genereazaV2(samanta)`, cu 0–4 operații pe piesă (subseturi
+ * amestecate de elemente, clase și scule oarecare, id-uri de operații din bazinul id-urilor de noduri), uneori cu
+ * câmpuri necunoscute pe operație și pe sculă.
+ */
+export function genereazaV3(samanta: number, mare = false): DocV3O {
+  const v2 = genereazaV2(samanta, mare);
+  const r = aleator(samanta + 0x5eed);
+  const intreg = (min: number, max: number): number => min + Math.floor(r() * (max - min + 1));
+  const alege = <V>(lista: readonly V[]): V => lista[Math.floor(r() * lista.length)] as V;
+  const scule = [S1, S2, S3, (): SculaO => ({ numar: 999, nume: '', diametru: 100 }), (): SculaO => ({ ...S1(), producator: 'X' })];
+  const elementeDin = (radacina: NodO): string[] => {
+    const rez: string[] = [];
+    const stiva: NodO[] = [radacina];
+    for (let n = stiva.pop(); n !== undefined; n = stiva.pop()) {
+      if (n.tip === 'element') rez.push(n.id);
+      else for (let k = n.copii.length - 1; k >= 0; k--) stiva.push(n.copii[k] as NodO);
+    }
+    return rez;
+  };
+  const amesteca = (lista: readonly string[]): string[] => {
+    const a = [...lista];
+    for (let k = a.length - 1; k > 0; k--) {
+      const j = intreg(0, k);
+      [a[k], a[j]] = [a[j] as string, a[k] as string];
+    }
+    return a;
+  };
+  const piese: PiesaV3O[] = v2.piese.map((p) => {
+    const elemente = elementeDin(p.radacina);
+    const folosite = new Set<string>();
+    const operatii: OperatieO[] = Array.from({ length: elemente.length === 0 ? 0 : intreg(0, 4) }, () => {
+      let id = '';
+      do id = r() < 0.4 ? alege(elemente) : alege(['o1', 'o2', 'O1', 'a', 'g', '-', ID_64]); while (folosite.has(id));
+      folosite.add(id);
+      const o: OperatieO = {
+        ...(r() < 0.15 ? { urechi: [], note: 'n' } : {}),
+        id, tip: 'profil',
+        noduri: amesteca(elemente).slice(0, intreg(1, elemente.length)),
+        scula: alege(scule)(),
+        latura: alege(['interior', 'pe-linie', 'exterior'] as const),
+        adancime: alege([3, 8, 18, 1000, (1 - r()) * 1000, 0.1]),
+        pas: alege([3, 4, 1000, (1 - r()) * 50, 0.5]),
+      };
+      return o;
+    });
+    return { ...p, operatii };
+  });
+  return { ...v2, schema: 3, piese };
+}
+
+export type CazV3 = { readonly nume: string; readonly doc: DocV3O };
+
+export const CORPUS_V3: readonly CazV3[] = [
+  ...Array.from({ length: 16 }, (_, k) => ({ nume: `GV3-${String(k + 1).padStart(2, '0')} generat, sămânța ${5000 + k}`, doc: genereazaV3(5000 + k) })),
+  { nume: 'GV3-17 generat mare: 40 de piese, 3 foi, sămânța 98', doc: genereazaV3(98, true) },
+];
 
 // ---------------------------------------------------------------------------------------------------------------
 // v1 refuzate la ușă, fiecare cu singura categorie pe care o raportează `verificaV1`.
@@ -745,31 +1497,62 @@ export const REFUZATE_V1: readonly Refuzat[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
-// Otrăvuri v2: fiecare încalcă un singur lucru, deci oracolul raportează o singură categorie.
+// v2 refuzate la migrare (ADR 0025): o piesă v2 cu un câmp propriu „operatii”, oricare i-ar fi valoarea. Singura
+// categorie raportată de `verificaV2V3` e `[ciocnire]`.
+
+/** Un v2 valid, cu două elemente într-un grup (dreptunghi, cerc). */
+const bazaV2 = (): DocV2O => doc(
+  [piesa('p1', grup('g', I(), [el('e1', I()), el('e2', T(10, 0), cerc())]))],
+  [foaie('f1', [inst('i1', 'p1', 10, 10, 0)])],
+);
+
+const refuzatV2 = (nume: string, strica: (d: DocV2O) => void): Refuzat => {
+  const d = bazaV2();
+  strica(d);
+  return { nume, doc: d, motiv: 'ciocnire' };
+};
+
+export const REFUZATE_V2: readonly Refuzat[] = [
+  refuzatV2('Z01 piesă v2 cu operatii: [] (chiar valoarea pe care ar scrie-o o piesă fără elemente)', (d) => {
+    (d.piese[0] as PiesaO)['operatii'] = [];
+  }),
+  refuzatV2('Z02 piesă v2 cu exact operațiile pe care le-ar scrie migrarea', (d) => {
+    (d.piese[0] as PiesaO)['operatii'] = [op('e1', ['e1'], 'exterior', 3, 3), op('e2', ['e2'], 'interior', 8, 4)];
+  }),
+  refuzatV2('Z03 a doua piesă are operatii: null', (d) => { d.piese.push({ id: 'p2', radacina: el('x', I()), operatii: null }); }),
+  refuzatV2('Z04 piesă v2 cu operatii: "x"', (d) => { (d.piese[0] as PiesaO)['operatii'] = 'x'; }),
+  {
+    nume: 'Z05 piesă v2 cu __proto__ și operatii (din JSON.parse)',
+    motiv: 'ciocnire',
+    doc: JSON.parse(
+      '{"schema":2,"rev":0,"piese":[{"id":"p1","__proto__":"x","operatii":{"o":1},"radacina":{"tip":"element","id":"e",'
+      + '"forma":{"tip":"cerc","raza":1},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}}}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[]}]}',
+    ),
+  },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Otrăvuri: fiecare încalcă un singur lucru, deci oracolul raportează o singură categorie.
 
 export type Otrava = { readonly nume: string; readonly doc: unknown; readonly categorie: CategorieO };
 
-/** Documentul valid de la care pleacă otrăvurile. */
+/** Documentul v2 valid de la care pleacă otrăvurile vechi. */
 const baza = (): DocV2O => doc(
   [piesa('p1', grup('g', I(), [el('e1', I()), el('e2', T(10, 0), cerc())]))],
   [foaie('f1', [inst('i1', 'p1', 10, 10, 0)])],
 );
 
+const esteObiectC = (v: unknown): v is Liber => typeof v === 'object' && v !== null && !Array.isArray(v);
 const scrie = (o: object, cheie: string, valoare: unknown): void => { (o as Liber)[cheie] = valoare; };
 const sterge = (o: object, cheie: string): void => { delete (o as Liber)[cheie]; };
-const f0 = (d: DocV2O): FoaieO => d.foi[0] as FoaieO;
-const i0 = (d: DocV2O): InstantaO => f0(d).instante[0] as InstantaO;
+const f0 = (d: DocV2O | DocV3O): FoaieO => d.foi[0] as FoaieO;
+const i0 = (d: DocV2O | DocV3O): InstantaO => f0(d).instante[0] as InstantaO;
 const p0 = (d: DocV2O): PiesaO => d.piese[0] as PiesaO;
 const g0 = (d: DocV2O): GrupO => p0(d).radacina as GrupO;
 const e0 = (d: DocV2O): ElementO => g0(d).copii[0] as ElementO;
 /** Cercul bazei. */
 const e1 = (d: DocV2O): ElementO => g0(d).copii[1] as ElementO;
-
-const otrava = (nume: string, categorie: CategorieO, strica: (d: DocV2O) => void): Otrava => {
-  const d = baza();
-  strica(d);
-  return { nume, doc: d, categorie };
-};
 
 /** Un lanț de grupuri cu matricea `pas`, cu un cerc la capăt. */
 const lantCerc = (grupuri: number, pas: MatriceO): NodO => {
@@ -778,128 +1561,291 @@ const lantCerc = (grupuri: number, pas: MatriceO): NodO => {
   return nod;
 };
 
-/** Un lanț de `niveluri` noduri: grupuri, cu un element la capăt. Rădăcina e nivelul 1. */
-const lant = (niveluri: number, pas: MatriceO = I()): NodO => {
-  let nod: NodO = el('frunza', I());
-  for (let k = niveluri - 1; k >= 1; k--) nod = grup(`g${k}`, { ...pas }, [nod]);
-  return nod;
+/**
+ * Forma v3 a unei otrăvi v2: schema 3 (o schemă greșită rămâne greșită: 1 rămâne 1, „2” devine „3”) și `operatii: []`
+ * pe fiecare piesă-obiect care n-o are. Lista goală e validă, deci otrava rămâne cu aceeași singură categorie.
+ */
+const laV3 = (d: unknown): unknown => {
+  if (!esteObiectC(d)) return d;
+  if (d['schema'] === 2) d['schema'] = 3;
+  else if (d['schema'] === '2') d['schema'] = '3';
+  const piese = d['piese'];
+  if (Array.isArray(piese)) for (const p of piese) if (esteObiectC(p) && !Object.hasOwn(p, 'operatii')) p['operatii'] = [];
+  return d;
 };
 
-export const OTRAVURI_V2: readonly Otrava[] = [
-  otrava('O01 instanța trimite la piesa lipsă p9', 'referinta', (d) => { i0(d).piesa = 'p9'; }),
-  otrava('O02 instanța trimite la id-ul unui nod, nu al unei piese', 'referinta', (d) => { i0(d).piesa = 'e1'; }),
-  otrava('O03 instanța trimite la id-ul altei instanțe', 'referinta', (d) => {
-    f0(d).instante.push(inst('i2', 'i1', 0, 0, 0));
+/** Otrăvurile documentului v2 (ADR 0024); `versiune` 3 le aduce la forma v3 (`laV3`). */
+function otravuriArbore(versiune: 2 | 3): Otrava[] {
+  const forma = (d: DocV2O): unknown => (versiune === 3 ? laV3(d) : d);
+  const eticheta = versiune === 3 ? 'v3 ' : '';
+  const otrava = (nume: string, categorie: CategorieO, strica: (d: DocV2O) => void): Otrava => {
+    const d = baza();
+    strica(d);
+    return { nume: `${eticheta}${nume}`, doc: forma(d), categorie };
+  };
+  return [
+    otrava('O01 instanța trimite la piesa lipsă p9', 'referinta', (d) => { i0(d).piesa = 'p9'; }),
+    otrava('O02 instanța trimite la id-ul unui nod, nu al unei piese', 'referinta', (d) => { i0(d).piesa = 'e1'; }),
+    otrava('O03 instanța trimite la id-ul altei instanțe', 'referinta', (d) => {
+      f0(d).instante.push(inst('i2', 'i1', 0, 0, 0));
+    }),
+    otrava('O04 două piese cu același id', 'unic-piese', (d) => { d.piese.push(piesa('p1', el('altul', I()))); }),
+    otrava('O05 două foi cu același id', 'unic-foi', (d) => { d.foi.push(foaie('f1', [])); }),
+    otrava('O06 aceeași instanță pe două foi', 'unic-instante', (d) => { d.foi.push(foaie('f2', [inst('i1', 'p1', 0, 0, 0)])); }),
+    otrava('O07 același id de nod în ramuri diferite ale aceleiași piese', 'unic-noduri', (d) => {
+      p0(d).radacina = grup('g', I(), [grup('a', I(), [el('x', I())]), grup('b', I(), [el('x', T(1, 0))])]);
+    }),
+    otrava('O08 același id la rădăcină și la un copil', 'unic-noduri', (d) => { e0(d).id = 'g'; }),
+    otrava('O09 adâncimea 33 (33 de niveluri, rădăcina e nivelul 1)', 'adancime', (d) => { p0(d).radacina = lant(33); }),
+    otrava('O10 adâncimea 50 000 (fără depășirea stivei)', 'adancime', (d) => { p0(d).radacina = lant(50_000); }),
+    otrava('O11 rotire 360', 'rotire', (d) => { i0(d).rotire = 360; }),
+    otrava('O12 rotire −90', 'rotire', (d) => { i0(d).rotire = -90; }),
+    otrava('O13 rotire NaN', 'rotire', (d) => { i0(d).rotire = Number.NaN; }),
+    otrava('O14 rotire Infinity', 'rotire', (d) => { i0(d).rotire = Number.POSITIVE_INFINITY; }),
+    otrava('O15 NaN în matricea unui nod', 'finit', (d) => { e0(d).matrice = M(1, 0, 0, 1, Number.NaN, 0); }),
+    otrava('O16 Infinity în x-ul instanței', 'finit', (d) => { i0(d).x = Number.POSITIVE_INFINITY; }),
+    otrava('O17 −Infinity în grosimea stocului', 'finit', (d) => { f0(d).stoc.grosime = Number.NEGATIVE_INFINITY; }),
+    otrava('O18 id de piesă cu spațiu', 'id', (d) => { p0(d).id = 'p 1'; i0(d).piesa = 'p 1'; }),
+    otrava('O19 id de instanță de 65 de caractere', 'id', (d) => { i0(d).id = `${ID_64}x`; }),
+    otrava('O20 id de foaie gol', 'id', (d) => { f0(d).id = ''; }),
+    otrava('O21 id de nod cu linie nouă la capăt', 'id', (d) => { e0(d).id = 'e1\n'; }),
+    otrava('O22 id de piesă cu diacritice', 'id', (d) => { p0(d).id = 'piesă'; i0(d).piesa = 'piesă'; }),
+    otrava('O23 zero foi', 'foi', (d) => { d.foi = []; }),
+    otrava('O24 schema 1 cu forma documentului nou', 'schema', (d) => { scrie(d, 'schema', 1); }),
+    otrava('O25 schema ca text', 'schema', (d) => { scrie(d, 'schema', '2'); }),
+    otrava('O26 grup fără copii', 'schema', (d) => { sterge(g0(d), 'copii'); }),
+    otrava('O27 element cu forma.tip necunoscut', 'schema', (d) => { e0(d).forma = { tip: 'elipsa', rx: 3, ry: 2 }; }),
+    otrava('O28 nod cu tip necunoscut', 'schema', (d) => { scrie(e0(d), 'tip', 'cerc'); }),
+    otrava('O29 rev lipsă', 'schema', (d) => { sterge(d, 'rev'); }),
+    otrava('O30 stoc lipsă', 'schema', (d) => { sterge(f0(d), 'stoc'); }),
+    otrava('O31 instante lipsă', 'schema', (d) => { sterge(f0(d), 'instante'); }),
+    otrava('O32 piesa instanței e număr', 'schema', (d) => { scrie(i0(d), 'piesa', 1); }),
+    otrava('O33 campuri cu o valoare număr', 'schema', (d) => { scrie(i0(d), 'campuri', { cod: 'A1', bucati: 3 }); }),
+    otrava('O34 matricea fără f', 'schema', (d) => { const m: Liber = { ...e0(d).matrice }; delete m['f']; scrie(e0(d), 'matrice', m); }),
+    otrava('O35 nume de piesă număr', 'schema', (d) => { scrie(p0(d), 'nume', 7); }),
+    { nume: `${eticheta}O36 documentul e o listă`, categorie: 'schema', doc: [forma(baza())] },
+    otrava('O37 latura 10 001', 'plafon', (d) => { e0(d).forma = dr(10_001, 20, 0); }),
+    otrava('O38 raza 10 001', 'plafon', (d) => { e0(d).forma = cerc(10_001); }),
+    // razaColt > 10 000 nu se mai poate fără [forma] (latura ≤ 10 000, deci razaColt ≤ 5 000): O39 e acum înălțimea.
+    otrava('O39 înălțimea 10 001', 'plafon', (d) => { e0(d).forma = dr(20, 10_001, 0); }),
+    otrava('O40 stocul de 10 001 lățime', 'plafon', (d) => { f0(d).stoc.latime = 10_001; }),
+    otrava('O41 grosimea 1 001', 'plafon', (d) => { f0(d).stoc.grosime = 1_001; }),
+    otrava('O42 1 001 de foi', 'plafon', (d) => { for (let k = 2; k <= 1001; k++) d.foi.push(foaie(`f${k}`, [])); }),
+    // O piesă fără elemente: 100 001 de instanțe, dar 0 elemente în lume (altfel ar fi și [margini]).
+    otrava('O43 100 001 de instanțe pe o foaie (ale unei piese goale)', 'plafon', (d) => {
+      p0(d).radacina = grup('g', I(), []);
+      for (let k = 2; k <= 100_001; k++) f0(d).instante.push(inst(`i${k}`, 'p1', 0, 0, 0));
+    }),
+    otrava('O44 100 002 noduri într-o piesă (1 grup + 100 001 elemente), fără instanțe', 'plafon', (d) => {
+      p0(d).radacina = grup('g', I(), Array.from({ length: 100_001 }, (_, k) => el(`e${k}`, I())));
+      f0(d).instante = [];
+    }),
+    otrava('O45 lățimea 0', 'pozitiv', (d) => { e0(d).forma = dr(0, 20, 0); }),
+    otrava('O46 raza negativă', 'pozitiv', (d) => { e0(d).forma = cerc(-1); }),
+    otrava('O47 nume de piesă de 201 de caractere', 'plafon', (d) => { p0(d).nume = 'x'.repeat(201); }),
+    otrava('O48 nume de nod de 201 de caractere', 'plafon', (d) => { e0(d).nume = 'ș'.repeat(201); }),
+    // Precizarea 5: marginile lumii.
+    otrava('O49 coeficient compus 100 000: cinci grupuri cu scara 10 (fiecare matrice locală e mică)', 'margini', (d) => {
+      p0(d).radacina = lant(6, M(10, 0, 0, 10, 0, 0));
+    }),
+    otrava('O50 translație compusă 10 000 001 (5 000 000 + 5 000 001)', 'margini', (d) => {
+      p0(d).radacina = grup('g', T(5_000_000, 0), [el('e', T(5_000_001, 0))]);
+    }),
+    otrava('O51 translație compusă prin scalare: 1 000 × 10 001', 'margini', (d) => {
+      p0(d).radacina = grup('g', M(1000, 0, 0, 1000, 0, 0), [el('e', T(10_001, 0))]);
+    }),
+    otrava('O52 coeficient local 10 001 la rădăcină', 'margini', (d) => { g0(d).matrice = M(10_001, 0, 0, 1, 0, 0); }),
+    otrava('O53 compunerea ajunge la Infinity (10 000 × 1e305)', 'margini', (d) => {
+      p0(d).radacina = grup('g', M(1e4, 0, 0, 1e4, 0, 0), [el('e', M(1e305, 0, 0, 1, 0, 0))]);
+    }),
+    otrava('O54 compunerea dă NaN (∞ − ∞) doar pe a; ceilalți coeficienți rămân în margini', 'margini', (d) => {
+      p0(d).radacina = grup('g', M(1e4, 0, 1e4, 1e-305, 0, 0), [el('e', M(1e305, -1e305, 0, 1, 0, 0))]);
+    }),
+    otrava('O55 x = 10 000 001', 'margini', (d) => { i0(d).x = 10_000_001; }),
+    otrava('O56 y = −10 000 000,5', 'margini', (d) => { i0(d).y = -10_000_000.5; }),
+    otrava('O57 100 001 elemente în lume: 1 000 de instanțe × 100 de elemente, plus una × 1', 'margini', (d) => {
+      p0(d).radacina = grup('g', I(), Array.from({ length: 100 }, (_, k) => el(`e${k}`, I())));
+      for (let k = 2; k <= 1000; k++) f0(d).instante.push(inst(`i${k}`, 'p1', 0, 0, 0));
+      d.piese.push(piesa('p2', el('e', I())));
+      f0(d).instante.push(inst('unu', 'p2', 0, 0, 0));
+    }),
+    otrava('O58 100 001 elemente în lume pe două foi (60 000 + 40 001; fiecare foaie e sub plafon)', 'margini', (d) => {
+      p0(d).radacina = grup('g', I(), Array.from({ length: 100 }, (_, k) => el(`e${k}`, I())));
+      for (let k = 2; k <= 600; k++) f0(d).instante.push(inst(`i${k}`, 'p1', 0, 0, 0));
+      d.piese.push(piesa('p2', el('e', I())));
+      d.foi.push(foaie('f2', [...Array.from({ length: 400 }, (_, k) => inst(`j${k}`, 'p1', 0, 0, 0)), inst('unu', 'p2', 0, 0, 0)]));
+    }),
+    otrava('O59 margini depășite într-o piesă fără instanțe', 'margini', (d) => { d.piese.push(piesa('p2', el('e', T(10_000_001, 0)))); }),
+    // Precizarea 5, ultimul punct: tot JSON-ul, cu câmpurile necunoscute, are cel mult 200 de niveluri.
+    otrava('O60 JSON adânc de 201 de niveluri (un câmp de sus)', 'adancime', (d) => { scrie(d, 'adanc', adanc(200)); }),
+    // e1 e pe nivelul 6 (document, piese, piesa, rădăcina, copii, e1), forma pe 7: 7 + 194 = 201.
+    otrava('O61 JSON adânc de 201 de niveluri, în forma unui element', 'adancime', (d) => { e0(d).forma = { ...dr(), adanc: adanc(194) }; }),
+    // Precizarea 4: campuri.
+    otrava('O62 campuri cu 201 de chei', 'plafon', (d) => {
+      i0(d).campuri = Object.fromEntries(Array.from({ length: 201 }, (_, k) => [`k${k}`, 'v']));
+    }),
+    otrava('O63 o cheie din campuri de 201 de caractere', 'plafon', (d) => { i0(d).campuri = { ['K'.repeat(201)]: 'v' }; }),
+    otrava('O64 o valoare din campuri de 10 001 de caractere', 'plafon', (d) => { i0(d).campuri = { cod: 'v'.repeat(10_001) }; }),
+    otrava('O65 rev 2^53 (nu e întreg sigur)', 'schema', (d) => { d.rev = 2 ** 53; }),
+    otrava('O66 rev 1,5', 'schema', (d) => { d.rev = 1.5; }),
+    // Precizarea 5: forme pe care consumatorii nu le pot desena.
+    otrava('O67 razaColt peste jumătate din latura mică (25,5 la 100 × 50)', 'forma', (d) => { e0(d).forma = dr(100, 50, 25.5); }),
+    otrava('O68 cerc sub o scalare locală neuniformă (2 × 1)', 'forma', (d) => { e1(d).matrice = M(2, 0, 0, 1, 10, 0); }),
+    otrava('O69 cerc sub o matrice locală similitudine, dar compusă neuniformă (grupul 1 × 2)', 'forma', (d) => {
+      g0(d).matrice = M(1, 0, 0, 2, 0, 0);
+    }),
+    otrava('O70 dreptunghi rotunjit sub forfecare', 'forma', (d) => { e0(d).forma = dr(40, 20, 5); e0(d).matrice = M(1, 0, 0.5, 1, 0, 0); }),
+    otrava('O71 cerc sub scalarea 0 (similitudine degenerată, determinant 0)', 'forma', (d) => { g0(d).matrice = M(0, 0, 0, 0, 0, 0); }),
+    otrava('O72 cerc sub d = 1 + 1e−9 (peste toleranța 1e−12)', 'forma', (d) => { e1(d).matrice = M(1, 0, 0, 1 + 1e-9, 10, 0); }),
+  ];
+}
+
+export const OTRAVURI_V2: readonly Otrava[] = otravuriArbore(2);
+
+/**
+ * Documentul v3 valid de la care pleacă otrăvurile operațiilor: un grup cu un dreptunghi (e1, operația o1, exterior)
+ * și un cerc (e2, operația o2, interior), o instanță.
+ */
+const baza3 = (): DocV3O => doc3(
+  [piesa3('p1', grup('g', I(), [el('e1', I()), el('e2', T(10, 0), cerc())]), [op('o1', ['e1'], 'exterior'), op('o2', ['e2'], 'interior', 8, 4)])],
+  [foaie('f1', [inst('i1', 'p1', 10, 10, 0)])],
+);
+const q0 = (d: DocV3O): PiesaV3O => d.piese[0] as PiesaV3O;
+const op0 = (d: DocV3O): OperatieO => q0(d).operatii[0] as OperatieO;
+const sc0 = (d: DocV3O): SculaO => op0(d).scula;
+const operatiiPe = (n: number, nod: string): OperatieO[] => Array.from({ length: n }, (_, k) => op(`o${k}`, [nod], 'exterior'));
+
+const otrava3 = (nume: string, categorie: CategorieO, strica: (d: DocV3O) => void): Otrava => {
+  const d = baza3();
+  strica(d);
+  return { nume, doc: d, categorie };
+};
+
+const OTRAVURI_OPERATII: readonly Otrava[] = [
+  // [operatie]: lista și câmpurile operației.
+  otrava3('P01 o piesă fără câmpul operatii', 'operatie', (d) => { sterge(q0(d), 'operatii'); }),
+  otrava3('P02 operatii e un obiect (după id), nu o listă', 'operatie', (d) => { scrie(q0(d), 'operatii', { o1: op0(d) }); }),
+  otrava3('P03 operatii e null', 'operatie', (d) => { scrie(q0(d), 'operatii', null); }),
+  otrava3('P04 o operație e text', 'operatie', (d) => { (q0(d).operatii as unknown[]).push('o3'); }),
+  otrava3('P05 tip „buzunar” (necunoscut)', 'operatie', (d) => { scrie(op0(d), 'tip', 'buzunar'); }),
+  otrava3('P06 tip lipsă', 'operatie', (d) => { sterge(op0(d), 'tip'); }),
+  otrava3('P07 tip „Profil” (majusculă)', 'operatie', (d) => { scrie(op0(d), 'tip', 'Profil'); }),
+  otrava3('P08 latura „Exterior” (majusculă)', 'operatie', (d) => { scrie(op0(d), 'latura', 'Exterior'); }),
+  otrava3('P09 latura lipsă', 'operatie', (d) => { sterge(op0(d), 'latura'); }),
+  otrava3('P10 latura „pe linie” (fără cratimă)', 'operatie', (d) => { scrie(op0(d), 'latura', 'pe linie'); }),
+  otrava3('P11 adancime 0', 'operatie', (d) => { op0(d).adancime = 0; }),
+  otrava3('P12 adancime 1 000,0001', 'operatie', (d) => { op0(d).adancime = 1000.0001; }),
+  otrava3('P13 adancime NaN', 'operatie', (d) => { op0(d).adancime = Number.NaN; }),
+  otrava3('P14 adancime „3” (text)', 'operatie', (d) => { scrie(op0(d), 'adancime', '3'); }),
+  otrava3('P15 pas −1', 'operatie', (d) => { op0(d).pas = -1; }),
+  otrava3('P16 pas Infinity', 'operatie', (d) => { op0(d).pas = Number.POSITIVE_INFINITY; }),
+  otrava3('P17 pas lipsă', 'operatie', (d) => { sterge(op0(d), 'pas'); }),
+  otrava3('P18 adancime −0', 'operatie', (d) => { op0(d).adancime = -0; }),
+  otrava3('P19 noduri goale', 'operatie', (d) => { op0(d).noduri = []; }),
+  otrava3('P20 noduri e text („e1”), nu listă', 'operatie', (d) => { scrie(op0(d), 'noduri', 'e1'); }),
+  otrava3('P21 același nod de două ori într-o operație', 'operatie', (d) => { op0(d).noduri = ['e1', 'e1']; }),
+  otrava3('P22 un număr în noduri', 'operatie', (d) => { scrie(op0(d), 'noduri', ['e1', 7]); }),
+  // [unic-operatii]
+  otrava3('P23 două operații cu același id în aceeași piesă', 'unic-operatii', (d) => { (q0(d).operatii[1] as OperatieO).id = 'o1'; }),
+  otrava3('P24 trei operații, a treia cu id-ul primei (clase și noduri diferite)', 'unic-operatii', (d) => {
+    q0(d).operatii.push(op('o1', ['e2'], 'pe-linie', 1, 1));
   }),
-  otrava('O04 două piese cu același id', 'unic-piese', (d) => { d.piese.push(piesa('p1', el('altul', I()))); }),
-  otrava('O05 două foi cu același id', 'unic-foi', (d) => { d.foi.push(foaie('f1', [])); }),
-  otrava('O06 aceeași instanță pe două foi', 'unic-instante', (d) => { d.foi.push(foaie('f2', [inst('i1', 'p1', 0, 0, 0)])); }),
-  otrava('O07 același id de nod în ramuri diferite ale aceleiași piese', 'unic-noduri', (d) => {
-    p0(d).radacina = grup('g', I(), [grup('a', I(), [el('x', I())]), grup('b', I(), [el('x', T(1, 0))])]);
+  // [id]
+  otrava3('P25 id de operație cu spațiu', 'id', (d) => { op0(d).id = 'o 1'; }),
+  otrava3('P26 id de operație de 65 de caractere', 'id', (d) => { op0(d).id = `${ID_64}x`; }),
+  otrava3('P27 id de operație gol', 'id', (d) => { op0(d).id = ''; }),
+  otrava3('P28 id de operație cu „/” (ca un id în lume)', 'id', (d) => { op0(d).id = 'i1/e1'; }),
+  otrava3('P29 id de operație număr', 'schema', (d) => { scrie(op0(d), 'id', 1); }),
+  // [referinta-op]
+  otrava3('P30 nodul e grupul rădăcinii', 'referinta-op', (d) => { op0(d).noduri = ['g']; }),
+  // Piesa străină stă ÎNAINTEA piesei verificate (o mulțime de elemente pe tot documentul ar vedea-o deja), apoi după.
+  otrava3('P31 nodul e un element al altei piese, așezate înainte', 'referinta-op', (d) => {
+    const p1 = q0(d);
+    d.piese.unshift(piesa3('p2', el('x', I()), []));
+    (p1.operatii[0] as OperatieO).noduri = ['x'];
   }),
-  otrava('O08 același id la rădăcină și la un copil', 'unic-noduri', (d) => { e0(d).id = 'g'; }),
-  otrava('O09 adâncimea 33 (33 de niveluri, rădăcina e nivelul 1)', 'adancime', (d) => { p0(d).radacina = lant(33); }),
-  otrava('O10 adâncimea 50 000 (fără depășirea stivei)', 'adancime', (d) => { p0(d).radacina = lant(50_000); }),
-  otrava('O11 rotire 360', 'rotire', (d) => { i0(d).rotire = 360; }),
-  otrava('O12 rotire −90', 'rotire', (d) => { i0(d).rotire = -90; }),
-  otrava('O13 rotire NaN', 'rotire', (d) => { i0(d).rotire = Number.NaN; }),
-  otrava('O14 rotire Infinity', 'rotire', (d) => { i0(d).rotire = Number.POSITIVE_INFINITY; }),
-  otrava('O15 NaN în matricea unui nod', 'finit', (d) => { e0(d).matrice = M(1, 0, 0, 1, Number.NaN, 0); }),
-  otrava('O16 Infinity în x-ul instanței', 'finit', (d) => { i0(d).x = Number.POSITIVE_INFINITY; }),
-  otrava('O17 −Infinity în grosimea stocului', 'finit', (d) => { f0(d).stoc.grosime = Number.NEGATIVE_INFINITY; }),
-  otrava('O18 id de piesă cu spațiu', 'id', (d) => { p0(d).id = 'p 1'; i0(d).piesa = 'p 1'; }),
-  otrava('O19 id de instanță de 65 de caractere', 'id', (d) => { i0(d).id = `${ID_64}x`; }),
-  otrava('O20 id de foaie gol', 'id', (d) => { f0(d).id = ''; }),
-  otrava('O21 id de nod cu linie nouă la capăt', 'id', (d) => { e0(d).id = 'e1\n'; }),
-  otrava('O22 id de piesă cu diacritice', 'id', (d) => { p0(d).id = 'piesă'; i0(d).piesa = 'piesă'; }),
-  otrava('O23 zero foi', 'foi', (d) => { d.foi = []; }),
-  otrava('O24 schema 1 cu forma v2', 'schema', (d) => { scrie(d, 'schema', 1); }),
-  otrava('O25 schema "2" (text)', 'schema', (d) => { scrie(d, 'schema', '2'); }),
-  otrava('O26 grup fără copii', 'schema', (d) => { sterge(g0(d), 'copii'); }),
-  otrava('O27 element cu forma.tip necunoscut', 'schema', (d) => { e0(d).forma = { tip: 'elipsa', rx: 3, ry: 2 }; }),
-  otrava('O28 nod cu tip necunoscut', 'schema', (d) => { scrie(e0(d), 'tip', 'cerc'); }),
-  otrava('O29 rev lipsă', 'schema', (d) => { sterge(d, 'rev'); }),
-  otrava('O30 stoc lipsă', 'schema', (d) => { sterge(f0(d), 'stoc'); }),
-  otrava('O31 instante lipsă', 'schema', (d) => { sterge(f0(d), 'instante'); }),
-  otrava('O32 piesa instanței e număr', 'schema', (d) => { scrie(i0(d), 'piesa', 1); }),
-  otrava('O33 campuri cu o valoare număr', 'schema', (d) => { scrie(i0(d), 'campuri', { cod: 'A1', bucati: 3 }); }),
-  otrava('O34 matricea fără f', 'schema', (d) => { const m: Liber = { ...e0(d).matrice }; delete m['f']; scrie(e0(d), 'matrice', m); }),
-  otrava('O35 nume de piesă număr', 'schema', (d) => { scrie(p0(d), 'nume', 7); }),
-  { nume: 'O36 documentul e o listă', categorie: 'schema', doc: [baza()] },
-  otrava('O37 latura 10 001', 'plafon', (d) => { e0(d).forma = dr(10_001, 20, 0); }),
-  otrava('O38 raza 10 001', 'plafon', (d) => { e0(d).forma = cerc(10_001); }),
-  // razaColt > 10 000 nu se mai poate fără [forma] (latura ≤ 10 000, deci razaColt ≤ 5 000): O39 e acum înălțimea.
-  otrava('O39 înălțimea 10 001', 'plafon', (d) => { e0(d).forma = dr(20, 10_001, 0); }),
-  otrava('O40 stocul de 10 001 lățime', 'plafon', (d) => { f0(d).stoc.latime = 10_001; }),
-  otrava('O41 grosimea 1 001', 'plafon', (d) => { f0(d).stoc.grosime = 1_001; }),
-  otrava('O42 1 001 de foi', 'plafon', (d) => { for (let k = 2; k <= 1001; k++) d.foi.push(foaie(`f${k}`, [])); }),
-  // O piesă fără elemente: 100 001 de instanțe, dar 0 elemente în lume (altfel ar fi și [margini]).
-  otrava('O43 100 001 de instanțe pe o foaie (ale unei piese goale)', 'plafon', (d) => {
-    p0(d).radacina = grup('g', I(), []);
-    for (let k = 2; k <= 100_001; k++) f0(d).instante.push(inst(`i${k}`, 'p1', 0, 0, 0));
+  otrava3('P31b nodul e un element al altei piese, așezate după', 'referinta-op', (d) => {
+    d.piese.push(piesa3('p2', el('x', I()), []));
+    op0(d).noduri = ['x'];
   }),
-  otrava('O44 100 002 noduri într-o piesă (1 grup + 100 001 elemente), fără instanțe', 'plafon', (d) => {
-    p0(d).radacina = grup('g', I(), Array.from({ length: 100_001 }, (_, k) => el(`e${k}`, I())));
+  otrava3('P32 nodul nu există', 'referinta-op', (d) => { op0(d).noduri = ['e9']; }),
+  otrava3('P33 nodul e id-ul piesei', 'referinta-op', (d) => { op0(d).noduri = ['p1']; }),
+  otrava3('P34 nodul e id-ul instanței', 'referinta-op', (d) => { op0(d).noduri = ['i1']; }),
+  otrava3('P35 nodul e un grup din mijlocul arborelui', 'referinta-op', (d) => {
+    q0(d).radacina = grup('g', I(), [grup('h', I(), [el('e1', I())]), el('e2', T(10, 0), cerc())]);
+    op0(d).noduri = ['h'];
+  }),
+  otrava3('P36 nodul e id-ul altei operații', 'referinta-op', (d) => { op0(d).noduri = ['o2']; }),
+  otrava3('P37 nodul cu un spațiu la capăt („e1 ”)', 'referinta-op', (d) => { op0(d).noduri = ['e1 ']; }),
+  otrava3('P38 nodul e un element, al doilea e grupul', 'referinta-op', (d) => { op0(d).noduri = ['e1', 'g']; }),
+  // [scula]
+  otrava3('P39 scula lipsă', 'scula', (d) => { sterge(op0(d), 'scula'); }),
+  otrava3('P40 scula e o listă', 'scula', (d) => { scrie(op0(d), 'scula', [1, 'freza plata', 6]); }),
+  otrava3('P41 numar 0', 'scula', (d) => { sc0(d).numar = 0; }),
+  otrava3('P42 numar 1 000', 'scula', (d) => { sc0(d).numar = 1000; }),
+  otrava3('P43 numar 1,5', 'scula', (d) => { sc0(d).numar = 1.5; }),
+  otrava3('P44 numar „1” (text)', 'scula', (d) => { scrie(sc0(d), 'numar', '1'); }),
+  otrava3('P45 numar NaN', 'scula', (d) => { sc0(d).numar = Number.NaN; }),
+  otrava3('P46 numar lipsă', 'scula', (d) => { sterge(sc0(d), 'numar'); }),
+  otrava3('P47 nume lipsă', 'scula', (d) => { sterge(sc0(d), 'nume'); }),
+  otrava3('P48 nume de 201 de caractere', 'scula', (d) => { sc0(d).nume = 'ș'.repeat(201); }),
+  otrava3('P49 nume număr', 'scula', (d) => { scrie(sc0(d), 'nume', 6); }),
+  otrava3('P50 diametru 0', 'scula', (d) => { sc0(d).diametru = 0; }),
+  otrava3('P51 diametru 100,0001', 'scula', (d) => { sc0(d).diametru = 100.0001; }),
+  otrava3('P52 diametru negativ', 'scula', (d) => { sc0(d).diametru = -6; }),
+  otrava3('P53 diametru Infinity', 'scula', (d) => { sc0(d).diametru = Number.POSITIVE_INFINITY; }),
+  otrava3('P54 diametru lipsă', 'scula', (d) => { sterge(sc0(d), 'diametru'); }),
+  otrava3('P55 diametru „6” (text)', 'scula', (d) => { scrie(sc0(d), 'diametru', '6'); }),
+  otrava3('P56 diametru −0', 'scula', (d) => { sc0(d).diametru = -0; }),
+  // [plafon]
+  otrava3('P57 o operație cu 10 001 noduri', 'plafon', (d) => {
+    const ids = Array.from({ length: 10_001 }, (_, k) => `e${k}`);
+    q0(d).radacina = grup('g', I(), ids.map((id) => el(id, I())));
+    q0(d).operatii = [op('o', ids, 'exterior')];
+  }),
+  otrava3('P58 100 001 de operații într-o piesă fără instanțe', 'plafon', (d) => {
+    q0(d).radacina = el('e', I());
+    q0(d).operatii = operatiiPe(100_001, 'e');
     f0(d).instante = [];
   }),
-  otrava('O45 lățimea 0', 'pozitiv', (d) => { e0(d).forma = dr(0, 20, 0); }),
-  otrava('O46 raza negativă', 'pozitiv', (d) => { e0(d).forma = cerc(-1); }),
-  otrava('O47 nume de piesă de 201 de caractere', 'plafon', (d) => { p0(d).nume = 'x'.repeat(201); }),
-  otrava('O48 nume de nod de 201 de caractere', 'plafon', (d) => { e0(d).nume = 'ș'.repeat(201); }),
-  // Precizarea 5: marginile lumii.
-  otrava('O49 coeficient compus 100 000: cinci grupuri cu scara 10 (fiecare matrice locală e mică)', 'margini', (d) => {
-    p0(d).radacina = lant(6, M(10, 0, 0, 10, 0, 0));
+  otrava3('P59 100 001 de operații în două piese (60 000 + 40 001), fără instanțe', 'plafon', (d) => {
+    q0(d).radacina = el('e', I());
+    q0(d).operatii = operatiiPe(60_000, 'e');
+    d.piese.push(piesa3('p2', el('e', I()), operatiiPe(40_001, 'e')));
+    f0(d).instante = [];
   }),
-  otrava('O50 translație compusă 10 000 001 (5 000 000 + 5 000 001)', 'margini', (d) => {
-    p0(d).radacina = grup('g', T(5_000_000, 0), [el('e', T(5_000_001, 0))]);
+  // Instanțele (50 001) și elementele în lume (50 001) sunt sub plafoane; tăieturile, 2 × 50 001 = 100 002.
+  otrava3('P60 100 002 tăieturi în lume: 50 001 de instanțe × 2 operații pe același element', 'plafon', (d) => {
+    q0(d).radacina = el('e', I());
+    q0(d).operatii = [op('a', ['e'], 'exterior'), op('b', ['e'], 'pe-linie', 1, 1)];
+    f0(d).instante = Array.from({ length: 50_001 }, (_, k) => inst(`i${k}`, 'p1', 0, 0, 0));
   }),
-  otrava('O51 translație compusă prin scalare: 1 000 × 10 001', 'margini', (d) => {
-    p0(d).radacina = grup('g', M(1000, 0, 0, 1000, 0, 0), [el('e', T(10_001, 0))]);
+  // 16 667 de instanțe × (3 operații × 2 noduri) = 100 002; instanțe × operații = 50 001; elemente în lume 33 334.
+  otrava3('P61 100 002 tăieturi în lume: 16 667 de instanțe × 3 operații × 2 noduri', 'plafon', (d) => {
+    q0(d).radacina = grup('g', I(), [el('a', I()), el('b', T(1, 0))]);
+    q0(d).operatii = [op('x', ['a', 'b'], 'exterior'), op('y', ['b', 'a'], 'interior'), op('z', ['a', 'b'], 'pe-linie', 1, 1)];
+    f0(d).instante = Array.from({ length: 16_667 }, (_, k) => inst(`i${k}`, 'p1', 0, 0, 0));
   }),
-  otrava('O52 coeficient local 10 001 la rădăcină', 'margini', (d) => { g0(d).matrice = M(10_001, 0, 0, 1, 0, 0); }),
-  otrava('O53 compunerea ajunge la Infinity (10 000 × 1e305)', 'margini', (d) => {
-    p0(d).radacina = grup('g', M(1e4, 0, 0, 1e4, 0, 0), [el('e', M(1e305, 0, 0, 1, 0, 0))]);
+  // Fiecare foaie e sub plafon (60 000 și 40 002 de tăieturi); documentul are 100 002.
+  otrava3('P62 100 002 tăieturi în lume pe două foi (30 000 + 20 001 de instanțe × 2)', 'plafon', (d) => {
+    q0(d).radacina = el('e', I());
+    q0(d).operatii = [op('a', ['e'], 'exterior'), op('b', ['e'], 'interior')];
+    f0(d).instante = Array.from({ length: 30_000 }, (_, k) => inst(`i${k}`, 'p1', 0, 0, 0));
+    d.foi.push(foaie('f2', Array.from({ length: 20_001 }, (_, k) => inst(`j${k}`, 'p1', 0, 0, 0))));
   }),
-  otrava('O54 compunerea dă NaN (∞ − ∞) doar pe a; ceilalți coeficienți rămân în margini', 'margini', (d) => {
-    p0(d).radacina = grup('g', M(1e4, 0, 1e4, 1e-305, 0, 0), [el('e', M(1e305, -1e305, 0, 1, 0, 0))]);
-  }),
-  otrava('O55 x = 10 000 001', 'margini', (d) => { i0(d).x = 10_000_001; }),
-  otrava('O56 y = −10 000 000,5', 'margini', (d) => { i0(d).y = -10_000_000.5; }),
-  otrava('O57 100 001 elemente în lume: 1 000 de instanțe × 100 de elemente, plus una × 1', 'margini', (d) => {
-    p0(d).radacina = grup('g', I(), Array.from({ length: 100 }, (_, k) => el(`e${k}`, I())));
-    for (let k = 2; k <= 1000; k++) f0(d).instante.push(inst(`i${k}`, 'p1', 0, 0, 0));
-    d.piese.push(piesa('p2', el('e', I())));
-    f0(d).instante.push(inst('unu', 'p2', 0, 0, 0));
-  }),
-  otrava('O58 100 001 elemente în lume pe două foi (60 000 + 40 001; fiecare foaie e sub plafon)', 'margini', (d) => {
-    p0(d).radacina = grup('g', I(), Array.from({ length: 100 }, (_, k) => el(`e${k}`, I())));
-    for (let k = 2; k <= 600; k++) f0(d).instante.push(inst(`i${k}`, 'p1', 0, 0, 0));
-    d.piese.push(piesa('p2', el('e', I())));
-    d.foi.push(foaie('f2', [...Array.from({ length: 400 }, (_, k) => inst(`j${k}`, 'p1', 0, 0, 0)), inst('unu', 'p2', 0, 0, 0)]));
-  }),
-  otrava('O59 margini depășite într-o piesă fără instanțe', 'margini', (d) => { d.piese.push(piesa('p2', el('e', T(10_000_001, 0)))); }),
-  // Precizarea 5, ultimul punct: tot JSON-ul, cu câmpurile necunoscute, are cel mult 200 de niveluri.
-  otrava('O60 JSON adânc de 201 de niveluri (un câmp de sus)', 'adancime', (d) => { scrie(d, 'adanc', adanc(200)); }),
-  // e1 e pe nivelul 6 (document, piese, piesa, rădăcina, copii, e1), forma pe 7: 7 + 194 = 201.
-  otrava('O61 JSON adânc de 201 de niveluri, în forma unui element', 'adancime', (d) => { e0(d).forma = { ...dr(), adanc: adanc(194) }; }),
-  // Precizarea 4: campuri.
-  otrava('O62 campuri cu 201 de chei', 'plafon', (d) => {
-    i0(d).campuri = Object.fromEntries(Array.from({ length: 201 }, (_, k) => [`k${k}`, 'v']));
-  }),
-  otrava('O63 o cheie din campuri de 201 de caractere', 'plafon', (d) => { i0(d).campuri = { ['K'.repeat(201)]: 'v' }; }),
-  otrava('O64 o valoare din campuri de 10 001 de caractere', 'plafon', (d) => { i0(d).campuri = { cod: 'v'.repeat(10_001) }; }),
-  otrava('O65 rev 2^53 (nu e întreg sigur)', 'schema', (d) => { d.rev = 2 ** 53; }),
-  otrava('O66 rev 1,5', 'schema', (d) => { d.rev = 1.5; }),
-  // Precizarea 5: forme pe care consumatorii nu le pot desena.
-  otrava('O67 razaColt peste jumătate din latura mică (25,5 la 100 × 50)', 'forma', (d) => { e0(d).forma = dr(100, 50, 25.5); }),
-  otrava('O68 cerc sub o scalare locală neuniformă (2 × 1)', 'forma', (d) => { e1(d).matrice = M(2, 0, 0, 1, 10, 0); }),
-  otrava('O69 cerc sub o matrice locală similitudine, dar compusă neuniformă (grupul 1 × 2)', 'forma', (d) => {
-    g0(d).matrice = M(1, 0, 0, 2, 0, 0);
-  }),
-  otrava('O70 dreptunghi rotunjit sub forfecare', 'forma', (d) => { e0(d).forma = dr(40, 20, 5); e0(d).matrice = M(1, 0, 0.5, 1, 0, 0); }),
-  otrava('O71 cerc sub scalarea 0 (similitudine degenerată, determinant 0)', 'forma', (d) => { g0(d).matrice = M(0, 0, 0, 0, 0, 0); }),
-  otrava('O72 cerc sub d = 1 + 1e−9 (peste toleranța 1e−12)', 'forma', (d) => { e1(d).matrice = M(1, 0, 0, 1 + 1e-9, 10, 0); }),
+  // [schema]
+  otrava3('P63 schema 2 cu forma v3 (ușa ar vedea o ciocnire, nu o migrare)', 'schema', (d) => { scrie(d, 'schema', 2); }),
+  otrava3('P64 schema 4', 'schema', (d) => { scrie(d, 'schema', 4); }),
+  otrava3('P65 schema „3” (text)', 'schema', (d) => { scrie(d, 'schema', '3'); }),
+  // [adancime]: operația e pe nivelul 5 (document, piese, piesa, operatii, operația), câmpul ei pe 6: 6 + 195 = 201.
+  otrava3('P66 JSON adânc de 201 de niveluri, într-un câmp necunoscut al operației', 'adancime', (d) => { scrie(op0(d), 'adanc', adanc(196)); }),
+  // Scula e pe nivelul 6, câmpul ei pe 7: 7 + 194 = 201.
+  otrava3('P67 JSON adânc de 201 de niveluri, într-un câmp necunoscut al sculei', 'adancime', (d) => { scrie(sc0(d), 'adanc', adanc(195)); }),
+  // [operatie] pe a doua piesă.
+  otrava3('P68 doar a doua piesă n-are operatii', 'operatie', (d) => { d.piese.push({ id: 'p2', radacina: el('x', I()) } as unknown as PiesaV3O); }),
 ];
+
+export const OTRAVURI_V3: readonly Otrava[] = [...otravuriArbore(3), ...OTRAVURI_OPERATII];
 
 // ---------------------------------------------------------------------------------------------------------------
 // Valide, dar dificile: seamănă cu otrăvurile. Precizarea 3 fixează parantezele și formula, deci aplicația și oracolul
@@ -1084,4 +2030,184 @@ export const VALIDE_DIFICILE: readonly CazValid[] = [
     }])]),
   },
   { nume: 'D26 rev 2^53 − 1 (cel mai mare întreg sigur)', doc: { ...baza(), rev: Number.MAX_SAFE_INTEGER } },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Valide v3, dar dificile (ADR 0025).
+
+export type CazValidV3 = { readonly nume: string; readonly doc: DocV3O };
+
+/** Un element `e` și `n` operații pe el, cu clasele pe rând (interior, pe-linie, exterior). */
+const operatiiAlternante = (n: number): OperatieO[] => Array.from(
+  { length: n },
+  (_, k) => op(`o${k}`, ['e'], (['interior', 'pe-linie', 'exterior'] as const)[k % 3] as LaturaO),
+);
+
+export const VALIDE_DIFICILE_V3: readonly CazValidV3[] = [
+  {
+    nume: 'W01 o piesă fără operații, cu instanță (nu se taie nimic)',
+    doc: doc3([piesa3('p1', el('e1', I()), [])], [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])]),
+  },
+  {
+    nume: 'W02 un element referit de trei operații (aceeași clasă și clase diferite)',
+    doc: doc3(
+      [piesa3(
+        'p1',
+        grup('g', I(), [el('e1', I()), el('e2', T(10, 0), cerc())]),
+        [op('a', ['e1'], 'exterior'), op('b', ['e1', 'e2'], 'interior', 5, 5), op('c', ['e1'], 'exterior', 18, 6)],
+      )],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ),
+  },
+  {
+    nume: 'W03 id-ul operației = id-ul nodului = id-ul piesei = id-ul instanței = id-ul foii',
+    doc: doc3([piesa3('x', el('x', I()), [op('x', ['x'], 'exterior')])], [foaie('x', [inst('x', 'x', 0, 0, 0)])]),
+  },
+  {
+    nume: 'W04 același id de operație în două piese diferite',
+    doc: doc3(
+      [piesa3('p1', el('e', I()), [op('o', ['e'], 'exterior')]), piesa3('p2', el('e', I(), cerc()), [op('o', ['e'], 'interior', 8, 4)])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0), inst('i2', 'p2', 100, 0, 0)])],
+    ),
+  },
+  {
+    // 25 000 de instanțe × 2 operații × 2 noduri; elementele în lume, 50 000.
+    nume: 'W05 exact 100 000 de tăieturi în lume (25 000 de instanțe × 2 operații × 2 noduri)',
+    doc: doc3(
+      [piesa3('p1', grup('g', I(), [el('a', I()), el('b', T(1, 0))]), [op('o1', ['a', 'b'], 'interior'), op('o2', ['b', 'a'], 'exterior')])],
+      [foaie('f1', Array.from({ length: 25_000 }, (_, k) => inst(`i${k}`, 'p1', k % 1000, Math.floor(k / 1000), 0)))],
+    ),
+  },
+  {
+    nume: 'W06 exact 100 000 de operații pe un singur element, o instanță (și exact 100 000 de tăieturi)',
+    doc: doc3([piesa3('p1', el('e', I()), operatiiAlternante(100_000))], [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])]),
+  },
+  {
+    nume: 'W07 o operație cu exact 10 000 de noduri, în ordinea inversă preordinii',
+    doc: doc3(
+      [piesa3(
+        'p1',
+        grup('g', I(), Array.from({ length: 10_000 }, (_, k) => el(`e${k}`, T(k, 0)))),
+        [op('tot', Array.from({ length: 10_000 }, (_, k) => `e${9_999 - k}`), 'exterior')],
+      )],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ),
+  },
+  {
+    // Tăieturile se numără pe instanțe: o piesă fără instanțe nu taie nimic, oricâte referințe ar avea.
+    nume: 'W08 100 000 de referințe într-o piesă fără instanțe (10 operații × 10 000 de noduri), plus o piesă tăiată',
+    doc: doc3(
+      [
+        piesa3(
+          'mare',
+          grup('g', I(), Array.from({ length: 10_000 }, (_, k) => el(`e${k}`, T(k, 0)))),
+          Array.from({ length: 10 }, (_, j) => op(`o${j}`, Array.from({ length: 10_000 }, (_, k) => `e${k}`), 'exterior')),
+        ),
+        piesa3('p2', el('e', I()), [op('o', ['e'], 'interior')]),
+      ],
+      [foaie('f1', [inst('i1', 'p2', 0, 0, 0)])],
+    ),
+  },
+  {
+    nume: 'W09 la plafoane: scula 1 și 999, nume gol și de 200, diametru 100 și 5e−324; adâncime și pas 1 000 și 5e−324',
+    doc: doc3(
+      [piesa3(
+        'p1',
+        grup('g', I(), [el('e1', I()), el('e2', T(50, 0), cerc())]),
+        [
+          op('a', ['e1'], 'exterior', 1000, 1000, { numar: 1, nume: '', diametru: 100 }),
+          op('b', ['e2'], 'interior', 5e-324, 5e-324, { numar: 999, nume: 'ș'.repeat(200), diametru: 5e-324 }),
+        ],
+      )],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ),
+  },
+  {
+    nume: 'W10 câmpuri necunoscute pe operație și pe sculă: __proto__, constructor, prototype, urechi, intrări (din JSON.parse)',
+    doc: JSON.parse(
+      '{"schema":3,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6,"__proto__":"s","producator":"X","lungime":{"utila":22}},'
+      + '"latura":"interior","adancime":8,"pas":4,"__proto__":"x","constructor":"Ion","prototype":"p",'
+      + '"urechi":[{"lungime":5}],"intrari":null,"note":"de pastrat"}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as DocV3O,
+  },
+  {
+    // ADR 0025: exportul refuză două scule într-un program (`sculaUnicaO`); ușa le primește.
+    nume: 'W11 scule diferite pe aceeași foaie (număr și diametru): documentul e valid, exportul le refuză',
+    doc: doc3(
+      [piesa3('p1', grup('g', I(), [el('e1', I()), el('e2', T(50, 0), cerc())]), [op('a', ['e1'], 'exterior'), op('b', ['e2'], 'interior', 2, 1, S2())])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ),
+  },
+  {
+    nume: 'W12 nodurile operației din grupuri diferite, în altă ordine decât preordinea (b1, a2, a1)',
+    doc: doc3(
+      [piesa3(
+        'p1',
+        grup('G', I(), [grup('A', T(0, 100), [el('a1', T(1, 0), cerc()), el('a2', T(2, 0), cerc())]), grup('B', M(0, 1, -1, 0, 0, 0), [el('b1', T(3, 0), cerc())])]),
+        [op('gauri', ['b1', 'a2', 'a1'], 'interior', 10, 5)],
+      )],
+      [foaie('f1', [inst('i1', 'p1', 500, 500, 270)])],
+    ),
+  },
+  {
+    nume: 'W13 pasul mai mare decât adâncimea (10 > 3): ușa nu le leagă',
+    doc: doc3([piesa3('p1', el('e', I()), [op('o', ['e'], 'exterior', 3, 10)])], [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])]),
+  },
+  {
+    // Operația pe nivelul 5, câmpul ei pe 6: 6 + 194 = 200. Scula pe 6, câmpul ei pe 7: 7 + 193 = 200.
+    nume: 'W14 JSON adânc de exact 200 de niveluri, într-un câmp al operației și într-unul al sculei',
+    doc: doc3(
+      [piesa3('p1', el('e', I()), [{ ...op('o', ['e'], 'exterior'), adanc: adanc(195), scula: { ...S1(), adanc: adanc(194) } }])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ),
+  },
+  {
+    nume: 'W15 latura nu depinde de formă: cerc exterior, dreptunghi interior, cerc pe linie',
+    doc: doc3(
+      [piesa3(
+        'p1',
+        grup('g', I(), [el('c', I(), cerc()), el('r', T(20, 0)), el('k', T(0, 20), cerc(2))]),
+        [op('o1', ['c'], 'exterior'), op('o2', ['r'], 'interior'), op('o3', ['k'], 'pe-linie', 1, 1)],
+      )],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ),
+  },
+  {
+    nume: 'W16 id-uri de operații care diferă doar prin majuscule (O1, o1) în aceeași piesă',
+    doc: doc3(
+      [piesa3('p1', el('e', I()), [op('O1', ['e'], 'exterior'), op('o1', ['e'], 'interior')])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ),
+  },
+  {
+    nume: 'W17 aceeași piesă cu operații pe două foi (fiecare foaie își taie instanțele ei)',
+    doc: doc3(
+      [piesa3('p1', grup('g', I(), [el('a', I()), el('b', T(5, 5), cerc())]), [op('o', ['b', 'a'], 'interior')])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 90)]), foaie('f2', [inst('i2', 'p1', 0, 0, 180), inst('i3', 'p1', 10, 10, 0)])],
+    ),
+  },
+  {
+    nume: 'W18 id-uri de operații de 64 de caractere și de un caracter (-, _)',
+    doc: doc3(
+      [piesa3('p1', el('e', I()), [op(ID_64, ['e'], 'exterior'), op('-', ['e'], 'interior'), op('_', ['e'], 'pe-linie', 1, 1)])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ),
+  },
+  {
+    nume: 'W19 operații pe o piesă fără instanțe (nu se taie); toate listele goale în rest',
+    doc: doc3(
+      [piesa3('p1', el('e', I()), [op('o', ['e'], 'exterior')]), piesa3('p2', grup('g', I(), []), [])],
+      [foaie('f1', [inst('i1', 'p2', 0, 0, 0)]), foaie('f2', [])],
+    ),
+  },
+  {
+    nume: 'W20 același element în două operații de aceeași clasă, cu scule diferite, pe două instanțe',
+    doc: doc3(
+      [piesa3('p1', el('e', I(), cerc(10)), [op('a', ['e'], 'interior', 2, 2, S2()), op('b', ['e'], 'interior', 18, 6)])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0), inst('i2', 'p1', 100, 0, 90)])],
+    ),
+  },
 ];
