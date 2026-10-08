@@ -3,22 +3,27 @@ import { Panza } from '../canvas/Panza.tsx';
 import { t } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { avertismente } from '../model/avertismente.ts';
-import { documentNou, type ElementDoc } from '../model/document.ts';
+import { documentNou } from '../model/document.ts';
 import { istoricNou, type Istoric } from '../model/jurnal.ts';
+import { elementeFoaie, type ElementLume } from '../model/lume.ts';
 import { creeazaRegistru, ruleaza, stare } from '../ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../ui/actiuniDocument.ts';
 import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type RezultatExport } from '../ui/actiuniExport.ts';
 import { DialogExport, type StareExport } from '../ui/DialogExport.tsx';
+import { ListaVectori, type RandLista } from '../ui/ListaVectori.tsx';
 import { useLimba } from '../ui/useLimba.ts';
 import type { RezultatConfig } from './config.ts';
 import { listaDesen } from './desen.ts';
 import type { Jurnal } from './jurnalErori.ts';
+import type { ProiectDeschis } from './proiectLocal.ts';
 
 type Props = {
   readonly config: RezultatConfig;
   readonly jurnal: Jurnal;
   readonly diagnostic: string | null;
   readonly alegeLimba: (l: Limba) => void;
+  /** Proiectul din browser, deschis înainte de prima randare (`proiectLocal.ts`). */
+  readonly proiect: ProiectDeschis;
 };
 
 /** Diagnosticul `?diagnostic=eroare-de-randare` aruncă la randare, ca ErrorBoundary-ul să se poată proba pe build. */
@@ -40,22 +45,47 @@ function descarca(octeti: Uint8Array<ArrayBuffer>, nume: string): void {
 const FOAIA_IMPLICITA = { latime: 300, inaltime: 200, grosime: 18 };
 
 /** Acțiunile din bară, în ordine; toate trec prin registru. */
-const BARA = ['document.adauga-dreptunghi', 'document.adauga-cerc', 'document.sterge-selectia', 'istoric.anuleaza', 'istoric.reface'] as const;
+const BARA = [
+  'document.adauga-dreptunghi', 'document.adauga-cerc', 'document.duplica-selectia', 'document.sterge-selectia',
+  'istoric.anuleaza', 'istoric.reface',
+] as const;
 
 const doua = (x: number): string => x.toFixed(2);
 
-function descriere(e: ElementDoc): string {
+/** Un element în lume, în cuvinte: forma și unde stă pe foaie. */
+function descriere(e: Pick<ElementLume, 'forma' | 'matrice'>): string {
   const { e: x, f: y } = e.matrice;
   return e.forma.tip === 'dreptunghi'
     ? t('forma.dreptunghi', { latime: doua(e.forma.latime), inaltime: doua(e.forma.inaltime), x: doua(x), y: doua(y) })
     : t('forma.cerc', { raza: doua(e.forma.raza), x: doua(x), y: doua(y) });
 }
 
-export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
+/** O instanță, în cuvinte: numele piesei, sau primul ei element (și câte mai are). */
+function descriereInstanta(elemente: readonly ElementLume[], nume: string | undefined): string {
+  const [primul] = elemente;
+  if (nume) return nume;
+  if (!primul) return '—';
+  return elemente.length === 1 ? descriere(primul) : `${descriere(primul)} (+${elemente.length - 1})`;
+}
+
+/** Ce spune bara de jos despre salvare, după cum s-a deschis proiectul. */
+function mesajProiect(p: ProiectDeschis): string | null {
+  if (p.mod === 'doar-citire') return t('depozit.doar-citire');
+  if (p.mod === 'fara-memorie') return t('depozit.fara-memorie');
+  if (p.mod === 'nu-se-deschide') return t('depozit.nu-se-deschide', { motiv: p.motiv });
+  return null;
+}
+
+export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) {
   const limbaActiva = useLimba();
   const intrari = useSyncExternalStore(jurnal.asculta, () => jurnal.citeste().length);
-  const [istoric, setIstoric] = useState<Istoric>(() => istoricNou(documentNou(FOAIA_IMPLICITA)));
+  const docPornire = useMemo(
+    () => ((proiect.mod === 'scriitor' || proiect.mod === 'doar-citire') && proiect.doc ? proiect.doc : documentNou(FOAIA_IMPLICITA)),
+    [proiect],
+  );
+  const [istoric, setIstoric] = useState<Istoric>(() => istoricNou(docPornire));
   const [selectie, setSelectie] = useState<readonly string[]>([]);
+  const [eroareSalvare, setEroareSalvare] = useState<string | null>(null);
   // Acțiunile citesc și scriu starea sincron: referința ține mereu ultima valoare, starea React redesenează.
   const curenta = useRef({ istoric, selectie });
   curenta.current = { istoric, selectie };
@@ -81,16 +111,38 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
       }
     },
   });
-  // Lista de desen se reface doar când se schimbă documentul: o listă nouă la fiecare randare ar cere un redesen inutil.
-  const forme = useMemo(() => listaDesen(istoric.doc), [istoric.doc]);
-  // Avertismentele: tot după fiecare schimbare a documentului; se arată în bara de jos, niciodată pe pânză.
-  const avert = useMemo(() => avertismente(istoric.doc), [istoric.doc]);
+  const doc = istoric.doc;
+  const foaie = doc.foi[0] ?? documentNou(FOAIA_IMPLICITA).foi[0];
+  // Lista de desen și elementele în lume se refac doar când se schimbă documentul.
+  const lume = useMemo(() => elementeFoaie(doc, 0), [doc]);
+  const forme = useMemo(() => listaDesen(doc), [doc]);
+  // Avertismentele: tot după fiecare schimbare a documentului; în bara de jos și în listă, niciodată pe pânză.
+  const avert = useMemo(() => avertismente(doc, 0), [doc]);
+  // Selecția ține instanțe; pânza primește elementele lor în lume.
+  const selectieDesen = useMemo(() => {
+    const alese = new Set(selectie);
+    return lume.filter((e) => alese.has(e.instanta)).map((e) => e.idLume);
+  }, [lume, selectie]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct'>> = {}): ContextDocument => ({
+  // Salvarea: fiecare document nou (după o comandă, o anulare sau o refacere) pleacă în IndexedDB, doar din fila care scrie.
+  useEffect(() => {
+    if (proiect.mod !== 'scriitor' || doc === docPornire) return;
+    proiect.depozit.scrie(doc).then(
+      () => { setEroareSalvare(null); },
+      (e: unknown) => {
+        const motiv = e instanceof Error ? e.message : String(e);
+        jurnal.adauga('salvare', e);
+        setEroareSalvare(motiv);
+      },
+    );
+  }, [doc, docPornire, proiect, jurnal]);
+
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'alese'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
     selecteaza: (ids) => { curenta.current = { ...curenta.current, selectie: ids }; setSelectie(ids); },
+    doarCitire: () => proiect.mod === 'doar-citire',
     ...extra,
   });
 
@@ -114,11 +166,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
     const tasta = (e: KeyboardEvent): void => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       const ctrl = e.ctrlKey || e.metaKey;
+      const k = e.key.toLowerCase();
       const id = e.key === 'Delete' ? 'document.sterge-selectia'
-        : ctrl && e.key.toLowerCase() === 'z' && !e.shiftKey ? 'istoric.anuleaza'
-          : ctrl && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey)) ? 'istoric.reface'
-            : null;
+        : ctrl && k === 'z' && !e.shiftKey ? 'istoric.anuleaza'
+          : ctrl && (k === 'y' || (k === 'z' && e.shiftKey)) ? 'istoric.reface'
+            : ctrl && k === 'd' && !e.shiftKey ? 'document.duplica-selectia'
+              : null;
       if (!id) return;
+      // Ctrl+D ar pune altfel pagina la favorite.
       e.preventDefault();
       ruleazaDocument(id, context());
     };
@@ -130,8 +185,25 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
   if (diagnostic === 'eroare-de-randare' && config.ok && config.config.instanta !== 'live') return <EroareProvocata />;
 
   const instanta = config.ok ? config.config.instanta : t('app.instanta.necunoscuta');
-  const doc = istoric.doc;
-  const selectat = selectie.length === 1 ? doc.elemente.find((e) => e.id === selectie[0]) : undefined;
+  const elementeInstanta = (id: string): ElementLume[] => lume.filter((e) => e.instanta === id);
+  const numePiesa = (id: string): string | undefined => {
+    const i = foaie?.instante.find((x) => x.id === id);
+    return i ? doc.piese.find((p) => p.id === i.piesa)?.nume : undefined;
+  };
+  const selectata = selectie.length === 1 && selectie[0] !== undefined ? selectie[0] : null;
+  const descriereLume = (idLume: string): string => {
+    const e = lume.find((x) => x.idLume === idLume);
+    return e ? descriere(e) : idLume;
+  };
+  const avertInstanta = new Map<string, string[]>();
+  for (const a of avert) avertInstanta.set(a.instanta, [...(avertInstanta.get(a.instanta) ?? []), t('avertisment.iese-din-foaie', { descriere: descriereLume(a.id) })]);
+  const randuri: RandLista[] = (foaie?.instante ?? []).map((i) => ({
+    id: i.id,
+    descriere: descriereInstanta(elementeInstanta(i.id), numePiesa(i.id)),
+    avertisment: avertInstanta.get(i.id)?.join('\n') ?? null,
+    selectat: selectie.includes(i.id),
+  }));
+  const mesaj = mesajProiect(proiect);
 
   return (
     <>
@@ -171,35 +243,45 @@ export function App({ config, jurnal, diagnostic, alegeLimba }: Props) {
           })()}
         </div>
         {!config.ok && <p role="status" className="avertisment">{t('eroare.config', { motiv: config.motiv })}</p>}
-        <Panza
-          forme={forme}
-          foaie={doc.foaie}
-          selectie={selectie}
-          onClic={(x, y, toleranta) => { ruleazaDocument('selectie.la-punct', context({ punct: () => ({ x, y, toleranta }) })); }}
-          onMutare={(dx, dy) => { ruleazaDocument('document.muta-selectia', context({ deplasare: () => ({ dx, dy }) })); }}
-        />
+        <div className="lucru">
+          <Panza
+            forme={forme}
+            foaie={foaie?.stoc ?? FOAIA_IMPLICITA}
+            selectie={selectieDesen}
+            onClic={(x, y, toleranta) => { ruleazaDocument('selectie.la-punct', context({ punct: () => ({ x, y, toleranta }) })); }}
+            onMutare={(dx, dy) => { ruleazaDocument('document.muta-selectia', context({ deplasare: () => ({ dx, dy }) })); }}
+          />
+          <ListaVectori
+            randuri={randuri}
+            onAlege={(id) => { ruleazaDocument('selectie.din-lista', context({ alese: () => [id] })); }}
+          />
+        </div>
         <footer>
-          <span data-testid="selectie">{selectat ? t('stare.selectie', { descriere: descriere(selectat) }) : t('stare.nimic-selectat')}</span>
+          <span data-testid="selectie">
+            {selectata ? t('stare.selectie', { descriere: descriereInstanta(elementeInstanta(selectata), numePiesa(selectata)) }) : t('stare.nimic-selectat')}
+          </span>
           {avert.length > 0 && (() => {
-            // Un singur rând, oricâte avertismente: bara nu crește peste pânză. Lista întreagă stă în titlu (și, când va
-            // exista, cu roșu în lista de vectori).
-            const toate = avert.map((a) => {
-              const e = doc.elemente.find((x) => x.id === a.id);
-              return t('avertisment.iese-din-foaie', { descriere: e ? descriere(e) : a.id });
-            });
+            // Un singur rând, oricâte avertismente: bara nu crește peste pânză. Lista întreagă stă în titlu și, cu roșu, în
+            // lista de vectori.
+            const toate = avert.map((a) => t('avertisment.iese-din-foaie', { descriere: descriereLume(a.id) }));
             return (
               <span className="avertisment-bara" data-testid="avertisment" title={toate.join('\n')}>
                 {toate.length === 1 ? toate[0] : t('avertisment.forme-ies-din-foaie', { n: toate.length })}
               </span>
             );
           })()}
+          {(mesaj ?? eroareSalvare) !== null && (
+            <span className="avertisment-bara" data-testid="proiect" role="status">
+              {mesaj ?? t('depozit.eroare', { motiv: eroareSalvare ?? '' })}
+            </span>
+          )}
           <span data-testid="jurnal">{t('jurnal.intrari', { n: intrari })}</span>
         </footer>
       </div>
       {dialogExport && (
         <DialogExport
-          elemente={doc.elemente.map((e) => ({
-            id: e.id,
+          elemente={lume.map((e) => ({
+            id: e.idLume,
             descriere: descriere(e),
             // Aceleași implicite ca `parametriImpliciti` din `src/cam/job.ts`, scrise aici ca pachetul de pornire să nu tragă CAM-ul.
             implicit: e.forma.tip === 'cerc' ? { latura: 'interior', adancime: 8, pas: 4 } : { latura: 'exterior', adancime: 3, pas: 3 },

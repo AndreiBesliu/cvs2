@@ -5,6 +5,7 @@ import type { Limba } from '../i18n/tipuri.ts';
 import { App } from './App.tsx';
 import { incarcaConfig } from './config.ts';
 import { ErrorBoundary } from './ErrorBoundary.tsx';
+import { deschideProiect } from './proiectLocal.ts';
 import { creeazaJurnal, type Context, type Depozit } from './jurnalErori.ts';
 import './stil.css';
 
@@ -45,6 +46,9 @@ function alegeLimba(l: Limba): void {
 
 const config = await incarcaConfig(window.fetch.bind(window));
 if (!config.ok) jurnal.adauga('config', config.motiv);
+// Proiectul din browser se deschide înainte de prima randare: o comandă dată între timp ar fi acoperită de el.
+const proiect = await deschideProiect();
+if (proiect.mod === 'nu-se-deschide') jurnal.adauga('proiect', proiect.motiv);
 
 const context = (): Context => ({
   aplicatia: 'CNC Vector Studio',
@@ -65,6 +69,7 @@ createRoot(radacina).render(
         jurnal={jurnal}
         diagnostic={new URLSearchParams(location.search).get('diagnostic')}
         alegeLimba={alegeLimba}
+        proiect={proiect}
       />
     </ErrorBoundary>
   </StrictMode>,

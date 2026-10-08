@@ -6,7 +6,8 @@
  * de erori care aruncă la rândul lui ar ascunde exact eroarea pe care trebuia s-o păstreze.
  */
 
-export type TipEroare = 'randare' | 'fereastra' | 'promisiune' | 'config';
+/** `proiect`: proiectul salvat nu s-a putut deschide; `salvare`: o scriere în IndexedDB a eșuat. */
+export type TipEroare = 'randare' | 'fereastra' | 'promisiune' | 'config' | 'proiect' | 'salvare';
 
 export interface IntrareEroare {
   readonly cand: string;

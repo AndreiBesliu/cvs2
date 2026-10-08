@@ -8,13 +8,13 @@ import { iesireDinFoaie } from '../../src/cam/iesire.ts';
 import { programDinDocument } from '../../src/cam/job.ts';
 import type { Program } from '../../src/ir/ir.ts';
 import { avertismente } from '../../src/model/avertismente.ts';
-import { documentNou, type Document, type ElementDoc } from '../../src/model/document.ts';
+import type { Document } from '../../src/model/document.ts';
+import { docDin, ID, type FormaSimpla } from './ajutor-document.ts';
 
-const ID = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
-const dreptunghi = (id: string, x: number, y: number): ElementDoc =>
+const dreptunghi = (id: string, x: number, y: number): FormaSimpla =>
   ({ id, forma: { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 0 }, matrice: { ...ID, e: x, f: y } });
-const cerc = (id: string, x: number, y: number, raza = 15): ElementDoc => ({ id, forma: { tip: 'cerc', raza }, matrice: { ...ID, e: x, f: y } });
-const doc = (...elemente: ElementDoc[]): Document => ({ ...documentNou({ latime: 300, inaltime: 200, grosime: 18 }), elemente });
+const cerc = (id: string, x: number, y: number, raza = 15): FormaSimpla => ({ id, forma: { tip: 'cerc', raza }, matrice: { ...ID, e: x, f: y } });
+const doc = (...elemente: FormaSimpla[]): Document => docDin({ latime: 300, inaltime: 200, grosime: 18 }, ...elemente);
 const SCULA = { numar: 1, nume: 'freza plata', diametru: 6 };
 
 function program(d: Document): Program {
@@ -27,7 +27,7 @@ test('avertismentul: doar formele care trec de marginea foii, cu cât trec; cea 
   assert.deepEqual(avertismente(doc(dreptunghi('e1', 20, 20))), []);
   // 100 × 60 cu colțul în (250, 20): ajunge la X 350, deci 50 mm peste latura dreaptă.
   assert.deepEqual(avertismente(doc(dreptunghi('e1', 20, 20), dreptunghi('e2', 250, 20))),
-    [{ tip: 'iese-din-foaie', id: 'e2', depasire: { stanga: 0, dreapta: 50, jos: 0, sus: 0 } }]);
+    [{ tip: 'iese-din-foaie', id: 'e2/e2', instanta: 'e2', depasire: { stanga: 0, dreapta: 50, jos: 0, sus: 0 } }]);
   // Lipit de margine (X 200…300): nu iese.
   assert.deepEqual(avertismente(doc(dreptunghi('e1', 200, 140))), []);
   // Cercul R15 cu centrul în (10, 190): 5 mm la stânga și 5 mm sus, prin punctele lui de pe axe.
@@ -41,7 +41,7 @@ test('traseul: insula plăcii 1 nu iese; mutată la 1 mm de margine, discul trec
   const r = iesireDinFoaie(program(doc(dreptunghi('e1', 1, 20))), { latime: 300, inaltime: 200 });
   assert.ok(r);
   assert.deepEqual(r.depasire, { stanga: 5, dreapta: 0, jos: 0, sus: 0 });
-  assert.deepEqual(r.elemente, ['e1']);
+  assert.deepEqual(r.elemente, ['e1/e1']);
 });
 
 test('traseul: forma în foaie, dar discul exteriorului trece de margine (la 4 mm: −1 − 3 = 2 mm)', () => {

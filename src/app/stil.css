@@ -266,3 +266,67 @@ footer {
   align-items: flex-start;
   gap: 0.5rem;
 }
+
+/* Pânza și lista de vectori, una lângă alta; pânza ia tot ce rămâne (min-width / min-height 0, altfel nu se strânge). */
+.lucru {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.lucru > .panza-cutie {
+  min-width: 0;
+}
+
+.lista-vectori {
+  flex: 0 0 16rem;
+  overflow: auto;
+  border-left: 1px solid var(--margine);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.lista-vectori h2 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.lista-vectori ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lista-vectori button {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  padding: 0.2rem 0.4rem;
+}
+
+.lista-vectori button[aria-pressed='true'] {
+  border-color: var(--accent);
+}
+
+/* Avertismentul apare cu roșu în listă (owner-ul, 07.10); pe pânză, niciodată. */
+.lista-vectori button.cu-avertisment {
+  color: var(--rosu);
+}
+
+.lista-goala {
+  color: var(--text-slab);
+  margin: 0;
+}
+
+@media (max-width: 40rem) {
+  .lucru {
+    flex-direction: column;
+  }
+
+  .lista-vectori {
+    flex: 0 0 auto;
+    max-height: 30vh;
+    border-left: 0;
+    border-top: 1px solid var(--margine);
+  }
+}

@@ -18,9 +18,11 @@ function aceeasiIesire(a: IesireFoaie | undefined, b: IesireFoaie): boolean {
 
 /** Exportul propriu-zis: documentul → profilele → IR → postul GRBL → octeții cu SHA-256. Se încarcă la cerere. */
 export async function calculeazaExport(doc: Document, p: ParametriExport): Promise<RezultatExport> {
+  const foaie = doc.foi[0];
+  if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
   const job = programDinDocument(doc, p.elemente, { numar: 1, nume: 'freza plata', diametru: p.diametruScula });
   if (!job.ok) return job;
-  const iesire = iesireDinFoaie(job.program, doc.foaie);
+  const iesire = iesireDinFoaie(job.program, foaie.stoc);
   if (iesire) {
     const { stanga, dreapta, jos, sus } = iesire.depasire;
     // Plafonul pe artefact (T23): o ieșire cât încă o foaie maximă e o greșeală de poziție, nu o intenție.
@@ -31,7 +33,7 @@ export async function calculeazaExport(doc: Document, p: ParametriExport): Promi
       return { ok: false, motiv: 'freza iese din foaie: exportul cere confirmarea ta', cereConfirmare: iesire };
     }
   }
-  const e = await exporta(job.program, { foaie: doc.foaie, origine: p.origine, z0: p.z0 }, GRBL_11, {
+  const e = await exporta(job.program, { foaie: foaie.stoc, origine: p.origine, z0: p.z0 }, GRBL_11, {
     asteptareAx: ASTEPTARE_AX,
     ...(iesire ? { iesireConfirmata: iesire.depasire } : {}),
   });

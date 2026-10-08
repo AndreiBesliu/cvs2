@@ -745,3 +745,14 @@ Firestore confirmat de owner).
 **Rămâne deschis:** cuvântul A / D (plus cele trei alegeri din D); felia 1.7 după el; hosting-ul pe adresa principală
 de test, după exportul Firestore confirmat; placa 1. Motivele exportului care vin din CAM sunt încă doar în română
 (gol mai vechi, din 1.9c).
+
+## 2026-10-08 — Etapa 1, felia 1.7: documentul v2, varianta D (Model: Claude Opus 5.5)
+
+**Prompt:** „D, ok la toate” (răspunsul la alegerea A / D, cu cele trei alegeri din D și implicitele de la 1.10).
+**Started:** 13:34. **Clasa:** R1–R2 (documentul; exportul îl citește). **Estimarea:** ~1 zi activă (2 felii de plan),
+plus oracolul independent și recenzia adversarială.
+
+**Ce intră:** ADR 0024 (decizia și contractul v2); schema v2 cu migrarea pură v1 → v2; elementele în lume (o singură
+funcție, citită de pânză, CAM și avertismente); comenzile pe instanțe și piese (Ctrl+D = copie separată, ștergerea
+ultimei instanțe ia și piesa); IndexedDB în tranzacție, cu un singur scriitor între file; lista de vectori, cu
+avertismentele cu roșu (`BRIEF.md` §16.3).

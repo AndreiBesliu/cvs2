@@ -2,6 +2,7 @@ import type { ComandaCale, FormaDesen } from '../canvas/protocol.ts';
 import { cerculArcului, numarSegmente, segment, type Contur } from '../geom/contur.ts';
 import type { Document } from '../model/document.ts';
 import { conturElement } from '../model/forme.ts';
+import { elementeFoaie } from '../model/lume.ts';
 
 /**
  * Documentul → lista de desen a pânzei: fiecare element, cu conturul lui exact, scris ca o cale (linii, arce cu centru și
@@ -26,6 +27,7 @@ export function caleContur(c: Contur): ComandaCale[] {
   return cale;
 }
 
+/** Formele primei foi: fiecare element în lume, cu id-ul lui în lume (`<instanță>/<element>`). */
 export function listaDesen(doc: Document): FormaDesen[] {
-  return doc.elemente.map((e) => ({ id: e.id, cale: caleContur(conturElement(e)) }));
+  return elementeFoaie(doc, 0).map((e) => ({ id: e.idLume, cale: caleContur(conturElement(e)) }));
 }

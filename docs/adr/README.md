@@ -41,3 +41,4 @@ redeschide. Cel mult o pagină.
 | [0021](0021-stackul.md) | T21 | Stack-ul | etapa 1 (scheletul) |
 | [0022](0022-n-axe-din-prima-zi.md) | T22 | N axe din prima zi | etapa 1 |
 | [0023](0023-cam-lasa-material.md) | T23 | CAM-ul lasă material implicit și are ieșirea mărginită | etapa 1 |
+| [0024](0024-planse-varianta-d.md) | — | Planșele: varianta D (piese cu arbore, instanțe pe foi), cu contractul documentului v2 | etapa 1 (felia 1.7) |
