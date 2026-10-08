@@ -18,7 +18,7 @@ test('antetul CSP de pe Hosting e CSP-ul din build, plus frame-ancestors, fără
   assert.ok(csp.includes("frame-ancestors 'none'"));
   assert.ok(!csp.includes('unsafe-eval'));
   // Antetele se potrivesc pe calea cererii: „/” și „/index.html” sunt două căi, deci amândouă sunt fără cache.
-  for (const cale of ['/', '/index.html', '/config.json']) {
+  for (const cale of ['/', '/index.html', '/config.json', '/sw.js']) {
     const r = cfg.hosting.headers.find((h) => h.source === cale);
     assert.equal(r?.headers.find((h) => h.key === 'Cache-Control')?.value, 'no-cache', cale);
   }

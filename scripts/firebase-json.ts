@@ -29,6 +29,8 @@ export function configHosting(publicDir: string): object {
         { source: '/', headers: [antet('Cache-Control', 'no-cache')] },
         { source: '/index.html', headers: [antet('Cache-Control', 'no-cache')] },
         { source: '/config.json', headers: [antet('Cache-Control', 'no-cache')] },
+        // Opritorul workerului ediției întâi: browserul trebuie să-l vadă imediat, nu dintr-un cache.
+        { source: '/sw.js', headers: [antet('Cache-Control', 'no-cache')] },
       ],
     },
   };
