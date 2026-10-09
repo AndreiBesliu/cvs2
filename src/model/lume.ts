@@ -67,6 +67,7 @@ export function elementeFoaie(doc: Document, indexFoaie = 0): ElementLume[] {
 export type Taietura = ElementLume & {
   readonly operatie: string;
   readonly latura: Operatie['latura'];
+  readonly sens: Operatie['sens'];
   readonly adancime: number;
   readonly pas: number;
   readonly scula: Operatie['scula'];
@@ -92,7 +93,7 @@ export function taieturiFoaie(doc: Document, indexFoaie = 0): Taietura[] {
       for (const n of o.noduri) {
         const e = elemente.get(n);
         if (!e) continue;
-        rez.push({ ...e, operatie: o.id, latura: o.latura, adancime: o.adancime, pas: o.pas, scula: o.scula });
+        rez.push({ ...e, operatie: o.id, latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, scula: o.scula });
       }
     }
   }

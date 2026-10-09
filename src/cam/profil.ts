@@ -1,14 +1,17 @@
-import type { Contur } from '../geom/contur.ts';
+import { inverseaza, type Contur } from '../geom/contur.ts';
 import { offsetInchis } from '../geom/offset.ts';
 
 /**
- * Profilul v0 (etapa 1): conturul decalat cu raza sculei, pe exterior sau pe interior, sau chiar linia, pe treceri de
- * adâncime. Urechile, intrările, sensul de tăiere și regiunea păstrată vin în etapa 2.
+ * Profilul: conturul decalat cu raza sculei, pe exterior sau pe interior, sau chiar linia, pe treceri de adâncime, în
+ * sensul de tăiere cerut (ADR 0027). Urechile și intrările vin în feliile 2.4–2.5.
  */
 export type Latura = 'exterior' | 'interior' | 'pe-linie';
+/** Cu axul M3: urcare = materialul păstrat în stânga sensului de mers; opoziție = în dreapta. */
+export type Sens = 'urcare' | 'opozitie';
 
 export type ParametriProfil = {
   readonly latura: Latura;
+  readonly sens: Sens;
   readonly diametruScula: number;
   /** Adâncimea totală, în mm, pozitivă (în jos de la suprafață). */
   readonly adancime: number;
@@ -47,12 +50,17 @@ export function profil(contur: Contur, p: ParametriProfil): RezultatProfil {
 
   let contururi: readonly Contur[];
   if (p.latura === 'pe-linie') {
+    // Scula taie ambii pereți: sensul nu schimbă materialul, deci traseul urmează conturul cum e desenat (ADR 0027 §3).
     contururi = [contur];
   } else {
     const raza = p.diametruScula / 2;
     const o = offsetInchis(contur, p.latura === 'exterior' ? raza : -raza);
     if (!o.ok) return o;
-    contururi = o.contururi;
+    // Offsetul dă buclele cu regiunea rezultatului în stânga (insulele trigonometric, golurile orar). La exterior,
+    // rezultatul cuprinde piesa: materialul păstrat e în stânga, deci urcarea e chiar sensul lor. La interior, rezultatul
+    // e golul micșorat, iar materialul păstrat e în dreapta: urcarea cere buclele inversate. Pornirea rămâne vârful 0.
+    const inversate = (p.latura === 'exterior') === (p.sens === 'opozitie');
+    contururi = inversate ? o.contururi.map(inverseaza) : o.contururi;
   }
   return { ok: true, treceri: adancimi.map((adancime) => ({ adancime, contururi })) };
 }

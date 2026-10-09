@@ -44,7 +44,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT)
     if (t.adancime > foaie.stoc.grosime + 1e-9) {
       return { ok: false, motiv: `${t.idLume}: adâncimea ${t.adancime} mm trece de grosimea foii (${foaie.stoc.grosime} mm)` };
     }
-    const pr = profil(conturElement(t), { latura: t.latura, diametruScula: scula.diametru, adancime: t.adancime, pas: t.pas });
+    const pr = profil(conturElement(t), { latura: t.latura, sens: t.sens, diametruScula: scula.diametru, adancime: t.adancime, pas: t.pas });
     if (!pr.ok) return { ok: false, motiv: `${t.idLume}: ${pr.motiv}` };
     // Invarianta 2: trecerile au același traseu în plan, deci se judecă o dată, pe prima.
     const incalcare = verificaTaietura(regiune.regiune, t.idLume, t.latura, pr.treceri[0]?.contururi ?? [], scula.diametru / 2);

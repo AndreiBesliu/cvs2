@@ -29,7 +29,7 @@ test('adâncimea sau pasul nevalide dau un motiv, nu o listă', () => {
 });
 
 test('profilul exterior al cercului Ø30 cu freza Ø6: raza 18, pe trecerile [4, 8]', () => {
-  const r = profil(conturCerc(0, 0, 15), { latura: 'exterior', diametruScula: 6, adancime: 8, pas: 4 });
+  const r = profil(conturCerc(0, 0, 15), { latura: 'exterior', sens: 'urcare', diametruScula: 6, adancime: 8, pas: 4 });
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
   assert.deepEqual(r.treceri.map((t) => t.adancime), [4, 8]);
@@ -39,15 +39,15 @@ test('profilul exterior al cercului Ø30 cu freza Ø6: raza 18, pe trecerile [4,
 });
 
 test('profilul interior: gaura Ø30 cu freza Ø6 dă raza 12; o sculă prea mare dă motivul', () => {
-  const r = profil(conturCerc(0, 0, 15), { latura: 'interior', diametruScula: 6, adancime: 3, pas: 3 });
+  const r = profil(conturCerc(0, 0, 15), { latura: 'interior', sens: 'urcare', diametruScula: 6, adancime: 3, pas: 3 });
   assert.ok(r.ok);
-  const prea = profil(conturCerc(0, 0, 2), { latura: 'interior', diametruScula: 6, adancime: 3, pas: 3 });
+  const prea = profil(conturCerc(0, 0, 2), { latura: 'interior', sens: 'urcare', diametruScula: 6, adancime: 3, pas: 3 });
   assert.deepEqual(prea, { ok: false, motiv: 'scula nu încape: offsetul interior dispare' });
 });
 
 test('profilul pe linie păstrează conturul neschimbat', () => {
   const c = conturDreptunghi(0, 0, 100, 60);
-  const r = profil(c, { latura: 'pe-linie', diametruScula: 6, adancime: 1, pas: 1 });
+  const r = profil(c, { latura: 'pe-linie', sens: 'urcare', diametruScula: 6, adancime: 1, pas: 1 });
   assert.ok(r.ok);
   if (r.ok) assert.equal(r.treceri[0]?.contururi[0], c);
 });

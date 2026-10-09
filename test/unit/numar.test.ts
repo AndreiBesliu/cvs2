@@ -33,3 +33,14 @@ test('textul unei valori din document se citește înapoi la exact aceeași valo
     assert.equal(citesteNumar(s), v, `${v}: ${s}`);
   }
 });
+
+test('în română, valoarea se arată cu virgulă și se citește înapoi la fel; întregii rămân fără separator', () => {
+  for (const x of [2.5, 3.175, 0.1 + 0.2, 1e-7, 8, 1000, 0.000012345678901234568]) {
+    const s = textNumar(x, true);
+    assert.ok(!s.includes('.'), s);
+    assert.equal(citesteNumar(s), x, s);
+  }
+  assert.equal(textNumar(2.5, true), '2,5');
+  assert.equal(textNumar(8, true), '8');
+  assert.equal(textNumar(2.5), '2.5', 'fără virgulă, punctul');
+});

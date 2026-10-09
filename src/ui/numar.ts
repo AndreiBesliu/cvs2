@@ -10,10 +10,12 @@ export function citesteNumar(s: string): number | null {
 /**
  * O valoare din document, ca text de editat: cel mai scurt text care se citește înapoi la exact aceeași valoare (al lui
  * `String`), dar fără exponent, pe care `citesteNumar` nu-l primește (`1e-7` devine `0.0000001`). Altfel un Exportă fără
- * nicio schimbare ar rescrie valoarea rotunjită, ca o comandă ascunsă.
+ * nicio schimbare ar rescrie valoarea rotunjită, ca o comandă ascunsă. Cu `virgula`, separatorul zecimal e virgula (în
+ * română „2,5”); `citesteNumar` le primește pe amândouă, deci textul se citește înapoi la fel.
  */
-export function textNumar(x: number): string {
+export function textNumar(x: number, virgula = false): string {
   const s = String(x);
   const m = /^(\d)(?:\.(\d+))?e-(\d+)$/.exec(s);
-  return m?.[1] !== undefined && m[3] !== undefined ? `0.${'0'.repeat(Number(m[3]) - 1)}${m[1]}${m[2] ?? ''}` : s;
+  const t = m?.[1] !== undefined && m[3] !== undefined ? `0.${'0'.repeat(Number(m[3]) - 1)}${m[1]}${m[2] ?? ''}` : s;
+  return virgula ? t.replace('.', ',') : t;
 }

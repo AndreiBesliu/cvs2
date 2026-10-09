@@ -254,7 +254,8 @@ test('în fila care doar citește, operațiile din dialog nu se pot schimba, dar
   await expect(a2.getByTestId('proiect')).toContainText('doar te uiți');
   await a2.locator('[data-actiune="export.gcode"]').click();
   await expect(a2.locator('[data-operatie="e1/e1"] input').nth(0)).toBeDisabled();
-  await expect(a2.locator('[data-operatie="e1/e1"] select')).toBeDisabled();
+  await expect(a2.locator('[data-operatie="e1/e1"] select[data-camp="latura"]')).toBeDisabled();
+  await expect(a2.locator('[data-operatie="e1/e1"] select[data-camp="sens"]')).toBeDisabled();
   await expect(a2.locator('[data-camp="diametru"]')).toBeDisabled();
   const d = a2.waitForEvent('download');
   await a2.locator('[data-buton="exporta"]').click();

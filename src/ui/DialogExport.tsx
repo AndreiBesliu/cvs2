@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import { MARGINI_OPERATIE, type Depasire, type IesireFoaie, type ParametriExport } from './actiuniExportTipuri.ts';
-import { citesteNumar, textNumar as text } from './numar.ts';
+import { citesteNumar, textNumar } from './numar.ts';
 import { useLimba } from './useLimba.ts';
 
 type Latura = 'exterior' | 'interior' | 'pe-linie';
 /** Ce se schimbă dintr-o operație de profil în dialog; scula (freza) e comună tuturor, până la schimbarea sculei. */
-export type ValoriOperatie = { readonly latura: Latura; readonly adancime: number; readonly pas: number };
+/** Sensul de tăiere (ADR 0027): urcare = materialul păstrat în stânga sensului de mers, cu axul M3. */
+type Sens = 'urcare' | 'opozitie';
+export type ValoriOperatie = { readonly latura: Latura; readonly sens: Sens; readonly adancime: number; readonly pas: number };
 
 /** Un rând: o operație a unei piese (ADR 0025), cu cheia `<piesă>/<operație>`. */
 export type OperatieExport = { readonly cheie: string; readonly descriere: string; readonly valori: ValoriOperatie };
@@ -73,7 +75,10 @@ function inMargini(s: string, plafon: number): boolean {
   return x !== null && Number.isFinite(x) && x > 0 && x <= plafon;
 }
 
-type Rand = { readonly latura: Latura; readonly adancime: string; readonly pas: string };
+type Rand = { readonly latura: Latura; readonly sens: Sens; readonly adancime: string; readonly pas: string };
+
+const SENSURI: readonly Sens[] = ['urcare', 'opozitie'];
+const CHEI_SENS: Readonly<Record<Sens, CheieSimpla>> = { urcare: 'export.sens.urcare', opozitie: 'export.sens.opozitie' };
 
 /**
  * Exportul G-code: colțul de origine, Z0, freza și profilul fiecărei operații. Operațiile vin din document și se scriu
@@ -83,12 +88,14 @@ export function DialogExport(
   { operatii, diametru: diametruInitial, freze, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare }: Props,
 ) {
   const limba = useLimba();
+  // În română, numerele se arată cu virgulă; se citesc cu oricare separator.
+  const text = (x: number): string => textNumar(x, limba === 'ro');
   const [origine, setOrigine] = useState<(typeof COLTURI)[number]>('stanga-jos');
   const [z0, setZ0] = useState<'sus' | 'jos'>('sus');
   // Valorile se țin ca text, cum le scrie omul; se citesc abia la verificare și la Exportă.
   const [diametru, setDiametru] = useState(() => text(diametruInitial));
   const dinDocument = (): Record<string, Rand> => Object.fromEntries(operatii.map((o) => [
-    o.cheie, { latura: o.valori.latura, adancime: text(o.valori.adancime), pas: text(o.valori.pas) },
+    o.cheie, { latura: o.valori.latura, sens: o.valori.sens, adancime: text(o.valori.adancime), pas: text(o.valori.pas) },
   ]));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
   const cere = stare && !stare.ok ? stare.cereConfirmare : undefined;
@@ -145,7 +152,7 @@ export function DialogExport(
     const p = param[o.cheie];
     const adancime = p ? citesteNumar(p.adancime) : null;
     const pas = p ? citesteNumar(p.pas) : null;
-    return p && adancime !== null && pas !== null ? [[o.cheie, { latura: p.latura, adancime, pas }] as const] : [];
+    return p && adancime !== null && pas !== null ? [[o.cheie, { latura: p.latura, sens: p.sens, adancime, pas }] as const] : [];
   }));
   const fmtFreza = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3 });
 
@@ -182,7 +189,10 @@ export function DialogExport(
         )}
         <table>
           <thead>
-            <tr><th>{t('export.element')}</th><th>{t('export.latura')}</th><th>{t('export.adancime')}</th><th>{t('export.pas')}</th></tr>
+            <tr>
+              <th>{t('export.element')}</th><th>{t('export.latura')}</th><th title={t('export.sens.titlu')}>{t('export.sens')}</th>
+              <th>{t('export.adancime')}</th><th>{t('export.pas')}</th>
+            </tr>
           </thead>
           <tbody>
             {operatii.map((o) => {
@@ -193,8 +203,15 @@ export function DialogExport(
                 <tr key={o.cheie} data-operatie={o.cheie}>
                   <td>{o.descriere}</td>
                   <td>
-                    <select value={p.latura} disabled={doarCitire} onChange={(ev) => { schimba(o.cheie, { latura: ev.target.value as Latura }); }}>
+                    <select value={p.latura} data-camp="latura" disabled={doarCitire} onChange={(ev) => { schimba(o.cheie, { latura: ev.target.value as Latura }); }}>
                       {LATURI.map((l) => <option key={l} value={l}>{t(CHEI_LATURA[l])}</option>)}
+                    </select>
+                  </td>
+                  <td>
+                    {/* Pe linie, scula taie ambii pereți: sensul nu schimbă materialul (ADR 0027 §3). */}
+                    <select value={p.sens} data-camp="sens" disabled={doarCitire || p.latura === 'pe-linie'} title={t('export.sens.titlu')}
+                      onChange={(ev) => { schimba(o.cheie, { sens: ev.target.value === 'opozitie' ? 'opozitie' : 'urcare' }); }}>
+                      {SENSURI.map((s) => <option key={s} value={s}>{t(CHEI_SENS[s])}</option>)}
                     </select>
                   </td>
                   <td><input type="text" inputMode="decimal" value={p.adancime} disabled={doarCitire} aria-invalid={!b.adancime} onChange={(ev) => { schimba(o.cheie, { adancime: ev.target.value }); }} /></td>

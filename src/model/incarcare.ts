@@ -85,9 +85,39 @@ function v2v3(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v3 → v4 (ADR 0027): fiecare operație primește `sens: 'urcare'`, implicitul owner-ului. Defensivă, ca v2 → v3: o
+ * operație care are deja un câmp `sens` e o ciocnire de nume și e refuzată; restul formelor le judecă schema v4.
+ */
+function v3v4(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  if (!Array.isArray(piese)) return { ok: true, doc: { ...doc, schema: 4 } };
+  const noi: unknown[] = [];
+  for (const p of piese) {
+    if (typeof p !== 'object' || p === null || Array.isArray(p) || !Array.isArray((p as Brut)['operatii'])) {
+      noi.push(p);
+      continue;
+    }
+    const piesa = p as Brut;
+    const operatii: unknown[] = [];
+    for (const o of piesa['operatii'] as unknown[]) {
+      if (typeof o !== 'object' || o === null || Array.isArray(o)) {
+        operatii.push(o);
+        continue;
+      }
+      if (Object.hasOwn(o, 'sens')) {
+        return { ok: false, motiv: `operația v3 ${String((o as Brut)['id'])} din piesa ${String(piesa['id'])} are câmpul „sens”, pe care v4 îl folosește: nu se poate migra fără să-l piardă` };
+      }
+      operatii.push({ ...(o as Brut), sens: 'urcare' });
+    }
+    noi.push({ ...piesa, operatii });
+  }
+  return { ok: true, doc: { ...doc, schema: 4, piese: noi } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
- * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 lucrează
- * defensiv, iar schema v3 (care conține toate regulile v2) judecă rezultatul.
+ * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 și v3 → v4
+ * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
  */
 export const MIGRARI: Readonly<Record<number, Migrare>> = {
   1: (brut) => {
@@ -103,6 +133,7 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
     return { ok: true, doc: v1v2(brut as unknown as DocumentV1) };
   },
   2: v2v3,
+  3: v3v4,
 };
 
 /** Câte niveluri de imbricare are o valoare JSON (documentul însuși e nivelul 1). Iterativ, oprit la `max + 1`. */

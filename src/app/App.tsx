@@ -309,7 +309,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
       return {
         cheie: `${piesa.id}/${o.id}`,
         descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
-        valori: { latura: o.latura, adancime: o.adancime, pas: o.pas },
+        valori: { latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas },
       };
     }));
     const operatii = lista.flatMap(({ piesa }) => piesa.operatii);

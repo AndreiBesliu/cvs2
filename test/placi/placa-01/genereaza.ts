@@ -2,6 +2,7 @@
  * Placa 1 (`PLAN.md` §5.3, `docs/etape/placa-01.md`): insula 100 × 60 cu gaura Ø30 în centru, pe MDF 18, cu freza Ø6.
  * - Fișierul A: zero XY în colțul stânga-jos al bucății. Fișierul B: în colțul dreapta-sus. Z0 pe fața de sus.
  * - Gaura: profil interior, 8 mm, în două treceri de 4. Insula: profil exterior, 3 mm, o trecere.
+ * - Sensul: urcare pe amândouă (ADR 0027, decizia owner-ului din 09.10): insula trigonometric, gaura orar (G2).
  *
  * Insula stă la 20 mm de marginile colțului de origine. În document (foaia 140 × 100), asta înseamnă (20, 20)…(120, 80)
  * pentru ambele fișiere: la B, cotele de mașină ies față de colțul dreapta-sus, deci nu depind de mărimea bucății.
@@ -25,8 +26,8 @@ export const REGIM = { turatie: 18000, avans: 1000, avansPlonjare: 300, zSigur: 
 function miscari(): Miscare[] {
   const rez: Miscare[] = [];
   const parti: ReadonlyArray<readonly [string, ReturnType<typeof profil>]> = [
-    ['gaura D30, 8 mm in doua treceri', profil(conturCerc(70, 50, 15), { latura: 'interior', diametruScula: SCULA.diametru, adancime: 8, pas: 4 })],
-    ['insula 100 x 60, 3 mm', profil(conturDreptunghi(20, 20, 100, 60), { latura: 'exterior', diametruScula: SCULA.diametru, adancime: 3, pas: 3 })],
+    ['gaura D30, 8 mm in doua treceri', profil(conturCerc(70, 50, 15), { latura: 'interior', sens: 'urcare', diametruScula: SCULA.diametru, adancime: 8, pas: 4 })],
+    ['insula 100 x 60, 3 mm', profil(conturDreptunghi(20, 20, 100, 60), { latura: 'exterior', sens: 'urcare', diametruScula: SCULA.diametru, adancime: 3, pas: 3 })],
   ];
   for (const [eticheta, p] of parti) {
     if (!p.ok) throw new Error(`${eticheta}: ${p.motiv}`);

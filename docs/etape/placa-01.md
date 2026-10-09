@@ -18,8 +18,12 @@ că placa se poate tăia de acum.
 
 | Fișierul | Zero XY | Linii | SHA-256 |
 |---|---|---:|---|
-| [placa-01-A.nc](https://raw.githubusercontent.com/AndreiBesliu/cvs2/main/test/placi/placa-01/placa-01-A.nc) | colțul **stânga-jos** al bucății | 34 | `edcb9c4e2a2aa2ff78761052f0776cacec367d862e9cee2646aab061d1b5a541` |
-| [placa-01-B.nc](https://raw.githubusercontent.com/AndreiBesliu/cvs2/main/test/placi/placa-01/placa-01-B.nc) | colțul **dreapta-sus** al bucății | 34 | `dc4cc988b45c9807a0ffdd6264bb9a6b06d48de1b0525438c8b4384b0eece51e` |
+| [placa-01-A.nc](https://raw.githubusercontent.com/AndreiBesliu/cvs2/main/test/placi/placa-01/placa-01-A.nc) | colțul **stânga-jos** al bucății | 34 | `2ce3b6d02e9400befd747c4255c7bbfdffcb41e864c26d4c3f73bcc8893023ac` |
+| [placa-01-B.nc](https://raw.githubusercontent.com/AndreiBesliu/cvs2/main/test/placi/placa-01/placa-01-B.nc) | colțul **dreapta-sus** al bucății | 34 | `af9d7e07a6dcd24d51772cda5eb21dab08b700a7cb151e1d5cea11352c8b2e81` |
+
+**Regenerate pe 09.10.2026** cu sensul de tăiere ales de owner (urcare, ADR 0027): gaura se taie acum orar (G2), insula
+tot trigonometric (G3). Cotele, pornirea și numărul de linii sunt aceleași; fișierele de dinainte de 09.10 tăiau gaura
+în opoziție. Dacă ai descărcat deja fișierele vechi, ia-le din nou (hash-urile din tabel sunt cele noi).
 
 Sunt și în Drive, în `cncvs2\test\placi\placa-01\`. Ca să verifici că fișierul de pe calculatorul de la mașină e exact
 acesta, deschide PowerShell în dosarul lui și rulează:

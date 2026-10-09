@@ -11,7 +11,7 @@ import { compune, esteSimilitudine, IDENTITATE } from '../geom/matrice.ts';
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 3;
+export const VERSIUNE_SCHEMA = 4;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -62,8 +62,10 @@ export type GrupNod = { tip: 'grup'; id: string; nume?: string; matrice: Matrice
 export type Nod = ElementNod | GrupNod;
 export type Scula = { numar: number; nume: string; diametru: number; [cheie: string]: unknown };
 export type Latura = 'exterior' | 'interior' | 'pe-linie';
+/** Sensul de tăiere (ADR 0027), cu axul M3: urcare = materialul păstrat în stânga sensului de mers. */
+export type Sens = 'urcare' | 'opozitie';
 export type Operatie = {
-  id: string; tip: 'profil'; noduri: string[]; scula: Scula; latura: Latura; adancime: number; pas: number;
+  id: string; tip: 'profil'; noduri: string[]; scula: Scula; latura: Latura; sens: Sens; adancime: number; pas: number;
   [cheie: string]: unknown;
 };
 export type Piesa = { id: string; nume?: string; radacina: Nod; operatii: Operatie[]; [cheie: string]: unknown };
@@ -72,7 +74,7 @@ export type Instanta = {
   id: string; piesa: string; x: number; y: number; rotire: number; campuri?: Record<string, string>; [cheie: string]: unknown;
 };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; [cheie: string]: unknown };
-export type Document = { schema: 3; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 4; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 const finit = v.pipe(v.number(), v.finite());
 const pozitiv = (max: number) => v.pipe(v.number(), v.finite(), v.gtValue(0), v.maxValue(max));
@@ -118,6 +120,7 @@ const SchemaOperatie = v.looseObject({
     diametru: pozitiv(PLAFON.diametruScula),
   }),
   latura: v.picklist(['exterior', 'interior', 'pe-linie']),
+  sens: v.picklist(['urcare', 'opozitie']),
   adancime: pozitiv(PLAFON.adancimeOperatie),
   pas: pozitiv(PLAFON.adancimeOperatie),
 });
@@ -304,8 +307,8 @@ export const SchemaDocument: v.GenericSchema<unknown, Document> = v.pipe(
  */
 export function operatieImplicita(nod: string, forma: FormaDoc, scula: Operatie['scula'] = { numar: 1, nume: 'freza plata', diametru: 6 }): Operatie {
   return forma.tip === 'cerc'
-    ? { id: nod, tip: 'profil', noduri: [nod], scula, latura: 'interior', adancime: 8, pas: 4 }
-    : { id: nod, tip: 'profil', noduri: [nod], scula, latura: 'exterior', adancime: 3, pas: 3 };
+    ? { id: nod, tip: 'profil', noduri: [nod], scula, latura: 'interior', sens: 'urcare', adancime: 8, pas: 4 }
+    : { id: nod, tip: 'profil', noduri: [nod], scula, latura: 'exterior', sens: 'urcare', adancime: 3, pas: 3 };
 }
 
 /**
