@@ -33,7 +33,9 @@ necunoscut `urechi` e refuzată cu motiv (ciocnire de nume, ca în ADR 0024, pre
 **2. Vârful urechii,** ca adâncime de la fața de sus: `varf = grosimeFoaie − g`. Puntea are grosimea g oricât de adânc
 merge tăietura, și cu supracursă. Exportul refuză, cu motiv:
 - `g ≥ grosimeFoaie`: vârful ar fi la fața de sus sau deasupra ei;
-- `adancime ≤ varf`: nicio trecere nu ajunge la vârful urechii, deci urechile cerute n-ar exista.
+- `adancime ≤ varf`: nicio trecere nu ajunge la vârful urechii, deci urechile cerute n-ar exista;
+- `W < D` (diametrul frezei; W = D trece): peste tăietură, puntea ar fi mai subțire decât g sau n-ar exista (vezi
+  „Puntea peste tăietură”, la Limitele; precizarea din 09.10).
 
 **Supracursa** devine un parametru al exportului: `calculeazaExport(doc, { …, supracursa })`, în mm, implicit 0, cel
 mult 2. Adâncimea unei operații poate trece de grosimea foii cu cel mult atât. Dialogul nu-l arată încă (vine cu profilul
@@ -64,8 +66,14 @@ mașinii), deci din interfață rămâne 0, ca azi.
 - O bucată de linie e o mișcare `taiere`; o bucată de arc e un `arc` pe același cerc, cu același centru. Z-ul e liniar
   pe fiecare bucată (constant pe palier și la adâncime plină). Pe arc, Z liniar în lungime e liniar în unghi, adică
   exact elicea G2 / G3 cu Z.
+- O bucată mai scurtă de 1e-6 mm (rupturi aproape una de alta, la urechi foarte înguste) e o mișcare `taiere`, și pe
+  arc: un arc cu startul în capăt ar fi citit ca cercul întreg (precizarea din 09.10).
 - Pe o trecere care traversează urechi, o mișcare poartă Z doar dacă Z-ul de la capătul ei diferă de cel de la start.
   Plonjarea de la s = 0 rămâne la −d. Trecerile care nu traversează se emit exact ca înainte.
+- **Avansul pe flancul care coboară** (precizarea din 09.10): flancul intră în material sub trecerea de dinainte, deci e
+  o rampă. Viteza lui pe verticală, F·|ΔZ| / L₃ (L₃ = lungimea în spațiu a bucății, elicea pe arc), nu trece de avansul
+  de plonjare: F = min(avans, avansPlonjare·L₃ / |ΔZ|). Palierul, flancul care urcă și restul buclei merg cu avansul de
+  tăiere.
 - Eticheta tăieturii rămâne cea din ADR 0026 §7, fără etichete în interiorul buclei. Poarta citește urechile din
   geometrie, nu din comentarii.
 
@@ -141,9 +149,28 @@ Se adaugă:
 - Pozițiile sunt automate, egal depărtate de la pornire. Așezarea de mână, sau cea care ocolește arcele, vine cu
   panoul de proprietăți sau mai târziu.
 - Placa 2 (felia 2.10) își alege forma și pornirea astfel încât urechile să cadă pe laturi drepte.
+- **Puntea peste tăietură** (precizarea din 09.10). Un punct de pe axa tăieturii e tăiat de toate pozițiile frezei aflate
+  la cel mult R de el, deci pe axă puntea e mai scurtă decât pe perete. Pe o latură dreaptă:
+  - pe peretele piesei, grosimea g ține pe W;
+  - pe axa tăieturii, ține doar pe W − D.
+
+  Grosimea pe axă e g·(1 − clamp((R − h) / ℓ, 0, 1)). De aici refuzul `W < D` de la punctul 2. La W = D, axa atinge g
+  într-un singur punct. Pe un arc, fereastra frezei pe axă diferă de R cu cel mult câteva procente: la un arc interior
+  foarte strâns, W = D poate lăsa pe axă puțin sub g.
 - Rampa și intrările (felia 2.5) se compun cu urechile prin Z-ul cel mai puțin adânc dintre cele două, ca în ediția
   întâi. Precizarea intră în ADR-ul lor.
 - Supracursa (tăierea în masa de sacrificiu) nu e încă în interfață; exportul o primește ca parametru (punctul 2).
+
+**Precizarea din 09.10.2026** (recenzia feliei 2.4, înainte de orice publicare). Recenzia a găsit trei goluri:
+- **Puntea peste tăietură.** Contractul spunea „puntea are grosimea g”, ceea ce e adevărat doar pe perete. O ureche mai
+  îngustă decât freza (3 mm cu Ø6) lăsa piesa liberă pe ultima trecere, iar exportul trecea fără motiv. S-a adăugat
+  refuzul `W < D`, iar definiția lui W rămâne aceeași, ca placa 2 să se măsoare tot pe perete.
+- **Bucățile sub 1e-6 mm.** La W sub ~1e-8 mm, două rupturi aproape una de alta pe un arc dădeau un arc cu startul în
+  capăt, citit ca cercul întreg. Pe placa 2, freza ar fi intrat 22 mm în piesă. Acum aceste bucăți sunt linii.
+- **Avansul pe flanc.** Flancul care coboară mergea cu avansul de tăiere, deci pe verticală de până la 3,3 ori avansul de
+  plonjare. Acum viteza lui pe verticală e plafonată la avansul de plonjare.
+
+Formula profilului, palierul și centrele nu s-au schimbat.
 
 ## Ce am respins
 
