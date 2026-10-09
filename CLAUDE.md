@@ -34,7 +34,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
     `npm run build && node scripts/publica-test.ts` (doar hosting). `public/sw.js` oprește workerul aplicației vechi.
   - Rămâne placa 1, tăiată de owner.
 - **Etapa 2 e în lucru din 08.10** (fișa: `docs/etape/etapa-02.md`), pornită înaintea plăcii 1 la cuvântul owner-ului.
-  Gata: 2.1 (gărzile offsetului) și 2.2 (operațiile în document: schema v3, ADR 0025).
+  Gata: 2.1 (gărzile offsetului), 2.2 (operațiile în document: schema v3, ADR 0025) și 2.3a (regiunea păstrată și
+  invarianta 2, ADR 0026). 2.3 s-a împărțit: 2.3b (sensul de tăiere) așteaptă implicitul ales de owner.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa

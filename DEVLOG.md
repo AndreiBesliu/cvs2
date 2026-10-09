@@ -880,3 +880,28 @@ independent (~0,6 M tokeni, 60–90 min).
 ε = 0,005 mm); `src/cam/regiune.ts`; distanța exactă segment–segment în `src/geom/distanta.ts`; exportul refuză cu
 motivul `regiunea păstrată:`; oracolul independent cu invarianta 2 în poartă.
 
+**Completed:** 09:15. **Treceri:** 4.
+
+**Făcut:**
+- **ADR 0026** (contractul): inelele din laturile declarate, includerea, K, partea proprie, invarianta 2 cu ε = 0,005 mm
+  pe traseul exact și cu rotunjirea postului (0,002 mm) pe G-code; pragul nu coboară sub 1e-6.
+- `src/geom/apropiere.ts`: distanța exactă segment–segment (linie și arc) și contur–contur, cu punctele care o dau;
+  separat de `distanta.ts`, ca să nu intre în pachetul de pornire (91,0 kB).
+- `src/cam/regiune.ts` + `job.ts`: exportul refuză, cu motivul `regiunea păstrată:` și locul, tăietura care intră într-o
+  piesă, inelele care se ating și elementul cu ambele laturi.
+- Fila care citește citește o dată ultima versiune la abonare (`proiectLocal.ts`): o versiune salvată între deschidere și
+  abonare se pierdea (test instabil, o dată din zece, găsit în controlul otrăvurilor).
+
+**Proba:**
+- oracolul independent (`test/oracles/regiune*.ts`, invarianta 2 în `poarta.ts`): acord în ambele sensuri pe 346 de
+  documente; 44 de sabotaje pe oracol, prinse (0,49 M tokeni, 67 min, cu repararea falsului pozitiv al porții la arcele
+  de 180,002°);
+- recenzia adversarială: o lentilă + 3 verificatori, 0,62 M tokeni, 29 min (anunțat ~1,1 M); 3 constatări mici,
+  reparate;
+- 25 de otrăvuri în worktree în afara Drive-ului: 22 prinse, 3 echivalente; controlul a prins întâi testul instabil;
+- 1068 de teste unitare, 36 e2e; fișierul owner-ului din 09.10 trece poarta, cu cadrul pe hârtie.
+
+**Rămâne deschis:** `pe-linie` nu se judecă (ADR 0026); poarta crede etichetele (nu verifică că mișcările urmează
+conturul etichetat); coardele cu care GRBL face arcele ($12 = 0,002 mm) nu sunt în buget (cel mult ~0,009 mm spre
+piesă, pe colțurile exterioare); 2.3b așteaptă implicitul sensului de tăiere și decizia pe placa 1.
+

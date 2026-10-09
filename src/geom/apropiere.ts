@@ -84,8 +84,7 @@ function intersectieDrepte(a: Punct, b: Punct, c: Punct, d: Punct): Punct | null
  * - segmentele se taie (distanța 0);
  * - un capăt al unuia, față de celălalt (proiecția pe dreaptă, sau radială pe arc);
  * - câte un punct interior al fiecăruia, cu legătura perpendiculară pe amândouă: la linie–arc, punctele c ± r·n ale
- *   cercului (n, normala dreptei); la arc–arc, punctele de pe linia centrelor; la arce concentrice, |r1 − r2| pe o rază
- *   comună.
+ *   cercului (n, normala dreptei); la arc–arc, punctele de pe linia centrelor (la arce concentrice, capetele ajung).
  * Se iau toate candidatele valide și se alege cea mai mică; niciun eșantion.
  */
 export function apropiereSegmente(u: SegmentContur, v: SegmentContur): Apropiere {
@@ -103,6 +102,8 @@ export function apropiereSegmente(u: SegmentContur, v: SegmentContur): Apropiere
   } else if (u.s.tip === 'A' && v.s.tip === 'A') {
     const c1 = cerculArcului(u.a, u.b, u.s.bulge), c2 = cerculArcului(v.a, v.b, v.s.bulge);
     for (const x of cercCerc(c1.centru, c1.raza, c2.centru, c2.raza)) if (peArcul(x, u) && peArcul(x, v)) ia(x, x);
+    // Arcele concentrice n-au linie a centrelor: dacă unghiurile lor se suprapun, un capăt al unuia e pe celălalt, iar
+    // capetele de mai sus îl iau deja cu proiecția radială, adică |r1 − r2| (otrava care scotea ramura lor era echivalentă).
     const d = dist(c1.centru, c2.centru);
     if (d > 0) {
       const ux = (c2.centru.x - c1.centru.x) / d, uy = (c2.centru.y - c1.centru.y) / d;
@@ -114,11 +115,6 @@ export function apropiereSegmente(u: SegmentContur, v: SegmentContur): Apropiere
           if (peArcul(q, v)) ia(p, q);
         }
       }
-    } else {
-      // Concentrice: pe o rază comună celor două arce, distanța e |r1 − r2|; o rază comună există dacă un capăt al unuia
-      // e pe celălalt, iar atunci perechea ei e chiar capătul și proiecția lui radială.
-      for (const p of [u.a, u.b]) if (peArcul(p, v)) ia(p, celMaiApropiat(p, v));
-      for (const q of [v.a, v.b]) if (peArcul(q, u)) ia(celMaiApropiat(q, u), q);
     }
   } else {
     const liniaEPrima = u.s.tip === 'L';
