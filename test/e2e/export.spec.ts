@@ -2,11 +2,38 @@ import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { poarta, type ContextPoarta } from '../oracles/poarta.ts';
+import { regiuneDinDocument } from '../oracles/regiune.ts';
 import { ecran, vedere } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
 
 const faraComentarii = (text: string): string[] => text.split('\n').filter((l) => l !== '' && !l.startsWith('('));
+
+/**
+ * Documentul salvat de aplicație (ultima versiune din IndexedDB), așteptat până ajunge la revizia dată. Poarta îl
+ * primește ca să judece și invariantele 2 (regiunea păstrată) și 9 (sensul) pe programul scris în browser.
+ */
+async function documentSalvat(page: Page, rev: number): Promise<unknown> {
+  let text: string | null = null;
+  await expect.poll(async () => {
+    text = await page.evaluate(async () => {
+      const db = await new Promise<IDBDatabase>((ok, eroare) => {
+        const r = indexedDB.open('cncvs2-proiecte', 1);
+        r.onsuccess = () => { ok(r.result); };
+        r.onerror = () => { eroare(r.error); };
+      });
+      const v = await new Promise<unknown>((ok, eroare) => {
+        const r = db.transaction('versiuni').objectStore('versiuni').openCursor(null, 'prev');
+        r.onsuccess = () => { ok(r.result?.value ?? null); };
+        r.onerror = () => { eroare(r.error); };
+      });
+      db.close();
+      return typeof v === 'string' ? v : null;
+    });
+    return text === null ? -1 : (JSON.parse(text) as { rev: number }).rev;
+  }).toBeGreaterThanOrEqual(rev);
+  return JSON.parse(text ?? 'null');
+}
 
 async function exporta(page: Page, origine: string): Promise<{ text: string; afisat: string; nume: string }> {
   await page.locator('[data-actiune="export.gcode"]').click();
@@ -34,6 +61,12 @@ test('desenul din aplicație iese în G-code: cu originea stânga-jos, exact lin
   const sha = createHash('sha256').update(text, 'ascii').digest('hex');
   expect(afisat).toContain(sha);
   expect(afisat).toContain('34 de linii');
+  // Poarta întreagă, cu documentul salvat de aplicație: și regiunea păstrată (2), și sensul (9).
+  const doc = await documentSalvat(page, 2);
+  expect(poarta(text, {
+    foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'stanga-jos', z0: 'sus', diametruScula: 6, pas: 4,
+    supracursa: 0, asteptareAx: 3, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
+  })).toEqual([]);
 });
 
 test('cu originea dreapta-sus pe foaia de 300 × 200: cotele pe hârtie și poarta trece', async ({ page }) => {
@@ -44,9 +77,11 @@ test('cu originea dreapta-sus pe foaia de 300 × 200: cotele pe hârtie și poar
   // Gaura pornește din (82, 50) mm; față de colțul dreapta-sus al foii 300 × 200: (82 − 300, 50 − 200).
   expect(text).toContain('\nG0 X-218.000 Y-150.000\n');
   expect(text).toContain('(origine dreapta-sus, Z0 sus, foaia 300.000 x 200.000 x 18.000 mm)');
+  const doc = await documentSalvat(page, 2);
   const incalcari = poarta(text, {
     foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'dreapta-sus', z0: 'sus', diametruScula: 6, pas: 4,
     supracursa: 0, asteptareAx: 3, cadru: { minX: 17, maxX: 123, minY: 17, maxY: 83 },
+    regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
   });
   expect(incalcari).toEqual([]);
 });
