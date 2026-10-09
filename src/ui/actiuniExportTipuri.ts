@@ -10,7 +10,10 @@ export type { IesireFoaie } from '../cam/iesire.ts';
  * Marginile valorilor unei operații (schema v3, ADR 0025), pentru dialogul de export: ce scrie el în document trebuie să
  * treacă de ușă la redeschidere. Interfața le citește de aici, nu din model (regula `interfata-prin-actiuni`).
  */
-export const MARGINI_OPERATIE = { diametru: PLAFON.diametruScula, adancime: PLAFON.adancimeOperatie } as const;
+export const MARGINI_OPERATIE = {
+  diametru: PLAFON.diametruScula, adancime: PLAFON.adancimeOperatie, urechi: PLAFON.urechi, latimeUreche: PLAFON.latura,
+  grosimeUreche: PLAFON.grosime,
+} as const;
 
 /**
  * Exportul G-code, ca acțiune a registrului (capabilitatea „export-gcode”): documentul → tăieturile (operațiile pieselor,
@@ -26,6 +29,11 @@ export type ParametriExport = {
    * cu aceleași numere.
    */
   readonly confirmareIesire?: IesireFoaie;
+  /**
+   * Cât are voie o tăietură sub fața de jos a foii, în mm (ADR 0028 §2): implicit 0. Dialogul nu-l trimite încă (vine cu
+   * profilul mașinii).
+   */
+  readonly supracursa?: number;
 };
 
 export type RezultatExport =

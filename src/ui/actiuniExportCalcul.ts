@@ -1,5 +1,5 @@
 import { iesireDinFoaie, type IesireFoaie } from '../cam/iesire.ts';
-import { programDinDocument } from '../cam/job.ts';
+import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
 import { PLAFON, type Document } from '../model/document.ts';
 import { GRBL_11 } from '../post/contracte/grbl11.ts';
 import { exporta } from '../post/export.ts';
@@ -20,7 +20,7 @@ function aceeasiIesire(a: IesireFoaie | undefined, b: IesireFoaie): boolean {
 export async function calculeazaExport(doc: Document, p: ParametriExport): Promise<RezultatExport> {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
-  const job = programDinDocument(doc);
+  const job = programDinDocument(doc, REGIM_IMPLICIT, p.supracursa ?? 0);
   if (!job.ok) return job;
   const iesire = iesireDinFoaie(job.program, foaie.stoc);
   if (iesire) {

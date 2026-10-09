@@ -24,7 +24,7 @@ test('un document valid trece prin ușa unică, neschimbat', () => {
   const r = incarca(JSON.parse(JSON.stringify(d)));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (r.ok) assert.deepEqual(r.doc, d);
-  assert.equal(VERSIUNE_SCHEMA, 4);
+  assert.equal(VERSIUNE_SCHEMA, 5);
 });
 
 test('ușa refuză, cu motiv: ce nu e obiect, fără versiune, dintr-o versiune mai nouă, cu valori absurde', () => {
@@ -105,7 +105,7 @@ test('migrarea v1 → v2 → v3: o piesă și o instanță pe element, cu id-ul 
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
   const d = r.doc;
-  assert.equal(d.schema, 4);
+  assert.equal(d.schema, 5);
   assert.equal(d.rev, 7);
   assert.equal(d['extra'], 'sus');
   assert.deepEqual(d.foi, [{ id: 'f1', stoc: { ...FOAIA, fibra: 'x' }, instante: [
@@ -114,7 +114,7 @@ test('migrarea v1 → v2 → v3: o piesă și o instanță pe element, cu id-ul 
   assert.deepEqual(d.piese[0], {
     id: 'e1', nume: 'ușița',
     radacina: { tip: 'element', id: 'e1', forma: v1.elemente[0]?.forma, matrice: { a: 0, b: 1, c: -1, d: 0, e: 0, f: 0 }, strat: 3 },
-    operatii: [{ id: 'e1', tip: 'profil', noduri: ['e1'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'exterior', sens: 'urcare', adancime: 3, pas: 3 }],
+    operatii: [{ id: 'e1', tip: 'profil', noduri: ['e1'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'exterior', sens: 'urcare', adancime: 3, pas: 3, urechi: null }],
   });
   assert.equal('nume' in (d.piese[1] ?? {}), false, 'fără nume, piesa n-are câmpul');
   const lumi = elementeFoaie(d);
@@ -246,7 +246,7 @@ test('migrarea refuză ciocnirile de nume și matricile v1 peste margini; câmpu
 });
 
 test('cheile __proto__, constructor și prototype rămân date: ușa nu le scoate și nu schimbă prototipul', () => {
-  const text = '{"schema":4,"rev":0,"__proto__":{"x":1},"piese":[{"id":"p","constructor":3,"operatii":[],"radacina":{"tip":"element","id":"a","forma":{"tip":"cerc","raza":1},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}}}],"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[{"id":"i","piesa":"p","x":0,"y":0,"rotire":0,"campuri":{"__proto__":"v","prototype":"w"}}]}]}';
+  const text = '{"schema":5,"rev":0,"__proto__":{"x":1},"piese":[{"id":"p","constructor":3,"operatii":[],"radacina":{"tip":"element","id":"a","forma":{"tip":"cerc","raza":1},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}}}],"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[{"id":"i","piesa":"p","x":0,"y":0,"rotire":0,"campuri":{"__proto__":"v","prototype":"w"}}]}]}';
   const r = incarca(JSON.parse(text));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
@@ -291,15 +291,15 @@ test('migrarea v2 → v3 (ADR 0025): o operație pe element, cu id-ul lui, în p
   const r = incarca(structuredClone(brut));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
-  assert.equal(r.doc.schema, 4);
+  assert.equal(r.doc.schema, 5);
   assert.equal(r.doc.rev, 4);
   assert.equal(r.doc['extra'], 'sus');
   const [p, gol] = r.doc.piese;
   assert.equal(p?.['alt'], 1, 'câmpurile necunoscute ale piesei rămân');
   assert.deepEqual(p?.operatii, [
-    { id: 'd', tip: 'profil', noduri: ['d'], scula: SCULA_IMPLICITA, latura: 'exterior', sens: 'urcare', adancime: 3, pas: 3 },
-    { id: 'c', tip: 'profil', noduri: ['c'], scula: SCULA_IMPLICITA, latura: 'interior', sens: 'urcare', adancime: 8, pas: 4 },
-    { id: 'e', tip: 'profil', noduri: ['e'], scula: SCULA_IMPLICITA, latura: 'interior', sens: 'urcare', adancime: 8, pas: 4 },
+    { id: 'd', tip: 'profil', noduri: ['d'], scula: SCULA_IMPLICITA, latura: 'exterior', sens: 'urcare', adancime: 3, pas: 3, urechi: null },
+    { id: 'c', tip: 'profil', noduri: ['c'], scula: SCULA_IMPLICITA, latura: 'interior', sens: 'urcare', adancime: 8, pas: 4, urechi: null },
+    { id: 'e', tip: 'profil', noduri: ['e'], scula: SCULA_IMPLICITA, latura: 'interior', sens: 'urcare', adancime: 8, pas: 4, urechi: null },
   ]);
   assert.deepEqual(gol?.operatii, [], 'o piesă fără elemente n-are operații');
   // Arborele și foile nu se schimbă; migrarea e deterministă, iar documentul migrat trece neschimbat prin ușă.
@@ -355,14 +355,14 @@ test('o operație pe un grup e refuzată: se taie doar elementele (ADR 0025)', (
     piese: [{ id: 'p', radacina: { tip: 'grup', id: 'g', matrice: { ...ID }, copii: [{ tip: 'element', id: 'a', forma: { tip: 'cerc', raza: 1 }, matrice: { ...ID } }] }, operatii: [] }],
     foi: [{ id: 'f1', stoc: FOAIA, instante: [instanta('i', 'p')] }],
   };
-  const op = { id: 'o', tip: 'profil', scula: SCULA_IMPLICITA, latura: 'interior', sens: 'urcare', adancime: 1, pas: 1 };
+  const op = { id: 'o', tip: 'profil', scula: SCULA_IMPLICITA, latura: 'interior', sens: 'urcare', adancime: 1, pas: 1, urechi: null };
   assert.ok(incarca(stricat(d, (x) => { x.piese[0].operatii = [{ ...op, noduri: ['a'] }]; })).ok);
   const r = incarca(stricat(d, (x) => { x.piese[0].operatii = [{ ...op, noduri: ['g'] }]; }));
   assert.match(r.ok ? '' : r.motiv, /referă g, care nu e un element al piesei/);
 });
 
 test(`plafoanele v3: cel mult ${PLAFON.operatii} de operații și ${PLAFON.taieturi} de tăieturi (operație × nod × instanță)`, () => {
-  const op = (id: string) => ({ id, tip: 'profil' as const, noduri: ['a'], scula: SCULA_IMPLICITA, latura: 'interior' as const, sens: 'urcare' as const, adancime: 1, pas: 1 });
+  const op = (id: string) => ({ id, tip: 'profil' as const, noduri: ['a'], scula: SCULA_IMPLICITA, latura: 'interior' as const, sens: 'urcare' as const, adancime: 1, pas: 1, urechi: null });
   const radacina: Nod = { tip: 'element', id: 'a', forma: { tip: 'cerc', raza: 1 }, matrice: { ...ID } };
   // Două operații pe un singur element, puse de 50 000 de ori: 100 000 de tăieturi (trece), cu încă o instanță 100 002.
   const cu = (n: number): Document => ({
@@ -385,15 +385,59 @@ test(`plafoanele v3: cel mult ${PLAFON.operatii} de operații și ${PLAFON.taiet
 
 test('migrarea v3 → v4 (ADR 0027): fiecare operație primește sens urcare; restul neschimbat; lanțul v2 → v4', () => {
   const d = docDin(FOAIA, dreptunghi('e1'), cerc('e2'));
-  const v3 = JSON.parse(JSON.stringify({ ...d, schema: 3, piese: d.piese.map((p) => ({ ...p, operatii: p.operatii.map(({ sens: _s, ...o }) => ({ ...o, alt: 7 })) })) }));
+  const v3 = JSON.parse(JSON.stringify({
+    ...d, schema: 3, piese: d.piese.map((p) => ({ ...p, operatii: p.operatii.map(({ sens: _s, urechi: _u, ...o }) => ({ ...o, alt: 7 })) })),
+  }));
   const r = incarca(v3);
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
-  assert.equal(r.doc.schema, 4);
+  assert.equal(r.doc.schema, 5);
   assert.deepEqual(r.doc.piese.map((p) => p.operatii.map((o) => [o.id, o.latura, o.sens, o['alt']])), [[['e1', 'exterior', 'urcare', 7]], [['e2', 'interior', 'urcare', 7]]]);
   // Fără operații: nimic de adăugat, doar schema.
   const gol = incarca(JSON.parse(JSON.stringify({ ...documentNou(FOAIA), schema: 3 })));
-  assert.ok(gol.ok && gol.doc.schema === 4 && gol.doc.piese.length === 0);
+  assert.ok(gol.ok && gol.doc.schema === 5 && gol.doc.piese.length === 0);
+});
+
+test('migrarea v4 → v5 (ADR 0028): fiecare operație primește urechi null; restul neschimbat; lanțul v3 → v5', () => {
+  const d = docDin(FOAIA, dreptunghi('e1'), cerc('e2'));
+  const v4 = JSON.parse(JSON.stringify({
+    ...d, schema: 4, piese: d.piese.map((p) => ({ ...p, operatii: p.operatii.map(({ urechi: _u, ...o }) => ({ ...o, sens: 'opozitie', alt: 7 })) })),
+  }));
+  const r = incarca(v4);
+  assert.ok(r.ok, r.ok ? '' : r.motiv);
+  if (!r.ok) return;
+  assert.equal(r.doc.schema, 5);
+  assert.deepEqual(r.doc.piese.map((p) => p.operatii.map((o) => [o.id, o.sens, o.urechi, o['alt']])), [[['e1', 'opozitie', null, 7]], [['e2', 'opozitie', null, 7]]]);
+  const gol = incarca(JSON.parse(JSON.stringify({ ...documentNou(FOAIA), schema: 4 })));
+  assert.ok(gol.ok && gol.doc.schema === 5 && gol.doc.piese.length === 0);
+  // Lanțul v3 → v4 → v5: sensul și urechile, amândouă.
+  const v3 = JSON.parse(JSON.stringify({ ...d, schema: 3, piese: d.piese.map((p) => ({ ...p, operatii: p.operatii.map(({ sens: _s, urechi: _u, ...o }) => o) })) }));
+  const r3 = incarca(v3);
+  assert.ok(r3.ok && r3.doc.piese.every((p) => p.operatii.every((o) => o.sens === 'urcare' && o.urechi === null)));
+});
+
+test('migrarea v4 → v5 refuză o operație care are deja câmpul „urechi” (s-ar pierde), oricare i-ar fi valoarea', () => {
+  const d = docDin(FOAIA, cerc('e1'));
+  for (const valoare of [null, { numar: 4, latime: 8, grosime: 2 }, 3, 'da']) {
+    const v4 = JSON.parse(JSON.stringify({ ...d, schema: 4, piese: d.piese.map((p) => ({ ...p, operatii: p.operatii.map((o) => ({ ...o, urechi: valoare })) })) }));
+    const r = incarca(v4);
+    assert.match(r.ok ? '' : r.motiv, /operația v4 e1 din piesa e1 are câmpul „urechi”/, JSON.stringify(valoare));
+  }
+});
+
+test('documentul v5: urechile sunt obligatorii, null sau { numar întreg 1–100, latime > 0, grosime > 0 }', () => {
+  const d = docDin(FOAIA, cerc('e1'));
+  const cu = (u: unknown): boolean => incarca(stricat(d, (x) => { x.piese[0].operatii[0].urechi = u; })).ok;
+  assert.ok(cu(null));
+  assert.ok(cu({ numar: 4, latime: 8, grosime: 2 }));
+  assert.ok(cu({ numar: 1, latime: 0.5, grosime: 0.1, alt: 'pastrat' }), 'câmpurile necunoscute rămân');
+  assert.ok(cu({ numar: PLAFON.urechi, latime: PLAFON.latura, grosime: PLAFON.grosime }), 'la plafon');
+  assert.equal(incarca(stricat(d, (x) => { delete x.piese[0].operatii[0].urechi; })).ok, false, 'fără urechi');
+  for (const rau of [
+    { numar: 0, latime: 8, grosime: 2 }, { numar: 2.5, latime: 8, grosime: 2 }, { numar: PLAFON.urechi + 1, latime: 8, grosime: 2 },
+    { numar: 4, latime: 0, grosime: 2 }, { numar: 4, latime: -1, grosime: 2 }, { numar: 4, latime: PLAFON.latura + 1, grosime: 2 },
+    { numar: 4, latime: 8, grosime: 0 }, { numar: 4, latime: 8, grosime: PLAFON.grosime + 1 }, { numar: 4, latime: 8 }, 4, 'da',
+  ]) assert.equal(cu(rau), false, JSON.stringify(rau));
 });
 
 test('migrarea v3 → v4 refuză o operație care are deja câmpul „sens” (s-ar pierde), oricare i-ar fi valoarea', () => {

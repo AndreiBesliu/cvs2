@@ -80,7 +80,7 @@ test('o singură sculă pe program: altă freză (număr sau diametru) e refuzat
 test('ordinea tăieturilor: latura, apoi instanța, apoi operația, apoi nodul din operație; elementul fără operație nu se taie', () => {
   const M = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
   const op = (id: string, noduri: string[], latura: Operatie['latura']): Operatie =>
-    ({ id, tip: 'profil', noduri, scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura, sens: 'urcare', adancime: 3, pas: 3 });
+    ({ id, tip: 'profil', noduri, scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura, sens: 'urcare', adancime: 3, pas: 3, urechi: null });
   const baza = documentNou({ latime: 300, inaltime: 200, grosime: 18 });
   const d: Document = {
     ...baza,
@@ -142,4 +142,61 @@ test('un element oglindit (determinant −1) se taie pe aceeași latură și în
   // Pe hârtie: exteriorul dreptunghiului 20…120 × 20…80 cu freza R3 merge pe 17…123 × 17…83.
   assert.deepEqual(a?.cadru, [17, 123, 17, 83]);
   assert.deepEqual(b, a);
+});
+
+test('urechile (ADR 0028): vârful de la fața de jos, puntea de grosimea cerută, și cu supracursă', () => {
+  // Placa 2: MDF 12, piesa 120 × 80 cu colțurile R10, tăiată prin, în treceri de 4; urechi 4 × 8, puntea de 2.
+  const d0 = docDin({ latime: 300, inaltime: 200, grosime: 12 },
+    { id: 'p', forma: { tip: 'dreptunghi', latime: 120, inaltime: 80, razaColt: 10 }, matrice: { ...ID, e: 50, f: 50 } });
+  const cu = (adancime: number, urechi: Operatie['urechi']): Document => cuOperatie(d0, 'p', { adancime, pas: 4, urechi });
+  const cote = (d: Document, supracursa = 0): number[] => {
+    const job = programDinDocument(d, undefined, supracursa);
+    assert.ok(job.ok, job.ok ? '' : job.motiv);
+    if (!job.ok) return [];
+    return [...new Set(job.program.miscari.flatMap((m) => (m.tip !== 'rapida' && m.tip !== 'eticheta' && 'la' in m && m.la.Z !== undefined ? [m.la.Z] : [])))];
+  };
+  // Fără urechi: doar −4, −8, −12.
+  assert.deepEqual(cote(cu(12, null)).sort((a, b) => b - a), [-4, -8, -12]);
+  // Cu urechi: și palierul la −10 (12 − 2), iar flancurile între −10 și −12; nimic între −8 și −10.
+  const z = cote(cu(12, { numar: 4, latime: 8, grosime: 2 }));
+  assert.ok(z.includes(-10) && z.includes(-12) && z.includes(-4) && z.includes(-8));
+  assert.ok(z.every((x) => x === -4 || x === -8 || (x <= -10 && x >= -12)), `cote neașteptate: ${z.join(', ')}`);
+  // Cu supracursă de 0,3: palierul rămâne la −10, deci puntea tot 2 (ediția întâi o subția la 1,7).
+  const zs = cote(cu(12.3, { numar: 4, latime: 8, grosime: 2 }), 0.3);
+  // 12,3 în treceri de cel mult 4: patru de 3,075; doar ultima trece de vârful urechii.
+  assert.ok(zs.includes(-10) && zs.includes(-12.3), zs.join(', '));
+  assert.ok(zs.every((x) => [-3.075, -6.15, -9.225000000000001].includes(x) || (x <= -10 && x >= -12.3)), zs.join(', '));
+  // Fără supracursă, aceeași adâncime e refuzată.
+  const peste = programDinDocument(cu(12.3, null));
+  assert.match(peste.ok ? '' : peste.motiv, /adâncimea 12.3 mm trece de grosimea foii \(12 mm\)/);
+  const preaMult = programDinDocument(cu(12.3, null), undefined, 0.2);
+  assert.match(preaMult.ok ? '' : preaMult.motiv, /plus supracursa \(0.2 mm\)/);
+  for (const s of [-0.1, 2.1, Number.NaN]) {
+    const r = programDinDocument(d0, undefined, s);
+    assert.match(r.ok ? '' : r.motiv, /supracursa trebuie să fie între 0 și 2 mm/, String(s));
+  }
+});
+
+test('urechile refuzate cu motiv: puntea cât foaia, tăietura care nu ajunge la vârf, urechile care nu încap', () => {
+  const d0 = docDin({ latime: 300, inaltime: 200, grosime: 12 },
+    { id: 'p', forma: { tip: 'dreptunghi', latime: 120, inaltime: 80, razaColt: 10 }, matrice: { ...ID, e: 50, f: 50 } });
+  const motiv = (v: Partial<Operatie>): string => {
+    const r = programDinDocument(cuOperatie(d0, 'p', { adancime: 12, pas: 4, ...v }));
+    return r.ok ? '' : r.motiv;
+  };
+  assert.match(motiv({ urechi: { numar: 4, latime: 8, grosime: 12 } }), /p\/p: urechile de 12 mm nu încap în foaia de 12 mm/);
+  assert.match(motiv({ urechi: { numar: 4, latime: 8, grosime: 13 } }), /nu încap în foaia/);
+  assert.match(motiv({ adancime: 10, urechi: { numar: 4, latime: 8, grosime: 2 } }), /tăietura de 10 mm nu ajunge la vârful urechilor \(la 10 mm de fața de sus\)/);
+  assert.equal(motiv({ adancime: 10.5, urechi: { numar: 4, latime: 8, grosime: 2 } }), '', 'puțin sub vârf: urechile există');
+  // Perimetrul traseului: 2·100 + 2·60 + 2π·13 ≈ 401,68; S ≈ 100,42 cu 4 urechi, deci cel mult 90,38.
+  assert.match(motiv({ urechi: { numar: 4, latime: 91, grosime: 2 } }), /p\/p: urechile nu încap: 4 urechi de 91 mm/);
+  assert.equal(motiv({ urechi: { numar: 4, latime: 90, grosime: 2 } }), '');
+});
+
+test('o operație fără urechi dă același program ca în v4: placa 1 neschimbată (amprentele, în placa01)', () => {
+  const d = doc(300, 200);
+  assert.ok(d.piese.every((p) => p.operatii.every((o) => o.urechi === null)));
+  const job = programDinDocument(d);
+  assert.ok(job.ok);
+  if (job.ok) assert.ok(job.program.miscari.every((m) => m.tip !== 'arc' || m.la.Z === undefined), 'nicio elice');
 });
