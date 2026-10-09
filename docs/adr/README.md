@@ -44,3 +44,4 @@ redeschide. Cel mult o pagină.
 | [0024](0024-planse-varianta-d.md) | — | Planșele: varianta D (piese cu arbore, instanțe pe foi), cu contractul documentului v2 | etapa 1 (felia 1.7) |
 | [0025](0025-operatiile-piesei.md) | — | Operațiile piesei: profilul stă în piesă (documentul v3), nu în dialogul de export | etapa 2 (felia 2.2) |
 | [0026](0026-regiunea-pastrata.md) | — | Regiunea păstrată (inelele, rolurile, includerea) și invarianta 2 | etapa 2 (felia 2.3a) |
+| [0027](0027-sensul-de-taiere.md) | — | Sensul de tăiere pe operație (documentul v4), implicit urcare; invarianta 9 | etapa 2 (felia 2.3b) |

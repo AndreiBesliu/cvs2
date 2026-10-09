@@ -905,3 +905,13 @@ motivul `regiunea păstrată:`; oracolul independent cu invarianta 2 în poartă
 conturul etichetat); coardele cu care GRBL face arcele ($12 = 0,002 mm) nu sunt în buget (cel mult ~0,009 mm spre
 piesă, pe colțurile exterioare); 2.3b așteaptă implicitul sensului de tăiere și decizia pe placa 1.
 
+## 2026-10-09 — Etapa 2, felia 2.3b: sensul de tăiere (Model: Claude Opus 5.5)
+
+**Prompt:** „ok” (la recomandările: urcare implicit, pe operație; placa 1 regenerată). **Started:** 19:05. **Clasa:** R2
+(sensul mișcă mașina). **Estimarea:** ~½ zi activă, plus oracolul independent (~0,6 M tokeni, 60–90 min: documentul v4
+și invarianta 9).
+
+**Ce intră:** ADR 0027 (urcare = materialul păstrat în stânga, cu M3; documentul v4 cu `Operatie.sens`, migrarea
+v3 → v4 cu `urcare`); profilul inversează buclele după latură și sens; dialogul arată sensul pe rând; placa 1
+regenerată (gaura în G2); numerele cu virgulă în română (din 2.2, amânat aici).
+

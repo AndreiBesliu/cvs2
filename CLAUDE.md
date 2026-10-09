@@ -35,7 +35,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - Rămâne placa 1, tăiată de owner.
 - **Etapa 2 e în lucru din 08.10** (fișa: `docs/etape/etapa-02.md`), pornită înaintea plăcii 1 la cuvântul owner-ului.
   Gata: 2.1 (gărzile offsetului), 2.2 (operațiile în document: schema v3, ADR 0025) și 2.3a (regiunea păstrată și
-  invarianta 2, ADR 0026). 2.3 s-a împărțit: 2.3b (sensul de tăiere) așteaptă implicitul ales de owner.
+  invarianta 2, ADR 0026). 2.3 s-a împărțit: 2.3b (sensul de tăiere, ADR 0027) în lucru din 09.10; 2.3c (contururile
+  deschise) după ea.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa
@@ -125,6 +126,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Regula: nimic portat nu intră fără probele noi ale proiectului (oracol, martor). Ce trece în codul nou e
   re-probat acolo, nu crezut pe cuvânt.
 
+- 09.10.2026: **sensul de tăiere: urcare implicit, pe fiecare operație** („ok” la recomandare), iar **placa 1 se
+  regenerează** cu el (gaura trece în G2, cotele rămân). Contractul: ADR 0027 (documentul v4).
 - 08.10.2026: **planșele: D** („D, ok la toate”), cu cele trei alegeri din prototip. Contractul documentului v2 e în ADR
   0024; un câmp nou cu sens intră doar cu schemă nouă și migrare.
 - 07.10.2026: **`PLAN.md` aprobat** (fără A / D, de ales înainte de etapa 1).
