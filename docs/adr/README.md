@@ -45,3 +45,4 @@ redeschide. Cel mult o pagină.
 | [0025](0025-operatiile-piesei.md) | — | Operațiile piesei: profilul stă în piesă (documentul v3), nu în dialogul de export | etapa 2 (felia 2.2) |
 | [0026](0026-regiunea-pastrata.md) | — | Regiunea păstrată (inelele, rolurile, includerea) și invarianta 2 | etapa 2 (felia 2.3a) |
 | [0027](0027-sensul-de-taiere.md) | — | Sensul de tăiere pe operație (documentul v4), implicit urcare; invarianta 9 | etapa 2 (felia 2.3b) |
+| [0028](0028-urechile.md) | — | Urechile: profilul Z(s) pe IR, puntea de la fața de jos (documentul v5); invarianta 10 | etapa 2 (felia 2.4) |

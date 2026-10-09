@@ -943,3 +943,12 @@ adâncime se leagă după ordine; de pus în etichetă înainte de degroșare / 
 invariantei 9 (de precizat în contract la urechi și intrări, 2.4–2.5); axul M4 vine cu profilul mașinii; zecimalele din
 descrierea formelor sunt încă cu punct în română.
 
+## 2026-10-09 — Etapa 2, felia 2.4: urechile (Model: Claude Opus 5.5)
+
+**Prompt:** „continua”. **Started:** 21:57. **Clasa:** R2 (urechile mișcă mașina). **Estimarea:** ~½ zi activă, plus
+oracolul independent (~0,8 M tokeni, 90–120 min: documentul v5, invarianta 9 amendată, invarianta 10 și oracolul pe
+hârtie). 2.3c (contururile deschise) trece lângă 2.7: n-are încă de unde primi un contur deschis.
+
+**Ce intră:** ADR 0028 (documentul v5 cu `Operatie.urechi`, migrarea v4 → v5 cu `null`); profilul Z(s) portat din
+ediția întâi, cu refuz în loc de palierul strâns; emitentul ca modificator peste trecerea din IR (liniile și arcele
+tăiate exact, flancul pe arc ca elice); vârful urechii de la fața de jos a foii; coloana Urechi în dialogul de export.
