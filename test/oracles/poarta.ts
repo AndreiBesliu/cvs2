@@ -15,8 +15,22 @@
  *     (iesire mm: st 5.000 dr 0.000 jos 0.000 sus 0.000)
  *   cu cât trece discul peste fiecare latură, în document. Partea de sub fața de sus se mărginește exact
  *   (`marginiSubSuprafata`: trecerea prin z = 0 și punctele cardinale ale arcelor), nu din eșantioane.
+ *
+ * Invarianta 2 (ADR 0026, etapa 2) rulează doar când contextul are `regiune` (`regiuneDinDocument(doc)` din
+ * `regiune.ts`): fiecare mișcare G1/G2/G3 cu o parte sub fața de sus (z < 0 în document) aparține etichetei
+ * `(<idLume>: <tip>, <latura>, <adâncime> mm)` de dinaintea ei; pe `exterior` / `interior`, partea ei de sub fața de sus
+ * (tăiată exact acolo unde z trece prin −1e-6, plonjarea pe verticală = un punct) stă în afara lui K ∪ S(C), la cel puțin
+ * max(R − ε − TOL_ROTUNJIRE, 1e-6) (§6 amendat: pe textul G-code se adaugă rotunjirea postului, ca la 1, 3 și 5;
+ * eșantionată, cu toleranța declarată în `regiune.ts`). `pe-linie`, G0 și mișcările din aer nu se judecă.
+ * ALEGERI: o tăiere înaintea primei etichete, o etichetă stricată sau care nu e singură pe linie, una care nu e a unei
+ * tăieturi din document (elementul, tipul, latura, adâncimea) și problemele documentului (inele care se ating, element
+ * cu ambele laturi; linia 0) sunt toate încălcări ale invariantei 2.
  */
 import { citeste, esantioane, marginiSubSuprafata, regulaArcGrbl, type Comentariu, type Mutare, type Punct3 } from './gcode.ts';
+import {
+  arc, citesteEticheta, prag, punct, pt, segment, verificaEticheta, verificaMutarea,
+  type Eticheta, type IncalcareMutare, type Primitiva, type Regiune,
+} from './regiune.ts';
 
 export type ColtOrigine = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus';
 
@@ -34,9 +48,11 @@ export type ContextPoarta = {
   readonly asteptareAx: number;
   /** Invarianta 8: cutia centrului sculei pe mișcările de tăiere, în coordonatele DOCUMENTULUI, socotită pe hârtie. */
   readonly cadru?: { readonly minX: number; readonly maxX: number; readonly minY: number; readonly maxY: number };
+  /** Invarianta 2: inelele foii 0 și tăieturile documentului (`regiuneDinDocument`). Fără ea, invarianta 2 nu rulează. */
+  readonly regiune?: Regiune;
 };
 
-export type Incalcare = { readonly invarianta: 1 | 3 | 5 | 6 | 7 | 8; readonly linia: number; readonly mesaj: string };
+export type Incalcare = { readonly invarianta: 1 | 2 | 3 | 5 | 6 | 7 | 8; readonly linia: number; readonly mesaj: string };
 
 const TOL = 1e-6;
 /** Rotunjirea la 3 zecimale mută un punct cu cel mult √2/2·10⁻³ mm. */
@@ -108,6 +124,39 @@ function laDocument(p: Punct3, ctx: ContextPoarta): Punct3 {
   return [p[0] + ox, p[1] + oy, p[2] - (ctx.z0 === 'jos' ? ctx.foaie.grosime : 0)];
 }
 
+/**
+ * Invarianta 2: partea unei mișcări G1/G2/G3 aflată sub fața de sus (z < −TOL în document), în XY-ul documentului.
+ * z e liniar în fracțiunea parcursă (și pe arcul elicoidal), deci capetele părții se calculează exact. Arcul e cel
+ * văzut de GRBL: centrul = startul + (I, J), raza din I/J, unghiul din `regulaArcGrbl`; dacă arcul nu ajunge exact în
+ * capătul scris (rotunjirea), se adaugă segmentul scurt până la el. Cu startul necunoscut, doar capătul (un punct).
+ */
+function parteaDeTaiere(m: Mutare, ctx: ContextPoarta): Primitiva[] {
+  const a = laDocument(m.a, ctx), b = laDocument(m.b, ctx);
+  const sub = -TOL;
+  if (!m.startCunoscut) return b[2] < sub ? [punct(pt(b[0], b[1]))] : [];
+  const za = a[2], zb = b[2];
+  if (Math.min(za, zb) >= sub) return [];
+  const s0 = za < sub ? 0 : (za - sub) / (za - zb);
+  const s1 = zb < sub ? 1 : (za - sub) / (za - zb);
+  if (m.cod === 0 || m.cod === 1) {
+    const pe = (s: number) => pt(a[0] + (b[0] - a[0]) * s, a[1] + (b[1] - a[1]) * s);
+    const p0 = pe(s0), p1 = pe(s1);
+    return p0.x === p1.x && p0.y === p1.y ? [punct(p0)] : [segment(p0, p1)];
+  }
+  const { unghi } = regulaArcGrbl(m);
+  const c = pt(a[0] + (m.i ?? 0), a[1] + (m.j ?? 0));
+  const r = Math.hypot(m.i ?? 0, m.j ?? 0);
+  if (r === 0) return [punct(c)];
+  const u0 = Math.atan2(a[1] - c.y, a[0] - c.x);
+  const rez: Primitiva[] = [arc(c, r, u0 + unghi * s0, unghi * (s1 - s0))];
+  if (s1 === 1) {
+    const u1 = u0 + unghi;
+    const capat = pt(c.x + r * Math.cos(u1), c.y + r * Math.sin(u1));
+    if (Math.hypot(capat.x - b[0], capat.y - b[1]) > 1e-9) rez.push(segment(capat, pt(b[0], b[1])));
+  }
+  return rez;
+}
+
 export function poarta(text: string, ctx: ContextPoarta): Incalcare[] {
   const rez: Incalcare[] = [];
   const { evenimente, probleme, comentarii } = citeste(text);
@@ -142,6 +191,28 @@ export function poarta(text: string, ctx: ContextPoarta): Incalcare[] {
   /** Linia primei mișcări de tăiere al cărei disc trece de o margine a foii. */
   let primaIesire = 0;
 
+  // 2: problemele documentului și etichetele (ADR 0026 §7), în ordinea liniilor.
+  const reg = ctx.regiune;
+  const etichete: Array<{ readonly linia: number; readonly eticheta: Eticheta | null }> = [];
+  if (reg) {
+    for (const p of reg.probleme) rez.push({ invarianta: 2, linia: 0, mesaj: `regiunea păstrată: ${p.mesaj}` });
+    for (const c of comentarii) {
+      const et = citesteEticheta(c.text);
+      if (et === null) continue;
+      if (et === 'stricata') {
+        rez.push({ invarianta: 2, linia: c.linia, mesaj: `etichetă de nerecunoscut: „${c.text}”` });
+        etichete.push({ linia: c.linia, eticheta: null });
+        continue;
+      }
+      if (!c.singur) rez.push({ invarianta: 2, linia: c.linia, mesaj: `eticheta nu e singură pe linie: „${c.text}”` });
+      const motiv = verificaEticheta(reg, et);
+      if (motiv) rez.push({ invarianta: 2, linia: c.linia, mesaj: `eticheta nu e a unei tăieturi din document: ${motiv}` });
+      etichete.push({ linia: c.linia, eticheta: motiv || !c.singur ? null : et });
+    }
+  }
+  /** Indicele etichetei active (ultima de pe o linie de dinaintea mișcării). */
+  let iEticheta = -1;
+
   for (const e of evenimente) {
     if (e.tip === 'ax') {
       axPornit = e.pornit && e.turatie > 0;
@@ -154,9 +225,41 @@ export function poarta(text: string, ctx: ContextPoarta): Incalcare[] {
     }
     const m: Mutare = e.m;
     if (m.cod === 2 || m.cod === 3) {
-      const { eroare33, unghi } = regulaArcGrbl(m);
+      const { eroare33, unghi, raza } = regulaArcGrbl(m);
       if (eroare33) rez.push({ invarianta: 6, linia: m.linia, mesaj: 'arcul dă error:33 după rotunjire' });
-      if (Math.abs(unghi) > Math.PI + 1e-6) rez.push({ invarianta: 6, linia: m.linia, mesaj: `arc de ${(Math.abs(unghi) * 180 / Math.PI).toFixed(1)}° pe un bloc (cerc fals?)` });
+      // Postul scrie cercul întreg ca două semicercuri; rotunjirea capetelor și a lui I/J la 3 zecimale poate duce unul la
+      // 180.00x° (cu cel mult ~0.0028 / r rad), pe care GRBL îl execută corect. Cercul fals e lângă 2π și rămâne prins:
+      // toleranța 2·TOL_ROTUNJIRE / r e plafonată la π/2, ca un bloc care închide cercul să fie prins la orice rază.
+      const peste180 = Math.min((2 * TOL_ROTUNJIRE) / raza, Math.PI / 2);
+      if (Math.abs(unghi) > Math.PI + peste180) rez.push({ invarianta: 6, linia: m.linia, mesaj: `arc de ${(Math.abs(unghi) * 180 / Math.PI).toFixed(1)}° pe un bloc (cerc fals?)` });
+    }
+    // 2: regiunea păstrată (ADR 0026 §6–§7).
+    if (reg && m.cod !== 0) {
+      while (iEticheta + 1 < etichete.length && etichete[iEticheta + 1]!.linia < m.linia) iEticheta++;
+      const parti = parteaDeTaiere(m, ctx);
+      if (parti.length) {
+        const activa = iEticheta >= 0 ? etichete[iEticheta] : undefined;
+        if (!activa) {
+          rez.push({ invarianta: 2, linia: m.linia, mesaj: 'mișcare de tăiere înaintea primei etichete' });
+        } else if (activa.eticheta && activa.eticheta.latura !== 'pe-linie') {
+          const id = activa.eticheta.idLume;
+          const i = reg.inele.findIndex((x) => x.idLume === id);
+          // Fără inel (element cu ambele laturi): problema documentului e deja raportată.
+          let rau: IncalcareMutare | null = null;
+          if (i >= 0) {
+            for (const p of parti) {
+              const x = verificaMutarea(reg, i, p, R, prag(R, TOL_ROTUNJIRE));
+              if (x && (!rau || x.patrundere > rau.patrundere)) rau = x;
+            }
+          }
+          if (rau) {
+            rez.push({
+              invarianta: 2, linia: m.linia,
+              mesaj: `regiunea păstrată: tăietura lui ${id} intră în ${rau.in} (cu ${rau.patrundere.toFixed(3)} mm, lângă X ${rau.la.x.toFixed(3)}, Y ${rau.la.y.toFixed(3)})`,
+            });
+          }
+        }
+      }
     }
     // Cu startul necunoscut (prima mișcare a programului), doar capătul e o poziție sigură.
     const puncte = (m.startCunoscut ? esantioane(m, pasEsantion) : [m.b]).map((p) => laDocument(p, ctx));
