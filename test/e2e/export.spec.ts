@@ -65,7 +65,7 @@ test('desenul din aplicație iese în G-code: cu originea stânga-jos, exact lin
   const doc = await documentSalvat(page, 2);
   expect(poarta(text, {
     foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'stanga-jos', z0: 'sus', diametruScula: 6, pas: 4,
-    supracursa: 0, asteptareAx: 3, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
+    supracursa: 0, asteptareAx: 3, avansPlonjare: 300, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
   })).toEqual([]);
 });
 
@@ -80,7 +80,7 @@ test('cu originea dreapta-sus pe foaia de 300 × 200: cotele pe hârtie și poar
   const doc = await documentSalvat(page, 2);
   const incalcari = poarta(text, {
     foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'dreapta-sus', z0: 'sus', diametruScula: 6, pas: 4,
-    supracursa: 0, asteptareAx: 3, cadru: { minX: 17, maxX: 123, minY: 17, maxY: 83 },
+    supracursa: 0, asteptareAx: 3, avansPlonjare: 300, cadru: { minX: 17, maxX: 123, minY: 17, maxY: 83 },
     regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
   });
   expect(incalcari).toEqual([]);
@@ -302,4 +302,59 @@ test('sensul de tăiere (ADR 0027): gaura în urcare e trigonometric (G3); trecu
   // Pe linie, sensul nu schimbă nimic: câmpul e oprit.
   await page.locator('[data-operatie="e1/e1"] select[data-camp="latura"]').selectOption('pe-linie');
   await expect(sens).toBeDisabled();
+});
+
+test('urechile (ADR 0028): bifate pe dreptunghi, cu implicitele 4 × 8 × 2, palierul la 2 mm de fața de jos; intră în document', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const rand = page.locator('[data-operatie="e1/e1"]');
+  // Tăiat prin foaia de 18, în treceri de 6.
+  await rand.locator('input').nth(0).fill('18');
+  await rand.locator('input').nth(1).fill('6');
+  const bifa = rand.locator('[data-camp="urechi"]');
+  await expect(bifa).not.toBeChecked();
+  await expect(page.locator('[data-urechi="e1/e1"]')).toHaveCount(0);
+  await bifa.check();
+  const campuri = page.locator('[data-urechi="e1/e1"]');
+  await expect(campuri.locator('[data-camp="urechi-numar"]')).toHaveValue('4');
+  await expect(campuri.locator('[data-camp="urechi-latime"]')).toHaveValue('8');
+  await expect(campuri.locator('[data-camp="urechi-grosime"]')).toHaveValue('2');
+  // Un număr de urechi care nu e întreg oprește exportul, cu motivul spus.
+  await campuri.locator('[data-camp="urechi-numar"]').fill('2,5');
+  await expect(page.getByTestId('export-invalid')).toHaveText(/^Urechile: numărul trebuie să fie un întreg de la 1 la 100;/);
+  await expect(campuri.locator('[data-camp="urechi-numar"]')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
+  await campuri.locator('[data-camp="urechi-numar"]').fill('4');
+  const d = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const text = readFileSync(await (await d).path(), 'ascii');
+  // Trecerile la 6 și 12 sunt deasupra vârfului (16); cea la 18 urcă pe palier la −16, cu flancuri cu Z.
+  expect(text).toMatch(/^G1 X[-\d.]+ Y[-\d.]+ Z-16\.000$/m);
+  expect(text).toMatch(/^G1 Z-18\.000 F300\.0$/m);
+  expect(text.split('\n').filter((l) => / Z-16\.000/.test(l)).length).toBe(4);
+  // Urechile au intrat în document, iar poarta trece pe programul din browser (1, 2, 9 și 10).
+  const doc = await documentSalvat(page, 2);
+  expect((doc as { piese: Array<{ operatii: Array<{ urechi: unknown }> }> }).piese[0]?.operatii[0]?.urechi).toEqual({ numar: 4, latime: 8, grosime: 2 });
+  expect(poarta(text, {
+    foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'stanga-jos', z0: 'sus', diametruScula: 6, pas: 6,
+    supracursa: 0, asteptareAx: 3, avansPlonjare: 300, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
+  })).toEqual([]);
+  // Proiectul redeschis (cheile salvate sortate): un Exportă fără nicio schimbare nu lasă nimic de anulat (recenzia 2.4).
+  await page.reload();
+  await expect(page.locator('[data-actiune="istoric.anuleaza"]')).toBeDisabled();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const d3 = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  expect(readFileSync(await (await d3).path(), 'ascii')).toBe(text);
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await expect(page.locator('[data-actiune="istoric.anuleaza"]')).toBeDisabled();
+  // Redeschis, dialogul arată urechile; scoasa bifa, exportul nu mai are palier.
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(bifa).toBeChecked();
+  await bifa.uncheck();
+  const d2 = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const fara = readFileSync(await (await d2).path(), 'ascii');
+  expect(fara).not.toMatch(/Z-16\.000/);
 });
