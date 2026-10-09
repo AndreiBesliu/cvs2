@@ -915,3 +915,31 @@ piesă, pe colțurile exterioare); 2.3b așteaptă implicitul sensului de tăier
 v3 → v4 cu `urcare`); profilul inversează buclele după latură și sens; dialogul arată sensul pe rând; placa 1
 regenerată (gaura în G2); numerele cu virgulă în română (din 2.2, amânat aici).
 
+**Completed:** 21:15. **Treceri:** 4.
+
+**Făcut:**
+- ADR 0027 + documentul v4: `Operatie.sens` (`urcare` / `opozitie`), migrarea v3 → v4 cu `urcare`, ciocnirea refuzată.
+- `src/cam/profil.ts`: buclele se inversează după latură și sens; pe-linie neschimbat; pornirea rămâne vârful 0.
+- Dialogul de export: coloana Sens (oprită pe linie și în fila care citește); numerele cu virgulă în română.
+- Placa 1 regenerată: gaura în G3 (neschimbată față de 1.9), insula în G2; fișa are hash-urile noi.
+
+**Greșeala, prinsă înainte de publicare:** prima versiune a ADR 0027 spunea „urcare = materialul păstrat în stânga”, luată
+din notițele ediției întâi și din raționamentul meu, neverificate pe cinematica așchiei. Aplicația, testele și placa
+regenerată o urmau, deci totul era verde, iar „urcare” tăia în opoziție. Recenzia a dovedit-o (simulare de așchie, regula
+G41 + M3); am oprit și oracolul, care construia invarianta 9 pe tabelul greșit. Reparat în contract, cod, texte, teste și
+placă, cu un test fizic care pică pe tabelul vechi. Nimic nu fusese împins sau publicat.
+
+**Proba:**
+- recenzia adversarială: o lentilă + 2 verificatori, 0,48 M tokeni, 22 min; 1 constatare critică (tabelul), reparată;
+  1 infirmată (zecimalele cu punct din descrierea formelor, mai veche decât felia);
+- oracolul independent: documentul v4 și invarianta 9 (aria cu semn a fiecărei bucle, partea păstrată derivată dintr-un
+  model al așchiei); 370 de cazuri de lipire, fără încălcări; 40 de sabotaje, prinse; 0,62 M tokeni, 116 min (estimat
+  60–90);
+- 16 otrăvuri, 16 prinse, în worktree în afara Drive-ului; e2e-ul exportului judecă acum și invariantele 2 și 9;
+- 1434 de teste unitare, 37 e2e; pornirea are 91,5 kB gzip.
+
+**Rămâne deschis:** eticheta din G-code nu poartă sensul sau id-ul operației (două operații pe același element și aceeași
+adâncime se leagă după ordine; de pus în etichetă înainte de degroșare / finisare); bucla deschisă e încălcare a
+invariantei 9 (de precizat în contract la urechi și intrări, 2.4–2.5); axul M4 vine cu profilul mașinii; zecimalele din
+descrierea formelor sunt încă cu punct în română.
+
