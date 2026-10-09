@@ -18,10 +18,12 @@ Bugetul unei felii e ~½ zi activă, până la prima măsurătoare (`PLAN.md` §
 |---|---|---|---|---|
 | 2.1 | Gărzile offsetului (s1-V §5): intrarea curățată (vârfuri repetate, linii aproape coliniare, autointersecții refuzate cu motiv), ieșirea validată (buclă deschisă, gol, aria monotonă în distanță, segmente sub 1 µm), rezoluția declarată de 0,01 mm; corpusul din s1 / s1-V în CI | I10d | R2 | — |
 | 2.2 | Operațiile în document (schema v3, cu migrarea v2 → v3): profilul ca operație a piesei, cu scula și parametrii; exportul le citește din document | I3, B1 | R2 | 2.1 |
-| 2.3 | Regiunea păstrată, cu oracolul întâi (invarianta 2, sesiune independentă); profilul pe orice contur (exterior, interior, pe linie, deschis pe o parte); sensul de tăiere | B1 | R2 | 2.2 |
-| 2.4 | Urechile ca modificator Z(s), portate cu cele 88 de verificări pe hârtie; vârful urechii măsurat de la fundul materialului (`docs/PORTARE.md` §3.1) | B1 | R2 | 2.3 |
-| 2.5 | Intrările și ieșirile, alese față de regiunea păstrată, plus rampa (portate, `docs/PORTARE.md` §3.2) | B1 | R2 | 2.3 |
-| 2.6 | Dog-bone și T-bone | B2 | R1 | 2.3 |
+| 2.3a | Regiunea păstrată (ADR 0026), cu oracolul întâi (invarianta 2 în poartă, sesiune independentă); exportul refuză tăietura care intră într-o piesă | B1 | R2 | 2.2 |
+| 2.3b | Sensul de tăiere (urcare / opoziție), pe operație, cu implicitul ales de owner; schema v4 | B1 | R2 | 2.3a |
+| 2.3c | Profilul pe orice contur: și pe cele deschise, pe o parte (stânga / dreapta), la nivelul CAM, pentru importul SVG | B1 | R2 | 2.3a |
+| 2.4 | Urechile ca modificator Z(s), portate cu cele 88 de verificări pe hârtie; vârful urechii măsurat de la fundul materialului (`docs/PORTARE.md` §3.1) | B1 | R2 | 2.3a |
+| 2.5 | Intrările și ieșirile, alese față de regiunea păstrată, plus rampa (portate, `docs/PORTARE.md` §3.2) | B1 | R2 | 2.3a |
+| 2.6 | Dog-bone și T-bone | B2 | R1 | 2.3a |
 | 2.7 | Importul SVG: DOMParser inert, unități, viewBox, transformări, plafonul de mărime; biarcele (T6) cu bugetul de toleranță (`docs/PORTARE.md` §3.3); fațada PathKit minimă (reuniunea + R3) pentru normalizarea `nonzero` de la ușă | A4, I10b | R2 | 2.1 |
 | 2.8 | Stratul WebGL2 (foaia, traseul ca LINE_STRIP) și panoul de proprietăți | I7, I19 | R2 | 2.2 |
 | 2.9 | Bancul vizual v1, cu martorii lui | I18 | R2 | 2.8 |

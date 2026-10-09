@@ -863,3 +863,20 @@ document; dialogul de export le arată și le scrie la Exportă, ca o singură c
 
 **Rămâne deschis:** motivele refuzurilor din CAM (acum și „altă sculă”) sunt doar în română (gol mai vechi, din 1.9c);
 schimbarea sculei (etapa 3); placa 1, la owner.
+
+## 2026-10-09 — Etapa 2, felia 2.3a: regiunea păstrată și invarianta 2 (Model: Claude Opus 5.5)
+
+**Prompt:** capturile testului owner-ului pe adresa de test și fișierul descărcat (`cncvs2-stanga-jos (1).nc`), după
+„dacă nu spui altfel, continui cu 2.3”. **Started:** 07:36. **Clasa:** R2. **Estimarea:** ~½ zi activă, plus oracolul
+independent (~0,6 M tokeni, 60–90 min).
+
+**Verificat întâi:** fișierul owner-ului trece poarta oracolului, cu cadrul pe hârtie (gaura R15 → traseul R12 în jurul
+(161,238; 55,007); exteriorul 17…123 × 17…83; patru treceri de 2 mm la pasul „2,5”).
+
+**Felia 2.3 împărțită** (ca 1.7a, 1.9a–c): 2.3a regiunea păstrată; 2.3b sensul de tăiere, după răspunsul owner-ului
+(implicitul urcare / opoziție; placa 1 regenerată sau nu); 2.3c profilul pe contururi deschise.
+
+**Ce intră în 2.3a:** ADR 0026 (inelele din laturile declarate, includerea, K, partea proprie, invarianta 2 cu
+ε = 0,005 mm); `src/cam/regiune.ts`; distanța exactă segment–segment în `src/geom/distanta.ts`; exportul refuză cu
+motivul `regiunea păstrată:`; oracolul independent cu invarianta 2 în poartă.
+
