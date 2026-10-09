@@ -62,7 +62,7 @@ export type GrupNod = { tip: 'grup'; id: string; nume?: string; matrice: Matrice
 export type Nod = ElementNod | GrupNod;
 export type Scula = { numar: number; nume: string; diametru: number; [cheie: string]: unknown };
 export type Latura = 'exterior' | 'interior' | 'pe-linie';
-/** Sensul de tăiere (ADR 0027), cu axul M3: urcare = materialul păstrat în stânga sensului de mers. */
+/** Sensul de tăiere (ADR 0027), cu axul M3: urcare = materialul păstrat în dreapta sensului de mers. */
 export type Sens = 'urcare' | 'opozitie';
 export type Operatie = {
   id: string; tip: 'profil'; noduri: string[]; scula: Scula; latura: Latura; sens: Sens; adancime: number; pas: number;

@@ -240,7 +240,7 @@ test('regiunea păstrată (ADR 0026): două dreptunghiuri puse unul peste altul 
   expect(descarcari).toBe(1);
 });
 
-test('sensul de tăiere (ADR 0027): gaura în urcare e orar (G2); trecută pe opoziție, trigonometric (G3); pe linie, sensul e oprit', async ({ page }) => {
+test('sensul de tăiere (ADR 0027): gaura în urcare e trigonometric (G3); trecută pe opoziție, orar (G2); pe linie, sensul e oprit', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-actiune="document.adauga-cerc"]').click();
   await page.locator('[data-actiune="export.gcode"]').click();
@@ -252,12 +252,12 @@ test('sensul de tăiere (ADR 0027): gaura în urcare e orar (G2); trecută pe op
     return readFileSync(await (await d).path(), 'ascii');
   };
   const urcare = await descarca();
-  expect(urcare).toMatch(/^G2 /m);
-  expect(urcare).not.toMatch(/^G3 /m);
+  expect(urcare).toMatch(/^G3 /m);
+  expect(urcare).not.toMatch(/^G2 /m);
   await sens.selectOption('opozitie');
   const opozitie = await descarca();
-  expect(opozitie).toMatch(/^G3 /m);
-  expect(opozitie).not.toMatch(/^G2 /m);
+  expect(opozitie).toMatch(/^G2 /m);
+  expect(opozitie).not.toMatch(/^G3 /m);
   // Același punct de pornire în ambele sensuri.
   expect(opozitie.match(/^G0 X.*$/m)?.[0]).toBe(urcare.match(/^G0 X.*$/m)?.[0]);
   // Sensul ales a intrat în document: redeschis, dialogul îl arată.

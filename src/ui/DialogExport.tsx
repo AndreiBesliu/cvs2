@@ -6,7 +6,7 @@ import { useLimba } from './useLimba.ts';
 
 type Latura = 'exterior' | 'interior' | 'pe-linie';
 /** Ce se schimbă dintr-o operație de profil în dialog; scula (freza) e comună tuturor, până la schimbarea sculei. */
-/** Sensul de tăiere (ADR 0027): urcare = materialul păstrat în stânga sensului de mers, cu axul M3. */
+/** Sensul de tăiere (ADR 0027): urcare = materialul păstrat în dreapta sensului de mers, cu axul M3. */
 type Sens = 'urcare' | 'opozitie';
 export type ValoriOperatie = { readonly latura: Latura; readonly sens: Sens; readonly adancime: number; readonly pas: number };
 

@@ -6,7 +6,7 @@ import { offsetInchis } from '../geom/offset.ts';
  * sensul de tăiere cerut (ADR 0027). Urechile și intrările vin în feliile 2.4–2.5.
  */
 export type Latura = 'exterior' | 'interior' | 'pe-linie';
-/** Cu axul M3: urcare = materialul păstrat în stânga sensului de mers; opoziție = în dreapta. */
+/** Cu axul M3 (orar văzut de sus): urcare = materialul păstrat în DREAPTA sensului de mers; opoziție = în stânga. */
 export type Sens = 'urcare' | 'opozitie';
 
 export type ParametriProfil = {
@@ -57,9 +57,10 @@ export function profil(contur: Contur, p: ParametriProfil): RezultatProfil {
     const o = offsetInchis(contur, p.latura === 'exterior' ? raza : -raza);
     if (!o.ok) return o;
     // Offsetul dă buclele cu regiunea rezultatului în stânga (insulele trigonometric, golurile orar). La exterior,
-    // rezultatul cuprinde piesa: materialul păstrat e în stânga, deci urcarea e chiar sensul lor. La interior, rezultatul
-    // e golul micșorat, iar materialul păstrat e în dreapta: urcarea cere buclele inversate. Pornirea rămâne vârful 0.
-    const inversate = (p.latura === 'exterior') === (p.sens === 'opozitie');
+    // rezultatul cuprinde piesa: materialul păstrat e în stânga, deci urcarea (păstrat în dreapta, ADR 0027) cere buclele
+    // inversate. La interior, rezultatul e golul micșorat, iar materialul păstrat e în dreapta: urcarea e chiar sensul
+    // lor. Pornirea rămâne vârful 0.
+    const inversate = (p.latura === 'exterior') === (p.sens === 'urcare');
     contururi = inversate ? o.contururi.map(inverseaza) : o.contururi;
   }
   return { ok: true, treceri: adancimi.map((adancime) => ({ adancime, contururi })) };

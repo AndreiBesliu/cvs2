@@ -52,10 +52,10 @@ test('profilul pe linie păstrează conturul neschimbat', () => {
   if (r.ok) assert.equal(r.treceri[0]?.contururi[0], c);
 });
 
-test('sensul (ADR 0027): exteriorul în urcare și gaura în opoziție merg trigonometric; celelalte două, orar; pornirea nu se mută', () => {
+test('sensul (ADR 0027): exteriorul în urcare și gaura în opoziție merg orar; celelalte două, trigonometric; pornirea nu se mută', () => {
   const cazuri = [
-    [conturDreptunghi(20, 20, 100, 60, 5), 'exterior', 'urcare', 1], [conturDreptunghi(20, 20, 100, 60, 5), 'exterior', 'opozitie', -1],
-    [conturCerc(70, 50, 15), 'interior', 'urcare', -1], [conturCerc(70, 50, 15), 'interior', 'opozitie', 1],
+    [conturDreptunghi(20, 20, 100, 60, 5), 'exterior', 'urcare', -1], [conturDreptunghi(20, 20, 100, 60, 5), 'exterior', 'opozitie', 1],
+    [conturCerc(70, 50, 15), 'interior', 'urcare', 1], [conturCerc(70, 50, 15), 'interior', 'opozitie', -1],
   ] as const;
   for (const [c, latura, sens, semn] of cazuri) {
     const r = profil(c, { latura, sens, diametruScula: 6, adancime: 3, pas: 3 });

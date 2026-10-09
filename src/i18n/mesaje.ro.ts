@@ -75,7 +75,7 @@ export const ro = {
   'export.sens': 'Sens',
   'export.sens.urcare': 'urcare',
   'export.sens.opozitie': 'opoziție',
-  'export.sens.titlu': 'Urcare: materialul care rămâne e în stânga sensului de mers (ax M3). Pe linie, sensul nu contează.',
+  'export.sens.titlu': 'Urcare: materialul care rămâne e în dreapta sensului de mers (ax M3). Pe linie, sensul nu contează.',
   'export.adancime': 'Adâncimea (mm)',
   'export.pas': 'Pasul (mm)',
   'export.regim': 'Axul la 18 000 rot/min, cu 3 s de așteptare; avansul 1 000 mm/min, plonjarea 300 mm/min; Z sigur 5 mm. Interioarele se taie primele.',

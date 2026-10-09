@@ -46,6 +46,8 @@ test('ambele fișiere trec poarta, cu insula și gaura la cotele de pe hârtie',
 test('cotele de mașină pe hârtie: gaura pornește din (82, 50) la A și din (−58, −50) la B', () => {
   assert.ok(AUR.A.toString('ascii').includes('\nG0 X82.000 Y50.000\n'));
   assert.ok(AUR.B.toString('ascii').includes('\nG0 X-58.000 Y-50.000\n'));
-  assert.ok(AUR.A.toString('ascii').includes('\nG1 X120.000 Y17.000 F1000.0\n'));
-  assert.ok(AUR.B.toString('ascii').includes('\nG1 X-20.000 Y-83.000 F1000.0\n'));
+  // Insula, în urcare (ADR 0027), merge orar: din (20, 17) întâi colțul spre (17, 20); la B, față de colțul dreapta-sus
+  // al foii 140 × 100: (17 − 140, 20 − 100) = (−123, −80).
+  assert.ok(AUR.A.toString('ascii').includes('\nG2 X17.000 Y20.000 I0.000 J3.000 F1000.0\n'));
+  assert.ok(AUR.B.toString('ascii').includes('\nG2 X-123.000 Y-80.000 I0.000 J3.000 F1000.0\n'));
 });

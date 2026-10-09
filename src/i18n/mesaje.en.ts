@@ -67,7 +67,7 @@ export const en = {
   'export.sens': 'Direction',
   'export.sens.urcare': 'climb',
   'export.sens.opozitie': 'conventional',
-  'export.sens.titlu': 'Climb: the material that stays is on the left of the direction of travel (M3 spindle). On the line, the direction does not matter.',
+  'export.sens.titlu': 'Climb: the material that stays is on the right of the direction of travel (M3 spindle). On the line, the direction does not matter.',
   'export.adancime': 'Depth (mm)',
   'export.pas': 'Step down (mm)',
   'export.regim': 'Spindle 18,000 rpm with a 3 s wait, feed 1,000 mm/min, plunge 300 mm/min, safe Z 5 mm. Inside profiles are cut first.',
