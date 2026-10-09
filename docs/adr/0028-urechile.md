@@ -31,9 +31,13 @@ necunoscut `urechi` e refuzată cu motiv (ciocnire de nume, ca în ADR 0024, pre
 - Urechile se pornesc din dialogul de export, pe rând, cu valorile implicite **4 × 8 mm × 2 mm** (cele ale plăcii 2).
 
 **2. Vârful urechii,** ca adâncime de la fața de sus: `varf = grosimeFoaie − g`. Puntea are grosimea g oricât de adânc
-merge tăietura (și cu supracursa, când vine). Exportul refuză, cu motiv:
+merge tăietura, și cu supracursă. Exportul refuză, cu motiv:
 - `g ≥ grosimeFoaie`: vârful ar fi la fața de sus sau deasupra ei;
 - `adancime ≤ varf`: nicio trecere nu ajunge la vârful urechii, deci urechile cerute n-ar exista.
+
+**Supracursa** devine un parametru al exportului: `calculeazaExport(doc, { …, supracursa })`, în mm, implicit 0, cel
+mult 2. Adâncimea unei operații poate trece de grosimea foii cu cel mult atât. Dialogul nu-l arată încă (vine cu profilul
+mașinii), deci din interfață rămâne 0, ca azi.
 
 **3. Profilul Z(s), pe fiecare buclă** (formulele din ediția întâi, `PORTARE.md` §3.1):
 - P = lungimea exactă a buclei (liniile; arcele ca r·|θ|); s = drumul pe buclă de la vârful 0, în sensul de mers
@@ -114,8 +118,8 @@ merge tăietura (și cu supracursa, când vine). Exportul refuză, cu motiv:
 Se adaugă:
 - o gaură (`interior`) circulară cu 3 urechi;
 - un caz ca placa 2 (120 × 80 cu colțurile R10, MDF 12, adâncimea 12, pasul 4, g = 2, deci puntea de 2,0);
-- **supracursa:** la nivelul CAM (profilul, urechile, postul), adâncimea 18,3 pe o foaie de 18, cu g = 2. Palierul
-  rămâne la −16, iar puntea e de 2,0. Exportul din document refuză încă adâncimea peste grosimea foii.
+- **supracursa:** exportul cu `supracursa: 0,3`, adâncimea 18,3 pe o foaie de 18, cu g = 2. Palierul rămâne la −16,
+  iar puntea e de 2,0. Fără parametru, aceeași adâncime e refuzată.
 
 **Martorii negativi**, care trebuie să înroșească oracolul:
 - Z binar pe vârfuri (forma de dinainte de 24.09);
@@ -139,7 +143,7 @@ Se adaugă:
 - Placa 2 (felia 2.10) își alege forma și pornirea astfel încât urechile să cadă pe laturi drepte.
 - Rampa și intrările (felia 2.5) se compun cu urechile prin Z-ul cel mai puțin adânc dintre cele două, ca în ediția
   întâi. Precizarea intră în ADR-ul lor.
-- Supracursa (tăierea în masa de sacrificiu) nu e încă în document. Profilul e deja gata pentru ea (punctul 2).
+- Supracursa (tăierea în masa de sacrificiu) nu e încă în interfață; exportul o primește ca parametru (punctul 2).
 
 ## Ce am respins
 
