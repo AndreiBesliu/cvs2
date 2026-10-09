@@ -37,6 +37,7 @@ export const ro = {
   'actiune.aplica-operatii': 'Aplică operațiile',
   'motiv.nicio-operatie': 'Nicio formă n-are o operație de tăiere.',
   'motiv.operatie-invalida': 'Valorile operațiilor trebuie să fie numere pozitive, cu punct sau cu virgulă: adâncimea și pasul până la 1000 mm, freza până la Ø100 mm.',
+  'motiv.urechi-invalide': 'Urechile: numărul trebuie să fie un întreg de la 1 la {n}; lungimea, un număr pozitiv până la {latime} mm; grosimea, un număr pozitiv până la {grosime} mm.',
   'export.proiect-schimbat': 'Proiectul s-a schimbat în altă filă în timpul exportului: exportă din nou.',
   'export.freze-diferite': 'Operațiile de pe foaie au freze diferite ({freze}). La Exportă primesc toate freza de mai sus.',
   'export.freze-diferite.citire': 'Operațiile de pe foaie au freze diferite ({freze}): exportul le refuză până când fila care scrie proiectul le aduce la o singură freză.',

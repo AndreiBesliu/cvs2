@@ -82,10 +82,12 @@ function zLa(noduri: readonly Nod[], s: number): number {
 /**
  * Mișcările unei bucle pe o trecere care traversează urechile, de la vârful 0 (unde scula e deja la −d) înapoi la el.
  * Fiecare segment se taie exact în rupturile din interiorul lui; o bucată de arc rămâne arc pe același cerc (elice pe
- * flanc). O mișcare poartă Z doar dacă Z-ul se schimbă pe ea.
+ * flanc), afară de cele sub 1e-6 mm, care sunt linii: un arc cu startul în capăt ar fi cercul întreg (`baleiajArc`).
+ * O mișcare poartă Z doar dacă Z-ul se schimbă pe ea. Flancul care coboară intră în material ca o rampă: viteza lui pe
+ * verticală nu trece de avansul de plonjare (ADR 0028 §4).
  */
 export function bucataCuUrechi(
-  c: Contur, noduri: readonly Nod[], d: number, avans: number,
+  c: Contur, noduri: readonly Nod[], d: number, avans: number, avansPlonjare: number,
 ): { readonly ok: true; readonly miscari: readonly Miscare[] } | { readonly ok: false; readonly motiv: string } {
   const m: Miscare[] = [];
   let zCur = -d;
@@ -110,15 +112,20 @@ export function bucataCuUrechi(
       urm++;
     }
     tinte.push({ s: s1, z: zCapat, capat: true });
+    let sPrec = s0;
     for (const t of tinte) {
       const p = t.capat ? b : punctPeSegment(a, b, cerc, (t.s - s0) / L);
       const la = t.z === zCur ? { X: p.x, Y: p.y } : { X: p.x, Y: p.y, Z: t.z };
-      if (cerc) {
-        m.push({ tip: 'arc', la, centru: cerc.centru, sens: cerc.baleiaj > 0 ? 'trigonometric' : 'orar', avans });
+      const lung = t.s - sPrec;
+      const dz = t.z - zCur;
+      const f = dz < 0 ? Math.min(avans, (avansPlonjare * Math.hypot(lung, dz)) / -dz) : avans;
+      if (cerc && lung >= EPS_RUPTURA) {
+        m.push({ tip: 'arc', la, centru: cerc.centru, sens: cerc.baleiaj > 0 ? 'trigonometric' : 'orar', avans: f });
       } else {
-        m.push({ tip: 'taiere', la, avans });
+        m.push({ tip: 'taiere', la, avans: f });
       }
       zCur = t.z;
+      sPrec = t.s;
     }
     s0 = s1;
   }

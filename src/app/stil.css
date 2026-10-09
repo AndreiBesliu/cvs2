@@ -175,6 +175,8 @@ footer {
   border: 1px solid var(--margine);
   border-radius: 10px;
   padding: 1rem 1.25rem;
+  /* Lățimea maximă cuprinde și marginea interioară: altfel, pe un telefon, cutia ieșea cu 10 px peste ecran. */
+  box-sizing: border-box;
   max-width: min(46rem, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);
   overflow: auto;
@@ -222,7 +224,8 @@ footer {
   padding-top: 0;
 }
 
-.dialog tr.urechi td:last-child {
+/* Flexul stă într-un div: pe celula însăși ar anula colSpan-ul, iar câmpurile s-ar strânge într-o singură coloană. */
+.dialog .campuri-urechi {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
@@ -230,6 +233,11 @@ footer {
 
 .dialog tr.urechi input {
   max-width: 5rem;
+}
+
+/* Câmpul greșit se vede, nu doar motivul. */
+.dialog input[aria-invalid='true'] {
+  border-color: var(--rosu);
 }
 
 .dialog .nota {

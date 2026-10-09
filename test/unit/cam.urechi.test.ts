@@ -175,7 +175,7 @@ test('pornirea e la adâncime plină, iar toate rupturile sunt în (0, P), cu fl
     // Între două urechi rămâne o porțiune la −d de cel puțin 10 % din spațiul dintre paliere.
     const S = P / n;
     for (let k = 0; k + 1 < n; k++) {
-      const plin = noduri[4 * k + 5]!.s - noduri[4 * k + 4]!.s;
+      const plin: number = noduri[4 * k + 5]!.s - noduri[4 * k + 4]!.s;
       assert.ok(plin >= 0.1 * (S - W) - 1e-9, `${P}/${n}/${W}: între urechile ${k} și ${k + 1} doar ${plin}`);
     }
   }
@@ -239,5 +239,61 @@ test('urechile pe toate laturile: exterior, interior, pe linie; și în ambele s
         assert.ok(near(x.flanc, 6 * l, 1e-9), `${latura}/${sens}: flanc ${x.flanc}`);
       }
     }
+  }
+});
+
+test('urechi foarte înguste: bucățile sub 1e-6 mm sunt linii, nu arce citite ca cercul întreg (recenzia 2.4)', () => {
+  // Colțurile R10 ale plăcii 2, decalate cu R3 (R13): la W = 1e-11, rupturile cad la 1e-11 una de alta pe arc.
+  for (const [contur, n] of [[conturDreptunghi(50, 50, 120, 80, 10), 2], [conturDreptunghi(50, 50, 120, 80, 10), 6], [conturCerc(200, 200, 100), 4]] as const) {
+    const pr = profil(contur, { latura: 'exterior', sens: 'urcare', diametruScula: 6, adancime: 12, pas: 4 });
+    assert.ok(pr.ok);
+    if (!pr.ok) continue;
+    const P = lungimeBucla(pr.treceri[0]!.contururi[0]!);
+    for (const W of [1e-11, 1e-10, 2e-10, 1e-8]) {
+      const tr = traseuProfil(pr.treceri, REGIM, { numar: n, latime: W, varf: 10 });
+      assert.ok(tr.ok, tr.ok ? '' : tr.motiv);
+      if (!tr.ok) continue;
+      const S = P / n, l = Math.min(W / 2, 0.45 * (S - W));
+      for (const t of masoara(tr.miscari, 10, l)) {
+        assert.ok(near(t.plin + t.flanc + t.palier, P, 1e-6), `n = ${n}, W = ${W}, trecerea la −${t.d}: ${t.plin + t.flanc + t.palier} față de ${P}`);
+      }
+    }
+  }
+});
+
+test('flancul care coboară: pe verticală, cel mult avansul de plonjare; restul buclei, cu avansul de tăiere (recenzia 2.4)', () => {
+  const cazuri: ReadonlyArray<readonly [Contur, Latura, number, number]> = [
+    [conturDreptunghi(50, 50, 120, 80, 10), 'exterior', 8, 2], [conturDreptunghi(50, 50, 120, 80, 10), 'exterior', 6, 6],
+    [conturCerc(100, 100, 20), 'interior', 24, 2], [conturCerc(200, 200, 100), 'exterior', 8, 2],
+  ];
+  for (const [contur, latura, W, g] of cazuri) {
+    const pr = profil(contur, { latura, sens: 'urcare', diametruScula: 6, adancime: 12, pas: 4 });
+    assert.ok(pr.ok);
+    if (!pr.ok) continue;
+    const tr = traseuProfil(pr.treceri, REGIM, { numar: 4, latime: W, varf: 12 - g });
+    assert.ok(tr.ok, tr.ok ? '' : tr.motiv);
+    if (!tr.ok) continue;
+    let x = 0, y = 0, z = 5, coborari = 0;
+    for (const m of tr.miscari) {
+      if (m.tip === 'rapida') { x = m.la.X ?? x; y = m.la.Y ?? y; z = m.la.Z ?? z; continue; }
+      if (m.tip !== 'taiere' && m.tip !== 'arc') continue;
+      const x1 = m.la.X ?? x, y1 = m.la.Y ?? y, z1 = m.la.Z ?? z;
+      const L = m.tip === 'arc'
+        ? Math.hypot(x - m.centru.x, y - m.centru.y) * Math.abs(baleiajArc({ x, y }, { x: x1, y: y1 }, m.centru, m.sens === 'trigonometric'))
+        : Math.hypot(x1 - x, y1 - y);
+      const et = `${latura} W ${W} g ${g}`;
+      if (L > 1e-12 && z1 < z) {
+        // Flancul care coboară: viteza pe verticală = F·|ΔZ| / L₃.
+        coborari++;
+        const vert = (m.avans * (z - z1)) / Math.hypot(L, z1 - z);
+        assert.ok(vert <= REGIM.avansPlonjare + 1e-9, `${et}: ${vert} mm/min pe verticală`);
+        assert.ok(m.avans <= REGIM.avans);
+      } else if (L > 1e-12) {
+        assert.equal(m.avans, REGIM.avans, `${et}: o mișcare care nu coboară merge cu avansul de tăiere`);
+      }
+      x = x1; y = y1; z = z1;
+    }
+    const traverseaza = pr.treceri.filter((t) => t.adancime > 12 - g).length;
+    assert.equal(coborari, 4 * traverseaza, `${latura} W ${W} g ${g}: un flanc care coboară pe ureche, pe fiecare trecere care traversează`);
   }
 });

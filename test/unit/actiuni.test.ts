@@ -5,6 +5,8 @@ import { traduce } from '../../src/i18n/t.ts';
 import { documentNou, type Operatie } from '../../src/model/document.ts';
 import { istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
+import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
+import { operatieDinDialog } from '../../src/app/valoriOperatii.ts';
 import { creeazaRegistru, ruleaza, stare } from '../../src/ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
 
@@ -275,4 +277,40 @@ test('plafonul tăieturilor la Ctrl+D: un element cu două operații, pus de 50 
   ctx.scrie(cu(49_999));
   ctx.selecteaza(['i0']);
   assert.deepEqual(stare(r, 'document.duplica-selectia', ctx), { ok: true }, '99 998 + 2 încape');
+});
+
+test('Exportă fără nicio schimbare, pe un proiect redeschis cu urechi: nicio comandă; un câmp necunoscut din urechi rămâne (recenzia 2.4)', () => {
+  const r = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
+  const ctx = context();
+  ruleaza(r, 'document.adauga-dreptunghi', ctx);
+  const d0 = ctx.h().doc;
+  // Urechile, cu un câmp necunoscut, salvate și redeschise ca în `proiectLocal`: `jsonCanonic` (cheile sortate), apoi ușa.
+  const salvat = jsonCanonic({ ...d0, piese: d0.piese.map((p) => ({ ...p, operatii: p.operatii.map((o) => ({ ...o, urechi: { numar: 4, latime: 8, grosime: 2, pozitii: [0.1, 0.4] } })) })) });
+  const re = incarca(JSON.parse(salvat));
+  assert.ok(re.ok, re.ok ? '' : re.motiv);
+  if (!re.ok) return;
+  let h = istoricNou(re.doc);
+  const p = re.doc.piese[0];
+  const o = p?.operatii[0];
+  assert.ok(p && o);
+  assert.deepEqual(Object.keys(o.urechi ?? {}), ['grosime', 'latime', 'numar', 'pozitii'], 'redeschis, cu cheile sortate');
+  const cu = (noi: Map<string, readonly Operatie[]>): ContextDocument => ({ ...ctx, istoric: () => h, scrie: (n) => { h = n; }, operatiiNoi: () => noi });
+  // Ce trimite dialogul: valorile reconstruite din câmpurile lui, fără câmpul necunoscut, în ordinea lui.
+  const v = { latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, urechi: { numar: 4, latime: 8, grosime: 2 } };
+  const scula = { numar: o.scula.numar, diametru: o.scula.diametru };
+  const inainte = h;
+  assert.deepEqual(ruleaza(r, 'document.aplica-operatii', cu(new Map([[p.id, [operatieDinDialog(o, v, scula)]]]))), { ok: true });
+  assert.equal(h, inainte, 'nicio comandă: nimic de anulat după un Exportă fără schimbare');
+  // Aceeași operație cu cheile în altă ordine (oricum ar construi-o dialogul): tot nicio comandă, comparația e canonică.
+  const invers = Object.fromEntries(Object.entries(o).reverse()) as Operatie;
+  assert.deepEqual(ruleaza(r, 'document.aplica-operatii', cu(new Map([[p.id, [invers]]]))), { ok: true });
+  assert.equal(h, inainte, 'aceleași valori în altă ordine nu sunt o schimbare');
+  // O schimbare reală: un singur pas, iar câmpul necunoscut rămâne.
+  assert.deepEqual(ruleaza(r, 'document.aplica-operatii', cu(new Map([[p.id, [operatieDinDialog(o, { ...v, urechi: { numar: 6, latime: 8, grosime: 2 } }, scula)]]]))), { ok: true });
+  assert.equal(h.trecut.length, inainte.trecut.length + 1);
+  assert.deepEqual(h.doc.piese[0]?.operatii[0]?.urechi, { grosime: 2, latime: 8, numar: 6, pozitii: [0.1, 0.4] });
+  // Bifa scoasă: fără urechi.
+  assert.equal(operatieDinDialog(o, { ...v, urechi: null }, scula).urechi, null);
+  // Rândul pe care dialogul nu-l are rămâne cum e.
+  assert.equal(operatieDinDialog(o, undefined, scula).urechi, o.urechi);
 });

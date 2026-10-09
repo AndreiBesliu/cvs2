@@ -33,7 +33,7 @@ export function traseuProfil(treceri: readonly Trecere[], p: ParametriTraseu, ur
       if (urechi && t.adancime > urechi.varf + EPS_VARF) {
         const noduri = noduriProfil(lungimeBucla(c), urechi, t.adancime);
         if (typeof noduri === 'string') return { ok: false, motiv: noduri };
-        const b = bucataCuUrechi(c, noduri, t.adancime, p.avans);
+        const b = bucataCuUrechi(c, noduri, t.adancime, p.avans, p.avansPlonjare);
         if (!b.ok) return b;
         for (const x of b.miscari) m.push(x);
         m.push({ tip: 'rapida', la: { Z: p.zSigur } });

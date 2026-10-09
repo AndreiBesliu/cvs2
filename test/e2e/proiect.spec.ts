@@ -262,6 +262,35 @@ test('în fila care doar citește, operațiile din dialog nu se pot schimba, dar
   expect(readFileSync(await (await d).path(), 'ascii')).toContain('Z-8.000');
 });
 
+test('în fila care doar citește, urechile scrise de scriitor se văd, oprite, și intră în export', async ({ page, context }) => {
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  // Scriitorul taie gaura prin foaie, cu urechi (implicitele: 4 × 8 × 2, deci palierul la −16).
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const rand = page.locator('[data-operatie="e1/e1"]');
+  await rand.locator('input').nth(0).fill('18');
+  await rand.locator('input').nth(1).fill('6');
+  await rand.locator('[data-camp="urechi"]').check();
+  const d1 = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await d1;
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await expect.poll(async () => (await versiuni(page)).length).toBe(2);
+  const a2 = await context.newPage();
+  await a2.goto('/');
+  await expect(a2.getByTestId('proiect')).toContainText('doar te uiți');
+  await a2.locator('[data-actiune="export.gcode"]').click();
+  await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="urechi"]')).toBeChecked();
+  await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="urechi"]')).toBeDisabled();
+  for (const c of ['urechi-numar', 'urechi-latime', 'urechi-grosime']) {
+    await expect(a2.locator(`[data-urechi="e1/e1"] [data-camp="${c}"]`)).toBeDisabled();
+  }
+  const d = a2.waitForEvent('download');
+  await a2.locator('[data-buton="exporta"]').click();
+  // Pe cerc, flancurile sunt elice: `G3 X… Y… Z-16.000 I… J…`.
+  expect(readFileSync(await (await d).path(), 'ascii')).toMatch(/ Z-16\.000\b/);
+});
+
 test('dialogul din fila care citește urmează versiunile scriitorului și, după preluare, nu scrie înapoi valori vechi', async ({ page, context }) => {
   await page.goto('/');
   await page.locator('[data-actiune="document.adauga-cerc"]').click();

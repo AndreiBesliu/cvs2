@@ -155,10 +155,10 @@ export function DialogExport(
     latime: p !== undefined && (!p.urechi || inMargini(p.latimeUreche, MARGINI_OPERATIE.latimeUreche)),
     grosime: p !== undefined && (!p.urechi || inMargini(p.grosimeUreche, MARGINI_OPERATIE.grosimeUreche)),
   });
-  const valid = diametruBun && operatii.every((o) => {
-    const b = randBun(param[o.cheie]);
-    return b.adancime && b.pas && b.numar && b.latime && b.grosime;
-  });
+  const randuri = operatii.map((o) => randBun(param[o.cheie]));
+  const operatiiBune = diametruBun && randuri.every((b) => b.adancime && b.pas);
+  const urechiBune = randuri.every((b) => b.numar && b.latime && b.grosime);
+  const valid = operatiiBune && urechiBune;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -184,6 +184,13 @@ export function DialogExport(
     return [[o.cheie, { latura: p.latura, sens: p.sens, adancime, pas, urechi }] as const];
   }));
   const fmtFreza = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3 });
+  // Motivul spune ce câmp e greșit: valorile operației, urechile, sau amândouă (recenzia feliei 2.4).
+  const motivInvalid = [
+    ...(operatiiBune ? [] : [t('motiv.operatie-invalida')]),
+    ...(urechiBune ? [] : [t('motiv.urechi-invalide', {
+      n: MARGINI_OPERATIE.urechi, latime: fmtFreza.format(MARGINI_OPERATIE.latimeUreche), grosime: fmtFreza.format(MARGINI_OPERATIE.grosimeUreche),
+    })]),
+  ].join(' ');
 
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="export-titlu">
@@ -257,6 +264,7 @@ export function DialogExport(
                   <tr className="urechi" data-urechi={o.cheie}>
                     <td />
                     <td colSpan={5}>
+                      <div className="campuri-urechi">
                       <label>
                         {t('export.urechi.numar')}
                         <input type="text" inputMode="numeric" value={p.numarUrechi} data-camp="urechi-numar" disabled={doarCitire}
@@ -272,6 +280,7 @@ export function DialogExport(
                         <input type="text" inputMode="decimal" value={p.grosimeUreche} data-camp="urechi-grosime" disabled={doarCitire}
                           aria-invalid={!b.grosime} onChange={(ev) => { schimba(o.cheie, { grosimeUreche: ev.target.value }); }} />
                       </label>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -281,7 +290,7 @@ export function DialogExport(
           </tbody>
         </table>
         <p className="nota">{t('export.regim')}</p>
-        {!valid && <p role="status" className="avertisment" data-testid="export-invalid">{t('motiv.operatie-invalida')}</p>}
+        {!valid && <p role="status" className="avertisment" data-testid="export-invalid">{motivInvalid}</p>}
         {cere && (
           <div className="confirmare-iesire" data-testid="iesire-foaie" ref={cerereVizibila} tabIndex={-1}>
             <div role="alert">
@@ -297,7 +306,7 @@ export function DialogExport(
         )}
         <div className="butoane">
           <button type="button" disabled={!valid || (cere !== undefined && !bifat)} data-buton="exporta"
-            title={valid ? undefined : t('motiv.operatie-invalida')}
+            title={valid ? undefined : motivInvalid}
             onClick={() => {
               const d = citesteNumar(diametru);
               if (!valid || d === null) return;

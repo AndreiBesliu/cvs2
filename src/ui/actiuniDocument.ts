@@ -4,6 +4,7 @@ import {
   type Numaratoare, type Operatie, type Piesa,
 } from '../model/document.ts';
 import { conturElement } from '../model/forme.ts';
+import { jsonCanonic } from '../model/incarcare.ts';
 import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { Actiune } from './actiuni.ts';
@@ -325,7 +326,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
       const comenzi: Comanda[] = [];
       for (const vechi of h.doc.piese) {
         const operatii = noi.get(vechi.id);
-        if (!operatii || JSON.stringify(operatii) === JSON.stringify(vechi.operatii)) continue;
+        // Canonic, nu după ordinea cheilor: un document redeschis are cheile sortate (`jsonCanonic` la salvare).
+        if (!operatii || jsonCanonic(operatii) === jsonCanonic(vechi.operatii)) continue;
         comenzi.push({ tip: 'inlocuieste-piesa', vechi, nou: { ...vechi, operatii: operatii.map((o) => structuredClone(o)) } });
       }
       const c = pas(comenzi);

@@ -72,6 +72,11 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       if (t.adancime <= varf + EPS_VARF) {
         return { ok: false, motiv: `${t.idLume}: tăietura de ${t.adancime} mm nu ajunge la vârful urechilor (la ${varf} mm de fața de sus), deci urechile n-ar exista` };
       }
+      // Pe axa tăieturii, puntea ține grosimea doar pe W − D (ADR 0028, precizarea din 09.10): mai îngustă decât freza,
+      // ar fi mai subțire sau n-ar exista.
+      if (t.urechi.latime < scula.diametru - EPS_VARF) {
+        return { ok: false, motiv: `${t.idLume}: urechile de ${t.urechi.latime} mm sunt mai scurte decât diametrul frezei (Ø${scula.diametru}), deci puntea de peste tăietură ar fi mai subțire de ${g} mm sau n-ar exista` };
+      }
       urechi = { numar: t.urechi.numar, latime: t.urechi.latime, varf };
     }
     const pr = profil(conturElement(t), { latura: t.latura, sens: t.sens, diametruScula: scula.diametru, adancime: t.adancime, pas: t.pas });

@@ -200,3 +200,18 @@ test('o operație fără urechi dă același program ca în v4: placa 1 neschimb
   assert.ok(job.ok);
   if (job.ok) assert.ok(job.program.miscari.every((m) => m.tip !== 'arc' || m.la.Z === undefined), 'nicio elice');
 });
+
+test('urechile mai scurte decât diametrul frezei sunt refuzate: pe axa tăieturii puntea ar fi mai subțire (recenzia 2.4)', () => {
+  const d0 = docDin({ latime: 300, inaltime: 200, grosime: 12 },
+    { id: 'p', forma: { tip: 'dreptunghi', latime: 120, inaltime: 80, razaColt: 10 }, matrice: { ...ID, e: 50, f: 50 } });
+  const motiv = (latime: number, diametru: number): string => {
+    const r = programDinDocument(cuDiametru(cuOperatie(d0, 'p', { adancime: 12, pas: 4, urechi: { numar: 4, latime, grosime: 2 } }), diametru));
+    return r.ok ? '' : r.motiv;
+  };
+  assert.match(motiv(3, 6), /p\/p: urechile de 3 mm sunt mai scurte decât diametrul frezei \(Ø6\), deci puntea de peste tăietură ar fi mai subțire de 2 mm/);
+  assert.match(motiv(5.99, 6), /mai scurte decât diametrul frezei/);
+  assert.match(motiv(8, 10), /mai scurte decât diametrul frezei \(Ø10\)/);
+  assert.equal(motiv(6, 6), '', 'W = D trece: pe axă, puntea atinge grosimea într-un punct');
+  assert.equal(motiv(8, 6), '');
+  assert.equal(motiv(8, 3.175), '');
+});

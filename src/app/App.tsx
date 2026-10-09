@@ -15,6 +15,7 @@ import { useLimba } from '../ui/useLimba.ts';
 import type { RezultatConfig } from './config.ts';
 import { listaDesen } from './desen.ts';
 import type { Jurnal } from './jurnalErori.ts';
+import { operatieDinDialog } from './valoriOperatii.ts';
 import { ConflictDeScriere, type DepozitProiect, type ProiectDeschis } from './proiectLocal.ts';
 
 type Props = {
@@ -341,10 +342,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
     const noi = new Map<string, Operatie[]>();
     const numar = exportFoaie?.numar ?? 1;
     for (const { piesa } of exportFoaie?.piese ?? []) {
-      noi.set(piesa.id, piesa.operatii.map((o) => {
-        const v = c.valori.get(`${piesa.id}/${o.id}`);
-        return { ...o, ...(v ?? {}), scula: { ...o.scula, numar, diametru: c.diametru } };
-      }));
+      noi.set(piesa.id, piesa.operatii.map((o) => operatieDinDialog(o, c.valori.get(`${piesa.id}/${o.id}`), { numar, diametru: c.diametru })));
     }
     const scris = ruleaza(registru, 'document.aplica-operatii', context({ operatiiNoi: () => noi }));
     // Doar citirea nu oprește exportul (operațiile din document rămân cele de exportat); orice alt refuz, da.
