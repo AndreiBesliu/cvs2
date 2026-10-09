@@ -198,15 +198,23 @@ async function deschide(idb: IDBFactory, expirat: () => boolean): Promise<Proiec
         const r = documentDin(v);
         return r.ok ? { ok: true, v, doc: r.doc } : r;
       };
-      if (canal) {
-        canal.onmessage = () => {
-          void reciteste().then((r) => {
-            if (oprit) return;
-            if (!r.ok) u.laNecitita(r.motiv);
-            else if (r.doc) u.laVersiune(r.doc);
-          }, () => undefined);
-        };
-      }
+      // Revizia pe care fila o are deja: o versiune se dă mai departe o singură dată.
+      let revVazuta = citita?.rev ?? null;
+      const urmeaza = (): void => {
+        void reciteste().then((r) => {
+          if (oprit) return;
+          if (!r.ok) u.laNecitita(r.motiv);
+          else if (r.doc && (r.v?.rev ?? null) !== revVazuta) {
+            revVazuta = r.v?.rev ?? null;
+            u.laVersiune(r.doc);
+          }
+        }, () => undefined);
+      };
+      if (canal) canal.onmessage = urmeaza;
+      // Fila se abonează abia după prima desenare (`useEffect`): o versiune salvată între deschidere și abonare n-a avut
+      // cui să-și trimită mesajul. O citire acum o prinde, altfel fila ar rămâne pe versiunea veche până la salvarea
+      // următoare (văzut ca test instabil, o dată din zece).
+      urmeaza();
       // Când fila care scrie se închide, blocarea vine aici: fila asta devine scriitorul, de la ultima versiune.
       cereBlocarea(true, oprire.signal).then(async (b) => {
         if (!b) return;
