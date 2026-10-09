@@ -260,6 +260,10 @@ test('sensul de tăiere (ADR 0027): gaura în urcare e orar (G2); trecută pe op
   expect(opozitie).not.toMatch(/^G2 /m);
   // Același punct de pornire în ambele sensuri.
   expect(opozitie.match(/^G0 X.*$/m)?.[0]).toBe(urcare.match(/^G0 X.*$/m)?.[0]);
+  // Sensul ales a intrat în document: redeschis, dialogul îl arată.
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(sens).toHaveValue('opozitie');
   // Pe linie, sensul nu schimbă nimic: câmpul e oprit.
   await page.locator('[data-operatie="e1/e1"] select[data-camp="latura"]').selectOption('pe-linie');
   await expect(sens).toBeDisabled();
