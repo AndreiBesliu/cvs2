@@ -952,3 +952,9 @@ hârtie). 2.3c (contururile deschise) trece lângă 2.7: n-are încă de unde pr
 **Ce intră:** ADR 0028 (documentul v5 cu `Operatie.urechi`, migrarea v4 → v5 cu `null`); profilul Z(s) portat din
 ediția întâi, cu refuz în loc de palierul strâns; emitentul ca modificator peste trecerea din IR (liniile și arcele
 tăiate exact, flancul pe arc ca elice); vârful urechii de la fața de jos a foii; coloana Urechi în dialogul de export.
+
+**Pauză:** 10.10 00:05, la cererea owner-ului („o să facem pauză când se poate”). Gata și comis: contractul (ADR 0028, cu
+precizarea de după recenzie), aplicația, recenzia (6 constatări, toate reparate), oracolul independent, e2e-ul prin poartă;
+1861 de teste unitare și 39 e2e, verzi. Otrăvurile: 20 din 37 rulate, 19 prinse; cea scăpată (avansul pe flanc socotit cu
+lungimea în plan) e acum prinsă de testul strâns. Rămân: otrăvurile 21–37 și reluarea celei scăpate, documentele feliei,
+push pe `main`, publicarea pe test. Ramura `wip/2.4-urechi` ține tot, împinsă.

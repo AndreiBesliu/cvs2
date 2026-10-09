@@ -288,6 +288,9 @@ test('flancul care coboară: pe verticală, cel mult avansul de plonjare; restul
         const vert = (m.avans * (z - z1)) / Math.hypot(L, z1 - z);
         assert.ok(vert <= REGIM.avansPlonjare + 1e-9, `${et}: ${vert} mm/min pe verticală`);
         assert.ok(m.avans <= REGIM.avans);
+        // Plafonat: exact avansul de plonjare pe verticală (lungimea în spațiu, cu Z), nu mai încet decât cere contractul.
+        if (m.avans < REGIM.avans) assert.ok(Math.abs(vert - REGIM.avansPlonjare) < 1e-9, `${et}: plafonat la ${vert}, nu la ${REGIM.avansPlonjare}`);
+        else assert.ok(vert <= REGIM.avansPlonjare + 1e-9);
       } else if (L > 1e-12) {
         assert.equal(m.avans, REGIM.avans, `${et}: o mișcare care nu coboară merge cu avansul de tăiere`);
       }
