@@ -3,6 +3,7 @@ import { conturElement } from '../model/forme.ts';
 import { taieturiFoaie } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { profil } from './profil.ts';
+import { regiunePastrata, verificaTaietura } from './regiune.ts';
 import { traseuProfil } from './traseu.ts';
 
 /**
@@ -33,6 +34,9 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT)
   if (alta) {
     return { ok: false, motiv: `${alta.idLume}: altă sculă (T${alta.scula.numar}, Ø${alta.scula.diametru}) decât T${scula.numar}, Ø${scula.diametru}; schimbarea sculei vine în etapa 3` };
   }
+  // Regiunea păstrată (ADR 0026): inelele și includerea lor, înaintea oricărui traseu.
+  const regiune = regiunePastrata(taieturi);
+  if (!regiune.ok) return { ok: false, motiv: regiune.motiv };
   const miscari: Miscare[] = [];
   for (const t of taieturi) {
     // Mai adânc decât foaia înseamnă în masa de sacrificiu (sau în masa mașinii). Supracursa unei tăieri prin material
@@ -42,6 +46,9 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT)
     }
     const pr = profil(conturElement(t), { latura: t.latura, diametruScula: scula.diametru, adancime: t.adancime, pas: t.pas });
     if (!pr.ok) return { ok: false, motiv: `${t.idLume}: ${pr.motiv}` };
+    // Invarianta 2: trecerile au același traseu în plan, deci se judecă o dată, pe prima.
+    const incalcare = verificaTaietura(regiune.regiune, t.idLume, t.latura, pr.treceri[0]?.contururi ?? [], scula.diametru / 2);
+    if (incalcare) return { ok: false, motiv: incalcare };
     const tr = traseuProfil(pr.treceri, regim);
     if (!tr.ok) return { ok: false, motiv: `${t.idLume}: ${tr.motiv}` };
     miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, ${t.latura}, ${t.adancime} mm`, element: t.idLume });

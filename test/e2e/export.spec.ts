@@ -216,3 +216,23 @@ test('virgula zecimală: „2,5” înseamnă 2,5 mm, nu 25; un text care nu e n
   // Gaura de 8 mm cu pasul de cel mult 2,5: patru treceri egale, la −2, −4, −6 și −8 (cu „25” ar fi fost una singură).
   for (const z of ['Z-2.000', 'Z-4.000', 'Z-6.000', 'Z-8.000']) expect(text).toContain(z);
 });
+
+test('regiunea păstrată (ADR 0026): două dreptunghiuri puse unul peste altul nu se exportă, iar motivul se vede', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  let descarcari = 0;
+  page.on('download', () => { descarcari++; });
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(page.getByTestId('export-stare')).toContainText('regiunea păstrată: e1/e1 și e2/e2 se ating sau se intersectează');
+  // Tras deoparte (la 230 mm), al doilea nu mai atinge primul: exportul merge.
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await trage(page, 110, 50, 120);
+  const d = page.waitForEvent('download');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await page.locator('[data-buton="exporta"]').click();
+  await d;
+  expect(descarcari).toBe(1);
+});
+

@@ -13,7 +13,7 @@ function distantaLaSegmentDrept(p: Punct, a: Punct, b: Punct): number {
 }
 
 /** Unghiul u e pe arcul care pleacă din `start` cu baleiajul cu semn `baleiaj`? */
-function peArc(u: number, start: number, baleiaj: number): boolean {
+export function peArc(u: number, start: number, baleiaj: number): boolean {
   const doiPi = 2 * Math.PI;
   const rel = baleiaj >= 0 ? (((u - start) % doiPi) + doiPi) % doiPi : (((start - u) % doiPi) + doiPi) % doiPi;
   return rel <= Math.abs(baleiaj);
