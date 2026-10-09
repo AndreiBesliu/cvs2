@@ -8,6 +8,8 @@
  *   întoarsă din 18cf16d, cea cerută de §7) pe ambele colțuri ale ei, placa pe toate 4 colțurile și ambele Z0,
  *   dreptunghiuri rotunjite, instanțe rotite, oglindiri, `pe-linie`, legarea etichetei de operație, etichetele;
  * - pe a doua metodă: aria exactă față de aria eșantionată, pe bucle aleatoare cu arce, pe toate colțurile;
+ * - amendamentul ADR 0028 §5 (felia 2.4): pe fiecare program judecat aici, verdictele invariantei 9 sunt exact cele ale
+ *   primei redactări (ultimul test);
  * - lipirea cu aplicația (testele „lipire:”): orice program al aplicației trece invariantele 9 și 2 pe corpusul 2.3a
  *   (cu sensuri la întâmplare); schimbarea sensului unei operații întoarce semnul buclelor ei și numai al lor, din
  *   același punct de pornire; `pe-linie` nu schimbă nimic; fișierele de aur ale plăcii 1.
@@ -20,8 +22,8 @@ import { laDocument, poarta, type ContextPoarta, type Incalcare } from '../oracl
 import { type DocV4O, type Liber, type SensO } from '../oracles/document.ts';
 import { citesteEticheta, regiuneDinDocument, verificaEticheta, type Regiune } from '../oracles/regiune.ts';
 import {
-  aschia, buclele, parteaPastrataPrinAschie, semnAsteptat, sensulPeretelui, sensurileEtichetelor, type Bucla,
-  type EtichetaActiva,
+  aschia, buclele, bucleleInainteDe0028, parteaPastrataPrinAschie, semnAsteptat, sensulPeretelui, sensurileEtichetelor,
+  verificaSensul, type Bucla, type EtichetaActiva,
 } from '../oracles/sens.ts';
 import {
   aleator, cerc, corpus, documentRegiune, drept, oglinda, PLACA_1, programDinTrasee, simple, STOC, tr, type CazCorpus, type Montaj,
@@ -41,7 +43,16 @@ const SENSURI: readonly SensO[] = ['urcare', 'opozitie'];
 function ctxDe(reg: Regiune, D: number, m: Montaj = MONTAJE[0]!): ContextPoarta {
   return { foaie: m.foaie, origine: m.origine, z0: m.z0, diametruScula: D, pas: 1000, supracursa: 0, asteptareAx: 3, regiune: reg };
 }
-const inv = (n: number) => (text: string, ctx: ContextPoarta): Incalcare[] => poarta(text, ctx).filter((i) => i.invarianta === n);
+/**
+ * Fiecare program judecat de poartă în acest fișier, cu contextul lui: la sfârșit, verdictele invariantei 9 amendate
+ * (ADR 0028 §5) se compară cu ale primei redactări, pe toate (proba că programele fără urechi nu-și schimbă verdictul).
+ */
+const vazute: Array<{ readonly text: string; readonly ctx: ContextPoarta }> = [];
+const poartaV = (text: string, ctx: ContextPoarta): Incalcare[] => {
+  vazute.push({ text, ctx });
+  return poarta(text, ctx);
+};
+const inv = (n: number) => (text: string, ctx: ContextPoarta): Incalcare[] => poartaV(text, ctx).filter((i) => i.invarianta === n);
 const inv9 = inv(9);
 const inv2 = inv(2);
 const mesaje = (v: readonly Incalcare[]): string => v.map((i) => `[${i.invarianta}] ${i.linia}: ${i.mesaj}`).join('\n');
@@ -275,8 +286,8 @@ const ctxPlaca = (sens: { rama?: SensO; gaura?: SensO }, origine: 'stanga-jos' |
 });
 
 test('placa 1 (§7 amendat: gaura G3, insula G2, din același punct): A pe stânga-jos și B pe dreapta-sus trec toată poarta', () => {
-  assert.deepEqual(poarta(cuEtichete(PLACA_1_NOUA.A), ctxPlaca({}, 'stanga-jos')), []);
-  assert.deepEqual(poarta(cuEtichete(PLACA_1_NOUA.B), ctxPlaca({}, 'dreapta-sus')), []);
+  assert.deepEqual(poartaV(cuEtichete(PLACA_1_NOUA.A), ctxPlaca({}, 'stanga-jos')), []);
+  assert.deepEqual(poartaV(cuEtichete(PLACA_1_NOUA.B), ctxPlaca({}, 'dreapta-sus')), []);
   // Aceleași linii (34), aceeași pornire a fiecărei bucle ca fișierele vechi; diferă doar insula.
   for (const f of ['A', 'B'] as const) {
     const nou = PLACA_1_NOUA[f].split('\n'), vechi = PLACA_1_VECHE[f].split('\n');
@@ -474,8 +485,9 @@ function intoarce(doc: DocV4O, alege: (latura: string, k: number) => boolean): D
   return d;
 }
 
-test('lipire: aplicația e pe schema 4 (ușa primește un v4)', async () => {
-  assert.equal(await schemaAplicatiei(), 4);
+test('lipire: aplicația e pe schema 4 sau 5 (ușa primește un v4; pe 5, îl migrează cu urechi: null)', async () => {
+  const s = await schemaAplicatiei();
+  assert.ok(s === 4 || s === 5, `schema ${s}`);
 });
 
 test('lipire: orice program scris de aplicație trece invariantele 9 și 2 (corpusul 2.3a cu sensuri la întâmplare, placa 1 × 8 montaje × 4 sensuri)', async () => {
@@ -484,7 +496,7 @@ test('lipire: orice program scris de aplicație trece invariantele 9 și 2 (corp
   let bucle = 0, plus = 0, minus = 0;
   for (const x of rez) {
     if (x.text === null) continue;
-    const v = poarta(x.text, ctxCaz(x.caz)).filter((i) => i.invarianta === 9 || i.invarianta === 2);
+    const v = poartaV(x.text, ctxCaz(x.caz)).filter((i) => i.invarianta === 9 || i.invarianta === 2);
     if (v.length) rele.push(`${descrie(x.caz)}: ${mesaje(v.slice(0, 3))}`);
     const reg = regiuneDinDocument(x.caz.doc);
     const et = eticheteleProgramului(x.text, reg);
@@ -547,7 +559,7 @@ test('lipire: toate operațiile exterior / interior întoarse: fiecare buclă î
   rez.forEach((x, k) => {
     const y = b[k]!;
     if (y.text === null) { rele.push(`${descrie(x.caz)}: întors, aplicația refuză: ${y.motiv}`); return; }
-    const v = poarta(y.text, ctxCaz(y.caz)).filter((i) => i.invarianta === 9 || i.invarianta === 2);
+    const v = poartaV(y.text, ctxCaz(y.caz)).filter((i) => i.invarianta === 9 || i.invarianta === 2);
     if (v.length) rele.push(`${descrie(x.caz)}, întors: ${mesaje(v.slice(0, 2))}`);
     const c = comparaIntoarse(x.caz, x.text!, y.text, y.caz.doc);
     if (c.rele.length) rele.push(`${descrie(x.caz)}: ${c.rele.slice(0, 3).join('; ')}`);
@@ -612,6 +624,27 @@ test('lipire: fișierele de aur ale plăcii 1 din repo sunt exact cele cerute de
   for (const f of ['A', 'B'] as const) {
     const text = readFileSync(new URL(`../placi/placa-01/placa-01-${f}.nc`, import.meta.url), 'utf8');
     assert.equal(text, PLACA_1_NOUA[f], `placa-01-${f}.nc nu e cea de pe hârtie`);
-    assert.deepEqual(poarta(cuEtichete(text), ctxPlaca({}, f === 'A' ? 'stanga-jos' : 'dreapta-sus')), [], f);
+    assert.deepEqual(poartaV(cuEtichete(text), ctxPlaca({}, f === 'A' ? 'stanga-jos' : 'dreapta-sus')), [], f);
   }
+});
+
+test('amendamentul ADR 0028 §5: pe fiecare program judecat în acest fișier (scrise de mână, traseele cerute coborâte și ridicate, inele întoarse, aplicația), verdictele invariantei 9 sunt EXACT cele ale primei redactări', () => {
+  let programe = 0, cuIncalcari = 0, verdicte = 0;
+  const rele: string[] = [];
+  for (const { text, ctx } of vazute) {
+    if (!ctx.regiune) continue;
+    const reg = ctx.regiune;
+    const { evenimente } = citeste(text);
+    const et = eticheteleProgramului(text, reg);
+    const laDoc = (p: Punct3): Punct3 => laDocument(p, ctx);
+    const nou = verificaSensul(evenimente, et, reg, laDoc).map((x) => `${x.linia}: ${x.mesaj}`);
+    const vechi = verificaSensul(evenimente, et, reg, laDoc, bucleleInainteDe0028).map((x) => `${x.linia}: ${x.mesaj}`);
+    if (JSON.stringify(nou) !== JSON.stringify(vechi)) rele.push(`${text.split('\n').length} linii: nou ${JSON.stringify(nou.slice(0, 2))}, vechi ${JSON.stringify(vechi.slice(0, 2))}`);
+    programe++;
+    if (vechi.length) cuIncalcari++;
+    verdicte += vechi.length;
+  }
+  assert.deepEqual(rele, []);
+  assert.ok(programe >= 500 && cuIncalcari >= 20, `${programe} programe, ${cuIncalcari} cu încălcări (${verdicte} verdicte)`);
+  console.log(`amendamentul 9: ${programe} programe comparate, ${cuIncalcari} cu încălcări, ${verdicte} verdicte identice`);
 });

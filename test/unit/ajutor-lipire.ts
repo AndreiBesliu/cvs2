@@ -3,9 +3,9 @@
  * primește interfața, și programul exportat (`calculeazaExport`, cu confirmarea ieșirii din foaie când o cere). Doar
  * testele din `test/unit` îl importă; oracolele (`test/oracles`) rămân fără `src/`.
  */
-import type { DocV4O, Liber } from '../oracles/document.ts';
+import type { DocV4O, DocV5O, Liber } from '../oracles/document.ts';
 
-/** Versiunea schemei pe care o primește ușa aplicației (4 = a trecut la ADR 0027), aflată cu un document v4 minim. */
+/** Versiunea schemei pe care o primește ușa aplicației (4 = ADR 0027, 5 = ADR 0028), aflată cu un document minim. */
 export async function schemaAplicatiei(): Promise<number> {
   const { incarca } = await import('../../src/model/incarcare.ts');
   const r = incarca({
@@ -15,14 +15,26 @@ export async function schemaAplicatiei(): Promise<number> {
 }
 
 /**
- * Documentul dat aplicației, prin ușă (`incarca`). O aplicație încă pe schema 3 refuză un v4: atunci primește același
- * document fără `sens` (invariantele 1–8 nu depind de el; invarianta 9 cere aplicația pe v4).
+ * Documentul dat aplicației, prin ușă (`incarca`). O aplicație mai veche decât documentul îl refuză; atunci primește
+ * același document coborât cât se poate fără să piardă nimic din ce taie: un v5 fără nicio ureche devine v4 (`urechi`
+ * scos), un v4 devine v3 (`sens` scos; invariantele 1–8 nu depind de el). Un v5 CU urechi nu se coboară: refuzul ușii
+ * e o eroare.
  */
-export async function pentruAplicatie<D>(doc: DocV4O): Promise<D> {
+export async function pentruAplicatie<D>(doc: DocV4O | DocV5O): Promise<D> {
   const { incarca } = await import('../../src/model/incarcare.ts');
   const r = incarca(structuredClone(doc));
   if (r.ok) return r.doc as unknown as D;
-  const v3 = structuredClone(doc) as Liber;
+  let v4 = structuredClone(doc) as Liber;
+  if (doc.schema === 5) {
+    const operatii = (v4['piese'] as Liber[]).flatMap((p) => p['operatii'] as Liber[]);
+    if (operatii.some((o) => o['urechi'] !== null)) throw new Error(`incarca a refuzat un document v5 cu urechi: ${String(r.motiv)}`);
+    v4['schema'] = 4;
+    for (const o of operatii) delete o['urechi'];
+    const r4 = incarca(structuredClone(v4));
+    if (r4.ok) return r4.doc as unknown as D;
+    v4 = structuredClone(v4);
+  }
+  const v3 = v4;
   v3['schema'] = 3;
   for (const p of v3['piese'] as Liber[]) for (const o of p['operatii'] as Liber[]) delete o['sens'];
   const r3 = incarca(v3);
@@ -32,14 +44,21 @@ export async function pentruAplicatie<D>(doc: DocV4O): Promise<D> {
 
 export type IesireAplicatie = { readonly ok: true; readonly text: string } | { readonly ok: false; readonly motiv: string };
 
-/** Programul aplicației pentru un document v4 și un montaj, cu confirmarea ieșirii din foaie dacă o cere. */
+/**
+ * Programul aplicației pentru un document v4 / v5 și un montaj, cu confirmarea ieșirii din foaie dacă o cere. `supracursa`
+ * (ADR 0028 §2, mm) se dă exportului doar când e cerută (implicit, ca din interfață, nu se trimite).
+ */
 export async function programulAplicatiei(
-  doc: DocV4O, montaj: { readonly origine: 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus'; readonly z0: 'sus' | 'jos' },
+  doc: DocV4O | DocV5O,
+  montaj: { readonly origine: 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus'; readonly z0: 'sus' | 'jos' },
+  o: { readonly supracursa?: number } = {},
 ): Promise<IesireAplicatie> {
   const { calculeazaExport } = await import('../../src/ui/actiuniExportCalcul.ts');
   type DocApp = Parameters<typeof calculeazaExport>[0];
+  type Optiuni = Parameters<typeof calculeazaExport>[1];
   const d = await pentruAplicatie<DocApp>(doc);
-  let r = await calculeazaExport(d, montaj);
-  if (!r.ok && 'cereConfirmare' in r && r.cereConfirmare) r = await calculeazaExport(d, { ...montaj, confirmareIesire: r.cereConfirmare });
+  const optiuni = (o.supracursa === undefined ? { ...montaj } : { ...montaj, supracursa: o.supracursa }) as Optiuni;
+  let r = await calculeazaExport(d, optiuni);
+  if (!r.ok && 'cereConfirmare' in r && r.cereConfirmare) r = await calculeazaExport(d, { ...optiuni, confirmareIesire: r.cereConfirmare });
   return r.ok ? { ok: true, text: r.program.text } : { ok: false, motiv: r.motiv };
 }

@@ -17,13 +17,20 @@
  * (`parteaPastrataPrinAschie`: urcarea = dintele intră gros și iese subțire, pe peretele păstrat), iar tabelul ADR-ului
  * e doar o verificare a derivării (testul de pe hârtie).
  *
+ * AMENDAMENTUL din ADR 0028 §5 (felia 2.4, urechile): Z-ul se poate schimba sub fața de sus fără să rupă drumul. Din
+ * definițiile de mai jos a dispărut „la aceeași adâncime” (în mișcare și în drum); buclele și aria rămân în proiecția
+ * XY. Prima redactare (2.3b) rămâne în `bucleleInainteDe0028`, doar ca proba că programele fără urechi (Z constant pe
+ * trecere) dau EXACT aceleași verdicte (`sens.oracol.test.ts`).
+ *
  * Definițiile mele pe textul G-code (alegeri, unde textul tace; marcate „ALEGERE”):
- * - MIȘCARE LA ADÂNCIME: G1 / G2 / G3 cu startul cunoscut, cu ambele capete sub fața de sus (z < −1e-6 în document) și
- *   la aceeași adâncime (|Δz| ≤ 1e-6). Orice altceva (G0, plonjarea, ridicarea, rampa, arcul elicoidal, o mișcare
- *   prin aer sau care trece prin fața de sus) întrerupe drumul. Un G1 fără deplasare în XY la adâncime nu-l întrerupe;
- * - DRUM: șirul maximal de mișcări la adâncime consecutive, la aceeași adâncime, sub aceeași etichetă (o etichetă nouă
- *   îl întrerupe). Adică „de la plonjare până la ridicare, la o adâncime”: trecerile coborâte pe verticală, fără
- *   ridicare, sunt drumuri separate;
+ * - MIȘCARE ÎN MATERIAL (ADR 0028 §5): G1 / G2 / G3 cu startul cunoscut și cu ambele capete sub fața de sus (z < −1e-6
+ *   în document), la orice Z (palierul și flancurile urechilor, arcul elicoidal). Orice altceva (G0, o mișcare cu un
+ *   capăt pe sau peste fața de sus: plonjarea de sus, ridicarea, rampa care intră din aer) întrerupe drumul. ALEGERE:
+ *   o mișcare în material fără deplasare în XY (un G1 pe verticală între treceri, fără ridicare) nu-l întrerupe și nu
+ *   intră în buclă (n-are arie și n-are lungime în proiecție), ca G1-ul fără deplasare din prima redactare;
+ * - DRUM: șirul maximal de mișcări în material consecutive, sub aceeași etichetă (o etichetă nouă îl întrerupe), la
+ *   orice Z. Adică „de la plonjare până la ridicare”: trecerile coborâte pe verticală, fără ridicare, sunt în ACELAȘI
+ *   drum, iar tăierea în bucle (mai jos) le desparte, fiindcă fiecare se închide în pornire;
  * - BUCLĂ: drumul se taie în bucle închise: o buclă se închide în primul capăt de mișcare aflat la cel mult 0,002 mm
  *   (rotunjirea postului) de un vârf al drumului deschis de până atunci (cel mai devreme vârf, deci de obicei startul),
  *   după cel puțin 0,01 mm de drum de la acel vârf; ce era înaintea vârfului (o legătură la adâncime) rămâne un drum
@@ -128,16 +135,25 @@ export function semnAsteptat(latura: 'exterior' | 'interior', sens: SensO): 1 | 
 
 export type P2 = { readonly x: number; readonly y: number };
 
-/** O mișcare la adâncime, în document. La arc: centrul, raza, unghiul parcurs (cu semn, în document). */
+/**
+ * O mișcare în material, în document, cu Z-ul capetelor (`za`, `zb`; Z e liniar în fracțiunea parcursă, și pe arcul
+ * elicoidal). La arc: centrul, raza, unghiul parcurs (cu semn, în document).
+ */
 export type Pas =
-  | { readonly tip: 'segment'; readonly linia: number; readonly a: P2; readonly b: P2 }
-  | { readonly tip: 'arc'; readonly linia: number; readonly a: P2; readonly b: P2; readonly c: P2; readonly r: number; readonly unghi: number };
+  | { readonly tip: 'segment'; readonly linia: number; readonly a: P2; readonly b: P2; readonly za: number; readonly zb: number }
+  | {
+    readonly tip: 'arc'; readonly linia: number; readonly a: P2; readonly b: P2; readonly c: P2; readonly r: number; readonly unghi: number;
+    readonly za: number; readonly zb: number;
+  };
 
 export type Bucla = {
   /** Prima și ultima linie a mișcărilor buclei. */
   readonly linii: readonly [number, number];
-  /** Adâncimea, în document (negativă). */
+  /** Z-ul pornirii buclei (startul primei mișcări), în document (negativ): adâncimea trecerii, la Z constant. */
   readonly z: number;
+  /** Cel mai jos și cel mai sus Z al capetelor mișcărilor buclei (egale cu `z` pe o trecere la Z constant). */
+  readonly zMin: number;
+  readonly zMax: number;
   readonly start: P2;
   readonly capat: P2;
   readonly inchisa: boolean;
@@ -195,23 +211,34 @@ export function ariaPasilor(pasi: readonly Pas[]): number {
 }
 
 /**
- * Mișcarea ca pas la adâncime, în document; `null` dacă întrerupe drumul; 'nimic' pentru un G1 fără deplasare în XY la
- * aceeași adâncime.
+ * Mișcarea ca pas în material, în document (ADR 0028 §5: la orice Z sub fața de sus); `null` dacă întrerupe drumul;
+ * 'nimic' pentru un G1 fără deplasare în XY (sub fața de sus).
+ */
+export function pasInMaterial(m: Mutare, laDoc: (p: Punct3) => Punct3, orientare: 1 | -1): { readonly z: number; readonly pas: Pas } | null | 'nimic' {
+  if (m.cod === 0 || !m.startCunoscut) return null;
+  const a = laDoc(m.a), b = laDoc(m.b);
+  if (!(a[2] < -TOL_SUB && b[2] < -TOL_SUB)) return null;
+  const A: P2 = { x: a[0], y: a[1] }, B: P2 = { x: b[0], y: b[1] };
+  const i = m.i ?? 0, j = m.j ?? 0;
+  if (m.cod === 1 || (i === 0 && j === 0)) {
+    if (A.x === B.x && A.y === B.y) return 'nimic';
+    return { z: a[2], pas: { tip: 'segment', linia: m.linia, a: A, b: B, za: a[2], zb: b[2] } };
+  }
+  const { unghi } = regulaArcGrbl(m);
+  const c3 = laDoc([m.a[0] + i, m.a[1] + j, m.a[2]]);
+  const C: P2 = { x: c3[0], y: c3[1] };
+  return { z: a[2], pas: { tip: 'arc', linia: m.linia, a: A, b: B, c: C, r: dist(A, C), unghi: unghi * orientare, za: a[2], zb: b[2] } };
+}
+
+/**
+ * PRIMA REDACTARE (2.3b), păstrată doar pentru proba amendamentului: mișcarea la adâncime cerea și |Δz| ≤ 1e-6; altfel
+ * întrerupea drumul.
  */
 export function pasLaAdancime(m: Mutare, laDoc: (p: Punct3) => Punct3, orientare: 1 | -1): { readonly z: number; readonly pas: Pas } | null | 'nimic' {
   if (m.cod === 0 || !m.startCunoscut) return null;
   const a = laDoc(m.a), b = laDoc(m.b);
   if (!(a[2] < -TOL_SUB && b[2] < -TOL_SUB) || Math.abs(a[2] - b[2]) > TOL_Z) return null;
-  const A: P2 = { x: a[0], y: a[1] }, B: P2 = { x: b[0], y: b[1] };
-  const i = m.i ?? 0, j = m.j ?? 0;
-  if (m.cod === 1 || (i === 0 && j === 0)) {
-    if (A.x === B.x && A.y === B.y) return 'nimic';
-    return { z: a[2], pas: { tip: 'segment', linia: m.linia, a: A, b: B } };
-  }
-  const { unghi } = regulaArcGrbl(m);
-  const c3 = laDoc([m.a[0] + i, m.a[1] + j, m.a[2]]);
-  const C: P2 = { x: c3[0], y: c3[1] };
-  return { z: a[2], pas: { tip: 'arc', linia: m.linia, a: A, b: B, c: C, r: dist(A, C), unghi: unghi * orientare } };
+  return pasInMaterial(m, laDoc, orientare);
 }
 
 /**
@@ -220,10 +247,11 @@ export function pasLaAdancime(m: Mutare, laDoc: (p: Punct3) => Punct3, orientare
  * el), după cel puțin LUNGIME_MINIMA de drum de la acel vârf; se ia cel mai devreme vârf. Ce era înaintea vârfului
  * (o legătură la adâncime) iese ca drum deschis, bucla ca buclă închisă; lanțul pornește din nou de la capăt.
  */
-function imparte(pasi: readonly Pas[], z: number, eticheta: number): Bucla[] {
+function imparte(pasi: readonly Pas[], eticheta: number): Bucla[] {
   const rez: Bucla[] = [];
   const bucla = (acum: readonly Pas[], inchisa: boolean): Bucla => ({
-    linii: [acum[0]!.linia, acum[acum.length - 1]!.linia], z,
+    linii: [acum[0]!.linia, acum[acum.length - 1]!.linia], z: acum[0]!.za,
+    zMin: Math.min(...acum.flatMap((p) => [p.za, p.zb])), zMax: Math.max(...acum.flatMap((p) => [p.za, p.zb])),
     start: acum[0]!.a, capat: acum[acum.length - 1]!.b, inchisa,
     arie: ariaPasilor(acum), lungime: acum.reduce((s, p) => s + lungimePas(p), 0), eticheta, pasi: acum,
   });
@@ -249,15 +277,28 @@ function imparte(pasi: readonly Pas[], z: number, eticheta: number): Bucla[] {
 
 /**
  * Buclele unui program (evenimentele citite de `citeste`), în ordinea lor, fiecare cu eticheta activă: ultima etichetă
- * de pe o linie de dinaintea primei ei mișcări (`liniiEtichete`, crescător).
+ * de pe o linie de dinaintea primei ei mișcări (`liniiEtichete`, crescător). Drumul e cel amendat de ADR 0028 §5:
+ * mișcările în material la orice Z, sub aceeași etichetă.
  */
 export function buclele(evenimente: readonly Eveniment[], liniiEtichete: readonly number[], laDoc: (p: Punct3) => Punct3): Bucla[] {
+  return drumuri(evenimente, liniiEtichete, laDoc, pasInMaterial, false);
+}
+
+/** PRIMA REDACTARE (2.3b): drumul la o singură adâncime; o schimbare de Z îl întrerupe. Doar pentru proba amendamentului. */
+export function bucleleInainteDe0028(evenimente: readonly Eveniment[], liniiEtichete: readonly number[], laDoc: (p: Punct3) => Punct3): Bucla[] {
+  return drumuri(evenimente, liniiEtichete, laDoc, pasLaAdancime, true);
+}
+
+function drumuri(
+  evenimente: readonly Eveniment[], liniiEtichete: readonly number[], laDoc: (p: Punct3) => Punct3,
+  pasul: typeof pasInMaterial, oAdancime: boolean,
+): Bucla[] {
   const orientare = orientareMontaj(laDoc);
   const rez: Bucla[] = [];
   let iE = -1;
   let drum: { eticheta: number; z: number; pasi: Pas[] } | null = null;
   const inchide = (): void => {
-    if (drum && drum.pasi.length) rez.push(...imparte(drum.pasi, drum.z, drum.eticheta));
+    if (drum && drum.pasi.length) rez.push(...imparte(drum.pasi, drum.eticheta));
     drum = null;
   };
   for (const e of evenimente) {
@@ -265,10 +306,10 @@ export function buclele(evenimente: readonly Eveniment[], liniiEtichete: readonl
     const m = e.m;
     while (iE + 1 < liniiEtichete.length && liniiEtichete[iE + 1]! < m.linia) iE++;
     if (drum !== null && (drum as { eticheta: number }).eticheta !== iE) inchide();
-    const x = pasLaAdancime(m, laDoc, orientare);
+    const x = pasul(m, laDoc, orientare);
     if (x === 'nimic') continue;
     if (x === null) { inchide(); continue; }
-    if (drum !== null && Math.abs((drum as { z: number }).z - x.z) > TOL_Z) inchide();
+    if (oAdancime && drum !== null && Math.abs((drum as { z: number }).z - x.z) > TOL_Z) inchide();
     drum ??= { eticheta: iE, z: x.z, pasi: [] };
     drum.pasi.push(x.pas);
   }
@@ -327,10 +368,11 @@ export function liniiCuAxInvers(text: string): number[] {
  */
 export function verificaSensul(
   evenimente: readonly Eveniment[], etichete: readonly EtichetaActiva[], reg: Regiune, laDoc: (p: Punct3) => Punct3,
+  bucle: typeof buclele = buclele,
 ): IncalcareSens[] {
   const rez: IncalcareSens[] = [];
   const sensuri = sensurileEtichetelor(etichete, reg);
-  for (const b of buclele(evenimente, etichete.map((e) => e.linia), laDoc)) {
+  for (const b of bucle(evenimente, etichete.map((e) => e.linia), laDoc)) {
     const unde = `liniile ${b.linii[0]}–${b.linii[1]}, Z ${b.z.toFixed(3)}`;
     if (b.eticheta < 0) {
       rez.push({ linia: b.linii[0], mesaj: `sensul de tăiere: buclă de tăiere înaintea primei etichete (${unde}): sensul așteptat nu se știe` });

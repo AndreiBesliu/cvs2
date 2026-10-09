@@ -36,8 +36,12 @@
  * Felia 2.3b (ADR 0027): tăieturile documentului poartă și sensul fiecărei operații (`TaieturaDoc.sensuri`, în
  * paralel cu adâncimile), citit de invarianta 9 (`sens.ts`). Un document v3 se aduce întâi la v4 (migrarea oracolului
  * dă `urcare`), ca sensul așteptat să fie cel cu care aplicația v4 taie un proiect vechi.
+ *
+ * Felia 2.4 (ADR 0028): tăieturile poartă și urechile fiecărei operații (`TaieturaDoc.urechi`, tot în paralel cu
+ * adâncimile), iar regiunea ține grosimea foii 0 (`grosimeFoaie`): invarianta 10 (`urechi.ts`) socotește vârful urechii
+ * de la fața de jos a foii (varf = grosimeFoaie − g). Un document mai vechi se aduce întâi la v5 (`urechi: null`).
  */
-import { ridicaO, taieturiV4O, type DocV3O, type DocV4O, type LaturaO, type MatriceO, type SensO } from './document.ts';
+import { ridicaO, taieturiV5O, type DocV3O, type DocV4O, type DocV5O, type LaturaO, type MatriceO, type SensO, type UrechiO } from './document.ts';
 
 /** §6: pe traseul exact, distanța la marginea lui K ∪ S(C) e cel puțin R − ε. */
 export const EPS_REGIUNE = 0.005;
@@ -471,6 +475,8 @@ export type TaieturaDoc = {
   readonly tip: string;
   readonly laturi: ReadonlyMap<LaturaO, readonly number[]>;
   readonly sensuri: ReadonlyMap<LaturaO, readonly SensO[]>;
+  /** ADR 0028: urechile fiecărei operații (`null` = fără), în aceeași ordine; lipsă (regiune construită de mână) = fără. */
+  readonly urechi?: ReadonlyMap<LaturaO, ReadonlyArray<UrechiO | null>>;
 };
 
 export type Regiune = {
@@ -481,11 +487,14 @@ export type Regiune = {
   readonly margineK: readonly boolean[];
   readonly probleme: readonly ProblemaRegiune[];
   readonly taieturi: ReadonlyMap<string, TaieturaDoc>;
+  /** Grosimea foii 0 a documentului (ADR 0028 §2: vârful urechii); lipsă = cea din contextul porții. */
+  readonly grosimeFoaie?: number;
 };
 
 /** Pădurea, marginea lui K și atingerile, din inele. */
 export function regiuneDinInele(
   inele: readonly Inel[], probleme: readonly ProblemaRegiune[] = [], taieturi: ReadonlyMap<string, TaieturaDoc> = new Map(),
+  grosimeFoaie?: number,
 ): Regiune {
   const toate = [...probleme];
   for (let i = 0; i < inele.length; i++) {
@@ -509,22 +518,29 @@ export function regiuneDinInele(
     return cel;
   });
   const margineK = inele.map((x, i) => x.rol === 'piesa' || (parinte[i]! >= 0 && inele[parinte[i]!]!.rol === 'piesa'));
-  return { inele, parinte, margineK, probleme: toate, taieturi };
+  return { inele, parinte, margineK, probleme: toate, taieturi, ...(grosimeFoaie === undefined ? {} : { grosimeFoaie }) };
 }
 
 /**
- * §1: inelele foii 0, din tăieturile documentului (oracolul documentului dă matricea în lume și ordinea). Un v3 se aduce
- * întâi la v4 (sensul `urcare`, ADR 0027 §5).
+ * §1: inelele foii 0, din tăieturile documentului (oracolul documentului dă matricea în lume și ordinea). Un v3 sau un
+ * v4 se aduce întâi la v5 (sensul `urcare`, ADR 0027 §5; urechile `null`, ADR 0028 §1).
  */
-export function regiuneDinDocument(doc: DocV3O | DocV4O): Regiune {
-  type Acum = { forma: FormaO; matrice: MatriceO; laturi: Map<LaturaO, number[]>; sensuri: Map<LaturaO, SensO[]> };
+export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O): Regiune {
+  type Acum = {
+    forma: FormaO; matrice: MatriceO; laturi: Map<LaturaO, number[]>; sensuri: Map<LaturaO, SensO[]>;
+    urechi: Map<LaturaO, Array<UrechiO | null>>;
+  };
   const pe = new Map<string, Acum>();
-  for (const t of taieturiV4O(doc.schema === 4 ? doc : ridicaO(doc), 0)) {
+  const v5 = doc.schema === 5 ? doc : ridicaO(doc);
+  for (const t of taieturiV5O(v5, 0)) {
     let x = pe.get(t.idLume);
     if (!x) {
-      x = { forma: t.forma as FormaO, matrice: t.matrice, laturi: new Map(), sensuri: new Map() };
+      x = { forma: t.forma as FormaO, matrice: t.matrice, laturi: new Map(), sensuri: new Map(), urechi: new Map() };
       pe.set(t.idLume, x);
     }
+    const u = x.urechi.get(t.latura) ?? [];
+    u.push(t.urechi);
+    x.urechi.set(t.latura, u);
     const l = x.laturi.get(t.latura) ?? [];
     l.push(t.adancime);
     x.laturi.set(t.latura, l);
@@ -536,7 +552,7 @@ export function regiuneDinDocument(doc: DocV3O | DocV4O): Regiune {
   const probleme: ProblemaRegiune[] = [];
   const taieturi = new Map<string, TaieturaDoc>();
   for (const [idLume, x] of pe) {
-    taieturi.set(idLume, { tip: x.forma.tip, laturi: x.laturi, sensuri: x.sensuri });
+    taieturi.set(idLume, { tip: x.forma.tip, laturi: x.laturi, sensuri: x.sensuri, urechi: x.urechi });
     const ext = x.laturi.has('exterior'), int = x.laturi.has('interior');
     if (ext && int) {
       probleme.push({ tip: 'ambele-laturi', elemente: [idLume], mesaj: `${idLume} are operații și pe exterior, și pe interior` });
@@ -544,7 +560,8 @@ export function regiuneDinDocument(doc: DocV3O | DocV4O): Regiune {
     }
     if (ext || int) inele.push({ idLume, rol: ext ? 'piesa' : 'gol', contur: contur(x.forma, x.matrice) });
   }
-  return regiuneDinInele(inele, probleme, taieturi);
+  const grosime = v5.foi[0]?.stoc.grosime;
+  return regiuneDinInele(inele, probleme, taieturi, typeof grosime === 'number' ? grosime : undefined);
 }
 
 /** Cel mai mic inel care conține strict punctul (−1: niciunul). */

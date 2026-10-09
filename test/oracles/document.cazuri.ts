@@ -1,5 +1,5 @@
 /**
- * CAZURILE oracolului documentului (ADR 0024 + ADR 0025 + ADR 0027, documentul v4), cu ZERO importuri din `src/`:
+ * CAZURILE oracolului documentului (ADR 0024 + ADR 0025 + ADR 0027 + ADR 0028, documentul v5), cu ZERO importuri din `src/`:
  * - `CAZURI_HARTIE`: documente v2 cu punctele în lume calculate de mână, pe hârtie, scrise ca numere (nu calculate
  *   aici). Coordonatele sunt întregi sau puteri ale lui 2, ca egalitatea să fie exactă (`===`). La ușă se migrează la
  *   v4, iar geometria nu se schimbă;
@@ -14,11 +14,16 @@
  * - `OTRAVURI_V2`, `OTRAVURI_V3`, `OTRAVURI_V4`: documente nevalide, fiecare cu singura categorie pe care trebuie s-o
  *   raporteze oracolul (`OTRAVURI_V3` = otrăvurile v2 aduse la forma v3, plus cele ale operațiilor; `OTRAVURI_V4` =
  *   aceleași aduse la forma v4, plus cele ale sensului);
- * - `VALIDE_DIFICILE` (v2), `VALIDE_DIFICILE_V3` și `VALIDE_DIFICILE_V4`: documente valide care seamănă cu niște otrăvuri.
+ * - `VALIDE_DIFICILE` (v2), `VALIDE_DIFICILE_V3` și `VALIDE_DIFICILE_V4`: documente valide care seamănă cu niște otrăvuri;
+ * - v5 (ADR 0028, la sfârșitul fișierului): `MIGRARI_V4_HARTIE` (v4 → v5 pe hârtie), `CORPUS_V5` (generat), `REFUZATE_V4`
+ *   (o operație v4 sau v3 care are deja `urechi`: ciocnire), `OTRAVURI_V5` (cele v4 aduse la v5, plus `OTRAVURI_URECHI`,
+ *   doar `[urechi]`) și `VALIDE_DIFICILE_V5`. Capcanele `urechi` scrise pe operații înainte de ADR 0028 (MV3-01, W10 și
+ *   corpusul v3 / v4) sunt acum ciocniri: `areUrechiPeOperatii` le găsește, `faraUrechiPeOperatii` le mută în
+ *   `urechiVechi`, ca restul documentului să treacă mai departe.
  */
 import type {
-  CategorieO, DocV1O, DocV2O, DocV3O, DocV4O, ElementO, ElementV1O, FoaieO, GrupO, InstantaO, LaturaO, Liber, MatriceO,
-  NodO, OperatieO, OperatieV4O, PiesaO, PiesaV3O, PiesaV4O, PunctO, SculaO, SensO, TaieturaV4O,
+  CategorieO, DocV1O, DocV2O, DocV3O, DocV4O, DocV5O, ElementO, ElementV1O, FoaieO, GrupO, InstantaO, LaturaO, Liber, MatriceO,
+  NodO, OperatieO, OperatieV4O, OperatieV5O, PiesaO, PiesaV3O, PiesaV4O, PiesaV5O, PunctO, SculaO, SensO, TaieturaV4O, UrechiO,
 } from './document.ts';
 
 type MatriceScrisa = { -readonly [K in keyof MatriceO]: number };
@@ -2143,7 +2148,8 @@ const otravaSens = (nume: string, strica: (d: DocV4O) => void): Otrava => {
   return { nume, doc: d, categorie: 'sens' };
 };
 
-const OTRAVURI_SENS: readonly Otrava[] = [
+/** Otrăvurile sensului, construite din nou la fiecare apel (v5 le aduce la forma ei pe loc, fără să le copieze). */
+const otravuriSens = (): Otrava[] => [
   otravaSens('S01 sens lipsă', (d) => { delete o4(d)['sens']; }),
   otravaSens('S02 sens „Urcare” (majusculă)', (d) => { o4(d)['sens'] = 'Urcare'; }),
   otravaSens('S03 sens „URCARE”', (d) => { o4(d)['sens'] = 'URCARE'; }),
@@ -2175,6 +2181,8 @@ const OTRAVURI_SENS: readonly Otrava[] = [
     o['scula'] = { ...(o['scula'] as SculaO), sens: 'urcare' };
   }),
 ];
+
+const OTRAVURI_SENS: readonly Otrava[] = otravuriSens();
 
 export const OTRAVURI_V4: readonly Otrava[] = [...otravuriArbore(4), ...otravuriOperatii(4), ...OTRAVURI_SENS];
 
@@ -2590,5 +2598,352 @@ export const VALIDE_DIFICILE_V4: readonly CazValidV4[] = [
       [piesa4('p1', grup('g', I(), [el('a', I(), cerc(3)), el('b', T(10, 0), cerc(3))]), [op4('o', ['b', 'a'], 'interior', 'opozitie', 5, 5)])],
       [foaie('f1', [inst('i1', 'p1', 0, 0, 0), inst('i2', 'p1', 50, 0, 180)])],
     ),
+  },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// v5 (ADR 0028): urechile operației.
+
+/**
+ * Forma v5 a unui document v4 (sau a unei otrăvi v4): schema 4 devine 5, iar o schemă 5 (otrava „schema mai nouă” a
+ * lui v4) devine 6, ca să rămână otravă; „4” devine „5”. Fiecare operație-obiect care n-are `urechi` primește
+ * `urechi(k)` (implicit `null`; k = a câta, în tot documentul). Pe loc; întoarce documentul.
+ */
+const laV5 = (d: unknown, urechi: (k: number) => UrechiO | null = () => null): unknown => {
+  if (!esteObiectL(d)) return d;
+  if (d['schema'] === 4) d['schema'] = 5;
+  else if (d['schema'] === 5) d['schema'] = 6;
+  else if (d['schema'] === '4') d['schema'] = '5';
+  const piese = d['piese'];
+  let k = 0;
+  if (Array.isArray(piese)) {
+    for (const p of piese) {
+      if (!esteObiectL(p) || !Array.isArray(p['operatii'])) continue;
+      for (const o of p['operatii'] as unknown[]) if (esteObiectL(o) && !Object.hasOwn(o, 'urechi')) o['urechi'] = urechi(k++);
+    }
+  }
+  return d;
+};
+
+const ur = (numar: number, latime: number, grosime: number): UrechiO => ({ numar, latime, grosime });
+/** Urechile pe rând: fără, 4 × 8 × 2 (dialogul), 1 × 0,5 × 0,1, 100 × 10 000 × 1 000 (plafoanele). */
+const urechiPeRand = (k: number): UrechiO | null => [null, ur(4, 8, 2), ur(1, 0.5, 0.1), ur(100, 10_000, 1_000)][k % 4]!;
+
+/** Operațiile unui document au un câmp propriu `urechi` (capcanele scrise înainte de ADR 0028, ciocniri în v5). */
+export function areUrechiPeOperatii(d: unknown): boolean {
+  if (!esteObiectL(d) || !Array.isArray(d['piese'])) return false;
+  return (d['piese'] as unknown[]).some((p) => esteObiectL(p) && Array.isArray(p['operatii'])
+    && (p['operatii'] as unknown[]).some((o) => esteObiectL(o) && Object.hasOwn(o, 'urechi')));
+}
+
+/** O copie fără câmpul `urechi` pe operații: aceeași capcană, mutată în `urechiVechi`, care nu se mai ciocnește. */
+export function faraUrechiPeOperatii<D>(d: D): D {
+  const c = structuredClone(d) as unknown;
+  if (!esteObiectL(c) || !Array.isArray(c['piese'])) return c as D;
+  for (const p of c['piese'] as unknown[]) {
+    if (!esteObiectL(p) || !Array.isArray(p['operatii'])) continue;
+    for (const o of p['operatii'] as unknown[]) {
+      if (esteObiectL(o) && Object.hasOwn(o, 'urechi')) {
+        o['urechiVechi'] = o['urechi'];
+        delete o['urechi'];
+      }
+    }
+  }
+  return c as D;
+}
+
+/**
+ * Migrări v4 → v5 pe hârtie (ADR 0028 §1): `schema: 5` și `urechi: null` pe fiecare operație, și pe `pe-linie`; tot
+ * restul rămâne, cu câmpurile necunoscute. Un câmp `urechi` în altă parte decât pe operație nu e o ciocnire.
+ */
+export const MIGRARI_V4_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v4: DocV4O; readonly v5: Liber }> = [
+  {
+    nume: 'MV4-01 trei operații (exterior opoziție, interior, pe-linie), câmpuri necunoscute; „urechi” pe sculă, nod, formă, piesă, instanță, foaie și sus',
+    v4: {
+      schema: 4, rev: 7, urechi: 'sus',
+      piese: [{
+        id: 'p1', urechi: 4,
+        radacina: {
+          tip: 'grup', id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, urechi: { numar: 4 },
+          copii: [
+            { tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+            { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 5, urechi: null }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 20, f: 10 } },
+          ],
+        },
+        operatii: [
+          { id: 'o1', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 6, urechi: [1] }, latura: 'exterior', adancime: 3, pas: 3, sens: 'opozitie', punti: 2 },
+          { id: 'o2', tip: 'profil', noduri: ['c'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4, sens: 'urcare' },
+          { id: 'o3', tip: 'profil', noduri: ['c', 'r'], scula: { numar: 2, nume: 'V 90', diametru: 3.175 }, latura: 'pe-linie', adancime: 1, pas: 1, sens: 'opozitie' },
+        ],
+      }],
+      foi: [{
+        id: 'f1', urechi: false, stoc: { latime: 600, inaltime: 400, grosime: 18 },
+        instante: [{ id: 'i1', piesa: 'p1', x: 10, y: 10, rotire: 0, urechi: 'i' }],
+      }],
+    },
+    v5: {
+      schema: 5, rev: 7, urechi: 'sus',
+      piese: [{
+        id: 'p1', urechi: 4,
+        radacina: {
+          tip: 'grup', id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, urechi: { numar: 4 },
+          copii: [
+            { tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+            { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 5, urechi: null }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 20, f: 10 } },
+          ],
+        },
+        operatii: [
+          { id: 'o1', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 6, urechi: [1] }, latura: 'exterior', adancime: 3, pas: 3, sens: 'opozitie', punti: 2, urechi: null },
+          { id: 'o2', tip: 'profil', noduri: ['c'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4, sens: 'urcare', urechi: null },
+          { id: 'o3', tip: 'profil', noduri: ['c', 'r'], scula: { numar: 2, nume: 'V 90', diametru: 3.175 }, latura: 'pe-linie', adancime: 1, pas: 1, sens: 'opozitie', urechi: null },
+        ],
+      }],
+      foi: [{
+        id: 'f1', urechi: false, stoc: { latime: 600, inaltime: 400, grosime: 18 },
+        instante: [{ id: 'i1', piesa: 'p1', x: 10, y: 10, rotire: 0, urechi: 'i' }],
+      }],
+    },
+  },
+  {
+    nume: 'MV4-02 două piese, una fără operații, fără instanțe; ordinea operațiilor rămâne',
+    v4: {
+      schema: 4, rev: 0,
+      piese: [
+        { id: 'a', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [] },
+        {
+          id: 'b', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+          operatii: [
+            { id: 'z', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 2, pas: 1, sens: 'opozitie' },
+            { id: 'a', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 4, pas: 1, sens: 'urcare' },
+          ],
+        },
+      ],
+      foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 10 }, instante: [] }],
+    },
+    v5: {
+      schema: 5, rev: 0,
+      piese: [
+        { id: 'a', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [] },
+        {
+          id: 'b', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+          operatii: [
+            { id: 'z', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 2, pas: 1, sens: 'opozitie', urechi: null },
+            { id: 'a', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 4, pas: 1, sens: 'urcare', urechi: null },
+          ],
+        },
+      ],
+      foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 10 }, instante: [] }],
+    },
+  },
+  {
+    nume: 'MV4-03 chei capcană pe operație și pe sculă (din JSON.parse)',
+    v4: JSON.parse(
+      '{"schema":4,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6,"__proto__":"s"},'
+      + '"latura":"interior","adancime":8,"pas":4,"__proto__":"x","constructor":"Ion","sens":"urcare"}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as DocV4O,
+    v5: JSON.parse(
+      '{"schema":5,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6,"__proto__":"s"},'
+      + '"latura":"interior","adancime":8,"pas":4,"__proto__":"x","constructor":"Ion","sens":"urcare","urechi":null}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as Liber,
+  },
+];
+
+/**
+ * Un document v5 din sămânță, valid: `genereazaV4(samanta)` fără capcanele `urechi` de pe operații (mutate în
+ * `urechiVechi`), cu urechi alese la întâmplare pe fiecare operație (fără, sau valori din tot intervalul și de la
+ * margini) și, uneori, capcane: un câmp `urechi` necunoscut pe sculă, pe piesă sau sus, un câmp necunoscut în urechi.
+ */
+export function genereazaV5(samanta: number, mare = false): DocV5O {
+  const v4 = faraUrechiPeOperatii(genereazaV4(samanta, mare));
+  const r = aleator(samanta + 0x0e5e);
+  const valoare = (): UrechiO | null => {
+    const x = r();
+    if (x < 0.35) return null;
+    if (x < 0.45) return ur(1, 5e-324, 5e-324);
+    if (x < 0.5) return ur(100, 10_000, 1_000);
+    const u: UrechiO = { numar: 1 + Math.floor(r() * 100), latime: (1 - r()) * 50, grosime: (1 - r()) * 20 };
+    return r() < 0.1 ? { ...u, forma: 'dreptunghiulara' } : u;
+  };
+  const piese: PiesaV5O[] = v4.piese.map((p) => ({
+    ...(r() < 0.1 ? { urechi: 3 } : {}),
+    ...p,
+    operatii: p.operatii.map((o): OperatieV5O => ({
+      ...o,
+      ...(r() < 0.1 ? { scula: { ...o.scula, urechi: 'scula' } } : {}),
+      urechi: valoare(),
+    })),
+  }));
+  return { ...(r() < 0.3 ? { urechi: [] } : {}), ...v4, schema: 5, piese };
+}
+
+export type CazV5 = { readonly nume: string; readonly doc: DocV5O };
+
+export const CORPUS_V5: readonly CazV5[] = [
+  ...Array.from({ length: 16 }, (_, k) => ({ nume: `GV5-${String(k + 1).padStart(2, '0')} generat, sămânța ${5000 + k}`, doc: genereazaV5(5000 + k) })),
+  { nume: 'GV5-17 generat mare: 40 de piese, 3 foi, sămânța 98', doc: genereazaV5(98, true) },
+];
+
+// v4 refuzate la migrare (ADR 0028 §1): o operație v4 care are deja un câmp propriu „urechi”, oricare i-ar fi
+// valoarea. Documentul v4 e valid (câmpul e necunoscut acolo); singura categorie raportată de `verificaV4V5` e
+// `[ciocnire]`. La fel un v3 cu „urechi” pe o operație: lanțul v3 → v4 îl păstrează, v4 → v5 se ciocnește.
+
+const bazaV4 = (): DocV4O => laV4(bazaV3()) as DocV4O;
+const opV4 = (d: DocV4O, piesa: number, k: number): Liber => ((d.piese[piesa] as PiesaV4O).operatii[k] as OperatieV4O);
+const refuzatV4 = (nume: string, strica: (d: DocV4O) => void): Refuzat => {
+  const d = bazaV4();
+  strica(d);
+  return { nume, doc: d, motiv: 'ciocnire' };
+};
+
+export const REFUZATE_V4: readonly Refuzat[] = [
+  refuzatV4('Z01 operație v4 cu urechi: null (chiar valoarea pe care ar scrie-o migrarea)', (d) => { opV4(d, 0, 0)['urechi'] = null; }),
+  refuzatV4('Z02 operație v4 cu urechi: { numar: 4, latime: 8, grosime: 2 } (o valoare v5 bună)', (d) => { opV4(d, 0, 1)['urechi'] = ur(4, 8, 2); }),
+  refuzatV4('Z03 operație v4 cu urechi: [] (capcana din corpusurile v3)', (d) => { opV4(d, 0, 0)['urechi'] = []; }),
+  refuzatV4('Z04 operație v4 cu urechi: "4x8"', (d) => { opV4(d, 0, 1)['urechi'] = '4x8'; }),
+  refuzatV4('Z05 operație v4 cu urechi: undefined, ca proprietate proprie', (d) => { opV4(d, 0, 0)['urechi'] = undefined; }),
+  refuzatV4('Z06 doar operația pe-linie a unei piese fără instanțe are urechi', (d) => {
+    d.piese.push(piesa4('p2', el('x', I()), [op4('a', ['x'], 'exterior', 'urcare'), { ...op4('b', ['x'], 'pe-linie', 'opozitie', 1, 1), urechi: { v: 1 } } as OperatieV4O]));
+  }),
+  {
+    nume: 'Z07 operație v4 cu __proto__ și urechi (din JSON.parse)',
+    motiv: 'ciocnire',
+    doc: JSON.parse(
+      '{"schema":4,"rev":0,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":1},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"f","diametru":6},"latura":"interior","adancime":1,"pas":1,"sens":"urcare","__proto__":"x","urechi":null}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[]}]}',
+    ),
+  },
+  // Lanțul: un v3 cu urechi pe operație trece v3 → v4 (câmp necunoscut) și se ciocnește la v4 → v5.
+  refuzatV3('Z08 operație v3 cu urechi: null (lanțul v3 → v4 → v5)', (d) => { opV3(d, 0, 0)['urechi'] = null; }),
+  refuzatV3('Z09 operație v3 cu urechi: [] (capcana din corpusul v3)', (d) => { opV3(d, 0, 1)['urechi'] = []; }),
+];
+
+/**
+ * Otrăvurile v5: cele v4 aduse la forma v5 (`laV5` DUPĂ stricare: fiecare operație-obiect primește `urechi: null`,
+ * deci și cele construite de otravă), plus cele ale urechilor. Documentul v5 valid de la care pleacă cele noi e
+ * `baza3` adus la v4 și la v5, cu o1 (exterior) cu urechi 4 × 8 × 2 și o2 (interior) fără.
+ */
+const baza5 = (): DocV5O => laV5(laV4(baza3()), (k) => (k === 0 ? ur(4, 8, 2) : null)) as DocV5O;
+const o5 = (d: DocV5O, k = 0, piesa = 0): Liber => (d.piese[piesa] as PiesaV5O).operatii[k] as OperatieV5O;
+const u5 = (d: DocV5O, k = 0): Liber => o5(d, k)['urechi'] as Liber;
+const otravaUrechi = (nume: string, strica: (d: DocV5O) => void): Otrava => {
+  const d = baza5();
+  strica(d);
+  return { nume, doc: d, categorie: 'urechi' };
+};
+
+export const OTRAVURI_URECHI: readonly Otrava[] = [
+  otravaUrechi('U01 urechi lipsă (un v4 etichetat schema 5)', (d) => { delete o5(d, 1)['urechi']; }),
+  otravaUrechi('U02 urechi undefined, ca proprietate proprie', (d) => { o5(d)['urechi'] = undefined; }),
+  otravaUrechi('U03 urechi false (oprite, dar nu ca null)', (d) => { o5(d)['urechi'] = false; }),
+  otravaUrechi('U04 urechi 0', (d) => { o5(d)['urechi'] = 0; }),
+  otravaUrechi('U05 urechi [] (listă goală)', (d) => { o5(d)['urechi'] = []; }),
+  otravaUrechi('U06 urechi [4, 8, 2] (listă, nu obiect)', (d) => { o5(d)['urechi'] = [4, 8, 2]; }),
+  otravaUrechi('U07 urechi „4 × 8 × 2” (text)', (d) => { o5(d)['urechi'] = '4 × 8 × 2'; }),
+  otravaUrechi('U08 numar 0', (d) => { u5(d)['numar'] = 0; }),
+  otravaUrechi('U09 numar 101 (peste PLAFON.urechi)', (d) => { u5(d)['numar'] = 101; }),
+  otravaUrechi('U10 numar 4,5 (nu e întreg)', (d) => { u5(d)['numar'] = 4.5; }),
+  otravaUrechi('U11 numar „4” (text)', (d) => { u5(d)['numar'] = '4'; }),
+  otravaUrechi('U12 numar −4', (d) => { u5(d)['numar'] = -4; }),
+  otravaUrechi('U13 numar NaN', (d) => { u5(d)['numar'] = NaN; }),
+  otravaUrechi('U14 numar Infinity', (d) => { u5(d)['numar'] = Infinity; }),
+  otravaUrechi('U15 numar lipsă', (d) => { delete u5(d)['numar']; }),
+  otravaUrechi('U16 numar 1 + 2^−52 (aproape întreg)', (d) => { u5(d)['numar'] = 1 + 2 ** -52; }),
+  otravaUrechi('U17 latime 0', (d) => { u5(d)['latime'] = 0; }),
+  otravaUrechi('U18 latime −8', (d) => { u5(d)['latime'] = -8; }),
+  otravaUrechi('U19 latime 10 000,001 (peste PLAFON.latura)', (d) => { u5(d)['latime'] = 10_000.001; }),
+  otravaUrechi('U20 latime Infinity', (d) => { u5(d)['latime'] = Infinity; }),
+  otravaUrechi('U21 latime NaN', (d) => { u5(d)['latime'] = NaN; }),
+  otravaUrechi('U22 latime „8” (text)', (d) => { u5(d)['latime'] = '8'; }),
+  otravaUrechi('U23 latime lipsă', (d) => { delete u5(d)['latime']; }),
+  otravaUrechi('U24 grosime 0', (d) => { u5(d)['grosime'] = 0; }),
+  otravaUrechi('U25 grosime −2', (d) => { u5(d)['grosime'] = -2; }),
+  otravaUrechi('U26 grosime 1 000,5 (peste PLAFON.grosime)', (d) => { u5(d)['grosime'] = 1000.5; }),
+  otravaUrechi('U27 grosime null', (d) => { u5(d)['grosime'] = null; }),
+  otravaUrechi('U28 grosime lipsă', (d) => { delete u5(d)['grosime']; }),
+  otravaUrechi('U29 o operație pe-linie fără urechi (câmpul e obligatoriu și acolo)', (d) => {
+    (d.piese[0] as PiesaV5O).operatii.push({ ...op4('l', ['e1'], 'pe-linie', 'urcare', 1, 1) } as unknown as OperatieV5O);
+  }),
+  otravaUrechi('U30 operația cu urechi greșite e a unei piese fără instanțe', (d) => {
+    d.piese.push({ id: 'p2', radacina: el('x', I()), operatii: [{ ...op4('a', ['x'], 'exterior', 'urcare'), urechi: ur(0, 8, 2) }] } as PiesaV5O);
+  }),
+  otravaUrechi('U31 urechile puse pe sculă, nu pe operație', (d) => {
+    const o = o5(d);
+    o['scula'] = { ...(o['scula'] as SculaO), urechi: o['urechi'] };
+    delete o['urechi'];
+  }),
+  otravaUrechi('U32 doar a doua operație are numar 0', (d) => { o5(d, 1)['urechi'] = ur(0, 8, 2); }),
+];
+
+export const OTRAVURI_V5: readonly Otrava[] = [
+  // Construite din nou (unele sunt prea adânci pentru `structuredClone`), apoi aduse la v5 pe loc.
+  ...[...otravuriArbore(4), ...otravuriOperatii(4), ...otravuriSens()].map((o) => ({
+    nume: o.nume.startsWith('v4 ') ? `v5 ${o.nume.slice(3)}` : `v5 ${o.nume}`, doc: laV5(o.doc), categorie: o.categorie,
+  })),
+  ...OTRAVURI_URECHI,
+];
+
+export type CazValidV5 = { readonly nume: string; readonly doc: DocV5O };
+
+export const VALIDE_DIFICILE_V5: readonly CazValidV5[] = [
+  // Fiecare X / W de mai sus, adus la v5 (fără capcanele `urechi` de pe operații), cu urechile pe rând.
+  ...VALIDE_DIFICILE_V4.map((c) => ({ nume: `${c.nume} (v5, urechi pe rând)`, doc: laV5(faraUrechiPeOperatii(c.doc), urechiPeRand) as DocV5O })),
+  {
+    nume: 'V01 la plafoane: numar 1 și 100, latime 10 000 și 5e−324, grosime 1 000 și 5e−324',
+    doc: laV5(laV4(doc3(
+      [piesa3('p1', grup('g', I(), [el('e1', I()), el('e2', T(50, 0), cerc())]), [op('a', ['e1'], 'exterior'), op('b', ['e2'], 'interior', 8, 4)])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    )), (k) => (k === 0 ? ur(1, 10_000, 1_000) : ur(100, 5e-324, 5e-324))) as DocV5O,
+  },
+  {
+    nume: 'V02 urechi pe pe-linie, pe exterior și pe interior, cu sensuri diferite',
+    doc: laV5(doc4([piesa4('p1', grup('g', I(), [el('a', I(), dr(80, 50, 6)), el('b', T(100, 0), cerc(10))]), [
+      op4('l', ['a'], 'pe-linie', 'opozitie', 1, 1), op4('e', ['a'], 'exterior', 'urcare', 12, 4), op4('i', ['b'], 'interior', 'opozitie', 6, 2),
+    ])], [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])]), (k) => ur(k + 2, 6 + k, 1.5)) as DocV5O,
+  },
+  {
+    // ADR 0028 §2–§3: încăperea urechilor și grosimea punții față de foaie sunt ale exportului, nu ale ușii.
+    nume: 'V03 urechi care nu încap (100 × 10 000) și puntea mai groasă decât foaia (1 000 pe foaia de 18): documentul e valid',
+    doc: laV5(laV4(baza3()), () => ur(100, 10_000, 1_000)) as DocV5O,
+  },
+  {
+    nume: 'V04 numar 4.0 (întreg în JS) și un câmp necunoscut în urechi (forma, note) se păstrează',
+    doc: laV5(laV4(baza3()), (k) => (k === 0 ? { numar: 4.0, latime: 8, grosime: 2, forma: 'triunghi', note: { a: 1 } } : null)) as DocV5O,
+  },
+  {
+    nume: 'V05 degroșarea și finisarea aceluiași contur, aceeași adâncime, una fără urechi, alta cu',
+    doc: laV5(doc4(
+      [piesa4('p1', el('e', I(), dr(80, 50, 6)), [op4('deg', ['e'], 'exterior', 'urcare', 12, 4), op4('fin', ['e'], 'exterior', 'urcare', 12, 12)])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ), (k) => (k === 0 ? null : ur(4, 8, 2))) as DocV5O,
+  },
+  {
+    nume: 'V06 chei capcană în urechi și pe operație (din JSON.parse)',
+    doc: JSON.parse(
+      '{"schema":5,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6},"latura":"interior","adancime":8,"pas":4,'
+      + '"__proto__":"x","sens":"opozitie","urechi":{"numar":3,"latime":6,"grosime":2,"__proto__":"u","constructor":"c"}}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as DocV5O,
+  },
+  {
+    nume: 'V07 un câmp necunoscut „urechi” pe sculă, nod, piesă, instanță, foaie și sus, cu operația fără urechi',
+    doc: {
+      schema: 5, rev: 3, urechi: 'sus',
+      piese: [{
+        id: 'p1', urechi: { numar: 0 },
+        radacina: { ...grup('g', I(), [{ ...el('e', I()), urechi: 'x' }]), urechi: ['x'] },
+        operatii: [{ ...op4('o', ['e'], 'exterior', 'opozitie'), scula: { ...S1(), urechi: ur(4, 8, 2) }, urechi: null }],
+      }],
+      foi: [{ ...foaie('f1', [{ ...inst('i1', 'p1', 0, 0, 0), urechi: 1 }]), urechi: null }],
+    } as DocV5O,
   },
 ];

@@ -31,6 +31,15 @@
  * are aria cu semn (arcele cum le execută GRBL, în coordonatele documentului) cu semnul din tabelul ADR 0027 §1.
  * Definițiile buclei, ale drumului deschis și ale legării etichetei de operație sunt în `sens.ts`. ALEGERE: un M4 (axul
  * invers) e tot o încălcare a invariantei 9, cât timp tabelul e doar pentru M3.
+ *
+ * Felia 2.4 (ADR 0028): invarianta 9 e AMENDATĂ (§5): drumul nu se mai rupe când Z se schimbă sub fața de sus (palierul
+ * și flancurile urechilor, arcul elicoidal); buclele și aria rămân în proiecția XY (`sens.ts`). Invarianta 10 (urechile)
+ * rulează tot doar cu `regiune`: pe fiecare buclă a unei tăieturi cu urechi, la fiecare trecere cu d > varf, Z(s)
+ * urmează profilul din ADR 0028 §3 cu P măsurat pe bucla din program; fără urechi, sau cu d ≤ varf, Z constant pe
+ * buclă. Vârful se socotește din grosimea foii DOCUMENTULUI (`regiune.grosimeFoaie`; lipsă: cea din context).
+ * Definițiile și toleranțele sunt în `urechi.ts`. Precizarea din 09.10: și refuzul W < D (cu D = `diametruScula`), iar,
+ * când contextul dă `avansPlonjare`, viteza pe verticală a mișcărilor care coboară în material (ALEGERE: tot sub 10).
+ * Invarianta 1 măsoară, din 2.4, pe discul de rază R − TOL_DISC (vezi constanta), ca urechile să nu dea falsuri.
  */
 import { citeste, esantioane, marginiSubSuprafata, regulaArcGrbl, type Comentariu, type Mutare, type Punct3 } from './gcode.ts';
 import {
@@ -38,6 +47,7 @@ import {
   type Eticheta, type IncalcareMutare, type Primitiva, type Regiune,
 } from './regiune.ts';
 import { liniiCuAxInvers, verificaSensul } from './sens.ts';
+import { verificaUrechile, vitezaVerticala } from './urechi.ts';
 
 export type ColtOrigine = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus';
 
@@ -57,13 +67,28 @@ export type ContextPoarta = {
   readonly cadru?: { readonly minX: number; readonly maxX: number; readonly minY: number; readonly maxY: number };
   /** Invarianta 2: inelele foii 0 și tăieturile documentului (`regiuneDinDocument`). Fără ea, invarianta 2 nu rulează. */
   readonly regiune?: Regiune;
+  /**
+   * ADR 0028 §4 (precizarea din 09.10): avansul de plonjare, mm/min. Dacă e dat, nicio mișcare G1 / G2 / G3 care coboară
+   * și se termină sub fața de sus nu are viteza pe verticală F·|ΔZ| / L₃ peste el (încălcare a invariantei 10).
+   */
+  readonly avansPlonjare?: number;
 };
 
-export type Incalcare = { readonly invarianta: 1 | 2 | 3 | 5 | 6 | 7 | 8 | 9; readonly linia: number; readonly mesaj: string };
+export type Incalcare = { readonly invarianta: 1 | 2 | 3 | 5 | 6 | 7 | 8 | 9 | 10; readonly linia: number; readonly mesaj: string };
 
 const TOL = 1e-6;
 /** Rotunjirea la 3 zecimale mută un punct cu cel mult √2/2·10⁻³ mm. */
 const TOL_ROTUNJIRE = 0.002;
+/**
+ * Invarianta 1 MĂSOARĂ cât scoate o mișcare doar pe celulele aflate la cel mult R − TOL_DISC de eșantion; materialul se
+ * TAIE cu tot discul (R). De ce (felia 2.4): cu urechile, trecerile aceleiași bucle nu mai au aceleași mișcări (o
+ * trecere care traversează e tăiată în rupturi, cu I / J rotunjite din alt start), deci marginea benzii tăiate se mută
+ * între treceri cu rotunjirea (centrul ±0,0007, raza ±0,0014) și cu dintele de fierăstrău al eșantionării (≤ 0,001).
+ * O celulă din această fâșie, neatinsă de trecerea de dinainte, apărea scoasă de la fața de sus dintr-odată (un fals:
+ * 11,32 mm „scoși” la un cerc Ø3,175 cu urechi). TOL_DISC = 2·TOL_ROTUNJIRE acoperă fâșia; o încălcare adevărată
+ * (o trecere mai adâncă decât pasul) ține pe tot discul, deci se vede și pe discul mic.
+ */
+const TOL_DISC = 2 * TOL_ROTUNJIRE;
 
 /** Declarația de ieșire din foaie, scrisă aici după contract, independent de aplicație. */
 const DECLARATIE_A = '(CONFIRMAT: freza iese din foaie)';
@@ -177,14 +202,16 @@ export function poarta(text: string, ctx: ContextPoarta): Incalcare[] {
   const pasEsantion = celula / 4;
 
   /** Pentru fiecare celulă sub discul sculei centrat în (x, y): `f(indice)`. */
-  const subScula = (x: number, y: number, f: (k: number) => void): void => {
+  const Rm2 = Math.max(R - TOL_DISC, R / 2) ** 2;
+  const subScula = (x: number, y: number, f: (k: number, d2: number) => void): void => {
     const i0 = Math.max(0, Math.floor((x - R) / celula)), i1 = Math.min(nx - 1, Math.floor((x + R) / celula));
     const j0 = Math.max(0, Math.floor((y - R) / celula)), j1 = Math.min(ny - 1, Math.floor((y + R) / celula));
     for (let j = j0; j <= j1; j++) {
       const dy = (j + 0.5) * celula - y;
       for (let i = i0; i <= i1; i++) {
         const dx = (i + 0.5) * celula - x;
-        if (dx * dx + dy * dy <= R * R) f(j * nx + i);
+        const d2 = dx * dx + dy * dy;
+        if (d2 <= R * R) f(j * nx + i, d2);
       }
     }
   };
@@ -305,9 +332,9 @@ export function poarta(text: string, ctx: ContextPoarta): Incalcare[] {
       if (m.cod === 0) {
         subScula(x, y, (k) => { if (z < (g[k] ?? 0) - TOL_ROTUNJIRE) atingeRapid = true; });
       } else {
-        subScula(x, y, (k) => {
+        subScula(x, y, (k, d2) => {
           const sus = g[k] ?? 0;
-          if (sus - z > maxScos) maxScos = sus - z;
+          if (d2 <= Rm2 && sus - z > maxScos) maxScos = sus - z;
           if (z < sus) g[k] = z;
         });
       }
@@ -324,6 +351,14 @@ export function poarta(text: string, ctx: ContextPoarta): Incalcare[] {
     for (const linia of liniiCuAxInvers(text)) {
       rez.push({ invarianta: 9, linia, mesaj: 'sensul de tăiere: axul pornit cu M4 (invers); tabelul ADR 0027 e doar pentru M3' });
     }
+    // 10: urechile (ADR 0028 §5), pe aceleași bucle și cu aceeași legare a etichetei de operație.
+    for (const x of verificaUrechile(evenimente, etichete, reg, (p) => laDocument(p, ctx), reg.grosimeFoaie ?? T, ctx.diametruScula)) {
+      rez.push({ invarianta: 10, linia: x.linia, mesaj: x.mesaj });
+    }
+  }
+  // 10, avansul (ADR 0028 §4, precizarea din 09.10): viteza pe verticală a mișcărilor care coboară în material.
+  if (ctx.avansPlonjare !== undefined) {
+    for (const x of vitezaVerticala(evenimente, (p) => laDocument(p, ctx), ctx.avansPlonjare)) rez.push({ invarianta: 10, linia: x.linia, mesaj: x.mesaj });
   }
 
   // 5, XY: ieșirea din foaie, pe tot programul. Cel mult o încălcare, cu toate motivele ei.

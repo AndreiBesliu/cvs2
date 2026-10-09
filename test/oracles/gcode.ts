@@ -29,6 +29,8 @@ export type Mutare = {
   /** Pentru G2 / G3: I și J citite din text; centrul văzut de controler e startul + (I, J). */
   readonly i?: number;
   readonly j?: number;
+  /** Avansul modal (F, mm/min) la mișcare; lipsă dacă programul n-a scris încă niciun F. */
+  readonly f?: number;
 };
 
 export type Eveniment =
@@ -68,6 +70,7 @@ export function citeste(text: string): Citire {
   let cunoscutZ = false;
   let mod: 0 | 1 | 2 | 3 = 0;
   let turatie = 0;
+  let avans: number | undefined;
   const linii = text.split('\n');
   if (linii.at(-1) === '') linii.pop();
 
@@ -104,6 +107,8 @@ export function citeste(text: string): Citire {
 
     // Faza 2: ordinea de execuție a controlerului: turația, axul, pauza, apoi mișcarea.
     if (val['S'] !== undefined) turatie = val['S'];
+    if (val['F'] !== undefined) avans = val['F'];
+    const fm = avans === undefined ? {} : { f: avans };
     for (const cod of mCoduri) {
       if (cod === 3 || cod === 4) evenimente.push({ tip: 'ax', pornit: true, turatie, linia: nr });
       if (cod === 5 || cod === 2 || cod === 30) evenimente.push({ tip: 'ax', pornit: false, turatie: 0, linia: nr });
@@ -127,9 +132,9 @@ export function citeste(text: string): Citire {
     const a: Punct3 = [x, y, z];
     if (mod === 2 || mod === 3) {
       if (val['R'] !== undefined) problema('arc cu R: postul scrie I / J');
-      evenimente.push({ tip: 'mutare', m: { cod: mod, linia: nr, startCunoscut: cunoscutXY && cunoscutZ, a, b, i: val['I'] ?? 0, j: val['J'] ?? 0 } });
+      evenimente.push({ tip: 'mutare', m: { cod: mod, linia: nr, startCunoscut: cunoscutXY && cunoscutZ, a, b, i: val['I'] ?? 0, j: val['J'] ?? 0, ...fm } });
     } else {
-      evenimente.push({ tip: 'mutare', m: { cod: mod, linia: nr, startCunoscut: cunoscutXY && cunoscutZ, a, b } });
+      evenimente.push({ tip: 'mutare', m: { cod: mod, linia: nr, startCunoscut: cunoscutXY && cunoscutZ, a, b, ...fm } });
     }
     [x, y, z] = b;
     if (areXY) cunoscutXY = true;
