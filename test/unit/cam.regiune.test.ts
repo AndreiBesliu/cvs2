@@ -39,7 +39,7 @@ test('placa 1: dreptunghiul exterior cu gaura înăuntru trece; K e dreptunghiul
   assert.equal(inK(r.regiune, { x: 10, y: 10 }), false, 'în schelet');
 });
 
-test('două piese la distanța g, cu Ø6: trec de la g = 5,995 în sus (ε = 0,005), sub ea sunt refuzate', () => {
+test('două piese la distanța g, cu Ø6: trec peste g = 5,995 (ε = 0,005), sub ea sunt refuzate', () => {
   const pereche = (g: number): Document => doc(dr('e1', 10, 10), dr('e2', 30 + g, 10));
   assert.equal(export_(pereche(6)), 'ok');
   assert.equal(export_(pereche(5.996)), 'ok', 'în ε');
@@ -56,6 +56,15 @@ test('o gaură pusă singură (în schelet) lângă o piesă: trece, ca în test
   assert.equal(export_(doc(dr('e1', 20, 20, 100, 60), cerc('e2', 161.238, 55.007, 15))), 'ok');
   // Și o gaură singură, fără nicio piesă: scheletul nu e păstrat, deci nimic de apărat în afara ei.
   assert.equal(export_(doc(cerc('e1', 70, 50, 15))), 'ok');
+});
+
+test('o gaură din schelet la 2 mm de o piesă: traseul piesei trece prin gaură (deșeu lângă deșeu) și nu e refuzat', () => {
+  // Piesa 20…120; gaura R10 cu centrul la X 132 are marginea la 122. Traseul exterior al piesei, la X 123, intră în gaură
+  // (1 mm de inelul ei), dar de ambele părți ale inelului găurii e deșeu: inelul nu e o margine a lui K.
+  assert.equal(export_(doc(dr('e1', 20, 20, 100, 60), cerc('e2', 132, 50, 10))), 'ok');
+  // Aceeași gaură, mutată în piesă (centrul la X 108, marginea la 118): inelul ei e acum margine (afară e piesa), iar
+  // peretele de 2 mm rămâne: traseele stau la 5 mm de inelul celălalt.
+  assert.equal(export_(doc(dr('e1', 20, 20, 100, 60), cerc('e2', 108, 50, 10))), 'ok');
 });
 
 test('inele care se ating, se taie sau coincid: refuzate cu motiv, cu locul', () => {
@@ -119,3 +128,18 @@ test('instanțele rotite și două instanțe ale aceleiași piese: inelele în l
   assert.equal(export_(cu(120)), 'ok');
   assert.match(refuzat({ ...cu(102), foi: [{ ...cu(102).foi[0]!, instante: [{ id: 'i1', piesa: 'p', x: 100, y: 20, rotire: 90 }, { id: 'i2', piesa: 'p', x: 102, y: 30, rotire: 0 }] }] }), /i[12]\/contur/);
 });
+
+test('recenzia 2.3a: freza Ø0,01 (R = ε) tot vede traversarea; motivul spune marginea cea mai apropiată, nu prima găsită', () => {
+  const cuFreza = (d: Document, diametru: number): Document =>
+    ({ ...d, piese: d.piese.map((p) => ({ ...p, operatii: p.operatii.map((o) => ({ ...o, scula: { ...o.scula, diametru }, adancime: 0.01, pas: 0.01 })) })) });
+  // Două piese la 0,001 mm: cu Ø0,01, traseul fiecăreia trece 0,004 mm în cealaltă.
+  assert.match(refuzat(cuFreza(doc(dr('e1', 10, 10), dr('e2', 30.001, 10)), 0.01)), /intră în piesa e\d\/e\d cu cel puțin 0\.005 mm/);
+  // Același lucru la Ø0,012 (R − ε > 0), refuzat și înainte.
+  refuzat(cuFreza(doc(dr('e1', 10, 10), dr('e2', 30.001, 10)), 0.012));
+  // e2 (pusă prima pe foaie, deci judecată prima) la 3,5 mm de e1, care are o gaură R4 la 1,5 mm de marginea ei. Traseul
+  // lui e2 (X 60,5) stă la 0,5 de e1 (intră 2,5 mm în piesă) și la 2 de gaură (intră 1 mm în deșeul găurii, dar gaura e
+  // margine a lui K). Se spune cea mai apropiată margine: e1, cu 2,5 mm; înainte se spunea gaura, cu 1 mm.
+  const m = refuzat(doc(dr('e2', 63.5, 10, 20, 50), dr('e1', 10, 10, 50, 50), cerc('g', 54.5, 35, 4)));
+  assert.match(m, /tăietura lui e2\/e2 intră în piesa e1\/e1 cu 2\.500 mm/);
+});
+

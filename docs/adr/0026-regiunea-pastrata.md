@@ -47,8 +47,14 @@ scheletul pentru alte tăieturi).
 
 **6. Invarianta 2.** Pentru fiecare mișcare de tăiere care aparține unei operații de profil `exterior` sau `interior`
 pe inelul C, **discul sculei** (raza R = diametrul / 2) nu intră în K ∪ S(C). Pentru fiecare punct p al mișcării:
-p ∉ K ∪ S(C) și distanța de la p la marginea lui K ∪ S(C) e cel puțin R − ε, cu **ε = 0,005 mm** (rotunjirea
-postului la 3 zecimale, plus toleranța offsetului, 0,002 mm).
+p ∉ K ∪ S(C) și distanța de la p la marginea lui K ∪ S(C) e cel puțin R − ε, cu **ε = 0,005 mm**, măsurat pe
+**traseul exact** (traseul aplicației, respectiv offsetul ideal al oracolului).
+- **Pe textul G-code**, poarta adaugă rotunjirea postului, ca la invariantele 1, 3 și 5: **0,002 mm** (coordonatele la
+  3 zecimale, iar centrul arcului e scris din startul rotunjit, cu I / J rotunjite). Pragul pe G-code e deci
+  R − ε − 0,002. *Precizare din recenzia feliei (09.10):* fără ea, o așezare la R − ε pe traseul exact putea ieși, după
+  rotunjire, cu 0,0005 mm sub prag în G-code, iar cele două sensuri ale acordului de la §9 nu se puteau ține amândouă.
+- **Pragul nu coboară sub 1e-6 mm:** la R = ε (freza Ø0,01, cea mai mică primită de offset), R − ε = 0, iar o
+  traversare a marginii (distanța 0) trebuie să rămână încălcare.
 - **Mișcarea de tăiere** e o mișcare G1 / G2 / G3 care are cel puțin un punct sub fața de sus (Z < 0 în coordonatele
   documentului, cu Z0 sus); o plonjare pe verticală se judecă în punctul ei XY.
 - Rapidele (G0), mișcările din aer și operațiile `pe-linie` nu se judecă: `pe-linie` taie chiar linia, intenționat

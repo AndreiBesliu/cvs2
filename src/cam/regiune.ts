@@ -1,6 +1,6 @@
 import { arieCuSemn, type Contur, type Punct } from '../geom/contur.ts';
 import { cutieContur, largita, type Cutie } from '../geom/cutie.ts';
-import { apropiereContururi, distantaCutii } from '../geom/apropiere.ts';
+import { apropiereContururi, distantaCutii, type Apropiere } from '../geom/apropiere.ts';
 import { inRegiune } from '../geom/distanta.ts';
 import { conturElement } from '../model/forme.ts';
 import type { Taietura } from '../model/lume.ts';
@@ -138,15 +138,23 @@ export function verificaTaietura(r: Regiune, idLume: string, latura: Taietura['l
       const cui = i === null ? '?' : (r.inele[i]?.idLume ?? '?');
       return `${PREFIX_REGIUNE} tăietura lui ${idLume} stă în piesa ${cui} (lângă X ${fmt(p0.x)}, Y ${fmt(p0.y)})`;
     }
-    // Cutia traseului lărgită cu R: un inel a cărui cutie n-o atinge stă la mai mult de R de traseu.
+    // Cutia traseului lărgită cu R: un inel a cărui cutie n-o atinge stă la mai mult de R de traseu. Se măsoară toate
+    // marginile apropiate și se spune cea mai apropiată: ea dă cât intră discul cu adevărat (ADR 0026 §8).
     const cutie = largita(cutieContur(traseu), raza);
+    let cea: { readonly d: Inel; readonly a: Apropiere } | null = null;
     for (const d of margini) {
       if (!seAtingCutiile(cutie, d.cutie)) continue;
       const a = apropiereContururi(traseu, d.contur);
-      if (a.distanta < raza - EPS_REGIUNE) {
-        const cui = d === c ? `propria parte păstrată a lui ${idLume}` : `piesa ${stapan(r, d)}`;
-        return `${PREFIX_REGIUNE} tăietura lui ${idLume} intră în ${cui} cu ${fmt(raza - a.distanta, 3)} mm (lângă X ${fmt(a.q.x)}, Y ${fmt(a.q.y)})`;
-      }
+      if (!cea || a.distanta < cea.a.distanta) cea = { d, a };
+    }
+    // Apartenența se probează doar în primul vârf, deci o traversare (distanța 0) trebuie să fie încălcare și la R = ε
+    // (freza Ø0,01), unde R − ε = 0: pragul nu coboară sub atingere.
+    if (cea && cea.a.distanta < Math.max(raza - EPS_REGIUNE, EPS_ATINGERE_INELE)) {
+      const { d, a } = cea;
+      const cui = d === c ? `propria parte păstrată a lui ${idLume}` : `piesa ${stapan(r, d)}`;
+      // Un traseu care trece marginea (distanța 0) intră cel puțin cu R; cât, exact, ar cere adâncimea traversării.
+      const cat = a.distanta < EPS_ATINGERE_INELE ? `cel puțin ${fmt(raza, 3)} mm` : `${fmt(raza - a.distanta, 3)} mm`;
+      return `${PREFIX_REGIUNE} tăietura lui ${idLume} intră în ${cui} cu ${cat} (lângă X ${fmt(a.q.x)}, Y ${fmt(a.q.y)})`;
     }
   }
   return null;
