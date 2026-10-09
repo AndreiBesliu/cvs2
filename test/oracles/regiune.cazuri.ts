@@ -1,10 +1,11 @@
 /**
- * Cazurile oracolului regiunii păstrate (ADR 0026): documentele de pe hârtie, un scriitor de G-code pentru programele
- * scrise „de mână” (din primitive, rotunjite la 3 zecimale, cu montajul) și corpusul determinist (mulberry32) pentru
- * lipirea cu aplicația. ZERO importuri din `src/`.
+ * Cazurile oracolului regiunii păstrate (ADR 0026) și ale sensului de tăiere (ADR 0027): documentele de pe hârtie (v4),
+ * un scriitor de G-code pentru programele scrise „de mână” (din primitive, rotunjite la 3 zecimale, cu montajul, cu
+ * una sau mai multe treceri) și corpusul determinist (mulberry32) pentru lipirea cu aplicația, cu un sens ales la
+ * întâmplare pe fiecare operație. ZERO importuri din `src/`.
  */
-import type { DocV3O, LaturaO, MatriceO } from './document.ts';
-import { capeteArc, contur, distantaListe, startul, type Contur, type FormaO, type Primitiva } from './regiune.ts';
+import type { DocV4O, LaturaO, MatriceO, SensO } from './document.ts';
+import { arc, capeteArc, contur, distantaListe, segment, startul, type Contur, type FormaO, type Primitiva } from './regiune.ts';
 import type { ColtOrigine } from './poarta.ts';
 
 export const ID: MatriceO = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
@@ -22,6 +23,8 @@ export type ElementC = {
   /** O operație pe fiecare latură din listă, în ordine (o latură repetată = două operații, de exemplu degroșare + finisare). */
   readonly laturi: readonly LaturaO[];
   readonly adancime?: number;
+  /** Sensul fiecărei operații, în ordinea `laturi` (ADR 0027); lipsă: sensul documentului, apoi `urcare`. */
+  readonly sensuri?: readonly SensO[];
 };
 export type PiesaC = { readonly id: string; readonly elemente: readonly ElementC[]; readonly grup?: MatriceO };
 export type InstantaC = { readonly id: string; readonly piesa: string; readonly x: number; readonly y: number; readonly rotire?: number };
@@ -30,17 +33,18 @@ export type Stoc = { readonly latime: number; readonly inaltime: number; readonl
 export const STOC: Stoc = { latime: 300, inaltime: 200, grosime: 18 };
 
 /**
- * Un document v3 (ADR 0025): fiecare piesă are rădăcina un grup `g` cu elementele ei, iar fiecare element primește câte
- * o operație de profil pe fiecare latură cerută, toate cu aceeași sculă (T1, diametrul dat), adâncimea și pasul.
+ * Un document v4 (ADR 0025 + 0027): fiecare piesă are rădăcina un grup `g` cu elementele ei, iar fiecare element
+ * primește câte o operație de profil pe fiecare latură cerută, toate cu aceeași sculă (T1, diametrul dat), adâncimea și
+ * pasul; sensul e al elementului (`sensuri`), altfel `o.sens`, altfel `urcare`.
  */
 export function documentRegiune(
   stoc: Stoc, piese: readonly PiesaC[], instante: readonly InstantaC[],
-  o: { readonly diametru: number; readonly adancime?: number; readonly pas?: number; readonly foaie2?: readonly InstantaC[] },
-): DocV3O {
+  o: { readonly diametru: number; readonly adancime?: number; readonly pas?: number; readonly foaie2?: readonly InstantaC[]; readonly sens?: SensO },
+): DocV4O {
   const scula = { numar: 1, nume: 'freza plata', diametru: o.diametru };
   const pas = o.pas ?? 3;
   return {
-    schema: 3,
+    schema: 4,
     rev: 0,
     piese: piese.map((p) => {
       let n = 0;
@@ -50,8 +54,9 @@ export function documentRegiune(
           tip: 'grup', id: 'rad', matrice: p.grup ?? ID,
           copii: p.elemente.map((e) => ({ tip: 'element', id: e.id, forma: { ...e.forma }, matrice: e.matrice ?? ID })),
         },
-        operatii: p.elemente.flatMap((e) => e.laturi.map((latura) => ({
+        operatii: p.elemente.flatMap((e) => e.laturi.map((latura, k) => ({
           id: `op${++n}`, tip: 'profil', noduri: [e.id], scula: { ...scula }, latura, adancime: e.adancime ?? o.adancime ?? 3, pas,
+          sens: e.sensuri?.[k] ?? o.sens ?? 'urcare',
         }))),
       };
     }),
@@ -64,12 +69,19 @@ export function documentRegiune(
 
 /** Piesa cu un singur element, pusă o dată: `<id>/<id>` în lume, ca formele din v1. */
 export function simple(
-  stoc: Stoc, forme: ReadonlyArray<{ id: string; forma: FormaO; x: number; y: number; laturi: readonly LaturaO[]; rotire?: number; adancime?: number }>,
-  o: { diametru: number; adancime?: number; pas?: number },
-): DocV3O {
+  stoc: Stoc,
+  forme: ReadonlyArray<{ id: string; forma: FormaO; x: number; y: number; laturi: readonly LaturaO[]; rotire?: number; adancime?: number; sensuri?: readonly SensO[] }>,
+  o: { diametru: number; adancime?: number; pas?: number; sens?: SensO },
+): DocV4O {
   return documentRegiune(
     stoc,
-    forme.map((f) => ({ id: f.id, elemente: [{ id: f.id, forma: f.forma, laturi: f.laturi, ...(f.adancime === undefined ? {} : { adancime: f.adancime }) }] })),
+    forme.map((f) => ({
+      id: f.id,
+      elemente: [{
+        id: f.id, forma: f.forma, laturi: f.laturi,
+        ...(f.adancime === undefined ? {} : { adancime: f.adancime }), ...(f.sensuri === undefined ? {} : { sensuri: f.sensuri }),
+      }],
+    })),
     forme.map((f) => ({ id: f.id, piesa: f.id, x: f.x, y: f.y, ...(f.rotire === undefined ? {} : { rotire: f.rotire }) })),
     o,
   );
@@ -84,7 +96,18 @@ export type Traseu = {
   readonly eticheta: string | null;
   readonly primitive: readonly Primitiva[];
   readonly adancime: number;
+  /**
+   * Trecerile (adâncimile, în ordine; lipsă: o singură trecere la `adancime`). Între treceri, scula coboară pe
+   * verticală în startul buclei (`coboara`, implicit) sau se ridică la Z sigur și plonjează din nou (`ridica`).
+   */
+  readonly treceri?: readonly number[];
+  readonly intre?: 'coboara' | 'ridica';
 };
+
+/** Același drum, parcurs invers (ordinea și fiecare primitivă). */
+export function inverseaza(ps: readonly Primitiva[]): Primitiva[] {
+  return [...ps].reverse().map((p) => (p.tip === 'segment' ? segment(p.b, p.a) : p.tip === 'arc' ? arc(p.c, p.r, p.u0 + p.du, -p.du) : p));
+}
 
 const f3 = (v: number): string => {
   const s = v.toFixed(3);
@@ -110,36 +133,41 @@ export function programDinTrasee(trasee: readonly Traseu[], montaj: Montaj, extr
   for (const t of trasee) {
     if (t.eticheta !== null) L.push(`(${t.eticheta})`);
     const s = startul(t.primitive[0]!);
-    const [x0, y0, zj] = M(s.x, s.y, -t.adancime);
-    L.push(`G0 X${f3(x0)} Y${f3(y0)}`, `G1 Z${f3(zj)} F300.0`);
-    let cur = s;
-    for (const p of t.primitive) {
-      if (p.tip === 'punct') continue;
-      const st = startul(p);
-      if (Math.hypot(st.x - cur.x, st.y - cur.y) > 1e-9) {
-        const [x, y] = M(st.x, st.y, 0);
-        L.push(`G1 X${f3(x)} Y${f3(y)} F1000.0`);
+    const treceri = t.treceri ?? [t.adancime];
+    treceri.forEach((adancime, trecere) => {
+      const [x0, y0, zj] = M(s.x, s.y, -adancime);
+      if (trecere === 0) L.push(`G0 X${f3(x0)} Y${f3(y0)}`);
+      else if (t.intre === 'ridica') L.push(`G0 Z${f3(zSus)}`, `G0 X${f3(x0)} Y${f3(y0)}`);
+      L.push(`G1 Z${f3(zj)} F300.0`);
+      let cur = s;
+      for (const p of t.primitive) {
+        if (p.tip === 'punct') continue;
+        const st = startul(p);
+        if (Math.hypot(st.x - cur.x, st.y - cur.y) > 1e-9) {
+          const [x, y] = M(st.x, st.y, 0);
+          L.push(`G1 X${f3(x)} Y${f3(y)} F1000.0`);
+        }
+        if (p.tip === 'segment') {
+          const [x, y] = M(p.b.x, p.b.y, 0);
+          L.push(`G1 X${f3(x)} Y${f3(y)} F1000.0`);
+          cur = p.b;
+          continue;
+        }
+        const n = Math.max(1, Math.ceil(Math.abs(p.du) / (Math.PI / 2) - 1e-9));
+        for (let k = 0; k < n; k++) {
+          const ua = p.u0 + (p.du * k) / n, ub = p.u0 + (p.du * (k + 1)) / n;
+          const a = { x: p.c.x + p.r * Math.cos(ua), y: p.c.y + p.r * Math.sin(ua) };
+          const b = k === n - 1 ? capeteArc(p)[1] : { x: p.c.x + p.r * Math.cos(ub), y: p.c.y + p.r * Math.sin(ub) };
+          const [xa, ya] = M(a.x, a.y, 0);
+          const [xb, yb] = M(b.x, b.y, 0);
+          const [cx, cy] = M(p.c.x, p.c.y, 0);
+          // I/J din startul rotunjit, ca postul (T9).
+          const i = cx - Number(f3(xa)), j = cy - Number(f3(ya));
+          L.push(`${p.du > 0 ? 'G3' : 'G2'} X${f3(xb)} Y${f3(yb)} I${f3(i)} J${f3(j)} F1000.0`);
+          cur = b;
+        }
       }
-      if (p.tip === 'segment') {
-        const [x, y] = M(p.b.x, p.b.y, 0);
-        L.push(`G1 X${f3(x)} Y${f3(y)} F1000.0`);
-        cur = p.b;
-        continue;
-      }
-      const n = Math.max(1, Math.ceil(Math.abs(p.du) / (Math.PI / 2) - 1e-9));
-      for (let k = 0; k < n; k++) {
-        const ua = p.u0 + (p.du * k) / n, ub = p.u0 + (p.du * (k + 1)) / n;
-        const a = { x: p.c.x + p.r * Math.cos(ua), y: p.c.y + p.r * Math.sin(ua) };
-        const b = k === n - 1 ? capeteArc(p)[1] : { x: p.c.x + p.r * Math.cos(ub), y: p.c.y + p.r * Math.sin(ub) };
-        const [xa, ya] = M(a.x, a.y, 0);
-        const [xb, yb] = M(b.x, b.y, 0);
-        const [cx, cy] = M(p.c.x, p.c.y, 0);
-        // I/J din startul rotunjit, ca postul (T9).
-        const i = cx - Number(f3(xa)), j = cy - Number(f3(ya));
-        L.push(`${p.du > 0 ? 'G3' : 'G2'} X${f3(xb)} Y${f3(yb)} I${f3(i)} J${f3(j)} F1000.0`);
-        cur = b;
-      }
-    }
+    });
     L.push(`G0 Z${f3(zSus)}`);
   }
   L.push('M5', 'M30');
@@ -149,9 +177,9 @@ export function programDinTrasee(trasee: readonly Traseu[], montaj: Montaj, extr
 // ---------------------------------------------------------------------------------------------------------------
 // Placa 1, pe hârtie: dreptunghiul 100 × 60 la (20, 20), exterior; cercul R15 la (70, 50), interior; freza Ø6.
 
-export const PLACA_1 = (diametru = 6): DocV3O => simple(STOC, [
-  { id: 'e1', forma: drept(100, 60), x: 20, y: 20, laturi: ['exterior'] },
-  { id: 'e2', forma: cerc(15), x: 70, y: 50, laturi: ['interior'], adancime: 8 },
+export const PLACA_1 = (diametru = 6, sens: { readonly rama?: SensO; readonly gaura?: SensO } = {}): DocV4O => simple(STOC, [
+  { id: 'e1', forma: drept(100, 60), x: 20, y: 20, laturi: ['exterior'], sensuri: [sens.rama ?? 'urcare'] },
+  { id: 'e2', forma: cerc(15), x: 70, y: 50, laturi: ['interior'], adancime: 8, sensuri: [sens.gaura ?? 'urcare'] },
 ], { diametru, pas: 4 });
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -173,7 +201,7 @@ export function aleator(samanta: number): () => number {
 export type CazCorpus = {
   readonly nume: string;
   readonly familie: string;
-  readonly doc: DocV3O;
+  readonly doc: DocV4O;
   readonly diametru: number;
   readonly origine: ColtOrigine;
   readonly z0: 'sus' | 'jos';
@@ -198,12 +226,15 @@ function laColt(rotire: number, w: number, h: number, X: number, Y: number): { x
 
 export function corpus(samanta = 0x2a3a): CazCorpus[] {
   const r = aleator(samanta);
+  // ADR 0027: sensul fiecărei operații, dintr-un șir separat, ca geometria corpusului din 2.3a să rămână aceeași.
+  const rs = aleator(samanta ^ 0x5e45);
   const rez: CazCorpus[] = [];
   let k = 0;
-  const adauga = (familie: string, nume: string, doc: DocV3O, diametru: number): void => {
+  const adauga = (familie: string, nume: string, doc: DocV4O, diametru: number): void => {
     const origine = COLTURI[k % 4]!;
     const z0 = Math.floor(k / 4) % 2 === 0 ? 'sus' : 'jos';
     k++;
+    for (const p of doc.piese) for (const o of p.operatii) o.sens = rs() < 0.5 ? 'urcare' : 'opozitie';
     rez.push({ familie, nume, doc, diametru, origine, z0 });
   };
 

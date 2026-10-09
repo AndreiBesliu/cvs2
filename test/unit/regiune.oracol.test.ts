@@ -6,11 +6,16 @@
  * - pe a doua metodă: distanța exactă față de eșantionarea pe ambele primitive; predicția (exactă) față de poartă
  *   (eșantionată), pe programele traseelor ideale;
  * - lipirea cu aplicația (testele „lipire:”), în ambele sensuri din ADR 0026 §9, pe corpusul determinist.
+ *
+ * Felia 2.3b (ADR 0027): documentele sunt v4 (corpusul are un sens ales la întâmplare pe fiecare operație); aplicația
+ * le primește prin ușă (`incarca`), ca interfața. Invarianta 9 (sensul) se judecă în `sens.oracol.test.ts`; aici,
+ * „restul porții” înseamnă exact invariantele 1, 3, 5, 6, 7 și 8.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { poarta, type ContextPoarta, type Incalcare } from '../oracles/poarta.ts';
-import { verificaV3, type DocV3O } from '../oracles/document.ts';
+import { verificaV4, type DocV4O } from '../oracles/document.ts';
+import { pentruAplicatie } from './ajutor-lipire.ts';
 import {
   arc, capeteArc, cercP, contur, celMaiMic, distantaExacta, distantaListe, dPunctLista, EPS_REGIUNE, inK,
   lungime, prag, prezice, pt, punct, punctLa, regiuneDinDocument, segment, startul, verificaMutarea,
@@ -53,7 +58,7 @@ function traseeIdeale(reg: Regiune, D: number, peste: Partial<Record<string, rea
     return drum ? [{ eticheta: `${inel.idLume}: ${t.tip}, ${latura}, ${adancime} mm`, primitive: drum, adancime }] : [];
   });
 }
-const programIdeal = (doc: DocV3O, D: number, m: Montaj = MONTAJE[0]!): string => programDinTrasee(traseeIdeale(regiuneDinDocument(doc), D), m);
+const programIdeal = (doc: DocV4O, D: number, m: Montaj = MONTAJE[0]!): string => programDinTrasee(traseeIdeale(regiuneDinDocument(doc), D), m);
 /** Pădurea, după id: rolul, părintele și dacă inelul mărginește K (ordinea inelelor e a tăieturilor, deci nu contează). */
 function padure(reg: Regiune): Record<string, [string, string | null, boolean]> {
   return Object.fromEntries(reg.inele.map((x, i) => [x.idLume, [x.rol, reg.parinte[i]! >= 0 ? reg.inele[reg.parinte[i]!]!.idLume : null, reg.margineK[i]!]]));
@@ -221,7 +226,7 @@ test('placa 1 (dreptunghi exterior + cerc interior, Ø6): pădurea, K pe hârtie
 });
 
 /** A 50 × 40 la (20, 20) și B 50 × 40 la (20 + 50 + g, 20), piese; freza Ø6. */
-const pereche = (g: number, D = 6): DocV3O => simple(STOC, [
+const pereche = (g: number, D = 6): DocV4O => simple(STOC, [
   { id: 'a', forma: drept(50, 40), x: 20, y: 20, laturi: ['exterior'] },
   { id: 'b', forma: drept(50, 40), x: 70 + g, y: 20, laturi: ['exterior'] },
 ], { diametru: D });
@@ -350,7 +355,7 @@ test('inelele care se ating, se taie sau coincid sunt refuzate; la 5e-7 se ating
     { id: 'a', forma: cerc(a[2]), x: a[0], y: a[1], laturi: [la] },
     { id: 'b', forma: cerc(b[2]), x: b[0], y: b[1], laturi: [la] },
   ], { diametru: 6 });
-  const tip = (d: DocV3O) => prezice(regiuneDinDocument(d), 6);
+  const tip = (d: DocV4O) => prezice(regiuneDinDocument(d), 6);
   // Tangente din exterior, se taie, coincid, tangente din interior.
   for (const [nume, d] of [
     ['tangente', doua([80, 100, 20], [110, 100, 10])],
@@ -569,7 +574,7 @@ test('a doua metodă: pe 160 de așezări aleatoare, poarta (eșantionată) pe t
       return [c * x - s * y, s * x + c * y];
     };
     const fel = n % 4;
-    let doc: DocV3O;
+    let doc: DocV4O;
     if (fel === 0 || fel === 1) {
       const [dx, dy] = rot(60 + g, 5);
       doc = documentRegiune(STOC, [
@@ -608,11 +613,11 @@ test('a doua metodă: pe 160 de așezări aleatoare, poarta (eșantionată) pe t
   assert.ok(prinseN > 40 && curateN > 100, `prinse ${prinseN}, curate ${curateN}`);
 });
 
-test('corpusul: fiecare document e un v3 valid după oracolul documentului, iar predicția are toate cele trei verdicte', () => {
+test('corpusul: fiecare document e un v4 valid după oracolul documentului, iar predicția are toate cele trei verdicte', () => {
   const c = corpus();
   const verdicte = new Map<string, number>();
   for (const caz of c) {
-    assert.deepEqual(verificaV3(caz.doc), [], caz.nume);
+    assert.deepEqual(verificaV4(caz.doc), [], caz.nume);
     const v = prezice(regiuneDinDocument(caz.doc), caz.diametru).verdict;
     verdicte.set(v, (verdicte.get(v) ?? 0) + 1);
   }
@@ -647,7 +652,7 @@ function ruleazaLipirea(): Promise<Rezultat[]> {
     for (const caz of cazuri) {
       const p = prezice(regiuneDinDocument(caz.doc), caz.diametru);
       const vinovati = [...p.probleme.flatMap((x) => x.elemente), ...p.patrunderi.filter((x) => x.stare !== 'ok').flatMap((x) => [x.idLume, x.in])];
-      const doc = caz.doc as unknown as DocApp;
+      const doc = await pentruAplicatie<DocApp>(caz.doc);
       const montaj = { origine: caz.origine, z0: caz.z0 };
       let r = await calculeazaExport(doc, montaj);
       if (!r.ok && 'cereConfirmare' in r && r.cereConfirmare) r = await calculeazaExport(doc, { ...montaj, confirmareIesire: r.cereConfirmare });
@@ -690,7 +695,7 @@ test('lipire: orice program scris de aplicație trece invarianta 2', async () =>
 test('lipire: aceleași programe trec și restul porții (1, 3, 5, 6, 7, 8)', async () => {
   const p = await poartaPeProgrameleAplicatiei();
   assert.deepEqual(p.flatMap(({ x, v }) => {
-    const alte = v.filter((i) => i.invarianta !== 2);
+    const alte = v.filter((i) => i.invarianta !== 2 && i.invarianta !== 9);
     return alte.length ? [raport(x, alte)] : [];
   }), []);
 });

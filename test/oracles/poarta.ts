@@ -25,12 +25,19 @@
  * ALEGERI: o tăiere înaintea primei etichete, o etichetă stricată sau care nu e singură pe linie, una care nu e a unei
  * tăieturi din document (elementul, tipul, latura, adâncimea) și problemele documentului (inele care se ating, element
  * cu ambele laturi; linia 0) sunt toate încălcări ale invariantei 2.
+ *
+ * Invarianta 9 (ADR 0027, felia 2.3b) rulează tot doar cu `regiune` (sensul așteptat vine din document, prin
+ * `TaieturaDoc.sensuri`): fiecare buclă închisă de mișcări la aceeași adâncime, sub o etichetă `exterior` / `interior`,
+ * are aria cu semn (arcele cum le execută GRBL, în coordonatele documentului) cu semnul din tabelul ADR 0027 §1.
+ * Definițiile buclei, ale drumului deschis și ale legării etichetei de operație sunt în `sens.ts`. ALEGERE: un M4 (axul
+ * invers) e tot o încălcare a invariantei 9, cât timp tabelul e doar pentru M3.
  */
 import { citeste, esantioane, marginiSubSuprafata, regulaArcGrbl, type Comentariu, type Mutare, type Punct3 } from './gcode.ts';
 import {
   arc, citesteEticheta, prag, punct, pt, segment, verificaEticheta, verificaMutarea,
   type Eticheta, type IncalcareMutare, type Primitiva, type Regiune,
 } from './regiune.ts';
+import { liniiCuAxInvers, verificaSensul } from './sens.ts';
 
 export type ColtOrigine = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus';
 
@@ -52,7 +59,7 @@ export type ContextPoarta = {
   readonly regiune?: Regiune;
 };
 
-export type Incalcare = { readonly invarianta: 1 | 2 | 3 | 5 | 6 | 7 | 8; readonly linia: number; readonly mesaj: string };
+export type Incalcare = { readonly invarianta: 1 | 2 | 3 | 5 | 6 | 7 | 8 | 9; readonly linia: number; readonly mesaj: string };
 
 const TOL = 1e-6;
 /** Rotunjirea la 3 zecimale mută un punct cu cel mult √2/2·10⁻³ mm. */
@@ -118,7 +125,7 @@ function citesteDeclaratia(comentarii: readonly Comentariu[]): { perechi: Perech
 }
 
 /** Mașină → document, pe hârtie: colțul de origine e o translație, Z0 jos ridică totul cu grosimea. */
-function laDocument(p: Punct3, ctx: ContextPoarta): Punct3 {
+export function laDocument(p: Punct3, ctx: Pick<ContextPoarta, 'foaie' | 'origine' | 'z0'>): Punct3 {
   const ox = ctx.origine === 'dreapta-jos' || ctx.origine === 'dreapta-sus' ? ctx.foaie.latime : 0;
   const oy = ctx.origine === 'dreapta-sus' || ctx.origine === 'stanga-sus' ? ctx.foaie.inaltime : 0;
   return [p[0] + ox, p[1] + oy, p[2] - (ctx.z0 === 'jos' ? ctx.foaie.grosime : 0)];
@@ -309,6 +316,14 @@ export function poarta(text: string, ctx: ContextPoarta): Incalcare[] {
     if (maxScos > ctx.pas + TOL_ROTUNJIRE) rez.push({ invarianta: 1, linia: m.linia, mesaj: `o trecere scoate ${maxScos.toFixed(3)} mm (pasul ${ctx.pas})` });
     // 3: nicio rapidă prin material.
     if (atingeRapid) rez.push({ invarianta: 3, linia: m.linia, mesaj: 'G0 prin material' });
+  }
+
+  // 9: sensul de tăiere (ADR 0027 §6), pe buclele de sub etichetele exterior / interior.
+  if (reg) {
+    for (const x of verificaSensul(evenimente, etichete, reg, (p) => laDocument(p, ctx))) rez.push({ invarianta: 9, linia: x.linia, mesaj: x.mesaj });
+    for (const linia of liniiCuAxInvers(text)) {
+      rez.push({ invarianta: 9, linia, mesaj: 'sensul de tăiere: axul pornit cu M4 (invers); tabelul ADR 0027 e doar pentru M3' });
+    }
   }
 
   // 5, XY: ieșirea din foaie, pe tot programul. Cel mult o încălcare, cu toate motivele ei.

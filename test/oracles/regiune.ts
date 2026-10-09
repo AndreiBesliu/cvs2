@@ -32,8 +32,12 @@
  * Pe o mișcare care nu atinge aceste inele, apartenența la K și la S(C) e constantă, deci se clasifică un singur punct.
  *
  * Alegerile mele unde textul tace sunt în raportul oracolului (și marcate „ALEGERE” aici).
+ *
+ * Felia 2.3b (ADR 0027): tăieturile documentului poartă și sensul fiecărei operații (`TaieturaDoc.sensuri`, în
+ * paralel cu adâncimile), citit de invarianta 9 (`sens.ts`). Un document v3 se aduce întâi la v4 (migrarea oracolului
+ * dă `urcare`), ca sensul așteptat să fie cel cu care aplicația v4 taie un proiect vechi.
  */
-import { taieturiV3O, type DocV3O, type LaturaO, type MatriceO } from './document.ts';
+import { ridicaO, taieturiV4O, type DocV3O, type DocV4O, type LaturaO, type MatriceO, type SensO } from './document.ts';
 
 /** §6: pe traseul exact, distanța la marginea lui K ∪ S(C) e cel puțin R − ε. */
 export const EPS_REGIUNE = 0.005;
@@ -459,8 +463,15 @@ export function contur(forma: FormaO, m: MatriceO): Contur {
 export type Rol = 'piesa' | 'gol';
 export type Inel = { readonly idLume: string; readonly rol: Rol; readonly contur: Contur };
 export type ProblemaRegiune = { readonly tip: 'ambele-laturi' | 'atingere'; readonly elemente: readonly string[]; readonly mesaj: string };
-/** Ce tăieturi are un element în lume: tipul formei și, pe fiecare latură, adâncimile operațiilor (pentru etichete). */
-export type TaieturaDoc = { readonly tip: string; readonly laturi: ReadonlyMap<LaturaO, readonly number[]> };
+/**
+ * Ce tăieturi are un element în lume: tipul formei și, pe fiecare latură, adâncimile operațiilor (pentru etichete) și
+ * sensurile lor (ADR 0027, în aceeași ordine: ordinea tăieturilor, adică a operațiilor în piesă).
+ */
+export type TaieturaDoc = {
+  readonly tip: string;
+  readonly laturi: ReadonlyMap<LaturaO, readonly number[]>;
+  readonly sensuri: ReadonlyMap<LaturaO, readonly SensO[]>;
+};
 
 export type Regiune = {
   readonly inele: readonly Inel[];
@@ -501,25 +512,31 @@ export function regiuneDinInele(
   return { inele, parinte, margineK, probleme: toate, taieturi };
 }
 
-/** §1: inelele foii 0, din tăieturile documentului (oracolul documentului dă matricea în lume și ordinea). */
-export function regiuneDinDocument(doc: DocV3O): Regiune {
-  type Acum = { forma: FormaO; matrice: MatriceO; laturi: Map<LaturaO, number[]> };
+/**
+ * §1: inelele foii 0, din tăieturile documentului (oracolul documentului dă matricea în lume și ordinea). Un v3 se aduce
+ * întâi la v4 (sensul `urcare`, ADR 0027 §5).
+ */
+export function regiuneDinDocument(doc: DocV3O | DocV4O): Regiune {
+  type Acum = { forma: FormaO; matrice: MatriceO; laturi: Map<LaturaO, number[]>; sensuri: Map<LaturaO, SensO[]> };
   const pe = new Map<string, Acum>();
-  for (const t of taieturiV3O(doc, 0)) {
+  for (const t of taieturiV4O(doc.schema === 4 ? doc : ridicaO(doc), 0)) {
     let x = pe.get(t.idLume);
     if (!x) {
-      x = { forma: t.forma as FormaO, matrice: t.matrice, laturi: new Map() };
+      x = { forma: t.forma as FormaO, matrice: t.matrice, laturi: new Map(), sensuri: new Map() };
       pe.set(t.idLume, x);
     }
     const l = x.laturi.get(t.latura) ?? [];
     l.push(t.adancime);
     x.laturi.set(t.latura, l);
+    const s = x.sensuri.get(t.latura) ?? [];
+    s.push(t.sens);
+    x.sensuri.set(t.latura, s);
   }
   const inele: Inel[] = [];
   const probleme: ProblemaRegiune[] = [];
   const taieturi = new Map<string, TaieturaDoc>();
   for (const [idLume, x] of pe) {
-    taieturi.set(idLume, { tip: x.forma.tip, laturi: x.laturi });
+    taieturi.set(idLume, { tip: x.forma.tip, laturi: x.laturi, sensuri: x.sensuri });
     const ext = x.laturi.has('exterior'), int = x.laturi.has('interior');
     if (ext && int) {
       probleme.push({ tip: 'ambele-laturi', elemente: [idLume], mesaj: `${idLume} are operații și pe exterior, și pe interior` });

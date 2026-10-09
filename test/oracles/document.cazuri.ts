@@ -1,20 +1,24 @@
 /**
- * CAZURILE oracolului documentului (ADR 0024 + ADR 0025, documentul v3), cu ZERO importuri din `src/`:
+ * CAZURILE oracolului documentului (ADR 0024 + ADR 0025 + ADR 0027, documentul v4), cu ZERO importuri din `src/`:
  * - `CAZURI_HARTIE`: documente v2 cu punctele în lume calculate de mână, pe hârtie, scrise ca numere (nu calculate
  *   aici). Coordonatele sunt întregi sau puteri ale lui 2, ca egalitatea să fie exactă (`===`). La ușă se migrează la
- *   v3, iar geometria nu se schimbă;
- * - `CAZURI_TAIETURI`: documente v3 (și unul v2) cu lista tăieturilor unei foi scrisă de mână, câmp cu câmp, ca literal;
- * - `MIGRARI_HARTIE` (v1 → v3, în lanț) și `MIGRARI_V2_HARTIE` (v2 → v3): documentul cerut de contracte, scris de mână;
- * - `CORPUS_V1`, `CORPUS_V2`, `CORPUS_V3`: documente valide, scrise de mână (capcanele) și generate cu un PRNG propriu,
- *   determinist; v1 și v2 trebuie să se migreze la v3;
- * - `REFUZATE_V1`, `REFUZATE_V2`: documente vechi pe care ușa le refuză, fiecare cu singura categorie raportată;
- * - `OTRAVURI_V2`, `OTRAVURI_V3`: documente nevalide, fiecare cu singura categorie pe care trebuie s-o raporteze
- *   oracolul (`OTRAVURI_V3` = otrăvurile v2 aduse la forma v3, plus cele ale operațiilor);
- * - `VALIDE_DIFICILE` (v2) și `VALIDE_DIFICILE_V3`: documente valide care seamănă cu niște otrăvuri.
+ *   v4, iar geometria nu se schimbă;
+ * - `CAZURI_TAIETURI`: documente v3 (și unul v2), care la ușă primesc `sens: 'urcare'`, și documente v4 cu ambele
+ *   sensuri, cu lista tăieturilor unei foi scrisă de mână, câmp cu câmp (și sensul), ca literal;
+ * - `MIGRARI_HARTIE` (v1 → v4, în lanț), `MIGRARI_V2_HARTIE` (v2 → v4) și `MIGRARI_V3_HARTIE` (v3 → v4): documentul
+ *   cerut de contracte, scris de mână;
+ * - `CORPUS_V1`, `CORPUS_V2`, `CORPUS_V3`, `CORPUS_V4`: documente valide, scrise de mână (capcanele) și generate cu un
+ *   PRNG propriu, determinist; v1, v2 și v3 trebuie să se migreze la v4;
+ * - `REFUZATE_V1`, `REFUZATE_V2`, `REFUZATE_V3`: documente vechi pe care ușa le refuză, fiecare cu singura categorie
+ *   raportată (v3: o operație care are deja `sens`);
+ * - `OTRAVURI_V2`, `OTRAVURI_V3`, `OTRAVURI_V4`: documente nevalide, fiecare cu singura categorie pe care trebuie s-o
+ *   raporteze oracolul (`OTRAVURI_V3` = otrăvurile v2 aduse la forma v3, plus cele ale operațiilor; `OTRAVURI_V4` =
+ *   aceleași aduse la forma v4, plus cele ale sensului);
+ * - `VALIDE_DIFICILE` (v2), `VALIDE_DIFICILE_V3` și `VALIDE_DIFICILE_V4`: documente valide care seamănă cu niște otrăvuri.
  */
 import type {
-  CategorieO, DocV1O, DocV2O, DocV3O, ElementO, ElementV1O, FoaieO, GrupO, InstantaO, LaturaO, Liber, MatriceO, NodO,
-  OperatieO, PiesaO, PiesaV3O, PunctO, SculaO, TaieturaO,
+  CategorieO, DocV1O, DocV2O, DocV3O, DocV4O, ElementO, ElementV1O, FoaieO, GrupO, InstantaO, LaturaO, Liber, MatriceO,
+  NodO, OperatieO, OperatieV4O, PiesaO, PiesaV3O, PiesaV4O, PunctO, SculaO, SensO, TaieturaV4O,
 } from './document.ts';
 
 type MatriceScrisa = { -readonly [K in keyof MatriceO]: number };
@@ -53,6 +57,36 @@ const op = (id: string, noduri: string[], latura: LaturaO, adancime = 3, pas = 3
 });
 const piesa3 = (id: string, radacina: NodO, operatii: OperatieO[]): PiesaV3O => ({ id, radacina, operatii });
 const doc3 = (piese: PiesaV3O[], foi: FoaieO[]): DocV3O => ({ schema: 3, rev: 0, piese, foi });
+
+// v4 (ADR 0027).
+const op4 = (id: string, noduri: string[], latura: LaturaO, sens: SensO, adancime = 3, pas = 3, scula: SculaO = S1()): OperatieV4O => ({
+  id, tip: 'profil', noduri, scula, latura, adancime, pas, sens,
+});
+const piesa4 = (id: string, radacina: NodO, operatii: OperatieV4O[]): PiesaV4O => ({ id, radacina, operatii });
+const doc4 = (piese: PiesaV4O[], foi: FoaieO[]): DocV4O => ({ schema: 4, rev: 0, piese, foi });
+const esteObiectL = (v: unknown): v is Liber => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/**
+ * Forma v4 a unui document v3 (sau a unei otrăvi v3): schema 3 devine 4 („3” devine „4”; altă schemă greșită rămâne
+ * greșită) și fiecare operație-obiect care n-are `sens` primește sensul dat de `sens(k)` (k = al câtelea, în tot
+ * documentul). Pe loc; întoarce documentul.
+ */
+const laV4 = (d: unknown, sens: (k: number) => SensO = () => 'urcare'): unknown => {
+  if (!esteObiectL(d)) return d;
+  if (d['schema'] === 3) d['schema'] = 4;
+  else if (d['schema'] === '3') d['schema'] = '4';
+  const piese = d['piese'];
+  let k = 0;
+  if (Array.isArray(piese)) {
+    for (const p of piese) {
+      if (!esteObiectL(p) || !Array.isArray(p['operatii'])) continue;
+      for (const o of p['operatii'] as unknown[]) if (esteObiectL(o) && !Object.hasOwn(o, 'sens')) o['sens'] = sens(k++);
+    }
+  }
+  return d;
+};
+/** Sensurile pe rând (urcare, opoziție, urcare, …): un v4 valid cu ambele valori. */
+const alternant = (k: number): SensO => (k % 2 === 0 ? 'urcare' : 'opozitie');
 
 // ---------------------------------------------------------------------------------------------------------------
 // Pe hârtie: geometria (documente v2; ușa le migrează, geometria rămâne).
@@ -313,23 +347,26 @@ export const CAZURI_HARTIE: readonly CazHartie[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
-// Pe hârtie: tăieturile (ADR 0025). Fiecare tăietură e scrisă de mână, câmp cu câmp; matricele sunt calculate pe
-// hârtie (comentariile), cu rotiri exacte, ca egalitatea să fie `===` (−0 = 0).
+// Pe hârtie: tăieturile (ADR 0025, cu sensul din ADR 0027). Fiecare tăietură e scrisă de mână, câmp cu câmp;
+// matricele sunt calculate pe hârtie (comentariile), cu rotiri exacte, ca egalitatea să fie `===` (−0 = 0).
 
 export type CazTaieturi = {
   readonly nume: string;
-  /** Un v3; T08 e un v2, ale cărui tăieturi vin din operațiile implicite ale migrării. */
-  readonly doc: DocV3O | DocV2O;
+  /**
+   * Un v3 (la ușă, fiecare operație primește `urcare`); T08 e un v2, ale cărui tăieturi vin din operațiile implicite
+   * ale migrării; T10–T12 sunt v4, cu ambele sensuri.
+   */
+  readonly doc: DocV4O | DocV3O | DocV2O;
   readonly indexFoaie: number;
-  /** Toate tăieturile foii, în ordine. */
-  readonly taieturi: readonly TaieturaO[];
+  /** Toate tăieturile foii, în ordine, fiecare cu sensul operației ei. */
+  readonly taieturi: readonly TaieturaV4O[];
 };
 
 /** O tăietură scrisă de mână (fiecare argument e o valoare literală; `idLume` se scrie, nu se calculează). */
 const t = (
   idLume: string, instanta: string, piesaT: string, operatie: string, nod: string, latura: LaturaO,
-  adancime: number, pas: number, scula: SculaO, forma: Liber, matrice: MatriceO,
-): TaieturaO => ({ idLume, instanta, piesa: piesaT, operatie, nod, latura, adancime, pas, scula, forma, matrice });
+  adancime: number, pas: number, scula: SculaO, forma: Liber, matrice: MatriceO, sens: SensO,
+): TaieturaV4O => ({ idLume, instanta, piesa: piesaT, operatie, nod, latura, adancime, pas, scula, forma, matrice, sens });
 
 /** T05: trei piese (una fără operații), două foi. */
 const docT05 = (): DocV3O => doc3(
@@ -369,9 +406,9 @@ export const CAZURI_TAIETURI: readonly CazTaieturi[] = [
     ),
     indexFoaie: 0,
     taieturi: [
-      t('i1/c', 'i1', 'p1', 'o-int', 'c', 'interior', 10, 5, S1(), cerc(), M(1, 0, 0, 1, 100, 60)),
-      t('i1/l', 'i1', 'p1', 'o-lin', 'l', 'pe-linie', 2, 1, S1(), dr(), M(1, 0, 0, 1, 105, 55)),
-      t('i1/r', 'i1', 'p1', 'o-ext', 'r', 'exterior', 18, 6, S1(), dr(), M(1, 0, 0, 1, 110, 50)),
+      t('i1/c', 'i1', 'p1', 'o-int', 'c', 'interior', 10, 5, S1(), cerc(), M(1, 0, 0, 1, 100, 60), 'urcare'),
+      t('i1/l', 'i1', 'p1', 'o-lin', 'l', 'pe-linie', 2, 1, S1(), dr(), M(1, 0, 0, 1, 105, 55), 'urcare'),
+      t('i1/r', 'i1', 'p1', 'o-ext', 'r', 'exterior', 18, 6, S1(), dr(), M(1, 0, 0, 1, 110, 50), 'urcare'),
     ],
   },
   {
@@ -388,12 +425,12 @@ export const CAZURI_TAIETURI: readonly CazTaieturi[] = [
     ),
     indexFoaie: 0,
     taieturi: [
-      t('i1/a', 'i1', 'p1', 'g1', 'a', 'interior', 5, 5, S1(), cerc(), M(1, 0, 0, 1, 10, 0)),
-      t('i1/b', 'i1', 'p1', 'g2', 'b', 'interior', 6, 3, S1(), cerc(3), M(1, 0, 0, 1, 0, 20)),
-      t('i2/a', 'i2', 'p1', 'g1', 'a', 'interior', 5, 5, S1(), cerc(), M(0, 1, -1, 0, 200, 110)),
-      t('i2/b', 'i2', 'p1', 'g2', 'b', 'interior', 6, 3, S1(), cerc(3), M(0, 1, -1, 0, 180, 100)),
-      t('i1/r', 'i1', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(), M(1, 0, 0, 1, 0, 0)),
-      t('i2/r', 'i2', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(), M(0, 1, -1, 0, 200, 100)),
+      t('i1/a', 'i1', 'p1', 'g1', 'a', 'interior', 5, 5, S1(), cerc(), M(1, 0, 0, 1, 10, 0), 'urcare'),
+      t('i1/b', 'i1', 'p1', 'g2', 'b', 'interior', 6, 3, S1(), cerc(3), M(1, 0, 0, 1, 0, 20), 'urcare'),
+      t('i2/a', 'i2', 'p1', 'g1', 'a', 'interior', 5, 5, S1(), cerc(), M(0, 1, -1, 0, 200, 110), 'urcare'),
+      t('i2/b', 'i2', 'p1', 'g2', 'b', 'interior', 6, 3, S1(), cerc(3), M(0, 1, -1, 0, 180, 100), 'urcare'),
+      t('i1/r', 'i1', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(), M(1, 0, 0, 1, 0, 0), 'urcare'),
+      t('i2/r', 'i2', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(), M(0, 1, -1, 0, 200, 100), 'urcare'),
     ],
   },
   {
@@ -410,9 +447,9 @@ export const CAZURI_TAIETURI: readonly CazTaieturi[] = [
     ),
     indexFoaie: 0,
     taieturi: [
-      t('i1/r', 'i1', 'p1', 'r', 'r', 'interior', 0.5, 0.5, S1(), dr(100, 50, 0), M(-1, 0, 0, -1, 10, 20)),
-      t('i1/r', 'i1', 'p1', 'marcaj', 'r', 'pe-linie', 1, 1, S2(), dr(100, 50, 0), M(-1, 0, 0, -1, 10, 20)),
-      t('i1/r', 'i1', 'p1', 'decupare', 'r', 'exterior', 18, 6, S1(), dr(100, 50, 0), M(-1, 0, 0, -1, 10, 20)),
+      t('i1/r', 'i1', 'p1', 'r', 'r', 'interior', 0.5, 0.5, S1(), dr(100, 50, 0), M(-1, 0, 0, -1, 10, 20), 'urcare'),
+      t('i1/r', 'i1', 'p1', 'marcaj', 'r', 'pe-linie', 1, 1, S2(), dr(100, 50, 0), M(-1, 0, 0, -1, 10, 20), 'urcare'),
+      t('i1/r', 'i1', 'p1', 'decupare', 'r', 'exterior', 18, 6, S1(), dr(100, 50, 0), M(-1, 0, 0, -1, 10, 20), 'urcare'),
     ],
   },
   {
@@ -435,9 +472,9 @@ export const CAZURI_TAIETURI: readonly CazTaieturi[] = [
     ),
     indexFoaie: 0,
     taieturi: [
-      t('i1/n2', 'i1', 'p1', 'gauri', 'n2', 'interior', 12, 4, S1(), cerc(2), M(1, 0, 0, 1, 1000, 5)),
-      t('i1/n1', 'i1', 'p1', 'gauri', 'n1', 'interior', 12, 4, S1(), cerc(2), M(0, 1, -1, 0, 1000, 10)),
-      t('i1/n3', 'i1', 'p1', 'o3', 'n3', 'exterior', 18, 9, S1(), dr(), M(1, 0, 0, 1, 1000, 0)),
+      t('i1/n2', 'i1', 'p1', 'gauri', 'n2', 'interior', 12, 4, S1(), cerc(2), M(1, 0, 0, 1, 1000, 5), 'urcare'),
+      t('i1/n1', 'i1', 'p1', 'gauri', 'n1', 'interior', 12, 4, S1(), cerc(2), M(0, 1, -1, 0, 1000, 10), 'urcare'),
+      t('i1/n3', 'i1', 'p1', 'o3', 'n3', 'exterior', 18, 9, S1(), dr(), M(1, 0, 0, 1, 1000, 0), 'urcare'),
     ],
   },
   {
@@ -448,16 +485,16 @@ export const CAZURI_TAIETURI: readonly CazTaieturi[] = [
     doc: docT05(),
     indexFoaie: 1,
     taieturi: [
-      t('iA2/e', 'iA2', 'pA', 'o', 'e', 'interior', 6, 3, S1(), cerc(4), M(0, 1, -1, 0, 50, 50)),
-      t('iB/y', 'iB', 'pB', 'k', 'y', 'exterior', 18, 6, S3(), dr(), M(0, -1, 1, 0, 106, -5)),
-      t('iB/x', 'iB', 'pB', 'k', 'x', 'exterior', 18, 6, S3(), dr(), M(0, -1, 1, 0, 105, -6)),
+      t('iA2/e', 'iA2', 'pA', 'o', 'e', 'interior', 6, 3, S1(), cerc(4), M(0, 1, -1, 0, 50, 50), 'urcare'),
+      t('iB/y', 'iB', 'pB', 'k', 'y', 'exterior', 18, 6, S3(), dr(), M(0, -1, 1, 0, 106, -5), 'urcare'),
+      t('iB/x', 'iB', 'pB', 'k', 'x', 'exterior', 18, 6, S3(), dr(), M(0, -1, 1, 0, 105, -6), 'urcare'),
     ],
   },
   {
     nume: 'T05b prima foaie a aceluiași document nu vede foaia a doua',
     doc: docT05(),
     indexFoaie: 0,
-    taieturi: [t('iA1/e', 'iA1', 'pA', 'o', 'e', 'interior', 6, 3, S1(), cerc(4), M(1, 0, 0, 1, 0, 0))],
+    taieturi: [t('iA1/e', 'iA1', 'pA', 'o', 'e', 'interior', 6, 3, S1(), cerc(4), M(1, 0, 0, 1, 0, 0), 'urcare')],
   },
   {
     // Instanțele: z9, a1, m5 (nu după id); operațiile lui pZ: z, b, a (nu după id). m = T(1, 0), a = T(2, 0), k = I.
@@ -475,13 +512,13 @@ export const CAZURI_TAIETURI: readonly CazTaieturi[] = [
     ),
     indexFoaie: 0,
     taieturi: [
-      t('z9/m', 'z9', 'pZ', 'b', 'm', 'interior', 4, 2, S1(), cerc(1), M(1, 0, 0, 1, 1, 0)),
-      t('z9/m', 'z9', 'pZ', 'a', 'm', 'interior', 2, 2, S1(), cerc(1), M(1, 0, 0, 1, 1, 0)),
-      t('a1/k', 'a1', 'pA', 'k', 'k', 'interior', 3, 3, S1(), dr(), M(1, 0, 0, 1, 1000, 0)),
-      t('m5/m', 'm5', 'pZ', 'b', 'm', 'interior', 4, 2, S1(), cerc(1), M(1, 0, 0, 1, 1, 500)),
-      t('m5/m', 'm5', 'pZ', 'a', 'm', 'interior', 2, 2, S1(), cerc(1), M(1, 0, 0, 1, 1, 500)),
-      t('z9/a', 'z9', 'pZ', 'z', 'a', 'pe-linie', 1, 1, S1(), dr(), M(1, 0, 0, 1, 2, 0)),
-      t('m5/a', 'm5', 'pZ', 'z', 'a', 'pe-linie', 1, 1, S1(), dr(), M(1, 0, 0, 1, 2, 500)),
+      t('z9/m', 'z9', 'pZ', 'b', 'm', 'interior', 4, 2, S1(), cerc(1), M(1, 0, 0, 1, 1, 0), 'urcare'),
+      t('z9/m', 'z9', 'pZ', 'a', 'm', 'interior', 2, 2, S1(), cerc(1), M(1, 0, 0, 1, 1, 0), 'urcare'),
+      t('a1/k', 'a1', 'pA', 'k', 'k', 'interior', 3, 3, S1(), dr(), M(1, 0, 0, 1, 1000, 0), 'urcare'),
+      t('m5/m', 'm5', 'pZ', 'b', 'm', 'interior', 4, 2, S1(), cerc(1), M(1, 0, 0, 1, 1, 500), 'urcare'),
+      t('m5/m', 'm5', 'pZ', 'a', 'm', 'interior', 2, 2, S1(), cerc(1), M(1, 0, 0, 1, 1, 500), 'urcare'),
+      t('z9/a', 'z9', 'pZ', 'z', 'a', 'pe-linie', 1, 1, S1(), dr(), M(1, 0, 0, 1, 2, 0), 'urcare'),
+      t('m5/a', 'm5', 'pZ', 'z', 'a', 'pe-linie', 1, 1, S1(), dr(), M(1, 0, 0, 1, 2, 500), 'urcare'),
     ],
   },
   {
@@ -501,7 +538,7 @@ export const CAZURI_TAIETURI: readonly CazTaieturi[] = [
     nume: 'T07c doar elementul cu operație se taie',
     doc: docT07(),
     indexFoaie: 2,
-    taieturi: [t('iX/e', 'iX', 'pX', 'o', 'e', 'exterior', 3, 3, S1(), dr(), M(1, 0, 0, 1, 13, 14))],
+    taieturi: [t('iX/e', 'iX', 'pX', 'o', 'e', 'exterior', 3, 3, S1(), dr(), M(1, 0, 0, 1, 13, 14), 'urcare')],
   },
   {
     // Un v2: migrarea dă r → exterior 3 3, c → interior 8 4, c2 → interior 8 4, scula { 1, 'freza plata', 6 }.
@@ -513,9 +550,9 @@ export const CAZURI_TAIETURI: readonly CazTaieturi[] = [
     ),
     indexFoaie: 0,
     taieturi: [
-      t('i1/c', 'i1', 'p1', 'c', 'c', 'interior', 8, 4, { numar: 1, nume: 'freza plata', diametru: 6 }, cerc(), M(1, 0, 0, 1, 120, 110)),
-      t('i2/c2', 'i2', 'p2', 'c2', 'c2', 'interior', 8, 4, { numar: 1, nume: 'freza plata', diametru: 6 }, cerc(3), M(0, 1, -1, 0, 0, 0)),
-      t('i1/r', 'i1', 'p1', 'r', 'r', 'exterior', 3, 3, { numar: 1, nume: 'freza plata', diametru: 6 }, dr(), M(1, 0, 0, 1, 100, 100)),
+      t('i1/c', 'i1', 'p1', 'c', 'c', 'interior', 8, 4, { numar: 1, nume: 'freza plata', diametru: 6 }, cerc(), M(1, 0, 0, 1, 120, 110), 'urcare'),
+      t('i2/c2', 'i2', 'p2', 'c2', 'c2', 'interior', 8, 4, { numar: 1, nume: 'freza plata', diametru: 6 }, cerc(3), M(0, 1, -1, 0, 0, 0), 'urcare'),
+      t('i1/r', 'i1', 'p1', 'r', 'r', 'exterior', 3, 3, { numar: 1, nume: 'freza plata', diametru: 6 }, dr(), M(1, 0, 0, 1, 100, 100), 'urcare'),
     ],
   },
   {
@@ -534,22 +571,89 @@ export const CAZURI_TAIETURI: readonly CazTaieturi[] = [
     ),
     indexFoaie: 0,
     taieturi: [
-      t('i1/c', 'i1', 'p1', 'gaura', 'c', 'interior', 18, 6, S1(), cerc(5), M(-1, 0, 0, -1, 50, 30)),
-      t('i2/c', 'i2', 'p1', 'gaura', 'c', 'interior', 18, 6, S1(), cerc(5), M(0, -1, 1, 0, -30, 150)),
-      t('i1/r', 'i1', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(20, 10, 2), M(-1, 0, 0, 1, 40, 0)),
-      t('i2/r', 'i2', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(20, 10, 2), M(0, -1, -1, 0, 0, 140)),
+      t('i1/c', 'i1', 'p1', 'gaura', 'c', 'interior', 18, 6, S1(), cerc(5), M(-1, 0, 0, -1, 50, 30), 'urcare'),
+      t('i2/c', 'i2', 'p1', 'gaura', 'c', 'interior', 18, 6, S1(), cerc(5), M(0, -1, 1, 0, -30, 150), 'urcare'),
+      t('i1/r', 'i1', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(20, 10, 2), M(-1, 0, 0, 1, 40, 0), 'urcare'),
+      t('i2/r', 'i2', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(20, 10, 2), M(0, -1, -1, 0, 0, 140), 'urcare'),
+    ],
+  },
+  {
+    // ADR 0027: sensul e al operației. Degroșarea și finisarea aceluiași contur, aceeași latură și aceeași adâncime, în
+    // sensuri diferite (motivul din „Ce am respins”); `pe-linie` își păstrează câmpul. i1 = T(100, 50): c = T(20, 10)
+    // → (120, 60); l = T(5, 5) → (105, 55); r = I → (100, 50). Clasele: interior, pe-linie, exterior; în exterior,
+    // operațiile în ordinea piesei (deg, apoi fin).
+    nume: 'T10 v4: degroșare în urcare și finisare în opoziție pe același contur; gaura în opoziție; pe-linie în opoziție',
+    doc: doc4(
+      [piesa4(
+        'p1',
+        grup('g', I(), [el('r', I(), dr()), el('c', T(20, 10), cerc()), el('l', T(5, 5))]),
+        [
+          op4('deg', ['r'], 'exterior', 'urcare', 6, 3), op4('fin', ['r'], 'exterior', 'opozitie', 6, 6),
+          op4('g', ['c'], 'interior', 'opozitie', 8, 4), op4('m', ['l'], 'pe-linie', 'opozitie', 1, 1),
+        ],
+      )],
+      [foaie('f1', [inst('i1', 'p1', 100, 50, 0)])],
+    ),
+    indexFoaie: 0,
+    taieturi: [
+      t('i1/c', 'i1', 'p1', 'g', 'c', 'interior', 8, 4, S1(), cerc(), M(1, 0, 0, 1, 120, 60), 'opozitie'),
+      t('i1/l', 'i1', 'p1', 'm', 'l', 'pe-linie', 1, 1, S1(), dr(), M(1, 0, 0, 1, 105, 55), 'opozitie'),
+      t('i1/r', 'i1', 'p1', 'deg', 'r', 'exterior', 6, 3, S1(), dr(), M(1, 0, 0, 1, 100, 50), 'urcare'),
+      t('i1/r', 'i1', 'p1', 'fin', 'r', 'exterior', 6, 6, S1(), dr(), M(1, 0, 0, 1, 100, 50), 'opozitie'),
+    ],
+  },
+  {
+    // Același arbore oglindit ca T09 (aceleași matrice, calculate acolo), cu sensurile schimbate: oglindirea nu atinge
+    // sensul, care e al operației (contorul trebuie să-l întoarcă CAM-ul, nu documentul).
+    nume: 'T11 v4 oglindit (determinant −1): sensul rămâne al operației, pe ambele instanțe',
+    doc: doc4(
+      [piesa4(
+        'p1',
+        grup('g', M(-1, 0, 0, 1, 50, 0), [el('r', T(10, 0), dr(20, 10, 2)), el('c', M(1, 0, 0, -1, 0, 30), cerc(5))]),
+        [op4('contur', ['r'], 'exterior', 'opozitie', 18, 6), op4('gaura', ['c'], 'interior', 'urcare', 18, 6)],
+      )],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0), inst('i2', 'p1', 0, 100, 90)])],
+    ),
+    indexFoaie: 0,
+    taieturi: [
+      t('i1/c', 'i1', 'p1', 'gaura', 'c', 'interior', 18, 6, S1(), cerc(5), M(-1, 0, 0, -1, 50, 30), 'urcare'),
+      t('i2/c', 'i2', 'p1', 'gaura', 'c', 'interior', 18, 6, S1(), cerc(5), M(0, -1, 1, 0, -30, 150), 'urcare'),
+      t('i1/r', 'i1', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(20, 10, 2), M(-1, 0, 0, 1, 40, 0), 'opozitie'),
+      t('i2/r', 'i2', 'p1', 'contur', 'r', 'exterior', 18, 6, S1(), dr(20, 10, 2), M(0, -1, -1, 0, 0, 140), 'opozitie'),
+    ],
+  },
+  {
+    // Ca T05 (a doua foaie, aceleași matrice), cu o operație în opoziție și una în urcare, pe piese diferite.
+    nume: 'T12 v4 a doua foaie: sensul vine din piesa fiecărei instanțe (pA în opoziție, pB în urcare)',
+    doc: doc4(
+      [
+        piesa4('pA', el('e', I(), cerc(4)), [op4('o', ['e'], 'interior', 'opozitie', 6, 3)]),
+        piesa4('pB', grup('g', T(5, 5), [el('x', T(1, 0)), el('y', T(0, 1))]), [op4('k', ['y', 'x'], 'exterior', 'urcare', 18, 6, S3())]),
+        piesa4('pC', el('z', I()), []),
+      ],
+      [
+        foaie('f1', [inst('iA1', 'pA', 0, 0, 0)]),
+        foaie('f2', [inst('iB', 'pB', 100, 0, 270), inst('iC', 'pC', 0, 0, 0), inst('iA2', 'pA', 50, 50, 90)]),
+      ],
+    ),
+    indexFoaie: 1,
+    taieturi: [
+      t('iA2/e', 'iA2', 'pA', 'o', 'e', 'interior', 6, 3, S1(), cerc(4), M(0, 1, -1, 0, 50, 50), 'opozitie'),
+      t('iB/y', 'iB', 'pB', 'k', 'y', 'exterior', 18, 6, S3(), dr(), M(0, -1, 1, 0, 106, -5), 'urcare'),
+      t('iB/x', 'iB', 'pB', 'k', 'x', 'exterior', 18, 6, S3(), dr(), M(0, -1, 1, 0, 105, -6), 'urcare'),
     ],
   },
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
-// Migrări pe hârtie: documentul v3 scris de mână, din textul contractelor (v1 → v2 → v3, în lanț).
+// Migrări pe hârtie: documentul v4 scris de mână, din textul contractelor (v1 → v2 → v3 → v4, în lanț): operațiile
+// implicite ale lui v3, fiecare cu `sens: 'urcare'` (ADR 0027 §5).
 
-export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1: DocV1O; readonly v3: Liber }> = [
+export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1: DocV1O; readonly v4: Liber }> = [
   {
     nume: 'M01 gol',
     v1: { schema: 1, rev: 0, foaie: { latime: 100, inaltime: 100, grosime: 10 }, elemente: [] },
-    v3: { schema: 3, rev: 0, piese: [], foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 10 }, instante: [] }] },
+    v4: { schema: 4, rev: 0, piese: [], foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 10 }, instante: [] }] },
   },
   {
     nume: 'M02 două elemente, nume, câmpuri necunoscute pe toate nivelurile',
@@ -561,8 +665,8 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
         { id: 'b', forma: { tip: 'cerc', raza: 10 }, matrice: M(1, 0, 0, 1, -5, 0) },
       ],
     },
-    v3: {
-      schema: 3, rev: 7, autor: 'A',
+    v4: {
+      schema: 4, rev: 7, autor: 'A',
       piese: [
         {
           id: 'a', nume: 'Raft',
@@ -572,7 +676,7 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
           },
           operatii: [{
             id: 'a', tip: 'profil', noduri: ['a'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
-            latura: 'exterior', adancime: 3, pas: 3,
+            latura: 'exterior', adancime: 3, pas: 3, sens: 'urcare',
           }],
         },
         {
@@ -580,7 +684,7 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
           radacina: { tip: 'element', id: 'b', forma: { tip: 'cerc', raza: 10 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
           operatii: [{
             id: 'b', tip: 'profil', noduri: ['b'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
-            latura: 'interior', adancime: 8, pas: 4,
+            latura: 'interior', adancime: 8, pas: 4, sens: 'urcare',
           }],
         },
       ],
@@ -600,14 +704,14 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
       foaie: { latime: 50, inaltime: 60, grosime: 3, id: 'X', nume: 'Placa', instante: 'nu' },
       elemente: [{ id: 'f1', forma: { tip: 'cerc', raza: 2 }, matrice: M(1, 0, 0, 1, 7, 8), x: 99, rotire: 45, piesa: 'q' }],
     },
-    v3: {
-      schema: 3, rev: 3,
+    v4: {
+      schema: 4, rev: 3,
       piese: [{
         id: 'f1',
         radacina: { tip: 'element', id: 'f1', forma: { tip: 'cerc', raza: 2 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, x: 99, rotire: 45, piesa: 'q' },
         operatii: [{
           id: 'f1', tip: 'profil', noduri: ['f1'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
-          latura: 'interior', adancime: 8, pas: 4,
+          latura: 'interior', adancime: 8, pas: 4, sens: 'urcare',
         }],
       }],
       foi: [{
@@ -629,8 +733,8 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
         copii: [{ tip: 'element', id: 'x' }],
       }],
     },
-    v3: {
-      schema: 3, rev: 5,
+    v4: {
+      schema: 4, rev: 5,
       piese: [{
         id: 'a',
         radacina: {
@@ -639,7 +743,7 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
         },
         operatii: [{
           id: 'a', tip: 'profil', noduri: ['a'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
-          latura: 'interior', adancime: 8, pas: 4,
+          latura: 'interior', adancime: 8, pas: 4, sens: 'urcare',
         }],
       }],
       foi: [{ id: 'f1', stoc: { latime: 10, inaltime: 10, grosime: 1 }, instante: [{ id: 'a', piesa: 'a', x: 3, y: -4, rotire: 0 }] }],
@@ -654,8 +758,8 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
       foaie: { latime: 10, inaltime: 10, grosime: 1 },
       elemente: [{ id: 'e', forma: { tip: 'dreptunghi', latime: 4, inaltime: 2, razaColt: 0 }, matrice: M(1, 0, 0, 1, 1, 1), operatii: [{ id: 'x' }] }],
     },
-    v3: {
-      schema: 3, rev: 2, operatii: 'sus',
+    v4: {
+      schema: 4, rev: 2, operatii: 'sus',
       piese: [{
         id: 'e',
         radacina: {
@@ -664,7 +768,7 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
         },
         operatii: [{
           id: 'e', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
-          latura: 'exterior', adancime: 3, pas: 3,
+          latura: 'exterior', adancime: 3, pas: 3, sens: 'urcare',
         }],
       }],
       foi: [{ id: 'f1', stoc: { latime: 10, inaltime: 10, grosime: 1 }, instante: [{ id: 'e', piesa: 'e', x: 1, y: 1, rotire: 0 }] }],
@@ -672,8 +776,8 @@ export const MIGRARI_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v1:
   },
 ];
 
-/** Migrări v2 → v3 pe hârtie (ADR 0025): o operație pe element, în preordine, cu implicitele formei. */
-export const MIGRARI_V2_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v2: DocV2O; readonly v3: Liber }> = [
+/** Migrări v2 → v4 pe hârtie (ADR 0025 + 0027): o operație pe element, în preordine, cu implicitele formei și `urcare`. */
+export const MIGRARI_V2_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v2: DocV2O; readonly v4: Liber }> = [
   {
     nume: 'MV01 un cerc: interior, 8, 4',
     v2: {
@@ -681,14 +785,14 @@ export const MIGRARI_V2_HARTIE: ReadonlyArray<{ readonly nume: string; readonly 
       piese: [{ id: 'p1', radacina: { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 10 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } } }],
       foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 18 }, instante: [{ id: 'i1', piesa: 'p1', x: 50, y: 50, rotire: 0 }] }],
     },
-    v3: {
-      schema: 3, rev: 5,
+    v4: {
+      schema: 4, rev: 5,
       piese: [{
         id: 'p1',
         radacina: { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 10 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
         operatii: [{
           id: 'c', tip: 'profil', noduri: ['c'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
-          latura: 'interior', adancime: 8, pas: 4,
+          latura: 'interior', adancime: 8, pas: 4, sens: 'urcare',
         }],
       }],
       foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 18 }, instante: [{ id: 'i1', piesa: 'p1', x: 50, y: 50, rotire: 0 }] }],
@@ -710,8 +814,8 @@ export const MIGRARI_V2_HARTIE: ReadonlyArray<{ readonly nume: string; readonly 
         instante: [{ id: 'i1', piesa: 'raft', x: 0, y: 0, rotire: 90, campuri: { cod: 'R1' } }],
       }],
     },
-    v3: {
-      schema: 3, rev: 11, autor: 'A',
+    v4: {
+      schema: 4, rev: 11, autor: 'A',
       piese: [{
         id: 'raft', nume: 'Raft', culoare: 'stejar',
         radacina: {
@@ -720,7 +824,7 @@ export const MIGRARI_V2_HARTIE: ReadonlyArray<{ readonly nume: string; readonly 
         },
         operatii: [{
           id: 'r', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
-          latura: 'exterior', adancime: 3, pas: 3,
+          latura: 'exterior', adancime: 3, pas: 3, sens: 'urcare',
         }],
       }],
       foi: [{
@@ -745,8 +849,8 @@ export const MIGRARI_V2_HARTIE: ReadonlyArray<{ readonly nume: string; readonly 
       }],
       foi: [{ id: 'f1', stoc: { latime: 2000, inaltime: 1000, grosime: 18 }, instante: [] }],
     },
-    v3: {
-      schema: 3, rev: 0,
+    v4: {
+      schema: 4, rev: 0,
       piese: [{
         id: 'p1',
         radacina: {
@@ -759,11 +863,11 @@ export const MIGRARI_V2_HARTIE: ReadonlyArray<{ readonly nume: string; readonly 
         operatii: [
           {
             id: 'r', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
-            latura: 'exterior', adancime: 3, pas: 3,
+            latura: 'exterior', adancime: 3, pas: 3, sens: 'urcare',
           },
           {
             id: 'c', tip: 'profil', noduri: ['c'], scula: { numar: 1, nume: 'freza plata', diametru: 6 },
-            latura: 'interior', adancime: 8, pas: 4,
+            latura: 'interior', adancime: 8, pas: 4, sens: 'urcare',
           },
         ],
       }],
@@ -795,8 +899,8 @@ export const MIGRARI_V2_HARTIE: ReadonlyArray<{ readonly nume: string; readonly 
         instante: [{ id: 'i1', piesa: 'p1', x: 0, y: 0, rotire: 0, operatii: 7 }, { id: 'i2', piesa: 'gol', x: 0, y: 0, rotire: 0 }],
       }],
     },
-    v3: {
-      schema: 3, rev: 9, operatii: null,
+    v4: {
+      schema: 4, rev: 9, operatii: null,
       piese: [
         {
           id: 'p1',
@@ -810,11 +914,11 @@ export const MIGRARI_V2_HARTIE: ReadonlyArray<{ readonly nume: string; readonly 
             el('n2', T(5, 0), cerc()),
           ]),
           operatii: [
-            { id: 'n5', tip: 'profil', noduri: ['n5'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4 },
-            { id: 'n3', tip: 'profil', noduri: ['n3'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'exterior', adancime: 3, pas: 3 },
-            { id: 'n1', tip: 'profil', noduri: ['n1'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4 },
-            { id: 'n4', tip: 'profil', noduri: ['n4'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'exterior', adancime: 3, pas: 3 },
-            { id: 'n2', tip: 'profil', noduri: ['n2'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4 },
+            { id: 'n5', tip: 'profil', noduri: ['n5'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4, sens: 'urcare' },
+            { id: 'n3', tip: 'profil', noduri: ['n3'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'exterior', adancime: 3, pas: 3, sens: 'urcare' },
+            { id: 'n1', tip: 'profil', noduri: ['n1'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4, sens: 'urcare' },
+            { id: 'n4', tip: 'profil', noduri: ['n4'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'exterior', adancime: 3, pas: 3, sens: 'urcare' },
+            { id: 'n2', tip: 'profil', noduri: ['n2'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4, sens: 'urcare' },
           ],
         },
         { id: 'gol', radacina: grup('g', I(), []), operatii: [] },
@@ -824,6 +928,109 @@ export const MIGRARI_V2_HARTIE: ReadonlyArray<{ readonly nume: string; readonly 
         instante: [{ id: 'i1', piesa: 'p1', x: 0, y: 0, rotire: 0, operatii: 7 }, { id: 'i2', piesa: 'gol', x: 0, y: 0, rotire: 0 }],
       }],
     },
+  },
+];
+
+/**
+ * Migrări v3 → v4 pe hârtie (ADR 0027 §5): `schema: 4` și `sens: 'urcare'` pe fiecare operație, și pe `pe-linie`; tot
+ * restul rămâne, cu câmpurile necunoscute. Un câmp `sens` în altă parte decât pe operație nu e o ciocnire.
+ */
+export const MIGRARI_V3_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v3: DocV3O; readonly v4: Liber }> = [
+  {
+    nume: 'MV3-01 trei operații (exterior, interior, pe-linie), câmpuri necunoscute; „sens” pe sculă, nod, piesă, instanță, foaie și sus',
+    v3: {
+      schema: 3, rev: 12, sens: 'sus',
+      piese: [{
+        id: 'p1', sens: 'piesa',
+        radacina: {
+          tip: 'grup', id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, sens: 'nod',
+          copii: [
+            { tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+            { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 5 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 20, f: 10 }, sens: 'element' },
+          ],
+        },
+        operatii: [
+          { id: 'o1', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 6, sens: 'scula' }, latura: 'exterior', adancime: 3, pas: 3, urechi: [] },
+          { id: 'o2', tip: 'profil', noduri: ['c'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4, note: 'gaura' },
+          { id: 'o3', tip: 'profil', noduri: ['c', 'r'], scula: { numar: 2, nume: 'V 90', diametru: 3.175 }, latura: 'pe-linie', adancime: 1, pas: 1 },
+        ],
+      }],
+      foi: [{
+        id: 'f1', sens: 'foaie', stoc: { latime: 600, inaltime: 400, grosime: 18 },
+        instante: [{ id: 'i1', piesa: 'p1', x: 10, y: 10, rotire: 0, sens: 'instanta' }],
+      }],
+    },
+    v4: {
+      schema: 4, rev: 12, sens: 'sus',
+      piese: [{
+        id: 'p1', sens: 'piesa',
+        radacina: {
+          tip: 'grup', id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, sens: 'nod',
+          copii: [
+            { tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+            { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 5 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 20, f: 10 }, sens: 'element' },
+          ],
+        },
+        operatii: [
+          { id: 'o1', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 6, sens: 'scula' }, latura: 'exterior', adancime: 3, pas: 3, urechi: [], sens: 'urcare' },
+          { id: 'o2', tip: 'profil', noduri: ['c'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4, note: 'gaura', sens: 'urcare' },
+          { id: 'o3', tip: 'profil', noduri: ['c', 'r'], scula: { numar: 2, nume: 'V 90', diametru: 3.175 }, latura: 'pe-linie', adancime: 1, pas: 1, sens: 'urcare' },
+        ],
+      }],
+      foi: [{
+        id: 'f1', sens: 'foaie', stoc: { latime: 600, inaltime: 400, grosime: 18 },
+        instante: [{ id: 'i1', piesa: 'p1', x: 10, y: 10, rotire: 0, sens: 'instanta' }],
+      }],
+    },
+  },
+  {
+    nume: 'MV3-02 două piese, una fără operații (lista goală rămâne goală), fără instanțe; ordinea operațiilor rămâne',
+    v3: {
+      schema: 3, rev: 0,
+      piese: [
+        { id: 'a', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [] },
+        {
+          id: 'b', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+          operatii: [
+            { id: 'z', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 2, pas: 1 },
+            { id: 'a', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 4, pas: 1 },
+          ],
+        },
+      ],
+      foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 10 }, instante: [] }],
+    },
+    v4: {
+      schema: 4, rev: 0,
+      piese: [
+        { id: 'a', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [] },
+        {
+          id: 'b', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+          operatii: [
+            { id: 'z', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 2, pas: 1, sens: 'urcare' },
+            { id: 'a', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 4, pas: 1, sens: 'urcare' },
+          ],
+        },
+      ],
+      foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 10 }, instante: [] }],
+    },
+  },
+  {
+    // Cheile capcană rămân date (ADR 0024, precizarea 9), și pe operația care primește `sens`.
+    nume: 'MV3-03 chei capcană pe operație și pe sculă (din JSON.parse)',
+    v3: JSON.parse(
+      '{"schema":3,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6,"__proto__":"s"},'
+      + '"latura":"interior","adancime":8,"pas":4,"__proto__":"x","constructor":"Ion","prototype":"p"}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as DocV3O,
+    v4: JSON.parse(
+      '{"schema":4,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6,"__proto__":"s"},'
+      + '"latura":"interior","adancime":8,"pas":4,"__proto__":"x","constructor":"Ion","prototype":"p","sens":"urcare"}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as Liber,
   },
 ];
 
@@ -1436,6 +1643,33 @@ export const CORPUS_V3: readonly CazV3[] = [
   { nume: 'GV3-17 generat mare: 40 de piese, 3 foi, sămânța 98', doc: genereazaV3(98, true) },
 ];
 
+/**
+ * Un document v4 din sămânță, valid: `genereazaV3(samanta)` (aceeași geometrie și aceleași operații), cu un sens ales
+ * la întâmplare pe fiecare operație (alt șir de numere, ca v3-ul să rămână neschimbat) și, uneori, capcane: un câmp
+ * necunoscut numit `sens` pe sculă, pe piesă sau sus (ADR 0027 nu-l citește acolo).
+ */
+export function genereazaV4(samanta: number, mare = false): DocV4O {
+  const v3 = genereazaV3(samanta, mare);
+  const r = aleator(samanta + 0x5e45);
+  const piese: PiesaV4O[] = v3.piese.map((p) => ({
+    ...(r() < 0.1 ? { sens: 3 } : {}),
+    ...p,
+    operatii: p.operatii.map((o): OperatieV4O => ({
+      ...o,
+      ...(r() < 0.1 ? { scula: { ...o.scula, sens: 'invers' } } : {}),
+      sens: r() < 0.5 ? 'urcare' : 'opozitie',
+    })),
+  }));
+  return { ...(r() < 0.3 ? { sens: null } : {}), ...v3, schema: 4, piese };
+}
+
+export type CazV4 = { readonly nume: string; readonly doc: DocV4O };
+
+export const CORPUS_V4: readonly CazV4[] = [
+  ...Array.from({ length: 16 }, (_, k) => ({ nume: `GV4-${String(k + 1).padStart(2, '0')} generat, sămânța ${5000 + k}`, doc: genereazaV4(5000 + k) })),
+  { nume: 'GV4-17 generat mare: 40 de piese, 3 foi, sămânța 98', doc: genereazaV4(98, true) },
+];
+
 // ---------------------------------------------------------------------------------------------------------------
 // v1 refuzate la ușă, fiecare cu singura categorie pe care o raportează `verificaV1`.
 
@@ -1533,6 +1767,45 @@ export const REFUZATE_V2: readonly Refuzat[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
+// v3 refuzate la migrare (ADR 0027 §5): o operație v3 care are deja un câmp propriu „sens”, oricare i-ar fi valoarea.
+// Documentul v3 e valid (câmpul e necunoscut acolo); singura categorie raportată de `verificaV3V4` e `[ciocnire]`.
+
+const bazaV3 = (): DocV3O => doc3(
+  [piesa3('p1', grup('g', I(), [el('e1', I()), el('e2', T(10, 0), cerc())]), [op('o1', ['e1'], 'exterior'), op('o2', ['e2'], 'interior', 8, 4)])],
+  [foaie('f1', [inst('i1', 'p1', 10, 10, 0)])],
+);
+
+const refuzatV3 = (nume: string, strica: (d: DocV3O) => void): Refuzat => {
+  const d = bazaV3();
+  strica(d);
+  return { nume, doc: d, motiv: 'ciocnire' };
+};
+const opV3 = (d: DocV3O, piesa: number, k: number): Liber => ((d.piese[piesa] as PiesaV3O).operatii[k] as OperatieO);
+
+export const REFUZATE_V3: readonly Refuzat[] = [
+  refuzatV3('Y01 operație v3 cu sens: "urcare" (chiar valoarea pe care ar scrie-o migrarea)', (d) => { opV3(d, 0, 0)['sens'] = 'urcare'; }),
+  refuzatV3('Y02 operație v3 cu sens: "opozitie"', (d) => { opV3(d, 0, 1)['sens'] = 'opozitie'; }),
+  refuzatV3('Y03 operație v3 cu sens: null', (d) => { opV3(d, 0, 0)['sens'] = null; }),
+  refuzatV3('Y04 operație v3 cu sens: "invers" (o valoare pe care v4 n-o primește)', (d) => { opV3(d, 0, 1)['sens'] = 'invers'; }),
+  refuzatV3('Y05 doar operația a doua piese, fără instanțe, are sens', (d) => {
+    d.piese.push(piesa3('p2', el('x', I()), [op('a', ['x'], 'exterior'), { ...op('b', ['x'], 'pe-linie', 1, 1), sens: { v: 1 } }]));
+  }),
+  refuzatV3('Y06 operație pe-linie cu sens (ciocnirea nu depinde de latură)', (d) => {
+    (d.piese[0] as PiesaV3O).operatii.push({ ...op('l', ['e1'], 'pe-linie', 1, 1), sens: 'urcare' });
+  }),
+  {
+    nume: 'Y07 operație v3 cu __proto__ și sens (din JSON.parse)',
+    motiv: 'ciocnire',
+    doc: JSON.parse(
+      '{"schema":3,"rev":0,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":1},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"f","diametru":6},"latura":"interior","adancime":1,"pas":1,"__proto__":"x","sens":"urcare"}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[]}]}',
+    ),
+  },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
 // Otrăvuri: fiecare încalcă un singur lucru, deci oracolul raportează o singură categorie.
 
 export type Otrava = { readonly nume: string; readonly doc: unknown; readonly categorie: CategorieO };
@@ -1574,10 +1847,10 @@ const laV3 = (d: unknown): unknown => {
   return d;
 };
 
-/** Otrăvurile documentului v2 (ADR 0024); `versiune` 3 le aduce la forma v3 (`laV3`). */
-function otravuriArbore(versiune: 2 | 3): Otrava[] {
-  const forma = (d: DocV2O): unknown => (versiune === 3 ? laV3(d) : d);
-  const eticheta = versiune === 3 ? 'v3 ' : '';
+/** Otrăvurile documentului v2 (ADR 0024); `versiune` 3 le aduce la forma v3 (`laV3`), 4 la forma v4 (`laV4`). */
+function otravuriArbore(versiune: 2 | 3 | 4): Otrava[] {
+  const forma = (d: DocV2O): unknown => (versiune === 4 ? laV4(laV3(d)) : versiune === 3 ? laV3(d) : d);
+  const eticheta = versiune === 4 ? 'v4 ' : versiune === 3 ? 'v3 ' : '';
   const otrava = (nume: string, categorie: CategorieO, strica: (d: DocV2O) => void): Otrava => {
     const d = baza();
     strica(d);
@@ -1715,137 +1988,195 @@ const op0 = (d: DocV3O): OperatieO => q0(d).operatii[0] as OperatieO;
 const sc0 = (d: DocV3O): SculaO => op0(d).scula;
 const operatiiPe = (n: number, nod: string): OperatieO[] => Array.from({ length: n }, (_, k) => op(`o${k}`, [nod], 'exterior'));
 
-const otrava3 = (nume: string, categorie: CategorieO, strica: (d: DocV3O) => void): Otrava => {
-  const d = baza3();
+/**
+ * Otrăvurile operațiilor (ADR 0025), în forma v3 sau, cu `versiune` 4, aduse la forma v4 DUPĂ stricare (`laV4`: fiecare
+ * operație-obiect primește `sens: 'urcare'`, deci și cele construite de otravă), ca fiecare să rămână cu o singură
+ * categorie. „Schema 4” nu mai e o otravă în v4: devine „schema 5”.
+ */
+function otravuriOperatii(versiune: 3 | 4): Otrava[] {
+  const otrava3 = (nume: string, categorie: CategorieO, strica: (d: DocV3O) => void): Otrava => {
+    const d = baza3();
+    strica(d);
+    return versiune === 4 ? { nume: `v4 ${nume}`, doc: laV4(d), categorie } : { nume, doc: d, categorie };
+  };
+
+  return [
+    // [operatie]: lista și câmpurile operației.
+    otrava3('P01 o piesă fără câmpul operatii', 'operatie', (d) => { sterge(q0(d), 'operatii'); }),
+    otrava3('P02 operatii e un obiect (după id), nu o listă', 'operatie', (d) => { scrie(q0(d), 'operatii', { o1: op0(d) }); }),
+    otrava3('P03 operatii e null', 'operatie', (d) => { scrie(q0(d), 'operatii', null); }),
+    otrava3('P04 o operație e text', 'operatie', (d) => { (q0(d).operatii as unknown[]).push('o3'); }),
+    otrava3('P05 tip „buzunar” (necunoscut)', 'operatie', (d) => { scrie(op0(d), 'tip', 'buzunar'); }),
+    otrava3('P06 tip lipsă', 'operatie', (d) => { sterge(op0(d), 'tip'); }),
+    otrava3('P07 tip „Profil” (majusculă)', 'operatie', (d) => { scrie(op0(d), 'tip', 'Profil'); }),
+    otrava3('P08 latura „Exterior” (majusculă)', 'operatie', (d) => { scrie(op0(d), 'latura', 'Exterior'); }),
+    otrava3('P09 latura lipsă', 'operatie', (d) => { sterge(op0(d), 'latura'); }),
+    otrava3('P10 latura „pe linie” (fără cratimă)', 'operatie', (d) => { scrie(op0(d), 'latura', 'pe linie'); }),
+    otrava3('P11 adancime 0', 'operatie', (d) => { op0(d).adancime = 0; }),
+    otrava3('P12 adancime 1 000,0001', 'operatie', (d) => { op0(d).adancime = 1000.0001; }),
+    otrava3('P13 adancime NaN', 'operatie', (d) => { op0(d).adancime = Number.NaN; }),
+    otrava3('P14 adancime „3” (text)', 'operatie', (d) => { scrie(op0(d), 'adancime', '3'); }),
+    otrava3('P15 pas −1', 'operatie', (d) => { op0(d).pas = -1; }),
+    otrava3('P16 pas Infinity', 'operatie', (d) => { op0(d).pas = Number.POSITIVE_INFINITY; }),
+    otrava3('P17 pas lipsă', 'operatie', (d) => { sterge(op0(d), 'pas'); }),
+    otrava3('P18 adancime −0', 'operatie', (d) => { op0(d).adancime = -0; }),
+    otrava3('P19 noduri goale', 'operatie', (d) => { op0(d).noduri = []; }),
+    otrava3('P20 noduri e text („e1”), nu listă', 'operatie', (d) => { scrie(op0(d), 'noduri', 'e1'); }),
+    otrava3('P21 același nod de două ori într-o operație', 'operatie', (d) => { op0(d).noduri = ['e1', 'e1']; }),
+    otrava3('P22 un număr în noduri', 'operatie', (d) => { scrie(op0(d), 'noduri', ['e1', 7]); }),
+    // [unic-operatii]
+    otrava3('P23 două operații cu același id în aceeași piesă', 'unic-operatii', (d) => { (q0(d).operatii[1] as OperatieO).id = 'o1'; }),
+    otrava3('P24 trei operații, a treia cu id-ul primei (clase și noduri diferite)', 'unic-operatii', (d) => {
+      q0(d).operatii.push(op('o1', ['e2'], 'pe-linie', 1, 1));
+    }),
+    // [id]
+    otrava3('P25 id de operație cu spațiu', 'id', (d) => { op0(d).id = 'o 1'; }),
+    otrava3('P26 id de operație de 65 de caractere', 'id', (d) => { op0(d).id = `${ID_64}x`; }),
+    otrava3('P27 id de operație gol', 'id', (d) => { op0(d).id = ''; }),
+    otrava3('P28 id de operație cu „/” (ca un id în lume)', 'id', (d) => { op0(d).id = 'i1/e1'; }),
+    otrava3('P29 id de operație număr', 'schema', (d) => { scrie(op0(d), 'id', 1); }),
+    // [referinta-op]
+    otrava3('P30 nodul e grupul rădăcinii', 'referinta-op', (d) => { op0(d).noduri = ['g']; }),
+    // Piesa străină stă ÎNAINTEA piesei verificate (o mulțime de elemente pe tot documentul ar vedea-o deja), apoi după.
+    otrava3('P31 nodul e un element al altei piese, așezate înainte', 'referinta-op', (d) => {
+      const p1 = q0(d);
+      d.piese.unshift(piesa3('p2', el('x', I()), []));
+      (p1.operatii[0] as OperatieO).noduri = ['x'];
+    }),
+    otrava3('P31b nodul e un element al altei piese, așezate după', 'referinta-op', (d) => {
+      d.piese.push(piesa3('p2', el('x', I()), []));
+      op0(d).noduri = ['x'];
+    }),
+    otrava3('P32 nodul nu există', 'referinta-op', (d) => { op0(d).noduri = ['e9']; }),
+    otrava3('P33 nodul e id-ul piesei', 'referinta-op', (d) => { op0(d).noduri = ['p1']; }),
+    otrava3('P34 nodul e id-ul instanței', 'referinta-op', (d) => { op0(d).noduri = ['i1']; }),
+    otrava3('P35 nodul e un grup din mijlocul arborelui', 'referinta-op', (d) => {
+      q0(d).radacina = grup('g', I(), [grup('h', I(), [el('e1', I())]), el('e2', T(10, 0), cerc())]);
+      op0(d).noduri = ['h'];
+    }),
+    otrava3('P36 nodul e id-ul altei operații', 'referinta-op', (d) => { op0(d).noduri = ['o2']; }),
+    otrava3('P37 nodul cu un spațiu la capăt („e1 ”)', 'referinta-op', (d) => { op0(d).noduri = ['e1 ']; }),
+    otrava3('P38 nodul e un element, al doilea e grupul', 'referinta-op', (d) => { op0(d).noduri = ['e1', 'g']; }),
+    // [scula]
+    otrava3('P39 scula lipsă', 'scula', (d) => { sterge(op0(d), 'scula'); }),
+    otrava3('P40 scula e o listă', 'scula', (d) => { scrie(op0(d), 'scula', [1, 'freza plata', 6]); }),
+    otrava3('P41 numar 0', 'scula', (d) => { sc0(d).numar = 0; }),
+    otrava3('P42 numar 1 000', 'scula', (d) => { sc0(d).numar = 1000; }),
+    otrava3('P43 numar 1,5', 'scula', (d) => { sc0(d).numar = 1.5; }),
+    otrava3('P44 numar „1” (text)', 'scula', (d) => { scrie(sc0(d), 'numar', '1'); }),
+    otrava3('P45 numar NaN', 'scula', (d) => { sc0(d).numar = Number.NaN; }),
+    otrava3('P46 numar lipsă', 'scula', (d) => { sterge(sc0(d), 'numar'); }),
+    otrava3('P47 nume lipsă', 'scula', (d) => { sterge(sc0(d), 'nume'); }),
+    otrava3('P48 nume de 201 de caractere', 'scula', (d) => { sc0(d).nume = 'ș'.repeat(201); }),
+    otrava3('P49 nume număr', 'scula', (d) => { scrie(sc0(d), 'nume', 6); }),
+    otrava3('P50 diametru 0', 'scula', (d) => { sc0(d).diametru = 0; }),
+    otrava3('P51 diametru 100,0001', 'scula', (d) => { sc0(d).diametru = 100.0001; }),
+    otrava3('P52 diametru negativ', 'scula', (d) => { sc0(d).diametru = -6; }),
+    otrava3('P53 diametru Infinity', 'scula', (d) => { sc0(d).diametru = Number.POSITIVE_INFINITY; }),
+    otrava3('P54 diametru lipsă', 'scula', (d) => { sterge(sc0(d), 'diametru'); }),
+    otrava3('P55 diametru „6” (text)', 'scula', (d) => { scrie(sc0(d), 'diametru', '6'); }),
+    otrava3('P56 diametru −0', 'scula', (d) => { sc0(d).diametru = -0; }),
+    // [plafon]
+    otrava3('P57 o operație cu 10 001 noduri', 'plafon', (d) => {
+      const ids = Array.from({ length: 10_001 }, (_, k) => `e${k}`);
+      q0(d).radacina = grup('g', I(), ids.map((id) => el(id, I())));
+      q0(d).operatii = [op('o', ids, 'exterior')];
+    }),
+    otrava3('P58 100 001 de operații într-o piesă fără instanțe', 'plafon', (d) => {
+      q0(d).radacina = el('e', I());
+      q0(d).operatii = operatiiPe(100_001, 'e');
+      f0(d).instante = [];
+    }),
+    otrava3('P59 100 001 de operații în două piese (60 000 + 40 001), fără instanțe', 'plafon', (d) => {
+      q0(d).radacina = el('e', I());
+      q0(d).operatii = operatiiPe(60_000, 'e');
+      d.piese.push(piesa3('p2', el('e', I()), operatiiPe(40_001, 'e')));
+      f0(d).instante = [];
+    }),
+    // Instanțele (50 001) și elementele în lume (50 001) sunt sub plafoane; tăieturile, 2 × 50 001 = 100 002.
+    otrava3('P60 100 002 tăieturi în lume: 50 001 de instanțe × 2 operații pe același element', 'plafon', (d) => {
+      q0(d).radacina = el('e', I());
+      q0(d).operatii = [op('a', ['e'], 'exterior'), op('b', ['e'], 'pe-linie', 1, 1)];
+      f0(d).instante = Array.from({ length: 50_001 }, (_, k) => inst(`i${k}`, 'p1', 0, 0, 0));
+    }),
+    // 16 667 de instanțe × (3 operații × 2 noduri) = 100 002; instanțe × operații = 50 001; elemente în lume 33 334.
+    otrava3('P61 100 002 tăieturi în lume: 16 667 de instanțe × 3 operații × 2 noduri', 'plafon', (d) => {
+      q0(d).radacina = grup('g', I(), [el('a', I()), el('b', T(1, 0))]);
+      q0(d).operatii = [op('x', ['a', 'b'], 'exterior'), op('y', ['b', 'a'], 'interior'), op('z', ['a', 'b'], 'pe-linie', 1, 1)];
+      f0(d).instante = Array.from({ length: 16_667 }, (_, k) => inst(`i${k}`, 'p1', 0, 0, 0));
+    }),
+    // Fiecare foaie e sub plafon (60 000 și 40 002 de tăieturi); documentul are 100 002.
+    otrava3('P62 100 002 tăieturi în lume pe două foi (30 000 + 20 001 de instanțe × 2)', 'plafon', (d) => {
+      q0(d).radacina = el('e', I());
+      q0(d).operatii = [op('a', ['e'], 'exterior'), op('b', ['e'], 'interior')];
+      f0(d).instante = Array.from({ length: 30_000 }, (_, k) => inst(`i${k}`, 'p1', 0, 0, 0));
+      d.foi.push(foaie('f2', Array.from({ length: 20_001 }, (_, k) => inst(`j${k}`, 'p1', 0, 0, 0))));
+    }),
+    // [schema]
+    otrava3('P63 schema 2 cu forma v3 (ușa ar vedea o ciocnire, nu o migrare)', 'schema', (d) => { scrie(d, 'schema', 2); }),
+    versiune === 4
+      ? otrava3('P64 schema 5', 'schema', (d) => { scrie(d, 'schema', 5); })
+      : otrava3('P64 schema 4', 'schema', (d) => { scrie(d, 'schema', 4); }),
+    // În v4, `laV4` duce textul „3” în „4”: tot text.
+    otrava3(`P65 schema „${versiune}” (text)`, 'schema', (d) => { scrie(d, 'schema', '3'); }),
+    // [adancime]: operația e pe nivelul 5 (document, piese, piesa, operatii, operația), câmpul ei pe 6: 6 + 195 = 201.
+    otrava3('P66 JSON adânc de 201 de niveluri, într-un câmp necunoscut al operației', 'adancime', (d) => { scrie(op0(d), 'adanc', adanc(196)); }),
+    // Scula e pe nivelul 6, câmpul ei pe 7: 7 + 194 = 201.
+    otrava3('P67 JSON adânc de 201 de niveluri, într-un câmp necunoscut al sculei', 'adancime', (d) => { scrie(sc0(d), 'adanc', adanc(195)); }),
+    // [operatie] pe a doua piesă.
+    otrava3('P68 doar a doua piesă n-are operatii', 'operatie', (d) => { d.piese.push({ id: 'p2', radacina: el('x', I()) } as unknown as PiesaV3O); }),
+  ];
+}
+
+export const OTRAVURI_V3: readonly Otrava[] = [...otravuriArbore(3), ...otravuriOperatii(3)];
+
+/**
+ * Otrăvurile sensului (ADR 0027 §5): documentul v4 valid de la care pleacă e `baza3` adus la v4 (o1 exterior, o2
+ * interior, ambele `urcare`); fiecare strică doar sensul, deci singura categorie e `[sens]`.
+ */
+const baza4 = (): DocV4O => laV4(baza3()) as DocV4O;
+const q4 = (d: DocV4O, k = 0): PiesaV4O => d.piese[k] as PiesaV4O;
+const o4 = (d: DocV4O, k = 0, piesa = 0): Liber => q4(d, piesa).operatii[k] as OperatieV4O;
+const otravaSens = (nume: string, strica: (d: DocV4O) => void): Otrava => {
+  const d = baza4();
   strica(d);
-  return { nume, doc: d, categorie };
+  return { nume, doc: d, categorie: 'sens' };
 };
 
-const OTRAVURI_OPERATII: readonly Otrava[] = [
-  // [operatie]: lista și câmpurile operației.
-  otrava3('P01 o piesă fără câmpul operatii', 'operatie', (d) => { sterge(q0(d), 'operatii'); }),
-  otrava3('P02 operatii e un obiect (după id), nu o listă', 'operatie', (d) => { scrie(q0(d), 'operatii', { o1: op0(d) }); }),
-  otrava3('P03 operatii e null', 'operatie', (d) => { scrie(q0(d), 'operatii', null); }),
-  otrava3('P04 o operație e text', 'operatie', (d) => { (q0(d).operatii as unknown[]).push('o3'); }),
-  otrava3('P05 tip „buzunar” (necunoscut)', 'operatie', (d) => { scrie(op0(d), 'tip', 'buzunar'); }),
-  otrava3('P06 tip lipsă', 'operatie', (d) => { sterge(op0(d), 'tip'); }),
-  otrava3('P07 tip „Profil” (majusculă)', 'operatie', (d) => { scrie(op0(d), 'tip', 'Profil'); }),
-  otrava3('P08 latura „Exterior” (majusculă)', 'operatie', (d) => { scrie(op0(d), 'latura', 'Exterior'); }),
-  otrava3('P09 latura lipsă', 'operatie', (d) => { sterge(op0(d), 'latura'); }),
-  otrava3('P10 latura „pe linie” (fără cratimă)', 'operatie', (d) => { scrie(op0(d), 'latura', 'pe linie'); }),
-  otrava3('P11 adancime 0', 'operatie', (d) => { op0(d).adancime = 0; }),
-  otrava3('P12 adancime 1 000,0001', 'operatie', (d) => { op0(d).adancime = 1000.0001; }),
-  otrava3('P13 adancime NaN', 'operatie', (d) => { op0(d).adancime = Number.NaN; }),
-  otrava3('P14 adancime „3” (text)', 'operatie', (d) => { scrie(op0(d), 'adancime', '3'); }),
-  otrava3('P15 pas −1', 'operatie', (d) => { op0(d).pas = -1; }),
-  otrava3('P16 pas Infinity', 'operatie', (d) => { op0(d).pas = Number.POSITIVE_INFINITY; }),
-  otrava3('P17 pas lipsă', 'operatie', (d) => { sterge(op0(d), 'pas'); }),
-  otrava3('P18 adancime −0', 'operatie', (d) => { op0(d).adancime = -0; }),
-  otrava3('P19 noduri goale', 'operatie', (d) => { op0(d).noduri = []; }),
-  otrava3('P20 noduri e text („e1”), nu listă', 'operatie', (d) => { scrie(op0(d), 'noduri', 'e1'); }),
-  otrava3('P21 același nod de două ori într-o operație', 'operatie', (d) => { op0(d).noduri = ['e1', 'e1']; }),
-  otrava3('P22 un număr în noduri', 'operatie', (d) => { scrie(op0(d), 'noduri', ['e1', 7]); }),
-  // [unic-operatii]
-  otrava3('P23 două operații cu același id în aceeași piesă', 'unic-operatii', (d) => { (q0(d).operatii[1] as OperatieO).id = 'o1'; }),
-  otrava3('P24 trei operații, a treia cu id-ul primei (clase și noduri diferite)', 'unic-operatii', (d) => {
-    q0(d).operatii.push(op('o1', ['e2'], 'pe-linie', 1, 1));
+const OTRAVURI_SENS: readonly Otrava[] = [
+  otravaSens('S01 sens lipsă', (d) => { delete o4(d)['sens']; }),
+  otravaSens('S02 sens „Urcare” (majusculă)', (d) => { o4(d)['sens'] = 'Urcare'; }),
+  otravaSens('S03 sens „URCARE”', (d) => { o4(d)['sens'] = 'URCARE'; }),
+  otravaSens('S04 sens „opoziție” (cu diacritice)', (d) => { o4(d)['sens'] = 'opoziție'; }),
+  otravaSens('S05 sens „urcare ” (spațiu la capăt)', (d) => { o4(d)['sens'] = 'urcare '; }),
+  otravaSens('S06 sens „climb” (numele englezesc)', (d) => { o4(d)['sens'] = 'climb'; }),
+  otravaSens('S07 sens „trigonometric” (sensul de mers, nu al tăierii)', (d) => { o4(d)['sens'] = 'trigonometric'; }),
+  otravaSens('S08 sens gol', (d) => { o4(d)['sens'] = ''; }),
+  otravaSens('S09 sens null', (d) => { o4(d)['sens'] = null; }),
+  otravaSens('S10 sens true', (d) => { o4(d)['sens'] = true; }),
+  otravaSens('S11 sens 0', (d) => { o4(d)['sens'] = 0; }),
+  otravaSens('S12 sens [„urcare”] (listă)', (d) => { o4(d)['sens'] = ['urcare']; }),
+  otravaSens('S13 sens { valoare: „urcare” } (obiect)', (d) => { o4(d)['sens'] = { valoare: 'urcare' }; }),
+  otravaSens('S14 sens undefined, ca proprietate proprie', (d) => { o4(d)['sens'] = undefined; }),
+  otravaSens('S15 doar a doua operație n-are sens', (d) => { delete o4(d, 1)['sens']; }),
+  otravaSens('S16 o operație pe-linie fără sens (câmpul e obligatoriu și acolo)', (d) => {
+    const o: Liber = { ...op('l', ['e1'], 'pe-linie', 1, 1) };
+    (q4(d).operatii as unknown[]).push(o);
   }),
-  // [id]
-  otrava3('P25 id de operație cu spațiu', 'id', (d) => { op0(d).id = 'o 1'; }),
-  otrava3('P26 id de operație de 65 de caractere', 'id', (d) => { op0(d).id = `${ID_64}x`; }),
-  otrava3('P27 id de operație gol', 'id', (d) => { op0(d).id = ''; }),
-  otrava3('P28 id de operație cu „/” (ca un id în lume)', 'id', (d) => { op0(d).id = 'i1/e1'; }),
-  otrava3('P29 id de operație număr', 'schema', (d) => { scrie(op0(d), 'id', 1); }),
-  // [referinta-op]
-  otrava3('P30 nodul e grupul rădăcinii', 'referinta-op', (d) => { op0(d).noduri = ['g']; }),
-  // Piesa străină stă ÎNAINTEA piesei verificate (o mulțime de elemente pe tot documentul ar vedea-o deja), apoi după.
-  otrava3('P31 nodul e un element al altei piese, așezate înainte', 'referinta-op', (d) => {
-    const p1 = q0(d);
-    d.piese.unshift(piesa3('p2', el('x', I()), []));
-    (p1.operatii[0] as OperatieO).noduri = ['x'];
+  otravaSens('S17 operația fără sens e a unei piese fără instanțe', (d) => {
+    d.piese.push(piesa4('p2', el('x', I()), [{ ...op('a', ['x'], 'exterior'), sens: 'invers' } as unknown as OperatieV4O]));
   }),
-  otrava3('P31b nodul e un element al altei piese, așezate după', 'referinta-op', (d) => {
-    d.piese.push(piesa3('p2', el('x', I()), []));
-    op0(d).noduri = ['x'];
+  otravaSens('S18 un v3 etichetat schema 4 (nicio operație n-are sens)', (d) => {
+    for (const o of q4(d).operatii) delete (o as Liber)['sens'];
   }),
-  otrava3('P32 nodul nu există', 'referinta-op', (d) => { op0(d).noduri = ['e9']; }),
-  otrava3('P33 nodul e id-ul piesei', 'referinta-op', (d) => { op0(d).noduri = ['p1']; }),
-  otrava3('P34 nodul e id-ul instanței', 'referinta-op', (d) => { op0(d).noduri = ['i1']; }),
-  otrava3('P35 nodul e un grup din mijlocul arborelui', 'referinta-op', (d) => {
-    q0(d).radacina = grup('g', I(), [grup('h', I(), [el('e1', I())]), el('e2', T(10, 0), cerc())]);
-    op0(d).noduri = ['h'];
+  otravaSens('S19 sensul pus pe sculă, nu pe operație', (d) => {
+    const o = o4(d);
+    delete o['sens'];
+    o['scula'] = { ...(o['scula'] as SculaO), sens: 'urcare' };
   }),
-  otrava3('P36 nodul e id-ul altei operații', 'referinta-op', (d) => { op0(d).noduri = ['o2']; }),
-  otrava3('P37 nodul cu un spațiu la capăt („e1 ”)', 'referinta-op', (d) => { op0(d).noduri = ['e1 ']; }),
-  otrava3('P38 nodul e un element, al doilea e grupul', 'referinta-op', (d) => { op0(d).noduri = ['e1', 'g']; }),
-  // [scula]
-  otrava3('P39 scula lipsă', 'scula', (d) => { sterge(op0(d), 'scula'); }),
-  otrava3('P40 scula e o listă', 'scula', (d) => { scrie(op0(d), 'scula', [1, 'freza plata', 6]); }),
-  otrava3('P41 numar 0', 'scula', (d) => { sc0(d).numar = 0; }),
-  otrava3('P42 numar 1 000', 'scula', (d) => { sc0(d).numar = 1000; }),
-  otrava3('P43 numar 1,5', 'scula', (d) => { sc0(d).numar = 1.5; }),
-  otrava3('P44 numar „1” (text)', 'scula', (d) => { scrie(sc0(d), 'numar', '1'); }),
-  otrava3('P45 numar NaN', 'scula', (d) => { sc0(d).numar = Number.NaN; }),
-  otrava3('P46 numar lipsă', 'scula', (d) => { sterge(sc0(d), 'numar'); }),
-  otrava3('P47 nume lipsă', 'scula', (d) => { sterge(sc0(d), 'nume'); }),
-  otrava3('P48 nume de 201 de caractere', 'scula', (d) => { sc0(d).nume = 'ș'.repeat(201); }),
-  otrava3('P49 nume număr', 'scula', (d) => { scrie(sc0(d), 'nume', 6); }),
-  otrava3('P50 diametru 0', 'scula', (d) => { sc0(d).diametru = 0; }),
-  otrava3('P51 diametru 100,0001', 'scula', (d) => { sc0(d).diametru = 100.0001; }),
-  otrava3('P52 diametru negativ', 'scula', (d) => { sc0(d).diametru = -6; }),
-  otrava3('P53 diametru Infinity', 'scula', (d) => { sc0(d).diametru = Number.POSITIVE_INFINITY; }),
-  otrava3('P54 diametru lipsă', 'scula', (d) => { sterge(sc0(d), 'diametru'); }),
-  otrava3('P55 diametru „6” (text)', 'scula', (d) => { scrie(sc0(d), 'diametru', '6'); }),
-  otrava3('P56 diametru −0', 'scula', (d) => { sc0(d).diametru = -0; }),
-  // [plafon]
-  otrava3('P57 o operație cu 10 001 noduri', 'plafon', (d) => {
-    const ids = Array.from({ length: 10_001 }, (_, k) => `e${k}`);
-    q0(d).radacina = grup('g', I(), ids.map((id) => el(id, I())));
-    q0(d).operatii = [op('o', ids, 'exterior')];
-  }),
-  otrava3('P58 100 001 de operații într-o piesă fără instanțe', 'plafon', (d) => {
-    q0(d).radacina = el('e', I());
-    q0(d).operatii = operatiiPe(100_001, 'e');
-    f0(d).instante = [];
-  }),
-  otrava3('P59 100 001 de operații în două piese (60 000 + 40 001), fără instanțe', 'plafon', (d) => {
-    q0(d).radacina = el('e', I());
-    q0(d).operatii = operatiiPe(60_000, 'e');
-    d.piese.push(piesa3('p2', el('e', I()), operatiiPe(40_001, 'e')));
-    f0(d).instante = [];
-  }),
-  // Instanțele (50 001) și elementele în lume (50 001) sunt sub plafoane; tăieturile, 2 × 50 001 = 100 002.
-  otrava3('P60 100 002 tăieturi în lume: 50 001 de instanțe × 2 operații pe același element', 'plafon', (d) => {
-    q0(d).radacina = el('e', I());
-    q0(d).operatii = [op('a', ['e'], 'exterior'), op('b', ['e'], 'pe-linie', 1, 1)];
-    f0(d).instante = Array.from({ length: 50_001 }, (_, k) => inst(`i${k}`, 'p1', 0, 0, 0));
-  }),
-  // 16 667 de instanțe × (3 operații × 2 noduri) = 100 002; instanțe × operații = 50 001; elemente în lume 33 334.
-  otrava3('P61 100 002 tăieturi în lume: 16 667 de instanțe × 3 operații × 2 noduri', 'plafon', (d) => {
-    q0(d).radacina = grup('g', I(), [el('a', I()), el('b', T(1, 0))]);
-    q0(d).operatii = [op('x', ['a', 'b'], 'exterior'), op('y', ['b', 'a'], 'interior'), op('z', ['a', 'b'], 'pe-linie', 1, 1)];
-    f0(d).instante = Array.from({ length: 16_667 }, (_, k) => inst(`i${k}`, 'p1', 0, 0, 0));
-  }),
-  // Fiecare foaie e sub plafon (60 000 și 40 002 de tăieturi); documentul are 100 002.
-  otrava3('P62 100 002 tăieturi în lume pe două foi (30 000 + 20 001 de instanțe × 2)', 'plafon', (d) => {
-    q0(d).radacina = el('e', I());
-    q0(d).operatii = [op('a', ['e'], 'exterior'), op('b', ['e'], 'interior')];
-    f0(d).instante = Array.from({ length: 30_000 }, (_, k) => inst(`i${k}`, 'p1', 0, 0, 0));
-    d.foi.push(foaie('f2', Array.from({ length: 20_001 }, (_, k) => inst(`j${k}`, 'p1', 0, 0, 0))));
-  }),
-  // [schema]
-  otrava3('P63 schema 2 cu forma v3 (ușa ar vedea o ciocnire, nu o migrare)', 'schema', (d) => { scrie(d, 'schema', 2); }),
-  otrava3('P64 schema 4', 'schema', (d) => { scrie(d, 'schema', 4); }),
-  otrava3('P65 schema „3” (text)', 'schema', (d) => { scrie(d, 'schema', '3'); }),
-  // [adancime]: operația e pe nivelul 5 (document, piese, piesa, operatii, operația), câmpul ei pe 6: 6 + 195 = 201.
-  otrava3('P66 JSON adânc de 201 de niveluri, într-un câmp necunoscut al operației', 'adancime', (d) => { scrie(op0(d), 'adanc', adanc(196)); }),
-  // Scula e pe nivelul 6, câmpul ei pe 7: 7 + 194 = 201.
-  otrava3('P67 JSON adânc de 201 de niveluri, într-un câmp necunoscut al sculei', 'adancime', (d) => { scrie(sc0(d), 'adanc', adanc(195)); }),
-  // [operatie] pe a doua piesă.
-  otrava3('P68 doar a doua piesă n-are operatii', 'operatie', (d) => { d.piese.push({ id: 'p2', radacina: el('x', I()) } as unknown as PiesaV3O); }),
 ];
 
-export const OTRAVURI_V3: readonly Otrava[] = [...otravuriArbore(3), ...OTRAVURI_OPERATII];
+export const OTRAVURI_V4: readonly Otrava[] = [...otravuriArbore(4), ...otravuriOperatii(4), ...OTRAVURI_SENS];
 
 // ---------------------------------------------------------------------------------------------------------------
 // Valide, dar dificile: seamănă cu otrăvurile. Precizarea 3 fixează parantezele și formula, deci aplicația și oracolul
@@ -2208,6 +2539,56 @@ export const VALIDE_DIFICILE_V3: readonly CazValidV3[] = [
     doc: doc3(
       [piesa3('p1', el('e', I(), cerc(10)), [op('a', ['e'], 'interior', 2, 2, S2()), op('b', ['e'], 'interior', 18, 6)])],
       [foaie('f1', [inst('i1', 'p1', 0, 0, 0), inst('i2', 'p1', 100, 0, 90)])],
+    ),
+  },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Valide v4, dar dificile (ADR 0027).
+
+export type CazValidV4 = { readonly nume: string; readonly doc: DocV4O };
+
+export const VALIDE_DIFICILE_V4: readonly CazValidV4[] = [
+  // Fiecare W de mai sus, adus la v4 cu sensurile pe rând (urcare, opoziție, …): aceleași capcane, cu ambele valori.
+  ...VALIDE_DIFICILE_V3.map((c) => ({ nume: `${c.nume} (v4, sensuri pe rând)`, doc: laV4(structuredClone(c.doc), alternant) as DocV4O })),
+  {
+    nume: 'X01 pe-linie în opoziție: câmpul se păstrează, deși nu schimbă traseul (ADR 0027 §3)',
+    doc: doc4([piesa4('p1', el('e', I()), [op4('o', ['e'], 'pe-linie', 'opozitie', 1, 1)])], [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])]),
+  },
+  {
+    nume: 'X02 degroșarea și finisarea aceluiași contur, aceeași latură și adâncime, în sensuri diferite',
+    doc: doc4(
+      [piesa4('p1', el('e', I(), dr(80, 50, 6)), [op4('deg', ['e'], 'exterior', 'urcare', 12, 4), op4('fin', ['e'], 'exterior', 'opozitie', 12, 12)])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ),
+  },
+  {
+    nume: 'X03 un câmp necunoscut „sens” pe sculă, nod, piesă, instanță, foaie și sus (nu e al operației)',
+    doc: {
+      schema: 4, rev: 3, sens: 'sus',
+      piese: [{
+        id: 'p1', sens: 'opozitie',
+        radacina: { ...grup('g', I(), [{ ...el('e', I()), sens: 'urcare' }]), sens: ['x'] },
+        operatii: [{ ...op4('o', ['e'], 'exterior', 'opozitie'), scula: { ...S1(), sens: 'urcare' } }],
+      }],
+      foi: [{ ...foaie('f1', [{ ...inst('i1', 'p1', 0, 0, 0), sens: 1 }]), sens: null }],
+    },
+  },
+  {
+    nume: 'X04 chei capcană pe operația v4 (din JSON.parse), sens opozitie',
+    doc: JSON.parse(
+      '{"schema":4,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6},"latura":"interior","adancime":8,"pas":4,'
+      + '"__proto__":"x","constructor":"Ion","sens":"opozitie"}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as DocV4O,
+  },
+  {
+    nume: 'X05 aceeași piesă pe două instanțe și o operație cu două noduri, în opoziție: sensul e al operației, pe toate',
+    doc: doc4(
+      [piesa4('p1', grup('g', I(), [el('a', I(), cerc(3)), el('b', T(10, 0), cerc(3))]), [op4('o', ['b', 'a'], 'interior', 'opozitie', 5, 5)])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0), inst('i2', 'p1', 50, 0, 180)])],
     ),
   },
 ];
