@@ -1,5 +1,7 @@
-import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from '../geom/contur.ts';
-import type { Miscare } from '../ir/ir.ts';
+import type { Contur } from '../geom/contur.ts';
+import { parcurge, type Nod, type RezultatParcurgere } from './parcurgere.ts';
+
+export { lungimeBucla } from './parcurgere.ts';
 
 /**
  * Urechile (ADR 0028): profilul Z(s) al ediției întâi, portat cu formulele lui, ca modificator peste trecerea L / A.
@@ -19,31 +21,23 @@ export type ParametriUrechi = {
   readonly varf: number;
 };
 
-/** O ruptură a profilului: poziția pe buclă și Z-ul de acolo, pe o trecere dată. */
-type Nod = { readonly s: number; readonly z: number };
-
-/** O ruptură mai aproape de atât de un vârf e chiar vârful (ADR 0028 §4). */
-const EPS_RUPTURA = 1e-6;
 /** O trecere traversează urechile doar dacă e mai adâncă decât vârful lor cu mai mult de atât. */
 export const EPS_VARF = 1e-9;
 
-/** Lungimea exactă a unui segment: linia, sau arcul ca r·|θ|. */
-function lungimeSegment(a: Punct, b: Punct, s: { readonly tip: string; readonly bulge?: number }): number {
-  if (s.tip === 'A' && s.bulge !== undefined) {
-    const { raza, baleiaj } = cerculArcului(a, b, s.bulge);
-    return raza * Math.abs(baleiaj);
-  }
-  return Math.hypot(b.x - a.x, b.y - a.y);
-}
+/**
+ * Unde stau urechile pe o buclă de lungime P: spațiul S, jumătatea palierului h, flancul ℓ și centrele. Nu depinde de
+ * adâncime, deci și zonele urechilor, [c − h − ℓ; c + h + ℓ], sunt aceleași pe toate trecerile (ADR 0029 §2).
+ */
+export type GeometrieUrechi = { readonly S: number; readonly h: number; readonly l: number; readonly centre: readonly number[] };
 
-/** Lungimea exactă a unei bucle închise. */
-export function lungimeBucla(c: Contur): number {
-  let p = 0;
-  for (let i = 0; i < numarSegmente(c); i++) {
-    const { a, b, s } = segment(c, i);
-    p += lungimeSegment(a, b, s);
+export function geometrieUrechi(lungime: number, u: ParametriUrechi): GeometrieUrechi | string {
+  const S = lungime / u.numar;
+  if (u.latime > 0.9 * S) {
+    return `urechile nu încap: ${u.numar} urechi de ${u.latime} mm pe o buclă de ${lungime.toFixed(2)} mm (cel mult ${(0.9 * S).toFixed(2)} mm fiecare)`;
   }
-  return p;
+  const centre: number[] = [];
+  for (let k = 0; k < u.numar; k++) centre.push((k + 0.5) * S);
+  return { S, h: u.latime / 2, l: Math.min(u.latime / 2, 0.45 * (S - u.latime)), centre };
 }
 
 /**
@@ -51,90 +45,21 @@ export function lungimeBucla(c: Contur): number {
  * două rupturi, Z e liniar. Întoarce motivul dacă urechile nu încap.
  */
 export function noduriProfil(lungime: number, u: ParametriUrechi, d: number): readonly Nod[] | string {
-  const S = lungime / u.numar;
-  if (u.latime > 0.9 * S) {
-    return `urechile nu încap: ${u.numar} urechi de ${u.latime} mm pe o buclă de ${lungime.toFixed(2)} mm (cel mult ${(0.9 * S).toFixed(2)} mm fiecare)`;
-  }
-  const h = u.latime / 2;
-  const l = Math.min(u.latime / 2, 0.45 * (S - u.latime));
+  const g = geometrieUrechi(lungime, u);
+  if (typeof g === 'string') return g;
+  const { h, l } = g;
   const noduri: Nod[] = [{ s: 0, z: -d }];
-  for (let k = 0; k < u.numar; k++) {
-    const c = (k + 0.5) * S;
+  for (const c of g.centre) {
     noduri.push({ s: c - h - l, z: -d }, { s: c - h, z: -u.varf }, { s: c + h, z: -u.varf }, { s: c + h + l, z: -d });
   }
   noduri.push({ s: lungime, z: -d });
   return noduri;
 }
 
-/** Z la poziția s, liniar între rupturi. Pe o porțiune plată, exact cota ei. */
-function zLa(noduri: readonly Nod[], s: number): number {
-  for (let i = 1; i < noduri.length; i++) {
-    const a = noduri[i - 1] as Nod, b = noduri[i] as Nod;
-    if (s <= b.s) {
-      if (a.z === b.z || b.s - a.s <= 0) return b.z;
-      const t = Math.min(1, Math.max(0, (s - a.s) / (b.s - a.s)));
-      return a.z + (b.z - a.z) * t;
-    }
-  }
-  return (noduri[noduri.length - 1] as Nod).z;
-}
-
 /**
- * Mișcările unei bucle pe o trecere care traversează urechile, de la vârful 0 (unde scula e deja la −d) înapoi la el.
- * Fiecare segment se taie exact în rupturile din interiorul lui; o bucată de arc rămâne arc pe același cerc (elice pe
- * flanc), afară de cele sub 1e-6 mm, care sunt linii: un arc cu startul în capăt ar fi cercul întreg (`baleiajArc`).
- * O mișcare poartă Z doar dacă Z-ul se schimbă pe ea. Flancul care coboară intră în material ca o rampă: viteza lui pe
- * verticală nu trece de avansul de plonjare (ADR 0028 §4).
+ * Mișcările unei bucle pe o trecere care traversează urechile, de la vârful 0 (unde scula e deja la −d) înapoi la el:
+ * parcurgerea buclei cu profilul urechilor (`parcurge`, cu regulile ADR 0028 §4).
  */
-export function bucataCuUrechi(
-  c: Contur, noduri: readonly Nod[], d: number, avans: number, avansPlonjare: number,
-): { readonly ok: true; readonly miscari: readonly Miscare[] } | { readonly ok: false; readonly motiv: string } {
-  const m: Miscare[] = [];
-  let zCur = -d;
-  let s0 = 0;
-  let urm = 1; // prima ruptură încă neemisă
-  for (let i = 0; i < numarSegmente(c); i++) {
-    const { a, b, s } = segment(c, i);
-    if (s.tip === 'C') return { ok: false, motiv: 'cubicele ajung la post doar ca biarce (T6, etapa 2)' };
-    const L = lungimeSegment(a, b, s);
-    const s1 = s0 + L;
-    const cerc = s.tip === 'A' ? cerculArcului(a, b, s.bulge) : undefined;
-    // Rupturile din interiorul segmentului, apoi capătul lui. Una lângă capăt (sub EPS) e capătul, cu cota ei.
-    const tinte: { s: number; z: number; capat: boolean }[] = [];
-    while (urm < noduri.length - 1 && (noduri[urm] as Nod).s < s1 - EPS_RUPTURA) {
-      const n = noduri[urm] as Nod;
-      if (n.s > s0 + EPS_RUPTURA) tinte.push({ s: n.s, z: n.z, capat: false });
-      urm++;
-    }
-    let zCapat = zLa(noduri, s1);
-    while (urm < noduri.length - 1 && (noduri[urm] as Nod).s <= s1 + EPS_RUPTURA) {
-      zCapat = (noduri[urm] as Nod).z;
-      urm++;
-    }
-    tinte.push({ s: s1, z: zCapat, capat: true });
-    let sPrec = s0;
-    for (const t of tinte) {
-      const p = t.capat ? b : punctPeSegment(a, b, cerc, (t.s - s0) / L);
-      const la = t.z === zCur ? { X: p.x, Y: p.y } : { X: p.x, Y: p.y, Z: t.z };
-      const lung = t.s - sPrec;
-      const dz = t.z - zCur;
-      const f = dz < 0 ? Math.min(avans, (avansPlonjare * Math.hypot(lung, dz)) / -dz) : avans;
-      if (cerc && lung >= EPS_RUPTURA) {
-        m.push({ tip: 'arc', la, centru: cerc.centru, sens: cerc.baleiaj > 0 ? 'trigonometric' : 'orar', avans: f });
-      } else {
-        m.push({ tip: 'taiere', la, avans: f });
-      }
-      zCur = t.z;
-      sPrec = t.s;
-    }
-    s0 = s1;
-  }
-  return { ok: true, miscari: m };
-}
-
-/** Punctul la fracțiunea f din lungimea segmentului: pe linie liniar, pe arc în unghi. */
-function punctPeSegment(a: Punct, b: Punct, cerc: ReturnType<typeof cerculArcului> | undefined, f: number): Punct {
-  if (!cerc) return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
-  const u = cerc.start + cerc.baleiaj * f;
-  return { x: cerc.centru.x + cerc.raza * Math.cos(u), y: cerc.centru.y + cerc.raza * Math.sin(u) };
+export function bucataCuUrechi(c: Contur, noduri: readonly Nod[], avans: number, avansPlonjare: number): RezultatParcurgere {
+  return parcurge(c, noduri, avans, avansPlonjare);
 }

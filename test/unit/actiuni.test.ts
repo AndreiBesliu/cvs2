@@ -296,7 +296,7 @@ test('Exportă fără nicio schimbare, pe un proiect redeschis cu urechi: nicio 
   assert.deepEqual(Object.keys(o.urechi ?? {}), ['grosime', 'latime', 'numar', 'pozitii'], 'redeschis, cu cheile sortate');
   const cu = (noi: Map<string, readonly Operatie[]>): ContextDocument => ({ ...ctx, istoric: () => h, scrie: (n) => { h = n; }, operatiiNoi: () => noi });
   // Ce trimite dialogul: valorile reconstruite din câmpurile lui, fără câmpul necunoscut, în ordinea lui.
-  const v = { latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, urechi: { numar: 4, latime: 8, grosime: 2 } };
+  const v = { latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, urechi: { numar: 4, latime: 8, grosime: 2 }, rampa: null };
   const scula = { numar: o.scula.numar, diametru: o.scula.diametru };
   const inainte = h;
   assert.deepEqual(ruleaza(r, 'document.aplica-operatii', cu(new Map([[p.id, [operatieDinDialog(o, v, scula)]]]))), { ok: true });

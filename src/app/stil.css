@@ -219,19 +219,21 @@ footer {
   max-width: 9rem;
 }
 
-/* Câmpurile urechilor, pe rândul lor de sub operație. */
-.dialog tr.urechi td {
+/* Câmpurile urechilor și ale rampei, pe rândul lor de sub operație. */
+.dialog tr.detalii td {
   padding-top: 0;
 }
 
-/* Flexul stă într-un div: pe celula însăși ar anula colSpan-ul, iar câmpurile s-ar strânge într-o singură coloană. */
-.dialog .campuri-urechi {
+/* Flexul stă în div-uri: pe celula însăși ar anula colSpan-ul, iar câmpurile s-ar strânge într-o singură coloană. */
+.dialog .campuri-detalii,
+.dialog .campuri-urechi,
+.dialog .campuri-rampa {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
 }
 
-.dialog tr.urechi input {
+.dialog tr.detalii input {
   max-width: 5rem;
 }
 

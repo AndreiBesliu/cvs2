@@ -313,6 +313,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
         valori: {
           latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
           urechi: o.urechi ? { numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime } : null,
+          rampa: o.rampa ? { lungime: o.rampa.lungime } : null,
         },
       };
     }));

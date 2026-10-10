@@ -84,7 +84,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     // Invarianta 2: trecerile au același traseu în plan, deci se judecă o dată, pe prima.
     const incalcare = verificaTaietura(regiune.regiune, t.idLume, t.latura, pr.treceri[0]?.contururi ?? [], scula.diametru / 2);
     if (incalcare) return { ok: false, motiv: incalcare };
-    const tr = traseuProfil(pr.treceri, regim, urechi);
+    const tr = traseuProfil(pr.treceri, regim, urechi, t.rampa ? { lungime: t.rampa.lungime } : undefined);
     if (!tr.ok) return { ok: false, motiv: `${t.idLume}: ${tr.motiv}` };
     miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, ${t.latura}, ${t.adancime} mm`, element: t.idLume });
     // Fără `push(...listă)`: o listă foarte lungă depășește stiva de argumente.

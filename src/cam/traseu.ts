@@ -1,6 +1,7 @@
 import { cerculArcului, numarSegmente, segment } from '../geom/contur.ts';
 import type { Miscare } from '../ir/ir.ts';
 import type { Trecere } from './profil.ts';
+import { buclaCuRampa, type ParametriRampa } from './rampa.ts';
 import { bucataCuUrechi, EPS_VARF, lungimeBucla, noduriProfil, type ParametriUrechi } from './urechi.ts';
 
 export type ParametriTraseu = {
@@ -16,12 +17,32 @@ export type RezultatTraseu = { readonly ok: true; readonly miscari: readonly Mis
  * Trecerile unui profil, ca mișcări în IR: pe fiecare trecere și pe fiecare contur, rapid deasupra pornirii, coborâre
  * cu avansul de plonjare, conturul cu liniile și arcele lui (arcele rămân arce), apoi ridicare la Z-ul de siguranță.
  * Pe trecerile mai adânci decât vârful urechilor, Z-ul urmează profilul lor (ADR 0028); celelalte rămân neschimbate.
- * Intrările în rampă și lead-ul vin în felia 2.5.
+ * Cu rampă (ADR 0029), fiecare buclă se taie continuu, cu toate trecerile ei, înaintea buclei următoare: rapid deasupra
+ * vârfului 0, coborâre până la fața de sus, apoi rampa și tura fiecărei treceri, fără ridicare între ele. Intrările și
+ * ieșirile vin în felia 2.5b.
  */
-export function traseuProfil(treceri: readonly Trecere[], p: ParametriTraseu, urechi?: ParametriUrechi): RezultatTraseu {
+export function traseuProfil(
+  treceri: readonly Trecere[], p: ParametriTraseu, urechi?: ParametriUrechi, rampa?: ParametriRampa,
+): RezultatTraseu {
   if (!(p.zSigur > 0)) return { ok: false, motiv: `Z-ul de siguranță trebuie să fie deasupra materialului (${p.zSigur})` };
   if (!(p.avans > 0 && p.avansPlonjare > 0)) return { ok: false, motiv: 'avansurile trebuie să fie pozitive' };
   const m: Miscare[] = [];
+  if (rampa) {
+    // Trecerile au aceleași bucle (profilul le decalează o dată); adâncimile, în ordine.
+    const adancimi = treceri.map((t) => t.adancime);
+    for (const c of treceri[0]?.contururi ?? []) {
+      const start = c.varfuri[0]?.p;
+      if (!start) continue;
+      m.push({ tip: 'rapida', la: { Z: p.zSigur } });
+      m.push({ tip: 'rapida', la: { X: start.x, Y: start.y } });
+      m.push({ tip: 'taiere', la: { Z: 0 }, avans: p.avansPlonjare });
+      const r = buclaCuRampa(c, adancimi, rampa, urechi, p.avans, p.avansPlonjare);
+      if (!r.ok) return r;
+      for (const x of r.miscari) m.push(x);
+      m.push({ tip: 'rapida', la: { Z: p.zSigur } });
+    }
+    return { ok: true, miscari: m };
+  }
   for (const t of treceri) {
     const z = -t.adancime;
     for (const c of t.contururi) {
@@ -33,7 +54,7 @@ export function traseuProfil(treceri: readonly Trecere[], p: ParametriTraseu, ur
       if (urechi && t.adancime > urechi.varf + EPS_VARF) {
         const noduri = noduriProfil(lungimeBucla(c), urechi, t.adancime);
         if (typeof noduri === 'string') return { ok: false, motiv: noduri };
-        const b = bucataCuUrechi(c, noduri, t.adancime, p.avans, p.avansPlonjare);
+        const b = bucataCuUrechi(c, noduri, p.avans, p.avansPlonjare);
         if (!b.ok) return b;
         for (const x of b.miscari) m.push(x);
         m.push({ tip: 'rapida', la: { Z: p.zSigur } });

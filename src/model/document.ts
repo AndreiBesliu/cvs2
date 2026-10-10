@@ -2,16 +2,16 @@ import * as v from 'valibot';
 import { compune, esteSimilitudine, IDENTITATE } from '../geom/matrice.ts';
 
 /**
- * Documentul v5 (T16, ADR 0016): varianta D a planșelor (ADR 0024, decizia owner-ului din 08.10.2026), adică piese cu
+ * Documentul v6 (T16, ADR 0016): varianta D a planșelor (ADR 0024, decizia owner-ului din 08.10.2026), adică piese cu
  * arbore propriu, puse ca instanțe pe foi, plus operațiile piesei (ADR 0025): profilul stă în piesă și se taie la fel în
- * fiecare instanță, în sensul de tăiere al operației (ADR 0027, v4), cu urechile ei (ADR 0028, v5). Contractul întreg e
- * în ADR-uri; oracolul independent (`test/oracles/document.ts`) îl citește de acolo, nu de aici.
+ * fiecare instanță, în sensul de tăiere al operației (ADR 0027, v4), cu urechile (ADR 0028, v5) și rampa ei (ADR 0029,
+ * v6). Contractul întreg e în ADR-uri; oracolul independent (`test/oracles/document.ts`) îl citește de acolo, nu de aici.
  *
  * Câmpurile necunoscute se păstrează, ca un document scris de o versiune mai nouă să nu piardă date trecând printr-una
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 5;
+export const VERSIUNE_SCHEMA = 6;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -71,9 +71,11 @@ export type Sens = 'urcare' | 'opozitie';
  * grosimea punții de la fața de jos a foii, în mm.
  */
 export type Urechi = { numar: number; latime: number; grosime: number; [cheie: string]: unknown };
+/** Rampa unei operații de profil (ADR 0029): lungimea în plan, de-a lungul buclei, pe care freza coboară o trecere (mm). */
+export type Rampa = { lungime: number; [cheie: string]: unknown };
 export type Operatie = {
   id: string; tip: 'profil'; noduri: string[]; scula: Scula; latura: Latura; sens: Sens; adancime: number; pas: number;
-  urechi: Urechi | null; [cheie: string]: unknown;
+  urechi: Urechi | null; rampa: Rampa | null; [cheie: string]: unknown;
 };
 export type Piesa = { id: string; nume?: string; radacina: Nod; operatii: Operatie[]; [cheie: string]: unknown };
 export type Stoc = { latime: number; inaltime: number; grosime: number; [cheie: string]: unknown };
@@ -81,7 +83,7 @@ export type Instanta = {
   id: string; piesa: string; x: number; y: number; rotire: number; campuri?: Record<string, string>; [cheie: string]: unknown;
 };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; [cheie: string]: unknown };
-export type Document = { schema: 5; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 6; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 const finit = v.pipe(v.number(), v.finite());
 const pozitiv = (max: number) => v.pipe(v.number(), v.finite(), v.gtValue(0), v.maxValue(max));
@@ -135,6 +137,7 @@ const SchemaOperatie = v.looseObject({
     latime: pozitiv(PLAFON.latura),
     grosime: pozitiv(PLAFON.grosime),
   })),
+  rampa: v.nullable(v.looseObject({ lungime: pozitiv(PLAFON.latura) })),
 });
 const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
 const SchemaInstanta = v.looseObject({
@@ -315,13 +318,13 @@ export const SchemaDocument: v.GenericSchema<unknown, Document> = v.pipe(
 
 /**
  * Operația implicită a unei forme noi (Adaugă): profilul cu care se taie placa 1 — cercul e o gaură (interior, 8 mm în
- * 2 treceri), dreptunghiul o insulă (exterior, 3 mm), cu freza plată Ø6, în urcare, fără urechi. Migrarea v2 → v3 are
+ * 2 treceri), dreptunghiul o insulă (exterior, 3 mm), cu freza plată Ø6, în urcare, fără urechi și fără rampă. Migrarea v2 → v3 are
  * propria copie, înghețată.
  */
 export function operatieImplicita(nod: string, forma: FormaDoc, scula: Operatie['scula'] = { numar: 1, nume: 'freza plata', diametru: 6 }): Operatie {
   return forma.tip === 'cerc'
-    ? { id: nod, tip: 'profil', noduri: [nod], scula, latura: 'interior', sens: 'urcare', adancime: 8, pas: 4, urechi: null }
-    : { id: nod, tip: 'profil', noduri: [nod], scula, latura: 'exterior', sens: 'urcare', adancime: 3, pas: 3, urechi: null };
+    ? { id: nod, tip: 'profil', noduri: [nod], scula, latura: 'interior', sens: 'urcare', adancime: 8, pas: 4, urechi: null, rampa: null }
+    : { id: nod, tip: 'profil', noduri: [nod], scula, latura: 'exterior', sens: 'urcare', adancime: 3, pas: 3, urechi: null, rampa: null };
 }
 
 /**

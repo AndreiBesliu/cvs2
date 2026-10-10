@@ -12,7 +12,7 @@ export type { IesireFoaie } from '../cam/iesire.ts';
  */
 export const MARGINI_OPERATIE = {
   diametru: PLAFON.diametruScula, adancime: PLAFON.adancimeOperatie, urechi: PLAFON.urechi, latimeUreche: PLAFON.latura,
-  grosimeUreche: PLAFON.grosime,
+  grosimeUreche: PLAFON.grosime, lungimeRampa: PLAFON.latura,
 } as const;
 
 /**

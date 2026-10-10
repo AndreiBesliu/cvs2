@@ -10,8 +10,11 @@ type Latura = 'exterior' | 'interior' | 'pe-linie';
 type Sens = 'urcare' | 'opozitie';
 /** Urechile (ADR 0028): câte pe buclă, lungimea palierului pe traseul frezei, grosimea punții de la fața de jos (mm). */
 export type UrechiOperatie = { readonly numar: number; readonly latime: number; readonly grosime: number };
+/** Rampa (ADR 0029): lungimea în plan pe care coboară o trecere (mm). */
+export type RampaOperatie = { readonly lungime: number };
 export type ValoriOperatie = {
   readonly latura: Latura; readonly sens: Sens; readonly adancime: number; readonly pas: number; readonly urechi: UrechiOperatie | null;
+  readonly rampa: RampaOperatie | null;
 };
 
 /** Un rând: o operație a unei piese (ADR 0025), cu cheia `<piesă>/<operație>`. */
@@ -83,7 +86,11 @@ function inMargini(s: string, plafon: number): boolean {
 type Rand = {
   readonly latura: Latura; readonly sens: Sens; readonly adancime: string; readonly pas: string;
   readonly urechi: boolean; readonly numarUrechi: string; readonly latimeUreche: string; readonly grosimeUreche: string;
+  readonly rampa: boolean; readonly lungimeRampa: string;
 };
+
+/** Lungimea cu care pornește bifa rampei pe un rând care n-avea (ADR 0029 §1). */
+const RAMPA_IMPLICITA: RampaOperatie = { lungime: 10 };
 
 /** Urechile cu care pornește bifa pe un rând care n-avea: cele ale plăcii 2 (ADR 0028 §1). */
 const URECHI_IMPLICITE: UrechiOperatie = { numar: 4, latime: 8, grosime: 2 };
@@ -116,6 +123,7 @@ export function DialogExport(
     return [o.cheie, {
       latura: o.valori.latura, sens: o.valori.sens, adancime: text(o.valori.adancime), pas: text(o.valori.pas),
       urechi: o.valori.urechi !== null, numarUrechi: text(u.numar), latimeUreche: text(u.latime), grosimeUreche: text(u.grosime),
+      rampa: o.valori.rampa !== null, lungimeRampa: text((o.valori.rampa ?? RAMPA_IMPLICITA).lungime),
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
@@ -148,17 +156,21 @@ export function DialogExport(
   useEffect(() => { if (cere) cerereVizibila.current?.focus(); }, [cere]);
   const diametruBun = inMargini(diametru, MARGINI_OPERATIE.diametru);
   // Câmpurile urechilor se judecă doar cu bifa pusă: oprite, nu intră în document.
-  const randBun = (p: Rand | undefined): { adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean } => ({
+  const randBun = (p: Rand | undefined): {
+    adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean; rampa: boolean;
+  } => ({
     adancime: p !== undefined && inMargini(p.adancime, MARGINI_OPERATIE.adancime),
     pas: p !== undefined && inMargini(p.pas, MARGINI_OPERATIE.adancime),
     numar: p !== undefined && (!p.urechi || intregInMargini(p.numarUrechi, MARGINI_OPERATIE.urechi)),
     latime: p !== undefined && (!p.urechi || inMargini(p.latimeUreche, MARGINI_OPERATIE.latimeUreche)),
     grosime: p !== undefined && (!p.urechi || inMargini(p.grosimeUreche, MARGINI_OPERATIE.grosimeUreche)),
+    rampa: p !== undefined && (!p.rampa || inMargini(p.lungimeRampa, MARGINI_OPERATIE.lungimeRampa)),
   });
   const randuri = operatii.map((o) => randBun(param[o.cheie]));
   const operatiiBune = diametruBun && randuri.every((b) => b.adancime && b.pas);
   const urechiBune = randuri.every((b) => b.numar && b.latime && b.grosime);
-  const valid = operatiiBune && urechiBune;
+  const rampeBune = randuri.every((b) => b.rampa);
+  const valid = operatiiBune && urechiBune && rampeBune;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -181,7 +193,10 @@ export function DialogExport(
     const numar = citesteNumar(p.numarUrechi), latime = citesteNumar(p.latimeUreche), grosime = citesteNumar(p.grosimeUreche);
     if (p.urechi && (numar === null || latime === null || grosime === null)) return [];
     const urechi = p.urechi && numar !== null && latime !== null && grosime !== null ? { numar, latime, grosime } : null;
-    return [[o.cheie, { latura: p.latura, sens: p.sens, adancime, pas, urechi }] as const];
+    const lungime = citesteNumar(p.lungimeRampa);
+    if (p.rampa && lungime === null) return [];
+    const rampa = p.rampa && lungime !== null ? { lungime } : null;
+    return [[o.cheie, { latura: p.latura, sens: p.sens, adancime, pas, urechi, rampa }] as const];
   }));
   const fmtFreza = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3 });
   // Motivul spune ce câmp e greșit: valorile operației, urechile, sau amândouă (recenzia feliei 2.4).
@@ -190,6 +205,7 @@ export function DialogExport(
     ...(urechiBune ? [] : [t('motiv.urechi-invalide', {
       n: MARGINI_OPERATIE.urechi, latime: fmtFreza.format(MARGINI_OPERATIE.latimeUreche), grosime: fmtFreza.format(MARGINI_OPERATIE.grosimeUreche),
     })]),
+    ...(rampeBune ? [] : [t('motiv.rampa-invalida', { lungime: fmtFreza.format(MARGINI_OPERATIE.lungimeRampa) })]),
   ].join(' ');
 
   return (
@@ -229,6 +245,7 @@ export function DialogExport(
               <th>{t('export.element')}</th><th>{t('export.latura')}</th><th title={t('export.sens.titlu')}>{t('export.sens')}</th>
               <th>{t('export.adancime')}</th><th>{t('export.pas')}</th>
               <th title={t('export.urechi.titlu')}>{t('export.urechi')}</th>
+              <th title={t('export.rampa.titlu')}>{t('export.rampa')}</th>
             </tr>
           </thead>
           <tbody>
@@ -258,13 +275,19 @@ export function DialogExport(
                     <input type="checkbox" checked={p.urechi} data-camp="urechi" disabled={doarCitire} aria-label={t('export.urechi')}
                       title={t('export.urechi.titlu')} onChange={(ev) => { schimba(o.cheie, { urechi: ev.target.checked }); }} />
                   </td>
+                  <td>
+                    <input type="checkbox" checked={p.rampa} data-camp="rampa" disabled={doarCitire} aria-label={t('export.rampa')}
+                      title={t('export.rampa.titlu')} onChange={(ev) => { schimba(o.cheie, { rampa: ev.target.checked }); }} />
+                  </td>
                 </tr>
-                {p.urechi && (
-                  // Câmpurile urechilor, pe un rând al lor sub operație: tabelul rămâne îngust.
-                  <tr className="urechi" data-urechi={o.cheie}>
+                {(p.urechi || p.rampa) && (
+                  // Câmpurile urechilor și ale rampei, pe un rând al lor sub operație: tabelul rămâne îngust.
+                  <tr className="detalii" data-detalii={o.cheie}>
                     <td />
-                    <td colSpan={5}>
-                      <div className="campuri-urechi">
+                    <td colSpan={6}>
+                      <div className="campuri-detalii">
+                      {p.urechi && (
+                      <div className="campuri-urechi" data-urechi={o.cheie}>
                       <label>
                         {t('export.urechi.numar')}
                         <input type="text" inputMode="numeric" value={p.numarUrechi} data-camp="urechi-numar" disabled={doarCitire}
@@ -280,6 +303,17 @@ export function DialogExport(
                         <input type="text" inputMode="decimal" value={p.grosimeUreche} data-camp="urechi-grosime" disabled={doarCitire}
                           aria-invalid={!b.grosime} onChange={(ev) => { schimba(o.cheie, { grosimeUreche: ev.target.value }); }} />
                       </label>
+                      </div>
+                      )}
+                      {p.rampa && (
+                      <div className="campuri-rampa" data-rampa={o.cheie}>
+                      <label title={t('export.rampa.lungime.titlu')}>
+                        {t('export.rampa.lungime')}
+                        <input type="text" inputMode="decimal" value={p.lungimeRampa} data-camp="rampa-lungime" disabled={doarCitire}
+                          aria-invalid={!b.rampa} onChange={(ev) => { schimba(o.cheie, { lungimeRampa: ev.target.value }); }} />
+                      </label>
+                      </div>
+                      )}
                       </div>
                     </td>
                   </tr>
