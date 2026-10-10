@@ -489,6 +489,11 @@ test('intrările cu rampă (ADR 0031): rampa coboară pe sfertul intrării, la f
   const doc = await documentSalvat(page, 2);
   const op = (doc as { piese: Array<{ operatii: Array<{ rampa: unknown; intrari: unknown }> }> }).piese[0]?.operatii[0];
   expect([op?.rampa, op?.intrari]).toEqual([{ lungime: 10 }, { raza: 3 }]);
+  // Poarta amendată (ADR 0031): 1, 2, 9, 10, 11, 12 și viteza pe verticală.
+  expect(poarta(text, {
+    foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'stanga-jos', z0: 'sus', diametruScula: 6, pas: 4,
+    supracursa: 0, asteptareAx: 3, avansPlonjare: 300, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
+  })).toEqual([]);
   // Pe linie, intrările se opresc, iar nota dispare.
   await rand.locator('select[data-camp="latura"]').selectOption('pe-linie');
   await expect(nota).toHaveCount(0);
