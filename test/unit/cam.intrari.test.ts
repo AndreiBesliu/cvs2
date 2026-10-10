@@ -77,7 +77,7 @@ test('gaura R5: raza 3 nu încape, jumătatea da, spre centrul găurii; gaura R3
   assert.deepEqual(x[0], { tip: 'rapida', la: { X: 100.5, Y: 98.5 } });
   assert.deepEqual(x[2], { tip: 'arc', la: { X: 102, Y: 100 }, centru: { x: 100.5, y: 100 }, sens: 'trigonometric', avans: 1000 });
   const omisa = bloc(cu(docDin(F, cerc('g', 3.6)), 'g', { latura: 'interior' }), 'g/g');
-  assert.deepEqual(omisa.avertismente, ['g/g: intrarea omisă pe bucla 1 (nu încape nicăieri, nici cu raza de 1.5 mm)']);
+  assert.deepEqual(omisa.avertismente, ['g/g: intrarea omisă pe bucla 1 (nu încape nicăieri cu raza de 3 mm, 1.5 mm)']);
   const fara = bloc(cuOperatie(docDin(F, cerc('g', 3.6)), 'g', { latura: 'interior', adancime: 6, pas: 3 }), 'g/g');
   assert.deepEqual(omisa.miscari, fara.miscari, 'fără intrare, programul e cel de azi');
 });
@@ -155,4 +155,53 @@ test('bucla pornită dintr-un punct: segmentul se taie (linie în linii, arc în
   const pe = incepeLa({ inchis: true, varfuri: [{ p: { x: 1, y: 0 }, s: arc(1) }, { p: { x: -1, y: 0 }, s: arc(1) }] }, Math.PI / 2);
   assert.ok(near(pe.varfuri[0]!.p.x, 0, 1e-12) && near(pe.varfuri[0]!.p.y, 1, 1e-12), 'pe cerc, mijlocul arcului de sus');
   assert.ok(pe.varfuri.every((v) => v.s.tip === 'A' || v.s === LINIE));
+});
+
+test('foaia (condiția b): la 7 mm de marginea de jos, intrarea din vârful 0 ar ieși din foaie, deci p₀ trece pe mijlocul laturii de sus', async () => {
+  // Dreptunghiul 100 × 60 la (7, 7): bucla centrului stă în foaie (discul ajunge la y = 1). Intrarea din vârful 0, (7, 4),
+  // ar coborî discul la y = −2. Primul candidat care rămâne în foaie: mijlocul primei laturi lungi în ordinea buclei, sus.
+  const d = cu(docDin(F, dr('a', 7, 7)), 'a', {});
+  const { miscari, avertismente } = bloc(d, 'a/a');
+  assert.deepEqual(avertismente, []);
+  const [x] = treceri(miscari);
+  assert.ok(x);
+  if (!x) return;
+  assert.deepEqual(x[2], { tip: 'arc', la: { X: 57, Y: 70 }, centru: { x: 57, y: 73 }, sens: 'trigonometric', avans: 1000 });
+  // Exportul nu mai cere confirmarea ieșirii din foaie.
+  const { iesireDinFoaie } = await import('../../src/cam/iesire.ts');
+  const j = programDinDocument(d);
+  assert.ok(j.ok && iesireDinFoaie(j.program, F) === null);
+});
+
+test('urechile altei bucle (condiția c): intrarea vecinei nu trece la mai puțin de D + 1 mm de bucla cu urechi', async () => {
+  // A: 100 × 60 la (50, 50), tăiat prin, cu 2 urechi; B: deasupra, la 13 mm, cu vârful 0 în dreptul unei urechi a lui A.
+  // Traseele stau la 7 mm (y 113 și 120). Semicercul din vârful 0 al lui B (ρ = 3, deșeul în jos) coboară până la y = 114,
+  // adică la 1 mm de traseul lui A, sub D + 1 = 7 mm: ar tăia legătura urechii. Deci p₀ al lui B se mută.
+  const { apropiereContururi } = await import('../../src/geom/apropiere.ts');
+  const { profil } = await import('../../src/cam/profil.ts');
+  const { conturDreptunghi: drept } = await import('../../src/geom/contur.ts');
+  let d = docDin(F, dr('a', 50, 50), dr('b', 65.288, 123));
+  d = cuOperatie(d, 'a', { adancime: 12, pas: 4, urechi: { numar: 2, latime: 8, grosime: 2 } });
+  d = cu(d, 'b', { adancime: 12, pas: 4 });
+  const { miscari, avertismente } = bloc(d, 'b/b');
+  assert.deepEqual(avertismente, []);
+  const [x] = treceri(miscari);
+  assert.ok(x);
+  if (!x) return;
+  const intrare = x[2];
+  assert.ok(intrare?.tip === 'arc');
+  if (intrare?.tip !== 'arc') return;
+  // p₀ nu mai e vârful 0 al lui B (65,288; 120), iar semicercul ales stă la cel puțin 7 mm de traseul lui A.
+  assert.ok(!(near(intrare.la.X ?? 0, 65.288, 1e-6) && near(intrare.la.Y ?? 0, 120, 1e-6)), 'p₀ s-a mutat de pe vârful 0');
+  const pa = profil(drept(50, 50, 100, 60), { latura: 'exterior', sens: 'urcare', diametruScula: 6, adancime: 12, pas: 4 });
+  assert.ok(pa.ok);
+  if (!pa.ok) return;
+  const a0 = x[0];
+  assert.ok(a0?.tip === 'rapida');
+  if (a0?.tip !== 'rapida') return;
+  const iesire = x[x.length - 1];
+  assert.ok(iesire?.tip === 'arc');
+  if (iesire?.tip !== 'arc') return;
+  const semi = { inchis: false, varfuri: [{ p: { x: a0.la.X ?? 0, y: a0.la.Y ?? 0 }, s: arc(1) }, { p: { x: iesire.la.X ?? 0, y: iesire.la.Y ?? 0 }, s: LINIE }] };
+  assert.ok(apropiereContururi(semi, pa.treceri[0]!.contururi[0]!).distanta >= 7 - 1e-9);
 });

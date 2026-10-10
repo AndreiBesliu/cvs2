@@ -13,6 +13,15 @@ export type ParametriIntrari = { readonly raza: number };
 
 export { RAZA_INTRARE_MINIMA };
 
+/**
+ * Cât material rămâne cel puțin între fanta intrării și fanta unei alte bucle cu urechi (ADR 0030 §3, condiția c): traseele
+ * stau la cel puțin D + 1 mm, ca intrarea să nu taie legătura care ține o ureche vecină.
+ */
+export const MARJA_SCHELET = 1;
+
+/** Lungimile care diferă cu cel mult atât sunt egale în ordinea candidaților (zgomotul de rotunjire nu le ordonează). */
+const EPS_LUNGIME = 1e-6;
+
 /** Intrarea aleasă pe o buclă: bucla pornită din p₀ și cercul intrării. */
 export type IntrareAleasa = {
   /** Bucla, cu vârful 0 în p₀ (ADR 0030 §4). */
@@ -54,7 +63,8 @@ function semicerc(c: { a: Punct; b: Punct; trigonometric: boolean }): Contur {
 
 /**
  * Pozițiile candidate pentru p₀ (ADR 0030 §3): vârful 0, apoi mijloacele celor mai lungi 12 segmente, după lungime
- * descrescătoare (la egalitate, indicele mai mic întâi); un mijloc identic cu un candidat de dinainte se sare.
+ * descrescătoare (lungimile la cel mult 1e-6 mm sunt egale, iar atunci indicele mai mic e întâi); un mijloc identic cu un
+ * candidat de dinainte se sare.
  */
 export function candidati(c: Contur): number[] {
   const n = numarSegmente(c);
@@ -67,7 +77,8 @@ export function candidati(c: Contur): number[] {
     s0 += L;
   }
   const rez = [0];
-  for (const x of [...segmente].sort((u, v) => v.L - u.L || u.i - v.i).slice(0, 12)) {
+  // Sortarea e stabilă și pornește din ordinea indicilor, deci la lungimi egale rămâne indicele mai mic întâi.
+  for (const x of [...segmente].sort((u, v) => (Math.abs(v.L - u.L) <= EPS_LUNGIME ? 0 : v.L - u.L)).slice(0, 12)) {
     const s = x.inceput + x.L / 2;
     if (rez.every((r) => Math.abs(r - s) > EPS_RUPTURA)) rez.push(s);
   }
@@ -75,11 +86,18 @@ export function candidati(c: Contur): number[] {
 }
 
 /**
- * Alegerea (ADR 0030 §3): pentru raza cerută, apoi pentru jumătatea ei (dacă e cel puțin 0,5 mm), primul candidat al
- * cărui semicerc trece de `incape` (verificarea exactă a invariantei 2, făcută de apelant pe regiunea păstrată).
+ * Razele încercate (ADR 0030 §3): cea cerută, apoi jumătatea ei, dacă e cel puțin 0,5 mm.
+ */
+export function razeIncercate(raza: number): number[] {
+  return [raza, ...(raza / 2 >= RAZA_INTRARE_MINIMA ? [raza / 2] : [])];
+}
+
+/**
+ * Alegerea (ADR 0030 §3): pentru fiecare rază încercată, primul candidat al cărui semicerc trece de `incape` (regiunea
+ * păstrată, foaia și urechile altor bucle, verificate de apelant).
  */
 export function alegeIntrarea(c: Contur, sens: Sens, raza: number, incape: (semicerc: Contur) => boolean): IntrareAleasa | null {
-  const raze = [raza, ...(raza / 2 >= RAZA_INTRARE_MINIMA ? [raza / 2] : [])];
+  const raze = razeIncercate(raza);
   const poz = candidati(c);
   for (const rho of raze) {
     for (const s of poz) {

@@ -4,7 +4,11 @@ import { taieturiFoaie } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { profil } from './profil.ts';
 import { regiunePastrata, verificaTaietura } from './regiune.ts';
-import { alegeIntrarea, RAZA_INTRARE_MINIMA, type IntrareAleasa } from './intrari.ts';
+import { apropiereContururi } from '../geom/apropiere.ts';
+import type { Contur } from '../geom/contur.ts';
+import { cutieContur, depasire, largita, type Depasire } from '../geom/cutie.ts';
+import { PRAG_REZOLUTIE } from './iesire.ts';
+import { alegeIntrarea, MARJA_SCHELET, RAZA_INTRARE_MINIMA, razeIncercate, type IntrareAleasa } from './intrari.ts';
 import { traseuProfil } from './traseu.ts';
 import { EPS_VARF, type ParametriUrechi } from './urechi.ts';
 
@@ -58,7 +62,17 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   if (!regiune.ok) return { ok: false, motiv: regiune.motiv };
   const miscari: Miscare[] = [];
   const avertismente: string[] = [];
-  for (const t of taieturi) {
+  // Buclele cu urechi ale fiecărei tăieturi, ca o intrare să nu le taie legătura (ADR 0030 §3, condiția c). Un profil care
+  // nu iese se raportează mai jos, la tăietura lui.
+  const bucleCuUrechi: readonly (readonly Contur[])[] = taieturi.map((u) => {
+    if (!u.urechi) return [];
+    const p = profil(conturElement(u), { latura: u.latura, sens: u.sens, diametruScula: scula.diametru, adancime: u.adancime, pas: u.pas });
+    return p.ok ? (p.treceri[0]?.contururi ?? []) : [];
+  });
+  const R = scula.diametru / 2;
+  /** Cât trece discul frezei de fiecare latură a foii, pe un traseu (măsura ieșirii din foaie). */
+  const iese = (x: Contur): Depasire => depasire(largita(cutieContur(x), R), foaie.stoc.latime, foaie.stoc.inaltime, PRAG_REZOLUTIE);
+  for (const [it, t] of taieturi.entries()) {
     // Mai adânc decât foaia înseamnă în masa de sacrificiu (sau în masa mașinii): cel mult supracursa.
     if (t.adancime > grosime + supracursa + 1e-9) {
       return {
@@ -102,11 +116,22 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
         return { ok: false, motiv: `${t.idLume}: raza intrării de ${t.intrari.raza} mm e sub ${RAZA_INTRARE_MINIMA} mm` };
       }
       const bucle = pr.treceri[0]?.contururi ?? [];
+      const raza = t.intrari.raza;
       intrari = bucle.map((c, j) => {
-        const ales = alegeIntrarea(c, t.sens, t.intrari?.raza ?? 0,
-          (semicerc) => verificaTaietura(regiune.regiune, t.idLume, t.latura, [semicerc], scula.diametru / 2) === null);
+        const dBucla = iese(c);
+        // ADR 0030 §3: încape dacă (a) ține discul în afara regiunii păstrate, (b) nu iese din foaie mai mult decât bucla,
+        // pe nicio latură, și (c) lasă cel puțin 1 mm de material lângă orice altă buclă cu urechi.
+        const incape = (semicerc: Contur): boolean => {
+          if (verificaTaietura(regiune.regiune, t.idLume, t.latura, [semicerc], R) !== null) return false;
+          const d = iese(semicerc);
+          if (d.stanga > dBucla.stanga || d.dreapta > dBucla.dreapta || d.jos > dBucla.jos || d.sus > dBucla.sus) return false;
+          return bucleCuUrechi.every((bs, iu) => bs.every((b, jb) => (iu === it && jb === j)
+            || apropiereContururi(semicerc, b).distanta >= scula.diametru + MARJA_SCHELET));
+        };
+        const ales = alegeIntrarea(c, t.sens, raza, incape);
         if (!ales) {
-          avertismente.push(`${t.idLume}: intrarea omisă pe bucla ${j + 1} (nu încape nicăieri, nici cu raza de ${(t.intrari?.raza ?? 0) / 2} mm)`);
+          const raze = razeIncercate(raza).map((r) => `${r} mm`).join(', ');
+          avertismente.push(`${t.idLume}: intrarea omisă pe bucla ${j + 1} (nu încape nicăieri cu raza de ${raze})`);
         }
         return ales;
       });
