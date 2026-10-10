@@ -1050,3 +1050,17 @@ verticală. Acum: minimul de 1 mm, refuzurile, toleranța declarată a invariant
 - avansul orizontal pe rampă și al coborârii prin aer nu sunt verificate;
 - rampa e oprită implicit (placa 1 neschimbată): pornirea ei din fabrică, ca în ediția întâi, e decizia owner-ului;
 - intrările și ieșirile (2.5b) aduc freza la e_k din afara piesei.
+
+## 2026-10-10 — Etapa 2, felia 2.5b: intrările și ieșirile (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua”. **Started:** 15:27. **Clasa:** R2 (intrările mișcă mașina). **Estimarea:** ~½ zi activă, plus
+oracolul independent (~0,7 M tokeni) și recenzia (o lentilă CAM, ~0,6 M).
+
+**Scopul tăiat:** intrările fără rampă. Rampa taie bucla fără ridicare între treceri, deci compunerea cere un contract al
+ei: felia 2.5c. Până atunci, exportul refuză cu motiv o operație cu amândouă. Placa 2 cere urechile și urma de intrare, nu
+rampa.
+
+**Ce intră:** ADR 0030 (documentul v7 cu `Operatie.intrari`, migrarea v6 → v7 cu `null`); semicercul intrării pe partea
+deșeului, ales din candidați (vârful 0, mijloacele celor mai lungi 12 segmente; raza, apoi jumătate) și verificat exact
+pe regiunea păstrată; bucla pornită din p₀ (urechile se mută cu ea); plonjarea în deșeu; avertismentul la export când
+intrarea nu încape; coloana Intrări în dialog.

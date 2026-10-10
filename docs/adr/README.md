@@ -47,3 +47,4 @@ redeschide. Cel mult o pagină.
 | [0027](0027-sensul-de-taiere.md) | — | Sensul de tăiere pe operație (documentul v4), implicit urcare; invarianta 9 | etapa 2 (felia 2.3b) |
 | [0028](0028-urechile.md) | — | Urechile: profilul Z(s) pe IR, puntea de la fața de jos (documentul v5); invarianta 10 | etapa 2 (felia 2.4) |
 | [0029](0029-rampa.md) | — | Rampa: bucla tăiată continuu, intrarea rotită și scoasă din zonele urechilor (documentul v6); invarianta 11 | etapa 2 (felia 2.5a) |
+| [0030](0030-intrarile.md) | — | Intrările și ieșirile: sferturi de cerc pe partea deșeului, alese și verificate pe regiunea păstrată (documentul v7); invarianta 12 | etapa 2 (felia 2.5b) |
