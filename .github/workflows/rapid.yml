@@ -1,5 +1,8 @@
 # Nivelul rapid (PLAN.md §4.4): la fiecare push, ≤ 5 minute. Un roșu blochează commit-ul următor.
 # Commit-urile care ating doar .md nu-l pornesc.
+# Testele unitare rulează în 3 felii paralele (`--test-shard`, pe fișiere): pe un singur job ajunseseră la 452 s din cele
+# 600 permise (felia 2.5b), iar oracolul feliei 2.5c le-ar fi dus peste. Fiecare push rulează tot; restul pașilor, o dată.
+# `--test-shard` trebuie să stea ÎNAINTEA fișierelor: după ele, Node îl ignoră pe tăcute (măsurat pe 10.10).
 name: rapid
 
 on:
@@ -17,9 +20,13 @@ concurrency:
 
 jobs:
   rapid:
-    name: Nivelul rapid
+    name: Nivelul rapid (felia ${{ matrix.felia }} din 3)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        felia: [1, 2, 3]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -28,12 +35,18 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Tipurile (tsc)
+        if: matrix.felia == 1
         run: npm run typecheck
       - name: Regulile de import, cu capcanele
+        if: matrix.felia == 1
         run: npm run importuri
-      - name: Testele unitare
-        run: npm test
+      - name: Testele unitare (felia ${{ matrix.felia }} din 3)
+        run: npm run test:felie
+        env:
+          FELIA: ${{ matrix.felia }}/3
       - name: Build-ul determinist și mărimea pachetului
+        if: matrix.felia == 1
         run: npm run determinism
       - name: Licențele dependențelor de rulare
+        if: matrix.felia == 1
         run: npm run licente

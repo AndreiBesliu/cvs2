@@ -14,7 +14,8 @@ jobs:
   complet:
     name: Nivelul complet
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # Testele unitare, nefeliate aici, trec de 10 minute pe mașina CI-ului din felia 2.5c (oracolul intrărilor cu rampă).
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

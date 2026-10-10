@@ -13,6 +13,7 @@
     "preview": "vite preview --port 4173 --strictPort",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --test \"test/unit/**/*.test.ts\"",
+    "test:felie": "node --test --test-shard=$FELIA \"test/unit/**/*.test.ts\"",
     "importuri": "node scripts/verifica-importuri.ts",
     "licente": "node scripts/verifica-licente.ts",
     "determinism": "node scripts/build-determinist.ts",
