@@ -80,7 +80,7 @@ test('o singură sculă pe program: altă freză (număr sau diametru) e refuzat
 test('ordinea tăieturilor: latura, apoi instanța, apoi operația, apoi nodul din operație; elementul fără operație nu se taie', () => {
   const M = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
   const op = (id: string, noduri: string[], latura: Operatie['latura']): Operatie =>
-    ({ id, tip: 'profil', noduri, scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura, sens: 'urcare', adancime: 3, pas: 3, urechi: null, rampa: null });
+    ({ id, tip: 'profil', noduri, scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura, sens: 'urcare', adancime: 3, pas: 3, urechi: null, rampa: null, intrari: null });
   const baza = documentNou({ latime: 300, inaltime: 200, grosime: 18 });
   const d: Document = {
     ...baza,

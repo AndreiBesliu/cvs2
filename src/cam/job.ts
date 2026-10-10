@@ -4,6 +4,7 @@ import { taieturiFoaie } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { profil } from './profil.ts';
 import { regiunePastrata, verificaTaietura } from './regiune.ts';
+import { alegeIntrarea, RAZA_INTRARE_MINIMA, type IntrareAleasa } from './intrari.ts';
 import { traseuProfil } from './traseu.ts';
 import { EPS_VARF, type ParametriUrechi } from './urechi.ts';
 
@@ -24,7 +25,13 @@ export const REGIM_IMPLICIT: Regim = { turatie: 18000, avans: 1000, avansPlonjar
 /** Cât poate trece o tăietură de fața de jos a foii, în masa de sacrificiu (ADR 0028 §2), în mm. */
 export const SUPRACURSA_MAXIMA = 2;
 
-export type RezultatJob = { readonly ok: true; readonly program: Program } | { readonly ok: false; readonly motiv: string };
+/**
+ * `avertismente`: ce n-a putut face lucrarea fără să fie o greșeală, spus omului la export (ADR 0030 §3: intrarea omisă pe
+ * o buclă unde nu încape). Programul rămâne corect fără ele.
+ */
+export type RezultatJob =
+  | { readonly ok: true; readonly program: Program; readonly avertismente: readonly string[] }
+  | { readonly ok: false; readonly motiv: string };
 
 /**
  * `supracursa`: cât are voie o operație sub fața de jos a foii (mm, 0 … `SUPRACURSA_MAXIMA`). Dialogul nu-l arată încă
@@ -50,6 +57,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   const regiune = regiunePastrata(taieturi);
   if (!regiune.ok) return { ok: false, motiv: regiune.motiv };
   const miscari: Miscare[] = [];
+  const avertismente: string[] = [];
   for (const t of taieturi) {
     // Mai adânc decât foaia înseamnă în masa de sacrificiu (sau în masa mașinii): cel mult supracursa.
     if (t.adancime > grosime + supracursa + 1e-9) {
@@ -84,11 +92,32 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     // Invarianta 2: trecerile au același traseu în plan, deci se judecă o dată, pe prima.
     const incalcare = verificaTaietura(regiune.regiune, t.idLume, t.latura, pr.treceri[0]?.contururi ?? [], scula.diametru / 2);
     if (incalcare) return { ok: false, motiv: incalcare };
-    const tr = traseuProfil(pr.treceri, regim, urechi, t.rampa ? { lungime: t.rampa.lungime } : undefined);
+    // Intrările (ADR 0030): alese pe fiecare buclă, verificate exact pe regiunea păstrată; bucla pornește din p₀.
+    let treceri = pr.treceri;
+    let intrari: (IntrareAleasa | null)[] | undefined;
+    if (t.intrari) {
+      if (t.latura === 'pe-linie') return { ok: false, motiv: `${t.idLume}: intrările cer o parte de deșeu, iar pe linie freza taie ambii pereți` };
+      if (t.rampa) return { ok: false, motiv: `${t.idLume}: intrările nu se compun încă cu rampa (felia 2.5c): scoate una dintre ele` };
+      if (!(t.intrari.raza >= RAZA_INTRARE_MINIMA)) {
+        return { ok: false, motiv: `${t.idLume}: raza intrării de ${t.intrari.raza} mm e sub ${RAZA_INTRARE_MINIMA} mm` };
+      }
+      const bucle = pr.treceri[0]?.contururi ?? [];
+      intrari = bucle.map((c, j) => {
+        const ales = alegeIntrarea(c, t.sens, t.intrari?.raza ?? 0,
+          (semicerc) => verificaTaietura(regiune.regiune, t.idLume, t.latura, [semicerc], scula.diametru / 2) === null);
+        if (!ales) {
+          avertismente.push(`${t.idLume}: intrarea omisă pe bucla ${j + 1} (nu încape nicăieri, nici cu raza de ${(t.intrari?.raza ?? 0) / 2} mm)`);
+        }
+        return ales;
+      });
+      const pornite = bucle.map((c, j) => intrari?.[j]?.bucla ?? c);
+      treceri = pr.treceri.map((x) => ({ adancime: x.adancime, contururi: pornite }));
+    }
+    const tr = traseuProfil(treceri, regim, urechi, t.rampa ? { lungime: t.rampa.lungime } : undefined, intrari);
     if (!tr.ok) return { ok: false, motiv: `${t.idLume}: ${tr.motiv}` };
     miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, ${t.latura}, ${t.adancime} mm`, element: t.idLume });
     // Fără `push(...listă)`: o listă foarte lungă depășește stiva de argumente.
     for (const m of tr.miscari) miscari.push(m);
   }
-  return { ok: true, program: { axe: AXE_XYZ, scula, turatie: regim.turatie, zSigur: regim.zSigur, miscari } };
+  return { ok: true, program: { axe: AXE_XYZ, scula, turatie: regim.turatie, zSigur: regim.zSigur, miscari }, avertismente };
 }

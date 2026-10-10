@@ -37,5 +37,5 @@ export async function calculeazaExport(doc: Document, p: ParametriExport): Promi
     asteptareAx: ASTEPTARE_AX,
     ...(iesire ? { iesireConfirmata: iesire.depasire } : {}),
   });
-  return e.ok ? { ok: true, program: e.exportat } : e;
+  return e.ok ? { ok: true, program: e.exportat, avertismente: job.avertismente } : e;
 }

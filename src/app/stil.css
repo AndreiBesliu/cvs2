@@ -227,7 +227,8 @@ footer {
 /* Flexul stă în div-uri: pe celula însăși ar anula colSpan-ul, iar câmpurile s-ar strânge într-o singură coloană. */
 .dialog .campuri-detalii,
 .dialog .campuri-urechi,
-.dialog .campuri-rampa {
+.dialog .campuri-rampa,
+.dialog .campuri-intrari {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1rem;

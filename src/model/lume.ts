@@ -73,6 +73,7 @@ export type Taietura = ElementLume & {
   readonly scula: Operatie['scula'];
   readonly urechi: Operatie['urechi'];
   readonly rampa: Operatie['rampa'];
+  readonly intrari: Operatie['intrari'];
 };
 
 const ORDINE_LATURA: Readonly<Record<Operatie['latura'], number>> = { interior: 0, 'pe-linie': 1, exterior: 2 };
@@ -95,7 +96,7 @@ export function taieturiFoaie(doc: Document, indexFoaie = 0): Taietura[] {
       for (const n of o.noduri) {
         const e = elemente.get(n);
         if (!e) continue;
-        rez.push({ ...e, operatie: o.id, latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, scula: o.scula, urechi: o.urechi, rampa: o.rampa });
+        rez.push({ ...e, operatie: o.id, latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, scula: o.scula, urechi: o.urechi, rampa: o.rampa, intrari: o.intrari });
       }
     }
   }

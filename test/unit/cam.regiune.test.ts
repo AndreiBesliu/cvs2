@@ -108,7 +108,7 @@ test('pe-linie nu e inel și nu se judecă: o linie gravată peste marginea pies
 test('instanțele rotite și două instanțe ale aceleiași piese: inelele în lume, fiecare cu id-ul lui', () => {
   const M = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
   const op = (id: string, latura: Operatie['latura']): Operatie =>
-    ({ id, tip: 'profil', noduri: [id], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura, sens: 'urcare', adancime: 3, pas: 3, urechi: null, rampa: null });
+    ({ id, tip: 'profil', noduri: [id], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura, sens: 'urcare', adancime: 3, pas: 3, urechi: null, rampa: null, intrari: null });
   const baza = doc();
   const cu = (x2: number): Document => ({
     ...baza,

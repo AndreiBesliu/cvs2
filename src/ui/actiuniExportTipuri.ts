@@ -1,4 +1,5 @@
 import type { IesireFoaie } from '../cam/iesire.ts';
+import { RAZA_INTRARE_MINIMA } from '../cam/intrariMinima.ts';
 import { RAMPA_MINIMA } from '../cam/rampaMinima.ts';
 import type { ColtOrigine } from '../ir/montaj.ts';
 import { PLAFON, type Document } from '../model/document.ts';
@@ -14,6 +15,7 @@ export type { IesireFoaie } from '../cam/iesire.ts';
 export const MARGINI_OPERATIE = {
   diametru: PLAFON.diametruScula, adancime: PLAFON.adancimeOperatie, urechi: PLAFON.urechi, latimeUreche: PLAFON.latura,
   grosimeUreche: PLAFON.grosime, lungimeRampa: PLAFON.latura, lungimeRampaMinima: RAMPA_MINIMA,
+  razaIntrare: PLAFON.latura, razaIntrareMinima: RAZA_INTRARE_MINIMA,
 } as const;
 
 /**
@@ -38,7 +40,8 @@ export type ParametriExport = {
 };
 
 export type RezultatExport =
-  | { readonly ok: true; readonly program: ProgramExportat }
+  /** `avertismente`: ce s-a făcut altfel decât s-a cerut, fără să fie o greșeală (intrarea omisă, ADR 0030 §3). */
+  | { readonly ok: true; readonly program: ProgramExportat; readonly avertismente: readonly string[] }
   | { readonly ok: false; readonly motiv: string }
   /** Freza iese din foaie și omul n-a confirmat încă exact ieșirea asta: nu se scrie nimic. */
   | { readonly ok: false; readonly motiv: string; readonly cereConfirmare: IesireFoaie };

@@ -1,4 +1,4 @@
-import { cerculArcului, numarSegmente, segment, type Contur, type Punct, type Segment } from '../geom/contur.ts';
+import { arc, cerculArcului, LINIE, numarSegmente, segment, type Contur, type Punct, type Segment, type Varf } from '../geom/contur.ts';
 import type { Miscare } from '../ir/ir.ts';
 
 /**
@@ -142,4 +142,56 @@ export function parcurge(c: Contur, noduri: readonly Nod[], avans: number, avans
     if (!peVarf || s1 >= sLa - EPS_RUPTURA) break;
   }
   return { ok: true, miscari: m };
+}
+
+/** Punctul și direcția de mers (unitară) la poziția s, cu 0 ≤ s ≤ P, plus segmentul și fracțiunea din el. */
+export function punctLa(c: Contur, s: number): { readonly p: Punct; readonly t: Punct; readonly i: number; readonly f: number } | null {
+  const n = numarSegmente(c);
+  let s0 = 0;
+  for (let i = 0; i < n; i++) {
+    const { a, b, s: seg } = segment(c, i);
+    if (seg.tip === 'C') return null;
+    const L = lungimeSegment(a, b, seg);
+    if (s <= s0 + L || i === n - 1) {
+      const f = L > 0 ? Math.min(1, Math.max(0, (s - s0) / L)) : 0;
+      if (seg.tip === 'A') {
+        const cerc = cerculArcului(a, b, seg.bulge);
+        const u = cerc.start + cerc.baleiaj * f;
+        const semn = cerc.baleiaj > 0 ? 1 : -1;
+        return { p: punctPeSegment(a, b, cerc, f), t: { x: -Math.sin(u) * semn, y: Math.cos(u) * semn }, i, f };
+      }
+      const L2 = Math.hypot(b.x - a.x, b.y - a.y);
+      if (!(L2 > 0)) return null;
+      return { p: punctPeSegment(a, b, undefined, f), t: { x: (b.x - a.x) / L2, y: (b.y - a.y) / L2 }, i, f };
+    }
+    s0 += L;
+  }
+  return null;
+}
+
+/**
+ * Bucla închisă pornită din poziția s (ADR 0030 §4): un vârf la cel mult 1e-6 mm de s devine vârful 0; altfel segmentul
+ * din s se taie acolo, o linie în două linii, un arc în două arce pe același cerc (baleiajele f·θ și (1 − f)·θ).
+ */
+export function incepeLa(c: Contur, s: number): Contur {
+  const n = c.varfuri.length;
+  const x = punctLa(c, s);
+  if (!x || !c.inchis) return c;
+  const { i, f } = x;
+  const va = c.varfuri[i] as Varf;
+  const vb = c.varfuri[(i + 1) % n] as Varf;
+  const L = lungimeSegment(va.p, vb.p, va.s);
+  const roteste = (k: number): Contur => ({ inchis: true, varfuri: [...c.varfuri.slice(k), ...c.varfuri.slice(0, k)] });
+  if (f * L <= EPS_RUPTURA) return roteste(i);
+  if ((1 - f) * L <= EPS_RUPTURA) return roteste((i + 1) % n);
+  let inainte: Segment = LINIE, dupa: Segment = LINIE;
+  if (va.s.tip === 'A') {
+    const theta = 4 * Math.atan(va.s.bulge);
+    inainte = arc(Math.tan((f * theta) / 4));
+    dupa = arc(Math.tan(((1 - f) * theta) / 4));
+  }
+  const varfuri: Varf[] = [{ p: x.p, s: dupa }];
+  for (let k = 1; k < n; k++) varfuri.push(c.varfuri[(i + k) % n] as Varf);
+  varfuri.push({ p: va.p, s: inainte });
+  return { inchis: true, varfuri };
 }

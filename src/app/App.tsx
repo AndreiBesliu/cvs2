@@ -169,7 +169,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
       exportInCurs.current = false;
       if (r.ok) {
         descarca(r.program.octeti, `cncvs2-${p?.origine ?? 'stanga-jos'}.${r.program.extensie}`);
-        setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256 });
+        setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente });
       } else {
         setStareExport('cereConfirmare' in r ? { ok: false, motiv: r.motiv, cereConfirmare: r.cereConfirmare } : { ok: false, motiv: r.motiv });
       }
@@ -314,6 +314,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
           latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
           urechi: o.urechi ? { numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime } : null,
           rampa: o.rampa ? { lungime: o.rampa.lungime } : null,
+          intrari: o.intrari ? { raza: o.intrari.raza } : null,
         },
       };
     }));

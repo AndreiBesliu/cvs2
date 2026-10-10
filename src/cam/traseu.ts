@@ -1,6 +1,7 @@
 import { cerculArcului, numarSegmente, segment } from '../geom/contur.ts';
 import type { Miscare } from '../ir/ir.ts';
 import type { Trecere } from './profil.ts';
+import { arcIesire, arcIntrare, type IntrareAleasa } from './intrari.ts';
 import { buclaCuRampa, type ParametriRampa } from './rampa.ts';
 import { bucataCuUrechi, EPS_VARF, lungimeBucla, noduriProfil, type ParametriUrechi } from './urechi.ts';
 
@@ -18,11 +19,13 @@ export type RezultatTraseu = { readonly ok: true; readonly miscari: readonly Mis
  * cu avansul de plonjare, conturul cu liniile și arcele lui (arcele rămân arce), apoi ridicare la Z-ul de siguranță.
  * Pe trecerile mai adânci decât vârful urechilor, Z-ul urmează profilul lor (ADR 0028); celelalte rămân neschimbate.
  * Cu rampă (ADR 0029), fiecare buclă se taie continuu, cu toate trecerile ei, înaintea buclei următoare: rapid deasupra
- * vârfului 0, coborâre până la fața de sus, apoi rampa și tura fiecărei treceri, fără ridicare între ele. Intrările și
- * ieșirile vin în felia 2.5b.
+ * vârfului 0, coborâre până la fața de sus, apoi rampa și tura fiecărei treceri, fără ridicare între ele. Cu intrări
+ * (ADR 0030, fără rampă), `intrari[j]` e intrarea aleasă pentru bucla j: trecerile ei plonjează în A (în deșeu), intră
+ * pe buclă în p₀ pe un sfert de cerc, taie bucla de la p₀ (vârful ei 0) și ies pe sfertul următor.
  */
 export function traseuProfil(
   treceri: readonly Trecere[], p: ParametriTraseu, urechi?: ParametriUrechi, rampa?: ParametriRampa,
+  intrari?: readonly (IntrareAleasa | null)[],
 ): RezultatTraseu {
   if (!(p.zSigur > 0)) return { ok: false, motiv: `Z-ul de siguranță trebuie să fie deasupra materialului (${p.zSigur})` };
   if (!(p.avans > 0 && p.avansPlonjare > 0)) return { ok: false, motiv: 'avansurile trebuie să fie pozitive' };
@@ -45,18 +48,21 @@ export function traseuProfil(
   }
   for (const t of treceri) {
     const z = -t.adancime;
-    for (const c of t.contururi) {
-      const start = c.varfuri[0]?.p;
+    for (const [j, c] of t.contururi.entries()) {
+      const intrare = intrari?.[j] ?? null;
+      const start = intrare ? intrare.a : c.varfuri[0]?.p;
       if (!start) continue;
       m.push({ tip: 'rapida', la: { Z: p.zSigur } });
       m.push({ tip: 'rapida', la: { X: start.x, Y: start.y } });
       m.push({ tip: 'taiere', la: { Z: z }, avans: p.avansPlonjare });
+      if (intrare) m.push(arcIntrare(intrare, p.avans));
       if (urechi && t.adancime > urechi.varf + EPS_VARF) {
         const noduri = noduriProfil(lungimeBucla(c), urechi, t.adancime);
         if (typeof noduri === 'string') return { ok: false, motiv: noduri };
         const b = bucataCuUrechi(c, noduri, p.avans, p.avansPlonjare);
         if (!b.ok) return b;
         for (const x of b.miscari) m.push(x);
+        if (intrare) m.push(arcIesire(intrare, p.avans));
         m.push({ tip: 'rapida', la: { Z: p.zSigur } });
         continue;
       }
@@ -71,6 +77,7 @@ export function traseuProfil(
           return { ok: false, motiv: 'cubicele ajung la post doar ca biarce (T6, etapa 2)' };
         }
       }
+      if (intrare) m.push(arcIesire(intrare, p.avans));
       m.push({ tip: 'rapida', la: { Z: p.zSigur } });
     }
   }

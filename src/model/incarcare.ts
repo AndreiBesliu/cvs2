@@ -175,8 +175,38 @@ function v5v6(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v6 → v7 (ADR 0030): fiecare operație primește `intrari: null`, adică fără intrări, deci programul rămâne același octet
+ * cu octet. Defensivă, ca v5 → v6: o operație care are deja un câmp `intrari` e o ciocnire de nume și e refuzată.
+ */
+function v6v7(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  if (!Array.isArray(piese)) return { ok: true, doc: { ...doc, schema: 7 } };
+  const noi: unknown[] = [];
+  for (const p of piese) {
+    if (typeof p !== 'object' || p === null || Array.isArray(p) || !Array.isArray((p as Brut)['operatii'])) {
+      noi.push(p);
+      continue;
+    }
+    const piesa = p as Brut;
+    const operatii: unknown[] = [];
+    for (const o of piesa['operatii'] as unknown[]) {
+      if (typeof o !== 'object' || o === null || Array.isArray(o)) {
+        operatii.push(o);
+        continue;
+      }
+      if (Object.hasOwn(o, 'intrari')) {
+        return { ok: false, motiv: `operația v6 ${String((o as Brut)['id'])} din piesa ${String(piesa['id'])} are câmpul „intrari”, pe care v7 îl folosește: nu se poate migra fără să-l piardă` };
+      }
+      operatii.push({ ...(o as Brut), intrari: null });
+    }
+    noi.push({ ...piesa, operatii });
+  }
+  return { ok: true, doc: { ...doc, schema: 7, piese: noi } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
- * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v5 → v6
+ * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v6 → v7
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
  */
 export const MIGRARI: Readonly<Record<number, Migrare>> = {
@@ -196,6 +226,7 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   3: v3v4,
   4: v4v5,
   5: v5v6,
+  6: v6v7,
 };
 
 /** Câte niveluri de imbricare are o valoare JSON (documentul însuși e nivelul 1). Iterativ, oprit la `max + 1`. */
