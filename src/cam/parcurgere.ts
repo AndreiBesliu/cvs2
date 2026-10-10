@@ -178,6 +178,37 @@ export function punctLa(c: Contur, s: number): { readonly p: Punct; readonly t: 
 }
 
 /**
+ * Bucata buclei închise c de la poziția s (luată modulo P), de lungime L (0 < L ≤ P), ca un contur deschis: segmentul de la
+ * capăt se taie exact, o linie într-o linie, un arc într-un arc pe același cerc. O bucată sub 1e-6 mm e doar punctul din s.
+ */
+export function bucataBuclei(c: Contur, s: number, L: number): Contur {
+  const P = lungimeBucla(c);
+  const r = incepeLa(c, P > 0 ? s - Math.floor(s / P) * P : 0);
+  const start = r.varfuri[0]?.p ?? { x: 0, y: 0 };
+  if (!(L > EPS_RUPTURA)) return { inchis: false, varfuri: [{ p: start, s: LINIE }] };
+  const varfuri: Varf[] = [];
+  let s0 = 0;
+  for (let i = 0; i < numarSegmente(r); i++) {
+    const { a, b, s: seg } = segment(r, i);
+    const Ls = lungimeSegment(a, b, seg);
+    if (s0 + Ls < L - EPS_RUPTURA) {
+      varfuri.push({ p: a, s: seg });
+      s0 += Ls;
+      continue;
+    }
+    const f = Ls > 0 ? Math.min(1, (L - s0) / Ls) : 1;
+    if (f * Ls <= EPS_RUPTURA) return { inchis: false, varfuri: [...varfuri, { p: a, s: LINIE }] };
+    if ((1 - f) * Ls <= EPS_RUPTURA) return { inchis: false, varfuri: [...varfuri, { p: a, s: seg }, { p: b, s: LINIE }] };
+    const cerc = seg.tip === 'A' ? cerculArcului(a, b, seg.bulge) : undefined;
+    const capat = punctPeSegment(a, b, cerc, f);
+    // Pe arc, prima parte are baleiajul f·θ, deci bulge-ul tan(f·θ / 4), ca în `incepeLa`.
+    const parte = seg.tip === 'A' ? arc(Math.tan((f * 4 * Math.atan(seg.bulge)) / 4)) : LINIE;
+    return { inchis: false, varfuri: [...varfuri, { p: a, s: parte }, { p: capat, s: LINIE }] };
+  }
+  return { inchis: false, varfuri: [...varfuri, { p: start, s: LINIE }] };
+}
+
+/**
  * Bucla închisă pornită din poziția s (ADR 0030 §4): un vârf la cel mult 1e-6 mm de s devine vârful 0; altfel segmentul
  * din s se taie acolo, o linie în două linii, un arc în două arce pe același cerc (baleiajele f·θ și (1 − f)·θ).
  */

@@ -7,11 +7,15 @@ import { regiunePastrata, verificaTaietura } from './regiune.ts';
 import { apropiereContururi } from '../geom/apropiere.ts';
 import type { Contur } from '../geom/contur.ts';
 import { cutieContur, depasire, largita, type Depasire } from '../geom/cutie.ts';
+import { distantaLaContur } from '../geom/distanta.ts';
+import { bucataBuclei, lungimeBucla } from './parcurgere.ts';
 import { PRAG_REZOLUTIE } from './iesire.ts';
-import { alegeIntrarea, lungimeSfert, MARJA_SCHELET, RAZA_INTRARE_MINIMA, razeIncercate, type IntrareAleasa } from './intrari.ts';
+import {
+  alegeIntrarea, lungimeSfert, MARJA_SCHELET, RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA, razeIncercate, type IntrareAleasa,
+} from './intrari.ts';
 import { RAMPA_MINIMA } from './rampaMinima.ts';
 import { traseuProfil } from './traseu.ts';
-import { EPS_VARF, type ParametriUrechi } from './urechi.ts';
+import { EPS_VARF, geometrieUrechi, type ParametriUrechi } from './urechi.ts';
 
 /**
  * Lucrarea: tăieturile primei foi (`taieturiFoaie`, ADR 0025), adică operațiile pieselor pe elementele lor, în fiecare
@@ -117,7 +121,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       }
       // ADR 0031 §2: sub rampă, freza coboară pe sfertul intrării, deci el are cel puțin rampa minimă.
       const cuRampa = t.rampa !== null;
-      if (cuRampa && !(lungimeSfert(t.intrari.raza) >= RAMPA_MINIMA)) {
+      if (cuRampa && !(t.intrari.raza >= RAZA_INTRARE_MINIMA_RAMPA)) {
         return {
           ok: false,
           motiv: `${t.idLume}: raza intrării de ${t.intrari.raza} mm e prea mică pentru rampă: sfertul ei de cerc are ${lungimeSfert(t.intrari.raza).toFixed(3)} mm, sub ${RAMPA_MINIMA} mm`,
@@ -127,12 +131,27 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       const raza = t.intrari.raza;
       intrari = bucle.map((c, j) => {
         const dBucla = iese(c);
+        // Urechile buclei înseși (ADR 0031, precizarea din 10.10, la ADR 0030 §3 c): coloana punții fiecărei urechi, pe
+        // traseu, e [c_k − h + R; c_k + h − R] numărat de la p₀ (ADR 0028 §2: puntea ține grosimea pe W − D).
+        const gu = urechi ? geometrieUrechi(lungimeBucla(c), urechi) : null;
+        const urechiProprii = (semicerc: Contur, s: number): boolean => {
+          if (!gu || typeof gu === 'string') return true;
+          return gu.centre.every((cc) => {
+            // Cu W = D, coloana e un punct: lungimea ei, W − D, e zero.
+            const coloana = bucataBuclei(c, s + cc - gu.h + R, 2 * gu.h - scula.diametru);
+            const p = coloana.varfuri[0]?.p;
+            const d = coloana.varfuri.length > 1 ? apropiereContururi(semicerc, coloana).distanta : p ? distantaLaContur(p, semicerc) : Infinity;
+            return d >= scula.diametru;
+          });
+        };
         // ADR 0030 §3: încape dacă (a) ține discul în afara regiunii păstrate, (b) nu iese din foaie mai mult decât bucla,
-        // pe nicio latură, și (c) lasă cel puțin 1 mm de material lângă orice altă buclă cu urechi.
-        const incape = (semicerc: Contur): boolean => {
+        // pe nicio latură, și (c) lasă cel puțin 1 mm de material lângă orice altă buclă cu urechi, iar puntea fiecărei
+        // urechi a buclei înseși rămâne întreagă (traseul la cel puțin D de coloana ei).
+        const incape = (semicerc: Contur, s: number): boolean => {
           if (verificaTaietura(regiune.regiune, t.idLume, t.latura, [semicerc], R) !== null) return false;
           const d = iese(semicerc);
           if (d.stanga > dBucla.stanga || d.dreapta > dBucla.dreapta || d.jos > dBucla.jos || d.sus > dBucla.sus) return false;
+          if (!urechiProprii(semicerc, s)) return false;
           return bucleCuUrechi.every((bs, iu) => bs.every((b, jb) => (iu === it && jb === j)
             || apropiereContururi(semicerc, b).distanta >= scula.diametru + MARJA_SCHELET));
         };

@@ -466,6 +466,14 @@ test('intrările cu rampă (ADR 0031): rampa coboară pe sfertul intrării, la f
   await expect(nota).toHaveCount(0);
   await rand.locator('[data-camp="intrari"]').check();
   await expect(nota).toHaveText('Cu intrări, rampa coboară pe sfertul intrării; lungimea se folosește doar unde intrarea se omite.');
+  // Cu rampă, raza are pragul ei: sfertul de cel puțin 1 mm, adică 2/π mm (0,6 trece fără rampă, aici nu).
+  const raza = page.locator('[data-intrari="e1/e1"] [data-camp="intrari-raza"]');
+  await raza.fill('0,6');
+  await expect(page.getByTestId('export-invalid')).toHaveText(/^Intrările: cu rampă, raza trebuie să fie un număr între 0,637 și 10\.000 mm/);
+  await rand.locator('[data-camp="rampa"]').uncheck();
+  await expect(page.getByTestId('export-invalid')).toHaveCount(0);
+  await rand.locator('[data-camp="rampa"]').check();
+  await raza.fill('3');
   const d = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
   const text = readFileSync(await (await d).path(), 'ascii');

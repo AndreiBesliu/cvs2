@@ -172,9 +172,9 @@ export function DialogExport(
     latime: p !== undefined && (!p.urechi || inMargini(p.latimeUreche, MARGINI_OPERATIE.latimeUreche)),
     grosime: p !== undefined && (!p.urechi || inMargini(p.grosimeUreche, MARGINI_OPERATIE.grosimeUreche)),
     rampa: p !== undefined && (!p.rampa || inMargini(p.lungimeRampa, MARGINI_OPERATIE.lungimeRampa, MARGINI_OPERATIE.lungimeRampaMinima)),
-    // Pe linie, intrările nu se cer (bifa e oprită), deci nici nu se judecă.
-    intrari: p !== undefined && (!p.intrari || p.latura === 'pe-linie'
-      || inMargini(p.razaIntrare, MARGINI_OPERATIE.razaIntrare, MARGINI_OPERATIE.razaIntrareMinima)),
+    // Pe linie, intrările nu se cer (bifa e oprită), deci nici nu se judecă. Cu rampă, raza are pragul ei (ADR 0031 §2).
+    intrari: p !== undefined && (!p.intrari || p.latura === 'pe-linie' || inMargini(p.razaIntrare, MARGINI_OPERATIE.razaIntrare,
+      p.rampa ? MARGINI_OPERATIE.razaIntrareMinimaRampa : MARGINI_OPERATIE.razaIntrareMinima)),
   });
   const randuri = operatii.map((o) => randBun(param[o.cheie]));
   const operatiiBune = diametruBun && randuri.every((b) => b.adancime && b.pas);
@@ -224,9 +224,13 @@ export function DialogExport(
     ...(rampeBune ? [] : [t('motiv.rampa-invalida', {
       minim: fmtFreza.format(MARGINI_OPERATIE.lungimeRampaMinima), lungime: fmtFreza.format(MARGINI_OPERATIE.lungimeRampa),
     })]),
-    ...(intrariBune ? [] : [t('motiv.intrari-invalide', {
-      minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinima), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
-    })]),
+    ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
+      ? t('motiv.intrari-invalide-rampa', {
+        minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinimaRampa), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
+      })
+      : t('motiv.intrari-invalide', {
+        minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinima), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
+      })]),
   ].join(' ');
 
   return (

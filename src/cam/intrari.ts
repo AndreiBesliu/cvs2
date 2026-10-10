@@ -1,8 +1,7 @@
 import { arc, LINIE, numarSegmente, segment, type Contur, type Punct } from '../geom/contur.ts';
 import type { Miscare } from '../ir/ir.ts';
-import { RAZA_INTRARE_MINIMA } from './intrariMinima.ts';
+import { RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA } from './intrariMinima.ts';
 import { avansCoborare, EPS_RUPTURA, incepeLa, lungimeBucla, punctLa } from './parcurgere.ts';
-import { RAMPA_MINIMA } from './rampaMinima.ts';
 import type { Sens } from './profil.ts';
 
 /**
@@ -12,7 +11,7 @@ import type { Sens } from './profil.ts';
  */
 export type ParametriIntrari = { readonly raza: number };
 
-export { RAZA_INTRARE_MINIMA };
+export { RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA };
 
 /**
  * Cât material rămâne cel puțin între fanta intrării și fanta unei alte bucle cu urechi (ADR 0030 §3, condiția c): traseele
@@ -20,10 +19,7 @@ export { RAZA_INTRARE_MINIMA };
  */
 export const MARJA_SCHELET = 1;
 
-/**
- * Lungimea sfertului de cerc al intrării, de rază ρ: πρ/2. Sub rampă, freza coboară pe el, deci are cel puțin
- * `RAMPA_MINIMA` (ADR 0031 §2).
- */
+/** Lungimea sfertului de cerc al intrării, de rază ρ: πρ/2. Sub rampă, freza coboară pe el (ADR 0031 §2). */
 export const lungimeSfert = (rho: number): number => (Math.PI * rho) / 2;
 
 /** Lungimile care diferă cu cel mult atât sunt egale în ordinea candidaților (zgomotul de rotunjire nu le ordonează). */
@@ -94,20 +90,21 @@ export function candidati(c: Contur): number[] {
 
 /**
  * Razele încercate (ADR 0030 §3): cea cerută, apoi jumătatea ei, dacă e cel puțin 0,5 mm. Sub rampă (ADR 0031 §2),
- * jumătatea se încearcă doar dacă și sfertul ei de cerc are cel puțin `RAMPA_MINIMA`; raza cerută o verifică apelantul.
+ * jumătatea se încearcă doar dacă e cel puțin 2/π mm (sfertul ei de cerc are cel puțin 1 mm); raza cerută o verifică
+ * apelantul.
  */
 export function razeIncercate(raza: number, cuRampa = false): number[] {
   const jumatate = raza / 2;
-  const incearca = jumatate >= RAZA_INTRARE_MINIMA && (!cuRampa || lungimeSfert(jumatate) >= RAMPA_MINIMA);
-  return [raza, ...(incearca ? [jumatate] : [])];
+  return [raza, ...(jumatate >= (cuRampa ? RAZA_INTRARE_MINIMA_RAMPA : RAZA_INTRARE_MINIMA) ? [jumatate] : [])];
 }
 
 /**
  * Alegerea (ADR 0030 §3): pentru fiecare rază încercată, primul candidat al cărui semicerc trece de `incape` (regiunea
- * păstrată, foaia și urechile altor bucle, verificate de apelant).
+ * păstrată, foaia, urechile altor bucle și ale buclei însăși, verificate de apelant; `s` e poziția candidatului pe c,
+ * de la care se numără urechile buclei).
  */
 export function alegeIntrarea(
-  c: Contur, sens: Sens, raza: number, incape: (semicerc: Contur) => boolean, cuRampa = false,
+  c: Contur, sens: Sens, raza: number, incape: (semicerc: Contur, s: number) => boolean, cuRampa = false,
 ): IntrareAleasa | null {
   const raze = razeIncercate(raza, cuRampa);
   const poz = candidati(c);
@@ -116,7 +113,7 @@ export function alegeIntrarea(
       const x = punctLa(c, s);
       if (!x) continue;
       const g = cercul(x.p, x.t, sens, rho);
-      if (!incape(semicerc(g))) continue;
+      if (!incape(semicerc(g), s)) continue;
       const bucla = incepeLa(c, s);
       const p0 = bucla.varfuri[0]?.p ?? x.p;
       return { bucla, p0, centru: g.centru, raza: rho, a: g.a, b: g.b, trigonometric: g.trigonometric };

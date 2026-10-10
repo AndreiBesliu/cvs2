@@ -204,3 +204,65 @@ test('urechile altei bucle (condiția c): intrarea vecinei nu trece la mai puți
   const semi = { inchis: false, varfuri: [{ p: { x: a0.la.X ?? 0, y: a0.la.Y ?? 0 }, s: arc(1) }, { p: { x: iesire.la.X ?? 0, y: iesire.la.Y ?? 0 }, s: LINIE }] };
   assert.ok(apropiereContururi(semi, pa.treceri[0]!.contururi[0]!).distanta >= 7 - 1e-9);
 });
+
+test('urechile buclei înseși (ADR 0031, precizarea din 10.10, la ADR 0030 §3 c): pe gaura R8 cu 2 urechi, intrarea s-ar apropia de punte, deci se omite', () => {
+  // Bucla centrului: cercul de rază 5 în jurul lui (100, 100), P = 10π; urechile la (k + ½)·P/2 de p₀, h = 4, R = 3, deci
+  // coloana punții e [c − 1; c + 1]. Cu ρ = 3, B = p₀ + ρ(n + t) stă la 2,83 mm de coloana primei urechi (sub D = 6); cu
+  // ρ = 1,5, la 4,19 mm. Pe cerc, candidații au aceeași geometrie (urechile se rotesc cu p₀), deci intrarea se omite.
+  for (const rampa of [null, { lungime: 10 }]) {
+    const op = { latura: 'interior' as const, adancime: 12, pas: 3, urechi: { numar: 2, latime: 8, grosime: 2 }, rampa };
+    const cu0 = bloc(cuOperatie(docDin(F, cerc('g', 8)), 'g', { ...op, intrari: { raza: 3 } }), 'g/g');
+    assert.deepEqual(cu0.avertismente, ['g/g: intrarea omisă pe bucla 1 (nu încape nicăieri cu raza de 3 mm, 1.5 mm)'], `rampa ${JSON.stringify(rampa)}`);
+    const fara = bloc(cuOperatie(docDin(F, cerc('g', 8)), 'g', { ...op, intrari: null }), 'g/g');
+    assert.deepEqual(cu0.miscari, fara.miscari, 'fără intrare, programul cu urechi de azi');
+  }
+});
+
+test('urechile buclei înseși: unde intrarea rămâne, semicercul stă la cel puțin D de coloana fiecărei punți (măsurat pe hârtie, eșantionat)', () => {
+  // Gaura R20 (bucla de rază 17, P = 34π), 3 urechi de 8 mm: coloanele sunt departe de p₀, deci intrarea de 3 mm rămâne.
+  const op = { latura: 'interior' as const, adancime: 12, pas: 3, urechi: { numar: 3, latime: 8, grosime: 2 }, intrari: { raza: 3 } };
+  const { miscari, avertismente } = bloc(cuOperatie(docDin(F, cerc('g', 20)), 'g', op), 'g/g');
+  assert.deepEqual(avertismente, []);
+  const [x] = treceri(miscari);
+  assert.ok(x);
+  if (!x) return;
+  const intrare = x[2], iesire = x[x.length - 1];
+  assert.ok(intrare?.tip === 'arc' && iesire?.tip === 'arc');
+  if (intrare?.tip !== 'arc' || iesire?.tip !== 'arc') return;
+  const C = intrare.centru, rho = Math.hypot((intrare.la.X ?? 0) - C.x, (intrare.la.Y ?? 0) - C.y);
+  const ung = (p: { x: number; y: number }, o: { x: number; y: number }): number => Math.atan2(p.y - o.y, p.x - o.x);
+  const p0 = { x: intrare.la.X ?? 0, y: intrare.la.Y ?? 0 };
+  // Semicercul: de la p₀ cu ±90° în jurul lui C (trigonometric aici: urcare pe interior).
+  const semi = Array.from({ length: 721 }, (_, i) => {
+    const u = ung(p0, C) + ((i - 360) / 360) * (Math.PI / 2);
+    return { x: C.x + rho * Math.cos(u), y: C.y + rho * Math.sin(u) };
+  });
+  const O = { x: 100, y: 100 }, r = 17, P = 2 * Math.PI * r, S = P / 3, R = 3, h = 4;
+  for (let k = 0; k < 3; k++) {
+    const c = (k + 0.5) * S;
+    for (let j = 0; j <= 40; j++) {
+      const s = c - h + R + ((2 * (h - R)) * j) / 40;
+      const u = ung(p0, O) + s / r;
+      const q = { x: O.x + r * Math.cos(u), y: O.y + r * Math.sin(u) };
+      const d = Math.min(...semi.map((p) => Math.hypot(p.x - q.x, p.y - q.y)));
+      assert.ok(d >= 6 - 1e-6, `urechea ${k}, s = ${s.toFixed(3)}: ${d.toFixed(4)} mm`);
+    }
+  }
+});
+
+test('bucata buclei: de la s, de lungime L, tăiată exact (linie în linie, arc în arc pe același cerc); sub 1e-6 mm, doar punctul', async () => {
+  const { bucataBuclei } = await import('../../src/cam/parcurgere.ts');
+  const c = conturDreptunghi(0, 0, 100, 50, 10);
+  const P = lungimeBucla(c);
+  for (const [s, L] of [[30, 50], [5, 20], [P - 3, 12], [0, P], [95, 3]] as const) {
+    const b = bucataBuclei(c, s, L);
+    assert.equal(b.inchis, false);
+    const lung = lungimeBucla({ ...b, inchis: true }) - Math.hypot(b.varfuri[0]!.p.x - b.varfuri[b.varfuri.length - 1]!.p.x, b.varfuri[0]!.p.y - b.varfuri[b.varfuri.length - 1]!.p.y);
+    assert.ok(near(lung, L, 1e-9), `s = ${s}, L = ${L}: lungimea ${lung}`);
+    const a = punctLa(c, s % P), z = punctLa(c, (s + L) % P);
+    assert.ok(a && near(b.varfuri[0]!.p.x, a.p.x, 1e-6) && near(b.varfuri[0]!.p.y, a.p.y, 1e-6), `s = ${s}: începutul`);
+    const ultim = b.varfuri[b.varfuri.length - 1]!.p;
+    assert.ok(z && near(ultim.x, z.p.x, 1e-6) && near(ultim.y, z.p.y, 1e-6), `s = ${s}, L = ${L}: capătul`);
+  }
+  assert.equal(bucataBuclei(c, 30, 0).varfuri.length, 1);
+});

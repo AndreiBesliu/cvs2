@@ -1,5 +1,5 @@
 import type { IesireFoaie } from '../cam/iesire.ts';
-import { RAZA_INTRARE_MINIMA } from '../cam/intrariMinima.ts';
+import { RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA } from '../cam/intrariMinima.ts';
 import { RAMPA_MINIMA } from '../cam/rampaMinima.ts';
 import type { ColtOrigine } from '../ir/montaj.ts';
 import { PLAFON, type Document } from '../model/document.ts';
@@ -15,7 +15,7 @@ export type { IesireFoaie } from '../cam/iesire.ts';
 export const MARGINI_OPERATIE = {
   diametru: PLAFON.diametruScula, adancime: PLAFON.adancimeOperatie, urechi: PLAFON.urechi, latimeUreche: PLAFON.latura,
   grosimeUreche: PLAFON.grosime, lungimeRampa: PLAFON.latura, lungimeRampaMinima: RAMPA_MINIMA,
-  razaIntrare: PLAFON.latura, razaIntrareMinima: RAZA_INTRARE_MINIMA,
+  razaIntrare: PLAFON.latura, razaIntrareMinima: RAZA_INTRARE_MINIMA, razaIntrareMinimaRampa: RAZA_INTRARE_MINIMA_RAMPA,
 } as const;
 
 /**

@@ -39,6 +39,7 @@ export const ro = {
   'motiv.operatie-invalida': 'Valorile operațiilor trebuie să fie numere pozitive, cu punct sau cu virgulă: adâncimea și pasul până la 1000 mm, freza până la Ø100 mm.',
   'motiv.rampa-invalida': 'Rampa: lungimea trebuie să fie un număr între {minim} și {lungime} mm (mai scurtă, ar fi o plonjare).',
   'motiv.intrari-invalide': 'Intrările: raza trebuie să fie un număr între {minim} și {raza} mm (mai mică, arcul ar ieși din rezoluția postului).',
+  'motiv.intrari-invalide-rampa': 'Intrările: cu rampă, raza trebuie să fie un număr între {minim} și {raza} mm (rampa coboară pe sfertul intrării, care are cel puțin 1 mm).',
   'motiv.urechi-invalide': 'Urechile: numărul trebuie să fie un întreg de la 1 la {n}; lungimea, un număr pozitiv până la {latime} mm; grosimea, un număr pozitiv până la {grosime} mm.',
   'export.proiect-schimbat': 'Proiectul s-a schimbat în altă filă în timpul exportului: exportă din nou.',
   'export.freze-diferite': 'Operațiile de pe foaie au freze diferite ({freze}). La Exportă primesc toate freza de mai sus.',
