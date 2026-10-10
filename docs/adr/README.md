@@ -46,3 +46,4 @@ redeschide. Cel mult o pagină.
 | [0026](0026-regiunea-pastrata.md) | — | Regiunea păstrată (inelele, rolurile, includerea) și invarianta 2 | etapa 2 (felia 2.3a) |
 | [0027](0027-sensul-de-taiere.md) | — | Sensul de tăiere pe operație (documentul v4), implicit urcare; invarianta 9 | etapa 2 (felia 2.3b) |
 | [0028](0028-urechile.md) | — | Urechile: profilul Z(s) pe IR, puntea de la fața de jos (documentul v5); invarianta 10 | etapa 2 (felia 2.4) |
+| [0029](0029-rampa.md) | — | Rampa: bucla tăiată continuu, intrarea rotită și scoasă din zonele urechilor (documentul v6); invarianta 11 | etapa 2 (felia 2.5a) |

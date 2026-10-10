@@ -999,3 +999,16 @@ trecere). Acum W < D e refuzată, iar W rămâne măsurată pe traseu, ca placa 
 - oracolul nu verifică, pe corpusul aleator, că bucățile de arc rămân pe cercul lor (doar cazurile pe hârtie);
 - rampa și intrările (2.5) se compun cu urechile prin Z-ul cel mai puțin adânc; supracursa intră în interfață cu profilul
   mașinii; restul de la 2.3b (eticheta fără sens, M4, zecimalele cu punct în descrierea formelor).
+
+## 2026-10-10 — Etapa 2, felia 2.5a: rampa (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (10.10 08:30), apoi „Planul neschimbat” (la întrebarea despre uneltele de desen). **Started:**
+10:30. **Clasa:** R2 (rampa mișcă mașina). **Estimarea:** ~½ zi activă, plus oracolul independent (~0,8 M tokeni, 75–120
+min: documentul v6, invarianta 9 amendată, 10 amendată, 11 nouă, oracolul pe hârtie al rampei).
+
+**Felia 2.5 împărțită** (ca 2.3): 2.5a rampa, 2.5b intrările și ieșirile. Rampa e un modificator Z(s), ca urechile, și se
+compune cu ele; intrările se aleg apoi față de regiunea păstrată, pe bucla cu rampă.
+
+**Ce intră:** ADR 0029 (documentul v6 cu `Operatie.rampa`, migrarea v5 → v6 cu `null`); bucla cu rampă tăiată continuu
+(rampa pe Lr = min(lungime; P/2), tura plină care o re-acoperă, intrarea rotită și scoasă din zonele urechilor, fără
+ridicare între treceri); coloana Rampă în dialog.

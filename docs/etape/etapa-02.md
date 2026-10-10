@@ -22,7 +22,8 @@ Bugetul unei felii e ~½ zi activă, până la prima măsurătoare (`PLAN.md` §
 | 2.3b | Sensul de tăiere (urcare / opoziție), pe operație, cu implicitul ales de owner; schema v4 | B1 | R2 | 2.3a |
 | 2.3c | Profilul pe orice contur: și pe cele deschise, pe o parte (stânga / dreapta), la nivelul CAM, pentru importul SVG (din 09.10, lângă 2.7: n-are contururi deschise până la import) | B1 | R2 | 2.3a |
 | 2.4 | Urechile ca modificator Z(s), portate cu cele 88 de verificări pe hârtie; vârful urechii măsurat de la fundul materialului (`docs/PORTARE.md` §3.1) | B1 | R2 | 2.3a |
-| 2.5 | Intrările și ieșirile, alese față de regiunea păstrată, plus rampa (portate, `docs/PORTARE.md` §3.2) | B1 | R2 | 2.3a |
+| 2.5a | Rampa (ADR 0029, documentul v6): bucla tăiată continuu, intrarea rotită, compusă cu urechile (portată, `docs/PORTARE.md` §3.2) | B1 | R2 | 2.4 |
+| 2.5b | Intrările și ieșirile, alese față de regiunea păstrată (portate, `docs/PORTARE.md` §3.2) | B1 | R2 | 2.5a |
 | 2.6 | Dog-bone și T-bone | B2 | R1 | 2.3a |
 | 2.7 | Importul SVG: DOMParser inert, unități, viewBox, transformări, plafonul de mărime; biarcele (T6) cu bugetul de toleranță (`docs/PORTARE.md` §3.3); fațada PathKit minimă (reuniunea + R3) pentru normalizarea `nonzero` de la ușă | A4, I10b | R2 | 2.1 |
 | 2.8 | Stratul WebGL2 (foaia, traseul ca LINE_STRIP) și panoul de proprietăți | I7, I19 | R2 | 2.2 |
