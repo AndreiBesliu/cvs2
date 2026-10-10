@@ -338,3 +338,27 @@ test('Exportă fără nicio schimbare, pe un proiect redeschis cu rampă: nicio 
   assert.deepEqual(h.doc.piese[0]?.operatii[0]?.rampa, { lungime: 25, unghi: 3 });
   assert.equal(operatieDinDialog(o, { ...v, rampa: null }, scula).rampa, null);
 });
+
+test('Exportă fără nicio schimbare, pe un proiect redeschis cu intrări: nicio comandă; un câmp necunoscut din intrări rămâne (felia 2.5b)', () => {
+  const r = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
+  const ctx = context();
+  ruleaza(r, 'document.adauga-dreptunghi', ctx);
+  const d0 = ctx.h().doc;
+  const salvat = jsonCanonic({ ...d0, piese: d0.piese.map((p) => ({ ...p, operatii: p.operatii.map((o) => ({ ...o, intrari: { raza: 3, forma: 'arc' } })) })) });
+  const re = incarca(JSON.parse(salvat));
+  assert.ok(re.ok, re.ok ? '' : re.motiv);
+  if (!re.ok) return;
+  let h = istoricNou(re.doc);
+  const p = re.doc.piese[0];
+  const o = p?.operatii[0];
+  assert.ok(p && o);
+  const cu = (noi: Map<string, readonly Operatie[]>): ContextDocument => ({ ...ctx, istoric: () => h, scrie: (n) => { h = n; }, operatiiNoi: () => noi });
+  const v = { latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, urechi: null, rampa: null, intrari: { raza: 3 } };
+  const scula = { numar: o.scula.numar, diametru: o.scula.diametru };
+  const inainte = h;
+  assert.deepEqual(ruleaza(r, 'document.aplica-operatii', cu(new Map([[p.id, [operatieDinDialog(o, v, scula)]]]))), { ok: true });
+  assert.equal(h, inainte, 'nicio comandă după un Exportă fără schimbare');
+  assert.deepEqual(ruleaza(r, 'document.aplica-operatii', cu(new Map([[p.id, [operatieDinDialog(o, { ...v, intrari: { raza: 5 } }, scula)]]]))), { ok: true });
+  assert.deepEqual(h.doc.piese[0]?.operatii[0]?.intrari, { forma: 'arc', raza: 5 });
+  assert.equal(operatieDinDialog(o, { ...v, intrari: null }, scula).intrari, null);
+});
