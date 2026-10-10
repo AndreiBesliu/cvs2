@@ -282,6 +282,7 @@ test('în fila care doar citește, urechile scrise de scriitor se văd, oprite, 
   await a2.locator('[data-actiune="export.gcode"]').click();
   await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="urechi"]')).toBeChecked();
   await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="urechi"]')).toBeDisabled();
+  await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="rampa"]')).toBeDisabled();
   for (const c of ['urechi-numar', 'urechi-latime', 'urechi-grosime']) {
     await expect(a2.locator(`[data-urechi="e1/e1"] [data-camp="${c}"]`)).toBeDisabled();
   }
