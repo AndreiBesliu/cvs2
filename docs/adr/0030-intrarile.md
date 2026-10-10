@@ -47,13 +47,22 @@ frezei.
 **3. Alegerea**, pe fiecare buclă (aceeași pentru toate trecerile ei):
 - **Candidații pentru p₀**, în ordine:
   1. vârful 0;
-  2. mijloacele celor mai lungi 12 segmente ale buclei, după lungime descrescătoare (la lungimi egale, indicele mai mic
-     întâi; un mijloc identic cu un candidat de dinainte se sare).
+  2. mijloacele celor mai lungi 12 segmente ale buclei, după lungime descrescătoare. Lungimile care diferă cu cel mult
+     1e-6 mm sunt egale, iar atunci indicele mai mic e întâi. Un mijloc identic cu un candidat de dinainte se sare.
 - **Razele:** întâi ρ = `raza`, apoi `raza / 2`, dacă e cel puțin 0,5 mm.
-- **Ordinea:** pentru fiecare rază, toți candidații, în ordine. Primul al cărui semicerc ține discul frezei în afara lui
-  K ∪ S(C) cu R − ε (verificarea exactă a invariantei 2, ADR 0026 §6) e ales.
+- **Ordinea:** pentru fiecare rază, toți candidații, în ordine. Primul care **încape** e ales. Un semicerc încape dacă
+  îndeplinește toate trei condițiile (b și c, din precizarea din 10.10):
+  - **a. regiunea păstrată:** discul frezei stă în afara lui K ∪ S(C) cu R − ε (verificarea exactă a invariantei 2,
+    ADR 0026 §6);
+  - **b. foaia:** cutia discului, luată pe semicerc, nu trece de nicio latură a foii mai mult decât cutia discului pe
+    buclă. Latura e una din stânga, dreapta, jos, sus. Măsura e cea a ieșirii din foaie (`iesireDinFoaie`, pragul de
+    rezoluție 0,0005 mm). Pe o buclă care stă în foaie, intrarea stă și ea în foaie;
+  - **c. urechile altor bucle:** traseul semicercului stă la cel puțin D + 1 mm (`MARJA_SCHELET`) de traseul oricărei
+    alte bucle cu urechi de pe foaie. Asta înseamnă buclele altor tăieturi și celelalte bucle ale aceleiași tăieturi.
+    Între cele două fante rămâne măcar 1 mm de material, deci intrarea nu taie legătura unei urechi vecine.
 - **Niciunul:** bucla se taie fără intrări, ca azi (plonjare în vârful 0). Exportul întoarce un avertisment, „intrarea
-  omisă pe <idLume> (bucla j)”, pe care dialogul îl arată. G-code-ul nu se schimbă.
+  omisă pe <idLume> (bucla j)”, pe care dialogul îl arată. Avertismentul pomenește raza jumătate doar dacă a fost
+  încercată. G-code-ul nu se schimbă.
 
 **4. Pornirea buclei e p₀.**
 - Pozițiile s de pe buclă se numără de la p₀. Urechile (ADR 0028 §3) se măsoară de acolo, deci p₀ e mereu la adâncime
@@ -95,7 +104,7 @@ Dialogul oprește bifa pe `pe-linie` și cere cel puțin 0,5 mm.
 - **12 (intrările), nouă.** Rulează în poartă cu documentul.
   - Pe o operație cu intrări, fiecare buclă:
     - fie are la fiecare trecere intrarea și ieșirea de la 2, cu o rază din {`raza`, `raza / 2`}, iar p₀ e un candidat
-      de la 3;
+      de la 3, care încape după toate trei condițiile (a, b, c);
     - fie n-are niciuna, și atunci niciun candidat nu încape (cu toleranța declarată de oracol).
   - Pe o operație fără intrări, nicio buclă n-are intrări.
 
@@ -131,11 +140,27 @@ Avertismentele exportului (intrarea omisă) se arată sub rezultat.
 
 ## Limitele
 
+- **Ieșirea în miezul tocmai eliberat.** Pe o tăietură interioară prin foaie, fără urechi, ieșirea ultimei treceri intră
+  până la ρ în stratul de jos al miezului care tocmai s-a desprins. Cu ρ > D, un miez liber poate fi împins spre peretele
+  opus. Miezurile mici se țin cu urechi sau cu vacuum. O ieșire care urcă în Z vine cu 2.5c.
+- **Bucla principală a unei vecine.** La o distanță între piese sub 2D, chiar bucla vecinei (fără intrări) poate tăia o
+  ureche. Asta e dinainte de această felie (ADR 0028). Condiția c de la §3 privește doar intrările.
+
 - **Intrările cu rampă** vin în felia 2.5c. Rampa taie bucla fără ridicare între treceri, deci intrarea și ieșirea se
   leagă altfel de ea.
 - Intrarea e un arc tangent, de un sfert de cerc. Intrarea în linie, cea perpendiculară sau cea cu suprapunere pot veni
   dacă atelierele le cer.
 - Candidații sunt puncte fixe (vârful 0 și mijloacele segmentelor). Alegerea de mână vine cu panoul de proprietăți.
+
+**Precizarea din 10.10.2026** (recenzia feliei 2.5b, înainte de orice publicare). Contractul verifica intrarea doar față
+de regiunea păstrată. Recenzia a găsit două goluri:
+- **Marginea foii.** La o piesă aflată la 7 mm de marginea foii, intrarea din vârful 0 ieșea din foaie, iar exportul cerea
+  confirmarea ieșirii. Pe 1632 de așezări, 384 erau așa și toate aveau un candidat în foaie.
+- **Urechea vecinei.** Intrarea unei piese putea tăia legătura care ține urechea unei piese vecine, fără niciun cuvânt.
+
+Acum „încape” înseamnă și b (foaia) și c (urechile altor bucle). Tot de la recenzie:
+- lungimile egale pe hârtie nu se mai ordonează după zgomotul de rotunjire;
+- avertismentul nu mai pomenește o rază care n-a fost încercată.
 
 ## Ce am respins
 
