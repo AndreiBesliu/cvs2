@@ -29,7 +29,8 @@ treceri, freza se ridică.
 - Refuzul pe linie rămâne (ADR 0030 §6: pe linie nu există parte de deșeu).
 - Refuzul „intrările nu se compun încă cu rampa” dispare.
 - Documentul nu se schimbă (v7).
-- Programul unei operații care are doar una dintre ele, sau niciuna, e **același, octet cu octet**.
+- Programul unei operații care are doar una dintre ele, sau niciuna, e **același, octet cu octet**. Excepția, din
+  precizarea de la sfârșit: intrările pe o buclă cu urechi, acolo unde intrarea se apropia de puntea unei urechi.
 
 **2. Alegerea** se face ca la ADR 0030 §3: candidații, condițiile a, b, c și ordinea. O singură diferență: sub rampă se
 încearcă doar razele al căror sfert de cerc are cel puțin `RAMPA_MINIMA` = 1 mm, adică πρ/2 ≥ 1 (ρ ≥ 2/π ≈ 0,637 mm).
@@ -59,7 +60,8 @@ treceri, freza se ridică.
   fundul lui e cel mult −d_{k−1}·t, iar trecerea k scoate cel mult (d_k − d_{k−1})·t, adică cel mult pasul.
 - **Ieșirea.** Merge la −d_k peste ieșirea de la −d_{k−1}, deci scoate pasul.
 - **Pantele.** Panta în material e (d_k − d_{k−1}) / (πρ/2): la pasul 3 și ρ = 3, ~32°. Drumul frezei e mai abrupt (d_k pe
-  πρ/2), dar coboară deasupra fundului lăsat de trecerea de dinainte.
+  πρ/2). În fiecare punct, el stă sub fundul lăsat de trecerea de dinainte cu (d_k − d_{k−1})·t, deci scoate cel mult
+  pasul.
 
 **5. Invariantele:**
 - **1 și 2** rămân neschimbate. Invarianta 2 judecă deja semicercul.
@@ -92,7 +94,9 @@ treceri, freza se ridică.
 - o gaură și mai mică, unde intrarea se omite: rampa din ADR 0029, de la vârful 0, plus avertismentul;
 - cu urechi, cu pozițiile numărate de la p₀;
 - raza 0,6 cu rampă: refuzată (sfertul are 0,94 mm);
-- raza 1 cu rampă: se încearcă doar 1, fiindcă 0,5 are sfertul de 0,785 mm.
+- raza 1 cu rampă: se încearcă doar 1, fiindcă 0,5 are sfertul de 0,785 mm;
+- o gaură R8 cu 2 urechi de 8 × 2 (freza Ø6, intrarea de 3 mm): intrarea s-ar apropia de punte, deci se omite (precizarea
+  de la sfârșit).
 
 **Martorii negativi**, care trebuie să înroșească oracolul:
 - intrarea plată la −d_k, cu plonjarea în A (forma din ADR 0030 §5, sub rampă);
@@ -114,6 +118,27 @@ intrări, rampa coboară pe sfertul intrării; lungimea se folosește doar unde 
   - O ieșire care urcă de la fund încalcă invarianta 1: discul intră în material proaspăt imediat după p₀.
   - Una care urcă doar până la −d_{k−1} tot atinge stratul de jos al unui miez liber.
   - Miezurile mici se țin cu urechi sau cu vacuum (ADR 0030).
+
+**Precizarea din 10.10.2026** (recenzia feliei 2.5c, înainte de orice publicare). Precizează și ADR 0030 §3, condiția c,
+pentru intrări cu sau fără rampă.
+- **Urechile buclei înseși.** Condiția c judeca doar buclele cu urechi ale altor tăieturi și celelalte bucle ale aceleiași
+  tăieturi. Pe bucla însăși, ieșirea la −d_k (și intrarea plată, fără rampă) putea tăia puntea unei urechi.
+  - Pe o gaură R8, cu freza Ø6, 2 urechi de 8 × 2 și intrarea de 3 mm, intrările fără rampă nu mai lăsau nicio punte
+    întreagă. Cu rampă, se pierdea una din două.
+  - Poarta nu vedea: invarianta 10 judecă doar Z-ul traseului, nu discul intrării.
+- **Acum** un semicerc încape doar dacă traseul lui stă la cel puțin D de **coloana** fiecărei urechi a buclei.
+  - Coloana e bucata de traseu [c_k − h + R; c_k + h − R], cu pozițiile numărate de la candidatul p₀. ADR 0028 §2: puntea
+    ține grosimea pe W − D; cu W = D, coloana e un punct.
+  - La distanța D, discul intrării nu atinge tubul de rază R din jurul coloanei, adică puntea garantată. Pragul e D, nu
+    D + 1 mm: e condiția exactă.
+  - Un candidat care nu trece lasă locul următorului, apoi razei înjumătățite. Dacă nu încape niciunul, intrarea se omite,
+    cu avertisment. Pe un cerc, urechile se rotesc cu p₀, deci alegerea rămâne între ρ, ρ/2 și omisiune.
+- **Programele care se schimbă:** doar intrările pe o buclă cu urechi, acolo unde intrarea se apropia de o punte. Pe
+  corpusul amprentelor sunt 8 din 1296 (cercul R20 cu 8 urechi de 10 mm, unde intrarea se omite acum). Restul rămân
+  aceleași, octet cu octet.
+- **Dialogul** cere, când rampa și intrările sunt bifate, raza de cel puțin 2/π mm (≈ 0,637), același prag ca refuzul
+  exportului, cu motivul lui.
+- **Oracolul:** invarianta 12 judecă și condiția nouă, iar un câmp de înălțimi verifică puntea fiecărei urechi.
 
 ## Ce am respins
 
