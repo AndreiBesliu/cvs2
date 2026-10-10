@@ -37,7 +37,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 ## B. Prelucrare 2D / 2.5D
 | Capabilitate | Sursă | Etapă | Stare | Commit |
 |---|---|---|---|---|
-| Profil, cu urechi de susținere, intrări / ieșiri, direcție de tăiere | S+D | v1 | de făcut | — |
+| Profil, cu urechi de susținere, intrări / ieșiri, direcție de tăiere | S+D | v1 | în lucru: operația în document (2.2), direcția (2.3b), urechile (2.4); rămân intrările / ieșirile (2.5) | 18cf16d, c73a217 |
 | Fileturi la colțuri interioare: dog-bone și T-bone | S+D | v1 | de făcut | — |
 | Buzunar (curățare de suprafață), cu mai multe freze | S+D | v1 | de făcut | — |
 | V-carve (inclusiv cu freză dreaptă pentru fund plat) | S+D | v1 | de făcut | — |

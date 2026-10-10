@@ -958,3 +958,44 @@ precizarea de după recenzie), aplicația, recenzia (6 constatări, toate repara
 1861 de teste unitare și 39 e2e, verzi. Otrăvurile: 20 din 37 rulate, 19 prinse; cea scăpată (avansul pe flanc socotit cu
 lungimea în plan) e acum prinsă de testul strâns. Rămân: otrăvurile 21–37 și reluarea celei scăpate, documentele feliei,
 push pe `main`, publicarea pe test. Ramura `wip/2.4-urechi` ține tot, împinsă.
+
+**Reluat:** 10.10 08:30, la „continua”: otrăvurile rămase, documentele, push, publicarea.
+
+**Completed:** 10.10 09:20. **Treceri:** 5.
+
+**Făcut:**
+- ADR 0028 + documentul v5: `Operatie.urechi` (`null` sau `{ numar, latime, grosime }`), migrarea v4 → v5 cu `null`, ciocnirea
+  refuzată. Programul unui document fără urechi e același, octet cu octet (placa 1 neschimbată).
+- `src/cam/urechi.ts`: profilul ediției întâi (palierul W, flancul min(W/2; 0,45·(S − W)), centrele la (k + ½)·S), cu refuz
+  la W > 0,9·S; segmentele tăiate exact în rupturi, flancul pe arc ca elice, bucățile sub 1e-6 mm ca linii; flancul care
+  coboară, cu viteza pe verticală plafonată la avansul de plonjare.
+- Lucrarea: vârful urechii = grosimea foii − grosimea punții; refuzurile (puntea cât foaia, tăietura care nu ajunge la
+  vârf, urechea mai scurtă decât freza); supracursa ca parametru al exportului (0–2 mm, implicit 0, fără interfață).
+- Dialogul: coloana Urechi, cu câmpurile pe rândul de sub operație; motivul spune ce e greșit; câmpul greșit e roșu; cutia
+  încape pe telefon. Exportă îmbină urechile (câmpurile necunoscute rămân), iar comparația operațiilor e canonică.
+
+**Greșeala contractului, prinsă înainte de publicare:** ADR-ul spunea „puntea are grosimea g”, adevărat doar pe peretele
+piesei. Pe axa tăieturii, un punct e tăiat de toate pozițiile frezei aflate la cel mult R de el, deci puntea ține g doar
+pe W − D; cu W ≤ D/2 nu există deloc. Recenzia a măsurat-o pe un câmp de înălțimi (Ø6 cu W = 3: piesa liberă pe ultima
+trecere). Acum W < D e refuzată, iar W rămâne măsurată pe traseu, ca placa 2 să se măsoare pe perete.
+
+**Proba:**
+- recenzia adversarială: 2 lentile + 5 verificatori, 1,16 M tokeni, 25 min (estimat ~1,2 M, 60–90 min); 6 constatări, toate
+  confirmate și reparate (1 mare, 4 medii, 1 mică);
+- oracolul independent: documentul v5, invarianta 9 amendată, invarianta 10, oracolul pe hârtie; 36 de sabotaje prinse,
+  5 martori negativi; 0,67 M tokeni, 74 min (estimat ~0,8 M, 90–120 min). Nota de proces: sesiunea a citit o dată, cu
+  `git show`, diff-ul lui `src/cam/urechi.ts`, după ce oracolul era scris și rulat; nimic n-a fost schimbat după;
+- poarta: invarianta 1 măsoară scoaterea în R − 0,004 (fals pozitiv la marginea benzii, cu I/J rotunjite diferit pe
+  treceri), cu regresia ei (o depășire reală de 2,61 mm e prinsă);
+- 37 din 37 otrăvuri prinse, în worktree în afara Drive-ului, în două tranșe (pauza a tăiat rularea după 20).
+  A 11-a (avansul pe flanc socotit cu lungimea în plan) scăpase întâi: testul cerea doar „cel mult avansul de plonjare”;
+  acum cere plafonul exact, iar la reluare e prinsă;
+- 1861 de teste unitare, 39 e2e; e2e-ul exportului cu urechi trece prin poartă (1, 2, 9, 10 și viteza pe verticală).
+
+**Rămâne deschis:**
+- palierul măsurat pe traseul centrului: pe un arc exterior, ciotul de pe perete e mai scurt (R10 cu Ø6: 8 → 6,15 mm);
+  pozițiile sunt automate; așezarea de mână vine cu panoul de proprietăți;
+- o punte aproape cât foaia (g în 0,0005 de grosime) dă palierul la `Z0.000`: poarta îl pică zgomotos; de refuzat în contract;
+- oracolul nu verifică, pe corpusul aleator, că bucățile de arc rămân pe cercul lor (doar cazurile pe hârtie);
+- rampa și intrările (2.5) se compun cu urechile prin Z-ul cel mai puțin adânc; supracursa intră în interfață cu profilul
+  mașinii; restul de la 2.3b (eticheta fără sens, M4, zecimalele cu punct în descrierea formelor).
