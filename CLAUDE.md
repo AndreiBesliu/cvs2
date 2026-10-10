@@ -36,8 +36,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 - **Etapa 2 e în lucru din 08.10** (fișa: `docs/etape/etapa-02.md`), pornită înaintea plăcii 1 la cuvântul owner-ului.
   Gata: 2.1 (gărzile offsetului), 2.2 (operațiile în document: schema v3, ADR 0025) și 2.3a (regiunea păstrată și
   invarianta 2, ADR 0026), 2.3b (sensul de tăiere, ADR 0027, documentul v4), 2.4 (urechile, ADR 0028, documentul v5)
-  și 2.5a (rampa, ADR 0029, documentul v6). 2.3c (contururile deschise) s-a mutat lângă 2.7. Urmează 2.5b (intrările
-  și ieșirile).
+  2.5a (rampa, ADR 0029, documentul v6) și 2.5b (intrările și ieșirile, ADR 0030, documentul v7). 2.3c (contururile
+  deschise) s-a mutat lângă 2.7. Urmează 2.5c (intrările cu rampa) sau 2.6 (dog-bone).
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa

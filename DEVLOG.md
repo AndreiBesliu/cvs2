@@ -1064,3 +1064,40 @@ rampa.
 deșeului, ales din candidați (vârful 0, mijloacele celor mai lungi 12 segmente; raza, apoi jumătate) și verificat exact
 pe regiunea păstrată; bucla pornită din p₀ (urechile se mută cu ea); plonjarea în deșeu; avertismentul la export când
 intrarea nu încape; coloana Intrări în dialog.
+
+**Completed:** 10.10 19:10. **Treceri:** 5.
+
+**Făcut:**
+- ADR 0030 + documentul v7: `Operatie.intrari` (`null` sau `{ raza }`), migrarea v6 → v7 cu `null`, ciocnirea refuzată.
+  Programul unui document fără intrări e același, octet cu octet (396 de programe identice).
+- `src/cam/intrari.ts`: partea deșeului din regula sensului (opusă piesei), cercul C = p₀ + ρn, A = p₀ + ρ(n − t),
+  B = p₀ + ρ(n + t); candidații și razele; `src/cam/parcurgere.ts`: punctul și tangenta la s, bucla pornită din s (linia
+  în linii, arcul în arce pe același cerc).
+- Lucrarea: alegerea pe fiecare buclă cu trei condiții (regiunea păstrată, foaia, urechile altor bucle); refuzurile (pe
+  linie, cu rampă, raza sub 0,5 mm); avertismentul intrării omise, purtat până în dialog.
+- Dialogul: coloana Intrări, raza 3 mm la bifă, oprită pe linie; avertismentele sub rezultat; câmpurile de număr din
+  tabel mai înguste (cu opt coloane, coloana Intrări ieșea tăiată pe desktop).
+
+**Golurile contractului, prinse înainte de publicare:** ADR-ul judeca intrarea doar față de regiunea păstrată.
+- La o piesă aproape de marginea foii, intrarea din vârful 0 ieșea din foaie, iar exportul cerea confirmarea, deși un
+  alt candidat stătea în foaie.
+- Intrarea unei piese putea tăia legătura urechii unei vecine, fără niciun cuvânt.
+
+Acum un semicerc încape doar dacă nu iese din foaie mai mult decât bucla și stă la cel puțin D + 1 mm de orice altă buclă
+cu urechi.
+
+**Proba:**
+- recenzia: o lentilă CAM (dialogul repetă tiparul recenzat; l-am verificat eu în browser, ro și en) + 3 verificatori,
+  0,74 M tokeni, 57 min; 2 constatări medii, reale, reparate; 1 infirmată (ieșirea în miezul eliberat: e deșeu, iar fără
+  ieșire freza ar urca pe peretele piesei), trecută la limite; 2 mici triate de mână și reparate;
+- oracolul independent (0,69 M, 96 min): documentul v7, invariantele 9, 10, 11 amendate, 12 nouă, oracolul pe hârtie;
+  36 de sabotaje prinse, 18 martori negativi; a închis o condiție pe schemă care sărea pe tăcute testele rampei. Nota
+  de proces: a văzut prin grep o linie din `src` (`VERSIUNE_SCHEMA = 7`) și una din testul aplicației; valorile pe
+  hârtie le-a calculat singură;
+- 38 din 39 otrăvuri prinse; cea scăpată (dialogul care nu citește intrările din document) e acum prinsă: e2e-ul intrărilor redeschide dialogul, verificat cu otrava aplicată.
+
+**Rămâne deschis:**
+- intrările cu rampă (2.5c);
+- textele CAM (refuzuri, avertismente) sunt doar în română, și în interfața engleză;
+- intrarea e doar un sfert de cerc; alegerea de mână vine cu panoul de proprietăți;
+- cu ρ > D, ieșirea ultimei treceri poate împinge un miez liber (limită scrisă în ADR).
