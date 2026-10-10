@@ -40,8 +40,15 @@
  * Felia 2.4 (ADR 0028): tăieturile poartă și urechile fiecărei operații (`TaieturaDoc.urechi`, tot în paralel cu
  * adâncimile), iar regiunea ține grosimea foii 0 (`grosimeFoaie`): invarianta 10 (`urechi.ts`) socotește vârful urechii
  * de la fața de jos a foii (varf = grosimeFoaie − g). Un document mai vechi se aduce întâi la v5 (`urechi: null`).
+ *
+ * Felia 2.5a (ADR 0029): tăieturile poartă și rampa fiecărei operații (`TaieturaDoc.rampe`, tot în paralel cu
+ * adâncimile), citită de invariantele 10 (amendată) și 11 (`rampa.ts`). Un document mai vechi se aduce întâi la v6
+ * (`rampa: null`).
  */
-import { ridicaO, taieturiV5O, type DocV3O, type DocV4O, type DocV5O, type LaturaO, type MatriceO, type SensO, type UrechiO } from './document.ts';
+import {
+  ridicaO, taieturiV6O, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type LaturaO, type MatriceO, type RampaO, type SensO,
+  type UrechiO,
+} from './document.ts';
 
 /** §6: pe traseul exact, distanța la marginea lui K ∪ S(C) e cel puțin R − ε. */
 export const EPS_REGIUNE = 0.005;
@@ -477,6 +484,8 @@ export type TaieturaDoc = {
   readonly sensuri: ReadonlyMap<LaturaO, readonly SensO[]>;
   /** ADR 0028: urechile fiecărei operații (`null` = fără), în aceeași ordine; lipsă (regiune construită de mână) = fără. */
   readonly urechi?: ReadonlyMap<LaturaO, ReadonlyArray<UrechiO | null>>;
+  /** ADR 0029: rampa fiecărei operații (`null` = fără), în aceeași ordine; lipsă (regiune construită de mână) = fără. */
+  readonly rampe?: ReadonlyMap<LaturaO, ReadonlyArray<RampaO | null>>;
 };
 
 export type Regiune = {
@@ -522,25 +531,28 @@ export function regiuneDinInele(
 }
 
 /**
- * §1: inelele foii 0, din tăieturile documentului (oracolul documentului dă matricea în lume și ordinea). Un v3 sau un
- * v4 se aduce întâi la v5 (sensul `urcare`, ADR 0027 §5; urechile `null`, ADR 0028 §1).
+ * §1: inelele foii 0, din tăieturile documentului (oracolul documentului dă matricea în lume și ordinea). Un v3, v4
+ * sau v5 se aduce întâi la v6 (sensul `urcare`, ADR 0027 §5; urechile `null`, ADR 0028 §1; rampa `null`, ADR 0029 §1).
  */
-export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O): Regiune {
+export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O): Regiune {
   type Acum = {
     forma: FormaO; matrice: MatriceO; laturi: Map<LaturaO, number[]>; sensuri: Map<LaturaO, SensO[]>;
-    urechi: Map<LaturaO, Array<UrechiO | null>>;
+    urechi: Map<LaturaO, Array<UrechiO | null>>; rampe: Map<LaturaO, Array<RampaO | null>>;
   };
   const pe = new Map<string, Acum>();
-  const v5 = doc.schema === 5 ? doc : ridicaO(doc);
-  for (const t of taieturiV5O(v5, 0)) {
+  const v5 = doc.schema === 6 ? doc : ridicaO(doc);
+  for (const t of taieturiV6O(v5, 0)) {
     let x = pe.get(t.idLume);
     if (!x) {
-      x = { forma: t.forma as FormaO, matrice: t.matrice, laturi: new Map(), sensuri: new Map(), urechi: new Map() };
+      x = { forma: t.forma as FormaO, matrice: t.matrice, laturi: new Map(), sensuri: new Map(), urechi: new Map(), rampe: new Map() };
       pe.set(t.idLume, x);
     }
     const u = x.urechi.get(t.latura) ?? [];
     u.push(t.urechi);
     x.urechi.set(t.latura, u);
+    const r = x.rampe.get(t.latura) ?? [];
+    r.push(t.rampa);
+    x.rampe.set(t.latura, r);
     const l = x.laturi.get(t.latura) ?? [];
     l.push(t.adancime);
     x.laturi.set(t.latura, l);
@@ -552,7 +564,7 @@ export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O): Regiune {
   const probleme: ProblemaRegiune[] = [];
   const taieturi = new Map<string, TaieturaDoc>();
   for (const [idLume, x] of pe) {
-    taieturi.set(idLume, { tip: x.forma.tip, laturi: x.laturi, sensuri: x.sensuri, urechi: x.urechi });
+    taieturi.set(idLume, { tip: x.forma.tip, laturi: x.laturi, sensuri: x.sensuri, urechi: x.urechi, rampe: x.rampe });
     const ext = x.laturi.has('exterior'), int = x.laturi.has('interior');
     if (ext && int) {
       probleme.push({ tip: 'ambele-laturi', elemente: [idLume], mesaj: `${idLume} are operații și pe exterior, și pe interior` });

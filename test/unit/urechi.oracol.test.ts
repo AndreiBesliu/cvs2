@@ -15,7 +15,9 @@
  * - precizarea din 09.10 (ADR 0028): W < D (W = D − 0,001 prins, W = D trece), avansul pe flancul care coboară (martorul
  *   cu avansul de tăiere e prins), arcul cu startul în capăt (cercul întreg al GRBL) prins de invariantele 6 și 2; plus
  *   falsul invariantei 1 de la marginea benzii (rotunjirea I / J între treceri), reparat în poartă și ținut aici;
- * - lipirea cu aplicația („lipire:”, doar pe schema 5): cele 9 cazuri prin `calculeazaExport` (supracursa 0,3 pentru
+ * - ADR 0029 (felia 2.5a): variantele „coborâre între treceri” ale scriitorului nu mai au forma de la §4 (plonjare,
+ *   ridicare între treceri): invarianta 11 le prinde, iar restul porții rămâne neschimbat; lipirea rulează și pe 6;
+ * - lipirea cu aplicația („lipire:”, pe schema 5 sau 6): cele 9 cazuri prin `calculeazaExport` (supracursa 0,3 pentru
  *   ultimul; fără ea, refuz), refuzurile cu motiv (W > 0,9·S, g ≥ grosimea foii, adâncimea ≤ vârf) cu controalele lor
  *   chiar lângă limită, corpusul 2.3a / 2.3b cu urechi la întâmplare (invariantele 1, 2, 9, 10 pe fiecare program),
  *   octeții identici între un document v4 și același document v5 cu `urechi: null` (și amprentele plăcii 1).
@@ -44,7 +46,7 @@ import { programulAplicatiei, schemaAplicatiei } from './ajutor-lipire.ts';
 /** Avansul de plonjare al regimului implicit (plonjarea e `G1 Z… F300.0`), pentru verificarea vitezei pe verticală. */
 const AVANS_PLONJARE = 300;
 const SCHEMA = await schemaAplicatiei();
-const LIPIRE = SCHEMA === 5 ? false : `aplicația e pe schema ${SCHEMA}; lipirea urechilor cere documentul v5 (ADR 0028)`;
+const LIPIRE = SCHEMA >= 5 ? false : `aplicația e pe schema ${SCHEMA}; lipirea urechilor cere documentul v5 (ADR 0028)`;
 
 const egal = (a: number, b: number, mesaj = '', tol = 1e-9): void => assert.ok(Math.abs(a - b) <= tol, `${mesaj}: ${a} ≠ ${b}`);
 const mesaje = (v: readonly Incalcare[]): string => v.map((i) => `[${i.invarianta}] ${i.linia}: ${i.mesaj}`).join('\n');
@@ -176,7 +178,11 @@ test('(o) scriitorul cum cere contractul: cele 9 cazuri pe 8 montaje (ridicare),
     for (const { m, intre, pornire } of variante) {
       const text = programCaz(c, m, { intre, pornire });
       const unde = `${c.nume} (${descrieM(m)}, ${intre}, pornirea ${pornire})`;
-      const v = poarta(text, ctxCaz(c, m));
+      const toate = poarta(text, ctxCaz(c, m));
+      // ADR 0029 §4–§5: fără rampă, coborârea pe verticală între treceri (fără ridicare) nu mai e forma cerută: invarianta
+      // 11 o prinde, iar restul porții rămâne cum era.
+      const v = intre === 'coboara' ? toate.filter((i) => i.invarianta !== 11) : toate;
+      if (intre === 'coboara' && !toate.some((i) => i.invarianta === 11 && /fără ridicare între treceri/.test(i.mesaj))) rele.push(`${unde}: invarianta 11 nu vede coborârea fără ridicare`);
       if (v.length) rele.push(`${unde}:\n${mesaje(v.slice(0, 4))}`);
       const h = hartie(c, text, m);
       if (h.rele.length) rele.push(`${unde}: ${h.rele.slice(0, 4).join('; ')}`);
@@ -455,8 +461,8 @@ test('(o) amendamentul 9 (ADR 0028 §5): fiecare trecere cu urechi e o buclă î
 
 // ── Lipirea cu aplicația ────────────────────────────────────────────────────────────────────────────────────────────
 
-test('lipire: aplicația e pe schema 5 (ușa primește un v5)', { skip: LIPIRE }, () => {
-  assert.equal(SCHEMA, 5);
+test('lipire: aplicația e pe schema 5 sau 6 (ușa primește un v5)', { skip: LIPIRE }, () => {
+  assert.ok(SCHEMA === 5 || SCHEMA === 6, `schema ${SCHEMA}`);
 });
 
 for (const c of CAZURI_URECHI) {
@@ -539,7 +545,7 @@ const programeCorpus = (): Promise<LipitU[]> => (corpusLipit ??= (async () => {
   return rez;
 })());
 
-test('lipire: corpusul 2.3a / 2.3b cu urechi la întâmplare (foi de 3–18 mm, toate colțurile, ambele Z0, toate laturile, ambele sensuri): orice program al aplicației trece invariantele 1, 2, 9 și 10', { skip: LIPIRE }, async () => {
+test('lipire: corpusul 2.3a / 2.3b cu urechi la întâmplare (foi de 3–18 mm, toate colțurile, ambele Z0, toate laturile, ambele sensuri): orice program al aplicației trece invariantele 1, 2, 9, 10 și 11', { skip: LIPIRE }, async () => {
   const rez = await programeCorpus();
   const rele: string[] = [];
   let programe = 0, bucleUrechi = 0;
@@ -553,7 +559,7 @@ test('lipire: corpusul 2.3a / 2.3b cu urechi la întâmplare (foi de 3–18 mm, 
       foaie: { latime: stoc.latime, inaltime: stoc.inaltime, grosime: stoc.grosime }, origine: x.caz.origine, z0: x.caz.z0,
       diametruScula: x.caz.diametru, pas, supracursa: 0, asteptareAx: 3, regiune: regiuneDinDocument(x.caz.doc), avansPlonjare: AVANS_PLONJARE,
     };
-    const v = poarta(x.text, ctx).filter((i) => [1, 2, 9, 10].includes(i.invarianta));
+    const v = poarta(x.text, ctx).filter((i) => [1, 2, 9, 10, 11].includes(i.invarianta));
     if (v.length) rele.push(`[${x.caz.familie}] ${x.caz.nume} (${x.caz.origine}, ${x.caz.z0}, T ${stoc.grosime}): ${mesaje(v.slice(0, 3))}`);
     // Buclele cu urechi judecate pe profil (Z variabil sub o etichetă cu urechi).
     const reg = ctx.regiune!;

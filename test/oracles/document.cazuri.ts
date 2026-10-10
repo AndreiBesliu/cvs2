@@ -1,5 +1,5 @@
 /**
- * CAZURILE oracolului documentului (ADR 0024 + ADR 0025 + ADR 0027 + ADR 0028, documentul v5), cu ZERO importuri din `src/`:
+ * CAZURILE oracolului documentului (ADR 0024 + 0025 + 0027 + 0028 + 0029, documentul v6), cu ZERO importuri din `src/`:
  * - `CAZURI_HARTIE`: documente v2 cu punctele în lume calculate de mână, pe hârtie, scrise ca numere (nu calculate
  *   aici). Coordonatele sunt întregi sau puteri ale lui 2, ca egalitatea să fie exactă (`===`). La ușă se migrează la
  *   v4, iar geometria nu se schimbă;
@@ -20,10 +20,14 @@
  *   doar `[urechi]`) și `VALIDE_DIFICILE_V5`. Capcanele `urechi` scrise pe operații înainte de ADR 0028 (MV3-01, W10 și
  *   corpusul v3 / v4) sunt acum ciocniri: `areUrechiPeOperatii` le găsește, `faraUrechiPeOperatii` le mută în
  *   `urechiVechi`, ca restul documentului să treacă mai departe.
+ * - v6 (ADR 0029, felia 2.5a, tot la sfârșit): `MIGRARI_V5_HARTIE` (v5 → v6 pe hârtie), `CORPUS_V6` (generat),
+ *   `REFUZATE_V5` (o operație v5, v4 sau v3 care are deja `rampa`: ciocnire), `OTRAVURI_V6` (cele v5 aduse la v6, plus
+ *   `OTRAVURI_RAMPA`, doar `[rampa]`) și `VALIDE_DIFICILE_V6`. Niciun corpus mai vechi nu are `rampa` pe operații.
  */
 import type {
-  CategorieO, DocV1O, DocV2O, DocV3O, DocV4O, DocV5O, ElementO, ElementV1O, FoaieO, GrupO, InstantaO, LaturaO, Liber, MatriceO,
-  NodO, OperatieO, OperatieV4O, OperatieV5O, PiesaO, PiesaV3O, PiesaV4O, PiesaV5O, PunctO, SculaO, SensO, TaieturaV4O, UrechiO,
+  CategorieO, DocV1O, DocV2O, DocV3O, DocV4O, DocV5O, DocV6O, ElementO, ElementV1O, FoaieO, GrupO, InstantaO, LaturaO, Liber,
+  MatriceO, NodO, OperatieO, OperatieV4O, OperatieV5O, OperatieV6O, PiesaO, PiesaV3O, PiesaV4O, PiesaV5O, PiesaV6O, PunctO,
+  RampaO, SculaO, SensO, TaieturaV4O, UrechiO,
 } from './document.ts';
 
 type MatriceScrisa = { -readonly [K in keyof MatriceO]: number };
@@ -2945,5 +2949,342 @@ export const VALIDE_DIFICILE_V5: readonly CazValidV5[] = [
       }],
       foi: [{ ...foaie('f1', [{ ...inst('i1', 'p1', 0, 0, 0), urechi: 1 }]), urechi: null }],
     } as DocV5O,
+  },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// v6 (ADR 0029): rampa operației.
+
+/**
+ * Forma v6 a unui document v5 (sau a unei otrăvi v5): schema 5 devine 6, iar o schemă 6 (otrava „schema mai nouă” a
+ * lui v5) devine 7, ca să rămână otravă; „5” devine „6”. Fiecare operație-obiect care n-are `rampa` primește
+ * `rampa(k)` (implicit `null`; k = a câta, în tot documentul). Pe loc; întoarce documentul.
+ */
+const laV6 = (d: unknown, rampa: (k: number) => RampaO | null = () => null): unknown => {
+  if (!esteObiectL(d)) return d;
+  if (d['schema'] === 5) d['schema'] = 6;
+  else if (d['schema'] === 6) d['schema'] = 7;
+  else if (d['schema'] === '5') d['schema'] = '6';
+  const piese = d['piese'];
+  let k = 0;
+  if (Array.isArray(piese)) {
+    for (const p of piese) {
+      if (!esteObiectL(p) || !Array.isArray(p['operatii'])) continue;
+      for (const o of p['operatii'] as unknown[]) if (esteObiectL(o) && !Object.hasOwn(o, 'rampa')) o['rampa'] = rampa(k++);
+    }
+  }
+  return d;
+};
+
+const rp = (lungime: number): RampaO => ({ lungime });
+/** Rampele pe rând: fără, 10 (dialogul), 5e−324 (cea mai mică), 10 000 (`PLAFON.latura`). */
+const rampePeRand = (k: number): RampaO | null => [null, rp(10), rp(5e-324), rp(10_000)][k % 4]!;
+
+/** Operațiile unui document au un câmp propriu `rampa` (ciocniri la v5 → v6). */
+export function areRampaPeOperatii(d: unknown): boolean {
+  if (!esteObiectL(d) || !Array.isArray(d['piese'])) return false;
+  return (d['piese'] as unknown[]).some((p) => esteObiectL(p) && Array.isArray(p['operatii'])
+    && (p['operatii'] as unknown[]).some((o) => esteObiectL(o) && Object.hasOwn(o, 'rampa')));
+}
+
+/**
+ * Migrări v5 → v6 pe hârtie (ADR 0029 §1): `schema: 6` și `rampa: null` pe fiecare operație, și pe `pe-linie`, și pe
+ * cele cu urechi; tot restul rămâne, cu câmpurile necunoscute. Un câmp `rampa` în altă parte decât pe operație (pe
+ * sculă, în urechi, pe nod, pe formă, pe piesă, pe instanță, pe foaie, sus) nu e o ciocnire.
+ */
+export const MIGRARI_V5_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v5: DocV5O; readonly v6: Liber }> = [
+  {
+    nume: 'MV5-01 trei operații (exterior cu urechi, interior, pe-linie), câmpuri necunoscute; „rampa” pe sculă, în urechi, pe nod, formă, piesă, instanță, foaie și sus',
+    v5: {
+      schema: 5, rev: 9, rampa: 'sus',
+      piese: [{
+        id: 'p1', rampa: 4,
+        radacina: {
+          tip: 'grup', id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, rampa: { lungime: 10 },
+          copii: [
+            { tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+            { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 5, rampa: null }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 20, f: 10 } },
+          ],
+        },
+        operatii: [
+          { id: 'o1', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 6, rampa: [1] }, latura: 'exterior', adancime: 12, pas: 4, sens: 'opozitie', urechi: { numar: 4, latime: 8, grosime: 2, rampa: 'u' }, intrari: 2 },
+          { id: 'o2', tip: 'profil', noduri: ['c'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4, sens: 'urcare', urechi: null },
+          { id: 'o3', tip: 'profil', noduri: ['c', 'r'], scula: { numar: 2, nume: 'V 90', diametru: 3.175 }, latura: 'pe-linie', adancime: 1, pas: 1, sens: 'opozitie', urechi: null },
+        ],
+      }],
+      foi: [{
+        id: 'f1', rampa: false, stoc: { latime: 600, inaltime: 400, grosime: 18 },
+        instante: [{ id: 'i1', piesa: 'p1', x: 10, y: 10, rotire: 0, rampa: 'i' }],
+      }],
+    },
+    v6: {
+      schema: 6, rev: 9, rampa: 'sus',
+      piese: [{
+        id: 'p1', rampa: 4,
+        radacina: {
+          tip: 'grup', id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, rampa: { lungime: 10 },
+          copii: [
+            { tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+            { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 5, rampa: null }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 20, f: 10 } },
+          ],
+        },
+        operatii: [
+          { id: 'o1', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 6, rampa: [1] }, latura: 'exterior', adancime: 12, pas: 4, sens: 'opozitie', urechi: { numar: 4, latime: 8, grosime: 2, rampa: 'u' }, intrari: 2, rampa: null },
+          { id: 'o2', tip: 'profil', noduri: ['c'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4, sens: 'urcare', urechi: null, rampa: null },
+          { id: 'o3', tip: 'profil', noduri: ['c', 'r'], scula: { numar: 2, nume: 'V 90', diametru: 3.175 }, latura: 'pe-linie', adancime: 1, pas: 1, sens: 'opozitie', urechi: null, rampa: null },
+        ],
+      }],
+      foi: [{
+        id: 'f1', rampa: false, stoc: { latime: 600, inaltime: 400, grosime: 18 },
+        instante: [{ id: 'i1', piesa: 'p1', x: 10, y: 10, rotire: 0, rampa: 'i' }],
+      }],
+    },
+  },
+  {
+    nume: 'MV5-02 două piese, una fără operații, fără instanțe; ordinea operațiilor rămâne',
+    v5: {
+      schema: 5, rev: 0,
+      piese: [
+        { id: 'a', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [] },
+        {
+          id: 'b', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+          operatii: [
+            { id: 'z', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 2, pas: 1, sens: 'opozitie', urechi: { numar: 1, latime: 6, grosime: 1 } },
+            { id: 'a', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 4, pas: 1, sens: 'urcare', urechi: null },
+          ],
+        },
+      ],
+      foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 10 }, instante: [] }],
+    },
+    v6: {
+      schema: 6, rev: 0,
+      piese: [
+        { id: 'a', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [] },
+        {
+          id: 'b', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+          operatii: [
+            { id: 'z', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 2, pas: 1, sens: 'opozitie', urechi: { numar: 1, latime: 6, grosime: 1 }, rampa: null },
+            { id: 'a', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 4, pas: 1, sens: 'urcare', urechi: null, rampa: null },
+          ],
+        },
+      ],
+      foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 10 }, instante: [] }],
+    },
+  },
+  {
+    nume: 'MV5-03 chei capcană pe operație, pe sculă și în urechi (din JSON.parse)',
+    v5: JSON.parse(
+      '{"schema":5,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6,"__proto__":"s"},'
+      + '"latura":"interior","adancime":8,"pas":4,"__proto__":"x","constructor":"Ion","sens":"urcare",'
+      + '"urechi":{"numar":3,"latime":6,"grosime":2,"__proto__":"u"}}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as DocV5O,
+    v6: JSON.parse(
+      '{"schema":6,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6,"__proto__":"s"},'
+      + '"latura":"interior","adancime":8,"pas":4,"__proto__":"x","constructor":"Ion","sens":"urcare",'
+      + '"urechi":{"numar":3,"latime":6,"grosime":2,"__proto__":"u"},"rampa":null}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as Liber,
+  },
+];
+
+/**
+ * Un document v6 din sămânță, valid: `genereazaV5(samanta)` cu o rampă aleasă la întâmplare pe fiecare operație (fără,
+ * 10, margini, sau o lungime din tot intervalul) și, uneori, capcane: un câmp `rampa` necunoscut pe sculă, în urechi, pe
+ * piesă sau sus, un câmp necunoscut în rampă.
+ */
+export function genereazaV6(samanta: number, mare = false): DocV6O {
+  const v5 = genereazaV5(samanta, mare);
+  const r = aleator(samanta + 0x0a29);
+  const valoare = (): RampaO | null => {
+    const x = r();
+    if (x < 0.35) return null;
+    if (x < 0.5) return rp(10);
+    if (x < 0.55) return rp(5e-324);
+    if (x < 0.6) return rp(10_000);
+    const o: RampaO = { lungime: (1 - r()) * 200 };
+    return r() < 0.1 ? { ...o, unghi: 3 } : o;
+  };
+  const piese: PiesaV6O[] = v5.piese.map((p) => ({
+    ...(r() < 0.1 ? { rampa: 3 } : {}),
+    ...p,
+    operatii: p.operatii.map((o): OperatieV6O => ({
+      ...o,
+      ...(r() < 0.1 ? { scula: { ...o.scula, rampa: 'scula' } } : {}),
+      ...(o.urechi !== null && r() < 0.2 ? { urechi: { ...o.urechi, rampa: 1 } } : {}),
+      rampa: valoare(),
+    })),
+  }));
+  return { ...(r() < 0.3 ? { rampa: [] } : {}), ...v5, schema: 6, piese };
+}
+
+export type CazV6 = { readonly nume: string; readonly doc: DocV6O };
+
+export const CORPUS_V6: readonly CazV6[] = [
+  ...Array.from({ length: 16 }, (_, k) => ({ nume: `GV6-${String(k + 1).padStart(2, '0')} generat, sămânța ${5000 + k}`, doc: genereazaV6(5000 + k) })),
+  { nume: 'GV6-17 generat mare: 40 de piese, 3 foi, sămânța 98', doc: genereazaV6(98, true) },
+];
+
+// v5 refuzate la migrare (ADR 0029 §1): o operație v5 care are deja un câmp propriu „rampa”, oricare i-ar fi
+// valoarea. Documentul v5 e valid (câmpul e necunoscut acolo); singura categorie raportată de `verificaV5V6` e
+// `[ciocnire]`. La fel un v4 sau un v3 cu „rampa” pe o operație: lanțul îl păstrează până la v5 și se ciocnește la v6.
+
+const bazaV5 = (): DocV5O => laV5(laV4(bazaV3()), (k) => (k === 0 ? ur(4, 8, 2) : null)) as DocV5O;
+const opV5 = (d: DocV5O, piesa: number, k: number): Liber => ((d.piese[piesa] as PiesaV5O).operatii[k] as OperatieV5O);
+const refuzatV5 = (nume: string, strica: (d: DocV5O) => void): Refuzat => {
+  const d = bazaV5();
+  strica(d);
+  return { nume, doc: d, motiv: 'ciocnire' };
+};
+
+export const REFUZATE_V5: readonly Refuzat[] = [
+  refuzatV5('Y01 operație v5 cu rampa: null (chiar valoarea pe care ar scrie-o migrarea)', (d) => { opV5(d, 0, 0)['rampa'] = null; }),
+  refuzatV5('Y02 operație v5 cu rampa: { lungime: 10 } (o valoare v6 bună)', (d) => { opV5(d, 0, 1)['rampa'] = rp(10); }),
+  refuzatV5('Y03 operație v5 cu rampa: []', (d) => { opV5(d, 0, 0)['rampa'] = []; }),
+  refuzatV5('Y04 operație v5 cu rampa: "10 mm"', (d) => { opV5(d, 0, 1)['rampa'] = '10 mm'; }),
+  refuzatV5('Y05 operație v5 cu rampa: undefined, ca proprietate proprie', (d) => { opV5(d, 0, 0)['rampa'] = undefined; }),
+  refuzatV5('Y06 doar operația pe-linie a unei piese fără instanțe are rampa', (d) => {
+    d.piese.push({
+      id: 'p2', radacina: el('x', I()),
+      operatii: [{ ...op4('a', ['x'], 'exterior', 'urcare'), urechi: null }, { ...op4('b', ['x'], 'pe-linie', 'opozitie', 1, 1), urechi: null, rampa: { v: 1 } }],
+    } as PiesaV5O);
+  }),
+  {
+    nume: 'Y07 operație v5 cu __proto__ și rampa (din JSON.parse)',
+    motiv: 'ciocnire',
+    doc: JSON.parse(
+      '{"schema":5,"rev":0,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":1},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"f","diametru":6},"latura":"interior","adancime":1,"pas":1,"sens":"urcare","urechi":null,"__proto__":"x","rampa":null}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[]}]}',
+    ),
+  },
+  // Lanțul: un v4 sau un v3 cu rampa pe operație trece până la v5 (câmp necunoscut) și se ciocnește la v5 → v6.
+  refuzatV4('Y08 operație v4 cu rampa: null (lanțul v4 → v5 → v6)', (d) => { opV4(d, 0, 0)['rampa'] = null; }),
+  refuzatV4('Y09 operație v4 cu rampa: { lungime: 10 }', (d) => { opV4(d, 0, 1)['rampa'] = rp(10); }),
+  refuzatV3('Y10 operație v3 cu rampa: null (lanțul v3 → … → v6)', (d) => { opV3(d, 0, 0)['rampa'] = null; }),
+];
+
+/**
+ * Otrăvurile v6: cele v5 aduse la forma v6 (`laV6` DUPĂ stricare: fiecare operație-obiect primește `rampa: null`, deci
+ * și cele construite de otravă), plus cele ale rampei. Documentul v6 valid de la care pleacă cele noi e `baza5` adus la
+ * v6, cu o1 (exterior, cu urechi) cu rampa 10 și o2 (interior) fără.
+ */
+const baza6 = (): DocV6O => laV6(baza5(), (k) => (k === 0 ? rp(10) : null)) as DocV6O;
+const o6 = (d: DocV6O, k = 0, piesa = 0): Liber => (d.piese[piesa] as PiesaV6O).operatii[k] as OperatieV6O;
+const r6 = (d: DocV6O, k = 0): Liber => o6(d, k)['rampa'] as Liber;
+const otravaRampa = (nume: string, strica: (d: DocV6O) => void): Otrava => {
+  const d = baza6();
+  strica(d);
+  return { nume, doc: d, categorie: 'rampa' };
+};
+
+export const OTRAVURI_RAMPA: readonly Otrava[] = [
+  otravaRampa('R01 rampa lipsă (un v5 etichetat schema 6)', (d) => { delete o6(d, 1)['rampa']; }),
+  otravaRampa('R02 rampa undefined, ca proprietate proprie', (d) => { o6(d)['rampa'] = undefined; }),
+  otravaRampa('R03 rampa false (oprită, dar nu ca null)', (d) => { o6(d)['rampa'] = false; }),
+  otravaRampa('R04 rampa 0', (d) => { o6(d)['rampa'] = 0; }),
+  otravaRampa('R05 rampa 10 (număr, nu obiect)', (d) => { o6(d)['rampa'] = 10; }),
+  otravaRampa('R06 rampa [] (listă goală)', (d) => { o6(d)['rampa'] = []; }),
+  otravaRampa('R07 rampa [10] (listă, nu obiect)', (d) => { o6(d)['rampa'] = [10]; }),
+  otravaRampa('R08 rampa „10” (text)', (d) => { o6(d)['rampa'] = '10'; }),
+  otravaRampa('R09 rampa {} (fără lungime)', (d) => { o6(d)['rampa'] = {}; }),
+  otravaRampa('R10 lungime 0', (d) => { r6(d)['lungime'] = 0; }),
+  otravaRampa('R11 lungime −0', (d) => { r6(d)['lungime'] = -0; }),
+  otravaRampa('R12 lungime −10', (d) => { r6(d)['lungime'] = -10; }),
+  otravaRampa('R13 lungime 10 000,001 (peste PLAFON.latura)', (d) => { r6(d)['lungime'] = 10_000.001; }),
+  otravaRampa('R14 lungime Infinity', (d) => { r6(d)['lungime'] = Infinity; }),
+  otravaRampa('R15 lungime NaN', (d) => { r6(d)['lungime'] = NaN; }),
+  otravaRampa('R16 lungime „10” (text)', (d) => { r6(d)['lungime'] = '10'; }),
+  otravaRampa('R17 lungime null', (d) => { r6(d)['lungime'] = null; }),
+  otravaRampa('R18 lungime lipsă, cu un alt câmp (unghi)', (d) => { o6(d)['rampa'] = { unghi: 3 }; }),
+  otravaRampa('R19 lungime true', (d) => { r6(d)['lungime'] = true; }),
+  otravaRampa('R20 o operație pe-linie fără rampa (câmpul e obligatoriu și acolo)', (d) => {
+    (d.piese[0] as PiesaV6O).operatii.push({ ...op4('l', ['e1'], 'pe-linie', 'urcare', 1, 1), urechi: null } as unknown as OperatieV6O);
+  }),
+  otravaRampa('R21 operația cu rampa greșită e a unei piese fără instanțe', (d) => {
+    d.piese.push({ id: 'p2', radacina: el('x', I()), operatii: [{ ...op4('a', ['x'], 'exterior', 'urcare'), urechi: null, rampa: rp(0) }] } as PiesaV6O);
+  }),
+  otravaRampa('R22 rampa pusă pe sculă, nu pe operație', (d) => {
+    const o = o6(d);
+    o['scula'] = { ...(o['scula'] as SculaO), rampa: o['rampa'] };
+    delete o['rampa'];
+  }),
+  otravaRampa('R23 rampa pusă în urechi, nu pe operație', (d) => {
+    const o = o6(d);
+    o['urechi'] = { ...(o['urechi'] as UrechiO), rampa: o['rampa'] };
+    delete o['rampa'];
+  }),
+  otravaRampa('R24 doar a doua operație are lungimea 0', (d) => { o6(d, 1)['rampa'] = rp(0); }),
+];
+
+export const OTRAVURI_V6: readonly Otrava[] = [
+  // Construite din nou (unele sunt prea adânci pentru `structuredClone`), aduse la v5, apoi la v6, pe loc.
+  ...[...otravuriArbore(4), ...otravuriOperatii(4), ...otravuriSens()].map((o) => ({
+    nume: o.nume.startsWith('v4 ') ? `v6 ${o.nume.slice(3)}` : `v6 ${o.nume}`, doc: laV6(laV5(o.doc)), categorie: o.categorie,
+  })),
+  ...OTRAVURI_URECHI.map((o) => ({ nume: `v6 ${o.nume}`, doc: laV6(structuredClone(o.doc)), categorie: o.categorie })),
+  ...OTRAVURI_RAMPA,
+];
+
+export type CazValidV6 = { readonly nume: string; readonly doc: DocV6O };
+
+export const VALIDE_DIFICILE_V6: readonly CazValidV6[] = [
+  // Fiecare document valid dificil v5, adus la v6, cu rampele pe rând.
+  ...VALIDE_DIFICILE_V5.map((c) => ({ nume: `${c.nume} (v6, rampe pe rând)`, doc: laV6(structuredClone(c.doc), rampePeRand) as DocV6O })),
+  {
+    nume: 'X01 la plafoane: lungimea 10 000 și 5e−324',
+    doc: laV6(laV5(laV4(doc3(
+      [piesa3('p1', grup('g', I(), [el('e1', I()), el('e2', T(50, 0), cerc())]), [op('a', ['e1'], 'exterior'), op('b', ['e2'], 'interior', 8, 4)])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ))), (k) => (k === 0 ? rp(10_000) : rp(5e-324))) as DocV6O,
+  },
+  {
+    nume: 'X02 rampa pe pe-linie, pe exterior (cu urechi) și pe interior, cu sensuri diferite',
+    doc: laV6(laV5(doc4([piesa4('p1', grup('g', I(), [el('a', I(), dr(80, 50, 6)), el('b', T(100, 0), cerc(10))]), [
+      op4('l', ['a'], 'pe-linie', 'opozitie', 1, 1), op4('e', ['a'], 'exterior', 'urcare', 12, 4), op4('i', ['b'], 'interior', 'opozitie', 6, 2),
+    ])], [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])]), (k) => (k === 1 ? ur(4, 8, 2) : null)), (k) => rp(5 + 5 * k)) as DocV6O,
+  },
+  {
+    // ADR 0029 §2: Lr = min(lungime, P / 2) e al exportului; o rampă mai lungă decât orice buclă e un document valid.
+    nume: 'X03 rampa de 10 000 pe un cerc R5 (mai lungă decât bucla): documentul e valid',
+    doc: laV6(laV5(laV4(baza3())), () => rp(10_000)) as DocV6O,
+  },
+  {
+    nume: 'X04 un câmp necunoscut în rampă (unghi, note) se păstrează; lungimea 10.0',
+    doc: laV6(laV5(laV4(baza3())), (k) => (k === 0 ? { lungime: 10.0, unghi: 3, note: { a: 1 } } : null)) as DocV6O,
+  },
+  {
+    nume: 'X05 degroșarea și finisarea aceluiași contur, aceeași adâncime, una cu rampă, alta fără',
+    doc: laV6(laV5(doc4(
+      [piesa4('p1', el('e', I(), dr(80, 50, 6)), [op4('deg', ['e'], 'exterior', 'urcare', 12, 4), op4('fin', ['e'], 'exterior', 'urcare', 12, 12)])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ), () => ur(4, 8, 2)), (k) => (k === 0 ? rp(10) : null)) as DocV6O,
+  },
+  {
+    nume: 'X06 chei capcană în rampă și pe operație (din JSON.parse)',
+    doc: JSON.parse(
+      '{"schema":6,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6},"latura":"interior","adancime":8,"pas":4,'
+      + '"__proto__":"x","sens":"opozitie","urechi":null,"rampa":{"lungime":7.5,"__proto__":"r","constructor":"c"}}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as DocV6O,
+  },
+  {
+    nume: 'X07 un câmp necunoscut „rampa” pe sculă, în urechi, pe nod, piesă, instanță, foaie și sus, cu operația fără rampă',
+    doc: {
+      schema: 6, rev: 3, rampa: 'sus',
+      piese: [{
+        id: 'p1', rampa: { lungime: 0 },
+        radacina: { ...grup('g', I(), [{ ...el('e', I()), rampa: 'x' }]), rampa: ['x'] },
+        operatii: [{ ...op4('o', ['e'], 'exterior', 'opozitie'), scula: { ...S1(), rampa: rp(10) }, urechi: { ...ur(4, 8, 2), rampa: rp(-1) }, rampa: null }],
+      }],
+      foi: [{ ...foaie('f1', [{ ...inst('i1', 'p1', 0, 0, 0), rampa: 1 }]), rampa: null }],
+    } as DocV6O,
   },
 ];

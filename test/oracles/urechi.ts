@@ -55,6 +55,11 @@
  *   centrelor și lungimea totală ±`TOL_CUMULAT` = 0,03 mm (aceeași margine cumulată ca tolS pe un tur de arce); geometria
  *   în plan ±`TOL_DRUM` = 0,003 mm (un punct rotunjit + I / J rotunjit).
  *
+ * AMENDAMENTUL din ADR 0029 §5 (felia 2.5a): pe o etichetă legată de o operație CU rampă (`cuRampa`, din `rampa.ts`),
+ * buclele nu se mai judecă aici (o buclă a drumului ține și rampa, deci Z variabil): profilul urechilor se judecă pe
+ * fundul fiecărei treceri, în `verificaRampa`. Refuzurile de la §2 (pe etichetă) rămân aici, pe toate etichetele. Fără
+ * rampă, nimic nu se schimbă.
+ *
  * Ce NU vede invarianta 10, și cine o vede: forma în plan a traseului (o coardă pe arc la flanc) e a invariantei 2
  * (pe exterior, coarda intră în piesă) și a hârtiei (`peDrum`); pe interior, coarda iese spre deșeu, deci doar hârtia.
  */
@@ -211,7 +216,7 @@ const mm = (v: number): string => v.toFixed(3);
  */
 export function verificaUrechile(
   evenimente: readonly Eveniment[], etichete: readonly EtichetaActiva[], reg: Regiune, laDoc: (p: Punct3) => Punct3, grosimeFoaie: number,
-  diametru?: number,
+  diametru?: number, cuRampa: ReadonlySet<number> = new Set(),
 ): IncalcareUrechi[] {
   const rez: IncalcareUrechi[] = [];
   const urechi = urechileEtichetelor(etichete, reg);
@@ -231,7 +236,8 @@ export function verificaUrechile(
     }
   });
   for (const b of buclele(evenimente, etichete.map((e) => e.linia), laDoc)) {
-    if (b.eticheta < 0) continue;
+    // ADR 0029 §5: cu rampă, profilul se judecă pe fundul fiecărei treceri, nu pe buclă (`rampa.ts`).
+    if (b.eticheta < 0 || cuRampa.has(b.eticheta)) continue;
     const et = etichete[b.eticheta]!.eticheta;
     if (!et) continue;
     const u = urechi[b.eticheta];

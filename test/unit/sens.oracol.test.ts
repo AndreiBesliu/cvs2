@@ -485,9 +485,9 @@ function intoarce(doc: DocV4O, alege: (latura: string, k: number) => boolean): D
   return d;
 }
 
-test('lipire: aplicația e pe schema 4 sau 5 (ușa primește un v4; pe 5, îl migrează cu urechi: null)', async () => {
+test('lipire: aplicația e pe schema 4, 5 sau 6 (ușa primește un v4; pe 5, îl migrează cu urechi: null; pe 6, și cu rampa: null)', async () => {
   const s = await schemaAplicatiei();
-  assert.ok(s === 4 || s === 5, `schema ${s}`);
+  assert.ok(s === 4 || s === 5 || s === 6, `schema ${s}`);
 });
 
 test('lipire: orice program scris de aplicație trece invariantele 9 și 2 (corpusul 2.3a cu sensuri la întâmplare, placa 1 × 8 montaje × 4 sensuri)', async () => {
@@ -628,7 +628,7 @@ test('lipire: fișierele de aur ale plăcii 1 din repo sunt exact cele cerute de
   }
 });
 
-test('amendamentul ADR 0028 §5: pe fiecare program judecat în acest fișier (scrise de mână, traseele cerute coborâte și ridicate, inele întoarse, aplicația), verdictele invariantei 9 sunt EXACT cele ale primei redactări', () => {
+test('amendamentele ADR 0028 §5 și ADR 0029 §5: pe fiecare program judecat în acest fișier (scrise de mână, traseele cerute coborâte și ridicate, inele întoarse, aplicația; niciunul cu rampă), verdictele invariantei 9 sunt EXACT cele ale primei redactări și cele de dinainte de ADR 0029', () => {
   let programe = 0, cuIncalcari = 0, verdicte = 0;
   const rele: string[] = [];
   for (const { text, ctx } of vazute) {
@@ -638,8 +638,12 @@ test('amendamentul ADR 0028 §5: pe fiecare program judecat în acest fișier (s
     const et = eticheteleProgramului(text, reg);
     const laDoc = (p: Punct3): Punct3 => laDocument(p, ctx);
     const nou = verificaSensul(evenimente, et, reg, laDoc).map((x) => `${x.linia}: ${x.mesaj}`);
-    const vechi = verificaSensul(evenimente, et, reg, laDoc, bucleleInainteDe0028).map((x) => `${x.linia}: ${x.mesaj}`);
+    // Prima redactare: drumul la o singură adâncime (2.3b) și porțiunile deschise toate încălcări (înainte de ADR 0029).
+    const vechi = verificaSensul(evenimente, et, reg, laDoc, bucleleInainteDe0028, false).map((x) => `${x.linia}: ${x.mesaj}`);
+    // ADR 0028 fără amendamentul ADR 0029 (porțiunile deschise toate încălcări).
+    const inainteDe0029 = verificaSensul(evenimente, et, reg, laDoc, buclele, false).map((x) => `${x.linia}: ${x.mesaj}`);
     if (JSON.stringify(nou) !== JSON.stringify(vechi)) rele.push(`${text.split('\n').length} linii: nou ${JSON.stringify(nou.slice(0, 2))}, vechi ${JSON.stringify(vechi.slice(0, 2))}`);
+    if (JSON.stringify(nou) !== JSON.stringify(inainteDe0029)) rele.push(`${text.split('\n').length} linii (0029): nou ${JSON.stringify(nou.slice(0, 2))}, înainte ${JSON.stringify(inainteDe0029.slice(0, 2))}`);
     programe++;
     if (vechi.length) cuIncalcari++;
     verdicte += vechi.length;

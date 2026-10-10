@@ -53,6 +53,18 @@
  *   încălcare (ambiguă).
  * Montajul: punctele mașinii trec în document prin `laDoc` (colțul și Z0: o translație). Orientarea lui se citește
  * din `laDoc` însuși (determinantul părții liniare), ca un montaj oglindit să întoarcă și unghiurile arcelor.
+ *
+ * AMENDAMENTUL din ADR 0029 §5 (felia 2.5a, rampa; sesiune independentă): un drum poate trece prin mai multe treceri,
+ * fără G0 între ele (rampa coboară de-a lungul buclei, iar tura continuă până la intrarea următoare). Buclele închise
+ * din el se judecă la fel. O porțiune DESCHISĂ a drumului care stă pe o buclă închisă a ACELUIAȘI drum, parcursă în
+ * același sens, nu mai e încălcare (`peBuclaInchisa`); orice altă porțiune deschisă rămâne încălcare. Definițiile mele:
+ * - „stă pe buclă”: fiecare eșantion al porțiunii (capetele mișcărilor și puncte la cel mult 0,5 mm) e la cel mult
+ *   TOL_PE_BUCLA = 0,005 mm de drumul buclei (două parcurgeri rotunjite ale aceluiași traseu: capetele ±0,0007, arcele
+ *   re-rotunjite din alt start: centrul ±0,0007, raza ±0,0014; plus marja);
+ * - „în același sens”: proiecțiile eșantioanelor consecutive pe buclă (poziția de-a lungul ei, modulo lungimea buclei)
+ *   avansează (Δ > 0), pe orice pereche de eșantioane depărtate cu mai mult de 2·TOL_PE_BUCLA;
+ * - drumul fiecărei bucle e ținut în `Bucla.drum`. Prima redactare a acestei reguli rămâne în `verificaSensul(…, false)`,
+ *   doar pentru proba că programele fără rampă au EXACT aceleași verdicte (`rampa.oracol.test.ts`).
  */
 import type { LaturaO, SensO } from './document.ts';
 import { regulaArcGrbl, type Eveniment, type Mutare, type Punct3 } from './gcode.ts';
@@ -68,6 +80,8 @@ export const TOL_INCHIDERE = 0.002;
 export const LUNGIME_MINIMA = 0.01;
 /** Sub atât (mm²), o buclă nu are sens de citit. */
 export const ARIE_MINIMA = 1e-6;
+/** ADR 0029 §5: o porțiune deschisă stă pe o buclă închisă dacă e la cel mult atât de ea (antetul). */
+export const TOL_PE_BUCLA = 0.005;
 /** Adâncimea din etichetă față de cea a operației (ADR 0026 §7: aceeași toleranță ca la invarianta 2). */
 const TOL_ADANCIME = 0.0005 + 1e-9;
 
@@ -163,6 +177,8 @@ export type Bucla = {
   /** Indicele etichetei active în lista dată (−1: înaintea primei etichete). */
   readonly eticheta: number;
   readonly pasi: readonly Pas[];
+  /** ADR 0029 §5: al câtelea drum al programului (buclele aceluiași drum au același număr). */
+  readonly drum: number;
 };
 
 const dist = (p: P2, q: P2): number => Math.hypot(p.x - q.x, p.y - q.y);
@@ -247,13 +263,13 @@ export function pasLaAdancime(m: Mutare, laDoc: (p: Punct3) => Punct3, orientare
  * el), după cel puțin LUNGIME_MINIMA de drum de la acel vârf; se ia cel mai devreme vârf. Ce era înaintea vârfului
  * (o legătură la adâncime) iese ca drum deschis, bucla ca buclă închisă; lanțul pornește din nou de la capăt.
  */
-function imparte(pasi: readonly Pas[], eticheta: number): Bucla[] {
+function imparte(pasi: readonly Pas[], eticheta: number, drum = 0): Bucla[] {
   const rez: Bucla[] = [];
   const bucla = (acum: readonly Pas[], inchisa: boolean): Bucla => ({
     linii: [acum[0]!.linia, acum[acum.length - 1]!.linia], z: acum[0]!.za,
     zMin: Math.min(...acum.flatMap((p) => [p.za, p.zb])), zMax: Math.max(...acum.flatMap((p) => [p.za, p.zb])),
     start: acum[0]!.a, capat: acum[acum.length - 1]!.b, inchisa,
-    arie: ariaPasilor(acum), lungime: acum.reduce((s, p) => s + lungimePas(p), 0), eticheta, pasi: acum,
+    arie: ariaPasilor(acum), lungime: acum.reduce((s, p) => s + lungimePas(p), 0), eticheta, pasi: acum, drum,
   });
   let lant: Pas[] = [];
   /** Lungimea drumului până la startul fiecărei mișcări din lanț, plus capătul. */
@@ -296,9 +312,10 @@ function drumuri(
   const orientare = orientareMontaj(laDoc);
   const rez: Bucla[] = [];
   let iE = -1;
+  let nrDrum = 0;
   let drum: { eticheta: number; z: number; pasi: Pas[] } | null = null;
   const inchide = (): void => {
-    if (drum && drum.pasi.length) rez.push(...imparte(drum.pasi, drum.eticheta));
+    if (drum && drum.pasi.length) rez.push(...imparte(drum.pasi, drum.eticheta, nrDrum++));
     drum = null;
   };
   for (const e of evenimente) {
@@ -348,6 +365,70 @@ export function sensurileEtichetelor(etichete: readonly EtichetaActiva[], reg: R
 
 const fel = (s: number): string => (s > 0 ? 'trigonometric' : 'orar');
 
+/** Punctul pasului la fracțiunea f (arcul pe cercul lui, fără segmentul scurt până la capătul scris). */
+function punctPeP(p: Pas, f: number): P2 {
+  if (p.tip === 'segment') return { x: p.a.x + (p.b.x - p.a.x) * f, y: p.a.y + (p.b.y - p.a.y) * f };
+  const u = Math.atan2(p.a.y - p.c.y, p.a.x - p.c.x) + p.unghi * f;
+  return { x: p.c.x + p.r * Math.cos(u), y: p.c.y + p.r * Math.sin(u) };
+}
+
+/** Proiecția lui q pe un pas: distanța și fracțiunea punctului cel mai apropiat. */
+function proiectie(p: Pas, q: P2): { readonly d: number; readonly f: number } {
+  if (p.tip === 'segment') {
+    const vx = p.b.x - p.a.x, vy = p.b.y - p.a.y;
+    const L2 = vx * vx + vy * vy;
+    const t = L2 > 0 ? Math.max(0, Math.min(1, ((q.x - p.a.x) * vx + (q.y - p.a.y) * vy) / L2)) : 0;
+    return { d: dist(punctPeP(p, t), q), f: t };
+  }
+  const u0 = Math.atan2(p.a.y - p.c.y, p.a.x - p.c.x);
+  const uq = Math.atan2(q.y - p.c.y, q.x - p.c.x);
+  const sweep = Math.abs(p.unghi);
+  const rel = ((((uq - u0) * Math.sign(p.unghi)) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  const f = rel <= sweep ? (sweep > 0 ? rel / sweep : 0) : (rel - sweep < 2 * Math.PI - rel ? 1 : 0);
+  const capat = dist(p.b, q);
+  const pe = dist(punctPeP(p, f), q);
+  return capat < pe ? { d: capat, f: 1 } : { d: pe, f };
+}
+
+/**
+ * ADR 0029 §5: porțiunea deschisă `o` stă pe bucla închisă `c` și o parcurge în același sens (definițiile din antet):
+ * fiecare eșantion e la cel mult TOL_PE_BUCLA de `c`, iar pozițiile proiecțiilor pe `c` avansează.
+ */
+export function peBuclaInchisa(o: Bucla, c: Bucla): boolean {
+  const L = c.lungime;
+  if (!(L > 0)) return false;
+  const pozitie = (q: P2): { readonly d: number; readonly s: number } => {
+    let cel = { d: Infinity, s: 0 };
+    let s = 0;
+    for (const p of c.pasi) {
+      const x = proiectie(p, q);
+      const Lp = lungimePas(p);
+      if (x.d < cel.d) cel = { d: x.d, s: s + x.f * Lp };
+      s += Lp;
+    }
+    return cel;
+  };
+  const esantioane: P2[] = [];
+  for (const p of o.pasi) {
+    const n = Math.max(1, Math.ceil(lungimePas(p) / 0.5));
+    for (let k = 0; k < n; k++) esantioane.push(punctPeP(p, k / n));
+    esantioane.push(p.b);
+  }
+  let prec: { readonly q: P2; readonly s: number } | null = null;
+  for (const q of esantioane) {
+    const x = pozitie(q);
+    if (x.d > TOL_PE_BUCLA) return false;
+    if (prec && dist(prec.q, q) > 2 * TOL_PE_BUCLA) {
+      let ds = (x.s - prec.s) % L;
+      if (ds > L / 2) ds -= L;
+      if (ds < -L / 2) ds += L;
+      if (!(ds > 0)) return false;
+    }
+    if (!prec || dist(prec.q, q) > 2 * TOL_PE_BUCLA) prec = { q, s: x.s };
+  }
+  return true;
+}
+
 /**
  * ALEGERE: liniile care pornesc axul în sens invers (M4), în afara comentariilor. ADR 0027 dă tabelul doar pentru M3
  * („Limitele”: M4 îl inversează și vine cu profilul mașinii); un program cu M4 ar avea toate sensurile întoarse fără ca
@@ -368,11 +449,12 @@ export function liniiCuAxInvers(text: string): number[] {
  */
 export function verificaSensul(
   evenimente: readonly Eveniment[], etichete: readonly EtichetaActiva[], reg: Regiune, laDoc: (p: Punct3) => Punct3,
-  bucle: typeof buclele = buclele,
+  bucle: typeof buclele = buclele, regula0029 = true,
 ): IncalcareSens[] {
   const rez: IncalcareSens[] = [];
   const sensuri = sensurileEtichetelor(etichete, reg);
-  for (const b of bucle(evenimente, etichete.map((e) => e.linia), laDoc)) {
+  const toate = bucle(evenimente, etichete.map((e) => e.linia), laDoc);
+  for (const b of toate) {
     const unde = `liniile ${b.linii[0]}–${b.linii[1]}, Z ${b.z.toFixed(3)}`;
     if (b.eticheta < 0) {
       rez.push({ linia: b.linii[0], mesaj: `sensul de tăiere: buclă de tăiere înaintea primei etichete (${unde}): sensul așteptat nu se știe` });
@@ -391,6 +473,8 @@ export function verificaSensul(
     }
     const latura = et.latura as Exclude<LaturaO, 'pe-linie'>;
     if (!b.inchisa) {
+      // ADR 0029 §5: tura care continuă spre intrarea următoare stă pe o buclă închisă a aceluiași drum, în același sens.
+      if (regula0029 && toate.some((c) => c.inchisa && c.drum === b.drum && peBuclaInchisa(b, c))) continue;
       rez.push({
         linia: b.linii[0],
         mesaj: `sensul de tăiere: drumul lui ${et.idLume} (${latura}) la ${unde} nu se închide (capătul la ${dist(b.capat, b.start).toFixed(3)} mm de start): sensul nu se poate judeca`,

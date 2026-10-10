@@ -40,6 +40,14 @@
  * Definițiile și toleranțele sunt în `urechi.ts`. Precizarea din 09.10: și refuzul W < D (cu D = `diametruScula`), iar,
  * când contextul dă `avansPlonjare`, viteza pe verticală a mișcărilor care coboară în material (ALEGERE: tot sub 10).
  * Invarianta 1 măsoară, din 2.4, pe discul de rază R − TOL_DISC (vezi constanta), ca urechile să nu dea falsuri.
+ *
+ * Felia 2.5a (ADR 0029, rampa; sesiune independentă): invarianta 9 e AMENDATĂ din nou (§5): o porțiune deschisă a unui
+ * drum care stă pe o buclă închisă a aceluiași drum, parcursă în același sens, nu mai e încălcare (`sens.ts`).
+ * Invarianta 10 e AMENDATĂ: pe o etichetă legată de o operație cu rampă, profilul urechilor se judecă pe fundul
+ * fiecărei treceri (`rampa.ts`), nu pe buclă. Invarianta 11 (rampa) e NOUĂ și rulează tot doar cu `regiune`: pe o
+ * operație cu rampă, programul buclei e cel din §2 (fără coborâre pe verticală în material, intrările rotite și scoase
+ * din zonele urechilor, coborârea liniară pe Lr, tura care acoperă bucla); pe una fără rampă, forma de la §4.
+ * Definițiile, legarea etichetei și toleranțele sunt în `rampa.ts`.
  */
 import { citeste, esantioane, marginiSubSuprafata, regulaArcGrbl, type Comentariu, type Mutare, type Punct3 } from './gcode.ts';
 import {
@@ -48,6 +56,7 @@ import {
 } from './regiune.ts';
 import { liniiCuAxInvers, verificaSensul } from './sens.ts';
 import { verificaUrechile, vitezaVerticala } from './urechi.ts';
+import { verificaRampa } from './rampa.ts';
 
 export type ColtOrigine = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus';
 
@@ -74,7 +83,7 @@ export type ContextPoarta = {
   readonly avansPlonjare?: number;
 };
 
-export type Incalcare = { readonly invarianta: 1 | 2 | 3 | 5 | 6 | 7 | 8 | 9 | 10; readonly linia: number; readonly mesaj: string };
+export type Incalcare = { readonly invarianta: 1 | 2 | 3 | 5 | 6 | 7 | 8 | 9 | 10 | 11; readonly linia: number; readonly mesaj: string };
 
 const TOL = 1e-6;
 /** Rotunjirea la 3 zecimale mută un punct cu cel mult √2/2·10⁻³ mm. */
@@ -351,10 +360,13 @@ export function poarta(text: string, ctx: ContextPoarta): Incalcare[] {
     for (const linia of liniiCuAxInvers(text)) {
       rez.push({ invarianta: 9, linia, mesaj: 'sensul de tăiere: axul pornit cu M4 (invers); tabelul ADR 0027 e doar pentru M3' });
     }
-    // 10: urechile (ADR 0028 §5), pe aceleași bucle și cu aceeași legare a etichetei de operație.
-    for (const x of verificaUrechile(evenimente, etichete, reg, (p) => laDocument(p, ctx), reg.grosimeFoaie ?? T, ctx.diametruScula)) {
+    // 10 și 11: rampa (ADR 0029 §5): pe etichetele cu rampă, urechile pe fundul fiecărei treceri, plus invarianta 11.
+    const rampa = verificaRampa(evenimente, etichete, reg, (p) => laDocument(p, ctx), reg.grosimeFoaie ?? T);
+    // 10: urechile (ADR 0028 §5), pe aceleași bucle și cu aceeași legare a etichetei de operație (fără etichetele cu rampă).
+    for (const x of verificaUrechile(evenimente, etichete, reg, (p) => laDocument(p, ctx), reg.grosimeFoaie ?? T, ctx.diametruScula, rampa.cuRampa)) {
       rez.push({ invarianta: 10, linia: x.linia, mesaj: x.mesaj });
     }
+    for (const x of rampa.incalcari) rez.push({ invarianta: x.invarianta, linia: x.linia, mesaj: x.mesaj });
   }
   // 10, avansul (ADR 0028 §4, precizarea din 09.10): viteza pe verticală a mișcărilor care coboară în material.
   if (ctx.avansPlonjare !== undefined) {

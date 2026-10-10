@@ -3,9 +3,9 @@
  * primește interfața, și programul exportat (`calculeazaExport`, cu confirmarea ieșirii din foaie când o cere). Doar
  * testele din `test/unit` îl importă; oracolele (`test/oracles`) rămân fără `src/`.
  */
-import type { DocV4O, DocV5O, Liber } from '../oracles/document.ts';
+import type { DocV4O, DocV5O, DocV6O, Liber } from '../oracles/document.ts';
 
-/** Versiunea schemei pe care o primește ușa aplicației (4 = ADR 0027, 5 = ADR 0028), aflată cu un document minim. */
+/** Versiunea schemei pe care o primește ușa aplicației (4 = ADR 0027, 5 = ADR 0028, 6 = ADR 0029), aflată cu un document minim. */
 export async function schemaAplicatiei(): Promise<number> {
   const { incarca } = await import('../../src/model/incarcare.ts');
   const r = incarca({
@@ -16,25 +16,32 @@ export async function schemaAplicatiei(): Promise<number> {
 
 /**
  * Documentul dat aplicației, prin ușă (`incarca`). O aplicație mai veche decât documentul îl refuză; atunci primește
- * același document coborât cât se poate fără să piardă nimic din ce taie: un v5 fără nicio ureche devine v4 (`urechi`
- * scos), un v4 devine v3 (`sens` scos; invariantele 1–8 nu depind de el). Un v5 CU urechi nu se coboară: refuzul ușii
- * e o eroare.
+ * același document coborât cât se poate fără să piardă nimic din ce taie: un v6 fără nicio rampă devine v5 (`rampa`
+ * scos), un v5 fără nicio ureche devine v4 (`urechi` scos), un v4 devine v3 (`sens` scos; invariantele 1–8 nu depind
+ * de el). Un v6 CU rampă sau un v5 CU urechi nu se coboară: refuzul ușii e o eroare.
  */
-export async function pentruAplicatie<D>(doc: DocV4O | DocV5O): Promise<D> {
+export async function pentruAplicatie<D>(doc: DocV4O | DocV5O | DocV6O): Promise<D> {
   const { incarca } = await import('../../src/model/incarcare.ts');
   const r = incarca(structuredClone(doc));
   if (r.ok) return r.doc as unknown as D;
-  let v4 = structuredClone(doc) as Liber;
-  if (doc.schema === 5) {
-    const operatii = (v4['piese'] as Liber[]).flatMap((p) => p['operatii'] as Liber[]);
-    if (operatii.some((o) => o['urechi'] !== null)) throw new Error(`incarca a refuzat un document v5 cu urechi: ${String(r.motiv)}`);
-    v4['schema'] = 4;
-    for (const o of operatii) delete o['urechi'];
-    const r4 = incarca(structuredClone(v4));
-    if (r4.ok) return r4.doc as unknown as D;
-    v4 = structuredClone(v4);
+  let jos = structuredClone(doc) as Liber;
+  const operatii = (): Liber[] => (jos['piese'] as Liber[]).flatMap((p) => p['operatii'] as Liber[]);
+  if (doc.schema === 6) {
+    if (operatii().some((o) => o['rampa'] !== null)) throw new Error(`incarca a refuzat un document v6 cu rampă: ${String(r.motiv)}`);
+    jos['schema'] = 5;
+    for (const o of operatii()) delete o['rampa'];
+    const r5 = incarca(structuredClone(jos));
+    if (r5.ok) return r5.doc as unknown as D;
   }
-  const v3 = v4;
+  if (jos['schema'] === 5) {
+    if (operatii().some((o) => o['urechi'] !== null)) throw new Error(`incarca a refuzat un document v5 cu urechi: ${String(r.motiv)}`);
+    jos['schema'] = 4;
+    for (const o of operatii()) delete o['urechi'];
+    const r4 = incarca(structuredClone(jos));
+    if (r4.ok) return r4.doc as unknown as D;
+    jos = structuredClone(jos);
+  }
+  const v3 = jos;
   v3['schema'] = 3;
   for (const p of v3['piese'] as Liber[]) for (const o of p['operatii'] as Liber[]) delete o['sens'];
   const r3 = incarca(v3);
@@ -45,11 +52,11 @@ export async function pentruAplicatie<D>(doc: DocV4O | DocV5O): Promise<D> {
 export type IesireAplicatie = { readonly ok: true; readonly text: string } | { readonly ok: false; readonly motiv: string };
 
 /**
- * Programul aplicației pentru un document v4 / v5 și un montaj, cu confirmarea ieșirii din foaie dacă o cere. `supracursa`
- * (ADR 0028 §2, mm) se dă exportului doar când e cerută (implicit, ca din interfață, nu se trimite).
+ * Programul aplicației pentru un document v4 / v5 / v6 și un montaj, cu confirmarea ieșirii din foaie dacă o cere.
+ * `supracursa` (ADR 0028 §2, mm) se dă exportului doar când e cerută (implicit, ca din interfață, nu se trimite).
  */
 export async function programulAplicatiei(
-  doc: DocV4O | DocV5O,
+  doc: DocV4O | DocV5O | DocV6O,
   montaj: { readonly origine: 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus'; readonly z0: 'sus' | 'jos' },
   o: { readonly supracursa?: number } = {},
 ): Promise<IesireAplicatie> {
