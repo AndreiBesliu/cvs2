@@ -197,8 +197,9 @@ export function bucataBuclei(c: Contur, s: number, L: number): Contur {
       continue;
     }
     const f = Ls > 0 ? Math.min(1, (L - s0) / Ls) : 1;
+    // Capătul la cel mult 1e-6 mm de începutul segmentului: bucata se oprește în vârf (fără segment de lungime zero). Lângă
+    // capătul segmentului nu e nevoie de lipire: tăietura la f ≈ 1 diferă de vârf cu cel mult 1e-6 mm.
     if (f * Ls <= EPS_RUPTURA) return { inchis: false, varfuri: [...varfuri, { p: a, s: LINIE }] };
-    if ((1 - f) * Ls <= EPS_RUPTURA) return { inchis: false, varfuri: [...varfuri, { p: a, s: seg }, { p: b, s: LINIE }] };
     const cerc = seg.tip === 'A' ? cerculArcului(a, b, seg.bulge) : undefined;
     const capat = punctPeSegment(a, b, cerc, f);
     // Pe arc, prima parte are baleiajul f·θ, deci bulge-ul tan(f·θ / 4), ca în `incepeLa`.

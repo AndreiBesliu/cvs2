@@ -1118,3 +1118,41 @@ trecere (ca în ediția întâi); buclele fără intrare păstrează rampa din A
 
 **Ce intră:** ADR 0031 (documentul rămâne v7); refuzul combinației scos; razele sub rampă doar cu sfertul de cel puțin
 1 mm; elicea intrării cu avansul plafonat; nota din dialog; programele fără combinație, aceleași octet cu octet.
+
+**Completed:** 11.10 01:10. **Treceri:** 6.
+
+**Făcut:**
+- ADR 0031 (documentul rămâne v7): pe o buclă cu intrare, rampa coboară pe sfertul intrării, de la fața de sus, la fiecare
+  trecere; între treceri freza se ridică. Invarianta 1 pe hârtie: intrarea trecerii k e același arc ca la k−1, cu cel mult
+  (d_k − d_{k−1})·t mai jos.
+- `src/cam/traseu.ts`: bucla la o trecere scrisă o dată (`taieBucla`, folosită și fără rampă: aceleași programe); ramura
+  rampei cu intrare. `src/cam/intrari.ts`: razele sub rampă (pragul 2/π mm, `intrariMinima.ts`), elicea cu avansul
+  plafonat (`avansCoborare`, scos din parcurgere). Refuzul rampei sub 1 mm și când toate buclele au intrare.
+- Dialogul: nota rampei pe intrare, raza minimă sub rampă cu motivul ei.
+
+**Gaura găsită de recenzie, moștenită din 2.5b:** condiția c (ADR 0030 §3) judeca doar urechile altor bucle. Pe bucla
+însăși, ieșirea la −d_k (și intrarea plată, fără rampă) putea tăia puntea unei urechi: pe o gaură R8 cu 2 urechi, intrările
+fără rampă nu lăsau nicio punte întreagă, iar poarta nu vedea (invarianta 10 judecă doar Z-ul traseului). Acum semicercul
+stă la cel puțin D de coloana fiecărei urechi proprii (`bucataBuclei`: bucata exactă de traseu, de la candidatul p₀).
+
+**Proba:**
+- recenzia: o lentilă CAM + 1 verificator, 0,47 M tokeni, 41 min; o constatare reală (de mai sus), reparată; una mică
+  (dialogul primea raza sub pragul rampei), reparată. Curat: 5400 de programe identice octet cu octet față de 6c4d131,
+  invarianta 1 pe câmpul de înălțimi, avansul elicei după rotunjirea postului, elicea în același XY cu semicercul verificat;
+- oracolul independent (0,63 M, 126 min): invariantele 9, 11, 12 amendate (și 10 pe trecerile cu intrare), oracolul pe
+  hârtie al rampei pe intrare, punțile urechilor pe câmpul de înălțimi, octeții fără combinație față de 6c4d131, 19 martori
+  negativi, 34 de sabotaje (33 prinse; cel scăpat nu se poate declanșa structural);
+- 27 din 30 otrăvuri prinse; cele 3 scăpate: două închise cu teste noi (coloana ultimei urechi pe o buclă nesimetrică față de p₀; bucata buclei care se termină în mijlocul unui arc), una echivalentă (lipirea capătului bucății, scoasă din cod).
+
+**CI:** pe un singur job, testele unitare ajunseseră la 452 s din cele 600 permise (felia 2.5b, față de „≤ 5 min” din
+`PLAN.md` §4.4), iar oracolul acestei felii le-ar fi dus peste. Acum nivelul rapid le rulează în 3 felii paralele
+(`--test-shard`, care trebuie să stea înaintea fișierelor: după ele, Node îl ignoră pe tăcute). Fișierul nou al oracolului,
+510 s singur, e împărțit mecanic în trei (253 s în paralel). Nivelul complet (nefeliat) are acum 30 de minute.
+
+**Rămâne deschis:**
+- panta rampei pe intrare se dă prin rază (la pasul 3 și ρ = 3, ~32°), nu prin lungimea rampei;
+- pe buclele cu intrare, freza se ridică între treceri (~1 s în aer pe trecere);
+- textele CAM (refuzuri, avertismente) sunt doar în română, și în interfața engleză;
+- pe găurile mici, flancurile urechilor mușcă ~0,1 mm din tubul punții pe partea concavă și fără intrări (oracolul judecă
+  puntea garantată; de reluat cu placa 2);
+- decizia rampei implicite e luată: oprită până la placa 1.

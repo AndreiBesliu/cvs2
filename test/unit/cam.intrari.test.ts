@@ -254,7 +254,9 @@ test('bucata buclei: de la s, de lungime L, tăiată exact (linie în linie, arc
   const { bucataBuclei } = await import('../../src/cam/parcurgere.ts');
   const c = conturDreptunghi(0, 0, 100, 50, 10);
   const P = lungimeBucla(c);
-  for (const [s, L] of [[30, 50], [5, 20], [P - 3, 12], [0, P], [95, 3]] as const) {
+  // Și bucăți care se termină în mijlocul unui arc de colț (80 … 80 + 5π): arcul se taie pe același cerc, deci lungimea
+  // rămâne exact L.
+  for (const [s, L] of [[30, 50], [5, 20], [P - 3, 12], [0, P], [95, 3], [70, 20], [10, P - 15]] as const) {
     const b = bucataBuclei(c, s, L);
     assert.equal(b.inchis, false);
     const lung = lungimeBucla({ ...b, inchis: true }) - Math.hypot(b.varfuri[0]!.p.x - b.varfuri[b.varfuri.length - 1]!.p.x, b.varfuri[0]!.p.y - b.varfuri[b.varfuri.length - 1]!.p.y);
@@ -265,4 +267,27 @@ test('bucata buclei: de la s, de lungime L, tăiată exact (linie în linie, arc
     assert.ok(z && near(ultim.x, z.p.x, 1e-6) && near(ultim.y, z.p.y, 1e-6), `s = ${s}, L = ${L}: capătul`);
   }
   assert.equal(bucataBuclei(c, 30, 0).varfuri.length, 1);
+});
+
+test('urechile buclei înseși, pe o buclă nesimetrică față de p₀: contează capătul coloanei ultimei urechi (spre p₀), nu doar începutul ei', () => {
+  // Dreptunghiul 100 × 60 la (50, 50), Ø6, exterior, 19 urechi de 8 mm: P = 320 + 6π, S/2 = 8,92, h − R = 1. Coloana ultimei
+  // urechi se termină la d = 7,92 mm înaintea vârfului 0, pe latura de jos, în (57,92; 47): la √(7,92² + 9) − 3 = 5,47 mm de
+  // semicercul din vârful 0 (C = (50, 44)), sub D = 6; începutul ei, cu W − D = 2 mm mai departe, ar trece (7,36). Mijloacele
+  // laturilor au aceeași problemă (simetric); primul candidat bun e mijlocul arcului de colț din stânga-jos, (50 − 3/√2;
+  // 50 − 3/√2), cu ρ = 3 și C pe diagonală, spre exterior.
+  const d = cuOperatie(docDin(F, dr('a', 50, 50)), 'a', { adancime: 12, pas: 4, urechi: { numar: 19, latime: 8, grosime: 2 }, intrari: { raza: 3 } });
+  const { miscari, avertismente } = bloc(d, 'a/a');
+  assert.deepEqual(avertismente, []);
+  const [x] = treceri(miscari);
+  assert.ok(x);
+  if (!x) return;
+  const intrare = x[2];
+  assert.ok(intrare?.tip === 'arc');
+  if (intrare?.tip !== 'arc') return;
+  const k = 3 / Math.SQRT2;
+  assert.ok(near(intrare.la.X ?? 0, 50 - k, 1e-9) && near(intrare.la.Y ?? 0, 50 - k, 1e-9), `p₀ = ${JSON.stringify(intrare.la)}`);
+  assert.ok(near(intrare.centru.x, 50 - 2 * k, 1e-9) && near(intrare.centru.y, 50 - 2 * k, 1e-9), `C = ${JSON.stringify(intrare.centru)}`);
+  // Martorul pe hârtie: din vârful 0, capătul coloanei ultimei urechi e sub D, începutul ei nu.
+  const P = 320 + 6 * Math.PI, dd = P / 19 / 2 - 1;
+  assert.ok(Math.hypot(dd, 3) - 3 < 6 && Math.hypot(dd + 2, 3) - 3 >= 6);
 });
