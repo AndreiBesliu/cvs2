@@ -93,6 +93,7 @@ export const ro = {
   'export.avertisment': 'Atenție: {text}',
   'export.rampa.titlu': 'Freza coboară de-a lungul buclei, nu drept în material; o tură plină trece apoi din nou peste rampă.',
   'export.rampa.lungime': 'Lungimea rampei (mm)',
+  'export.rampa.peIntrare': 'Cu intrări, rampa coboară pe sfertul intrării; lungimea se folosește doar unde intrarea se omite.',
   'export.rampa.lungime.titlu': 'Distanța în plan pe care coboară o trecere. Pe o buclă mai scurtă de două ori decât ea, rampa se scurtează la jumătate din buclă.',
   'export.adancime': 'Adâncimea (mm)',
   'export.pas': 'Pasul (mm)',

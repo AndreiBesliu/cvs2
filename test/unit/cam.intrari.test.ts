@@ -131,11 +131,10 @@ test('cu urechi: pozițiile lor se numără de la p₀, care e mereu la adâncim
   centre.forEach((c, k) => assert.ok(near(c, (k + 0.5) * S, 1e-6), `centrul ${k} la ${c}, nu la ${(k + 0.5) * S}`));
 });
 
-test('refuzurile (ADR 0030 §6): pe linie, cu rampă, raza sub 0,5 mm', () => {
+test('refuzurile (ADR 0030 §6): pe linie, raza sub 0,5 mm (cu rampă: `cam.intrari-rampa.test.ts`, ADR 0031)', () => {
   const d = docDin(F, dr('a', 50, 50));
   const motiv = (v: Partial<Operatie>): string => { const r = programDinDocument(cu(d, 'a', v)); return r.ok ? '' : r.motiv; };
   assert.match(motiv({ latura: 'pe-linie' }), /a\/a: intrările cer o parte de deșeu/);
-  assert.match(motiv({ rampa: { lungime: 10 } }), /a\/a: intrările nu se compun încă cu rampa \(felia 2\.5c\)/);
   assert.match(motiv({ intrari: { raza: 0.4 } }), /a\/a: raza intrării de 0\.4 mm e sub 0\.5 mm/);
   assert.equal(motiv({ intrari: { raza: 0.5 } }), '');
 });

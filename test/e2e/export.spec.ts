@@ -453,3 +453,35 @@ test('intrările (ADR 0030): bifate pe dreptunghi, freza plonjează în deșeu �
   await expect(page.locator('[data-intrari="e1/e1"] [data-camp="intrari-raza"]')).toHaveValue('3');
   await expect(page.locator('[data-intrari="e2/e2"] [data-camp="intrari-raza"]')).toHaveValue('30');
 });
+
+test('intrările cu rampă (ADR 0031): rampa coboară pe sfertul intrării, la fiecare trecere; nota din dialog', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const rand = page.locator('[data-operatie="e1/e1"]');
+  await rand.locator('input').nth(0).fill('12');
+  await rand.locator('input').nth(1).fill('4');
+  await rand.locator('[data-camp="rampa"]').check();
+  const nota = page.locator('[data-rampa="e1/e1"] [data-nota="rampa-pe-intrare"]');
+  await expect(nota).toHaveCount(0);
+  await rand.locator('[data-camp="intrari"]').check();
+  await expect(nota).toHaveText('Cu intrări, rampa coboară pe sfertul intrării; lungimea se folosește doar unde intrarea se omite.');
+  const d = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const text = readFileSync(await (await d).path(), 'ascii');
+  await expect(page.getByTestId('export-avertismente')).toHaveCount(0);
+  // Dreptunghiul 100 × 60 la (20, 20), Ø6, urcare: A = (23, 14), p₀ = (20, 17), C = (20, 14). La fiecare trecere: prin aer
+  // până la fața de sus, apoi elicea până la −4, −8, −12, cu viteza pe verticală plafonată la 300 mm/min.
+  const bloc = text.slice(text.indexOf('(e1/e1'));
+  const avans = (dz: number): string => Math.min(1000, (300 * Math.hypot(1.5 * Math.PI, dz)) / dz).toFixed(1);
+  for (const z of [4, 8, 12]) {
+    expect(bloc).toContain(`G0 X23.000 Y14.000\nG1 Z0.000 F300.0\nG3 X20.000 Y17.000 Z-${z}.000 I-3.000 J0.000 F${avans(z)}\n`);
+  }
+  expect(bloc.split('\n').filter((l) => l === 'G1 Z0.000 F300.0')).toHaveLength(3);
+  const doc = await documentSalvat(page, 2);
+  const op = (doc as { piese: Array<{ operatii: Array<{ rampa: unknown; intrari: unknown }> }> }).piese[0]?.operatii[0];
+  expect([op?.rampa, op?.intrari]).toEqual([{ lungime: 10 }, { raza: 3 }]);
+  // Pe linie, intrările se opresc, iar nota dispare.
+  await rand.locator('select[data-camp="latura"]').selectOption('pe-linie');
+  await expect(nota).toHaveCount(0);
+});

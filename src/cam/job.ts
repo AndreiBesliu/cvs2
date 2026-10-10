@@ -8,7 +8,8 @@ import { apropiereContururi } from '../geom/apropiere.ts';
 import type { Contur } from '../geom/contur.ts';
 import { cutieContur, depasire, largita, type Depasire } from '../geom/cutie.ts';
 import { PRAG_REZOLUTIE } from './iesire.ts';
-import { alegeIntrarea, MARJA_SCHELET, RAZA_INTRARE_MINIMA, razeIncercate, type IntrareAleasa } from './intrari.ts';
+import { alegeIntrarea, lungimeSfert, MARJA_SCHELET, RAZA_INTRARE_MINIMA, razeIncercate, type IntrareAleasa } from './intrari.ts';
+import { RAMPA_MINIMA } from './rampaMinima.ts';
 import { traseuProfil } from './traseu.ts';
 import { EPS_VARF, type ParametriUrechi } from './urechi.ts';
 
@@ -111,9 +112,16 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     let intrari: (IntrareAleasa | null)[] | undefined;
     if (t.intrari) {
       if (t.latura === 'pe-linie') return { ok: false, motiv: `${t.idLume}: intrările cer o parte de deșeu, iar pe linie freza taie ambii pereți` };
-      if (t.rampa) return { ok: false, motiv: `${t.idLume}: intrările nu se compun încă cu rampa (felia 2.5c): scoate una dintre ele` };
       if (!(t.intrari.raza >= RAZA_INTRARE_MINIMA)) {
         return { ok: false, motiv: `${t.idLume}: raza intrării de ${t.intrari.raza} mm e sub ${RAZA_INTRARE_MINIMA} mm` };
+      }
+      // ADR 0031 §2: sub rampă, freza coboară pe sfertul intrării, deci el are cel puțin rampa minimă.
+      const cuRampa = t.rampa !== null;
+      if (cuRampa && !(lungimeSfert(t.intrari.raza) >= RAMPA_MINIMA)) {
+        return {
+          ok: false,
+          motiv: `${t.idLume}: raza intrării de ${t.intrari.raza} mm e prea mică pentru rampă: sfertul ei de cerc are ${lungimeSfert(t.intrari.raza).toFixed(3)} mm, sub ${RAMPA_MINIMA} mm`,
+        };
       }
       const bucle = pr.treceri[0]?.contururi ?? [];
       const raza = t.intrari.raza;
@@ -128,9 +136,9 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
           return bucleCuUrechi.every((bs, iu) => bs.every((b, jb) => (iu === it && jb === j)
             || apropiereContururi(semicerc, b).distanta >= scula.diametru + MARJA_SCHELET));
         };
-        const ales = alegeIntrarea(c, t.sens, raza, incape);
+        const ales = alegeIntrarea(c, t.sens, raza, incape, cuRampa);
         if (!ales) {
-          const raze = razeIncercate(raza).map((r) => `${r} mm`).join(', ');
+          const raze = razeIncercate(raza, cuRampa).map((r) => `${r} mm`).join(', ');
           avertismente.push(`${t.idLume}: intrarea omisă pe bucla ${j + 1} (nu încape nicăieri cu raza de ${raze})`);
         }
         return ales;

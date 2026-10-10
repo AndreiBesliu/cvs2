@@ -340,6 +340,10 @@ export function DialogExport(
                         <input type="text" inputMode="decimal" value={p.lungimeRampa} data-camp="rampa-lungime" disabled={doarCitire}
                           aria-invalid={!b.rampa} onChange={(ev) => { schimba(o.cheie, { lungimeRampa: ev.target.value }); }} />
                       </label>
+                      {p.intrari && p.latura !== 'pe-linie' && (
+                        // ADR 0031 §7: cu intrări, rampa coboară pe sfertul intrării.
+                        <span className="nota" data-nota="rampa-pe-intrare">{t('export.rampa.peIntrare')}</span>
+                      )}
                       </div>
                       )}
                       {p.intrari && p.latura !== 'pe-linie' && (

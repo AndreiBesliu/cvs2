@@ -16,6 +16,11 @@ export { RAMPA_MINIMA };
 
 export type RezultatRampa = { readonly ok: true; readonly miscari: readonly Miscare[] } | { readonly ok: false; readonly motiv: string };
 
+/** Refuzul unei rampe mai scurte decât `RAMPA_MINIMA` (ADR 0029, precizarea din 10.10), pe operație; `null` dacă trece. */
+export function refuzLungimeRampa(rampa: ParametriRampa): string | null {
+  return rampa.lungime >= RAMPA_MINIMA ? null : `rampa de ${rampa.lungime} mm e sub ${RAMPA_MINIMA} mm: ar fi o plonjare`;
+}
+
 /** Profilul unei treceri pe o tură [0; P]: urechile, dacă trecerea le traversează, altfel adâncimea plină. */
 function profilTura(P: number, d: number, urechi: ParametriUrechi | undefined): readonly Nod[] | string {
   if (urechi && d > urechi.varf + EPS_VARF) return noduriProfil(P, urechi, d);
@@ -84,9 +89,8 @@ export function buclaCuRampa(
 ): RezultatRampa {
   const P = lungimeBucla(c);
   if (!(P > 0)) return { ok: true, miscari: [] };
-  if (!(rampa.lungime >= RAMPA_MINIMA)) {
-    return { ok: false, motiv: `rampa de ${rampa.lungime} mm e sub ${RAMPA_MINIMA} mm: ar fi o plonjare` };
-  }
+  const refuz = refuzLungimeRampa(rampa);
+  if (refuz) return { ok: false, motiv: refuz };
   const Lr = Math.min(rampa.lungime, P / 2);
   if (Lr < RAMPA_MINIMA) {
     return { ok: false, motiv: `rampa nu încape pe bucla de ${P.toFixed(3)} mm (cel puțin ${2 * RAMPA_MINIMA} mm): scoate rampa operației` };

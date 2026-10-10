@@ -85,6 +85,7 @@ export const en = {
   'export.avertisment': 'Warning: {text}',
   'export.rampa.titlu': 'The cutter descends along the loop instead of plunging straight into the material; a full lap then passes over the ramp again.',
   'export.rampa.lungime': 'Ramp length (mm)',
+  'export.rampa.peIntrare': 'With leads, the ramp descends along the lead-in quarter circle; the length applies only where the lead is omitted.',
   'export.rampa.lungime.titlu': 'The distance in plan over which one pass descends. On a loop shorter than twice this length, the ramp is cut to half the loop.',
   'export.adancime': 'Depth (mm)',
   'export.pas': 'Step down (mm)',

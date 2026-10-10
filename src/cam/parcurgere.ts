@@ -55,6 +55,14 @@ function punctPeSegment(a: Punct, b: Punct, cerc: ReturnType<typeof cerculArculu
 export type RezultatParcurgere = { readonly ok: true; readonly miscari: readonly Miscare[] } | { readonly ok: false; readonly motiv: string };
 
 /**
+ * Avansul unei bucăți de lungime `lung` în plan, cu Z-ul schimbat cu `dz`: una care coboară merge pe verticală cel mult cu
+ * avansul de plonjare, F = min(avans, avansPlonjare·L₃ / |ΔZ|) (ADR 0028 §4, ADR 0029 §3, ADR 0031 §3).
+ */
+export function avansCoborare(lung: number, dz: number, avans: number, avansPlonjare: number): number {
+  return dz < 0 ? Math.min(avans, (avansPlonjare * Math.hypot(lung, dz)) / -dz) : avans;
+}
+
+/**
  * Mișcările de-a lungul buclei, de la primul nod la ultimul (pozițiile desfășurate, crescătoare). Freza e deja în
  * punctul primului nod, la cota lui.
  * - Fiecare segment se taie exact în nodurile din interiorul lui. Un nod la cel mult 1e-6 mm de un vârf e chiar vârful,
@@ -130,7 +138,7 @@ export function parcurge(c: Contur, noduri: readonly Nod[], avans: number, avans
       const la = t.z === zCur ? { X: p.x, Y: p.y } : { X: p.x, Y: p.y, Z: t.z };
       const lung = t.s - sPrec;
       const dz = t.z - zCur;
-      const f = dz < 0 ? Math.min(avans, (avansPlonjare * Math.hypot(lung, dz)) / -dz) : avans;
+      const f = avansCoborare(lung, dz, avans, avansPlonjare);
       if (cerc && lung >= EPS_RUPTURA) {
         m.push({ tip: 'arc', la, centru: cerc.centru, sens: cerc.baleiaj > 0 ? 'trigonometric' : 'orar', avans: f });
       } else {

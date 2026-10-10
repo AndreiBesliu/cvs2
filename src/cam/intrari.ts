@@ -1,7 +1,8 @@
 import { arc, LINIE, numarSegmente, segment, type Contur, type Punct } from '../geom/contur.ts';
 import type { Miscare } from '../ir/ir.ts';
 import { RAZA_INTRARE_MINIMA } from './intrariMinima.ts';
-import { EPS_RUPTURA, incepeLa, lungimeBucla, punctLa } from './parcurgere.ts';
+import { avansCoborare, EPS_RUPTURA, incepeLa, lungimeBucla, punctLa } from './parcurgere.ts';
+import { RAMPA_MINIMA } from './rampaMinima.ts';
 import type { Sens } from './profil.ts';
 
 /**
@@ -18,6 +19,12 @@ export { RAZA_INTRARE_MINIMA };
  * stau la cel puțin D + 1 mm, ca intrarea să nu taie legătura care ține o ureche vecină.
  */
 export const MARJA_SCHELET = 1;
+
+/**
+ * Lungimea sfertului de cerc al intrării, de rază ρ: πρ/2. Sub rampă, freza coboară pe el, deci are cel puțin
+ * `RAMPA_MINIMA` (ADR 0031 §2).
+ */
+export const lungimeSfert = (rho: number): number => (Math.PI * rho) / 2;
 
 /** Lungimile care diferă cu cel mult atât sunt egale în ordinea candidaților (zgomotul de rotunjire nu le ordonează). */
 const EPS_LUNGIME = 1e-6;
@@ -86,18 +93,23 @@ export function candidati(c: Contur): number[] {
 }
 
 /**
- * Razele încercate (ADR 0030 §3): cea cerută, apoi jumătatea ei, dacă e cel puțin 0,5 mm.
+ * Razele încercate (ADR 0030 §3): cea cerută, apoi jumătatea ei, dacă e cel puțin 0,5 mm. Sub rampă (ADR 0031 §2),
+ * jumătatea se încearcă doar dacă și sfertul ei de cerc are cel puțin `RAMPA_MINIMA`; raza cerută o verifică apelantul.
  */
-export function razeIncercate(raza: number): number[] {
-  return [raza, ...(raza / 2 >= RAZA_INTRARE_MINIMA ? [raza / 2] : [])];
+export function razeIncercate(raza: number, cuRampa = false): number[] {
+  const jumatate = raza / 2;
+  const incearca = jumatate >= RAZA_INTRARE_MINIMA && (!cuRampa || lungimeSfert(jumatate) >= RAMPA_MINIMA);
+  return [raza, ...(incearca ? [jumatate] : [])];
 }
 
 /**
  * Alegerea (ADR 0030 §3): pentru fiecare rază încercată, primul candidat al cărui semicerc trece de `incape` (regiunea
  * păstrată, foaia și urechile altor bucle, verificate de apelant).
  */
-export function alegeIntrarea(c: Contur, sens: Sens, raza: number, incape: (semicerc: Contur) => boolean): IntrareAleasa | null {
-  const raze = razeIncercate(raza);
+export function alegeIntrarea(
+  c: Contur, sens: Sens, raza: number, incape: (semicerc: Contur) => boolean, cuRampa = false,
+): IntrareAleasa | null {
+  const raze = razeIncercate(raza, cuRampa);
   const poz = candidati(c);
   for (const rho of raze) {
     for (const s of poz) {
@@ -116,6 +128,17 @@ export function alegeIntrarea(c: Contur, sens: Sens, raza: number, incape: (semi
 /** Intrarea, de la A la p₀, și ieșirea, de la p₀ la B: arce în IR, pe cercul intrării, cu avansul de tăiere. */
 export function arcIntrare(i: IntrareAleasa, avans: number): Miscare {
   return { tip: 'arc', la: { X: i.p0.x, Y: i.p0.y }, centru: i.centru, sens: i.trigonometric ? 'trigonometric' : 'orar', avans };
+}
+
+/**
+ * Intrarea sub rampă (ADR 0031 §3): elicea de la (A, 0) la (p₀, z), cu Z liniar în lungimea arcului, cu avansul plafonat
+ * ca pe orice bucată care coboară.
+ */
+export function arcIntrareCuRampa(i: IntrareAleasa, z: number, avans: number, avansPlonjare: number): Miscare {
+  return {
+    tip: 'arc', la: { X: i.p0.x, Y: i.p0.y, Z: z }, centru: i.centru, sens: i.trigonometric ? 'trigonometric' : 'orar',
+    avans: avansCoborare(lungimeSfert(i.raza), z, avans, avansPlonjare),
+  };
 }
 
 export function arcIesire(i: IntrareAleasa, avans: number): Miscare {
