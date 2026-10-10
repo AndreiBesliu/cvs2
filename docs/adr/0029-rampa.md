@@ -35,6 +35,11 @@ necunoscut `rampa` e refuzată cu motiv (ciocnire de nume). Lanțul v1 → … �
   (s și s + P sunt același punct).
 - **Lr = min(lungime; P / 2).** Pe o buclă mai scurtă decât 2 × lungimea, rampa se scurtează la P / 2: e mai abruptă,
   dar viteza pe verticală rămâne plafonată (punctul 3).
+- **Rampa minimă: 1 mm** (precizarea din 10.10). Sub ea, rampa e o plonjare cu alt nume și iese din rezoluția postului.
+  - dialogul cere lungimea de cel puțin 1 mm;
+  - exportul refuză cu motiv o operație cu lungimea sub 1 mm (documentul o admite, cu `lungime` pozitiv);
+  - exportul refuză și o buclă pe care Lr < 1 mm (P < 2 mm: „rampa nu încape pe buclă”); acolo rampa se scoate de pe
+    operație.
 - **Zonele urechilor:** dacă operația are urechi, zona urechii j e Z_j = [c_j − h − ℓ, c_j + h + ℓ] (ADR 0028 §3). În
   afara zonelor, profilul oricărei treceri e la adâncime plină. `scoate(s)` = capătul c_j + h + ℓ dacă s (modulo P) e
   strict în interiorul zonei j, altfel s. Fără urechi, `scoate(s) = s`.
@@ -78,7 +83,9 @@ plonjarea în vârful 0, ridicarea între treceri.
   Fără rampă, invarianta 10 rămâne cum e.
 - **11 (rampa), nouă.** Rulează în poartă cu documentul.
   - **Pe o operație cu rampă:**
-    - nicio mișcare verticală (X și Y neschimbate) nu coboară în material;
+    - nicio mișcare verticală (X și Y neschimbate) nu coboară în material. **Toleranța** (precizarea din 10.10): o mișcare
+      scrisă cu X și Y neschimbate poate coborî cel mult (d_k − d_{k−1})·0,001 / Lr + 0,0005 mm. E cât coboară o bucată
+      de rampă mai scurtă decât rezoluția postului: capătul rampei poate cădea la o fracțiune de micron după un vârf;
     - la fiecare trecere, coborârea de la −d_{k−1} la −d_k se face de-a lungul buclei, pe Lr în plan, cu intrările
       după regula de la 2;
     - pe porțiunile din afara zonelor urechilor, coborârea e liniară.
@@ -122,6 +129,19 @@ plonjarea în vârful 0, ridicarea între treceri.
 - Implicitul e „fără rampă”, ca placa 1 să rămână neschimbată. Pornirea ei din fabrică (ca în ediția întâi) se decide cu
   owner-ul.
 - Intrările și ieșirile (felia 2.5b, ADR 0030) aduc freza la e_k din afara piesei. Rampa de aici rămâne pe buclă.
+
+**Precizarea din 10.10.2026** (recenzia feliei 2.5a, înainte de orice publicare). Contractul nu dădea rampei o lungime
+minimă.
+- **Pana de material.** O rampă de cel mult 1e-6 mm se pierdea la emitere, iar coborârea se întindea pe tot primul
+  segment. Pe o tăietură prin foaie, tura finală nu-l mai tăia la adâncime: rămânea o pană de până la 4 mm, fără motiv.
+- **Plonjarea verticală.** Sub rezoluția postului, „rampa” ieșea în G-code ca plonjare verticală.
+
+Acum rampa are minimum 1 mm, cu refuzuri. Invarianta 11 are o toleranță declarată pentru bucățile mai scurte decât
+rezoluția postului.
+
+Tot de la recenzie: un program fără rampă e același, octet cu octet, ca în v5, cu o excepție. Pe linie, cu urechi, dacă
+bucla pornește cu un segment de lungime zero (un dreptunghi cu raza colțului cât jumătate din latură), emitentul vechi
+scria o mișcare de lungime zero, iar parcurgerea nouă o sare.
 
 ## Ce am respins
 
