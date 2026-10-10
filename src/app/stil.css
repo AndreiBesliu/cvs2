@@ -238,6 +238,11 @@ footer {
   max-width: 5rem;
 }
 
+/* În tabel, câmpurile de număr sunt înguste: cu urechile, rampa și intrările, tabelul are opt coloane. */
+.dialog table input[type='text'] {
+  max-width: 5.5rem;
+}
+
 /* Câmpul greșit se vede, nu doar motivul. */
 .dialog input[aria-invalid='true'] {
   border-color: var(--rosu);
