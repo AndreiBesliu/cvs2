@@ -48,6 +48,16 @@
  * operație cu rampă, programul buclei e cel din §2 (fără coborâre pe verticală în material, intrările rotite și scoase
  * din zonele urechilor, coborârea liniară pe Lr, tura care acoperă bucla); pe una fără rampă, forma de la §4.
  * Definițiile, legarea etichetei și toleranțele sunt în `rampa.ts`.
+ *
+ * Felia 2.5b (ADR 0030, intrările; sesiune independentă): invarianta 12 e NOUĂ și rulează tot doar cu `regiune`: pe o
+ * operație cu intrări, fiecare buclă are la fiecare trecere intrarea și ieșirea de la §2 (cu p₀ un candidat de la §3),
+ * sau niciuna, și atunci niciun candidat nu încape (verificarea exactă din `intrari.ts`); pe o operație fără intrări,
+ * nicio buclă n-are intrări. Invarianta 9 e AMENDATĂ (porțiunea deschisă de la începutul / sfârșitul trecerii care e o
+ * intrare sau o ieșire nu e încălcare), iar 11 e AMENDATĂ (plonjarea în A, în afara buclei, același A și p₀ la toate
+ * trecerile; precizarea din 10.10: intrarea aleasă încape și pe foaie, și departe de buclele cu urechi, din
+ * `ctx.foaie` și `diametruScula`). Invarianta 10 nu se schimbă în cod: bucla invariantei 9 pornește deja din punctul
+ * în care trecerea intră pe ea (p₀), iar intrarea și ieșirea sunt drumuri deschise la Z constant. `inainteDe0030` rulează poarta de dinainte
+ * (fără 12 și fără amendamente), doar pentru proba că programele fără intrări au EXACT aceleași verdicte.
  */
 import { citeste, esantioane, marginiSubSuprafata, regulaArcGrbl, type Comentariu, type Mutare, type Punct3 } from './gcode.ts';
 import {
@@ -57,6 +67,7 @@ import {
 import { liniiCuAxInvers, verificaSensul } from './sens.ts';
 import { verificaUrechile, vitezaVerticala } from './urechi.ts';
 import { verificaRampa } from './rampa.ts';
+import { regula0030, verificaIntrari } from './intrari.ts';
 
 export type ColtOrigine = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus';
 
@@ -83,7 +94,7 @@ export type ContextPoarta = {
   readonly avansPlonjare?: number;
 };
 
-export type Incalcare = { readonly invarianta: 1 | 2 | 3 | 5 | 6 | 7 | 8 | 9 | 10 | 11; readonly linia: number; readonly mesaj: string };
+export type Incalcare = { readonly invarianta: 1 | 2 | 3 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12; readonly linia: number; readonly mesaj: string };
 
 const TOL = 1e-6;
 /** Rotunjirea la 3 zecimale mută un punct cu cel mult √2/2·10⁻³ mm. */
@@ -198,7 +209,7 @@ function parteaDeTaiere(m: Mutare, ctx: ContextPoarta): Primitiva[] {
   return rez;
 }
 
-export function poarta(text: string, ctx: ContextPoarta): Incalcare[] {
+export function poarta(text: string, ctx: ContextPoarta, o: { readonly inainteDe0030?: boolean } = {}): Incalcare[] {
   const rez: Incalcare[] = [];
   const { evenimente, probleme, comentarii } = citeste(text);
   for (const p of probleme) rez.push({ invarianta: 6, linia: p.linia, mesaj: p.mesaj });
@@ -356,17 +367,23 @@ export function poarta(text: string, ctx: ContextPoarta): Incalcare[] {
 
   // 9: sensul de tăiere (ADR 0027 §6), pe buclele de sub etichetele exterior / interior.
   if (reg) {
-    for (const x of verificaSensul(evenimente, etichete, reg, (p) => laDocument(p, ctx))) rez.push({ invarianta: 9, linia: x.linia, mesaj: x.mesaj });
+    const amendat = !o.inainteDe0030;
+    const regula = amendat ? regula0030(etichete, reg) : undefined;
+    for (const x of verificaSensul(evenimente, etichete, reg, (p) => laDocument(p, ctx), undefined, true, regula)) rez.push({ invarianta: 9, linia: x.linia, mesaj: x.mesaj });
     for (const linia of liniiCuAxInvers(text)) {
       rez.push({ invarianta: 9, linia, mesaj: 'sensul de tăiere: axul pornit cu M4 (invers); tabelul ADR 0027 e doar pentru M3' });
     }
     // 10 și 11: rampa (ADR 0029 §5): pe etichetele cu rampă, urechile pe fundul fiecărei treceri, plus invarianta 11.
-    const rampa = verificaRampa(evenimente, etichete, reg, (p) => laDocument(p, ctx), reg.grosimeFoaie ?? T);
+    const rampa = verificaRampa(evenimente, etichete, reg, (p) => laDocument(p, ctx), reg.grosimeFoaie ?? T, amendat);
     // 10: urechile (ADR 0028 §5), pe aceleași bucle și cu aceeași legare a etichetei de operație (fără etichetele cu rampă).
     for (const x of verificaUrechile(evenimente, etichete, reg, (p) => laDocument(p, ctx), reg.grosimeFoaie ?? T, ctx.diametruScula, rampa.cuRampa)) {
       rez.push({ invarianta: 10, linia: x.linia, mesaj: x.mesaj });
     }
     for (const x of rampa.incalcari) rez.push({ invarianta: x.invarianta, linia: x.linia, mesaj: x.mesaj });
+    // 12 și 11 amendată: intrările și ieșirile (ADR 0030 §7).
+    if (amendat) {
+      for (const x of verificaIntrari(evenimente, etichete, reg, (p) => laDocument(p, ctx), R, ctx.foaie).incalcari) rez.push({ invarianta: x.invarianta, linia: x.linia, mesaj: x.mesaj });
+    }
   }
   // 10, avansul (ADR 0028 §4, precizarea din 09.10): viteza pe verticală a mișcărilor care coboară în material.
   if (ctx.avansPlonjare !== undefined) {

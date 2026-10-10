@@ -44,10 +44,14 @@
  * Felia 2.5a (ADR 0029): tăieturile poartă și rampa fiecărei operații (`TaieturaDoc.rampe`, tot în paralel cu
  * adâncimile), citită de invariantele 10 (amendată) și 11 (`rampa.ts`). Un document mai vechi se aduce întâi la v6
  * (`rampa: null`).
+ *
+ * Felia 2.5b (ADR 0030, sesiune independentă): tăieturile poartă și intrările fiecărei operații (`TaieturaDoc.intrari`,
+ * tot în paralel cu adâncimile), citite de invariantele 9, 11 (amendate) și 12 (`intrari.ts`). Un document mai vechi se
+ * aduce întâi la v7 (`intrari: null`).
  */
 import {
-  ridicaO, taieturiV6O, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type LaturaO, type MatriceO, type RampaO, type SensO,
-  type UrechiO,
+  ridicaO, taieturiV7O, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type DocV7O, type IntrariO, type LaturaO, type MatriceO,
+  type RampaO, type SensO, type UrechiO,
 } from './document.ts';
 
 /** §6: pe traseul exact, distanța la marginea lui K ∪ S(C) e cel puțin R − ε. */
@@ -486,6 +490,13 @@ export type TaieturaDoc = {
   readonly urechi?: ReadonlyMap<LaturaO, ReadonlyArray<UrechiO | null>>;
   /** ADR 0029: rampa fiecărei operații (`null` = fără), în aceeași ordine; lipsă (regiune construită de mână) = fără. */
   readonly rampe?: ReadonlyMap<LaturaO, ReadonlyArray<RampaO | null>>;
+  /** ADR 0030: intrările fiecărei operații (`null` = fără), în aceeași ordine; lipsă (regiune construită de mână) = fără. */
+  readonly intrari?: ReadonlyMap<LaturaO, ReadonlyArray<IntrariO | null>>;
+  /**
+   * ADR 0030 §3 c (precizarea din 10.10): conturul exact al elementului, și pentru cele doar `pe-linie` (care nu sunt
+   * inele), ca traseul buclelor cu urechi să poată fi socotit; lipsă dacă forma nu se poate contura.
+   */
+  readonly contur?: Contur;
 };
 
 export type Regiune = {
@@ -531,22 +542,28 @@ export function regiuneDinInele(
 }
 
 /**
- * §1: inelele foii 0, din tăieturile documentului (oracolul documentului dă matricea în lume și ordinea). Un v3, v4
- * sau v5 se aduce întâi la v6 (sensul `urcare`, ADR 0027 §5; urechile `null`, ADR 0028 §1; rampa `null`, ADR 0029 §1).
+ * §1: inelele foii 0, din tăieturile documentului (oracolul documentului dă matricea în lume și ordinea). Un v3, …,
+ * v6 se aduce întâi la v7 (sensul `urcare`, ADR 0027 §5; urechile `null`, ADR 0028 §1; rampa `null`, ADR 0029 §1;
+ * intrările `null`, ADR 0030 §1).
  */
-export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O): Regiune {
+export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O): Regiune {
   type Acum = {
     forma: FormaO; matrice: MatriceO; laturi: Map<LaturaO, number[]>; sensuri: Map<LaturaO, SensO[]>;
-    urechi: Map<LaturaO, Array<UrechiO | null>>; rampe: Map<LaturaO, Array<RampaO | null>>;
+    urechi: Map<LaturaO, Array<UrechiO | null>>; rampe: Map<LaturaO, Array<RampaO | null>>; intrari: Map<LaturaO, Array<IntrariO | null>>;
   };
   const pe = new Map<string, Acum>();
-  const v5 = doc.schema === 6 ? doc : ridicaO(doc);
-  for (const t of taieturiV6O(v5, 0)) {
+  const v5 = doc.schema === 7 ? doc : ridicaO(doc);
+  for (const t of taieturiV7O(v5, 0)) {
     let x = pe.get(t.idLume);
     if (!x) {
-      x = { forma: t.forma as FormaO, matrice: t.matrice, laturi: new Map(), sensuri: new Map(), urechi: new Map(), rampe: new Map() };
+      x = {
+        forma: t.forma as FormaO, matrice: t.matrice, laturi: new Map(), sensuri: new Map(), urechi: new Map(), rampe: new Map(), intrari: new Map(),
+      };
       pe.set(t.idLume, x);
     }
+    const ii = x.intrari.get(t.latura) ?? [];
+    ii.push(t.intrari);
+    x.intrari.set(t.latura, ii);
     const u = x.urechi.get(t.latura) ?? [];
     u.push(t.urechi);
     x.urechi.set(t.latura, u);
@@ -564,7 +581,11 @@ export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O): Regi
   const probleme: ProblemaRegiune[] = [];
   const taieturi = new Map<string, TaieturaDoc>();
   for (const [idLume, x] of pe) {
-    taieturi.set(idLume, { tip: x.forma.tip, laturi: x.laturi, sensuri: x.sensuri, urechi: x.urechi, rampe: x.rampe });
+    let c: Contur | undefined;
+    try { c = contur(x.forma, x.matrice); } catch { c = undefined; }
+    taieturi.set(idLume, {
+      tip: x.forma.tip, laturi: x.laturi, sensuri: x.sensuri, urechi: x.urechi, rampe: x.rampe, intrari: x.intrari, ...(c ? { contur: c } : {}),
+    });
     const ext = x.laturi.has('exterior'), int = x.laturi.has('interior');
     if (ext && int) {
       probleme.push({ tip: 'ambele-laturi', elemente: [idLume], mesaj: `${idLume} are operații și pe exterior, și pe interior` });

@@ -65,6 +65,13 @@
  *   avansează (Δ > 0), pe orice pereche de eșantioane depărtate cu mai mult de 2·TOL_PE_BUCLA;
  * - drumul fiecărei bucle e ținut în `Bucla.drum`. Prima redactare a acestei reguli rămâne în `verificaSensul(…, false)`,
  *   doar pentru proba că programele fără rampă au EXACT aceleași verdicte (`rampa.oracol.test.ts`).
+ *
+ * AMENDAMENTUL din ADR 0030 §7 (felia 2.5b, intrările; sesiune independentă): la începutul și la sfârșitul unei treceri,
+ * o porțiune deschisă care e o intrare sau o ieșire nu e încălcare. ALEGERE: „la început” = primul element al drumului,
+ * urmat imediat de o buclă închisă; „la sfârșit” = ultimul element, după o buclă închisă. Ce înseamnă „e o intrare” (un
+ * arc tangent la buclă în p₀, de cel mult 90°, cu raza `raza` sau `raza / 2` a operației, pe partea deșeului) e regula
+ * dată de poartă (`regula0030` din `intrari.ts`), ca acest fișier să nu depindă de oracolul intrărilor. Fără regulă
+ * (`regula0030` lipsă), verdictele sunt cele de dinainte de ADR 0030 (proba din `intrari.oracol.test.ts`).
  */
 import type { LaturaO, SensO } from './document.ts';
 import { regulaArcGrbl, type Eveniment, type Mutare, type Punct3 } from './gcode.ts';
@@ -450,6 +457,7 @@ export function liniiCuAxInvers(text: string): number[] {
 export function verificaSensul(
   evenimente: readonly Eveniment[], etichete: readonly EtichetaActiva[], reg: Regiune, laDoc: (p: Punct3) => Punct3,
   bucle: typeof buclele = buclele, regula0029 = true,
+  regula0030?: (o: Bucla, c: Bucla, pozitie: 'inainte' | 'dupa') => boolean,
 ): IncalcareSens[] {
   const rez: IncalcareSens[] = [];
   const sensuri = sensurileEtichetelor(etichete, reg);
@@ -475,6 +483,14 @@ export function verificaSensul(
     if (!b.inchisa) {
       // ADR 0029 §5: tura care continuă spre intrarea următoare stă pe o buclă închisă a aceluiași drum, în același sens.
       if (regula0029 && toate.some((c) => c.inchisa && c.drum === b.drum && peBuclaInchisa(b, c))) continue;
+      // ADR 0030 §7: intrarea (primul element al drumului, înaintea unei bucle închise) sau ieșirea (ultimul, după una).
+      if (regula0030) {
+        const ale = toate.filter((c) => c.drum === b.drum);
+        const k = ale.indexOf(b);
+        const urm = ale[k + 1], prec = ale[k - 1];
+        if (k === 0 && urm?.inchisa && regula0030(b, urm, 'inainte')) continue;
+        if (k === ale.length - 1 && prec?.inchisa && regula0030(b, prec, 'dupa')) continue;
+      }
       rez.push({
         linia: b.linii[0],
         mesaj: `sensul de tăiere: drumul lui ${et.idLume} (${latura}) la ${unde} nu se închide (capătul la ${dist(b.capat, b.start).toFixed(3)} mm de start): sensul nu se poate judeca`,

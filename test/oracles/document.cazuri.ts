@@ -1,5 +1,5 @@
 /**
- * CAZURILE oracolului documentului (ADR 0024 + 0025 + 0027 + 0028 + 0029, documentul v6), cu ZERO importuri din `src/`:
+ * CAZURILE oracolului documentului (ADR 0024 + 0025 + 0027 + 0028 + 0029 + 0030, documentul v7), cu ZERO importuri din `src/`:
  * - `CAZURI_HARTIE`: documente v2 cu punctele în lume calculate de mână, pe hârtie, scrise ca numere (nu calculate
  *   aici). Coordonatele sunt întregi sau puteri ale lui 2, ca egalitatea să fie exactă (`===`). La ușă se migrează la
  *   v4, iar geometria nu se schimbă;
@@ -23,11 +23,16 @@
  * - v6 (ADR 0029, felia 2.5a, tot la sfârșit): `MIGRARI_V5_HARTIE` (v5 → v6 pe hârtie), `CORPUS_V6` (generat),
  *   `REFUZATE_V5` (o operație v5, v4 sau v3 care are deja `rampa`: ciocnire), `OTRAVURI_V6` (cele v5 aduse la v6, plus
  *   `OTRAVURI_RAMPA`, doar `[rampa]`) și `VALIDE_DIFICILE_V6`. Niciun corpus mai vechi nu are `rampa` pe operații.
+ * - v7 (ADR 0030, felia 2.5b, sesiune independentă, tot la sfârșit): `MIGRARI_V6_HARTIE` (v6 → v7 pe hârtie),
+ *   `CORPUS_V7` (generat), `REFUZATE_V6` (o operație v6, v5, v4 sau v3 care are deja `intrari`: ciocnire),
+ *   `OTRAVURI_V7` (cele v6 aduse la v7, plus `OTRAVURI_INTRARI`, doar `[intrari]`) și `VALIDE_DIFICILE_V7`. Capcanele
+ *   `intrari` scrise pe operații înainte de ADR 0030 (W10 în v3; MV5-01 în v5 / v6) sunt acum ciocniri:
+ *   `areIntrariPeOperatii` le găsește, `faraIntrariPeOperatii` le mută în `intrariVechi`.
  */
 import type {
   CategorieO, DocV1O, DocV2O, DocV3O, DocV4O, DocV5O, DocV6O, ElementO, ElementV1O, FoaieO, GrupO, InstantaO, LaturaO, Liber,
   MatriceO, NodO, OperatieO, OperatieV4O, OperatieV5O, OperatieV6O, PiesaO, PiesaV3O, PiesaV4O, PiesaV5O, PiesaV6O, PunctO,
-  RampaO, SculaO, SensO, TaieturaV4O, UrechiO,
+  RampaO, SculaO, SensO, TaieturaV4O, UrechiO, DocV7O, IntrariO, OperatieV7O, PiesaV7O,
 } from './document.ts';
 
 type MatriceScrisa = { -readonly [K in keyof MatriceO]: number };
@@ -3286,5 +3291,367 @@ export const VALIDE_DIFICILE_V6: readonly CazValidV6[] = [
       }],
       foi: [{ ...foaie('f1', [{ ...inst('i1', 'p1', 0, 0, 0), rampa: 1 }]), rampa: null }],
     } as DocV6O,
+  },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// v7 (ADR 0030): intrările operației. Sesiune independentă, scrise doar din textul ADR-ului.
+
+/**
+ * Forma v7 a unui document v6 (sau a unei otrăvi v6): schema 6 devine 7, iar o schemă 7 (otrava „schema mai nouă” a
+ * lui v6) devine 8, ca să rămână otravă; „6” devine „7”. Fiecare operație-obiect care n-are `intrari` primește
+ * `intrari(k)` (implicit `null`; k = a câta, în tot documentul). Pe loc; întoarce documentul.
+ */
+const laV7 = (d: unknown, intrari: (k: number) => IntrariO | null = () => null): unknown => {
+  if (!esteObiectL(d)) return d;
+  if (d['schema'] === 6) d['schema'] = 7;
+  else if (d['schema'] === 7) d['schema'] = 8;
+  else if (d['schema'] === '6') d['schema'] = '7';
+  const piese = d['piese'];
+  let k = 0;
+  if (Array.isArray(piese)) {
+    for (const p of piese) {
+      if (!esteObiectL(p) || !Array.isArray(p['operatii'])) continue;
+      for (const o of p['operatii'] as unknown[]) if (esteObiectL(o) && !Object.hasOwn(o, 'intrari')) o['intrari'] = intrari(k++);
+    }
+  }
+  return d;
+};
+
+const ir = (raza: number): IntrariO => ({ raza });
+/** Intrările pe rând: fără, 3 (dialogul), 5e−324 (cea mai mică pozitivă: ușa o primește, exportul o refuză), 10 000. */
+const intrariPeRand = (k: number): IntrariO | null => [null, ir(3), ir(5e-324), ir(10_000)][k % 4]!;
+
+/** Operațiile unui document au un câmp propriu `intrari` (capcanele scrise înainte de ADR 0030, ciocniri în v7). */
+export function areIntrariPeOperatii(d: unknown): boolean {
+  if (!esteObiectL(d) || !Array.isArray(d['piese'])) return false;
+  return (d['piese'] as unknown[]).some((p) => esteObiectL(p) && Array.isArray(p['operatii'])
+    && (p['operatii'] as unknown[]).some((o) => esteObiectL(o) && Object.hasOwn(o, 'intrari')));
+}
+
+/** O copie fără câmpul `intrari` pe operații: aceeași capcană, mutată în `intrariVechi`, care nu se mai ciocnește. */
+export function faraIntrariPeOperatii<D>(d: D): D {
+  const c = structuredClone(d) as unknown;
+  if (!esteObiectL(c) || !Array.isArray(c['piese'])) return c as D;
+  for (const p of c['piese'] as unknown[]) {
+    if (!esteObiectL(p) || !Array.isArray(p['operatii'])) continue;
+    for (const o of p['operatii'] as unknown[]) {
+      if (esteObiectL(o) && Object.hasOwn(o, 'intrari')) {
+        o['intrariVechi'] = o['intrari'];
+        delete o['intrari'];
+      }
+    }
+  }
+  return c as D;
+}
+
+/**
+ * Migrări v6 → v7 pe hârtie (ADR 0030 §1): `schema: 7` și `intrari: null` pe fiecare operație, și pe `pe-linie`, și pe
+ * cele cu urechi sau rampă; tot restul rămâne, cu câmpurile necunoscute. Un câmp `intrari` în altă parte decât pe
+ * operație (pe sculă, în urechi, în rampă, pe nod, pe formă, pe piesă, pe instanță, pe foaie, sus) nu e o ciocnire.
+ */
+export const MIGRARI_V6_HARTIE: ReadonlyArray<{ readonly nume: string; readonly v6: DocV6O; readonly v7: Liber }> = [
+  {
+    nume: 'MV6-01 trei operații (exterior cu urechi și rampă, interior, pe-linie), câmpuri necunoscute; „intrari” pe sculă, în urechi, în rampă, pe nod, formă, piesă, instanță, foaie și sus',
+    v6: {
+      schema: 6, rev: 9, intrari: 'sus',
+      piese: [{
+        id: 'p1', intrari: 4,
+        radacina: {
+          tip: 'grup', id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, intrari: { raza: 3 },
+          copii: [
+            { tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 80, inaltime: 50, razaColt: 6 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, intrari: null },
+            { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 5, intrari: null }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 20, f: 10 } },
+          ],
+        },
+        operatii: [
+          { id: 'o1', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 6, intrari: [1] }, latura: 'exterior', adancime: 12, pas: 4, sens: 'opozitie', urechi: { numar: 4, latime: 8, grosime: 2, intrari: 'u' }, rampa: { lungime: 10, intrari: { raza: 1 } }, note: 'de pastrat' },
+          { id: 'o2', tip: 'profil', noduri: ['c'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4, sens: 'urcare', urechi: null, rampa: null },
+          { id: 'o3', tip: 'profil', noduri: ['c', 'r'], scula: { numar: 2, nume: 'V 90', diametru: 3.175 }, latura: 'pe-linie', adancime: 1, pas: 1, sens: 'opozitie', urechi: null, rampa: null },
+        ],
+      }],
+      foi: [{
+        id: 'f1', intrari: false, stoc: { latime: 600, inaltime: 400, grosime: 18 },
+        instante: [{ id: 'i1', piesa: 'p1', x: 10, y: 10, rotire: 0, intrari: 'i' }],
+      }],
+    },
+    v7: {
+      schema: 7, rev: 9, intrari: 'sus',
+      piese: [{
+        id: 'p1', intrari: 4,
+        radacina: {
+          tip: 'grup', id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, intrari: { raza: 3 },
+          copii: [
+            { tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 80, inaltime: 50, razaColt: 6 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, intrari: null },
+            { tip: 'element', id: 'c', forma: { tip: 'cerc', raza: 5, intrari: null }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 20, f: 10 } },
+          ],
+        },
+        operatii: [
+          { id: 'o1', tip: 'profil', noduri: ['r'], scula: { numar: 1, nume: 'freza plata', diametru: 6, intrari: [1] }, latura: 'exterior', adancime: 12, pas: 4, sens: 'opozitie', urechi: { numar: 4, latime: 8, grosime: 2, intrari: 'u' }, rampa: { lungime: 10, intrari: { raza: 1 } }, note: 'de pastrat', intrari: null },
+          { id: 'o2', tip: 'profil', noduri: ['c'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'interior', adancime: 8, pas: 4, sens: 'urcare', urechi: null, rampa: null, intrari: null },
+          { id: 'o3', tip: 'profil', noduri: ['c', 'r'], scula: { numar: 2, nume: 'V 90', diametru: 3.175 }, latura: 'pe-linie', adancime: 1, pas: 1, sens: 'opozitie', urechi: null, rampa: null, intrari: null },
+        ],
+      }],
+      foi: [{
+        id: 'f1', intrari: false, stoc: { latime: 600, inaltime: 400, grosime: 18 },
+        instante: [{ id: 'i1', piesa: 'p1', x: 10, y: 10, rotire: 0, intrari: 'i' }],
+      }],
+    },
+  },
+  {
+    nume: 'MV6-02 o piesă fără operații și una cu două operații pe același cerc; ordinea operațiilor rămâne',
+    v6: {
+      schema: 6, rev: 0,
+      piese: [
+        { id: 'a', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [] },
+        {
+          id: 'b', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+          operatii: [
+            { id: 'z', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 2, pas: 1, sens: 'opozitie', urechi: null, rampa: { lungime: 1 } },
+            { id: 'a', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 4, pas: 1, sens: 'urcare', urechi: null, rampa: null },
+          ],
+        },
+      ],
+      foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 10 }, instante: [] }],
+    },
+    v7: {
+      schema: 7, rev: 0,
+      piese: [
+        { id: 'a', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [] },
+        {
+          id: 'b', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 3 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+          operatii: [
+            { id: 'z', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 2, pas: 1, sens: 'opozitie', urechi: null, rampa: { lungime: 1 }, intrari: null },
+            { id: 'a', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: '', diametru: 6 }, latura: 'interior', adancime: 4, pas: 1, sens: 'urcare', urechi: null, rampa: null, intrari: null },
+          ],
+        },
+      ],
+      foi: [{ id: 'f1', stoc: { latime: 100, inaltime: 100, grosime: 10 }, instante: [] }],
+    },
+  },
+  {
+    nume: 'MV6-03 chei capcană pe operație, pe sculă și în rampă (din JSON.parse)',
+    v6: JSON.parse(
+      '{"schema":6,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6,"__proto__":"s"},'
+      + '"latura":"interior","adancime":8,"pas":4,"__proto__":"x","constructor":"Ion","sens":"urcare",'
+      + '"urechi":null,"rampa":{"lungime":7,"__proto__":"r"}}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as DocV6O,
+    v7: JSON.parse(
+      '{"schema":7,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6,"__proto__":"s"},'
+      + '"latura":"interior","adancime":8,"pas":4,"__proto__":"x","constructor":"Ion","sens":"urcare",'
+      + '"urechi":null,"rampa":{"lungime":7,"__proto__":"r"},"intrari":null}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as Liber,
+  },
+];
+
+/**
+ * Un document v7 din sămânță, valid: `genereazaV6(samanta)` fără capcanele `intrari` vechi, cu intrări alese la
+ * întâmplare pe fiecare operație (fără, 3, margini, sau o rază din tot intervalul) și, uneori, capcane: un câmp
+ * `intrari` necunoscut pe sculă, în urechi, în rampă, pe piesă sau sus, un câmp necunoscut în intrări.
+ */
+export function genereazaV7(samanta: number, mare = false): DocV7O {
+  const v6 = faraIntrariPeOperatii(genereazaV6(samanta, mare));
+  const r = aleator(samanta + 0x0a30);
+  const valoare = (): IntrariO | null => {
+    const x = r();
+    if (x < 0.35) return null;
+    if (x < 0.5) return ir(3);
+    if (x < 0.55) return ir(5e-324);
+    if (x < 0.6) return ir(10_000);
+    const o: IntrariO = { raza: (1 - r()) * 50 };
+    return r() < 0.1 ? { ...o, forma: 'arc' } : o;
+  };
+  const piese: PiesaV7O[] = v6.piese.map((p) => ({
+    ...(r() < 0.1 ? { intrari: 3 } : {}),
+    ...p,
+    operatii: p.operatii.map((o): OperatieV7O => ({
+      ...o,
+      ...(r() < 0.1 ? { scula: { ...o.scula, intrari: 'scula' } } : {}),
+      ...(o.urechi !== null && r() < 0.2 ? { urechi: { ...o.urechi, intrari: 1 } } : {}),
+      ...(o.rampa !== null && r() < 0.2 ? { rampa: { ...o.rampa, intrari: { raza: 0 } } } : {}),
+      intrari: valoare(),
+    })),
+  }));
+  return { ...(r() < 0.3 ? { intrari: [] } : {}), ...v6, schema: 7, piese };
+}
+
+export type CazV7 = { readonly nume: string; readonly doc: DocV7O };
+
+export const CORPUS_V7: readonly CazV7[] = [
+  ...Array.from({ length: 16 }, (_, k) => ({ nume: `GV7-${String(k + 1).padStart(2, '0')} generat, sămânța ${7000 + k}`, doc: genereazaV7(7000 + k) })),
+  { nume: 'GV7-17 generat mare: 40 de piese, 3 foi, sămânța 97', doc: genereazaV7(97, true) },
+];
+
+// v6 refuzate la migrare (ADR 0030 §1): o operație v6 care are deja un câmp propriu „intrari”, oricare i-ar fi
+// valoarea. Documentul v6 e valid (câmpul e necunoscut acolo); singura categorie raportată de `verificaV6V7` e
+// `[ciocnire]`. La fel un v5, v4 sau v3 cu „intrari” pe o operație: lanțul îl păstrează până la v6 și se ciocnește la v7.
+
+const bazaV6 = (): DocV6O => laV6(laV5(laV4(bazaV3())), (k) => (k === 0 ? rp(10) : null)) as DocV6O;
+const opV6 = (d: DocV6O, piesa: number, k: number): Liber => ((d.piese[piesa] as PiesaV6O).operatii[k] as OperatieV6O);
+const refuzatV6 = (nume: string, strica: (d: DocV6O) => void): Refuzat => {
+  const d = bazaV6();
+  strica(d);
+  return { nume, doc: d, motiv: 'ciocnire' };
+};
+
+export const REFUZATE_V6: readonly Refuzat[] = [
+  refuzatV6('Z01 operație v6 cu intrari: null (chiar valoarea pe care ar scrie-o migrarea)', (d) => { opV6(d, 0, 0)['intrari'] = null; }),
+  refuzatV6('Z02 operație v6 cu intrari: { raza: 3 } (o valoare v7 bună)', (d) => { opV6(d, 0, 1)['intrari'] = ir(3); }),
+  refuzatV6('Z03 operație v6 cu intrari: []', (d) => { opV6(d, 0, 0)['intrari'] = []; }),
+  refuzatV6('Z04 operație v6 cu intrari: "3 mm"', (d) => { opV6(d, 0, 1)['intrari'] = '3 mm'; }),
+  refuzatV6('Z05 operație v6 cu intrari: undefined, ca proprietate proprie', (d) => { opV6(d, 0, 0)['intrari'] = undefined; }),
+  refuzatV6('Z06 doar operația pe-linie a unei piese fără instanțe are intrari', (d) => {
+    d.piese.push({
+      id: 'p2', radacina: el('x', I()),
+      operatii: [
+        { ...op4('a', ['x'], 'exterior', 'urcare'), urechi: null, rampa: null },
+        { ...op4('b', ['x'], 'pe-linie', 'opozitie', 1, 1), urechi: null, rampa: null, intrari: { raza: 1 } },
+      ],
+    } as PiesaV6O);
+  }),
+  {
+    nume: 'Z07 operație v6 cu __proto__ și intrari (din JSON.parse)',
+    motiv: 'ciocnire',
+    doc: JSON.parse(
+      '{"schema":6,"rev":0,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":1},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"f","diametru":6},"latura":"interior","adancime":1,"pas":1,"sens":"urcare","urechi":null,"rampa":null,"__proto__":"x","intrari":null}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[]}]}',
+    ),
+  },
+  // Lanțul: un v5, v4 sau v3 cu intrari pe operație trece până la v6 (câmp necunoscut) și se ciocnește la v6 → v7.
+  { nume: 'Z08 operație v5 cu intrari: null (lanțul v5 → v6 → v7)', motiv: 'ciocnire', doc: (() => { const d = bazaV5(); opV5(d, 0, 0)['intrari'] = null; return d; })() },
+  refuzatV4('Z09 operație v4 cu intrari: { raza: 3 } (lanțul v4 → … → v7)', (d) => { opV4(d, 0, 1)['intrari'] = ir(3); }),
+  refuzatV3('Z10 operație v3 cu intrari: null (lanțul v3 → … → v7)', (d) => { opV3(d, 0, 0)['intrari'] = null; }),
+];
+
+/**
+ * Otrăvurile v7: cele v6 aduse la forma v7 (`laV7` DUPĂ stricare: fiecare operație-obiect primește `intrari: null`),
+ * plus cele ale intrărilor. Documentul v7 valid de la care pleacă cele noi e `baza6` adus la v7, cu o1 (exterior, cu
+ * urechi și rampă) fără intrări și o2 (interior) cu raza 3. ALEGERE: o1 are rampă, deci intrările nu-i pot fi puse
+ * fără refuzul EXPORTULUI (§6); ușa le-ar primi, dar otrăvurile de mai jos stau pe o2.
+ */
+const baza7 = (): DocV7O => laV7(baza6(), (k) => (k === 1 ? ir(3) : null)) as DocV7O;
+const o7 = (d: DocV7O, k = 1, piesa = 0): Liber => (d.piese[piesa] as PiesaV7O).operatii[k] as OperatieV7O;
+const i7 = (d: DocV7O, k = 1): Liber => o7(d, k)['intrari'] as Liber;
+const otravaIntrari = (nume: string, strica: (d: DocV7O) => void): Otrava => {
+  const d = baza7();
+  strica(d);
+  return { nume, doc: d, categorie: 'intrari' };
+};
+
+export const OTRAVURI_INTRARI: readonly Otrava[] = [
+  otravaIntrari('I01 intrari lipsă (un v6 etichetat schema 7)', (d) => { delete o7(d, 0)['intrari']; }),
+  otravaIntrari('I02 intrari undefined, ca proprietate proprie', (d) => { o7(d)['intrari'] = undefined; }),
+  otravaIntrari('I03 intrari false (oprite, dar nu ca null)', (d) => { o7(d)['intrari'] = false; }),
+  otravaIntrari('I04 intrari true', (d) => { o7(d)['intrari'] = true; }),
+  otravaIntrari('I05 intrari 3 (număr, nu obiect)', (d) => { o7(d)['intrari'] = 3; }),
+  otravaIntrari('I06 intrari [] (listă goală)', (d) => { o7(d)['intrari'] = []; }),
+  otravaIntrari('I07 intrari [{ raza: 3 }] (listă, nu obiect)', (d) => { o7(d)['intrari'] = [ir(3)]; }),
+  otravaIntrari('I08 intrari „3” (text)', (d) => { o7(d)['intrari'] = '3'; }),
+  otravaIntrari('I09 intrari {} (fără rază)', (d) => { o7(d)['intrari'] = {}; }),
+  otravaIntrari('I10 raza 0', (d) => { i7(d)['raza'] = 0; }),
+  otravaIntrari('I11 raza −0', (d) => { i7(d)['raza'] = -0; }),
+  otravaIntrari('I12 raza −3', (d) => { i7(d)['raza'] = -3; }),
+  otravaIntrari('I13 raza 10 000,001 (peste PLAFON.latura)', (d) => { i7(d)['raza'] = 10_000.001; }),
+  otravaIntrari('I14 raza Infinity', (d) => { i7(d)['raza'] = Infinity; }),
+  otravaIntrari('I15 raza NaN', (d) => { i7(d)['raza'] = NaN; }),
+  otravaIntrari('I16 raza „3” (text)', (d) => { i7(d)['raza'] = '3'; }),
+  otravaIntrari('I17 raza null', (d) => { i7(d)['raza'] = null; }),
+  otravaIntrari('I18 raza lipsă, cu alt câmp (diametru)', (d) => { o7(d)['intrari'] = { diametru: 6 }; }),
+  otravaIntrari('I19 raza [3]', (d) => { i7(d)['raza'] = [3]; }),
+  otravaIntrari('I20 o operație pe-linie fără intrari (câmpul e obligatoriu și acolo)', (d) => {
+    (d.piese[0] as PiesaV7O).operatii.push({ ...op4('l', ['e1'], 'pe-linie', 'urcare', 1, 1), urechi: null, rampa: null } as unknown as OperatieV7O);
+  }),
+  otravaIntrari('I21 operația cu raza 0 e a unei piese fără instanțe', (d) => {
+    d.piese.push({ id: 'p2', radacina: el('x', I()), operatii: [{ ...op4('a', ['x'], 'exterior', 'urcare'), urechi: null, rampa: null, intrari: ir(0) }] } as PiesaV7O);
+  }),
+  otravaIntrari('I22 intrari puse pe sculă, nu pe operație', (d) => {
+    const o = o7(d);
+    o['scula'] = { ...(o['scula'] as SculaO), intrari: o['intrari'] };
+    delete o['intrari'];
+  }),
+  otravaIntrari('I23 intrari puse în rampă, nu pe operație', (d) => {
+    const o = o7(d, 0);
+    o['rampa'] = { ...(o['rampa'] as RampaO), intrari: ir(3) };
+    delete o['intrari'];
+  }),
+  otravaIntrari('I24 doar prima operație are raza −1', (d) => { o7(d, 0)['intrari'] = ir(-1); }),
+];
+
+export const OTRAVURI_V7: readonly Otrava[] = [
+  // Otrăvurile v6 construite din nou (unele sunt prea adânci pentru `structuredClone`), aduse la v7, pe loc.
+  ...[...otravuriArbore(4), ...otravuriOperatii(4), ...otravuriSens()].map((o) => ({
+    nume: o.nume.startsWith('v4 ') ? `v7 ${o.nume.slice(3)}` : `v7 ${o.nume}`, doc: laV7(laV6(laV5(o.doc))), categorie: o.categorie,
+  })),
+  ...OTRAVURI_URECHI.map((o) => ({ nume: `v7 ${o.nume}`, doc: laV7(laV6(structuredClone(o.doc))), categorie: o.categorie })),
+  ...OTRAVURI_RAMPA.map((o) => ({ nume: `v7 ${o.nume}`, doc: laV7(structuredClone(o.doc)), categorie: o.categorie })),
+  ...OTRAVURI_INTRARI,
+];
+
+export type CazValidV7 = { readonly nume: string; readonly doc: DocV7O };
+
+export const VALIDE_DIFICILE_V7: readonly CazValidV7[] = [
+  // Fiecare document valid dificil v6, adus la v7, cu intrările pe rând (capcanele `intrari` vechi mutate deoparte).
+  ...VALIDE_DIFICILE_V6.map((c) => ({ nume: `${c.nume} (v7, intrări pe rând)`, doc: laV7(faraIntrariPeOperatii(c.doc), intrariPeRand) as DocV7O })),
+  {
+    nume: 'Q01 la plafoane: raza 10 000 și 5e−324 (ușa le primește; 5e−324 e refuzul EXPORTULUI, §6)',
+    doc: laV7(laV6(laV5(laV4(doc3(
+      [piesa3('p1', grup('g', I(), [el('e1', I()), el('e2', T(50, 0), cerc())]), [op('a', ['e1'], 'exterior'), op('b', ['e2'], 'interior', 8, 4)])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    )))), (k) => (k === 0 ? ir(10_000) : ir(5e-324))) as DocV7O,
+  },
+  {
+    // ADR 0030 §6: intrările pe pe-linie și intrările cu rampă sunt refuzuri ale exportului, nu ale ușii.
+    nume: 'Q02 intrări pe pe-linie, pe exterior (cu urechi și rampă) și pe interior, cu sensuri diferite',
+    doc: laV7(laV6(laV5(doc4([piesa4('p1', grup('g', I(), [el('a', I(), dr(80, 50, 6)), el('b', T(100, 0), cerc(10))]), [
+      op4('l', ['a'], 'pe-linie', 'opozitie', 1, 1), op4('e', ['a'], 'exterior', 'urcare', 12, 4), op4('i', ['b'], 'interior', 'opozitie', 6, 2),
+    ])], [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])]), (k) => (k === 1 ? ur(4, 8, 2) : null)), (k) => (k === 1 ? rp(10) : null)), (k) => ir(1 + k)) as DocV7O,
+  },
+  {
+    nume: 'Q03 raza 0,4 (sub minimul exportului, §6) și raza 0,5 (chiar minimul): documentul e valid',
+    doc: laV7(laV6(laV5(laV4(doc3(
+      [piesa3('p1', grup('g', I(), [el('e1', I()), el('e2', T(50, 0), cerc())]), [op('a', ['e1'], 'exterior'), op('b', ['e2'], 'interior', 8, 4)])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    )))), (k) => (k === 0 ? ir(0.4) : ir(0.5))) as DocV7O,
+  },
+  {
+    nume: 'Q04 un câmp necunoscut în intrări (forma, note) se păstrează; raza 3.0',
+    doc: laV7(laV6(laV5(laV4(baza3()))), (k) => (k === 0 ? { raza: 3.0, forma: 'arc', note: { a: 1 } } : null)) as DocV7O,
+  },
+  {
+    nume: 'Q05 degroșarea și finisarea aceluiași contur, aceeași adâncime, una cu intrări, alta fără',
+    doc: laV7(laV6(laV5(doc4(
+      [piesa4('p1', el('e', I(), dr(80, 50, 6)), [op4('deg', ['e'], 'exterior', 'urcare', 12, 4), op4('fin', ['e'], 'exterior', 'urcare', 12, 12)])],
+      [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])],
+    ), () => ur(4, 8, 2))), (k) => (k === 0 ? ir(3) : null)) as DocV7O,
+  },
+  {
+    nume: 'Q06 chei capcană în intrări și pe operație (din JSON.parse)',
+    doc: JSON.parse(
+      '{"schema":7,"rev":1,"piese":[{"id":"p1","radacina":{"tip":"element","id":"e","forma":{"tip":"cerc","raza":5},'
+      + '"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}},"operatii":[{"id":"o","tip":"profil","noduri":["e"],'
+      + '"scula":{"numar":1,"nume":"freza plata","diametru":6},"latura":"interior","adancime":8,"pas":4,'
+      + '"__proto__":"x","sens":"opozitie","urechi":null,"rampa":null,"intrari":{"raza":2.5,"__proto__":"i","constructor":"c"}}]}],'
+      + '"foi":[{"id":"f1","stoc":{"latime":100,"inaltime":100,"grosime":18},"instante":[{"id":"i1","piesa":"p1","x":50,"y":50,"rotire":0}]}]}',
+    ) as DocV7O,
+  },
+  {
+    nume: 'Q07 un câmp necunoscut „intrari” pe sculă, în urechi, în rampă, pe nod, piesă, instanță, foaie și sus, cu operația fără intrări',
+    doc: {
+      schema: 7, rev: 3, intrari: 'sus',
+      piese: [{
+        id: 'p1', intrari: { raza: 0 },
+        radacina: { ...grup('g', I(), [{ ...el('e', I()), intrari: 'x' }]), intrari: ['x'] },
+        operatii: [{ ...op4('o', ['e'], 'exterior', 'opozitie'), scula: { ...S1(), intrari: ir(3) }, urechi: { ...ur(4, 8, 2), intrari: ir(-1) }, rampa: { ...rp(10), intrari: 0 }, intrari: null }],
+      }],
+      foi: [{ ...foaie('f1', [{ ...inst('i1', 'p1', 0, 0, 0), intrari: 1 }]), intrari: null }],
+    } as DocV7O,
   },
 ];

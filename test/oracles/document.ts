@@ -1,5 +1,5 @@
 /**
- * ORACOLUL documentului v6 (ADR 0029: rampa), peste v5 (ADR 0028: urechile), v4 (ADR 0027: sensul de tăiere), v3 (ADR
+ * ORACOLUL documentului v7 (ADR 0030: intrările și ieșirile), peste v6 (ADR 0029: rampa), peste v5 (ADR 0028: urechile), v4 (ADR 0027: sensul de tăiere), v3 (ADR
  * 0025: operațiile piesei) și v2 (ADR 0024, varianta D: piese cu arbore, instanțe pe foi, cu „Precizările contractului”
  * 1–10), cu ZERO importuri din `src/`. Totul e scris din textul ADR-urilor, nu din codul aplicației: matricea, ordinea
  * elementelor și a tăieturilor în lume, migrările v1 → v2 → v3 → v4 → v5 → v6, marginile lumii și regulile de validitate au aici propria lor copie. Dacă
@@ -94,6 +94,22 @@
  *   câmp necunoscut oarecare;
  * - lanțul v1 → … → v6: operațiile create de migrarea v2 → v3 n-au nici `sens`, nici `urechi`, nici `rampa`; un câmp
  *   `rampa` pus pe o operație v3 sau v4 trece prin migrările până la v5 (câmp necunoscut) și se ciocnește la v5 → v6.
+ *
+ * Din ADR 0030 (documentul v7, felia 2.5b: intrările și ieșirile; sesiune independentă, scris doar din textul ADR-ului;
+ * alegerile mele sunt marcate „ALEGERE”):
+ * - v7 = contractul v6 + `Operatie.intrari`, OBLIGATORIU pe orice operație (ca `rampa`; ALEGERE: și pe `pe-linie`, unde
+ *   intrările sunt refuzate la EXPORT, §6, nu la ușă): `null` sau `{ raza }`, cu `raza` finit în (0, `PLAFON.latura`] =
+ *   (0, 10 000] mm. Categoria nouă e `[intrari]` (lipsa câmpului, tipul, raza);
+ * - ALEGERE: câmpurile necunoscute DIN obiectul `intrari` se păstrează (regula generală din ADR 0024, ca la rampă,
+ *   urechi și sculă); o listă, un număr, un text sau `false` în locul obiectului e `[intrari]`;
+ * - raza sub 0,5 mm, intrările pe `pe-linie` și intrările împreună cu rampa sunt refuzuri ale EXPORTULUI (§6), nu ale
+ *   ușii: documentul le admite (raza e doar pozitivă);
+ * - migrarea v6 → v7 (pură): fiecare operație primește `intrari: null`; tot restul rămâne, cu câmpurile necunoscute. O
+ *   operație v6 care are deja un câmp propriu `intrari` (ORICE valoare, și `null`) e o ciocnire (`[ciocnire]`). ALEGERE:
+ *   ca la `sens`, `urechi` și `rampa`, ciocnirea e doar pe OPERAȚIE; `intrari` pe sculă, în urechi, în rampă, pe nod, pe
+ *   piesă sau sus e un câmp necunoscut oarecare;
+ * - lanțul v1 → … → v7: operațiile create de migrarea v2 → v3 n-au `intrari`; un câmp `intrari` pus pe o operație v3,
+ *   v4 sau v5 trece prin migrările până la v6 (câmp necunoscut) și se ciocnește la v6 → v7.
  */
 
 export type MatriceO = {
@@ -143,6 +159,12 @@ export type OperatieV6O = OperatieV5O & { rampa: RampaO | null };
 export type PiesaV6O = PiesaO & { operatii: OperatieV6O[] };
 export type DocV6O = Liber & { schema: 6; rev: number; piese: PiesaV6O[]; foi: FoaieO[] };
 
+/** ADR 0030: intrările unei operații de profil (raza cercului intrării, pe traseul centrului frezei), sau `null`. */
+export type IntrariO = Liber & { raza: number };
+export type OperatieV7O = OperatieV6O & { intrari: IntrariO | null };
+export type PiesaV7O = PiesaO & { operatii: OperatieV7O[] };
+export type DocV7O = Liber & { schema: 7; rev: number; piese: PiesaV7O[]; foi: FoaieO[] };
+
 /** Ce au în comun v2, v3, v4 și v5 pentru geometrie: operațiile nu schimbă nimic din ea. */
 export type DocArboreO = { readonly piese: readonly PiesaO[]; readonly foi: readonly FoaieO[] };
 
@@ -171,11 +193,13 @@ export type TaieturaV4O = TaieturaO & { sens: SensO };
 export type TaieturaV5O = TaieturaV4O & { urechi: UrechiO | null };
 /** O tăietură v6: și rampa operației ei (ADR 0029), obiectul din document sau `null`. */
 export type TaieturaV6O = TaieturaV5O & { rampa: RampaO | null };
+/** O tăietură v7: și intrările operației ei (ADR 0030), obiectul din document sau `null`. */
+export type TaieturaV7O = TaieturaV6O & { intrari: IntrariO | null };
 
 export type CategorieO =
   | 'schema' | 'id' | 'unic-piese' | 'unic-foi' | 'unic-instante' | 'unic-noduri' | 'unic-elemente' | 'referinta'
   | 'adancime' | 'rotire' | 'finit' | 'plafon' | 'foi' | 'pozitiv' | 'margini' | 'ciocnire' | 'forma'
-  | 'operatie' | 'unic-operatii' | 'referinta-op' | 'scula' | 'sens' | 'urechi' | 'rampa';
+  | 'operatie' | 'unic-operatii' | 'referinta-op' | 'scula' | 'sens' | 'urechi' | 'rampa' | 'intrari';
 
 /** ADR 0027 §5: valorile primite ale sensului, exact; implicitul migrării și al operației noi. */
 export const SENSURI_O: readonly SensO[] = ['urcare', 'opozitie'];
@@ -188,8 +212,14 @@ export const URECHI_DIALOG_O = { numar: 4, latime: 8, grosime: 2 } as const;
 export const RAMPA_IMPLICITA_O = null;
 /** ADR 0029 §1: lungimea cu care se pornește rampa din dialog, în mm. */
 export const RAMPA_DIALOG_O = { lungime: 10 } as const;
+/** ADR 0030 §1: implicitul migrării v6 → v7 și al operației noi (fără intrări). */
+export const INTRARI_IMPLICITE_O = null;
+/** ADR 0030 §1: raza cu care se pornesc intrările din dialog, în mm. */
+export const INTRARI_DIALOG_O = { raza: 3 } as const;
+/** ADR 0030 §6: sub atât (mm), exportul refuză intrările (documentul le admite). */
+export const RAZA_MINIMA_INTRARI_O = 0.5;
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 6;
+export const SCHEMA_CURENTA_O = 7;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -408,23 +438,30 @@ function taieturiCuOperatii<Op extends OperatieO>(
 }
 
 /** Tăieturile unei foi v3, v4, v5 sau v6 (cele 11 câmpuri ale contractului din ADR 0025), în ordinea contractului. */
-export function taieturiV3O(doc: DocV3O | DocV4O | DocV5O | DocV6O, indexFoaie = 0): TaieturaO[] {
+export function taieturiV3O(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O, indexFoaie = 0): TaieturaO[] {
   return taieturiCuOperatii<OperatieO>(doc, indexFoaie).map((x) => x.t);
 }
 
 /** Tăieturile unei foi v4 (sau v5), fiecare cu sensul operației ei (ADR 0027), în aceeași ordine. */
-export function taieturiV4O(doc: DocV4O | DocV5O | DocV6O, indexFoaie = 0): TaieturaV4O[] {
+export function taieturiV4O(doc: DocV4O | DocV5O | DocV6O | DocV7O, indexFoaie = 0): TaieturaV4O[] {
   return taieturiCuOperatii<OperatieV4O>(doc, indexFoaie).map(({ t, op }) => ({ ...t, sens: op.sens }));
 }
 
 /** Tăieturile unei foi v5, fiecare cu sensul și urechile operației ei (ADR 0028), în aceeași ordine. */
-export function taieturiV5O(doc: DocV5O | DocV6O, indexFoaie = 0): TaieturaV5O[] {
+export function taieturiV5O(doc: DocV5O | DocV6O | DocV7O, indexFoaie = 0): TaieturaV5O[] {
   return taieturiCuOperatii<OperatieV5O>(doc, indexFoaie).map(({ t, op }) => ({ ...t, sens: op.sens, urechi: op.urechi }));
 }
 
 /** Tăieturile unei foi v6, fiecare cu sensul, urechile și rampa operației ei (ADR 0029), în aceeași ordine. */
-export function taieturiV6O(doc: DocV6O, indexFoaie = 0): TaieturaV6O[] {
+export function taieturiV6O(doc: DocV6O | DocV7O, indexFoaie = 0): TaieturaV6O[] {
   return taieturiCuOperatii<OperatieV6O>(doc, indexFoaie).map(({ t, op }) => ({ ...t, sens: op.sens, urechi: op.urechi, rampa: op.rampa }));
+}
+
+/** Tăieturile unei foi v7, fiecare cu sensul, urechile, rampa și intrările operației ei (ADR 0030), în aceeași ordine. */
+export function taieturiV7O(doc: DocV7O, indexFoaie = 0): TaieturaV7O[] {
+  return taieturiCuOperatii<OperatieV7O>(doc, indexFoaie).map(({ t, op }) => ({
+    ...t, sens: op.sens, urechi: op.urechi, rampa: op.rampa, intrari: op.intrari,
+  }));
 }
 
 /** ADR 0025: „o singură sculă pe program”. Motivul refuzului exportului (număr sau diametru diferit), sau nimic. */
@@ -596,10 +633,46 @@ export function migreazaV1V6O(v1: DocV1O): DocV6O {
   return migreazaV5V6O(migreazaV1V5O(v1));
 }
 
-/** Orice versiune primită, adusă la versiunea curentă, v6 (o copie; un v6 rămâne neschimbat). */
-export function ridicaO(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O): DocV6O {
+/** Orice versiune primită până la 6, adusă la v6 (o copie; un v6 rămâne neschimbat). */
+export function ridicaV6O(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O): DocV6O {
   if (doc.schema === 6) return structuredClone(doc);
   return migreazaV5V6O(ridicaV5O(doc));
+}
+
+/**
+ * Documentul v7 pe care ADR 0030 îl cere din v6: `schema: 7` și `intrari: null` pe fiecare operație; restul rămâne, cu
+ * câmpurile necunoscute. Documentul de intrare e presupus migrabil (nicio operație cu un câmp propriu `intrari`).
+ */
+export function migreazaV6V7O(v6: DocV6O): DocV7O {
+  const copie = structuredClone(v6);
+  const piese: PiesaV7O[] = copie.piese.map((p) => ({
+    ...p,
+    operatii: p.operatii.map((o): OperatieV7O => ({ ...o, intrari: INTRARI_IMPLICITE_O })),
+  }));
+  return { ...copie, schema: 7, piese };
+}
+
+/** v5 → v6 → v7, …, v1 → … → v7, în lanț. */
+export function migreazaV5V7O(v5: DocV5O): DocV7O {
+  return migreazaV6V7O(migreazaV5V6O(v5));
+}
+export function migreazaV4V7O(v4: DocV4O): DocV7O {
+  return migreazaV6V7O(migreazaV4V6O(v4));
+}
+export function migreazaV3V7O(v3: DocV3O): DocV7O {
+  return migreazaV6V7O(migreazaV3V6O(v3));
+}
+export function migreazaV2V7O(v2: DocV2O): DocV7O {
+  return migreazaV6V7O(migreazaV2V6O(v2));
+}
+export function migreazaV1V7O(v1: DocV1O): DocV7O {
+  return migreazaV6V7O(migreazaV1V6O(v1));
+}
+
+/** Orice versiune primită, adusă la versiunea curentă, v7 (o copie; un v7 rămâne neschimbat). */
+export function ridicaO(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O): DocV7O {
+  if (doc.schema === 7) return structuredClone(doc);
+  return migreazaV6V7O(ridicaV6O(doc));
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -723,10 +796,22 @@ export function problemeRampaO(op: Liber): string[] {
 }
 
 /**
+ * ADR 0030 §1: de ce câmpul `intrari` al unei operații v7 nu e bun (lipsă, alt tip, raza în afara intervalului), ca
+ * listă de motive; goală = `null` sau un obiect bun (câmpurile necunoscute din el se păstrează, ALEGERE din antet).
+ */
+export function problemeIntrariO(op: Liber): string[] {
+  if (!Object.hasOwn(op, 'intrari')) return ['lipsește (v7 îl cere: null sau { raza })'];
+  const x = op['intrari'];
+  if (x === null) return [];
+  if (!esteObiect(x)) return [`= ${JSON.stringify(x) ?? String(x)} nu e null sau obiect`];
+  return inInterval(x['raza'], PLAFOANE_O.latura) ? [] : [`.raza = ${String(x['raza'])} nu e în (0, ${PLAFOANE_O.latura}]`];
+}
+
+/**
  * Lista încălcărilor contractului v2 (`schema` 2), v3 (`schema` 3, cu operațiile), v4 (`schema` 4, cu sensul fiecărei
  * operații) sau v5 (`schema` 5, cu urechile); goală = document valid. Merge iterativ: un arbore adânc nu umple stiva.
  */
-function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6): string[] {
+function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7): string[] {
   const probleme: string[] = [];
   const semnaleaza: Semnaleaza = (categorie, mesaj) => { probleme.push(`[${categorie}] ${mesaj}`); };
   const u = unelte(semnaleaza);
@@ -821,6 +906,8 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6): string[] {
       if (schema >= 5) for (const m of problemeUrechiO(op)) semnaleaza('urechi', `${co}.urechi ${m}`);
       // ADR 0029 §1: obligatoriu în v6, pe orice operație (și `pe-linie`, ALEGERE din antet).
       if (schema >= 6) for (const m of problemeRampaO(op)) semnaleaza('rampa', `${co}.rampa ${m}`);
+      // ADR 0030 §1: obligatoriu în v7, pe orice operație (și `pe-linie`, ALEGERE din antet: refuzul e al exportului).
+      if (schema >= 7) for (const m of problemeIntrariO(op)) semnaleaza('intrari', `${co}.intrari ${m}`);
       if (!inInterval(op['adancime'], PLAFOANE_O.adancimeOperatie)) semnaleaza('operatie', `${co}.adancime = ${String(op['adancime'])} nu e în (0, ${PLAFOANE_O.adancimeOperatie}]`);
       if (!inInterval(op['pas'], PLAFOANE_O.pasOperatie)) semnaleaza('operatie', `${co}.pas = ${String(op['pas'])} nu e în (0, ${PLAFOANE_O.pasOperatie}]`);
       scula(`${co}.scula`, op['scula']);
@@ -972,6 +1059,60 @@ export function verificaV5(doc: unknown): string[] {
 /** Lista încălcărilor contractului v6 (ADR 0024 + 0025 + 0027 + 0028 + 0029); goală = document v6 valid. */
 export function verificaV6(doc: unknown): string[] {
   return verificaArboreO(doc, 6);
+}
+
+/** Lista încălcărilor contractului v7 (ADR 0024 + 0025 + 0027 + 0028 + 0029 + 0030); goală = document v7 valid. */
+export function verificaV7(doc: unknown): string[] {
+  return verificaArboreO(doc, 7);
+}
+
+/**
+ * De ce ușa trebuie să refuze un document v6, ca listă de probleme; goală = se migrează la v7. Contractul v6, apoi
+ * ciocnirea de nume (o operație cu un câmp propriu `intrari`, oricare i-ar fi valoarea, și `null`), apoi documentul
+ * MIGRAT trebuie să respecte contractul v7.
+ */
+export function verificaV6V7(doc: unknown): string[] {
+  const probleme = verificaV6(doc);
+  if (esteObiect(doc) && Array.isArray(doc['piese'])) {
+    doc['piese'].forEach((p: unknown, i) => {
+      if (!esteObiect(p) || !Array.isArray(p['operatii'])) return;
+      p['operatii'].forEach((op: unknown, k) => {
+        if (esteObiect(op) && Object.hasOwn(op, 'intrari')) {
+          probleme.push(`[ciocnire] piese[${i}].operatii[${k}]: câmpul „intrari” al operației v6 s-ar pierde în migrare`);
+        }
+      });
+    });
+  }
+  if (probleme.length > 0) return probleme;
+  return verificaV7(migreazaV6V7O(doc as DocV6O));
+}
+
+/** v5 până la v7: `verificaV5V6`, apoi v6-ul migrat prin `verificaV6V7` (un câmp `intrari` pe o operație v5 se ciocnește). */
+export function verificaV5V7(doc: unknown): string[] {
+  const probleme = verificaV5V6(doc);
+  if (probleme.length > 0) return probleme;
+  return verificaV6V7(migreazaV5V6O(doc as DocV5O));
+}
+
+/** v4 până la v7: `verificaV4V6`, apoi v6-ul migrat prin `verificaV6V7`. */
+export function verificaV4V7(doc: unknown): string[] {
+  const probleme = verificaV4V6(doc);
+  if (probleme.length > 0) return probleme;
+  return verificaV6V7(migreazaV4V6O(doc as DocV4O));
+}
+
+/** v3 până la v7: `verificaV3V6`, apoi v6-ul migrat prin `verificaV6V7`. */
+export function verificaV3V7(doc: unknown): string[] {
+  const probleme = verificaV3V6(doc);
+  if (probleme.length > 0) return probleme;
+  return verificaV6V7(migreazaV3V6O(doc as DocV3O));
+}
+
+/** v2 până la v7: `verificaV2V6`, apoi v6-ul migrat (operațiile create de migrare n-au `intrari`). */
+export function verificaV2V7(doc: unknown): string[] {
+  const probleme = verificaV2V6(doc);
+  if (probleme.length > 0) return probleme;
+  return verificaV6V7(migreazaV2V6O(doc as DocV2O));
 }
 
 /**
@@ -1139,15 +1280,36 @@ export function verificaV1(doc: unknown): string[] {
   });
   if (probleme.length > 0) return probleme;
   // Precizarea 5: „un document v1 cu valori peste aceste margini e refuzat la migrare”: se judecă documentul migrat,
-  // apoi lanțul continuă la v3, la v4, la v5 și la v6.
-  return verificaV2V6(migreazaV1O(doc as DocV1O));
+  // apoi lanțul continuă la v3, la v4, la v5, la v6 și la v7.
+  return verificaV2V7(migreazaV1O(doc as DocV1O));
 }
 
-/** Ce spune ușa despre orice document: după `schema`, verificarea versiunii lui (și a migrării până la 6). */
+/** Ce spune ușa despre orice document: după `schema`, verificarea versiunii lui (și a migrării până la 7). */
 export function verificaO(doc: unknown): string[] {
   if (!esteObiect(doc)) return ['[schema] documentul nu e un obiect'];
   const s = doc['schema'];
   if (s === 1) return verificaV1(doc);
+  if (s === 2) return verificaV2V7(doc);
+  if (s === 3) return verificaV3V7(doc);
+  if (s === 4) return verificaV4V7(doc);
+  if (s === 5) return verificaV5V7(doc);
+  if (s === 6) return verificaV6V7(doc);
+  if (s === 7) return verificaV7(doc);
+  return [`[schema] schema = ${JSON.stringify(s)} nu e 1, 2, 3, 4, 5, 6 sau 7`];
+}
+
+/**
+ * Ușa unei aplicații rămase pe schema 6 (înainte de felia 2.5b), pentru lipire: verificarea versiunii documentului și a
+ * migrării până la 6, cu `intrari` un câmp necunoscut oarecare; schema 7 e refuzată. Un v1 nu poate purta `intrari`
+ * pe o operație (migrarea v2 → v3 creează operațiile), deci lanțul lui până la 6 ajunge.
+ */
+export function verificaPanaLaV6O(doc: unknown): string[] {
+  if (!esteObiect(doc)) return ['[schema] documentul nu e un obiect'];
+  const s = doc['schema'];
+  if (s === 1) {
+    const p = verificaV1(doc);
+    return p.length > 0 ? p : verificaV6(migreazaV1V6O(doc as DocV1O));
+  }
   if (s === 2) return verificaV2V6(doc);
   if (s === 3) return verificaV3V6(doc);
   if (s === 4) return verificaV4V6(doc);

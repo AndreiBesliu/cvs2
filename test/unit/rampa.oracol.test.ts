@@ -43,7 +43,9 @@ import { programulAplicatiei, schemaAplicatiei } from './ajutor-lipire.ts';
 
 const AVANS_PLONJARE = 300;
 const SCHEMA = await schemaAplicatiei();
-const LIPIRE = SCHEMA === 6 ? false : `aplicația e pe schema ${SCHEMA}; lipirea rampei cere documentul v6 (ADR 0029)`;
+// Felia 2.5b (sesiune independentă): poarta era `SCHEMA === 6`, deci pe aplicația v7 TOATĂ lipirea rampei (12 teste) se
+// sărea în tăcere (exit 0). Acum rulează pe ≥ 6; pe o aplicație mai veche, testul de schemă de mai jos PICĂ (nu se sare).
+const LIPIRE = SCHEMA >= 6 ? false : `aplicația e pe schema ${SCHEMA}; lipirea rampei cere documentul v6 (ADR 0029)`;
 
 const egal = (a: number, b: number, mesaj = '', tol = 1e-9): void => assert.ok(Math.abs(a - b) <= tol, `${mesaj}: ${a} ≠ ${b}`);
 const mesaje = (v: readonly Incalcare[]): string => v.map((i) => `[${i.invarianta}] ${i.linia}: ${i.mesaj}`).join('\n');
@@ -426,8 +428,8 @@ test('(o) amendamentul 9 nu lasă să treacă o porțiune deschisă care NU stă
 
 // ── Lipirea cu aplicația ────────────────────────────────────────────────────────────────────────────────────────────
 
-test('lipire: aplicația e pe schema 6 (ușa primește un v6)', { skip: LIPIRE }, () => {
-  assert.equal(SCHEMA, 6);
+test('lipire: aplicația e pe schema ≥ 6 (ușa primește un v6); pe una mai veche testul PICĂ', () => {
+  assert.ok(SCHEMA >= 6, `schema ${SCHEMA}`);
 });
 
 for (const c of CAZURI_RAMPA) {

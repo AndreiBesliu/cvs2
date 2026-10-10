@@ -461,8 +461,8 @@ test('(o) amendamentul 9 (ADR 0028 §5): fiecare trecere cu urechi e o buclă î
 
 // ── Lipirea cu aplicația ────────────────────────────────────────────────────────────────────────────────────────────
 
-test('lipire: aplicația e pe schema 5 sau 6 (ușa primește un v5)', { skip: LIPIRE }, () => {
-  assert.ok(SCHEMA === 5 || SCHEMA === 6, `schema ${SCHEMA}`);
+test('lipire: aplicația e pe schema 5–7 (ușa primește un v5); pe una mai veche testul PICĂ, nu se sare', () => {
+  assert.ok(SCHEMA >= 5 && SCHEMA <= 7, `schema ${SCHEMA}`);
 });
 
 for (const c of CAZURI_URECHI) {

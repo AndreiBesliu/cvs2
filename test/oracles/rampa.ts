@@ -65,8 +65,13 @@
  *   coborârii ±(Lr·(0,0011·m / ΣΔZ + 0,0015·m / Σs) + 0,003), cu m bucăți măsurate; acoperirea și coborârea sub fund pe
  *   banda tp = 0,003 + 0,0042·Θ (fundul de pe hârtie față de program, ±TOL_Z_RAMPA), eșantionată la 0,05 mm: niciun gol
  *   mai lung de 2·tp + 0,1 (cusăturile și pasul eșantionării; o pană de rampă are Lr).
+ *
+ * Felia 2.5b (ADR 0030, sesiune independentă): legarea etichetei de operație se face pe tuplul (urechi, rampă,
+ * intrări); pe o operație cu intrări (fără rampă, nu `pe-linie`), forma trecerilor (invarianta 11 amendată: plonjarea în
+ * A, intrarea, bucla, ieșirea) o judecă `intrari.ts`, deci `formaFaraRampa` nu mai rulează aici pentru ea
+ * (`regula0030 = false`: comportamentul de dinainte, pentru proba echivalenței).
  */
-import type { RampaO, UrechiO } from './document.ts';
+import type { IntrariO, RampaO, UrechiO } from './document.ts';
 import { citeste, regulaArcGrbl, type Eveniment, type Punct3 } from './gcode.ts';
 import type { Primitiva, Regiune } from './regiune.ts';
 import { LUNGIME_MINIMA, orientareMontaj, TOL_INCHIDERE, TOL_SUB, type EtichetaActiva, type P2 } from './sens.ts';
@@ -415,24 +420,30 @@ function zMinIn(l: Lant, w0: number, w1: number): number {
 // ---------------------------------------------------------------------------------------------------------------
 // Legarea etichetei de operație, pe perechea (urechi, rampă).
 
-export type ParametriEticheta = { readonly urechi: UrechiO | null; readonly rampa: RampaO | null; readonly adancime: number };
+export type ParametriEticheta = {
+  readonly urechi: UrechiO | null; readonly rampa: RampaO | null; readonly adancime: number;
+  /** ADR 0030: intrările operației legate (`null` = fără). */
+  readonly intrari: IntrariO | null;
+};
 
 export function parametriiEtichetelor(etichete: readonly EtichetaActiva[], reg: Regiune): Array<ParametriEticheta | { readonly motiv: string } | null> {
   const aparitii = new Map<string, number>();
-  const text = (u: UrechiO | null, r: RampaO | null): string => `${u === null ? 'null' : `${u.numar}|${u.latime}|${u.grosime}`}#${r === null ? 'null' : String(r.lungime)}`;
+  const text = (u: UrechiO | null, r: RampaO | null, i: IntrariO | null): string =>
+    `${u === null ? 'null' : `${u.numar}|${u.latime}|${u.grosime}`}#${r === null ? 'null' : String(r.lungime)}#${i === null ? 'null' : String(i.raza)}`;
   return etichete.map(({ eticheta: et }) => {
     if (!et) return null;
     const t = reg.taieturi.get(et.idLume);
     const adancimi = t?.laturi.get(et.latura) ?? [];
     const urechi = t?.urechi?.get(et.latura) ?? [];
     const rampe = t?.rampe?.get(et.latura) ?? [];
+    const intrari = t?.intrari?.get(et.latura) ?? [];
     const candidate = adancimi.flatMap((a, k) => (Math.abs(a - et.adancime) <= TOL_ADANCIME ? [k] : []));
     if (candidate.length === 0) return { motiv: `${et.idLume} n-are o operație ${et.latura} de ${et.adancime} mm` };
     const cheie = `${et.idLume}|${et.latura}|${candidate.join(',')}`;
     const k = aparitii.get(cheie) ?? 0;
     aparitii.set(cheie, k + 1);
-    const valori = candidate.map((c) => ({ urechi: urechi[c] ?? null, rampa: rampe[c] ?? null, adancime: adancimi[c]! }));
-    if (valori.every((v) => text(v.urechi, v.rampa) === text(valori[0]!.urechi, valori[0]!.rampa))) return valori[0]!;
+    const valori = candidate.map((c) => ({ urechi: urechi[c] ?? null, rampa: rampe[c] ?? null, adancime: adancimi[c]!, intrari: intrari[c] ?? null }));
+    if (valori.every((v) => text(v.urechi, v.rampa, v.intrari) === text(valori[0]!.urechi, valori[0]!.rampa, valori[0]!.intrari))) return valori[0]!;
     if (k < valori.length) return valori[k]!;
     return { motiv: `${et.idLume} are ${valori.length} operații ${et.latura} de ${et.adancime} mm cu urechi sau rampe diferite, iar eticheta apare de ${k + 1} ori` };
   });
@@ -532,7 +543,7 @@ function judecaCuRampa(l: Lant, cine: string, par: ParametriEticheta, rampa: Ram
 }
 
 /** Invarianta 11 pe un lanț fără rampă (forma de la §4), fără ordinea și punctul plonjării (judecate pe etichetă). */
-function formaFaraRampa(l: Lant, cine: string): IncalcareRampa[] {
+export function formaFaraRampa(l: Lant, cine: string): IncalcareRampa[] {
   const rez: IncalcareRampa[] = [];
   const p0 = l.pasi[0]!;
   if (!(coboaraPeVerticala(p0) && p0.za >= -TOL_SUB)) {
@@ -567,6 +578,7 @@ function peLant(l: Lant, q: P2): boolean {
  */
 export function verificaRampa(
   evenimente: readonly Eveniment[], etichete: readonly EtichetaActiva[], reg: Regiune, laDoc: (p: Punct3) => Punct3, grosimeFoaie: number,
+  regula0030 = true,
 ): { readonly incalcari: IncalcareRampa[]; readonly cuRampa: ReadonlySet<number> } {
   const rez: IncalcareRampa[] = [];
   const par = parametriiEtichetelor(etichete, reg);
@@ -590,7 +602,8 @@ export function verificaRampa(
       continue;
     }
     if (x.rampa === null) {
-      rez.push(...formaFaraRampa(l, cine));
+      // ADR 0030 §7: pe o operație cu intrări, forma trecerilor e a lui `intrari.ts`.
+      if (!(regula0030 && x.intrari !== null && et.latura !== 'pe-linie')) rez.push(...formaFaraRampa(l, cine));
       const lista = peEticheta.get(l.eticheta) ?? [];
       lista.push(l);
       peEticheta.set(l.eticheta, lista);
