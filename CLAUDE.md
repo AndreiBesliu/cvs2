@@ -127,6 +127,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Regula: nimic portat nu intră fără probele noi ale proiectului (oracol, martor). Ce trece în codul nou e
   re-probat acolo, nu crezut pe cuvânt.
 
+- 10.10.2026: **rampa rămâne oprită implicit** pe formele noi până la placa 1 („Ok” la recomandarea din raportul feliei
+  2.5b); pornirea ei din fabrică (ca în ediția întâi) se reia după placă.
 - 10.10.2026: **desenul rămâne în etapa 6** („Planul neschimbat”, din trei variante: reordonarea etapei 2 cu panoul de
   proprietăți și importul SVG întâi; un desen minim adus acum; planul neschimbat). Feliile etapei 2 merg în ordinea din
   fișă: 2.5 intrările, 2.6 dog-bone, 2.7 importul SVG, 2.8 panoul de proprietăți.

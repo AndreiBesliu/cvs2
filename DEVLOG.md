@@ -1101,3 +1101,20 @@ cu urechi.
 - textele CAM (refuzuri, avertismente) sunt doar în română, și în interfața engleză;
 - intrarea e doar un sfert de cerc; alegerea de mână vine cu panoul de proprietăți;
 - cu ρ > D, ieșirea ultimei treceri poate împinge un miez liber (limită scrisă în ADR).
+
+## 2026-10-10 — Etapa 2, felia 2.5c: intrările cu rampă (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok”. **Started:** 19:53. **Clasa:** R2 (mișcă mașina). **Estimarea:** ~½ zi activă, plus oracolul
+independent (~0,7 M tokeni) și recenzia (o lentilă CAM, ~0,7 M).
+
+**„Ok” la raportul feliei 2.5b:** rampa rămâne oprită implicit pe formele noi până la placa 1 (recomandarea), iar felia
+2.5c pornește.
+
+**Forma, schimbată față de fișă:** fișa cerea compunerea „cu bucla tăiată continuu”. Nu se poate fără a încălca
+invarianta 1: intrarea și ieșirea taie în deșeu, în material proaspăt, deci ieșirea trebuie coborâtă cu un pas la fiecare
+trecere. Freza trece prin deșeu la fiecare trecere, iar singurul drum tangent înapoi pe buclă, fără ridicare, e cercul
+întreg al intrării. ADR 0031: pe o buclă cu intrare, rampa coboară pe sfertul intrării, de la fața de sus, la fiecare
+trecere (ca în ediția întâi); buclele fără intrare păstrează rampa din ADR 0029.
+
+**Ce intră:** ADR 0031 (documentul rămâne v7); refuzul combinației scos; razele sub rampă doar cu sfertul de cel puțin
+1 mm; elicea intrării cu avansul plafonat; nota din dialog; programele fără combinație, aceleași octet cu octet.

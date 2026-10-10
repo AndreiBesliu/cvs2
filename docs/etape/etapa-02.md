@@ -24,7 +24,7 @@ Bugetul unei felii e ~½ zi activă, până la prima măsurătoare (`PLAN.md` §
 | 2.4 | Urechile ca modificator Z(s), portate cu cele 88 de verificări pe hârtie; vârful urechii măsurat de la fundul materialului (`docs/PORTARE.md` §3.1) | B1 | R2 | 2.3a |
 | 2.5a | Rampa (ADR 0029, documentul v6): bucla tăiată continuu, intrarea rotită, compusă cu urechile (portată, `docs/PORTARE.md` §3.2) | B1 | R2 | 2.4 |
 | 2.5b | Intrările și ieșirile, alese față de regiunea păstrată (ADR 0030, documentul v7; portate, `docs/PORTARE.md` §3.2), fără rampă | B1 | R2 | 2.5a |
-| 2.5c | Intrările compuse cu rampa (bucla tăiată continuu) | B1 | R2 | 2.5b |
+| 2.5c | Intrările compuse cu rampa: rampa pe sfertul intrării (ADR 0031; din 10.10, nu „bucla tăiată continuu”: invarianta 1 cere ieșirea coborâtă cu un pas la fiecare trecere) | B1 | R2 | 2.5b |
 | 2.6 | Dog-bone și T-bone | B2 | R1 | 2.3a |
 | 2.7 | Importul SVG: DOMParser inert, unități, viewBox, transformări, plafonul de mărime; biarcele (T6) cu bugetul de toleranță (`docs/PORTARE.md` §3.3); fațada PathKit minimă (reuniunea + R3) pentru normalizarea `nonzero` de la ușă | A4, I10b | R2 | 2.1 |
 | 2.8 | Stratul WebGL2 (foaia, traseul ca LINE_STRIP) și panoul de proprietăți | I7, I19 | R2 | 2.2 |

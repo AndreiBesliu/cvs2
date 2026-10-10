@@ -147,7 +147,7 @@ Avertismentele exportului (intrarea omisă) se arată sub rezultat.
   ureche. Asta e dinainte de această felie (ADR 0028). Condiția c de la §3 privește doar intrările.
 
 - **Intrările cu rampă** vin în felia 2.5c. Rampa taie bucla fără ridicare între treceri, deci intrarea și ieșirea se
-  leagă altfel de ea.
+  leagă altfel de ea. (Contractul lor e ADR 0031: rampa pe sfertul intrării; ieșirea care urcă în Z a fost respinsă acolo.)
 - Intrarea e un arc tangent, de un sfert de cerc. Intrarea în linie, cea perpendiculară sau cea cu suprapunere pot veni
   dacă atelierele le cer.
 - Candidații sunt puncte fixe (vârful 0 și mijloacele segmentelor). Alegerea de mână vine cu panoul de proprietăți.
