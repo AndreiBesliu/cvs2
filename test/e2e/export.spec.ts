@@ -358,3 +358,52 @@ test('urechile (ADR 0028): bifate pe dreptunghi, cu implicitele 4 × 8 × 2, pal
   const fara = readFileSync(await (await d2).path(), 'ascii');
   expect(fara).not.toMatch(/Z-16\.000/);
 });
+
+test('rampa (ADR 0029): bifată pe dreptunghi, freza coboară pe buclă, nu drept, fără ridicare între treceri; intră în document', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const rand = page.locator('[data-operatie="e1/e1"]');
+  await rand.locator('input').nth(0).fill('12');
+  await rand.locator('input').nth(1).fill('4');
+  const bifa = rand.locator('[data-camp="rampa"]');
+  await expect(bifa).not.toBeChecked();
+  await expect(page.locator('[data-rampa="e1/e1"]')).toHaveCount(0);
+  await bifa.check();
+  const lungime = page.locator('[data-rampa="e1/e1"] [data-camp="rampa-lungime"]');
+  await expect(lungime).toHaveValue('10');
+  // O lungime care nu e număr oprește exportul, cu motivul rampei.
+  await lungime.fill('zece');
+  await expect(page.getByTestId('export-invalid')).toHaveText(/^Rampa: lungimea trebuie să fie un număr între 1 și 10\.000 mm/);
+  // Sub rampa minimă (1 mm), tot invalidă: ar fi o plonjare.
+  await lungime.fill('0,5');
+  await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
+  await lungime.fill('10');
+  const d = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const text = readFileSync(await (await d).path(), 'ascii');
+  const linii = text.split('\n');
+  // O singură mișcare verticală, la fața de sus, prin aer; nicio ridicare până la sfârșit.
+  expect(linii.filter((l) => /^G1 Z/.test(l))).toEqual(['G1 Z0.000 F300.0']);
+  const taieri = linii.findIndex((l) => l === 'G1 Z0.000 F300.0');
+  expect(linii.slice(taieri).filter((l) => /^G0 /.test(l))).toEqual(['G0 Z5.000']);
+  // Fiecare trecere coboară pe rampă: −4, −8, −12, cu viteza pe verticală plafonată (F sub avansul de tăiere).
+  for (const z of ['-4.000', '-8.000', '-12.000']) {
+    expect(text).toMatch(new RegExp(`^G[123] X[-\\d.]+ Y[-\\d.]+ Z${z}( I[-\\d.]+ J[-\\d.]+)?( F\\d+\\.\\d)?$`, 'm'));
+  }
+  const doc = await documentSalvat(page, 2);
+  expect((doc as { piese: Array<{ operatii: Array<{ rampa: unknown }> }> }).piese[0]?.operatii[0]?.rampa).toEqual({ lungime: 10 });
+  expect(poarta(text, {
+    foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'stanga-jos', z0: 'sus', diametruScula: 6, pas: 4,
+    supracursa: 0, asteptareAx: 3, avansPlonjare: 300, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
+  })).toEqual([]);
+  // Redeschis, dialogul arată rampa; scoasă bifa, programul revine la plonjări.
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(bifa).toBeChecked();
+  await bifa.uncheck();
+  const d2 = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const fara = readFileSync(await (await d2).path(), 'ascii');
+  expect(fara.split('\n').filter((l) => /^G1 Z/.test(l))).toEqual(['G1 Z-4.000 F300.0', 'G1 Z-8.000 F300.0', 'G1 Z-12.000 F300.0']);
+});
