@@ -1012,3 +1012,41 @@ compune cu ele; intrările se aleg apoi față de regiunea păstrată, pe bucla 
 **Ce intră:** ADR 0029 (documentul v6 cu `Operatie.rampa`, migrarea v5 → v6 cu `null`); bucla cu rampă tăiată continuu
 (rampa pe Lr = min(lungime; P/2), tura plină care o re-acoperă, intrarea rotită și scoasă din zonele urechilor, fără
 ridicare între treceri); coloana Rampă în dialog.
+
+**Completed:** 10.10 14:35. **Treceri:** 5.
+
+**Făcut:**
+- ADR 0029 + documentul v6: `Operatie.rampa` (`null` sau `{ lungime }`), migrarea v5 → v6 cu `null`, ciocnirea refuzată.
+  Programul unui document fără rampă e același, octet cu octet (o excepție scrisă în ADR: pe linie, cu urechi, o buclă
+  care pornește cu un segment de lungime zero).
+- `src/cam/parcurgere.ts`: parcurgerea generală a buclei, desfășurată (pornește și se oprește oriunde, trece peste vârful
+  0); urechile o folosesc neschimbat: 396 de programe identice octet cu octet, cu și fără urechi.
+- `src/cam/rampa.ts`: intrările e₁ = 0, e_(k+1) = scoate(e_k + Lr); rampa Z = max(zR, zP), cu frântura unde se întâlnesc;
+  tura până la intrarea următoare; rampa minimă 1 mm (`src/cam/rampaMinima.ts`, ca dialogul s-o citească fără CAM).
+- Dialogul: coloana Rampă, lungimea pe rândul de detalii comun cu urechile; motivul cu marginile (1 – 10 000 mm).
+
+**Greșeala contractului, prinsă înainte de publicare:** ADR-ul nu dădea rampei o lungime minimă. La o rampă ≤ 1e-6 mm,
+capătul ei se pierdea la emitere, coborârea se întindea pe tot primul segment, iar tura finală nu-l mai tăia la adâncime:
+pe o tăietură prin foaie rămânea o pană de până la 4 mm, fără motiv. Sub rezoluția postului, rampa ieșea plonjare
+verticală. Acum: minimul de 1 mm, refuzurile, toleranța declarată a invariantei 11.
+
+**Proba:**
+- recenzia: prima rulare (2 lentile) a murit la limita săptămânală, după 0,34 M; a doua, doar lentila CAM (modelul și
+  dialogul copiau tiparul urechilor, recenzat ieri; le-am verificat eu, în browser) + 2 verificatori, 0,60 M, 35 min; 2
+  constatări (1 medie, 1 mică), reale, reparate;
+- oracolul independent, reluat cu `SendMessage` după limită: 0,65 M; documentul v6, invariantele 9, 10 amendate și 11,
+  oracolul pe hârtie; 31 de sabotaje prinse; a găsit că testele de legătură ale urechilor erau sărite pe tăcute din
+  momentul trecerii la v6 (condiționate de schema 5), și le-a repornit;
+- 30 din 31 otrăvuri prinse, în worktree în afara Drive-ului. Cea rămasă e echivalentă, dovedit: fără
+  deduplicarea nodurilor la capătul turei, IR-ul iese identic pe 720 de bucle (dublurile cad pe vârful 0, iar parcurgerea
+  le lipește de el); deduplicarea rămâne ca apărare;
+- 2386 de teste unitare (0 sărite), 40 e2e; e2e-ul exportului cu rampă trece prin poartă (1, 2, 9, 10, 11 și viteza pe
+  verticală).
+
+**Rămâne deschis:**
+- banda de toleranță a oracolului crește cu unghiul arcelor din tot lanțul (~0,55 mm la 18 treceri pe colțuri rotunjite);
+  oracolul pe hârtie e mai strâns (~0,08 mm), dar doar pe 8 cazuri de 3 treceri;
+- împărțirea pe treceri nu e fixată de contract (oricare cu pasul ≤ cel cerut trece);
+- avansul orizontal pe rampă și al coborârii prin aer nu sunt verificate;
+- rampa e oprită implicit (placa 1 neschimbată): pornirea ei din fabrică, ca în ediția întâi, e decizia owner-ului;
+- intrările și ieșirile (2.5b) aduc freza la e_k din afara piesei.
