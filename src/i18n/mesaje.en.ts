@@ -29,7 +29,7 @@ export const en = {
   'actiune.aplica-operatii': 'Apply the operations',
   'motiv.nicio-operatie': 'No shape has a cutting operation.',
   'motiv.operatie-invalida': 'Operation values must be positive numbers, with a point or a comma: depth and step up to 1000 mm, the cutter up to Ø100 mm.',
-  'motiv.rampa-invalida': 'Ramp: the length must be a positive number up to {lungime} mm.',
+  'motiv.rampa-invalida': 'Ramp: the length must be a number from {minim} to {lungime} mm (any shorter would be a plunge).',
   'motiv.urechi-invalide': 'Tabs: the count must be a whole number from 1 to {n}; the length a positive number up to {latime} mm; the thickness a positive number up to {grosime} mm.',
   'export.proiect-schimbat': 'The project changed in another tab during the export: export again.',
   'export.freze-diferite': 'The operations on this sheet use different cutters ({freze}). Export gives them all the cutter above.',

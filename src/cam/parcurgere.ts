@@ -106,6 +106,9 @@ export function parcurge(c: Contur, noduri: readonly Nod[], avans: number, avans
     while (urm < noduri.length - 1 && (noduri[urm] as Nod).s < sCapat - EPS_RUPTURA) {
       const nod = noduri[urm] as Nod;
       if (nod.s > sA + EPS_RUPTURA) tinte.push({ s: nod.s, z: nod.z, capat: false });
+      // Un nod lipit de pornire, cu altă cotă, n-are unde să se emită: sărit, ar întinde coborârea pe tot segmentul
+      // (recenzia feliei 2.5a). Cine construiește nodurile nu trebuie să ajungă aici.
+      else if (nod.z !== zCur) return { ok: false, motiv: `nod de profil la sub ${EPS_RUPTURA} mm de pornire, cu altă cotă (${nod.z} față de ${zCur})` };
       urm++;
     }
     let zCapat: number;

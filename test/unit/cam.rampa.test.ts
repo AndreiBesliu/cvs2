@@ -168,3 +168,66 @@ test('fără rampă, trecerile rămân cum erau: plonjare în vârful 0 și ridi
   assert.deepEqual(plonjari.map((m) => (m.tip === 'taiere' ? m.la.Z : null)), [-4, -8]);
   assert.equal(tr.miscari.filter((m) => m.tip === 'rapida' && m.la.Z === 5).length, 4);
 });
+
+test('rampa minimă (recenzia 2.5a): sub 1 mm e refuzată; o buclă pe care rampa nu încape e refuzată, cu motiv', () => {
+  const pr = profil(conturDreptunghi(20, 20, 300, 200), { latura: 'exterior', sens: 'urcare', diametruScula: 6, adancime: 12, pas: 4 });
+  assert.ok(pr.ok);
+  if (!pr.ok) return;
+  for (const lungime of [0.999, 1e-6, 5e-7, 0.0004]) {
+    const r = traseuProfil(pr.treceri, REGIM, undefined, { lungime });
+    assert.equal(r.ok, false, String(lungime));
+    if (!r.ok) assert.match(r.motiv, /e sub 1 mm: ar fi o plonjare/);
+  }
+  assert.ok(traseuProfil(pr.treceri, REGIM, undefined, { lungime: 1 }).ok, 'exact 1 mm trece');
+  // Gaura de R3,2 cu freza Ø6: bucla centrului are raza 0,2, deci P ≈ 1,26 mm și Lr = P / 2 < 1.
+  const mic = profil(conturCerc(50, 50, 3.2), { latura: 'interior', sens: 'urcare', diametruScula: 6, adancime: 4, pas: 2 });
+  assert.ok(mic.ok);
+  if (!mic.ok) return;
+  const r = traseuProfil(mic.treceri, REGIM, undefined, { lungime: 10 });
+  assert.equal(r.ok, false);
+  if (!r.ok) assert.match(r.motiv, /rampa nu încape pe bucla de 1\.257 mm \(cel puțin 2 mm\)/);
+});
+
+test('în textul G-code, o mișcare cu X și Y neschimbate coboară cel mult cât o bucată de rampă sub rezoluție (ADR 0029 §5)', async () => {
+  const { posteaza } = await import('../../src/post/post.ts');
+  const { GRBL_11 } = await import('../../src/post/contracte/grbl11.ts');
+  const { AXE_XYZ } = await import('../../src/ir/ir.ts');
+  const pr = profil(conturDreptunghi(20, 20, 300, 200), { latura: 'exterior', sens: 'urcare', diametruScula: 6, adancime: 12, pas: 4 });
+  assert.ok(pr.ok);
+  if (!pr.ok) return;
+  let cazuriCuBucataMica = 0;
+  // 1,5709: capătul rampei cade la o fracțiune de micron după vârful arcului de colț (π/2·3 = 4,712…).
+  for (const lungime of [1, 1.5709, 1.5708, 4.7124, 10, 25]) {
+    const tr = traseuProfil(pr.treceri, REGIM, undefined, { lungime });
+    assert.ok(tr.ok);
+    if (!tr.ok) continue;
+    const r = posteaza({ axe: AXE_XYZ, scula: { numar: 1, nume: 'f', diametru: 6 }, turatie: 18000, zSigur: 5, miscari: tr.miscari },
+      { foaie: { latime: 400, inaltime: 300, grosime: 12 }, origine: 'stanga-jos', z0: 'sus' }, GRBL_11, { asteptareAx: 3 });
+    assert.ok(r.ok);
+    if (!r.ok) continue;
+    const toleranta = (4 * 0.001) / Math.min(lungime, 509) + 0.0005;
+    let x = Number.NaN, y = Number.NaN, z = 5;
+    for (const linie of r.text.split('\n')) {
+      const cuv = (c: string): number | undefined => { const m = new RegExp(`${c}(-?[\\d.]+)`).exec(linie); return m ? Number(m[1]) : undefined; };
+      if (!/^G[0123] /.test(linie)) continue;
+      const x1 = cuv('X') ?? x, y1 = cuv('Y') ?? y, z1 = cuv('Z') ?? z;
+      if (/^G[123] /.test(linie) && x1 === x && y1 === y && z1 < z && z1 < 0) {
+        // Singura coborâre verticală mare e cea până la fața de sus (Z0), prin aer.
+        assert.ok(z - z1 <= toleranta + 1e-9, `rampa ${lungime}: „${linie}” coboară ${(z - z1).toFixed(4)} mm pe verticală (toleranța ${toleranta.toFixed(4)})`);
+        cazuriCuBucataMica++;
+      }
+      x = x1; y = y1; z = z1;
+    }
+  }
+  assert.ok(cazuriCuBucataMica >= 1, 'controlul: măcar un caz chiar are o bucată de rampă sub rezoluție');
+});
+
+test('parcurgerea refuză un nod lipit de pornire cu altă cotă, în loc să-l sară tăcut (recenzia 2.5a)', async () => {
+  const { parcurge } = await import('../../src/cam/parcurgere.ts');
+  const c = conturDreptunghi(0, 0, 100, 50);
+  const r = parcurge(c, [{ s: 10, z: -4 }, { s: 10 + 5e-7, z: -8 }, { s: 60, z: -8 }], 1000, 300);
+  assert.equal(r.ok, false);
+  if (!r.ok) assert.match(r.motiv, /nod de profil la sub 0\.000001 mm de pornire, cu altă cotă/);
+  // Același nod, cu aceeași cotă, se sare (e chiar pornirea).
+  assert.ok(parcurge(c, [{ s: 10, z: -4 }, { s: 10 + 5e-7, z: -4 }, { s: 60, z: -8 }], 1000, 300).ok);
+});

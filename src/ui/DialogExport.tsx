@@ -77,9 +77,9 @@ const CHEI_LATURA: Readonly<Record<Latura, CheieSimpla>> = {
 };
 
 /** În (0, plafon]: marginile schemei v3, ca operațiile scrise în document să treacă de ușă la redeschidere. */
-function inMargini(s: string, plafon: number): boolean {
+function inMargini(s: string, plafon: number, minim = 0): boolean {
   const x = citesteNumar(s);
-  return x !== null && Number.isFinite(x) && x > 0 && x <= plafon;
+  return x !== null && Number.isFinite(x) && x > 0 && x >= minim && x <= plafon;
 }
 
 /** Urechile pornite sau nu; câmpurile lor rămân scrise și cu bifa scoasă, ca o bifă pusă la loc să nu le piardă. */
@@ -164,7 +164,7 @@ export function DialogExport(
     numar: p !== undefined && (!p.urechi || intregInMargini(p.numarUrechi, MARGINI_OPERATIE.urechi)),
     latime: p !== undefined && (!p.urechi || inMargini(p.latimeUreche, MARGINI_OPERATIE.latimeUreche)),
     grosime: p !== undefined && (!p.urechi || inMargini(p.grosimeUreche, MARGINI_OPERATIE.grosimeUreche)),
-    rampa: p !== undefined && (!p.rampa || inMargini(p.lungimeRampa, MARGINI_OPERATIE.lungimeRampa)),
+    rampa: p !== undefined && (!p.rampa || inMargini(p.lungimeRampa, MARGINI_OPERATIE.lungimeRampa, MARGINI_OPERATIE.lungimeRampaMinima)),
   });
   const randuri = operatii.map((o) => randBun(param[o.cheie]));
   const operatiiBune = diametruBun && randuri.every((b) => b.adancime && b.pas);
@@ -205,7 +205,9 @@ export function DialogExport(
     ...(urechiBune ? [] : [t('motiv.urechi-invalide', {
       n: MARGINI_OPERATIE.urechi, latime: fmtFreza.format(MARGINI_OPERATIE.latimeUreche), grosime: fmtFreza.format(MARGINI_OPERATIE.grosimeUreche),
     })]),
-    ...(rampeBune ? [] : [t('motiv.rampa-invalida', { lungime: fmtFreza.format(MARGINI_OPERATIE.lungimeRampa) })]),
+    ...(rampeBune ? [] : [t('motiv.rampa-invalida', {
+      minim: fmtFreza.format(MARGINI_OPERATIE.lungimeRampaMinima), lungime: fmtFreza.format(MARGINI_OPERATIE.lungimeRampa),
+    })]),
   ].join(' ');
 
   return (

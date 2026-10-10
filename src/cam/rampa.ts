@@ -1,6 +1,7 @@
 import type { Contur } from '../geom/contur.ts';
 import type { Miscare } from '../ir/ir.ts';
 import { EPS_RUPTURA, lungimeBucla, parcurge, zLa, type Nod } from './parcurgere.ts';
+import { RAMPA_MINIMA } from './rampaMinima.ts';
 import { EPS_VARF, geometrieUrechi, noduriProfil, type ParametriUrechi } from './urechi.ts';
 
 /**
@@ -10,6 +11,8 @@ import { EPS_VARF, geometrieUrechi, noduriProfil, type ParametriUrechi } from '.
  * rampa să pornească exact de unde e freza. Cu urechi, rampa ia Z-ul cel mai puțin adânc dintre ea și profil.
  */
 export type ParametriRampa = { readonly lungime: number };
+
+export { RAMPA_MINIMA };
 
 export type RezultatRampa = { readonly ok: true; readonly miscari: readonly Miscare[] } | { readonly ok: false; readonly motiv: string };
 
@@ -81,7 +84,13 @@ export function buclaCuRampa(
 ): RezultatRampa {
   const P = lungimeBucla(c);
   if (!(P > 0)) return { ok: true, miscari: [] };
+  if (!(rampa.lungime >= RAMPA_MINIMA)) {
+    return { ok: false, motiv: `rampa de ${rampa.lungime} mm e sub ${RAMPA_MINIMA} mm: ar fi o plonjare` };
+  }
   const Lr = Math.min(rampa.lungime, P / 2);
+  if (Lr < RAMPA_MINIMA) {
+    return { ok: false, motiv: `rampa nu încape pe bucla de ${P.toFixed(3)} mm (cel puțin ${2 * RAMPA_MINIMA} mm): scoate rampa operației` };
+  }
   // Zonele urechilor (aceleași pe toate trecerile): intrarea nu are voie să cadă strict înăuntrul uneia.
   const zone: Array<readonly [number, number]> = [];
   if (urechi) {
