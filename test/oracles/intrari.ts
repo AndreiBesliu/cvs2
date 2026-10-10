@@ -85,18 +85,38 @@
  *   element și aceeași latură, și doar dacă operația judecată are ea însăși urechi;
  * - ordinea candidaților: lungimile care diferă cu cel mult 1e-6 mm sunt egale, iar atunci indicele mai mic (în sensul
  *   de mers, din vârful 0) e întâi.
+ *
+ * FELIA 2.5c (ADR 0031, intrările cu rampă; sesiune independentă), cu `regula0031` (poarta o dă, `inainteDe0031` o
+ * oprește):
+ * - §6: refuzul „intrări și rampă” dispare; pe o operație cu rampă și intrări (nu `pe-linie`), raza cerută al cărei
+ *   sfert πρ/2 e sub 1 mm e o încălcare a lui 12 pe linia etichetei (exportul trebuia refuzat, ADR 0031 §2);
+ * - razele încercate sub rampă: `razeleCuRampa` (cele de la §3 cu sfertul ≥ 1 mm: raza / 2 doar dacă e ≥ 0,5 ȘI are
+ *   sfertul ≥ 1 mm), în 12 (alegerea, intrarea omisă) și în 9 (`regula0030`);
+ * - sub rampă, o trecere „are intrare” dacă începe cu o porțiune deschisă înaintea buclei (bucla fără intrare e un
+ *   singur lanț ADR 0029 §2, care se termină cu restul turei: nu e o ieșire); forma trecerii (coborârea prin aer, elicea,
+ *   ridicarea) e a lui `intrari-rampa.ts`, nu a plonjării de la §5; 12 cere în plus ca intrarea să coboare de la Z = 0
+ *   (±0,0005) în A la fundul trecerii (cel mai jos Z al ei, ±0,002) în p₀;
+ * - operațiile doar cu rampă rămân ale lui `rampa.ts`, ca înainte (verdictele lor nu se schimbă).
+ *
+ * PRECIZAREA DIN 10.10 a ADR 0031 (și a ADR 0030 §3 c, cu sau fără rampă; tot cu `regula0031`): un semicerc încape doar
+ * dacă stă la cel puțin D (exact, cu banda ±TOL_INCAPE) de COLOANA fiecărei urechi a buclei înseși:
+ * [c_k − h + R, c_k + h − R] pe bucla analitică, cu pozițiile de la candidatul p₀ (mijlocul semicercului), un punct când
+ * W = D (`coloaneleUrechilor`, `incapeTot(…, proprii)`). Se aplică alegerii judecate (12) și verificării „niciun candidat
+ * nu încape”.
  */
-import type { IntrariO, LaturaO, SensO } from './document.ts';
+import type { IntrariO, LaturaO, SensO, UrechiO } from './document.ts';
 import type { Punct3, Eveniment } from './gcode.ts';
 import {
-  arc as arcP, capeteArc, celMaiMic, cutieLista, distantaListe, inParteaProprie, inUnghi, lungime as lungimeP, prag, pt, punctLa,
+  arc as arcP, capeteArc, celMaiMic, cutieLista, distantaListe, inParteaProprie, inUnghi, lungime as lungimeP, prag, pt, punct as punctP, punctLa,
   segment as segmentP, type Arc, type Cutie, type Primitiva, type Regiune,
 } from './regiune.ts';
 import {
   LUNGIME_MINIMA, parteaPastrataPrinAschie, sensurileEtichetelor, TOL_INCHIDERE, TOL_SUB,
   type Bucla, type EtichetaActiva, type P2, type Parte, type Pas,
 } from './sens.ts';
-import { formaFaraRampa, lanturile, parametriiEtichetelor, parcurgeriHartie, type Lant, type PasL } from './rampa.ts';
+import {
+  formaFaraRampa, lanturile, parametriiEtichetelor, parcurgeriHartie, RAMPA_MINIMA, TOL_FATA, TOL_Z_RAMPA, type Lant, type PasL,
+} from './rampa.ts';
 
 export const RAZA_MINIMA = 0.5;
 export const TOL_GEOM = 0.003;
@@ -242,7 +262,7 @@ export function iesirea(c: Cutie, R: number, W: number, H: number): readonly [nu
  */
 export function incapeTot(
   reg: Regiune, i: number, semicerc: Arc, R: number, lume: Lumea, bucla: readonly Primitiva[], id: string, latura: LaturaO,
-  cuUrechi: boolean,
+  cuUrechi: boolean, proprii: UrechiO | null = null,
 ): { readonly verdict: Verdict; readonly motiv: string } {
   const vs: Array<{ v: Verdict; m: string }> = [];
   vs.push({ v: incape(reg, i, semicerc, R), m: 'a (regiunea păstrată)' });
@@ -256,10 +276,60 @@ export function incapeTot(
     const prag = lume.D + MARJA_SCHELET;
     vs.push({ v: d < prag - TOL_INCAPE ? 'nu' : d < prag + TOL_INCAPE ? 'banda' : 'da', m: `c (la ${mm(d)} mm de bucla cu urechi a lui ${u.id}, sub D + 1 = ${mm(prag)})` });
   }
+  // c, precizarea din 10.10 a ADR 0031: urechile buclei înseși, numărate de la p₀ = mijlocul semicercului.
+  if (proprii) {
+    const p0 = punctLa(semicerc, lungimeP(semicerc) / 2);
+    coloaneleUrechilor(bucla, p0, proprii, lume.D).forEach((col, k) => {
+      const d = distantaListe([semicerc], col);
+      vs.push({ v: d < lume.D - TOL_INCAPE ? 'nu' : d < lume.D + TOL_INCAPE ? 'banda' : 'da', m: `c, urechile proprii (la ${mm(d)} mm de coloana urechii ${k} a buclei, sub D = ${mm(lume.D)})` });
+    });
+  }
   const nu = vs.find((x) => x.v === 'nu');
   if (nu) return { verdict: 'nu', motiv: nu.m };
   const b = vs.find((x) => x.v === 'banda');
   return b ? { verdict: 'banda', motiv: b.m } : { verdict: 'da', motiv: '' };
+}
+
+/** Bucata de traseu [s0, s1] (s de la startul buclei) ca primitive; un punct dacă s1 ≤ s0 (ADR 0028 §2: W = D). */
+export function bucataDeTraseu(bucla: readonly Primitiva[], s0: number, s1: number): Primitiva[] {
+  if (s1 <= s0 + 1e-12) {
+    let s = 0;
+    for (const p of bucla) {
+      const L = lungimeP(p);
+      if (s0 <= s + L + 1e-12) return [punctP(punctLa(p, Math.max(0, Math.min(L, s0 - s))))];
+      s += L;
+    }
+    return [];
+  }
+  const rez: Primitiva[] = [];
+  let s = 0;
+  for (const p of bucla) {
+    const L = lungimeP(p);
+    const a = Math.max(0, s0 - s), b = Math.min(L, s1 - s);
+    if (b > a + 1e-12) {
+      if (p.tip === 'segment') rez.push(segmentP(punctLa(p, a), punctLa(p, b)));
+      else if (p.tip === 'arc') rez.push(arcP(p.c, p.r, p.u0 + (p.du * a) / L, (p.du * (b - a)) / L));
+    }
+    s += L;
+  }
+  return rez;
+}
+
+/**
+ * Precizarea din 10.10 a ADR 0031 (și a ADR 0030 §3 c): coloanele urechilor buclei, cu pozițiile numărate de la p₀ pe
+ * bucla analitică: coloana urechii k e [c_k − h + R, c_k + h − R], c_k = (k + ½)·P / n, h = W / 2, R = D / 2 (un punct
+ * când W = D). Fără coloane dacă urechile nu încap (W > 0,9·S: refuz, judecat în altă parte).
+ */
+export function coloaneleUrechilor(bucla: readonly Primitiva[], p0: P2, u: { readonly numar: number; readonly latime: number }, D: number): Primitiva[][] {
+  const { bucla: b } = dinVarful0(bucla, p0);
+  const P = b.reduce((s, q) => s + lungimeP(q), 0);
+  const S = P / u.numar;
+  if (u.latime > 0.9 * S) return [];
+  const h = u.latime / 2, R = D / 2;
+  return Array.from({ length: u.numar }, (_, k) => {
+    const c = (k + 0.5) * S;
+    return bucataDeTraseu(b, c - h + R, c + h - R);
+  });
 }
 
 /** Semicercul măsurat pe program: centrul C și raza ρ ale intrării, cu p₀ la mijloc, în sensul părții. */
@@ -406,6 +476,16 @@ export function candidatii(bucla: readonly Primitiva[], ordine: 'mers' | 'invers
 /** Razele încercate (§3): raza, apoi raza / 2 dacă e cel puțin 0,5. */
 export const razele = (raza: number): number[] => (raza / 2 >= RAZA_MINIMA ? [raza, raza / 2] : [raza]);
 
+/**
+ * ADR 0031 §2: sub rampă se încearcă doar razele de la §3 al căror sfert de cerc are cel puțin `RAMPA_MINIMA` = 1 mm
+ * (πρ/2 ≥ 1). ALEGERE la limită: πρ/2 ≥ 1 − 1e-12 (rotunjirea lui π·ρ în virgulă mobilă; ρ = 2/π intră). Goală: raza
+ * cerută e sub prag, iar exportul trebuia refuzat.
+ */
+export const sfertulIncape = (rho: number): boolean => (Math.PI * rho) / 2 >= RAMPA_MINIMA - 1e-12;
+export const razeleCuRampa = (raza: number): number[] => razele(raza).filter(sfertulIncape);
+/** Razele încercate pe o operație, cu sau fără rampă. */
+export const razeleOperatiei = (raza: number, rampa: boolean): number[] => (rampa ? razeleCuRampa(raza) : razele(raza));
+
 export type Alegere = { readonly p0: P2; readonly t0: P2; readonly rho: number; readonly candidat: Candidat } | null;
 
 /**
@@ -549,6 +629,36 @@ export function desparte(pasi: readonly PasL[]): TrecereI {
 }
 
 /**
+ * ADR 0031 §3: o trecere cu rampa pe intrare, tăiată după coborâre: intrarea = mișcările (nu pe verticală) de la începutul
+ * lanțului care coboară, pornind de la fața de sus; p₀ = capătul ei; bucla = până la prima întoarcere în p₀ (după cel
+ * puțin 0,01 mm); ieșirea = restul, care trebuie să existe și să nu coboare. ALEGERE: nu prima închidere a drumului
+ * (`desparte`), fiindcă A poate sta pe buclă (sfertul intrării e chiar arcul unui colț de rază ρ, iar bucla se întoarce
+ * prin A); iar o rampă ADR 0029 din vârful 0 nu are forma asta (după prima tură urmează o altă coborâre, sau nimic).
+ * `null`: lanțul nu e o trecere cu intrare.
+ */
+export function desparteCuRampa(pasi: readonly PasL[]): TrecereI | null {
+  if (!pasi.length || Math.abs(pasi[0]!.za) > TOL_FATA) return null;
+  let k0 = 0;
+  while (k0 < pasi.length && !pasi[k0]!.vertical && pasi[k0]!.zb < pasi[k0]!.za - 1e-9) k0++;
+  if (k0 === 0 || k0 === pasi.length) return null;
+  const p0 = pasi[k0 - 1]!.b;
+  let L = 0, j = -1;
+  for (let q = k0; q < pasi.length; q++) {
+    L += pasi[q]!.s1 - pasi[q]!.s0;
+    if (!pasi[q]!.vertical && L >= LUNGIME_MINIMA && dist(pasi[q]!.b, p0) <= TOL_INCHIDERE) { j = q; break; }
+  }
+  if (j < 0) return null;
+  const rest = pasi.slice(j + 1);
+  if (!rest.some((p) => !p.vertical) || rest.some((p) => !p.vertical && p.zb < p.za - 1e-9)) return null;
+  const mv = (xs: readonly PasL[]): Bucata[] => xs.filter((p) => !p.vertical).map(dinPasL);
+  return {
+    pasi, plonjare: null, verticale: pasi.filter((p) => p.vertical && p.zb < p.za - 1e-9), intrare: mv(pasi.slice(0, k0)),
+    bucla: mv(pasi.slice(k0, j + 1)), bucle: 1 + desparte(rest).bucle, iesire: mv(rest), inchisa: true, A: pasi[0]!.a, p0,
+    zMin: Math.min(...pasi.flatMap((p) => [p.za, p.zb])),
+  };
+}
+
+/**
  * §2 pe un arc citit (intrarea sau ieșirea), față de bucla care pornește în p₀ cu direcția t₀ (eroarea δ): raza din
  * `raze`, sensul după partea deșeului, contactul cu p₀ (intrarea se termină acolo, ieșirea pleacă de acolo), centrul pe
  * partea deșeului (normala măsurată față de cea cerută; cu sensul corect, asta e și tangența în p₀). `sfert`: unghiul
@@ -585,6 +695,8 @@ export type IncalcareIntrari = { readonly invarianta: 11 | 12; readonly linia: n
 type Legare = {
   readonly intrari: IntrariO | null; readonly rampa: boolean; readonly adancime: number; readonly sens: SensO | null; readonly latura: LaturaO;
   readonly id: string; readonly urechi: boolean;
+  /** Urechile operației legate (precizarea din 10.10 a ADR 0031: coloanele buclei înseși). */
+  readonly urechiO: UrechiO | null;
 };
 
 function legarile(etichete: readonly EtichetaActiva[], reg: Regiune): Array<Legare | null> {
@@ -596,7 +708,7 @@ function legarile(etichete: readonly EtichetaActiva[], reg: Regiune): Array<Lega
     const s = sensuri[k];
     return {
       intrari: x.intrari ?? null, rampa: x.rampa !== null, adancime: x.adancime, sens: s && 'sens' in s ? s.sens : null, latura: e.eticheta.latura,
-      id: e.eticheta.idLume, urechi: x.urechi !== null,
+      id: e.eticheta.idLume, urechi: x.urechi !== null, urechiO: x.urechi,
     };
   });
 }
@@ -606,22 +718,28 @@ function legarile(etichete: readonly EtichetaActiva[], reg: Regiune): Array<Lega
  * după ultima (`'dupa'`) a aceluiași drum, e o intrare sau o ieșire: un arc tangent la buclă în p₀, de cel mult 90°, cu
  * raza `raza` sau `raza/2` a operației, pe partea deșeului.
  */
-export function esteIntrareSauIesire(o: Bucla, bucla: Bucla, pozitie: 'inainte' | 'dupa', raza: number, sens: SensO): boolean {
+export function esteIntrareSauIesire(o: Bucla, bucla: Bucla, pozitie: 'inainte' | 'dupa', raza: number, sens: SensO, rampa = false): boolean {
   const a = arcul(o.pasi.map(dinPas));
   if (typeof a === 'string') return false;
   const prima = bucla.pasi[0];
   if (!prima) return false;
   const { t, delta } = directia(dinPas(prima), 'start');
-  return judecaArcul(a, bucla.start, t, delta, parteDeseu(sens), razele(raza), pozitie === 'inainte' ? 'intrarea' : 'ieșirea', false) === null;
+  return judecaArcul(a, bucla.start, t, delta, parteDeseu(sens), razeleOperatiei(raza, rampa), pozitie === 'inainte' ? 'intrarea' : 'ieșirea', false) === null;
 }
 
-/** Fabrica regulii de mai sus pentru `verificaSensul`: raza și sensul operației fiecărei etichete. */
-export function regula0030(etichete: readonly EtichetaActiva[], reg: Regiune): (o: Bucla, c: Bucla, pozitie: 'inainte' | 'dupa') => boolean {
+/**
+ * Fabrica regulii de mai sus pentru `verificaSensul`: raza și sensul operației fiecărei etichete. `regula0031` (ADR 0031
+ * §5, invarianta 9 amendată): pe o operație cu rampă, razele sunt cele de la ADR 0031 §2 (sfertul ≥ 1 mm). Porțiunea de
+ * la început poate coborî (elicea intrării): regula judecă doar proiecția XY, deci nu cere Z constant; partea elicei
+ * care pleacă de la fața de sus nici nu intră în drumul invariantei 9 (`sens.ts`: mișcarea în material are ambele
+ * capete sub fața de sus), iar restul ei e judecat aici ca porțiune deschisă de cel mult 90°.
+ */
+export function regula0030(etichete: readonly EtichetaActiva[], reg: Regiune, regula0031 = false): (o: Bucla, c: Bucla, pozitie: 'inainte' | 'dupa') => boolean {
   const leg = legarile(etichete, reg);
   return (o, c, pozitie) => {
     const x = o.eticheta >= 0 ? leg[o.eticheta] : null;
     if (!x || x.intrari === null || x.sens === null || x.latura === 'pe-linie') return false;
-    return esteIntrareSauIesire(o, c, pozitie, x.intrari.raza, x.sens);
+    return esteIntrareSauIesire(o, c, pozitie, x.intrari.raza, x.sens, regula0031 && x.rampa);
   };
 }
 
@@ -632,36 +750,50 @@ export function regula0030(etichete: readonly EtichetaActiva[], reg: Regiune): (
 export function verificaIntrari(
   evenimente: readonly Eveniment[], etichete: readonly EtichetaActiva[], reg: Regiune, laDoc: (p: Punct3) => Punct3, R: number,
   foaie: { readonly latime: number; readonly inaltime: number } = { latime: Infinity, inaltime: Infinity },
+  regula0031 = false,
 ): { readonly incalcari: IncalcareIntrari[]; readonly cuIntrari: ReadonlySet<number> } {
   const rez: IncalcareIntrari[] = [];
   const lume = lumea(reg, foaie, 2 * R);
   const leg = legarile(etichete, reg);
   const cuIntrari = new Set<number>();
   leg.forEach((x, k) => { if (x && x.intrari !== null && !x.rampa && x.latura !== 'pe-linie') cuIntrari.add(k); });
-  // §6: refuzurile, pe etichetă (o dată pe linie).
+  // §6: refuzurile, pe etichetă (o dată pe linie). ADR 0031 §1–§2: „intrări și rampă” nu mai e refuz; sub rampă, raza
+  // al cărei sfert are sub 1 mm e.
   etichete.forEach((e, k) => {
     const x = leg[k];
     if (!x || x.intrari === null) return;
     const cine = `${x.id} (${x.latura})`;
     if (x.latura === 'pe-linie') rez.push({ invarianta: 12, linia: e.linia, mesaj: `intrările lui ${cine}: pe-linie n-are parte de deșeu; exportul trebuia refuzat (§6)` });
-    if (x.rampa) rez.push({ invarianta: 12, linia: e.linia, mesaj: `intrările lui ${cine}: intrări și rampă pe aceeași operație; exportul trebuia refuzat (§6)` });
+    if (x.rampa && !regula0031) rez.push({ invarianta: 12, linia: e.linia, mesaj: `intrările lui ${cine}: intrări și rampă pe aceeași operație; exportul trebuia refuzat (§6)` });
+    if (x.rampa && regula0031 && x.latura !== 'pe-linie' && !sfertulIncape(x.intrari.raza)) {
+      rez.push({ invarianta: 12, linia: e.linia, mesaj: `intrările lui ${cine}: cu rampă, raza ${x.intrari.raza} mm are sfertul de ${mm((Math.PI * x.intrari.raza) / 2)} mm, sub ${RAMPA_MINIMA} mm; exportul trebuia refuzat (ADR 0031 §2)` });
+    }
     if (x.intrari.raza < RAZA_MINIMA) rez.push({ invarianta: 12, linia: e.linia, mesaj: `intrările lui ${cine}: raza ${x.intrari.raza} mm e sub ${RAZA_MINIMA} mm; exportul trebuia refuzat (§6)` });
   });
   // Trecerile, grupate pe tăietură.
-  const grupe = new Map<string, { k: number; treceri: TrecereI[] }>();
+  const grupe = new Map<string, { k: number; treceri: TrecereI[]; cuIntrare: boolean[] }>();
   for (const l of lanturile(evenimente, etichete.map((e) => e.linia), laDoc)) {
     if (l.eticheta < 0) continue;
     const x = leg[l.eticheta];
-    if (!x || x.latura === 'pe-linie' || x.rampa) continue;
+    // Operațiile doar cu rampă rămân ale lui `rampa.ts` (verdictele lor nu se schimbă).
+    if (!x || x.latura === 'pe-linie' || (x.rampa && !(regula0031 && x.intrari !== null))) continue;
     const cheie = `${x.id}|${x.latura}|${x.adancime}|${x.intrari === null ? 'null' : x.intrari.raza}`;
-    const g = grupe.get(cheie) ?? { k: l.eticheta, treceri: [] };
-    g.treceri.push(desparte(l.pasi));
+    const g = grupe.get(cheie) ?? { k: l.eticheta, treceri: [], cuIntrare: [] };
+    // ADR 0031: sub rampă, trecerea cu intrare se taie după coborâre (`desparteCuRampa`); altfel ca la ADR 0030.
+    const tr = x.rampa && regula0031 ? desparteCuRampa(l.pasi) : null;
+    g.treceri.push(tr ?? desparte(l.pasi));
+    g.cuIntrare.push(tr !== null);
     grupe.set(cheie, g);
   }
-  for (const { k, treceri } of grupe.values()) {
+  for (const { k, treceri, cuIntrare: arePeRampa } of grupe.values()) {
     const x = leg[k]!;
     const cine = `${x.id} (${x.latura})`;
-    const cu = treceri.filter((t) => t.intrare.length > 0 || t.iesire.length > 0);
+    // ADR 0031 §3: sub rampă, bucla fără intrare e un singur lanț cu toate trecerile (ADR 0029 §2), care se termină
+    // după ultima buclă închisă cu restul turei (o porțiune deschisă, dar nu o ieșire); trecerea cu intrare e cea care
+    // începe în afara buclei (ALEGERE: „are intrare” = porțiunea deschisă de dinaintea primei bucle).
+    const subRampa = x.rampa && regula0031;
+    const are = (t: TrecereI, j: number): boolean => (subRampa ? arePeRampa[j]! : t.intrare.length > 0 || t.iesire.length > 0);
+    const cu = treceri.filter(are);
     if (x.intrari === null) {
       for (const t of cu) {
         rez.push({ invarianta: 12, linia: (t.intrare[0] ?? t.iesire[0])!.linia, mesaj: `intrările: operația lui ${cine} n-are intrări, dar trecerea are ${t.intrare.length ? 'o intrare' : 'o ieșire'}` });
@@ -673,22 +805,26 @@ export function verificaIntrari(
     const latura = x.latura as 'exterior' | 'interior';
     const i = reg.inele.findIndex((q) => q.idLume === x.id);
     const analitica = i >= 0 ? buclaAnalitica(reg, i, latura, R, x.sens) : null;
-    const raze = razele(x.intrari.raza);
+    const raze = razeleOperatiei(x.intrari.raza, subRampa);
     if (cu.length > 0 && cu.length < treceri.length) {
       rez.push({ invarianta: 12, linia: (cu[0]!.intrare[0] ?? cu[0]!.iesire[0])!.linia, mesaj: `intrările lui ${cine}: ${cu.length} din ${treceri.length} treceri au intrări; §3 cere aceeași alegere la toate` });
     }
     let ref: { A: P2; p0: P2; rho: number } | null = null;
-    for (const t of treceri) {
-      const are = t.intrare.length > 0 || t.iesire.length > 0;
+    // Precizarea din 10.10 a ADR 0031: condiția c judecă și urechile buclei înseși (doar în poarta de după ADR 0031).
+    const proprii = regula0031 ? x.urechiO : null;
+    for (const [j, t] of treceri.entries()) {
       const linia = t.pasi[0]!.linia;
-      if (!are) {
+      if (!are(t, j)) {
+        // ADR 0031 §3: sub rampă, bucla fără intrare are forma din ADR 0029 §2 (judecată în `rampa.ts`).
+        if (subRampa) continue;
         // Bucla fără intrări: forma de la ADR 0029 §4 (11).
         for (const v of formaFaraRampa({ eticheta: k, pasi: t.pasi, inainte: null, lungime: 0, theta: 0 } as Lant, cine)) rez.push({ invarianta: 11, linia: v.linia, mesaj: v.mesaj });
         continue;
       }
-      // 11 amendată: plonjarea pe verticală, din aer, în A, în afara buclei; intrarea, bucla, ieșirea, ridicarea.
-      if (!t.plonjare || t.plonjare.za < -TOL_SUB) rez.push({ invarianta: 11, linia, mesaj: `intrările (11): trecerea lui ${cine} nu începe cu o plonjare pe verticală din aer` });
-      if (t.verticale.length) rez.push({ invarianta: 11, linia: t.verticale[0]!.linia, mesaj: `intrările (11): ${cine} coboară pe verticală și în altă parte decât în A` });
+      // 11 amendată: plonjarea pe verticală, din aer, în A, în afara buclei; intrarea, bucla, ieșirea, ridicarea. Sub
+      // rampă (ADR 0031 §3), forma trecerii e judecată în `intrari-rampa.ts` (coborârea doar până la fața de sus).
+      if (!subRampa && (!t.plonjare || t.plonjare.za < -TOL_SUB)) rez.push({ invarianta: 11, linia, mesaj: `intrările (11): trecerea lui ${cine} nu începe cu o plonjare pe verticală din aer` });
+      if (!subRampa && t.verticale.length) rez.push({ invarianta: 11, linia: t.verticale[0]!.linia, mesaj: `intrările (11): ${cine} coboară pe verticală și în altă parte decât în A` });
       if (!t.inchisa || t.p0 === null) {
         rez.push({ invarianta: 11, linia, mesaj: `intrările (11): trecerea lui ${cine} nu are o buclă închisă` });
         continue;
@@ -713,12 +849,21 @@ export function verificaIntrari(
         rez.push({ invarianta: 12, linia: ae.linia, mesaj: `intrările lui ${cine}: ieșirea nu e pe cercul intrării (centrul ${mm(ae.c.x)}, ${mm(ae.c.y)} față de ${mm(ai.c.x)}, ${mm(ai.c.y)})` });
       }
       if (dist(ai.a, t.A) > 2 * TOL_GEOM) rez.push({ invarianta: 11, linia: ai.linia, mesaj: `intrările (11): intrarea lui ${cine} nu pleacă din punctul plonjării` });
+      // ADR 0031 §5, 12 amendată: sub rampă, intrarea coboară de la 0, în A, la −d_k, în p₀ (d_k = fundul trecerii, citit
+      // din program: cel mai jos Z al ei).
+      if (subRampa) {
+        const z0 = t.pasi.find((p) => p.linia === t.intrare[0]!.linia)?.za ?? NaN;
+        const z1 = t.pasi.find((p) => p.linia === t.intrare[t.intrare.length - 1]!.linia)?.zb ?? NaN;
+        if (!(Math.abs(z0) <= TOL_FATA) || !(Math.abs(z1 - t.zMin) <= TOL_Z_RAMPA)) {
+          rez.push({ invarianta: 12, linia: ai.linia, mesaj: `intrările lui ${cine} (cu rampă): intrarea coboară de la Z ${mm(z0)} în A la Z ${mm(z1)} în p₀; ADR 0031 §5 cere de la 0 la fundul trecerii (${mm(t.zMin)})` });
+        }
+      }
       if (analitica && !esteCandidat(analitica, t.p0)) {
         rez.push({ invarianta: 12, linia: ai.linia, mesaj: `intrările lui ${cine}: p₀ (${mm(t.p0.x)}, ${mm(t.p0.y)}) nu e un candidat de la §3 (vârful 0 sau mijlocul unui segment)` });
       }
       // Precizarea din 10.10: intrarea aleasă încape (a, b, c), măsurată pe program (C și ρ ale intrării).
       if (analitica && i >= 0 && !ri) {
-        const x0 = incapeTot(reg, i, semicercDin(ai.c, ai.r, t.p0, parte), R, lume, analitica, x.id, x.latura, x.urechi);
+        const x0 = incapeTot(reg, i, semicercDin(ai.c, ai.r, t.p0, parte), R, lume, analitica, x.id, x.latura, x.urechi, proprii);
         if (x0.verdict === 'nu') rez.push({ invarianta: 12, linia: ai.linia, mesaj: `intrările lui ${cine}: semicercul ales (p₀ ${mm(t.p0.x)}, ${mm(t.p0.y)}, ρ ${mm(ai.r)}) nu încape: ${x0.motiv}` });
       }
       const rho = raze.find((r) => Math.abs(r - ai.r) <= TOL_GEOM) ?? ai.r;
@@ -733,7 +878,7 @@ export function verificaIntrari(
       if (t.p0 === null) continue;
       const { bucla } = dinVarful0(analitica, t.p0);
       for (const rho of raze) {
-        const c = candidatii(bucla).find((q) => incapeTot(reg, i, semicercul(q.p, q.t, parte, rho).arc, R, lume, analitica, x.id, x.latura, x.urechi).verdict === 'da');
+        const c = candidatii(bucla).find((q) => incapeTot(reg, i, semicercul(q.p, q.t, parte, rho).arc, R, lume, analitica, x.id, x.latura, x.urechi, proprii).verdict === 'da');
         if (c) {
           rez.push({
             invarianta: 12, linia: t.pasi[0]!.linia,

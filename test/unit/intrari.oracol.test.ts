@@ -12,6 +12,8 @@
  * - precizarea din 10.10 (§3 b și c): rama la 7 mm de marginea foii (intrarea nu iese din foaie mai mult decât bucla) și
  *   vecina deasupra unei rame cu urechi (semicercul la cel puțin D + 1 de bucla cu urechi); lungimile egale la 1e-6 mm,
  *   indicele mai mic întâi; avertismentul fără raza / 2 când nu s-a încercat;
+ * - precizarea din 10.10 a ADR 0031 (felia 2.5c): „încape” judecă și urechile buclei înseși (coloana fiecărei urechi la cel
+ *   puțin D de semicerc), în alegerea oracolului și în lipire; refuzul „intrări și rampă” nu mai există (ADR 0031);
  * - lipirea cu aplicația („lipire:”, cere schema ≥ 7 și PICĂ, nu se sare, pe o aplicație mai veche): cele 8 cazuri pe 8
  *   montaje (poarta întreagă, hârtia, vârful 0 citit din programul fără intrări, avertismentul intrării omise),
  *   refuzurile §6 cu motiv, corpusul 2.4 cu intrări la întâmplare (1, 2, 9, 10, 11, 12, viteza pe verticală și alegerea
@@ -205,7 +207,9 @@ test('(o) alegerea oracolului (§3) pe fiecare caz e cea scrisă de mână (p₀
       // Vârful 0 de pe hârtie: startul traseului orientat (ca în `drumCerut`), citit din bucla analitică.
       const start = b[0]!.tip === 'segment' ? b[0]!.a : (() => { const a = b[0]! as { c: P2; r: number; u0: number }; return { x: a.c.x + a.r * Math.cos(a.u0), y: a.c.y + a.r * Math.sin(a.u0) }; })();
       const lume = lumea(reg, c.stoc, c.diametru);
-      const judeca = (a: Parameters<typeof incape>[2]) => incapeTot(reg, i, a, 3, lume, b, `${f.id}/${f.id}`, latura, (c.urechiPe && Object.hasOwn(c.urechiPe, f.id) ? c.urechiPe[f.id] ?? null : c.urechi) !== null).verdict;
+      // Precizarea din 10.10 a ADR 0031: condiția c judecă și urechile buclei înseși.
+      const proprii = c.urechiPe && Object.hasOwn(c.urechiPe, f.id) ? c.urechiPe[f.id] ?? null : c.urechi;
+      const judeca = (a: Parameters<typeof incape>[2]) => incapeTot(reg, i, a, 3, lume, b, `${f.id}/${f.id}`, latura, proprii !== null, proprii).verdict;
       const alegeri = alegerileAcceptate(judeca, c.raza, parteDeseu(f.sens ?? 'urcare'), candidatii(dinVarful0(b, start).bucla));
       const asteptat = c.asteptat[f.id] ?? null;
       assert.equal(alegeri.length, 1, `${c.nume}/${f.id}: o singură alegere, fără bandă`);
@@ -350,13 +354,14 @@ test('(o) amendamentul 9 e necesar: pe programele scriitorului CU intrări, poar
   assert.deepEqual(poarta(text, ctxCaz(c, m)), []);
 });
 
-test('(o) refuzurile §6 pe etichetă: un program sub o operație cu intrări pe pe-linie, cu intrări și rampă, sau cu raza 0,4 e o încălcare a lui 12 („exportul trebuia refuzat”); raza 0,5 nu', () => {
+test('(o) refuzurile §6 pe etichetă: un program sub o operație cu intrări pe pe-linie sau cu raza 0,4 e o încălcare a lui 12 („exportul trebuia refuzat”); raza 0,5 nu; ADR 0031: intrări și rampă nu mai e refuz, dar sub rampă raza 0,6 (sfertul 0,942) da', () => {
   const c = CAZURI_INTRARI[0]!;
   const m = montaje(c.stoc)[0]!;
   const text = programIntrari(c, m);
   const cu = (f: (d: DocV7O) => void): DocV7O => { const d = structuredClone(c.doc); f(d); return d; };
   const refuz = (d: DocV7O): boolean => poarta(text, { ...ctxCaz(c, m), regiune: regiuneDinDocument(d) }).some((i) => i.invarianta === 12 && /trebuia refuzat/.test(i.mesaj));
-  assert.ok(refuz(cu((d) => { d.piese[0]!.operatii[0]!.rampa = { lungime: 10 }; })), 'intrări și rampă');
+  assert.ok(!refuz(cu((d) => { d.piese[0]!.operatii[0]!.rampa = { lungime: 10 }; })), 'intrări și rampă (ADR 0031: nu mai e refuz)');
+  assert.ok(refuz(cu((d) => { d.piese[0]!.operatii[0]!.rampa = { lungime: 10 }; d.piese[0]!.operatii[0]!.intrari = { raza: 0.6 }; })), 'raza 0,6 cu rampă (ADR 0031 §2)');
   assert.ok(refuz(cu((d) => { d.piese[0]!.operatii[0]!.intrari = { raza: 0.4 }; })), 'raza 0,4');
   assert.ok(!refuz(cu((d) => { d.piese[0]!.operatii[0]!.intrari = { raza: 0.5 }; })), 'raza 0,5 (control)');
   const peLinie = cu((d) => { d.piese[0]!.operatii[0]!.latura = 'pe-linie'; });
@@ -455,7 +460,7 @@ for (const c of CAZURI_INTRARI) {
   });
 }
 
-test('lipire: refuzurile §6 au motiv (intrări pe pe-linie; intrări și rampă; raza 0,4), iar controalele trec poarta (raza 0,5; aceleași fără intrări)', async () => {
+test('lipire: refuzurile §6 au motiv (intrări pe pe-linie; raza 0,4; ADR 0031: raza 0,6 cu rampă), iar controalele trec poarta (raza 0,5; aceleași fără intrări; ADR 0031: intrări și rampă)', async () => {
   assert.ok(SCHEMA >= 7, `schema ${SCHEMA}`);
   const baza = CAZURI_INTRARI[0]!;
   const m = montaje(baza.stoc)[0]!;
@@ -463,7 +468,8 @@ test('lipire: refuzurile §6 au motiv (intrări pe pe-linie; intrări și rampă
   const cazuri: Array<{ nume: string; doc: DocV7O; ok: boolean }> = [
     { nume: 'pe-linie cu intrări', doc: cu((d) => { d.piese[0]!.operatii[0]!.latura = 'pe-linie'; }), ok: false },
     { nume: 'pe-linie fără intrări (control)', doc: cu((d) => { d.piese[0]!.operatii[0]!.latura = 'pe-linie'; d.piese[0]!.operatii[0]!.intrari = null; }), ok: true },
-    { nume: 'intrări și rampă', doc: cu((d) => { d.piese[0]!.operatii[0]!.rampa = { lungime: 10 }; }), ok: false },
+    { nume: 'intrări și rampă (ADR 0031: rampa pe sfertul intrării)', doc: cu((d) => { d.piese[0]!.operatii[0]!.rampa = { lungime: 10 }; }), ok: true },
+    { nume: 'raza 0,6 cu rampă (ADR 0031 §2: sfertul 0,942 mm)', doc: cu((d) => { d.piese[0]!.operatii[0]!.rampa = { lungime: 10 }; d.piese[0]!.operatii[0]!.intrari = { raza: 0.6 }; }), ok: false },
     { nume: 'rampă fără intrări (control)', doc: cu((d) => { d.piese[0]!.operatii[0]!.rampa = { lungime: 10 }; d.piese[0]!.operatii[0]!.intrari = null; }), ok: true },
     { nume: 'raza 0,4', doc: cu((d) => { d.piese[0]!.operatii[0]!.intrari = { raza: 0.4 }; }), ok: false },
     { nume: 'raza 0,499', doc: cu((d) => { d.piese[0]!.operatii[0]!.intrari = { raza: 0.499 }; }), ok: false },
@@ -548,7 +554,9 @@ test('lipire: corpusul 2.4 cu intrări la întâmplare (raza 0,5–20; foi de 3�
       })() : [];
       if (cercul) cercuri++;
       const lume = lumea(reg, stoc, x.caz.diametru);
-      const judeca = (a: Parameters<typeof incape>[2]) => incapeTot(reg, i, a, x.caz.diametru / 2, lume, b, id, latura, (tai.urechi?.get(latura)?.[0] ?? null) !== null).verdict;
+      // Precizarea din 10.10 a ADR 0031: condiția c judecă și urechile buclei înseși (coloanele, la cel puțin D).
+      const proprii = tai.urechi?.get(latura)?.[0] ?? null;
+      const judeca = (a: Parameters<typeof incape>[2]) => incapeTot(reg, i, a, x.caz.diametru / 2, lume, b, id, latura, proprii !== null, proprii).verdict;
       const acc = (o: 'mers' | 'invers'): Alegere[] => alegerileAcceptate(judeca, intr[0]!.raza, parte, [...candidatii(bucla, o), ...extra]);
       const potriveste = (a: Alegere): boolean => (a === null ? aplicatia === null
         : aplicatia !== null && dist(a.p0, aplicatia.p0) <= TOL_CANDIDAT && Math.abs(a.rho - aplicatia.rho) <= 0.003);

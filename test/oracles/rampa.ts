@@ -70,8 +70,14 @@
  * intrări); pe o operație cu intrări (fără rampă, nu `pe-linie`), forma trecerilor (invarianta 11 amendată: plonjarea în
  * A, intrarea, bucla, ieșirea) o judecă `intrari.ts`, deci `formaFaraRampa` nu mai rulează aici pentru ea
  * (`regula0030 = false`: comportamentul de dinainte, pentru proba echivalenței).
+ *
+ * Felia 2.5c (ADR 0031, sesiune independentă): pe o operație cu rampă și intrări (nu `pe-linie`), un lanț care începe
+ * cu o porțiune deschisă înaintea buclei (intrarea, `desparte` din `intrari.ts`) e o trecere cu rampa pe intrare, cu
+ * forma din ADR 0031 §3, judecată în `intrari-rampa.ts` (poarta dă predicatul `sare`); bucla fără intrare (omisă) se
+ * judecă aici, neschimbată, ca la §2. Refuzul „rampa nu încape pe buclă” (Lr < 1 mm) rămâne deci doar pe aceste bucle,
+ * iar refuzul lungimii sub 1 mm rămâne pe etichetă (ADR 0031 §3).
  */
-import type { IntrariO, RampaO, UrechiO } from './document.ts';
+import type { IntrariO, LaturaO, RampaO, UrechiO } from './document.ts';
 import { citeste, regulaArcGrbl, type Eveniment, type Punct3 } from './gcode.ts';
 import type { Primitiva, Regiune } from './regiune.ts';
 import { LUNGIME_MINIMA, orientareMontaj, TOL_INCHIDERE, TOL_SUB, type EtichetaActiva, type P2 } from './sens.ts';
@@ -574,11 +580,13 @@ function peLant(l: Lant, q: P2): boolean {
 
 /**
  * Invariantele 10 (amendată, pe operațiile cu rampă) și 11 pe un program. `cuRampa` = indicii etichetelor legate de o
- * operație cu rampă (invarianta 10 din `urechi.ts` nu le mai judecă pe bucle).
+ * operație cu rampă (invarianta 10 din `urechi.ts` nu le mai judecă pe bucle). `sare` (ADR 0031, felia 2.5c): lanțurile
+ * cu rampă pentru care întoarce `true` (trecerile cu rampa pe intrare) nu se judecă aici, ci în `intrari-rampa.ts`;
+ * fără `sare`, comportamentul de dinainte de ADR 0031 (proba echivalenței).
  */
 export function verificaRampa(
   evenimente: readonly Eveniment[], etichete: readonly EtichetaActiva[], reg: Regiune, laDoc: (p: Punct3) => Punct3, grosimeFoaie: number,
-  regula0030 = true,
+  regula0030 = true, sare?: (l: Lant, x: ParametriEticheta, latura: LaturaO) => boolean,
 ): { readonly incalcari: IncalcareRampa[]; readonly cuRampa: ReadonlySet<number> } {
   const rez: IncalcareRampa[] = [];
   const par = parametriiEtichetelor(etichete, reg);
@@ -609,6 +617,8 @@ export function verificaRampa(
       peEticheta.set(l.eticheta, lista);
       continue;
     }
+    // ADR 0031 §3: o trecere cu rampa pe intrare are forma ei (`intrari-rampa.ts`); bucla fără intrare rămâne a lui §2.
+    if (sare?.(l, x, et.latura)) continue;
     // Cu rampă: coborârea prin aer până la fața de sus, apoi lanțul de la Z = 0.
     const i = l.inainte;
     const p0 = l.pasi[0]!;
