@@ -126,6 +126,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Regula: nimic portat nu intră fără probele noi ale proiectului (oracol, martor). Ce trece în codul nou e
   re-probat acolo, nu crezut pe cuvânt.
 
+- 10.10.2026: **desenul rămâne în etapa 6** („Planul neschimbat”, din trei variante: reordonarea etapei 2 cu panoul de
+  proprietăți și importul SVG întâi; un desen minim adus acum; planul neschimbat). Feliile etapei 2 merg în ordinea din
+  fișă: 2.5 intrările, 2.6 dog-bone, 2.7 importul SVG, 2.8 panoul de proprietăți.
 - 09.10.2026: **sensul de tăiere: urcare implicit, pe fiecare operație** („ok” la recomandare), iar **placa 1 se
   regenerează** cu el (cu M3, urcare = materialul păstrat în dreapta: gaura rămâne în G3, insula trece în G2; cotele
   rămân). Contractul: ADR 0027 (documentul v4).
