@@ -446,4 +446,10 @@ test('intrările (ADR 0030): bifate pe dreptunghi, freza plonjează în deșeu �
     foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'stanga-jos', z0: 'sus', diametruScula: 6, pas: 4,
     supracursa: 0, asteptareAx: 3, avansPlonjare: 300, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
   })).toEqual([]);
+  // Redeschis, dialogul citește intrările din document (altfel un Exportă le-ar scoate pe tăcute).
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(bifa).toBeChecked();
+  await expect(page.locator('[data-intrari="e1/e1"] [data-camp="intrari-raza"]')).toHaveValue('3');
+  await expect(page.locator('[data-intrari="e2/e2"] [data-camp="intrari-raza"]')).toHaveValue('30');
 });
