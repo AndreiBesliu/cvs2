@@ -1,5 +1,5 @@
 /**
- * ORACOLUL documentului v7 (ADR 0030: intrările și ieșirile), peste v6 (ADR 0029: rampa), peste v5 (ADR 0028: urechile), v4 (ADR 0027: sensul de tăiere), v3 (ADR
+ * ORACOLUL documentului v8 (ADR 0032: degajările colțurilor), peste v7 (ADR 0030: intrările și ieșirile), peste v6 (ADR 0029: rampa), peste v5 (ADR 0028: urechile), v4 (ADR 0027: sensul de tăiere), v3 (ADR
  * 0025: operațiile piesei) și v2 (ADR 0024, varianta D: piese cu arbore, instanțe pe foi, cu „Precizările contractului”
  * 1–10), cu ZERO importuri din `src/`. Totul e scris din textul ADR-urilor, nu din codul aplicației: matricea, ordinea
  * elementelor și a tăieturilor în lume, migrările v1 → v2 → v3 → v4 → v5 → v6, marginile lumii și regulile de validitate au aici propria lor copie. Dacă
@@ -110,6 +110,22 @@
  *   piesă sau sus e un câmp necunoscut oarecare;
  * - lanțul v1 → … → v7: operațiile create de migrarea v2 → v3 n-au `intrari`; un câmp `intrari` pus pe o operație v3,
  *   v4 sau v5 trece prin migrările până la v6 (câmp necunoscut) și se ciocnește la v6 → v7.
+ *
+ * Din ADR 0032 (documentul v8, felia 2.6: degajările colțurilor; sesiune independentă, scris doar din textul ADR-ului;
+ * alegerile mele sunt marcate „ALEGERE”):
+ * - v8 = contractul v7 + `Operatie.colturi`, OBLIGATORIU pe orice operație: `null` sau `{ tip }`, cu `tip` exact
+ *   `'dog-bone'` sau `'t-bone'` (fără majuscule, spații sau alte grafii). Categoria nouă e `[colturi]` (lipsa câmpului,
+ *   tipul obiectului, `tip`);
+ * - câmpurile necunoscute DIN obiectul `colturi` se păstrează (§1, scris în ADR); o listă, un număr, un text sau
+ *   `false` în locul obiectului e `[colturi]`;
+ * - ALEGERE: și pe `pe-linie` câmpul e obligatoriu și poate fi `{ tip }`: degajările pe `pe-linie` sunt un refuz al
+ *   EXPORTULUI (§6), nu al ușii (ca la intrări);
+ * - migrarea v7 → v8 (pură): fiecare operație primește `colturi: null`; tot restul rămâne, cu câmpurile necunoscute. O
+ *   operație v7 care are deja un câmp propriu `colturi` (ORICE valoare, și `null`) e o ciocnire (`[ciocnire]`).
+ *   ALEGERE: ca la `sens`, `urechi`, `rampa` și `intrari`, ciocnirea e doar pe OPERAȚIE; `colturi` pe formă, pe sculă,
+ *   în urechi, în rampă, în intrări, pe nod, pe piesă sau sus e un câmp necunoscut oarecare;
+ * - lanțul v1 → … → v8: un câmp `colturi` pus pe o operație v3 … v6 trece prin migrările până la v7 (câmp necunoscut) și
+ *   se ciocnește la v7 → v8.
  */
 
 export type MatriceO = {
@@ -165,6 +181,13 @@ export type OperatieV7O = OperatieV6O & { intrari: IntrariO | null };
 export type PiesaV7O = PiesaO & { operatii: OperatieV7O[] };
 export type DocV7O = Liber & { schema: 7; rev: number; piese: PiesaV7O[]; foi: FoaieO[] };
 
+/** ADR 0032: degajările colțurilor unei operații de profil (dog-bone sau T-bone), sau `null`. */
+export type TipColturiO = 'dog-bone' | 't-bone';
+export type ColturiO = Liber & { tip: TipColturiO };
+export type OperatieV8O = OperatieV7O & { colturi: ColturiO | null };
+export type PiesaV8O = PiesaO & { operatii: OperatieV8O[] };
+export type DocV8O = Liber & { schema: 8; rev: number; piese: PiesaV8O[]; foi: FoaieO[] };
+
 /** Ce au în comun v2, v3, v4 și v5 pentru geometrie: operațiile nu schimbă nimic din ea. */
 export type DocArboreO = { readonly piese: readonly PiesaO[]; readonly foi: readonly FoaieO[] };
 
@@ -195,11 +218,13 @@ export type TaieturaV5O = TaieturaV4O & { urechi: UrechiO | null };
 export type TaieturaV6O = TaieturaV5O & { rampa: RampaO | null };
 /** O tăietură v7: și intrările operației ei (ADR 0030), obiectul din document sau `null`. */
 export type TaieturaV7O = TaieturaV6O & { intrari: IntrariO | null };
+/** O tăietură v8: și degajările operației ei (ADR 0032), obiectul din document sau `null`. */
+export type TaieturaV8O = TaieturaV7O & { colturi: ColturiO | null };
 
 export type CategorieO =
   | 'schema' | 'id' | 'unic-piese' | 'unic-foi' | 'unic-instante' | 'unic-noduri' | 'unic-elemente' | 'referinta'
   | 'adancime' | 'rotire' | 'finit' | 'plafon' | 'foi' | 'pozitiv' | 'margini' | 'ciocnire' | 'forma'
-  | 'operatie' | 'unic-operatii' | 'referinta-op' | 'scula' | 'sens' | 'urechi' | 'rampa' | 'intrari';
+  | 'operatie' | 'unic-operatii' | 'referinta-op' | 'scula' | 'sens' | 'urechi' | 'rampa' | 'intrari' | 'colturi';
 
 /** ADR 0027 §5: valorile primite ale sensului, exact; implicitul migrării și al operației noi. */
 export const SENSURI_O: readonly SensO[] = ['urcare', 'opozitie'];
@@ -218,8 +243,12 @@ export const INTRARI_IMPLICITE_O = null;
 export const INTRARI_DIALOG_O = { raza: 3 } as const;
 /** ADR 0030 §6: sub atât (mm), exportul refuză intrările (documentul le admite). */
 export const RAZA_MINIMA_INTRARI_O = 0.5;
+/** ADR 0032 §1: implicitul migrării v7 → v8 și al operației noi (fără degajări). */
+export const COLTURI_IMPLICITE_O = null;
+/** ADR 0032 §1: tipurile degajărilor, exact. */
+export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 7;
+export const SCHEMA_CURENTA_O = 8;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -438,29 +467,36 @@ function taieturiCuOperatii<Op extends OperatieO>(
 }
 
 /** Tăieturile unei foi v3, v4, v5 sau v6 (cele 11 câmpuri ale contractului din ADR 0025), în ordinea contractului. */
-export function taieturiV3O(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O, indexFoaie = 0): TaieturaO[] {
+export function taieturiV3O(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O, indexFoaie = 0): TaieturaO[] {
   return taieturiCuOperatii<OperatieO>(doc, indexFoaie).map((x) => x.t);
 }
 
 /** Tăieturile unei foi v4 (sau v5), fiecare cu sensul operației ei (ADR 0027), în aceeași ordine. */
-export function taieturiV4O(doc: DocV4O | DocV5O | DocV6O | DocV7O, indexFoaie = 0): TaieturaV4O[] {
+export function taieturiV4O(doc: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O, indexFoaie = 0): TaieturaV4O[] {
   return taieturiCuOperatii<OperatieV4O>(doc, indexFoaie).map(({ t, op }) => ({ ...t, sens: op.sens }));
 }
 
 /** Tăieturile unei foi v5, fiecare cu sensul și urechile operației ei (ADR 0028), în aceeași ordine. */
-export function taieturiV5O(doc: DocV5O | DocV6O | DocV7O, indexFoaie = 0): TaieturaV5O[] {
+export function taieturiV5O(doc: DocV5O | DocV6O | DocV7O | DocV8O, indexFoaie = 0): TaieturaV5O[] {
   return taieturiCuOperatii<OperatieV5O>(doc, indexFoaie).map(({ t, op }) => ({ ...t, sens: op.sens, urechi: op.urechi }));
 }
 
 /** Tăieturile unei foi v6, fiecare cu sensul, urechile și rampa operației ei (ADR 0029), în aceeași ordine. */
-export function taieturiV6O(doc: DocV6O | DocV7O, indexFoaie = 0): TaieturaV6O[] {
+export function taieturiV6O(doc: DocV6O | DocV7O | DocV8O, indexFoaie = 0): TaieturaV6O[] {
   return taieturiCuOperatii<OperatieV6O>(doc, indexFoaie).map(({ t, op }) => ({ ...t, sens: op.sens, urechi: op.urechi, rampa: op.rampa }));
 }
 
 /** Tăieturile unei foi v7, fiecare cu sensul, urechile, rampa și intrările operației ei (ADR 0030), în aceeași ordine. */
-export function taieturiV7O(doc: DocV7O, indexFoaie = 0): TaieturaV7O[] {
+export function taieturiV7O(doc: DocV7O | DocV8O, indexFoaie = 0): TaieturaV7O[] {
   return taieturiCuOperatii<OperatieV7O>(doc, indexFoaie).map(({ t, op }) => ({
     ...t, sens: op.sens, urechi: op.urechi, rampa: op.rampa, intrari: op.intrari,
+  }));
+}
+
+/** Tăieturile unei foi v8, fiecare cu sensul, urechile, rampa, intrările și degajările operației ei (ADR 0032). */
+export function taieturiV8O(doc: DocV8O, indexFoaie = 0): TaieturaV8O[] {
+  return taieturiCuOperatii<OperatieV8O>(doc, indexFoaie).map(({ t, op }) => ({
+    ...t, sens: op.sens, urechi: op.urechi, rampa: op.rampa, intrari: op.intrari, colturi: op.colturi,
   }));
 }
 
@@ -669,10 +705,49 @@ export function migreazaV1V7O(v1: DocV1O): DocV7O {
   return migreazaV6V7O(migreazaV1V6O(v1));
 }
 
-/** Orice versiune primită, adusă la versiunea curentă, v7 (o copie; un v7 rămâne neschimbat). */
-export function ridicaO(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O): DocV7O {
+/** Orice versiune primită până la 7, adusă la v7 (o copie; un v7 rămâne neschimbat). */
+export function ridicaV7O(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O): DocV7O {
   if (doc.schema === 7) return structuredClone(doc);
   return migreazaV6V7O(ridicaV6O(doc));
+}
+
+/**
+ * Documentul v8 pe care ADR 0032 îl cere din v7: `schema: 8` și `colturi: null` pe fiecare operație; restul rămâne, cu
+ * câmpurile necunoscute. Documentul de intrare e presupus migrabil (nicio operație cu un câmp propriu `colturi`).
+ */
+export function migreazaV7V8O(v7: DocV7O): DocV8O {
+  const copie = structuredClone(v7);
+  const piese: PiesaV8O[] = copie.piese.map((p) => ({
+    ...p,
+    operatii: p.operatii.map((o): OperatieV8O => ({ ...o, colturi: COLTURI_IMPLICITE_O })),
+  }));
+  return { ...copie, schema: 8, piese };
+}
+
+/** v6 → v7 → v8, …, v1 → … → v8, în lanț. */
+export function migreazaV6V8O(v6: DocV6O): DocV8O {
+  return migreazaV7V8O(migreazaV6V7O(v6));
+}
+export function migreazaV5V8O(v5: DocV5O): DocV8O {
+  return migreazaV7V8O(migreazaV5V7O(v5));
+}
+export function migreazaV4V8O(v4: DocV4O): DocV8O {
+  return migreazaV7V8O(migreazaV4V7O(v4));
+}
+export function migreazaV3V8O(v3: DocV3O): DocV8O {
+  return migreazaV7V8O(migreazaV3V7O(v3));
+}
+export function migreazaV2V8O(v2: DocV2O): DocV8O {
+  return migreazaV7V8O(migreazaV2V7O(v2));
+}
+export function migreazaV1V8O(v1: DocV1O): DocV8O {
+  return migreazaV7V8O(migreazaV1V7O(v1));
+}
+
+/** Orice versiune primită, adusă la versiunea curentă, v8 (o copie; un v8 rămâne neschimbat). */
+export function ridicaO(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O): DocV8O {
+  if (doc.schema === 8) return structuredClone(doc);
+  return migreazaV7V8O(ridicaV7O(doc));
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -807,11 +882,29 @@ export function problemeIntrariO(op: Liber): string[] {
   return inInterval(x['raza'], PLAFOANE_O.latura) ? [] : [`.raza = ${String(x['raza'])} nu e în (0, ${PLAFOANE_O.latura}]`];
 }
 
+/** ADR 0032 §1: tipurile primite, ca mulțime (exact; fără majuscule, spații sau alte grafii). */
+const TIPURI_COLTURI_SET_O: ReadonlySet<unknown> = new Set<unknown>(TIPURI_COLTURI_O);
+
+/**
+ * ADR 0032 §1: de ce câmpul `colturi` al unei operații v8 nu e bun (lipsă, alt tip, `tip` necunoscut), ca listă de
+ * motive; goală = `null` sau un obiect bun (câmpurile necunoscute din el se păstrează).
+ */
+export function problemeColturiO(op: Liber): string[] {
+  if (!Object.hasOwn(op, 'colturi')) return ['lipsește (v8 îl cere: null sau { tip })'];
+  const c = op['colturi'];
+  if (c === null) return [];
+  if (!esteObiect(c)) return [`= ${JSON.stringify(c) ?? String(c)} nu e null sau obiect`];
+  if (!Object.hasOwn(c, 'tip') || !TIPURI_COLTURI_SET_O.has(c['tip'])) {
+    return [`.tip = ${Object.hasOwn(c, 'tip') ? JSON.stringify(c['tip']) ?? String(c['tip']) : '(lipsă)'} nu e ${TIPURI_COLTURI_O.join(' sau ')}`];
+  }
+  return [];
+}
+
 /**
  * Lista încălcărilor contractului v2 (`schema` 2), v3 (`schema` 3, cu operațiile), v4 (`schema` 4, cu sensul fiecărei
  * operații) sau v5 (`schema` 5, cu urechile); goală = document valid. Merge iterativ: un arbore adânc nu umple stiva.
  */
-function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7): string[] {
+function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8): string[] {
   const probleme: string[] = [];
   const semnaleaza: Semnaleaza = (categorie, mesaj) => { probleme.push(`[${categorie}] ${mesaj}`); };
   const u = unelte(semnaleaza);
@@ -908,6 +1001,8 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7): string[] 
       if (schema >= 6) for (const m of problemeRampaO(op)) semnaleaza('rampa', `${co}.rampa ${m}`);
       // ADR 0030 §1: obligatoriu în v7, pe orice operație (și `pe-linie`, ALEGERE din antet: refuzul e al exportului).
       if (schema >= 7) for (const m of problemeIntrariO(op)) semnaleaza('intrari', `${co}.intrari ${m}`);
+      // ADR 0032 §1: obligatoriu în v8, pe orice operație (și `pe-linie`, ALEGERE din antet: refuzul e al exportului).
+      if (schema >= 8) for (const m of problemeColturiO(op)) semnaleaza('colturi', `${co}.colturi ${m}`);
       if (!inInterval(op['adancime'], PLAFOANE_O.adancimeOperatie)) semnaleaza('operatie', `${co}.adancime = ${String(op['adancime'])} nu e în (0, ${PLAFOANE_O.adancimeOperatie}]`);
       if (!inInterval(op['pas'], PLAFOANE_O.pasOperatie)) semnaleaza('operatie', `${co}.pas = ${String(op['pas'])} nu e în (0, ${PLAFOANE_O.pasOperatie}]`);
       scula(`${co}.scula`, op['scula']);
@@ -1064,6 +1159,67 @@ export function verificaV6(doc: unknown): string[] {
 /** Lista încălcărilor contractului v7 (ADR 0024 + 0025 + 0027 + 0028 + 0029 + 0030); goală = document v7 valid. */
 export function verificaV7(doc: unknown): string[] {
   return verificaArboreO(doc, 7);
+}
+
+/** Lista încălcărilor contractului v8 (ADR 0024 + 0025 + 0027 + 0028 + 0029 + 0030 + 0032); goală = document v8 valid. */
+export function verificaV8(doc: unknown): string[] {
+  return verificaArboreO(doc, 8);
+}
+
+/**
+ * De ce ușa trebuie să refuze un document v7, ca listă de probleme; goală = se migrează la v8. Contractul v7, apoi
+ * ciocnirea de nume (o operație cu un câmp propriu `colturi`, oricare i-ar fi valoarea, și `null`), apoi documentul
+ * MIGRAT trebuie să respecte contractul v8.
+ */
+export function verificaV7V8(doc: unknown): string[] {
+  const probleme = verificaV7(doc);
+  if (esteObiect(doc) && Array.isArray(doc['piese'])) {
+    doc['piese'].forEach((p: unknown, i) => {
+      if (!esteObiect(p) || !Array.isArray(p['operatii'])) return;
+      p['operatii'].forEach((op: unknown, k) => {
+        if (esteObiect(op) && Object.hasOwn(op, 'colturi')) {
+          probleme.push(`[ciocnire] piese[${i}].operatii[${k}]: câmpul „colturi” al operației v7 s-ar pierde în migrare`);
+        }
+      });
+    });
+  }
+  if (probleme.length > 0) return probleme;
+  return verificaV8(migreazaV7V8O(doc as DocV7O));
+}
+
+/** v6 până la v8: `verificaV6V7`, apoi v7-ul migrat prin `verificaV7V8` (un câmp `colturi` pe o operație v6 se ciocnește). */
+export function verificaV6V8(doc: unknown): string[] {
+  const probleme = verificaV6V7(doc);
+  if (probleme.length > 0) return probleme;
+  return verificaV7V8(migreazaV6V7O(doc as DocV6O));
+}
+
+/** v5 până la v8: `verificaV5V7`, apoi v7-ul migrat prin `verificaV7V8`. */
+export function verificaV5V8(doc: unknown): string[] {
+  const probleme = verificaV5V7(doc);
+  if (probleme.length > 0) return probleme;
+  return verificaV7V8(migreazaV5V7O(doc as DocV5O));
+}
+
+/** v4 până la v8: `verificaV4V7`, apoi v7-ul migrat prin `verificaV7V8`. */
+export function verificaV4V8(doc: unknown): string[] {
+  const probleme = verificaV4V7(doc);
+  if (probleme.length > 0) return probleme;
+  return verificaV7V8(migreazaV4V7O(doc as DocV4O));
+}
+
+/** v3 până la v8: `verificaV3V7`, apoi v7-ul migrat prin `verificaV7V8`. */
+export function verificaV3V8(doc: unknown): string[] {
+  const probleme = verificaV3V7(doc);
+  if (probleme.length > 0) return probleme;
+  return verificaV7V8(migreazaV3V7O(doc as DocV3O));
+}
+
+/** v2 până la v8: `verificaV2V7`, apoi v7-ul migrat (operațiile create de migrare n-au `colturi`). */
+export function verificaV2V8(doc: unknown): string[] {
+  const probleme = verificaV2V7(doc);
+  if (probleme.length > 0) return probleme;
+  return verificaV7V8(migreazaV2V7O(doc as DocV2O));
 }
 
 /**
@@ -1280,15 +1436,37 @@ export function verificaV1(doc: unknown): string[] {
   });
   if (probleme.length > 0) return probleme;
   // Precizarea 5: „un document v1 cu valori peste aceste margini e refuzat la migrare”: se judecă documentul migrat,
-  // apoi lanțul continuă la v3, la v4, la v5, la v6 și la v7.
-  return verificaV2V7(migreazaV1O(doc as DocV1O));
+  // apoi lanțul continuă la v3, la v4, la v5, la v6, la v7 și la v8.
+  return verificaV2V8(migreazaV1O(doc as DocV1O));
 }
 
-/** Ce spune ușa despre orice document: după `schema`, verificarea versiunii lui (și a migrării până la 7). */
+/** Ce spune ușa despre orice document: după `schema`, verificarea versiunii lui (și a migrării până la 8). */
 export function verificaO(doc: unknown): string[] {
   if (!esteObiect(doc)) return ['[schema] documentul nu e un obiect'];
   const s = doc['schema'];
   if (s === 1) return verificaV1(doc);
+  if (s === 2) return verificaV2V8(doc);
+  if (s === 3) return verificaV3V8(doc);
+  if (s === 4) return verificaV4V8(doc);
+  if (s === 5) return verificaV5V8(doc);
+  if (s === 6) return verificaV6V8(doc);
+  if (s === 7) return verificaV7V8(doc);
+  if (s === 8) return verificaV8(doc);
+  return [`[schema] schema = ${JSON.stringify(s)} nu e 1, 2, 3, 4, 5, 6, 7 sau 8`];
+}
+
+/**
+ * Ușa unei aplicații rămase pe schema 7 (înainte de felia 2.6), pentru lipire: verificarea versiunii documentului și a
+ * migrării până la 7, cu `colturi` un câmp necunoscut oarecare; schema 8 e refuzată. Un v1 nu poate purta `colturi`
+ * pe o operație (migrarea v2 → v3 creează operațiile), deci lanțul lui până la 7 ajunge.
+ */
+export function verificaPanaLaV7O(doc: unknown): string[] {
+  if (!esteObiect(doc)) return ['[schema] documentul nu e un obiect'];
+  const s = doc['schema'];
+  if (s === 1) {
+    const p = verificaV1(doc);
+    return p.length > 0 ? p : verificaV7(migreazaV1V7O(doc as DocV1O));
+  }
   if (s === 2) return verificaV2V7(doc);
   if (s === 3) return verificaV3V7(doc);
   if (s === 4) return verificaV4V7(doc);

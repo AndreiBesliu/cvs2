@@ -42,6 +42,13 @@
  * testele doar-v7 („(a7)”, „(e7)”, „(g7)”, „(h7)”) se sar doar sub 7, iar testul „VERSIUNE_SCHEMA e 7” nu se sare
  * (o aplicație rămasă în urmă îl înroșește, nu-l ascunde). Tăietura aplicației poate purta și `intrari` (ALEGERE, ca la
  * rampă): dacă o are, e a operației ei.
+ *
+ * Felia 2.6 (ADR 0032, sesiune independentă): oracolul e pe v8 (`colturi` pe fiecare operație; `ridicaO` dă v8,
+ * `ridicaV7O` păstrează lanțul vechi până la 7). Pe 8, ușa trebuie să dea v8-ul migrării (`colturi: null`; o operație
+ * veche cu un câmp `colturi` e refuzată, ca ciocnire); testele doar-v8 („(a8)”, „(e8)”, „(g8)”, „(h8)”) rulează pe ≥ 8
+ * și se sar doar sub 8, iar testul „VERSIUNE_SCHEMA e 8” nu se sare (o aplicație rămasă în urmă îl înroșește). Testele
+ * v7 rulează și pe 8: un v7 valid trece prin ușă ca v8-ul migrării. Tăietura aplicației poate purta și `colturi`
+ * (ALEGERE, ca la intrări): dacă o are, e a operației ei.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -59,6 +66,8 @@ import {
   verificaV5, verificaV5V6, verificaV6,
   type DocV2O, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type ElementLumeO, type Liber, type RampaO, type TaieturaO,
   type TaieturaV4O, type UrechiO,
+  COLTURI_IMPLICITE_O, migreazaV1V8O, migreazaV4V8O, migreazaV5V8O, migreazaV6V8O, migreazaV7V8O, ridicaV7O, taieturiV8O, TIPURI_COLTURI_O,
+  verificaPanaLaV7O, verificaV7V8, verificaV8, type ColturiO, type DocV8O,
 } from '../oracles/document.ts';
 import {
   areRampaPeOperatii, areUrechiPeOperatii, CAZURI_HARTIE, CAZURI_TAIETURI, CORPUS_V1, CORPUS_V2, CORPUS_V3, CORPUS_V4,
@@ -68,220 +77,22 @@ import {
   VALIDE_DIFICILE_V4, VALIDE_DIFICILE_V5, VALIDE_DIFICILE_V6,
   areIntrariPeOperatii, CORPUS_V7, faraIntrariPeOperatii, MIGRARI_V6_HARTIE, OTRAVURI_INTRARI, OTRAVURI_V7, REFUZATE_V6,
   VALIDE_DIFICILE_V7,
+  areColturiPeOperatii, CORPUS_V8, MIGRARI_V7_HARTIE, OTRAVURI_COLTURI, OTRAVURI_V8, REFUZATE_V7, VALIDE_DIFICILE_V8,
 } from '../oracles/document.cazuri.ts';
 
-type DocApp = Parameters<typeof elementeFoaie>[0];
+import {
+  type DocApp, V, PE_V5, PE_V6, PE_V7, PE_V8, DOAR_V5, DOAR_V6, DOAR_V7, DOAR_V8, verificaSchemaApp, v5PentruApp, v6PentruApp, v7PentruApp, ciocnesteLa7, accepta, ca, asteptatDinV4, lumeaAplicatiei, formeTaietura, type TaieturaApp, taieturileAplicatiei, aceleasiChei, aceeasiLume, type TaieturaAsteptata, aceleasiTaieturi, taieturileOracolului, aceeasiFoaie, mare, text, faraCampuriNoi, incarcaVechi, unice, V4_VALIDE, V5_VALIDE, V6_VALIDE,
+} from './ajutor-document-oracol.ts';
 
-/** Schema aplicației: 4 (înainte de felia 2.4), 5 (înainte de 2.5a) sau 6. */
-const V = VERSIUNE_SCHEMA as number;
-const PE_V5 = V >= 5;
-const PE_V6 = V >= 6;
-const PE_V7 = V >= 7;
-/** Motivul pentru care testele doar-v5 se sar. */
-const DOAR_V5 = PE_V5 ? false : `aplicația e încă pe schema ${V}; testul cere documentul v5 (ADR 0028)`;
-const DOAR_V6 = PE_V6 ? false : `aplicația e încă pe schema ${V}; testul cere documentul v6 (ADR 0029)`;
-const DOAR_V7 = PE_V7 ? false : `aplicația e încă pe schema ${V}; testul cere documentul v7 (ADR 0030)`;
-/** Ce verifică ușa aplicației pe documentul schemei ei. */
-const verificaSchemaApp = (d: unknown): string[] => (PE_V7 ? verificaV7(d) : PE_V6 ? verificaV6(d) : PE_V5 ? verificaV5(d) : verificaV4(d));
-/** Un v5 al oracolului, cum trebuie să iasă din ușa aplicației: neschimbat pe 5, cu `rampa: null` pe 6, și `intrari: null` pe 7. */
-const v5PentruApp = (d: DocV5O): DocV5O | DocV6O | DocV7O => (PE_V7 ? migreazaV5V7O(d) : PE_V6 ? migreazaV5V6O(d) : d);
-/** Un v6 al oracolului, cum trebuie să iasă din ușa aplicației: neschimbat pe 6, cu `intrari: null` pe 7. */
-const v6PentruApp = (d: DocV6O): DocV6O | DocV7O => (PE_V7 ? migreazaV6V7O(d) : d);
-/** Pe 7, un document cu un câmp `intrari` pe operații se ciocnește (ADR 0030 §1). */
-const ciocnesteLa7 = (d: unknown): boolean => PE_V7 && areIntrariPeOperatii(d);
-
-/** Documentul primit de `incarca`; un refuz pică testul, cu motivul. */
-function accepta(brut: unknown): DocApp {
-  const r = incarca(brut);
-  if (!r.ok) return assert.fail(`incarca a refuzat: ${String(r.motiv)}`);
-  return r.doc;
-}
-
-/** Documentul aplicației, citit de oracol ca date. */
-const ca = (d: DocApp): DocV7O => d as unknown as DocV7O;
-
-/**
- * Ce trebuie să dea ușa aplicației pentru un document vechi, adus de oracol la v4: v4-ul însuși (aplicația pe 4) sau
- * v5-ul migrării (pe 5); `null` = refuz (pe 5: o operație care are deja un câmp `urechi`, ciocnire).
- */
-function asteptatDinV4(v4: DocV4O): DocV4O | DocV5O | DocV6O | DocV7O | null {
-  if (!PE_V5) return v4;
-  if (areUrechiPeOperatii(v4)) return null;
-  if (!PE_V6) return migreazaV4V5O(v4);
-  if (areRampaPeOperatii(v4)) return null;
-  if (!PE_V7) return migreazaV4V6O(v4);
-  return areIntrariPeOperatii(v4) ? null : migreazaV4V7O(v4);
-}
-
-/** Lista aplicației, în forma oracolului; `idLume` trebuie să fie `<instanță>/<nod>`. */
-function lumeaAplicatiei(doc: DocApp, indexFoaie = 0): ElementLumeO[] {
-  return elementeFoaie(doc, indexFoaie).map((e) => {
-    assert.equal(e.idLume, `${e.instanta}/${e.nod}`, `idLume ${e.idLume} nu e instanța/nodul`);
-    return { idLume: e.idLume, forma: e.forma, matrice: e.matrice };
-  });
-}
-
-/** Cum își scrie aplicația tăieturile: fără, cu `sens`, cu `sens` și `urechi` (ALEGERE din antet); se raportează o dată. */
-const formeTaietura = new Set<string>();
-
-type TaieturaApp = TaieturaO & { sens?: unknown; urechi?: unknown; rampa?: unknown; intrari?: unknown };
-
-/**
- * Tăieturile aplicației, citite ca date: fiecare are exact câmpurile contractului (cele 11, eventual și `sens`, eventual
- * și `urechi`), iar `idLume` e instanța/nodul.
- */
-function taieturileAplicatiei(doc: DocApp, indexFoaie = 0): TaieturaApp[] {
-  const forme = new Map<string, string>([
-    [JSON.stringify([...CAMPURI_TAIETURA_O].sort()), 'fără sens'],
-    [JSON.stringify([...CAMPURI_TAIETURA_O, 'sens'].sort()), 'cu sens'],
-    [JSON.stringify([...CAMPURI_TAIETURA_O, 'sens', 'urechi'].sort()), 'cu sens și urechi'],
-    [JSON.stringify([...CAMPURI_TAIETURA_O, 'sens', 'urechi', 'rampa'].sort()), 'cu sens, urechi și rampă'],
-    [JSON.stringify([...CAMPURI_TAIETURA_O, 'sens', 'urechi', 'rampa', 'intrari'].sort()), 'cu sens, urechi, rampă și intrări'],
-  ]);
-  return (taieturiFoaie(doc, indexFoaie) as readonly object[]).map((x) => {
-    const chei = Object.keys(x).sort();
-    const potrivite = forme.get(JSON.stringify(chei));
-    assert.ok(potrivite, `câmpurile unei tăieturi: ${chei.join(', ')}`);
-    formeTaietura.add(potrivite);
-    const t = x as unknown as TaieturaApp;
-    assert.equal(t.idLume, `${t.instanta}/${t.nod}`, `idLume ${t.idLume} nu e instanța/nodul`);
-    return t;
-  });
-}
-
-/**
- * Două liste de chei egale, element cu element; la prima diferență, poziția și cele două valori. (Pe 100 000 de
- * elemente, `assert.deepEqual` calculează un diff care durează minute: un test roșu ar arăta ca unul blocat.)
- */
-function aceleasiChei(real: readonly string[], asteptat: readonly string[], mesaj: string): void {
-  const n = Math.max(real.length, asteptat.length);
-  for (let k = 0; k < n; k++) {
-    if (real[k] !== asteptat[k]) {
-      assert.fail(`${mesaj}: la poziția ${k}, ${JSON.stringify(real[k])} ≠ ${JSON.stringify(asteptat[k])} (lungimi ${real.length} și ${asteptat.length})`);
-    }
-  }
-}
-
-/** Aceleași id-uri în aceeași ordine, aceeași formă, aceeași matrice (fiecare componentă `===`). */
-function aceeasiLume(real: readonly ElementLumeO[], asteptat: readonly ElementLumeO[]): void {
-  aceleasiChei(real.map((e) => e.idLume), asteptat.map((e) => e.idLume), 'id-urile în lume și ordinea lor');
-  real.forEach((e, k) => {
-    const o = asteptat[k] as ElementLumeO;
-    const df = diferenta(e.forma, o.forma);
-    assert.ok(df === undefined, `${e.idLume}: forma diferă (${df})`);
-    for (const c of ['a', 'b', 'c', 'd', 'e', 'f'] as const) {
-      const x = e.matrice[c];
-      const y = o.matrice[c];
-      assert.ok(x === y, `${e.idLume}: matrice.${c} = ${x}, aștept ${y}`);
-    }
-  });
-}
-
-/**
- * Aceleași tăieturi în aceeași ordine: scalarii `===`, scula și forma prin `diferenta`, matricea `===`; sensul și
- * urechile, când lista reală le are (oracolul are mereu sensul; urechile, pe v5).
- */
-function aceleasiTaieturi(real: readonly TaieturaApp[], asteptat: ReadonlyArray<TaieturaV4O & { urechi?: UrechiO | null; rampa?: RampaO | null; intrari?: IntrariO | null }>, cine = 'aplicația'): void {
-  const chei = (l: ReadonlyArray<TaieturaO>): string[] => l.map((x) => `${x.idLume}#${x.operatie}`);
-  aceleasiChei(chei(real), chei(asteptat), `${cine}: tăieturile (idLume#operație) și ordinea lor`);
-  real.forEach((x, k) => {
-    const o = asteptat[k] as TaieturaV4O & { urechi?: UrechiO | null; rampa?: RampaO | null; intrari?: IntrariO | null };
-    const unde = `${cine}, tăietura ${k} (${x.idLume}#${x.operatie})`;
-    for (const c of ['idLume', 'instanta', 'piesa', 'operatie', 'nod', 'latura', 'adancime', 'pas'] as const) {
-      assert.ok(x[c] === o[c], `${unde}: ${c} = ${String(x[c])}, aștept ${String(o[c])}`);
-    }
-    if (Object.hasOwn(x, 'sens')) assert.ok(x.sens === o.sens, `${unde}: sens = ${String(x.sens)}, aștept ${o.sens}`);
-    if (Object.hasOwn(x, 'urechi')) {
-      assert.ok(Object.hasOwn(o, 'urechi'), `${unde}: urechi pe tăietura unui document v4`);
-      const du = diferenta(x.urechi, o.urechi);
-      assert.ok(du === undefined, `${unde}: urechile diferă (${du})`);
-    }
-    if (Object.hasOwn(x, 'rampa')) {
-      assert.ok(Object.hasOwn(o, 'rampa'), `${unde}: rampa pe tăietura unui document mai vechi de v6`);
-      const dr = diferenta(x.rampa, o.rampa);
-      assert.ok(dr === undefined, `${unde}: rampele diferă (${dr})`);
-    }
-    if (Object.hasOwn(x, 'intrari')) {
-      assert.ok(Object.hasOwn(o, 'intrari'), `${unde}: intrari pe tăietura unui document mai vechi de v7`);
-      const di = diferenta(x.intrari, o.intrari);
-      assert.ok(di === undefined, `${unde}: intrările diferă (${di})`);
-    }
-    const ds = diferenta(x.scula, o.scula);
-    assert.ok(ds === undefined, `${unde}: scula diferă (${ds})`);
-    const df = diferenta(x.forma, o.forma);
-    assert.ok(df === undefined, `${unde}: forma diferă (${df})`);
-    for (const c of ['a', 'b', 'c', 'd', 'e', 'f'] as const) {
-      assert.ok(x.matrice[c] === o.matrice[c], `${unde}: matrice.${c} = ${x.matrice[c]}, aștept ${o.matrice[c]}`);
-    }
-  });
-}
-
-/** Tăieturile oracolului pentru un document v4, v5, v6 sau v7. */
-const taieturileOracolului = (d: DocV4O | DocV5O | DocV6O | DocV7O, k: number): ReadonlyArray<TaieturaV4O & { urechi?: UrechiO | null; rampa?: RampaO | null; intrari?: IntrariO | null }> =>
-  (d.schema === 7 ? taieturiV7O(d, k) : d.schema === 6 ? taieturiV6O(d, k) : d.schema === 5 ? taieturiV5O(d, k) : taieturiV4O(d, k));
-
-/** Elementele și tăieturile fiecărei foi, aplicația față de oracol. */
-function aceeasiFoaie(doc: DocApp, asteptat: DocV4O | DocV5O | DocV6O | DocV7O): void {
-  assert.equal(ca(doc).foi.length, asteptat.foi.length, 'numărul de foi');
-  for (let k = 0; k < asteptat.foi.length; k++) {
-    aceeasiLume(lumeaAplicatiei(doc, k), geometrieV2(asteptat, k));
-    aceleasiTaieturi(taieturileAplicatiei(doc, k), taieturileOracolului(asteptat, k));
-  }
-}
-
-/**
- * Un document mare (peste 20 000 de noduri și instanțe): trece o dată prin (a) și prin (e), cu tot cu documentul exact,
- * dar nu și prin încărcările repetate din (b), (c) și (g), care nu depind de mărime și ar costa zeci de secunde.
- */
-function mare(d: { readonly piese: ReadonlyArray<{ readonly radacina: unknown }>; readonly foi: ReadonlyArray<{ readonly instante: readonly unknown[] }> }): boolean {
-  let n = d.foi.reduce((s, f) => s + f.instante.length, 0);
-  const stiva: unknown[] = d.piese.map((p) => p.radacina);
-  for (let x = stiva.pop(); x !== undefined; x = stiva.pop()) {
-    n++;
-    const copii = (x as Liber)['copii'];
-    if (Array.isArray(copii)) stiva.push(...(copii as unknown[]));
-  }
-  return n > 20_000;
-}
-
-/** Octeții canonici, ca text (dacă `jsonCanonic` dă octeți, se decodează). */
-const text = (b: ReturnType<typeof jsonCanonic>): string =>
-  typeof b === 'string' ? b : new TextDecoder().decode(b as unknown as Uint8Array);
-
-/** Un document fără câmpurile noi de pe operații: schema dată, `sens` scos și (dacă `urechi`) `urechi` și `rampa` scoase. */
-function faraCampuriNoi(d: unknown, schema: number, urechi = PE_V5): Liber {
-  const c = structuredClone(d) as Liber;
-  c['schema'] = schema;
-  for (const p of c['piese'] as Liber[]) {
-    for (const o of p['operatii'] as Liber[]) {
-      delete o['sens'];
-      if (urechi) delete o['urechi'];
-      if (urechi && PE_V6) delete o['rampa'];
-      if (urechi && PE_V7) delete o['intrari'];
-    }
-  }
-  return c;
-}
-
-/**
- * Încărcarea unui document vechi (`brut`) pe care oracolul îl duce în `v4` (lanțul până la 4): ce dă ușa trebuie să fie
- * exact `asteptatDinV4(v4)`, sau un refuz cu motiv când acela e `null`. Întoarce documentul aplicației (sau null).
- */
-function incarcaVechi(brut: unknown, v4: DocV4O): { readonly doc: DocApp; readonly asteptat: DocV4O | DocV5O | DocV6O | DocV7O } | null {
-  const asteptat = asteptatDinV4(v4);
-  if (asteptat === null) {
-    const r = incarca(structuredClone(brut));
-    if (r.ok) assert.fail(`aplicația (pe ${V}) a migrat o operație care avea deja un câmp „urechi”, „rampa” sau „intrari” (ADR 0028 / 0029 / 0030 §1: ciocnire)`);
-    assert.ok(String(r.motiv ?? '').length > 0, 'refuzul n-are motiv');
-    return null;
-  }
-  return { doc: accepta(structuredClone(brut)), asteptat };
-}
+// Fișierul 1 din 3: oracolul singur (până la v6) și lipirea v1–v3 (cu migrările pe hârtie); restul în
+// `document.lipire.oracol.test.ts` (otrăvurile, documentele valide, refuzurile) și `document.v8.oracol.test.ts` (v7, v8).
 
 // ── Oracolul singur, pe hârtie ──────────────────────────────────────────────────────────────────────────────────────
 
-test('(o) versiunea curentă a oracolului e 7; sensurile sunt urcare și opozitie; urechile: implicit null, dialogul 4 × 8 × 2, cel mult 100; rampa: implicit null, dialogul 10 mm; intrările: implicit null, dialogul 3 mm, exportul cere ≥ 0,5', () => {
-  assert.equal(SCHEMA_CURENTA_O, 7);
+test('(o) versiunea curentă a oracolului e 8; sensurile sunt urcare și opozitie; urechile: implicit null, dialogul 4 × 8 × 2, cel mult 100; rampa: implicit null, dialogul 10 mm; intrările: implicit null, dialogul 3 mm, exportul cere ≥ 0,5; colțurile: implicit null, dog-bone sau t-bone', () => {
+  assert.equal(SCHEMA_CURENTA_O, 8);
+  assert.equal(COLTURI_IMPLICITE_O, null);
+  assert.deepEqual([...TIPURI_COLTURI_O], ['dog-bone', 't-bone']);
   assert.equal(INTRARI_IMPLICITE_O, null);
   assert.deepEqual({ ...INTRARI_DIALOG_O }, { raza: 3 });
   assert.equal(RAZA_MINIMA_INTRARI_O, 0.5);
@@ -304,8 +115,10 @@ for (const { nume, v1, v4 } of MIGRARI_HARTIE) {
     assert.equal(diferenta(migreazaV1V5O(v1), migreazaV4V5O(v4 as DocV4O)), undefined);
     assert.equal(diferenta(migreazaV1V6O(v1), migreazaV4V6O(v4 as DocV4O)), undefined);
     assert.equal(diferenta(ridicaV6O(v1), migreazaV4V6O(v4 as DocV4O)), undefined);
-    assert.equal(diferenta(ridicaO(v1), migreazaV4V7O(v4 as DocV4O)), undefined);
+    assert.equal(diferenta(ridicaV7O(v1), migreazaV4V7O(v4 as DocV4O)), undefined);
     assert.equal(diferenta(migreazaV1V7O(v1), migreazaV4V7O(v4 as DocV4O)), undefined);
+    assert.equal(diferenta(ridicaO(v1), migreazaV4V8O(v4 as DocV4O)), undefined);
+    assert.equal(diferenta(migreazaV1V8O(v1), migreazaV4V8O(v4 as DocV4O)), undefined);
   });
 }
 
@@ -335,7 +148,8 @@ for (const { nume, v3, v4 } of MIGRARI_V3_HARTIE) {
       assert.equal(diferenta(ridicaV5O(v3), migreazaV4V5O(v4 as DocV4O)), undefined);
       assert.equal(diferenta(migreazaV3V6O(v3), migreazaV4V6O(v4 as DocV4O)), undefined);
       assert.equal(diferenta(ridicaV6O(v3), migreazaV4V6O(v4 as DocV4O)), undefined);
-      assert.equal(diferenta(ridicaO(v3), migreazaV4V7O(v4 as DocV4O)), undefined);
+      assert.equal(diferenta(ridicaV7O(v3), migreazaV4V7O(v4 as DocV4O)), undefined);
+      assert.equal(diferenta(ridicaO(v3), migreazaV4V8O(v4 as DocV4O)), undefined);
     }
   });
 }
@@ -422,9 +236,9 @@ test('(o) migrarea v5 → v6 e pură și deterministă; din v5 rămâne tot, în
 for (const caz of CAZURI_TAIETURI) {
   test(`(o) tăieturile oracolului pe hârtie, cu sensul (și urechile null, la v5): ${caz.nume}`, () => {
     assert.deepEqual(verificaO(caz.doc), []);
-    const v7 = ridicaO(caz.doc);
-    aceleasiTaieturi(taieturiV4O(v7, caz.indexFoaie), caz.taieturi, 'oracolul');
-    for (const t of taieturiV7O(v7, caz.indexFoaie)) { assert.equal(t.urechi, null); assert.equal(t.rampa, null); assert.equal(t.intrari, null); }
+    const v8 = ridicaO(caz.doc);
+    aceleasiTaieturi(taieturiV4O(v8, caz.indexFoaie), caz.taieturi, 'oracolul');
+    for (const t of taieturiV8O(v8, caz.indexFoaie)) { assert.equal(t.urechi, null); assert.equal(t.rampa, null); assert.equal(t.intrari, null); assert.equal(t.colturi, null); }
   });
 }
 
@@ -576,9 +390,9 @@ test('(o) corpusul v5: valid, cu urechi null și cu valori de pe tot intervalul 
   assert.ok(nule > 50 && cu > 100 && laMargini > 20 && capcane >= 5 && necunoscute >= 3, JSON.stringify({ nule, cu, laMargini, capcane, necunoscute }));
 });
 
-test('(o) schema 8, „7” ca text și 6.5 sunt refuzate de oracol; v1, …, v6 ajung la v7 prin lanț (și la v6 prin `ridicaV6O`)', () => {
-  const d = structuredClone(VALIDE_DIFICILE_V7[1]!.doc) as Liber;
-  for (const s of [8, '7', 6.5, 0, null]) {
+test('(o) schema 9, „8” ca text și 7.5 sunt refuzate de oracol; v1, …, v7 ajung la v8 prin lanț (și la v7 prin `ridicaV7O`, la v6 prin `ridicaV6O`)', () => {
+  const d = structuredClone(VALIDE_DIFICILE_V8[1]!.doc) as Liber;
+  for (const s of [9, '8', 7.5, 0, null]) {
     d['schema'] = s;
     assert.deepEqual(categoriiO(verificaO(d)), ['schema'], String(s));
   }
@@ -590,26 +404,32 @@ test('(o) schema 8, „7” ca text și 6.5 sunt refuzate de oracol; v1, …, v6
   const v6ca7 = structuredClone(faraIntrariPeOperatii(VALIDE_DIFICILE_V6[1]!.doc)) as Liber;
   v6ca7['schema'] = 7;
   assert.deepEqual(categoriiO(verificaO(v6ca7)), ['intrari']);
-  assert.equal(ridicaO(CORPUS_V1[0]!.doc).schema, 7);
-  assert.equal(ridicaO(CORPUS_V2[0]!.doc).schema, 7);
-  assert.equal(ridicaO(faraUrechiPeOperatii(CORPUS_V3[0]!.doc)).schema, 7);
-  assert.equal(ridicaO(faraUrechiPeOperatii(CORPUS_V4[0]!.doc)).schema, 7);
-  assert.equal(ridicaO(CORPUS_V5[0]!.doc).schema, 7);
-  assert.equal(ridicaO(CORPUS_V6[0]!.doc).schema, 7);
+  // Un v7 etichetat 8 (fără colțuri) nu e un v8: [colturi].
+  const v7ca8 = structuredClone(VALIDE_DIFICILE_V7[1]!.doc) as Liber;
+  v7ca8['schema'] = 8;
+  assert.deepEqual(categoriiO(verificaO(v7ca8)), ['colturi']);
+  assert.equal(ridicaO(CORPUS_V1[0]!.doc).schema, 8);
+  assert.equal(ridicaO(CORPUS_V2[0]!.doc).schema, 8);
+  assert.equal(ridicaO(faraUrechiPeOperatii(CORPUS_V3[0]!.doc)).schema, 8);
+  assert.equal(ridicaO(faraUrechiPeOperatii(CORPUS_V4[0]!.doc)).schema, 8);
+  assert.equal(ridicaO(CORPUS_V5[0]!.doc).schema, 8);
+  assert.equal(ridicaO(CORPUS_V6[0]!.doc).schema, 8);
+  assert.equal(ridicaO(CORPUS_V7[0]!.doc).schema, 8);
+  assert.equal(ridicaV7O(CORPUS_V6[0]!.doc).schema, 7);
   assert.equal(ridicaV6O(CORPUS_V5[0]!.doc).schema, 6);
   assert.equal(ridicaV5O(CORPUS_V1[0]!.doc).schema, 5);
 });
 
 // ── Lipirea cu aplicația ────────────────────────────────────────────────────────────────────────────────────────────
 
-test('VERSIUNE_SCHEMA e 4–7 (raport: sub 7, testele doar-v7 se sar)', () => {
-  assert.ok(V >= 4 && V <= 7, `VERSIUNE_SCHEMA = ${V}`);
-  console.log(`schema aplicației: ${V}${PE_V7 ? '' : ' (testele doar-v7 se sar)'}`);
+test('VERSIUNE_SCHEMA e 4–8 (raport: sub 8, testele doar-v8 se sar)', () => {
+  assert.ok(V >= 4 && V <= 8, `VERSIUNE_SCHEMA = ${V}`);
+  console.log(`schema aplicației: ${V}${PE_V8 ? '' : ' (testele doar-v8 se sar)'}`);
 });
 
 // Felia 2.5b: fără `skip`. Poarta de dinainte („e 6”, sărit sub 6) ar fi PICAT pe 7, dar una scrisă `=== 6` ar fi sărit
-// în tăcere; acum versiunea oracolului și a aplicației trebuie să fie aceeași, altfel testul e roșu.
-test('VERSIUNE_SCHEMA e 7 (felia 2.5b, ADR 0030), aceeași cu a oracolului', () => {
+// în tăcere; acum versiunea oracolului și a aplicației trebuie să fie aceeași, altfel testul e roșu. Felia 2.6: la fel, 8.
+test('VERSIUNE_SCHEMA e 8 (felia 2.6, ADR 0032), aceeași cu a oracolului', () => {
   assert.equal(V, SCHEMA_CURENTA_O);
 });
 
@@ -628,7 +448,7 @@ for (const { nume, doc } of CORPUS_V1) {
     const x = incarcaVechi(doc, migreazaV1V4O(doc));
     if (!x) return;
     assert.equal(diferenta(x.doc, x.asteptat), undefined);
-    if (PE_V5) assert.equal(diferenta(x.doc, PE_V7 ? migreazaV1V7O(doc) : PE_V6 ? migreazaV1V6O(doc) : migreazaV1V5O(doc)), undefined);
+    if (PE_V5) assert.equal(diferenta(x.doc, PE_V8 ? migreazaV1V8O(doc) : PE_V7 ? migreazaV1V7O(doc) : PE_V6 ? migreazaV1V6O(doc) : migreazaV1V5O(doc)), undefined);
   });
 
   test(`(b) câmpurile necunoscute trec prin migrarea v1 → v${V}: ${nume}`, () => {
@@ -653,6 +473,7 @@ for (const { nume, doc } of CORPUS_V1) {
         if (PE_V5) assert.equal(o.urechi, null, `operația ${o.id} a piesei ${p.id}: urechi`);
         if (PE_V6) assert.equal(o.rampa, null, `operația ${o.id} a piesei ${p.id}: rampa`);
         if (PE_V7) assert.equal(o.intrari, null, `operația ${o.id} a piesei ${p.id}: intrari`);
+        if (PE_V8) assert.equal(o.colturi, null, `operația ${o.id} a piesei ${p.id}: colturi`);
       }
       for (const [cheie, val] of Object.entries(e)) {
         if (['id', 'nume', 'forma', 'matrice'].includes(cheie)) continue;
@@ -684,7 +505,7 @@ test(`(a) ${V1_LA_PLAFON.nume}: se migrează, cu exact 100 000 de elemente și d
   aceeasiLume(lumeaAplicatiei(v), geometrieV1(doc));
   const taieturi = taieturileAplicatiei(v);
   assert.equal(taieturi.length, 100_000);
-  aceleasiTaieturi(taieturi, PE_V7 ? taieturiV7O(migreazaV1V7O(doc)) : PE_V6 ? taieturiV6O(migreazaV1V6O(doc)) : PE_V5 ? taieturiV5O(migreazaV1V5O(doc)) : taieturiV4O(migreazaV1V4O(doc)));
+  aceleasiTaieturi(taieturi, PE_V8 ? taieturiV8O(migreazaV1V8O(doc)) : PE_V7 ? taieturiV7O(migreazaV1V7O(doc)) : PE_V6 ? taieturiV6O(migreazaV1V6O(doc)) : PE_V5 ? taieturiV5O(migreazaV1V5O(doc)) : taieturiV4O(migreazaV1V4O(doc)));
 });
 
 for (const { nume, doc } of [...CORPUS_V2, ...VALIDE_DIFICILE]) {
@@ -742,6 +563,7 @@ for (const { nume, doc } of [...CORPUS_V3, ...VALIDE_DIFICILE_V3]) {
         if (PE_V5) assert.equal(o.urechi, null, `${p.id}/${o.id}: urechi`);
         if (PE_V6) assert.equal(o.rampa, null, `${p.id}/${o.id}: rampa`);
         if (PE_V7) assert.equal(o.intrari, null, `${p.id}/${o.id}: intrari`);
+        if (PE_V8) assert.equal(o.colturi, null, `${p.id}/${o.id}: colturi`);
       }
     }
     assert.equal(diferenta(faraCampuriNoi(c, 3), doc), undefined);
@@ -823,326 +645,7 @@ for (const caz of CAZURI_HARTIE) {
   });
 }
 
-for (const caz of CAZURI_TAIETURI) {
-  test(`(t) tăieturile pe hârtie: ${caz.nume}`, () => {
-    assert.deepEqual(verificaO(caz.doc), [], 'oracolul: documentul cazului e primit');
-    const doc = accepta(structuredClone(caz.doc));
-    aceleasiTaieturi(taieturileAplicatiei(doc, caz.indexFoaie), caz.taieturi.map((t) => (PE_V7 ? { ...t, urechi: null, rampa: null, intrari: null } : PE_V6 ? { ...t, urechi: null, rampa: null } : PE_V5 ? { ...t, urechi: null } : t)), 'aplicația');
-    aceleasiTaieturi(taieturiV4O(ridicaO(caz.doc), caz.indexFoaie), caz.taieturi, 'oracolul');
-  });
-}
-
-for (const o of OTRAVURI_V4) {
-  test(`(e) otrava v4 [${o.categorie}] e refuzată: ${o.nume}`, () => {
-    const probleme = verificaV4(o.doc);
-    assert.ok(probleme.some((p) => p.startsWith(`[${o.categorie}]`)), `oracolul nu vede [${o.categorie}]: ${probleme.slice(0, 5).join('; ')}`);
-    assert.equal(incarca(o.doc).ok, false, 'aplicația a primit otrava');
-  });
-}
-
-for (const o of OTRAVURI_V5) {
-  test(`(e5) otrava v5 [${o.categorie}] e refuzată: ${o.nume}`, { skip: DOAR_V5 }, () => {
-    const probleme = verificaV5(o.doc);
-    assert.ok(probleme.some((p) => p.startsWith(`[${o.categorie}]`)), `oracolul nu vede [${o.categorie}]: ${probleme.slice(0, 5).join('; ')}`);
-    const r = incarca(o.doc);
-    if (r.ok) assert.fail('aplicația a primit otrava');
-    assert.ok(String(r.motiv ?? '').length > 0, 'refuzul n-are motiv');
-  });
-}
-
-for (const o of OTRAVURI_V6) {
-  test(`(e6) otrava v6 [${o.categorie}] e refuzată: ${o.nume}`, { skip: DOAR_V6 }, () => {
-    const probleme = verificaV6(o.doc);
-    assert.ok(probleme.some((p) => p.startsWith(`[${o.categorie}]`)), `oracolul nu vede [${o.categorie}]: ${probleme.slice(0, 5).join('; ')}`);
-    const r = incarca(o.doc);
-    if (r.ok) assert.fail('aplicația a primit otrava');
-    assert.ok(String(r.motiv ?? '').length > 0, 'refuzul n-are motiv');
-  });
-}
-
-for (const o of OTRAVURI_V3) {
-  test(`(e) otrava v3 [${o.categorie}] e refuzată (nu se migrează): ${o.nume}`, () => {
-    const probleme = verificaV3(o.doc);
-    assert.ok(probleme.some((p) => p.startsWith(`[${o.categorie}]`)), `oracolul nu vede [${o.categorie}]: ${probleme.slice(0, 5).join('; ')}`);
-    assert.ok(verificaO(o.doc).length > 0, 'oracolul (ușa v5) ar primi otrava');
-    assert.equal(incarca(o.doc).ok, false, 'aplicația a primit otrava');
-  });
-}
-
-for (const o of OTRAVURI_V2) {
-  test(`(e) otrava v2 [${o.categorie}] e refuzată (nu se migrează): ${o.nume}`, () => {
-    const probleme = verificaV2V3(o.doc);
-    assert.ok(probleme.some((p) => p.startsWith(`[${o.categorie}]`)), `oracolul nu vede [${o.categorie}]: ${probleme.slice(0, 5).join('; ')}`);
-    assert.equal(incarca(o.doc).ok, false, 'aplicația a primit otrava');
-  });
-}
-
-for (const v of [...VALIDE_DIFICILE_V4, ...CORPUS_V4]) {
-  test(`(e) v4 valid, deși seamănă cu o otravă${PE_V5 && areUrechiPeOperatii(v.doc) ? ' (pe 5: ciocnirea urechilor, refuz)' : ''}: ${v.nume}`, () => {
-    assert.deepEqual(verificaV4(v.doc), [], 'oracolul');
-    const x = incarcaVechi(v.doc, v.doc);
-    if (!x) return;
-    aceeasiFoaie(x.doc, x.asteptat);
-  });
-}
-
-for (const v of [...VALIDE_DIFICILE_V5, ...CORPUS_V5]) {
-  test(`(e5) v5 valid, deși seamănă cu o otravă: ${v.nume}`, { skip: DOAR_V5 }, () => {
-    assert.deepEqual(verificaV5(v.doc), [], 'oracolul');
-    if (ciocnesteLa7(v.doc)) { assert.equal(incarca(structuredClone(v.doc)).ok, false, 'pe 7: ciocnirea intrărilor'); return; }
-    aceeasiFoaie(accepta(structuredClone(v.doc)), v5PentruApp(v.doc));
-  });
-}
-
-for (const v of [...VALIDE_DIFICILE_V6, ...CORPUS_V6]) {
-  test(`(e6) v6 valid, deși seamănă cu o otravă: ${v.nume}`, { skip: DOAR_V6 }, () => {
-    assert.deepEqual(verificaV6(v.doc), [], 'oracolul');
-    if (ciocnesteLa7(v.doc)) { assert.equal(incarca(structuredClone(v.doc)).ok, false, 'pe 7: ciocnirea intrărilor'); return; }
-    aceeasiFoaie(accepta(structuredClone(v.doc)), v6PentruApp(v.doc));
-  });
-}
-
-test(`(f) schema ${V + 1} (mai nouă decât a aplicației) e refuzată; schema 8 e refuzată și de oracol`, () => {
-  const d = structuredClone((VALIDE_DIFICILE_V7[1] as (typeof VALIDE_DIFICILE_V7)[number]).doc) as Liber;
-  d['schema'] = V + 1;
-  assert.equal(incarca(d).ok, false);
-  d['schema'] = 8;
-  assert.ok(verificaO(d).some((p) => p.startsWith('[schema]')));
-  assert.equal(incarca(d).ok, false);
-});
-
-/** Fiecare document o singură dată (H08 / H08b, H13 / H14, T05 / T05b, T07a–c au același document). */
-function unice<C extends { readonly doc: object }>(lista: readonly C[]): C[] {
-  const vazute = new Set<string>();
-  return lista.filter((c) => {
-    const cheie = JSON.stringify(c.doc);
-    if (vazute.has(cheie)) return false;
-    vazute.add(cheie);
-    return true;
-  });
-}
-
-/** Documente v4 valide: cele scrise ca v4 și v4-urile oracolului din v3-urile, v2-urile de pe hârtie și dificile. */
-const V4_VALIDE: ReadonlyArray<{ readonly nume: string; readonly doc: DocV4O }> = [
-  ...VALIDE_DIFICILE_V4.filter((c) => !mare(c.doc)),
-  ...CORPUS_V4,
-  ...unice(CAZURI_TAIETURI.filter((c) => c.doc.schema === 4)).map((c) => ({ nume: c.nume, doc: c.doc as DocV4O })),
-  ...unice(CAZURI_TAIETURI.filter((c) => c.doc.schema === 3)).map((c) => ({ nume: `${c.nume} (migrat de oracol)`, doc: migreazaV3V4O(c.doc as DocV3O) })),
-  ...unice<{ readonly nume: string; readonly doc: DocV2O }>([...CAZURI_HARTIE, ...VALIDE_DIFICILE].filter((c) => !mare(c.doc)))
-    .map((c) => ({ nume: `${c.nume} (migrat de oracol)`, doc: migreazaV2V4O(c.doc) })),
-];
-
-for (const { nume, doc } of V4_VALIDE) {
-  test(`(g) un v4 valid trece prin ușă ${PE_V5 ? 'ca v5-ul migrării (urechi: null)' : 'neschimbat'}: ${nume}`, () => {
-    assert.deepEqual(verificaV4(doc), [], 'oracolul');
-    const x = incarcaVechi(doc, doc);
-    if (!x) return;
-    assert.equal(diferenta(x.doc, x.asteptat), undefined);
-    const b1 = jsonCanonic(x.doc);
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(JSON.stringify(doc)))), b1, 'încărcat din JSON (−0 devine 0)');
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(text(b1)))), b1, 'încărcat din octeții canonici');
-  });
-}
-
-/** Documente v5 valide: cele scrise ca v5, corpusul și v5-urile oracolului din v4-urile valide (fără ciocniri). */
-const V5_VALIDE: ReadonlyArray<{ readonly nume: string; readonly doc: DocV5O }> = [
-  ...VALIDE_DIFICILE_V5.filter((c) => !mare(c.doc)),
-  ...CORPUS_V5.filter((c) => !mare(c.doc)),
-  ...MIGRARI_V4_HARTIE.map((c) => ({ nume: `${c.nume} (v5 de pe hârtie)`, doc: c.v5 as DocV5O })),
-  ...V4_VALIDE.filter((c) => !mare(c.doc) && !areUrechiPeOperatii(c.doc)).map((c) => ({ nume: `${c.nume} (v5, migrat de oracol)`, doc: migreazaV4V5O(c.doc) })),
-];
-
-for (const { nume, doc } of V5_VALIDE) {
-  test(`(g5) un v5 valid trece prin ușă ${PE_V7 ? 'ca v7-ul migrării' : PE_V6 ? 'ca v6-ul migrării (rampa: null)' : 'neschimbat'}: ${nume}`, { skip: DOAR_V5 }, () => {
-    assert.deepEqual(verificaV5(doc), [], 'oracolul');
-    if (ciocnesteLa7(doc)) { assert.equal(incarca(structuredClone(doc)).ok, false, 'pe 7: ciocnirea intrărilor'); return; }
-    const o1 = accepta(structuredClone(doc));
-    assert.equal(diferenta(o1, v5PentruApp(doc)), undefined);
-    const b1 = jsonCanonic(o1);
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(JSON.stringify(doc)))), b1, 'încărcat din JSON (−0 devine 0)');
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(text(b1)))), b1, 'încărcat din octeții canonici');
-  });
-}
-
-/** Documente v6 valide: cele scrise ca v6, corpusul, cele de pe hârtie și v6-urile oracolului din v5-urile valide. */
-const V6_VALIDE: ReadonlyArray<{ readonly nume: string; readonly doc: DocV6O }> = [
-  ...VALIDE_DIFICILE_V6.filter((c) => !mare(c.doc)),
-  ...CORPUS_V6.filter((c) => !mare(c.doc)),
-  ...MIGRARI_V5_HARTIE.map((c) => ({ nume: `${c.nume} (v6 de pe hârtie)`, doc: c.v6 as DocV6O })),
-  ...V5_VALIDE.filter((c) => !mare(c.doc)).map((c) => ({ nume: `${c.nume} (v6, migrat de oracol)`, doc: migreazaV5V6O(c.doc) })),
-];
-
-for (const { nume, doc } of V6_VALIDE) {
-  test(`(g6) un v6 valid trece prin ușă ${PE_V7 ? 'ca v7-ul migrării (intrari: null)' : 'neschimbat'}: ${nume}`, { skip: DOAR_V6 }, () => {
-    assert.deepEqual(verificaV6(doc), [], 'oracolul');
-    if (ciocnesteLa7(doc)) { assert.equal(incarca(structuredClone(doc)).ok, false, 'pe 7: ciocnirea intrărilor'); return; }
-    const o1 = accepta(structuredClone(doc));
-    assert.equal(diferenta(o1, v6PentruApp(doc)), undefined);
-    const b1 = jsonCanonic(o1);
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(JSON.stringify(doc)))), b1, 'încărcat din JSON (−0 devine 0)');
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(text(b1)))), b1, 'încărcat din octeții canonici');
-  });
-}
-
-for (const r of [...REFUZATE_V1, ...REFUZATE_V2, ...REFUZATE_V3]) {
-  test(`(h) un document vechi de nemigrat e refuzat [${r.motiv}]: ${r.nume}`, () => {
-    const probleme = verificaO(r.doc);
-    assert.ok(probleme.some((p) => p.startsWith(`[${r.motiv}]`)), `oracolul nu vede [${r.motiv}]: ${probleme.slice(0, 5).join('; ')}`);
-    const rez = incarca(structuredClone(r.doc));
-    if (rez.ok) return assert.fail('aplicația a migrat un document de nemigrat');
-    assert.ok(String(rez.motiv ?? '').length > 0, 'refuzul n-are motiv');
-  });
-}
-
-for (const r of REFUZATE_V4) {
-  test(`(h5) o operație veche cu „urechi” e refuzată la migrarea în v5 [${r.motiv}]: ${r.nume}`, { skip: DOAR_V5 }, () => {
-    assert.deepEqual(categoriiO(verificaO(r.doc)), [r.motiv]);
-    const rez = incarca(structuredClone(r.doc));
-    if (rez.ok) return assert.fail('aplicația a migrat un document de nemigrat');
-    assert.ok(String(rez.motiv ?? '').length > 0, 'refuzul n-are motiv');
-  });
-}
-
-for (const r of REFUZATE_V5) {
-  test(`(h6) o operație veche cu „rampa” e refuzată la migrarea în v6 [${r.motiv}]: ${r.nume}`, { skip: DOAR_V6 }, () => {
-    assert.deepEqual(categoriiO(verificaO(r.doc)), [r.motiv]);
-    const rez = incarca(structuredClone(r.doc));
-    if (rez.ok) return assert.fail('aplicația a migrat un document de nemigrat');
-    assert.ok(String(rez.motiv ?? '').length > 0, 'refuzul n-are motiv');
-  });
-}
-
-// ── v7 (ADR 0030): oracolul singur ───────────────────────────────────────────────────────────────────────────────────
-
-for (const { nume, v6, v7 } of MIGRARI_V6_HARTIE) {
-  test(`(o) oracolul migrează v6 → v7 exact ca pe hârtie: ${nume}`, () => {
-    assert.deepEqual(verificaV6(v6), []);
-    assert.deepEqual(verificaV6V7(v6), []);
-    assert.deepEqual(verificaO(v6), []);
-    assert.equal(diferenta(migreazaV6V7O(v6), v7), undefined);
-    assert.equal(diferenta(ridicaO(v6), v7), undefined);
-    assert.deepEqual(verificaV7(v7), []);
-    assert.deepEqual(verificaO(v7), []);
-    assert.deepEqual(verificaPanaLaV6O(v6), [], 'ușa unei aplicații pe 6: `intrari` în afara operațiilor e necunoscut oarecare');
-  });
-}
-
-test('(o) migrarea v6 → v7 e pură și deterministă; din v6 rămâne tot, în afară de schema și de intrari: null pe operații', () => {
-  let operatii = 0;
-  for (const { doc } of [...CORPUS_V6, ...VALIDE_DIFICILE_V6].filter((c) => !mare(c.doc) && !areIntrariPeOperatii(c.doc))) {
-    const inainte = JSON.stringify(doc);
-    const a = migreazaV6V7O(doc);
-    assert.equal(JSON.stringify(doc), inainte, 'intrarea s-a schimbat');
-    assert.equal(diferenta(a, migreazaV6V7O(doc)), undefined);
-    assert.equal(a.schema, 7);
-    for (const p of a.piese) for (const o of p.operatii) { assert.equal(o.intrari, null); operatii++; }
-    const c = structuredClone(a) as Liber;
-    c['schema'] = 6;
-    for (const p of c['piese'] as Liber[]) for (const o of p['operatii'] as Liber[]) delete o['intrari'];
-    assert.equal(diferenta(c, doc), undefined);
-    assert.deepEqual(verificaV7(a), []);
-  }
-  assert.ok(operatii > 100, `${operatii} operații migrate`);
-});
-
-test('(o) otrăvurile v7: fiecare raportează exact categoria ei (cele v6 aduse la v7, plus cele ale intrărilor, doar [intrari])', () => {
-  const rele: string[] = [];
-  for (const o of OTRAVURI_V7) {
-    const c = categoriiO(verificaV7(o.doc));
-    if (!c.includes(o.categorie)) rele.push(`${o.nume}: nu vede [${o.categorie}] (${c.join(', ')})`);
-    else if (c.length !== 1) rele.push(`${o.nume}: și alte categorii (${c.join(', ')})`);
-    if (verificaO(o.doc).length === 0) rele.push(`${o.nume}: ușa oracolului (verificaO) o primește`);
-  }
-  assert.deepEqual(rele, []);
-  assert.ok(OTRAVURI_INTRARI.length >= 24);
-  assert.equal(OTRAVURI_V7.length, OTRAVURI_V6.length + OTRAVURI_INTRARI.length);
-});
-
-test('(o) v6 (sau v5, v4, v3) cu „intrari” pe o operație, oricare i-ar fi valoarea: valid în schema lui, de nemigrat la v7 ([ciocnire]); ușa unei aplicații pe 6 îl primește', () => {
-  for (const r of REFUZATE_V6) {
-    const d = r.doc as Liber;
-    if (d['schema'] === 6) {
-      assert.deepEqual(verificaV6(r.doc), [], r.nume);
-      assert.deepEqual(categoriiO(verificaV6V7(r.doc)), ['ciocnire'], r.nume);
-    }
-    assert.deepEqual(verificaPanaLaV6O(r.doc), [], `${r.nume}: până la v6, intrari e un câmp necunoscut`);
-    assert.deepEqual(categoriiO(verificaO(r.doc)), ['ciocnire'], r.nume);
-  }
-  // Capcanele de dinainte de ADR 0030: exact documentele cu `intrari` pe operații se ciocnesc (W10, MV5-01).
-  let vechi = 0;
-  for (const { doc } of [...CORPUS_V3, ...CORPUS_V4, ...CORPUS_V5, ...CORPUS_V6, ...VALIDE_DIFICILE_V3, ...VALIDE_DIFICILE_V4, ...VALIDE_DIFICILE_V5, ...VALIDE_DIFICILE_V6]) {
-    if (areIntrariPeOperatii(doc)) vechi++;
-  }
-  assert.ok(vechi >= 1, `${vechi} capcane „intrari” vechi`);
-});
-
-test('(o) corpusul v7: valid, cu intrari null și cu raze de pe tot intervalul (și de la margini, și sub minimul exportului), cu capcanele „intrari” în afara operației', () => {
-  let nule = 0, cu = 0, laMargini = 0, capcane = 0, necunoscute = 0;
-  for (const { nume, doc } of [...CORPUS_V7, ...VALIDE_DIFICILE_V7]) {
-    assert.deepEqual(verificaV7(doc), [], nume);
-    assert.deepEqual(verificaO(doc), [], nume);
-    if (Object.hasOwn(doc, 'intrari')) capcane++;
-    for (const p of doc.piese) {
-      if (Object.hasOwn(p, 'intrari')) capcane++;
-      for (const o of p.operatii) {
-        if (Object.hasOwn(o.scula, 'intrari') || (o.urechi !== null && Object.hasOwn(o.urechi, 'intrari')) || (o.rampa !== null && Object.hasOwn(o.rampa, 'intrari'))) capcane++;
-        if (o.intrari === null) { nule++; continue; }
-        cu++;
-        if (o.intrari.raza === 10_000 || o.intrari.raza === 5e-324 || o.intrari.raza < RAZA_MINIMA_INTRARI_O) laMargini++;
-        if (Object.keys(o.intrari).length > 1) necunoscute++;
-      }
-    }
-  }
-  assert.ok(nule > 50 && cu > 100 && laMargini > 20 && capcane >= 5 && necunoscute >= 3, JSON.stringify({ nule, cu, laMargini, capcane, necunoscute }));
-});
-
-// ── v7 (ADR 0030): lipirea ───────────────────────────────────────────────────────────────────────────────────────────
-
-for (const { nume, v6, v7 } of MIGRARI_V6_HARTIE) {
-  test(`(a7) migrarea v6 → v7 pe hârtie: ${nume}`, { skip: DOAR_V7 }, () => {
-    assert.equal(diferenta(accepta(structuredClone(v6)), v7), undefined);
-    const b1 = jsonCanonic(accepta(structuredClone(v6)));
-    assert.deepEqual(jsonCanonic(accepta(structuredClone(v7))), b1, 'v7 de pe hârtie încărcat direct');
-  });
-}
-
-for (const o of OTRAVURI_V7) {
-  test(`(e7) otrava v7 [${o.categorie}] e refuzată: ${o.nume}`, { skip: DOAR_V7 }, () => {
-    const probleme = verificaV7(o.doc);
-    assert.ok(probleme.some((p) => p.startsWith(`[${o.categorie}]`)), `oracolul nu vede [${o.categorie}]: ${probleme.slice(0, 5).join('; ')}`);
-    const r = incarca(o.doc);
-    if (r.ok) assert.fail('aplicația a primit otrava');
-    assert.ok(String(r.motiv ?? '').length > 0, 'refuzul n-are motiv');
-  });
-}
-
-for (const v of [...VALIDE_DIFICILE_V7, ...CORPUS_V7]) {
-  test(`(e7) v7 valid, deși seamănă cu o otravă: ${v.nume}`, { skip: DOAR_V7 }, () => {
-    assert.deepEqual(verificaV7(v.doc), [], 'oracolul');
-    aceeasiFoaie(accepta(structuredClone(v.doc)), v.doc);
-  });
-}
-
-for (const { nume, doc } of [...VALIDE_DIFICILE_V7, ...CORPUS_V7].filter((c) => !mare(c.doc))) {
-  test(`(g7) un v7 valid trece neschimbat prin ușă: ${nume}`, { skip: DOAR_V7 }, () => {
-    const o1 = accepta(structuredClone(doc));
-    assert.equal(diferenta(o1, doc), undefined);
-    const b1 = jsonCanonic(o1);
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(JSON.stringify(doc)))), b1, 'încărcat din JSON (−0 devine 0)');
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(text(b1)))), b1, 'încărcat din octeții canonici');
-  });
-}
-
-for (const r of REFUZATE_V6) {
-  test(`(h7) o operație veche cu „intrari” e refuzată la migrarea în v7 [${r.motiv}]: ${r.nume}`, { skip: DOAR_V7 }, () => {
-    assert.deepEqual(categoriiO(verificaO(r.doc)), [r.motiv]);
-    const rez = incarca(structuredClone(r.doc));
-    if (rez.ok) return assert.fail('aplicația a migrat un document de nemigrat');
-    assert.ok(String(rez.motiv ?? '').length > 0, 'refuzul n-are motiv');
-  });
-}
-
-test('raport: forma tăieturilor aplicației (cu sau fără sens, urechi, rampă și intrări)', () => {
+test('raport: forma tăieturilor aplicației (cu sau fără sens, urechi, rampă, intrări și colțuri)', () => {
   // Rulează după celelalte (ordinea fișierului); doar spune ce a văzut.
   console.log(`tăieturile aplicației: ${[...formeTaietura].join(', ') || 'necitite'}`);
 });
