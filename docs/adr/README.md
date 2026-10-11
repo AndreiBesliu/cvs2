@@ -49,3 +49,4 @@ redeschide. Cel mult o pagină.
 | [0029](0029-rampa.md) | — | Rampa: bucla tăiată continuu, intrarea rotită și scoasă din zonele urechilor (documentul v6); invarianta 11 | etapa 2 (felia 2.5a) |
 | [0030](0030-intrarile.md) | — | Intrările și ieșirile: sferturi de cerc pe partea deșeului, alese și verificate pe regiunea păstrată (documentul v7); invarianta 12 | etapa 2 (felia 2.5b) |
 | [0031](0031-intrarile-cu-rampa.md) | — | Intrările cu rampă: rampa pe sfertul intrării, la fiecare trecere (documentul rămâne v7); invariantele 9, 11, 12 amendate | etapa 2 (felia 2.5c) |
+| [0032](0032-degajarile.md) | — | Degajările colțurilor: dog-bone și T-bone, drumul minim din colțul traseului (documentul v8); invarianta 2 amendată, 13 nouă | etapa 2 (felia 2.6) |

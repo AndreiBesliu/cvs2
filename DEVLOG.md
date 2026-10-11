@@ -1156,3 +1156,15 @@ stă la cel puțin D de coloana fiecărei urechi proprii (`bucataBuclei`: bucata
 - pe găurile mici, flancurile urechilor mușcă ~0,1 mm din tubul punții pe partea concavă și fără intrări (oracolul judecă
   puntea garantată; de reluat cu placa 2);
 - decizia rampei implicite e luată: oprită până la placa 1.
+
+## 2026-10-11 — Etapa 2, felia 2.6: degajările (dog-bone, T-bone) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua”. **Started:** 08:59. **Clasa:** R2 (mișcă mașina; fișa o socotea R1, dar compunerea cu urechile,
+rampa și intrările și invarianta 2 amendată o fac R2). **Estimarea:** ~½ zi activă, plus oracolul independent (~0,7 M
+tokeni) și recenzia (o lentilă CAM, ~0,6 M).
+
+**Ce intră:** ADR 0032 (documentul v8 cu `Operatie.colturi`, migrarea v7 → v8 cu `null`). Degajarea minimă: pe fiecare
+colț concav pentru materialul păstrat, între două linii, un drum Q → E → Q, cu cercul frezei prin colțul V (dog-bone pe
+bisectoare, T-bone în peretele mai lung), la fiecare sosire în Q. Condițiile: departe de buclele vecine, departe de
+urechile buclei. Altfel, avertisment. Coloana Colțuri în dialog. Ediția întâi punea un cerc separat cu centrul la r
+dincolo de colț: nu atingea restul lăsat de freză.
