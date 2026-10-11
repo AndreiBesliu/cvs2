@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { cubicaInArce } from '../../src/geom/biarce.ts';
-import { RAZA_MAXIMA_ARC, TOLERANTA_PROIECT } from '../../src/geom/toleranta.ts';
+import { RAZA_MAXIMA_ARC, TINTA_APROXIMARE, TOLERANTA_PROIECT } from '../../src/geom/toleranta.ts';
 import { judecaAbaterea, judecaLantul, lant, type CubicaO } from '../oracles/biarce.ts';
 
 type Q = readonly [number, number, number, number, number, number, number, number];
@@ -107,6 +107,26 @@ test('nicio bucată nulă pe dreptele cu mânere oarecare; lanțul începe exact
   const q: Q = [53.18006729066486, 42.20408884969117, 53.18006728992862, 42.20408884765708, 55.91844850386557, 61.769599281152246, 27.838901009122242, 53.82537656317423];
   const s = judeca('mâner aproape retras', q, TOLERANTA_PROIECT);
   assert.deepEqual(s.varfuri[0]?.p, { x: q[0], y: q[1] });
+});
+
+test('ținta de 0,99 (ADR 0033 §1, §6): abaterea reală, măsurată de oracol, nu trece de ținta fitter-ului', () => {
+  // Cazuri găsite prin căutare adversarială (urcare pe pante) pe variantele slăbite ale măsurătorii (otrăvurile 2.7a):
+  // fără rafinarea maximelor locale, primul ajunge la 0,9914 × tol; aplicația îl taie altfel (0,78). Al doilea e maximul
+  // aplicației (0,9900 × tol). Cu ținta egală cu toleranța, al treilea urcă la 1,0000 × tol.
+  const cazuri: Array<[string, Q]> = [
+    ['maximul fără rafinare', [-2.8818999946004284, 0.8581621760990146, -1.1889785904427577, 1.5104379719115573, -3.0005894484201794, 1.6096294927378234, 3.4980094175814855, -2.9165910194909017]],
+    ['maximul aplicației', [1.3524279628400144, -8.563404037917653, -10.657237479084984, 4.3600097907741695, -8.490339725205192, 7.457497101400448, 0.8279418010808324, -5.636255753220051]],
+    ['maximul cu ținta = tol (1,0000 × tol)', [-1.340055472916619, 15.927944190413394, 8.026085580617814, -0.4678553143300024, 18.372346604491472, -1.211802706212896, -0.6001467348907161, -17.435355156679595]],
+  ];
+  for (const [nume, q] of cazuri) {
+    const c = cub(q);
+    const r = cubicaInArce(c.a, c.c1, c.c2, c.b, TOLERANTA_PROIECT);
+    assert.ok(r.ok, nume);
+    if (!r.ok) continue;
+    const j = judecaAbaterea(c, lant(c.a, r.varfuri, c.b), TOLERANTA_PROIECT);
+    const e = Math.max(j.curbaLant, j.lantCurba) / TOLERANTA_PROIECT;
+    assert.ok(e <= TINTA_APROXIMARE * 1.001, `${nume}: ${e} × tol`);
+  }
 });
 
 test('toleranța sub rezoluția numerică a coordonatelor are motivul ei, nu pe cel al plafonului', () => {

@@ -47,8 +47,9 @@ de la fiecare punct al lanțului la curbă) e **cel mult `tol`**. Dacă nu se po
      două eșantioane ale măsurătorii (§6);
   4. fiecare bucată monotonă se împarte în jumătăți până când biarcul ei încape (sau devine plată);
 - **raza:** un arc cu raza peste `RAZA_MAXIMA_ARC` devine linie, înainte de măsurare, deci lanțul măsurat e cel emis;
-- nicio bucată de lungime nulă: un biarc a cărui îmbinare cade pe un capăt nu se folosește (bucata se împarte), iar un
-  vârf al lanțului aflat la sub 1e-9 mm de următorul cade;
+- nicio bucată de lungime nulă: o bucată plată cu coarda sub 1e-9 mm se sare (și lanțul începe tot exact în a), iar pe
+  bucățile monotone îmbinarea biarcului nu cade pe un capăt. Căutarea din 11.10, cu fitter-ul fără nicio altă gardă: nicio
+  bucată nulă în 7 500 de cubice (drepte cu mânere oarecare, rotite, aproape drepte, cu mânere retrase, aleatoare);
 - o cubică degenerată (toate cele patru puncte la sub 1e-9 mm) nu dă nicio bucată.
 
 **Vârfurile se caută din B′, nu din cross(B′, B″).** La un vârf, cross are o rădăcină dublă: rotunjirea face discriminantul

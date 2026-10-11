@@ -146,6 +146,19 @@ test('cubica dreaptă care se întoarce: tăiată exact în vârfuri (B′ = 0, 
   }
 });
 
+test('regula liniei la pragul ei (ADR 0033 §4): mânerele la 0,989 × tol de coardă dau o linie, la 0,991 × tol nu', () => {
+  const cu = (k: number) => cubicaInArce(P(0, 0), P(10, k * TOLERANTA_PROIECT), P(20, k * TOLERANTA_PROIECT), P(30, 0), TOLERANTA_PROIECT);
+  const sub = cu(0.989), peste = cu(0.991);
+  assert.ok(sub.ok && sub.varfuri.length === 1 && sub.varfuri[0]?.s.tip === 'L', JSON.stringify(sub));
+  assert.ok(peste.ok && !(peste.varfuri.length === 1 && peste.varfuri[0]?.s.tip === 'L'), JSON.stringify(peste));
+});
+
+test('la un vârf, bucățile vecine sunt arce: tangenta de sosire e −B″, cea de plecare +B″', () => {
+  // Cu semnul greșit pe una dintre părți, biarcul de lângă vârf nu încape și bucata se înjumătățește până devine linie.
+  const r = cubicaInArce(P(0, 0), P(10, 10), P(0, 10), P(10, 0), TOLERANTA_PROIECT);
+  assert.ok(r.ok && r.varfuri.every((v) => v.s.tip === 'A'), JSON.stringify(r.ok ? r.varfuri.map((v) => v.s.tip) : r));
+});
+
 test('refuzurile (ADR 0033 §5): toleranța care nu e pozitivă și finită, punctele neterminate, plafonul de bucăți', () => {
   for (const tol of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
     const r = cubicaInArce(P(0, 0), P(1, 1), P(2, 1), P(3, 0), tol);

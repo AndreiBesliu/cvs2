@@ -99,10 +99,9 @@ function radaciniPeAxe(q: Cubica): { readonly x: number[]; readonly y: number[] 
   return { x: pe('x'), y: pe('y') };
 }
 
-/** Valorile din (lo, hi), sortate, fără dubluri mai apropiate de 1e-9. */
+/** Valorile din (lo, hi), sortate. Două aproape egale dau o bucată cu coarda nulă, pe care regula liniei o sare. */
 function inInterval(ts: readonly number[], lo: number, hi: number): number[] {
-  const toate = ts.filter((t) => t > lo + 1e-9 && t < hi - 1e-9).sort((u, v) => u - v);
-  return toate.filter((t, i) => i === 0 || t - (toate[i - 1] as number) > 1e-9);
+  return ts.filter((t) => t > lo + 1e-9 && t < hi - 1e-9).sort((u, v) => u - v);
 }
 
 /**
@@ -169,7 +168,7 @@ function arcSauLinie(A: Punct, B: Punct, bulge: number): Varf {
 
 /**
  * Biarcul cu tangente egale (Bolton): de la p0 (tangenta t0) la p1 (tangenta t1), prin J. Întoarce vârfurile [p0, J], cu
- * arcele lor, sau null dacă nu există ori dacă J cade pe un capăt (o bucată nulă): atunci bucata se împarte.
+ * arcele lor, sau null dacă nu există. Pe o bucată monotonă (ADR 0033 §4), J nu cade pe un capăt.
  */
 function biarc(p0: Punct, t0: Punct, p1: Punct, t1: Punct): Varf[] | null {
   const v = scade(p1, p0);
@@ -188,7 +187,6 @@ function biarc(p0: Punct, t0: Punct, p1: Punct, t1: Punct): Varf[] | null {
   }
   if (!(d > 0) || !Number.isFinite(d)) return null;
   const j = { x: (p0.x + p1.x + d * (t0.x - t1.x)) / 2, y: (p0.y + p1.y + d * (t0.y - t1.y)) / 2 };
-  if (lungime(scade(j, p0)) < EPS_PUNCT || lungime(scade(p1, j)) < EPS_PUNCT) return null;
   const b1 = bulgeDinStart(p0, t0, j), b2 = bulgeDinSosire(j, p1, t1);
   if (!Number.isFinite(b1) || !Number.isFinite(b2) || Math.abs(b1) > 1 || Math.abs(b2) > 1) return null;
   return [arcSauLinie(p0, j, b1), arcSauLinie(j, p1, b2)];
@@ -320,14 +318,10 @@ export function cubicaInArce(a: Punct, c1: Punct, c2: Punct, b: Punct, tol: numb
   for (let i = 0; i + 1 < ts.length; i++) potriveste(ts[i] as number, ts[i + 1] as number, true);
   if (subRezolutie) return { ok: false, motiv: `toleranța ${tol} mm e sub rezoluția numerică a coordonatelor cubicei` };
   if (depasit) return { ok: false, motiv: `cubica nu încape sub ${tol} mm în ${PLAFON_BUCATI} de bucăți` };
-  // Nicio bucată de lungime nulă (ADR 0033 §4): un vârf aflat la sub EPS_PUNCT de următorul cade, iar lanțul începe tot în a.
-  const lant: Varf[] = [];
-  for (let i = 0; i < rez.length; i++) {
-    const v = rez[i] as Varf;
-    if (lungime(scade(i + 1 < rez.length ? (rez[i + 1] as Varf).p : b, v.p)) < EPS_PUNCT) continue;
-    lant.push(lant.length === 0 && v.p !== a ? { p: a, s: v.s } : v);
-  }
-  return { ok: true, varfuri: lant, bucati: lant.length };
+  // Lanțul începe exact în a (ADR 0033 §4): o primă bucată plată cu coarda sub EPS_PUNCT, sărită, lasă primul vârf lângă a.
+  const v0 = rez[0];
+  if (v0 && v0.p !== a) rez[0] = { p: a, s: v0.s };
+  return { ok: true, varfuri: rez, bucati };
 }
 
 /**
