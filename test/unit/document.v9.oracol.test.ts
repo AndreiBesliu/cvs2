@@ -205,22 +205,12 @@ for (const { nume, doc } of [...VALIDE_DIFICILE_V9, ...CORPUS_V9].filter((c) => 
   });
 }
 
-/**
- * Un v8 care conține o cale nu e un v8 valid (forma nu există acolo), iar oracolul îl refuză (ALEGERE: contractul
- * versiunii întâi, ca în tot lanțul). ADR 0034 §3 tace însă despre ce face ușa v9 cu el: migrat (doar numărul), e un v9
- * valid. Se primește oricare: refuzul cu motiv, sau primirea ca v9-ul migrării (nimic schimbat în afară de număr); ce
- * face aplicația se raportează.
- */
+// ADR 0034 §3 (precizarea din 11.10): un document marcat v8 care conține o cale e refuzat, cu motiv (v8 n-o cunoaște).
 for (const r of REFUZATE_V8) {
-  test(`(h9) un v8 cu o cale (ADR 0034 tace): refuzat cu motiv, sau primit exact ca migrarea v8 → v9: ${r.nume}`, { skip: DOAR_V9 }, () => {
+  test(`(h9) un v8 cu o cale e refuzat, cu motiv (ADR 0034 §3): ${r.nume}`, { skip: DOAR_V9 }, () => {
     const rez = incarca(structuredClone(r.doc));
-    if (!rez.ok) {
-      assert.ok(String(rez.motiv ?? '').length > 0, 'refuzul n-are motiv');
-      console.log(`(h9) ${r.nume}: aplicația îl refuză (${String(rez.motiv)})`);
-      return;
-    }
-    assert.equal(diferenta(rez.doc, { ...(r.doc as Liber), schema: 9 }), undefined, 'primit, dar nu ca migrarea v8 → v9 (doar numărul)');
-    console.log(`(h9) ${r.nume}: aplicația îl primește ca v9-ul migrării (oracolul îl refuză; ADR 0034 tace)`);
+    if (rez.ok) return assert.fail('aplicația a primit un document marcat v8 care conține o cale');
+    assert.ok(String(rez.motiv ?? '').length > 0, 'refuzul n-are motiv');
   });
 }
 

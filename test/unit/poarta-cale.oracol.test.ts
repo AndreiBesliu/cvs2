@@ -10,7 +10,8 @@
  * - colțurile de degajat (ADR 0032 pe o cale: doar L–L, pe partea deșeului), numărate pe hârtie în cazuri, față de cele
  *   judecate de oracol; avertismentele de degajare omisă, exact cele cerute;
  * - perechile care se ating: regiunea oracolului vede atingerea, iar exportul e refuzat cu motivul `regiunea păstrată:`
- *   (ADR 0026 §8).
+ *   (ADR 0026 §8), ca atingere, și cu banda („abaterea biarcelor”) când un inel vine dintr-o cale cu cubice (recenzia,
+ *   ADR 0034 §6); perechile apropiate dincolo de bandă nu sunt atingeri: exportul le refuză altfel.
  * Martorii negativi (`(m)`): transformări deliberate ale unui program al aplicației (mutat cu 0,02 mm, arcele înlocuite
  * de corzi, o mișcare lipsă, bucla interiorului dată drept exterior), fiecare prinsă de abatere sau de poartă: dovada că
  * verificările de mai sus nu trec în gol. Maximele abaterilor se raportează la sfârșit.
@@ -39,7 +40,19 @@ for (const caz of CAZURI_POARTA_CALE) {
       assert.ok(vazuta, `oracolul nu vede atingerea ${caz.atingere.join(' – ')}: ${JSON.stringify(reg.probleme)}`);
       if (r.ok) return assert.fail('aplicația a exportat un document cu inele care se ating');
       assert.ok(r.motiv.startsWith('regiunea păstrată:'), `motivul nu e al regiunii (ADR 0026 §8): ${r.motiv}`);
-      rezumat.push(`${caz.nume}: refuzat (${r.motiv.slice(0, 100)})`);
+      assert.match(r.motiv, /se ating/, 'motivul nu e atingerea');
+      // ADR 0034 §6 (recenzia): cu un inel dintr-o cale cu cubice, refuzul spune și banda.
+      if (caz.banda) assert.match(r.motiv, /abaterea biarcelor/, 'refuzul nu spune banda biarcelor');
+      rezumat.push(`${caz.nume}: refuzat (${r.motiv.slice(0, 120)})`);
+      return;
+    }
+    if (caz.departe) {
+      const vazuta = reg.probleme.some((p) => p.tip === 'atingere');
+      assert.ok(!vazuta, `oracolul vede o atingere dincolo de bandă: ${JSON.stringify(reg.probleme)}`);
+      if (r.ok) return assert.fail('aplicația a exportat două tăieturi care intră una în piesa celeilalte');
+      assert.ok(r.motiv.startsWith('regiunea păstrată:'), `motivul nu e al regiunii (ADR 0026 §8): ${r.motiv}`);
+      assert.doesNotMatch(r.motiv, /se ating/, 'refuzat ca atingere, deși inelele stau dincolo de bandă');
+      rezumat.push(`${caz.nume}: refuzat altfel (${r.motiv.slice(0, 120)})`);
       return;
     }
     assert.deepEqual(reg.probleme, [], 'oracolul: regiunea documentului are probleme');

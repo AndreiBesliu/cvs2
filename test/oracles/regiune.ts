@@ -69,7 +69,11 @@
  * - `drumIdeal` nu există pentru o cale (offsetul exact al unei căi oarecare nu e scris aici): predicția (`prezice`) o
  *   trece la „scula nu încape”, iar oracolele care cer bucla exactă (intrările: candidații; degajările: §5) folosesc,
  *   pentru căi, bucla citită din program (`degajari.ts`) sau sar verificarea (intrările), cu limitele spuse în raport;
- * - `laturiCale`: laturile căii în lume, cu tipul lor (L, A, C), pentru colțurile degajărilor (§2: doar L–L).
+ * - `laturiCale`: laturile căii în lume, cu tipul lor (L, A, C), pentru colțurile degajărilor (§2: doar L–L);
+ * - RECENZIA (11.10, ADR 0034 §6): `laturiCale` poartă și tangentele de capăt (arcul: din arcul în lume; cubica: mânerul,
+ *   celălalt mâner, coarda), arcul în lume și punctele de control (colțurile curbe, curbele strânse, arcele sub R ale
+ *   desenului, în `degajari.ts`); pragul atingerii a două inele e 1e-6 + 0,001 · câte dintre ele vin din căi cu cubice
+ *   (`cuCubice`), fiindcă inelul aplicației, din biarce, stă la cel mult 0,001 de desen.
  */
 import {
   ridicaO, taieturiV8O, type ColturiO, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type DocV7O, type DocV8O, type DocV9O, type IntrariO, type LaturaO,
@@ -339,7 +343,15 @@ export type VarfCale = {
   readonly s: { readonly tip: 'L' } | { readonly tip: 'A'; readonly bulge: number } | { readonly tip: 'C'; readonly c1: Pt; readonly c2: Pt };
 };
 /** O latură a căii în lume, cu tipul ei (pentru colțurile degajărilor) și capetele. */
-export type LaturaCale = { readonly tip: 'L' | 'A' | 'C'; readonly a: Pt; readonly b: Pt };
+export type LaturaCale = {
+  readonly tip: 'L' | 'A' | 'C'; readonly a: Pt; readonly b: Pt;
+  /**
+   * Felia 2.7b (recenzia, ADR 0034 §6): tangentele de capăt, în lume (nenormate): la linie, coarda; la arc, din arcul în
+   * lume (deci și sub o oglindire); la cubică, mânerul, apoi celălalt mâner, apoi coarda. Plus arcul în lume și
+   * punctele de control ale cubicei în lume.
+   */
+  readonly t0?: Pt; readonly t1?: Pt; readonly arc?: Arc; readonly c1?: Pt; readonly c2?: Pt;
+};
 /** Săgeata la care se aproximează o cubică (antetul). */
 export const SAGETA_CUBICA = 1e-4;
 
@@ -417,6 +429,8 @@ export type Contur = {
   /** Doar la cale: laturile ei în lume, cu tipul lor, în ordinea căii, și sensul ei (+1 = trigonometric, din aria cu semn). */
   readonly laturiCale?: readonly LaturaCale[];
   readonly orientare?: 1 | -1;
+  /** Doar la cale: are cel puțin o cubică (ADR 0034 §6, recenzia: pragul atingerii crește cu 0,001). */
+  readonly cuCubice?: boolean;
 };
 
 /** Punctul de la fracțiunea t al cubicei (a, c1, c2, b). */
@@ -489,19 +503,29 @@ function conturCale(forma: Extract<FormaO, { tip: 'cale' }>, m: MatriceO): Contu
   vs.forEach((v, k) => {
     const urm = vs[(k + 1) % vs.length]!;
     const a = aplica(m, v.p), b = aplica(m, urm.p);
+    const coarda = pt(b.x - a.x, b.y - a.y);
     if (v.s.tip === 'L') {
-      laturi.push({ tip: 'L', a, b });
+      laturi.push({ tip: 'L', a, b, t0: coarda, t1: coarda });
       if (a.x !== b.x || a.y !== b.y) primitive.push(segment(a, b));
       return;
     }
     if (v.s.tip === 'A') {
-      laturi.push({ tip: 'A', a, b });
       const local = arcBulge(v.p, urm.p, v.s.bulge);
-      if (local) primitive.push(mapeazaSimilitudine(m, local));
+      const lume = local ? mapeazaSimilitudine(m, local) : null;
+      if (lume && lume.tip === 'arc') {
+        const tang = (u: number): Pt => pt(-Math.sign(lume.du) * Math.sin(u), Math.sign(lume.du) * Math.cos(u));
+        laturi.push({ tip: 'A', a, b, t0: tang(lume.u0), t1: tang(lume.u0 + lume.du), arc: lume });
+        primitive.push(lume);
+      } else laturi.push({ tip: 'A', a, b });
       return;
     }
-    laturi.push({ tip: 'C', a, b });
-    primitive.push(...cubicaPolilinie(a, aplica(m, v.s.c1), aplica(m, v.s.c2), b));
+    const c1 = aplica(m, v.s.c1), c2 = aplica(m, v.s.c2);
+    const nenul = (...vs: Pt[]): Pt => vs.find((q) => q.x !== 0 || q.y !== 0) ?? coarda;
+    laturi.push({
+      tip: 'C', a, b, c1, c2,
+      t0: nenul(pt(c1.x - a.x, c1.y - a.y), pt(c2.x - a.x, c2.y - a.y), coarda), t1: nenul(pt(b.x - c2.x, b.y - c2.y), pt(b.x - c1.x, b.y - c1.y), coarda),
+    });
+    primitive.push(...cubicaPolilinie(a, c1, c2, b));
   });
   if (primitive.length === 0) throw new Error('cale fără nicio latură nenulă');
   const vsPoligon = poligon(primitive, SAGETA_CUBICA);
@@ -513,6 +537,7 @@ function conturCale(forma: Extract<FormaO, { tip: 'cale' }>, m: MatriceO): Contu
   return {
     tip: 'cale', primitive, cutiiPrimitive: primitive.map(cutiePrimitiva), cutie: cutieLista(primitive), arie: Math.abs(A / 2),
     punct: aplica(m, vs[0]!.p), contine: (p) => inPoligon(vsPoligon, p), drumIdeal: () => null, laturiCale: laturi, orientare: A > 0 ? 1 : -1,
+    cuCubice: vs.some((v) => v.s.tip === 'C'),
   };
 }
 
@@ -661,9 +686,11 @@ export function regiuneDinInele(
   for (let i = 0; i < inele.length; i++) {
     for (let j = i + 1; j < inele.length; j++) {
       const a = inele[i]!, b = inele[j]!;
-      if (distantaCutii(a.contur.cutie, b.contur.cutie) >= ATINGERE) continue;
+      // ADR 0034 §6 (recenzia): pragul crește cu 0,001 (`TOLERANTA_PROIECT`) pentru fiecare inel dintr-o cale cu cubice.
+      const prag = ATINGERE + 0.001 * ((a.contur.cuCubice ? 1 : 0) + (b.contur.cuCubice ? 1 : 0));
+      if (distantaCutii(a.contur.cutie, b.contur.cutie) >= prag) continue;
       const d = distantaListe(a.contur.primitive, b.contur.primitive);
-      if (d < ATINGERE) {
+      if (d < prag) {
         toate.push({ tip: 'atingere', elemente: [a.idLume, b.idLume], mesaj: `inelele ${a.idLume} și ${b.idLume} se ating (la ${d.toExponential(2)} mm)` });
       }
     }

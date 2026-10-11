@@ -8,6 +8,10 @@
  * similitudini oglindite și rotite și (fără arce) sub o forfecare, freze Ø3,175 / Ø6 / Ø8, toate colțurile de origine
  * și ambele Z0. Plus o gaură-cale într-o piesă-cale și trei perechi care se ating (regiunea trebuie să le refuze).
  *
+ * Recenzia (11.10, ADR 0034 §6): C20–C22 (colțurile cu o latură curbă, curba strânsă sub R, arcul desenului sub R) și
+ * R04–R07 (banda atingerii: 1e-6 + 0,001 pe fiecare inel dintr-o cale cu cubice; cubicele lor sunt drepte, deci biarcele
+ * nu mută distanța).
+ *
  * Așteptările scrise de mână, pe fiecare caz: câte colțuri de degajat are fiecare tăietură (ADR 0032 §2 pe o cale: doar
  * L–L, pe partea deșeului) și, la perechile care se ating, elementele atingerii.
  */
@@ -79,6 +83,14 @@ export const O_PATRATICE = 'M 25 0 Q 25 25 0 25 Q -25 25 -25 0 Q -25 -25 0 -25 Q
 export const VAL_D = 'M 0 60 C 60 120 120 0 244 61 L 244 122 L 0 122 Z';
 /** Cubica cu vârf (cusp) în (30, 45): derivata se anulează la t = 0,5; închisă cu o linie. */
 export const cuVarf = (): FormaO => cale([vC(0, 0, 60, 60, 0, 60), vL(60, 0)]);
+/** Felia 2.7b (recenzia): un pătrat cu o umflătură semicirculară (raza 2) pe latura de sus, între x = 18 și 22. */
+export const umflatura = (): FormaO => cale([vL(0, 0), vL(40, 0), vL(40, 40), vL(22, 40), vA(22, 40, 1), vL(18, 40), vL(0, 40)]);
+/** Un pătrat cu latura de sus o cubică strânsă (vârful ei, în (20, 100), are raza de curbură 2,067). */
+export const strans = (): FormaO => cale([vL(0, 0), vL(40, 0), vC(40, 40, 21, 120, 19, 120), vL(0, 40)]);
+/** Un pătrat 40 × 40 cu latura dreaptă (sau stângă) o cubică dreaptă (mânerele pe latură): o cale cu cubice, fără curbă. */
+export const patratCubicDreapta = (): FormaO => cale([vL(0, 0), vC(40, 0, 40, 10, 40, 30), vL(40, 40), vL(0, 40)]);
+export const patratCubicStanga = (): FormaO => cale([vL(0, 0), vL(40, 0), vL(40, 40), vC(0, 40, 0, 30, 0, 10)]);
+
 /** Un pătrat-cale (doar linii), colțul stânga-jos în (x, y). */
 export const patrat = (x: number, y: number, l: number): FormaO => cale([vL(x, y), vL(x + l, y), vL(x + l, y + l), vL(x, y + l)]);
 
@@ -124,6 +136,10 @@ export type CazPoartaCale = {
   readonly colturi?: Readonly<Record<string, number>>;
   /** Elementele care se ating (regiunea și exportul trebuie să refuze). */
   readonly atingere?: readonly string[];
+  /** Felia 2.7b (recenzia): pragul atingerii are banda biarcelor (unul dintre inele vine dintr-o cale cu cubice). */
+  readonly banda?: boolean;
+  /** Două inele foarte apropiate care NU se ating (dincolo de bandă): exportul refuză altfel (tăietura intră în vecină). */
+  readonly departe?: readonly string[];
 };
 
 const STOC: Stoc = { latime: 300, inaltime: 220, grosime: 12 };
@@ -258,7 +274,63 @@ const DE_BAZA: ReadonlyArray<Omit<CazPoartaCale, 'montaj'> & { readonly montaj?:
     D: 6,
     colturi: { 'x/x': 8 },
   },
+  // Felia 2.7b (recenzia, ADR 0034 §6): colțurile curbe, curbele strânse, arcele desenului sub R.
+  {
+    nume: 'C20 pătratul cu o umflătură semicirculară (raza 2) pe latura de sus, exterior, dog-bone: două colțuri concave cu o latură curbă (la baza umflăturii)',
+    doc: docCaleCam(STOC, [{ id: 'u', x: 120, y: 80, elemente: [{ id: 'u', forma: umflatura(), latura: 'exterior', adancime: 6, colturi: { tip: 'dog-bone' } }] }], { diametru: 6, pas: 3 }),
+    D: 6,
+  },
+  {
+    nume: 'C21 pătratul cu o cubică strânsă (raza 2,067 < R) pe latura de sus, interior, dog-bone: curba strânsă, două colțuri curbe, două degajări',
+    doc: docCaleCam(STOC, [{ id: 't', x: 120, y: 60, elemente: [{ id: 't', forma: strans(), latura: 'interior', adancime: 6, colturi: { tip: 'dog-bone' } }] }], { diametru: 6, pas: 3 }),
+    D: 6,
+    colturi: { 't/t': 2 },
+  },
+  {
+    nume: 'C22 pătratul cu umflătura de raza 2 (< R), interior, dog-bone: colțul rotunjit pe arcul desenului, patru degajări',
+    doc: docCaleCam(STOC, [{ id: 'a', x: 120, y: 80, elemente: [{ id: 'a', forma: umflatura(), latura: 'interior', adancime: 6, colturi: { tip: 'dog-bone' } }] }], { diametru: 6, pas: 3 }),
+    D: 6,
+    colturi: { 'a/a': 4 },
+  },
   // Perechile care se ating: regiunea (ADR 0026 §2) și exportul refuză.
+  {
+    nume: 'R04 două căi cu cubice (drepte) la 0,0015 mm: sub banda 0,002 (amândouă din căi cu cubice), se ating',
+    doc: docCaleCam(STOC, [
+      { id: 'a', x: 100, y: 80, elemente: [{ id: 'a', forma: patratCubicDreapta(), latura: 'exterior', adancime: 6 }] },
+      { id: 'b', x: 140.0015, y: 80, elemente: [{ id: 'b', forma: patratCubicStanga(), latura: 'exterior', adancime: 6 }] },
+    ], { diametru: 6, pas: 3 }),
+    D: 6,
+    atingere: ['a/a', 'b/b'],
+    banda: true,
+  },
+  {
+    nume: 'R05 aceleași două căi cu cubice la 0,003 mm: peste banda 0,002, nu se ating (tăieturile intră în vecină)',
+    doc: docCaleCam(STOC, [
+      { id: 'a', x: 100, y: 80, elemente: [{ id: 'a', forma: patratCubicDreapta(), latura: 'exterior', adancime: 6 }] },
+      { id: 'b', x: 140.003, y: 80, elemente: [{ id: 'b', forma: patratCubicStanga(), latura: 'exterior', adancime: 6 }] },
+    ], { diametru: 6, pas: 3 }),
+    D: 6,
+    departe: ['a/a', 'b/b'],
+  },
+  {
+    nume: 'R06 o cale cu cubice și una doar din linii la 0,0008 mm: sub banda 0,001, se ating',
+    doc: docCaleCam(STOC, [
+      { id: 'a', x: 100, y: 80, elemente: [{ id: 'a', forma: patratCubicDreapta(), latura: 'exterior', adancime: 6 }] },
+      { id: 'b', x: 140.0008, y: 80, elemente: [{ id: 'b', forma: patrat(0, 0, 40), latura: 'exterior', adancime: 6 }] },
+    ], { diametru: 6, pas: 3 }),
+    D: 6,
+    atingere: ['a/a', 'b/b'],
+    banda: true,
+  },
+  {
+    nume: 'R07 două căi doar din linii la 0,0008 mm: fără bandă (1e-6), nu se ating (tăieturile intră în vecină)',
+    doc: docCaleCam(STOC, [
+      { id: 'a', x: 100, y: 80, elemente: [{ id: 'a', forma: patrat(0, 0, 40), latura: 'exterior', adancime: 6 }] },
+      { id: 'b', x: 140.0008, y: 80, elemente: [{ id: 'b', forma: patrat(0, 0, 40), latura: 'exterior', adancime: 6 }] },
+    ], { diametru: 6, pas: 3 }),
+    D: 6,
+    departe: ['a/a', 'b/b'],
+  },
   {
     nume: 'R01 două inimi care se suprapun (exterior, exterior)',
     doc: docCaleCam(STOC, [

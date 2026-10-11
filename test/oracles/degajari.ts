@@ -71,6 +71,11 @@
  *   degajarea pe arce vine cu importul SVG`. Cu o condiție în bandă, oricare dintre rezultatele posibile e acceptat
  *   (`rezultate`, `avertismenteleCerute`).
  *
+ * RECENZIA 2.7b (11.10, ADR 0034 §6, precizările): pe o cale cu `colturi`, și avertismentele colțurilor cu o latură curbă
+ * (concave pentru K, cu restul ≥ 0,01, atinse de buclă), ale curbelor strânse (cubica cu raza minimă de curbură spre
+ * deșeu sub R, în punctul ei) și „colțul rotunjit” pe arcele desenului (`avertismenteleCaii`, `arceSubRaza`); numerele
+ * se potrivesc cu toleranța 0,0015 / 0,002 (`Potrivire`), pe prag în bandă.
+ *
  * FELIA 2.7b (ADR 0034, forma „cale”; aceeași sesiune independentă): colțurile unei căi sunt vârfurile L–L (`colturiPeCale`),
  * cu Q socotit fără offsetul exact al căii (picioarele pe laturi și distanța lui Q la tot conturul ≥ R). Bucla unei căi,
  * pentru §5 (a: traseele celorlalte bucle; b: coloanele urechilor; c: cutia buclei), e cea citită din program, cu banda
@@ -85,7 +90,7 @@ import type { ColturiO, IntrariO, LaturaO, RampaO, SensO, TipColturiO, UrechiO }
 import { citeste, regulaArcGrbl, type Eveniment, type Mutare, type Punct3 } from './gcode.ts';
 import {
   arc as arcP, celMaiMic, distantaListe, dPunctLista, lungime as lungimeP, punct as punctP, punctLa, segment as segmentP, type Contur, type IncalcareMutare, type Primitiva,
-  type Regiune,
+  type LaturaCale, type Regiune,
 } from './regiune.ts';
 import { TOL_INCHIDERE, TOL_SUB, type EtichetaActiva, type P2 } from './sens.ts';
 import { buclaAnalitica, coloaneleUrechilor, desparte, desparteCuRampa, MARJA_SCHELET, mersTrigonometric } from './intrari.ts';
@@ -156,6 +161,13 @@ export function conturCuratat(c: Contur): Primitiva[] {
  * ALEGERE: cercul n-are colțuri (un cerc sub R nu încape oricum).
  */
 export function arceSubRaza(c: Contur, latura: 'exterior' | 'interior', R: number): number[] {
+  if (c.tip === 'cale') {
+    // ADR 0034 §6 (recenzia): pe arcele desenului (nu pe biarce), curățate, concave pentru K (centrul pe partea deșeului:
+    // pe interior, arcul care merge în sensul căii; pe exterior, cel care merge invers).
+    const o = c.orientare ?? 1;
+    return (c.laturiCale ?? []).flatMap((l) => (l.tip === 'A' && l.arc && l.arc.tip === 'arc' && Math.abs(l.arc.du) * l.arc.r >= CURATARE && l.arc.r < R
+      && (latura === 'interior') === (o * l.arc.du > 0) ? [l.arc.r] : []));
+  }
   if (c.tip !== 'dreptunghi' || latura !== 'interior') return [];
   return conturCuratat(c).flatMap((q) => (q.tip === 'arc' && q.r < R ? [q.r] : []));
 }
@@ -478,7 +490,111 @@ export type JudecataFoii = {
   readonly colturi: ReadonlyMap<string, readonly ColtJudecat[]>;
   /** Arcele concave pentru K cu raza sub R, pe fiecare tăietură cu `colturi`. */
   readonly arce: ReadonlyArray<{ readonly id: string; readonly cheie: string; readonly r: number }>;
+  /** Felia 2.7b (recenzia): colțurile curbe și curbele strânse ale căilor cu `colturi` (avertismentele, cu bandă). */
+  readonly curbe: readonly AvertismentCerut[];
 };
+
+/** Un avertisment cerut: obligatoriu sau în bandă; formele acceptate (text exact, sau o potrivire cu toleranță). */
+export type Potrivire = { readonly afis: string; readonly test: (a: string) => boolean };
+export type AvertismentCerut = { readonly obligatoriu: boolean; readonly texte: ReadonlyArray<string | Potrivire> };
+
+/** Numerele unui text, în ordine. */
+const numereDin = (s: string): number[] => [...s.matchAll(/-?\d+(?:\.\d+)?/g)].map((x) => Number(x[0]));
+
+/** Potrivirea unui text cu șablonul (numerele `?` pe poziții), cu toleranța pe fiecare număr. */
+function potrivire(afis: string, sablon: RegExp, valori: readonly number[], tol: number): Potrivire {
+  return {
+    afis,
+    test: (a) => {
+      const m = sablon.exec(a);
+      if (!m) return false;
+      const xs = m.slice(1).map(Number);
+      return xs.length === valori.length && xs.every((x, k) => Math.abs(x - valori[k]!) <= tol);
+    },
+  };
+}
+
+const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const NUM = '(-?\\d+\\.\\d{3})';
+
+/** Raza minimă de curbură a cubicei (a, c1, c2, b) acolo unde centrul de curbură e pe partea `nw` (normala dată de semn). */
+function razaMinimaSpre(a: P2, c1: P2, c2: P2, b: P2, peDeseu: (p: P2, T: P2, centru: P2) => boolean): { readonly r: number; readonly p: P2 } | null {
+  const ev = (t: number): { p: P2; d1: P2; d2: P2 } => {
+    const s = 1 - t;
+    const P = (k0: number, k1: number, k2: number, k3: number): P2 => ({ x: k0 * a.x + k1 * c1.x + k2 * c2.x + k3 * b.x, y: k0 * a.y + k1 * c1.y + k2 * c2.y + k3 * b.y });
+    return { p: P(s * s * s, 3 * s * s * t, 3 * s * t * t, t * t * t), d1: P(-3 * s * s, 3 * s * s - 6 * s * t, 6 * s * t - 3 * t * t, 3 * t * t), d2: P(6 * s, -12 * s + 6 * t, 6 * s - 12 * t, 6 * t) };
+  };
+  const raza = (t: number): number => {
+    const { p, d1, d2 } = ev(t);
+    const v = Math.hypot(d1.x, d1.y);
+    if (!(v > 0)) return 0;
+    const k = (d1.x * d2.y - d1.y * d2.x) / (v * v * v);
+    if (k === 0) return Infinity;
+    const T = { x: d1.x / v, y: d1.y / v };
+    const N = { x: -T.y * Math.sign(k), y: T.x * Math.sign(k) };
+    return peDeseu(p, T, N) ? 1 / Math.abs(k) : Infinity;
+  };
+  const n = 4000;
+  let km = -1, rm = Infinity;
+  for (let k = 0; k <= n; k++) { const r = raza(k / n); if (r < rm) { rm = r; km = k; } }
+  if (km < 0 || !Number.isFinite(rm)) return null;
+  // Secțiunea de aur în jurul celui mai mic eșantion.
+  let lo = Math.max(0, (km - 1) / n), hi = Math.min(1, (km + 1) / n);
+  const g = (Math.sqrt(5) - 1) / 2;
+  for (let it = 0; it < 80; it++) {
+    const m1 = hi - g * (hi - lo), m2 = lo + g * (hi - lo);
+    if (raza(m1) <= raza(m2)) hi = m2; else lo = m1;
+  }
+  const t = (lo + hi) / 2;
+  const r = Math.min(raza(t), rm);
+  return { r, p: ev(r === rm ? km / n : t).p };
+}
+
+/**
+ * ADR 0034 §6 (precizările recenziei), pe o cale cu `colturi` pe latura dată: colțurile desenului cu o latură curbă (A
+ * sau C), concave pentru K, cu restul R / cos(θ/2) − R ≥ 0,01 (θ = cât se rupe mersul), la care bucla ajunge (la cel mult
+ * 2R / cos(θ/2) de vârf; bucla citită din program), primesc „degajarea omisă la colțul (x, y): o latură a colțului e
+ * curbă”; o cubică ce se strânge spre deșeu sub R primește „curba de lângă (x, y) se strânge până la raza r mm”, în
+ * punctul razei minime. Pe pragurile lor (± 1e-6 la rest și la rază, ± `BANDA_PROGRAM` la distanța buclei), în bandă.
+ */
+export function avertismenteleCaii(id: string, c: Contur, latura: 'exterior' | 'interior', R: number, bucla: readonly Primitiva[] | undefined): AvertismentCerut[] {
+  const rez: AvertismentCerut[] = [];
+  const o = c.orientare ?? 1;
+  const lung = (l: LaturaCale): number => (l.tip === 'A' && l.arc && l.arc.tip === 'arc' ? Math.abs(l.arc.du) * l.arc.r : dist(l.a, l.b) + (l.c1 ? dist(l.a, l.c1) : 0));
+  const ls = (c.laturiCale ?? []).filter((l) => lung(l) >= CURATARE);
+  for (let k = 0; k < ls.length; k++) {
+    const p = ls[(k + ls.length - 1) % ls.length]!, n = ls[k]!;
+    if ((p.tip === 'L' && n.tip === 'L') || !p.t1 || !n.t0) continue;
+    const vir = Math.atan2(cross(p.t1, n.t0), dot(p.t1, n.t0));
+    const concav = latura === 'exterior' ? o * vir < 0 : o * vir > 0;
+    if (!concav) continue;
+    const cj = Math.cos(Math.abs(vir) / 2);
+    const rest = cj > 0 ? R / cj - R : Infinity;
+    if (rest < REST_MINIM - 1e-6) continue;
+    const V = n.a;
+    const lim = cj > 0 ? (2 * R) / cj : Infinity;
+    const d = bucla && bucla.length ? dPunctLista(V, bucla) : NaN;
+    if (Number.isFinite(d) && d > lim + BANDA_PROGRAM) continue;
+    const banda = Math.abs(rest - REST_MINIM) <= 1e-6 || !Number.isFinite(d) || Math.abs(d - lim) <= BANDA_PROGRAM;
+    const afis = `${id}: degajarea omisă la colțul (${f3(V.x)}, ${f3(V.y)}): o latură a colțului e curbă`;
+    rez.push({ obligatoriu: !banda, texte: [potrivire(afis, new RegExp(`^${escapeRe(id)}: degajarea omisă la colțul \\(${NUM}, ${NUM}\\): o latură a colțului e curbă$`), [V.x, V.y], 0.0015)] });
+  }
+  const nw = (T: P2): P2 => {
+    const afara = o > 0 ? { x: T.y, y: -T.x } : { x: -T.y, y: T.x };
+    return latura === 'exterior' ? afara : { x: -afara.x, y: -afara.y };
+  };
+  for (const l of ls) {
+    if (l.tip !== 'C' || !l.c1 || !l.c2) continue;
+    const x = razaMinimaSpre(l.a, l.c1, l.c2, l.b, (_p, T, N) => dot(N, nw(T)) > 0);
+    if (!x || x.r > R + 1e-6) continue;
+    const afis = `${id}: curba de lângă (${f3(x.p.x)}, ${f3(x.p.y)}) se strânge până la raza ${f3(x.r)} mm (sub raza frezei, ${f3(R)} mm): freza o rotunjește`;
+    rez.push({
+      obligatoriu: Math.abs(x.r - R) > 1e-6 && x.r > 1e-3,
+      texte: [potrivire(afis, new RegExp(`^${escapeRe(id)}: curba de lângă \\(${NUM}, ${NUM}\\) se strânge până la raza ${NUM} mm \\(sub raza frezei, ${escapeRe(f3(R))} mm\\): freza o rotunjește$`), [x.p.x, x.p.y, x.r], x.r > 1e-3 ? 0.002 : Infinity)],
+    });
+  }
+  return rez;
+}
 
 /**
  * §5 (cu precizarea din 11.10) pe toată foaia 0: colțurile fiecărei operații `exterior` / `interior` cu `colturi`, cu
@@ -494,6 +610,7 @@ export function judecaFoaia(
   type Brut = { readonly cheie: string; readonly id: string; readonly latura: 'exterior' | 'interior'; readonly k: number; readonly c: ColtDegajat; readonly sens: SensO; readonly urechi: UrechiO | null; readonly drum: Primitiva };
   const toate: Brut[] = [];
   const arce: Array<{ id: string; cheie: string; r: number }> = [];
+  const curbe: AvertismentCerut[] = [];
   for (const [id, t] of reg.taieturi) {
     if (!t.contur) continue;
     for (const [latura, adancimi] of t.laturi) {
@@ -506,6 +623,7 @@ export function judecaFoaia(
           toate.push({ cheie, id, latura, k, c, sens, urechi: (t.urechi?.get(latura)?.[k] ?? null) as UrechiO | null, drum: segmentP(c.Q, c.E) });
         }
         for (const r of arceSubRaza(t.contur, latura, R)) arce.push({ id, cheie, r });
+        if (t.contur.tip === 'cale') curbe.push(...avertismenteleCaii(id, t.contur, latura, R, dinProgram.get(cheie)));
       }
     }
   }
@@ -562,7 +680,7 @@ export function judecaFoaia(
     const motiv = probe.find(([, p]) => p.v !== 'da')?.[1].m ?? '';
     colturi.set(x.cheie, [...(colturi.get(x.cheie) ?? []), { ...x.c, id: x.id, latura: x.latura, kOp: x.k, verdict, rezultate, motiv }]);
   });
-  return { colturi, arce };
+  return { colturi, arce, curbe };
 }
 
 const f3 = (v: number): string => v.toFixed(3);
@@ -572,8 +690,8 @@ const f3 = (v: number): string => v.toFixed(3);
  * motivul (în bandă: oricare dintre rezultatele posibile, sau niciunul, deci neobligatoriu); pe fiecare arc sub R, textul
  * lui. `texte` = formele acceptate.
  */
-export function avertismenteleCerute(j: JudecataFoii, R: number): Array<{ readonly obligatoriu: boolean; readonly texte: readonly string[] }> {
-  const rez: Array<{ obligatoriu: boolean; texte: string[] }> = [];
+export function avertismenteleCerute(j: JudecataFoii, R: number): AvertismentCerut[] {
+  const rez: AvertismentCerut[] = [];
   for (const lista of j.colturi.values()) {
     for (const c of lista) {
       const motive = c.rezultate.filter((m): m is Motiv => m !== null);
@@ -584,6 +702,7 @@ export function avertismenteleCerute(j: JudecataFoii, R: number): Array<{ readon
   for (const x of j.arce) {
     rez.push({ obligatoriu: true, texte: [`${x.id}: colțul rotunjit cu raza ${f3(x.r)} mm (sub raza frezei, ${f3(R)} mm) rămâne cu raza frezei; degajarea pe arce vine cu importul SVG`] });
   }
+  rez.push(...j.curbe);
   return rez;
 }
 
@@ -591,15 +710,17 @@ export function avertismenteleCerute(j: JudecataFoii, R: number): Array<{ readon
  * Avertismentele aplicației față de cele cerute: cele despre degajări (`degajarea omisă`, `colțul rotunjit`) se potrivesc
  * una câte una cu cele cerute (textul exact); întoarce problemele (goală = exact cele cerute).
  */
-export function comparaAvertismentele(av: readonly string[] | null, cerute: ReadonlyArray<{ readonly obligatoriu: boolean; readonly texte: readonly string[] }>): string[] {
+export function comparaAvertismentele(av: readonly string[] | null, cerute: readonly AvertismentCerut[]): string[] {
   const rele: string[] = [];
   const libere = cerute.map((x) => ({ ...x, luat: false }));
-  for (const a of (av ?? []).filter((x) => /degajarea omisă|colțul rotunjit/.test(x))) {
-    const x = libere.find((q) => !q.luat && q.texte.includes(a));
+  const potriveste = (t: string | Potrivire, a: string): boolean => (typeof t === 'string' ? t === a : t.test(a));
+  // Felia 2.7b (recenzia): și „curba de lângă … se strânge” (ADR 0034 §6).
+  for (const a of (av ?? []).filter((x) => /degajarea omisă|colțul rotunjit|se strânge până la raza/.test(x))) {
+    const x = libere.find((q) => !q.luat && q.texte.some((t) => potriveste(t, a)));
     if (x) x.luat = true;
     else rele.push(`avertisment necerut (sau în altă formă): „${a}”`);
   }
-  for (const x of libere) if (x.obligatoriu && !x.luat) rele.push(`lipsește avertismentul „${x.texte.join('” sau „')}”`);
+  for (const x of libere) if (x.obligatoriu && !x.luat) rele.push(`lipsește avertismentul „${x.texte.map((t) => (typeof t === 'string' ? t : t.afis)).join('” sau „')}”`);
   return rele;
 }
 
@@ -665,7 +786,7 @@ export function analizeazaDegajarile(
     }
   }
   // Colțurile judecate pe toată foaia (§5 a are nevoie de candidații celorlalte bucle), o singură dată.
-  const judecata: JudecataFoii = areColturi ? judecaFoaia(reg, R, foaie, pornire, dinProgram) : { colturi: new Map(), arce: [] };
+  const judecata: JudecataFoii = areColturi ? judecaFoaia(reg, R, foaie, pornire, dinProgram) : { colturi: new Map(), arce: [], curbe: [] };
   const colturi = judecata.colturi;
   const ale = (x: LegareD): readonly ColtJudecat[] => colturi.get(`${x.id}|${x.latura}|${x.k}`) ?? [];
   void D;

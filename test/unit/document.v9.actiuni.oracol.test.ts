@@ -7,6 +7,10 @@
  * un plafon, acțiunea trebuie să fie inactivă (cu motiv) și documentul neschimbat; altfel activă, cu exact numerele
  * prezise, iar documentul rezultat trece ușa oracolului (`verificaV9`) și pe a aplicației (se poate redeschide).
  * ALEGERE: un cerc nou nu adaugă vârfuri de cale, deci „Adaugă cerc” rămâne activ și la plafonul lumii.
+ *
+ * Precizarea recenziei (11.10, ADR 0034 §2): o instanță mutată sau copiată (Ctrl+D) peste 10⁷ mm de origine
+ * (`PLAFON.translatie`, pe |x| sau |y|): acțiunea e inactivă, cu motivul ei („prea departe”), iar ușa folosește același
+ * prag. Copia stă la +20 / −20 mm de original (`actiuni.test.ts`); mutarea, cu deplasarea dată.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -60,6 +64,51 @@ const CAZURI: readonly Caz[] = [
   { nume: 'A7 două căi de 50 000, ambele alese: copiile fac exact 200 000 în piese', varfuri: [50_000, 50_000], alese: ['i0x0', 'i1x0'], activa: true },
   { nume: 'A8 doar lumea: o cale de 50 000 pusă de 19 ori și una de 10 (950 010 în lume); copia celei mari ar face 1 000 010, piesele doar 100 010', varfuri: [50_000, 10], instante: [19, 1], alese: ['i0x0'], activa: false },
 ];
+
+type CazDeparte = { readonly nume: string; readonly x: number; readonly y: number; readonly actiune: 'document.duplica-selectia' | 'document.muta-selectia'; readonly dx?: number; readonly dy?: number };
+const DEPARTE: readonly CazDeparte[] = [
+  { nume: 'B1 Ctrl+D la x = 10⁷ − 10: copia ar sta la 10⁷ + 10', x: 1e7 - 10, y: 100, actiune: 'document.duplica-selectia' },
+  { nume: 'B2 Ctrl+D la x = 10⁷ − 20: copia stă exact la 10⁷', x: 1e7 - 20, y: 100, actiune: 'document.duplica-selectia' },
+  { nume: 'B3 Ctrl+D la y = −10⁷ + 10: copia ar sta la −10⁷ − 10', x: 100, y: -1e7 + 10, actiune: 'document.duplica-selectia' },
+  { nume: 'B4 mutarea cu 15 mm de la x = 10⁷ − 10: ar ajunge la 10⁷ + 5', x: 1e7 - 10, y: 100, actiune: 'document.muta-selectia', dx: 15, dy: 0 },
+  { nume: 'B5 mutarea cu 10 mm de la x = 10⁷ − 10: ajunge exact la 10⁷', x: 1e7 - 10, y: 100, actiune: 'document.muta-selectia', dx: 10, dy: 0 },
+  { nume: 'B6 mutarea cu −30 mm pe y de la y = −10⁷ + 20: ar ajunge la −10⁷ − 10', x: 100, y: -1e7 + 20, actiune: 'document.muta-selectia', dx: 0, dy: -30 },
+];
+
+for (const c of DEPARTE) {
+  test(`(p9) instanța peste 10⁷ mm (prea departe): ${c.nume}`, { skip: DOAR_V9 }, () => {
+    const brut = docPieseCale([4]);
+    const inst = (brut.foi[0]!.instante as Array<{ x: number; y: number }>)[0]!;
+    inst.x = c.x;
+    inst.y = c.y;
+    assert.deepEqual(verificaV9(brut), [], 'oracolul: documentul de pornire e valid');
+    const h0 = accepta(brut);
+    let h = istoricNou(h0);
+    let sel: readonly string[] = ['i0x0'];
+    const ctx: ContextDocument = {
+      istoric: () => h, scrie: (nou) => { h = nou; }, selectie: () => sel, selecteaza: (ids) => { sel = ids; },
+      ...(c.actiune === 'document.muta-selectia' ? { deplasare: () => ({ dx: c.dx!, dy: c.dy! }) } : {}),
+    };
+    // Predicția oracolului: noua poziție (copia la +20 / −20, mutarea cu deplasarea) față de `PLAFON.translatie`.
+    const nou = c.actiune === 'document.duplica-selectia' ? { x: c.x + 20, y: c.y - 20 } : { x: c.x + c.dx!, y: c.y + c.dy! };
+    const incape = Math.abs(nou.x) <= PLAFOANE_O.translatie && Math.abs(nou.y) <= PLAFOANE_O.translatie;
+    const doc0 = h.doc;
+    const s = stare(registru, c.actiune, ctx);
+    const r = ruleaza(registru, c.actiune, ctx);
+    if (!incape) {
+      assert.ok(!s.ok && String(s.motiv ?? '').length > 0, `acțiunea e activă, deși instanța ar ajunge la (${nou.x}, ${nou.y})`);
+      assert.match(String(!s.ok ? s.motiv : ''), /departe/, 'motivul nu e „prea departe”');
+      assert.equal(r.ok, false);
+      assert.equal(h.doc, doc0, 'documentul s-a schimbat');
+      return;
+    }
+    assert.deepEqual(s, { ok: true }, `acțiunea e inactivă, deși instanța ajunge doar la (${nou.x}, ${nou.y})`);
+    assert.deepEqual(r, { ok: true });
+    const pozitii = ((h.doc as unknown as Liber)['foi'] as Liber[]).flatMap((f) => (f['instante'] as Liber[]).map((i) => [i['x'], i['y']]));
+    assert.ok(pozitii.some(([x, y]) => x === nou.x && y === nou.y), `nicio instanță la (${nou.x}, ${nou.y}): ${JSON.stringify(pozitii)}`);
+    assert.deepEqual(verificaV9(h.doc), [], 'ușa oracolului refuză documentul de după acțiune');
+  });
+}
 
 for (const c of CAZURI) {
   test(`(p9) Ctrl+D și plafoanele căilor: ${c.nume}`, { skip: DOAR_V9 }, () => {

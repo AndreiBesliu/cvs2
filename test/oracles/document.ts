@@ -138,12 +138,15 @@
  *   coordonată sau un `bulge` care nu e număr; `[finit]` = un număr nefinit; `[margini]` = o coordonată (p, c1, c2) cu
  *   |x| sau |y| peste `PLAFON.translatie` = 10⁷ mm; `[plafon]` = peste `PLAFON.varfuriCale` = 50 000 de vârfuri pe o
  *   cale; `[forma]` = o cale CU ARCE sub o matrice compusă care nu e similitudine (liniile și cubicele trec prin orice
- *   matrice afină); `bulge` nu are alt plafon decât să fie finit;
+ *   matrice afină); `bulge` nu are alt plafon decât să fie finit; RECENZIA (11.10, precizările §2): și `[plafon]` = un arc
+ *   cu raza (c / 4)·(|b| + 1/|b|) peste `PLAFON.latura` = 10 000 mm; și `[forma]` = un element cu arce a cărui matrice în
+ *   lume (instanța cu rotirea ei, apoi grupurile, apoi elementul, ca `geometrieV2`) nu e similitudine la 2e-12
+ *   (`similitudineLume`, aceeași formă ca la 1e-12), judecată doar când matricea din piesă e în margini;
  * - plafoanele de ansamblu: vârfurile tuturor căilor pieselor (și ale pieselor fără instanțe) ≤ `PLAFON.varfuri` =
  *   200 000 (`[plafon]`); vârfurile în lume (fiecare instanță, de pe orice foaie, cu vârfurile căilor piesei ei) ≤
  *   `PLAFON.varfuriLume` = 1 000 000 (ALEGERE: `[margini]`, ca elementele în lume din ADR 0024);
  * - migrarea v8 → v9 schimbă doar `schema`; nu există ciocniri (niciun câmp nou). Un v8 cu o formă `cale` nu e un v8
- *   valid, deci nu se migrează.
+ *   valid, deci nu se migrează (ADR 0034 §3, precizarea din 11.10).
  */
 
 export type MatriceO = {
@@ -300,6 +303,11 @@ export const PLAFOANE_O = {
   campuriValoare: 10_000,
   /** Toleranța similitudinii, relativă la scară. */
   similitudine: 1e-12,
+  /**
+   * ADR 0034 §2 (precizarea recenziei, 11.10): toleranța similitudinii matricei în lume a unui element cu arce
+   * (`TOLERANTA_SIMILITUDINE_LUME`), cu aceeași formă ca cea din piesă (relativă la scară).
+   */
+  similitudineLume: 2e-12,
   // ADR 0025.
   /** Operațiile din tot documentul, și ale pieselor fără instanțe. */
   operatii: 100_000,
@@ -385,9 +393,9 @@ export function inMarginiO(m: MatriceO): boolean {
 }
 
 /** Precizarea 5: rotire + scalare uniformă, eventual cu oglindire, în toleranța relativă; determinantul ≠ 0. */
-export function esteSimilitudineO(m: MatriceO): boolean {
+export function esteSimilitudineO(m: MatriceO, tol: number = PLAFOANE_O.similitudine): boolean {
   const scara = Math.max(Math.hypot(m.a, m.b), Math.hypot(m.c, m.d), 1);
-  const toleranta = PLAFOANE_O.similitudine * scara;
+  const toleranta = tol * scara;
   const directa = Math.abs(m.a - m.d) <= toleranta && Math.abs(m.b + m.c) <= toleranta;
   const oglindita = Math.abs(m.a + m.d) <= toleranta && Math.abs(m.b - m.c) <= toleranta;
   const determinant = m.a * m.d - m.b * m.c;
@@ -940,6 +948,10 @@ function unelte(semnaleaza: Semnaleaza, schema = 0) {
         const a = puncte[k], c = puncte[(k + 1) % lista.length];
         if (b !== undefined && b !== 0 && a !== undefined && c !== undefined && a.x === c.x && a.y === c.y) {
           semnaleaza('cale', `${cv}: arcul are capetele în același punct (${a.x}, ${a.y}): n-are cerc`);
+        } else if (b !== undefined && b !== 0 && a !== undefined && c !== undefined) {
+          // ADR 0034 §2 (recenzia): raza (c / 4)·(b + 1/b), din coardă și bulge, cel mult `PLAFON.latura` (ca la cerc).
+          const raza = (Math.hypot(c.x - a.x, c.y - a.y) / 4) * (Math.abs(b) + 1 / Math.abs(b));
+          if (!(raza <= PLAFOANE_O.latura)) semnaleaza('plafon', `${cv}: arcul are raza ${raza} > ${PLAFOANE_O.latura} mm`);
         }
         return;
       }
@@ -1070,16 +1082,18 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9): s
     const idNoduri = new Set<string>();
     const idElemente = new Set<string>();
     const idGrupuri = new Set<string>();
-    const stiva: Array<{ nod: unknown; nivel: number; deasupra: MatriceO | undefined }> = [
-      { nod: radacina, nivel: 1, deasupra: IDENTITATE_O },
+    const stiva: Array<{ nod: unknown; nivel: number; deasupra: MatriceO | undefined; lant: readonly MatriceO[] }> = [
+      { nod: radacina, nivel: 1, deasupra: IDENTITATE_O, lant: [] },
     ];
+    /** ADR 0034 §2 (recenzia): elementele cu arce și matricele locale de la rădăcină la ele (în ordinea din `lume.ts`). */
+    const cuArce: Array<{ readonly id: string; readonly lant: readonly MatriceO[] }> = [];
     let noduri = 0;
     let elemente = 0;
     let varfuri = 0;
     let preaAdanc = false;
     let pesteMargini = false;
     for (let pas = stiva.pop(); pas !== undefined; pas = stiva.pop()) {
-      const { nod, nivel, deasupra } = pas;
+      const { nod, nivel, deasupra, lant } = pas;
       if (nivel > PLAFOANE_O.adancime) {
         if (!preaAdanc) semnaleaza('adancime', `${cp}: un nod pe nivelul ${nivel} > ${PLAFOANE_O.adancime}`);
         preaAdanc = true;
@@ -1106,16 +1120,18 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9): s
         if (idn !== undefined) idGrupuri.add(idn);
         const copii = nod['copii'];
         if (!Array.isArray(copii)) semnaleaza('schema', `${cale}: grupul n-are lista copii`);
-        else for (let k = copii.length - 1; k >= 0; k--) stiva.push({ nod: copii[k], nivel: nivel + 1, deasupra: compus });
+        else for (let k = copii.length - 1; k >= 0; k--) stiva.push({ nod: copii[k], nivel: nivel + 1, deasupra: compus, lant: local ? [...lant, local] : lant });
       } else if (nod['tip'] === 'element') {
         if (idn !== undefined) idElemente.add(idn);
         elemente++;
         varfuri += u.forma(`${cale}.forma`, nod['forma'], compus);
+        // Lumea se judecă doar pe o matrice din piesă în margini (alta e deja `[margini]`, ca la similitudinea din piesă).
+        if (local !== undefined && compus !== undefined && inMarginiO(compus) && idn !== undefined && areArceO(nod['forma'])) cuArce.push({ id: idn, lant: [...lant, local] });
       } else {
         semnaleaza('schema', `${cale}.tip = ${JSON.stringify(nod['tip'])} nu e grup sau element`);
       }
     }
-    return { noduri, elemente, varfuri, idElemente, idGrupuri };
+    return { noduri, elemente, varfuri, idElemente, idGrupuri, cuArce };
   };
 
   /** Scula unei operații: totul e `[scula]`; câmpurile necunoscute se păstrează. */
@@ -1191,6 +1207,8 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9): s
   /** ADR 0034: vârfurile căilor fiecărei piese (pentru plafonul în lume) și suma pe toate piesele. */
   const varfuriPiesa = new Map<string, number>();
   let varfuriPiese = 0;
+  /** ADR 0034 §2 (recenzia): elementele cu arce ale fiecărei piese, cu lanțul matricelor locale. */
+  const arcePiesa = new Map<string, ReadonlyArray<{ readonly id: string; readonly lant: readonly MatriceO[] }>>();
   const referintePiesa = new Map<string, number>();
   let noduri = 0;
   let operatiiDocument = 0;
@@ -1211,6 +1229,7 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9): s
       noduri += numarate.noduri;
       varfuriPiese += numarate.varfuri;
       if (idp !== undefined && !varfuriPiesa.has(idp)) varfuriPiesa.set(idp, numarate.varfuri);
+      if (idp !== undefined && !arcePiesa.has(idp)) arcePiesa.set(idp, numarate.cuArce);
       if (idp !== undefined && !elementePiesa.has(idp)) elementePiesa.set(idp, numarate.elemente);
       if (schema >= 3) {
         const ops = operatii(`piesa ${idp ?? cale}`, p['operatii'], numarate.idElemente, numarate.idGrupuri);
@@ -1268,6 +1287,15 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9): s
         const rotire = inst['rotire'];
         if (typeof rotire !== 'number') semnaleaza('schema', `${ci}.rotire nu e număr`);
         else if (!(Number.isFinite(rotire) && rotire >= 0 && rotire < 360)) semnaleaza('rotire', `${ci}.rotire = ${rotire} nu e în [0, 360)`);
+        else if (schema >= 9 && typeof piesa === 'string' && typeof inst['x'] === 'number' && typeof inst['y'] === 'number' && Number.isFinite(inst['x']) && Number.isFinite(inst['y'])) {
+          // ADR 0034 §2 (recenzia): matricea în lume a fiecărui element cu arce, compusă ca în `lume.ts` (instanța cu
+          // rotirea ei, apoi grupurile, apoi elementul), e o similitudine la `similitudineLume`.
+          const start = compuneO(translatieO(inst['x'], inst['y']), rotatieO(rotire));
+          for (const el of arcePiesa.get(piesa) ?? []) {
+            const lume = el.lant.reduce((m, x) => compuneO(m, x), start);
+            if (!esteSimilitudineO(lume, PLAFOANE_O.similitudineLume)) semnaleaza('forma', `instanța ${idi ?? ci}: ${el.id} are arce sub o matrice neuniformă în lume`);
+          }
+        }
         const campuri = inst['campuri'];
         if (campuri !== undefined) {
           if (!esteObiect(campuri)) {
@@ -1298,6 +1326,14 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9): s
     if (taieturiLume > PLAFOANE_O.taieturiLume) semnaleaza('plafon', `${taieturiLume} tăieturi în lume > ${PLAFOANE_O.taieturiLume}`);
   }
   return probleme;
+}
+
+/** O formă cu arce: cercul, dreptunghiul rotunjit, calea cu un segment `A` (ADR 0024 §5, ADR 0034 §2). */
+function areArceO(f: unknown): boolean {
+  if (!esteObiect(f)) return false;
+  if (f['tip'] === 'cerc') return true;
+  if (f['tip'] === 'dreptunghi') return typeof f['razaColt'] === 'number' && f['razaColt'] > 0;
+  return f['tip'] === 'cale' && Array.isArray(f['varfuri']) && (f['varfuri'] as unknown[]).some((v) => esteObiect(v) && esteObiect(v['s']) && v['s']['tip'] === 'A');
 }
 
 /** Lista încălcărilor contractului v2 (ADR 0024); goală = document v2 valid (încă nemigrat). */

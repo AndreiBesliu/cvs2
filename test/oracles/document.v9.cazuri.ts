@@ -181,6 +181,8 @@ const otravaCale = (nume: string, categorie: CategorieO, strica: (f: Liber, d: D
   return { nume, doc: d, categorie };
 };
 const varf = (f: Liber, k: number): Liber => (f['varfuri'] as Liber[])[k]!;
+/** Bulge-ul (sub 1) al arcului cu coarda c și raza r: rădăcina mică a lui b + 1/b = 4r / c, scrisă fără scădere. */
+export const bulgeLaRaza = (c: number, r: number): number => { const q = (4 * r) / c; return 2 / (q + Math.sqrt(q * q - 4)); };
 const seg = (f: Liber, k: number): Liber => varf(f, k)['s'] as Liber;
 const SHEAR: MatriceO = { a: 1, b: 0, c: 0.5, d: 1, e: 0, f: 0 };
 
@@ -218,6 +220,12 @@ export const OTRAVURI_CALE: readonly Otrava[] = [
   otravaCale('L31 cale cu arce sub o forfecare (arcul ar deveni elipsă)', 'forma', () => {}, { matrice: SHEAR }),
   otravaCale('L32 cale cu arce sub un grup scalat neuniform (matricea compusă)', 'forma', () => {}, { grup: { a: 2, b: 0, c: 0, d: 1, e: 0, f: 0 } }),
   otravaCale('L33 tipul formei „Cale”', 'schema', (f) => { f['tip'] = 'Cale'; }),
+  // ADR 0034 §2 (precizarea recenziei): raza (c / 4)·(b + 1/b) cel mult `PLAFON.latura` = 10 000 mm. Arcul căii mixte
+  // are coarda 15: bulge 1e-6 dă 3,75·10⁶ mm, bulge 10⁶ tot 3,75·10⁶ (aproape un cerc întreg), iar `bulgeLaRaza` dă raza
+  // cerută exact.
+  otravaCale('L34 arc cu bulge 1e-6 pe coarda de 15 (raza 3,75·10⁶ mm, un cerc aproape plat)', 'plafon', (f) => { seg(f, 1)['bulge'] = 1e-6; }),
+  otravaCale('L35 arc cu bulge 10⁶ pe coarda de 15 (raza 3,75·10⁶ mm, aproape un cerc întreg)', 'plafon', (f) => { seg(f, 1)['bulge'] = 1e6; }),
+  otravaCale('L36 arc cu raza 10 000,01 mm (chiar peste plafon), bulge negativ', 'plafon', (f) => { seg(f, 1)['bulge'] = -bulgeLaRaza(15, 10_000.01); }),
 ];
 
 /** Otrăvurile plafoanelor (documente mari). */
@@ -242,9 +250,8 @@ export const OTRAVURI_V9: readonly Otrava[] = [
 ];
 
 /**
- * Un v8 cu o formă `cale`: nu e un v8 valid (forma nu există acolo), deci ușa oracolului îl refuză, nu-l migrează
- * (ALEGERE: contractul versiunii întâi, ca în tot lanțul). ADR 0034 §3 tace; aplicația îl primește ca v9-ul migrării
- * (doar numărul), iar lipirea (h9) primește oricare dintre cele două și spune ce a văzut.
+ * Un v8 cu o formă `cale`: nu e un v8 valid (forma nu există acolo), deci ușa îl refuză, cu motiv, nu-l migrează (ADR 0034
+ * §3, precizarea din 11.10, la constatarea oracolului).
  */
 export const REFUZATE_V8: readonly Refuzat[] = [
   { nume: 'Z11 un v8 cu o formă cale (scris greșit ca 8)', motiv: 'schema', doc: { ...docCale(caleMixta()), schema: 8 } },
@@ -273,7 +280,20 @@ export const VALIDE_DIFICILE_V9: readonly CazValidV9[] = [
   { nume: 'K03 doar linii și cubice sub un grup scalat neuniform', doc: docCale(caleFaraArce(), { grup: { a: 3, b: 0, c: 0, d: 0.5, e: 0, f: 0 } }) },
   { nume: 'K04 exact 2 vârfuri: o lentilă din două arce', doc: docCale(formaCale([vA(0, 0, 0.5), vA(20, 0, 0.5)])) },
   { nume: 'K05 exact 2 vârfuri: o linie și o cubică', doc: docCale(formaCale([vL(0, 0), vC(20, 0, 15, 10, 5, 10)])) },
-  { nume: 'K06 un arc cu capetele la 1e-9 mm (nu identice), bulge 10⁶ și bulge −1e-12', doc: docCale(formaCale([vA(0, 0, 1e6), vA(1e-9, 0, -1e-12), vL(10, 10)])) },
+  // Felia 2.7b (recenzia, ADR 0034 §2): bulge −1e-12 ar da o rază de 3,5·10¹² mm, acum refuzată; −4e-4 dă 8 839 mm.
+  { nume: 'K06 un arc cu capetele la 1e-9 mm (nu identice) și bulge 10⁶ (raza 2,5e-4 mm), apoi unul cu bulge −4e-4 (raza 8 839 mm)', doc: docCale(formaCale([vA(0, 0, 1e6), vA(1e-9, 0, -4e-4), vL(10, 10)])) },
+  {
+    // Recenzia (ADR 0034 §2): un grup cu forfecarea 10 000 compensat exact de element (în piesă: identitatea), sub
+    // instanța rotită 239°: în lume, rotunjirile celor două ordini lasă o abatere de ~8,8e-13 (relativ), sub 2e-12. Cazul
+    // ține verificarea lumii pe un caz neexact (o rotire cu sinusul exact ar da zero).
+    nume: 'K12 cale cu arce sub un grup cu forfecarea 10 000 compensat de element, instanța rotită 239°: în lume ~8,8e-13, trece la 2e-12',
+    doc: ((): DocV9O => {
+      const d = docCale(caleMixta(), { grup: { a: 1, b: 0, c: 10_000, d: 1, e: 0, f: 0 }, matrice: { a: 1, b: 0, c: -10_000, d: 1, e: 0, f: 0 } });
+      (d.foi[0]!.instante[0] as { rotire: number }).rotire = 239;
+      return d;
+    })(),
+  },
+  { nume: 'K11 un arc cu raza 9 999,99 mm (chiar sub plafon) pe coarda de 15', doc: docCale(formaCale([vL(0, 0), vA(30, 0, bulgeLaRaza(15, 9_999.99)), vC(30, 15, 22, 24, 8, 24), vL(0, 15)])) },
   { nume: 'K07 coordonate exact la ±10⁷ (p, c1, c2)', doc: docCale(formaCale([vL(-1e7, 1e7), vC(1e7, -1e7, 1e7, 1e7, -1e7, -1e7), vL(0, 0)])) },
   { nume: 'K08 segmente nule, vârfuri repetate și o cale care se taie singură (ușa nu judecă geometria)', doc: docCale(formaCale([vL(0, 0), vL(0, 0), vL(20, 20), vL(20, 0), vL(0, 20), vL(0, 20)])) },
   { nume: 'K09 cale cu arce sub o similitudine oglindită, rotită și scalată', doc: docCale(caleMixta(), { matrice: { a: 0, b: -2, c: -2, d: 0, e: 100, f: 50 } }) },
