@@ -27,6 +27,10 @@ Bugetul unei felii e ~½ zi activă, până la prima măsurătoare (`PLAN.md` §
 | 2.5c | Intrările compuse cu rampa: rampa pe sfertul intrării (ADR 0031; din 10.10, nu „bucla tăiată continuu”: invarianta 1 cere ieșirea coborâtă cu un pas la fiecare trecere) | B1 | R2 | 2.5b |
 | 2.6 | Dog-bone și T-bone | B2 | R1 | 2.3a |
 | 2.7 | Importul SVG: DOMParser inert, unități, viewBox, transformări, plafonul de mărime; biarcele (T6) cu bugetul de toleranță (`docs/PORTARE.md` §3.3); fațada PathKit minimă (reuniunea + R3) pentru normalizarea `nonzero` de la ușă | A4, I10b | R2 | 2.1 |
+| 2.7a | Biarcele (ADR 0033): cubica devine arce sub toleranța proiectului (0,001 mm), cu abaterea în ambele sensuri, eșecuri explicite, bugetul de toleranță într-un singur loc; doar geometria, cu oracolul | I10b | R2 | 2.1 |
+| 2.7b | Forma „cale” în document (v9): contururi închise din linii, arce și cubice; desenul pe pânză; CAM-ul prin biarce | A4 | R2 | 2.7a |
+| 2.7c | Ușa SVG: DOMParser inert, unități, viewBox, transformări, elementele (path, rect, circle, ellipse, line, polyline, polygon), plafonul de mărime, avertismentele; butonul de import | A4 | R2 | 2.7b |
+| 2.7d | Fațada PathKit minimă (reuniunea + R3) pentru normalizarea `nonzero` de la ușă, încărcată doar la import | A4 | R2 | 2.7c |
 | 2.8 | Stratul WebGL2 (foaia, traseul ca LINE_STRIP) și panoul de proprietăți | I7, I19 | R2 | 2.2 |
 | 2.9 | Bancul vizual v1, cu martorii lui | I18 | R2 | 2.8 |
 | 2.10 | Fișa plăcii 2, cu programele de aur | — | R2 | 2.4–2.7 |

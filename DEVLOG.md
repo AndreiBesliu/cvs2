@@ -1203,3 +1203,16 @@ bucată din piesă, fără niciun avertisment. Acum candidatele se judecă și �
   (găsită de oracol, de dinainte de felie; raportată, nu picată);
 - un index spațial pentru condiția a, la foile mari (etapa 12);
 - textele CAM (refuzuri, avertismente) sunt doar în română, și în interfața engleză.
+
+## 2026-10-11 — Etapa 2, felia 2.7a: biarcele (Model: Claude Opus 5.5)
+
+**Prompt:** „continua”. **Started:** 15:08. **Clasa:** R2 (singura aproximare de pe drumul spre mașină, ADR 0006).
+**Estimarea:** ~½ zi activă, plus oracolul independent (~0,6 M tokeni) și recenzia (~0,5 M).
+
+**Felia 2.7 împărțită** (fișa o socotea o felie; cere biarcele, o formă nouă în document, cititorul SVG, PathKit și
+contururile deschise): 2.7a biarcele, 2.7b forma „cale” (documentul v9) cu CAM-ul prin biarce, 2.7c ușa SVG și importul,
+2.7d normalizarea `nonzero` cu PathKit; 2.3c (contururile deschise) după ele.
+
+**Ce intră:** ADR 0033; `src/geom/toleranta.ts` (bugetul, un singur loc: toleranța proiectului 0,001 mm, ținta 0,99);
+`src/geom/biarce.ts` (cubica → linii și arce, tăiată la inflexiuni și vârfuri, abaterea măsurată în ambele sensuri,
+refuzurile și plafonul de bucăți explicite). Nimic nou pentru owner: nicio formă nu are încă cubice (vin cu 2.7b–c).
