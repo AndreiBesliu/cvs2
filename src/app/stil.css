@@ -175,9 +175,10 @@ footer {
   border: 1px solid var(--margine);
   border-radius: 10px;
   padding: 1rem 1.25rem;
-  /* Lățimea maximă cuprinde și marginea interioară: altfel, pe un telefon, cutia ieșea cu 10 px peste ecran. */
+  /* Lățimea maximă cuprinde și marginea interioară: altfel, pe un telefon, cutia ieșea cu 10 px peste ecran. Cu nouă
+     coloane (felia 2.6, Colțuri), 46rem tăia ultima coloană pe desktop; pe telefon, cutia se derulează. */
   box-sizing: border-box;
-  max-width: min(46rem, calc(100vw - 2rem));
+  max-width: min(56rem, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);
   overflow: auto;
 }
