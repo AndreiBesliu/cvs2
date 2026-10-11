@@ -154,3 +154,31 @@ test('refuzul: degajări pe linie (nu există parte de deșeu)', () => {
   const r = programDinDocument(gaura({ latura: 'pe-linie' }));
   assert.match(r.ok ? '' : r.motiv, /g\/g: degajările cer o parte de deșeu/);
 });
+
+test('condiția b: cu 2 urechi pe gaura 40 × 30, colțurile la 4 mm de coloana unei punți se omit, cu avertisment', () => {
+  // Bucla pornește din Q = (53, 53) și merge trigonometric: laturile 34, 24, 34, 24, P = 116; Q-urile la s = 0, 34, 58, 92.
+  // Urechile la (k + ½)·58 = 29 și 87, cu h = 4, R = 3: coloanele [28; 30] și [86; 88]. Colțul din s = 34 e la 4 mm de
+  // prima coloană, cel din s = 92 la 4 mm de a doua: sub D = 6, deci se omit; celelalte două sunt la 28 mm.
+  const d = gaura({ adancime: 12, pas: 4, urechi: { numar: 2, latime: 8, grosime: 2 } });
+  const { miscari, avertismente } = bloc(d, 'g/g');
+  assert.deepEqual([...avertismente].sort(), [
+    'g/g: degajarea omisă la colțul (50.000, 80.000): ar tăia puntea unei urechi',
+    'g/g: degajarea omisă la colțul (90.000, 50.000): ar tăia puntea unei urechi',
+  ]);
+  const ds = drumuri(miscari);
+  assert.deepEqual([...new Set(ds.map((x) => cheie(x.q)))].sort(), ['53.0000,53.0000', '87.0000,77.0000']);
+  assert.equal(ds.length, 6, '2 colțuri × 3 treceri');
+});
+
+test('restul minim (ADR 0032 §2): un vârf aproape drept (rest sub 0,01 mm) nu primește degajare; unul de 11° da', () => {
+  const contur = (y: number) => ({
+    inchis: true,
+    varfuri: [{ x: 0, y: 0 }, { x: 20, y }, { x: 40, y: 0 }, { x: 40, y: 30 }, { x: 0, y: 30 }].map((p) => ({ p, s: { tip: 'L' as const } })),
+  });
+  // Cotul de 2·atan(0,3/20) = 1,7°: restul 3·(1/cos 0,86° − 1) = 0,0003 mm. Cotul de 2·atan(2/20) = 11,4°: 0,0149 mm.
+  assert.equal(colturiDeDegajat(contur(-0.3), 'interior', 'urcare', R, 'dog-bone').length, 4);
+  const cinci = colturiDeDegajat(contur(-2), 'interior', 'urcare', R, 'dog-bone');
+  assert.equal(cinci.length, 5);
+  const cot = cinci.find((x) => near(x.v.x, 20) && near(x.v.y, -2));
+  assert.ok(cot && near(Math.hypot(cot.q.x - cot.v.x, cot.q.y - cot.v.y) - R, R / Math.cos(Math.atan(0.1)) - R, 1e-12));
+});
