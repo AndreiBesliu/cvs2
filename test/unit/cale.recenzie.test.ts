@@ -275,3 +275,12 @@ test('determinantul normat: o scalare de 1e-162 sub o rotire de 45° nu mai face
   assert.doesNotThrow(() => instantaLa(r.doc, 300, 300, 0.5));
   assert.doesNotThrow(() => programDinDocument(r.doc));
 });
+
+test('un vârf dublat lângă un colț curb (o linie nulă, des într-un SVG) nu ascunde avertismentul colțului (oracolul, C20)', () => {
+  // „D”-ul ca gaură, cu vârful (0, 40) dublat: o linie nulă înaintea semicercului.
+  if (D.tip !== 'cale') return;
+  const dublat: FormaDoc = { tip: 'cale', inchis: true, varfuri: [{ p: P(0, 40), s: { tip: 'L' } }, ...D.varfuri] };
+  const j = programDinDocument(piesa(dublat, { ...ID }, 600, 300, 0, { latura: 'interior', colturi: { tip: 'dog-bone' } }));
+  assert.ok(j.ok, j.ok ? '' : j.motiv);
+  if (j.ok) assert.equal(j.avertismente.filter((a) => /o latură a colțului e curbă/.test(a)).length, 2, j.avertismente.join('\n'));
+});

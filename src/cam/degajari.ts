@@ -125,6 +125,22 @@ function directieDesen(a: Punct, b: Punct, s: Segment, la: 0 | 1): Punct | null 
 }
 
 /**
+ * Desenul fără segmentele nule: o linie dintr-un punct în același punct, sau o cubică cu toate punctele lângă capăt. Un
+ * vârf dublat (des într-un SVG) ar lăsa colțul de lângă el fără direcție, deci nespus (oracolul 2.7b, cazul C20). Un desen
+ * care ar rămâne fără vârfuri rămâne cum e.
+ */
+function faraSegmenteNule(c: Contur): Contur {
+  const n = c.varfuri.length;
+  const lang = (a: Punct, b: Punct): boolean => Math.hypot(b.x - a.x, b.y - a.y) < 1e-9;
+  const varfuri = c.varfuri.filter((v, i) => {
+    const urm = c.varfuri[(i + 1) % n];
+    if (!urm || !lang(v.p, urm.p)) return true;
+    return !(v.s.tip === 'L' || (v.s.tip === 'C' && lang(v.p, v.s.c1) && lang(v.p, v.s.c2)));
+  });
+  return varfuri.length >= 2 ? { inchis: c.inchis, varfuri } : c;
+}
+
+/**
  * Colțurile desenului cu o latură curbă (arc sau cubică) în care mersul se rupe spre deșeu, cu restul de cel puțin
  * `REST_MINIM` (recenzia 2.7b): ADR 0032 degajează doar colțurile dintre două linii, deci lucrarea le spune omului, ca o
  * degajare să nu lipsească pe tăcute. `element` e desenul exact (cu cubice), în coordonatele foii.
@@ -132,7 +148,7 @@ function directieDesen(a: Punct, b: Punct, s: Segment, la: 0 | 1): Punct | null 
 export function colturiCurbe(element: Contur, latura: 'exterior' | 'interior', sens: Sens, R: number): Array<{ readonly v: Punct; readonly cosJumatate: number }> {
   if (!element.inchis || element.varfuri.length < 2) return [];
   const kDreapta = sens === 'urcare';
-  const c = inSensulDeMers(element, latura, sens);
+  const c = inSensulDeMers(faraSegmenteNule(element), latura, sens);
   const n = c.varfuri.length;
   const rez: Array<{ v: Punct; cosJumatate: number }> = [];
   for (let i = 0; i < n; i++) {
