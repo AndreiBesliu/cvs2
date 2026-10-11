@@ -1,5 +1,5 @@
 /**
- * ORACOLUL documentului v8 (ADR 0032: degajările colțurilor), peste v7 (ADR 0030: intrările și ieșirile), peste v6 (ADR 0029: rampa), peste v5 (ADR 0028: urechile), v4 (ADR 0027: sensul de tăiere), v3 (ADR
+ * ORACOLUL documentului v9 (ADR 0034: forma „cale”), peste v8 (ADR 0032: degajările colțurilor), peste v7 (ADR 0030: intrările și ieșirile), peste v6 (ADR 0029: rampa), peste v5 (ADR 0028: urechile), v4 (ADR 0027: sensul de tăiere), v3 (ADR
  * 0025: operațiile piesei) și v2 (ADR 0024, varianta D: piese cu arbore, instanțe pe foi, cu „Precizările contractului”
  * 1–10), cu ZERO importuri din `src/`. Totul e scris din textul ADR-urilor, nu din codul aplicației: matricea, ordinea
  * elementelor și a tăieturilor în lume, migrările v1 → v2 → v3 → v4 → v5 → v6, marginile lumii și regulile de validitate au aici propria lor copie. Dacă
@@ -126,6 +126,24 @@
  *   în urechi, în rampă, în intrări, pe nod, pe piesă sau sus e un câmp necunoscut oarecare;
  * - lanțul v1 → … → v8: un câmp `colturi` pus pe o operație v3 … v6 trece prin migrările până la v7 (câmp necunoscut) și
  *   se ciocnește la v7 → v8.
+ *
+ * Din ADR 0034 (documentul v9, felia 2.7b: forma „cale”; sesiune independentă, scris doar din textul ADR-ului; alegerile
+ * mele sunt marcate „ALEGERE”):
+ * - forma nouă `{ tip: 'cale', inchis: true, varfuri: [{ p: { x, y }, s }, …] }`, `s` = `{ tip: 'L' }` | `{ tip: 'A',
+ *   bulge }` | `{ tip: 'C', c1, c2 }`; câmpurile necunoscute se păstrează pe formă, pe vârf, pe segment și pe punct.
+ *   Forma există doar de la v9: într-un document v8 (sau mai vechi), `cale` e o formă necunoscută (`[schema]`);
+ * - refuzurile §2, cu categoriile mele (ALEGERE): `[cale]` = sub 2 vârfuri, `inchis` ≠ `true`, `varfuri` care nu e
+ *   listă, un vârf / segment care nu e obiect, un tip de segment necunoscut, `bulge` 0 (și −0) sau un arc cu capetele în
+ *   ACELAȘI punct (egalitate exactă a coordonatelor; 1e-9 mm alături trece: ușa nu judecă geometria); `[schema]` = o
+ *   coordonată sau un `bulge` care nu e număr; `[finit]` = un număr nefinit; `[margini]` = o coordonată (p, c1, c2) cu
+ *   |x| sau |y| peste `PLAFON.translatie` = 10⁷ mm; `[plafon]` = peste `PLAFON.varfuriCale` = 50 000 de vârfuri pe o
+ *   cale; `[forma]` = o cale CU ARCE sub o matrice compusă care nu e similitudine (liniile și cubicele trec prin orice
+ *   matrice afină); `bulge` nu are alt plafon decât să fie finit;
+ * - plafoanele de ansamblu: vârfurile tuturor căilor pieselor (și ale pieselor fără instanțe) ≤ `PLAFON.varfuri` =
+ *   200 000 (`[plafon]`); vârfurile în lume (fiecare instanță, de pe orice foaie, cu vârfurile căilor piesei ei) ≤
+ *   `PLAFON.varfuriLume` = 1 000 000 (ALEGERE: `[margini]`, ca elementele în lume din ADR 0024);
+ * - migrarea v8 → v9 schimbă doar `schema`; nu există ciocniri (niciun câmp nou). Un v8 cu o formă `cale` nu e un v8
+ *   valid, deci nu se migrează.
  */
 
 export type MatriceO = {
@@ -181,12 +199,19 @@ export type OperatieV7O = OperatieV6O & { intrari: IntrariO | null };
 export type PiesaV7O = PiesaO & { operatii: OperatieV7O[] };
 export type DocV7O = Liber & { schema: 7; rev: number; piese: PiesaV7O[]; foi: FoaieO[] };
 
+/** ADR 0034: documentul v9 = v8 cu forma `cale` (operațiile nu se schimbă). */
+export type PunctCaleO = Liber & { x: number; y: number };
+export type SegmentCaleO = Liber & ({ tip: 'L' } | { tip: 'A'; bulge: number } | { tip: 'C'; c1: PunctCaleO; c2: PunctCaleO });
+export type VarfCaleO = Liber & { p: PunctCaleO; s: SegmentCaleO };
+export type FormaCaleO = Liber & { tip: 'cale'; inchis: true; varfuri: VarfCaleO[] };
+
 /** ADR 0032: degajările colțurilor unei operații de profil (dog-bone sau T-bone), sau `null`. */
 export type TipColturiO = 'dog-bone' | 't-bone';
 export type ColturiO = Liber & { tip: TipColturiO };
 export type OperatieV8O = OperatieV7O & { colturi: ColturiO | null };
 export type PiesaV8O = PiesaO & { operatii: OperatieV8O[] };
 export type DocV8O = Liber & { schema: 8; rev: number; piese: PiesaV8O[]; foi: FoaieO[] };
+export type DocV9O = Liber & { schema: 9; rev: number; piese: PiesaV8O[]; foi: FoaieO[] };
 
 /** Ce au în comun v2, v3, v4 și v5 pentru geometrie: operațiile nu schimbă nimic din ea. */
 export type DocArboreO = { readonly piese: readonly PiesaO[]; readonly foi: readonly FoaieO[] };
@@ -224,7 +249,7 @@ export type TaieturaV8O = TaieturaV7O & { colturi: ColturiO | null };
 export type CategorieO =
   | 'schema' | 'id' | 'unic-piese' | 'unic-foi' | 'unic-instante' | 'unic-noduri' | 'unic-elemente' | 'referinta'
   | 'adancime' | 'rotire' | 'finit' | 'plafon' | 'foi' | 'pozitiv' | 'margini' | 'ciocnire' | 'forma'
-  | 'operatie' | 'unic-operatii' | 'referinta-op' | 'scula' | 'sens' | 'urechi' | 'rampa' | 'intrari' | 'colturi';
+  | 'operatie' | 'unic-operatii' | 'referinta-op' | 'scula' | 'sens' | 'urechi' | 'rampa' | 'intrari' | 'colturi' | 'cale';
 
 /** ADR 0027 §5: valorile primite ale sensului, exact; implicitul migrării și al operației noi. */
 export const SENSURI_O: readonly SensO[] = ['urcare', 'opozitie'];
@@ -248,7 +273,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 8;
+export const SCHEMA_CURENTA_O = 9;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -293,6 +318,14 @@ export const PLAFOANE_O = {
   /** `PLAFON.urechi`: câte urechi pe buclă, întreg în 1–100. */
   urechiMin: 1,
   urechi: 100,
+  // ADR 0034.
+  /** Vârfurile unei căi: cel puțin 2, cel mult `PLAFON.varfuriCale`. */
+  varfuriCaleMin: 2,
+  varfuriCale: 50_000,
+  /** Vârfurile tuturor căilor pieselor, și ale celor fără instanțe. */
+  varfuri: 200_000,
+  /** Vârfurile în lume: fiecare instanță de pe orice foaie, cu vârfurile căilor piesei ei. */
+  varfuriLume: 1_000_000,
 } as const;
 
 /** Clasele tăieturilor, în ordinea în care se taie. */
@@ -467,34 +500,34 @@ function taieturiCuOperatii<Op extends OperatieO>(
 }
 
 /** Tăieturile unei foi v3, v4, v5 sau v6 (cele 11 câmpuri ale contractului din ADR 0025), în ordinea contractului. */
-export function taieturiV3O(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O, indexFoaie = 0): TaieturaO[] {
+export function taieturiV3O(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O, indexFoaie = 0): TaieturaO[] {
   return taieturiCuOperatii<OperatieO>(doc, indexFoaie).map((x) => x.t);
 }
 
 /** Tăieturile unei foi v4 (sau v5), fiecare cu sensul operației ei (ADR 0027), în aceeași ordine. */
-export function taieturiV4O(doc: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O, indexFoaie = 0): TaieturaV4O[] {
+export function taieturiV4O(doc: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O, indexFoaie = 0): TaieturaV4O[] {
   return taieturiCuOperatii<OperatieV4O>(doc, indexFoaie).map(({ t, op }) => ({ ...t, sens: op.sens }));
 }
 
 /** Tăieturile unei foi v5, fiecare cu sensul și urechile operației ei (ADR 0028), în aceeași ordine. */
-export function taieturiV5O(doc: DocV5O | DocV6O | DocV7O | DocV8O, indexFoaie = 0): TaieturaV5O[] {
+export function taieturiV5O(doc: DocV5O | DocV6O | DocV7O | DocV8O | DocV9O, indexFoaie = 0): TaieturaV5O[] {
   return taieturiCuOperatii<OperatieV5O>(doc, indexFoaie).map(({ t, op }) => ({ ...t, sens: op.sens, urechi: op.urechi }));
 }
 
 /** Tăieturile unei foi v6, fiecare cu sensul, urechile și rampa operației ei (ADR 0029), în aceeași ordine. */
-export function taieturiV6O(doc: DocV6O | DocV7O | DocV8O, indexFoaie = 0): TaieturaV6O[] {
+export function taieturiV6O(doc: DocV6O | DocV7O | DocV8O | DocV9O, indexFoaie = 0): TaieturaV6O[] {
   return taieturiCuOperatii<OperatieV6O>(doc, indexFoaie).map(({ t, op }) => ({ ...t, sens: op.sens, urechi: op.urechi, rampa: op.rampa }));
 }
 
 /** Tăieturile unei foi v7, fiecare cu sensul, urechile, rampa și intrările operației ei (ADR 0030), în aceeași ordine. */
-export function taieturiV7O(doc: DocV7O | DocV8O, indexFoaie = 0): TaieturaV7O[] {
+export function taieturiV7O(doc: DocV7O | DocV8O | DocV9O, indexFoaie = 0): TaieturaV7O[] {
   return taieturiCuOperatii<OperatieV7O>(doc, indexFoaie).map(({ t, op }) => ({
     ...t, sens: op.sens, urechi: op.urechi, rampa: op.rampa, intrari: op.intrari,
   }));
 }
 
 /** Tăieturile unei foi v8, fiecare cu sensul, urechile, rampa, intrările și degajările operației ei (ADR 0032). */
-export function taieturiV8O(doc: DocV8O, indexFoaie = 0): TaieturaV8O[] {
+export function taieturiV8O(doc: DocV8O | DocV9O, indexFoaie = 0): TaieturaV8O[] {
   return taieturiCuOperatii<OperatieV8O>(doc, indexFoaie).map(({ t, op }) => ({
     ...t, sens: op.sens, urechi: op.urechi, rampa: op.rampa, intrari: op.intrari, colturi: op.colturi,
   }));
@@ -576,6 +609,44 @@ export function migreazaV2V3O(v2: DocV2O): DocV3O {
   return { ...copie, schema: 3, piese };
 }
 
+/**
+ * Pașii de la v3 la v9: câmpul nou pe care fiecare îl pune pe operații și valoarea lui implicită (v8 → v9 n-are câmp nou,
+ * doar numărul). Felia 2.7b: lanțurile lungi se fac cu O SINGURĂ copie și pașii pe loc (`urcaPeLoc`), nu cu câte o
+ * copie la fiecare pas și fiecare lanț recalculat de la capăt (pătratic, minute întregi pe un document de 100 000 de
+ * operații). Pașii unici (`migreazaV3V4O` … `migreazaV8V9O`) rămân definițiile de referință; `urcaPeLoc` face exact ce
+ * fac ei (fiecare operație, un obiect NOU, cu câmpul adăugat la capăt; piesele, obiecte noi; cheile de sus, în ordinea
+ * lor), iar sesiunea care a scris-o a comparat cele două căi pe tot corpusul (aceleași documente, octet cu octet).
+ */
+const PASI_O: ReadonlyArray<{ readonly de: number; readonly camp: string | null; readonly implicit: unknown }> = [
+  { de: 3, camp: 'sens', implicit: SENS_IMPLICIT_O }, { de: 4, camp: 'urechi', implicit: URECHI_IMPLICITE_O },
+  { de: 5, camp: 'rampa', implicit: RAMPA_IMPLICITA_O }, { de: 6, camp: 'intrari', implicit: INTRARI_IMPLICITE_O },
+  { de: 7, camp: 'colturi', implicit: COLTURI_IMPLICITE_O }, { de: 8, camp: null, implicit: null },
+];
+
+/** Pasul vk → vk+1 (k = 3 … 8), pe loc, pe un document deja copiat (și deja verificat: nicio ciocnire). */
+function urcaPeLoc(d: Liber, de: number): void {
+  const pas = PASI_O.find((x) => x.de === de)!;
+  if (pas.camp !== null) {
+    const camp = pas.camp;
+    d['piese'] = (d['piese'] as Liber[]).map((piesa) => ({
+      ...piesa,
+      operatii: (piesa['operatii'] as Liber[]).map((o) => ({ ...o, [camp]: pas.implicit })),
+    }));
+  }
+  d['schema'] = de + 1;
+}
+
+/** Orice versiune până la `pana`, adusă la `pana` (o copie; un document deja la `pana` rămâne neschimbat). */
+function ridicaLaO<T>(doc: { readonly schema: number }, pana: number): T {
+  if (doc.schema === pana) return structuredClone(doc) as T;
+  let d: Liber;
+  if (doc.schema === 1) d = migreazaV2V3O(migreazaV1O(doc as DocV1O)) as Liber;
+  else if (doc.schema === 2) d = migreazaV2V3O(doc as DocV2O) as Liber;
+  else d = structuredClone(doc) as Liber;
+  for (let k = d['schema'] as number; k < pana; k++) urcaPeLoc(d, k);
+  return d as T;
+}
+
 /** v1 → v2 → v3, în lanț. */
 export function migreazaV1V3O(v1: DocV1O): DocV3O {
   return migreazaV2V3O(migreazaV1O(v1));
@@ -596,20 +667,17 @@ export function migreazaV3V4O(v3: DocV3O): DocV4O {
 
 /** v2 → v3 → v4, în lanț. */
 export function migreazaV2V4O(v2: DocV2O): DocV4O {
-  return migreazaV3V4O(migreazaV2V3O(v2));
+  return ridicaLaO<DocV4O>(v2, 4);
 }
 
 /** v1 → v2 → v3 → v4, în lanț. */
 export function migreazaV1V4O(v1: DocV1O): DocV4O {
-  return migreazaV3V4O(migreazaV1V3O(v1));
+  return ridicaLaO<DocV4O>(v1, 4);
 }
 
 /** Orice versiune primită până la 4, adusă la v4 (o copie; un v4 rămâne neschimbat). */
 export function ridicaV4O(doc: DocV1O | DocV2O | DocV3O | DocV4O): DocV4O {
-  if (doc.schema === 1) return migreazaV1V4O(doc);
-  if (doc.schema === 2) return migreazaV2V4O(doc);
-  if (doc.schema === 3) return migreazaV3V4O(doc);
-  return structuredClone(doc);
+  return ridicaLaO<DocV4O>(doc, 4);
 }
 
 /**
@@ -627,19 +695,18 @@ export function migreazaV4V5O(v4: DocV4O): DocV5O {
 
 /** v3 → v4 → v5, v2 → … → v5 și v1 → … → v5, în lanț. */
 export function migreazaV3V5O(v3: DocV3O): DocV5O {
-  return migreazaV4V5O(migreazaV3V4O(v3));
+  return ridicaLaO<DocV5O>(v3, 5);
 }
 export function migreazaV2V5O(v2: DocV2O): DocV5O {
-  return migreazaV4V5O(migreazaV2V4O(v2));
+  return ridicaLaO<DocV5O>(v2, 5);
 }
 export function migreazaV1V5O(v1: DocV1O): DocV5O {
-  return migreazaV4V5O(migreazaV1V4O(v1));
+  return ridicaLaO<DocV5O>(v1, 5);
 }
 
 /** Orice versiune primită până la 5, adusă la v5 (o copie; un v5 rămâne neschimbat). */
 export function ridicaV5O(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O): DocV5O {
-  if (doc.schema === 5) return structuredClone(doc);
-  return migreazaV4V5O(ridicaV4O(doc));
+  return ridicaLaO<DocV5O>(doc, 5);
 }
 
 /**
@@ -657,22 +724,21 @@ export function migreazaV5V6O(v5: DocV5O): DocV6O {
 
 /** v4 → v5 → v6, v3 → … → v6, v2 → … → v6 și v1 → … → v6, în lanț. */
 export function migreazaV4V6O(v4: DocV4O): DocV6O {
-  return migreazaV5V6O(migreazaV4V5O(v4));
+  return ridicaLaO<DocV6O>(v4, 6);
 }
 export function migreazaV3V6O(v3: DocV3O): DocV6O {
-  return migreazaV5V6O(migreazaV3V5O(v3));
+  return ridicaLaO<DocV6O>(v3, 6);
 }
 export function migreazaV2V6O(v2: DocV2O): DocV6O {
-  return migreazaV5V6O(migreazaV2V5O(v2));
+  return ridicaLaO<DocV6O>(v2, 6);
 }
 export function migreazaV1V6O(v1: DocV1O): DocV6O {
-  return migreazaV5V6O(migreazaV1V5O(v1));
+  return ridicaLaO<DocV6O>(v1, 6);
 }
 
 /** Orice versiune primită până la 6, adusă la v6 (o copie; un v6 rămâne neschimbat). */
 export function ridicaV6O(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O): DocV6O {
-  if (doc.schema === 6) return structuredClone(doc);
-  return migreazaV5V6O(ridicaV5O(doc));
+  return ridicaLaO<DocV6O>(doc, 6);
 }
 
 /**
@@ -690,25 +756,24 @@ export function migreazaV6V7O(v6: DocV6O): DocV7O {
 
 /** v5 → v6 → v7, …, v1 → … → v7, în lanț. */
 export function migreazaV5V7O(v5: DocV5O): DocV7O {
-  return migreazaV6V7O(migreazaV5V6O(v5));
+  return ridicaLaO<DocV7O>(v5, 7);
 }
 export function migreazaV4V7O(v4: DocV4O): DocV7O {
-  return migreazaV6V7O(migreazaV4V6O(v4));
+  return ridicaLaO<DocV7O>(v4, 7);
 }
 export function migreazaV3V7O(v3: DocV3O): DocV7O {
-  return migreazaV6V7O(migreazaV3V6O(v3));
+  return ridicaLaO<DocV7O>(v3, 7);
 }
 export function migreazaV2V7O(v2: DocV2O): DocV7O {
-  return migreazaV6V7O(migreazaV2V6O(v2));
+  return ridicaLaO<DocV7O>(v2, 7);
 }
 export function migreazaV1V7O(v1: DocV1O): DocV7O {
-  return migreazaV6V7O(migreazaV1V6O(v1));
+  return ridicaLaO<DocV7O>(v1, 7);
 }
 
 /** Orice versiune primită până la 7, adusă la v7 (o copie; un v7 rămâne neschimbat). */
 export function ridicaV7O(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O): DocV7O {
-  if (doc.schema === 7) return structuredClone(doc);
-  return migreazaV6V7O(ridicaV6O(doc));
+  return ridicaLaO<DocV7O>(doc, 7);
 }
 
 /**
@@ -726,28 +791,60 @@ export function migreazaV7V8O(v7: DocV7O): DocV8O {
 
 /** v6 → v7 → v8, …, v1 → … → v8, în lanț. */
 export function migreazaV6V8O(v6: DocV6O): DocV8O {
-  return migreazaV7V8O(migreazaV6V7O(v6));
+  return ridicaLaO<DocV8O>(v6, 8);
 }
 export function migreazaV5V8O(v5: DocV5O): DocV8O {
-  return migreazaV7V8O(migreazaV5V7O(v5));
+  return ridicaLaO<DocV8O>(v5, 8);
 }
 export function migreazaV4V8O(v4: DocV4O): DocV8O {
-  return migreazaV7V8O(migreazaV4V7O(v4));
+  return ridicaLaO<DocV8O>(v4, 8);
 }
 export function migreazaV3V8O(v3: DocV3O): DocV8O {
-  return migreazaV7V8O(migreazaV3V7O(v3));
+  return ridicaLaO<DocV8O>(v3, 8);
 }
 export function migreazaV2V8O(v2: DocV2O): DocV8O {
-  return migreazaV7V8O(migreazaV2V7O(v2));
+  return ridicaLaO<DocV8O>(v2, 8);
 }
 export function migreazaV1V8O(v1: DocV1O): DocV8O {
-  return migreazaV7V8O(migreazaV1V7O(v1));
+  return ridicaLaO<DocV8O>(v1, 8);
 }
 
-/** Orice versiune primită, adusă la versiunea curentă, v8 (o copie; un v8 rămâne neschimbat). */
-export function ridicaO(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O): DocV8O {
-  if (doc.schema === 8) return structuredClone(doc);
-  return migreazaV7V8O(ridicaV7O(doc));
+/** Orice versiune primită până la 8, adusă la v8 (o copie; un v8 rămâne neschimbat). */
+export function ridicaV8O(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O): DocV8O {
+  return ridicaLaO<DocV8O>(doc, 8);
+}
+
+/** Documentul v9 pe care ADR 0034 §3 îl cere din v8: doar `schema: 9`; tot restul rămâne, cu câmpurile necunoscute. */
+export function migreazaV8V9O(v8: DocV8O): DocV9O {
+  return { ...structuredClone(v8), schema: 9 };
+}
+
+/** v7 → v8 → v9, …, v1 → … → v9, în lanț. */
+export function migreazaV7V9O(v7: DocV7O): DocV9O {
+  return ridicaLaO<DocV9O>(v7, 9);
+}
+export function migreazaV6V9O(v6: DocV6O): DocV9O {
+  return ridicaLaO<DocV9O>(v6, 9);
+}
+export function migreazaV5V9O(v5: DocV5O): DocV9O {
+  return ridicaLaO<DocV9O>(v5, 9);
+}
+export function migreazaV4V9O(v4: DocV4O): DocV9O {
+  return ridicaLaO<DocV9O>(v4, 9);
+}
+export function migreazaV3V9O(v3: DocV3O): DocV9O {
+  return ridicaLaO<DocV9O>(v3, 9);
+}
+export function migreazaV2V9O(v2: DocV2O): DocV9O {
+  return ridicaLaO<DocV9O>(v2, 9);
+}
+export function migreazaV1V9O(v1: DocV1O): DocV9O {
+  return ridicaLaO<DocV9O>(v1, 9);
+}
+
+/** Orice versiune primită, adusă la versiunea curentă, v9 (o copie; un v9 rămâne neschimbat). */
+export function ridicaO(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O): DocV9O {
+  return ridicaLaO<DocV9O>(doc, 9);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -762,7 +859,7 @@ const esteObiect = (v: unknown): v is Liber => typeof v === 'object' && v !== nu
 type Semnaleaza = (categorie: CategorieO, mesaj: string) => void;
 
 /** Verificările comune v1 / v2 / v3 (forma, matricea, id-ul, numele, mărimile), legate de lista de probleme. */
-function unelte(semnaleaza: Semnaleaza) {
+function unelte(semnaleaza: Semnaleaza, schema = 0) {
   /** Un număr finit, sau nimic (cu problema spusă). */
   const finit = (cale: string, v: unknown): number | undefined => {
     if (typeof v !== 'number') { semnaleaza('schema', `${cale} nu e număr`); return undefined; }
@@ -798,12 +895,66 @@ function unelte(semnaleaza: Semnaleaza) {
     return { a, b, c, d, e, f };
   };
   /**
-   * Forma; `compus` e matricea compusă a elementului față de rădăcina piesei (lipsește în v1, unde se judecă după
-   * migrare, sau când o matrice de pe drum e stricată).
+   * Un punct al unei căi (ADR 0034 §2): x și y numere (`[schema]`), finite (`[finit]`), cu |x|, |y| ≤ 10⁷ (`[margini]`).
+   * Întoarce punctul, sau nimic.
    */
-  const forma = (cale: string, v: unknown, compus?: MatriceO): void => {
-    if (!esteObiect(v)) { semnaleaza('schema', `${cale} lipsește sau nu e obiect`); return; }
+  const punctCale = (cale: string, v: unknown): PunctO | undefined => {
+    if (!esteObiect(v)) { semnaleaza('cale', `${cale} lipsește sau nu e obiect`); return undefined; }
+    let bun = true;
+    for (const k of ['x', 'y'] as const) {
+      const n = finit(`${cale}.${k}`, v[k]);
+      if (n === undefined) { bun = false; continue; }
+      if (Math.abs(n) > PLAFOANE_O.translatie) { semnaleaza('margini', `${cale}.${k} = ${n} iese din ±${PLAFOANE_O.translatie}`); bun = false; }
+    }
+    return bun ? { x: v['x'] as number, y: v['y'] as number } : undefined;
+  };
+  /**
+   * Forma `cale` (ADR 0034 §1–§2); întoarce câte vârfuri are (pentru plafoanele de ansamblu) și dacă are arce.
+   */
+  const formaCale = (cale: string, v: Liber): { varfuri: number; arce: boolean } => {
+    if (v['inchis'] !== true) semnaleaza('cale', `${cale}.inchis = ${JSON.stringify(v['inchis']) ?? String(v['inchis'])} nu e true`);
+    const lista = v['varfuri'];
+    if (!Array.isArray(lista)) { semnaleaza('cale', `${cale}.varfuri lipsește sau nu e listă`); return { varfuri: 0, arce: false }; }
+    if (lista.length < PLAFOANE_O.varfuriCaleMin) semnaleaza('cale', `${cale}.varfuri are ${lista.length} < ${PLAFOANE_O.varfuriCaleMin} vârfuri`);
+    if (lista.length > PLAFOANE_O.varfuriCale) {
+      semnaleaza('plafon', `${cale}.varfuri are ${lista.length} > ${PLAFOANE_O.varfuriCale} vârfuri`);
+      return { varfuri: lista.length, arce: false };
+    }
+    const puncte = lista.map((x: unknown, k) => (esteObiect(x) ? punctCale(`${cale}.varfuri[${k}].p`, x['p']) : undefined));
     let arce = false;
+    lista.forEach((x: unknown, k) => {
+      const cv = `${cale}.varfuri[${k}]`;
+      if (!esteObiect(x)) { semnaleaza('cale', `${cv} nu e obiect`); return; }
+      const sg = x['s'];
+      if (!esteObiect(sg)) { semnaleaza('cale', `${cv}.s lipsește sau nu e obiect`); return; }
+      if (sg['tip'] === 'L') return;
+      if (sg['tip'] === 'C') {
+        punctCale(`${cv}.s.c1`, sg['c1']);
+        punctCale(`${cv}.s.c2`, sg['c2']);
+        return;
+      }
+      if (sg['tip'] === 'A') {
+        arce = true;
+        const b = finit(`${cv}.s.bulge`, sg['bulge']);
+        if (b === 0) semnaleaza('cale', `${cv}.s.bulge = 0: arcul n-are cerc`);
+        const a = puncte[k], c = puncte[(k + 1) % lista.length];
+        if (b !== undefined && b !== 0 && a !== undefined && c !== undefined && a.x === c.x && a.y === c.y) {
+          semnaleaza('cale', `${cv}: arcul are capetele în același punct (${a.x}, ${a.y}): n-are cerc`);
+        }
+        return;
+      }
+      semnaleaza('cale', `${cv}.s.tip = ${JSON.stringify(sg['tip']) ?? String(sg['tip'])} nu e L, A sau C`);
+    });
+    return { varfuri: lista.length, arce };
+  };
+  /**
+   * Forma; `compus` e matricea compusă a elementului față de rădăcina piesei (lipsește în v1, unde se judecă după
+   * migrare, sau când o matrice de pe drum e stricată). Întoarce câte vârfuri de cale are (0 pentru celelalte forme).
+   */
+  const forma = (cale: string, v: unknown, compus?: MatriceO): number => {
+    if (!esteObiect(v)) { semnaleaza('schema', `${cale} lipsește sau nu e obiect`); return 0; }
+    let arce = false;
+    let varfuri = 0;
     if (v['tip'] === 'dreptunghi') {
       const l = dimensiune(`${cale}.latime`, v['latime'], PLAFOANE_O.latura);
       const h = dimensiune(`${cale}.inaltime`, v['inaltime'], PLAFOANE_O.latura);
@@ -817,12 +968,17 @@ function unelte(semnaleaza: Semnaleaza) {
     } else if (v['tip'] === 'cerc') {
       dimensiune(`${cale}.raza`, v['raza'], PLAFOANE_O.latura);
       arce = true;
+    } else if (v['tip'] === 'cale' && schema >= 9) {
+      const x = formaCale(cale, v);
+      arce = x.arce;
+      varfuri = x.varfuri;
     } else {
       semnaleaza('schema', `${cale}.tip = ${JSON.stringify(v['tip'])} nu e o formă cunoscută`);
     }
     if (arce && compus !== undefined && inMarginiO(compus) && !esteSimilitudineO(compus)) {
       semnaleaza('forma', `${cale}: o formă cu arce sub o matrice compusă care nu e similitudine: ${JSON.stringify(compus)}`);
     }
+    return varfuri;
   };
   const rev = (v: unknown): void => {
     if (typeof v !== 'number' || !Number.isSafeInteger(v) || v < 0) semnaleaza('schema', `rev = ${String(v)} nu e un întreg sigur ≥ 0`);
@@ -904,10 +1060,10 @@ export function problemeColturiO(op: Liber): string[] {
  * Lista încălcărilor contractului v2 (`schema` 2), v3 (`schema` 3, cu operațiile), v4 (`schema` 4, cu sensul fiecărei
  * operații) sau v5 (`schema` 5, cu urechile); goală = document valid. Merge iterativ: un arbore adânc nu umple stiva.
  */
-function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8): string[] {
+function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9): string[] {
   const probleme: string[] = [];
   const semnaleaza: Semnaleaza = (categorie, mesaj) => { probleme.push(`[${categorie}] ${mesaj}`); };
-  const u = unelte(semnaleaza);
+  const u = unelte(semnaleaza, schema);
 
   /** Arborele unei piese: preordine cu stivă explicită; nodurile de sub nivelul 32 nu se mai deschid. */
   const arbore = (cp: string, radacina: unknown) => {
@@ -919,6 +1075,7 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8): strin
     ];
     let noduri = 0;
     let elemente = 0;
+    let varfuri = 0;
     let preaAdanc = false;
     let pesteMargini = false;
     for (let pas = stiva.pop(); pas !== undefined; pas = stiva.pop()) {
@@ -953,12 +1110,12 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8): strin
       } else if (nod['tip'] === 'element') {
         if (idn !== undefined) idElemente.add(idn);
         elemente++;
-        u.forma(`${cale}.forma`, nod['forma'], compus);
+        varfuri += u.forma(`${cale}.forma`, nod['forma'], compus);
       } else {
         semnaleaza('schema', `${cale}.tip = ${JSON.stringify(nod['tip'])} nu e grup sau element`);
       }
     }
-    return { noduri, elemente, idElemente, idGrupuri };
+    return { noduri, elemente, varfuri, idElemente, idGrupuri };
   };
 
   /** Scula unei operații: totul e `[scula]`; câmpurile necunoscute se păstrează. */
@@ -1031,6 +1188,9 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8): strin
   // Piesele întâi: instanțele trimit la ele.
   const idPiese = new Set<string>();
   const elementePiesa = new Map<string, number>();
+  /** ADR 0034: vârfurile căilor fiecărei piese (pentru plafonul în lume) și suma pe toate piesele. */
+  const varfuriPiesa = new Map<string, number>();
+  let varfuriPiese = 0;
   const referintePiesa = new Map<string, number>();
   let noduri = 0;
   let operatiiDocument = 0;
@@ -1049,6 +1209,8 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8): strin
       u.nume(cale, p);
       const numarate = arbore(`piesa ${idp ?? cale}`, p['radacina']);
       noduri += numarate.noduri;
+      varfuriPiese += numarate.varfuri;
+      if (idp !== undefined && !varfuriPiesa.has(idp)) varfuriPiesa.set(idp, numarate.varfuri);
       if (idp !== undefined && !elementePiesa.has(idp)) elementePiesa.set(idp, numarate.elemente);
       if (schema >= 3) {
         const ops = operatii(`piesa ${idp ?? cale}`, p['operatii'], numarate.idElemente, numarate.idGrupuri);
@@ -1062,6 +1224,7 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8): strin
   const idInstante = new Set<string>();
   let instante = 0;
   let elementeLume = 0;
+  let varfuriLume = 0;
   let taieturiLume = 0;
   const foi = doc['foi'];
   if (!Array.isArray(foi)) {
@@ -1095,6 +1258,7 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8): strin
         else if (!idPiese.has(piesa)) semnaleaza('referinta', `instanța ${idi ?? ci} trimite la piesa lipsă ${piesa}`);
         else {
           elementeLume += elementePiesa.get(piesa) ?? 0;
+          varfuriLume += varfuriPiesa.get(piesa) ?? 0;
           taieturiLume += referintePiesa.get(piesa) ?? 0;
         }
         for (const axa of ['x', 'y'] as const) {
@@ -1124,6 +1288,11 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8): strin
   if (noduri > PLAFOANE_O.noduri) semnaleaza('plafon', `${noduri} noduri > ${PLAFOANE_O.noduri}`);
   if (instante > PLAFOANE_O.instante) semnaleaza('plafon', `${instante} instanțe > ${PLAFOANE_O.instante}`);
   if (elementeLume > PLAFOANE_O.elementeLume) semnaleaza('margini', `${elementeLume} elemente în lume > ${PLAFOANE_O.elementeLume}`);
+  if (schema >= 9) {
+    // ADR 0034 §2: plafoanele de ansamblu ale căilor.
+    if (varfuriPiese > PLAFOANE_O.varfuri) semnaleaza('plafon', `${varfuriPiese} vârfuri de cale în piese > ${PLAFOANE_O.varfuri}`);
+    if (varfuriLume > PLAFOANE_O.varfuriLume) semnaleaza('margini', `${varfuriLume} vârfuri de cale în lume > ${PLAFOANE_O.varfuriLume}`);
+  }
   if (schema >= 3) {
     if (operatiiDocument > PLAFOANE_O.operatii) semnaleaza('plafon', `${operatiiDocument} operații > ${PLAFOANE_O.operatii}`);
     if (taieturiLume > PLAFOANE_O.taieturiLume) semnaleaza('plafon', `${taieturiLume} tăieturi în lume > ${PLAFOANE_O.taieturiLume}`);
@@ -1166,6 +1335,89 @@ export function verificaV8(doc: unknown): string[] {
   return verificaArboreO(doc, 8);
 }
 
+/** Lista încălcărilor contractului v9 (… + ADR 0034: forma `cale` și plafoanele ei); goală = document v9 valid. */
+export function verificaV9(doc: unknown): string[] {
+  return verificaArboreO(doc, 9);
+}
+
+/** Ciocnirile pasului vk → vk+1 (k = 3 … 7): o operație care are deja câmpul nou al pasului, oricare i-ar fi valoarea. */
+function ciocniriPas(doc: unknown, de: number): string[] {
+  const camp = PASI_O.find((x) => x.de === de)?.camp ?? null;
+  const rez: string[] = [];
+  if (camp === null || !esteObiect(doc) || !Array.isArray(doc['piese'])) return rez;
+  doc['piese'].forEach((p: unknown, i) => {
+    if (!esteObiect(p) || !Array.isArray(p['operatii'])) return;
+    p['operatii'].forEach((op: unknown, k) => {
+      if (esteObiect(op) && Object.hasOwn(op, camp)) {
+        rez.push(`[ciocnire] piese[${i}].operatii[${k}]: câmpul „${camp}” al operației v${de} s-ar pierde în migrare`);
+      }
+    });
+  });
+  return rez;
+}
+
+/**
+ * Lanțul ușii de la versiunea `de` (2 … 8) până la `pana` (de + 2 … 9), cu o singură copie (felia 2.7b, ca `ridicaLaO`).
+ * Aceleași probleme, în aceeași ordine, ca pașii compuși pe care îi descriu comentariile lanțurilor de mai jos
+ * (`verificaV2V3`, `verificaV3V4` … `verificaV8V9`, fiecare pe documentul migrat de pasul dinainte): la primul pas,
+ * contractul versiunii și ciocnirile, împreună; la fiecare pas următor, întâi contractul documentului migrat (singur,
+ * dacă are probleme: așa le întoarce coada pasului dinainte), apoi ciocnirile lui; la capăt, contractul lui `pana`.
+ */
+function verificaLantO(doc: unknown, de: number, pana: number): string[] {
+  let cur: unknown = doc;
+  let copiat = false;
+  let k = de;
+  if (de === 2) {
+    const p = verificaV2V3(doc);
+    if (p.length > 0) return p;
+    cur = migreazaV2V3O(doc as DocV2O);
+    copiat = true;
+    k = 3;
+  }
+  for (; k < pana; k++) {
+    const contract = verificaArboreO(cur, k as 3 | 4 | 5 | 6 | 7 | 8);
+    if (k !== de && contract.length > 0) return contract;
+    const probleme = [...contract, ...ciocniriPas(cur, k)];
+    if (probleme.length > 0) return probleme;
+    if (!copiat) {
+      cur = structuredClone(cur);
+      copiat = true;
+    }
+    urcaPeLoc(cur as Liber, k);
+  }
+  return verificaArboreO(cur, pana as 4 | 5 | 6 | 7 | 8 | 9);
+}
+
+/**
+ * De ce ușa trebuie să refuze un document v8, până la v9: contractul v8 (o formă `cale` e necunoscută acolo), apoi
+ * documentul MIGRAT (doar numărul) trebuie să respecte contractul v9 (fără căi, plafoanele lor nu pot fi atinse).
+ */
+export function verificaV8V9(doc: unknown): string[] {
+  const probleme = verificaV8(doc);
+  if (probleme.length > 0) return probleme;
+  return verificaV9(migreazaV8V9O(doc as DocV8O));
+}
+
+/** v7 … v2 până la v9: lanțul până la v8, apoi v8-ul migrat prin `verificaV8V9` (`verificaLantO`). */
+export function verificaV7V9(doc: unknown): string[] {
+  return verificaLantO(doc, 7, 9);
+}
+export function verificaV6V9(doc: unknown): string[] {
+  return verificaLantO(doc, 6, 9);
+}
+export function verificaV5V9(doc: unknown): string[] {
+  return verificaLantO(doc, 5, 9);
+}
+export function verificaV4V9(doc: unknown): string[] {
+  return verificaLantO(doc, 4, 9);
+}
+export function verificaV3V9(doc: unknown): string[] {
+  return verificaLantO(doc, 3, 9);
+}
+export function verificaV2V9(doc: unknown): string[] {
+  return verificaLantO(doc, 2, 9);
+}
+
 /**
  * De ce ușa trebuie să refuze un document v7, ca listă de probleme; goală = se migrează la v8. Contractul v7, apoi
  * ciocnirea de nume (o operație cu un câmp propriu `colturi`, oricare i-ar fi valoarea, și `null`), apoi documentul
@@ -1189,37 +1441,27 @@ export function verificaV7V8(doc: unknown): string[] {
 
 /** v6 până la v8: `verificaV6V7`, apoi v7-ul migrat prin `verificaV7V8` (un câmp `colturi` pe o operație v6 se ciocnește). */
 export function verificaV6V8(doc: unknown): string[] {
-  const probleme = verificaV6V7(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV7V8(migreazaV6V7O(doc as DocV6O));
+  return verificaLantO(doc, 6, 8);
 }
 
 /** v5 până la v8: `verificaV5V7`, apoi v7-ul migrat prin `verificaV7V8`. */
 export function verificaV5V8(doc: unknown): string[] {
-  const probleme = verificaV5V7(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV7V8(migreazaV5V7O(doc as DocV5O));
+  return verificaLantO(doc, 5, 8);
 }
 
 /** v4 până la v8: `verificaV4V7`, apoi v7-ul migrat prin `verificaV7V8`. */
 export function verificaV4V8(doc: unknown): string[] {
-  const probleme = verificaV4V7(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV7V8(migreazaV4V7O(doc as DocV4O));
+  return verificaLantO(doc, 4, 8);
 }
 
 /** v3 până la v8: `verificaV3V7`, apoi v7-ul migrat prin `verificaV7V8`. */
 export function verificaV3V8(doc: unknown): string[] {
-  const probleme = verificaV3V7(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV7V8(migreazaV3V7O(doc as DocV3O));
+  return verificaLantO(doc, 3, 8);
 }
 
 /** v2 până la v8: `verificaV2V7`, apoi v7-ul migrat (operațiile create de migrare n-au `colturi`). */
 export function verificaV2V8(doc: unknown): string[] {
-  const probleme = verificaV2V7(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV7V8(migreazaV2V7O(doc as DocV2O));
+  return verificaLantO(doc, 2, 8);
 }
 
 /**
@@ -1245,30 +1487,22 @@ export function verificaV6V7(doc: unknown): string[] {
 
 /** v5 până la v7: `verificaV5V6`, apoi v6-ul migrat prin `verificaV6V7` (un câmp `intrari` pe o operație v5 se ciocnește). */
 export function verificaV5V7(doc: unknown): string[] {
-  const probleme = verificaV5V6(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV6V7(migreazaV5V6O(doc as DocV5O));
+  return verificaLantO(doc, 5, 7);
 }
 
 /** v4 până la v7: `verificaV4V6`, apoi v6-ul migrat prin `verificaV6V7`. */
 export function verificaV4V7(doc: unknown): string[] {
-  const probleme = verificaV4V6(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV6V7(migreazaV4V6O(doc as DocV4O));
+  return verificaLantO(doc, 4, 7);
 }
 
 /** v3 până la v7: `verificaV3V6`, apoi v6-ul migrat prin `verificaV6V7`. */
 export function verificaV3V7(doc: unknown): string[] {
-  const probleme = verificaV3V6(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV6V7(migreazaV3V6O(doc as DocV3O));
+  return verificaLantO(doc, 3, 7);
 }
 
 /** v2 până la v7: `verificaV2V6`, apoi v6-ul migrat (operațiile create de migrare n-au `intrari`). */
 export function verificaV2V7(doc: unknown): string[] {
-  const probleme = verificaV2V6(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV6V7(migreazaV2V6O(doc as DocV2O));
+  return verificaLantO(doc, 2, 7);
 }
 
 /**
@@ -1294,9 +1528,7 @@ export function verificaV5V6(doc: unknown): string[] {
 
 /** v4 până la v6: `verificaV4V5`, apoi v5-ul migrat prin `verificaV5V6` (un câmp `rampa` pe o operație v4 se ciocnește). */
 export function verificaV4V6(doc: unknown): string[] {
-  const probleme = verificaV4V5(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV5V6(migreazaV4V5O(doc as DocV4O));
+  return verificaLantO(doc, 4, 6);
 }
 
 /**
@@ -1364,37 +1596,27 @@ export function verificaV2V3(doc: unknown): string[] {
  * `verificaV3V4` (operațiile create de migrare n-au `sens`, deci nu se pot ciocni).
  */
 export function verificaV2V4(doc: unknown): string[] {
-  const probleme = verificaV2V3(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV3V4(migreazaV2V3O(doc as DocV2O));
+  return verificaLantO(doc, 2, 4);
 }
 
 /** v3 până la v5: `verificaV3V4`, apoi v4-ul migrat prin `verificaV4V5` (un câmp `urechi` pe o operație v3 se ciocnește). */
 export function verificaV3V5(doc: unknown): string[] {
-  const probleme = verificaV3V4(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV4V5(migreazaV3V4O(doc as DocV3O));
+  return verificaLantO(doc, 3, 5);
 }
 
 /** v3 până la v6: `verificaV3V5`, apoi v5-ul migrat prin `verificaV5V6`. */
 export function verificaV3V6(doc: unknown): string[] {
-  const probleme = verificaV3V5(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV5V6(migreazaV3V5O(doc as DocV3O));
+  return verificaLantO(doc, 3, 6);
 }
 
 /** v2 până la v5: `verificaV2V4`, apoi v4-ul migrat (operațiile create de migrare n-au `urechi`). */
 export function verificaV2V5(doc: unknown): string[] {
-  const probleme = verificaV2V4(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV4V5(migreazaV2V4O(doc as DocV2O));
+  return verificaLantO(doc, 2, 5);
 }
 
 /** v2 până la v6: `verificaV2V5`, apoi v5-ul migrat (operațiile create de migrare n-au `rampa`). */
 export function verificaV2V6(doc: unknown): string[] {
-  const probleme = verificaV2V5(doc);
-  if (probleme.length > 0) return probleme;
-  return verificaV5V6(migreazaV2V5O(doc as DocV2O));
+  return verificaLantO(doc, 2, 6);
 }
 
 /**
@@ -1436,15 +1658,37 @@ export function verificaV1(doc: unknown): string[] {
   });
   if (probleme.length > 0) return probleme;
   // Precizarea 5: „un document v1 cu valori peste aceste margini e refuzat la migrare”: se judecă documentul migrat,
-  // apoi lanțul continuă la v3, la v4, la v5, la v6, la v7 și la v8.
-  return verificaV2V8(migreazaV1O(doc as DocV1O));
+  // apoi lanțul continuă la v3, la v4, la v5, la v6, la v7, la v8 și la v9.
+  return verificaV2V9(migreazaV1O(doc as DocV1O));
 }
 
-/** Ce spune ușa despre orice document: după `schema`, verificarea versiunii lui (și a migrării până la 8). */
+/** Ce spune ușa despre orice document: după `schema`, verificarea versiunii lui (și a migrării până la 9). */
 export function verificaO(doc: unknown): string[] {
   if (!esteObiect(doc)) return ['[schema] documentul nu e un obiect'];
   const s = doc['schema'];
   if (s === 1) return verificaV1(doc);
+  if (s === 2) return verificaV2V9(doc);
+  if (s === 3) return verificaV3V9(doc);
+  if (s === 4) return verificaV4V9(doc);
+  if (s === 5) return verificaV5V9(doc);
+  if (s === 6) return verificaV6V9(doc);
+  if (s === 7) return verificaV7V9(doc);
+  if (s === 8) return verificaV8V9(doc);
+  if (s === 9) return verificaV9(doc);
+  return [`[schema] schema = ${JSON.stringify(s)} nu e 1, 2, 3, 4, 5, 6, 7, 8 sau 9`];
+}
+
+/**
+ * Ușa unei aplicații rămase pe schema 8 (înainte de felia 2.7b), pentru lipire: verificarea versiunii documentului și a
+ * migrării până la 8; schema 9 e refuzată („scris de o versiune mai nouă”), iar o formă `cale` e necunoscută.
+ */
+export function verificaPanaLaV8O(doc: unknown): string[] {
+  if (!esteObiect(doc)) return ['[schema] documentul nu e un obiect'];
+  const s = doc['schema'];
+  if (s === 1) {
+    const p = verificaV1(doc);
+    return p.length > 0 ? p : verificaV8(migreazaV1V8O(doc as DocV1O));
+  }
   if (s === 2) return verificaV2V8(doc);
   if (s === 3) return verificaV3V8(doc);
   if (s === 4) return verificaV4V8(doc);

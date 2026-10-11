@@ -36,7 +36,7 @@ const AMPRENTE_INAINTE: Readonly<Record<string, readonly [number, number, string
 };
 
 test('lipire: programele documentelor fără colturi (corpusul 2.6, cazurile §8, placa 1 pe 8 montaje) sunt, octet cu octet, cele ale aplicației de dinainte de ADR 0032 (bb65461); fișierele plăcii 1 își păstrează amprentele', async () => {
-  assert.equal(SCHEMA, 8);
+  assert.ok(SCHEMA >= 8 && SCHEMA <= 9, `schema ${SCHEMA}`);
   const fam: Record<string, { h: string[]; ok: number }> = { corpus: { h: [], ok: 0 }, cazuri: { h: [], ok: 0 }, placa: { h: [], ok: 0 } };
   const pune = (f: string, r: Awaited<ReturnType<typeof programulAplicatiei>>): void => {
     fam[f]!.h.push(sha(r.ok ? r.text : `REFUZ: ${r.motiv}`));

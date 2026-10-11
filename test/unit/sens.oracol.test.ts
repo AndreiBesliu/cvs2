@@ -485,9 +485,9 @@ function intoarce(doc: DocV4O, alege: (latura: string, k: number) => boolean): D
   return d;
 }
 
-test('lipire: aplicația e pe schema 4–8 (ușa primește un v4; pe 5, îl migrează cu urechi: null; pe 6, și cu rampa: null; pe 7, și cu intrari: null; pe 8, și cu colturi: null)', async () => {
+test('lipire: aplicația e pe schema 4–9 (ușa primește un v4; pe 5, îl migrează cu urechi: null; pe 6, și cu rampa: null; pe 7, și cu intrari: null; pe 8, și cu colturi: null; pe 9, doar numărul: v9 adaugă forma cale, nu schimbă sensul)', async () => {
   const s = await schemaAplicatiei();
-  assert.ok(s >= 4 && s <= 8, `schema ${s}`);
+  assert.ok(s >= 4 && s <= 9, `schema ${s}`);
 });
 
 test('lipire: orice program scris de aplicație trece invariantele 9 și 2 (corpusul 2.3a cu sensuri la întâmplare, placa 1 × 8 montaje × 4 sensuri)', async () => {

@@ -32,6 +32,9 @@
  *   (generat), `REFUZATE_V7` (o operație v7, v6, v5, v4 sau v3 care are deja `colturi`: ciocnire), `OTRAVURI_V8` (cele
  *   v7 aduse la v8, plus `OTRAVURI_COLTURI`, doar `[colturi]`) și `VALIDE_DIFICILE_V8`. Niciun corpus mai vechi nu are
  *   `colturi` pe operații (`areColturiPeOperatii`); capcana `colturi` din v1 (C-…, pe formă) rămâne un câmp necunoscut.
+ * - v9 (ADR 0034, felia 2.7b): în `document.v9.cazuri.ts`, ca fișierele care nu-l folosesc să nu-l construiască; de aceea
+ *   `aleator`, `laV5` … `laV8` și generatorii otrăvurilor (`otravuriArbore`, `otravuriOperatii`, `otravuriSens`) sunt
+ *   exportate.
  */
 import type {
   CategorieO, DocV1O, DocV2O, DocV3O, DocV4O, DocV5O, DocV6O, ElementO, ElementV1O, FoaieO, GrupO, InstantaO, LaturaO, Liber,
@@ -105,6 +108,16 @@ const laV4 = (d: unknown, sens: (k: number) => SensO = () => 'urcare'): unknown 
 };
 /** Sensurile pe rând (urcare, opoziție, urcare, …): un v4 valid cu ambele valori. */
 const alternant = (k: number): SensO => (k % 2 === 0 ? 'urcare' : 'opozitie');
+
+/**
+ * Felia 2.7b: un caz al cărui document se construiește la prima citire, apoi rămâne același (copiile pe versiuni ale
+ * documentelor de 100 000 de noduri și operații costau secunde la fiecare import, și în fișierele care nu le citesc).
+ * Funcțiile de mai jos (`laV4` … `laV8`, `alternant`, `urechiPeRand` …) sunt pure, deci ordinea citirilor nu contează.
+ */
+export function lenes<D>(nume: string, f: () => D): { readonly nume: string; readonly doc: D } {
+  let d: D | undefined;
+  return { nume, get doc(): D { return (d ??= f()); } };
+}
 
 // ---------------------------------------------------------------------------------------------------------------
 // Pe hârtie: geometria (documente v2; ușa le migrează, geometria rămâne).
@@ -1213,7 +1226,7 @@ const SCRISE_DE_MANA: readonly CazV1[] = [
 ];
 
 /** PRNG propriu (mulberry32), determinist: niciun `Math.random`. */
-function aleator(samanta: number): () => number {
+export function aleator(samanta: number): () => number {
   let s = samanta >>> 0;
   return () => {
     s = (s + 0x6d2b79f5) >>> 0;
@@ -1866,7 +1879,7 @@ const laV3 = (d: unknown): unknown => {
 };
 
 /** Otrăvurile documentului v2 (ADR 0024); `versiune` 3 le aduce la forma v3 (`laV3`), 4 la forma v4 (`laV4`). */
-function otravuriArbore(versiune: 2 | 3 | 4): Otrava[] {
+export function otravuriArbore(versiune: 2 | 3 | 4): Otrava[] {
   const forma = (d: DocV2O): unknown => (versiune === 4 ? laV4(laV3(d)) : versiune === 3 ? laV3(d) : d);
   const eticheta = versiune === 4 ? 'v4 ' : versiune === 3 ? 'v3 ' : '';
   const otrava = (nume: string, categorie: CategorieO, strica: (d: DocV2O) => void): Otrava => {
@@ -2011,7 +2024,7 @@ const operatiiPe = (n: number, nod: string): OperatieO[] => Array.from({ length:
  * operație-obiect primește `sens: 'urcare'`, deci și cele construite de otravă), ca fiecare să rămână cu o singură
  * categorie. „Schema 4” nu mai e o otravă în v4: devine „schema 5”.
  */
-function otravuriOperatii(versiune: 3 | 4): Otrava[] {
+export function otravuriOperatii(versiune: 3 | 4): Otrava[] {
   const otrava3 = (nume: string, categorie: CategorieO, strica: (d: DocV3O) => void): Otrava => {
     const d = baza3();
     strica(d);
@@ -2162,7 +2175,7 @@ const otravaSens = (nume: string, strica: (d: DocV4O) => void): Otrava => {
 };
 
 /** Otrăvurile sensului, construite din nou la fiecare apel (v5 le aduce la forma ei pe loc, fără să le copieze). */
-const otravuriSens = (): Otrava[] => [
+export const otravuriSens = (): Otrava[] => [
   otravaSens('S01 sens lipsă', (d) => { delete o4(d)['sens']; }),
   otravaSens('S02 sens „Urcare” (majusculă)', (d) => { o4(d)['sens'] = 'Urcare'; }),
   otravaSens('S03 sens „URCARE”', (d) => { o4(d)['sens'] = 'URCARE'; }),
@@ -2571,7 +2584,7 @@ export type CazValidV4 = { readonly nume: string; readonly doc: DocV4O };
 
 export const VALIDE_DIFICILE_V4: readonly CazValidV4[] = [
   // Fiecare W de mai sus, adus la v4 cu sensurile pe rând (urcare, opoziție, …): aceleași capcane, cu ambele valori.
-  ...VALIDE_DIFICILE_V3.map((c) => ({ nume: `${c.nume} (v4, sensuri pe rând)`, doc: laV4(structuredClone(c.doc), alternant) as DocV4O })),
+  ...VALIDE_DIFICILE_V3.map((c) => lenes(`${c.nume} (v4, sensuri pe rând)`, () => laV4(structuredClone(c.doc), alternant) as DocV4O)),
   {
     nume: 'X01 pe-linie în opoziție: câmpul se păstrează, deși nu schimbă traseul (ADR 0027 §3)',
     doc: doc4([piesa4('p1', el('e', I()), [op4('o', ['e'], 'pe-linie', 'opozitie', 1, 1)])], [foaie('f1', [inst('i1', 'p1', 0, 0, 0)])]),
@@ -2622,7 +2635,7 @@ export const VALIDE_DIFICILE_V4: readonly CazValidV4[] = [
  * lui v4) devine 6, ca să rămână otravă; „4” devine „5”. Fiecare operație-obiect care n-are `urechi` primește
  * `urechi(k)` (implicit `null`; k = a câta, în tot documentul). Pe loc; întoarce documentul.
  */
-const laV5 = (d: unknown, urechi: (k: number) => UrechiO | null = () => null): unknown => {
+export const laV5 = (d: unknown, urechi: (k: number) => UrechiO | null = () => null): unknown => {
   if (!esteObiectL(d)) return d;
   if (d['schema'] === 4) d['schema'] = 5;
   else if (d['schema'] === 5) d['schema'] = 6;
@@ -2907,7 +2920,7 @@ export type CazValidV5 = { readonly nume: string; readonly doc: DocV5O };
 
 export const VALIDE_DIFICILE_V5: readonly CazValidV5[] = [
   // Fiecare X / W de mai sus, adus la v5 (fără capcanele `urechi` de pe operații), cu urechile pe rând.
-  ...VALIDE_DIFICILE_V4.map((c) => ({ nume: `${c.nume} (v5, urechi pe rând)`, doc: laV5(faraUrechiPeOperatii(c.doc), urechiPeRand) as DocV5O })),
+  ...VALIDE_DIFICILE_V4.map((c) => lenes(`${c.nume} (v5, urechi pe rând)`, () => laV5(faraUrechiPeOperatii(c.doc), urechiPeRand) as DocV5O)),
   {
     nume: 'V01 la plafoane: numar 1 și 100, latime 10 000 și 5e−324, grosime 1 000 și 5e−324',
     doc: laV5(laV4(doc3(
@@ -2969,7 +2982,7 @@ export const VALIDE_DIFICILE_V5: readonly CazValidV5[] = [
  * lui v5) devine 7, ca să rămână otravă; „5” devine „6”. Fiecare operație-obiect care n-are `rampa` primește
  * `rampa(k)` (implicit `null`; k = a câta, în tot documentul). Pe loc; întoarce documentul.
  */
-const laV6 = (d: unknown, rampa: (k: number) => RampaO | null = () => null): unknown => {
+export const laV6 = (d: unknown, rampa: (k: number) => RampaO | null = () => null): unknown => {
   if (!esteObiectL(d)) return d;
   if (d['schema'] === 5) d['schema'] = 6;
   else if (d['schema'] === 6) d['schema'] = 7;
@@ -3244,7 +3257,7 @@ export type CazValidV6 = { readonly nume: string; readonly doc: DocV6O };
 
 export const VALIDE_DIFICILE_V6: readonly CazValidV6[] = [
   // Fiecare document valid dificil v5, adus la v6, cu rampele pe rând.
-  ...VALIDE_DIFICILE_V5.map((c) => ({ nume: `${c.nume} (v6, rampe pe rând)`, doc: laV6(structuredClone(c.doc), rampePeRand) as DocV6O })),
+  ...VALIDE_DIFICILE_V5.map((c) => lenes(`${c.nume} (v6, rampe pe rând)`, () => laV6(structuredClone(c.doc), rampePeRand) as DocV6O)),
   {
     nume: 'X01 la plafoane: lungimea 10 000 și 5e−324',
     doc: laV6(laV5(laV4(doc3(
@@ -3306,7 +3319,7 @@ export const VALIDE_DIFICILE_V6: readonly CazValidV6[] = [
  * lui v6) devine 8, ca să rămână otravă; „6” devine „7”. Fiecare operație-obiect care n-are `intrari` primește
  * `intrari(k)` (implicit `null`; k = a câta, în tot documentul). Pe loc; întoarce documentul.
  */
-const laV7 = (d: unknown, intrari: (k: number) => IntrariO | null = () => null): unknown => {
+export const laV7 = (d: unknown, intrari: (k: number) => IntrariO | null = () => null): unknown => {
   if (!esteObiectL(d)) return d;
   if (d['schema'] === 6) d['schema'] = 7;
   else if (d['schema'] === 7) d['schema'] = 8;
@@ -3603,7 +3616,7 @@ export type CazValidV7 = { readonly nume: string; readonly doc: DocV7O };
 
 export const VALIDE_DIFICILE_V7: readonly CazValidV7[] = [
   // Fiecare document valid dificil v6, adus la v7, cu intrările pe rând (capcanele `intrari` vechi mutate deoparte).
-  ...VALIDE_DIFICILE_V6.map((c) => ({ nume: `${c.nume} (v7, intrări pe rând)`, doc: laV7(faraIntrariPeOperatii(c.doc), intrariPeRand) as DocV7O })),
+  ...VALIDE_DIFICILE_V6.map((c) => lenes(`${c.nume} (v7, intrări pe rând)`, () => laV7(faraIntrariPeOperatii(c.doc), intrariPeRand) as DocV7O)),
   {
     nume: 'Q01 la plafoane: raza 10 000 și 5e−324 (ușa le primește; 5e−324 e refuzul EXPORTULUI, §6)',
     doc: laV7(laV6(laV5(laV4(doc3(
@@ -3668,7 +3681,7 @@ export const VALIDE_DIFICILE_V7: readonly CazValidV7[] = [
  * lui v7) devine 9, ca să rămână otravă; „7” devine „8”. Fiecare operație-obiect care n-are `colturi` primește
  * `colturi(k)` (implicit `null`; k = a câta, în tot documentul). Pe loc; întoarce documentul.
  */
-const laV8 = (d: unknown, colturi: (k: number) => ColturiO | null = () => null): unknown => {
+export const laV8 = (d: unknown, colturi: (k: number) => ColturiO | null = () => null): unknown => {
   if (!esteObiectL(d)) return d;
   if (d['schema'] === 7) d['schema'] = 8;
   else if (d['schema'] === 8) d['schema'] = 9;
@@ -3950,7 +3963,7 @@ export type CazValidV8 = { readonly nume: string; readonly doc: DocV8O };
 
 export const VALIDE_DIFICILE_V8: readonly CazValidV8[] = [
   // Fiecare document valid dificil v7, adus la v8, cu colțurile pe rând.
-  ...VALIDE_DIFICILE_V7.map((c) => ({ nume: `${c.nume} (v8, colțuri pe rând)`, doc: laV8(structuredClone(c.doc), colturiPeRand) as DocV8O })),
+  ...VALIDE_DIFICILE_V7.map((c) => lenes(`${c.nume} (v8, colțuri pe rând)`, () => laV8(structuredClone(c.doc), colturiPeRand) as DocV8O)),
   {
     // ADR 0032 §6: degajările pe pe-linie sunt un refuz al exportului, nu al ușii (ALEGERE din antetul oracolului).
     nume: 'R01 colturi pe pe-linie, pe exterior (cu urechi și rampă) și pe interior (cu intrări), cu sensuri diferite',

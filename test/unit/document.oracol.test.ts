@@ -49,6 +49,15 @@
  * și se sar doar sub 8, iar testul „VERSIUNE_SCHEMA e 8” nu se sare (o aplicație rămasă în urmă îl înroșește). Testele
  * v7 rulează și pe 8: un v7 valid trece prin ușă ca v8-ul migrării. Tăietura aplicației poate purta și `colturi`
  * (ALEGERE, ca la intrări): dacă o are, e a operației ei.
+ *
+ * Felia 2.7b (ADR 0034, sesiune independentă): oracolul e pe v9 (forma `cale`; migrarea v8 → v9 schimbă doar numărul,
+ * deci fiecare test de mai sus primește pe 9 documentul migrării cu `schema: 9`); testele v9 sunt în
+ * `document.v9.oracol.test.ts` și `document.v9.actiuni.oracol.test.ts`, iar „VERSIUNE_SCHEMA e 9” nu se sare. Ca fiecare
+ * fișier să ruleze în ~20 s, cele 3 fișiere au devenit 9 (fiecare cu antetul și importurile întregi), W06 (100 000 de
+ * operații pe un element) nu mai trece prin încărcările repetate (g*) și prin probele de puritate de după v3 → v4
+ * (`mareOperatii`), copiile pe versiuni ale documentelor mari se fac la prima citire (`lenes`, în cazuri), iar lanțurile
+ * lungi ale oracolului (ușa și ridicarea) au o singură copie (`verificaLantO`, `ridicaLaO`): comparate cu cele de
+ * dinainte pe 2 361 de documente (corpusuri, otrăvuri, generate și mari), 23 464 de rezultate, nicio diferență.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -68,6 +77,7 @@ import {
   type TaieturaV4O, type UrechiO,
   COLTURI_IMPLICITE_O, migreazaV1V8O, migreazaV4V8O, migreazaV5V8O, migreazaV6V8O, migreazaV7V8O, ridicaV7O, taieturiV8O, TIPURI_COLTURI_O,
   verificaPanaLaV7O, verificaV7V8, verificaV8, type ColturiO, type DocV8O,
+  migreazaV1V9O, migreazaV4V9O, migreazaV8V9O, ridicaV8O, verificaPanaLaV8O, verificaV8V9, verificaV9, type DocV9O,
 } from '../oracles/document.ts';
 import {
   areRampaPeOperatii, areUrechiPeOperatii, CAZURI_HARTIE, CAZURI_TAIETURI, CORPUS_V1, CORPUS_V2, CORPUS_V3, CORPUS_V4,
@@ -81,16 +91,22 @@ import {
 } from '../oracles/document.cazuri.ts';
 
 import {
-  type DocApp, V, PE_V5, PE_V6, PE_V7, PE_V8, DOAR_V5, DOAR_V6, DOAR_V7, DOAR_V8, verificaSchemaApp, v5PentruApp, v6PentruApp, v7PentruApp, ciocnesteLa7, accepta, ca, asteptatDinV4, lumeaAplicatiei, formeTaietura, type TaieturaApp, taieturileAplicatiei, aceleasiChei, aceeasiLume, type TaieturaAsteptata, aceleasiTaieturi, taieturileOracolului, aceeasiFoaie, mare, text, faraCampuriNoi, incarcaVechi, unice, V4_VALIDE, V5_VALIDE, V6_VALIDE,
+  type DocApp, V, PE_V5, PE_V6, PE_V7, PE_V8, PE_V9, DOAR_V5, DOAR_V6, DOAR_V7, DOAR_V8, DOAR_V9, verificaSchemaApp, v5PentruApp, v6PentruApp, v7PentruApp, v8PentruApp, ciocnesteLa7, accepta, ca, asteptatDinV4, lumeaAplicatiei, formeTaietura, type TaieturaApp, taieturileAplicatiei, aceleasiChei, aceeasiLume, type TaieturaAsteptata, aceleasiTaieturi, taieturileOracolului, aceeasiFoaie, mare, mareOperatii, text, faraCampuriNoi, incarcaVechi, unice, valideV4, valideV5, valideV6,
 } from './ajutor-document-oracol.ts';
 
-// Fișierul 1 din 3: oracolul singur (până la v6) și lipirea v1–v3 (cu migrările pe hârtie); restul în
-// `document.lipire.oracol.test.ts` (otrăvurile, documentele valide, refuzurile) și `document.v8.oracol.test.ts` (v7, v8).
+// Fișierul 1 din 11 (vezi antetul; felia 2.7b: împărțit ca fiecare fișier să ruleze în ~20 s): oracolul singur până la
+// v6 (fără ciocnirile „urechi”), versiunea aplicației, migrările și cazurile pe hârtie.
+// Toate: `document.oracol.test.ts` (oracolul singur până la v6, migrările și cazurile pe hârtie),
+// `document.v1.oracol.test.ts`, `document.v2.oracol.test.ts`, `document.v3.oracol.test.ts` (lipirea v1, v2, v3),
+// `document.lipire.oracol.test.ts`, `document.lipire5.oracol.test.ts`, `document.lipire6.oracol.test.ts` (otrăvurile,
+// documentele valide și refuzurile v2–v6), `document.v7.oracol.test.ts`, `document.v8.oracol.test.ts`,
+// `document.v9.oracol.test.ts` și `document.v9.actiuni.oracol.test.ts`.
 
 // ── Oracolul singur, pe hârtie ──────────────────────────────────────────────────────────────────────────────────────
 
-test('(o) versiunea curentă a oracolului e 8; sensurile sunt urcare și opozitie; urechile: implicit null, dialogul 4 × 8 × 2, cel mult 100; rampa: implicit null, dialogul 10 mm; intrările: implicit null, dialogul 3 mm, exportul cere ≥ 0,5; colțurile: implicit null, dog-bone sau t-bone', () => {
-  assert.equal(SCHEMA_CURENTA_O, 8);
+test('(o) versiunea curentă a oracolului e 9 (căile: 2–50 000 de vârfuri, 200 000 în piese, 1 000 000 în lume); sensurile sunt urcare și opozitie; urechile: implicit null, dialogul 4 × 8 × 2, cel mult 100; rampa: implicit null, dialogul 10 mm; intrările: implicit null, dialogul 3 mm, exportul cere ≥ 0,5; colțurile: implicit null, dog-bone sau t-bone', () => {
+  assert.equal(SCHEMA_CURENTA_O, 9);
+  assert.deepEqual([PLAFOANE_O.varfuriCaleMin, PLAFOANE_O.varfuriCale, PLAFOANE_O.varfuri, PLAFOANE_O.varfuriLume], [2, 50_000, 200_000, 1_000_000]);
   assert.equal(COLTURI_IMPLICITE_O, null);
   assert.deepEqual([...TIPURI_COLTURI_O], ['dog-bone', 't-bone']);
   assert.equal(INTRARI_IMPLICITE_O, null);
@@ -117,7 +133,9 @@ for (const { nume, v1, v4 } of MIGRARI_HARTIE) {
     assert.equal(diferenta(ridicaV6O(v1), migreazaV4V6O(v4 as DocV4O)), undefined);
     assert.equal(diferenta(ridicaV7O(v1), migreazaV4V7O(v4 as DocV4O)), undefined);
     assert.equal(diferenta(migreazaV1V7O(v1), migreazaV4V7O(v4 as DocV4O)), undefined);
-    assert.equal(diferenta(ridicaO(v1), migreazaV4V8O(v4 as DocV4O)), undefined);
+    assert.equal(diferenta(ridicaV8O(v1), migreazaV4V8O(v4 as DocV4O)), undefined);
+    assert.equal(diferenta(ridicaO(v1), migreazaV4V9O(v4 as DocV4O)), undefined);
+    assert.equal(diferenta(migreazaV1V9O(v1), migreazaV4V9O(v4 as DocV4O)), undefined);
     assert.equal(diferenta(migreazaV1V8O(v1), migreazaV4V8O(v4 as DocV4O)), undefined);
   });
 }
@@ -149,7 +167,8 @@ for (const { nume, v3, v4 } of MIGRARI_V3_HARTIE) {
       assert.equal(diferenta(migreazaV3V6O(v3), migreazaV4V6O(v4 as DocV4O)), undefined);
       assert.equal(diferenta(ridicaV6O(v3), migreazaV4V6O(v4 as DocV4O)), undefined);
       assert.equal(diferenta(ridicaV7O(v3), migreazaV4V7O(v4 as DocV4O)), undefined);
-      assert.equal(diferenta(ridicaO(v3), migreazaV4V8O(v4 as DocV4O)), undefined);
+      assert.equal(diferenta(ridicaV8O(v3), migreazaV4V8O(v4 as DocV4O)), undefined);
+      assert.equal(diferenta(ridicaO(v3), migreazaV4V9O(v4 as DocV4O)), undefined);
     }
   });
 }
@@ -199,7 +218,7 @@ test('(o) migrarea v3 → v4 e pură și deterministă: intrarea rămâne neschi
 
 test('(o) migrarea v4 → v5 e pură și deterministă; din v4 rămâne tot, în afară de schema și de urechi: null pe operații', () => {
   let operatii = 0;
-  for (const { doc } of [...CORPUS_V4, ...VALIDE_DIFICILE_V4].filter((c) => !mare(c.doc) && !areUrechiPeOperatii(c.doc))) {
+  for (const { doc } of [...CORPUS_V4, ...VALIDE_DIFICILE_V4].filter((c) => !mare(c.doc) && !mareOperatii(c.doc) && !areUrechiPeOperatii(c.doc))) {
     const inainte = JSON.stringify(doc);
     const a = migreazaV4V5O(doc);
     assert.equal(JSON.stringify(doc), inainte, 'intrarea s-a schimbat');
@@ -212,12 +231,13 @@ test('(o) migrarea v4 → v5 e pură și deterministă; din v4 rămâne tot, în
     assert.equal(diferenta(c, doc), undefined);
     assert.deepEqual(verificaV5(a), []);
   }
-  assert.ok(operatii > 100, `${operatii} operații migrate`);
+  // Felia 2.7b: fără W06 (`mareOperatii`), corpusul v4 are ~60 de operații de migrat.
+  assert.ok(operatii > 50, `${operatii} operații migrate`);
 });
 
 test('(o) migrarea v5 → v6 e pură și deterministă; din v5 rămâne tot, în afară de schema și de rampa: null pe operații', () => {
   let operatii = 0;
-  for (const { doc } of [...CORPUS_V5, ...VALIDE_DIFICILE_V5].filter((c) => !mare(c.doc))) {
+  for (const { doc } of [...CORPUS_V5, ...VALIDE_DIFICILE_V5].filter((c) => !mare(c.doc) && !mareOperatii(c.doc))) {
     const inainte = JSON.stringify(doc);
     const a = migreazaV5V6O(doc);
     assert.equal(JSON.stringify(doc), inainte, 'intrarea s-a schimbat');
@@ -237,6 +257,7 @@ for (const caz of CAZURI_TAIETURI) {
   test(`(o) tăieturile oracolului pe hârtie, cu sensul (și urechile null, la v5): ${caz.nume}`, () => {
     assert.deepEqual(verificaO(caz.doc), []);
     const v8 = ridicaO(caz.doc);
+    assert.equal(v8.schema, 9);
     aceleasiTaieturi(taieturiV4O(v8, caz.indexFoaie), caz.taieturi, 'oracolul');
     for (const t of taieturiV8O(v8, caz.indexFoaie)) { assert.equal(t.urechi, null); assert.equal(t.rampa, null); assert.equal(t.intrari, null); assert.equal(t.colturi, null); }
   });
@@ -330,26 +351,6 @@ test('(o) v3 cu „sens” pe o operație: valid ca v3, de nemigrat ([ciocnire])
   assert.deepEqual(verificaV3V4(MIGRARI_V3_HARTIE[0]!.v3), []);
 });
 
-test('(o) v4 (sau v3) cu „urechi” pe o operație, oricare i-ar fi valoarea: valid în schema lui, de nemigrat la v5 ([ciocnire])', () => {
-  for (const r of REFUZATE_V4) {
-    const d = r.doc as Liber;
-    if (d['schema'] === 4) {
-      assert.deepEqual(verificaV4(r.doc), [], r.nume);
-      assert.deepEqual(categoriiO(verificaV4V5(r.doc)), ['ciocnire'], r.nume);
-    } else {
-      assert.deepEqual(verificaV3V4(r.doc), [], `${r.nume}: v3 → v4 trece (câmp necunoscut)`);
-    }
-    assert.deepEqual(categoriiO(verificaO(r.doc)), ['ciocnire'], r.nume);
-  }
-  // Capcanele mai vechi: corpusurile v3 / v4 cu `urechi: []` pe operații sunt acum ciocniri, și doar ele.
-  let ciocniri = 0;
-  for (const { nume, doc } of [...CORPUS_V3, ...VALIDE_DIFICILE_V3, ...CORPUS_V4, ...VALIDE_DIFICILE_V4]) {
-    const c = categoriiO(verificaO(doc));
-    if (areUrechiPeOperatii(doc)) { ciocniri++; assert.deepEqual(c, ['ciocnire'], nume); } else assert.deepEqual(c, areIntrariPeOperatii(doc) ? ['ciocnire'] : [], nume);
-    assert.deepEqual(verificaO(faraIntrariPeOperatii(faraUrechiPeOperatii(doc))), [], `${nume}, fără urechi și intrări pe operații`);
-  }
-  assert.ok(ciocniri >= 10, `${ciocniri} ciocniri în corpusurile vechi`);
-});
 
 test('(o) corpusurile: v3 se migrează la v4, v4 e valid și are ambele sensuri și capcanele „sens” în afara operației', () => {
   for (const { nume, doc } of CORPUS_V3) assert.deepEqual(verificaV3V4(doc), [], nume);
@@ -390,9 +391,9 @@ test('(o) corpusul v5: valid, cu urechi null și cu valori de pe tot intervalul 
   assert.ok(nule > 50 && cu > 100 && laMargini > 20 && capcane >= 5 && necunoscute >= 3, JSON.stringify({ nule, cu, laMargini, capcane, necunoscute }));
 });
 
-test('(o) schema 9, „8” ca text și 7.5 sunt refuzate de oracol; v1, …, v7 ajung la v8 prin lanț (și la v7 prin `ridicaV7O`, la v6 prin `ridicaV6O`)', () => {
+test('(o) schema 10, „9” ca text și 8.5 sunt refuzate de oracol; v1, …, v8 ajung la v9 prin lanț (și la v8 prin `ridicaV8O`, la v7 prin `ridicaV7O`)', () => {
   const d = structuredClone(VALIDE_DIFICILE_V8[1]!.doc) as Liber;
-  for (const s of [9, '8', 7.5, 0, null]) {
+  for (const s of [10, '9', 8.5, 0, null]) {
     d['schema'] = s;
     assert.deepEqual(categoriiO(verificaO(d)), ['schema'], String(s));
   }
@@ -408,13 +409,20 @@ test('(o) schema 9, „8” ca text și 7.5 sunt refuzate de oracol; v1, …, v7
   const v7ca8 = structuredClone(VALIDE_DIFICILE_V7[1]!.doc) as Liber;
   v7ca8['schema'] = 8;
   assert.deepEqual(categoriiO(verificaO(v7ca8)), ['colturi']);
-  assert.equal(ridicaO(CORPUS_V1[0]!.doc).schema, 8);
-  assert.equal(ridicaO(CORPUS_V2[0]!.doc).schema, 8);
-  assert.equal(ridicaO(faraUrechiPeOperatii(CORPUS_V3[0]!.doc)).schema, 8);
-  assert.equal(ridicaO(faraUrechiPeOperatii(CORPUS_V4[0]!.doc)).schema, 8);
-  assert.equal(ridicaO(CORPUS_V5[0]!.doc).schema, 8);
-  assert.equal(ridicaO(CORPUS_V6[0]!.doc).schema, 8);
-  assert.equal(ridicaO(CORPUS_V7[0]!.doc).schema, 8);
+  assert.equal(ridicaO(CORPUS_V1[0]!.doc).schema, 9);
+  assert.equal(ridicaV8O(CORPUS_V1[0]!.doc).schema, 8);
+  assert.equal(ridicaO(CORPUS_V2[0]!.doc).schema, 9);
+  assert.equal(ridicaV8O(CORPUS_V2[0]!.doc).schema, 8);
+  assert.equal(ridicaO(faraUrechiPeOperatii(CORPUS_V3[0]!.doc)).schema, 9);
+  assert.equal(ridicaV8O(faraUrechiPeOperatii(CORPUS_V3[0]!.doc)).schema, 8);
+  assert.equal(ridicaO(faraUrechiPeOperatii(CORPUS_V4[0]!.doc)).schema, 9);
+  assert.equal(ridicaV8O(faraUrechiPeOperatii(CORPUS_V4[0]!.doc)).schema, 8);
+  assert.equal(ridicaO(CORPUS_V5[0]!.doc).schema, 9);
+  assert.equal(ridicaV8O(CORPUS_V5[0]!.doc).schema, 8);
+  assert.equal(ridicaO(CORPUS_V6[0]!.doc).schema, 9);
+  assert.equal(ridicaV8O(CORPUS_V6[0]!.doc).schema, 8);
+  assert.equal(ridicaO(CORPUS_V7[0]!.doc).schema, 9);
+  assert.equal(ridicaV8O(CORPUS_V7[0]!.doc).schema, 8);
   assert.equal(ridicaV7O(CORPUS_V6[0]!.doc).schema, 7);
   assert.equal(ridicaV6O(CORPUS_V5[0]!.doc).schema, 6);
   assert.equal(ridicaV5O(CORPUS_V1[0]!.doc).schema, 5);
@@ -422,161 +430,16 @@ test('(o) schema 9, „8” ca text și 7.5 sunt refuzate de oracol; v1, …, v7
 
 // ── Lipirea cu aplicația ────────────────────────────────────────────────────────────────────────────────────────────
 
-test('VERSIUNE_SCHEMA e 4–8 (raport: sub 8, testele doar-v8 se sar)', () => {
-  assert.ok(V >= 4 && V <= 8, `VERSIUNE_SCHEMA = ${V}`);
-  console.log(`schema aplicației: ${V}${PE_V8 ? '' : ' (testele doar-v8 se sar)'}`);
+test('VERSIUNE_SCHEMA e 4–9 (raport: sub 9, testele doar-v9 se sar)', () => {
+  assert.ok(V >= 4 && V <= 9, `VERSIUNE_SCHEMA = ${V}`);
+  console.log(`schema aplicației: ${V}${PE_V9 ? '' : ' (testele doar-v9 se sar)'}`);
 });
 
 // Felia 2.5b: fără `skip`. Poarta de dinainte („e 6”, sărit sub 6) ar fi PICAT pe 7, dar una scrisă `=== 6` ar fi sărit
 // în tăcere; acum versiunea oracolului și a aplicației trebuie să fie aceeași, altfel testul e roșu. Felia 2.6: la fel, 8.
-test('VERSIUNE_SCHEMA e 8 (felia 2.6, ADR 0032), aceeași cu a oracolului', () => {
+test('VERSIUNE_SCHEMA e 9 (felia 2.7b, ADR 0034), aceeași cu a oracolului', () => {
   assert.equal(V, SCHEMA_CURENTA_O);
 });
-
-for (const { nume, doc } of CORPUS_V1) {
-  test(`(a) v1 → v${V} păstrează geometria și dă tăieturile oracolului: ${nume}`, () => {
-    assert.deepEqual(verificaV1(doc), [], 'oracolul: documentul v1 se migrează');
-    const x = incarcaVechi(doc, migreazaV1V4O(doc));
-    if (!x) return;
-    assert.equal(ca(x.doc).schema, V);
-    assert.deepEqual(verificaSchemaApp(x.doc), []);
-    aceeasiLume(geometrieV2(ca(x.doc)), geometrieV1(doc));
-    aceeasiFoaie(x.doc, x.asteptat);
-  });
-
-  test(`(a) v1 → v${V} dă exact documentul din contracte: ${nume}`, () => {
-    const x = incarcaVechi(doc, migreazaV1V4O(doc));
-    if (!x) return;
-    assert.equal(diferenta(x.doc, x.asteptat), undefined);
-    if (PE_V5) assert.equal(diferenta(x.doc, PE_V8 ? migreazaV1V8O(doc) : PE_V7 ? migreazaV1V7O(doc) : PE_V6 ? migreazaV1V6O(doc) : migreazaV1V5O(doc)), undefined);
-  });
-
-  test(`(b) câmpurile necunoscute trec prin migrarea v1 → v${V}: ${nume}`, () => {
-    const v = ca(accepta(structuredClone(doc)));
-    assert.equal(v.rev, doc.rev);
-    for (const [cheie, val] of Object.entries(doc)) {
-      if (['schema', 'rev', 'foaie', 'elemente'].includes(cheie)) continue;
-      const d = diferenta(v[cheie], val);
-      assert.ok(d === undefined, `primul nivel, ${cheie}: ${d}`);
-    }
-    const stoc = (v.foi[0] as DocV6O['foi'][number]).stoc;
-    for (const [cheie, val] of Object.entries(doc.foaie)) {
-      const d = diferenta(stoc[cheie], val);
-      assert.ok(d === undefined, `foaia → stoc, ${cheie}: ${d}`);
-    }
-    doc.elemente.forEach((e, i) => {
-      const p = v.piese[i] as DocV6O['piese'][number];
-      assert.equal(p.id, e.id);
-      assert.equal(p.nume, e.nume, `numele elementului ${e.id} stă pe piesă`);
-      for (const o of p.operatii) {
-        assert.equal(o.sens, 'urcare', `operația ${o.id} a piesei ${p.id}`);
-        if (PE_V5) assert.equal(o.urechi, null, `operația ${o.id} a piesei ${p.id}: urechi`);
-        if (PE_V6) assert.equal(o.rampa, null, `operația ${o.id} a piesei ${p.id}: rampa`);
-        if (PE_V7) assert.equal(o.intrari, null, `operația ${o.id} a piesei ${p.id}: intrari`);
-        if (PE_V8) assert.equal(o.colturi, null, `operația ${o.id} a piesei ${p.id}: colturi`);
-      }
-      for (const [cheie, val] of Object.entries(e)) {
-        if (['id', 'nume', 'forma', 'matrice'].includes(cheie)) continue;
-        const d = diferenta((p.radacina as Liber)[cheie], val);
-        assert.ok(d === undefined, `elementul ${e.id} → rădăcina piesei, ${cheie}: ${d}`);
-      }
-      for (const [cheie, val] of Object.entries(e.matrice)) {
-        if (['a', 'b', 'c', 'd', 'e', 'f'].includes(cheie)) continue;
-        const d = diferenta((p.radacina.matrice as unknown as Liber)[cheie], val);
-        assert.ok(d === undefined, `matricea elementului ${e.id} → matricea rădăcinii, ${cheie}: ${d}`);
-      }
-    });
-  });
-
-  test(`(c) migrarea v1 → v${V} și încărcarea sunt idempotente la octet: ${nume}`, () => {
-    const o1 = accepta(structuredClone(doc));
-    const b1 = jsonCanonic(o1);
-    assert.deepEqual(jsonCanonic(accepta(structuredClone(doc))), b1, 'a doua migrare');
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(JSON.stringify(o1)))), b1, `v${V} încărcat din nou`);
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(text(b1)))), b1, `v${V} încărcat din octeții canonici`);
-  });
-}
-
-test(`(a) ${V1_LA_PLAFON.nume}: se migrează, cu exact 100 000 de elemente și de tăieturi în lume`, () => {
-  const { doc } = V1_LA_PLAFON;
-  assert.deepEqual(verificaV1(doc), [], 'oracolul');
-  const v = accepta(structuredClone(doc));
-  assert.deepEqual(verificaSchemaApp(v), []);
-  aceeasiLume(lumeaAplicatiei(v), geometrieV1(doc));
-  const taieturi = taieturileAplicatiei(v);
-  assert.equal(taieturi.length, 100_000);
-  aceleasiTaieturi(taieturi, PE_V8 ? taieturiV8O(migreazaV1V8O(doc)) : PE_V7 ? taieturiV7O(migreazaV1V7O(doc)) : PE_V6 ? taieturiV6O(migreazaV1V6O(doc)) : PE_V5 ? taieturiV5O(migreazaV1V5O(doc)) : taieturiV4O(migreazaV1V4O(doc)));
-});
-
-for (const { nume, doc } of [...CORPUS_V2, ...VALIDE_DIFICILE]) {
-  test(`(a) v2 → v${V} dă exact documentul din contracte, cu elementele și tăieturile oracolului: ${nume}`, () => {
-    assert.deepEqual(verificaV2V4(doc), [], 'oracolul: documentul v2 se migrează');
-    const x = incarcaVechi(doc, migreazaV2V4O(doc));
-    if (!x) return;
-    assert.equal(ca(x.doc).schema, V);
-    assert.equal(diferenta(x.doc, x.asteptat), undefined);
-    for (let k = 0; k < doc.foi.length; k++) aceeasiLume(geometrieV2(ca(x.doc), k), geometrieV2(doc, k));
-    aceeasiFoaie(x.doc, x.asteptat);
-  });
-
-  if (mare(doc)) continue;
-
-  test(`(b) din v2 rămâne tot, în afară de schema și de operatii: ${nume}`, () => {
-    const c = structuredClone(ca(accepta(structuredClone(doc)))) as Liber;
-    assert.equal(c['schema'], V);
-    c['schema'] = 2;
-    for (const p of c['piese'] as Liber[]) {
-      assert.ok(Array.isArray(p['operatii']), `piesa ${String(p['id'])} n-are lista operatii`);
-      delete p['operatii'];
-    }
-    assert.equal(diferenta(c, doc), undefined);
-  });
-
-  test(`(c) migrarea v2 → v${V} și încărcarea sunt idempotente la octet: ${nume}`, () => {
-    const o1 = accepta(structuredClone(doc));
-    const b1 = jsonCanonic(o1);
-    assert.deepEqual(jsonCanonic(accepta(structuredClone(doc))), b1, 'a doua migrare');
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(JSON.stringify(o1)))), b1, `v${V} încărcat din nou`);
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(text(b1)))), b1, `v${V} încărcat din octeții canonici`);
-  });
-}
-
-for (const { nume, doc } of [...CORPUS_V3, ...VALIDE_DIFICILE_V3]) {
-  const ciocnire = (PE_V5 && areUrechiPeOperatii(doc)) || ciocnesteLa7(doc);
-  test(`(a) v3 → v${V} dă exact documentul din contract${ciocnire ? ' (pe 5: ciocnirea urechilor, refuz)' : ''}, cu elementele și tăieturile oracolului: ${nume}`, () => {
-    assert.deepEqual(verificaV3V4(doc), [], 'oracolul: documentul v3 se migrează la v4');
-    const x = incarcaVechi(doc, migreazaV3V4O(doc));
-    if (!x) return;
-    assert.equal(ca(x.doc).schema, V);
-    assert.equal(diferenta(x.doc, x.asteptat), undefined);
-    aceeasiFoaie(x.doc, x.asteptat);
-  });
-
-  if (mare(doc) || ciocnire) continue;
-
-  test(`(b) din v3 rămâne tot, în afară de schema și de câmpurile noi ale operațiilor: ${nume}`, () => {
-    const c = ca(accepta(structuredClone(doc)));
-    assert.equal(c.schema, V);
-    for (const p of c.piese) {
-      for (const o of p.operatii) {
-        assert.equal(o.sens, 'urcare', `${p.id}/${o.id}`);
-        if (PE_V5) assert.equal(o.urechi, null, `${p.id}/${o.id}: urechi`);
-        if (PE_V6) assert.equal(o.rampa, null, `${p.id}/${o.id}: rampa`);
-        if (PE_V7) assert.equal(o.intrari, null, `${p.id}/${o.id}: intrari`);
-        if (PE_V8) assert.equal(o.colturi, null, `${p.id}/${o.id}: colturi`);
-      }
-    }
-    assert.equal(diferenta(faraCampuriNoi(c, 3), doc), undefined);
-  });
-
-  test(`(c) migrarea v3 → v${V} și încărcarea sunt idempotente la octet: ${nume}`, () => {
-    const o1 = accepta(structuredClone(doc));
-    const b1 = jsonCanonic(o1);
-    assert.deepEqual(jsonCanonic(accepta(structuredClone(doc))), b1, 'a doua migrare');
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(JSON.stringify(o1)))), b1, `v${V} încărcat din nou`);
-    assert.deepEqual(jsonCanonic(accepta(JSON.parse(text(b1)))), b1, `v${V} încărcat din octeții canonici`);
-  });
-}
 
 for (const { nume, v1, v4 } of MIGRARI_HARTIE) {
   test(`(a) migrarea v1 → v${V} pe hârtie: ${nume}`, () => {

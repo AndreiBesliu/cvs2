@@ -3,9 +3,9 @@
  * primește interfața, și programul exportat (`calculeazaExport`, cu confirmarea ieșirii din foaie când o cere). Doar
  * testele din `test/unit` îl importă; oracolele (`test/oracles`) rămân fără `src/`.
  */
-import type { DocV4O, DocV5O, DocV6O, DocV7O, DocV8O, Liber } from '../oracles/document.ts';
+import type { DocV4O, DocV5O, DocV6O, DocV7O, DocV8O, DocV9O, Liber } from '../oracles/document.ts';
 
-/** Versiunea schemei pe care o primește ușa aplicației (4 = ADR 0027, …, 7 = ADR 0030, 8 = ADR 0032), aflată cu un document minim. */
+/** Versiunea schemei pe care o primește ușa aplicației (4 = ADR 0027, …, 8 = ADR 0032, 9 = ADR 0034), aflată cu un document minim. */
 export async function schemaAplicatiei(): Promise<number> {
   const { incarca } = await import('../../src/model/incarcare.ts');
   const r = incarca({
@@ -16,19 +16,26 @@ export async function schemaAplicatiei(): Promise<number> {
 
 /**
  * Documentul dat aplicației, prin ușă (`incarca`). O aplicație mai veche decât documentul îl refuză; atunci primește
- * același document coborât cât se poate fără să piardă nimic din ce taie: un v8 fără nicio degajare devine v7
+ * același document coborât cât se poate fără să piardă nimic din ce taie: un v9 fără nicio cale devine v8 (doar numărul,
+ * ADR 0034 §3; un v9 CU căi nu se coboară), un v8 fără nicio degajare devine v7
  * (`colturi` scos), un v7 fără nicio intrare devine v6
  * (`intrari` scos), un v6 fără nicio rampă devine v5 (`rampa` scos), un v5 fără nicio ureche devine v4 (`urechi` scos),
  * un v4 devine v3 (`sens` scos; invariantele 1–8 nu depind de el). Un v8 CU degajări, un v7 CU intrări, un v6 CU rampă
  * sau un v5 CU urechi nu se coboară: refuzul ușii e o eroare.
  */
-export async function pentruAplicatie<D>(doc: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O): Promise<D> {
+export async function pentruAplicatie<D>(doc: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O): Promise<D> {
   const { incarca } = await import('../../src/model/incarcare.ts');
   const r = incarca(structuredClone(doc));
   if (r.ok) return r.doc as unknown as D;
   let jos = structuredClone(doc) as Liber;
   const operatii = (): Liber[] => (jos['piese'] as Liber[]).flatMap((p) => p['operatii'] as Liber[]);
-  if (doc.schema === 8) {
+  if (jos['schema'] === 9) {
+    if (JSON.stringify(jos['piese']).includes('"tip":"cale"')) throw new Error(`incarca a refuzat un document v9 cu căi: ${String(r.motiv)}`);
+    jos['schema'] = 8;
+    const r8 = incarca(structuredClone(jos));
+    if (r8.ok) return r8.doc as unknown as D;
+  }
+  if (jos['schema'] === 8) {
     if (operatii().some((o) => o['colturi'] !== null)) throw new Error(`incarca a refuzat un document v8 cu degajări: ${String(r.motiv)}`);
     jos['schema'] = 7;
     for (const o of operatii()) delete o['colturi'];
@@ -74,11 +81,11 @@ export type IesireAplicatie =
   | { readonly ok: false; readonly motiv: string };
 
 /**
- * Programul aplicației pentru un document v4 … v8 și un montaj, cu confirmarea ieșirii din foaie dacă o cere.
+ * Programul aplicației pentru un document v4 … v9 și un montaj, cu confirmarea ieșirii din foaie dacă o cere.
  * `supracursa` (ADR 0028 §2, mm) se dă exportului doar când e cerută (implicit, ca din interfață, nu se trimite).
  */
 export async function programulAplicatiei(
-  doc: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O,
+  doc: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O,
   montaj: { readonly origine: 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus'; readonly z0: 'sus' | 'jos' },
   o: { readonly supracursa?: number } = {},
 ): Promise<IesireAplicatie> {

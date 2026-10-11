@@ -52,9 +52,27 @@
  * Felia 2.6 (ADR 0032, sesiune independentă): tăieturile poartă și degajările fiecărei operații (`TaieturaDoc.colturi`,
  * tot în paralel cu adâncimile), citite de invariantele 2 (amendată) și 13 (`degajari.ts`). Un document mai vechi se
  * aduce întâi la v8 (`colturi: null`).
+ *
+ * Felia 2.7b (ADR 0034, sesiune independentă): forma `cale` (linii, arce cu `bulge`, cubice), în documentul v9 (primit
+ * ca atare; unul mai vechi se aduce întâi la v9). Conturul ei în lume (`contur`), MĂSURA MEA, nu biarcele aplicației:
+ * - liniile: segmente exacte; arcele: arce exacte (centrul și raza din coardă și `bulge`, sub similitudine, ca la
+ *   dreptunghiul rotunjit; o cale cu arce sub altă matrice aruncă, ca acolo);
+ * - cubicele: imaginea afină a unei cubice e cubica punctelor de control transformate (exact), apoi împărțită de
+ *   Casteljau până când fiecare bucată e PLATĂ: c1 și c2 la cel mult `SAGETA_CUBICA` = 1e-4 mm de coarda ei. Curba stă
+ *   în învelitoarea convexă a punctelor de control, deci la cel mult 1e-4 de coardă, iar proiecția ei pe coardă o
+ *   acoperă: distanța Hausdorff dintre curbă și polilinie e ≤ 1e-4 mm, în ambele sensuri;
+ * - de ce ajunge: invarianta 2 cere distanța traseului ≥ R − ε − rotunjirea (ε = 0,005, rotunjirea 0,002). Traseul
+ *   aplicației stă la R − 0,00099 (biarcele, ADR 0033) de calea exactă, iar măsura mea greșește cu cel mult 1e-4; rămân
+ *   ~0,004 mm de rezervă până la prag, deci verdictul nu depinde de aproximarea mea decât la o pătrundere reală mai mică
+ *   de 1e-4 mm peste prag (declarată). Includerea (`evenodd`) se face pe aceeași polilinie, cu arcele aproximate la fel
+ *   (1e-4): greșește doar pentru puncte la sub 1e-4 mm de contur, unde invarianta 2 judecă distanța, nu apartenența;
+ * - `drumIdeal` nu există pentru o cale (offsetul exact al unei căi oarecare nu e scris aici): predicția (`prezice`) o
+ *   trece la „scula nu încape”, iar oracolele care cer bucla exactă (intrările: candidații; degajările: §5) folosesc,
+ *   pentru căi, bucla citită din program (`degajari.ts`) sau sar verificarea (intrările), cu limitele spuse în raport;
+ * - `laturiCale`: laturile căii în lume, cu tipul lor (L, A, C), pentru colțurile degajărilor (§2: doar L–L).
  */
 import {
-  ridicaO, taieturiV8O, type ColturiO, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type DocV7O, type DocV8O, type IntrariO, type LaturaO,
+  ridicaO, taieturiV8O, type ColturiO, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type DocV7O, type DocV8O, type DocV9O, type IntrariO, type LaturaO,
   type MatriceO, type RampaO, type SensO, type UrechiO,
 } from './document.ts';
 
@@ -315,7 +333,18 @@ export function distantaListe(ps: readonly Primitiva[], qs: readonly Primitiva[]
 // ---------------------------------------------------------------------------------------------------------------
 // Contururile exacte, din forma documentului și matricea în lume (ADR 0024: x′ = a·x + c·y + e, y′ = b·x + d·y + f).
 
+/** ADR 0034: un vârf al căii (coordonatele elementului) și segmentul care pleacă din el. */
+export type VarfCale = {
+  readonly p: Pt;
+  readonly s: { readonly tip: 'L' } | { readonly tip: 'A'; readonly bulge: number } | { readonly tip: 'C'; readonly c1: Pt; readonly c2: Pt };
+};
+/** O latură a căii în lume, cu tipul ei (pentru colțurile degajărilor) și capetele. */
+export type LaturaCale = { readonly tip: 'L' | 'A' | 'C'; readonly a: Pt; readonly b: Pt };
+/** Săgeata la care se aproximează o cubică (antetul). */
+export const SAGETA_CUBICA = 1e-4;
+
 export type FormaO =
+  | { readonly tip: 'cale'; readonly inchis: boolean; readonly varfuri: readonly VarfCale[] }
   | { readonly tip: 'cerc'; readonly raza: number }
   | { readonly tip: 'dreptunghi'; readonly latime: number; readonly inaltime: number; readonly razaColt: number };
 
@@ -369,7 +398,7 @@ function dreptunghiLocal(x0: number, y0: number, x1: number, y1: number, r: numb
 }
 
 export type Contur = {
-  readonly tip: 'cerc' | 'dreptunghi';
+  readonly tip: 'cerc' | 'dreptunghi' | 'cale';
   /** Conturul închis, în lume. */
   readonly primitive: readonly Primitiva[];
   /** Cutia fiecărei primitive, în aceeași ordine. */
@@ -385,10 +414,111 @@ export type Contur = {
    * `null` dacă scula nu încape (alt refuz al aplicației, nu al regiunii).
    */
   readonly drumIdeal: (R: number, latura: 'exterior' | 'interior') => Primitiva[] | null;
+  /** Doar la cale: laturile ei în lume, cu tipul lor, în ordinea căii, și sensul ei (+1 = trigonometric, din aria cu semn). */
+  readonly laturiCale?: readonly LaturaCale[];
+  readonly orientare?: 1 | -1;
 };
+
+/** Punctul de la fracțiunea t al cubicei (a, c1, c2, b). */
+function deCasteljau(a: Pt, c1: Pt, c2: Pt, b: Pt, t: number): readonly [readonly [Pt, Pt, Pt, Pt], readonly [Pt, Pt, Pt, Pt]] {
+  const l = (p: Pt, q: Pt): Pt => pt(p.x + (q.x - p.x) * t, p.y + (q.y - p.y) * t);
+  const ab = l(a, c1), bc = l(c1, c2), cd = l(c2, b);
+  const abc = l(ab, bc), bcd = l(bc, cd);
+  const m = l(abc, bcd);
+  return [[a, ab, abc, m], [m, bcd, cd, b]];
+}
+
+/** Cubica (în lume) ca polilinie cu săgeata cel mult `sageata` (antetul): segmentele, în ordine. */
+export function cubicaPolilinie(a: Pt, c1: Pt, c2: Pt, b: Pt, sageata = SAGETA_CUBICA): Segment[] {
+  const rez: Segment[] = [];
+  const pas = (p0: Pt, p1: Pt, p2: Pt, p3: Pt, adanc: number): void => {
+    const plata = Math.max(dPunctSegment(p1, p0, p3), dPunctSegment(p2, p0, p3));
+    if (plata <= sageata || adanc >= 40) {
+      if (p0.x !== p3.x || p0.y !== p3.y) rez.push(segment(p0, p3));
+      return;
+    }
+    const [st, dr] = deCasteljau(p0, p1, p2, p3, 0.5);
+    pas(st[0], st[1], st[2], st[3], adanc + 1);
+    pas(dr[0], dr[1], dr[2], dr[3], adanc + 1);
+  };
+  pas(a, c1, c2, b, 0);
+  return rez;
+}
+
+/** Arcul de la a la b cu `bulge` (local, ADR 0001: bulge = tan(baleiaj / 4), pozitiv trigonometric); null fără cerc. */
+export function arcBulge(a: Pt, b: Pt, bulge: number): Arc | null {
+  const c = dist(a, b);
+  if (!(c > 0) || bulge === 0 || !Number.isFinite(bulge)) return null;
+  const ux = (b.x - a.x) / c, uy = (b.y - a.y) / c;
+  const h = (c * (1 - bulge * bulge)) / (4 * bulge);
+  const cen = pt((a.x + b.x) / 2 - uy * h, (a.y + b.y) / 2 + ux * h);
+  const r = (c * (1 + bulge * bulge)) / (4 * Math.abs(bulge));
+  return arc(cen, r, Math.atan2(a.y - cen.y, a.x - cen.x), 4 * Math.atan(bulge));
+}
+
+/** Punctele unei liste de primitive, ca poligon închis (arcele la săgeata dată), pentru includere și arie. */
+function poligon(ps: readonly Primitiva[], sageata: number): Pt[] {
+  const rez: Pt[] = [];
+  for (const q of ps) {
+    if (q.tip === 'punct') { rez.push(q.p); continue; }
+    if (q.tip === 'segment') { rez.push(q.a); continue; }
+    const pasU = q.r > sageata ? 2 * Math.acos(1 - sageata / q.r) : Math.PI / 2;
+    const n = Math.max(1, Math.ceil(Math.abs(q.du) / pasU));
+    for (let k = 0; k < n; k++) rez.push(peCerc(q.c, q.r, q.u0 + (q.du * k) / n));
+  }
+  return rez;
+}
+
+/** `evenodd` pe un poligon (punctul strict înăuntru; pe margine, oricum). */
+function inPoligon(vs: readonly Pt[], p: Pt): boolean {
+  let in_ = false;
+  for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+    const a = vs[i]!, b = vs[j]!;
+    if ((a.y > p.y) !== (b.y > p.y) && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) in_ = !in_;
+  }
+  return in_;
+}
+
+/** ADR 0034: conturul unei căi în lume (antetul). */
+function conturCale(forma: Extract<FormaO, { tip: 'cale' }>, m: MatriceO): Contur {
+  const vs = forma.varfuri;
+  const areArce = vs.some((v) => v.s.tip === 'A');
+  if (areArce && !esteSimilitudine(m)) throw new Error('cale cu arce sub o matrice care nu e similitudine');
+  const primitive: Primitiva[] = [];
+  const laturi: LaturaCale[] = [];
+  vs.forEach((v, k) => {
+    const urm = vs[(k + 1) % vs.length]!;
+    const a = aplica(m, v.p), b = aplica(m, urm.p);
+    if (v.s.tip === 'L') {
+      laturi.push({ tip: 'L', a, b });
+      if (a.x !== b.x || a.y !== b.y) primitive.push(segment(a, b));
+      return;
+    }
+    if (v.s.tip === 'A') {
+      laturi.push({ tip: 'A', a, b });
+      const local = arcBulge(v.p, urm.p, v.s.bulge);
+      if (local) primitive.push(mapeazaSimilitudine(m, local));
+      return;
+    }
+    laturi.push({ tip: 'C', a, b });
+    primitive.push(...cubicaPolilinie(a, aplica(m, v.s.c1), aplica(m, v.s.c2), b));
+  });
+  if (primitive.length === 0) throw new Error('cale fără nicio latură nenulă');
+  const vsPoligon = poligon(primitive, SAGETA_CUBICA);
+  let A = 0;
+  for (let i = 0; i < vsPoligon.length; i++) {
+    const p = vsPoligon[i]!, q = vsPoligon[(i + 1) % vsPoligon.length]!;
+    A += p.x * q.y - q.x * p.y;
+  }
+  return {
+    tip: 'cale', primitive, cutiiPrimitive: primitive.map(cutiePrimitiva), cutie: cutieLista(primitive), arie: Math.abs(A / 2),
+    punct: aplica(m, vs[0]!.p), contine: (p) => inPoligon(vsPoligon, p), drumIdeal: () => null, laturiCale: laturi, orientare: A > 0 ? 1 : -1,
+  };
+}
 
 export function contur(forma: FormaO, m: MatriceO): Contur {
   if (det(m) === 0 || ![m.a, m.b, m.c, m.d, m.e, m.f].every(Number.isFinite)) throw new Error('matrice degenerată');
+  if (forma.tip === 'cale') return conturCale(forma, m);
   if (forma.tip === 'cerc') {
     if (!esteSimilitudine(m)) throw new Error('cerc sub o matrice care nu e similitudine');
     const c = aplica(m, pt(0, 0));
@@ -481,7 +611,12 @@ export function contur(forma: FormaO, m: MatriceO): Contur {
 
 export type Rol = 'piesa' | 'gol';
 export type Inel = { readonly idLume: string; readonly rol: Rol; readonly contur: Contur };
-export type ProblemaRegiune = { readonly tip: 'ambele-laturi' | 'atingere'; readonly elemente: readonly string[]; readonly mesaj: string };
+/**
+ * `contur` (felia 2.7b, ALEGERE): o cale primită de ușă (ADR 0034 §2: ușa nu judecă geometria) al cărei contur nu se
+ * poate construi (toate laturile nule), pe o latură `exterior` / `interior`: CAM-ul trebuie s-o refuze (gărzile
+ * offsetului), iar un program care o taie totuși încalcă invarianta 2 (ca celelalte probleme ale documentului).
+ */
+export type ProblemaRegiune = { readonly tip: 'ambele-laturi' | 'atingere' | 'contur'; readonly elemente: readonly string[]; readonly mesaj: string };
 /**
  * Ce tăieturi are un element în lume: tipul formei și, pe fiecare latură, adâncimile operațiilor (pentru etichete) și
  * sensurile lor (ADR 0027, în aceeași ordine: ordinea tăieturilor, adică a operațiilor în piesă).
@@ -552,14 +687,15 @@ export function regiuneDinInele(
  * v7 se aduce întâi la v8 (sensul `urcare`, ADR 0027 §5; urechile `null`, ADR 0028 §1; rampa `null`, ADR 0029 §1;
  * intrările `null`, ADR 0030 §1; degajările `null`, ADR 0032 §1).
  */
-export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O): Regiune {
+export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O): Regiune {
   type Acum = {
     forma: FormaO; matrice: MatriceO; laturi: Map<LaturaO, number[]>; sensuri: Map<LaturaO, SensO[]>;
     urechi: Map<LaturaO, Array<UrechiO | null>>; rampe: Map<LaturaO, Array<RampaO | null>>; intrari: Map<LaturaO, Array<IntrariO | null>>;
     colturi: Map<LaturaO, Array<ColturiO | null>>;
   };
   const pe = new Map<string, Acum>();
-  const v5 = doc.schema === 8 ? doc : ridicaO(doc);
+  // Felia 2.7b: un v9 se citește ca atare (un v9 trecut prin `ridicaO` ca „vechi” și-ar pierde parametrii operațiilor).
+  const v5 = doc.schema === 9 ? doc : ridicaO(doc);
   for (const t of taieturiV8O(v5, 0)) {
     let x = pe.get(t.idLume);
     if (!x) {
@@ -603,7 +739,14 @@ export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV
       probleme.push({ tip: 'ambele-laturi', elemente: [idLume], mesaj: `${idLume} are operații și pe exterior, și pe interior` });
       continue;
     }
-    if (ext || int) inele.push({ idLume, rol: ext ? 'piesa' : 'gol', contur: contur(x.forma, x.matrice) });
+    if (!ext && !int) continue;
+    if (!c) {
+      let motiv = '?';
+      try { contur(x.forma, x.matrice); } catch (e) { motiv = e instanceof Error ? e.message : String(e); }
+      probleme.push({ tip: 'contur', elemente: [idLume], mesaj: `conturul lui ${idLume} nu se poate construi: ${motiv}` });
+      continue;
+    }
+    inele.push({ idLume, rol: ext ? 'piesa' : 'gol', contur: c });
   }
   const grosime = v5.foi[0]?.stoc.grosime;
   return regiuneDinInele(inele, probleme, taieturi, typeof grosime === 'number' ? grosime : undefined);

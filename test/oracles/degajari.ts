@@ -71,6 +71,11 @@
  *   degajarea pe arce vine cu importul SVG`. Cu o condiție în bandă, oricare dintre rezultatele posibile e acceptat
  *   (`rezultate`, `avertismenteleCerute`).
  *
+ * FELIA 2.7b (ADR 0034, forma „cale”; aceeași sesiune independentă): colțurile unei căi sunt vârfurile L–L (`colturiPeCale`),
+ * cu Q socotit fără offsetul exact al căii (picioarele pe laturi și distanța lui Q la tot conturul ≥ R). Bucla unei căi,
+ * pentru §5 (a: traseele celorlalte bucle; b: coloanele urechilor; c: cutia buclei), e cea citită din program, cu banda
+ * `BANDA_PROGRAM` = 0,003 (cotele rotunjite); dreptunghiurile și cercurile rămân pe offsetul exact, ca înainte.
+ *
  * TOLERANȚELE (cotele rotunjite la 3 zecimale):
  * - TOL_Q = 0,005 (Q citit ±0,0007 față de cel de pe hârtie, cu marjă), TOL_E = 0,003 (E citit ±0,0007);
  * - Z-ul drumului: egal cu Z-ul sosirii, ±0,0005 (Z nu se rescrie; aceeași cotă);
@@ -79,7 +84,7 @@
 import type { ColturiO, IntrariO, LaturaO, RampaO, SensO, TipColturiO, UrechiO } from './document.ts';
 import { citeste, regulaArcGrbl, type Eveniment, type Mutare, type Punct3 } from './gcode.ts';
 import {
-  celMaiMic, distantaListe, lungime as lungimeP, punct as punctP, punctLa, segment as segmentP, type Contur, type IncalcareMutare, type Primitiva,
+  arc as arcP, celMaiMic, distantaListe, dPunctLista, lungime as lungimeP, punct as punctP, punctLa, segment as segmentP, type Contur, type IncalcareMutare, type Primitiva,
   type Regiune,
 } from './regiune.ts';
 import { TOL_INCHIDERE, TOL_SUB, type EtichetaActiva, type P2 } from './sens.ts';
@@ -167,6 +172,7 @@ function ariePoligon(vs: readonly P2[]): number {
  * tipul degajării. Lista e în ordinea de mers (doar pentru citit; potrivirea cu programul se face după Q).
  */
 export function colturiDeDegajat(c: Contur, latura: 'exterior' | 'interior', sens: SensO, R: number, tip: TipColturiO): ColtDegajat[] {
+  if (c.tip === 'cale') return colturiPeCale(c, latura, sens, R, tip);
   const ps = conturCuratat(c);
   // Vârfurile ascuțite: două linii consecutive, cu tangenta ruptă; V = intersecția dreptelor lor (după curățare, capetele
   // pot fi la sub 1e-6 unul de altul), P = vârful de dinainte, N = cel de după (în ordinea conturului).
@@ -196,6 +202,59 @@ export function colturiDeDegajat(c: Contur, latura: 'exterior' | 'interior', sen
   const drum = c.drumIdeal(R, latura);
   const segs = (drum ?? []).filter((q): q is Extract<Primitiva, { tip: 'segment' }> => q.tip === 'segment');
   const arieDrum = Math.abs(ariePoligon(segs.map((q) => q.a)));
+  return colturiDinVarfuri(ordonate, latura, trig, R, tip, (Q) => {
+    const scara = 1 + Math.hypot(Q.x, Q.y);
+    return Boolean(drum) && arieDrum > 1e-9 * scara * scara && segs.some((q) => dist(q.a, Q) <= 1e-6 * scara);
+  });
+}
+
+/**
+ * ADR 0034 + ADR 0032 §2, pe o cale: colțurile sunt vârfurile în care se întâlnesc două laturi L (linii) ale căii, după
+ * curățare (laturile sub 1e-6 mm scoase; ALEGERE: un arc după lungimea lui, o cubică după întinderea punctelor ei),
+ * cu tangenta ruptă; arcele și cubicele nu dau colțuri (ALEGERE: o cubică rămâne „curbă” și când biarcele ar face-o
+ * linie, la o cubică plată; corpusul le ocolește). Sensul căii vine din aria ei cu semn. Q există (fără offsetul exact al
+ * căii, pe care nu-l am): picioarele lui Q pe cele două laturi cad înăuntrul lor (R / tan(α/2) ≤ lungimea fiecăreia) și
+ * nicio altă parte a conturului nu e mai aproape de Q decât R (Q e un vârf al marginii offsetului: punctele la exact R de
+ * contur, pe partea deșeului).
+ */
+function colturiPeCale(c: Contur, latura: 'exterior' | 'interior', sens: SensO, R: number, tip: TipColturiO): ColtDegajat[] {
+  const toate = c.laturiCale ?? [];
+  const ls = toate.filter((l) => {
+    if (l.tip === 'L') return dist(l.a, l.b) >= CURATARE;
+    return dist(l.a, l.b) >= CURATARE || l.tip === 'C';
+  });
+  if (ls.length < 2) return [];
+  const varf = (k: number): P2 | null => {
+    const a = ls[(k + ls.length - 1) % ls.length]!, b = ls[k]!;
+    if (a.tip !== 'L' || b.tip !== 'L') return null;
+    const d1 = unit(sub(a.b, a.a)), d2 = unit(sub(b.b, b.a));
+    if (Math.abs(cross(d1, d2)) <= COLINIAR && dot(d1, d2) > 0) return null;
+    const x = cross(d1, d2);
+    if (x === 0) return b.a;
+    const t = cross(sub(b.a, a.a), d2) / x;
+    return plus(a.a, d1, t);
+  };
+  const varfuri: Array<{ V: P2; P: P2; N: P2 }> = [];
+  for (let k = 0; k < ls.length; k++) {
+    const V = varf(k);
+    if (!V) continue;
+    varfuri.push({ V, P: varf((k + ls.length - 1) % ls.length) ?? ls[(k + ls.length - 1) % ls.length]!.a, N: varf((k + 1) % ls.length) ?? ls[k]!.b });
+  }
+  if (varfuri.length === 0) return [];
+  const trig = mersTrigonometric(latura, sens);
+  const ordonate = (c.orientare ?? 1) > 0 === trig ? varfuri : [...varfuri].reverse().map((v) => ({ V: v.V, P: v.N, N: v.P }));
+  return colturiDinVarfuri(ordonate, latura, trig, R, tip, (Q, V, P, N, alfa) => {
+    const picior = R / Math.tan(alfa / 2);
+    if (picior > dist(P, V) + 1e-9 || picior > dist(N, V) + 1e-9) return false;
+    return dPunctLista(Q, c.primitive) >= R * (1 - 1e-12) - 1e-9;
+  });
+}
+
+/** Colțurile (§2–§3) din vârfurile în ordinea de mers, cu testul de existență al lui Q dat de formă. */
+function colturiDinVarfuri(
+  ordonate: ReadonlyArray<{ readonly V: P2; readonly P: P2; readonly N: P2 }>, latura: 'exterior' | 'interior', trig: boolean, R: number, tip: TipColturiO,
+  existaQ: (Q: P2, V: P2, P: P2, N: P2, alfa: number) => boolean,
+): ColtDegajat[] {
   const s = trig ? 1 : -1;
   const rez: ColtDegajat[] = [];
   ordonate.forEach(({ V, P, N }, k) => {
@@ -209,8 +268,7 @@ export function colturiDeDegajat(c: Contur, latura: 'exterior' | 'interior', sen
     const u = unit(plus(e1, e2));
     const sinJ = Math.sin(alfa / 2);
     const Q = plus(V, u, R / sinJ);
-    const scara = 1 + Math.hypot(Q.x, Q.y);
-    if (!drum || !(arieDrum > 1e-9 * scara * scara) || !segs.some((q) => dist(q.a, Q) <= 1e-6 * scara)) return;
+    if (!existaQ(Q, V, P, N, alfa)) return;
     const rest = R / sinJ - R;
     if (!(rest >= REST_MINIM - 1e-12)) return;
     const normala = (e: P2): P2 => {
@@ -330,19 +388,28 @@ export function legarileDegajarilor(etichete: readonly EtichetaActiva[], reg: Re
 }
 
 /** O buclă a foii (pentru §5 a): tăietura (elementul, latura, indicele operației) și traseul ei exact. */
-type BuclaFoaie = { readonly id: string; readonly latura: LaturaO; readonly k: number; readonly drum: readonly Primitiva[] };
+type BuclaFoaie = { readonly id: string; readonly latura: LaturaO; readonly k: number; readonly drum: readonly Primitiva[]; readonly program: boolean };
 
-/** Traseele exacte ale tuturor buclelor de pe foaia 0: câte unul pe fiecare operație (offsetul, sau conturul pe `pe-linie`). */
-export function bucleleFoii(reg: Regiune, R: number): BuclaFoaie[] {
+/** Banda verdictelor când una dintre măsuri vine din program (cotele rotunjite la 3 zecimale: ±0,0007, plus arcele). */
+export const BANDA_PROGRAM = 0.003;
+
+/**
+ * Traseele tuturor buclelor de pe foaia 0: câte unul pe fiecare operație (offsetul exact, sau conturul pe `pe-linie`).
+ * Felia 2.7b: o cale n-are offset exact aici (`drumIdeal` = null), deci bucla ei e cea citită din program (`dinProgram`,
+ * cheia `id|latura|k`), marcată `program` (banda ei e `BANDA_PROGRAM`); fără ea, bucla lipsește (o limită spusă).
+ */
+export function bucleleFoii(reg: Regiune, R: number, dinProgram: ReadonlyMap<string, readonly Primitiva[]> = new Map()): BuclaFoaie[] {
   const rez: BuclaFoaie[] = [];
   for (const [id, t] of reg.taieturi) {
     if (!t.contur) continue;
     for (const [latura, adancimi] of t.laturi) {
-      const drum = latura === 'pe-linie' ? t.contur.primitive : t.contur.drumIdeal(R, latura);
-      if (!drum || drum.length === 0) continue;
-      const fara = drum.filter((q) => q.tip !== 'punct');
-      const d = fara.length ? fara : drum;
-      for (let k = 0; k < adancimi.length; k++) rez.push({ id, latura, k, drum: d });
+      const exact = latura === 'pe-linie' ? t.contur.primitive : t.contur.drumIdeal(R, latura);
+      for (let k = 0; k < adancimi.length; k++) {
+        const drum = exact ?? dinProgram.get(`${id}|${latura}|${k}`) ?? null;
+        if (!drum || drum.length === 0) continue;
+        const fara = drum.filter((q) => q.tip !== 'punct');
+        rez.push({ id, latura, k, drum: fara.length ? fara : drum, program: !exact });
+      }
     }
   }
   return rez;
@@ -366,7 +433,7 @@ export type ColtJudecat = ColtDegajat & {
 };
 
 type Proba = { readonly v: Verdict; readonly m: string };
-const proba = (d: number, p: number, m: string): Proba => ({ v: d < p - BANDA_CONDITII ? 'nu' : d < p + BANDA_CONDITII ? 'banda' : 'da', m });
+const proba = (d: number, p: number, m: string, banda = BANDA_CONDITII): Proba => ({ v: d < p - banda ? 'nu' : d < p + banda ? 'banda' : 'da', m });
 const ceaMaiRea = (ps: readonly Proba[]): Proba => ps.find((x) => x.v === 'nu') ?? ps.find((x) => x.v === 'banda') ?? { v: 'da', m: '' };
 
 /** Rezultatele posibile ale verificărilor luate în ordine: prima care pică e motivul; în bandă, ambele ramuri. */
@@ -420,9 +487,10 @@ export type JudecataFoii = {
  */
 export function judecaFoaia(
   reg: Regiune, R: number, foaie: { readonly latime: number; readonly inaltime: number } | null, pornire: ReadonlyMap<string, P2>,
+  dinProgram: ReadonlyMap<string, readonly Primitiva[]> = new Map(),
 ): JudecataFoii {
   const D = 2 * R;
-  const bucle = bucleleFoii(reg, R);
+  const bucle = bucleleFoii(reg, R, dinProgram);
   type Brut = { readonly cheie: string; readonly id: string; readonly latura: 'exterior' | 'interior'; readonly k: number; readonly c: ColtDegajat; readonly sens: SensO; readonly urechi: UrechiO | null; readonly drum: Primitiva };
   const toate: Brut[] = [];
   const arce: Array<{ id: string; cheie: string; r: number }> = [];
@@ -444,7 +512,7 @@ export function judecaFoaia(
   // a, traseul: față de toate celelalte bucle (nu și de bucla însăși).
   const a = toate.map((x) => ceaMaiRea(bucle.filter((b) => !(b.id === x.id && b.latura === x.latura && b.k === x.k)).map((b) => {
     const d = distantaListe([x.drum], b.drum);
-    return proba(d, D + MARJA_SCHELET, `a (drumul e la ${mm(d)} mm de bucla ${b.id} ${b.latura}, sub D + 1 = ${mm(D + MARJA_SCHELET)})`);
+    return proba(d, D + MARJA_SCHELET, `a (drumul e la ${mm(d)} mm de bucla ${b.id} ${b.latura}, sub D + 1 = ${mm(D + MARJA_SCHELET)})`, b.program ? BANDA_PROGRAM : BANDA_CONDITII);
   })));
   // a, candidații: ai altor bucle, care trec partea „traseu” (în bandă: candidați poate, deci verdictul lor e în bandă).
   const cand = toate.map((x, i) => ceaMaiRea(toate.flatMap((y, j) => {
@@ -460,24 +528,31 @@ export function judecaFoaia(
     let cols = coloane.get(x.cheie);
     if (!cols) {
       const i = reg.inele.findIndex((q) => q.idLume === x.id);
-      const bucla = i >= 0 ? buclaAnalitica(reg, i, x.latura, R, x.sens) : null;
+      const analitica = i >= 0 ? buclaAnalitica(reg, i, x.latura, R, x.sens) : null;
+      // Felia 2.7b: la o cale, bucla din program (pornită chiar din p₀, în sensul de mers).
+      const bucla = analitica ?? (dinProgram.get(x.cheie) as Primitiva[] | undefined) ?? null;
       const p0 = pornire.get(x.cheie);
       cols = bucla && p0 ? coloaneleUrechilor(bucla, p0, x.urechi, D) : [];
       coloane.set(x.cheie, cols);
     }
+    const banda = dinProgram.has(x.cheie) && reg.taieturi.get(x.id)?.contur?.tip === 'cale' ? BANDA_PROGRAM : BANDA_CONDITII;
     return ceaMaiRea(cols.map((col, k) => {
       const d = distantaListe([x.drum], col);
-      return proba(d, D, `b (drumul e la ${mm(d)} mm de coloana urechii ${k}, sub D = ${mm(D)})`);
+      return proba(d, D, `b (drumul e la ${mm(d)} mm de coloana urechii ${k}, sub D = ${mm(D)})`, banda);
     }));
   });
   // c, foaia: golul cutiei discului drumului ≥ min(1, golul cutiei discului buclei), pe fiecare latură.
   const c = toate.map((x) => {
     if (!foaie) return { v: 'da' as const, m: '' };
     const t = reg.taieturi.get(x.id)!;
-    const drumBucla = t.contur!.drumIdeal(R, x.latura) ?? [];
+    const exact = t.contur!.drumIdeal(R, x.latura);
+    const drumBucla = exact ?? dinProgram.get(x.cheie) ?? [];
+    // Fără nicio buclă cunoscută, golul ei nu se știe: verdictul e în bandă (oricare).
+    if (drumBucla.length === 0) return { v: 'banda' as const, m: 'c (bucla nu se cunoaște)' };
+    const banda = exact ? BANDA_CONDITII : BANDA_PROGRAM;
     const gB = golurile(cutiaDrumului(drumBucla), R, foaie.latime, foaie.inaltime);
     const gD = golurile(cutiaDrumului([x.drum]), R, foaie.latime, foaie.inaltime);
-    return ceaMaiRea(gD.map((g, k) => proba(g, Math.min(MARJA_FOAIE, gB[k]!), `c (discul drumului e la ${mm(g)} mm de latura ${LATURI_FOII[k]} a foii; bucla, la ${mm(gB[k]!)})`)));
+    return ceaMaiRea(gD.map((g, k) => proba(g, Math.min(MARJA_FOAIE, gB[k]!), `c (discul drumului e la ${mm(g)} mm de latura ${LATURI_FOII[k]} a foii; bucla, la ${mm(gB[k]!)})`, banda)));
   });
   const colturi = new Map<string, ColtJudecat[]>();
   toate.forEach((x, i) => {
@@ -573,6 +648,8 @@ export function analizeazaDegajarile(
   // degajări: altfel nu trebuie, iar poarta rămâne la fel de rapidă pe programele fără ele).
   const areColturi = [...reg.taieturi.values()].some((t) => [...(t.colturi?.values() ?? [])].some((l) => l.some((c) => c !== null)));
   const pornire = new Map<string, P2>();
+  /** Felia 2.7b: bucla fiecărei tăieturi, citită din program (prima ei buclă închisă), pentru căile fără offset exact. */
+  const dinProgram = new Map<string, Primitiva[]>();
   for (const l of areColturi ? lanturile(fara, etichete.map((e) => e.linia), laDoc) : []) {
     const x = l.eticheta >= 0 ? leg[l.eticheta] : null;
     if (!x || 'motiv' in x) continue;
@@ -581,9 +658,14 @@ export function analizeazaDegajarile(
     const t = desparteCuRampa(l.pasi) ?? desparte(l.pasi);
     const p = t.p0 ?? l.pasi.find((q) => !q.vertical)?.a ?? null;
     if (p) pornire.set(cheie, p);
+    if (t.bucla.length) {
+      dinProgram.set(cheie, t.bucla.map((q) => (q.c !== undefined && q.r !== undefined && q.unghi !== undefined
+        ? arcP(q.c, q.r, Math.atan2(q.a.y - q.c.y, q.a.x - q.c.x), q.unghi)
+        : segmentP(q.a, q.b))));
+    }
   }
   // Colțurile judecate pe toată foaia (§5 a are nevoie de candidații celorlalte bucle), o singură dată.
-  const judecata: JudecataFoii = areColturi ? judecaFoaia(reg, R, foaie, pornire) : { colturi: new Map(), arce: [] };
+  const judecata: JudecataFoii = areColturi ? judecaFoaia(reg, R, foaie, pornire, dinProgram) : { colturi: new Map(), arce: [] };
   const colturi = judecata.colturi;
   const ale = (x: LegareD): readonly ColtJudecat[] => colturi.get(`${x.id}|${x.latura}|${x.k}`) ?? [];
   void D;

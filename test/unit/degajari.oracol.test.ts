@@ -212,8 +212,10 @@ test('(o) drumurile dus-întors: o fantă cât freza (A → B → A, cu sau făr
 
 // ── Lipirea: programele aplicației pe cazurile §8 ───────────────────────────────────────────────────────────────────
 
-test('lipire: aplicația e pe schema 8 (ADR 0032); pe una mai veche testul PICĂ, nu se sare', () => {
-  assert.equal(SCHEMA, 8);
+// Felia 2.7b: v9 adaugă doar forma „cale”; degajările (ADR 0032) nu se schimbă, deci lipirea rulează pe 8–9. Sub 8 sau
+// peste 9 testul PICĂ (o versiune nouă se judecă din nou, nu se sare).
+test('lipire: aplicația e pe schema 8–9 (ADR 0032; v9 = forma cale, ADR 0034); pe alta testul PICĂ, nu se sare', () => {
+  assert.ok(SCHEMA >= 8 && SCHEMA <= 9, `schema ${SCHEMA}`);
 });
 
 for (const c of CAZURI_DEG) {
