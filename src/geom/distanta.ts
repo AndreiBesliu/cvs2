@@ -66,9 +66,9 @@ function intoarcerilePeAxa(p0: number, p1: number, p2: number, p3: number): numb
 }
 
 /**
- * Distanța de la p la cubică: pe fiecare bucată monotonă pe x și pe y, 8 eșantioane, apoi Newton din fiecare minim local
- * al lor. Bucata monotonă se rotește cel mult 90°, deci minimele nu se ascund între eșantioane decât cu o eroare mult sub
- * toleranța unui clic.
+ * Distanța de la p la cubică: pe fiecare bucată monotonă pe x și pe y, 8 eșantioane; în jurul fiecărui minim local al lor
+ * (între eșantioanele vecine), secțiunea de aur, apoi Newton. Fără secțiunea de aur, Newton pornit dintr-un capăt unde
+ * B′ = 0 (mânerul retras) nu se mișcă, iar minimul de lângă capăt scapă (oracolul 2.7b: 0,3 mm).
  */
 function distantaLaCubica(p: Punct, q: Cubica): number {
   const ts = [0, ...new Set([
@@ -80,11 +80,21 @@ function distantaLaCubica(p: Punct, q: Cubica): number {
   for (let k = 0; k + 1 < ts.length; k++) {
     const t0 = ts[k] as number, t1 = ts[k + 1] as number;
     const N = 8;
-    const valori = Array.from({ length: N + 1 }, (_, i) => d(t0 + ((t1 - t0) * i) / N));
+    const la = (i: number): number => t0 + ((t1 - t0) * Math.max(0, Math.min(N, i))) / N;
+    const valori = Array.from({ length: N + 1 }, (_, i) => d(la(i)));
     for (let i = 0; i <= N; i++) {
       const v = valori[i] as number;
       if (v > (valori[i - 1] ?? Infinity) || v > (valori[i + 1] ?? Infinity)) continue;
-      let t = t0 + ((t1 - t0) * i) / N;
+      // Secțiunea de aur pe [t(i−1), t(i+1)]: găsește minimul din interval, oricât de aproape de capăt ar fi.
+      const g = (Math.sqrt(5) - 1) / 2;
+      let lo = la(i - 1), hi = la(i + 1);
+      let x1 = hi - g * (hi - lo), x2 = lo + g * (hi - lo), f1 = d(x1), f2 = d(x2);
+      for (let it = 0; it < 60 && hi - lo > 1e-16; it++) {
+        if (f1 <= f2) { hi = x2; x2 = x1; f2 = f1; x1 = hi - g * (hi - lo); f1 = d(x1); }
+        else { lo = x1; x1 = x2; f1 = f2; x2 = lo + g * (hi - lo); f2 = d(x2); }
+      }
+      let t = f1 <= f2 ? x1 : x2;
+      min = Math.min(min, v, d(t));
       for (let it = 0; it < 12; it++) {
         const r = peCubica(q, t), d1 = derivataCubicei(q, t);
         const u = 1 - t;

@@ -160,3 +160,11 @@ test('clicul alege calea: înăuntru, lângă curbă (în toleranță), nu depar
   assert.equal(instantaLa(d, 150, 59.7, 0.5), 'c', 'sub vârful de jos, în toleranță');
   assert.equal(instantaLa(d, 150, 58, 0.5), null, 'sub vârful de jos, departe');
 });
+
+test('distanța lângă capătul unei cubice (oracolul 2.7b): mânerul retras, unde B′(0) = 0, și minimul de lângă capăt', () => {
+  // Newton pornit din capăt nu se mișca: aplicația întorcea distanța până la capăt (0,3 mm, respectiv 2,3246).
+  const retras = { inchis: true, varfuri: [{ p: P(95, 30), s: { tip: 'C' as const, c1: P(95, 30), c2: P(95, 5) } }, { p: P(75, 5), s: { tip: 'L' as const } }, { p: P(75, 60), s: { tip: 'L' as const } }] };
+  assert.ok(Math.abs(distantaLaContur(P(95, 29.7), retras) - 0.005403264) < 1e-8);
+  const aproape = { inchis: true, varfuri: [{ p: P(142.5, 102.5), s: { tip: 'C' as const, c1: P(142, 100), c2: P(134.1, 90.9) } }, { p: P(120.5, 87.5), s: { tip: 'L' as const } }, { p: P(300, 300), s: { tip: 'L' as const } }] };
+  assert.ok(Math.abs(distantaLaContur(P(140.19442031171639, 102.79700300691184), aproape) - 2.283196288) < 1e-8);
+});
