@@ -5,9 +5,10 @@ import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { profil } from './profil.ts';
 import { regiunePastrata, verificaTaietura } from './regiune.ts';
 import { apropiereContururi } from '../geom/apropiere.ts';
-import type { Contur } from '../geom/contur.ts';
+import { LINIE, type Contur } from '../geom/contur.ts';
 import { cutieContur, depasire, largita, type Depasire } from '../geom/cutie.ts';
 import { distantaLaContur } from '../geom/distanta.ts';
+import { colturiDeDegajat, EPS_COLT, type Degajare } from './degajari.ts';
 import { bucataBuclei, lungimeBucla } from './parcurgere.ts';
 import { PRAG_REZOLUTIE } from './iesire.ts';
 import {
@@ -15,7 +16,22 @@ import {
 } from './intrari.ts';
 import { RAMPA_MINIMA } from './rampaMinima.ts';
 import { traseuProfil } from './traseu.ts';
-import { EPS_VARF, geometrieUrechi, type ParametriUrechi } from './urechi.ts';
+import { EPS_VARF, geometrieUrechi, type GeometrieUrechi, type ParametriUrechi } from './urechi.ts';
+
+/**
+ * Traseul x stă la cel puțin D de coloana fiecărei urechi a buclei c, cu urechile numărate de la poziția s pe c (ADR 0031,
+ * precizarea din 10.10): coloana urechii k e [c_k − h + R; c_k + h − R], unde puntea ține grosimea (ADR 0028 §2). Cu
+ * W = D, coloana e un punct.
+ */
+function departeDeUrechi(x: Contur, c: Contur, s: number, gu: GeometrieUrechi | string | null, R: number, D: number): boolean {
+  if (!gu || typeof gu === 'string') return true;
+  return gu.centre.every((cc) => {
+    const coloana = bucataBuclei(c, s + cc - gu.h + R, 2 * gu.h - D);
+    const p = coloana.varfuri[0]?.p;
+    const d = coloana.varfuri.length > 1 ? apropiereContururi(x, coloana).distanta : p ? distantaLaContur(p, x) : Infinity;
+    return d >= D;
+  });
+}
 
 /**
  * Lucrarea: tăieturile primei foi (`taieturiFoaie`, ADR 0025), adică operațiile pieselor pe elementele lor, în fiecare
@@ -67,13 +83,12 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   if (!regiune.ok) return { ok: false, motiv: regiune.motiv };
   const miscari: Miscare[] = [];
   const avertismente: string[] = [];
-  // Buclele cu urechi ale fiecărei tăieturi, ca o intrare să nu le taie legătura (ADR 0030 §3, condiția c). Un profil care
-  // nu iese se raportează mai jos, la tăietura lui.
-  const bucleCuUrechi: readonly (readonly Contur[])[] = taieturi.map((u) => {
-    if (!u.urechi) return [];
-    const p = profil(conturElement(u), { latura: u.latura, sens: u.sens, diametruScula: scula.diametru, adancime: u.adancime, pas: u.pas });
-    return p.ok ? (p.treceri[0]?.contururi ?? []) : [];
-  });
+  // Profilele tuturor tăieturilor, o dată. Un profil care nu iese se raportează mai jos, la tăietura lui.
+  const profile = taieturi.map((u) => profil(conturElement(u), { latura: u.latura, sens: u.sens, diametruScula: scula.diametru, adancime: u.adancime, pas: u.pas }));
+  // Buclele fiecărei tăieturi: ca o degajare să nu se apropie de ele (ADR 0032 §5 a); cele cu urechi, ca o intrare să nu le
+  // taie legătura (ADR 0030 §3, condiția c).
+  const bucleToate: readonly (readonly Contur[])[] = profile.map((p) => (p.ok ? (p.treceri[0]?.contururi ?? []) : []));
+  const bucleCuUrechi: readonly (readonly Contur[])[] = taieturi.map((u, i) => (u.urechi ? (bucleToate[i] ?? []) : []));
   const R = scula.diametru / 2;
   /** Cât trece discul frezei de fiecare latură a foii, pe un traseu (măsura ieșirii din foaie). */
   const iese = (x: Contur): Depasire => depasire(largita(cutieContur(x), R), foaie.stoc.latime, foaie.stoc.inaltime, PRAG_REZOLUTIE);
@@ -106,7 +121,8 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       }
       urechi = { numar: t.urechi.numar, latime: t.urechi.latime, varf };
     }
-    const pr = profil(conturElement(t), { latura: t.latura, sens: t.sens, diametruScula: scula.diametru, adancime: t.adancime, pas: t.pas });
+    const pr = profile[it];
+    if (!pr) return { ok: false, motiv: `${t.idLume}: profilul lipsește` };
     if (!pr.ok) return { ok: false, motiv: `${t.idLume}: ${pr.motiv}` };
     // Invarianta 2: trecerile au același traseu în plan, deci se judecă o dată, pe prima.
     const incalcare = verificaTaietura(regiune.regiune, t.idLume, t.latura, pr.treceri[0]?.contururi ?? [], scula.diametru / 2);
@@ -134,16 +150,6 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
         // Urechile buclei înseși (ADR 0031, precizarea din 10.10, la ADR 0030 §3 c): coloana punții fiecărei urechi, pe
         // traseu, e [c_k − h + R; c_k + h − R] numărat de la p₀ (ADR 0028 §2: puntea ține grosimea pe W − D).
         const gu = urechi ? geometrieUrechi(lungimeBucla(c), urechi) : null;
-        const urechiProprii = (semicerc: Contur, s: number): boolean => {
-          if (!gu || typeof gu === 'string') return true;
-          return gu.centre.every((cc) => {
-            // Cu W = D, coloana e un punct: lungimea ei, W − D, e zero.
-            const coloana = bucataBuclei(c, s + cc - gu.h + R, 2 * gu.h - scula.diametru);
-            const p = coloana.varfuri[0]?.p;
-            const d = coloana.varfuri.length > 1 ? apropiereContururi(semicerc, coloana).distanta : p ? distantaLaContur(p, semicerc) : Infinity;
-            return d >= scula.diametru;
-          });
-        };
         // ADR 0030 §3: încape dacă (a) ține discul în afara regiunii păstrate, (b) nu iese din foaie mai mult decât bucla,
         // pe nicio latură, și (c) lasă cel puțin 1 mm de material lângă orice altă buclă cu urechi, iar puntea fiecărei
         // urechi a buclei înseși rămâne întreagă (traseul la cel puțin D de coloana ei).
@@ -151,7 +157,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
           if (verificaTaietura(regiune.regiune, t.idLume, t.latura, [semicerc], R) !== null) return false;
           const d = iese(semicerc);
           if (d.stanga > dBucla.stanga || d.dreapta > dBucla.dreapta || d.jos > dBucla.jos || d.sus > dBucla.sus) return false;
-          if (!urechiProprii(semicerc, s)) return false;
+          if (!departeDeUrechi(semicerc, c, s, gu, R, scula.diametru)) return false;
           return bucleCuUrechi.every((bs, iu) => bs.every((b, jb) => (iu === it && jb === j)
             || apropiereContururi(semicerc, b).distanta >= scula.diametru + MARJA_SCHELET));
         };
@@ -165,7 +171,32 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       const pornite = bucle.map((c, j) => intrari?.[j]?.bucla ?? c);
       treceri = pr.treceri.map((x) => ({ adancime: x.adancime, contururi: pornite }));
     }
-    const tr = traseuProfil(treceri, regim, urechi, t.rampa ? { lungime: t.rampa.lungime } : undefined, intrari);
+    // Degajările (ADR 0032): colțurile concave pentru K, socotite pe desen; fiecare pe bucla care are vârful Q, dacă trece
+    // de condițiile de la §5. Altfel, avertisment.
+    let degajari: Degajare[][] | undefined;
+    if (t.colturi) {
+      if (t.latura === 'pe-linie') return { ok: false, motiv: `${t.idLume}: degajările cer o parte de deșeu, iar pe linie freza taie ambii pereți` };
+      const bucle = treceri[0]?.contururi ?? [];
+      const lista: Degajare[][] = bucle.map(() => []);
+      for (const d of colturiDeDegajat(conturElement(t), t.latura, t.sens, R, t.colturi.tip)) {
+        const j = bucle.findIndex((c) => c.varfuri.some((x) => Math.hypot(x.p.x - d.q.x, x.p.y - d.q.y) <= EPS_COLT));
+        const c = bucle[j];
+        // Decalarea a mâncat colțul (laturi prea scurte): nu există Q, deci nici degajare (§2).
+        if (!c) continue;
+        const drum: Contur = { inchis: false, varfuri: [{ p: d.q, s: LINIE }, { p: d.e, s: LINIE }] };
+        const vecine = bucleToate.every((bs, iu) => bs.every((b, jb) => (iu === it && jb === j)
+          || apropiereContururi(drum, b).distanta >= scula.diametru + MARJA_SCHELET));
+        const gu = urechi ? geometrieUrechi(lungimeBucla(c), urechi) : null;
+        const motiv = !vecine ? 'prea aproape de altă buclă' : !departeDeUrechi(drum, c, 0, gu, R, scula.diametru) ? 'ar tăia puntea unei urechi' : null;
+        if (motiv) {
+          avertismente.push(`${t.idLume}: degajarea omisă la colțul (${d.v.x.toFixed(3)}, ${d.v.y.toFixed(3)}): ${motiv}`);
+          continue;
+        }
+        lista[j]?.push(d);
+      }
+      degajari = lista;
+    }
+    const tr = traseuProfil(treceri, regim, urechi, t.rampa ? { lungime: t.rampa.lungime } : undefined, intrari, degajari);
     if (!tr.ok) return { ok: false, motiv: `${t.idLume}: ${tr.motiv}` };
     miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, ${t.latura}, ${t.adancime} mm`, element: t.idLume });
     // Fără `push(...listă)`: o listă foarte lungă depășește stiva de argumente.

@@ -1,5 +1,6 @@
 import { arc, cerculArcului, LINIE, numarSegmente, segment, type Contur, type Punct, type Segment, type Varf } from '../geom/contur.ts';
 import type { Miscare } from '../ir/ir.ts';
+import { degajeaza, type Degajare } from './degajari.ts';
 
 /**
  * Parcurgerea unei bucle închise cu un profil Z(s): drumul pe care îl folosesc urechile (ADR 0028) și rampa (ADR 0029).
@@ -71,8 +72,12 @@ export function avansCoborare(lung: number, dz: number, avans: number, avansPlon
  *   arc cu startul în capăt ar fi cercul întreg (`baleiajArc`).
  * - O mișcare poartă Z doar dacă Z-ul se schimbă pe ea.
  * - O bucată care coboară merge pe verticală cel mult cu avansul de plonjare: F = min(avans, avansPlonjare·L₃ / |ΔZ|).
+ * - La fiecare sosire într-un vârf care e Q-ul unei degajări (ADR 0032 §4), drumul Q → E → Q, la Z-ul curent; pornirea nu
+ *   e o sosire.
  */
-export function parcurge(c: Contur, noduri: readonly Nod[], avans: number, avansPlonjare: number): RezultatParcurgere {
+export function parcurge(
+  c: Contur, noduri: readonly Nod[], avans: number, avansPlonjare: number, degajari?: readonly Degajare[],
+): RezultatParcurgere {
   const n = numarSegmente(c);
   const primul = noduri[0], ultimul = noduri[noduri.length - 1];
   if (n === 0 || !primul || !ultimul || noduri.length < 2) return { ok: true, miscari: [] };
@@ -146,6 +151,7 @@ export function parcurge(c: Contur, noduri: readonly Nod[], avans: number, avans
       }
       zCur = t.z;
       sPrec = t.s;
+      if (t.capat) degajeaza(m, p, degajari, avans);
     }
     if (!peVarf || s1 >= sLa - EPS_RUPTURA) break;
   }

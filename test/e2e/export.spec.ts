@@ -498,3 +498,29 @@ test('intrările cu rampă (ADR 0031): rampa coboară pe sfertul intrării, la f
   await rand.locator('select[data-camp="latura"]').selectOption('pe-linie');
   await expect(nota).toHaveCount(0);
 });
+
+test('degajările (ADR 0032): dog-bone pe gaură, drumul din fiecare colț al traseului; intră în document; oprite pe linie', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const rand = page.locator('[data-operatie="e1/e1"]');
+  await rand.locator('select[data-camp="latura"]').selectOption('interior');
+  const colturi = rand.locator('select[data-camp="colturi"]');
+  await expect(colturi).toHaveValue('');
+  await colturi.selectOption('dog-bone');
+  const d = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const text = readFileSync(await (await d).path(), 'ascii');
+  // Gaura 100 × 60 din (20, 20), Ø6: colțul traseului stânga-jos e (23, 23), iar E = (20 + 3/√2, 20 + 3/√2), dus-întors.
+  expect(text).toMatch(/\nG1 X22\.121 Y22\.121( F\d+\.\d)?\nG1 X23\.000 Y23\.000( F\d+\.\d)?\n/);
+  for (const e of ['X117.879 Y22.121', 'X117.879 Y77.879', 'X22.121 Y77.879']) expect(text).toContain(e);
+  const doc = await documentSalvat(page, 2);
+  expect((doc as { piese: Array<{ operatii: Array<{ colturi: unknown }> }> }).piese[0]?.operatii[0]?.colturi).toEqual({ tip: 'dog-bone' });
+  // Redeschis, dialogul citește alegerea din document; pe linie, alegerea se oprește.
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(colturi).toHaveValue('dog-bone');
+  await rand.locator('select[data-camp="latura"]').selectOption('pe-linie');
+  await expect(colturi).toBeDisabled();
+  await expect(colturi).toHaveValue('');
+});

@@ -14,9 +14,11 @@ export type UrechiOperatie = { readonly numar: number; readonly latime: number; 
 export type RampaOperatie = { readonly lungime: number };
 /** Intrările și ieșirile (ADR 0030): raza sfertului de cerc (mm). */
 export type IntrariOperatie = { readonly raza: number };
+/** Degajările colțurilor (ADR 0032): dog-bone sau T-bone. */
+export type ColturiOperatie = { readonly tip: 'dog-bone' | 't-bone' };
 export type ValoriOperatie = {
   readonly latura: Latura; readonly sens: Sens; readonly adancime: number; readonly pas: number; readonly urechi: UrechiOperatie | null;
-  readonly rampa: RampaOperatie | null; readonly intrari: IntrariOperatie | null;
+  readonly rampa: RampaOperatie | null; readonly intrari: IntrariOperatie | null; readonly colturi: ColturiOperatie | null;
 };
 
 /** Un rând: o operație a unei piese (ADR 0025), cu cheia `<piesă>/<operație>`. */
@@ -90,6 +92,8 @@ type Rand = {
   readonly urechi: boolean; readonly numarUrechi: string; readonly latimeUreche: string; readonly grosimeUreche: string;
   readonly rampa: boolean; readonly lungimeRampa: string;
   readonly intrari: boolean; readonly razaIntrare: string;
+  /** Degajările: „” = fără. */
+  readonly colturi: '' | ColturiOperatie['tip'];
 };
 
 /** Raza cu care pornește bifa intrărilor pe un rând care n-avea (ADR 0030 §1). */
@@ -131,6 +135,7 @@ export function DialogExport(
       urechi: o.valori.urechi !== null, numarUrechi: text(u.numar), latimeUreche: text(u.latime), grosimeUreche: text(u.grosime),
       rampa: o.valori.rampa !== null, lungimeRampa: text((o.valori.rampa ?? RAMPA_IMPLICITA).lungime),
       intrari: o.valori.intrari !== null, razaIntrare: text((o.valori.intrari ?? INTRARI_IMPLICITE).raza),
+      colturi: o.valori.colturi?.tip ?? '',
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
@@ -212,7 +217,9 @@ export function DialogExport(
     const raza = citesteNumar(p.razaIntrare);
     if (cuIntrari && raza === null) return [];
     const intrari = cuIntrari && raza !== null ? { raza } : null;
-    return [[o.cheie, { latura: p.latura, sens: p.sens, adancime, pas, urechi, rampa, intrari }] as const];
+    // Pe linie, nici degajările (ADR 0032 §6): alegerea e oprită, iar documentul nu le primește.
+    const colturi = p.colturi !== '' && p.latura !== 'pe-linie' ? { tip: p.colturi } : null;
+    return [[o.cheie, { latura: p.latura, sens: p.sens, adancime, pas, urechi, rampa, intrari, colturi }] as const];
   }));
   const fmtFreza = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3 });
   // Motivul spune ce câmp e greșit: valorile operației, urechile, sau amândouă (recenzia feliei 2.4).
@@ -272,6 +279,7 @@ export function DialogExport(
               <th title={t('export.urechi.titlu')}>{t('export.urechi')}</th>
               <th title={t('export.rampa.titlu')}>{t('export.rampa')}</th>
               <th title={t('export.intrari.titlu')}>{t('export.intrari')}</th>
+              <th title={t('export.colturi.titlu')}>{t('export.colturi')}</th>
             </tr>
           </thead>
           <tbody>
@@ -311,12 +319,22 @@ export function DialogExport(
                       disabled={doarCitire || p.latura === 'pe-linie'} aria-label={t('export.intrari')}
                       title={t('export.intrari.titlu')} onChange={(ev) => { schimba(o.cheie, { intrari: ev.target.checked }); }} />
                   </td>
+                  <td>
+                    {/* Pe linie, nu există parte de deșeu pentru degajare (ADR 0032 §6). */}
+                    <select value={p.latura === 'pe-linie' ? '' : p.colturi} data-camp="colturi" disabled={doarCitire || p.latura === 'pe-linie'}
+                      aria-label={t('export.colturi')} title={t('export.colturi.titlu')}
+                      onChange={(ev) => { schimba(o.cheie, { colturi: ev.target.value === 'dog-bone' || ev.target.value === 't-bone' ? ev.target.value : '' }); }}>
+                      <option value="">{t('export.colturi.fara')}</option>
+                      <option value="dog-bone">{t('export.colturi.dog-bone')}</option>
+                      <option value="t-bone">{t('export.colturi.t-bone')}</option>
+                    </select>
+                  </td>
                 </tr>
                 {(p.urechi || p.rampa || (p.intrari && p.latura !== 'pe-linie')) && (
                   // Câmpurile urechilor și ale rampei, pe un rând al lor sub operație: tabelul rămâne îngust.
                   <tr className="detalii" data-detalii={o.cheie}>
                     <td />
-                    <td colSpan={7}>
+                    <td colSpan={8}>
                       <div className="campuri-detalii">
                       {p.urechi && (
                       <div className="campuri-urechi" data-urechi={o.cheie}>

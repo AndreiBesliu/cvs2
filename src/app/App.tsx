@@ -315,6 +315,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
           urechi: o.urechi ? { numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime } : null,
           rampa: o.rampa ? { lungime: o.rampa.lungime } : null,
           intrari: o.intrari ? { raza: o.intrari.raza } : null,
+          colturi: o.colturi ? { tip: o.colturi.tip } : null,
         },
       };
     }));

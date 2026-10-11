@@ -1,5 +1,6 @@
 import type { Contur } from '../geom/contur.ts';
 import type { Miscare } from '../ir/ir.ts';
+import type { Degajare } from './degajari.ts';
 import { EPS_RUPTURA, lungimeBucla, parcurge, zLa, type Nod } from './parcurgere.ts';
 import { RAMPA_MINIMA } from './rampaMinima.ts';
 import { EPS_VARF, geometrieUrechi, noduriProfil, type ParametriUrechi } from './urechi.ts';
@@ -85,7 +86,7 @@ function noduriRampa(tura: readonly Nod[], P: number, e: number, Lr: number, dPr
  */
 export function buclaCuRampa(
   c: Contur, adancimi: readonly number[], rampa: ParametriRampa, urechi: ParametriUrechi | undefined,
-  avans: number, avansPlonjare: number,
+  avans: number, avansPlonjare: number, degajari?: readonly Degajare[],
 ): RezultatRampa {
   const P = lungimeBucla(c);
   if (!(P > 0)) return { ok: true, miscari: [] };
@@ -118,7 +119,7 @@ export function buclaCuRampa(
     const urmatoarea = ultima ? e + Lr : scoate(e + Lr);
     const rampaK = noduriRampa(tura, P, e, Lr, dPrec, d);
     const turaK = noduriPe(tura, P, e + Lr, urmatoarea + P);
-    const r = parcurge(c, [...rampaK, ...turaK.slice(1)], avans, avansPlonjare);
+    const r = parcurge(c, [...rampaK, ...turaK.slice(1)], avans, avansPlonjare, degajari);
     if (!r.ok) return r;
     for (const x of r.miscari) m.push(x);
     e = urmatoarea;

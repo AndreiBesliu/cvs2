@@ -1,4 +1,5 @@
 import type { Contur } from '../geom/contur.ts';
+import type { Degajare } from './degajari.ts';
 import { parcurge, type Nod, type RezultatParcurgere } from './parcurgere.ts';
 
 export { lungimeBucla } from './parcurgere.ts';
@@ -58,8 +59,10 @@ export function noduriProfil(lungime: number, u: ParametriUrechi, d: number): re
 
 /**
  * Mișcările unei bucle pe o trecere care traversează urechile, de la vârful 0 (unde scula e deja la −d) înapoi la el:
- * parcurgerea buclei cu profilul urechilor (`parcurge`, cu regulile ADR 0028 §4).
+ * parcurgerea buclei cu profilul urechilor (`parcurge`, cu regulile ADR 0028 §4), cu degajările colțurilor (ADR 0032).
  */
-export function bucataCuUrechi(c: Contur, noduri: readonly Nod[], avans: number, avansPlonjare: number): RezultatParcurgere {
-  return parcurge(c, noduri, avans, avansPlonjare);
+export function bucataCuUrechi(
+  c: Contur, noduri: readonly Nod[], avans: number, avansPlonjare: number, degajari?: readonly Degajare[],
+): RezultatParcurgere {
+  return parcurge(c, noduri, avans, avansPlonjare, degajari);
 }
