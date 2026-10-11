@@ -127,7 +127,36 @@ Avertismentele (degajarea omisă) se arată sub rezultat, ca la intrări.
 - Pe un dreptunghi cu colțuri rotunjite sub raza frezei, freza lasă raza ei, iar colțul nu primește degajare: desenul
   are colțuri rotunjite, nu ascuțite.
 - Direcția T-bone-ului se alege după lungimea pereților. Alegerea de mână vine cu panoul de proprietăți.
+- Degajările aceleiași bucle nu se judecă între ele (precizarea din 11.10); formele cu colțuri intrânde apropiate vin cu
+  importul SVG.
 - Degajarea e minimă: cercul trece prin V. Un joc în plus (un cep cu toleranță strânsă) se dă din desen.
+
+**Precizarea din 11.10.2026** (recenzia feliei 2.6, înainte de orice publicare).
+- **Degajările față în față** (§5 a). Condiția judeca drumul doar față de traseele celorlalte bucle. Două găuri 40 × 30 cu
+  T-bone, cu un perete de 4–6 mm între ele: fiecare crestătură trecea singură de condiție (8 mm până la traseul vecinei),
+  dar crestăturile se întâlneau și tăiau peretele de tot. O bucată din piesă se desprindea, fără niciun avertisment.
+  Acum drumul [Q, E] stă la cel puțin D + 1 mm și de drumurile **candidate** ale celorlalte bucle.
+  - Un candidat e un colț de la §2–§3 cu Q pe bucla lui și cu drumul departe de traseele celorlalte bucle.
+  - Două candidate ale unor bucle diferite, mai apropiate de D + 1 mm, se omit amândouă, deci ordinea tăieturilor nu
+    contează. Condiția b nu intră în candidatură (depinde de pornirea buclei), deci un candidat care pică b tot îl
+    oprește pe cel din fața lui: e partea sigură.
+  - Degajările aceleiași bucle nu se judecă între ele: cu formele de azi nu se pot întâlni (se redeschide la 2.7).
+- **c. marginea foii** (condiție nouă). O crestătură putea lăsa o fâșie de 0,5 mm până la marginea foii, fără să iasă din ea.
+  Acum, pe fiecare latură a foii, discul de pe drum stă la cel puțin 1 mm de ea. Dacă bucla însăși e mai aproape de acea
+  latură (sau iese), drumul poate ajunge cât bucla, nu mai aproape.
+- **Avertismentul,** exact: „<idLume>: degajarea omisă la colțul (x, y): <motiv>”, cu V în coordonatele foii, la 3 zecimale.
+  Motivul e primul care pică, în ordinea: „prea aproape de altă buclă” (traseele, a), „prea aproape de degajarea altei
+  bucle” (candidatele, a), „ar tăia puntea unei urechi” (b), „prea aproape de marginea foii” (c).
+- **Conturul curățat** (§2). Colțurile se socotesc pe conturul elementului curățat ca la intrarea în offset: un arc pe care
+  curățarea îl scoate (sub 1e-6 mm) face colțul ascuțit, la fel cum îl vede traseul.
+- **Arcele sub raza frezei** (§2, limitele). Un colț al elementului concav pentru K, rotunjit cu o rază sub R, nu primește
+  degajare: freza lasă acolo raza ei. Exportul o spune, câte un avertisment pe arc: „<idLume>: colțul rotunjit cu raza r mm
+  (sub raza frezei, R mm) rămâne cu raza frezei; degajarea pe arce vine cu importul SVG”.
+- **Cu urechi** (§4). Drumul e la Z-ul profilului în Q, pe palier sau pe flanc. Sub acel Z, colțul rămâne în ciotul urechii
+  și pleacă odată cu ea. Deci, la §8, „colțul V tăiat la adâncime” înseamnă tăiat până la Z-ul drumului: −d_k, sau Z-ul
+  profilului în Q.
+- **Timpul.** Distanțele de la §5 a se socotesc exact doar unde cutiile nu le despart deja (cutia e o margine de jos):
+  1600 de găuri cu dog-bone, 1,3 s în loc de 13 s. Un index spațial vine cu foile mari (etapa 12).
 
 ## Ce am respins
 
