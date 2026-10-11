@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
-import { cutieContur } from '../geom/cutie.ts';
 import { t } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { avertismente } from '../model/avertismente.ts';
 import { documentNou, type Document, type Operatie } from '../model/document.ts';
-import { conturElement } from '../model/forme.ts';
+import { cutieElement } from '../model/forme.ts';
 import { istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
 import { creeazaRegistru, ruleaza, stare } from '../ui/actiuni.ts';
@@ -62,7 +61,7 @@ function descriere(e: Pick<ElementLume, 'forma' | 'matrice'>): string {
     return t('forma.dreptunghi', { latime: doua(e.forma.latime), inaltime: doua(e.forma.inaltime), x: doua(x), y: doua(y) });
   }
   if (e.forma.tip === 'cerc') return t('forma.cerc', { raza: doua(e.forma.raza), x: doua(x), y: doua(y) });
-  const c = cutieContur(conturElement(e));
+  const c = cutieElement(e);
   return t('forma.cale', {
     latime: doua(c.maxX - c.minX), inaltime: doua(c.maxY - c.minY), n: e.forma.varfuri.length, x: doua(c.minX), y: doua(c.minY),
   });

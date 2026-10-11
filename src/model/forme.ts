@@ -1,4 +1,5 @@
 import { conturCerc, conturDreptunghi, LINIE, type Contur, type Segment } from '../geom/contur.ts';
+import { cutieContur, type Cutie } from '../geom/cutie.ts';
 import { transformaContur, type Matrice } from '../geom/matrice.ts';
 import type { FormaDoc, SegmentDoc } from './document.ts';
 
@@ -22,4 +23,21 @@ export function conturElement(e: { readonly forma: FormaDoc; readonly matrice: M
       ? conturCerc(0, 0, f.raza)
       : { inchis: true, varfuri: f.varfuri.map((x) => ({ p: { x: x.p.x, y: x.p.y }, s: segmentCale(x.s) })) };
   return transformaContur(local, e.matrice);
+}
+
+/** Cutiile exacte, după formă (obiectul ei) și matrice: documentul nu se schimbă pe loc, deci o formă veche nu revine. */
+const CUTII = new WeakMap<FormaDoc, Map<string, Cutie>>();
+
+/**
+ * Cutia exactă a elementului în lume (cu extremele arcelor și ale cubicelor), ținută între apeluri: clicul și lista o cer
+ * la fiecare gest, iar o cale are până la 50 000 de vârfuri (recenzia 2.7b).
+ */
+export function cutieElement(e: { readonly forma: FormaDoc; readonly matrice: Matrice }): Cutie {
+  let pe = CUTII.get(e.forma);
+  if (!pe) { pe = new Map(); CUTII.set(e.forma, pe); }
+  const m = e.matrice;
+  const cheie = `${m.a} ${m.b} ${m.c} ${m.d} ${m.e} ${m.f}`;
+  let c = pe.get(cheie);
+  if (!c) { c = cutieContur(conturElement(e)); pe.set(cheie, c); }
+  return c;
 }

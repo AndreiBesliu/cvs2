@@ -1,4 +1,4 @@
-import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from './contur.ts';
+import { cerculArcului, numarSegmente, segment, type Contur, type Punct, type Segment } from './contur.ts';
 
 /**
  * Distanța de la un punct la un contur și regula de umplere `evenodd` (T3, ADR 0003): o singură funcție „punct în
@@ -95,6 +95,8 @@ function distantaLaCubica(p: Punct, q: Cubica): number {
       }
       let t = f1 <= f2 ? x1 : x2;
       min = Math.min(min, v, d(t));
+      // Newton lustruiește, prins în intervalul secțiunii de aur.
+      const loN = la(i - 1), hiN = la(i + 1);
       for (let it = 0; it < 12; it++) {
         const r = peCubica(q, t), d1 = derivataCubicei(q, t);
         const u = 1 - t;
@@ -105,7 +107,7 @@ function distantaLaCubica(p: Punct, q: Cubica): number {
         const f = (r.x - p.x) * d1.x + (r.y - p.y) * d1.y;
         const fp = d1.x * d1.x + d1.y * d1.y + (r.x - p.x) * d2.x + (r.y - p.y) * d2.y;
         if (!(Math.abs(fp) > 0)) break;
-        const tn = Math.max(t0, Math.min(t1, t - f / fp));
+        const tn = Math.max(loN, Math.min(hiN, t - f / fp));
         if (Math.abs(tn - t) < 1e-15) break;
         t = tn;
       }
@@ -115,12 +117,17 @@ function distantaLaCubica(p: Punct, q: Cubica): number {
   return min;
 }
 
+/** Distanța de la p la un singur segment (linie, arc sau cubică). */
+export function distantaLaSegment(p: Punct, a: Punct, b: Punct, s: Segment): number {
+  return s.tip === 'L' ? distantaLaSegmentDrept(p, a, b)
+    : s.tip === 'A' ? distantaLaArc(p, a, b, s.bulge) : distantaLaCubica(p, { a, c1: s.c1, c2: s.c2, b });
+}
+
 export function distantaLaContur(p: Punct, c: Contur): number {
   let d = Infinity;
   for (let i = 0; i < numarSegmente(c); i++) {
     const { a, b, s } = segment(c, i);
-    d = Math.min(d, s.tip === 'L' ? distantaLaSegmentDrept(p, a, b)
-      : s.tip === 'A' ? distantaLaArc(p, a, b, s.bulge) : distantaLaCubica(p, { a, c1: s.c1, c2: s.c2, b }));
+    d = Math.min(d, distantaLaSegment(p, a, b, s));
   }
   return d;
 }
@@ -151,24 +158,32 @@ function traversariCubica(p: Punct, y: number, q: Cubica): number {
  * Câte ori taie conturul o rază orizontală spre +x din p. Raza e ridicată cu un ε față de p, ca să nu treacă niciodată
  * exact printr-un vârf: o atingere în vârf ar fi numărată altfel de cele două segmente care se întâlnesc acolo.
  */
+/** Cât se ridică raza orizontală față de p (vezi `traversari`). */
+export const RIDICARE_RAZA = 1e-9;
+
+/** Câte ori taie segmentul de la a la b raza orizontală de înălțime y (deja ridicată) spre +x din p. */
+export function traversariSegment(p: Punct, y: number, a: Punct, b: Punct, s: Segment): number {
+  if (s.tip === 'L') return (a.y > y) !== (b.y > y) && p.x < a.x + ((y - a.y) * (b.x - a.x)) / (b.y - a.y) ? 1 : 0;
+  if (s.tip === 'A') {
+    const { centru, raza, start, baleiaj } = cerculArcului(a, b, s.bulge);
+    const h = y - centru.y;
+    if (Math.abs(h) >= raza) return 0;
+    const w = Math.sqrt(raza * raza - h * h);
+    let n = 0;
+    for (const x of [centru.x - w, centru.x + w]) {
+      if (x > p.x && peArc(Math.atan2(h, x - centru.x), start, baleiaj)) n++;
+    }
+    return n;
+  }
+  return traversariCubica(p, y, { a, c1: s.c1, c2: s.c2, b });
+}
+
 function traversari(p: Punct, c: Contur): number {
-  const y = p.y + 1e-9;
+  const y = p.y + RIDICARE_RAZA;
   let n = 0;
   for (let i = 0; i < numarSegmente(c); i++) {
     const { a, b, s } = segment(c, i);
-    if (s.tip === 'L') {
-      if ((a.y > y) !== (b.y > y) && p.x < a.x + ((y - a.y) * (b.x - a.x)) / (b.y - a.y)) n++;
-    } else if (s.tip === 'A') {
-      const { centru, raza, start, baleiaj } = cerculArcului(a, b, s.bulge);
-      const h = y - centru.y;
-      if (Math.abs(h) >= raza) continue;
-      const w = Math.sqrt(raza * raza - h * h);
-      for (const x of [centru.x - w, centru.x + w]) {
-        if (x > p.x && peArc(Math.atan2(h, x - centru.x), start, baleiaj)) n++;
-      }
-    } else {
-      n += traversariCubica(p, y, { a, c1: s.c1, c2: s.c2, b });
-    }
+    n += traversariSegment(p, y, a, b, s);
   }
   return n;
 }

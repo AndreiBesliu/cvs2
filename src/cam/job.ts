@@ -1,5 +1,6 @@
 import type { Document } from '../model/document.ts';
 import { conturDeTaiat } from './contur.ts';
+import { conturElement } from '../model/forme.ts';
 import { taieturiFoaie, type Taietura } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { profil } from './profil.ts';
@@ -9,7 +10,7 @@ import { LINIE, type Contur } from '../geom/contur.ts';
 import { cutieContur, depasire, largita, type Cutie, type Depasire } from '../geom/cutie.ts';
 import { curataIntrare } from '../geom/offset.ts';
 import { distantaLaContur } from '../geom/distanta.ts';
-import { arceSubRaza, colturiDeDegajat, EPS_COLT, type Degajare } from './degajari.ts';
+import { arceSubRaza, colturiCurbe, colturiDeDegajat, cubiceSubRaza, EPS_COLT, type Degajare } from './degajari.ts';
 import { bucataBuclei, lungimeBucla } from './parcurgere.ts';
 import { PRAG_REZOLUTIE } from './iesire.ts';
 import {
@@ -29,7 +30,7 @@ function departeDeUrechi(x: Contur, c: Contur, s: number, gu: GeometrieUrechi | 
   return gu.centre.every((cc) => {
     const coloana = bucataBuclei(c, s + cc - gu.h + R, 2 * gu.h - D);
     const p = coloana.varfuri[0]?.p;
-    const d = coloana.varfuri.length > 1 ? apropiereContururi(x, coloana).distanta : p ? distantaLaContur(p, x) : Infinity;
+    const d = coloana.varfuri.length > 1 ? apropiereContururi(x, coloana, D).distanta : p ? distantaLaContur(p, x) : Infinity;
     return d >= D;
   });
 }
@@ -106,7 +107,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   const departeDeBucla = (x: Contur, cx: Cutie, iu: number, jb: number): boolean => {
     const cb = cutiiBucle[iu]?.[jb];
     const b = bucleToate[iu]?.[jb];
-    return !cb || !b || distantaCutii(cx, cb) >= prag || apropiereContururi(x, b).distanta >= prag;
+    return !cb || !b || distantaCutii(cx, cb) >= prag || apropiereContururi(x, b, prag).distanta >= prag;
   };
   const R = scula.diametru / 2;
   // Degajările candidate (ADR 0032 §5 a, precizarea din 11.10): colțurile fiecărei tăieturi cu degajări, pe conturul curățat
@@ -131,7 +132,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   });
   /** Drumul candidatului (iu, j) stă la cel puțin D + 1 mm de drumurile candidate ale celorlalte bucle. */
   const departeDeDegajari = (x: Candidat, iu: number): boolean => candidati.every((cs, ib) => cs.every((y) => !y.departe
-    || (ib === iu && y.j === x.j) || distantaCutii(x.cutie, y.cutie) >= prag || apropiereContururi(x.drum, y.drum).distanta >= prag));
+    || (ib === iu && y.j === x.j) || distantaCutii(x.cutie, y.cutie) >= prag || apropiereContururi(x.drum, y.drum, prag).distanta >= prag));
   /** Cât trece discul frezei de fiecare latură a foii, pe un traseu (măsura ieșirii din foaie). */
   const iese = (x: Contur): Depasire => depasire(largita(cutieContur(x), R), foaie.stoc.latime, foaie.stoc.inaltime, PRAG_REZOLUTIE);
   for (const [it, t] of taieturi.entries()) {
@@ -201,7 +202,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
           if (d.stanga > dBucla.stanga || d.dreapta > dBucla.dreapta || d.jos > dBucla.jos || d.sus > dBucla.sus) return false;
           if (!departeDeUrechi(semicerc, c, s, gu, R, scula.diametru)) return false;
           return bucleCuUrechi.every((bs, iu) => bs.every((b, jb) => (iu === it && jb === j)
-            || apropiereContururi(semicerc, b).distanta >= scula.diametru + MARJA_SCHELET));
+            || apropiereContururi(semicerc, b, scula.diametru + MARJA_SCHELET).distanta >= scula.diametru + MARJA_SCHELET));
         };
         const ales = alegeIntrarea(c, t.sens, raza, incape, cuRampa);
         if (!ales) {
@@ -219,9 +220,15 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     let degajari: Degajare[][] | undefined;
     if (t.colturi) {
       if (t.latura === 'pe-linie') return { ok: false, motiv: `${t.idLume}: degajările cer o parte de deșeu, iar pe linie freza taie ambii pereți` };
-      const curat = curataIntrare(conturDe(t));
-      for (const r of arceSubRaza(curat.ok ? curat.contur : conturDe(t), t.latura, t.sens, R)) {
+      // Arcele sub raza frezei se socotesc pe DESEN (recenzia 2.7b): arcele biarcelor unei cubice nu sunt colțuri, iar o
+      // curbă strânsă se spune o dată, nu pe fiecare arc al ei.
+      const desen = conturElement(t);
+      const curat = curataIntrare(desen);
+      for (const r of arceSubRaza(curat.ok ? curat.contur : desen, t.latura, t.sens, R)) {
         avertismente.push(`${t.idLume}: colțul rotunjit cu raza ${r.toFixed(3)} mm (sub raza frezei, ${R.toFixed(3)} mm) rămâne cu raza frezei; degajarea pe arce vine cu importul SVG`);
+      }
+      for (const c of cubiceSubRaza(desen, t.latura, t.sens, R)) {
+        avertismente.push(`${t.idLume}: curba de lângă (${c.p.x.toFixed(3)}, ${c.p.y.toFixed(3)}) se strânge până la raza ${c.raza.toFixed(3)} mm (sub raza frezei, ${R.toFixed(3)} mm): freza o rotunjește`);
       }
       const bucle = treceri[0]?.contururi ?? [];
       const lista: Degajare[][] = bucle.map(() => []);
@@ -246,6 +253,15 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
         lista[x.j]?.push(x.d);
       }
       degajari = lista;
+      // Colțurile desenului cu o latură curbă nu primesc degajare (ADR 0032, doar între două linii): spuse, nu omise pe
+      // tăcute (recenzia 2.7b), dacă freza ajunge la ele (o buclă trece la cel mult 2·R/cos(θ/2) de colț) și dacă biarcele
+      // nu le-au dat totuși două linii, deci o degajare.
+      const aici = (p: { x: number; y: number }, q: { x: number; y: number }): boolean => Math.hypot(p.x - q.x, p.y - q.y) <= EPS_COLT;
+      for (const c of colturiCurbe(desen, t.latura, t.sens, R)) {
+        if ((candidati[it] ?? []).some((x) => aici(x.d.v, c.v))) continue;
+        if (!bucle.some((b) => distantaLaContur(c.v, b) <= (2 * R) / c.cosJumatate)) continue;
+        avertismente.push(`${t.idLume}: degajarea omisă la colțul (${c.v.x.toFixed(3)}, ${c.v.y.toFixed(3)}): o latură a colțului e curbă`);
+      }
     }
     const tr = traseuProfil(treceri, regim, urechi, t.rampa ? { lungime: t.rampa.lungime } : undefined, intrari, degajari);
     if (!tr.ok) return { ok: false, motiv: `${t.idLume}: ${tr.motiv}` };

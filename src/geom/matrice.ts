@@ -51,12 +51,28 @@ export function determinant(m: Matrice): number {
   return m.a * m.d - m.b * m.c;
 }
 
+/**
+ * Toleranța similitudinii în lume (ADR 0034 §2, recenzia 2.7b). Ușa judecă matricea din piesă la 1e-12; rotirea instanței
+ * învârte abaterea (a − d, b + c), iar norma pe componente crește cu cel mult √2. Consumatorii (pânza, clicul, CAM-ul)
+ * judecă deci la 2e-12, iar ușa judecă și matricea în lume la aceeași valoare: ce primește ușa, consumatorii pot desena.
+ */
+export const TOLERANTA_SIMILITUDINE_LUME = 2e-12;
+
+/**
+ * Determinantul pe coloanele normate: semnul și nulitatea lui nu depind de scară. Determinantul brut al unei scalări de
+ * 1e-162 e 5e-324, iar sub o rotire de 45° ajunge 0 (recenzia 2.7b).
+ */
+export function determinantNormat(m: Matrice): number {
+  const n1 = Math.hypot(m.a, m.b), n2 = Math.hypot(m.c, m.d);
+  return n1 > 0 && n2 > 0 ? (m.a / n1) * (m.d / n2) - (m.b / n1) * (m.c / n2) : 0;
+}
+
 /** E similitudine dacă păstrează unghiurile: rotire + scalare uniformă, eventual cu oglindire. */
 export function esteSimilitudine(m: Matrice, tol = 1e-12): boolean {
   const scara = Math.max(Math.hypot(m.a, m.b), Math.hypot(m.c, m.d), 1);
   const directa = Math.abs(m.a - m.d) <= tol * scara && Math.abs(m.b + m.c) <= tol * scara;
   const oglindita = Math.abs(m.a + m.d) <= tol * scara && Math.abs(m.b - m.c) <= tol * scara;
-  return (directa || oglindita) && Math.abs(determinant(m)) > 0;
+  return (directa || oglindita) && Math.abs(determinantNormat(m)) > 0;
 }
 
 /**
@@ -65,10 +81,10 @@ export function esteSimilitudine(m: Matrice, tol = 1e-12): boolean {
  */
 export function transformaContur(contur: Contur, m: Matrice): Contur {
   const areArce = contur.varfuri.some((v) => v.s.tip === 'A');
-  if (areArce && !esteSimilitudine(m)) {
+  if (areArce && !esteSimilitudine(m, TOLERANTA_SIMILITUDINE_LUME)) {
     throw new Error('un arc nu trece exact printr-o matrice neuniformă: forma rămâne parametrică (T2)');
   }
-  const semn = determinant(m) < 0 ? -1 : 1;
+  const semn = determinantNormat(m) < 0 ? -1 : 1;
   return {
     inchis: contur.inchis,
     varfuri: contur.varfuri.map((v) => {

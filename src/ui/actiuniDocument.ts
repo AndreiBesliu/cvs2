@@ -1,9 +1,9 @@
 import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
 import {
-  noduriPiesa, numara, operatieImplicita, operatieInMargini, plafonDepasit, PLAFON, type Document, type FormaDoc, type Instanta,
-  type Numaratoare, type Operatie, type Piesa,
+  instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, operatieInMargini, plafonDepasit, PLAFON, type Document, type FormaDoc,
+  type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa,
 } from '../model/document.ts';
-import { conturElement } from '../model/forme.ts';
+import { conturElement, cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/incarcare.ts';
 import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie } from '../model/lume.ts';
@@ -46,6 +46,9 @@ export function instantaLa(doc: Document, x: number, y: number, toleranta: numbe
   for (let i = lume.length - 1; i >= 0; i--) {
     const e = lume[i];
     if (!e) continue;
+    // Cutia, lărgită cu toleranța, o margine de jos a distanței: elementele departe de clic nu se mai măsoară.
+    const k = cutieElement(e);
+    if (x < k.minX - toleranta || x > k.maxX + toleranta || y < k.minY - toleranta || y > k.maxY + toleranta) continue;
     const c = conturElement(e);
     if (distantaLaContur({ x, y }, c) <= toleranta || inRegiune({ x, y }, [c])) return e.instanta;
   }
@@ -170,6 +173,25 @@ const poateAdauga = (ctx: ContextDocument): true | 'motiv.doar-citire' | 'motiv.
   return incape(ctx.istoric().doc, { noduri: 1, instante: 1, elementeLume: 1, operatii: 1, taieturi: 1, varfuri: 0, varfuriLume: 0 }) ? true : 'motiv.plafon';
 };
 
+/** O instanță aleasă, decalată cu (dx, dy), ar sta prea departe de origine: ușa n-ar mai redeschide proiectul. */
+function alesePreaDeparte(ctx: ContextDocument, dx: number, dy: number): boolean {
+  const alese = new Set(ctx.selectie());
+  return foaieCurenta(ctx.istoric().doc).instante.some((i) => alese.has(i.id) && instantaPreaDeparte(i.x + dx, i.y + dy));
+}
+
+/**
+ * Copia arborelui unei piese pentru Ctrl+D: noduri noi, dar formele împărțite. Documentul nu se schimbă pe loc, deci o
+ * formă poate sta în două piese; o cale de 50 000 de vârfuri nu se mai copiază în istoric la fiecare Ctrl+D (recenzia 2.7b).
+ */
+function copieArbore(n: Nod): Nod {
+  if (n.tip === 'element') {
+    const { forma, ...rest } = n;
+    return { ...structuredClone(rest), forma } as Nod;
+  }
+  const { copii, ...rest } = n;
+  return { ...structuredClone(rest), copii: copii.map(copieArbore) } as Nod;
+}
+
 /** Selecția păstrează doar instanțele care există încă (după o anulare, o refacere sau o ștergere). */
 function curataSelectia(ctx: ContextDocument): void {
   const existente = new Set(foaieCurenta(ctx.istoric().doc).instante.map((i) => i.id));
@@ -222,7 +244,14 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
     id: 'document.muta-selectia',
     eticheta: 'actiune.muta-selectia',
     capabilitate: 'desen',
-    activa: (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie' : !ctx.deplasare ? 'motiv.nicio-deplasare' : scrie(ctx)),
+    activa: (ctx) => {
+      if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
+      if (!ctx.deplasare) return 'motiv.nicio-deplasare';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const d = ctx.deplasare();
+      return alesePreaDeparte(ctx, d.dx, d.dy) ? 'motiv.prea-departe' : true;
+    },
     ruleaza: (ctx) => {
       const d = ctx.deplasare?.() ?? { dx: 0, dy: 0 };
       if (!Number.isFinite(d.dx) || !Number.isFinite(d.dy) || (d.dx === 0 && d.dy === 0)) return;
@@ -246,7 +275,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
       if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
       const s = scrie(ctx);
       if (s !== true) return s;
-      return incape(ctx.istoric().doc, cresteCopia(ctx)) ? true : 'motiv.plafon';
+      if (!incape(ctx.istoric().doc, cresteCopia(ctx))) return 'motiv.plafon';
+      return alesePreaDeparte(ctx, DECALAJ_COPIE.dx, DECALAJ_COPIE.dy) ? 'motiv.prea-departe' : true;
     },
     ruleaza: (ctx) => {
       let h = ctx.istoric();
@@ -259,7 +289,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
         const piesaVeche = doc.piese.find((p) => p.id === original.piesa);
         if (!piesaVeche) continue;
         const id = idNou(doc);
-        const piesa: Piesa = { ...structuredClone(piesaVeche), id };
+        const { radacina, ...restPiesa } = piesaVeche;
+        const piesa: Piesa = { ...structuredClone(restPiesa), radacina: copieArbore(radacina), id };
         const foaie = foaieCurenta(doc);
         const c: Comanda = {
           tip: 'adauga',

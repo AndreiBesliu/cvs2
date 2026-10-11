@@ -134,6 +134,14 @@ const SchemaCale = v.pipe(
     const urm = f.varfuri[(i + 1) % f.varfuri.length];
     return urm !== undefined && (urm.p.x !== x.p.x || urm.p.y !== x.p.y);
   }), 'un arc al căii are capetele în același punct: n-are cerc'),
+  // Raza arcului, (c / 4)·(b + 1/b), cel mult a cercului (recenzia 2.7b): un bulge aproape de 0 dă un cerc cât un continent,
+  // unul uriaș depășește double-ul (NaN), iar pânza lucrează în float32. Scrisă ca `<=`, ca NaN și Infinity să cadă.
+  v.check((f) => f.varfuri.every((x, i) => {
+    if (x.s.tip !== 'A') return true;
+    const urm = f.varfuri[(i + 1) % f.varfuri.length];
+    const b = Math.abs(x.s.bulge);
+    return urm !== undefined && (Math.hypot(urm.p.x - x.p.x, urm.p.y - x.p.y) / 4) * (b + 1 / b) <= PLAFON.latura;
+  }), `un arc al căii are raza peste ${PLAFON.latura} mm`),
 );
 const SchemaForma = v.variant('tip', [
   v.pipe(
@@ -247,7 +255,7 @@ function matriciInMargini(p: Piesa): string | null {
   return null;
 }
 
-function areArce(f: FormaDoc): boolean {
+export function areArce(f: FormaDoc): boolean {
   if (f.tip === 'cale') return f.varfuri.some((x) => x.s.tip === 'A');
   return f.tip === 'cerc' || f.razaColt > 0;
 }
@@ -311,6 +319,11 @@ export function plafonDepasit(n: Numaratoare): string | null {
   return null;
 }
 
+/** Instanța ar sta prea departe de originea foii: același prag la ușă și la acțiunile care mută sau copiază. */
+export function instantaPreaDeparte(x: number, y: number): boolean {
+  return !(Math.max(Math.abs(x), Math.abs(y)) <= PLAFON.translatie);
+}
+
 /** Problema operațiilor unei piese (ADR 0025), sau null: id-uri unice în piesă, noduri distincte, toate elemente ale ei. */
 function problemaOperatii(p: Piesa, elemente: ReadonlySet<string>): string | null {
   const ids = new Set<string>();
@@ -350,7 +363,7 @@ function problemaDeAnsamblu(d: Document): string | null {
       if (instante.has(i.id)) return `două instanțe au id-ul ${i.id}`;
       instante.add(i.id);
       if (!piese.has(i.piesa)) return `instanța ${i.id} trimite la piesa lipsă ${i.piesa}`;
-      if (Math.max(Math.abs(i.x), Math.abs(i.y)) > PLAFON.translatie) return `instanța ${i.id} stă la peste ${PLAFON.translatie} mm`;
+      if (instantaPreaDeparte(i.x, i.y)) return `instanța ${i.id} stă la peste ${PLAFON.translatie} mm`;
     }
   }
   // Id-urile și referințele sunt în regulă, deci numărătoarea e cea a documentului: aceeași pe care o folosesc acțiunile.

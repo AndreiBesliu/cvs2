@@ -1,6 +1,7 @@
 import { cerculArcului, numarSegmente, segment, type Contur, type Punct, type Segment } from './contur.ts';
-import { CUTIE_GOALA, cuPunct, cutieArc, type Cutie } from './cutie.ts';
+import { CUTIE_GOALA, cuPunct, cutieArc, largita, type Cutie } from './cutie.ts';
 import { peArc } from './distanta.ts';
+import { indexCutii } from './offset.ts';
 
 /**
  * Apropierea exactă dintre segmente și contururi (linii și arce), cu punctele care o dau: o citesc regiunea păstrată
@@ -158,13 +159,29 @@ export function segmenteCuCutii(c: Contur): ReadonlyArray<{ readonly s: SegmentC
 /**
  * Distanța exactă dintre două contururi (linii și arce), cu punctele care o dau. Perechile de segmente ale căror cutii
  * stau mai departe decât cea mai bună distanță găsită nu se mai măsoară.
+ *
+ * `prag`: pragul deciziei apelantului. O distanță sub el iese exactă; peste el, rezultatul e doar „cel puțin pragul”
+ * (Infinity, dacă nimic nu e mai aproape). Cutiile lui c2 stau într-un index, iar pentru fiecare segment al lui c1 se
+ * măsoară doar cele mai apropiate de min(cea mai bună distanță, prag), în ordinea lor, ca perechea aleasă la egalitate să
+ * fie aceeași (recenzia 2.7b: n·m perechi țineau exportul minute întregi).
  */
-export function apropiereContururi(c1: Contur, c2: Contur): Apropiere {
+export function apropiereContururi(c1: Contur, c2: Contur, prag = Infinity): Apropiere {
   const s1 = segmenteCuCutii(c1), s2 = segmenteCuCutii(c2);
   let cea: Apropiere = { distanta: Infinity, p: c1.varfuri[0]?.p ?? { x: 0, y: 0 }, q: c2.varfuri[0]?.p ?? { x: 0, y: 0 } };
+  const index = indexCutii(s2.map((y) => y.cutie));
+  const candidati: number[] = [];
   for (const x of s1) {
-    for (const y of s2) {
-      if (distantaCutii(x.cutie, y.cutie) >= cea.distanta) continue;
+    const r = Math.min(cea.distanta, prag);
+    candidati.length = 0;
+    if (r === Infinity) {
+      for (let j = 0; j < s2.length; j++) candidati.push(j);
+    } else {
+      index.vizita(largita(x.cutie, r), (j) => { candidati.push(j); });
+      candidati.sort((u, v) => u - v);
+    }
+    for (const j of candidati) {
+      const y = s2[j];
+      if (!y || distantaCutii(x.cutie, y.cutie) >= cea.distanta) continue;
       const a = apropiereSegmente(x.s, y.s);
       if (a.distanta < cea.distanta) cea = a;
     }

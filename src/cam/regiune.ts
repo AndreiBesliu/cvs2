@@ -2,6 +2,7 @@ import { arieCuSemn, type Contur, type Punct } from '../geom/contur.ts';
 import { cutieContur, largita, type Cutie } from '../geom/cutie.ts';
 import { apropiereContururi, distantaCutii, type Apropiere } from '../geom/apropiere.ts';
 import { inRegiune } from '../geom/distanta.ts';
+import { TOLERANTA_PROIECT } from '../geom/toleranta.ts';
 import { conturDeTaiat } from './contur.ts';
 import type { Taietura } from '../model/lume.ts';
 
@@ -51,7 +52,9 @@ export function regiunePastrata(taieturi: readonly Taietura[], contururi?: Reado
     x[t.latura] = true;
     laturi.set(t.idLume, x);
   }
-  const brute: Array<Omit<Inel, 'parinte'>> = [];
+  // `dinBiarce`: inelul unei căi cu cubice stă la cel mult TOLERANTA_PROIECT de desen (ADR 0033 §3), deci două desene care
+  // se ating pot ieși, ca biarce, la până la o toleranță pe inel distanță (recenzia 2.7b: 71 din 160 de contacte scăpau).
+  const brute: Array<Omit<Inel, 'parinte'> & { readonly dinBiarce: boolean }> = [];
   for (const [idLume, x] of laturi) {
     if (x.exterior && x.interior) {
       return { ok: false, motiv: `${PREFIX_REGIUNE} ${idLume} are operații și pe exterior, și pe interior: nu se știe ce parte se păstrează` };
@@ -62,17 +65,22 @@ export function regiunePastrata(taieturi: readonly Taietura[], contururi?: Reado
       if (!r.ok) return { ok: false, motiv: `${idLume}: ${r.motiv}` };
       contur = r.contur;
     }
-    brute.push({ idLume, rol: x.exterior ? 'piesa' : 'gol', contur, cutie: cutieContur(contur), arie: Math.abs(arieCuSemn(contur)) });
+    const dinBiarce = x.t.forma.tip === 'cale' && x.t.forma.varfuri.some((v) => v.s.tip === 'C');
+    brute.push({ idLume, rol: x.exterior ? 'piesa' : 'gol', contur, cutie: cutieContur(contur), arie: Math.abs(arieCuSemn(contur)), dinBiarce });
   }
   for (let i = 0; i < brute.length; i++) {
     for (let j = i + 1; j < brute.length; j++) {
       const a = brute[i], b = brute[j];
-      if (!a || !b || distantaCutii(a.cutie, b.cutie) >= EPS_ATINGERE_INELE) continue;
-      const d = apropiereContururi(a.contur, b.contur);
-      if (d.distanta < EPS_ATINGERE_INELE) {
+      if (!a || !b) continue;
+      const biarce = Number(a.dinBiarce) + Number(b.dinBiarce);
+      const prag = EPS_ATINGERE_INELE + TOLERANTA_PROIECT * biarce;
+      if (distantaCutii(a.cutie, b.cutie) >= prag) continue;
+      const d = apropiereContururi(a.contur, b.contur, prag);
+      if (d.distanta < prag) {
+        const banda = biarce > 0 ? ` (sau stau la mai puțin de ${(prag).toFixed(3)} mm, abaterea biarcelor)` : '';
         return {
           ok: false,
-          motiv: `${PREFIX_REGIUNE} ${a.idLume} și ${b.idLume} se ating sau se intersectează (lângă X ${fmt(d.p.x)}, Y ${fmt(d.p.y)}): nu se știe ce material rămâne între ele`,
+          motiv: `${PREFIX_REGIUNE} ${a.idLume} și ${b.idLume} se ating sau se intersectează${banda} (lângă X ${fmt(d.p.x)}, Y ${fmt(d.p.y)}): nu se știe ce material rămâne între ele`,
         };
       }
     }
@@ -154,7 +162,7 @@ export function verificaTaietura(r: Regiune, idLume: string, latura: Taietura['l
     let cea: { readonly d: Inel; readonly a: Apropiere } | null = null;
     for (const d of margini) {
       if (!seAtingCutiile(cutie, d.cutie)) continue;
-      const a = apropiereContururi(traseu, d.contur);
+      const a = apropiereContururi(traseu, d.contur, Math.max(raza - EPS_REGIUNE, EPS_ATINGERE_INELE));
       if (!cea || a.distanta < cea.a.distanta) cea = { d, a };
     }
     // Apartenența se probează doar în primul vârf, deci o traversare (distanța 0) trebuie să fie încălcare și la R = ε

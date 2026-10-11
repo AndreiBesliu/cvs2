@@ -1,5 +1,7 @@
 import * as v from 'valibot';
-import { PLAFON, SchemaDocument, VERSIUNE_SCHEMA, type Document } from './document.ts';
+import { esteSimilitudine, TOLERANTA_SIMILITUDINE_LUME } from '../geom/matrice.ts';
+import { areArce, noduriPiesa, PLAFON, SchemaDocument, VERSIUNE_SCHEMA, type Document } from './document.ts';
+import { elementeInstanta, matriceInstanta } from './lume.ts';
 import { SchemaDocumentV1, type DocumentV1 } from './schemaV1.ts';
 
 /**
@@ -285,6 +287,33 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   8: v8v9,
 };
 
+/**
+ * Un element cu arce sub o matrice în lume care nu e similitudine (ADR 0034 §2, recenzia 2.7b), sau null. Ușa judecă
+ * matricea din piesă la 1e-12, dar lumea compune altfel (de la instanță în jos, cu rotirea ei), iar un grup neuniform
+ * compensat de element rotunjește diferit: pânza și CAM-ul ar arunca la fiecare pornire. Aici se judecă matricile pe care
+ * le vor folosi consumatorii, cu aceeași funcție și aceeași toleranță; partea liniară depinde doar de piesă și de rotire.
+ */
+function arceNeuniformeInLume(d: Document): string | null {
+  const cuArce = new Map(d.piese
+    .filter((p) => noduriPiesa(p.radacina).some(({ nod }) => nod.tip === 'element' && areArce(nod.forma)))
+    .map((p) => [p.id, p]));
+  const judecate = new Set<string>();
+  for (const f of d.foi) {
+    for (const i of f.instante) {
+      const p = cuArce.get(i.piesa);
+      const cheie = `${i.piesa} ${i.rotire}`;
+      if (!p || judecate.has(cheie)) continue;
+      judecate.add(cheie);
+      for (const e of elementeInstanta(p.radacina, i, matriceInstanta(i))) {
+        if (areArce(e.forma) && !esteSimilitudine(e.matrice, TOLERANTA_SIMILITUDINE_LUME)) {
+          return `instanța ${i.id}: ${e.nod} are arce sub o matrice neuniformă în lume`;
+        }
+      }
+    }
+  }
+  return null;
+}
+
 /** Câte niveluri de imbricare are o valoare JSON (documentul însuși e nivelul 1). Iterativ, oprit la `max + 1`. */
 function imbricare(x: unknown, max: number): number {
   let cel = 0;
@@ -327,6 +356,8 @@ export function incarca(brut: unknown): RezultatIncarcare {
   }
   const r = v.safeParse(SchemaDocument, doc);
   if (!r.success) return { ok: false, motiv: `documentul nu respectă schema${motivSchema(r.issues)}` };
+  const lume = arceNeuniformeInLume(doc as Document);
+  if (lume) return { ok: false, motiv: `documentul nu respectă schema: ${lume}` };
   // Documentul întors e o copie a intrării validate, nu ieșirea valibot: aceea scoate tăcut cheile `__proto__`,
   // `constructor` și `prototype`, iar contractul păstrează câmpurile necunoscute. Copia le ține ca date simple.
   return { ok: true, doc: structuredClone(doc) as Document };
