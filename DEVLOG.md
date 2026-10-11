@@ -1216,3 +1216,48 @@ contururile deschise): 2.7a biarcele, 2.7b forma „cale” (documentul v9) cu C
 **Ce intră:** ADR 0033; `src/geom/toleranta.ts` (bugetul, un singur loc: toleranța proiectului 0,001 mm, ținta 0,99);
 `src/geom/biarce.ts` (cubica → linii și arce, tăiată la inflexiuni și vârfuri, abaterea măsurată în ambele sensuri,
 refuzurile și plafonul de bucăți explicite). Nimic nou pentru owner: nicio formă nu are încă cubice (vin cu 2.7b–c).
+
+**Completed:** 11.10 17:40. **Treceri:** 5.
+
+**Făcut:**
+- ADR 0033 (cu precizarea recenziei): bugetul de toleranță într-un singur loc (`toleranta.ts`: 0,001 mm, ținta 0,99,
+  raza maximă a arcelor 9 900 mm); ușa `cubicaInArce` / `conturFaraCubice`, cu refuzuri explicite (toleranța, punctele
+  neterminate, plafonul de 4 096 de bucăți, rezoluția numerică).
+- Ordinea tăieturilor: inflexiunile și vârfurile (vârfurile din B′, nu din cross: rotunjirea pierdea jumătate din ele),
+  regula liniei, apoi extremele pe axe pentru bucățile care nu sunt plate (monotone pe x și y), apoi înjumătățirea.
+- Măsurătoarea: 32 de puncte pe fiecare sens, apoi fiecare maxim local rafinat prin secțiunea de aur.
+- Un test leagă raza maximă de garda fiecărui contract de post și toleranța postului de cea a proiectului.
+
+**Ce a găsit recenzia** (o lentilă de geometrie + 5 verificatori, 1,20 M tokeni, 67 min; toate reproduse cu măsuri
+independente):
+- mânerul întors pe o cubică aproape dreaptă: întoarcerea din primul 1/32 al bucății nu cădea pe niciun eșantion, iar
+  lanțul era coarda goală. 18–35 × tol, până la 414 × pe 2,4 m, tăcut;
+- vârfurile cu coordonate oarecare, ratate din rotunjire: până la 2,63 × tol;
+- vârful abaterii între eșantioane: 1,13 × tol pe un singur biarc;
+- razele de 1e6–1e12 mm: postul le-ar fi scris ca segmente G1, a doua aproximare peste prima (2,05 × tol prin postul
+  real);
+- bucățile nule, începutul la 1e-9 mm de a, motivul greșit al refuzului de sub rezoluție.
+
+**Proba:**
+- oracolul independent (0,48 M în total, două treceri): distanța exactă la cubică și la arc, Hausdorff în ambele sensuri,
+  ordinea tăieturilor de la §4 cu rădăcinile exacte (aritmetică întreagă) și o marjă care ține seama de condiționare;
+  150 de cubice la 4 toleranțe (229 de teste), martorii, controalele negative, 35 de sabotaje ale oracolului (toate
+  prinse). Prima lui constatare (dreapta care se întoarce n-avea tăieturi) s-a reparat înaintea recenziei. Pe aplicația
+  de dinaintea recenziei prinde 18 din cele 20 de cazuri ale ei;
+- otrăvurile, două treceri: la prima, 13 din 26 prinse. Din cele scăpate:
+  - 4 au primit teste noi: ținta de 0,99 măsurată de oracol pe cazuri căutate adversarial, pragul regulii liniei,
+    arcele de lângă vârf;
+  - 3 erau cod mort, scos: dublurile tăieturilor și ambele gărzi de bucăți nule (fără ele, nicio bucată nulă în 7 500 de
+    cubice);
+  - 5 sunt echivalente: cele două sensuri luate singure, 8 eșantioane și rafinarea doar a maximului global (căutarea
+    adversarială, 1 500 de cubice + 3 000 de pași de urcare, rămâne la 0,99000 × tol), rădăcinile cu anulare
+    (1,4e-11 mm). Primele patru rămân, fiindcă le cere contractul.
+  La a doua trecere, pe codul final: 6 din 11 prinse, iar restul de 5 sunt cele echivalente.
+
+**Rămâne deschis:**
+- marja de 100 mm sub garda postului presupune o freză cu raza ≤ 100 mm la offsetul spre exterior. Lucrarea din 2.7b
+  trebuie să verifice raza arcelor după offset;
+- un oracol de la cap la coadă (cubica → biarce → offset → post → G-code, abaterea față de cubică) vine cu 2.7b, când
+  cubicele intră în CAM;
+- numărul bucăților a crescut de ~1,3–1,8 ori (curbele blânde ies din linii măsurate);
+- garanția rămâne euristică (§6): o cocoașă mai îngustă de 1/32 dintr-o bucată monotonă, fără maxim eșantionat lângă ea.
