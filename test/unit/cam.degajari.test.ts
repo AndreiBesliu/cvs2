@@ -182,3 +182,56 @@ test('restul minim (ADR 0032 §2): un vârf aproape drept (rest sub 0,01 mm) nu 
   const cot = cinci.find((x) => near(x.v.x, 20) && near(x.v.y, -2));
   assert.ok(cot && near(Math.hypot(cot.q.x - cot.v.x, cot.q.y - cot.v.y) - R, R / Math.cos(Math.atan(0.1)) - R, 1e-12));
 });
+
+test('degajările față în față (precizarea din 11.10): cu peretele de 5 mm, T-bone-urile care s-ar întâlni se omit amândouă; cu 7 mm rămân, cu 1 mm între ele', () => {
+  // Gaura A din (50, 50) și gaura B deasupra ei. T-bone: crestăturile colțurilor de sus ale lui A urcă până la y = 83 (E la
+  // y = 80), iar ale colțurilor de jos ale lui B coboară până la y_B − 3. Cu peretele de 5 mm (B din y = 85), drumurile
+  // [Q, E] sunt la 5 mm unul de altul, sub D + 1 = 7, deși fiecare e la 8 mm de traseul celeilalte bucle.
+  const doua = (yB: number): Document => {
+    let d = docDin(F, dr('a', 50, 50), dr('b', 50, yB));
+    for (const id of ['a', 'b']) d = cuOperatie(d, id, { latura: 'interior', adancime: 6, pas: 3, colturi: { tip: 't-bone' } });
+    return d;
+  };
+  const j5 = programDinDocument(doua(85));
+  assert.ok(j5.ok);
+  if (!j5.ok) return;
+  assert.deepEqual([...j5.avertismente].sort(), [
+    'a/a: degajarea omisă la colțul (50.000, 80.000): prea aproape de degajarea altei bucle',
+    'a/a: degajarea omisă la colțul (90.000, 80.000): prea aproape de degajarea altei bucle',
+    'b/b: degajarea omisă la colțul (50.000, 85.000): prea aproape de degajarea altei bucle',
+    'b/b: degajarea omisă la colțul (90.000, 85.000): prea aproape de degajarea altei bucle',
+  ]);
+  const j7 = programDinDocument(doua(87));
+  assert.ok(j7.ok && j7.avertismente.length === 0);
+  const sus = drumuri(bloc(doua(87), 'a/a').miscari).filter((x) => x.e.y > 79);
+  const jos = drumuri(bloc(doua(87), 'b/b').miscari).filter((x) => x.e.y < 88);
+  assert.ok(sus.length > 0 && jos.length > 0);
+  // Între crestături: (87 − 3) − (80 + 3) = 1 mm.
+  assert.ok(near(Math.min(...jos.map((x) => x.e.y)) - R - (Math.max(...sus.map((x) => x.e.y)) + R), 1, 1e-9));
+});
+
+test('condiția c (marginea foii): T-bone-ul care ar lăsa sub 1 mm până la marginea foii se omite; bucla însăși stă la 3,5 mm', () => {
+  // Gaura din (50; 3,5): traseul de jos e la y = 6,5, discul lui la 3,5 de margine. T-bone-urile de jos ar coborî discul
+  // până la y = 0,5.
+  const d = cuOperatie(docDin(F, dr('g', 50, 3.5)), 'g', { latura: 'interior', adancime: 6, pas: 3, colturi: { tip: 't-bone' } });
+  const { miscari, avertismente } = bloc(d, 'g/g');
+  assert.deepEqual([...avertismente].sort(), [
+    'g/g: degajarea omisă la colțul (50.000, 3.500): prea aproape de marginea foii',
+    'g/g: degajarea omisă la colțul (90.000, 3.500): prea aproape de marginea foii',
+  ]);
+  assert.equal(drumuri(miscari).length, 4, 'colțurile de sus, pe 2 treceri');
+});
+
+test('colțurile rotunjite: sub raza frezei, avertisment și fără degajare; un arc pe care curățarea îl scoate e un colț ascuțit', () => {
+  const rot = (raza: number) => cuOperatie(docDin(F, { ...dr('g', 50, 50), forma: { tip: 'dreptunghi' as const, latime: 40, inaltime: 30, razaColt: raza } }), 'g',
+    { latura: 'interior', adancime: 6, pas: 3, colturi: { tip: 'dog-bone' } });
+  const r2 = bloc(rot(2), 'g/g');
+  assert.equal(drumuri(r2.miscari).length, 0);
+  assert.deepEqual(r2.avertismente, Array.from({ length: 4 }, () => 'g/g: colțul rotunjit cu raza 2.000 mm (sub raza frezei, 3.000 mm) rămâne cu raza frezei; degajarea pe arce vine cu importul SVG'));
+  // Cu raza peste a frezei, freza încape: nimic de spus.
+  assert.deepEqual(bloc(rot(5), 'g/g').avertismente, []);
+  // Un arc de 1e-7 mm dispare la curățare: colțurile sunt ascuțite, deci 4 degajări pe fiecare trecere.
+  const mic = bloc(rot(1e-7), 'g/g');
+  assert.deepEqual(mic.avertismente, []);
+  assert.equal(drumuri(mic.miscari).length, 8);
+});

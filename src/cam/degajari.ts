@@ -1,4 +1,4 @@
-import { inSensTrigonometric, inverseaza, type Contur, type Punct } from '../geom/contur.ts';
+import { cerculArcului, inSensTrigonometric, inverseaza, type Contur, type Punct } from '../geom/contur.ts';
 import type { Miscare } from '../ir/ir.ts';
 import type { Sens } from './profil.ts';
 
@@ -35,11 +35,8 @@ const unitar = (x: number, y: number): Punct => {
  */
 export function colturiDeDegajat(element: Contur, latura: 'exterior' | 'interior', sens: Sens, R: number, tip: TipColturi): Degajare[] {
   if (!element.inchis || element.varfuri.length < 3) return [];
-  const kInauntru = latura === 'exterior';
   const kDreapta = sens === 'urcare';
-  // Cu K în dreapta: în afara conturului (o gaură), mersul e trigonometric; înăuntru, orar. La opoziție, invers.
-  const trig = inSensTrigonometric(element);
-  const c = kDreapta !== kInauntru ? trig : inverseaza(trig);
+  const c = inSensulDeMers(element, latura, sens);
   const n = c.varfuri.length;
   const rez: Degajare[] = [];
   for (let i = 0; i < n; i++) {
@@ -74,6 +71,34 @@ export function colturiDeDegajat(element: Contur, latura: 'exterior' | 'interior
       e = { x: v.p.x + R * m.x, y: v.p.y + R * m.y };
     }
     rez.push({ v: v.p, q, e });
+  }
+  return rez;
+}
+
+/** Conturul închis, parcurs în sensul de mers: cu K în dreapta, în afara conturului (o gaură) e trigonometric. */
+function inSensulDeMers(element: Contur, latura: 'exterior' | 'interior', sens: Sens): Contur {
+  const trig = inSensTrigonometric(element);
+  return (sens === 'urcare') !== (latura === 'exterior') ? trig : inverseaza(trig);
+}
+
+/**
+ * Razele arcelor concave pentru K mai mici decât raza frezei (ADR 0032, precizarea din 11.10): acolo freza lasă raza ei, iar
+ * colțul nu primește degajare (degajarea pe arce vine cu importul SVG). Un arc e concav pentru K dacă se curbează spre
+ * deșeu: la stânga cu K în dreapta.
+ */
+export function arceSubRaza(element: Contur, latura: 'exterior' | 'interior', sens: Sens, R: number): number[] {
+  if (!element.inchis || element.varfuri.length < 2) return [];
+  const kDreapta = sens === 'urcare';
+  const c = inSensulDeMers(element, latura, sens);
+  const n = c.varfuri.length;
+  const rez: number[] = [];
+  for (let i = 0; i < n; i++) {
+    const v = c.varfuri[i];
+    const b = c.varfuri[(i + 1) % n];
+    if (!v || !b || v.s.tip !== 'A') continue;
+    if (!(kDreapta ? v.s.bulge > 0 : v.s.bulge < 0)) continue;
+    const { raza } = cerculArcului(v.p, b.p, v.s.bulge);
+    if (raza < R) rez.push(raza);
   }
   return rez;
 }
