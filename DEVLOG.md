@@ -1168,3 +1168,38 @@ colț concav pentru materialul păstrat, între două linii, un drum Q → E →
 bisectoare, T-bone în peretele mai lung), la fiecare sosire în Q. Condițiile: departe de buclele vecine, departe de
 urechile buclei. Altfel, avertisment. Coloana Colțuri în dialog. Ediția întâi punea un cerc separat cu centrul la r
 dincolo de colț: nu atingea restul lăsat de freză.
+
+**Completed:** 11.10 13:52. **Treceri:** 6.
+
+**Făcut:**
+- ADR 0032 + documentul v8: `Operatie.colturi` (`null` sau `{ tip }`), migrarea v7 → v8 cu `null`, ciocnirea refuzată.
+  Programul unui document fără degajări e același, octet cu octet (1728 de cazuri; oracolul: corpusul, cazurile, placa 1).
+- `src/cam/degajari.ts`: colțurile de degajat pe conturul elementului, curățat ca la offset și parcurs în sensul de mers
+  (concave pentru K, între două linii, cu restul de cel puțin 0,01 mm); Q, E pentru dog-bone și T-bone (peretele mai lung,
+  la egalitate cel de după V); drumul la fiecare sosire în Q, în `parcurge` (urechi, rampă) și pe bucla simplă.
+- Lucrarea: profilele o dată; candidatele judecate față de traseele celorlalte bucle și între ele; urechile buclei tăiate
+  (ajutorul `departeDeUrechi`, folosit și de intrări); marginea foii; avertismentele; arcele sub raza frezei.
+- Dialogul: coloana Colțuri („—”, dog-bone, T-bone), oprită pe linie și în fila care citește.
+
+**Gaura găsită de recenzie:** condiția a judeca drumul doar față de traseele celorlalte bucle. Două găuri cu T-bone și un
+perete de 4–6 mm între ele: fiecare crestătură trecea singură, dar se întâlneau, tăiau peretele de tot și desprindeau o
+bucată din piesă, fără niciun avertisment. Acum candidatele se judecă și între ele; două în conflict se omit amândouă.
+
+**Proba:**
+- recenzia: o lentilă CAM + 2 verificatori, 0,66 M tokeni, 38 min; o constatare reală (de mai sus), reparată; una medie
+  coborâtă la mică (degajarea pe flancul unei urechi rămâne la Z-ul flancului: precizată în ADR); patru mici reparate
+  (marginea foii, arcele sub raza frezei și conturul curățat, textul avertismentului, timpul pătratic);
+- oracolul independent (0,81 M, 96 min): documentul v8, invariantele 2, 9–12 amendate, 13 nouă, oracolul pe hârtie cu
+  câmpul de înălțimi (colțul tăiat, cât intră în pereți), cazurile D01–D26, 110 documente, 15 martori, 37 de sabotaje (35
+  prinse, 2 echivalente);
+- 35 din 36 otrăvuri prinse; cea scăpată e echivalentă (candidatele pe linie: o tăietură pe linie cu degajări e refuzată oricum de lucrare).
+
+**CI:** nivelul rapid în 4 felii (suma testelor a trecut de la 1453 la 1675 s local).
+
+**Rămâne deschis:**
+- colțurile cu arce (degajarea pe arce) și degajările aceleiași bucle judecate între ele vin cu importul SVG (2.7);
+- pachetul de pornire are 94,9 kB din plafonul de 100 kB;
+- toleranța invariantelor 10 și 11 pe rampele cu coordonate neîntregi (Ø3,175) e cu 0,002 mm prea strânsă în oracol
+  (găsită de oracol, de dinainte de felie; raportată, nu picată);
+- un index spațial pentru condiția a, la foile mari (etapa 12);
+- textele CAM (refuzuri, avertismente) sunt doar în română, și în interfața engleză.
