@@ -121,16 +121,29 @@ export function conturExact(forma: FormaCaleO, m: MatriceO): ConturExact {
 const dCutie = (x: number, y: number, c: Cutie): number =>
   Math.hypot(x < c.x0 ? c.x0 - x : x > c.x1 ? x - c.x1 : 0, y < c.y0 ? c.y0 - y : y > c.y1 ? y - c.y1 : 0);
 
+const dSegment = (s: SegmentExact, x: number, y: number): number => (s.fel === 'piesa' ? distantaLaPiesa(s.q, x, y) : distantaLaCubica(s.c, x, y).d);
+
+/**
+ * Distanța exactă (în precizia declarată) de la (x, y) la conturul exact, cu segmentul cel mai apropiat. `indiciu` = un
+ * segment de încercat întâi (doar viteza: celelalte se taie cu cutiile lor, fără să schimbe rezultatul).
+ */
+export function distantaCuIndiciu(ce: ConturExact, x: number, y: number, indiciu = 0): { readonly d: number; readonly i: number } {
+  const n = ce.segmente.length;
+  const h = Math.min(Math.max(indiciu, 0), n - 1);
+  let best = dSegment(ce.segmente[h] as SegmentExact, x, y), bi = h;
+  for (let i = 0; i < n; i++) {
+    if (i === h) continue;
+    const s = ce.segmente[i] as SegmentExact;
+    if (dCutie(x, y, s) >= best) continue;
+    const d = dSegment(s, x, y);
+    if (d < best) { best = d; bi = i; }
+  }
+  return { d: best, i: bi };
+}
+
 /** Distanța exactă (în precizia declarată) de la (x, y) la conturul exact. */
 export function distanta(ce: ConturExact, x: number, y: number): number {
-  const ord = ce.segmente.map((s) => ({ s, lb: dCutie(x, y, s) })).sort((u, v) => u.lb - v.lb);
-  let best = Infinity;
-  for (const { s, lb } of ord) {
-    if (lb >= best) break;
-    const d = s.fel === 'piesa' ? distantaLaPiesa(s.q, x, y) : distantaLaCubica(s.c, x, y).d;
-    if (d < best) best = d;
-  }
-  return best;
+  return distantaCuIndiciu(ce, x, y).d;
 }
 
 /** Traversările razei spre +x din (px, py) cu un segment y-monoton dat prin capete și o funcție x(y) pe el. */
@@ -339,6 +352,7 @@ export function masoara(t: readonly MutarePlan[], ce: ConturExact, R: number, la
   const laturaGresita: string[] = [];
   const vazute = new Set<string>();
   let mutari = 0;
+  let indiciu = 0;
   for (const m of t) {
     const cheie = `${m.a.x},${m.a.y},${m.b.x},${m.b.y},${m.arc ? `${m.arc.c.x},${m.arc.c.y},${m.arc.du}` : 'L'}`;
     if (vazute.has(cheie)) continue;
@@ -354,7 +368,9 @@ export function masoara(t: readonly MutarePlan[], ce: ConturExact, R: number, la
     const abatere = (f: number): { v: number; s: number; p: PunctO } => {
       const { p, n } = punctPeMutare(m, f);
       const q = impins === 0 ? p : { x: p.x + sigma * impins * n.x, y: p.y + sigma * impins * n.y };
-      const d = distanta(ce, q.x, q.y) - R;
+      const r = distantaCuIndiciu(ce, q.x, q.y, indiciu);
+      indiciu = r.i;
+      const d = r.d - R;
       return { v: Math.abs(d), s: Math.sign(d), p: q };
     };
     const N = Math.min(48, Math.max(6, Math.ceil(lungimeMutare(m) / 0.25)));

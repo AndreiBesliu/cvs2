@@ -13,48 +13,15 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { BUGET_GCODE, BUGET_IR, judecaArcele, judecaTraseul, traseuDinGcode, traseuDinIR } from '../oracles/cale.ts';
-import { CAZURI_CALE, contureleExacte, type CazCale } from '../oracles/cale.cazuri.ts';
-import { exportul } from './ajutor-cale-oracol.ts';
+import { BUGET_GCODE, BUGET_IR } from '../oracles/cale.ts';
+import { CAZURI_CALE } from '../oracles/cale.cazuri.ts';
+import { exportul, judecaCazul, type Maxime } from './ajutor-cale-oracol.ts';
 
 const TOL = 0.001;
-const maxime = new Map<string, { ir: number; g: number; mutari: number; cazuri: number }>();
-
-async function judeca(caz: CazCale): Promise<string[]> {
-  const e = await exportul(caz.doc, caz.stoc);
-  if (!e.ok) {
-    if (e.unde === 'exceptie') return [`a aruncat: ${e.motiv}`];
-    if (!(e.motiv.trim().length > 0)) return [`refuz fără motiv (${e.unde})`];
-    if (caz.categorie === 'trebuie') return [`refuzat la ${e.unde}: ${e.motiv}`];
-    if (caz.categorie === 'refuz' && e.unde !== 'cam') return [`refuzat la ${e.unde}, nu la CAM: ${e.motiv}`];
-    return [];
-  }
-  if (caz.categorie === 'refuz') return ['exportul a reușit, dar conturul se autointersectează: trebuia refuzat'];
-  const probleme: string[] = [];
-  const ce = contureleExacte(caz.doc);
-  const ir = traseuDinIR(e.miscari), gc = traseuDinGcode(e.text);
-  const R = caz.diametru / 2;
-  const cunoscute = new Set(ce.keys());
-  for (const m of ir.plan) if (!cunoscute.has(m.eticheta.split(':')[0] ?? '')) { probleme.push(`IR ${m.sursa}: mișcare fără eticheta unui element (${m.eticheta})`); break; }
-  for (const m of gc.plan) if (!cunoscute.has(m.eticheta)) { probleme.push(`G-code ${m.sursa}: mișcare fără eticheta unui element (${m.eticheta})`); break; }
-  let mi = 0, mg = 0, mutari = 0;
-  for (const [id, c] of ce) {
-    const ji = judecaTraseul({ ...ir, plan: ir.plan.filter((m) => m.eticheta.startsWith(`${id}:`)) }, c, R, caz.latura, BUGET_IR);
-    const jg = judecaTraseul({ ...gc, probleme: [], plan: gc.plan.filter((m) => m.eticheta === id) }, c, R, caz.latura, BUGET_GCODE);
-    probleme.push(...ji.probleme.map((x) => `IR ${id}: ${x}`), ...jg.probleme.map((x) => `G-code ${id}: ${x}`));
-    mi = Math.max(mi, ji.masura.max);
-    mg = Math.max(mg, jg.masura.max);
-    mutari += jg.masura.mutari;
-  }
-  probleme.push(...gc.probleme.map((x) => `G-code: ${x}`), ...judecaArcele(ir, gc));
-  if (e.aproximari !== 0) probleme.push(`postul a declarat ${e.aproximari} arce scrise ca segmente`);
-  const f = maxime.get(caz.familie) ?? { ir: 0, g: 0, mutari: 0, cazuri: 0 };
-  maxime.set(caz.familie, { ir: Math.max(f.ir, mi), g: Math.max(f.g, mg), mutari: f.mutari + mutari, cazuri: f.cazuri + 1 });
-  return probleme;
-}
+const maxime: Maxime = new Map();
 
 for (const caz of CAZURI_CALE) {
-  test(`(a) ${caz.familie} [${caz.categorie}]: ${caz.nume}`, async () => { assert.deepEqual(await judeca(caz), []); });
+  test(`(a) ${caz.familie} [${caz.categorie}]: ${caz.nume}`, async () => { assert.deepEqual(await judecaCazul(caz, maxime), []); });
 }
 
 test('(b) exportul din interfață (calculeazaExport) dă același text ca lanțul măsurat', async () => {

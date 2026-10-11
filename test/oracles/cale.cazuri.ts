@@ -11,13 +11,20 @@
  * - `amestec`: linii, arce și cubice în aceeași cale (lacrima, scobitura cu arc concav, colțurile rotunjite cu κ);
  * - `similitudini`: aceleași căi sub matrici de element, de grup și de instanță (scalate, rotite, oglindite: arcul își
  *   schimbă semnul `bulge` în lume), două instanțe ale aceleiași piese;
- * - `neuniforme`: căi doar cu linii și cubice sub matrici afine oarecare (trec exact).
+ * - `neuniforme`: căi doar cu linii și cubice sub matrici afine oarecare (trec exact);
+ * - `CAZURI_CALE_2` (precizările recenziei, ADR 0034 §6): căile netede pe care offsetul le refuza fals (contactul fals la
+ *   o joncțiune tangentă, buclele minuscule de 5e-4 … 0,03 mm ale ieșirii), măsurate la fel:
+ *   · `pete-32`, `pete-128`: pete Catmull-Rom de 32 și 128 de cubice, raza ~40 mm (trei armonice cu faze la întâmplare);
+ *   · `elipse-mici`: elipsele 6 × 2 și 3 × 1 mm din 4 cubice κ, rotite 10°, la (600, 300), exterior Ø6 (freza e mai mare
+ *     decât raza lor de curbură);
+ *   · `colturi-k`: dreptunghiul 20 × 12 cu colțuri κ de 3,5 mm, la fel așezat, interior Ø6;
+ *   · `flori`: r(θ) = r0 + a·sin(kθ) prin Catmull-Rom (6 puncte pe undă), cu 8 și 12 unde, raza de 10 și 20 mm.
  * Sculele: Ø6 și Ø3,175; trecerile: 1–3 (adâncimea 3, 6 sau 9 mm, pasul 3); laturile: exterior și interior. Toate stau în
  * foaie, cu margine, ca exportul să nu ceară confirmarea ieșirii.
  */
 import type { MatriceO, PunctO } from './document.ts';
 import type { SegmentO, VarfO } from './biarce.ts';
-import { COLTURI, GLIFA_O, GLIFA_O_TT, INIMA, VAL, arcPeCoarda, cale } from './biarce.cazuri.ts';
+import { COLTURI, GLIFA_O, GLIFA_O_TT, INIMA, KAPPA, VAL, aleator, arcPeCoarda, cale, sfert } from './biarce.cazuri.ts';
 import { ID, conturExact, similitudine, type ConturExact, type FormaCaleO } from './cale.ts';
 import { compuneO, geometrieV2, type DocArboreO, type Liber } from './document.ts';
 
@@ -25,7 +32,8 @@ export type Stoc = { readonly latime: number; readonly inaltime: number; readonl
 
 export type CazCale = {
   readonly nume: string;
-  readonly familie: 'glife' | 'inimi' | 'curbe-2440' | 'varfuri' | 'manere' | 'amestec' | 'similitudini' | 'neuniforme';
+  readonly familie: 'glife' | 'inimi' | 'curbe-2440' | 'varfuri' | 'manere' | 'amestec' | 'similitudini' | 'neuniforme'
+    | 'pete-32' | 'pete-128' | 'elipse-mici' | 'colturi-k' | 'flori';
   readonly doc: Liber;
   readonly stoc: Stoc;
   readonly diametru: number;
@@ -226,3 +234,86 @@ function cazuri(): CazCale[] {
 }
 
 export const CAZURI_CALE: readonly CazCale[] = cazuri();
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Precizările recenziei (ADR 0034 §6): căile netede refuzate fals înaintea reparației.
+
+/** Catmull-Rom închis prin puncte: cubica de la Pi la Pi+1 are c1 = Pi + (Pi+1 − Pi−1)/6 și c2 = Pi+1 − (Pi+2 − Pi)/6. */
+export function catmullRom(pts: readonly PunctO[]): FormaCaleO {
+  const n = pts.length;
+  const at = (i: number): PunctO => pts[((i % n) + n) % n] as PunctO;
+  return formaCale(pts.map((p0, i) => {
+    const p1 = at(i + 1), pm = at(i - 1), p2 = at(i + 2);
+    return v(p0, C(P(p0.x + (p1.x - pm.x) / 6, p0.y + (p1.y - pm.y) / 6), P(p1.x - (p2.x - p0.x) / 6, p1.y - (p2.y - p0.y) / 6)));
+  }));
+}
+
+/** O pată de n cubice, raza ~r0: trei armonice (2, 3, 4) cu amplitudinile 8 %, 5 %, 3 % și faze din sămânță. */
+export function pata(n: number, r0: number, samanta: number): FormaCaleO {
+  const r = aleator(samanta);
+  const faze = [r(), r(), r()].map((x) => 2 * Math.PI * x);
+  const amp = [0.08, 0.05, 0.03];
+  return catmullRom(Array.from({ length: n }, (_x, i) => {
+    const u = (2 * Math.PI * i) / n;
+    const rho = r0 * (1 + amp.reduce((s, a, j) => s + a * Math.sin((j + 2) * u + (faze[j] as number)), 0));
+    return P(rho * Math.cos(u), rho * Math.sin(u));
+  }));
+}
+
+/** Floarea r(θ) = r0 + a·sin(kθ) (a = 15 % din raza maximă), prin 6 puncte pe undă. */
+export function floare(k: number, rMax: number): FormaCaleO {
+  const a = 0.15 * rMax, r0 = rMax - a;
+  return catmullRom(Array.from({ length: 6 * k }, (_x, i) => {
+    const u = (2 * Math.PI * i) / (6 * k);
+    const rho = r0 + a * Math.sin(k * u);
+    return P(rho * Math.cos(u), rho * Math.sin(u));
+  }));
+}
+
+/** Elipsa (rx, ry) din 4 cubice κ, centrată în origine. */
+export function elipsaK(rx: number, ry: number): FormaCaleO {
+  const q = [0, 1, 2, 3].map((k) => sfert(0, 0, rx, ry, (k * Math.PI) / 2));
+  return formaCale(q.map((c) => v(c.a, C(c.c1, c.c2))));
+}
+
+/** Dreptunghiul w × h centrat în origine, cu colțurile cubice κ de rază r. */
+export function dreptunghiK(w: number, h: number, r: number): FormaCaleO {
+  const x0 = -w / 2, x1 = w / 2, y0 = -h / 2, y1 = h / 2, k = KAPPA * r;
+  return formaCale([
+    v(P(x0 + r, y0), L), v(P(x1 - r, y0), C(P(x1 - r + k, y0), P(x1, y0 + r - k))),
+    v(P(x1, y0 + r), L), v(P(x1, y1 - r), C(P(x1, y1 - r + k), P(x1 - r + k, y1))),
+    v(P(x1 - r, y1), L), v(P(x0 + r, y1), C(P(x0 + r - k, y1), P(x0, y1 - r + k))),
+    v(P(x0, y1 - r), L), v(P(x0, y0 + r), C(P(x0, y0 + r - k), P(x0 + r - k, y0))),
+  ]);
+}
+
+function cazuri2(): CazCale[] {
+  const rez: CazCale[] = [];
+  const pune = (
+    nume: string, familie: CazCale['familie'], stoc: Stoc, forma: FormaCaleO, latura: 'exterior' | 'interior', diametru: number,
+    o: { matrice?: MatriceO; x: number; y: number },
+  ): void => {
+    const doc = docCale(stoc, forma as unknown as Liber, {
+      ...(o.matrice ? { matrice: o.matrice } : {}), instante: [{ x: o.x, y: o.y }], latura, diametru, adancime: 3, pas: 3,
+    });
+    rez.push({ nume, familie, doc, stoc, diametru, latura, categorie: 'trebuie' });
+  };
+  for (const [n, familie] of [[32, 'pete-32'], [128, 'pete-128']] as const) {
+    for (const samanta of [1, 2, 3]) {
+      for (const latura of ['exterior', 'interior'] as const) {
+        pune(`pata de ${n} de cubice (sămânța ${samanta}), ${latura}, Ø6`, familie, MIC, pata(n, 40, 1000 * n + samanta), latura, 6, { x: 150, y: 150 });
+      }
+    }
+  }
+  const asezare = { matrice: similitudine(1, 10, false), x: 600, y: 300 };
+  pune('elipsa 6 × 2 din 4 cubice κ, rotită 10°, la (600, 300), exterior, Ø6', 'elipse-mici', MARE, elipsaK(3, 1), 'exterior', 6, asezare);
+  pune('elipsa 3 × 1 din 4 cubice κ, rotită 10°, la (600, 300), exterior, Ø6', 'elipse-mici', MARE, elipsaK(1.5, 0.5), 'exterior', 6, asezare);
+  pune('dreptunghiul 20 × 12 cu colțuri κ de 3,5, rotit 10°, la (600, 300), interior, Ø6', 'colturi-k', MARE, dreptunghiK(20, 12, 3.5), 'interior', 6, asezare);
+  for (const [k, rMax] of [[8, 10], [12, 10], [8, 20], [12, 20]] as const) {
+    pune(`floarea cu ${k} unde, raza ${rMax}, exterior, Ø6`, 'flori', MIC, floare(k, rMax), 'exterior', 6, { x: 150, y: 150 });
+    pune(`floarea cu ${k} unde, raza ${rMax}, interior, Ø${rMax === 10 ? '3,175' : '6'}`, 'flori', MIC, floare(k, rMax), 'interior', rMax === 10 ? 3.175 : 6, { x: 150, y: 150 });
+  }
+  return rez;
+}
+
+export const CAZURI_CALE_2: readonly CazCale[] = cazuri2();
