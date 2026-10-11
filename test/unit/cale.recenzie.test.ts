@@ -264,3 +264,14 @@ test('timpul CAM-ului crește aproape liniar: un poligon de 35 000 de vârfuri s
   // Local ~2 s; pe CI de ~2,6 ori mai încet. Pătratic, era 437 s.
   assert.ok(s < 30, `${s.toFixed(1)} s`);
 });
+
+test('determinantul normat: o scalare de 1e-162 sub o rotire de 45° nu mai face din cerc o „matrice neuniformă” care aruncă', () => {
+  // Determinantul brut al scalării e 5e-324 (pozitiv, deci ușa o primește), iar sub rotire ajunge 0.
+  const s = 1.9e-162;
+  const d = piesa({ tip: 'cerc', raza: 15 }, { a: s, b: 0, c: 0, d: s, e: 0, f: 0 }, 300, 300, 45);
+  const r = prinUsa(d);
+  if (!r.ok) return; // un refuz cu motiv e și el în contract; aruncarea nu.
+  assert.doesNotThrow(() => listaDesen(r.doc));
+  assert.doesNotThrow(() => instantaLa(r.doc, 300, 300, 0.5));
+  assert.doesNotThrow(() => programDinDocument(r.doc));
+});
