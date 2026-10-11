@@ -1271,3 +1271,6 @@ activă, plus oracolul independent (~0,6 M tokeni) și recenzia (~1 M). Săptăm
 coordonatele elementului. Migrarea v8 → v9 schimbă doar numărul. Pânza o desenează exact (cubicele ca Bézier), iar clicul
 o măsoară exact. CAM-ul o taie prin biarce (ADR 0033 §7), o singură dată pe element, înaintea regiunii păstrate, a
 offsetului și a degajărilor. Nimic nou de încercat pentru owner: căile intră în aplicație cu importul SVG (2.7c).
+
+**Pauză** (11.10, la cererea owner-ului „o sa facem pauza cand se poate”): codul, oracolele și reparațiile recenziei
+sunt împinse (`7199f63`). Rămân otrăvurile (48, în curs într-o clonă din afara Drive) și încheierea feliei.
