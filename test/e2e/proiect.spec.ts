@@ -5,6 +5,7 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { poarta } from '../oracles/poarta.ts';
 import { ecran, vedere } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
@@ -438,4 +439,53 @@ test('un export în curs în fila care citește, când scriitorul salvează: nu 
   const text = readFileSync(await (await d).path(), 'ascii');
   expect(text).toContain('dreptunghi');
   expect(text).toContain('cerc');
+});
+
+test('o cale salvată (inima din patru cubice, ADR 0034): în listă cu cutia ei, aleasă cu clicul, tăiată prin biarce', async ({ page }) => {
+  await page.goto('/');
+  const P = (x: number, y: number) => ({ x, y });
+  const inima = {
+    tip: 'cale', inchis: true,
+    varfuri: [
+      { p: P(50, 10), s: { tip: 'C', c1: P(80, 40), c2: P(95, 75) } },
+      { p: P(75, 85), s: { tip: 'C', c1: P(60, 95), c2: P(50, 80) } },
+      { p: P(50, 70), s: { tip: 'C', c1: P(50, 80), c2: P(40, 95) } },
+      { p: P(25, 85), s: { tip: 'C', c1: P(5, 75), c2: P(20, 40) } },
+    ],
+  };
+  const scula = { numar: 1, nume: 'freza plata', diametru: 6 };
+  const doc = {
+    schema: 9, rev: 5,
+    piese: [{
+      id: 'c', radacina: { tip: 'element', id: 'c', forma: inima, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+      operatii: [{ id: 'c', tip: 'profil', noduri: ['c'], scula, latura: 'exterior', sens: 'urcare', adancime: 3, pas: 3, urechi: null, rampa: null, intrari: null, colturi: null }],
+    }],
+    foi: [{ id: 'f1', stoc: { latime: 300, inaltime: 200, grosime: 18 }, instante: [{ id: 'c', piesa: 'c', x: 100, y: 50, rotire: 0 }] }],
+  };
+  await scrieVersiune(page, 5, JSON.stringify(doc));
+  await page.reload();
+  const text = 'cale 68.21 × 78.30, 4 segmente, la X 115.89, Y 60.00';
+  await expect(randuri(page)).toHaveText([text]);
+  // Clicul pe pânză, în mijlocul inimii (150, 100): includerea se măsoară pe cubice.
+  const v = await vedere(page);
+  const la = await ecran(page, v);
+  const p = la(150, 100);
+  await page.mouse.click(p.x, p.y);
+  await expect(page.getByTestId('selectie')).toHaveText(`Selectat: ${text}`);
+  // Deasupra scobiturii, între lobi: nimic.
+  const q = la(150, 140);
+  await page.mouse.click(q.x, q.y);
+  await expect(page.getByTestId('selectie')).toContainText('Nimic selectat');
+  // Exportul: inima iese din arce (biarcele), iar poarta invariantelor trece pe programul scris în browser.
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await page.locator('[data-camp="origine"]').selectOption('stanga-jos');
+  const descarcare = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const gcode = readFileSync(await (await descarcare).path(), 'ascii');
+  const arce = gcode.split(/\r?\n/).filter((l) => /^G[23] /.test(l)).length;
+  expect(arce).toBeGreaterThan(100);
+  expect(poarta(gcode, {
+    foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'stanga-jos', z0: 'sus', diametruScula: 6, pas: 3,
+    supracursa: 0, asteptareAx: 3, avansPlonjare: 300,
+  })).toEqual([]);
 });

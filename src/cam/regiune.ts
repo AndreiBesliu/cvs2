@@ -2,7 +2,7 @@ import { arieCuSemn, type Contur, type Punct } from '../geom/contur.ts';
 import { cutieContur, largita, type Cutie } from '../geom/cutie.ts';
 import { apropiereContururi, distantaCutii, type Apropiere } from '../geom/apropiere.ts';
 import { inRegiune } from '../geom/distanta.ts';
-import { conturElement } from '../model/forme.ts';
+import { conturDeTaiat } from './contur.ts';
 import type { Taietura } from '../model/lume.ts';
 
 /**
@@ -11,7 +11,8 @@ import type { Taietura } from '../model/lume.ts';
  * - K: un punct e păstrat dacă cel mai mic inel care îl conține e piesă.
  * - Partea proprie S(C): piesa își păstrează interiorul, golul exteriorul, doar pentru propriile tăieturi.
  * - Invarianta 2: discul sculei nu intră în K ∪ S(C), cu toleranța EPS_REGIUNE.
- * Totul se măsoară exact, pe linii și arce: distanța segment–segment, includerea cu `evenodd`.
+ * Totul se măsoară exact, pe linii și arce: distanța segment–segment, includerea cu `evenodd`. Inelul unei căi e conturul
+ * ei de tăiat, cu cubicele ca biarce (ADR 0034 §6): același pe care îl taie freza.
  */
 
 /** Rotunjirea postului la 3 zecimale, plus toleranța offsetului (0,002 mm): ADR 0026 §6. */
@@ -37,8 +38,12 @@ export type Regiune = { readonly inele: readonly Inel[] };
 
 const fmt = (x: number, z = 1): string => x.toFixed(z);
 
-/** Inelele foii, cu includerea lor, sau refuzul (o latură dublă, două inele care se ating). */
-export function regiunePastrata(taieturi: readonly Taietura[]): { readonly ok: true; readonly regiune: Regiune } | { readonly ok: false; readonly motiv: string } {
+/**
+ * Inelele foii, cu includerea lor, sau refuzul (o latură dublă, două inele care se ating, biarcele unei căi). `contururi`:
+ * conturul de tăiat al fiecărui element, după id-ul în lume, dacă lucrarea l-a calculat deja; altfel, se calculează aici.
+ */
+export function regiunePastrata(taieturi: readonly Taietura[], contururi?: ReadonlyMap<string, Contur>):
+  { readonly ok: true; readonly regiune: Regiune } | { readonly ok: false; readonly motiv: string } {
   const laturi = new Map<string, { exterior: boolean; interior: boolean; t: Taietura }>();
   for (const t of taieturi) {
     if (t.latura === 'pe-linie') continue;
@@ -51,7 +56,12 @@ export function regiunePastrata(taieturi: readonly Taietura[]): { readonly ok: t
     if (x.exterior && x.interior) {
       return { ok: false, motiv: `${PREFIX_REGIUNE} ${idLume} are operații și pe exterior, și pe interior: nu se știe ce parte se păstrează` };
     }
-    const contur = conturElement(x.t);
+    let contur = contururi?.get(idLume);
+    if (!contur) {
+      const r = conturDeTaiat(x.t);
+      if (!r.ok) return { ok: false, motiv: `${idLume}: ${r.motiv}` };
+      contur = r.contur;
+    }
     brute.push({ idLume, rol: x.exterior ? 'piesa' : 'gol', contur, cutie: cutieContur(contur), arie: Math.abs(arieCuSemn(contur)) });
   }
   for (let i = 0; i < brute.length; i++) {

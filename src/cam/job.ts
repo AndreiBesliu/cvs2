@@ -1,6 +1,6 @@
 import type { Document } from '../model/document.ts';
-import { conturElement } from '../model/forme.ts';
-import { taieturiFoaie } from '../model/lume.ts';
+import { conturDeTaiat } from './contur.ts';
+import { taieturiFoaie, type Taietura } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { profil } from './profil.ts';
 import { regiunePastrata, verificaTaietura } from './regiune.ts';
@@ -79,13 +79,23 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   if (alta) {
     return { ok: false, motiv: `${alta.idLume}: altă sculă (T${alta.scula.numar}, Ø${alta.scula.diametru}) decât T${scula.numar}, Ø${scula.diametru}; schimbarea sculei vine în etapa 3` };
   }
+  // Conturul de tăiat al fiecărui element (ADR 0034 §6): o singură dată, în lume, cu cubicele ca biarce (ADR 0033 §7).
+  // Același contur îl folosesc regiunea păstrată, profilul, degajările și avertismentele.
+  const contururi = new Map<string, Contur>();
+  for (const t of taieturi) {
+    if (contururi.has(t.idLume)) continue;
+    const r = conturDeTaiat(t);
+    if (!r.ok) return { ok: false, motiv: `${t.idLume}: ${r.motiv}` };
+    contururi.set(t.idLume, r.contur);
+  }
+  const conturDe = (t: Taietura): Contur => contururi.get(t.idLume) as Contur;
   // Regiunea păstrată (ADR 0026): inelele și includerea lor, înaintea oricărui traseu.
-  const regiune = regiunePastrata(taieturi);
+  const regiune = regiunePastrata(taieturi, contururi);
   if (!regiune.ok) return { ok: false, motiv: regiune.motiv };
   const miscari: Miscare[] = [];
   const avertismente: string[] = [];
   // Profilele tuturor tăieturilor, o dată. Un profil care nu iese se raportează mai jos, la tăietura lui.
-  const profile = taieturi.map((u) => profil(conturElement(u), { latura: u.latura, sens: u.sens, diametruScula: scula.diametru, adancime: u.adancime, pas: u.pas }));
+  const profile = taieturi.map((u) => profil(conturDe(u), { latura: u.latura, sens: u.sens, diametruScula: scula.diametru, adancime: u.adancime, pas: u.pas }));
   // Buclele fiecărei tăieturi: ca o degajare să nu se apropie de ele (ADR 0032 §5 a); cele cu urechi, ca o intrare să nu le
   // taie legătura (ADR 0030 §3, condiția c).
   const bucleToate: readonly (readonly Contur[])[] = profile.map((p) => (p.ok ? (p.treceri[0]?.contururi ?? []) : []));
@@ -106,9 +116,9 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   const candidati: readonly (readonly Candidat[])[] = taieturi.map((u, iu) => {
     const bs = bucleToate[iu] ?? [];
     if (!u.colturi || u.latura === 'pe-linie' || bs.length === 0) return [];
-    const curat = curataIntrare(conturElement(u));
+    const curat = curataIntrare(conturDe(u));
     const rez: Candidat[] = [];
-    for (const d of colturiDeDegajat(curat.ok ? curat.contur : conturElement(u), u.latura, u.sens, R, u.colturi.tip)) {
+    for (const d of colturiDeDegajat(curat.ok ? curat.contur : conturDe(u), u.latura, u.sens, R, u.colturi.tip)) {
       // Decalarea a mâncat colțul (laturi prea scurte): nu există Q, deci nici degajare (§2).
       const j = bs.findIndex((c) => c.varfuri.some((x) => Math.hypot(x.p.x - d.q.x, x.p.y - d.q.y) <= EPS_COLT));
       if (j < 0) continue;
@@ -209,8 +219,8 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     let degajari: Degajare[][] | undefined;
     if (t.colturi) {
       if (t.latura === 'pe-linie') return { ok: false, motiv: `${t.idLume}: degajările cer o parte de deșeu, iar pe linie freza taie ambii pereți` };
-      const curat = curataIntrare(conturElement(t));
-      for (const r of arceSubRaza(curat.ok ? curat.contur : conturElement(t), t.latura, t.sens, R)) {
+      const curat = curataIntrare(conturDe(t));
+      for (const r of arceSubRaza(curat.ok ? curat.contur : conturDe(t), t.latura, t.sens, R)) {
         avertismente.push(`${t.idLume}: colțul rotunjit cu raza ${r.toFixed(3)} mm (sub raza frezei, ${R.toFixed(3)} mm) rămâne cu raza frezei; degajarea pe arce vine cu importul SVG`);
       }
       const bucle = treceri[0]?.contururi ?? [];

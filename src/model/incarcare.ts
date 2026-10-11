@@ -235,8 +235,16 @@ function v7v8(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v8 → v9 (ADR 0034 §3): doar numărul. v9 adaugă o formă, „cale”, fără niciun câmp nou pe ce exista, deci un document v8
+ * e un document v9 valid, iar programul lui rămâne același, octet cu octet.
+ */
+function v8v9(doc: Brut): ReturnType<Migrare> {
+  return { ok: true, doc: { ...doc, schema: 9 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
- * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v7 → v8
+ * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v8 → v9
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
  */
 export const MIGRARI: Readonly<Record<number, Migrare>> = {
@@ -258,6 +266,7 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   5: v5v6,
   6: v6v7,
   7: v7v8,
+  8: v8v9,
 };
 
 /** Câte niveluri de imbricare are o valoare JSON (documentul însuși e nivelul 1). Iterativ, oprit la `max + 1`. */

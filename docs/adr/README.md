@@ -51,3 +51,4 @@ redeschide. Cel mult o pagină.
 | [0031](0031-intrarile-cu-rampa.md) | — | Intrările cu rampă: rampa pe sfertul intrării, la fiecare trecere (documentul rămâne v7); invariantele 9, 11, 12 amendate | etapa 2 (felia 2.5c) |
 | [0032](0032-degajarile.md) | — | Degajările colțurilor: dog-bone și T-bone, drumul minim din colțul traseului (documentul v8); invarianta 2 amendată, 13 nouă | etapa 2 (felia 2.6) |
 | [0033](0033-biarcele.md) | T6 | Biarcele: cubica devine linii și arce sub 0,001 mm, abaterea în ambele sensuri, bugetul de toleranță într-un singur loc | etapa 2 (felia 2.7a) |
+| [0034](0034-forma-cale.md) | T1 | Forma „cale”: un contur închis din linii, arce și cubice (documentul v9); pânza și clicul exacte, CAM-ul prin biarce, o dată pe element | etapa 2 (felia 2.7b) |

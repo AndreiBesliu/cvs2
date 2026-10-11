@@ -50,6 +50,7 @@ export const en = {
   'stare.nimic-selectat': 'Nothing selected. Click a shape; drag it to move it; wheel to zoom; middle button or Space + drag to pan.',
   'forma.dreptunghi': 'rectangle {latime} × {inaltime} at X {x}, Y {y}',
   'forma.cerc': 'circle R{raza} centred at X {x}, Y {y}',
+  'forma.cale': 'path {latime} × {inaltime}, {n} segments, at X {x}, Y {y}',
   'bara.actiuni': 'Actions',
   'actiune.exporta-gcode': 'Export G-code',
   'motiv.nimic-de-exportat': 'Draw something first.',

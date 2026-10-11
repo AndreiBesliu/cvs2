@@ -1261,3 +1261,13 @@ independente):
   cubicele intră în CAM;
 - numărul bucăților a crescut de ~1,3–1,8 ori (curbele blânde ies din linii măsurate);
 - garanția rămâne euristică (§6): o cocoașă mai îngustă de 1/32 dintr-o bucată monotonă, fără maxim eșantionat lângă ea.
+
+## 2026-10-11 — Etapa 2, felia 2.7b: forma „cale” (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua”. **Started:** 18:07. **Clasa:** R2 (cubicele ajung la mașină prin CAM). **Estimarea:** ~½ zi
+activă, plus oracolul independent (~0,6 M tokeni) și recenzia (~1 M). Săptămâna era la 43 % (citit cu `get_usage`).
+
+**Ce intră:** ADR 0034 și documentul v9: o formă nouă, „cale”, un contur închis din linii, arce și cubice, în
+coordonatele elementului. Migrarea v8 → v9 schimbă doar numărul. Pânza o desenează exact (cubicele ca Bézier), iar clicul
+o măsoară exact. CAM-ul o taie prin biarce (ADR 0033 §7), o singură dată pe element, înaintea regiunii păstrate, a
+offsetului și a degajărilor. Nimic nou de încercat pentru owner: căile intră în aplicație cu importul SVG (2.7c).

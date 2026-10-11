@@ -2,16 +2,18 @@ import * as v from 'valibot';
 import { compune, esteSimilitudine, IDENTITATE } from '../geom/matrice.ts';
 
 /**
- * Documentul v8 (T16, ADR 0016): varianta D a planșelor (ADR 0024, decizia owner-ului din 08.10.2026), adică piese cu
+ * Documentul v9 (T16, ADR 0016): varianta D a planșelor (ADR 0024, decizia owner-ului din 08.10.2026), adică piese cu
  * arbore propriu, puse ca instanțe pe foi, plus operațiile piesei (ADR 0025): profilul stă în piesă și se taie la fel în
  * fiecare instanță, în sensul de tăiere al operației (ADR 0027, v4), cu urechile (ADR 0028, v5), rampa (ADR 0029, v6) și
- * intrările ei (ADR 0030, v7) și degajările colțurilor (ADR 0032, v8). Contractul întreg e în ADR-uri; oracolul independent (`test/oracles/document.ts`) îl citește de acolo, nu de aici.
+ * intrările ei (ADR 0030, v7) și degajările colțurilor (ADR 0032, v8). Forma „cale” (ADR 0034, v9) e un contur închis din
+ * linii, arce și cubice. Contractul întreg e în ADR-uri; oracolul independent (`test/oracles/document.ts`) îl citește de
+ * acolo, nu de aici.
  *
  * Câmpurile necunoscute se păstrează, ca un document scris de o versiune mai nouă să nu piardă date trecând printr-una
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 8;
+export const VERSIUNE_SCHEMA = 9;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -51,12 +53,26 @@ export const PLAFON = {
   adancimeOperatie: 1_000,
   /** Urechile pe o buclă a traseului (ADR 0028). */
   urechi: 100,
+  /** Vârfurile unei căi (ADR 0034). */
+  varfuriCale: 50_000,
+  /** Vârfurile tuturor căilor pieselor. */
+  varfuri: 200_000,
+  /** Vârfurile căilor în lume: instanțele înmulțite cu vârfurile căilor piesei lor. Pânza, CAM-ul și clicul sunt liniare în ele. */
+  varfuriLume: 1_000_000,
 } as const;
 
 export type Matrice = { a: number; b: number; c: number; d: number; e: number; f: number };
+export type PunctDoc = { x: number; y: number; [cheie: string]: unknown };
+/** Segmentul care pleacă dintr-un vârf al căii (ADR 0001): linie, arc (`bulge` = tan(baleiaj / 4)) sau cubică. */
+export type SegmentDoc =
+  | { tip: 'L'; [cheie: string]: unknown }
+  | { tip: 'A'; bulge: number; [cheie: string]: unknown }
+  | { tip: 'C'; c1: PunctDoc; c2: PunctDoc; [cheie: string]: unknown };
+export type VarfDoc = { p: PunctDoc; s: SegmentDoc; [cheie: string]: unknown };
 export type FormaDoc =
   | { tip: 'dreptunghi'; latime: number; inaltime: number; razaColt: number; [cheie: string]: unknown }
-  | { tip: 'cerc'; raza: number; [cheie: string]: unknown };
+  | { tip: 'cerc'; raza: number; [cheie: string]: unknown }
+  | { tip: 'cale'; inchis: true; varfuri: VarfDoc[]; [cheie: string]: unknown };
 export type ElementNod = {
   tip: 'element'; id: string; nume?: string; forma: FormaDoc; matrice: Matrice; [cheie: string]: unknown;
 };
@@ -87,7 +103,7 @@ export type Instanta = {
   id: string; piesa: string; x: number; y: number; rotire: number; campuri?: Record<string, string>; [cheie: string]: unknown;
 };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; [cheie: string]: unknown };
-export type Document = { schema: 8; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 9; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 const finit = v.pipe(v.number(), v.finite());
 const pozitiv = (max: number) => v.pipe(v.number(), v.finite(), v.gtValue(0), v.maxValue(max));
@@ -95,6 +111,30 @@ const Id = v.pipe(v.string(), v.minLength(1), v.maxLength(PLAFON.idLungime), v.r
 const Nume = v.optional(v.pipe(v.string(), v.maxLength(PLAFON.numeLungime)));
 
 const SchemaMatrice = v.looseObject({ a: finit, b: finit, c: finit, d: finit, e: finit, f: finit });
+const coordonata = v.pipe(v.number(), v.finite(), v.minValue(-PLAFON.translatie), v.maxValue(PLAFON.translatie));
+const SchemaPunct = v.looseObject({ x: coordonata, y: coordonata });
+const SchemaSegment = v.variant('tip', [
+  v.looseObject({ tip: v.literal('L') }),
+  v.looseObject({ tip: v.literal('A'), bulge: v.pipe(v.number(), v.finite(), v.check((b) => b !== 0, 'un arc cu bulge 0 n-are cerc')) }),
+  v.looseObject({ tip: v.literal('C'), c1: SchemaPunct, c2: SchemaPunct }),
+]);
+/** Calea (ADR 0034): un contur închis; un arc trebuie să aibă capetele în puncte diferite, altfel n-are cerc. */
+const SchemaCale = v.pipe(
+  v.looseObject({
+    tip: v.literal('cale'),
+    inchis: v.literal(true),
+    varfuri: v.pipe(
+      v.array(v.looseObject({ p: SchemaPunct, s: SchemaSegment })),
+      v.minLength(2, 'o cale are cel puțin 2 vârfuri'),
+      v.maxLength(PLAFON.varfuriCale, `o cale are cel mult ${PLAFON.varfuriCale} de vârfuri`),
+    ),
+  }),
+  v.check((f) => f.varfuri.every((x, i) => {
+    if (x.s.tip !== 'A') return true;
+    const urm = f.varfuri[(i + 1) % f.varfuri.length];
+    return urm !== undefined && (urm.p.x !== x.p.x || urm.p.y !== x.p.y);
+  }), 'un arc al căii are capetele în același punct: n-are cerc'),
+);
 const SchemaForma = v.variant('tip', [
   v.pipe(
     v.looseObject({
@@ -106,6 +146,7 @@ const SchemaForma = v.variant('tip', [
     v.check((f) => 2 * f.razaColt <= Math.min(f.latime, f.inaltime), 'raza colțului trece de jumătate din latura mai mică'),
   ),
   v.looseObject({ tip: v.literal('cerc'), raza: pozitiv(PLAFON.latura) }),
+  SchemaCale,
 ]);
 
 const SchemaElement = v.looseObject({ tip: v.literal('element'), id: Id, nume: Nume, forma: SchemaForma, matrice: SchemaMatrice });
@@ -207,40 +248,52 @@ function matriciInMargini(p: Piesa): string | null {
 }
 
 function areArce(f: FormaDoc): boolean {
+  if (f.tip === 'cale') return f.varfuri.some((x) => x.s.tip === 'A');
   return f.tip === 'cerc' || f.razaColt > 0;
 }
 
-/** Cât ocupă documentul din plafoanele lui: nodurile, instanțele și elementele în lume. */
+/** Cât ocupă documentul din plafoanele lui: nodurile, instanțele, elementele în lume și vârfurile căilor (ADR 0034). */
 export type Numaratoare = {
   readonly noduri: number; readonly instante: number; readonly elementeLume: number; readonly operatii: number; readonly taieturi: number;
+  readonly varfuri: number; readonly varfuriLume: number;
 };
 
 export function numara(d: Document): Numaratoare {
   const elementePiesa = new Map<string, number>();
   const referintePiesa = new Map<string, number>();
+  const varfuriPiesa = new Map<string, number>();
   let noduri = 0;
   let operatii = 0;
+  let varfuri = 0;
   for (const p of d.piese) {
     let elemente = 0;
+    let varfuriP = 0;
     for (const { nod } of noduriPiesa(p.radacina)) {
       noduri++;
-      if (nod.tip === 'element') elemente++;
+      if (nod.tip === 'element') {
+        elemente++;
+        if (nod.forma.tip === 'cale') varfuriP += nod.forma.varfuri.length;
+      }
     }
     elementePiesa.set(p.id, elemente);
+    varfuriPiesa.set(p.id, varfuriP);
+    varfuri += varfuriP;
     operatii += p.operatii.length;
     referintePiesa.set(p.id, p.operatii.reduce((s, o) => s + o.noduri.length, 0));
   }
   let instante = 0;
   let elementeLume = 0;
   let taieturi = 0;
+  let varfuriLume = 0;
   for (const f of d.foi) {
     for (const i of f.instante) {
       instante++;
       elementeLume += elementePiesa.get(i.piesa) ?? 0;
       taieturi += referintePiesa.get(i.piesa) ?? 0;
+      varfuriLume += varfuriPiesa.get(i.piesa) ?? 0;
     }
   }
-  return { noduri, instante, elementeLume, operatii, taieturi };
+  return { noduri, instante, elementeLume, operatii, taieturi, varfuri, varfuriLume };
 }
 
 /**
@@ -253,6 +306,8 @@ export function plafonDepasit(n: Numaratoare): string | null {
   if (n.instante > PLAFON.instante) return `documentul are ${n.instante} de instanțe, peste ${PLAFON.instante}`;
   if (n.elementeLume > PLAFON.elementeLume) return `foile au ${n.elementeLume} de elemente în lume, peste ${PLAFON.elementeLume}`;
   if (n.taieturi > PLAFON.taieturi) return `foile au ${n.taieturi} de tăieturi în lume, peste ${PLAFON.taieturi}`;
+  if (n.varfuri > PLAFON.varfuri) return `căile pieselor au ${n.varfuri} de vârfuri, peste ${PLAFON.varfuri}`;
+  if (n.varfuriLume > PLAFON.varfuriLume) return `foile au ${n.varfuriLume} de vârfuri de căi în lume, peste ${PLAFON.varfuriLume}`;
   return null;
 }
 
@@ -324,8 +379,8 @@ export const SchemaDocument: v.GenericSchema<unknown, Document> = v.pipe(
 
 /**
  * Operația implicită a unei forme noi (Adaugă): profilul cu care se taie placa 1 — cercul e o gaură (interior, 8 mm în
- * 2 treceri), dreptunghiul o insulă (exterior, 3 mm), cu freza plată Ø6, în urcare, fără urechi, rampă sau intrări. Migrarea v2 → v3 are
- * propria copie, înghețată.
+ * 2 treceri), dreptunghiul o insulă (exterior, 3 mm), cu freza plată Ø6, în urcare, fără urechi, rampă sau intrări. Calea
+ * o primește pe a dreptunghiului (ADR 0034 §7). Migrarea v2 → v3 are propria copie, înghețată.
  */
 export function operatieImplicita(nod: string, forma: FormaDoc, scula: Operatie['scula'] = { numar: 1, nume: 'freza plata', diametru: 6 }): Operatie {
   return forma.tip === 'cerc'

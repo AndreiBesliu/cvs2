@@ -6,11 +6,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { RAZA_MAXIMA_ARC, TOLERANTA_PROIECT } from '../../src/geom/toleranta.ts';
+import { PLAFON } from '../../src/model/document.ts';
 import { TOLERANTA_APROXIMARE } from '../../src/post/post.ts';
 import { GRBL_11 } from '../../src/post/contracte/grbl11.ts';
 
-/** Raza frezei pe care offsetul o poate adăuga unui arc (Ø 200 mm). */
-const REZERVA_OFFSET = 100;
+/**
+ * Cât poate adăuga offsetul unui arc: raza celei mai mari freze pe care o primește documentul (ADR 0034 §6). Rezerva din
+ * buget (100 mm sub garda postului) o acoperă.
+ */
+const REZERVA_OFFSET = PLAFON.diametruScula / 2;
 
 test('toleranța postului e toleranța proiectului', () => {
   assert.equal(TOLERANTA_APROXIMARE, TOLERANTA_PROIECT);

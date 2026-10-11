@@ -137,6 +137,7 @@ function incape(doc: Document, plus: Numaratoare): boolean {
   return plafonDepasit({
     noduri: n.noduri + plus.noduri, instante: n.instante + plus.instante, elementeLume: n.elementeLume + plus.elementeLume,
     operatii: n.operatii + plus.operatii, taieturi: n.taieturi + plus.taieturi,
+    varfuri: n.varfuri + plus.varfuri, varfuriLume: n.varfuriLume + plus.varfuriLume,
   }) === null;
 }
 
@@ -145,7 +146,7 @@ function cresteCopia(ctx: ContextDocument): Numaratoare {
   const doc = ctx.istoric().doc;
   const alese = new Set(ctx.selectie());
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
-  const plus = { noduri: 0, instante: 0, elementeLume: 0, operatii: 0, taieturi: 0 };
+  const plus = { noduri: 0, instante: 0, elementeLume: 0, operatii: 0, taieturi: 0, varfuri: 0, varfuriLume: 0 };
   for (const i of foaieCurenta(doc).instante) {
     const p = alese.has(i.id) ? piese.get(i.piesa) : undefined;
     if (!p) continue;
@@ -155,6 +156,10 @@ function cresteCopia(ctx: ContextDocument): Numaratoare {
     plus.elementeLume += noduri.filter((x) => x.nod.tip === 'element').length;
     plus.operatii += p.operatii.length;
     plus.taieturi += p.operatii.reduce((s, o) => s + o.noduri.length, 0);
+    // Vârfurile căilor (ADR 0034): copia are piesa ei, deci le adaugă și în piese, și în lume.
+    const varfuri = noduri.reduce((s, x) => s + (x.nod.tip === 'element' && x.nod.forma.tip === 'cale' ? x.nod.forma.varfuri.length : 0), 0);
+    plus.varfuri += varfuri;
+    plus.varfuriLume += varfuri;
   }
   return plus;
 }
@@ -162,7 +167,7 @@ function cresteCopia(ctx: ContextDocument): Numaratoare {
 const poateAdauga = (ctx: ContextDocument): true | 'motiv.doar-citire' | 'motiv.plafon' => {
   const s = scrie(ctx);
   if (s !== true) return s;
-  return incape(ctx.istoric().doc, { noduri: 1, instante: 1, elementeLume: 1, operatii: 1, taieturi: 1 }) ? true : 'motiv.plafon';
+  return incape(ctx.istoric().doc, { noduri: 1, instante: 1, elementeLume: 1, operatii: 1, taieturi: 1, varfuri: 0, varfuriLume: 0 }) ? true : 'motiv.plafon';
 };
 
 /** Selecția păstrează doar instanțele care există încă (după o anulare, o refacere sau o ștergere). */
