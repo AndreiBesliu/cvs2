@@ -236,9 +236,25 @@ function v7v8(doc: Brut): ReturnType<Migrare> {
 
 /**
  * v8 → v9 (ADR 0034 §3): doar numărul. v9 adaugă o formă, „cale”, fără niciun câmp nou pe ce exista, deci un document v8
- * e un document v9 valid, iar programul lui rămâne același, octet cu octet.
+ * e un document v9 valid, iar programul lui rămâne același, octet cu octet. Un document marcat v8 care conține o cale e
+ * refuzat: v8 n-o cunoaște, deci nu e un v8 valid (oracolul 2.7b), iar ușa nu ghicește cine l-a scris.
  */
 function v8v9(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (typeof p !== 'object' || p === null) continue;
+    const stiva: unknown[] = [(p as Brut)['radacina']];
+    while (stiva.length > 0) {
+      const nod = stiva.pop();
+      if (typeof nod !== 'object' || nod === null) continue;
+      const n = nod as Brut;
+      const forma = n['forma'];
+      if (n['tip'] === 'element' && typeof forma === 'object' && forma !== null && (forma as Brut)['tip'] === 'cale') {
+        return { ok: false, motiv: `elementul v8 ${String(n['id'])} are o formă „cale”, pe care v8 n-o cunoaște: nu e un document v8 valid` };
+      }
+      if (n['tip'] === 'grup' && Array.isArray(n['copii'])) for (const c of n['copii']) stiva.push(c);
+    }
+  }
   return { ok: true, doc: { ...doc, schema: 9 } };
 }
 

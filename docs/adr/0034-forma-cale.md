@@ -42,7 +42,8 @@ cel sub rezoluție, cel cu mai puțin de două vârfuri distincte; regiunea păs
 
 **3. Migrarea v8 → v9** schimbă doar numărul schemei. Un document v8 e un document v9 valid, iar programul lui rămâne
 același, octet cu octet. O versiune v8 refuză un document v9 la ușă („scris de o versiune mai nouă”), deci nu poate tăia o
-cale fără s-o înțeleagă.
+cale fără s-o înțeleagă. Invers, un document **marcat v8 care conține o cale** e refuzat, cu motiv: v8 n-o cunoaște, deci
+nu e un v8 valid, iar ușa nu ghicește cine l-a scris (precizarea din 11.10, la constatarea oracolului).
 
 **4. Pânza** desenează calea exact: liniile, arcele cu centrul și raza lor, cubicele ca Bézier. Nicio aproximare pe ecran.
 

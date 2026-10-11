@@ -107,9 +107,13 @@ test('migrarea v8 → v9 schimbă doar numărul; un document mai nou de 9 e refu
   assert.ok(r.ok, motiv(r));
   if (r.ok) assert.deepEqual(r.doc, d);
   assert.match(motiv(incarca({ ...v8, schema: 10 })), /versiune mai nouă \(schema 10, aici 9\)/);
-  // O cale într-un document v8 nu există: schema v8 n-o cunoaște, dar după migrare e judecată de v9 și trece.
+  // Un document marcat v8 care conține o cale nu e un v8 valid (v8 n-o cunoaște): refuzat, și când calea stă într-un grup.
   const cuCale = incarca({ ...JSON.parse(JSON.stringify(cu(INIMA))), schema: 8 });
-  assert.ok(cuCale.ok, motiv(cuCale));
+  assert.match(motiv(cuCale), /elementul v8 c are o formă „cale”, pe care v8 n-o cunoaște/);
+  const inGrup = JSON.parse(JSON.stringify(cu(INIMA)));
+  inGrup.schema = 8;
+  inGrup.piese[0].radacina = { tip: 'grup', id: 'g', matrice: { ...ID }, copii: [inGrup.piese[0].radacina] };
+  assert.match(motiv(incarca(inGrup)), /elementul v8 c are o formă „cale”/);
 });
 
 test('pânza desenează calea exact: cubicele ca Bézier, arcele cu centrul și raza, linia', () => {
