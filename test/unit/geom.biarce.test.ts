@@ -118,6 +118,34 @@ test('cubica dreaptă e o linie; cea degenerată nu dă nimic', () => {
   assert.ok(z.ok && z.varfuri.length === 0 && z.bucati === 0);
 });
 
+test('cubica dreaptă care se întoarce: tăiată exact în vârfuri (B′ = 0, t = (5 ∓ √5)/10), fără bucăți de lungime nulă', () => {
+  // Toate punctele pe Ox: cross(B′, B″) e identic zero, deci vârfurile se găsesc doar din B′ = 0.
+  const q: Q = [P(0, 0), P(20, 0), P(-10, 0), P(10, 0)];
+  const r = cubicaInArce(q[0], q[1], q[2], q[3], TOLERANTA_PROIECT);
+  assert.ok(r.ok);
+  if (!r.ok) return;
+  assert.deepEqual(r.varfuri.map((v) => v.s.tip), ['L', 'L', 'L']);
+  assert.ok(Math.abs((r.varfuri[1]?.p.x ?? 0) - (5 + Math.sqrt(5))) < 1e-9, 'întoarcerea din dreapta');
+  assert.ok(Math.abs((r.varfuri[2]?.p.x ?? 0) - (5 - Math.sqrt(5))) < 1e-9, 'întoarcerea din stânga');
+  verifica('dreapta care se intoarce', q, TOLERANTA_PROIECT);
+  // Aceeași întoarcere, rotită: vârfurile se caută pe componenta mai mare, iar cealaltă trebuie să se anuleze și ea.
+  const c = Math.cos(0.7), s = Math.sin(0.7), rot = (p: Punct): Punct => P(p.x * c - p.y * s, p.x * s + p.y * c);
+  const qr: Q = [rot(q[0]), rot(q[1]), rot(q[2]), rot(q[3])];
+  const rr = cubicaInArce(qr[0], qr[1], qr[2], qr[3], TOLERANTA_PROIECT);
+  assert.ok(rr.ok && rr.varfuri.length === 3);
+  verifica('dreapta rotita', qr, TOLERANTA_PROIECT);
+  for (const [nume, x] of [['S', [P(0, 0), P(30, 40), P(70, -40), P(100, 0)]], ['varf', [P(0, 0), P(10, 10), P(0, 10), P(10, 0)]], ['dreapta', q]] as Array<[string, Q]>) {
+    const t = cubicaInArce(x[0], x[1], x[2], x[3], TOLERANTA_PROIECT);
+    assert.ok(t.ok);
+    if (!t.ok) continue;
+    const lant = [...t.varfuri.map((v) => v.p), x[3]];
+    for (let i = 0; i + 1 < lant.length; i++) {
+      const u = lant[i] as Punct, v = lant[i + 1] as Punct;
+      assert.ok(Math.hypot(v.x - u.x, v.y - u.y) >= 1e-9, `${nume}: bucata ${i} are lungimea nulă`);
+    }
+  }
+});
+
 test('refuzurile (ADR 0033 §5): toleranța care nu e pozitivă și finită, punctele neterminate, plafonul de bucăți', () => {
   for (const tol of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
     const r = cubicaInArce(P(0, 0), P(1, 1), P(2, 1), P(3, 0), tol);
