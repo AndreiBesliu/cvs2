@@ -13,6 +13,7 @@ import assert from 'node:assert/strict';
 import { listaDesen } from '../../src/app/desen.ts';
 import { programDinDocument } from '../../src/cam/job.ts';
 import { distantaLaContur } from '../../src/geom/distanta.ts';
+import { compune, determinant, rotatie, transformaContur } from '../../src/geom/matrice.ts';
 import { TOLERANTA_PROIECT } from '../../src/geom/toleranta.ts';
 import { traduce } from '../../src/i18n/t.ts';
 import { avertismente } from '../../src/model/avertismente.ts';
@@ -283,4 +284,58 @@ test('un vârf dublat lângă un colț curb (o linie nulă, des într-un SVG) nu
   const j = programDinDocument(piesa(dublat, { ...ID }, 600, 300, 0, { latura: 'interior', colturi: { tip: 'dog-bone' } }));
   assert.ok(j.ok, j.ok ? '' : j.motiv);
   if (j.ok) assert.equal(j.avertismente.filter((a) => /o latură a colțului e curbă/.test(a)).length, 2, j.avertismente.join('\n'));
+});
+
+test('un refuz al biarcelor în CAM spune al cui e (otrava „refuzul fără id”, 2.7b): <idLume>: <motiv>', () => {
+  // Un arc de 2·10⁶ mm, cu raza de curbură ~10⁶ mm: peste raza maximă a arcelor (9 900 mm), deci linii de ~89 mm la
+  // 0,001 mm; zeci de mii de bucăți, peste plafonul de 4 096.
+  const arc: FormaDoc = {
+    tip: 'cale', inchis: true,
+    varfuri: [{ p: P(0, 0), s: { tip: 'C', c1: P(0, 2e6), c2: P(2e6, 2e6) } }, { p: P(2e6, 0), s: { tip: 'L' } }],
+  };
+  const j = programDinDocument(cuOperatie(docDin(F, { id: 'c', forma: arc, matrice: ID }), 'c', { latura: 'exterior' }));
+  assert.ok(!j.ok);
+  assert.match(j.motiv, /^\S+\/c: .*4096 de bucăți/);
+});
+
+test('matricea în lume e judecată de ușă (otrava „fără matricea în lume”, 2.7b): un caz care trece în piesă și pică în lume', () => {
+  // Grupul: 10⁴ × 1 sub o rotire de 27,1°, compensat de element; în piesă, abaterea e 9,1e-13 (sub 1e-12). Instanța rotită
+  // cu 19,9° o duce, prin rotunjire, la 2,65e-12 în lume (peste 2e-12): ușa trebuie să refuze, cu motivul ei.
+  const S = (x: number, y: number) => ({ a: x, b: 0, c: 0, d: y, e: 0, f: 0 });
+  const d = docDin(F, { id: 'c', forma: D, matrice: { ...ID } });
+  const p = d.piese[0];
+  if (!p || p.radacina.tip !== 'element') throw new Error('piesa');
+  const element = { ...p.radacina, matrice: compune(rotatie(360 - 27.1), S(1e-4, 1)) };
+  p.radacina = { tip: 'grup', id: 'g', matrice: compune(S(1e4, 1), rotatie(27.1)), copii: [element] };
+  const foaie = d.foi[0];
+  if (!foaie) throw new Error('foaie');
+  foaie.instante = [{ id: 'c', piesa: 'c', x: 300, y: 300, rotire: 19.9 }];
+  assert.match(motiv(prinUsa(d)), /instanța c: c are arce sub o matrice neuniformă în lume/);
+  // Fără rotirea instanței, aceeași piesă trece.
+  foaie.instante = [{ id: 'c', piesa: 'c', x: 300, y: 300, rotire: 0 }];
+  assert.ok(prinUsa(d).ok);
+});
+
+test('Ctrl+D împarte forma, nu o copiază (otrava „copia copiază formele”, 2.7b): istoricul nu crește cu o cale întreagă', () => {
+  const d = piesa(D, { ...ID }, 100, 100, 0);
+  let h = istoricNou(d);
+  const ctx: ContextDocument = { istoric: () => h, scrie: (x) => { h = x; }, selectie: () => ['c'], selecteaza: () => {} };
+  ACTIUNI_DOCUMENT.find((a) => a.id === 'document.duplica-selectia')?.ruleaza(ctx);
+  const [vechi, nou] = h.doc.piese;
+  assert.ok(vechi && nou && vechi.radacina.tip === 'element' && nou.radacina.tip === 'element');
+  assert.notEqual(nou.radacina, vechi.radacina);
+  assert.equal(nou.radacina.forma, vechi.radacina.forma);
+});
+
+test('oglindirea la scară minusculă (otrava „semnul din determinantul brut”, 2.7b): bulge-ul își schimbă tot semnul', () => {
+  // Sub 1,9e-162 și 45°, determinantul brut se rotunjește la −0, iar cel normat rămâne −1.
+  const s = 1.9e-162;
+  const m = compune(rotatie(45), { a: -s, b: 0, c: 0, d: s, e: 0, f: 0 });
+  assert.ok(!(determinant(m) < 0));
+  const c = conturElement({ forma: D, matrice: { ...ID } });
+  const t = transformaContur(c, m);
+  const arc0 = c.varfuri.find((v) => v.s.tip === 'A');
+  const arc1 = t.varfuri.find((v) => v.s.tip === 'A');
+  assert.ok(arc0?.s.tip === 'A' && arc1?.s.tip === 'A');
+  assert.equal(Math.sign(arc1.s.bulge), -Math.sign(arc0.s.bulge));
 });

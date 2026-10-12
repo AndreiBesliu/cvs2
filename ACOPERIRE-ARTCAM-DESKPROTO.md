@@ -22,7 +22,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Vectori, noduri, boolean, offset, aliniere | S | v1 | de făcut | — |
 | Text, text pe cale, fonturi | S | v1 | de făcut | — |
 | Verificarea și repararea vectorilor: deschiși, duplicați, intersecții, bucle, noduri prea apropiate | S | v1 | de făcut | — |
-| Import 2D: DXF, AI / EPS (S+D); SVG (D); PDF vectorial, DWG, WMF, DGK / PIC (S) | S+D | v1 (decis 07.10: DXF, SVG, PDF și AI compatibil PDF; EPS și AI ≤ 8 prin cititor propriu limitat, cu refuz explicit; WMF; DWG doar mesaj în v1, nativ de decis în v1.x; DGK / PIC scoase, vezi „Scoase la reverificare”) | în lucru (SVG: 2.7a biarcele gata; forma, ușa și PathKit în 2.7b–d) | — |
+| Import 2D: DXF, AI / EPS (S+D); SVG (D); PDF vectorial, DWG, WMF, DGK / PIC (S) | S+D | v1 (decis 07.10: DXF, SVG, PDF și AI compatibil PDF; EPS și AI ≤ 8 prin cititor propriu limitat, cu refuz explicit; WMF; DWG doar mesaj în v1, nativ de decis în v1.x; DGK / PIC scoase, vezi „Scoase la reverificare”) | în lucru (SVG: 2.7a biarcele și 2.7b forma „cale” gata; ușa SVG și PathKit în 2.7c–d) | — |
 | Export 2D cu vectori reali: DXF, SVG, PDF (EPS da, AI nu: decis 07.10), la scara exactă, cu cercuri, arce și curbe păstrate ca entități și cu straturile păstrate; deschis editabil în alte programe (rând nou, cerut de owner; `BRIEF.md` §16.2) | S | v1 (decis 07.10) | de făcut | — |
 | Cote (nici ArtCAM nu le are: doar rigle și măsurare) | peste prag | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Deformare în anvelopă (între două curbe), pentru vectori și reliefuri | S | v1 (decis 06.10; era v1.x) | de făcut | — |

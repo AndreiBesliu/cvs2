@@ -1274,3 +1274,48 @@ offsetului și a degajărilor. Nimic nou de încercat pentru owner: căile intr�
 
 **Pauză** (11.10, la cererea owner-ului „o sa facem pauza cand se poate”): codul, oracolele și reparațiile recenziei
 sunt împinse (`7199f63`). Rămân otrăvurile (48, în curs într-o clonă din afara Drive) și încheierea feliei.
+
+**Completed:** 12.10 10:39 (după pauză; otrăvurile au rulat din nou, de la capăt, pe o clonă curată). **Treceri:** 6.
+
+**Făcut:**
+- ADR 0034 + documentul v9: forma „cale” (un contur închis L / A / C), ușa (refuzurile, plafoanele de vârfuri pe cale, pe
+  piese și în lume, raza arcului ≤ 10 000 mm, matricea în lume a elementelor cu arce), migrarea v8 → v9 (un v8 cu o cale e
+  refuzat); pânza o desenează exact; clicul măsoară cubicele direct (includerea prin bisecție, distanța prin secțiunea de
+  aur și Newton); lista: „cale L × H, n segmente” (cu pluralul românesc).
+- CAM-ul: conturul de tăiat al fiecărui element, o dată, în lume, cu cubicele ca biarce (`src/cam/contur.ts`, încărcat
+  doar la export), pentru regiune, profil, degajări și avertismente.
+
+**Ce a găsit recenzia** (două lentile + 10 verificatori, **3,95 M tokeni**, de ~3 ori peste estimare; toate reproduse):
+- căile netede refuzate de offset (înaltă): la o linie plată lângă un arc al biarcelor, cavalier lăsa o buclă de
+  5e-4 … 0,03 mm (32 de cubice: un sfert refuzate; 128: patru din cinci). Buclele locale sub 0,1 mm se scot acum;
+- contactele false dintre două arce mici tangente (înaltă: până la 90 % din florile mici refuzate): ignorate lângă vârf;
+- arcul cu raza absurdă (critică, dintr-un document fabricat: un semicerc ascuns tăiat în piesă): raza ≤ 10 000 mm;
+- matricile la limita similitudinii (pânza arunca la fiecare pornire): ușa judecă și matricea în lume, la 2e-12;
+- timpul O(n·m) al verificărilor offsetului (35 000 de vârfuri: 7 minute): un index de cutii, ~2 s, aceleași verdicte;
+- două căi care se ating exact (scăpau jumătate): banda biarcelor la atingere; colțurile curbe fără degajare (tăcute):
+  avertisment; o curbă strânsă: un avertisment, nu unul pe fiecare arc al biarcelor;
+- distanța clicului (până la 29 mm); muta / Ctrl+D peste 10⁷ mm (din etapa 1); Ctrl+D copia o cale întreagă în istoric.
+- Reparația la cauză, în cavalier (îmbinarea aproape tangentă), a dat aserțiuni noi peste scoaterea buclelor: amânată
+  la 2.7c, pe fonturi și SVG-uri reale (ADR 0034, limitele).
+
+**Proba:**
+- oracolul documentului, al regiunii și al porții (sesiune independentă, ~1,1 M, două treceri): documentul v9 și cele 33
+  de otrăvuri ale căii, plafoanele și după acțiuni, regiunea pe căi, poarta pe 22 de cazuri pe 8 montaje, 1 912 programe
+  fără căi identice cu cele de dinainte; a găsit două defecte ale aplicației (un v8 cu o cale primit ca v9; colțul curb
+  ascuns de un vârf dublat), reparați;
+- oracolul cap-coadă (sesiune independentă, ~0,2 M): G-code-ul citit înapoi, la R de cubica exactă: 0,99 × tol pe IR,
+  1,48 × tol pe G-code (bugetele 1,001 și 3,001), pe 59 de documente; a găsit distanța clicului de lângă capete;
+- otrăvurile: 48, rulate din nou pe o clonă curată după pauză: 38 prinse.
+  - 4 au primit teste noi, probate pe otrava lor: refuzul biarcelor fără id-ul elementului, matricea în lume la ușă
+    (un caz care trece în piesă la 1e-12 și pică în lume la 2e-12), Ctrl+D care copia formele, semnul din determinantul
+    brut la oglindirea minusculă;
+  - 6 sunt echivalente, măsurat: regiunea care își recalculează conturul (aceleași biarce, deterministe; doar timpul),
+    traversarea la capătul bucății (bisecția convergentă), rafinarea doar a minimului global (0 diferențe pe 200 000 de
+    cubice), Newton fără secțiunea de aur și invers (cel mult 1,5e-12 mm, și pe 300 000 de cubice cu mânerul retras:
+    fiecare ajunge singur).
+
+**Rămâne deschis:**
+- reparația cavalier la cauză (2.7c); cavalier dă uneori un contur deschis pe colțurile de 0,5 mm (de dinainte);
+- degajarea pe colțurile cu arce și cubice cere un ADR nou (acum: avertisment);
+- timpul biarcelor (~1–3 ms pe cubică, pe firul principal): măsurat în 2.7c pe fișiere reale;
+- pachetul de pornire: 97,0 kB din 100.
