@@ -12,7 +12,8 @@
  * arcelor eliptice cu n = ⌈|Δθ| / φ⌉), ca să judece structura: ordinea, startul, tipurile, numărul de cubice.
  *
  * Ce judecă (`judecaRezultat`):
- * - refuzul (codul) sau, pe `ok`: pagina, `px`, `illustrator`, toate cele 21 de numere ale raportului (exact), numărul
+ * - refuzul (codul) sau, pe `ok`: pagina, `px`, `illustrator`, cele 20 de numere ale raportului în afară de cele nonzero
+ *   (exact), numărul
  *   căilor și, pe fiecare cale: `forma`, `nume`, tipurile segmentelor în ordine (deci startul și sensul), fiecare vârf la
  *   toleranța lui, semnul și valoarea `bulge`, punctele de control ale cubicelor din fișier, nicio linie nulă, nicio cubică
  *   cu cele patru puncte egale, nicio rază de arc peste 10 000 mm; apoi distanța în AMBELE sensuri dintre fiecare segment
@@ -22,7 +23,17 @@
  *   apropiere;
  * - latura (§8): adâncimea pe geometria exactă, cu includerea `evenodd` proprie (raza spre +x; linia semideschisă, cubica
  *   tăiată în bucăți monotone pe y la rădăcinile lui B′y, arcul tăiat la extremele lui y; traversarea prin bisecție);
- * - piesa (§8): grupul `g`, elementele c1…cN, coordonatele minus colțul cutiei exacte, instanța, operațiile.
+ * - piesa (§8): grupul `g`, elementele c1…cN, coordonatele minus colțul cutiei exacte, instanța, operațiile;
+ * - felia 2.7d (ADR 0036, ADR 0035 §4, §8, §10): fiecare formă UMPLUTĂ cu regula efectivă nonzero se normalizează.
+ *   Oracolul nu refface aranjamentul: pe citirea 2.7c a formei decide (`analizaNonzero`) dacă trebuie schimbată (regiunea
+ *   nonzero ≠ evenodd mai departe de τ, sau muchii coincidente); o formă schimbată de aplicație o judecă oracolul
+ *   normalizării (`./nonzero.ts`: regiunea, geometria din bucățile citirii, la toleranța citirii, topologia, umplerea în
+ *   stânga), iar `nonzero-normalizate` = formele schimbate, `nonzero-refuzate` între cele de schimbat rămase ca în 2.7c și
+ *   toate cele rămase. Stilurile (`./svg.stil.ts`): atribut < reguli simple din `<style>` < `style`, cu `fill`, bugetul
+ *   potrivirilor (`plafon` / `css`) și `stil` doar pe o regulă necitită. Plafonul vârfurilor se judecă întâi pe intrare.
+ *   Amendamentul §6 (K7): o formă deja evenodd se schimbă doar cu un martor la τ (`martorTau`); una cu martor și fără nicio
+ *   sondă umplută dincolo de τ (mai subțire decât τ peste tot) e prezisă goală, numărată `nonzero-normalizate` (ca forma cu
+ *   regiunea vidă), dar poate și să rămână: refuzul `gol` al oracolului poartă atunci `alternativ`, rezultatul în care rămâne.
  *
  * Alegerile mele unde ADR-ul tace (le spun și în raport; corpusul le ocolește unde se poate):
  * - lungimea CSS: spațiile XML de la capete se taie; numărul ca în §5 (fără „1.”); unitatea fără deosebire de majuscule;
@@ -30,8 +41,9 @@
  *   sau o latură dată în px / fără unitate;
  * - `illustrator` (revizia 12.10): un comentariu din primii 16 KiB conține „Adobe Illustrator” (ALEGERE: 16 Ki caractere ale
  *   textului decodat, nu octeți);
- * - `stil` = un element `style` oriunde în document (și în `defs`: acolo stă la Illustrator, iar clasele lui se aplică);
- * - `fill-rule` se moștenește (proprietate CSS moștenită, ca în SVG); din `style` câștigă ultima declarație;
+ * - elementele `style` se citesc oriunde în document (și în `defs`: acolo stă la Illustrator), în ordinea documentului;
+ * - `fill-rule`, `fill` și `visibility` se moștenesc (proprietăți CSS moștenite, ca în SVG); din `style` câștigă ultima
+ *   declarație;
  * - transformările: separatorul dintre ele e opțional (revizia 12.10); argumentele separate de comma-wsp;
  * - cercul și elipsa: două arce de 180° (ADR 0034: „cercul devine o cale din două arce”); pentru elipse (și cercul sub o
  *   matrice care nu e similitudine) comparația acceptă și varianta SVG 2 cu patru sferturi (`varianta`), și spune care;
@@ -55,6 +67,8 @@
  */
 import { DOMParser } from '@xmldom/xmldom';
 import { distantaLaCubica, type CubicaO } from './biarce.ts';
+import { conturSimpluDinLinii, grupuri, judecaNormalizarea, martorTau, muchiiCoincidente, regiuneaDifera, sondeUmplute, toatePrimitivele, type CaleN } from './nonzero.ts';
+import { CONST_STIL, foaieDin, STIL_RADACINA_PARINTE, stilCalculat, type StilCalculat } from './svg.stil.ts';
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Constantele contractului (copiate din text, nu din aplicație).
@@ -98,7 +112,7 @@ export const CONST_O = {
 export const CODURI_O = [
   'deschise', 'degenerate', 'prea-mari', 'sarit-text', 'sarit-use', 'sarit-image', 'sarit-foreignObject', 'sarit-svg',
   'ascunse', 'eroare-date', 'atribut-invalid', 'transformare-invalida', 'singulara', 'arce-eliptice', 'arce-plate',
-  'cubice-din-arce', 'nonzero', 'pagina-fara-marime', 'viewbox-invalid', 'transformare-radacina', 'stil',
+  'cubice-din-arce', 'nonzero-normalizate', 'nonzero-refuzate', 'pagina-fara-marime', 'viewbox-invalid', 'transformare-radacina', 'stil',
 ] as const;
 export type CodO = (typeof CODURI_O)[number];
 export type RaportO = Record<CodO, number>;
@@ -719,38 +733,26 @@ export type CaleO = {
   runs: RunO[];
   /** Toleranța vârfului i (după clasa segmentelor vecine). */
   tolVarf: number[];
+  /** Forma se normalizează (felia 2.7d): regula efectivă nonzero și umplută (`fill` efectiv altul decât `none`). */
   nonzero: boolean;
 };
 export type RezultatO =
-  | { ok: true; cai: CaleO[]; pagina: { latime: number; inaltime: number } | null; px: boolean; illustrator: boolean; avertismente: RaportO; marime: number; tolLC: number }
-  | { ok: false; cod: CodRefuzO; avertismente?: RaportO; detaliu?: string };
+  | { ok: true; cai: CaleO[]; pagina: { latime: number; inaltime: number } | null; px: boolean; illustrator: boolean; avertismente: RaportO; marime: number; tolLC: number; formeNonzero: FormaNonzeroO[] }
+  | { ok: false; cod: CodRefuzO; avertismente?: RaportO; detaliu?: string; alternativ?: RezultatO };
 
-export type OptiuniO = { pxPeTol?: 96 | 72; varianta?: 2 | 4; parser?: ParserSvg; limba?: string; buget?: number };
+export type OptiuniO = { pxPeTol?: 96 | 72; varianta?: 2 | 4; parser?: ParserSvg; limba?: string; buget?: number; densitateNonzero?: number };
+
+/**
+ * Analiza unei forme `nonzero` (ADR 0036): `deSchimbat` = regiunea nonzero a citirii ≠ evenodd (o sondă mai departe de τ)
+ * sau muchii coincidente; `martor` = martorul de proximitate la τ (§6, amendamentul K7: o formă deja evenodd se poate
+ * schimba doar cu el); `subtire` = deja evenodd, cu martor, și nicio sondă umplută dincolo de τ (o formă simplă mai subțire
+ * decât τ: poate ieși și goală); `gol` = predicția că dispare (regiunea vidă, sau subțire); `sigur` = analiza s-a făcut.
+ */
+export type FormaNonzeroO = { forma: number; deSchimbat: boolean; gol: boolean; sigur: boolean; dezacorduri: number; coincidente: number; martor: string | null; subtire: boolean };
 
 const FORME = new Set(['path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon']);
 const SARITE: Record<string, CodO> = {
   text: 'sarit-text', use: 'sarit-use', image: 'sarit-image', foreignObject: 'sarit-foreignObject', svg: 'sarit-svg',
-};
-
-type Stil = { display?: string; visibility?: string; 'fill-rule'?: string };
-function stilDin(el: Element): Stil {
-  const r: Stil = {};
-  const s = el.getAttribute('style');
-  if (s === null) return r;
-  for (const decl of s.split(';')) {
-    const k = decl.indexOf(':');
-    if (k < 0) continue;
-    const nume = taie(decl.slice(0, k)).toLowerCase();
-    const val = taie(decl.slice(k + 1)).toLowerCase();
-    if (nume === 'display' || nume === 'visibility' || nume === 'fill-rule') r[nume] = val;
-  }
-  return r;
-}
-const proprietate = (el: Element, st: Stil, nume: keyof Stil): string | undefined => {
-  const v = st[nume];
-  if (v !== undefined) return v;
-  const a = el.getAttribute(nume);
-  return a === null ? undefined : taie(a).toLowerCase();
 };
 
 const copiiElement = (el: Element): Element[] => {
@@ -787,7 +789,7 @@ function formeAscunse(el: Element, ns: string | null, limba: string): number {
   return n;
 }
 
-type Cadru = { el: Element; m: Mat; vizibil: boolean; regula: 'nonzero' | 'evenodd' };
+type Cadru = { el: Element; m: Mat; stil: StilCalculat };
 
 export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
   const pxTol = opt.pxPeTol ?? 96;
@@ -814,14 +816,25 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
   // Comentariile (Illustrator) și elementele `style`, oriunde.
   // Steagul Illustrator: un comentariu din primii 16 KiB conține „Adobe Illustrator” (ALEGERE: caracterele textului).
   const illustrator = [...text.slice(0, 16 * 1024).matchAll(/<!--([\s\S]*?)-->/g)].some((m) => (m[1] as string).includes('Adobe Illustrator'));
+  // Felia 2.7d (§4 „Stilurile”): regulile simple din toate elementele `style` (în ordinea documentului) se aplică; `stil`
+  // numără doar o regulă cu una din cele patru proprietăți care nu se citește (sau `!important`, sau peste 10 000 de reguli).
+  let foaie: ReturnType<typeof foaieDin> | null = null;
   {
+    const texte: string[] = [];
     const stiva: Node[] = [doc as unknown as Node];
     while (stiva.length > 0) {
       const n = stiva.pop() as Node;
-      if (n.nodeType === 1 && (n as Element).localName === 'style' && (n as Element).namespaceURI === ns) nr.stil = 1;
-      for (let c = n.firstChild; c !== null; c = c.nextSibling) stiva.push(c);
+      if (n.nodeType === 1 && (n as Element).localName === 'style' && (n as Element).namespaceURI === ns) texte.push((n as Element).textContent ?? '');
+      const copii: Node[] = [];
+      for (let c = n.firstChild; c !== null; c = c.nextSibling) copii.push(c);
+      stiva.push(...copii.reverse());
+    }
+    if (texte.length > 0) {
+      foaie = foaieDin(texte);
+      if (foaie.stil) nr.stil = 1;
     }
   }
+  const costCss = { n: 0 };
 
   // Pagina (§2).
   const k = 25.4 / pxTol;
@@ -869,20 +882,17 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
 
   const cai: CaleO[] = [];
   let forma = 0;
-  const stRad = stilDin(rad);
-  const visRad = proprietate(rad, stRad, 'visibility');
-  const frRad = proprietate(rad, stRad, 'fill-rule');
-  const vizRad = visRad === 'hidden' || visRad === 'collapse' ? false : true;
-  const regRad = frRad === 'evenodd' ? 'evenodd' : 'nonzero';
-  const stiva: Cadru[] = copiiElement(rad).reverse().map((el) => ({ el, m: mPagina, vizibil: vizRad, regula: regRad }));
+  // Rădăcina: display nu se judecă (ca în 2.7c); restul se moștenește.
+  const stRad = { ...stilCalculat(rad, STIL_RADACINA_PARINTE, foaie, costCss), ascuns: false };
+  const stiva: Cadru[] = copiiElement(rad).reverse().map((el) => ({ el, m: mPagina, stil: stRad }));
   const lucru: Lucru = { produse: 0 };
   try {
   while (stiva.length > 0) {
-    const { el, m, vizibil: vizParinte, regula: regParinte } = stiva.pop() as Cadru;
+    const { el, m, stil: stParinte } = stiva.pop() as Cadru;
     if (el.namespaceURI !== ns) continue;
     const ln = el.localName;
-    const st = stilDin(el);
-    if (proprietate(el, st, 'display') === 'none') {
+    const stil = stilCalculat(el, stParinte, foaie, costCss);
+    if (stil.ascuns) {
       if (FORME.has(ln) || ln === 'g' || ln === 'a' || ln === 'switch') {
         const n = formeAscunse(el, ns, limba);
         nr.ascunse += n;
@@ -890,10 +900,7 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
       }
       continue;
     }
-    const vis = proprietate(el, st, 'visibility');
-    const vizibil = vis === 'hidden' || vis === 'collapse' ? false : vis === 'visible' ? true : vizParinte;
-    const fr = proprietate(el, st, 'fill-rule');
-    const regula = fr === 'evenodd' ? 'evenodd' : fr === 'nonzero' ? 'nonzero' : regParinte;
+    const vizibil = stil.visibility === 'visible';
     let m2 = m;
     const tr = el.getAttribute('transform');
     if (tr !== null) {
@@ -905,14 +912,15 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
       m2 = mul(m, t);
     }
     if (ln === 'g' || ln === 'a') {
-      for (const c of copiiElement(el).reverse()) stiva.push({ el: c, m: m2, vizibil, regula });
+      for (const c of copiiElement(el).reverse()) stiva.push({ el: c, m: m2, stil });
     } else if (ln === 'switch') {
       const c = alesSwitch(el, ns, limba);
-      if (c !== undefined) stiva.push({ el: c, m: m2, vizibil, regula });
+      if (c !== undefined) stiva.push({ el: c, m: m2, stil });
     } else if (FORME.has(ln)) {
       const idx = forma++;
       if (!vizibil) nr.ascunse++;
-      else proceseazaForma(el, ln, m2, regula, idx, varianta, nr, cai, lucru);
+      // ADR 0036 §9: doar o formă umplută cu regula nonzero se normalizează; `fill: none` se citește ca atare.
+      else proceseazaForma(el, ln, m2, stil.regula === 'nonzero' && stil.umplut, idx, varianta, nr, cai, lucru);
     } else if (ln in SARITE) {
       // Revizia 12.10: visibility nu le scoate din raport (un tspan vizibil reapare); doar display:none (mai sus).
       nr[SARITE[ln] as CodO]++;
@@ -923,37 +931,12 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
     throw e;
   }
 
-  // Ordinea refuzurilor (revizia 12.10): plafon (vârfurile, apoi includerile), departe, gol.
+  // Bugetul potrivirilor CSS (§4, felia 2.7d): peste 2·10⁷ pe fișier, refuz (nu se citește pe jumătate stilat).
+  if (costCss.n > CONST_STIL.potriviri) return { ok: false, cod: 'plafon', detaliu: 'css', avertismente: nr };
+  // Ordinea refuzurilor (revizia 12.10): plafon (vârfurile, apoi includerile), departe, gol. Plafonul vârfurilor se judecă
+  // întâi pe intrare, înaintea normalizării (felia 2.7d, ADR 0036 §9): atunci numerele nonzero rămân 0.
   if (cai.length === 0) return { ok: false, cod: 'gol', avertismente: nr };
   if (cai.reduce((t, c) => t + c.varfuri.length, 0) > CONST_O.varfuriPrimite) return { ok: false, cod: 'plafon', avertismente: nr };
-  // Perechile `nonzero` (§8, §10): în aceeași formă, B conține primul vârf al lui A, cu aria de același semn; după
-  // parcurgere și după plafonul vârfurilor, cu bugetul includerilor.
-  const buget = { rest: opt.buget ?? CONST_O.includeri };
-  const peForma = new Map<number, CaleO[]>();
-  for (const c of cai) {
-    const l = peForma.get(c.forma) ?? [];
-    l.push(c);
-    peForma.set(c.forma, l);
-  }
-  for (const l of peForma.values()) {
-    if (l.length < 2 || !(l[0] as CaleO).nonzero) continue;
-    const arii = l.map((c) => arieRuns(c.runs));
-    const cutii = l.map((c) => cutieExacta(c.runs));
-    for (const [i, a] of l.entries()) {
-      const p0 = (a.varfuri[0] as VarfO).p;
-      let gasit = false;
-      for (const [j, b] of l.entries()) {
-        if (j === i) continue;
-        if (!includereCuBuget(b, cutii[j] as Cutie, p0, buget)) {
-          if (buget.rest < 0) return { ok: false, cod: 'plafon', detaliu: 'includeri', avertismente: nr };
-          continue;
-        }
-        if (Math.sign(arii[j] as number) === Math.sign(arii[i] as number)) { gasit = true; break; }
-      }
-      if (buget.rest < 0) return { ok: false, cod: 'plafon', detaliu: 'includeri', avertismente: nr };
-      if (gasit) nr.nonzero++;
-    }
-  }
   for (const c of cai) {
     for (const v of c.varfuri) {
       const pts = v.s.tip === 'C' ? [v.p, v.s.c1, v.s.c2] : [v.p];
@@ -977,7 +960,34 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
       r.piese.forEach((_, j) => c.tolVarf.push(j === 0 ? Math.max(r.tol, prec.tol) : r.tol));
     });
   }
-  return { ok: true, cai, pagina, px, illustrator, avertismente: nr, marime, tolLC };
+  // Regula `nonzero` (§8, §10; ADR 0036, felia 2.7d): fiecare formă cu regula efectivă nonzero trece, cu toate subcăile
+  // ei, prin normalizare. Oracolul nu refface aranjamentul: el decide, pe citirea de mai sus, care forme TREBUIE schimbate
+  // (regiunea nonzero ≠ evenodd mai departe de τ, sau muchii coincidente) și care trebuie lăsate exact ca în 2.7c; ieșirea
+  // schimbată o judecă `judecaRezultat` cu oracolul normalizării. Numerele raportului de aici sunt predicția fără refuzuri.
+  const formeNonzero: FormaNonzeroO[] = [];
+  {
+    const peForma = new Map<number, CaleO[]>();
+    for (const c of cai) {
+      if (!c.nonzero) continue;
+      const l = peForma.get(c.forma) ?? [];
+      l.push(c);
+      peForma.set(c.forma, l);
+    }
+    for (const [forma, l] of peForma) formeNonzero.push(analizaNonzero(forma, l, opt.densitateNonzero ?? 1));
+  }
+  // ADR 0036 §6: forma goală (regiunea vidă, sau o formă simplă mai subțire decât τ) se numără tot nonzero-normalizate;
+  // dacă nu rămâne nimic, fișierul e „gol”. Forma subțire POATE și să rămână: alternativa e rezultatul în care rămâne.
+  nr['nonzero-normalizate'] = formeNonzero.filter((f) => f.deSchimbat || f.gol).length;
+  const ok: RezultatO = { ok: true, cai, pagina, px, illustrator, avertismente: nr, marime, tolLC, formeNonzero };
+  const goale = new Set(formeNonzero.filter((f) => f.gol).map((f) => f.forma));
+  if (goale.size > 0 && cai.every((c) => goale.has(c.forma))) {
+    const subtiri = formeNonzero.filter((f) => f.gol && f.subtire);
+    if (subtiri.length === 0) return { ok: false, cod: 'gol', avertismente: nr };
+    const nr2 = { ...nr, 'nonzero-normalizate': nr['nonzero-normalizate'] - subtiri.length };
+    const alt: RezultatO = { ...ok, avertismente: nr2, formeNonzero: formeNonzero.map((f) => (f.subtire ? { ...f, gol: false } : f)) };
+    return { ok: false, cod: 'gol', avertismente: nr, alternativ: alt };
+  }
+  return ok;
 }
 
 /** Subcăile unei forme, în unitățile formei (segmente + arcele formelor, cu centrul lor). */
@@ -989,7 +999,7 @@ type SubcaleF = { start: P; segs: SegF[]; z: boolean; linie?: boolean };
 const PLAFON_LUCRU = Symbol('plafon');
 type Lucru = { produse: number };
 
-function proceseazaForma(el: Element, ln: string, m: Mat, regula: 'nonzero' | 'evenodd', idx: number, varianta: 2 | 4, nr: RaportO, cai: CaleO[], lucru: Lucru): void {
+function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean, idx: number, varianta: 2 | 4, nr: RaportO, cai: CaleO[], lucru: Lucru): void {
   const sub = subcaiForma(el, ln, varianta, nr);
   if (sub === null) return;
   if (esteSingularaO(m)) {
@@ -1096,7 +1106,7 @@ function proceseazaForma(el: Element, ln: string, m: Mat, regula: 'nonzero' | 'e
       nr.degenerate++;
       continue;
     }
-    const cale: CaleO = { varfuri, forma: idx, runs: vii, tolVarf: [], nonzero: regula === 'nonzero' };
+    const cale: CaleO = { varfuri, forma: idx, runs: vii, tolVarf: [], nonzero: normalizabila };
     if (idA !== null) cale.nume = idA.slice(0, CONST_O.numeLungime);
     cai.push(cale);
   }
@@ -1567,7 +1577,7 @@ export const tipuri = (v: readonly VarfO[]): string => v.map((x) => x.s.tip).joi
  * fără să pună radicandul la 0 (constatarea 1 a oracolului): semicercul împărțit în două jumătăți, toleranța crește cu
  * zgomotul `zgomotF65`, iar vârfurile dintre cubice se judecă pe curbă, nu față de vârfurile oracolului.
  */
-export type OptiuniJudecata = { N?: number; lambdaTolerant?: boolean };
+export type OptiuniJudecata = { N?: number; lambdaTolerant?: boolean; densitateNonzero?: number };
 
 /** O cale a aplicației față de calea oracolului: structura, vârfurile, apoi distanța în ambele sensuri, pe segmente. */
 export function judecaCale(app: unknown, o: CaleO, eticheta: string, opt: OptiuniJudecata = {}): string[] {
@@ -1674,11 +1684,25 @@ export function judecaCale(app: unknown, o: CaleO, eticheta: string, opt: Optiun
   return pr;
 }
 
-/** Rezultatul aplicației față de al oracolului. */
+/** Codurile raportului pe care le judecă analiza formelor nonzero (nu comparația directă). */
+export const CODURI_NONZERO_O = ['nonzero-normalizate', 'nonzero-refuzate'] as const;
+
+type CaleApp = { varfuri?: unknown; forma?: unknown; nume?: unknown };
+
+/**
+ * Rezultatul aplicației față de al oracolului. Formele `evenodd` (și cele nonzero lăsate neschimbate) se judecă cale cu
+ * cale, ca în 2.7c. O formă nonzero a cărei ieșire diferă de citirea 2.7c e o formă NORMALIZATĂ: se judecă cu oracolul
+ * normalizării (ADR 0036: regiunea ei evenodd = regiunea nonzero a citirii, mai departe de τ; geometria din bucățile
+ * citirii, la toleranța citirii; topologia), iar numele căilor ei e `id`-ul formei. Numerele `nonzero-*`: normalizate =
+ * formele schimbate; refuzate între formele care trebuiau schimbate și au rămas ca în 2.7c și toate formele nonzero
+ * rămase ca în 2.7c (un refuz pe o formă deja evenodd e posibil, dar nu obligatoriu).
+ */
 export function judecaRezultat(app: unknown, o: RezultatO, opt: OptiuniJudecata = {}): string[] {
   if (typeof app !== 'object' || app === null) return ['rezultatul nu e obiect'];
   const a = app as { ok?: unknown; cod?: unknown; cai?: unknown; pagina?: unknown; px?: unknown; illustrator?: unknown; avertismente?: unknown };
   if (!o.ok) {
+    // O formă subțire (§6, K7) poate și să rămână: atunci se judecă alternativa.
+    if (a.ok === true && o.alternativ !== undefined) return judecaRezultat(app, o.alternativ, opt);
     if (a.ok !== false) return [`trebuia refuzat (${o.cod}), dar ok = ${String(a.ok)}`];
     if (a.cod !== o.cod) return [`codul ${String(a.cod)} ≠ ${o.cod}`];
     const d = (app as { detaliu?: unknown }).detaliu;
@@ -1693,26 +1717,127 @@ export function judecaRezultat(app: unknown, o: RezultatO, opt: OptiuniJudecata 
   else if (pg === null || typeof pg !== 'object' || !(Math.abs(pg.latime - o.pagina.latime) <= 1e-12 * o.pagina.latime) || !(Math.abs(pg.inaltime - o.pagina.inaltime) <= 1e-12 * o.pagina.inaltime)) pr.push(`pagina ${JSON.stringify(pg)} ≠ ${JSON.stringify(o.pagina)}`);
   if (a.px !== o.px) pr.push(`px ${String(a.px)} ≠ ${String(o.px)}`);
   if (a.illustrator !== o.illustrator) pr.push(`illustrator ${String(a.illustrator)} ≠ ${String(o.illustrator)}`);
-  pr.push(...judecaRaport(a.avertismente, o.avertismente));
+  pr.push(...judecaRaport(a.avertismente, o.avertismente, CODURI_NONZERO_O));
   if (!Array.isArray(a.cai)) return [...pr, 'cai nu e listă'];
-  if (a.cai.length !== o.cai.length) return [...pr, `${a.cai.length} căi ≠ ${o.cai.length} (oracol)`];
-  a.cai.forEach((c: { varfuri?: unknown; forma?: unknown; nume?: unknown }, i: number) => {
-    const w = o.cai[i] as CaleO;
-    if (c.forma !== w.forma) pr.push(`calea ${i}: forma ${String(c.forma)} ≠ ${w.forma}`);
-    if (c.nume !== w.nume) pr.push(`calea ${i}: nume ${String(c.nume)} ≠ ${String(w.nume)}`);
-    pr.push(...judecaCale(c.varfuri, w, `calea ${i}`, opt));
-  });
+  // Căile aplicației, pe forme (în ordinea documentului).
+  const appPeForma = new Map<number, CaleApp[]>();
+  let ultima = -Infinity;
+  for (const [i, c] of (a.cai as CaleApp[]).entries()) {
+    const f = c?.forma;
+    if (typeof f !== 'number' || !Number.isInteger(f) || f < ultima) { pr.push(`calea ${i}: forma ${String(f)} în afara ordinii documentului`); continue; }
+    ultima = f;
+    const l = appPeForma.get(f) ?? [];
+    l.push(c);
+    appPeForma.set(f, l);
+  }
+  const oPeForma = new Map<number, CaleO[]>();
+  for (const c of o.cai) { const l = oPeForma.get(c.forma) ?? []; l.push(c); oPeForma.set(c.forma, l); }
+  const analize = new Map(o.formeNonzero.map((f) => [f.forma, f]));
+  const forme = [...new Set([...appPeForma.keys(), ...oPeForma.keys()])].sort((x, y) => x - y);
+  let schimbate = 0, ramaseDeSchimbat = 0, ramaseNonzero = 0;
+  for (const f of forme) {
+    const A = appPeForma.get(f) ?? [], O = oPeForma.get(f) ?? [];
+    if (O.length === 0) { pr.push(`forma ${f}: ${A.length} căi pe care oracolul nu le are`); continue; }
+    const nonzero = (O[0] as CaleO).nonzero;
+    const identic = A.length === O.length
+      ? A.flatMap((c, k) => {
+        const w = O[k] as CaleO;
+        return [...(c.nume !== w.nume ? [`forma ${f}, calea ${k}: nume ${String(c.nume)} ≠ ${String(w.nume)}`] : []), ...judecaCale(c.varfuri, w, `forma ${f}, calea ${k}`, opt)];
+      })
+      : [`forma ${f}: ${A.length} căi ≠ ${O.length} (oracol)`];
+    if (!nonzero) { pr.push(...identic); continue; }
+    const an = analize.get(f);
+    if (identic.length === 0) {
+      ramaseNonzero++;
+      if (an?.deSchimbat === true) ramaseDeSchimbat++;
+      continue;
+    }
+    // Forma a fost normalizată.
+    schimbate++;
+    if (an !== undefined && an.deSchimbat === false && an.sigur && an.martor === null) pr.push(`forma ${f}: normalizată, dar regiunea ei nonzero e deja cea evenodd, fără muchii coincidente și fără martor la τ (§6: trebuia lăsată ca în 2.7c); ${identic[0]}`);
+    const nume = (O[0] as CaleO).nume;
+    A.forEach((c, k) => { if (c.nume !== nume) pr.push(`forma ${f} (normalizată), calea ${k}: nume ${String(c.nume)} ≠ ${String(nume)}`); });
+    const tol = O.map((c) => c.tolVarf);
+    const j = judecaNormalizarea(O.map((c) => c.varfuri as CaleN), 'nonzero', { ok: true, cai: A.map((c) => c.varfuri), info: {} }, {
+      info: false, biti: false, asteptat: 'schimbat', densitate: opt.densitateNonzero ?? 1,
+      tolSursa: (ci, vi) => (tol[ci]?.[vi] ?? 0),
+      ...(an !== undefined ? { martor: an.martor } : {}),
+    });
+    pr.push(...j.probleme.map((p) => `forma ${f} (normalizată): ${p}`));
+  }
+  const av = (a.avertismente ?? {}) as Record<string, unknown>;
+  if (av['nonzero-normalizate'] !== schimbate) pr.push(`raportul: nonzero-normalizate = ${String(av['nonzero-normalizate'])} ≠ ${schimbate} (formele nonzero schimbate)`);
+  const rf = av['nonzero-refuzate'];
+  if (typeof rf !== 'number' || !(rf >= ramaseDeSchimbat && rf <= ramaseNonzero)) pr.push(`raportul: nonzero-refuzate = ${String(rf)} ∉ [${ramaseDeSchimbat}, ${ramaseNonzero}] (formele care trebuiau schimbate și au rămas ca în 2.7c; toate cele rămase)`);
   return pr;
 }
 
-export function judecaRaport(app: unknown, o: RaportO): string[] {
+export function judecaRaport(app: unknown, o: RaportO, exceptii: readonly string[] = []): string[] {
   if (typeof app !== 'object' || app === null) return ['raportul lipsește'];
   const r = app as Record<string, unknown>;
   const pr: string[] = [];
   const chei = Object.keys(r).sort().join(',');
   if (chei !== [...CODURI_O].sort().join(',')) pr.push(`cheile raportului: ${chei}`);
-  for (const c of CODURI_O) if (r[c] !== o[c]) pr.push(`raportul: ${c} = ${String(r[c])} ≠ ${o[c]} (oracol)`);
+  for (const c of CODURI_O) if (!exceptii.includes(c) && r[c] !== o[c]) pr.push(`raportul: ${c} = ${String(r[c])} ≠ ${o[c]} (oracol)`);
   return pr;
+}
+
+/**
+ * Căile finale: ale oracolului pentru formele rămase ca în 2.7c, ale aplicației (judecate) pentru cele normalizate, ca
+ * `CaleO` cu geometria exactă a vârfurilor aplicației. Pentru laturi (§8) și colțul piesei, după `judecaRezultat` curat.
+ */
+export function caiFinaleO(app: unknown, o: RezultatO): CaleO[] {
+  if (!o.ok) return [];
+  const a = app as { cai: Array<{ varfuri: VarfO[]; forma: number; nume?: string }> };
+  const oPeForma = new Map<number, CaleO[]>();
+  for (const c of o.cai) { const l = oPeForma.get(c.forma) ?? []; l.push(c); oPeForma.set(c.forma, l); }
+  const appPeForma = new Map<number, Array<{ varfuri: VarfO[]; forma: number; nume?: string }>>();
+  for (const c of a.cai) { const l = appPeForma.get(c.forma) ?? []; l.push(c); appPeForma.set(c.forma, l); }
+  const out: CaleO[] = [];
+  for (const f of [...new Set([...oPeForma.keys(), ...appPeForma.keys()])].sort((x, y) => x - y)) {
+    const O = oPeForma.get(f) ?? [], A = appPeForma.get(f) ?? [];
+    const identic = A.length === O.length && A.every((c, k) => judecaCale(c.varfuri, O[k] as CaleO, 'x').length === 0);
+    if (identic) { out.push(...O); continue; }
+    for (const c of A) {
+      const runs: RunO[] = segmenteApp(c.varfuri).map((g) => {
+        const ex: SegExact = g.s.tip === 'L' ? { fel: 'L', a: g.a, b: g.b } : g.s.tip === 'C' ? { fel: 'C', a: g.a, c1: g.s.c1, c2: g.s.c2, b: g.b } : { fel: 'E', a: g.a, b: g.b, ...arcApp(g.a, g.b, g.s.bulge) };
+        return { ex, piese: [{ p: g.a, s: g.s }], clasa: 'L', raza: 0, gol: 0, tol: 0 };
+      });
+      const cale: CaleO = { varfuri: c.varfuri, forma: f, runs, tolVarf: c.varfuri.map(() => 0), nonzero: true };
+      if (c.nume !== undefined) cale.nume = c.nume;
+      out.push(cale);
+    }
+  }
+  return out;
+}
+
+/** Analiza unei forme nonzero (citirea 2.7c a ei): trebuie schimbată? Regiunea ei e vidă? */
+export function analizaNonzero(forma: number, cai: readonly CaleO[], densitate: number): FormaNonzeroO {
+  const cn = cai.map((c) => c.varfuri as CaleN);
+  const tol = cai.map((c) => c.tolVarf);
+  const o = { densitate: Math.max(densitate, 0.01), tolSursa: (ci: number, vi: number): number => tol[ci]?.[vi] ?? 0 };
+  /** Deja evenodd: cu martor la τ, poate ieși schimbată; fără nicio sondă umplută dincolo de τ, chiar goală. */
+  const dejaEvenodd = (sigur: boolean): FormaNonzeroO => {
+    const martor = martorTau(cn);
+    const subtire = martor !== null && sondeUmplute(cn, 'nonzero', o) === 0;
+    return { forma, deSchimbat: false, gol: subtire, sigur, dezacorduri: 0, coincidente: 0, martor, subtire };
+  };
+  // Un singur contur simplu din linii: deja evenodd, fără sonde de regiune.
+  if (cn.length === 1 && conturSimpluDinLinii(cn[0] as CaleN) === true) return dejaEvenodd(true);
+  if (densitate <= 0) return { forma, deSchimbat: false, gol: false, sigur: false, dezacorduri: 0, coincidente: 0, martor: null, subtire: false };
+  const dezacorduri = regiuneaDifera(cn, 'nonzero', o).dezacorduri;
+  // Coincidențele contează doar când regiunile nu diferă deja (perechile pot fi pătratice pe forme dense).
+  let coincidente = 0;
+  if (dezacorduri === 0) {
+    const gr = grupuri(cn);
+    const epsMax = gr.reduce((m, g) => Math.max(m, g.eps), 0);
+    const segs = toatePrimitivele(cn);
+    for (const s of segs) s.tol = tol[s.ci]?.[s.vi] ?? 0;
+    coincidente = muchiiCoincidente(segs, (s) => epsMax + s.tol).length;
+  }
+  if (dezacorduri === 0 && coincidente === 0) return dejaEvenodd(true);
+  const gol = sondeUmplute(cn, 'nonzero', o) === 0;
+  return { forma, deSchimbat: true, gol, sigur: true, dezacorduri, coincidente, martor: null, subtire: false };
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -1796,3 +1921,15 @@ export function numeDinFisierO(f: string): string {
 }
 
 export const octetiDin = (s: string): Uint8Array => new TextEncoder().encode(s);
+
+/**
+ * Laturile pe care §8 le hotărăște: primul vârf al căii nu stă (la `tol`) pe conturul altei căi. Felia 2.7d: contururile
+ * normalizate se pot atinge într-un vârf (ADR 0036 §7), deci primul vârf al unuia poate sta pe altul, unde includerea e
+ * nedefinită (ADR 0035 §8, ultimul paragraf).
+ */
+export function laturiHotarate(cai: readonly CaleO[], tol: number): boolean[] {
+  return cai.map((a, i) => {
+    const p = (a.varfuri[0] as VarfO).p;
+    return cai.every((b, j) => j === i || b.runs.every((r) => distantaExact(p, r.ex) > tol));
+  });
+}

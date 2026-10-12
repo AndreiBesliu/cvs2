@@ -8,9 +8,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { citesteSvg } from '../../src/io/svg.ts';
 import { citesteSvgO, judecaRezultat, parserTest } from '../oracles/svg.ts';
-import { CONSTATARI, judecaHartia, octetiCaz } from '../oracles/svg.cazuri.ts';
+import { CONSTATARI, judecaHartia, judecaHartiaFinala, octetiCaz } from '../oracles/svg.cazuri.ts';
+import { SEMINTE_CONSTATARI, svgAleator } from '../oracles/svg.aleator.ts';
 
-test('constatările deschise ale oracolului (12.10: toate rezolvate; lista rămâne pentru cele noi)', () => {
+test('constatările deschise ale oracolului (12.10: toate rezolvate; 2.7d: K7 rezolvată de amendamentul ADR 0036 §6)', () => {
   assert.deepEqual(CONSTATARI.map((c) => c.nume), []);
 });
 
@@ -21,6 +22,14 @@ for (const c of CONSTATARI) {
   });
   test(`(a) CONSTATARE, aplicația: ${c.nume}`, () => {
     const a = citesteSvg(octetiCaz(c), { pxPeTol: c.px ?? 96, parser: parserTest() });
-    assert.deepEqual(judecaRezultat(a, o), []);
+    assert.deepEqual([...judecaRezultat(a, o), ...judecaHartiaFinala(a, o, c.hartie)], []);
+  });
+}
+
+for (const s of SEMINTE_CONSTATARI) {
+  test(`(a) CONSTATARE, aplicația: SVG-ul aleator cu sămânța ${s}`, () => {
+    const { text, px } = svgAleator(s);
+    const b = new TextEncoder().encode(text);
+    assert.deepEqual(judecaRezultat(citesteSvg(b, { pxPeTol: px, parser: parserTest() }), citesteSvgO(b, { pxPeTol: px })), []);
   });
 }

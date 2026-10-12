@@ -193,10 +193,111 @@ test('imbricarea alege latura: O (exterior + gaură), pătratele de trei nivelur
   assert.deepEqual(laturiDinImbricare(r.cai), ['exterior', 'interior', 'exterior', 'exterior', 'interior', 'exterior']);
 });
 
-test('nonzero: două subcăi una în alta, în același sens, se numără; în sensuri opuse, nu', () => {
-  assert.equal(cai(pagina('<path d="M0 0 H40 V40 H0 Z M10 10 H30 V30 H10 Z"/>')).avertismente.nonzero, 1);
-  assert.equal(cai(pagina('<path d="M0 0 H40 V40 H0 Z M10 10 V30 H30 V10 Z"/>')).avertismente.nonzero, 0);
-  assert.equal(cai(pagina('<path fill-rule="evenodd" d="M0 0 H40 V40 H0 Z M10 10 H30 V30 H10 Z"/>')).avertismente.nonzero, 0);
+test('nonzero (ADR 0036): în același sens, pătratul interior e plin, deci rămâne doar exteriorul; în sensuri opuse e gaură, neschimbat', () => {
+  const plin = cai(pagina('<path d="M0 0 H40 V40 H0 Z M10 10 H30 V30 H10 Z"/>'));
+  assert.equal(plin.avertismente['nonzero-normalizate'], 1);
+  assert.equal(plin.cai.length, 1);
+  assert.deepEqual(puncte(plin.cai[0]?.varfuri ?? []).sort(), [[0, 10], [0, 50], [40, 10], [40, 50]].sort());
+  const gaura = cai(pagina('<path d="M0 0 H40 V40 H0 Z M10 10 V30 H30 V10 Z"/>'));
+  assert.equal(gaura.avertismente['nonzero-normalizate'], 0);
+  assert.equal(gaura.cai.length, 2);
+  // Sub evenodd nu se normalizează nimic: interiorul rămâne gaură.
+  const eo = cai(pagina('<path fill-rule="evenodd" d="M0 0 H40 V40 H0 Z M10 10 H30 V30 H10 Z"/>'));
+  assert.equal(eo.avertismente['nonzero-normalizate'], 0);
+  assert.equal(eo.cai.length, 2);
+  // Două cercuri suprapuse în aceeași cale: reuniunea, din arce pe cercurile-sursă.
+  const u = cai(pagina('<path d="M 30 25 m -10 0 a 10 10 0 1 0 20 0 a 10 10 0 1 0 -20 0 Z M 42 25 m -10 0 a 10 10 0 1 0 20 0 a 10 10 0 1 0 -20 0 Z"/>'));
+  assert.equal(u.avertismente['nonzero-normalizate'], 1);
+  assert.equal(u.cai.length, 1);
+  assert.ok((u.cai[0]?.varfuri ?? []).every((v) => v.s.tip === 'A'));
+});
+
+// Un pătrat cu un pătrat interior în ACELAȘI sens: sub nonzero e plin (1 contur), sub evenodd e gaură (2 contururi).
+const SAIBA = 'd="M0 0 H40 V40 H0 Z M10 10 H30 V30 H10 Z"';
+
+test('recenzia 2.7d: regulile CSS simple (Illustrator: clase) dau fill-rule, fill și display; specificitatea și ordinea ca în CSS', () => {
+  const contururi = (corp: string) => {
+    const r = cai(pagina(corp));
+    return { n: r.cai.length, normalizate: r.avertismente['nonzero-normalizate'], stil: r.avertismente.stil, ascunse: r.avertismente.ascunse };
+  };
+  // Clasa Illustrator: gaura rămâne gaură, nimic de avertizat (toate regulile s-au citit).
+  assert.deepEqual(contururi(`<style>.st0{fill-rule:evenodd;clip-rule:evenodd}</style><path class="st0" ${SAIBA}/>`), { n: 2, normalizate: 0, stil: 0, ascunse: 0 });
+  // Moștenită de la grup; comentariile se sar.
+  assert.equal(contururi(`<style>/* x{fill-rule:nonzero} */ g.eo{fill-rule:evenodd}</style><g class="eo"><path ${SAIBA}/></g>`).n, 2);
+  // CSS peste atributul de prezentare; `style` peste CSS; #id peste .clasă; la aceeași specificitate, ultima regulă.
+  assert.equal(contururi(`<style>.st0{fill-rule:evenodd}</style><path class="st0" fill-rule="nonzero" ${SAIBA}/>`).n, 2);
+  assert.equal(contururi(`<style>.st0{fill-rule:evenodd}</style><path class="st0" style="fill-rule:nonzero" ${SAIBA}/>`).n, 1);
+  assert.equal(contururi(`<style>#a{fill-rule:nonzero}.st0{fill-rule:evenodd}</style><path id="a" class="st0" ${SAIBA}/>`).n, 1);
+  assert.equal(contururi(`<style>.a{fill-rule:evenodd}.b{fill-rule:nonzero}</style><path class="b a" ${SAIBA}/>`).n, 1);
+  assert.equal(contururi(`<style>.b{fill-rule:nonzero}.a{fill-rule:evenodd}</style><path class="b a" ${SAIBA}/>`).n, 2);
+  // Selectorii compuși cer toate clasele; elementul și `*`.
+  assert.equal(contururi(`<style>.a.b{fill-rule:evenodd}</style><path class="a" ${SAIBA}/>`).n, 1);
+  assert.equal(contururi(`<style>path.a{fill-rule:evenodd}</style><path class="a" ${SAIBA}/>`).n, 2);
+  assert.equal(contururi(`<style>*{fill-rule:evenodd}</style><path ${SAIBA}/>`).n, 2);
+  // `display: none` dintr-o clasă ascunde (în 2.7c, forma se importa).
+  assert.deepEqual(contururi(`<style>.h{display:none}</style><rect class="h" width="5" height="5"/><rect x="10" width="5" height="5"/>`), { n: 1, normalizate: 0, stil: 0, ascunse: 1 });
+  // Ce nu se citește (combinatori, regulile `@`, `!important`) avertizează, iar regula nu se aplică.
+  assert.deepEqual(contururi(`<style>g > path{fill-rule:evenodd}</style><g><path ${SAIBA}/></g>`), { n: 1, normalizate: 1, stil: 1, ascunse: 0 });
+  assert.equal(contururi(`<style>@media print{path{fill-rule:evenodd}}</style><path ${SAIBA}/>`).stil, 1);
+  assert.equal(contururi(`<style>path{fill-rule:evenodd!important}</style><path ${SAIBA}/>`).stil, 1);
+  // O regulă care nu atinge proprietățile citite nu avertizează, oricât de complicat ar fi selectorul.
+  assert.equal(contururi(`<style>g > path:hover{stroke:red}</style><path ${SAIBA}/>`).stil, 0);
+});
+
+test('recenzia 2.7d: o formă fără umplere (fill="none", desenul unui contur) nu se normalizează: șaiba își păstrează gaura', () => {
+  const n = (corp: string) => cai(pagina(corp)).cai.length;
+  assert.equal(n(`<path fill="none" stroke="#000" ${SAIBA}/>`), 2);
+  assert.equal(n(`<style>.st1{fill:none;stroke:#000}</style><path class="st1" ${SAIBA}/>`), 2);
+  assert.equal(n(`<g fill="none"><path ${SAIBA}/></g>`), 2);
+  // Umplerea se moștenește și se poate repune; `inherit` ia părintele.
+  assert.equal(n(`<g fill="none"><path fill="red" ${SAIBA}/></g>`), 1);
+  assert.equal(n(`<g style="fill:none"><path fill="inherit" ${SAIBA}/></g>`), 2);
+  assert.equal(cai(pagina(`<path ${SAIBA}/>`, 'width="100mm" height="50mm" viewBox="0 0 100 50" fill="none"')).cai.length, 2);
+});
+
+test('recenzia 2.7d: potrivirile CSS au un buget pe fișier; peste el, refuz (nu o citire pe jumătate stilată)', () => {
+  const t0 = performance.now();
+  const reguli = '*{fill:red}'.repeat(10_000);
+  const elemente = '<rect width="1" height="1"/>'.repeat(2_100);
+  const r = citeste(pagina(`<style>${reguli}</style>${elemente}`));
+  assert.ok(!r.ok && r.cod === 'plafon' && r.detaliu === 'css', JSON.stringify(r.ok ? 'ok' : [r.cod, r.detaliu]));
+  // Sub buget: aceleași reguli, mai puține elemente.
+  assert.ok(citeste(pagina(`<style>${reguli}</style>${'<rect width="1" height="1"/>'.repeat(1_900)}`)).ok);
+  assert.ok(performance.now() - t0 < 10_000, `${performance.now() - t0} ms`);
+});
+
+test('recenzia 2.7d: bugetul normalizării e al fișierului: după trei forme scumpe, a patra se citește ca în 2.7c, numărată', () => {
+  // 200 de triunghiuri suprapuse într-o cale: ~7,0·10⁶ unități (măsurat 12.10), sub plafonul unui apel (12·10⁶). Patru
+  // costă ~28·10⁶ > 24·10⁶: primele trei se normalizează, a patra nu mai încape.
+  let d = '';
+  for (let i = 0; i < 200; i++) d += `M${i % 100} 0h.5L50 10z`;
+  const forma = `<path d="${d}"/>`;
+  const trei = cai(pagina(forma.repeat(3))).avertismente;
+  assert.deepEqual([trei['nonzero-normalizate'], trei['nonzero-refuzate']], [3, 0]);
+  const patru = cai(pagina(forma.repeat(4)));
+  assert.deepEqual([patru.avertismente['nonzero-normalizate'], patru.avertismente['nonzero-refuzate']], [3, 1]);
+  // Forma refuzată intră ca în 2.7c: subcăile ei brute (200), după cele normalizate.
+  assert.equal(patru.cai.filter((c) => c.forma === 3).length, 200);
+});
+
+test('oracolul 2.7d (K7): o formă nonzero mai subțire decât τ peste tot poate ieși goală; se numără normalizată, iar fișierul gol e refuzat', () => {
+  const felie = '<polygon points="0,10 10,10 20,10.000000001"/>';
+  const singura = citeste(pagina(felie));
+  assert.ok(!singura.ok && singura.cod === 'gol', JSON.stringify(singura.ok ? 'ok' : singura.cod));
+  assert.deepEqual([singura.avertismente?.degenerate, singura.avertismente?.['nonzero-normalizate']], [0, 1]);
+  const cuAlta = cai(pagina(`${felie}<rect x="30" width="5" height="5"/>`));
+  assert.deepEqual([cuAlta.cai.length, cuAlta.avertismente.degenerate, cuAlta.avertismente['nonzero-normalizate']], [1, 0, 1]);
+  // Sub evenodd nu trece prin normalizare: rămâne o cale, ca în 2.7c.
+  assert.equal(cai(pagina('<polygon fill-rule="evenodd" points="0,10 10,10 20,10.000000001"/>')).cai.length, 1);
+});
+
+test('recenzia 2.7d: plafonul total al vârfurilor se judecă pe intrare, înaintea normalizării', () => {
+  // 5 căi × 14 000 de triunghiuri suprapuse (42 000 de vârfuri fiecare; 210 000 > 200 000): refuzat fără să normalizeze.
+  let d = '';
+  for (let i = 0; i < 14_000; i++) d += `M${i % 100} 0h.5L50 10z`;
+  const r = citeste(pagina(`<path d="${d}"/>`.repeat(5)));
+  assert.ok(!r.ok && r.cod === 'plafon' && r.detaliu === '210000', JSON.stringify(r.ok ? 'ok' : [r.cod, r.detaliu]));
+  assert.equal((r.avertismente?.['nonzero-normalizate'] ?? 0) + (r.avertismente?.['nonzero-refuzate'] ?? 0), 0);
 });
 
 test('piesa importului: grupul cu c1…cN, operațiile pe laturi, colțul cutiei în instanță; trece de ușa documentului', () => {
@@ -276,7 +377,8 @@ test('recenzia 2.7c: bugetul includerilor (imbricarea și perechile nonzero) opr
   // 60 000 de triunghiuri (180 000 de vârfuri, sub plafon) într-o singură formă nonzero, cu cutiile suprapuse.
   let d = '';
   for (let i = 0; i < 60_000; i++) d += `M${i % 100} 0h.5L50 10z`;
+  // ADR 0036: normalizarea o refuză din bugetul ei (determinist), iar forma se citește ca în 2.7c, numărată.
   const nz = citeste(pagina(`<path d="${d}"/>`));
-  assert.ok(!nz.ok && nz.cod === 'plafon' && nz.detaliu === 'includeri', JSON.stringify(nz.ok || [nz.cod, nz.detaliu]));
+  assert.ok(nz.ok && nz.avertismente['nonzero-refuzate'] === 1, JSON.stringify(nz.ok ? nz.avertismente['nonzero-refuzate'] : nz.cod));
   assert.ok(performance.now() - t0 < 20_000, `${performance.now() - t0} ms`);
 });

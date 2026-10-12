@@ -9,7 +9,7 @@
  *
  * Cazurile ocolesc ambiguitățile listate în antetul lui `svg.ts` (și în raport), cu excepția celor marcate „ALEGERE”.
  */
-import { CODURI_O, laturiO, type CodRefuzO, type RaportO, type RezultatO, type VarfO } from './svg.ts';
+import { arieRuns, caiFinaleO, CODURI_O, laturiO, type CodRefuzO, type RaportO, type RezultatO, type VarfO } from './svg.ts';
 
 export const K96 = 25.4 / 96;
 export const K72 = 25.4 / 72;
@@ -37,6 +37,14 @@ export type Hartie = {
   laturi?: Array<'exterior' | 'interior'>;
   forme?: number[];
   nume?: Array<string | undefined>;
+  /**
+   * Felia 2.7d (ADR 0036): ce rămâne după normalizarea formelor nonzero (căile, laturile lor, aria regiunii: exterioarele
+   * plus, interioarele minus). Câmpurile de mai sus (`cai`, `tipuri`, `varfuri`, `laturi`) descriu citirea 2.7c, înainte
+   * de normalizare; `avertismente['nonzero-normalizate']` = câte forme TREBUIE schimbate (predicția oracolului).
+   */
+  final?: { cai?: number; laturi?: Array<'exterior' | 'interior'>; arie?: number };
+  /** Câte dintre formele de schimbat le refuză normalizarea (ADR 0036 §8: cazurile pe care ADR-ul le numește), citite evenodd. */
+  nonzeroRefuzate?: number;
 };
 export type CazSvg = {
   readonly nume: string;
@@ -201,8 +209,15 @@ const C: CazSvg[] = [
   { nume: 'C16 polygon dus-întors, trei puncte pe dreaptă, M L Z: degenerate', text: p100('<polygon points="0,0 10,0"/><polygon points="0,20 10,20 20,20"/><path d="M 30 30 L 40 30 Z"/><polygon points="0,40 10,50 20,60 5,45"/><rect x="50" y="50" width="5" height="5"/>'),
     hartie: { cai: 1, forme: [4], avertismente: { degenerate: 4 } } },
   // D = 20 mm: abaterea 1e-12 mm ≤ 1e-12 · 20 (pe dreaptă), 1e-9 mm nu.
-  { nume: 'C22 coliniar la 1e-12 din mărime: degenerată; la 1e-9: cale', text: p100('<polygon points="0,0 10,0 20,0.000000000001"/><polygon points="0,10 10,10 20,10.000000001"/>'),
+  // Felia 2.7d: a doua poligonală (un triunghi cu înălțimea de 5e-10 mm) e evenodd, ca să rămână proba pragului 2.7c.
+  { nume: 'C22 coliniar la 1e-12 din mărime: degenerată; la 1e-9: cale', text: p100('<polygon points="0,0 10,0 20,0.000000000001"/><polygon fill-rule="evenodd" points="0,10 10,10 20,10.000000001"/>'),
     hartie: { cai: 1, forme: [1], tipuri: ['LLL'], avertismente: { degenerate: 1 } } },
+  // ADR 0036 §6 (amendamentul K7, fosta constatare K7): „deja evenodd” se judecă la precizia τ; triunghiul de 5e-10 mm
+  // (τ ≈ 2e-9) iese gol, numărat nonzero-normalizate (nu degenerate), iar fișierul fără nimic altceva e „gol”.
+  { nume: 'C25 triunghiul de 5e-10 mm, nonzero, singur: gol, nonzero-normalizate (§6, K7)', text: p100('<polygon points="0,10 10,10 20,10.000000001"/>'),
+    hartie: { cod: 'gol', avertismente: { 'nonzero-normalizate': 1 } } },
+  { nume: 'C26 triunghiul de 5e-10 mm lângă un dreptunghi: triunghiul dispare (numărat), dreptunghiul rămâne', text: p100('<polygon points="0,10 10,10 20,10.000000001"/><rect x="50" y="50" width="10" height="10"/>'),
+    hartie: { cai: 2, forme: [0, 1], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 100 } } },
   { nume: 'C23 polygon cu un punct, M Z, M L-nul Z: degenerate (fosta constatare K2)', text: p100('<polygon points="5,5"/><path d="M 20 20 Z"/><path d="M 30 30 L 30 30 Z"/><rect x="50" y="50" width="5" height="5"/>'),
     hartie: { cai: 1, forme: [3], avertismente: { degenerate: 3 } } },
   { nume: 'C24 line de lungime 0: tot deschisă', text: p100('<line x1="5" y1="5" x2="5" y2="5"/><rect width="5" height="5"/>'),
@@ -284,8 +299,10 @@ const E: CazSvg[] = [
     hartie: { cai: 2, tipuri: ['LLL', 'LLL'], varfuri: [[1, 0, 10, 90], [1, 1, 0, 90], [1, 2, 0, 100]] }, faraLaturi: true },
   { nume: 'E8 S după C oglindește c2', text: p100('<path d="M 10 50 C 10 60 20 60 20 50 S 30 40 30 50 Z"/>'),
     hartie: { tipuri: ['CCL'], varfuri: [[0, 1, 20, 50], [0, 2, 30, 50]] } },
+  // Felia 2.7d: în prima, linia (10, 50) → (20, 50) e parcursă dus-întors de linia de închidere (30, 50) → (10, 50): o muchie
+  // coincidentă, deci forma nonzero se normalizează (§7: fără dus-întors); rămân cubica și linia de închidere scurtată.
   { nume: 'E9 S după L și după Q: c1 = punctul curent', text: p100('<path d="M 10 50 L 20 50 S 30 40 30 50 Z"/><path d="M 10 20 Q 15 10 20 20 S 30 10 30 20 Z"/>'),
-    hartie: { tipuri: ['LCL', 'CCL'] } },
+    hartie: { tipuri: ['LCL', 'CCL'], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 2 } } },
   { nume: 'E10 Q și T după Q: ridicarea exactă, oglindirea lui q', text: p100('<path d="M 10 50 Q 15 40 20 50 T 30 50 Z"/>'),
     hartie: { tipuri: ['CCL'], varfuri: [[0, 1, 20, 50]] } },
   { nume: 'E11 T după L și T după T (după nimic)', text: p100('<path d="M 10 50 L 20 50 T 30 40 Z"/><path d="M 10 20 T 20 20 T 30 10 Z"/>'),
@@ -345,7 +362,7 @@ const E: CazSvg[] = [
   { nume: 'E36 cerc mic departe de origine: semicercuri exacte (fosta K6)', text: svg('width="10000mm" height="10000mm" viewBox="0 0 10000 10000"', '<circle cx="5000.1" cy="3.3" r="0.003"/>'),
     hartie: { tipuri: ['AA'], bulge: [[0, 0, -tan4], [0, 1, -tan4]] } },
   { nume: 'E29 două subcăi: ordinea și latura', text: p100('<path d="M 10 10 h 30 v 30 h -30 z M 20 20 h 10 v 10 h -10 z"/>'),
-    hartie: { cai: 2, tipuri: ['LLLL', 'LLLL'], forme: [0, 0], laturi: ['exterior', 'interior'], avertismente: { nonzero: 1 } } },
+    hartie: { cai: 2, tipuri: ['LLLL', 'LLLL'], forme: [0, 0], laturi: ['exterior', 'interior'], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 900 } } },
   // A doua (revizia 12.10): bucla dintr-o singură cubică se împarte la t = 1/2: B(½) = ((50 + 210 + 210 + 50) / 8,
   // (50 + 150 + 210 + 50) / 8) = (65, 57,5) → (65, 42,5).
   { nume: 'E30 o cubică nulă se scoate; bucla dintr-o singură cubică se împarte în două', text: p100('<path d="M 10 10 L 30 10 C 30 10 30 10 30 10 L 30 30 Z"/><path d="M 50 50 C 70 50 70 70 50 50 Z"/>'),
@@ -391,10 +408,11 @@ const F: CazSvg[] = [
     hartie: { cai: 1, varfuri: [[0, 0, 10, 90]] } },
   { nume: 'F13 rădăcina cu prefix', text: '<s:svg xmlns:s="http://www.w3.org/2000/svg" width="100mm" height="100mm" viewBox="0 0 100 100"><s:g><s:rect x="10" y="10" width="5" height="5"/></s:g></s:svg>',
     hartie: { cai: 1, varfuri: [[0, 0, 10, 90]] } },
-  { nume: 'F14 <style>: avertisment, clasa nu ascunde', text: p100('<style>.a { display: none }</style><rect class="a" x="10" y="10" width="5" height="5"/>'),
-    hartie: { cai: 1, avertismente: { stil: 1 } } },
-  { nume: 'F15 <style> CDATA în defs: tot avertisment (ALEGERE)', text: p100('<defs><style><![CDATA[ .a { fill: red } ]]></style></defs><rect class="a" x="10" y="10" width="5" height="5"/>'),
-    hartie: { cai: 1, avertismente: { stil: 1 } } },
+  // Felia 2.7d (ADR 0035 §4 „Stilurile”): regulile simple din <style> se aplică, iar `stil` numără doar o regulă necitită.
+  { nume: 'F14 <style> cu o regulă simplă: clasa ascunde forma (2.7d; în 2.7c doar avertiza)', text: p100('<style>.a { display: none }</style><rect class="a" x="10" y="10" width="5" height="5"/><rect x="30" y="30" width="5" height="5"/>'),
+    hartie: { cai: 1, forme: [1], avertismente: { ascunse: 1 } } },
+  { nume: 'F15 <style> CDATA în defs, cu o regulă simplă (fill): se aplică, fără avertisment (2.7d)', text: p100('<defs><style><![CDATA[ .a { fill: red } ]]></style></defs><rect class="a" x="10" y="10" width="5" height="5"/>'),
+    hartie: { cai: 1 } },
   { nume: 'F16 ascuns cu transformare greșită: ascunse, nu transformare-invalida (precizarea 12.10)', text: p100('<g display="none" transform="translate(1"><rect width="5" height="5"/><g transform="bad"><circle r="2"/></g></g><rect x="10" y="10" width="5" height="5"/>'),
     hartie: { cai: 1, forme: [2], avertismente: { ascunse: 2 } } },
   { nume: 'F17 a: container', text: p100('<a href="https://example.com"><rect x="10" y="10" width="5" height="5"/></a>'),
@@ -413,25 +431,25 @@ const patratD = (x: number, y: number, l: number, invers = false): string =>
   invers ? `M ${x} ${y} v ${l} h ${l} v ${-l} z` : `M ${x} ${y} h ${l} v ${l} h ${-l} z`;
 
 const G: CazSvg[] = [
-  { nume: 'G1 litera O cu sensuri opuse: nonzero 0', text: p100(`<path d="${cerc(50, 50, 20, 1)} ${cerc(50, 50, 10, 0)}"/>`),
+  { nume: 'G1 litera O cu sensuri opuse: deja evenodd, neschimbată', text: p100(`<path d="${cerc(50, 50, 20, 1)} ${cerc(50, 50, 10, 0)}"/>`),
     hartie: { cai: 2, tipuri: ['AA', 'AA'], laturi: ['exterior', 'interior'], forme: [0, 0] } },
-  { nume: 'G2 litera O cu același sens: nonzero 1', text: p100(`<path d="${cerc(50, 50, 20, 1)} ${cerc(50, 50, 10, 1)}"/>`),
-    hartie: { cai: 2, laturi: ['exterior', 'interior'], avertismente: { nonzero: 1 } } },
-  { nume: 'G3 același sens, fill-rule="evenodd": 0', text: p100(`<path fill-rule="evenodd" d="${cerc(50, 50, 20, 1)} ${cerc(50, 50, 10, 1)}"/>`),
+  { nume: 'G2 litera O cu același sens: normalizată, discul (2.7d)', text: p100(`<path d="${cerc(50, 50, 20, 1)} ${cerc(50, 50, 10, 1)}"/>`),
+    hartie: { cai: 2, laturi: ['exterior', 'interior'], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 400 * Math.PI } } },
+  { nume: 'G3 același sens, fill-rule="evenodd": nenormalizată', text: p100(`<path fill-rule="evenodd" d="${cerc(50, 50, 20, 1)} ${cerc(50, 50, 10, 1)}"/>`),
     hartie: { cai: 2, laturi: ['exterior', 'interior'] } },
   { nume: 'G4 fill-rule moștenit de la grup (ALEGERE) și style peste atribut', text: p100(`<g fill-rule="evenodd"><path d="${patratD(0, 0, 40)} ${patratD(10, 10, 20)}"/></g><path fill-rule="evenodd" style="fill-rule:nonzero" d="${patratD(50, 50, 40)} ${patratD(60, 60, 20)}"/>`),
-    hartie: { cai: 4, laturi: ['exterior', 'interior', 'exterior', 'interior'], avertismente: { nonzero: 1 } } },
+    hartie: { cai: 4, laturi: ['exterior', 'interior', 'exterior', 'interior'], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 3, laturi: ['exterior', 'interior', 'exterior'], arie: 1600 - 400 + 1600 } } },
   { nume: 'G5 trei pătrate imbricate, elemente separate, în altă ordine', text: p100('<rect x="20" y="20" width="50" height="50"/><rect width="90" height="90"/><rect x="10" y="10" width="70" height="70"/>'),
     hartie: { cai: 3, laturi: ['exterior', 'exterior', 'interior'] } },
   { nume: 'G6 litera B: conturul și două goluri, sensuri opuse', text: p100(`<path d="M 10 10 H 40 C 55 10 55 45 40 45 C 60 45 60 90 40 90 H 10 Z ${patratD(20, 20, 15, true)} ${patratD(20, 55, 20, true)}"/>`),
     hartie: { cai: 3, laturi: ['exterior', 'interior', 'interior'] } },
   { nume: 'G7 forme alăturate: toate exterioare', text: p100('<rect width="10" height="10"/><circle cx="30" cy="5" r="5"/><ellipse cx="50" cy="5" rx="6" ry="4"/><polygon points="70,0 80,0 75,10"/>'),
     hartie: { cai: 4, laturi: ['exterior', 'exterior', 'exterior', 'exterior'], avertismente: { 'arce-eliptice': 2, 'cubice-din-arce': 14 } } },
-  { nume: 'G8 trei subcăi imbricate cu același sens: nonzero 2', text: p100(`<path d="${patratD(0, 0, 90)} ${patratD(10, 10, 70)} ${patratD(20, 20, 50)}"/>`),
-    hartie: { cai: 3, laturi: ['exterior', 'interior', 'exterior'], avertismente: { nonzero: 2 } } },
-  { nume: 'G9 două subcăi alăturate cu același sens: nonzero 0', text: p100(`<path d="${patratD(0, 0, 20)} ${patratD(30, 0, 20)}"/>`),
+  { nume: 'G8 trei subcăi imbricate cu același sens: normalizate, pătratul mare (2.7d)', text: p100(`<path d="${patratD(0, 0, 90)} ${patratD(10, 10, 70)} ${patratD(20, 20, 50)}"/>`),
+    hartie: { cai: 3, laturi: ['exterior', 'interior', 'exterior'], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 8100 } } },
+  { nume: 'G9 două subcăi alăturate cu același sens: neschimbate', text: p100(`<path d="${patratD(0, 0, 20)} ${patratD(30, 0, 20)}"/>`),
     hartie: { cai: 2, laturi: ['exterior', 'exterior'] } },
-  { nume: 'G10 imbricarea trece peste forme; nonzero doar în aceeași formă', text: p100(`<path d="${patratD(0, 0, 90)}"/><path d="${patratD(10, 10, 70)}"/>`),
+  { nume: 'G10 imbricarea trece peste forme; normalizarea doar în aceeași formă', text: p100(`<path d="${patratD(0, 0, 90)}"/><path d="${patratD(10, 10, 70)}"/>`),
     hartie: { cai: 2, laturi: ['exterior', 'interior'] } },
   { nume: 'G11 cerc într-un cerc (arce), cu startul pe axă', text: p100('<circle cx="50" cy="50" r="40"/><circle cx="50" cy="50" r="20"/><circle cx="50" cy="50" r="10"/>'),
     hartie: { cai: 3, laturi: ['exterior', 'interior', 'exterior'] } },
@@ -440,6 +458,118 @@ const G: CazSvg[] = [
   // σ = 40: φ = 0,33341, n = ⌈π / φ⌉ = 10 pe jumătate.
   { nume: 'G13 elipsă (cubice) cu un punct lângă margine, înăuntru', text: p100('<ellipse cx="50" cy="50" rx="40" ry="20"/><rect x="85" y="49" width="2" height="2"/>'),
     hartie: { cai: 2, laturi: ['exterior', 'interior'], avertismente: { 'arce-eliptice': 2, 'cubice-din-arce': 20 } } },
+];
+
+// ---------------------------------------------------------------------------------------------------------------------
+// N. Normalizarea nonzero la ușă (felia 2.7d, ADR 0036, ADR 0035 §8 și §10): forma cu regula efectivă nonzero trece, cu
+// toate subcăile ei, prin normalizare; formele separate nu se amestecă; evenodd nu se atinge. Hârtia: câte forme trebuie
+// schimbate (predicția), ce rămâne (`final`), aria regiunii (formule închise).
+
+/** Reuniunea a două discuri de rază r la distanța d < 2r: 2πr² − lentila. */
+const arieDouaCercuri = (r: number, d: number): number => 2 * Math.PI * r * r - (2 * r * r * Math.acos(d / (2 * r)) - (d / 2) * Math.sqrt(4 * r * r - d * d));
+/** Pentagrama de rază R sub nonzero: 5·R·rᵢ·sin 36°, rᵢ = R·cos 72° / cos 36°. */
+const ariePentagrama = (R: number): number => 5 * R * ((R * Math.cos((2 * Math.PI) / 5)) / Math.cos(Math.PI / 5)) * Math.sin(Math.PI / 5);
+/** Pentagrama în coordonatele SVG (Y în jos), centrul (cx, cy), raza R, ca listă de puncte. */
+const puncteStea = (cx: number, cy: number, R: number): string => Array.from({ length: 5 }, (_, i) => {
+  const a = Math.PI / 2 + (i * 4 * Math.PI) / 5;
+  return `${(cx + R * Math.cos(a)).toFixed(12)},${(cy - R * Math.sin(a)).toFixed(12)}`;
+}).join(' ');
+const dreptRotunjit = (x: number, y: number): string => `M ${x + 5} ${y} h 30 a 5 5 0 0 1 5 5 v 20 a 5 5 0 0 1 -5 5 h -30 a 5 5 0 0 1 -5 -5 v -20 a 5 5 0 0 1 5 -5 z`;
+
+const N: CazSvg[] = [
+  { nume: 'N1 două dreptunghiuri suprapuse în aceeași cale: reuniunea (8 linii)', text: p100('<path d="M 10 10 h 40 v 30 h -40 z M 30 20 h 40 v 30 h -40 z"/>'),
+    hartie: { cai: 2, tipuri: ['LLLL', 'LLLL'], forme: [0, 0], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 2400 - 400 } } },
+  { nume: 'N2 aceleași dreptunghiuri ca elemente separate: fiecare formă rămâne (se normalizează singură)', text: p100('<rect x="10" y="10" width="40" height="30"/><rect x="30" y="20" width="40" height="30"/>'),
+    hartie: { cai: 2, forme: [0, 1], laturi: ['exterior', 'interior'], final: { cai: 2, laturi: ['exterior', 'interior'] } } },
+  { nume: 'N3 pentagrama dintr-o singură subcale (nonzero): steaua, 10 linii', text: p100(`<polygon points="${puncteStea(50, 50, 40)}"/>`),
+    hartie: { cai: 1, tipuri: ['LLLLL'], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: ariePentagrama(40) } } },
+  { nume: 'N4 pentagrama cu fill-rule="evenodd": rămâne', text: p100(`<polygon fill-rule="evenodd" points="${puncteStea(50, 50, 40)}"/>`),
+    hartie: { cai: 1, tipuri: ['LLLLL'], final: { cai: 1 } } },
+  { nume: 'N5 pentagrama: style fill-rule:nonzero peste atributul evenodd: normalizată', text: p100(`<polygon fill-rule="evenodd" style="fill-rule: nonzero" points="${puncteStea(50, 50, 40)}"/>`),
+    hartie: { cai: 1, avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, arie: ariePentagrama(40) } } },
+  { nume: 'N6 pentagrama într-un grup cu fill-rule="evenodd" (moștenit): rămâne', text: p100(`<g fill-rule="evenodd"><polygon points="${puncteStea(50, 50, 40)}"/></g>`),
+    hartie: { cai: 1, final: { cai: 1 } } },
+  { nume: 'N7 o cale și inversa ei, singure: regiunea vidă, fișierul e gol', text: p100('<path d="M 10 10 h 20 v 20 h -20 z M 10 10 v 20 h 20 v -20 z"/>'),
+    hartie: { cod: 'gol', avertismente: { 'nonzero-normalizate': 1 } } },
+  { nume: 'N8 o cale și inversa ei lângă un dreptunghi: forma dispare, dreptunghiul rămâne', text: p100('<path id="dus-intors" d="M 10 10 h 20 v 20 h -20 z M 10 10 v 20 h 20 v -20 z"/><rect id="r" x="60" y="60" width="10" height="10"/>'),
+    hartie: { cai: 3, forme: [0, 0, 1], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 100 } } },
+  { nume: 'N9 două cercuri suprapuse în aceeași cale: reuniunea, arce pe cercurile sursei', text: p100(`<path id="opt" d="${cerc(40, 50, 20, 1)} ${cerc(60, 50, 20, 1)}"/>`),
+    hartie: { cai: 2, tipuri: ['AA', 'AA'], nume: ['opt', 'opt'], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: arieDouaCercuri(20, 20) } } },
+  // Fiecare jumătate de elipsă (rx 20, ry 10): σ = 20, φ = 0,37425, n = 9; patru jumătăți, 36 de cubice.
+  { nume: 'N10 două elipse suprapuse în aceeași cale: reuniunea, din sub-curbele cubicelor ușii', text: p100('<path d="M 20 50 A 20 10 0 1 1 60 50 A 20 10 0 1 1 20 50 Z M 40 50 A 20 10 0 1 1 80 50 A 20 10 0 1 1 40 50 Z"/>'),
+    hartie: { cai: 2, tipuri: ['C'.repeat(18), 'C'.repeat(18)], avertismente: { 'nonzero-normalizate': 1, 'arce-eliptice': 4, 'cubice-din-arce': 36 }, final: { cai: 1, laturi: ['exterior'] } } },
+  { nume: 'N11 două dreptunghiuri cu o latură comună în aceeași cale: unul singur', text: p100('<path d="M 10 10 h 20 v 20 h -20 z M 30 10 h 20 v 20 h -20 z"/>'),
+    hartie: { cai: 2, avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 800 } } },
+  // ADR 0036 §8: „curbe aproape coincidente, dar nu identice” — două cubice la 1e-6 una de alta, cu trei traversări: refuz,
+  // forma se citește evenodd (ca în 2.7c) și se numără.
+  { nume: 'N12 cubice aproape paralele (1e-6, trei traversări) în aceeași cale: normalizarea refuzată, citită evenodd', text: p100('<path d="M 0 70 C 30 30 70 30 100 70 L 100 90 L 0 90 Z M 100 69.9999999 C 70 30.000001 30 29.999999 0 70.0000001 L 0 10 L 100 10 Z"/>'),
+    hartie: { cai: 2, tipuri: ['CLLL', 'CLLL'], avertismente: { 'nonzero-normalizate': 1 }, nonzeroRefuzate: 1, final: { cai: 2 } } },
+  { nume: 'N13 o formă oglindită (scale(-1, 1)) cu subcăi suprapuse: reuniunea, trigonometric în mm', text: p100('<g transform="translate(100, 0) scale(-1, 1)"><path d="M 10 10 h 40 v 30 h -40 z M 30 20 h 40 v 30 h -40 z"/></g>'),
+    hartie: { cai: 2, avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 2000 } } },
+  { nume: 'N14 un dreptunghi rotunjit dublat exact în aceeași cale (L + A): unul singur', text: p100(`<path d="${dreptRotunjit(15, 10)} ${dreptRotunjit(15, 10)}"/>`),
+    hartie: { cai: 2, tipuri: ['LALALALA', 'LALALALA'], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 1200 - (100 - 25 * Math.PI) } } },
+  { nume: 'N15 o fundă dintr-o singură subcale (lobii ±1): deja evenodd, rămâne', text: p100('<path d="M 10 10 L 40 40 L 40 10 L 10 40 Z"/>'),
+    hartie: { cai: 1, tipuri: ['LLLL'], final: { cai: 1 } } },
+  { nume: 'N16 litera O din două subcăi cu sensuri opuse și un punct în gaură în același sens: rămân trei căi', text: p100(`<path d="${cerc(50, 50, 30, 1)} ${cerc(50, 50, 15, 0)} ${cerc(50, 50, 5, 1)}"/>`),
+    hartie: { cai: 3, laturi: ['exterior', 'interior', 'exterior'], final: { cai: 3, laturi: ['exterior', 'interior', 'exterior'], arie: Math.PI * (900 - 225 + 25) } } },
+  { nume: 'N17 trei forme: una normalizată, una evenodd suprapusă, una simplă: doar prima se schimbă', text: p100(`<path d="M 10 10 h 20 v 20 h -20 z M 20 20 h 20 v 20 h -20 z"/><path fill-rule="evenodd" d="M 60 10 h 20 v 20 h -20 z M 70 20 h 20 v 20 h -20 z"/><circle cx="50" cy="80" r="10"/>`),
+    hartie: { cai: 5, forme: [0, 0, 1, 1, 2], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 4 } } },
+];
+
+// ---------------------------------------------------------------------------------------------------------------------
+// S. Stilurile și umplerea (felia 2.7d, recenzia: ADR 0035 §4 „Stilurile” și „Umplerea”, ADR 0036 §9). Forma de probă e
+// D2: două dreptunghiuri suprapuse în aceeași cale (sub nonzero, reuniunea: o cale, aria 2 000; sub evenodd sau fără
+// umplere, cele două căi citite ca atare).
+
+const D2 = 'M 10 10 h 40 v 30 h -40 z M 30 20 h 40 v 30 h -40 z';
+/** D2 normalizată (nonzero, umplută). */
+const NORM: Partial<Hartie> = { cai: 2, tipuri: ['LLLL', 'LLLL'], final: { cai: 1, laturi: ['exterior'], arie: 2000 } };
+/** D2 citită ca atare (evenodd sau fără umplere). */
+const RAW: Partial<Hartie> = { cai: 2, tipuri: ['LLLL', 'LLLL'], final: { cai: 2 } };
+const n1 = { 'nonzero-normalizate': 1 } as const;
+
+const S: CazSvg[] = [
+  { nume: 'S1 fill-rule: evenodd dintr-o clasă din <style>: pentagrama rămâne, fără avertisment', text: p100(`<style>.eo { fill-rule: evenodd }</style><polygon class="eo" points="${puncteStea(50, 50, 40)}"/>`),
+    hartie: { cai: 1, final: { cai: 1 } } },
+  { nume: 'S2 fill: none dintr-o clasă (ca la Illustrator): forma de contur nu se normalizează', text: p100(`<style>.st0{fill:none;}</style><path class="st0" d="${D2}"/>`),
+    hartie: { ...RAW } },
+  { nume: 'S3 atributul fill="none": nu se normalizează', text: p100(`<path fill="none" d="${D2}"/>`), hartie: { ...RAW } },
+  { nume: 'S4 fill="none" moștenit de la grup: nu se normalizează', text: p100(`<g fill="none"><path d="${D2}"/></g>`), hartie: { ...RAW } },
+  { nume: 'S5 fill="inherit" ia părintele (none): nu se normalizează', text: p100(`<g fill="none"><path fill="inherit" d="${D2}"/></g>`), hartie: { ...RAW } },
+  { nume: 'S6 o culoare sub un grup fill="none": umplută, se normalizează', text: p100(`<g fill="none"><path fill="#000" d="${D2}"/></g>`), hartie: { ...NORM, avertismente: n1 } },
+  { nume: 'S7 style="fill:none" pe grup, style="fill:inherit" pe formă: nu se normalizează', text: p100(`<g style="fill:none"><path style="fill:inherit" d="${D2}"/></g>`), hartie: { ...RAW } },
+  { nume: 'S8 regula din <style> câștigă peste atribut: path { fill-rule: nonzero } peste fill-rule="evenodd"', text: p100(`<style>path { fill-rule: nonzero }</style><path fill-rule="evenodd" d="${D2}"/>`), hartie: { ...NORM, avertismente: n1 } },
+  { nume: 'S9 style câștigă peste <style>: style="fill-rule: nonzero" peste path { fill-rule: evenodd }', text: p100(`<style>path { fill-rule: evenodd }</style><path style="fill-rule: nonzero" d="${D2}"/>`), hartie: { ...NORM, avertismente: n1 } },
+  { nume: 'S10 regula din <style> câștigă peste atributul fill: path { fill: none } peste fill="red"', text: p100(`<style>path { fill: none }</style><path fill="red" d="${D2}"/>`), hartie: { ...RAW } },
+  { nume: 'S11 specificitatea: #id peste .clasă (evenodd câștigă)', text: p100(`<style>#a { fill-rule: evenodd } .c { fill-rule: nonzero }</style><path id="a" class="c" d="${D2}"/>`), hartie: { ...RAW } },
+  { nume: 'S12 la specificitate egală câștigă ultima regulă (.d după .c)', text: p100(`<style>.c { fill-rule: nonzero } .d { fill-rule: evenodd }</style><path class="c d" d="${D2}"/>`), hartie: { ...RAW } },
+  { nume: 'S13 path.c (clasă + element) peste .c, deși e înainte', text: p100(`<style>path.c { fill-rule: evenodd } .c { fill-rule: nonzero }</style><path class="c" d="${D2}"/>`), hartie: { ...RAW } },
+  { nume: 'S14 două elemente <style>: ultima regulă din document câștigă', text: p100(`<style>.c { fill-rule: evenodd }</style><style>.c { fill-rule: nonzero }</style><path class="c" d="${D2}"/>`), hartie: { ...NORM, avertismente: n1 } },
+  { nume: 'S15 * are specificitatea cea mai mică: path { nonzero } peste * { evenodd } scris după', text: p100(`<style>path { fill-rule: nonzero } * { fill-rule: evenodd }</style><path d="${D2}"/>`), hartie: { ...NORM, avertismente: n1 } },
+  { nume: 'S16 selector cu combinator (g > path): regula nu se aplică, avertisment', text: p100(`<style>g > path { fill-rule: evenodd }</style><g><path d="${D2}"/></g>`), hartie: { ...NORM, avertismente: { ...n1, stil: 1 } } },
+  { nume: 'S17 regula @media cu fill-rule: nu se aplică, avertisment', text: p100(`<style>@media print { path { fill-rule: evenodd } }</style><path d="${D2}"/>`), hartie: { ...NORM, avertismente: { ...n1, stil: 1 } } },
+  { nume: 'S18 !important în <style>: avertisment, dar style câștigă (se aplică doar ca o declarație obișnuită)', text: p100(`<style>.a { fill-rule: evenodd !important }</style><path class="a" style="fill-rule: nonzero" d="${D2}"/>`), hartie: { ...NORM, avertismente: { ...n1, stil: 1 } } },
+  { nume: 'S19 !important în <style>, fără style: se aplică (evenodd), cu avertisment', text: p100(`<style>.a { fill-rule: evenodd !important }</style><path class="a" d="${D2}"/>`), hartie: { ...RAW, avertismente: { stil: 1 } } },
+  { nume: 'S20 reguli obișnuite fără cele patru proprietăți (combinator, !important pe color): fără avertisment', text: p100(`<style>g > path { stroke: red } .a { color: red !important }</style><path class="a" d="${D2}"/>`), hartie: { ...NORM, avertismente: n1 } },
+  // ALEGERE (textul ADR 0035 §4: „o regulă `@` (`@media`…) … dau avertismentul”, necalificat): orice regulă @ avertizează.
+  { nume: 'S35 o regulă @ fără cele patru proprietăți (@font-face, @import): avertisment', text: p100(`<style>@import url(x.css); @font-face { font-family: x }</style><path d="${D2}"/>`), hartie: { ...NORM, avertismente: { ...n1, stil: 1 } } },
+  { nume: 'S36 !important pe color într-o regulă cu fill: avertisment, regula se aplică', text: p100(`<style>.a { color: red !important; fill: none }</style><path class="a" d="${D2}"/>`), hartie: { ...RAW, avertismente: { stil: 1 } } },
+  { nume: 'S21 două id-uri (#a#b): nu e simplu, avertisment', text: p100(`<style>#a#b { fill: none }</style><path id="a" d="${D2}"/>`), hartie: { ...NORM, avertismente: { ...n1, stil: 1 } } },
+  { nume: 'S22 selector cu atribut (path[id=a]): nu e simplu, avertisment', text: p100(`<style>path[id=a] { fill: none }</style><path id="a" d="${D2}"/>`), hartie: { ...NORM, avertismente: { ...n1, stil: 1 } } },
+  { nume: 'S23 pseudo-clasă (path:first-child): nu e simplu, avertisment', text: p100(`<style>path:first-child { fill: none }</style><path d="${D2}"/>`), hartie: { ...NORM, avertismente: { ...n1, stil: 1 } } },
+  { nume: 'S24 comentariile se sar: regula din comentariu nu contează', text: p100(`<style>/* .c { fill-rule: nonzero } */ .c { fill-rule: evenodd } /* .c { fill: none } */</style><path class="c" d="${D2}"/>`), hartie: { ...RAW } },
+  { nume: 'S25 display: none dintr-o clasă: grupul și formele lui ascunse', text: p100('<style>.h { display: none }</style><g class="h"><rect width="5" height="5"/><circle r="3"/></g><rect x="10" y="10" width="5" height="5"/>'),
+    hartie: { cai: 1, forme: [2], avertismente: { ascunse: 2 } } },
+  { nume: 'S26 visibility din <style>, moștenită; o clasă visible reapare', text: p100('<style>g { visibility: hidden } .v { visibility: visible }</style><g><rect class="v" width="5" height="5"/><rect x="10" width="5" height="5"/></g>'),
+    hartie: { cai: 1, forme: [0], avertismente: { ascunse: 1 } } },
+  { nume: 'S27 selectorul de element svg (rădăcina): fill-rule moștenit de toate', text: p100(`<style>svg { fill-rule: evenodd }</style><path d="${D2}"/>`), hartie: { ...RAW } },
+  { nume: 'S28 o clasă pe grup: fill-rule moștenit', text: p100(`<style>.eo{fill-rule:evenodd}</style><g class="eo"><path d="${D2}"/></g>`), hartie: { ...RAW } },
+  { nume: 'S29 *.c (lipit cu *): se aplică', text: p100(`<style>*.c { fill: none }</style><path class="c" d="${D2}"/>`), hartie: { ...RAW } },
+  { nume: 'S30 o listă de selectori simpli (rect, .c): se aplică ambilor', text: p100(`<style>rect, .c { fill-rule: evenodd }</style><path class="c" d="${D2}"/>`), hartie: { ...RAW } },
+  { nume: 'S31 10 000 de reguli: se citesc (evenodd), fără avertisment', text: p100(`<style>${'.x{fill-rule:evenodd}'.repeat(10_000)}</style><path class="x" d="${D2}"/>`), hartie: { ...RAW } },
+  { nume: 'S32 10 001 de reguli: <style> nu se citește deloc (nonzero), avertisment', text: p100(`<style>${'.x{fill-rule:evenodd}'.repeat(10_001)}</style><path class="x" d="${D2}"/>`), hartie: { ...NORM, avertismente: { ...n1, stil: 1 } } },
+  { nume: 'S33 un <style> doar cu proprietăți necitite (stroke): fără avertisment (2.7c avertiza)', text: p100(`<style>path { stroke: red; stroke-width: 2 }</style><path fill-rule="evenodd" d="${D2}"/>`), hartie: { ...RAW } },
+  { nume: 'S34 !important în style se ignoră (style rămâne cea mai tare sursă), fără avertisment', text: p100(`<style>path { fill-rule: nonzero }</style><path style="fill-rule: evenodd !important" d="${D2}"/>`), hartie: { ...RAW } },
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -629,7 +759,7 @@ const I: CazSvg[] = [
       tipuri: ['LLLL', 'LLLL', 'AA', 'LLL', 'CCCC', 'C'.repeat(16)],
       varfuri: [[0, 0, 10 * K72, (113.3858 - 10) * K72], [1, 0, 20 * K72, (113.3858 - 20) * K72]],
       laturi: ['exterior', 'interior', 'exterior', 'exterior', 'exterior', 'exterior'],
-      avertismente: { stil: 1, 'arce-eliptice': 2, 'cubice-din-arce': 16 } } },
+      avertismente: { 'arce-eliptice': 2, 'cubice-din-arce': 16 } } },
   { nume: 'I3 comentariul doar cu „Illustrator” (fără „Adobe”): nu e Illustrator', text: `<?xml version="1.0"?><!-- exported for Illustrator users -->${mm(100, 100, '<rect width="5" height="5"/>')}`,
     hartie: { illustrator: false } },
   { nume: 'I4 „Adobe Illustrator” după primii 16 KiB: nu se vede', text: `<?xml version="1.0"?><!--${' '.repeat(20_000)}--><!-- Generator: Adobe Illustrator 27.0 -->${mm(100, 100, '<rect width="5" height="5"/>')}`,
@@ -638,7 +768,7 @@ const I: CazSvg[] = [
     hartie: { illustrator: true } },
 ];
 
-export const CORPUS: readonly CazSvg[] = [...A, ...B, ...C, ...D, ...E, ...F, ...G, ...H, ...I];
+export const CORPUS: readonly CazSvg[] = [...A, ...B, ...C, ...D, ...E, ...F, ...G, ...N, ...S, ...H, ...I];
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Judecata hârtiei: oracolul trebuie să dea exact ce scrie pe hârtie.
@@ -685,6 +815,34 @@ export function judecaHartia(o: RezultatO, h: Hartie): string[] {
   return pr;
 }
 
+/**
+ * Hârtia după normalizare (felia 2.7d), pe rezultatul aplicației deja judecat de `judecaRezultat`: numerele `nonzero-*`
+ * EXACT (cele de schimbat minus cele refuzate pe hârtie; refuzurile pe hârtie), câte căi rămân, laturile lor și aria
+ * regiunii (exterioarele plus, interioarele minus).
+ */
+export function judecaHartiaFinala(app: unknown, o: RezultatO, h: Hartie): string[] {
+  const a = app as { ok?: unknown; cod?: unknown; avertismente?: Record<string, unknown> } | null;
+  // Refuzul de pe hârtie e strict (și unde oracolul are o alternativă, ADR 0036 §6: forma subțire „poate” rămâne).
+  if (h.cod !== undefined) return a?.ok === false && a.cod === h.cod ? [] : [`hârtia: trebuia refuzat ${h.cod}, dar ok = ${String(a?.ok)}, cod ${String(a?.cod)}`];
+  if (!o.ok || a?.ok !== true) return [];
+  const pr: string[] = [];
+  const ref = h.nonzeroRefuzate ?? 0;
+  const norm = (h.avertismente?.['nonzero-normalizate'] ?? 0) - ref;
+  if (a.avertismente?.['nonzero-normalizate'] !== norm) pr.push(`hârtia: nonzero-normalizate = ${String(a.avertismente?.['nonzero-normalizate'])} ≠ ${norm}`);
+  if (a.avertismente?.['nonzero-refuzate'] !== ref) pr.push(`hârtia: nonzero-refuzate = ${String(a.avertismente?.['nonzero-refuzate'])} ≠ ${ref}`);
+  const f = h.final;
+  if (f === undefined) return pr;
+  const fin = caiFinaleO(app, o);
+  if (f.cai !== undefined && fin.length !== f.cai) pr.push(`hârtia: ${fin.length} căi după normalizare ≠ ${f.cai}`);
+  const lat = laturiO(fin);
+  if (f.laturi !== undefined && JSON.stringify(lat) !== JSON.stringify(f.laturi)) pr.push(`hârtia: laturile după normalizare ${JSON.stringify(lat)} ≠ ${JSON.stringify(f.laturi)}`);
+  if (f.arie !== undefined) {
+    const A = fin.reduce((s, c, i) => s + (lat[i] === 'exterior' ? 1 : -1) * Math.abs(arieRuns(c.runs)), 0);
+    if (!(Math.abs(A - f.arie) <= 1e-9 * Math.max(1, Math.abs(f.arie)))) pr.push(`hârtia: aria după normalizare ${A} ≠ ${f.arie}`);
+  }
+  return pr;
+}
+
 export const octetiCaz = (c: CazSvg): Uint8Array => (c.octeti !== undefined ? c.octeti() : new TextEncoder().encode(c.text ?? ''));
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -693,4 +851,5 @@ export const octetiCaz = (c: CazSvg): Uint8Array => (c.octeti !== undefined ? c.
 
 export const CONSTATARI: readonly CazSvg[] = [
   // Revizia 12.10: K2–K6 reparate în aplicație (mutate în corpus: C23, E33–E36); K1 inversată de ADR (F22).
+  // Felia 2.7d: K7 rezolvată de amendamentul ADR 0036 §6 (mutată în corpus: C22 cu evenodd, C25).
 ];

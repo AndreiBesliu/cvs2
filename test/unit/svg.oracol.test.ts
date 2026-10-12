@@ -3,9 +3,11 @@
  * corpusul scris de mână (`test/oracles/svg.cazuri.ts`, cu valorile pe hârtie):
  * - (0) constantele contractului; oracolul pe hârtie, pe fiecare caz (refuzul, pagina, px, tipurile, vârfurile, bulge,
  *   raportul, laturile, forma, numele);
- * - (a) aplicația față de oracol, pe fiecare caz: refuzul, pagina, px, illustrator, cele 21 de numere, căile (structura,
+ * - (a) aplicația față de oracol, pe fiecare caz: refuzul, pagina, px, illustrator, cele 22 de numere, căile (structura,
  *   startul, vârfurile, sensul arcelor, cubicele din fișier, segmentele nule, razele, distanța în ambele sensuri, rafinată);
- *   unde maparea nu depinde de px, același rezultat și la celălalt pxPeTol;
+ *   formele nonzero normalizate (felia 2.7d, ADR 0036) cu oracolul normalizării (regiunea, geometria citirii, topologia),
+ *   numerele `nonzero-*` și ce rămâne după normalizare față de hârtie; unde maparea nu depinde de px, același rezultat și
+ *   la celălalt pxPeTol;
  * - (b) latura (§8): `laturiDinImbricare` față de imbricarea oracolului (pe geometria exactă);
  * - (c) piesa (§8): `piesaDinImport` (grupul, elementele, colțul exact, instanța, operațiile) trece de ușa documentului;
  * - (d) `problemaEntitati` și `numeDinFisier`;
@@ -21,10 +23,10 @@ import { numeDinFisier, piesaDinImport } from '../../src/io/piesa.ts';
 import { TOLERANTA_IMPORT, TOLERANTA_PROIECT } from '../../src/geom/toleranta.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import {
-  CODURI_O, CONST_O, SVG_NS_O, citesteSvgO, coltExact, judecaPiesa, judecaRezultat, laturiBugetO, laturiO, numeDinFisierO, parserTest,
+  CODURI_O, CONST_O, SVG_NS_O, caiFinaleO, citesteSvgO, coltExact, judecaPiesa, judecaRezultat, laturiBugetO, laturiO, numeDinFisierO, parserTest,
   problemaEntitatiO, punctCub, type RezultatO, type VarfO,
 } from '../oracles/svg.ts';
-import { CORPUS, ILLUSTRATOR, judecaHartia, octetiCaz, type CazSvg } from '../oracles/svg.cazuri.ts';
+import { CORPUS, ILLUSTRATOR, judecaHartia, judecaHartiaFinala, octetiCaz, type CazSvg } from '../oracles/svg.cazuri.ts';
 
 type CaleApp = { varfuri: VarfO[]; forma: number; nume?: string };
 type OkApp = { ok: true; cai: CaleApp[]; pagina: { latime: number; inaltime: number } | null; px: boolean; illustrator: boolean; avertismente: Record<string, number> };
@@ -47,9 +49,10 @@ const copie = <T>(x: T): T => structuredClone(x);
 // ---------------------------------------------------------------------------------------------------------------------
 // (0)
 
-test('(0) constantele: codurile raportului (21, în ordine), plafoanele, toleranța importului, spațiul de nume', () => {
+test('(0) constantele: codurile raportului (22, în ordine; 2.7d: nonzero-normalizate și nonzero-refuzate în locul lui nonzero), plafoanele, toleranța importului, spațiul de nume', () => {
   assert.deepEqual([...CODURI_AVERTISMENT], [...CODURI_O]);
-  assert.equal(CODURI_O.length, 21);
+  assert.equal(CODURI_O.length, 22);
+  assert.ok(!(CODURI_O as readonly string[]).includes('nonzero'));
   assert.equal(PLAFON_IMPORT.octeti, CONST_O.octeti);
   assert.equal(PLAFON_IMPORT.entitati, CONST_O.declaratii);
   assert.equal(PLAFON_IMPORT.varfuriLucru, CONST_O.varfuriLucru);
@@ -78,11 +81,15 @@ for (const c of CORPUS) {
     const o = oracol(c);
     const a = app(c);
     assert.deepEqual(judecaRezultat(a, o), []);
+    assert.deepEqual(judecaHartiaFinala(a, o, c.hartie), []);
     if (o.ok && !o.px) {
       // Maparea nu depinde de px: același rezultat la celălalt pxPeTol (aplicația și oracolul).
       const alt = (c.px ?? 96) === 96 ? 72 : 96;
       assert.deepEqual(judecaRezultat(app(c, alt), o), []);
-      assert.deepEqual(judecaRezultat(citesteSvgO(octetiCaz(c), { pxPeTol: alt, limba: c.limba ?? 'en' }), o), []);
+      const o2 = citesteSvgO(octetiCaz(c), { pxPeTol: alt, limba: c.limba ?? 'en' });
+      assert.ok(o2.ok);
+      assert.deepEqual(o2.cai.map((x) => x.varfuri), o.cai.map((x) => x.varfuri));
+      assert.deepEqual(o2.avertismente, o.avertismente);
     }
   });
 }
@@ -98,7 +105,8 @@ for (const c of CORPUS) {
       assert.equal(l.length, a.cai.length);
       return;
     }
-    assert.deepEqual(l, laturiO(o.cai));
+    // Felia 2.7d: laturile căilor finale (formele normalizate cu căile aplicației, judecate la (a)).
+    assert.deepEqual(l, laturiO(caiFinaleO(a, o)));
   });
   test(`(c) piesa: ${c.nume}`, () => {
     const a = app(c) as OkApp;
@@ -106,7 +114,7 @@ for (const c of CORPUS) {
     const scula = c.nume.startsWith('I') ? { numar: 2, nume: 'freza 3', diametru: 3 } : undefined;
     const arg = { nume: 'caz', cai: a.cai, laturi, pagina: a.pagina };
     const rez = scula === undefined ? piesaDinImport(arg, 'p1') : piesaDinImport(arg, 'p1', scula);
-    assert.deepEqual(judecaPiesa(rez, arg, 'p1', coltExact(o.cai), 2 * CONST_O.tolImport + o.tolLC, scula), []);
+    assert.deepEqual(judecaPiesa(rez, arg, 'p1', coltExact(caiFinaleO(a, o)), 2 * CONST_O.tolImport + o.tolLC, scula), []);
     const doc = {
       schema: 9, rev: 0, piese: [rez.piesa],
       foi: [{ id: 'f1', stoc: { latime: 1000, inaltime: 1000, grosime: 18 }, instante: [{ id: 'i1', piesa: 'p1', x: rez.x, y: rez.y, rotire: 0 }] }],
@@ -264,7 +272,8 @@ test('(e) controale negative pe piesă: instanța mutată, coordonatele nemutate
 });
 
 test('(d) laturiDinImbricare cu buget: null când se termină, aceleași laturi când ajunge (§8)', () => {
-  const c = caz('G8');
+  // Felia 2.7d: G8 (o singură formă) se normalizează la o cale; G5 are trei forme imbricate, neschimbate.
+  const c = caz('G5');
   const a = app(c) as OkApp;
   const fara = laturiDinImbricare(a.cai);
   assert.deepEqual(laturiDinImbricare(a.cai, 1e9), fara);
@@ -273,4 +282,84 @@ test('(d) laturiDinImbricare cu buget: null când se termină, aceleași laturi 
   assert.ok(o.ok);
   assert.deepEqual(laturiBugetO(o.cai, 1e9), laturiO(o.cai));
   assert.equal(laturiBugetO(o.cai, 2), null);
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// (e) Felia 2.7d: controalele negative ale formelor nonzero (ADR 0036 la ușă).
+
+controlNegativ('o formă normalizată înlocuită cu citirea 2.7c (numărată tot normalizată)', 'N1', (a) => {
+  const o = oracol(caz('N1'));
+  assert.ok(o.ok);
+  a.cai = o.cai.map((c) => ({ varfuri: copie(c.varfuri), forma: c.forma }));
+});
+controlNegativ('numerele nonzero schimbate între ele (normalizată numărată refuzată)', 'N1', (a) => {
+  a.avertismente['nonzero-normalizate'] = 0;
+  a.avertismente['nonzero-refuzate'] = 1;
+});
+controlNegativ('nonzero-normalizate = 2 pentru o singură formă normalizată', 'N1', (a) => { a.avertismente['nonzero-normalizate'] = 2; });
+controlNegativ('un vârf al reuniunii mutat cu 1e-5 mm', 'N1', (a) => { (cale0(a)[2] as unknown as VarfM).p.x += 1e-5; });
+controlNegativ('reuniunea cercurilor: un bulge cu semnul întors', 'N9', (a) => {
+  const v = cale0(a).find((x) => x.s.tip === 'A') as unknown as VarfM;
+  v.s.bulge = -(v.s.bulge as number);
+});
+controlNegativ('numele formei pierdut pe calea normalizată', 'N9', (a) => { delete (a.cai[0] as CaleApp).nume; });
+controlNegativ('o formă care trebuia să dispară (calea și inversa ei) lăsată ca în 2.7c, numărată normalizată', 'N8', (a) => {
+  const o = oracol(caz('N8'));
+  assert.ok(o.ok);
+  a.cai = o.cai.map((c) => ({ varfuri: copie(c.varfuri), forma: c.forma, ...(c.nume !== undefined ? { nume: c.nume } : {}) }));
+});
+controlNegativ('reuniunea pierde dreptunghiul al doilea (doar primul contur)', 'N1', (a) => {
+  const v = cale0(a);
+  v.splice(0, v.length, { p: { x: 10, y: 90 }, s: { tip: 'L' } }, { p: { x: 50, y: 90 }, s: { tip: 'L' } }, { p: { x: 50, y: 60 }, s: { tip: 'L' } }, { p: { x: 10, y: 60 }, s: { tip: 'L' } });
+});
+
+/** Rezultatul așteptat construit din citirea oracolului (o formă care rămâne ca în 2.7c), fără aplicație. */
+function dinOracol(c: CazSvg, dat?: RezultatO): OkApp {
+  const o = dat ?? oracol(c);
+  assert.ok(o.ok);
+  return { ok: true, cai: o.cai.map((x) => ({ varfuri: copie(x.varfuri), forma: x.forma, ...(x.nume !== undefined ? { nume: x.nume } : {}) })), pagina: o.pagina, px: o.px, illustrator: o.illustrator, avertismente: { ...o.avertismente } };
+}
+test('(e) control negativ, fără aplicație: o formă cu fill: none (S2) normalizată totuși, sau cu un număr nonzero', () => {
+  const c = caz('S2');
+  const o = oracol(c);
+  const bun = dinOracol(c);
+  assert.deepEqual(judecaRezultat(bun, o), [], 'citirea ca atare trece');
+  const unit = copie(bun);
+  unit.cai = [{ varfuri: [{ p: { x: 10, y: 90 }, s: { tip: 'L' } }, { p: { x: 10, y: 60 }, s: { tip: 'L' } }, { p: { x: 30, y: 60 }, s: { tip: 'L' } }, { p: { x: 30, y: 50 }, s: { tip: 'L' } }, { p: { x: 70, y: 50 }, s: { tip: 'L' } }, { p: { x: 70, y: 80 }, s: { tip: 'L' } }, { p: { x: 50, y: 80 }, s: { tip: 'L' } }, { p: { x: 50, y: 90 }, s: { tip: 'L' } }] as VarfO[], forma: 0 }];
+  unit.avertismente['nonzero-normalizate'] = 1;
+  assert.ok(judecaRezultat(unit, o).length > 0, 'reuniunea unei forme fără umplere a trecut');
+  const numarata = copie(bun);
+  numarata.avertismente['nonzero-refuzate'] = 1;
+  assert.ok(judecaRezultat(numarata, o).length > 0, 'un refuz numărat pe o formă fără umplere a trecut');
+});
+test('(e) §6 relaxat (amendamentul K7), fără aplicație: triunghiul subțire (C25) păstrat ca atare trece judecata (alternativa), dar nu hârtia', () => {
+  const c = caz('C25');
+  const o = oracol(c);
+  assert.ok(!o.ok && o.cod === 'gol' && o.alternativ !== undefined && o.alternativ.ok);
+  const pastrat = dinOracol({ ...c, nume: 'x', hartie: {} } as CazSvg, o.alternativ);
+  assert.deepEqual(judecaRezultat(pastrat, o), [], 'forma subțire poate rămâne (ADR 0036 §6: „poate ieși”)');
+  assert.ok(judecaHartiaFinala(pastrat, o, c.hartie).length > 0, 'hârtia cere refuzul gol');
+});
+test('(e) control negativ, §6 relaxat, fără aplicație: o formă groasă, deja evenodd, fără martor (N15, funda) „normalizată” într-o copie e prinsă', () => {
+  const c = caz('N15');
+  const o = oracol(c);
+  assert.ok(o.ok && o.formeNonzero[0]?.martor === null && o.formeNonzero[0]?.deSchimbat === false);
+  const bun = dinOracol(c);
+  assert.deepEqual(judecaRezultat(bun, o), []);
+  const schimbat = copie(bun);
+  const v = (schimbat.cai[0] as CaleApp).varfuri;
+  v.push(v.shift() as VarfO);
+  schimbat.avertismente['nonzero-normalizate'] = 1;
+  const pr = judecaRezultat(schimbat, o);
+  assert.ok(pr.some((p) => p.includes('§6')), JSON.stringify(pr));
+});
+
+test('(e) control negativ, fără aplicație: stil numărat pe un <style> cu reguli simple (S1), sau nenumărat pe un combinator (S16)', () => {
+  const b1 = dinOracol(caz('S1'));
+  b1.avertismente['stil'] = 1;
+  assert.ok(judecaRezultat(b1, oracol(caz('S1'))).length > 0);
+  const c16 = caz('S16');
+  const o16 = oracol(c16);
+  assert.ok(o16.ok && o16.avertismente['stil'] === 1);
+  assert.ok(judecaHartia({ ...o16, avertismente: { ...o16.avertismente, stil: 0 } }, c16.hartie).length > 0);
 });

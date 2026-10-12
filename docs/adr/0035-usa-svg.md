@@ -79,12 +79,22 @@ milimetri e M = pagina ∘ strămoșii ∘ forma.
 - **Sărite, numărate în raport:** `text`, `use`, `image`, `foreignObject` și `svg` imbricat.
 - **Sărite fără raport** (nu se desenează direct, sau nu sunt desen): `defs`, `symbol`, `clipPath`, `mask`, `marker`,
   `pattern`, gradientele, filtrele, `style`, `script`, `title`, `desc`, `metadata`, animațiile și orice alt element.
-- **Ascunse:** `display: none` (atribut sau declarație în `style`) sare elementul și tot ce conține; `visibility: hidden`
-  sau `collapse` se moștenește, iar un copil cu `visible` reapare. Se numără. Din `style` se citesc doar `display`,
-  `visibility` și `fill-rule` (ultima declarație câștigă, ca în CSS, și câștigă peste atribut). Un element `<style>` în
-  fișier dă un avertisment: clasele nu se citesc, deci un element ascuns printr-o clasă se importă. Într-un subarbore
-  ascuns, transformările nu se mai judecă: se numără doar formele (și elementul ascuns cu o transformare greșită e
-  ascuns, nu „transformare invalidă”).
+- **Ascunse:** `display: none` sare elementul și tot ce conține; `visibility: hidden` sau `collapse` se moștenește, iar un
+  copil cu `visible` reapare. Se numără. Într-un subarbore ascuns, transformările nu se mai judecă: se numără doar formele
+  (și elementul ascuns cu o transformare greșită e ascuns, nu „transformare invalidă”).
+- **Stilurile** (din 2.7d; recenzia 2.7d: Illustrator pune `fill-rule: evenodd` și `fill: none` în clase, iar normalizarea
+  `nonzero`, ADR 0036, le umplea găurile). Se citesc doar `display`, `visibility`, `fill-rule` și `fill`, din trei
+  surse, în ordinea în care câștigă: atributul de prezentare, apoi regulile din `<style>` (după specificitate, la egalitate
+  ultima), apoi declarațiile din `style` (ultima câștigă; `!important` se ignoră). Din `<style>` se citesc doar regulile cu
+  selectori simpli: `element`, `.clasă`, `#id`, `*` și lipiți (`path.a.b`), separați prin virgulă; comentariile se sar.
+  Specificitatea: id, apoi clase, apoi element. O regulă cu una din cele patru proprietăți al cărei selector nu e
+  simplu (un combinator, un atribut, o pseudo-clasă, două id-uri), o regulă `@` (`@media`…) sau un `!important` dau avertismentul
+  `stil` (o dată), iar regula nu se aplică (`!important` se aplică, dar ca o declarație obișnuită). Peste 10 000 de
+  reguli, `<style>` nu se citește deloc (`stil`). **Bugetul potrivirilor:** fiecare regulă verificată pe un element
+  costă 1 (regulile stau pe găleți: prima clasă, id-ul, elementul, `*`); peste 2·10⁷ pe fișier, importul e refuzat
+  (`plafon`, detaliul `css`): nu se citește pe jumătate stilat.
+- **Umplerea:** `fill` efectiv `none` (moștenit; `inherit` ia părintele; implicit plin) face din formă un desen de
+  contur, nu o regiune: nu se normalizează (ADR 0036 §9), subcăile ei se citesc ca atare.
 - **Geometria formelor** (SVG 2, cu atributele citite ca în Edge): `rect` cu `rx` / `ry` (unul lipsă îl ia pe celălalt;
   fiecare tăiat la jumătatea laturii; lățimea sau înălțimea ≤ 0 sare forma), pornit din (x + rx, y). La `rx` / `ry` (și ale
   lui `ellipse`), un atribut necitibil (și „auto” scris ca atribut, și un procent) e 0, iar unul negativ e lipsă (recenzia
@@ -145,7 +155,9 @@ milimetri e M = pagina ∘ strămoșii ∘ forma.
   de ușă și opreau tot importul). Cubicele unui arc eliptic se numără înainte să se facă: dacă nu mai încap (cu un loc
   păstrat pentru linia de închidere), subcalea se sare pe loc (un arc cât un continent ar cere milioane).
 - **Plafonul de lucru:** citirea se oprește la **1 000 000** de vârfuri produse (`PLAFON_IMPORT.varfuriLucru`, și ale căilor
-  sărite) și refuză (`plafon`); la fel, căile primite cu peste `PLAFON.varfuri` (200 000) de vârfuri.
+  sărite) și refuză (`plafon`); la fel, căile primite cu peste `PLAFON.varfuri` (200 000) de vârfuri: întâi pe intrare,
+  înaintea normalizării `nonzero` (recenzia 2.7d: un fișier refuzat oricum nu mai plătește normalizarea), apoi pe ieșirea
+  ei.
 - O coordonată în milimetri peste `PLAFON.translatie` (de origine) refuză importul.
 
 **8. Piesa.** Importul adaugă o piesă și o instanță a ei, într-un singur pas de anulare (o comandă `adauga`):
@@ -160,9 +172,9 @@ milimetri e M = pagina ∘ strămoșii ∘ forma.
   blocată). Peste buget, importul e refuzat (`plafon`, detaliul `includeri`). Operațiile sunt două
   (`exterior`, `interior`, fiecare doar dacă are căi; peste `PLAFON.noduriOperatie` căi, încă una, `exterior-2` …), cu
   valorile operației implicite a dreptunghiului (profil, 3 mm într-o trecere, urcare) și freza foii, dacă e una singură;
-- **regula `nonzero`** (implicita SVG) nu se aplică în 2.7c: totul se citește `evenodd` (T3). Unde diferă vizibil, adică
-  două subcăi ale aceleiași forme, una în alta, cu același sens, sub `nonzero`, raportul le numără. Normalizarea vine cu
-  2.7d (PathKit);
+- **regula `nonzero`** (implicita SVG): din 2.7d, fiecare formă cu regula efectivă `nonzero` trece, cu toate subcăile ei,
+  prin normalizarea exactă (ADR 0036) înainte să devină căi; neschimbată, rămâne exact ca în 2.7c. La refuz, se citește
+  `evenodd`, ca în 2.7c, numărată (§10);
 - documentul de după import trece de ușa documentului (`incarca`), cu plafoanele lui (ADR 0024, ADR 0034). Altfel importul
   e refuzat, cu motivul ușii, iar documentul rămâne neschimbat.
 
@@ -187,11 +199,12 @@ interioare), avertismentele numărate și, când contează, alegerea lui `pxPeTo
 - `arce-eliptice`, `arce-plate`: arcele scrise ca cubice (§6), iar `cubice-din-arce`: câte cubice au ieșit din ele. Se
   numără când se scriu, chiar dacă subcalea lor e sărită apoi (deschisă, degenerată); dintr-o subcale prea mare, doar cele
   scrise înainte de oprire;
-- `nonzero`: subcăile A ale unei forme cu regula `nonzero` pentru care există altă subcale B a aceleiași forme care
-  conține primul vârf al lui A, cu aria cu același semn (o arie nulă are semnul 0). Se socotesc după parcurgere și după
-  plafonul vârfurilor, cu bugetul includerilor (§8; recenzia 2.7c: 281 s în ușă), iar peste el importul e refuzat
-  (`plafon`, `includeri`);
-- o singură dată (0 sau 1): `pagina-fara-marime`, `viewbox-invalid`, `transformare-radacina`, `stil`.
+- `nonzero-normalizate`: formele `nonzero` pe care normalizarea (ADR 0036) le-a schimbat; `nonzero-refuzate`: cele pe care
+  le-a refuzat, citite `evenodd`. (În 2.7c, contorul `nonzero` număra perechile de subcăi în același sens, una în alta: o
+  euristică pe care suprapunerile, dublurile și buclele duble o ocoleau; ADR 0036 l-a înlocuit.) Căile normalizate trec
+  din nou prin plafonul căii (§7);
+- o singură dată (0 sau 1): `pagina-fara-marime`, `viewbox-invalid`, `transformare-radacina`, `stil` (o regulă CSS care
+  nu s-a citit, §4; în 2.7c, orice `<style>`).
 
 Ordinea căilor e ordinea documentului, apoi a subcăilor. Un fișier fără nicio cale închisă e refuzat, cu raportul.
 
@@ -201,7 +214,7 @@ altei căi (§8) are latura pe care o dă includerea, nedefinită pe contur.
 **Refuzurile** au coduri, traduse de interfață, judecate în ordinea: `plafon` (vârfurile, apoi includerile), `departe`,
 `gol`: `octeti`, `svgz`, `entitati`, `parsare`, `radacina` (rădăcina nu e `svg`),
 `gol` (nicio cale închisă), `departe` (o coordonată peste `PLAFON.translatie`), `plafon` (plafonul de lucru sau al
-vârfurilor, §7, sau al includerilor, §8). Interfața adaugă `neincarcat`: codul ușii nu s-a putut aduce (o publicare nouă a
+vârfurilor, §7, al includerilor, §8, sau al potrivirilor CSS, §4, detaliul `css`). Interfața adaugă `neincarcat`: codul ușii nu s-a putut aduce (o publicare nouă a
 schimbat fișierele, rețeaua lipsește); dialogul spune asta și oferă reîncărcarea, nu „fișierul nu e un SVG” (recenzia
 2.7c).
 
@@ -237,11 +250,11 @@ alegerea px-ului, Escape), o publicare nouă în timpul unei sesiuni (bucata uș
 - **Timpul** (Node, aceeași mașină): ușa ≤ 9 ms și imbricarea ≤ 9 ms pe 35 kB (103 căi, 1 316 cubice); CAM-ul întreg
   ~0,5 s pe același fișier (~0,4 ms pe cubică). În bugetul firului principal; un worker nu e încă necesar.
 
-- `use`, `text`, `image`, `svg` imbricat, clasele CSS și decuparea nu se citesc: sunt numărate în raport. `use` și
+- `use`, `text`, `image`, `svg` imbricat, selectorii CSS compuși și decuparea nu se citesc: sunt numărate în raport. `use` și
   `svg` imbricat se pot adăuga fără să schimbe contractul (încă un container cu matricea lui).
 - 1 px = 1/96 sau 1/72 țol, la alegere; alte rezoluții (90 dpi, Inkscape vechi) cer scalarea după import, care vine cu
   desenul (etapa 6).
-- Regula `nonzero` vine cu 2.7d; până atunci, contururile suprapuse sau cu același sens se taie după `evenodd`.
+- Regula `nonzero`: normalizată din 2.7d (ADR 0036); o formă refuzată acolo se taie după `evenodd`, numărată.
 - Latura se alege pe toată piesa. Schimbarea ei pe o singură cale cere panoul de proprietăți (2.8).
 - Ușa rulează pe firul principal: la 16 MiB, ~1–2 s (măsurat în 2.7c).
 

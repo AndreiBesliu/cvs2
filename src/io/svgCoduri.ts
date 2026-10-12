@@ -18,6 +18,12 @@ export const PLAFON_IMPORT = {
    * refuzat (`plafon`, cu detaliul `includeri`).
    */
   includeri: 20_000_000,
+  /**
+   * Unitățile de lucru ale normalizării `nonzero` pe tot fișierul (ADR 0036 §10): un singur buget, nu unul pe formă
+   * (recenzia 2.7d: 286 KiB de forme mici țineau firul principal 94 s). Peste el, formele rămase se citesc `evenodd`,
+   * numărate. Cât două forme la plafonul lor (~1 s fiecare).
+   */
+  normalizare: 24_000_000,
 } as const;
 
 /** `neincarcat`: codul ușii nu s-a putut aduce (o publicare nouă, rețeaua); îl pune interfața, nu ușa. */
@@ -31,7 +37,7 @@ export type CodEntitati = (typeof CODURI_ENTITATI)[number];
 export const CODURI_AVERTISMENT = [
   'deschise', 'degenerate', 'prea-mari', 'sarit-text', 'sarit-use', 'sarit-image', 'sarit-foreignObject', 'sarit-svg',
   'ascunse', 'eroare-date', 'atribut-invalid', 'transformare-invalida', 'singulara', 'arce-eliptice', 'arce-plate',
-  'cubice-din-arce', 'nonzero', 'pagina-fara-marime', 'viewbox-invalid', 'transformare-radacina', 'stil',
+  'cubice-din-arce', 'nonzero-normalizate', 'nonzero-refuzate', 'pagina-fara-marime', 'viewbox-invalid', 'transformare-radacina', 'stil',
 ] as const;
 export type CodAvertisment = (typeof CODURI_AVERTISMENT)[number];
 export type Avertismente = Readonly<Record<CodAvertisment, number>>;

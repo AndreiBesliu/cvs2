@@ -3,12 +3,10 @@
  * plus raportul. Inertă: `DOMParser` fără context de navigare, nimic atașat, nimic încărcat, doar atribute citite;
  * matricile și unitățile le socotește ușa.
  */
-import { arieCuSemn, LINIE, type Punct, type Segment, type Varf } from '../geom/contur.ts';
-import { cutieContur } from '../geom/cutie.ts';
-import { inRegiune } from '../geom/distanta.ts';
+import { LINIE, type Punct, type Segment, type Varf } from '../geom/contur.ts';
 import { arcEliptic, bucatiArcEliptic } from '../geom/elipsa.ts';
 import { aplica, compune, determinantNormat, esteSimilitudine, type Matrice } from '../geom/matrice.ts';
-import { indexCutii } from '../geom/offset.ts';
+import { normalizeaza } from '../geom/nonzero.ts';
 import { TOLERANTA_IMPORT } from '../geom/toleranta.ts';
 import { PLAFON } from '../model/document.ts';
 import { citesteDateCale, citesteLungime, citestePuncte, citesteStil, citesteTransform, type ComandaCale } from './svgDate.ts';
@@ -119,12 +117,132 @@ function lungimeUtilizator(el: Element, nume: string): number | null | undefined
   return k === undefined ? null : (l.valoare * k * 96) / 25.4;
 }
 
-type Stil = { readonly display: string | null; readonly visibility: string | null; readonly fillRule: string | null };
+type Stil = {
+  readonly display: string | null; readonly visibility: string | null; readonly fillRule: string | null; readonly fill: string | null;
+};
 
-function stilElement(el: Element): Stil {
-  const s = citesteStil(el.getAttribute('style'));
-  const prop = (nume: string): string | null => (s.get(nume) ?? el.getAttribute(nume))?.trim().toLowerCase() ?? null;
-  return { display: prop('display'), visibility: prop('visibility'), fillRule: prop('fill-rule') };
+/** Proprietățile pe care ușa le citește din stiluri (ADR 0035 §4). */
+const PROPRIETATI = ['display', 'visibility', 'fill-rule', 'fill'] as const;
+
+/** O regulă simplă din `<style>`: un selector compus fără combinatori (`element`, `.clasă`, `#id`, `*`, lipite). */
+type RegulaCss = {
+  readonly tag: string | null; readonly id: string | null; readonly clase: readonly string[];
+  readonly specificitate: number; readonly ordine: number; readonly decl: ReadonlyMap<string, string>;
+};
+
+/** Plafonul regulilor CSS citite: peste el, stilurile nu se citesc deloc (ca în 2.7c), cu avertismentul `stil`. */
+const PLAFON_REGULI_CSS = 10_000;
+
+/**
+ * Plafonul potrivirilor CSS pe tot fișierul (regulă × element verificate): peste el, fișierul se refuză (`plafon`, cu
+ * detaliul `css`), nu se citește pe jumătate stilat. Un fișier Illustrator face ~1 potrivire pe element.
+ */
+const PLAFON_POTRIVIRI_CSS = 20_000_000;
+
+/** Bugetul potrivirilor CSS s-a terminat: citirea se oprește, fișierul se refuză. */
+class PesteCss extends Error {}
+
+/**
+ * Regulile simple din `<style>` (ADR 0035 §4, recenzia 2.7d: Illustrator pune `fill-rule: evenodd` și `fill: none` în clase,
+ * iar normalizarea `nonzero` le umplea găurile). Comentariile și regulile `@` se sar; selectorii cu combinatori, atribute sau
+ * pseudo-clase se ignoră. Doar `display`, `visibility`, `fill-rule` și `fill`. `ignorate`: ceva din `<style>` care putea
+ * schimba aceste proprietăți nu s-a citit (avertismentul `stil`).
+ */
+function citesteCss(doc: Document): { readonly index: IndexCss; readonly ignorate: boolean } {
+  const stiluri = doc.getElementsByTagName('style');
+  let text = '';
+  for (let i = 0; i < stiluri.length; i++) text += `${stiluri.item(i)?.textContent ?? ''}\n`;
+  text = text.replace(/\/\*[^]*?\*\//g, ' ');
+  // Regulile `@` (media, font-face, import…), cu blocul lor, se scot: adâncimea acoladelor, liniar.
+  let curat = '';
+  let ignorate = false;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] !== '@') {
+      curat += text[i];
+      continue;
+    }
+    ignorate = true;
+    let j = i;
+    while (j < text.length && text[j] !== '{' && text[j] !== ';') j++;
+    if (text[j] === '{') {
+      let adancime = 0;
+      for (; j < text.length; j++) {
+        if (text[j] === '{') adancime++;
+        else if (text[j] === '}' && --adancime === 0) break;
+      }
+    }
+    i = j;
+  }
+  const reguli: RegulaCss[] = [];
+  const re = /([^{}]+)\{([^{}]*)\}/g;
+  for (let m = re.exec(curat); m; m = re.exec(curat)) {
+    const decl = new Map<string, string>();
+    for (const [k, v] of citesteStil(m[2] ?? '')) if ((PROPRIETATI as readonly string[]).includes(k)) decl.set(k, v.trim().toLowerCase());
+    if (decl.size === 0) continue;
+    // `!important` ar câștiga și peste `style`: aici se citește ca o declarație obișnuită, cu avertisment.
+    if (/!\s*important/i.test(m[2] ?? '')) ignorate = true;
+    for (const sel of (m[1] ?? '').split(',')) {
+      const t = /^\s*([a-zA-Z][\w-]*|\*)?((?:[.#][\w-]+)*)\s*$/.exec(sel);
+      const parti = t?.[2]?.match(/[.#][\w-]+/g) ?? [];
+      const ids = parti.filter((x) => x.startsWith('#')).map((x) => x.slice(1));
+      if (!t || (!t[1] && !t[2]) || ids.length > 1) {
+        ignorate = true;
+        continue;
+      }
+      const clase = parti.filter((x) => x.startsWith('.')).map((x) => x.slice(1));
+      const tag = t[1] && t[1] !== '*' ? t[1] : null;
+      reguli.push({
+        tag, id: ids[0] ?? null, clase, specificitate: ids.length * 10_000 + clase.length * 100 + (tag ? 1 : 0), ordine: reguli.length, decl,
+      });
+      if (reguli.length > PLAFON_REGULI_CSS) return { index: INDEX_GOL, ignorate: true };
+    }
+  }
+  // Indexul: fiecare regulă stă sub prima ei clasă, altfel sub id, altfel sub element, altfel la „oricare”. Un element se
+  // potrivește doar cu regulile din gălețile lui (potrivirea rămâne liniară în elemente).
+  const idx: IndexCss = { clase: new Map(), id: new Map(), tag: new Map(), oricare: [] };
+  const pune = (m: Map<string, RegulaCss[]>, k: string, r: RegulaCss): void => { const l = m.get(k); if (l) l.push(r); else m.set(k, [r]); };
+  for (const r of reguli) {
+    const c = r.clase[0];
+    if (c !== undefined) pune(idx.clase, c, r);
+    else if (r.id) pune(idx.id, r.id, r);
+    else if (r.tag) pune(idx.tag, r.tag, r);
+    else idx.oricare.push(r);
+  }
+  return { index: idx, ignorate };
+}
+
+type IndexCss = {
+  readonly clase: Map<string, RegulaCss[]>; readonly id: Map<string, RegulaCss[]>; readonly tag: Map<string, RegulaCss[]>;
+  readonly oricare: RegulaCss[];
+};
+const INDEX_GOL: IndexCss = { clase: new Map(), id: new Map(), tag: new Map(), oricare: [] };
+
+/**
+ * Stilul unui element: atributul de prezentare, peste el regulile CSS (după specificitate și ordine), peste ele `style`.
+ * `lucru` numără potrivirile CSS ale întregului fișier (`PLAFON_POTRIVIRI_CSS`).
+ */
+function stilElement(el: Element, css: IndexCss, lucru: { potriviri: number }): Stil {
+  const val = new Map<string, string>();
+  for (const k of PROPRIETATI) {
+    const a = el.getAttribute(k);
+    if (a !== null) val.set(k, a.trim().toLowerCase());
+  }
+  const tag = el.localName;
+  const id = el.getAttribute('id');
+  const clase = new Set((el.getAttribute('class') ?? '').split(/\s+/).filter(Boolean));
+  const candidate = [...css.oricare, ...(css.tag.get(tag) ?? []), ...(id ? css.id.get(id) ?? [] : [])];
+  for (const c of clase) candidate.push(...(css.clase.get(c) ?? []));
+  lucru.potriviri += candidate.length;
+  if (lucru.potriviri > PLAFON_POTRIVIRI_CSS) throw new PesteCss();
+  if (candidate.length > 0) {
+    candidate.sort((a, b) => a.specificitate - b.specificitate || a.ordine - b.ordine);
+    for (const r of candidate) {
+      if ((r.tag && r.tag !== tag) || (r.id && r.id !== id) || !r.clase.every((c) => clase.has(c))) continue;
+      for (const [k, v] of r.decl) val.set(k, v);
+    }
+  }
+  for (const [k, v] of citesteStil(el.getAttribute('style'))) if ((PROPRIETATI as readonly string[]).includes(k)) val.set(k, v.trim().toLowerCase());
+  return { display: val.get('display') ?? null, visibility: val.get('visibility') ?? null, fillRule: val.get('fill-rule') ?? null, fill: val.get('fill') ?? null };
 }
 
 /** Maparea `viewBox` → viewport (SVG 2 §8.2), cu `preserveAspectRatio`. Viewport-ul are mărimea (w, h), în mm. */
@@ -456,6 +574,8 @@ type Cadru = {
   readonly ascuns: boolean;
   readonly vizibil: boolean;
   readonly umplere: string;
+  /** `fill` efectiv altul decât `none`: forma e o regiune (un desen doar din contur nu se normalizează; recenzia 2.7d). */
+  readonly umplut: boolean;
 };
 
 function copii(el: Element): Element[] {
@@ -490,7 +610,6 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
 
   const n = Object.fromEntries(CODURI_AVERTISMENT.map((c) => [c, 0])) as Numaratoare;
   const illustrator = /<!--[^]{0,2000}?Adobe Illustrator/.test(text.slice(0, 16_384));
-  if (doc.getElementsByTagName('style').length > 0) n.stil = 1;
   if (radacina.getAttribute('transform') !== null) n['transformare-radacina'] = 1;
 
   // Pagina (ADR 0035 §2).
@@ -540,17 +659,21 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
 
   const cai: CaleSvg[] = [];
   const limba = (optiuni.limba ?? 'en').toLowerCase();
-  /** Subcăile primite ale fiecărei forme cu regula `nonzero` și cu mai multe subcăi: perechile se numără după parcurgere. */
-  const deNonzero: Varf[][][] = [];
   const lucru = { varfuri: 0 };
   let primite = 0;
   let indexForma = 0;
   let departe = false;
+  /** Formele citite, în ordine; normalizarea `nonzero` (ADR 0036) rulează după parcurgere și după plafonul intrării. */
+  const forme: Array<{ readonly index: number; readonly nume?: string; readonly cai: Varf[][]; readonly nonzero: boolean }> = [];
   const stiva: Cadru[] = [];
-  const stilR = stilElement(radacina);
+  const { index: css, ignorate } = citesteCss(doc);
+  if (ignorate) n.stil = 1;
+  const potriviri = { potriviri: 0 };
+  // Pe rădăcină, bugetul nu se poate termina (cel mult `PLAFON_REGULI_CSS` potriviri).
+  const stilR = stilElement(radacina, css, potriviri);
   const radacinaAscunsa = stilR.display === 'none';
   const pune = (parinte: Cadru, el: Element): void => {
-    const st = stilElement(el);
+    const st = stilElement(el, css, potriviri);
     const vizibilitate = st.visibility && st.visibility !== 'inherit' ? st.visibility : null;
     stiva.push({
       el,
@@ -558,6 +681,7 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
       ascuns: parinte.ascuns || st.display === 'none',
       vizibil: vizibilitate === null ? parinte.vizibil : vizibilitate === 'visible',
       umplere: st.fillRule && st.fillRule !== 'inherit' ? st.fillRule : parinte.umplere,
+      umplut: st.fill && st.fill !== 'inherit' ? st.fill !== 'none' : parinte.umplut,
     });
   };
   const radacinaCadru: Cadru = {
@@ -566,10 +690,11 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
     ascuns: radacinaAscunsa,
     vizibil: !(stilR.visibility === 'hidden' || stilR.visibility === 'collapse'),
     umplere: stilR.fillRule === 'evenodd' ? 'evenodd' : 'nonzero',
+    umplut: stilR.fill !== 'none',
   };
-  for (const c of copii(radacina).reverse()) pune(radacinaCadru, c);
 
   try {
+    for (const c of copii(radacina).reverse()) pune(radacinaCadru, c);
     while (stiva.length > 0) {
       const cadru = stiva.pop();
       if (!cadru) break;
@@ -648,26 +773,44 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
           n.degenerate++;
           continue;
         }
-        if (!v.every((x) => inMargini(x))) departe = true;
-        primite += v.length;
         aleFormei.push(v);
-        cai.push({ varfuri: v, forma: index, ...(nume !== undefined ? { nume } : {}) });
       }
-      if (cadru.umplere !== 'evenodd' && aleFormei.length > 1) deNonzero.push(aleFormei);
+      if (aleFormei.length > 0) {
+        // Doar o regiune umplută (`fill` ≠ `none`) cu regula `nonzero` se normalizează (ADR 0036 §9).
+        forme.push({ index, ...(nume !== undefined ? { nume } : {}), cai: aleFormei, nonzero: cadru.umplere !== 'evenodd' && cadru.umplut });
+      }
     }
   } catch (e) {
     if (e instanceof PestePlafon) return { ok: false, cod: 'plafon', detaliu: String(PLAFON_IMPORT.varfuriLucru), avertismente: n };
+    if (e instanceof PesteCss) return { ok: false, cod: 'plafon', detaliu: 'css', avertismente: n };
     throw e;
+  }
+  // Plafonul total, întâi pe intrare: un fișier refuzat oricum nu mai plătește normalizarea (recenzia 2.7d).
+  const intrare = forme.reduce((s, f) => s + f.cai.reduce((t, v) => t + v.length, 0), 0);
+  if (intrare > PLAFON.varfuri) return { ok: false, cod: 'plafon', detaliu: String(intrare), avertismente: n };
+  // ADR 0036: o formă `nonzero` trece o dată, cu toate subcăile ei, prin aranjamentul exact, cu bugetul ÎNTREGULUI fișier.
+  // Neschimbată, rămâne același obiect (documentul ca în 2.7c); la refuz (și cu bugetul terminat), ca în 2.7c, numărată.
+  const buget = { ramas: PLAFON_IMPORT.normalizare };
+  for (const f of forme) {
+    let finale: readonly (readonly Varf[])[] = f.cai;
+    if (f.nonzero) {
+      const r = normalizeaza(f.cai, { buget });
+      if (!r.ok || r.cai.some((v) => v.length > PLAFON.varfuriCale)) {
+        // O reuniune peste plafonul căii nu scoate forma: o citește ca în 2.7c (recenzia 2.7d).
+        n['nonzero-refuzate']++;
+      } else if (!r.info.neschimbat) {
+        // Și o formă care iese goală (regiunea vidă, sau toată mai subțire decât τ: ADR 0036 §6, oracolul 2.7d, K7).
+        n['nonzero-normalizate']++;
+        finale = r.cai;
+      }
+    }
+    for (const v of finale) {
+      if (!v.every((x) => inMargini(x))) departe = true;
+      primite += v.length;
+      cai.push({ varfuri: v, forma: f.index, ...(f.nume !== undefined ? { nume: f.nume } : {}) });
+    }
   }
   if (primite > PLAFON.varfuri) return { ok: false, cod: 'plafon', detaliu: String(primite), avertismente: n };
-  // Perechile `nonzero`, după parcurgere și după plafonul vârfurilor, cu bugetul includerilor (recenzia 2.7c: 281 s).
-  const buget = { ramas: PLAFON_IMPORT.includeri };
-  try {
-    for (const f of deNonzero) n.nonzero += perechiNonzero(f, buget);
-  } catch (e) {
-    if (e instanceof PestePlafon) return { ok: false, cod: 'plafon', detaliu: 'includeri', avertismente: n };
-    throw e;
-  }
   if (departe) return { ok: false, cod: 'departe', avertismente: n };
   if (cai.length === 0) return { ok: false, cod: 'gol', avertismente: n };
   return {
@@ -684,31 +827,4 @@ const finitInMargini = (x: number): boolean => Number.isFinite(x) && Math.abs(x)
 function inMargini(v: Varf): boolean {
   const pct = [v.p, ...(v.s.tip === 'C' ? [v.s.c1, v.s.c2] : [])];
   return pct.every((q) => finitInMargini(q.x) && finitInMargini(q.y)) && (v.s.tip !== 'A' || Number.isFinite(v.s.bulge));
-}
-
-/**
- * Câte subcăi ale aceleiași forme stau într-o altă subcale a ei cu același sens (ADR 0035 §10, `nonzero`). Fiecare candidat
- * vizitat costă 1 din buget, iar fiecare includere măsurată, câte vârfuri are calea; la capătul bugetului, `PestePlafon`.
- */
-function perechiNonzero(cai: readonly Varf[][], buget: { ramas: number }): number {
-  const contururi = cai.map((varfuri) => ({ inchis: true, varfuri }));
-  const semne = contururi.map((c) => Math.sign(arieCuSemn(c)));
-  // O cale cu mii de subcăi (o trasare, un text): doar perechile ale căror cutii se ating se măsoară (indexul de cutii).
-  const index = indexCutii(contururi.map(cutieContur));
-  let rez = 0;
-  for (const [i, a] of cai.entries()) {
-    const p = a[0]?.p;
-    if (!p) continue;
-    let gasit = false;
-    // Includerea e a clicului (ADR 0034 §5), exactă pe cubice.
-    index.vizita({ minX: p.x, minY: p.y, maxX: p.x, maxY: p.y }, (j) => {
-      const b = contururi[j];
-      if (gasit || j === i || !b || semne[j] !== semne[i]) return;
-      buget.ramas -= 1 + b.varfuri.length;
-      if (buget.ramas < 0) throw new PestePlafon();
-      if (inRegiune(p, [b])) gasit = true;
-    });
-    if (gasit) rez++;
-  }
-  return rez;
 }

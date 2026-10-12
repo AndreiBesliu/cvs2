@@ -26,7 +26,7 @@ const AVERTISMENT = {
   'eroare-date': 'import.av.eroare-date', 'atribut-invalid': 'import.av.atribut-invalid',
   'transformare-invalida': 'import.av.transformare-invalida', singulara: 'import.av.singulara',
   'arce-eliptice': 'import.av.arce-eliptice', 'arce-plate': 'import.av.arce-plate', 'cubice-din-arce': 'import.av.cubice-din-arce',
-  nonzero: 'import.av.nonzero', 'pagina-fara-marime': 'import.av.pagina-fara-marime', 'viewbox-invalid': 'import.av.viewbox-invalid',
+  'nonzero-normalizate': 'import.av.nonzero-normalizate', 'nonzero-refuzate': 'import.av.nonzero-refuzate', 'pagina-fara-marime': 'import.av.pagina-fara-marime', 'viewbox-invalid': 'import.av.viewbox-invalid',
   'transformare-radacina': 'import.av.transformare-radacina', stil: 'import.av.stil',
 } as const satisfies Readonly<Record<CodAvertisment, string>>;
 
@@ -50,6 +50,7 @@ function textRefuz(cod: CodRefuz, detaliu: string | undefined): string {
     return t('import.refuz.entitati', { motiv: t(motiv) });
   }
   if (cod === 'plafon' && detaliu === 'includeri') return t('import.refuz.includeri');
+  if (cod === 'plafon' && detaliu === 'css') return t('import.refuz.css');
   return t(REFUZ[cod], { mb: (Number(detaliu ?? 0) / 1048576).toFixed(1) });
 }
 

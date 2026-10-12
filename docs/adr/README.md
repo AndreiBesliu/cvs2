@@ -53,3 +53,4 @@ redeschide. Cel mult o pagină.
 | [0033](0033-biarcele.md) | T6 | Biarcele: cubica devine linii și arce sub 0,001 mm, abaterea în ambele sensuri, bugetul de toleranță într-un singur loc | etapa 2 (felia 2.7a) |
 | [0034](0034-forma-cale.md) | T1 | Forma „cale”: un contur închis din linii, arce și cubice (documentul v9); pânza și clicul exacte, CAM-ul prin biarce, o dată pe element | etapa 2 (felia 2.7b) |
 | [0035](0035-usa-svg.md) | T18 | Ușa SVG: din fișier la căi în mm, inertă; unitățile, pagina, transformările, cele șapte forme; arcele rămân arce, elipsele devin cubice sub 1e-6 mm; latura din imbricare; plafoanele de octeți, entități, vârfuri și includeri | etapa 2 (felia 2.7c) |
+| [0036](0036-normalizarea-nonzero.md) | T3 | Regula `nonzero` la ușă: aranjamentul exact în double, fără PathKit (mecanismul lui ADR 0003 înlocuit), toleranța relativă la întindere, grupurile, refuzurile explicite | etapa 2 (felia 2.7d) |

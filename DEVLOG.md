@@ -1379,3 +1379,20 @@ pictate unul peste altul. Alegerea a ce se taie, pe contur, vine cu panoul de pr
 - reparația cavalier la cauză, nereevaluată: logourile reale se opresc la regiune, înaintea offsetului;
 - `use` și `svg` imbricat (se pot adăuga fără alt contract); rezoluțiile px în afară de 96 / 72;
 - pachetul de pornire: 98,4 kB din 100 (dialogurile au trecut la cerere; următoarea interfață la pornire cere loc).
+
+## 2026-10-12 — Etapa 2, felia 2.7d: regula `nonzero` la ușa SVG (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (după încheierea lui 2.7c). **Started:** 12:15. **Clasa:** R2 (geometria importată ajunge la
+mașină). **Estimarea:** design cu prototipuri (~1,5 M), portarea, oracolul (~0,6 M), recenzia (~2 M). Săptămâna era la
+61 % (`get_usage`).
+
+**Ce intră:** ADR 0036. Workflow-ul de design (3 prototipuri independente + un judecător cu instrumentul lui, 1,71 M, 3,8 h)
+a infirmat mecanismul din ADR 0003 / 0004 pentru ușă: PathKit + R3 pierdea tăcut detalii de µm la scara foii și refuza
+textul real. Câștigă aranjamentul exact în double, fără PathKit, cu toleranța relativă la întinderea desenului: 0 erori de
+regiune pe 16,4 M de puncte, abaterea ≤ 1e-9 mm, „supa” de 10 212 vârfuri din fonturi reale în ~1 s. Ușa normalizează
+fiecare formă `nonzero`; la refuz importă ca în 2.7c, numărat.
+
+**Pauză** (12.10, la cererea owner-ului „poti sa te opresti cand poti”): portarea cu reparațiile recenziei, ușa (clasele
+CSS simple, `fill: none`, bugetele pe fișier), oracolul independent și testele sunt împinse. Rămân: otrăvurile (54, scrise
+de o sesiune independentă, verificate că se aplică și compilează; nepornite), publicarea pe test și încheierea feliei.
+

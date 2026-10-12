@@ -7,8 +7,12 @@
  *   `deschise`), un arc „cât un continent” (cubicele numărate înainte: nu se fac, nici nu se numără);
  * - piesa cu 10 001 căi: operațiile `exterior` (10 000 de noduri) și `exterior-2` (1), trece de ușa documentului;
  * - revizia 12.10: plafonul căii judecat după linia de închidere (50 000 trec, 50 001 nu); bugetul includerilor
- *   (2·10⁷): perechile nonzero ale unei forme cu 4 000 de „săgeți” îl depășesc (`plafon`, `includeri`), 1 000 nu;
- *   laturile a 4 000 de dreptunghiuri imbricate (forme separate) cu bugetul: null.
+ *   (2·10⁷) al laturilor: 4 000 de „săgeți” îl depășesc (null), 1 000 nu; laturile a 4 000 de dreptunghiuri imbricate
+ *   (forme separate) cu bugetul: null;
+ * - felia 2.7d (ADR 0036): euristica perechilor nonzero (care consuma bugetul includerilor la citire) a dispărut; o formă
+ *   nonzero cu 1 000 / 4 000 de săgeți suprapuse (sute de mii de încrucișări) trece prin normalizare: ori o face (judecată
+ *   de oracolul normalizării), ori o refuză cu bugetul ei (§8) și forma se citește evenodd, numărată; ușa nu se blochează.
+ *   Sondele nonzero ale oracolului au aici densitatea 0,01 (formele au zeci de mii de laturi).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -18,14 +22,16 @@ import { laturiDinImbricare } from '../../src/io/imbricare.ts';
 import { piesaDinImport } from '../../src/io/piesa.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import { CONST_O, citesteSvgO, coltExact, judecaPiesa, judecaRezultat, laturiBugetO, laturiO, parserTest, type RezultatO, type VarfO } from '../oracles/svg.ts';
-import { judecaHartia, mm, type Hartie } from '../oracles/svg.cazuri.ts';
+import { judecaHartia, judecaHartiaFinala, mm, type Hartie } from '../oracles/svg.cazuri.ts';
 
 const enc = (t: string): Uint8Array => new TextEncoder().encode(t);
-const ambele = (b: Uint8Array): { a: unknown; o: RezultatO } => ({ a: citesteSvg(b, { parser: parserTest() }), o: citesteSvgO(b) });
+const DENS = 0.01;
+const ambele = (b: Uint8Array): { a: unknown; o: RezultatO } => ({ a: citesteSvg(b, { parser: parserTest() }), o: citesteSvgO(b, { densitateNonzero: DENS }) });
 function judeca(b: Uint8Array, h: Hartie): { a: unknown; o: RezultatO } {
   const r = ambele(b);
   assert.deepEqual(judecaHartia(r.o, h), [], 'oracolul față de hârtie');
-  assert.deepEqual(judecaRezultat(r.a, r.o, { N: 4 }), [], 'aplicația față de oracol');
+  assert.deepEqual(judecaRezultat(r.a, r.o, { N: 4, densitateNonzero: DENS }), [], 'aplicația față de oracol');
+  assert.deepEqual(judecaHartiaFinala(r.a, r.o, h), [], 'aplicația față de hârtie, după normalizare');
   return r;
 }
 /** Un poligon regulat cu n vârfuri, în sensul SVG crescător. */
@@ -103,15 +109,33 @@ const sageti = (n: number): string => Array.from({ length: n }, (_, k) => {
   return `M ${x} 0 L 1000 500 L ${x} 1000 L ${x + 0.1} 500 Z`;
 }).join(' ');
 
-test('bugetul includerilor (§8, §10): perechile nonzero pe 4 000 de săgeți → plafon / includeri; pe 1 000 trec', () => {
-  // 4 000: ~8·10⁶ candidați în cutie × (1 + 4) = 4·10⁷ > 2·10⁷.
-  judeca(enc(mm(1000, 1000, `<path d="${sageti(4000)}"/>`)), { cod: 'plafon', detaliu: 'includeri' });
-  // 1 000: ~5·10⁵ × 5 = 2,5·10⁶ ≪ 2·10⁷; nicio includere: nonzero 0, toate exterioare.
-  const { a, o } = judeca(enc(mm(1000, 1000, `<path d="${sageti(1000)}"/>`)), { cai: 1000 });
+test('bugetul includerilor (§8): laturile a 4 000 de săgeți dau null (peste buget), ale a 1 000 trec; citirea evenodd trece', () => {
+  // 4 000: ~8·10⁶ candidați în cutie × (1 + 4) = 4·10⁷ > 2·10⁷. Evenodd: fără normalizare, citirea e cea din 2.7c.
+  const { a: a4, o: o4 } = judeca(enc(mm(1000, 1000, `<path fill-rule="evenodd" d="${sageti(4000)}"/>`)), { cai: 4000 });
+  assert.ok(o4.ok);
+  assert.equal(laturiDinImbricare((a4 as { cai: Array<{ varfuri: VarfO[] }> }).cai, (PLAFON_IMPORT as unknown as { includeri: number }).includeri), null);
+  assert.equal(laturiBugetO(o4.cai, CONST_O.includeri), null);
+  // 1 000: ~5·10⁵ × 5 = 2,5·10⁶ ≪ 2·10⁷; nicio includere: toate exterioare.
+  const { a, o } = judeca(enc(mm(1000, 1000, `<path fill-rule="evenodd" d="${sageti(1000)}"/>`)), { cai: 1000 });
   assert.ok(o.ok);
   const l = laturiDinImbricare((a as { cai: Array<{ varfuri: VarfO[] }> }).cai, (PLAFON_IMPORT as unknown as { includeri: number }).includeri);
   assert.deepEqual(l, laturiO(o.cai));
   assert.ok(l?.every((x) => x === 'exterior'));
+});
+
+test('felia 2.7d: 1 000 și 4 000 de săgeți nonzero (o singură formă, sute de mii de încrucișări): normalizate sau refuzate, numărate, fără blocaj', () => {
+  for (const n of [1000, 4000]) {
+    const b = enc(mm(1000, 1000, `<path d="${sageti(n)}"/>`));
+    const t0 = performance.now();
+    const a = citesteSvg(b, { parser: parserTest() }) as { ok: boolean; avertismente: Record<string, number> };
+    const t = performance.now() - t0;
+    const o = citesteSvgO(b, { densitateNonzero: DENS });
+    assert.ok(o.ok && o.formeNonzero.length === 1 && (o.formeNonzero[0] as { deSchimbat: boolean }).deSchimbat, 'oracolul: forma trebuie schimbată');
+    assert.deepEqual(judecaRezultat(a, o, { N: 4, densitateNonzero: DENS }), [], `${n}`);
+    assert.equal((a.avertismente['nonzero-normalizate'] ?? 0) + (a.avertismente['nonzero-refuzate'] ?? 0), 1);
+    // ADR 0036 §10: pe firul principal, cu bugetul de la §8; peste el, refuz (aici: secunde, nu minute).
+    assert.ok(t < 10_000, `${n}: ${t.toFixed(0)} ms`);
+  }
 });
 
 test('bugetul laturilor: 4 000 de dreptunghiuri imbricate (forme separate): citirea trece, laturile cu buget dau null', () => {

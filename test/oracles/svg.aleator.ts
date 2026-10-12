@@ -5,6 +5,13 @@
  * `.5`), atribute de stil. ZERO importuri din `src/`. Nu are valori pe hârtie: îl judecă oracolul.
  */
 
+/**
+ * Semințele cu o constatare deschisă, judecate în `svg.constatari.oracol.test.ts` (nu în bucla aleatoare). Felia 2.7d:
+ * 164 (un contur care se tăia singur lângă o cuspidă, înfășurarea −1 la 2,8e-7 mm de frontieră) a picat pe instantaneul
+ * portului și trece pe portul de acum; a rămas în buclă, iar reproducerea minimă e în corpusul normalizării.
+ */
+export const SEMINTE_CONSTATARI: readonly number[] = [];
+
 /** mulberry32: determinist, aceeași secvență pe orice mașină. */
 export function aleator(samanta: number): () => number {
   let a = samanta >>> 0;

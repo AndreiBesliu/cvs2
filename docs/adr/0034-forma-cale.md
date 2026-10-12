@@ -132,7 +132,11 @@ extremele cubicelor), cu colțul stânga-jos.
   trece la sub `posEqualEps` de cerc, iar intersecția e clasificată „tangentă”, deci îmbinarea cade la R·θ de cea
   adevărată. Reparația la cauză (reîncercarea intersecției cu 1e-12·r) ajuta pe literele TrueType (21 → 3 refuzuri din
   2 249), dar, peste scoaterea buclelor, a dat aserțiuni noi în cavalier pe bulele de 128 de cubice (2 din 60): a rămas
-  deoparte. Se reia în 2.7c, pe fonturi și SVG-uri reale, prin martorul lui cavalier (`PROVENIENTA.md`).
+  deoparte. Se reia în 2.7c, pe fonturi și SVG-uri reale, prin martorul lui cavalier (`PROVENIENTA.md`). **Măsurat pe
+  12.10** (felia 2.7d, contururile a cinci SVG-uri reale, 170 de căi, offset ±1,5 și ±3 mm, ~540 de offseturi): 4 eșecuri
+  ale verificării ieșirii (0,7 %), toate refuzate cu motiv, niciunul tăcut; refuzurile „se autointersectează” erau toate
+  reale (7 încrucișări, 2 contururi care trec prin propriul vârf, unul care se apropie de el însuși la 0,0013 mm, sub
+  rezoluția de 0,01 mm). Reparația la cauză rămâne amânată: nu schimbă ce primește omul (un refuz cu motiv).
 - **Documentul la plafon** (200 000 de vârfuri pe piese, măsurat): 20,6 MB de JSON; ușa îl judecă în ~1,1 s, iar JSON-ul
   canonic al fiecărei salvări ia ~0,7 s. Un SVG obișnuit are de sute de ori mai puțin.
 - Calea nu se editează încă (desenul vine în etapa 6), iar contururile deschise vin cu 2.3c.

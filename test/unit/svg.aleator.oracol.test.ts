@@ -6,14 +6,17 @@
  *
  * Modul `lambdaTolerant` (arcele cu Λ ≥ 1, cu zgomotul F.6.5 al aplicației, constatarea 1) e oprit din 12.10: după
  * reparația constatării, și arcele acelea se judecă strict.
- * Perechile `nonzero` nu se judecă într-o formă care are o cale cu aria practic nulă (semnul ariei e zgomot).
+ * Felia 2.7d (ADR 0036): formele nonzero se normalizează; cele schimbate le judecă oracolul normalizării (regiunea,
+ * geometria citirii, topologia), iar numerele `nonzero-normalizate` / `nonzero-refuzate` se judecă pe forme. Euristica
+ * ariei din 2.7c (perechile în același sens) a dispărut, deci și filtrul căilor cu aria practic nulă. Laturile se judecă
+ * pe căile finale.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { citesteSvg } from '../../src/io/svg.ts';
 import { laturiDinImbricare } from '../../src/io/imbricare.ts';
-import { arieRuns, citesteSvgO, judecaRezultat, laturiO, parserTest, type CaleO, type VarfO } from '../oracles/svg.ts';
-import { svgAleator } from '../oracles/svg.aleator.ts';
+import { caiFinaleO, citesteSvgO, judecaRezultat, laturiHotarate, laturiO, parserTest, type VarfO } from '../oracles/svg.ts';
+import { SEMINTE_CONSTATARI, svgAleator } from '../oracles/svg.aleator.ts';
 
 const SEMINTE = 240;
 const PE_TEST = 20;
@@ -22,17 +25,22 @@ for (let start = 1; start <= SEMINTE; start += PE_TEST) {
   test(`aleator: semințele ${start}…${start + PE_TEST - 1}`, () => {
     const pr: string[] = [];
     for (let s = start; s < start + PE_TEST; s++) {
+      // Semințele cu o constatare deschisă se judecă în testul constatărilor (`svg.constatari.oracol.test.ts`).
+      if (SEMINTE_CONSTATARI.includes(s)) continue;
       const { text, px } = svgAleator(s);
       const b = new TextEncoder().encode(text);
-      const o = citesteSvgO(b, { pxPeTol: px });
+      // Densitatea sondelor nonzero 0,6 (corpusul o are 1): 240 de fișiere sub un minut.
+      const o = citesteSvgO(b, { pxPeTol: px, densitateNonzero: 0.6 });
       const a = citesteSvg(b, { pxPeTol: px, parser: parserTest() });
-      let p = judecaRezultat(a, o, { lambdaTolerant: false });
+      const p = judecaRezultat(a, o, { lambdaTolerant: false, densitateNonzero: 0.6 });
       if (o.ok) {
-        const plata = new Set(o.cai.filter((c: CaleO) => Math.abs(arieRuns(c.runs)) <= 1e-9 * o.marime * o.marime).map((c) => c.forma));
-        if (plata.size > 0) p = p.filter((x) => !x.startsWith('raportul: nonzero'));
         if (p.length === 0) {
-          const la = laturiDinImbricare((a as unknown as { cai: Array<{ varfuri: VarfO[] }> }).cai), lo = laturiO(o.cai);
-          if (JSON.stringify(la) !== JSON.stringify(lo)) p.push(`laturi ${JSON.stringify(la)} ≠ ${JSON.stringify(lo)}`);
+          const fin = caiFinaleO(a, o);
+          const la = laturiDinImbricare((a as unknown as { cai: Array<{ varfuri: VarfO[] }> }).cai), lo = laturiO(fin);
+          // Doar laturile hotărâte (primul vârf nu stă pe conturul altei căi: acolo includerea e nedefinită, §8).
+          const h = laturiHotarate(fin, 1e-9 * Math.max(1, o.marime));
+          const dif = lo.map((x, i) => (h[i] === true && la[i] !== x ? i : -1)).filter((i) => i >= 0);
+          if (dif.length > 0) p.push(`laturi ${JSON.stringify(la)} ≠ ${JSON.stringify(lo)} la ${JSON.stringify(dif)}`);
         }
       }
       for (const x of p) pr.push(`sămânța ${s} (px ${px}): ${x}`);

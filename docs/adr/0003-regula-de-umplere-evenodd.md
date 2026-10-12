@@ -1,6 +1,8 @@
 # ADR 0003 — Regula de umplere: `evenodd` peste tot (T3)
 
 **Starea:** acceptat pe 07.10.2026, odată cu `PLAN.md` (§3.5, rândul T3). **Intră în:** etapa 1; normalizarea la ușă din etapa 2.
+**Mecanismul normalizării e înlocuit de ADR 0036** (12.10.2026): aranjamentul exact, fără PathKit și fără R3 (măsurat în
+felia 2.7d: PathKit + R3 pierdea tăcut detalii de µm la scara foii și refuza textul real). Regula rămâne.
 
 **Problema.** Ecranul, clicul, scula și exportul trebuie să vadă aceeași regiune. O gaură orientată ca exteriorul e
 gaură sub `evenodd` și plin sub `nonzero`.
