@@ -217,8 +217,8 @@ test('sub dialog, aplicația e inertă: Shift+Tab nu iese din dialog, iar două 
   await trage(page, 70, 50, -40);
   const stare = (await page.getByTestId('selectie').textContent()) ?? '';
   await page.locator('[data-actiune="export.gcode"]').click();
-  // La deschidere, focusul intră în dialog.
-  expect(await page.evaluate(() => Boolean(document.activeElement?.closest('.dialog')))).toBe(true);
+  // La deschidere (dialogul vine la cerere), focusul intră în dialog.
+  await expect.poll(() => page.evaluate(() => Boolean(document.activeElement?.closest('.dialog')))).toBe(true);
   // Oricâte Shift+Tab, focusul nu ajunge în aplicația din spate (la Anulează / Reface din bară): e inertă.
   for (let i = 0; i < 12; i++) {
     await page.keyboard.press('Shift+Tab');

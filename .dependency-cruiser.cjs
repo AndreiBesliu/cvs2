@@ -62,6 +62,14 @@ module.exports = {
       to: { path: '^src/', pathNot: '^src/(model|geom)/' },
     },
     {
+      name: 'io-doar-model-geom',
+      severity: 'error',
+      comment: 'Ușile de import și de export (src/io) aduc fișierele la document: importă doar modelul și geometria. '
+        + 'Textele le traduce interfața, din codurile lor (ADR 0035).',
+      from: { path: modul('io') },
+      to: { path: '^src/', pathNot: '^src/(io|model|geom)/' },
+    },
+    {
       name: 'cam-fara-post-sim-masina-interfata',
       severity: 'error',
       comment: 'CAM-ul produce IR; nu știe de post, de simulare, de mașină sau de interfață.',

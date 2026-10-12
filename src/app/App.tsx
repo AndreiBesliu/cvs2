@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
 import { t } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
@@ -10,7 +10,8 @@ import { elementeFoaie, type ElementLume } from '../model/lume.ts';
 import { creeazaRegistru, ruleaza, stare } from '../ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../ui/actiuniDocument.ts';
 import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type RezultatExport } from '../ui/actiuniExport.ts';
-import { DialogExport, type CerereExport, type OperatieExport, type StareExport } from '../ui/DialogExport.tsx';
+import { ACTIUNI_IMPORT, PLAFON_IMPORT, preincarcaImport, type ContextImport, type FisierImport, type PrevizualizareImport } from '../ui/actiuniImport.ts';
+import type { CerereExport, OperatieExport, StareExport } from '../ui/DialogExport.tsx';
 import { ListaVectori, type RandLista } from '../ui/ListaVectori.tsx';
 import { useLimba } from '../ui/useLimba.ts';
 import type { RezultatConfig } from './config.ts';
@@ -42,6 +43,34 @@ function descarca(octeti: Uint8Array<ArrayBuffer>, nume: string): void {
   a.click();
   setTimeout(() => { URL.revokeObjectURL(url); }, 10_000);
 }
+
+/**
+ * Un dialog care nu s-a putut încărca: după o publicare nouă, fișierele vechi nu mai există pe server (alt nume), iar o
+ * filă deschisă de dinainte le cere degeaba. Proiectul e salvat; pagina reîncărcată ia versiunea nouă.
+ */
+function DialogNeincarcat({ onInchide }: { readonly onInchide: () => void }) {
+  return (
+    <div className="dialog" role="dialog" aria-modal="true">
+      <div className="dialog-cutie">
+        <p role="alert" className="avertisment">{t('dialog.neincarcat')}</p>
+        <div className="butoane">
+          <button type="button" onClick={() => { window.location.reload(); }}>{t('eroare.reincarca')}</button>
+          <button type="button" onClick={onInchide}>{t('export.inchide')}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Dialogurile se încarcă la cerere: nu intră în pachetul de pornire (plafonul de 100 kB, `PLAN.md` §4.4), pe care îl
+ * plătește fiecare deschidere a aplicației. Se aduc în fundal după pornire (`useEffect` de mai jos), ca prima deschidere
+ * să nu aștepte rețeaua; un eșec al încărcării arată `DialogNeincarcat`, nu ecranul de eroare.
+ */
+const incarcaDialogExport = () => import('../ui/DialogExport.tsx');
+const incarcaDialogImport = () => import('../ui/DialogImport.tsx');
+const DialogExport = lazy(() => incarcaDialogExport().then((m) => ({ default: m.DialogExport }), () => ({ default: DialogNeincarcat })));
+const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.DialogImport }), () => ({ default: DialogNeincarcat })));
 
 /** Foaia documentului nou: bucata minimă a plăcii 1. */
 const FOAIA_IMPLICITA = { latime: 300, inaltime: 200, grosime: 18 };
@@ -116,6 +145,21 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
   const [dialogExport, setDialogExport] = useState(false);
   const [stareExport, setStareExport] = useState<StareExport | null>(null);
   /**
+   * Importul SVG (ADR 0035 §9): fișierul ales, px-ul și previzualizarea. Cât e deschis, documentul nu se schimbă pe altă
+   * cale: „Importă” adaugă exact ce arată dialogul.
+   */
+  const [dialogImport, setDialogImport] = useState<{
+    readonly fisier: FisierImport | null; readonly nume: string; readonly px: 96 | 72; readonly pxAutomat: boolean;
+    readonly stare: PrevizualizareImport | 'citire';
+    /** Se recitește cu alt px: previzualizarea veche rămâne pe ecran (și focusul pe alegere), dar „Importă” e oprit. */
+    readonly seRecitesc?: boolean;
+  } | null>(null);
+  /** Numărul ultimei citiri: un rezultat întârziat al unei citiri vechi (alt fișier, alt px, dialog închis) se aruncă. */
+  const cerereImport = useRef(0);
+  const fisierImport = useRef<HTMLInputElement>(null);
+  /** Previzualizarea deja adăugată: un al doilea clic pe „Importă” (dublu-clic, înainte să se închidă dialogul) n-o mai adaugă. */
+  const importat = useRef<PrevizualizareImport | null>(null);
+  /**
    * Numărul ultimei cereri de export. Un rezultat întârziat (calculul se încarcă la cerere) e al altor parametri dacă între
    * timp s-a pornit alt export, s-a schimbat un parametru sau s-a închis dialogul: nu se afișează și nu se descarcă.
    */
@@ -167,6 +211,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
   }, [proiect]);
   const registru = useMemo(() => creeazaRegistru(ACTIUNI_DOCUMENT, () => true), []);
   const registruExport = useMemo(() => creeazaRegistru(ACTIUNI_EXPORT, () => true), []);
+  const registruImport = useMemo(() => creeazaRegistru(ACTIUNI_IMPORT, () => true), []);
   const contextExport = (p?: ParametriExport, cerere = cerereExport.current): ContextExport => ({
     document: () => curenta.current.istoric.doc,
     parametri: () => p ?? { origine: 'stanga-jos', z0: 'sus' },
@@ -223,7 +268,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'alese' | 'operatiiNoi'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'alese' | 'operatiiNoi' | 'importNou'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -236,13 +281,23 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
     document.documentElement.lang = limbaActiva;
   }, [limbaActiva]);
 
+  // Dialogurile, aduse în fundal după pornire (vezi `DialogNeincarcat`).
+  useEffect(() => {
+    const id = setTimeout(() => {
+      void incarcaDialogExport().catch(() => undefined);
+      void incarcaDialogImport().catch(() => undefined);
+      preincarcaImport();
+    }, 1_000);
+    return () => { clearTimeout(id); };
+  }, []);
+
   /**
    * Ușa unică a acțiunilor de document. Cât e deschis dialogul de export, nicio acțiune nu rulează, oricare ar fi calea:
    * o scurtătură, un buton atins cu Tab sau o tragere pornită înainte de dialog. Confirmarea unei ieșiri din foaie rămâne
    * a desenului pe care omul îl vede.
    */
   const dialogDeschis = useRef(false);
-  dialogDeschis.current = dialogExport;
+  dialogDeschis.current = dialogExport || dialogImport !== null;
   const ruleazaDocument = (id: string, ctx: ContextDocument): void => {
     if (dialogDeschis.current) return;
     ruleaza(registru, id, ctx);
@@ -371,10 +426,62 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
     }
   };
 
+  /**
+   * Citește fișierul ales cu `px` px pe țol. Un fișier pe care îl spune Illustrator și a cărui mapare depinde de px se
+   * recitește o dată cu 72 (ADR 0035 §2), iar dialogul spune de ce.
+   */
+  const contextImport = (f: FisierImport | null, px: 96 | 72, rezultat: (r: PrevizualizareImport) => void): ContextImport => ({
+    fisier: () => f,
+    pxPeTol: () => px,
+    limba: () => limbaActiva,
+    doarCitire: () => doarCiteste(mod),
+    rezultat,
+    jurnal: (e) => { jurnal.adauga('import', e); },
+  });
+  const citesteImport = (f: FisierImport, px: 96 | 72, automat: boolean, vechi?: PrevizualizareImport): void => {
+    const cerere = ++cerereImport.current;
+    setDialogImport(vechi
+      ? { fisier: f, nume: f.nume, px, pxAutomat: automat, stare: vechi, seRecitesc: true }
+      : { fisier: f, nume: f.nume, px, pxAutomat: automat, stare: 'citire' });
+    ruleaza(registruImport, 'import.svg', contextImport(f, px, (r) => {
+      if (cerere !== cerereImport.current) return;
+      if (!automat && px === 96 && r.ok && r.px && r.illustrator) {
+        citesteImport(f, 72, true);
+        return;
+      }
+      setDialogImport({ fisier: f, nume: f.nume, px, pxAutomat: automat, stare: r });
+    }));
+  };
+  const alesFisier = (lista: FileList | null): void => {
+    const f = lista?.[0];
+    if (!f) return;
+    // Peste plafon, fișierul nu se citește deloc (ADR 0035 §1).
+    if (f.size > PLAFON_IMPORT.octeti) {
+      cerereImport.current++;
+      setDialogImport({ fisier: null, nume: f.name, px: 96, pxAutomat: false, stare: { ok: false, cod: 'octeti', detaliu: String(f.size) } });
+      return;
+    }
+    const cerere = ++cerereImport.current;
+    setDialogImport({ fisier: null, nume: f.name, px: 96, pxAutomat: false, stare: 'citire' });
+    f.arrayBuffer().then((b) => {
+      if (cerere === cerereImport.current) citesteImport({ nume: f.name, octeti: new Uint8Array(b) }, 96, false);
+    }, (e: unknown) => {
+      if (cerere === cerereImport.current) {
+        setDialogImport({ fisier: null, nume: f.name, px: 96, pxAutomat: false, stare: { ok: false, cod: 'parsare', detaliu: String(e) } });
+      }
+    });
+  };
+  const importOk = dialogImport && dialogImport.stare !== 'citire' && dialogImport.stare.ok ? dialogImport.stare : null;
+  const stareImport = importOk ? stare(registru, 'document.importa', context({ importNou: () => importOk.pregatit })) : null;
+  const inchideImport = (): void => {
+    cerereImport.current++;
+    setDialogImport(null);
+  };
+
   return (
     <>
       {/* Sub dialog, aplicația e inertă: nici Tab, nici clicul nu mai ajung la bară sau la pânză. */}
-      <div className="aplicatie" inert={dialogExport}>
+      <div className="aplicatie" inert={dialogExport || dialogImport !== null}>
         <header>
           <h1>{t('app.titlu')}</h1>
           <span data-testid="instanta" className="instanta">{t('app.instanta', { nume: instanta })}</span>
@@ -398,6 +505,19 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
               </button>
             );
           })}
+          {(() => {
+            const s = stare(registruImport, 'import.svg', contextImport(null, 96, () => undefined));
+            return (
+              <>
+                <button type="button" disabled={!s.ok} title={s.ok ? undefined : t(s.motiv)} data-actiune="import.svg"
+                  onClick={() => { fisierImport.current?.click(); }}>
+                  {t('actiune.importa-svg')}
+                </button>
+                <input ref={fisierImport} type="file" accept=".svg,image/svg+xml" hidden data-camp="fisier-svg"
+                  onChange={(e) => { alesFisier(e.target.files); e.target.value = ''; }} />
+              </>
+            );
+          })()}
           {(() => {
             const s = stare(registruExport, 'export.gcode', contextExport());
             return (
@@ -444,6 +564,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
           <span data-testid="jurnal">{t('jurnal.intrari', { n: intrari })}</span>
         </footer>
       </div>
+      <Suspense fallback={null}>
       {dialogExport && exportFoaie && (
         <DialogExport
           baza={bazaNoua}
@@ -458,6 +579,29 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
           onReseteaza={() => { cerereExport.current++; exportInCurs.current = false; setStareExport(null); }}
         />
       )}
+      {dialogImport && (
+        <DialogImport
+          nume={dialogImport.nume}
+          stare={dialogImport.stare}
+          pxPeTol={dialogImport.px}
+          pxAutomat={dialogImport.pxAutomat}
+          seRecitesc={dialogImport.seRecitesc === true}
+          motiv={stareImport && !stareImport.ok ? stareImport.motiv : null}
+          onPx={(px) => {
+            if (dialogImport.fisier) citesteImport(dialogImport.fisier, px, dialogImport.pxAutomat, importOk ?? undefined);
+          }}
+          onImporta={() => {
+            if (!importOk || importat.current === importOk || dialogImport.seRecitesc) return;
+            const r = ruleaza(registru, 'document.importa', context({ importNou: () => importOk.pregatit }));
+            if (r.ok) {
+              importat.current = importOk;
+              inchideImport();
+            }
+          }}
+          onInchide={inchideImport}
+        />
+      )}
+      </Suspense>
     </>
   );
 }

@@ -9,6 +9,8 @@ import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
 import { operatieDinDialog } from '../../src/app/valoriOperatii.ts';
 import { creeazaRegistru, ruleaza, stare } from '../../src/ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
+import { ACTIUNI_EXPORT } from '../../src/ui/actiuniExport.ts';
+import { ACTIUNI_IMPORT } from '../../src/ui/actiuniImport.ts';
 
 const lume = (h: Istoric) => elementeFoaie(h.doc, 0);
 const instante = (h: Istoric) => h.doc.foi[0]?.instante ?? [];
@@ -29,7 +31,7 @@ function context(deplasare?: { dx: number; dy: number }): ContextDocument & { h:
 
 test('fiecare acțiune declară o capabilitate din catalog și o etichetă în ambele limbi', () => {
   assert.ok(ACTIUNI_DOCUMENT.length > 0);
-  for (const a of ACTIUNI_DOCUMENT) {
+  for (const a of [...ACTIUNI_DOCUMENT, ...ACTIUNI_EXPORT, ...ACTIUNI_IMPORT]) {
     assert.ok(a.id.length > 0, 'id gol');
     assert.ok(esteCapabilitate(a.capabilitate), `${a.id}: capabilitatea „${a.capabilitate}” nu e în catalog`);
     assert.ok(traduce('ro', a.eticheta).length > 0 && traduce('en', a.eticheta).length > 0, a.id);

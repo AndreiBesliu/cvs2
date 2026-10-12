@@ -7,7 +7,7 @@
  */
 
 /** `proiect`: proiectul salvat nu s-a putut deschide; `salvare`: o scriere în IndexedDB a eșuat. */
-export type TipEroare = 'randare' | 'fereastra' | 'promisiune' | 'config' | 'proiect' | 'salvare';
+export type TipEroare = 'randare' | 'fereastra' | 'promisiune' | 'config' | 'proiect' | 'salvare' | 'import';
 
 export interface IntrareEroare {
   readonly cand: string;

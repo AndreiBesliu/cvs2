@@ -19,3 +19,10 @@ export const TINTA_APROXIMARE = 0.99;
  * adaugă raza frezei. Testul `geom.toleranta.test.ts` leagă cifrele.
  */
 export const RAZA_MAXIMA_ARC = 9_900;
+
+/**
+ * Cât mută importul geometria din fișier, în mm (ADR 0035 §6, §7): arcele eliptice și cele plate scrise ca cubice, și
+ * golul sub care o subcale fără `Z` e închisă. O miime din toleranța proiectului: biarcele (0,99 × tol) plus importul
+ * rămân sub toleranță față de curba din fișier.
+ */
+export const TOLERANTA_IMPORT = TOLERANTA_PROIECT / 1_000;

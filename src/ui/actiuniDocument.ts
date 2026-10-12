@@ -3,8 +3,9 @@ import {
   instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, operatieInMargini, plafonDepasit, PLAFON, type Document, type FormaDoc,
   type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa,
 } from '../model/document.ts';
+import { piesaDinImport, type ImportPregatit } from '../io/piesa.ts';
 import { conturElement, cutieElement } from '../model/forme.ts';
-import { jsonCanonic } from '../model/incarcare.ts';
+import { incarca, jsonCanonic } from '../model/incarcare.ts';
 import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { Actiune } from './actiuni.ts';
@@ -29,6 +30,8 @@ export type ContextDocument = {
   readonly alese?: () => readonly string[];
   /** Operațiile noi ale pieselor, după id-ul piesei, din dialogul de export (se scriu toate într-un singur pas). */
   readonly operatiiNoi?: () => ReadonlyMap<string, readonly Operatie[]>;
+  /** Importul pregătit de previzualizare (ADR 0035), de adăugat ca o piesă nouă. */
+  readonly importNou?: () => ImportPregatit;
 };
 
 /** Foaia pe care se lucrează; Multi-Plate (mai multe foi pe ecran) vine în etapa 11. */
@@ -108,6 +111,35 @@ function adauga(ctx: ContextDocument, forma: FormaDoc, x: number, y: number): vo
     tip: 'adauga', foaie: foaie.id, instanta, pozitie: foaie.instante.length, piesa: { piesa, pozitie: h.doc.piese.length },
   }));
   ctx.selecteaza([id]);
+}
+
+/**
+ * Comanda unui import (ADR 0035 §8): piesa și instanța ei, într-un singur pas. Documentul de după trebuie să treacă de
+ * plafoane și de ușa documentului întreagă: ce intră prin import se și redeschide. Ținută pe (document, import): `activa`
+ * și `ruleaza` cer aceeași judecată.
+ */
+type ComandaImport = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: 'motiv.plafon' | 'motiv.import-refuzat' };
+let ultimulImport: { doc: Document; pregatit: ImportPregatit; rez: ComandaImport } | null = null;
+function comandaImport(doc: Document, pregatit: ImportPregatit): ComandaImport {
+  if (ultimulImport && ultimulImport.doc === doc && ultimulImport.pregatit === pregatit) return ultimulImport.rez;
+  const id = idNou(doc);
+  const scula = sculaFoii(doc);
+  const { piesa, x, y } = piesaDinImport(pregatit, id, scula);
+  const varfuri = pregatit.cai.reduce((s, c) => s + c.varfuri.length, 0);
+  const elemente = pregatit.cai.length;
+  let rez: ComandaImport;
+  if (!incape(doc, { noduri: elemente + 1, instante: 1, elementeLume: elemente, operatii: piesa.operatii.length, taieturi: elemente, varfuri, varfuriLume: varfuri })) {
+    rez = { ok: false, motiv: 'motiv.plafon' };
+  } else {
+    const foaie = foaieCurenta(doc);
+    const comanda: Comanda = {
+      tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x, y, rotire: 0 }, pozitie: foaie.instante.length,
+      piesa: { piesa, pozitie: doc.piese.length },
+    };
+    rez = incarca(executa(istoricDin(doc), comanda).doc).ok ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.import-refuzat' };
+  }
+  ultimulImport = { doc, pregatit, rez };
+  return rez;
 }
 
 /** Acțiunile care schimbă documentul sunt oprite într-o filă care doar citește. */
@@ -238,6 +270,26 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
     activa: poateAdauga,
     ruleaza: (ctx) => {
       adauga(ctx, { tip: 'cerc', raza: 15 }, 70, 50);
+    },
+  },
+  {
+    id: 'document.importa',
+    eticheta: 'actiune.importa',
+    capabilitate: 'desen',
+    activa: (ctx) => {
+      if (!ctx.importNou) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaImport(ctx.istoric().doc, ctx.importNou());
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      if (!ctx.importNou) return;
+      const h = ctx.istoric();
+      const r = comandaImport(h.doc, ctx.importNou());
+      if (!r.ok) return;
+      ctx.scrie(executa(h, r.comanda));
+      ctx.selecteaza([r.id]);
     },
   },
   {

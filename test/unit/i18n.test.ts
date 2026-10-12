@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { en } from '../../src/i18n/mesaje.en.ts';
 import { ro, type DictionarRo } from '../../src/i18n/mesaje.ro.ts';
+import { enImport } from '../../src/i18n/import.en.ts';
+import { roImport } from '../../src/i18n/import.ro.ts';
 import { limbaDePornire, traduce } from '../../src/i18n/t.ts';
 
 /*
@@ -21,6 +23,11 @@ void [lipsaOCheie, cuOCheieInPlus, pluralFaraFew, textInLocDePlural];
 
 test('ro și en au exact aceleași chei, și la rulare', () => {
   assert.deepEqual(Object.keys(ro).sort(), Object.keys(en).sort());
+});
+
+test('mesajele încărcate la cerere (importul): ro și en cu aceleași chei, niciuna și printre cele de la pornire', () => {
+  assert.deepEqual(Object.keys(roImport).sort(), Object.keys(enImport).sort());
+  for (const k of Object.keys(enImport)) assert.ok(!(k in en), `${k} e și la pornire`);
 });
 
 test('pluralul românesc: one, few, other, după regulile CLDR', () => {

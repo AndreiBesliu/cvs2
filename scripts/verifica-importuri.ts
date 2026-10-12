@@ -21,6 +21,7 @@ const ASTEPTATE: ReadonlyArray<readonly [string, string]> = [
   ['i18n-izolat', 'test/capcane/i18n/importa-app.ts'],
   ['shared-izolat', 'test/capcane/shared/importa-src.ts'],
   ['model-doar-geom', 'test/capcane/model/importa-app.ts'],
+  ['io-doar-model-geom', 'test/capcane/io/importa-ui.ts'],
   ['cam-fara-post-sim-masina-interfata', 'test/capcane/cam/importa-ui.ts'],
   ['post-doar-ir', 'test/capcane/post/importa-app.ts'],
   ['sim-doar-ir', 'test/capcane/sim/importa-app.ts'],

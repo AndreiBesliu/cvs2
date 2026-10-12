@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Logoul plăcii 2 (felia 2.7c, ADR 0035): lățimea declarată 80 mm. Conturul exterior atinge x = 0 și x = 80 cu
+     tangente verticale; colțurile sunt o cubică, un arc și o pătratică. Găurile: un cerc Ø16 și o elipsă 28 × 14,
+     așezată de grupul ei. Freza Ø6 încape peste tot (cea mai strânsă curbură, la vârfurile elipsei: 49/14 = 3,5 mm). -->
+<svg xmlns="http://www.w3.org/2000/svg" width="80mm" height="40mm" viewBox="0 0 80 40">
+  <g id="strat1">
+    <path id="contur" d="M 10 0 H 70 C 76 0 80 4 80 10 V 30 A 10 10 0 0 1 70 40 H 10 Q 0 40 0 30 V 10 C 0 4 4 0 10 0 Z"/>
+    <circle id="gaura" cx="22" cy="20" r="8"/>
+    <g transform="translate(54 20)">
+      <ellipse id="ochi" rx="14" ry="7"/>
+    </g>
+  </g>
+</svg>

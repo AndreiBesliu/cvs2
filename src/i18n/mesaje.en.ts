@@ -119,4 +119,8 @@ export const en = {
   'depozit.fara-memorie': 'This browser does not allow local storage: the project is not saved.',
   'depozit.nu-se-deschide': 'The saved project could not be opened ({motiv}). A new project was started; the old one stays in this browser.',
   'depozit.eroare': 'Saving failed: {motiv}',
+  'dialog.neincarcat': 'This window could not be loaded (the app was updated meanwhile, or the network is down). Your project is saved: reload the page.',
+  'actiune.importa-svg': 'Import SVG…',
+  'actiune.importa': 'Import',
+  'motiv.import-refuzat': 'The imported drawing would not pass the project check, so the project could not be opened again.',
 } as const satisfies Readonly<Record<string, Mesaj>>;

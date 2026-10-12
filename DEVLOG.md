@@ -1319,3 +1319,18 @@ sunt împinse (`7199f63`). Rămân otrăvurile (48, în curs într-o clonă din 
 - degajarea pe colțurile cu arce și cubice cere un ADR nou (acum: avertisment);
 - timpul biarcelor (~1–3 ms pe cubică, pe firul principal): măsurat în 2.7c pe fișiere reale;
 - pachetul de pornire: 97,0 kB din 100.
+
+## 2026-10-12 — Etapa 2, felia 2.7c: ușa SVG și importul (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (după pauză). **Started:** 07:30. **Clasa:** R2 (desenul importat ajunge la mașină). **Estimarea:**
+~½ zi activă, plus oracolul independent (~0,6 M tokeni) și recenzia (~1 M). Săptămâna era la 54 % (citit cu `get_usage`).
+
+**Ce intră:** ADR 0035, ușa SVG. Octeții (16 MiB) și entitățile se judecă înaintea parserului; `DOMParser` inert, fără
+nimic atașat. Unitățile și pagina (cu alegerea 96 / 72 px pe țol, preselectată pentru Illustrator), transformările, cele
+șapte forme, gramatica datelor căii. Arcele de cerc rămân arce; cele eliptice și cele plate devin cubice sub 1e-6 mm.
+Subcăile închise devin căi (ADR 0034), cele deschise se numără (vin cu 2.3c). Latura vine din imbricare. Piesa și instanța
+intră într-un singur pas de anulare. Dialogul arată mărimea, contururile și raportul. Butonul „Importă SVG…”. Ușa,
+dialogurile (și cel de export) și mesajele lor se încarcă la cerere: pachetul de pornire are 98,4 kB din 100.
+
+**Stare** (12.10, la împingere): codul, oracolul (sesiune independentă) și reparațiile recenziei sunt împinse; otrăvurile
+(49, scrise de o sesiune independentă) rulează pe o clonă din afara Drive. Încheierea feliei vine după ele.

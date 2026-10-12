@@ -1,12 +1,8 @@
 import type { en } from './mesaje.en.ts';
-
-type DictionarEn = typeof en;
-
-/** Aceeași formă ca mesajul în engleză: textul rămâne text, iar pluralul are toate cele trei forme românești. */
-type FormaRo<M> = M extends string ? string : { readonly one: string; readonly few: string; readonly other: string };
+import type { DictionarRoPentru } from './tipuri.ts';
 
 /** Exact cheile din engleză, nici mai multe, nici mai puține: `satisfies` refuză și cheia lipsă, și pe cea în plus. */
-export type DictionarRo = { readonly [K in keyof DictionarEn]: FormaRo<DictionarEn[K]> };
+export type DictionarRo = DictionarRoPentru<typeof en>;
 
 export const ro = {
   'app.titlu': 'CNC Vector Studio',
@@ -139,4 +135,8 @@ export const ro = {
   'depozit.fara-memorie': 'Browserul ăsta nu permite memoria locală: proiectul nu se salvează.',
   'depozit.nu-se-deschide': 'Proiectul salvat nu s-a putut deschide ({motiv}). Am pornit unul nou; cel vechi rămâne în browser.',
   'depozit.eroare': 'Salvarea n-a mers: {motiv}',
+  'dialog.neincarcat': 'Fereastra nu s-a putut încărca (aplicația s-a actualizat între timp sau rețeaua lipsește). Proiectul e salvat: reîncarcă pagina.',
+  'actiune.importa-svg': 'Importă SVG…',
+  'actiune.importa': 'Importă',
+  'motiv.import-refuzat': 'Desenul importat n-ar trece de verificarea proiectului: proiectul n-ar mai putea fi deschis.',
 } as const satisfies DictionarRo;
