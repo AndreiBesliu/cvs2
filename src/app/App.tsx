@@ -157,8 +157,6 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
   /** Numărul ultimei citiri: un rezultat întârziat al unei citiri vechi (alt fișier, alt px, dialog închis) se aruncă. */
   const cerereImport = useRef(0);
   const fisierImport = useRef<HTMLInputElement>(null);
-  /** Previzualizarea deja adăugată: un al doilea clic pe „Importă” (dublu-clic, înainte să se închidă dialogul) n-o mai adaugă. */
-  const importat = useRef<PrevizualizareImport | null>(null);
   /**
    * Numărul ultimei cereri de export. Un rezultat întârziat (calculul se încarcă la cerere) e al altor parametri dacă între
    * timp s-a pornit alt export, s-a schimbat un parametru sau s-a închis dialogul: nu se afișează și nu se descarcă.
@@ -591,12 +589,11 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
             if (dialogImport.fisier) citesteImport(dialogImport.fisier, px, dialogImport.pxAutomat, importOk ?? undefined);
           }}
           onImporta={() => {
-            if (!importOk || importat.current === importOk || dialogImport.seRecitesc) return;
+            // Un dublu-clic nu importă de două ori: clicul e un eveniment discret, deci React închide dialogul înaintea
+            // celui de-al doilea (otrava care scotea o gardă de aici a scăpat: garda era cod mort; e2e-ul o arată).
+            if (!importOk || dialogImport.seRecitesc) return;
             const r = ruleaza(registru, 'document.importa', context({ importNou: () => importOk.pregatit }));
-            if (r.ok) {
-              importat.current = importOk;
-              inchideImport();
-            }
+            if (r.ok) inchideImport();
           }}
           onInchide={inchideImport}
         />

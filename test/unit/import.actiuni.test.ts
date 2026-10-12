@@ -96,3 +96,24 @@ test('mesajele importului vin cu dialogul: înainte de încărcare lipsesc (eroa
   assert.equal(traduce('en', 'import.av.deschise', { n: 2 }), '2 open paths skipped (open contours come later)');
   assert.equal(traduce('ro', 'import.av.deschise', { n: 20 }), '20 de căi deschise sărite (contururile deschise vin mai târziu)');
 });
+
+test('previzualizarea: mărimea e a desenului (cutia lui exactă), nu a paginii; laturile numărate (otrava „lățimea paginii”, 2.7c)', async () => {
+  // În Node nu există DOMParser: îl dă xmldom, cu erorile aruncate, cum îl folosește ușa în browser.
+  const { DOMParser } = await import('@xmldom/xmldom');
+  const g = globalThis as { DOMParser?: unknown };
+  const vechi = g.DOMParser;
+  g.DOMParser = class {
+    parseFromString(t: string, tip: string) {
+      return new DOMParser({ onError: (n: string, m: string) => { if (n !== 'warning') throw new Error(m); } }).parseFromString(t, tip);
+    }
+  };
+  try {
+    const { previzualizareSvg } = await import('../../src/ui/actiuniImportCalcul.ts');
+    const p = previzualizareSvg({ nume: 'mic.svg', octeti: octeti(pagina('<rect x="10" y="10" width="30" height="20"/><circle cx="25" cy="20" r="4"/>')) }, 96, 'ro');
+    assert.ok(p.ok);
+    assert.deepEqual([p.latime, p.inaltime, p.exterioare, p.interioare], [30, 20, 1, 1]);
+    assert.equal(p.pregatit.nume, 'mic');
+  } finally {
+    g.DOMParser = vechi;
+  }
+});

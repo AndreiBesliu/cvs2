@@ -37,9 +37,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Gata: 2.1 (gărzile offsetului), 2.2 (operațiile în document: schema v3, ADR 0025) și 2.3a (regiunea păstrată și
   invarianta 2, ADR 0026), 2.3b (sensul de tăiere, ADR 0027, documentul v4), 2.4 (urechile, ADR 0028, documentul v5)
   2.5a (rampa, ADR 0029, documentul v6), 2.5b (intrările și ieșirile, ADR 0030, documentul v7), 2.5c (intrările cu
-  rampă, ADR 0031), 2.6 (degajările dog-bone / T-bone, ADR 0032, documentul v8), 2.7a (biarcele, ADR 0033) și 2.7b
-  (forma „cale”, ADR 0034, documentul v9). Felia 2.7 s-a împărțit în 2.7a–2.7d (fișa); 2.3c (contururile deschise) vine
-  după ele. Urmează 2.7c (ușa SVG și importul).
+  rampă, ADR 0031), 2.6 (degajările dog-bone / T-bone, ADR 0032, documentul v8), 2.7a (biarcele, ADR 0033), 2.7b
+  (forma „cale”, ADR 0034, documentul v9) și 2.7c (ușa SVG și importul, ADR 0035). Felia 2.7 s-a împărțit în 2.7a–2.7d
+  (fișa); 2.3c (contururile deschise) vine după ele. Urmează 2.7d (PathKit, regula `nonzero` la import).
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa

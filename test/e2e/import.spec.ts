@@ -125,3 +125,23 @@ test('ușa care nu se poate aduce (o publicare nouă): dialogul spune asta și o
   await expect(page.getByRole('button', { name: 'Reîncarcă' })).toBeVisible();
   await expect(page.locator('[data-buton="importa"]')).toHaveCount(0);
 });
+
+test('Escape închide dialogul și cu focusul căzut pe pagină (otrava „Escape doar în dialog”, 2.7c)', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/placi/placa-02/logo-80mm.svg');
+  await expect(page.getByTestId('import-marime')).toBeVisible();
+  await page.evaluate(() => { (document.activeElement as HTMLElement | null)?.blur(); });
+  expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
+test('ușa e adusă în fundal după pornire: o publicare nouă care îi schimbă numele nu mai strică primul import (otrava „ușa nepreîncărcată”, 2.7c)', async ({ page }) => {
+  const adusa = page.waitForResponse(/actiuniImportCalcul-[^/]*\.js$/);
+  await page.goto('/');
+  await adusa;
+  // Acum fișierul vechi „dispare” de pe server, ca după o publicare nouă.
+  await page.route(/actiuniImportCalcul-[^/]*\.js$/, (r) => r.abort());
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/placi/placa-02/logo-80mm.svg');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 80.00 × 40.00 mm');
+});

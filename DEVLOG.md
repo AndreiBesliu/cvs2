@@ -1334,3 +1334,48 @@ dialogurile (și cel de export) și mesajele lor se încarcă la cerere: pachetu
 
 **Stare** (12.10, la împingere): codul, oracolul (sesiune independentă) și reparațiile recenziei sunt împinse; otrăvurile
 (49, scrise de o sesiune independentă) rulează pe o clonă din afara Drive. Încheierea feliei vine după ele.
+
+**Completed:** 12.10 12:05. **Treceri:** 5.
+
+**Făcut:**
+- ADR 0035 și ușa: `src/io/svg.ts` (parcurgerea, pagina, formele, arcele), `svgDate.ts` (gramaticile: datele căii,
+  `points`, `transform`, lungimile, `style`), `piesa.ts` (piesa importului), `imbricare.ts` (latura), `src/geom/elipsa.ts`
+  (arcul eliptic în cubice, cu abaterea pe hârtie: 1,82e-5 · φ⁶ · σ); `TOLERANTA_IMPORT` = 1e-6 mm.
+- Acțiunea `document.importa` (un pas de anulare, plafoanele, ușa documentului întreagă), butonul, dialogul (lazy, cu
+  rezerva la o publicare nouă), dicționarul `import.*` încărcat cu dialogul; regula de import `io-doar-model-geom`.
+- Logoul plăcii 2 (`test/placi/placa-02/logo-80mm.svg`): e2e-ul îl importă (80,00 × 40,00) și îl exportă cu centrul
+  frezei Ø6 exact de la X −3 la X 83.
+
+**Ce a găsit oracolul** (sesiune independentă, ~0,58 M, două treceri): arcele de 180° cu centrul la √ε de mijlocul
+coardei (un semicerc ieșea împărțit în două; până la 8e-6 mm, peste bugetul de 1e-6), elementele sărite sub `visibility`
+(precizat apoi invers, la recenzie), `M … Z` nedegenerat. Pe contractul final: 189 de cazuri pe hârtie, 240 de SVG-uri
+aleatoare (strict), plafoanele; 45 din 48 de sabotaje ale oracolului prinse (3 redundante).
+
+**Ce a găsit recenzia** (2 lentile + 16 verificatori, **2,2 M**, de ~2 ori peste estimare; 15 constatări reproduse, toate
+reparate):
+- imbricarea și perechile `nonzero` pătratice (50 000 de dreptunghiuri identice: 334 s cu fila blocată; 80 000 de
+  triunghiuri: 281 s): un buget de includeri (2·10⁷), peste el refuz;
+- entitățile: declarația dublă (XML ia prima) și valorile implicite din `ATTLIST` (80 MiB din 16); motivul ca cod tradus;
+- pagina cu o singură latură absolută (de 3,78 ori prea mică); arcul aproape de 360° (raza 58 în loc de 50);
+  contururile fără arie (CAM-ul refuza toată piesa); bucla dintr-o singură cubică; plafonul căii înaintea liniei de
+  închidere; similitudinea sub scara 1; `rx` / `ry` și `switch` ca în Edge;
+- dialogul: focusul pierdut după alegerea px-ului, Escape; partea ușii care nu se poate aduce după o publicare nouă.
+- Verificatorii au corectat două reparații propuse (`rx="auto"` e 0 în Edge, nu „lipsă”; `visibility` nu scoate
+  elementele sărite din raport, un `tspan` vizibil reapare).
+
+**Pe fișiere reale** (două embleme de club de pe Wikipedia, logoul Presto, iconițe): ușa ≤ 9 ms, CAM-ul ~0,5 s pe 1 316
+cubice; contururile suprapuse peste randarea originalului se potrivesc. Exportul le refuză (regiunea): sunt straturi
+pictate unul peste altul. Alegerea a ce se taie, pe contur, vine cu panoul de proprietăți (2.8).
+
+**Proba:**
+- paritatea parserelor: Edge (`DOMParser`) și xmldom dau același rezultat pe 18 cazuri; xmldom nu expandează entitățile
+  DTD, deci cazurile pozitive cu entități (Illustrator) sunt în e2e;
+- otrăvurile (49, scrise de o sesiune independentă, ~0,24 M): **45 prinse**. 3 scăpate au primit teste, probate pe
+  otrava lor (mărimea desenului, nu a paginii, în previzualizare; Escape cu focusul pe pagină; ușa adusă în fundal); a
+  patra era cod mort (garda dublu-clicului: React închide dialogul înaintea celui de-al doilea clic), scoasă.
+
+**Rămâne deschis:**
+- regula `nonzero` (2.7d, PathKit); contururile deschise (2.3c); alegerea pe contur (2.8);
+- reparația cavalier la cauză, nereevaluată: logourile reale se opresc la regiune, înaintea offsetului;
+- `use` și `svg` imbricat (se pot adăuga fără alt contract); rezoluțiile px în afară de 96 / 72;
+- pachetul de pornire: 98,4 kB din 100 (dialogurile au trecut la cerere; următoarea interfață la pornire cere loc).
