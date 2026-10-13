@@ -10,14 +10,17 @@
  *   refuzată cu motiv, fiecare document valid trece cu exact elementele și tăieturile oracolului; (g9) un v9 valid trece
  *   neschimbat, cu octeții canonici independenți de drum; (p9) documentele la plafoane trec, cele peste sunt refuzate;
  *   (h9) un v8 cu o cale e refuzat.
+ * Felia 2.3c-2 (ADR 0037): pe 10, ușa aplicației dă v9-ul migrat la v10 (doar numărul, `v9PentruApp`); `ridicaO` și
+ * `verificaO` sunt pe v10 (`ridicaV9O`, `verificaPanaLaV9O` păstrează v9); (f9): pe 10, un v9 rescris 10 e un v10 valid,
+ * primit neschimbat, iar ușa v9 l-ar refuza.
  * Plafoanele numărate după acțiuni (Ctrl+D) sunt în `document.v9.actiuni.oracol.test.ts`.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
 import {
-  categoriiO, diferenta, migreazaV8V9O, ridicaO, taieturiV8O, verificaO, verificaPanaLaV8O, verificaV8, verificaV8V9, verificaV9,
-  type DocV9O, type Liber,
+  categoriiO, diferenta, migreazaV8V9O, migreazaV9V10O, ridicaO, ridicaV9O, taieturiV8O, verificaO, verificaPanaLaV8O, verificaPanaLaV9O, verificaV8,
+  verificaV8V9, verificaV9, type DocV9O, type Liber,
 } from '../oracles/document.ts';
 import { CORPUS_V8, VALIDE_DIFICILE_V8, OTRAVURI_V8 } from '../oracles/document.cazuri.ts';
 import {
@@ -25,7 +28,7 @@ import {
   mareV9, varfuriDeCale,
 } from '../oracles/document.v9.cazuri.ts';
 import { regiuneDinDocument } from '../oracles/regiune.ts';
-import { accepta, aceeasiFoaie, DOAR_V9, mare, mareOperatii, text } from './ajutor-document-oracol.ts';
+import { accepta, aceeasiFoaie, DOAR_V9, mare, mareOperatii, PE_V10, text, v9PentruApp } from './ajutor-document-oracol.ts';
 
 /** Formele `cale` ale unui document (toate piesele), cu vârfurile lor. */
 function caiDin(d: unknown): Liber[] {
@@ -48,7 +51,9 @@ for (const { nume, v8, v9 } of MIGRARI_V8_HARTIE) {
     assert.deepEqual(verificaV8V9(v8), []);
     assert.deepEqual(verificaO(v8), []);
     assert.equal(diferenta(migreazaV8V9O(v8), v9), undefined);
-    assert.equal(diferenta(ridicaO(v8), v9), undefined);
+    assert.equal(diferenta(ridicaV9O(v8), v9), undefined);
+    // Felia 2.3c-2: `ridicaO` dă v10 (doar numărul, ADR 0037 §2).
+    assert.equal(diferenta(ridicaO(v8), migreazaV9V10O(v9 as DocV9O)), undefined);
     assert.deepEqual(verificaV9(v9), []);
     assert.deepEqual(verificaO(v9), []);
     assert.deepEqual(verificaPanaLaV8O(v8), [], 'ușa unei aplicații pe 8');
@@ -158,7 +163,7 @@ test('(o) regiunea pe v9 (addendumul 2): primește căile și păstrează pe tă
 
 for (const { nume, v8, v9 } of MIGRARI_V8_HARTIE) {
   test(`(a9) migrarea v8 → v9 pe hârtie: ${nume}`, { skip: DOAR_V9 }, () => {
-    assert.equal(diferenta(accepta(structuredClone(v8)), v9), undefined);
+    assert.equal(diferenta(accepta(structuredClone(v8)), v9PentruApp(v9 as DocV9O)), undefined);
     assert.deepEqual(jsonCanonic(accepta(structuredClone(v9))), jsonCanonic(accepta(structuredClone(v8))), 'v9 de pe hârtie încărcat direct');
   });
 }
@@ -184,7 +189,7 @@ for (const { nume, doc } of VALIDE_PLAFOANE_CALE) {
   test(`(p9) la plafon, primit neschimbat: ${nume}`, { skip: DOAR_V9 }, () => {
     const d = accepta(doc);
     assert.equal(varfuriDeCale(d), varfuriDeCale(doc));
-    assert.equal(diferenta(d, doc), undefined);
+    assert.equal(diferenta(d, v9PentruApp(doc)), undefined);
   });
 }
 
@@ -198,7 +203,7 @@ for (const v of [...VALIDE_DIFICILE_V9, ...CORPUS_V9]) {
 for (const { nume, doc } of [...VALIDE_DIFICILE_V9, ...CORPUS_V9].filter((c) => !mare(c.doc) && !mareOperatii(c.doc) && !mareV9(c.doc))) {
   test(`(g9) un v9 valid trece prin ușă neschimbat; octeții canonici nu depind de drum: ${nume}`, { skip: DOAR_V9 }, () => {
     const o1 = accepta(structuredClone(doc));
-    assert.equal(diferenta(o1, doc), undefined);
+    assert.equal(diferenta(o1, v9PentruApp(doc)), undefined);
     const b1 = jsonCanonic(o1);
     assert.deepEqual(jsonCanonic(accepta(JSON.parse(JSON.stringify(doc)))), b1, 'încărcat din JSON (−0 devine 0)');
     assert.deepEqual(jsonCanonic(accepta(JSON.parse(text(b1)))), b1, 'încărcat din octeții canonici');
@@ -214,8 +219,14 @@ for (const r of REFUZATE_V8) {
   });
 }
 
-test('(f9) un document v9 cu o cale, rescris ca schema 10, e refuzat (scris de o versiune mai nouă)', { skip: DOAR_V9 }, () => {
+test(`(f9) un document v9 cu o cale, rescris ca schema 10: ${PE_V10 ? 'pe 10, un v10 valid, primit neschimbat; ușa v9 l-ar refuza' : 'refuzat (scris de o versiune mai nouă)'}`, { skip: DOAR_V9 }, () => {
   const d = { ...structuredClone(VALIDE_DIFICILE_V9.find((c) => caiDin(c.doc).length > 0)!.doc), schema: 10 } as unknown as DocV9O;
-  assert.deepEqual(categoriiO(verificaO(d)), ['schema']);
-  assert.equal(incarca(d).ok, false);
+  assert.deepEqual(categoriiO(verificaPanaLaV9O(d)), ['schema']);
+  if (!PE_V10) {
+    assert.equal(incarca(d).ok, false);
+    return;
+  }
+  // Felia 2.3c-2 (ADR 0037 §2): calea închisă e o cale v10 validă; ușa v10 (a oracolului și a aplicației) îl primește.
+  assert.deepEqual(verificaO(d), []);
+  assert.equal(diferenta(accepta(structuredClone(d)), d), undefined);
 });

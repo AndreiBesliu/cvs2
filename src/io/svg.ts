@@ -20,8 +20,11 @@ export {
 
 export const SVG_NS = 'http://www.w3.org/2000/svg';
 
-/** O cale închisă a fișierului, în mm, pe pagină. `forma` e indexul formei SVG din care vine, în ordinea documentului. */
-export type CaleSvg = { readonly varfuri: readonly Varf[]; readonly forma: number; readonly nume?: string };
+/**
+ * O cale a fișierului, în mm, pe pagină. `forma` e indexul formei SVG din care vine, în ordinea documentului. `inchis` o
+ * spune ușa, iar importul îl citește (ADR 0037 §2); până la 2.3c-3, ușa dă doar căi închise (cele deschise se sar).
+ */
+export type CaleSvg = { readonly varfuri: readonly Varf[]; readonly inchis: boolean; readonly forma: number; readonly nume?: string };
 
 export type RezultatSvg =
   | {
@@ -849,7 +852,7 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
     for (const v of finale) {
       if (!v.every((x) => inMargini(x))) departe = true;
       primite += v.length;
-      cai.push({ varfuri: v, forma: f.index, ...(f.nume !== undefined ? { nume: f.nume } : {}) });
+      cai.push({ varfuri: v, inchis: true, forma: f.index, ...(f.nume !== undefined ? { nume: f.nume } : {}) });
     }
   }
   if (primite > PLAFON.varfuri) return { ok: false, cod: 'plafon', detaliu: String(primite), avertismente: n };

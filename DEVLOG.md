@@ -1469,6 +1469,16 @@ a fost întărit: prinde acum defectul similitudinii judecate absolut, probat cu
 de o sesiune independentă (0,64 M, două treceri): 27 de cazuri noi pe hârtie (U1–U27), fișierele reale, 23 de sabotaje
 prinse; a precizat ordinea (praful după degenerare) și a cerut decizia pentru praful din normalizare.
 
+**2.3c-2 (documentul v10 și tăierea pe linie a căilor deschise, ADR 0037 §2, §4, §7–§10):** implementarea de un agent
+într-o clonă (0,61 M): schema 10 (`inchis`, ultimul segment L, arcele pe n − 1 segmente, laturile stânga / dreapta,
+`despartire`), migrarea v9 → v10, `inchis` citit real în cele patru locuri (fără coarda de închidere), CAM-ul pe linie pe
+deschise (plonjare la vârful 0 la fiecare trecere), refuzurile §9 (stânga / dreapta: „vine în 2.3c-5”), ordinea §8 cu
+despărțirea marcată, avertismentele §10; 29 de teste cu valori pe hârtie. Poarta și oracolul documentului v10, de o
+sesiune independentă (0,61 M): eticheta deschisă, invarianta 11 pe deschise, 14 (i) fără coardă, 14 (iii), refuzurile ca
+încălcări, 16 martori, 27 de sabotaje prinse. La integrare: clasa 3 ține doar tăieturile DESCHISE marcate (aplicația
+punea și un nod închis al unei operații marcate; reparat după oracol). Pornirea: 99,6 kB din 100 (schema v10 și
+migrarea stau la pornire); 2.3c-3 va muta piesa importului la cerere.
+
 ## 2026-10-13 — Etapa 2, felia 2.8a: carcasa interfeței (Model: Claude Opus 5.5)
 
 **Prompt:** „ai dreptate, B arata cel mai bine. dar, vreau sa avem doua template-uri. B, care va fi cel modern, si voi vrea

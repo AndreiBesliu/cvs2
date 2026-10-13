@@ -24,7 +24,8 @@ import type { Incalcare } from '../oracles/poarta.ts';
 const cheie = (i: Incalcare): string => `${i.invarianta}|${i.mesaj}`;
 
 test('lipire: corpusul degajărilor (din sămânță): orice program trece toată poarta; avertismentele sunt exact colțurile omise; refuzurile au motiv și nu vin din degajări; fără drumuri, geometria e a programului fără colturi', async () => {
-  assert.ok(SCHEMA >= 8 && SCHEMA <= 9, `schema ${SCHEMA}`);
+  // Felia 2.3c-2: v10 (ADR 0037) adaugă căile deschise; documentele fără ele se taie la fel (ADR 0037 §2, §13), deci și pe 10.
+  assert.ok(SCHEMA >= 8 && SCHEMA <= 10, `schema ${SCHEMA}`);
   const rele: string[] = [];
   let programe = 0, refuzuri = 0, drumuri = 0, pastrate = 0, omise = 0, banda = 0, ascutite = 0, obtuze = 0, tee = 0, dogb = 0, arce = 0;
   const preexistente: string[] = [];

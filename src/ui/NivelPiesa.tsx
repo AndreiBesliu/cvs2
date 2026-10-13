@@ -11,7 +11,7 @@ import { useLimba } from './useLimba.ts';
  */
 export type OperatieArbore = {
   readonly id: string;
-  readonly latura: 'exterior' | 'interior' | 'pe-linie';
+  readonly latura: 'exterior' | 'interior' | 'pe-linie' | 'stanga' | 'dreapta';
   readonly noduri: readonly string[];
   readonly adancime: number;
   readonly pas: number;

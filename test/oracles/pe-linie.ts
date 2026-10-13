@@ -38,9 +38,11 @@
  *   (0,0005 − 0,00011 − 0,0001 − 0,000005).
  * Peste `TOL_14` nu ajunge niciun program legal: o abatere de 0,004 mm e deja încălcare (martorul N2).
  *
+ * Felia 2.3c-2 (ADR 0037 §2, documentul v10): pe o cale DESCHISĂ, `regiune.ts` construiește calea desenată fără coarda
+ * de închidere (`contur(…, deschise)`, doar cele n − 1 segmente reale), deci aici nu se schimbă nimic: o coardă tăiată
+ * de la ultimul vârf la vârful 0 iese de pe cale (înainte), iar acoperirea se cere doar pe segmentele reale.
+ *
  * Ce NU face (limitele, spuse în raport):
- * - căile DESCHISE (documentul v10) nu ajung încă aici: `contur` din `regiune.ts` închide orice cale; pe o cale
- *   deschisă, calea desenată e fără coarda de închidere și trebuie construită așa înainte ca 14 (i) s-o judece;
  * - G0 nu se judecă (nu e „mișcare de tăiere”); o rapidă prin material e a invariantei 3. O rapidă rupe lanțul.
  */
 import type { Eveniment, Mutare } from './gcode.ts';

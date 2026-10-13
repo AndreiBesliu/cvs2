@@ -5,7 +5,7 @@
  */
 import type { DocV4O, DocV5O, DocV6O, DocV7O, DocV8O, DocV9O, Liber } from '../oracles/document.ts';
 
-/** Versiunea schemei pe care o primește ușa aplicației (4 = ADR 0027, …, 8 = ADR 0032, 9 = ADR 0034), aflată cu un document minim. */
+/** Versiunea schemei pe care o primește ușa aplicației (4 = ADR 0027, …, 8 = ADR 0032, 9 = ADR 0034, 10 = ADR 0037), aflată cu un document minim. */
 export async function schemaAplicatiei(): Promise<number> {
   const { incarca } = await import('../../src/model/incarcare.ts');
   const r = incarca({

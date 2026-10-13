@@ -82,12 +82,15 @@ function noduriRampa(tura: readonly Nod[], P: number, e: number, Lr: number, dPr
 
 /**
  * Bucla c, cu toate trecerile ei (adâncimile, crescătoare), pe rampă. Freza e deasupra lui c, la Z-ul de siguranță; la
- * sfârșit rămâne la adâncime, pe buclă (ridicarea o scrie apelantul).
+ * sfârșit rămâne la adâncime, pe buclă (ridicarea o scrie apelantul). Pe un contur deschis, rampa se refuză (ADR 0037 §9):
+ * tura desfășurată ar continua de la capăt spre segmentul 0, un G1 la adâncime prin material, și n-ar exista tura care
+ * re-acoperă rampa.
  */
 export function buclaCuRampa(
   c: Contur, adancimi: readonly number[], rampa: ParametriRampa, urechi: ParametriUrechi | undefined,
   avans: number, avansPlonjare: number, degajari?: readonly Degajare[],
 ): RezultatRampa {
+  if (!c.inchis) return { ok: false, motiv: 'rampa pe o cale deschisă vine mai târziu: tura ar trece de la capăt spre începutul căii, prin material' };
   const P = lungimeBucla(c);
   if (!(P > 0)) return { ok: true, miscari: [] };
   const refuz = refuzLungimeRampa(rampa);

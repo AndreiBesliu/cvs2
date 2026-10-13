@@ -76,6 +76,11 @@
  * forma din ADR 0031 §3, judecată în `intrari-rampa.ts` (poarta dă predicatul `sare`); bucla fără intrare (omisă) se
  * judecă aici, neschimbată, ca la §2. Refuzul „rampa nu încape pe buclă” (Lr < 1 mm) rămâne deci doar pe aceste bucle,
  * iar refuzul lungimii sub 1 mm rămâne pe etichetă (ADR 0031 §3).
+ *
+ * Felia 2.3c-2 (ADR 0037 §13, invarianta 11 amendată; sesiune independentă): poarta dă predicatul `deschisa` (eticheta
+ * e a unei căi deschise); lanțurile și eticheta unei căi deschise nu se mai judecă aici (nici forma de la §4, cu
+ * întoarcerea în punctul plonjării, nici rampa), ci în `deschise.ts`: plonjarea într-un capăt, drumul până la celălalt,
+ * ridicarea; rampa pe o cale deschisă e un refuz. Fără predicat, comportamentul de dinainte (proba echivalenței).
  */
 import type { IntrariO, LaturaO, RampaO, UrechiO } from './document.ts';
 import { citeste, regulaArcGrbl, type Eveniment, type Punct3 } from './gcode.ts';
@@ -587,6 +592,7 @@ function peLant(l: Lant, q: P2): boolean {
 export function verificaRampa(
   evenimente: readonly Eveniment[], etichete: readonly EtichetaActiva[], reg: Regiune, laDoc: (p: Punct3) => Punct3, grosimeFoaie: number,
   regula0030 = true, sare?: (l: Lant, x: ParametriEticheta, latura: LaturaO) => boolean,
+  deschisa?: (iEticheta: number) => boolean,
 ): { readonly incalcari: IncalcareRampa[]; readonly cuRampa: ReadonlySet<number> } {
   const rez: IncalcareRampa[] = [];
   const par = parametriiEtichetelor(etichete, reg);
@@ -595,12 +601,16 @@ export function verificaRampa(
   // Precizarea din 10.10: o operație cu rampa sub 1 mm trebuia refuzată la export (o dată pe etichetă).
   etichete.forEach((e, i) => {
     const x = par[i];
+    // ADR 0037 §9, §13: rampa pe o cale deschisă e refuzul judecat în `deschise.ts`, nu aici.
+    if (deschisa?.(i)) return;
     if (!e.eticheta || !x || 'motiv' in x || x.rampa === null || !(x.rampa.lungime < RAMPA_MINIMA)) return;
     rez.push({ invarianta: 11, linia: e.linia, mesaj: `rampa lui ${e.eticheta.idLume}: ${x.rampa.lungime} mm e sub minimul de ${RAMPA_MINIMA} mm: exportul trebuia refuzat` });
   });
   const peEticheta = new Map<number, Lant[]>();
   for (const l of lanturile(evenimente, etichete.map((e) => e.linia), laDoc)) {
     if (l.eticheta < 0) continue;
+    // ADR 0037 §13: pe eticheta unei căi deschise, trecerea are forma ei (`deschise.ts`), nu pe cea a buclei.
+    if (deschisa?.(l.eticheta)) continue;
     const et = etichete[l.eticheta]!.eticheta;
     const x = par[l.eticheta];
     if (!et || !x) continue;

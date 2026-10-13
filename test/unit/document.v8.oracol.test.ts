@@ -58,6 +58,12 @@
  * (`mareOperatii`), copiile pe versiuni ale documentelor mari se fac la prima citire (`lenes`, în cazuri), iar lanțurile
  * lungi ale oracolului (ușa și ridicarea) au o singură copie (`verificaLantO`, `ridicaLaO`): comparate cu cele de
  * dinainte pe 2 361 de documente (corpusuri, otrăvuri, generate și mari), 23 464 de rezultate, nicio diferență.
+ *
+ * Felia 2.3c-2 (ADR 0037, sesiune independentă): oracolul e pe v10 (căile deschise, laturile `stanga` / `dreapta`,
+ * `despartire`; migrarea v9 → v10 schimbă doar numărul). `SCHEMA_CURENTA_O` = 10, `ridicaO` dă v10 (`ridicaV9O`
+ * păstrează lanțul până la 9), `verificaO` e ușa v10 (`verificaPanaLaV9O`, a unei aplicații pe 9), iar fiecare test de
+ * mai sus primește pe 10 documentul migrării cu `schema: 10` (`v9PentruApp`, lanțurile `migreazaVkV10O`); „mai nouă”
+ * e de acum 11. Testele v10 sunt în `document.v10.oracol.test.ts`; „VERSIUNE_SCHEMA e 10” nu se sare.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -78,6 +84,7 @@ import {
   COLTURI_IMPLICITE_O, migreazaV1V8O, migreazaV4V8O, migreazaV5V8O, migreazaV6V8O, migreazaV7V8O, ridicaV7O, taieturiV8O, TIPURI_COLTURI_O,
   verificaPanaLaV7O, verificaV7V8, verificaV8, type ColturiO, type DocV8O,
   migreazaV1V9O, migreazaV4V9O, migreazaV8V9O, ridicaV8O, verificaPanaLaV8O, verificaV8V9, verificaV9, type DocV9O,
+  migreazaV9V10O, ridicaV9O,
 } from '../oracles/document.ts';
 import {
   areRampaPeOperatii, areUrechiPeOperatii, CAZURI_HARTIE, CAZURI_TAIETURI, CORPUS_V1, CORPUS_V2, CORPUS_V3, CORPUS_V4,
@@ -111,7 +118,8 @@ for (const { nume, v7, v8 } of MIGRARI_V7_HARTIE) {
     assert.deepEqual(verificaO(v7), []);
     assert.equal(diferenta(migreazaV7V8O(v7), v8), undefined);
     assert.equal(diferenta(ridicaV8O(v7), v8), undefined);
-    assert.equal(diferenta(ridicaO(v7), migreazaV8V9O(v8 as DocV8O)), undefined);
+    assert.equal(diferenta(ridicaV9O(v7), migreazaV8V9O(v8 as DocV8O)), undefined);
+    assert.equal(diferenta(ridicaO(v7), migreazaV9V10O(migreazaV8V9O(v8 as DocV8O))), undefined);
     assert.deepEqual(verificaV8(v8), []);
     assert.deepEqual(verificaO(v8), []);
     assert.deepEqual(verificaPanaLaV7O(v7), [], 'ușa unei aplicații pe 7: `colturi` în afara operațiilor e necunoscut oarecare');

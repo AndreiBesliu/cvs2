@@ -261,8 +261,46 @@ function v8v9(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v9 → v10 (ADR 0037 §2): doar numărul. v10 adaugă calea deschisă (`inchis: false`), laturile `stanga` / `dreapta` și
+ * marcajul `despartire`, fără niciun câmp nou obligatoriu, deci un document v9 e un document v10 valid, iar programul lui
+ * rămâne același, octet cu octet. Un document marcat v9 care conține una din ele e refuzat, ca la v8 → v9: v9 n-o
+ * cunoaște, deci nu e un v9 valid, iar ușa nu ghicește cine l-a scris. (O versiune v9 refuză la rândul ei un document
+ * v10: nu poate tăia o cale deschisă închizând-o.)
+ */
+function v9v10(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (typeof p !== 'object' || p === null) continue;
+    const piesa = p as Brut;
+    const stiva: unknown[] = [piesa['radacina']];
+    while (stiva.length > 0) {
+      const nod = stiva.pop();
+      if (typeof nod !== 'object' || nod === null) continue;
+      const n = nod as Brut;
+      const forma = n['forma'];
+      if (n['tip'] === 'element' && typeof forma === 'object' && forma !== null && (forma as Brut)['tip'] === 'cale' && (forma as Brut)['inchis'] !== true) {
+        return { ok: false, motiv: `elementul v9 ${String(n['id'])} are o cale care nu e închisă, pe care v9 n-o cunoaște: nu e un document v9 valid` };
+      }
+      if (n['tip'] === 'grup' && Array.isArray(n['copii'])) for (const c of n['copii']) stiva.push(c);
+    }
+    for (const o of Array.isArray(piesa['operatii']) ? piesa['operatii'] as unknown[] : []) {
+      if (typeof o !== 'object' || o === null) continue;
+      const op = o as Brut;
+      const unde = `operația v9 ${String(op['id'])} din piesa ${String(piesa['id'])}`;
+      if (op['latura'] === 'stanga' || op['latura'] === 'dreapta') {
+        return { ok: false, motiv: `${unde} are latura „${op['latura']}”, pe care v9 n-o cunoaște: nu e un document v9 valid` };
+      }
+      if (Object.hasOwn(op, 'despartire')) {
+        return { ok: false, motiv: `${unde} are câmpul „despartire”, pe care v10 îl folosește: nu e un document v9 valid` };
+      }
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 10 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
- * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v8 → v9
+ * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v9 → v10
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
  */
 export const MIGRARI: Readonly<Record<number, Migrare>> = {
@@ -285,6 +323,7 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   6: v6v7,
   7: v7v8,
   8: v8v9,
+  9: v9v10,
 };
 
 /**

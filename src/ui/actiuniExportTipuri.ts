@@ -2,7 +2,7 @@ import type { IesireFoaie } from '../cam/iesire.ts';
 import { RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA } from '../cam/intrariMinima.ts';
 import { RAMPA_MINIMA } from '../cam/rampaMinima.ts';
 import type { ColtOrigine } from '../ir/montaj.ts';
-import { PLAFON, type Document } from '../model/document.ts';
+import { PLAFON, type Document, type Latura } from '../model/document.ts';
 import type { ProgramExportat } from '../post/export.ts';
 
 export type { Depasire } from '../geom/cutie.ts';
@@ -17,6 +17,23 @@ export const MARGINI_OPERATIE = {
   grosimeUreche: PLAFON.grosime, lungimeRampa: PLAFON.latura, lungimeRampaMinima: RAMPA_MINIMA,
   razaIntrare: PLAFON.latura, razaIntrareMinima: RAZA_INTRARE_MINIMA, razaIntrareMinimaRampa: RAZA_INTRARE_MINIMA_RAMPA,
 } as const;
+
+/** Latura unei operații de profil, cum o arată dialogul (ADR 0037 §2). */
+export type LaturaExport = Latura;
+
+const LATURI_INCHISE: readonly LaturaExport[] = ['exterior', 'interior', 'pe-linie'];
+const LATURI_DESCHISE: readonly LaturaExport[] = ['pe-linie'];
+
+/**
+ * Laturile pe care dialogul le oferă unui rând (ADR 0037 §12): ce nu refuză exportul. Pe un rând doar cu contururi închise
+ * (`deschise` = 0), exterior / interior / pe linie; pe unul cu căi deschise (toate sau amestecate), doar pe linie: stânga
+ * și dreapta vin cu 2.3c-5. Latura scrisă deja în document rămâne în listă, ca rândul s-o arate cum e (exportul o refuză
+ * cu motiv, iar omul o poate schimba).
+ */
+export function laturiOferite(deschise: number, curenta: LaturaExport): readonly LaturaExport[] {
+  const l = deschise > 0 ? LATURI_DESCHISE : LATURI_INCHISE;
+  return l.includes(curenta) ? l : [...l, curenta];
+}
 
 /**
  * Exportul G-code, ca acțiune a registrului (capabilitatea „export-gcode”): documentul → tăieturile (operațiile pieselor,

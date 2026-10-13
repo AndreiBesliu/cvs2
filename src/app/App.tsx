@@ -4,7 +4,7 @@ import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { avertismente } from '../model/avertismente.ts';
-import { documentNou, type Document, type Operatie } from '../model/document.ts';
+import { documentNou, esteCaleDeschisa, type Document, type Operatie } from '../model/document.ts';
 import { cutieElement } from '../model/forme.ts';
 import { istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
@@ -109,9 +109,9 @@ function descriere(e: Pick<ElementLume, 'forma' | 'matrice'>): string {
   }
   if (e.forma.tip === 'cerc') return t('forma.cerc', { raza: doua(e.forma.raza), x: doua(x), y: doua(y) });
   const c = cutieElement(e);
-  return t('forma.cale', {
-    latime: doua(c.maxX - c.minX), inaltime: doua(c.maxY - c.minY), n: e.forma.varfuri.length, x: doua(c.minX), y: doua(c.minY),
-  });
+  // O cale deschisă are n − 1 segmente (ADR 0037 §2); textul „cale deschisă” vine cu ușa care le aduce (2.3c-3).
+  const n = e.forma.varfuri.length - (e.forma.inchis ? 0 : 1);
+  return t('forma.cale', { latime: doua(c.maxX - c.minX), inaltime: doua(c.maxY - c.minY), n, x: doua(c.minX), y: doua(c.minY) });
 }
 
 /** O instanță, în cuvinte: numele piesei, sau primul ei element (și câte mai are). */
@@ -446,6 +446,11 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       return {
         cheie: `${piesa.id}/${o.id}`,
         descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
+        // Câte căi deschise taie operația (ADR 0037 §12): dialogul nu oferă ce refuză exportul pe ele.
+        deschise: o.noduri.filter((n) => {
+          const e = harti.dupaIdLume.get(`${inst}/${n}`);
+          return e !== undefined && esteCaleDeschisa(e.forma);
+        }).length,
         valori: {
           latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
           urechi: o.urechi ? { numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime } : null,

@@ -74,11 +74,20 @@
  *   celălalt mâner, coarda), arcul în lume și punctele de control (colțurile curbe, curbele strânse, arcele sub R ale
  *   desenului, în `degajari.ts`); pragul atingerii a două inele e 1e-6 + 0,001 · câte dintre ele vin din căi cu cubice
  *   (`cuCubice`), fiindcă inelul aplicației, din biarce, stă la cel mult 0,001 de desen.
+ *
+ * Felia 2.3c-2 (ADR 0037, documentul v10; sesiune independentă): `regiuneDinDocument` primește și un v10. Tăieturile vin
+ * în ordinea de la §8 (`taieturiV10O`, ținute întregi în `Regiune.ordine`, cu marcajul despărțirii și clasa); o cale cu
+ * `inchis: false` rămâne DESCHISĂ (`contur(…, deschise)`: doar cele n − 1 segmente reale, fără coarda de închidere, cu
+ * capetele în lume), primește `TaieturaDoc.inchis = false` și nu devine inel (§10: K nu se schimbă). Laturile
+ * `stanga` / `dreapta` nu intră în hărțile tăieturilor (le judecă 2.3c-5), ci doar în `ordine`. Alături,
+ * `Regiune.inainteDe0037` e regiunea pe care o construia oracolul de dinainte din același document (orice cale închisă,
+ * ordinea din ADR 0025): o citește poarta în modul `inainteDe0037`. Un document v3 … v9 se construiește exact ca înainte.
  */
 import {
-  ridicaO, taieturiV8O, type ColturiO, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type DocV7O, type DocV8O, type DocV9O, type IntrariO, type LaturaO,
-  type MatriceO, type RampaO, type SensO, type UrechiO,
+  ridicaV9O, taieturiV8O, type ColturiO, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type DocV7O, type DocV8O, type DocV9O, type IntrariO, type LaturaO,
+  type DocV10O, type MatriceO, type RampaO, type SensO, type UrechiO,
 } from './document.ts';
+import { esteDeschisaO, taieturiV10O, type TaieturaV10O } from './document.v10.ts';
 
 /** §6: pe traseul exact, distanța la marginea lui K ∪ S(C) e cel puțin R − ε. */
 export const EPS_REGIUNE = 0.005;
@@ -411,7 +420,7 @@ function dreptunghiLocal(x0: number, y0: number, x1: number, y1: number, r: numb
 
 export type Contur = {
   readonly tip: 'cerc' | 'dreptunghi' | 'cale';
-  /** Conturul închis, în lume. */
+  /** Conturul închis, în lume (ADR 0037: la o cale deschisă, doar cele n − 1 segmente reale, fără coarda de închidere). */
   readonly primitive: readonly Primitiva[];
   /** Cutia fiecărei primitive, în aceeași ordine. */
   readonly cutiiPrimitive: readonly Cutie[];
@@ -431,6 +440,9 @@ export type Contur = {
   readonly orientare?: 1 | -1;
   /** Doar la cale: are cel puțin o cubică (ADR 0034 §6, recenzia: pragul atingerii crește cu 0,001). */
   readonly cuCubice?: boolean;
+  /** ADR 0037: calea e deschisă (documentul v10, `inchis: false`), cu capetele ei în lume: vârful 0 și ultimul vârf. */
+  readonly deschis?: true;
+  readonly capete?: readonly [Pt, Pt];
 };
 
 /** Punctul de la fracțiunea t al cubicei (a, c1, c2, b). */
@@ -493,14 +505,20 @@ function inPoligon(vs: readonly Pt[], p: Pt): boolean {
   return in_;
 }
 
-/** ADR 0034: conturul unei căi în lume (antetul). */
-function conturCale(forma: Extract<FormaO, { tip: 'cale' }>, m: MatriceO): Contur {
+/**
+ * ADR 0034: conturul unei căi în lume (antetul). ADR 0037 §2 (felia 2.3c-2): cu `deschise`, o cale cu `inchis: false` e
+ * DESCHISĂ: doar cele n − 1 segmente reale, fără coarda de închidere (segmentul ultimului vârf nu e o latură), fără
+ * interior și fără arie, cu capetele în lume. Fără `deschise` (poarta de dinainte de ADR 0037), orice cale se închide,
+ * exact ca înainte.
+ */
+function conturCale(forma: Extract<FormaO, { tip: 'cale' }>, m: MatriceO, deschise = false): Contur {
   const vs = forma.varfuri;
+  const deschis = deschise && forma.inchis === false;
   const areArce = vs.some((v) => v.s.tip === 'A');
   if (areArce && !esteSimilitudine(m)) throw new Error('cale cu arce sub o matrice care nu e similitudine');
   const primitive: Primitiva[] = [];
   const laturi: LaturaCale[] = [];
-  vs.forEach((v, k) => {
+  (deschis ? vs.slice(0, -1) : vs).forEach((v, k) => {
     const urm = vs[(k + 1) % vs.length]!;
     const a = aplica(m, v.p), b = aplica(m, urm.p);
     const coarda = pt(b.x - a.x, b.y - a.y);
@@ -528,6 +546,14 @@ function conturCale(forma: Extract<FormaO, { tip: 'cale' }>, m: MatriceO): Contu
     primitive.push(...cubicaPolilinie(a, c1, c2, b));
   });
   if (primitive.length === 0) throw new Error('cale fără nicio latură nenulă');
+  if (deschis) {
+    // ADR 0037 §2, §10: o cale deschisă nu e inel: nu conține nimic, n-are arie, nici sens de parcurgere al unei bucle.
+    return {
+      tip: 'cale', primitive, cutiiPrimitive: primitive.map(cutiePrimitiva), cutie: cutieLista(primitive), arie: 0,
+      punct: aplica(m, vs[0]!.p), contine: () => false, drumIdeal: () => null, laturiCale: laturi,
+      cuCubice: vs.slice(0, -1).some((v) => v.s.tip === 'C'), deschis: true, capete: [aplica(m, vs[0]!.p), aplica(m, vs[vs.length - 1]!.p)],
+    };
+  }
   const vsPoligon = poligon(primitive, SAGETA_CUBICA);
   let A = 0;
   for (let i = 0; i < vsPoligon.length; i++) {
@@ -541,9 +567,10 @@ function conturCale(forma: Extract<FormaO, { tip: 'cale' }>, m: MatriceO): Contu
   };
 }
 
-export function contur(forma: FormaO, m: MatriceO): Contur {
+/** Conturul exact în lume; `deschise` (ADR 0037): o cale cu `inchis: false` rămâne deschisă (`conturCale`). */
+export function contur(forma: FormaO, m: MatriceO, deschise = false): Contur {
   if (det(m) === 0 || ![m.a, m.b, m.c, m.d, m.e, m.f].every(Number.isFinite)) throw new Error('matrice degenerată');
-  if (forma.tip === 'cale') return conturCale(forma, m);
+  if (forma.tip === 'cale') return conturCale(forma, m, deschise);
   if (forma.tip === 'cerc') {
     if (!esteSimilitudine(m)) throw new Error('cerc sub o matrice care nu e similitudine');
     const c = aplica(m, pt(0, 0));
@@ -663,6 +690,11 @@ export type TaieturaDoc = {
    * inele), ca traseul buclelor cu urechi să poată fi socotit; lipsă dacă forma nu se poate contura.
    */
   readonly contur?: Contur;
+  /**
+   * ADR 0037 (documentul v10): `false` dacă elementul e o cale deschisă, `true` altfel; lipsă la un document mai vechi
+   * (regiunea de dinainte de ADR 0037, unde orice cale e închisă). Așa află poarta că eticheta e a unei căi deschise.
+   */
+  readonly inchis?: boolean;
 };
 
 export type Regiune = {
@@ -675,6 +707,18 @@ export type Regiune = {
   readonly taieturi: ReadonlyMap<string, TaieturaDoc>;
   /** Grosimea foii 0 a documentului (ADR 0028 §2: vârful urechii); lipsă = cea din contextul porții. */
   readonly grosimeFoaie?: number;
+  /**
+   * ADR 0037 §8 (documentul v10): toate tăieturile foii 0, în ordinea de la §8 (`taieturiV10O`), cu marcajul despărțirii,
+   * calea deschisă și clasa; lipsă la un document mai vechi. Le citesc 14 (iii) și refuzurile (`deschise.ts`).
+   */
+  readonly ordine?: readonly TaieturaV10O[];
+  /** ADR 0037 §8 (documentul v10): foaia 0 a documentului, pentru refuzul tăieturii nemarcate care ajunge la margine. */
+  readonly foaieDocument?: { readonly latime: number; readonly inaltime: number };
+  /**
+   * ADR 0037 §13 (modul `inainteDe0037`): regiunea pe care o construia oracolul de dinainte din același document v10
+   * (orice cale închisă, laturile noi și `despartire` necunoscute, ordinea din ADR 0025); lipsă = aceeași regiune.
+   */
+  readonly inainteDe0037?: Regiune;
 };
 
 /** Pădurea, marginea lui K și atingerile, din inele. */
@@ -712,18 +756,56 @@ export function regiuneDinInele(
 /**
  * §1: inelele foii 0, din tăieturile documentului (oracolul documentului dă matricea în lume și ordinea). Un v3, …,
  * v7 se aduce întâi la v8 (sensul `urcare`, ADR 0027 §5; urechile `null`, ADR 0028 §1; rampa `null`, ADR 0029 §1;
- * intrările `null`, ADR 0030 §1; degajările `null`, ADR 0032 §1).
+ * intrările `null`, ADR 0030 §1; degajările `null`, ADR 0032 §1). Un v10 (ADR 0037) se citește ca atare: vezi mai jos.
  */
-export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O): Regiune {
+export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O): Regiune {
+  if (doc.schema === 10) {
+    // ADR 0037 (felia 2.3c-2): tăieturile în ordinea de la §8, căile deschise rămân deschise și nu sunt inele; alături,
+    // regiunea pe care o construia oracolul de dinainte din același document (pentru modul `inainteDe0037`).
+    const ordine = taieturiV10O(doc, 0);
+    const grosime = doc.foi[0]?.stoc.grosime;
+    const de3 = ordine.filter((t): t is TaieturaV10O & { latura: LaturaO } => LATURI_DE_DINAINTE.has(t.latura));
+    const nou = construiesteRegiune(de3, typeof grosime === 'number' ? grosime : undefined, true);
+    const stoc = doc.foi[0]?.stoc;
+    return {
+      ...nou, ordine, inainteDe0037: construiesteRegiuneVeche(doc as unknown as DocV9O),
+      ...(stoc ? { foaieDocument: { latime: stoc.latime, inaltime: stoc.inaltime } } : {}),
+    };
+  }
+  return construiesteRegiuneVeche(doc);
+}
+
+/** Laturile pe care le cunoștea regiunea de dinainte de ADR 0037 (`stanga` / `dreapta` vin cu 2.3c-5). */
+const LATURI_DE_DINAINTE: ReadonlySet<string> = new Set<string>(['exterior', 'interior', 'pe-linie']);
+
+/** Regiunea, exact cum o construia oracolul de dinainte de ADR 0037 (orice cale închisă). */
+function construiesteRegiuneVeche(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O): Regiune {
+  // Felia 2.7b: un v9 se citește ca atare (un v9 trecut prin `ridicaO` ca „vechi” și-ar pierde parametrii operațiilor).
+  // Felia 2.3c-2: `ridicaO` dă acum v10; lanțul de dinainte (până la 9) e `ridicaV9O`.
+  const v5 = doc.schema === 9 ? doc : ridicaV9O(doc);
+  const grosime = v5.foi[0]?.stoc.grosime;
+  return construiesteRegiune(taieturiV8O(v5, 0), typeof grosime === 'number' ? grosime : undefined, false);
+}
+
+/** O tăietură, cât îi trebuie regiunii (`TaieturaV8O` sau `TaieturaV10O` pe laturile de dinainte). */
+type TaieturaRegiune = {
+  readonly idLume: string; readonly forma: unknown; readonly matrice: MatriceO; readonly latura: LaturaO; readonly adancime: number;
+  readonly sens: SensO; readonly urechi: UrechiO | null; readonly rampa: RampaO | null; readonly intrari: IntrariO | null; readonly colturi: ColturiO | null;
+};
+
+/**
+ * Inelele și tăieturile din tăieturile foii 0, în ordinea lor. `deschise` (ADR 0037): o cale cu `inchis: false` rămâne
+ * deschisă, primește `inchis: false` și NU devine inel, oricare i-ar fi latura (§10: K nu se schimbă; exteriorul /
+ * interiorul pe ea e un refuz, judecat în `deschise.ts`); fără `deschise`, exact construcția de dinainte.
+ */
+function construiesteRegiune(taieturiFoaie: Iterable<TaieturaRegiune>, grosime: number | undefined, deschise: boolean): Regiune {
   type Acum = {
     forma: FormaO; matrice: MatriceO; laturi: Map<LaturaO, number[]>; sensuri: Map<LaturaO, SensO[]>;
     urechi: Map<LaturaO, Array<UrechiO | null>>; rampe: Map<LaturaO, Array<RampaO | null>>; intrari: Map<LaturaO, Array<IntrariO | null>>;
     colturi: Map<LaturaO, Array<ColturiO | null>>;
   };
   const pe = new Map<string, Acum>();
-  // Felia 2.7b: un v9 se citește ca atare (un v9 trecut prin `ridicaO` ca „vechi” și-ar pierde parametrii operațiilor).
-  const v5 = doc.schema === 9 ? doc : ridicaO(doc);
-  for (const t of taieturiV8O(v5, 0)) {
+  for (const t of taieturiFoaie) {
     let x = pe.get(t.idLume);
     if (!x) {
       x = {
@@ -756,11 +838,14 @@ export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV
   const taieturi = new Map<string, TaieturaDoc>();
   for (const [idLume, x] of pe) {
     let c: Contur | undefined;
-    try { c = contur(x.forma, x.matrice); } catch { c = undefined; }
+    try { c = contur(x.forma, x.matrice, deschise); } catch { c = undefined; }
+    const deschisa = deschise && esteDeschisaO(x.forma);
     taieturi.set(idLume, {
       tip: x.forma.tip, laturi: x.laturi, sensuri: x.sensuri, urechi: x.urechi, rampe: x.rampe, intrari: x.intrari, colturi: x.colturi,
-      ...(c ? { contur: c } : {}),
+      ...(c ? { contur: c } : {}), ...(deschise ? { inchis: !deschisa } : {}),
     });
+    // ADR 0037 §10: o cale deschisă nu e inel (exteriorul / interiorul pe ea e refuzul de la §9, judecat în `deschise.ts`).
+    if (deschisa) continue;
     const ext = x.laturi.has('exterior'), int = x.laturi.has('interior');
     if (ext && int) {
       probleme.push({ tip: 'ambele-laturi', elemente: [idLume], mesaj: `${idLume} are operații și pe exterior, și pe interior` });
@@ -769,14 +854,13 @@ export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV
     if (!ext && !int) continue;
     if (!c) {
       let motiv = '?';
-      try { contur(x.forma, x.matrice); } catch (e) { motiv = e instanceof Error ? e.message : String(e); }
+      try { contur(x.forma, x.matrice, deschise); } catch (e) { motiv = e instanceof Error ? e.message : String(e); }
       probleme.push({ tip: 'contur', elemente: [idLume], mesaj: `conturul lui ${idLume} nu se poate construi: ${motiv}` });
       continue;
     }
     inele.push({ idLume, rol: ext ? 'piesa' : 'gol', contur: c });
   }
-  const grosime = v5.foi[0]?.stoc.grosime;
-  return regiuneDinInele(inele, probleme, taieturi, typeof grosime === 'number' ? grosime : undefined);
+  return regiuneDinInele(inele, probleme, taieturi, grosime);
 }
 
 /** Cel mai mic inel care conține strict punctul (−1: niciunul). */

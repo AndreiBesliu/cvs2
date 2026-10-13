@@ -75,14 +75,26 @@ export type Taietura = ElementLume & {
   readonly rampa: Operatie['rampa'];
   readonly intrari: Operatie['intrari'];
   readonly colturi: Operatie['colturi'];
+  /** Despărțirea foii, marcată de om (ADR 0037 §8): doar când e marcată; lipsa ei înseamnă nemarcată. */
+  readonly despartire?: true;
 };
 
-const ORDINE_LATURA: Readonly<Record<Operatie['latura'], number>> = { interior: 0, 'pe-linie': 1, exterior: 2 };
+/** Clasele ordinii (ADR 0025, amendat de ADR 0037 §8); despărțirile marcate formează clasa 3, la urmă. */
+const ORDINE_LATURA: Readonly<Record<Operatie['latura'], number>> = { interior: 0, 'pe-linie': 1, stanga: 1, dreapta: 1, exterior: 2 };
+const CLASA_DESPARTIRE = 3;
 
 /**
- * Tăieturile unei foi, în ordinea de tăiere a contractului: întâi interioarele, apoi cele pe linie, la urmă exterioarele
- * (piesa nu se mișcă sub sculă); în aceeași clasă, instanțele în ordinea foii, operațiile în ordinea piesei, nodurile în
- * ordinea operației. Elementele fără operație nu se taie.
+ * Clasa 3 ține doar tăieturile DESCHISE marcate (ADR 0037 §8): un nod închis dintr-o operație marcată rămâne în clasa
+ * laturii lui (exportul îl refuză oricum; ordinea urmează contractul, oracolul 2.3c-2).
+ */
+const clasa = (t: Taietura): number =>
+  (t.despartire && t.forma.tip === 'cale' && !t.forma.inchis ? CLASA_DESPARTIRE : ORDINE_LATURA[t.latura]);
+
+/**
+ * Tăieturile unei foi, în ordinea de tăiere a contractului (ADR 0037 §8): întâi interioarele; apoi cele pe linie (închise
+ * și deschise) și tăieturile deschise nemarcate (o fantă în piesă se taie cât piesa e încă prinsă); apoi exterioarele
+ * (piesa nu se mișcă sub sculă); la urmă, despărțirile foii marcate de om. În aceeași clasă, instanțele în ordinea foii,
+ * operațiile în ordinea piesei, nodurile în ordinea operației. Elementele fără operație nu se taie.
  */
 export function taieturiFoaie(doc: Document, indexFoaie = 0): Taietura[] {
   const foaie = doc.foi[indexFoaie];
@@ -97,10 +109,13 @@ export function taieturiFoaie(doc: Document, indexFoaie = 0): Taietura[] {
       for (const n of o.noduri) {
         const e = elemente.get(n);
         if (!e) continue;
-        rez.push({ ...e, operatie: o.id, latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, scula: o.scula, urechi: o.urechi, rampa: o.rampa, intrari: o.intrari, colturi: o.colturi });
+        rez.push({
+          ...e, operatie: o.id, latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, scula: o.scula, urechi: o.urechi,
+          rampa: o.rampa, intrari: o.intrari, colturi: o.colturi, ...(o.despartire === true ? { despartire: true } : {}),
+        });
       }
     }
   }
   // Sortarea e stabilă: în aceeași clasă rămâne ordinea de mai sus.
-  return rez.sort((a, b) => ORDINE_LATURA[a.latura] - ORDINE_LATURA[b.latura]);
+  return rez.sort((a, b) => clasa(a) - clasa(b));
 }

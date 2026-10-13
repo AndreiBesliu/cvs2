@@ -13,7 +13,8 @@ function segmentCale(s: SegmentDoc): Segment {
 /**
  * Conturul exact al unei forme așezate: forma parametrică în coordonatele ei, apoi matricea dată (pentru un element în
  * lume, matricea lui din `elementeFoaie`). Dreptunghiul are colțul stânga-jos în (0, 0), cercul centrul în (0, 0), iar
- * calea (ADR 0034) își are vârfurile chiar în coordonatele elementului.
+ * calea (ADR 0034) își are vârfurile chiar în coordonatele elementului. Calea își păstrează `inchis` (ADR 0037 §2): una
+ * deschisă citită ca închisă ar primi coarda de închidere, iar freza ar tăia-o prin material.
  */
 export function conturElement(e: { readonly forma: FormaDoc; readonly matrice: Matrice }): Contur {
   const f = e.forma;
@@ -21,7 +22,7 @@ export function conturElement(e: { readonly forma: FormaDoc; readonly matrice: M
     ? conturDreptunghi(0, 0, f.latime, f.inaltime, f.razaColt)
     : f.tip === 'cerc'
       ? conturCerc(0, 0, f.raza)
-      : { inchis: true, varfuri: f.varfuri.map((x) => ({ p: { x: x.p.x, y: x.p.y }, s: segmentCale(x.s) })) };
+      : { inchis: f.inchis, varfuri: f.varfuri.map((x) => ({ p: { x: x.p.x, y: x.p.y }, s: segmentCale(x.s) })) };
   return transformaContur(local, e.matrice);
 }
 

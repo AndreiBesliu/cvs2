@@ -58,6 +58,12 @@
  * (`mareOperatii`), copiile pe versiuni ale documentelor mari se fac la prima citire (`lenes`, în cazuri), iar lanțurile
  * lungi ale oracolului (ușa și ridicarea) au o singură copie (`verificaLantO`, `ridicaLaO`): comparate cu cele de
  * dinainte pe 2 361 de documente (corpusuri, otrăvuri, generate și mari), 23 464 de rezultate, nicio diferență.
+ *
+ * Felia 2.3c-2 (ADR 0037, sesiune independentă): oracolul e pe v10 (căile deschise, laturile `stanga` / `dreapta`,
+ * `despartire`; migrarea v9 → v10 schimbă doar numărul). `SCHEMA_CURENTA_O` = 10, `ridicaO` dă v10 (`ridicaV9O`
+ * păstrează lanțul până la 9), `verificaO` e ușa v10 (`verificaPanaLaV9O`, a unei aplicații pe 9), iar fiecare test de
+ * mai sus primește pe 10 documentul migrării cu `schema: 10` (`v9PentruApp`, lanțurile `migreazaVkV10O`); „mai nouă”
+ * e de acum 11. Testele v10 sunt în `document.v10.oracol.test.ts`; „VERSIUNE_SCHEMA e 10” nu se sare.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -78,6 +84,7 @@ import {
   COLTURI_IMPLICITE_O, migreazaV1V8O, migreazaV4V8O, migreazaV5V8O, migreazaV6V8O, migreazaV7V8O, ridicaV7O, taieturiV8O, TIPURI_COLTURI_O,
   verificaPanaLaV7O, verificaV7V8, verificaV8, type ColturiO, type DocV8O,
   migreazaV1V9O, migreazaV4V9O, migreazaV8V9O, ridicaV8O, verificaPanaLaV8O, verificaV8V9, verificaV9, type DocV9O,
+  migreazaV1V10O,
 } from '../oracles/document.ts';
 import {
   areRampaPeOperatii, areUrechiPeOperatii, CAZURI_HARTIE, CAZURI_TAIETURI, CORPUS_V1, CORPUS_V2, CORPUS_V3, CORPUS_V4,
@@ -91,7 +98,7 @@ import {
 } from '../oracles/document.cazuri.ts';
 
 import {
-  type DocApp, V, PE_V5, PE_V6, PE_V7, PE_V8, PE_V9, DOAR_V5, DOAR_V6, DOAR_V7, DOAR_V8, DOAR_V9, verificaSchemaApp, v5PentruApp, v6PentruApp, v7PentruApp, v8PentruApp, ciocnesteLa7, accepta, ca, asteptatDinV4, lumeaAplicatiei, formeTaietura, type TaieturaApp, taieturileAplicatiei, aceleasiChei, aceeasiLume, type TaieturaAsteptata, aceleasiTaieturi, taieturileOracolului, aceeasiFoaie, mare, mareOperatii, text, faraCampuriNoi, incarcaVechi, unice, valideV4, valideV5, valideV6,
+  type DocApp, V, PE_V10, PE_V5, PE_V6, PE_V7, PE_V8, PE_V9, DOAR_V5, DOAR_V6, DOAR_V7, DOAR_V8, DOAR_V9, verificaSchemaApp, v5PentruApp, v6PentruApp, v7PentruApp, v8PentruApp, ciocnesteLa7, accepta, ca, asteptatDinV4, lumeaAplicatiei, formeTaietura, type TaieturaApp, taieturileAplicatiei, aceleasiChei, aceeasiLume, type TaieturaAsteptata, aceleasiTaieturi, taieturileOracolului, aceeasiFoaie, mare, mareOperatii, text, faraCampuriNoi, incarcaVechi, unice, valideV4, valideV5, valideV6,
 } from './ajutor-document-oracol.ts';
 
 // Fișierul 2 din 11 (vezi antetul; felia 2.7b: împărțit ca fiecare fișier să ruleze în ~20 s): lipirea v1 (corpusul și
@@ -117,7 +124,7 @@ for (const { nume, doc } of CORPUS_V1) {
     const x = incarcaVechi(doc, migreazaV1V4O(doc));
     if (!x) return;
     assert.equal(diferenta(x.doc, x.asteptat), undefined);
-    if (PE_V5) assert.equal(diferenta(x.doc, PE_V9 ? migreazaV1V9O(doc) : PE_V8 ? migreazaV1V8O(doc) : PE_V7 ? migreazaV1V7O(doc) : PE_V6 ? migreazaV1V6O(doc) : migreazaV1V5O(doc)), undefined);
+    if (PE_V5) assert.equal(diferenta(x.doc, PE_V10 ? migreazaV1V10O(doc) : PE_V9 ? migreazaV1V9O(doc) : PE_V8 ? migreazaV1V8O(doc) : PE_V7 ? migreazaV1V7O(doc) : PE_V6 ? migreazaV1V6O(doc) : migreazaV1V5O(doc)), undefined);
   });
 
   test(`(b) câmpurile necunoscute trec prin migrarea v1 → v${V}: ${nume}`, () => {

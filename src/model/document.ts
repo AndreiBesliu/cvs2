@@ -2,18 +2,19 @@ import * as v from 'valibot';
 import { compune, esteSimilitudine, IDENTITATE } from '../geom/matrice.ts';
 
 /**
- * Documentul v9 (T16, ADR 0016): varianta D a planșelor (ADR 0024, decizia owner-ului din 08.10.2026), adică piese cu
+ * Documentul v10 (T16, ADR 0016): varianta D a planșelor (ADR 0024, decizia owner-ului din 08.10.2026), adică piese cu
  * arbore propriu, puse ca instanțe pe foi, plus operațiile piesei (ADR 0025): profilul stă în piesă și se taie la fel în
  * fiecare instanță, în sensul de tăiere al operației (ADR 0027, v4), cu urechile (ADR 0028, v5), rampa (ADR 0029, v6) și
- * intrările ei (ADR 0030, v7) și degajările colțurilor (ADR 0032, v8). Forma „cale” (ADR 0034, v9) e un contur închis din
- * linii, arce și cubice. Contractul întreg e în ADR-uri; oracolul independent (`test/oracles/document.ts`) îl citește de
- * acolo, nu de aici.
+ * intrările ei (ADR 0030, v7) și degajările colțurilor (ADR 0032, v8). Forma „cale” (ADR 0034, v9) e un contur din linii,
+ * arce și cubice, închis sau, din v10, deschis (ADR 0037 §2); profilul are și laturile `stanga` / `dreapta` și marcajul
+ * `despartire`. Contractul întreg e în ADR-uri; oracolul independent (`test/oracles/document.ts`) îl citește de acolo, nu
+ * de aici.
  *
  * Câmpurile necunoscute se păstrează, ca un document scris de o versiune mai nouă să nu piardă date trecând printr-una
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 9;
+export const VERSIUNE_SCHEMA = 10;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -72,14 +73,22 @@ export type VarfDoc = { p: PunctDoc; s: SegmentDoc; [cheie: string]: unknown };
 export type FormaDoc =
   | { tip: 'dreptunghi'; latime: number; inaltime: number; razaColt: number; [cheie: string]: unknown }
   | { tip: 'cerc'; raza: number; [cheie: string]: unknown }
-  | { tip: 'cale'; inchis: true; varfuri: VarfDoc[]; [cheie: string]: unknown };
+  /**
+   * Calea (ADR 0034, ADR 0037 §2): închisă, cu n segmente, sau deschisă, cu n − 1 (ADR 0001): segmentul ultimului vârf al
+   * unei căi deschise e `L` și nu se ia în seamă.
+   */
+  | { tip: 'cale'; inchis: boolean; varfuri: VarfDoc[]; [cheie: string]: unknown };
 export type ElementNod = {
   tip: 'element'; id: string; nume?: string; forma: FormaDoc; matrice: Matrice; [cheie: string]: unknown;
 };
 export type GrupNod = { tip: 'grup'; id: string; nume?: string; matrice: Matrice; copii: Nod[]; [cheie: string]: unknown };
 export type Nod = ElementNod | GrupNod;
 export type Scula = { numar: number; nume: string; diametru: number; [cheie: string]: unknown };
-export type Latura = 'exterior' | 'interior' | 'pe-linie';
+/**
+ * Latura profilului: exterior / interior pe contururile închise, pe linie pe oricare, stânga / dreapta (partea FREZEI, în
+ * sensul desenului, ADR 0037 §3) pe căile deschise. Potrivirea cu `inchis` o judecă CAM-ul, nu ușa (ADR 0037 §2).
+ */
+export type Latura = 'exterior' | 'interior' | 'pe-linie' | 'stanga' | 'dreapta';
 /** Sensul de tăiere (ADR 0027), cu axul M3: urcare = materialul păstrat în dreapta sensului de mers. */
 export type Sens = 'urcare' | 'opozitie';
 /**
@@ -93,9 +102,14 @@ export type Rampa = { lungime: number; [cheie: string]: unknown };
 export type Intrari = { raza: number; [cheie: string]: unknown };
 /** Degajările colțurilor unei operații de profil (ADR 0032): dog-bone pe bisectoare sau T-bone în peretele mai lung. */
 export type Colturi = { tip: 'dog-bone' | 't-bone'; [cheie: string]: unknown };
+/**
+ * `despartire` (ADR 0037 §2, §8, decizia owner-ului din 13.10): tăietura deschisă prin toată foaia care desparte foaia,
+ * marcată de om; se taie la urmă. Lipsă = nemarcată: aplicația n-o ghicește.
+ */
 export type Operatie = {
   id: string; tip: 'profil'; noduri: string[]; scula: Scula; latura: Latura; sens: Sens; adancime: number; pas: number;
-  urechi: Urechi | null; rampa: Rampa | null; intrari: Intrari | null; colturi: Colturi | null; [cheie: string]: unknown;
+  urechi: Urechi | null; rampa: Rampa | null; intrari: Intrari | null; colturi: Colturi | null; despartire?: boolean;
+  [cheie: string]: unknown;
 };
 export type Piesa = { id: string; nume?: string; radacina: Nod; operatii: Operatie[]; [cheie: string]: unknown };
 export type Stoc = { latime: number; inaltime: number; grosime: number; [cheie: string]: unknown };
@@ -103,7 +117,7 @@ export type Instanta = {
   id: string; piesa: string; x: number; y: number; rotire: number; campuri?: Record<string, string>; [cheie: string]: unknown;
 };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; [cheie: string]: unknown };
-export type Document = { schema: 9; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 10; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 const finit = v.pipe(v.number(), v.finite());
 const pozitiv = (max: number) => v.pipe(v.number(), v.finite(), v.gtValue(0), v.maxValue(max));
@@ -118,29 +132,47 @@ const SchemaSegment = v.variant('tip', [
   v.looseObject({ tip: v.literal('A'), bulge: v.pipe(v.number(), v.finite(), v.check((b) => b !== 0, 'un arc cu bulge 0 n-are cerc')) }),
   v.looseObject({ tip: v.literal('C'), c1: SchemaPunct, c2: SchemaPunct }),
 ]);
-/** Calea (ADR 0034): un contur închis; un arc trebuie să aibă capetele în puncte diferite, altfel n-are cerc. */
+type PunctXY = { readonly x: number; readonly y: number };
+
+/**
+ * Fiecare arc REAL al căii trece de `bun`, cu capetele lui: o cale închisă are n segmente, una deschisă n − 1 (ADR 0037 §2).
+ * Pe o cale deschisă, ultimul vârf n-are segment: vecinul luat cu `(i + 1) % n` ar închide calea.
+ */
+function arceleReale(
+  f: { readonly inchis: boolean; readonly varfuri: ReadonlyArray<{ readonly p: PunctXY; readonly s: { readonly tip: string; readonly bulge?: number } }> },
+  bun: (a: PunctXY, b: PunctXY, bulge: number) => boolean,
+): boolean {
+  const n = f.varfuri.length;
+  for (let i = 0; i < (f.inchis ? n : n - 1); i++) {
+    const x = f.varfuri[i], urm = f.varfuri[(i + 1) % n];
+    if (x && urm && x.s.tip === 'A' && !bun(x.p, urm.p, x.s.bulge ?? 0)) return false;
+  }
+  return true;
+}
+
+/**
+ * Calea (ADR 0034, ADR 0037 §2): închisă sau deschisă. Un arc trebuie să aibă capetele în puncte diferite, altfel n-are
+ * cerc; verificările arcului se fac doar pe segmentele reale. Pe o cale deschisă, segmentul ultimului vârf e `L`: un
+ * segment ignorat ar fi o dată ascunsă, pe care o versiune viitoare sau o închidere ar face-o reală fără ca cineva s-o vadă.
+ */
 const SchemaCale = v.pipe(
   v.looseObject({
     tip: v.literal('cale'),
-    inchis: v.literal(true),
+    inchis: v.boolean(),
     varfuri: v.pipe(
       v.array(v.looseObject({ p: SchemaPunct, s: SchemaSegment })),
       v.minLength(2, 'o cale are cel puțin 2 vârfuri'),
       v.maxLength(PLAFON.varfuriCale, `o cale are cel mult ${PLAFON.varfuriCale} de vârfuri`),
     ),
   }),
-  v.check((f) => f.varfuri.every((x, i) => {
-    if (x.s.tip !== 'A') return true;
-    const urm = f.varfuri[(i + 1) % f.varfuri.length];
-    return urm !== undefined && (urm.p.x !== x.p.x || urm.p.y !== x.p.y);
-  }), 'un arc al căii are capetele în același punct: n-are cerc'),
+  v.check((f) => f.inchis || f.varfuri[f.varfuri.length - 1]?.s.tip === 'L',
+    'ultimul vârf al unei căi deschise are un segment care nu e „L” (segmentul lui nu există)'),
+  v.check((f) => arceleReale(f, (a, b) => a.x !== b.x || a.y !== b.y), 'un arc al căii are capetele în același punct: n-are cerc'),
   // Raza arcului, (c / 4)·(b + 1/b), cel mult a cercului (recenzia 2.7b): un bulge aproape de 0 dă un cerc cât un continent,
   // unul uriaș depășește double-ul (NaN), iar pânza lucrează în float32. Scrisă ca `<=`, ca NaN și Infinity să cadă.
-  v.check((f) => f.varfuri.every((x, i) => {
-    if (x.s.tip !== 'A') return true;
-    const urm = f.varfuri[(i + 1) % f.varfuri.length];
-    const b = Math.abs(x.s.bulge);
-    return urm !== undefined && (Math.hypot(urm.p.x - x.p.x, urm.p.y - x.p.y) / 4) * (b + 1 / b) <= PLAFON.latura;
+  v.check((f) => arceleReale(f, (a, b, bulge) => {
+    const k = Math.abs(bulge);
+    return (Math.hypot(b.x - a.x, b.y - a.y) / 4) * (k + 1 / k) <= PLAFON.latura;
   }), `un arc al căii are raza peste ${PLAFON.latura} mm`),
 );
 const SchemaForma = v.variant('tip', [
@@ -181,7 +213,7 @@ const SchemaOperatie = v.looseObject({
     nume: v.pipe(v.string(), v.maxLength(PLAFON.numeLungime)),
     diametru: pozitiv(PLAFON.diametruScula),
   }),
-  latura: v.picklist(['exterior', 'interior', 'pe-linie']),
+  latura: v.picklist(['exterior', 'interior', 'pe-linie', 'stanga', 'dreapta']),
   sens: v.picklist(['urcare', 'opozitie']),
   adancime: pozitiv(PLAFON.adancimeOperatie),
   pas: pozitiv(PLAFON.adancimeOperatie),
@@ -193,6 +225,7 @@ const SchemaOperatie = v.looseObject({
   rampa: v.nullable(v.looseObject({ lungime: pozitiv(PLAFON.latura) })),
   intrari: v.nullable(v.looseObject({ raza: pozitiv(PLAFON.latura) })),
   colturi: v.nullable(v.looseObject({ tip: v.picklist(['dog-bone', 't-bone']) })),
+  despartire: v.optional(v.boolean()),
 });
 const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
 const SchemaInstanta = v.looseObject({
@@ -253,6 +286,11 @@ function matriciInMargini(p: Piesa): string | null {
     if (x.nod.tip === 'grup') for (const copil of x.nod.copii) stiva.push({ nod: copil, m });
   }
   return null;
+}
+
+/** Forma e o cale deschisă (ADR 0037): fără coarda de închidere. */
+export function esteCaleDeschisa(f: FormaDoc): boolean {
+  return f.tip === 'cale' && !f.inchis;
 }
 
 export function areArce(f: FormaDoc): boolean {

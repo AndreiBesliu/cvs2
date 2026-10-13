@@ -27,7 +27,7 @@ function stricat(d: Document, f: (forma: Record<string, any>) => void): unknown 
 }
 
 test('o cale trece prin ușă neschimbată, cu câmpurile necunoscute pe formă, pe vârf, pe segment și pe punct', () => {
-  assert.equal(VERSIUNE_SCHEMA, 9);
+  assert.equal(VERSIUNE_SCHEMA, 10);
   for (const forma of [INIMA, D]) {
     const d = cu(forma);
     const r = prinUsa(d);
@@ -46,7 +46,7 @@ test('o cale trece prin ușă neschimbată, cu câmpurile necunoscute pe formă,
   if (r.ok) assert.deepEqual(r.doc, necunoscute);
 });
 
-test('ușa refuză, cu motiv: sub 2 vârfuri, numere nefinite sau prea mari, segmentul necunoscut, arcul fără cerc, calea deschisă', () => {
+test('ușa refuză, cu motiv: sub 2 vârfuri, numere nefinite sau prea mari, segmentul necunoscut, arcul fără cerc, calea deschisă cu ultimul segment C, inchis lipsă sau care nu e boolean', () => {
   const d = cu(INIMA);
   const cazuri: Array<[string, (f: Record<string, any>) => void, RegExp]> = [
     ['un singur vârf', (f) => { f.varfuri = f.varfuri.slice(0, 1); }, /cel puțin 2 vârfuri/],
@@ -55,7 +55,8 @@ test('ușa refuză, cu motiv: sub 2 vârfuri, numere nefinite sau prea mari, seg
     ['segmentul necunoscut', (f) => { f.varfuri[0].s = { tip: 'Q', c: P(1, 2) }; }, /varfuri\.0\.s/],
     ['bulge 0', (f) => { f.varfuri[0].s = { tip: 'A', bulge: 0 }; }, /bulge 0/],
     ['arcul cu capetele în același punct', (f) => { f.varfuri[1].p = { ...f.varfuri[0].p }; f.varfuri[0].s = { tip: 'A', bulge: 0.5 }; }, /capetele în același punct/],
-    ['deschisă', (f) => { f.inchis = false; }, /inchis/],
+    ['deschisă, cu ultimul segment C (ADR 0037 §2)', (f) => { f.inchis = false; }, /nu e „L”/],
+    ['inchis care nu e boolean', (f) => { f.inchis = 'nu'; }, /inchis/],
     ['fără inchis', (f) => { delete f.inchis; }, /inchis/],
   ];
   for (const [nume, strica, asteptat] of cazuri) {
@@ -100,13 +101,13 @@ test('plafoanele căilor (ADR 0034 §2): pe o cale, pe piese și în lume', () =
   assert.match(motiv(prinUsa({ ...una, foi: [{ ...foaie, instante }] })), /1050000 de vârfuri de căi în lume, peste 1000000/);
 });
 
-test('migrarea v8 → v9 schimbă doar numărul; un document mai nou de 9 e refuzat', () => {
+test('migrarea v8 → v9 schimbă doar numărul; un document mai nou decât aplicația e refuzat', () => {
   const d = docDin(F, { id: 'r', forma: { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 5 }, matrice: { ...ID, e: 20, f: 20 } });
   const v8 = { ...JSON.parse(JSON.stringify(d)), schema: 8 };
   const r = incarca(v8);
   assert.ok(r.ok, motiv(r));
   if (r.ok) assert.deepEqual(r.doc, d);
-  assert.match(motiv(incarca({ ...v8, schema: 10 })), /versiune mai nouă \(schema 10, aici 9\)/);
+  assert.match(motiv(incarca({ ...v8, schema: 11 })), /versiune mai nouă \(schema 11, aici 10\)/);
   // Un document marcat v8 care conține o cale nu e un v8 valid (v8 n-o cunoaște): refuzat, și când calea stă într-un grup.
   const cuCale = incarca({ ...JSON.parse(JSON.stringify(cu(INIMA))), schema: 8 });
   assert.match(motiv(cuCale), /elementul v8 c are o formă „cale”, pe care v8 n-o cunoaște/);

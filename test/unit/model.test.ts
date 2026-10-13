@@ -24,7 +24,7 @@ test('un document valid trece prin ușa unică, neschimbat', () => {
   const r = incarca(JSON.parse(JSON.stringify(d)));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (r.ok) assert.deepEqual(r.doc, d);
-  assert.equal(VERSIUNE_SCHEMA, 9);
+  assert.equal(VERSIUNE_SCHEMA, 10);
 });
 
 test('ușa refuză, cu motiv: ce nu e obiect, fără versiune, dintr-o versiune mai nouă, cu valori absurde', () => {
@@ -105,7 +105,7 @@ test('migrarea v1 → v2 → v3: o piesă și o instanță pe element, cu id-ul 
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
   const d = r.doc;
-  assert.equal(d.schema, 9);
+  assert.equal(d.schema, VERSIUNE_SCHEMA);
   assert.equal(d.rev, 7);
   assert.equal(d['extra'], 'sus');
   assert.deepEqual(d.foi, [{ id: 'f1', stoc: { ...FOAIA, fibra: 'x' }, instante: [
@@ -246,7 +246,10 @@ test('migrarea refuză ciocnirile de nume și matricile v1 peste margini; câmpu
 });
 
 test('cheile __proto__, constructor și prototype rămân date: ușa nu le scoate și nu schimbă prototipul', () => {
-  const text = '{"schema":9,"rev":0,"__proto__":{"x":1},"piese":[{"id":"p","constructor":3,"operatii":[],"radacina":{"tip":"element","id":"a","forma":{"tip":"cerc","raza":1},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}}}],"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[{"id":"i","piesa":"p","x":0,"y":0,"rotire":0,"campuri":{"__proto__":"v","prototype":"w"}}]}]}';
+  const text = '{"schema":10,"rev":0,"__proto__":{"x":1},"piese":[{"id":"p","constructor":3,"operatii":[],"radacina":{"tip":"element","id":"a","forma":{"tip":"cerc","raza":1},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}}}],"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[{"id":"i","piesa":"p","x":0,"y":0,"rotire":0,"campuri":{"__proto__":"v","prototype":"w"}}]}]}';
+  // Și prin migrarea v9 → v10: cheile rămân date și după copia migrării.
+  const r9 = incarca(JSON.parse(text.replace('"schema":10', '"schema":9')));
+  assert.ok(r9.ok && jsonCanonic(r9.doc) === jsonCanonic(JSON.parse(text)), r9.ok ? 'v9' : r9.motiv);
   const r = incarca(JSON.parse(text));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
@@ -291,7 +294,7 @@ test('migrarea v2 → v3 (ADR 0025): o operație pe element, cu id-ul lui, în p
   const r = incarca(structuredClone(brut));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
-  assert.equal(r.doc.schema, 9);
+  assert.equal(r.doc.schema, VERSIUNE_SCHEMA);
   assert.equal(r.doc.rev, 4);
   assert.equal(r.doc['extra'], 'sus');
   const [p, gol] = r.doc.piese;
@@ -332,7 +335,7 @@ test('operațiile v3: id unic în piesă, noduri distincte, doar elemente ale pi
   assert.match(motiv((x) => { x.piese[0].operatii[0].noduri = ['lipsa']; }), /referă lipsa, care nu e un element al piesei/);
   assert.equal(ok((x) => { x.piese[0].operatii[0].noduri = []; }), false, 'fără noduri');
   assert.equal(ok((x) => { x.piese[0].operatii[0].tip = 'buzunar'; }), false, 'alt tip decât profil');
-  assert.equal(ok((x) => { x.piese[0].operatii[0].latura = 'stanga'; }), false, 'latura necunoscută');
+  assert.equal(ok((x) => { x.piese[0].operatii[0].latura = 'sus'; }), false, 'latura necunoscută');
   assert.equal(ok((x) => { delete x.piese[0].operatii; }), false, 'v3 fără câmpul operatii');
   for (const [camp, rau, bun] of [
     ['adancime', 0, 1000], ['adancime', 1000.5, 0.001], ['pas', 0, 1000], ['pas', Number.NaN, 0.5],
@@ -391,11 +394,11 @@ test('migrarea v3 → v4 (ADR 0027): fiecare operație primește sens urcare; re
   const r = incarca(v3);
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
-  assert.equal(r.doc.schema, 9);
+  assert.equal(r.doc.schema, VERSIUNE_SCHEMA);
   assert.deepEqual(r.doc.piese.map((p) => p.operatii.map((o) => [o.id, o.latura, o.sens, o['alt']])), [[['e1', 'exterior', 'urcare', 7]], [['e2', 'interior', 'urcare', 7]]]);
   // Fără operații: nimic de adăugat, doar schema.
   const gol = incarca(JSON.parse(JSON.stringify({ ...documentNou(FOAIA), schema: 3 })));
-  assert.ok(gol.ok && gol.doc.schema === 9 && gol.doc.piese.length === 0);
+  assert.ok(gol.ok && gol.doc.schema === VERSIUNE_SCHEMA && gol.doc.piese.length === 0);
 });
 
 test('migrarea v4 → v5 (ADR 0028): fiecare operație primește urechi null; restul neschimbat; lanțul v3 → v5', () => {
@@ -406,10 +409,10 @@ test('migrarea v4 → v5 (ADR 0028): fiecare operație primește urechi null; re
   const r = incarca(v4);
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
-  assert.equal(r.doc.schema, 9);
+  assert.equal(r.doc.schema, VERSIUNE_SCHEMA);
   assert.deepEqual(r.doc.piese.map((p) => p.operatii.map((o) => [o.id, o.sens, o.urechi, o['alt']])), [[['e1', 'opozitie', null, 7]], [['e2', 'opozitie', null, 7]]]);
   const gol = incarca(JSON.parse(JSON.stringify({ ...documentNou(FOAIA), schema: 4 })));
-  assert.ok(gol.ok && gol.doc.schema === 9 && gol.doc.piese.length === 0);
+  assert.ok(gol.ok && gol.doc.schema === VERSIUNE_SCHEMA && gol.doc.piese.length === 0);
   // Lanțul v3 → v4 → v5: sensul și urechile, amândouă.
   const v3 = JSON.parse(JSON.stringify({ ...d, schema: 3, piese: d.piese.map((p) => ({ ...p, operatii: p.operatii.map(({ sens: _s, urechi: _u, rampa: _r, intrari: _i, colturi: _c, ...o }) => o) })) }));
   const r3 = incarca(v3);
@@ -465,10 +468,10 @@ test('migrarea v5 → v6 (ADR 0029): fiecare operație primește rampa null; res
   const r = incarca(v5);
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
-  assert.equal(r.doc.schema, 9);
+  assert.equal(r.doc.schema, VERSIUNE_SCHEMA);
   assert.deepEqual(r.doc.piese.map((p) => p.operatii.map((o) => [o.id, o.rampa, o.urechi?.numar, o['alt']])), [[['e1', null, 4, 7]], [['e2', null, 4, 7]]]);
   const gol = incarca(JSON.parse(JSON.stringify({ ...documentNou(FOAIA), schema: 5 })));
-  assert.ok(gol.ok && gol.doc.schema === 9 && gol.doc.piese.length === 0);
+  assert.ok(gol.ok && gol.doc.schema === VERSIUNE_SCHEMA && gol.doc.piese.length === 0);
   // Lanțul v4 → v5 → v6.
   const v4 = JSON.parse(JSON.stringify({ ...d, schema: 4, piese: d.piese.map((p) => ({ ...p, operatii: p.operatii.map(({ urechi: _u, rampa: _r, intrari: _i, colturi: _c, ...o }) => o) })) }));
   const r4 = incarca(v4);
@@ -505,10 +508,10 @@ test('migrarea v6 → v7 (ADR 0030): fiecare operație primește intrari null; r
   const r = incarca(v6);
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
-  assert.equal(r.doc.schema, 9);
+  assert.equal(r.doc.schema, VERSIUNE_SCHEMA);
   assert.deepEqual(r.doc.piese.map((p) => p.operatii.map((o) => [o.id, o.intrari, o.rampa?.lungime, o['alt']])), [[['e1', null, 10, 7]], [['e2', null, 10, 7]]]);
   const gol = incarca(JSON.parse(JSON.stringify({ ...documentNou(FOAIA), schema: 6 })));
-  assert.ok(gol.ok && gol.doc.schema === 9 && gol.doc.piese.length === 0);
+  assert.ok(gol.ok && gol.doc.schema === VERSIUNE_SCHEMA && gol.doc.piese.length === 0);
   const v5 = JSON.parse(JSON.stringify({ ...d, schema: 5, piese: d.piese.map((p) => ({ ...p, operatii: p.operatii.map(({ rampa: _r, intrari: _i, colturi: _c, ...o }) => o) })) }));
   const r5 = incarca(v5);
   assert.ok(r5.ok && r5.doc.piese.every((p) => p.operatii.every((o) => o.rampa === null && o.intrari === null)));
@@ -544,10 +547,10 @@ test('migrarea v7 → v8 (ADR 0032): fiecare operație primește colturi null; r
   const r = incarca(v7);
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
-  assert.equal(r.doc.schema, 9);
+  assert.equal(r.doc.schema, VERSIUNE_SCHEMA);
   assert.deepEqual(r.doc.piese.map((p) => p.operatii.map((o) => [o.id, o.colturi, o.intrari?.raza, o['alt']])), [[['e1', null, 3, 7]], [['e2', null, 3, 7]]]);
   const gol = incarca(JSON.parse(JSON.stringify({ ...documentNou(FOAIA), schema: 7 })));
-  assert.ok(gol.ok && gol.doc.schema === 9 && gol.doc.piese.length === 0);
+  assert.ok(gol.ok && gol.doc.schema === VERSIUNE_SCHEMA && gol.doc.piese.length === 0);
   const v6 = JSON.parse(JSON.stringify({ ...d, schema: 6, piese: d.piese.map((p) => ({ ...p, operatii: p.operatii.map(({ intrari: _i, colturi: _c, ...o }) => o) })) }));
   const r6 = incarca(v6);
   assert.ok(r6.ok && r6.doc.piese.every((p) => p.operatii.every((o) => o.intrari === null && o.colturi === null)));

@@ -1,11 +1,13 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import '../i18n/export.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
-import { MARGINI_OPERATIE, type Depasire, type IesireFoaie, type ParametriExport } from './actiuniExportTipuri.ts';
+import {
+  laturiOferite, MARGINI_OPERATIE, type Depasire, type IesireFoaie, type LaturaExport, type ParametriExport,
+} from './actiuniExportTipuri.ts';
 import { citesteNumar, textNumar } from './numar.ts';
 import { useLimba } from './useLimba.ts';
 
-type Latura = 'exterior' | 'interior' | 'pe-linie';
+type Latura = LaturaExport;
 /** Ce se schimbă dintr-o operație de profil în dialog; scula (freza) e comună tuturor, până la schimbarea sculei. */
 /** Sensul de tăiere (ADR 0027): urcare = materialul păstrat în dreapta sensului de mers, cu axul M3. */
 type Sens = 'urcare' | 'opozitie';
@@ -22,8 +24,11 @@ export type ValoriOperatie = {
   readonly rampa: RampaOperatie | null; readonly intrari: IntrariOperatie | null; readonly colturi: ColturiOperatie | null;
 };
 
-/** Un rând: o operație a unei piese (ADR 0025), cu cheia `<piesă>/<operație>`. */
-export type OperatieExport = { readonly cheie: string; readonly descriere: string; readonly valori: ValoriOperatie };
+/**
+ * Un rând: o operație a unei piese (ADR 0025), cu cheia `<piesă>/<operație>`. `deschise`: câte din nodurile ei sunt căi
+ * deschise (ADR 0037 §12): coloanele oferă doar ce nu refuză exportul.
+ */
+export type OperatieExport = { readonly cheie: string; readonly descriere: string; readonly deschise: number; readonly valori: ValoriOperatie };
 
 /** Ce trimite dialogul la Exportă: montajul, valorile operațiilor (se scriu în document) și confirmarea. */
 export type CerereExport = ParametriExport & { readonly diametru: number; readonly valori: ReadonlyMap<string, ValoriOperatie> };
@@ -72,13 +77,13 @@ function laturi(d: Depasire, limba: string): string {
 }
 
 const COLTURI = ['stanga-jos', 'dreapta-jos', 'dreapta-sus', 'stanga-sus'] as const;
-const LATURI: readonly Latura[] = ['exterior', 'interior', 'pe-linie'];
 const CHEI_COLT: Readonly<Record<(typeof COLTURI)[number], CheieSimpla>> = {
   'stanga-jos': 'export.colt.stanga-jos', 'dreapta-jos': 'export.colt.dreapta-jos',
   'dreapta-sus': 'export.colt.dreapta-sus', 'stanga-sus': 'export.colt.stanga-sus',
 };
 const CHEI_LATURA: Readonly<Record<Latura, CheieSimpla>> = {
   exterior: 'export.latura.exterior', interior: 'export.latura.interior', 'pe-linie': 'export.latura.pe-linie',
+  stanga: 'export.latura.stanga', dreapta: 'export.latura.dreapta',
 };
 
 /** În (0, plafon]: marginile schemei v3, ca operațiile scrise în document să treacă de ușă la redeschidere. */
@@ -129,14 +134,17 @@ export function DialogExport(
   const [z0, setZ0] = useState<'sus' | 'jos'>('sus');
   // Valorile se țin ca text, cum le scrie omul; se citesc abia la verificare și la Exportă.
   const [diametru, setDiametru] = useState(() => text(diametruInitial));
+  // Pe un rând cu căi deschise, urechile, rampa, intrările și degajările vin mai târziu (ADR 0037 §9, §12): bifele pornesc
+  // scoase și rămân oprite, iar Exportă le scrie scoase (ce refuză exportul nu se oferă).
   const dinDocument = (): Record<string, Rand> => Object.fromEntries(operatii.map((o) => {
     const u = o.valori.urechi ?? URECHI_IMPLICITE;
+    const inchise = o.deschise === 0;
     return [o.cheie, {
       latura: o.valori.latura, sens: o.valori.sens, adancime: text(o.valori.adancime), pas: text(o.valori.pas),
-      urechi: o.valori.urechi !== null, numarUrechi: text(u.numar), latimeUreche: text(u.latime), grosimeUreche: text(u.grosime),
-      rampa: o.valori.rampa !== null, lungimeRampa: text((o.valori.rampa ?? RAMPA_IMPLICITA).lungime),
-      intrari: o.valori.intrari !== null, razaIntrare: text((o.valori.intrari ?? INTRARI_IMPLICITE).raza),
-      colturi: o.valori.colturi?.tip ?? '',
+      urechi: inchise && o.valori.urechi !== null, numarUrechi: text(u.numar), latimeUreche: text(u.latime), grosimeUreche: text(u.grosime),
+      rampa: inchise && o.valori.rampa !== null, lungimeRampa: text((o.valori.rampa ?? RAMPA_IMPLICITA).lungime),
+      intrari: inchise && o.valori.intrari !== null, razaIntrare: text((o.valori.intrari ?? INTRARI_IMPLICITE).raza),
+      colturi: inchise ? o.valori.colturi?.tip ?? '' : '',
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
@@ -288,13 +296,17 @@ export function DialogExport(
               const p = param[o.cheie];
               if (!p) return null;
               const b = randBun(p);
+              // Rândul are căi deschise (ADR 0037 §12): doar pe linie, fără urechi, rampă, intrări și degajări, cu motivul în titlu.
+              const deschis = o.deschise > 0;
+              const titluDeschis = deschis ? t('export.deschise.titlu') : undefined;
               return (
                 <Fragment key={o.cheie}>
                 <tr data-operatie={o.cheie}>
                   <td>{o.descriere}</td>
                   <td>
-                    <select value={p.latura} data-camp="latura" disabled={doarCitire} onChange={(ev) => { schimba(o.cheie, { latura: ev.target.value as Latura }); }}>
-                      {LATURI.map((l) => <option key={l} value={l}>{t(CHEI_LATURA[l])}</option>)}
+                    <select value={p.latura} data-camp="latura" disabled={doarCitire} title={deschis ? t('export.latura.deschise.titlu') : undefined}
+                      onChange={(ev) => { schimba(o.cheie, { latura: ev.target.value as Latura }); }}>
+                      {laturiOferite(o.deschise, p.latura).map((l) => <option key={l} value={l}>{t(CHEI_LATURA[l])}</option>)}
                     </select>
                   </td>
                   <td>
@@ -307,23 +319,23 @@ export function DialogExport(
                   <td><input type="text" inputMode="decimal" value={p.adancime} disabled={doarCitire} aria-invalid={!b.adancime} onChange={(ev) => { schimba(o.cheie, { adancime: ev.target.value }); }} /></td>
                   <td><input type="text" inputMode="decimal" value={p.pas} disabled={doarCitire} aria-invalid={!b.pas} onChange={(ev) => { schimba(o.cheie, { pas: ev.target.value }); }} /></td>
                   <td>
-                    <input type="checkbox" checked={p.urechi} data-camp="urechi" disabled={doarCitire} aria-label={t('export.urechi')}
-                      title={t('export.urechi.titlu')} onChange={(ev) => { schimba(o.cheie, { urechi: ev.target.checked }); }} />
+                    <input type="checkbox" checked={p.urechi} data-camp="urechi" disabled={doarCitire || deschis} aria-label={t('export.urechi')}
+                      title={titluDeschis ?? t('export.urechi.titlu')} onChange={(ev) => { schimba(o.cheie, { urechi: ev.target.checked }); }} />
                   </td>
                   <td>
-                    <input type="checkbox" checked={p.rampa} data-camp="rampa" disabled={doarCitire} aria-label={t('export.rampa')}
-                      title={t('export.rampa.titlu')} onChange={(ev) => { schimba(o.cheie, { rampa: ev.target.checked }); }} />
+                    <input type="checkbox" checked={p.rampa} data-camp="rampa" disabled={doarCitire || deschis} aria-label={t('export.rampa')}
+                      title={titluDeschis ?? t('export.rampa.titlu')} onChange={(ev) => { schimba(o.cheie, { rampa: ev.target.checked }); }} />
                   </td>
                   <td>
                     {/* Pe linie, freza taie ambii pereți: nu există parte de deșeu pentru intrare (ADR 0030 §6). */}
                     <input type="checkbox" checked={p.intrari && p.latura !== 'pe-linie'} data-camp="intrari"
-                      disabled={doarCitire || p.latura === 'pe-linie'} aria-label={t('export.intrari')}
-                      title={t('export.intrari.titlu')} onChange={(ev) => { schimba(o.cheie, { intrari: ev.target.checked }); }} />
+                      disabled={doarCitire || deschis || p.latura === 'pe-linie'} aria-label={t('export.intrari')}
+                      title={titluDeschis ?? t('export.intrari.titlu')} onChange={(ev) => { schimba(o.cheie, { intrari: ev.target.checked }); }} />
                   </td>
                   <td>
                     {/* Pe linie, nu există parte de deșeu pentru degajare (ADR 0032 §6). */}
-                    <select value={p.latura === 'pe-linie' ? '' : p.colturi} data-camp="colturi" disabled={doarCitire || p.latura === 'pe-linie'}
-                      aria-label={t('export.colturi')} title={t('export.colturi.titlu')}
+                    <select value={p.latura === 'pe-linie' ? '' : p.colturi} data-camp="colturi" disabled={doarCitire || deschis || p.latura === 'pe-linie'}
+                      aria-label={t('export.colturi')} title={titluDeschis ?? t('export.colturi.titlu')}
                       onChange={(ev) => { schimba(o.cheie, { colturi: ev.target.value === 'dog-bone' || ev.target.value === 't-bone' ? ev.target.value : '' }); }}>
                       <option value="">{t('export.colturi.fara')}</option>
                       <option value="dog-bone">{t('export.colturi.dog-bone')}</option>

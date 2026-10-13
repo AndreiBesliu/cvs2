@@ -22,6 +22,7 @@ import {
   verificaPanaLaV7O, verificaV7V8, verificaV8, type ColturiO, type DocV8O,
   migreazaV1V9O, migreazaV4V9O, migreazaV5V9O, migreazaV6V9O, migreazaV7V9O, migreazaV8V9O, ridicaV8O, verificaPanaLaV8O, verificaV8V9, verificaV9,
   type DocV9O,
+  migreazaV4V10O, migreazaV5V10O, migreazaV6V10O, migreazaV7V10O, migreazaV8V10O, migreazaV9V10O, verificaV10, type DocV10O,
 } from '../oracles/document.ts';
 import {
   areRampaPeOperatii, areUrechiPeOperatii, CAZURI_HARTIE, CAZURI_TAIETURI, CORPUS_V1, CORPUS_V2, CORPUS_V3, CORPUS_V4,
@@ -44,22 +45,27 @@ export const PE_V6 = V >= 6;
 export const PE_V7 = V >= 7;
 export const PE_V8 = V >= 8;
 export const PE_V9 = V >= 9;
+/** Felia 2.3c-2 (ADR 0037): documentul v10. */
+export const PE_V10 = V >= 10;
 /** Motivul pentru care testele doar-v5 se sar. */
 export const DOAR_V5 = PE_V5 ? false : `aplicația e încă pe schema ${V}; testul cere documentul v5 (ADR 0028)`;
 export const DOAR_V6 = PE_V6 ? false : `aplicația e încă pe schema ${V}; testul cere documentul v6 (ADR 0029)`;
 export const DOAR_V7 = PE_V7 ? false : `aplicația e încă pe schema ${V}; testul cere documentul v7 (ADR 0030)`;
 export const DOAR_V8 = PE_V8 ? false : `aplicația e încă pe schema ${V}; testul cere documentul v8 (ADR 0032)`;
 export const DOAR_V9 = PE_V9 ? false : `aplicația e încă pe schema ${V}; testul cere documentul v9 (ADR 0034)`;
+export const DOAR_V10 = PE_V10 ? false : `aplicația e încă pe schema ${V}; testul cere documentul v10 (ADR 0037)`;
 /** Ce verifică ușa aplicației pe documentul schemei ei. */
-export const verificaSchemaApp = (d: unknown): string[] => (PE_V9 ? verificaV9(d) : PE_V8 ? verificaV8(d) : PE_V7 ? verificaV7(d) : PE_V6 ? verificaV6(d) : PE_V5 ? verificaV5(d) : verificaV4(d));
+export const verificaSchemaApp = (d: unknown): string[] => (PE_V10 ? verificaV10(d) : PE_V9 ? verificaV9(d) : PE_V8 ? verificaV8(d) : PE_V7 ? verificaV7(d) : PE_V6 ? verificaV6(d) : PE_V5 ? verificaV5(d) : verificaV4(d));
 /** Un v5 al oracolului, cum trebuie să iasă din ușa aplicației: neschimbat pe 5, cu `rampa: null` pe 6, și `intrari: null` pe 7. */
-export const v5PentruApp = (d: DocV5O): DocV5O | DocV6O | DocV7O | DocV8O | DocV9O => (PE_V9 ? migreazaV5V9O(d) : PE_V8 ? migreazaV5V8O(d) : PE_V7 ? migreazaV5V7O(d) : PE_V6 ? migreazaV5V6O(d) : d);
+export const v5PentruApp = (d: DocV5O): DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O => (PE_V10 ? migreazaV5V10O(d) : PE_V9 ? migreazaV5V9O(d) : PE_V8 ? migreazaV5V8O(d) : PE_V7 ? migreazaV5V7O(d) : PE_V6 ? migreazaV5V6O(d) : d);
 /** Un v6 al oracolului, cum trebuie să iasă din ușa aplicației: neschimbat pe 6, cu `intrari: null` pe 7. */
-export const v6PentruApp = (d: DocV6O): DocV6O | DocV7O | DocV8O | DocV9O => (PE_V9 ? migreazaV6V9O(d) : PE_V8 ? migreazaV6V8O(d) : PE_V7 ? migreazaV6V7O(d) : d);
+export const v6PentruApp = (d: DocV6O): DocV6O | DocV7O | DocV8O | DocV9O | DocV10O => (PE_V10 ? migreazaV6V10O(d) : PE_V9 ? migreazaV6V9O(d) : PE_V8 ? migreazaV6V8O(d) : PE_V7 ? migreazaV6V7O(d) : d);
 /** Un v7 al oracolului, cum trebuie să iasă din ușa aplicației: neschimbat pe 7, cu `colturi: null` pe 8. */
-export const v7PentruApp = (d: DocV7O): DocV7O | DocV8O | DocV9O => (PE_V9 ? migreazaV7V9O(d) : PE_V8 ? migreazaV7V8O(d) : d);
-/** Un v8 al oracolului, cum trebuie să iasă din ușa aplicației: neschimbat pe 8, cu `schema: 9` pe 9 (ADR 0034 §3). */
-export const v8PentruApp = (d: DocV8O): DocV8O | DocV9O => (PE_V9 ? migreazaV8V9O(d) : d);
+export const v7PentruApp = (d: DocV7O): DocV7O | DocV8O | DocV9O | DocV10O => (PE_V10 ? migreazaV7V10O(d) : PE_V9 ? migreazaV7V9O(d) : PE_V8 ? migreazaV7V8O(d) : d);
+/** Un v8 al oracolului, cum trebuie să iasă din ușa aplicației: neschimbat pe 8, cu `schema: 9` pe 9 (ADR 0034 §3), 10 pe 10. */
+export const v8PentruApp = (d: DocV8O): DocV8O | DocV9O | DocV10O => (PE_V10 ? migreazaV8V10O(d) : PE_V9 ? migreazaV8V9O(d) : d);
+/** Un v9 al oracolului, cum trebuie să iasă din ușa aplicației: neschimbat pe 9, cu `schema: 10` pe 10 (ADR 0037 §2). */
+export const v9PentruApp = (d: DocV9O): DocV9O | DocV10O => (PE_V10 ? migreazaV9V10O(d) : d);
 /** Pe 7, un document cu un câmp `intrari` pe operații se ciocnește (ADR 0030 §1). */
 export const ciocnesteLa7 = (d: unknown): boolean => (PE_V7 && areIntrariPeOperatii(d)) || (PE_V8 && areColturiPeOperatii(d));
 
@@ -77,7 +83,7 @@ export const ca = (d: DocApp): DocV8O => d as unknown as DocV8O;
  * Ce trebuie să dea ușa aplicației pentru un document vechi, adus de oracol la v4: v4-ul însuși (aplicația pe 4) sau
  * v5-ul migrării (pe 5); `null` = refuz (pe 5: o operație care are deja un câmp `urechi`, ciocnire).
  */
-export function asteptatDinV4(v4: DocV4O): DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | null {
+export function asteptatDinV4(v4: DocV4O): DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | null {
   if (!PE_V5) return v4;
   if (areUrechiPeOperatii(v4)) return null;
   if (!PE_V6) return migreazaV4V5O(v4);
@@ -86,7 +92,7 @@ export function asteptatDinV4(v4: DocV4O): DocV4O | DocV5O | DocV6O | DocV7O | D
   if (areIntrariPeOperatii(v4)) return null;
   if (!PE_V8) return migreazaV4V7O(v4);
   if (areColturiPeOperatii(v4)) return null;
-  return PE_V9 ? migreazaV4V9O(v4) : migreazaV4V8O(v4);
+  return PE_V10 ? migreazaV4V10O(v4) : PE_V9 ? migreazaV4V9O(v4) : migreazaV4V8O(v4);
 }
 
 /** Lista aplicației, în forma oracolului; `idLume` trebuie să fie `<instanță>/<nod>`. */
@@ -200,12 +206,15 @@ export function aceleasiTaieturi(real: readonly TaieturaApp[], asteptat: Readonl
   });
 }
 
-/** Tăieturile oracolului pentru un document v4, …, v8. */
-export const taieturileOracolului = (d: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O, k: number): ReadonlyArray<TaieturaAsteptata> =>
-  (d.schema === 9 || d.schema === 8 ? taieturiV8O(d, k) : d.schema === 7 ? taieturiV7O(d, k) : d.schema === 6 ? taieturiV6O(d, k) : d.schema === 5 ? taieturiV5O(d, k) : taieturiV4O(d, k));
+/**
+ * Tăieturile oracolului pentru un document v4, …, v10. Un v10 de aici e un document vechi migrat (fără căi deschise, fără
+ * laturile noi, fără `despartire`), deci ordinea de la §8 (ADR 0037) e chiar cea a lui ADR 0025 (`taieturiV8O`).
+ */
+export const taieturileOracolului = (d: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O, k: number): ReadonlyArray<TaieturaAsteptata> =>
+  (d.schema === 10 ? taieturiV8O(d as unknown as DocV9O, k) : d.schema === 9 || d.schema === 8 ? taieturiV8O(d, k) : d.schema === 7 ? taieturiV7O(d, k) : d.schema === 6 ? taieturiV6O(d, k) : d.schema === 5 ? taieturiV5O(d, k) : taieturiV4O(d, k));
 
 /** Elementele și tăieturile fiecărei foi, aplicația față de oracol. */
-export function aceeasiFoaie(doc: DocApp, asteptat: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O): void {
+export function aceeasiFoaie(doc: DocApp, asteptat: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O): void {
   assert.equal(ca(doc).foi.length, asteptat.foi.length, 'numărul de foi');
   for (let k = 0; k < asteptat.foi.length; k++) {
     aceeasiLume(lumeaAplicatiei(doc, k), geometrieV2(asteptat, k));
@@ -267,7 +276,7 @@ export function faraCampuriNoi(d: unknown, schema: number, urechi = PE_V5): Libe
  * Încărcarea unui document vechi (`brut`) pe care oracolul îl duce în `v4` (lanțul până la 4): ce dă ușa trebuie să fie
  * exact `asteptatDinV4(v4)`, sau un refuz cu motiv când acela e `null`. Întoarce documentul aplicației (sau null).
  */
-export function incarcaVechi(brut: unknown, v4: DocV4O): { readonly doc: DocApp; readonly asteptat: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O } | null {
+export function incarcaVechi(brut: unknown, v4: DocV4O): { readonly doc: DocApp; readonly asteptat: DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O } | null {
   const asteptat = asteptatDinV4(v4);
   if (asteptat === null) {
     const r = incarca(structuredClone(brut));

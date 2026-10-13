@@ -5,7 +5,8 @@
  * adaugă vârfurile căilor piesei la ambele numărători: suma pe piese (≤ 200 000) și lumea (≤ 1 000 000). Oracolul
  * prezice numerele de după copie din document (`varfuriDeCale`, `varfuriInLume`, scrise aici din ADR); dacă ar trece de
  * un plafon, acțiunea trebuie să fie inactivă (cu motiv) și documentul neschimbat; altfel activă, cu exact numerele
- * prezise, iar documentul rezultat trece ușa oracolului (`verificaV9`) și pe a aplicației (se poate redeschide).
+ * prezise, iar documentul rezultat trece ușa oracolului (`verificaV9`; felia 2.3c-2: pe schema aplicației,
+ * `verificaSchemaApp`, deci `verificaV10` pe 10) și pe a aplicației (se poate redeschide).
  * ALEGERE: un cerc nou nu adaugă vârfuri de cale, deci „Adaugă cerc” rămâne activ și la plafonul lumii.
  *
  * Precizarea recenziei (11.10, ADR 0034 §2): o instanță mutată sau copiată (Ctrl+D) peste 10⁷ mm de origine
@@ -20,7 +21,7 @@ import { creeazaRegistru, ruleaza, stare } from '../../src/ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
 import { PLAFOANE_O, verificaV9, type Liber } from '../oracles/document.ts';
 import { docPieseCale, varfuriDeCale } from '../oracles/document.v9.cazuri.ts';
-import { accepta, DOAR_V9, type DocApp } from './ajutor-document-oracol.ts';
+import { accepta, DOAR_V9, verificaSchemaApp, type DocApp } from './ajutor-document-oracol.ts';
 
 /** Vârfurile căilor fiecărei piese (după id). */
 function varfuriPePiesa(d: unknown): Map<string, number> {
@@ -106,7 +107,8 @@ for (const c of DEPARTE) {
     assert.deepEqual(r, { ok: true });
     const pozitii = ((h.doc as unknown as Liber)['foi'] as Liber[]).flatMap((f) => (f['instante'] as Liber[]).map((i) => [i['x'], i['y']]));
     assert.ok(pozitii.some(([x, y]) => x === nou.x && y === nou.y), `nicio instanță la (${nou.x}, ${nou.y}): ${JSON.stringify(pozitii)}`);
-    assert.deepEqual(verificaV9(h.doc), [], 'ușa oracolului refuză documentul de după acțiune');
+    // Felia 2.3c-2: documentul de după acțiune e pe schema aplicației (10, ADR 0037), judecat de ușa oracolului pentru ea.
+    assert.deepEqual(verificaSchemaApp(h.doc), [], 'ușa oracolului refuză documentul de după acțiune');
   });
 }
 
@@ -139,7 +141,7 @@ for (const c of CAZURI) {
       const d1 = ctx.h().doc;
       assert.deepEqual({ piese: varfuriDeCale(d1), lume: varfuriInLume(d1) }, prezis, 'numărătorile de după copie');
       assert.equal(((d1 as unknown as Liber)['piese'] as unknown[]).length, ((doc0 as unknown as Liber)['piese'] as unknown[]).length + c.alese.length, 'câte o piesă nouă pe copie');
-      assert.deepEqual(verificaV9(d1), [], 'ușa oracolului refuză documentul de după Ctrl+D');
+      assert.deepEqual(verificaSchemaApp(d1), [], 'ușa oracolului refuză documentul de după Ctrl+D');
       if (c.redeschide) {
         const re = incarca(JSON.parse(JSON.stringify(d1)));
         assert.ok(re.ok, `documentul de după Ctrl+D nu se mai deschide: ${re.ok ? '' : String(re.motiv)}`);

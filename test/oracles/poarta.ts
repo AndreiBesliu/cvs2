@@ -89,7 +89,22 @@
  *   cu supremul rafinat (nu doar capetele). Prinde cercul Ø50 de la „Ce am măsurat”, punctul 2.
  * `inainteDe0037` rulează poarta de dinainte de ADR 0037 (ADR 0032 întreg), doar pentru proba că programele fără
  * defectul de la punctul 2 au EXACT aceleași verdicte; `inainteDe0032`, `inainteDe0031` și `inainteDe0030` o implică.
- * Restul lui §13 (2, 9 și 11 amendate pe căile deschise, 14 (ii), 14 (iii)) nu e aici.
+ *
+ * Felia 2.3c-2 (ADR 0037 §8, §9, §13, documentul v10; sesiune independentă), definițiile în `deschise.ts`:
+ * - etichetele căilor deschise, `(<idLume>: cale, pe-linie, <adâncime> mm)`, devin cunoscute: poarta află că o etichetă
+ *   e a unei căi deschise din document (`TaieturaDoc.inchis === false`, construit de `regiuneDinDocument` dintr-un v10);
+ * - 14 (i) judecă pe conturul DESCHIS (fără coarda de închidere), construit așa de `regiune.ts`;
+ * - 11 AMENDATĂ: pe eticheta unei căi deschise, o trecere = plonjarea verticală din aer într-un capăt (pe linie, vârful
+ *   0), drumul până la celălalt capăt la Z constant, ridicarea; toate trecerile din același punct; fără întoarcerea în
+ *   punctul plonjării (forma de la §4 din `rampa.ts` nu le mai judecă);
+ * - 14 (iii): ordinea de la §8 (clasele 0–3, despărțirile la urmă și doar marcate), pe documentele cu căi deschise;
+ * - refuzurile luate ca încălcări (linia 0): urechile, rampa, intrările, degajările pe o operație cu un nod deschis (10,
+ *   11, 12, 13), exteriorul / interiorul pe un element deschis și stânga / dreapta pe unul închis (2), marcajul
+ *   despărțirii nejustificat, calea deschisă degenerată și tăietura deschisă prin foaie, nemarcată, care ajunge la
+ *   marginea foii (14, §8).
+ * `inainteDe0037` (și orice mod mai vechi) oprește toate acestea și citește `regiune.inainteDe0037`: regiunea pe care o
+ * construia oracolul de dinainte din același document (orice cale închisă). Documentele fără căi deschise au EXACT
+ * aceleași verdicte în afară de 14 (i). Tăieturile pe o parte (14 (ii), părțile lui 2 și 9) vin cu 2.3c-5.
  */
 import { citeste, esantioane, marginiSubSuprafata, regulaArcGrbl, type Comentariu, type Mutare, type Punct3 } from './gcode.ts';
 import {
@@ -103,6 +118,7 @@ import { regula0030, verificaIntrari } from './intrari.ts';
 import { pasCuIntrare, verificaIntrariCuRampa } from './intrari-rampa.ts';
 import { analizeazaDegajarile, verificaDrumulExact, type AnalizaDegajari } from './degajari.ts';
 import { invarianta14 } from './pe-linie.ts';
+import { etichetaDeschisa, verificaDeschise } from './deschise.ts';
 
 export type ColtOrigine = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus';
 
@@ -286,8 +302,13 @@ export function poarta(text: string, ctx: ContextPoarta, o: ModPoarta = {}): Inc
   /** Linia primei mișcări de tăiere al cărei disc trece de o margine a foii. */
   let primaIesire = 0;
 
+  // Modurile (doar pentru probele de echivalență): orice poartă de dinainte o oprește pe cele noi.
+  const amendat32 = !o.inainteDe0030 && !o.inainteDe0031 && !o.inainteDe0032;
+  // 14 (i), 11 pe căile deschise, refuzurile și 14 (iii) (ADR 0037 §13): orice poartă de dinainte le oprește.
+  const amendat37 = amendat32 && !o.inainteDe0037;
+  // ADR 0037 §13: poarta de dinainte vede regiunea de dinainte (orice cale închisă), cea construită din același document.
+  const reg = ctx.regiune && !amendat37 ? (ctx.regiune.inainteDe0037 ?? ctx.regiune) : ctx.regiune;
   // 2: problemele documentului și etichetele (ADR 0026 §7), în ordinea liniilor.
-  const reg = ctx.regiune;
   const etichete: Array<{ readonly linia: number; readonly eticheta: Eticheta | null }> = [];
   if (reg) {
     for (const p of reg.probleme) rez.push({ invarianta: 2, linia: 0, mesaj: `regiunea păstrată: ${p.mesaj}` });
@@ -308,9 +329,6 @@ export function poarta(text: string, ctx: ContextPoarta, o: ModPoarta = {}): Inc
   /** Indicele etichetei active (ultima de pe o linie de dinaintea mișcării). */
   let iEticheta = -1;
   // 13 și amendamentele ADR 0032 (2, 9–12): drumurile dus-întors, citite o dată, înaintea mișcărilor.
-  const amendat32 = !o.inainteDe0030 && !o.inainteDe0031 && !o.inainteDe0032;
-  // 14 (i) (ADR 0037 §13): orice poartă de dinainte o oprește.
-  const amendat37 = amendat32 && !o.inainteDe0037;
   const deg: AnalizaDegajari | null = reg && amendat32 ? analizeazaDegajarile(evenimente, etichete, reg, (p) => laDocument(p, ctx), R, ctx.foaie) : null;
   /** Evenimentele pe care se judecă 9–12: fără drumurile dus-întors (ADR 0032 §7), sau toate (poarta de dinainte). */
   const judecate = deg ? deg.faraDrumuri : evenimente;
@@ -425,7 +443,9 @@ export function poarta(text: string, ctx: ContextPoarta, o: ModPoarta = {}): Inc
       rez.push({ invarianta: 9, linia, mesaj: 'sensul de tăiere: axul pornit cu M4 (invers); tabelul ADR 0027 e doar pentru M3' });
     }
     // 10 și 11: rampa (ADR 0029 §5): pe etichetele cu rampă, urechile pe fundul fiecărei treceri, plus invarianta 11.
-    const rampa = verificaRampa(judecate, etichete, reg, (p) => laDocument(p, ctx), reg.grosimeFoaie ?? T, amendat, amendat31 ? pasCuIntrare : undefined);
+    // ADR 0037 §13: etichetele căilor deschise au forma lor (`deschise.ts`), nu pe cea a buclei.
+    const deschisa = amendat37 ? (i: number): boolean => etichetaDeschisa(etichete[i]?.eticheta, reg) : undefined;
+    const rampa = verificaRampa(judecate, etichete, reg, (p) => laDocument(p, ctx), reg.grosimeFoaie ?? T, amendat, amendat31 ? pasCuIntrare : undefined, deschisa);
     // 10: urechile (ADR 0028 §5), pe aceleași bucle și cu aceeași legare a etichetei de operație (fără etichetele cu rampă).
     for (const x of verificaUrechile(judecate, etichete, reg, (p) => laDocument(p, ctx), reg.grosimeFoaie ?? T, ctx.diametruScula, rampa.cuRampa)) {
       rez.push({ invarianta: 10, linia: x.linia, mesaj: x.mesaj });
@@ -444,6 +464,8 @@ export function poarta(text: string, ctx: ContextPoarta, o: ModPoarta = {}): Inc
     // 14 (i): pe linie, freza stă pe linie, iar linia e acoperită (ADR 0037 §1, §13).
     if (amendat37) {
       for (const x of invarianta14(evenimente, etichete, reg, (m) => parteaDeTaiere(m, ctx))) rez.push({ invarianta: 14, linia: x.linia, mesaj: x.mesaj });
+      // 11 pe căile deschise, refuzurile de la §9 și 14 (iii), ordinea de la §8 (ADR 0037 §13, `deschise.ts`).
+      for (const x of verificaDeschise(judecate, etichete, reg, (p) => laDocument(p, ctx))) rez.push(x);
     }
   }
   // 10, avansul (ADR 0028 §4, precizarea din 09.10): viteza pe verticală a mișcărilor care coboară în material.

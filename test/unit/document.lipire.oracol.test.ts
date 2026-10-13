@@ -58,6 +58,12 @@
  * (`mareOperatii`), copiile pe versiuni ale documentelor mari se fac la prima citire (`lenes`, în cazuri), iar lanțurile
  * lungi ale oracolului (ușa și ridicarea) au o singură copie (`verificaLantO`, `ridicaLaO`): comparate cu cele de
  * dinainte pe 2 361 de documente (corpusuri, otrăvuri, generate și mari), 23 464 de rezultate, nicio diferență.
+ *
+ * Felia 2.3c-2 (ADR 0037, sesiune independentă): oracolul e pe v10 (căile deschise, laturile `stanga` / `dreapta`,
+ * `despartire`; migrarea v9 → v10 schimbă doar numărul). `SCHEMA_CURENTA_O` = 10, `ridicaO` dă v10 (`ridicaV9O`
+ * păstrează lanțul până la 9), `verificaO` e ușa v10 (`verificaPanaLaV9O`, a unei aplicații pe 9), iar fiecare test de
+ * mai sus primește pe 10 documentul migrării cu `schema: 10` (`v9PentruApp`, lanțurile `migreazaVkV10O`); „mai nouă”
+ * e de acum 11. Testele v10 sunt în `document.v10.oracol.test.ts`; „VERSIUNE_SCHEMA e 10” nu se sare.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -78,6 +84,7 @@ import {
   COLTURI_IMPLICITE_O, migreazaV1V8O, migreazaV4V8O, migreazaV5V8O, migreazaV6V8O, migreazaV7V8O, ridicaV7O, taieturiV8O, TIPURI_COLTURI_O,
   verificaPanaLaV7O, verificaV7V8, verificaV8, type ColturiO, type DocV8O,
   migreazaV1V9O, migreazaV4V9O, migreazaV8V9O, ridicaV8O, verificaPanaLaV8O, verificaV8V9, verificaV9, type DocV9O,
+  ridicaV9O,
 } from '../oracles/document.ts';
 import {
   areRampaPeOperatii, areUrechiPeOperatii, CAZURI_HARTIE, CAZURI_TAIETURI, CORPUS_V1, CORPUS_V2, CORPUS_V3, CORPUS_V4,
@@ -108,7 +115,8 @@ for (const caz of CAZURI_TAIETURI) {
     assert.deepEqual(verificaO(caz.doc), [], 'oracolul: documentul cazului e primit');
     const doc = accepta(structuredClone(caz.doc));
     aceleasiTaieturi(taieturileAplicatiei(doc, caz.indexFoaie), caz.taieturi.map((t) => (PE_V8 ? { ...t, urechi: null, rampa: null, intrari: null, colturi: null } : PE_V7 ? { ...t, urechi: null, rampa: null, intrari: null } : PE_V6 ? { ...t, urechi: null, rampa: null } : PE_V5 ? { ...t, urechi: null } : t)), 'aplicația');
-    aceleasiTaieturi(taieturiV4O(ridicaO(caz.doc), caz.indexFoaie), caz.taieturi, 'oracolul');
+    // Felia 2.3c-2: `ridicaO` dă v10; tăieturile ADR 0025 se citesc pe lanțul până la 9 (aceleași, fără căi deschise).
+    aceleasiTaieturi(taieturiV4O(ridicaV9O(caz.doc), caz.indexFoaie), caz.taieturi, 'oracolul');
   });
 }
 
@@ -146,11 +154,11 @@ for (const v of [...VALIDE_DIFICILE_V4, ...CORPUS_V4]) {
   });
 }
 
-test(`(f) schema ${V + 1} (mai nouă decât a aplicației) e refuzată; schema 10 e refuzată și de oracol`, () => {
+test(`(f) schema ${V + 1} (mai nouă decât a aplicației) e refuzată; schema ${SCHEMA_CURENTA_O + 1} e refuzată și de oracol`, () => {
   const d = structuredClone((VALIDE_DIFICILE_V8[1] as (typeof VALIDE_DIFICILE_V8)[number]).doc) as Liber;
   d['schema'] = V + 1;
   assert.equal(incarca(d).ok, false);
-  d['schema'] = 10;
+  d['schema'] = SCHEMA_CURENTA_O + 1;
   assert.ok(verificaO(d).some((p) => p.startsWith('[schema]')));
   assert.equal(incarca(d).ok, false);
 });

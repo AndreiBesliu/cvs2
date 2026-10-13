@@ -23,6 +23,9 @@ export const EPS_ATINGERE_INELE = 1e-6;
 /** Începutul oricărui refuz al regiunii păstrate, ca testele să-l poată recunoaște (ADR 0026 §8). */
 export const PREFIX_REGIUNE = 'regiunea păstrată:';
 
+/** Refuzul tăieturii pe o parte a unei căi deschise (ADR 0037 §3, §6), până la sub-felia ei (2.3c-5). */
+export const MOTIV_PARTE = 'tăietura pe o parte (stânga / dreapta) a unei căi deschise vine într-o felie următoare (2.3c-5): deocamdată, alege pe linie';
+
 export type Rol = 'piesa' | 'gol';
 
 export type Inel = {
@@ -47,7 +50,9 @@ export function regiunePastrata(taieturi: readonly Taietura[], contururi?: Reado
   { readonly ok: true; readonly regiune: Regiune } | { readonly ok: false; readonly motiv: string } {
   const laturi = new Map<string, { exterior: boolean; interior: boolean; t: Taietura }>();
   for (const t of taieturi) {
-    if (t.latura === 'pe-linie') continue;
+    // Inelele vin doar din exterior / interior: pe linie nu păstrează nimic (ADR 0026 §6), iar o cale deschisă tăiată pe o
+    // parte nu e inel (ADR 0037 §10: K nu se schimbă).
+    if (t.latura !== 'exterior' && t.latura !== 'interior') continue;
     const x = laturi.get(t.idLume) ?? { exterior: false, interior: false, t };
     x[t.latura] = true;
     laturi.set(t.idLume, x);
@@ -141,6 +146,8 @@ function stapan(r: Regiune, x: Inel): string {
  */
 export function verificaTaietura(r: Regiune, idLume: string, latura: Taietura['latura'], trasee: readonly Contur[], raza: number): string | null {
   if (latura === 'pe-linie') return null;
+  // Pe o parte, regiunea se judecă cu pereții (ADR 0037 §10), din 2.3c-5. Până atunci, refuz, nu „trece” nejudecat.
+  if (latura !== 'exterior' && latura !== 'interior') return `${idLume}: ${MOTIV_PARTE}`;
   const c = r.inele.find((x) => x.idLume === idLume);
   if (!c) return null;
   const inS = (p: Punct): boolean => (c.rol === 'piesa' ? inRegiune(p, [c.contur]) : !inRegiune(p, [c.contur]));
@@ -151,31 +158,59 @@ export function verificaTaietura(r: Regiune, idLume: string, latura: Taietura['l
     if (inS(p0)) {
       return `${PREFIX_REGIUNE} tăietura lui ${idLume} trece pe partea păstrată a propriului contur (lângă X ${fmt(p0.x)}, Y ${fmt(p0.y)})`;
     }
-    if (inK(r, p0)) {
-      const i = celMaiMicInel(r, p0);
-      const cui = i === null ? '?' : (r.inele[i]?.idLume ?? '?');
-      return `${PREFIX_REGIUNE} tăietura lui ${idLume} stă în piesa ${cui} (lângă X ${fmt(p0.x)}, Y ${fmt(p0.y)})`;
-    }
-    // Cutia traseului lărgită cu R: un inel a cărui cutie n-o atinge stă la mai mult de R de traseu. Se măsoară toate
-    // marginile apropiate și se spune cea mai apropiată: ea dă cât intră discul cu adevărat (ADR 0026 §8).
-    const cutie = largita(cutieContur(traseu), raza);
-    let cea: { readonly d: Inel; readonly a: Apropiere } | null = null;
-    for (const d of margini) {
-      if (!seAtingCutiile(cutie, d.cutie)) continue;
-      const a = apropiereContururi(traseu, d.contur, Math.max(raza - EPS_REGIUNE, EPS_ATINGERE_INELE));
-      if (!cea || a.distanta < cea.a.distanta) cea = { d, a };
-    }
-    // Apartenența se probează doar în primul vârf, deci o traversare (distanța 0) trebuie să fie încălcare și la R = ε
-    // (freza Ø0,01), unde R − ε = 0: pragul nu coboară sub atingere.
-    if (cea && cea.a.distanta < Math.max(raza - EPS_REGIUNE, EPS_ATINGERE_INELE)) {
+    if (inK(r, p0)) return `${PREFIX_REGIUNE} tăietura lui ${idLume} stă în piesa ${piesaCare(r, p0)} (lângă X ${fmt(p0.x)}, Y ${fmt(p0.y)})`;
+    const cea = margineAtinsa(traseu, margini, raza);
+    if (cea) {
       const { d, a } = cea;
       const cui = d === c ? `propria parte păstrată a lui ${idLume}` : `piesa ${stapan(r, d)}`;
-      // Un traseu care trece marginea (distanța 0) intră cel puțin cu R; cât, exact, ar cere adâncimea traversării.
-      const cat = a.distanta < EPS_ATINGERE_INELE ? `cel puțin ${fmt(raza, 3)} mm` : `${fmt(raza - a.distanta, 3)} mm`;
-      return `${PREFIX_REGIUNE} tăietura lui ${idLume} intră în ${cui} cu ${cat} (lângă X ${fmt(a.q.x)}, Y ${fmt(a.q.y)})`;
+      return `${PREFIX_REGIUNE} tăietura lui ${idLume} intră în ${cui} cu ${catIntra(a, raza)} (lângă X ${fmt(a.q.x)}, Y ${fmt(a.q.y)})`;
     }
   }
   return null;
+}
+
+/** Piesa în care stă un punct din K: cel mai mic inel care îl conține. */
+function piesaCare(r: Regiune, p: Punct): string {
+  const i = celMaiMicInel(r, p);
+  return i === null ? '?' : (r.inele[i]?.idLume ?? '?');
+}
+
+/** Cât intră discul: un traseu care trece marginea (distanța 0) intră cel puțin cu R; cât, exact, ar cere adâncimea traversării. */
+function catIntra(a: Apropiere, raza: number): string {
+  return a.distanta < EPS_ATINGERE_INELE ? `cel puțin ${fmt(raza, 3)} mm` : `${fmt(raza - a.distanta, 3)} mm`;
+}
+
+/**
+ * Cea mai apropiată margine de traseu, dacă discul de rază R purtat pe el intră în ea (distanța sub R − ε), altfel null.
+ * Cutia traseului lărgită cu R: un inel a cărui cutie n-o atinge stă la mai mult de R de traseu. Se măsoară toate
+ * marginile apropiate și se spune cea mai apropiată: ea dă cât intră discul cu adevărat (ADR 0026 §8). Apartenența se
+ * probează doar în primul vârf, deci o traversare (distanța 0) trebuie să fie încălcare și la R = ε (freza Ø0,01), unde
+ * R − ε = 0: pragul nu coboară sub atingere.
+ */
+function margineAtinsa(traseu: Contur, margini: readonly Inel[], raza: number): { readonly d: Inel; readonly a: Apropiere } | null {
+  const prag = Math.max(raza - EPS_REGIUNE, EPS_ATINGERE_INELE);
+  const cutie = largita(cutieContur(traseu), raza);
+  let cea: { readonly d: Inel; readonly a: Apropiere } | null = null;
+  for (const d of margini) {
+    if (!seAtingCutiile(cutie, d.cutie)) continue;
+    const a = apropiereContururi(traseu, d.contur, prag);
+    if (!cea || a.distanta < cea.a.distanta) cea = { d, a };
+  }
+  return cea && cea.a.distanta < prag ? cea : null;
+}
+
+/**
+ * Discul frezei purtat pe un traseu (o cale deschisă tăiată pe linie, ADR 0037 §8, §10) intră în K: primul punct stă în
+ * K, sau traseul trece la mai puțin de R − ε de o margine a lui K. Întoarce piesa, cât intră și locul, ca text, sau null.
+ * Pe linie, partea proprie nu există: se judecă doar K.
+ */
+export function discInK(r: Regiune, traseu: Contur, raza: number): { readonly piesa: string; readonly unde: string } | null {
+  const p0 = traseu.varfuri[0]?.p;
+  if (!p0) return null;
+  if (inK(r, p0)) return { piesa: piesaCare(r, p0), unde: `lângă X ${fmt(p0.x)}, Y ${fmt(p0.y)}` };
+  const cea = margineAtinsa(traseu, r.inele.filter((x) => margineK(r, x)), raza);
+  if (!cea) return null;
+  return { piesa: stapan(r, cea.d), unde: `cu ${catIntra(cea.a, raza)}, lângă X ${fmt(cea.a.q.x)}, Y ${fmt(cea.a.q.y)}` };
 }
 
 const seAtingCutiile = (a: Cutie, b: Cutie): boolean => a.minX <= b.maxX && b.minX <= a.maxX && a.minY <= b.maxY && b.minY <= a.maxY;

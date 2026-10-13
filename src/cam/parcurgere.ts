@@ -74,6 +74,8 @@ export function avansCoborare(lung: number, dz: number, avans: number, avansPlon
  * - O bucată care coboară merge pe verticală cel mult cu avansul de plonjare: F = min(avans, avansPlonjare·L₃ / |ΔZ|).
  * - La fiecare sosire într-un vârf care e Q-ul unei degajări (ADR 0032 §4), drumul Q → E → Q, la Z-ul curent; pornirea nu
  *   e o sosire.
+ * - Pe un contur deschis, drumul nu se desfășoară: stă în [0; P] (ADR 0037, „Ce am măsurat” 6). După ultimul vârf n-ar
+ *   urma segmentul 0, ci un G1 drept, la adâncime, de la capăt spre începutul căii, prin material.
  */
 export function parcurge(
   c: Contur, noduri: readonly Nod[], avans: number, avansPlonjare: number, degajari?: readonly Degajare[],
@@ -93,6 +95,9 @@ export function parcurge(
     P += L;
   }
   if (!(P > 0)) return { ok: true, miscari: [] };
+  if (!c.inchis && !(sDe >= -EPS_RUPTURA && sLa <= P + EPS_RUPTURA)) {
+    return { ok: false, motiv: `pe o cale deschisă, drumul de la ${sDe} la ${sLa} mm trece de capetele ei (0 și ${P} mm)` };
+  }
   const m: Miscare[] = [];
   let zCur = primul.z;
   let urm = 1; // primul nod încă neemis
@@ -186,8 +191,10 @@ export function punctLa(c: Contur, s: number): { readonly p: Punct; readonly t: 
 /**
  * Bucata buclei închise c de la poziția s (luată modulo P), de lungime L (0 < L ≤ P), ca un contur deschis: segmentul de la
  * capăt se taie exact, o linie într-o linie, un arc într-un arc pe același cerc. O bucată sub 1e-6 mm e doar punctul din s.
+ * Pe un contur deschis, poziția nu se ia modulo P (ADR 0037, „Ce am măsurat” 6): e o greșeală a apelantului, spusă tare.
  */
 export function bucataBuclei(c: Contur, s: number, L: number): Contur {
+  if (!c.inchis) throw new RangeError('bucata buclei cere o buclă închisă: pe o cale deschisă, poziția nu se desfășoară');
   const P = lungimeBucla(c);
   const r = incepeLa(c, P > 0 ? s - Math.floor(s / P) * P : 0);
   const start = r.varfuri[0]?.p ?? { x: 0, y: 0 };
