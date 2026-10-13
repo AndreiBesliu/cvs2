@@ -123,6 +123,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Calcul pe mai multe fire (workers) | D | v1 | de făcut | — |
 | Șabloane de operații (aceleași setări pe alt desen) și calcul în lot | S | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Două interfețe: asistent pas cu pas pentru începători + interfața completă | D | v1 (decis 06.10; era v1.x) | de făcut | — |
+| Două șabloane ale interfeței complete: **modern** (prototipul B, ales 13.10) și **clasic**, familiar celor care vin din ArtCAM (organizarea, nu aspectul: fără interfață, iconițe sau texte copiate) sau din CNCVS 1; plus **aranjarea personalizată**: utilizatorul așază uneltele în interfață și salvează aranjamentul | owner (13.10) | v1; momentul îl alege asistentul, fără să miște planul | în lucru (carcasa modernă: 2.8a) | — |
 | Scripting / macro-uri și asistenți proprii | D | v2 | de făcut | — |
 
 ## G. De decis de owner
