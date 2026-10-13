@@ -1402,6 +1402,43 @@ intai, sau crezi ca se poate face acum, fara sa afectam planul?”. Owner-ul a i
 vârf, dar mânerul retras (`s… -1-1-1-1z`) rămânea la 1 ulp de el, cu o tangentă din zgomot. Reparat (ADR 0035 §7), cu
 testul pe cele două forme reale: 0 refuzuri, 3 forme normalizate.
 
+**Completed:** 13.10 09:55. **Treceri:** 6 (designul; portarea; recenzia și reparațiile; oracolul, cu K1 și K7; logoul
+AS Roma; otrăvurile, cu golurile închise).
+
+**Făcut:**
+- ADR 0036 și `src/geom/nonzero.ts`: regula `nonzero` normalizată printr-un aranjament exact în double, fără PathKit
+  (mecanismul lui ADR 0003 înlocuit; PathKit rămâne pentru booleenele editorului, etapa 6, ADR 0004); calea rapidă
+  exactă (forma deja `evenodd` = același obiect), geometria ieșirii a sursei, refuzurile cu cod, bugetul pe apel și pe
+  fișier;
+- ușa (ADR 0035): regulile CSS simple din `<style>` (cu bugetul potrivirilor), `fill: none` nenormalizat, plafonul pe
+  intrare înaintea normalizării, mânerul retras lipit la închidere (logoul AS Roma).
+
+**Ce a găsit recenzia** (2 lentile + verificatori, 1,77 M; 8 confirmate, toate reparate): încrucișările la unghi mic
+ratate (critică: o lentilă de înfășurare 2 ieșea gaură, tăcut), comasarea nodurilor pătratică, ordinea ieșirilor la
+tangente, coincidența la 16τ, clasele CSS ale Illustrator ignorate, desenele `fill: none` normalizate, bugetul pe formă,
+plafonul după normalizare.
+
+**Ce a găsit oracolul** (sesiune independentă, 0,87 M, 168 + 972 de teste, 34 de sabotaje prinse): K1 (o cale cu un
+singur vârf trecea „neschimbată”: acum refuz `intrare`); K7 (un triunghi mai subțire decât τ iese gol: ADR 0036 §6
+precizat, „deja evenodd” la precizia τ).
+
+**Otrăvurile** (54, scrise de o sesiune independentă, 0,29 M; rulate pe o clonă la `ed5cd65`, reluate după închiderea
+sesiunii): **45 prinse**, 9 scăpate.
+- 4 au primit teste, fiecare probat pe otrava lui. **Două erau goluri reale, cu regiunea greșită, tăcut:** o cubică cu
+  buclă luată drept simplă pe calea rapidă (bucla de înfășurare 2 rămânea gaură) și incluziunea numărată pe bucăți
+  monotone pe x (un pătrat în același sens, sub un arc, rămânea gaură). Celelalte două: calea rapidă pe un desen de
+  20 m, arcul întreg întors cu −bulge bit cu bit.
+- 5 sunt echivalente sau plase de siguranță: coincidența cubicelor la 16τ și ordinea după curbură la tangente egale
+  (măsurate de portare), raza de control și verificarea de la mijloc (plasele a doua, care transformă o ratare în refuz),
+  muchia parțial în spatele originii (0 diferențe pe 6 000 de forme aleatoare și pe cazul țintit).
+
+**Costul în agenți:** ~5,3 M (designul 1,71, portarea 0,68, recenzia 1,77, oracolul 0,87, otrăvurile 0,29).
+
+**Rămâne deschis:**
+- booleenele editorului (etapa 6): același aranjament, cu alt predicat, se reevaluează atunci față de PathKit;
+- textul (etapa 7) folosește aceeași funcție; ADR 0036 se redeschide la refuzuri pe glife reale;
+- praful din ieșirea normalizării (VfB): regula vine cu 2.3c-1 (ADR 0037 §11).
+
 ## 2026-10-13 — Etapa 2, felia 2.3c: profilul pe contururile deschise (Model: Claude Opus 5.5)
 
 **Prompt:** același „continua, …” (13.10 07:17), după reparația logoului AS Roma. **Started:** 07:50, cât rulează

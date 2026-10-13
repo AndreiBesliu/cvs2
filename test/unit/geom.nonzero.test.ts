@@ -700,3 +700,72 @@ test('bugetul importului: comun mai multor apeluri, scăzut și de cele refuzate
     if (!e.ok) assert.match(e.motiv, /^intrare: bugetul/);
   }
 });
+
+// ---------------------------------------------------------------- otrăvurile 2.7d (13.10): goluri închise cu teste
+
+test('otrava 2.7d: un grup simplu pe un desen de 20 m (τ peste toleranța importului) trece pe calea rapidă, neschimbat', () => {
+  // τ = 1e-10 · 28 284 + 64 ulp ≈ 2,8e-6 mm > 1e-6: aranjamentul ar refuza („toleranta”), dar calea rapidă nu folosește τ.
+  const intrare = [drept(0, 0, 20_000, 20_000)];
+  const r = reusit(intrare);
+  assert.equal(r.info.neschimbat, true);
+  assert.equal(r.cai, intrare);
+});
+
+test('otrava 2.7d: un arc-sursă întreg, întors în ieșire, are exact −bulge, bit cu bit (ADR 0036 §5)', () => {
+  // Un cerc din 4 arce, orar; două, suprapuse doar pe o parte: arcele din partea îndepărtată rămân întregi, iar ieșirea
+  // (plinul în stânga) le întoarce. Bulge-urile sunt alese ca tan(atan(b)) ≠ b în double (0,3077, 0,4084, 0,4445): un
+  // bulge recalculat din baleiaj ar ieși la 1 ulp de −b (otrava „arcul întreg întors cu bulge recalculat” trecea pe
+  // 100° / 120° / 80° / 60°, unde drumul dus-întors e exact).
+  const bulge = [0.3077, 0.4084, 0.4445];
+  const rest = 2 * Math.PI - bulge.reduce((s, b) => s + 4 * Math.atan(b), 0);
+  const toate = [...bulge, Math.tan(rest / 4)];
+  const cerc4 = (cx: number, cy: number, r: number): Varf[] => {
+    let u = 0;
+    return toate.map((b) => {
+      const v = A(cx + r * Math.cos(u), cy + r * Math.sin(u), b);
+      u += 4 * Math.atan(b);
+      return v;
+    });
+  };
+  const a = invers(cerc4(0, 0, 10));
+  const b = invers(cerc4(17, 0, 10));
+  const r = reusit([a, b]);
+  assert.equal(r.info.neschimbat, false);
+  const surse = [a, b].flatMap((c) => c.map((v, i) => ({ v, urm: (c[(i + 1) % c.length] as Varf).p })));
+  let intoarse = 0;
+  for (const c of r.cai) {
+    c.forEach((v, i) => {
+      if (v.s.tip !== 'A') return;
+      const capat = (c[(i + 1) % c.length] as Varf).p;
+      const sursa = surse.find((x) => x.v.s.tip === 'A' && x.urm.x === v.p.x && x.urm.y === v.p.y && x.v.p.x === capat.x && x.v.p.y === capat.y);
+      if (!sursa || sursa.v.s.tip !== 'A') return;
+      intoarse++;
+      assert.ok(Object.is(v.s.bulge, -sursa.v.s.bulge), `${v.s.bulge} ≠ −${sursa.v.s.bulge}`);
+    });
+  }
+  assert.ok(intoarse >= 2, `doar ${intoarse} arce întregi întoarse`);
+});
+
+test('otrava 2.7d: o cubică cu buclă (în același sens ca restul căii, înfășurarea 2) nu e simplă pe calea rapidă', () => {
+  // Latura de jos a unui hexagon e o cubică ce se încolăcește în sus, în interior: bucla e parcursă trigonometric, ca
+  // hexagonul, deci înfășurarea în ea e 2 (plină sub nonzero, gaură sub evenodd). Laturile vecine pleacă din capete la
+  // 60° și 120°, în afara conurilor cubicei ([0°, 108°] și [72°, 180°]), iar celelalte perechi au cutiile disjuncte: doar
+  // hodograful cubicei o trimite la aranjament (cu un pătrat, conul din capăt o trimitea oricum).
+  const r = reusit([[C(0, 0, 30, 30, -10, 30), L(20, 0), L(35, 26), L(35, 60), L(-15, 60), L(-15, 26)]]);
+  assert.equal(r.info.neschimbat, false);
+  assert.equal(r.info.intersectii, 1);
+  // Ieșirea e un singur contur, fără buclă: bucla se contopește în regiune.
+  assert.equal(r.cai.length, 1);
+});
+
+test('otrava 2.7d: incluziunea de pe calea rapidă numără raza pe bucăți monotone pe y (arcul monoton pe x, cu capetele sub rază)', () => {
+  // Arcul de sus al exteriorului merge de la dreapta la stânga, monoton pe x, cu vârful la y ≈ 32,5 și capetele la y = 10;
+  // tangenta lui se rotește 143°, deci trece de testul hodografului. Raza din (18, 20) îl taie o singură dată, în dreapta.
+  // Pe bucăți monotone pe x (o singură bucată, capetele sub rază), traversarea se pierdea: pătratul interior, în același
+  // sens, părea afară, iar calea rapidă îl lăsa gaură (sub nonzero e plin).
+  const ext = [L(0, 0), L(40, 0), C(40, 10, 28, 40, 12, 40), L(0, 10)];
+  const int = [L(18, 20), L(22, 20), L(22, 24), L(18, 24)];
+  const r = reusit([ext, int]);
+  assert.equal(r.info.neschimbat, false);
+  assert.equal(r.cai.length, 1);
+});

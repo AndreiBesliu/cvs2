@@ -39,7 +39,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   2.5a (rampa, ADR 0029, documentul v6), 2.5b (intrările și ieșirile, ADR 0030, documentul v7), 2.5c (intrările cu
   rampă, ADR 0031), 2.6 (degajările dog-bone / T-bone, ADR 0032, documentul v8), 2.7a (biarcele, ADR 0033), 2.7b
   (forma „cale”, ADR 0034, documentul v9) și 2.7c (ușa SVG și importul, ADR 0035). Felia 2.7 s-a împărțit în 2.7a–2.7d
-  (fișa); 2.3c (contururile deschise) vine după ele. Urmează 2.7d (PathKit, regula `nonzero` la import).
+  (fișa), încheiată cu 2.7d (regula `nonzero` la ușă, ADR 0036: aranjamentul exact, fără PathKit); apoi 2.8a (carcasa
+  interfeței, prototipul B, ales de owner). În lucru: 2.3c (contururile deschise, ADR 0037), în sub-felii; 2.3c-0 (pe
+  linie, freza stă pe linie, cu invarianta 14 (i)) gata.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa
