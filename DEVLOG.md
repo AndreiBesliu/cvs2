@@ -1528,3 +1528,9 @@ primește acum și mai multe fișiere deodată. Un contur punctat cu textul „L
 **Proba:** testul unitar al locului (centrul cutiei în punctul lăsat; fără loc, ca la buton); 2 e2e noi cu lăsarea reală
 (DataTransfer): două fișiere pe rând, la locul lor; un DXF refuzat, „Sari peste”, „Renunță la toate”. 6 049 de teste
 unitare, e2e 59 / 59. **Pornirea: 99,9 kB din 100**: următoarea interfață la pornire cere întâi loc (o mutare la cerere).
+
+**Săgețile de sens** (13.10, „Sagetile de directie ar trebui sa apara totusi doar cand sunt relevante. In principiu cand
+se selecteaza partea pe care se face frezarea. Cand se face pe.linie este irelevant”): săgeata apare acum doar pe o cale
+deschisă tăiată pe o parte (stânga / dreapta); pe linie, nu (ADR 0037 §12 precizat). Până la 2.3c-5, când vine alegerea
+părții, nu se vede nicio săgeată. Testul unitar o probează în ambele sensuri (pe linie: 0; pe stânga: 1, în vârful 0);
+e2e-ul valului: 0 și cu valul ales. 6 049 de teste unitare, e2e 59 / 59.

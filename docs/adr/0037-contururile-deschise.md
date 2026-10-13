@@ -360,7 +360,10 @@ Calea are vârfurile subcăii plus punctul final, cu segmentul L. E degenerată 
 **12. Interfața minimă.** Schimbă doar componentele de azi; carcasa din 2.8a le reîmbracă fără să schimbe contractul.
 - **Pânza:**
   - calea deschisă se desenează fără linie de închidere (`desen.ts` face deja asta);
-  - pe căile deschise din selecție apare o săgeată mică la vârful 0, în sensul desenului (~8 px, aceeași la orice zoom);
+  - pe căile deschise din selecție **tăiate pe o parte (stânga / dreapta)** apare o săgeată mică la vârful 0, în sensul
+    desenului (~8 px, aceeași la orice zoom). Pe linie, sensul nu schimbă tăietura, deci săgeata nu apare (decizia
+    owner-ului, 13.10: „Sagetile de directie ar trebui sa apara totusi doar cand sunt relevante […] Cand se face
+    pe.linie este irelevant”);
   - dacă o cale are o operație pe o parte, apare și o liniuță pe partea sculei. Liniuța e socotită în lume, cu aceeași funcție ca în CAM, deci e corectă și sub oglindire.
 - **Lista de vectori:** „cale deschisă …”.
 - **Dialogul de export.** Coloana Profil oferă, după tipul nodurilor din rând:

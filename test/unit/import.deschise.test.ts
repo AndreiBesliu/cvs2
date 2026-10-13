@@ -9,7 +9,7 @@
  *   intrări și degajări), împărțită peste `PLAFON.noduriOperatie`, și prin acțiunea `document.importa`;
  * - fișierul real `CNC-referinta.svg`: valul de 150 mm e O cale deschisă, în `deschise`, iar programul lui pe linie trece
  *   de poartă (cu valorile de pe hârtie ale cubicei);
- * - pânza: săgeata de sens (vârful 0 și direcția desenului) doar pe căile deschise.
+ * - pânza: săgeata de sens (vârful 0 și direcția desenului) doar pe căile deschise tăiate pe o parte (nu pe linie).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -323,7 +323,7 @@ test('CNC-referinta.svg, tot fișierul cu exterioarele și interioarele trecute 
 
 // ── Pânza: săgeata de sens ───────────────────────────────────────────────────────────────────────────────────────
 
-test('pânza (§12): săgeata stă în vârful 0, în sensul desenului — linia, arcul, cubica; doar pe căile deschise', () => {
+test('pânza (§12): săgeata stă în vârful 0, în sensul desenului — linia, arcul, cubica; doar pe căile deschise tăiate pe o parte', () => {
   const c = (varfuri: Varf[]): Contur => ({ inchis: false, varfuri });
   const aproape = (d: { ux: number; uy: number } | null, ux: number, uy: number): void => {
     assert.ok(d && Math.abs(d.ux - ux) < 1e-12 && Math.abs(d.uy - uy) < 1e-12, JSON.stringify(d));
@@ -336,9 +336,16 @@ test('pânza (§12): săgeata stă în vârful 0, în sensul desenului — linia
   aproape(directiaDeStart(c([{ p: P(160, 60), s: { tip: 'C', c1: P(210, 120), c2: P(260, 0) } }, { p: P(310, 60), s: L }])), 5 / Math.sqrt(61), 6 / Math.sqrt(61));
   aproape(directiaDeStart(c([{ p: P(0, 0), s: { tip: 'C', c1: P(0, 0), c2: P(0, 10) } }, { p: P(10, 10), s: L }])), 0, 1);
   assert.equal(directiaDeStart(c([{ p: P(0, 0), s: L }])), null);
-  // Lista de desen: săgeata doar pe calea deschisă, în lume (cu instanța).
+  // Pe linie (operația implicită a liniilor importate), săgeata nu apare: sensul nu schimbă tăietura (decizia owner-ului,
+  // 13.10).
   const doc = documentReferinta(400, 300);
-  const forme = listaDesen(doc);
+  assert.equal(listaDesen(doc).filter((f) => f.sageata).length, 0);
+  // Pe o parte (stânga): săgeata apare doar pe calea deschisă, în lume (cu instanța).
+  const peParte = {
+    ...doc,
+    piese: doc.piese.map((q) => ({ ...q, operatii: q.operatii.map((o) => (o.id === 'deschise' ? { ...o, latura: 'stanga' as const } : o)) })),
+  };
+  const forme = listaDesen(peParte);
   const cuSageata = forme.filter((f) => f.sageata);
   assert.equal(cuSageata.length, 1);
   assert.equal(cuSageata[0]?.id, 'e1/c4');

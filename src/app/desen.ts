@@ -2,7 +2,7 @@ import type { ComandaCale, FormaDesen } from '../canvas/protocol.ts';
 import { cerculArcului, numarSegmente, segment, type Contur } from '../geom/contur.ts';
 import type { Document } from '../model/document.ts';
 import { conturElement } from '../model/forme.ts';
-import { elementeFoaie } from '../model/lume.ts';
+import { elementeFoaie, taieturiFoaie } from '../model/lume.ts';
 
 /**
  * Documentul → lista de desen a pânzei: fiecare element, cu conturul lui exact, scris ca o cale (linii, arce cu centru și
@@ -51,14 +51,16 @@ export function directiaDeStart(c: Contur): { readonly ux: number; readonly uy: 
 }
 
 /**
- * Formele primei foi: fiecare element în lume, cu id-ul lui în lume (`<instanță>/<element>`). O cale deschisă primește
- * săgeata de sens: vârful 0 și direcția desenului acolo (ADR 0037 §12), în lume.
+ * Formele primei foi: fiecare element în lume, cu id-ul lui în lume (`<instanță>/<element>`). O cale deschisă tăiată pe
+ * o parte (stânga / dreapta) primește săgeata de sens: vârful 0 și direcția desenului acolo, în lume. Pe linie, sensul nu
+ * schimbă tăietura, deci săgeata nu apare (decizia owner-ului, 13.10; ADR 0037 §12).
  */
 export function listaDesen(doc: Document): FormaDesen[] {
+  const peOParte = new Set(taieturiFoaie(doc, 0).filter((t) => t.latura === 'stanga' || t.latura === 'dreapta').map((t) => t.idLume));
   return elementeFoaie(doc, 0).map((e) => {
     const c = conturElement(e);
     const p = c.varfuri[0]?.p;
-    const d = !c.inchis && p ? directiaDeStart(c) : null;
+    const d = !c.inchis && p && peOParte.has(e.idLume) ? directiaDeStart(c) : null;
     return d && p ? { id: e.idLume, cale: caleContur(c), sageata: { x: p.x, y: p.y, ...d } } : { id: e.idLume, cale: caleContur(c) };
   });
 }

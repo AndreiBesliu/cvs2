@@ -131,6 +131,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Regula: nimic portat nu intră fără probele noi ale proiectului (oracol, martor). Ce trece în codul nou e
   re-probat acolo, nu crezut pe cuvânt.
 
+- 13.10.2026: **săgețile de sens doar unde contează** („Sagetile de directie ar trebui sa apara totusi doar cand sunt
+  relevante. In principiu cand se selecteaza partea pe care se face frezarea. Cand se face pe.linie este irelevant”):
+  săgeata apare doar pe o cale deschisă tăiată pe o parte (stânga / dreapta), nu pe linie (ADR 0037 §12).
 - 13.10.2026: **interfața: B e șablonul modern** („ai dreptate, B arata cel mai bine”); se integrează în 2.8a (cu arborele
   proiectului din A și coordonatele în bara de jos, la recomandare). **Mai târziu: un al doilea șablon, clasic** (aproape
   de ArtCAM ca organizare, fără interfață copiată, sau de CNCVS 1), **și interfața personalizabilă** (utilizatorul așază

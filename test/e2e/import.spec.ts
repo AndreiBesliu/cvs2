@@ -185,26 +185,12 @@ test('CNC-referinta.svg (ADR 0037 §11, §12): valul vine ca o cale deschisă, c
   await page.locator('[data-buton="importa"]').click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 
-  // Piesa importată e aleasă: pe val apare săgeata de sens, în vârful 0 (160, 60), spre primul mâner.
+  // Piesa importată e aleasă. Valul se taie pe linie, unde sensul nu schimbă tăietura: nicio săgeată, nici aleasă (decizia
+  // owner-ului, 13.10; săgeata apare pe o cale deschisă tăiată pe o parte, stânga / dreapta, care vine în 2.3c-5).
   await expect(page.getByTestId('selectie')).toHaveText('Selectat: CNC-referinta');
   await vedere(page);
-  await expect(page.getByTestId('panza')).toHaveAttribute('data-sageti', '1');
-  const cuSageata = await cernealaLa(page, 160, 60, 14);
-  // Clic pe foaie, departe de orice cale (250, 100): nimic ales, deci nicio săgeată; valul rămâne desenat.
-  const v = await vedere(page);
-  const la = await ecran(page, v);
-  const gol = la(250, 100);
-  await page.mouse.click(gol.x, gol.y);
-  await expect(page.getByTestId('selectie')).toContainText('Nimic selectat');
-  await vedere(page);
   await expect(page.getByTestId('panza')).toHaveAttribute('data-sageti', '0');
-  const faraSageata = await cernealaLa(page, 160, 60, 14);
-  expect(faraSageata).toBeGreaterThan(0);
-  // Triunghiul are ~8 × 6,4 px CSS: cel puțin 10 px² în plus față de linia singură.
-  expect(cuSageata - faraSageata).toBeGreaterThan(10 * v.dpr * v.dpr);
-  // Aleasă din nou din listă, săgeata revine.
-  await page.getByTestId('lista-vectori').getByText('CNC-referinta').click();
-  await expect(page.getByTestId('panza')).toHaveAttribute('data-sageti', '1');
+  expect(await cernealaLa(page, 160, 60, 14)).toBeGreaterThan(0);
 
   // Exportul: rândul căii deschise e „pe linie”, 1 mm, cu descrierea „cale deschisă”. Literele stau prea aproape pentru
   // exterior cu Ø6 (regiunea refuză), deci exterioarele și interioarele trec și ele pe linie.
