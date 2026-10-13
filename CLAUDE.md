@@ -140,7 +140,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   taietura care desparte foaia ar trebui pusa intentionat de utilizator, nu automat”). Stânga / dreapta = partea frezei,
   în sensul desenului; liniile importate primesc o gravură de min(1 mm, grosimea / 2); formele umplute fără Z se închid
   la import, ca în browser; o tăietură pe linie prin foaie într-o piesă dă avertisment; **despărțirea foii o marchează
-  utilizatorul** (`despartire: true`, tăiată la urmă), aplicația n-o ghicește.
+  utilizatorul** (`despartire: true`, tăiată la urmă), aplicația n-o ghicește; una nemarcată, prin foaie, care atinge
+  marginea foii e refuzată la export („ok” la recomandare, 13.10). Tot atunci: 2.3c-3 acum, fără recenzie; recenzia și
+  2.3c-4–6 după resetarea săptămânală (17.10), din cauza bugetului comun cu celelalte proiecte.
 - 13.10.2026: **carcasa interfeței vine mai devreme** („da, pornește prototipurile”, la recomandarea dată la întrebarea
   owner-ului dacă UI-ul se poate face înainte de etapa 3 fără să mute planul): trei prototipuri independente ale carcasei
   (aranjamentul, tema, componentele), fiecare aplicația reală pe un canal de test, din care owner-ul alege; varianta aleasă

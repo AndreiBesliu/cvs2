@@ -251,8 +251,8 @@ utilizatorul, intenționat**; aplicația nu clasifică singură o tăietură dre
 - **O tăietură deschisă prin foaie, nemarcată, care ajunge la marginea foii** (un capăt la cel mult R + 1 mm de conturul
   foii, sau în afara ei) poate despărți foaia: exportul o refuză, cu motivul „X: tăietura deschisă prin foaie ajunge la
   marginea foii și o poate despărți; marcheaz-o «despărțire» (se taie la urmă) sau micșorează adâncimea”. Aplicația nu
-  hotărăște în locul omului; doar îi cere să hotărască. *(Refuzul, nu avertismentul, e propunerea din 13.10; owner-ul îl
-  confirmă înaintea sub-feliei 2.3c-5.)*
+  hotărăște în locul omului; doar îi cere să hotărască. *(Refuzul, nu avertismentul: confirmat de owner pe 13.10, „ok” la
+  recomandare.)*
 - Rețelele de linii care închid o bucată fără să atingă marginea foii nu se analizează (Limitele).
 
 De ce: o linie prin foaie care desparte scheletul înaintea decupării lasă liberă o bucată de foaie cu piese încă netăiate. Acele piese se pot mișca sub freză.
