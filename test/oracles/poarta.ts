@@ -81,6 +81,15 @@
  *   `colturi` (`analizeazaDegajarile`).
  * `inainteDe0032` rulează poarta de dinainte de ADR 0032 (ADR 0031 întreg), doar pentru proba că programele fără
  * degajări au EXACT aceleași verdicte; `inainteDe0031` și `inainteDe0030` o implică.
+ *
+ * Felia 2.3c (ADR 0037 §13; sesiune independentă), definițiile în `pe-linie.ts`:
+ * - 14 (i) NOUĂ, tot doar cu `regiune`: pe orice etichetă `pe-linie` validă, fiecare mișcare de tăiere (partea ei de sub
+ *   fața de sus, arcele cum le execută GRBL) stă pe calea desenată a elementului, iar fiecare trecere (lanțul mișcărilor
+ *   de tăiere consecutive ale etichetei) acoperă calea; ambele sensuri la `TOL_14` = 0,001 + 0,002 + marja declarată,
+ *   cu supremul rafinat (nu doar capetele). Prinde cercul Ø50 de la „Ce am măsurat”, punctul 2.
+ * `inainteDe0037` rulează poarta de dinainte de ADR 0037 (ADR 0032 întreg), doar pentru proba că programele fără
+ * defectul de la punctul 2 au EXACT aceleași verdicte; `inainteDe0032`, `inainteDe0031` și `inainteDe0030` o implică.
+ * Restul lui §13 (2, 9 și 11 amendate pe căile deschise, 14 (ii), 14 (iii)) nu e aici.
  */
 import { citeste, esantioane, marginiSubSuprafata, regulaArcGrbl, type Comentariu, type Mutare, type Punct3 } from './gcode.ts';
 import {
@@ -93,6 +102,7 @@ import { verificaRampa } from './rampa.ts';
 import { regula0030, verificaIntrari } from './intrari.ts';
 import { pasCuIntrare, verificaIntrariCuRampa } from './intrari-rampa.ts';
 import { analizeazaDegajarile, verificaDrumulExact, type AnalizaDegajari } from './degajari.ts';
+import { invarianta14 } from './pe-linie.ts';
 
 export type ColtOrigine = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus';
 
@@ -119,10 +129,12 @@ export type ContextPoarta = {
   readonly avansPlonjare?: number;
 };
 
-export type Incalcare = { readonly invarianta: 1 | 2 | 3 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13; readonly linia: number; readonly mesaj: string };
+export type Incalcare = { readonly invarianta: 1 | 2 | 3 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14; readonly linia: number; readonly mesaj: string };
 
 /** Comutatoarele porților de dinainte (doar pentru probele de echivalență). */
-export type ModPoarta = { readonly inainteDe0030?: boolean; readonly inainteDe0031?: boolean; readonly inainteDe0032?: boolean };
+export type ModPoarta = {
+  readonly inainteDe0030?: boolean; readonly inainteDe0031?: boolean; readonly inainteDe0032?: boolean; readonly inainteDe0037?: boolean;
+};
 
 const TOL = 1e-6;
 /** Rotunjirea la 3 zecimale mută un punct cu cel mult √2/2·10⁻³ mm. */
@@ -205,12 +217,13 @@ export function laDocument(p: Punct3, ctx: Pick<ContextPoarta, 'foaie' | 'origin
 }
 
 /**
- * Invarianta 2: partea unei mișcări G1/G2/G3 aflată sub fața de sus (z < −TOL în document), în XY-ul documentului.
- * z e liniar în fracțiunea parcursă (și pe arcul elicoidal), deci capetele părții se calculează exact. Arcul e cel
- * văzut de GRBL: centrul = startul + (I, J), raza din I/J, unghiul din `regulaArcGrbl`; dacă arcul nu ajunge exact în
- * capătul scris (rotunjirea), se adaugă segmentul scurt până la el. Cu startul necunoscut, doar capătul (un punct).
+ * Invarianta 2 (și 14 (i), `pe-linie.ts`): partea unei mișcări G1/G2/G3 aflată sub fața de sus (z < −TOL în document),
+ * în XY-ul documentului. z e liniar în fracțiunea parcursă (și pe arcul elicoidal), deci capetele părții se calculează
+ * exact. Arcul e cel văzut de GRBL: centrul = startul + (I, J), raza din I/J, unghiul din `regulaArcGrbl`; dacă arcul nu
+ * ajunge exact în capătul scris (rotunjirea), se adaugă segmentul scurt până la el. Cu startul necunoscut, doar capătul
+ * (un punct).
  */
-function parteaDeTaiere(m: Mutare, ctx: ContextPoarta): Primitiva[] {
+export function parteaDeTaiere(m: Mutare, ctx: ContextPoarta): Primitiva[] {
   const a = laDocument(m.a, ctx), b = laDocument(m.b, ctx);
   const sub = -TOL;
   if (!m.startCunoscut) return b[2] < sub ? [punct(pt(b[0], b[1]))] : [];
@@ -296,6 +309,8 @@ export function poarta(text: string, ctx: ContextPoarta, o: ModPoarta = {}): Inc
   let iEticheta = -1;
   // 13 și amendamentele ADR 0032 (2, 9–12): drumurile dus-întors, citite o dată, înaintea mișcărilor.
   const amendat32 = !o.inainteDe0030 && !o.inainteDe0031 && !o.inainteDe0032;
+  // 14 (i) (ADR 0037 §13): orice poartă de dinainte o oprește.
+  const amendat37 = amendat32 && !o.inainteDe0037;
   const deg: AnalizaDegajari | null = reg && amendat32 ? analizeazaDegajarile(evenimente, etichete, reg, (p) => laDocument(p, ctx), R, ctx.foaie) : null;
   /** Evenimentele pe care se judecă 9–12: fără drumurile dus-întors (ADR 0032 §7), sau toate (poarta de dinainte). */
   const judecate = deg ? deg.faraDrumuri : evenimente;
@@ -426,6 +441,10 @@ export function poarta(text: string, ctx: ContextPoarta, o: ModPoarta = {}): Inc
     }
     // 13: degajările (ADR 0032 §7).
     if (deg) for (const x of deg.incalcari) rez.push({ invarianta: x.invarianta, linia: x.linia, mesaj: x.mesaj });
+    // 14 (i): pe linie, freza stă pe linie, iar linia e acoperită (ADR 0037 §1, §13).
+    if (amendat37) {
+      for (const x of invarianta14(evenimente, etichete, reg, (m) => parteaDeTaiere(m, ctx))) rez.push({ invarianta: 14, linia: x.linia, mesaj: x.mesaj });
+    }
   }
   // 10, avansul (ADR 0028 §4, precizarea din 09.10): viteza pe verticală a mișcărilor care coboară în material.
   if (ctx.avansPlonjare !== undefined) {
