@@ -42,7 +42,7 @@
  *   închisă cu `Z` sau prin apropiere, `degenerate`, ca în 2.7c) → PRAFUL (diagonala cutiei exacte a subcăii, în mm, sub
  *   0,01 mm: sărită, `sub-rezolutie`, oricum s-ar fi închis) → numărul închiderii (`inchise-de-umplere`,
  *   `inchise-la-usa`). Căile închise de ușă intră în normalizarea nonzero și în imbricare ca orice cale închisă. Căile
- *   deschise rămân sărite (vin cu 2.3c-3). Jurnalul subcăilor (`subcai`: soarta, golul, diagonala) servește testelor pe
+ *   deschise rămâneau sărite (le importă 2.3c-3, mai jos). Jurnalul subcăilor (`subcai`: soarta, golul, diagonala) servește testelor pe
  *   fișiere reale.
  *
  * Alegerile mele unde ADR-ul tace (le spun și în raport; corpusul le ocolește unde se poate):
@@ -102,6 +102,32 @@
  * normalizării (opțiunea `praf`) iartă exact contururile de praf ale regiunii adevărate (găsite cu aranjamentul local),
  * cere ca niciun contur sub rezoluție să nu rămână și le numără; `judecaRezultat` cere `sub-rezolutie` = subcăile-praf +
  * contururile găsite (iar când aplicația numără altfel, le caută pe toate, în fiecare încrucișare: `prafAdevarat`).
+ * - sub-felia 2.3c-3 (ADR 0037 §11, partea a doua; amendează ADR 0035 §7, §8, §10): căile deschise se importă. Devin căi
+ *   deschise (`inchis: false`): subcăile fără `Z` cu `fill: none` și golul peste 0,01 mm, orice `line`, `polyline`-urile cu
+ *   `fill: none` care nu se închid, și subcăile pe care închiderea ușii (umplerea, golul sub rezoluție) le-ar face
+ *   degenerate („rămâne deschisă”). Calea are vârfurile subcăii plus vârful final (capătul ultimului segment), cu segmentul
+ *   `L`; plafonul căii (50 000) se judecă cu vârful final inclus. E degenerată (sărită, `degenerate`) cu mai puțin de 2
+ *   vârfuri distincte sau cu lungimea sub REZOLUTIE. Căile deschise nu intră în imbricare (nu conțin nimic, latura lor e
+ *   `pe-linie`) și nici în normalizarea nonzero; nu sunt niciodată praf. `deschise` numără căile deschise IMPORTATE.
+ *   Refuzul `gol` = nicio cale (un fișier doar din linii se importă). Piesa primește a treia operație, `deschise` (apoi
+ *   `deschise-2` … peste `noduriOperatie`): pe linie, adâncimea min(1 mm, grosimea foii / 2) într-o trecere, urcare, freza
+ *   foii, fără urechi, rampă, intrări și colțuri; elementul păstrează `inchis: false`.
+ * Alegerile sub-feliei 2.3c-3 (ADR 0037 §11; le spun și în raport):
+ * - în rezultatul ușii, o cale e deschisă dacă are `inchis: false`; lipsa câmpului sau `true` = închisă (câmpul formei din
+ *   documentul v10, ADR 0037 §2). Orice altă valoare e o greșeală;
+ * - vârful final se judecă separat: segmentul lui trebuie să fie `L` (ADR 0037 §2), poziția la toleranța ultimului segment;
+ * - lungimea căii deschise e a geometriei EXACTE (curbele integrate numeric); vârfurile distincte = puncte egale exact, în
+ *   mm; corpusul stă departe de prag cu curbele (pragul se probează pe linii);
+ * - ordinea pe o cale deschisă: plafonul (cu vârful final), apoi degenerarea; vârful final nu se numără în plafonul de lucru
+ *   (ca linia de închidere), iar arcul păstrează locul lui (ca pe al liniei de închidere);
+ * - segmentele nule exact se scot și pe căile deschise (ADR 0035 §7 e scris pe subcăi); o `line` nulă e degenerată;
+ * - o subcale închisă prin apropiere (golul ≤ TOLERANTA_IMPORT, fără linie adăugată) și degenerată rămâne `degenerate`, ca
+ *   în 2.7c: doar închiderea ADĂUGATĂ de ușă „lasă subcalea deschisă”;
+ * - căile deschise nu sunt candidați în bugetul includerilor (nu costă nimic);
+ * - într-o formă, căile deschise se judecă în ordinea lor, separat de cele închise; amestecul lor (ordinea subcăilor) se
+ *   judecă doar pe formele nenormalizate (ieșirea normalizării n-are o ordine scrisă);
+ * - piesa: ordinea operațiilor nu se judecă (nu e scrisă); `despartire` lipsă sau `false` (ADR 0037 §2: lipsa = false);
+ *   grosimea foii vine în argumentul piesei (`grosime`, ALEGERE de interfață: ADR-ul nu spune pe unde).
  */
 import { DOMParser } from '@xmldom/xmldom';
 import { distantaLaCubica, type CubicaO } from './biarce.ts';
@@ -147,7 +173,12 @@ export const CONST_O = {
   relArc: 1e-7,
   /** ADR 0037 §4, §11 (sub-felia 2.3c-1): REZOLUTIE, pragul prafului și al golului închis la ușă. */
   rezolutie: 0.01,
+  /** ADR 0037 §11 (sub-felia 2.3c-3): adâncimea operației `deschise` e min(1 mm, grosimea foii / 2). */
+  adancimeDeschise: 1,
 } as const;
+
+/** ADR 0037 §11: adâncimea operației `deschise` pe o foaie de grosimea dată (mm), într-o trecere. */
+export const adancimeDeschiseO = (grosime: number): number => Math.min(CONST_O.adancimeDeschise, grosime / 2);
 
 /** ADR 0035 §10, apoi codurile ADR 0037 §11 („Raportul”, în ordinea scrisă acolo), la coadă (ALEGERE: locul nu e scris). */
 export const CODURI_O = [
@@ -779,13 +810,19 @@ export type CaleO = {
   tolVarf: number[];
   /** Forma se normalizează (felia 2.7d): regula efectivă nonzero și umplută (`fill` efectiv altul decât `none`). */
   nonzero: boolean;
+  /**
+   * Sub-felia 2.3c-3 (ADR 0037 §11): `false` pe o cale deschisă. Atunci `runs` sunt segmentele ei (fără închidere), iar
+   * `varfuri` au în plus vârful final (capătul ultimului segment, cu segmentul `L`).
+   */
+  inchis: boolean;
 };
 /**
- * Jurnalul unei subcăi a unui `path` / `polyline` / `polygon` (sub-felia 2.3c-1), după plafonul căii: soarta ei (codul la
- * care s-a numărat, sau `cale`), `z`, golul capăt–start și diagonala cutiei exacte (în mm), `umplut`, iar la `cale`,
- * indexul căii în `cai` și dacă ușa a adăugat linia de închidere (`inchisaDeUsa`: umplerea sau golul sub rezoluție).
+ * Jurnalul unei subcăi a unui `path` / `polyline` / `polygon` / `line` (sub-felia 2.3c-1; `line` din 2.3c-3), după plafonul
+ * căii: soarta ei (codul la care s-a numărat, `cale` pentru o cale închisă, `deschisa` pentru o cale deschisă importată),
+ * `z`, golul capăt–start și diagonala cutiei exacte (în mm), `umplut`, iar la `cale` / `deschisa`, indexul căii în `cai`
+ * și, la `cale`, dacă ușa a adăugat linia de închidere (`inchisaDeUsa`: umplerea sau golul sub rezoluție).
  */
-export type SoartaSubcaleO = 'cale' | 'sub-rezolutie' | 'deschise' | 'degenerate' | 'prea-mari';
+export type SoartaSubcaleO = 'cale' | 'deschisa' | 'sub-rezolutie' | 'degenerate' | 'prea-mari';
 export type SubcaleJurnalO = { forma: number; soarta: SoartaSubcaleO; z: boolean; gol: number; diagonala: number; umplut: boolean; inchisaDeUsa: 'umplere' | 'usa' | null; cale?: number };
 
 export type RezultatO =
@@ -989,6 +1026,7 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
   if (costCss.n > CONST_STIL.potriviri) return { ok: false, cod: 'plafon', detaliu: 'css', avertismente: nr };
   // Ordinea refuzurilor (revizia 12.10): plafon (vârfurile, apoi includerile), departe, gol. Plafonul vârfurilor se judecă
   // întâi pe intrare, înaintea normalizării (felia 2.7d, ADR 0036 §9): atunci numerele nonzero rămân 0.
+  // ADR 0037 §11 (2.3c-3): `gol` = nicio cale, deschisă sau închisă (un fișier doar din linii se importă).
   if (cai.length === 0) return { ok: false, cod: 'gol', avertismente: nr, subcai: jurnal };
   if (cai.reduce((t, c) => t + c.varfuri.length, 0) > CONST_O.varfuriPrimite) return { ok: false, cod: 'plafon', avertismente: nr };
   for (const c of cai) {
@@ -1009,10 +1047,14 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
       r.tol = baza + r.gol;
     }
     c.tolVarf = [];
+    const n = c.runs.length;
     c.runs.forEach((r, i) => {
-      const prec = c.runs[(i - 1 + c.runs.length) % c.runs.length] as RunO;
+      // Pe o cale deschisă, primul vârf n-are vecin înainte (nicio închidere peste capăt).
+      const prec = (c.inchis ? c.runs[(i - 1 + n) % n] : c.runs[Math.max(0, i - 1)]) as RunO;
       r.piese.forEach((_, j) => c.tolVarf.push(j === 0 ? Math.max(r.tol, prec.tol) : r.tol));
     });
+    // ADR 0037 §11: vârful final al căii deschise e capătul ultimului segment.
+    if (!c.inchis) c.tolVarf.push((c.runs[n - 1] as RunO).tol);
   }
   // Regula `nonzero` (§8, §10; ADR 0036, felia 2.7d): fiecare formă cu regula efectivă nonzero trece, cu toate subcăile
   // ei, prin normalizare. Oracolul nu refface aranjamentul: el decide, pe citirea de mai sus, care forme TREBUIE schimbate
@@ -1036,7 +1078,9 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
   const golLaUsa = jurnal.reduce((m, j) => (j.inchisaDeUsa === 'usa' && j.soarta === 'cale' ? Math.max(m, j.gol) : m), 0);
   const ok: RezultatO = { ok: true, cai, pagina, px, illustrator, avertismente: nr, marime, tolLC, formeNonzero, subcai: jurnal, golLaUsa };
   const goale = new Set(formeNonzero.filter((f) => f.gol).map((f) => f.forma));
-  if (goale.size > 0 && cai.every((c) => goale.has(c.forma))) {
+  // ADR 0037 §11 (2.3c-3): căile deschise nu intră în normalizare, deci rămân și într-o formă care dispare: fișierul e gol
+  // doar dacă nu rămâne nicio cale, nici deschisă.
+  if (goale.size > 0 && cai.every((c) => c.inchis && goale.has(c.forma))) {
     const subtiri = formeNonzero.filter((f) => f.gol && f.subtire);
     if (subtiri.length === 0) return { ok: false, cod: 'gol', avertismente: nr };
     const nr2 = { ...nr, 'nonzero-normalizate': nr['nonzero-normalizate'] - subtiri.length };
@@ -1064,10 +1108,8 @@ function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean
   }
   const idA = el.getAttribute('id');
   for (const s of sub) {
-    if (s.linie === true) {
-      nr.deschise++;
-      continue;
-    }
+    // ADR 0037 §11 (2.3c-3): orice `line` e o cale deschisă (nicio închidere, niciodată praf), cu regula ei de degenerare.
+    const linieSvg = s.linie === true;
     if (s.segs.length === 0 && !s.z) continue;
     const runs: RunO[] = [];
     const p0 = aplica(m, s.start);
@@ -1142,8 +1184,36 @@ function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean
     const noteaza = (soarta: SoartaSubcaleO, inchisaDeUsa: 'umplere' | 'usa' | null, cale?: number): void => {
       jurnal.push({ forma: idx, soarta, z: s.z, gol, diagonala, umplut, inchisaDeUsa, ...(cale !== undefined ? { cale } : {}) });
     };
+    /**
+     * ADR 0037 §11 (2.3c-3): calea deschisă = vârfurile segmentelor vii plus vârful final (capătul ultimului segment, cu
+     * segmentul `L`). Plafonul căii, cu vârful final inclus (ALEGERE: înaintea degenerării, ca la linia de închidere);
+     * degenerată cu mai puțin de 2 vârfuri distincte sau cu lungimea (exactă) sub REZOLUTIE; nu intră în normalizarea nonzero.
+     */
+    const deschisa = (): void => {
+      if (citite + 1 > CONST_O.varfuriCale) {
+        nr['prea-mari']++;
+        noteaza('prea-mari', null);
+        return;
+      }
+      const varfuri: VarfO[] = [...vii.flatMap((r) => r.piese), { p: pk, s: { tip: 'L' } }];
+      if (varfuriDistincte(varfuri) < 2 || lungimeRuns(vii) < CONST_O.rezolutie) {
+        nr.degenerate++;
+        noteaza('degenerate', null);
+        return;
+      }
+      nr.deschise++;
+      noteaza('deschisa', null, cai.length);
+      const cale: CaleO = { varfuri, forma: idx, runs: vii, tolVarf: [], nonzero: false, inchis: false };
+      if (idA !== null) cale.nume = idA.slice(0, CONST_O.numeLungime);
+      cai.push(cale);
+    };
+    if (linieSvg) {
+      deschisa();
+      continue;
+    }
     // Închiderea: cu `Z`, sau prin apropiere (≤ TOLERANTA_IMPORT), ca în 2.7c; fără `Z`, peste ea (2.3c-1): umplerea
-    // (`fill` efectiv ≠ `none`) închide cu o linie; `fill: none` închide doar golul de cel mult REZOLUTIE; altfel deschisă.
+    // (`fill` efectiv ≠ `none`) închide cu o linie; `fill: none` închide doar golul de cel mult REZOLUTIE; altfel deschisă
+    // (2.3c-3: o cale deschisă).
     let inchisaDeUsa: 'umplere' | 'usa' | null = null;
     if (gol <= CONST_O.tolImport) {
       if (vii.length > 0) (vii[vii.length - 1] as RunO).gol = gol;
@@ -1156,8 +1226,7 @@ function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean
       vii.push(linie(pk, p0));
       if (!s.z) inchisaDeUsa = umplut ? 'umplere' : 'usa';
     } else {
-      nr.deschise++;
-      noteaza('deschise', null);
+      deschisa();
       continue;
     }
     // O buclă dintr-o singură cubică (închisă, fără linia de închidere): împărțită la t = 1/2 (de Casteljau), două vârfuri.
@@ -1172,10 +1241,11 @@ function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean
     }
     const varfuri = vii.flatMap((r) => r.piese);
     if (varfuri.length < 2 || (vii.every((r) => r.clasa === 'L') && coliniare(varfuri.map((v) => v.p)))) {
-      // ADR 0037 §11: închiderea adăugată de ușă care dă o cale degenerată lasă subcalea deschisă (numărată `deschise`).
+      // ADR 0037 §11: închiderea adăugată de ușă care dă o cale degenerată lasă subcalea deschisă: din 2.3c-3, o cale
+      // deschisă (fără linia de închidere, care e ultimul segment: bucla dintr-o cubică nu are linie adăugată).
       if (inchisaDeUsa !== null) {
-        nr.deschise++;
-        noteaza('deschise', inchisaDeUsa);
+        vii.pop();
+        deschisa();
       } else {
         nr.degenerate++;
         noteaza('degenerate', null);
@@ -1192,7 +1262,7 @@ function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean
     if (inchisaDeUsa === 'umplere') nr['inchise-de-umplere']++;
     else if (inchisaDeUsa === 'usa') nr['inchise-la-usa']++;
     noteaza('cale', inchisaDeUsa, cai.length);
-    const cale: CaleO = { varfuri, forma: idx, runs: vii, tolVarf: [], nonzero: normalizabila };
+    const cale: CaleO = { varfuri, forma: idx, runs: vii, tolVarf: [], nonzero: normalizabila, inchis: true };
     if (idA !== null) cale.nume = idA.slice(0, CONST_O.numeLungime);
     cai.push(cale);
   }
@@ -1213,6 +1283,41 @@ export function coliniare(pts: readonly P[]): boolean {
   const ux = (f.x - p0.x) / D, uy = (f.y - p0.y) / D;
   return pts.every((q) => Math.abs((q.x - p0.x) * uy - (q.y - p0.y) * ux) <= 1e-12 * D);
 }
+
+/** ADR 0037 §11 (2.3c-3): câte vârfuri distincte (egale exact, în mm) are o cale. */
+export function varfuriDistincte(v: readonly VarfO[]): number {
+  return new Set(v.map((x) => `${x.p.x}|${x.p.y}`)).size;
+}
+
+/** Nodurile și ponderile Gauss–Legendre cu 5 puncte, pe [−1, 1]. */
+const GL5 = [
+  [0, 0.5688888888888889], [-0.5384693101056831, 0.4786286704993665], [0.5384693101056831, 0.4786286704993665],
+  [-0.906179845938664, 0.2369268850561891], [0.906179845938664, 0.2369268850561891],
+] as const;
+
+/**
+ * Lungimea unui segment exact: linia închis, arcul de cerc R·|Δθ|, cubica și arcul eliptic prin Gauss–Legendre cu 5 puncte
+ * pe 32 de bucăți egale ale parametrului (eroarea, pe curbele netede ale corpusului, e mult sub 1e-9 mm).
+ */
+export function lungimeExacta(s: SegExact): number {
+  if (s.fel === 'L') return Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y);
+  if (s.fel === 'E' && s.cerc) return Math.hypot(s.u.x, s.u.y) * Math.abs(s.dt);
+  const viteza = (f: number): number => {
+    if (s.fel === 'C') {
+      const d = derivCub(s.a, s.c1, s.c2, s.b, f);
+      return Math.hypot(d.x, d.y);
+    }
+    const d = derivE(s, s.t0 + f * s.dt);
+    return Math.hypot(d.x, d.y) * Math.abs(s.dt);
+  };
+  const B = 32;
+  let L = 0;
+  for (let k = 0; k < B; k++) {
+    for (const [x, w] of GL5) L += (w / 2 / B) * viteza((k + (x + 1) / 2) / B);
+  }
+  return L;
+}
+export const lungimeRuns = (runs: readonly RunO[]): number => runs.reduce((t, r) => t + lungimeExacta(r.ex), 0);
 
 /** Geometria SVG 2 a fiecărei forme, sau null când forma se sare (cu numărul ei, dacă e cazul). */
 function subcaiForma(el: Element, ln: string, varianta: 2 | 4, nr: RaportO): SubcaleF[] | null {
@@ -1581,16 +1686,23 @@ export function cutieExacta(runs: readonly RunO[]): Cutie {
   return c;
 }
 
-/** Cutia exactă a unei căi a aplicației (cu extremele arcelor și ale cubicelor). */
-export function cutieVarfuri(varfuri: readonly VarfO[]): Cutie {
-  const runs: RunO[] = segmenteApp(varfuri).map((g) => {
+/** Cutia exactă a unei căi a aplicației (cu extremele arcelor și ale cubicelor; deschisă: fără segmentul de după final). */
+export function cutieVarfuri(varfuri: readonly VarfO[], inchis = true): Cutie {
+  const runs: RunO[] = segmenteApp(varfuri, inchis).map((g) => {
     const ex: SegExact = g.s.tip === 'L' ? { fel: 'L', a: g.a, b: g.b } : g.s.tip === 'C' ? { fel: 'C', a: g.a, c1: g.s.c1, c2: g.s.c2, b: g.b } : { fel: 'E', a: g.a, b: g.b, ...arcApp(g.a, g.b, g.s.bulge) };
     return { ex, piese: [], clasa: 'L', raza: 0, gol: 0, tol: 0 };
   });
   return cutieExacta(runs);
 }
 
-export const segmenteApp = (v: readonly VarfO[]): SegApp[] => v.map((x, i) => ({ a: x.p, b: (v[(i + 1) % v.length] as VarfO).p, s: x.s }));
+/**
+ * Segmentele unei căi a aplicației: închisă, n (ultimul ajunge în primul vârf); deschisă (ADR 0037 §2), n − 1 (segmentul
+ * vârfului final nu se ia în seamă).
+ */
+export const segmenteApp = (v: readonly VarfO[], inchis = true): SegApp[] =>
+  inchis
+    ? v.map((x, i) => ({ a: x.p, b: (v[(i + 1) % v.length] as VarfO).p, s: x.s }))
+    : v.slice(0, -1).map((x, i) => ({ a: x.p, b: (v[i + 1] as VarfO).p, s: x.s }));
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Latura (§8).
@@ -1606,16 +1718,23 @@ export function includereCuBuget(b: CaleO, cutie: Cutie, p: P, buget: { rest: nu
   return inRegiune(b.runs, p.x, p.y);
 }
 
-/** Laturile cu buget (§8): null când bugetul se termină. */
-export function laturiBugetO(cai: readonly CaleO[], rest: number): Array<'exterior' | 'interior'> | null {
+/** Latura unei căi după imbricare: exterior / interior; o cale deschisă (2.3c-3) nu primește latură: `pe-linie`. */
+export type LaturaO = 'exterior' | 'interior' | 'pe-linie';
+
+/**
+ * Laturile cu buget (§8): null când bugetul se termină. ADR 0037 §11 (2.3c-3): căile deschise nu intră în imbricare: nu
+ * sunt candidați (ALEGERE: nu costă nimic) și primesc `pe-linie`.
+ */
+export function laturiBugetO(cai: readonly CaleO[], rest: number): LaturaO[] | null {
   const cutii = cai.map((c) => cutieExacta(c.runs));
   const buget = { rest };
-  const r: Array<'exterior' | 'interior'> = [];
+  const r: LaturaO[] = [];
   for (const [i, a] of cai.entries()) {
+    if (!a.inchis) { r.push('pe-linie'); continue; }
     const p = (a.varfuri[0] as VarfO).p;
     let n = 0;
     for (const [j, b] of cai.entries()) {
-      if (j !== i && includereCuBuget(b, cutii[j] as Cutie, p, buget)) n++;
+      if (j !== i && b.inchis && includereCuBuget(b, cutii[j] as Cutie, p, buget)) n++;
       if (buget.rest < 0) return null;
     }
     r.push(n % 2 === 0 ? 'exterior' : 'interior');
@@ -1623,15 +1742,19 @@ export function laturiBugetO(cai: readonly CaleO[], rest: number): Array<'exteri
   return r;
 }
 
-/** Adâncimea fiecărei căi = câte alte căi conțin primul ei vârf; pară → exterior, impară → interior. */
-export function laturiO(cai: readonly CaleO[]): Array<'exterior' | 'interior'> {
+/**
+ * Adâncimea fiecărei căi închise = câte alte căi ÎNCHISE conțin primul ei vârf; pară → exterior, impară → interior. O cale
+ * deschisă (ADR 0037 §11) nu conține nimic și nu primește latură: `pe-linie`.
+ */
+export function laturiO(cai: readonly CaleO[]): LaturaO[] {
   const cutii = cai.map((c) => cutieExacta(c.runs));
   return cai.map((a, i) => {
+    if (!a.inchis) return 'pe-linie';
     const p = (a.varfuri[0] as VarfO).p;
     let n = 0;
     cai.forEach((b, j) => {
       const k = cutii[j] as Cutie;
-      if (j !== i && p.x >= k.minX && p.x <= k.maxX && p.y >= k.minY && p.y <= k.maxY && inRegiune(b.runs, p.x, p.y)) n++;
+      if (j !== i && b.inchis && p.x >= k.minX && p.x <= k.maxX && p.y >= k.minY && p.y <= k.maxY && inRegiune(b.runs, p.x, p.y)) n++;
     });
     return n % 2 === 0 ? 'exterior' : 'interior';
   });
@@ -1675,9 +1798,20 @@ export function judecaCale(app: unknown, o: CaleO, eticheta: string, opt: Optiun
     const f = formaVarf(v);
     if (f !== null) return [`${eticheta}: vârful ${i}: ${f}`];
   }
-  const av = app as VarfO[];
-  if (av.length < 2) return [`${eticheta}: ${av.length} vârfuri (< 2)`];
-  const sa = segmenteApp(av);
+  const toate = app as VarfO[];
+  if (toate.length < 2) return [`${eticheta}: ${toate.length} vârfuri (< 2)`];
+  // ADR 0037 §2, §11 (2.3c-3): calea deschisă are, după vârfurile segmentelor, vârful final (capătul ultimului segment), cu
+  // segmentul `L`, neluat în seamă. Se judecă separat; segmentele sunt n − 1, fără nimic peste capăt.
+  const deschisa = !o.inchis;
+  const av = deschisa ? toate.slice(0, -1) : toate;
+  if (deschisa) {
+    const fa = toate[toate.length - 1] as VarfO, fo = o.varfuri[o.varfuri.length - 1] as VarfO;
+    const tolF = o.tolVarf[o.tolVarf.length - 1] ?? 0;
+    if (fa.s.tip !== 'L') pr.push(`${eticheta}: vârful final are segmentul ${fa.s.tip}, nu L (ADR 0037 §2)`);
+    const d = Math.hypot(fa.p.x - fo.p.x, fa.p.y - fo.p.y);
+    if (!(d <= tolF)) pr.push(`${eticheta}: vârful final (${fa.p.x}, ${fa.p.y}) ≠ (${fo.p.x}, ${fo.p.y}) cu ${d.toExponential(3)}`);
+  }
+  const sa = segmenteApp(toate, !deschisa);
   // Alinierea: fiecare segment exact își ia bucățile lui (în ordine, din primul vârf: deci startul și sensul).
   const tipApp = tipuri(av);
   type Felie = { r: RunO; k: number; n: number; libera: boolean; tol: number };
@@ -1699,10 +1833,11 @@ export function judecaCale(app: unknown, o: CaleO, eticheta: string, opt: Optiun
     return k === av.length ? l : null;
   };
   const felii = potriveste();
-  if (felii === null) return [`${eticheta}: structura ${tipApp} ≠ ${tipuri(o.varfuri)} (oracol)`];
+  if (felii === null) return [...pr, `${eticheta}: structura ${tipuri(toate)} ≠ ${tipuri(o.varfuri)} (oracol${deschisa ? ', cale deschisă' : ''})`];
   // Vârfurile: primul al fiecărui segment exact, la toleranța vecinilor; cele dinăuntru, față de ale oracolului (sau pe curbă).
   felii.forEach((fe, fi) => {
-    const prec = felii[(fi - 1 + felii.length) % felii.length] as { tol: number };
+    // Pe o cale deschisă, primul segment n-are vecin înainte.
+    const prec = (deschisa && fi === 0 ? fe : felii[(fi - 1 + felii.length) % felii.length]) as { tol: number };
     for (let j = 0; j < fe.n; j++) {
       const v = av[fe.k + j] as VarfO;
       const tolV = j === 0 ? Math.max(fe.tol, prec.tol) : fe.tol;
@@ -1773,7 +1908,9 @@ export function judecaCale(app: unknown, o: CaleO, eticheta: string, opt: Optiun
 /** Codurile raportului pe care le judecă analiza formelor nonzero (nu comparația directă). */
 export const CODURI_NONZERO_O = ['nonzero-normalizate', 'nonzero-refuzate'] as const;
 
-type CaleApp = { varfuri?: unknown; forma?: unknown; nume?: unknown };
+type CaleApp = { varfuri?: unknown; forma?: unknown; nume?: unknown; inchis?: unknown };
+/** ADR 0037 §11 (2.3c-3), ALEGERE de interfață: o cale a ușii e deschisă dacă are `inchis: false`. */
+const deschisaApp = (c: CaleApp): boolean => c.inchis === false;
 
 /**
  * Rezultatul aplicației față de al oracolului. Formele `evenodd` (și cele nonzero lăsate neschimbate) se judecă cale cu
@@ -1811,6 +1948,7 @@ export function judecaRezultat(app: unknown, o: RezultatO, opt: OptiuniJudecata 
   let ultima = -Infinity;
   for (const [i, c] of (a.cai as CaleApp[]).entries()) {
     const f = c?.forma;
+    if (c?.inchis !== undefined && typeof c.inchis !== 'boolean') pr.push(`calea ${i}: inchis ${String(c.inchis)} nu e boolean`);
     if (typeof f !== 'number' || !Number.isInteger(f) || f < ultima) { pr.push(`calea ${i}: forma ${String(f)} în afara ordinii documentului`); continue; }
     ultima = f;
     const l = appPeForma.get(f) ?? [];
@@ -1827,8 +1965,26 @@ export function judecaRezultat(app: unknown, o: RezultatO, opt: OptiuniJudecata 
   let prafGasit = 0;
   const normalizate: Array<{ forma: number; intrare: CaleN[]; tol: number[][] }> = [];
   for (const f of forme) {
-    const A = appPeForma.get(f) ?? [], O = oPeForma.get(f) ?? [];
-    if (O.length === 0) { pr.push(`forma ${f}: ${A.length} căi pe care oracolul nu le are`); continue; }
+    const Atoate = appPeForma.get(f) ?? [], Otoate = oPeForma.get(f) ?? [];
+    if (Otoate.length === 0) { pr.push(`forma ${f}: ${Atoate.length} căi pe care oracolul nu le are`); continue; }
+    // ADR 0037 §11 (2.3c-3): căile deschise nu intră în normalizare; se judecă separat, în ordinea lor, ca în 2.7c.
+    const Ad = Atoate.filter(deschisaApp), Od = Otoate.filter((c) => !c.inchis);
+    if (Ad.length !== Od.length) pr.push(`forma ${f}: ${Ad.length} căi deschise ≠ ${Od.length} (oracol)`);
+    else {
+      Ad.forEach((c, k) => {
+        const w = Od[k] as CaleO;
+        if (c.nume !== w.nume) pr.push(`forma ${f}, calea deschisă ${k}: nume ${String(c.nume)} ≠ ${String(w.nume)}`);
+        pr.push(...judecaCale(c.varfuri, w, `forma ${f}, calea deschisă ${k}`, opt));
+      });
+    }
+    const A = Atoate.filter((c) => !deschisaApp(c)), O = Otoate.filter((c) => c.inchis);
+    if (O.length === 0) {
+      if (A.length > 0) pr.push(`forma ${f}: ${A.length} căi închise pe care oracolul nu le are`);
+      continue;
+    }
+    // Ordinea subcăilor, deschise și închise amestecate, într-o formă rămasă ca în citire (normalizarea n-are o ordine).
+    const sir = (l: boolean[]): string => l.map((d) => (d ? 'd' : 'i')).join('');
+    const ordine = sir(Atoate.map(deschisaApp)) === sir(Otoate.map((c) => !c.inchis)) ? [] : [`forma ${f}: ordinea căilor deschise (d) și închise (i) ${sir(Atoate.map(deschisaApp))} ≠ ${sir(Otoate.map((c) => !c.inchis))} (oracol)`];
     const nonzero = (O[0] as CaleO).nonzero;
     const identic = A.length === O.length
       ? A.flatMap((c, k) => {
@@ -1836,11 +1992,12 @@ export function judecaRezultat(app: unknown, o: RezultatO, opt: OptiuniJudecata 
         return [...(c.nume !== w.nume ? [`forma ${f}, calea ${k}: nume ${String(c.nume)} ≠ ${String(w.nume)}`] : []), ...judecaCale(c.varfuri, w, `forma ${f}, calea ${k}`, opt)];
       })
       : [`forma ${f}: ${A.length} căi ≠ ${O.length} (oracol)`];
-    if (!nonzero) { pr.push(...identic); continue; }
+    if (!nonzero) { pr.push(...identic, ...(identic.length === 0 ? ordine : [])); continue; }
     const an = analize.get(f);
     if (identic.length === 0) {
       ramaseNonzero++;
       if (an?.deSchimbat === true) ramaseDeSchimbat++;
+      pr.push(...ordine);
       continue;
     }
     // Forma a fost normalizată.
@@ -1895,22 +2052,25 @@ export function judecaRaport(app: unknown, o: RaportO, exceptii: readonly string
  */
 export function caiFinaleO(app: unknown, o: RezultatO): CaleO[] {
   if (!o.ok) return [];
-  const a = app as { cai: Array<{ varfuri: VarfO[]; forma: number; nume?: string }> };
+  type C = { varfuri: VarfO[]; forma: number; nume?: string; inchis?: boolean };
+  const a = app as { cai: C[] };
   const oPeForma = new Map<number, CaleO[]>();
   for (const c of o.cai) { const l = oPeForma.get(c.forma) ?? []; l.push(c); oPeForma.set(c.forma, l); }
-  const appPeForma = new Map<number, Array<{ varfuri: VarfO[]; forma: number; nume?: string }>>();
+  const appPeForma = new Map<number, C[]>();
   for (const c of a.cai) { const l = appPeForma.get(c.forma) ?? []; l.push(c); appPeForma.set(c.forma, l); }
   const out: CaleO[] = [];
   for (const f of [...new Set([...oPeForma.keys(), ...appPeForma.keys()])].sort((x, y) => x - y)) {
     const O = oPeForma.get(f) ?? [], A = appPeForma.get(f) ?? [];
-    const identic = A.length === O.length && A.every((c, k) => judecaCale(c.varfuri, O[k] as CaleO, 'x').length === 0);
+    const identic = A.length === O.length && A.every((c, k) => (c.inchis !== false) === (O[k] as CaleO).inchis && judecaCale(c.varfuri, O[k] as CaleO, 'x').length === 0);
     if (identic) { out.push(...O); continue; }
     for (const c of A) {
-      const runs: RunO[] = segmenteApp(c.varfuri).map((g) => {
+      // 2.3c-3: o cale deschisă a aplicației (judecată la `judecaRezultat`) rămâne deschisă, fără segmentul de după final.
+      const inchis = c.inchis !== false;
+      const runs: RunO[] = segmenteApp(c.varfuri, inchis).map((g) => {
         const ex: SegExact = g.s.tip === 'L' ? { fel: 'L', a: g.a, b: g.b } : g.s.tip === 'C' ? { fel: 'C', a: g.a, c1: g.s.c1, c2: g.s.c2, b: g.b } : { fel: 'E', a: g.a, b: g.b, ...arcApp(g.a, g.b, g.s.bulge) };
         return { ex, piese: [{ p: g.a, s: g.s }], clasa: 'L', raza: 0, gol: 0, tol: 0 };
       });
-      const cale: CaleO = { varfuri: c.varfuri, forma: f, runs, tolVarf: c.varfuri.map(() => 0), nonzero: true };
+      const cale: CaleO = { varfuri: c.varfuri, forma: f, runs, tolVarf: c.varfuri.map(() => 0), nonzero: inchis, inchis };
       if (c.nume !== undefined) cale.nume = c.nume;
       out.push(cale);
     }
@@ -1928,7 +2088,8 @@ export function prafNormalizareO(o: RezultatO): number {
   let n = 0;
   for (const f of o.formeNonzero) {
     if (!f.deSchimbat) continue;
-    const cai = o.cai.filter((c) => c.forma === f.forma);
+    // Doar căile închise ale formei intră în normalizare (2.3c-3: cele deschise rămân afară).
+    const cai = o.cai.filter((c) => c.forma === f.forma && c.inchis);
     n += prafAdevarat(cai.map((c) => c.varfuri as CaleN), 'nonzero', CONST_O.rezolutie, { tolSursa: (ci, vi) => (cai[ci]?.tolVarf[vi] ?? 0) }).length;
   }
   return n;
@@ -1966,13 +2127,20 @@ export function analizaNonzero(forma: number, cai: readonly CaleO[], densitate: 
 // ---------------------------------------------------------------------------------------------------------------------
 // Piesa (§8).
 
-export type PiesaArg = { nume: string; cai: Array<{ varfuri: VarfO[]; nume?: string }>; laturi: ReadonlyArray<string>; pagina: { latime: number; inaltime: number } | null };
+/**
+ * Argumentul piesei: căile ușii (cu `inchis: false` pe cele deschise, 2.3c-3), laturile lor, pagina și (ALEGERE de
+ * interfață, sub-felia 2.3c-3) grosimea foii în mm, din care vine adâncimea operației `deschise` (ADR 0037 §11).
+ */
+export type PiesaArg = { nume: string; cai: Array<{ varfuri: VarfO[]; nume?: string; inchis?: boolean }>; laturi: ReadonlyArray<string>; pagina: { latime: number; inaltime: number } | null; grosime: number };
 export const SCULA_IMPLICITA_SVG_O = { numar: 1, nume: 'freza plata', diametru: 6 } as const;
 
 /**
  * Piesa construită de aplicație din căile ei: grupul `g` cu identitatea, c1…cN în ordine, coordonatele = ale căilor minus
  * colțul (același vector pentru toate), colțul = colțul cutiei exacte (oracolul), instanța în colț (sau în 0 fără pagină),
- * operațiile pe laturi, cu implicitele dreptunghiului, felii de cel mult 10 000 de noduri.
+ * operațiile pe laturi, cu implicitele dreptunghiului, felii de cel mult 10 000 de noduri. Sub-felia 2.3c-3 (ADR 0037 §11):
+ * elementul unei căi deschise are forma `cale` cu `inchis: false`, iar căile deschise primesc a treia operație, `deschise`
+ * (`deschise-2` …): pe linie, min(1 mm, grosimea / 2) într-o trecere, urcare, freza foii, fără urechi, rampă, intrări și
+ * colțuri. Căile deschise nu intră în exterior / interior, oricare le-ar fi latura din listă.
  */
 export function judecaPiesa(rez: unknown, arg: PiesaArg, id: string, coltExact: P, tolColt: number, scula?: { numar: number; nume: string; diametru: number }): string[] {
   const pr: string[] = [];
@@ -1995,11 +2163,13 @@ export function judecaPiesa(rez: unknown, arg: PiesaArg, id: string, coltExact: 
   for (const c of arg.cai) for (const v of c.varfuri) maxC = Math.max(maxC, Math.abs(v.p.x), Math.abs(v.p.y));
   const eps = 1e-14 * maxC * 4;
   copii.forEach((e, i) => {
-    const c = arg.cai[i] as { varfuri: VarfO[]; nume?: string };
+    const c = arg.cai[i] as { varfuri: VarfO[]; nume?: string; inchis?: boolean };
     if (e.tip !== 'element' || e.id !== `c${i + 1}` || !idm(e.matrice)) pr.push(`elementul ${i}: ${String(e.tip)} ${String(e.id)} ${JSON.stringify(e.matrice)}`);
     if (e.nume !== c.nume) pr.push(`elementul ${i}: nume ${String(e.nume)} ≠ ${String(c.nume)}`);
     const f = e.forma;
-    if (f?.tip !== 'cale' || f.inchis !== true || !Array.isArray(f.varfuri) || f.varfuri.length !== c.varfuri.length) { pr.push(`elementul ${i}: forma ${JSON.stringify(f)?.slice(0, 120)}`); return; }
+    // ADR 0037 §2, §11: `inchis` real (o cale deschisă citită închisă ar primi coarda de închidere, tăiată prin material).
+    const inchis = c.inchis !== false;
+    if (f?.tip !== 'cale' || f.inchis !== inchis || !Array.isArray(f.varfuri) || f.varfuri.length !== c.varfuri.length) { pr.push(`elementul ${i}: forma ${JSON.stringify(f)?.slice(0, 120)} (inchis așteptat ${String(inchis)})`); return; }
     const muta = (q: P, w: P): boolean => Math.abs(q.x + colt.x - w.x) <= eps && Math.abs(q.y + colt.y - w.y) <= eps;
     f.varfuri.forEach((v, j) => {
       const w = c.varfuri[j] as VarfO;
@@ -2014,19 +2184,28 @@ export function judecaPiesa(rez: unknown, arg: PiesaArg, id: string, coltExact: 
   // Operațiile.
   const ops = piesa['operatii'] as Array<Record<string, unknown>> | undefined;
   if (!Array.isArray(ops)) return [...pr, 'operatii lipsă'];
-  const asteptate: Array<{ id: string; latura: string; noduri: string[] }> = [];
-  for (const lat of ['exterior', 'interior'] as const) {
-    const ids = arg.laturi.flatMap((l, i) => (l === lat ? [`c${i + 1}`] : []));
-    for (let k = 0; k * CONST_O.noduriOperatie < ids.length; k++) asteptate.push({ id: k === 0 ? lat : `${lat}-${k + 1}`, latura: lat, noduri: ids.slice(k * CONST_O.noduriOperatie, (k + 1) * CONST_O.noduriOperatie) });
-  }
+  const asteptate: Array<{ id: string; latura: string; noduri: string[]; adancime: number }> = [];
+  const felii = (baza: string, latura: string, ids: string[], adancime: number): void => {
+    for (let k = 0; k * CONST_O.noduriOperatie < ids.length; k++) asteptate.push({ id: k === 0 ? baza : `${baza}-${k + 1}`, latura, noduri: ids.slice(k * CONST_O.noduriOperatie, (k + 1) * CONST_O.noduriOperatie), adancime });
+  };
+  const inchisa = (i: number): boolean => (arg.cai[i] as { inchis?: boolean }).inchis !== false;
+  for (const lat of ['exterior', 'interior'] as const) felii(lat, lat, arg.laturi.flatMap((l, i) => (l === lat && inchisa(i) ? [`c${i + 1}`] : [])), 3);
+  // ADR 0037 §11 (2.3c-3): a treia operație, pe căile deschise (o linie uitată în fișier lasă doar o urmă).
+  felii('deschise', 'pe-linie', arg.cai.flatMap((_, i) => (inchisa(i) ? [] : [`c${i + 1}`])), adancimeDeschiseO(arg.grosime));
   const sc = scula ?? SCULA_IMPLICITA_SVG_O;
   if (ops.length !== asteptate.length) pr.push(`${ops.length} operații ≠ ${asteptate.length}: ${ops.map((o) => String(o['id'])).join(', ')}`);
   for (const w of asteptate) {
     const o = ops.find((x) => x['id'] === w.id);
     if (o === undefined) { pr.push(`operația ${w.id} lipsește`); continue; }
-    const asteptat = { id: w.id, tip: 'profil', noduri: w.noduri, scula: { numar: sc.numar, nume: sc.nume, diametru: sc.diametru }, latura: w.latura, adancime: 3, pas: 3, sens: 'urcare', urechi: null, rampa: null, intrari: null, colturi: null };
+    // Într-o trecere: pasul = adâncimea. `despartire` (ADR 0037 §2) lipsă = false; importul nu marchează nimic.
+    const asteptat = { id: w.id, tip: 'profil', noduri: w.noduri, scula: { numar: sc.numar, nume: sc.nume, diametru: sc.diametru }, latura: w.latura, adancime: w.adancime, pas: w.adancime, sens: 'urcare', urechi: null, rampa: null, intrari: null, colturi: null };
+    const fara = (x: Record<string, unknown>): Record<string, unknown> => {
+      if (x['despartire'] !== false) return x;
+      const { despartire: _, ...rest } = x;
+      return rest;
+    };
     const pe = (x: Record<string, unknown>): string => JSON.stringify(Object.keys(x).sort().map((k) => [k, x[k]]));
-    if (pe(o) !== pe(asteptat)) pr.push(`operația ${w.id}: ${JSON.stringify(o).slice(0, 300)} ≠ ${JSON.stringify(asteptat).slice(0, 300)}`);
+    if (pe(fara(o)) !== pe(asteptat)) pr.push(`operația ${w.id}: ${JSON.stringify(o).slice(0, 300)} ≠ ${JSON.stringify(asteptat).slice(0, 300)}`);
   }
   return pr;
 }
@@ -2052,7 +2231,9 @@ export const octetiDin = (s: string): Uint8Array => new TextEncoder().encode(s);
  */
 export function laturiHotarate(cai: readonly CaleO[], tol: number): boolean[] {
   return cai.map((a, i) => {
+    // ADR 0037 §11 (2.3c-3): o cale deschisă e mereu `pe-linie`; una deschisă nu conține, deci nu contează ca vecină.
+    if (!a.inchis) return true;
     const p = (a.varfuri[0] as VarfO).p;
-    return cai.every((b, j) => j === i || b.runs.every((r) => distantaExact(p, r.ex) > tol));
+    return cai.every((b, j) => j === i || !b.inchis || b.runs.every((r) => distantaExact(p, r.ex) > tol));
   });
 }

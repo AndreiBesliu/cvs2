@@ -1479,6 +1479,18 @@ sesiune independentă (0,61 M): eticheta deschisă, invarianta 11 pe deschise, 1
 punea și un nod închis al unei operații marcate; reparat după oracol). Pornirea: 99,6 kB din 100 (schema v10 și
 migrarea stau la pornire); 2.3c-3 va muta piesa importului la cerere.
 
+**2.3c-3 (importul căilor deschise și interfața, ADR 0037 §11 partea a doua, §12)** — „ok” al owner-ului: acum, fără
+recenzie; recenzia A și 2.3c-4–6 după resetarea săptămânală (17.10). Implementarea (agent, 0,47 M): `line`, subcăile
+`fill: none` cu golul peste 0,01 mm și polilinile deschise devin căi deschise (cu vârful final); degenerată sub 2 vârfuri
+distincte sau sub 0,01 mm pe curbă; nici imbricare, nici normalizare; `gol` = nicio cale; operația `deschise` a piesei:
+pe linie, min(1 mm, grosimea / 2), o trecere; săgeata de sens pe pânză pentru căile deschise selectate; „cale deschisă”
+în listă; dialogul numără căile deschise și spune că grosimea liniei din fișier nu contează. Piesa importului se face
+acum în modulul previzualizării (la cerere): pornirea 99,6 → 99,2 kB. Oracolul SVG (sesiune independentă, 0,47 M):
+secțiunea L (17 cazuri), cazurile vechi aduse la contract, 10 001 linii, plafonul cu vârful final, sabotajele prinse.
+La integrare: doar forma apelului `piesaDinImport(date, id, scula, grosime)` adaptată în testul de legătură. Valul din
+CNC-referinta se importă ca o cale deschisă și se taie pe linie, prin poartă (e2e). 6 048 de teste unitare; e2e 57 / 57
+(o rulare a avut o dată pagina neîncărcată în 30 s; două rulări complete după, curate).
+
 ## 2026-10-13 — Etapa 2, felia 2.8a: carcasa interfeței (Model: Claude Opus 5.5)
 
 **Prompt:** „ai dreptate, B arata cel mai bine. dar, vreau sa avem doua template-uri. B, care va fi cel modern, si voi vrea

@@ -1,7 +1,7 @@
 /**
- * Ușa SVG (ADR 0035): octeții unui fișier → căile închise, în mm, cu Y în sus și pagina cu colțul stânga-jos în origine,
- * plus raportul. Inertă: `DOMParser` fără context de navigare, nimic atașat, nimic încărcat, doar atribute citite;
- * matricile și unitățile le socotește ușa.
+ * Ușa SVG (ADR 0035, amendată de ADR 0037 §11): octeții unui fișier → căile, închise sau deschise, în mm, cu Y în sus și
+ * pagina cu colțul stânga-jos în origine, plus raportul. Inertă: `DOMParser` fără context de navigare, nimic atașat,
+ * nimic încărcat, doar atribute citite; matricile și unitățile le socotește ușa.
  */
 import { LINIE, type Punct, type Segment, type Varf } from '../geom/contur.ts';
 import { cutieContur } from '../geom/cutie.ts';
@@ -22,7 +22,8 @@ export const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
  * O cale a fișierului, în mm, pe pagină. `forma` e indexul formei SVG din care vine, în ordinea documentului. `inchis` o
- * spune ușa, iar importul îl citește (ADR 0037 §2); până la 2.3c-3, ușa dă doar căi închise (cele deschise se sar).
+ * spune ușa, iar importul îl citește (ADR 0037 §2). O cale deschisă (§11) are vârfurile subcăii plus punctul final, cu
+ * segmentul L: n vârfuri, n − 1 segmente.
  */
 export type CaleSvg = { readonly varfuri: readonly Varf[]; readonly inchis: boolean; readonly forma: number; readonly nume?: string };
 
@@ -428,15 +429,19 @@ type Numaratoare = Record<CodAvertisment, number>;
 /** Plafonul de lucru al citirii (`PLAFON_IMPORT.varfuriLucru`) a fost atins: citirea se oprește. */
 class PestePlafon extends Error {}
 
+/** O subcale citită: vârfurile ei în mm și dacă e închisă (ADR 0037 §2, §11). */
+type CaleCitita = { readonly varfuri: Varf[]; readonly inchis: boolean };
+
 /**
- * O subcale a formei, în mm (ADR 0035 §6, §7): vârfurile căii, 'deschisa', 'goala' (un M singur), 'degenerata' (fără arie)
- * sau 'prea-mare' (peste `PLAFON.varfuriCale`: citirea ei se oprește acolo). Liniile și cubicele trec exact prin M; arcele
- * de cerc sub o similitudine rămân arce (împărțite peste 180°), restul devin cubice sub `TOLERANTA_IMPORT`. `lucru` numără
- * vârfurile produse de toată citirea.
+ * O subcale a formei, în mm (ADR 0035 §6, §7; ADR 0037 §11): calea, închisă sau deschisă, 'goala' (un M singur),
+ * 'degenerata' (fără arie, sau o cale deschisă fără lungime), 'praf' (o cale închisă sub rezoluție) sau 'prea-mare' (peste
+ * `PLAFON.varfuriCale`: citirea ei se oprește acolo). Liniile și cubicele trec exact prin M; arcele de cerc sub o
+ * similitudine rămân arce (împărțite peste 180°), restul devin cubice sub `TOLERANTA_IMPORT`. `lucru` numără vârfurile
+ * produse de toată citirea. `umplut` = 'linie' pentru elementul `line`: mereu deschis, niciodată umplut (ADR 0035 §4).
  */
 function subcaleMm(
-  sc: SubcaleLocala, M: Matrice, sim: boolean, semn: number, n: Numaratoare, lucru: { varfuri: number }, umplut: boolean,
-): Varf[] | 'deschisa' | 'goala' | 'prea-mare' | 'degenerata' | 'praf' {
+  sc: SubcaleLocala, M: Matrice, sim: boolean, semn: number, n: Numaratoare, lucru: { varfuri: number }, umplut: boolean | 'linie',
+): CaleCitita | 'goala' | 'prea-mare' | 'degenerata' | 'praf' {
   const varfuri: Varf[] = [];
   let local = sc.start;
   let cur = aplica(M, sc.start);
@@ -503,14 +508,16 @@ function subcaleMm(
   }
   // Un M singur nu e o subcale; cu Z, e una închisă, fără niciun vârf (deci degenerată).
   if (desenate === 0) return sc.z ? 'degenerata' : 'goala';
+  // `line` e mereu deschisă (ADR 0037 §11: „orice line”): vârfurile ei plus punctul final, fără nicio închidere.
+  if (umplut === 'linie') return deschisa(varfuri, cur);
   const start = aplica(M, sc.start);
   const gol = Math.hypot(cur.x - start.x, cur.y - start.y);
   // Cum se închide o subcale fără Z (ADR 0037 §11): o formă umplută, ca în browser (care o umple); una trasă doar cu
-  // linie, doar dacă golul e sub rezoluție. Altfel rămâne deschisă.
+  // linie, doar dacă golul e sub rezoluție. Altfel rămâne deschisă: o cale deschisă, cu punctul final.
   let inchidere: 'umplere' | 'usa' | null = null;
   if (gol > TOLERANTA_IMPORT) {
     if (!sc.z) {
-      if (!umplut && gol > REZOLUTIE) return varfuri.length > PLAFON.varfuriCale ? 'prea-mare' : 'deschisa';
+      if (!umplut && gol > REZOLUTIE) return deschisa(varfuri, cur);
       inchidere = umplut ? 'umplere' : 'usa';
     }
     varfuri.push({ p: cur, s: LINIE });
@@ -529,18 +536,71 @@ function subcaleMm(
   const unic = varfuri[0];
   if (varfuri.length === 1 && unic && unic.s.tip === 'C') {
     const b = bucla(unic.p, unic.s.c1, unic.s.c2);
-    return praf(b) ? 'praf' : b;
+    return praf(b) ? 'praf' : { varfuri: b, inchis: true };
   }
-  // O subcale pe care închiderea o face degenerată rămâne deschisă (ADR 0037 §11): nu era un contur.
-  if (varfuri.length < 2) return inchidere ? 'deschisa' : 'degenerata';
+  // O subcale pe care închiderea o face degenerată rămâne deschisă (ADR 0037 §11): nu era un contur. Vârful adăugat de
+  // închidere e chiar punctul final al căii deschise (capătul, cu segmentul L), deci nu se mai adaugă o dată.
+  if (varfuri.length < 2) return inchidere ? deschisa(varfuri.slice(0, -1), cur) : 'degenerata';
   // Doar linii, toate pe o dreaptă: conturul n-are arie (nici browserul nu-l umple), iar CAM-ul ar refuza toată piesa.
-  if (varfuri.every((v) => v.s.tip === 'L') && peODreapta(varfuri)) return inchidere ? 'deschisa' : 'degenerata';
+  if (varfuri.every((v) => v.s.tip === 'L') && peODreapta(varfuri)) return inchidere ? deschisa(varfuri.slice(0, -1), cur) : 'degenerata';
   // Praful (ADR 0037 §11), după degenerare (un `M…Z` fără segmente rămâne degenerat, ca în 2.7c): sub rezoluție, CAM-ul
   // refuza tot exportul.
   if (praf(varfuri)) return 'praf';
   if (inchidere === 'umplere') n['inchise-de-umplere']++;
   else if (inchidere === 'usa') n['inchise-la-usa']++;
-  return varfuri;
+  return { varfuri, inchis: true };
+}
+
+/**
+ * Calea deschisă a unei subcăi (ADR 0037 §11): vârfurile ei plus punctul final, cu segmentul L. Plafonul căii se judecă
+ * cu vârful final inclus; e degenerată dacă are mai puțin de 2 vârfuri distincte sau lungimea pe curbă sub `REZOLUTIE`.
+ * Praful nu se judecă aici: o cale lăsată deschisă cu golul peste 0,01 mm are diagonala cel puțin cât golul, iar una
+ * rămasă deschisă după o închidere degenerată nu era un contur (ADR 0037 §11, „Praful”).
+ */
+function deschisa(varfuri: readonly Varf[], capat: Punct): CaleCitita | 'prea-mare' | 'degenerata' {
+  const v = [...varfuri, { p: capat, s: LINIE }];
+  if (v.length > PLAFON.varfuriCale) return 'prea-mare';
+  const p0 = capat;
+  if (!v.some((x) => x.p.x !== p0.x || x.p.y !== p0.y)) return 'degenerata';
+  return lungimeDeschisa(v) < REZOLUTIE ? 'degenerata' : { varfuri: v, inchis: false };
+}
+
+/**
+ * Lungimea pe curbă a unei căi deschise (n − 1 segmente), până la rezoluție: doar pragul contează, deci socoteala se
+ * oprește odată trecută de el. Linia exact; arcul din coardă și bulge (r·θ); cubica prin `lungimeCubica`.
+ */
+function lungimeDeschisa(v: readonly Varf[]): number {
+  let l = 0;
+  for (let i = 0; i + 1 < v.length && l < REZOLUTIE; i++) {
+    const a = v[i] as Varf, b = (v[i + 1] as Varf).p;
+    const coarda = Math.hypot(b.x - a.p.x, b.y - a.p.y);
+    if (a.s.tip === 'L') l += coarda;
+    else if (a.s.tip === 'A') {
+      // r·θ = coarda·(1 + β²)·atan|β| / |β|; spre β → 0, coarda.
+      const k = Math.abs(a.s.bulge);
+      l += k === 0 ? coarda : (coarda * (1 + k * k) * Math.atan(k)) / k;
+    } else l += lungimeCubica(a.p, a.s.c1, a.s.c2, b, REZOLUTIE - l, 0);
+  }
+  return l;
+}
+
+/**
+ * Lungimea unei cubice, prin împărțiri de Casteljau: coarda e o margine de jos, poligonul de control una de sus. O bucată
+ * a cărei coardă trece de `ramas` întoarce coarda (pragul e deja depășit); altfel se împarte până când cele două margini
+ * diferă cu cel mult 1e-9 mm (o eroare fără greutate față de pragul de 0,01 mm).
+ */
+function lungimeCubica(a: Punct, c1: Punct, c2: Punct, b: Punct, ramas: number, adancime: number): number {
+  const d = (p: Punct, q: Punct): number => Math.hypot(q.x - p.x, q.y - p.y);
+  const coarda = d(a, b);
+  if (coarda >= ramas) return coarda;
+  const poligon = d(a, c1) + d(c1, c2) + d(c2, b);
+  if (poligon - coarda <= 1e-9 || adancime >= 40) return (poligon + coarda) / 2;
+  const mij = (p: Punct, q: Punct): Punct => ({ x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 });
+  const m01 = mij(a, c1), m12 = mij(c1, c2), m23 = mij(c2, b);
+  const m012 = mij(m01, m12), m123 = mij(m12, m23);
+  const m = mij(m012, m123);
+  const prima = lungimeCubica(a, m01, m012, m, ramas, adancime + 1);
+  return prima >= ramas ? prima : prima + lungimeCubica(m, m123, m23, b, ramas - prima, adancime + 1);
 }
 
 /** Un contur închis mai mic decât rezoluția: diagonala cutiei lui exacte (arcele cu extremele, cubicele cu ale lor). */
@@ -699,7 +759,7 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
   let indexForma = 0;
   let departe = false;
   /** Formele citite, în ordine; normalizarea `nonzero` (ADR 0036) rulează după parcurgere și după plafonul intrării. */
-  const forme: Array<{ readonly index: number; readonly nume?: string; readonly cai: Varf[][]; readonly nonzero: boolean }> = [];
+  const forme: Array<{ readonly index: number; readonly nume?: string; readonly cai: CaleCitita[]; readonly nonzero: boolean }> = [];
   const stiva: Cadru[] = [];
   const { index: css, ignorate } = citesteCss(doc);
   if (ignorate) n.stil = 1;
@@ -783,18 +843,15 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
         continue;
       }
       if (date.eroare) n['eroare-date']++;
-      // `line` e mereu deschisă (ADR 0035 §4), chiar de lungime 0.
-      if (tip === 'line') {
-        n.deschise++;
-        continue;
-      }
       const sim = similitudine(m);
       const semn = Math.sign(determinantNormat(m));
       const id = el.getAttribute('id');
       const nume = id ? id.slice(0, PLAFON.numeLungime) : undefined;
-      const aleFormei: Varf[][] = [];
+      const aleFormei: CaleCitita[] = [];
+      // `line` e mereu deschisă (ADR 0035 §4) și devine cale deschisă (ADR 0037 §11), oricum ar fi umplută.
+      const umplut = tip === 'line' ? 'linie' : cadru.umplut;
       for (const sc of subcai(date.comenzi)) {
-        const v = subcaleMm(sc, m, sim, semn, n, lucru, cadru.umplut);
+        const v = subcaleMm(sc, m, sim, semn, n, lucru, umplut);
         if (v === 'praf') {
           n['sub-rezolutie']++;
           continue;
@@ -804,10 +861,6 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
           n['prea-mari']++;
           continue;
         }
-        if (v === 'deschisa') {
-          n.deschise++;
-          continue;
-        }
         if (v === 'degenerata') {
           n.degenerate++;
           continue;
@@ -815,7 +868,8 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
         aleFormei.push(v);
       }
       if (aleFormei.length > 0) {
-        // Doar o regiune umplută (`fill` ≠ `none`) cu regula `nonzero` se normalizează (ADR 0036 §9).
+        // Doar o regiune umplută (`fill` ≠ `none`) cu regula `nonzero` se normalizează (ADR 0036 §9), și doar căile ei
+        // închise: o cale deschisă nu e o regiune (ADR 0037 §11).
         forme.push({ index, ...(nume !== undefined ? { nume } : {}), cai: aleFormei, nonzero: cadru.umplere !== 'evenodd' && cadru.umplut });
       }
     }
@@ -824,16 +878,19 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
     if (e instanceof PesteCss) return { ok: false, cod: 'plafon', detaliu: 'css', avertismente: n };
     throw e;
   }
-  // Plafonul total, întâi pe intrare: un fișier refuzat oricum nu mai plătește normalizarea (recenzia 2.7d).
-  const intrare = forme.reduce((s, f) => s + f.cai.reduce((t, v) => t + v.length, 0), 0);
+  // Plafonul total, întâi pe intrare (căile deschise, cu vârful final): un fișier refuzat oricum nu mai plătește
+  // normalizarea (recenzia 2.7d).
+  const intrare = forme.reduce((s, f) => s + f.cai.reduce((t, c) => t + c.varfuri.length, 0), 0);
   if (intrare > PLAFON.varfuri) return { ok: false, cod: 'plafon', detaliu: String(intrare), avertismente: n };
-  // ADR 0036: o formă `nonzero` trece o dată, cu toate subcăile ei, prin aranjamentul exact, cu bugetul ÎNTREGULUI fișier.
-  // Neschimbată, rămâne același obiect (documentul ca în 2.7c); la refuz (și cu bugetul terminat), ca în 2.7c, numărată.
+  // ADR 0036: o formă `nonzero` trece o dată, cu toate subcăile ei ÎNCHISE, prin aranjamentul exact, cu bugetul ÎNTREGULUI
+  // fișier. Neschimbată, rămâne același obiect, cu căile în ordinea subcăilor (documentul ca în 2.7c); la refuz (și cu
+  // bugetul terminat), ca în 2.7c, numărată. Schimbată, ieșirea normalizării vine întâi, apoi căile deschise, în ordine.
   const buget = { ramas: PLAFON_IMPORT.normalizare };
   for (const f of forme) {
-    let finale: readonly (readonly Varf[])[] = f.cai;
-    if (f.nonzero) {
-      const r = normalizeaza(f.cai, { buget });
+    let finale: readonly CaleCitita[] = f.cai;
+    const inchise = f.cai.filter((c) => c.inchis).map((c) => c.varfuri);
+    if (f.nonzero && inchise.length > 0) {
+      const r = normalizeaza(inchise, { buget });
       if (!r.ok || r.cai.some((v) => v.length > PLAFON.varfuriCale)) {
         // O reuniune peste plafonul căii nu scoate forma: o citește ca în 2.7c (recenzia 2.7d).
         n['nonzero-refuzate']++;
@@ -842,21 +899,25 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
         n['nonzero-normalizate']++;
         // Praful și pe ieșire (ADR 0037 §11): o buclă de închidere sub rezoluție (logoul VfB: 2 de ~6e-5 mm) ar face
         // CAM-ul să refuze tot exportul.
-        finale = r.cai.filter((v) => {
+        const iesire = r.cai.filter((v) => {
           if (!praf(v)) return true;
           n['sub-rezolutie']++;
           return false;
         });
+        finale = [...iesire.map((varfuri) => ({ varfuri, inchis: true })), ...f.cai.filter((c) => !c.inchis)];
       }
     }
-    for (const v of finale) {
-      if (!v.every((x) => inMargini(x))) departe = true;
-      primite += v.length;
-      cai.push({ varfuri: v, inchis: true, forma: f.index, ...(f.nume !== undefined ? { nume: f.nume } : {}) });
+    for (const c of finale) {
+      if (!c.varfuri.every((x) => inMargini(x))) departe = true;
+      primite += c.varfuri.length;
+      // `deschise` numără căile deschise importate (ADR 0037 §11), nu pe cele sărite.
+      if (!c.inchis) n.deschise++;
+      cai.push({ varfuri: c.varfuri, inchis: c.inchis, forma: f.index, ...(f.nume !== undefined ? { nume: f.nume } : {}) });
     }
   }
   if (primite > PLAFON.varfuri) return { ok: false, cod: 'plafon', detaliu: String(primite), avertismente: n };
   if (departe) return { ok: false, cod: 'departe', avertismente: n };
+  // `gol` = nicio cale, închisă sau deschisă (ADR 0037 §11): un fișier făcut doar din linii se importă.
   if (cai.length === 0) return { ok: false, cod: 'gol', avertismente: n };
   return {
     ok: true,

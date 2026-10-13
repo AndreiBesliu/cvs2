@@ -4,6 +4,11 @@
  * orice, arce cu steaguri, raze prea mici, raze 0, capete egale), numere scrise în feluri diferite (lipite, exponenți,
  * `.5`), atribute de stil, umplerea (`fill`, sub-felia 2.3c-1, dintr-un șir aleator separat). ZERO importuri din `src/`. Nu
  * are valori pe hârtie: îl judecă oracolul.
+ *
+ * Sub-felia 2.3c-3 (ADR 0037 §11): generatorul face deja căi deschise (subcăile fără `Z` cu `fill="none"`, ~15 % × ~25 %,
+ * orice `line`, `polyline`-urile fără umplere, „M L”-urile umplute pe o dreaptă), deci nu se schimbă: aceleași fișiere pe
+ * aceleași semințe. Pe cele 240, oracolul importă 87 de căi deschise în cele 97 de fișiere fără forme de normalizat (sonda
+ * de autoconsistență din 13.10: rezultatul construit din oracol trece de `judecaRezultat`, 0 probleme).
  */
 
 /**

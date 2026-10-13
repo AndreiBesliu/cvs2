@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { Varf } from '../../src/geom/contur.ts';
 import { traduce } from '../../src/i18n/t.ts';
-import type { ImportPregatit } from '../../src/io/piesa.ts';
+import { pregateste, type ImportPregatit } from '../../src/io/piesa.ts';
 import { documentNou } from '../../src/model/document.ts';
 import { istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
@@ -32,12 +32,12 @@ const patrat = (x: number, y: number, l: number): Varf[] => [
   { p: { x, y }, s: { tip: 'L' } }, { p: { x: x + l, y }, s: { tip: 'L' } },
   { p: { x: x + l, y: y + l }, s: { tip: 'L' } }, { p: { x, y: y + l }, s: { tip: 'L' } },
 ];
-const LOGO: ImportPregatit = {
+const LOGO: ImportPregatit = pregateste({
   nume: 'logo',
   cai: [{ varfuri: patrat(20, 30, 80), nume: 'contur' }, { varfuri: patrat(40, 50, 20) }],
   laturi: ['exterior', 'interior'],
   pagina: { latime: 200, inaltime: 150 },
-};
+});
 
 test('importul adaugă o piesă și o instanță într-un singur pas, o selectează, iar Ctrl+Z o scoate', () => {
   const ctx = context(LOGO);
@@ -64,10 +64,10 @@ test('importul e oprit în fila care doar citește, peste plafoane și când doc
   assert.deepEqual(stare(registru, 'document.importa', context()), { ok: false, motiv: 'motiv.nimic-ales' });
   // 5 căi de 45 000 de vârfuri: 225 000, peste plafonul pieselor (200 000).
   const mare = (k: number): Varf[] => Array.from({ length: 45_000 }, (_, j) => ({ p: { x: k * 10 + Math.cos(j) , y: Math.sin(j) + j * 1e-3 }, s: { tip: 'L' } }));
-  const prea: ImportPregatit = { nume: 'mare', cai: [0, 1, 2, 3, 4].map((k) => ({ varfuri: mare(k) })), laturi: ['exterior', 'exterior', 'exterior', 'exterior', 'exterior'], pagina: null };
+  const prea: ImportPregatit = pregateste({ nume: 'mare', cai: [0, 1, 2, 3, 4].map((k) => ({ varfuri: mare(k) })), laturi: ['exterior', 'exterior', 'exterior', 'exterior', 'exterior'], pagina: null });
   assert.deepEqual(stare(registru, 'document.importa', context(prea)), { ok: false, motiv: 'motiv.plafon' });
   // Două pătrate la 1,98·10⁷ mm unul de altul: coordonatele din piesă ar trece de 10⁷ mm, deci ușa documentului refuză.
-  const departe: ImportPregatit = { nume: 'departe', cai: [{ varfuri: patrat(-9.9e6, 0, 1) }, { varfuri: patrat(9.9e6, 0, 1) }], laturi: ['exterior', 'exterior'], pagina: null };
+  const departe: ImportPregatit = pregateste({ nume: 'departe', cai: [{ varfuri: patrat(-9.9e6, 0, 1) }, { varfuri: patrat(9.9e6, 0, 1) }], laturi: ['exterior', 'exterior'], pagina: null });
   const ctx = context(departe);
   assert.deepEqual(stare(registru, 'document.importa', ctx), { ok: false, motiv: 'motiv.import-refuzat' });
   ruleaza(registru, 'document.importa', ctx);
@@ -93,8 +93,9 @@ test('mesajele importului vin cu dialogul: înainte de încărcare lipsesc (eroa
   assert.throws(() => traduce('ro', 'import.titlu', { nume: 'x' }), /nu e încărcat/);
   await import('../../src/i18n/import.ts');
   assert.equal(traduce('ro', 'import.titlu', { nume: 'logo' }), 'Importă SVG: logo');
-  assert.equal(traduce('en', 'import.av.deschise', { n: 2 }), '2 open paths skipped (open contours come later)');
-  assert.equal(traduce('ro', 'import.av.deschise', { n: 20 }), '20 de căi deschise sărite (contururile deschise vin mai târziu)');
+  // Din 2.3c-3, `deschise` numără căile deschise IMPORTATE (ADR 0037 §11).
+  assert.equal(traduce('en', 'import.av.deschise', { n: 2 }), '2 open paths (no closing Z, not filled) imported as lines, to cut on the line');
+  assert.equal(traduce('ro', 'import.av.deschise', { n: 20 }), '20 de căi deschise (fără Z de închidere, neumplute) importate ca linii, de tăiat pe linie');
 });
 
 test('previzualizarea: mărimea e a desenului (cutia lui exactă), nu a paginii; laturile numărate (otrava „lățimea paginii”, 2.7c)', async () => {

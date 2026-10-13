@@ -10,6 +10,8 @@
  * geometria citirii, topologia), iar numerele `nonzero-normalizate` / `nonzero-refuzate` se judecă pe forme. Euristica
  * ariei din 2.7c (perechile în același sens) a dispărut, deci și filtrul căilor cu aria practic nulă. Laturile se judecă
  * pe căile finale.
+ * Sub-felia 2.3c-3 (ADR 0037 §11): căile deschise (`inchis: false`, cu vârful final) se judecă separat de cele închise, în
+ * ordinea lor; latura lor e `pe-linie` (nu intră în imbricare), deci și ele sunt „hotărâte”.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

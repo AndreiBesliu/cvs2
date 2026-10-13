@@ -68,6 +68,7 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
   const [vedere, setVedere] = useState<Vedere | null>(null);
   const [deplasare, setDeplasare] = useState({ dx: 0, dy: 0 });
   const [afisata, setAfisata] = useState(0);
+  const [sageti, setSageti] = useState(0);
   const [trimisa, setTrimisa] = useState(0);
   const gest = useRef<{ tip: 'pan' | 'mutare' | 'apasare'; x0: number; y0: number; v0: Vedere } | null>(null);
   const spatiu = useRef(false);
@@ -98,6 +99,7 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
       if (ctx) ctx.transferFromImageBitmap(e.data.imagine);
       else e.data.imagine.close();
       setAfisata(e.data.cerere);
+      setSageti(e.data.sageti);
     };
     return () => { w.terminate(); };
   }, []);
@@ -229,6 +231,7 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
       data-ty={vedere?.ty}
       data-dpr={marime.dpr}
       data-afisata={afisata}
+      data-sageti={sageti}
       data-cerere={trimisa}
       onPointerDown={apasa}
       onPointerMove={misca}

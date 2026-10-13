@@ -3,7 +3,8 @@ import {
   instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, operatieInMargini, plafonDepasit, PLAFON, type Document, type FormaDoc,
   type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa,
 } from '../model/document.ts';
-import { piesaDinImport, type ImportPregatit } from '../io/piesa.ts';
+// Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
+import type { ImportPregatit } from '../io/piesa.ts';
 import { conturElement, cutieElement } from '../model/forme.ts';
 import { incarca, jsonCanonic } from '../model/incarcare.ts';
 import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
@@ -116,7 +117,8 @@ function adauga(ctx: ContextDocument, forma: FormaDoc, x: number, y: number): vo
 /**
  * Comanda unui import (ADR 0035 §8): piesa și instanța ei, într-un singur pas. Documentul de după trebuie să treacă de
  * plafoane și de ușa documentului întreagă: ce intră prin import se și redeschide. Ținută pe (document, import): `activa`
- * și `ruleaza` cer aceeași judecată.
+ * și `ruleaza` cer aceeași judecată. Piesa o face constructorul adus cu importul, cu freza și grosimea foii curente
+ * (adâncimea căilor deschise, ADR 0037 §11).
  */
 type ComandaImport = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: 'motiv.plafon' | 'motiv.import-refuzat' };
 let ultimulImport: { doc: Document; pregatit: ImportPregatit; rez: ComandaImport } | null = null;
@@ -124,7 +126,7 @@ function comandaImport(doc: Document, pregatit: ImportPregatit): ComandaImport {
   if (ultimulImport && ultimulImport.doc === doc && ultimulImport.pregatit === pregatit) return ultimulImport.rez;
   const id = idNou(doc);
   const scula = sculaFoii(doc);
-  const { piesa, x, y } = piesaDinImport(pregatit, id, scula);
+  const { piesa, x, y } = pregatit.piesa(id, { ...(scula ? { scula } : {}), grosime: foaieCurenta(doc).stoc.grosime });
   const varfuri = pregatit.cai.reduce((s, c) => s + c.varfuri.length, 0);
   const elemente = pregatit.cai.length;
   let rez: ComandaImport;

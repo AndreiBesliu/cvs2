@@ -45,6 +45,7 @@ export const en = {
   'forma.dreptunghi': 'rectangle {latime} × {inaltime} at X {x}, Y {y}',
   'forma.cerc': 'circle R{raza} centred at X {x}, Y {y}',
   'forma.cale': { one: 'path {latime} × {inaltime}, {n} segment, at X {x}, Y {y}', other: 'path {latime} × {inaltime}, {n} segments, at X {x}, Y {y}' },
+  'forma.cale-deschisa': { one: 'open path {latime} × {inaltime}, {n} segment, at X {x}, Y {y}', other: 'open path {latime} × {inaltime}, {n} segments, at X {x}, Y {y}' },
   'bara.actiuni': 'Actions',
   'actiune.exporta-gcode': 'Export G-code',
   'motiv.nimic-de-exportat': 'Draw something first.',

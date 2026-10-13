@@ -45,6 +45,9 @@ function deseneaza(): void {
   g.lineWidth = 1 / s;
   g.lineJoin = 'round';
 
+  /** Lungimea săgeții de sens: ~8 px CSS la orice zoom (ADR 0037 §12), în mm. */
+  const sageata = 8 / c.vedere.scara;
+  let sageti = 0;
   for (const f of c.forme) {
     const selectat = c.selectie.includes(f.id);
     const cale = new Path2D();
@@ -59,10 +62,23 @@ function deseneaza(): void {
     if (selectat) g.translate(c.deplasare.dx, c.deplasare.dy);
     g.strokeStyle = selectat ? c.culori.selectie : c.culori.linie;
     g.stroke(cale);
+    // Săgeata de sens pe o cale deschisă din selecție: un triunghi plin cu baza în vârful 0, cu vârful spre mers.
+    const s0 = f.sageata;
+    if (selectat && s0) {
+      const l = sageata, b = sageata * 0.4;
+      g.beginPath();
+      g.moveTo(s0.x + s0.ux * l, s0.y + s0.uy * l);
+      g.lineTo(s0.x - s0.uy * b, s0.y + s0.ux * b);
+      g.lineTo(s0.x + s0.uy * b, s0.y - s0.ux * b);
+      g.closePath();
+      g.fillStyle = c.culori.selectie;
+      g.fill();
+      sageti++;
+    }
     g.restore();
   }
   const imagine = panza.transferToImageBitmap();
-  lucrator.postMessage({ tip: 'imagine', cerere: c.cerere, imagine }, [imagine]);
+  lucrator.postMessage({ tip: 'imagine', cerere: c.cerere, imagine, sageti }, [imagine]);
 }
 
 lucrator.onmessage = (e) => {

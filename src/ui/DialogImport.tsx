@@ -73,8 +73,9 @@ type Props = {
 };
 
 /**
- * Dialogul importului SVG (ADR 0035 §9): ce ar adăuga „Importă”, înainte de a schimba documentul. Mărimea desenului,
- * contururile pe laturi, alegerea px-ului când contează și raportul.
+ * Dialogul importului SVG (ADR 0035 §9, ADR 0037 §12): ce ar adăuga „Importă”, înainte de a schimba documentul. Mărimea
+ * desenului, contururile închise pe laturi, căile deschise (tăiate pe linie) cu nota grosimii liniei, alegerea px-ului
+ * când contează și raportul.
  */
 export function DialogImport({ nume, stare, pxPeTol, pxAutomat, seRecitesc, motiv, onPx, onImporta, onInchide }: Props) {
   useLimba();
@@ -103,7 +104,16 @@ export function DialogImport({ nume, stare, pxPeTol, pxAutomat, seRecitesc, moti
         {ok && (
           <>
             <p data-testid="import-marime">{t('import.marime', { latime: ok.latime.toFixed(2), inaltime: ok.inaltime.toFixed(2) })}</p>
-            <p data-testid="import-cai">{t('import.cai', { n: ok.exterioare + ok.interioare, exterioare: ok.exterioare, interioare: ok.interioare })}</p>
+            {(ok.exterioare + ok.interioare > 0 || ok.deschise === 0) && (
+              <p data-testid="import-cai">{t('import.cai', { n: ok.exterioare + ok.interioare, exterioare: ok.exterioare, interioare: ok.interioare })}</p>
+            )}
+            {/* Căile deschise (ADR 0037 §12): câte, cum se taie, și nota grosimii liniei (nu se citește din fișier). */}
+            {ok.deschise > 0 && (
+              <>
+                <p data-testid="import-deschise">{t('import.deschise', { n: ok.deschise })}</p>
+                <p data-testid="import-grosime-linie">{t('import.grosime-linie')}</p>
+              </>
+            )}
             {ok.px && (
               <div className="campuri">
                 <label>

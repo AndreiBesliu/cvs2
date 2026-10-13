@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { poarta } from '../oracles/poarta.ts';
 import { regiuneDinDocument } from '../oracles/regiune.ts';
+import { ecran, vedere } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -144,4 +145,95 @@ test('ușa e adusă în fundal după pornire: o publicare nouă care îi schimb�
   await page.route(/actiuniImportCalcul-[^/]*\.js$/, (r) => r.abort());
   await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/placi/placa-02/logo-80mm.svg');
   await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 80.00 × 40.00 mm');
+});
+
+/**
+ * Pixelii pânzei care diferă de foaie, într-un pătrat de ±`r` px CSS în jurul unui punct al documentului (în pixeli
+ * fizici): cerneala oricărei culori (linia sau selecția).
+ */
+async function cernealaLa(page: Page, x: number, y: number, r: number): Promise<number> {
+  const v = await vedere(page);
+  const cx = (v.tx + x * v.scara) * v.dpr, cy = (v.ty - y * v.scara) * v.dpr, m = Math.round(r * v.dpr);
+  return page.evaluate(([cx, cy, m]) => {
+    const el = document.querySelector('[data-testid="panza"]') as HTMLCanvasElement;
+    const c = document.createElement('canvas');
+    c.width = el.width;
+    c.height = el.height;
+    const g = c.getContext('2d');
+    if (!g) return -1;
+    g.drawImage(el, 0, 0);
+    const d = g.getImageData(Math.round(cx) - m, Math.round(cy) - m, 2 * m + 1, 2 * m + 1).data;
+    const v = getComputedStyle(document.documentElement).getPropertyValue('--panza-foaie').trim();
+    const foaie = [1, 3, 5].map((i) => parseInt(v.slice(i, i + 2), 16));
+    let n = 0;
+    for (let k = 0; k < d.length; k += 4) {
+      const dif = Math.abs((d[k] ?? 0) - (foaie[0] ?? 0)) + Math.abs((d[k + 1] ?? 0) - (foaie[1] ?? 0)) + Math.abs((d[k + 2] ?? 0) - (foaie[2] ?? 0));
+      if (dif > 60) n++;
+    }
+    return n;
+  }, [cx, cy, m] as const);
+}
+
+test('CNC-referinta.svg (ADR 0037 §11, §12): valul vine ca o cale deschisă, cu săgeata de sens în selecție, și se taie pe linie, prin poartă', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles('docs/faza2/sonde/s2-export-import/pachet-owner/CNC-referinta.svg');
+  // Dialogul: contururile închise din imbricare, calea deschisă (valul, fill none) și nota grosimii liniei.
+  await expect(page.getByTestId('import-cai')).toHaveText('11 contururi închise: 10 tăiate pe exterior, 1 pe interior (din imbricare)');
+  await expect(page.getByTestId('import-deschise')).toHaveText('1 cale deschisă, tăiată pe linie: un canal de cel mult 1 mm (jumătate din foaie, dacă e mai subțire), într-o trecere');
+  await expect(page.getByTestId('import-grosime-linie')).toHaveText('Grosimea liniei din fișier nu contează: canalul are diametrul frezei.');
+  await expect(page.locator('[data-avertisment="deschise"]')).toHaveText('1 cale deschisă (fără Z de închidere, neumplută) importată ca linie, de tăiat pe linie');
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  // Piesa importată e aleasă: pe val apare săgeata de sens, în vârful 0 (160, 60), spre primul mâner.
+  await expect(page.getByTestId('selectie')).toHaveText('Selectat: CNC-referinta');
+  await vedere(page);
+  await expect(page.getByTestId('panza')).toHaveAttribute('data-sageti', '1');
+  const cuSageata = await cernealaLa(page, 160, 60, 14);
+  // Clic pe foaie, departe de orice cale (250, 100): nimic ales, deci nicio săgeată; valul rămâne desenat.
+  const v = await vedere(page);
+  const la = await ecran(page, v);
+  const gol = la(250, 100);
+  await page.mouse.click(gol.x, gol.y);
+  await expect(page.getByTestId('selectie')).toContainText('Nimic selectat');
+  await vedere(page);
+  await expect(page.getByTestId('panza')).toHaveAttribute('data-sageti', '0');
+  const faraSageata = await cernealaLa(page, 160, 60, 14);
+  expect(faraSageata).toBeGreaterThan(0);
+  // Triunghiul are ~8 × 6,4 px CSS: cel puțin 10 px² în plus față de linia singură.
+  expect(cuSageata - faraSageata).toBeGreaterThan(10 * v.dpr * v.dpr);
+  // Aleasă din nou din listă, săgeata revine.
+  await page.getByTestId('lista-vectori').getByText('CNC-referinta').click();
+  await expect(page.getByTestId('panza')).toHaveAttribute('data-sageti', '1');
+
+  // Exportul: rândul căii deschise e „pe linie”, 1 mm, cu descrierea „cale deschisă”. Literele stau prea aproape pentru
+  // exterior cu Ø6 (regiunea refuză), deci exterioarele și interioarele trec și ele pe linie.
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const val = page.locator('[data-operatie="e1/deschise"]');
+  await expect(val).toContainText('cale deschisă 150.00 × 34.64, 1 segment, la X 160.00, Y 42.68');
+  await expect(val.locator('select[data-camp="latura"]')).toHaveValue('pe-linie');
+  await expect(val.locator('select[data-camp="latura"] option')).toHaveCount(1);
+  await expect(val.locator('[data-camp="urechi"]')).toBeDisabled();
+  await page.locator('[data-operatie="e1/exterior"] select[data-camp="latura"]').selectOption('pe-linie');
+  await page.locator('[data-operatie="e1/interior"] select[data-camp="latura"]').selectOption('pe-linie');
+  // Desenul (400 × 300 pe pagină) iese din foaia de 300 × 200: confirmarea de la 1.10.
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(page.getByTestId('iesire-foaie')).toContainText('Freza iese din foaie:');
+  await page.locator('[data-camp="confirma-iesire"]').check();
+  const d = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const text = readFileSync(await (await d).path(), 'ascii');
+  // Pe hârtie: plonjarea în vârful 0 al valului (160, 60) la −1 mm, cu F300, o singură trecere, până în (310, 60).
+  expect(text).toContain('\n(e1/c4: cale, pe-linie, 1 mm)\nG0 X160.000 Y60.000\nG1 Z-1.000 F300.0\n');
+  const bucata = text.slice(text.indexOf('(e1/c4:'));
+  const urmatoarea = bucata.indexOf('\n(', 1);
+  const valul = urmatoarea > 0 ? bucata.slice(0, urmatoarea) : bucata;
+  expect(valul.match(/Z-/g)?.length).toBe(1);
+  expect(valul).toMatch(/X310\.000 Y60\.000[^\n]*\nG0 Z5\.000\n/);
+  // Revizia 2: operațiile scrise de export (exterioarele și interioarele pe linie). Poarta, cu regiunea din document.
+  const doc = await documentSalvat(page, 2);
+  expect(poarta(text, {
+    foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'stanga-jos', z0: 'sus', diametruScula: 6, pas: 3,
+    supracursa: 0, asteptareAx: 3, avansPlonjare: 300, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
+  })).toEqual([]);
 });

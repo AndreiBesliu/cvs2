@@ -170,7 +170,7 @@ test('`inchis` citit (1/4): conturElement păstrează calea deschisă, cu n − 
   assert.equal(conturElement({ forma: INIMA, matrice: { ...ID } }).inchis, true);
 });
 
-test('`inchis` citit (2/4): piesa importului păstrează calea deschisă; ea nu primește exterior / interior', () => {
+test('`inchis` citit (2/4): piesa importului păstrează calea deschisă; ea nu primește exterior / interior, ci `deschise` pe linie', () => {
   const U = [P(0, 100), P(0, 0), P(100, 0), P(100, 100)].map((p) => ({ p, s: L }));
   const patrat = [P(40, 40), P(60, 40), P(60, 60), P(40, 60)].map((p) => ({ p, s: L }));
   const cai = [{ varfuri: U, inchis: false }, { varfuri: patrat, inchis: true }];
@@ -179,8 +179,9 @@ test('`inchis` citit (2/4): piesa importului păstrează calea deschisă; ea nu 
   const copii = piesa.radacina.tip === 'grup' ? piesa.radacina.copii : [];
   assert.deepEqual(copii.map((e) => (e.tip === 'element' && e.forma.tip === 'cale' ? e.forma.inchis : null)), [false, true]);
   assert.deepEqual([x, y], [0, 0]);
-  assert.deepEqual(piesa.operatii.map((o) => [o.id, o.latura, o.noduri]), [['exterior', 'exterior', ['c2']]]);
-  // Piesa trece de ușa documentului: calea deschisă, fără operație.
+  // Din 2.3c-3 (ADR 0037 §11), calea deschisă are operația ei: pe linie, 1 mm într-o trecere (fără grosimea foii).
+  assert.deepEqual(piesa.operatii.map((o) => [o.id, o.latura, o.noduri, o.adancime, o.pas]), [['exterior', 'exterior', ['c2'], 3, 3], ['deschise', 'pe-linie', ['c1'], 1, 1]]);
+  // Piesa trece de ușa documentului: calea deschisă, cu operația ei.
   const r = incarca({ schema: 10, rev: 0, piese: [piesa], foi: [{ id: 'f1', stoc: F, instante: [{ id: 'i1', piesa: 'p1', x, y, rotire: 0 }] }] });
   assert.ok(r.ok, motiv(r));
 });

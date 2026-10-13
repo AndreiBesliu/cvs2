@@ -15,6 +15,14 @@
  *   nonzero cu 1 000 / 4 000 de săgeți suprapuse (sute de mii de încrucișări) trece prin normalizare: ori o face (judecată
  *   de oracolul normalizării), ori o refuză cu bugetul ei (§8) și forma se citește evenodd, numărată; ușa nu se blochează.
  *   Sondele nonzero ale oracolului au aici densitatea 0,01 (formele au zeci de mii de laturi).
+ * - sub-felia 2.3c-3 (ADR 0037 §11, partea a doua): căile deschise se importă, deci:
+ *   - plafonul de lucru se probează pe polilinii degenerate (zigzaguri de 1e-7 mm, închise prin apropiere, pe o dreaptă):
+ *     sărite, dar numărate în plafon (20 trec, `gol` cu `degenerate` 20; 21 → `plafon`). Zigzagurile late de 1 mm ar fi
+ *     acum căi deschise de 49 000 de vârfuri (980 000 > 200 000: plafonul căilor primite, nu cel de lucru);
+ *   - plafonul căii deschise se judecă cu vârful final: o polilinie `fill: none` (și un path) cu 50 000 de puncte trece
+ *     (49 999 de segmente + final), cu 50 001 e prea-mare (50 000 de segmente încap la citire, vârful final nu);
+ *   - piesa cu 10 001 linii: `deschise` (10 000 de noduri) și `deschise-2` (1), pe hârtie (fără aplicație) și din aplicație;
+ *   - piesele din aplicație primesc grosimea foii (`grosime`, ALEGERE de interfață) și trec de ușa documentului v10.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -23,7 +31,7 @@ import { citesteSvg, PLAFON_IMPORT } from '../../src/io/svg.ts';
 import { laturiDinImbricare } from '../../src/io/imbricare.ts';
 import { piesaDinImport } from '../../src/io/piesa.ts';
 import { incarca } from '../../src/model/incarcare.ts';
-import { CONST_O, citesteSvgO, coltExact, judecaPiesa, judecaRezultat, laturiBugetO, laturiO, parserTest, type RezultatO, type VarfO } from '../oracles/svg.ts';
+import { CONST_O, adancimeDeschiseO, citesteSvgO, coltExact, judecaPiesa, judecaRezultat, laturiBugetO, laturiO, parserTest, type PiesaArg, type RezultatO, type VarfO } from '../oracles/svg.ts';
 import { judecaHartia, judecaHartiaFinala, mm, type Hartie } from '../oracles/svg.cazuri.ts';
 
 const enc = (t: string): Uint8Array => new TextEncoder().encode(t);
@@ -39,7 +47,10 @@ function judeca(b: Uint8Array, h: Hartie): { a: unknown; o: RezultatO } {
 /** Un poligon regulat cu n vârfuri, în sensul SVG crescător. */
 const poligon = (cx: number, cy: number, r: number, n: number): string =>
   `<polygon points="${Array.from({ length: n }, (_, i) => `${(cx + r * Math.cos((2 * Math.PI * i) / n)).toFixed(5)},${(cy + r * Math.sin((2 * Math.PI * i) / n)).toFixed(5)}`).join(' ')}"/>`;
-const zigzag = (n: number, y: number): string => `<polyline points="${Array.from({ length: n }, (_, i) => `${i % 2} ${y}`).join(' ')}"/>`;
+/** Un zigzag pe dreapta y, între x = 0 și x = `lat` (mm). Cu `lat` = 1e-7, golul e cel mult 1e-7 (închis prin apropiere, degenerat). */
+const zigzag = (n: number, y: number, lat = 1): string => `<polyline points="${Array.from({ length: n }, (_, i) => `${i % 2 === 0 ? 0 : lat} ${y}`).join(' ')}"/>`;
+/** Grosimea foii din documentele probelor: adâncimea `deschise` e atunci 1 mm (ADR 0037 §11). */
+const GROSIME = 18;
 
 test('octeții: 16 MiB + 1 refuzat înainte de citire; exact 16 MiB trece de plafon', () => {
   const baza = enc(mm(100, 100, '<rect width="5" height="5"/>'));
@@ -62,11 +73,20 @@ test('plafonul căilor primite: 5 × 45 000 = 225 000 > 200 000 → plafon; 4 ×
   assert.deepEqual(laturiDinImbricare((a as { cai: Array<{ varfuri: VarfO[] }> }).cai), laturiO(o.cai));
 });
 
-test('plafonul de lucru: 21 de polilinii deschise × 49 000 de puncte (1 028 979 de vârfuri produse) → plafon', () => {
-  judeca(enc(mm(100, 100, Array.from({ length: 21 }, (_, i) => zigzag(49_000, i)).join(''))), { cod: 'plafon' });
-  // 20 dintre ele: 979 980 de vârfuri produse, sub plafon; toate deschise: refuzul e „gol”, cu raportul. Sub-felia 2.3c-1
-  // (ADR 0037 §11): poliliniile sunt umplute, dar închiderea lor ar sta pe o dreaptă (degenerată), deci rămân deschise.
-  judeca(enc(mm(100, 100, Array.from({ length: 20 }, (_, i) => zigzag(49_000, i)).join(''))), { cod: 'gol', avertismente: { deschise: 20 } });
+test('plafonul de lucru: 21 de polilinii sărite × 49 000 de puncte (1 028 979 de vârfuri produse) → plafon', () => {
+  // Sub-felia 2.3c-3: zigzaguri de 1e-7 mm (degenerate), ca plafonul de lucru să fie singurul care poate refuza.
+  judeca(enc(mm(100, 100, Array.from({ length: 21 }, (_, i) => zigzag(49_000, i, 1e-7)).join(''))), { cod: 'plafon' });
+  // 20 dintre ele: 979 980 de vârfuri produse, sub plafon; toate sărite: refuzul e „gol”, cu raportul. Ultimul punct stă în
+  // x = 1e-7: golul ≤ TOLERANTA_IMPORT, deci închisă prin apropiere, pe o dreaptă: degenerată, ca în 2.7c.
+  judeca(enc(mm(100, 100, Array.from({ length: 20 }, (_, i) => zigzag(49_000, i, 1e-7)).join(''))), { cod: 'gol', avertismente: { degenerate: 20 } });
+});
+
+test('sub-felia 2.3c-3, oracolul: zigzagurile late de 1 mm sunt acum căi deschise (20 × 49 000 = 980 000 de vârfuri > 200 000 → plafon)', () => {
+  // Umplute, închiderea lor ar sta pe o dreaptă, deci rămân deschise (ADR 0037 §11): căi deschise, cu lungimea 48 999 mm.
+  const o = citesteSvgO(enc(mm(100, 100, Array.from({ length: 20 }, (_, i) => zigzag(49_000, i)).join(''))), { densitateNonzero: DENS });
+  assert.deepEqual(judecaHartia(o, { cod: 'plafon' }), []);
+  const doua = citesteSvgO(enc(mm(100, 100, zigzag(49_000, 1) + zigzag(49_000, 2))), { densitateNonzero: DENS });
+  assert.deepEqual(judecaHartia(doua, { cai: 2, tipuri: ['L'.repeat(49_000), 'L'.repeat(49_000)], inchis: [false, false], avertismente: { deschise: 2 } }), []);
 });
 
 test('prea-mari: subcalea închisă și cea deschisă de 60 000 de vârfuri, arcul „cât un continent”', () => {
@@ -87,13 +107,91 @@ test('piesa cu 10 001 căi: exterior (10 000 de noduri) și exterior-2 (1); trec
   const cai = (a as { cai: Array<{ varfuri: VarfO[]; nume?: string }>; pagina: { latime: number; inaltime: number } }).cai;
   const laturi = laturiDinImbricare(cai);
   assert.deepEqual(laturi, laturiO(o.cai));
-  const arg = { nume: 'grila', cai, laturi, pagina: (a as { pagina: { latime: number; inaltime: number } }).pagina };
+  const arg = { nume: 'grila', cai, laturi, pagina: (a as { pagina: { latime: number; inaltime: number } }).pagina, grosime: GROSIME };
   const rez = piesaDinImport(arg, 'p1');
   assert.deepEqual(judecaPiesa(rez, arg, 'p1', coltExact(o.cai), 2 * CONST_O.tolImport + o.tolLC), []);
   const ops = (rez.piesa as unknown as { operatii: Array<{ id: string; noduri: string[] }> }).operatii;
   assert.deepEqual(ops.map((x) => [x.id, x.noduri.length]), [['exterior', 10_000], ['exterior-2', 1]]);
-  const u = incarca({ schema: 9, rev: 0, piese: [rez.piesa], foi: [{ id: 'f1', stoc: { latime: 1000, inaltime: 1000, grosime: 18 }, instante: [{ id: 'i1', piesa: 'p1', x: rez.x, y: rez.y, rotire: 0 }] }] });
+  const u = incarca({ schema: 10, rev: 0, piese: [rez.piesa], foi: [{ id: 'f1', stoc: { latime: 1000, inaltime: 1000, grosime: GROSIME }, instante: [{ id: 'i1', piesa: 'p1', x: rez.x, y: rez.y, rotire: 0 }] }] });
   assert.equal(u.ok, true, u.ok ? '' : u.motiv);
+});
+
+// Sub-felia 2.3c-3: 10 001 linii de 1 mm pe o grilă (101 pe rând, pasul 2 mm): 10 001 căi deschise; colțul (0, 210 − 198).
+const LINII = Array.from({ length: 10_001 }, (_, i) => {
+  const x = (i % 101) * 2, y = Math.floor(i / 101) * 2;
+  return `<line x1="${x}" y1="${y}" x2="${x + 1}" y2="${y}"/>`;
+}).join('');
+/** Calea i a grilei de linii, în mm (pe pagina de 210 mm). */
+const linieGrila = (i: number): { varfuri: VarfO[]; inchis: false } => {
+  const x = (i % 101) * 2, y = 210 - Math.floor(i / 101) * 2;
+  return { inchis: false, varfuri: [{ p: { x, y }, s: { tip: 'L' } }, { p: { x: x + 1, y }, s: { tip: 'L' } }] };
+};
+
+test('sub-felia 2.3c-3, oracolul: 10 001 de linii = 10 001 de căi deschise', () => {
+  const o = citesteSvgO(enc(mm(210, 210, LINII)));
+  assert.deepEqual(judecaHartia(o, { cai: 10_001, avertismente: { deschise: 10_001 } }), []);
+  assert.ok(o.ok);
+  assert.ok(o.cai.every((c) => !c.inchis));
+  assert.deepEqual(coltExact(o.cai), { x: 0, y: 12 });
+});
+
+test('sub-felia 2.3c-3, fără aplicație: piesa a 10 001 de linii pe hârtie: deschise (10 000 de noduri) și deschise-2 (1); o singură operație e prinsă', () => {
+  const cai = Array.from({ length: 10_001 }, (_, i) => linieGrila(i));
+  const arg: PiesaArg = { nume: 'grila', cai, laturi: cai.map(() => 'pe-linie'), pagina: { latime: 210, inaltime: 210 }, grosime: GROSIME };
+  const colt = { x: 0, y: 12 };
+  const ad = adancimeDeschiseO(GROSIME);
+  const op = (id: string, noduri: string[]): Record<string, unknown> => ({ id, tip: 'profil', noduri, scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'pe-linie', adancime: ad, pas: ad, sens: 'urcare', urechi: null, rampa: null, intrari: null, colturi: null });
+  const ids = cai.map((_, i) => `c${i + 1}`);
+  const piesa = (operatii: Array<Record<string, unknown>>): unknown => ({
+    piesa: {
+      id: 'p1', nume: 'grila',
+      radacina: {
+        tip: 'grup', id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 },
+        copii: cai.map((c, i) => ({ tip: 'element', id: `c${i + 1}`, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, forma: { tip: 'cale', inchis: false, varfuri: c.varfuri.map((v) => ({ p: { x: v.p.x - colt.x, y: v.p.y - colt.y }, s: v.s })) } })),
+      },
+      operatii,
+    },
+    x: colt.x, y: colt.y,
+  });
+  assert.deepEqual(judecaPiesa(piesa([op('deschise', ids.slice(0, 10_000)), op('deschise-2', ids.slice(10_000))]), arg, 'p1', colt, 1e-9), []);
+  assert.ok(judecaPiesa(piesa([op('deschise', ids)]), arg, 'p1', colt, 1e-9).length > 0, 'o operație cu 10 001 de noduri a trecut');
+  assert.ok(judecaPiesa(piesa([op('deschise', ids.slice(0, 10_000))]), arg, 'p1', colt, 1e-9).length > 0, 'deschise-2 lipsă a trecut');
+});
+
+test('sub-felia 2.3c-3: piesa aplicației cu 10 001 de linii: deschise (10 000) și deschise-2 (1); trece de ușa documentului v10', () => {
+  const { a, o } = judeca(enc(mm(210, 210, LINII)), { cai: 10_001, avertismente: { deschise: 10_001 } });
+  assert.ok(o.ok);
+  const cai = (a as { cai: Array<{ varfuri: VarfO[]; nume?: string; inchis?: boolean }> }).cai;
+  const laturi = laturiDinImbricare(cai);
+  assert.deepEqual(laturi, laturiO(o.cai));
+  const arg = { nume: 'grila', cai, laturi, pagina: (a as { pagina: { latime: number; inaltime: number } }).pagina, grosime: GROSIME };
+  const rez = piesaDinImport(arg, 'p1');
+  assert.deepEqual(judecaPiesa(rez, arg, 'p1', coltExact(o.cai), 2 * CONST_O.tolImport + o.tolLC), []);
+  const ops = (rez.piesa as unknown as { operatii: Array<{ id: string; noduri: string[] }> }).operatii;
+  assert.deepEqual(ops.map((x) => [x.id, x.noduri.length]), [['deschise', 10_000], ['deschise-2', 1]]);
+  const u = incarca({ schema: 10, rev: 0, piese: [rez.piesa], foi: [{ id: 'f1', stoc: { latime: 1000, inaltime: 1000, grosime: GROSIME }, instante: [{ id: 'i1', piesa: 'p1', x: rez.x, y: rez.y, rotire: 0 }] }] });
+  assert.equal(u.ok, true, u.ok ? '' : u.motiv);
+});
+
+// Sub-felia 2.3c-3: plafonul căii deschise cu vârful final. fill="none", pe dreapta y = 50 (și y = 60, ca path), pasul
+// 0,001 mm: golul ~50 mm, deci o cale deschisă (nicio închidere). 50 000 de puncte = 49 999 de segmente + vârful final;
+// 50 001 de puncte: 50 000 de segmente încap la citire, dar vârful final nu (ADR 0037 §11: plafonul cu vârful final).
+const RECT_PLAFON = '<rect x="95" y="95" width="2" height="2"/>';
+const polilinieDreapta = (n: number): string => `<polyline fill="none" points="${Array.from({ length: n }, (_, i) => `${(i * 0.001).toFixed(3)} 50`).join(' ')}"/>`;
+const caleDreapta = (n: number): string => `<path fill="none" d="M 0 40 ${'h 0.001 '.repeat(n - 1)}"/>`;
+const PLAFON_DESCHISE: ReadonlyArray<readonly [string, Hartie]> = [
+  [polilinieDreapta(50_000), { cai: 2, tipuri: ['L'.repeat(50_000), 'LLLL'], inchis: [false, true], varfuri: [[0, 0, 0, 50], [0, 49_999, 49.999, 50]], avertismente: { deschise: 1 } }],
+  [polilinieDreapta(50_001), { cai: 1, forme: [1], avertismente: { 'prea-mari': 1 } }],
+  [caleDreapta(50_000), { cai: 2, tipuri: ['L'.repeat(50_000), 'LLLL'], inchis: [false, true], avertismente: { deschise: 1 } }],
+  [caleDreapta(50_001), { cai: 1, forme: [1], avertismente: { 'prea-mari': 1 } }],
+];
+
+test('sub-felia 2.3c-3, oracolul pe hârtie: plafonul căii deschise cu vârful final: 50 000 de puncte trec; 50 001, prea-mare', () => {
+  for (const [corp, h] of PLAFON_DESCHISE) assert.deepEqual(judecaHartia(citesteSvgO(enc(mm(100, 100, corp + RECT_PLAFON))), h), []);
+});
+
+test('sub-felia 2.3c-3, aplicația: plafonul căii deschise cu vârful final: 50 000 de puncte trec; 50 001, prea-mare', () => {
+  for (const [corp, h] of PLAFON_DESCHISE) judeca(enc(mm(100, 100, corp + RECT_PLAFON)), h);
 });
 
 test('plafonul căii după linia de închidere: polygon cu 50 000 de puncte trece, cu 50 001 e prea-mare', () => {

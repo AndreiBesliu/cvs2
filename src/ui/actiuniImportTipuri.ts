@@ -21,6 +21,8 @@ export type PrevizualizareImport =
     readonly inaltime: number;
     readonly exterioare: number;
     readonly interioare: number;
+    /** Căile deschise (ADR 0037 §11): fără latură din imbricare, tăiate pe linie, în operația `deschise` a piesei. */
+    readonly deschise: number;
     /** Maparea depinde de px: dialogul oferă alegerea lui `pxPeTol`. */
     readonly px: boolean;
     readonly illustrator: boolean;

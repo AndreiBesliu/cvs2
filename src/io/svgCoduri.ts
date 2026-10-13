@@ -26,14 +26,20 @@ export const PLAFON_IMPORT = {
   normalizare: 24_000_000,
 } as const;
 
-/** `neincarcat`: codul ușii nu s-a putut aduce (o publicare nouă, rețeaua); îl pune interfața, nu ușa. */
+/**
+ * `neincarcat`: codul ușii nu s-a putut aduce (o publicare nouă, rețeaua); îl pune interfața, nu ușa. `gol`: nicio cale,
+ * nici închisă, nici deschisă (ADR 0037 §11).
+ */
 export type CodRefuz = 'octeti' | 'svgz' | 'entitati' | 'parsare' | 'radacina' | 'gol' | 'departe' | 'plafon' | 'neincarcat';
 
 /** De ce sunt refuzate entitățile (ADR 0035 §1), ca cod: interfața îl traduce, fără text din fișier. */
 export const CODURI_ENTITATI = ['parametru', 'fara-nume', 'externa', 'neterminata', 'valoare', 'numar', 'expansiune', 'attlist'] as const;
 export type CodEntitati = (typeof CODURI_ENTITATI)[number];
 
-/** Raportul (ADR 0035 §10), în ordinea în care îl arată dialogul. */
+/**
+ * Raportul (ADR 0035 §10), în ordinea în care îl arată dialogul. Din 2.3c-3 (ADR 0037 §11), `deschise` numără căile
+ * deschise IMPORTATE (tăiate pe linie), nu pe cele sărite; o cale deschisă degenerată se numără la `degenerate`.
+ */
 export const CODURI_AVERTISMENT = [
   'deschise', 'degenerate', 'prea-mari', 'sarit-text', 'sarit-use', 'sarit-image', 'sarit-foreignObject', 'sarit-svg',
   'ascunse', 'eroare-date', 'atribut-invalid', 'transformare-invalida', 'singulara', 'arce-eliptice', 'arce-plate',

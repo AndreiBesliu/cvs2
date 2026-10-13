@@ -131,7 +131,7 @@ test('erorile din date: se păstrează ce e dinainte; prima comandă trebuie să
   assert.equal(r.cai.length, 1);
 });
 
-test('subcăile deschise, elementele sărite și cele ascunse se numără; fișierul fără nicio cale închisă e refuzat', () => {
+test('subcăile deschise (importate, ADR 0037 §11), elementele sărite și cele ascunse se numără; un fișier doar din linii se importă', () => {
   const r = cai(pagina(`
     <path d="M0 0 L10 10"/><line x1="0" y1="0" x2="5" y2="5"/><polyline points="0,0 10,0 10,10 0,0"/>
     <text>x</text><use href="#a"/><image href="a.png"/><svg/>
@@ -140,13 +140,17 @@ test('subcăile deschise, elementele sărite și cele ascunse se numără; fiși
     <defs><rect width="9" height="9"/></defs>
     <switch><foreignObject requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/"/><g><rect width="5" height="5"/></g></switch>`));
   const a = r.avertismente;
+  // Linia umplută fără Z (închiderea ar fi degenerată) și `line`: două căi deschise, importate.
   assert.equal(a.deschise, 2);
   assert.deepEqual([a['sarit-text'], a['sarit-use'], a['sarit-image'], a['sarit-svg']], [1, 1, 1, 1]);
   assert.equal(a.ascunse, 3);
-  // Polilinia închisă de la sine, dreptunghiul vizibil din grupul ascuns și cel din switch.
-  assert.equal(r.cai.length, 3);
-  const gol = citeste(pagina('<path d="M0 0 L10 10"/>'));
-  assert.ok(!gol.ok && gol.cod === 'gol' && gol.avertismente?.deschise === 1);
+  // Cele două căi deschise, polilinia închisă de la sine, dreptunghiul vizibil din grupul ascuns și cel din switch.
+  assert.deepEqual(r.cai.map((c) => c.inchis), [false, false, true, true, true]);
+  // „gol” înseamnă acum „nicio cale”: o singură linie se importă.
+  const linie = citeste(pagina('<path d="M0 0 L10 10"/>'));
+  assert.ok(linie.ok && linie.cai.length === 1 && linie.avertismente.deschise === 1);
+  const gol = citeste(pagina('<text>x</text>'));
+  assert.ok(!gol.ok && gol.cod === 'gol');
 });
 
 test('refuzurile ușii: octeții, arhiva, entitățile, XML-ul stricat, rădăcina, coordonatele de peste 10⁷ mm', () => {
@@ -323,8 +327,8 @@ test('ADR 0037 §11 (2.3c-1): o formă umplută fără Z se închide, ca în bro
   assert.deepEqual(av('<path d="M0 0 L10 0 L10 10"/>'), { ok: true, n: 1, deschise: 0, degenerate: 0, 'inchise-de-umplere': 1, 'inchise-la-usa': 0, 'sub-rezolutie': 0 });
   assert.equal(av('<path d="M0 0 L10 0 L10 10 L0.0003 0"/>')['inchise-de-umplere'], 1);
   assert.equal(av('<polyline points="0,0 10,0 10,10"/>')['inchise-de-umplere'], 1);
-  // Două puncte: închiderea dă un dus-întors fără arie, deci subcalea rămâne deschisă (nu „degenerată”).
-  assert.deepEqual(av('<path d="M0 0 L10 0"/>'), { ok: false, n: 0, deschise: 1, degenerate: 0, 'inchise-de-umplere': 0, 'inchise-la-usa': 0, 'sub-rezolutie': 0 });
+  // Două puncte: închiderea dă un dus-întors fără arie, deci subcalea rămâne deschisă (nu „degenerată”) și se importă.
+  assert.deepEqual(av('<path d="M0 0 L10 0"/>'), { ok: true, n: 1, deschise: 1, degenerate: 0, 'inchise-de-umplere': 0, 'inchise-la-usa': 0, 'sub-rezolutie': 0 });
   // `line` nu se umple niciodată: rămâne deschisă.
   assert.equal(av('<line x1="0" y1="0" x2="10" y2="10"/><rect x="20" width="5" height="5"/>').deschise, 1);
   // Umplerea se moștenește (grup, clasă): `fill: none` nu închide un gol mare.
@@ -334,15 +338,16 @@ test('ADR 0037 §11 (2.3c-1): o formă umplută fără Z se închide, ca în bro
 
 test('ADR 0037 §11 (2.3c-1): un contur cu fill none se închide doar sub rezoluție (0,01 mm); praful se sare, numărat', () => {
   const r = cai(pagina('<path fill="none" d="M0 0 L10 0 L10 10 L0.005 0"/><path fill="none" d="M20 0 L30 0 L30 10 L20.02 0"/>'));
-  assert.equal(r.cai.length, 1);
+  assert.deepEqual(r.cai.map((c) => c.inchis), [true, false]);
   assert.deepEqual([r.avertismente['inchise-la-usa'], r.avertismente.deschise], [1, 1]);
   // Linia adăugată e chiar golul: niciun punct nu se mută.
   assert.deepEqual(puncte(r.cai[0]?.varfuri ?? []), [[0, 50], [10, 50], [10, 40], [0.005, 50]]);
   // Praful: un triunghi de 1e-4 mm (închis) se sare. O linie de 1e-4 mm cu fill none se închide la ușă, dar închiderea
-  // e degenerată, deci rămâne deschisă (praful se judecă după degenerare, ca un `M…Z` gol să rămână degenerat).
+  // e degenerată, deci rămâne deschisă (praful se judecă după degenerare, ca un `M…Z` gol să rămână degenerat); din
+  // 2.3c-3, deschisă, are lungimea sub 0,01 mm, deci e degenerată (ADR 0037 §11).
   const p = citeste(pagina('<path d="M5 5 L5.0001 5 L5 5.0001 Z"/><path fill="none" d="M8 8 L8.0001 8"/><path d="M9 9 Z"/><rect x="20" width="5" height="5"/>'));
   assert.ok(p.ok && p.cai.length === 1);
-  assert.deepEqual([p.avertismente['sub-rezolutie'], p.avertismente.deschise, p.avertismente.degenerate], [1, 1, 1]);
+  assert.deepEqual([p.avertismente['sub-rezolutie'], p.avertismente.deschise, p.avertismente.degenerate], [1, 0, 2]);
   // Pragul: o diagonală de 0,0099 mm e praf, una de 0,0101 nu.
   assert.equal(citeste(pagina('<path d="M0 0 L0.007 0 L0 0.007 Z"/><rect x="20" width="5" height="5"/>')).avertismente?.['sub-rezolutie'], 1);
   assert.equal(citeste(pagina('<path d="M0 0 L0.0072 0 L0 0.0072 Z"/><rect x="20" width="5" height="5"/>')).avertismente?.['sub-rezolutie'], 0);
@@ -391,8 +396,9 @@ test('recenzia 2.7c, pagina și formele: o singură latură absolută ia raportu
   assert.ok(cerc.length === 2 && cerc.every((v) => v.s.tip === 'A'));
   const tacut = citeste(pagina('<ellipse cx="50" cy="25" rx="10" ry="auto"/>'));
   assert.ok(!tacut.ok && tacut.cod === 'gol' && tacut.avertismente?.['atribut-invalid'] === 0);
+  // O `line` de lungime 0 e o cale deschisă degenerată (ADR 0037 §11): sărită, numărată la `degenerate`.
   const linie = citeste(pagina('<line x1="20" y1="20" x2="20" y2="20"/>'));
-  assert.ok(!linie.ok && linie.avertismente?.deschise === 1 && linie.avertismente.degenerate === 0);
+  assert.ok(!linie.ok && linie.cod === 'gol' && linie.avertismente?.deschise === 0 && linie.avertismente.degenerate === 1);
 });
 
 test('recenzia 2.7c, căile: aproape de 360° raza rămâne 50; contururile coliniare sunt degenerate; bucla dintr-o cubică se împarte', () => {

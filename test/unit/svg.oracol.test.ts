@@ -19,6 +19,13 @@
  * aplicație (pe rezultatul construit din oracol), ca să prindă un oracol stricat și înainte ca aplicația să le aibă.
  * Precizarea 13.10 (praful ieșirii normalizării): cazurile U24–U26 și controalele lor negative, pe ieșirea aplicației
  * (bucla păstrată, scoasă dar nenumărată, numărată de două ori; un contur care NU e praf scos).
+ *
+ * Sub-felia 2.3c-3 (ADR 0037 §11, partea a doua): căile deschise se importă (`inchis: false`, vârful final cu segmentul L),
+ * secțiunea L a corpusului și cazurile amendate (C11, C24, U6–U10, U16, U17, U22, U23, H7); piesa cu operația `deschise`
+ * (pe linie, min(1 mm, grosimea / 2) într-o trecere), documentul v10 la ușa documentului (`schema: 10`) și grosimea foii
+ * în argumentul piesei (`grosime`, ALEGERE de interfață). Controalele negative ale căilor deschise și ale piesei se judecă
+ * fără aplicație (rezultatul și piesa construite din oracol / de pe hârtie), ca să prindă un oracol stricat și înainte ca
+ * aplicația să aibă 2.3c-3; testele (c′) și (c″) cer piesa aplicației din căile oracolului.
  */
 import { test } from 'node:test';
 import { DOMParser } from '@xmldom/xmldom';
@@ -30,12 +37,12 @@ import { TOLERANTA_IMPORT, TOLERANTA_PROIECT } from '../../src/geom/toleranta.ts
 import { REZOLUTIE } from '../../src/geom/offset.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import {
-  CODURI_2_3C1_O, CODURI_O, CONST_O, SVG_NS_O, caiFinaleO, citesteSvgO, coltExact, judecaPiesa, judecaRezultat, laturiBugetO, laturiO, numeDinFisierO, parserTest,
-  prafNormalizareO, problemaEntitatiO, punctCub, type RezultatO, type VarfO,
+  CODURI_2_3C1_O, CODURI_O, CONST_O, SVG_NS_O, adancimeDeschiseO, caiFinaleO, citesteSvgO, coltExact, judecaPiesa, judecaRezultat, laturiBugetO, laturiO, numeDinFisierO, parserTest,
+  prafNormalizareO, problemaEntitatiO, punctCub, type CaleO, type PiesaArg, type RezultatO, type RunO, type VarfO,
 } from '../oracles/svg.ts';
 import { CORPUS, ILLUSTRATOR, judecaHartia, judecaHartiaFinala, mm, octetiCaz, type CazSvg } from '../oracles/svg.cazuri.ts';
 
-type CaleApp = { varfuri: VarfO[]; forma: number; nume?: string };
+type CaleApp = { varfuri: VarfO[]; forma: number; nume?: string; inchis?: boolean };
 type OkApp = { ok: true; cai: CaleApp[]; pagina: { latime: number; inaltime: number } | null; px: boolean; illustrator: boolean; avertismente: Record<string, number> };
 
 const app = (c: CazSvg, px?: 96 | 72): unknown => {
@@ -72,6 +79,9 @@ test('(0) constantele: codurile raportului (25, în ordine; 2.7d: nonzero-normal
   assert.equal(TOLERANTA_IMPORT, CONST_O.tolImport);
   assert.equal(TOLERANTA_IMPORT, TOLERANTA_PROIECT / 1000);
   assert.equal(SVG_NS, SVG_NS_O);
+  // ADR 0037 §11 (2.3c-3): adâncimea operației `deschise`, min(1 mm, grosimea / 2).
+  assert.equal(CONST_O.adancimeDeschise, 1);
+  assert.deepEqual([18, 2, 1.5, 0.6].map(adancimeDeschiseO), [1, 1, 0.75, 0.3]);
 });
 
 test('(0) corpusul: nume unice, cel puțin 120 de cazuri', () => {
@@ -106,6 +116,9 @@ for (const c of CORPUS) {
   });
 }
 
+/** Grosimea foii din documentul probei (c); adâncimea `deschise` e atunci min(1, 9) = 1 mm. */
+const GROSIME = 18;
+
 for (const c of CORPUS) {
   const o = oracol(c);
   if (!o.ok) continue;
@@ -124,12 +137,13 @@ for (const c of CORPUS) {
     const a = app(c) as OkApp;
     const laturi = laturiDinImbricare(a.cai);
     const scula = c.nume.startsWith('I') ? { numar: 2, nume: 'freza 3', diametru: 3 } : undefined;
-    const arg = { nume: 'caz', cai: a.cai, laturi, pagina: a.pagina };
+    // 2.3c-3: grosimea foii (18 mm) dă adâncimea operației `deschise`; documentul e v10 (căile deschise).
+    const arg = { nume: 'caz', cai: a.cai, laturi, pagina: a.pagina, grosime: GROSIME };
     const rez = scula === undefined ? piesaDinImport(arg, 'p1') : piesaDinImport(arg, 'p1', scula);
     assert.deepEqual(judecaPiesa(rez, arg, 'p1', coltExact(caiFinaleO(a, o)), 2 * CONST_O.tolImport + o.tolLC, scula), []);
     const doc = {
-      schema: 9, rev: 0, piese: [rez.piesa],
-      foi: [{ id: 'f1', stoc: { latime: 1000, inaltime: 1000, grosime: 18 }, instante: [{ id: 'i1', piesa: 'p1', x: rez.x, y: rez.y, rotire: 0 }] }],
+      schema: 10, rev: 0, piese: [rez.piesa],
+      foi: [{ id: 'f1', stoc: { latime: 1000, inaltime: 1000, grosime: GROSIME }, instante: [{ id: 'i1', piesa: 'p1', x: rez.x, y: rez.y, rotire: 0 }] }],
     };
     const u = incarca(doc);
     assert.equal(u.ok, true, u.ok ? '' : u.motiv);
@@ -265,7 +279,7 @@ test('(e) controale negative pe piesă: instanța mutată, coordonatele nemutate
   const o = oracol(c);
   const a = app(c) as OkApp;
   const laturi = laturiDinImbricare(a.cai);
-  const arg = { nume: 'caz', cai: a.cai, laturi, pagina: a.pagina };
+  const arg = { nume: 'caz', cai: a.cai, laturi, pagina: a.pagina, grosime: GROSIME };
   const tol = 2 * CONST_O.tolImport + (o.ok ? o.tolLC : 0);
   const colt = coltExact(o.ok ? o.cai : []);
   const bun = piesaDinImport(arg, 'p1');
@@ -329,7 +343,7 @@ controlNegativ('reuniunea pierde dreptunghiul al doilea (doar primul contur)', '
 function dinOracol(c: CazSvg, dat?: RezultatO): OkApp {
   const o = dat ?? oracol(c);
   assert.ok(o.ok);
-  return { ok: true, cai: o.cai.map((x) => ({ varfuri: copie(x.varfuri), forma: x.forma, ...(x.nume !== undefined ? { nume: x.nume } : {}) })), pagina: o.pagina, px: o.px, illustrator: o.illustrator, avertismente: { ...o.avertismente } };
+  return { ok: true, cai: o.cai.map((x) => ({ varfuri: copie(x.varfuri), forma: x.forma, inchis: x.inchis, ...(x.nume !== undefined ? { nume: x.nume } : {}) })), pagina: o.pagina, px: o.px, illustrator: o.illustrator, avertismente: { ...o.avertismente } };
 }
 test('(e) control negativ, fără aplicație: o formă cu fill: none (S2) normalizată totuși, sau cu un număr nonzero', () => {
   const c = caz('S2');
@@ -461,8 +475,10 @@ controlNegativ23c1('linia de închidere a umplerii pe alt drum: capătul mutat c
   ((a.cai[0] as CaleApp).varfuri[2] as unknown as VarfM).p.x += 1e-5;
 });
 
-test('(e) control negativ 2.3c-1, fără aplicație: praful singur păstrat (U14) și „M L” umplută închisă (U7): trebuiau refuzate gol', () => {
-  for (const [numeCaz, cale] of [['U14', caleL(0, [[20, 80], [20.0001, 80], [20.0001, 79.9999]])], ['U7', caleL(0, [[10, 90], [30, 90]])]] as const) {
+// Sub-felia 2.3c-3: U7 („M L” umplută singură) nu mai e `gol`, ci o cale deschisă; închiderea ei o prinde
+// `controlNegativ23c3` („calea deschisă cu inchis: true”). Aici rămâne praful singur (U14), ca în 2.3c-1.
+test('(e) control negativ 2.3c-1, fără aplicație: praful singur păstrat (U14): trebuia refuzat gol', () => {
+  for (const [numeCaz, cale] of [['U14', caleL(0, [[20, 80], [20.0001, 80], [20.0001, 79.9999]])]] as const) {
     const c = caz(numeCaz);
     const o = oracol(c);
     assert.ok(!o.ok && o.cod === 'gol');
@@ -506,4 +522,196 @@ test('(0) praful ieșirii, hârtia oracolului: o buclă de închidere mai subți
   assert.equal(prafNormalizareO(caz('90.00000001')), 0);
   assert.equal(prafNormalizareO(caz('90.0000001')), 1);
   assert.equal(prafNormalizareO(caz('90.00004')), 1);
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// (e) Sub-felia 2.3c-3 (ADR 0037 §11, partea a doua): controalele negative ale căilor deschise. Fără aplicație: rezultatul
+// corect se construiește din oracol (trebuie să treacă), apoi se strică așa cum l-ar strica o ușă greșită.
+
+function controlNegativ23c3(nume: string, numeCaz: string, strica: (a: OkApp) => void): void {
+  test(`(e) control negativ 2.3c-3, fără aplicație: ${nume} (${numeCaz})`, () => {
+    const c = caz(numeCaz);
+    const o = oracol(c);
+    const bun = dinOracol(c);
+    assert.deepEqual(judecaRezultat(copie(bun), o), [], 'rezultatul construit din oracol trebuie să treacă');
+    const rau = copie(bun);
+    strica(rau);
+    assert.ok(judecaRezultat(rau, o).length > 0, 'stricarea a trecut neobservată');
+  });
+}
+/** Calea deschisă k a rezultatului. */
+const deschisa = (a: OkApp, k = 0): CaleApp => a.cai.filter((c) => c.inchis === false)[k] as CaleApp;
+const ultimul = (c: CaleApp): VarfM => c.varfuri[c.varfuri.length - 1] as unknown as VarfM;
+
+controlNegativ23c3('calea deschisă sărită (ca înainte de 2.3c-3), tot numărată deschise', 'L3', (a) => { a.cai = []; });
+controlNegativ23c3('calea deschisă sărită lângă o cale închisă', 'U8', (a) => { a.cai = a.cai.filter((c) => c.inchis !== false); });
+controlNegativ23c3('vârful final lipsă', 'L1', (a) => { deschisa(a).varfuri.pop(); });
+controlNegativ23c3('vârful final lipsă pe o cale cu curbe (CAL → CA)', 'L4', (a) => { deschisa(a).varfuri.pop(); });
+controlNegativ23c3('vârful final lipsă pe valul lui CNC-referinta (CL → C)', 'U22', (a) => { deschisa(a).varfuri.pop(); });
+controlNegativ23c3('vârful final cu segmentul A (ADR 0037 §2: ultimul segment e L)', 'L1', (a) => { ultimul(deschisa(a)).s = { tip: 'A', bulge: 0.5 }; });
+controlNegativ23c3('vârful final mutat cu 1e-5 mm', 'L1', (a) => { ultimul(deschisa(a)).p.x += 1e-5; });
+controlNegativ23c3('vârful final dublat (un segment nul la coadă)', 'L3', (a) => { const c = deschisa(a); c.varfuri.push(copie(c.varfuri[c.varfuri.length - 1] as VarfO)); });
+controlNegativ23c3('calea deschisă fără câmpul inchis (citită închisă: coarda de închidere)', 'L3', (a) => { delete deschisa(a).inchis; });
+controlNegativ23c3('calea deschisă cu inchis: true (închisă, ca în ediția întâi)', 'U10', (a) => { deschisa(a).inchis = true; });
+controlNegativ23c3('„M L” umplută închisă de umplere (închiderea degenerată nu se face)', 'U7', (a) => {
+  const c = deschisa(a);
+  c.inchis = true;
+  c.varfuri.pop();
+  plus(a, 'deschise', -1);
+  plus(a, 'inchise-de-umplere', 1);
+});
+controlNegativ23c3('inchis ca text („false”)', 'L1', (a) => { (deschisa(a) as unknown as { inchis: unknown }).inchis = 'false'; });
+controlNegativ23c3('calea închisă marcată deschisă', 'U8', (a) => { (a.cai[0] as CaleApp).inchis = false; });
+controlNegativ23c3('sensul căii deschise întors', 'L3', (a) => { deschisa(a).varfuri.reverse(); });
+controlNegativ23c3('bulge-ul semicercului deschis cu semnul întors', 'L4', (a) => { const v = deschisa(a).varfuri[1] as unknown as VarfM; v.s.bulge = -(v.s.bulge as number); });
+controlNegativ23c3('oglindirea: bulge-ul căii deschise oglindite cu semnul întors', 'L12', (a) => { const v = deschisa(a).varfuri[0] as unknown as VarfM; v.s.bulge = -(v.s.bulge as number); });
+controlNegativ23c3('o cale deschisă degenerată (line de 0,009 mm) importată', 'L6', (a) => {
+  a.cai.unshift({ forma: 0, inchis: false, varfuri: [{ p: { x: 5, y: 95 }, s: { tip: 'L' } }, { p: { x: 5.009, y: 95 }, s: { tip: 'L' } }] as VarfO[] });
+  plus(a, 'degenerate', -1);
+  plus(a, 'deschise', 1);
+});
+controlNegativ23c3('o cale deschisă de 0,011 mm sărită ca degenerată (pragul × 1,2)', 'L6', (a) => {
+  a.cai = a.cai.filter((c) => c.forma !== 1);
+  plus(a, 'degenerate', 1);
+  plus(a, 'deschise', -1);
+});
+controlNegativ23c3('deschise numără subcăile sărite, nu căile importate (0 în loc de 1)', 'L1', (a) => { plus(a, 'deschise', -1); });
+controlNegativ23c3('deschise numără și degeneratele (4 în loc de 2)', 'L6', (a) => { plus(a, 'deschise', 2); });
+controlNegativ23c3('ordinea subcăilor într-o formă: calea deschisă mutată înaintea celei închise', 'L11', (a) => {
+  const [x, y] = [a.cai[0], a.cai[1]] as [CaleApp, CaleApp];
+  a.cai[0] = y;
+  a.cai[1] = x;
+});
+controlNegativ23c3('U-ul deschis citit închis (o cale închisă în plus, imbricarea schimbată)', 'L8', (a) => { (a.cai[0] as CaleApp).inchis = true; });
+controlNegativ23c3('numele căii deschise pierdut', 'L5', (a) => { delete deschisa(a, 1).nume; });
+
+test('(e) control negativ 2.3c-3, fără aplicație: `gol` în loc de căile deschise (L5, U7, H7, L9); doar degeneratele (L7) sunt gol', () => {
+  for (const n of ['L5', 'U7', 'H7', 'L9', 'U10', 'C11']) {
+    const o = oracol(caz(n));
+    assert.ok(o.ok, n);
+    assert.ok(judecaRezultat({ ok: false, cod: 'gol', avertismente: { ...o.avertismente } }, o).length > 0, `${n}: gol a trecut`);
+  }
+  const o7 = oracol(caz('L7'));
+  assert.ok(!o7.ok && o7.cod === 'gol');
+  assert.deepEqual(judecaRezultat({ ok: false, cod: 'gol', avertismente: { ...o7.avertismente } }, o7), []);
+  const pastrata = { ok: true, cai: [caleL(1, [[30, 70], [30.006, 70]])].map((c) => ({ ...c, inchis: false })), pagina: { latime: 100, inaltime: 100 }, px: false, illustrator: false, avertismente: { ...o7.avertismente, degenerate: 1, deschise: 1 } };
+  assert.ok(judecaRezultat(pastrata, o7).length > 0, 'calea de 0,006 mm păstrată a trecut');
+});
+
+test('(0) imbricarea fără căile deschise, pe hârtie: U-ul din L8 citit închis ar schimba latura pătratului mic', () => {
+  const o = oracol(caz('L8'));
+  assert.ok(o.ok);
+  assert.deepEqual(laturiO(o.cai), ['pe-linie', 'interior', 'exterior', 'pe-linie']);
+  assert.deepEqual(laturiBugetO(o.cai, 1e9), laturiO(o.cai));
+  // Martorul: același U, închis cu linia (90, 90) → (10, 90), stă în pătratul mare (interior) și conține primul vârf
+  // (20, 40) al pătratului mic (adâncimea 2: exterior).
+  const u = o.cai[0] as CaleO;
+  const fin = (u.varfuri[u.varfuri.length - 1] as VarfO).p, start = (u.varfuri[0] as VarfO).p;
+  const coarda: RunO = { ex: { fel: 'L', a: fin, b: start }, piese: [{ p: fin, s: { tip: 'L' } }], clasa: 'L', raza: 0, gol: 0, tol: 0 };
+  const inchis = o.cai.map((c, i) => (i === 0 ? { ...c, inchis: true, runs: [...c.runs, coarda] } : c));
+  assert.deepEqual(laturiO(inchis), ['interior', 'exterior', 'exterior', 'pe-linie']);
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// (0) Piesa pe hârtie (2.3c-3, ADR 0037 §11): L5, două linii, cu operația `deschise`. Stricăturile ei trebuie prinse de
+// `judecaPiesa`, fără aplicație.
+
+type PiesaHartie = { piesa: { id: string; nume: string; radacina: { tip: string; id: string; matrice: unknown; copii: Array<Record<string, unknown> & { forma: Record<string, unknown> }> }; operatii: Array<Record<string, unknown>> }; x: number; y: number };
+const ID_M = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+/** L5 pe hârtie: colțul (0, 50); c1 „sus” = (0, 50) → (100, 50), c2 „jos” = (0, 0) → (100, 0); instanța în colț. */
+function piesaL5(adancime: number): PiesaHartie {
+  const el = (id: string, nume: string, y: number): Record<string, unknown> & { forma: Record<string, unknown> } => ({
+    tip: 'element', id, nume, matrice: { ...ID_M },
+    forma: { tip: 'cale', inchis: false, varfuri: [{ p: { x: 0, y }, s: { tip: 'L' } }, { p: { x: 100, y }, s: { tip: 'L' } }] },
+  });
+  return {
+    piesa: {
+      id: 'p1', nume: 'caz', radacina: { tip: 'grup', id: 'g', matrice: { ...ID_M }, copii: [el('c1', 'sus', 50), el('c2', 'jos', 0)] },
+      operatii: [{ id: 'deschise', tip: 'profil', noduri: ['c1', 'c2'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'pe-linie', adancime, pas: adancime, sens: 'urcare', urechi: null, rampa: null, intrari: null, colturi: null }],
+    },
+    x: 0, y: 50,
+  };
+}
+const argL5 = (grosime: number): PiesaArg => ({
+  nume: 'caz', laturi: ['pe-linie', 'pe-linie'], pagina: { latime: 100, inaltime: 100 }, grosime,
+  cai: [
+    { nume: 'sus', inchis: false, varfuri: [{ p: { x: 0, y: 100 }, s: { tip: 'L' } }, { p: { x: 100, y: 100 }, s: { tip: 'L' } }] },
+    { nume: 'jos', inchis: false, varfuri: [{ p: { x: 0, y: 50 }, s: { tip: 'L' } }, { p: { x: 100, y: 50 }, s: { tip: 'L' } }] },
+  ],
+});
+const COLT_L5 = { x: 0, y: 50 };
+
+test('(0) piesa pe hârtie (2.3c-3): L5 cu `deschise` de min(1, grosimea / 2): 1 mm pe 18 și pe 2, 0,75 pe 1,5, 0,3 pe 0,6; trece de ușa documentului v10', () => {
+  const o = oracol(caz('L5'));
+  assert.ok(o.ok);
+  assert.deepEqual(coltExact(o.cai), COLT_L5);
+  for (const [g, ad] of [[18, 1], [2, 1], [1.5, 0.75], [0.6, 0.3]] as const) {
+    assert.deepEqual(judecaPiesa(piesaL5(ad), argL5(g), 'p1', COLT_L5, 1e-9), [], `grosimea ${g}`);
+    const u = incarca({ schema: 10, rev: 0, piese: [piesaL5(ad).piesa], foi: [{ id: 'f1', stoc: { latime: 1000, inaltime: 1000, grosime: g }, instante: [{ id: 'i1', piesa: 'p1', x: 0, y: 50, rotire: 0 }] }] });
+    assert.equal(u.ok, true, u.ok ? '' : `grosimea ${g}: ${u.motiv}`);
+  }
+  // `despartire: false` = lipsa (ADR 0037 §2).
+  const cuFals = piesaL5(1);
+  (cuFals.piesa.operatii[0] as Record<string, unknown>)['despartire'] = false;
+  assert.deepEqual(judecaPiesa(cuFals, argL5(18), 'p1', COLT_L5, 1e-9), []);
+});
+
+test('(e) control negativ 2.3c-3, fără aplicație: piesa de pe hârtie stricată (adâncimea, pasul, latura, sensul, urechile, despărțirea, elementul închis, operația lipsă)', () => {
+  const op = (p: PiesaHartie): Record<string, unknown> => p.piesa.operatii[0] as Record<string, unknown>;
+  const stricaturi: Array<[string, number, (p: PiesaHartie) => void]> = [
+    ['1 mm pe foaia de 1,5 (fără grosimea / 2)', 1.5, (p) => { op(p)['adancime'] = 1; op(p)['pas'] = 1; }],
+    ['grosimea / 2 pe foaia de 18 (9 mm, fără plafonul de 1 mm)', 18, (p) => { op(p)['adancime'] = 9; op(p)['pas'] = 9; }],
+    ['3 mm, implicita dreptunghiului', 18, (p) => { op(p)['adancime'] = 3; op(p)['pas'] = 3; }],
+    ['adâncimea foii întregi (desparte foaia din oficiu)', 18, (p) => { op(p)['adancime'] = 18; op(p)['pas'] = 18; }],
+    ['pasul 0,5 (două treceri)', 18, (p) => { op(p)['pas'] = 0.5; }],
+    ['latura exterior', 18, (p) => { op(p)['latura'] = 'exterior'; }],
+    ['latura stânga', 18, (p) => { op(p)['latura'] = 'stanga'; }],
+    ['sensul opoziție', 18, (p) => { op(p)['sens'] = 'opozitie'; }],
+    ['urechi', 18, (p) => { op(p)['urechi'] = { numar: 4, latime: 6, grosime: 1.5 }; }],
+    ['rampa', 18, (p) => { op(p)['rampa'] = { lungime: 10 }; }],
+    ['intrări', 18, (p) => { op(p)['intrari'] = { tip: 'arc' }; }],
+    ['colțuri', 18, (p) => { op(p)['colturi'] = 'dog-bone'; }],
+    ['despartire: true', 18, (p) => { op(p)['despartire'] = true; }],
+    ['freza de 3 mm', 18, (p) => { (op(p)['scula'] as { diametru: number }).diametru = 3; }],
+    ['id-ul exterior', 18, (p) => { op(p)['id'] = 'exterior'; }],
+    ['un nod lipsă', 18, (p) => { op(p)['noduri'] = ['c1']; }],
+    ['operația lipsă', 18, (p) => { p.piesa.operatii = []; }],
+    ['o operație exterior în plus pe căile deschise', 18, (p) => { p.piesa.operatii.push({ ...op(p), id: 'exterior', latura: 'exterior', adancime: 3, pas: 3 }); }],
+    ['elementul închis (coarda de închidere)', 18, (p) => { (p.piesa.radacina.copii[0] as { forma: Record<string, unknown> }).forma['inchis'] = true; }],
+    ['elementul fără vârful final', 18, (p) => { ((p.piesa.radacina.copii[1] as { forma: Record<string, unknown> }).forma['varfuri'] as unknown[]).pop(); }],
+  ];
+  for (const [nume, g, strica] of stricaturi) {
+    const p = piesaL5(adancimeDeschiseO(g));
+    strica(p);
+    assert.ok(judecaPiesa(p, argL5(g), 'p1', COLT_L5, 1e-9).length > 0, `${nume}: a trecut neobservată`);
+  }
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// (c′) (c″) Piesa aplicației din căile ORACOLULUI (2.3c-3): pe cazurile cu căi deschise, fără forme de normalizat (acolo
+// căile finale sunt ale aplicației). Independent de cititorul aplicației: doar `piesaDinImport` și ușa documentului.
+
+for (const c of CORPUS) {
+  const o = oracol(c);
+  if (!o.ok || o.cai.every((x) => x.inchis) || o.formeNonzero.some((f) => f.deSchimbat || f.gol)) continue;
+  test(`(c′) piesa din căile oracolului (2.3c-3): ${c.nume}`, () => {
+    const cai = o.cai.map((x) => ({ varfuri: copie(x.varfuri), inchis: x.inchis, ...(x.nume !== undefined ? { nume: x.nume } : {}) }));
+    const arg = { nume: 'caz', cai, laturi: laturiO(o.cai), pagina: o.pagina, grosime: GROSIME };
+    const rez = piesaDinImport(arg, 'p1');
+    assert.deepEqual(judecaPiesa(rez, arg, 'p1', coltExact(o.cai), 2 * CONST_O.tolImport + o.tolLC), []);
+    const u = incarca({ schema: 10, rev: 0, piese: [rez.piesa], foi: [{ id: 'f1', stoc: { latime: 1000, inaltime: 1000, grosime: GROSIME }, instante: [{ id: 'i1', piesa: 'p1', x: rez.x, y: rez.y, rotire: 0 }] }] });
+    assert.equal(u.ok, true, u.ok ? '' : u.motiv);
+  });
+}
+
+test('(c″) adâncimea operației `deschise` după grosimea foii (aplicația, din căile oracolului L5): 0,75 mm pe 1,5, 1 mm pe 2 și pe 18', () => {
+  const o = oracol(caz('L5'));
+  if (!o.ok) throw new Error('L5 trebuie acceptat de oracol');
+  const cai: PiesaArg['cai'] = o.cai.map((x) => ({ varfuri: copie(x.varfuri), inchis: x.inchis, ...(x.nume !== undefined ? { nume: x.nume } : {}) }));
+  for (const g of [1.5, 2, 18]) {
+    const arg: PiesaArg & { laturi: ReturnType<typeof laturiO> } = { nume: 'caz', cai, laturi: laturiO(o.cai), pagina: o.pagina, grosime: g };
+    // Aplicația primește grosimea foii ca al patrulea argument (`piesaDinImport(date, id, scula?, grosime?)`); oracolul o
+    // ține în `arg`, pentru judecată. Doar forma apelului, adaptată la integrare (13.10).
+    assert.deepEqual(judecaPiesa(piesaDinImport(arg, 'p1', undefined, g), arg, 'p1', coltExact(o.cai), 2 * CONST_O.tolImport + o.tolLC), [], `grosimea ${g}`);
+  }
 });

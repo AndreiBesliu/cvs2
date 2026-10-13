@@ -53,6 +53,11 @@ export const ro = {
     few: 'cale {latime} × {inaltime}, {n} segmente, la X {x}, Y {y}',
     other: 'cale {latime} × {inaltime}, {n} de segmente, la X {x}, Y {y}',
   },
+  'forma.cale-deschisa': {
+    one: 'cale deschisă {latime} × {inaltime}, {n} segment, la X {x}, Y {y}',
+    few: 'cale deschisă {latime} × {inaltime}, {n} segmente, la X {x}, Y {y}',
+    other: 'cale deschisă {latime} × {inaltime}, {n} de segmente, la X {x}, Y {y}',
+  },
   'bara.actiuni': 'Acțiuni',
   'actiune.exporta-gcode': 'Exportă G-code',
   'motiv.nimic-de-exportat': 'Desenează întâi ceva.',

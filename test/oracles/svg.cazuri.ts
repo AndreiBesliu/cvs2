@@ -14,6 +14,13 @@
  * e praf; proba lui trece în E37) s-au schimbat odată cu contractul. Precizarea 13.10 (praful ieșirii normalizării): U24
  * (logoul VfB minim: bucla de închidere scoasă din normalizare, `prafNormalizare` 1), U25 (aceeași buclă fără normalizare:
  * rămâne) și U26 (un contur de 0,012 mm în ieșire: nu e praf).
+ *
+ * Sub-felia 2.3c-3 (ADR 0037 §11, partea a doua): căile deschise se importă (`inchis: false`, cu vârful final), deci
+ * cazurile care așteptau subcăi deschise sărite așteaptă acum căi deschise: C11 (line), C24 și U23 (line degenerată: sub
+ * 2 vârfuri distincte, sub 0,01 mm), U6–U10, U16, U17, U22 (valul lui CNC-referinta), H7 (doar linii: nu mai e `gol`).
+ * Secțiunea L adaugă line, polyline, căile `fill: none` (cu cubice, arce, arce eliptice, oglindite), pragul degenerării,
+ * fișierul doar din linii, imbricarea fără căi deschise, normalizarea fără ele și `gol` = nicio cale. Plafonul cu vârful
+ * final stă în `svg.mari.oracol.test.ts` (are 50 000 de vârfuri).
  */
 import { arieRuns, caiFinaleO, CODURI_O, laturiO, prafNormalizareO, type CodRefuzO, type RaportO, type RezultatO, type VarfO } from './svg.ts';
 
@@ -40,15 +47,18 @@ export type Hartie = {
   bulge?: Array<[number, number, number]>;
   /** Numerele diferite de 0; restul trebuie să fie 0. */
   avertismente?: Partial<RaportO>;
-  laturi?: Array<'exterior' | 'interior'>;
+  /** Sub-felia 2.3c-3: o cale deschisă n-are latură din imbricare, are `pe-linie`. */
+  laturi?: Array<'exterior' | 'interior' | 'pe-linie'>;
   forme?: number[];
+  /** Sub-felia 2.3c-3 (ADR 0037 §11): `inchis` al fiecărei căi, în ordine (false = cale deschisă, cu vârful final). */
+  inchis?: boolean[];
   nume?: Array<string | undefined>;
   /**
    * Felia 2.7d (ADR 0036): ce rămâne după normalizarea formelor nonzero (căile, laturile lor, aria regiunii: exterioarele
    * plus, interioarele minus). Câmpurile de mai sus (`cai`, `tipuri`, `varfuri`, `laturi`) descriu citirea 2.7c, înainte
    * de normalizare; `avertismente['nonzero-normalizate']` = câte forme TREBUIE schimbate (predicția oracolului).
    */
-  final?: { cai?: number; laturi?: Array<'exterior' | 'interior'>; arie?: number };
+  final?: { cai?: number; laturi?: Array<'exterior' | 'interior' | 'pe-linie'>; arie?: number };
   /** Câte dintre formele de schimbat le refuză normalizarea (ADR 0036 §8: cazurile pe care ADR-ul le numește), citite evenodd. */
   nonzeroRefuzate?: number;
   /**
@@ -212,8 +222,9 @@ const C: CazSvg[] = [
     hartie: { cai: 4, tipuri: ['LLLL', 'LLLL', 'LALALALA', 'LLLL'], varfuri: [[0, 0, 0, 100], [2, 0, 64, 80], [2, 1, 76, 80], [3, 0, 60, 50]], bulge: [[2, 1, -tan8]] } },
   { nume: 'C21 elipsa: rx necitibil = 0, deci sărită în tăcere', text: p100('<ellipse rx="abc" ry="5" cx="50" cy="50"/><ellipse rx="auto" ry="5" cx="50" cy="50"/><rect width="5" height="5"/>'),
     hartie: { cai: 1, forme: [2] } },
-  { nume: 'C11 line: mereu deschisă', text: p100('<line x1="0" y1="0" x2="10" y2="10"/><rect width="5" height="5"/>'),
-    hartie: { cai: 1, forme: [1], avertismente: { deschise: 1 } } },
+  // Sub-felia 2.3c-3 (ADR 0037 §11): orice `line` e o cale deschisă, cu vârful final (segmentul L); înainte era sărită.
+  { nume: 'C11 line: o cale deschisă (2.3c-3; înainte sărită)', text: p100('<line x1="0" y1="0" x2="10" y2="10"/><rect width="5" height="5"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LL', 'LLLL'], inchis: [false, true], varfuri: [[0, 0, 0, 100], [0, 1, 10, 90]], laturi: ['pe-linie', 'exterior'], avertismente: { deschise: 1 } } },
   // Sub-felia 2.3c-1 (ADR 0037 §11): prima polilinie e umplută (implicit), deci se închide cu o linie (golul √200 mm);
   // în 2.7c era deschisă (sărită, `deschise`).
   { nume: 'C12 polyline umplută fără întoarcere (2.3c-1: închisă de umplere) și închisă prin apropiere', text: p100('<polyline points="0,0 10,0 10,10"/><polyline points="20,20 30,20 30,30 20,20"/>'),
@@ -239,8 +250,9 @@ const C: CazSvg[] = [
     hartie: { cai: 2, forme: [0, 1], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 100 } } },
   { nume: 'C23 polygon cu un punct, M Z, M L-nul Z: degenerate (fosta constatare K2)', text: p100('<polygon points="5,5"/><path d="M 20 20 Z"/><path d="M 30 30 L 30 30 Z"/><rect x="50" y="50" width="5" height="5"/>'),
     hartie: { cai: 1, forme: [3], avertismente: { degenerate: 3 } } },
-  { nume: 'C24 line de lungime 0: tot deschisă', text: p100('<line x1="5" y1="5" x2="5" y2="5"/><rect width="5" height="5"/>'),
-    hartie: { cai: 1, forme: [1], avertismente: { deschise: 1 } } },
+  // 2.3c-3: calea deschisă cu mai puțin de 2 vârfuri distincte e degenerată (ADR 0037 §11).
+  { nume: 'C24 line de lungime 0: degenerată (2.3c-3; înainte sărită ca deschisă)', text: p100('<line x1="5" y1="5" x2="5" y2="5"/><rect width="5" height="5"/>'),
+    hartie: { cai: 1, forme: [1], avertismente: { degenerate: 1 } } },
   { nume: 'C17 polygon cu un punct repetat: linia nulă scoasă', text: p100('<polygon points="0,0 10,0 10,0 10,10"/>'),
     hartie: { tipuri: ['LLL'], varfuri: [[0, 0, 0, 100], [0, 1, 10, 100], [0, 2, 10, 90]] } },
   { nume: 'C18 polyline închisă prin apropiere în mm (gol 1e-7 px ≤ 1e-6 mm)', text: svg('width="100" height="100"', '<polyline points="10,10 20,10 20,20 10.0000001,10"/>'),
@@ -598,7 +610,8 @@ const S: CazSvg[] = [
 // ---------------------------------------------------------------------------------------------------------------------
 // U. Umplerea, golul sub rezoluție și praful (sub-felia 2.3c-1, ADR 0037 §11, amendează ADR 0035 §7, §10). Pe hârtie:
 // - o subcale fără `Z` cu golul peste TOLERANTA_IMPORT (1e-6 mm) a unei forme UMPLUTE (`fill` efectiv ≠ `none`; implicit
-//   plin) se închide cu o linie: `inchise-de-umplere`; dacă închiderea dă o cale degenerată, rămâne deschisă: `deschise`;
+//   plin) se închide cu o linie: `inchise-de-umplere`; dacă închiderea dă o cale degenerată, rămâne deschisă (2.3c-3: o
+//   cale deschisă, numărată `deschise`, sau `degenerate` dacă are sub 2 vârfuri distincte ori sub 0,01 mm);
 // - cu `fill: none`, golul ≤ REZOLUTIE (0,01 mm) se închide cu o linie: `inchise-la-usa`; peste, rămâne deschisă;
 // - o subcale (închisă cu `Z`, sau închisă de ușă) cu diagonala cutiei sub 0,01 mm se sare: `sub-rezolutie`;
 // - golul ≤ 1e-6 mm se închide în tăcere, ca în 2.7c (fără linie, fără număr);
@@ -636,17 +649,19 @@ const U: CazSvg[] = [
     hartie: { cai: 1, px: true, tipuri: ['LLLLL'], varfuri: [[0, 0, 10 * K96, 90 * K96], [0, 4, 10 * K96, (100 - 10.001) * K96]], avertismente: { 'inchise-de-umplere': 1 }, goluri: [0.001 * K96] } },
   { nume: 'U5 triunghiul umplut fără Z, golul mare (√800 mm): închis cu o linie', text: p100('<path d="M 10 10 L 30 10 L 30 30"/>'),
     hartie: { cai: 1, tipuri: ['LLL'], varfuri: [[0, 0, 10, 90], [0, 1, 30, 90], [0, 2, 30, 70]], avertismente: { 'inchise-de-umplere': 1 }, goluri: [Math.sqrt(800)], laturi: ['exterior'] } },
-  { nume: 'U6 „M L” umplută și trei puncte pe o dreaptă: închiderea ar fi degenerată, rămân deschise (nu degenerate)', text: p100('<path d="M 10 10 L 30 10"/><path d="M 10 20 L 30 20 L 20 20"/><rect x="50" y="50" width="10" height="10"/>'),
-    hartie: { cai: 1, forme: [2], avertismente: { deschise: 2 } } },
-  { nume: 'U7 „M L” umplută singură: deschisă, fișierul e gol', text: p100('<path d="M 10 10 L 30 10"/>'),
-    hartie: { cod: 'gol', avertismente: { deschise: 1 } } },
-  { nume: 'U8 polyline umplută: închisă de umplere; cu fill="none": deschisă', text: p100('<polyline points="10,10 30,10 30,30"/><polyline fill="none" points="50,10 70,10 70,30"/>'),
-    hartie: { cai: 1, forme: [0], tipuri: ['LLL'], varfuri: [[0, 2, 30, 70]], avertismente: { 'inchise-de-umplere': 1, deschise: 1 }, goluri: [Math.sqrt(800)] } },
+  // 2.3c-3: subcăile care rămân deschise devin căi deschise (vârfurile plus vârful final), nu mai sunt sărite.
+  { nume: 'U6 „M L” umplută și trei puncte pe o dreaptă: închiderea ar fi degenerată, rămân deschise (2.3c-3: căi deschise)', text: p100('<path d="M 10 10 L 30 10"/><path d="M 10 20 L 30 20 L 20 20"/><rect x="50" y="50" width="10" height="10"/>'),
+    hartie: { cai: 3, forme: [0, 1, 2], tipuri: ['LL', 'LLL', 'LLLL'], inchis: [false, false, true], varfuri: [[0, 0, 10, 90], [0, 1, 30, 90], [1, 0, 10, 80], [1, 1, 30, 80], [1, 2, 20, 80]], laturi: ['pe-linie', 'pe-linie', 'exterior'], avertismente: { deschise: 2 } } },
+  { nume: 'U7 „M L” umplută singură: o cale deschisă (2.3c-3; înainte fișierul era gol)', text: p100('<path d="M 10 10 L 30 10"/>'),
+    hartie: { cai: 1, tipuri: ['LL'], inchis: [false], varfuri: [[0, 0, 10, 90], [0, 1, 30, 90]], laturi: ['pe-linie'], avertismente: { deschise: 1 } } },
+  { nume: 'U8 polyline umplută: închisă de umplere; cu fill="none": o cale deschisă (2.3c-3)', text: p100('<polyline points="10,10 30,10 30,30"/><polyline fill="none" points="50,10 70,10 70,30"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LLL', 'LLL'], inchis: [true, false], varfuri: [[0, 2, 30, 70], [1, 0, 50, 90], [1, 1, 70, 90], [1, 2, 70, 70]], laturi: ['exterior', 'pe-linie'], avertismente: { 'inchise-de-umplere': 1, deschise: 1 }, goluri: [Math.sqrt(800)] } },
   // Golul 0,005: |89,995 − 90|; golul 0,02: deschisă. A treia, o polilinie fără umplere cu golul 0,005: închisă la ușă.
-  { nume: 'U9 fill="none": golul 0,005 mm se închide la ușă (path și polyline), golul 0,02 mm rămâne deschis', text: p100('<path fill="none" d="M 10 10 L 30 10 L 30 30 L 10 30 L 10 10.005"/><path fill="none" d="M 50 10 L 70 10 L 70 30 L 50 30 L 50 10.02"/><polyline fill="none" points="10,50 30,50 30,70 10,70 10,50.005"/>'),
-    hartie: { cai: 2, forme: [0, 2], tipuri: ['LLLLL', 'LLLLL'], varfuri: [[0, 4, 10, 89.995], [1, 4, 10, 49.995]], avertismente: { 'inchise-la-usa': 2, deschise: 1 }, goluri: [0.005, 0.005], golLaUsa: 0.005, laturi: ['exterior', 'exterior'] } },
-  { nume: 'U10 fill="none", doar golul 0,02 mm: deschisă, fișierul e gol', text: p100('<path fill="none" d="M 50 10 L 70 10 L 70 30 L 50 30 L 50 10.02"/>'),
-    hartie: { cod: 'gol', avertismente: { deschise: 1 } } },
+  // Calea deschisă (2.3c-3): 4 segmente plus vârful final (50, 89,98), deci tot 5 vârfuri, fără linia de închidere.
+  { nume: 'U9 fill="none": golul 0,005 mm se închide la ușă (path și polyline), golul 0,02 mm rămâne deschis (2.3c-3: o cale deschisă)', text: p100('<path fill="none" d="M 10 10 L 30 10 L 30 30 L 10 30 L 10 10.005"/><path fill="none" d="M 50 10 L 70 10 L 70 30 L 50 30 L 50 10.02"/><polyline fill="none" points="10,50 30,50 30,70 10,70 10,50.005"/>'),
+    hartie: { cai: 3, forme: [0, 1, 2], tipuri: ['LLLLL', 'LLLLL', 'LLLLL'], inchis: [true, false, true], varfuri: [[0, 4, 10, 89.995], [1, 0, 50, 90], [1, 4, 50, 89.98], [2, 4, 10, 49.995]], avertismente: { 'inchise-la-usa': 2, deschise: 1 }, goluri: [0.005, 0.005], golLaUsa: 0.005, laturi: ['exterior', 'pe-linie', 'exterior'] } },
+  { nume: 'U10 fill="none", doar golul 0,02 mm: o cale deschisă (2.3c-3; înainte fișierul era gol)', text: p100('<path fill="none" d="M 50 10 L 70 10 L 70 30 L 50 30 L 50 10.02"/>'),
+    hartie: { cai: 1, tipuri: ['LLLLL'], inchis: [false], varfuri: [[0, 0, 50, 90], [0, 3, 50, 70], [0, 4, 50, 89.98]], avertismente: { deschise: 1 } } },
   { nume: 'U11 golul sub TOLERANTA_IMPORT (5e-7 mm), fără Z: închise în tăcere, fără număr (umplută și fără umplere)', text: p100('<path d="m 10 10 h 20 v 20 h -20 v -19.9999995"/><path fill="none" d="m 50 10 h 20 v 20 h -20 v -19.9999995"/>'),
     hartie: { cai: 2, tipuri: ['LLLL', 'LLLL'], varfuri: [[0, 3, 10, 70], [1, 3, 50, 70]], goluri: [], golLaUsa: 0 } },
   // Praful: diagonala 1e-4 · √2 mm. A doua e umplută fără Z (s-ar închide de umplere), a treia fără umplere (golul 1,4e-4 mm
@@ -661,10 +676,10 @@ const U: CazSvg[] = [
   // Degenerata rămâne înaintea prafului (ALEGERE): `M Z` și linia nulă închisă sunt `degenerate`, ca în 2.7c (C19, C23).
   { nume: 'U15 degenerată și praf deodată (M Z, M L Z de 1e-7): degenerate, ca în 2.7c; triunghiul de 1e-4: sub-rezolutie', text: p100('<path d="M 20 20 Z"/><path d="M 0 0 L 1e-7 0 Z"/><path d="M 20 30 l 0.0001 0 l 0 0.0001 z"/><rect x="50" y="50" width="5" height="5"/>'),
     hartie: { cai: 1, forme: [3], avertismente: { degenerate: 2, 'sub-rezolutie': 1 } } },
-  { nume: 'U16 fill moștenit de la grup: none lasă deschisă, o culoare pe formă o închide, fill="inherit" ia none', text: p100('<g fill="none"><path d="M 10 10 L 30 10 L 30 30"/><path fill="#000" d="M 50 10 L 70 10 L 70 30"/><path fill="inherit" d="M 10 50 L 30 50 L 30 70"/></g>'),
-    hartie: { cai: 1, forme: [1], tipuri: ['LLL'], varfuri: [[0, 0, 50, 90], [0, 1, 70, 90], [0, 2, 70, 70]], avertismente: { 'inchise-de-umplere': 1, deschise: 2 } } },
-  { nume: 'U17 fill dintr-o clasă CSS: .c{fill:none} lasă deschisă (și moștenit, pe o polilinie); .u{fill:#123} sub un grup none o închide', text: p100('<style>.c{fill:none} .u{fill:#123}</style><path class="c" d="M 10 10 L 30 10 L 30 30"/><g fill="none"><path class="u" d="M 50 10 L 70 10 L 70 30"/></g><g class="c"><polyline points="10,50 30,50 30,70"/></g>'),
-    hartie: { cai: 1, forme: [1], tipuri: ['LLL'], varfuri: [[0, 0, 50, 90]], avertismente: { 'inchise-de-umplere': 1, deschise: 2 } } },
+  { nume: 'U16 fill moștenit de la grup: none lasă deschisă (2.3c-3: cale deschisă), o culoare pe formă o închide, fill="inherit" ia none', text: p100('<g fill="none"><path d="M 10 10 L 30 10 L 30 30"/><path fill="#000" d="M 50 10 L 70 10 L 70 30"/><path fill="inherit" d="M 10 50 L 30 50 L 30 70"/></g>'),
+    hartie: { cai: 3, forme: [0, 1, 2], tipuri: ['LLL', 'LLL', 'LLL'], inchis: [false, true, false], varfuri: [[0, 2, 30, 70], [1, 0, 50, 90], [1, 1, 70, 90], [1, 2, 70, 70], [2, 0, 10, 50], [2, 2, 30, 30]], avertismente: { 'inchise-de-umplere': 1, deschise: 2 } } },
+  { nume: 'U17 fill dintr-o clasă CSS: .c{fill:none} lasă deschisă (și moștenit, pe o polilinie; 2.3c-3: căi deschise); .u{fill:#123} sub un grup none o închide', text: p100('<style>.c{fill:none} .u{fill:#123}</style><path class="c" d="M 10 10 L 30 10 L 30 30"/><g fill="none"><path class="u" d="M 50 10 L 70 10 L 70 30"/></g><g class="c"><polyline points="10,50 30,50 30,70"/></g>'),
+    hartie: { cai: 3, forme: [0, 1, 2], tipuri: ['LLL', 'LLL', 'LLL'], inchis: [false, true, false], varfuri: [[1, 0, 50, 90], [2, 2, 30, 30]], avertismente: { 'inchise-de-umplere': 1, deschise: 2 } } },
   { nume: 'U18 style="fill:none" pe grup, golul 0,005 mm: închisă la ușă; style="fill:red" pe formă: închisă de umplere', text: p100('<g style="fill:none"><path d="M 10 10 L 30 10 L 30 30 L 10 30 L 10 10.005"/><path style="fill:red" d="M 50 10 L 70 10 L 70 30"/></g>'),
     hartie: { cai: 2, forme: [0, 1], tipuri: ['LLLLL', 'LLL'], avertismente: { 'inchise-la-usa': 1, 'inchise-de-umplere': 1 }, goluri: [0.005, Math.sqrt(800)], golLaUsa: 0.005 } },
   // Ca N1, fără Z: cele două dreptunghiuri se închid de umplere, apoi forma nonzero se normalizează (reuniunea, 2 000 mm²).
@@ -674,12 +689,14 @@ const U: CazSvg[] = [
     hartie: { cai: 2, tipuri: ['LLLLL', 'LLLLL'], laturi: ['exterior', 'interior'], avertismente: { 'inchise-la-usa': 2 }, goluri: [0.005, 0.005], golLaUsa: 0.005, final: { cai: 2, laturi: ['exterior', 'interior'] } } },
   { nume: 'U21 o cale închisă de umplere într-un dreptunghi: interioară (imbricarea)', text: p100('<rect x="10" y="10" width="80" height="80"/><path d="M 30 30 L 70 30 L 70 70 L 30 70"/>'),
     hartie: { cai: 2, forme: [0, 1], tipuri: ['LLLL', 'LLLL'], laturi: ['exterior', 'interior'], avertismente: { 'inchise-de-umplere': 1 }, goluri: [40], final: { cai: 2, laturi: ['exterior', 'interior'], arie: 6400 - 1600 } } },
-  // CNC-referinta (stratul GRAVARE): valul de 150 mm cu fill="none" moștenit de la strat rămâne deschis; cercul rămâne.
-  { nume: 'U22 CNC-referinta: valul de 150 mm, fill="none" pe strat, rămâne deschis', text: svg('width="400mm" height="300mm" viewBox="0 0 400 300"', '<g fill="none" stroke="#000" stroke-width="0.2"><circle cx="70" cy="73" r="50"/></g><g fill="none" stroke="#000" stroke-width="0.2"><path d="M160,240C210,180 260,300 310,240"/></g>'),
-    hartie: { cai: 1, forme: [0], tipuri: ['AA'], avertismente: { deschise: 1 } } },
-  // `line` nu trece prin praf (ALEGERE): e mereu deschisă, oricât de scurtă (ADR 0035 §4; în 2.3c-3, regula ei de lungime).
-  { nume: 'U23 line de 1e-4 mm: deschise, nu sub-rezolutie', text: p100('<line x1="5" y1="5" x2="5.0001" y2="5"/><rect width="5" height="5"/>'),
-    hartie: { cai: 1, forme: [1], avertismente: { deschise: 1 } } },
+  // CNC-referinta (stratul GRAVARE): valul de 150 mm cu fill="none" moștenit de la strat rămâne deschis: din 2.3c-3, o cale
+  // deschisă (cubica din fișier, apoi vârful final (310, 60)); cercul rămâne.
+  { nume: 'U22 CNC-referinta: valul de 150 mm, fill="none" pe strat, rămâne deschis (2.3c-3: o cale deschisă)', text: svg('width="400mm" height="300mm" viewBox="0 0 400 300"', '<g fill="none" stroke="#000" stroke-width="0.2"><circle cx="70" cy="73" r="50"/></g><g fill="none" stroke="#000" stroke-width="0.2"><path d="M160,240C210,180 260,300 310,240"/></g>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['AA', 'CL'], inchis: [true, false], varfuri: [[1, 0, 160, 60], [1, 1, 310, 60]], laturi: ['exterior', 'pe-linie'], avertismente: { deschise: 1 } } },
+  // `line` nu trece prin praf (ALEGERE): e mereu deschisă, oricât de scurtă (ADR 0035 §4); din 2.3c-3, regula ei de lungime:
+  // sub 0,01 mm, degenerată.
+  { nume: 'U23 line de 1e-4 mm: degenerată (2.3c-3: sub 0,01 mm), nu sub-rezolutie', text: p100('<line x1="5" y1="5" x2="5.0001" y2="5"/><rect width="5" height="5"/>'),
+    hartie: { cai: 1, forme: [1], avertismente: { degenerate: 1 } } },
   // ADR 0037 §11 (precizarea 13.10), reproducerea minimă a logoului VfB: ultima latură a pătratului fără Z, (10, 30) →
   // E = (10,00004; 9,99996), taie prima latură (y = 10) în X = (10 + 4e-5 · 20 / 20,00004; 10), lângă start, iar linia de
   // închidere E → (10, 10) lasă bucla X–E–S (diagonala 5,66e-5 mm), în sens opus pătratului: înfășurarea −1, umplută sub
@@ -704,6 +721,74 @@ const U: CazSvg[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------
+// L. Căile deschise (sub-felia 2.3c-3, ADR 0037 §11, partea a doua; amendează ADR 0035 §7, §8, §10). Pe hârtie:
+// - devin căi deschise (`inchis: false`): orice `line`, subcăile fără `Z` cu `fill: none` și golul peste 0,01 mm,
+//   `polyline`-urile cu `fill: none` care nu se închid, și subcăile pe care închiderea ușii le-ar face degenerate;
+// - calea are vârfurile subcăii plus vârful final (capătul ultimului segment), cu segmentul L; tipurile au deci un L la
+//   coadă (o linie: „LL”);
+// - degenerată (sărită, `degenerate`) cu mai puțin de 2 vârfuri distincte sau cu lungimea sub 0,01 mm;
+// - nu intră în imbricare (latura `pe-linie`, nu conțin nimic) și nici în normalizarea nonzero; `deschise` le numără;
+// - refuzul `gol` = nicio cale.
+
+const L: CazSvg[] = [
+  { nume: 'L1 o line singură: o cale deschisă, cu vârful final', text: p100('<line x1="10" y1="10" x2="60" y2="40"/>'),
+    hartie: { cai: 1, forme: [0], tipuri: ['LL'], inchis: [false], varfuri: [[0, 0, 10, 90], [0, 1, 60, 60]], laturi: ['pe-linie'], avertismente: { deschise: 1 } } },
+  // rotate(90): (x, y) → (−y, x): (10, −30) → (30, 10), (20, −30) → (30, 20).
+  { nume: 'L2 line sub o transformare (rotate(90))', text: p100('<line transform="rotate(90)" x1="10" y1="-30" x2="20" y2="-30"/>'),
+    hartie: { cai: 1, tipuri: ['LL'], inchis: [false], varfuri: [[0, 0, 30, 90], [0, 1, 30, 80]], avertismente: { deschise: 1 } } },
+  { nume: 'L3 polyline cu fill="none" care nu se închide: o cale deschisă cu 4 vârfuri (3 segmente + final)', text: p100('<polyline fill="none" points="10,10 50,10 50,50 20,40"/>'),
+    hartie: { cai: 1, tipuri: ['LLLL'], inchis: [false], varfuri: [[0, 0, 10, 90], [0, 1, 50, 90], [0, 2, 50, 50], [0, 3, 20, 60]], laturi: ['pe-linie'], avertismente: { deschise: 1 } } },
+  // Cubica din fișier (10, 50) → (50, 50), apoi semicercul A 20 20 0 0 0 spre (90, 50): centrul (70, 50), prin (70, 30) în
+  // mm, deci trigonometric: bulge = +1. Vârful final (90, 50), cu L.
+  { nume: 'L4 cale cu fill="none" din cubică și semicerc: CAL, bulge +1', text: p100('<path fill="none" d="M 10 50 C 20 70 40 70 50 50 A 20 20 0 0 0 90 50"/>'),
+    hartie: { cai: 1, tipuri: ['CAL'], inchis: [false], varfuri: [[0, 0, 10, 50], [0, 1, 50, 50], [0, 2, 90, 50]], bulge: [[0, 1, tan4]], avertismente: { deschise: 1 } } },
+  { nume: 'L5 fișierul doar din linii (o gravură): se importă, două căi deschise, cu numele', text: p100('<line id="sus" x1="0" y1="0" x2="100" y2="0"/><line id="jos" x1="0" y1="50" x2="100" y2="50"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LL', 'LL'], inchis: [false, false], nume: ['sus', 'jos'], varfuri: [[0, 0, 0, 100], [0, 1, 100, 100], [1, 0, 0, 50], [1, 1, 100, 50]], laturi: ['pe-linie', 'pe-linie'], avertismente: { deschise: 2 } } },
+  // Pragul degenerării (0,01 mm), pe linii: line de 0,009 mm degenerată, de 0,011 mm cale; „M L” umplută (închiderea ar fi
+  // degenerată, deci rămâne deschisă) de 0,006 mm degenerată, de 0,02 mm cale.
+  { nume: 'L6 pragul degenerării: 0,009 și 0,006 mm degenerate, 0,011 și 0,02 mm căi deschise', text: p100('<line x1="5" y1="5" x2="5.009" y2="5"/><line x1="5" y1="10" x2="5.011" y2="10"/><path d="M 30 30 L 30.006 30"/><path d="M 40 40 L 40.02 40"/>'),
+    hartie: { cai: 2, forme: [1, 3], tipuri: ['LL', 'LL'], inchis: [false, false], varfuri: [[0, 0, 5, 90], [0, 1, 5.011, 90], [1, 0, 40, 60], [1, 1, 40.02, 60]], avertismente: { degenerate: 2, deschise: 2 } } },
+  { nume: 'L7 doar căi deschise degenerate: nicio cale, gol (cu raportul)', text: p100('<line x1="5" y1="5" x2="5" y2="5"/><path d="M 30 30 L 30.006 30"/><text>t</text>'),
+    hartie: { cod: 'gol', avertismente: { degenerate: 2, 'sarit-text': 1 } } },
+  // Imbricarea fără căile deschise: U-ul deschis (10, 90) → (10, 10) → (90, 10) → (90, 90), citit închis (cu orice coardă:
+  // (90, 90) → (10, 90), sau peste ultimul segment, (90, 10) → (10, 90)), ar conține primul vârf (20, 40) al pătratului mic
+  // (adâncimea 2: exterior); deschis, nu conține nimic (adâncimea 1: interior, în pătratul mare). Linia din pătratul mic nu
+  // primește latură. Aria regiunii: 10 000 − 100, căile deschise nu intră.
+  { nume: 'L8 imbricarea fără căile deschise: U-ul deschis nu conține pătratul, linia nu primește latură', text: p100('<path fill="none" d="M 10 10 L 10 90 L 90 90 L 90 10"/><rect x="20" y="60" width="10" height="10"/><rect width="100" height="100"/><line x1="25" y1="62" x2="25" y2="68"/>'),
+    hartie: { cai: 4, forme: [0, 1, 2, 3], tipuri: ['LLLL', 'LLLL', 'LLLL', 'LL'], inchis: [false, true, true, false], varfuri: [[1, 0, 20, 40]], laturi: ['pe-linie', 'interior', 'exterior', 'pe-linie'], avertismente: { deschise: 2 },
+      final: { cai: 4, laturi: ['pe-linie', 'interior', 'exterior', 'pe-linie'], arie: 9900 } } },
+  // Ca N7 (o cale și inversa ei: regiunea vidă), plus „M L” umplută în aceeași formă: închiderea ar fi degenerată, deci o
+  // cale deschisă, care nu intră în normalizare. Forma își pierde căile închise, dar fișierul nu e gol: rămâne linia.
+  { nume: 'L9 o formă nonzero vidă cu o cale deschisă: linia rămâne, fișierul nu e gol', text: p100('<path d="M 10 10 h 20 v 20 h -20 z M 10 10 v 20 h 20 v -20 z M 50 50 L 90 50"/>'),
+    hartie: { cai: 3, forme: [0, 0, 0], tipuri: ['LLLL', 'LLLL', 'LL'], inchis: [true, true, false], varfuri: [[2, 0, 50, 50], [2, 1, 90, 50]], avertismente: { 'nonzero-normalizate': 1, deschise: 1 }, final: { cai: 1, laturi: ['pe-linie'], arie: 0 } } },
+  // Ca N1 (reuniunea, 2 000 mm²), plus o linie umplută în aceeași formă: reuniunea doar din căile închise; linia rămâne.
+  { nume: 'L10 reuniunea nonzero cu o cale deschisă în aceeași formă: linia rămâne în afara normalizării', text: p100('<path d="M 10 10 h 40 v 30 h -40 z M 30 20 h 40 v 30 h -40 z M 10 80 L 90 80"/>'),
+    hartie: { cai: 3, forme: [0, 0, 0], tipuri: ['LLLL', 'LLLL', 'LL'], inchis: [true, true, false], avertismente: { 'nonzero-normalizate': 1, deschise: 1 }, final: { cai: 2, arie: 2000 } } },
+  // Pătratul umplut singur e deja evenodd (un contur simplu): nu se normalizează. Linia „M L” din aceeași formă (o cale
+  // deschisă: închiderea ei ar fi degenerată) stă pe latura de sus a pătratului; dacă ar intra în normalizare, muchiile
+  // coincidente ar cere schimbarea formei (ADR 0036). Căile deschise nu intră (ADR 0037 §11): nonzero-normalizate 0.
+  { nume: 'L17 o cale deschisă pe latura unui pătrat umplut, în aceeași formă: nu intră în normalizare (pătratul rămâne)', text: p100('<path d="M 10 10 h 20 v 20 h -20 z M 10 10 L 30 10"/>'),
+    hartie: { cai: 2, forme: [0, 0], tipuri: ['LLLL', 'LL'], inchis: [true, false], varfuri: [[1, 0, 10, 90], [1, 1, 30, 90]], laturi: ['exterior', 'pe-linie'], avertismente: { deschise: 1 }, final: { cai: 2, laturi: ['exterior', 'pe-linie'], arie: 400 } } },
+  { nume: 'L11 ordinea subcăilor într-o formă fill="none": închisă, deschisă, închisă', text: p100('<path fill="none" d="M 10 10 h 20 v 20 h -20 z M 50 10 L 90 10 M 50 50 h 20 v 20 h -20 z"/>'),
+    hartie: { cai: 3, forme: [0, 0, 0], tipuri: ['LLLL', 'LL', 'LLLL'], inchis: [true, false, true], varfuri: [[1, 0, 50, 90], [1, 1, 90, 90]], laturi: ['exterior', 'pe-linie', 'exterior'], avertismente: { deschise: 1 } } },
+  // translate(100, 0) scale(−1, 1): x → 100 − x. Semicercul din (90, 50) spre (50, 50), sens 0: în mm, din (10, 50) prin
+  // (30, 70) în (50, 50), orar: det(M) = (−1)(−1) = +1, Δθ = −π, bulge = −1. Apoi linia spre (50, 80), vârful final.
+  { nume: 'L12 cale deschisă oglindită, cu un semicerc: bulge −1, sensul din fișier păstrat', text: p100('<g transform="translate(100, 0) scale(-1, 1)"><path fill="none" d="M 90 50 A 20 20 0 0 0 50 50 L 50 20"/></g>'),
+    hartie: { cai: 1, tipuri: ['ALL'], inchis: [false], varfuri: [[0, 0, 10, 50], [0, 1, 50, 50], [0, 2, 50, 80]], bulge: [[0, 0, -tan4]], avertismente: { deschise: 1 } } },
+  // σ = 20: φ = 0,37425, n = ⌈π / φ⌉ = 9 cubice, apoi vârful final (50, 50).
+  { nume: 'L13 jumătate de elipsă deschisă: 9 cubice și vârful final', text: p100('<path fill="none" d="M 10 50 A 20 10 0 0 1 50 50"/>'),
+    hartie: { cai: 1, tipuri: [`${'C'.repeat(9)}L`], inchis: [false], varfuri: [[0, 0, 10, 50], [0, 9, 50, 50]], avertismente: { deschise: 1, 'arce-eliptice': 1, 'cubice-din-arce': 9 } } },
+  { nume: 'L14 cale deschisă cu o linie nulă și un arc cu capetele egale: scoase', text: p100('<path fill="none" d="M 10 10 L 30 10 L 30 10 A 5 5 0 0 1 30 10 L 30 30"/>'),
+    hartie: { cai: 1, tipuri: ['LLL'], inchis: [false], varfuri: [[0, 0, 10, 90], [0, 1, 30, 90], [0, 2, 30, 70]], avertismente: { deschise: 1 } } },
+  // Dus-întors pe aceeași dreaptă: pe o cale deschisă e voie (ADR 0037 §4: autointersecția e permisă), lungimea 120 mm.
+  { nume: 'L15 polyline dus-întors pe o dreaptă (fill="none"): o cale deschisă, nu degenerată', text: p100('<polyline fill="none" points="10,10 90,10 50,10"/>'),
+    hartie: { cai: 1, tipuri: ['LLL'], inchis: [false], varfuri: [[0, 0, 10, 90], [0, 1, 90, 90], [0, 2, 50, 90]], avertismente: { deschise: 1 } } },
+  // Fără viewBox, la 96: 1 px = K96 mm; pagina 100 px, deci y_mm = (100 − y) · K96.
+  { nume: 'L16 line în px (fără viewBox, 96)', text: svg('width="100" height="100"', '<line x1="0" y1="0" x2="96" y2="0"/>'),
+    hartie: { cai: 1, px: true, tipuri: ['LL'], inchis: [false], varfuri: [[0, 0, 0, 100 * K96], [0, 1, 25.4, 100 * K96]], avertismente: { deschise: 1 } } },
+];
+
+// ---------------------------------------------------------------------------------------------------------------------
 // H. Refuzurile mici (cele mari stau în testul lor).
 
 const H: CazSvg[] = [
@@ -713,8 +798,9 @@ const H: CazSvg[] = [
   { nume: 'H4 entitate nedeclarată', text: p100('<rect width="&foo;" height="5"/>'), hartie: { cod: 'parsare' } },
   { nume: 'H5 rădăcina html', text: '<html xmlns="http://www.w3.org/1999/xhtml"><body/></html>', hartie: { cod: 'radacina' } },
   { nume: 'H6 svg în alt spațiu de nume', text: '<svg xmlns="http://example.com/x"><rect width="5" height="5"/></svg>', hartie: { cod: 'radacina' } },
-  { nume: 'H7 nicio cale închisă: refuz cu raportul', text: p100('<line x2="10"/><path d="M 0 0 L 10 10"/><polyline points="0,0 5,5"/><text>t</text>'),
-    hartie: { cod: 'gol', avertismente: { deschise: 3, 'sarit-text': 1 } } },
+  // ADR 0037 §11 (2.3c-3): refuzul `gol` = nicio cale; un fișier doar din linii se importă (înainte: refuzat `gol`).
+  { nume: 'H7 nicio cale închisă, doar linii: se importă, trei căi deschise (2.3c-3; înainte gol)', text: p100('<line x2="10"/><path d="M 0 0 L 10 10"/><polyline points="0,0 5,5"/><text>t</text>'),
+    hartie: { cai: 3, forme: [0, 1, 2], tipuri: ['LL', 'LL', 'LL'], inchis: [false, false, false], varfuri: [[0, 0, 0, 100], [0, 1, 10, 100], [1, 1, 10, 90], [2, 1, 5, 95]], laturi: ['pe-linie', 'pe-linie', 'pe-linie'], avertismente: { deschise: 3, 'sarit-text': 1 } } },
   { nume: 'H8 svg gol', text: p100(''), hartie: { cod: 'gol' } },
   { nume: 'H9 coordonată peste 10⁷ mm', text: p100('<rect x="20000000" width="10" height="10"/>'), hartie: { cod: 'departe' } },
   { nume: 'H10 fără pagină, departe în y', text: svg('', '<rect y="-40000000" width="10" height="10"/>'), hartie: { cod: 'departe' } },
@@ -899,7 +985,7 @@ const I: CazSvg[] = [
     hartie: { illustrator: true } },
 ];
 
-export const CORPUS: readonly CazSvg[] = [...A, ...B, ...C, ...D, ...E, ...F, ...G, ...N, ...S, ...U, ...H, ...I];
+export const CORPUS: readonly CazSvg[] = [...A, ...B, ...C, ...D, ...E, ...F, ...G, ...N, ...S, ...U, ...L, ...H, ...I];
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Judecata hârtiei: oracolul trebuie să dea exact ce scrie pe hârtie.
@@ -943,6 +1029,7 @@ export function judecaHartia(o: RezultatO, h: Hartie): string[] {
   if (h.laturi !== undefined && JSON.stringify(laturiO(o.cai)) !== JSON.stringify(h.laturi)) pr.push(`laturi ${JSON.stringify(laturiO(o.cai))} ≠ ${JSON.stringify(h.laturi)}`);
   if (h.forme !== undefined && JSON.stringify(o.cai.map((c) => c.forma)) !== JSON.stringify(h.forme)) pr.push(`forme ${JSON.stringify(o.cai.map((c) => c.forma))} ≠ ${JSON.stringify(h.forme)}`);
   if (h.nume !== undefined && JSON.stringify(o.cai.map((c) => c.nume ?? null)) !== JSON.stringify(h.nume.map((n) => n ?? null))) pr.push(`nume ${JSON.stringify(o.cai.map((c) => c.nume))}`);
+  if (h.inchis !== undefined && JSON.stringify(o.cai.map((c) => c.inchis)) !== JSON.stringify(h.inchis)) pr.push(`inchis ${JSON.stringify(o.cai.map((c) => c.inchis))} ≠ ${JSON.stringify(h.inchis)}`);
   // Sub-felia 2.3c-1: golurile căilor închise de ușă (în ordinea căilor) și golul cel mai mare închis la ușă.
   if (h.goluri !== undefined) {
     const g = o.subcai.filter((j) => j.soarta === 'cale' && j.inchisaDeUsa !== null).sort((x, y) => (x.cale ?? 0) - (y.cale ?? 0)).map((j) => j.gol);
@@ -981,7 +1068,8 @@ export function judecaHartiaFinala(app: unknown, o: RezultatO, h: Hartie): strin
   const lat = laturiO(fin);
   if (f.laturi !== undefined && JSON.stringify(lat) !== JSON.stringify(f.laturi)) pr.push(`hârtia: laturile după normalizare ${JSON.stringify(lat)} ≠ ${JSON.stringify(f.laturi)}`);
   if (f.arie !== undefined) {
-    const A = fin.reduce((s, c, i) => s + (lat[i] === 'exterior' ? 1 : -1) * Math.abs(arieRuns(c.runs)), 0);
+    // Căile deschise (2.3c-3) n-au arie: nu intră în regiune.
+    const A = fin.reduce((s, c, i) => s + (lat[i] === 'pe-linie' ? 0 : (lat[i] === 'exterior' ? 1 : -1) * Math.abs(arieRuns(c.runs))), 0);
     if (!(Math.abs(A - f.arie) <= 1e-9 * Math.max(1, Math.abs(f.arie)))) pr.push(`hârtia: aria după normalizare ${A} ≠ ${f.arie}`);
   }
   return pr;

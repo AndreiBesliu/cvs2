@@ -14,7 +14,15 @@ export type ComandaCale =
   | { readonly t: 'C'; readonly x1: number; readonly y1: number; readonly x2: number; readonly y2: number; readonly x: number; readonly y: number }
   | { readonly t: 'Z' };
 
-export type FormaDesen = { readonly id: string; readonly cale: readonly ComandaCale[] };
+/**
+ * O formă de desenat. `sageata` (ADR 0037 §12): pe o cale deschisă, vârful 0 și direcția de mers a desenului acolo (un
+ * vector unitar, în mm ai documentului); pânza desenează săgeata doar când forma e în selecție.
+ */
+export type FormaDesen = {
+  readonly id: string;
+  readonly cale: readonly ComandaCale[];
+  readonly sageata?: { readonly x: number; readonly y: number; readonly ux: number; readonly uy: number };
+};
 
 /** Vederea: câți pixeli CSS are un milimetru și unde cade originea documentului pe ecran (pixeli CSS). */
 export type Vedere = { readonly scara: number; readonly tx: number; readonly ty: number };
@@ -35,7 +43,8 @@ export type CerereDesen = {
   readonly culori: { readonly fundal: string; readonly foaie: string; readonly linie: string; readonly selectie: string };
 };
 
-export type RaspunsDesen = { readonly tip: 'imagine'; readonly cerere: number; readonly imagine: ImageBitmap };
+/** `sageti`: câte săgeți de sens (căile deschise din selecție) are imaginea. */
+export type RaspunsDesen = { readonly tip: 'imagine'; readonly cerere: number; readonly imagine: ImageBitmap; readonly sageti: number };
 
 /** Zoomul: cel mult 1 000 px/mm (T13), cel puțin cât să încapă o foaie de 10 m pe ecran. */
 export const SCARA_MINIMA = 0.01;
