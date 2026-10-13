@@ -4,6 +4,10 @@ import { en } from '../../src/i18n/mesaje.en.ts';
 import { ro, type DictionarRo } from '../../src/i18n/mesaje.ro.ts';
 import { enImport } from '../../src/i18n/import.en.ts';
 import { roImport } from '../../src/i18n/import.ro.ts';
+import { enCarcasa } from '../../src/i18n/carcasa.en.ts';
+import { enExport } from '../../src/i18n/export.en.ts';
+import { roExport } from '../../src/i18n/export.ro.ts';
+import { roCarcasa } from '../../src/i18n/carcasa.ro.ts';
 import { limbaDePornire, traduce } from '../../src/i18n/t.ts';
 
 /*
@@ -28,6 +32,20 @@ test('ro și en au exact aceleași chei, și la rulare', () => {
 test('mesajele încărcate la cerere (importul): ro și en cu aceleași chei, niciuna și printre cele de la pornire', () => {
   assert.deepEqual(Object.keys(roImport).sort(), Object.keys(enImport).sort());
   for (const k of Object.keys(enImport)) assert.ok(!(k in en), `${k} e și la pornire`);
+});
+
+test('mesajele exportului încărcate la cerere: ro și en cu aceleași chei, niciuna și printre cele de la pornire', () => {
+  assert.deepEqual(Object.keys(roExport).sort(), Object.keys(enExport).sort());
+  for (const k of Object.keys(enExport)) assert.ok(!(k in en) && !(k in enImport), `${k} e și în alt dicționar`);
+  // Le folosesc și aplicația, și fereastra care nu s-a putut încărca: rămân la pornire.
+  assert.ok('export.inchide' in en && 'export.proiect-schimbat' in en);
+  // Fără dialog (`export.ts` neîncărcat), textele lui nu sunt în dicționar: chiar nu vin la pornire.
+  assert.throws(() => traduce('ro', 'export.titlu'), /nu e încărcat/);
+});
+
+test('mesajele carcasei încărcate la cerere (paleta, proprietățile): ro și en cu aceleași chei, niciuna și în alt dicționar', () => {
+  assert.deepEqual(Object.keys(roCarcasa).sort(), Object.keys(enCarcasa).sort());
+  for (const k of Object.keys(enCarcasa)) assert.ok(!(k in en) && !(k in enImport) && !(k in enExport), `${k} e și în alt dicționar`);
 });
 
 test('pluralul românesc: one, few, other, după regulile CLDR', () => {

@@ -10,6 +10,7 @@ import { creeazaJurnal, type Context, type Depozit } from './jurnalErori.ts';
 import './stil.css';
 
 const CHEIE_LIMBA = 'cncvs2.limba';
+const CHEIE_TEMA = 'cncvs2.tema';
 
 /** `localStorage` poate lipsi sau arunca (fereastră privată, date blocate); atunci totul merge în memorie. */
 function depozitLocal(): Depozit | null {
@@ -34,6 +35,22 @@ try {
   salvata = null;
 }
 schimbaLimba(limbaDePornire(salvata, navigator.languages));
+
+// Tema aleasă (luminoasă / întunecată / după sistem) se pune înaintea primei randări, ca pagina să nu clipească.
+try {
+  document.documentElement.dataset['tema'] = depozit?.getItem(CHEIE_TEMA) ?? 'auto';
+} catch {
+  // Fără depozit, tema urmează sistemul.
+}
+
+function alegeTema(tema: string): void {
+  document.documentElement.dataset['tema'] = tema;
+  try {
+    depozit?.setItem(CHEIE_TEMA, tema);
+  } catch {
+    // Alegerea rămâne doar pentru sesiunea asta.
+  }
+}
 
 function alegeLimba(l: Limba): void {
   schimbaLimba(l);
@@ -69,6 +86,7 @@ createRoot(radacina).render(
         jurnal={jurnal}
         diagnostic={new URLSearchParams(location.search).get('diagnostic')}
         alegeLimba={alegeLimba}
+        alegeTema={alegeTema}
         proiect={proiect}
       />
     </ErrorBoundary>

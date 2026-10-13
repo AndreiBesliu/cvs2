@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import {
   SCARA_MAXIMA, SCARA_MINIMA, type CerereDesen, type FormaDesen, type RaspunsDesen, type Vedere,
 } from './protocol.ts';
@@ -11,6 +11,23 @@ type Props = {
   readonly onClic: (x: number, y: number, toleranta: number) => void;
   /** O mutare terminată a selecției, în mm. */
   readonly onMutare: (dx: number, dy: number) => void;
+  /**
+   * Zona pânzei pe care n-o acoperă barele și panourile care plutesc deasupra ei: foaia se potrivește în ea. Fără ea (sau
+   * mai mică de 100 px), foaia se potrivește în toată pânza.
+   */
+  readonly zona?: RefObject<HTMLElement | null>;
+  /** Crește la fiecare „arată toată foaia”: vederea se potrivește din nou. */
+  readonly potrivire?: number;
+  /** Cutia selecției, în mm: bara selecției (`children`) stă lângă ea, sub ea dacă încape, altfel deasupra. */
+  readonly cutie?: { readonly minX: number; readonly minY: number; readonly maxX: number; readonly maxY: number } | null;
+  readonly children?: ReactNode;
+  /**
+   * Cursorul deasupra pânzei, în mm ai foii (ca documentul: originea în colțul stânga-jos, Y în sus), la fiecare mișcare;
+   * `null` când iese de pe pânză (și când trece peste o bară care plutește deasupra ei).
+   */
+  readonly onCursor?: (p: { readonly x: number; readonly y: number } | null) => void;
+  /** Scara vederii (px CSS pe mm), la fiecare vedere nouă: zoom, deplasare, potrivire. */
+  readonly onScara?: (scara: number) => void;
 };
 
 /** Pixelii de toleranță ai clicului și pragul de la care o apăsare devine tragere. */
@@ -28,12 +45,14 @@ function culori(): CerereDesen['culori'] {
   };
 }
 
-/** Vederea care așază foaia întreagă în pânză, cu o margine. */
-export function vedereaPotrivita(lat: number, ina: number, foaie: { latime: number; inaltime: number }): Vedere {
+/** Vederea care așază foaia întreagă în pânză (sau în zona `z` a ei, în pixeli din colțul pânzei), cu o margine. */
+export function vedereaPotrivita(
+  lat: number, ina: number, foaie: { latime: number; inaltime: number }, z = { x: 0, y: 0, w: lat, h: ina },
+): Vedere {
   const margine = 24;
   const scara = Math.min(SCARA_MAXIMA, Math.max(SCARA_MINIMA,
-    Math.min((lat - 2 * margine) / foaie.latime, (ina - 2 * margine) / foaie.inaltime)));
-  return { scara, tx: (lat - foaie.latime * scara) / 2, ty: ina - (ina - foaie.inaltime * scara) / 2 };
+    Math.min((z.w - 2 * margine) / foaie.latime, (z.h - 2 * margine) / foaie.inaltime)));
+  return { scara, tx: z.x + (z.w - foaie.latime * scara) / 2, ty: z.y + z.h - (z.h - foaie.inaltime * scara) / 2 };
 }
 
 /**
@@ -41,7 +60,7 @@ export function vedereaPotrivita(lat: number, ina: number, foaie: { latime: numb
  * document: primește formele gata descrise și trimite înapoi gesturile (clic, mutare), pe care aplicația le rulează
  * prin registrul de acțiuni.
  */
-export function Panza({ forme, foaie, selectie, onClic, onMutare }: Props) {
+export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivire, cutie, children, onCursor, onScara }: Props) {
   const panzaRef = useRef<HTMLCanvasElement | null>(null);
   const lucratorRef = useRef<Worker | null>(null);
   const cerereRef = useRef(0);
@@ -52,6 +71,23 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare }: Props) {
   const [trimisa, setTrimisa] = useState(0);
   const gest = useRef<{ tip: 'pan' | 'mutare' | 'apasare'; x0: number; y0: number; v0: Vedere } | null>(null);
   const spatiu = useRef(false);
+  // Culorile se citesc din CSS la fiecare desen: o temă schimbată (aleasă sau a sistemului) cere un desen nou.
+  const [tema, setTema] = useState(0);
+  useEffect(() => {
+    const m = matchMedia('(prefers-color-scheme: dark)');
+    const schimbata = (): void => { setTema((n) => n + 1); };
+    const o = new MutationObserver(schimbata);
+    o.observe(document.documentElement, { attributeFilter: ['data-tema'] });
+    m.addEventListener('change', schimbata);
+    return () => { o.disconnect(); m.removeEventListener('change', schimbata); };
+  }, []);
+
+  /** Zona liberă, în pixeli din colțul pânzei, dacă e destul de mare. */
+  const zonaLibera = (): { x: number; y: number; w: number; h: number } | undefined => {
+    const z = zona?.current?.getBoundingClientRect();
+    const c = panzaRef.current?.getBoundingClientRect();
+    return z && c && z.width > 100 && z.height > 100 ? { x: z.left - c.left, y: z.top - c.top, w: z.width, h: z.height } : undefined;
+  };
 
   // Workerul: unul pe pânză, închis la demontare.
   useEffect(() => {
@@ -88,8 +124,13 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare }: Props) {
 
   // La prima mărime reală, foaia întreagă în vedere. O cutie încă nemăsurată (0 px) ar da scara minimă.
   useEffect(() => {
-    if (!vedere && marime.latime > 100 && marime.inaltime > 100) setVedere(vedereaPotrivita(marime.latime, marime.inaltime, foaie));
+    if (!vedere && marime.latime > 100 && marime.inaltime > 100) setVedere(vedereaPotrivita(marime.latime, marime.inaltime, foaie, zonaLibera()));
   }, [marime, foaie, vedere]);
+
+  // „Arată toată foaia”: aceeași potrivire, la cerere.
+  useEffect(() => {
+    if (potrivire && marime.latime > 100 && marime.inaltime > 100) setVedere(vedereaPotrivita(marime.latime, marime.inaltime, foaie, zonaLibera()));
+  }, [potrivire]);
 
   // Orice schimbare → o cerere nouă către worker.
   useEffect(() => {
@@ -102,7 +143,10 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare }: Props) {
       vedere, foaie, forme, selectie, deplasare, culori: culori(),
     };
     w.postMessage(cerere);
-  }, [marime, vedere, foaie, forme, selectie, deplasare]);
+  }, [marime, vedere, foaie, forme, selectie, deplasare, tema]);
+
+  // Scara, spusă afară o dată pe vedere nouă (zoomul din bara de jos).
+  useEffect(() => { if (vedere) onScara?.(vedere.scara); }, [vedere]);
 
   const laDocument = useCallback((ev: { clientX: number; clientY: number }, v: Vedere) => {
     const r = panzaRef.current?.getBoundingClientRect();
@@ -149,6 +193,10 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare }: Props) {
   };
 
   const misca = (e: React.PointerEvent<HTMLCanvasElement>): void => {
+    if (vedere && onCursor) {
+      const p = laDocument(e, vedere);
+      onCursor({ x: p.x, y: p.y });
+    }
     const g = gest.current;
     if (!g) return;
     const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
@@ -186,8 +234,20 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare }: Props) {
       onPointerMove={misca}
       onPointerUp={elibereaza}
       onPointerCancel={() => { gest.current = null; setDeplasare({ dx: 0, dy: 0 }); }}
+      onPointerLeave={() => { onCursor?.(null); }}
       onContextMenu={(e) => { e.preventDefault(); }}
     />
+    {/* Bara selecției: sub cutie dacă încape deasupra barei de jos, altfel deasupra cutiei; ascunsă cât se mută selecția. */}
+    {children && cutie && vedere && deplasare.dx === 0 && deplasare.dy === 0 && (() => {
+      const sub = vedere.ty - cutie.minY * vedere.scara + 12;
+      const top = sub < marime.inaltime - 112 ? sub : vedere.ty - cutie.maxY * vedere.scara - 56;
+      const left = vedere.tx + ((cutie.minX + cutie.maxX) / 2) * vedere.scara;
+      return (
+        <div className="bara-selectie" style={{ left: Math.min(Math.max(left, 96), marime.latime - 96), top: Math.min(Math.max(top, 72), marime.inaltime - 104) }}>
+          {children}
+        </div>
+      );
+    })()}
     </div>
   );
 }

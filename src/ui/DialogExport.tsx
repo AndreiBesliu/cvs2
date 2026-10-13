@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
+import '../i18n/export.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import { MARGINI_OPERATIE, type Depasire, type IesireFoaie, type ParametriExport } from './actiuniExportTipuri.ts';
 import { citesteNumar, textNumar } from './numar.ts';

@@ -1,18 +1,26 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
-import { t } from '../i18n/t.ts';
+import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
+import { t, type CheieSimpla } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { avertismente } from '../model/avertismente.ts';
 import { documentNou, type Document, type Operatie } from '../model/document.ts';
 import { cutieElement } from '../model/forme.ts';
 import { istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
-import { creeazaRegistru, ruleaza, stare } from '../ui/actiuni.ts';
+import { creeazaRegistru, ruleaza, stare, toate, type RezultatActiune } from '../ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../ui/actiuniDocument.ts';
+import {
+  ARANJAMENT_MODERN, cheieIntrare, COMUTA_PANOU, PANOURI,
+  type Aranjament, type IdCip, type IdControl, type IdPanou, type IdZona, type Intrare, type Unealta,
+} from '../ui/aranjament.ts';
+import { CipCursor, CipZoom, semnal, type PunctFoaie } from '../ui/CipuriVedere.tsx';
+import { ACTIUNI_VEDERE, type ContextVedere } from '../ui/actiuniVedere.ts';
+import { actiuneaTastei, tastaActiunii, tastaApasata } from '../ui/scurtaturi.ts';
 import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type RezultatExport } from '../ui/actiuniExport.ts';
 import { ACTIUNI_IMPORT, PLAFON_IMPORT, preincarcaImport, type ContextImport, type FisierImport, type PrevizualizareImport } from '../ui/actiuniImport.ts';
 import type { CerereExport, OperatieExport, StareExport } from '../ui/DialogExport.tsx';
-import { ListaVectori, type RandLista } from '../ui/ListaVectori.tsx';
+import { incarcaNivelPiesa, ListaVectori, type RandLista } from '../ui/ListaVectori.tsx';
 import { useLimba } from '../ui/useLimba.ts';
 import type { RezultatConfig } from './config.ts';
 import { listaDesen } from './desen.ts';
@@ -25,8 +33,15 @@ type Props = {
   readonly jurnal: Jurnal;
   readonly diagnostic: string | null;
   readonly alegeLimba: (l: Limba) => void;
+  /** Tema aleasă (`TEME`): o pune pe pagină și o ține minte în browser. */
+  readonly alegeTema: (tema: string) => void;
   /** Proiectul din browser, deschis înainte de prima randare (`proiectLocal.ts`). */
   readonly proiect: ProiectDeschis;
+  /**
+   * Ce stă în fiecare zonă a ecranului (`aranjament.ts`). Implicit, șablonul modern; un șablon clasic sau un aranjament
+   * salvat de om intră pe aici, fără altă carcasă.
+   */
+  readonly aranjament?: Aranjament;
 };
 
 /** Diagnosticul `?diagnostic=eroare-de-randare` aruncă la randare, ca ErrorBoundary-ul să se poată proba pe build. */
@@ -71,15 +86,18 @@ const incarcaDialogExport = () => import('../ui/DialogExport.tsx');
 const incarcaDialogImport = () => import('../ui/DialogImport.tsx');
 const DialogExport = lazy(() => incarcaDialogExport().then((m) => ({ default: m.DialogExport }), () => ({ default: DialogNeincarcat })));
 const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.DialogImport }), () => ({ default: DialogNeincarcat })));
+/** Paleta de comenzi și panoul de proprietăți vin tot la cerere (prototipul B): nu intră în pachetul de pornire. */
+const incarcaPaleta = () => import('../ui/Paleta.tsx');
+const incarcaProprietati = () => import('./PanouProprietati.tsx');
+const Paleta = lazy(() => incarcaPaleta().then((m) => ({ default: m.Paleta }), () => ({ default: DialogNeincarcat })));
+// Panoul care nu se poate aduce rămâne gol: e doar de citit, iar selecția se vede și în listă și în bara de jos.
+const PanouProprietati = lazy(() => incarcaProprietati().then((m) => ({ default: m.PanouProprietati }), () => ({ default: () => null })));
 
 /** Foaia documentului nou: bucata minimă a plăcii 1. */
 const FOAIA_IMPLICITA = { latime: 300, inaltime: 200, grosime: 18 };
 
-/** Acțiunile din bară, în ordine; toate trec prin registru. */
-const BARA = [
-  'document.adauga-dreptunghi', 'document.adauga-cerc', 'document.duplica-selectia', 'document.sterge-selectia',
-  'istoric.anuleaza', 'istoric.reface',
-] as const;
+/** Temele, în ordinea în care le trece butonul: după sistem, luminoasă, întunecată. */
+const TEME = ['auto', 'luminoasa', 'intunecata'] as const;
 
 const doua = (x: number): string => x.toFixed(2);
 
@@ -123,7 +141,7 @@ function mesajProiect(mod: ModFila, p: ProiectDeschis, motivNecitit: string): st
   return null;
 }
 
-export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) {
+export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect, aranjament = ARANJAMENT_MODERN }: Props) {
   const limbaActiva = useLimba();
   const intrari = useSyncExternalStore(jurnal.asculta, () => jurnal.citeste().length);
   const docPornire = useMemo(
@@ -142,6 +160,22 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
   const curenta = useRef({ istoric, selectie });
   curenta.current = { istoric, selectie };
 
+  const [paleta, setPaleta] = useState(false);
+  /**
+   * Panourile deschise. Pe ecran îngust, proprietățile (doar de citit până la 2.8) pornesc închise: pânza are întâi
+   * nevoie de loc. Nu se țin minte după reîncărcare (aranjamentul salvat vine mai târziu, `aranjament.ts`).
+   */
+  const [panouri, setPanouri] = useState<Readonly<Record<IdPanou, boolean>>>(() => ({
+    lista: true, proprietati: matchMedia('(min-width: 64rem)').matches,
+  }));
+  const comutaPanou = (p: IdPanou): void => { setPanouri((s) => ({ ...s, [p]: !s[p] })); };
+  /** Cursorul pe foaie și scara vederii, pentru cipurile de jos: se schimbă des, deci doar cipul lor se redesenează. */
+  const [cursor] = useState(() => semnal<PunctFoaie | null>(null));
+  const [scara] = useState(() => semnal<number | null>(null));
+  const [tema, setTema] = useState(() => TEME.find((x) => x === document.documentElement.dataset['tema']) ?? 'auto');
+  const [potrivire, setPotrivire] = useState(0);
+  /** Zona pânzei pe care n-o acoperă barele și panourile: foaia se potrivește în ea. */
+  const zona = useRef<HTMLDivElement>(null);
   const [dialogExport, setDialogExport] = useState(false);
   const [stareExport, setStareExport] = useState<StareExport | null>(null);
   /**
@@ -210,6 +244,20 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
   const registru = useMemo(() => creeazaRegistru(ACTIUNI_DOCUMENT, () => true), []);
   const registruExport = useMemo(() => creeazaRegistru(ACTIUNI_EXPORT, () => true), []);
   const registruImport = useMemo(() => creeazaRegistru(ACTIUNI_IMPORT, () => true), []);
+  const registruVedere = useMemo(() => creeazaRegistru(ACTIUNI_VEDERE, () => true), []);
+  /** Unde era focusul când s-a deschis paleta: acolo se întoarce la închidere. */
+  const focusPaleta = useRef<Element | null>(null);
+  const contextVedere: ContextVedere = {
+    paleta: () => { focusPaleta.current = document.activeElement; setPaleta(true); },
+    lista: () => { comutaPanou('lista'); },
+    proprietati: () => { comutaPanou('proprietati'); },
+    potriveste: () => { setPotrivire((n) => n + 1); },
+    tema: () => {
+      const noua = TEME[(TEME.indexOf(tema) + 1) % TEME.length] ?? 'auto';
+      setTema(noua);
+      alegeTema(noua);
+    },
+  };
   const contextExport = (p?: ParametriExport, cerere = cerereExport.current): ContextExport => ({
     document: () => curenta.current.istoric.doc,
     parametri: () => p ?? { origine: 'stanga-jos', z0: 'sus' },
@@ -240,16 +288,18 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
       else peInstanta.set(e.instanta, [e]);
     }
     const piese = new Map(doc.piese.map((p) => [p.id, p]));
-    const nume = new Map((doc.foi[0]?.instante ?? []).map((i) => [i.id, piese.get(i.piesa)?.nume]));
-    return { peInstanta, nume, dupaIdLume: new Map(lume.map((e) => [e.idLume, e])) };
+    const piesaInstantei = new Map((doc.foi[0]?.instante ?? []).map((i) => [i.id, piese.get(i.piesa)]));
+    const nume = new Map([...piesaInstantei].map(([i, p]) => [i, p?.nume]));
+    return { peInstanta, nume, piesaInstantei, dupaIdLume: new Map(lume.map((e) => [e.idLume, e])) };
   }, [lume, doc]);
   // Selecția ține instanțe; doar cele care există încă se arată (o anulare le poate scoate de pe foaie).
   const selectieValida = useMemo(() => selectie.filter((id) => harti.nume.has(id)), [selectie, harti]);
-  // Pânza primește elementele în lume ale instanțelor alese.
-  const selectieDesen = useMemo(
-    () => selectieValida.flatMap((id) => (harti.peInstanta.get(id) ?? []).map((e) => e.idLume)),
-    [selectieValida, harti],
-  );
+  // Pânza primește elementele în lume ale instanțelor alese, și cutia lor (bara selecției stă lângă ea).
+  const [selectieDesen, cutieSelectie] = useMemo(() => {
+    const elemente = selectieValida.flatMap((id) => harti.peInstanta.get(id) ?? []);
+    const cutie = elemente.reduce((c, e) => uneste(c, cutieElement(e)), CUTIE_GOALA);
+    return [elemente.map((e) => e.idLume), elemente.length > 0 ? cutie : null] as const;
+  }, [selectieValida, harti]);
 
   // Salvarea: fiecare document nou (după o comandă, o anulare sau o refacere) pleacă în IndexedDB, doar din fila care scrie.
   useEffect(() => {
@@ -284,6 +334,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
     const id = setTimeout(() => {
       void incarcaDialogExport().catch(() => undefined);
       void incarcaDialogImport().catch(() => undefined);
+      void incarcaPaleta().catch(() => undefined);
+      void incarcaProprietati().catch(() => undefined);
+      void incarcaNivelPiesa().catch(() => undefined);
       preincarcaImport();
     }, 1_000);
     return () => { clearTimeout(id); };
@@ -296,25 +349,43 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
    */
   const dialogDeschis = useRef(false);
   dialogDeschis.current = dialogExport || dialogImport !== null;
+  /** Un dialog sau paleta: aplicația de sub ele e inertă. */
+  const modal = dialogDeschis.current || paleta;
   const ruleazaDocument = (id: string, ctx: ContextDocument): void => {
     if (dialogDeschis.current) return;
     ruleaza(registru, id, ctx);
   };
 
+  /** Contextul importului înainte de alegerea fișierului: doar starea butonului (fila care doar citește îl oprește). */
+  const importFaraFisier = (): ContextImport => contextImport(null, 96, () => undefined);
+  /** Starea oricărei acțiuni din bare și din paletă, citită din registrul ei. */
+  const stareActiune = (id: string): RezultatActiune => (
+    id === 'import.svg' ? stare(registruImport, id, importFaraFisier())
+      : id === 'export.gcode' ? stare(registruExport, id, contextExport())
+        : registruVedere.actiuni.has(id) ? stare(registruVedere, id, contextVedere) : stare(registru, id, context()));
+  const eticheta = (id: string): CheieSimpla => (registru.actiuni.get(id) ?? registruImport.actiuni.get(id)
+    ?? registruExport.actiuni.get(id) ?? registruVedere.actiuni.get(id))?.eticheta ?? 'motiv.actiune-necunoscuta';
+  /**
+   * O acțiune aleasă din bară, din bara selecției, din paletă sau de la tastatură. Importul cere întâi fișierul, iar
+   * exportul își deschide dialogul (ca butoanele de până acum); restul rulează prin registrul lor. Cât e deschis un
+   * dialog, nimic nu rulează.
+   */
+  const executa = (id: string): void => {
+    if (dialogDeschis.current || !stareActiune(id).ok) return;
+    if (id === 'import.svg') fisierImport.current?.click();
+    else if (id === 'export.gcode') { setStareExport(null); setDialogExport(true); }
+    else if (registruVedere.actiuni.has(id)) ruleaza(registruVedere, id, contextVedere);
+    else ruleazaDocument(id, context());
+  };
+
   useEffect(() => {
     const tasta = (e: KeyboardEvent): void => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      const ctrl = e.ctrlKey || e.metaKey;
-      const k = e.key.toLowerCase();
-      const id = e.key === 'Delete' ? 'document.sterge-selectia'
-        : ctrl && k === 'z' && !e.shiftKey ? 'istoric.anuleaza'
-          : ctrl && (k === 'y' || (k === 'z' && e.shiftKey)) ? 'istoric.reface'
-            : ctrl && k === 'd' && !e.shiftKey ? 'document.duplica-selectia'
-              : null;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+      const id = actiuneaTastei(tastaApasata(e));
       if (!id) return;
-      // Ctrl+D ar pune altfel pagina la favorite.
+      // Ctrl+D ar pune altfel pagina la favorite, iar Ctrl+K ar căuta în bara browserului.
       e.preventDefault();
-      ruleazaDocument(id, context());
+      if (!paleta) executa(id);
     };
     window.addEventListener('keydown', tasta);
     return () => { window.removeEventListener('keydown', tasta); };
@@ -339,12 +410,18 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
     else avertInstanta.set(a.instanta, [text]);
   }
   const alese = new Set(selectieValida);
+  // Arborele proiectului (ADR 0024): sub fiecare instanță, piesa ei (câte forme) și operațiile ei, direct din document.
   const randuri: RandLista[] = (foaie?.instante ?? []).map((i) => ({
     id: i.id,
     descriere: descriereInstanta(elementeInstanta(i.id), numePiesa(i.id)),
     avertisment: avertInstanta.get(i.id)?.join('\n') ?? null,
     selectat: alese.has(i.id),
+    elemente: elementeInstanta(i.id).length,
+    operatii: harti.piesaInstantei.get(i.id)?.operatii ?? [],
   }));
+  const stoc = foaie?.stoc ?? FOAIA_IMPLICITA;
+  // Rădăcina arborelui: foaia, cu mărimile exacte din document (cu punct, ca descrierile formelor).
+  const radacinaArbore = t('arbore.foaia', { nume: foaie?.nume ?? '1', latime: stoc.latime, inaltime: stoc.inaltime, grosime: stoc.grosime });
   const mesaj = mesajProiect(mod, proiect, motivNecitit);
 
   /**
@@ -476,13 +553,68 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
     setDialogImport(null);
   };
 
-  return (
-    <>
-      {/* Sub dialog, aplicația e inertă: nici Tab, nici clicul nu mai ajung la bară sau la pânză. */}
-      <div className="aplicatie" inert={dialogExport || dialogImport !== null}>
-        <header>
-          <h1>{t('app.titlu')}</h1>
-          <span data-testid="instanta" className="instanta">{t('app.instanta', { nume: instanta })}</span>
+  /**
+   * Un buton al unei acțiuni, cu iconița ei (din CSS, după `data-icona`), numele (ascuns vizual unde iconița ajunge) și un
+   * sfat la trecerea cu mausul: numele și scurtătura, sau motivul pentru care acțiunea e inactivă. Sfatul e `aria-hidden`
+   * (numele accesibil rămâne eticheta), iar motivul rămâne și în `title`, ca până acum.
+   */
+  const buton = (
+    id: string, atribut: 'data-actiune' | 'data-context',
+    extra?: ButtonHTMLAttributes<HTMLButtonElement> & { readonly 'data-icona'?: string }, text = t(eticheta(id)),
+  ) => {
+    const s = stareActiune(id);
+    const k = tastaActiunii(id);
+    return (
+      <button key={id} type="button" disabled={!s.ok} title={s.ok ? undefined : t(s.motiv)} {...{ [atribut]: id }} data-icona={id}
+        onClick={() => { executa(id); }} {...extra}>
+        <span className="eticheta">{text}</span>
+        <span className="sfat" aria-hidden="true">{text}{s.ok ? k && <kbd>{k}</kbd> : `: ${t(s.motiv)}`}</span>
+      </button>
+    );
+  };
+
+  /*
+   * Randarea după aranjament (`aranjament.ts`): barele, panourile, cipurile și bara selecției vin din date. Aici stă doar
+   * cum arată fiecare fel de intrare; ce stă unde, decide aranjamentul.
+   */
+
+  /** Panoul pe care îl strânge și îl deschide o acțiune a vederii, dacă e una dintre ele. */
+  const panouAl = (id: string): IdPanou | undefined => PANOURI.find((p) => COMUTA_PANOU[p] === id);
+
+  /**
+   * O unealtă: butonul acțiunii ei, cu aspectul cerut. Bara selecției își poartă uneltele cu `data-context`, ca
+   * localizatorii `data-actiune` să rămână unici pe pagină. Un comutator de panou arată, apăsat, că panoul e deschis.
+   */
+  const unealta = (u: Unealta, zona: IdZona): ReactNode => {
+    const id = u.actiune;
+    const atribut = zona === 'selectie' ? 'data-context' : 'data-actiune';
+    if (u.aspect === 'cauta') {
+      const s = stareActiune(id);
+      const k = tastaActiunii(id);
+      return (
+        <button type="button" className="cauta" disabled={!s.ok} title={s.ok ? undefined : t(s.motiv)} {...{ [atribut]: id }}
+          data-icona={id} onClick={() => { executa(id); }}>
+          <span className="eticheta">{t(eticheta(id))}</span>
+          {k && <kbd aria-hidden="true">{k.replace(/\+/g, ' ')}</kbd>}
+        </button>
+      );
+    }
+    const clase = [
+      u.aspect === 'eticheta' || u.aspect === 'principal' ? 'cu-eticheta' : '',
+      u.aspect === 'principal' ? 'principal' : '',
+      zona === 'jos' ? 'cip-buton' : '',
+    ].filter((c) => c !== '').join(' ');
+    const extra = clase === '' ? {} : { className: clase };
+    if (id === 'vedere.tema') return buton(id, atribut, { ...extra, 'data-icona': `tema.${tema}` }, `${t('vedere.tema')}: ${t(`tema.${tema}`)}`);
+    const p = panouAl(id);
+    return buton(id, atribut, p ? { ...extra, 'aria-pressed': panouri[p] } : extra);
+  };
+
+  /** Un control care nu e acțiune: limba, ca butoane apăsate / neapăsate. */
+  const control = (c: IdControl): ReactNode => {
+    switch (c) {
+      case 'limba':
+        return (
           <nav aria-label={t('app.limba')}>
             {LIMBI.map((l) => (
               <button key={l} type="button" aria-pressed={l === limbaActiva} onClick={() => { alegeLimba(l); }}>
@@ -490,78 +622,148 @@ export function App({ config, jurnal, diagnostic, alegeLimba, proiect }: Props) 
               </button>
             ))}
           </nav>
-        </header>
-        <div className="bara" role="toolbar" aria-label={t('bara.actiuni')}>
-          {BARA.map((id) => {
-            const s = stare(registru, id, context());
-            const a = registru.actiuni.get(id);
-            if (!a) return null;
-            return (
-              <button key={id} type="button" disabled={!s.ok} title={s.ok ? undefined : t(s.motiv)} data-actiune={id}
-                onClick={() => { ruleazaDocument(id, context()); }}>
-                {t(a.eticheta)}
-              </button>
-            );
-          })}
-          {(() => {
-            const s = stare(registruImport, 'import.svg', contextImport(null, 96, () => undefined));
-            return (
-              <>
-                <button type="button" disabled={!s.ok} title={s.ok ? undefined : t(s.motiv)} data-actiune="import.svg"
-                  onClick={() => { fisierImport.current?.click(); }}>
-                  {t('actiune.importa-svg')}
-                </button>
-                <input ref={fisierImport} type="file" accept=".svg,image/svg+xml" hidden data-camp="fisier-svg"
-                  onChange={(e) => { alesFisier(e.target.files); e.target.value = ''; }} />
-              </>
-            );
-          })()}
-          {(() => {
-            const s = stare(registruExport, 'export.gcode', contextExport());
-            return (
-              <button type="button" disabled={!s.ok} title={s.ok ? undefined : t(s.motiv)} data-actiune="export.gcode"
-                onClick={() => { setStareExport(null); setDialogExport(true); }}>
-                {t('actiune.exporta-gcode')}
-              </button>
-            );
-          })()}
-        </div>
-        {!config.ok && <p role="status" className="avertisment">{t('eroare.config', { motiv: config.motiv })}</p>}
-        <div className="lucru">
-          <Panza
-            forme={forme}
-            foaie={foaie?.stoc ?? FOAIA_IMPLICITA}
-            selectie={selectieDesen}
-            onClic={(x, y, toleranta) => { ruleazaDocument('selectie.la-punct', context({ punct: () => ({ x, y, toleranta }) })); }}
-            onMutare={(dx, dy) => { ruleazaDocument('document.muta-selectia', context({ deplasare: () => ({ dx, dy }) })); }}
-          />
+        );
+    }
+  };
+
+  /** Un cip de stare; unul fără nimic de spus (niciun avertisment, configurația citită) nu se arată. */
+  const cip = (c: IdCip): ReactNode => {
+    switch (c) {
+      case 'selectie': {
+        const text = selectata ? t('stare.selectie', { descriere: descriereInstanta(elementeInstanta(selectata), numePiesa(selectata)) }) : t('stare.nimic-selectat');
+        return <span data-testid="selectie" className="cip cip-selectie" title={text}>{text}</span>;
+      }
+      case 'avertisment': {
+        if (avert.length === 0) return null;
+        // Un singur rând, oricâte avertismente: bara nu crește peste pânză. Lista întreagă stă în titlu și, cu roșu, în
+        // lista de vectori.
+        const texte = avert.map((a) => t('avertisment.iese-din-foaie', { descriere: descriereLume(a.id) }));
+        return (
+          <span className="cip cip-rosu avertisment-bara" data-testid="avertisment" title={texte.join('\n')}>
+            {texte.length === 1 ? texte[0] : t('avertisment.forme-ies-din-foaie', { n: texte.length })}
+          </span>
+        );
+      }
+      case 'proiect':
+        return (mesaj ?? eroareSalvare) === null ? null : (
+          <span className="cip cip-atentie" data-testid="proiect" role="status">
+            {mesaj ?? t('depozit.eroare', { motiv: eroareSalvare ?? '' })}
+          </span>
+        );
+      case 'config':
+        return config.ok ? null : <p role="status" className="cip cip-atentie avertisment">{t('eroare.config', { motiv: config.motiv })}</p>;
+      case 'cursor':
+        return <CipCursor cursor={cursor} />;
+      case 'zoom':
+        return <CipZoom scara={scara} />;
+      case 'jurnal':
+        return <span data-testid="jurnal" className={intrari > 0 ? 'cip cip-rosu' : 'cip'}>{t('jurnal.intrari', { n: intrari })}</span>;
+    }
+  };
+
+  const intrare = (x: Intrare, zona: IdZona): ReactNode => ('actiune' in x ? unealta(x, zona) : 'control' in x ? control(x.control) : cip(x.cip));
+
+  /** Grupurile unei zone, în ordinea aranjamentului. */
+  const grupuri = (zona: IdZona): ReactNode => aranjament.zone[zona].map((g) => (
+    <div key={g.id} className="grup" data-grup={g.id}>
+      {g.intrari.map((x) => <Fragment key={cheieIntrare(x)}>{intrare(x, zona)}</Fragment>)}
+    </div>
+  ));
+
+  /** Ce arată un panou deschis. */
+  const continutPanou = (p: IdPanou): ReactNode => {
+    switch (p) {
+      case 'lista':
+        return (
           <ListaVectori
+            foaie={radacinaArbore}
             randuri={randuri}
             onAlege={(id) => { ruleazaDocument('selectie.din-lista', context({ alese: () => [id] })); }}
           />
+        );
+      case 'proprietati':
+        return <Suspense fallback={null}><PanouProprietati doc={doc} alese={selectieValida} elemente={selectieDesen.length} cutie={cutieSelectie} /></Suspense>;
+    }
+  };
+
+  /** Un panou: insula lui, cu butonul care îl strânge în colț. Strâns, rămâne doar butonul. */
+  const panou = (p: IdPanou): ReactNode => (
+    <section key={p} className="insula panou" data-panou={p} data-deschis={panouri[p]}>
+      {buton(COMUTA_PANOU[p], 'data-actiune', { 'aria-expanded': panouri[p] })}
+      {panouri[p] && continutPanou(p)}
+    </section>
+  );
+  const deschise = (d: 'stanga' | 'dreapta'): boolean => aranjament.docuri[d].some((p) => panouri[p]);
+
+  return (
+    <>
+      {/*
+        Sub dialog (și sub paletă), aplicația e inertă: nici Tab, nici clicul nu mai ajung la bare sau la pânză. Pânza ține
+        tot ecranul; barele, panourile și cipurile plutesc deasupra ei, într-o grilă care lasă clicul să treacă prin golurile
+        ei (`pointer-events`). Zona liberă din mijloc e locul în care se potrivește foaia.
+      */}
+      <div className="aplicatie" inert={modal} data-aranjament={aranjament.id} data-stanga={deschise('stanga')} data-dreapta={deschise('dreapta')}>
+        <header className="sus">
+          <div className="insula marca">
+            <h1>{t('app.titlu')}</h1>
+            <span data-testid="instanta" className="instanta">{t('app.instanta', { nume: instanta })}</span>
+          </div>
+          <div className="insula bara" role="toolbar" aria-label={t('bara.actiuni')}>
+            {grupuri('sus')}
+          </div>
+          {aranjament.zone.unelte.length > 0 && <div className="insula unelte">{grupuri('unelte')}</div>}
+        </header>
+        {/* Fereastra de fișiere a importului: în afara barelor, ca importul să meargă din orice aranjament (și din paletă). */}
+        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml" hidden data-camp="fisier-svg"
+          onChange={(e) => { alesFisier(e.target.files); e.target.value = ''; }} />
+        <div className="lucru">
+          <Panza
+            forme={forme}
+            foaie={stoc}
+            selectie={selectieDesen}
+            onClic={(x, y, toleranta) => { ruleazaDocument('selectie.la-punct', context({ punct: () => ({ x, y, toleranta }) })); }}
+            onMutare={(dx, dy) => { ruleazaDocument('document.muta-selectia', context({ deplasare: () => ({ dx, dy }) })); }}
+            zona={zona}
+            potrivire={potrivire}
+            cutie={cutieSelectie}
+            onCursor={cursor.scrie}
+            onScara={scara.scrie}
+          >
+            {/*
+              Bara se montează din nou când apare o selecție și când se închide un dialog sau paleta (cheia): de fiecare
+              dată reia garda de 0,3 s din CSS (`apare`), în care clicul trece prin ea. Între timp își păstrează focusul
+              (Duplică apăsat de la tastatură nu-l pierde).
+            */}
+            {selectieValida.length > 0 && aranjament.zone.selectie.length > 0 && (
+              <div key={String(modal)} className="insula" role="toolbar" aria-label={t('bara.selectie')}>
+                {grupuri('selectie')}
+              </div>
+            )}
+          </Panza>
         </div>
-        <footer>
-          <span data-testid="selectie">
-            {selectata ? t('stare.selectie', { descriere: descriereInstanta(elementeInstanta(selectata), numePiesa(selectata)) }) : t('stare.nimic-selectat')}
-          </span>
-          {avert.length > 0 && (() => {
-            // Un singur rând, oricâte avertismente: bara nu crește peste pânză. Lista întreagă stă în titlu și, cu roșu, în
-            // lista de vectori.
-            const toate = avert.map((a) => t('avertisment.iese-din-foaie', { descriere: descriereLume(a.id) }));
-            return (
-              <span className="avertisment-bara" data-testid="avertisment" title={toate.join('\n')}>
-                {toate.length === 1 ? toate[0] : t('avertisment.forme-ies-din-foaie', { n: toate.length })}
-              </span>
-            );
-          })()}
-          {(mesaj ?? eroareSalvare) !== null && (
-            <span className="avertisment-bara" data-testid="proiect" role="status">
-              {mesaj ?? t('depozit.eroare', { motiv: eroareSalvare ?? '' })}
-            </span>
-          )}
-          <span data-testid="jurnal">{t('jurnal.intrari', { n: intrari })}</span>
-        </footer>
+        <div className="doc doc-stanga">{aranjament.docuri.stanga.map(panou)}</div>
+        <div className="zona-libera" ref={zona} aria-hidden="true" />
+        <div className="doc doc-dreapta">{aranjament.docuri.dreapta.map(panou)}</div>
+        <footer className="jos">{grupuri('jos')}</footer>
       </div>
+      {paleta && (
+        <Suspense fallback={null}>
+          <Paleta
+            tasta={tastaActiunii}
+            elemente={[
+              ...toate(registruImport, importFaraFisier()), ...toate(registruExport, contextExport()),
+              ...toate(registru, context()), ...toate(registruVedere, contextVedere),
+            ]}
+            onAlege={(id) => {
+              setPaleta(false);
+              // După închidere: aplicația nu mai e inertă, iar fereastra de fișiere a importului se poate deschide.
+              setTimeout(() => { executa(id); }, 0);
+            }}
+            onInchide={() => { setPaleta(false); }}
+            focusInapoi={focusPaleta.current}
+          />
+        </Suspense>
+      )}
       <Suspense fallback={null}>
       {dialogExport && exportFoaie && (
         <DialogExport

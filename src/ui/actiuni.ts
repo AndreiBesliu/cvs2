@@ -41,6 +41,11 @@ export function stare<C>(r: Registru<C>, id: string, ctx: C): RezultatActiune {
   return activa === true ? { ok: true } : { ok: false, motiv: activa };
 }
 
+/** Vederea paletei de comenzi: fiecare acțiune a registrului, în ordinea lui, cu eticheta și starea ei de acum. */
+export function toate<C>(r: Registru<C>, ctx: C): Array<{ readonly id: string; readonly eticheta: CheieSimpla; readonly stare: RezultatActiune }> {
+  return [...r.actiuni.values()].map((a) => ({ id: a.id, eticheta: a.eticheta, stare: stare(r, a.id, ctx) }));
+}
+
 /** Rulează acțiunea doar dacă e permisă și activă; altfel întoarce motivul, fără efect. */
 export function ruleaza<C>(r: Registru<C>, id: string, ctx: C): RezultatActiune {
   const s = stare(r, id, ctx);

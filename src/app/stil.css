@@ -1,70 +1,165 @@
+/*
+ * Carcasa „pânza întâi” (prototipul B, șablonul modern din 2.8a). Pânza ține tot ecranul; barele, panourile și cipurile
+ * plutesc deasupra ei, așezate după aranjament (`src/ui/aranjament.ts`).
+ *
+ * Tokenurile sunt semantice și au două teme, luminoasă și întunecată, la fel de îngrijite:
+ * - suprafețe: --s-panou (tot ce plutește), --s-camp (câmpuri), --fond (sub dialoguri);
+ * - text: --t, pe suprafața panoului; textul secundar, fundalurile de stare și marginile se DERIVĂ din el și din
+ *   suprafață (color-mix), deci rămân lizibile pe orice suprafață care își redefinește perechea;
+ * - accent: --a (text și contur, ≥ 4,5:1 pe panou), --a-plin cu --t-pe-a (butonul principal);
+ * - --rosu (avertismente, citit și de e2e), --l-focus (inelul de focus), --l-camp (marginea câmpurilor, ≥ 3:1);
+ * - pânza: --panza-* în hex literal (workerul și e2e-ul le citesc ca atare; o temă nouă cere un desen nou, vezi Panza).
+ * Contrastele (WCAG): text ≥ 4,5:1 în ambele teme, marginile câmpurilor ≥ 3:1; măsurate în nota prototipului
+ * (PROTOTIP.md, pe ramura prototip/ui-b).
+ */
 :root {
-  color-scheme: light dark;
-  --fundal: #f6f4ef;
-  --text: #1d232b;
-  --text-slab: #5a6470;
-  --accent: #b86b0e;
-  --margine: #d8d3c8;
-  --panza-fundal: #e9e6df;
+  color-scheme: light;
+  --panza-fundal: #e3e1db;
   --panza-foaie: #fbfaf7;
   --panza-linie: #1d232b;
   --panza-selectie: #c25e00;
+  --s-panou: #ffffff;
+  --t: #1d232b;
+  --a: #a64d00;
+  --a-plin: #a64d00;
+  --t-pe-a: #ffffff;
   --rosu: #b3261e;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
+  --l-focus: #0b5cd5;
+  --l-camp: #868b93;
+  --fond: rgb(20 24 29 / 0.4);
+  --umbra-1: 0 1px 2px rgb(16 20 24 / 0.1), 0 2px 10px rgb(16 20 24 / 0.08);
+  --umbra-2: 0 12px 48px rgb(16 20 24 / 0.28);
 }
 
+/* Tema întunecată: după sistem (dacă omul n-a ales luminoasa) sau aleasă. Același bloc, de două ori. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --fundal: #161a1f;
-    --text: #e8e4dc;
-    --text-slab: #a3abb5;
-    --accent: #f2a33a;
-    --margine: #333a43;
-    --panza-fundal: #0f1215;
-    --panza-foaie: #1c2127;
+  :root:not([data-tema='luminoasa']) {
+    color-scheme: dark;
+    --panza-fundal: #0e1114;
+    --panza-foaie: #1b2027;
     --panza-linie: #e8e4dc;
     --panza-selectie: #f2a33a;
+    --s-panou: #1e2329;
+    --t: #e8e4dc;
+    --a: #f2a33a;
+    --a-plin: #f2a33a;
+    --t-pe-a: #1a1206;
     --rosu: #ff8a80;
+    --l-focus: #7cb2ff;
+    --l-camp: #737b86;
+    --fond: rgb(0 0 0 / 0.55);
+    --umbra-1: 0 1px 2px rgb(0 0 0 / 0.5), 0 2px 12px rgb(0 0 0 / 0.35);
+    --umbra-2: 0 12px 48px rgb(0 0 0 / 0.6);
+  }
+}
+
+:root[data-tema='intunecata'] {
+  color-scheme: dark;
+  --panza-fundal: #0e1114;
+  --panza-foaie: #1b2027;
+  --panza-linie: #e8e4dc;
+  --panza-selectie: #f2a33a;
+  --s-panou: #1e2329;
+  --t: #e8e4dc;
+  --a: #f2a33a;
+  --a-plin: #f2a33a;
+  --t-pe-a: #1a1206;
+  --rosu: #ff8a80;
+  --l-focus: #7cb2ff;
+  --l-camp: #737b86;
+  --fond: rgb(0 0 0 / 0.55);
+  --umbra-1: 0 1px 2px rgb(0 0 0 / 0.5), 0 2px 12px rgb(0 0 0 / 0.35);
+  --umbra-2: 0 12px 48px rgb(0 0 0 / 0.6);
+}
+
+/* Derivatele (aceleași în ambele teme) și scările. */
+:root {
+  --t-slab: color-mix(in oklab, var(--t) 68%, var(--s-panou));
+  --s-peste: color-mix(in oklab, var(--t) 7%, var(--s-panou));
+  --s-ales: color-mix(in oklab, var(--a) 16%, var(--s-panou));
+  --s-rosu: color-mix(in oklab, var(--rosu) 12%, var(--s-panou));
+  --s-atentie: color-mix(in oklab, var(--a) 14%, var(--s-panou));
+  --l-margine: color-mix(in oklab, var(--t) 13%, var(--s-panou));
+  --s-camp: var(--s-panou);
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --r-1: 6px;
+  --r-2: 10px;
+  --r-3: 14px;
+  --fs-1: 0.75rem;
+  --fs-2: 0.8125rem;
+  --fs-3: 0.875rem;
+  --fs-4: 1rem;
+  /* Ținta minimă a unui buton: 36 px cu mausul, 44 px la atingere. */
+  --tinta: 36px;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-family: var(--font);
+  line-height: 1.45;
+}
+
+@media (pointer: coarse) {
+  :root {
+    --tinta: 44px;
   }
 }
 
 body {
   margin: 0;
-  background: var(--fundal);
-  color: var(--text);
+  background: var(--panza-fundal);
+  color: var(--t);
 }
 
-main {
-  max-width: 48rem;
-  margin: 0 auto;
-  padding: 1.5rem 1rem;
+/* Aplicația ține fereastra; ecranul de eroare (fără aplicație) se derulează normal. */
+body:has(.aplicatie) {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
-/* Coloană flex: pânza ia tot ce rămâne, oricâte rânduri ar apărea deasupra ei (avertismentul e opțional). */
-.aplicatie {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+:focus-visible {
+  outline: 2px solid var(--l-focus);
+  outline-offset: 2px;
 }
 
-.aplicatie > header {
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid var(--margine);
+/* Fără mișcare: tranzițiile dispar; întârzierea barei selecției rămâne (e o gardă, nu o animație), fără estompare. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+
+  .bara-selectie > .insula {
+    animation-duration: 0.01s;
+  }
 }
 
-.aplicatie .instanta {
-  color: var(--text-slab);
-  font-size: 0.9rem;
-  margin-right: auto;
+/* ── Componentele de bază ─────────────────────────────────────────────────────────────────────────────────────── */
+
+button {
+  font: inherit;
+  font-size: var(--fs-3);
+  color: var(--t);
+  min-height: var(--tinta);
+  min-width: var(--tinta);
+  padding: 0 var(--sp-3);
+  border: 1px solid transparent;
+  border-radius: var(--r-1);
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
 }
 
-.bara {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid var(--margine);
+button:hover:enabled {
+  background: var(--s-peste);
+}
+
+button:active:enabled {
+  background: var(--s-ales);
 }
 
 button:disabled {
@@ -72,10 +167,124 @@ button:disabled {
   cursor: default;
 }
 
-.panza-cutie {
+button[aria-pressed='true'] {
+  background: var(--s-ales);
+  box-shadow: inset 0 0 0 1px var(--a);
+  font-weight: 600;
+}
+
+kbd {
+  font: var(--fs-1) / 1.2 var(--mono);
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--l-margine);
+  color: var(--t-slab);
+  background: var(--s-panou);
+  white-space: nowrap;
+}
+
+/*
+ * Iconițele: o mască SVG pe ::before, colorată cu culoarea textului (deci cu contrastul lui, în ambele teme). Fără
+ * conținut text, deci numele accesibil rămâne eticheta. Un id fără iconiță nu desenează nimic.
+ */
+[data-icona] {
+  --ic: linear-gradient(transparent, transparent);
   position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
+}
+
+[data-icona]::before {
+  content: '';
+  flex: none;
+  width: 20px;
+  height: 20px;
+  background: currentColor;
+  mask: var(--ic) center / 20px 20px no-repeat;
+}
+
+/* Eticheta unui buton cu iconiță: ascunsă vizual (citită de cititoarele de ecran); importul și exportul o arată. */
+[data-icona] > .eticheta {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Inactiv: iconița și eticheta se sting, sfatul (cu motivul) rămâne lizibil. */
+button[data-icona]:disabled {
+  opacity: 1;
+}
+
+button[data-icona]:disabled::before,
+button[data-icona]:disabled > .eticheta {
+  opacity: 0.4;
+}
+
+/*
+ * Sfatul: numele și scurtătura, sau motivul inactivității, la trecerea cu mausul sau la focusul de la tastatură. Pe
+ * suprafața inversă (textul și suprafața schimbă locul). Nu primește clicuri: nu acoperă niciodată pânza sau alt buton.
+ */
+.sfat {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  translate: -50% 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 5px 8px;
+  border-radius: var(--r-1);
+  background: var(--t);
+  color: var(--s-panou);
+  font-size: var(--fs-2);
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s, visibility 0.12s;
+}
+
+[data-icona]:hover > .sfat,
+[data-icona]:focus-visible > .sfat {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0.35s;
+}
+
+.sfat kbd {
+  color: inherit;
+  background: transparent;
+  border-color: color-mix(in oklab, var(--s-panou) 40%, var(--t));
+}
+
+/* ── Așezarea: pânza dedesubt, cromul deasupra, într-o grilă transparentă la clic ─────────────────────────────── */
+
+.aplicatie {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template:
+    'sus sus sus' auto
+    'stanga centru dreapta' minmax(0, 1fr)
+    'jos jos jos' auto / auto minmax(0, 1fr) auto;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  pointer-events: none;
+}
+
+.lucru {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: auto;
+}
+
+.panza-cutie {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
 }
 
@@ -88,93 +297,665 @@ button:disabled {
   touch-action: none;
 }
 
-.aplicatie > footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin: 0;
-  padding: 0.4rem 1rem;
-  border-top: 1px solid var(--margine);
+.zona-libera {
+  grid-area: centru;
+  min-width: 0;
+  min-height: 0;
 }
 
-.avertisment {
-  margin: 0;
-  padding: 0.4rem 1rem;
-  color: var(--accent);
+/* Insulele: tot ce plutește (bare, panouri). */
+.insula {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  box-sizing: border-box;
+  background: var(--s-panou);
+  color: var(--t);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+  box-shadow: var(--umbra-1);
 }
 
-header {
+/* Rândul de sus: marca, bara de acțiuni (centrată pe fereastră), uneltele. */
+.sus {
+  grid-area: sus;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas: 'marca bara unelte';
+  align-items: start;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.marca {
+  grid-area: marca;
+  justify-self: start;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: var(--sp-3);
+  min-height: calc(var(--tinta) + 10px);
+  padding: 0 var(--sp-2) 0 var(--sp-4);
+  min-width: 0;
 }
 
 h1 {
-  font-size: 1.5rem;
   margin: 0;
+  font-size: var(--fs-3);
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-button {
-  font: inherit;
-  padding: 0.35rem 0.8rem;
-  border: 1px solid var(--margine);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text);
-  cursor: pointer;
+.instanta {
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--s-peste);
+  white-space: nowrap;
 }
 
-button[aria-pressed='true'] {
-  border-color: var(--accent);
-  color: var(--accent);
+.bara {
+  grid-area: bara;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+}
+
+/*
+ * Grupurile unei bare vin din aranjament (`src/ui/aranjament.ts`). În bara de sus, fiecare grup e un rând de butoane,
+ * despărțit de cel dinainte de o linie subțire; în celelalte zone, grupul nu se vede (copiii lui stau direct în bară).
+ */
+.grup {
+  display: contents;
+}
+
+.bara > .grup {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.bara > .grup + .grup {
+  margin-left: 9px;
+}
+
+.bara > .grup + .grup::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--l-margine);
+}
+
+/* Aspectul unei unelte (din aranjament): cu numele la vedere, sau butonul principal, plin, cu accentul. */
+.cu-eticheta > .eticheta {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+}
+
+/* Cu eticheta la vedere, sfatul apare doar ca să spună de ce butonul e inactiv. */
+.cu-eticheta:enabled > .sfat {
+  display: none;
+}
+
+button.principal:enabled {
+  background: var(--a-plin);
+  color: var(--t-pe-a);
   font-weight: 600;
+}
+
+button.principal:hover:enabled {
+  background: color-mix(in oklab, var(--a-plin) 85%, var(--t));
+}
+
+.unelte {
+  grid-area: unelte;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+}
+
+.unelte .sfat {
+  left: auto;
+  right: 0;
+  translate: none;
+}
+
+.cauta {
+  justify-content: flex-start;
+  min-width: 10rem;
+  padding: 0 6px 0 10px;
+  color: var(--t-slab);
+  border: 1px solid var(--l-margine);
+}
+
+.cauta kbd {
+  margin-left: auto;
+}
+
+.cauta > .eticheta {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
 }
 
 nav {
   display: flex;
-  gap: 0.4rem;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--r-1);
+  background: var(--s-peste);
 }
 
-footer {
-  margin-top: 2rem;
-  color: var(--text-slab);
-  font-size: 0.9rem;
+nav button {
+  min-height: calc(var(--tinta) - 4px);
+  min-width: calc(var(--tinta) - 4px);
+  padding: 0 var(--sp-2);
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--t-slab);
 }
 
-.ecran-eroare .butoane {
+nav button[aria-pressed='true'] {
+  background: var(--s-panou);
+  color: var(--t);
+  box-shadow: var(--umbra-1);
+}
+
+/* ── Panourile laterale: plutesc, se strâng la un singur buton ───────────────────────────────────────────────── */
+
+/*
+ * Docurile: coloana din stânga și cea din dreapta a grilei, cu panourile din aranjament, de sus în jos. Docul însuși e
+ * transparent la clic; doar panourile îl primesc, iar golul de sub ele rămâne al pânzei.
+ */
+.doc {
   display: flex;
-  gap: 0.5rem;
-  margin: 1rem 0;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-width: 0;
+  min-height: 0;
 }
 
-.ecran-eroare textarea {
-  width: 100%;
-  box-sizing: border-box;
-  font-family: ui-monospace, Consolas, monospace;
-  font-size: 0.8rem;
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--margine);
-  border-radius: 6px;
+.doc-stanga {
+  grid-area: stanga;
+  align-items: flex-start;
 }
+
+.doc-dreapta {
+  grid-area: dreapta;
+  align-items: flex-end;
+}
+
+/* Panoul nu se derulează el, ci conținutul lui: butonul care îl strânge rămâne sus, oricât de lungă e lista. */
+.panou {
+  width: 15.5rem;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panou > :not(button) {
+  min-height: 0;
+  overflow: auto;
+}
+
+.panou > button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+}
+
+.panou .sfat {
+  left: auto;
+  right: 0;
+  translate: none;
+}
+
+.panou[data-deschis='false'] {
+  width: auto;
+  padding: 4px;
+  overflow: visible;
+}
+
+.panou[data-deschis='false'] > button {
+  position: relative;
+  top: 0;
+  right: 0;
+}
+
+.doc-stanga .panou[data-deschis='false'] .sfat {
+  left: 0;
+  right: auto;
+}
+
+.panou h2 {
+  margin: 0 0 var(--sp-2);
+  padding: 10px 48px 0 var(--sp-2);
+  min-height: 26px;
+  font-size: var(--fs-1);
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--t-slab);
+}
+
+.lista-vectori {
+  padding: var(--sp-1) var(--sp-2) var(--sp-2);
+}
+
+/*
+ * Arborele proiectului (prototipul A, în tokenurile lui B): rădăcina e foaia; sub ea, rândurile instanțelor, fiecare cu
+ * comutatorul lui (săgeata) și, deschis, piesa și operațiile ei, pe o linie de ghidaj. Liniile de ghidaj și textul
+ * nodurilor sunt derivate din text și suprafață, deci se văd la fel în ambele teme.
+ */
+.lista-vectori .nod {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  padding: 3px var(--sp-2);
+  color: var(--t-slab);
+  font-size: var(--fs-2);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.lista-vectori .nod[data-icona]::before {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  mask-size: 14px 14px;
+}
+
+.lista-vectori .nod-foaie {
+  color: var(--t);
+  font-weight: 600;
+}
+
+.lista-vectori ul {
+  list-style: none;
+  margin: 0 0 0 14px;
+  padding: 0 0 0 var(--sp-1);
+  border-left: 1px solid var(--l-margine);
+  display: grid;
+  gap: 1px;
+}
+
+.lista-vectori li {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: start;
+}
+
+.lista-vectori button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  min-height: 32px;
+  padding: 4px var(--sp-2);
+  font-size: var(--fs-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.lista-vectori .comuta {
+  min-width: 24px;
+  width: 24px;
+  padding: 0;
+  color: var(--t-slab);
+}
+
+.lista-vectori .comuta::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 6 6 6-6 6'/%3E%3C/svg%3E") center / 14px 14px no-repeat;
+}
+
+.lista-vectori .comuta[aria-expanded='true']::before {
+  rotate: 90deg;
+}
+
+.lista-vectori .copii {
+  grid-column: 1 / -1;
+  margin: 0 0 var(--sp-1) 11px;
+  padding-left: var(--sp-1);
+  border-left: 1px solid var(--l-margine);
+}
+
+.lista-vectori .copii-piesa {
+  margin: 0 0 0 14px;
+}
+
+.lista-vectori .nod-foaie + .lista-goala {
+  padding-left: calc(13px + var(--sp-2));
+}
+
+/* Avertismentul apare cu roșu în listă (owner-ul, 07.10); pe pânză, niciodată. */
+.lista-vectori button.cu-avertisment {
+  color: var(--rosu);
+  box-shadow: inset 3px 0 0 var(--rosu);
+}
+
+.lista-vectori button.cu-avertisment[aria-pressed='true'] {
+  box-shadow: inset 3px 0 0 var(--rosu), inset 0 0 0 1px var(--a);
+}
+
+.lista-goala {
+  margin: 0;
+  padding: 2px var(--sp-2) var(--sp-2);
+  color: var(--t-slab);
+  font-size: var(--fs-2);
+}
+
+.proprietati {
+  padding: var(--sp-1) var(--sp-3) var(--sp-3);
+  font-size: var(--fs-2);
+}
+
+.proprietati h2 {
+  padding-left: 0;
+}
+
+.prop-nota {
+  margin: 0 0 var(--sp-3);
+  padding: 6px var(--sp-2);
+  border-radius: var(--r-1);
+  border: 1px dashed var(--a);
+  background: var(--s-atentie);
+  color: var(--t);
+  font-size: var(--fs-1);
+}
+
+.proprietati h3 {
+  margin: var(--sp-3) 0 var(--sp-1);
+  font-size: var(--fs-2);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.proprietati dl {
+  margin: 0;
+}
+
+.prop-rand {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-2);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.prop-rand dt {
+  color: var(--t-slab);
+}
+
+.prop-rand dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.prop-multi {
+  margin: 0 0 var(--sp-2);
+  font-weight: 600;
+}
+
+/* ── Bara selecției: lângă selecție, pe pânză ─────────────────────────────────────────────────────────────────── */
+
+.bara-selectie {
+  position: absolute;
+  translate: -50% 0;
+  z-index: 2;
+}
+
+/*
+ * La fiecare selecție nouă (bara e cheiată pe ea), bara apare abia după 0,3 s; până atunci e `visibility: hidden`, deci
+ * clicul trece prin ea, la pânză. Al doilea clic al unui dublu-clic (de exemplu pe „Importă”, al cărui dialog se închide
+ * la primul) nu apasă un buton apărut sub cursor, cum ar fi Șterge.
+ */
+.bara-selectie > .insula {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--r-2);
+  animation: apare 0.15s ease-out 0.3s backwards;
+}
+
+@keyframes apare {
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* ── Rândul de jos: starea, în cipuri mici ───────────────────────────────────────────────────────────────────── */
+
+.jos {
+  grid-area: jos;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.cip {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  display: inline-block;
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 10px;
+  line-height: 28px;
+  border-radius: 999px;
+  background: var(--s-panou);
+  color: var(--t-slab);
+  border: 1px solid var(--l-margine);
+  box-shadow: var(--umbra-1);
+  font-size: var(--fs-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
+ * Selecția ia ce rămâne din rând, cel mult cât textul ei (restul, cu „…”, stă în titlu). Baza 0 contează: cu baza
+ * textului (lung când nu e nimic selectat), rândul s-ar rupe în două, iar bara de jos ar urca peste foaie.
+ */
+.cip-selectie {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: max-content;
+  margin-right: auto;
+  color: var(--t);
+}
+
+.cip-cursor,
+.cip-zoom {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Cursorul ține o lățime fixă: cipurile de după el nu sar la fiecare mișcare a mausului. */
+.cip-cursor {
+  min-width: 13.5em;
+  text-align: center;
+}
+
+/* Fără vedere încă, zoomul n-are ce spune. */
+.cip-zoom:empty {
+  display: none;
+}
+
+.cip-rosu {
+  color: var(--rosu);
+  background: var(--s-rosu);
+  border-color: color-mix(in oklab, var(--rosu) 40%, var(--s-panou));
+}
+
+/* Fila care doar citește, conflictul, salvarea care n-a mers: se văd, pe fundalul de atenție. */
+.cip-atentie {
+  color: var(--t);
+  background: var(--s-atentie);
+  border-color: var(--a);
+  white-space: normal;
+  line-height: 1.35;
+  padding: 5px 12px;
+  border-radius: var(--r-2);
+}
+
+.jos .cip-buton {
+  pointer-events: auto;
+  z-index: 1;
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: 999px;
+  box-shadow: var(--umbra-1);
+}
+
+.jos .sfat {
+  top: auto;
+  bottom: calc(100% + 8px);
+  left: auto;
+  right: 0;
+  translate: none;
+}
+
+/* ── Ecranele mai înguste ─────────────────────────────────────────────────────────────────────────────────────── */
+
+/* Sub 75rem, bara de acțiuni trece pe al doilea rând: nu mai încape între marcă și unelte. */
+@media (max-width: 75rem) {
+  .sus {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'marca unelte' 'bara bara';
+  }
+
+  .bara {
+    justify-self: start;
+  }
+}
+
+/*
+ * Telefonul: panourile trec jos, sub pânză, unul lângă altul, cu cel mult 30 % din înălțime; strânse, sunt doar două
+ * butoane pe același rând. Bara de acțiuni se poate derula.
+ */
+@media (max-width: 40rem) {
+  .aplicatie {
+    grid-template:
+      'sus sus' auto
+      'centru centru' minmax(0, 1fr)
+      'stanga dreapta' auto
+      'jos jos' auto / minmax(0, 1fr) auto;
+    gap: var(--sp-2);
+    padding: var(--sp-2);
+  }
+
+  .aplicatie[data-dreapta='true'] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .doc {
+    align-self: end;
+    align-items: stretch;
+  }
+
+  .panou {
+    width: auto;
+    max-height: 30vh;
+  }
+
+  .doc-stanga .panou[data-deschis='false'] {
+    align-self: flex-start;
+  }
+
+  .doc-dreapta .panou[data-deschis='false'] {
+    align-self: flex-end;
+  }
+
+  .cip-cursor,
+  .cip-zoom {
+    display: none;
+  }
+
+  .instanta {
+    display: none;
+  }
+
+  .cauta {
+    min-width: 0;
+    padding: 0;
+  }
+
+  .cauta > kbd {
+    display: none;
+  }
+
+  .cauta > .eticheta {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .bara {
+    justify-self: stretch;
+    overflow-x: auto;
+  }
+
+  .bara .cu-eticheta > .eticheta {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .bara .sfat {
+    display: none;
+  }
+}
+
+/* ── Dialogurile (exportul, importul, fereastra care nu s-a putut încărca) ─────────────────────────────────────── */
 
 .dialog {
   position: fixed;
   inset: 0;
+  z-index: 10;
   display: grid;
   place-items: center;
-  background: rgb(0 0 0 / 0.35);
-  z-index: 10;
+  background: var(--fond);
 }
 
 .dialog-cutie {
-  background: var(--fundal);
-  color: var(--text);
-  border: 1px solid var(--margine);
-  border-radius: 10px;
-  padding: 1rem 1.25rem;
+  background: var(--s-panou);
+  color: var(--t);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+  box-shadow: var(--umbra-2);
+  padding: var(--sp-4) var(--sp-5) var(--sp-5);
   /* Lățimea maximă cuprinde și marginea interioară: altfel, pe un telefon, cutia ieșea cu 10 px peste ecran. Cu nouă
      coloane (felia 2.6, Colțuri), 46rem tăia ultima coloană pe desktop; pe telefon, cutia se derulează. */
   box-sizing: border-box;
@@ -183,41 +964,76 @@ footer {
   overflow: auto;
 }
 
+.dialog-cutie:focus {
+  outline: none;
+}
+
 .dialog h2 {
-  margin: 0 0 0.75rem;
-  font-size: 1.15rem;
+  margin: 0 0 var(--sp-4);
+  font-size: 1.0625rem;
+  font-weight: 650;
 }
 
 .dialog .campuri {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
-  margin-bottom: 0.75rem;
+  gap: var(--sp-3) var(--sp-5);
+  margin-bottom: var(--sp-4);
 }
 
 .dialog label {
   display: grid;
-  gap: 0.2rem;
-  font-size: 0.9rem;
+  gap: var(--sp-1);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.dialog input[type='text'],
+.dialog select {
+  font: inherit;
+  font-size: var(--fs-3);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+  box-sizing: border-box;
+  max-width: 9rem;
+}
+
+/* 20 px plus 2 px de jur împrejur: ținta de 24 px (WCAG 2.5.8) fără să umfle rândurile tabelului. */
+.dialog input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  margin: 2px;
+  accent-color: var(--a-plin);
+}
+
+.dialog input:disabled,
+.dialog select:disabled {
+  opacity: 0.55;
 }
 
 .dialog table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 0.9rem;
+  font-size: var(--fs-2);
 }
 
 .dialog th,
 .dialog td {
   text-align: left;
-  padding: 0.3rem 0.4rem;
-  border-bottom: 1px solid var(--margine);
+  padding: 6px var(--sp-2);
+  border-bottom: 1px solid var(--l-margine);
 }
 
-.dialog input,
-.dialog select {
-  font: inherit;
-  max-width: 9rem;
+.dialog th {
+  font-size: var(--fs-1);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--t-slab);
 }
 
 /* Câmpurile urechilor și ale rampei, pe rândul lor de sub operație. */
@@ -232,7 +1048,7 @@ footer {
 .dialog .campuri-intrari {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1rem;
+  gap: var(--sp-2) var(--sp-4);
 }
 
 .dialog tr.detalii input {
@@ -247,46 +1063,58 @@ footer {
 /* Câmpul greșit se vede, nu doar motivul. */
 .dialog input[aria-invalid='true'] {
   border-color: var(--rosu);
+  box-shadow: inset 0 0 0 1px var(--rosu);
 }
 
 .dialog .nota {
-  color: var(--text-slab);
-  font-size: 0.85rem;
+  color: var(--t-slab);
+  font-size: var(--fs-2);
+}
+
+.avertisment {
+  color: var(--a);
 }
 
 .dialog .butoane {
   display: flex;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+.dialog .butoane button {
+  border-color: var(--l-camp);
+  padding: 0 var(--sp-4);
+}
+
+/* Primul buton al dialogului e gestul lui (Exportă, Importă, Reîncarcă): plin, cu accentul. */
+.dialog .butoane button:first-child:not([data-buton='renunta']) {
+  background: var(--a-plin);
+  color: var(--t-pe-a);
+  border-color: var(--a-plin);
+  font-weight: 600;
+}
+
+.dialog .butoane button:first-child:not([data-buton='renunta']):hover:enabled {
+  background: color-mix(in oklab, var(--a-plin) 85%, var(--t));
 }
 
 [data-testid='export-stare'] {
   overflow-wrap: anywhere;
-  font-size: 0.85rem;
-}
-
-/* Avertismentele: în bara de jos, cu roșu, pe un singur rând; niciodată pe pânză (owner-ul, 07.10). */
-.avertisment-bara {
-  color: var(--rosu);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dialog-cutie:focus {
-  outline: none;
+  font-size: var(--fs-2);
 }
 
 .dialog .confirmare-iesire {
-  margin: 0.75rem 0;
-  padding: 0.5rem 0.75rem;
+  margin: var(--sp-3) 0;
+  padding: var(--sp-2) var(--sp-3);
   border: 1px solid var(--rosu);
-  border-radius: 6px;
-  font-size: 0.9rem;
+  border-radius: var(--r-1);
+  background: var(--s-rosu);
+  font-size: var(--fs-3);
 }
 
 .dialog .confirmare-iesire p {
-  margin: 0 0 0.4rem;
+  margin: 0 0 var(--sp-1);
 }
 
 .dialog .confirmare-iesire strong {
@@ -296,75 +1124,248 @@ footer {
 .dialog .confirmare-iesire label {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
+  gap: var(--sp-2);
+  color: var(--t);
 }
 
-/* Pânza și lista de vectori, una lângă alta; pânza ia tot ce rămâne (min-width / min-height 0, altfel nu se strânge). */
-.lucru {
+/* ── Paleta de comenzi (Ctrl+K) ───────────────────────────────────────────────────────────────────────────────── */
+
+.paleta-fond {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  justify-items: center;
+  align-items: start;
+  padding: 12vh var(--sp-3) var(--sp-3);
+  background: var(--fond);
+}
+
+.paleta {
+  position: relative;
   display: flex;
-  flex: 1 1 auto;
-  min-height: 0;
+  flex-direction: column;
+  width: min(36rem, 100%);
+  max-height: 72vh;
+  background: var(--s-panou);
+  color: var(--t);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+  box-shadow: var(--umbra-2);
+  overflow: hidden;
 }
 
-.lucru > .panza-cutie {
-  min-width: 0;
+.paleta[data-icona]::before {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  color: var(--t-slab);
 }
 
-.lista-vectori {
-  flex: 0 0 16rem;
+.paleta input {
+  font: inherit;
+  font-size: var(--fs-4);
+  color: var(--t);
+  background: transparent;
+  min-height: 52px;
+  padding: 0 var(--sp-4) 0 46px;
+  border: 0;
+  border-bottom: 1px solid var(--l-margine);
+}
+
+/* Singurul loc cu focus din paletă: inelul devine o linie sub câmp, la fel de vizibilă. */
+.paleta input:focus-visible {
+  outline: none;
+  box-shadow: inset 0 -2px 0 var(--l-focus);
+}
+
+.paleta-lista {
   overflow: auto;
-  border-left: 1px solid var(--margine);
-  padding: 0.5rem 0.75rem;
-  font-size: 0.9rem;
+  padding: 6px;
 }
 
-.lista-vectori h2 {
-  margin: 0 0 0.4rem;
-  font-size: 0.95rem;
+.paleta-grup {
+  padding: 10px 10px 4px;
+  font-size: var(--fs-1);
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--t-slab);
 }
 
-.lista-vectori ul {
-  list-style: none;
+.paleta-optiune {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  grid-template-areas: 'ic nume tasta' '. motiv tasta';
+  align-items: center;
+  column-gap: 10px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: var(--r-1);
+  cursor: pointer;
+}
+
+.paleta-optiune::before {
+  grid-area: ic;
+}
+
+.paleta-nume {
+  grid-area: nume;
+}
+
+.paleta-motiv {
+  grid-area: motiv;
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+.paleta-optiune > kbd {
+  grid-area: tasta;
+}
+
+.paleta-optiune[aria-selected='true'] {
+  background: var(--s-ales);
+  box-shadow: inset 2px 0 0 var(--a);
+}
+
+.paleta-optiune[aria-disabled='true'] {
+  cursor: default;
+  color: var(--t-slab);
+}
+
+.paleta-gol {
   margin: 0;
-  padding: 0;
+  padding: var(--sp-4);
+  color: var(--t-slab);
 }
 
-.lista-vectori button {
+.paleta-ajutor {
+  margin: 0;
+  padding: var(--sp-2) 14px;
+  border-top: 1px solid var(--l-margine);
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+/* ── Ecranul de eroare (ErrorBoundary) ───────────────────────────────────────────────────────────────────────── */
+
+main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+main h1 {
+  font-size: 1.5rem;
+  white-space: normal;
+}
+
+.ecran-eroare .butoane {
+  display: flex;
+  gap: var(--sp-2);
+  margin: 1rem 0;
+}
+
+.ecran-eroare .butoane button {
+  border-color: var(--l-camp);
+}
+
+.ecran-eroare textarea {
   width: 100%;
-  text-align: left;
-  border: 1px solid transparent;
-  padding: 0.2rem 0.4rem;
+  box-sizing: border-box;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  background: var(--s-camp);
+  color: var(--t);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
 }
 
-.lista-vectori button[aria-pressed='true'] {
-  border-color: var(--accent);
+/* ICONE: măști SVG 24 × 24, contur 1,8 (data: URI, fără cerere în rețea) */
+[data-icona='document.adauga-dreptunghi'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='6' width='17' height='12' rx='1.5'/%3E%3C/svg%3E");
 }
 
-/* Avertismentul apare cu roșu în listă (owner-ul, 07.10); pe pânză, niciodată. */
-.lista-vectori button.cu-avertisment {
-  color: var(--rosu);
+[data-icona='document.adauga-cerc'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E");
 }
 
-.lista-goala {
-  color: var(--text-slab);
-  margin: 0;
+[data-icona='document.duplica-selectia'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.5' y='8.5' width='11.5' height='11.5' rx='2'/%3E%3Cpath d='M15.5 8.5V5.5A1.5 1.5 0 0 0 14 4H5.5A1.5 1.5 0 0 0 4 5.5V14a1.5 1.5 0 0 0 1.5 1.5h3'/%3E%3C/svg%3E");
 }
 
-/* Pe ecran îngust, lista trece sub pânză și cedează ea prima: pânza își păstrează înălțimea (sub 100 px n-ar porni). */
-@media (max-width: 40rem) {
-  .lucru {
-    flex-direction: column;
-  }
-
-  .lucru > .panza-cutie {
-    flex: 1 0 10rem;
-  }
-
-  .lista-vectori {
-    flex: 0 1 auto;
-    min-height: 0;
-    max-height: 30vh;
-    border-left: 0;
-    border-top: 1px solid var(--margine);
-  }
+[data-icona='document.sterge-selectia'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h16M10 11v6M14 11v6M6 7l1 12.5A1.5 1.5 0 0 0 8.5 21h7a1.5 1.5 0 0 0 1.5-1.5L18 7M9 7V4.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5V7'/%3E%3C/svg%3E");
 }
+
+[data-icona='istoric.anuleaza'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 14 4 9l5-5'/%3E%3Cpath d='M4 9h10.5a5.5 5.5 0 0 1 0 11H11'/%3E%3C/svg%3E");
+}
+
+[data-icona='istoric.reface'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 14 5-5-5-5'/%3E%3Cpath d='M20 9H9.5a5.5 5.5 0 0 0 0 11H13'/%3E%3C/svg%3E");
+}
+
+[data-icona='import.svg'],
+[data-icona='document.importa'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12M7 10l5 5 5-5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4'/%3E%3C/svg%3E");
+}
+
+[data-icona='export.gcode'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 15V3M7 8l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4'/%3E%3C/svg%3E");
+}
+
+[data-icona='document.aplica-operatii'],
+[data-icona='vedere.proprietati'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6h8.8M17.2 6H20M4 12h2.8M11.2 12H20M4 18h10.8M19.2 18H20'/%3E%3Ccircle cx='15' cy='6' r='2.2'/%3E%3Ccircle cx='9' cy='12' r='2.2'/%3E%3Ccircle cx='17' cy='18' r='2.2'/%3E%3C/svg%3E");
+}
+
+[data-icona='vedere.paleta'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+}
+
+[data-icona='vedere.lista'],
+[data-icona='selectie.din-lista'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6h11M9 12h11M9 18h11'/%3E%3Cpath d='M4.5 6h.01M4.5 12h.01M4.5 18h.01' stroke-width='2.6'/%3E%3C/svg%3E");
+}
+
+[data-icona='vedere.potriveste'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4'/%3E%3Crect x='8' y='9' width='8' height='6' rx='1'/%3E%3C/svg%3E");
+}
+
+[data-icona='vedere.tema'],
+[data-icona='tema.auto'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3Cpath d='M12 4a8 8 0 0 1 0 16z' fill='black'/%3E%3C/svg%3E");
+}
+
+[data-icona='tema.luminoasa'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M12 2.5v2M12 19.5v2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M2.5 12h2M19.5 12h2M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4'/%3E%3C/svg%3E");
+}
+
+[data-icona='tema.intunecata'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z'/%3E%3C/svg%3E");
+}
+
+[data-icona='vedere.limba'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M3.5 12h17M12 3.5c2.4 2.6 3.5 5.4 3.5 8.5s-1.1 5.9-3.5 8.5c-2.4-2.6-3.5-5.4-3.5-8.5s1.1-5.9 3.5-8.5z'/%3E%3C/svg%3E");
+}
+
+[data-icona='selectie.la-punct'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 3.5 19 10.8l-6 1.7-2.8 5.9z'/%3E%3C/svg%3E");
+}
+
+[data-icona='document.muta-selectia'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3'/%3E%3C/svg%3E");
+}
+[data-icona='arbore.foaie'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='m3 9 9-5 9 5-9 5zM3 14l9 5 9-5'/%3E%3C/svg%3E");
+}
+
+[data-icona='arbore.piesa'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M5 5h9l5 5v9H5z'/%3E%3C/svg%3E");
+}
+
+[data-icona='arbore.operatie'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M3 17c4 0 4-10 9-10s5 10 9 10'/%3E%3C/svg%3E");
+}
+/* ICONE: sfârșit */

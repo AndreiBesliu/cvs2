@@ -1421,3 +1421,25 @@ aproape nul (coarda 1e-11 mm, bulge 1e-13) ieșea din post un cerc Ø50 tăiat p
 automat”): ADR 0037 acceptat cu cele cinci implicite, iar despărțirea foii devine un marcaj al utilizatorului
 (`despartire: true`), nu o clasificare automată; o tăietură deschisă prin foaie, nemarcată, care ajunge la marginea foii
 se refuză (de confirmat înaintea lui 2.3c-5).
+
+## 2026-10-13 — Etapa 2, felia 2.8a: carcasa interfeței (Model: Claude Opus 5.5)
+
+**Prompt:** „ai dreptate, B arata cel mai bine. dar, vreau sa avem doua template-uri. B, care va fi cel modern, si voi vrea
+sa avem si unul clasic, care arata mai aproape de Artcam sau chiar si CNCVS 1. Ma gandesc sa facem UI-ul customizabil.
+unde userul poate aseza unelte in UI si il poate salva. ok, nu lasa asta sa incurce planul. Doar tine minte si decizi tu
+cand este cel mai bine sa te apuci de asta”. **Started:** 08:45. **Completed:** 09:55. **Clasa:** R1 (interfața; nimic
+nu mișcă mașina).
+
+**Făcut** (integrarea, de un agent într-o clonă, ~0,43 M; prototipurile: A ~0,4 M, B ~0,36 M + prima jumătate, C ~0,4 M):
+- carcasa B pe `main`: pânza pe tot ecranul, insulele plutitoare, paleta Ctrl+K peste registrul de acțiuni, bara selecției
+  (cu garda de 0,3 s contra dublu-clicului), panourile care se strâng, temele (după sistem, luminoasă, întunecată);
+- **aranjamentul din date** (`src/ui/aranjament.ts`): zonele, grupurile, intrările după id-urile din registru, docurile;
+  `ARANJAMENT_MODERN` e B, iar `verificaAranjament` refuză id-urile necunoscute și dublurile (test, cu controale). Un
+  șablon clasic sau un aranjament salvat de om vor fi alte date, trecute prin aceeași verificare (decizia owner-ului de
+  mai sus: momentul îl alege asistentul);
+- din prototipul A: arborele proiectului (foaia → instanțele → piesa → operațiile) și cipurile cursorului (mm) și ale
+  zoomului;
+- pornirea: 99,0 kB din 100 (mesajele dialogului de export și 4 motive ale lui vin cu dialogul).
+
+**Proba:** 5 572 de teste unitare; e2e în Edge 56 / 56 (6 noi: paleta, tema ținută minte, panourile, garda barei
+selecției, arborele, cursorul); niciun selector folosit de e2e schimbat.
