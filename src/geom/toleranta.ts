@@ -26,3 +26,9 @@ export const RAZA_MAXIMA_ARC = 9_900;
  * rămân sub toleranță față de curba din fișier.
  */
 export const TOLERANTA_IMPORT = TOLERANTA_PROIECT / 1_000;
+
+/**
+ * Rezoluția modelului, în mm: sub ea (colțuri, offseturi), rezultatul nu e garantat (s1-V §5.4). O subcale importată
+ * mai mică de atât e praf (ADR 0037 §11), iar un contur cu capetele mai apropiate se închide la ușă.
+ */
+export const REZOLUTIE = 0.01;

@@ -4,10 +4,11 @@
  * matricile și unitățile le socotește ușa.
  */
 import { LINIE, type Punct, type Segment, type Varf } from '../geom/contur.ts';
+import { cutieContur } from '../geom/cutie.ts';
 import { arcEliptic, bucatiArcEliptic } from '../geom/elipsa.ts';
 import { aplica, compune, determinantNormat, esteSimilitudine, type Matrice } from '../geom/matrice.ts';
 import { normalizeaza } from '../geom/nonzero.ts';
-import { TOLERANTA_IMPORT } from '../geom/toleranta.ts';
+import { REZOLUTIE, TOLERANTA_IMPORT } from '../geom/toleranta.ts';
 import { PLAFON } from '../model/document.ts';
 import { citesteDateCale, citesteLungime, citestePuncte, citesteStil, citesteTransform, type ComandaCale } from './svgDate.ts';
 
@@ -430,8 +431,9 @@ class PestePlafon extends Error {}
  * de cerc sub o similitudine rămân arce (împărțite peste 180°), restul devin cubice sub `TOLERANTA_IMPORT`. `lucru` numără
  * vârfurile produse de toată citirea.
  */
-function subcaleMm(sc: SubcaleLocala, M: Matrice, sim: boolean, semn: number, n: Numaratoare, lucru: { varfuri: number }):
-  Varf[] | 'deschisa' | 'goala' | 'prea-mare' | 'degenerata' {
+function subcaleMm(
+  sc: SubcaleLocala, M: Matrice, sim: boolean, semn: number, n: Numaratoare, lucru: { varfuri: number }, umplut: boolean,
+): Varf[] | 'deschisa' | 'goala' | 'prea-mare' | 'degenerata' | 'praf' {
   const varfuri: Varf[] = [];
   let local = sc.start;
   let cur = aplica(M, sc.start);
@@ -500,8 +502,14 @@ function subcaleMm(sc: SubcaleLocala, M: Matrice, sim: boolean, semn: number, n:
   if (desenate === 0) return sc.z ? 'degenerata' : 'goala';
   const start = aplica(M, sc.start);
   const gol = Math.hypot(cur.x - start.x, cur.y - start.y);
+  // Cum se închide o subcale fără Z (ADR 0037 §11): o formă umplută, ca în browser (care o umple); una trasă doar cu
+  // linie, doar dacă golul e sub rezoluție. Altfel rămâne deschisă.
+  let inchidere: 'umplere' | 'usa' | null = null;
   if (gol > TOLERANTA_IMPORT) {
-    if (!sc.z) return varfuri.length > PLAFON.varfuriCale ? 'prea-mare' : 'deschisa';
+    if (!sc.z) {
+      if (!umplut && gol > REZOLUTIE) return varfuri.length > PLAFON.varfuriCale ? 'prea-mare' : 'deschisa';
+      inchidere = umplut ? 'umplere' : 'usa';
+    }
     varfuri.push({ p: cur, s: LINIE });
   } else if (gol > 0) {
     // Capătul se lipește de primul vârf; un mâner egal cu el (cubica cu mânerul retras: `s-1-1-1-1z` din Illustrator) se
@@ -516,11 +524,26 @@ function subcaleMm(sc: SubcaleLocala, M: Matrice, sim: boolean, semn: number, n:
   // Plafonul se judecă după linia de închidere (recenzia 2.7c: 50 001 de vârfuri treceau de ușă și opreau tot importul).
   if (varfuri.length > PLAFON.varfuriCale) return 'prea-mare';
   const unic = varfuri[0];
-  if (varfuri.length === 1 && unic && unic.s.tip === 'C') return bucla(unic.p, unic.s.c1, unic.s.c2);
-  if (varfuri.length < 2) return 'degenerata';
+  if (varfuri.length === 1 && unic && unic.s.tip === 'C') {
+    const b = bucla(unic.p, unic.s.c1, unic.s.c2);
+    return praf(b) ? 'praf' : b;
+  }
+  // O subcale pe care închiderea o face degenerată rămâne deschisă (ADR 0037 §11): nu era un contur.
+  if (varfuri.length < 2) return inchidere ? 'deschisa' : 'degenerata';
   // Doar linii, toate pe o dreaptă: conturul n-are arie (nici browserul nu-l umple), iar CAM-ul ar refuza toată piesa.
-  if (varfuri.every((v) => v.s.tip === 'L') && peODreapta(varfuri)) return 'degenerata';
+  if (varfuri.every((v) => v.s.tip === 'L') && peODreapta(varfuri)) return inchidere ? 'deschisa' : 'degenerata';
+  // Praful (ADR 0037 §11), după degenerare (un `M…Z` fără segmente rămâne degenerat, ca în 2.7c): sub rezoluție, CAM-ul
+  // refuza tot exportul.
+  if (praf(varfuri)) return 'praf';
+  if (inchidere === 'umplere') n['inchise-de-umplere']++;
+  else if (inchidere === 'usa') n['inchise-la-usa']++;
   return varfuri;
+}
+
+/** Un contur închis mai mic decât rezoluția: diagonala cutiei lui exacte (arcele cu extremele, cubicele cu ale lor). */
+function praf(varfuri: readonly Varf[]): boolean {
+  const c = cutieContur({ inchis: true, varfuri });
+  return Math.hypot(c.maxX - c.minX, c.maxY - c.minY) < REZOLUTIE;
 }
 
 /**
@@ -768,7 +791,11 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
       const nume = id ? id.slice(0, PLAFON.numeLungime) : undefined;
       const aleFormei: Varf[][] = [];
       for (const sc of subcai(date.comenzi)) {
-        const v = subcaleMm(sc, m, sim, semn, n, lucru);
+        const v = subcaleMm(sc, m, sim, semn, n, lucru, cadru.umplut);
+        if (v === 'praf') {
+          n['sub-rezolutie']++;
+          continue;
+        }
         if (v === 'goala') continue;
         if (v === 'prea-mare') {
           n['prea-mari']++;
@@ -810,7 +837,13 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
       } else if (!r.info.neschimbat) {
         // Și o formă care iese goală (regiunea vidă, sau toată mai subțire decât τ: ADR 0036 §6, oracolul 2.7d, K7).
         n['nonzero-normalizate']++;
-        finale = r.cai;
+        // Praful și pe ieșire (ADR 0037 §11): o buclă de închidere sub rezoluție (logoul VfB: 2 de ~6e-5 mm) ar face
+        // CAM-ul să refuze tot exportul.
+        finale = r.cai.filter((v) => {
+          if (!praf(v)) return true;
+          n['sub-rezolutie']++;
+          return false;
+        });
       }
     }
     for (const v of finale) {

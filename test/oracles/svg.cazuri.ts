@@ -8,8 +8,14 @@
  * Testul (0) cere ca oracolul să dea exact hârtia; testul (a) cere ca aplicația să dea exact oracolul.
  *
  * Cazurile ocolesc ambiguitățile listate în antetul lui `svg.ts` (și în raport), cu excepția celor marcate „ALEGERE”.
+ *
+ * Sub-felia 2.3c-1 (ADR 0037 §11): secțiunea U (umplerea, golul sub rezoluție, praful) și numerele noi
+ * (`inchise-de-umplere`, `inchise-la-usa`, `sub-rezolutie`); C12 (polilinia umplută se închide) și E36 (cercul de 0,003 mm
+ * e praf; proba lui trece în E37) s-au schimbat odată cu contractul. Precizarea 13.10 (praful ieșirii normalizării): U24
+ * (logoul VfB minim: bucla de închidere scoasă din normalizare, `prafNormalizare` 1), U25 (aceeași buclă fără normalizare:
+ * rămâne) și U26 (un contur de 0,012 mm în ieșire: nu e praf).
  */
-import { arieRuns, caiFinaleO, CODURI_O, laturiO, type CodRefuzO, type RaportO, type RezultatO, type VarfO } from './svg.ts';
+import { arieRuns, caiFinaleO, CODURI_O, laturiO, prafNormalizareO, type CodRefuzO, type RaportO, type RezultatO, type VarfO } from './svg.ts';
 
 export const K96 = 25.4 / 96;
 export const K72 = 25.4 / 72;
@@ -45,6 +51,17 @@ export type Hartie = {
   final?: { cai?: number; laturi?: Array<'exterior' | 'interior'>; arie?: number };
   /** Câte dintre formele de schimbat le refuză normalizarea (ADR 0036 §8: cazurile pe care ADR-ul le numește), citite evenodd. */
   nonzeroRefuzate?: number;
+  /**
+   * Sub-felia 2.3c-1 (ADR 0037 §11): golurile (mm) subcăilor închise de ușă (umplerea sau golul sub rezoluție) care au
+   * devenit căi, în ordinea căilor; și golul cel mai mare al celor închise la ușă (`fill: none`).
+   */
+  goluri?: number[];
+  golLaUsa?: number;
+  /**
+   * ADR 0037 §11 (precizarea 13.10): câte contururi de praf scoate ușa din ieșirea normalizării nonzero (numărate și ele
+   * la `sub-rezolutie`, peste subcăile-praf din `avertismente`).
+   */
+  prafNormalizare?: number;
 };
 export type CazSvg = {
   readonly nume: string;
@@ -197,8 +214,10 @@ const C: CazSvg[] = [
     hartie: { cai: 1, forme: [2] } },
   { nume: 'C11 line: mereu deschisă', text: p100('<line x1="0" y1="0" x2="10" y2="10"/><rect width="5" height="5"/>'),
     hartie: { cai: 1, forme: [1], avertismente: { deschise: 1 } } },
-  { nume: 'C12 polyline deschisă (numărată) și închisă prin apropiere', text: p100('<polyline points="0,0 10,0 10,10"/><polyline points="20,20 30,20 30,30 20,20"/>'),
-    hartie: { cai: 1, forme: [1], tipuri: ['LLL'], varfuri: [[0, 0, 20, 80], [0, 1, 30, 80], [0, 2, 30, 70]], avertismente: { deschise: 1 } } },
+  // Sub-felia 2.3c-1 (ADR 0037 §11): prima polilinie e umplută (implicit), deci se închide cu o linie (golul √200 mm);
+  // în 2.7c era deschisă (sărită, `deschise`).
+  { nume: 'C12 polyline umplută fără întoarcere (2.3c-1: închisă de umplere) și închisă prin apropiere', text: p100('<polyline points="0,0 10,0 10,10"/><polyline points="20,20 30,20 30,30 20,20"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LLL', 'LLL'], varfuri: [[0, 0, 0, 100], [0, 1, 10, 100], [0, 2, 10, 90], [1, 0, 20, 80], [1, 1, 30, 80], [1, 2, 30, 70]], avertismente: { 'inchise-de-umplere': 1 }, goluri: [Math.SQRT2 * 10] } },
   { nume: 'C13 polygon: linia de închidere', text: p100('<polygon points="10,10 20,10 15,20"/>'),
     hartie: { tipuri: ['LLL'], varfuri: [[0, 0, 10, 90], [0, 1, 20, 90], [0, 2, 15, 80]] } },
   { nume: 'C14 polygon cu număr impar: punctele dinaintea erorii', text: p100('<polygon points="10,10 20,10 15,20 30"/>'),
@@ -359,8 +378,12 @@ const E: CazSvg[] = [
     hartie: { cai: 1, avertismente: { 'arce-eliptice': 1, 'cubice-din-arce': 11 } } },
   { nume: 'E35 elipsa excentrică departe de origine (fosta K5)', px: 72, text: p100('<ellipse cx="71.3" cy="66.9" rx="0.1" ry="23.8"/>'),
     hartie: { cai: 1, avertismente: { 'arce-eliptice': 2, 'cubice-din-arce': 18 } } },
-  { nume: 'E36 cerc mic departe de origine: semicercuri exacte (fosta K6)', text: svg('width="10000mm" height="10000mm" viewBox="0 0 10000 10000"', '<circle cx="5000.1" cy="3.3" r="0.003"/>'),
-    hartie: { tipuri: ['AA'], bulge: [[0, 0, -tan4], [0, 1, -tan4]] } },
+  // Sub-felia 2.3c-1 (ADR 0037 §11): cercul de rază 0,003 mm are diagonala cutiei 0,006 · √2 = 0,0085 mm < 0,01, deci e
+  // praf (sărit, `sub-rezolutie`); proba semicercurilor exacte (fosta K6) trece la raza 0,004 mm (diagonala 0,0113 mm).
+  { nume: 'E36 cerc mic departe de origine (r 0,003 mm): 2.3c-1, praf, fișierul e gol', text: svg('width="10000mm" height="10000mm" viewBox="0 0 10000 10000"', '<circle cx="5000.1" cy="3.3" r="0.003"/>'),
+    hartie: { cod: 'gol', avertismente: { 'sub-rezolutie': 1 } } },
+  { nume: 'E37 cerc mic departe de origine (r 0,004 mm): semicercuri exacte (fosta K6)', text: svg('width="10000mm" height="10000mm" viewBox="0 0 10000 10000"', '<circle cx="5000.1" cy="3.3" r="0.004"/>'),
+    hartie: { tipuri: ['AA'], varfuri: [[0, 0, 5000.104, 9996.7], [0, 1, 5000.096, 9996.7]], bulge: [[0, 0, -tan4], [0, 1, -tan4]] } },
   { nume: 'E29 două subcăi: ordinea și latura', text: p100('<path d="M 10 10 h 30 v 30 h -30 z M 20 20 h 10 v 10 h -10 z"/>'),
     hartie: { cai: 2, tipuri: ['LLLL', 'LLLL'], forme: [0, 0], laturi: ['exterior', 'interior'], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 900 } } },
   // A doua (revizia 12.10): bucla dintr-o singură cubică se împarte la t = 1/2: B(½) = ((50 + 210 + 210 + 50) / 8,
@@ -573,6 +596,114 @@ const S: CazSvg[] = [
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------
+// U. Umplerea, golul sub rezoluție și praful (sub-felia 2.3c-1, ADR 0037 §11, amendează ADR 0035 §7, §10). Pe hârtie:
+// - o subcale fără `Z` cu golul peste TOLERANTA_IMPORT (1e-6 mm) a unei forme UMPLUTE (`fill` efectiv ≠ `none`; implicit
+//   plin) se închide cu o linie: `inchise-de-umplere`; dacă închiderea dă o cale degenerată, rămâne deschisă: `deschise`;
+// - cu `fill: none`, golul ≤ REZOLUTIE (0,01 mm) se închide cu o linie: `inchise-la-usa`; peste, rămâne deschisă;
+// - o subcale (închisă cu `Z`, sau închisă de ușă) cu diagonala cutiei sub 0,01 mm se sare: `sub-rezolutie`;
+// - golul ≤ 1e-6 mm se închide în tăcere, ca în 2.7c (fără linie, fără număr);
+// - căile închise așa intră în normalizarea nonzero și în imbricare, ca orice cale închisă.
+// Golurile sunt reproduceri sintetice ale fișierelor reale măsurate (logoul VfB: 8 subcăi umplute fără Z, golurile 5e-5 …
+// 6e-4 mm din rotunjirea coordonatelor relative; logoul Presto: 2, golul 0,001 px; CNC-referinta: valul de 150 mm, fără
+// umplere, rămâne deschis); fișierele însele se judecă în `svg.reale.oracol.test.ts`, când există.
+
+/** Trei pătrate fără Z într-o singură cale, fiecare `m` relativ la capătul celei dinainte: golurile 5e-5, 1e-4, 6e-4 mm. */
+const VFB_PATRATE = 'm 10 10 h 20 v 20 h -20 v -19.99995 m 30 -0.00005 h 20 v 20 h -20 v -19.9999 m 30 -0.0001 h 20 v 20 h -20 v -19.9994';
+/** Pătratul fără Z a cărui ultimă latură trece de start: închiderea lasă o buclă de 5,66e-5 mm (logoul VfB, minim). */
+const VFB_BUCLA = 'M 10 90 L 30 90 L 30 70 L 10 70 L 10.00004 90.00004';
+/** Aria patrulaterului X, (30, 10), (30, 30), (10, 30), în mm (X: ultima latură taie y = 10). */
+const ARIE_VFB_PATRULATER = ((): number => {
+  const E = { x: 10.00004, y: 100 - 90.00004 };
+  const X = { x: 10 + ((E.x - 10) * (30 - 10)) / (30 - E.y), y: 10 };
+  const q = [X, { x: 30, y: 10 }, { x: 30, y: 30 }, { x: 10, y: 30 }];
+  return q.reduce((s, p, i) => { const r = q[(i + 1) % q.length] as { x: number; y: number }; return s + (p.x * r.y - r.x * p.y) / 2; }, 0);
+})();
+
+const U: CazSvg[] = [
+  { nume: 'U1 VfB: trei subcăi umplute fără Z (golurile 5e-5, 1e-4, 6e-4 mm, din coordonatele relative): închise de umplere', text: p100(`<path d="${VFB_PATRATE}"/>`),
+    hartie: { cai: 3, forme: [0, 0, 0], tipuri: ['LLLLL', 'LLLLL', 'LLLLL'], laturi: ['exterior', 'exterior', 'exterior'],
+      varfuri: [[0, 0, 10, 90], [0, 3, 10, 70], [0, 4, 10, 89.99995], [1, 0, 40, 90], [1, 4, 40, 89.9999], [2, 0, 70, 90], [2, 4, 70, 89.9994]],
+      avertismente: { 'inchise-de-umplere': 3 }, goluri: [5e-5, 1e-4, 6e-4], golLaUsa: 0, final: { cai: 3, laturi: ['exterior', 'exterior', 'exterior'], arie: 1200 } } },
+  // A doua cubică ajunge orizontal în (50, 20,0006): linia de închidere e verticală, de 6e-4 mm, fără încrucișare.
+  { nume: 'U2 VfB: lacrima din două cubice fără Z, golul 6e-4 mm: cubicele și linia de închidere', text: p100('<path d="M 50 20 C 70 20 70 50 50 50 C 30 50 30 20.0006 50 20.0006"/>'),
+    hartie: { cai: 1, tipuri: ['CCL'], varfuri: [[0, 0, 50, 80], [0, 1, 50, 50], [0, 2, 50, 79.9994]], avertismente: { 'inchise-de-umplere': 1 }, goluri: [6e-4], laturi: ['exterior'] } },
+  // Ca în logoul VfB (ADR 0037, „Ce am măsurat” 4): coada cubicei a doua taie capul primei la 3e-4 mm de start, deci
+  // închiderea lasă o încrucișare minusculă. Ușa n-o judecă (ADR 0034 §2); evenodd, ca normalizarea să nu intre în joc.
+  { nume: 'U3 VfB: încrucișarea minusculă la închidere (evenodd): închisă de umplere, nejudecată la ușă', text: p100('<path fill-rule="evenodd" d="M 50 20 C 70 20 70 50 50 50 C 30 50 30 20 50.0006 20"/>'),
+    hartie: { cai: 1, tipuri: ['CCL'], varfuri: [[0, 2, 50.0006, 80]], avertismente: { 'inchise-de-umplere': 1 }, goluri: [6e-4] } },
+  // Presto: coordonate în px fără viewBox, rotunjite la 0,001 px: golul 0,001 · 25,4 / 96 = 2,6458e-4 mm.
+  { nume: 'U4 Presto: golul de 0,001 px (2,6458e-4 mm la 96): închisă de umplere', text: svg('width="100" height="100"', '<path d="m 10 10 h 20 v 20 h -20 v -19.999"/>'),
+    hartie: { cai: 1, px: true, tipuri: ['LLLLL'], varfuri: [[0, 0, 10 * K96, 90 * K96], [0, 4, 10 * K96, (100 - 10.001) * K96]], avertismente: { 'inchise-de-umplere': 1 }, goluri: [0.001 * K96] } },
+  { nume: 'U5 triunghiul umplut fără Z, golul mare (√800 mm): închis cu o linie', text: p100('<path d="M 10 10 L 30 10 L 30 30"/>'),
+    hartie: { cai: 1, tipuri: ['LLL'], varfuri: [[0, 0, 10, 90], [0, 1, 30, 90], [0, 2, 30, 70]], avertismente: { 'inchise-de-umplere': 1 }, goluri: [Math.sqrt(800)], laturi: ['exterior'] } },
+  { nume: 'U6 „M L” umplută și trei puncte pe o dreaptă: închiderea ar fi degenerată, rămân deschise (nu degenerate)', text: p100('<path d="M 10 10 L 30 10"/><path d="M 10 20 L 30 20 L 20 20"/><rect x="50" y="50" width="10" height="10"/>'),
+    hartie: { cai: 1, forme: [2], avertismente: { deschise: 2 } } },
+  { nume: 'U7 „M L” umplută singură: deschisă, fișierul e gol', text: p100('<path d="M 10 10 L 30 10"/>'),
+    hartie: { cod: 'gol', avertismente: { deschise: 1 } } },
+  { nume: 'U8 polyline umplută: închisă de umplere; cu fill="none": deschisă', text: p100('<polyline points="10,10 30,10 30,30"/><polyline fill="none" points="50,10 70,10 70,30"/>'),
+    hartie: { cai: 1, forme: [0], tipuri: ['LLL'], varfuri: [[0, 2, 30, 70]], avertismente: { 'inchise-de-umplere': 1, deschise: 1 }, goluri: [Math.sqrt(800)] } },
+  // Golul 0,005: |89,995 − 90|; golul 0,02: deschisă. A treia, o polilinie fără umplere cu golul 0,005: închisă la ușă.
+  { nume: 'U9 fill="none": golul 0,005 mm se închide la ușă (path și polyline), golul 0,02 mm rămâne deschis', text: p100('<path fill="none" d="M 10 10 L 30 10 L 30 30 L 10 30 L 10 10.005"/><path fill="none" d="M 50 10 L 70 10 L 70 30 L 50 30 L 50 10.02"/><polyline fill="none" points="10,50 30,50 30,70 10,70 10,50.005"/>'),
+    hartie: { cai: 2, forme: [0, 2], tipuri: ['LLLLL', 'LLLLL'], varfuri: [[0, 4, 10, 89.995], [1, 4, 10, 49.995]], avertismente: { 'inchise-la-usa': 2, deschise: 1 }, goluri: [0.005, 0.005], golLaUsa: 0.005, laturi: ['exterior', 'exterior'] } },
+  { nume: 'U10 fill="none", doar golul 0,02 mm: deschisă, fișierul e gol', text: p100('<path fill="none" d="M 50 10 L 70 10 L 70 30 L 50 30 L 50 10.02"/>'),
+    hartie: { cod: 'gol', avertismente: { deschise: 1 } } },
+  { nume: 'U11 golul sub TOLERANTA_IMPORT (5e-7 mm), fără Z: închise în tăcere, fără număr (umplută și fără umplere)', text: p100('<path d="m 10 10 h 20 v 20 h -20 v -19.9999995"/><path fill="none" d="m 50 10 h 20 v 20 h -20 v -19.9999995"/>'),
+    hartie: { cai: 2, tipuri: ['LLLL', 'LLLL'], varfuri: [[0, 3, 10, 70], [1, 3, 50, 70]], goluri: [], golLaUsa: 0 } },
+  // Praful: diagonala 1e-4 · √2 mm. A doua e umplută fără Z (s-ar închide de umplere), a treia fără umplere (golul 1,4e-4 mm
+  // s-ar închide la ușă): amândouă sunt praf, deci nu se numără închiderea.
+  { nume: 'U12 praful: triunghiurile de 1e-4 mm (cu Z, fără Z umplut, fără Z fără umplere) sărite, sub-rezolutie', text: p100('<path d="M 20 20 l 0.0001 0 l 0 0.0001 z"/><path d="M 30 20 l 0.0001 0 l 0 0.0001"/><path fill="none" d="M 40 20 l 0.0001 0 l 0 0.0001"/><rect x="50" y="50" width="10" height="10"/>'),
+    hartie: { cai: 1, forme: [3], avertismente: { 'sub-rezolutie': 3 } } },
+  // Lângă prag: catetele 0,0035 (diagonala 0,00495 mm) și 0,008 (0,01131 mm).
+  { nume: 'U13 praful lângă prag: diagonala 0,00495 mm sărită, 0,01131 mm păstrată', text: p100('<path d="M 20 20 l 0.0035 0 l 0 0.0035 z"/><path d="M 30 20 l 0.008 0 l 0 0.008 z"/>'),
+    hartie: { cai: 1, forme: [1], tipuri: ['LLL'], varfuri: [[0, 0, 30, 80], [0, 1, 30.008, 80], [0, 2, 30.008, 79.992]], avertismente: { 'sub-rezolutie': 1 } } },
+  { nume: 'U14 praful singur: fișierul e gol, cu sub-rezolutie', text: p100('<path d="M 20 20 l 0.0001 0 l 0 0.0001 z"/>'),
+    hartie: { cod: 'gol', avertismente: { 'sub-rezolutie': 1 } } },
+  // Degenerata rămâne înaintea prafului (ALEGERE): `M Z` și linia nulă închisă sunt `degenerate`, ca în 2.7c (C19, C23).
+  { nume: 'U15 degenerată și praf deodată (M Z, M L Z de 1e-7): degenerate, ca în 2.7c; triunghiul de 1e-4: sub-rezolutie', text: p100('<path d="M 20 20 Z"/><path d="M 0 0 L 1e-7 0 Z"/><path d="M 20 30 l 0.0001 0 l 0 0.0001 z"/><rect x="50" y="50" width="5" height="5"/>'),
+    hartie: { cai: 1, forme: [3], avertismente: { degenerate: 2, 'sub-rezolutie': 1 } } },
+  { nume: 'U16 fill moștenit de la grup: none lasă deschisă, o culoare pe formă o închide, fill="inherit" ia none', text: p100('<g fill="none"><path d="M 10 10 L 30 10 L 30 30"/><path fill="#000" d="M 50 10 L 70 10 L 70 30"/><path fill="inherit" d="M 10 50 L 30 50 L 30 70"/></g>'),
+    hartie: { cai: 1, forme: [1], tipuri: ['LLL'], varfuri: [[0, 0, 50, 90], [0, 1, 70, 90], [0, 2, 70, 70]], avertismente: { 'inchise-de-umplere': 1, deschise: 2 } } },
+  { nume: 'U17 fill dintr-o clasă CSS: .c{fill:none} lasă deschisă (și moștenit, pe o polilinie); .u{fill:#123} sub un grup none o închide', text: p100('<style>.c{fill:none} .u{fill:#123}</style><path class="c" d="M 10 10 L 30 10 L 30 30"/><g fill="none"><path class="u" d="M 50 10 L 70 10 L 70 30"/></g><g class="c"><polyline points="10,50 30,50 30,70"/></g>'),
+    hartie: { cai: 1, forme: [1], tipuri: ['LLL'], varfuri: [[0, 0, 50, 90]], avertismente: { 'inchise-de-umplere': 1, deschise: 2 } } },
+  { nume: 'U18 style="fill:none" pe grup, golul 0,005 mm: închisă la ușă; style="fill:red" pe formă: închisă de umplere', text: p100('<g style="fill:none"><path d="M 10 10 L 30 10 L 30 30 L 10 30 L 10 10.005"/><path style="fill:red" d="M 50 10 L 70 10 L 70 30"/></g>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LLLLL', 'LLL'], avertismente: { 'inchise-la-usa': 1, 'inchise-de-umplere': 1 }, goluri: [0.005, Math.sqrt(800)], golLaUsa: 0.005 } },
+  // Ca N1, fără Z: cele două dreptunghiuri se închid de umplere, apoi forma nonzero se normalizează (reuniunea, 2 000 mm²).
+  { nume: 'U19 două dreptunghiuri suprapuse fără Z, umplute (nonzero): închise de umplere, apoi normalizate (reuniunea)', text: p100('<path d="M 10 10 h 40 v 30 h -40 M 30 20 h 40 v 30 h -40"/>'),
+    hartie: { cai: 2, forme: [0, 0], tipuri: ['LLLL', 'LLLL'], avertismente: { 'inchise-de-umplere': 2, 'nonzero-normalizate': 1 }, goluri: [30, 30], final: { cai: 1, laturi: ['exterior'], arie: 2000 } } },
+  { nume: 'U20 aceleași, fill="none" și golul 0,005 mm: închise la ușă, nenormalizate, imbricate', text: p100('<path fill="none" d="M 10 10 h 40 v 30 h -40 v -29.995 M 30 20 h 40 v 30 h -40 v -29.995"/>'),
+    hartie: { cai: 2, tipuri: ['LLLLL', 'LLLLL'], laturi: ['exterior', 'interior'], avertismente: { 'inchise-la-usa': 2 }, goluri: [0.005, 0.005], golLaUsa: 0.005, final: { cai: 2, laturi: ['exterior', 'interior'] } } },
+  { nume: 'U21 o cale închisă de umplere într-un dreptunghi: interioară (imbricarea)', text: p100('<rect x="10" y="10" width="80" height="80"/><path d="M 30 30 L 70 30 L 70 70 L 30 70"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LLLL', 'LLLL'], laturi: ['exterior', 'interior'], avertismente: { 'inchise-de-umplere': 1 }, goluri: [40], final: { cai: 2, laturi: ['exterior', 'interior'], arie: 6400 - 1600 } } },
+  // CNC-referinta (stratul GRAVARE): valul de 150 mm cu fill="none" moștenit de la strat rămâne deschis; cercul rămâne.
+  { nume: 'U22 CNC-referinta: valul de 150 mm, fill="none" pe strat, rămâne deschis', text: svg('width="400mm" height="300mm" viewBox="0 0 400 300"', '<g fill="none" stroke="#000" stroke-width="0.2"><circle cx="70" cy="73" r="50"/></g><g fill="none" stroke="#000" stroke-width="0.2"><path d="M160,240C210,180 260,300 310,240"/></g>'),
+    hartie: { cai: 1, forme: [0], tipuri: ['AA'], avertismente: { deschise: 1 } } },
+  // `line` nu trece prin praf (ALEGERE): e mereu deschisă, oricât de scurtă (ADR 0035 §4; în 2.3c-3, regula ei de lungime).
+  { nume: 'U23 line de 1e-4 mm: deschise, nu sub-rezolutie', text: p100('<line x1="5" y1="5" x2="5.0001" y2="5"/><rect width="5" height="5"/>'),
+    hartie: { cai: 1, forme: [1], avertismente: { deschise: 1 } } },
+  // ADR 0037 §11 (precizarea 13.10), reproducerea minimă a logoului VfB: ultima latură a pătratului fără Z, (10, 30) →
+  // E = (10,00004; 9,99996), taie prima latură (y = 10) în X = (10 + 4e-5 · 20 / 20,00004; 10), lângă start, iar linia de
+  // închidere E → (10, 10) lasă bucla X–E–S (diagonala 5,66e-5 mm), în sens opus pătratului: înfășurarea −1, umplută sub
+  // nonzero. Dreptunghiul suprapus din aceeași cale face forma de normalizat; ieșirea are reuniunea și bucla, iar ușa sare
+  // bucla (praful ieșirii), numărată la `sub-rezolutie`. Rămâne reuniunea: patrulaterul X, (30, 10), (30, 30), (10, 30)
+  // plus 400 − 25 mm².
+  { nume: 'U24 VfB minim: bucla de închidere sub rezoluție, scoasă din normalizare (praful ieșirii)', text: p100(`<path d="${VFB_BUCLA} M 25 75 L 45 75 L 45 55 L 25 55 Z"/>`),
+    hartie: { cai: 2, forme: [0, 0], tipuri: ['LLLLL', 'LLLL'], laturi: ['exterior', 'interior'], varfuri: [[0, 4, 10.00004, 100 - 90.00004]],
+      avertismente: { 'inchise-de-umplere': 1, 'nonzero-normalizate': 1 }, prafNormalizare: 1, final: { cai: 1, laturi: ['exterior'], arie: ARIE_VFB_PATRULATER + 375 } } },
+  // Aceeași buclă într-o formă care nu se normalizează (un singur contur, deja evenodd: lobii ±1): rămâne în contur, ca
+  // forma 1 a logoului VfB; praful ieșirii nu se aplică.
+  { nume: 'U25 aceeași buclă de închidere, fără normalizare (deja evenodd): rămâne în contur, fără praf', text: p100(`<path d="${VFB_BUCLA}"/>`),
+    hartie: { cai: 1, tipuri: ['LLLLL'], avertismente: { 'inchise-de-umplere': 1 }, prafNormalizare: 0, final: { cai: 1 } } },
+  // Bucla de închidere subțire: E la 1e-7 mm sub prima latură (raza înscrisă 2·aria / perimetrul ≈ 5e-8 mm, peste 2τ ≈ 1e-8):
+  // tot praf, scos din ieșire și numărat.
+  { nume: 'U27 bucla de închidere de 4e-5 × 1e-7 mm, în forma normalizată: praf, scoasă și numărată', text: p100('<path d="M 10 90 L 30 90 L 30 70 L 10 70 L 10.00004 90.0000001 M 25 75 L 45 75 L 45 55 L 25 55 Z"/>'),
+    hartie: { cai: 2, forme: [0, 0], avertismente: { 'inchise-de-umplere': 1, 'nonzero-normalizate': 1 }, prafNormalizare: 1, final: { cai: 1, laturi: ['exterior'] } } },
+  // Pragul prafului pe ieșirea normalizării: un pătrat de 0,0085 mm (diagonala 0,01202 ≥ 0,01) în forma normalizată nu e
+  // praf: rămâne contur (controlul negativ îl scoate și cere să fie prins).
+  { nume: 'U26 un pătrat de 0,0085 mm în forma normalizată: diagonala 0,012 mm, nu e praf, rămâne', text: p100('<path d="M 10 90 h 20 v -20 h -20 z M 25 75 h 20 v -20 h -20 z M 60 40 h 0.0085 v -0.0085 h -0.0085 z"/>'),
+    hartie: { cai: 3, forme: [0, 0, 0], avertismente: { 'nonzero-normalizate': 1 }, prafNormalizare: 0, final: { cai: 2, laturi: ['exterior', 'exterior'], arie: 775 + 0.0085 * 0.0085 } } },
+];
+
+// ---------------------------------------------------------------------------------------------------------------------
 // H. Refuzurile mici (cele mari stau în testul lor).
 
 const H: CazSvg[] = [
@@ -768,7 +899,7 @@ const I: CazSvg[] = [
     hartie: { illustrator: true } },
 ];
 
-export const CORPUS: readonly CazSvg[] = [...A, ...B, ...C, ...D, ...E, ...F, ...G, ...N, ...S, ...H, ...I];
+export const CORPUS: readonly CazSvg[] = [...A, ...B, ...C, ...D, ...E, ...F, ...G, ...N, ...S, ...U, ...H, ...I];
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Judecata hârtiei: oracolul trebuie să dea exact ce scrie pe hârtie.
@@ -812,6 +943,16 @@ export function judecaHartia(o: RezultatO, h: Hartie): string[] {
   if (h.laturi !== undefined && JSON.stringify(laturiO(o.cai)) !== JSON.stringify(h.laturi)) pr.push(`laturi ${JSON.stringify(laturiO(o.cai))} ≠ ${JSON.stringify(h.laturi)}`);
   if (h.forme !== undefined && JSON.stringify(o.cai.map((c) => c.forma)) !== JSON.stringify(h.forme)) pr.push(`forme ${JSON.stringify(o.cai.map((c) => c.forma))} ≠ ${JSON.stringify(h.forme)}`);
   if (h.nume !== undefined && JSON.stringify(o.cai.map((c) => c.nume ?? null)) !== JSON.stringify(h.nume.map((n) => n ?? null))) pr.push(`nume ${JSON.stringify(o.cai.map((c) => c.nume))}`);
+  // Sub-felia 2.3c-1: golurile căilor închise de ușă (în ordinea căilor) și golul cel mai mare închis la ușă.
+  if (h.goluri !== undefined) {
+    const g = o.subcai.filter((j) => j.soarta === 'cale' && j.inchisaDeUsa !== null).sort((x, y) => (x.cale ?? 0) - (y.cale ?? 0)).map((j) => j.gol);
+    if (g.length !== h.goluri.length || g.some((x, i) => !(Math.abs(x - (h.goluri?.[i] as number)) <= 1e-12 * Math.max(1, x)))) pr.push(`golurile închiderilor ${JSON.stringify(g)} ≠ ${JSON.stringify(h.goluri)}`);
+  }
+  if (h.golLaUsa !== undefined && !(Math.abs(o.golLaUsa - h.golLaUsa) <= 1e-12)) pr.push(`golLaUsa ${o.golLaUsa} ≠ ${h.golLaUsa}`);
+  if (h.prafNormalizare !== undefined) {
+    const n = prafNormalizareO(o);
+    if (n !== h.prafNormalizare) pr.push(`contururile de praf ale normalizării: ${n} ≠ ${h.prafNormalizare} (hârtia)`);
+  }
   return pr;
 }
 
@@ -830,6 +971,9 @@ export function judecaHartiaFinala(app: unknown, o: RezultatO, h: Hartie): strin
   const norm = (h.avertismente?.['nonzero-normalizate'] ?? 0) - ref;
   if (a.avertismente?.['nonzero-normalizate'] !== norm) pr.push(`hârtia: nonzero-normalizate = ${String(a.avertismente?.['nonzero-normalizate'])} ≠ ${norm}`);
   if (a.avertismente?.['nonzero-refuzate'] !== ref) pr.push(`hârtia: nonzero-refuzate = ${String(a.avertismente?.['nonzero-refuzate'])} ≠ ${ref}`);
+  // ADR 0037 §11: subcăile-praf plus contururile de praf scoase din normalizare (când normalizarea nu e refuzată).
+  const sub = (h.avertismente?.['sub-rezolutie'] ?? 0) + (ref > 0 ? 0 : (h.prafNormalizare ?? 0));
+  if (a.avertismente?.['sub-rezolutie'] !== sub) pr.push(`hârtia: sub-rezolutie = ${String(a.avertismente?.['sub-rezolutie'])} ≠ ${sub}`);
   const f = h.final;
   if (f === undefined) return pr;
   const fin = caiFinaleO(app, o);

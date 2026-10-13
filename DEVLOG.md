@@ -1459,6 +1459,16 @@ automat”): ADR 0037 acceptat cu cele cinci implicite, iar despărțirea foii d
 (`despartire: true`), nu o clasificare automată; o tăietură deschisă prin foaie, nemarcată, care ajunge la marginea foii
 se refuză (de confirmat înaintea lui 2.3c-5).
 
+**2.3c-1 (ușa SVG: umplerea și praful, ADR 0037 §11):** o formă umplută fără Z se închide cu o linie, ca în browser
+(`inchise-de-umplere`); una trasă doar cu linie, doar cu golul ≤ 0,01 mm (`inchise-la-usa`); praful (cutia exactă sub
+0,01 mm, după verificarea degenerării) se sare, numărat (`sub-rezolutie`), și pe contururile ieșite din normalizare (VfB:
+2 bucle de închidere de ~6e-5 mm, care făceau CAM-ul să refuze exportul). Căile deschise rămân sărite până la 2.3c-3.
+Pe fișierele reale: VfB 8 forme închise prin umplere, Presto 2, valul din CNC-referinta rămâne deschis, AS Roma și placa 2
+neschimbate. `REZOLUTIE` stă acum în `toleranta.ts` (un singur loc). Un test vechi (elipsa sub scara 1e-13, ajunsă praf)
+a fost întărit: prinde acum defectul similitudinii judecate absolut, probat cu defectul pus înapoi. Oracolul SVG amendat
+de o sesiune independentă (0,64 M, două treceri): 27 de cazuri noi pe hârtie (U1–U27), fișierele reale, 23 de sabotaje
+prinse; a precizat ordinea (praful după degenerare) și a cerut decizia pentru praful din normalizare.
+
 ## 2026-10-13 — Etapa 2, felia 2.8a: carcasa interfeței (Model: Claude Opus 5.5)
 
 **Prompt:** „ai dreptate, B arata cel mai bine. dar, vreau sa avem doua template-uri. B, care va fi cel modern, si voi vrea

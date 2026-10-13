@@ -34,6 +34,16 @@
  *   Amendamentul §6 (K7): o formă deja evenodd se schimbă doar cu un martor la τ (`martorTau`); una cu martor și fără nicio
  *   sondă umplută dincolo de τ (mai subțire decât τ peste tot) e prezisă goală, numărată `nonzero-normalizate` (ca forma cu
  *   regiunea vidă), dar poate și să rămână: refuzul `gol` al oracolului poartă atunci `alternativ`, rezultatul în care rămâne.
+ * - sub-felia 2.3c-1 (ADR 0037 §11, prima parte; amendează ADR 0035 §7, §10), pe fiecare subcale a unui `path`, `polyline`
+ *   sau `polygon`, în ordinea: plafonul căii (la citire) → închiderea (cu `Z`, sau golul ≤ `TOLERANTA_IMPORT`: ca în 2.7c,
+ *   fără număr nou; fără `Z`, cu golul peste `TOLERANTA_IMPORT`: o formă UMPLUTĂ (`fill` efectiv ≠ `none`, moștenit) se
+ *   închide cu o linie; una cu `fill: none` și golul ≤ `REZOLUTIE` = 0,01 mm se închide cu o linie; altfel rămâne
+ *   deschisă, `deschise`) → degenerata (o subcale închisă de ușă care iese degenerată rămâne deschisă, `deschise`; una
+ *   închisă cu `Z` sau prin apropiere, `degenerate`, ca în 2.7c) → PRAFUL (diagonala cutiei exacte a subcăii, în mm, sub
+ *   0,01 mm: sărită, `sub-rezolutie`, oricum s-ar fi închis) → numărul închiderii (`inchise-de-umplere`,
+ *   `inchise-la-usa`). Căile închise de ușă intră în normalizarea nonzero și în imbricare ca orice cale închisă. Căile
+ *   deschise rămân sărite (vin cu 2.3c-3). Jurnalul subcăilor (`subcai`: soarta, golul, diagonala) servește testelor pe
+ *   fișiere reale.
  *
  * Alegerile mele unde ADR-ul tace (le spun și în raport; corpusul le ocolește unde se poate):
  * - lungimea CSS: spațiile XML de la capete se taie; numărul ca în §5 (fără „1.”); unitatea fără deosebire de majuscule;
@@ -64,10 +74,38 @@
  *   cubică / arc, două pe arcul împărțit, n pe arcul scris ca cubice), numărate înainte de închidere; corpusul stă departe
  *   de margine;
  * - refuzul `plafon` nu-și judecă raportul (numerele de la oprire țin de ordinea citirii).
+ * Alegerile sub-feliei 2.3c-1 (ADR 0037 §11; le spun și în raport):
+ * - ordinea noilor coduri: lista din „Raportul” (`inchise-de-umplere`, `inchise-la-usa`, `sub-rezolutie`); locul lor în
+ *   listă nu e scris, deci (regula coordonatorului) stau la coada listei, după `stil`;
+ * - praful se judecă DUPĂ degenerată: o subcale care e și degenerată și praf (`M … Z` fără segmente, un `polygon` dintr-un
+ *   punct, o linie nulă închisă; logoul AS Roma are una) rămâne `degenerate`, ca în 2.7c (ADR 0035 §7 o numește așa, iar
+ *   ADR 0037 nu o mută); altfel regula „mai puțin de 2 vârfuri” n-ar mai fi atinsă niciodată (orice subcale închisă cu un
+ *   vârf are cutia nulă). Praful prinde subcăile adevărate, dar mai mici decât rezoluția (un triunghi de 1e-4 mm), închise
+ *   cu `Z` sau de ușă; una deschisă și degenerată după închidere (o linie de 1e-4 mm umplută) rămâne `deschise`;
+ * - cutia prafului e cutia EXACTĂ a subcăii (cu extremele curbelor), în mm, cu punctul de start; corpusul nu are curbe
+ *   lângă prag (vârfurile, punctele de control sau curba exactă dau aceeași decizie);
+ * - `line` NU trece prin regula prafului: e „mereu deschisă, oricât de scurtă” (ADR 0035 §4) și, în 2.3c-3, „orice line”
+ *   devine cale deschisă, cu regula ei de degenerare (lungimea sub 0,01 mm), care altfel n-ar mai fi atinsă niciodată;
+ *   în 2.3c-1 o `line` rămâne `deschise`, oricât de scurtă;
+ * - „subcalea fără Z” a regulilor noi e cea cu golul peste `TOLERANTA_IMPORT`: sub el, subcalea e deja închisă (ADR 0035
+ *   §7), fără linie adăugată, deci fără număr;
+ * - o subcale cu `fill: none` și golul ≤ 0,01 mm care iese degenerată după închidere rămâne deschisă, ca la umplere
+ *   (ADR-ul o scrie doar la umplere; corpusul o ocolește);
+ * - plafonul căii (ADR 0035 §7) se judecă și pe linia de închidere adăugată de ușă: o subcale fără loc pentru ea e
+ *   `prea-mari`, ca la `Z` (nu `deschise`);
+ * - `inchise-la-usa` vine „cu golul cel mai mare”: oracolul îl dă în `golLaUsa` (mm), dar nu-l judecă la aplicație
+ *   (contractul nu-i numește câmpul; precizarea 13.10 l-a scos: textul raportului spune pragul).
+ * Precizarea 13.10 (ADR 0037 §11, „Praful”): ordinea de mai sus e adoptată (cutia exactă a subcăii închise; `M…Z` rămâne
+ * degenerată; `line` nu e niciodată praf), iar praful se judecă și pe contururile IEȘITE din normalizarea nonzero: un
+ * contur al ieșirii cu diagonala cutiei exacte sub 0,01 mm se sare, numărat la `sub-rezolutie`. Oracolul nu reface
+ * normalizarea, deci: `avertismente['sub-rezolutie']` prezice doar subcăile-praf; la fiecare formă normalizată, oracolul
+ * normalizării (opțiunea `praf`) iartă exact contururile de praf ale regiunii adevărate (găsite cu aranjamentul local),
+ * cere ca niciun contur sub rezoluție să nu rămână și le numără; `judecaRezultat` cere `sub-rezolutie` = subcăile-praf +
+ * contururile găsite (iar când aplicația numără altfel, le caută pe toate, în fiecare încrucișare: `prafAdevarat`).
  */
 import { DOMParser } from '@xmldom/xmldom';
 import { distantaLaCubica, type CubicaO } from './biarce.ts';
-import { conturSimpluDinLinii, grupuri, judecaNormalizarea, martorTau, muchiiCoincidente, regiuneaDifera, sondeUmplute, toatePrimitivele, type CaleN } from './nonzero.ts';
+import { conturSimpluDinLinii, grupuri, judecaNormalizarea, martorTau, muchiiCoincidente, prafAdevarat, regiuneaDifera, sondeUmplute, toatePrimitivele, type CaleN } from './nonzero.ts';
 import { CONST_STIL, foaieDin, STIL_RADACINA_PARINTE, stilCalculat, type StilCalculat } from './svg.stil.ts';
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -107,13 +145,19 @@ export const CONST_O = {
   /** Toleranțele comparației (secțiunea „Ce verifică oracolul”). */
   relLinii: 1e-9,
   relArc: 1e-7,
+  /** ADR 0037 §4, §11 (sub-felia 2.3c-1): REZOLUTIE, pragul prafului și al golului închis la ușă. */
+  rezolutie: 0.01,
 } as const;
 
+/** ADR 0035 §10, apoi codurile ADR 0037 §11 („Raportul”, în ordinea scrisă acolo), la coadă (ALEGERE: locul nu e scris). */
 export const CODURI_O = [
   'deschise', 'degenerate', 'prea-mari', 'sarit-text', 'sarit-use', 'sarit-image', 'sarit-foreignObject', 'sarit-svg',
   'ascunse', 'eroare-date', 'atribut-invalid', 'transformare-invalida', 'singulara', 'arce-eliptice', 'arce-plate',
   'cubice-din-arce', 'nonzero-normalizate', 'nonzero-refuzate', 'pagina-fara-marime', 'viewbox-invalid', 'transformare-radacina', 'stil',
+  'inchise-de-umplere', 'inchise-la-usa', 'sub-rezolutie',
 ] as const;
+/** Codurile noi ale sub-feliei 2.3c-1 (ADR 0037 §11). */
+export const CODURI_2_3C1_O = ['inchise-de-umplere', 'inchise-la-usa', 'sub-rezolutie'] as const;
 export type CodO = (typeof CODURI_O)[number];
 export type RaportO = Record<CodO, number>;
 export const CODURI_REFUZ_O = ['octeti', 'svgz', 'entitati', 'parsare', 'radacina', 'gol', 'departe', 'plafon'] as const;
@@ -736,9 +780,17 @@ export type CaleO = {
   /** Forma se normalizează (felia 2.7d): regula efectivă nonzero și umplută (`fill` efectiv altul decât `none`). */
   nonzero: boolean;
 };
+/**
+ * Jurnalul unei subcăi a unui `path` / `polyline` / `polygon` (sub-felia 2.3c-1), după plafonul căii: soarta ei (codul la
+ * care s-a numărat, sau `cale`), `z`, golul capăt–start și diagonala cutiei exacte (în mm), `umplut`, iar la `cale`,
+ * indexul căii în `cai` și dacă ușa a adăugat linia de închidere (`inchisaDeUsa`: umplerea sau golul sub rezoluție).
+ */
+export type SoartaSubcaleO = 'cale' | 'sub-rezolutie' | 'deschise' | 'degenerate' | 'prea-mari';
+export type SubcaleJurnalO = { forma: number; soarta: SoartaSubcaleO; z: boolean; gol: number; diagonala: number; umplut: boolean; inchisaDeUsa: 'umplere' | 'usa' | null; cale?: number };
+
 export type RezultatO =
-  | { ok: true; cai: CaleO[]; pagina: { latime: number; inaltime: number } | null; px: boolean; illustrator: boolean; avertismente: RaportO; marime: number; tolLC: number; formeNonzero: FormaNonzeroO[] }
-  | { ok: false; cod: CodRefuzO; avertismente?: RaportO; detaliu?: string; alternativ?: RezultatO };
+  | { ok: true; cai: CaleO[]; pagina: { latime: number; inaltime: number } | null; px: boolean; illustrator: boolean; avertismente: RaportO; marime: number; tolLC: number; formeNonzero: FormaNonzeroO[]; subcai: SubcaleJurnalO[]; golLaUsa: number }
+  | { ok: false; cod: CodRefuzO; avertismente?: RaportO; detaliu?: string; alternativ?: RezultatO; subcai?: SubcaleJurnalO[] };
 
 export type OptiuniO = { pxPeTol?: 96 | 72; varianta?: 2 | 4; parser?: ParserSvg; limba?: string; buget?: number; densitateNonzero?: number };
 
@@ -886,6 +938,7 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
   const stRad = { ...stilCalculat(rad, STIL_RADACINA_PARINTE, foaie, costCss), ascuns: false };
   const stiva: Cadru[] = copiiElement(rad).reverse().map((el) => ({ el, m: mPagina, stil: stRad }));
   const lucru: Lucru = { produse: 0 };
+  const jurnal: SubcaleJurnalO[] = [];
   try {
   while (stiva.length > 0) {
     const { el, m, stil: stParinte } = stiva.pop() as Cadru;
@@ -920,7 +973,8 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
       const idx = forma++;
       if (!vizibil) nr.ascunse++;
       // ADR 0036 §9: doar o formă umplută cu regula nonzero se normalizează; `fill: none` se citește ca atare.
-      else proceseazaForma(el, ln, m2, stil.regula === 'nonzero' && stil.umplut, idx, varianta, nr, cai, lucru);
+      // ADR 0037 §11 (2.3c-1): umplerea efectivă hotărăște și închiderea subcăilor fără `Z`.
+      else proceseazaForma(el, ln, m2, stil.regula === 'nonzero' && stil.umplut, stil.umplut, idx, varianta, nr, cai, lucru, jurnal);
     } else if (ln in SARITE) {
       // Revizia 12.10: visibility nu le scoate din raport (un tspan vizibil reapare); doar display:none (mai sus).
       nr[SARITE[ln] as CodO]++;
@@ -935,7 +989,7 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
   if (costCss.n > CONST_STIL.potriviri) return { ok: false, cod: 'plafon', detaliu: 'css', avertismente: nr };
   // Ordinea refuzurilor (revizia 12.10): plafon (vârfurile, apoi includerile), departe, gol. Plafonul vârfurilor se judecă
   // întâi pe intrare, înaintea normalizării (felia 2.7d, ADR 0036 §9): atunci numerele nonzero rămân 0.
-  if (cai.length === 0) return { ok: false, cod: 'gol', avertismente: nr };
+  if (cai.length === 0) return { ok: false, cod: 'gol', avertismente: nr, subcai: jurnal };
   if (cai.reduce((t, c) => t + c.varfuri.length, 0) > CONST_O.varfuriPrimite) return { ok: false, cod: 'plafon', avertismente: nr };
   for (const c of cai) {
     for (const v of c.varfuri) {
@@ -978,7 +1032,9 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
   // ADR 0036 §6: forma goală (regiunea vidă, sau o formă simplă mai subțire decât τ) se numără tot nonzero-normalizate;
   // dacă nu rămâne nimic, fișierul e „gol”. Forma subțire POATE și să rămână: alternativa e rezultatul în care rămâne.
   nr['nonzero-normalizate'] = formeNonzero.filter((f) => f.deSchimbat || f.gol).length;
-  const ok: RezultatO = { ok: true, cai, pagina, px, illustrator, avertismente: nr, marime, tolLC, formeNonzero };
+  // ADR 0037 §11: `inchise-la-usa` vine cu golul cel mai mare (nejudecat la aplicație: câmpul nu e numit).
+  const golLaUsa = jurnal.reduce((m, j) => (j.inchisaDeUsa === 'usa' && j.soarta === 'cale' ? Math.max(m, j.gol) : m), 0);
+  const ok: RezultatO = { ok: true, cai, pagina, px, illustrator, avertismente: nr, marime, tolLC, formeNonzero, subcai: jurnal, golLaUsa };
   const goale = new Set(formeNonzero.filter((f) => f.gol).map((f) => f.forma));
   if (goale.size > 0 && cai.every((c) => goale.has(c.forma))) {
     const subtiri = formeNonzero.filter((f) => f.gol && f.subtire);
@@ -999,7 +1055,7 @@ type SubcaleF = { start: P; segs: SegF[]; z: boolean; linie?: boolean };
 const PLAFON_LUCRU = Symbol('plafon');
 type Lucru = { produse: number };
 
-function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean, idx: number, varianta: 2 | 4, nr: RaportO, cai: CaleO[], lucru: Lucru): void {
+function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean, umplut: boolean, idx: number, varianta: 2 | 4, nr: RaportO, cai: CaleO[], lucru: Lucru, jurnal: SubcaleJurnalO[]): void {
   const sub = subcaiForma(el, ln, varianta, nr);
   if (sub === null) return;
   if (esteSingularaO(m)) {
@@ -1079,16 +1135,29 @@ function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean
     const vii = runs.filter((r) => r.nul !== true);
     const pk = vii.length > 0 ? (vii[vii.length - 1] as RunO).ex.b : p0;
     const gol = Math.hypot(pk.x - p0.x, pk.y - p0.y);
+    // Diagonala cutiei exacte a subcăii (cu startul și cu segmentele nule), în mm: praful de mai jos (ADR 0037 §11).
+    const cut = cutieExacta(runs);
+    const x0 = Math.min(cut.minX, p0.x), x1 = Math.max(cut.maxX, p0.x), y0 = Math.min(cut.minY, p0.y), y1 = Math.max(cut.maxY, p0.y);
+    const diagonala = Math.hypot(x1 - x0, y1 - y0);
+    const noteaza = (soarta: SoartaSubcaleO, inchisaDeUsa: 'umplere' | 'usa' | null, cale?: number): void => {
+      jurnal.push({ forma: idx, soarta, z: s.z, gol, diagonala, umplut, inchisaDeUsa, ...(cale !== undefined ? { cale } : {}) });
+    };
+    // Închiderea: cu `Z`, sau prin apropiere (≤ TOLERANTA_IMPORT), ca în 2.7c; fără `Z`, peste ea (2.3c-1): umplerea
+    // (`fill` efectiv ≠ `none`) închide cu o linie; `fill: none` închide doar golul de cel mult REZOLUTIE; altfel deschisă.
+    let inchisaDeUsa: 'umplere' | 'usa' | null = null;
     if (gol <= CONST_O.tolImport) {
       if (vii.length > 0) (vii[vii.length - 1] as RunO).gol = gol;
-    } else if (s.z) {
+    } else if (s.z || umplut || gol <= CONST_O.rezolutie) {
       if (citite + 1 > CONST_O.varfuriCale) {
         nr['prea-mari']++;
+        noteaza('prea-mari', null);
         continue;
       }
       vii.push(linie(pk, p0));
+      if (!s.z) inchisaDeUsa = umplut ? 'umplere' : 'usa';
     } else {
       nr.deschise++;
+      noteaza('deschise', null);
       continue;
     }
     // O buclă dintr-o singură cubică (închisă, fără linia de închidere): împărțită la t = 1/2 (de Casteljau), două vârfuri.
@@ -1103,9 +1172,26 @@ function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean
     }
     const varfuri = vii.flatMap((r) => r.piese);
     if (varfuri.length < 2 || (vii.every((r) => r.clasa === 'L') && coliniare(varfuri.map((v) => v.p)))) {
-      nr.degenerate++;
+      // ADR 0037 §11: închiderea adăugată de ușă care dă o cale degenerată lasă subcalea deschisă (numărată `deschise`).
+      if (inchisaDeUsa !== null) {
+        nr.deschise++;
+        noteaza('deschise', inchisaDeUsa);
+      } else {
+        nr.degenerate++;
+        noteaza('degenerate', null);
+      }
       continue;
     }
+    // ADR 0037 §11, praful (2.3c-1): o subcale, închisă (cu `Z`, prin apropiere) sau deschisă (închisă de ușă), cu diagonala
+    // cutiei sub REZOLUTIE se sare, numărată `sub-rezolutie`, fără numărul închiderii. După degenerată (ALEGERE, în antet).
+    if (diagonala < CONST_O.rezolutie) {
+      nr['sub-rezolutie']++;
+      noteaza('sub-rezolutie', inchisaDeUsa);
+      continue;
+    }
+    if (inchisaDeUsa === 'umplere') nr['inchise-de-umplere']++;
+    else if (inchisaDeUsa === 'usa') nr['inchise-la-usa']++;
+    noteaza('cale', inchisaDeUsa, cai.length);
     const cale: CaleO = { varfuri, forma: idx, runs: vii, tolVarf: [], nonzero: normalizabila };
     if (idA !== null) cale.nume = idA.slice(0, CONST_O.numeLungime);
     cai.push(cale);
@@ -1717,7 +1803,8 @@ export function judecaRezultat(app: unknown, o: RezultatO, opt: OptiuniJudecata 
   else if (pg === null || typeof pg !== 'object' || !(Math.abs(pg.latime - o.pagina.latime) <= 1e-12 * o.pagina.latime) || !(Math.abs(pg.inaltime - o.pagina.inaltime) <= 1e-12 * o.pagina.inaltime)) pr.push(`pagina ${JSON.stringify(pg)} ≠ ${JSON.stringify(o.pagina)}`);
   if (a.px !== o.px) pr.push(`px ${String(a.px)} ≠ ${String(o.px)}`);
   if (a.illustrator !== o.illustrator) pr.push(`illustrator ${String(a.illustrator)} ≠ ${String(o.illustrator)}`);
-  pr.push(...judecaRaport(a.avertismente, o.avertismente, CODURI_NONZERO_O));
+  // `sub-rezolutie` se judecă separat (mai jos): subcăile-praf prezise plus contururile de praf scoase din normalizare.
+  pr.push(...judecaRaport(a.avertismente, o.avertismente, [...CODURI_NONZERO_O, 'sub-rezolutie']));
   if (!Array.isArray(a.cai)) return [...pr, 'cai nu e listă'];
   // Căile aplicației, pe forme (în ordinea documentului).
   const appPeForma = new Map<number, CaleApp[]>();
@@ -1735,6 +1822,10 @@ export function judecaRezultat(app: unknown, o: RezultatO, opt: OptiuniJudecata 
   const analize = new Map(o.formeNonzero.map((f) => [f.forma, f]));
   const forme = [...new Set([...appPeForma.keys(), ...oPeForma.keys()])].sort((x, y) => x - y);
   let schimbate = 0, ramaseDeSchimbat = 0, ramaseNonzero = 0;
+  // ADR 0037 §11: contururile de praf scoase din ieșirea normalizării (găsite de oracolul normalizării) și formele
+  // normalizate (intrarea lor, pentru căutarea întreagă când numărul aplicației nu se potrivește).
+  let prafGasit = 0;
+  const normalizate: Array<{ forma: number; intrare: CaleN[]; tol: number[][] }> = [];
   for (const f of forme) {
     const A = appPeForma.get(f) ?? [], O = oPeForma.get(f) ?? [];
     if (O.length === 0) { pr.push(`forma ${f}: ${A.length} căi pe care oracolul nu le are`); continue; }
@@ -1762,11 +1853,27 @@ export function judecaRezultat(app: unknown, o: RezultatO, opt: OptiuniJudecata 
       info: false, biti: false, asteptat: 'schimbat', densitate: opt.densitateNonzero ?? 1,
       tolSursa: (ci, vi) => (tol[ci]?.[vi] ?? 0),
       ...(an !== undefined ? { martor: an.martor } : {}),
+      // ADR 0037 §11: contururile ieșirii sub rezoluție lipsesc (sărite de ușă, numărate `sub-rezolutie`).
+      praf: CONST_O.rezolutie,
     });
     pr.push(...j.probleme.map((p) => `forma ${f} (normalizată): ${p}`));
+    prafGasit += j.masuri.praf ?? 0;
+    normalizate.push({ forma: f, intrare: O.map((c) => c.varfuri as CaleN), tol });
   }
   const av = (a.avertismente ?? {}) as Record<string, unknown>;
   if (av['nonzero-normalizate'] !== schimbate) pr.push(`raportul: nonzero-normalizate = ${String(av['nonzero-normalizate'])} ≠ ${schimbate} (formele nonzero schimbate)`);
+  // `sub-rezolutie` = subcăile-praf (prezise exact) + contururile de praf ale formelor normalizate. Cele găsite lângă
+  // dezacorduri sunt o margine de jos; dacă aplicația numără altfel, se caută toate (ferestrele în fiecare încrucișare).
+  const subPrezis = o.avertismente['sub-rezolutie'];
+  const subApp = av['sub-rezolutie'];
+  if (subApp !== subPrezis + prafGasit) {
+    let toate = 0;
+    if (typeof subApp === 'number' && subApp > subPrezis + prafGasit) {
+      for (const n of normalizate) toate += prafAdevarat(n.intrare, 'nonzero', CONST_O.rezolutie, { tolSursa: (ci, vi) => (n.tol[ci]?.[vi] ?? 0) }).length;
+      toate = Math.max(toate, prafGasit);
+    } else toate = prafGasit;
+    if (subApp !== subPrezis + toate) pr.push(`raportul: sub-rezolutie = ${String(subApp)} ≠ ${subPrezis} (subcăile-praf) + ${toate} (contururile de praf ale normalizării, ADR 0037 §11)`);
+  }
   const rf = av['nonzero-refuzate'];
   if (typeof rf !== 'number' || !(rf >= ramaseDeSchimbat && rf <= ramaseNonzero)) pr.push(`raportul: nonzero-refuzate = ${String(rf)} ∉ [${ramaseDeSchimbat}, ${ramaseNonzero}] (formele care trebuiau schimbate și au rămas ca în 2.7c; toate cele rămase)`);
   return pr;
@@ -1809,6 +1916,22 @@ export function caiFinaleO(app: unknown, o: RezultatO): CaleO[] {
     }
   }
   return out;
+}
+
+/**
+ * ADR 0037 §11: câte contururi de praf are regiunea nonzero adevărată a formelor de schimbat (cele pe care ușa le sare din
+ * ieșirea normalizării și le numără la `sub-rezolutie`, dacă normalizarea nu e refuzată). Căutarea întreagă (ferestrele în
+ * fiecare încrucișare), pentru hârtie.
+ */
+export function prafNormalizareO(o: RezultatO): number {
+  if (!o.ok) return 0;
+  let n = 0;
+  for (const f of o.formeNonzero) {
+    if (!f.deSchimbat) continue;
+    const cai = o.cai.filter((c) => c.forma === f.forma);
+    n += prafAdevarat(cai.map((c) => c.varfuri as CaleN), 'nonzero', CONST_O.rezolutie, { tolSursa: (ci, vi) => (cai[ci]?.tolVarf[vi] ?? 0) }).length;
+  }
+  return n;
 }
 
 /** Analiza unei forme nonzero (citirea 2.7c a ei): trebuie schimbată? Regiunea ei e vidă? */

@@ -4,6 +4,7 @@ import {
 } from './contur.ts';
 import { CUTIE_GOALA, cuPunct, cutieArc, type Cutie } from './cutie.ts';
 import { distantaLaContur, distantaLaSegment, inRegiune, RIDICARE_RAZA, traversariSegment } from './distanta.ts';
+import { REZOLUTIE } from './toleranta.ts';
 
 /**
  * Cutii într-un index static (arborele R împachetat al lui cavalier; cavalier se folosește doar prin fațada asta, regula
@@ -80,8 +81,8 @@ export type RezultatOffset =
   | { readonly ok: true; readonly contururi: readonly Contur[] }
   | { readonly ok: false; readonly motiv: string };
 
-/** Rezoluția modelului, în mm: sub ea (colțuri, offseturi), rezultatul nu e garantat (s1-V §5.4). */
-export const REZOLUTIE = 0.01;
+/** Rezoluția modelului (`toleranta.ts`, un singur loc): sub ea, rezultatul nu e garantat (s1-V §5.4). */
+export { REZOLUTIE };
 /** Cea mai mică distanță de offset acceptată: jumătate din rezoluție. */
 export const DISTANTA_MINIMA = REZOLUTIE / 2;
 /** Două puncte mai apropiate de atât sunt unul singur, iar două segmente mai apropiate se ating (mm). */

@@ -149,7 +149,9 @@ milimetri e M = pagina ∘ strămoșii ∘ forma.
   egal (exact) cu acel ultim punct (mânerul retras, `s… -1-1-1-1z` din Illustrator) se mută odată cu el în primul vârf
   (13.10, logoul AS Roma: rămânea la 1 ulp de vârf, cu o tangentă din zgomot, iar normalizarea refuza forma). Cu `Z` și
   un gol mai mare, se adaugă linia de închidere.
-- Subcăile **deschise** (și `line`, și `polyline` care nu se închide) se sar, numărate: vin cu 2.3c.
+- Subcăile **deschise** (și `line`, și `polyline` care nu se închide) se sar, numărate: vin cu 2.3c. *Amendat de ADR 0037
+  §11 (felia 2.3c-1):* o formă umplută fără Z se închide, ca în browser (`inchise-de-umplere`); una cu `fill: none` se
+  închide doar cu golul ≤ 0,01 mm (`inchise-la-usa`); o subcale sub rezoluție e praf, sărită (`sub-rezolutie`).
 - Se scot doar segmentele nule exact, judecate în coordonatele formei: linia cu capetele egale și cubica cu toate cele patru
   puncte egale. Restul geometriei
   nu se judecă la ușă (ADR 0034 §2).

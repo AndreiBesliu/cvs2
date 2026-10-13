@@ -310,6 +310,44 @@ test('logoul AS Roma (13.10): la închidere, mânerul egal cu capătul se lipeș
   assert.ok(u?.s.tip === 'C' && u.s.c2.x === 0.5);
 });
 
+test('ADR 0037 §11 (2.3c-1): o formă umplută fără Z se închide, ca în browser; dacă închiderea e degenerată, rămâne deschisă', () => {
+  const CODURI = ['deschise', 'degenerate', 'inchise-de-umplere', 'inchise-la-usa', 'sub-rezolutie'] as const;
+  type Rezumat = { ok: boolean; n: number } & Record<(typeof CODURI)[number], number>;
+  const av = (corp: string): Rezumat => {
+    const r = citeste(pagina(corp));
+    const rez = { ok: r.ok, n: r.ok ? r.cai.length : 0 } as Rezumat;
+    for (const c of CODURI) rez[c] = r.avertismente?.[c] ?? 0;
+    return rez;
+  };
+  // Golul mare (un triunghi fără Z), golul VfB (3e-4 mm, din rotunjirea coordonatelor relative) și o polyline umplută.
+  assert.deepEqual(av('<path d="M0 0 L10 0 L10 10"/>'), { ok: true, n: 1, deschise: 0, degenerate: 0, 'inchise-de-umplere': 1, 'inchise-la-usa': 0, 'sub-rezolutie': 0 });
+  assert.equal(av('<path d="M0 0 L10 0 L10 10 L0.0003 0"/>')['inchise-de-umplere'], 1);
+  assert.equal(av('<polyline points="0,0 10,0 10,10"/>')['inchise-de-umplere'], 1);
+  // Două puncte: închiderea dă un dus-întors fără arie, deci subcalea rămâne deschisă (nu „degenerată”).
+  assert.deepEqual(av('<path d="M0 0 L10 0"/>'), { ok: false, n: 0, deschise: 1, degenerate: 0, 'inchise-de-umplere': 0, 'inchise-la-usa': 0, 'sub-rezolutie': 0 });
+  // `line` nu se umple niciodată: rămâne deschisă.
+  assert.equal(av('<line x1="0" y1="0" x2="10" y2="10"/><rect x="20" width="5" height="5"/>').deschise, 1);
+  // Umplerea se moștenește (grup, clasă): `fill: none` nu închide un gol mare.
+  assert.equal(av('<g fill="none"><path d="M0 0 L10 0 L10 10"/></g><rect x="20" width="5" height="5"/>').deschise, 1);
+  assert.equal(av('<style>.c{fill:none}</style><path class="c" d="M0 0 L10 0 L10 10"/><rect x="20" width="5" height="5"/>').deschise, 1);
+});
+
+test('ADR 0037 §11 (2.3c-1): un contur cu fill none se închide doar sub rezoluție (0,01 mm); praful se sare, numărat', () => {
+  const r = cai(pagina('<path fill="none" d="M0 0 L10 0 L10 10 L0.005 0"/><path fill="none" d="M20 0 L30 0 L30 10 L20.02 0"/>'));
+  assert.equal(r.cai.length, 1);
+  assert.deepEqual([r.avertismente['inchise-la-usa'], r.avertismente.deschise], [1, 1]);
+  // Linia adăugată e chiar golul: niciun punct nu se mută.
+  assert.deepEqual(puncte(r.cai[0]?.varfuri ?? []), [[0, 50], [10, 50], [10, 40], [0.005, 50]]);
+  // Praful: un triunghi de 1e-4 mm (închis) se sare. O linie de 1e-4 mm cu fill none se închide la ușă, dar închiderea
+  // e degenerată, deci rămâne deschisă (praful se judecă după degenerare, ca un `M…Z` gol să rămână degenerat).
+  const p = citeste(pagina('<path d="M5 5 L5.0001 5 L5 5.0001 Z"/><path fill="none" d="M8 8 L8.0001 8"/><path d="M9 9 Z"/><rect x="20" width="5" height="5"/>'));
+  assert.ok(p.ok && p.cai.length === 1);
+  assert.deepEqual([p.avertismente['sub-rezolutie'], p.avertismente.deschise, p.avertismente.degenerate], [1, 1, 1]);
+  // Pragul: o diagonală de 0,0099 mm e praf, una de 0,0101 nu.
+  assert.equal(citeste(pagina('<path d="M0 0 L0.007 0 L0 0.007 Z"/><rect x="20" width="5" height="5"/>')).avertismente?.['sub-rezolutie'], 1);
+  assert.equal(citeste(pagina('<path d="M0 0 L0.0072 0 L0 0.0072 Z"/><rect x="20" width="5" height="5"/>')).avertismente?.['sub-rezolutie'], 0);
+});
+
 test('recenzia 2.7d: plafonul total al vârfurilor se judecă pe intrare, înaintea normalizării', () => {
   // 5 căi × 14 000 de triunghiuri suprapuse (42 000 de vârfuri fiecare; 210 000 > 200 000): refuzat fără să normalizeze.
   let d = '';
@@ -383,8 +421,10 @@ test('recenzia 2.7c: switch cu systemLanguage, după limba aplicației; similitu
   };
   assert.equal(lat('ro'), 6);
   assert.equal(lat('en'), 7);
-  // O elipsă de 0,1 × 0,2 mm sub o scară minusculă rămâne elipsă (cubice), nu cerc.
-  const e = cai(pagina('<circle cx="1e12" cy="1e12" r="1" transform="scale(1e-13 2e-13)"/>', 'width="100mm" height="100mm" viewBox="0 0 1 1"'));
+  // O elipsă de 1 × 2 mm sub o scară minusculă rămâne elipsă (cubice), nu cerc. Matricea în mm are a = 1e-13, d = 2e-13:
+  // judecată absolut (|a − d| ≤ 1e-12), ar fi o similitudine (13.10: probat cu defectul pus înapoi). Până la 2.3c-1 cercul
+  // avea 1e-11 mm, acum praf (ADR 0037 §11), și o scară la care și varianta absolută vedea elipsa.
+  const e = cai(pagina('<circle cx="1e14" cy="1e14" r="1e13" transform="scale(1e-15 2e-15)"/>', 'width="100mm" height="100mm" viewBox="0 0 1 1"'));
   assert.equal(e.avertismente['arce-eliptice'], 2);
 });
 

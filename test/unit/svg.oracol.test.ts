@@ -3,7 +3,7 @@
  * corpusul scris de mână (`test/oracles/svg.cazuri.ts`, cu valorile pe hârtie):
  * - (0) constantele contractului; oracolul pe hârtie, pe fiecare caz (refuzul, pagina, px, tipurile, vârfurile, bulge,
  *   raportul, laturile, forma, numele);
- * - (a) aplicația față de oracol, pe fiecare caz: refuzul, pagina, px, illustrator, cele 22 de numere, căile (structura,
+ * - (a) aplicația față de oracol, pe fiecare caz: refuzul, pagina, px, illustrator, cele 25 de numere, căile (structura,
  *   startul, vârfurile, sensul arcelor, cubicele din fișier, segmentele nule, razele, distanța în ambele sensuri, rafinată);
  *   formele nonzero normalizate (felia 2.7d, ADR 0036) cu oracolul normalizării (regiunea, geometria citirii, topologia),
  *   numerele `nonzero-*` și ce rămâne după normalizare față de hârtie; unde maparea nu depinde de px, același rezultat și
@@ -13,6 +13,12 @@
  * - (d) `problemaEntitati` și `numeDinFisier`;
  * - (e) CONTROALELE NEGATIVE: transformări greșite ale ieșirii aplicației trebuie prinse de oracol.
  * Parserul e același pentru amândoi (`parserTest`: xmldom, cu entitățile simple expandate ca în browser).
+ *
+ * Sub-felia 2.3c-1 (ADR 0037 §11): trei numere noi la coada raportului (`inchise-de-umplere`, `inchise-la-usa`,
+ * `sub-rezolutie`), secțiunea U a corpusului și controalele negative ale umplerii, golului și prafului, judecate fără
+ * aplicație (pe rezultatul construit din oracol), ca să prindă un oracol stricat și înainte ca aplicația să le aibă.
+ * Precizarea 13.10 (praful ieșirii normalizării): cazurile U24–U26 și controalele lor negative, pe ieșirea aplicației
+ * (bucla păstrată, scoasă dar nenumărată, numărată de două ori; un contur care NU e praf scos).
  */
 import { test } from 'node:test';
 import { DOMParser } from '@xmldom/xmldom';
@@ -21,12 +27,13 @@ import { citesteSvg, CODURI_AVERTISMENT, PLAFON_IMPORT, problemaEntitati, SVG_NS
 import { laturiDinImbricare } from '../../src/io/imbricare.ts';
 import { numeDinFisier, piesaDinImport } from '../../src/io/piesa.ts';
 import { TOLERANTA_IMPORT, TOLERANTA_PROIECT } from '../../src/geom/toleranta.ts';
+import { REZOLUTIE } from '../../src/geom/offset.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import {
-  CODURI_O, CONST_O, SVG_NS_O, caiFinaleO, citesteSvgO, coltExact, judecaPiesa, judecaRezultat, laturiBugetO, laturiO, numeDinFisierO, parserTest,
-  problemaEntitatiO, punctCub, type RezultatO, type VarfO,
+  CODURI_2_3C1_O, CODURI_O, CONST_O, SVG_NS_O, caiFinaleO, citesteSvgO, coltExact, judecaPiesa, judecaRezultat, laturiBugetO, laturiO, numeDinFisierO, parserTest,
+  prafNormalizareO, problemaEntitatiO, punctCub, type RezultatO, type VarfO,
 } from '../oracles/svg.ts';
-import { CORPUS, ILLUSTRATOR, judecaHartia, judecaHartiaFinala, octetiCaz, type CazSvg } from '../oracles/svg.cazuri.ts';
+import { CORPUS, ILLUSTRATOR, judecaHartia, judecaHartiaFinala, mm, octetiCaz, type CazSvg } from '../oracles/svg.cazuri.ts';
 
 type CaleApp = { varfuri: VarfO[]; forma: number; nume?: string };
 type OkApp = { ok: true; cai: CaleApp[]; pagina: { latime: number; inaltime: number } | null; px: boolean; illustrator: boolean; avertismente: Record<string, number> };
@@ -49,10 +56,15 @@ const copie = <T>(x: T): T => structuredClone(x);
 // ---------------------------------------------------------------------------------------------------------------------
 // (0)
 
-test('(0) constantele: codurile raportului (22, în ordine; 2.7d: nonzero-normalizate și nonzero-refuzate în locul lui nonzero), plafoanele, toleranța importului, spațiul de nume', () => {
+test('(0) constantele: codurile raportului (25, în ordine; 2.7d: nonzero-normalizate și nonzero-refuzate în locul lui nonzero; 2.3c-1: cele trei noi la coadă), plafoanele, toleranța importului, REZOLUTIE, spațiul de nume', () => {
   assert.deepEqual([...CODURI_AVERTISMENT], [...CODURI_O]);
-  assert.equal(CODURI_O.length, 22);
+  assert.equal(CODURI_O.length, 25);
   assert.ok(!(CODURI_O as readonly string[]).includes('nonzero'));
+  // ADR 0037 §11, „Raportul”: în ordinea scrisă acolo; locul lor nu e scris, deci la coadă (ALEGERE, antetul oracolului).
+  assert.deepEqual(CODURI_O.slice(-3), [...CODURI_2_3C1_O]);
+  assert.deepEqual([...CODURI_2_3C1_O], ['inchise-de-umplere', 'inchise-la-usa', 'sub-rezolutie']);
+  assert.equal(REZOLUTIE, CONST_O.rezolutie);
+  assert.equal(CONST_O.rezolutie, 0.01);
   assert.equal(PLAFON_IMPORT.octeti, CONST_O.octeti);
   assert.equal(PLAFON_IMPORT.entitati, CONST_O.declaratii);
   assert.equal(PLAFON_IMPORT.varfuriLucru, CONST_O.varfuriLucru);
@@ -362,4 +374,136 @@ test('(e) control negativ, fără aplicație: stil numărat pe un <style> cu reg
   const o16 = oracol(c16);
   assert.ok(o16.ok && o16.avertismente['stil'] === 1);
   assert.ok(judecaHartia({ ...o16, avertismente: { ...o16.avertismente, stil: 0 } }, c16.hartie).length > 0);
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// (e) Sub-felia 2.3c-1 (ADR 0037 §11): controalele negative ale umplerii, golului sub rezoluție și prafului. Fără aplicație:
+// rezultatul corect se construiește din oracol (trebuie să treacă), apoi se strică așa cum l-ar strica o ușă greșită.
+
+/** O cale din linii, cu vârfurile date (în mm). */
+const caleL = (forma: number, puncte: Array<[number, number]>): CaleApp => ({ forma, varfuri: puncte.map(([x, y]) => ({ p: { x, y }, s: { tip: 'L' } })) as VarfO[] });
+/** Căile rezultatului în ordinea documentului (după `forma`, stabil). */
+const ordoneaza = (a: OkApp): void => { a.cai.sort((x, y) => x.forma - y.forma); };
+const plus = (a: OkApp, cod: string, d: number): void => { a.avertismente[cod] = (a.avertismente[cod] ?? 0) + d; };
+
+function controlNegativ23c1(nume: string, numeCaz: string, strica: (a: OkApp) => void): void {
+  test(`(e) control negativ 2.3c-1, fără aplicație: ${nume} (${numeCaz})`, () => {
+    const c = caz(numeCaz);
+    const o = oracol(c);
+    const bun = dinOracol(c);
+    assert.deepEqual(judecaRezultat(copie(bun), o), [], 'rezultatul construit din oracol trebuie să treacă');
+    const rau = copie(bun);
+    strica(rau);
+    assert.ok(judecaRezultat(rau, o).length > 0, 'stricarea a trecut neobservată');
+  });
+}
+
+controlNegativ23c1('închiderea de umplere ignorată (ca în 2.7c): calea lipsă, numărată deschise', 'U21', (a) => {
+  a.cai = a.cai.filter((x) => x.forma !== 1);
+  plus(a, 'deschise', 1);
+  plus(a, 'inchise-de-umplere', -1);
+});
+controlNegativ23c1('regula umplerii ignorată: și subcalea cu fill="none" moștenit se închide', 'U16', (a) => {
+  a.cai.push(caleL(0, [[10, 90], [30, 90], [30, 70]]));
+  ordoneaza(a);
+  plus(a, 'deschise', -1);
+  plus(a, 'inchise-de-umplere', 1);
+});
+controlNegativ23c1('regula umplerii întoarsă: subcalea umplută lăsată deschisă', 'U16', (a) => {
+  a.cai = [];
+  plus(a, 'deschise', 1);
+  plus(a, 'inchise-de-umplere', -1);
+});
+controlNegativ23c1('pragul golului × 10 (0,1 mm): golul de 0,02 mm închis la ușă', 'U9', (a) => {
+  a.cai.push(caleL(1, [[50, 90], [70, 90], [70, 70], [50, 70], [50, 89.98]]));
+  ordoneaza(a);
+  plus(a, 'deschise', -1);
+  plus(a, 'inchise-la-usa', 1);
+});
+controlNegativ23c1('pragul golului ÷ 10 (0,001 mm): golul de 0,005 mm lăsat deschis', 'U9', (a) => {
+  a.cai = a.cai.filter((x) => x.forma !== 0);
+  plus(a, 'deschise', 1);
+  plus(a, 'inchise-la-usa', -1);
+});
+controlNegativ23c1('praful păstrat: triunghiul de 1e-4 mm cu Z rămâne cale', 'U12', (a) => {
+  a.cai.push(caleL(0, [[20, 80], [20.0001, 80], [20.0001, 79.9999]]));
+  ordoneaza(a);
+  plus(a, 'sub-rezolutie', -1);
+});
+controlNegativ23c1('praful umplut fără Z numărat închis de umplere, nu praf', 'U12', (a) => {
+  plus(a, 'sub-rezolutie', -1);
+  plus(a, 'inchise-de-umplere', 1);
+});
+controlNegativ23c1('pragul prafului ÷ 10 (0,001 mm): triunghiul de 0,00495 mm păstrat', 'U13', (a) => {
+  a.cai.unshift(caleL(0, [[20, 80], [20.0035, 80], [20.0035, 79.9965]]));
+  plus(a, 'sub-rezolutie', -1);
+});
+controlNegativ23c1('numerele schimbate: închise la ușă numărate închise de umplere', 'U9', (a) => {
+  a.avertismente['inchise-de-umplere'] = a.avertismente['inchise-la-usa'] as number;
+  a.avertismente['inchise-la-usa'] = 0;
+});
+controlNegativ23c1('numerele schimbate: sub-rezolutie numărate deschise', 'U12', (a) => {
+  a.avertismente['deschise'] = a.avertismente['sub-rezolutie'] as number;
+  a.avertismente['sub-rezolutie'] = 0;
+});
+controlNegativ23c1('golul sub TOLERANTA_IMPORT numărat (închiderea în tăcere numărată ca umplere și la ușă)', 'U11', (a) => {
+  plus(a, 'inchise-de-umplere', 1);
+  plus(a, 'inchise-la-usa', 1);
+});
+controlNegativ23c1('închiderea degenerată numărată degenerate, nu deschise', 'U6', (a) => {
+  plus(a, 'deschise', -2);
+  plus(a, 'degenerate', 2);
+});
+controlNegativ23c1('capătul lipit de start (un punct mutat): linia de închidere de 5e-5 mm lipsă', 'U1', (a) => {
+  (a.cai[0] as CaleApp).varfuri.pop();
+});
+controlNegativ23c1('linia de închidere a umplerii pe alt drum: capătul mutat cu 1e-5 mm', 'U5', (a) => {
+  ((a.cai[0] as CaleApp).varfuri[2] as unknown as VarfM).p.x += 1e-5;
+});
+
+test('(e) control negativ 2.3c-1, fără aplicație: praful singur păstrat (U14) și „M L” umplută închisă (U7): trebuiau refuzate gol', () => {
+  for (const [numeCaz, cale] of [['U14', caleL(0, [[20, 80], [20.0001, 80], [20.0001, 79.9999]])], ['U7', caleL(0, [[10, 90], [30, 90]])]] as const) {
+    const c = caz(numeCaz);
+    const o = oracol(c);
+    assert.ok(!o.ok && o.cod === 'gol');
+    const corect = { ok: false, cod: 'gol', avertismente: { ...o.avertismente } };
+    assert.deepEqual(judecaRezultat(corect, o), [], `${numeCaz}: refuzul corect trece`);
+    const rau = { ok: true, cai: [cale], pagina: { latime: 100, inaltime: 100 }, px: false, illustrator: false, avertismente: { ...o.avertismente } };
+    assert.ok(judecaRezultat(rau, o).length > 0, `${numeCaz}: păstrarea a trecut neobservată`);
+    const numarGresit = { ...corect, avertismente: { ...o.avertismente, 'sub-rezolutie': 0, deschise: 0 } };
+    assert.ok(judecaRezultat(numarGresit, o).length > 0, `${numeCaz}: raportul refuzului nejudecat`);
+  }
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// (e) ADR 0037 §11, praful ieșirii normalizării (precizarea 13.10): pe ieșirea aplicației (corectă pe U24 / U26), stricată.
+
+/** Bucla de închidere a lui U24, ca în ieșirea normalizării (umplerea în stânga): S, E, X. */
+const BUCLA_U24 = (): VarfO[] => {
+  const E = { x: 10.00004, y: 100 - 90.00004 };
+  const X = { x: 10 + ((E.x - 10) * (30 - 10)) / (30 - E.y), y: 10 };
+  return [{ p: { x: 10, y: 10 }, s: { tip: 'L' } }, { p: E, s: { tip: 'L' } }, { p: X, s: { tip: 'L' } }] as VarfO[];
+};
+controlNegativ('praful ieșirii păstrat: bucla de 5,7e-5 mm adusă înapoi, nenumărată', 'U24', (a) => {
+  a.cai.push({ forma: 0, varfuri: BUCLA_U24() });
+  plus(a, 'sub-rezolutie', -1);
+});
+controlNegativ('praful ieșirii scos, dar nenumărat (sub-rezolutie 0)', 'U24', (a) => { plus(a, 'sub-rezolutie', -1); });
+controlNegativ('praful ieșirii numărat de două ori (sub-rezolutie 2 pentru o buclă)', 'U24', (a) => { plus(a, 'sub-rezolutie', 1); });
+controlNegativ('un contur care NU e praf (diagonala 0,012 mm) scos din ieșirea normalizării, numărat sub-rezolutie', 'U26', (a) => {
+  const n = a.cai.length;
+  a.cai = a.cai.filter((c) => !(c.varfuri as VarfO[]).every((v) => v.p.x >= 59 && v.p.x <= 61));
+  assert.equal(a.cai.length, n - 1, 'pătratul mic trebuia să fie în ieșire');
+  plus(a, 'sub-rezolutie', 1);
+});
+controlNegativ('un contur care NU e praf (diagonala 0,012 mm) scos din ieșirea normalizării, nenumărat', 'U26', (a) => {
+  a.cai = a.cai.filter((c) => !(c.varfuri as VarfO[]).every((v) => v.p.x >= 59 && v.p.x <= 61));
+});
+
+test('(0) praful ieșirii, hârtia oracolului: o buclă de închidere mai subțire decât 4τ (1e-8 mm) nu e contur de praf; una de 1e-7 mm este', () => {
+  // E sub prima latură cu h: bucla S, X, E are raza înscrisă ≈ h / 2; τ ≈ 4,95e-9 mm (D ≈ 49,5 mm).
+  const caz = (h: string): RezultatO => citesteSvgO(new TextEncoder().encode(mm(100, 100, `<path d="M 10 90 L 30 90 L 30 70 L 10 70 L 10.00004 ${h} M 25 75 L 45 75 L 45 55 L 25 55 Z"/>`)));
+  assert.equal(prafNormalizareO(caz('90.00000001')), 0);
+  assert.equal(prafNormalizareO(caz('90.0000001')), 1);
+  assert.equal(prafNormalizareO(caz('90.00004')), 1);
 });

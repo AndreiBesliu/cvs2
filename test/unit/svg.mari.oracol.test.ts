@@ -9,6 +9,8 @@
  * - revizia 12.10: plafonul căii judecat după linia de închidere (50 000 trec, 50 001 nu); bugetul includerilor
  *   (2·10⁷) al laturilor: 4 000 de „săgeți” îl depășesc (null), 1 000 nu; laturile a 4 000 de dreptunghiuri imbricate
  *   (forme separate) cu bugetul: null;
+ * - sub-felia 2.3c-1 (ADR 0037 §11): plafonul căii judecat și pe linia de închidere adăugată de ușă (umplerea, golul sub
+ *   rezoluție);
  * - felia 2.7d (ADR 0036): euristica perechilor nonzero (care consuma bugetul includerilor la citire) a dispărut; o formă
  *   nonzero cu 1 000 / 4 000 de săgeți suprapuse (sute de mii de încrucișări) trece prin normalizare: ori o face (judecată
  *   de oracolul normalizării), ori o refuză cu bugetul ei (§8) și forma se citește evenodd, numărată; ușa nu se blochează.
@@ -62,7 +64,8 @@ test('plafonul căilor primite: 5 × 45 000 = 225 000 > 200 000 → plafon; 4 ×
 
 test('plafonul de lucru: 21 de polilinii deschise × 49 000 de puncte (1 028 979 de vârfuri produse) → plafon', () => {
   judeca(enc(mm(100, 100, Array.from({ length: 21 }, (_, i) => zigzag(49_000, i)).join(''))), { cod: 'plafon' });
-  // 20 dintre ele: 979 980 de vârfuri produse, sub plafon; toate deschise: refuzul e „gol”, cu raportul.
+  // 20 dintre ele: 979 980 de vârfuri produse, sub plafon; toate deschise: refuzul e „gol”, cu raportul. Sub-felia 2.3c-1
+  // (ADR 0037 §11): poliliniile sunt umplute, dar închiderea lor ar sta pe o dreaptă (degenerată), deci rămân deschise.
   judeca(enc(mm(100, 100, Array.from({ length: 20 }, (_, i) => zigzag(49_000, i)).join(''))), { cod: 'gol', avertismente: { deschise: 20 } });
 });
 
@@ -97,6 +100,17 @@ test('plafonul căii după linia de închidere: polygon cu 50 000 de puncte trec
   const rect = '<rect x="95" y="95" width="2" height="2"/>';
   judeca(enc(mm(100, 100, poligon(40, 40, 30, 50_000) + rect)), { cai: 2, tipuri: ['L'.repeat(50_000), 'LLLL'] });
   judeca(enc(mm(100, 100, poligon(40, 40, 30, 50_001) + rect)), { cai: 1, forme: [1], avertismente: { 'prea-mari': 1 } });
+});
+
+test('sub-felia 2.3c-1: plafonul căii pe închiderea ușii: polyline umplută de 50 000 de puncte se închide; fără umplere, de 50 001, e prea-mare', () => {
+  const rect = '<rect x="95" y="95" width="2" height="2"/>';
+  const linie = (n: number, umplere = ''): string => poligon(40, 40, 30, n).replace('<polygon', `<polyline${umplere}`);
+  // Golul ultimului punct față de primul e coarda 2 · 30 · sin(π / n) ≈ 0,0038 mm: umplută, închiderea de umplere; fără
+  // umplere, sub REZOLUTIE, închiderea la ușă. Linia de închidere e vârful 50 000: 49 999 de linii citite + 1 încap.
+  judeca(enc(mm(100, 100, linie(50_000) + rect)), { cai: 2, tipuri: ['L'.repeat(50_000), 'LLLL'], avertismente: { 'inchise-de-umplere': 1 } });
+  judeca(enc(mm(100, 100, linie(50_000, ' fill="none"') + rect)), { cai: 2, tipuri: ['L'.repeat(50_000), 'LLLL'], avertismente: { 'inchise-la-usa': 1 } });
+  // 50 001 de puncte: 50 000 de linii citite încap, dar linia de închidere nu.
+  judeca(enc(mm(100, 100, linie(50_001, ' fill="none"') + rect)), { cai: 1, forme: [1], avertismente: { 'prea-mari': 1 } });
 });
 
 /**

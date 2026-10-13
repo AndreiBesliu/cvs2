@@ -310,6 +310,13 @@ linie trece prin toată grosimea piesei Y (lângă …): o despică sau o creste
 **11. Ușa SVG** (amendează ADR 0035 §7, §8, §10).
 
 *Praful.* O subcale, închisă sau deschisă, cu diagonala cutiei sub `REZOLUTIE` se sare. Se numără la `sub-rezolutie`. Azi, o subcale închisă de felul ăsta face CAM-ul să refuze tot exportul.
+- Cutia e cea exactă (`cutieContur`: arcele cu extremele, cubicele cu ale lor), a subcăii închise.
+- Se judecă **după** închidere și după verificarea degenerării: un `M…Z` fără segmente rămâne `degenerate` (ADR 0035
+  §7), iar o subcale pe care închiderea o face degenerată rămâne deschisă. O subcale lăsată deschisă (golul peste 0,01 mm)
+  nu poate fi praf: diagonala ei e cel puțin golul. `line` nu e niciodată praf (e mereu deschisă).
+- Se judecă și pe **contururile ieșite din normalizarea `nonzero`** (ADR 0036): o buclă de închidere sub rezoluție (logoul
+  VfB: 2 bucle de ~6e-5 mm, la vârful închiderii) se sare, numărată la `sub-rezolutie`. Regiunea pierdută e sub
+  rezoluție; păstrată, CAM-ul ar refuza tot exportul.
 
 *Umplerea* (decizia owner-ului, 13.10). Se închid cu o linie, ca în browser, și se numără la `inchise-de-umplere`:
 - o subcale fără Z a unei forme umplute (`fill` efectiv ≠ `none`, moștenit, ADR 0035 §4);
@@ -319,7 +326,8 @@ Dacă închiderea dă o cale degenerată (mai puțin de 2 vârfuri, sau numai li
 - Căile închise așa intră în normalizarea `nonzero` (ADR 0036) și în imbricare, ca orice cale închisă.
 - Precizează „Ce am respins” din ADR 0035: se închid doar subcăile umplute, pe care le umple și browserul, nu și cele trase doar cu linie.
 
-*Golul sub rezoluție.* O subcale cu `fill: none` și golul de cel mult 0,01 mm se închide cu o linie. Se numără la `inchise-la-usa`, cu golul cel mai mare. Niciun punct nu se mută, iar linia adăugată e sub rezoluția declarată.
+*Golul sub rezoluție.* O subcale cu `fill: none` și golul de cel mult 0,01 mm se închide cu o linie. Se numără la `inchise-la-usa` (textul raportului spune pragul, 0,01 mm). Niciun punct nu se mută, iar linia adăugată e
+sub rezoluția declarată.
 
 *Ce devine cale deschisă:*
 - subcăile fără Z, cu `fill: none` și golul peste 0,01 mm;
@@ -346,7 +354,7 @@ Calea are vârfurile subcăii plus punctul final, cu segmentul L. E degenerată 
 
 *Raportul:*
 - `deschise` numără acum căile deschise importate, nu pe cele sărite;
-- coduri noi: `inchise-de-umplere`, `inchise-la-usa`, `sub-rezolutie`;
+- coduri noi: `inchise-de-umplere`, `inchise-la-usa`, `sub-rezolutie`, în ordinea asta, la coada listei din ADR 0035 §10;
 - textele se scriu în en și ro.
 
 **12. Interfața minimă.** Schimbă doar componentele de azi; carcasa din 2.8a le reîmbracă fără să schimbe contractul.

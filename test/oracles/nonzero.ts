@@ -30,7 +30,18 @@
  * - TOPOLOGIA (§7): fiecare contur ≥ 2 vârfuri; nicio linie / arc cu capetele egale, nicio cubică cu toate punctele egale;
  *   nicio muchie coincidentă (nici dus-întors, nici ac); niciun contur nu trece de două ori prin același vârf (amendamentul
  *   §7: un ciclu se taie la vârful repetat, frontierele care se ating ies în contururi separate);
- * - INFO: `contururiIntrare`, `contururiIesire`, `grupuri` (§3, cutiile exacte care se ating, tranzitiv), `tau` (§4).
+ * - INFO: `contururiIntrare`, `contururiIesire`, `grupuri` (§3, cutiile exacte care se ating, tranzitiv), `tau` (§4);
+ * - PRAFUL (opțiunea `praf`, doar la ușa SVG: ADR 0037 §11, sub-felia 2.3c-1): un contur al regiunii adevărate cu
+ *   diagonala cutiei exacte sub rezoluție lipsește din ieșire. Oracolul nu face aranjamentul întreg: în jurul fiecărei
+ *   sonde în dezacord și al fiecărui punct al frontierei adevărate fără ieșire, construiește aranjamentul LOCAL (o
+ *   fereastră de 1,25 × rezoluția: primitivele intrării ca polilinii cu eroarea de coardă ≤ 1e-11 mm, tăiate la
+ *   încrucișări, fiecare bucată judecată cu înfășurarea EXACTĂ a intrării de o parte și de alta, buclele frontierei
+ *   închise cu regula „primul la dreapta”, deci contururile care se ating într-un vârf ies separate, ca la §7). O buclă
+ *   închisă în fereastră, cu diagonala sub rezoluție și mai groasă decât τ (2·aria / perimetrul > 2τ), e un contur de praf:
+ *   sondele din ea și punctele frontierei de pe ea se scutesc; restul rămâne strict. Un contur păstrat în ieșire cu
+ *   diagonala sub rezoluție e o greșeală. `masuri.praf` = contururile de praf găsite (ușa le compară cu `sub-rezolutie`);
+ *   `prafAdevarat` le caută pe toate (ferestrele în fiecare încrucișare a intrării: un contur de praf nu poate fi o cale
+ *   întreagă a intrării, ușa le-a sărit înainte, deci trece printr-o încrucișare).
  *
  * Toleranțele (pe grup g, cu D = diagonala cutiei exacte și M = cea mai mare |coordonată| a ei):
  * - τ = 1e-10·D + 64·ulp(M) (§4, formula ADR-ului);
@@ -661,12 +672,23 @@ export type OptiuniN = {
   samanta?: number;
   /** Martorul de proximitate la τ, dacă apelantul l-a calculat deja (ușa SVG); null = fără martor. */
   martor?: string | null;
+  /**
+   * Praful ieșirii (ADR 0037 §11, la ușa SVG, sub-felia 2.3c-1): rezoluția, în mm. Un contur al regiunii adevărate cu
+   * diagonala cutiei exacte sub ea lipsește din ieșire (sărit, numărat de ușă la `sub-rezolutie`); unul păstrat e o
+   * greșeală. Fără opțiune (normalizarea singură), ieșirea trebuie să aibă toate contururile.
+   */
+  praf?: number;
 };
 
 export type MasuriN = {
   sonde: number; ambigue: number; aproape: number; dezacorduri: number; adancime: number;
   orientare: number; iesireSursa: number; adevarIesire: number; adevarEsantioane: number;
   varfMax: number; cubMax: number; arcMax: number; liniiMax: number; grupuri: number; tau: number[]; atingeri: number; martor?: string;
+  /**
+   * Cu `praf`: contururile de praf ale regiunii adevărate găsite (distincte), sondele și punctele frontierei scutite pentru
+   * că stau în ele (sau pe ele), și ferestrele locale calculate.
+   */
+  praf?: number; prafScutite?: number; prafFerestre?: number; prafBucle?: BuclaPraf[];
 };
 
 export function aleatorN(samanta: number): () => number {
@@ -899,6 +921,13 @@ export function judecaNormalizarea(intrare: readonly CaleN[], regula: 'nonzero' 
       }
     });
   });
+  // ADR 0037 §11 (praful ieșirii, la ușa SVG): un contur al ieșirii cu diagonala cutiei exacte sub rezoluție trebuia sărit.
+  if (opt.praf !== undefined) {
+    iesire.forEach((c, ci) => {
+      const k = cutieCale(c), d = Math.hypot(k.x1 - k.x0, k.y1 - k.y0);
+      if (d < opt.praf!) pr.push(`ieșirea ${ci}: un contur sub rezoluție (diagonala cutiei ${d.toExponential(3)} mm < ${opt.praf}) păstrat; ADR 0037 §11: se sare, numărat sub-rezolutie`);
+    });
+  }
   const co = muchiiCoincidente(sO, (s) => epsPrim(ev(s, 0.5)));
   for (const [i, j] of co) {
     const A = sO[i] as Prim, B = sO[j] as Prim;
@@ -1057,6 +1086,8 @@ export function judecaNormalizarea(intrare: readonly CaleN[], regula: 'nonzero' 
   let exemplu: { q: P; wS: number; wO: number; ds: number } | null = null;
   let exOrient: { q: P; wO: number; ds: number } | null = null;
   let dezIntrare = 0;
+  // Cu `praf`, dezacordurile se adună întâi: cele din contururile de praf ale regiunii adevărate se scutesc mai jos.
+  const dezacordPraf: Array<{ q: P; wS: number; wO: number; ds: number }> = [];
   for (const q of sonde(ctx, sO, iesire, intrare)) {
     const g = grupLa(ctx, q);
     const eta = Math.max(1e-12 * g.D, 8 * ulp(g.M));
@@ -1070,23 +1101,15 @@ export function judecaNormalizarea(intrare: readonly CaleN[], regula: 'nonzero' 
     M.sonde++;
     if (b.w !== 0 && b.w !== 1) { M.orientare++; exOrient ??= { q, wO: b.w, ds: celMaiAproape(ctx.dS, q).d }; }
     if (umple(a.w, regula) !== umple(b.w, 'evenodd')) {
-      M.dezacorduri++;
       const ds = celMaiAproape(ctx.dS, q).d;
+      if (opt.praf !== undefined) { dezacordPraf.push({ q, wS: a.w, wO: b.w, ds }); continue; }
+      M.dezacorduri++;
       if (ds > M.adancime) { M.adancime = ds; exemplu = { q, wS: a.w, wO: b.w, ds }; }
     }
   }
-  if (M.dezacorduri > 0) pr.push(`regiunea: ${M.dezacorduri} sonde din ${M.sonde} în dezacord (cea mai adâncă la ${M.adancime.toExponential(3)} de frontieră: ${JSON.stringify(exemplu)})`);
-  if (M.orientare > 0) pr.push(`orientarea: înfășurarea ieșirii ∉ {0, 1} în ${M.orientare} sonde (umplerea nu e în stânga sau contururile se suprapun; de exemplu ${JSON.stringify(exOrient)})`);
-  if (M.sonde < 50) pr.push(`prea puține sonde curate (${M.sonde})`);
-  // §6 (amendamentul K7): o intrare deja evenodd (nicio sondă dincolo de τ nu le deosebește, nicio muchie coincidentă) se
-  // poate schimba doar cu un martor de proximitate la τ; altfel trebuia întoarsă chiar ea.
-  if (dezIntrare === 0 && muchiiCoincidente(ctx.sS, (s) => (ctx.gr[ctx.grupPrim[s.id] as number] as Grup).eps + s.tol).length === 0) {
-    const m = opt.martor !== undefined ? opt.martor : martorTau(intrare);
-    if (m === null) pr.push('§6: intrarea e deja evenodd (nicio sondă dincolo de τ, nicio muchie coincidentă) și n-are niciun martor la τ: trebuia întoarsă chiar ea (același obiect)');
-    else M.martor = m;
-  }
-
-  // --- adevăr → ieșire: punctele frontierei adevărate au ieșirea la εd
+  // --- adevăr → ieșire: punctele frontierei adevărate au ieșirea la εd. Se adună aici (sondele de praf le folosesc),
+  // problemele se scriu la urmă, ca înainte.
+  const orfane: Array<{ p: P; tol: number; mesaj: string }> = [];
   for (const s of ctx.sS) {
     const g = ctx.gr[ctx.grupPrim[s.id] as number] as Grup;
     const K = Math.max(2, Math.round(6 * ctx.dens));
@@ -1107,12 +1130,45 @@ export function judecaNormalizarea(intrare: readonly CaleN[], regula: 'nonzero' 
         const dout = cel.d - s.tol;
         // Lângă o atingere (§4), ieșirea poate sta la τ (segmentul atingerii); altfel la εd.
         const tolA = cel.k >= 0 ? tolSeg(sO[cel.k] as Prim, g) : 4 * g.eps;
+        if (!(dout <= tolA)) {
+          const mesaj = `adevăr → ieșire: punctul (${p.x}, ${p.y}) al frontierei adevărate (sursa ${s.ci}/${s.vi}) la ${dout.toExponential(3)} de ieșire (tol ${tolA.toExponential(2)})`;
+          if (opt.praf === undefined) M.adevarIesire = Math.max(M.adevarIesire, dout);
+          orfane.push({ p, tol: s.tol + 4 * g.tau, mesaj });
+          break;
+        }
         M.adevarIesire = Math.max(M.adevarIesire, dout);
-        if (!(dout <= tolA)) { pr.push(`adevăr → ieșire: punctul (${p.x}, ${p.y}) al frontierei adevărate (sursa ${s.ci}/${s.vi}) la ${dout.toExponential(3)} de ieșire (tol ${tolA.toExponential(2)})`); break; }
         break;
       }
     }
   }
+  // --- praful (ADR 0037 §11): sondele în dezacord și punctele frontierei fără ieșire se explică prin contururile de praf ale
+  // regiunii adevărate (aranjamentul local în jurul lor); ce nu se explică rămâne greșeală.
+  if (opt.praf !== undefined) {
+    const bucle: BuclaPraf[] = [];
+    const seminte = [...dezacordPraf.map((x) => x.q), ...orfane.map((x) => x.p)];
+    M.prafFerestre = seminte.length > 0 ? cautaPraf(ctx, seminte, opt.praf, bucle, 400) : 0;
+    M.praf = bucle.length;
+    M.prafBucle = bucle;
+    M.prafScutite = 0;
+    const dEx = (q: P): number => 16 * EPS_POLI + 4 * grupLa(ctx, q).tau;
+    for (const x of dezacordPraf) {
+      if (inPraf(bucle, x.q, dEx(x.q))) { M.prafScutite++; continue; }
+      M.dezacorduri++;
+      if (x.ds > M.adancime) { M.adancime = x.ds; exemplu = x; }
+    }
+    for (let i = orfane.length - 1; i >= 0; i--) if (inPraf(bucle, (orfane[i] as { p: P }).p, dEx((orfane[i] as { p: P }).p) + (orfane[i] as { tol: number }).tol)) { M.prafScutite++; orfane.splice(i, 1); }
+  }
+  if (M.dezacorduri > 0) pr.push(`regiunea: ${M.dezacorduri} sonde din ${M.sonde} în dezacord (cea mai adâncă la ${M.adancime.toExponential(3)} de frontieră: ${JSON.stringify(exemplu)})`);
+  if (M.orientare > 0) pr.push(`orientarea: înfășurarea ieșirii ∉ {0, 1} în ${M.orientare} sonde (umplerea nu e în stânga sau contururile se suprapun; de exemplu ${JSON.stringify(exOrient)})`);
+  if (M.sonde < 50) pr.push(`prea puține sonde curate (${M.sonde})`);
+  // §6 (amendamentul K7): o intrare deja evenodd (nicio sondă dincolo de τ nu le deosebește, nicio muchie coincidentă) se
+  // poate schimba doar cu un martor de proximitate la τ; altfel trebuia întoarsă chiar ea.
+  if (dezIntrare === 0 && muchiiCoincidente(ctx.sS, (s) => (ctx.gr[ctx.grupPrim[s.id] as number] as Grup).eps + s.tol).length === 0) {
+    const m = opt.martor !== undefined ? opt.martor : martorTau(intrare);
+    if (m === null) pr.push('§6: intrarea e deja evenodd (nicio sondă dincolo de τ, nicio muchie coincidentă) și n-are niciun martor la τ: trebuia întoarsă chiar ea (același obiect)');
+    else M.martor = m;
+  }
+  for (const o of orfane) pr.push(o.mesaj);
   return { probleme: pr.slice(0, 40), masuri: M };
 }
 
@@ -1328,4 +1384,301 @@ export function martorTau(intrare: readonly CaleN[]): string | null {
     }
   }
   return null;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Praful ieșirii (ADR 0037 §11, la ușa SVG, sub-felia 2.3c-1): contururile regiunii adevărate cu diagonala cutiei exacte
+// sub rezoluție, găsite prin aranjamentul LOCAL al intrării (o fereastră pătrată în jurul unui punct), nu prin cel întreg.
+
+/** Un contur de praf al regiunii adevărate: polilinia lui (umplerea în stânga), cutia, diagonala, aria cu semn, perimetrul. */
+export type BuclaPraf = { pts: P[]; cutie: Cutie; diag: number; arie: number; perimetru: number };
+
+/** Eroarea de coardă a poliliniilor locale (mm). */
+const EPS_POLI = 1e-11;
+
+type RunL = { pts: P[]; t0: number; t1: number };
+type SegL = { a: P; b: P; run: number; k: number };
+/** O bucată a frontierei candidate: punctele, segmentul-sursă al fiecărei muchii (în `segs`), capetele. */
+type PiesaL = { pts: P[]; seg: number[]; de: string; la: string; deschisa: boolean; folosita: boolean };
+
+const cheieP = (p: P): string => `${p.x},${p.y}`;
+
+/** Bucățile primitivei care ating cutia W, ca polilinii (capetele t = 0 / 1 sunt exact vârfurile primitivei). */
+function poliliniiInFereastra(s: Prim, W: Cutie, eps: number): RunL[] {
+  const runs: RunL[] = [];
+  let cur: RunL | null = null;
+  const pct = (t: number): P => (t === 0 ? s.a : t === 1 ? s.b : ev(s, t));
+  const cutieBuc = (t0: number, t1: number): { c: Cutie; plat: boolean } => {
+    const p0 = pct(t0), p1 = pct(t1);
+    if (s.tip === 'L') return { c: { x0: Math.min(p0.x, p1.x), y0: Math.min(p0.y, p1.y), x1: Math.max(p0.x, p1.x), y1: Math.max(p0.y, p1.y) }, plat: true };
+    if (s.tip === 'A') {
+      const unghi = Math.abs(s.sw) * (t1 - t0);
+      const sag = s.r * (1 - Math.cos(unghi / 2));
+      // Un arc de cel mult o jumătate stă la cel mult săgeata lui de coardă.
+      const e = unghi <= Math.PI ? sag : 2 * s.r;
+      return { c: { x0: Math.min(p0.x, p1.x) - e, y0: Math.min(p0.y, p1.y) - e, x1: Math.max(p0.x, p1.x) + e, y1: Math.max(p0.y, p1.y) + e }, plat: unghi <= Math.PI && sag <= eps };
+    }
+    const q = subCurba(s, t0, t1);
+    const xs = q.map((u) => u.x), ys = q.map((u) => u.y);
+    const c = { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+    // Abaterea curbei de la coardă ≤ abaterea punctelor de control (învelitoarea convexă).
+    const a = q[0], b = q[3], dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy);
+    const dl = (u: P): number => (L > 0 ? Math.abs((u.x - a.x) * dy - (u.y - a.y) * dx) / L : dist(u, a));
+    return { c, plat: Math.max(dl(q[1]), dl(q[2])) <= eps };
+  };
+  const rec = (t0: number, t1: number, adanc: number): void => {
+    const { c, plat } = cutieBuc(t0, t1);
+    if (!seAting(c, W)) { cur = null; return; }
+    if (plat || adanc >= 52) {
+      if (cur === null) { cur = { pts: [pct(t0)], t0, t1 }; runs.push(cur); }
+      cur.pts.push(pct(t1));
+      cur.t1 = t1;
+      return;
+    }
+    const m = (t0 + t1) / 2;
+    rec(t0, m, adanc + 1);
+    rec(m, t1, adanc + 1);
+  };
+  rec(0, 1, 0);
+  return runs;
+}
+
+/** Distanța punct – segment. */
+function distPS(p: P, a: P, b: P): number {
+  const dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy;
+  let t = L2 > 0 ? ((p.x - a.x) * dx + (p.y - a.y) * dy) / L2 : 0;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(a.x + t * dx - p.x, a.y + t * dy - p.y);
+}
+
+/** Polilinia închisă `pts` înconjoară q (înfășurarea ≠ 0)? */
+function inPoligon(pts: readonly P[], q: P): boolean {
+  let w = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i] as P, b = pts[(i + 1) % pts.length] as P;
+    const o = (b.x - a.x) * (q.y - a.y) - (q.x - a.x) * (b.y - a.y);
+    if (a.y <= q.y) { if (b.y > q.y && o > 0) w++; }
+    else if (b.y <= q.y && o < 0) w--;
+  }
+  return w !== 0;
+}
+function distPoligon(pts: readonly P[], q: P): number {
+  let d = Infinity;
+  for (let i = 0; i < pts.length; i++) d = Math.min(d, distPS(q, pts[i] as P, pts[(i + 1) % pts.length] as P));
+  return d;
+}
+
+/**
+ * Buclele frontierei regiunii adevărate (intrarea sub regulă) din fereastra pătrată de semilatură R în jurul lui c,
+ * închise în fereastră, cu diagonala cutiei sub `rezolutie` și mai groase decât τ: contururile de praf de acolo.
+ */
+function bucleInFereastra(ctx: Context, c: P, R: number, rezolutie: number): BuclaPraf[] {
+  const W: Cutie = { x0: c.x - R, y0: c.y - R, x1: c.x + R, y1: c.y + R };
+  const marg = 0.02 * R;
+  const We: Cutie = { x0: W.x0 - marg, y0: W.y0 - marg, x1: W.x1 + marg, y1: W.y1 + marg };
+  const g = grupLa(ctx, c);
+  const eta = Math.max(1e-12 * g.D, 8 * ulp(g.M));
+  const prag = 8 * (EPS_POLI + eta);
+  // 1. Poliliniile primitivelor care ating fereastra.
+  const runs: RunL[] = [];
+  for (const x of toateAproape(ctx.dS, c, R * Math.SQRT2 + marg)) runs.push(...poliliniiInFereastra(ctx.sS[x.k] as Prim, We, EPS_POLI));
+  const segs: SegL[] = [];
+  const bazaRun: number[] = [];
+  runs.forEach((r, ri) => { bazaRun.push(segs.length); for (let k = 0; k + 1 < r.pts.length; k++) segs.push({ a: r.pts[k] as P, b: r.pts[k + 1] as P, run: ri, k }); });
+  // 2. Grila segmentelor (pe fereastra lărgită).
+  const G = 128, cs = (We.x1 - We.x0) / G;
+  const cl = (v: number): number => Math.max(0, Math.min(G - 1, v));
+  const cel = new Map<number, number[]>();
+  segs.forEach((sg, i) => {
+    const i0 = cl(Math.floor((Math.min(sg.a.x, sg.b.x) - We.x0) / cs)), i1 = cl(Math.floor((Math.max(sg.a.x, sg.b.x) - We.x0) / cs));
+    const j0 = cl(Math.floor((Math.min(sg.a.y, sg.b.y) - We.y0) / cs)), j1 = cl(Math.floor((Math.max(sg.a.y, sg.b.y) - We.y0) / cs));
+    for (let x = i0; x <= i1; x++) for (let y = j0; y <= j1; y++) { const k = x * 4096 + y; let l = cel.get(k); if (l === undefined) { l = []; cel.set(k, l); } l.push(i); }
+  });
+  // 3. Încrucișările (și atingerile într-un vârf al poliliniei): tăieturile pe segment, cu punctul comun (aceeași cheie).
+  const taieturi = new Map<number, Array<{ u: number; p: P }>>();
+  const adauga = (i: number, u: number, p: P): void => { let l = taieturi.get(i); if (l === undefined) { l = []; taieturi.set(i, l); } l.push({ u, p }); };
+  const vazut = new Set<number>();
+  const TOL_U = 1e-12;
+  for (const l of cel.values()) {
+    for (let x = 0; x < l.length; x++) for (let y = x + 1; y < l.length; y++) {
+      const i = Math.min(l[x] as number, l[y] as number), j = Math.max(l[x] as number, l[y] as number);
+      const ch = i * segs.length + j;
+      if (vazut.has(ch)) continue;
+      vazut.add(ch);
+      const A = segs[i] as SegL, B = segs[j] as SegL;
+      if (A.run === B.run && Math.abs(A.k - B.k) <= 1) continue;
+      if (egale(A.a, B.a) || egale(A.a, B.b) || egale(A.b, B.a) || egale(A.b, B.b)) continue;
+      const rx = A.b.x - A.a.x, ry = A.b.y - A.a.y, sx = B.b.x - B.a.x, sy = B.b.y - B.a.y;
+      const den = rx * sy - ry * sx;
+      if (den === 0) continue;
+      const qx = B.a.x - A.a.x, qy = B.a.y - A.a.y;
+      let ua = (qx * sy - qy * sx) / den, ub = (qx * ry - qy * rx) / den;
+      if (ua < -TOL_U || ua > 1 + TOL_U || ub < -TOL_U || ub > 1 + TOL_U) continue;
+      ua = ua < TOL_U ? 0 : ua > 1 - TOL_U ? 1 : ua;
+      ub = ub < TOL_U ? 0 : ub > 1 - TOL_U ? 1 : ub;
+      const p = ua === 0 ? A.a : ua === 1 ? A.b : ub === 0 ? B.a : ub === 1 ? B.b : { x: A.a.x + ua * rx, y: A.a.y + ua * ry };
+      adauga(i, ua, p);
+      adauga(j, ub, p);
+    }
+  }
+  // 4. Bucățile: fiecare polilinie tăiată la încrucișări; un capăt care nu e vârf al primitivei (ieșirea din fereastră), sau
+  // care stă în afara ferestrei, e deschis.
+  const piese: PiesaL[] = [];
+  const inW = (p: P): boolean => p.x > W.x0 && p.x < W.x1 && p.y > W.y0 && p.y < W.y1;
+  runs.forEach((r, ri) => {
+    const baza = bazaRun[ri] as number;
+    let cur: P[] = [r.pts[0] as P];
+    let curSeg: number[] = [];
+    let deschisStart = r.t0 !== 0;
+    const inchide = (deschisCapat: boolean): void => {
+      if (cur.length >= 2) {
+        const a = cur[0] as P, b = cur[cur.length - 1] as P;
+        piese.push({ pts: cur, seg: curSeg, de: cheieP(a), la: cheieP(b), deschisa: deschisStart || deschisCapat || !inW(a) || !inW(b), folosita: false });
+      }
+    };
+    const nou = (p: P): void => { cur = [p]; curSeg = []; deschisStart = false; };
+    for (let k = 0; k + 1 < r.pts.length; k++) {
+      const t = (taieturi.get(baza + k) ?? []).slice().sort((u, v) => u.u - v.u);
+      for (const x of t) {
+        if (egale(x.p, cur[cur.length - 1] as P)) {
+          // Tăietura în vârful curent (u = 0, sau o dublură): bucata se termină acolo.
+          if (cur.length >= 2) { inchide(false); nou(x.p); }
+          continue;
+        }
+        if (x.u === 1) continue;
+        cur.push(x.p);
+        curSeg.push(baza + k);
+        inchide(false);
+        nou(x.p);
+      }
+      const urm = r.pts[k + 1] as P;
+      if (!egale(urm, cur[cur.length - 1] as P)) { cur.push(urm); curSeg.push(baza + k); }
+      if (t.some((x) => x.u === 1) && cur.length >= 2) { inchide(false); nou(urm); }
+    }
+    inchide(r.t1 !== 1);
+  });
+  // 5. Frontiera: fiecare bucată judecată cu înfășurarea EXACTĂ a intrării, de o parte și de alta a segmentului ei cel mai
+  // lung, la un sfert din segment și din cea mai apropiată altă polilinie; orientată cu umplerea în stânga. O bucată pe care
+  // judecata nu se poate face (prea aproape de alta, sau ambiguă) e deschisă: bucla ei nu scutește nimic.
+  const vecinMin = (m: P, r0: number, propriu: number): number => {
+    let d = r0;
+    const sp = segs[propriu] as SegL;
+    const i0 = cl(Math.floor((m.x - r0 - We.x0) / cs)), i1 = cl(Math.floor((m.x + r0 - We.x0) / cs));
+    const j0 = cl(Math.floor((m.y - r0 - We.y0) / cs)), j1 = cl(Math.floor((m.y + r0 - We.y0) / cs));
+    for (let x = i0; x <= i1; x++) for (let y = j0; y <= j1; y++) for (const i of cel.get(x * 4096 + y) ?? []) {
+      const sg = segs[i] as SegL;
+      // Segmentul-sursă al muchiei și vecinii lui din aceeași polilinie nu contează.
+      if (i === propriu || (sg.run === sp.run && Math.abs(sg.k - sp.k) <= 1)) continue;
+      d = Math.min(d, distPS(m, sg.a, sg.b));
+    }
+    return d;
+  };
+  const frontiera: PiesaL[] = [];
+  for (const pc of piese) {
+    let best = 0, L = -1;
+    for (let k = 0; k + 1 < pc.pts.length; k++) { const l = dist(pc.pts[k] as P, pc.pts[k + 1] as P); if (l > L) { L = l; best = k; } }
+    const a = pc.pts[best] as P, b = pc.pts[best + 1] as P;
+    const m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    const nx = -(b.y - a.y) / L, ny = (b.x - a.x) / L;
+    const delta = Math.min(L / 4, vecinMin(m, L, pc.seg[best] as number) / 4);
+    if (!(delta >= prag)) { pc.deschisa = true; frontiera.push(pc); continue; }
+    const st = infasurare(ctx.wS, { x: m.x + delta * nx, y: m.y + delta * ny }, eta);
+    const dr = infasurare(ctx.wS, { x: m.x - delta * nx, y: m.y - delta * ny }, eta);
+    if (st.amb || dr.amb) { pc.deschisa = true; frontiera.push(pc); continue; }
+    const fs = umple(st.w, ctx.rule), fd = umple(dr.w, ctx.rule);
+    if (fs === fd) continue;
+    if (!fs) { pc.pts = pc.pts.slice().reverse(); const t = pc.de; pc.de = pc.la; pc.la = t; }
+    frontiera.push(pc);
+  }
+  // 6. Buclele: din capătul fiecărei bucăți, următoarea e prima la dreapta (cea mai mică rotire în sensul acelor de la
+  // direcția întoarsă), deci contururile care se ating într-un vârf ies separate (ADR 0036 §7).
+  const iese = new Map<string, PiesaL[]>();
+  for (const pc of frontiera) { const l = iese.get(pc.de) ?? []; l.push(pc); iese.set(pc.de, l); }
+  const ung = (u: P): number => Math.atan2(u.y, u.x);
+  const bucle: BuclaPraf[] = [];
+  for (const start of frontiera) {
+    if (start.folosita || start.deschisa) continue;
+    const lant: PiesaL[] = [];
+    let pc: PiesaL = start, inchisa = false, buna = true;
+    for (let pas = 0; pas < 100_000; pas++) {
+      pc.folosita = true;
+      lant.push(pc);
+      if (pc.deschisa) { buna = false; break; }
+      const n = pc.pts.length;
+      const din = { x: (pc.pts[n - 2] as P).x - (pc.pts[n - 1] as P).x, y: (pc.pts[n - 2] as P).y - (pc.pts[n - 1] as P).y };
+      let urm: PiesaL | null = null, bestCw = Infinity;
+      for (const q of iese.get(pc.la) ?? []) {
+        const spre = { x: (q.pts[1] as P).x - (q.pts[0] as P).x, y: (q.pts[1] as P).y - (q.pts[0] as P).y };
+        let cw = ung(din) - ung(spre);
+        cw = ((cw % DOIPI) + DOIPI) % DOIPI;
+        if (cw === 0) cw = DOIPI;
+        if (cw < bestCw) { bestCw = cw; urm = q; }
+      }
+      if (urm === null) { buna = false; break; }
+      if (urm === start) { inchisa = true; break; }
+      if (urm.folosita) { buna = false; break; }
+      pc = urm;
+    }
+    if (!inchisa || !buna) continue;
+    const pts: P[] = [];
+    for (const x of lant) for (let k = 0; k + 1 < x.pts.length; k++) pts.push(x.pts[k] as P);
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, A = 0, Lp = 0;
+    pts.forEach((p, i) => {
+      const q = pts[(i + 1) % pts.length] as P;
+      x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y);
+      A += (p.x * q.y - q.x * p.y) / 2;
+      Lp += dist(p, q);
+    });
+    const diag = Math.hypot(x1 - x0, y1 - y0);
+    // Mai groasă decât τ (ALEGERE: raza înscrisă 2·aria / perimetrul peste 2τ, deci lățimea peste ~4τ): o trăsătură mai
+    // subțire o închide, o contopește sau o refuză normalizarea (ADR 0036 §4, §8), deci nu e un contur al ieșirii.
+    if (diag < rezolutie && Lp > 0 && (2 * Math.abs(A)) / Lp > 2 * g.tau) bucle.push({ pts, cutie: { x0, y0, x1, y1 }, diag, arie: A, perimetru: Lp });
+  }
+  return bucle;
+}
+
+/** Adaugă contururile de praf noi, fără dubluri (aceeași cutie la 1e-9 mm și aceeași arie la 1e-6 relativ). */
+function adaugaBucle(toate: BuclaPraf[], noi: readonly BuclaPraf[]): void {
+  const e = 1e-9;
+  for (const b of noi) {
+    const dublu = toate.some((x) => Math.abs(x.cutie.x0 - b.cutie.x0) <= e && Math.abs(x.cutie.y0 - b.cutie.y0) <= e && Math.abs(x.cutie.x1 - b.cutie.x1) <= e
+      && Math.abs(x.cutie.y1 - b.cutie.y1) <= e && Math.abs(x.arie - b.arie) <= 1e-6 * Math.abs(b.arie));
+    if (!dublu) toate.push(b);
+  }
+}
+
+/** Punctul q stă într-un contur de praf, sau la cel mult d de el? */
+function inPraf(bucle: readonly BuclaPraf[], q: P, d: number): boolean {
+  return bucle.some((b) => q.x >= b.cutie.x0 - d && q.x <= b.cutie.x1 + d && q.y >= b.cutie.y0 - d && q.y <= b.cutie.y1 + d && (inPoligon(b.pts, q) || distPoligon(b.pts, q) <= d));
+}
+
+/**
+ * Ferestrele în jurul semințelor (cel mult `maxFerestre`); o sămânță la cel mult R − rezoluția (pe fiecare axă) de un
+ * centru deja calculat e acoperită: contururile de praf care o conțin stau întregi în fereastra aceea. Întoarce câte
+ * ferestre a calculat.
+ */
+function cautaPraf(ctx: Context, seminte: readonly P[], rezolutie: number, bucle: BuclaPraf[], maxFerestre: number): number {
+  const R = 1.25 * rezolutie;
+  const centre: P[] = [];
+  for (const q of seminte) {
+    if (centre.length >= maxFerestre) break;
+    if (centre.some((c) => Math.max(Math.abs(c.x - q.x), Math.abs(c.y - q.y)) <= R - rezolutie)) continue;
+    // Mai departe de rezoluție de frontiera intrării: niciun contur de praf nu-l poate conține.
+    if (!(celMaiAproape(ctx.dS, q).d <= rezolutie)) continue;
+    centre.push(q);
+    adaugaBucle(bucle, bucleInFereastra(ctx, q, R, rezolutie));
+  }
+  return centre.length;
+}
+
+/**
+ * Toate contururile de praf ale regiunii adevărate (intrarea sub regulă): ferestrele în fiecare încrucișare a intrării.
+ * Un contur de praf nu e o cale întreagă a intrării (ușa sare subcăile-praf înaintea normalizării), deci trece printr-o
+ * încrucișare a ei (și a unei cubice cu ea însăși).
+ */
+export function prafAdevarat(intrare: readonly CaleN[], regula: 'nonzero' | 'evenodd', rezolutie: number, opt: OptiuniN = {}): BuclaPraf[] {
+  const ctx = context(intrare, regula, opt);
+  const bucle: BuclaPraf[] = [];
+  cautaPraf(ctx, intersectiiAprox(ctx.sS).map((x) => x.p), rezolutie, bucle, 100_000);
+  return bucle;
 }

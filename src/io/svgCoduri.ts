@@ -38,6 +38,8 @@ export const CODURI_AVERTISMENT = [
   'deschise', 'degenerate', 'prea-mari', 'sarit-text', 'sarit-use', 'sarit-image', 'sarit-foreignObject', 'sarit-svg',
   'ascunse', 'eroare-date', 'atribut-invalid', 'transformare-invalida', 'singulara', 'arce-eliptice', 'arce-plate',
   'cubice-din-arce', 'nonzero-normalizate', 'nonzero-refuzate', 'pagina-fara-marime', 'viewbox-invalid', 'transformare-radacina', 'stil',
+  // ADR 0037 §11 (felia 2.3c-1).
+  'inchise-de-umplere', 'inchise-la-usa', 'sub-rezolutie',
 ] as const;
 export type CodAvertisment = (typeof CODURI_AVERTISMENT)[number];
 export type Avertismente = Readonly<Record<CodAvertisment, number>>;

@@ -2,7 +2,8 @@
  * Generatorul de SVG-uri aleatoare (cu sămânță) al oracolului SVG: grupuri imbricate cu transformări de toate felurile
  * (și oglindiri), forme de toate felurile, căi cu toate comenzile (absolute și relative, repetarea implicită, S / T după
  * orice, arce cu steaguri, raze prea mici, raze 0, capete egale), numere scrise în feluri diferite (lipite, exponenți,
- * `.5`), atribute de stil. ZERO importuri din `src/`. Nu are valori pe hârtie: îl judecă oracolul.
+ * `.5`), atribute de stil, umplerea (`fill`, sub-felia 2.3c-1, dintr-un șir aleator separat). ZERO importuri din `src/`. Nu
+ * are valori pe hârtie: îl judecă oracolul.
  */
 
 /**
@@ -26,6 +27,13 @@ export function aleator(samanta: number): () => number {
 
 export function svgAleator(samanta: number): { text: string; px: 96 | 72 } {
   const r = aleator(samanta);
+  // Sub-felia 2.3c-1 (ADR 0037 §11): umplerea (`fill`) din alt șir aleator, ca geometria fiecărei semințe să rămână cea
+  // de dinainte; `fill="none"` lasă deschise subcăile fără `Z` (umplute, se închid cu o linie).
+  const rUmplere = aleator((Math.imul(samanta, 0x9e3779b1) ^ 0x5bd1e995) >>> 0);
+  const umplere = (pNone: number, pPlin: number): string => {
+    const x = rUmplere();
+    return x < pNone ? ' fill="none"' : x < pNone + pPlin ? ' fill="#123"' : '';
+  };
   const int = (a: number, b: number): number => a + Math.floor(r() * (b - a + 1));
   const alege = <T>(l: readonly T[]): T => l[Math.floor(r() * l.length)] as T;
   /** Un număr scris într-unul din felurile gramaticii. */
@@ -90,7 +98,7 @@ export function svgAleator(samanta: number): { text: string; px: 96 | 72 } {
     const stil = r() < 0.15 ? ` fill-rule="${alege(['evenodd', 'nonzero'])}"` : '';
     const id = r() < 0.3 ? ` id="f${int(0, 999)}"` : '';
     const tr = r() < 0.3 ? ` transform="${transform()}"` : '';
-    const extra = `${stil}${id}${tr}`;
+    const extra = `${stil}${id}${tr}${umplere(0.25, 0.1)}`;
     if (f <= 3) return `<path${extra} d="${cale()}"/>`;
     if (f === 4) {
       const rx = r() < 0.5 ? '' : ` rx="${nr(alege([1, 2, 5, 30]))}"`;
@@ -114,7 +122,7 @@ export function svgAleator(samanta: number): { text: string; px: 96 | 72 } {
     const tr = r() < 0.6 ? ` transform="${transform()}"` : '';
     const ascuns = r() < 0.05 ? ' display="none"' : '';
     const vis = r() < 0.05 ? ' visibility="hidden"' : '';
-    return `<g${tr}${ascuns}${vis}>${copii.join('')}</g>`;
+    return `<g${tr}${ascuns}${vis}${umplere(0.15, 0)}>${copii.join('')}</g>`;
   };
   const pagina = alege([
     'width="100mm" height="100mm" viewBox="0 0 100 100"',

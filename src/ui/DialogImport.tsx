@@ -28,6 +28,8 @@ const AVERTISMENT = {
   'arce-eliptice': 'import.av.arce-eliptice', 'arce-plate': 'import.av.arce-plate', 'cubice-din-arce': 'import.av.cubice-din-arce',
   'nonzero-normalizate': 'import.av.nonzero-normalizate', 'nonzero-refuzate': 'import.av.nonzero-refuzate', 'pagina-fara-marime': 'import.av.pagina-fara-marime', 'viewbox-invalid': 'import.av.viewbox-invalid',
   'transformare-radacina': 'import.av.transformare-radacina', stil: 'import.av.stil',
+  'inchise-de-umplere': 'import.av.inchise-de-umplere', 'inchise-la-usa': 'import.av.inchise-la-usa',
+  'sub-rezolutie': 'import.av.sub-rezolutie',
 } as const satisfies Readonly<Record<CodAvertisment, string>>;
 
 function ListaAvertismente({ a }: { readonly a: Avertismente | undefined }) {
