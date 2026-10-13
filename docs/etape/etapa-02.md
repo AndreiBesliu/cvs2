@@ -31,7 +31,8 @@ Bugetul unei felii e ~½ zi activă, până la prima măsurătoare (`PLAN.md` §
 | 2.7b | Forma „cale” în document (v9): contururi închise din linii, arce și cubice; desenul pe pânză; CAM-ul prin biarce | A4 | R2 | 2.7a |
 | 2.7c | Ușa SVG: DOMParser inert, unități, viewBox, transformări, elementele (path, rect, circle, ellipse, line, polyline, polygon), plafonul de mărime, avertismentele; butonul de import | A4 | R2 | 2.7b |
 | 2.7d | Fațada PathKit minimă (reuniunea + R3) pentru normalizarea `nonzero` de la ușă, încărcată doar la import | A4 | R2 | 2.7c |
-| 2.8 | Stratul WebGL2 (foaia, traseul ca LINE_STRIP) și panoul de proprietăți | I7, I19 | R2 | 2.2 |
+| 2.8a | Carcasa interfeței (aranjamentul, tokenurile temei, componentele), din prototipul ales de owner dintre trei (13.10, „da, pornește prototipurile”) | — | R1 | — |
+| 2.8 | Stratul WebGL2 (foaia, traseul ca LINE_STRIP) și panoul de proprietăți, în carcasa din 2.8a | I7, I19 | R2 | 2.2, 2.8a |
 | 2.9 | Bancul vizual v1, cu martorii lui | I18 | R2 | 2.8 |
 | 2.10 | Fișa plăcii 2, cu programele de aur | — | R2 | 2.4–2.7 |
 

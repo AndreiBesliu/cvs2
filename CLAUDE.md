@@ -129,6 +129,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Regula: nimic portat nu intră fără probele noi ale proiectului (oracol, martor). Ce trece în codul nou e
   re-probat acolo, nu crezut pe cuvânt.
 
+- 13.10.2026: **carcasa interfeței vine mai devreme** („da, pornește prototipurile”, la recomandarea dată la întrebarea
+  owner-ului dacă UI-ul se poate face înainte de etapa 3 fără să mute planul): trei prototipuri independente ale carcasei
+  (aranjamentul, tema, componentele), fiecare aplicația reală pe un canal de test, din care owner-ul alege; varianta aleasă
+  intră ca felia 2.8a, înaintea panoului de proprietăți (2.8). Uneltele de desen rămân în etapa 6, interfața pentru
+  începători în 27–33.
 - 10.10.2026: **rampa rămâne oprită implicit** pe formele noi până la placa 1 („Ok” la recomandarea din raportul feliei
   2.5b); pornirea ei din fabrică (ca în ediția întâi) se reia după placă.
 - 10.10.2026: **desenul rămâne în etapa 6** („Planul neschimbat”, din trei variante: reordonarea etapei 2 cu panoul de

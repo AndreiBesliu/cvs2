@@ -86,8 +86,8 @@ export const REZOLUTIE = 0.01;
 export const DISTANTA_MINIMA = REZOLUTIE / 2;
 /** Două puncte mai apropiate de atât sunt unul singur, iar două segmente mai apropiate se ating (mm). */
 export const EPS_ATINGERE = 1e-6;
-/** Un arc mai plat de atât e o linie (s1-V §5.6). */
-const BULGE_MINIM = 1e-6;
+/** Un arc mai plat de atât e o linie (s1-V §5.6); și traseul pe linie îl scrie linie (`taieBucla`). */
+export const BULGE_MINIM = 1e-6;
 /** Pasul celei de-a doua încercări: peste pragul de topologie decis de epsilon, sub rezoluția postului (1 µm). */
 const PAS_REINCERCARE = 1e-4;
 /** Cât poate diferi distanța unui punct al traseului de |d| (mm): sub rezoluția declarată, cu loc pentru rotunjiri. */

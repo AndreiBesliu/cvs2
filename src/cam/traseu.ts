@@ -1,4 +1,5 @@
 import { cerculArcului, numarSegmente, segment, type Contur } from '../geom/contur.ts';
+import { BULGE_MINIM, EPS_ATINGERE } from '../geom/offset.ts';
 import type { Miscare } from '../ir/ir.ts';
 import { degajeaza, type Degajare } from './degajari.ts';
 import type { Trecere } from './profil.ts';
@@ -36,8 +37,15 @@ function taieBucla(
     if (s.tip === 'L') {
       m.push({ tip: 'taiere', la: { X: b.x, Y: b.y }, avans: p.avans });
     } else if (s.tip === 'A') {
-      const { centru } = cerculArcului(a, b, s.bulge);
-      m.push({ tip: 'arc', la: { X: b.x, Y: b.y }, centru, sens: s.bulge > 0 ? 'trigonometric' : 'orar', avans: p.avans });
+      const { centru, raza, baleiaj } = cerculArcului(a, b, s.bulge);
+      // Un arc plat (|bulge| < 1e-6, săgeata ≤ 2e-8 mm sub raza maximă de 10 000) sau mai scurt de 1e-6 mm se scrie linie,
+      // ca la curățarea offsetului: în IR, un baleiaj sub 1e-12 rad e cercul întreg (`baleiajArc`). Pe `pe-linie`,
+      // conturul ajunge aici necurățat (13.10: un arc cu coarda 1e-11 mm ieșea un cerc Ø50 tăiat prin piesă).
+      if (Math.abs(s.bulge) < BULGE_MINIM || !(raza * Math.abs(baleiaj) >= EPS_ATINGERE)) {
+        m.push({ tip: 'taiere', la: { X: b.x, Y: b.y }, avans: p.avans });
+      } else {
+        m.push({ tip: 'arc', la: { X: b.x, Y: b.y }, centru, sens: s.bulge > 0 ? 'trigonometric' : 'orar', avans: p.avans });
+      }
     } else {
       return 'cubicele ajung la post doar ca biarce (T6, etapa 2)';
     }

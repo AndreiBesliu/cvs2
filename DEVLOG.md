@@ -1402,3 +1402,17 @@ intai, sau crezi ca se poate face acum, fara sa afectam planul?”. Owner-ul a i
 vârf, dar mânerul retras (`s… -1-1-1-1z`) rămânea la 1 ulp de el, cu o tangentă din zgomot. Reparat (ADR 0035 §7), cu
 testul pe cele două forme reale: 0 refuzuri, 3 forme normalizate.
 
+## 2026-10-13 — Etapa 2, felia 2.3c: profilul pe contururile deschise (Model: Claude Opus 5.5)
+
+**Prompt:** același „continua, …” (13.10 07:17), după reparația logoului AS Roma. **Started:** 07:50, cât rulează
+otrăvurile 2.7d pe o clonă. **Clasa:** R2 (tăietura pe un contur deschis ajunge la mașină). **Estimarea:** mai mult de o
+felie (documentul v10, ușa SVG, pânza, CAM-ul pe deschis, poarta): designul întâi, cu 3 propuneri independente, o sondă
+cu cod a offsetului deschis și un judecător (~1,5 M, 1–1,5 h), apoi împărțirea în sub-felii. Săptămâna era la 73 %
+(`get_usage`, reset 17.10).
+
+**Designul** (`wf_7ef65ba5-613`, 3 propuneri + sonda + judecătorul, 0,40 M; reluat după închiderea sesiunii): ciorna ADR
+0037, 5 întrebări pentru owner, 6 sub-felii (~3–3,5 zile, ~4,5–5 M). A găsit un defect pe `main`: pe `pe-linie`, un arc
+aproape nul (coarda 1e-11 mm, bulge 1e-13) ieșea din post un cerc Ø50 tăiat prin piesă (`baleiajArc` ia un baleiaj sub
+1e-12 rad drept cercul întreg, iar traseul scria conturul necurățat). **2.3c-0:** `taieBucla` scrie linie orice arc cu
+|bulge| < 1e-6 sau mai scurt de 1e-6 mm, ca la curățarea offsetului; testul pe tot lanțul (până la G-code) pică înainte
+și trece după; corpusul amprentelor rămâne identic. Garda din poartă (invarianta 14 (i)) o scrie o sesiune independentă.
