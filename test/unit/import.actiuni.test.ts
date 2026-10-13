@@ -118,3 +118,23 @@ test('previzualizarea: mărimea e a desenului (cutia lui exactă), nu a paginii;
     g.DOMParser = vechi;
   }
 });
+
+test('lăsat pe planșă (2.8b): centrul cutiei desenului cade în punctul lăsat; fără loc, rămâne locul din pagină', () => {
+  // LOGO are cutia 80 × 80 (de la 20, 30): lăsat în (150, 100), colțul ei ajunge în (110, 60).
+  const ctx = { ...context(LOGO), locImport: () => ({ x: 150, y: 100 }) };
+  assert.deepEqual(stare(registru, 'document.importa', ctx), { ok: true });
+  ruleaza(registru, 'document.importa', ctx);
+  const [i] = ctx.h().doc.foi[0]?.instante ?? [];
+  assert.deepEqual([i?.x, i?.y], [110, 60]);
+  const lume = elementeFoaie(ctx.h().doc, 0);
+  const c1 = lume[0];
+  assert.ok(c1?.forma.tip === 'cale');
+  const xs = c1.forma.varfuri.map((v) => v.p.x + c1.matrice.e);
+  const ys = c1.forma.varfuri.map((v) => v.p.y + c1.matrice.f);
+  assert.deepEqual([(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2], [150, 100]);
+  // Fără loc (`null`), ca la buton: locul din pagina fișierului.
+  const fara = { ...context(LOGO), locImport: () => null };
+  ruleaza(registru, 'document.importa', fara);
+  const [j] = fara.h().doc.foi[0]?.instante ?? [];
+  assert.deepEqual([j?.x, j?.y], [20, 30]);
+});

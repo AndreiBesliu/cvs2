@@ -33,6 +33,8 @@ export type ContextDocument = {
   readonly operatiiNoi?: () => ReadonlyMap<string, readonly Operatie[]>;
   /** Importul pregătit de previzualizare (ADR 0035), de adăugat ca o piesă nouă. */
   readonly importNou?: () => ImportPregatit;
+  /** Punctul în care s-a lăsat fișierul pe planșă (mm ai foii), sau null: centrul desenului cade acolo (felia 2.8b). */
+  readonly locImport?: () => { readonly x: number; readonly y: number } | null;
 };
 
 /** Foaia pe care se lucrează; Multi-Plate (mai multe foi pe ecran) vine în etapa 11. */
@@ -121,12 +123,18 @@ function adauga(ctx: ContextDocument, forma: FormaDoc, x: number, y: number): vo
  * (adâncimea căilor deschise, ADR 0037 §11).
  */
 type ComandaImport = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: 'motiv.plafon' | 'motiv.import-refuzat' };
-let ultimulImport: { doc: Document; pregatit: ImportPregatit; rez: ComandaImport } | null = null;
-function comandaImport(doc: Document, pregatit: ImportPregatit): ComandaImport {
-  if (ultimulImport && ultimulImport.doc === doc && ultimulImport.pregatit === pregatit) return ultimulImport.rez;
+type Loc = { readonly x: number; readonly y: number } | null;
+let ultimulImport: { doc: Document; pregatit: ImportPregatit; la: Loc; rez: ComandaImport } | null = null;
+function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc = null): ComandaImport {
+  const acelasiLoc = (a: Loc, b: Loc): boolean => (a === null || b === null ? a === b : a.x === b.x && a.y === b.y);
+  if (ultimulImport && ultimulImport.doc === doc && ultimulImport.pregatit === pregatit && acelasiLoc(ultimulImport.la, la)) return ultimulImport.rez;
   const id = idNou(doc);
   const scula = sculaFoii(doc);
-  const { piesa, x, y } = pregatit.piesa(id, { ...(scula ? { scula } : {}), grosime: foaieCurenta(doc).stoc.grosime });
+  const pus = pregatit.piesa(id, { ...(scula ? { scula } : {}), grosime: foaieCurenta(doc).stoc.grosime });
+  const { piesa } = pus;
+  // Lăsat pe planșă: centrul cutiei desenului în punctul lăsat; altfel, locul din pagina fișierului.
+  const x = la ? la.x - pus.latime / 2 : pus.x;
+  const y = la ? la.y - pus.inaltime / 2 : pus.y;
   const varfuri = pregatit.cai.reduce((s, c) => s + c.varfuri.length, 0);
   const elemente = pregatit.cai.length;
   let rez: ComandaImport;
@@ -140,7 +148,7 @@ function comandaImport(doc: Document, pregatit: ImportPregatit): ComandaImport {
     };
     rez = incarca(executa(istoricDin(doc), comanda).doc).ok ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.import-refuzat' };
   }
-  ultimulImport = { doc, pregatit, rez };
+  ultimulImport = { doc, pregatit, la, rez };
   return rez;
 }
 
@@ -282,13 +290,13 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
       if (!ctx.importNou) return 'motiv.nimic-ales';
       const s = scrie(ctx);
       if (s !== true) return s;
-      const r = comandaImport(ctx.istoric().doc, ctx.importNou());
+      const r = comandaImport(ctx.istoric().doc, ctx.importNou(), ctx.locImport?.() ?? null);
       return r.ok ? true : r.motiv;
     },
     ruleaza: (ctx) => {
       if (!ctx.importNou) return;
       const h = ctx.istoric();
-      const r = comandaImport(h.doc, ctx.importNou());
+      const r = comandaImport(h.doc, ctx.importNou(), ctx.locImport?.() ?? null);
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
       ctx.selecteaza([r.id]);

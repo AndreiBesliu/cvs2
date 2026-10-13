@@ -192,6 +192,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const cerereImport = useRef(0);
   const fisierImport = useRef<HTMLInputElement>(null);
   /**
+   * Coada fișierelor alese sau lăsate pe planșă (felia 2.8b): dialogul le trece pe rând; `punct` e locul lăsării (mm ai
+   * foii), sau null (butonul, ori lăsate în afara pânzei).
+   */
+  const [coadaImport, setCoadaImport] = useState<{
+    readonly fisiere: readonly File[]; readonly k: number; readonly punct: { readonly x: number; readonly y: number } | null;
+  } | null>(null);
+  /**
    * Numărul ultimei cereri de export. Un rezultat întârziat (calculul se încarcă la cerere) e al altor parametri dacă între
    * timp s-a pornit alt export, s-a schimbat un parametru sau s-a închis dialogul: nu se afișează și nu se descarcă.
    */
@@ -316,7 +323,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'alese' | 'operatiiNoi' | 'importNou'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -351,6 +358,24 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   dialogDeschis.current = dialogExport || dialogImport !== null;
   /** Un dialog sau paleta: aplicația de sub ele e inertă. */
   const modal = dialogDeschis.current || paleta;
+  const modalRef = useRef(modal);
+  modalRef.current = modal;
+  useEffect(() => {
+    const cuFisiere = (e: DragEvent): boolean => [...(e.dataTransfer?.types ?? [])].includes('Files');
+    const peste = (e: DragEvent): void => { if (cuFisiere(e)) e.preventDefault(); };
+    const lasa = (e: DragEvent): void => {
+      // Pânza le-a primit deja (cu locul lor): aici doar cele lăsate în afara ei.
+      if (!cuFisiere(e) || e.defaultPrevented) return;
+      e.preventDefault();
+      if (!modalRef.current) pornesteImportRef.current([...(e.dataTransfer?.files ?? [])], null);
+    };
+    window.addEventListener('dragover', peste);
+    window.addEventListener('drop', lasa);
+    return () => {
+      window.removeEventListener('dragover', peste);
+      window.removeEventListener('drop', lasa);
+    };
+  }, []);
   const ruleazaDocument = (id: string, ctx: ContextDocument): void => {
     if (dialogDeschis.current) return;
     ruleaza(registru, id, ctx);
@@ -532,9 +557,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       setDialogImport({ fisier: f, nume: f.nume, px, pxAutomat: automat, stare: r });
     }));
   };
-  const alesFisier = (lista: FileList | null): void => {
-    const f = lista?.[0];
-    if (!f) return;
+  /** Un fișier al cozii: deocamdată doar SVG (după nume sau tip); celelalte formate vin mai târziu. */
+  const incepeFisier = (f: File): void => {
+    if (!/\.svg$/i.test(f.name) && f.type !== 'image/svg+xml') {
+      cerereImport.current++;
+      setDialogImport({ fisier: null, nume: f.name, px: 96, pxAutomat: false, stare: { ok: false, cod: 'tip' } });
+      return;
+    }
     // Peste plafon, fișierul nu se citește deloc (ADR 0035 §1).
     if (f.size > PLAFON_IMPORT.octeti) {
       cerereImport.current++;
@@ -551,11 +580,34 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       }
     });
   };
+  const pornesteImport = (fisiere: readonly File[], punct: { readonly x: number; readonly y: number } | null): void => {
+    const f = fisiere[0];
+    if (!f) return;
+    setCoadaImport({ fisiere, k: 0, punct });
+    incepeFisier(f);
+  };
+  const alesFisier = (lista: FileList | null): void => { pornesteImport(lista ? [...lista] : [], null); };
+  const pornesteImportRef = useRef(pornesteImport);
+  pornesteImportRef.current = pornesteImport;
+  // Locul piesei din coadă: punctul lăsat, apoi fiecare fișier următor cu 10 mm la dreapta și în jos (nu cad unul peste altul).
+  const locImport = coadaImport?.punct ? { x: coadaImport.punct.x + 10 * coadaImport.k, y: coadaImport.punct.y - 10 * coadaImport.k } : null;
   const importOk = dialogImport && dialogImport.stare !== 'citire' && dialogImport.stare.ok ? dialogImport.stare : null;
-  const stareImport = importOk ? stare(registru, 'document.importa', context({ importNou: () => importOk.pregatit })) : null;
+  const stareImport = importOk ? stare(registru, 'document.importa', context({ importNou: () => importOk.pregatit, locImport: () => locImport })) : null;
   const inchideImport = (): void => {
     cerereImport.current++;
     setDialogImport(null);
+    setCoadaImport(null);
+  };
+  /** Fișierul următor din coadă (după „Importă” sau „Sari peste”), sau închiderea dialogului. */
+  const urmatorulImport = (): void => {
+    const c = coadaImport;
+    const urm = c ? c.fisiere[c.k + 1] : undefined;
+    if (!c || !urm) {
+      inchideImport();
+      return;
+    }
+    setCoadaImport({ ...c, k: c.k + 1 });
+    incepeFisier(urm);
   };
 
   /**
@@ -719,7 +771,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           {aranjament.zone.unelte.length > 0 && <div className="insula unelte">{grupuri('unelte')}</div>}
         </header>
         {/* Fereastra de fișiere a importului: în afara barelor, ca importul să meargă din orice aranjament (și din paletă). */}
-        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml" hidden data-camp="fisier-svg"
+        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml" multiple hidden data-camp="fisier-svg"
           onChange={(e) => { alesFisier(e.target.files); e.target.value = ''; }} />
         <div className="lucru">
           <Panza
@@ -733,6 +785,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             cutie={cutieSelectie}
             onCursor={cursor.scrie}
             onScara={scara.scrie}
+            {...(modal ? {} : { onFisiere: (fisiere: readonly File[], punct: { readonly x: number; readonly y: number } | null) => { pornesteImport(fisiere, punct); } })}
+            textLasare={t('import.lasa-aici')}
           >
             {/*
               Bara se montează din nou când apare o selecție și când se închide un dialog sau paleta (cheia): de fiecare
@@ -799,10 +853,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             // Un dublu-clic nu importă de două ori: clicul e un eveniment discret, deci React închide dialogul înaintea
             // celui de-al doilea (otrava care scotea o gardă de aici a scăpat: garda era cod mort; e2e-ul o arată).
             if (!importOk || dialogImport.seRecitesc) return;
-            const r = ruleaza(registru, 'document.importa', context({ importNou: () => importOk.pregatit }));
-            if (r.ok) inchideImport();
+            const r = ruleaza(registru, 'document.importa', context({ importNou: () => importOk.pregatit, locImport: () => locImport }));
+            if (r.ok) urmatorulImport();
           }}
           onInchide={inchideImport}
+          {...(coadaImport && coadaImport.fisiere.length > 1
+            ? { coada: { k: coadaImport.k + 1, n: coadaImport.fisiere.length }, onSari: urmatorulImport }
+            : {})}
         />
       )}
       </Suspense>

@@ -9,7 +9,7 @@ import { useLimba } from './useLimba.ts';
 const REFUZ: Readonly<Record<CodRefuz, CheieSimpla>> = {
   octeti: 'import.refuz.octeti', svgz: 'import.refuz.svgz', entitati: 'import.refuz.entitati', parsare: 'import.refuz.parsare',
   radacina: 'import.refuz.radacina', gol: 'import.refuz.gol', departe: 'import.refuz.departe', plafon: 'import.refuz.plafon',
-  neincarcat: 'dialog.neincarcat',
+  neincarcat: 'dialog.neincarcat', tip: 'import.refuz.tip',
 };
 
 /** Motivul refuzului entităților, tradus din codul ușii: niciun text din fișier nu ajunge în interfață. */
@@ -70,6 +70,10 @@ type Props = {
   readonly onPx: (px: 96 | 72) => void;
   readonly onImporta: () => void;
   readonly onInchide: () => void;
+  /** Mai multe fișiere lăsate deodată (felia 2.8b): al câtelea e acesta; „Renunță” le închide pe toate. */
+  readonly coada?: { readonly k: number; readonly n: number };
+  /** Trece la fișierul următor fără să-l importe pe acesta. */
+  readonly onSari?: () => void;
 };
 
 /**
@@ -77,7 +81,7 @@ type Props = {
  * desenului, contururile închise pe laturi, căile deschise (tăiate pe linie) cu nota grosimii liniei, alegerea px-ului
  * când contează și raportul.
  */
-export function DialogImport({ nume, stare, pxPeTol, pxAutomat, seRecitesc, motiv, onPx, onImporta, onInchide }: Props) {
+export function DialogImport({ nume, stare, pxPeTol, pxAutomat, seRecitesc, motiv, onPx, onImporta, onInchide, coada, onSari }: Props) {
   useLimba();
   const cutie = useRef<HTMLDivElement>(null);
   useEffect(() => { cutie.current?.focus(); }, []);
@@ -93,7 +97,10 @@ export function DialogImport({ nume, stare, pxPeTol, pxAutomat, seRecitesc, moti
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="import-titlu">
       <div className="dialog-cutie" ref={cutie} tabIndex={-1}>
-        <h2 id="import-titlu">{t('import.titlu', { nume })}</h2>
+        <h2 id="import-titlu">
+          {t('import.titlu', { nume })}
+          {coada && <span data-testid="import-coada">{' '}{t('import.coada', { k: coada.k, n: coada.n })}</span>}
+        </h2>
         {stare === 'citire' && <p role="status">{t('import.citeste')}</p>}
         {stare !== 'citire' && !stare.ok && (
           <>
@@ -139,7 +146,8 @@ export function DialogImport({ nume, stare, pxPeTol, pxAutomat, seRecitesc, moti
           {stare !== 'citire' && !stare.ok && stare.cod === 'neincarcat' && (
             <button type="button" onClick={() => { window.location.reload(); }}>{t('eroare.reincarca')}</button>
           )}
-          <button type="button" data-buton="renunta" onClick={onInchide}>{t('import.renunta')}</button>
+          {coada && onSari && <button type="button" data-buton="sari" onClick={onSari}>{t('import.sari')}</button>}
+          <button type="button" data-buton="renunta" onClick={onInchide}>{t(coada ? 'import.renunta-toate' : 'import.renunta')}</button>
         </div>
       </div>
     </div>

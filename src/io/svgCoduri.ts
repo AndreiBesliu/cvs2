@@ -30,7 +30,7 @@ export const PLAFON_IMPORT = {
  * `neincarcat`: codul ușii nu s-a putut aduce (o publicare nouă, rețeaua); îl pune interfața, nu ușa. `gol`: nicio cale,
  * nici închisă, nici deschisă (ADR 0037 §11).
  */
-export type CodRefuz = 'octeti' | 'svgz' | 'entitati' | 'parsare' | 'radacina' | 'gol' | 'departe' | 'plafon' | 'neincarcat';
+export type CodRefuz = 'octeti' | 'svgz' | 'entitati' | 'parsare' | 'radacina' | 'gol' | 'departe' | 'plafon' | 'neincarcat' | 'tip';
 
 /** De ce sunt refuzate entitățile (ADR 0035 §1), ca cod: interfața îl traduce, fără text din fișier. */
 export const CODURI_ENTITATI = ['parametru', 'fara-nume', 'externa', 'neterminata', 'valoare', 'numar', 'expansiune', 'attlist'] as const;

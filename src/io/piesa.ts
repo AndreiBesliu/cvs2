@@ -29,7 +29,11 @@ export type DateImport = {
 export type FoaieImport = { readonly scula?: Operatie['scula']; readonly grosime?: number };
 
 /** Piesa importului și locul instanței ei pe foaie. */
-export type PiesaImport = { readonly piesa: Piesa; readonly x: number; readonly y: number };
+export type PiesaImport = {
+  readonly piesa: Piesa; readonly x: number; readonly y: number;
+  /** Mărimea cutiei desenului, în mm: lăsat pe planșă, centrul lui cade în punctul lăsat (felia 2.8b). */
+  readonly latime: number; readonly inaltime: number;
+};
 
 /**
  * Importul pregătit de previzualizare: datele, plus constructorul piesei, adus odată cu ele din modulul încărcat la
@@ -118,5 +122,7 @@ export function piesaDinImport(p: DateImport, id: string, scula?: Operatie['scul
     radacina: { tip: 'grup', id: 'g', matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }, copii: elemente },
     operatii,
   };
-  return p.pagina ? { piesa, x: dx, y: dy } : { piesa, x: 0, y: 0 };
+  const latime = cutie.maxX - cutie.minX;
+  const inaltime = cutie.maxY - cutie.minY;
+  return p.pagina ? { piesa, x: dx, y: dy, latime, inaltime } : { piesa, x: 0, y: 0, latime, inaltime };
 }

@@ -1512,3 +1512,19 @@ nu mișcă mașina).
 
 **Proba:** 5 572 de teste unitare; e2e în Edge 56 / 56 (6 noi: paleta, tema ținută minte, panourile, garda barei
 selecției, arborele, cursorul); niciun selector folosit de e2e schimbat.
+
+## 2026-10-13 — Etapa 2, felia 2.8b: fișierele lăsate pe planșă (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa pot 'arunca' direct in plansa unul sau mai multe fisiere vectoriale, cum ar fi un svg”.
+**Started:** 13:10. **Completed:** 13:55. **Clasa:** R1 (interfața importului; ușa SVG neschimbată). Făcută în sesiunea
+principală, fără agenți (bugetul săptămânii).
+
+**Făcut:** pânza primește fișierele trase din sistem și spune punctul în mm ai foii; fereastra prinde și fișierele lăsate
+în afara pânzei (browserul nu mai deschide SVG-ul în locul aplicației); coada trece fișierele prin dialogul existent, pe
+rând („(2 din 3)”, „Sari peste”, „Renunță la toate”); lăsat pe pânză, centrul desenului cade în punctul lăsat, iar
+fiecare fișier următor cu 10 mm la dreapta și în jos; un fișier care nu e SVG e refuzat cu motiv; butonul „Importă SVG…”
+primește acum și mai multe fișiere deodată. Un contur punctat cu textul „Lasă fișierele SVG aici” cât se trag fișierele.
+
+**Proba:** testul unitar al locului (centrul cutiei în punctul lăsat; fără loc, ca la buton); 2 e2e noi cu lăsarea reală
+(DataTransfer): două fișiere pe rând, la locul lor; un DXF refuzat, „Sari peste”, „Renunță la toate”. 6 049 de teste
+unitare, e2e 59 / 59. **Pornirea: 99,9 kB din 100**: următoarea interfață la pornire cere întâi loc (o mutare la cerere).

@@ -237,3 +237,65 @@ test('CNC-referinta.svg (ADR 0037 §11, §12): valul vine ca o cale deschisă, c
     supracursa: 0, asteptareAx: 3, avansPlonjare: 300, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
   })).toEqual([]);
 });
+
+/** Un SVG cu un pătrat de 20 × 20 mm, la 10 mm de colțul paginii de 40 × 40 mm. */
+const PATRAT = '<svg xmlns="http://www.w3.org/2000/svg" width="40mm" height="40mm" viewBox="0 0 40 40"><rect x="10" y="10" width="20" height="20"/></svg>';
+
+/** Lasă fișierele pe pânză în punctul (fx, fy) din pânză (0…1): `dragover`, apoi `drop`, cu un DataTransfer real. */
+async function lasaPePanza(page: Page, fisiere: ReadonlyArray<{ nume: string; text: string; tip: string }>, fx: number, fy: number) {
+  const panza = page.getByTestId('panza');
+  const r = await panza.boundingBox();
+  if (!r) throw new Error('pânza nu are cutie');
+  const clientX = r.x + r.width * fx, clientY = r.y + r.height * fy;
+  const dt = await page.evaluateHandle((f) => {
+    const d = new DataTransfer();
+    for (const x of f) d.items.add(new File([x.text], x.nume, { type: x.tip }));
+    return d;
+  }, fisiere);
+  await panza.dispatchEvent('dragover', { dataTransfer: dt, clientX, clientY });
+  await expect(page.getByTestId('lasa-aici')).toBeVisible();
+  await panza.dispatchEvent('drop', { dataTransfer: dt, clientX, clientY });
+  // Punctul lăsat, în mm ai foii, din vederea pânzei (aceeași formulă ca pânza).
+  const v = await panza.evaluate((el) => ({ s: Number(el.dataset.scara), tx: Number(el.dataset.tx), ty: Number(el.dataset.ty) }));
+  return { x: (r.width * fx - v.tx) / v.s, y: (v.ty - r.height * fy) / v.s };
+}
+
+test('lăsarea pe planșă (2.8b): două SVG-uri trec prin dialog pe rând și cad cu centrul unde au fost lăsate', async ({ page }) => {
+  await page.goto('/');
+  const p = await lasaPePanza(page, [
+    { nume: 'unu.svg', text: PATRAT, tip: 'image/svg+xml' },
+    { nume: 'doi.svg', text: PATRAT, tip: 'image/svg+xml' },
+  ], 0.5, 0.5);
+  await expect(page.getByTestId('lasa-aici')).toHaveCount(0);
+  await expect(page.getByTestId('import-coada')).toHaveText('(1 din 2)');
+  await page.click('[data-buton="importa"]');
+  await expect(page.getByTestId('import-coada')).toHaveText('(2 din 2)');
+  await page.click('[data-buton="importa"]');
+  await expect(page.locator('.dialog')).toHaveCount(0);
+  const doc = await documentSalvat(page, 2) as { foi: Array<{ instante: Array<{ x: number; y: number }> }> };
+  const inst = doc.foi[0]?.instante ?? [];
+  expect(inst).toHaveLength(2);
+  // Pătratul de 20 mm: colțul instanței e centrul minus 10; al doilea, decalat cu 10 la dreapta și 10 în jos.
+  expect(inst[0]?.x).toBeCloseTo(p.x - 10, 6);
+  expect(inst[0]?.y).toBeCloseTo(p.y - 10, 6);
+  expect(inst[1]?.x).toBeCloseTo(p.x, 6);
+  expect(inst[1]?.y).toBeCloseTo(p.y - 20, 6);
+});
+
+test('lăsarea pe planșă (2.8b): „Sari peste” trece la următorul, un fișier care nu e SVG e refuzat cu motiv, „Renunță la toate” închide', async ({ page }) => {
+  await page.goto('/');
+  await lasaPePanza(page, [
+    { nume: 'desen.dxf', text: '0\nSECTION', tip: 'application/dxf' },
+    { nume: 'unu.svg', text: PATRAT, tip: 'image/svg+xml' },
+    { nume: 'doi.svg', text: PATRAT, tip: 'image/svg+xml' },
+  ], 0.4, 0.6);
+  await expect(page.getByTestId('import-coada')).toHaveText('(1 din 3)');
+  await expect(page.getByTestId('import-refuz')).toContainText('Doar fișierele SVG se importă deocamdată');
+  await page.click('[data-buton="sari"]');
+  await expect(page.getByTestId('import-coada')).toHaveText('(2 din 3)');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 20.00 × 20.00 mm');
+  await page.getByRole('button', { name: 'Renunță la toate' }).click();
+  await expect(page.locator('.dialog')).toHaveCount(0);
+  // Nimic importat: lista e goală.
+  await expect(page.locator('[data-instanta]')).toHaveCount(0);
+});

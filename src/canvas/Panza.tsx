@@ -28,6 +28,12 @@ type Props = {
   readonly onCursor?: (p: { readonly x: number; readonly y: number } | null) => void;
   /** Scara vederii (px CSS pe mm), la fiecare vedere nouă: zoom, deplasare, potrivire. */
   readonly onScara?: (scara: number) => void;
+  /**
+   * Fișierele lăsate pe pânză (trase din sistem), cu punctul lăsării în mm ai foii (felia 2.8b). Fără el, pânza nu primește
+   * fișiere. `textLasare`: textul arătat cât se trag fișiere deasupra ei.
+   */
+  readonly onFisiere?: (fisiere: readonly File[], punct: { readonly x: number; readonly y: number } | null) => void;
+  readonly textLasare?: string;
 };
 
 /** Pixelii de toleranță ai clicului și pragul de la care o apăsare devine tragere. */
@@ -60,7 +66,9 @@ export function vedereaPotrivita(
  * document: primește formele gata descrise și trimite înapoi gesturile (clic, mutare), pe care aplicația le rulează
  * prin registrul de acțiuni.
  */
-export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivire, cutie, children, onCursor, onScara }: Props) {
+export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivire, cutie, children, onCursor, onScara, onFisiere, textLasare }: Props) {
+  const [trage, setTrage] = useState(false);
+  const cuFisiere = (e: { readonly dataTransfer: DataTransfer }): boolean => [...e.dataTransfer.types].includes('Files');
   const panzaRef = useRef<HTMLCanvasElement | null>(null);
   const lucratorRef = useRef<Worker | null>(null);
   const cerereRef = useRef(0);
@@ -239,7 +247,22 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
       onPointerCancel={() => { gest.current = null; setDeplasare({ dx: 0, dy: 0 }); }}
       onPointerLeave={() => { onCursor?.(null); }}
       onContextMenu={(e) => { e.preventDefault(); }}
+      onDragOver={(e) => {
+        if (!onFisiere || !cuFisiere(e)) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        if (!trage) setTrage(true);
+      }}
+      onDragLeave={() => { setTrage(false); }}
+      onDrop={(e) => {
+        setTrage(false);
+        if (!onFisiere || !cuFisiere(e)) return;
+        e.preventDefault();
+        const p = vedere ? laDocument(e, vedere) : null;
+        onFisiere([...e.dataTransfer.files], p ? { x: p.x, y: p.y } : null);
+      }}
     />
+    {trage && textLasare && <div className="lasa-aici" data-testid="lasa-aici">{textLasare}</div>}
     {/* Bara selecției: sub cutie dacă încape deasupra barei de jos, altfel deasupra cutiei; ascunsă cât se mută selecția. */}
     {children && cutie && vedere && deplasare.dx === 0 && deplasare.dy === 0 && (() => {
       const sub = vedere.ty - cutie.minY * vedere.scara + 12;

@@ -278,3 +278,9 @@ alegerea px-ului, Escape), o publicare nouă în timpul unei sesiuni (bucata uș
 
 **Se redeschide dacă:** fișierele reale cer alte rezoluții px, `use` sau text, sau dacă ușa trece de buget pe firul
 principal.
+
+**Adăugat în felia 2.8b (13.10, cererea owner-ului):** fișierele se pot și lăsa pe planșă, trase din sistem, unul sau mai
+multe. Fiecare trece prin aceeași ușă și același dialog, pe rând („2 din 3”, cu „Sari peste” și „Renunță la toate”);
+lăsat pe pânză, centrul cutiei desenului cade în punctul lăsat (fiecare fișier următor cu 10 mm la dreapta și în jos),
+iar lăsat în afara pânzei, ca la buton (locul din pagină). Un fișier care nu e SVG e refuzat cu motiv (`tip`). Contractul
+ușii nu se schimbă.
