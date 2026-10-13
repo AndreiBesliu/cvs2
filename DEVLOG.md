@@ -1416,3 +1416,8 @@ aproape nul (coarda 1e-11 mm, bulge 1e-13) ieșea din post un cerc Ø50 tăiat p
 1e-12 rad drept cercul întreg, iar traseul scria conturul necurățat). **2.3c-0:** `taieBucla` scrie linie orice arc cu
 |bulge| < 1e-6 sau mai scurt de 1e-6 mm, ca la curățarea offsetului; testul pe tot lanțul (până la G-code) pică înainte
 și trece după; corpusul amprentelor rămâne identic. Garda din poartă (invarianta 14 (i)) o scrie o sesiune independentă.
+
+**Deciziile owner-ului** (13.10, „ok, dar, taietura care desparte foaia ar trebui pusa intentionat de utilizator, nu
+automat”): ADR 0037 acceptat cu cele cinci implicite, iar despărțirea foii devine un marcaj al utilizatorului
+(`despartire: true`), nu o clasificare automată; o tăietură deschisă prin foaie, nemarcată, care ajunge la marginea foii
+se refuză (de confirmat înaintea lui 2.3c-5).
