@@ -1396,3 +1396,9 @@ fiecare formă `nonzero`; la refuz importă ca în 2.7c, numărat.
 CSS simple, `fill: none`, bugetele pe fișier), oracolul independent și testele sunt împinse. Rămân: otrăvurile (54, scrise
 de o sesiune independentă, verificate că se aplică și compilează; nepornite), publicarea pe test și încheierea feliei.
 
+**Reluat:** 13.10 07:17, la „continua, o sa vreau sa facem partea de UI putin mai devreme, dar termina feliile pana la 3.0
+intai, sau crezi ca se poate face acum, fara sa afectam planul?”. Owner-ul a importat pe test logoul AS Roma (Illustrator,
+95 de forme): 2 forme refuzate de normalizare (autoverificarea). Cauza era în ușă: la închidere, capătul se lipea de primul
+vârf, dar mânerul retras (`s… -1-1-1-1z`) rămânea la 1 ulp de el, cu o tangentă din zgomot. Reparat (ADR 0035 §7), cu
+testul pe cele două forme reale: 0 refuzuri, 3 forme normalizate.
+

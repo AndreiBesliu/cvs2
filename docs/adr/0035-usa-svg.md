@@ -144,8 +144,11 @@ milimetri e M = pagina ∘ strămoșii ∘ forma.
   (în milimetri). Un `M` singur nu e o subcale; `M … Z` fără niciun segment e una închisă, fără vârfuri (degenerată).
 - **Degenerată** e o subcale închisă cu mai puțin de 2 vârfuri, sau doar din linii, toate pe o dreaptă (până la 1e-12 din
   mărimea ei): n-are arie, browserul n-o umple, iar CAM-ul ar refuza toată piesa (recenzia 2.7c). O buclă dintr-o singură
-  cubică (o picătură desenată dintr-un nod) se împarte la t = 1/2 (de Casteljau) în două cubice, deci două vârfuri. Calea are vârfurile subcăii fără ultimul punct: ultimul segment ajunge în primul vârf. Cu `Z` și un gol
-  mai mare, se adaugă linia de închidere.
+  cubică (o picătură desenată dintr-un nod) se împarte la t = 1/2 (de Casteljau) în două cubice, deci două vârfuri. Calea
+  are vârfurile subcăii fără ultimul punct: ultimul segment ajunge în primul vârf. Un punct de control al ultimei cubice
+  egal (exact) cu acel ultim punct (mânerul retras, `s… -1-1-1-1z` din Illustrator) se mută odată cu el în primul vârf
+  (13.10, logoul AS Roma: rămânea la 1 ulp de vârf, cu o tangentă din zgomot, iar normalizarea refuza forma). Cu `Z` și
+  un gol mai mare, se adaugă linia de închidere.
 - Subcăile **deschise** (și `line`, și `polyline` care nu se închide) se sar, numărate: vin cu 2.3c.
 - Se scot doar segmentele nule exact, judecate în coordonatele formei: linia cu capetele egale și cubica cu toate cele patru
   puncte egale. Restul geometriei

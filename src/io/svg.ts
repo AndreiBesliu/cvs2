@@ -503,6 +503,15 @@ function subcaleMm(sc: SubcaleLocala, M: Matrice, sim: boolean, semn: number, n:
   if (gol > TOLERANTA_IMPORT) {
     if (!sc.z) return varfuri.length > PLAFON.varfuriCale ? 'prea-mare' : 'deschisa';
     varfuri.push({ p: cur, s: LINIE });
+  } else if (gol > 0) {
+    // Capătul se lipește de primul vârf; un mâner egal cu el (cubica cu mânerul retras: `s-1-1-1-1z` din Illustrator) se
+    // lipește odată cu el. Altfel rămânea la 1 ulp de vârf, cu o tangentă din zgomot, iar normalizarea `nonzero` refuza
+    // forma (logoul AS Roma, 13.10: 2 forme din 95).
+    const ultim = varfuri[varfuri.length - 1];
+    if (ultim && ultim.s.tip === 'C') {
+      const lipit = (q: Punct): Punct => (q.x === cur.x && q.y === cur.y ? start : q);
+      varfuri[varfuri.length - 1] = { p: ultim.p, s: { tip: 'C', c1: lipit(ultim.s.c1), c2: lipit(ultim.s.c2) } };
+    }
   }
   // Plafonul se judecă după linia de închidere (recenzia 2.7c: 50 001 de vârfuri treceau de ușă și opreau tot importul).
   if (varfuri.length > PLAFON.varfuriCale) return 'prea-mare';

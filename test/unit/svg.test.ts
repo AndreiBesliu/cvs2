@@ -291,6 +291,25 @@ test('oracolul 2.7d (K7): o formă nonzero mai subțire decât τ peste tot poat
   assert.equal(cai(pagina('<polygon fill-rule="evenodd" points="0,10 10,10 20,10.000000001"/>')).cai.length, 1);
 });
 
+test('logoul AS Roma (13.10): la închidere, mânerul egal cu capătul se lipește odată cu el; normalizarea nu mai refuză', () => {
+  // Din fișierul real (Illustrator, viewBox în px pe o pagină în px): `s… -1-1-1-1z` lasă capătul la ~1e-14 de start.
+  const r = cai(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 587.5 761.7" width="277.723070189" height="360.070915001">
+    <path d="m406.6 377.4s-0.1 11.9-2.6 14.9h1.4c0.5-0.4 1.5-4.2 1.9-5.7 0.4-1.6 0.3-8.2 0.3-8.2s-1-1-1-1z"/>
+    <path d="m239.6 189.9s15.8-6 19.5 19.3c1.7-9.2-0.4-20.2-6.8-23.6-6.4-3.3-12.7 4.3-12.7 4.3z"/></svg>`);
+  assert.equal(r.avertismente['nonzero-refuzate'], 0);
+  assert.equal(r.cai.length, 2);
+  for (const c of r.cai) {
+    const ultim = c.varfuri[c.varfuri.length - 1];
+    assert.ok(ultim?.s.tip === 'C');
+    // Exact primul vârf, bit cu bit, nu la 1 ulp de el.
+    assert.deepEqual(ultim.s.c2, c.varfuri[0]?.p);
+  }
+  // Un mâner diferit de capăt nu se mută: doar egalitatea exactă e „mânerul retras”.
+  const alt = cai(pagina('<path d="M0 0 L10 0 C10 5 0.5 5 0.0000001 0.0000001 Z"/>'));
+  const u = alt.cai[0]?.varfuri.at(-1);
+  assert.ok(u?.s.tip === 'C' && u.s.c2.x === 0.5);
+});
+
 test('recenzia 2.7d: plafonul total al vârfurilor se judecă pe intrare, înaintea normalizării', () => {
   // 5 căi × 14 000 de triunghiuri suprapuse (42 000 de vârfuri fiecare; 210 000 > 200 000): refuzat fără să normalizeze.
   let d = '';
