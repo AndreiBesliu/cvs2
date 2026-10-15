@@ -86,10 +86,10 @@
  * - Z-ul drumului: egal cu Z-ul sosirii, ±0,0005 (Z nu se rescrie; aceeași cotă);
  * - F-ul drumului: avansul de tăiere ±0,05 (F scris cu o zecimală).
  */
-import type { ColturiO, IntrariO, LaturaO, RampaO, SensO, TipColturiO, UrechiO } from './document.ts';
+import type { ColturiO, IntrariO, LaturaO, LaturaV10O, RampaO, SensO, TipColturiO, UrechiO } from './document.ts';
 import { citeste, regulaArcGrbl, type Eveniment, type Mutare, type Punct3 } from './gcode.ts';
 import {
-  arc as arcP, celMaiMic, distantaListe, dPunctLista, lungime as lungimeP, punct as punctP, punctLa, segment as segmentP, type Contur, type IncalcareMutare, type Primitiva,
+  arc as arcP, celMaiMic, distantaListe, dPunctLista, lungime as lungimeP, peOParte, punct as punctP, punctLa, segment as segmentP, type Contur, type IncalcareMutare, type Primitiva,
   type LaturaCale, type Regiune,
 } from './regiune.ts';
 import { TOL_INCHIDERE, TOL_SUB, type EtichetaActiva, type P2 } from './sens.ts';
@@ -361,7 +361,7 @@ export function faraDrumuri(evenimente: readonly Eveniment[], drumuri: readonly 
 // A. Poarta: legarea etichetei, condițiile §5, invarianta 13 și scutirea de la invarianta 2.
 
 export type LegareD = {
-  readonly id: string; readonly latura: LaturaO;
+  readonly id: string; readonly latura: LaturaV10O;
   /** Indicele operației printre operațiile elementului pe latura etichetei (ordinea tăieturilor). */
   readonly k: number;
   readonly colturi: ColturiO | null; readonly sens: SensO | null; readonly urechi: UrechiO | null; readonly adancime: number;
@@ -415,6 +415,8 @@ export function bucleleFoii(reg: Regiune, R: number, dinProgram: ReadonlyMap<str
   for (const [id, t] of reg.taieturi) {
     if (!t.contur) continue;
     for (const [latura, adancimi] of t.laturi) {
+      // ADR 0037 §9 (felia 2.3c-5): o tăietură pe o parte nu e buclă (iar degajările pe ea sunt refuzate, `deschise.ts`).
+      if (peOParte(latura)) continue;
       const exact = latura === 'pe-linie' ? t.contur.primitive : t.contur.drumIdeal(R, latura);
       for (let k = 0; k < adancimi.length; k++) {
         const drum = exact ?? dinProgram.get(`${id}|${latura}|${k}`) ?? null;
@@ -614,7 +616,7 @@ export function judecaFoaia(
   for (const [id, t] of reg.taieturi) {
     if (!t.contur) continue;
     for (const [latura, adancimi] of t.laturi) {
-      if (latura === 'pe-linie') continue;
+      if (latura === 'pe-linie' || peOParte(latura)) continue;
       for (let k = 0; k < adancimi.length; k++) {
         const col = t.colturi?.get(latura)?.[k] ?? null, sens = t.sensuri.get(latura)?.[k];
         if (!col || !sens) continue;

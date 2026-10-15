@@ -104,10 +104,10 @@
  * W = D (`coloaneleUrechilor`, `incapeTot(…, proprii)`). Se aplică alegerii judecate (12) și verificării „niciun candidat
  * nu încape”.
  */
-import type { IntrariO, LaturaO, SensO, UrechiO } from './document.ts';
+import type { IntrariO, LaturaO, LaturaV10O, SensO, UrechiO } from './document.ts';
 import type { Punct3, Eveniment } from './gcode.ts';
 import {
-  arc as arcP, capeteArc, celMaiMic, cutieLista, distantaListe, inParteaProprie, inUnghi, lungime as lungimeP, prag, pt, punct as punctP, punctLa,
+  arc as arcP, capeteArc, celMaiMic, cutieLista, distantaListe, inParteaProprie, inUnghi, lungime as lungimeP, peOParte, prag, pt, punct as punctP, punctLa,
   segment as segmentP, type Arc, type Cutie, type Primitiva, type Regiune,
 } from './regiune.ts';
 import {
@@ -229,7 +229,8 @@ export function lumea(reg: Regiune, foaie: { readonly latime: number; readonly i
     if (!t.urechi) continue;
     for (const [latura, lista] of t.urechi) {
       const cate = lista.filter((u) => u !== null).length;
-      if (cate === 0 || !t.contur) continue;
+      // ADR 0037 §9 (felia 2.3c-5): urechile pe o tăietură pe o parte sunt refuzate (`deschise.ts`); nu e buclă.
+      if (cate === 0 || !t.contur || peOParte(latura)) continue;
       const drum = latura === 'pe-linie' ? t.contur.primitive : t.contur.drumIdeal(D / 2, latura);
       if (!drum) continue;
       for (let k = 0; k < cate; k++) urechite.push({ id, latura, drum: drum.filter((q) => q.tip !== 'punct') });
@@ -693,7 +694,7 @@ export type IncalcareIntrari = { readonly invarianta: 11 | 12; readonly linia: n
 
 /** Intrările așteptate pe etichetă: operația legată (ca la 9–11) cu raza, latura, sensul, rampa. */
 type Legare = {
-  readonly intrari: IntrariO | null; readonly rampa: boolean; readonly adancime: number; readonly sens: SensO | null; readonly latura: LaturaO;
+  readonly intrari: IntrariO | null; readonly rampa: boolean; readonly adancime: number; readonly sens: SensO | null; readonly latura: LaturaV10O;
   readonly id: string; readonly urechi: boolean;
   /** Urechile operației legate (precizarea din 10.10 a ADR 0031: coloanele buclei înseși). */
   readonly urechiO: UrechiO | null;
@@ -756,7 +757,7 @@ export function verificaIntrari(
   const lume = lumea(reg, foaie, 2 * R);
   const leg = legarile(etichete, reg);
   const cuIntrari = new Set<number>();
-  leg.forEach((x, k) => { if (x && x.intrari !== null && !x.rampa && x.latura !== 'pe-linie') cuIntrari.add(k); });
+  leg.forEach((x, k) => { if (x && x.intrari !== null && !x.rampa && x.latura !== 'pe-linie' && !peOParte(x.latura)) cuIntrari.add(k); });
   // §6: refuzurile, pe etichetă (o dată pe linie). ADR 0031 §1–§2: „intrări și rampă” nu mai e refuz; sub rampă, raza
   // al cărei sfert are sub 1 mm e.
   etichete.forEach((e, k) => {
@@ -775,8 +776,9 @@ export function verificaIntrari(
   for (const l of lanturile(evenimente, etichete.map((e) => e.linia), laDoc)) {
     if (l.eticheta < 0) continue;
     const x = leg[l.eticheta];
-    // Operațiile doar cu rampă rămân ale lui `rampa.ts` (verdictele lor nu se schimbă).
-    if (!x || x.latura === 'pe-linie' || (x.rampa && !(regula0031 && x.intrari !== null))) continue;
+    // Operațiile doar cu rampă rămân ale lui `rampa.ts` (verdictele lor nu se schimbă). ADR 0037 (felia 2.3c-5): o
+    // tăietură pe o parte n-are buclă, deci nici intrări (refuzate pe ea, `deschise.ts`); trecerea ei e a lui `parte.ts`.
+    if (!x || x.latura === 'pe-linie' || peOParte(x.latura) || (x.rampa && !(regula0031 && x.intrari !== null))) continue;
     const cheie = `${x.id}|${x.latura}|${x.adancime}|${x.intrari === null ? 'null' : x.intrari.raza}`;
     const g = grupe.get(cheie) ?? { k: l.eticheta, treceri: [], cuIntrare: [] };
     // ADR 0031: sub rampă, trecerea cu intrare se taie după coborâre (`desparteCuRampa`); altfel ca la ADR 0030.
@@ -863,7 +865,7 @@ export function verificaIntrari(
       }
       // Precizarea din 10.10: intrarea aleasă încape (a, b, c), măsurată pe program (C și ρ ale intrării).
       if (analitica && i >= 0 && !ri) {
-        const x0 = incapeTot(reg, i, semicercDin(ai.c, ai.r, t.p0, parte), R, lume, analitica, x.id, x.latura, x.urechi, proprii);
+        const x0 = incapeTot(reg, i, semicercDin(ai.c, ai.r, t.p0, parte), R, lume, analitica, x.id, latura, x.urechi, proprii);
         if (x0.verdict === 'nu') rez.push({ invarianta: 12, linia: ai.linia, mesaj: `intrările lui ${cine}: semicercul ales (p₀ ${mm(t.p0.x)}, ${mm(t.p0.y)}, ρ ${mm(ai.r)}) nu încape: ${x0.motiv}` });
       }
       const rho = raze.find((r) => Math.abs(r - ai.r) <= TOL_GEOM) ?? ai.r;
@@ -878,7 +880,7 @@ export function verificaIntrari(
       if (t.p0 === null) continue;
       const { bucla } = dinVarful0(analitica, t.p0);
       for (const rho of raze) {
-        const c = candidatii(bucla).find((q) => incapeTot(reg, i, semicercul(q.p, q.t, parte, rho).arc, R, lume, analitica, x.id, x.latura, x.urechi, proprii).verdict === 'da');
+        const c = candidatii(bucla).find((q) => incapeTot(reg, i, semicercul(q.p, q.t, parte, rho).arc, R, lume, analitica, x.id, latura, x.urechi, proprii).verdict === 'da');
         if (c) {
           rez.push({
             invarianta: 12, linia: t.pasi[0]!.linia,

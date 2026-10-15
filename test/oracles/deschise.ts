@@ -37,14 +37,19 @@
  *     (Refuzul, nu avertismentul, e propunerea din 13.10 pe care owner-ul o confirmă înaintea lui 2.3c-5; dacă devine
  *     avertisment, refuzul iese de aici.)
  *
- * Ce NU face (limitele, spuse în raport): tăieturile pe o parte (stânga / dreapta: 14 (ii), părțile invariantelor 2 și 9)
- * vin cu 2.3c-5; eticheta lor nu e încă recunoscută (regexul din `regiune.ts`), deci e o încălcare a invariantei 2. Nici
- * discul unei despărțiri care intră într-o piesă nu e judecat.
+ * Felia 2.3c-5 (sesiune independentă): tăieturile pe o parte (stânga / dreapta: 14 (ii), părțile invariantelor 2 și 9)
+ * sunt în `parte.ts`. Aici, 11 AMENDATĂ pe ele (§7: „pentru fiecare trecere k, pe fiecare bucată, în ordine”): sub o
+ * etichetă pe o parte, trecerile sunt lanțurile consecutive la aceeași adâncime (±0,001), fiecare cu o bucată sau mai
+ * multe; toate trecerile au tot atâtea bucăți, iar bucata j plonjează la fiecare trecere în punctul în care a plonjat la
+ * prima („toate trecerile unei bucăți pornesc din același punct”, §13). Pe linie rămâne regula de dinainte (vârful 0).
+ *
+ * Ce NU face (limitele, spuse în raport): discul unei despărțiri pe linie care intră într-o piesă nu e judecat (pe o
+ * parte, îl judecă invarianta 2 din `parte.ts`).
  */
 import type { Eveniment, Mutare, Punct3 } from './gcode.ts';
 import { lanturile, type Lant } from './rampa.ts';
 import { TOL_SUB, type EtichetaActiva } from './sens.ts';
-import { lungime, type Eticheta, type Pt, type Regiune } from './regiune.ts';
+import { lungime, peOParte, type Eticheta, type Pt, type Regiune } from './regiune.ts';
 import { CLASE_O, type TaieturaV10O } from './document.v10.ts';
 
 /** Plonjarea în vârful 0 și capătul în ultimul vârf: rotunjirea postului (√2/2 · 0,001) plus o rezervă. */
@@ -147,8 +152,28 @@ export function formaDeschisa(
     const cine = `${et.idLume} (${et.latura}, cale deschisă)`;
     const prima = lista[0]!;
     let prec = 0;
+    // Felia 2.3c-5 (antetul): pe o parte, trecerile pe bucăți; bucata j plonjează mereu unde a plonjat la prima trecere.
+    if (peOParte(et.latura)) {
+      const treceri: Array<typeof lista> = [];
+      for (const x of lista) {
+        const t = treceri[treceri.length - 1];
+        if (t && Math.abs(t[0]!.d - x.d) <= TOL_Z_DESCHIS) t.push(x); else treceri.push([x]);
+      }
+      const bucati = treceri[0]!;
+      for (const t of treceri.slice(1)) {
+        if (t.length !== bucati.length) {
+          rez.push({ invarianta: 11, linia: t[0]!.l.pasi[0]!.linia, mesaj: `trecerea pe calea deschisă (§7): la ${mm(t[0]!.d)} mm, ${cine} are ${t.length} bucăți; prima trecere avea ${bucati.length}` });
+        }
+        t.forEach((x, k) => {
+          const b = bucati[k];
+          if (b && dist(x.plonjare, b.plonjare) > TOL_CAPAT) {
+            rez.push({ invarianta: 11, linia: x.l.pasi[0]!.linia, mesaj: `trecerea pe calea deschisă (§13): bucata ${k + 1} a lui ${cine} plonjează în ${pct(x.plonjare)}; la prima trecere, în ${pct(b.plonjare)}: toate trecerile unei bucăți pornesc din același punct` });
+          }
+        });
+      }
+    }
     for (const x of lista) {
-      if (dist(x.plonjare, prima.plonjare) > TOL_CAPAT) {
+      if (!peOParte(et.latura) && dist(x.plonjare, prima.plonjare) > TOL_CAPAT) {
         rez.push({ invarianta: 11, linia: x.l.pasi[0]!.linia, mesaj: `trecerea pe calea deschisă (§13): ${cine} plonjează în ${pct(x.plonjare)}; trecerea de dinainte, în ${pct(prima.plonjare)}: toate trecerile pornesc din același capăt` });
       }
       if (x.d < prec - TOL_Z_DESCHIS) {

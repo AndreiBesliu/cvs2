@@ -473,7 +473,8 @@ export function verificaSensul(
       rez.push({ linia: b.linii[0], mesaj: `sensul de tăiere: buclă sub o etichetă nevalidă (linia ${etichete[b.eticheta]!.linia}; ${unde}): sensul așteptat nu se știe` });
       continue;
     }
-    if (et.latura === 'pe-linie') continue;
+    // ADR 0037 §13 (felia 2.3c-5): pe stânga / dreapta, invarianta 9 amendată e a lui `parte.ts` (τ × v, nu aria).
+    if (et.latura === 'pe-linie' || et.latura === 'stanga' || et.latura === 'dreapta') continue;
     const s = sensuri[b.eticheta];
     if (!s || 'motiv' in s) {
       rez.push({ linia: b.linii[0], mesaj: `sensul de tăiere: ${s ? s.motiv : 'fără operație'} (${unde})` });
