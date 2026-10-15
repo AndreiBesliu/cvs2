@@ -384,12 +384,19 @@ Calea are vârfurile subcăii plus punctul final, cu segmentul L. E degenerată 
   vârfurilor, deci un cerc de Ø0,009 trecea de ușă și apoi refuza tot exportul.
 - **`departe` se judecă și pe coordonatele piesei** (fiecare punct, cu mânerele, minus colțul cutiei exacte), nu doar pe
   ale paginii: o linie de la −9·10⁶ la 9·10⁶ cădea abia la ușa documentului, cu un motiv generic.
-- **Propuneri, NEAPLICATE (contractul de azi le contrazice, iar oracolul independent al ușii îl codifică):** (a) o linie
-  dreaptă umplută scrisă cu C / Q (mânerele pe dreaptă, sau cu zgomotul rotunjirii) e închisă de umplere și dispare,
-  deși aceeași linie scrisă cu L e importată; (b) o linie dus-întors închisă de autor (Z, sau întoarsă exact în start)
-  e sărită ca „degenerată”, deși are lungime. Recomandarea: închiderea fără arie (toate punctele, cu mânerele, la cel mult
-  REZOLUTIE / 2 de o dreaptă) lasă calea deschisă, ca linie; iar o formă golită de normalizare se numără ca sărită. Se
-  aplică doar cu oracolul ușii amendat de o sesiune independentă (felia 2.3c-6).
+*Precizarea 2.3c-6 (15.10, din recenzia A; contract nou, oracolul ușii se amendează independent):*
+- **Închiderea fără arie lasă o linie.** Ordinea judecății unei subcăi închise (de autor, cu Z sau cu golul ≤
+  `TOLERANTA_IMPORT`; de umplere; de ușă, golul ≤ 0,01 mm) rămâne cea de azi: degenerarea exactă (mai puțin de 2 vârfuri,
+  sau numai linii pe o dreaptă la 1e-12 din mărime), apoi praful (diagonala cutiei exacte sub `REZOLUTIE`). DUPĂ praf,
+  încă o judecată: dacă subcalea n-are arce și toate punctele ei, cu mânerele cubicelor, stau la cel mult `REZOLUTIE` / 2
+  de dreapta prin cele mai depărtate două puncte ale ei, nu e un contur, ci o linie: devine cale deschisă. Închisă de ușă
+  sau de umplere: fără linia de închidere (n-a fost desenată), ca la degenerarea exactă de azi. Închisă de autor: cu drumul
+  înapoi până în start, cum e desenat (o linie dus-întors). Se numără ca orice cale deschisă (`deschise`), nu la
+  `inchise-de-umplere` / `inchise-la-usa`. Așa, o linie dreaptă umplută scrisă cu C / Q (mânerele pe dreaptă, sau cu
+  zgomotul rotunjirii lui Illustrator) se importă ca aceeași linie scrisă cu L, iar `M10 10 L60 10 Z` sau `M10 10 L60 10 L10 10`
+  devine o linie, nu o cale „fără lungime” sărită.
+- **O formă `nonzero` pe care normalizarea o golește de tot** (regiunea vidă: o cale și inversa ei, un triunghi sub τ) se
+  numără și la `degenerate` (sărită), pe lângă `nonzero-normalizate`.
 
 *Ce nu se citește:* `stroke-width`. Canalul are diametrul frezei, nu grosimea liniei din fișier.
 

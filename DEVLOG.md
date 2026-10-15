@@ -1640,3 +1640,9 @@ acordul pe regiune (10, 11, 12), iar e2e-ul liniei pe stânga trece prin poartă
 
 **Proba:** 6 300 de teste unitare, e2e 64 / 64 (4 noi: despărțirea din dialog, ușa căzută la reîncărcare, dublu-clicul în
 coadă, config.json fără răspuns); pornirea 96,6 kB.
+
+## 2026-10-15 — 2.3c-6, segmentul 1: ușa SVG, închiderea fără arie (Model: Claude Opus 5.5)
+
+**Prompt:** „poti sa continui” (după „deocamdata folosim un plan cu usage mai mic, asa ca vreau sa segmentezi mai mult
+taskurile deocamdata”). **Started:** acum. **Clasa:** R2 (contract nou la ușă). Un singur agent: sesiunea independentă care
+amendează oracolul ușii din ADR 0037 §11 („Precizarea 2.3c-6”); în paralel, aplicația.
