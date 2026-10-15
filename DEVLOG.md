@@ -1653,3 +1653,26 @@ Oracolul ușii amendat de o sesiune independentă (0,45 M, 31 min): 102 teste no
 cu forme fără arie; aplicația îl trece din prima (1 378 / 1 378). Textul meu din ADR avea o contradicție (ordinea punea
 degenerarea exactă înaintea regulii noi), corectată înainte ca oracolul să se sprijine pe ea; exemplul „triunghi sub τ”
 corectat la integrare. 6 403 de teste unitare, e2e 64 / 64.
+
+## 2026-10-15 — 2.3c-6, segmentul 2a: otrăvurile pe offsetul deschis, tăietura pe o parte și CAM (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, continua” (la „2a ~1–1½ h: offsetul deschis, tăietura pe o parte și CAM-ul”). **Started:** acum. Un singur
+agent: sesiunea independentă alege, aplică și rulează otrăvurile (ADR 0037, „Otrăvurile care contează”), în clonă; cele
+scăpate le tratează sesiunea aplicației (test nou sau echivalența măsurată).
+**Starea la 22:10 (sesiunea s-a închis cu agentul în lucru):** agentul a rulat toate cele 70 de otrăvuri (clona
+`scratchpad/clona-otravuri-23c-a`, jurnalul `.tmp/otravuri.log`, fiecare restaurată cu sha256): **50 prinse, 20 scăpate**.
+A doua șansă cu toată suita a pornit-o în 3 copii PARALELE: sub încărcare pică testele de timp și fără otravă (bazele kA–kC
+roșii), deci cele 3 „prinse” acolo (O02, O43, J07) nu se iau în seamă: se refac serial. Triajul celor 20 (de făcut, fără
+agenți; limita săptămânală a sărit la 88 % după schimbarea planului):
+- **găuri, cu testul planificat:** O11 (banda dus-întorsului ×10: U de 6,0004, abaterea 2e-4); O15 (distanța ±0,05: a doua
+  bucată la 3,01, izolată); O19 (capacul capătului FINAL: ocolul la capăt); O37 (evantaiele scoase: L-ul pe dreapta fără
+  arcul de colț, două bucăți); P02 (rotirea de 90° luată drept oglindire: instanța rotită cu o tăietură pe stânga); F03
+  (ordinea bucăților la inversare: strangularea pe stânga + opoziție); R04 (p₀ în K: o linie pe o parte în mijlocul unei
+  piese); R06 (pragul pereților R − 2ε: două linii la 5,993); J04 (neatins peste 2D: colțul concav de 60°, 10,39 mm); J07 și
+  D18 (marginea foii pe cale: o tăietură pe o parte prin foaie, calea la 5 mm de margine, scula spre ea); D21 (lasoul cu
+  startul lângă cale); T01 / T02 (pe linie: arcul plat cu coarda lungă, arcul scurt nelaț, în IR, câte unul);
+- **de măsurat:** O02 (ultimul segment nefortat L: sens.oracol pică în copia paralelă — de refăcut serial), O32 (fără
+  reîncercare: un caz care trece doar la |d| + 1e-4, din pieptenele oracolului), O36 (lungimea idealului cu semnul invers:
+  densitatea pe arcele cu r ≈ |d|, factor ≤ 2), L02 (nodurile închise marcate: exportul le refuză oricum);
+- **probabil echivalente, de argumentat:** O43 (mijloacele: redundante cu acoperirea pe porțiunile valide), J05 (propriul
+  perete: redundant cu distanța ± 0,002 a offsetului).
