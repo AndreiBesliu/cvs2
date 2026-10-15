@@ -1676,3 +1676,25 @@ agenți; limita săptămânală a sărit la 88 % după schimbarea planului):
   densitatea pe arcele cu r ≈ |d|, factor ≤ 2), L02 (nodurile închise marcate: exportul le refuză oricum);
 - **probabil echivalente, de argumentat:** O43 (mijloacele: redundante cu acoperirea pe porțiunile valide), J05 (propriul
   perete: redundant cu distanța ± 0,002 a offsetului).
+**Completed (segmentul 2a, 15.10 seara, fără agenți):** cele 20 de otrăvuri scăpate sunt închise: **18 prinse acum de câte
+un test țintit** (`test/unit/otravuri.23c.test.ts`, 17 teste; fiecare verificat în clonă: verde pe codul curat, roșu cu
+otrava lui aplicată, restaurat cu sha256), **2 echivalente, cu dovadă**:
+- teste noi pe golurile din triaj: O11, O15, O19, O37, P02, F03, R04, R06, J04, J07 + D18 (un test), D21, T01, T02;
+- măsurate și transformate în teste: O32 (căutare pe 736 de căi: 18 trec doar prin reîncercarea la |d| + 1e-4, de exemplu
+  pieptenele cu golurile la 5,9999 și d = 3, unde prima încercare a lui cavalier dă un punct pe partea greșită; testul ia
+  două dintre ele), O36 (semicercul R3 cu scula la 3 dinspre convex: idealul R6; cu otrava pasul cade la π / 189 și un gol
+  de 0,08 mm centrat în vârf trece), L02 (un nod închis dintr-o operație marcată despărțire rămâne în clasa laturii lui:
+  contractul `taieturiFoaie`, chiar dacă exportul îl refuză);
+- O43 nu era echivalentă, cum credeam: un cocoloș de 0,04 mm spre perete (săgeata 0,01), între două eșantioane ale
+  acoperirii (pasul 0,05), trece cu toate vârfurile la exact 3 mm; doar mijlocul arcului îl prinde;
+- **O02 echivalentă:** cu otrava aplicată, offsetul a 4 căi cu 6 arce diferite pe ultimul vârf (inclusiv bulge 1e6), la
+  3 distanțe, e identic octet cu octet cu cel fără arc (72 / 72): cavalier nu citește segmentul ultimului vârf al unei
+  polilinii deschise, iar curățarea (`imparteArceMari`, `unesteVarfuri`, `scoateVarfuriPeLatura`, `segmenteCale`) nu-l mută
+  pe alt vârf. Forțarea rămâne, ca apărare. Rulată serial, `sens.oracol` trece cu otrava (29 / 29): picătura din copia
+  paralelă era „out of memory”;
+- **J05 echivalentă, prin construcție:** traseul pe o parte iese din autoverificarea offsetului la |distanța − R| ≤ 0,002 de
+  propria cale, iar peretele se atinge doar sub R − ε, cu ε = 0,005; propriul perete nu poate fi atins de bucățile
+  offsetului (alte trasee, precum intrările, sunt refuzate pe căile deschise până la 2.5 pe deschise).
+Nivelul rapid: în prima rulare 7 picături, toate „out of memory” (`Fatal process out of memory`, `DataCloneError`, cu bash
+fără procese libere în același timp), nu de cod; fișierele lor rerulate serial: 634 / 634; tsc, importurile, determinismul
+(pornirea 96,7 / 100 kB) și licențele verzi.
