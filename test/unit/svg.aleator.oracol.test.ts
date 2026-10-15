@@ -12,6 +12,8 @@
  * pe căile finale.
  * Sub-felia 2.3c-3 (ADR 0037 §11): căile deschise (`inchis: false`, cu vârful final) se judecă separat de cele închise, în
  * ordinea lor; latura lor e `pe-linie` (nu intră în imbricare), deci și ele sunt „hotărâte”.
+ * Precizarea 2.3c-6 (ADR 0037 §11): subcăile închise fără arie sunt linii (căi deschise), iar formele golite de normalizare
+ * se numără și la `degenerate`; generatorul are în plus o formă „fără arie” la coada a ~40 % din fișiere.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

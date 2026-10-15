@@ -128,6 +128,26 @@
  *   judecă doar pe formele nenormalizate (ieșirea normalizării n-are o ordine scrisă);
  * - piesa: ordinea operațiilor nu se judecă (nu e scrisă); `despartire` lipsă sau `false` (ADR 0037 §2: lipsa = false);
  *   grosimea foii vine în argumentul piesei (`grosime`, ALEGERE de interfață: ADR-ul nu spune pe unde).
+ * - precizarea 2.3c-6 (ADR 0037 §11, „Închiderea fără arie lasă o linie”, textul corectat de coordonator), pe fiecare
+ *   subcale închisă (de autor: cu `Z` sau cu golul ≤ TOLERANTA_IMPORT; de umplere; de ușă, golul ≤ 0,01 mm), după
+ *   închidere și după împărțirea buclei dintr-o cubică, în ordinea: (1) sub 2 vârfuri: degenerată, ca în 2.7c; (2) numai
+ *   linii pe o dreaptă la 1e-12 din mărime: o LINIE; (3) praful, ca în 2.3c-1; (4) fără arce, toate punctele cu mânerele
+ *   cubicelor la cel mult REZOLUTIE / 2 = 0,005 mm de dreapta prin cele mai depărtate două puncte: o LINIE. Linia e o cale
+ *   deschisă (`deschise`, sau `degenerate` sub 0,01 mm, ca orice cale deschisă): închisă de ușă / umplere, fără linia de
+ *   închidere (vârful final = capătul subcăii); închisă de autor, cu drumul înapoi (linia de închidere adăugată rămâne,
+ *   vârful final = startul). Nu se numără la `inchise-de-umplere` / `inchise-la-usa` și nu intră în normalizare. O formă
+ *   nonzero golită de tot de normalizare se numără și la `degenerate` (pe lângă `nonzero-normalizate`).
+ * Alegerile precizării 2.3c-6 (le spun și în raport):
+ * - „arce” = segmentele `A` ale ieșirii (arcele de cerc păstrate); arcele eliptice și cele plate (R > 9 990 mm) sunt
+ *   scrise ca cubice și se judecă pe mânerele cubicelor lor; un `A` cu raza 0 e o linie; corpusul nu stă pe diferență;
+ * - „cele mai depărtate două puncte” se caută printre aceleași puncte (vârfurile, capetele și mânerele); la egalitate,
+ *   prima pereche; corpusul stă departe de prag (0,0045 / 0,0055 mm, mânerele la 0,001 / 0,008 mm);
+ * - vârful final al liniei închise de autor prin apropiere (fără linia de închidere) e startul; diferența față de capăt
+ *   e golul (≤ 1e-6 mm), în toleranța ultimului segment; bucla dintr-o cubică închisă de autor se împarte întâi (2.7c),
+ *   deci o asemenea linie are două cubice (corpusul n-o are);
+ * - plafonul căii pe linia închisă de autor: vârfurile citite + linia de închidere adăugată + vârful final;
+ * - forma golită se numără o dată (nu pe subcăi); una care păstrează căi deschise în aceeași formă (L9: regiunea ei e
+ *   vidă, linia rămâne) e ambiguă: predicția o numără, `judecaRezultat` primește 0 sau 1.
  */
 import { DOMParser } from '@xmldom/xmldom';
 import { distantaLaCubica, type CubicaO } from './biarce.ts';
@@ -1074,6 +1094,10 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
   // ADR 0036 §6: forma goală (regiunea vidă, sau o formă simplă mai subțire decât τ) se numără tot nonzero-normalizate;
   // dacă nu rămâne nimic, fișierul e „gol”. Forma subțire POATE și să rămână: alternativa e rezultatul în care rămâne.
   nr['nonzero-normalizate'] = formeNonzero.filter((f) => f.deSchimbat || f.gol).length;
+  // Precizarea 2.3c-6 (ADR 0037 §11): o formă nonzero golită de tot de normalizare (regiunea vidă) se numără și la
+  // `degenerate`, o dată pe formă (ALEGERE: „o formă … se numără”). Predicția numără orice formă prezisă goală; una care
+  // păstrează căi deschise (L9) e ambiguă, iar `judecaRezultat` primește acolo și 0 (ALEGERE, în raport).
+  nr.degenerate += formeNonzero.filter((f) => f.gol).length;
   // ADR 0037 §11: `inchise-la-usa` vine cu golul cel mai mare (nejudecat la aplicație: câmpul nu e numit).
   const golLaUsa = jurnal.reduce((m, j) => (j.inchisaDeUsa === 'usa' && j.soarta === 'cale' ? Math.max(m, j.gol) : m), 0);
   const ok: RezultatO = { ok: true, cai, pagina, px, illustrator, avertismente: nr, marime, tolLC, formeNonzero, subcai: jurnal, golLaUsa };
@@ -1083,7 +1107,8 @@ export function citesteSvgO(octeti: Uint8Array, opt: OptiuniO = {}): RezultatO {
   if (goale.size > 0 && cai.every((c) => c.inchis && goale.has(c.forma))) {
     const subtiri = formeNonzero.filter((f) => f.gol && f.subtire);
     if (subtiri.length === 0) return { ok: false, cod: 'gol', avertismente: nr };
-    const nr2 = { ...nr, 'nonzero-normalizate': nr['nonzero-normalizate'] - subtiri.length };
+    // Forma subțire care rămâne nu e nici normalizată, nici golită (2.3c-6: nici `degenerate`).
+    const nr2 = { ...nr, 'nonzero-normalizate': nr['nonzero-normalizate'] - subtiri.length, degenerate: nr.degenerate - subtiri.length };
     const alt: RezultatO = { ...ok, avertismente: nr2, formeNonzero: formeNonzero.map((f) => (f.subtire ? { ...f, gol: false } : f)) };
     return { ok: false, cod: 'gol', avertismente: nr, alternativ: alt };
   }
@@ -1188,14 +1213,16 @@ function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean
      * ADR 0037 §11 (2.3c-3): calea deschisă = vârfurile segmentelor vii plus vârful final (capătul ultimului segment, cu
      * segmentul `L`). Plafonul căii, cu vârful final inclus (ALEGERE: înaintea degenerării, ca la linia de închidere);
      * degenerată cu mai puțin de 2 vârfuri distincte sau cu lungimea (exactă) sub REZOLUTIE; nu intră în normalizarea nonzero.
+     * Precizarea 2.3c-6: o subcale închisă de autor care e o linie păstrează drumul înapoi (linia de închidere, dacă s-a
+     * adăugat, numărată în plafon ca `inchidere`), iar vârful ei final e startul (`fin`).
      */
-    const deschisa = (): void => {
-      if (citite + 1 > CONST_O.varfuriCale) {
+    const deschisa = (fin: P = pk, inchidere = 0): void => {
+      if (citite + inchidere + 1 > CONST_O.varfuriCale) {
         nr['prea-mari']++;
         noteaza('prea-mari', null);
         return;
       }
-      const varfuri: VarfO[] = [...vii.flatMap((r) => r.piese), { p: pk, s: { tip: 'L' } }];
+      const varfuri: VarfO[] = [...vii.flatMap((r) => r.piese), { p: fin, s: { tip: 'L' } }];
       if (varfuriDistincte(varfuri) < 2 || lungimeRuns(vii) < CONST_O.rezolutie) {
         nr.degenerate++;
         noteaza('degenerate', null);
@@ -1215,6 +1242,8 @@ function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean
     // (`fill` efectiv ≠ `none`) închide cu o linie; `fill: none` închide doar golul de cel mult REZOLUTIE; altfel deschisă
     // (2.3c-3: o cale deschisă).
     let inchisaDeUsa: 'umplere' | 'usa' | null = null;
+    // Precizarea 2.3c-6: linia de închidere adăugată (cu Z și golul peste TOLERANTA_IMPORT, sau de ușă).
+    let cuInchidere = false;
     if (gol <= CONST_O.tolImport) {
       if (vii.length > 0) (vii[vii.length - 1] as RunO).gol = gol;
     } else if (s.z || umplut || gol <= CONST_O.rezolutie) {
@@ -1224,6 +1253,7 @@ function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean
         continue;
       }
       vii.push(linie(pk, p0));
+      cuInchidere = true;
       if (!s.z) inchisaDeUsa = umplut ? 'umplere' : 'usa';
     } else {
       deschisa();
@@ -1240,9 +1270,21 @@ function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean
         { ex: { fel: 'C', a: m0, c1: bcd, c2: cd, b: e.b }, piese: [{ p: m0, s: { tip: 'C', c1: bcd, c2: cd } }], clasa: 'C', raza: 0, gol, tol: 0 });
     }
     const varfuri = vii.flatMap((r) => r.piese);
-    if (varfuri.length < 2 || (vii.every((r) => r.clasa === 'L') && coliniare(varfuri.map((v) => v.p)))) {
-      // ADR 0037 §11: închiderea adăugată de ușă care dă o cale degenerată lasă subcalea deschisă: din 2.3c-3, o cale
-      // deschisă (fără linia de închidere, care e ultimul segment: bucla dintr-o cubică nu are linie adăugată).
+    /**
+     * Precizarea 2.3c-6 (ADR 0037 §11): o subcale închisă fără arie e o linie, deci o cale deschisă. Închisă de ușă sau de
+     * umplere: fără linia de închidere (n-a fost desenată; e ultimul segment). Închisă de autor (cu `Z`, sau prin apropiere):
+     * cu drumul înapoi până în start, cum e desenat (linia de închidere, dacă s-a adăugat, rămâne), cu vârful final în start.
+     * Se numără `deschise` (sau `degenerate`, sub 0,01 mm), nu la `inchise-de-umplere` / `inchise-la-usa`.
+     */
+    const caLinie = (): void => {
+      if (inchisaDeUsa !== null) {
+        vii.pop();
+        deschisa();
+      } else deschisa(p0, cuInchidere ? 1 : 0);
+    };
+    // (1) Mai puțin de 2 vârfuri: degenerată, ca în 2.7c. (O închidere a ușii adaugă o linie la un segment viu, deci are
+    // mereu cel puțin 2 vârfuri; ramura ei rămâne cum era în 2.3c-3.)
+    if (varfuri.length < 2) {
       if (inchisaDeUsa !== null) {
         vii.pop();
         deschisa();
@@ -1252,11 +1294,23 @@ function proceseazaForma(el: Element, ln: string, m: Mat, normalizabila: boolean
       }
       continue;
     }
-    // ADR 0037 §11, praful (2.3c-1): o subcale, închisă (cu `Z`, prin apropiere) sau deschisă (închisă de ușă), cu diagonala
-    // cutiei sub REZOLUTIE se sare, numărată `sub-rezolutie`, fără numărul închiderii. După degenerată (ALEGERE, în antet).
+    // (2) Numai linii pe o dreaptă la 1e-12 din mărime (degenerarea exactă din 2.7c): o linie, cu regula de la (4). Înaintea
+    // prafului: o linie exactă sub rezoluție e judecată ca linie (degenerată sub 0,01 mm).
+    if (vii.every((r) => r.clasa === 'L') && coliniare(varfuri.map((v) => v.p))) {
+      caLinie();
+      continue;
+    }
+    // (3) ADR 0037 §11, praful (2.3c-1): o subcale, închisă (cu `Z`, prin apropiere) sau deschisă (închisă de ușă), cu
+    // diagonala cutiei sub REZOLUTIE se sare, numărată `sub-rezolutie`, fără numărul închiderii. După degenerată (ALEGERE).
     if (diagonala < CONST_O.rezolutie) {
       nr['sub-rezolutie']++;
       noteaza('sub-rezolutie', inchisaDeUsa);
+      continue;
+    }
+    // (4) DUPĂ praf: fără arce, toate punctele (cu mânerele cubicelor) la cel mult REZOLUTIE / 2 de dreapta prin cele mai
+    // depărtate două puncte: o linie, cu aceeași regulă.
+    if (linieFaraArie(vii)) {
+      caLinie();
       continue;
     }
     if (inchisaDeUsa === 'umplere') nr['inchise-de-umplere']++;
@@ -1282,6 +1336,76 @@ export function coliniare(pts: readonly P[]): boolean {
   if (D === 0) return true;
   const ux = (f.x - p0.x) / D, uy = (f.y - p0.y) / D;
   return pts.every((q) => Math.abs((q.x - p0.x) * uy - (q.y - p0.y) * ux) <= 1e-12 * D);
+}
+
+/**
+ * Precizarea 2.3c-6 (ADR 0037 §11): punctele unei subcăi pentru regula liniei, în mm: vârfurile, capetele segmentelor și
+ * mânerele cubicelor (și ale celor scrise din arce eliptice / plate: cubicele lor sunt cele cerute de ADR 0035 §6).
+ */
+export function puncteLinieO(runs: readonly RunO[]): P[] {
+  const pts: P[] = [];
+  for (const r of runs) {
+    for (const v of r.piese) {
+      pts.push(v.p);
+      if (v.s.tip === 'C') pts.push(v.s.c1, v.s.c2);
+    }
+    pts.push(r.ex.b);
+  }
+  return pts;
+}
+
+/**
+ * Perechea cea mai depărtată a unei mulțimi SUBȚIRI de puncte (toate la cel mult `h` de dreapta prin `a` și `u`, unitar):
+ * capetele ei au proiecțiile pe `u` lângă extreme (cu marja (M − m) − √((M − m)² − (2h)²)), deci se caută doar printre
+ * punctele de la cele două capete. Exactă, fără ipoteze despre ordine; la egalitate, prima pereche găsită.
+ */
+function perecheaDepartata(pts: readonly P[], a: P, u: P, h: number): [P, P] {
+  const pr = pts.map((q) => (q.x - a.x) * u.x + (q.y - a.y) * u.y);
+  let m = Infinity, M = -Infinity;
+  for (const x of pr) { m = Math.min(m, x); M = Math.max(M, x); }
+  const L = M - m;
+  const marja = (L * L <= 4 * h * h ? L : L - Math.sqrt(L * L - 4 * h * h)) + 1e-9 * Math.max(1, Math.abs(m), Math.abs(M));
+  const jos: P[] = [], sus: P[] = [];
+  pts.forEach((q, i) => {
+    if ((pr[i] as number) <= m + marja) jos.push(q);
+    if ((pr[i] as number) >= M - marja) sus.push(q);
+  });
+  let best = -1;
+  let rez: [P, P] = [a, a];
+  for (const p of jos) {
+    for (const q of sus) {
+      const d = (q.x - p.x) * (q.x - p.x) + (q.y - p.y) * (q.y - p.y);
+      if (d > best) { best = d; rez = [p, q]; }
+    }
+  }
+  return rez;
+}
+
+/**
+ * Precizarea 2.3c-6 (ADR 0037 §11), punctul 4: subcalea n-are arce (segmente `A` în ieșire; ALEGERE: arcele eliptice și
+ * plate sunt scrise ca cubice, judecate pe mânerele lor) și toate punctele ei, cu mânerele cubicelor, stau la cel mult
+ * REZOLUTIE / 2 de dreapta prin cele mai depărtate două puncte ale ei (ALEGERE: perechea se caută printre aceleași puncte,
+ * cu mânere). Filtrul rapid: dacă toate stau la h de dreapta perechii, atunci stau la 6h de dreapta prin primul punct și
+ * cel mai depărtat de el (sin θ ≤ 2h / D₀, iar orice punct e la cel mult 2·D₀ de primul); peste 8h, nu e linie.
+ */
+export function linieFaraArie(runs: readonly RunO[]): boolean {
+  if (runs.length === 0 || runs.some((r) => r.clasa === 'arc')) return false;
+  const h = CONST_O.rezolutie / 2;
+  const pts = puncteLinieO(runs);
+  const a = pts[0] as P;
+  let D0 = 0, b = a;
+  for (const q of pts) {
+    const d = Math.hypot(q.x - a.x, q.y - a.y);
+    if (d > D0) { D0 = d; b = q; }
+  }
+  if (D0 === 0) return false;
+  const u = { x: (b.x - a.x) / D0, y: (b.y - a.y) / D0 };
+  for (const q of pts) if (Math.abs((q.x - a.x) * u.y - (q.y - a.y) * u.x) > 8 * h) return false;
+  const [p, q] = perecheaDepartata(pts, a, u, 8 * h);
+  const L = Math.hypot(q.x - p.x, q.y - p.y);
+  if (L === 0) return false;
+  const v = { x: (q.x - p.x) / L, y: (q.y - p.y) / L };
+  return pts.every((w) => Math.abs((w.x - p.x) * v.y - (w.y - p.y) * v.x) <= h);
 }
 
 /** ADR 0037 §11 (2.3c-3): câte vârfuri distincte (egale exact, în mm) are o cale. */
@@ -1941,7 +2065,8 @@ export function judecaRezultat(app: unknown, o: RezultatO, opt: OptiuniJudecata 
   if (a.px !== o.px) pr.push(`px ${String(a.px)} ≠ ${String(o.px)}`);
   if (a.illustrator !== o.illustrator) pr.push(`illustrator ${String(a.illustrator)} ≠ ${String(o.illustrator)}`);
   // `sub-rezolutie` se judecă separat (mai jos): subcăile-praf prezise plus contururile de praf scoase din normalizare.
-  pr.push(...judecaRaport(a.avertismente, o.avertismente, [...CODURI_NONZERO_O, 'sub-rezolutie']));
+  // `degenerate` la fel (precizarea 2.3c-6): degeneratele citirii plus formele nonzero golite de tot de normalizare.
+  pr.push(...judecaRaport(a.avertismente, o.avertismente, [...CODURI_NONZERO_O, 'sub-rezolutie', 'degenerate']));
   if (!Array.isArray(a.cai)) return [...pr, 'cai nu e listă'];
   // Căile aplicației, pe forme (în ordinea documentului).
   const appPeForma = new Map<number, CaleApp[]>();
@@ -1963,6 +2088,9 @@ export function judecaRezultat(app: unknown, o: RezultatO, opt: OptiuniJudecata 
   // ADR 0037 §11: contururile de praf scoase din ieșirea normalizării (găsite de oracolul normalizării) și formele
   // normalizate (intrarea lor, pentru căutarea întreagă când numărul aplicației nu se potrivește).
   let prafGasit = 0;
+  // Precizarea 2.3c-6: formele normalizate fără nicio cale închisă în ieșire (golite de tot); dintre ele, cele care au
+  // căi deschise în aceeași formă (ambigue: forma nu dispare, doar regiunea ei).
+  let golite = 0, goliteCuDeschise = 0;
   const normalizate: Array<{ forma: number; intrare: CaleN[]; tol: number[][] }> = [];
   for (const f of forme) {
     const Atoate = appPeForma.get(f) ?? [], Otoate = oPeForma.get(f) ?? [];
@@ -2002,6 +2130,10 @@ export function judecaRezultat(app: unknown, o: RezultatO, opt: OptiuniJudecata 
     }
     // Forma a fost normalizată.
     schimbate++;
+    if (A.length === 0) {
+      golite++;
+      if (Od.length > 0) goliteCuDeschise++;
+    }
     if (an !== undefined && an.deSchimbat === false && an.sigur && an.martor === null) pr.push(`forma ${f}: normalizată, dar regiunea ei nonzero e deja cea evenodd, fără muchii coincidente și fără martor la τ (§6: trebuia lăsată ca în 2.7c); ${identic[0]}`);
     const nume = (O[0] as CaleO).nume;
     A.forEach((c, k) => { if (c.nume !== nume) pr.push(`forma ${f} (normalizată), calea ${k}: nume ${String(c.nume)} ≠ ${String(nume)}`); });
@@ -2030,6 +2162,15 @@ export function judecaRezultat(app: unknown, o: RezultatO, opt: OptiuniJudecata 
       toate = Math.max(toate, prafGasit);
     } else toate = prafGasit;
     if (subApp !== subPrezis + toate) pr.push(`raportul: sub-rezolutie = ${String(subApp)} ≠ ${subPrezis} (subcăile-praf) + ${toate} (contururile de praf ale normalizării, ADR 0037 §11)`);
+  }
+  // Precizarea 2.3c-6: `degenerate` = degeneratele citirii (predicția fără formele golite) + formele golite de aplicație
+  // (judecate mai sus de oracolul normalizării: regiunea lor e vidă). O formă golită care păstrează căi deschise poate să nu
+  // se numere (ambiguitatea din antet).
+  const degCitire = o.avertismente.degenerate - o.formeNonzero.filter((f) => f.gol).length;
+  const deg = av['degenerate'];
+  if (typeof deg !== 'number' || !(deg >= degCitire + golite - goliteCuDeschise && deg <= degCitire + golite)) {
+    const asteptat = goliteCuDeschise > 0 ? `∈ [${degCitire + golite - goliteCuDeschise}, ${degCitire + golite}]` : `≠ ${degCitire + golite}`;
+    pr.push(`raportul: degenerate = ${String(deg)} ${asteptat} (${degCitire} ale citirii + ${golite} forme nonzero golite de normalizare, precizarea 2.3c-6)`);
   }
   const rf = av['nonzero-refuzate'];
   if (typeof rf !== 'number' || !(rf >= ramaseDeSchimbat && rf <= ramaseNonzero)) pr.push(`raportul: nonzero-refuzate = ${String(rf)} ∉ [${ramaseDeSchimbat}, ${ramaseNonzero}] (formele care trebuiau schimbate și au rămas ca în 2.7c; toate cele rămase)`);

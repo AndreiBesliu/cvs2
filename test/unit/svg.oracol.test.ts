@@ -26,6 +26,12 @@
  * în argumentul piesei (`grosime`, ALEGERE de interfață). Controalele negative ale căilor deschise și ale piesei se judecă
  * fără aplicație (rezultatul și piesa construite din oracol / de pe hârtie), ca să prindă un oracol stricat și înainte ca
  * aplicația să aibă 2.3c-3; testele (c′) și (c″) cer piesa aplicației din căile oracolului.
+ *
+ * Precizarea 2.3c-6 (ADR 0037 §11, „Închiderea fără arie lasă o linie”): secțiunea P a corpusului, cazurile schimbate (C16,
+ * C22, C25, C26, N7, N8, L9), proba K7 mutată pe L-ul subțire (C27, C28) și controalele negative ale regulii, fără aplicație
+ * (linia sărită ca degenerată, fără drumul înapoi, cu vârful final greșit, păstrată contur, cu linia de închidere a ușii,
+ * numărată la închideri, praful și coliniarul exact în ordinea greșită, pragul × / ÷ 1,2, mânerele ignorate; forma golită
+ * numărată 0 sau 2 la `degenerate`, ambiguitatea L9).
  */
 import { test } from 'node:test';
 import { DOMParser } from '@xmldom/xmldom';
@@ -358,13 +364,21 @@ test('(e) control negativ, fără aplicație: o formă cu fill: none (S2) normal
   numarata.avertismente['nonzero-refuzate'] = 1;
   assert.ok(judecaRezultat(numarata, o).length > 0, 'un refuz numărat pe o formă fără umplere a trecut');
 });
-test('(e) §6 relaxat (amendamentul K7), fără aplicație: triunghiul subțire (C25) păstrat ca atare trece judecata (alternativa), dar nu hârtia', () => {
-  const c = caz('C25');
+// Precizarea 2.3c-6: triunghiul subțire (C25) e acum o linie, înaintea normalizării; forma subțire K7 e L-ul (C27).
+test('(e) §6 relaxat (amendamentul K7), fără aplicație: L-ul subțire (C27) păstrat ca atare trece judecata (alternativa, fără degenerate), dar nu hârtia', () => {
+  const c = caz('C27');
   const o = oracol(c);
   assert.ok(!o.ok && o.cod === 'gol' && o.alternativ !== undefined && o.alternativ.ok);
   const pastrat = dinOracol({ ...c, nume: 'x', hartie: {} } as CazSvg, o.alternativ);
   assert.deepEqual(judecaRezultat(pastrat, o), [], 'forma subțire poate rămâne (ADR 0036 §6: „poate ieși”)');
   assert.ok(judecaHartiaFinala(pastrat, o, c.hartie).length > 0, 'hârtia cere refuzul gol');
+  // Păstrată, nu e golită: numărată degenerate (ca forma golită) e prinsă.
+  const numarata = copie(pastrat);
+  numarata.avertismente['degenerate'] = 1;
+  assert.ok(judecaRezultat(numarata, o).length > 0, 'forma subțire păstrată numărată degenerate a trecut');
+  // Refuzul gol fără degenerate (ca înainte de 2.3c-6) e prins.
+  const refuz = { ok: false, cod: 'gol', avertismente: { ...(o.avertismente as Record<string, number>), degenerate: 0 } };
+  assert.ok(judecaRezultat(refuz, o).length > 0, 'refuzul gol fără degenerate a trecut');
 });
 test('(e) control negativ, §6 relaxat, fără aplicație: o formă groasă, deja evenodd, fără martor (N15, funda) „normalizată” într-o copie e prinsă', () => {
   const c = caz('N15');
@@ -596,6 +610,91 @@ test('(e) control negativ 2.3c-3, fără aplicație: `gol` în loc de căile des
   assert.deepEqual(judecaRezultat({ ok: false, cod: 'gol', avertismente: { ...o7.avertismente } }, o7), []);
   const pastrata = { ok: true, cai: [caleL(1, [[30, 70], [30.006, 70]])].map((c) => ({ ...c, inchis: false })), pagina: { latime: 100, inaltime: 100 }, px: false, illustrator: false, avertismente: { ...o7.avertismente, degenerate: 1, deschise: 1 } };
   assert.ok(judecaRezultat(pastrata, o7).length > 0, 'calea de 0,006 mm păstrată a trecut');
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// (e) Precizarea 2.3c-6 (ADR 0037 §11, „Închiderea fără arie lasă o linie”): controalele negative, fără aplicație
+// (rezultatul corect construit din oracol trece, apoi se strică așa cum l-ar strica o ușă fără regula nouă sau greșită).
+
+const vf = (x: number, y: number): VarfO => ({ p: { x, y }, s: { tip: 'L' } });
+controlNegativ23c3('2.3c-6: linia închisă de autor sărită ca degenerată (ca înainte)', 'P6', (a) => {
+  a.cai = [];
+  plus(a, 'deschise', -2);
+  plus(a, 'degenerate', 2);
+});
+controlNegativ23c3('2.3c-6: linia închisă de autor fără drumul înapoi (LL în loc de LLL)', 'P6', (a) => { deschisa(a).varfuri.pop(); });
+controlNegativ23c3('2.3c-6: linia închisă de autor cu vârful final în ultimul colț, nu în start', 'P8', (a) => { ultimul(deschisa(a)).p.y = 49.996; });
+controlNegativ23c3('2.3c-6: linia umplută scrisă cu c păstrată contur închis de umplere (ca înainte)', 'P2', (a) => {
+  const c = deschisa(a);
+  c.inchis = true;
+  c.varfuri.pop();
+  plus(a, 'deschise', -1);
+  plus(a, 'inchise-de-umplere', 1);
+});
+controlNegativ23c3('2.3c-6: linia închisă de ușă cu linia de închidere păstrată (LLLL)', 'P14', (a) => { deschisa(a).varfuri.push(vf(10, 50)); });
+controlNegativ23c3('2.3c-6: linia închisă de ușă numărată și inchise-la-usa', 'P14', (a) => { plus(a, 'inchise-la-usa', 1); });
+controlNegativ23c3('2.3c-6: linia închisă de umplere numărată și inchise-de-umplere', 'P14', (a) => { plus(a, 'inchise-de-umplere', 1); });
+controlNegativ23c3('2.3c-6: praful făcut linie (punctul 4 înaintea prafului)', 'P10', (a) => {
+  a.cai.unshift({ forma: 0, inchis: false, varfuri: [vf(20, 80), vf(20.008, 80), vf(20.004, 79.999999), vf(20, 80)] });
+  plus(a, 'sub-rezolutie', -1);
+  plus(a, 'deschise', 1);
+});
+controlNegativ23c3('2.3c-6: coliniarul exact sub rezoluție judecat praf (praful înaintea punctului 2)', 'P11', (a) => {
+  a.cai = a.cai.filter((c) => c.inchis !== false);
+  plus(a, 'deschise', -1);
+  plus(a, 'degenerate', -1);
+  plus(a, 'sub-rezolutie', 2);
+});
+controlNegativ23c3('2.3c-6: pragul × 1,2 (0,006 mm): triunghiul de 0,0055 mm făcut linie', 'P12', (a) => {
+  const c = a.cai[1] as CaleApp;
+  c.inchis = false;
+  c.varfuri.push(copie(c.varfuri[0] as VarfO));
+  plus(a, 'deschise', 1);
+});
+controlNegativ23c3('2.3c-6: pragul ÷ 1,2: triunghiul de 0,0045 mm păstrat contur', 'P12', (a) => {
+  const c = deschisa(a);
+  c.inchis = true;
+  c.varfuri.pop();
+  plus(a, 'deschise', -1);
+});
+controlNegativ23c3('2.3c-6: mânerele ignorate: cubica în S (mânerele la 0,008 mm) făcută linie', 'P13', (a) => {
+  // Închisă: (10, 70) C, (60, 70) L (linia de închidere); deschisă, fără ea: aceleași vârfuri, (60, 70) e vârful final.
+  (a.cai[0] as CaleApp).inchis = false;
+  plus(a, 'inchise-de-umplere', -1);
+  plus(a, 'deschise', 1);
+});
+
+test('(e) 2.3c-6, fără aplicație: forma golită de normalizare (N8) numărată degenerate o dată; 0 sau 2 sunt prinse', () => {
+  const c = caz('N8');
+  const o = oracol(c);
+  const bun = dinOracol(c);
+  bun.cai = bun.cai.filter((x) => x.forma !== 0);
+  assert.deepEqual(judecaRezultat(copie(bun), o), [], 'forma golită, numărată degenerate și nonzero-normalizate, trece');
+  for (const d of [0, 2]) {
+    const rau = copie(bun);
+    rau.avertismente['degenerate'] = d;
+    assert.ok(judecaRezultat(rau, o).length > 0, `degenerate = ${d} a trecut`);
+  }
+  // Refuzul gol al lui N7 fără degenerate (ca înainte de 2.3c-6).
+  const o7 = oracol(caz('N7'));
+  assert.ok(!o7.ok && o7.cod === 'gol');
+  assert.deepEqual(judecaRezultat({ ok: false, cod: 'gol', avertismente: { ...(o7.avertismente as Record<string, number>) } }, o7), []);
+  assert.ok(judecaRezultat({ ok: false, cod: 'gol', avertismente: { ...(o7.avertismente as Record<string, number>), degenerate: 0 } }, o7).length > 0, 'N7 fără degenerate a trecut');
+});
+
+test('(e) 2.3c-6, fără aplicație: forma golită care păstrează o linie (L9) e ambiguă: degenerate 0 sau 1 trec, 2 nu', () => {
+  const c = caz('L9');
+  const o = oracol(c);
+  const bun = dinOracol(c);
+  bun.cai = bun.cai.filter((x) => x.inchis === false);
+  for (const d of [0, 1]) {
+    const r = copie(bun);
+    r.avertismente['degenerate'] = d;
+    assert.deepEqual(judecaRezultat(r, o), [], `degenerate = ${d}`);
+  }
+  const rau = copie(bun);
+  rau.avertismente['degenerate'] = 2;
+  assert.ok(judecaRezultat(rau, o).length > 0, 'degenerate = 2 a trecut');
 });
 
 test('(0) imbricarea fără căile deschise, pe hârtie: U-ul din L8 citit închis ar schimba latura pătratului mic', () => {

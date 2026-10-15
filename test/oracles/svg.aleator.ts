@@ -9,6 +9,13 @@
  * orice `line`, `polyline`-urile fără umplere, „M L”-urile umplute pe o dreaptă), deci nu se schimbă: aceleași fișiere pe
  * aceleași semințe. Pe cele 240, oracolul importă 87 de căi deschise în cele 97 de fișiere fără forme de normalizat (sonda
  * de autoconsistență din 13.10: rezultatul construit din oracol trece de `judecaRezultat`, 0 probleme).
+ *
+ * Precizarea 2.3c-6 (ADR 0037 §11, „Închiderea fără arie lasă o linie”): subcăile închise fără arie pe care generatorul
+ * le făcea deja (poligoanele din 2 puncte, `M … H … Z`, arcele cu raza 0, cubicele pe o dreaptă) sunt acum linii, după
+ * oracol. În plus, dintr-un șir aleator separat (geometria și umplerea de dinainte rămân aceleași pe fiecare sămânță), ~40 %
+ * din fișiere primesc la coadă o formă „fără arie” (`formaFaraArie`): 88 din 240, dintre care 62 de linii (de autor, de
+ * umplere, de ușă, exacte sau cu zgomot, cu mânere) și 26 de contraexemple (contururi subțiri, dar departe de prag). Sonda
+ * de autoconsistență din 15.10: 156 de căi deschise în cele 103 fișiere fără forme de normalizat, 0 probleme.
  */
 
 /**
@@ -142,5 +149,74 @@ export function svgAleator(samanta: number): { text: string; px: 96 | 72 } {
   const n = int(1, 5);
   const corp: string[] = [];
   for (let i = 0; i < n; i++) corp.push(r() < 0.5 ? grup(0) : forma());
+  // Precizarea 2.3c-6 (ADR 0037 §11): din al treilea șir aleator (geometria și umplerea de dinainte rămân aceleași pe
+  // fiecare sămânță), în ~40 % din fișiere, o formă „fără arie” la coada desenului (`formaFaraArie`).
+  const rLinie = aleator((Math.imul(samanta, 0x85ebca6b) ^ 0xc2b2ae35) >>> 0);
+  if (rLinie() < 0.4) corp.push(formaFaraArie(rLinie));
   return { text: `<svg xmlns="http://www.w3.org/2000/svg" ${pagina}>${corp.join('\n')}</svg>`, px: r() < 0.3 ? 72 : 96 };
+}
+
+/**
+ * Precizarea 2.3c-6: o subcale închisă care e (sau nu e) o linie, departe de praguri, fără transformare (doar pagina, cu
+ * scara între 0,24 și 1 mm pe unitate, uneori neuniformă). Punctele (vârfurile și mânerele) stau la cel mult 0,0015
+ * unități de o dreaptă de 10 … 60 de unități: față de dreapta oricăror două puncte de la capete, cel mult 2 · 0,0015 =
+ * 0,003 mm < 0,005 (o linie, fără să conteze care pereche e „cea mai depărtată”); pe dreptele orizontale / verticale,
+ * uneori exact (punctul 2). Contraexemplele au un punct la 0,06 … 0,5 unități (≥ 0,024 mm după pagină > 0,005): rămân
+ * contururi. Închiderile: de autor (Z, polygon, rect, prin apropiere), de umplere (fără Z), de ușă (fill="none", golul de
+ * 0,001 … 0,0015 unități, de-a lungul dreptei).
+ */
+function formaFaraArie(q: () => number): string {
+  const int = (a: number, b: number): number => a + Math.floor(q() * (b - a + 1));
+  const alege = <T>(l: readonly T[]): T => l[Math.floor(q() * l.length)] as T;
+  const f = (v: number): string => v.toFixed(4);
+  const grade = alege([0, 90, 0, 90, 15, 30, 45, 60, 120, 135, 160, 200, 290]);
+  const axa = grade % 90 === 0;
+  const ux = axa ? Math.round(Math.cos((grade * Math.PI) / 180)) : Math.cos((grade * Math.PI) / 180);
+  const uy = axa ? Math.round(Math.sin((grade * Math.PI) / 180)) : Math.sin((grade * Math.PI) / 180);
+  const ax = int(20, 150) / 2, ay = int(20, 150) / 2, L = int(10, 60);
+  const exact = axa && q() < 0.5;
+  const zg = (): number => (exact ? 0 : int(-15, 15) / 10_000);
+  /** Punctul de la parametrul t pe dreaptă, decalat perpendicular cu d (unități). */
+  const pt = (t: number, d: number): string => `${f(ax + ux * L * t - uy * d)} ${f(ay + uy * L * t + ux * d)}`;
+  const departe = (): number => ((q() < 0.5 ? -1 : 1) * int(6, 50)) / 100;
+  const contur = q() < 0.25;
+  const stil = q() < 0.2 ? ' fill-rule="evenodd"' : '';
+  const tip = int(0, 7);
+  if (tip <= 1) {
+    // Poligonul sau calea cu Z: 2 … 5 puncte pe dreaptă, în ordine; contraexemplul are un punct la mijloc departe.
+    const k = int(2, 5);
+    const ts = Array.from({ length: k }, (_, i) => (k === 1 ? 0 : i / (k - 1)));
+    const pts = ts.map((t, i) => pt(t, contur && i === 1 ? departe() : zg()));
+    if (contur && k === 2) pts.splice(1, 0, pt(0.5, departe()));
+    return tip === 0 ? `<polygon${stil} points="${pts.join(' ')}"/>` : `<path${stil} d="M ${pts.join(' L ')} ${alege(['Z', 'z'])}"/>`;
+  }
+  if (tip === 2 || tip === 3) {
+    // Umplută, fără Z: o cubică (C) sau o pătratică (Q) cu mânerele pe dreaptă, cu zgomot; contraexemplul are un mâner departe.
+    const umplere = alege(['', ' fill="#123"']);
+    const p0 = pt(0, zg()), p1 = pt(1, zg());
+    if (tip === 2) {
+      const t1 = int(0, 10) / 10, t2 = int(0, 10) / 10;
+      return `<path${stil}${umplere} d="M ${p0} C ${pt(t1, contur ? departe() : zg())} ${pt(t2, zg())} ${p1}"/>`;
+    }
+    return `<path${stil}${umplere} d="M ${p0} Q ${pt(int(1, 9) / 10, contur ? departe() : zg())} ${p1}"/>`;
+  }
+  if (tip === 4) {
+    // fill="none", închisă de ușă: întoarsă în start, cu golul de 0,001 … 0,0015 unități de-a lungul dreptei.
+    const gol = int(10, 15) / 10_000;
+    return `<path fill="none" d="M ${pt(0, zg())} L ${pt(1, zg())} L ${contur ? `${pt(0.5, departe())} L ` : ''}${pt(gol / L, zg())}"/>`;
+  }
+  if (tip === 5) {
+    // Închisă de autor prin apropiere: dus-întors, înapoi exact în start.
+    const p0 = pt(0, zg());
+    return `<path${stil} d="M ${p0} L ${pt(1, zg())} L ${contur ? `${pt(0.5, departe())} L ` : ''}${p0}"/>`;
+  }
+  if (tip === 6) {
+    // Polilinia umplută: închisă de umplere.
+    const pts = [pt(0, zg()), pt(0.4, contur ? departe() : zg()), pt(1, zg())];
+    return `<polyline${stil} points="${pts.join(' ')}"/>`;
+  }
+  // Dreptunghiul subțire, pe axe: grosimea 0,0005 … 0,0015 unități (linie) sau 0,06 … 0,5 (contur).
+  const h = contur ? Math.abs(departe()) : int(5, 15) / 10_000;
+  const [w, hh] = grade % 180 === 0 ? [L, h] : [h, L];
+  return `<rect${stil} x="${f(ax)}" y="${f(ay)}" width="${f(w)}" height="${f(hh)}"/>`;
 }
