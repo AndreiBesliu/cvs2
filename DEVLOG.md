@@ -1560,4 +1560,4 @@ săptămânii, 85 % folosit).
 offsetul deschis”): promptul oracolului independent, gata de dat, și lista aplicației (curățarea pe deschis: cele patru
 funcții care azi merg în cerc; `verificaIesireDeschisa`; reîncercarea; motivele; `neatins`; timpul). Valorile pe hârtie 3–9
 din ADR 0037 refăcute de mână: toate ies (cârligul 14,828 mm; V-ul de 10°: 34,421 / 34,290 mm; arcul de 300°: 34,03 mm).
-Fără cod, fără agenți. **Completed:** 08:05.
+Fără cod, fără agenți. **Completed:** 07:52.
