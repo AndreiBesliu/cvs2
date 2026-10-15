@@ -398,8 +398,12 @@ Calea are vârfurile subcăii plus punctul final, cu segmentul L. E degenerată 
   `inchise-de-umplere` / `inchise-la-usa`. Așa, o linie dreaptă umplută scrisă cu C / Q (mânerele pe dreaptă, sau cu
   zgomotul rotunjirii lui Illustrator) se importă ca aceeași linie scrisă cu L, iar `M10 10 L60 10 Z` sau `M10 10 L60 10 L10 10`
   devine o linie, nu o cale „fără lungime” sărită.
-- **O formă `nonzero` pe care normalizarea o golește de tot** (regiunea vidă: o cale și inversa ei, un triunghi sub τ) se
-  numără și la `degenerate` (sărită), pe lângă `nonzero-normalizate`.
+- **O formă `nonzero` pe care normalizarea o golește de tot** (regiunea vidă: o cale și inversa ei, un L mai subțire decât
+  τ) se numără și la `degenerate` (sărită), pe lângă `nonzero-normalizate`, o dată pe formă. Un triunghi sub τ nu mai ajunge
+  acolo: e pe o dreaptă la punctul 4, deci e o linie.
+- **Consecința ordinii (2) înaintea prafului, primită:** un poligon exact coliniar de 0,008 mm, închis de autor, e o linie
+  dus-întors de 0,016 mm (peste pragul de 0,01), nu praf; cu 1e-6 abatere de la dreaptă e praf. Diferența e sub rezoluție.
+  (Oracolul independent al ușii, la integrare, 15.10.)
 
 *Ce nu se citește:* `stroke-width`. Canalul are diametrul frezei, nu grosimea liniei din fișier.
 

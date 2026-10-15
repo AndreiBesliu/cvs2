@@ -541,11 +541,17 @@ function subcaleMm(
   // O subcale pe care închiderea o face degenerată rămâne deschisă (ADR 0037 §11): nu era un contur. Vârful adăugat de
   // închidere e chiar punctul final al căii deschise (capătul, cu segmentul L), deci nu se mai adaugă o dată.
   if (varfuri.length < 2) return inchidere ? deschisa(varfuri.slice(0, -1), cur) : 'degenerata';
-  // Doar linii, toate pe o dreaptă: conturul n-are arie (nici browserul nu-l umple), iar CAM-ul ar refuza toată piesa.
-  if (varfuri.every((v) => v.s.tip === 'L') && peODreapta(varfuri)) return inchidere ? deschisa(varfuri.slice(0, -1), cur) : 'degenerata';
-  // Praful (ADR 0037 §11), după degenerare (un `M…Z` fără segmente rămâne degenerat, ca în 2.7c): sub rezoluție, CAM-ul
+  // O închidere fără arie e o linie (ADR 0037 §11, precizarea 2.3c-6): închisă de ușă sau de umplere, fără linia de
+  // închidere (n-a fost desenată); închisă de autor (Z, sau dus-întors până în start), cu drumul înapoi, cum e desenată.
+  const linie = (): ReturnType<typeof deschisa> => (inchidere ? deschisa(varfuri.slice(0, -1), cur) : deschisa(varfuri, start));
+  // (2) Doar linii, toate pe o dreaptă (exact): conturul n-are arie (nici browserul nu-l umple).
+  if (varfuri.every((v) => v.s.tip === 'L') && peODreapta(varfuri)) return linie();
+  // (3) Praful (ADR 0037 §11), după degenerare (un `M…Z` fără segmente rămâne degenerat, ca în 2.7c): sub rezoluție, CAM-ul
   // refuza tot exportul.
   if (praf(varfuri)) return 'praf';
+  // (4) După praf: fără arce, toate punctele, cu mânerele, la cel mult REZOLUTIE / 2 de o dreaptă (o linie scrisă cu C / Q,
+  // cu zgomotul rotunjirii): tot o linie (recenzia A: umplută, era închisă și dispărea la normalizare).
+  if (varfuri.every((v) => v.s.tip !== 'A') && peODreapta(varfuri, REZOLUTIE / 2)) return linie();
   if (inchidere === 'umplere') n['inchise-de-umplere']++;
   else if (inchidere === 'usa') n['inchise-la-usa']++;
   return { varfuri, inchis: true };
@@ -625,22 +631,23 @@ function bucla(a: Punct, c1: Punct, c2: Punct): Varf[] {
 }
 
 /** Toate vârfurile pe dreapta dintre primul și cel mai depărtat de el, până la rotunjire (1e-12 din mărime). */
-function peODreapta(v: readonly Varf[]): boolean {
-  const a = v[0]?.p;
-  if (!a) return true;
-  let b = a;
-  let dmax = 0;
-  for (const x of v) {
-    const d = Math.hypot(x.p.x - a.x, x.p.y - a.y);
-    if (d > dmax) {
-      dmax = d;
-      b = x.p;
-    }
-  }
+/**
+ * Punctele subcăii (vârfurile și mânerele cubicelor) stau pe o dreaptă: exact (la 1e-12 din mărime), sau la cel mult
+ * `toleranta` mm de dreapta prin cele mai depărtate două puncte ale ei (ADR 0037 §11, precizarea 2.3c-6).
+ */
+function peODreapta(v: readonly Varf[], toleranta = 0): boolean {
+  const puncte = v.flatMap((x) => (x.s.tip === 'C' ? [x.p, x.s.c1, x.s.c2] : [x.p]));
+  const a0 = puncte[0];
+  if (!a0) return true;
+  // Cele mai depărtate două puncte: cel mai departe de primul, apoi cel mai departe de acela.
+  const departe = (de: Punct): Punct => puncte.reduce((m, q) => (Math.hypot(q.x - de.x, q.y - de.y) > Math.hypot(m.x - de.x, m.y - de.y) ? q : m), de);
+  const a = toleranta > 0 ? departe(a0) : a0;
+  const b = departe(a);
+  const dmax = Math.hypot(b.x - a.x, b.y - a.y);
   if (dmax === 0) return true;
   const ux = (b.x - a.x) / dmax;
   const uy = (b.y - a.y) / dmax;
-  return v.every((x) => Math.abs((x.p.x - a.x) * uy - (x.p.y - a.y) * ux) <= 1e-12 * Math.max(dmax, 1));
+  return puncte.every((x) => Math.abs((x.x - a.x) * uy - (x.y - a.y) * ux) <= Math.max(toleranta, 1e-12 * Math.max(dmax, 1)));
 }
 
 /** E similitudine relativ la scara ei (sub scara 1, toleranța absolută ar lua o elipsă minusculă drept cerc; recenzia 2.7c). */
@@ -904,6 +911,8 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
           n['sub-rezolutie']++;
           return false;
         });
+        // Golită de tot (regiunea vidă): sărită, numărată și la `degenerate` (ADR 0037 §11, precizarea 2.3c-6).
+        if (r.cai.length === 0) n.degenerate++;
         finale = [...iesire.map((varfuri) => ({ varfuri, inchis: true })), ...f.cai.filter((c) => !c.inchis)];
       }
     }

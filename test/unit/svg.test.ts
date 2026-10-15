@@ -284,15 +284,21 @@ test('recenzia 2.7d: bugetul normalizării e al fișierului: după trei forme sc
   assert.equal(patru.cai.filter((c) => c.forma === 3).length, 200);
 });
 
-test('oracolul 2.7d (K7): o formă nonzero mai subțire decât τ peste tot poate ieși goală; se numără normalizată, iar fișierul gol e refuzat', () => {
+test('oracolul 2.7d (K7), cu precizarea 2.3c-6: felia de 1e-9 mm e o linie (închiderea fără arie), nu o regiune golită', () => {
+  // Poligonul (închis de autor) are toate punctele la 1e-9 de o dreaptă: din 2.3c-6 e o linie dus-întors, înaintea
+  // normalizării, deci nici nu mai ajunge să fie golit de ea.
   const felie = '<polygon points="0,10 10,10 20,10.000000001"/>';
-  const singura = citeste(pagina(felie));
-  assert.ok(!singura.ok && singura.cod === 'gol', JSON.stringify(singura.ok ? 'ok' : singura.cod));
-  assert.deepEqual([singura.avertismente?.degenerate, singura.avertismente?.['nonzero-normalizate']], [0, 1]);
+  const singura = cai(pagina(felie));
+  assert.equal(singura.cai.length, 1);
+  assert.equal(singura.cai[0]?.inchis, false);
+  assert.deepEqual([singura.avertismente.degenerate, singura.avertismente['nonzero-normalizate']], [0, 0]);
   const cuAlta = cai(pagina(`${felie}<rect x="30" width="5" height="5"/>`));
-  assert.deepEqual([cuAlta.cai.length, cuAlta.avertismente.degenerate, cuAlta.avertismente['nonzero-normalizate']], [1, 0, 1]);
-  // Sub evenodd nu trece prin normalizare: rămâne o cale, ca în 2.7c.
+  assert.deepEqual([cuAlta.cai.length, cuAlta.avertismente.degenerate], [2, 0]);
   assert.equal(cai(pagina('<polygon fill-rule="evenodd" points="0,10 10,10 20,10.000000001"/>')).cai.length, 1);
+  // O regiune golită de normalizare (o cale și inversa ei) se numără și la `degenerate` (sărită).
+  const vida = citeste(pagina('<path d="M0 0 L10 0 L10 10 Z M0 0 L10 10 L10 0 Z"/>'));
+  assert.ok(!vida.ok && vida.cod === 'gol');
+  assert.deepEqual([vida.avertismente?.degenerate, vida.avertismente?.['nonzero-normalizate']], [1, 1]);
 });
 
 test('logoul AS Roma (13.10): la închidere, mânerul egal cu capătul se lipește odată cu el; normalizarea nu mai refuză', () => {
@@ -408,8 +414,10 @@ test('recenzia 2.7c, căile: aproape de 360° raza rămâne 50; contururile coli
     if (x.s.tip !== 'A' || !b) continue;
     aproape(cerculArcului(x.p, b, x.s.bulge).raza, 50, 1e-9);
   }
-  const dreapta = citeste(pagina('<path d="M 10 10 L 30 30 L 50 50 Z"/><polygon points="60,10 90,10"/>'));
-  assert.ok(!dreapta.ok && dreapta.cod === 'gol' && dreapta.avertismente?.degenerate === 2);
+  // Din 2.3c-6 (ADR 0037 §11): un contur coliniar închis de autor e o linie dus-întors, nu o cale „fără lungime” sărită.
+  const dreapta = cai(pagina('<path d="M 10 10 L 30 30 L 50 50 Z"/><polygon points="60,10 90,10"/>'));
+  assert.deepEqual(dreapta.cai.map((c) => [c.inchis, c.varfuri.length]), [[false, 4], [false, 3]]);
+  assert.equal(dreapta.avertismente.degenerate, 0);
   const picatura = cai(pagina('<path d="M 50 45 C 90 0 10 0 50 45 Z"/>')).cai[0]?.varfuri ?? [];
   assert.equal(picatura.length, 2);
   assert.ok(picatura.every((x) => x.s.tip === 'C'));
@@ -457,4 +465,20 @@ test('recenzia A (ușa SVG, 4): `departe` se judecă și pe coordonatele piesei 
   assert.ok(!cubica.ok && cubica.cod === 'departe', JSON.stringify(cubica).slice(0, 200));
   // Martorul: ±4e6 trece.
   assert.ok(citeste(pagina('<line x1="-4000000" y1="10" x2="4000000" y2="10" stroke="black"/>')).ok);
+});
+
+test('precizarea 2.3c-6: o linie dreaptă umplută scrisă cu l, c, q sau cu zgomot e aceeași cale deschisă; fâșia sub 0,01 e linie', () => {
+  const stil = '<style>.st0{fill:#FFFFFF;stroke:#000000}</style>';
+  const ca = (d: string) => cai(pagina(`${stil}<path class="st0" d="${d}"/>`, 'width="300mm" height="200mm" viewBox="0 0 300 200"'));
+  for (const d of ['M100,100l150,0', 'M100,100c50,0,100,0,150,0', 'M100,100c50.001,0.001,100,-0.001,150,0', 'M100,100q75,0,150,0', 'M100,100C100,100 250,100 250,100']) {
+    const r = ca(d);
+    assert.equal(r.cai.length, 1, d);
+    assert.equal(r.cai[0]?.inchis, false, d);
+    assert.equal(r.avertismente['inchise-de-umplere'], 0, d);
+  }
+  // Fâșia închisă de 0,004 × 50 mm e o linie; cea de 0,02 × 50 rămâne contur închis; triunghiul de 1e-4 mm e praf.
+  assert.equal(ca('M10,10 h50 v0.004 h-50 Z').cai[0]?.inchis, false);
+  assert.equal(ca('M10,10 h50 v0.02 h-50 Z').cai[0]?.inchis, true);
+  const praf = citeste(pagina('<path d="M10,10 l0.0001,0 l0,0.0001 Z"/><rect x="30" width="5" height="5"/>'));
+  assert.ok(praf.ok && praf.avertismente['sub-rezolutie'] === 1 && praf.cai.length === 1);
 });

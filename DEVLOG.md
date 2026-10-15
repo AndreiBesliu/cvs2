@@ -1646,3 +1646,10 @@ coadă, config.json fără răspuns); pornirea 96,6 kB.
 **Prompt:** „poti sa continui” (după „deocamdata folosim un plan cu usage mai mic, asa ca vreau sa segmentezi mai mult
 taskurile deocamdata”). **Started:** acum. **Clasa:** R2 (contract nou la ușă). Un singur agent: sesiunea independentă care
 amendează oracolul ușii din ADR 0037 §11 („Precizarea 2.3c-6”); în paralel, aplicația.
+**Completed (segmentul 1):** ușa SVG urmează precizarea 2.3c-6 (ADR 0037 §11): o închidere fără arie e o linie (o linie
+dreaptă umplută scrisă cu `c` / `q` sau cu zgomotul rotunjirii se importă ca aceeași linie scrisă cu `l`; `M L Z` și
+dus-întorsul până în start devin o linie, nu o cale „fără lungime” sărită); forma golită de normalizare se numără sărită.
+Oracolul ușii amendat de o sesiune independentă (0,45 M, 31 min): 102 teste noi, 18 sabotaje prinse, generatorul aleator
+cu forme fără arie; aplicația îl trece din prima (1 378 / 1 378). Textul meu din ADR avea o contradicție (ordinea punea
+degenerarea exactă înaintea regulii noi), corectată înainte ca oracolul să se sprijine pe ea; exemplul „triunghi sub τ”
+corectat la integrare. 6 403 de teste unitare, e2e 64 / 64.
