@@ -90,6 +90,15 @@ export function strangulare(): ConturD {
   return cale([-1, -20], [-1, 0, Math.tan(sw / 4)], [1, 0], [1, -20]);
 }
 
+/**
+ * D-ul: o linie și un arc de 170° (R20) care se întoarce aproape de start; scula înăuntru (stânga) dă o bucată închisă din
+ * DOUĂ segmente: offsetul liniei și al arcului, care se taie în două puncte.
+ */
+export const D_UL = ((): ConturD => {
+  const q = polar(20, 170);
+  return cale([-20, 0], [20, 0, Math.tan((170 * RAD) / 4)], [q.x, q.y]);
+})();
+
 /** Camera: o cameră de 50 × 20, cu gura de 2 mm în colțul din stânga-jos; scula înăuntru (stânga) dă două bucăți. */
 export const CAMERA = cale([0, 0], [100, 0], [100, 20], [50, 20], [50, 2]);
 
@@ -326,6 +335,7 @@ export const CORPUS: readonly CazCorpus[] = [
 
   caz('strangulare', 'canalul cu strangulare (bucata cu capătul în start)', strangulare()),
   caz('camera', 'camera cu gura de 2 mm (două bucăți, una închisă)', CAMERA),
+  caz('camera', 'D-ul (bucata închisă din două segmente)', D_UL),
 
   caz('murdar', 'primul segment de 1e-7 mm, în unghi drept', cale([0, 0], [0, 1e-7], [100, 1e-7])),
   caz('murdar', 'ultimul segment de 1e-7 mm, în unghi drept', cale([0, 0], [100, 0], [100, 1e-7])),
@@ -402,6 +412,8 @@ export function iesireCorecta(c: ConturD, d: number): { readonly bucati: readonl
 }
 
 const HOOK = cale([0, 0], [50, 0], [50, 2], [45, 2]);
+/** Punctul cârligului la poziția s pe cale (pe hârtie: 50 + 2 + 5). */
+const punctPeCaleHook = (s: number): PunctD => (s <= 50 ? { x: s, y: 0 } : s <= 52 ? { x: 50, y: s - 50 } : { x: 50 - (s - 52), y: 2 });
 const L_UL = cale([0, 0], [100, 0], [100, 100]);
 const U10 = cale([0, 50], [0, 0], [10, 0], [10, 50]);
 const U60015 = cale([0, 50], [0, 0], [6.0015, 0], [6.0015, 50]);
@@ -448,6 +460,11 @@ export function martori(): Martor[] {
     },
     { nume: '`neatins` cu o porțiune în plus (linia)', cale: LINIA, d: 3, rezultat: ok([bucata([10, 53], [110, 53])], [{ de: 10, pana: 20, lungime: 10, la: { x: 25, y: 50 } }]), laVerificare: false },
     { nume: 'un traseu pe o cale care se încrucișează', cale: cale([0, 0], [10, 10], [10, 0], [0, 10]), d: 3, rezultat: ok([bucata([0, 4.2426], [5.7574, 10])]), laVerificare: false },
+    {
+      nume: '`neatins` cu porțiunile vecine neunite (cârligul)', cale: HOOK, d: 3,
+      rezultat: ok(carlig.bucati, [[42.1716, 50], [50, 52], [52, 57]].map(([de, pana]) => ({ de: de as number, pana: pana as number, lungime: (pana as number) - (de as number), la: punctPeCaleHook(((de as number) + (pana as number)) / 2) }))),
+      laVerificare: false,
+    },
     { nume: '`neatins` cu `la` greșit (L-ul, stânga)', cale: L_UL, d: 3, rezultat: ok(iesireCorecta(L_UL, 3).bucati, iesireCorecta(L_UL, 3).neatins.map((p) => ({ ...p, la: { x: p.la.x + 1, y: p.la.y } }))), laVerificare: false },
   ];
 }
@@ -467,6 +484,7 @@ export function controale(): Control[] {
     { nume: 'semicercul, stânga (de mână)', cale: el(HARTIE, 2).cale, d: 3, bucati: [bucata([47, 0, 1], [-47, 0])] },
     ideal('camera (două bucăți, una închisă)', CAMERA, 3),
     ideal('canalul cu strangulare (bucata cu capătul în start)', strangulare(), -3),
+    ideal('D-ul (bucata închisă din două segmente)', D_UL, 3),
     ideal('V-ul de 10°', V10, 3),
     ideal('U-ul de 6, dus-întors la exact 2R', cale([0, 50], [0, 0], [6, 0], [6, 50]), 3),
     { nume: 'U-ul de 6,00005, dus-întors pe mijloc (în 2R ± 1e-4)', cale: cale([0, 50], [0, 0], [6.00005, 0], [6.00005, 50]), d: 3, bucati: [bucata([3.000025, 50], [3.000025, 3], [3.000025, 50])] },
