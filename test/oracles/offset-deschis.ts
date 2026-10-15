@@ -25,8 +25,10 @@
  *
  * Alegerile mele unde contractul tace (toate sunt și în `ALEGERI`, și în raportul oracolului):
  * - eșantioanele au pasul 0,025 mm (jumătate din pasul contractului), plus capetele fiecărei bucăți de curbă;
- * - porțiunile `neatins` mai scurte de 0,05 mm (pasul contractului) pot lipsi din oricare parte; celelalte se potrivesc la
- *   1e-4 mm pe `de` și `pana` (marginile oracolului sunt exacte, cu marja de validitate inclusă);
+ * - `neatins` se compară la granulația pasului contractului (0,05 mm): în ambele liste, golurile (fâșiile valide) mai
+ *   scurte de 0,05 mm se închid și porțiunile mai scurte de 0,05 mm se scot; ce rămâne se potrivește la 1e-4 mm pe `de`
+ *   și `pana` (marginile oracolului sunt exacte, cu marja de validitate inclusă). Două porțiuni primite care se ating
+ *   (vecine peste un vârf) trebuie să fie una;
  * - un refuz „nu încape” e justificat dacă oracolul n-are niciun punct ideal valid la |d| SAU la |d| + 1e-4 (distanța
  *   reîncercării): contractul nu spune față de care se judecă refuzul de după reîncercare;
  * - „se ating” = mai aproape de 1e-6 mm; două segmente VECINE se ating doar dacă se mai taie la peste
@@ -649,9 +651,10 @@ function punctDeLaCapat(P: Prim, vx: number, vy: number, l: number): PunctD {
  * dacă se apropie la mai puțin de 1e-6 mm (sau se taie) la peste max(1e-5, 1e-7 × cea mai mare lungime sau rază) de V,
  * sau dacă se suprapun lângă V. Atingerea de lângă V a unei joncțiuni tangente (contactul fals) se iartă.
  */
-function veciniSeAting(P: Prim, Q: Prim, vx: number, vy: number): PunctD | null {
+function veciniSeAting(P: Prim, Q: Prim, vx: number, vy: number, alt?: PunctD): PunctD | null {
   const tau = Math.max(1e-5, 1e-7 * Math.max(P.lungime, Q.lungime, P.r, Q.r));
-  for (const c of candidati(P, Q)) if (c.d < PRAGURI.atingere && Math.hypot(c.x - vx, c.y - vy) > tau) return c;
+  const departe = (c: PunctD): boolean => Math.hypot(c.x - vx, c.y - vy) > tau && (alt === undefined || Math.hypot(c.x - alt.x, c.y - alt.y) > tau);
+  for (const c of candidati(P, Q)) if (c.d < PRAGURI.atingere && departe(c)) return c;
   const l = Math.min(P.lungime, Q.lungime) / 2;
   if (l <= 0) return null;
   const pP = punctDeLaCapat(P, vx, vy, l);
@@ -1146,7 +1149,9 @@ export function verificaBucatile(ideal: Ideal, bucati: readonly ConturD[]): stri
       const B = el(toate, h);
       let atins: PunctD | null = null;
       if (A.b === B.b && B.i === A.i + 1) {
-        atins = veciniSeAting(A.P, B.P, A.P.bx, A.P.by);
+        // O bucată închisă din două segmente: cele două au în comun și startul.
+        const doua = el(inchise, A.b) && el(lanturi, A.b).length === 2;
+        atins = veciniSeAting(A.P, B.P, A.P.bx, A.P.by, doua ? { x: A.P.ax, y: A.P.ay } : undefined);
       } else if (A.b === B.b && el(inchise, A.b) && A.i === 0 && B.i === el(lanturi, A.b).length - 1) {
         atins = veciniSeAting(A.P, B.P, A.P.ax, A.P.ay);
       } else {
@@ -1163,10 +1168,21 @@ export function verificaBucatile(ideal: Ideal, bucati: readonly ConturD[]): stri
   return probleme;
 }
 
+/** Porțiunile la granulația de 0,05 mm: golurile mai scurte se închid, apoi porțiunile mai scurte se scot. */
+function laGranulatie(xs: readonly PortiuneD[]): { de: number; pana: number }[] {
+  const rez: { de: number; pana: number }[] = [];
+  for (const p of [...xs].sort((a, b) => a.de - b.de)) {
+    const u = rez[rez.length - 1];
+    if (u && p.de - u.pana < ALEGERI.portiuneMinima) u.pana = Math.max(u.pana, p.pana);
+    else rez.push({ de: p.de, pana: p.pana });
+  }
+  return rez.filter((p) => p.pana - p.de >= ALEGERI.portiuneMinima);
+}
+
 /**
  * `neatins` primit față de cel de pe hârtie: fiecare porțiune are forma {de, pana, lungime, la}, cu lungimea = pana − de
- * și `la` pe cale, în mijloc; porțiunile de cel puțin 0,05 mm se potrivesc la 1e-4 mm pe `de` și `pana`, în ambele
- * sensuri.
+ * și `la` pe cale, în mijloc; porțiunile vecine sunt unite; la granulația de 0,05 mm, porțiunile se potrivesc la 1e-4 mm
+ * pe `de` și `pana`, în ambele sensuri.
  */
 export function comparaNeatins(ideal: Ideal, primit: readonly PortiuneD[]): string[] {
   const probleme: string[] = [];
@@ -1183,14 +1199,22 @@ export function comparaNeatins(ideal: Ideal, primit: readonly PortiuneD[]): stri
     if (Math.hypot(m.x - p.la.x, m.y - p.la.y) > tol) probleme.push(`neatins[${i}]: la = ${pt(p.la.x, p.la.y)}, dar mijlocul porțiunii pe cale e ${pt(m.x, m.y)}`);
   });
   if (probleme.length > 0) return probleme;
-  const potrivit = (a: PortiuneD, b: PortiuneD): boolean => Math.abs(a.de - b.de) <= tol && Math.abs(a.pana - b.pana) <= tol;
-  for (const a of ideal.neatins) {
-    if (a.lungime < ALEGERI.portiuneMinima) continue;
-    if (!primit.some((b) => potrivit(a, b))) probleme.push(`neatins: lipsește porțiunea [${fx(a.de)}, ${fx(a.pana)}] (${fx(a.lungime)} mm, la ${pt(a.la.x, a.la.y)})`);
+  const sortate = [...primit].sort((a, b) => a.de - b.de);
+  for (let i = 1; i < sortate.length; i++) {
+    const a = el(sortate, i - 1);
+    const b = el(sortate, i);
+    if (b.de - a.pana <= 1e-9) probleme.push(`neatins: porțiunile [${fx(a.de)}, ${fx(a.pana)}] și [${fx(b.de)}, ${fx(b.pana)}] se ating și nu sunt unite`);
   }
-  for (const b of primit) {
-    if (b.lungime < ALEGERI.portiuneMinima) continue;
-    if (!ideal.neatins.some((a) => potrivit(a, b))) probleme.push(`neatins: porțiunea [${fx(b.de)}, ${fx(b.pana)}] (${fx(b.lungime)} mm) nu e pe hârtie`);
+  const asteptat = laGranulatie(ideal.neatins);
+  const primitG = laGranulatie(primit);
+  const potrivit = (a: { de: number; pana: number }, b: { de: number; pana: number }): boolean => Math.abs(a.de - b.de) <= tol && Math.abs(a.pana - b.pana) <= tol;
+  for (const a of asteptat) {
+    if (primitG.some((b) => potrivit(a, b))) continue;
+    const la = punctPeCale(ideal.cale, ideal.s0, (a.de + a.pana) / 2);
+    probleme.push(`neatins: lipsește porțiunea [${fx(a.de)}, ${fx(a.pana)}] (${fx(a.pana - a.de)} mm, la ${pt(la.x, la.y)})`);
+  }
+  for (const b of primitG) {
+    if (!asteptat.some((a) => potrivit(a, b))) probleme.push(`neatins: porțiunea [${fx(b.de)}, ${fx(b.pana)}] (${fx(b.pana - b.de)} mm) nu e pe hârtie`);
   }
   return probleme;
 }

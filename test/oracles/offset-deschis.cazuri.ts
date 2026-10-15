@@ -389,6 +389,8 @@ export type Martor = {
   readonly rezultat: RezultatD;
   /** Se dă și verificării aplicației (`verificaIesireDeschisa`): bucățile, sau ieșirea goală la un refuz. */
   readonly laVerificare: boolean;
+  /** Martorul pe care verificarea aplicației îl primește (o constatare a oracolului): se judecă într-un test separat. */
+  readonly constatare?: string;
 };
 
 const bucata = (...puncte: ReadonlyArray<readonly [number, number] | readonly [number, number, number]>): ConturD => cale(...puncte);
@@ -402,6 +404,7 @@ export function iesireCorecta(c: ConturD, d: number): { readonly bucati: readonl
 const HOOK = cale([0, 0], [50, 0], [50, 2], [45, 2]);
 const L_UL = cale([0, 0], [100, 0], [100, 100]);
 const U10 = cale([0, 50], [0, 0], [10, 0], [10, 50]);
+const U60015 = cale([0, 50], [0, 0], [6.0015, 0], [6.0015, 50]);
 const ARC8 = (HARTIE.find((h) => h.nume.startsWith('8.')) as CazHartie).cale;
 
 export function martori(): Martor[] {
@@ -438,6 +441,11 @@ export function martori(): Martor[] {
       nume: 'o bucată dublată în U-ul de 10 (atingere într-un canal mai lat decât 2R)', cale: U10, d: 3,
       rezultat: ok([...iesireCorecta(U10, 3).bucati, bucata([3, 40], [3, 30])], iesireCorecta(U10, 3).neatins), laVerificare: true,
     },
+    {
+      nume: 'dus-întorsul într-un U de 6,0015 (în afara lui 2R ± 1e-4)', cale: U60015, d: 3,
+      rezultat: ok([bucata([3.00075, 50], [3.00075, 3], [3.00075, 50])], iesireCorecta(U60015, 3).neatins), laVerificare: true,
+      constatare: 'verificaIesireDeschisa primește un dus-întors care se atinge singur la lățimea 2R + 1,5e-3 (contractul: doar 2R ± 1e-4)',
+    },
     { nume: '`neatins` cu o porțiune în plus (linia)', cale: LINIA, d: 3, rezultat: ok([bucata([10, 53], [110, 53])], [{ de: 10, pana: 20, lungime: 10, la: { x: 25, y: 50 } }]), laVerificare: false },
     { nume: 'un traseu pe o cale care se încrucișează', cale: cale([0, 0], [10, 10], [10, 0], [0, 10]), d: 3, rezultat: ok([bucata([0, 4.2426], [5.7574, 10])]), laVerificare: false },
     { nume: '`neatins` cu `la` greșit (L-ul, stânga)', cale: L_UL, d: 3, rezultat: ok(iesireCorecta(L_UL, 3).bucati, iesireCorecta(L_UL, 3).neatins.map((p) => ({ ...p, la: { x: p.la.x + 1, y: p.la.y } }))), laVerificare: false },
@@ -461,6 +469,7 @@ export function controale(): Control[] {
     ideal('canalul cu strangulare (bucata cu capătul în start)', strangulare(), -3),
     ideal('V-ul de 10°', V10, 3),
     ideal('U-ul de 6, dus-întors la exact 2R', cale([0, 50], [0, 0], [6, 0], [6, 50]), 3),
+    { nume: 'U-ul de 6,00005, dus-întors pe mijloc (în 2R ± 1e-4)', cale: cale([0, 50], [0, 0], [6.00005, 0], [6.00005, 50]), d: 3, bucati: [bucata([3.000025, 50], [3.000025, 3], [3.000025, 50])] },
     ideal('U-ul de 5, dreapta', cale([0, 50], [0, 0], [5, 0], [5, 50]), -3),
     ideal('zig-zag-ul cu pasul 5', zigzag(40, 5, 2), 3),
     ideal('arcul R5 de 300°, coarde de 0,02 (hârtia, 8)', ARC8, -1.5),

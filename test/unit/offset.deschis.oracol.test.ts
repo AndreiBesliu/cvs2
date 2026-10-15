@@ -240,13 +240,27 @@ function verifica(c: ConturD, d: number, bucati: readonly ConturD[]): Verificare
 test('(e) verificaIesireDeschisa respinge fiecare martor negativ', () => {
   const trecuti: string[] = [];
   for (const m of martori()) {
-    if (!m.laVerificare) continue;
+    if (!m.laVerificare || m.constatare !== undefined) continue;
     const v = verifica(m.cale, m.d, m.rezultat.ok ? m.rezultat.bucati : []);
     if ('aruncat' in v) trecuti.push(`${m.nume}: a aruncat ${String(v.aruncat)}`);
     else if (v.problema === null) trecuti.push(`${m.nume}: primit`);
     else if (!m.rezultat.ok && v.problema.includes('nu încape')) trecuti.push(`${m.nume}: ieșirea goală e „${v.problema}”, deși există puncte ideale valide`);
   }
   assert.deepEqual(trecuti, []);
+});
+
+// Constatarea oracolului (raportată, nereparată aici): contractul acceptă atingerea dus-întors doar la lățimea 2R ± 1e-4
+// (ADR 0037 §5, „Atingerile”); verificarea aplicației primește un dus-întors și la 2R + 1,5e-3. Testul rămâne roșu până
+// la decizia owner-ului (verificarea strânsă, sau contractul lărgit).
+test('(e) verificaIesireDeschisa respinge dus-întorsul în afara lui 2R ± 1e-4 (constatare)', () => {
+  const primiti: string[] = [];
+  for (const m of martori()) {
+    if (m.constatare === undefined || !m.rezultat.ok) continue;
+    const v = verifica(m.cale, m.d, m.rezultat.bucati);
+    if ('aruncat' in v) primiti.push(`${m.nume}: a aruncat ${String(v.aruncat)}`);
+    else if (v.problema === null) primiti.push(`${m.nume}: primit (${m.constatare})`);
+  }
+  assert.deepEqual(primiti, []);
 });
 
 test('(e) verificaIesireDeschisa primește fiecare control, cu `neatins` de pe hârtie', () => {
