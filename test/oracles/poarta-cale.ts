@@ -25,7 +25,7 @@
  */
 import { citeste, type Punct3 } from './gcode.ts';
 import { aplicaO, geometrieV2, type DocArboreO, type MatriceO } from './document.ts';
-import { arc, arcBulge, citesteEticheta, dPunctLista, lungime, punctLa, segment, verificaEticheta, type Primitiva, type Regiune } from './regiune.ts';
+import { arc, arcBulge, citesteEticheta, dPunctLista, lungime, peOParte, punctLa, segment, verificaEticheta, type Primitiva, type Regiune } from './regiune.ts';
 import { drumuriDusIntors, faraDrumuri } from './degajari.ts';
 import { lanturile } from './rampa.ts';
 import { desparte, desparteCuRampa, type Bucata } from './intrari.ts';
@@ -147,7 +147,8 @@ export function masoaraCaile(text: string, doc: DocArboreO, reg: Regiune, R: num
   const geometrie = new Map<string, { bucati: BucataCale[]; semn: number; varfuri: P2[] }>();
   for (const l of lanturile(fara, etichete.map((e) => e.linia), laDoc)) {
     const e = l.eticheta >= 0 ? etichete[l.eticheta]?.eticheta ?? null : null;
-    if (!e) continue;
+    // ADR 0037 (felia 2.3c-5): o tăietură pe o parte nu e o buclă a căii; o judecă poarta (`parte.ts`).
+    if (!e || peOParte(e.latura)) continue;
     const t = reg.taieturi.get(e.idLume);
     if (t?.tip !== 'cale' || !t.contur) continue;
     const latura = e.latura;

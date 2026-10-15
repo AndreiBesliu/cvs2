@@ -82,7 +82,7 @@
  * întoarcerea în punctul plonjării, nici rampa), ci în `deschise.ts`: plonjarea într-un capăt, drumul până la celălalt,
  * ridicarea; rampa pe o cale deschisă e un refuz. Fără predicat, comportamentul de dinainte (proba echivalenței).
  */
-import type { IntrariO, LaturaO, RampaO, UrechiO } from './document.ts';
+import type { IntrariO, LaturaV10O, RampaO, UrechiO } from './document.ts';
 import { citeste, regulaArcGrbl, type Eveniment, type Punct3 } from './gcode.ts';
 import type { Primitiva, Regiune } from './regiune.ts';
 import { LUNGIME_MINIMA, orientareMontaj, TOL_INCHIDERE, TOL_SUB, type EtichetaActiva, type P2 } from './sens.ts';
@@ -591,7 +591,7 @@ function peLant(l: Lant, q: P2): boolean {
  */
 export function verificaRampa(
   evenimente: readonly Eveniment[], etichete: readonly EtichetaActiva[], reg: Regiune, laDoc: (p: Punct3) => Punct3, grosimeFoaie: number,
-  regula0030 = true, sare?: (l: Lant, x: ParametriEticheta, latura: LaturaO) => boolean,
+  regula0030 = true, sare?: (l: Lant, x: ParametriEticheta, latura: LaturaV10O) => boolean,
   deschisa?: (iEticheta: number) => boolean,
 ): { readonly incalcari: IncalcareRampa[]; readonly cuRampa: ReadonlySet<number> } {
   const rez: IncalcareRampa[] = [];

@@ -104,11 +104,27 @@
  *   marginea foii (14, §8).
  * `inainteDe0037` (și orice mod mai vechi) oprește toate acestea și citește `regiune.inainteDe0037`: regiunea pe care o
  * construia oracolul de dinainte din același document (orice cale închisă). Documentele fără căi deschise au EXACT
- * aceleași verdicte în afară de 14 (i). Tăieturile pe o parte (14 (ii), părțile lui 2 și 9) vin cu 2.3c-5.
+ * aceleași verdicte în afară de 14 (i).
+ *
+ * Felia 2.3c-5 (ADR 0037 §3, §5, §6, §7, §10, §13; sesiune independentă), definițiile în `parte.ts`:
+ * - eticheta `(<idLume>: cale, stanga|dreapta, <adâncime> mm)` devine cunoscută (modul `inainteDe0037` citește cu regexul
+ *   de dinainte, deci acolo rămâne „stricată”); regiunea ține pereții (`Regiune.pereti`), cu partea în lume (XOR-ul
+ *   determinantului);
+ * - 2 AMENDATĂ: pe stânga / dreapta, partea de sub fața de sus a fiecărei mișcări stă în afara lui K, la cel puțin
+ *   max(R − ε − 0,002, 1e-6) de marginile lui K și de toți pereții, pe partea etichetei față de propriul perete, fără
+ *   ocolirea capătului; pe exterior / interior, pereții se adaugă la margini (`verificaPeretii`, mesaj separat, deci
+ *   mesajele de dinainte rămân neschimbate);
+ * - 9 AMENDATĂ: pe stânga / dreapta, τ × v din modelul așchiei, iar o buclă închisă sub o etichetă pe o parte e o
+ *   încălcare (cu excepția bucății care se închide pe ea însăși, precizarea 2.3c-4); `verificaSensul` le sare;
+ * - 14 (ii) NOUĂ: la fiecare trecere, reuniunea drumurilor = offsetul deschis ideal (Hausdorff în ambele sensuri, pe
+ *   porțiunile valide), capetele pe normalele capetelor acolo unde sunt valide;
+ * - 11 pe căile deschise (`deschise.ts`) AMENDATĂ pe stânga / dreapta: o trecere are o bucată sau mai multe, iar
+ *   fiecare bucată plonjează la fiecare trecere în același punct.
+ * Documentele fără tăieturi pe o parte au EXACT aceleași verdicte (nicio etichetă pe o parte, niciun perete).
  */
 import { citeste, esantioane, marginiSubSuprafata, regulaArcGrbl, type Comentariu, type Mutare, type Punct3 } from './gcode.ts';
 import {
-  arc, citesteEticheta, prag, punct, pt, segment, verificaEticheta, verificaMutarea,
+  arc, citesteEticheta, peOParte, prag, punct, pt, segment, verificaEticheta, verificaMutarea,
   type Eticheta, type IncalcareMutare, type Primitiva, type Regiune,
 } from './regiune.ts';
 import { liniiCuAxInvers, verificaSensul } from './sens.ts';
@@ -119,6 +135,7 @@ import { pasCuIntrare, verificaIntrariCuRampa } from './intrari-rampa.ts';
 import { analizeazaDegajarile, verificaDrumulExact, type AnalizaDegajari } from './degajari.ts';
 import { invarianta14 } from './pe-linie.ts';
 import { etichetaDeschisa, verificaDeschise } from './deschise.ts';
+import { verificaPeOParte, verificaPeretii } from './parte.ts';
 
 export type ColtOrigine = 'stanga-jos' | 'dreapta-jos' | 'dreapta-sus' | 'stanga-sus';
 
@@ -313,7 +330,8 @@ export function poarta(text: string, ctx: ContextPoarta, o: ModPoarta = {}): Inc
   if (reg) {
     for (const p of reg.probleme) rez.push({ invarianta: 2, linia: 0, mesaj: `regiunea păstrată: ${p.mesaj}` });
     for (const c of comentarii) {
-      const et = citesteEticheta(c.text);
+      // Felia 2.3c-5: stânga / dreapta sunt etichete doar în poarta amendată (cea de dinainte le citea „stricate”).
+      const et = citesteEticheta(c.text, amendat37);
       if (et === null) continue;
       if (et === 'stricata') {
         rez.push({ invarianta: 2, linia: c.linia, mesaj: `etichetă de nerecunoscut: „${c.text}”` });
@@ -361,7 +379,7 @@ export function poarta(text: string, ctx: ContextPoarta, o: ModPoarta = {}): Inc
         const activa = iEticheta >= 0 ? etichete[iEticheta] : undefined;
         if (!activa) {
           rez.push({ invarianta: 2, linia: m.linia, mesaj: 'mișcare de tăiere înaintea primei etichete' });
-        } else if (activa.eticheta && activa.eticheta.latura !== 'pe-linie') {
+        } else if (activa.eticheta && activa.eticheta.latura !== 'pe-linie' && !peOParte(activa.eticheta.latura)) {
           const id = activa.eticheta.idLume;
           const i = reg.inele.findIndex((x) => x.idLume === id);
           // Fără inel (element cu ambele laturi): problema documentului e deja raportată.
@@ -379,6 +397,20 @@ export function poarta(text: string, ctx: ContextPoarta, o: ModPoarta = {}): Inc
               invarianta: 2, linia: m.linia,
               mesaj: `regiunea păstrată: tăietura lui ${id} intră în ${rau.in} (cu ${rau.patrundere.toFixed(3)} mm, lângă X ${rau.la.x.toFixed(3)}, Y ${rau.la.y.toFixed(3)})`,
             });
+          }
+          // ADR 0037 §10, §13 (felia 2.3c-5): pe exterior / interior, pereții tăieturilor pe o parte se adaugă la margini.
+          if (amendat37 && reg.pereti?.length) {
+            let rauP: ReturnType<typeof verificaPeretii> = null;
+            for (const p of parti) {
+              const x = verificaPeretii(reg.pereti, p, R, prag(R, TOL_ROTUNJIRE));
+              if (x && (!rauP || x.patrundere > rauP.patrundere)) rauP = x;
+            }
+            if (rauP) {
+              rez.push({
+                invarianta: 2, linia: m.linia,
+                mesaj: `regiunea păstrată: tăietura lui ${id} atinge peretele lui ${rauP.perete} (cu ${rauP.patrundere.toFixed(3)} mm, lângă X ${rauP.la.x.toFixed(3)}, Y ${rauP.la.y.toFixed(3)})`,
+              });
+            }
           }
         }
       }
@@ -466,6 +498,8 @@ export function poarta(text: string, ctx: ContextPoarta, o: ModPoarta = {}): Inc
       for (const x of invarianta14(evenimente, etichete, reg, (m) => parteaDeTaiere(m, ctx))) rez.push({ invarianta: 14, linia: x.linia, mesaj: x.mesaj });
       // 11 pe căile deschise, refuzurile de la §9 și 14 (iii), ordinea de la §8 (ADR 0037 §13, `deschise.ts`).
       for (const x of verificaDeschise(judecate, etichete, reg, (p) => laDocument(p, ctx))) rez.push(x);
+      // 2, 9 și 14 (ii) pe stânga / dreapta (felia 2.3c-5, `parte.ts`), pe toate mișcările.
+      for (const x of verificaPeOParte(evenimente, etichete, reg, (m) => parteaDeTaiere(m, ctx), (p) => laDocument(p, ctx), R)) rez.push(x);
     }
   }
   // 10, avansul (ADR 0028 §4, precizarea din 09.10): viteza pe verticală a mișcărilor care coboară în material.

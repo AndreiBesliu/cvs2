@@ -50,7 +50,7 @@
  * - pe hârtie: A, p₀, C, ρ ±0,003; F ±(0,05 + 300·0,0011 / d_k + 0,1) (rotunjirea lui F și a cotelor); fundul în câmp
  *   ±(panta·(celula·√2/2 + pasul eșantionării) + 0,002); cât scoate o mișcare ±0,002 (Z rotunjit).
  */
-import type { LaturaO } from './document.ts';
+import type { LaturaV10O } from './document.ts';
 import { citeste, regulaArcGrbl, type Eveniment, type Mutare, type Punct3 } from './gcode.ts';
 import type { Regiune } from './regiune.ts';
 import { orientareMontaj, type EtichetaActiva, type P2 } from './sens.ts';
@@ -60,15 +60,15 @@ import {
 } from './rampa.ts';
 import { profil, rupturi, TOL_S_FIX, TOL_S_PE_RADIAN, zProfil, type Profil } from './urechi.ts';
 import { arcul, bucataDeTraseu, desparte, desparteCuRampa, dinVarful0, TOL_ACELASI, type Bucata, type TrecereI } from './intrari.ts';
-import { distantaListe, lungime as lungimeP, punct, pt, punctLa, type Primitiva } from './regiune.ts';
+import { distantaListe, lungime as lungimeP, peOParte, punct, pt, punctLa, type Primitiva } from './regiune.ts';
 import type { UrechiO } from './document.ts';
 
 const mm = (v: number): string => v.toFixed(3);
 const dist = (p: P2, q: P2): number => Math.hypot(p.x - q.x, p.y - q.y);
 
 /** Lanțul e o trecere cu rampa pe intrare (ADR 0031 §3): operația are intrări, nu e pe linie, iar lanțul pleacă din afara buclei. */
-export function pasCuIntrare(l: Lant, x: ParametriEticheta, latura: LaturaO): boolean {
-  return x.intrari !== null && x.rampa !== null && latura !== 'pe-linie' && desparteCuRampa(l.pasi) !== null;
+export function pasCuIntrare(l: Lant, x: ParametriEticheta, latura: LaturaV10O): boolean {
+  return x.intrari !== null && x.rampa !== null && latura !== 'pe-linie' && !peOParte(latura) && desparteCuRampa(l.pasi) !== null;
 }
 
 // ---------------------------------------------------------------------------------------------------------------

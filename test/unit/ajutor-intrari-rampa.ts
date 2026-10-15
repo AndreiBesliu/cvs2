@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
 import type { Punct3 } from '../oracles/gcode.ts';
 import { laDocument, poarta, type ContextPoarta, type Incalcare } from '../oracles/poarta.ts';
 import type { DocV7O } from '../oracles/document.ts';
-import { citesteEticheta, regiuneDinDocument } from '../oracles/regiune.ts';
+import { citesteEticheta, peOParte, regiuneDinDocument } from '../oracles/regiune.ts';
 import { citeste } from '../oracles/gcode.ts';
 import { asteptatRampa, comparaRampa, lanturile, masoaraRampa, parcurgeriHartie, type PasL } from '../oracles/rampa.ts';
 import { asteptatPeHartie, comparaCuHartia, masoara, profil, zProfil, type BucataTrecere, type Trecere } from '../oracles/urechi.ts';
@@ -186,7 +186,7 @@ export function puntiProgram(doc: DocV7O, text: string, ctx: ContextPoarta): { r
   const vazute = new Set<string>();
   for (const l of lanturile(ev.evenimente, et.map((e) => e.linia), laDoc)) {
     const e = l.eticheta >= 0 ? et[l.eticheta]!.eticheta : null;
-    if (!e || e.latura === 'pe-linie' || vazute.has(e.idLume)) continue;
+    if (!e || e.latura === 'pe-linie' || peOParte(e.latura) || vazute.has(e.idLume)) continue;
     vazute.add(e.idLume);
     const tai = reg.taieturi.get(e.idLume);
     const ops = tai?.urechi?.get(e.latura) ?? [];

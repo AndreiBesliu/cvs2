@@ -192,27 +192,34 @@ export function supremul(q: Primitiva, dist: Distanta, T: number): Depasire | nu
     const d = dist(q.p);
     return d > T ? { d, la: q.p } : null;
   }
-  const L = lungime(q);
+  return supremulCurba((s) => punctLa(q, s), 0, lungime(q), dist, T);
+}
+
+/**
+ * Același suprem, pe o curbă parcursă cu viteza 1 (`la(s)`, s în [s0, s1]): `dist` ∘ `la` e 1-lipschitziană, deci
+ * rafinarea de mai sus se aplică neschimbată (felia 2.3c-5 o folosește pe offsetul deschis ideal, `parte.ts`).
+ */
+export function supremulCurba(la: (s: number) => Pt, s0: number, s1: number, dist: Distanta, T: number): Depasire | null {
   const st: { rau: Depasire | null } = { rau: null };
-  const vezi = (d: number, la: Pt): void => { if (d > T && (st.rau === null || d > st.rau.d)) st.rau = { d, la }; };
-  const p0 = punctLa(q, 0), p1 = punctLa(q, L);
+  const vezi = (d: number, p: Pt): void => { if (d > T && (st.rau === null || d > st.rau.d)) st.rau = { d, la: p }; };
+  const p0 = la(s0), p1 = la(s1);
   const d0 = dist(p0), d1 = dist(p1);
   vezi(d0, p0);
   vezi(d1, p1);
-  const stiva: Array<readonly [number, number, number, number]> = [[0, L, d0, d1]];
+  const stiva: Array<readonly [number, number, number, number]> = [[s0, s1, d0, d1]];
   while (stiva.length) {
-    const [s0, s1, a, b] = stiva.pop()!;
-    const h = s1 - s0;
-    // Marginea lipschitziană a supremului pe [s0, s1].
+    const [a0, a1, a, b] = stiva.pop()!;
+    const h = a1 - a0;
+    // Marginea lipschitziană a supremului pe [a0, a1].
     const U = (a + b + h) / 2;
     if (U <= T) continue;
     if (st.rau !== null && U <= st.rau.d + Math.max(1e-3, 0.01 * st.rau.d)) continue;
     if (h <= PAS_MIN_14) continue;
-    const sm = (s0 + s1) / 2;
-    const pm = punctLa(q, sm);
+    const sm = (a0 + a1) / 2;
+    const pm = la(sm);
     const dm = dist(pm);
     vezi(dm, pm);
-    stiva.push([s0, sm, a, dm], [sm, s1, dm, b]);
+    stiva.push([a0, sm, a, dm], [sm, a1, dm, b]);
   }
   return st.rau;
 }
