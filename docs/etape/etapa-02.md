@@ -38,6 +38,56 @@ Bugetul unei felii e ~½ zi activă, până la prima măsurătoare (`PLAN.md` §
 | 2.9 | Bancul vizual v1, cu martorii lui | I18 | R2 | 2.8 |
 | 2.10 | Fișa plăcii 2, cu programele de aur | — | R2 | 2.4–2.7 |
 
+**2.3c-4, offsetul deschis: pregătit pe 15.10, pornește după resetarea săptămânală din 17.10.** Contractul e ADR 0037
+§5. Valorile pe hârtie 3–9 au fost refăcute de mână pe 15.10 și ies toate: semicercul (R47 / R53), L-ul (arcul R3,
+1,93 mm² rămași în colț), cârligul (o bucată până la x = 42,172; neatins 14,828 mm), U-ul de 5 mm (refuz / 6 vârfuri),
+V-ul de 10° (34,421 / 34,290 mm), oglindirea (Y53, de la X50 la X150). Cavalier e deja măsurat pe căile deschise (ADR 0037,
+„Ce am măsurat”, punctul 3).
+
+*Ce intră:* doar geometria: `offsetDeschis` în `src/geom/offset.ts`, cu verificarea ieșirii și `neatins`. Tăietura pe o
+parte în CAM (traseul, sensul, pereții, refuzurile, dialogul, săgețile vizibile) e 2.3c-5. Nimic vizibil pentru owner.
+
+*Două drumuri, în paralel:*
+1. **Oracolul**, într-o sesiune independentă. Costul estimat: 0,5–0,9 M, după oracolele de la 2.1–2.7d. Promptul:
+   > Ești o sesiune independentă: scrii oracolul offsetului deschis din ADR 0037 §5 și din „Ce verifică oracolul” (al
+   > treilea punct). Din aplicație citești doar semnătura `offsetDeschis` și tipurile `Contur` / `Varf`
+   > (`src/geom/contur.ts`); nu citești implementarea. (1) `test/oracles/offset-deschis.ts`: zero importuri din `src/`,
+   > fără cavalier; offsetul deschis ideal pe linii și arce (c(t) + d·n(t) și evantaiele colțurilor convexe dinspre
+   > sculă), păstrat unde distanța la toată calea e cel puțin |d|; distanța Hausdorff în ambele sensuri; `neatins` pe
+   > hârtie. (2) `test/oracles/offset-deschis.cazuri.ts`: cazurile 1 și 3–9 de la „Valorile pe hârtie”, la nivel de
+   > geometrie (fără G-code), plus un corpus: linii, arce, arce de peste 180°, L-uri și lanțuri cu colțuri convexe și
+   > concave, cârlige, U-uri, V-uri înguste, zig-zag-uri, polilinii fine (L1·L2·sin θ < 1e-5 mm²), joncțiuni aproape
+   > tangente de biarce, căi care se ating singure (refuz), capete în același punct (refuz), ambele părți, 3 raze.
+   > (3) `test/unit/offset.deschis.oracol.test.ts`: legătura, cu `offsetDeschis` pe tot corpusul; acceptat = offsetul
+   > corect sau un refuz, niciodată un traseu greșit; refuzurile numărate și raportate; „scula nu încape” doar unde
+   > oracolul n-are niciun punct ideal valid. (4) Martorii negativi: partea inversată, o bucată scăpată, traseul
+   > prelungit dincolo de normala capătului, traseul care ocolește capătul, ieșirea goală luată drept „nu încape”.
+   > (5) Cel puțin 20 de sabotaje pe oracol, fiecare prins. Nu schimbi nimic în `src/`. Ce e ambiguu în contract
+   > raportezi, nu ghicești.
+2. **Aplicația**, în sesiunea principală:
+   - **curățarea pe deschis:** `imparteArceMari`, `unesteVarfuri`, `scoateVarfuriPeLatura` și `seAtingeSingur` merg azi
+     în cerc (`% n`). Primesc `inchis`: fără perechea ultim–prim; capetele nu se mută (un segment scurt de la capăt pierde
+     vârful dinspre interior); vârfurile pe latură se scot doar din interior. Iertarea contactului fals între vecini (azi
+     doar `c.inchis && n >= 3`) se aplică și pe deschis, fără perechea ultim–prim;
+   - **`verificaIesireDeschisa`:**
+     - forma bucăților și ordinea lor de-a lungul căii;
+     - distanța: `distantaLaContur` și indexul știu deja căile deschise (`numarSegmente`);
+     - partea: produsul vectorial; la un capăt, nici pe partea păstrată a tangentei, nici în capac;
+     - atingerile, cu excepția dus-întors la 2R ± 1e-4;
+     - acoperirea: eșantioane la cel mult 0,05 mm; un punct ideal e valid la cel puțin |d| − 1e-5 de cale; fiecare
+       punct valid stă la cel mult 0,002 de traseu;
+   - **reîncercarea** cu |d| + 1e-4, apoi refuzul. Cele două motive exacte: „scula nu încape pe partea cerută” doar fără
+     niciun punct ideal valid; altfel „offsetul a eșuat lângă (x, y)”;
+   - **`neatins`:** porțiunile cu punctele ideale invalide, cu lungimea și locul (cârligul: 14,828 mm);
+   - **timpul:** acoperirea pe o cale de 10 m înseamnă 200 000 de eșantioane, prin indexul cutiilor. Se măsoară pe
+     zig-zag-ul de 25 600 de segmente (ADR 0037, „Limitele”).
+
+*Gata când:* testele de legătură ale oracolului sunt verzi, refuzurile sunt numărate (niciun „nu încape” fals pe cazul 8),
+sabotajele oracolului sunt prinse și CI-ul e verde.
+
+*După:* recenzia A (2.3c-0…3) poate rula în paralel cu oracolul. Urmează 2.3c-5 (cu recenzia B și amendarea porții) și
+2.3c-6 (otrăvurile, alese de altă sesiune).
+
 **Contractul gărzilor offsetului** (felia 2.1, din `docs/faza2/sonde/s1-geometrie/VERIFICARE.md` §5). Scris aici ca
 fațada `offsetInchis` din `src/geom/offset.ts` și oracolul independent să-l implementeze separat. Versiunea 2, după
 primul contact cu oracolul (08.10).

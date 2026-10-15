@@ -1555,3 +1555,9 @@ săptămânii, 85 % folosit).
   trebuie atunci să vină cu dialogul.
 
 **Proba:** 6 049 de teste unitare; e2e 59 / 59 (după reparație; înainte, 42 / 59, cele roșii pe redeschiderea proiectului).
+
+**Apoi, 2.3c-4 pregătit** (aceeași cerere, punctul 2): planul de pornire e în fișă (`docs/etape/etapa-02.md`, „2.3c-4,
+offsetul deschis”): promptul oracolului independent, gata de dat, și lista aplicației (curățarea pe deschis: cele patru
+funcții care azi merg în cerc; `verificaIesireDeschisa`; reîncercarea; motivele; `neatins`; timpul). Valorile pe hârtie 3–9
+din ADR 0037 refăcute de mână: toate ies (cârligul 14,828 mm; V-ul de 10°: 34,421 / 34,290 mm; arcul de 300°: 34,03 mm).
+Fără cod, fără agenți. **Completed:** 08:05.
