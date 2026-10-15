@@ -200,6 +200,25 @@ exact; materialul păstrat e pe partea cealaltă.
 
 *`neatins`:* porțiunile căii ale căror puncte ideale nu sunt valide, adică peretele la care freza nu ajunge, cu lungimea și locul. Le folosește avertismentul de la §10.
 
+*Precizările 2.3c-4 (15.10, la implementare; oracolul le ia ca parte a contractului):*
+- **Bucata care se închide pe ea însăși.** Într-o cameră cu gura mai îngustă decât D (un canal cu o strangulare, scula
+  înăuntru), freza ocolește camera și se întoarce în start: bucata are capătul în start. Atingerea dintre primul și
+  ultimul ei segment, chiar în start, nu e o atingere (ca la un contur închis). Orice altă atingere rămâne refuzată.
+- **Picioarele la egalitate.** Un punct al traseului poate fi la fel de aproape (în 1e-6 mm) de mai multe locuri ale
+  căii: de exemplu, startul unei bucăți pe un zig-zag dens e intersecția cercului din jurul startului căii cu cercul din
+  jurul primului vârf. Partea se judecă atunci față de fiecare picior, iar punctul e corect dacă e corect față de unul.
+  Judecat doar față de capăt, punctul ar cădea în capac, deci un traseu bun ar fi fost refuzat (văzut la R3 pe zig-zag-ul
+  cu pasul 0,5).
+- **Forma lui `neatins`:** `{ de, pana, lungime, la }`. `de` și `pana` sunt pozițiile pe cale (mm pe curbă, de la vârful 0),
+  iar `la` e punctul căii din mijlocul porțiunii. Porțiunile vecine peste un vârf se unesc: cârligul dă o singură porțiune
+  de 14,828 mm. Marginile poartă marja de validitate (|d| − 1e-5): se mută cu ~1e-5 mm, iar pe o pană îngustă cu
+  1e-5 / sin θ (V-ul de 10°: 1,2e-4 mm în total).
+- **Colțurile concave dinspre sculă intră în `neatins`:** R · cot(θ / 2) pe fiecare latură (la 90°, câte R). E adevărat
+  fizic (colțul rămâne rotunjit cu R, §6), dar pe un zig-zag tăiat pe partea concavă dă câte o porțiune la fiecare dinte
+  (12 799 la 25 600 de segmente). **De hotărât la 2.3c-5:** cum le arată avertismentul de la §10 (grupate, sau doar
+  porțiunile mai lungi decât colțul), fără să schimbe `neatins`.
+- **Timpul:** pe zig-zag-ul de 25 600 de segmente, cu R3, 2,4–4,9 s cu tot cu verificări (în banda de 4–8 s din „Limitele”).
+
 **6. Tăietura pe o parte: ce face freza.**
 - **Traseul:** centrul merge pe offsetul la R, pe partea sculei. Peretele rămâne exact pe linie; materialul păstrat e dincolo de el.
 - **Capetele:**

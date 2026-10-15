@@ -49,9 +49,10 @@ parte în CAM (traseul, sensul, pereții, refuzurile, dialogul, săgețile vizib
 
 *Două drumuri, în paralel:*
 1. **Oracolul**, într-o sesiune independentă. Costul estimat: 0,5–0,9 M, după oracolele de la 2.1–2.7d. Promptul:
-   > Ești o sesiune independentă: scrii oracolul offsetului deschis din ADR 0037 §5 și din „Ce verifică oracolul” (al
-   > treilea punct). Din aplicație citești doar semnătura `offsetDeschis` și tipurile `Contur` / `Varf`
-   > (`src/geom/contur.ts`); nu citești implementarea. (1) `test/oracles/offset-deschis.ts`: zero importuri din `src/`,
+   > Ești o sesiune independentă: scrii oracolul offsetului deschis din ADR 0037 §5 (cu precizările 2.3c-4) și din „Ce
+   > verifică oracolul” (al treilea punct). Din aplicație citești doar semnăturile `offsetDeschis` și
+   > `verificaIesireDeschisa` (`src/geom/offset.ts`) și tipurile `Contur` / `Varf` (`src/geom/contur.ts`); nu citești
+   > implementarea. (1) `test/oracles/offset-deschis.ts`: zero importuri din `src/`,
    > fără cavalier; offsetul deschis ideal pe linii și arce (c(t) + d·n(t) și evantaiele colțurilor convexe dinspre
    > sculă), păstrat unde distanța la toată calea e cel puțin |d|; distanța Hausdorff în ambele sensuri; `neatins` pe
    > hârtie. (2) `test/oracles/offset-deschis.cazuri.ts`: cazurile 1 și 3–9 de la „Valorile pe hârtie”, la nivel de
@@ -81,6 +82,10 @@ parte în CAM (traseul, sensul, pereții, refuzurile, dialogul, săgețile vizib
    - **`neatins`:** porțiunile cu punctele ideale invalide, cu lungimea și locul (cârligul: 14,828 mm);
    - **timpul:** acoperirea pe o cale de 10 m înseamnă 200 000 de eșantioane, prin indexul cutiilor. Se măsoară pe
      zig-zag-ul de 25 600 de segmente (ADR 0037, „Limitele”).
+
+*Starea pe 15.10:* partea aplicației e gata (`offsetDeschis` și `verificaIesireDeschisa` în `src/geom/offset.ts`, 15 teste
+ale autorului în `test/unit/geom.offset.deschis.test.ts`, 13 mutații ale verificării, toate prinse). Rămâne oracolul
+independent. Precizările apărute la implementare sunt în ADR 0037 §5.
 
 *Gata când:* testele de legătură ale oracolului sunt verzi, refuzurile sunt numărate (niciun „nu încape” fals pe cazul 8),
 sabotajele oracolului sunt prinse și CI-ul e verde.

@@ -1561,3 +1561,27 @@ offsetul deschis”): promptul oracolului independent, gata de dat, și lista ap
 funcții care azi merg în cerc; `verificaIesireDeschisa`; reîncercarea; motivele; `neatins`; timpul). Valorile pe hârtie 3–9
 din ADR 0037 refăcute de mână: toate ies (cârligul 14,828 mm; V-ul de 10°: 34,421 / 34,290 mm; arcul de 300°: 34,03 mm).
 Fără cod, fără agenți. **Completed:** 07:52.
+
+## 2026-10-15 — Etapa 2, felia 2.3c-4: offsetul deschis, partea aplicației (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (la recomandarea „încep acum, fără agenți, partea aplicației din 2.3c-4: întâi testele cu valorile
+pe hârtie, apoi codul; oracolul independent și recenzia rămân pentru vineri”). **Started:** 09:00. **Clasa:** R2
+(geometria tăieturii pe o parte). Fără agenți; oracolul independent vine după 17.10, din promptul din fișă.
+**Completed:** 09:20.
+
+**Făcut:** `offsetDeschis(contur, distanta)` și `verificaIesireDeschisa` în `src/geom/offset.ts` (ADR 0037 §5): curățarea
+pe deschis (cele patru funcții care mergeau în cerc primesc `inchis`), verificarea ieșirii (forma, distanța, partea,
+atingerile, acoperirea la 0,05 mm), reîncercarea, cele două motive, `neatins` cu marginile înjumătățite.
+- Cavalier dă exact valorile pe hârtie (linia, semicercul, L-ul, cârligul 42,1716, U-ul, V-ul 34,4211, canelura cât freza).
+- **Două găuri ale contractului, găsite la implementare, scrise ca precizări în ADR 0037 §5:** (1) canalul cu strangulare dă
+  o bucată cu capătul în start (camera ocolită): regula „nicio bucată nu se atinge singură” ar fi refuzat-o; (2) pe
+  zig-zag-ul de sub sculă, startul bucății e la egalitate între capătul căii și primul vârf: judecat doar față de capăt,
+  cădea în capac (refuz fals la R3, prins de măsurătoarea timpului).
+- De hotărât la 2.3c-5: colțurile concave intră în `neatins` (câte R pe fiecare latură la 90°); pe un zig-zag dau o
+  porțiune la fiecare dinte, deci avertismentul trebuie să le grupeze.
+- Timpul: zig-zag-ul de 25 600 de segmente, R3: 2,4–4,9 s cu toate verificările.
+
+**Proba:** 15 teste noi (valorile pe hârtie, refuzurile, verificarea ieșirii pe ieșiri greșite construite de mână);
+13 mutații ale verificării (partea întoarsă, bucata scăpată, ieșirea goală luată drept „nu încape”, acoperirea, partea,
+capacul, evantaiul, atingerile, bucla, dus-întorsul, egalitatea picioarelor, înjumătățirea), toate prinse. 6 064 de teste
+unitare; pornirea 96,1 kB (offsetul e în bucata exportului). Nimic vizibil (vine cu 2.3c-5). Rămâne oracolul independent.
