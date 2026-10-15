@@ -749,7 +749,15 @@ export function analizeazaDegajarile(
   foaie: { readonly latime: number; readonly inaltime: number } | null = null,
 ): AnalizaDegajari {
   const rez: IncalcareDegajari[] = [];
-  const drumuri = drumuriDusIntors(evenimente, laDoc);
+  // ADR 0037 §5, §9 (felia 2.3c-5): sub o etichetă pe o parte, un dus-întors e canelura cât freza (§5: „la lățimea exact
+  // 2R, un traseu dus-întors pe aceeași linie se acceptă”), nu un drum de degajare (degajările pe o cale deschisă sunt
+  // refuzate, §9): nu se scoate din trecere și nu e judecat aici. Fără etichete pe o parte, lista e cea de dinainte.
+  const subParte = (linia: number): boolean => {
+    let k = -1;
+    while (k + 1 < etichete.length && etichete[k + 1]!.linia < linia) k++;
+    return k >= 0 && peOParte(etichete[k]!.eticheta?.latura);
+  };
+  const drumuri = drumuriDusIntors(evenimente, laDoc).filter((d) => !subParte(d.linii[0]));
   const fara = faraDrumuri(evenimente, drumuri);
   const leg = legarileDegajarilor(etichete, reg);
   const D = 2 * R;

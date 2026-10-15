@@ -84,6 +84,13 @@ export const V7 = (): DocV10O =>
 export const VG = (adancime = 3): DocV10O =>
   unu('g', 50, 50, { id: 'g', forma: deschisa([vL(0, 0), vL(100, 0), vL(100, 20), vL(50, 20), vL(50, 2)]), latura: 'stanga', adancime });
 
+/**
+ * Canelura cât freza (§5: „la lățimea exact 2R, un traseu dus-întors pe aceeași linie se acceptă”): (−20,50)→(0,50)→(0,0)
+ * →(6,0)→(6,50)→(26,50), pe stânga (scula intră în fanta de 6 mm), pusă în (100, 50).
+ */
+export const VN = (): DocV10O =>
+  unu('n', 100, 50, { id: 'n', forma: deschisa([vL(-20, 50), vL(0, 50), vL(0, 0), vL(6, 0), vL(6, 50), vL(26, 50)]), latura: 'stanga', adancime: 3 });
+
 /** Piesa P a valorilor 10 și 11: dreptunghiul 60 × 40 pus în (40, 40), exterior, 3 mm (urcare). */
 const PIESA_P: PiesaD = { id: 'p', x: 40, y: 40, elemente: [{ id: 'r', forma: { tip: 'dreptunghi', latime: 60, inaltime: 40, razaColt: 0 }, latura: 'exterior', adancime: 3 }] };
 /** 10: o linie paralelă cu latura de sus a piesei (y = 80), la `la` mm de ea, de la x = 30 la x = 110. */
@@ -174,6 +181,14 @@ export const TRASEE = {
     });
     return lant(...ps);
   })(),
+  /** Canelura: (−20,53)→(0,53), arcul R3 în jurul lui (0,50), în jos pe x = 3 până în (3,3), înapoi în sus, arcul în jurul lui (6,50), (6,53)→(26,53). */
+  vn: ((): Primitiva[] => {
+    const o = (x: number, y: number): Pt => pt(100 + x, 50 + y);
+    return [
+      sg(o(-20, 53), o(0, 53)), arc(o(0, 50), 3, Math.PI / 2, -Math.PI / 2), sg(o(3, 50), o(3, 3)), sg(o(3, 3), o(3, 50)),
+      arc(o(6, 50), 3, Math.PI, -Math.PI / 2), sg(o(6, 53), o(26, 53)),
+    ];
+  })(),
   /** Zig-zag-ul dens, pe dreapta (ca desenul, opoziție): arcele R3 din jurul văilor interioare, între intersecții. */
   vz: ((): Primitiva[] => {
     const h = Math.sqrt(9 - 0.25);
@@ -219,6 +234,7 @@ export function corecteParte(): CazParte[] {
   rez.push({ nume: '7 V-ul de 10°, scula înăuntru: centrul se oprește la R / sin 5° de vârf', doc: V7(), text: programParte([{ idLume: 'v/v', latura: 'stanga', adancime: 3, bucati: [TRASEE.v7] }]) });
   rez.push({ nume: 'cubica, stânga: offsetul exact al cubicei, eșantionat (peretele cu cubice, toleranța + 0,0011)', doc: VC(), text: programParte([{ idLume: 'w/c', latura: 'stanga', adancime: 3, bucati: [TRASEE.vc] }]) });
   rez.push({ nume: 'zig-zag-ul dens (precizarea 2.3c-4): arcele R3 ale văilor, startul la egalitate între capăt și vârf', doc: VZ(), text: programParte([{ idLume: 'z/z', latura: 'dreapta', adancime: 3, bucati: [TRASEE.vz] }]) });
+  rez.push({ nume: 'canelura cât freza (§5): dus-întors pe linia din mijlocul fantei de 2R', doc: VN(), text: programParte([{ idLume: 'n/n', latura: 'stanga', adancime: 3, bucati: [TRASEE.vn] }]) });
   rez.push({ nume: 'G-ul: două bucăți, camera se închide pe ea însăși', doc: VG(), text: programParte([{ idLume: 'g/g', latura: 'stanga', adancime: 3, bucati: [TRASEE.vg.A, TRASEE.vg.B] }]) });
   rez.push({
     nume: 'G-ul la 6 mm: două treceri × două bucăți, fiecare bucată din același punct', doc: VG(6),
