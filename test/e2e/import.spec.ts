@@ -245,6 +245,12 @@ test('linia tăiată pe stânga (2.3c-5): dialogul o oferă, G-code-ul pe hârti
   const text = readFileSync(await (await d).path(), 'ascii');
   // Hârtia 1 (ADR 0037): stânga + urcare = ca desenul, centrul la R deasupra liniei; 1 mm într-o trecere (gravura importului).
   expect(text).toContain('\n(e1/c1: cale, stanga, 1 mm)\nG0 X50.000 Y53.000\nG1 Z-1.000 F300.0\nG1 X150.000 Y53.000 F1000.0\nG0 Z5.000\n');
+  // Poarta amendată (2.3c-5, sesiune independentă), pe documentul salvat (revizia 2: latura scrisă de export).
+  const doc = await documentSalvat(page, 2);
+  expect(poarta(text, {
+    foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'stanga-jos', z0: 'sus', diametruScula: 6, pas: 1,
+    supracursa: 0, asteptareAx: 3, avansPlonjare: 300, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
+  })).toEqual([]);
   await page.getByRole('button', { name: 'Închide' }).click();
   // Latura scrisă de export: linia aleasă își arată acum sensul (ADR 0037 §12).
   await expect(page.getByTestId('panza')).toHaveAttribute('data-sageti', '1');

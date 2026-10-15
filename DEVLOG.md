@@ -1612,3 +1612,12 @@ opus); (5) poliliniile fine nu mai sunt refuzate cu „se atinge singură” (su
 care merg înainte); (6) plafonul verificării (~200 m de traseu), cu refuz explicit; (7) liniuța pe partea frezei, lângă
 săgeată (ADR 0037 §12), din aceeași funcție ca CAM-ul (`src/model/parte.ts`), corectă sub oglindire. 2 constatări
 infirmate de verificator (comportamente cerute de contract). 6 082 de teste unitare.
+**Integrarea oracolului 2.3c-4 și a porții 2.3c-5 (sesiuni independente, 2,56 M cu recenzia A, 89 min):** oracolul (120 de
+teste, 46 de sabotaje prinse, 516 offseturi fără niciun traseu greșit) a prins o abatere: verificarea primea dus-întorsul
+până la 2R + 0,004 (contractul: ± 1e-4); reparată (banda |d| ± 5e-5). Poarta (65 de teste, 38 de sabotaje prinse) a
+reparat singură un fals pozitiv vechi (canelura cât freza luată drept drum dog-bone). Legătura aplicație–poartă
+(`parte.aplicatie.oracol.test.ts`): 24 din 26 la primul contact; cele 2: un fals pozitiv al porții (invarianta 9 pe bucata
+de închidere de 0,28 µm a unui arc GRBL; reparat la integrare: primitive de cel puțin 0,001 mm) și un defect al aplicației
+(canelura din mijlocul unei căi, refuzată cu „se atinge singură” în punctul de întoarcere; reparat). Acum 26 / 26, plus
+acordul pe regiune (10, 11, 12), iar e2e-ul liniei pe stânga trece prin poartă. Alegerile oracolului și ale porții, scrise
+în ADR 0037 §13 („Precizările integrării”). 6 293 de teste unitare, e2e 60 / 60.

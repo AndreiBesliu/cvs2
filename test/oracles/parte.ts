@@ -83,6 +83,12 @@ export const TOL_ATINGERE = 2 * TOL_POST_P;
 const TOL_Z_TRECERE = 0.001;
 /** Sub atât (față de mers), un eșantion n-are sens de citit (antetul, invarianta 9). */
 const TOL_SENS = TOL_POST_P;
+/**
+ * Sub atât (mm, rezoluția postului), o primitivă nu-și spune sensul: bucata de închidere a unui arc citit ca GRBL (de la
+ * capătul socotit al arcului la ținta lui, ~1e-4 mm, din rotunjirea lui I / J) are o direcție de zgomot. Reparat la
+ * integrare (2.3c-5): pe cubica blândă, poarta lua o asemenea bucată de 0,28 µm drept mers invers.
+ */
+const LUNGIME_MINIMA_SENS = 0.001;
 /** Pasul în interiorul unei încălcări (doar pentru adâncimea raportată). */
 const PAS_INCALCARE = 0.01;
 
@@ -561,7 +567,7 @@ export function verificaPeOParte(
           const r = judecaPunct(j, p, R);
           if (r.v === 'capac') { if (!capac || r.beta! > capac.beta) capac = { beta: r.beta!, la: p }; }
           else if (r.v !== 'ok') partea ??= p;
-          if (asteptat === null || rau9 !== null || q.tip === 'punct') continue;
+          if (asteptat === null || rau9 !== null || q.tip === 'punct' || lungime(q) < LUNGIME_MINIMA_SENS) continue;
           // 9: piciorul unic, în interiorul unei primitive.
           const ps = r.picioare;
           if (ps.length !== 1 || ps[0]!.loc !== 'interior') continue;

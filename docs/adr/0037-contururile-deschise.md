@@ -439,6 +439,25 @@ Calea are vârfurile subcăii plus punctul final, cu segmentul L. E degenerată 
 - **Neschimbate:** invariantele 1, 3, 5, 6, 7, 8, 10, 12 și 13.
 - **Echivalența:** documentele fără căi deschise primesc exact aceleași verdicte, cu o singură excepție: 14 (i), pe programele cu arcele de la „Ce am măsurat”, punctul 2. Poarta are un mod `inainteDe0037`, ca la ADR 0030–0032.
 
+*Precizările integrării (15.10: oracolul 2.3c-4 și poarta 2.3c-5, sesiuni independente; alegerile lor, primite de
+asistent ca parte a contractului):*
+- **Bucla de la 9.** „O buclă închisă sub o etichetă deschisă e o încălcare”, cu excepția bucății care se închide pe ea
+  însăși din precizarea 2.3c-4 (camera cu gura sub D): un lanț întreg, ale cărui mișcări trec partea (2) și 14 (ii).
+- **Toleranțele pe G-code.** 14 (ii) se judecă la 0,002 (offsetul) + 0,002 (postul) + 0,0006 = 0,0046 mm, plus 0,0011 pe
+  pereții cu cubice; capetele pe normale, la fel. Picioarele la egalitate: 1e-6 + 2 · 0,002 (rotunjirea mută punctul).
+- **Refuzuri în plus, luate ca încălcări:** peretele fără niciun punct ideal valid; o etichetă pe o parte fără mișcări,
+  deși offsetul are porțiuni valide; două lanțuri ale aceleiași treceri care se ating.
+- **Invarianta 9** se judecă doar unde piciorul e unic și în interiorul unei primitive, cu |τ × v| > 0,002, și (reparat
+  la integrare) doar pe primitive de cel puțin 0,001 mm: bucata de închidere a unui arc citit ca GRBL are o direcție de
+  zgomot (pe cubica blândă, 0,28 µm luați drept mers invers).
+- **Reîncercarea cu |d| + 1e-4:** ieșirea ei se judecă față de distanța ei; un „nu încape” e justificat dacă la |d| sau la
+  |d| + 1e-4 nu există niciun punct ideal valid.
+- **Mulțimea validă de măsură zero** (arcul cu raza exact |d|, spre centru: idealul e centrul): oricare refuz.
+- **Canelura cât freza în mijlocul unei căi:** punctul ei de întoarcere, unde se întâlnesc coborârea, urcarea și vecinii lor,
+  nu e o atingere (aplicația, reparat la integrare); banda lățimii rămâne 2R ± 1e-4 (oracolul 2.3c-4 a prins verificarea
+  care primea până la 2R + 0,004).
+- **`neatins`** se compară la granulația pasului (0,05 mm): golurile și porțiunile mai scurte se închid, respectiv se scot.
+
 ## Ce verifică oracolul
 
 Sesiuni independente, fără niciun import din `src/` și fără cavalier, verifică:

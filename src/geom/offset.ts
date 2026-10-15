@@ -246,12 +246,20 @@ function directieLaCapat(a: Punct, b: Punct, s: Varf['s'], la: 0 | 1): Punct {
  *   (precizarea 2.3c-4), ca un contur închis.
  * Distanța la |d|, partea și acoperirea se verifică separat.
  */
-function seAtingeSingur(c: Contur, iesireDeschisa = false): boolean {
+function seAtingeSingur(c: Contur, iesire?: { readonly laDistanta: (p: Punct) => boolean }): boolean {
+  const iesireDeschisa = iesire !== undefined;
   const n = c.varfuri.length;
   const dupa = (i: number): number => (c.inchis ? (i + 1) % n : i + 1);
+  const articulatii = iesire ? articulatiiDusIntors(c, iesire.laDistanta) : [];
   let gasit = false;
   laCavalier(c).visitSelfIntersectsOpt((x) => {
-    if (iesireDeschisa && x.kind !== 'basic' && suprapunereDusIntors(c, x.startIndex1, x.startIndex2)) return true;
+    // Punctul de întoarcere al unui dus-întors primit: acolo se întâlnesc, de la sine, coborârea, urcarea și vecinii lor
+    // (integrarea porții 2.3c-5: canelura din mijlocul unei căi era refuzată cu „se atinge singură”).
+    if (x.kind === 'basic' && articulatii.some((j) => Math.hypot(x.point.x - j.x, x.point.y - j.y) <= 10 * EPS_ATINGERE)) return true;
+    // Dus-întorsul se primește doar la lățimea 2R ± 1e-4 (§5): suprapunerea stă la |d| ± 5e-5 de cale (oracolul 2.3c-4:
+    // fără banda asta, verificarea primea canelura până la 2R + 0,004, cât o lăsa toleranța distanței).
+    if (iesire && x.kind !== 'basic' && suprapunereDusIntors(c, x.startIndex1, x.startIndex2)
+      && iesire.laDistanta({ x: (x.point1.x + x.point2.x) / 2, y: (x.point1.y + x.point2.y) / 2 })) return true;
     if (iesireDeschisa && x.kind === 'basic' && capatInStart(c, x.startIndex1, x.startIndex2, x.point)) return true;
     if (x.kind !== 'basic' && n >= 3) {
       const urmator = x.startIndex2 === dupa(x.startIndex1) ? [x.startIndex1, x.startIndex2]
@@ -286,6 +294,20 @@ function capatInStart(c: Contur, i: number, j: number, x: Punct): boolean {
   const start = c.varfuri[0]?.p, capat = c.varfuri[n - 1]?.p;
   if (c.inchis || n < 3 || !start || !capat || Math.min(i, j) !== 0 || Math.max(i, j) !== n - 2) return false;
   return Math.hypot(capat.x - start.x, capat.y - start.y) <= EPS_ATINGERE && Math.hypot(x.x - start.x, x.y - start.y) <= EPS_ATINGERE;
+}
+
+/**
+ * Punctele de întoarcere ale dus-întorsurilor unei bucăți: două linii consecutive, a doua întoarsă exact în startul primei,
+ * la |d| de cale (banda canelurii cât freza, `laDistanta`).
+ */
+function articulatiiDusIntors(c: Contur, laDistanta: (p: Punct) => boolean): Punct[] {
+  const rez: Punct[] = [];
+  for (let k = 0; k + 2 < c.varfuri.length; k++) {
+    const a = c.varfuri[k] as Varf, b = c.varfuri[k + 1] as Varf, e = c.varfuri[k + 2] as Varf;
+    if (a.s.tip !== 'L' || b.s.tip !== 'L' || Math.hypot(e.p.x - a.p.x, e.p.y - a.p.y) > EPS_ATINGERE) continue;
+    if (laDistanta({ x: (a.p.x + b.p.x) / 2, y: (a.p.y + b.p.y) / 2 })) rez.push(a.p);
+  }
+  return rez;
 }
 
 /** Segmentele i și j sunt două linii în sensuri opuse (traseul dus-întors al canelurii cât freza)? */
@@ -341,6 +363,9 @@ export function curataIntrare(c: Contur): Curatare {
 function curataIesire(c: Contur): Contur {
   return { inchis: c.inchis, varfuri: unesteVarfuri(c.varfuri, EPS_ATINGERE, c.inchis) };
 }
+
+/** Jumătate din banda de lățime a canelurii cât freza (2R ± 1e-4, ADR 0037 §5): abaterea dus-întorsului de la |d|. */
+const BANDA_DUS_INTORS = 5e-5;
 
 /** Cel mult atâtea segmente între cele două care se taie: o buclă locală, nu o parte din traseu. */
 const SEGMENTE_BUCLA = 8;
@@ -904,7 +929,8 @@ function verificaBucati(segmente: readonly SegmentCale[], cale: ConturIndexat, d
   }
   for (let i = 0; i < bucati.length; i++) {
     const a = bucati[i] as Contur;
-    if (seAtingeSingur(a, true)) return 'offsetul a dat o bucată care se atinge singură';
+    const laDistanta = (p: Punct): boolean => Math.abs(distantaIndexata(p, cale, ad + 1) - ad) <= BANDA_DUS_INTORS;
+    if (seAtingeSingur(a, { laDistanta })) return 'offsetul a dat o bucată care se atinge singură';
     for (let j = i + 1; j < bucati.length; j++) if (seAtingIntreEle(a, bucati[j] as Contur)) return 'offsetul a dat două bucăți care se ating';
   }
   return null;
