@@ -353,4 +353,17 @@ test('pânza (§12): săgeata stă în vârful 0, în sensul desenului — linia
   assert.ok(s && Math.abs(s.x - 160) < 1e-9 && Math.abs(s.y - 60) < 1e-9 && Math.abs(s.ux - 5 / Math.sqrt(61)) < 1e-12);
   // Calea deschisă se desenează fără Z (fără linia de închidere).
   assert.ok(!cuSageata[0]?.cale.some((k) => k.t === 'Z'));
+  // Liniuța: partea frezei pe foaie, față de săgeată (recenzia B, ADR 0037 §12): stânga = 1, dreapta = −1; sub o oglindire
+  // a grupului, partea pe foaie se inversează, cu aceeași funcție ca în CAM.
+  assert.equal(s?.parte, 1);
+  const cuLatura = (latura: 'stanga' | 'dreapta', a: number) => ({
+    ...doc,
+    piese: doc.piese.map((q) => ({
+      ...q,
+      radacina: { ...q.radacina, matrice: { ...q.radacina.matrice, a } },
+      operatii: q.operatii.map((o) => (o.id === 'deschise' ? { ...o, latura } : o)),
+    })),
+  });
+  const parte = (latura: 'stanga' | 'dreapta', a: number) => listaDesen(cuLatura(latura, a)).find((f) => f.sageata)?.sageata?.parte;
+  assert.deepEqual([parte('stanga', 1), parte('dreapta', 1), parte('stanga', -1), parte('dreapta', -1)], [1, -1, -1, 1]);
 });

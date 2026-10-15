@@ -235,6 +235,11 @@ function directieLaCapat(a: Punct, b: Punct, s: Varf['s'], la: 0 | 1): Punct {
  * (suprapunerile, întoarcerile, intersecțiile depărtate) rămân refuzate. Pe o cale deschisă la fel, fără perechea
  * ultim–prim (ADR 0037 §5).
  *
+ * La fel, o „suprapunere” raportată între doi vecini care merg înainte (sub 90°): doi vecini care merg înainte au în comun
+ * doar vârful, deci suprapunerea e testul de paralelism nenormalizat al lui cavalier pe două coarde aproape coliniare
+ * (recenzia B: un arc de 270° din coarde de 0,015 mm era refuzat cu „se atinge singură”, deși nu se atinge). Un vecin
+ * care se întoarce peste celălalt (peste 90°) rămâne atingere.
+ *
  * `iesireDeschisa` (doar bucățile offsetului deschis, ADR 0037 §5, „Atingerile”), două atingeri nu sunt atingeri:
  * - o suprapunere a două linii în sensuri opuse: traseul dus-întors al canelurii cât freza;
  * - capătul bucății în startul ei: freza ocolește o cameră cu gura mai îngustă decât D și se întoarce de unde a plecat
@@ -248,6 +253,16 @@ function seAtingeSingur(c: Contur, iesireDeschisa = false): boolean {
   laCavalier(c).visitSelfIntersectsOpt((x) => {
     if (iesireDeschisa && x.kind !== 'basic' && suprapunereDusIntors(c, x.startIndex1, x.startIndex2)) return true;
     if (iesireDeschisa && x.kind === 'basic' && capatInStart(c, x.startIndex1, x.startIndex2, x.point)) return true;
+    if (x.kind !== 'basic' && n >= 3) {
+      const urmator = x.startIndex2 === dupa(x.startIndex1) ? [x.startIndex1, x.startIndex2]
+        : x.startIndex1 === dupa(x.startIndex2) ? [x.startIndex2, x.startIndex1] : null;
+      const a = urmator ? c.varfuri[urmator[0] as number] : undefined, v = urmator ? c.varfuri[urmator[1] as number] : undefined;
+      const b = urmator ? c.varfuri[dupa(urmator[1] as number)] : undefined;
+      if (a && v && b) {
+        const ti = directieLaCapat(a.p, v.p, a.s, 1), to = directieLaCapat(v.p, b.p, v.s, 0);
+        if (ti.x * to.x + ti.y * to.y > 0) return true;
+      }
+    }
     if (x.kind === 'basic' && n >= 3) {
       const urmator = x.startIndex2 === dupa(x.startIndex1) ? [x.startIndex1, x.startIndex2]
         : x.startIndex1 === dupa(x.startIndex2) ? [x.startIndex2, x.startIndex1] : null;
@@ -516,6 +531,19 @@ const INJUMATATIRI = 40;
 /** Un picior mai aproape de atât de capătul segmentului (mm) cade în vârf. */
 const LA_VARF = 1e-9;
 const NU_INCAPE = 'scula nu încape pe partea cerută';
+/**
+ * O frângere a căii sub atât (rad) e mers drept pentru parte: evantaiul ei ar avea |d| · 1e-6 mm, sub rezoluție. Recenzia
+ * B: joncțiunile tangente ale biarcelor ies, departe de origine, cu frângeri de zgomot (~1e-12 rad), iar semnul lor nu
+ * spune nimic despre partea punctului.
+ */
+const COTITURA_DREAPTA = 1e-6;
+/** Toleranța capetelor pe deschis: cea a lui cavalier (`posEqualEps` implicit), ca intrarea verificată să fie cea decalată. */
+const EPS_POZITIE_CAVALIER = 1e-5;
+/**
+ * Plafonul eșantioanelor ideale ale verificării (ADR 0037 „Limitele”, timpul): ~200 m de cale la 0,05 mm, ~1,5 s pe firul
+ * principal. Peste el, refuz cu motiv: o cale atât de lungă își așteaptă calculul în worker.
+ */
+const PLAFON_ESANTIOANE = 4_000_000;
 
 /**
  * O porțiune a căii pe care freza n-o atinge (ADR 0037 §5, `neatins`): punctele ei ideale nu sunt valide. `de` și `pana`
@@ -637,8 +665,10 @@ function corectFataDe(p: Punct, pc: Picior, segmente: readonly SegmentCale[], d:
     const inainte = segmente[laStart ? pc.i - 1 : pc.i] as SegmentCale, dupa = segmente[laStart ? pc.i : pc.i + 1] as SegmentCale;
     const tIn = directieLaCapat(inainte.a, inainte.b, inainte.s, 1), tOut = directieLaCapat(dupa.a, dupa.b, dupa.s, 0);
     const cotitura = cruce(tIn, tOut);
-    // Fără cotitură (mersul continuă drept), piciorul e pe normală: ca în interiorul segmentului.
-    if (Math.abs(cotitura) <= 1e-12 && scalar(tIn, tOut) > 0) return semn * cruce(tIn, w) > 0;
+    // Mers (aproape) drept: piciorul e pe normală, iar partea o dă normala medie, nu semnul unei frângeri de zgomot.
+    if (Math.abs(Math.atan2(cotitura, scalar(tIn, tOut))) <= COTITURA_DREAPTA) {
+      return semn * (-(tIn.y + tOut.y) * w.x + (tIn.x + tOut.x) * w.y) > 0;
+    }
     // Evantaiul e de partea convexă: în stânga la o cotitură spre dreapta, și invers.
     return cotitura * semn < 0;
   }
@@ -684,7 +714,7 @@ function acoperire(segmente: readonly SegmentCale[], cale: ConturIndexat, d: num
   };
   for (let i = 0; i < segmente.length; i++) {
     const g = segmente[i] as SegmentCale;
-    const m = Math.max(1, Math.ceil(g.lungime / PAS_ACOPERIRE));
+    const m = Math.max(1, Math.ceil(lungimeIdeala(g, d) / PAS_ACOPERIRE));
     let tPrec = 0;
     let validPrec: boolean | null = null;
     for (let k = 0; k <= m; k++) {
@@ -732,6 +762,60 @@ function acoperire(segmente: readonly SegmentCale[], cale: ConturIndexat, d: num
   };
 }
 
+/**
+ * Lungimea idealului unui segment: pe un arc, a cercului decalat (|r − d · semnul baleiajului| · |baleiaj|), care poate fi
+ * mult mai lung decât arcul (R ≪ |d|, convex dinspre sculă). Pasul de 0,05 mm se ia pe ideal (recenzia B: pe un arc R0,05
+ * cu d = 12,5, eșantioanele cădeau la 9 mm unul de altul și un gol de traseu trecea).
+ */
+function lungimeIdeala(g: SegmentCale, d: number): number {
+  if (g.s.tip !== 'A') return g.lungime;
+  const { raza, baleiaj } = cerculArcului(g.a, g.b, g.s.bulge);
+  return Math.max(g.lungime, Math.abs(raza - d * Math.sign(baleiaj)) * Math.abs(baleiaj));
+}
+
+/** Câte eșantioane ideale cere verificarea: segmentele (pe ideal) și evantaiele colțurilor convexe dinspre sculă. */
+function esantioaneIdeale(segmente: readonly SegmentCale[], d: number): number {
+  let n = 0;
+  for (let i = 0; i < segmente.length; i++) {
+    const g = segmente[i] as SegmentCale;
+    n += Math.ceil(lungimeIdeala(g, d) / PAS_ACOPERIRE) + 1;
+    const urm = segmente[i + 1];
+    if (!urm) continue;
+    const tIn = directieLaCapat(g.a, g.b, g.s, 1), tOut = directieLaCapat(urm.a, urm.b, urm.s, 0);
+    n += Math.ceil((Math.abs(d) * Math.abs(Math.atan2(cruce(tIn, tOut), scalar(tIn, tOut)))) / PAS_ACOPERIRE);
+  }
+  return n;
+}
+
+/** Tangenta unitară a segmentului la mijlocul lui, în sensul mersului. */
+function tangentaLaMijloc(a: Punct, b: Punct, s: Segment): Punct {
+  if (s.tip !== 'A') {
+    const l = Math.hypot(b.x - a.x, b.y - a.y);
+    return { x: (b.x - a.x) / l, y: (b.y - a.y) / l };
+  }
+  const { start, baleiaj } = cerculArcului(a, b, s.bulge);
+  const u = start + baleiaj / 2, semn = Math.sign(baleiaj);
+  return { x: -Math.sin(u) * semn, y: Math.cos(u) * semn };
+}
+
+/** Tangenta căii în piciorul dat: pe segment, a lui; într-un vârf din interior, suma celor două (bisectoarea mersului). */
+function tangentaCaii(pc: Picior, segmente: readonly SegmentCale[]): Punct {
+  const g = segmente[pc.i] as SegmentCale;
+  const laStart = pc.t * g.lungime <= LA_VARF, laFinal = (1 - pc.t) * g.lungime <= LA_VARF;
+  if (laStart && pc.i > 0) {
+    const p = segmente[pc.i - 1] as SegmentCale;
+    const u = directieLaCapat(p.a, p.b, p.s, 1), v = directieLaCapat(g.a, g.b, g.s, 0);
+    return { x: u.x + v.x, y: u.y + v.y };
+  }
+  if (laFinal && pc.i + 1 < segmente.length) {
+    const nx = segmente[pc.i + 1] as SegmentCale;
+    const u = directieLaCapat(g.a, g.b, g.s, 1), v = directieLaCapat(nx.a, nx.b, nx.s, 0);
+    return { x: u.x + v.x, y: u.y + v.y };
+  }
+  const { n } = laFractiune(g, pc.t);
+  return { x: n.y, y: -n.x };
+}
+
 /** Punctul căii la poziția s (mm pe curbă, de la vârful 0). */
 function peCale(segmente: readonly SegmentCale[], s: number): Punct {
   for (const g of segmente) if (s <= g.s0 + g.lungime) return laFractiune(g, Math.max(0, (s - g.s0) / g.lungime)).p;
@@ -757,9 +841,12 @@ function curataIntrareDeschisa(c: Contur): Curatare {
   const n = c.varfuri.length;
   // Segmentul ultimului vârf nu există (ADR 0001): rămâne linie, oricum ar fi scris.
   const plate = c.varfuri.map((v, i) => (i === n - 1 || (v.s.tip === 'A' && Math.abs(v.s.bulge) < BULGE_MINIM) ? { p: v.p, s: LINIE } : v));
-  const varfuri = scoateVarfuriPeLatura(unesteVarfuri(imparteArceMari(plate, false), EPS_ATINGERE, false), false);
+  // Segmentele sub toleranța de poziție a lui cavalier (1e-5 mm) se unesc, cu capetele nemutate: cavalier le șterge oricum
+  // înainte de decalare, iar verificarea trebuie să judece aceeași cale (recenzia B: o codiță de 2e-6 mm la capăt, lăsată
+  // de rotunjirea unui SVG, dădea refuzuri false).
+  const varfuri = scoateVarfuriPeLatura(unesteVarfuri(imparteArceMari(plate, false), EPS_POZITIE_CAVALIER, false), false);
   const [v0, v1] = varfuri;
-  if (!v0 || !v1 || (varfuri.length === 2 && lungime(v0.p, v1.p, v0.s) < EPS_ATINGERE)) {
+  if (!v0 || !v1 || (varfuri.length === 2 && lungime(v0.p, v1.p, v0.s) < EPS_POZITIE_CAVALIER)) {
     return { ok: false, motiv: 'calea are mai puțin de două vârfuri distincte' };
   }
   const curat: Contur = { inchis: false, varfuri };
@@ -802,6 +889,17 @@ function verificaBucati(segmente: readonly SegmentCale[], cale: ConturIndexat, d
         return `offsetul a dat un punct la ${dist.toFixed(4)} mm de cale, nu la ${ad} mm`;
       }
       if (!peParteaCeruta(p, segmente, cale.index, d)) return `offsetul a dat un punct pe partea greșită a căii (${p.x.toFixed(3)}, ${p.y.toFixed(3)})`;
+    }
+    // Sensul (recenzia B): fiecare segment merge în sensul desenului față de cel puțin unul din picioarele mijlocului lui
+    // (la egalitate, ca dus-întorsul canelurii cât freza). Profilul întoarce bucățile după tabelul sensului (§6) presupunând
+    // asta; o bucată întoarsă s-ar tăia tăcut în sensul opus.
+    for (let i = 0; i < numarSegmente(c); i++) {
+      const g = segment(c, i);
+      const mp = mijloc(g.a, g.b, g.s), tau = tangentaLaMijloc(g.a, g.b, g.s);
+      const picioare = picioarePeCale(mp, segmente, cale.index, ad + TOLERANTA_DISTANTA);
+      if (!picioare.some((pc) => scalar(tau, tangentaCaii(pc, segmente)) > 0)) {
+        return `offsetul a dat o bucată în sens invers față de desen (lângă ${mp.x.toFixed(3)}, ${mp.y.toFixed(3)})`;
+      }
     }
   }
   for (let i = 0; i < bucati.length; i++) {
@@ -868,6 +966,11 @@ export function offsetDeschis(contur: Contur, distanta: number): RezultatOffsetD
   try {
     const intrare = curataIntrareDeschisa(contur);
     if (!intrare.ok) return intrare;
+    const segmente = segmenteCale(intrare.contur);
+    if (esantioaneIdeale(segmente, Math.abs(distanta) + PAS_REINCERCARE) > PLAFON_ESANTIOANE) {
+      const metri = segmente.reduce((s, g) => s + g.lungime, 0) / 1000;
+      return { ok: false, motiv: `calea e prea lungă pentru verificarea offsetului pe firul principal (${metri.toFixed(1)} m de cale; cel mult ~${(PLAFON_ESANTIOANE * PAS_ACOPERIRE / 1e6).toFixed(0)} m de traseu verificat): calculul în worker vine mai târziu` };
+    }
     const prima = incearcaDeschis(intrare.contur, distanta);
     if (prima.ok || prima.motiv === NU_INCAPE) return prima;
     const aDoua = incearcaDeschis(intrare.contur, distanta + Math.sign(distanta) * PAS_REINCERCARE);

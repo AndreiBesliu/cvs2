@@ -3,6 +3,7 @@ import { cerculArcului, numarSegmente, segment, type Contur } from '../geom/cont
 import type { Document } from '../model/document.ts';
 import { conturElement } from '../model/forme.ts';
 import { elementeFoaie, taieturiFoaie } from '../model/lume.ts';
+import { oglindeste, parteaLume } from '../model/parte.ts';
 
 /**
  * Documentul → lista de desen a pânzei: fiecare element, cu conturul lui exact, scris ca o cale (linii, arce cu centru și
@@ -52,15 +53,22 @@ export function directiaDeStart(c: Contur): { readonly ux: number; readonly uy: 
 
 /**
  * Formele primei foi: fiecare element în lume, cu id-ul lui în lume (`<instanță>/<element>`). O cale deschisă tăiată pe
- * o parte (stânga / dreapta) primește săgeata de sens: vârful 0 și direcția desenului acolo, în lume. Pe linie, sensul nu
- * schimbă tăietura, deci săgeata nu apare (decizia owner-ului, 13.10; ADR 0037 §12).
+ * o parte (stânga / dreapta) primește săgeata de sens: vârful 0 și direcția desenului acolo, în lume, plus partea frezei pe
+ * foaie (cu aceeași funcție ca CAM-ul, deci corectă și sub oglindire), pentru liniuță. Pe linie, sensul nu schimbă
+ * tăietura, deci săgeata nu apare (decizia owner-ului, 13.10; ADR 0037 §12).
  */
 export function listaDesen(doc: Document): FormaDesen[] {
-  const peOParte = new Set(taieturiFoaie(doc, 0).filter((t) => t.latura === 'stanga' || t.latura === 'dreapta').map((t) => t.idLume));
+  const parti = new Map<string, 1 | -1>();
+  for (const t of taieturiFoaie(doc, 0)) {
+    if ((t.latura === 'stanga' || t.latura === 'dreapta') && !parti.has(t.idLume)) {
+      parti.set(t.idLume, parteaLume(t.latura, oglindeste(t.matrice)) === 'stanga' ? 1 : -1);
+    }
+  }
   return elementeFoaie(doc, 0).map((e) => {
     const c = conturElement(e);
     const p = c.varfuri[0]?.p;
-    const d = !c.inchis && p && peOParte.has(e.idLume) ? directiaDeStart(c) : null;
-    return d && p ? { id: e.idLume, cale: caleContur(c), sageata: { x: p.x, y: p.y, ...d } } : { id: e.idLume, cale: caleContur(c) };
+    const parte = parti.get(e.idLume);
+    const d = !c.inchis && p && parte ? directiaDeStart(c) : null;
+    return d && p && parte ? { id: e.idLume, cale: caleContur(c), sageata: { x: p.x, y: p.y, ...d, parte } } : { id: e.idLume, cale: caleContur(c) };
   });
 }

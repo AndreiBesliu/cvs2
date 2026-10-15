@@ -1602,3 +1602,13 @@ dreapta pe un rând cu o singură cale deschisă, cu Sens activ; săgeata de sen
 hârtie (`cam.parte.test.ts`: hârtiile 1, 3, 4, 9–12, cârligul, U-ul, despărțirea, sensul pe modelul așchiei), un e2e
 nou (linia pe stânga: G-code-ul la Y53 și săgeata). 6 075 de teste unitare, e2e 60 / 60, pornirea 96,2 kB. **Nepublicat
 pe test** până la poarta amendată (ADR 0037, „Ordinea lucrului”).
+**Recenzia B (2.3c-4 și 2.3c-5; 2 lentile + 2 verificatori, 1,12 M, 64 min):** 7 constatări confirmate, toate reparate,
+fiecare cu testul ei: (1) frângerile de zgomot (~1e-12 rad) la joncțiunile tangente ale biarcelor erau luate drept colțuri:
+o curbă S din SVG, departe de origine (X 2500), era refuzată fals cu „partea greșită” până la 48 % din cazuri; acum sub 1e-6
+rad e mers drept, iar partea vine din normala medie; (2) o codiță de 1e-6…1e-5 mm la capăt (rotunjirea unui SVG): curățarea
+pe deschis unește acum la toleranța lui cavalier (1e-5); (3) acoperirea eșantionează arcele pe lungimea idealului (pe un arc
+R0,05 cu d = 12,5 trecea un gol de 9 mm); (4) sensul bucăților se verifică (o bucată întoarsă s-ar fi tăiat în sensul
+opus); (5) poliliniile fine nu mai sunt refuzate cu „se atinge singură” (suprapunerea raportată de cavalier între vecini
+care merg înainte); (6) plafonul verificării (~200 m de traseu), cu refuz explicit; (7) liniuța pe partea frezei, lângă
+săgeată (ADR 0037 §12), din aceeași funcție ca CAM-ul (`src/model/parte.ts`), corectă sub oglindire. 2 constatări
+infirmate de verificator (comportamente cerute de contract). 6 082 de teste unitare.

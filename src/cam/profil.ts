@@ -1,5 +1,6 @@
 import { inverseaza, type Contur } from '../geom/contur.ts';
 import { offsetDeschis, offsetInchis, type PortiuneNeatinsa } from '../geom/offset.ts';
+import { parteaLume } from '../model/parte.ts';
 
 /**
  * Profilul: conturul decalat cu raza sculei, pe exterior sau pe interior, sau chiar linia, pe treceri de adâncime, în
@@ -31,10 +32,6 @@ export type RezultatProfil =
   | { readonly ok: true; readonly treceri: readonly Trecere[]; readonly neatins: readonly PortiuneNeatinsa[] }
   | { readonly ok: false; readonly motiv: string };
 
-/** Partea sculei pe foaie: latura, inversată sub o oglindire (ADR 0037 §3). */
-export function parteaLume(latura: 'stanga' | 'dreapta', oglindit: boolean): 'stanga' | 'dreapta' {
-  return (latura === 'stanga') !== oglindit ? 'stanga' : 'dreapta';
-}
 
 const pozitivFinit = (x: number): boolean => Number.isFinite(x) && x > 0;
 

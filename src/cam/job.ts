@@ -1,4 +1,5 @@
 import { esteCaleDeschisa, type Document } from '../model/document.ts';
+import { oglindeste } from '../model/parte.ts';
 import { conturDeTaiat } from './contur.ts';
 import { judecaDeschisa, NEATINS_PESTE_D, refuzDeschise } from './deschise.ts';
 import { conturElement } from '../model/forme.ts';
@@ -105,7 +106,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   // (ADR 0037 §3), partea pe foaie se inversează sub o matrice care oglindește.
   const profile = taieturi.map((u) => profil(conturDe(u), {
     latura: u.latura, sens: u.sens, diametruScula: scula.diametru, adancime: u.adancime, pas: u.pas,
-    oglindit: u.matrice.a * u.matrice.d - u.matrice.b * u.matrice.c < 0,
+    oglindit: oglindeste(u.matrice),
   }));
   // Pereții (ADR 0037 §10): calea fiecărei tăieturi pe o parte; muchia ei se promite, deci niciun disc nu vine mai aproape
   // de R − ε de ea, nici al profilelor, nici al altor tăieturi pe o parte.

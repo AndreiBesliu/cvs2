@@ -16,12 +16,13 @@ export type ComandaCale =
 
 /**
  * O formă de desenat. `sageata` (ADR 0037 §12): pe o cale deschisă, vârful 0 și direcția de mers a desenului acolo (un
- * vector unitar, în mm ai documentului); pânza desenează săgeata doar când forma e în selecție.
+ * vector unitar, în mm ai documentului); pânza desenează săgeata doar când forma e în selecție. `parte`: partea frezei pe
+ * foaie, față de direcția săgeții (1 = în stânga, −1 = în dreapta), pentru liniuța de lângă ea.
  */
 export type FormaDesen = {
   readonly id: string;
   readonly cale: readonly ComandaCale[];
-  readonly sageata?: { readonly x: number; readonly y: number; readonly ux: number; readonly uy: number };
+  readonly sageata?: { readonly x: number; readonly y: number; readonly ux: number; readonly uy: number; readonly parte?: 1 | -1 };
 };
 
 /** Vederea: câți pixeli CSS are un milimetru și unde cade originea documentului pe ecran (pixeli CSS). */

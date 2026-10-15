@@ -73,6 +73,16 @@ function deseneaza(): void {
       g.closePath();
       g.fillStyle = c.culori.selectie;
       g.fill();
+      // Liniuța pe partea frezei (ADR 0037 §12): perpendiculară pe mers, de la baza săgeții, cât săgeata.
+      if (s0.parte) {
+        const nx = -s0.uy * s0.parte, ny = s0.ux * s0.parte;
+        g.beginPath();
+        g.moveTo(s0.x + nx * b * 1.5, s0.y + ny * b * 1.5);
+        g.lineTo(s0.x + nx * (b * 1.5 + l), s0.y + ny * (b * 1.5 + l));
+        g.lineWidth = 2 / s;
+        g.strokeStyle = c.culori.selectie;
+        g.stroke();
+      }
       sageti++;
     }
     g.restore();

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { conturFaraCubice } from '../../src/geom/biarce.ts';
-import { arc, cerculArcului, LINIE, segment, type Contur, type Punct, type Varf } from '../../src/geom/contur.ts';
+import { arc, cerculArcului, inverseaza, LINIE, segment, type Contur, type Punct, type Varf } from '../../src/geom/contur.ts';
 import { distantaLaContur } from '../../src/geom/distanta.ts';
 import { offsetDeschis, verificaIesireDeschisa, type RezultatOffsetDeschis } from '../../src/geom/offset.ts';
 
@@ -244,7 +244,16 @@ test('verificarea ieșirii prinde, fiecare singură: partea greșită, atingeril
   assert.match(problema([linii([10, 53], [110, 53]), linii([30, 47], [90, 47])]) ?? '', /partea greșită/);
   // Două bucăți suprapuse pe aceeași parte; apoi o bucată care se suprapune pe ea însăși în același sens.
   assert.match(problema([linii([10, 53], [110, 53]), linii([50, 53], [60, 53])]) ?? '', /se ating/);
-  assert.match(problema([linii([10, 53], [70, 53], [40, 53], [110, 53])]) ?? '', /se atinge singură/);
+  // Întoarsă pe drum, o bucată merge în sens invers (verificarea sensului, recenzia B).
+  assert.match(problema([linii([10, 53], [70, 53], [40, 53], [110, 53])]) ?? '', /sens invers/);
+  // Bucla camerei (canalul cu strangulare) prelungită înainte peste propriul start: totul merge înainte, la |d|, pe partea
+  // cerută, dar bucata se suprapune pe ea însăși; doar verificarea atingerilor o prinde.
+  const canal = linii([0, 0], [100, 0], [100, 10], [52, 10], [52, 4], [48, 4], [48, 10], [0, 10]);
+  const rc = bun(offsetDeschis(canal, 3));
+  const bucla = rc.bucati[1] as Contur;
+  const prelungita: Contur = { inchis: false, varfuri: [...bucla.varfuri, { p: { x: 56, y: 3 }, s: LINIE }] };
+  assert.equal(verificaIesireDeschisa(canal, 3, [rc.bucati[0] as Contur, bucla]).problema, null);
+  assert.match(verificaIesireDeschisa(canal, 3, [rc.bucati[0] as Contur, prelungita]).problema ?? '', /se atinge singură/);
   // Jumătate de traseu: acoperirea lipsește chiar după capătul bucății.
   assert.match(problema([linii([10, 53], [60, 53])]) ?? '', /^offsetul a eșuat lângă \(60\.0\d\d, 50\.000\)$/);
   // Ieșirea goală, cu puncte ideale valide: nu e „nu încape”.
@@ -290,4 +299,66 @@ test('zig-zag-ul sub sculă: bucata pornește unde cercul startului taie cercul 
   assert.ok(dist(aproapeEgal, 1) - dist(aproapeEgal, 0) > 5e-10, 'mai aproape de start');
   assert.equal(verificaIesireDeschisa(z, -3, [aproapeEgal]).problema, null);
   assert.match(verificaIesireDeschisa(z, -3, [mutat(1e-3)]).problema ?? '', /partea greșită/);
+});
+
+// ── Recenzia B (15.10): constatările confirmate, fiecare cu cazul ei ─────────────────────────────────────────────────
+
+test('recenzia B, 1: o frângere de zgomot la joncțiunea tangentă (δ până la 1e-10 rad) e mers drept, pe ambele părți', () => {
+  for (const delta of [0, 1e-13, 2e-12, 1e-11, -1e-10, 5e-8]) {
+    const capat = { x: 50 + 20 * Math.cos(delta) - 20 * Math.sin(delta), y: 20 * Math.sin(delta) + 20 * Math.cos(delta) };
+    const c: Contur = { inchis: false, varfuri: [{ p: { x: 0, y: 0 }, s: LINIE }, { p: { x: 50, y: 0 }, s: arc(Math.tan(Math.PI / 8)) }, { p: capat, s: LINIE }] };
+    for (const d of [3, -3]) assert.ok(offsetDeschis(c, d).ok, `δ = ${delta}, d = ${d}: ${JSON.stringify(offsetDeschis(c, d))}`);
+  }
+});
+
+test('recenzia B, 1: curba S din biarce, departe de origine (X 2500, Y 1200), pe ambele părți', () => {
+  const cub: Contur = { inchis: false, varfuri: [{ p: { x: 2510, y: 1210 }, s: { tip: 'C', c1: { x: 2540, y: 1185 }, c2: { x: 2540, y: 1250 } } }, { p: { x: 2570, y: 1225 }, s: LINIE }] };
+  const b = conturFaraCubice(cub, 0.001);
+  assert.ok(b.ok);
+  if (b.ok) for (const d of [3, -3]) assert.ok(offsetDeschis(b.contur, d).ok, `d = ${d}`);
+});
+
+test('recenzia B, 2: o codiță de 1e-6 … 1e-5 mm la un capăt (rotunjirea unui SVG) nu mai dă refuz fals', () => {
+  for (const e of [1.2e-6, 2e-6, 3e-6, 8e-6]) {
+    for (const u of [30, -70, 120]) {
+      const r = (u * Math.PI) / 180;
+      const laCapat = linii([0, 0], [50, 0], [50 + e * Math.cos(r), e * Math.sin(r)]);
+      const laStart = linii([-e * Math.cos(r), -e * Math.sin(r)], [0, 0], [50, 0]);
+      for (const c of [laCapat, laStart]) for (const d of [3, -3]) assert.ok(offsetDeschis(c, d).ok, `e = ${e}, ${u}°, d = ${d}`);
+    }
+  }
+});
+
+test('recenzia B, 3: pe un arc mic cu freză mare, acoperirea se eșantionează pe ideal: golul de 46°–89° e prins', () => {
+  const c: Contur = { inchis: false, varfuri: [{ p: { x: 0.05, y: 0 }, s: arc(1) }, { p: { x: -0.05, y: 0 }, s: LINIE }] };
+  const R = 12.55;
+  const pe = (u: number): Punct => ({ x: R * Math.cos((u * Math.PI) / 180), y: R * Math.sin((u * Math.PI) / 180) });
+  const bucata = (u0: number, u1: number): Contur => ({ inchis: false, varfuri: [{ p: pe(u0), s: arc(Math.tan(((u1 - u0) * Math.PI) / 720)) }, { p: pe(u1), s: LINIE }] });
+  assert.equal(verificaIesireDeschisa(c, -12.5, [bucata(0, 180)]).problema, null);
+  assert.match(verificaIesireDeschisa(c, -12.5, [bucata(0, 46), bucata(89, 180)]).problema ?? '', /^offsetul a eșuat lângă/);
+});
+
+test('recenzia B, 4: o bucată întoarsă (în sensul opus desenului) e refuzată, nu tăiată în sensul greșit', () => {
+  const L = linii([0, 0], [60, 0], [60, 40]);
+  const r = bun(offsetDeschis(L, -3));
+  assert.equal(verificaIesireDeschisa(L, -3, r.bucati).problema, null);
+  assert.match(verificaIesireDeschisa(L, -3, r.bucati.map(inverseaza)).problema ?? '', /sens invers/);
+});
+
+test('recenzia B, 5: polilinia fină (arcul R15 de 270° din coarde de 0,015 mm) nu mai e refuzată cu „se atinge singură”', () => {
+  const n = Math.round((15 * 1.5 * Math.PI) / 0.015);
+  const c: Contur = { inchis: false, varfuri: Array.from({ length: n + 1 }, (_, k) => ({ p: { x: 15 * Math.cos((1.5 * Math.PI * k) / n), y: 15 * Math.sin((1.5 * Math.PI * k) / n) }, s: LINIE })) };
+  for (const d of [0.5, -1.5]) {
+    const r = offsetDeschis(c, d);
+    // Corect, sau defectul cunoscut al lui cavalier pe poliliniile fine („offsetul a eșuat”, ADR 0037 „Limitele”).
+    if (!r.ok) assert.match(r.motiv, /^offsetul a eșuat/, `d = ${d}`);
+  }
+});
+
+test('recenzia B, 6: o cale foarte lungă (semicercul R100 m) e refuzată repede, cu motiv, nu blochează firul principal', () => {
+  const c: Contur = { inchis: false, varfuri: [{ p: { x: 1e5, y: 0 }, s: arc(1) }, { p: { x: -1e5, y: 0 }, s: LINIE }] };
+  const t0 = performance.now();
+  const r = offsetDeschis(c, 3);
+  assert.ok(performance.now() - t0 < 2000);
+  assert.ok(!r.ok && /prea lungă pentru verificarea offsetului/.test(r.motiv), JSON.stringify(r));
 });
