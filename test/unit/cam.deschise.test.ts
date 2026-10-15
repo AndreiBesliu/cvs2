@@ -313,3 +313,44 @@ test('dialogul (§12): o singură cale deschisă oferă pe linie, stânga, dreap
   assert.deepEqual(laturiOferite(2, 2, 'exterior'), ['pe-linie', 'exterior']);
   assert.deepEqual(laturiOferite(0, 1, 'stanga'), ['exterior', 'interior', 'pe-linie', 'stanga']);
 });
+
+// ── Recenzia A (15.10): constatările lentilei CAM și document, fiecare cu cazul recenzentului ───────────────────────────
+
+test('recenzia A, 1: tăietura prin foaie care atinge marginile la MIJLOC (nu la capete) e refuzată nemarcată; marcată, trece', () => {
+  const u = deschisa([150, 115], [3, 100], [297, 100], [150, 85]);
+  const d = peLinie(docDin(F, element('z', u, 0, 0)), 'z', { adancime: 18, pas: 6 });
+  assert.match(refuz(d), /^z\/z: tăietura deschisă prin foaie ajunge la marginea foii/);
+  program(cuOperatie(d, 'z', { despartire: true }));
+});
+
+test('recenzia A, 2: arcul de 340° și linia vecină care îl taie a doua oară închid o bucată: avertismentul „calea se taie singură”', () => {
+  const forma: FormaDoc = {
+    tip: 'cale', inchis: false,
+    varfuri: [{ p: P(0, 0), s: { tip: 'A', bulge: Math.tan((85 * Math.PI) / 180) } }, { p: P(10 - 10 * Math.cos((20 * Math.PI) / 180), 10 * Math.sin((20 * Math.PI) / 180)), s: L }, { p: P(30, 10 * Math.sin((20 * Math.PI) / 180)), s: L }],
+  };
+  const { avertismente } = program(peLinie(docDin(F, element('a', forma, 100, 100)), 'a', { adancime: 18, pas: 6 }));
+  assert.ok(avertismente.some((a) => /^a\/a: bucata închisă de tăietură iese liberă, fără urechi \(calea se taie singură\)$/.test(a)), JSON.stringify(avertismente));
+});
+
+test('recenzia A, 3: „lasoul” cu coada oprită la 2 mm de tulpină (canalele se ating) dă avertismentul bucății libere', () => {
+  const lasou = deschisa([20, 100], [100, 100], [150, 100], [150, 150], [100, 150], [100, 102]);
+  const { avertismente } = program(peLinie(docDin(F, element('l', lasou, 0, 0)), 'l', { adancime: 18, pas: 6 }));
+  assert.ok(avertismente.some((a) => /^l\/l: bucata închisă de tăietură iese liberă, fără urechi \(un capăt la 2\.000 mm de restul căii\)$/.test(a)), JSON.stringify(avertismente));
+  // Coada oprită la 9 mm (peste D + 1): nimic.
+  const departe = deschisa([20, 100], [100, 100], [150, 100], [150, 150], [100, 150], [100, 109]);
+  assert.deepEqual(program(peLinie(docDin(F, element('l', departe, 0, 0)), 'l', { adancime: 18, pas: 6 })).avertismente, []);
+});
+
+test('recenzia A, 5: un arc cu |bulge| uriaș (cerc aproape întreg pe o coardă de 1e-300) are centrul finit în IR', () => {
+  const forma: FormaDoc = { tip: 'cale', inchis: false, varfuri: [{ p: P(0, 0), s: { tip: 'A', bulge: 1e300 } }, { p: P(1e-300, 0), s: L }, { p: P(10, 0), s: L }] };
+  // În origine: mutată pe foaie, coarda de 1e-300 s-ar contopi în lume (100 + 1e-300 = 100).
+  const { miscari } = program(peLinie(docDin(F, element('b', forma, 0, 0)), 'b'));
+  const arce = miscari.filter((m) => m.tip === 'arc');
+  assert.ok(arce.length >= 1);
+  for (const a of arce) if (a.tip === 'arc') assert.ok(Number.isFinite(a.centru.x) && Number.isFinite(a.centru.y), JSON.stringify(a));
+});
+
+test('recenzia A (ușa SVG, 1): cercul de Ø0,009 trece de ușă pe cutia exactă, deci și CAM-ul îl primește (aceeași măsură)', () => {
+  const d = cuOperatie(docDin(F, element('c', { tip: 'cerc', raza: 0.0045 }, 100, 100)), 'c', { latura: 'exterior', adancime: 3, pas: 3 });
+  program(d);
+});

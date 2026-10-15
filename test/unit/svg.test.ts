@@ -447,3 +447,14 @@ test('recenzia 2.7c: bugetul includerilor (imbricarea și perechile nonzero) opr
   assert.ok(nz.ok && nz.avertismente['nonzero-refuzate'] === 1, JSON.stringify(nz.ok ? nz.avertismente['nonzero-refuzate'] : nz.cod));
   assert.ok(performance.now() - t0 < 20_000, `${performance.now() - t0} ms`);
 });
+
+test('recenzia A (ușa SVG, 4): `departe` se judecă și pe coordonatele piesei (punctul minus colțul cutiei), cu mânerele', () => {
+  // Fiecare capăt e sub plafonul translației (1e7), dar în piesă al doilea ajunge la 1,8e7: refuzat la ușă, cu motivul lui.
+  const linie = citeste(pagina('<line x1="-9000000" y1="10" x2="9000000" y2="10" stroke="black"/>'));
+  assert.ok(!linie.ok && linie.cod === 'departe', JSON.stringify(linie).slice(0, 200));
+  // Mânerul unei cubice la 9,99e6, cu startul la −3e6: în piesă, mânerul ajunge la 1,299e7 (cutia e a curbei).
+  const cubica = citeste(pagina('<path d="M-3000000 0 C9990000 0 0 10 10 10"/>'));
+  assert.ok(!cubica.ok && cubica.cod === 'departe', JSON.stringify(cubica).slice(0, 200));
+  // Martorul: ±4e6 trece.
+  assert.ok(citeste(pagina('<line x1="-4000000" y1="10" x2="4000000" y2="10" stroke="black"/>')).ok);
+});

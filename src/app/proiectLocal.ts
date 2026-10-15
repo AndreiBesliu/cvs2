@@ -50,6 +50,11 @@ export type ProiectDeschis =
   | { readonly mod: 'doar-citire'; readonly doc: Document | null; readonly urmareste: (u: Urmarire) => () => void }
   /** Proiectul salvat nu s-a putut deschide; fila lucrează în memorie, fără să-l acopere. */
   | { readonly mod: 'nu-se-deschide'; readonly motiv: string }
+  /**
+   * Proiectul salvat n-a putut fi citit ACUM (ușa de încărcare n-a venit: rețeaua, o versiune nouă a aplicației; sau baza
+   * n-a răspuns la timp): fila lucrează în memorie, fără să-l acopere, iar o reîncărcare îl aduce (recenzia A).
+   */
+  | { readonly mod: 'necitit-acum'; readonly motiv: string }
   /** Browserul nu dă memorie locală (fereastră privată, date blocate), sau deschiderea a eșuat. */
   | { readonly mod: 'fara-memorie'; readonly motiv: string };
 
@@ -98,7 +103,7 @@ const usaLaCerere = (): Promise<Usa> => import('../model/incarcare.ts').then((m)
  * O ușă care nu s-a putut aduce aruncă: deschiderea cade pe „fără memorie”, cu motivul, nu pe un proiect gol.
  */
 async function documentDin(
-  v: Versiune | null, usa: Promise<Usa>,
+  v: Versiune | null, usa: () => Promise<Usa>,
 ): Promise<{ readonly ok: true; readonly doc: Document | null } | { readonly ok: false; readonly motiv: string }> {
   if (!v) return { ok: true, doc: null };
   if (typeof v.valoare !== 'string') return { ok: false, motiv: 'versiunea salvată nu e text' };
@@ -108,7 +113,7 @@ async function documentDin(
   } catch {
     return { ok: false, motiv: 'textul salvat nu e JSON' };
   }
-  const r = (await usa)(brut);
+  const r = (await usa())(brut);
   return r.ok ? { ok: true, doc: r.doc } : r;
 }
 
@@ -187,10 +192,13 @@ async function deschide(idb: IDBFactory, expirat: () => boolean): Promise<Proiec
   usa.catch(() => undefined);
   const db = await deschideBaza(idb);
   const citita = await citeste(db);
-  const d = await documentDin(citita, usa).catch((e: unknown) => {
+  let d: Awaited<ReturnType<typeof documentDin>>;
+  try {
+    d = await documentDin(citita, () => usa);
+  } catch (e) {
     db.close();
-    throw e;
-  });
+    return { mod: 'necitit-acum', motiv: `ușa de încărcare nu s-a putut aduce (${e instanceof Error ? e.message : String(e)})` };
+  }
   if (!d.ok) {
     db.close();
     return { mod: 'nu-se-deschide', motiv: d.motiv };
@@ -214,10 +222,17 @@ async function deschide(idb: IDBFactory, expirat: () => boolean): Promise<Proiec
       const oprire = new AbortController();
       let blocareTinuta: Blocare | null = null;
       let oprit = false;
+      // Recitirea nu aruncă: o ușă care nu se poate aduce (rețeaua, o versiune nouă a aplicației; browserul ține minte
+      // importul eșuat) devine „necitit”, cu motivul, nu o tăcere (recenzia A: fila rămânea pe versiunea veche, iar la
+      // preluare ținea blocarea de scriitor fără să scrie).
       const reciteste = async (): Promise<{ ok: true; v: Versiune | null; doc: Document | null } | { ok: false; motiv: string }> => {
-        const v = await citeste(db);
-        const r = await documentDin(v, usaLaCerere());
-        return r.ok ? { ok: true, v, doc: r.doc } : r;
+        try {
+          const v = await citeste(db);
+          const r = await documentDin(v, usaLaCerere);
+          return r.ok ? { ok: true, v, doc: r.doc } : r;
+        } catch (e) {
+          return { ok: false, motiv: `proiectul nu s-a putut citi acum (rețeaua sau o versiune nouă a aplicației): reîncarcă pagina (${e instanceof Error ? e.message : String(e)})` };
+        }
       };
       // Revizia pe care fila o are deja: o versiune se dă mai departe o singură dată.
       let revVazuta = citita?.rev ?? null;
@@ -278,6 +293,8 @@ export async function deschideProiect(): Promise<ProiectDeschis> {
       }),
     ]);
   } catch (e) {
+    // Termenul: baza (sau ușa) n-a răspuns la timp. Proiectul poate exista: nu e „browserul fără memorie”.
+    if (expirat) return { mod: 'necitit-acum', motiv: 'deschiderea a depășit timpul' };
     return { mod: 'fara-memorie', motiv: e instanceof Error ? e.message : String(e) };
   } finally {
     clearTimeout(ceas);

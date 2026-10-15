@@ -41,6 +41,8 @@ export const enExport = {
   'export.rampa': 'Ramp',
   'export.intrari': 'Leads',
   'export.colturi': 'Corners',
+  'export.despartire': 'Split',
+  'export.despartire.titlu': 'This cut splits the sheet: it is cut last, after the outsides. You mark it, only on an open path cut through the whole sheet, outside the parts.',
   'export.colturi.titlu': 'Relief for the sharp corners the cutter cannot reach (a mortise for a tenon): dog-bone on the diagonal, T-bone into the longer wall. On the line there is no waste.',
   'export.colturi.fara': '—',
   'export.colturi.dog-bone': 'dog-bone',

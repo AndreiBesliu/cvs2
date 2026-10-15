@@ -12,5 +12,10 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
   const rampa = v === undefined ? o.rampa : v.rampa && o.rampa ? { ...o.rampa, ...v.rampa } : v.rampa;
   const intrari = v === undefined ? o.intrari : v.intrari && o.intrari ? { ...o.intrari, ...v.intrari } : v.intrari;
   const colturi = v === undefined ? o.colturi : v.colturi && o.colturi ? { ...o.colturi, ...v.colturi } : v.colturi;
-  return { ...o, ...(v ?? {}), urechi, rampa, intrari, colturi, scula: { ...o.scula, numar: scula.numar, diametru: scula.diametru } };
+  // Despărțirea (ADR 0037 §8): bifată, `true`; nebifată, câmpul pleacă (lipsă = false), ca un document fără marcaj să rămână
+  // octet cu octet ce era.
+  const { despartire: _vechi, ...rest } = { ...o, ...(v ?? {}), urechi, rampa, intrari, colturi, scula: { ...o.scula, numar: scula.numar, diametru: scula.diametru } };
+  void _vechi;
+  const despartire = v?.despartire ?? o.despartire;
+  return despartire ? { ...rest, despartire: true } : rest;
 }

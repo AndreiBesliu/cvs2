@@ -22,6 +22,11 @@ export type ColturiOperatie = { readonly tip: 'dog-bone' | 't-bone' };
 export type ValoriOperatie = {
   readonly latura: Latura; readonly sens: Sens; readonly adancime: number; readonly pas: number; readonly urechi: UrechiOperatie | null;
   readonly rampa: RampaOperatie | null; readonly intrari: IntrariOperatie | null; readonly colturi: ColturiOperatie | null;
+  /**
+   * Despărțirea foii (ADR 0037 §8, decizia owner-ului din 13.10: o marchează omul): doar pe un rând cu căi deschise; lipsă =
+   * neschimbată. Exportul cere marcajul pe o tăietură deschisă prin foaie care ajunge la marginea foii.
+   */
+  readonly despartire?: boolean;
 };
 
 /**
@@ -102,6 +107,7 @@ type Rand = {
   readonly intrari: boolean; readonly razaIntrare: string;
   /** Degajările: „” = fără. */
   readonly colturi: '' | ColturiOperatie['tip'];
+  readonly despartire: boolean;
 };
 
 /** Raza cu care pornește bifa intrărilor pe un rând care n-avea (ADR 0030 §1). */
@@ -147,6 +153,7 @@ export function DialogExport(
       rampa: inchise && o.valori.rampa !== null, lungimeRampa: text((o.valori.rampa ?? RAMPA_IMPLICITA).lungime),
       intrari: inchise && o.valori.intrari !== null, razaIntrare: text((o.valori.intrari ?? INTRARI_IMPLICITE).raza),
       colturi: inchise ? o.valori.colturi?.tip ?? '' : '',
+      despartire: !inchise && o.valori.despartire === true,
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
@@ -230,7 +237,9 @@ export function DialogExport(
     const intrari = cuIntrari && raza !== null ? { raza } : null;
     // Pe linie, nici degajările (ADR 0032 §6): alegerea e oprită, iar documentul nu le primește.
     const colturi = p.colturi !== '' && p.latura !== 'pe-linie' ? { tip: p.colturi } : null;
-    return [[o.cheie, { latura: p.latura, sens: p.sens, adancime, pas, urechi, rampa, intrari, colturi }] as const];
+    // Despărțirea se scrie doar pe un rând cu căi deschise (pe celelalte, bifa e oprită).
+    const despartire = o.deschise > 0 ? { despartire: p.despartire } : {};
+    return [[o.cheie, { latura: p.latura, sens: p.sens, adancime, pas, urechi, rampa, intrari, colturi, ...despartire }] as const];
   }));
   const fmtFreza = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3 });
   // Motivul spune ce câmp e greșit: valorile operației, urechile, sau amândouă (recenzia feliei 2.4).
@@ -291,6 +300,7 @@ export function DialogExport(
               <th title={t('export.rampa.titlu')}>{t('export.rampa')}</th>
               <th title={t('export.intrari.titlu')}>{t('export.intrari')}</th>
               <th title={t('export.colturi.titlu')}>{t('export.colturi')}</th>
+              <th title={t('export.despartire.titlu')}>{t('export.despartire')}</th>
             </tr>
           </thead>
           <tbody>
@@ -344,12 +354,17 @@ export function DialogExport(
                       <option value="t-bone">{t('export.colturi.t-bone')}</option>
                     </select>
                   </td>
+                  <td>
+                    {/* Despărțirea foii (ADR 0037 §8): doar pe un rând cu căi deschise; o marchează omul, aplicația n-o ghicește. */}
+                    <input type="checkbox" checked={p.despartire} data-camp="despartire" disabled={doarCitire || !deschis} aria-label={t('export.despartire')}
+                      title={t('export.despartire.titlu')} onChange={(ev) => { schimba(o.cheie, { despartire: ev.target.checked }); }} />
+                  </td>
                 </tr>
                 {(p.urechi || p.rampa || (p.intrari && p.latura !== 'pe-linie')) && (
                   // Câmpurile urechilor și ale rampei, pe un rând al lor sub operație: tabelul rămâne îngust.
                   <tr className="detalii" data-detalii={o.cheie}>
                     <td />
-                    <td colSpan={8}>
+                    <td colSpan={9}>
                       <div className="campuri-detalii">
                       {p.urechi && (
                       <div className="campuri-urechi" data-urechi={o.cheie}>

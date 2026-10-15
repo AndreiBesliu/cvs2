@@ -2,7 +2,7 @@ import { plineClosed, plineOpen, StaticAabb2dIndexBuilder, type Polyline } from 
 import {
   LINIE, arc, arieCuSemn, cerculArcului, inSensTrigonometric, numarSegmente, segment, type Contur, type Punct, type Segment, type Varf,
 } from './contur.ts';
-import { CUTIE_GOALA, cuPunct, cutieArc, type Cutie } from './cutie.ts';
+import { CUTIE_GOALA, cuPunct, cutieArc, cutieContur, type Cutie } from './cutie.ts';
 import { distantaLaContur, distantaLaSegment, inRegiune, peArc, RIDICARE_RAZA, traversariSegment } from './distanta.ts';
 import { REZOLUTIE } from './toleranta.ts';
 
@@ -310,6 +310,16 @@ function articulatiiDusIntors(c: Contur, laDistanta: (p: Punct) => boolean): Pun
   return rez;
 }
 
+/**
+ * Calea (deschisă sau închisă) se autointersectează, cu iertarea contactelor false dintre vecini (aceeași regulă ca la
+ * curățarea offsetului). O folosește și avertismentul „bucata liberă” (ADR 0037 §10): două segmente VECINE care se mai
+ * taie o dată, departe de capătul comun (un arc mare și o linie), închid și ele o bucată (recenzia A).
+ */
+export function seAutointersecteaza(c: Contur): boolean {
+  // Cavalier cere arce de cel mult 180°: cele mai mari se împart întâi, fără să schimbe forma.
+  return seAtingeSingur({ inchis: c.inchis, varfuri: imparteArceMari(c.varfuri, c.inchis) });
+}
+
 /** Segmentele i și j sunt două linii în sensuri opuse (traseul dus-întors al canelurii cât freza)? */
 function suprapunereDusIntors(c: Contur, i: number, j: number): boolean {
   const n = c.varfuri.length;
@@ -346,10 +356,11 @@ export function curataIntrare(c: Contur): Curatare {
     return { ok: false, motiv: `conturul nu se poate citi: ${e instanceof Error ? e.message : String(e)}` };
   }
   if (autointersectat) return { ok: false, motiv: 'conturul se autointersectează: nu se poate decala' };
-  // Un contur închis care nu se autointersectează are arie; unul mai mic decât rezoluția nu se poate însă garanta.
-  const xs = varfuri.map((v) => v.p.x);
-  const ys = varfuri.map((v) => v.p.y);
-  if (Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) < REZOLUTIE) {
+  // Un contur închis care nu se autointersectează are arie; unul mai mic decât rezoluția nu se poate însă garanta. Cutia
+  // e cea exactă, cu extremele arcelor: aceeași măsură ca la ușa SVG (ADR 0037 §11, praful; recenzia A: un cerc de
+  // Ø0,009 trecea de import pe cutia exactă, iar aici, pe cutia vârfurilor, refuza tot exportul).
+  const cutie = cutieContur(curat);
+  if (Math.hypot(cutie.maxX - cutie.minX, cutie.maxY - cutie.minY) < REZOLUTIE) {
     return { ok: false, motiv: `conturul e mai mic decât rezoluția declarată (${REZOLUTIE} mm)` };
   }
   return { ok: true, contur: curat };

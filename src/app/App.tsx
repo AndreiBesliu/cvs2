@@ -137,6 +137,7 @@ function mesajProiect(mod: ModFila, p: ProiectDeschis, motivNecitit: string): st
   if (mod === 'doar-citire') return t('depozit.doar-citire');
   if (mod === 'conflict') return t('depozit.conflict');
   if (mod === 'fara-memorie') return t('depozit.fara-memorie');
+  if (mod === 'necitit-acum') return t('depozit.necitit-acum');
   if (mod === 'nu-se-deschide' && p.mod === 'nu-se-deschide') return t('depozit.nu-se-deschide', { motiv: p.motiv });
   return null;
 }
@@ -483,6 +484,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           rampa: o.rampa ? { lungime: o.rampa.lungime } : null,
           intrari: o.intrari ? { raza: o.intrari.raza } : null,
           colturi: o.colturi ? { tip: o.colturi.tip } : null,
+          ...(o.despartire ? { despartire: true } : {}),
         },
       };
     }));
@@ -549,7 +551,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     setDialogImport(vechi
       ? { fisier: f, nume: f.nume, px, pxAutomat: automat, stare: vechi, seRecitesc: true }
       : { fisier: f, nume: f.nume, px, pxAutomat: automat, stare: 'citire' });
-    ruleaza(registruImport, 'import.svg', contextImport(f, px, (r) => {
+    const pornit = ruleaza(registruImport, 'import.svg', contextImport(f, px, (r) => {
       if (cerere !== cerereImport.current) return;
       if (!automat && px === 96 && r.ok && r.px && r.illustrator) {
         citesteImport(f, 72, true);
@@ -557,6 +559,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       }
       setDialogImport({ fisier: f, nume: f.nume, px, pxAutomat: automat, stare: r });
     }));
+    // Acțiunea oprită (fila a trecut între timp pe „doar citire”): dialogul nu așteaptă un rezultat care nu vine.
+    if (!pornit.ok) inchideImport();
   };
   /** Un fișier al cozii: deocamdată doar SVG (după nume sau tip); celelalte formate vin mai târziu. */
   const incepeFisier = (f: File): void => {
@@ -583,7 +587,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   };
   const pornesteImport = (fisiere: readonly File[], punct: { readonly x: number; readonly y: number } | null): void => {
     const f = fisiere[0];
-    if (!f) return;
+    // Fila care doar citește nu importă (ca butonul, oprit): o lăsare pe planșă nu mai deschide un dialog care rămâne
+    // pentru totdeauna la „Se citește fișierul…” (recenzia A).
+    if (!f || doarCiteste(mod)) return;
     setCoadaImport({ fisiere, k: 0, punct });
     incepeFisier(f);
   };

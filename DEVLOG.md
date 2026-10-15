@@ -1621,3 +1621,22 @@ de închidere de 0,28 µm a unui arc GRBL; reparat la integrare: primitive de ce
 (canelura din mijlocul unei căi, refuzată cu „se atinge singură” în punctul de întoarcere; reparat). Acum 26 / 26, plus
 acordul pe regiune (10, 11, 12), iar e2e-ul liniei pe stânga trece prin poartă. Alegerile oracolului și ale porții, scrise
 în ADR 0037 §13 („Precizările integrării”). 6 293 de teste unitare, e2e 60 / 60.
+**Recenzia A (2.3c-0…3 și feliile de interfață; 3 lentile + 3 verificatori):** 15 constatări, toate confirmate. Reparate
+13, fiecare cu testul ei:
+- **CAM și document (5):** o tăietură prin foaie care atinge marginile la MIJLOC desparte foaia fără refuz: acum
+  contează orice punct al drumului, nu doar capetele; „bucata liberă” vede și vecinii care se mai taie o dată (arcul de
+  340° cu linia) și coada oprită sub D de tulpină (canalele se ating); arcul cu |bulge| uriaș avea centrul NaN, deci postul
+  omitea tăcut cercul (`cerculArcului` fără depășire, aceiași biți pe arcele obișnuite); marcajul „despărțire” se pune
+  acum din dialog (coloana nouă, doar pe rândurile cu căi deschise; exportul îl cerea, dar interfața nu avea unde).
+- **Ușa SVG (2 din 4):** praful judecat la fel la ușă și în CAM (cutia exactă; un cerc de Ø0,009 trecea de import și
+  refuza apoi tot exportul); `departe` și pe coordonatele piesei. Celelalte 2 (linia umplută scrisă cu C / Q dispare;
+  dus-întorsul închis cu Z e sărit) schimbă contractul pe care îl codifică oracolul independent al ușii: aplicarea le-a
+  făcut roșii pe 240 de semințe aleatoare, deci au fost scoase și trecute în ADR 0037 §11 ca propuneri, pentru 2.3c-6.
+- **Interfața și pornirea (6):** fila care citește, cu ușa căzută, spune „necitit” și lasă blocarea (nu mai ține toate
+  filele în „doar citire”); dublu-clicul pe „Importă” din coadă nu mai importă și fișierul următor nevăzut; lăsarea pe
+  planșă în fila care doar citește nu mai deschide un dialog agățat; ușa care nu vine la pornire spune „n-a putut fi citit
+  acum”, nu „browserul nu permite memoria locală” (un mod nou, `necitit-acum`); Space nu mai rămâne „apăsat” după alt-tab;
+  config.json agățat nu mai ține pagina albă (termen de 4 s).
+
+**Proba:** 6 300 de teste unitare, e2e 64 / 64 (4 noi: despărțirea din dialog, ușa căzută la reîncărcare, dublu-clicul în
+coadă, config.json fără răspuns); pornirea 96,6 kB.

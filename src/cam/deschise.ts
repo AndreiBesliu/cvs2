@@ -1,7 +1,7 @@
 import { apropiereSegmente, segmenteCuCutii, type SegmentContur } from '../geom/apropiere.ts';
-import { cerculArcului, type Contur, type Punct } from '../geom/contur.ts';
-import { largita } from '../geom/cutie.ts';
-import { EPS_ATINGERE, indexCutii } from '../geom/offset.ts';
+import { cerculArcului, type Contur, type Varf } from '../geom/contur.ts';
+import { EPS_ATINGERE, seAutointersecteaza } from '../geom/offset.ts';
+import { cutieContur, CUTIE_GOALA, uneste } from '../geom/cutie.ts';
 import { REZOLUTIE } from '../geom/toleranta.ts';
 import { esteCaleDeschisa } from '../model/document.ts';
 import type { Taietura } from '../model/lume.ts';
@@ -92,30 +92,44 @@ function lungime(s: SegmentContur): number {
 }
 
 /**
- * Calea deschisă se taie singură (§10, bucata liberă): două segmente nevecine se ating, la sub 1e-6 mm. Segmentele de
- * lungime practic zero (un vârf repetat) nu se numără: altfel vecinii lor ar părea nevecini care se ating. Cu un index pe
- * cutiile segmentelor: doar perechile apropiate se măsoară exact.
+ * Calea deschisă se taie singură (§10, bucata liberă): se autointersectează, cu aceeași regulă ca la offset, deci și doi
+ * vecini care se mai taie o dată departe de capătul comun (recenzia A: arcul de 340° și linia care îl închide).
  */
 export function seTaieSingura(c: Contur): boolean {
-  const s = segmenteCuCutii(c).filter((x) => lungime(x.s) >= EPS_ATINGERE);
-  const index = indexCutii(s.map((x) => x.cutie));
-  for (let i = 0; i < s.length; i++) {
-    const x = s[i];
-    if (!x) continue;
-    let gasit = false;
-    index.vizita(largita(x.cutie, EPS_ATINGERE), (j) => {
-      const y = s[j];
-      if (gasit || j <= i + 1 || !y) return;
-      if (apropiereSegmente(x.s, y.s).distanta < EPS_ATINGERE) gasit = true;
-    });
-    if (gasit) return true;
+  // Vârfurile repetate (segmentele de lungime practic zero) se unesc întâi: altfel vecinii lor ar părea nevecini care se ating.
+  const varfuri: Varf[] = [];
+  for (const x of c.varfuri) {
+    const u = varfuri[varfuri.length - 1];
+    if (u && Math.hypot(x.p.x - u.p.x, x.p.y - u.p.y) < EPS_ATINGERE) { varfuri[varfuri.length - 1] = { p: u.p, s: x.s }; continue; }
+    varfuri.push(x);
   }
-  return false;
+  return varfuri.length > 2 && seAutointersecteaza({ inchis: c.inchis, varfuri });
 }
 
-/** Cât de aproape stă punctul de conturul foii [0, W] × [0, H]: negativ în afara ei. */
-function laMarginea(p: Punct, latime: number, inaltime: number): number {
-  return Math.min(p.x, latime - p.x, p.y, inaltime - p.y);
+/**
+ * Cât de aproape vine un capăt al căii de restul ei, în afara vecinătății lui pe curbă (D, pe calea însăși): un „lasou”
+ * cu coada oprită sub D de tulpină închide o bucată, fiindcă se ating canalele, nu liniile (recenzia A). Distanța cea mai
+ * mică, sau Infinity.
+ */
+function capatLangaCale(c: Contur, D: number): number {
+  const s = segmenteCuCutii(c);
+  const lungimi = s.map((x) => lungime(x.s));
+  const total = lungimi.reduce((a, b) => a + b, 0);
+  const p0 = c.varfuri[0]?.p, pn = c.varfuri[c.varfuri.length - 1]?.p;
+  if (!p0 || !pn) return Infinity;
+  let min = Infinity, s0 = 0;
+  for (const [i, x] of s.entries()) {
+    const l = lungimi[i] ?? 0;
+    if (s0 >= D) min = Math.min(min, apropiereSegmente(x.s, { a: p0, b: p0, s: { tip: 'L' } }).distanta);
+    if (s0 + l <= total - D) min = Math.min(min, apropiereSegmente(x.s, { a: pn, b: pn, s: { tip: 'L' } }).distanta);
+    s0 += l;
+  }
+  return min;
+}
+
+/** Cât de aproape stă cutia de conturul foii [0, W] × [0, H]: negativ dacă iese din ea. */
+function laMargineaCutiei(c: { readonly minX: number; readonly minY: number; readonly maxX: number; readonly maxY: number }, latime: number, inaltime: number): number {
+  return Math.min(c.minX, latime - c.maxX, c.minY, inaltime - c.maxY);
 }
 
 export type JudecataDeschisa = { readonly ok: true; readonly avertismente: readonly string[] } | { readonly ok: false; readonly motiv: string };
@@ -148,8 +162,10 @@ export function judecaDeschisa(
   const p0 = traseu.varfuri[0]?.p;
   const pn = traseu.varfuri[traseu.varfuri.length - 1]?.p;
   if (!p0 || !pn) return { ok: true, avertismente: [] };
-  if (prinFoaie && !t.despartire
-    && Math.min(laMarginea(p0, foaie.latime, foaie.inaltime), laMarginea(pn, foaie.latime, foaie.inaltime)) <= R + MARJA_MARGINE) {
+  // Ajunge la marginea foii ORICE punct al drumului centrului (precizarea recenziei A la §8: nu doar un capăt; o cale care
+  // atinge marginile la mijloc desparte foaia la fel). Foaia e paralelă cu axele, deci ajunge cutia exactă a drumurilor.
+  const cutieDrum = trasee.reduce((x, d) => uneste(x, cutieContur(d)), CUTIE_GOALA);
+  if (prinFoaie && !t.despartire && laMargineaCutiei(cutieDrum, foaie.latime, foaie.inaltime) <= R + MARJA_MARGINE) {
     return {
       ok: false,
       motiv: `${t.idLume}: tăietura deschisă prin foaie ajunge la marginea foii și o poate despărți; marcheaz-o «despărțire» (se taie la urmă) sau micșorează adâncimea`,
@@ -164,8 +180,10 @@ export function judecaDeschisa(
   }
   if (prinFoaie) {
     const capete = Math.hypot(pn.x - p0.x, pn.y - p0.y);
+    const coada = t.latura === 'pe-linie' ? capatLangaCale(traseu, D) : Infinity;
     const cum = capete < D + MARJA_BUCATA ? `capetele la ${fmt(capete, 3)} mm unul de altul`
-      : t.latura === 'pe-linie' && seTaieSingura(traseu) ? 'calea se taie singură' : null;
+      : t.latura === 'pe-linie' && seTaieSingura(traseu) ? 'calea se taie singură'
+        : coada < D + MARJA_BUCATA ? `un capăt la ${fmt(coada, 3)} mm de restul căii` : null;
     if (cum) avertismente.push(`${t.idLume}: bucata închisă de tăietură iese liberă, fără urechi (${cum})`);
   }
   return { ok: true, avertismente };

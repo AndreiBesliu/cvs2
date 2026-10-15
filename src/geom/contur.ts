@@ -42,10 +42,13 @@ export function cerculArcului(a: Punct, b: Punct, bulge: number): { centru: Punc
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   const coarda = Math.hypot(dx, dy);
-  // Centrul stă pe mediatoarea coardei, la (c/2)·(1 − β²)/(2β) spre normala din stânga.
-  const k = (1 - bulge * bulge) / (4 * bulge);
+  // Centrul stă pe mediatoarea coardei, la (c/2)·(1 − β²)/(2β) spre normala din stânga. La |β| uriaș (un cerc aproape
+  // întreg pe o coardă minusculă), β² depășește double-ul: atunci forma fără pătrat, (1/β − β)/4 și (c/4)(|β| + 1/|β|)
+  // (recenzia A: centrul ieșea NaN, iar postul omitea tăcut cercul). Altfel, forma de până acum, cu aceiași biți.
+  const finit = Number.isFinite(bulge * bulge);
+  const k = finit ? (1 - bulge * bulge) / (4 * bulge) : (1 / bulge - bulge) / 4;
   const centru = { x: (a.x + b.x) / 2 - dy * k, y: (a.y + b.y) / 2 + dx * k };
-  const raza = (coarda * (1 + bulge * bulge)) / (4 * Math.abs(bulge));
+  const raza = finit ? (coarda * (1 + bulge * bulge)) / (4 * Math.abs(bulge)) : (coarda / 4) * (Math.abs(bulge) + 1 / Math.abs(bulge));
   return { centru, raza, start: Math.atan2(a.y - centru.y, a.x - centru.x), baleiaj: 4 * Math.atan(bulge) };
 }
 

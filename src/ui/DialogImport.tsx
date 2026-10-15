@@ -139,14 +139,16 @@ export function DialogImport({ nume, stare, pxPeTol, pxAutomat, seRecitesc, moti
         {ok && motiv && <p role="status" className="avertisment" data-testid="import-motiv">{t(motiv)}</p>}
         <div className="butoane">
           {ok && (
-            <button type="button" disabled={motiv !== null || seRecitesc} title={motiv ? t(motiv) : undefined} data-buton="importa" onClick={onImporta}>
+            <button type="button" disabled={motiv !== null || seRecitesc} title={motiv ? t(motiv) : undefined} data-buton="importa"
+              onClick={(e) => { if (e.detail <= 1) onImporta(); }}>
               {t('import.importa')}
             </button>
           )}
           {stare !== 'citire' && !stare.ok && stare.cod === 'neincarcat' && (
             <button type="button" onClick={() => { window.location.reload(); }}>{t('eroare.reincarca')}</button>
           )}
-          {coada && onSari && <button type="button" data-buton="sari" onClick={onSari}>{t('import.sari')}</button>}
+          {/* Al doilea clic al unui dublu-clic cade pe butonul fișierului următor, în același loc: se ignoră (recenzia A). */}
+          {coada && onSari && <button type="button" data-buton="sari" onClick={(e) => { if (e.detail <= 1) onSari(); }}>{t('import.sari')}</button>}
           <button type="button" data-buton="renunta" onClick={onInchide}>{t(coada ? 'import.renunta-toate' : 'import.renunta')}</button>
         </div>
       </div>

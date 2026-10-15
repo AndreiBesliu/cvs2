@@ -74,6 +74,7 @@ export const ro = {
   'depozit.necitita': 'Altă filă a salvat o versiune pe care aplicația de aici n-o poate deschide ({motiv}). Aici nu se mai salvează nimic: reîncarcă pagina.',
   'depozit.conflict': 'Altă filă a salvat proiectul între timp: aici modificările nu se mai salvează. Reîncarcă pagina.',
   'depozit.fara-memorie': 'Browserul ăsta nu permite memoria locală: proiectul nu se salvează.',
+  'depozit.necitit-acum': 'Proiectul salvat n-a putut fi citit acum (rețeaua, o versiune nouă a aplicației sau un răspuns întârziat). Lucrezi în memorie, fără salvare; proiectul rămâne în browser: reîncarcă pagina.',
   'depozit.nu-se-deschide': 'Proiectul salvat nu s-a putut deschide ({motiv}). Am pornit unul nou; cel vechi rămâne în browser.',
   'depozit.eroare': 'Salvarea n-a mers: {motiv}',
   'dialog.neincarcat': 'Fereastra nu s-a putut încărca (aplicația s-a actualizat între timp sau rețeaua lipsește). Proiectul e salvat: reîncarcă pagina.',

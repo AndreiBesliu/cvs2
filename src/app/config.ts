@@ -31,9 +31,12 @@ export function citesteConfig(text: string): RezultatConfig {
   return { ok: true, config: r.output };
 }
 
+/** Cât așteaptă pornirea după config.json (ms): o cerere agățată nu mai ține pagina albă (recenzia A). */
+export const TERMEN_CONFIG_MS = 4000;
+
 export async function incarcaConfig(cere: typeof fetch): Promise<RezultatConfig> {
   try {
-    const raspuns = await cere('/config.json', { cache: 'no-store' });
+    const raspuns = await cere('/config.json', { cache: 'no-store', signal: AbortSignal.timeout(TERMEN_CONFIG_MS) });
     if (!raspuns.ok) return { ok: false, motiv: `config.json: HTTP ${raspuns.status}` };
     return citesteConfig(await raspuns.text());
   } catch (e) {

@@ -916,6 +916,18 @@ export function citesteSvg(octeti: Uint8Array, optiuni: OptiuniSvg = {}): Rezult
     }
   }
   if (primite > PLAFON.varfuri) return { ok: false, cod: 'plafon', detaliu: String(primite), avertismente: n };
+  // Piesa păstrează pagina minus colțul cutiei exacte (`piesaDinImport`): și acolo, fiecare punct, cu mânerele, rămâne în
+  // plafonul translației (recenzia A: o linie de la −9e6 la 9e6 trecea de ușă și cădea la ușa documentului fără motiv).
+  if (!departe && cai.length > 0) {
+    let minX = Infinity, minY = Infinity;
+    for (const c of cai) {
+      const k = cutieContur({ inchis: c.inchis, varfuri: c.varfuri });
+      minX = Math.min(minX, k.minX);
+      minY = Math.min(minY, k.minY);
+    }
+    departe = cai.some((c) => c.varfuri.some((v) => [v.p, ...(v.s.tip === 'C' ? [v.s.c1, v.s.c2] : [])]
+      .some((q) => !(Math.abs(q.x - minX) <= PLAFON.translatie && Math.abs(q.y - minY) <= PLAFON.translatie))));
+  }
   if (departe) return { ok: false, cod: 'departe', avertismente: n };
   // `gol` = nicio cale, închisă sau deschisă (ADR 0037 §11): un fișier făcut doar din linii se importă.
   if (cai.length === 0) return { ok: false, cod: 'gol', avertismente: n };

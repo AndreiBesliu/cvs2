@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { esteCapabilitate } from '../../shared/capabilitati.ts';
 import { traduce } from '../../src/i18n/t.ts';
-import { documentNou, type Operatie } from '../../src/model/document.ts';
+import { documentNou, operatieImplicita, type Operatie } from '../../src/model/document.ts';
 import { istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
@@ -388,4 +388,15 @@ test('Exportă fără nicio schimbare, pe un proiect redeschis cu degajări: nic
   assert.deepEqual(ruleaza(r, 'document.aplica-operatii', cu(new Map([[p.id, [operatieDinDialog(o, { ...v, colturi: { tip: 't-bone' as const } }, scula)]]]))), { ok: true });
   assert.deepEqual(h.doc.piese[0]?.operatii[0]?.colturi, { joc: 0.1, tip: 't-bone' });
   assert.equal(operatieDinDialog(o, { ...v, colturi: null }, scula).colturi, null);
+});
+
+test('despărțirea din dialog (recenzia A): bifată se scrie `true`; nebifată, câmpul pleacă; neatinsă, rămâne cum era', () => {
+  const o = { ...operatieImplicita('o', { tip: 'cale', inchis: false, varfuri: [{ p: { x: 0, y: 0 }, s: { tip: 'L' } }, { p: { x: 10, y: 0 }, s: { tip: 'L' } }] }), noduri: ['e'] };
+  const v = { latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, urechi: null, rampa: null, intrari: null, colturi: null };
+  const scula = { numar: o.scula.numar, diametru: o.scula.diametru };
+  assert.equal(operatieDinDialog(o, { ...v, despartire: true }, scula).despartire, true);
+  const marcata = { ...o, despartire: true };
+  assert.equal(Object.hasOwn(operatieDinDialog(marcata, { ...v, despartire: false }, scula), 'despartire'), false);
+  assert.equal(operatieDinDialog(marcata, v, scula).despartire, true);
+  assert.equal(Object.hasOwn(operatieDinDialog(o, v, scula), 'despartire'), false);
 });

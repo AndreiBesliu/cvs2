@@ -167,9 +167,16 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
   useEffect(() => {
     const jos = (e: KeyboardEvent): void => { if (e.code === 'Space') spatiu.current = true; };
     const sus = (e: KeyboardEvent): void => { if (e.code === 'Space') spatiu.current = false; };
+    // Fereastra pierde focusul cu Space ținut (alt-tab): keyup ajunge în altă parte, deci Space se uită aici (recenzia A).
+    const uita = (): void => { spatiu.current = false; };
     window.addEventListener('keydown', jos);
     window.addEventListener('keyup', sus);
-    return () => { window.removeEventListener('keydown', jos); window.removeEventListener('keyup', sus); };
+    window.addEventListener('blur', uita);
+    document.addEventListener('visibilitychange', uita);
+    return () => {
+      window.removeEventListener('keydown', jos); window.removeEventListener('keyup', sus);
+      window.removeEventListener('blur', uita); document.removeEventListener('visibilitychange', uita);
+    };
   }, []);
 
   // Rotița: zoom în jurul cursorului. Ascultătorul e pasiv=false, ca pagina să nu se deruleze.

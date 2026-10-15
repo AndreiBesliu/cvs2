@@ -274,6 +274,16 @@ utilizatorul, intenționat**; aplicația nu clasifică singură o tăietură dre
   recomandare.)*
 - Rețelele de linii care închid o bucată fără să atingă marginea foii nu se analizează (Limitele).
 
+*Precizările recenziei A (15.10):*
+- **„Ajunge la marginea foii” = orice punct al drumului centrului frezei, nu doar un capăt:** o cale care atinge marginile
+  la mijloc (un „U” culcat cu capetele departe de margini) desparte foaia la fel. Foaia e paralelă cu axele, deci se
+  judecă pe cutia exactă a drumurilor (pe linie, calea; pe o parte, bucățile), cu același prag R + 1 mm.
+- **Marcajul se pune din dialog:** coloana „Despărțire”, activă doar pe un rând cu căi deschise (motivul refuzului îi cere
+  omului să marcheze; fără coloană, n-ar fi avut cum). Nebifată, câmpul pleacă din operație (lipsă = false).
+- **Bucata liberă (§10)** vede și doi vecini care se mai taie o dată departe de capătul comun (arcul de 340° și linia), și
+  un capăt al căii pe linie la mai puțin de D + 1 mm de restul ei, în afara vecinătății lui pe curbă (canalele se ating:
+  „lasoul” cu coada oprită sub D de tulpină). Restul rețelelor rămâne la Limite.
+
 De ce: o linie prin foaie care desparte scheletul înaintea decupării lasă liberă o bucată de foaie cu piese încă netăiate. Acele piese se pot mișca sub freză.
 
 **9. Ce se refuză, cu motiv.** Refuzurile sunt în `job.ts`, înaintea traseului. Dialogul oprește coloanele, cu motivul în titlu, în en și ro.
@@ -368,6 +378,18 @@ sub rezoluția declarată.
 - `polyline`-urile cu `fill: none` care nu se închid.
 
 Calea are vârfurile subcăii plus punctul final, cu segmentul L. E degenerată dacă are mai puțin de 2 vârfuri distincte sau lungimea sub 0,01 mm: atunci se sare și se numără la `degenerate`. Plafonul căii se judecă cu vârful final inclus.
+
+*Precizările recenziei A (15.10):*
+- **Praful și CAM-ul măsoară la fel:** cutia exactă, cu extremele arcelor. CAM-ul (`curataIntrare`) măsura cutia
+  vârfurilor, deci un cerc de Ø0,009 trecea de ușă și apoi refuza tot exportul.
+- **`departe` se judecă și pe coordonatele piesei** (fiecare punct, cu mânerele, minus colțul cutiei exacte), nu doar pe
+  ale paginii: o linie de la −9·10⁶ la 9·10⁶ cădea abia la ușa documentului, cu un motiv generic.
+- **Propuneri, NEAPLICATE (contractul de azi le contrazice, iar oracolul independent al ușii îl codifică):** (a) o linie
+  dreaptă umplută scrisă cu C / Q (mânerele pe dreaptă, sau cu zgomotul rotunjirii) e închisă de umplere și dispare,
+  deși aceeași linie scrisă cu L e importată; (b) o linie dus-întors închisă de autor (Z, sau întoarsă exact în start)
+  e sărită ca „degenerată”, deși are lungime. Recomandarea: închiderea fără arie (toate punctele, cu mânerele, la cel mult
+  REZOLUTIE / 2 de o dreaptă) lasă calea deschisă, ca linie; iar o formă golită de normalizare se numără ca sărită. Se
+  aplică doar cu oracolul ușii amendat de o sesiune independentă (felia 2.3c-6).
 
 *Ce nu se citește:* `stroke-width`. Canalul are diametrul frezei, nu grosimea liniei din fișier.
 

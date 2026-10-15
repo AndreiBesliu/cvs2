@@ -37,6 +37,8 @@ export const roExport = {
   'export.rampa': 'Rampă',
   'export.intrari': 'Intrări',
   'export.colturi': 'Colțuri',
+  'export.despartire': 'Despărțire',
+  'export.despartire.titlu': 'Tăietura desparte foaia: se taie la urmă, după exterioare. O marchezi tu, doar pe o cale deschisă tăiată prin toată foaia, în afara pieselor.',
   'export.colturi.titlu': 'Degajarea colțurilor ascuțite în care freza nu intră (o gaură pentru un cep): dog-bone pe diagonală, T-bone în peretele mai lung. Pe linie nu există deșeu.',
   'export.colturi.fara': '—',
   'export.colturi.dog-bone': 'dog-bone',

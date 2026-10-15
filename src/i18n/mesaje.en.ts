@@ -58,6 +58,7 @@ export const en = {
   'depozit.necitita': 'Another tab saved a version this copy of the app cannot open ({motiv}). Nothing is saved here any more: reload the page.',
   'depozit.conflict': 'Another tab saved the project in the meantime: changes here are no longer saved. Reload the page.',
   'depozit.fara-memorie': 'This browser does not allow local storage: the project is not saved.',
+  'depozit.necitit-acum': 'The saved project could not be read right now (the network, a new version of the app or a late answer). You are working in memory, without saving; the project stays in this browser: reload the page.',
   'depozit.nu-se-deschide': 'The saved project could not be opened ({motiv}). A new project was started; the old one stays in this browser.',
   'depozit.eroare': 'Saving failed: {motiv}',
   'dialog.neincarcat': 'This window could not be loaded (the app was updated meanwhile, or the network is down). Your project is saved: reload the page.',

@@ -72,7 +72,7 @@ async function porneste(): Promise<void> {
   if (!config.ok) jurnal.adauga('config', config.motiv);
   // Proiectul din browser se deschide înainte de prima randare: o comandă dată între timp ar fi acoperită de el.
   const proiect = await deschideProiect();
-  if (proiect.mod === 'nu-se-deschide' || proiect.mod === 'fara-memorie') jurnal.adauga('proiect', proiect.motiv);
+  if (proiect.mod === 'nu-se-deschide' || proiect.mod === 'fara-memorie' || proiect.mod === 'necitit-acum') jurnal.adauga('proiect', proiect.motiv);
 
   const context = (): Context => ({
     aplicatia: 'CNC Vector Studio',
