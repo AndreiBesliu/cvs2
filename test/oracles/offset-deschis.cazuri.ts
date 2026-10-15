@@ -432,6 +432,14 @@ export function martori(): Martor[] {
     { nume: 'traseul decalat cu 0,003 mm', cale: LINIA, d: 3, rezultat: deplasat(0.003), laVerificare: true },
     { nume: '`neatins` lipsă (cârligul)', cale: HOOK, d: 3, rezultat: ok(carlig.bucati, []), laVerificare: false },
     { nume: '`neatins` cu porțiunea mutată (cârligul)', cale: HOOK, d: 3, rezultat: ok(carlig.bucati, carlig.neatins.map((p) => ({ ...p, de: p.de - 0.5, lungime: p.lungime + 0.5, la: { x: p.la.x - 0.25, y: p.la.y } }))), laVerificare: false },
+    { nume: 'o gaură de 20 mm în traseu (linia)', cale: LINIA, d: 3, rezultat: ok([bucata([10, 53], [20, 53]), bucata([40, 53], [110, 53])]), laVerificare: true },
+    { nume: 'o gaură de 0,06 mm în traseu (linia)', cale: LINIA, d: 3, rezultat: ok([bucata([10, 53], [60, 53]), bucata([60.06, 53], [110, 53])]), laVerificare: true },
+    {
+      nume: 'o bucată dublată în U-ul de 10 (atingere într-un canal mai lat decât 2R)', cale: U10, d: 3,
+      rezultat: ok([...iesireCorecta(U10, 3).bucati, bucata([3, 40], [3, 30])], iesireCorecta(U10, 3).neatins), laVerificare: true,
+    },
+    { nume: '`neatins` cu o porțiune în plus (linia)', cale: LINIA, d: 3, rezultat: ok([bucata([10, 53], [110, 53])], [{ de: 10, pana: 20, lungime: 10, la: { x: 25, y: 50 } }]), laVerificare: false },
+    { nume: 'un traseu pe o cale care se încrucișează', cale: cale([0, 0], [10, 10], [10, 0], [0, 10]), d: 3, rezultat: ok([bucata([0, 4.2426], [5.7574, 10])]), laVerificare: false },
     { nume: '`neatins` cu `la` greșit (L-ul, stânga)', cale: L_UL, d: 3, rezultat: ok(iesireCorecta(L_UL, 3).bucati, iesireCorecta(L_UL, 3).neatins.map((p) => ({ ...p, la: { x: p.la.x + 1, y: p.la.y } }))), laVerificare: false },
   ];
 }
