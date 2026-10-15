@@ -21,6 +21,13 @@
  * Secțiunea L adaugă line, polyline, căile `fill: none` (cu cubice, arce, arce eliptice, oglindite), pragul degenerării,
  * fișierul doar din linii, imbricarea fără căi deschise, normalizarea fără ele și `gol` = nicio cale. Plafonul cu vârful
  * final stă în `svg.mari.oracol.test.ts` (are 50 000 de vârfuri).
+ *
+ * Precizarea 2.3c-6 (ADR 0037 §11, „Închiderea fără arie lasă o linie”, textul corectat de coordonator): secțiunea P (linia
+ * umplută scrisă cu l / c / c cu zgomot / q / mânerele retrase, `M10 10 L60 10 Z` și `M10 10 L60 10 L10 10`, fâșiile de
+ * 0,004 și 0,02 mm, praful înaintea liniei, coliniarul exact sub rezoluție, pragul de 0,005 mm, martorii negativi, linia
+ * închisă de ușă, forma golită de normalizare). Cazurile schimbate: C16, C22 (liniile închise de autor: dus-întors, nu
+ * degenerate), C25, C26 (triunghiul de 5e-10 mm e acum o linie, înaintea normalizării; proba K7 trece pe un L subțire, C27,
+ * C28), N7, N8, L9 (forma golită de normalizare se numără și la `degenerate`). U12, U13 nu se schimbă (praful e întâi).
  */
 import { arieRuns, caiFinaleO, CODURI_O, laturiO, prafNormalizareO, type CodRefuzO, type RaportO, type RezultatO, type VarfO } from './svg.ts';
 
@@ -92,6 +99,8 @@ const varfuriRect = (cale: number, x: number, y: number, w: number, h: number, H
 
 const tan8 = Math.tan(Math.PI / 8);
 const tan4 = Math.tan(Math.PI / 4);
+/** Un L de 5e-10 mm grosime, cu laturile de 20 mm (C27, C28): subțire sub τ, dar nu pe o dreaptă (precizarea 2.3c-6). */
+const L_SUBTIRE = '0,10 20,10 20,30 19.9999999995,30 19.9999999995,10.0000000005 0,10.0000000005';
 
 // ---------------------------------------------------------------------------------------------------------------------
 // A. Unitățile și pagina.
@@ -235,19 +244,33 @@ const C: CazSvg[] = [
     hartie: { tipuri: ['LLL'], varfuri: [[0, 2, 15, 80]], avertismente: { 'eroare-date': 1 } } },
   { nume: 'C15 polygon cu o eroare la mijloc', text: p100('<polygon points="10,10 20,10 15,20 x 40,40"/>'),
     hartie: { tipuri: ['LLL'], avertismente: { 'eroare-date': 1 } } },
-  // Revizia 12.10: doar din linii, toate pe o dreaptă = degenerată (n-are arie).
-  { nume: 'C16 polygon dus-întors, trei puncte pe dreaptă, M L Z: degenerate', text: p100('<polygon points="0,0 10,0"/><polygon points="0,20 10,20 20,20"/><path d="M 30 30 L 40 30 Z"/><polygon points="0,40 10,50 20,60 5,45"/><rect x="50" y="50" width="5" height="5"/>'),
-    hartie: { cai: 1, forme: [4], avertismente: { degenerate: 4 } } },
-  // D = 20 mm: abaterea 1e-12 mm ≤ 1e-12 · 20 (pe dreaptă), 1e-9 mm nu.
-  // Felia 2.7d: a doua poligonală (un triunghi cu înălțimea de 5e-10 mm) e evenodd, ca să rămână proba pragului 2.7c.
-  { nume: 'C22 coliniar la 1e-12 din mărime: degenerată; la 1e-9: cale', text: p100('<polygon points="0,0 10,0 20,0.000000000001"/><polygon fill-rule="evenodd" points="0,10 10,10 20,10.000000001"/>'),
-    hartie: { cai: 1, forme: [1], tipuri: ['LLL'], avertismente: { degenerate: 1 } } },
-  // ADR 0036 §6 (amendamentul K7, fosta constatare K7): „deja evenodd” se judecă la precizia τ; triunghiul de 5e-10 mm
-  // (τ ≈ 2e-9) iese gol, numărat nonzero-normalizate (nu degenerate), iar fișierul fără nimic altceva e „gol”.
-  { nume: 'C25 triunghiul de 5e-10 mm, nonzero, singur: gol, nonzero-normalizate (§6, K7)', text: p100('<polygon points="0,10 10,10 20,10.000000001"/>'),
-    hartie: { cod: 'gol', avertismente: { 'nonzero-normalizate': 1 } } },
-  { nume: 'C26 triunghiul de 5e-10 mm lângă un dreptunghi: triunghiul dispare (numărat), dreptunghiul rămâne', text: p100('<polygon points="0,10 10,10 20,10.000000001"/><rect x="50" y="50" width="10" height="10"/>'),
-    hartie: { cai: 2, forme: [0, 1], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 100 } } },
+  // Revizia 12.10: doar din linii, toate pe o dreaptă = degenerată (n-are arie). Precizarea 2.3c-6 (ADR 0037 §11, punctul
+  // 2): închise de autor, sunt LINII, cu drumul înapoi până în start: vârfurile subcăii, linia de închidere a lui Z și
+  // vârful final în start. (0, 0) → (0, 100); (0, 40) (10, 50) (20, 60) (5, 45) → (0, 60) (10, 50) (20, 40) (5, 55).
+  { nume: 'C16 polygon dus-întors, trei puncte pe dreaptă, M L Z (2.3c-6: linii dus-întors; înainte degenerate)', text: p100('<polygon points="0,0 10,0"/><polygon points="0,20 10,20 20,20"/><path d="M 30 30 L 40 30 Z"/><polygon points="0,40 10,50 20,60 5,45"/><rect x="50" y="50" width="5" height="5"/>'),
+    hartie: { cai: 5, forme: [0, 1, 2, 3, 4], tipuri: ['LLL', 'LLLL', 'LLL', 'LLLLL', 'LLLL'], inchis: [false, false, false, false, true],
+      varfuri: [[0, 0, 0, 100], [0, 1, 10, 100], [0, 2, 0, 100], [1, 0, 0, 80], [1, 2, 20, 80], [1, 3, 0, 80], [2, 0, 30, 70], [2, 1, 40, 70], [2, 2, 30, 70], [3, 0, 0, 60], [3, 1, 10, 50], [3, 2, 20, 40], [3, 3, 5, 55], [3, 4, 0, 60]],
+      laturi: ['pe-linie', 'pe-linie', 'pe-linie', 'pe-linie', 'exterior'], avertismente: { deschise: 4 } } },
+  // D = 20 mm: abaterea 1e-12 mm ≤ 1e-12 · 20 (pe dreaptă, punctul 2), 1e-9 mm nu (dar ≤ 0,005 mm: punctul 4). Precizarea
+  // 2.3c-6: amândouă sunt linii închise de autor (polygon), cu drumul înapoi; pragul de 1e-12 se vede doar sub rezoluție
+  // (P11). Felia 2.7d: a doua e evenodd (proba pragului 2.7c); n-are importanță: liniile nu intră în normalizare.
+  { nume: 'C22 coliniar la 1e-12 din mărime și la 1e-9: amândouă linii dus-întors (2.3c-6; înainte degenerată / cale)', text: p100('<polygon points="0,0 10,0 20,0.000000000001"/><polygon fill-rule="evenodd" points="0,10 10,10 20,10.000000001"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LLLL', 'LLLL'], inchis: [false, false], varfuri: [[0, 0, 0, 100], [0, 2, 20, 100], [0, 3, 0, 100], [1, 0, 0, 90], [1, 2, 20, 90], [1, 3, 0, 90]], laturi: ['pe-linie', 'pe-linie'], avertismente: { deschise: 2 } } },
+  // ADR 0036 §6 (amendamentul K7, fosta constatare K7): triunghiul de 5e-10 mm (τ ≈ 2e-9) ieșea gol din normalizare.
+  // Precizarea 2.3c-6: toate punctele lui stau la 5e-10 mm ≤ 0,005 mm de dreaptă (punctul 4), deci e o linie (închisă de
+  // autor: cu drumul înapoi), înaintea normalizării. Proba K7 trece pe un L subțire (C27, C28: nu e pe o dreaptă).
+  { nume: 'C25 triunghiul de 5e-10 mm, nonzero, singur: o linie dus-întors (2.3c-6; înainte gol, K7)', text: p100('<polygon points="0,10 10,10 20,10.000000001"/>'),
+    hartie: { cai: 1, tipuri: ['LLLL'], inchis: [false], varfuri: [[0, 0, 0, 90], [0, 1, 10, 90], [0, 2, 20, 90], [0, 3, 0, 90]], laturi: ['pe-linie'], avertismente: { deschise: 1 } } },
+  { nume: 'C26 triunghiul de 5e-10 mm lângă un dreptunghi: linia și dreptunghiul (2.3c-6; înainte triunghiul dispărea)', text: p100('<polygon points="0,10 10,10 20,10.000000001"/><rect x="50" y="50" width="10" height="10"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LLLL', 'LLLL'], inchis: [false, true], laturi: ['pe-linie', 'exterior'], avertismente: { deschise: 1 }, final: { cai: 2, laturi: ['pe-linie', 'exterior'], arie: 100 } } },
+  // ADR 0036 §6 (K7) după 2.3c-6: un L de 5e-10 mm grosime (20 + 20 mm) nu e pe o dreaptă (colțul (20, 90) stă la 14,1 mm de
+  // dreapta capetelor), deci rămâne contur: un singur contur simplu, deja evenodd, cu martor la τ (≈ 2,8e-9 mm) și nicio
+  // sondă umplută dincolo de τ: iese gol (numărat nonzero-normalizate și, din 2.3c-6, degenerate) sau poate rămâne.
+  // Golul ultimului punct (5e-10 mm ≤ TOLERANTA_IMPORT) închide prin apropiere: 5 vârfuri.
+  { nume: 'C27 un L de 5e-10 mm, nonzero, singur: gol, nonzero-normalizate și degenerate (§6, K7; 2.3c-6)', text: p100(`<polygon points="${L_SUBTIRE}"/>`),
+    hartie: { cod: 'gol', avertismente: { 'nonzero-normalizate': 1, degenerate: 1 } } },
+  { nume: 'C28 un L de 5e-10 mm lângă un dreptunghi: L-ul dispare (numărat de două ori), dreptunghiul rămâne', text: p100(`<polygon points="${L_SUBTIRE}"/><rect x="50" y="50" width="10" height="10"/>`),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LLLLL', 'LLLL'], avertismente: { 'nonzero-normalizate': 1, degenerate: 1 }, final: { cai: 1, laturi: ['exterior'], arie: 100 } } },
   { nume: 'C23 polygon cu un punct, M Z, M L-nul Z: degenerate (fosta constatare K2)', text: p100('<polygon points="5,5"/><path d="M 20 20 Z"/><path d="M 30 30 L 30 30 Z"/><rect x="50" y="50" width="5" height="5"/>'),
     hartie: { cai: 1, forme: [3], avertismente: { degenerate: 3 } } },
   // 2.3c-3: calea deschisă cu mai puțin de 2 vârfuri distincte e degenerată (ADR 0037 §11).
@@ -524,10 +547,11 @@ const N: CazSvg[] = [
     hartie: { cai: 1, avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, arie: ariePentagrama(40) } } },
   { nume: 'N6 pentagrama într-un grup cu fill-rule="evenodd" (moștenit): rămâne', text: p100(`<g fill-rule="evenodd"><polygon points="${puncteStea(50, 50, 40)}"/></g>`),
     hartie: { cai: 1, final: { cai: 1 } } },
-  { nume: 'N7 o cale și inversa ei, singure: regiunea vidă, fișierul e gol', text: p100('<path d="M 10 10 h 20 v 20 h -20 z M 10 10 v 20 h 20 v -20 z"/>'),
-    hartie: { cod: 'gol', avertismente: { 'nonzero-normalizate': 1 } } },
-  { nume: 'N8 o cale și inversa ei lângă un dreptunghi: forma dispare, dreptunghiul rămâne', text: p100('<path id="dus-intors" d="M 10 10 h 20 v 20 h -20 z M 10 10 v 20 h 20 v -20 z"/><rect id="r" x="60" y="60" width="10" height="10"/>'),
-    hartie: { cai: 3, forme: [0, 0, 1], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: 100 } } },
+  // Precizarea 2.3c-6 (ADR 0037 §11): forma golită de tot de normalizare se numără și la `degenerate` (o dată pe formă).
+  { nume: 'N7 o cale și inversa ei, singure: regiunea vidă, fișierul e gol (2.3c-6: și degenerate)', text: p100('<path d="M 10 10 h 20 v 20 h -20 z M 10 10 v 20 h 20 v -20 z"/>'),
+    hartie: { cod: 'gol', avertismente: { 'nonzero-normalizate': 1, degenerate: 1 } } },
+  { nume: 'N8 o cale și inversa ei lângă un dreptunghi: forma dispare, dreptunghiul rămâne (2.3c-6: și degenerate)', text: p100('<path id="dus-intors" d="M 10 10 h 20 v 20 h -20 z M 10 10 v 20 h 20 v -20 z"/><rect id="r" x="60" y="60" width="10" height="10"/>'),
+    hartie: { cai: 3, forme: [0, 0, 1], avertismente: { 'nonzero-normalizate': 1, degenerate: 1 }, final: { cai: 1, laturi: ['exterior'], arie: 100 } } },
   { nume: 'N9 două cercuri suprapuse în aceeași cale: reuniunea, arce pe cercurile sursei', text: p100(`<path id="opt" d="${cerc(40, 50, 20, 1)} ${cerc(60, 50, 20, 1)}"/>`),
     hartie: { cai: 2, tipuri: ['AA', 'AA'], nume: ['opt', 'opt'], avertismente: { 'nonzero-normalizate': 1 }, final: { cai: 1, laturi: ['exterior'], arie: arieDouaCercuri(20, 20) } } },
   // Fiecare jumătate de elipsă (rx 20, ry 10): σ = 20, φ = 0,37425, n = 9; patru jumătăți, 36 de cubice.
@@ -665,10 +689,13 @@ const U: CazSvg[] = [
   { nume: 'U11 golul sub TOLERANTA_IMPORT (5e-7 mm), fără Z: închise în tăcere, fără număr (umplută și fără umplere)', text: p100('<path d="m 10 10 h 20 v 20 h -20 v -19.9999995"/><path fill="none" d="m 50 10 h 20 v 20 h -20 v -19.9999995"/>'),
     hartie: { cai: 2, tipuri: ['LLLL', 'LLLL'], varfuri: [[0, 3, 10, 70], [1, 3, 50, 70]], goluri: [], golLaUsa: 0 } },
   // Praful: diagonala 1e-4 · √2 mm. A doua e umplută fără Z (s-ar închide de umplere), a treia fără umplere (golul 1,4e-4 mm
-  // s-ar închide la ușă): amândouă sunt praf, deci nu se numără închiderea.
+  // s-ar închide la ușă): amândouă sunt praf, deci nu se numără închiderea. Precizarea 2.3c-6: triunghiurile stau la cel
+  // mult 7,1e-5 mm de o dreaptă (linii, după punctul 4), dar praful (punctul 3) se judecă întâi: rămân praf.
   { nume: 'U12 praful: triunghiurile de 1e-4 mm (cu Z, fără Z umplut, fără Z fără umplere) sărite, sub-rezolutie', text: p100('<path d="M 20 20 l 0.0001 0 l 0 0.0001 z"/><path d="M 30 20 l 0.0001 0 l 0 0.0001"/><path fill="none" d="M 40 20 l 0.0001 0 l 0 0.0001"/><rect x="50" y="50" width="10" height="10"/>'),
     hartie: { cai: 1, forme: [3], avertismente: { 'sub-rezolutie': 3 } } },
-  // Lângă prag: catetele 0,0035 (diagonala 0,00495 mm) și 0,008 (0,01131 mm).
+  // Lângă prag: catetele 0,0035 (diagonala 0,00495 mm) și 0,008 (0,01131 mm). Precizarea 2.3c-6: praful se judecă înaintea
+  // regulii liniei (U12, U13 neschimbate), iar triunghiul de 0,008 nu e o linie: vârful drept stă la 0,008 / √2 = 0,00566 mm
+  // > 0,005 de ipotenuză (dreapta celor mai depărtate două puncte).
   { nume: 'U13 praful lângă prag: diagonala 0,00495 mm sărită, 0,01131 mm păstrată', text: p100('<path d="M 20 20 l 0.0035 0 l 0 0.0035 z"/><path d="M 30 20 l 0.008 0 l 0 0.008 z"/>'),
     hartie: { cai: 1, forme: [1], tipuri: ['LLL'], varfuri: [[0, 0, 30, 80], [0, 1, 30.008, 80], [0, 2, 30.008, 79.992]], avertismente: { 'sub-rezolutie': 1 } } },
   { nume: 'U14 praful singur: fișierul e gol, cu sub-rezolutie', text: p100('<path d="M 20 20 l 0.0001 0 l 0 0.0001 z"/>'),
@@ -759,8 +786,10 @@ const L: CazSvg[] = [
       final: { cai: 4, laturi: ['pe-linie', 'interior', 'exterior', 'pe-linie'], arie: 9900 } } },
   // Ca N7 (o cale și inversa ei: regiunea vidă), plus „M L” umplută în aceeași formă: închiderea ar fi degenerată, deci o
   // cale deschisă, care nu intră în normalizare. Forma își pierde căile închise, dar fișierul nu e gol: rămâne linia.
+  // Precizarea 2.3c-6: „o formă golită de tot” e ambiguă aici (regiunea e vidă, linia rămâne): predicția o numără la
+  // `degenerate`; `judecaRezultat` primește de la aplicație 0 sau 1 (ALEGERE, în raport).
   { nume: 'L9 o formă nonzero vidă cu o cale deschisă: linia rămâne, fișierul nu e gol', text: p100('<path d="M 10 10 h 20 v 20 h -20 z M 10 10 v 20 h 20 v -20 z M 50 50 L 90 50"/>'),
-    hartie: { cai: 3, forme: [0, 0, 0], tipuri: ['LLLL', 'LLLL', 'LL'], inchis: [true, true, false], varfuri: [[2, 0, 50, 50], [2, 1, 90, 50]], avertismente: { 'nonzero-normalizate': 1, deschise: 1 }, final: { cai: 1, laturi: ['pe-linie'], arie: 0 } } },
+    hartie: { cai: 3, forme: [0, 0, 0], tipuri: ['LLLL', 'LLLL', 'LL'], inchis: [true, true, false], varfuri: [[2, 0, 50, 50], [2, 1, 90, 50]], avertismente: { 'nonzero-normalizate': 1, deschise: 1, degenerate: 1 }, final: { cai: 1, laturi: ['pe-linie'], arie: 0 } } },
   // Ca N1 (reuniunea, 2 000 mm²), plus o linie umplută în aceeași formă: reuniunea doar din căile închise; linia rămâne.
   { nume: 'L10 reuniunea nonzero cu o cale deschisă în aceeași formă: linia rămâne în afara normalizării', text: p100('<path d="M 10 10 h 40 v 30 h -40 z M 30 20 h 40 v 30 h -40 z M 10 80 L 90 80"/>'),
     hartie: { cai: 3, forme: [0, 0, 0], tipuri: ['LLLL', 'LLLL', 'LL'], inchis: [true, true, false], avertismente: { 'nonzero-normalizate': 1, deschise: 1 }, final: { cai: 2, arie: 2000 } } },
@@ -786,6 +815,73 @@ const L: CazSvg[] = [
   // Fără viewBox, la 96: 1 px = K96 mm; pagina 100 px, deci y_mm = (100 − y) · K96.
   { nume: 'L16 line în px (fără viewBox, 96)', text: svg('width="100" height="100"', '<line x1="0" y1="0" x2="96" y2="0"/>'),
     hartie: { cai: 1, px: true, tipuri: ['LL'], inchis: [false], varfuri: [[0, 0, 0, 100 * K96], [0, 1, 25.4, 100 * K96]], avertismente: { deschise: 1 } } },
+];
+
+// ---------------------------------------------------------------------------------------------------------------------
+// P. Precizarea 2.3c-6 (ADR 0037 §11, „Închiderea fără arie lasă o linie”, textul corectat). Pe hârtie, pe o subcale
+// închisă (de autor: cu Z sau cu golul ≤ 1e-6 mm; de umplere; de ușă: fill="none" și golul ≤ 0,01 mm), în ordinea:
+// (1) sub 2 vârfuri: degenerată; (2) numai linii pe o dreaptă la 1e-12: LINIE; (3) praful (diagonala < 0,01 mm);
+// (4) fără arce, toate punctele cu mânerele la ≤ 0,005 mm de dreapta celor mai depărtate două puncte: LINIE.
+// Linia e o cale deschisă (`deschise`; sub 0,01 mm, `degenerate`): închisă de ușă / umplere, fără linia de închidere;
+// închisă de autor, cu drumul înapoi până în start (vârful final = startul). Pe pagina de 100 mm: x_mm = x, y_mm = 100 − y.
+
+/** Linia (10, 50) → (60, 50), o cale deschisă: aceeași hârtie oricum ar fi scrisă (P1–P5). */
+const LINIA_P = (tip: string): Hartie => ({ cai: 1, forme: [0], tipuri: [tip], inchis: [false], varfuri: [[0, 0, 10, 50], [0, 1, 60, 50]], laturi: ['pe-linie'], avertismente: { deschise: 1 } });
+
+const P: CazSvg[] = [
+  // Umplută, fără Z: închisă de umplere, deci linia pierde linia de închidere; (2) exact pe dreaptă (ca U7).
+  { nume: 'P1 linia umplută scrisă cu l: o cale deschisă (10, 50) → (60, 50)', text: p100('<path d="M 10 50 l 50 0"/>'), hartie: LINIA_P('LL') },
+  // (4): mânerele (20, 50) și (50, 50) pe dreaptă; cubica din fișier rămâne cubică (ADR 0035 §6), apoi vârful final.
+  { nume: 'P2 linia umplută scrisă cu c, mânerele pe dreaptă: aceeași cale deschisă (CL)', text: p100('<path d="M 10 50 c 10 0 40 0 50 0"/>'), hartie: LINIA_P('CL') },
+  // Mânerele la 0,001 mm de dreaptă (zgomotul rotunjirii, ca la Illustrator): (20, 49,999), (50, 50,001) ≤ 0,005.
+  { nume: 'P3 linia umplută scrisă cu c, mânerele cu zgomot de 0,001 mm: aceeași cale deschisă', text: p100('<path d="M 10 50 c 10 0.001 40 -0.001 50 0"/>'), hartie: LINIA_P('CL') },
+  // Q ridicată exact: c1 = (10 + ⅔·25, 50), c2 = (60 − ⅔·25, 50), pe dreaptă.
+  { nume: 'P4 linia umplută scrisă cu q: aceeași cale deschisă', text: p100('<path d="M 10 50 q 25 0 50 0"/>'), hartie: LINIA_P('CL') },
+  // Mânerele retrase (Inkscape: c 0,0 … 50,0 50,0): c1 = startul, c2 = capătul.
+  { nume: 'P5 linia umplută cu mânerele retrase (Inkscape): aceeași cale deschisă', text: p100('<path d="M 10 50 c 0 0 50 0 50 0"/>'), hartie: LINIA_P('CL') },
+  // Închise de autor (Z), umplută și fără umplere: drumul înapoi e linia de închidere, vârful final e startul.
+  { nume: 'P6 M10 10 L60 10 Z (umplută și fill="none"): o linie dus-întors, nu „fără lungime”', text: p100('<path d="M10 10 L60 10 Z"/><path fill="none" d="M10 20 L60 20 Z"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LLL', 'LLL'], inchis: [false, false], varfuri: [[0, 0, 10, 90], [0, 1, 60, 90], [0, 2, 10, 90], [1, 0, 10, 80], [1, 1, 60, 80], [1, 2, 10, 80]], laturi: ['pe-linie', 'pe-linie'], avertismente: { deschise: 2 } } },
+  // Închisă de autor prin apropiere (golul 0): drumul înapoi e segmentul desenat.
+  { nume: 'P7 M10 10 L60 10 L10 10: o linie dus-întors', text: p100('<path d="M10 10 L60 10 L10 10"/>'),
+    hartie: { cai: 1, tipuri: ['LLL'], inchis: [false], varfuri: [[0, 0, 10, 90], [0, 1, 60, 90], [0, 2, 10, 90]], laturi: ['pe-linie'], avertismente: { deschise: 1 } } },
+  // (4): fâșia de 0,004 × 50 mm: colțurile stau la ≤ 0,004 mm de diagonală (dreapta celor mai depărtate două puncte). Ca
+  // path cu Z (linia de închidere adăugată) și ca rect (latura a patra e scrisă): amândouă LLLLL, cu vârful final în start.
+  { nume: 'P8 fâșia închisă de 0,004 × 50 mm (path cu Z și rect): o linie dus-întors', text: p100('<path d="M 10 50 h 50 v 0.004 h -50 z"/><rect x="10" y="60" width="50" height="0.004"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LLLLL', 'LLLLL'], inchis: [false, false], varfuri: [[0, 0, 10, 50], [0, 2, 60, 49.996], [0, 3, 10, 49.996], [0, 4, 10, 50], [1, 0, 10, 40], [1, 2, 60, 39.996], [1, 4, 10, 40]], laturi: ['pe-linie', 'pe-linie'], avertismente: { deschise: 2 } } },
+  // Martor negativ: fâșia de 0,02 mm: colțurile la ~0,02 mm de diagonală > 0,005. Rămâne contur (simplu, deja evenodd).
+  { nume: 'P9 fâșia închisă de 0,02 × 50 mm: rămâne contur închis', text: p100('<path d="M 10 50 h 50 v 0.02 h -50 z"/>'),
+    hartie: { cai: 1, tipuri: ['LLLL'], inchis: [true], varfuri: [[0, 0, 10, 50], [0, 1, 60, 50], [0, 2, 60, 49.98], [0, 3, 10, 49.98]], laturi: ['exterior'], final: { cai: 1, laturi: ['exterior'], arie: 50 * 0.02 } } },
+  // Praful înaintea regulii liniei (punctul 3 înaintea lui 4): acul de 0,008 mm (al treilea vârf la 1e-6 mm de dreaptă: nu
+  // exact pe ea) are diagonala 0,008 < 0,01: praf. Ca linie, dus-întors ar avea 0,016 mm și s-ar importa.
+  { nume: 'P10 acul de 0,008 mm aproape pe dreaptă: praf (judecat înaintea liniei), nu linie', text: p100('<path d="M 20 20 l 0.008 0 l -0.004 0.000001 z"/><rect x="50" y="50" width="10" height="10"/>'),
+    hartie: { cai: 1, forme: [1], avertismente: { 'sub-rezolutie': 1 } } },
+  // Punctul 2 (coliniarul EXACT, la 1e-12) stă înaintea prafului (textul corectat): poligonul (10, 90) (10,004, 90)
+  // (10,008, 90) e o linie dus-întors de 0,016 mm ≥ 0,01: importată; același cu al treilea vârf la 1e-6 mm de dreaptă e
+  // praf; „M 30 30 L 30,004 30 Z” e o linie de 0,008 mm: degenerată (nu praf). Consecință literală a ordinii, spusă în raport.
+  { nume: 'P11 coliniarul exact sub rezoluție (punctul 2 înaintea prafului): linia de 0,016 mm importată, cea de 0,008 degenerată; neexact: praf', text: p100('<polygon points="10,10 10.004,10 10.008,10"/><polygon points="10,20 10.004,20 10.008,20.000001"/><path d="M 30 30 L 30.004 30 Z"/><rect x="50" y="50" width="10" height="10"/>'),
+    hartie: { cai: 2, forme: [0, 3], tipuri: ['LLLL', 'LLLL'], inchis: [false, true], varfuri: [[0, 0, 10, 90], [0, 1, 10.004, 90], [0, 2, 10.008, 90], [0, 3, 10, 90]], laturi: ['pe-linie', 'exterior'], avertismente: { deschise: 1, degenerate: 1, 'sub-rezolutie': 1 } } },
+  // Pragul de 0,005 mm, cu startul în vârful din mijloc: (10, 50) – (60, 50) sunt cele mai depărtate (50 mm); vârful (35, …)
+  // stă la 0,0045 (linie) sau la 0,0055 (contur). Dreapta prin start și punctul cel mai depărtat de el ar lăsa celălalt capăt
+  // la ~0,009 mm (deci perechea contează).
+  { nume: 'P12 pragul de 0,005 mm: triunghiul de 0,0045 mm e linie, cel de 0,0055 mm rămâne contur', text: p100('<path d="M 35 50.0045 L 10 50 L 60 50 Z"/><path d="M 35 70.0055 L 10 70 L 60 70 Z"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LLLL', 'LLL'], inchis: [false, true], varfuri: [[0, 0, 35, 49.9955], [0, 1, 10, 50], [0, 2, 60, 50], [0, 3, 35, 49.9955], [1, 0, 35, 29.9945], [1, 1, 10, 30], [1, 2, 60, 30]], laturi: ['pe-linie', 'exterior'], avertismente: { deschise: 1 } } },
+  // Martorii negativi ai regulii (evenodd: normalizarea nu intră în joc): (a) cubica în S cu mânerele la 0,008 mm de dreaptă
+  // (curba însăși stă la ≤ 0,0023 mm: 0,024·t(1 − t)(1 − 2t) la t = 0,211): mânerele contează, rămâne contur, închis de
+  // umplere; (b) arcul de R 9 000 mm pe coarda de 10 mm (săgeata 100 / 72 000 = 0,0014 mm): are arce, rămâne contur.
+  { nume: 'P13 martorii negativi: cubica cu mânerele la 0,008 mm (curba la 0,0023) și arcul plat cu săgeata 0,0014 mm rămân contururi', text: p100('<path fill-rule="evenodd" d="M 10 30 C 20 30.008 50 29.992 60 30"/><path fill-rule="evenodd" d="M 10 10 A 9000 9000 0 0 1 20 10 Z"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['CL', 'AL'], inchis: [true, true], varfuri: [[0, 0, 10, 70], [0, 1, 60, 70], [1, 0, 10, 90], [1, 1, 20, 90]], laturi: ['exterior', 'exterior'], avertismente: { 'inchise-de-umplere': 1 }, goluri: [50] } },
+  // Închisă de ușă (fill="none", golul 0,002 ≤ 0,01) și de umplere (golul 0,002): (4) linii, fără linia de închidere;
+  // vârful final e capătul subcăii (10, 49,998), nu startul. Nu se numără la inchise-la-usa / inchise-de-umplere.
+  { nume: 'P14 linia închisă de ușă (fill="none", golul 0,002 mm) și de umplere: căi deschise fără linia de închidere', text: p100('<path fill="none" d="M 10 50 L 60 50 L 10 50.002"/><path d="M 10 30 L 60 30 L 10 30.002"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['LLL', 'LLL'], inchis: [false, false], varfuri: [[0, 0, 10, 50], [0, 1, 60, 50], [0, 2, 10, 49.998], [1, 0, 10, 70], [1, 1, 60, 70], [1, 2, 10, 69.998]], laturi: ['pe-linie', 'pe-linie'], avertismente: { deschise: 2 } } },
+  // Bulina a doua: semicercul dus-întors (același arc, sensuri opuse; Λ = 1, centrul (20, 50)) are arce, deci nu e linie:
+  // intră în normalizare (muchii coincidente), care îl golește de tot: nonzero-normalizate și degenerate.
+  { nume: 'P15 semicercul dus-întors (arce) lângă un dreptunghi: golit de normalizare, numărat și degenerate', text: p100('<path d="M 10 50 A 10 10 0 0 1 30 50 A 10 10 0 0 0 10 50 Z"/><rect x="60" y="60" width="10" height="10"/>'),
+    hartie: { cai: 2, forme: [0, 1], tipuri: ['AA', 'LLLL'], avertismente: { 'nonzero-normalizate': 1, degenerate: 1 }, final: { cai: 1, laturi: ['exterior'], arie: 100 } } },
+  // Închisă de autor, scrisă cu C (Illustrator): cubica, apoi drumul înapoi (linia de închidere), vârful final în start.
+  { nume: 'P16 linia umplută scrisă cu C și închisă cu Z: cubica și drumul înapoi (CLL)', text: p100('<path d="M 10 50 C 20 50 50 50 60 50 Z"/>'),
+    hartie: { cai: 1, tipuri: ['CLL'], inchis: [false], varfuri: [[0, 0, 10, 50], [0, 1, 60, 50], [0, 2, 10, 50]], laturi: ['pe-linie'], avertismente: { deschise: 1 } } },
 ];
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -985,7 +1081,7 @@ const I: CazSvg[] = [
     hartie: { illustrator: true } },
 ];
 
-export const CORPUS: readonly CazSvg[] = [...A, ...B, ...C, ...D, ...E, ...F, ...G, ...N, ...S, ...U, ...L, ...H, ...I];
+export const CORPUS: readonly CazSvg[] = [...A, ...B, ...C, ...D, ...E, ...F, ...G, ...N, ...S, ...U, ...L, ...P, ...H, ...I];
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Judecata hârtiei: oracolul trebuie să dea exact ce scrie pe hârtie.
