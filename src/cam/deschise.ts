@@ -6,13 +6,13 @@ import { REZOLUTIE } from '../geom/toleranta.ts';
 import { esteCaleDeschisa } from '../model/document.ts';
 import type { Taietura } from '../model/lume.ts';
 import { lungimeBucla } from './parcurgere.ts';
-import { discInK, MOTIV_PARTE, type Regiune } from './regiune.ts';
+import { discInK, type Regiune } from './regiune.ts';
 
 /**
  * Căile deschise în CAM (ADR 0037, sub-felia 2.3c-2): refuzurile de dinaintea traseului (§9, §4, marcajul pe o cale
  * închisă de la §8), judecata marcajului „despărțire” și a tăieturii deschise prin foaie care ajunge la marginea foii
- * (§8), apoi avertismentele de la §10 (tăietura pe linie prin foaie într-o piesă, bucata liberă). Programul nu se schimbă
- * din cauza unui avertisment. Pe o parte (stânga / dreapta) se refuză până la 2.3c-5.
+ * (§8), apoi avertismentele de la §10 (tăietura pe linie prin foaie într-o piesă, bucata liberă, peretele neatins).
+ * Programul nu se schimbă din cauza unui avertisment.
  */
 
 /** Cât de aproape de conturul foii ajunge capătul unei tăieturi deschise care o poate despărți, peste R (ADR 0037 §8). */
@@ -62,7 +62,7 @@ export function refuzDeschise(taieturi: readonly Taietura[], contururi: Readonly
     const deschisa = esteCaleDeschisa(t.forma);
     if (deschisa && (t.latura === 'exterior' || t.latura === 'interior')) {
       // Nu se degradează tăcut pe linie, ca în ediția întâi (ADR 0037, „Ce am respins”).
-      return `${t.idLume}: profilul ${t.latura} cere un contur închis: pe o cale deschisă alege pe linie (stânga și dreapta vin într-o felie următoare)`;
+      return `${t.idLume}: profilul ${t.latura} cere un contur închis: pe o cale deschisă alege pe linie, stânga sau dreapta`;
     }
     if (!deschisa && (t.latura === 'stanga' || t.latura === 'dreapta')) {
       return `${t.idLume}: stânga / dreapta cer o cale deschisă: pe un contur închis alege exterior sau interior`;
@@ -71,7 +71,6 @@ export function refuzDeschise(taieturi: readonly Taietura[], contururi: Readonly
     if ((parti.get(t.idLume)?.size ?? 0) > 1) {
       return `${t.idLume}: are operații și pe stânga, și pe dreapta: nu se știe ce parte se păstrează`;
     }
-    if (t.latura === 'stanga' || t.latura === 'dreapta') return `${t.idLume}: ${MOTIV_PARTE}`;
     if (opDeschise.has(`${t.piesa}/${t.operatie}`)) {
       const ce = ceVineMaiTarziu(t);
       if (ce) return deschisa ? `${t.idLume}: ${ce}` : `${t.idLume}: operația ${t.operatie} are și căi deschise; ${ce}`;
@@ -121,14 +120,18 @@ function laMarginea(p: Punct, latime: number, inaltime: number): number {
 
 export type JudecataDeschisa = { readonly ok: true; readonly avertismente: readonly string[] } | { readonly ok: false; readonly motiv: string };
 
+/** Peste atâta (mm) peste diametrul frezei, o porțiune neatinsă nu mai e doar rotunjirea unui colț concav (ADR 0037 §10). */
+export const NEATINS_PESTE_D = 1e-6;
+
 /**
  * Judecata unei tăieturi pe o cale deschisă, după regiune (ADR 0037 §8, §10): marcajul „despărțire” (prin toată foaia,
  * cu discul frezei în afara pieselor), tăietura deschisă nemarcată prin foaie care ajunge la marginea foii (refuz: omul
- * hotărăște, aplicația doar îi cere să hotărască), apoi avertismentele. `traseu`: drumul centrului frezei (pe linie, chiar
- * calea, în lume).
+ * hotărăște, aplicația doar îi cere să hotărască), apoi avertismentele. `cale`: calea, în lume (capetele ei); `trasee`:
+ * drumurile centrului frezei (pe linie, chiar calea; pe o parte, bucățile offsetului).
  */
 export function judecaDeschisa(
-  t: Taietura, traseu: Contur, regiune: Regiune, foaie: { readonly latime: number; readonly inaltime: number; readonly grosime: number }, D: number,
+  t: Taietura, cale: Contur, trasee: readonly Contur[], regiune: Regiune,
+  foaie: { readonly latime: number; readonly inaltime: number; readonly grosime: number }, D: number,
 ): JudecataDeschisa {
   const R = D / 2;
   const prinFoaie = t.adancime >= foaie.grosime - EPS_GROSIME;
@@ -136,9 +139,12 @@ export function judecaDeschisa(
     if (!prinFoaie) {
       return { ok: false, motiv: `${t.idLume}: o despărțire taie prin toată foaia, iar adâncimea de ${t.adancime} mm e sub grosimea foii (${foaie.grosime} mm)` };
     }
-    const k = discInK(regiune, traseu, R);
-    if (k) return { ok: false, motiv: `${t.idLume}: despărțirea intră în piesa ${k.piesa} (${k.unde}): o despărțire trece doar prin schelet, în afara pieselor` };
+    for (const traseu of trasee) {
+      const k = discInK(regiune, traseu, R);
+      if (k) return { ok: false, motiv: `${t.idLume}: despărțirea intră în piesa ${k.piesa} (${k.unde}): o despărțire trece doar prin schelet, în afara pieselor` };
+    }
   }
+  const traseu = cale;
   const p0 = traseu.varfuri[0]?.p;
   const pn = traseu.varfuri[traseu.varfuri.length - 1]?.p;
   if (!p0 || !pn) return { ok: true, avertismente: [] };

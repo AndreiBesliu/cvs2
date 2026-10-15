@@ -22,16 +22,18 @@ export const MARGINI_OPERATIE = {
 export type LaturaExport = Latura;
 
 const LATURI_INCHISE: readonly LaturaExport[] = ['exterior', 'interior', 'pe-linie'];
+const LATURI_O_CALE: readonly LaturaExport[] = ['pe-linie', 'stanga', 'dreapta'];
 const LATURI_DESCHISE: readonly LaturaExport[] = ['pe-linie'];
 
 /**
  * Laturile pe care dialogul le oferă unui rând (ADR 0037 §12): ce nu refuză exportul. Pe un rând doar cu contururi închise
- * (`deschise` = 0), exterior / interior / pe linie; pe unul cu căi deschise (toate sau amestecate), doar pe linie: stânga
- * și dreapta vin cu 2.3c-5. Latura scrisă deja în document rămâne în listă, ca rândul s-o arate cum e (exportul o refuză
- * cu motiv, iar omul o poate schimba).
+ * (`deschise` = 0), exterior / interior / pe linie. Pe un rând cu o singură cale, deschisă (`noduri` = `deschise` = 1),
+ * pe linie, stânga și dreapta. Pe mai multe căi deschise sau pe un rând amestecat, doar pe linie: fiecare cale și-ar avea
+ * partea după sensul ei întâmplător din fișier (latura pe fiecare cale vine cu panoul, 2.8). Latura scrisă deja în
+ * document rămâne în listă, ca rândul s-o arate cum e (exportul o refuză cu motiv, iar omul o poate schimba).
  */
-export function laturiOferite(deschise: number, curenta: LaturaExport): readonly LaturaExport[] {
-  const l = deschise > 0 ? LATURI_DESCHISE : LATURI_INCHISE;
+export function laturiOferite(deschise: number, noduri: number, curenta: LaturaExport): readonly LaturaExport[] {
+  const l = deschise === 0 ? LATURI_INCHISE : deschise === 1 && noduri === 1 ? LATURI_O_CALE : LATURI_DESCHISE;
   return l.includes(curenta) ? l : [...l, curenta];
 }
 

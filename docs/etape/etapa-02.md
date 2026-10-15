@@ -87,6 +87,9 @@ parte în CAM (traseul, sensul, pereții, refuzurile, dialogul, săgețile vizib
 ale autorului în `test/unit/geom.offset.deschis.test.ts`, 13 mutații ale verificării, toate prinse). Rămâne oracolul
 independent. Precizările apărute la implementare sunt în ADR 0037 §5.
 
+*2.3c-5 (15.10):* partea aplicației gata (tăietura pe stânga / dreapta în CAM, pereții, dialogul, săgeata), nepublicată
+pe test până la poarta amendată (sesiunea independentă, în lucru) și recenzia B.
+
 *Gata când:* testele de legătură ale oracolului sunt verzi, refuzurile sunt numărate (niciun „nu încape” fals pe cazul 8),
 sabotajele oracolului sunt prinse și CI-ul e verde.
 

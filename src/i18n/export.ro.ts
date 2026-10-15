@@ -22,7 +22,7 @@ export const roExport = {
   'export.latura.pe-linie': 'pe linie',
   'export.latura.stanga': 'stânga',
   'export.latura.dreapta': 'dreapta',
-  'export.latura.deschise.titlu': 'O cale deschisă se taie deocamdată pe linie. Exteriorul și interiorul cer un contur închis; stânga și dreapta (partea pe care merge freza) vin într-o versiune următoare.',
+  'export.latura.deschise.titlu': 'O cale deschisă se taie pe linie sau pe o parte: stânga și dreapta sunt partea pe care merge freza, privind în sensul desenului (săgeata de pe planșă). Pe o parte, doar pe un rând cu o singură cale. Exteriorul și interiorul cer un contur închis.',
   'export.deschise.titlu': 'Pe o cale deschisă, urechile, rampa, intrările și degajările colțurilor vin într-o versiune următoare.',
   'export.sens': 'Sens',
   'export.sens.urcare': 'urcare',

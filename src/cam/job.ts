@@ -1,11 +1,11 @@
 import { esteCaleDeschisa, type Document } from '../model/document.ts';
 import { conturDeTaiat } from './contur.ts';
-import { judecaDeschisa, refuzDeschise } from './deschise.ts';
+import { judecaDeschisa, NEATINS_PESTE_D, refuzDeschise } from './deschise.ts';
 import { conturElement } from '../model/forme.ts';
 import { taieturiFoaie, type Taietura } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { profil } from './profil.ts';
-import { MOTIV_PARTE, regiunePastrata, verificaTaietura } from './regiune.ts';
+import { perete, regiunePastrata, verificaTaietura, type Perete } from './regiune.ts';
 import { apropiereContururi, distantaCutii } from '../geom/apropiere.ts';
 import { LINIE, type Contur } from '../geom/contur.ts';
 import { cutieContur, depasire, largita, type Cutie, type Depasire } from '../geom/cutie.ts';
@@ -102,10 +102,17 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   const miscari: Miscare[] = [];
   const avertismente: string[] = [];
   // Profilele tuturor tăieturilor, o dată. Un profil care nu iese se raportează mai jos, la tăietura lui. Pe o parte
-  // (stânga / dreapta) nu se ajunge aici: refuzul de mai sus o oprește până la 2.3c-5.
-  const profile = taieturi.map((u) => (u.latura === 'stanga' || u.latura === 'dreapta'
-    ? { ok: false as const, motiv: MOTIV_PARTE }
-    : profil(conturDe(u), { latura: u.latura, sens: u.sens, diametruScula: scula.diametru, adancime: u.adancime, pas: u.pas })));
+  // (ADR 0037 §3), partea pe foaie se inversează sub o matrice care oglindește.
+  const profile = taieturi.map((u) => profil(conturDe(u), {
+    latura: u.latura, sens: u.sens, diametruScula: scula.diametru, adancime: u.adancime, pas: u.pas,
+    oglindit: u.matrice.a * u.matrice.d - u.matrice.b * u.matrice.c < 0,
+  }));
+  // Pereții (ADR 0037 §10): calea fiecărei tăieturi pe o parte; muchia ei se promite, deci niciun disc nu vine mai aproape
+  // de R − ε de ea, nici al profilelor, nici al altor tăieturi pe o parte.
+  const pereti: Perete[] = [];
+  for (const u of taieturi) {
+    if ((u.latura === 'stanga' || u.latura === 'dreapta') && !pereti.some((p) => p.idLume === u.idLume)) pereti.push(perete(u.idLume, conturDe(u)));
+  }
   // Buclele fiecărei tăieturi: ca o degajare să nu se apropie de ele (ADR 0032 §5 a); cele cu urechi, ca o intrare să nu le
   // taie legătura (ADR 0030 §3, condiția c).
   const bucleToate: readonly (readonly Contur[])[] = profile.map((p) => (p.ok ? (p.treceri[0]?.contururi ?? []) : []));
@@ -145,9 +152,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   /** Cât trece discul frezei de fiecare latură a foii, pe un traseu (măsura ieșirii din foaie). */
   const iese = (x: Contur): Depasire => depasire(largita(cutieContur(x), R), foaie.stoc.latime, foaie.stoc.inaltime, PRAG_REZOLUTIE);
   for (const [it, t] of taieturi.entries()) {
-    // Pe o parte nu se ajunge aici (refuzul căilor deschise, mai sus); garda dă doar tipul laturii.
     const latura = t.latura;
-    if (latura === 'stanga' || latura === 'dreapta') return { ok: false, motiv: `${t.idLume}: ${MOTIV_PARTE}` };
     // Mai adânc decât foaia înseamnă în masa de sacrificiu (sau în masa mașinii): cel mult supracursa.
     if (t.adancime > grosime + supracursa + 1e-9) {
       return {
@@ -156,13 +161,6 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
           ? `${t.idLume}: adâncimea ${t.adancime} mm trece de grosimea foii (${grosime} mm) plus supracursa (${supracursa} mm)`
           : `${t.idLume}: adâncimea ${t.adancime} mm trece de grosimea foii (${grosime} mm)`,
       };
-    }
-    // Calea deschisă (ADR 0037 §8, §10): despărțirea marcată, tăietura prin foaie care ajunge la marginea foii, apoi
-    // avertismentele. Pe linie, traseul e chiar calea, în lume.
-    if (esteCaleDeschisa(t.forma)) {
-      const j = judecaDeschisa(t, conturDe(t), regiune.regiune, foaie.stoc, scula.diametru);
-      if (!j.ok) return { ok: false, motiv: j.motiv };
-      for (const a of j.avertismente) avertismente.push(a);
     }
     // Urechile (ADR 0028 §2): vârful lor se măsoară de la fața de jos a foii, deci puntea are grosimea cerută oricât de
     // adânc merge tăietura.
@@ -186,9 +184,26 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     const pr = profile[it];
     if (!pr) return { ok: false, motiv: `${t.idLume}: profilul lipsește` };
     if (!pr.ok) return { ok: false, motiv: `${t.idLume}: ${pr.motiv}` };
-    // Invarianta 2: trecerile au același traseu în plan, deci se judecă o dată, pe prima.
-    const incalcare = verificaTaietura(regiune.regiune, t.idLume, latura, pr.treceri[0]?.contururi ?? [], scula.diametru / 2);
+    // Calea deschisă (ADR 0037 §8, §10): despărțirea marcată, tăietura prin foaie care ajunge la marginea foii, apoi
+    // avertismentele. Capetele sunt ale căii; discul merge pe trasee (pe linie, chiar calea; pe o parte, bucățile).
+    if (esteCaleDeschisa(t.forma)) {
+      const j = judecaDeschisa(t, conturDe(t), pr.treceri[0]?.contururi ?? [], regiune.regiune, foaie.stoc, scula.diametru);
+      if (!j.ok) return { ok: false, motiv: j.motiv };
+      for (const a of j.avertismente) avertismente.push(a);
+    }
+    // Invarianta 2: trecerile au același traseu în plan, deci se judecă o dată, pe prima. Cu pereții (ADR 0037 §10).
+    const incalcare = verificaTaietura(regiune.regiune, t.idLume, latura, pr.treceri[0]?.contururi ?? [], scula.diametru / 2, pereti);
     if (incalcare) return { ok: false, motiv: incalcare };
+    // Peretele neatins (ADR 0037 §10, precizarea 2.3c-5): un singur avertisment pe tăietură, doar cu porțiunile mai lungi
+    // decât D. Rotunjirea unui colț concav de cel puțin 90° (R · cot(θ / 2) pe fiecare latură, cel mult D în total) e ca
+    // la un profil închis fără degajări și nu se spune.
+    const lungi = pr.neatins.filter((n) => n.lungime > scula.diametru + NEATINS_PESTE_D);
+    if (lungi.length > 0) {
+      const total = lungi.reduce((s, n) => s + n.lungime, 0);
+      const cea = lungi.reduce((a, b) => (b.lungime > a.lungime ? b : a));
+      const cate = lungi.length === 1 ? `o porțiune a peretelui, de ${total.toFixed(3)} mm` : `${lungi.length} porțiuni ale peretelui, în total ${total.toFixed(3)} mm (cea mai lungă: ${cea.lungime.toFixed(3)} mm)`;
+      avertismente.push(`${t.idLume}: freza nu ajunge la ${cate}, lângă X ${cea.la.x.toFixed(3)}, Y ${cea.la.y.toFixed(3)}: acolo rămâne material lipit de perete`);
+    }
     // Intrările (ADR 0030): alese pe fiecare buclă, verificate exact pe regiunea păstrată; bucla pornește din p₀.
     let treceri = pr.treceri;
     let intrari: (IntrareAleasa | null)[] | undefined;
@@ -216,7 +231,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
         // pe nicio latură, și (c) lasă cel puțin 1 mm de material lângă orice altă buclă cu urechi, iar puntea fiecărei
         // urechi a buclei înseși rămâne întreagă (traseul la cel puțin D de coloana ei).
         const incape = (semicerc: Contur, s: number): boolean => {
-          if (verificaTaietura(regiune.regiune, t.idLume, latura, [semicerc], R) !== null) return false;
+          if (verificaTaietura(regiune.regiune, t.idLume, latura, [semicerc], R, pereti) !== null) return false;
           const d = iese(semicerc);
           if (d.stanga > dBucla.stanga || d.dreapta > dBucla.dreapta || d.jos > dBucla.jos || d.sus > dBucla.sus) return false;
           if (!departeDeUrechi(semicerc, c, s, gu, R, scula.diametru)) return false;
@@ -239,6 +254,8 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     let degajari: Degajare[][] | undefined;
     if (t.colturi) {
       if (latura === 'pe-linie') return { ok: false, motiv: `${t.idLume}: degajările cer o parte de deșeu, iar pe linie freza taie ambii pereți` };
+      // Pe o parte nu se ajunge aici: degajările pe o cale deschisă se refuză înainte (ADR 0037 §9).
+      if (latura !== 'exterior' && latura !== 'interior') return { ok: false, motiv: `${t.idLume}: degajările colțurilor pe o cale deschisă vin mai târziu` };
       // Arcele sub raza frezei se socotesc pe DESEN (recenzia 2.7b): arcele biarcelor unei cubice nu sunt colțuri, iar o
       // curbă strânsă se spune o dată, nu pe fiecare arc al ei.
       const desen = conturElement(t);

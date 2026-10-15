@@ -476,6 +476,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           const e = harti.dupaIdLume.get(`${inst}/${n}`);
           return e !== undefined && esteCaleDeschisa(e.forma);
         }).length,
+        noduri: o.noduri.length,
         valori: {
           latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
           urechi: o.urechi ? { numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime } : null,

@@ -3,7 +3,7 @@
  * plonjarea F300, foaia 300 × 200 × 18, originea stânga-jos.
  * - §4 / §7: pe linie, freza merge pe cale din vârful 0 până la celălalt capăt, cu plonjarea verticală în vârful 0 la
  *   fiecare trecere și ridicarea la capăt; nicio coardă de închidere, niciun zig-zag, sensul nu schimbă nimic.
- * - §9: refuzurile (laturile nepotrivite, stânga / dreapta până la 2.3c-5, urechile, rampa, intrările și degajările pe o
+ * - §9: refuzurile (laturile nepotrivite, stânga și dreapta pe același element, urechile, rampa, intrările și degajările pe o
  *   operație cu căi deschise, calea degenerată).
  * - §8: ordinea (despărțirile la urmă), judecata marcajului, refuzul tăieturii deschise nemarcate care ajunge la margine.
  * - §10: avertismentele (pe linie prin foaie într-o piesă, bucata liberă), cu programul neschimbat.
@@ -146,11 +146,9 @@ test('§9: exterior / interior pe o cale deschisă se refuză (nu se degradează
   }
 });
 
-test('§9: stânga / dreapta pe o cale deschisă vin cu 2.3c-5; amândouă pe același element: nu se știe ce parte se păstrează', () => {
+test('§9: stânga și dreapta pe același element: nu se știe ce parte se păstrează (fiecare singură trece, din 2.3c-5)', () => {
   const linie = docDin(F, element('l', deschisa([50, 50], [150, 50]), 0, 0));
-  for (const latura of ['stanga', 'dreapta'] as const) {
-    assert.match(refuz(cuOperatie(linie, 'l', { latura })), /^l\/l: tăietura pe o parte \(stânga \/ dreapta\) a unei căi deschise vine într-o felie următoare \(2\.3c-5\)/);
-  }
+  for (const latura of ['stanga', 'dreapta'] as const) program(cuOperatie(linie, 'l', { latura }));
   const doua: Document = {
     ...linie,
     piese: linie.piese.map((p) => ({ ...p, operatii: [
@@ -307,9 +305,11 @@ test('ordinea (§8): interioarele, apoi pe linie și deschisele nemarcate (și s
   assert.equal(fals.some((x) => Object.hasOwn(x, 'despartire')), false);
 });
 
-test('dialogul (§12): rândul cu căi deschise oferă doar pe linie; latura scrisă deja în document rămâne în listă', () => {
-  assert.deepEqual(laturiOferite(0, 'exterior'), ['exterior', 'interior', 'pe-linie']);
-  assert.deepEqual(laturiOferite(1, 'pe-linie'), ['pe-linie']);
-  assert.deepEqual(laturiOferite(2, 'exterior'), ['pe-linie', 'exterior']);
-  assert.deepEqual(laturiOferite(0, 'stanga'), ['exterior', 'interior', 'pe-linie', 'stanga']);
+test('dialogul (§12): o singură cale deschisă oferă pe linie, stânga, dreapta; mai multe sau amestecate, doar pe linie; latura scrisă rămâne', () => {
+  assert.deepEqual(laturiOferite(0, 1, 'exterior'), ['exterior', 'interior', 'pe-linie']);
+  assert.deepEqual(laturiOferite(1, 1, 'pe-linie'), ['pe-linie', 'stanga', 'dreapta']);
+  assert.deepEqual(laturiOferite(1, 2, 'pe-linie'), ['pe-linie']);
+  assert.deepEqual(laturiOferite(2, 2, 'stanga'), ['pe-linie', 'stanga']);
+  assert.deepEqual(laturiOferite(2, 2, 'exterior'), ['pe-linie', 'exterior']);
+  assert.deepEqual(laturiOferite(0, 1, 'stanga'), ['exterior', 'interior', 'pe-linie', 'stanga']);
 });

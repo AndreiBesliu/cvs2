@@ -186,7 +186,7 @@ test('CNC-referinta.svg (ADR 0037 §11, §12): valul vine ca o cale deschisă, c
   await expect(page.getByRole('dialog')).toHaveCount(0);
 
   // Piesa importată e aleasă. Valul se taie pe linie, unde sensul nu schimbă tăietura: nicio săgeată, nici aleasă (decizia
-  // owner-ului, 13.10; săgeata apare pe o cale deschisă tăiată pe o parte, stânga / dreapta, care vine în 2.3c-5).
+  // owner-ului, 13.10; săgeata apare pe o cale deschisă tăiată pe o parte, stânga / dreapta).
   await expect(page.getByTestId('selectie')).toHaveText('Selectat: CNC-referinta');
   await vedere(page);
   await expect(page.getByTestId('panza')).toHaveAttribute('data-sageti', '0');
@@ -198,7 +198,8 @@ test('CNC-referinta.svg (ADR 0037 §11, §12): valul vine ca o cale deschisă, c
   const val = page.locator('[data-operatie="e1/deschise"]');
   await expect(val).toContainText('cale deschisă 150.00 × 34.64, 1 segment, la X 160.00, Y 42.68');
   await expect(val.locator('select[data-camp="latura"]')).toHaveValue('pe-linie');
-  await expect(val.locator('select[data-camp="latura"] option')).toHaveCount(1);
+  // Un rând cu o singură cale deschisă: pe linie, stânga, dreapta (ADR 0037 §12).
+  await expect(val.locator('select[data-camp="latura"] option')).toHaveText(['pe linie', 'stânga', 'dreapta']);
   await expect(val.locator('[data-camp="urechi"]')).toBeDisabled();
   await page.locator('[data-operatie="e1/exterior"] select[data-camp="latura"]').selectOption('pe-linie');
   await page.locator('[data-operatie="e1/interior"] select[data-camp="latura"]').selectOption('pe-linie');
@@ -222,6 +223,31 @@ test('CNC-referinta.svg (ADR 0037 §11, §12): valul vine ca o cale deschisă, c
     foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'stanga-jos', z0: 'sus', diametruScula: 6, pas: 3,
     supracursa: 0, asteptareAx: 3, avansPlonjare: 300, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
   })).toEqual([]);
+});
+
+test('linia tăiată pe stânga (2.3c-5): dialogul o oferă, G-code-ul pe hârtie la Y53, iar săgeata de sens apare în selecție', async ({ page }) => {
+  await page.goto('/');
+  // Linia (50,50)→(150,50) pe foaie: în SVG y crește în jos, deci y = 200 − 150.
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="300mm" height="200mm" viewBox="0 0 300 200"><line x1="50" y1="150" x2="150" y2="150" stroke="black"/></svg>';
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisier('linia.svg', svg));
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByTestId('selectie')).toHaveText('Selectat: linia');
+  await vedere(page);
+  await expect(page.getByTestId('panza')).toHaveAttribute('data-sageti', '0');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const rand = page.locator('[data-operatie="e1/deschise"]');
+  await rand.locator('select[data-camp="latura"]').selectOption('stanga');
+  // Pe o parte, sensul contează: câmpul lui e activ.
+  await expect(rand.locator('select[data-camp="sens"]')).toBeEnabled();
+  const d = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const text = readFileSync(await (await d).path(), 'ascii');
+  // Hârtia 1 (ADR 0037): stânga + urcare = ca desenul, centrul la R deasupra liniei; 1 mm într-o trecere (gravura importului).
+  expect(text).toContain('\n(e1/c1: cale, stanga, 1 mm)\nG0 X50.000 Y53.000\nG1 Z-1.000 F300.0\nG1 X150.000 Y53.000 F1000.0\nG0 Z5.000\n');
+  await page.getByRole('button', { name: 'Închide' }).click();
+  // Latura scrisă de export: linia aleasă își arată acum sensul (ADR 0037 §12).
+  await expect(page.getByTestId('panza')).toHaveAttribute('data-sageti', '1');
 });
 
 /** Un SVG cu un pătrat de 20 × 20 mm, la 10 mm de colțul paginii de 40 × 40 mm. */

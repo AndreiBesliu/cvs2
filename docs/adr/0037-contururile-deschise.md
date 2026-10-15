@@ -326,6 +326,20 @@ linie trece prin toată grosimea piesei Y (lângă …): o despică sau o creste
 - **Peretele neatins:** porțiunile `neatins` de la §5, cu lungimea și locul. La mașină, acolo rămâne material lipit de perete.
 - **Bucata liberă:** o tăietură deschisă prin foaie cu capetele la mai puțin de D + 1 mm unul de altul, sau o cale pe linie prin foaie care se taie singură. Textul: „bucata închisă de tăietură iese liberă, fără urechi”.
 
+*Precizările 2.3c-5 (15.10, la implementare):*
+- **Peretele neatins se spune o dată pe tăietură, doar peste D.** `neatins` (§5) rămâne întreg, dar avertismentul ia doar
+  porțiunile mai lungi decât D și le spune într-un singur rând: câte sunt, lungimea totală, cea mai lungă și locul ei.
+  Rotunjirea unui colț concav de cel puțin 90° are cel mult D (R · cot(θ / 2) pe fiecare latură) și nu se spune, ca la un
+  profil închis fără degajări (§6). Un colț mai ascuțit, cârligul și V-ul de 10° se spun (14,828 mm; 68,580 mm). Pe un
+  zig-zag tăiat pe partea concavă, un singur rând, nu câte unul pe dinte (hotărât de asistent, la recomandarea din
+  precizările 2.3c-4).
+- **Hârtia 10, „cu freza pe partea cealaltă: trece”, cere și ca profilul piesei să stea departe de perete.** La 5 mm de
+  latura piesei, fâșia e mai îngustă decât D: linia trece pe dreapta, dar profilul exterior al piesei (la R de latura ei)
+  vine la 2 mm de perete, deci refuzul e pe piesă: „tăietura lui r atinge peretele lui l cu 1,000 mm”. Pe hârtie, la 9 mm
+  trec amândouă părțile.
+- **Despărțirea pe o parte** se judecă pe bucățile offsetului (discul merge pe ele), iar marginea foii pe capetele căii
+  (canalul trece de capăt cu R, ca pe linie).
+
 **11. Ușa SVG** (amendează ADR 0035 §7, §8, §10).
 
 *Praful.* O subcale, închisă sau deschisă, cu diagonala cutiei sub `REZOLUTIE` se sare. Se numără la `sub-rezolutie`. Azi, o subcale închisă de felul ăsta face CAM-ul să refuze tot exportul.

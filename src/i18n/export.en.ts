@@ -26,7 +26,7 @@ export const enExport = {
   'export.latura.pe-linie': 'on the line',
   'export.latura.stanga': 'left',
   'export.latura.dreapta': 'right',
-  'export.latura.deschise.titlu': 'An open path is cut on the line for now. Outside and inside need a closed outline; left and right (the side the cutter runs on) come in a later version.',
+  'export.latura.deschise.titlu': 'An open path is cut on the line or on one side: left and right are the side the cutter runs on, looking along the drawing direction (the arrow on the sheet). One side only on a row with a single path. Outside and inside need a closed outline.',
   'export.deschise.titlu': 'On an open path, tabs, ramps, leads and corner relief come in a later version.',
   'export.sens': 'Direction',
   'export.sens.urcare': 'climb',

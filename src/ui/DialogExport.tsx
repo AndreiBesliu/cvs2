@@ -28,7 +28,9 @@ export type ValoriOperatie = {
  * Un rând: o operație a unei piese (ADR 0025), cu cheia `<piesă>/<operație>`. `deschise`: câte din nodurile ei sunt căi
  * deschise (ADR 0037 §12): coloanele oferă doar ce nu refuză exportul.
  */
-export type OperatieExport = { readonly cheie: string; readonly descriere: string; readonly deschise: number; readonly valori: ValoriOperatie };
+export type OperatieExport = {
+  readonly cheie: string; readonly descriere: string; readonly deschise: number; readonly noduri: number; readonly valori: ValoriOperatie;
+};
 
 /** Ce trimite dialogul la Exportă: montajul, valorile operațiilor (se scriu în document) și confirmarea. */
 export type CerereExport = ParametriExport & { readonly diametru: number; readonly valori: ReadonlyMap<string, ValoriOperatie> };
@@ -306,7 +308,7 @@ export function DialogExport(
                   <td>
                     <select value={p.latura} data-camp="latura" disabled={doarCitire} title={deschis ? t('export.latura.deschise.titlu') : undefined}
                       onChange={(ev) => { schimba(o.cheie, { latura: ev.target.value as Latura }); }}>
-                      {laturiOferite(o.deschise, p.latura).map((l) => <option key={l} value={l}>{t(CHEI_LATURA[l])}</option>)}
+                      {laturiOferite(o.deschise, o.noduri, p.latura).map((l) => <option key={l} value={l}>{t(CHEI_LATURA[l])}</option>)}
                     </select>
                   </td>
                   <td>

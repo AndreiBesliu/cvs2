@@ -23,8 +23,15 @@ export const EPS_ATINGERE_INELE = 1e-6;
 /** Începutul oricărui refuz al regiunii păstrate, ca testele să-l poată recunoaște (ADR 0026 §8). */
 export const PREFIX_REGIUNE = 'regiunea păstrată:';
 
-/** Refuzul tăieturii pe o parte a unei căi deschise (ADR 0037 §3, §6), până la sub-felia ei (2.3c-5). */
-export const MOTIV_PARTE = 'tăietura pe o parte (stânga / dreapta) a unei căi deschise vine într-o felie următoare (2.3c-5): deocamdată, alege pe linie';
+/**
+ * Peretele unei tăieturi pe o parte (ADR 0037 §10): calea deschisă, în lume (conturul ei de tăiat), a cărei muchie e
+ * promisă. Niciun disc de freză nu vine mai aproape de R − ε de el, nici al tăieturii lui (care stă la exact R).
+ */
+export type Perete = { readonly idLume: string; readonly contur: Contur; readonly cutie: Cutie };
+
+export function perete(idLume: string, contur: Contur): Perete {
+  return { idLume, contur, cutie: cutieContur(contur) };
+}
 
 export type Rol = 'piesa' | 'gol';
 
@@ -140,16 +147,38 @@ function stapan(r: Regiune, x: Inel): string {
 
 /**
  * Invarianta 2 pe traseele unei tăieturi (contururile centrului sculei, la orice trecere): null, sau motivul. Pentru o
- * tăietură `pe-linie`, sau a unui element care nu e inel, nu se judecă nimic (ADR 0026 §6).
+ * tăietură `pe-linie` nu se judecă nimic (ADR 0026 §6).
  * Traseul e în afara lui K ∪ S(C) dacă un punct al lui e afară și niciun punct nu vine mai aproape de R − ε de marginea
- * lui K ∪ S(C), care e făcută din marginile lui K și din C.
+ * lui K ∪ S(C), care e făcută din marginile lui K și din C. Pereții tăieturilor pe o parte (ADR 0037 §10) se adaugă la
+ * margini: pe exterior / interior și pe o parte. Pe o parte (stânga / dreapta), K se judecă la fel, fără partea proprie:
+ * calea nu e inel; partea față de propriul perete o verifică offsetul deschis (§5).
  */
-export function verificaTaietura(r: Regiune, idLume: string, latura: Taietura['latura'], trasee: readonly Contur[], raza: number): string | null {
+export function verificaTaietura(
+  r: Regiune, idLume: string, latura: Taietura['latura'], trasee: readonly Contur[], raza: number, pereti: readonly Perete[] = [],
+): string | null {
   if (latura === 'pe-linie') return null;
-  // Pe o parte, regiunea se judecă cu pereții (ADR 0037 §10), din 2.3c-5. Până atunci, refuz, nu „trece” nejudecat.
-  if (latura !== 'exterior' && latura !== 'interior') return `${idLume}: ${MOTIV_PARTE}`;
+  if (latura === 'stanga' || latura === 'dreapta') {
+    const margini = r.inele.filter((x) => margineK(r, x));
+    for (const traseu of trasee) {
+      const p0 = traseu.varfuri[0]?.p;
+      if (!p0) continue;
+      if (inK(r, p0)) return `${PREFIX_REGIUNE} tăietura lui ${idLume} stă în piesa ${piesaCare(r, p0)} (lângă X ${fmt(p0.x)}, Y ${fmt(p0.y)})`;
+      const cea = margineAtinsa(traseu, margini, raza);
+      if (cea) return `${PREFIX_REGIUNE} tăietura lui ${idLume} intră în piesa ${stapan(r, cea.d)} cu ${catIntra(cea.a, raza)} (lângă X ${fmt(cea.a.q.x)}, Y ${fmt(cea.a.q.y)})`;
+      const p = pereteAtins(traseu, pereti, raza);
+      if (p) return motivPerete(idLume, p, raza);
+    }
+    return null;
+  }
   const c = r.inele.find((x) => x.idLume === idLume);
-  if (!c) return null;
+  if (!c) {
+    // Un element care nu e inel n-are parte proprie; pereții se judecă totuși.
+    for (const traseu of trasee) {
+      const p = pereteAtins(traseu, pereti, raza);
+      if (p) return motivPerete(idLume, p, raza);
+    }
+    return null;
+  }
   const inS = (p: Punct): boolean => (c.rol === 'piesa' ? inRegiune(p, [c.contur]) : !inRegiune(p, [c.contur]));
   const margini = r.inele.filter((x) => x === c || margineK(r, x));
   for (const traseu of trasee) {
@@ -165,8 +194,29 @@ export function verificaTaietura(r: Regiune, idLume: string, latura: Taietura['l
       const cui = d === c ? `propria parte păstrată a lui ${idLume}` : `piesa ${stapan(r, d)}`;
       return `${PREFIX_REGIUNE} tăietura lui ${idLume} intră în ${cui} cu ${catIntra(a, raza)} (lângă X ${fmt(a.q.x)}, Y ${fmt(a.q.y)})`;
     }
+    const p = pereteAtins(traseu, pereti, raza);
+    if (p) return motivPerete(idLume, p, raza);
   }
   return null;
+}
+
+/** Cel mai apropiat perete de traseu, dacă discul de rază R purtat pe el vine mai aproape de R − ε, altfel null. */
+function pereteAtins(traseu: Contur, pereti: readonly Perete[], raza: number): { readonly p: Perete; readonly a: Apropiere } | null {
+  if (pereti.length === 0) return null;
+  const prag = Math.max(raza - EPS_REGIUNE, EPS_ATINGERE_INELE);
+  const cutie = largita(cutieContur(traseu), raza);
+  let cel: { readonly p: Perete; readonly a: Apropiere } | null = null;
+  for (const p of pereti) {
+    if (!seAtingCutiile(cutie, p.cutie)) continue;
+    const a = apropiereContururi(traseu, p.contur, prag);
+    if (!cel || a.distanta < cel.a.distanta) cel = { p, a };
+  }
+  return cel && cel.a.distanta < prag ? cel : null;
+}
+
+function motivPerete(idLume: string, x: { readonly p: Perete; readonly a: Apropiere }, raza: number): string {
+  const al = x.p.idLume === idLume ? 'propriul perete' : `peretele lui ${x.p.idLume}`;
+  return `${PREFIX_REGIUNE} tăietura lui ${idLume} atinge ${al} cu ${catIntra(x.a, raza)} (lângă X ${fmt(x.a.q.x)}, Y ${fmt(x.a.q.y)}): muchia lui se promite exactă`;
 }
 
 /** Piesa în care stă un punct din K: cel mai mic inel care îl conține. */

@@ -1,11 +1,11 @@
 import { inverseaza, type Contur } from '../geom/contur.ts';
-import { offsetInchis } from '../geom/offset.ts';
+import { offsetDeschis, offsetInchis, type PortiuneNeatinsa } from '../geom/offset.ts';
 
 /**
  * Profilul: conturul decalat cu raza sculei, pe exterior sau pe interior, sau chiar linia, pe treceri de adâncime, în
- * sensul de tăiere cerut (ADR 0027). Urechile și intrările vin în feliile 2.4–2.5.
+ * sensul de tăiere cerut (ADR 0027). Pe o cale deschisă, și pe o parte: stânga / dreapta (ADR 0037 §3, §6).
  */
-export type Latura = 'exterior' | 'interior' | 'pe-linie';
+export type Latura = 'exterior' | 'interior' | 'pe-linie' | 'stanga' | 'dreapta';
 /** Cu axul M3 (orar văzut de sus): urcare = materialul păstrat în DREAPTA sensului de mers; opoziție = în stânga. */
 export type Sens = 'urcare' | 'opozitie';
 
@@ -17,13 +17,24 @@ export type ParametriProfil = {
   readonly adancime: number;
   /** Cât scoate cel mult o trecere, în mm. */
   readonly pas: number;
+  /**
+   * Matricea elementului în lume oglindește (determinantul negativ): pe o parte, partea pe foaie se inversează odată cu
+   * forma (ADR 0037 §3, `parteaLume = latura XOR (det < 0)`). Conturul primit e deja în lume.
+   */
+  readonly oglindit?: boolean;
 };
 
 export type Trecere = { readonly adancime: number; readonly contururi: readonly Contur[] };
 
+/** `neatins`: pe o parte, porțiunile peretelui la care freza nu ajunge (ADR 0037 §5, §10); altfel, gol. */
 export type RezultatProfil =
-  | { readonly ok: true; readonly treceri: readonly Trecere[] }
+  | { readonly ok: true; readonly treceri: readonly Trecere[]; readonly neatins: readonly PortiuneNeatinsa[] }
   | { readonly ok: false; readonly motiv: string };
+
+/** Partea sculei pe foaie: latura, inversată sub o oglindire (ADR 0037 §3). */
+export function parteaLume(latura: 'stanga' | 'dreapta', oglindit: boolean): 'stanga' | 'dreapta' {
+  return (latura === 'stanga') !== oglindit ? 'stanga' : 'dreapta';
+}
 
 const pozitivFinit = (x: number): boolean => Number.isFinite(x) && x > 0;
 
@@ -49,9 +60,23 @@ export function profil(contur: Contur, p: ParametriProfil): RezultatProfil {
   if (typeof adancimi === 'string') return { ok: false, motiv: adancimi };
 
   let contururi: readonly Contur[];
+  let neatins: readonly PortiuneNeatinsa[] = [];
   if (p.latura === 'pe-linie') {
     // Scula taie ambii pereți: sensul nu schimbă materialul, deci traseul urmează conturul cum e desenat (ADR 0027 §3).
     contururi = [contur];
+  } else if (p.latura === 'stanga' || p.latura === 'dreapta') {
+    // Pe o parte (ADR 0037 §6): centrul pe offsetul deschis la R, pe partea sculei din lume; peretele rămâne linia.
+    if (contur.inchis) return { ok: false, motiv: 'stânga / dreapta cer o cale deschisă: pe un contur închis alege exterior sau interior' };
+    const parte = parteaLume(p.latura, p.oglindit === true);
+    const raza = p.diametruScula / 2;
+    const o = offsetDeschis(contur, parte === 'stanga' ? raza : -raza);
+    if (!o.ok) return o;
+    // Sensul (ADR 0037 §6, ADR 0027): bucățile ies în sensul desenului, cu materialul păstrat de partea cealaltă a liniei.
+    // Cu M3, la urcare materialul păstrat stă în dreapta mersului: scula în stânga ⇒ ca desenul. Altfel, fiecare bucată se
+    // inversează, și ordinea lor odată cu ele.
+    const inversate = (parte === 'stanga') !== (p.sens === 'urcare');
+    contururi = inversate ? [...o.bucati].reverse().map(inverseaza) : o.bucati;
+    neatins = o.neatins;
   } else {
     const raza = p.diametruScula / 2;
     const o = offsetInchis(contur, p.latura === 'exterior' ? raza : -raza);
@@ -63,5 +88,5 @@ export function profil(contur: Contur, p: ParametriProfil): RezultatProfil {
     const inversate = (p.latura === 'exterior') === (p.sens === 'urcare');
     contururi = inversate ? o.contururi.map(inverseaza) : o.contururi;
   }
-  return { ok: true, treceri: adancimi.map((adancime) => ({ adancime, contururi })) };
+  return { ok: true, treceri: adancimi.map((adancime) => ({ adancime, contururi })), neatins };
 }

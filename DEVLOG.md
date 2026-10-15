@@ -1585,3 +1585,20 @@ atingerile, acoperirea la 0,05 mm), reîncercarea, cele două motive, `neatins` 
 13 mutații ale verificării (partea întoarsă, bucata scăpată, ieșirea goală luată drept „nu încape”, acoperirea, partea,
 capacul, evantaiul, atingerile, bucla, dus-întorsul, egalitatea picioarelor, înjumătățirea), toate prinse. 6 064 de teste
 unitare; pornirea 96,1 kB (offsetul e în bucata exportului). Nimic vizibil (vine cu 2.3c-5). Rămâne oracolul independent.
+
+## 2026-10-15 — După resetarea săptămânală: oracolul 2.3c-4, poarta 2.3c-5, recenzia A; felia 2.3c-5 (Model: Claude Opus 5.5)
+
+**Prompt:** „vad ca s-a resetat limita saptamanala poti  sa incepi in forta”. **Started:** 12:27. **Clasa:** R2.
+Workflow-ul `wf_0f6db36e-3fc` (8 agenți, în clone din scratchpad, în afara Drive; estimat 3–4,5 M): oracolul independent
+al offsetului deschis (2.3c-4), poarta pentru tăieturile pe o parte (independentă, din ADR 0037 §13) și recenzia A (3
+lentile + un verificator pe lentilă: CAM și documentul; ușa SVG; interfața și pornirea). În paralel, în repo: partea
+aplicației din 2.3c-5 (tăietura pe stânga / dreapta).
+**2.3c-5, partea aplicației (12:27–12:41):** tăietura pe stânga / dreapta în CAM: profilul prin `offsetDeschis` cu R, pe
+partea din lume (XOR cu determinantul), bucățile întoarse după tabelul sensului (§6); pereții ca margini protejate în
+regiune (pentru profile, intrări și celelalte tăieturi pe o parte, §10); despărțirea judecată pe bucăți, marginea foii pe
+capetele căii; avertismentul peretelui neatins, unul pe tăietură, doar peste D (precizarea 2.3c-5); dialogul oferă stânga /
+dreapta pe un rând cu o singură cale deschisă, cu Sens activ; săgeata de sens apare pe planșă. Precizare în ADR: hârtia
+10 („pe partea cealaltă trece”) cere ca și profilul piesei să stea departe de perete (la 5 mm îl atinge). 11 teste noi pe
+hârtie (`cam.parte.test.ts`: hârtiile 1, 3, 4, 9–12, cârligul, U-ul, despărțirea, sensul pe modelul așchiei), un e2e
+nou (linia pe stânga: G-code-ul la Y53 și săgeata). 6 075 de teste unitare, e2e 60 / 60, pornirea 96,2 kB. **Nepublicat
+pe test** până la poarta amendată (ADR 0037, „Ordinea lucrului”).
