@@ -1,12 +1,13 @@
 /**
  * Piesa unui import (ADR 0035 §8, ADR 0037 §11): căile, ca elemente ale unui grup, cu operațiile alese din imbricare
  * (exterior / interior) plus operația căilor deschise (pe linie). Vine la cerere, cu previzualizarea (felia 2.3c-3): nu
- * intră în pachetul de pornire. Acțiunea documentului primește constructorul piesei odată cu importul pregătit
- * (`ImportPregatit.piesa`), fără să importe modulul.
+ * intră în pachetul de pornire. Acțiunea documentului primește constructorul piesei și ușa de încărcare odată cu importul
+ * pregătit (`ImportPregatit.piesa`, `ImportPregatit.treceDeUsa`), fără să importe modulele lor.
  */
 import type { Varf } from '../geom/contur.ts';
 import { cutieContur, CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
-import { operatieImplicita, PLAFON, type ElementNod, type Latura, type Operatie, type Piesa, type VarfDoc } from '../model/document.ts';
+import { operatieImplicita, PLAFON, type Document, type ElementNod, type Latura, type Operatie, type Piesa, type VarfDoc } from '../model/document.ts';
+import { incarca } from '../model/incarcare.ts';
 
 /**
  * O cale a importului, cum o dă ușa SVG: `inchis` e al ei (ADR 0037 §2). Lipsa câmpului înseamnă o cale închisă: ușa îl
@@ -36,14 +37,18 @@ export type PiesaImport = {
 };
 
 /**
- * Importul pregătit de previzualizare: datele, plus constructorul piesei, adus odată cu ele din modulul încărcat la
- * cerere. Piesa se face abia la „Importă”, cu id-ul liber și cu foaia documentului de atunci.
+ * Importul pregătit de previzualizare: datele, plus constructorul piesei și ușa de încărcare, aduse odată cu ele din
+ * modulul încărcat la cerere. Piesa se face abia la „Importă”, cu id-ul liber și cu foaia documentului de atunci; documentul
+ * cu piesa adăugată intră doar dacă trece de ușă (`treceDeUsa`, adică `incarca`), care nu e în pachetul de pornire.
  */
-export type ImportPregatit = DateImport & { readonly piesa: (id: string, foaie: FoaieImport) => PiesaImport };
+export type ImportPregatit = DateImport & {
+  readonly piesa: (id: string, foaie: FoaieImport) => PiesaImport;
+  readonly treceDeUsa: (doc: Document) => boolean;
+};
 
-/** Importul pregătit din datele lui: constructorul e `piesaDinImport`, pe aceleași date. */
+/** Importul pregătit din datele lui: constructorul e `piesaDinImport`, pe aceleași date; ușa e `incarca`. */
 export function pregateste(d: DateImport): ImportPregatit {
-  return { ...d, piesa: (id, foaie) => piesaDinImport(d, id, foaie.scula, foaie.grosime) };
+  return { ...d, piesa: (id, foaie) => piesaDinImport(d, id, foaie.scula, foaie.grosime), treceDeUsa: (doc) => incarca(doc).ok };
 }
 
 /**

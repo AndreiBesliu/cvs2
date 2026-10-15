@@ -1,5 +1,6 @@
 import type { Document } from '../model/document.ts';
-import { incarca, jsonCanonic } from '../model/incarcare.ts';
+import type { RezultatIncarcare } from '../model/incarcare.ts';
+import { jsonCanonic } from '../model/jsonCanonic.ts';
 
 /**
  * Proiectul salvat în browser (`PLAN.md` §3.6, ADR 0016): o singură bază IndexedDB, cu nume nou (datele aplicației vechi
@@ -83,8 +84,22 @@ async function ultimaVersiune(store: IDBObjectStore): Promise<Versiune | null> {
   return { rev: cheie[1], valoare: cursor.value };
 }
 
-/** Versiunea citită, prin singura ușă. Orice valoare care nu e text e un proiect care nu se deschide, nu „niciun proiect”. */
-function documentDin(v: Versiune | null): { readonly ok: true; readonly doc: Document | null } | { readonly ok: false; readonly motiv: string } {
+type Usa = (brut: unknown) => RezultatIncarcare;
+
+/**
+ * Ușa de încărcare (`incarca`, cu migrările) vine la cerere: e nevoie de ea doar când există o versiune salvată, iar
+ * deschiderea e oricum asincronă. Așa nu ocupă pachetul de pornire. Workerul PWA (ADR 0017) trebuie s-o țină și pe ea
+ * în cache, cu celelalte bucăți încărcate la cerere: altfel, offline, proiectul salvat nu s-ar deschide.
+ */
+const usaLaCerere = (): Promise<Usa> => import('../model/incarcare.ts').then((m) => m.incarca);
+
+/**
+ * Versiunea citită, prin singura ușă. Orice valoare care nu e text e un proiect care nu se deschide, nu „niciun proiect”.
+ * O ușă care nu s-a putut aduce aruncă: deschiderea cade pe „fără memorie”, cu motivul, nu pe un proiect gol.
+ */
+async function documentDin(
+  v: Versiune | null, usa: Promise<Usa>,
+): Promise<{ readonly ok: true; readonly doc: Document | null } | { readonly ok: false; readonly motiv: string }> {
   if (!v) return { ok: true, doc: null };
   if (typeof v.valoare !== 'string') return { ok: false, motiv: 'versiunea salvată nu e text' };
   let brut: unknown;
@@ -93,7 +108,7 @@ function documentDin(v: Versiune | null): { readonly ok: true; readonly doc: Doc
   } catch {
     return { ok: false, motiv: 'textul salvat nu e JSON' };
   }
-  const r = incarca(brut);
+  const r = (await usa)(brut);
   return r.ok ? { ok: true, doc: r.doc } : r;
 }
 
@@ -167,9 +182,15 @@ function canalNou(): BroadcastChannel | null {
 }
 
 async function deschide(idb: IDBFactory, expirat: () => boolean): Promise<ProiectDeschis> {
+  // Ușa pleacă odată cu baza, nu după citire: aduse în paralel, deschiderea nu așteaptă două drumuri unul după altul.
+  const usa = usaLaCerere();
+  usa.catch(() => undefined);
   const db = await deschideBaza(idb);
   const citita = await citeste(db);
-  const d = documentDin(citita);
+  const d = await documentDin(citita, usa).catch((e: unknown) => {
+    db.close();
+    throw e;
+  });
   if (!d.ok) {
     db.close();
     return { mod: 'nu-se-deschide', motiv: d.motiv };
@@ -195,7 +216,7 @@ async function deschide(idb: IDBFactory, expirat: () => boolean): Promise<Proiec
       let oprit = false;
       const reciteste = async (): Promise<{ ok: true; v: Versiune | null; doc: Document | null } | { ok: false; motiv: string }> => {
         const v = await citeste(db);
-        const r = documentDin(v);
+        const r = await documentDin(v, usaLaCerere());
         return r.ok ? { ok: true, v, doc: r.doc } : r;
       };
       // Revizia pe care fila o are deja: o versiune se dă mai departe o singură dată.

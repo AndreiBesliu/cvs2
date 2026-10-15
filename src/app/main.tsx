@@ -61,34 +61,44 @@ function alegeLimba(l: Limba): void {
   }
 }
 
-const config = await incarcaConfig(window.fetch.bind(window));
-if (!config.ok) jurnal.adauga('config', config.motiv);
-// Proiectul din browser se deschide înainte de prima randare: o comandă dată între timp ar fi acoperită de el.
-const proiect = await deschideProiect();
-if (proiect.mod === 'nu-se-deschide' || proiect.mod === 'fara-memorie') jurnal.adauga('proiect', proiect.motiv);
+/**
+ * Pornirea, într-o funcție, fără `await` la nivelul modulului. Ușa de încărcare a proiectului vine la cerere, chiar în
+ * timpul pornirii, iar bucata ei poate importa pachetul de intrare: cu un `await` sus, modulul ăsta ar rămâne neevaluat
+ * până la deschidere, deci bucata l-ar aștepta pe el și el pe ea. Văzut în e2e: deschiderea ieșea „fără memorie”, după
+ * termen. O eroare aici ajunge în jurnal prin `unhandledrejection`.
+ */
+async function porneste(): Promise<void> {
+  const config = await incarcaConfig(window.fetch.bind(window));
+  if (!config.ok) jurnal.adauga('config', config.motiv);
+  // Proiectul din browser se deschide înainte de prima randare: o comandă dată între timp ar fi acoperită de el.
+  const proiect = await deschideProiect();
+  if (proiect.mod === 'nu-se-deschide' || proiect.mod === 'fara-memorie') jurnal.adauga('proiect', proiect.motiv);
 
-const context = (): Context => ({
-  aplicatia: 'CNC Vector Studio',
-  versiunea: __VERSIUNE__,
-  instanta: config.ok ? config.config.instanta : 'necunoscută',
-  limba: limba(),
-  browserul: navigator.userAgent,
-});
+  const context = (): Context => ({
+    aplicatia: 'CNC Vector Studio',
+    versiunea: __VERSIUNE__,
+    instanta: config.ok ? config.config.instanta : 'necunoscută',
+    limba: limba(),
+    browserul: navigator.userAgent,
+  });
 
-const radacina = document.getElementById('root');
-if (!radacina) throw new Error('#root lipsește din index.html');
+  const radacina = document.getElementById('root');
+  if (!radacina) throw new Error('#root lipsește din index.html');
 
-createRoot(radacina).render(
-  <StrictMode>
-    <ErrorBoundary jurnal={jurnal} context={context}>
-      <App
-        config={config}
-        jurnal={jurnal}
-        diagnostic={new URLSearchParams(location.search).get('diagnostic')}
-        alegeLimba={alegeLimba}
-        alegeTema={alegeTema}
-        proiect={proiect}
-      />
-    </ErrorBoundary>
-  </StrictMode>,
-);
+  createRoot(radacina).render(
+    <StrictMode>
+      <ErrorBoundary jurnal={jurnal} context={context}>
+        <App
+          config={config}
+          jurnal={jurnal}
+          diagnostic={new URLSearchParams(location.search).get('diagnostic')}
+          alegeLimba={alegeLimba}
+          alegeTema={alegeTema}
+          proiect={proiect}
+        />
+      </ErrorBoundary>
+    </StrictMode>,
+  );
+}
+
+void porneste();

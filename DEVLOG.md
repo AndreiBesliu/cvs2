@@ -1534,3 +1534,24 @@ se selecteaza partea pe care se face frezarea. Cand se face pe.linie este irelev
 deschisă tăiată pe o parte (stânga / dreapta); pe linie, nu (ADR 0037 §12 precizat). Până la 2.3c-5, când vine alegerea
 părții, nu se vede nicio săgeată. Testul unitar o probează în ambele sensuri (pe linie: 0; pe stânga: 1, în vârful 0);
 e2e-ul valului: 0 și cu valul ales. 6 049 de teste unitare, e2e 59 / 59.
+
+## 2026-10-15 — Etapa 2: loc în pachetul de pornire (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (la recomandarea „fac 1 și 2, ~4–5 %, și mă opresc oricum la 92 %”, după „ce mai poti face cu
+usage-ul ramas?”). **Started:** 07:30. **Clasa:** R1 (aceeași ușă de încărcare, adusă la cerere). Fără agenți (bugetul
+săptămânii, 85 % folosit).
+**Completed:** 07:50.
+
+**Făcut:** pornirea a scăzut de la 99,9 la **96,1 kB** din 100, fără să ridice plafonul.
+- Ușa de încărcare (`incarca`, cu migrările v1 → v10) vine la cerere: deschiderea proiectului o cere odată cu baza
+  IndexedDB, iar importul o primește odată cu piesa (`ImportPregatit.treceDeUsa`). `jsonCanonic` are modulul lui
+  (salvarea îl folosește la pornire). 99,9 → 98,1 kB.
+- **E2e-ul a prins un blocaj:** pornirea aștepta deschiderea cu `await` la nivelul modulului, iar bucata ușii importa
+  pachetul de intrare; deci fiecare îl aștepta pe celălalt, până la termenul de 4 s, iar proiectul salvat se deschidea
+  „fără memorie” (doar 42 din 59 de e2e treceau). Reparat structural: pornirea e o funcție, fără `await` sus. Rollup nu mai desparte
+  modulele comune în bucăți separate (o făcea din cauza `await`-ului de sus), deci pornirea are 2 fișiere în loc de 8:
+  98,1 → 96,1 kB. Verificat: închiderea statică a intrării = exact fișierele cerute de `index.html`.
+- Următoarea mutare, dacă va fi nevoie: schema documentului (valibot), dar garda exportului (`operatieInMargini`)
+  trebuie atunci să vină cu dialogul.
+
+**Proba:** 6 049 de teste unitare; e2e 59 / 59 (după reparație; înainte, 42 / 59, cele roșii pe redeschiderea proiectului).

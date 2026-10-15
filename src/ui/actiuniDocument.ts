@@ -6,7 +6,7 @@ import {
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
 import { conturElement, cutieElement } from '../model/forme.ts';
-import { incarca, jsonCanonic } from '../model/incarcare.ts';
+import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { Actiune } from './actiuni.ts';
@@ -146,7 +146,7 @@ function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc = null):
       tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x, y, rotire: 0 }, pozitie: foaie.instante.length,
       piesa: { piesa, pozitie: doc.piese.length },
     };
-    rez = incarca(executa(istoricDin(doc), comanda).doc).ok ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.import-refuzat' };
+    rez = pregatit.treceDeUsa(executa(istoricDin(doc), comanda).doc) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.import-refuzat' };
   }
   ultimulImport = { doc, pregatit, la, rez };
   return rez;
