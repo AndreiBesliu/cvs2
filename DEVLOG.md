@@ -1698,3 +1698,29 @@ otrava lui aplicată, restaurat cu sha256), **2 echivalente, cu dovadă**:
 Nivelul rapid: în prima rulare 7 picături, toate „out of memory” (`Fatal process out of memory`, `DataCloneError`, cu bash
 fără procese libere în același timp), nu de cod; fișierele lor rerulate serial: 634 / 634; tsc, importurile, determinismul
 (pornirea 96,7 / 100 kB) și licențele verzi.
+
+## 2026-10-16 — 2.3c-6, segmentul 2b: otrăvurile pe ușa SVG, documentul v10 și interfață (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (la „2b: otrăvurile pe ușa SVG, documentul v10 și interfață, cu un agent, ~0,5–1 M”). **Started:**
+dimineața, săptămânalul la 88 %. Un singur agent (sesiunea independentă): alege, aplică și rulează otrăvurile în clona nouă
+`scratchpad/clona-otravuri-23c-b` (clona 2a avea depozitul git stricat: arbori lipsă), SERIAL, cu a doua șansă pe zona
+modulului, nu pe toată suita (în 2a, copiile paralele au picat din lipsă de memorie). Cele scăpate le tratează sesiunea
+aplicației.
+**Completed (segmentul 2b):** agentul a ales și a rulat **45 de otrăvuri** pe ușa SVG (22), document / model (11), aplicație
+(3), desen (2) și interfață (7, prin e2e), serial, fiecare restaurată cu sha256; sursele clonei identice cu HEAD la final.
+**36 prinse, 9 scăpate** (S13, M11, W01 la unitare; E02–E07 în e2e), plus M09 prinsă doar la a doua șansă, indirect.
+Costul agentului: ~343 k tokeni, ~80 min (săptămânalul 88 → 89 %). Sesiunea aplicației le-a închis pe toate 10, fiecare cu
+un test verificat în clonă (verde pe codul curat, roșu cu otrava lui, restaurat cu sha256):
+- unitare, în `test/unit/otravuri.23c.test.ts`: S13 (cubica „ac” închisă de ușă și apoi linie: lungimea pe curbă, nu pe
+  coardă), M11 (`jsonCanonic` sare `undefined`: altfel proiectul salvat nu se redeschide), W01 (fără săgeată pe un contur
+  închis cu latura stânga), M09 (o tăietură deschisă pe dreapta, nemarcată, înaintea exterioarelor);
+- e2e, în `test/e2e/otravuri-23c.spec.ts` (6): E02 (fila care doar citește și nu-și poate aduce ușa spune „nu s-a putut citi
+  acum”), E03 (lăsarea pe planșă în fila care doar citește nu face aplicația inertă nici pentru un cadru: dialogul se
+  încarcă la cerere și nu apucă să apară, dar `inert` se vede), E04 (rândul amestecat, un contur închis și o linie, nu
+  oferă stânga / dreapta; proiectul pus direct în IndexedDB), E05 (bifa despărțirii rămâne bifată la redeschidere), E06
+  (bifa inactivă pe un rând doar cu închise), E07 (un clic cu `detail = 2` pe „Importă” nu importă; `dblclick`-ul vechi nu
+  prindea otrava).
+Testul instabil semnalat de agent, `import.spec.ts` (lăsarea pe planșă, 2.8b, ~1 din 4): vederea pânzei se citea după
+lăsare, uneori înainte de prima măsurare (`NaN`); acum se așteaptă `data-scara` și se citește înainte de lăsare: 16 / 16 la
+`--repeat-each=8`. Echivalențele notate de agent la alegere (nerulate): ramura `umplut === 'linie'` din ușă, `inchidere ?`
+de la linia 543 (cod mort), `!alt.inchis` în imbricare, `cutieCai` cu `inchis: true` în piesă.

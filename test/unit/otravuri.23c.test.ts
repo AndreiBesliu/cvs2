@@ -1,5 +1,6 @@
 /**
- * Găurile găsite de otrăvurile feliei 2.3c (segmentul 2a, sesiune independentă: 70 de otrăvuri, 50 prinse, 20 scăpate).
+ * Găurile găsite de otrăvurile feliei 2.3c (sesiuni independente; segmentul 2a: 70 de otrăvuri, 50 prinse, 20 scăpate;
+ * segmentul 2b, ușa SVG, documentul și interfața: 45, 36 prinse, 9 scăpate, dintre care 4 aici, restul în e2e).
  * Câte un test pentru fiecare otravă scăpată care era o gaură reală, pe cazul cel mai simplu care o separă: pe codul
  * curat trece, cu otrava lui aplicată pică (verificat cu harnașul otrăvurilor, în clonă). Id-urile sunt ale listei.
  */
@@ -11,6 +12,9 @@ import { offsetDeschis, verificaIesireDeschisa } from '../../src/geom/offset.ts'
 import type { Miscare } from '../../src/ir/ir.ts';
 import type { Document, FormaDoc, Operatie, VarfDoc } from '../../src/model/document.ts';
 import { taieturiFoaie } from '../../src/model/lume.ts';
+import { jsonCanonic } from '../../src/model/jsonCanonic.ts';
+import { listaDesen } from '../../src/app/desen.ts';
+import { citeste } from './ajutor-svg.ts';
 import { cuOperatie, docDin, ID } from './ajutor-document.ts';
 
 const F = { latime: 300, inaltime: 200, grosime: 18 };
@@ -158,4 +162,27 @@ test('T02: pe linie, un arc care nu e plat (bulge 0,5) mai scurt de 1e-6 mm se s
   const forma: FormaDoc = { tip: 'cale', inchis: false, varfuri: [{ p: { x: 10, y: 10 }, s: { tip: 'A', bulge: 0.5 } }, { p: { x: 10 + 5e-7, y: 10 }, s: L }, { p: { x: 60, y: 10 }, s: L }] };
   const m = aleLui(program(op(docDin(F, element('t', forma, 0, 0)), 't', { latura: 'pe-linie' })).miscari, 't/t');
   assert.equal(m.filter((x) => x.tip === 'arc').length, 0);
+});
+
+test('S13: o cubică „ac” (coarda 0,004, curba ~0,03 mm), închisă de ușă și apoi linie, nu e praf: lungimea se ia pe curbă', () => {
+  const r = citeste('<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100mm" viewBox="0 0 100 100"><path d="M10 10 C10 10.02 10.004 10.02 10.004 10" fill="none"/></svg>');
+  assert.ok(r.ok, JSON.stringify(r));
+  if (r.ok) assert.deepEqual(r.cai.map((c) => ({ inchis: c.inchis, varfuri: c.varfuri.length })), [{ inchis: false, varfuri: 2 }]);
+});
+
+test('M11: jsonCanonic sare cheile cu `undefined` (altfel textul salvat nu mai e JSON și proiectul nu se redeschide)', () => {
+  const t = jsonCanonic({ a: 1, b: undefined, c: { d: undefined, e: [1] } });
+  assert.equal(t, '{"a":1,"c":{"e":[1]}}');
+  assert.deepEqual(JSON.parse(t), { a: 1, c: { e: [1] } });
+});
+
+test('W01: săgeata de sens nu apare pe un contur ÎNCHIS cu latura stânga (documentul o primește, CAM-ul o refuză)', () => {
+  const d = op(docDin(F, { id: 'r', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }, matrice: { ...ID, e: 10, f: 10 } }), 'r', { latura: 'stanga' });
+  assert.deepEqual(listaDesen(d).filter((f) => f.sageata).map((f) => f.id), []);
+});
+
+test('M09: o tăietură DESCHISĂ pe dreapta, nemarcată, se taie înaintea exterioarelor, chiar listată după ele', () => {
+  const d0 = docDin(F, { id: 'r', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }, matrice: { ...ID, e: 10, f: 10 } }, element('l', deschisa([0, 0], [100, 0]), 0, 60));
+  const d = op(op(d0, 'r', { latura: 'exterior' }), 'l', { latura: 'dreapta' });
+  assert.deepEqual(taieturiFoaie(d).map((t) => `${t.idLume}:${t.latura}`), ['l/l:dreapta', 'r/r:exterior']);
 });

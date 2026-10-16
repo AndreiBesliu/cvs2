@@ -262,6 +262,8 @@ const PATRAT = '<svg xmlns="http://www.w3.org/2000/svg" width="40mm" height="40m
 /** Lasă fișierele pe pânză în punctul (fx, fy) din pânză (0…1): `dragover`, apoi `drop`, cu un DataTransfer real. */
 async function lasaPePanza(page: Page, fisiere: ReadonlyArray<{ nume: string; text: string; tip: string }>, fx: number, fy: number) {
   const panza = page.getByTestId('panza');
+  // Vederea pânzei se scrie după prima măsurare: lăsarea înainte de ea dădea punctul NaN (instabil, ~1 din 4, 2.3c-6 2b).
+  await expect(panza).toHaveAttribute('data-scara', /\d/);
   const r = await panza.boundingBox();
   if (!r) throw new Error('pânza nu are cutie');
   const clientX = r.x + r.width * fx, clientY = r.y + r.height * fy;
@@ -272,9 +274,10 @@ async function lasaPePanza(page: Page, fisiere: ReadonlyArray<{ nume: string; te
   }, fisiere);
   await panza.dispatchEvent('dragover', { dataTransfer: dt, clientX, clientY });
   await expect(page.getByTestId('lasa-aici')).toBeVisible();
-  await panza.dispatchEvent('drop', { dataTransfer: dt, clientX, clientY });
-  // Punctul lăsat, în mm ai foii, din vederea pânzei (aceeași formulă ca pânza).
+  // Punctul lăsat, în mm ai foii, din vederea pânzei (aceeași formulă ca pânza), citită chiar înainte de lăsare: după ea,
+  // dialogul importului poate schimba vederea.
   const v = await panza.evaluate((el) => ({ s: Number(el.dataset.scara), tx: Number(el.dataset.tx), ty: Number(el.dataset.ty) }));
+  await panza.dispatchEvent('drop', { dataTransfer: dt, clientX, clientY });
   return { x: (r.width * fx - v.tx) / v.s, y: (v.ty - r.height * fy) / v.s };
 }
 
