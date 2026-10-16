@@ -40,8 +40,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   rampă, ADR 0031), 2.6 (degajările dog-bone / T-bone, ADR 0032, documentul v8), 2.7a (biarcele, ADR 0033), 2.7b
   (forma „cale”, ADR 0034, documentul v9) și 2.7c (ușa SVG și importul, ADR 0035). Felia 2.7 s-a împărțit în 2.7a–2.7d
   (fișa), încheiată cu 2.7d (regula `nonzero` la ușă, ADR 0036: aranjamentul exact, fără PathKit); apoi 2.8a (carcasa
-  interfeței, prototipul B, ales de owner). În lucru: 2.3c (contururile deschise, ADR 0037), în sub-felii; 2.3c-0 (pe
-  linie, freza stă pe linie, cu invarianta 14 (i)) gata.
+  interfeței, prototipul B, ales de owner), 2.8b (fișierele lăsate pe planșă) și 2.8-0 (loc în pachetul de pornire).
+  **2.3c (contururile deschise, ADR 0037, documentul v10) încheiată pe 16.10**, în sub-feliile 2.3c-0…6 (fișa: pe linie,
+  pe stânga / dreapta, despărțirea foii marcată de om, ușa SVG cu liniile deschise, două recenzii, otrăvurile). Urmează
+  2.8 (stratul WebGL2 și panoul de proprietăți).
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa

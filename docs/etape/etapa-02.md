@@ -38,7 +38,34 @@ Bugetul unei felii e ~½ zi activă, până la prima măsurătoare (`PLAN.md` §
 | 2.9 | Bancul vizual v1, cu martorii lui | I18 | R2 | 2.8 |
 | 2.10 | Fișa plăcii 2, cu programele de aur | — | R2 | 2.4–2.7 |
 
-**2.3c-4, offsetul deschis: pregătit pe 15.10, pornește după resetarea săptămânală din 17.10.** Contractul e ADR 0037
+**2.3c, contururile deschise: încheiată pe 16.10.** Contractul e ADR 0037, documentul v10. Sub-feliile, fiecare cu
+commit, publicată pe instanța de test și cu CI verde:
+- **2.3c-0** (`1a337e6`, `66f80fc`): pe linie, freza stă pe linie; un arc aproape nul se scrie linie; invarianta 14 (i) în
+  poartă (sesiune independentă);
+- **2.3c-1** (`812996a`): ușa SVG închide formele umplute fără Z (ca browserul) și sare praful;
+- **2.3c-2** (`bfb92ce`): documentul v10 (marcajul `despartire`) și căile deschise tăiate pe linie, cu poarta și oracolul
+  documentului amendate independent;
+- **2.3c-3** (`e60d689`, `b91be31`): liniile deschise intră pe ușa SVG ca căi deschise, gravate pe linie; săgeata de sens
+  doar pe căile tăiate pe o parte (decizia owner-ului);
+- **2.3c-4** (`f20647e`, `38449cf`): offsetul deschis cu verificarea ieșirii și porțiunile neatinse; oracolul independent
+  (120 de teste, 46 de sabotaje prinse);
+- **2.3c-5** (`01c84ec`, `8ad09fc`, `0de24ad`): tăietura pe stânga / dreapta în CAM, pereții, dialogul, săgeata; poarta
+  amendată independent (65 de teste, 38 de sabotaje prinse);
+- **recenziile:** A (`b1640fb`: 13 din 15 constatări reparate, 2 trecute în ADR) și B (`2ef4c72`: 7 reparate);
+- **2.3c-6** (`9dab66c`, `31317e0`, `10044cf`): ușa SVG după precizarea §11 (o închidere fără arie e o linie), cu oracolul
+  amendat independent; otrăvurile, alese și rulate de sesiuni independente: 115 (70 pe offset / CAM, 45 pe ușă, document și
+  interfață), 86 prinse din prima, cele 29 scăpate închise cu câte un test țintit (unitar sau e2e), în afară de 2
+  echivalente cu dovadă.
+
+*Ce poate încerca owner-ul* (pe <https://cncvectorstudio-test.firebaseapp.com/>): un SVG cu linii (`<line>`, căi fără Z)
+intră cu liniile deschise, gravate pe linie la min(1 mm, grosimea / 2); în dialogul exportului, o linie singură pe rând se
+poate tăia pe stânga sau pe dreapta (săgeata arată sensul, liniuța partea frezei); o tăietură prin foaie care ajunge la
+margine e refuzată nemarcată și trece cu „Despărțire” bifată, tăiată la urmă.
+
+*Rămas deschis:* calculul offsetului pe căi foarte lungi (peste ~200 m de traseu verificat) e refuzat cu motiv până la
+worker; intrările, urechile, rampa și degajările pe căile deschise sunt refuzate cu motiv („vin mai târziu”).
+
+**2.3c-4, offsetul deschis: pregătit pe 15.10** (istoric; a pornit tot pe 15.10, fără să mai aștepte resetarea din 17.10). Contractul e ADR 0037
 §5. Valorile pe hârtie 3–9 au fost refăcute de mână pe 15.10 și ies toate: semicercul (R47 / R53), L-ul (arcul R3,
 1,93 mm² rămași în colț), cârligul (o bucată până la x = 42,172; neatins 14,828 mm), U-ul de 5 mm (refuz / 6 vârfuri),
 V-ul de 10° (34,421 / 34,290 mm), oglindirea (Y53, de la X50 la X150). Cavalier e deja măsurat pe căile deschise (ADR 0037,

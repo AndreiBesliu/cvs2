@@ -22,7 +22,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Vectori, noduri, boolean, offset, aliniere | S | v1 | de făcut | — |
 | Text, text pe cale, fonturi | S | v1 | de făcut | — |
 | Verificarea și repararea vectorilor: deschiși, duplicați, intersecții, bucle, noduri prea apropiate | S | v1 | de făcut | — |
-| Import 2D: DXF, AI / EPS (S+D); SVG (D); PDF vectorial, DWG, WMF, DGK / PIC (S) | S+D | v1 (decis 07.10: DXF, SVG, PDF și AI compatibil PDF; EPS și AI ≤ 8 prin cititor propriu limitat, cu refuz explicit; WMF; DWG doar mesaj în v1, nativ de decis în v1.x; DGK / PIC scoase, vezi „Scoase la reverificare”) | în lucru (SVG: 2.7a biarcele, 2.7b forma „cale”, 2.7c ușa SVG cu importul și 2.7d regula `nonzero` (ADR 0036, fără PathKit) gata; contururile deschise în 2.3c, ADR 0037) | — |
+| Import 2D: DXF, AI / EPS (S+D); SVG (D); PDF vectorial, DWG, WMF, DGK / PIC (S) | S+D | v1 (decis 07.10: DXF, SVG, PDF și AI compatibil PDF; EPS și AI ≤ 8 prin cititor propriu limitat, cu refuz explicit; WMF; DWG doar mesaj în v1, nativ de decis în v1.x; DGK / PIC scoase, vezi „Scoase la reverificare”) | în lucru (SVG: 2.7a biarcele, 2.7b forma „cale”, 2.7c ușa SVG cu importul și 2.7d regula `nonzero` (ADR 0036, fără PathKit) gata; contururile deschise gata în 2.3c, ADR 0037: liniile și căile fără Z intră deschise, o închidere fără arie rămâne linie) | e60d689, 9dab66c |
 | Export 2D cu vectori reali: DXF, SVG, PDF (EPS da, AI nu: decis 07.10), la scara exactă, cu cercuri, arce și curbe păstrate ca entități și cu straturile păstrate; deschis editabil în alte programe (rând nou, cerut de owner; `BRIEF.md` §16.2) | S | v1 (decis 07.10) | de făcut | — |
 | Cote (nici ArtCAM nu le are: doar rigle și măsurare) | peste prag | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Deformare în anvelopă (între două curbe), pentru vectori și reliefuri | S | v1 (decis 06.10; era v1.x) | de făcut | — |
@@ -37,7 +37,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 ## B. Prelucrare 2D / 2.5D
 | Capabilitate | Sursă | Etapă | Stare | Commit |
 |---|---|---|---|---|
-| Profil, cu urechi de susținere, intrări / ieșiri, direcție de tăiere | S+D | v1 | în lucru: operația în document (2.2), direcția (2.3b), urechile (2.4), rampa (2.5a), intrările / ieșirile (2.5b), intrările cu rampa (2.5c); rămâne placa 2 (2.10) | 18cf16d, c73a217, db586c6, 6db1103, 9538bc7 |
+| Profil, cu urechi de susținere, intrări / ieșiri, direcție de tăiere | S+D | v1 | în lucru: operația în document (2.2), direcția (2.3b), urechile (2.4), rampa (2.5a), intrările / ieșirile (2.5b), intrările cu rampa (2.5c), profilul pe căile deschise: pe linie, pe stânga / dreapta, despărțirea foii marcată de om (2.3c, ADR 0037); rămâne placa 2 (2.10) | 18cf16d, c73a217, db586c6, 6db1103, 9538bc7, bfb92ce, 01c84ec |
 | Fileturi la colțuri interioare: dog-bone și T-bone | S+D | v1 | în lucru: degajările pe operație, pe colțurile dintre linii (2.6, ADR 0032); rămân colțurile cu arce (2.7) și placa 2 | 91211c5, 98a22bf |
 | Buzunar (curățare de suprafață), cu mai multe freze | S+D | v1 | de făcut | — |
 | V-carve (inclusiv cu freză dreaptă pentru fund plat) | S+D | v1 | de făcut | — |
