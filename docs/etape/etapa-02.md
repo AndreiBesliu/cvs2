@@ -34,11 +34,11 @@ Bugetul unei felii e ~½ zi activă, până la prima măsurătoare (`PLAN.md` §
 | 2.8a | Carcasa interfeței (aranjamentul, tokenurile temei, componentele), din prototipul ales de owner dintre trei (13.10, „da, pornește prototipurile”) | — | R1 | — |
 | 2.8b | Fișierele lăsate pe planșă (cererea owner-ului, 13.10): unul sau mai multe SVG-uri trase pe pânză trec prin dialogul importului pe rând și cad cu centrul unde au fost lăsate | A4 | R1 | 2.7c, 2.8a |
 | 2.8-0 | Loc în pachetul de pornire pentru 2.8 (99,9 → 96,1 kB din 100): ușa de încărcare a proiectului vine la cerere; pornirea fără `await` la nivelul modulului (altfel bucata adusă la cerere în timpul pornirii se bloca) | — | R1 | 2.8b |
-| 2.8 | Stratul WebGL2 (traseul ca LINE_STRIP; foaia rămâne în workerul vectorilor până la etapa 4; ADR 0038, propus) și panoul de proprietăți editabil, în carcasa din 2.8a; sub-feliile 2.8c–2.8e | I7, I19 | R2 | 2.2, 2.8a |
+| 2.8 | Stratul WebGL2 (traseul ca LINE_STRIP; foaia rămâne în workerul vectorilor până la etapa 4; ADR 0038) și panoul de proprietăți editabil, în carcasa din 2.8a; sub-feliile 2.8c–2.8e | I7, I19 | R2 | 2.2, 2.8a |
 | 2.9 | Bancul vizual v1, cu martorii lui | I18 | R2 | 2.8 |
 | 2.10 | Fișa plăcii 2, cu programele de aur | — | R2 | 2.4–2.7 |
 
-**2.8, traseul pe pânză și panoul de proprietăți: planul (16.10), contractul în ADR 0038 (propus, așteaptă owner-ul).**
+**2.8, traseul pe pânză și panoul de proprietăți: planul (16.10), contractul în ADR 0038 (acceptat pe 16.10, „ok” la implicit).**
 Sub-feliile, fiecare cu commit, publicare pe test și raport:
 - **2.8c, panoul editabil** (fără agenți, 2–3 segmente de ~1–2 % din săptămânal): câmpul numeric unic (semnul, virgula,
   Enter / Escape, motivul); acțiunile `instanta.pozitie`, `instanta.rotire`, `foaie.stoc`, fiecare un pas de anulare, cu

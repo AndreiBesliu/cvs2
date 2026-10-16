@@ -1,7 +1,8 @@
 # ADR 0038: Traseul pe pânză (stratul WebGL2) și panoul de proprietăți editabil
 
-**Starea:** propus pe 16.10.2026, pentru felia 2.8. Așteaptă owner-ul: cele trei alegeri marcate **(owner)**, fiecare cu
-implicitul recomandat în față.
+**Starea:** acceptat pe 16.10.2026 („ok”: implicitul recomandat la toate cele trei alegeri marcate **(owner)**), pentru
+felia 2.8. Precizat la acceptare: poziția din panou e colțul stânga-jos al cutiei selecției; rotirea ține pe loc centrul
+cutiei piesei (§4).
 
 **Intră în:** etapa 2 (felia 2.8, în sub-feliile 2.8c–2.8e din fișă). **Precizează:** ADR 0013 (T13, pânza): ordinea
 straturilor până la simulare (etapa 4).
@@ -45,8 +46,10 @@ aceeași vedere ca vectorii):
 
 **4. Panoul de proprietăți se editează** **(owner)**:
 - **implicit, în 2.8:**
-  - poziția X / Y a instanței (sau a cutiei comune, la mai multe selectate: aceeași deplasare pentru toate);
-  - rotirea unei singure instanțe, în grade, normalizată în [0, 360);
+  - poziția X / Y: **colțul stânga-jos al cutiei selecției**, în coordonatele foii, la una sau la mai multe instanțe (aceeași
+    deplasare pentru toate). Pentru om e locul formei, nu originea instanței, care la un cerc e centrul;
+  - rotirea unei singure instanțe, în grade, normalizată în [0, 360), **în jurul centrului cutiei piesei** (centrul rămâne
+    pe loc, ca în programele de desen; instanța își mută originea cât trebuie);
   - foaia, fără selecție: lățimea, înălțimea și grosimea, în plafoanele schemei (ADR 0024).
 - Operațiile rămân în dialogul exportului, iar panoul le arată, cu butonul „Editează în export”.
 - Fiecare schimbare e o acțiune a registrului, cu capabilitatea `desen`: un singur pas de anulare, refuzată cu motiv în

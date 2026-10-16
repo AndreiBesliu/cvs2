@@ -110,6 +110,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 16.10.2026: **traseul pe pânză și panoul de proprietăți (ADR 0038, felia 2.8)**: „ok” la implicitul recomandat. Traseul
+  ultimului program, pe WebGL2, **la cerere** („Arată traseul”, tasta T; stins cu cip când documentul se schimbă; recalculul
+  automat abia cu bazinul din etapa 4); stratul **deasupra** vectorilor, foaia rămâne în worker până la etapa 4; panoul
+  editează **poziția, rotirea și foaia**, operațiile rămân în dialogul exportului.
 - 05.10.2026: repo-ul stă în `C:\Users\besli\Desktop\MyWork\Apps\cncvs2`. A fost mutat din `C:\dev\cncvs2` la
   cererea owner-ului, ca să lucrăm din `Apps`. Git local, ramura `main`.
 - 06.10.2026: remote-ul e **`AndreiBesliu/cvs2`, public**, ales de owner. Se aplică două reguli:

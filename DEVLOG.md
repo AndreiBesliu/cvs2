@@ -1744,3 +1744,19 @@ segmente), la cerere („Arată traseul”, tasta T; stins cu cip când document
 doar cipul; panoul de proprietăți editabil (poziția, rotirea, foaia) cu câmpul numeric unic; oracolul stratului din textul
 G-code, independent. Trei alegeri la owner (recalculul la cerere, straturile, ce se editează în panou), cu implicitul
 recomandat. Fișa: sub-feliile 2.8c (panoul), 2.8d (traseul), 2.8e (probele independente, după 17.10).
+
+## 2026-10-16 — 2.8c, segmentul 1: ADR 0038 acceptat; acțiunile panoului și numărul cu semn (Model: Claude Opus 5.5)
+
+**Prompt:** „ok” (la ADR 0038 propus: implicitul recomandat la toate trei alegerile). **Started:** dimineața.
+**Completed:** ADR 0038 acceptat, cu două precizări la acceptare: poziția din panou e colțul stânga-jos al cutiei
+selecției (la un cerc, originea instanței e centrul), iar rotirea ține pe loc centrul cutiei piesei. Decizia, în
+`CLAUDE.md`. Codul, fără interfață încă (panoul se leagă în segmentul 2, nepublicat):
+- `document.pozitioneaza` (una sau mai multe instanțe, aceeași deplasare, un pas), `document.roteste` (o singură
+  instanță, unghiul normalizat în [0, 360), centrul pe loc), `foaie.stoc` (doar mărimile scrise, în plafoanele schemei);
+  fiecare refuzată cu motiv (fila care doar citește, selecția, valoarea, plafonul, prea departe), iar aceeași valoare nu
+  e o comandă;
+- jurnalul: comanda `inlocuieste-stoc`, cu inversa ei;
+- `citesteNumar(s, semn)`: semnul („-”, „−”, „+”) doar unde e cerut, „-0” e 0; `textNumar` scrie și valorile negative
+  fără exponent, citite înapoi exact;
+- `test/unit/actiuni.panou.test.ts`: 8 teste (poziția pe un cerc și pe mai multe forme, refuzurile, rotirea cu centrul pe
+  loc la 90° și la 33,3°, normalizarea, foaia cu anularea / refacerea și redeschiderea, refuzurile foii, numărul cu semn).

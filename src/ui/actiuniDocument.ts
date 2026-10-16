@@ -1,14 +1,16 @@
 import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
 import {
   instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, operatieInMargini, plafonDepasit, PLAFON, type Document, type FormaDoc,
-  type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa,
+  type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa, type Stoc,
 } from '../model/document.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
+import { uneste, type Cutie } from '../geom/cutie.ts';
+import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 import { conturElement, cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
-import { elementeFoaie } from '../model/lume.ts';
+import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
 import type { Actiune } from './actiuni.ts';
 
 /**
@@ -35,6 +37,12 @@ export type ContextDocument = {
   readonly importNou?: () => ImportPregatit;
   /** Punctul în care s-a lăsat fișierul pe planșă (mm ai foii), sau null: centrul desenului cade acolo (felia 2.8b). */
   readonly locImport?: () => { readonly x: number; readonly y: number } | null;
+  /** Panoul (ADR 0038 §4): colțul stânga-jos nou al cutiei selecției, în mm ai foii; doar axele scrise. */
+  readonly pozitieNoua?: () => { readonly x?: number; readonly y?: number };
+  /** Panoul: rotirea nouă a singurei instanțe selectate, în grade (se normalizează în [0, 360)). */
+  readonly rotireNoua?: () => number;
+  /** Panoul, fără selecție: materialul nou al foii, în mm; doar mărimile scrise. */
+  readonly stocNou?: () => { readonly latime?: number; readonly inaltime?: number; readonly grosime?: number };
 };
 
 /** Foaia pe care se lucrează; Multi-Plate (mai multe foi pe ecran) vine în etapa 11. */
@@ -433,6 +441,84 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
     },
   },
   {
+    // Panoul de proprietăți (ADR 0038 §4): colțul stânga-jos al cutiei selecției, la una sau la mai multe instanțe.
+    id: 'document.pozitioneaza',
+    eticheta: 'actiune.pozitioneaza',
+    capabilitate: 'desen',
+    activa: (ctx) => {
+      if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
+      if (!ctx.pozitieNoua) return 'motiv.nicio-deplasare';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const d = deplasarePozitie(ctx);
+      if (typeof d === 'string') return d;
+      return alesePreaDeparte(ctx, d.dx, d.dy) ? 'motiv.prea-departe' : true;
+    },
+    ruleaza: (ctx) => {
+      const d = deplasarePozitie(ctx);
+      if (typeof d === 'string' || (d.dx === 0 && d.dy === 0) || alesePreaDeparte(ctx, d.dx, d.dy)) return;
+      const h = ctx.istoric();
+      const foaie = foaieCurenta(h.doc);
+      const alese = new Set(ctx.selectie());
+      const c = pas(foaie.instante
+        .filter((i) => alese.has(i.id))
+        .map((vechi): Comanda => ({ tip: 'inlocuieste-instanta', foaie: foaie.id, vechi, nou: { ...vechi, x: vechi.x + d.dx, y: vechi.y + d.dy } })));
+      if (c) ctx.scrie(executa(h, c));
+    },
+  },
+  {
+    // Rotirea unei singure instanțe, în jurul centrului piesei ei (ADR 0038 §4).
+    id: 'document.roteste',
+    eticheta: 'actiune.roteste',
+    capabilitate: 'desen',
+    activa: (ctx) => {
+      if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
+      if (ctx.selectie().length > 1) return 'motiv.o-singura-selectie';
+      if (!ctx.rotireNoua) return 'motiv.nicio-deplasare';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = ctx.rotireNoua();
+      if (!Number.isFinite(r)) return 'motiv.valoare-invalida';
+      const doc = ctx.istoric().doc;
+      const i = foaieCurenta(doc).instante.find((x) => x.id === ctx.selectie()[0]);
+      if (!i) return 'motiv.nicio-selectie';
+      const nou = instantaRotita(doc, i, rotireNormalizata(r));
+      return instantaPreaDeparte(nou.x, nou.y) ? 'motiv.prea-departe' : true;
+    },
+    ruleaza: (ctx) => {
+      const r = ctx.rotireNoua?.();
+      const h = ctx.istoric();
+      const foaie = foaieCurenta(h.doc);
+      const vechi = ctx.selectie().length === 1 ? foaie.instante.find((x) => x.id === ctx.selectie()[0]) : undefined;
+      if (r === undefined || !Number.isFinite(r) || !vechi) return;
+      const rotire = rotireNormalizata(r);
+      if (rotire === vechi.rotire) return;
+      const nou = instantaRotita(h.doc, vechi, rotire);
+      if (instantaPreaDeparte(nou.x, nou.y)) return;
+      ctx.scrie(executa(h, { tip: 'inlocuieste-instanta', foaie: foaie.id, vechi, nou }));
+    },
+  },
+  {
+    // Materialul foii, din panou, fără selecție (ADR 0038 §4). Operațiile nu se ating: exportul le judecă din nou.
+    id: 'foaie.stoc',
+    eticheta: 'actiune.foaie-stoc',
+    capabilitate: 'desen',
+    activa: (ctx) => {
+      if (!ctx.stocNou) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const k = stocCerut(ctx);
+      return typeof k === 'string' ? k : true;
+    },
+    ruleaza: (ctx) => {
+      const nou = stocCerut(ctx);
+      const h = ctx.istoric();
+      const foaie = foaieCurenta(h.doc);
+      if (typeof nou === 'string' || jsonCanonic(nou) === jsonCanonic(foaie.stoc)) return;
+      ctx.scrie(executa(h, { tip: 'inlocuieste-stoc', foaie: foaie.id, vechi: foaie.stoc, nou }));
+    },
+  },
+  {
     id: 'istoric.anuleaza',
     eticheta: 'actiune.anuleaza',
     capabilitate: 'desen',
@@ -447,6 +533,64 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
     ruleaza: (ctx) => { ctx.scrie(reface(ctx.istoric())); curataSelectia(ctx); },
   },
 ];
+
+/** Cutia elementelor instanțelor alese, în lume (mm ai foii), sau null fără niciun element. */
+function cutieAlese(doc: Document, alese: ReadonlySet<string>): Cutie | null {
+  let k: Cutie | null = null;
+  for (const e of elementeFoaie(doc, FOAIA)) {
+    if (!alese.has(e.instanta)) continue;
+    const c = cutieElement(e);
+    k = k ? uneste(k, c) : c;
+  }
+  return k;
+}
+
+/** Deplasarea care duce colțul stânga-jos al cutiei selecției în poziția cerută (doar pe axele scrise), sau motivul. */
+function deplasarePozitie(ctx: ContextDocument): { readonly dx: number; readonly dy: number } | 'motiv.valoare-invalida' | 'motiv.nicio-selectie' {
+  const p = ctx.pozitieNoua?.() ?? {};
+  if ((p.x !== undefined && !Number.isFinite(p.x)) || (p.y !== undefined && !Number.isFinite(p.y))) return 'motiv.valoare-invalida';
+  const k = cutieAlese(ctx.istoric().doc, new Set(ctx.selectie()));
+  if (!k) return 'motiv.nicio-selectie';
+  return { dx: p.x === undefined ? 0 : p.x - k.minX, dy: p.y === undefined ? 0 : p.y - k.minY };
+}
+
+/** Unghiul în [0, 360): un unghi deja acolo rămâne exact cum e (ca la `rotatie`); 360 − ε rotunjit la 360 devine 0. */
+export function rotireNormalizata(r: number): number {
+  if (r >= 0 && r < 360) return r === 0 ? 0 : r;
+  const n = ((r % 360) + 360) % 360;
+  return n >= 360 || n === 0 ? 0 : n;
+}
+
+/**
+ * Instanța rotită la `rotire`, cu centrul cutiei piesei ținut pe loc (ADR 0038 §4): cu matricea T(x, y)·R(r), centrul c
+ * al piesei ajunge în R(r)·c + (x, y), deci originea nouă e (x, y) + R(r₀)·c − R(r₁)·c.
+ */
+function instantaRotita(doc: Document, i: Instanta, rotire: number): Instanta {
+  const p = doc.piese.find((x) => x.id === i.piesa);
+  let k: Cutie | null = null;
+  for (const e of p ? elementeInstanta(p.radacina, i, IDENTITATE) : []) {
+    const c = cutieElement(e);
+    k = k ? uneste(k, c) : c;
+  }
+  if (!k) return { ...i, rotire };
+  const cx = (k.minX + k.maxX) / 2, cy = (k.minY + k.maxY) / 2;
+  const r0 = rotatie(i.rotire), r1 = rotatie(rotire);
+  return {
+    ...i,
+    x: i.x + (r0.a * cx + r0.c * cy) - (r1.a * cx + r1.c * cy),
+    y: i.y + (r0.b * cx + r0.d * cy) - (r1.b * cx + r1.d * cy),
+    rotire,
+  };
+}
+
+/** Materialul nou al foii, cu mărimile nescrise păstrate, sau motivul: în plafoanele schemei (ADR 0024), strict pozitive. */
+function stocCerut(ctx: ContextDocument): Stoc | 'motiv.foaie-invalida' {
+  const vechi = foaieCurenta(ctx.istoric().doc).stoc;
+  const n = ctx.stocNou?.() ?? {};
+  const bun = (x: number | undefined, max: number): boolean => x === undefined || (Number.isFinite(x) && x > 0 && x <= max);
+  if (!bun(n.latime, PLAFON.latura) || !bun(n.inaltime, PLAFON.latura) || !bun(n.grosime, PLAFON.grosime)) return 'motiv.foaie-invalida';
+  return { ...vechi, latime: n.latime ?? vechi.latime, inaltime: n.inaltime ?? vechi.inaltime, grosime: n.grosime ?? vechi.grosime };
+}
 
 function istoricDin(doc: Document): Istoric {
   return { doc, trecut: [], viitor: [] };

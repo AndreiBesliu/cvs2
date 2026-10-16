@@ -1,4 +1,4 @@
-import type { Document, Instanta, Piesa } from './document.ts';
+import type { Document, Instanta, Piesa, Stoc } from './document.ts';
 
 /**
  * Jurnalul de comenzi (T16, ADR 0016): fiecare schimbare e o comandă cu valorile vechi și cele noi, deci anularea și
@@ -9,6 +9,7 @@ import type { Document, Instanta, Piesa } from './document.ts';
  * - `adauga` / `sterge` pun sau scot o instanță de pe o foaie, iar dacă au `piesa`, și piesa (o piesă nouă, sau ultima
  *   instanță a unei piese, cât timp nivelul doi e ascuns);
  * - `inlocuieste-instanta` / `inlocuieste-piesa` schimbă una cu valorile ei noi;
+ * - `inlocuieste-stoc` schimbă materialul unei foi (lățimea, înălțimea, grosimea; ADR 0038 §4);
  * - `lot` e un singur pas de anulare pentru o acțiune pe mai multe lucruri.
  */
 export type Comanda =
@@ -21,6 +22,7 @@ export type Comanda =
   }
   | { readonly tip: 'inlocuieste-instanta'; readonly foaie: string; readonly vechi: Instanta; readonly nou: Instanta }
   | { readonly tip: 'inlocuieste-piesa'; readonly vechi: Piesa; readonly nou: Piesa }
+  | { readonly tip: 'inlocuieste-stoc'; readonly foaie: string; readonly vechi: Stoc; readonly nou: Stoc }
   | { readonly tip: 'lot'; readonly comenzi: readonly Comanda[] };
 
 export type Istoric = {
@@ -55,6 +57,11 @@ function aplicaPas(doc: Document, c: Comanda): Document {
   const fi = indexFoaie(doc, c.foaie);
   const foaie = doc.foi[fi];
   if (!foaie) throw new Error(`foaia ${c.foaie} nu există`);
+  if (c.tip === 'inlocuieste-stoc') {
+    const foi = [...doc.foi];
+    foi[fi] = { ...foaie, stoc: c.nou };
+    return { ...doc, foi };
+  }
   const instante = [...foaie.instante];
   let piese = doc.piese;
   if (c.tip === 'inlocuieste-instanta') {
@@ -98,6 +105,7 @@ function inversa(c: Comanda): Comanda {
     case 'sterge': return { ...c, tip: 'adauga' };
     case 'inlocuieste-instanta': return { tip: c.tip, foaie: c.foaie, vechi: c.nou, nou: c.vechi };
     case 'inlocuieste-piesa': return { tip: c.tip, vechi: c.nou, nou: c.vechi };
+    case 'inlocuieste-stoc': return { tip: c.tip, foaie: c.foaie, vechi: c.nou, nou: c.vechi };
   }
 }
 
