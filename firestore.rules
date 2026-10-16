@@ -30,6 +30,11 @@ service cloud.firestore {
       }
     }
 
+    // Marcajele de rulare ale joburilor (ADR 0041 §5): scrise doar de joburi; citite de personal (Diagnoza).
+    match /marcaje/{job} {
+      allow read: if nivelPersonal() >= 1;
+    }
+
     // Auditul (ADR 0040 §4): scris doar de callable-uri, în tranzacția acțiunii; citit de admin și owner.
     match /audit/{id} {
       allow read: if nivelPersonal() >= 2;

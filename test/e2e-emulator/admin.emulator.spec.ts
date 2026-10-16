@@ -55,6 +55,9 @@ test.beforeEach(async () => {
     primaData: new Date('2026-10-16T09:00:00Z'), ultimaData: new Date('2026-10-16T11:00:00Z'), rezolvat: false, ultima,
   });
   await scrie(`errorLogs/${G1}/aparitii/a1`, ultima);
+  // Marcajul unui job (ADR 0041): verificarea a reușit acum o oră; backupZilnic n-are marcaj (n-a rulat niciodată).
+  const oraTrecuta = new Date(Date.now() - 3_600_000);
+  await scrie('marcaje/verificaBackup', { schema: 1, job: 'verificaBackup', ultimaPornire: oraTrecuta, ultimulFinal: oraTrecuta, ultimulSucces: oraTrecuta, esecuriLaRand: 0, ultimaEroare: null });
   await scrie(`errorLogs/${G2}`, {
     schema: 1, amprenta: G2, sursa: 'server', tip: 'job:x', mesaj: 'vechi', numar: 1, oameni: [],
     primaData: new Date('2026-10-10T09:00:00Z'), ultimaData: new Date('2026-10-10T09:00:00Z'), rezolvat: true, ultima: { mesaj: 'vechi' },
@@ -125,6 +128,8 @@ test('fila Erori: filtrul, detaliul și „Marchează rezolvată”, cu auditul;
   await expect(page.locator('[data-verificare="nerezolvate"]')).toHaveAttribute('data-stare', 'bine');
   await expect(page.locator('[data-verificare="instanta"]')).toHaveAttribute('data-stare', 'bine');
   await expect(page.locator('[data-verificare="appcheck"]')).toHaveAttribute('data-stare', 'info');
+  await expect(page.locator('[data-verificare="job:verificaBackup"]')).toHaveAttribute('data-stare', 'bine');
+  await expect(page.locator('[data-verificare="job:backupZilnic"]')).toHaveAttribute('data-stare', 'atentie');
 });
 
 test('un om fără cont nu vede nimic: doar butonul de intrare', async ({ page }) => {

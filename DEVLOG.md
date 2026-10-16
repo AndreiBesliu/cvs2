@@ -1912,3 +1912,27 @@ permisiune si continua cu ce ai nevoie”. **Started:** 16.10 20:15. Clasa R2, e
   fereastra o blochează doar panoul browserului meu, fără nicio eroare în consolă. Login-ul și primul owner sunt ale
   owner-ului.
 **Completed:** 16.10 20:55.
+
+## 2026-10-16 — Etapa 3, felia 3.4a: backup-ul zilnic și marcajele de rulare (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pregătește 3.4 (backup-ul și marcajele).” **Started:** 16.10 21:35, săptămânalul la 93 %. Clasa R2.
+**Completed:**
+- ADR 0041: `backupZilnic` (03:00, ora României) pornește exportul întregii baze în `BUCKET_BACKUP/firestore/<ora>` și
+  notează operația; `verificaBackup` (05:00) o cere terminată, fără eroare, și de azi. `BUCKET_BACKUP` e parametru pe
+  proiect (`functions/.env.cncvectorstudio-test`); lipsă sau greșit = eșec cu motivul. 3.4 împărțită: 3.4b (publicarea
+  pe live, WIF, `meta/deployment`, contul de serviciu dedicat) cere conturile owner-ului;
+- marcajul de rulare `marcaje/{job}` (`cuMarcaj`): pornirea înainte de lucru, reușita (contorul 0, `detaliu` înlocuit)
+  sau eșecul (contorul la rând, eroarea, rândul `job:<nume>` în fila Erori, adică alarma); nu aruncă;
+- judecata pură (`shared/joburi.ts`): niciodată / rulează / pornit fără final / eșecuri la rând / fără succes / vechi
+  (1,1 × intervalul + 2 h, rotunjit: în double ieșea 28,400000000000002) / un eșec / bine; un câmp de timp de alt tip face
+  marcajul nevalid. Diagnoza judecă fiecare job din `JOBURI`, deci și pe cel fără marcaj;
+- regula `marcaje` (personalul citește, nimeni nu scrie din client);
+- teste: 23 pe emulator (5 noi pe joburi, cu un client de export fals; unul pe regula marcajelor), 3 e2e pe emulatoare
+  (Diagnoza: un job cu succes, unul fără marcaj), 7 unitare pe judecată și unul în Diagnoză. **10 sabotaje**, fiecare prins
+  de exact testul lui, martorii trecuți. Emulatorul a prins un defect pe care tipurile nu-l vedeau: `import { v1 } from
+  '@google-cloud/firestore'` cădea la rulare în ESM (pachetul CommonJS nu exportă `v1` numit); acum prin `require`, la
+  prima rulare. Nivelul rapid: 6 476 de teste, 0 picate; `/admin` 165,7 / 200 kB;
+- **publicat pe test:** cele două joburi create (36 de funcții pe proiect: 32 vechi, 4 noi), regulile, hosting-ul. Prima
+  rulare reală: 17.10 la 03:00 și 05:00; dacă contul de serviciu implicit n-are dreptul de export, apare în fila Erori și
+  în Diagnoză.
+**Completed:** 16.10 22:20.

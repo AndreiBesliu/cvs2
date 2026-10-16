@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
-import { collection, getCountFromServer, query, where } from 'firebase/firestore';
+import { collection, getCountFromServer, getDocs, query, where } from 'firebase/firestore';
 import type { Conexiune } from '../../cloud/conexiune.ts';
 import { t, traduce } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
@@ -23,7 +23,11 @@ export function FilaDiagnoza({ con, instanta, build, rol }: {
     const functii: Masura<number> = await fetch(con.adresaFunctiei('logClientError'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"data":{}}',
     }).then((r) => ({ ok: true as const, valoare: r.status }), (e: unknown) => ({ ok: false as const, motiv: motivDin(e) }));
-    return verificari({ instanta, proiect: con.projectId, build, appCheck: con.appCheck, rol, nerezolvate, functii });
+    const marcaje = await getDocs(collection(con.db, 'marcaje')).then(
+      (s) => ({ ok: true as const, valoare: Object.fromEntries(s.docs.map((x) => [x.id, x.data()])) }),
+      (e: unknown) => ({ ok: false as const, motiv: motivDin(e) }),
+    );
+    return verificari({ instanta, proiect: con.projectId, build, appCheck: con.appCheck, rol, nerezolvate, functii, marcaje, acum: Date.now() });
   }, [con, instanta, build, rol]);
 
   useEffect(() => {

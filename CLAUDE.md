@@ -52,7 +52,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`functions/`, Node 24, codebase separat de cel vechi), `npm run test:emulator`, `npm run publica:functii` (doar pe test).
   **3.3 (personalul, fila Erori, Diagnoza; ADR 0040)** gata pe 16.10: pagina `/admin` pe instanța de test (login Google,
   rolul din `staff/{uid}`), regulile noi publicate, TTL de 90 de zile; `npm run publica:functii` duce funcțiile, regulile și
-  indecșii. Urmează 3.2 (raportorul din client; cere cheia reCAPTCHA a domeniului de test, pas al owner-ului).
+  indecșii. **3.4a (backup-ul zilnic și marcajele de rulare, ADR 0041)** gata pe 16.10: joburile programate pe test, prima
+  rulare pe 17.10 la 03:00 / 05:00. Urmează 3.2 (raportorul din client; cere cheia reCAPTCHA a domeniului de test, pas al
+  owner-ului) și 3.4b (publicarea pe live, cu conturile owner-ului).
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa

@@ -28,6 +28,7 @@ before(async () => {
     await setDoc(doc(db, 'errorLogs/g1/aparitii/a1'), { mesaj: 'x' });
     await setDoc(doc(db, 'limiteErori/client_1'), { numar: 1 });
     await setDoc(doc(db, 'audit/a1'), { cine: 'sup', actiune: 'erori.marcheaza' });
+    await setDoc(doc(db, 'marcaje/backupZilnic'), { job: 'backupZilnic', esecuriLaRand: 0 });
     // Colecțiile aplicației vechi, pe care regulile vechi le dădeau omului lor.
     await setDoc(doc(db, 'users/om'), { nume: 'om' });
     await setDoc(doc(db, 'customers/om'), { stripeId: 'cus_x' });
@@ -91,6 +92,16 @@ test('auditul îl citesc doar admin și owner; nu-l scrie nimeni din client', as
     await assertFails(setDoc(doc(ca(uid), 'audit/a2'), { cine: uid }));
     await assertFails(deleteDoc(doc(ca(uid), 'audit/a1')));
   }
+});
+
+test('marcajele joburilor le citește personalul; nu le scrie nimeni din client', async () => {
+  for (const uid of ['sup', 'adm', 'own']) {
+    await assertSucceeds(getDoc(doc(ca(uid), 'marcaje/backupZilnic')));
+    await assertSucceeds(getDocs(collection(ca(uid), 'marcaje')));
+  }
+  for (const uid of [null, 'om', 'fals']) await assertFails(getDoc(doc(ca(uid), 'marcaje/backupZilnic')));
+  await assertFails(setDoc(doc(ca('own'), 'marcaje/backupZilnic'), { esecuriLaRand: 0 }));
+  await assertFails(updateDoc(doc(ca('sup'), 'marcaje/backupZilnic'), { esecuriLaRand: 0 }));
 });
 
 test('colecțiile aplicației vechi sunt refuzate, chiar și omului lor', async () => {
