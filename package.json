@@ -39,6 +39,7 @@
     "@xmldom/xmldom": "0.9.12",
     "cavalier-contours-js": "0.1.1",
     "dependency-cruiser": "18.5.0",
+    "ignore": "7.0.11",
     "typescript": "7.0.2",
     "vite": "8.3.3"
   }

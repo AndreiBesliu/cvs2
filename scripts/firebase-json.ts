@@ -41,6 +41,7 @@ export function configHosting(publicDir: string): object {
  * proiectul de test). Pleacă doar `lib/` și `package.json`: sursele și testele rămân acasă.
  */
 export const CODEBASE = 'cncvs2';
+export const FUNCTII_IGNORATE: readonly string[] = ['node_modules', '.git', '*.local', '/src', '/test', '/tsconfig*.json'];
 
 export function configFunctii(): object {
   return {
@@ -48,7 +49,9 @@ export function configFunctii(): object {
       source: 'functions',
       codebase: CODEBASE,
       runtime: 'nodejs24',
-      ignore: ['node_modules', '.git', '*.local', 'src', 'test', 'tsconfig*.json'],
+      // Semantica `.gitignore` (pachetul `ignore` din firebase-tools): fără `/`, `src` ar prinde și `lib/functions/src`, iar
+      // în cloud n-ar mai ajunge codul compilat (prima publicare, 16.10). Testul: `test/unit/functii.pachet.test.ts`.
+      ignore: FUNCTII_IGNORATE,
     }],
     firestore: { rules: 'firestore.rules' },
     // Emulatoarele (`npm run test:emulator`), pe un proiect `demo-*`: nu ating cloud-ul și nu cer login.

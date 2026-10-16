@@ -57,3 +57,4 @@ fișa completă (programele de aur, cotele pe hârtie, cum tai, ce măsori) se s
 
 | # | Started | Completed | Treceri | Nota |
 |---|---|---|---:|---|
+| 3.1 | 16.10 18:20 | 16.10 19:20 | 4 | Jurnalul de erori pe server (ADR 0039): funcțiile `cncvs2` pe test, fără să le atingă pe cele vechi; `errorLogs` grupat pe amprentă, cu aparițiile; `logServerError` care nu aruncă; `logClientError` cu App Check și plafon. Regulile noi probate pe emulator, nepublicate (3.3). 12 teste pe emulator, 12 sabotaje prinse (după ce martorul a arătat un eșec fals al instrumentului). **Pe test:** 401 fără App Check și cu un token nesemnat. Publicarea a cerut două reparații: excluderile ancorate (`/src`) și recrearea callable-ului (invocarea publică se pune doar la creare). |

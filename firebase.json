@@ -83,9 +83,9 @@
         "node_modules",
         ".git",
         "*.local",
-        "src",
-        "test",
-        "tsconfig*.json"
+        "/src",
+        "/test",
+        "/tsconfig*.json"
       ]
     }
   ],

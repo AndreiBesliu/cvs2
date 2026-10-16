@@ -10,7 +10,11 @@ import { REGIUNI } from './regiuni.ts';
 
 initializeApp();
 
-/** Erorile din browser (ADR 0039 §5): App Check impus, fără cont cerut, plafon de rată, răspuns `{ ok }`. */
+/**
+ * Erorile din browser (ADR 0039 §5): App Check impus, fără cont cerut, plafon de rată, răspuns `{ ok }`.
+ * Invocarea publică (IAM) o pune firebase-tools doar la CREAREA unui callable, nu la actualizare: un callable a cărui
+ * creare a picat la construcție rămâne cu 403 de la frontul Google până e șters și creat din nou (măsurat pe 16.10).
+ */
 export const logClientError = onCall(
   { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 5, memory: '256MiB', timeoutSeconds: 20 },
   async (cerere) => {

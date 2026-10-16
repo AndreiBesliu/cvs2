@@ -1868,3 +1868,13 @@ mașină, deci etapa 3 pornește cu observabilitatea (P0), nu cu senderul. Golul
   citește din `package.json`-ul instalat. Regulile de import citesc și `functions/` (o încălcare pusă de probă e prinsă);
 - CI: în nivelul rapid, dependențele și tipurile funcțiilor; în cel complet, Java 21, Firebase CLI 15.18.0 fixat și
   testele pe emulatoare.
+- **publicat pe test** (`npm run publica:functii`, doar `functions:cncvs2`; cele 32 de funcții vechi neatinse). Trei
+  treceri: (1) construcția din cloud n-a găsit `lib/functions/src/index.js`: în `firebase.json`, `src` (semantica
+  `.gitignore`) prindea și `lib/functions/src`; acum `/src`, `/test`, cu testul `functii.pachet.test.ts` (pică pe modelele
+  vechi), pe `ignore` declarat explicit; (2) funcția a răspuns 403 de la frontul Google: firebase-tools pune invocarea
+  publică a unui callable doar la creare (codul lui, `fabricator.js`), iar crearea picase la construcție; (3) ștearsă și
+  creată din nou. **Măsurat:** `logClientError` întoarce 401 fără App Check și 401 cu un token nesemnat (pe care
+  emulatorul l-ar fi primit). 200 cu un token adevărat se măsoară în 3.2, cu cheia reCAPTCHA a domeniului de test.
+  Suita unitară: 6 456 de teste (cele 6 447 din CI + 9), 0 picate; cele 8 sărite sunt amânările „aplicația nu taie încă”.
+  **Completed:** 16.10 19:20, ~1 h, săptămânalul 91 → 92 %. Treceri: 4 (contractul, codul cu testele și sabotajele, CI-ul,
+  publicarea).
