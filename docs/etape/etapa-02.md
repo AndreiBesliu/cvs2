@@ -56,6 +56,47 @@ cipul stării, refacerea după export, pe test). Precizare: butonul „Arată tr
 foaia” (în bara de sus lățea insula uneltelor peste butonul Exportă, la 1 280 px). Rămâne 2.8e (probele independente).
 *Gata când:* owner-ul vede traseul unui SVG importat pe instanța de test și mută / rotește o piesă din panou; oracolul
 stratului trece, cu sabotajele prinse; CI-ul e verde.
+
+**2.8e, probele independente: aprobată pe 16.10 seara** („Da, pornește 2.8e mâine după resetare, cu costul spus.”;
+1,5–3 M în total), pornită după resetarea săptămânală din 17.10, 11:00. Trei sesiuni independente, în fundal, una după alta
+dacă fereastra de 5 ore strânge; fiecare primește brief-ul de mai jos, întreg. Sesiunea aplicației integrează rezultatele
+(testele noi, reparațiile, cu câte un test fiecare) și le publică pe test.
+
+*Brief A, oracolul stratului (~0,5–1 M):*
+> Ești o sesiune independentă: scrii oracolul stratului de traseu din ADR 0038 („Dovada și probele”, primul punct), fără
+> să citești implementarea. Din aplicație citești doar: ADR 0038, `test/e2e/traseu.spec.ts` (cum se pornește aplicația și
+> cum se arată traseul cu tasta T), atributele `data-*` ale pânzei și cum se citește vederea (scara în px/mm, translația)
+> din DOM. (1) `test/oracles/strat-traseu.ts`: zero importuri din `src/`; din textul G-code (G0/G1/G2/G3, I/J, G90, G21)
+> și din vedere, pixelii pe care trebuie să cadă traseul: segmentele, arcele (cu săgeata sub ½ px), rapidele separat de
+> tăieri. (2) `test/e2e/traseu.oracol.spec.ts`, în Edge, pe `dist/`: pixelii citiți din canvasul WebGL2 (cu
+> `preserveDrawingBuffer` doar dacă aplicația îl are; altfel prin `readPixels` după un cadru) față de oracol, pe hârtie:
+> dreptunghiul profilat pe exterior cu Ø6 (o ramă la 3 mm de contur, ±1 px la 10 px/mm); cercul Ø30 (raza 15 + R, ±1 px
+> la 1 000 px/mm, la marginea foii de 2 440 mm: precizia relativă la bucată); linia tăiată pe linie (aceiași pixeli ca
+> vectorul ei). Programul se ia din exportul aplicației (ca omul), nu din cod. (3) Martorii negativi: traseul decalat cu
+> 1 px, raza × 1,01, rapidele desenate ca tăieri, arcul cu sensul întors. (4) Cel puțin 15 sabotaje pe oracol, fiecare
+> prins, cu martorul fără sabotaj trecut. Nu schimbi nimic în `src/`. Ce e ambiguu în contract raportezi, nu ghicești.
+> Raportul: fișierele, cifrele, ce n-ai putut proba și de ce.
+
+*Brief B, recenzia panoului și a stratului (~0,5–1 M):*
+> Ești o sesiune independentă de recenzie adversarială a feliilor 2.8c și 2.8d (ADR 0038): panoul de proprietăți editabil
+> (`src/ui/CampNumeric.tsx`, `src/app/PanouProprietati.tsx`, acțiunile `instanta.pozitie`, `instanta.rotire`, `foaie.stoc`
+> din `src/ui/actiuniDocument.ts`, `citesteNumar` / `textNumar`) și traseul pe WebGL2 (`src/app/traseuDesen.ts`,
+> `src/canvas/StratTraseu.tsx`, legarea din `src/app/App.tsx`). Cauți defecte reale, fiecare cu reproducerea: o valoare
+> care ajunge altfel în document decât a scris omul (semnul, virgula, exponentul, „-0”, plafoanele, rotirea normalizată,
+> centrul ținut pe loc), un pas de anulare greșit sau lipsă, fila care doar citește, focusul și Escape, traseul care cade
+> în alt loc decât programul (precizia float32 relativă la bucată, arcele la ½ px, bugetul, treptele de zoom), contextul
+> WebGL pierdut, traseul vechi neîntunecat, scurgeri (buffere, ascultători). Pentru fiecare constatare: fișierul și
+> linia, scenariul concret, de ce e greșit față de ADR 0038 și un test care o arată (scris, rulat, pică pe codul de azi).
+> Fără reparații în `src/` și fără stil. Raportul: constatările confirmate, cele respinse cu motivul, ce n-ai acoperit.
+
+*Brief C, otrăvurile (~0,3–0,5 M):*
+> Ești o sesiune independentă: alegi și rulezi otrăvurile pe feliile 2.8c și 2.8d, cu `scripts/otravuri.py` și regulile din
+> `docs/otravuri.md` (clonă în afara Drive-ului, serial, baza verde întâi, restaurarea verificată). Ținta: 35–45 de otrăvuri
+> pe `CampNumeric`, `citesteNumar` / `textNumar`, acțiunile panoului, `traseuDesen.ts` (coardele, bugetul, treptele, bucățile
+> relative, RESTART) și `StratTraseu.tsx` (prin e2e: `test/e2e/traseu.spec.ts`, `test/e2e/panou.spec.ts`). Lista o scrii în
+> `test/otravuri/2.8.py`, fiecare cu motivul. Rulezi `verifica`, `baza`, `lot`, apoi `doua` pe cele scăpate. Nu schimbi
+> nimic în `src/`. Raportul: prinse / scăpate / VOID, iar pentru fiecare scăpată, ce ar trebui să verifice testul care
+> lipsește (sesiunea aplicației scrie testele).
 *Rămas deschis (găsit pe 16.10):* alegerea pe contur promisă de ADR 0035 („Limitele”: ce se taie dintr-un logo de ecran,
 latura pe o singură cale) n-a intrat în 2.8: ADR 0038 a lăsat operațiile în dialogul exportului. Documentul o permite deja
 (fiecare operație are lista ei de noduri), dar cere selecția în interiorul piesei, deci vine cu editorul de vectori
