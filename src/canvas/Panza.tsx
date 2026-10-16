@@ -34,6 +34,11 @@ type Props = {
    */
   readonly onFisiere?: (fisiere: readonly File[], punct: { readonly x: number; readonly y: number } | null) => void;
   readonly textLasare?: string;
+  /**
+   * Un strat deasupra vectorilor (traseul pe WebGL2, ADR 0038 §3), cu vederea și mărimea pânzei: fără evenimente, ca
+   * gesturile să ajungă tot la pânză.
+   */
+  readonly strat?: (vedere: Vedere, marime: { readonly latime: number; readonly inaltime: number; readonly dpr: number }) => ReactNode;
 };
 
 /** Pixelii de toleranță ai clicului și pragul de la care o apăsare devine tragere. */
@@ -66,7 +71,7 @@ export function vedereaPotrivita(
  * document: primește formele gata descrise și trimite înapoi gesturile (clic, mutare), pe care aplicația le rulează
  * prin registrul de acțiuni.
  */
-export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivire, cutie, children, onCursor, onScara, onFisiere, textLasare }: Props) {
+export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivire, cutie, children, onCursor, onScara, onFisiere, textLasare, strat }: Props) {
   const [trage, setTrage] = useState(false);
   const cuFisiere = (e: { readonly dataTransfer: DataTransfer }): boolean => [...e.dataTransfer.types].includes('Files');
   const panzaRef = useRef<HTMLCanvasElement | null>(null);
@@ -269,6 +274,7 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
         onFisiere([...e.dataTransfer.files], p ? { x: p.x, y: p.y } : null);
       }}
     />
+    {strat && vedere && marime.latime > 0 && strat(vedere, marime)}
     {trage && textLasare && <div className="lasa-aici" data-testid="lasa-aici">{textLasare}</div>}
     {/* Bara selecției: sub cutie dacă încape deasupra barei de jos, altfel deasupra cutiei; ascunsă cât se mută selecția. */}
     {children && cutie && vedere && deplasare.dx === 0 && deplasare.dy === 0 && (() => {

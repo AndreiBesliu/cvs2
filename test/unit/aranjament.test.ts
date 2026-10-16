@@ -31,8 +31,9 @@ test('aranjamentul implicit: fiecare acțiune din el există în registru și ap
     for (const id of ids) assert.ok(REGISTRU.has(id), `zona ${z}: „${id}” nu e în registru`);
     assert.equal(new Set(ids).size, ids.length, `zona ${z} are o acțiune de două ori: ${ids.join(', ')}`);
   }
-  // Plasa nu e vidă: bara de sus, uneltele, bara selecției și cea de jos au, împreună, acțiunile prototipului B.
-  assert.equal(numarate, 8 + 2 + 3 + 1);
+  // Plasa nu e vidă: bara de sus, uneltele, bara selecției și cea de jos au, împreună, acțiunile prototipului B, plus
+  // „Arată traseul” în bara de jos (2.8d).
+  assert.equal(numarate, 8 + 2 + 3 + 2);
   for (const p of PANOURI) assert.ok(REGISTRU.has(COMUTA_PANOU[p]), `panoul ${p}: comutatorul lipsește din registru`);
   assert.deepEqual(verificaAranjament(ARANJAMENT_MODERN, REGISTRU), []);
 });

@@ -1,4 +1,7 @@
+import { RESTART, treaptaZoom, type Bucata } from '../canvas/protocol.ts';
 import { baleiajArc, type Miscare } from '../ir/ir.ts';
+
+export { RESTART, type Bucata };
 
 /**
  * Traseul unui program, pregătit pentru stratul WebGL2 al pânzei (ADR 0038 §1). Pur: din mișcările IR-ului (coordonatele
@@ -12,18 +15,6 @@ import { baleiajArc, type Miscare } from '../ir/ir.ts';
 
 export type Sir = { readonly rapid: boolean; readonly puncte: readonly number[] };
 
-export type Bucata = {
-  readonly rapid: boolean;
-  readonly origine: { readonly x: number; readonly y: number };
-  /** x, y relative la origine, câte o pereche pe vârf. */
-  readonly varfuri: Float32Array;
-  /** Indicii LINE_STRIP; `RESTART` desparte șirurile din aceeași bucată (primitive restart, mereu pornit în WebGL2). */
-  readonly indici: Uint32Array;
-  /** Cutia bucății în lume (mm), pentru a sări bucățile din afara vederii. */
-  readonly cutie: { readonly minX: number; readonly minY: number; readonly maxX: number; readonly maxY: number };
-};
-
-export const RESTART = 0xffff_ffff;
 export const INTINDERE_BUCATA = 64;
 /** Cel mult atâtea vârfuri într-o bucată (un buffer). */
 const VARFURI_PE_BUCATA = 1 << 16;
@@ -33,8 +24,13 @@ const VARFURI_PE_BUCATA = 1 << 16;
  * de zoom (trepte de ×2), deci cel mult ½ px oriunde în treaptă. Treapta, ca aproximarea să se refacă doar la schimbarea ei.
  */
 export function tolerantaTreptei(scara: number, dpr: number): { readonly treapta: number; readonly toleranta: number } {
-  const treapta = Math.ceil(Math.log2(Math.max(scara * dpr, 1e-9)));
-  return { treapta, toleranta: 0.5 / 2 ** treapta };
+  const treapta = treaptaZoom(scara, dpr);
+  return { treapta, toleranta: tolerantaDinTreapta(treapta) };
+}
+
+/** Toleranța arcelor pe o treaptă de zoom: ½ pixel fizic la capătul ei de sus. */
+export function tolerantaDinTreapta(treapta: number): number {
+  return 0.5 / 2 ** treapta;
 }
 
 /** Câte coarde cere un arc de rază r și baleiaj b, ca săgeata să fie cel mult `toleranta` (măcar una la 90°). */

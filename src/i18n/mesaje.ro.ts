@@ -92,6 +92,7 @@ export const ro = {
   'vedere.lista': 'Panoul listei',
   'vedere.proprietati': 'Panoul de proprietăți',
   'vedere.potriveste': 'Arată toată foaia',
+  'vedere.traseu': 'Arată traseul',
   'vedere.tema': 'Tema',
   'tema.auto': 'după sistem',
   'tema.luminoasa': 'luminoasă',

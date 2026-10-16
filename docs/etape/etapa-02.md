@@ -50,6 +50,10 @@ Sub-feliile, fiecare cu commit, publicare pe test și raport:
   citiți din canvas).
 - **2.8e, probele independente** (cu agenți, după resetarea din 17.10; ~0,5–1 M fiecare): oracolul stratului (pixelii din
   textul G-code și vedere, fără importuri din `src/`), recenzia panoului și a stratului, otrăvurile.
+*Starea pe 16.10:* **2.8c gata** (`6be3615`, `79b864e`: acțiunile panoului, câmpul numeric unic, panoul editabil, pe
+test). **2.8d gata** (`0d8f27a` și pasul de după: traseul pregătit, stratul WebGL2 la cerere, „Arată traseul” cu tasta T,
+cipul stării, refacerea după export, pe test). Precizare: butonul „Arată traseul” stă în bara de jos, lângă „Arată toată
+foaia” (în bara de sus lățea insula uneltelor peste butonul Exportă, la 1 280 px). Rămâne 2.8e (probele independente).
 *Gata când:* owner-ul vede traseul unui SVG importat pe instanța de test și mută / rotește o piesă din panou; oracolul
 stratului trece, cu sabotajele prinse; CI-ul e verde.
 

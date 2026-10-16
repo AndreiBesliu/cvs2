@@ -1,6 +1,7 @@
 import type { enCarcasa } from './carcasa.en.ts';
 import type { enExport } from './export.en.ts';
 import type { enImport } from './import.en.ts';
+import type { enTraseu } from './traseu.en.ts';
 import { en } from './mesaje.en.ts';
 import { ro } from './mesaje.ro.ts';
 import { LIMBI, type Limba, type Mesaj } from './tipuri.ts';
@@ -8,9 +9,10 @@ import { LIMBI, type Limba, type Mesaj } from './tipuri.ts';
 /**
  * Toate mesajele, ca tip: cele de la pornire (`mesaje.*.ts`) și cele care vin cu un modul încărcat la cerere
  * (`import.*.ts` și `export.*.ts` cu dialogurile lor, `carcasa.*.ts` cu paleta și panoul de proprietăți, înregistrate de
- * `import.ts`, `export.ts` și `carcasa.ts`). Doar tipul lor intră aici, nu textul.
+ * `import.ts`, `export.ts` și `carcasa.ts`; `traseu.*.ts` cu traseul de pe pânză, prin `traseu.ts`). Doar tipul lor intră
+ * aici, nu textul.
  */
-type Toate = typeof en & typeof enImport & typeof enExport & typeof enCarcasa;
+type Toate = typeof en & typeof enImport & typeof enExport & typeof enCarcasa & typeof enTraseu;
 export type Cheie = keyof Toate;
 
 /** Cheile al căror mesaj e plural: nu se pot cere fără `n`. */

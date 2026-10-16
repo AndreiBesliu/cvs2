@@ -76,6 +76,7 @@ export const en = {
   'vedere.lista': 'Sheet list panel',
   'vedere.proprietati': 'Properties panel',
   'vedere.potriveste': 'Show the whole sheet',
+  'vedere.traseu': 'Show toolpath',
   'vedere.tema': 'Theme',
   'tema.auto': 'as the system',
   'tema.luminoasa': 'light',

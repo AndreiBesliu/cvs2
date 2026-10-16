@@ -28,6 +28,31 @@ export type FormaDesen = {
 /** Vederea: câți pixeli CSS are un milimetru și unde cade originea documentului pe ecran (pixeli CSS). */
 export type Vedere = { readonly scara: number; readonly tx: number; readonly ty: number };
 
+/**
+ * O bucată a traseului, pentru stratul WebGL2 (ADR 0038 §1): vârfurile în float32 RELATIV la origine (cel mult 64 mm de
+ * ea), legate cu LINE_STRIP; `RESTART` desparte șirurile din aceeași bucată (primitive restart, mereu pornit în WebGL2
+ * pentru indicii pe 32 de biți). Le face aplicația din program; pânza doar le desenează.
+ */
+export type Bucata = {
+  readonly rapid: boolean;
+  readonly origine: { readonly x: number; readonly y: number };
+  /** x, y relative la origine, câte o pereche pe vârf. */
+  readonly varfuri: Float32Array;
+  readonly indici: Uint32Array;
+  /** Cutia bucății în lume (mm), ca bucățile din afara vederii să se sară. */
+  readonly cutie: { readonly minX: number; readonly minY: number; readonly maxX: number; readonly maxY: number };
+};
+
+export const RESTART = 0xffff_ffff;
+
+/**
+ * Treapta de zoom (ADR 0038 §1): ⌈log₂(pixeli fizici pe mm)⌉. Aproximarea arcelor traseului se reface doar când se schimbă
+ * treapta, nu la fiecare pas al rotiței.
+ */
+export function treaptaZoom(scara: number, dpr: number): number {
+  return Math.ceil(Math.log2(Math.max(scara * dpr, 1e-9)));
+}
+
 export type CerereDesen = {
   readonly tip: 'deseneaza';
   readonly cerere: number;

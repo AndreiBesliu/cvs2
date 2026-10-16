@@ -11,6 +11,7 @@ export const TASTE: ReadonlyArray<readonly [tasta: string, actiune: string]> = [
   ['Delete', 'document.sterge-selectia'],
   ['Ctrl+K', 'vedere.paleta'],
   ['Home', 'vedere.potriveste'],
+  ['T', 'vedere.traseu'],
 ];
 
 /**

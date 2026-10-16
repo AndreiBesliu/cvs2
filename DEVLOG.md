@@ -1785,3 +1785,23 @@ bucată cu RESTART (primitive restart), segmentele lungi împărțite, bucățil
 `test/unit/traseu.desen.test.ts`: 9 teste pe hârtie (dreptunghiul, sfertul de arc R10 la 0,001 mm = 56 de coarde, arcul
 orar, cercul întreg și elicea, bugetul, treptele, linia de 2 440 × 1 220 mm în bucăți legate, precizia de 10 ori mai bună
 decât float32 în lume, RESTART). Nimic vizibil încă.
+
+## 2026-10-16 — 2.8d, segmentele 2–3: traseul pe pânză, pe WebGL2 (Model: Claude Opus 5.5)
+
+**Prompt:** „vad ca usage-ul nu se consuma periculos de repede. poti sa faci mai multe  lucruri in acest pas. continua”.
+**Started:** după 2.8d-1. **Completed** (un pas mai mare, la cererea owner-ului):
+- `src/canvas/StratTraseu.tsx` (la cerere, 2 kB gzip): canvas WebGL2 deasupra vectorilor, fără evenimente; LINE_STRIP cu
+  primitive restart, vârfurile relative la bucată și `u_off` calculat în double; bucățile din afara vederii sărite; culorile
+  din temă (`--traseu-taiere`, `--traseu-rapid`), stins la 35 % când e vechi; fără WebGL2 → `fara-webgl`; contextul pierdut
+  → `context-pierdut`, refăcut la `webglcontextrestored`; primul cadru al fiecărui set măsurat cu `finish`: peste 32 ms,
+  bugetul (2 M de vârfuri) se înjumătățește, până la 50 k;
+- `App.tsx`: „Arată traseul” (`vedere.traseu`, tasta T): calculează programul documentului de acum (CAM-ul și dicționarul
+  traseului vin la cerere), îl arată; la zi, îl ascunde; vechi (altă revizie) → stins, cu cipul „Traseul e vechi: T îl
+  calculează din nou”; refuzul CAM-ului → cipul cu motivul; după un export reușit, traseul arătat se reface; treapta de zoom
+  (×2) re-randează carcasa doar la schimbare; `Panza` primește un `strat` deasupra vectorilor;
+- tipurile comune (`Bucata`, `RESTART`, `treaptaZoom`) în `canvas/protocol.ts`; mesajele cipului într-un dicționar la cerere
+  (`i18n/traseu.*.ts`), ca pornirea să nu crească: 98,6 / 100 kB (de la 97,7);
+- butonul în bara de jos: în bara de sus lățea insula uneltelor peste „Exportă” (8 e2e expirate la 30 s, prinse de poartă);
+- `test/e2e/traseu.spec.ts`: 6 teste (pixelii ramei la 3 mm de dreptunghi, nu pe contur, nu înăuntru; vechi → T → la zi
+  → ascuns; refuzul; fără WebGL2; contextul pierdut și refăcut; refacerea după export). Văzut în browser: rama, cercul
+  interior și rapidele.

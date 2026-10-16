@@ -1,5 +1,8 @@
 import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
+import { treaptaZoom, type Bucata, type Vedere } from '../canvas/protocol.ts';
+import type { StareStrat } from '../canvas/StratTraseu.tsx';
+import type { Miscare } from '../ir/ir.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
@@ -92,6 +95,23 @@ const incarcaProprietati = () => import('./PanouProprietati.tsx');
 const Paleta = lazy(() => incarcaPaleta().then((m) => ({ default: m.Paleta }), () => ({ default: DialogNeincarcat })));
 // Panoul care nu se poate aduce rămâne gol: e doar de citit, iar selecția se vede și în listă și în bara de jos.
 const PanouProprietati = lazy(() => incarcaProprietati().then((m) => ({ default: m.PanouProprietati }), () => ({ default: () => null })));
+/** Stratul traseului (ADR 0038 §3) vine la primul „Arată traseul”: WebGL2 nu intră în pachetul de pornire. */
+const StratTraseu = lazy(() => import('../canvas/StratTraseu.tsx').then((m) => ({ default: m.StratTraseu }), () => ({ default: () => null })));
+
+/**
+ * Traseul de pe pânză (ADR 0038 §2): ultimul program calculat la „Arată traseul”, cu revizia documentului de atunci
+ * (altă revizie = traseul e vechi, stins). `miscari` rămâne cât se calculează din nou, ca pânza să nu clipească.
+ */
+type StareTraseu = {
+  readonly arata: boolean;
+  readonly stare: 'calcul' | 'gata' | 'refuz';
+  readonly rev: number;
+  readonly miscari: readonly Miscare[] | null;
+  readonly motiv: string | null;
+};
+/** Bugetul de vârfuri al stratului la pornire (5 M de segmente țin 60 Hz pe iGPU, s6-V); se înjumătățește la un cadru lent. */
+const BUGET_TRASEU = 2_000_000;
+const BUGET_TRASEU_MINIM = 50_000;
 
 /** Foaia documentului nou: bucata minimă a plăcii 1. */
 const FOAIA_IMPLICITA = { latime: 300, inaltime: 200, grosime: 18 };
@@ -173,6 +193,19 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   /** Cursorul pe foaie și scara vederii, pentru cipurile de jos: se schimbă des, deci doar cipul lor se redesenează. */
   const [cursor] = useState(() => semnal<PunctFoaie | null>(null));
   const [scara] = useState(() => semnal<number | null>(null));
+  const [traseu, setTraseu] = useState<StareTraseu | null>(null);
+  const [bugetTraseu, setBugetTraseu] = useState(BUGET_TRASEU);
+  const [stareStrat, setStareStrat] = useState<StareStrat>('ok');
+  const [traseuPregatit, setTraseuPregatit] = useState<{ readonly bucati: readonly Bucata[]; readonly rarit: boolean } | null>(null);
+  const cerereTraseu = useRef(0);
+  // Pentru rezultatul exportului, care vine mai târziu, dintr-un context făcut la apăsarea butonului.
+  const traseuArat = useRef(false);
+  traseuArat.current = traseu?.arata === true;
+  // Doar treapta de zoom re-randează carcasa (×2), nu fiecare pas al rotiței.
+  const treapta = useSyncExternalStore(scara.asculta, () => {
+    const s = scara.citeste();
+    return s === null ? null : treaptaZoom(s, window.devicePixelRatio || 1);
+  });
   const [tema, setTema] = useState(() => TEME.find((x) => x === document.documentElement.dataset['tema']) ?? 'auto');
   const [potrivire, setPotrivire] = useState(0);
   /** Zona pânzei pe care n-o acoperă barele și panourile: foaia se potrivește în ea. */
@@ -260,6 +293,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     lista: () => { comutaPanou('lista'); },
     proprietati: () => { comutaPanou('proprietati'); },
     potriveste: () => { setPotrivire((n) => n + 1); },
+    traseu: () => { comutaTraseu(); },
     tema: () => {
       const noua = TEME[(TEME.indexOf(tema) + 1) % TEME.length] ?? 'auto';
       setTema(noua);
@@ -274,6 +308,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       exportInCurs.current = false;
       if (r.ok) {
         descarca(r.program.octeti, `cncvs2-${p?.origine ?? 'stanga-jos'}.${r.program.extensie}`);
+        // Exportul tocmai a scris operațiile: traseul arătat se reface pe documentul exportat.
+        if (traseuArat.current) calculeazaTraseu();
         setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente });
       } else {
         setStareExport('cereConfirmare' in r ? { ok: false, motiv: r.motiv, cereConfirmare: r.cereConfirmare } : { ok: false, motiv: r.motiv });
@@ -381,6 +417,61 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     if (dialogDeschis.current) return;
     ruleaza(registru, id, ctx);
   };
+  /**
+   * „Arată traseul” (ADR 0038 §2): cu traseul arătat și la zi, îl ascunde; altfel calculează programul documentului de
+   * acum, pe firul principal (CAM-ul vine la cerere), după ce cipul „se calculează” a apucat să se vadă. Un calcul pornit
+   * după el îl face pe cel vechi să nu mai conteze.
+   */
+  const comutaTraseu = (): void => {
+    const d = curenta.current.istoric.doc;
+    if (traseu?.arata && traseu.stare === 'gata' && traseu.rev === d.rev) {
+      setTraseu({ ...traseu, arata: false });
+      return;
+    }
+    calculeazaTraseu();
+  };
+  /** Programul documentului de acum, pentru traseu; și după un export reușit, dacă traseul e arătat (ADR 0038 §2). */
+  const calculeazaTraseu = (): void => {
+    const d = curenta.current.istoric.doc;
+    const cerere = ++cerereTraseu.current;
+    setStareStrat('ok');
+    const refuz = (motiv: string): void => {
+      if (cerere === cerereTraseu.current) setTraseu({ arata: true, stare: 'refuz', rev: d.rev, miscari: null, motiv });
+    };
+    // Mesajele cipului vin înaintea lui (dicționarul traseului, la cerere), apoi CAM-ul.
+    Promise.all([import('../cam/job.ts'), import('../i18n/traseu.ts')]).then(([{ programDinDocument }]) => {
+      if (cerere !== cerereTraseu.current) return;
+      setTraseu((v) => ({ arata: true, stare: 'calcul', rev: d.rev, miscari: v?.miscari ?? null, motiv: null }));
+      setTimeout(() => {
+        if (cerere !== cerereTraseu.current) return;
+        try {
+          const r = programDinDocument(d);
+          if (cerere !== cerereTraseu.current) return;
+          if (r.ok) setTraseu({ arata: true, stare: 'gata', rev: d.rev, miscari: r.program.miscari, motiv: null });
+          else refuz(r.motiv);
+        } catch (e) {
+          refuz(e instanceof Error ? e.message : String(e));
+        }
+      }, 0);
+    }, (e: unknown) => { refuz(e instanceof Error ? e.message : String(e)); });
+  };
+  // Bucățile stratului: din program, la treapta de zoom și sub buget (modulul vine la cerere, cu stratul).
+  const miscariTraseu = traseu?.arata ? traseu.miscari : null;
+  useEffect(() => {
+    if (!miscariTraseu || treapta === null) {
+      setTraseuPregatit(null);
+      return;
+    }
+    let viu = true;
+    import('./traseuDesen.ts').then(({ siruriInBuget, bucatiDinSiruri, tolerantaDinTreapta }) => {
+      if (!viu) return;
+      const r = siruriInBuget(miscariTraseu, tolerantaDinTreapta(treapta), bugetTraseu);
+      setTraseuPregatit({ bucati: bucatiDinSiruri(r.siruri), rarit: r.rarit || r.pesteBuget });
+    }, () => { if (viu) setTraseuPregatit(null); });
+    return () => { viu = false; };
+  }, [miscariTraseu, treapta, bugetTraseu]);
+  const traseuVechi = traseu?.stare === 'gata' && traseu.rev !== doc.rev;
+
   /** Un câmp al panoului de proprietăți (ADR 0038 §4): acțiunea lui, cu rezultatul (motivul unui refuz rămâne în câmp). */
   const aplicaDinPanou = (id: string, extra: Parameters<typeof context>[0]): RezultatActiune => {
     if (dialogDeschis.current) return { ok: false, motiv: 'motiv.nimic-ales' };
@@ -676,6 +767,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     const extra = clase === '' ? {} : { className: clase };
     if (id === 'vedere.tema') return buton(id, atribut, { ...extra, 'data-icona': `tema.${tema}` }, `${t('vedere.tema')}: ${t(`tema.${tema}`)}`);
     const p = panouAl(id);
+    if (id === 'vedere.traseu') return buton(id, atribut, { ...extra, 'aria-pressed': traseu?.arata === true });
     return buton(id, atribut, p ? { ...extra, 'aria-pressed': panouri[p] } : extra);
   };
 
@@ -727,6 +819,19 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         return <CipZoom scara={scara} />;
       case 'jurnal':
         return <span data-testid="jurnal" className={intrari > 0 ? 'cip cip-rosu' : 'cip'}>{t('jurnal.intrari', { n: intrari })}</span>;
+      case 'traseu': {
+        // Starea traseului (ADR 0038 §2, §3): doar când e ceva de spus; traseul la zi și desenat n-are cip.
+        if (!traseu?.arata) return null;
+        const [cheie, clasa, motiv] = traseu.stare === 'calcul' ? ['traseu.calcul', 'cip', ''] as const
+          : traseu.stare === 'refuz' ? ['traseu.refuz', 'cip cip-rosu', traseu.motiv ?? ''] as const
+            : stareStrat === 'fara-webgl' ? ['traseu.fara-webgl', 'cip cip-atentie', ''] as const
+              : stareStrat === 'context-pierdut' ? ['traseu.context', 'cip cip-atentie', ''] as const
+                : traseuVechi ? ['traseu.vechi', 'cip cip-atentie', ''] as const
+                  : traseuPregatit?.rarit ? ['traseu.rarit', 'cip', ''] as const : [null, '', ''] as const;
+        if (cheie === null) return null;
+        const text = t(cheie, { motiv });
+        return <span data-testid="traseu-stare" data-stare={cheie} className={clasa} role="status" title={text}>{text}</span>;
+      }
     }
   };
 
@@ -807,6 +912,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             cutie={cutieSelectie}
             onCursor={cursor.scrie}
             onScara={scara.scrie}
+            {...(traseu?.arata && traseuPregatit && stareStrat !== 'fara-webgl' ? {
+              strat: (v: Vedere, m: { readonly latime: number; readonly inaltime: number; readonly dpr: number }) => (
+                <Suspense fallback={null}>
+                  <StratTraseu bucati={traseuPregatit.bucati} vedere={v} marime={m} stins={traseuVechi} onStare={setStareStrat}
+                    onLent={() => { setBugetTraseu((b) => Math.max(BUGET_TRASEU_MINIM, Math.floor(b / 2))); }} />
+                </Suspense>
+              ),
+            } : {})}
             {...(modal ? {} : { onFisiere: (fisiere: readonly File[], punct: { readonly x: number; readonly y: number } | null) => { pornesteImport(fisiere, punct); } })}
             textLasare={t('import.lasa-aici')}
           >
