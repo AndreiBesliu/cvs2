@@ -1734,3 +1734,13 @@ owner-ul pe instanța de test; ce rămâne deschis: căile peste ~200 m de trase
 rampa, intrările și degajările pe căile deschise sunt refuzate cu motiv). `ACOPERIRE`: rândul importului 2D (contururile
 deschise gata) și rândul profilului (profilul pe căile deschise). `CLAUDE.md`: starea etapei 2, urmează 2.8. Aplicația
 nu s-a schimbat de la `9dab66c`, deja pe instanța de test.
+
+## 2026-10-16 — 2.8, segmentul 1: contractul (ADR 0038, propus) și planul sub-feliilor (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (la „Urmează 2.8 […] 1. contractul 2.8: ADR-ul și planul în fișă, fără agenți, ~1–2 %”).
+**Started:** dimineața. **Completed:** ADR 0038 propus: traseul ultimului program calculat, pe un canvas WebGL2 deasupra
+vectorilor (LINE_STRIP pe șiruri continue, float32 relativ la bucată, arcele la ½ px pe treapta de zoom, bugetul de
+segmente), la cerere („Arată traseul”, tasta T; stins cu cip când documentul se schimbă), încărcat la cerere, fără WebGL2
+doar cipul; panoul de proprietăți editabil (poziția, rotirea, foaia) cu câmpul numeric unic; oracolul stratului din textul
+G-code, independent. Trei alegeri la owner (recalculul la cerere, straturile, ce se editează în panou), cu implicitul
+recomandat. Fișa: sub-feliile 2.8c (panoul), 2.8d (traseul), 2.8e (probele independente, după 17.10).

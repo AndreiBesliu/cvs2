@@ -34,9 +34,24 @@ Bugetul unei felii e ~½ zi activă, până la prima măsurătoare (`PLAN.md` §
 | 2.8a | Carcasa interfeței (aranjamentul, tokenurile temei, componentele), din prototipul ales de owner dintre trei (13.10, „da, pornește prototipurile”) | — | R1 | — |
 | 2.8b | Fișierele lăsate pe planșă (cererea owner-ului, 13.10): unul sau mai multe SVG-uri trase pe pânză trec prin dialogul importului pe rând și cad cu centrul unde au fost lăsate | A4 | R1 | 2.7c, 2.8a |
 | 2.8-0 | Loc în pachetul de pornire pentru 2.8 (99,9 → 96,1 kB din 100): ușa de încărcare a proiectului vine la cerere; pornirea fără `await` la nivelul modulului (altfel bucata adusă la cerere în timpul pornirii se bloca) | — | R1 | 2.8b |
-| 2.8 | Stratul WebGL2 (foaia, traseul ca LINE_STRIP) și panoul de proprietăți, în carcasa din 2.8a | I7, I19 | R2 | 2.2, 2.8a |
+| 2.8 | Stratul WebGL2 (traseul ca LINE_STRIP; foaia rămâne în workerul vectorilor până la etapa 4; ADR 0038, propus) și panoul de proprietăți editabil, în carcasa din 2.8a; sub-feliile 2.8c–2.8e | I7, I19 | R2 | 2.2, 2.8a |
 | 2.9 | Bancul vizual v1, cu martorii lui | I18 | R2 | 2.8 |
 | 2.10 | Fișa plăcii 2, cu programele de aur | — | R2 | 2.4–2.7 |
+
+**2.8, traseul pe pânză și panoul de proprietăți: planul (16.10), contractul în ADR 0038 (propus, așteaptă owner-ul).**
+Sub-feliile, fiecare cu commit, publicare pe test și raport:
+- **2.8c, panoul editabil** (fără agenți, 2–3 segmente de ~1–2 % din săptămânal): câmpul numeric unic (semnul, virgula,
+  Enter / Escape, motivul); acțiunile `instanta.pozitie`, `instanta.rotire`, `foaie.stoc`, fiecare un pas de anulare, cu
+  refuzurile (fila care doar citește, plafoanele); testele pe acțiuni și e2e pe panou. Pornirea rămâne sub 100 kB (panoul
+  e deja la cerere).
+- **2.8d, traseul pe WebGL2** (fără agenți, 2–3 segmente): acțiunea „Arată traseul” (tasta T), traseul vechi stins cu cip,
+  stratul la cerere, deasupra vectorilor, LINE_STRIP relativ la bucată, arcele la ½ px pe treapta de zoom, bugetul de
+  segmente măsurat la pornire, refuzul fără WebGL2 și refacerea la contextul pierdut; testele aplicației (e2e cu pixelii
+  citiți din canvas).
+- **2.8e, probele independente** (cu agenți, după resetarea din 17.10; ~0,5–1 M fiecare): oracolul stratului (pixelii din
+  textul G-code și vedere, fără importuri din `src/`), recenzia panoului și a stratului, otrăvurile.
+*Gata când:* owner-ul vede traseul unui SVG importat pe instanța de test și mută / rotește o piesă din panou; oracolul
+stratului trece, cu sabotajele prinse; CI-ul e verde.
 
 **2.3c, contururile deschise: încheiată pe 16.10.** Contractul e ADR 0037, documentul v10. Sub-feliile, fiecare cu
 commit, publicată pe instanța de test și cu CI verde:
