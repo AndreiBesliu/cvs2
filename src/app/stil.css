@@ -1387,3 +1387,51 @@ main h1 {
   pointer-events: none;
   z-index: 5;
 }
+
+/* Câmpul numeric unic (ADR 0038 §5) în panoul de proprietăți: valoarea, unitatea, motivul unui refuz sub ele. */
+.camp-numeric {
+  display: inline-grid;
+  grid-template-columns: 6rem auto;
+  align-items: center;
+  gap: 4px;
+  justify-items: end;
+}
+
+.camp-numeric input {
+  width: 100%;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.camp-numeric input[aria-invalid='true'] {
+  border-color: var(--a);
+}
+
+.camp-unitate {
+  color: var(--t-slab);
+  min-width: 1.5em;
+  text-align: left;
+}
+
+.camp-motiv {
+  grid-column: 1 / -1;
+  max-width: 14rem;
+  color: var(--t);
+  background: var(--s-atentie);
+  border-radius: var(--r-1);
+  padding: 2px 6px;
+  font-size: var(--fs-1);
+  text-align: left;
+  white-space: normal;
+}
+
+.prop-grup {
+  margin: var(--sp-2) 0 0;
+  color: var(--t-slab);
+  font-size: var(--fs-1);
+}
+
+.prop-export {
+  margin-top: var(--sp-3);
+}

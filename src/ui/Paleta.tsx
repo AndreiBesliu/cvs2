@@ -31,6 +31,9 @@ const GESTURI: Readonly<Record<string, CheieSimpla>> = {
   'document.muta-selectia': 'paleta.gest.document.muta-selectia',
   'document.importa': 'paleta.gest.document.importa',
   'document.aplica-operatii': 'paleta.gest.document.aplica-operatii',
+  'document.pozitioneaza': 'paleta.gest.panou',
+  'document.roteste': 'paleta.gest.panou',
+  'foaie.stoc': 'paleta.gest.panou',
 };
 
 /** Grupurile, în ordinea paletei, după prefixul id-ului. */

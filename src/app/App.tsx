@@ -324,7 +324,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -380,6 +380,11 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const ruleazaDocument = (id: string, ctx: ContextDocument): void => {
     if (dialogDeschis.current) return;
     ruleaza(registru, id, ctx);
+  };
+  /** Un câmp al panoului de proprietăți (ADR 0038 §4): acțiunea lui, cu rezultatul (motivul unui refuz rămâne în câmp). */
+  const aplicaDinPanou = (id: string, extra: Parameters<typeof context>[0]): RezultatActiune => {
+    if (dialogDeschis.current) return { ok: false, motiv: 'motiv.nimic-ales' };
+    return ruleaza(registru, id, context(extra));
   };
 
   /** Contextul importului înainte de alegerea fișierului: doar starea butonului (fila care doar citește îl oprește). */
@@ -746,7 +751,17 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           />
         );
       case 'proprietati':
-        return <Suspense fallback={null}><PanouProprietati doc={doc} alese={selectieValida} elemente={selectieDesen.length} cutie={cutieSelectie} /></Suspense>;
+        return (
+          <Suspense fallback={null}>
+            <PanouProprietati
+              doc={doc} alese={selectieValida} elemente={selectieDesen.length} cutie={cutieSelectie} doarCitire={doarCiteste(mod)}
+              onPozitie={(p) => aplicaDinPanou('document.pozitioneaza', { pozitieNoua: () => p })}
+              onRotire={(r) => aplicaDinPanou('document.roteste', { rotireNoua: () => r })}
+              onStoc={(s) => aplicaDinPanou('foaie.stoc', { stocNou: () => s })}
+              onEditeazaOperatii={() => { executa('export.gcode'); }}
+            />
+          </Suspense>
+        );
     }
   };
 

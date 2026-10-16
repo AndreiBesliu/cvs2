@@ -1760,3 +1760,15 @@ selecției (la un cerc, originea instanței e centrul), iar rotirea ține pe loc
   fără exponent, citite înapoi exact;
 - `test/unit/actiuni.panou.test.ts`: 8 teste (poziția pe un cerc și pe mai multe forme, refuzurile, rotirea cu centrul pe
   loc la 90° și la 33,3°, normalizarea, foaia cu anularea / refacerea și redeschiderea, refuzurile foii, numărul cu semn).
+
+## 2026-10-16 — 2.8c, segmentul 2: panoul de proprietăți editabil (Model: Claude Opus 5.5)
+
+**Prompt:** „continuq” (la „2.8c, segmentul 2: panoul editabil […] cu e2e și publicarea pe test”). **Started:** dimineața.
+**Completed:** `src/ui/CampNumeric.tsx`, câmpul numeric unic (ADR 0038 §5): Enter sau ieșirea din câmp aplică, Escape
+revine; o valoare greșită sau refuzată rămâne în câmp, cu motivul sub el (`aria-invalid`); câmpul urmează documentul cât
+omul n-a scris nimic neaplicat (doar focusul nu ține textul vechi, deci ieșirea dintr-un câmp neatins nu aplică nimic).
+Panoul: fără selecție, lățimea / înălțimea / grosimea foii; cu selecție, colțul stânga-jos X / Y și, la o singură formă,
+rotirea; „Editează în Exportă G-code” deschide dialogul; în fila care doar citește, câmpurile sunt oprite, cu motivul în
+titlu. Paleta arată cele trei acțiuni ca „Din panoul de proprietăți”. `test/e2e/panou.spec.ts`: 6 teste. Văzut în
+browser: eticheta lungă a colțului se rupea pe trei rânduri în panoul îngust → titlu de grup „Colțul stânga-jos”, rândurile
+X și Y.
