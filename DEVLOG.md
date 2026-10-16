@@ -1817,3 +1817,20 @@ aceeași funcție ca butonul Exportă: `placa-02.nc`, 587 de linii, SHA-256 `c33
 (interioarele întâi); dog-bone-ul pe hârtie (centrul la 3 / √2 de fiecare colț, la fiecare trecere); urechile la Z −10 (8);
 lățimile pe centrul frezei (80 + 6, 120 + 6, 40 + 6). Fișa: `docs/etape/placa-02.md` (ce probează, ce îți trebuie, cum
 tai, ce măsori). Aplicația nu s-a schimbat.
+
+## 2026-10-16 — 2.9: bancul vizual v1 și unealta de otrăvuri, comisă (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (la „2.9, bancul vizual v1: îl pot planifica fără agenți”). **Started:** după 2.10. **Completed:**
+- `npm run banc` (`playwright.banc.config.ts`, `test/banc/`): aplicația din `dist/` deschide 3 documente de referință
+  (placa 1; o linie pe stânga; placa 2), arată traseul (T), fotografiază foaia și fereastra greșelii mărită cu rotița (la
+  densitatea 3, cu barele ascunse prin CSSOM: CSP-ul nu primește stiluri inline), sondează pixelii traseului și exportă
+  G-code-ul ca omul; cifra lui (traseul insulei 106 × 66; Y 53; dog-bone 12 treceri și logoul 86) stă lângă valoarea de
+  pe hârtie. Fiecare caz are martorul lui negativ (insula pe interior; linia pe dreapta; gaura fără dog-bone), care trebuie
+  să arate greșit și în cifră, și în poză. Bancul pică dacă o cifră nu e cea de pe hârtie, dacă traseul nu cade pe
+  punctele de pe hârtie, sau dacă un martor arată bine. Pagina: `dist/banc/index.html`, publicată la `/banc/`.
+  Văzut: la zoomul foii întregi, martorul plăcii 2 arăta ca originalul (1,24 mm); de aici detaliul mărit;
+- `scripts/otravuri.py`: unealta generală (verifica, baza, lot, doua, plin, tinte, e2e), cu restaurarea verificată pe
+  sha256 și la capăt față de HEAD (`git hash-object`), refuzul în dosarul din Drive (probat în ambele sensuri: refuză în
+  repo, merge în clonă; prima variantă refuza și clona din scratchpad, a doua, scrisă prin heredoc, nu mai prindea `\`);
+  listele 2.3c în `test/otravuri/` (70 + 45, toate se aplică); probată cap-coadă în clonă (S13, M11 prinse de testele lor).
+  `docs/otravuri.md`: unealta, regulile, listele.

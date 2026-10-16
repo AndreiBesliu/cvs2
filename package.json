@@ -18,7 +18,8 @@
     "licente": "node scripts/verifica-licente.ts",
     "determinism": "node scripts/build-determinist.ts",
     "rapid": "npm run typecheck && npm run importuri && npm test && npm run determinism && npm run licente",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "banc": "playwright test -c playwright.banc.config.ts"
   },
   "dependencies": {
     "react": "19.3.0",
