@@ -27,6 +27,7 @@ before(async () => {
     await setDoc(doc(db, 'errorLogs/g1'), { numar: 1, rezolvat: false });
     await setDoc(doc(db, 'errorLogs/g1/aparitii/a1'), { mesaj: 'x' });
     await setDoc(doc(db, 'limiteErori/client_1'), { numar: 1 });
+    await setDoc(doc(db, 'audit/a1'), { cine: 'sup', actiune: 'erori.marcheaza' });
     // Colecțiile aplicației vechi, pe care regulile vechi le dădeau omului lor.
     await setDoc(doc(db, 'users/om'), { nume: 'om' });
     await setDoc(doc(db, 'customers/om'), { stripeId: 'cus_x' });
@@ -78,6 +79,18 @@ test('staff: fiecare își citește doar documentul lui și nu-l scrie nimeni di
   await assertFails(setDoc(doc(ca('om'), 'staff/om'), { rol: 'owner' }));
   await assertFails(updateDoc(doc(ca('sup'), 'staff/sup'), { rol: 'owner' }));
   await assertFails(setDoc(doc(ca('own'), 'staff/nou'), { rol: 'support' }));
+});
+
+test('auditul îl citesc doar admin și owner; nu-l scrie nimeni din client', async () => {
+  for (const uid of ['adm', 'own']) {
+    await assertSucceeds(getDoc(doc(ca(uid), 'audit/a1')));
+    await assertSucceeds(getDocs(collection(ca(uid), 'audit')));
+  }
+  for (const uid of [null, 'om', 'sup', 'fals']) await assertFails(getDoc(doc(ca(uid), 'audit/a1')));
+  for (const uid of ['sup', 'own']) {
+    await assertFails(setDoc(doc(ca(uid), 'audit/a2'), { cine: uid }));
+    await assertFails(deleteDoc(doc(ca(uid), 'audit/a1')));
+  }
 });
 
 test('colecțiile aplicației vechi sunt refuzate, chiar și omului lor', async () => {

@@ -1,0 +1,17 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "errorLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "rezolvat", "order": "ASCENDING" },
+        { "fieldPath": "ultimaData", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    { "collectionGroup": "errorLogs", "fieldPath": "expiraLa", "ttl": true, "indexes": [] },
+    { "collectionGroup": "aparitii", "fieldPath": "expiraLa", "ttl": true, "indexes": [] },
+    { "collectionGroup": "limiteErori", "fieldPath": "expiraLa", "ttl": true, "indexes": [] }
+  ]
+}

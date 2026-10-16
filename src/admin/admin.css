@@ -1,0 +1,223 @@
+/* Pagina /admin (ADR 0040): aceleași tokenuri ca aplicația (`src/app/stil.css`), încărcate doar cu pagina. */
+.admin {
+  min-height: 100vh;
+  background: var(--s-peste);
+  color: var(--t);
+}
+
+.admin-antet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-5);
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--s-panou);
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.admin-antet h1 {
+  margin: 0;
+  font-size: var(--fs-4);
+}
+
+.admin-cont {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.admin-inapoi {
+  margin-left: auto;
+  font-size: var(--fs-2);
+  color: var(--a);
+}
+
+.admin-corp {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--sp-5);
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.admin-mesaj,
+.admin-slab {
+  color: var(--t-slab);
+}
+
+.admin-eroare {
+  color: var(--rosu);
+}
+
+.admin-randuri {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.admin-intrare,
+.admin-fara-rol {
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: start;
+  padding: var(--sp-5);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+.admin-fara-rol h2 {
+  margin: 0;
+  font-size: var(--fs-4);
+}
+
+.admin-uid code {
+  font-family: var(--mono);
+  font-size: var(--fs-3);
+  padding: var(--sp-1) var(--sp-2);
+  background: var(--s-peste);
+  border-radius: var(--r-1);
+  user-select: all;
+}
+
+.admin-file {
+  display: flex;
+  gap: var(--sp-2);
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.admin-file button[aria-selected='true'] {
+  background: var(--s-ales);
+  font-weight: 600;
+}
+
+.admin-grupuri,
+.admin-verificari {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.admin-grup,
+.admin-verificari li {
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.admin-grup[data-rezolvat='true'] {
+  opacity: 0.7;
+}
+
+.admin-grup-rand {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--sp-1) var(--sp-3);
+  align-items: start;
+}
+
+.admin-grup-rand > button {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+}
+
+.admin-eticheta {
+  font-size: var(--fs-1);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--t-slab);
+}
+
+.admin-grup-mesaj {
+  font-family: var(--mono);
+  font-size: var(--fs-3);
+  overflow-wrap: anywhere;
+}
+
+.admin-slab {
+  font-size: var(--fs-2);
+}
+
+.admin-detaliu {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--l-margine);
+  display: grid;
+  gap: var(--sp-2);
+  font-size: var(--fs-2);
+}
+
+.admin-detaliu h3 {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-3);
+}
+
+.admin-aparitie p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-aparitie pre {
+  max-height: 320px;
+  overflow: auto;
+  padding: var(--sp-2);
+  background: var(--s-peste);
+  border-radius: var(--r-1);
+  font-size: var(--fs-1);
+}
+
+.admin-aparitii {
+  margin: 0;
+  padding-left: var(--sp-5);
+  overflow-wrap: anywhere;
+}
+
+.admin-verificari li {
+  display: grid;
+  grid-template-columns: 7rem 12rem 1fr;
+  gap: var(--sp-1) var(--sp-3);
+  align-items: baseline;
+}
+
+.admin-verificari li > .admin-slab {
+  grid-column: 3;
+}
+
+.admin-stare {
+  font-size: var(--fs-1);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.admin-verificari li[data-stare='bine'] .admin-stare {
+  color: var(--traseu-taiere);
+}
+
+.admin-verificari li[data-stare='atentie'] .admin-stare {
+  color: var(--a);
+}
+
+.admin-verificari li[data-stare='esec'] .admin-stare {
+  color: var(--rosu);
+}
+
+@media (max-width: 640px) {
+  .admin-corp {
+    padding: var(--sp-4);
+  }
+
+  .admin-verificari li {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-verificari li > .admin-slab {
+    grid-column: 1;
+  }
+}

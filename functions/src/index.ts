@@ -6,6 +6,7 @@ import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { onCall } from 'firebase-functions/v2/https';
 import { trateazaRaportClient } from './erori/client.ts';
+import { marcheazaEroarea as marcheaza } from './erori/marcheaza.ts';
 import { REGIUNI } from './regiuni.ts';
 
 initializeApp();
@@ -25,4 +26,10 @@ export const logClientError = onCall(
       ip: cerere.rawRequest.ip,
     });
   },
+);
+
+/** „Rezolvat” / „Redeschide” pe un grup de erori (ADR 0040 §4): personalul, cu auditul în aceeași tranzacție. */
+export const marcheazaEroarea = onCall(
+  { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 2, memory: '256MiB', timeoutSeconds: 20 },
+  async (cerere) => marcheaza(getFirestore(), cerere.auth?.uid ?? null, cerere.data),
 );

@@ -15,6 +15,11 @@ export function configHosting(publicDir: string): object {
     hosting: {
       public: publicDir,
       ignore: ['firebase.json', '**/.*'],
+      // Pagina de administrare (ADR 0040 §1) e o rută a aceluiași `index.html`.
+      rewrites: [
+        { source: '/admin', destination: '/index.html' },
+        { source: '/admin/**', destination: '/index.html' },
+      ],
       headers: [
         {
           source: '**',
@@ -53,10 +58,12 @@ export function configFunctii(): object {
       // în cloud n-ar mai ajunge codul compilat (prima publicare, 16.10). Testul: `test/unit/functii.pachet.test.ts`.
       ignore: FUNCTII_IGNORATE,
     }],
-    firestore: { rules: 'firestore.rules' },
+    // Indexul compus al filei Erori și politica TTL de 90 de zile (ADR 0040 §4, §6).
+    firestore: { rules: 'firestore.rules', indexes: 'firestore.indexes.json' },
     // Emulatoarele (`npm run test:emulator`), pe un proiect `demo-*`: nu ating cloud-ul și nu cer login.
     emulators: {
       singleProjectMode: true,
+      auth: { port: 9095 },
       firestore: { port: 8085 },
       functions: { port: 5005 },
       ui: { enabled: false },

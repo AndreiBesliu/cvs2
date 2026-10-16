@@ -1,6 +1,7 @@
 /**
  * Testele pe emulatoare (ADR 0039): compilează funcțiile, pornește Firestore și Functions pe proiectul `demo-cncvs2`
- * (un proiect `demo-*` nu atinge cloud-ul și nu cere login) și rulează `functions/test/*.test.ts`, pe rând (baza e comună).
+ * (un proiect `demo-*` nu atinge cloud-ul și nu cere login) și rulează `functions/test/*.test.ts`, pe rând (baza e comună),
+ * apoi e2e-ul paginii `/admin` (`test/e2e-emulator/`, cu Auth).
  *
  *   npm run test:emulator
  *
@@ -32,5 +33,7 @@ if (versiuneJava('java') < 21) {
 }
 
 execSync('npm --prefix functions run compileaza', { stdio: 'inherit', env });
-const teste = 'node --test --test-concurrency=1 functions/test/*.test.ts';
-execSync(`firebase emulators:exec --only firestore,functions --project demo-cncvs2 "${teste}"`, { stdio: 'inherit', env });
+// Pagina /admin cap-coadă (ADR 0040) rulează pe dist/, cu emulatoarele pornite: build-ul întâi.
+execSync('npm run build', { stdio: 'inherit', env });
+const teste = 'node --test --test-concurrency=1 functions/test/*.test.ts && npx playwright test -c playwright.emulator.config.ts';
+execSync(`firebase emulators:exec --only auth,firestore,functions --project demo-cncvs2 "${teste}"`, { stdio: 'inherit', env });

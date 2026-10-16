@@ -1841,7 +1841,7 @@ tai, ce măsori). Aplicația nu s-a schimbat.
 fișa docs/etape/etapa-02.md. Starea: etapa 2 are toate feliile gata, în afară de 2.8e, verificarea independentă a
 panoului de proprietăți și a traseului pe WebGL2, care pornește după resetarea săptămânală din 17.10. Plăcile 1 și 2 sunt
 la mine pentru tăiere. Lucrăm în pași mari, cu commit, publicare pe test și raport la fiecare. Agenții doar cu acordul
-meu și cu costul spus înainte.” **Started:** 16.10 18:20, săptămânalul la 91 %. Clasa R2, estimarea 1 felie (P0 are 3).
+meu și cu costul spus înainte.” **Started:** 16.10 18:25, săptămânalul la 91 %. Clasa R2, estimarea 1 felie (P0 are 3).
 **Alegerea:** etapa 2 nu mai are nimic fără agenți. Cu plăcile 1 și 2 netăiate, `PLAN.md` §4.6 (punctul 7) cere felii fără
 mașină, deci etapa 3 pornește cu observabilitatea (P0), nu cu senderul. Golul găsit în etapa 2 (alegerea pe contur din ADR
 0035, neluată de ADR 0038) cere selecția în piesă, deci e propus pentru etapa 6.
@@ -1876,5 +1876,39 @@ mașină, deci etapa 3 pornește cu observabilitatea (P0), nu cu senderul. Golul
   creată din nou. **Măsurat:** `logClientError` întoarce 401 fără App Check și 401 cu un token nesemnat (pe care
   emulatorul l-ar fi primit). 200 cu un token adevărat se măsoară în 3.2, cu cheia reCAPTCHA a domeniului de test.
   Suita unitară: 6 456 de teste (cele 6 447 din CI + 9), 0 picate; cele 8 sărite sunt amânările „aplicația nu taie încă”.
-  **Completed:** 16.10 19:20, ~1 h, săptămânalul 91 → 92 %. Treceri: 4 (contractul, codul cu testele și sabotajele, CI-ul,
+  **Completed:** 16.10 19:50 (orele corectate după ceasul mașinii), ~1,5 h, săptămânalul 91 → 92 %. Treceri: 4 (contractul, codul cu testele și sabotajele, CI-ul,
   publicarea).
+
+## 2026-10-16 — Etapa 3, felia 3.3: personalul, fila Erori și Diagnoza (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, continuă cu 3.3.” (la „Continui cu felia 3.3 (personalul și fila Erori)?”); pe parcurs: „nu imi mai cere
+permisiune si continua cu ce ai nevoie”. **Started:** 16.10 20:15. Clasa R2, estimarea 1–2 felii.
+**Completed:**
+- ADR 0040: ruta `/admin` la cerere, înaintea deschiderii proiectului; login Google cu configurația instanței de la gazdă;
+  rolul din `staff/{uid}`; fila Erori; Diagnoza minimă; TTL-ul; CSP-ul; probele pe emulatoare. Două abateri de la plan,
+  spuse: primul owner se scrie din consolă (fără credențiale Admin locale), amprenta `meta/deployment` vine cu pipeline-ul
+  (3.4);
+- server: `marcheazaEroarea` (rolul citit din `staff` în tranzacție, auditul `audit/{id}` cu valoarea dinainte, aceeași
+  valoare nu scrie, refuzurile cu motiv, căderea în jurnal), regula auditului (admin / owner), indexul compus și TTL-ul pe
+  `expiraLa` (`firestore.indexes.json`); `shared/personal.ts` (scara rolurilor);
+- client: `src/cloud/conexiune.ts` (Firebase din `config.json`, emulatoarele și furnizorul App Check de probă doar pe
+  gazda locală), `src/admin/` (pagina, fila Erori cu filtrul, detaliul, aparițiile și „Rezolvat”; Diagnoza cu 7
+  verificări, între ele apelul fără App Check la `logClientError`, care trebuie să dea 401), mesajele en / ro la cerere;
+  CSP-ul cu originile Firebase ale celor două proiecte (fără `*`), rescrierea `/admin` pe hosting; `config.json` de pe test
+  primește configurația web la publicare, din `apps:sdkconfig` (nu stă în repo);
+- poarta de mărime: bucata `/admin` (164 kB gzip, cu Firebase) are plafonul ei (200 kB) și nu intră în totalul aplicației,
+  fiindcă aplicația n-o descarcă; poarta cere ca adminul să fie exact o bucată separată. Pornirea: 98,7 → 99,0 / 100 kB;
+- teste: 17 pe emulator (3 noi de marcare și unul de audit), 3 e2e pe emulatoare (login-ul emulatorului de Auth, contul
+  fără rol cu uid-ul, rolul, filtrul, detaliul, „Rezolvat” cu auditul, Diagnoza), 3 e2e fără configurație (unul cu
+  martorul lui: adminul nu ia blocarea proiectului), 13 unitare. **7 sabotaje** (orice cont ca personal, filtrul gol, fără
+  App Check de probă, proba Diagnozei cu App Check, adminul care ia blocarea, auditul lipsă, rolul neverificat): toate
+  prinse. Martorul unui test e2e a picat întâi: primul apel al callable-ului după pornirea emulatorului de funcții trece de
+  5 s, deci și un sabotaj fusese „prins” din motivul greșit; termen de 30 s pe acel pas, apoi sabotajul prins unde
+  trebuie. Încă o capcană a instrumentului: `| head` după `npm run rapid` tăia rularea și dădea ieșirea 0 a lui `head`;
+  rulat din nou cu codul real: 6 469 de teste, 0 picate, aceleași 8 sărite. E2e-ul întreg: 85 / 85;
+- **publicat pe test:** funcțiile (`marcheazaEroarea` creată, deci publică), regulile noi (cele vechi înlocuite, cum cere
+  planul), indecșii (cei 3 vechi și suprascrierea veche neatinși, fără `--force`), hosting-ul. În browser, pe test:
+  `/admin` arată butonul Google; la clic, scripturile `apis.google.com` și cadrul `/__/auth/iframe` se încarcă sub CSP,
+  fereastra o blochează doar panoul browserului meu, fără nicio eroare în consolă. Login-ul și primul owner sunt ale
+  owner-ului.
+**Completed:** 16.10 20:55.

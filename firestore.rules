@@ -2,7 +2,7 @@ rules_version = '2';
 
 // Regulile aplicației noi (ADR 0039 §7). Totul e refuzat implicit, deci și colecțiile aplicației vechi (`PLAN.md` §3.4 și
 // §8.2, decizia 22). Scrierile vin doar de la server (Admin SDK, care nu trece prin reguli), prin callable-uri.
-// Probate pe emulator (`npm run test:emulator`); publicate pe test odată cu fila Erori (felia 3.3), nu înainte.
+// Probate pe emulator (`npm run test:emulator`); publicate pe test odată cu fila Erori (felia 3.3, ADR 0040).
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -28,6 +28,11 @@ service cloud.firestore {
       match /aparitii/{id} {
         allow read: if nivelPersonal() >= 1;
       }
+    }
+
+    // Auditul (ADR 0040 §4): scris doar de callable-uri, în tranzacția acțiunii; citit de admin și owner.
+    match /audit/{id} {
+      allow read: if nivelPersonal() >= 2;
     }
   }
 }

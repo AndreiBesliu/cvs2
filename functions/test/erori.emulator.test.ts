@@ -1,6 +1,6 @@
 import { beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { initializeApp } from 'firebase-admin/app';
+import { getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore, Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { oraFerestrei } from '../../shared/erori.ts';
 import { trateazaRaportClient } from '../src/erori/client.ts';
@@ -17,7 +17,7 @@ const gazda = process.env['FIRESTORE_EMULATOR_HOST'];
 if (!gazda) throw new Error('FIRESTORE_EMULATOR_HOST lipsește: testele rulează prin npm run test:emulator');
 process.env['GCLOUD_PROJECT'] ??= PROIECT;
 
-initializeApp({ projectId: PROIECT });
+if (getApps().length === 0) initializeApp({ projectId: PROIECT });
 const db = getFirestore();
 
 beforeEach(async () => {

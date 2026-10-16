@@ -13,10 +13,15 @@ import { gzipSync } from 'node:zlib';
  * Plafoanele JavaScript-ului comprimat, în kB:
  * - la pornire, ce cere `index.html` (scriptul de intrare și `modulepreload`): măsurat 81 kB la felia 1.9c (React +
  *   valibot + aplicația; calculul exportului se încarcă la cerere);
- * - totalul, cu bucățile încărcate la cerere (exportul: cavalier + CAM + post, ~23 kB) și workerul.
+ * - totalul, cu bucățile încărcate la cerere (exportul: cavalier + CAM + post, ~23 kB) și workerul;
+ * - pagina `/admin` (ADR 0040, decizia din 16.10): bucata ei (`PaginaAdmin-*`, cu Firebase: contul, Firestore, funcțiile,
+ *   App Check; 170 kB la felia 3.3) are plafonul ei și nu intră în totalul aplicației, fiindcă aplicația n-o descarcă
+ *   niciodată. Firebase-ul pe care îl va aduce raportorul de erori (3.2) intră în total: îl descarcă oricine are o eroare.
  */
 const PLAFON_PORNIRE_KB = 100;
 const PLAFON_TOTAL_KB = 300;
+const PLAFON_ADMIN_KB = 200;
+const BUCATA_ADMIN = /^assets\/PaginaAdmin-[^/]+\.js$/;
 
 function fisiere(dir: string): string[] {
   return readdirSync(dir).flatMap((n) => {
@@ -61,17 +66,34 @@ if (laPornire.size === 0) {
 }
 let pornire = 0;
 let total = 0;
+let admin = 0;
+let bucatiAdmin = 0;
 for (const p of fisiere('.tmp/build-1')) {
   if (!p.endsWith('.js')) continue;
   const kb = gz(p);
+  const rel = relative('.tmp/build-1', p).replace(/\\/g, '/');
+  if (BUCATA_ADMIN.test(rel)) {
+    admin += kb;
+    bucatiAdmin++;
+    if (laPornire.has(rel)) {
+      console.error(`${rel}: pagina /admin a ajuns în pachetul de pornire.`);
+      process.exit(1);
+    }
+    continue;
+  }
   total += kb;
-  if (laPornire.has(relative('.tmp/build-1', p).replace(/\\/g, '/'))) pornire += kb;
+  if (laPornire.has(rel)) pornire += kb;
+}
+if (bucatiAdmin !== 1) {
+  // Fără bucata ei, Firebase-ul adminului s-ar număra în altă parte (sau deloc): măsurătoarea ar minți.
+  console.error(`Pagina /admin trebuie să fie exact o bucată separată (PaginaAdmin-*.js); găsite: ${bucatiAdmin}.`);
+  process.exit(1);
 }
 console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri.`);
-console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}).`);
+console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}).`);
 rmSync('.tmp/build-1', { recursive: true, force: true });
 rmSync('.tmp/build-2', { recursive: true, force: true });
-if (pornire > PLAFON_PORNIRE_KB || total > PLAFON_TOTAL_KB) {
+if (pornire > PLAFON_PORNIRE_KB || total > PLAFON_TOTAL_KB || admin > PLAFON_ADMIN_KB) {
   console.error('Mărimea pachetului trece de plafon.');
   process.exit(1);
 }

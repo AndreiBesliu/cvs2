@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { limba, limbaDePornire, schimbaLimba } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import { App } from './App.tsx';
-import { incarcaConfig } from './config.ts';
+import { esteRutaAdmin, incarcaConfig } from './config.ts';
 import { ErrorBoundary } from './ErrorBoundary.tsx';
 import { deschideProiect } from './proiectLocal.ts';
 import { creeazaJurnal, type Context, type Depozit } from './jurnalErori.ts';
@@ -70,9 +70,6 @@ function alegeLimba(l: Limba): void {
 async function porneste(): Promise<void> {
   const config = await incarcaConfig(window.fetch.bind(window));
   if (!config.ok) jurnal.adauga('config', config.motiv);
-  // Proiectul din browser se deschide înainte de prima randare: o comandă dată între timp ar fi acoperită de el.
-  const proiect = await deschideProiect();
-  if (proiect.mod === 'nu-se-deschide' || proiect.mod === 'fara-memorie' || proiect.mod === 'necitit-acum') jurnal.adauga('proiect', proiect.motiv);
 
   const context = (): Context => ({
     aplicatia: 'CNC Vector Studio',
@@ -84,6 +81,24 @@ async function porneste(): Promise<void> {
 
   const radacina = document.getElementById('root');
   if (!radacina) throw new Error('#root lipsește din index.html');
+
+  // Pagina `/admin` (ADR 0040 §1) vine la cerere, ÎNAINTEA deschiderii proiectului: nu ia blocarea lui de scriere și nu
+  // aduce Firebase în pachetul de pornire.
+  if (esteRutaAdmin(location.pathname)) {
+    const { PaginaAdmin } = await import('../admin/PaginaAdmin.tsx');
+    createRoot(radacina).render(
+      <StrictMode>
+        <ErrorBoundary jurnal={jurnal} context={context}>
+          <PaginaAdmin config={config} build={__VERSIUNE__} />
+        </ErrorBoundary>
+      </StrictMode>,
+    );
+    return;
+  }
+
+  // Proiectul din browser se deschide înainte de prima randare: o comandă dată între timp ar fi acoperită de el.
+  const proiect = await deschideProiect();
+  if (proiect.mod === 'nu-se-deschide' || proiect.mod === 'fara-memorie' || proiect.mod === 'necitit-acum') jurnal.adauga('proiect', proiect.motiv);
 
   createRoot(radacina).render(
     <StrictMode>
