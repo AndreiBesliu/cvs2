@@ -1772,3 +1772,16 @@ rotirea; „Editează în Exportă G-code” deschide dialogul; în fila care do
 titlu. Paleta arată cele trei acțiuni ca „Din panoul de proprietăți”. `test/e2e/panou.spec.ts`: 6 teste. Văzut în
 browser: eticheta lungă a colțului se rupea pe trei rânduri în panoul îngust → titlu de grup „Colțul stânga-jos”, rândurile
 X și Y.
+
+## 2026-10-16 — 2.8d, segmentul 1: traseul pregătit pentru WebGL2 (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (la „2.8d, traseul pe WebGL2 (2–3 segmente)”). **Started:** după 2.8c. **Completed:**
+`src/app/traseuDesen.ts`, pur (în `app`, nu în `canvas`: regula „interfata-prin-actiuni” oprește pânza să citească IR-ul;
+pânza va primi doar bucățile, ca la vectori): șirurile programului (rapide / tăieri, poziția modală, Z ignorat, elicea ca
+arcul ei), arcele în coarde cu săgeata ≤ toleranță și capetele exacte, bugetul (toleranța dublată până încape: „rărit”;
+liniile singure peste buget: „peste buget”), toleranța treptei de zoom (½ px fizic la capătul de sus al treptei de ×2) și
+bucățile pentru GPU: vârfurile float32 relative la originea bucății, cel mult 64 mm de ea, șirurile apropiate în aceeași
+bucată cu RESTART (primitive restart), segmentele lungi împărțite, bucățile legate prin ultimul vârf ținut în double.
+`test/unit/traseu.desen.test.ts`: 9 teste pe hârtie (dreptunghiul, sfertul de arc R10 la 0,001 mm = 56 de coarde, arcul
+orar, cercul întreg și elicea, bugetul, treptele, linia de 2 440 × 1 220 mm în bucăți legate, precizia de 10 ori mai bună
+decât float32 în lume, RESTART). Nimic vizibil încă.
