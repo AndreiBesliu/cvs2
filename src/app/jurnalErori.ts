@@ -6,8 +6,10 @@
  * de erori care aruncă la rândul lui ar ascunde exact eroarea pe care trebuia s-o păstreze.
  */
 
-/** `proiect`: proiectul salvat nu s-a putut deschide; `salvare`: o scriere în IndexedDB a eșuat. */
-export type TipEroare = 'randare' | 'fereastra' | 'promisiune' | 'config' | 'proiect' | 'salvare' | 'import';
+import { PLAFON_MESAJ, PLAFON_STIVA, taie, type TipEroare } from '../../shared/erori.ts';
+
+// Tipurile, plafoanele și tăietura sunt cele din contractul comun cu serverul (`shared/erori.ts`, ADR 0039).
+export { PLAFON_MESAJ, PLAFON_STIVA, type TipEroare };
 
 export interface IntrareEroare {
   readonly cand: string;
@@ -34,8 +36,6 @@ export interface Context {
 export const CHEIE_DEPOZIT = 'cncvs2.jurnalErori.v1';
 /** Câte intrări se păstrează; cele mai vechi pleacă primele. */
 export const PLAFON_INTRARI = 50;
-export const PLAFON_MESAJ = 1_000;
-export const PLAFON_STIVA = 4_000;
 
 export interface Jurnal {
   adauga(tip: TipEroare, eroare: unknown, stivaComponentelor?: string): void;
@@ -43,10 +43,6 @@ export interface Jurnal {
   raport(context: Context): string;
   goleste(): void;
   asculta(a: () => void): () => void;
-}
-
-function taie(text: string, plafon: number): string {
-  return text.length <= plafon ? text : `${text.slice(0, plafon)}… (+${text.length - plafon})`;
 }
 
 function descrie(eroare: unknown): { mesaj: string; stiva: string } {

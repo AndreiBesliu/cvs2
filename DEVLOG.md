@@ -1834,3 +1834,37 @@ tai, ce măsori). Aplicația nu s-a schimbat.
   repo, merge în clonă; prima variantă refuza și clona din scratchpad, a doua, scrisă prin heredoc, nu mai prindea `\`);
   listele 2.3c în `test/otravuri/` (70 + 45, toate se aplică); probată cap-coadă în clonă (S13, M11 prinse de testele lor).
   `docs/otravuri.md`: unealta, regulile, listele.
+
+## 2026-10-16 — Etapa 3, felia 3.1: jurnalul de erori pe server (Model: Claude Opus 5.5)
+
+**Prompt:** „Continuăm CNC Vector Studio 2 (Apps\cncvs2). Citește CLAUDE.md, ultimele intrări din DEVLOG.md (16.10) și
+fișa docs/etape/etapa-02.md. Starea: etapa 2 are toate feliile gata, în afară de 2.8e, verificarea independentă a
+panoului de proprietăți și a traseului pe WebGL2, care pornește după resetarea săptămânală din 17.10. Plăcile 1 și 2 sunt
+la mine pentru tăiere. Lucrăm în pași mari, cu commit, publicare pe test și raport la fiecare. Agenții doar cu acordul
+meu și cu costul spus înainte.” **Started:** 16.10 18:20, săptămânalul la 91 %. Clasa R2, estimarea 1 felie (P0 are 3).
+**Alegerea:** etapa 2 nu mai are nimic fără agenți. Cu plăcile 1 și 2 netăiate, `PLAN.md` §4.6 (punctul 7) cere felii fără
+mașină, deci etapa 3 pornește cu observabilitatea (P0), nu cu senderul. Golul găsit în etapa 2 (alegerea pe contur din ADR
+0035, neluată de ADR 0038) cere selecția în piesă, deci e propus pentru etapa 6.
+**Completed:**
+- fișa `docs/etape/etapa-03.md` (feliile 3.1–3.9, coloana „Mașina”, ordinea cu plăcile netăiate, coada owner-ului);
+  ADR 0039 (contractul deciziilor deja aprobate, fără alegeri noi);
+- `shared/erori.ts`: contractul comun (tipurile, plafoanele, validarea raportului, descrierea valorilor aruncate,
+  normalizarea și cheia amprentei, IP-ul ultim din `X-Forwarded-For`, fereastra pe oră); jurnalul local îl folosește acum
+  pentru tipuri, plafoane și tăietură (comportamentul neschimbat; pornirea rămâne 98,7 / 100 kB). 9 teste unitare;
+- `functions/` (codebase-ul `cncvs2`, Node 24, `firebase-functions` 7.4.0, `firebase-admin` 14.5.0, compilat cu tsc-ul
+  repo-ului în `lib/`): `errorLogs/{amprenta}` cu `aparitii`, într-o tranzacție (contoarele plafonului, grupul creat sau
+  numărat și redeschis, apariția); `logServerError` care nu aruncă și cere `uid`; `logClientError` în `europe-central2`, cu
+  App Check impus, plafon 40 / oră pe IP (hash) și 2 000 / oră global, răspuns `{ ok }`;
+- `firestore.rules`: totul refuzat implicit, jurnalul citit doar de personal (`staff/{uid}`), scris de nimeni din client;
+  probat pe emulator, **nepublicat** (pe test rămân regulile vechi, care refuză deja `errorLogs`; regulile noi pleacă cu
+  fila Erori, 3.3, ca repetiția comutării să pornească tot de la build-ul vechi cu regulile lui);
+- `npm run test:emulator` (Firestore + Functions pe `demo-cncvs2`, Java din JBR-ul Android Studio când `java` e 1.8): 12
+  teste (gruparea și redeschiderea, oamenii până la 50, plafonul pe IP cu IP-ul ultim, plafonul global, raportul nevalid,
+  instanța pusă de server, `logServerError` cu `null`, context circular și Firestore căzut, callable-ul 401 / 200, regulile
+  pe roluri, scrierea refuzată tuturor, `staff`, colecțiile vechi). **12 sabotaje, câte unul pe test, toate prinse.**
+  Instrumentul a mințit întâi: cu un filtru de nume care nu prindea niciun test din fișierul regulilor, `after` rula fără
+  `before` și număra un eșec fals la fiecare sabotaj; martorul (fără sabotaj) a picat și el, de aici reparația;
+- licențele: și `functions/package-lock.json` (247 de pachete de rulare); `limiter` (MIT în forma veche, `licenses`) se
+  citește din `package.json`-ul instalat. Regulile de import citesc și `functions/` (o încălcare pusă de probă e prinsă);
+- CI: în nivelul rapid, dependențele și tipurile funcțiilor; în cel complet, Java 21, Firebase CLI 15.18.0 fixat și
+  testele pe emulatoare.

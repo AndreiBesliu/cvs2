@@ -35,9 +35,16 @@ jobs:
           node-version: 26
           cache: npm
       - run: npm ci
+      # Funcțiile (ADR 0039) au propriul package.json: tipurile lor și licențele lor de rulare cer dependențele instalate.
+      - name: Dependențele funcțiilor
+        if: matrix.felia == 1
+        run: npm --prefix functions ci
       - name: Tipurile (tsc)
         if: matrix.felia == 1
         run: npm run typecheck
+      - name: Tipurile funcțiilor (tsc)
+        if: matrix.felia == 1
+        run: npm run typecheck:functii
       - name: Regulile de import, cu capcanele
         if: matrix.felia == 1
         run: npm run importuri

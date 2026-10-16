@@ -73,5 +73,35 @@
         ]
       }
     ]
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "cncvs2",
+      "runtime": "nodejs24",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "*.local",
+        "src",
+        "test",
+        "tsconfig*.json"
+      ]
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "emulators": {
+    "singleProjectMode": true,
+    "firestore": {
+      "port": 8085
+    },
+    "functions": {
+      "port": 5005
+    },
+    "ui": {
+      "enabled": false
+    }
   }
 }

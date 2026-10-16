@@ -9,8 +9,9 @@
  * Limita: se citește ce declară pachetul. Un pachet care declară greșit (s12: `dwg2dxf` declară ISC, dar e GPL) trece
  * de aici; de aceea, o dependență nouă de rulare se citește și de mână înainte să intre.
  */
-import { readFileSync } from 'node:fs';
-import { licentaPermisa } from './licente.ts';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { licentaDin, licentaPermisa } from './licente.ts';
 
 type Intrare = {
   readonly version?: string;
@@ -20,9 +21,14 @@ type Intrare = {
 };
 type Lockfile = { readonly packages: Readonly<Record<string, Intrare>> };
 
-const lock = JSON.parse(readFileSync('package-lock.json', 'utf8')) as Lockfile;
+/**
+ * Arborele de rulare al unui lockfile: aplicația (`package-lock.json`) și funcțiile din cloud
+ * (`functions/package-lock.json`, ADR 0039), fiecare cu dependențele lui de rulare.
+ */
+function verifica(fisier: string): { refuzate: number; lipsa: number; total: number } {
+const lock = JSON.parse(readFileSync(fisier, 'utf8')) as Lockfile;
 const radacina = lock.packages[''];
-if (!radacina) throw new Error('package-lock.json fără pachetul rădăcină');
+if (!radacina) throw new Error(`${fisier} fără pachetul rădăcină`);
 
 /** Unde a pus npm pachetul `nume` cerut de pachetul de la `cale`: întâi imbricat, apoi urcând spre rădăcină. */
 function rezolva(cale: string, nume: string): string | undefined {
@@ -54,13 +60,27 @@ while (coada.length) {
 
 let refuzate = 0;
 for (const [cale, p] of vizitate) {
-  const ok = licentaPermisa(p.license);
+  // npm copiază în lockfile doar forma nouă (`license`); un pachet vechi (`licenses: [...]`, de ex. `limiter`) se
+  // citește din `package.json`-ul instalat, cu aceeași funcție ca restul.
+  const instalat = join(dirname(fisier), cale, 'package.json');
+  const licenta = p.license ?? (existsSync(instalat) ? licentaDin(JSON.parse(readFileSync(instalat, 'utf8')) as object) : undefined);
+  const ok = licentaPermisa(licenta);
   if (!ok) refuzate++;
-  console.log(`  ${ok ? '✓' : '✗'} ${cale.replace(/^node_modules\//, '')}@${p.version ?? '?'}: ${p.license ?? '(lipsă)'}`);
+  console.log(`  ${ok ? '✓' : '✗'} ${cale.replace(/^node_modules\//, '')}@${p.version ?? '?'}: ${licenta ?? '(lipsă)'}`);
 }
-for (const l of lipsa) console.error(`  ✗ lipsește din lockfile: ${l}`);
-if (refuzate || lipsa.length) {
-  console.error(`Licențe: ${refuzate} în afara listei albe, ${lipsa.length} nerezolvate.`);
-  process.exit(1);
+for (const l of lipsa) console.error(`  ✗ lipsește din ${fisier}: ${l}`);
+return { refuzate, lipsa: lipsa.length, total: vizitate.size };
 }
-console.log(`Licențe: ${vizitate.size} dependențe de rulare, toate pe lista albă.`);
+
+let problema = false;
+for (const fisier of ['package-lock.json', 'functions/package-lock.json']) {
+  console.log(fisier);
+  const r = verifica(fisier);
+  if (r.refuzate || r.lipsa) {
+    console.error(`Licențe (${fisier}): ${r.refuzate} în afara listei albe, ${r.lipsa} nerezolvate.`);
+    problema = true;
+  } else {
+    console.log(`Licențe (${fisier}): ${r.total} dependențe de rulare, toate pe lista albă.`);
+  }
+}
+if (problema) process.exit(1);

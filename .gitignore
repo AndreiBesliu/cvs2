@@ -9,3 +9,7 @@ playwright-report/
 
 # Rapoartele Fazei 0: doar local (descriu gauri de securitate ale aplicatiei vechi, inca live)
 docs/faza0/
+
+# Funcțiile compilate (ADR 0039): se refac din functions/src la fiecare publicare
+functions/lib/
+functions/node_modules/

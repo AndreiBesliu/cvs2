@@ -45,7 +45,7 @@ type Raport = {
 const bin = fileURLToPath(new URL('../node_modules/dependency-cruiser/bin/dependency-cruiser.mjs', import.meta.url));
 let iesire: string;
 try {
-  iesire = execFileSync(process.execPath, [bin, 'src', 'test', 'shared', 'scripts', '--config', '.dependency-cruiser.cjs', '--output-type', 'json'], {
+  iesire = execFileSync(process.execPath, [bin, 'src', 'test', 'shared', 'scripts', 'functions/src', 'functions/test', '--config', '.dependency-cruiser.cjs', '--output-type', 'json'], {
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
   });

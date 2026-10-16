@@ -46,6 +46,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   2.8 (stratul WebGL2 și panoul de proprietăți): 2.8c (panoul editabil) și 2.8d (traseul pe pânză) gata pe 16.10; 2.8e
   (probele independente) după resetarea din 17.10. **Fișa plăcii 2 (2.10) gata pe 16.10** (`docs/etape/placa-02.md`);
   rămâne tăierea ei, de owner, după placa 1.
+- **Etapa 3 e în lucru din 16.10** (fișa: `docs/etape/etapa-03.md`), după ce etapa 2 și-a terminat feliile fără agenți.
+  Cu plăcile 1 și 2 netăiate, `PLAN.md` §4.6 (punctul 7) cere felii fără mașină: întâi observabilitatea (P0), apoi
+  senderul, după prima placă tăiată. **3.1 (jurnalul de erori pe server, ADR 0039)** gata pe 16.10: funcțiile `cncvs2`
+  (`functions/`, Node 24, codebase separat de cel vechi), `npm run test:emulator`, `npm run publica:functii` (doar pe test).
+  Urmează 3.2 (raportorul din client; cere cheia reCAPTCHA a domeniului de test, pas al owner-ului).
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa
@@ -60,6 +65,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - Comenzile: `gh run list --workflow rapid.yml --branch main --limit 1` și
     `gh run list --workflow complet.yml --limit 1`.
   - Local, tot nivelul rapid: `npm run rapid`. E2e-ul în Edge: `npm run build && npm run e2e`.
+  - Funcțiile și regulile pe emulatoare: `npm run test:emulator` (Java ≥ 21: pe mașina asta, JBR-ul din Android Studio,
+    ales de script; în CI, în nivelul complet).
   - Bancul vizual (2.9, `PLAN.md` §4.5): `npm run build && npm run banc` scrie `dist/banc/` (poza, cifra, martorul);
     publicat odată cu aplicația, la `/banc/` pe instanța de test. Otrăvurile: `scripts/otravuri.py`, `docs/otravuri.md`.
 - **Cârligul `.claude/hooks/fara-add-all.ts`** refuză `git add -A` / `--all` / `-u` / `.` și `git commit -a` în

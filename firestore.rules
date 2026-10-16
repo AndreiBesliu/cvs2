@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// Regulile aplicației noi (ADR 0039 §7). Totul e refuzat implicit, deci și colecțiile aplicației vechi (`PLAN.md` §3.4 și
+// §8.2, decizia 22). Scrierile vin doar de la server (Admin SDK, care nu trece prin reguli), prin callable-uri.
+// Probate pe emulator (`npm run test:emulator`); publicate pe test odată cu fila Erori (felia 3.3), nu înainte.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Rolul de personal are o singură sursă: `staff/{uid}` (raportul de admin din Faza 2, §5.1, punctul 2).
+    // Un rol necunoscut nu dă nimic.
+    function nivelRol(rol) {
+      return rol == 'owner' ? 3 : (rol == 'admin' ? 2 : (rol == 'support' ? 1 : 0));
+    }
+    function nivelDin(cale) {
+      return exists(cale) ? nivelRol(get(cale).data.get('rol', '')) : 0;
+    }
+    function nivelPersonal() {
+      return request.auth == null ? 0 : nivelDin(/databases/$(database)/documents/staff/$(request.auth.uid));
+    }
+
+    match /staff/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /errorLogs/{amprenta} {
+      allow read: if nivelPersonal() >= 1;
+
+      match /aparitii/{id} {
+        allow read: if nivelPersonal() >= 1;
+      }
+    }
+  }
+}

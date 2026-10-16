@@ -36,8 +36,37 @@ export function configHosting(publicDir: string): object {
   };
 }
 
+/**
+ * Funcțiile aplicației noi (ADR 0039 §1): codebase-ul `cncvs2`, separat de `default` (funcțiile aplicației vechi, încă pe
+ * proiectul de test). Pleacă doar `lib/` și `package.json`: sursele și testele rămân acasă.
+ */
+export const CODEBASE = 'cncvs2';
+
+export function configFunctii(): object {
+  return {
+    functions: [{
+      source: 'functions',
+      codebase: CODEBASE,
+      runtime: 'nodejs24',
+      ignore: ['node_modules', '.git', '*.local', 'src', 'test', 'tsconfig*.json'],
+    }],
+    firestore: { rules: 'firestore.rules' },
+    // Emulatoarele (`npm run test:emulator`), pe un proiect `demo-*`: nu ating cloud-ul și nu cer login.
+    emulators: {
+      singleProjectMode: true,
+      firestore: { port: 8085 },
+      functions: { port: 5005 },
+      ui: { enabled: false },
+    },
+  };
+}
+
+/**
+ * `firebase.json` din rădăcină: hosting-ul, funcțiile, regulile și emulatoarele. Publicarea hosting-ului
+ * (`scripts/pregateste-publicare.ts`) își scrie propriul fișier, doar cu hosting-ul, deci nu poate atinge funcțiile.
+ */
 export function textFirebaseJson(): string {
-  return `${JSON.stringify(configHosting('dist'), null, 2)}\n`;
+  return `${JSON.stringify({ ...configHosting('dist'), ...configFunctii() }, null, 2)}\n`;
 }
 
 if (import.meta.main) {

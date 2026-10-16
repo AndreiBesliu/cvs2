@@ -56,6 +56,10 @@ cipul stării, refacerea după export, pe test). Precizare: butonul „Arată tr
 foaia” (în bara de sus lățea insula uneltelor peste butonul Exportă, la 1 280 px). Rămâne 2.8e (probele independente).
 *Gata când:* owner-ul vede traseul unui SVG importat pe instanța de test și mută / rotește o piesă din panou; oracolul
 stratului trece, cu sabotajele prinse; CI-ul e verde.
+*Rămas deschis (găsit pe 16.10):* alegerea pe contur promisă de ADR 0035 („Limitele”: ce se taie dintr-un logo de ecran,
+latura pe o singură cale) n-a intrat în 2.8: ADR 0038 a lăsat operațiile în dialogul exportului. Documentul o permite deja
+(fiecare operație are lista ei de noduri), dar cere selecția în interiorul piesei, deci vine cu editorul de vectori
+(etapa 6). Propunere, la owner.
 
 **2.3c, contururile deschise: încheiată pe 16.10.** Contractul e ADR 0037, documentul v10. Sub-feliile, fiecare cu
 commit, publicată pe instanța de test și cu CI verde:
