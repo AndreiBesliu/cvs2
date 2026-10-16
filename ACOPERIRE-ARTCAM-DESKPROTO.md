@@ -37,7 +37,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 ## B. Prelucrare 2D / 2.5D
 | Capabilitate | Sursă | Etapă | Stare | Commit |
 |---|---|---|---|---|
-| Profil, cu urechi de susținere, intrări / ieșiri, direcție de tăiere | S+D | v1 | în lucru: operația în document (2.2), direcția (2.3b), urechile (2.4), rampa (2.5a), intrările / ieșirile (2.5b), intrările cu rampa (2.5c), profilul pe căile deschise: pe linie, pe stânga / dreapta, despărțirea foii marcată de om (2.3c, ADR 0037); rămâne placa 2 (2.10) | 18cf16d, c73a217, db586c6, 6db1103, 9538bc7, bfb92ce, 01c84ec |
+| Profil, cu urechi de susținere, intrări / ieșiri, direcție de tăiere | S+D | v1 | în lucru: operația în document (2.2), direcția (2.3b), urechile (2.4), rampa (2.5a), intrările / ieșirile (2.5b), intrările cu rampa (2.5c), profilul pe căile deschise: pe linie, pe stânga / dreapta, despărțirea foii marcată de om (2.3c, ADR 0037); fișa plăcii 2 gata (2.10), rămâne tăierea ei | 18cf16d, c73a217, db586c6, 6db1103, 9538bc7, bfb92ce, 01c84ec |
 | Fileturi la colțuri interioare: dog-bone și T-bone | S+D | v1 | în lucru: degajările pe operație, pe colțurile dintre linii (2.6, ADR 0032); rămân colțurile cu arce (2.7) și placa 2 | 91211c5, 98a22bf |
 | Buzunar (curățare de suprafață), cu mai multe freze | S+D | v1 | de făcut | — |
 | V-carve (inclusiv cu freză dreaptă pentru fund plat) | S+D | v1 | de făcut | — |

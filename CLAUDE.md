@@ -43,7 +43,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   interfeței, prototipul B, ales de owner), 2.8b (fișierele lăsate pe planșă) și 2.8-0 (loc în pachetul de pornire).
   **2.3c (contururile deschise, ADR 0037, documentul v10) încheiată pe 16.10**, în sub-feliile 2.3c-0…6 (fișa: pe linie,
   pe stânga / dreapta, despărțirea foii marcată de om, ușa SVG cu liniile deschise, două recenzii, otrăvurile). Urmează
-  2.8 (stratul WebGL2 și panoul de proprietăți).
+  2.8 (stratul WebGL2 și panoul de proprietăți): 2.8c (panoul editabil) și 2.8d (traseul pe pânză) gata pe 16.10; 2.8e
+  (probele independente) după resetarea din 17.10. **Fișa plăcii 2 (2.10) gata pe 16.10** (`docs/etape/placa-02.md`);
+  rămâne tăierea ei, de owner, după placa 1.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa

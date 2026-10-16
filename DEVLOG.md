@@ -1805,3 +1805,15 @@ decât float32 în lume, RESTART). Nimic vizibil încă.
 - `test/e2e/traseu.spec.ts`: 6 teste (pixelii ramei la 3 mm de dreptunghi, nu pe contur, nu înăuntru; vechi → T → la zi
   → ascuns; refuzul; fără WebGL2; contextul pierdut și refăcut; refacerea după export). Văzut în browser: rama, cercul
   interior și rapidele.
+
+## 2026-10-16 — 2.10: fișa plăcii 2, cu fișierul de aur (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (la „până atunci, fără agenți: fișa plăcii 2 (2.10), cu programele de referință”). **Started:** după
+2.8d. **Completed:** `test/placi/placa-02/genereaza.ts` face documentul plăcii (v10, trece de ușă): piesa 120 × 80 R10 cu 4
+urechi 8 × 2 și gaura 40 × 30 cu dog-bone, cepul 40 × 30 cu 2 urechi, logoul de 80 mm prin ușa SVG și imbricarea aplicației
+(2 urechi pe contur), totul prin MDF 12 în 3 treceri de 4, în urcare, cu intrări R3; G-code-ul iese din `calculeazaExport`,
+aceeași funcție ca butonul Exportă: `placa-02.nc`, 587 de linii, SHA-256 `c33a5a42…fa302`. `test/unit/placa02.test.ts`
+(6): octet cu octet și hash-ul în fișă; poarta cu regiunea păstrată a documentului (nicio intrare în piese); ordinea
+(interioarele întâi); dog-bone-ul pe hârtie (centrul la 3 / √2 de fiecare colț, la fiecare trecere); urechile la Z −10 (8);
+lățimile pe centrul frezei (80 + 6, 120 + 6, 40 + 6). Fișa: `docs/etape/placa-02.md` (ce probează, ce îți trebuie, cum
+tai, ce măsori). Aplicația nu s-a schimbat.
