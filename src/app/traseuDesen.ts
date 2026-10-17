@@ -96,16 +96,39 @@ export function siruriInBuget(miscari: readonly Miscare[], toleranta: number, bu
 } {
   let tol = toleranta;
   let r = siruriDinProgram(miscari, tol);
+  let v = varfuriGpu(r.siruri);
   let rarit = false;
   // 60 de dublări duc toleranța de la 1e-9 mm peste orice foaie: fiecare arc ajunge la o coardă pe sfert.
-  for (let i = 0; i < 60 && r.segmente > buget; i++) {
+  for (let i = 0; i < 60 && v > buget; i++) {
     const urm = siruriDinProgram(miscari, tol * 2);
+    // Oprirea: arcele nu se mai pot rări (segmentele nu mai scad). Vârfurile nu scad monoton: o coardă mai lungă poate cere
+    // mai mulți pași de jumătate de întindere.
     if (urm.segmente >= r.segmente) break;
     tol *= 2;
     r = urm;
+    v = varfuriGpu(urm.siruri);
     rarit = true;
   }
-  return { ...r, toleranta: tol, rarit, pesteBuget: r.segmente > buget };
+  return { ...r, toleranta: tol, rarit, pesteBuget: v > buget };
+}
+
+/**
+ * Câte vârfuri urcă șirurile în GPU (`bucatiDinSiruri`): fiecare segment se taie în pași de cel mult jumătate din întinderea
+ * bucății, deci o linie de 2 440 mm are 77 de vârfuri, nu 2. Bugetul se judecă pe ele, nu pe segmentele programului
+ * (recenzia 2.8e, F7: 1 000 de linii de-a latul foii urcau 114 002 vârfuri la un buget de 50 000, fără cip).
+ */
+export function varfuriGpu(siruri: readonly Sir[]): number {
+  let n = 0;
+  for (const s of siruri) {
+    if (s.puncte.length < 4) continue;
+    n += 1;
+    for (let i = 2; i + 1 < s.puncte.length; i += 2) {
+      const dx = Math.abs((s.puncte[i] as number) - (s.puncte[i - 2] as number));
+      const dy = Math.abs((s.puncte[i + 1] as number) - (s.puncte[i - 1] as number));
+      n += Math.max(1, Math.ceil(Math.max(dx, dy) / (INTINDERE_BUCATA / 2)));
+    }
+  }
+  return n;
 }
 
 /**

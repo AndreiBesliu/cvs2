@@ -545,13 +545,22 @@ function cutieAlese(doc: Document, alese: ReadonlySet<string>): Cutie | null {
   return k;
 }
 
-/** Deplasarea care duce colțul stânga-jos al cutiei selecției în poziția cerută (doar pe axele scrise), sau motivul. */
+/** Sub atât (mm), o deplasare nu e o mutare: de șase ordine sub rezoluția postului, doar zgomotul aritmeticii (ADR 0038 §5). */
+const PRAG_MUTARE = 1e-9;
+
+/**
+ * Deplasarea care duce colțul stânga-jos al cutiei selecției în poziția cerută (doar pe axele scrise), sau motivul.
+ * Colțul e derivat din geometrie (`x + t`), deci poate ateriza la câțiva ulp de valoarea scrisă (3,577 → 3,576999999999998;
+ * la o formă rotită, valoarea exactă adesea nici nu există); panoul îl arată rotunjit (`valoareDerivata`), iar o deplasare
+ * sub `PRAG_MUTARE` e zero: reconfirmarea aceleiași valori nu e o comandă (recenzia 2.8e, F2).
+ */
 function deplasarePozitie(ctx: ContextDocument): { readonly dx: number; readonly dy: number } | 'motiv.valoare-invalida' | 'motiv.nicio-selectie' {
   const p = ctx.pozitieNoua?.() ?? {};
   if ((p.x !== undefined && !Number.isFinite(p.x)) || (p.y !== undefined && !Number.isFinite(p.y))) return 'motiv.valoare-invalida';
   const k = cutieAlese(ctx.istoric().doc, new Set(ctx.selectie()));
   if (!k) return 'motiv.nicio-selectie';
-  return { dx: p.x === undefined ? 0 : p.x - k.minX, dy: p.y === undefined ? 0 : p.y - k.minY };
+  const prag = (d: number): number => (Math.abs(d) < PRAG_MUTARE ? 0 : d);
+  return { dx: prag(p.x === undefined ? 0 : p.x - k.minX), dy: prag(p.y === undefined ? 0 : p.y - k.minY) };
 }
 
 /** Unghiul în [0, 360): un unghi deja acolo rămâne exact cum e (ca la `rotatie`); 360 − ε rotunjit la 360 devine 0. */

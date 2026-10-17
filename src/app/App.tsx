@@ -196,6 +196,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [traseu, setTraseu] = useState<StareTraseu | null>(null);
   const [bugetTraseu, setBugetTraseu] = useState(BUGET_TRASEU);
   const [stareStrat, setStareStrat] = useState<StareStrat>('ok');
+  const [cheieStrat, setCheieStrat] = useState(0);
   const [traseuPregatit, setTraseuPregatit] = useState<{ readonly bucati: readonly Bucata[]; readonly rarit: boolean } | null>(null);
   const cerereTraseu = useRef(0);
   // Pentru rezultatul exportului, care vine mai târziu, dintr-un context făcut la apăsarea butonului.
@@ -424,7 +425,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    */
   const comutaTraseu = (): void => {
     const d = curenta.current.istoric.doc;
-    if (traseu?.arata && traseu.stare === 'gata' && traseu.rev === d.rev) {
+    // Și un refuz pentru documentul de acum se ascunde: altfel butonul nu se mai putea dezapăsa (recenzia 2.8e, F3).
+    if (traseu?.arata && (traseu.stare === 'gata' || traseu.stare === 'refuz') && traseu.rev === d.rev) {
       setTraseu({ ...traseu, arata: false });
       return;
     }
@@ -434,7 +436,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const calculeazaTraseu = (): void => {
     const d = curenta.current.istoric.doc;
     const cerere = ++cerereTraseu.current;
-    setStareStrat('ok');
+    // Un strat care nu e „ok” (context pierdut, WebGL indisponibil) se montează din nou, cu un canvas și un context noi;
+    // un „ok” pus peste canvasul vechi, cu contextul tot pierdut, lăsa traseul nedesenat și fără cip (recenzia 2.8e, F4).
+    if (stareStrat !== 'ok') {
+      setCheieStrat((k) => k + 1);
+      setStareStrat('ok');
+    }
     const refuz = (motiv: string): void => {
       if (cerere === cerereTraseu.current) setTraseu({ arata: true, stare: 'refuz', rev: d.rev, miscari: null, motiv });
     };
@@ -442,7 +449,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     Promise.all([import('../cam/job.ts'), import('../i18n/traseu.ts')]).then(([{ programDinDocument }]) => {
       if (cerere !== cerereTraseu.current) return;
       setTraseu((v) => ({ arata: true, stare: 'calcul', rev: d.rev, miscari: v?.miscari ?? null, motiv: null }));
-      setTimeout(() => {
+      // Cu modulele deja aduse, un `setTimeout(0)` simplu pornea CAM-ul înaintea desenării cipului (recenzia 2.8e, F5):
+      // cadrul următor, apoi o sarcină, deci după ce browserul a pictat.
+      const dupaCadru = (f: () => void): void => { requestAnimationFrame(() => { setTimeout(f, 0); }); };
+      dupaCadru(() => {
         if (cerere !== cerereTraseu.current) return;
         try {
           const r = programDinDocument(d);
@@ -452,7 +462,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         } catch (e) {
           refuz(e instanceof Error ? e.message : String(e));
         }
-      }, 0);
+      });
     }, (e: unknown) => { refuz(e instanceof Error ? e.message : String(e)); });
   };
   // Bucățile stratului: din program, la treapta de zoom și sub buget (modulul vine la cerere, cu stratul).
@@ -470,7 +480,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     }, () => { if (viu) setTraseuPregatit(null); });
     return () => { viu = false; };
   }, [miscariTraseu, treapta, bugetTraseu]);
-  const traseuVechi = traseu?.stare === 'gata' && traseu.rev !== doc.rev;
+  // Stins: programul unui document de dinainte (și un refuz pentru el nu mai e motivul de acum, recenzia 2.8e, F3), sau
+  // programul vechi ținut sub cipul „se calculează” (F5).
+  const traseuVechi = traseu !== null && traseu !== undefined
+    && ((traseu.stare !== 'calcul' && traseu.rev !== doc.rev) || traseu.stare === 'calcul');
 
   /** Un câmp al panoului de proprietăți (ADR 0038 §4): acțiunea lui, cu rezultatul (motivul unui refuz rămâne în câmp). */
   const aplicaDinPanou = (id: string, extra: Parameters<typeof context>[0]): RezultatActiune => {
@@ -823,7 +836,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         // Starea traseului (ADR 0038 §2, §3): doar când e ceva de spus; traseul la zi și desenat n-are cip.
         if (!traseu?.arata) return null;
         const [cheie, clasa, motiv] = traseu.stare === 'calcul' ? ['traseu.calcul', 'cip', ''] as const
-          : traseu.stare === 'refuz' ? ['traseu.refuz', 'cip cip-rosu', traseu.motiv ?? ''] as const
+          : traseu.stare === 'refuz' && traseu.rev === doc.rev ? ['traseu.refuz', 'cip cip-rosu', traseu.motiv ?? ''] as const
             : stareStrat === 'fara-webgl' ? ['traseu.fara-webgl', 'cip cip-atentie', ''] as const
               : stareStrat === 'context-pierdut' ? ['traseu.context', 'cip cip-atentie', ''] as const
                 : traseuVechi ? ['traseu.vechi', 'cip cip-atentie', ''] as const
@@ -915,7 +928,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             {...(traseu?.arata && traseuPregatit && stareStrat !== 'fara-webgl' ? {
               strat: (v: Vedere, m: { readonly latime: number; readonly inaltime: number; readonly dpr: number }) => (
                 <Suspense fallback={null}>
-                  <StratTraseu bucati={traseuPregatit.bucati} vedere={v} marime={m} stins={traseuVechi} onStare={setStareStrat}
+                  <StratTraseu key={cheieStrat} bucati={traseuPregatit.bucati} vedere={v} marime={m} stins={traseuVechi} onStare={setStareStrat}
                     onLent={() => { setBugetTraseu((b) => Math.max(BUGET_TRASEU_MINIM, Math.floor(b / 2))); }} />
                 </Suspense>
               ),

@@ -24,3 +24,12 @@ export function textNumar(x: number, virgula = false): string {
   const t = m?.[1] !== undefined && m[3] !== undefined ? `0.${'0'.repeat(Number(m[3]) - 1)}${m[1]}${m[2] ?? ''}` : s;
   return virgula ? t.replace('.', ',') : t;
 }
+
+/**
+ * O mărime derivată din geometrie (colțul cutiei: `x + t`), rotunjită la 1e-9 mm pentru afișare: valoarea exactă scrisă de
+ * om adesea nu există ca rezultat al adunării, iar câmpul ar arăta 3,576999999999998 în loc de 3,577 (recenzia 2.8e, F2).
+ * 1e-9 mm e de șase ordine sub rezoluția postului; mărimile ținute în document (rotirea, foaia) se arată exact.
+ */
+export function valoareDerivata(x: number): number {
+  return Math.round(x * 1e9) / 1e9;
+}

@@ -17,6 +17,8 @@ type Props = {
 
 /** Un cadru mai lung de atât (măsurat cu `finish`, o dată pe set de bucăți) cere un buget mai mic (ADR 0013, T13). */
 export const CADRU_LENT_MS = 32;
+/** Cât așteaptă stratul refacerea unui context pierdut, până să spună că WebGL2 e indisponibil (ms). */
+export const ASTEPTARE_REFACERE = 5000;
 
 const VS = `#version 300 es
 in vec2 a_rel;
@@ -191,19 +193,36 @@ export function StratTraseu({ bucati, vedere, marime, stins, onStare, onLent }: 
       ultim.current.onStare(g ? 'ok' : 'fara-webgl');
       if (g) cere();
     };
+    // Un context nerefăcut în `ASTEPTARE_REFACERE` nu mai „revine singur”: cipul spune că WebGL2 e indisponibil (ADR 0038
+    // §3), iar T montează un strat nou (recenzia 2.8e, F4).
+    let asteapta: ReturnType<typeof setTimeout> | undefined;
     const pierdut = (e: Event): void => {
       e.preventDefault();
       if (gpu.current) gpu.current.incarcate = [];
       gpu.current = null;
       ultim.current.onStare('context-pierdut');
+      clearTimeout(asteapta);
+      asteapta = setTimeout(() => { if (!gpu.current) ultim.current.onStare('fara-webgl'); }, ASTEPTARE_REFACERE);
+    };
+    const refacut = (): void => {
+      clearTimeout(asteapta);
+      porneste();
     };
     c.addEventListener('webglcontextlost', pierdut);
-    c.addEventListener('webglcontextrestored', porneste);
+    c.addEventListener('webglcontextrestored', refacut);
     porneste();
+    // Culorile se citesc din temă la fiecare desen: o temă schimbată (aleasă sau a sistemului) redesenează (F6).
+    const tema = new MutationObserver(cere);
+    tema.observe(document.documentElement, { attributes: true, attributeFilter: ['data-tema'] });
+    const sistem = window.matchMedia('(prefers-color-scheme: dark)');
+    sistem.addEventListener('change', cere);
     return () => {
+      clearTimeout(asteapta);
+      tema.disconnect();
+      sistem.removeEventListener('change', cere);
       cancelAnimationFrame(cadru.current);
       c.removeEventListener('webglcontextlost', pierdut);
-      c.removeEventListener('webglcontextrestored', porneste);
+      c.removeEventListener('webglcontextrestored', refacut);
       if (gpu.current) elibereaza(gpu.current);
       gpu.current = null;
     };

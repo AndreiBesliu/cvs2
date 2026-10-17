@@ -5,6 +5,7 @@ import { t } from '../i18n/t.ts';
 import type { Document, Operatie } from '../model/document.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import { CampNumeric } from '../ui/CampNumeric.tsx';
+import { valoareDerivata } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 
 type Props = {
@@ -90,8 +91,8 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
           {instanta && <h3>{piesa?.nume ?? piesa?.id ?? instanta.id}</h3>}
           {cutie && <p className="prop-grup">{t('prop.colt')}</p>}
           <dl>
-            {cutie && rand('X', camp(`${t('prop.colt')}, X`, 'pozitie-x', cutie.minX, 'mm', true, (x) => onPozitie({ x })))}
-            {cutie && rand('Y', camp(`${t('prop.colt')}, Y`, 'pozitie-y', cutie.minY, 'mm', true, (y) => onPozitie({ y })))}
+            {cutie && rand('X', camp(`${t('prop.colt')}, X`, 'pozitie-x', valoareDerivata(cutie.minX), 'mm', true, (x) => onPozitie({ x })))}
+            {cutie && rand('Y', camp(`${t('prop.colt')}, Y`, 'pozitie-y', valoareDerivata(cutie.minY), 'mm', true, (y) => onPozitie({ y })))}
             {instanta && rand(t('prop.rotirea'), camp(t('prop.rotirea'), 'rotire', instanta.rotire, '°', true, onRotire))}
             {cutie && rand(t('prop.cutia'), t('prop.mm2', { latime: mm(cutie.maxX - cutie.minX), inaltime: mm(cutie.maxY - cutie.minY) }))}
             {rand(t('prop.elemente'), elemente)}

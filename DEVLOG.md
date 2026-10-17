@@ -1949,5 +1949,35 @@ Import Export Admin`); `verificaBackup` → „niciun export pornit de backupZil
 (`esecuriLaRand: 1`) și în `errorLogs` (`job:backupZilnic`, `job:verificaBackup`): alarma a funcționat cum scrie în ADR.
 `firestore:operations:list` confirmă: singurul export e cel din 08.10. Pasul de IAM e al owner-ului. (Citirea marcajelor:
 GET prin clientul API al firebase-tools, cu identitatea CLI-ului; `functions:log` nu arată eșecul, fiindcă jobul nu aruncă.)
-**Agenții:** A (oracolul stratului) în repo, pe portul 4173; B (recenzia) într-o clonă în afara Drive-ului, pe portul
+**Agenții (pornite la 11:55):** A (oracolul stratului) în repo, pe portul 4173; B (recenzia) într-o clonă în afara Drive-ului, pe portul
 4174; C (otrăvurile) după A, în clona lui (serial, cum cer regulile), ca build-urile și Edge-ul să nu se calce.
+**Pasul de IAM (owner, 17.10 ~12:00):** rolul `Cloud Datastore Import Export Admin` adăugat contului de serviciu implicit;
+verificat în politica IAM a proiectului (citire). Contul avea deja `roles/editor`: „Editor” singur NU dă dreptul de export
+(de aici `PERMISSION_DENIED`). Pornirea manuală a jobului din sesiune a fost refuzată de clasificatorul de permisiuni
+(credențialele CLI-ului folosite programatic), deci prima rulare cu rolul e mâine la 03:00 (sau „Force run” din consolă,
+de owner).
+**B, recenzia (terminată 17.10 ~12:15, ~0,27 M):** 7 constatări, fiecare cu un test care pică pe codul de azi, în clona
+`scratchpad/clona-28e-b` (`test/unit/recenzie28.test.ts`: R1, R1b, R2; `test/e2e/recenzie28.spec.ts`: C1, C2, C2b, C3,
+C4, C7): F1 (gravă) valoarea scrisă se pierde la ieșirea din câmp printr-un clic pe pânză (câmpul se demontează la
+schimbarea selecției înainte de blur); F2 colțul X nu ajunge exact (3,577 → 3,576999999999998; reconfirmarea face o comandă
+de 1,8e-15 mm); F3 refuzul CAM-ului rămâne pe ecran după reparare și traseul nu se mai poate opri; F4 contextul WebGL pierdut
+și nerefăcut → nimic desenat, niciun cip; F5 cipul „Se calculează” nu apare (CAM-ul pornește înaintea randării), iar sub el
+traseul vechi nu e stins; F6 culorile vechi după schimbarea temei; F7 bugetul numără segmentele, nu vârfurile din GPU. Respinse
+cu dovadă: numărul, plafoanele, rotirea, fila care citește, precizia float32 (≤ 0,006 px), scurgerile. De verificat pe cod și
+reparat după A, fiecare cu testul lui.
+**A, oracolul stratului (terminat ~12:50, ~0,31 M):** `test/oracles/strat-traseu.ts` (zero importuri; G-code → pixeli, cele
+4 origini, săgeata arcelor ≤ ½ px) și `test/e2e/traseu.oracol.spec.ts` (13 teste: 7 pe hârtie, 6 în Edge pe programul
+exportat): ±1 px, fără goluri (1,5 px) și abaterea medie ≤ ½ px pe primitivă (adăugată: fără ea, decalajul de 1 px trecea).
+Măsurat: dreptunghiul 0,725 px max / 0,244 medie; cercul la 2 440 mm, 1 000 px/mm, 0,979 / 0,305; linia pe linie 0. Martorii
+negativi (±1 px, raza × 1,01, rapidele ca tăieri, arcul întors) pică pe pixelii reali; 32 de sabotaje pe oracol, toate
+prinse (lista: `test/otravuri/strat-traseu.oracol.sabotaje.ts`). Limita spusă: precizia relativă la bucată nu se dovedește
+doar cu ±1 px (rămâne probată numeric de recenzie: ≤ 0,006 px).
+**Integrarea B (cele 7 constatări, fiecare cu testul ei, care pica și trece acum):** F1 câmpul aplică în faza de captură a
+apăsării (înaintea pânzei); F2 colțul e o mărime derivată (`x + t`): afișat rotunjit la 1e-9 mm (`valoareDerivata`), iar o
+deplasare sub 1e-9 mm nu e o comandă (încercarea de a ateriza exact, căutând originea pe ulp, a mers la 0°, dar la 30° valoarea
+exactă adesea nu există: grila lui `x` e mai rară decât a colțului); F3 refuzul se ascunde ca traseul și devine „vechi” după o
+schimbare; F4 T montează un strat nou când stratul nu e „ok”, iar contextul nerefăcut în 5 s devine „WebGL2 indisponibil”
+(C3 adaptat la intenția scrisă de recenzent: „ori desenează, ori un cip”; probat că pică pe codul vechi); F5 calculul după
+cadrul următor, traseul vechi stins sub „se calculează”; F6 stratul redesenează la schimbarea temei; F7 bugetul pe vârfurile
+din GPU (oprirea rărit rămâne pe segmente: vârfurile nu scad monoton). Precizările, în ADR 0038. Nivelul rapid: 6 479 de
+teste, 0 picate; e2e 104 / 104. **Pornirea: 99,1 / 100 kB** (strâmt).

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { t } from '../i18n/t.ts';
 import type { RezultatActiune } from './actiuni.ts';
 import { citesteNumar, textNumar } from './numar.ts';
@@ -66,10 +66,25 @@ export function CampNumeric({ eticheta, valoare, unitate, semn = false, camp, de
       setMotiv(t(r.motiv));
     }
   };
+  // Un clic în afara câmpului (pe pânză, de pildă) poate schimba selecția înainte de blur, iar câmpul, legat de selecție,
+  // se demonta fără să aplice: valoarea scrisă se pierdea (recenzia 2.8e, F1). Faza de captură a ferestrei vine înaintea
+  // oricărui alt ascultător, deci valoarea ajunge pe forma de atunci; blur-ul de după nu mai are ce aplica.
+  const camp_ = useRef<HTMLInputElement>(null);
+  const aplicaAcum = useRef(aplica);
+  aplicaAcum.current = aplica;
+  useEffect(() => {
+    if (!editez) return undefined;
+    const laApasare = (e: PointerEvent): void => {
+      if (e.target !== camp_.current) aplicaAcum.current();
+    };
+    window.addEventListener('pointerdown', laApasare, true);
+    return () => { window.removeEventListener('pointerdown', laApasare, true); };
+  }, [editez]);
 
   return (
     <span className="camp-numeric">
       <input
+        ref={camp_}
         type="text"
         inputMode="decimal"
         autoComplete="off"

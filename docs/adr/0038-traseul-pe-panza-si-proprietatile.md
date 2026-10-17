@@ -71,6 +71,25 @@ aceeași vedere ca vectorii):
   virgula, valoarea greșită cu motiv, fila care doar citește).
 - **Pornirea** rămâne sub 100 kB: stratul și câmpul se încarcă la cerere (poarta `determinism` o măsoară).
 
+## Precizările din 2.8e (17.10.2026, după recenzia și oracolul independente)
+
+- **Colțul din panou e o mărime derivată** (`x + t`, din geometrie): valoarea exactă scrisă de om adesea nu există ca
+  rezultat al adunării (la o formă rotită, grila lui `x` e mai rară decât cea a colțului). Câmpul îl arată rotunjit la
+  1e-9 mm (`valoareDerivata`), iar o deplasare sub 1e-9 mm nu e o comandă. Mărimile ținute în document (rotirea, foaia) se
+  arată în continuare exact (§5).
+- **Ieșirea din câmp printr-un clic oriunde aplică**, și când clicul schimbă selecția (câmpul se demontează): valoarea
+  se aplică în faza de captură a apăsării, pe forma de atunci.
+- **Un refuz al CAM-ului** se ascunde cu „Arată traseul” ca traseul, iar după o schimbare a documentului nu mai e motivul
+  de acum: cipul spune că traseul e vechi.
+- **Contextul pierdut:** cipul „revine singur” cât așteaptă refacerea, cel mult 5 s; apoi „WebGL2 indisponibil” (§3). T
+  montează un strat nou, cu un canvas și un context noi, în loc să pretindă „ok” peste canvasul vechi.
+- **Bugetul de segmente** se judecă pe vârfurile urcate în GPU (segmentele lungi se taie în pași de 32 mm), nu pe
+  segmentele programului.
+- **Oracolul stratului** (`test/oracles/strat-traseu.ts`) judecă ±1 px, fără goluri (1,5 px) și abaterea medie ≤ ½ px pe
+  primitivă (fără ea, un traseu decalat cu 1 px trecea). Limita lui, spusă: precizia relativă la bucată nu se poate
+  dovedi doar cu ±1 px (desenul „naiv” în float32 e prins în 3 din 20 de faze la 2 440 mm, 8 din 20 la 10 000 mm); ea
+  rămâne probată numeric (≤ 0,006 px la 1 000 px/mm).
+
 ## Ce am respins
 
 - **Traseul desenat în workerul vectorilor** (Path2D): un program de 1 M de segmente pe pânză software trece de secunde
