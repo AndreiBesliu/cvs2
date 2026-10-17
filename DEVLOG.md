@@ -1990,3 +1990,10 @@ dublărilor, apoi otrava schimba doar argumentul): testul cere acum și ca șiru
 S02: zoomul trebuie făcut într-un punct al pânzei calculat din vedere (colțul ferestrei cădea peste bare).
 **Completed:** 17.10 14:45. Costul 2.8e: agenții ~0,86 M (A 0,31, B 0,27, C 0,26), plus integrarea; săptămânalul 1 → ~24 %.
 Nivelul rapid: 6 487 de teste, 0 picate; e2e 112 / 112; pornirea 99,1 / 100 kB.
+
+## 2026-10-17 — Interfață: loc în pachetul de pornire (Model: Claude Opus 5.5)
+
+**Prompt:** „atunci tu continua” (după raportul 2.8e; ultracode pornit). **Started:** 17.10 ~14:55, săptămânalul ~24 %.
+Felie fără mașină (`PLAN.md` §4.6, punctul 7): pornirea e la 99,1 / 100 kB, deci orice funcție nouă de interfață s-ar
+lovi de plafon. Ținta: sub ~90 kB, fără schimbare de comportament. Workflow: măsurătoarea, 3 propuneri independente,
+judecătorul, implementarea, 3 verificatori adversariali (estimat 2–3 M).
