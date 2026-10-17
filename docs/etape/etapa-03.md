@@ -20,7 +20,7 @@ felii; F3: senderul, 8 felii R3). Coloana „Mașina” spune dacă proba feliei
 | # | Felia | Articolul | Clasa | Mașina | Depinde de |
 |---|---|---|---|---|---|
 | 3.1 | Jurnalul de erori pe server (P0, partea 1a; ADR 0039): funcțiile în TypeScript (codebase-ul `cncvs2`, `europe-central2`), `errorLogs` grupat pe amprentă, `logServerError` care nu aruncă, `logClientError` cu App Check și plafon de rată, regulile Firestore noi; testele pe emulator; publicat pe test | P0, I13 | R2 | nu | — |
-| 3.2 | Raportorul din client (P0, partea 1b): erorile jurnalului local pleacă spre `logClientError`, cu SDK-ul adus la prima eroare; App Check cu cheia instanței citită de la gazdă; CSP-ul; măsurat pe test: 200 cu token, 401 fără | P0, I13 | R2 | nu | 3.1; cheia reCAPTCHA de test (owner) |
+| 3.2 | Raportorul din client (P0, partea 1b): erorile jurnalului local pleacă spre `logClientError`, cu SDK-ul adus la prima eroare; App Check cu cheia instanței citită de la gazdă; CSP-ul; măsurat pe test: 200 cu token, 401 fără | P0, I13 | R2 | nu | 3.1; cheia reCAPTCHA de test (creată 17.10), înregistrată în App Check (owner) |
 | 3.3 | Personalul și Diagnoza (P0, partea 2; ADR 0040): `staff/{uid}` și rolul în reguli, login Google, primul owner scris din consolă; pagina `/admin` cu fila Erori (și „Rezolvat” prin callable, cu auditul) și Diagnoza minimă (instanța, build-ul, App Check, erorile nerezolvate, funcțiile, marcajele); retenția de 90 de zile (TTL) | P0 | R2 | nu | 3.1 |
 | 3.4a | Backup-ul zilnic al Firestore, cu verificarea lui, și marcajele de rulare judecate în Diagnoză (P1, partea 1; ADR 0041) | P1 | R2 | nu | 3.3 |
 | 3.4b | Publicarea pe live (P1, partea 2): workflow-ul cu sha fixat, mediul `live` cu aprobarea owner-ului, WIF; amprenta `meta/deployment`, scrisă de pipeline (mutată din 3.3, ADR 0040 §7); contul de serviciu dedicat al backup-ului | P1 | R2 | nu | 3.4a; mediul `live`, WIF, PITR (owner) |
@@ -52,7 +52,7 @@ implicit n-are dreptul de export, eșecul apare în fila Erori și în Diagnoză
 | Ce | Pentru | Termen |
 |---|---|---|
 | Primul login pe <https://cncvectorstudio-test.firebaseapp.com/admin> și documentul `staff/<uid>` cu `rol: "owner"`, creat în consola Firestore (pagina arată uid-ul și linkul) | 3.3: fila Erori și Diagnoza | după 3.3 |
-| Cheia reCAPTCHA Enterprise pentru domeniul de test, creată în proiectul `cncvectorstudio-test` | 3.2: erorile oamenilor ajung pe server; „Rezolvat” din fila Erori | înainte de 3.2 |
+| Înregistrarea cheii în App Check: în consolă, App Check → aplicația `cvs-test` → reCAPTCHA Enterprise, cheia „App Check cncvs2 (test)” (creată pe 17.10 de asistent, doar pentru domeniile de test; API-ul pornit atunci; pasul App Check l-a refuzat clasificatorul). Fără „Enforce” pe vreun serviciu. Cheia ediției întâi stă pe live și are doar domeniile de live | 3.2: erorile oamenilor ajung pe server; „Rezolvat” din fila Erori | înainte de 3.2 |
 | Tăierea plăcilor 1 și 2 | 3.5 (transcrierile rejucate pe emulator) și prima felie a etapei | cât mai curând |
 | Placa de contact pentru Z | 3.7 | înainte de 3.7 |
 | Mediul `live` în GitHub; WIF pe ambele proiecte; PITR pe live | 3.4 | înainte de 3.4 |
