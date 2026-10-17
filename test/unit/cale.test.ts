@@ -9,7 +9,7 @@ import { distantaLaContur, inRegiune } from '../../src/geom/distanta.ts';
 import { PLAFON, VERSIUNE_SCHEMA, type Document, type FormaDoc, type VarfDoc } from '../../src/model/document.ts';
 import { conturElement } from '../../src/model/forme.ts';
 import { incarca } from '../../src/model/incarcare.ts';
-import { instantaLa } from '../../src/ui/actiuniDocument.ts';
+import { instantaLa } from '../../src/ui/actiuniAlegere.ts';
 import { D, INIMA, inimaEsantionata } from './ajutor-cale.ts';
 import { docDin, ID } from './ajutor-document.ts';
 

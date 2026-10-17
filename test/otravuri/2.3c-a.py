@@ -125,7 +125,7 @@ o('T01', TRS, "if (Math.abs(s.bulge) < BULGE_MINIM || !(raza * Math.abs(baleiaj)
 o('T02', TRS, "if (Math.abs(s.bulge) < BULGE_MINIM || !(raza * Math.abs(baleiaj) >= EPS_ATINGERE)) {", "if (Math.abs(s.bulge) < BULGE_MINIM) {", 'traseu', 'arcul scurt (sub 1e-6 mm pe curba) scris arc')
 
 # ── contur.ts ────────────────────────────────────────────────────────────────────────────────────────────────────────
-o('C01', CON, "const finit = Number.isFinite(bulge * bulge);", "const finit = true;", 'geom', 'cerculArcului fara ramura de depasire (bulge urias)')
+o('C01', 'src/geom/conturBaza.ts', "const finit = Number.isFinite(bulge * bulge);", "const finit = true;", 'geom', 'cerculArcului fara ramura de depasire (bulge urias)')
 
 
 # ---- Seturile (din harnașul segmentului 2a) ----

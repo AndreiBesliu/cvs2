@@ -107,7 +107,8 @@ o('S22', 'src/io/piesa.ts',
   'svg', 'adâncimea căilor deschise min(1, grosimea) în loc de min(1, grosimea / 2)')
 
 # ---- M: documentul v10 ----
-DOC = 'src/model/document.ts'
+# Schemele documentului stau, din 17.10 (loc în pachetul de pornire), în modulul lor, mutate neschimbate.
+DOC = 'src/model/schemaDocument.ts'
 INC = 'src/model/incarcare.ts'
 o('M01', DOC,
   "v.check((f) => f.inchis || f.varfuri[f.varfuri.length - 1]?.s.tip === 'L',",
@@ -181,6 +182,8 @@ o('W02', 'src/app/desen.ts',
 
 # ---- E: doar e2e (interfața și pornirea) ----
 APP = 'src/app/App.tsx'
+# Rândurile dialogului de export stau, din 17.10 (loc în pachetul de pornire), în dialogul legat de document.
+EXP = 'src/app/ExportConectat.tsx'
 PL = 'src/app/proiectLocal.ts'
 o('E01', PL,
   "    return { mod: 'necitit-acum', motiv: `ușa de încărcare nu s-a putut aduce",
@@ -191,14 +194,14 @@ o('E02', PL,
   "        try {\n          const v = await citeste(db);\n          const r = await documentDin(v, usaLaCerere);\n          return r.ok ? { ok: true, v, doc: r.doc } : r;\n        } finally { /* fără prindere */ }\n        try { /* */ } catch (e) {",
   'e2e', '`reciteste` nu mai prinde eroarea ușii (fila care citește tace)')
 o('E03', APP,
-  "if (!f || doarCiteste(mod)) return;",
-  "if (!f) return;",
+  "if (!fisiere[0] || doarCiteste(mod)) return;",
+  "if (!fisiere[0]) return;",
   'e2e', 'garda doar-citire scoasă din pornesteImport (lăsarea pe planșă deschide dialogul)')
-o('E04', APP,
+o('E04', EXP,
   "        noduri: o.noduri.length,\n",
   "        noduri: 1,\n",
   'e2e', 'rândul dialogului crede că are un singur nod: stânga / dreapta oferite pe mai multe căi')
-o('E05', APP,
+o('E05', EXP,
   "          ...(o.despartire ? { despartire: true } : {}),\n",
   "",
   'e2e', 'marcajul despărțirii din document nu ajunge în dialog (Exportă îl scoate)')

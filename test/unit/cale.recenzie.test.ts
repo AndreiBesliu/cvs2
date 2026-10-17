@@ -10,6 +10,8 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+// Dicționarele de bază vin la cerere (`t.ts`): testele care cer texte le încarcă întâi pe amândouă.
+import './limbi.ts';
 import { listaDesen } from '../../src/app/desen.ts';
 import { programDinDocument } from '../../src/cam/job.ts';
 import { distantaLaContur } from '../../src/geom/distanta.ts';
@@ -21,7 +23,8 @@ import { PLAFON, type Document, type FormaDoc, type Operatie, type VarfDoc } fro
 import { conturElement } from '../../src/model/forme.ts';
 import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
 import { istoricNou } from '../../src/model/jurnal.ts';
-import { ACTIUNI_DOCUMENT, instantaLa, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
+import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
+import { instantaLa } from '../../src/ui/actiuniAlegere.ts';
 import { D } from './ajutor-cale.ts';
 import { cuOperatie, docDin, ID } from './ajutor-document.ts';
 

@@ -1,0 +1,254 @@
+import { uneste, type Cutie } from '../geom/cutie.ts';
+import { IDENTITATE, rotatie } from '../geom/matrice.ts';
+// Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
+import type { ImportPregatit } from '../io/piesa.ts';
+import { instantaPreaDeparte, PLAFON, type Document, type Instanta, type Operatie, type Stoc } from '../model/document.ts';
+import { operatieInMargini } from '../model/schemaDocument.ts';
+import { cutieElement } from '../model/forme.ts';
+import { jsonCanonic } from '../model/jsonCanonic.ts';
+import { executa, type Comanda } from '../model/jurnal.ts';
+import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
+import {
+  alesePreaDeparte, FOAIA, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
+  type CalculDocument, type ContextDocument,
+} from './actiuniDocument.ts';
+
+/**
+ * Calculul acțiunilor documentului pornite doar de ferestre și de panou (`actiuniDocument.ts`, `laCerere`): importul
+ * (ADR 0035 §8), operațiile din dialogul de export (ADR 0025), poziția, rotirea și foaia din panou (ADR 0038 §4). Nu stă în
+ * pachetul de pornire: îl importă static ferestrele care dau aceste acțiuni (`ExportConectat`, `ImportConectat`,
+ * `PanouProprietati`), iar modulul se înregistrează în registrul documentului la evaluare (starea lui globală, ca
+ * dicționarele de mesaje). `activa` repetă gărzile ieftine din registru, apoi judecă; textul lor e cel de dinainte de mutare.
+ */
+
+/**
+ * Comanda unui import (ADR 0035 §8): piesa și instanța ei, într-un singur pas. Documentul de după trebuie să treacă de
+ * plafoane și de ușa documentului întreagă: ce intră prin import se și redeschide. Ținută pe (document, import): `activa`
+ * și `ruleaza` cer aceeași judecată. Piesa o face constructorul adus cu importul, cu freza și grosimea foii curente
+ * (adâncimea căilor deschise, ADR 0037 §11).
+ */
+type ComandaImport = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: 'motiv.plafon' | 'motiv.import-refuzat' };
+type Loc = { readonly x: number; readonly y: number } | null;
+let ultimulImport: { doc: Document; pregatit: ImportPregatit; la: Loc; rez: ComandaImport } | null = null;
+function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc = null): ComandaImport {
+  const acelasiLoc = (a: Loc, b: Loc): boolean => (a === null || b === null ? a === b : a.x === b.x && a.y === b.y);
+  if (ultimulImport && ultimulImport.doc === doc && ultimulImport.pregatit === pregatit && acelasiLoc(ultimulImport.la, la)) return ultimulImport.rez;
+  const id = idNou(doc);
+  const scula = sculaFoii(doc);
+  const pus = pregatit.piesa(id, { ...(scula ? { scula } : {}), grosime: foaieCurenta(doc).stoc.grosime });
+  const { piesa } = pus;
+  // Lăsat pe planșă: centrul cutiei desenului în punctul lăsat; altfel, locul din pagina fișierului.
+  const x = la ? la.x - pus.latime / 2 : pus.x;
+  const y = la ? la.y - pus.inaltime / 2 : pus.y;
+  const varfuri = pregatit.cai.reduce((s, c) => s + c.varfuri.length, 0);
+  const elemente = pregatit.cai.length;
+  let rez: ComandaImport;
+  if (!incape(doc, { noduri: elemente + 1, instante: 1, elementeLume: elemente, operatii: piesa.operatii.length, taieturi: elemente, varfuri, varfuriLume: varfuri })) {
+    rez = { ok: false, motiv: 'motiv.plafon' };
+  } else {
+    const foaie = foaieCurenta(doc);
+    const comanda: Comanda = {
+      tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x, y, rotire: 0 }, pozitie: foaie.instante.length,
+      piesa: { piesa, pozitie: doc.piese.length },
+    };
+    rez = pregatit.treceDeUsa(executa(istoricDin(doc), comanda).doc) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.import-refuzat' };
+  }
+  ultimulImport = { doc, pregatit, la, rez };
+  return rez;
+}
+
+/**
+ * Dialogul schimbă doar valorile operațiilor existente: aceleași operații, în aceeași ordine, pe aceleași noduri. Așa
+ * referințele, unicitatea și plafoanele rămân cum le-a lăsat ușa; valorile noi trebuie doar să fie în marginile schemei.
+ */
+function operatiiAcceptate(doc: Document, noi: ReadonlyMap<string, readonly Operatie[]>): boolean {
+  const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  for (const [id, operatii] of noi) {
+    const vechi = piese.get(id)?.operatii;
+    if (!vechi || vechi.length !== operatii.length) return false;
+    for (const [k, o] of operatii.entries()) {
+      const v = vechi[k];
+      if (!v || o.id !== v.id || o.tip !== v.tip || o.noduri.length !== v.noduri.length || o.noduri.some((n, j) => n !== v.noduri[j])) return false;
+      if (!operatieInMargini(o)) return false;
+    }
+  }
+  return true;
+}
+
+/** Cutia elementelor instanțelor alese, în lume (mm ai foii), sau null fără niciun element. */
+function cutieAlese(doc: Document, alese: ReadonlySet<string>): Cutie | null {
+  let k: Cutie | null = null;
+  for (const e of elementeFoaie(doc, FOAIA)) {
+    if (!alese.has(e.instanta)) continue;
+    const c = cutieElement(e);
+    k = k ? uneste(k, c) : c;
+  }
+  return k;
+}
+
+/** Sub atât (mm), o deplasare nu e o mutare: de șase ordine sub rezoluția postului, doar zgomotul aritmeticii (ADR 0038 §5). */
+const PRAG_MUTARE = 1e-9;
+
+/**
+ * Deplasarea care duce colțul stânga-jos al cutiei selecției în poziția cerută (doar pe axele scrise), sau motivul.
+ * Colțul e derivat din geometrie (`x + t`), deci poate ateriza la câțiva ulp de valoarea scrisă (3,577 → 3,576999999999998;
+ * la o formă rotită, valoarea exactă adesea nici nu există); panoul îl arată rotunjit (`valoareDerivata`), iar o deplasare
+ * sub `PRAG_MUTARE` e zero: reconfirmarea aceleiași valori nu e o comandă (recenzia 2.8e, F2).
+ */
+function deplasarePozitie(ctx: ContextDocument): { readonly dx: number; readonly dy: number } | 'motiv.valoare-invalida' | 'motiv.nicio-selectie' {
+  const p = ctx.pozitieNoua?.() ?? {};
+  if ((p.x !== undefined && !Number.isFinite(p.x)) || (p.y !== undefined && !Number.isFinite(p.y))) return 'motiv.valoare-invalida';
+  const k = cutieAlese(ctx.istoric().doc, new Set(ctx.selectie()));
+  if (!k) return 'motiv.nicio-selectie';
+  const prag = (d: number): number => (Math.abs(d) < PRAG_MUTARE ? 0 : d);
+  return { dx: prag(p.x === undefined ? 0 : p.x - k.minX), dy: prag(p.y === undefined ? 0 : p.y - k.minY) };
+}
+
+/** Unghiul în [0, 360): un unghi deja acolo rămâne exact cum e (ca la `rotatie`); 360 − ε rotunjit la 360 devine 0. */
+export function rotireNormalizata(r: number): number {
+  if (r >= 0 && r < 360) return r === 0 ? 0 : r;
+  const n = ((r % 360) + 360) % 360;
+  return n >= 360 || n === 0 ? 0 : n;
+}
+
+/**
+ * Instanța rotită la `rotire`, cu centrul cutiei piesei ținut pe loc (ADR 0038 §4): cu matricea T(x, y)·R(r), centrul c
+ * al piesei ajunge în R(r)·c + (x, y), deci originea nouă e (x, y) + R(r₀)·c − R(r₁)·c.
+ */
+function instantaRotita(doc: Document, i: Instanta, rotire: number): Instanta {
+  const p = doc.piese.find((x) => x.id === i.piesa);
+  let k: Cutie | null = null;
+  for (const e of p ? elementeInstanta(p.radacina, i, IDENTITATE) : []) {
+    const c = cutieElement(e);
+    k = k ? uneste(k, c) : c;
+  }
+  if (!k) return { ...i, rotire };
+  const cx = (k.minX + k.maxX) / 2, cy = (k.minY + k.maxY) / 2;
+  const r0 = rotatie(i.rotire), r1 = rotatie(rotire);
+  return {
+    ...i,
+    x: i.x + (r0.a * cx + r0.c * cy) - (r1.a * cx + r1.c * cy),
+    y: i.y + (r0.b * cx + r0.d * cy) - (r1.b * cx + r1.d * cy),
+    rotire,
+  };
+}
+
+/** Materialul nou al foii, cu mărimile nescrise păstrate, sau motivul: în plafoanele schemei (ADR 0024), strict pozitive. */
+function stocCerut(ctx: ContextDocument): Stoc | 'motiv.foaie-invalida' {
+  const vechi = foaieCurenta(ctx.istoric().doc).stoc;
+  const n = ctx.stocNou?.() ?? {};
+  const bun = (x: number | undefined, max: number): boolean => x === undefined || (Number.isFinite(x) && x > 0 && x <= max);
+  if (!bun(n.latime, PLAFON.latura) || !bun(n.inaltime, PLAFON.latura) || !bun(n.grosime, PLAFON.grosime)) return 'motiv.foaie-invalida';
+  return { ...vechi, latime: n.latime ?? vechi.latime, inaltime: n.inaltime ?? vechi.inaltime, grosime: n.grosime ?? vechi.grosime };
+}
+
+/** Calculul celor cinci acțiuni, după id; `inregistreazaCalcul` îl leagă de registrul documentului. */
+export const CALCUL_DOCUMENT: CalculDocument = {
+  'document.importa': {
+    activa: (ctx) => {
+      if (!ctx.importNou) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaImport(ctx.istoric().doc, ctx.importNou(), ctx.locImport?.() ?? null);
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      if (!ctx.importNou) return;
+      const h = ctx.istoric();
+      const r = comandaImport(h.doc, ctx.importNou(), ctx.locImport?.() ?? null);
+      if (!r.ok) return;
+      ctx.scrie(executa(h, r.comanda));
+      ctx.selecteaza([r.id]);
+    },
+  },
+  'document.aplica-operatii': {
+    activa: (ctx) => {
+      if (!ctx.operatiiNoi) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      return operatiiAcceptate(ctx.istoric().doc, ctx.operatiiNoi()) ? true : 'motiv.operatie-invalida';
+    },
+    ruleaza: (ctx) => {
+      const noi = ctx.operatiiNoi?.();
+      if (!noi || !operatiiAcceptate(ctx.istoric().doc, noi)) return;
+      const h = ctx.istoric();
+      const comenzi: Comanda[] = [];
+      for (const vechi of h.doc.piese) {
+        const operatii = noi.get(vechi.id);
+        // Canonic, nu după ordinea cheilor: un document redeschis are cheile sortate (`jsonCanonic` la salvare).
+        if (!operatii || jsonCanonic(operatii) === jsonCanonic(vechi.operatii)) continue;
+        comenzi.push({ tip: 'inlocuieste-piesa', vechi, nou: { ...vechi, operatii: operatii.map((o) => structuredClone(o)) } });
+      }
+      const c = pas(comenzi);
+      if (c) ctx.scrie(executa(h, c));
+    },
+  },
+  'document.pozitioneaza': {
+    activa: (ctx) => {
+      if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
+      if (!ctx.pozitieNoua) return 'motiv.nicio-deplasare';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const d = deplasarePozitie(ctx);
+      if (typeof d === 'string') return d;
+      return alesePreaDeparte(ctx, d.dx, d.dy) ? 'motiv.prea-departe' : true;
+    },
+    ruleaza: (ctx) => {
+      const d = deplasarePozitie(ctx);
+      if (typeof d === 'string' || (d.dx === 0 && d.dy === 0) || alesePreaDeparte(ctx, d.dx, d.dy)) return;
+      const h = ctx.istoric();
+      const foaie = foaieCurenta(h.doc);
+      const alese = new Set(ctx.selectie());
+      const c = pas(foaie.instante
+        .filter((i) => alese.has(i.id))
+        .map((vechi): Comanda => ({ tip: 'inlocuieste-instanta', foaie: foaie.id, vechi, nou: { ...vechi, x: vechi.x + d.dx, y: vechi.y + d.dy } })));
+      if (c) ctx.scrie(executa(h, c));
+    },
+  },
+  'document.roteste': {
+    activa: (ctx) => {
+      if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
+      if (ctx.selectie().length > 1) return 'motiv.o-singura-selectie';
+      if (!ctx.rotireNoua) return 'motiv.nicio-deplasare';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = ctx.rotireNoua();
+      if (!Number.isFinite(r)) return 'motiv.valoare-invalida';
+      const doc = ctx.istoric().doc;
+      const i = foaieCurenta(doc).instante.find((x) => x.id === ctx.selectie()[0]);
+      if (!i) return 'motiv.nicio-selectie';
+      const nou = instantaRotita(doc, i, rotireNormalizata(r));
+      return instantaPreaDeparte(nou.x, nou.y) ? 'motiv.prea-departe' : true;
+    },
+    ruleaza: (ctx) => {
+      const r = ctx.rotireNoua?.();
+      const h = ctx.istoric();
+      const foaie = foaieCurenta(h.doc);
+      const vechi = ctx.selectie().length === 1 ? foaie.instante.find((x) => x.id === ctx.selectie()[0]) : undefined;
+      if (r === undefined || !Number.isFinite(r) || !vechi) return;
+      const rotire = rotireNormalizata(r);
+      if (rotire === vechi.rotire) return;
+      const nou = instantaRotita(h.doc, vechi, rotire);
+      if (instantaPreaDeparte(nou.x, nou.y)) return;
+      ctx.scrie(executa(h, { tip: 'inlocuieste-instanta', foaie: foaie.id, vechi, nou }));
+    },
+  },
+  'foaie.stoc': {
+    activa: (ctx) => {
+      if (!ctx.stocNou) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const k = stocCerut(ctx);
+      return typeof k === 'string' ? k : true;
+    },
+    ruleaza: (ctx) => {
+      const nou = stocCerut(ctx);
+      const h = ctx.istoric();
+      const foaie = foaieCurenta(h.doc);
+      if (typeof nou === 'string' || jsonCanonic(nou) === jsonCanonic(foaie.stoc)) return;
+      ctx.scrie(executa(h, { tip: 'inlocuieste-stoc', foaie: foaie.id, vechi: foaie.stoc, nou }));
+    },
+  },
+};
+
+inregistreazaCalcul(CALCUL_DOCUMENT);

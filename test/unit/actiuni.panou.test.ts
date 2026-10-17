@@ -12,7 +12,8 @@ import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
 import { istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import { creeazaRegistru, ruleaza, stare } from '../../src/ui/actiuni.ts';
-import { ACTIUNI_DOCUMENT, rotireNormalizata, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
+import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
+import { rotireNormalizata } from '../../src/ui/actiuniDocumentCalcul.ts';
 import { citesteNumar, textNumar } from '../../src/ui/numar.ts';
 
 const R = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);

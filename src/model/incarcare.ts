@@ -1,6 +1,7 @@
 import * as v from 'valibot';
 import { esteSimilitudine, TOLERANTA_SIMILITUDINE_LUME } from '../geom/matrice.ts';
-import { areArce, noduriPiesa, PLAFON, SchemaDocument, VERSIUNE_SCHEMA, type Document } from './document.ts';
+import { areArce, noduriPiesa, PLAFON, VERSIUNE_SCHEMA, type Document } from './document.ts';
+import { SchemaDocument } from './schemaDocument.ts';
 import { elementeInstanta, matriceInstanta } from './lume.ts';
 import { SchemaDocumentV1, type DocumentV1 } from './schemaV1.ts';
 

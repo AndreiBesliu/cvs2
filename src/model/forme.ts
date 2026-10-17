@@ -1,4 +1,4 @@
-import { conturCerc, conturDreptunghi, LINIE, type Contur, type Segment } from '../geom/contur.ts';
+import { conturCerc, conturDreptunghi, LINIE, type Contur, type Segment } from '../geom/conturBaza.ts';
 import { cutieContur, type Cutie } from '../geom/cutie.ts';
 import { transformaContur, type Matrice } from '../geom/matrice.ts';
 import type { FormaDoc, SegmentDoc } from './document.ts';

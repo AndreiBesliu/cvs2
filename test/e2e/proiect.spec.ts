@@ -107,6 +107,9 @@ test('fără Web Locks (o origine nesigură), două file scriu, dar a doua nu o 
   await a1.goto('/');
   const a2 = await context.newPage();
   await a2.goto('/');
+  // A doua filă și-a deschis proiectul (gol) înainte ca prima să scrie: altfel l-ar citi pe al primei și n-ar fi niciun
+  // conflict (cursa se vedea o dată din câteva rulări, și înainte de dicționarul limbii la cerere).
+  await expect(a2.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeEnabled();
   await a1.locator('[data-actiune="document.adauga-cerc"]').click();
   await expect.poll(async () => (await versiuni(a1)).length).toBe(1);
   await a2.locator('[data-actiune="document.adauga-dreptunghi"]').click();

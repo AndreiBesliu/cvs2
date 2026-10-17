@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { listaDesen } from '../../src/app/desen.ts';
 import type { Document } from '../../src/model/document.ts';
-import { instantaLa } from '../../src/ui/actiuniDocument.ts';
+import { instantaLa } from '../../src/ui/actiuniAlegere.ts';
 import { docDin, ID } from './ajutor-document.ts';
 
 const doc: Document = docDin(

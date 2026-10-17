@@ -6,6 +6,8 @@ import { documentNou } from '../../src/model/document.ts';
 import { istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { creeazaRegistru, ruleaza } from '../../src/ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
+// Calculul importului, al operațiilor și al panoului vine la cerere, cu ferestrele lor: aici, ca în ele, la evaluare.
+import '../../src/ui/actiuniDocumentCalcul.ts';
 import { textNumar } from '../../src/ui/numar.ts';
 
 /**

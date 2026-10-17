@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+// Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
+import '../ui/actiuniDocumentCalcul.ts';
 import '../i18n/carcasa.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';

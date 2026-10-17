@@ -13,6 +13,8 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+// Dicționarele de bază vin la cerere (`t.ts`): testele care cer texte le încarcă întâi pe amândouă.
+import './limbi.ts';
 import { readFileSync } from 'node:fs';
 import { listaDesen, directiaDeStart } from '../../src/app/desen.ts';
 import { iesireDinFoaie } from '../../src/cam/iesire.ts';
@@ -28,6 +30,8 @@ import { GRBL_11 } from '../../src/post/contracte/grbl11.ts';
 import { posteaza } from '../../src/post/post.ts';
 import { creeazaRegistru, ruleaza } from '../../src/ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
+// Calculul importului, al operațiilor și al panoului vine la cerere, cu ferestrele lor: aici, ca în ele, la evaluare.
+import '../../src/ui/actiuniDocumentCalcul.ts';
 import { poarta } from '../oracles/poarta.ts';
 import { regiuneDinDocument } from '../oracles/regiune.ts';
 import { citeste, pagina } from './ajutor-svg.ts';

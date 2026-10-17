@@ -44,7 +44,8 @@ def o(id, fis, vechi, nou, set, ce):
 NUMAR_F = 'src/ui/numar.ts'
 CAMP = 'src/ui/CampNumeric.tsx'
 PANOU_F = 'src/app/PanouProprietati.tsx'
-ACT = 'src/ui/actiuniDocument.ts'
+# Calculul acțiunilor panoului stă, din 17.10 (loc în pachetul de pornire), în modulul adus cu ferestrele.
+ACT = 'src/ui/actiuniDocumentCalcul.ts'
 TR = 'src/app/traseuDesen.ts'
 STRAT = 'src/canvas/StratTraseu.tsx'
 APP = 'src/app/App.tsx'
@@ -117,8 +118,8 @@ o('P06', PANOU_F,
 
 # ---- A: acțiunile panoului (set panou) ----
 o('A01', ACT,
-  "return { dx: p.x === undefined ? 0 : p.x - k.minX,",
-  "return { dx: p.x === undefined ? 0 : p.x - k.maxX,",
+  "return { dx: prag(p.x === undefined ? 0 : p.x - k.minX),",
+  "return { dx: prag(p.x === undefined ? 0 : p.x - k.maxX),",
   'panou', 'poziția X e marginea dreaptă a cutiei, nu colțul stânga-jos')
 o('A03', ACT,
   "if (typeof d === 'string' || (d.dx === 0 && d.dy === 0) || alesePreaDeparte(ctx, d.dx, d.dy)) return;",

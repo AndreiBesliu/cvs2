@@ -4,15 +4,15 @@ import { treaptaZoom, type Bucata, type Vedere } from '../canvas/protocol.ts';
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
 import type { Miscare } from '../ir/ir.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
-import { t, type CheieSimpla } from '../i18n/t.ts';
+import { incarcaLimba, t, type CheieSimpla } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { avertismente } from '../model/avertismente.ts';
-import { documentNou, esteCaleDeschisa, type Document, type Operatie } from '../model/document.ts';
+import { documentNou, type Document, type Operatie } from '../model/document.ts';
 import { cutieElement } from '../model/forme.ts';
 import { istoricNou, type Istoric } from '../model/jurnal.ts';
 import { elementeFoaie, type ElementLume } from '../model/lume.ts';
 import { creeazaRegistru, ruleaza, stare, toate, type RezultatActiune } from '../ui/actiuni.ts';
-import { ACTIUNI_DOCUMENT, type ContextDocument } from '../ui/actiuniDocument.ts';
+import { ACTIUNI_DOCUMENT, incarcaAlegerea, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
   ARANJAMENT_MODERN, cheieIntrare, COMUTA_PANOU, PANOURI,
   type Aranjament, type IdCip, type IdControl, type IdPanou, type IdZona, type Intrare, type Unealta,
@@ -21,14 +21,15 @@ import { CipCursor, CipZoom, semnal, type PunctFoaie } from '../ui/CipuriVedere.
 import { ACTIUNI_VEDERE, type ContextVedere } from '../ui/actiuniVedere.ts';
 import { actiuneaTastei, tastaActiunii, tastaApasata } from '../ui/scurtaturi.ts';
 import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type RezultatExport } from '../ui/actiuniExport.ts';
-import { ACTIUNI_IMPORT, PLAFON_IMPORT, preincarcaImport, type ContextImport, type FisierImport, type PrevizualizareImport } from '../ui/actiuniImport.ts';
-import type { CerereExport, OperatieExport, StareExport } from '../ui/DialogExport.tsx';
+import {
+  ACTIUNI_IMPORT, preincarcaImport, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport,
+} from '../ui/actiuniImport.ts';
+import type { CerereExport, StareExport } from '../ui/DialogExport.tsx';
 import { incarcaNivelPiesa, ListaVectori, type RandLista } from '../ui/ListaVectori.tsx';
 import { useLimba } from '../ui/useLimba.ts';
 import type { RezultatConfig } from './config.ts';
 import { listaDesen } from './desen.ts';
 import type { Jurnal } from './jurnalErori.ts';
-import { operatieDinDialog } from './valoriOperatii.ts';
 import { ConflictDeScriere, type DepozitProiect, type ProiectDeschis } from './proiectLocal.ts';
 
 type Props = {
@@ -85,10 +86,12 @@ function DialogNeincarcat({ onInchide }: { readonly onInchide: () => void }) {
  * plătește fiecare deschidere a aplicației. Se aduc în fundal după pornire (`useEffect` de mai jos), ca prima deschidere
  * să nu aștepte rețeaua; un eșec al încărcării arată `DialogNeincarcat`, nu ecranul de eroare.
  */
-const incarcaDialogExport = () => import('../ui/DialogExport.tsx');
-const incarcaDialogImport = () => import('../ui/DialogImport.tsx');
-const DialogExport = lazy(() => incarcaDialogExport().then((m) => ({ default: m.DialogExport }), () => ({ default: DialogNeincarcat })));
-const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.DialogImport }), () => ({ default: DialogNeincarcat })));
+const incarcaDialogExport = () => import('./ExportConectat.tsx');
+const incarcaDialogImport = () => import('./ImportConectat.tsx');
+// Dialogurile vin legate de document (`ExportConectat`, `ImportConectat`): valorile operațiilor, citirea fișierelor și coada
+// importului pleacă din pachetul de pornire odată cu ferestrele lor.
+const DialogExport = lazy(() => incarcaDialogExport().then((m) => ({ default: m.ExportConectat }), () => ({ default: DialogNeincarcat })));
+const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.ImportConectat }), () => ({ default: DialogNeincarcat })));
 /** Paleta de comenzi și panoul de proprietăți vin tot la cerere (prototipul B): nu intră în pachetul de pornire. */
 const incarcaPaleta = () => import('../ui/Paleta.tsx');
 const incarcaProprietati = () => import('./PanouProprietati.tsx');
@@ -213,25 +216,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const zona = useRef<HTMLDivElement>(null);
   const [dialogExport, setDialogExport] = useState(false);
   const [stareExport, setStareExport] = useState<StareExport | null>(null);
-  /**
-   * Importul SVG (ADR 0035 §9): fișierul ales, px-ul și previzualizarea. Cât e deschis, documentul nu se schimbă pe altă
-   * cale: „Importă” adaugă exact ce arată dialogul.
-   */
-  const [dialogImport, setDialogImport] = useState<{
-    readonly fisier: FisierImport | null; readonly nume: string; readonly px: 96 | 72; readonly pxAutomat: boolean;
-    readonly stare: PrevizualizareImport | 'citire';
-    /** Se recitește cu alt px: previzualizarea veche rămâne pe ecran (și focusul pe alegere), dar „Importă” e oprit. */
-    readonly seRecitesc?: boolean;
-  } | null>(null);
-  /** Numărul ultimei citiri: un rezultat întârziat al unei citiri vechi (alt fișier, alt px, dialog închis) se aruncă. */
-  const cerereImport = useRef(0);
   const fisierImport = useRef<HTMLInputElement>(null);
   /**
-   * Coada fișierelor alese sau lăsate pe planșă (felia 2.8b): dialogul le trece pe rând; `punct` e locul lăsării (mm ai
-   * foii), sau null (butonul, ori lăsate în afara pânzei).
+   * Importul SVG (ADR 0035 §9): coada fișierelor alese sau lăsate pe planșă (felia 2.8b), pe care dialogul le trece pe
+   * rând (`ImportConectat`: citirea, px-ul, previzualizarea); `punct` e locul lăsării (mm ai foii), sau null (butonul, ori
+   * lăsate în afara pânzei). Cât e deschis (coada nu e null), documentul nu se schimbă pe altă cale: „Importă” adaugă exact
+   * ce arată dialogul.
    */
   const [coadaImport, setCoadaImport] = useState<{
-    readonly fisiere: readonly File[]; readonly k: number; readonly punct: { readonly x: number; readonly y: number } | null;
+    readonly fisiere: readonly File[]; readonly punct: { readonly x: number; readonly y: number } | null;
   } | null>(null);
   /**
    * Numărul ultimei cereri de export. Un rezultat întârziat (calculul se încarcă la cerere) e al altor parametri dacă între
@@ -361,7 +354,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -374,9 +367,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     document.documentElement.lang = limbaActiva;
   }, [limbaActiva]);
 
-  // Dialogurile, aduse în fundal după pornire (vezi `DialogNeincarcat`).
+  // Alegerea cu clicul (distanța la contur, `actiuniAlegere.ts`) vine la cerere, imediat după montare: doar un clic dat în
+  // primele clipe o așteaptă (și se aplică la sosirea ei).
+  useEffect(() => { incarcaAlegerea().catch(() => undefined); }, []);
+  // Dialogurile, aduse în fundal după pornire (vezi `DialogNeincarcat`); și dicționarele ambelor limbi (pornirea a adus
+  // doar limba activă): schimbarea limbii nu mai așteaptă rețeaua.
   useEffect(() => {
     const id = setTimeout(() => {
+      for (const l of LIMBI) void incarcaLimba(l).catch(() => undefined);
       void incarcaDialogExport().catch(() => undefined);
       void incarcaDialogImport().catch(() => undefined);
       void incarcaPaleta().catch(() => undefined);
@@ -393,7 +391,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * a desenului pe care omul îl vede.
    */
   const dialogDeschis = useRef(false);
-  dialogDeschis.current = dialogExport || dialogImport !== null;
+  dialogDeschis.current = dialogExport || coadaImport !== null;
   /** Un dialog sau paleta: aplicația de sub ele e inertă. */
   const modal = dialogDeschis.current || paleta;
   const modalRef = useRef(modal);
@@ -560,70 +558,16 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const mesaj = mesajProiect(mod, proiect, motivNecitit);
 
   /**
-   * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
-   * ei element în prima instanță a piesei. Freza e comună tuturor, până la schimbarea sculei. Se calculează doar cu
-   * dialogul deschis, liniar (o hartă a pieselor, o mulțime a celor văzute), o dată pe document și pe limbă.
-   */
-  const exportFoaie = useMemo(() => {
-    if (!dialogExport) return null;
-    const piese = new Map(doc.piese.map((p) => [p.id, p]));
-    const vazute = new Set<string>();
-    const lista: Array<{ readonly piesa: Document['piese'][number]; readonly instanta: string }> = [];
-    for (const i of doc.foi[0]?.instante ?? []) {
-      const p = vazute.has(i.piesa) ? undefined : piese.get(i.piesa);
-      if (!p) continue;
-      vazute.add(p.id);
-      lista.push({ piesa: p, instanta: i.id });
-    }
-    const randuriOp: OperatieExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.map((o) => {
-      const e = harti.dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
-      const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
-      return {
-        cheie: `${piesa.id}/${o.id}`,
-        descriere: o.noduri.length > 1 ? `${baza} (+${o.noduri.length - 1})` : baza,
-        // Câte căi deschise taie operația (ADR 0037 §12): dialogul nu oferă ce refuză exportul pe ele.
-        deschise: o.noduri.filter((n) => {
-          const e = harti.dupaIdLume.get(`${inst}/${n}`);
-          return e !== undefined && esteCaleDeschisa(e.forma);
-        }).length,
-        noduri: o.noduri.length,
-        valori: {
-          latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
-          urechi: o.urechi ? { numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime } : null,
-          rampa: o.rampa ? { lungime: o.rampa.lungime } : null,
-          intrari: o.intrari ? { raza: o.intrari.raza } : null,
-          colturi: o.colturi ? { tip: o.colturi.tip } : null,
-          ...(o.despartire ? { despartire: true } : {}),
-        },
-      };
-    }));
-    const operatii = lista.flatMap(({ piesa }) => piesa.operatii);
-    return {
-      piese: lista,
-      randuri: randuriOp,
-      diametru: operatii[0]?.scula.diametru ?? 6,
-      // Freza la care Exportă aduce toate operațiile: numărul primei, cu diametrul din dialog.
-      numar: operatii[0]?.scula.numar ?? 1,
-      freze: [...new Map(operatii.map((o) => [`${o.scula.numar}/${o.scula.diametru}`, { numar: o.scula.numar, diametru: o.scula.diametru }])).values()],
-      descrieri: new Map(lume.map((e) => [e.idLume, descriere(e)])),
-    };
-  }, [dialogExport, doc, harti, lume, limbaActiva]);
-
-  /**
    * Exportă: întâi valorile din dialog intră în document, ca o singură comandă (se salvează, Ctrl+Z le scoate), apoi
    * exportul citește documentul. Scrierea trece pe lângă ușa oprită sub dialog: e chiar gestul dialogului. Într-o filă
-   * care doar citește, acțiunea e inactivă, iar dialogul n-a lăsat nimic de schimbat.
+   * care doar citește, acțiunea e inactivă, iar dialogul n-a lăsat nimic de schimbat. Operațiile noi le face dialogul
+   * (`ExportConectat`), din valorile lui.
    */
-  const exporta = (c: CerereExport): void => {
+  const exporta = (noi: ReadonlyMap<string, Operatie[]>, c: CerereExport): void => {
     // Fila care n-a putut citi ultima versiune ar exporta una veche: refuză, cu motivul din bara de jos, în dialog.
     if (mod === 'necitita') {
       setStareExport({ ok: false, motiv: t('depozit.necitita', { motiv: motivNecitit }) });
       return;
-    }
-    const noi = new Map<string, Operatie[]>();
-    const numar = exportFoaie?.numar ?? 1;
-    for (const { piesa } of exportFoaie?.piese ?? []) {
-      noi.set(piesa.id, piesa.operatii.map((o) => operatieDinDialog(o, c.valori.get(`${piesa.id}/${o.id}`), { numar, diametru: c.diametru })));
     }
     const scris = ruleaza(registru, 'document.aplica-operatii', context({ operatiiNoi: () => noi }));
     // Doar citirea nu oprește exportul (operațiile din document rămân cele de exportat); orice alt refuz, da.
@@ -643,10 +587,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     }
   };
 
-  /**
-   * Citește fișierul ales cu `px` px pe țol. Un fișier pe care îl spune Illustrator și a cărui mapare depinde de px se
-   * recitește o dată cu 72 (ADR 0035 §2), iar dialogul spune de ce.
-   */
+  /** Contextul ușii SVG pentru un fișier și un px; citirea lui o face dialogul (`ImportConectat`). */
   const contextImport = (f: FisierImport | null, px: 96 | 72, rezultat: (r: PrevizualizareImport) => void): ContextImport => ({
     fisier: () => f,
     pxPeTol: () => px,
@@ -655,76 +596,18 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     rezultat,
     jurnal: (e) => { jurnal.adauga('import', e); },
   });
-  const citesteImport = (f: FisierImport, px: 96 | 72, automat: boolean, vechi?: PrevizualizareImport): void => {
-    const cerere = ++cerereImport.current;
-    setDialogImport(vechi
-      ? { fisier: f, nume: f.nume, px, pxAutomat: automat, stare: vechi, seRecitesc: true }
-      : { fisier: f, nume: f.nume, px, pxAutomat: automat, stare: 'citire' });
-    const pornit = ruleaza(registruImport, 'import.svg', contextImport(f, px, (r) => {
-      if (cerere !== cerereImport.current) return;
-      if (!automat && px === 96 && r.ok && r.px && r.illustrator) {
-        citesteImport(f, 72, true);
-        return;
-      }
-      setDialogImport({ fisier: f, nume: f.nume, px, pxAutomat: automat, stare: r });
-    }));
-    // Acțiunea oprită (fila a trecut între timp pe „doar citire”): dialogul nu așteaptă un rezultat care nu vine.
-    if (!pornit.ok) inchideImport();
-  };
-  /** Un fișier al cozii: deocamdată doar SVG (după nume sau tip); celelalte formate vin mai târziu. */
-  const incepeFisier = (f: File): void => {
-    if (!/\.svg$/i.test(f.name) && f.type !== 'image/svg+xml') {
-      cerereImport.current++;
-      setDialogImport({ fisier: null, nume: f.name, px: 96, pxAutomat: false, stare: { ok: false, cod: 'tip' } });
-      return;
-    }
-    // Peste plafon, fișierul nu se citește deloc (ADR 0035 §1).
-    if (f.size > PLAFON_IMPORT.octeti) {
-      cerereImport.current++;
-      setDialogImport({ fisier: null, nume: f.name, px: 96, pxAutomat: false, stare: { ok: false, cod: 'octeti', detaliu: String(f.size) } });
-      return;
-    }
-    const cerere = ++cerereImport.current;
-    setDialogImport({ fisier: null, nume: f.name, px: 96, pxAutomat: false, stare: 'citire' });
-    f.arrayBuffer().then((b) => {
-      if (cerere === cerereImport.current) citesteImport({ nume: f.name, octeti: new Uint8Array(b) }, 96, false);
-    }, (e: unknown) => {
-      if (cerere === cerereImport.current) {
-        setDialogImport({ fisier: null, nume: f.name, px: 96, pxAutomat: false, stare: { ok: false, cod: 'parsare', detaliu: String(e) } });
-      }
-    });
-  };
   const pornesteImport = (fisiere: readonly File[], punct: { readonly x: number; readonly y: number } | null): void => {
-    const f = fisiere[0];
     // Fila care doar citește nu importă (ca butonul, oprit): o lăsare pe planșă nu mai deschide un dialog care rămâne
     // pentru totdeauna la „Se citește fișierul…” (recenzia A).
-    if (!f || doarCiteste(mod)) return;
-    setCoadaImport({ fisiere, k: 0, punct });
-    incepeFisier(f);
+    if (!fisiere[0] || doarCiteste(mod)) return;
+    setCoadaImport({ fisiere, punct });
   };
   const alesFisier = (lista: FileList | null): void => { pornesteImport(lista ? [...lista] : [], null); };
   const pornesteImportRef = useRef(pornesteImport);
   pornesteImportRef.current = pornesteImport;
-  // Locul piesei din coadă: punctul lăsat, apoi fiecare fișier următor cu 10 mm la dreapta și în jos (nu cad unul peste altul).
-  const locImport = coadaImport?.punct ? { x: coadaImport.punct.x + 10 * coadaImport.k, y: coadaImport.punct.y - 10 * coadaImport.k } : null;
-  const importOk = dialogImport && dialogImport.stare !== 'citire' && dialogImport.stare.ok ? dialogImport.stare : null;
-  const stareImport = importOk ? stare(registru, 'document.importa', context({ importNou: () => importOk.pregatit, locImport: () => locImport })) : null;
-  const inchideImport = (): void => {
-    cerereImport.current++;
-    setDialogImport(null);
-    setCoadaImport(null);
-  };
-  /** Fișierul următor din coadă (după „Importă” sau „Sari peste”), sau închiderea dialogului. */
-  const urmatorulImport = (): void => {
-    const c = coadaImport;
-    const urm = c ? c.fisiere[c.k + 1] : undefined;
-    if (!c || !urm) {
-      inchideImport();
-      return;
-    }
-    setCoadaImport({ ...c, k: c.k + 1 });
-    incepeFisier(urm);
-  };
+  /** `document.importa` cu importul pregătit de dialog, în locul lui: aceeași ușă a documentului ca restul acțiunilor. */
+  const contextImportNou = (p: ImportPregatit, loc: { readonly x: number; readonly y: number } | null): ContextDocument => (
+    context({ importNou: () => p, locImport: () => loc }));
 
   /**
    * Un buton al unei acțiuni, cu iconița ei (din CSS, după `data-icona`), numele (ascuns vizual unde iconița ajunge) și un
@@ -918,7 +801,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             forme={forme}
             foaie={stoc}
             selectie={selectieDesen}
-            onClic={(x, y, toleranta) => { ruleazaDocument('selectie.la-punct', context({ punct: () => ({ x, y, toleranta }) })); }}
+            onClic={(x, y, toleranta) => {
+              const punct = () => ({ x, y, toleranta });
+              // Un clic dat înaintea modulului alegerii se aplică la sosirea lui tot prin ușă (garda dialogului).
+              ruleazaDocument('selectie.la-punct', context({
+                punct,
+                dinNou: () => { ruleazaDocument('selectie.la-punct', context({ punct })); },
+                jurnal: (e) => { jurnal.adauga('promisiune', e); },
+              }));
+            }}
             onMutare={(dx, dy) => { ruleazaDocument('document.muta-selectia', context({ deplasare: () => ({ dx, dy }) })); }}
             zona={zona}
             potrivire={potrivire}
@@ -972,42 +863,30 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         </Suspense>
       )}
       <Suspense fallback={null}>
-      {dialogExport && exportFoaie && (
+      {dialogExport && (
         <DialogExport
           baza={bazaNoua}
-          operatii={exportFoaie.randuri}
-          diametru={exportFoaie.diametru}
-          freze={exportFoaie.freze}
-          descrieri={exportFoaie.descrieri}
+          doc={doc}
+          dupaIdLume={harti.dupaIdLume}
+          lume={lume}
+          descriere={descriere}
+          limba={limbaActiva}
           doarCitire={doarCiteste(mod)}
           stare={stareExport}
-          onExporta={(c) => { exporta(c); }}
+          onExporta={(noi, c) => { exporta(noi, c); }}
           onInchide={() => { cerereExport.current++; exportInCurs.current = false; setDialogExport(false); }}
           onReseteaza={() => { cerereExport.current++; exportInCurs.current = false; setStareExport(null); }}
         />
       )}
-      {dialogImport && (
+      {coadaImport && (
         <DialogImport
-          nume={dialogImport.nume}
-          stare={dialogImport.stare}
-          pxPeTol={dialogImport.px}
-          pxAutomat={dialogImport.pxAutomat}
-          seRecitesc={dialogImport.seRecitesc === true}
-          motiv={stareImport && !stareImport.ok ? stareImport.motiv : null}
-          onPx={(px) => {
-            if (dialogImport.fisier) citesteImport(dialogImport.fisier, px, dialogImport.pxAutomat, importOk ?? undefined);
-          }}
-          onImporta={() => {
-            // Un dublu-clic nu importă de două ori: clicul e un eveniment discret, deci React închide dialogul înaintea
-            // celui de-al doilea (otrava care scotea o gardă de aici a scăpat: garda era cod mort; e2e-ul o arată).
-            if (!importOk || dialogImport.seRecitesc) return;
-            const r = ruleaza(registru, 'document.importa', context({ importNou: () => importOk.pregatit, locImport: () => locImport }));
-            if (r.ok) urmatorulImport();
-          }}
-          onInchide={inchideImport}
-          {...(coadaImport && coadaImport.fisiere.length > 1
-            ? { coada: { k: coadaImport.k + 1, n: coadaImport.fisiere.length }, onSari: urmatorulImport }
-            : {})}
+          fisiere={coadaImport.fisiere}
+          punct={coadaImport.punct}
+          registruImport={registruImport}
+          contextImport={contextImport}
+          stareImporta={(p, loc) => stare(registru, 'document.importa', contextImportNou(p, loc))}
+          importa={(p, loc) => ruleaza(registru, 'document.importa', contextImportNou(p, loc))}
+          onInchide={() => { setCoadaImport(null); }}
         />
       )}
       </Suspense>

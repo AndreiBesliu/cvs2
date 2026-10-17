@@ -1,16 +1,11 @@
-import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
+import type { CheieSimpla } from '../i18n/t.ts';
 import {
-  instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, operatieInMargini, plafonDepasit, PLAFON, type Document, type FormaDoc,
-  type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa, type Stoc,
+  instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, plafonDepasit, type Document, type FormaDoc,
+  type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa,
 } from '../model/document.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
-import { uneste, type Cutie } from '../geom/cutie.ts';
-import { IDENTITATE, rotatie } from '../geom/matrice.ts';
-import { conturElement, cutieElement } from '../model/forme.ts';
-import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
-import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
 import type { Actiune } from './actiuni.ts';
 
 /**
@@ -29,6 +24,13 @@ export type ContextDocument = {
   readonly deplasare?: () => { readonly dx: number; readonly dy: number };
   /** Punctul clicului, în mm, cu toleranța lui (câțiva pixeli, în mm la zoomul curent). */
   readonly punct?: () => { readonly x: number; readonly y: number; readonly toleranta: number };
+  /**
+   * Aceeași acțiune, rulată din nou prin ușa aplicației (garda „dialog deschis”): clicul dat înaintea modulului alegerii
+   * se aplică pe aici la sosirea lui (`alegereLaCerere`). Fără ea, se aplică direct.
+   */
+  readonly dinNou?: () => void;
+  /** Jurnalul de erori al aplicației: modulul alegerii care nu vine. */
+  readonly jurnal?: (e: unknown) => void;
   /** Instanțele alese din lista de vectori. */
   readonly alese?: () => readonly string[];
   /** Operațiile noi ale pieselor, după id-ul piesei, din dialogul de export (se scriu toate într-un singur pas). */
@@ -46,28 +48,65 @@ export type ContextDocument = {
 };
 
 /** Foaia pe care se lucrează; Multi-Plate (mai multe foi pe ecran) vine în etapa 11. */
-const FOAIA = 0;
+export const FOAIA = 0;
 
 /** Copia făcută cu Ctrl+D stă la 20 mm la dreapta și 20 mm mai jos (ADR 0024, ca în prototip). */
 export const DECALAJ_COPIE = { dx: 20, dy: -20 } as const;
 
+/** Modulul alegerii cu clicul (`actiuniAlegere.ts`): distanța la contur și regula de umplere, aduse la cerere. */
+export type Alegere = typeof import('./actiuniAlegere.ts');
+
 /**
- * Instanța de sub un punct al documentului: cea al cărei element, cel mai de sus, are conturul la cel mult `toleranta` mm
- * sau punctul înăuntru (regula evenodd). Sau null.
+ * Clicul pe pânză, cu modulul alegerii adus la cerere (`aduce`). Cu modulul sosit, alege pe loc. Înainte de el, golește
+ * selecția pe loc și se aplică la sosire, doar dacă între timp n-a venit alt clic (se aplică doar ultimul), documentul și
+ * selecția sunt aceleași, iar ușa aplicației lasă (`dinNou`: garda „dialog deschis”). O tragere începută între timp mută
+ * forma din clipa în care apare selecția, cu deplasarea măsurată de la apăsare (pânza reverifică selecția la fiecare
+ * mișcare). Un modul care nu vine: clicul nu alege, intrarea în jurnal, iar clicul următor îl cere din nou (Edge ține
+ * eșecul unui `import()` până la reîncărcare, deci acolo clicul spune din nou că n-a putut; e2e `la-cerere.spec.ts`).
  */
-export function instantaLa(doc: Document, x: number, y: number, toleranta: number): string | null {
-  const lume = elementeFoaie(doc, FOAIA);
-  for (let i = lume.length - 1; i >= 0; i--) {
-    const e = lume[i];
-    if (!e) continue;
-    // Cutia, lărgită cu toleranța, o margine de jos a distanței: elementele departe de clic nu se mai măsoară.
-    const k = cutieElement(e);
-    if (x < k.minX - toleranta || x > k.maxX + toleranta || y < k.minY - toleranta || y > k.maxY + toleranta) continue;
-    const c = conturElement(e);
-    if (distantaLaContur({ x, y }, c) <= toleranta || inRegiune({ x, y }, [c])) return e.instanta;
-  }
-  return null;
+export function alegereLaCerere(aduce: () => Promise<Alegere>): { readonly incarca: () => Promise<Alegere>; readonly ruleaza: (ctx: ContextDocument) => void } {
+  let modul: Alegere | null = null;
+  let cerere: Promise<Alegere> | null = null;
+  let clicuri = 0;
+  const incarca = (): Promise<Alegere> => {
+    cerere ??= aduce().then((m) => {
+      modul = m;
+      return m;
+    }, (e: unknown) => {
+      cerere = null;
+      throw e;
+    });
+    return cerere;
+  };
+  const ruleaza = (ctx: ContextDocument): void => {
+    const p = ctx.punct?.();
+    if (!p) return;
+    const nr = ++clicuri;
+    const doc = ctx.istoric().doc;
+    if (modul) {
+      const id = modul.instantaLa(doc, p.x, p.y, p.toleranta);
+      ctx.selecteaza(id ? [id] : []);
+      return;
+    }
+    ctx.selecteaza([]);
+    const goala = ctx.selectie();
+    incarca().then((m) => {
+      if (nr !== clicuri || ctx.istoric().doc !== doc || ctx.selectie() !== goala) return;
+      if (ctx.dinNou) {
+        ctx.dinNou();
+        return;
+      }
+      const id = m.instantaLa(doc, p.x, p.y, p.toleranta);
+      ctx.selecteaza(id ? [id] : []);
+    }, (e: unknown) => { ctx.jurnal?.(e); });
+  };
+  return { incarca, ruleaza };
 }
+
+const ALEGERE = alegereLaCerere(() => import('./actiuniAlegere.ts'));
+
+/** Modulul alegerii, cerut de aplicație la montare: primul clic nu așteaptă rețeaua (doar unul dat în primele clipe). */
+export const incarcaAlegerea = ALEGERE.incarca;
 
 /** Primul id liber de forma `e<n>`, liber și ca piesă, și ca instanță: o formă nouă are piesa și instanța cu același id. */
 export function idNou(doc: Document, ocupate: ReadonlySet<string> = new Set()): string {
@@ -79,14 +118,14 @@ export function idNou(doc: Document, ocupate: ReadonlySet<string> = new Set()): 
   return `e${n}`;
 }
 
-function foaieCurenta(doc: Document) {
+export function foaieCurenta(doc: Document) {
   const f = doc.foi[FOAIA];
   if (!f) throw new Error('documentul n-are foaie');
   return f;
 }
 
 /** Un singur pas de anulare, oricâte lucruri atinge acțiunea. */
-function pas(comenzi: readonly Comanda[]): Comanda | null {
+export function pas(comenzi: readonly Comanda[]): Comanda | null {
   if (comenzi.length === 0) return null;
   return comenzi.length === 1 && comenzi[0] ? comenzi[0] : { tip: 'lot', comenzi };
 }
@@ -96,7 +135,7 @@ function pas(comenzi: readonly Comanda[]): Comanda | null {
  * diametrul (numele nu schimbă ce face mașina). O formă nouă o primește: un program are o singură sculă, iar o formă
  * adăugată după ce omul a ales Ø3,175 n-are de ce să vină cu Ø6.
  */
-function sculaFoii(doc: Document): Operatie['scula'] | undefined {
+export function sculaFoii(doc: Document): Operatie['scula'] | undefined {
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   let scula: Operatie['scula'] | undefined;
   for (const i of foaieCurenta(doc).instante) {
@@ -124,68 +163,14 @@ function adauga(ctx: ContextDocument, forma: FormaDoc, x: number, y: number): vo
   ctx.selecteaza([id]);
 }
 
-/**
- * Comanda unui import (ADR 0035 §8): piesa și instanța ei, într-un singur pas. Documentul de după trebuie să treacă de
- * plafoane și de ușa documentului întreagă: ce intră prin import se și redeschide. Ținută pe (document, import): `activa`
- * și `ruleaza` cer aceeași judecată. Piesa o face constructorul adus cu importul, cu freza și grosimea foii curente
- * (adâncimea căilor deschise, ADR 0037 §11).
- */
-type ComandaImport = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: 'motiv.plafon' | 'motiv.import-refuzat' };
-type Loc = { readonly x: number; readonly y: number } | null;
-let ultimulImport: { doc: Document; pregatit: ImportPregatit; la: Loc; rez: ComandaImport } | null = null;
-function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc = null): ComandaImport {
-  const acelasiLoc = (a: Loc, b: Loc): boolean => (a === null || b === null ? a === b : a.x === b.x && a.y === b.y);
-  if (ultimulImport && ultimulImport.doc === doc && ultimulImport.pregatit === pregatit && acelasiLoc(ultimulImport.la, la)) return ultimulImport.rez;
-  const id = idNou(doc);
-  const scula = sculaFoii(doc);
-  const pus = pregatit.piesa(id, { ...(scula ? { scula } : {}), grosime: foaieCurenta(doc).stoc.grosime });
-  const { piesa } = pus;
-  // Lăsat pe planșă: centrul cutiei desenului în punctul lăsat; altfel, locul din pagina fișierului.
-  const x = la ? la.x - pus.latime / 2 : pus.x;
-  const y = la ? la.y - pus.inaltime / 2 : pus.y;
-  const varfuri = pregatit.cai.reduce((s, c) => s + c.varfuri.length, 0);
-  const elemente = pregatit.cai.length;
-  let rez: ComandaImport;
-  if (!incape(doc, { noduri: elemente + 1, instante: 1, elementeLume: elemente, operatii: piesa.operatii.length, taieturi: elemente, varfuri, varfuriLume: varfuri })) {
-    rez = { ok: false, motiv: 'motiv.plafon' };
-  } else {
-    const foaie = foaieCurenta(doc);
-    const comanda: Comanda = {
-      tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x, y, rotire: 0 }, pozitie: foaie.instante.length,
-      piesa: { piesa, pozitie: doc.piese.length },
-    };
-    rez = pregatit.treceDeUsa(executa(istoricDin(doc), comanda).doc) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.import-refuzat' };
-  }
-  ultimulImport = { doc, pregatit, la, rez };
-  return rez;
-}
-
 /** Acțiunile care schimbă documentul sunt oprite într-o filă care doar citește. */
-const scrie = (ctx: ContextDocument): true | 'motiv.doar-citire' => (ctx.doarCitire?.() ? 'motiv.doar-citire' : true);
-
-/**
- * Dialogul schimbă doar valorile operațiilor existente: aceleași operații, în aceeași ordine, pe aceleași noduri. Așa
- * referințele, unicitatea și plafoanele rămân cum le-a lăsat ușa; valorile noi trebuie doar să fie în marginile schemei.
- */
-function operatiiAcceptate(doc: Document, noi: ReadonlyMap<string, readonly Operatie[]>): boolean {
-  const piese = new Map(doc.piese.map((p) => [p.id, p]));
-  for (const [id, operatii] of noi) {
-    const vechi = piese.get(id)?.operatii;
-    if (!vechi || vechi.length !== operatii.length) return false;
-    for (const [k, o] of operatii.entries()) {
-      const v = vechi[k];
-      if (!v || o.id !== v.id || o.tip !== v.tip || o.noduri.length !== v.noduri.length || o.noduri.some((n, j) => n !== v.noduri[j])) return false;
-      if (!operatieInMargini(o)) return false;
-    }
-  }
-  return true;
-}
+export const scrie = (ctx: ContextDocument): true | 'motiv.doar-citire' => (ctx.doarCitire?.() ? 'motiv.doar-citire' : true);
 
 /**
  * Un document nou trebuie să treacă și el de ușă (ADR 0024, precizarea 5): o acțiune care ar trece de plafoane e inactivă,
  * altfel aplicația ar salva un proiect pe care, la redeschidere, nu l-ar mai putea încărca.
  */
-function incape(doc: Document, plus: Numaratoare): boolean {
+export function incape(doc: Document, plus: Numaratoare): boolean {
   const n = numara(doc);
   return plafonDepasit({
     noduri: n.noduri + plus.noduri, instante: n.instante + plus.instante, elementeLume: n.elementeLume + plus.elementeLume,
@@ -224,7 +209,7 @@ const poateAdauga = (ctx: ContextDocument): true | 'motiv.doar-citire' | 'motiv.
 };
 
 /** O instanță aleasă, decalată cu (dx, dy), ar sta prea departe de origine: ușa n-ar mai redeschide proiectul. */
-function alesePreaDeparte(ctx: ContextDocument, dx: number, dy: number): boolean {
+export function alesePreaDeparte(ctx: ContextDocument, dx: number, dy: number): boolean {
   const alese = new Set(ctx.selectie());
   return foaieCurenta(ctx.istoric().doc).instante.some((i) => alese.has(i.id) && instantaPreaDeparte(i.x + dx, i.y + dy));
 }
@@ -249,18 +234,51 @@ function curataSelectia(ctx: ContextDocument): void {
   if (sel.some((id) => !existente.has(id))) ctx.selecteaza(sel.filter((id) => existente.has(id)));
 }
 
+/**
+ * Calculul acțiunilor pornite doar de ferestre și de panou (importul, operațiile din dialogul de export, poziția, rotirea,
+ * foaia): vine la cerere, cu modulul `actiuniDocumentCalcul.ts`, pe care îl importă ferestrele care dau aceste acțiuni
+ * (`ExportConectat`, `ImportConectat`, `PanouProprietati`) și care se înregistrează aici la evaluare, ca mesajele unui
+ * modul la cerere (`adaugaMesaje`). Registrul păstrează id-ul, eticheta și gărzile ieftine, deci bara, paleta și
+ * scurtăturile văd aceleași motive fără calcul: fără datele ferestrei (`importNou`, `operatiiNoi`, `pozitieNoua`,
+ * `rotireNoua`, `stocNou`), garda refuză înaintea calculului, exact cu motivul de până acum.
+ */
+export type CalculDocument = Readonly<Record<string, Pick<Actiune<ContextDocument>, 'activa' | 'ruleaza'>>>;
+let calcul: CalculDocument | null = null;
+
+/** Înregistrarea calculului (o dată, la evaluarea modulului lui). */
+export function inregistreazaCalcul(c: CalculDocument): void {
+  calcul = c;
+}
+
+/**
+ * O acțiune cu calculul la cerere. Cu garda trecută, calculul TREBUIE să fie înregistrat: o fereastră care dă datele
+ * acțiunii fără să-i importe calculul e o greșeală de cod, deci aruncă (un refuz tăcut ar fi trecut drept „nimic ales”).
+ */
+function laCerere(id: string, eticheta: CheieSimpla, garda: (ctx: ContextDocument) => true | CheieSimpla): Actiune<ContextDocument> {
+  const calculul = (): Pick<Actiune<ContextDocument>, 'activa' | 'ruleaza'> => {
+    const c = calcul?.[id];
+    if (!c) throw new Error(`acțiunea ${id}: calculul ei nu e încărcat (vine cu fereastra care o folosește, actiuniDocumentCalcul.ts)`);
+    return c;
+  };
+  return {
+    id, eticheta, capabilitate: 'desen',
+    activa: (ctx) => {
+      const g = garda(ctx);
+      return g === true ? calculul().activa(ctx) : g;
+    },
+    ruleaza: (ctx) => {
+      if (garda(ctx) === true) calculul().ruleaza(ctx);
+    },
+  };
+}
+
 export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   {
     id: 'selectie.la-punct',
     eticheta: 'actiune.selecteaza',
     capabilitate: 'desen',
     activa: (ctx) => (ctx.punct ? true : 'motiv.niciun-punct'),
-    ruleaza: (ctx) => {
-      const p = ctx.punct?.();
-      if (!p) return;
-      const id = instantaLa(ctx.istoric().doc, p.x, p.y, p.toleranta);
-      ctx.selecteaza(id ? [id] : []);
-    },
+    ruleaza: ALEGERE.ruleaza,
   },
   {
     id: 'selectie.din-lista',
@@ -290,26 +308,7 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
       adauga(ctx, { tip: 'cerc', raza: 15 }, 70, 50);
     },
   },
-  {
-    id: 'document.importa',
-    eticheta: 'actiune.importa',
-    capabilitate: 'desen',
-    activa: (ctx) => {
-      if (!ctx.importNou) return 'motiv.nimic-ales';
-      const s = scrie(ctx);
-      if (s !== true) return s;
-      const r = comandaImport(ctx.istoric().doc, ctx.importNou(), ctx.locImport?.() ?? null);
-      return r.ok ? true : r.motiv;
-    },
-    ruleaza: (ctx) => {
-      if (!ctx.importNou) return;
-      const h = ctx.istoric();
-      const r = comandaImport(h.doc, ctx.importNou(), ctx.locImport?.() ?? null);
-      if (!r.ok) return;
-      ctx.scrie(executa(h, r.comanda));
-      ctx.selecteaza([r.id]);
-    },
-  },
+  laCerere('document.importa', 'actiune.importa', (ctx) => (ctx.importNou ? true : 'motiv.nimic-ales')),
   {
     id: 'document.muta-selectia',
     eticheta: 'actiune.muta-selectia',
@@ -413,111 +412,17 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
       ctx.selecteaza([]);
     },
   },
-  {
-    // Dialogul de export scrie operațiile pieselor (ADR 0025) la Exportă: o singură comandă, deci un singur Ctrl+Z.
-    // Doar piesele ale căror operații s-au schimbat; numărul operațiilor nu se schimbă, deci plafoanele rămân.
-    id: 'document.aplica-operatii',
-    eticheta: 'actiune.aplica-operatii',
-    capabilitate: 'desen',
-    activa: (ctx) => {
-      if (!ctx.operatiiNoi) return 'motiv.nimic-ales';
-      const s = scrie(ctx);
-      if (s !== true) return s;
-      return operatiiAcceptate(ctx.istoric().doc, ctx.operatiiNoi()) ? true : 'motiv.operatie-invalida';
-    },
-    ruleaza: (ctx) => {
-      const noi = ctx.operatiiNoi?.();
-      if (!noi || !operatiiAcceptate(ctx.istoric().doc, noi)) return;
-      const h = ctx.istoric();
-      const comenzi: Comanda[] = [];
-      for (const vechi of h.doc.piese) {
-        const operatii = noi.get(vechi.id);
-        // Canonic, nu după ordinea cheilor: un document redeschis are cheile sortate (`jsonCanonic` la salvare).
-        if (!operatii || jsonCanonic(operatii) === jsonCanonic(vechi.operatii)) continue;
-        comenzi.push({ tip: 'inlocuieste-piesa', vechi, nou: { ...vechi, operatii: operatii.map((o) => structuredClone(o)) } });
-      }
-      const c = pas(comenzi);
-      if (c) ctx.scrie(executa(h, c));
-    },
-  },
-  {
-    // Panoul de proprietăți (ADR 0038 §4): colțul stânga-jos al cutiei selecției, la una sau la mai multe instanțe.
-    id: 'document.pozitioneaza',
-    eticheta: 'actiune.pozitioneaza',
-    capabilitate: 'desen',
-    activa: (ctx) => {
-      if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
-      if (!ctx.pozitieNoua) return 'motiv.nicio-deplasare';
-      const s = scrie(ctx);
-      if (s !== true) return s;
-      const d = deplasarePozitie(ctx);
-      if (typeof d === 'string') return d;
-      return alesePreaDeparte(ctx, d.dx, d.dy) ? 'motiv.prea-departe' : true;
-    },
-    ruleaza: (ctx) => {
-      const d = deplasarePozitie(ctx);
-      if (typeof d === 'string' || (d.dx === 0 && d.dy === 0) || alesePreaDeparte(ctx, d.dx, d.dy)) return;
-      const h = ctx.istoric();
-      const foaie = foaieCurenta(h.doc);
-      const alese = new Set(ctx.selectie());
-      const c = pas(foaie.instante
-        .filter((i) => alese.has(i.id))
-        .map((vechi): Comanda => ({ tip: 'inlocuieste-instanta', foaie: foaie.id, vechi, nou: { ...vechi, x: vechi.x + d.dx, y: vechi.y + d.dy } })));
-      if (c) ctx.scrie(executa(h, c));
-    },
-  },
-  {
-    // Rotirea unei singure instanțe, în jurul centrului piesei ei (ADR 0038 §4).
-    id: 'document.roteste',
-    eticheta: 'actiune.roteste',
-    capabilitate: 'desen',
-    activa: (ctx) => {
-      if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
-      if (ctx.selectie().length > 1) return 'motiv.o-singura-selectie';
-      if (!ctx.rotireNoua) return 'motiv.nicio-deplasare';
-      const s = scrie(ctx);
-      if (s !== true) return s;
-      const r = ctx.rotireNoua();
-      if (!Number.isFinite(r)) return 'motiv.valoare-invalida';
-      const doc = ctx.istoric().doc;
-      const i = foaieCurenta(doc).instante.find((x) => x.id === ctx.selectie()[0]);
-      if (!i) return 'motiv.nicio-selectie';
-      const nou = instantaRotita(doc, i, rotireNormalizata(r));
-      return instantaPreaDeparte(nou.x, nou.y) ? 'motiv.prea-departe' : true;
-    },
-    ruleaza: (ctx) => {
-      const r = ctx.rotireNoua?.();
-      const h = ctx.istoric();
-      const foaie = foaieCurenta(h.doc);
-      const vechi = ctx.selectie().length === 1 ? foaie.instante.find((x) => x.id === ctx.selectie()[0]) : undefined;
-      if (r === undefined || !Number.isFinite(r) || !vechi) return;
-      const rotire = rotireNormalizata(r);
-      if (rotire === vechi.rotire) return;
-      const nou = instantaRotita(h.doc, vechi, rotire);
-      if (instantaPreaDeparte(nou.x, nou.y)) return;
-      ctx.scrie(executa(h, { tip: 'inlocuieste-instanta', foaie: foaie.id, vechi, nou }));
-    },
-  },
-  {
-    // Materialul foii, din panou, fără selecție (ADR 0038 §4). Operațiile nu se ating: exportul le judecă din nou.
-    id: 'foaie.stoc',
-    eticheta: 'actiune.foaie-stoc',
-    capabilitate: 'desen',
-    activa: (ctx) => {
-      if (!ctx.stocNou) return 'motiv.nimic-ales';
-      const s = scrie(ctx);
-      if (s !== true) return s;
-      const k = stocCerut(ctx);
-      return typeof k === 'string' ? k : true;
-    },
-    ruleaza: (ctx) => {
-      const nou = stocCerut(ctx);
-      const h = ctx.istoric();
-      const foaie = foaieCurenta(h.doc);
-      if (typeof nou === 'string' || jsonCanonic(nou) === jsonCanonic(foaie.stoc)) return;
-      ctx.scrie(executa(h, { tip: 'inlocuieste-stoc', foaie: foaie.id, vechi: foaie.stoc, nou }));
-    },
-  },
+  // Dialogul de export scrie operațiile pieselor (ADR 0025) la Exportă: o singură comandă, deci un singur Ctrl+Z.
+  // Doar piesele ale căror operații s-au schimbat; numărul operațiilor nu se schimbă, deci plafoanele rămân.
+  laCerere('document.aplica-operatii', 'actiune.aplica-operatii', (ctx) => (ctx.operatiiNoi ? true : 'motiv.nimic-ales')),
+  // Panoul de proprietăți (ADR 0038 §4): colțul stânga-jos al cutiei selecției, la una sau la mai multe instanțe.
+  laCerere('document.pozitioneaza', 'actiune.pozitioneaza', (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie'
+    : ctx.pozitieNoua ? true : 'motiv.nicio-deplasare')),
+  // Rotirea unei singure instanțe, în jurul centrului piesei ei (ADR 0038 §4).
+  laCerere('document.roteste', 'actiune.roteste', (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie'
+    : ctx.selectie().length > 1 ? 'motiv.o-singura-selectie' : ctx.rotireNoua ? true : 'motiv.nicio-deplasare')),
+  // Materialul foii, din panou, fără selecție (ADR 0038 §4). Operațiile nu se ating: exportul le judecă din nou.
+  laCerere('foaie.stoc', 'actiune.foaie-stoc', (ctx) => (ctx.stocNou ? true : 'motiv.nimic-ales')),
   {
     id: 'istoric.anuleaza',
     eticheta: 'actiune.anuleaza',
@@ -534,73 +439,6 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   },
 ];
 
-/** Cutia elementelor instanțelor alese, în lume (mm ai foii), sau null fără niciun element. */
-function cutieAlese(doc: Document, alese: ReadonlySet<string>): Cutie | null {
-  let k: Cutie | null = null;
-  for (const e of elementeFoaie(doc, FOAIA)) {
-    if (!alese.has(e.instanta)) continue;
-    const c = cutieElement(e);
-    k = k ? uneste(k, c) : c;
-  }
-  return k;
-}
-
-/** Sub atât (mm), o deplasare nu e o mutare: de șase ordine sub rezoluția postului, doar zgomotul aritmeticii (ADR 0038 §5). */
-const PRAG_MUTARE = 1e-9;
-
-/**
- * Deplasarea care duce colțul stânga-jos al cutiei selecției în poziția cerută (doar pe axele scrise), sau motivul.
- * Colțul e derivat din geometrie (`x + t`), deci poate ateriza la câțiva ulp de valoarea scrisă (3,577 → 3,576999999999998;
- * la o formă rotită, valoarea exactă adesea nici nu există); panoul îl arată rotunjit (`valoareDerivata`), iar o deplasare
- * sub `PRAG_MUTARE` e zero: reconfirmarea aceleiași valori nu e o comandă (recenzia 2.8e, F2).
- */
-function deplasarePozitie(ctx: ContextDocument): { readonly dx: number; readonly dy: number } | 'motiv.valoare-invalida' | 'motiv.nicio-selectie' {
-  const p = ctx.pozitieNoua?.() ?? {};
-  if ((p.x !== undefined && !Number.isFinite(p.x)) || (p.y !== undefined && !Number.isFinite(p.y))) return 'motiv.valoare-invalida';
-  const k = cutieAlese(ctx.istoric().doc, new Set(ctx.selectie()));
-  if (!k) return 'motiv.nicio-selectie';
-  const prag = (d: number): number => (Math.abs(d) < PRAG_MUTARE ? 0 : d);
-  return { dx: prag(p.x === undefined ? 0 : p.x - k.minX), dy: prag(p.y === undefined ? 0 : p.y - k.minY) };
-}
-
-/** Unghiul în [0, 360): un unghi deja acolo rămâne exact cum e (ca la `rotatie`); 360 − ε rotunjit la 360 devine 0. */
-export function rotireNormalizata(r: number): number {
-  if (r >= 0 && r < 360) return r === 0 ? 0 : r;
-  const n = ((r % 360) + 360) % 360;
-  return n >= 360 || n === 0 ? 0 : n;
-}
-
-/**
- * Instanța rotită la `rotire`, cu centrul cutiei piesei ținut pe loc (ADR 0038 §4): cu matricea T(x, y)·R(r), centrul c
- * al piesei ajunge în R(r)·c + (x, y), deci originea nouă e (x, y) + R(r₀)·c − R(r₁)·c.
- */
-function instantaRotita(doc: Document, i: Instanta, rotire: number): Instanta {
-  const p = doc.piese.find((x) => x.id === i.piesa);
-  let k: Cutie | null = null;
-  for (const e of p ? elementeInstanta(p.radacina, i, IDENTITATE) : []) {
-    const c = cutieElement(e);
-    k = k ? uneste(k, c) : c;
-  }
-  if (!k) return { ...i, rotire };
-  const cx = (k.minX + k.maxX) / 2, cy = (k.minY + k.maxY) / 2;
-  const r0 = rotatie(i.rotire), r1 = rotatie(rotire);
-  return {
-    ...i,
-    x: i.x + (r0.a * cx + r0.c * cy) - (r1.a * cx + r1.c * cy),
-    y: i.y + (r0.b * cx + r0.d * cy) - (r1.b * cx + r1.d * cy),
-    rotire,
-  };
-}
-
-/** Materialul nou al foii, cu mărimile nescrise păstrate, sau motivul: în plafoanele schemei (ADR 0024), strict pozitive. */
-function stocCerut(ctx: ContextDocument): Stoc | 'motiv.foaie-invalida' {
-  const vechi = foaieCurenta(ctx.istoric().doc).stoc;
-  const n = ctx.stocNou?.() ?? {};
-  const bun = (x: number | undefined, max: number): boolean => x === undefined || (Number.isFinite(x) && x > 0 && x <= max);
-  if (!bun(n.latime, PLAFON.latura) || !bun(n.inaltime, PLAFON.latura) || !bun(n.grosime, PLAFON.grosime)) return 'motiv.foaie-invalida';
-  return { ...vechi, latime: n.latime ?? vechi.latime, inaltime: n.inaltime ?? vechi.inaltime, grosime: n.grosime ?? vechi.grosime };
-}
-
-function istoricDin(doc: Document): Istoric {
+export function istoricDin(doc: Document): Istoric {
   return { doc, trecut: [], viitor: [] };
 }

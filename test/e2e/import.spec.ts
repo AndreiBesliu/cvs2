@@ -109,7 +109,9 @@ test('px din Illustrator: 72 preselectat și spus; 96 la alegere; un fișier str
 });
 
 test('dialogul care nu se poate încărca (o publicare nouă a schimbat fișierele): mesajul și reîncărcarea, nu ecranul de eroare', async ({ page }) => {
-  await page.route(/DialogImport-[^/]*\.js$/, (r) => r.abort());
+  // Dialogul vine legat de coadă, în bucata `ImportConectat` (cu `DialogImport` în ea): la orice redenumire a bucății,
+  // ruta se schimbă odată cu ea, altfel nu mai oprește nimic.
+  await page.route(/ImportConectat-[^/]*\.js$/, (r) => r.abort());
   await page.goto('/');
   await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/placi/placa-02/logo-80mm.svg');
   await expect(page.getByRole('alert')).toHaveText('Fereastra nu s-a putut încărca (aplicația s-a actualizat între timp sau rețeaua lipsește). Proiectul e salvat: reîncarcă pagina.');

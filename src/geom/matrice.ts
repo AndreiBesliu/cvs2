@@ -1,4 +1,4 @@
-import { arc, type Contur, type Punct, type Segment } from './contur.ts';
+import { arc, type Contur, type Punct, type Segment } from './conturBaza.ts';
 
 /**
  * Matricea afină, în convenția SVG / canvas: x′ = a·x + c·y + e, y′ = b·x + d·y + f.

@@ -1,4 +1,4 @@
-import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from './contur.ts';
+import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from './conturBaza.ts';
 
 /**
  * Cutia exactă a geometriei: dreptunghiul cel mai mic, paralel cu axele, care o cuprinde. Fără eșantionare:

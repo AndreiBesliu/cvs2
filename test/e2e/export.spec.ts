@@ -197,6 +197,22 @@ test('un rezultat de export întârziat, venit după schimbarea unui parametru, 
   await expect(page.locator('[data-camp="confirma-iesire"]')).not.toBeChecked();
 });
 
+test('dialogul exportului care nu se poate încărca (o publicare nouă a schimbat fișierele): mesajul și Închide, nu ecranul de eroare', async ({ page }) => {
+  // Dialogul vine legat de document, în bucata `ExportConectat` (cu `DialogExport` în ea).
+  await page.route(/ExportConectat-[^/]*\.js$/, (r) => r.abort());
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.getByRole('alert')).toHaveText('Fereastra nu s-a putut încărca (aplicația s-a actualizat între timp sau rețeaua lipsește). Proiectul e salvat: reîncarcă pagina.');
+  await expect(page.getByRole('button', { name: 'Reîncarcă' })).toBeVisible();
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  // Aplicația nu mai e inertă, iar documentul e cel de dinainte.
+  await expect(page.locator('[data-actiune="document.adauga-cerc"]')).toBeEnabled();
+  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await expect(page.getByTestId('selectie')).toContainText('Selectat: cerc R15');
+});
+
 test('mai multe forme în afara foii: un singur rând în bara de jos, cu lista în titlu', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();

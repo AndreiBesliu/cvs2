@@ -13,6 +13,8 @@ import { istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import { creeazaRegistru, ruleaza } from '../../src/ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
+// Calculul importului, al operațiilor și al panoului vine la cerere, cu ferestrele lor: aici, ca în ele, la evaluare.
+import '../../src/ui/actiuniDocumentCalcul.ts';
 import { citesteNumar, textNumar, valoareDerivata } from '../../src/ui/numar.ts';
 
 const R = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);

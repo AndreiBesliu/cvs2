@@ -8,6 +8,8 @@ import { istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import { creeazaRegistru, ruleaza, stare } from '../../src/ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
+// Calculul importului, al operațiilor și al panoului vine la cerere, cu ferestrele lor: aici, ca în ele, la evaluare.
+import '../../src/ui/actiuniDocumentCalcul.ts';
 import { ACTIUNI_IMPORT, type PrevizualizareImport } from '../../src/ui/actiuniImport.ts';
 import { octeti, pagina } from './ajutor-svg.ts';
 

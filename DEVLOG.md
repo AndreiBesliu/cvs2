@@ -1997,3 +1997,18 @@ Nivelul rapid: 6 487 de teste, 0 picate; e2e 112 / 112; pornirea 99,1 / 100 kB.
 Felie fără mașină (`PLAN.md` §4.6, punctul 7): pornirea e la 99,1 / 100 kB, deci orice funcție nouă de interfață s-ar
 lovi de plafon. Ținta: sub ~90 kB, fără schimbare de comportament. Workflow: măsurătoarea, 3 propuneri independente,
 judecătorul, implementarea, 3 verificatori adversariali (estimat 2–3 M).
+**Workflow (terminat ~18:00, ~2,59 M):** măsurătoarea, 3 propuneri independente, judecătorul, implementarea, 4
+verificatori. Pornirea 99,1 → 92,1 kB: o singură bucată la pornire (`codeSplitting.groups`), ferestrele exportului,
+importului și panoului cu calculul lor (`actiuniDocumentCalcul.ts`, înregistrat la evaluare), schemele documentului în
+`schemaDocument.ts`, dicționarul limbii active și alegerea cu clicul la cerere, orientarea conturului separată
+(`conturBaza.ts`). ADR 0042.
+**Integrarea (cele 9 constatări ale verificatorilor):** remediate 7, fiecare cu proba ei, care pică pe sabotajul
+remedierii (4 sabotaje în e2e, plus ușa: un import al offsetului în `incarcare.ts` duce poarta la 1): limba aleasă nu se
+mai abandonează după 4 s (prima venită pornește aplicația, cea aleasă o înlocuiește când sosește; termenul total 30 s);
+ultimul clic de limbă câștigă; pagina „fără texte” cu `lang` pe fiecare jumătate și focusul pe Reîncarcă; otrava C01
+repusă pe `conturBaza.ts` (devenise VOID); ușa unui proiect salvat plafonată la 8 kB, pornirea cu ușa la 100. Rămân, scrise
+în ADR 0042 §6: o tragere terminată și o tastă dată înaintea sosirii alegerii (~1 s pe Fast 3G). Capcana zilei: e2e-ul
+servește `dist/`, iar `npm run rapid` nu-l reface (poarta construiește în altă parte): prima rulare verde era pe un build
+de dinaintea remedierii, refăcută.
+**Completed:** 17.10 19:00. Costul: workflow-ul ~2,59 M plus integrarea; săptămânalul ~24 → 29 %. Nivelul rapid: 6 504 de
+teste, 0 picate (8 sărite); e2e 125 / 125; emulatorul 23 + 3; pornirea **92,3 / 100 kB**, cu ușa 96,9.

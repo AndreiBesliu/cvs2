@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+// Dicționarele de bază vin la cerere (`t.ts`): testele care cer texte le încarcă întâi pe amândouă.
+import './limbi.ts';
 import { esteCapabilitate } from '../../shared/capabilitati.ts';
 import { traduce } from '../../src/i18n/t.ts';
 import { documentNou, operatieImplicita, type Operatie } from '../../src/model/document.ts';
@@ -9,6 +11,8 @@ import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
 import { operatieDinDialog } from '../../src/app/valoriOperatii.ts';
 import { creeazaRegistru, ruleaza, stare } from '../../src/ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
+// Calculul importului, al operațiilor și al panoului vine la cerere, cu ferestrele lor: aici, ca în ele, la evaluare.
+import '../../src/ui/actiuniDocumentCalcul.ts';
 import { ACTIUNI_EXPORT } from '../../src/ui/actiuniExport.ts';
 import { ACTIUNI_IMPORT } from '../../src/ui/actiuniImport.ts';
 import { ACTIUNI_VEDERE } from '../../src/ui/actiuniVedere.ts';

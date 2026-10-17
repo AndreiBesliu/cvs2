@@ -37,5 +37,15 @@ export default defineConfig({
   build: {
     target: 'es2023',
     sourcemap: false,
+    // Fără polyfill-ul `modulepreload`: toate browserele țintă (es2023) îl au nativ, iar polyfill-ul stătea în pornire.
+    modulePreload: { polyfill: false },
+    rolldownOptions: {
+      output: {
+        // Tot ce importă static intrarea stă într-o singură bucată, `index.html` cere un singur script (plasa din
+        // `scripts/build-determinist.ts`). Fără grup, un modul împărțit de pornire și de o bucată la cerere ieșea într-o
+        // bucată comună, preîncărcată: o mutare la cerere putea astfel adăuga o cerere la pornire, nu scoate octeți.
+        codeSplitting: { groups: [{ name: 'pornire', tags: ['$initial'] }] },
+      },
+    },
   },
 });

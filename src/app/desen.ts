@@ -1,5 +1,5 @@
 import type { ComandaCale, FormaDesen } from '../canvas/protocol.ts';
-import { cerculArcului, numarSegmente, segment, type Contur } from '../geom/contur.ts';
+import { cerculArcului, numarSegmente, segment, type Contur } from '../geom/conturBaza.ts';
 import type { Document } from '../model/document.ts';
 import { conturElement } from '../model/forme.ts';
 import { elementeFoaie, taieturiFoaie } from '../model/lume.ts';

@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+// Dicționarele de bază vin la cerere (`t.ts`): testele care cer texte le încarcă întâi pe amândouă.
+import './limbi.ts';
 import { en } from '../../src/i18n/mesaje.en.ts';
 import { ro, type DictionarRo } from '../../src/i18n/mesaje.ro.ts';
 import { enImport } from '../../src/i18n/import.en.ts';

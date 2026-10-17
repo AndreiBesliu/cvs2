@@ -1,4 +1,4 @@
-import { cerculArcului, numarSegmente, segment, type Contur, type Punct, type Segment } from './contur.ts';
+import { cerculArcului, numarSegmente, segment, type Contur, type Punct, type Segment } from './conturBaza.ts';
 
 /**
  * Distanța de la un punct la un contur și regula de umplere `evenodd` (T3, ADR 0003): o singură funcție „punct în
