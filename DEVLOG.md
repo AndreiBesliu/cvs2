@@ -2012,3 +2012,11 @@ servește `dist/`, iar `npm run rapid` nu-l reface (poarta construiește în alt
 de dinaintea remedierii, refăcută.
 **Completed:** 17.10 19:00. Costul: workflow-ul ~2,59 M plus integrarea; săptămânalul ~24 → 29 %. Nivelul rapid: 6 504 de
 teste, 0 picate (8 sărite); e2e 125 / 125; emulatorul 23 + 3; pornirea **92,3 / 100 kB**, cu ușa 96,9.
+
+## 2026-10-17 — 3.2: raportorul de erori din client (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (după raportul despre cheia reCAPTCHA; ultracode pornit). **Started:** 17.10 ~20:45, săptămânalul
+~29 %. Pe test, API-ul reCAPTCHA Enterprise e pornit și cheia „App Check cncvs2 (test)” creată (17.10); înregistrarea ei
+în App Check a refuzat-o clasificatorul de două ori, deci rămâne pasul owner-ului: până atunci, pe test raportorul
+primește 401 (măsurarea „200 cu token” vine după înregistrare și o republicare). Workflow: implementarea, apoi 4
+verificatori adversariali (corectitudinea, securitatea și CSP-ul, pachetul, probele); estimat 1,5–2 M.
