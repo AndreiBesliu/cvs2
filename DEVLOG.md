@@ -2020,3 +2020,12 @@ teste, 0 picate (8 sărite); e2e 125 / 125; emulatorul 23 + 3; pornirea **92,3 /
 în App Check a refuzat-o clasificatorul de două ori, deci rămâne pasul owner-ului: până atunci, pe test raportorul
 primește 401 (măsurarea „200 cu token” vine după înregistrare și o republicare). Workflow: implementarea, apoi 4
 verificatori adversariali (corectitudinea, securitatea și CSP-ul, pachetul, probele); estimat 1,5–2 M.
+**Pauză:** 17.10 ~23:45, la cererea owner-ului („o sa facem pauza cand se poate safe”), pe ramura `wip/3.2-raportor`.
+Starea: implementarea (workflow 1, ~1,05 M, cu 4 verificatori: 25 de constatări) și cele 13 remedieri (workflow 2,
+agentul de remediere) sunt în arbore, cu porțile verzi raportate de agent (rapid 6 571 / 0 picate, e2e 134, emulatorul
+23 + 6), dar nereluate de integrator. Reverificarea „remedieri” a găsit 6 constatări (una mare: marcajul „doar local” pe
+dicționar e prea larg, deci o publicare cu bucățile `mesaje.*` lipsă ar trece nevăzută; „fara-memorie” prinde orice
+excepție; cheia locală nu grupează id-urile; inactivitatea probată doar 3,5 s; carantina ocolibilă pe adresa contului;
+curățarea scapă `HTTPS://`, `wss://`, paranteze). Reverificarea „otrăvuri” a fost oprită la pauză. **De reluat:**
+constatările reverificării (journal: `wf_42e7cb55-de1`), otrăvurile din nou, porțile, ADR 0043, publicarea pe test și
+măsurarea „200 cu token” (App Check e înregistrat pe test de owner, 17.10).

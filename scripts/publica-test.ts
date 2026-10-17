@@ -10,7 +10,7 @@
 import { execFileSync } from 'node:child_process';
 import { pregatestePublicare } from './pregateste-publicare.ts';
 
-const dir = pregatestePublicare();
+const dir = await pregatestePublicare();
 execFileSync('firebase', ['deploy', '--only', 'hosting', '--project', 'test'], {
   cwd: dir,
   stdio: 'inherit',

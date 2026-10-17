@@ -6,6 +6,12 @@
  * cele două proiecte (același artefact servește testul și live-ul). Contul: `identitytoolkit`, `securetoken`, scriptul
  * `apis.google.com` și cadrul `authDomain` al popup-ului; Firestore; App Check cu reCAPTCHA Enterprise; funcțiile din
  * `europe-central2`. Nimic cu `*`.
+ *
+ * reCAPTCHA Enterprise (ADR 0043 §8): exact directivele din FAQ-ul Google („Can I customize the reCAPTCHA widget or
+ * badge?”, docs.cloud.google.com/recaptcha/docs/faq): `script-src` și `frame-src` pe `www.google.com/recaptcha/`,
+ * `www.gstatic.com/recaptcha/`, `recaptcha.google.com/recaptcha/`, plus `connect-src https://www.google.com/recaptcha/`.
+ * App Check schimbă tokenul la `content-firebaseappcheck.googleapis.com` și aduce `www.google.com/recaptcha/enterprise.js`
+ * (constantele `BASE_ENDPOINT` și `RECAPTCHA_ENTERPRISE_URL` din `@firebase/app-check`).
  */
 const PROIECTE = ['cncvectorstudio-test', 'cncvectorstudio'] as const;
 export const DOMENII_AUTH = PROIECTE.map((p) => `https://${p}.firebaseapp.com`);
@@ -19,7 +25,8 @@ export const CSP = [
   "font-src 'self'",
   [
     "connect-src 'self'", 'https://identitytoolkit.googleapis.com', 'https://securetoken.googleapis.com',
-    'https://firestore.googleapis.com', 'https://content-firebaseappcheck.googleapis.com', ...ORIGINI_FUNCTII,
+    'https://firestore.googleapis.com', 'https://content-firebaseappcheck.googleapis.com', 'https://www.google.com/recaptcha/',
+    ...ORIGINI_FUNCTII,
   ].join(' '),
   ['frame-src', ...DOMENII_AUTH, 'https://www.google.com/recaptcha/', 'https://recaptcha.google.com/recaptcha/'].join(' '),
   "worker-src 'self' blob:",

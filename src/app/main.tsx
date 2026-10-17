@@ -7,6 +7,7 @@ import { esteRutaAdmin, incarcaConfig } from './config.ts';
 import { ErrorBoundary } from './ErrorBoundary.tsx';
 import { deschideProiect } from './proiectLocal.ts';
 import { creeazaJurnal, type Context, type Depozit } from './jurnalErori.ts';
+import { creeazaRaportor, descrieStare } from './raportorPornire.ts';
 import './stil.css';
 
 const CHEIE_LIMBA = 'cncvs2.limba';
@@ -25,6 +26,19 @@ function depozitLocal(): Depozit | null {
 
 const depozit = depozitLocal();
 const jurnal = creeazaJurnal(depozit, () => new Date(), () => location.href);
+/**
+ * Raportorul de erori (3.2, ADR 0043): ascultă jurnalul de acum, deci prinde și erorile de dinaintea lui `config.json`
+ * (ținute în coadă); Firebase vine la cerere, abia la prima eroare cu configurația cunoscută. Ambele rute (aplicația și
+ * `/admin`) îl au; pe `/admin`, apelul poartă singur tokenul contului. Browserul e implicit `navigator.userAgent`.
+ * Condițiile mediului omului (dicționarul care nu vine, proiectul local fără memorie) intră în jurnal „doar locale”
+ * (`adaugaLocala`): raportorul le sare, fără să descarce nimic (ADR 0039 §6, recenzia 3.2).
+ */
+const raportor = creeazaRaportor({
+  jurnal,
+  adu: () => import('../cloud/raportor.ts'),
+  build: __VERSIUNE__,
+  limba,
+});
 window.addEventListener('error', (e) => { jurnal.adauga('fereastra', e.error ?? e.message); });
 window.addEventListener('unhandledrejection', (e) => { jurnal.adauga('promisiune', e.reason); });
 
@@ -63,7 +77,7 @@ async function pregatesteLimba(l: Limba): Promise<boolean> {
     const id = setTimeout(pornesteAlta, TERMEN_LIMBA_MS);
     prima.then(() => { clearTimeout(id); }, (e: unknown) => {
       clearTimeout(id);
-      jurnal.adauga('promisiune', e);
+      jurnal.adaugaLocala('promisiune', e);
       pornesteAlta();
     });
   });
@@ -76,7 +90,7 @@ async function pregatesteLimba(l: Limba): Promise<boolean> {
     if (x !== l) prima.then(() => { if (!alegereaOmului) schimbaLimba(l); }, () => undefined);
     return true;
   } catch (e) {
-    jurnal.adauga('promisiune', e);
+    jurnal.adaugaLocala('promisiune', e);
     return false;
   }
 }
@@ -112,7 +126,7 @@ function alegeLimba(l: Limba): void {
     } catch {
       // Alegerea rămâne doar pentru sesiunea asta.
     }
-  }, (e: unknown) => { jurnal.adauga('promisiune', e); });
+  }, (e: unknown) => { jurnal.adaugaLocala('promisiune', e); });
 }
 
 /**
@@ -161,7 +175,12 @@ function faraTexte(radacina: HTMLElement): void {
  * termen. O eroare aici ajunge în jurnal prin `unhandledrejection`.
  */
 async function porneste(): Promise<void> {
-  const [config, cuTexte] = await Promise.all([incarcaConfig(window.fetch.bind(window)), limbaGata]);
+  // Raportorul pornește cum vine configurația, fără să aștepte dicționarul și fără să întârzie randarea (nimic nu-l așteaptă).
+  const configGata = incarcaConfig(window.fetch.bind(window)).then((c) => {
+    raportor.porneste(c.ok ? c.config : null);
+    return c;
+  });
+  const [config, cuTexte] = await Promise.all([configGata, limbaGata]);
   if (!config.ok) jurnal.adauga('config', config.motiv);
 
   const context = (): Context => ({
@@ -170,6 +189,7 @@ async function porneste(): Promise<void> {
     instanta: config.ok ? config.config.instanta : 'necunoscută',
     limba: limba(),
     browserul: navigator.userAgent,
+    raportorul: descrieStare(raportor.stare()),
   });
 
   const radacina = document.getElementById('root');
@@ -195,7 +215,9 @@ async function porneste(): Promise<void> {
 
   // Proiectul din browser se deschide înainte de prima randare: o comandă dată între timp ar fi acoperită de el.
   const proiect = await deschideProiect();
-  if (proiect.mod === 'nu-se-deschide' || proiect.mod === 'fara-memorie' || proiect.mod === 'necitit-acum') jurnal.adauga('proiect', proiect.motiv);
+  // Fără memorie (IndexedDB lipsă sau blocat) și „necitit acum” (bucata ușii nu vine) descriu mediul omului, nu un defect.
+  if (proiect.mod === 'fara-memorie' || proiect.mod === 'necitit-acum') jurnal.adaugaLocala('proiect', proiect.motiv);
+  else if (proiect.mod === 'nu-se-deschide') jurnal.adauga('proiect', proiect.motiv);
 
   createRoot(radacina).render(
     <StrictMode>

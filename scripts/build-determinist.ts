@@ -17,7 +17,9 @@ import { gzipSync } from 'node:zlib';
  * - totalul, cu bucățile încărcate la cerere (exportul: cavalier + CAM + post, ~23 kB) și workerul;
  * - pagina `/admin` (ADR 0040, decizia din 16.10): bucata ei (`PaginaAdmin-*`, cu Firebase: contul, Firestore, funcțiile,
  *   App Check; 170 kB la felia 3.3) are plafonul ei și nu intră în totalul aplicației, fiindcă aplicația n-o descarcă
- *   niciodată. Firebase-ul pe care îl va aduce raportorul de erori (3.2) intră în total: îl descarcă oricine are o eroare.
+ *   niciodată. Firebase-ul pe care îl aduce raportorul de erori (3.2, ADR 0043) intră în total: îl descarcă oricine are o
+ *   eroare. Din 3.2, Firebase-ul comun (aplicația, App Check, funcțiile: `conexiuneBaza-*`) e o bucată împărțită de admin
+ *   și de raportor: adminul se măsoară cu tot ce aduce (închiderea lui), raportorul la fel, cu plafonul lui.
  */
 const PLAFON_PORNIRE_KB = 100;
 const PLAFON_TOTAL_KB = 300;
@@ -29,6 +31,18 @@ const PLAFON_ADMIN_KB = 200;
  */
 const PLAFON_USA_KB = 8;
 const BUCATA_ADMIN = /^assets\/PaginaAdmin-[^/]+\.js$/;
+/**
+ * Raportorul de erori (ADR 0043): bucata la cerere cu Firebase-ul ei (17,5 kB după recenzia 3.2), descărcată la prima
+ * eroare. Nu numără `enterprise.js` (reCAPTCHA, terț), adus în plus pe o instanță cu App Check.
+ */
+const PLAFON_RAPORTOR_KB = 25;
+/**
+ * Partea raportorului din pornire (`src/app/raportorPornire.ts`, cu ce aduce din `shared/`), măsurată singură, minificată:
+ * coada, plafoanele, stingerea, curățarea textelor (1,39 kB după recenzia 3.2). Un import static al bucății trimițătoare
+ * (în loc de `import type`) ar trage Firebase după ea și ar sări plafonul.
+ */
+const PLAFON_RAPORTOR_PORNIRE_KB = 1.5;
+const RAPORTOR_PORNIRE = 'src/app/raportorPornire.ts';
 
 function fisiere(dir: string): string[] {
   return readdirSync(dir).flatMap((n) => {
@@ -157,6 +171,41 @@ for (const [marcaj, ce] of LA_CERERE) {
     process.exit(1);
   }
 }
+
+/**
+ * Firebase (ADR 0040 §1, ADR 0043 §2) stă DOAR în bucățile permise: raportorul, baza comună și pagina `/admin`. Marcajele
+ * se caută în TOATE bucățile, nu doar în cea de pornire (recenzia 3.2: pornirea mai cere imediat ~9 bucăți, de exemplu
+ * `PanouProprietati`; un import de valoare din baza conexiunii într-una dintre ele ar aduce Firebase la fiecare pornire).
+ * Și nicio altă bucată nu importă static o bucată permisă: baza ar rămâne în bucata ei, dar ar veni odată cu importatorul.
+ */
+const CU_FIREBASE = /^assets\/(?:raportor|conexiuneBaza|PaginaAdmin)-[A-Za-z0-9_-]{8}\.js$/;
+const MARCAJE_FIREBASE: ReadonlyArray<readonly [string, string]> = [
+  ['@firebase/app', 'aplicația Firebase (src/cloud/conexiuneBaza.ts)'],
+  ['content-firebaseappcheck.googleapis.com', 'App Check'],
+  ['@firebase/functions', 'funcțiile Firebase'],
+  ['logClientError', 'trimiterea raportului (src/cloud/raportor.ts)'],
+];
+for (const [marcaj, ce] of MARCAJE_FIREBASE) {
+  const cu = [...bucati.keys()].filter((r) => cod(r).includes(marcaj));
+  if (cu.length === 0) {
+    console.error(`Niciun fișier al build-ului nu conține „${marcaj}”: plasa pentru ${ce} nu mai vede nimic (marcajul s-a schimbat?).`);
+    process.exit(1);
+  }
+  const straine = cu.filter((r) => !CU_FIREBASE.test(r));
+  if (straine.length > 0) {
+    console.error(`„${marcaj}” (${ce}) e în ${straine.join(', ')}: Firebase are voie doar în raportor-*, conexiuneBaza-* și PaginaAdmin-* (vine la cerere, cu raportorul de erori și cu /admin).`);
+    process.exit(1);
+  }
+}
+for (const r of bucati.keys()) {
+  if (CU_FIREBASE.test(r)) continue;
+  for (const m of cod(r).matchAll(/(?:import|from)\s*["']\.\/([^"']+\.js)["']/g)) {
+    if (CU_FIREBASE.test(`assets/${m[1] ?? ''}`)) {
+      console.error(`${r} importă static ${m[1] ?? ''}: Firebase ar veni odată cu ea, nu la cerere (doar import() are voie).`);
+      process.exit(1);
+    }
+  }
+}
 // Prețul unui proiect salvat: ușa (`incarcare`) și ce aduce ea în afara pornirii vin înaintea primei randări.
 const usa = bucataNumita('incarcare');
 const kbUsa = kbInchidere(usa);
@@ -188,13 +237,59 @@ if (kbAlegere > PLAFON_ALEGERE_KB) {
   console.error(`Alegerea cu clicul aduce ${kbAlegere.toFixed(1)} kB în afara pornirii (plafon ${PLAFON_ALEGERE_KB}): ${inchidere(alegere).join(', ')}.`);
   process.exit(1);
 }
+
+/**
+ * Raportorul de erori (ADR 0043): bucata trimițătoare există, separat, iar pornirea o cere doar dinamic (`import()`);
+ * ce aduce ea (Firebase-ul comun) are plafonul ei. Adminul se măsoară cu închiderea lui: cu Firebase-ul împărțit.
+ */
+const raportor = bucataNumita('raportor');
+const numeRaportor = raportor.replace('assets/', '');
+if (!['`', '"', "'"].some((g) => cod(bucataPornirii).includes(`import(${g}./${numeRaportor}${g})`))) {
+  console.error(`Pornirea nu cere ${numeRaportor} cu import(): raportorul nu mai vine la cerere (sau nu mai vine deloc).`);
+  process.exit(1);
+}
+const kbRaportor = kbInchidere(raportor);
+const bucataAdmin = [...bucati.keys()].find((r) => BUCATA_ADMIN.test(r)) ?? '';
+admin = kbInchidere(bucataAdmin);
+
+/** Partea din pornire, măsurată singură: modulul, minificat, cu tot ce importă (nimic extern), gzip 9. */
+async function kbModul(intrare: string): Promise<number> {
+  const { build } = await import('vite');
+  const iesire = await build({
+    configFile: false,
+    logLevel: 'silent',
+    build: {
+      write: false,
+      minify: true,
+      lib: { entry: intrare, formats: ['es'], fileName: 'modul' },
+      // În modul bibliotecă, `minify: true` lasă spațiile (ieșirea rămâne citibilă); minificarea completă, ca în build.
+      rolldownOptions: { treeshake: true, output: { minify: true } },
+    },
+  });
+  const rezultate = Array.isArray(iesire) ? iesire : [iesire];
+  let codModul = '';
+  for (const r of rezultate) {
+    if ('output' in r) for (const o of r.output) if (o.type === 'chunk') codModul += o.code;
+  }
+  if (codModul === '') {
+    console.error(`${intrare}: măsurătoarea n-a produs cod (plasa ar fi vidă).`);
+    process.exit(1);
+  }
+  return gzipSync(codModul, { level: 9 }).length / 1024;
+}
+const kbRaportorPornire = await kbModul(RAPORTOR_PORNIRE);
 console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri.`);
 console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}).`);
+console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
 console.log(`Cu un proiect salvat, ușa vine înaintea primei randări: +${kbUsa.toFixed(1)} kB (plafon ${PLAFON_USA_KB}; cu pornirea ${(pornire + kbUsa).toFixed(1)} / ${PLAFON_PORNIRE_KB}) (${inchidere(usa).map((r) => r.replace('assets/', '')).join(', ')}).`);
 rmSync('.tmp/build-1', { recursive: true, force: true });
 rmSync('.tmp/build-2', { recursive: true, force: true });
 if (kbUsa > PLAFON_USA_KB || pornire + kbUsa > PLAFON_PORNIRE_KB) {
   console.error(`Ușa proiectului: ${kbUsa.toFixed(1)} kB (plafon ${PLAFON_USA_KB}); pornirea cu ușa: ${(pornire + kbUsa).toFixed(1)} kB (plafon ${PLAFON_PORNIRE_KB}).`);
+  process.exit(1);
+}
+if (kbRaportorPornire > PLAFON_RAPORTOR_PORNIRE_KB || kbRaportor > PLAFON_RAPORTOR_KB) {
+  console.error(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}).`);
   process.exit(1);
 }
 if (pornire > PLAFON_PORNIRE_KB || total > PLAFON_TOTAL_KB || admin > PLAFON_ADMIN_KB) {
