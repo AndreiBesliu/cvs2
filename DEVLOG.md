@@ -1981,3 +1981,12 @@ schimbare; F4 T montează un strat nou când stratul nu e „ok”, iar contextu
 cadrul următor, traseul vechi stins sub „se calculează”; F6 stratul redesenează la schimbarea temei; F7 bugetul pe vârfurile
 din GPU (oprirea rărit rămâne pe segmente: vârfurile nu scad monoton). Precizările, în ADR 0038. Nivelul rapid: 6 479 de
 teste, 0 picate; e2e 104 / 104. **Pornirea: 99,1 / 100 kB** (strâmt).
+**C, otrăvurile (terminat ~14:00, ~0,26 M):** 44 rulate, 0 VOID: 23 prinse, 21 scăpate (2 echivalente cu dovadă, C03 și A08;
+19 găuri). Integrarea: 18 teste noi (`test/unit/otravuri.28.test.ts`: N07, N11, A19, A22, T03, T04, T11, T12, T17, T20;
+`test/e2e/otravuri-28.spec.ts`: P01, P02, P03, P06, C04, C05, C07, S02, S06, AP07) și oracolul reparat pentru S07 (rapidele
+vs tăierile pe RGB, nu și pe alfa). P03 și T11 refăcute pe codul de după reparații. Fiecare test probat pe otrava lui într-o
+clonă de la `d6412b1` (`tinte` / `e2e`, restaurare pe sha): 21 / 21 prinse. T12 a scăpat întâi de două ori (paritatea
+dublărilor, apoi otrava schimba doar argumentul): testul cere acum și ca șirurile întoarse să fie ale toleranței întoarse.
+S02: zoomul trebuie făcut într-un punct al pânzei calculat din vedere (colțul ferestrei cădea peste bare).
+**Completed:** 17.10 14:45. Costul 2.8e: agenții ~0,86 M (A 0,31, B 0,27, C 0,26), plus integrarea; săptămânalul 1 → ~24 %.
+Nivelul rapid: 6 487 de teste, 0 picate; e2e 112 / 112; pornirea 99,1 / 100 kB.

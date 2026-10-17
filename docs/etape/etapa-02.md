@@ -56,6 +56,9 @@ cipul stării, refacerea după export, pe test). Precizare: butonul „Arată tr
 foaia” (în bara de sus lățea insula uneltelor peste butonul Exportă, la 1 280 px). Rămâne 2.8e (probele independente).
 *Gata când:* owner-ul vede traseul unui SVG importat pe instanța de test și mută / rotește o piesă din panou; oracolul
 stratului trece, cu sabotajele prinse; CI-ul e verde.
+*Starea pe 17.10:* **2.8e gata, deci 2.8 încheiată**: oracolul stratului (13 teste, 32 de sabotaje prinse), recenzia (7
+constatări, toate reparate cu testul lor; precizările în ADR 0038), otrăvurile (44: 23 prinse, 2 echivalente, 19 găuri
+închise cu 18 teste și oracolul reparat; 21 / 21 prinse la integrare). Etapa 2 are toate feliile gata; rămân plăcile 1 și 2.
 
 **2.8e, probele independente: aprobată pe 16.10 seara** („Da, pornește 2.8e mâine după resetare, cu costul spus.”;
 1,5–3 M în total), pornită după resetarea săptămânală din 17.10, 11:00. Trei sesiuni independente, în fundal, una după alta

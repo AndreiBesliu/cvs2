@@ -44,7 +44,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **2.3c (contururile deschise, ADR 0037, documentul v10) încheiată pe 16.10**, în sub-feliile 2.3c-0…6 (fișa: pe linie,
   pe stânga / dreapta, despărțirea foii marcată de om, ușa SVG cu liniile deschise, două recenzii, otrăvurile). Urmează
   2.8 (stratul WebGL2 și panoul de proprietăți): 2.8c (panoul editabil) și 2.8d (traseul pe pânză) gata pe 16.10; 2.8e
-  (probele independente) după resetarea din 17.10. **Fișa plăcii 2 (2.10) gata pe 16.10** (`docs/etape/placa-02.md`);
+  (probele independente) gata pe 17.10: 2.8 încheiată, etapa 2 are toate feliile gata. **Fișa plăcii 2 (2.10) gata pe 16.10** (`docs/etape/placa-02.md`);
   rămâne tăierea ei, de owner, după placa 1.
 - **Etapa 3 e în lucru din 16.10** (fișa: `docs/etape/etapa-03.md`), după ce etapa 2 și-a terminat feliile fără agenți.
   Cu plăcile 1 și 2 netăiate, `PLAN.md` §4.6 (punctul 7) cere felii fără mașină: întâi observabilitatea (P0), apoi

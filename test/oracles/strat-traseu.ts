@@ -357,6 +357,14 @@ function diferenta(a: RGBA, b: RGBA): number {
   return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]) + Math.abs(a[3] - b[3]);
 }
 
+/**
+ * Diferența doar pe culoare (RGB), pentru „rapidele au altă culoare decât tăierile”: o diferență doar de alfa (rapidele
+ * în verdele tăierilor, la α 0,8) nu e altă culoare (otrava S07 a 2.8e trecea prin suma pe RGBA).
+ */
+function diferentaRgb(a: RGBA, b: RGBA): number {
+  return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]);
+}
+
 function clasa(pixeli: readonly RGBA[]): Clasa {
   const numar = new Map<string, number>();
   for (const c of pixeli) numar.set(c.join(','), (numar.get(c.join(',')) ?? 0) + 1);
@@ -457,7 +465,7 @@ export function judeca(img: Imagine, prims: readonly Primitiva[], v: Vedere, opt
   for (const [nume, c] of [['tăierile', taiere], ['rapidele', rapid]] as const) {
     if (c.n >= minim && c.abateri > 0.01 * c.n) motive.push(`${nume} nu au o singură culoare: ${c.abateri} din ${c.n} pixeli se depărtează de ${c.culoare?.join(',')}`);
   }
-  if (taiere.n >= minim && rapid.n >= minim && taiere.culoare && rapid.culoare && diferenta(taiere.culoare, rapid.culoare) < 32) {
+  if (taiere.n >= minim && rapid.n >= minim && taiere.culoare && rapid.culoare && diferentaRgb(taiere.culoare, rapid.culoare) < 32) {
     motive.push(`rapidele au culoarea tăierilor (${rapid.culoare.join(',')} / ${taiere.culoare.join(',')})`);
   }
 
