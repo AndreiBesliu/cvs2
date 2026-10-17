@@ -1936,3 +1936,18 @@ permisiune si continua cu ce ai nevoie”. **Started:** 16.10 20:15. Clasa R2, e
   rulare reală: 17.10 la 03:00 și 05:00; dacă contul de serviciu implicit n-are dreptul de export, apare în fila Erori și
   în Diagnoză.
 **Completed:** 16.10 22:20.
+
+## 2026-10-17 — Etapa 2, felia 2.8e: probele independente ale panoului și ale traseului (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește 2.8e mâine după resetare, cu costul spus.” (16.10 seara; pornită de programarea din sesiune, la
+17.10 11:07). **Started:** 17.10 11:10, săptămânalul la 1 % (resetat), fereastra de 5 ore la 14 %. Bugetul anunțat:
+1,5–3 M în total.
+**Primul backup pe test (ADR 0041), citit înainte de agenți:** ambele joburi au pornit la oră (`backupZilnic` 03:00,
+`verificaBackup` 05:00), dar exportul n-a pornit: `backupZilnic` → `7 PERMISSION_DENIED: The caller does not have
+permission` (contul de serviciu implicit, `210091034164-compute@developer.gserviceaccount.com`, n-are `Cloud Datastore
+Import Export Admin`); `verificaBackup` → „niciun export pornit de backupZilnic”. Ambele eșecuri sunt în marcaje
+(`esecuriLaRand: 1`) și în `errorLogs` (`job:backupZilnic`, `job:verificaBackup`): alarma a funcționat cum scrie în ADR.
+`firestore:operations:list` confirmă: singurul export e cel din 08.10. Pasul de IAM e al owner-ului. (Citirea marcajelor:
+GET prin clientul API al firebase-tools, cu identitatea CLI-ului; `functions:log` nu arată eșecul, fiindcă jobul nu aruncă.)
+**Agenții:** A (oracolul stratului) în repo, pe portul 4173; B (recenzia) într-o clonă în afara Drive-ului, pe portul
+4174; C (otrăvurile) după A, în clona lui (serial, cum cer regulile), ca build-urile și Edge-ul să nu se calce.
