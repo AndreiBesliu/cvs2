@@ -1,7 +1,7 @@
 # ADR 0043: Raportorul de erori din client (P0, partea 1b)
 
-**Starea:** propus pe 17.10.2026, odată cu felia 3.2; revizuit în aceeași zi după recenzia cu patru lentile (secțiunea
-„Recenzia (17.10)”). Scrie contractul deciziilor deja luate (ADR 0039 §5: „clientul mai are plafonul lui pe sesiune”; ADR
+**Starea:** acceptat pe 18.10.2026, odată cu felia 3.2; revizuit pe 17.10 după recenzia cu patru lentile (secțiunea
+„Recenzia (17.10)”) și pe 18.10 după reverificarea remedierilor și a doua rundă de otrăvuri („Reverificarea (18.10)”). Scrie contractul deciziilor deja luate (ADR 0039 §5: „clientul mai are plafonul lui pe sesiune”; ADR
 0039 §6: condițiile de operare nu pleacă; `docs/faza2/admin/RAPORT.md` §5.1, punctele 4 și 6), cu abaterile spuse la fiecare
 punct. **Intră în:** etapa 3, felia 3.2. **Continuă:** ADR 0039 (serverul, `logClientError`), ADR 0040 (§2 configurația de
 la gazdă, §8 CSP-ul, §9 emulatoarele în carantină), ADR 0042 (§8 poarta pachetului).
@@ -17,17 +17,23 @@ crearea lui, în pagina curentă, inclusiv cele dinaintea sosirii `config.json` 
 `localStorage` nu se retrimit: n-au build-ul, iar retrimiterea ar dubla rapoartele la fiecare încărcare. Mecanismul:
 ascultătorul jurnalului (`jurnal.asculta`) primește intrarea nouă ca argument; la golire nu primește nimic. Ascultătorii
 vechi (`useSyncExternalStore`) ignoră argumentul.
-- **Condițiile de operare nu pleacă** (ADR 0039 §6, predicatul îngust, la sursă; din recenzie). O intrare poate fi marcată
-  „doar locală” (`IntrareEroare.doarLocala`, scrisă cu `jurnal.adaugaLocala`, păstrată și citită din depozit, arătată
-  „(doar local)” în raportul copiat). Se marchează doar sursele care descriu mediul omului, nu un defect: proiectul local
-  fără memorie (`fara-memorie`: IndexedDB lipsă, blocat, deschiderea expirată), proiectul „necitit acum” (bucata ușii nu
-  vine) și dicționarul unei limbi care nu vine (la pornire, rezerva căzută și eșecul total; la alegerea din butoane).
-  `nu-se-deschide` (proiectul stricat) rămâne raportat. Raportorul le sare fără să descarce nimic: pe o instanță cu
-  Firebase, un om cu datele site-ului blocate nu mai aduce Firebase (și un POST) la fiecare pornire.
+- **Condițiile de operare nu pleacă** (ADR 0039 §6, predicatul îngust, la sursă; din recenzie, **îngustat la
+  reverificare**). O intrare poate fi marcată „doar locală” (`IntrareEroare.doarLocala`, scrisă cu `jurnal.adaugaLocala`,
+  păstrată și citită din depozit, arătată „(doar local)” în raportul copiat). Se marchează **doar mediul omului la
+  deschiderea proiectului local**: IndexedDB lipsă, eroarea browserului (`SecurityError` = date blocate, `InvalidStateError`
+  = fereastra privată, `QuotaExceededError` = discul plin, `UnknownError` = profilul stricat; `eroareDeMediu` din
+  `proiectLocal.ts`) și baza care nu răspunde la timp (rezultatele poartă `mediu: true`). Raportorul le sare fără să
+  descarce nimic: pe o instanță cu Firebase, un om cu datele site-ului blocate nu aduce Firebase (și un POST) la fiecare
+  pornire. **Pleacă la server** (reverificarea): dicționarele care nu vin (prima limbă, rezerva, eșecul total, alegerea din
+  butoane), ușa proiectului care nu vine (`necitit-acum` din bucata lipsă), `VersionError`, un magazin lipsă, o excepție a
+  codului nostru și `nu-se-deschide`. O publicare stricată (bucăți lipsă) arată exact ca o rețea căzută, iar cu rețeaua
+  căzută nici bucata raportorului n-ar veni, deci marcajul n-avea ce câștiga acolo și ascundea pana totală.
 
-**2. Partea din pornire e mică și fără Firebase** (`src/app/raportorPornire.ts`, 1,39 kB măsurat singur): ascultă jurnalul,
-ține coada și, la prima intrare nouă cu configurația cunoscută, aduce la cerere bucata care trimite (`src/cloud/raportor.ts`,
-`import()`; partea din pornire o importă doar ca tip). Fără `firebase` în configurație (local) sau cu configurația nevalidă,
+**2. Partea din pornire e mică și fără Firebase** (`src/app/raportorPornire.ts`, 1,20 kB măsurat singur): ascultă jurnalul,
+ține coada (intrările așa cum au venit, cu limba de atunci) și, la prima intrare nouă cu configurația cunoscută, aduce la
+cerere bucata care trimite (`src/cloud/raportor.ts`, `import()`; partea din pornire o importă doar ca tip). Raportul se
+construiește și se curăță în bucata la cerere (`raportDin`, `curataText`; mutate acolo la reverificare, ca partea din
+pornire să rămână sub 1,5 kB). Fără `firebase` în configurație (local) sau cu configurația nevalidă,
 raportorul e stins: coada se golește, nimic nu se descarcă, nici mai târziu. Cu emulatoare locale pe gazda locală, trimite
 spre emulatoare (calea probată în e2e-ul pe emulator).
 - **Abatere: conexiunea s-a împărțit.** Raportorul nu importă `conexiune.ts` întreg: ar fi adus contul și Firestore
@@ -42,8 +48,11 @@ spre emulatoare (calea probată în e2e-ul pe emulator).
 - **Carantina emulatoarelor, pe adresele lor** (din recenzie): `conecteazaBaza` acceptă emulatoarele doar dacă pagina ȘI
   fiecare emulator (contul, Firestore, funcțiile) sunt pe gazda locală (`emulatoareLocale`), altfel
   `emulatoare-in-afara`. Înainte, pe `localhost`, un `config.json` cu `functions: 'colector.exemplu.ro:80'` trimitea
-  rapoartele și tokenul de probă acolo, prin http. `conexiune.ts` leagă contul și Firestore doar după bază, deci aceeași
-  verificare le acoperă.
+  rapoartele și tokenul de probă acolo, prin http. **La reverificare, adresele se potrivesc întregi** (`http://` +
+  `localhost` / `127.0.0.1` + port pentru cont; gazdă locală + port pentru Firestore și funcții), nu prin `new URL`:
+  `@firebase/auth` își ia gazda cu regexul lui, deci `http://localhost\@colector.exemplu.ro:9099` trecea de `URL` (gazda
+  `localhost`) și lega contul de `colector.exemplu.ro`. `conexiune.ts` leagă contul și Firestore doar după bază, deci
+  aceeași verificare le acoperă.
 - **App Check fără reîmprospătare în fundal** (`isTokenAutoRefreshEnabled: false`, din recenzie): raportorul și `/admin` cer
   tokenul când îl folosesc. Altfel reCAPTCHA ar evalua periodic tot restul sesiunii, și după ce raportorul s-a stins.
 
@@ -52,18 +61,23 @@ fragment (`faraInterogare`), `build` = `__VERSIUNE__`, `browser` = `navigator.us
 nu-l mai dă), `limba` = limba curentă (la intrarea în coadă), fiecare tăiat cu `taie()` la plafoanele contractului. Nimic
 altceva nu pleacă (probat pe cheile corpului trimis). Instanța și uid-ul le pune serverul.
 - **Textele trimise se curăță** (apărare în adâncime, din recenzie; jurnalul local rămâne neatins): în `mesaj` și `stiva`,
-  query-ul și fragmentul adreselor http(s) devin `?…`, iar adresele de e-mail devin `<email>` (`curataText`). Regexurile
-  sunt liniare: adresa se ia întreagă dintr-o trecere și se taie în funcție; e-mailul începe doar la marginea unui cuvânt
-  (privirea înapoi), deci un șir lung nu se rescanează (probat: 120 de texte de ~4 000 de caractere, făcute să provoace
+  query-ul și fragmentul adreselor devin `?…`, iar adresele de e-mail devin `<email>` (`curataText`). **Lărgit la
+  reverificare:** orice protocol și cu majuscule (`HTTPS://`, `wss://`), parantezele din cale, e-mailul codificat (`%40`),
+  iar poziția din stivă de la capătul adresei (`:linie:coloană`, cu paranteza) rămâne. Regexurile sunt liniare:
+  protocolul are cel mult 20 de caractere, partea locală a e-mailului cel mult 64, adresa se ia dintr-o trecere și se taie în
+  funcție, iar e-mailul începe doar la marginea unui cuvânt (probat: texte de ~4 000 de caractere făcute să provoace
   revenirea, sub 150 ms).
 - **Mesajul gol** (`throw ''`, doar spații) pleacă drept `eroare fără mesaj` (`MESAJ_GOL`): serverul refuză un mesaj gol
   (`valideazaRaport`), deci eroarea s-ar fi pierdut și ar fi consumat din plafoane.
 
 **4. Plafonul pe sesiune:** cel mult **20** de rapoarte pe încărcarea paginii și cel mult **3** cu aceeași cheie locală;
 restul se numără, nu se trimit.
-- **Cheia locală (schimbată la recenzie)** e `tip|mesaj`, cu primele 300 de caractere și cifrele înlocuite printr-un singur
-  regex liniar (`cheieLocala`), nu `cheieAmprenta` (regexurile normalizării serverului: ~90 ms pe eroare la un mesaj lung
-  cu cratime, plătiți și peste plafon). Gruparea adevărată rămâne pe server.
+- **Cheia locală (schimbată la recenzie și la reverificare)** e `tip|mesaj`: cuvintele (despărțite într-o singură trecere)
+  care poartă o cifră (numere, uuid-uri, id-uri hex) sau care arată ca un id (cel puțin 16 caractere, cu majuscule și
+  litere mici) devin `#`, iar cheia se taie la 300 (`cheieLocala`). Nu e `cheieAmprenta` (regexurile normalizării
+  serverului: ~90 ms pe eroare la un mesaj lung cu cratime, plătiți și peste plafon). Prima variantă înlocuia doar cifrele:
+  o eroare în buclă cu un uuid nou la fiecare apariție mânca atunci tot plafonul pe sesiune (reverificarea). Gruparea
+  adevărată rămâne pe server.
 - **Ordinea în ascultător (schimbată la recenzie):** marcajul „doar local”, starea (stins → imediat), plafonul pe sesiune,
   abia apoi cheia. O eroare repetată într-o buclă nu mai costă nimic după plafon.
 - **Abatere: coada n-are verificare proprie.** În coadă intră doar rapoarte acceptate, deci plafonul pe sesiune o mărginește
@@ -110,8 +124,9 @@ mesajul pe care îl pune SDK-ul (`<cod> [<status>]`, `_errorForResponse`), proba
 și ale configurației), și pornește din promisiunea lui `config.json` (`incarcaConfig(...).then(...)`), fără să aștepte
 dicționarul, fără `await` la nivelul modulului (ADR 0042: lecția blocajului) și fără ca randarea să-l aștepte. Ambele rute îl
 au (aplicația și `/admin`). Doar primul `porneste` contează (fără dublă pornire; StrictMode nu-l atinge, fiindcă stă în
-afara lui React). Fără nicio eroare, nimic nu se descarcă, nici la inactivitate (probat: 3,5 s fără nicio cerere, cu
-Firebase și App Check în config).
+afara lui React). Fără nicio eroare, nimic nu se descarcă, nici la inactivitate (probat în e2e: 3,5 s fără nicio cerere,
+cu Firebase și App Check în config; și unitar, cu ceasul fals: o oră fără nicio intrare, bucata necerută; o aducere amânată
+la 5 s trecea de e2e, la reverificare).
 
 **7. Cheia App Check a instanței, la publicare** (`scripts/appcheck-cheie.ts`): `pregateste-publicare.ts` citește
 `GET https://firebaseappcheck.googleapis.com/v1/projects/<proiect>/apps/<appId>/recaptchaEnterpriseConfig` prin clientul API al
@@ -153,17 +168,17 @@ adăugat; restul era acoperit. Nimic lărgit în rest.
 
 ## Cifrele (măsurate, gzip 9, după recenzie)
 
-- Pornirea: 92,3 → **93,5 kB** (cu dicționarul, 2,1); partea raportorului: **1,39 kB** singură (plafon 1,5; înainte de
-  recenzie 1,26: cheia locală a scos normalizarea, curățarea textelor și starea au adăugat). Cu un proiect salvat:
-  98,1 / 100.
-- La prima eroare, cu Firebase în configurație: **17,5 kB** (`raportor` 0,7 + `conexiuneBaza` 16,8). **Nu include `enterprise.js`**
-  (reCAPTCHA Enterprise, script terț cu cadrul lui), adus în plus la prima eroare pe o instanță cu App Check.
-- `/admin` cu tot ce aduce: 164 → 166,5 kB (plafon 200). Totalul fără admin: 192,6 → 211,3 kB (plafon 300).
+- Pornirea: 92,3 → **93,5 kB** (cu dicționarul, 2,1); partea raportorului: **1,20 kB** singură (plafon 1,5; la recenzie
+  1,39, la reverificare 1,52 cu cheia și curățarea noi, apoi 1,20 după mutarea raportului în bucata la cerere). Cu un proiect
+  salvat: **98,1 / 100** (strâmt: următoarea mutare la ADR 0042).
+- La prima eroare, cu Firebase în configurație: **17,9 kB** (`raportor` 1,1 + `conexiuneBaza` 16,8). **Nu include
+  `enterprise.js`** (reCAPTCHA Enterprise, script terț cu cadrul lui), adus în plus la prima eroare pe o instanță cu App Check.
+- `/admin` cu tot ce aduce: 164 → 166,6 kB (plafon 200). Totalul fără admin: 192,6 → 211,8 kB (plafon 300).
 
 ## Dovada și probele
 
-- **Unitare** (`test/unit/raportor.test.ts`, 47; `appcheck-cheie.test.ts`, 12; `jurnalErori.test.ts`, 13;
-  `conexiuneBaza.test.ts`, 3): coada dinaintea configurației, doar intrările sesiunii, intrările „doar locale” sărite fără
+- **Unitare** (`test/unit/raportor.test.ts`, 49; `appcheck-cheie.test.ts`, 12; `jurnalErori.test.ts`, 13;
+  `conexiuneBaza.test.ts`, 5): coada dinaintea configurației, doar intrările sesiunii, intrările „doar locale” sărite fără
   descărcare, fără Firebase = nimic adus, plafoanele (și cu erori rare) și constantele de politică fixate (20 / 3 / 20 /
   5 000 ms / 30 000 ms / 10 000 ms), cheia locală (ieftină pe un mesaj lung în kebab-case, sub 40 ms pentru 10 erori;
   plafonul pe cheie ține), stingerea la 401 / 403 / plafon / import eșuat / conexiune refuzată sau aruncată / token App
@@ -173,14 +188,17 @@ adăugat; restul era acoperit. Nimic lărgit în rest.
   liniar), cu mesajul de rezervă și browserul implicit, starea în raportul copiat; ascultătorul primește intrarea și când
   depozitul aruncă; cheia App Check strictă, citirea cu clientul injectat (404, 200 bun, 200 fără `siteKey`, corp ciudat,
   cheie strâmbă, eroare de rețea), `config.json` publicat (funcția pură și pregătirea cu dependențele injectate);
-  carantina emulatoarelor pe adresele lor.
-- **E2e pe build** (`test/e2e/raportor.spec.ts`, 8; plasa refuză orice gazdă externă): fără Firebase, o eroare (și una
+  carantina emulatoarelor pe adresele lor, întregi; clasificarea erorilor proiectului local (mediu sau defect); App Check
+  fără reîmprospătare în fundal (plasă pe sursă: fiecare `isTokenAutoRefreshEnabled` din `src/` e `false`).
+- **E2e pe build** (`test/e2e/raportor.spec.ts`, 11; plasa refuză orice gazdă externă): fără Firebase, o eroare (și una
   dinaintea `config.json`) nu cere bucata raportorului, nici Firebase; martorul cu Firebase fără App Check: bucata vine la
   prima eroare, corpul are doar cheile contractului și browserul paginii, funcția dă 401, a doua eroare nu mai pleacă,
   jurnalul are doar erorile omului, un singur avertisment; bucata care nu vine: o cerere, nicio eroare nouă; **nu la
   inactivitate** (3,5 s, nicio cerere spre `raportor-*`, `conexiuneBaza-*`, `enterprise.js`); **IndexedDB blocat**: intrarea
   „doar locală”, nicio cerere spre bucata raportorului; **App Check cu `enterprise.js` oprit, apoi servit gol** (o cheie de
-  site falsă în config): stins (`app-check`) în termenul tokenului, niciun POST, a doua eroare lăsată imediat. **CSP-ul**
+  site falsă în config): stins (`app-check`) în termenul tokenului, niciun POST, a doua eroare lăsată imediat; **o publicare
+  fără dicționare**: ecranul „fără texte”, iar rapoartele (primul eșec și eșecul total) pleacă; **baza la o versiune mai
+  nouă** (`VersionError`): raportul pleacă, nu e „doar local”; **ușa proiectului care nu vine**: „necitit acum” pleacă. **CSP-ul**
   (`csp.spec.ts`, +1): sub CSP-ul din build, scriptul, cadrele, cererile reCAPTCHA, schimbul App Check și funcțiile ambelor
   proiecte trec, o origine străină e refuzată (martorul).
 - **Pe emulatoare** (`test/e2e-emulator/raportor.emulator.spec.ts`, 3): o eroare de randare ajunge grup în `errorLogs`, cu
@@ -233,6 +251,28 @@ Nerezolvate de recenzie, cu motivul:
 - **U19 (cache-ul `curenta` din `conecteazaBaza`)** n-are probă unitară: pe emulator, a doua inițializare App Check ar arunca
   (testul `/admin` ar cădea); cu reCAPTCHA și aceeași cheie, mutația e aproape echivalentă.
 
+## Reverificarea (18.10)
+
+Două lentile pe remedieri (17.10, seara): „remedieri” a terminat cu 6 constatări; „otrăvuri” a fost oprită la pauză, iar a
+doua rundă de otrăvuri a rulat-o integratorul, pe 18.10, pe codul final (`test/otravuri/3.2.py`).
+
+| Constatarea | Remediul |
+|---|---|
+| **mare:** marcajul „doar local” pe dicționare: o publicare fără `mesaje.*` (nimeni nu poate porni aplicația) nu ajungea la server; același `catch` acoperea și defecte de cod | §1: dicționarele pleacă. Probă e2e: 404 pe ambele dicționare → „fără texte”, iar primul eșec și `AggregateError` ajung la funcție (sabotajele: cele două marcaje puse înapoi, prinse; al doilea a scăpat întâi, iar proba cere acum și eșecul total) |
+| `fara-memorie` prindea orice excepție (`VersionError`, un `TypeError` al nostru) și o marca „doar local” | §1: `eroareDeMediu` (lista îngustă), `mediu: true` doar pe ea, pe IndexedDB lipsă și pe termen; ușa care nu vine pleacă și ea. Probe: unitară pe clasificare, e2e pe `VersionError` și pe ușa lipsă |
+| Cheia locală nu grupa id-urile: o eroare cu uuid în buclă mânca tot plafonul pe sesiune | §4: cuvintele cu cifre sau cu forma unui id devin `#`, liniar. Probă: 25 de uuid-uri + o eroare distinctă (pleacă); id-uri hex și id-uri Firebase fără cifre |
+| „Nu la inactivitate” probat doar 3,5 s: o aducere la 5 s trecea | §6: proba unitară cu ceasul fals (o oră) |
+| Carantina ocolibilă pe adresa contului (`http://localhost\@colector…`) | §2: adresele potrivite întregi |
+| Curățarea scăpa `HTTPS://`, `wss://`, parantezele, `%40` și tăia poziția din stivă | §3: lărgită, poziția păstrată |
+
+Sabotajele acestor remedieri: 12, toate prinse (unul abia după întărirea probei, mai sus). Apoi **a doua rundă de
+otrăvuri**, pe codul final: 31 (11 scăpate în prima rundă, reaplicate: J1, U1, U3–U8, U16, U17, U20; 20 noi pe remedierile din
+17.10: cursele tokenului și ale apelului, codurile reîncercării, stingerea, starea în raport, cheia App Check strictă,
+carantina, plafonul pe cheie, dubla pornire, coada la stingere). **30 prinse de setul lor**; N11 (reîmprospătarea App Check în
+fundal pusă înapoi) a scăpat: opțiunea SDK-ului nu se vede la rulare fără reCAPTCHA adevărat și o jumătate de TTL, deci a
+primit o plasă pe sursă (îngustă, pe un singur nume de opțiune), probată cu otrava: prinsă. **31 / 31.** Rezultatul e în
+antetul listei.
+
 ## Ce impune
 
 - Un modul nou care trimite spre funcții din aplicație trece prin `conexiuneBaza.ts`, nu prin `conexiune.ts` (care aduce
@@ -241,7 +281,9 @@ Nerezolvate de recenzie, cu motivul:
   pornire (marcajele și plasa importatorilor din poartă îl opresc).
 - Nimic din raportor nu scrie în jurnal; o eroare nouă de raportare se numără în `stare()`, care se vede în „Copiază
   raportul”.
-- O sursă nouă de erori care descrie mediul omului (nu un defect) scrie cu `adaugaLocala`; un defect, cu `adauga`.
+- O sursă nouă de erori care descrie mediul omului (nu un defect) scrie cu `adaugaLocala`; un defect, cu `adauga`. **O
+  bucată, un dicționar sau un fișier al aplicației care nu vine e defect** (o publicare stricată arată la fel ca rețeaua):
+  se raportează. Lista erorilor de mediu e una singură (`eroareDeMediu`).
 - Un apel nou spre server din raportor are termen propriu (cursa din `src/cloud/raportor.ts`), nu doar opțiunea SDK-ului.
 - Publicarea cere firebase-tools instalat global și logat (citirea cheii); o eroare de citire oprește publicarea.
 - **Politica de confidențialitate, la lansare,** spune că la o eroare (pe o instanță cu App Check) se încarcă reCAPTCHA
@@ -259,7 +301,11 @@ Nerezolvate de recenzie, cu motivul:
   La fel un 503 venit după scriere. Rare, mărginite de plafoane.
 - Pagina `/admin` folosește aceeași bază: cu `enterprise.js` blocat, apelurile ei („Rezolvat”) rămân fără termen propriu
   (doar raportorul are cursele).
-- Cifra „la prima eroare” (17,5 kB) nu include `enterprise.js`.
+- Cifra „la prima eroare” (17,9 kB) nu include `enterprise.js`.
+- O bază la altă versiune (`VersionError`) se raportează acum, dar omul vede tot mesajul „fără memorie” (textul interfeței
+  nu s-a schimbat în felia asta).
+- Pe o rețea căzută, o bucată care nu vine produce rapoarte care nu pot pleca (raportorul nu vine nici el): se pierd, ca
+  înainte; o rețea instabilă poate trimite câteva rapoarte de „bucată lipsă”, mărginite de plafoane și grupate pe server.
 
 ## Ce am respins
 
@@ -275,5 +321,7 @@ Nerezolvate de recenzie, cu motivul:
 ## Se redeschide dacă
 
 - pe date reale, plafoanele clientului (20 / 3) taie erori distincte care contează sau lasă să treacă zgomot;
-- partea din pornire trece de 1,5 kB, sau pornirea trece de ~95 kB (ADR 0042);
+- partea din pornire trece de 1,5 kB, sau pornirea trece de ~95 kB, ori pornirea cu ușa de 100 kB (ADR 0042);
+- rapoartele de „bucată lipsă” din rețele instabile acoperă defectele adevărate (atunci un predicat îngust pentru ele, la
+  sursă);
 - pe date reale apar dubluri din reîncercarea pe statusul 0 / 503, sau rapoarte pierdute pe termenul de 30 s.

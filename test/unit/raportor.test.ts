@@ -13,12 +13,12 @@ import { PLAFON_MESAJ, PLAFON_SCURT, PLAFON_STIVA, valideazaRaport, type RaportC
 import { creeazaJurnal, type Jurnal } from '../../src/app/jurnalErori.ts';
 import { eroareDeMediu } from '../../src/app/proiectLocal.ts';
 import {
-  MESAJ_GOL, PAUZA_REINCERCARE_MS, PLAFON_COADA, PLAFON_PE_CHEIE, PLAFON_SESIUNE, cheieLocala, creeazaRaportor, curataText,
-  descrieStare, raportDin, type DepsRaportor,
+  PAUZA_REINCERCARE_MS, PLAFON_COADA, PLAFON_PE_CHEIE, PLAFON_SESIUNE, cheieLocala, creeazaRaportor, descrieStare,
+  type DepsRaportor,
 } from '../../src/app/raportorPornire.ts';
 import {
-  TERMEN_APEL_MS, TERMEN_APP_CHECK_MS, dinEroare, dinRaspuns, trimitereDin, type Amana, type ModulRaportor, type RezultatTrimitere,
-  type Trimitere,
+  MESAJ_GOL, TERMEN_APEL_MS, TERMEN_APP_CHECK_MS, curataText, dinEroare, dinRaspuns, raportDin, trimitereDin, type Amana,
+  type ModulRaportor, type RezultatTrimitere, type Trimitere,
 } from '../../src/cloud/raportor.ts';
 
 const ACUM = new Date('2026-10-17T12:00:00.000Z');
@@ -63,7 +63,7 @@ function banc(peste: Partial<DepsRaportor> = {}, faraConexiune = false): Banc {
       return b.raspuns(n, r);
     },
   };
-  const modul: ModulRaportor = { creeazaTrimitere: () => { b.create++; return faraConexiune ? null : trimitere; } };
+  const modul: ModulRaportor = { creeazaTrimitere: () => { b.create++; return faraConexiune ? null : trimitere; }, raportDin };
   b.deps = {
     jurnal,
     adu: () => { b.adus++; return Promise.resolve(modul); },
@@ -107,7 +107,7 @@ test('constantele de politică: 20 pe sesiune, 3 pe cheie, coada 20, pauza 5 s, 
 
 test('raportul: câmpurile din intrare, adresa fără query și fragment, build-ul, browserul și limba; nimic altceva', () => {
   const r = raportDin(
-    { cand: ACUM.toISOString(), tip: 'randare', mesaj: 'Error: bum', stiva: 'at x', adresa: 'https://h/a/b?q=1#f' },
+    { tip: 'randare', mesaj: 'Error: bum', stiva: 'at x', adresa: 'https://h/a/b?q=1#f' },
     'b1', 'Edge', 'en',
   );
   assert.deepEqual(r, { tip: 'randare', mesaj: 'Error: bum', stiva: 'at x', adresa: 'https://h/a/b', build: 'b1', browser: 'Edge', limba: 'en' });
@@ -115,13 +115,13 @@ test('raportul: câmpurile din intrare, adresa fără query și fragment, build-
 });
 
 test('adresa doar cu fragment (fără query) pleacă fără fragment', () => {
-  const r = raportDin({ cand: '', tip: 'fereastra', mesaj: 'm', stiva: '', adresa: 'https://h/a#access_token=SECRET' }, 'b', 'u', 'ro');
+  const r = raportDin({ tip: 'fereastra', mesaj: 'm', stiva: '', adresa: 'https://h/a#access_token=SECRET' }, 'b', 'u', 'ro');
   assert.equal(r.adresa, 'https://h/a');
 });
 
 test('raportul se taie la plafoanele contractului (browserul lung, mesajul și stiva lungi)', () => {
   const r = raportDin(
-    { cand: '', tip: 'fereastra', mesaj: 'm'.repeat(PLAFON_MESAJ + 10), stiva: 's'.repeat(PLAFON_STIVA + 10), adresa: `https://h/${'a'.repeat(900)}` },
+    { tip: 'fereastra', mesaj: 'm'.repeat(PLAFON_MESAJ + 10), stiva: 's'.repeat(PLAFON_STIVA + 10), adresa: `https://h/${'a'.repeat(900)}` },
     'b'.repeat(PLAFON_SCURT + 5), 'u'.repeat(PLAFON_SCURT + 50), 'ro',
   );
   assert.ok(r.browser.startsWith('u'.repeat(PLAFON_SCURT)) && r.browser.endsWith('… (+50)'), r.browser.slice(-12));
@@ -160,11 +160,11 @@ test('curățarea e liniară: texte lungi, fără adrese sau e-mailuri, trec rep
 
 test('un mesaj gol sau doar din spații primește textul de rezervă, ca serverul să nu-l refuze', () => {
   for (const mesaj of ['', '   ', '\n\t']) {
-    const r = raportDin({ cand: '', tip: 'promisiune', mesaj, stiva: '', adresa: 'https://h/' }, 'b', 'u', 'ro');
+    const r = raportDin({ tip: 'promisiune', mesaj, stiva: '', adresa: 'https://h/' }, 'b', 'u', 'ro');
     assert.equal(r.mesaj, MESAJ_GOL);
     assert.equal(valideazaRaport(r).ok, true, JSON.stringify(mesaj));
   }
-  assert.equal(raportDin({ cand: '', tip: 'promisiune', mesaj: ' x ', stiva: '', adresa: '' }, 'b', 'u', 'ro').mesaj, ' x ');
+  assert.equal(raportDin({ tip: 'promisiune', mesaj: ' x ', stiva: '', adresa: '' }, 'b', 'u', 'ro').mesaj, ' x ');
 });
 
 test('browserul din raport: implicit user-agentul (main.tsx nu-l mai dă de mână)', async () => {
@@ -386,7 +386,7 @@ test('emulatoarele în afara gazdei locale (conexiunea refuzată): stins, nimic 
 
 test('conexiunea care aruncă la creare: stins (fara-conexiune), nu agățat în „pornit”', async () => {
   const b = banc({
-    adu: () => Promise.resolve({ creeazaTrimitere: () => { throw new Error('already-initialized'); } }),
+    adu: () => Promise.resolve({ creeazaTrimitere: () => { throw new Error('already-initialized'); }, raportDin }),
   });
   const r = creeazaRaportor(b.deps);
   r.porneste(CONFIG);
@@ -597,7 +597,7 @@ test('trimiterea citește răspunsul din `data`: ok = trimis; { ok: false, motiv
 test('raportorul cu trimiterea reală (apelul injectat): 200 { ok: false, motiv: plafon } stinge pentru sesiune', async () => {
   const apeluri: RaportClient[] = [];
   const t = trimitereDin({ apel: async (r) => { apeluri.push(r); return { data: { ok: false, motiv: 'plafon' } }; }, token: null });
-  const b = banc({ adu: () => Promise.resolve({ creeazaTrimitere: () => t }) });
+  const b = banc({ adu: () => Promise.resolve({ creeazaTrimitere: () => t, raportDin }) });
   const r = creeazaRaportor(b.deps);
   r.porneste(CONFIG);
   b.jurnal.adauga('fereastra', 'a');

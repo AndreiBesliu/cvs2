@@ -1,6 +1,6 @@
 import { getToken } from 'firebase/app-check';
 import { httpsCallable } from 'firebase/functions';
-import type { RaportClient } from '../../shared/erori.ts';
+import { faraInterogare, PLAFON_ADRESA, PLAFON_MESAJ, PLAFON_SCURT, PLAFON_STIVA, taie, type RaportClient, type TipEroare } from '../../shared/erori.ts';
 import { conecteazaBaza, type ConfigCloud } from './conexiuneBaza.ts';
 
 /**
@@ -38,6 +38,50 @@ export interface Trimitere {
 /** Forma bucății, așa cum o vede pornirea (care o importă doar ca tip și la cerere). */
 export interface ModulRaportor {
   readonly creeazaTrimitere: (config: ConfigCloud) => Trimitere | null;
+  readonly raportDin: typeof raportDin;
+}
+
+/** Ce ia raportul dintr-o intrare a jurnalului local (`IntrareEroare`, fără dependența de aplicație). */
+export interface IntrareRaport {
+  readonly tip: TipEroare;
+  readonly mesaj: string;
+  readonly stiva: string;
+  readonly adresa: string;
+}
+
+/** Mesajul unui raport fără text (`throw ''`): serverul refuză un mesaj gol, deci eroarea s-ar pierde. */
+export const MESAJ_GOL = 'eroare fără mesaj';
+
+/**
+ * Textul trimis, curățat (apărare în adâncime; jurnalul local rămâne neatins): query-ul și fragmentul adreselor (orice
+ * protocol, și cu majuscule: `HTTPS://`, `wss://`) devin „?…”, iar poziția din stivă de la capăt (`:linie:coloană`, cu
+ * paranteza) rămâne; adresele de e-mail, și cele codificate (`%40`), devin `<email>`. Regexurile sunt liniare: protocolul
+ * are cel mult 20 de caractere, partea locală a e-mailului cel mult 64 (RFC 5321), iar adresa se ia dintr-o trecere și se
+ * taie în funcție (reverificarea 3.2).
+ */
+export function curataText(s: string): string {
+  return s
+    .replace(/\b[a-z][a-z0-9+.-]{0,19}:\/\/[^\s"'`<>]*/gi, (a) => {
+      const k = a.search(/[?#]/);
+      if (k < 0) return a;
+      const coada = /(?::\d+){0,2}\)?$/.exec(a.slice(k))?.[0] ?? '';
+      return `${a.slice(0, k)}?…${coada}`;
+    })
+    .replace(/(?<![\w.+-])[\w.+-]{1,64}(?:@|%40)[\w-]{1,63}(?:\.[\w-]{1,63}){1,8}/gi, '<email>');
+}
+
+/** Raportul (`RaportClient`, ADR 0039 §5): doar câmpurile contractului, curățate și tăiate la plafoanele lui. */
+export function raportDin(i: IntrareRaport, build: string, browser: string, limba: string): RaportClient {
+  const mesaj = curataText(i.mesaj);
+  return {
+    tip: i.tip,
+    mesaj: taie(mesaj.trim() ? mesaj : MESAJ_GOL, PLAFON_MESAJ),
+    stiva: taie(curataText(i.stiva), PLAFON_STIVA),
+    adresa: taie(faraInterogare(i.adresa), PLAFON_ADRESA),
+    build: taie(build, PLAFON_SCURT),
+    browser: taie(browser, PLAFON_SCURT),
+    limba: taie(limba, PLAFON_SCURT),
+  };
 }
 
 /** Termenul unui apel, de la cerere (cu tot cu token) la răspuns: acoperă pornirea la rece a funcției. */

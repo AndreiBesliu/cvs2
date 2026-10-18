@@ -5,6 +5,12 @@
 # local”, cheia locală, curățarea, inactivitatea) au sabotajele lor separat (12, toate prinse; DEVLOG).
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
+#
+# Construirea și curățarea raportului (U20, N09) stau, din 18.10, în bucata la cerere (`src/cloud/raportor.ts`).
+# Rezultatul (clona de la 5c4cee2; bazele verzi: raportor 64, conex 16, cheie 12): 31 rulate, 0 VOID, 30 prinse de setul lor.
+# Scăpată: N11 (reîmprospătarea App Check în fundal), opțiune a SDK-ului care nu se vede la rulare fără reCAPTCHA adevărat
+# și o jumătate de TTL; primește o plasă pe sursă în test/unit/conexiuneBaza.test.ts (fiecare `isTokenAutoRefreshEnabled`
+# din src/ e `false`), probată cu `tinte`: PRINSĂ. Toate 31 prinse.
 O = []
 
 
@@ -41,7 +47,7 @@ o('U16', CHE, '{ resolveOnHTTPError: true }', '{ resolveOnHTTPError: false }', '
 o('U17', PUB, "writeFileSync(join(dir, 'public', 'config.json'), json);",
   "writeFileSync(join(dir, 'public', 'config.json'), `${JSON.stringify({ instanta: 'test', firebase })}\\n`);",
   'cheie', 'config.json publicat fără appCheck')
-o('U20', POR, 'adresa: taie(faraInterogare(i.adresa), PLAFON_ADRESA),', "adresa: taie(i.adresa.split('?')[0] ?? '', PLAFON_ADRESA),",
+o('U20', TRI, 'adresa: taie(faraInterogare(i.adresa), PLAFON_ADRESA),', "adresa: taie(i.adresa.split('?')[0] ?? '', PLAFON_ADRESA),",
   'raportor', 'fragmentul adresei pleacă (fără query, cu `#access_token`)')
 
 # ---- N: remedierile (17.10) ----
@@ -58,7 +64,7 @@ o('N06', POR, "if (rez === 'retea' && faza === 'pornit')", "if ((rez === 'retea'
 o('N07', POR, "if (!(await t.pregateste().catch(() => false)))", "if (!(await t.pregateste().catch(() => true)))",
   'raportor', 'o pregătire care respinge trece drept reușită')
 o('N08', POR, "    if (i.doarLocala) {\n      n.locale++;\n      return;\n    }\n", '', 'raportor', 'intrările „doar locale” pleacă')
-o('N09', POR, 'taie(mesaj.trim() ? mesaj : MESAJ_GOL, PLAFON_MESAJ)', 'taie(mesaj, PLAFON_MESAJ)', 'raportor', 'mesajul gol pleacă gol (serverul îl refuză)')
+o('N09', TRI, 'taie(mesaj.trim() ? mesaj : MESAJ_GOL, PLAFON_MESAJ)', 'taie(mesaj, PLAFON_MESAJ)', 'raportor', 'mesajul gol pleacă gol (serverul îl refuză)')
 o('N10', JUR, "...(context.raportorul === undefined ? [] : [`raportorul: ${context.raportorul}`]),", '',
   'raportor', 'starea raportorului lipsește din „Copiază raportul”')
 o('N11', CON, 'isTokenAutoRefreshEnabled: false });', 'isTokenAutoRefreshEnabled: true });', 'conex', 'reîmprospătarea tokenului în fundal (reCAPTCHA periodic)')

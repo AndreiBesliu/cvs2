@@ -1,4 +1,3 @@
-import { faraInterogare, PLAFON_ADRESA, PLAFON_MESAJ, PLAFON_SCURT, PLAFON_STIVA, taie, type RaportClient } from '../../shared/erori.ts';
 import type { ConfigCloud } from '../cloud/conexiuneBaza.ts';
 import type { ModulRaportor, RezultatTrimitere, Trimitere } from '../cloud/raportor.ts';
 import type { IntrareEroare, Jurnal } from './jurnalErori.ts';
@@ -6,7 +5,8 @@ import type { IntrareEroare, Jurnal } from './jurnalErori.ts';
 /**
  * Raportorul de erori, partea din pornire (felia 3.2, ADR 0043): mică și fără Firebase. Ascultă jurnalul local, ține
  * intrările noi ale acestei sesiuni într-o coadă (și pe cele de dinaintea sosirii `config.json`) și, la prima intrare cu
- * configurația cunoscută, aduce la cerere bucata care trimite (`src/cloud/raportor.ts`). Intrările vechi din depozit nu
+ * configurația cunoscută, aduce la cerere bucata care trimite (`src/cloud/raportor.ts`). Coada ține intrările așa cum
+ * au venit (cu limba de atunci): raportul se construiește și se curăță în bucata la cerere, ca pornirea să rămână mică. Intrările vechi din depozit nu
  * pleacă: n-au build-ul, iar retrimiterea lor ar dubla rapoartele la fiecare încărcare. Nici cele „doar locale” (condițiile
  * mediului omului, ADR 0039 §6): ele nu aduc nimic.
  *
@@ -26,8 +26,6 @@ export const PLAFON_PE_CHEIE = 3;
 export const PLAFON_COADA = PLAFON_SESIUNE;
 /** Pauza dinaintea singurei reîncercări, după o cerere care n-a ajuns. */
 export const PAUZA_REINCERCARE_MS = 5_000;
-/** Mesajul unui raport fără text (`throw ''`): serverul refuză un mesaj gol, deci eroarea s-ar pierde. */
-export const MESAJ_GOL = 'eroare fără mesaj';
 
 /**
  * - `fara-firebase`: configurația nu are Firebase (local) sau n-a putut fi citită;
@@ -77,38 +75,6 @@ export interface Raportor {
 }
 
 /**
- * Textul trimis, curățat (apărare în adâncime; jurnalul local rămâne neatins): query-ul și fragmentul adreselor (orice
- * protocol, și cu majuscule: `HTTPS://`, `wss://`) devin „?…”, iar poziția din stivă de la capăt (`:linie:coloană`, cu
- * paranteza) rămâne; adresele de e-mail, și cele codificate (`%40`), devin `<email>`. Regexurile sunt liniare: protocolul
- * are cel mult 20 de caractere, partea locală a e-mailului cel mult 64 (RFC 5321), iar adresa se ia dintr-o trecere și se
- * taie în funcție (reverificarea 3.2).
- */
-export function curataText(s: string): string {
-  return s
-    .replace(/\b[a-z][a-z0-9+.-]{0,19}:\/\/[^\s"'`<>]*/gi, (a) => {
-      const k = a.search(/[?#]/);
-      if (k < 0) return a;
-      const coada = /(?::\d+){0,2}\)?$/.exec(a.slice(k))?.[0] ?? '';
-      return `${a.slice(0, k)}?…${coada}`;
-    })
-    .replace(/(?<![\w.+-])[\w.+-]{1,64}(?:@|%40)[\w-]{1,63}(?:\.[\w-]{1,63}){1,8}/gi, '<email>');
-}
-
-/** Raportul (`RaportClient`, ADR 0039 §5): doar câmpurile contractului, curățate și tăiate la plafoanele lui. */
-export function raportDin(i: IntrareEroare, build: string, browser: string, limba: string): RaportClient {
-  const mesaj = curataText(i.mesaj);
-  return {
-    tip: i.tip,
-    mesaj: taie(mesaj.trim() ? mesaj : MESAJ_GOL, PLAFON_MESAJ),
-    stiva: taie(curataText(i.stiva), PLAFON_STIVA),
-    adresa: taie(faraInterogare(i.adresa), PLAFON_ADRESA),
-    build: taie(build, PLAFON_SCURT),
-    browser: taie(browser, PLAFON_SCURT),
-    limba: taie(limba, PLAFON_SCURT),
-  };
-}
-
-/**
  * Cheia plafonului pe cheie: tipul și începutul mesajului, cu fiecare cuvânt care poartă o cifră (numere, uuid-uri, id-uri
  * hex) sau care arată ca un id (lung, cu majuscule și litere mici) înlocuit cu `#`. Cuvintele se despart printr-o singură
  * trecere, deci cheia e liniară. Nu e amprenta serverului (`cheieAmprenta`, cu regexurile normalizării, ~90 ms pe un mesaj
@@ -138,7 +104,8 @@ export function creeazaRaportor(deps: DepsRaportor): Raportor {
   let inLucru = false;
   let avertizat = false;
   let trimitere: Promise<Trimitere | null> | null = null;
-  const coada: RaportClient[] = [];
+  const coada: Array<{ readonly intrare: IntrareEroare; readonly limba: string }> = [];
+  let modul: ModulRaportor | null = null;
   const peCheie = new Map<string, number>();
   let acceptate = 0;
   const n = { trimise: 0, refuzate: 0, esuate: 0, pestePlafon: 0, renuntate: 0, locale: 0, reincercari: 0 };
@@ -180,7 +147,7 @@ export function creeazaRaportor(deps: DepsRaportor): Raportor {
     }
     acceptate++;
     peCheie.set(cheie, vazute + 1);
-    coada.push(raportDin(i, deps.build, browser, deps.limba()));
+    coada.push({ intrare: i, limba: deps.limba() });
     if (faza === 'pornit') void pompa();
   };
 
@@ -194,6 +161,7 @@ export function creeazaRaportor(deps: DepsRaportor): Raportor {
         stinge('import');
         return null;
       }
+      modul = m;
       let t: Trimitere | null = null;
       try {
         t = m.creeazaTrimitere(c);
@@ -213,7 +181,7 @@ export function creeazaRaportor(deps: DepsRaportor): Raportor {
     return trimitere;
   };
 
-  const incearca = async (t: Trimitere, r: RaportClient): Promise<RezultatTrimitere> => {
+  const incearca = async (t: Trimitere, r: Parameters<Trimitere['trimite']>[0]): Promise<RezultatTrimitere> => {
     try {
       return await t.trimite(r);
     } catch {
@@ -247,9 +215,10 @@ export function creeazaRaportor(deps: DepsRaportor): Raportor {
     inLucru = true;
     try {
       const t = await aduTrimitere(config);
-      while (t && faza === 'pornit' && coada.length > 0) {
-        const r = coada[0];
-        if (!r) break;
+      while (t && modul && faza === 'pornit' && coada.length > 0) {
+        const x = coada[0];
+        if (!x) break;
+        const r = modul.raportDin(x.intrare, deps.build, browser, x.limba);
         let rez = await incearca(t, r);
         if (rez === 'retea' && faza === 'pornit') {
           n.reincercari++;
