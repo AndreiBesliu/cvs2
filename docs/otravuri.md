@@ -51,6 +51,7 @@ Comenzile rulează cu `PYTHONIOENCODING=utf-8`, iar jurnalul se adaugă la `.tmp
 |---|---|---|
 | `test/otravuri/2.3c-a.py` | offsetul deschis, tăietura pe o parte, CAM-ul căilor deschise | 70: 50 prinse, 20 scăpate → 18 teste, 2 echivalente |
 | `test/otravuri/2.3c-b.py` | ușa SVG, documentul v10, aplicația, desenul, interfața (e2e) | 45: 36 prinse, 9 scăpate (+1 indirect) → 10 teste |
+| `test/otravuri/timp.py` | estimarea timpului (ADR 0046): planificatorul, arcele, sincronizările, `$$`, secțiunile, rezumatul; alese de autor | 38: 37 prinse, 1 scăpată → 1 test (plus o gardă); pe codul final 48 / 48 |
 
 Codul se mișcă după campanie, așa că o otravă poate ieși VOID mai târziu: `verifica` o arată, iar lista se reface. Feliile
 de dinainte de 2.3c au rulat otrăvurile cu harnașe nesalvate; rezultatele lor sunt în DEVLOG și în fișa etapei.

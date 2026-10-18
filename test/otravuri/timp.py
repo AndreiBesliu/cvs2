@@ -3,6 +3,11 @@
 # (`PLAN.md` §4.3 cere otrăvurile alese independent după etapa 4: aceasta e plasa autorului, nu runda independentă).
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
+#
+# Rezultatul: prima rundă (clona de la 7d080c9, 38 de otrăvuri): 37 prinse; A06 (G2 cu startul în capăt) scăpată → proba
+# cercului întreg în sens orar; A05 prinsă doar de termen (bucla fără sfârșit a unui arc cu 2r ≤ $12) → plafonul de 65 535
+# de segmente și proba motivului. A doua rundă, pe codul final (clona de la f81baf1, 48, cu cele 10 noi ale remedierilor
+# recenziei): 48 / 48 prinse, niciuna de termen, bazele verzi (timp 38, timp2 157).
 O = []
 
 
@@ -33,14 +38,14 @@ o('T04', TIM, 'if (this.coada.length >= this.B) this.executaPrimul();', 'if (thi
 o('T05', TIM, 'e2 = Math.min(c.intrareMaxima2, e2 + 2 * c.acc * c.mm);', 'e2 = Math.min(c.intrareMaxima2, e2 + c.acc * c.mm);',
   'timp', 'pasul înapoi cu jumătate din distanța de frânare')
 o('T06', TIM, 'Math.min(e2, this.intrare2 + 2 * b.acc * b.mm)', 'e2', 'timp', 'ieșirea fără limita accelerării din intrare')
-o('T07', TIM, "    if (!rapid && nominala > vitezaRapida) {\n      nominala = vitezaRapida;\n      limitate++;\n    }",
-  "    if (!rapid && nominala > vitezaRapida) {\n      limitate++;\n    }", 'timp', 'avansul nu mai e tăiat la viteza maximă a mașinii')
+o('T07', TIM, "    if (!rapid && nominala > vitezaRapida) {\n      nominala = vitezaRapida;\n      limitate.add(linieCurenta);\n    }",
+  "    if (!rapid && nominala > vitezaRapida) {\n      limitate.add(linieCurenta);\n    }", 'timp', 'avansul nu mai e tăiat la viteza maximă a mașinii')
 o('T08', TIM, '    const vitezaRapida = limita(vmax, u);', '    const vitezaRapida = Math.min(...vmax);', 'timp', 'viteza rapidă fără versor (nu se mai adună axele)')
 o('T09', TIM, '    const acc = limita(amax, u);', '    const acc = Math.min(...amax);', 'timp', 'accelerația fără versor')
 o('T10', TIM, '    const intrareMaxima2 = Math.min(nominala > nominalaAnterioara ? nominalaAnterioara ** 2 : nominala ** 2, jonctiune2);',
   '    const intrareMaxima2 = Math.min(nominala ** 2, jonctiune2);', 'timp', 'intrarea fără viteza nominală a blocului dinainte')
 o('T11', TIM, '    if (!(nominala > avansMinim)) nominala = avansMinim;', '', 'timp', 'fără avansul minim')
-o('T12', TIM, '      limitate++;', '', 'timp', 'blocurile limitate nu se mai numără')
+o('T12', TIM, '      limitate.add(linieCurenta);', '', 'timp', 'liniile limitate nu se mai numără')
 o('T13', TIM, '      const tp = lround((tinta[k] as number) * (pasi[k] as number));', '      const tp = (tinta[k] as number) * (pasi[k] as number);',
   'timp', 'fără cuantizarea pe pași')
 o('T14', TIM, '  if (dAcc + dDec <= L) return (v - vi) / a + (v - ve) / a + (L - dAcc - dDec) / v;',
@@ -56,7 +61,7 @@ o('A05', TIM, '    if (!(2 * raza > tol)) throw', '    if (2 * raza < 0) throw',
 o('A06', TIM, '      if (unghi >= -EPS_ARC) unghi -= 2 * Math.PI;', '      if (unghi > 0) unghi -= 2 * Math.PI;', 'timp', 'G2 cu startul în capăt: arc de 0, nu cerc (doar oracolul o vede)')
 # ---- sincronizările și pauza ----
 o('S01', TIM, "    if (mAx !== undefined && mAx !== ax) {\n      sincronizeaza();", "    if (mAx !== undefined && mAx !== ax) {", 'timp', 'M3 / M5 nu mai opresc mișcarea')
-o('S02', TIM, "      if (v.S !== turatie && ax === 'pornit') sincronizeaza();", '', 'timp', 'S nou cu axul pornit nu mai oprește')
+o('S02', TIM, "      if (v.S !== turatie && ax !== 'oprit') sincronizeaza();", '', 'timp', 'S nou cu axul pornit nu mai oprește')
 o('S03', TIM, '    if (mRacire !== undefined && mRacire !== racire) {\n      sincronizeaza();', '    if (mRacire !== undefined && mRacire !== racire) {',
   'timp', 'răcirea nu mai oprește')
 o('S04', TIM, "      sincronizeaza();\n      const pauza", "      const pauza", 'timp', 'G4 nu mai golește bufferul')

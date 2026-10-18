@@ -56,6 +56,17 @@ Ordinea:
 Dopurile găurilor (gaura piesei, cercul și elipsa logoului) nu au urechi: se desprind la ultima trecere. Dacă vrei, prinde-le
 cu bandă dublu adezivă, sau oprește-te înainte de ultima trecere și scoate-le.
 
+## Timpul (ADR 0046)
+
+Estimarea aplicației pentru fișierul de mai sus, cu modelul planificatorului GRBL 1.1h:
+- **10 min 23 s** pe setările din fabrică ale GRBL 1.1h (viteza maximă 500 mm/min, accelerația 10 mm/s²: avansul de
+  1 000 mm/min e tăiat la 500);
+- **4 min 31 s** pe o mașină cu $110 = $111 = 5 000, $112 = 1 000 mm/min și $120 = $121 = 500, $122 = 200 mm/s².
+
+Pe mașina ta, timpul depinde de setările ei. Dacă poți, **cronometrează tăierea** (de la pornirea fișierului până la oprirea
+axului la final) și trimite-mi timpul împreună cu răspunsul mașinii la `$$` (îl tastezi în consola senderului). Comparația
+cu estimarea, cu toleranța ±10 %, intră în teste odată cu cotele.
+
 ## Ce măsori
 
 | Cota | Valoarea | Toleranța |

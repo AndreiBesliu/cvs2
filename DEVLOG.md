@@ -2115,3 +2115,23 @@ reluare); emulatoarele 24 + 6; pornirea 93,9 / 100 kB, cu ușa 98,5 (strâmt).
 date (implicitele 1.1h, înlocuibile cu `$$`), rezumatul în dialogul exportului, calculat în bucata lui la cerere. Probele
 pe hârtie înaintea funcției; oracolul independent îl scrie un agent fără acces la `src/` (deși felia e R2: ediția întâi
 avea un estimator autoconsistent, niciodată comparat). Estimat ~1–1,5 M (oracolul, un verificator).
+**Făcut:** probele pe hârtie întâi (`test/unit/timp.test.ts`: T2 = 12,1667 s cu a = 100, 24,8333 s pe implicite; trapezul,
+triunghiul, diagonala limitată pe axe, colțul de 90°, fereastra de 15 blocuri: 2,407036 s, cu 16: 2,362988; arcul: 78 de
+segmente; pauza în pași de 50 ms), apoi modelul (`src/sim/timp.ts`, din sursa GRBL 1.1h descărcată), profilul ca date
+(`src/ir/masina.ts`, `src/ir/masini/grbl11h.ts`, `$$`), secțiunile postului (eticheta IR cu `operatie`; octeții neschimbați),
+rezumatul în dialog (timpul, pe operație, pe sculă, câmpul `$$`), în bucata calculului exportului. ADR 0046.
+**Oracolul (agent, ~0,36 M):** `test/oracles/timp.ts` cu 16 cazuri pe hârtie și controale negative; a derivat singur fereastra
+de 15 blocuri. Aplicația trece cazurile lui; pe corpus (plăcile pe două mașini, 300 de programe aleatoare pe profile aleatoare)
+abaterea cea mai mare e ~10⁻¹⁴. Diferențele de refuz (M7 oprit din fabrică, G1 fără F scris explicit, grupurile modale, G80 cu
+axe, plafoanele T / N / P): oracolul avea dreptate, aplicația le refuză acum la fel.
+**Recenzia (un verificator, ~0,38 M):** niciun defect mare; remediate cu proba lor: M3 → M4 golește bufferul, M2 / M30
+resetează modurile, o probă pe hârtie cu două operații (o rotire a timpilor între operații trecea), linia peste 79 de caractere
+și valorile negative refuzate, `/` și paranteza ca în `protocol.c`, liniile limitate numărate pe linii (nu pe segmente),
+plafonul de 10 M blocuri, motivul structurat, tabelele accesibile; scrise în ADR: legătura serială, `$1`, M1 (refuzat ales).
+**Sabotajele** (`test/otravuri/timp.py`, clonă în afara Drive-ului): prima rundă 37 / 38 (A06, G2 cu startul în capăt: proba
+cercului orar; A05 prins doar de termen, o buclă fără sfârșit: plafonul de 65 535 de segmente); pe codul final 48 / 48.
+**Mediul:** `npm test` cu 31 de procese a căzut de două ori pe memorie (`VirtualAlloc failed`; memoria angajată 50,6 / 63,3 GB,
+un joc deschis ține 17,5 GB): aceleași teste cu `--test-concurrency=8` au trecut; restul nivelului rapid, separat, verde.
+**Completed:** 18.10 23:40. Costul: agenții ~0,74 M (oracolul 0,36, verificatorul 0,38), plus bucla principală; săptămânalul
+56 → 59 %. Nivelul rapid: tipurile, importurile (14 / 14), 6 771 de teste unitare, 0 picate (8 sărite), build-ul determinist,
+licențele; e2e 152 / 152 în Edge; emulatoarele 24 + 6; pornirea 93,9 / 100 kB (cu ușa 98,5, neschimbată), totalul 224,7 kB.
