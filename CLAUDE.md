@@ -55,8 +55,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   indecșii. **3.4a (backup-ul zilnic și marcajele de rulare, ADR 0041)** gata pe 16.10: joburile programate pe test, prima
   rulare pe 17.10 la 03:00 / 05:00. **Loc în pachetul de pornire (ADR 0042)** gata pe 17.10: pornirea 99,1 → 92,3 / 100
   kB, ușa unui proiect salvat plafonată (8 kB). **3.2 (raportorul de erori din client, ADR 0043)** gata pe 18.10: erorile
-  ajung în `errorLogs` (pe test: 200 cu token, 401 fără), App Check înregistrat pe test. Urmează 3.4b (publicarea pe live,
-  cu conturile owner-ului); restul etapei cere o placă tăiată.
+  ajung în `errorLogs` (pe test: 200 cu token, 401 fără), App Check înregistrat pe test. **3.4b (publicarea pe live, ADR 0044)**: partea fără
+  conturi gata pe 18.10 (amprenta `meta/deployment`, `node scripts/publica.ts --instanta test`, workflow-ul `publica`); rămân
+  pașii owner-ului (`scripts/wif/pregateste-proiect.sh` în Cloud Shell, mediile GitHub). Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
 - **Feliile:** felia = ~½ zi activă, cu commit și cu proba scrisă înaintea funcției. Feliile se aleg doar din etapa

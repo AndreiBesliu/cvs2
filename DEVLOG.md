@@ -2057,3 +2057,16 @@ sesiunile paralele). Nivelul rapid: 6 577 de teste, 0 picate (8 sărite); e2e 13
 de publicare, citită de Diagnoză), un singur script de publicare pentru ambele instanțe (live doar din workflow, în mediul
 GitHub `live`), workflow-ul `publica` cu sha fixat (pe `main`, nivelul rapid verde, iar pe live același sha ca pe test),
 contul dedicat al backup-ului (opțional, din `.env`), scriptul de Cloud Shell pentru WIF / conturi / PITR. Fără agenți.
+**Făcut:** amprenta `meta/deployment` pe ținte (`shared/publicare.ts`; scrisă prin REST cu masca țintelor publicate,
+`scripts/amprenta.ts`; regula: citire pentru personal, nicio scriere), verificarea „Publicarea” din Diagnoză (după build:
+alt proiect, alt build, server din alt commit, necomis = eșec pe live), `scripts/publica.ts` pentru ambele instanțe (live
+doar din workflow, în mediul `live`, cu sha-ul cerut și checkout-ul curat; hosting-ul doar cu `dist/` al commit-ului),
+`publica-test.ts` / `publica-functii.ts` peste el, workflow-ul `publica` (sha pe `main`, rapid verde, pe live același sha
+publicat întreg pe test; WIF, `google-github-actions/auth` v3.0.0 și firebase-tools 15.18.0 fixate), versiunea din build din
+checkout (nu din `GITHUB_SHA`, care la `workflow_dispatch` e capul lui `main`), `SA_BACKUP` opțional, scriptul de Cloud Shell
+(`scripts/wif/pregateste-proiect.sh`). ADR 0044. 10 sabotaje, toate prinse.
+**Pe test (măsurat):** serverul și hosting-ul publicate cu scriptul nou; garda a refuzat întâi un `dist/` construit înaintea
+commit-ului; amprenta citită înapoi: toate cele 4 ținte din `ee1357454fb0`, din arborele curat; `verifica-test.ts` trece pe
+acest sha și refuză altul. GitHub a citit workflow-ul (`publica`, activ). Nerulat: workflow-ul însuși (cere WIF și mediile).
+**Completed:** 18.10 11:35. Fără agenți. Nivelul rapid: 6 598 de teste, 0 picate (8 sărite); e2e 137 / 137; emulatoarele
+24 + 6; pornirea 93,5 / 100 kB (neschimbată), `/admin` 168,0 kB.
