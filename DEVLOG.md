@@ -2029,3 +2029,23 @@ excepție; cheia locală nu grupează id-urile; inactivitatea probată doar 3,5 
 curățarea scapă `HTTPS://`, `wss://`, paranteze). Reverificarea „otrăvuri” a fost oprită la pauză. **De reluat:**
 constatările reverificării (journal: `wf_42e7cb55-de1`), otrăvurile din nou, porțile, ADR 0043, publicarea pe test și
 măsurarea „200 cu token” (App Check e înregistrat pe test de owner, 17.10).
+**Reluare:** 18.10 ~08:20, la „continua” (sesiune nouă, după pauză; raționamentul refăcut din DEVLOG și din jurnalul
+workflow-ului). Backup-ul de noapte a mers: `backupZilnic` 03:00 succes, `verificaBackup` 05:00 a găsit exportul terminat.
+**Reverificarea, remediată (integratorul):** marcajul „doar local” îngustat la mediul omului (`eroareDeMediu`: date blocate,
+fereastra privată, discul plin, profilul stricat; IndexedDB lipsă; termenul), deci dicționarele și ușa care nu vin,
+`VersionError` și excepțiile codului pleacă la server; cheia locală grupează id-urile (cuvintele cu cifre sau cu forma unui
+id devin `#`), liniar; curățarea pe orice protocol, cu parantezele, `%40` și poziția din stivă păstrată; carantina
+emulatoarelor pe adresele întregi (backslash-ul din adresa contului ocolea `new URL`); inactivitatea probată cu ceasul fals.
+3 e2e noi și 6 unitare noi, toate picate întâi pe codul vechi; 12 sabotaje, toate prinse (unul abia după întărirea probei:
+eșecul total al dicționarelor). Partea raportorului din pornire trecuse la 1,52 kB (peste 1,5): construirea și curățarea
+raportului s-au mutat în bucata la cerere → 1,20 kB. **A doua rundă de otrăvuri** (`test/otravuri/3.2.py`, clonă în afara
+Drive-ului): 31 (11 scăpate în prima rundă, reaplicate; 20 noi pe remedieri), 30 prinse; N11 (reîmprospătarea App Check)
+a primit o plasă pe sursă: 31 / 31. Agentul de otrăvuri oprit la pauză n-a fost reluat (lista am scris-o eu, pe remedierile
+agentului, nu pe ale mele, care au avut sabotajele lor).
+**Pe test (măsurat în browser, 18.10 ~08:55):** publicarea pune cheia în `config.json`; fără eroare, nimic adus; la o eroare
+provocată: bucățile raportorului, `enterprise.js`, schimbul App Check 200, `logClientError` **200**, grupul în `errorLogs`;
+fără App Check (curl): **401**. Consola: doar eroarea provocată, nicio încălcare de CSP.
+**Completed:** 18.10 09:05. Commit-ul feliei pe `main`: squash din `wip/3.2-raportor`. Costul: workflow-ul 1 ~1,05 M, workflow-ul 2
+(remedierile + o reverificare + o reverificare oprită) nemăsurat separat; săptămânalul 29 → 44 % (cu bucla principală și cu
+sesiunile paralele). Nivelul rapid: 6 577 de teste, 0 picate (8 sărite); e2e 137 / 137; emulatoarele 23 + 6; pornirea
+**93,5 / 100 kB** (cu ușa 98,1, strâmt), partea raportorului 1,20 kB, la prima eroare 17,9 kB + reCAPTCHA.
