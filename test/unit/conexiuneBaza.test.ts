@@ -25,6 +25,17 @@ test('un singur emulator în afară (sau o adresă nevalidă) refuză tot', () =
   assert.equal(emulatoareLocale(LOCALE, 'cncvectorstudio-test.firebaseapp.com'), false, 'pagina în afară');
 });
 
+test('adresa contului citită ca de SDK, nu ca de URL (reverificarea 3.2): backslash-ul, utilizatorul, calea, alt protocol', () => {
+  // `new URL` vede gazda `localhost`, dar @firebase/auth leagă contul de ce urmează după `@` (`colector.exemplu.ro`).
+  assert.equal(emulatoareLocale({ ...LOCALE, auth: 'http://localhost\\@colector.exemplu.ro:9099' }, 'localhost'), false);
+  assert.equal(emulatoareLocale({ ...LOCALE, auth: 'http://u@colector.exemplu.ro:9099' }, 'localhost'), false);
+  assert.equal(emulatoareLocale({ ...LOCALE, auth: 'http://localhost@colector.exemplu.ro:9099' }, 'localhost'), false);
+  assert.equal(emulatoareLocale({ ...LOCALE, auth: 'http://127.0.0.1:9095/cale' }, 'localhost'), false);
+  assert.equal(emulatoareLocale({ ...LOCALE, auth: 'https://127.0.0.1:9095' }, 'localhost'), false);
+  assert.equal(emulatoareLocale({ ...LOCALE, firestore: '127.0.0.1:8085@colector.exemplu.ro' }, 'localhost'), false);
+  assert.equal(emulatoareLocale({ ...LOCALE, auth: 'http://127.0.0.1:9095/' }, 'localhost'), true, 'bara de la final e aceeași adresă');
+});
+
 test('conexiunea refuză emulatoarele cu o gazdă din afară, chiar pe localhost, fără să creeze aplicația', () => {
   const r = conecteazaBaza({ firebase: FIREBASE, emulatoare: { ...LOCALE, functions: 'colector.exemplu.ro:80' } }, 'localhost');
   assert.deepEqual(r, { ok: false, motiv: 'emulatoare-in-afara' });

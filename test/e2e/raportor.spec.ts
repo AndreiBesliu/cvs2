@@ -155,6 +155,69 @@ test.describe('raportorul de erori', () => {
     expect(p.externe).toEqual([]);
   });
 
+  /** Funcția stubbuită cu 200 `{ ok: true }`; întoarce corpurile rapoartelor primite. */
+  async function functiaPrimeste(page: Page): Promise<string[]> {
+    const apeluri: string[] = [];
+    await page.route(FUNCTIE, (r) => {
+      if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
+      apeluri.push(r.request().postData() ?? '');
+      return r.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: JSON.stringify({ result: { ok: true } }) });
+    });
+    return apeluri;
+  }
+
+  test('o publicare fără dicționare (defectul nostru, nu rețeaua omului): ecranul „fără texte”, iar raportul pleacă', async ({ page }) => {
+    const p = await plasa(page);
+    await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(CONFIG_FIREBASE) }));
+    await page.route(/\/assets\/mesaje\.(ro|en)-[^/]+\.js$/, (r) => r.fulfill({ status: 404, body: '' }));
+    const apeluri = await functiaPrimeste(page);
+    await page.goto('/');
+    await expect(page.locator('[data-eroare="fara-texte"]')).toBeVisible({ timeout: 40_000 });
+    await expect.poll(() => apeluri.join('\n'), { timeout: 15_000 }).toContain('mesaje.');
+    // Și eșecul total (pornirea renunță): semnul că aplicația n-a pornit pentru nimeni.
+    await expect.poll(() => apeluri.join('\n'), { timeout: 15_000 }).toContain('AggregateError');
+    expect(p.externe).toEqual([]);
+  });
+
+  test('baza proiectelor la o versiune mai nouă (VersionError, defectul nostru): raportul pleacă, nu e „doar local”', async ({ page }) => {
+    const p = await plasa(page);
+    // Cererea de deschidere la versiunea 7 intră în coada bazei înaintea celei a aplicației (la 1), deci aplicația primește VersionError.
+    await page.addInitScript(() => {
+      const r = indexedDB.open('cncvs2-proiecte', 7);
+      r.onupgradeneeded = () => { r.result.createObjectStore('versiuni'); };
+      r.onsuccess = () => { r.result.close(); };
+    });
+    await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(CONFIG_FIREBASE) }));
+    const apeluri = await functiaPrimeste(page);
+    await page.goto('/');
+    await expect.poll(() => apeluri.join('\n'), { timeout: 15_000 }).toMatch(/version/i);
+    const intrari = await page.evaluate(() => localStorage.getItem('cncvs2.jurnalErori.v1') ?? '');
+    expect(intrari).not.toContain('"doarLocala":true');
+    expect(p.externe).toEqual([]);
+  });
+
+  test('ușa proiectului care nu vine (o publicare nouă): „necitit acum” pleacă la server', async ({ page }) => {
+    const p = await plasa(page);
+    await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(CONFIG_FIREBASE) }));
+    const apeluri = await functiaPrimeste(page);
+    await page.goto('/');
+    await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+    await expect.poll(() => page.evaluate(() => new Promise<number>((ok) => {
+      const r = indexedDB.open('cncvs2-proiecte');
+      r.onsuccess = () => {
+        const db = r.result;
+        if (!db.objectStoreNames.contains('versiuni')) { db.close(); ok(0); return; }
+        const c = db.transaction('versiuni').objectStore('versiuni').count();
+        c.onsuccess = () => { db.close(); ok(c.result); };
+      };
+    }))).toBeGreaterThan(0);
+    await page.route(/\/assets\/schemaDocument-[^/]+\.js$/, (r) => r.abort());
+    await page.reload();
+    await expect(page.getByTestId('proiect')).toContainText('Proiectul salvat n-a putut fi citit acum');
+    await expect.poll(() => apeluri.join('\n'), { timeout: 15_000 }).toContain('ușa de încărcare');
+    expect(p.externe).toEqual([]);
+  });
+
   for (const [cum, raspunde] of [
     ['oprită (blocant, rețea)', (r: Route) => r.abort()],
     ['servită goală (blocant care o înlocuiește)', (r: Route) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' })],

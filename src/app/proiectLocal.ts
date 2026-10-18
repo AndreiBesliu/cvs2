@@ -53,10 +53,26 @@ export type ProiectDeschis =
   /**
    * Proiectul salvat n-a putut fi citit ACUM (ușa de încărcare n-a venit: rețeaua, o versiune nouă a aplicației; sau baza
    * n-a răspuns la timp): fila lucrează în memorie, fără să-l acopere, iar o reîncărcare îl aduce (recenzia A).
+   * `mediu`: cauza e mediul omului (termenul), nu ușa care lipsește (ADR 0043: doar mediul rămâne „doar local”).
    */
-  | { readonly mod: 'necitit-acum'; readonly motiv: string }
-  /** Browserul nu dă memorie locală (fereastră privată, date blocate), sau deschiderea a eșuat. */
-  | { readonly mod: 'fara-memorie'; readonly motiv: string };
+  | { readonly mod: 'necitit-acum'; readonly motiv: string; readonly mediu?: true }
+  /**
+   * Browserul nu dă memorie locală (fereastră privată, date blocate), sau deschiderea a eșuat. `mediu`: cauza e a browserului
+   * (`eroareDeMediu`); fără el, deschiderea a căzut din alt motiv (o bază la altă versiune, codul nostru) și eroarea pleacă.
+   */
+  | { readonly mod: 'fara-memorie'; readonly motiv: string; readonly mediu?: true };
+
+/**
+ * Erorile IndexedDB care descriu mediul omului, nu un defect (ADR 0039 §6, reverificarea 3.2): baza blocată de setările
+ * browserului (`SecurityError`), indisponibilă în fereastra privată (`InvalidStateError`), discul plin
+ * (`QuotaExceededError`), sau stricată în profil (`UnknownError`). Restul (`VersionError`, un magazin lipsă, un `TypeError`)
+ * sunt ale noastre.
+ */
+const ERORI_DE_MEDIU: ReadonlySet<string> = new Set(['SecurityError', 'InvalidStateError', 'QuotaExceededError', 'UnknownError']);
+
+export function eroareDeMediu(e: unknown): boolean {
+  return e instanceof Error && ERORI_DE_MEDIU.has(e.name);
+}
 
 function cerere<T>(r: IDBRequest<T>): Promise<T> {
   return new Promise((ok, eroare) => {
@@ -208,7 +224,7 @@ async function deschide(idb: IDBFactory, expirat: () => boolean): Promise<Proiec
     // Răspunsul a venit după termen: aplicația a pornit deja în memorie. Nimic nu rămâne ținut.
     blocare?.elibereaza();
     db.close();
-    return { mod: 'fara-memorie', motiv: 'deschiderea a depășit timpul' };
+    return { mod: 'fara-memorie', motiv: 'deschiderea a depășit timpul', mediu: true };
   }
   if (blocare) {
     void navigator.storage?.persist?.().catch(() => false);
@@ -282,7 +298,7 @@ async function deschide(idb: IDBFactory, expirat: () => boolean): Promise<Proiec
 
 export async function deschideProiect(): Promise<ProiectDeschis> {
   const idb = globalThis.indexedDB;
-  if (!idb) return { mod: 'fara-memorie', motiv: 'browserul n-are IndexedDB' };
+  if (!idb) return { mod: 'fara-memorie', motiv: 'browserul n-are IndexedDB', mediu: true };
   let expirat = false;
   let ceas: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -294,8 +310,9 @@ export async function deschideProiect(): Promise<ProiectDeschis> {
     ]);
   } catch (e) {
     // Termenul: baza (sau ușa) n-a răspuns la timp. Proiectul poate exista: nu e „browserul fără memorie”.
-    if (expirat) return { mod: 'necitit-acum', motiv: 'deschiderea a depășit timpul' };
-    return { mod: 'fara-memorie', motiv: e instanceof Error ? e.message : String(e) };
+    if (expirat) return { mod: 'necitit-acum', motiv: 'deschiderea a depășit timpul', mediu: true };
+    const motiv = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+    return eroareDeMediu(e) ? { mod: 'fara-memorie', motiv, mediu: true } : { mod: 'fara-memorie', motiv };
   } finally {
     clearTimeout(ceas);
   }

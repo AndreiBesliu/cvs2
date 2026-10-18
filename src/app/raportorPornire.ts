@@ -77,17 +77,21 @@ export interface Raportor {
 }
 
 /**
- * Textul trimis, curățat (apărare în adâncime; jurnalul local rămâne neatins): query-ul și fragmentul adreselor http(s)
- * devin „?…”, adresele de e-mail devin `<email>`. Regexurile sunt liniare: adresa se ia întreagă dintr-o trecere și se
- * taie în funcție; e-mailul începe doar la marginea unui cuvânt (privirea înapoi), deci un șir lung nu se rescanează.
+ * Textul trimis, curățat (apărare în adâncime; jurnalul local rămâne neatins): query-ul și fragmentul adreselor (orice
+ * protocol, și cu majuscule: `HTTPS://`, `wss://`) devin „?…”, iar poziția din stivă de la capăt (`:linie:coloană`, cu
+ * paranteza) rămâne; adresele de e-mail, și cele codificate (`%40`), devin `<email>`. Regexurile sunt liniare: protocolul
+ * are cel mult 20 de caractere, partea locală a e-mailului cel mult 64 (RFC 5321), iar adresa se ia dintr-o trecere și se
+ * taie în funcție (reverificarea 3.2).
  */
 export function curataText(s: string): string {
   return s
-    .replace(/https?:\/\/[^\s"'`<>()[\]{}]*/g, (a) => {
+    .replace(/\b[a-z][a-z0-9+.-]{0,19}:\/\/[^\s"'`<>]*/gi, (a) => {
       const k = a.search(/[?#]/);
-      return k < 0 ? a : `${a.slice(0, k)}?…`;
+      if (k < 0) return a;
+      const coada = /(?::\d+){0,2}\)?$/.exec(a.slice(k))?.[0] ?? '';
+      return `${a.slice(0, k)}?…${coada}`;
     })
-    .replace(/(?<![\w.+-])[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, '<email>');
+    .replace(/(?<![\w.+-])[\w.+-]{1,64}(?:@|%40)[\w-]{1,63}(?:\.[\w-]{1,63}){1,8}/gi, '<email>');
 }
 
 /** Raportul (`RaportClient`, ADR 0039 §5): doar câmpurile contractului, curățate și tăiate la plafoanele lui. */
@@ -105,12 +109,17 @@ export function raportDin(i: IntrareEroare, build: string, browser: string, limb
 }
 
 /**
- * Cheia plafonului pe cheie: tipul și începutul mesajului, cu cifrele înlocuite (un singur regex liniar). Nu e amprenta
- * serverului (`cheieAmprenta`, cu regexurile normalizării, ~90 ms pe un mesaj lung cu cratime: recenzia 17.10); gruparea
- * adevărată rămâne pe server.
+ * Cheia plafonului pe cheie: tipul și începutul mesajului, cu fiecare cuvânt care poartă o cifră (numere, uuid-uri, id-uri
+ * hex) sau care arată ca un id (lung, cu majuscule și litere mici) înlocuit cu `#`. Cuvintele se despart printr-o singură
+ * trecere, deci cheia e liniară. Nu e amprenta serverului (`cheieAmprenta`, cu regexurile normalizării, ~90 ms pe un mesaj
+ * lung cu cratime: recenzia 17.10), dar grupează tot ce grupează ea pe mesajele obișnuite; gruparea adevărată rămâne pe
+ * server. Fără id-uri, o eroare în buclă cu un uuid nou la fiecare apariție ar mânca tot plafonul pe sesiune
+ * (reverificarea 3.2).
  */
 export function cheieLocala(tip: string, mesaj: string): string {
-  return `${tip}|${mesaj.slice(0, 300).replace(/\d+/g, '0')}`;
+  const bucati = mesaj.slice(0, 600).split(/([^\w-]+)/);
+  const id = (c: string): boolean => /\d/.test(c) || (c.length >= 16 && /[a-z]/.test(c) && /[A-Z]/.test(c));
+  return `${tip}|${bucati.map((c, i) => (i % 2 === 0 && id(c) ? '#' : c)).join('').slice(0, 300)}`;
 }
 
 /** Starea, pe o linie (antetul raportului jurnalului): faza, motivul stingerii, contoarele. */

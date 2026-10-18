@@ -6,10 +6,12 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import { initializeApp } from 'firebase/app';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { PLAFON_MESAJ, PLAFON_SCURT, PLAFON_STIVA, valideazaRaport, type RaportClient } from '../../shared/erori.ts';
 import { creeazaJurnal, type Jurnal } from '../../src/app/jurnalErori.ts';
+import { eroareDeMediu } from '../../src/app/proiectLocal.ts';
 import {
   MESAJ_GOL, PAUZA_REINCERCARE_MS, PLAFON_COADA, PLAFON_PE_CHEIE, PLAFON_SESIUNE, cheieLocala, creeazaRaportor, curataText,
   descrieStare, raportDin, type DepsRaportor,
@@ -672,6 +674,55 @@ test('erorile Firebase: 401 / 403 = neautorizat; doar cererea care n-a ajuns (st
   assert.equal(dinEroare(e('unauthenticated')), 'neautorizat', 'și fără prefix');
   assert.equal(dinEroare(new Error('x')), 'altul');
   assert.equal(dinEroare(undefined), 'altul');
+});
+
+/* ── Reverificarea (18.10) ──────────────────────────────────────────────────────────────────────────────────────── */
+
+test('cheia locală grupează și id-urile (uuid, hex, id lung cu majuscule și litere mici): o eroare în buclă nu mănâncă plafonul pe sesiune', async () => {
+  const b = banc();
+  const r = creeazaRaportor(b.deps);
+  r.porneste(CONFIG);
+  for (let i = 0; i < 25; i++) b.jurnal.adauga('fereastra', `Error: piesa ${randomUUID()} lipsește din document`);
+  b.jurnal.adauga('fereastra', 'TypeError: altceva');
+  await asteapta();
+  assert.equal(b.trimise.filter((t) => t.mesaj.startsWith('Error: piesa')).length, PLAFON_PE_CHEIE);
+  assert.ok(b.trimise.some((t) => t.mesaj === 'TypeError: altceva'), 'eroarea distinctă pleacă');
+  assert.equal(cheieLocala('fereastra', 'doc AbCdEfGhIjKlMnOpQrSt lipsă'), cheieLocala('fereastra', 'doc QwErTyUiOpAsDfGhJkLz lipsă'), 'id Firebase fără cifre');
+  assert.equal(cheieLocala('fereastra', 'cheia 0xdeadbeef12 greșită'), cheieLocala('fereastra', 'cheia 0x77aa0f0001 greșită'));
+  assert.notEqual(cheieLocala('fereastra', 'Cannot read properties of undefined'), cheieLocala('fereastra', 'Cannot read properties of null'));
+  const t0 = performance.now();
+  for (let i = 0; i < 20; i++) cheieLocala('fereastra', `${'a-'.repeat(2_000)}1 ${'AbC'.repeat(1_000)}`);
+  assert.ok(performance.now() - t0 < 40, 'cheia rămâne liniară');
+});
+
+test('curățarea: orice protocol (și cu majuscule), paranteze în cale, e-mailul codificat; poziția din stivă rămâne', () => {
+  assert.equal(curataText('Failed: HTTPS://api.exemplu.ro/x?token=SECRET123'), 'Failed: HTTPS://api.exemplu.ro/x?…');
+  assert.equal(curataText('WebSocket wss://rt.exemplu.ro/socket?token=SECRET123 failed'), 'WebSocket wss://rt.exemplu.ro/socket?… failed');
+  assert.equal(curataText('GET https://exemplu.ro/cauta(1)?token=SECRET123 404'), 'GET https://exemplu.ro/cauta(1)?… 404');
+  assert.equal(curataText('contul ion.popescu%40exemplu.ro nu exista'), 'contul <email> nu exista');
+  assert.equal(curataText('at f (http://localhost:5173/src/app/App.tsx?t=1712:10:5)'), 'at f (http://localhost:5173/src/app/App.tsx?…:10:5)');
+  assert.equal(curataText('(vezi https://x.ro/a?b=1)'), '(vezi https://x.ro/a?…)');
+  const t0 = performance.now();
+  for (let i = 0; i < 20; i++) for (const s of [`${'a'.repeat(3_000)}://x?y`, 'a1+'.repeat(1_300), `${'b.'.repeat(1_500)}%40`, 'x://?'.repeat(800)]) curataText(s);
+  assert.ok(performance.now() - t0 < 150, 'curățarea rămâne liniară');
+});
+
+test('nu la inactivitate: pornit cu Firebase și fără nicio intrare, nimic nu se aduce, oricât trece timpul', (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'setInterval'] });
+  const b = banc();
+  const r = creeazaRaportor(b.deps);
+  r.porneste(CONFIG);
+  t.mock.timers.tick(60 * 60_000);
+  assert.equal(b.adus, 0);
+  assert.equal(r.stare().faza, 'pornit');
+});
+
+test('erorile proiectului local: doar mediul omului (IndexedDB lipsă, blocat, plin, termenul) e „doar local”; un defect al nostru pleacă', () => {
+  const dom = (name: string): Error => Object.assign(new Error(name), { name });
+  for (const e of [dom('SecurityError'), dom('InvalidStateError'), dom('QuotaExceededError'), dom('UnknownError')]) assert.equal(eroareDeMediu(e), true, e.name);
+  for (const e of [dom('VersionError'), dom('NotFoundError'), new TypeError('x is undefined'), dom('ConstraintError'), 'text', null]) {
+    assert.equal(eroareDeMediu(e), false, String(e instanceof Error ? e.name : e));
+  }
 });
 
 test('erorile SDK-ului real: fetch căzut (status 0) = rețea; 500 = altul; 503 = rețea; 401 = neautorizat', async () => {

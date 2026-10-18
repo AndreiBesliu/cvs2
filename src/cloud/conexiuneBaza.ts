@@ -51,19 +51,20 @@ export function hostPort(adresa: string): { host: string; port: number } {
   return { host, port: Number(port) };
 }
 
+/** Adresa emulatorului de cont: exact `http://<gazda locală>:<port>`, cu bara de la final cel mult. */
+const ADRESA_CONT_LOCALA = /^http:\/\/(?:localhost|127\.0\.0\.1):\d{1,5}\/?$/;
+/** Firestore și funcțiile: exact `<gazda locală>:<port>`. */
+const GAZDA_PORT_LOCALA = /^(?:localhost|127\.0\.0\.1):\d{1,5}$/;
+
 /**
  * Carantina emulatoarelor (ADR 0040 §9): pagina pe gazda locală ȘI fiecare emulator numit (contul, Firestore, funcțiile)
  * pe gazda locală. Altfel un `config.json` cu emulatoare ar trimite rapoartele și tokenul de probă spre orice gazdă, prin
- * http (recenzia 3.2, 17.10). O adresă a contului care nu se poate citi e în afară.
+ * http (recenzia 3.2, 17.10). Adresele se potrivesc întregi, nu se citesc cu `new URL`: SDK-ul contului își ia gazda cu
+ * regexul lui, deci `http://localhost\@colector.ro:9099` ar trece de `URL` (gazda `localhost`) și ar lega contul de
+ * `colector.ro` (reverificarea 3.2).
  */
 export function emulatoareLocale(e: NonNullable<ConfigCloud['emulatoare']>, gazda: string): boolean {
-  let auth = '';
-  try {
-    auth = new URL(e.auth).hostname;
-  } catch {
-    auth = '';
-  }
-  return [gazda, auth, hostPort(e.firestore).host, hostPort(e.functions).host].every(gazdaLocala);
+  return gazdaLocala(gazda) && ADRESA_CONT_LOCALA.test(e.auth) && GAZDA_PORT_LOCALA.test(e.firestore) && GAZDA_PORT_LOCALA.test(e.functions);
 }
 
 let curenta: ConexiuneBaza | null = null;

@@ -30,8 +30,10 @@ const jurnal = creeazaJurnal(depozit, () => new Date(), () => location.href);
  * Raportorul de erori (3.2, ADR 0043): ascultă jurnalul de acum, deci prinde și erorile de dinaintea lui `config.json`
  * (ținute în coadă); Firebase vine la cerere, abia la prima eroare cu configurația cunoscută. Ambele rute (aplicația și
  * `/admin`) îl au; pe `/admin`, apelul poartă singur tokenul contului. Browserul e implicit `navigator.userAgent`.
- * Condițiile mediului omului (dicționarul care nu vine, proiectul local fără memorie) intră în jurnal „doar locale”
- * (`adaugaLocala`): raportorul le sare, fără să descarce nimic (ADR 0039 §6, recenzia 3.2).
+ * Doar mediul omului (proiectul local fără memorie: IndexedDB lipsă, blocat, plin, sau baza care nu răspunde la timp) intră
+ * în jurnal „doar local” (`adaugaLocala`): raportorul îl sare, fără să descarce nimic (ADR 0039 §6). Dicționarele și ușa
+ * proiectului care nu vin pleacă: o publicare stricată arată la fel, iar cu rețeaua căzută nici raportorul n-ar veni
+ * (reverificarea 3.2).
  */
 const raportor = creeazaRaportor({
   jurnal,
@@ -77,7 +79,7 @@ async function pregatesteLimba(l: Limba): Promise<boolean> {
     const id = setTimeout(pornesteAlta, TERMEN_LIMBA_MS);
     prima.then(() => { clearTimeout(id); }, (e: unknown) => {
       clearTimeout(id);
-      jurnal.adaugaLocala('promisiune', e);
+      jurnal.adauga('promisiune', e);
       pornesteAlta();
     });
   });
@@ -90,7 +92,7 @@ async function pregatesteLimba(l: Limba): Promise<boolean> {
     if (x !== l) prima.then(() => { if (!alegereaOmului) schimbaLimba(l); }, () => undefined);
     return true;
   } catch (e) {
-    jurnal.adaugaLocala('promisiune', e);
+    jurnal.adauga('promisiune', e);
     return false;
   }
 }
@@ -126,7 +128,7 @@ function alegeLimba(l: Limba): void {
     } catch {
       // Alegerea rămâne doar pentru sesiunea asta.
     }
-  }, (e: unknown) => { jurnal.adaugaLocala('promisiune', e); });
+  }, (e: unknown) => { jurnal.adauga('promisiune', e); });
 }
 
 /**
@@ -215,9 +217,12 @@ async function porneste(): Promise<void> {
 
   // Proiectul din browser se deschide înainte de prima randare: o comandă dată între timp ar fi acoperită de el.
   const proiect = await deschideProiect();
-  // Fără memorie (IndexedDB lipsă sau blocat) și „necitit acum” (bucata ușii nu vine) descriu mediul omului, nu un defect.
-  if (proiect.mod === 'fara-memorie' || proiect.mod === 'necitit-acum') jurnal.adaugaLocala('proiect', proiect.motiv);
-  else if (proiect.mod === 'nu-se-deschide') jurnal.adauga('proiect', proiect.motiv);
+  // Doar mediul omului (`mediu`: IndexedDB lipsă, blocat, plin, termenul) e „doar local”; o bază la altă versiune, o ușă
+  // care nu vine sau o excepție a codului nostru pleacă la server (reverificarea 3.2).
+  if (proiect.mod === 'fara-memorie' || proiect.mod === 'necitit-acum' || proiect.mod === 'nu-se-deschide') {
+    if ('mediu' in proiect && proiect.mediu) jurnal.adaugaLocala('proiect', proiect.motiv);
+    else jurnal.adauga('proiect', proiect.motiv);
+  }
 
   createRoot(radacina).render(
     <StrictMode>
