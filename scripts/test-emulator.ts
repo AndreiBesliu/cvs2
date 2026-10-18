@@ -1,7 +1,7 @@
 /**
  * Testele pe emulatoare (ADR 0039): compilează funcțiile, pornește Firestore și Functions pe proiectul `demo-cncvs2`
  * (un proiect `demo-*` nu atinge cloud-ul și nu cere login) și rulează `functions/test/*.test.ts`, pe rând (baza e comună),
- * apoi e2e-ul paginii `/admin` (`test/e2e-emulator/`, cu Auth).
+ * apoi e2e-ul paginii `/admin` și al raportorului de erori (`test/e2e-emulator/`, cu Auth).
  *
  *   npm run test:emulator
  *

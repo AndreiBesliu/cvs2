@@ -17,6 +17,11 @@ export interface IntrareEroare {
   readonly mesaj: string;
   readonly stiva: string;
   readonly adresa: string;
+  /**
+   * O condiție a mediului omului, nu un defect (ADR 0039 §6, predicatul îngust; recenzia 3.2): proiectul local fără memorie
+   * sau necitit acum, dicționarul unei limbi care nu vine. Rămâne în jurnalul local, dar nu pleacă spre server.
+   */
+  readonly doarLocala?: true;
 }
 
 export interface Depozit {
@@ -31,6 +36,8 @@ export interface Context {
   readonly instanta: string;
   readonly limba: string;
   readonly browserul: string;
+  /** Starea raportorului de erori (3.2, `descrieStare`): o linie în antetul raportului, când există. */
+  readonly raportorul?: string;
 }
 
 export const CHEIE_DEPOZIT = 'cncvs2.jurnalErori.v1';
@@ -39,10 +46,16 @@ export const PLAFON_INTRARI = 50;
 
 export interface Jurnal {
   adauga(tip: TipEroare, eroare: unknown, stivaComponentelor?: string): void;
+  /** Ca `adauga`, dar marcată „doar locală” (`IntrareEroare.doarLocala`): o condiție a mediului, nu pleacă spre server. */
+  adaugaLocala(tip: TipEroare, eroare: unknown): void;
   citeste(): readonly IntrareEroare[];
   raport(context: Context): string;
   goleste(): void;
-  asculta(a: () => void): () => void;
+  /**
+   * Ascultătorul află de fiecare schimbare; la o intrare nouă o primește (raportorul de erori, 3.2: doar intrările acestei
+   * sesiuni pleacă spre server), la golire nu primește nimic.
+   */
+  asculta(a: (noua?: IntrareEroare) => void): () => void;
 }
 
 function descrie(eroare: unknown): { mesaj: string; stiva: string } {
@@ -63,7 +76,7 @@ function eIntrare(x: unknown): x is IntrareEroare {
 
 export function creeazaJurnal(depozit: Depozit | null, ceas: () => Date, adresa: () => string): Jurnal {
   let inMemorie: IntrareEroare[] = [];
-  const ascultatori = new Set<() => void>();
+  const ascultatori = new Set<(noua?: IntrareEroare) => void>();
 
   const citesteDepozit = (): IntrareEroare[] => {
     if (!depozit) return inMemorie;
@@ -77,7 +90,7 @@ export function creeazaJurnal(depozit: Depozit | null, ceas: () => Date, adresa:
     }
   };
 
-  const scrie = (lista: IntrareEroare[]): void => {
+  const scrie = (lista: IntrareEroare[], noua: IntrareEroare): void => {
     inMemorie = lista;
     if (depozit) {
       try {
@@ -86,20 +99,28 @@ export function creeazaJurnal(depozit: Depozit | null, ceas: () => Date, adresa:
         // Depozitul plin sau blocat: intrările rămân în memorie, pentru sesiunea asta.
       }
     }
-    for (const a of ascultatori) a();
+    for (const a of ascultatori) a(noua);
+  };
+
+  const pune = (tip: TipEroare, eroare: unknown, stivaComponentelor: string, doarLocala: boolean): void => {
+    const { mesaj, stiva } = descrie(eroare);
+    const intrare: IntrareEroare = {
+      cand: ceas().toISOString(),
+      tip,
+      mesaj: taie(mesaj, PLAFON_MESAJ),
+      stiva: taie(stivaComponentelor ? `${stiva}\n--- componente ---${stivaComponentelor}` : stiva, PLAFON_STIVA),
+      adresa: adresa(),
+      ...(doarLocala ? { doarLocala: true as const } : {}),
+    };
+    scrie([...citesteDepozit(), intrare].slice(-PLAFON_INTRARI), intrare);
   };
 
   return {
     adauga(tip, eroare, stivaComponentelor = '') {
-      const { mesaj, stiva } = descrie(eroare);
-      const intrare: IntrareEroare = {
-        cand: ceas().toISOString(),
-        tip,
-        mesaj: taie(mesaj, PLAFON_MESAJ),
-        stiva: taie(stivaComponentelor ? `${stiva}\n--- componente ---${stivaComponentelor}` : stiva, PLAFON_STIVA),
-        adresa: adresa(),
-      };
-      scrie([...citesteDepozit(), intrare].slice(-PLAFON_INTRARI));
+      pune(tip, eroare, stivaComponentelor, false);
+    },
+    adaugaLocala(tip, eroare) {
+      pune(tip, eroare, '', true);
     },
     citeste: citesteDepozit,
     raport(context) {
@@ -110,11 +131,12 @@ export function creeazaJurnal(depozit: Depozit | null, ceas: () => Date, adresa:
         `instanța: ${context.instanta}`,
         `limba: ${context.limba}`,
         `browserul: ${context.browserul}`,
+        ...(context.raportorul === undefined ? [] : [`raportorul: ${context.raportorul}`]),
         `ora raportului: ${ceas().toISOString()}`,
         `intrări: ${intrari.length}`,
       ];
       const corp = intrari.map((e, i) => [
-        `#${i + 1} ${e.cand} [${e.tip}] ${e.mesaj}`,
+        `#${i + 1} ${e.cand} [${e.tip}]${e.doarLocala ? ' (doar local)' : ''} ${e.mesaj}`,
         `adresa: ${e.adresa}`,
         e.stiva,
       ].filter(Boolean).join('\n'));

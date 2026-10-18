@@ -87,3 +87,56 @@ test('ascultătorii află de fiecare intrare nouă', () => {
   j.adauga('fereastra', 'b');
   assert.equal(apeluri, 1);
 });
+
+test('ascultătorul primește intrarea nouă (raportorul, 3.2); golirea nu trimite nicio intrare', () => {
+  const j = creeazaJurnal(depozitFals(), () => ACUM, () => 'http://localhost/a?q=1');
+  const primite: Array<string | undefined> = [];
+  j.asculta((noua) => { primite.push(noua?.mesaj); });
+  j.adauga('promisiune', new RangeError('prea mare'));
+  j.goleste();
+  assert.deepEqual(primite, ['RangeError: prea mare', undefined]);
+});
+
+test('ascultătorul (raportorul) primește intrarea și când depozitul aruncă la scriere (plin sau blocat)', () => {
+  const d: Depozit = { getItem: () => null, setItem: () => { throw new Error('QuotaExceededError'); }, removeItem: () => {} };
+  const j = creeazaJurnal(d, () => ACUM, () => '/');
+  const primite: string[] = [];
+  j.asculta((noua) => { if (noua) primite.push(noua.mesaj); });
+  j.adauga('fereastra', 'cu depozitul plin');
+  assert.deepEqual(primite, ['cu depozitul plin']);
+});
+
+test('o condiție a mediului („doar locală”) e marcată, păstrată în depozit, citită înapoi și anunțată cu marcajul', () => {
+  const d = depozitFals();
+  const j = creeazaJurnal(d, () => ACUM, () => '/');
+  const primite: Array<boolean | undefined> = [];
+  j.asculta((noua) => { primite.push(noua?.doarLocala); });
+  j.adaugaLocala('proiect', 'browserul n-are IndexedDB');
+  j.adauga('fereastra', 'un defect');
+  assert.deepEqual(primite, [true, undefined]);
+  const reluat = creeazaJurnal(d, () => ACUM, () => '/').citeste();
+  assert.equal(reluat[0]?.doarLocala, true);
+  assert.equal(reluat[0]?.mesaj, 'browserul n-are IndexedDB');
+  assert.ok(!('doarLocala' in (reluat[1] ?? {})), 'o eroare obișnuită n-are câmpul');
+  const raport = j.raport(CONTEXT);
+  assert.ok(raport.includes('[proiect] (doar local) browserul n-are IndexedDB'), raport);
+  assert.ok(raport.includes('[fereastra] un defect'));
+});
+
+test('raportul poartă starea raportorului, când contextul o are (o linie „raportorul: …”)', () => {
+  const j = creeazaJurnal(depozitFals(), () => ACUM, () => '/');
+  assert.ok(!j.raport(CONTEXT).includes('raportorul:'));
+  const raport = j.raport({ ...CONTEXT, raportorul: 'stins (app-check); trimise 0' });
+  assert.ok(raport.split('\n').includes('raportorul: stins (app-check); trimise 0'), raport);
+});
+
+test('intrările vechi din depozit nu se anunță din nou la o intrare nouă: doar cea nouă', () => {
+  const d = depozitFals();
+  creeazaJurnal(d, () => ACUM, () => '/').adauga('fereastra', 'din sesiunea trecută');
+  const j = creeazaJurnal(d, () => ACUM, () => '/');
+  const primite: string[] = [];
+  j.asculta((noua) => { if (noua) primite.push(noua.mesaj); });
+  j.adauga('fereastra', 'de acum');
+  assert.deepEqual(primite, ['de acum']);
+  assert.equal(j.citeste().length, 2);
+});

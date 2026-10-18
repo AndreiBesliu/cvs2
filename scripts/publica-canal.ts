@@ -16,7 +16,7 @@ if (!canal || !/^[a-z0-9-]{1,40}$/.test(canal)) {
   process.exit(2);
 }
 
-const dir = pregatestePublicare();
+const dir = await pregatestePublicare();
 execFileSync('firebase', ['hosting:channel:deploy', canal, '--project', 'test', '--expires', '30d'], {
   cwd: dir,
   stdio: 'inherit',
