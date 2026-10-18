@@ -3,15 +3,13 @@
  * din înregistrarea App Check a aplicației web (`recaptchaEnterpriseConfig` → `siteKey`), nu din repo. Același artefact
  * servește testul și live-ul; fiecare instanță își primește cheia în `config.json`.
  *
- * Nu există comandă CLI pentru citire: se folosește clientul API al firebase-tools instalat global (aceeași identitate ca
- * la publicări), doar cu GET. Citirea primește clientul (`citesteCheie`, injectat în teste); clasificarea răspunsului și
+ * Nu există comandă CLI pentru citire: se folosește clientul API al firebase-tools instalat global (`firebase-api.ts`,
+ * aceeași identitate ca la publicări), doar cu GET. Citirea primește clientul (`citesteCheie`, injectat în teste); clasificarea răspunsului și
  * textul `config.json` publicat sunt pure. Strict (recenzia 17.10): un răspuns de altă formă sau o cheie strâmbă opresc
  * publicarea, nu devin „neînregistrat”.
  */
-import { execFileSync } from 'node:child_process';
-import { createRequire } from 'node:module';
-import { join } from 'node:path';
 import { citesteConfig } from '../src/app/config.ts';
+import { clientFirebaseTools } from './firebase-api.ts';
 
 export type CheieAppCheck =
   | { readonly stare: 'inregistrata'; readonly cheieSite: string }
@@ -100,25 +98,11 @@ export async function citesteCheie(client: ClientApi, proiect: string, appId: st
   }
 }
 
-/** Clientul API al firebase-tools instalat global (`npm root -g`), cu contul implicit al lui `firebase login`. */
-async function clientFirebaseTools(): Promise<ClientApi> {
-  const radacina = execFileSync('npm', ['root', '-g'], { encoding: 'utf8', shell: process.platform === 'win32' }).trim();
-  const lib = join(radacina, 'firebase-tools', 'lib');
-  const require = createRequire(join(lib, 'index.js'));
-  const { requireAuth } = require(join(lib, 'requireAuth')) as { requireAuth: (o: unknown) => Promise<unknown> };
-  const { getGlobalDefaultAccount } = require(join(lib, 'auth')) as { getGlobalDefaultAccount: () => { user: unknown; tokens: unknown } | undefined };
-  const { Client } = require(join(lib, 'apiv2')) as { Client: new (o: { urlPrefix: string; auth: boolean; apiVersion: string }) => ClientApi };
-  const cont = getGlobalDefaultAccount();
-  if (!cont) throw new Error('firebase-tools nu are niciun cont (firebase login)');
-  await requireAuth({ user: cont.user, tokens: cont.tokens });
-  return new Client({ urlPrefix: 'https://firebaseappcheck.googleapis.com', auth: true, apiVersion: 'v1' });
-}
-
 /** Citirea la publicare: clientul firebase-tools, apoi `citesteCheie`. */
 export async function citesteCheieAppCheck(proiect: string, appId: string): Promise<CheieAppCheck> {
   let client: ClientApi;
   try {
-    client = await clientFirebaseTools();
+    client = await clientFirebaseTools('https://firebaseappcheck.googleapis.com');
   } catch (e) {
     return eroare(motivDin(e));
   }

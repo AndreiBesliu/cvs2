@@ -1,4 +1,5 @@
 import { JOBURI, judecaMarcaj, limitaOre, marcajDin, type NumeJob } from '../../../shared/joburi.ts';
+import { amprentaDin, PROIECTE, shaScurt, TINTE_SERVER, type Publicare } from '../../../shared/publicare.ts';
 import type { Cheie, CheieSimpla } from '../../i18n/t.ts';
 import type { Masura } from '../erori/date.ts';
 
@@ -10,7 +11,7 @@ import type { Masura } from '../erori/date.ts';
 export type StareVerificare = 'bine' | 'atentie' | 'esec' | 'info';
 
 export interface Verificare {
-  readonly id: 'instanta' | 'build' | 'appcheck' | 'rol' | 'nerezolvate' | 'functii' | `job:${NumeJob}`;
+  readonly id: 'instanta' | 'build' | 'amprenta' | 'appcheck' | 'rol' | 'nerezolvate' | 'functii' | `job:${NumeJob}`;
   readonly stare: StareVerificare;
   readonly titlu: CheieSimpla;
   /** Măsura: o cheie cu parametrii ei; `n` alege pluralul. */
@@ -29,13 +30,15 @@ export interface DateDiagnoza {
   readonly functii: Masura<number>;
   /** Documentele din `marcaje`, după id (ADR 0041); un job fără document n-a rulat niciodată. */
   readonly marcaje: Masura<Readonly<Record<string, Readonly<Record<string, unknown>>>>>;
+  /** Amprenta publicării (`meta/deployment`, ADR 0044); `null`: documentul lipsește. */
+  readonly amprenta: Masura<Readonly<Record<string, unknown>> | null>;
   readonly acum: number;
 }
 
 /** Proiectul la care trebuie să vorbească o instanță. */
 export function proiectAsteptat(instanta: string, proiect: string): boolean {
-  if (instanta === 'test') return proiect === 'cncvectorstudio-test';
-  if (instanta === 'live') return proiect === 'cncvectorstudio';
+  if (instanta === 'test') return proiect === PROIECTE.test;
+  if (instanta === 'live') return proiect === PROIECTE.live;
   if (instanta === 'local') return proiect.startsWith('demo-');
   return false;
 }
@@ -47,6 +50,7 @@ export function verificari(d: DateDiagnoza): readonly Verificare[] {
     ? { id: 'instanta', stare: 'bine', titlu: 'admin.diag.instanta', masura: { cheie: 'admin.diag.instanta.bine', param: p } }
     : { id: 'instanta', stare: 'esec', titlu: 'admin.diag.instanta', masura: { cheie: 'admin.diag.instanta.esec', param: p }, indiciu: 'admin.diag.instanta.indiciu' });
   v.push({ id: 'build', stare: 'info', titlu: 'admin.diag.build', masura: { cheie: 'admin.erori.build', param: { build: d.build, instanta: d.instanta } } });
+  v.push(verificareAmprenta(d));
   v.push(d.appCheck === 'recaptcha'
     ? { id: 'appcheck', stare: 'bine', titlu: 'admin.diag.appcheck', masura: { cheie: 'admin.diag.appcheck.recaptcha' } }
     : d.appCheck === 'proba'
@@ -71,6 +75,40 @@ export function verificari(d: DateDiagnoza): readonly Verificare[] {
         : { id: 'functii', stare: 'esec', titlu: t, masura: { cheie: 'admin.diag.functii.cod', param: { cod: f.valoare } }, indiciu: i });
   for (const j of JOBURI) v.push(verificareJob(j, d));
   return v;
+}
+
+/** Ora unei publicări, pe scurt: `AAAA-LL-ZZ HH:MM UTC`. */
+function oraScurta(iso: string): string {
+  return `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
+}
+
+/**
+ * Amprenta publicării (ADR 0044): proiectul ei, build-ul paginii față de commit-ul publicat pe hosting, serverul (funcțiile,
+ * regulile, indecșii) față de pagină, modificările necomise (pe live, imposibile: live se publică doar din workflow).
+ */
+function verificareAmprenta(d: DateDiagnoza): Verificare {
+  const id = 'amprenta';
+  const titlu = 'admin.diag.amprenta' as const;
+  if (!d.amprenta.ok) return { id, stare: 'esec', titlu, masura: { cheie: 'admin.diag.amprenta.necitit', param: { motiv: d.amprenta.motiv } } };
+  if (d.amprenta.valoare === null) return { id, stare: 'atentie', titlu, masura: { cheie: 'admin.diag.amprenta.lipsa' }, indiciu: 'admin.diag.amprenta.lipsa-indiciu' };
+  const a = amprentaDin(d.amprenta.valoare);
+  if (a === 'nevalid') return { id, stare: 'atentie', titlu, masura: { cheie: 'admin.diag.amprenta.nevalid' } };
+  if (a.projectId !== d.proiect) return { id, stare: 'esec', titlu, masura: { cheie: 'admin.diag.amprenta.alt-proiect', param: { proiect: a.projectId } } };
+  const publicari = Object.values(a.tinte).filter((x): x is Publicare => x !== undefined);
+  const necomis = publicari.some((x) => !x.arboreCurat);
+  if (necomis && d.instanta === 'live') return { id, stare: 'esec', titlu, masura: { cheie: 'admin.diag.amprenta.necomis-live' } };
+  const h = a.tinte.hosting;
+  if (!h) return { id, stare: 'atentie', titlu, masura: { cheie: 'admin.diag.amprenta.fara-hosting' }, indiciu: 'admin.diag.amprenta.lipsa-indiciu' };
+  const sha = shaScurt(h.gitSha);
+  if (sha !== d.build) {
+    return { id, stare: 'atentie', titlu, masura: { cheie: 'admin.diag.amprenta.alt-build', param: { build: d.build, sha } }, indiciu: 'admin.diag.amprenta.alt-build-indiciu' };
+  }
+  const param = { sha, cand: oraScurta(h.deployedAt), cine: h.deployedBy };
+  if (necomis) return { id, stare: 'info', titlu, masura: { cheie: 'admin.diag.amprenta.necomis', param } };
+  // Serverul: fiecare țintă publicată din alt commit decât pagina, sau niciodată prin script („—”).
+  const server = [...new Set(TINTE_SERVER.map((t) => a.tinte[t]).map((x) => (x ? shaScurt(x.gitSha) : '—')))].filter((x) => x !== sha);
+  if (server.length > 0) return { id, stare: 'info', titlu, masura: { cheie: 'admin.diag.amprenta.server-altul', param: { ...param, server: server.join(', ') } } };
+  return { id, stare: 'bine', titlu, masura: { cheie: 'admin.diag.amprenta.bine', param } };
 }
 
 /** Un job din `JOBURI`, judecat din marcajul lui (ADR 0041 §3). */

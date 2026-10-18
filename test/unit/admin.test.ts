@@ -61,16 +61,21 @@ const proaspat = (oreInUrma: number) => ({
   ultimulSucces: momentul(ACUM - oreInUrma * 3_600_000), esecuriLaRand: 0,
 });
 const bun: DateDiagnoza = {
-  instanta: 'test', proiect: 'cncvectorstudio-test', build: 'abc123', appCheck: 'recaptcha', rol: 'owner',
+  instanta: 'test', proiect: 'cncvectorstudio-test', build: 'abc123000000', appCheck: 'recaptcha', rol: 'owner',
   nerezolvate: { ok: true, valoare: 0 }, functii: { ok: true, valoare: 401 },
   marcaje: { ok: true, valoare: { backupZilnic: proaspat(6), verificaBackup: proaspat(4) } }, acum: ACUM,
+  // Amprenta publicării (ADR 0044): pagina și serverul din commit-ul build-ului.
+  amprenta: { ok: true, valoare: { schema: 1, app: 'cncvs2', projectId: 'cncvectorstudio-test', tinte: {
+    hosting: { gitSha: `abc123${'0'.repeat(34)}`, gitRef: 'main', arboreCurat: true, deployedAt: '2026-10-17T08:00:00.000Z', deployedBy: 'local' },
+  } } },
 };
 const stare = (d: DateDiagnoza, id: string) => verificari(d).find((v) => v.id === id)?.stare;
 
 test('Diagnoza pe o instanță sănătoasă: bine, cu informațiile', () => {
   const v = verificari(bun);
-  assert.deepEqual(v.map((x) => x.id), ['instanta', 'build', 'appcheck', 'rol', 'nerezolvate', 'functii', 'job:backupZilnic', 'job:verificaBackup']);
-  assert.deepEqual(v.map((x) => x.stare), ['bine', 'info', 'bine', 'info', 'bine', 'bine', 'bine', 'bine']);
+  assert.deepEqual(v.map((x) => x.id), ['instanta', 'build', 'amprenta', 'appcheck', 'rol', 'nerezolvate', 'functii', 'job:backupZilnic', 'job:verificaBackup']);
+  // Amprenta: doar pagina publicată prin script (serverul nu), deci informație.
+  assert.deepEqual(v.map((x) => x.stare), ['bine', 'info', 'info', 'bine', 'info', 'bine', 'bine', 'bine', 'bine']);
   assert.deepEqual(v.find((x) => x.id === 'job:backupZilnic')?.masura, { cheie: 'admin.diag.job.bine', param: { ore: 6 } });
 });
 

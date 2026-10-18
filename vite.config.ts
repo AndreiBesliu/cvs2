@@ -3,14 +3,16 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { CSP } from './shared/csp.ts';
 
-/** Versiunea din build: commit-ul. Două build-uri ale aceluiași commit ies identice, octet cu octet. */
+/**
+ * Versiunea din build: commit-ul checkout-ului. Două build-uri ale aceluiași commit ies identice, octet cu octet. Întâi
+ * `git` (în workflow-ul `publica`, pornit manual, `GITHUB_SHA` e capul lui `main`, nu commit-ul cerut și scos: ADR 0044);
+ * `GITHUB_SHA` doar fără `git`. Exact 12 caractere: scriptul de publicare le caută în `dist/`.
+ */
 function versiune(): string {
-  const dinCi = process.env['GITHUB_SHA'];
-  if (dinCi) return dinCi.slice(0, 12);
   try {
-    return execSync('git rev-parse --short=12 HEAD', { encoding: 'utf8' }).trim();
+    return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim().slice(0, 12);
   } catch {
-    return 'necunoscută';
+    return process.env['GITHUB_SHA']?.slice(0, 12) ?? 'necunoscută';
   }
 }
 

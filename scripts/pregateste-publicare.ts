@@ -1,7 +1,7 @@
 /**
- * Pregătirea comună a unei publicări pe instanța de test: build-ul din `dist/` nu se schimbă; într-o copie din
- * `.tmp/publicare/` se pune `config.json` cu instanța „test”, `firebase.json` (din aceeași sursă unică) și un
- * `.firebaserc` care numește doar proiectul de test. Întoarce dosarul din care se rulează `firebase`.
+ * Pregătirea comună a publicării hosting-ului unei instanțe (test sau live, ADR 0044): build-ul din `dist/` nu se schimbă;
+ * într-o copie din `.tmp/publicare/` se pune `config.json` cu instanța, `firebase.json` (din aceeași sursă unică) și un
+ * `.firebaserc` care numește doar proiectul instanței. Întoarce dosarul din care se rulează `firebase`.
  *
  * Configurația web Firebase a instanței (ADR 0040 §2) se citește din Firebase la fiecare publicare (`apps:list`,
  * `apps:sdkconfig`): valorile sunt publice, dar nu stau în repo, ca să nu rămână în urma proiectului. La fel cheia App
@@ -12,8 +12,9 @@ import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { citesteCheieAppCheck, configPublicat, type CheieAppCheck, type ConfigWeb } from './appcheck-cheie.ts';
 import { configHosting } from './firebase-json.ts';
+import { PROIECTE, type Instanta } from '../shared/publicare.ts';
 
-export const PROIECT_TEST = 'cncvectorstudio-test';
+export const PROIECT_TEST = PROIECTE.test;
 
 function firebaseJson(args: readonly string[]): unknown {
   const iesire = execFileSync('firebase', [...args, '--json'], { encoding: 'utf8', shell: process.platform === 'win32' });
@@ -36,6 +37,8 @@ export function configWeb(proiect: string): { apiKey: string; authDomain: string
 
 /** Ce citește pregătirea din afară (Firebase, dosarele): injectat în teste, implicit cel adevărat. */
 export interface DepsPublicare {
+  /** Implicit `test`. */
+  readonly instanta?: Instanta;
   readonly configWeb?: (proiect: string) => ConfigWeb;
   readonly cheie?: (proiect: string, appId: string) => Promise<CheieAppCheck>;
   readonly dist?: string;
@@ -52,14 +55,16 @@ export async function pregatestePublicare(deps: DepsPublicare = {}): Promise<str
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   cpSync(dist, join(dir, 'public'), { recursive: true });
-  const firebase = (deps.configWeb ?? configWeb)(PROIECT_TEST);
+  const instanta = deps.instanta ?? 'test';
+  const proiect = PROIECTE[instanta];
+  const firebase = (deps.configWeb ?? configWeb)(proiect);
   // Fără înregistrare: config fără appCheck și avertismentul (raportorul primește 401); o eroare de citire oprește aici.
-  const cheie = await (deps.cheie ?? citesteCheieAppCheck)(PROIECT_TEST, firebase.appId);
-  const { json, avertisment } = configPublicat('test', firebase, cheie);
+  const cheie = await (deps.cheie ?? citesteCheieAppCheck)(proiect, firebase.appId);
+  const { json, avertisment } = configPublicat(instanta, firebase, cheie);
   if (avertisment) console.warn(`\n⚠ ${avertisment}\n`);
-  else console.log(`App Check: cheia reCAPTCHA Enterprise a instanței intră în config.json (${PROIECT_TEST}).`);
+  else console.log(`App Check: cheia reCAPTCHA Enterprise a instanței intră în config.json (${proiect}).`);
   writeFileSync(join(dir, 'public', 'config.json'), json);
   writeFileSync(join(dir, 'firebase.json'), `${JSON.stringify(configHosting('public'), null, 2)}\n`);
-  writeFileSync(join(dir, '.firebaserc'), `${JSON.stringify({ projects: { test: PROIECT_TEST } }, null, 2)}\n`);
+  writeFileSync(join(dir, '.firebaserc'), `${JSON.stringify({ projects: { [instanta]: proiect } }, null, 2)}\n`);
   return dir;
 }

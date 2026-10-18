@@ -2049,3 +2049,11 @@ fără App Check (curl): **401**. Consola: doar eroarea provocată, nicio încă
 (remedierile + o reverificare + o reverificare oprită) nemăsurat separat; săptămânalul 29 → 44 % (cu bucla principală și cu
 sesiunile paralele). Nivelul rapid: 6 577 de teste, 0 picate (8 sărite); e2e 137 / 137; emulatoarele 23 + 6; pornirea
 **93,5 / 100 kB** (cu ușa 98,1, strâmt), partea raportorului 1,20 kB, la prima eroare 17,9 kB + reCAPTCHA.
+
+## 2026-10-18 — 3.4b: publicarea pe live, partea fără conturi (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua” (după raportul 3.2; la întrebarea „Ce urmează în etapa 3?”, recomandarea era 3.4b). **Started:** 18.10
+~09:15, săptămânalul 44 %. Partea care nu cere conturile owner-ului: amprenta `meta/deployment` pe ținte (scrisă de scriptul
+de publicare, citită de Diagnoză), un singur script de publicare pentru ambele instanțe (live doar din workflow, în mediul
+GitHub `live`), workflow-ul `publica` cu sha fixat (pe `main`, nivelul rapid verde, iar pe live același sha ca pe test),
+contul dedicat al backup-ului (opțional, din `.env`), scriptul de Cloud Shell pentru WIF / conturi / PITR. Fără agenți.

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { JOBURI, judecaMarcaj, limitaOre, marcajDin, type Marcaj } from '../../shared/joburi.ts';
+import { JOBURI, judecaMarcaj, limitaOre, marcajDin, optiuniContBackup, type Marcaj } from '../../shared/joburi.ts';
 
 /** Judecata marcajului de rulare (ADR 0041 §3), pe hârtie: jobul zilnic, timeout 300 s, limita 1,1 × 24 + 2 = 28,4 h. */
 
@@ -52,4 +52,15 @@ test('marcajul din document: momentele cu toMillis; un șir sau un număr în c�
   assert.equal(marcajDin({ ultimulSucces: t(Number.NaN) }), 'nevalid');
   assert.equal(marcajDin({ esecuriLaRand: -1 }), 'nevalid');
   assert.equal(marcajDin({ esecuriLaRand: '2' }), 'nevalid');
+});
+
+test('contul joburilor de backup (ADR 0044): SA_BACKUP când există; lipsă = contul implicit; unul strâmb aruncă la publicare', () => {
+  assert.deepEqual(optiuniContBackup(undefined), {});
+  assert.deepEqual(optiuniContBackup(''), {});
+  assert.deepEqual(optiuniContBackup('backup-cncvs2@cncvectorstudio-test.iam.gserviceaccount.com'), {
+    serviceAccount: 'backup-cncvs2@cncvectorstudio-test.iam.gserviceaccount.com',
+  });
+  for (const x of ['backup-cncvs2', 'backup@gmail.com', 'b@cncvectorstudio-test.iam.gserviceaccount.com', ' backup-cncvs2@cncvectorstudio-test.iam.gserviceaccount.com']) {
+    assert.throws(() => optiuniContBackup(x), x);
+  }
 });

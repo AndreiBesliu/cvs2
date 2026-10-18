@@ -35,6 +35,12 @@ service cloud.firestore {
       allow read: if nivelPersonal() >= 1;
     }
 
+    // Amprenta publicării (ADR 0044): scrisă doar de scriptul de publicare (prin IAM, nu prin reguli); citită de personal
+    // (Diagnoza). Restul colecției `meta` rămâne refuzat.
+    match /meta/deployment {
+      allow read: if nivelPersonal() >= 1;
+    }
+
     // Auditul (ADR 0040 §4): scris doar de callable-uri, în tranzacția acțiunii; citit de admin și owner.
     match /audit/{id} {
       allow read: if nivelPersonal() >= 2;

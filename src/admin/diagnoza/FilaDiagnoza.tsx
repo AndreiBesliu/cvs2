@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
-import { collection, getCountFromServer, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getCountFromServer, getDoc, getDocs, query, where } from 'firebase/firestore';
 import type { Conexiune } from '../../cloud/conexiune.ts';
 import { t, traduce } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
@@ -27,7 +27,12 @@ export function FilaDiagnoza({ con, instanta, build, rol }: {
       (s) => ({ ok: true as const, valoare: Object.fromEntries(s.docs.map((x) => [x.id, x.data()])) }),
       (e: unknown) => ({ ok: false as const, motiv: motivDin(e) }),
     );
-    return verificari({ instanta, proiect: con.projectId, build, appCheck: con.appCheck, rol, nerezolvate, functii, marcaje, acum: Date.now() });
+    // Amprenta publicării (ADR 0044): scrisă de scriptul de publicare; lipsa ei e o stare, nu o eroare.
+    const amprenta = await getDoc(doc(con.db, 'meta/deployment')).then(
+      (s) => ({ ok: true as const, valoare: s.exists() ? s.data() : null }),
+      (e: unknown) => ({ ok: false as const, motiv: motivDin(e) }),
+    );
+    return verificari({ instanta, proiect: con.projectId, build, appCheck: con.appCheck, rol, nerezolvate, functii, marcaje, amprenta, acum: Date.now() });
   }, [con, instanta, build, rol]);
 
   useEffect(() => {

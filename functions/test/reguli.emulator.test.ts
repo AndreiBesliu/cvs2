@@ -29,6 +29,8 @@ before(async () => {
     await setDoc(doc(db, 'limiteErori/client_1'), { numar: 1 });
     await setDoc(doc(db, 'audit/a1'), { cine: 'sup', actiune: 'erori.marcheaza' });
     await setDoc(doc(db, 'marcaje/backupZilnic'), { job: 'backupZilnic', esecuriLaRand: 0 });
+    await setDoc(doc(db, 'meta/deployment'), { schema: 1, app: 'cncvs2', projectId: 'demo-cncvs2', tinte: {} });
+    await setDoc(doc(db, 'meta/altceva'), { x: 1 });
     // Colecțiile aplicației vechi, pe care regulile vechi le dădeau omului lor.
     await setDoc(doc(db, 'users/om'), { nume: 'om' });
     await setDoc(doc(db, 'customers/om'), { stripeId: 'cus_x' });
@@ -102,6 +104,16 @@ test('marcajele joburilor le citește personalul; nu le scrie nimeni din client'
   for (const uid of [null, 'om', 'fals']) await assertFails(getDoc(doc(ca(uid), 'marcaje/backupZilnic')));
   await assertFails(setDoc(doc(ca('own'), 'marcaje/backupZilnic'), { esecuriLaRand: 0 }));
   await assertFails(updateDoc(doc(ca('sup'), 'marcaje/backupZilnic'), { esecuriLaRand: 0 }));
+});
+
+test('amprenta publicării (meta/deployment) o citește personalul; nu o scrie nimeni din client; restul lui meta e refuzat', async () => {
+  for (const uid of ['sup', 'adm', 'own']) await assertSucceeds(getDoc(doc(ca(uid), 'meta/deployment')));
+  for (const uid of [null, 'om', 'fals']) await assertFails(getDoc(doc(ca(uid), 'meta/deployment')));
+  await assertFails(setDoc(doc(ca('own'), 'meta/deployment'), { schema: 1 }));
+  await assertFails(updateDoc(doc(ca('own'), 'meta/deployment'), { projectId: 'altul' }));
+  await assertFails(deleteDoc(doc(ca('own'), 'meta/deployment')));
+  await assertFails(getDoc(doc(ca('own'), 'meta/altceva')));
+  await assertFails(getDocs(collection(ca('own'), 'meta')));
 });
 
 test('colecțiile aplicației vechi sunt refuzate, chiar și omului lor', async () => {

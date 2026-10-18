@@ -1,0 +1,123 @@
+# Publicarea unei instanțe (ADR 0044): un commit fixat, de pe `main`, cu nivelul rapid verde, publicat cu
+# `scripts/publica.ts` (serverul, hosting-ul, apoi amprenta `meta/deployment`). Live: doar un commit deja publicat întreg pe
+# test, în mediul GitHub `live`, care cere aprobarea owner-ului. Identitatea Google vine prin WIF, fără chei descărcate:
+# variabilele fiecărui mediu (`INSTANTA`, `WIF_PROVIDER`, `SA_PUBLICARE`) le pune owner-ul o dată (ADR 0044, „Pașii
+# owner-ului”). Intrările ajung în `run:` doar prin `env:`, niciodată direct în comandă.
+name: publica
+
+on:
+  workflow_dispatch:
+    inputs:
+      instanta:
+        description: Instanța
+        type: choice
+        options: [test, live]
+        required: true
+      sha:
+        description: Commit-ul de publicat (40 de caractere, de pe main)
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publica-${{ inputs.instanta }}
+  cancel-in-progress: false
+
+jobs:
+  verifica:
+    name: Commit-ul cerut
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # Mediul testului (fără aprobare): identitatea lui citește amprenta testului, condiția publicării pe live.
+    environment: test
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - name: Forma sha-ului
+        env:
+          SHA: ${{ inputs.sha }}
+        run: |
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::sha-ul trebuie să aibă 40 de caractere hex"; exit 1; }
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Pe main
+        env:
+          SHA: ${{ inputs.sha }}
+        run: git merge-base --is-ancestor "$SHA" origin/main || { echo "::error::$SHA nu e pe main"; exit 1; }
+      # Nivelul rapid nu rulează pe commit-urile doar cu .md (`paths-ignore`): ajunge cel mai apropiat strămoș verde, dacă
+      # de la el până la commit s-au schimbat doar fișiere .md.
+      - name: Nivelul rapid verde (pe commit sau pe strămoșul lui, doar cu .md între ele)
+        env:
+          SHA: ${{ inputs.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for c in $(git rev-list --max-count=50 "$SHA"); do
+            n=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/rapid.yml/runs?head_sha=$c&status=success" --jq '.total_count')
+            if [ "$n" -gt 0 ]; then
+              cod=$(git diff --name-only "$c" "$SHA" | grep -vE '\.md$' || true)
+              if [ -n "$cod" ]; then echo "::error::între $c (verde) și $SHA s-au schimbat fișiere de cod: $cod"; exit 1; fi
+              echo "Nivelul rapid verde pe $c."
+              exit 0
+            fi
+          done
+          echo "::error::niciun nivel rapid verde pe $SHA sau pe ultimii 50 de strămoși"
+          exit 1
+      - uses: actions/setup-node@v5
+        if: inputs.instanta == 'live'
+        with:
+          node-version: 26
+          cache: npm
+      - name: Dependențele și firebase-tools
+        if: inputs.instanta == 'live'
+        run: npm ci && npm i -g firebase-tools@15.18.0
+      - name: Identitatea Google a testului (WIF)
+        if: inputs.instanta == 'live'
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.SA_PUBLICARE }}
+      - name: Același commit, publicat întreg pe test
+        if: inputs.instanta == 'live'
+        env:
+          SHA: ${{ inputs.sha }}
+        run: node scripts/verifica-test.ts "$SHA"
+
+  publica:
+    name: Publicarea
+    needs: verifica
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # Live: mediul cere aprobarea owner-ului; abia după ea există variabilele lui (identitatea live).
+    environment: ${{ inputs.instanta }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.sha }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+      - name: Dependențele și firebase-tools
+        run: npm ci && npm --prefix functions ci && npm i -g firebase-tools@15.18.0
+      - name: Identitatea Google a instanței (WIF)
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.SA_PUBLICARE }}
+      - name: Build-ul
+        run: npm run build
+      - name: Publicarea, cu amprenta
+        env:
+          INSTANTA: ${{ inputs.instanta }}
+          CNCVS2_SHA: ${{ inputs.sha }}
+          CNCVS2_MEDIU: ${{ vars.INSTANTA }}
+        run: node scripts/publica.ts --instanta "$INSTANTA"

@@ -13,3 +13,6 @@ docs/faza0/
 # Funcțiile compilate (ADR 0039): se refac din functions/src la fiecare publicare
 functions/lib/
 functions/node_modules/
+
+# Acreditările scrise de google-github-actions/auth în dosarul de lucru (workflow-ul publica, ADR 0044): nu murdăresc arborele.
+gha-creds-*.json

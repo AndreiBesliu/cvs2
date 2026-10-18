@@ -7,7 +7,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { onCall } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { createRequire } from 'node:module';
-import { JOBURI, type NumeJob } from '../../shared/joburi.ts';
+import { JOBURI, optiuniContBackup, type NumeJob } from '../../shared/joburi.ts';
 import { pornesteBackup, verificaBackup as verifica, type ClientExport } from './joburi/backup.ts';
 import { cuMarcaj } from './joburi/marcaj.ts';
 import { trateazaRaportClient } from './erori/client.ts';
@@ -58,10 +58,13 @@ function clientExport(): ClientExport {
   return client;
 }
 
+/** Contul joburilor de backup: cel dedicat (`SA_BACKUP`, ADR 0044), când e în `.env`; altfel cel implicit. */
+const contBackup = optiuniContBackup(process.env['SA_BACKUP']);
+
 const backup = definitie('backupZilnic');
 /** Exportul zilnic al bazei, la 03:00 (ora României), în `BUCKET_BACKUP` (din `functions/.env.<proiect>`). */
 export const backupZilnic = onSchedule(
-  { schedule: backup.programare, timeZone: backup.fus, region: REGIUNI.job, timeoutSeconds: backup.timeoutSecunde, retryCount: 0, memory: '256MiB' },
+  { ...contBackup, schedule: backup.programare, timeZone: backup.fus, region: REGIUNI.job, timeoutSeconds: backup.timeoutSecunde, retryCount: 0, memory: '256MiB' },
   async () => {
     await cuMarcaj(getFirestore(), backup.nume, () => pornesteBackup(clientExport(), process.env['BUCKET_BACKUP'], process.env['GCLOUD_PROJECT'] ?? '', new Date()));
   },
@@ -70,7 +73,7 @@ export const backupZilnic = onSchedule(
 const verificare = definitie('verificaBackup');
 /** Verificarea exportului de azi, la 05:00: terminat, fără eroare; altfel eșec în marcaj și în fila Erori. */
 export const verificaBackup = onSchedule(
-  { schedule: verificare.programare, timeZone: verificare.fus, region: REGIUNI.job, timeoutSeconds: verificare.timeoutSecunde, retryCount: 0, memory: '256MiB' },
+  { ...contBackup, schedule: verificare.programare, timeZone: verificare.fus, region: REGIUNI.job, timeoutSeconds: verificare.timeoutSecunde, retryCount: 0, memory: '256MiB' },
   async () => {
     await cuMarcaj(getFirestore(), verificare.nume, () => verifica(getFirestore(), clientExport(), new Date()));
   },
