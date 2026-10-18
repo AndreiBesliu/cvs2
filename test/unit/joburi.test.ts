@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { JOBURI, judecaMarcaj, limitaOre, marcajDin, optiuniContBackup, type Marcaj } from '../../shared/joburi.ts';
 
 /** Judecata marcajului de rulare (ADR 0041 §3), pe hârtie: jobul zilnic, timeout 300 s, limita 1,1 × 24 + 2 = 28,4 h. */
@@ -63,4 +65,20 @@ test('contul joburilor de backup (ADR 0044): SA_BACKUP când există; lipsă = c
   for (const x of ['backup-cncvs2', 'backup@gmail.com', 'b@cncvectorstudio-test.iam.gserviceaccount.com', ' backup-cncvs2@cncvectorstudio-test.iam.gserviceaccount.com']) {
     assert.throws(() => optiuniContBackup(x), x);
   }
+});
+
+test('fiecare linie SA_BACKUP din functions/.env.* e un cont de serviciu (unul strâmb pică aici, nu la publicare)', () => {
+  const fisiere = readdirSync('functions').filter((f) => f.startsWith('.env'));
+  let linii = 0;
+  for (const f of fisiere) {
+    for (const l of readFileSync(join('functions', f), 'utf8').split(/\r?\n/)) {
+      const m = /^SA_BACKUP=(.*)$/.exec(l);
+      if (!m) continue;
+      linii++;
+      assert.doesNotThrow(() => optiuniContBackup(m[1]), `${f}: ${l}`);
+      // Gol = contul implicit (emulatoarele); altfel contul trebuie să fie al proiectului fișierului.
+      if (m[1]) assert.ok(m[1].endsWith(`@${f.slice('.env.'.length)}.iam.gserviceaccount.com`), `${f}: contul e al proiectului fișierului`);
+    }
+  }
+  assert.ok(linii >= 2, 'testul are contul dedicat, iar emulatoarele valoarea goală (altfel emulatorul o cere la tastatură)');
 });

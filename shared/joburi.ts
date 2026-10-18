@@ -97,8 +97,9 @@ const CONT_SERVICIU = /^[a-z][a-z0-9-]{4,28}[a-z0-9]@[a-z][a-z0-9-]{4,28}[a-z0-9
 
 /**
  * Contul de serviciu al joburilor de backup (ADR 0044; ADR 0041 §1 promitea unul dedicat, cu doar drepturile exportului):
- * `SA_BACKUP` din `functions/.env.<proiect>`, când există; altfel contul implicit al funcțiilor. Unul strâmb aruncă la
- * publicare (analiza funcțiilor), nu la 03:00.
+ * `SA_BACKUP` din `functions/.env.<proiect>`, când există; altfel contul implicit al funcțiilor. Funcțiile îl iau ca parametru
+ * (`defineString`, rezolvat la publicare); aici se judecă forma, iar testul o cere fiecărei linii `SA_BACKUP` din repo, ca
+ * unul strâmb să pice în nivelul rapid, nu la publicare sau la 03:00.
  */
 export function optiuniContBackup(sa: string | undefined): { readonly serviceAccount?: string } {
   if (sa === undefined || sa === '') return {};

@@ -28,10 +28,12 @@ gcloud config set project "$P" >/dev/null
 N=$(gcloud projects describe "$P" --format='value(projectNumber)')
 echo "Proiectul $P (numărul $N), mediul GitHub $MEDIU."
 
+# Cloud Billing: firebase-tools verifică planul Blaze înaintea funcțiilor; cu un cont de serviciu, API-ul trebuie pornit în
+# proiect (prima rulare a workflow-ului pe test, 18.10).
 gcloud services enable iamcredentials.googleapis.com sts.googleapis.com cloudresourcemanager.googleapis.com \
   firebasehosting.googleapis.com cloudfunctions.googleapis.com run.googleapis.com cloudbuild.googleapis.com \
   artifactregistry.googleapis.com cloudscheduler.googleapis.com firebaserules.googleapis.com firestore.googleapis.com \
-  firebaseappcheck.googleapis.com
+  firebaseappcheck.googleapis.com cloudbilling.googleapis.com
 
 # 1. WIF: tokenul GitHub (OIDC) se schimbă pe o identitate Google doar pentru repo-ul nostru.
 gcloud iam workload-identity-pools describe github --location=global >/dev/null 2>&1 \

@@ -5,9 +5,10 @@
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { onCall } from 'firebase-functions/v2/https';
+import { defineString } from 'firebase-functions/params';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { createRequire } from 'node:module';
-import { JOBURI, optiuniContBackup, type NumeJob } from '../../shared/joburi.ts';
+import { JOBURI, type NumeJob } from '../../shared/joburi.ts';
 import { pornesteBackup, verificaBackup as verifica, type ClientExport } from './joburi/backup.ts';
 import { cuMarcaj } from './joburi/marcaj.ts';
 import { trateazaRaportClient } from './erori/client.ts';
@@ -58,8 +59,13 @@ function clientExport(): ClientExport {
   return client;
 }
 
-/** Contul joburilor de backup: cel dedicat (`SA_BACKUP`, ADR 0044), când e în `.env`; altfel cel implicit. */
-const contBackup = optiuniContBackup(process.env['SA_BACKUP']);
+/**
+ * Contul joburilor de backup (ADR 0044): parametrul `SA_BACKUP`, rezolvat de firebase-tools din `functions/.env.<proiect>` la
+ * publicare. Nu `process.env`: analiza funcțiilor nu primește valorile din `.env` (doar pe cele ale Firebase), deci joburile
+ * rămâneau pe contul implicit (măsurat pe 18.10, după prima rulare a workflow-ului). Gol = contul implicit (firebase-tools
+ * face dintr-un cont gol `null`). Forma valorilor din repo o păzește `test/unit/joburi.test.ts`.
+ */
+const contBackup = { serviceAccount: defineString('SA_BACKUP', { default: '', description: 'Contul de serviciu al joburilor de backup (ADR 0044); gol = contul implicit.' }) };
 
 const backup = definitie('backupZilnic');
 /** Exportul zilnic al bazei, la 03:00 (ora României), în `BUCKET_BACKUP` (din `functions/.env.<proiect>`). */

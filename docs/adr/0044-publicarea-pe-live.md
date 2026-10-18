@@ -57,9 +57,15 @@ a cheii App Check, `iam.serviceAccountUser` pentru conturile de rulare), folosib
 (`attribute.environment/<mediu>`). Prețul acceptat pe 15.08 (sha fixat, aprobare pe alt canal, intrări prin `env:`) e
 respectat; contul de rulare al funcțiilor rămâne cel implicit, cu drepturile lui.
 
-**5. Contul dedicat al backup-ului** (ADR 0041 §1): `SA_BACKUP` din `functions/.env.<proiect>` (`optiuniContBackup`, în
-`shared/joburi.ts`), când există; altfel contul implicit al funcțiilor, ca acum. Un nume strâmb aruncă la publicare
-(analiza funcțiilor), nu la 03:00. Contul îl creează scriptul de la punctul 4 (export, Firestore, bucket-ul).
+**5. Contul dedicat al backup-ului** (ADR 0041 §1): parametrul firebase-functions `SA_BACKUP` (`defineString`), rezolvat de
+firebase-tools din `functions/.env.<proiect>` la publicare; gol = contul implicit al funcțiilor (firebase-tools face dintr-un
+cont gol `null`). Contul îl creează scriptul de la punctul 4 (export, Firestore, bucket-ul). **Schimbat după prima rulare:**
+prima variantă citea `process.env` la încărcarea modulului, dar analiza funcțiilor primește doar variabilele Firebase, nu și
+pe cele din `.env` (`prepare.js`, `discoverBuild`), deci joburile rămâneau pe contul implicit, tăcut (citit pe funcții după
+rulare). Două consecințe: o valoare implicită goală înseamnă pentru firebase-tools „nicio valoare”, deci proiectul
+emulatoarelor are `SA_BACKUP=` scris explicit (altfel emulatorul o cere la tastatură și se agață); iar un proiect fără linia
+lui (live, înaintea scriptului) nu se poate publica neinteractiv: o gardă, nu o scăpare. Forma fiecărei linii din repo
+(`optiuniContBackup`) o cere `test/unit/joburi.test.ts`, în nivelul rapid.
 
 **6. Diagnoza citește amprenta** (verificarea `amprenta`, după `build`): necitită = eșec cu motivul; lipsă = atenție cu
 indiciul („publică prin script sau workflow”); altă formă = atenție; alt proiect = eșec (aliasul care minte); fără hosting =
@@ -75,8 +81,11 @@ cu commit-ul, ora și cine.
   `test/unit/admin.test.ts` (Diagnoza întreagă, cu amprenta).
 - **Pe emulator:** regulile lui `meta/deployment` (personalul citește; nimeni nu scrie; restul lui `meta` refuzat).
 - **Pe test:** publicarea cu scriptul nou (serverul și hosting-ul) scrie amprenta (măsurat la felie, citită înapoi).
-- **Neprobat aici:** workflow-ul însuși (cere WIF și mediile GitHub: pașii owner-ului); prima rulare pe test îl probează,
-  iar prima rulare pe live e comutarea (3.9).
+- **Prima rulare a workflow-ului pe test (18.10, după scriptul owner-ului):** WIF a mers din prima; publicarea a căzut la
+  verificarea Blaze a firebase-tools (cu un cont de serviciu, API-ul Cloud Billing trebuie pornit în proiect; cu contul
+  owner-ului nu), deci API-ul a intrat în scriptul de Cloud Shell; reluată, a trecut, iar amprenta e a workflow-ului
+  (`github:AndreiBesliu #<rulare>`, toate țintele, arborele curat). Tot ea a arătat contul backup-ului neaplicat (punctul 5).
+- **Neprobat aici:** prima rulare pe live, care e comutarea (3.9).
 
 ## Ce impune
 
