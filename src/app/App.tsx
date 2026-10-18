@@ -17,7 +17,7 @@ import {
   ARANJAMENT_MODERN, cheieIntrare, COMUTA_PANOU, PANOURI,
   type Aranjament, type IdCip, type IdControl, type IdPanou, type IdZona, type Intrare, type Unealta,
 } from '../ui/aranjament.ts';
-import { CipCursor, CipZoom, semnal, type PunctFoaie } from '../ui/CipuriVedere.tsx';
+import { CipCursor, CipZoom, semnal, type PunctFoaie, type Semnal } from '../ui/CipuriVedere.tsx';
 import { ACTIUNI_VEDERE, type ContextVedere } from '../ui/actiuniVedere.ts';
 import { actiuneaTastei, tastaActiunii, tastaApasata } from '../ui/scurtaturi.ts';
 import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type RezultatExport } from '../ui/actiuniExport.ts';
@@ -46,6 +46,8 @@ type Props = {
    * salvat de om intră pe aici, fără altă carcasă.
    */
   readonly aranjament?: Aranjament;
+  /** Oferta actualizării PWA (ADR 0045 §5): funcția clicului „Reîncarcă”, cât un worker nou așteaptă. */
+  readonly actualizare: Semnal<(() => void) | null>;
 };
 
 /** Diagnosticul `?diagnostic=eroare-de-randare` aruncă la randare, ca ErrorBoundary-ul să se poată proba pe build. */
@@ -165,8 +167,9 @@ function mesajProiect(mod: ModFila, p: ProiectDeschis, motivNecitit: string): st
   return null;
 }
 
-export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect, aranjament = ARANJAMENT_MODERN }: Props) {
+export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect, aranjament = ARANJAMENT_MODERN, actualizare }: Props) {
   const limbaActiva = useLimba();
+  const aplicaActualizare = useSyncExternalStore(actualizare.asculta, actualizare.citeste);
   const intrari = useSyncExternalStore(jurnal.asculta, () => jurnal.citeste().length);
   const docPornire = useMemo(
     () => ((proiect.mod === 'scriitor' || proiect.mod === 'doar-citire') && proiect.doc ? proiect.doc : documentNou(FOAIA_IMPLICITA)),
@@ -709,6 +712,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         );
       case 'config':
         return config.ok ? null : <p role="status" className="cip cip-atentie avertisment">{t('eroare.config', { motiv: config.motiv })}</p>;
+      case 'actualizare':
+        // Doar oferită: abia clicul aplică versiunea nouă (o reîncărcare singură ar pierde munca nesalvată).
+        return aplicaActualizare && (
+          <span className="cip cip-atentie cip-actualizare" data-testid="actualizare" role="status">
+            {t('actualizare.gata')}
+            <button type="button" onClick={aplicaActualizare}>{t('eroare.reincarca')}</button>
+          </span>
+        );
       case 'cursor':
         return <CipCursor cursor={cursor} />;
       case 'zoom':

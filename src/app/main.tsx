@@ -1,7 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { incarcaLimba, limba, limbaDePornire, schimbaLimba } from '../i18n/t.ts';
+import { incarcaLimba, limba, limbaDePornire, schimbaLimba, t } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
+import { programeazaPwa } from '../pwa/pornire.ts';
+import { semnal } from '../ui/CipuriVedere.tsx';
 import { App } from './App.tsx';
 import { esteRutaAdmin, incarcaConfig } from './config.ts';
 import { ErrorBoundary } from './ErrorBoundary.tsx';
@@ -43,6 +45,8 @@ const raportor = creeazaRaportor({
 });
 window.addEventListener('error', (e) => { jurnal.adauga('fereastra', e.error ?? e.message); });
 window.addEventListener('unhandledrejection', (e) => { jurnal.adauga('promisiune', e.reason); });
+/** Oferta actualizării (ADR 0045 §5): funcția clicului „Reîncarcă” din bara de jos, pusă de înregistrarea workerului. */
+const actualizare = semnal<(() => void) | null>(null);
 
 let salvata: string | null = null;
 try {
@@ -171,6 +175,22 @@ function faraTexte(radacina: HTMLElement): void {
 }
 
 /**
+ * Workerul PWA (ADR 0045 §7): înregistrarea vine la cerere, după prima randare (pauza și garda: `src/pwa/pornire.ts`), doar
+ * în build și doar unde browserul are service worker. Un eșec intră în jurnal o singură dată (o bucată care nu vine e
+ * defect, ADR 0043), fără reîncercare.
+ */
+function pornestePwa(): void {
+  programeazaPwa({
+    prod: import.meta.env.PROD,
+    nav: navigator,
+    porneste: () => {
+      import('../pwa/inregistrare.ts').then((m) => m.inregistreaza({ oferta: actualizare.scrie, jurnal }))
+        .catch((e: unknown) => { jurnal.adauga('promisiune', e); });
+    },
+  });
+}
+
+/**
  * Pornirea, într-o funcție, fără `await` la nivelul modulului. Ușa de încărcare a proiectului vine la cerere, chiar în
  * timpul pornirii, iar bucata ei poate importa pachetul de intrare: cu un `await` sus, modulul ăsta ar rămâne neevaluat
  * până la deschidere, deci bucata l-ar aștepta pe el și el pe ea. Văzut în e2e: deschiderea ieșea „fără memorie”, după
@@ -204,7 +224,22 @@ async function porneste(): Promise<void> {
   // Pagina `/admin` (ADR 0040 §1) vine la cerere, ÎNAINTEA deschiderii proiectului: nu ia blocarea lui de scriere și nu
   // aduce Firebase în pachetul de pornire.
   if (esteRutaAdmin(location.pathname)) {
-    const { PaginaAdmin } = await import('../admin/PaginaAdmin.tsx');
+    pornestePwa();
+    // Pagina vine doar din rețea (nici ea, nici navigarea la `/admin` nu sunt ale workerului, ADR 0045 §2, §4): dacă bucata
+    // ei nu vine (rețeaua căzută după index.html), un mesaj care cere rețea, nu o pagină albă.
+    const admin = await import('../admin/PaginaAdmin.tsx').catch((e: unknown) => {
+      jurnal.adauga('promisiune', e);
+      return null;
+    });
+    if (!admin) {
+      const p = document.createElement('p');
+      p.role = 'alert';
+      p.className = 'ecran-eroare';
+      p.textContent = t('admin.cere-retea');
+      radacina.replaceChildren(p);
+      return;
+    }
+    const { PaginaAdmin } = admin;
     createRoot(radacina).render(
       <StrictMode>
         <ErrorBoundary jurnal={jurnal} context={context}>
@@ -234,10 +269,12 @@ async function porneste(): Promise<void> {
           alegeLimba={alegeLimba}
           alegeTema={alegeTema}
           proiect={proiect}
+          actualizare={actualizare}
         />
       </ErrorBoundary>
     </StrictMode>,
   );
+  pornestePwa();
 }
 
 void porneste();

@@ -67,6 +67,8 @@ export const en = {
   'depozit.necitit-acum': 'The saved project could not be read right now (the network, a new version of the app or a late answer). You are working in memory, without saving; the project stays in this browser: reload the page.',
   'depozit.nu-se-deschide': 'The saved project could not be opened ({motiv}). A new project was started; the old one stays in this browser.',
   'depozit.eroare': 'Saving failed: {motiv}',
+  'actualizare.gata': 'New version ready',
+  'admin.cere-retea': 'The administration page needs a network connection: reload the page once you are online.',
   'dialog.neincarcat': 'This window could not be loaded (the app was updated meanwhile, or the network is down). Your project is saved: reload the page.',
   'actiune.importa-svg': 'Import SVG…',
   'import.lasa-aici': 'Drop SVG files here: each one lands centred where you drop it',

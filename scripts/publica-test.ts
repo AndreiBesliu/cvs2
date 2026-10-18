@@ -4,7 +4,7 @@
  *
  *   npm run build && node scripts/publica-test.ts
  *
- * Workerul vechi de pe adresa asta îl oprește `public/sw.js`. Proiectul se numește mereu explicit; pe live nu publică
+ * Workerul vechi de pe adresa asta îl preia workerul PWA (`/sw.js`, ADR 0045 §6). Proiectul se numește mereu explicit; pe live nu publică
  * scriptul ăsta niciodată.
  */
 import { publica } from './publica.ts';

@@ -832,6 +832,13 @@ nav button[aria-pressed='true'] {
   border-radius: var(--r-2);
 }
 
+/* „Versiune nouă gata” cu butonul lângă text (ADR 0045 §5). */
+.cip-actualizare {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
 .jos .cip-buton {
   pointer-events: auto;
   z-index: 1;

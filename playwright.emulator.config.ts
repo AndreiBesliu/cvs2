@@ -12,7 +12,8 @@ export default defineConfig({
   workers: 1,
   reporter: [['list']],
   use: { baseURL: 'http://localhost:4173', bypassCSP: true },
-  projects: [{ name: 'edge', use: { channel: 'msedge' } }],
+  // Workerul PWA blocat, ca în suita e2e (`playwright.config.ts`, ADR 0045 §9).
+  projects: [{ name: 'edge', use: { channel: 'msedge', serviceWorkers: 'block' } }],
   webServer: {
     command: 'npm run preview',
     url: 'http://localhost:4173',

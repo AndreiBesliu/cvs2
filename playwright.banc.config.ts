@@ -9,7 +9,8 @@ export default defineConfig({
   reporter: [['list']],
   outputDir: '.tmp/banc-rezultate',
   use: { baseURL: 'http://localhost:4173' },
-  projects: [{ name: 'edge', use: { channel: 'msedge' } }],
+  // Workerul PWA blocat, ca în suita e2e (`playwright.config.ts`): pozele vin din build-ul servit, nu dintr-un precache.
+  projects: [{ name: 'edge', use: { channel: 'msedge', serviceWorkers: 'block' } }],
   webServer: {
     command: 'npm run preview',
     url: 'http://localhost:4173',

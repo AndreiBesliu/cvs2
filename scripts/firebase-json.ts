@@ -34,7 +34,8 @@ export function configHosting(publicDir: string): object {
         { source: '/', headers: [antet('Cache-Control', 'no-cache')] },
         { source: '/index.html', headers: [antet('Cache-Control', 'no-cache')] },
         { source: '/config.json', headers: [antet('Cache-Control', 'no-cache')] },
-        // Opritorul workerului ediției întâi: browserul trebuie să-l vadă imediat, nu dintr-un cache.
+        // Workerul PWA (ADR 0045), la adresa workerului ediției întâi: browserul trebuie să vadă imediat o versiune nouă
+        // (actualizarea oferită, preluarea de la aplicația veche), nu una dintr-un cache HTTP.
         { source: '/sw.js', headers: [antet('Cache-Control', 'no-cache')] },
       ],
     },

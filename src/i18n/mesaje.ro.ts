@@ -83,6 +83,8 @@ export const ro = {
   'depozit.necitit-acum': 'Proiectul salvat n-a putut fi citit acum (rețeaua, o versiune nouă a aplicației sau un răspuns întârziat). Lucrezi în memorie, fără salvare; proiectul rămâne în browser: reîncarcă pagina.',
   'depozit.nu-se-deschide': 'Proiectul salvat nu s-a putut deschide ({motiv}). Am pornit unul nou; cel vechi rămâne în browser.',
   'depozit.eroare': 'Salvarea n-a mers: {motiv}',
+  'actualizare.gata': 'Versiune nouă gata',
+  'admin.cere-retea': 'Pagina de administrare cere rețea: reîncarcă pagina când ai rețea.',
   'dialog.neincarcat': 'Fereastra nu s-a putut încărca (aplicația s-a actualizat între timp sau rețeaua lipsește). Proiectul e salvat: reîncarcă pagina.',
   'actiune.importa-svg': 'Importă SVG…',
   'import.lasa-aici': 'Lasă fișierele SVG aici: fiecare cade cu centrul unde îl lași',

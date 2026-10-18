@@ -8,6 +8,7 @@ import { readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
+import { DOAR_ONLINE, inPrecache, motivPrecache } from '../shared/precache.ts';
 
 /**
  * Plafoanele JavaScript-ului comprimat, în kB:
@@ -277,10 +278,111 @@ async function kbModul(intrare: string): Promise<number> {
   }
   return gzipSync(codModul, { level: 9 }).length / 1024;
 }
+/**
+ * Workerul PWA (ADR 0045 §8): `sw.js` există (iar determinismul de mai sus îl cere identic în cele două build-uri), iar
+ * manifestul lui de precache e EXACT ce cere predicatul (`shared/precache.ts`), în ambele direcții. Cum predicatul e
+ * același în `vite.config.ts` și aici, egalitatea prinde doar un manifest nefiltrat sau tăiat de workbox (un fișier peste
+ * plafonul lui de mărime); de aceea, câteva verificări NU trec prin predicat: ambele dicționare, ferestrele, workerul
+ * pânzei și raportorul (cu baza conexiunii) sunt în manifest, pagina `/admin` (după CONȚINUT: Firestore, contul) nu e,
+ * iar o bucată adusă doar de bucăți doar online (de exemplu o parte nouă a paginii `/admin`) cere să fie trecută în
+ * `DOAR_ONLINE`.
+ */
+if (!a.has('sw.js')) {
+  console.error('dist/sw.js lipsește: workerul PWA nu s-a construit (vite-plugin-pwa, `vite.config.ts`).');
+  process.exit(1);
+}
+const codSw = readFileSync('.tmp/build-1/sw.js', 'utf8');
+if (codSw.includes('__WB_MANIFEST')) {
+  console.error('sw.js conține încă `self.__WB_MANIFEST`: manifestul precache-ului nu s-a injectat.');
+  process.exit(1);
+}
+const manifest = new Set([...codSw.matchAll(/["']?url["']?\s*:\s*["']([^"']+)["']/g)].map((m) => m[1] ?? ''));
+const necunoscute = [...a.keys()].filter((f) => motivPrecache(f) === 'necunoscut');
+if (necunoscute.length > 0) {
+  console.error(`Fișiere fără decizie de precache (shared/precache.ts): ${necunoscute.join(', ')}.`);
+  process.exit(1);
+}
+const dePrecache = [...a.keys()].filter(inPrecache);
+const lipsaDinManifest = dePrecache.filter((f) => !manifest.has(f));
+const inPlusInManifest = [...manifest].filter((f) => !dePrecache.includes(f));
+if (lipsaDinManifest.length > 0 || inPlusInManifest.length > 0) {
+  console.error(`Manifestul precache-ului din sw.js nu e cel din shared/precache.ts: lipsesc ${lipsaDinManifest.join(', ') || '—'}; în plus ${inPlusInManifest.join(', ') || '—'}.`);
+  process.exit(1);
+}
+// Raportorul și baza conexiunii sunt obligatorii (recenzia din 18.10): fila rămâne pe versiunea ei până la clic, deci și
+// raportorul ei trebuie să vină după o publicare, când bucata lui veche nu mai e pe hosting.
+const obligatorii = ['index.html', bucataPornirii, ...bucatiLimba, ...['ExportConectat', 'ImportConectat', 'actiuniAlegere', 'actiuniExportCalcul', 'lucrator', 'raportor', 'conexiuneBaza'].map(bucataNumita)];
+const lipsaObligatorii = obligatorii.filter((f) => !manifest.has(f));
+if (lipsaObligatorii.length > 0) {
+  console.error(`Precache-ul nu are ${lipsaObligatorii.join(', ')}: offline, aplicația n-ar porni sau limba / ferestrele / raportorul n-ar veni (ADR 0042, ADR 0045 §2).`);
+  process.exit(1);
+}
+/**
+ * Pagina `/admin` rămâne afară, după CONȚINUT (nu prin predicat): adresele Firestore și ale contului (Auth), pe care le
+ * are doar ea. Firebase-ul raportorului (aplicația, App Check, funcțiile) are voie în precache doar în raportor-* și
+ * conexiuneBaza-*.
+ */
+const MARCAJE_ADMIN: ReadonlyArray<readonly [string, string]> = [
+  ['firestore.googleapis.com', 'Firestore (pagina /admin)'],
+  ['identitytoolkit', 'contul Firebase (pagina /admin)'],
+];
+for (const [marcaj, ce] of MARCAJE_ADMIN) {
+  if (![...bucati.keys()].some((r) => cod(r).includes(marcaj))) {
+    console.error(`Niciun fișier al build-ului nu conține „${marcaj}”: plasa pentru ${ce} nu mai vede nimic (marcajul s-a schimbat?).`);
+    process.exit(1);
+  }
+}
+const FIREBASE_IN_PRECACHE = /^assets\/(?:raportor|conexiuneBaza)-[A-Za-z0-9_-]{8}\.js$/;
+const straineInPrecache = [...manifest].filter((f) => f === 'config.json' || f === 'sw.js' || f.startsWith('banc/')
+  || (f.endsWith('.js') && MARCAJE_ADMIN.some(([marcaj]) => cod(f).includes(marcaj)))
+  || (f.endsWith('.js') && !FIREBASE_IN_PRECACHE.test(f) && MARCAJE_FIREBASE.some(([marcaj]) => cod(f).includes(marcaj))));
+if (straineInPrecache.length > 0) {
+  console.error(`Precache-ul conține ${straineInPrecache.join(', ')}: pagina /admin (Firestore, contul), config.json, sw.js și bancul rămân în afara lui; Firebase doar în raportor-* și conexiuneBaza-*.`);
+  process.exit(1);
+}
+/** Cine pomenește o bucată JS: un import static sau dinamic (`./x.js`) ori un worker (`/assets/x.js`). */
+const referinte = (rel: string): string[] => {
+  const nume = rel.replace('assets/', '');
+  return [...bucati.keys()].filter((r) => r !== rel && r !== 'sw.js'
+    && [...cod(r).matchAll(/["'`](?:\.\/|\/assets\/)([^"'`]+\.js)["'`]/g)].some((m) => m[1] === nume));
+};
+for (const f of manifest) {
+  if (f.endsWith('.js') && f !== bucataPornirii && !referinte(f).some((r) => manifest.has(r))) {
+    console.error(`${f} e adusă doar de bucăți din afara precache-ului (${referinte(f).join(', ') || 'de nimeni'}): o parte doar online (/admin) se trece în DOAR_ONLINE (${DOAR_ONLINE.join(', ')}).`);
+    process.exit(1);
+  }
+  const stil = /^assets\/(.+)-[A-Za-z0-9_-]{8}\.css$/.exec(f);
+  if (stil && !html.includes(`/${f}"`) && ![...manifest].some((j) => j.startsWith(`assets/${stil[1] ?? ''}-`) && j.endsWith('.js'))) {
+    console.error(`${f}: stilul unei bucăți din afara precache-ului (nici în index.html, nici lângă o bucată JS a lui): se trece în DOAR_ONLINE.`);
+    process.exit(1);
+  }
+}
+const kbPrecache = [...manifest].reduce((s, f) => s + gz(join('.tmp/build-1', f)), 0);
+
+/**
+ * Înregistrarea workerului (ADR 0045 §7) vine la cerere, după prima randare: bucata de pornire o cere doar cu `import()`,
+ * iar adresa workerului (`/sw.js`, un text pe care îl are doar ea) nu e în pornire, dar e în altă bucată.
+ */
+const inregistrare = bucataNumita('inregistrare');
+const numeInregistrare = inregistrare.replace('assets/', '');
+if (!['`', '"', "'"].some((g) => cod(bucataPornirii).includes(`import(${g}./${numeInregistrare}${g})`))) {
+  console.error(`Pornirea nu cere ${numeInregistrare} cu import(): înregistrarea workerului nu mai vine la cerere (sau deloc).`);
+  process.exit(1);
+}
+if (cod(bucataPornirii).includes('/sw.js')) {
+  console.error('Bucata de pornire conține „/sw.js”: înregistrarea workerului PWA vine la cerere (src/pwa/inregistrare.ts), nu la pornire.');
+  process.exit(1);
+}
+if (!cod(inregistrare).includes('/sw.js')) {
+  console.error(`${inregistrare} nu conține „/sw.js”: plasa înregistrării la cerere nu mai vede nimic.`);
+  process.exit(1);
+}
+
 const kbRaportorPornire = await kbModul(RAPORTOR_PORNIRE);
 console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri.`);
 console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}).`);
 console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
+console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f)).join(', ')}).`);
 console.log(`Cu un proiect salvat, ușa vine înaintea primei randări: +${kbUsa.toFixed(1)} kB (plafon ${PLAFON_USA_KB}; cu pornirea ${(pornire + kbUsa).toFixed(1)} / ${PLAFON_PORNIRE_KB}) (${inchidere(usa).map((r) => r.replace('assets/', '')).join(', ')}).`);
 rmSync('.tmp/build-1', { recursive: true, force: true });
 rmSync('.tmp/build-2', { recursive: true, force: true });
