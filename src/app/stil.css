@@ -1084,6 +1084,16 @@ nav button[aria-pressed='true'] {
   font-size: var(--fs-2);
 }
 
+/* Rezumatul jobului (ADR 0046): prima coloană e antetul rândului, scrisă ca restul rândului. */
+.dialog .rezumat tbody th,
+.dialog .rezumat tfoot th {
+  font-size: var(--fs-2);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--t);
+}
+
 /* Răspunsul la $$ (ADR 0046): lățimea dialogului, cu literele egale ale consolei. */
 .dialog textarea {
   width: 100%;

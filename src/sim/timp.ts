@@ -28,8 +28,8 @@ export type EstimareTimp =
     readonly portiuni: readonly Portiune[];
     /** Câte blocuri au intrat în planificator (cu segmentele arcelor; blocurile fără niciun pas, nu). */
     readonly blocuri: number;
-    /** Câte blocuri de tăiere au cerut un avans peste viteza maximă a mașinii pe direcția lor (tăiat de controler). */
-    readonly blocuriLimitate: number;
+    /** Câte linii ale programului cer un avans peste viteza maximă a mașinii pe direcția lor (tăiat de controler). */
+    readonly liniiLimitate: number;
   }
   /** `linie`: linia programului (de la 1), sau 0 când e vina profilului. */
   | { readonly ok: false; readonly motiv: string; readonly linie: number };
@@ -39,6 +39,11 @@ const EPS_ARC = 5e-7;
 /** `N_ARC_CORRECTION` din config.h: la al câtelea segment `mc_arc` refăcea rotația cu sin / cos exacte. */
 const CORECTIE_ARC = 12;
 const MM_PE_INCH = 25.4;
+/**
+ * Plafonul blocurilor planificatorului (T23): ~0,3 µs pe bloc măsurat (recenzia din 18.10), deci ~3 s în cel mai rău caz,
+ * pe firul principal, până la bazinul de workere. Postul scrie cel mult 2 000 000 de linii; arcele le înmulțesc.
+ */
+const PLAFON_BLOCURI = 10_000_000;
 const AXE = ['X', 'Y', 'Z'] as const;
 
 class EroareEstimare extends Error {
@@ -141,16 +146,18 @@ const NUMAR = /^[+-]?(\d+\.?\d*|\.\d+)$/;
  * Estimarea programului `text` pe mașina `profil`. `limite`: liniile (numărate de la 0, crescător) unde începe câte o
  * porțiune, de exemplu secțiunile postului; porțiunea 0 e tot ce vine înaintea primei limite.
  */
-export function estimeazaTimp(text: string, profil: ProfilMasina, limite: readonly number[] = []): EstimareTimp {
+export function estimeazaTimp(
+  text: string, profil: ProfilMasina, limite: readonly number[] = [], plafonBlocuri = PLAFON_BLOCURI,
+): EstimareTimp {
   try {
-    return estimeaza(text, profil, limite);
+    return estimeaza(text, profil, limite, plafonBlocuri);
   } catch (e) {
     if (e instanceof EroareEstimare) return { ok: false, motiv: e.message, linie: e.linie };
     throw e;
   }
 }
 
-function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]): EstimareTimp {
+function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[], plafonBlocuri: number): EstimareTimp {
   const axe: AxaMasina[] = AXE.map((a) => {
     const x = profil.axe[a];
     if (!x) throw new EroareEstimare(0, `profilul ${profil.nume} n-are axa ${a}`);
@@ -171,7 +178,8 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
   const acum: Acumulator[] = Array.from({ length: limite.length + 1 }, gol);
   const plan = new Planificator(fw.blocuriPlanificator, acum);
   let blocuri = 0;
-  let limitate = 0;
+  const limitate = new Set<number>();
+  let linieCurenta = 0;
 
   // Starea G-code (`gc_state`): poziția în mm, ca numere reale; cea a planificatorului (`pl.position`), în pași.
   const poz = [0, 0, 0];
@@ -182,7 +190,7 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
   let avans = 0;
   let inch = false;
   let incremental = false;
-  let ax: 'oprit' | 'pornit' = 'oprit';
+  let ax: 'oprit' | 'cw' | 'ccw' = 'oprit';
   let turatie = 0;
   let racire = false;
   let portiune = 0;
@@ -210,7 +218,7 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
     let nominala = rapid ? vitezaRapida : avans;
     if (!rapid && nominala > vitezaRapida) {
       nominala = vitezaRapida;
-      limitate++;
+      limitate.add(linieCurenta);
     }
     if (!(nominala > avansMinim)) nominala = avansMinim;
     let jonctiune2: number;
@@ -238,6 +246,9 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
     nominalaAnterioara = nominala;
     versorAnterior = u;
     blocuri++;
+    if (blocuri > plafonBlocuri) {
+      throw new EroareEstimare(linieCurenta, `programul trece de ${plafonBlocuri} de blocuri ale planificatorului (cu segmentele arcelor): estimarea ar bloca dialogul`);
+    }
     const p = acum[portiune] as Acumulator;
     if (rapid) p.rapide += mm;
     else p.taiere += mm;
@@ -268,6 +279,8 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
       unghi += 2 * Math.PI;
     }
     const segmente = Math.floor(Math.abs(0.5 * unghi * raza) / Math.sqrt(tol * (2 * raza - tol)));
+    // `segments` e uint16_t în mc_arc: peste 65 535, conversia din float e nedefinită în C. Refuzat, nu ghicit.
+    if (!(segmente <= 65535)) throw new EroareEstimare(nr, `arcul ar avea ${segmente} de segmente, peste 65 535 (contorul din mc_arc)`);
     if (segmente > 0) {
       const theta = unghi / segmente;
       const liniar = ((tinta[2] as number) - pz) / segmente;
@@ -310,6 +323,7 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
       portiune = urmatoareaLimita;
     }
     const nr = n + 1;
+    linieCurenta = nr;
     const cuvinte = cuvinteLinie(linii[n] as string, nr);
     if (cuvinte.length === 0) continue;
 
@@ -318,7 +332,7 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
     let gMiscare: Miscare | undefined;
     let gInch: boolean | undefined;
     let gIncremental: boolean | undefined;
-    let mAx: 'oprit' | 'pornit' | undefined;
+    let mAx: 'oprit' | 'cw' | 'ccw' | undefined;
     let mRacire: boolean | undefined;
     let sfarsit = false;
     // Grupurile modale din gcode.c: două coduri din același grup pe o linie sunt error:21.
@@ -352,7 +366,9 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
       } else if (litera === 'M') {
         const cod = `M${valoare}`;
         switch (valoare) {
-          case 3: case 4: grup('ax', cod); mAx = 'pornit'; break;
+          // M3 și M4 sunt stări diferite (SPINDLE_ENABLE_CW / CCW): trecerea de la una la alta golește bufferul.
+          case 3: grup('ax', cod); mAx = 'cw'; break;
+          case 4: grup('ax', cod); mAx = 'ccw'; break;
           case 5: grup('ax', cod); mAx = 'oprit'; break;
           case 8: grup('racire', cod); mRacire = true; break;
           case 9: grup('racire', cod); mRacire = false; break;
@@ -387,7 +403,7 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
     const unitate = inch ? MM_PE_INCH : 1;
     if (v.F !== undefined) avans = (v.F * unitate) / 60;
     if (v.S !== undefined) {
-      if (v.S !== turatie && ax === 'pornit') sincronizeaza();
+      if (v.S !== turatie && ax !== 'oprit') sincronizeaza();
       turatie = v.S;
     }
     if (mAx !== undefined && mAx !== ax) {
@@ -438,19 +454,28 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
       }
       for (let k = 0; k < 3; k++) poz[k] = tinta[k] as number;
     }
-    if (sfarsit) sincronizeaza();
+    if (sfarsit) {
+      // M2 / M30 (gcode.c, PROGRAM_FLOW_COMPLETED): după golire, G1, G17, G90, G94, G54, M5, M9; unitățile, F și S rămân.
+      sincronizeaza();
+      miscare = 1;
+      incremental = false;
+      ax = 'oprit';
+      racire = false;
+    }
   }
   sincronizeaza();
 
   const total = acum.reduce<Acumulator>((s, p) => ({
     secunde: s.secunde + p.secunde, pauze: s.pauze + p.pauze, taiere: s.taiere + p.taiere, rapide: s.rapide + p.rapide,
   }), gol());
-  return { ok: true, total, portiuni: acum, blocuri, blocuriLimitate: limitate };
+  return { ok: true, total, portiuni: acum, blocuri, liniiLimitate: limitate.size };
 }
 
 /**
- * Cuvintele unei linii, cum le citește GRBL: comentariile `( … )` și `;` scoase, spațiile ignorate, literele mari; fiecare
- * literă cu numărul ei. O literă fără număr, sau un număr fără literă, refuză linia.
+ * Cuvintele unei linii, cum le citește GRBL (`protocol.c`): comentariile `( … )` (și una neînchisă, până la capăt) și `;`
+ * scoase, spațiile și `/` ignorate, literele mari; cel mult 79 de caractere rămase (`LINE_BUFFER_SIZE` 80; error:11);
+ * fiecare literă cu numărul ei. O literă fără număr, un număr fără literă sau o valoare negativă la F, N, P, S, T (error:4)
+ * refuză linia.
  */
 function cuvinteLinie(linie: string, nr: number): Array<readonly [string, number]> {
   let curat = '';
@@ -462,11 +487,11 @@ function cuvinteLinie(linie: string, nr: number): Array<readonly [string, number
     }
     if (c === '(') { inComentariu = true; continue; }
     if (c === ';') break;
-    if (c === ' ' || c === '\t' || c === '\r') continue;
+    if (c === ' ' || c === '\t' || c === '\r' || c === '/') continue;
     curat += c.toUpperCase();
   }
-  if (inComentariu) throw new EroareEstimare(nr, 'comentariul nu se închide');
   if (curat === '') return [];
+  if (curat.length > 79) throw new EroareEstimare(nr, `linia are ${curat.length} de caractere utile, peste 79 (GRBL: error:11)`);
   const rez: Array<readonly [string, number]> = [];
   let i = 0;
   while (i < curat.length) {
@@ -476,7 +501,9 @@ function cuvinteLinie(linie: string, nr: number): Array<readonly [string, number
     while (j < curat.length && /[0-9.+-]/.test(curat[j] as string)) j++;
     const numar = curat.slice(i + 1, j);
     if (!NUMAR.test(numar)) throw new EroareEstimare(nr, `${litera} fără un număr valid („${numar}”)`);
-    rez.push([litera, Number(numar)]);
+    const valoare = Number(numar);
+    if (valoare < 0 && 'FNPST'.includes(litera)) throw new EroareEstimare(nr, `${litera}${numar}: valoare negativă (GRBL: error:4)`);
+    rez.push([litera, valoare]);
     i = j;
   }
   return rez;

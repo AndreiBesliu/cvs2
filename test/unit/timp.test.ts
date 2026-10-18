@@ -66,13 +66,13 @@ test('T2 (placa 3): linia de 200 mm la F1000, trapez: 200 / 16,667 + 16,667 / 10
   aproape(r.total.taiere, 200, 1e-9, 'tăierea');
   assert.equal(r.total.rapide, 0);
   assert.equal(r.blocuri, 1);
-  assert.equal(r.blocuriLimitate, 0);
+  assert.equal(r.liniiLimitate, 0);
 });
 
 test('aceeași linie pe implicitele GRBL ($110 = 500): avansul tăiat la 500 mm/min, 200 / 8,333 + 8,333 / 10 = 24,8333 s', () => {
   const r = ok(estimeazaTimp(linii('G1 X200 F1000'), PROFIL_GRBL_11H));
   aproape(r.total.secunde, 24.833333333, 1e-6, 'timpul');
-  assert.equal(r.blocuriLimitate, 1);
+  assert.equal(r.liniiLimitate, 1);
 });
 
 test('triunghi: 10 mm la F6000 cu a = 100 nu ajung la 100 mm/s (vârful √(aL) = 31,6): t = 2·√(10/100) = 0,63246 s', () => {
@@ -134,11 +134,22 @@ test('arcul mic, cercul întreg (start = capăt: 2π) și arcul cu 2r ≤ $12, r
   const cerc = ok(estimeazaTimp(linii('G0 X10', 'G3 X10 Y0 I-10 J0 F600'), profil({ a: [1e6, 1e6, 1e6], pasi: 1e5 })));
   // 2π·10 / √(0,002·19,998) = 314,16 → 314 de segmente, plus G0.
   assert.equal(cerc.blocuri, 1 + Math.floor(Math.PI * 10 / Math.sqrt(0.002 * (20 - 0.002))));
+  // Și în sens orar (G2): atan2 dă 0, iar `≥ −ε` îl face −2π: același cerc, nu un arc de 0.
+  const orar = ok(estimeazaTimp(linii('G0 X10', 'G2 X10 Y0 I-10 J0 F600'), profil({ a: [1e6, 1e6, 1e6], pasi: 1e5 })));
+  assert.equal(orar.blocuri, cerc.blocuri);
+  assert.ok(Math.abs(orar.total.taiere - cerc.total.taiere) < 1e-6, 'aceeași lungime');
   // Unde contează „− $12” din rădăcină: cercul întreg cu r = 0,003 are floor(π·0,003 / √(0,002·0,004)) = floor(3,33) = 3
   // segmente; fără el, floor(π·0,003 / √(0,002·0,006)) = 2.
   assert.equal(ok(estimeazaTimp(linii('G0 X0.003', 'G3 X0.003 Y0 I-0.003 J0 F600'), profil({ pasi: 1e5 }))).blocuri, 1 + 3);
+  // Peste 65 535 de segmente (contorul uint16 din mc_arc): cercul de r = 1000 cu $12 = 0,000001 ar avea
+  // floor(π·1000 / √(10⁻⁶·1999,999999)) = 70 248. Refuzat; cu $12 = 0,002 are 1 570.
+  assert.equal(estimeazaTimp(linii('G0 X1000', 'G3 X1000 Y0 I-1000 J0 F600'), profil({ tol: 0.000001 })).ok, false);
+  assert.equal(ok(estimeazaTimp(linii('G0 X1000', 'G3 X1000 Y0 I-1000 J0 F600'), profil())).blocuri, 1 + 1570);
   // 2r ≤ $12: în mc_arc rădăcina e dintr-un număr ≤ 0, iar conversia rezultatului în uint16 e nedefinită în C. Refuzat.
-  assert.equal(estimeazaTimp(linii('G2 X0.002 Y0 I0.001 J0 F600'), profil({ pasi: 1e5 })).ok, false);
+  const sub = estimeazaTimp(linii('G2 X0.002 Y0 I0.001 J0 F600'), profil({ pasi: 1e5 }));
+  assert.equal(sub.ok, false);
+  // Cu motivul lui, nu cu cel al contorului (rădăcina din 0 ar da și ea „Infinity de segmente”).
+  if (!sub.ok) assert.match(sub.motiv, /sub jumătate din toleranța arcului/);
 });
 
 test('pauza G4: delay_sec numără pași de 50 ms, rotunjit în sus: P2 = 2,0 s, P2.001 = 2,05 s, P0.01 = 0,05 s', () => {
@@ -162,6 +173,46 @@ test('M3 / M5 și S cu axul pornit golesc bufferul: două linii coliniare de 100
   aproape(ok(estimeazaTimp(linii('G1 X100 F1200', 'S2000', 'G1 X200'), profil())).total.secunde, 10.2, 1e-6, 'S cu axul oprit');
   aproape(ok(estimeazaTimp(linii('G1 X100 F1200', 'G4 P0', 'G1 X200'), profil())).total.secunde, 10.4, 1e-6, 'G4 P0');
   aproape(ok(estimeazaTimp(linii('G1 X100 F1200', 'M8', 'G1 X200', 'M9'), profil())).total.secunde, 10.4, 1e-6, 'răcirea (M8)');
+  // M3 și M4 sunt stări diferite ale axului (SPINDLE_ENABLE_CW / CCW): trecerea golește bufferul (recenzia din 18.10).
+  aproape(ok(estimeazaTimp(linii('M3 S1000', 'G1 X100 F1200', 'M4', 'G1 X200'), profil())).total.secunde, 10.4, 1e-6, 'M3 → M4');
+  aproape(ok(estimeazaTimp(linii('M3 S1000', 'G1 X100 F1200', 'M3', 'G1 X200'), profil())).total.secunde, 10.2, 1e-6, 'M3 → M3');
+});
+
+test('M2 / M30 resetează modurile (gcode.c, PROGRAM_FLOW_COMPLETED): G1, G90, axul și răcirea oprite; F rămâne', () => {
+  // G91, apoi M30: X10 de după e absolut, deci același loc (bloc gol): doar primii 10 mm, 1 + 0,1 s.
+  aproape(ok(estimeazaTimp(linii('G91', 'G1 X10 F600', 'M30', 'G1 X10'), profil())).total.secunde, 1.1, 1e-6, 'G90 după M30');
+  // Axul oprit după M30: S nou nu mai golește bufferul.
+  aproape(ok(estimeazaTimp(linii('M3 S1000', 'M30', 'G1 X100 F1200', 'S2000', 'G1 X200'), profil())).total.secunde, 10.2, 1e-6, 'axul');
+  // Răcirea oprită după M30: M9 nu mai e o schimbare.
+  aproape(ok(estimeazaTimp(linii('M8', 'M30', 'G1 X100 F1200', 'M9', 'G1 X200'), profil())).total.secunde, 10.2, 1e-6, 'răcirea');
+  // Modul trece pe G1: o axă fără F, după un program numai cu G0, e error:22.
+  const g1 = estimeazaTimp(linii('G0 X1', 'M30', 'X2'), profil());
+  assert.equal(g1.ok, false);
+  if (!g1.ok) assert.equal(g1.linie, 3);
+  // F rămâne: același X2 cu F dat înainte de M30 trece.
+  assert.equal(estimeazaTimp(linii('G1 X1 F600', 'G0 X2', 'M30', 'X3'), profil()).ok, true);
+});
+
+test('cititorul ca protocol.c: `/` ignorat, paranteza neînchisă ține până la capăt, cel mult 79 de caractere utile', () => {
+  const baza = ok(estimeazaTimp(linii('G1 X10 F600', 'G1 Y10'), profil())).total.secunde;
+  aproape(ok(estimeazaTimp(linii('/G1 X10 F600', 'G1 Y10'), profil())).total.secunde, baza, 1e-12, '/');
+  aproape(ok(estimeazaTimp(linii('G1 X10 F600 (fără capăt Y999', 'G1 Y10'), profil())).total.secunde, baza, 1e-12, 'paranteza');
+  const utile = (n: number): string => `G1X${'0'.repeat(n - 4)}1`;
+  assert.equal(utile(79).length, 79);
+  assert.equal(estimeazaTimp(linii('G1 F100', utile(79)), profil()).ok, true);
+  const lunga = estimeazaTimp(linii('G1 F100', utile(80)), profil());
+  assert.equal(lunga.ok, false);
+  if (!lunga.ok) assert.equal(lunga.linie, 2);
+  // Spațiile și comentariile nu se numără (protocol.c le scoate înainte de buffer).
+  assert.equal(estimeazaTimp(linii('G1 F100', `${utile(79)} (${'x'.repeat(40)})`), profil()).ok, true);
+});
+
+test('plafonul blocurilor (T23): peste el, estimarea refuză, cu linia; sub el, nimic nu se schimbă', () => {
+  const prog = linii('G1 X1 F600', 'G1 X2', 'G1 X3', 'G1 X4');
+  assert.equal(ok(estimeazaTimp(prog, profil(), [], 4)).blocuri, 4);
+  const peste = estimeazaTimp(prog, profil(), [], 3);
+  assert.equal(peste.ok, false);
+  if (!peste.ok) assert.equal(peste.linie, 4);
 });
 
 test('tăierea, apoi rapida coliniară mai rapidă: intrarea rapidei e limitată de viteza nominală a tăierii (10 mm/s): 10,05 + 1,905', () => {
@@ -176,7 +227,7 @@ test('avansul minim (MINIMUM_FEED_RATE = 1 mm/min): F0.5 merge cu 1 mm/min, 1 mm
 test('plonjarea: F300 pe Z cu $112 = 200 și $122 = 50: 10 / 3,333 + 3,333 / 50 = 3,0667 s, un bloc limitat', () => {
   const r = ok(estimeazaTimp(linii('G1 Z-10 F300'), profil({ v: [10000, 10000, 200], a: [100, 100, 50] })));
   aproape(r.total.secunde, 3.066666667, 1e-6, 'timpul');
-  assert.equal(r.blocuriLimitate, 1);
+  assert.equal(r.liniiLimitate, 1);
 });
 
 test('cuantizarea pe pași (250 / mm): X0.001 e un bloc gol, X0.003 e un pas (0,004 mm): 2·√(0,004/10) = 0,04 s', () => {
@@ -225,6 +276,8 @@ test('ce nu se poate estima e refuzat cu linia: planul G18, arcul cu R, M0 (timp
     [linii('G21', 'G18'), 2], [linii('G2 X10 R5 F600'), 1], [linii('G1 X1 F100', 'M0'), 2], [linii('M6 T2'), 1],
     [linii('G93 G1 X1 F1'), 1], [linii('G1 X1 F100 Q3'), 1], [linii('G1 X1'), 1], [linii('G2 X10 F100'), 1],
     [linii('G1 X1 Y F100'), 1], [linii('G1 XX1 F100'), 1], [linii('G4'), 1], [linii('G1 X1 F0'), 1],
+    // error:4: valorile negative la F, S, P, T, N.
+    [linii('G1 X1 F-100'), 1], [linii('S-100'), 1], [linii('T-1'), 1],
     // error:33: startul la 4 mm de centru, capătul la 6 mm.
     [linii('G21', 'G2 X10 Y0 I4 J0 F600'), 2],
   ] as const) {

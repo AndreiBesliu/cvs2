@@ -151,7 +151,12 @@ function durata(s: number, limba: string): string {
 
 /** Rezumatul jobului (ADR 0046): timpul, apoi tabelul pe operații și cel pe scule, cu distanțele de tăiere și de rapide. */
 function Rezumat({ r, operatii, limba }: { readonly r: RezumatJob; readonly operatii: readonly OperatieExport[]; readonly limba: string }) {
-  if (!r.ok) return <p role="status" className="avertisment" data-testid="export-rezumat">{t('export.rezumat.eroare', { motiv: r.motiv })}</p>;
+  if (!r.ok) {
+    const cheie: CheieSimpla = r.sursa === 'setari'
+      ? (r.linie > 0 ? 'export.rezumat.eroare.setari' : 'export.rezumat.eroare.setari-tot')
+      : (r.linie > 0 ? 'export.rezumat.eroare.program' : 'export.rezumat.eroare');
+    return <p role="status" className="avertisment" data-testid="export-rezumat">{t(cheie, { linie: r.linie, motiv: r.motiv })}</p>;
+  }
   const nr = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 0 });
   const zec = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3 });
   const descriere = new Map(operatii.map((o) => [o.cheie, o.descriere]));
@@ -175,29 +180,29 @@ function Rezumat({ r, operatii, limba }: { readonly r: RezumatJob; readonly oper
   return (
     <section className="rezumat" data-testid="export-rezumat" aria-labelledby="rezumat-titlu">
       <h3 id="rezumat-titlu">{t('export.rezumat.titlu')}</h3>
-      <p data-rezumat="timp"><strong>{t('export.rezumat.timp', { timp: durata(r.total.secunde, limba) })}</strong></p>
+      <p data-rezumat="timp" role="status"><strong>{t('export.rezumat.timp', { timp: durata(r.total.secunde, limba) })}</strong></p>
       <p className="nota" data-rezumat="masina" data-sursa={m.sursa}>
         {t(m.sursa === 'setari' ? 'export.rezumat.masina.setari' : 'export.rezumat.masina.implicit', masina)}
       </p>
-      {r.blocuriLimitate > 0 && (
-        <p className="avertisment" data-rezumat="limitat">{t('export.rezumat.limitat', { n: r.blocuriLimitate })}</p>
+      {r.liniiLimitate > 0 && (
+        <p className="avertisment" data-rezumat="limitat">{t('export.rezumat.limitat', { n: r.liniiLimitate })}</p>
       )}
-      <table data-rezumat="operatii">
+      <table data-rezumat="operatii" aria-label={t('export.rezumat.pe-operatie')}>
         {antet('export.rezumat.operatia')}
         <tbody>
           {r.peOperatie.map((o) => (
-            <tr key={o.operatie} data-operatie={o.operatie}><td>{descriere.get(o.operatie) ?? o.operatie}</td>{celule(o)}</tr>
+            <tr key={o.operatie} data-operatie={o.operatie}><th scope="row">{descriere.get(o.operatie) ?? o.operatie}</th>{celule(o)}</tr>
           ))}
-          <tr data-rand="restul"><td>{t('export.rezumat.restul')}</td>{celule(r.restul)}</tr>
+          <tr data-rand="restul"><th scope="row">{t('export.rezumat.restul')}</th>{celule(r.restul)}</tr>
         </tbody>
-        <tfoot><tr data-rand="total"><td><strong>{t('export.rezumat.total')}</strong></td>{celule(r.total)}</tr></tfoot>
+        <tfoot><tr data-rand="total"><th scope="row"><strong>{t('export.rezumat.total')}</strong></th>{celule(r.total)}</tr></tfoot>
       </table>
-      <table data-rezumat="scule">
+      <table data-rezumat="scule" aria-label={t('export.rezumat.pe-scula')}>
         {antet('export.rezumat.scula')}
         <tbody>
           {r.peScula.map((s) => (
             <tr key={s.numar} data-scula={s.numar}>
-              <td>{t('export.rezumat.scula.rand', { numar: s.numar, nume: s.nume, diametru: zec.format(s.diametru) })}</td>{celule(s)}
+              <th scope="row">{t('export.rezumat.scula.rand', { numar: s.numar, nume: s.nume, diametru: zec.format(s.diametru) })}</th>{celule(s)}
             </tr>
           ))}
         </tbody>

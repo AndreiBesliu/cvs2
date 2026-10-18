@@ -74,9 +74,32 @@ test('rezumatul pe hârtie, implicitele GRBL 1.1h: pornirea (G0 Z5 + G4 P3) și 
   aproape(r.total.secunde, 11.394662246, 1e-6, 'totalul');
   aproape(r.total.taiere, 16, 1e-9, 'tăierea: Z5 → Z−1 și X10 → X20');
   aproape(r.total.rapide, 5 + 10 + 6, 1e-9, 'rapidele: Z5, X10, Z5');
-  assert.equal(r.blocuriLimitate, 1, 'F1000 pe X peste $110 = 500');
+  assert.equal(r.liniiLimitate, 1, 'F1000 pe X peste $110 = 500');
   assert.deepEqual(r.masina, { nume: 'GRBL 1.1h', sursa: 'implicit', vitezaMaxima: [500, 500, 500], acceleratie: [10, 10, 10] });
   assert.deepEqual(r.peScula, [{ numar: 1, nume: 'freza plata', diametru: 6, ...r.total }]);
+});
+
+test('două operații despărțite de o pauză: fiecare are timpul ei pe hârtie (o rotire a timpilor între operații pică)', async () => {
+  // Operația b începe cu G4 P1 (golirea bufferului), deci a se termină oprită ca înainte (6,980449 s), iar b e
+  // 1 + G0 X30 din (20, 0) din repaus în repaus: 10 / 8,333 + 8,333 / 10 = 2,033333; total 4,414214 + 6,980449 + 3,033333.
+  const miscari: Miscare[] = [
+    ...OP_A,
+    { tip: 'eticheta', text: 'b', element: 'i1/e2', operatie: 'p1/o2' },
+    { tip: 'pauza', secunde: 1 },
+    { tip: 'rapida', la: { X: 30 } },
+  ];
+  const e = await exporta(program(miscari), MONTAJ, GRBL_11, { asteptareAx: 3 });
+  assert.ok(e.ok);
+  if (!e.ok) return;
+  const r = rezumatJob(e.exportat, program(miscari).scula, undefined);
+  assert.ok(r.ok, r.ok ? '' : r.motiv);
+  if (!r.ok) return;
+  assert.deepEqual(r.peOperatie.map((o) => o.operatie), ['p1/o1', 'p1/o2']);
+  aproape(r.peOperatie[0]?.secunde ?? 0, 6.980448684, 1e-6, 'operația a');
+  aproape(r.peOperatie[1]?.secunde ?? 0, 3.033333333, 1e-6, 'operația b');
+  aproape(r.peOperatie[1]?.pauze ?? 0, 1, 1e-12, 'pauza e a operației b');
+  aproape(r.restul.secunde, 4.414213562, 1e-6, 'restul');
+  aproape(r.total.secunde, 14.427995579, 1e-6, 'totalul');
 });
 
 test('placa 2: fiecare operație are timpul ei, iar operațiile plus restul dau totalul; `$$` mai rapid scurtează jobul', async () => {
@@ -96,7 +119,7 @@ test('placa 2: fiecare operație are timpul ei, iar operațiile plus restul dau 
   if (!rapid.ok) return;
   assert.equal(rapid.masina.sursa, 'setari');
   assert.ok(rapid.total.secunde < r.total.secunde / 1.5, `${rapid.total.secunde} față de ${r.total.secunde}`);
-  assert.equal(rapid.blocuriLimitate, 0);
+  assert.equal(rapid.liniiLimitate, 0);
   aproape(rapid.total.taiere, r.total.taiere, 1e-9, 'distanțele nu depind de viteze');
 });
 
@@ -106,7 +129,7 @@ test('`$$` greșit nu oprește exportul: programul iese, rezumatul spune linia',
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
   assert.equal(r.rezumat.ok, false);
-  if (!r.rezumat.ok) assert.match(r.rezumat.motiv, /linia 2/);
+  if (!r.rezumat.ok) assert.deepEqual([r.rezumat.sursa, r.rezumat.linie], ['setari', 2]);
   const fara = await calculeazaExport(doc, { origine: 'stanga-jos', z0: 'sus' });
   assert.ok(fara.ok);
   if (fara.ok) {

@@ -38,11 +38,14 @@ test('rezumatul: timpul fișierului descărcat, pe implicitele GRBL 1.1h, cu fie
   await expect(rez.locator('[data-rezumat="masina"]')).toHaveAttribute('data-sursa', 'implicit');
   await expect(rez.locator('[data-rezumat="masina"]')).toContainText('viteza maximă X 500, Y 500, Z 500 mm/min');
   // F1000 trece de $110 = 500: spus pe față.
-  await expect(rez.locator('[data-rezumat="limitat"]')).toContainText('controlerul le încetinește');
+  await expect(rez.locator('[data-rezumat="limitat"]')).toContainText('avansul trece de viteza maximă a mașinii');
   await expect(rez.locator('tr[data-operatie]')).toHaveCount(2);
   await expect(rez.locator('tr[data-rand="restul"] td[data-col="timp"]')).toHaveText(/\d+,\d s/);
   await expect(rez.locator('tr[data-rand="total"] td[data-col="taiere"]')).toHaveText(new Intl.NumberFormat('ro-RO', { maximumFractionDigits: 0 }).format(e.total.taiere));
-  await expect(rez.locator('[data-rezumat="scule"] tr[data-scula="1"] td').first()).toHaveText('T1 freza plata, Ø6');
+  await expect(rez.locator('[data-rezumat="scule"] tr[data-scula="1"] th')).toHaveText('T1 freza plata, Ø6');
+  // Tabelele au nume, iar rândurile antet (cititorul de ecran spune operația lângă fiecare cifră).
+  await expect(page.getByRole('table', { name: 'Timpul pe operații' })).toBeVisible();
+  await expect(page.getByRole('rowheader', { name: 'Total' })).toBeVisible();
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
@@ -82,7 +85,7 @@ test('`$$` greșit: programul se descarcă oricum, rezumatul spune linia greșit
   await page.locator('[data-camp="setari-masina"]').fill('$110=5000\n$120=abc\n');
   const text = await exporta(page);
   expect(text).toContain('M30');
-  await expect(page.getByTestId('export-rezumat')).toContainText('Fără estimarea timpului: setările mașinii, linia 2');
+  await expect(page.getByTestId('export-rezumat')).toContainText('Fără estimarea timpului: setările $$ lipite, linia 2: $120');
 });
 
 test('în engleză: titlul, timpul și rândurile au textele lor', async ({ browser }) => {
@@ -94,7 +97,8 @@ test('în engleză: titlul, timpul și rândurile au textele lor', async ({ brow
   await exporta(page);
   const rez = page.getByTestId('export-rezumat');
   await expect(rez.locator('h3')).toHaveText('Job summary');
-  await expect(rez.locator('[data-rezumat="timp"]')).toHaveText(/^Estimated time: \d+ min \d\d s$/);
-  await expect(rez.locator('tr[data-rand="restul"] td').first()).toHaveText('Start and end (safe Z, spindle and its wait, retract)');
+  // Sub un minut, cu o zecimală (punctul englezesc); peste, minute și secunde.
+  await expect(rez.locator('[data-rezumat="timp"]')).toHaveText(/^Estimated time: (\d+\.\d s|\d+ min \d\d s)$/);
+  await expect(rez.locator('tr[data-rand="restul"] th')).toHaveText('Start and end (safe Z, spindle and its wait, retract)');
   await ctx.close();
 });

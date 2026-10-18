@@ -55,11 +55,11 @@ export function rezumatJob(program: ProgramExportat, scula: Scula, setari: strin
   let profil: ProfilMasina = PROFIL_GRBL_11H;
   if (setari !== undefined && setari.trim() !== '') {
     const s = profilDinSetari(setari, PROFIL_GRBL_11H);
-    if (!s.ok) return { ok: false, motiv: s.linie > 0 ? `setările mașinii, linia ${s.linie}: ${s.motiv}` : `setările mașinii: ${s.motiv}` };
+    if (!s.ok) return { ok: false, sursa: 'setari', linie: s.linie, motiv: s.motiv };
     profil = s.profil;
   }
   const e = estimeazaTimp(program.text, profil, program.sectiuni.map((s) => s.linie));
-  if (!e.ok) return { ok: false, motiv: e.linie > 0 ? `linia ${e.linie} a programului: ${e.motiv}` : e.motiv };
+  if (!e.ok) return { ok: false, sursa: 'program', linie: e.linie, motiv: e.motiv };
   const adauga = (la: ReturnType<typeof zero>, p: Portiune | undefined): void => {
     if (!p) return;
     la.secunde += p.secunde;
@@ -96,6 +96,6 @@ export function rezumatJob(program: ProgramExportat, scula: Scula, setari: strin
       vitezaMaxima: [axa('X').vitezaMaxima, axa('Y').vitezaMaxima, axa('Z').vitezaMaxima],
       acceleratie: [axa('X').acceleratie, axa('Y').acceleratie, axa('Z').acceleratie],
     },
-    blocuriLimitate: e.blocuriLimitate,
+    liniiLimitate: e.liniiLimitate,
   };
 }

@@ -113,11 +113,32 @@ function program(r: () => number): string {
     } else if (t < 0.85) {
       l.push(`G4 P${(r() * 2).toFixed(3)}`);
     } else if (t < 0.9) {
-      l.push(r() < 0.5 ? 'M5' : `M3 S${10000 + Math.floor(r() * 4) * 2000}`);
+      const u = r();
+      l.push(u < 0.4 ? 'M5' : u < 0.7 ? `M3 S${10000 + Math.floor(r() * 4) * 2000}` : 'M4');
     } else if (t < 0.93) {
       l.push(`S${10000 + Math.floor(r() * 4) * 2000}`);
     } else if (t < 0.95) {
       l.push(r() < 0.5 ? 'M8' : 'M9');
+    } else if (t < 0.965) {
+      // Câteva mișcări relative (G91), cu un arc, apoi înapoi pe G90.
+      l.push('G91');
+      for (let k = 0; k < 3; k++) {
+        const dx = Math.round((r() - 0.5) * 20 * 1000) / 1000, dy = Math.round((r() - 0.5) * 20 * 1000) / 1000;
+        l.push(`G1 X${n3(dx)} Y${n3(dy)}`);
+        x = Math.round((x + dx) * 1000) / 1000;
+        y = Math.round((y + dy) * 1000) / 1000;
+      }
+      l.push(`G2 X${n3(10)} Y${n3(0)} I${n3(5)} J${n3(0)}`);
+      x = Math.round((x + 10) * 1000) / 1000;
+      l.push('G90');
+    } else if (t < 0.975) {
+      // În inch: o linie, apoi înapoi pe mm; poziția e cea rotunjită în inch.
+      const xi = Math.round(((x + (r() - 0.5) * 20) / 25.4) * 1000) / 1000;
+      l.push('G20', `G1 X${n3(xi)} F${(10 + Math.floor(r() * 100)).toFixed(1)}`, 'G21');
+      x = xi * 25.4;
+    } else if (t < 0.98) {
+      // Un program lipit după altul: M30, apoi pornirea din nou (G1 modal, F păstrat).
+      l.push('M30', 'M3 S18000', `N${i} T1 G4 P0.500 ; din nou`);
     } else {
       x = Math.round((x + (r() - 0.5) * 0.02) * 1000) / 1000;
       l.push(`G1 X${n3(x)} F${(50 + Math.floor(r() * 500)).toFixed(1)}`);

@@ -60,9 +60,21 @@ o('S02', TIM, "      if (v.S !== turatie && ax === 'pornit') sincronizeaza();", 
 o('S03', TIM, '    if (mRacire !== undefined && mRacire !== racire) {\n      sincronizeaza();', '    if (mRacire !== undefined && mRacire !== racire) {',
   'timp', 'răcirea nu mai oprește')
 o('S04', TIM, "      sincronizeaza();\n      const pauza", "      const pauza", 'timp', 'G4 nu mai golește bufferul')
-o('S05', TIM, 'Math.ceil(v.P / fw.pasPauza - 1e-9)', 'Math.round(v.P / fw.pasPauza)', 'timp', 'pauza rotunjită la cel mai apropiat pas')
+o('S05', TIM, 'const pauza = Math.ceil(v.P / fw.pasPauza - 1e-9) * fw.pasPauza;', 'const pauza = Math.round(v.P / fw.pasPauza) * fw.pasPauza;',
+  'timp', 'pauza rotunjită la cel mai apropiat pas')
 o('S06', TIM, "const MM_PE_INCH = 25.4;", "const MM_PE_INCH = 25;", 'timp', 'inch-ul greșit')
 o('S07', TIM, 'return incremental ? (poz[k] as number) + w * unitate : w * unitate;', 'return w * unitate;', 'timp', 'G91 ignorat')
+# ---- după recenzie (18.10): M4, M2 / M30, cititorul ca protocol.c, plafonul ----
+o('S08', TIM, "          case 4: grup('ax', cod); mAx = 'ccw'; break;", "          case 4: grup('ax', cod); mAx = 'cw'; break;", 'timp', 'M4 e tot M3: trecerea nu mai oprește')
+o('S09', TIM, '      incremental = false;\n', '', 'timp', 'M30 nu mai readuce G90')
+o('S10', TIM, "      ax = 'oprit';\n", '', 'timp', 'axul rămâne pornit după M30')
+o('S11', TIM, '      miscare = 1;\n', '', 'timp', 'modul rămâne G0 după M30')
+o('S12', TIM, '      racire = false;\n', '', 'timp', 'răcirea rămâne pornită după M30')
+o('P01', TIM, 'if (curat.length > 79)', 'if (curat.length > 80)', 'timp', 'linia de 80 de caractere utile trece')
+o('P02', TIM, "    if (valoare < 0 && 'FNPST'.includes(litera))", '    if (false)', 'timp', 'valorile negative trec')
+o('P03', TIM, " || c === '/') continue;", ') continue;', 'timp', '`/` refuzat, nu ignorat')
+o('P04', TIM, 'if (blocuri > plafonBlocuri) {', 'if (blocuri > plafonBlocuri + 1) {', 'timp', 'plafonul cu un bloc mai mare')
+o('R07', REZ, "    if (!s.ok) return { ok: false, sursa: 'setari',", "    if (!s.ok) return { ok: false, sursa: 'program',", 'timp', 'greșeala din `$$` atribuită programului')
 # ---- `$$` ----
 o('M01', MAS, '    const zeroValid = numarSetare === 11;', '    const zeroValid = numarSetare === 12;', 'timp', '$12 = 0 acceptat, $11 = 0 refuzat')
 o('M02', MAS, "    if (valori.has(numarSetare)) return { ok: false, motiv: `$${numarSetare} e scris de două ori`, linie: i + 1 };", '',

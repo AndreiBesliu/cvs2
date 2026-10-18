@@ -85,9 +85,13 @@ export type RezumatJob =
       readonly vitezaMaxima: readonly [number, number, number]; readonly acceleratie: readonly [number, number, number];
     };
     /** Câte blocuri de tăiere cer un avans peste viteza maximă a mașinii pe direcția lor (controlerul îl taie). */
-    readonly blocuriLimitate: number;
+    readonly liniiLimitate: number;
   }
-  | { readonly ok: false; readonly motiv: string };
+  /**
+   * `sursa`: ce n-a putut citi estimarea, setările lipite sau programul; `linie`: linia din textul lor (de la 1), sau 0.
+   * `motiv` e al domeniului (în română, ca motivele exportului); interfața îl pune în fraza ei, tradusă.
+   */
+  | { readonly ok: false; readonly sursa: 'setari' | 'program'; readonly linie: number; readonly motiv: string };
 
 export type RezultatExport =
   /** `avertismente`: ce s-a făcut altfel decât s-a cerut, fără să fie o greșeală (intrarea omisă, ADR 0030 §3). */

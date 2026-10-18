@@ -54,17 +54,30 @@ lipește în dialog (punctul 5).
   întreg), raza din I / J, `segmente = floor(|½·θ·r| / √($12·(2r − $12)))`, rotația aproximată cu corecția la al 12-lea
   segment, ultimul segment exact la capăt; zero segmente = o singură linie. Arcul cu capătul pe alt cerc (`error:33`) și
   cel cu 2r ≤ `$12` (rădăcină din negativ în firmware) sunt refuzate;
-- **sincronizările** (bufferul se golește, mișcarea se oprește): G4, schimbarea stării axului (M3 / M4 / M5) și a turației
-  cu axul pornit (`spindle_sync`), răcirea (M7 / M8 / M9), sfârșitul (M2 / M30);
+- **sincronizările** (bufferul se golește, mișcarea se oprește): G4, schimbarea stării axului (M3 / M4 / M5; M3 și M4 sunt
+  stări diferite, deci și trecerea dintre ele) și a turației cu axul pornit (`spindle_sync`), răcirea (M8 / M9), sfârșitul
+  (M2 / M30), după care modurile revin la G1, G90, G94, G54, axul și răcirea oprite (unitățile, F și S rămân);
 - **pauza**: `delay_sec` numără pași de 50 ms, rotunjit în sus (`ceil(20 · P)`);
-- **cititorul**: G0–G4, G17, G20 / G21, G90 / G91, G94, G40 / G49 / G80 / G54–G59 (fără efect pe timp), M2–M5, M7–M9, M30,
-  F, S, T, N, P, comentariile. Refuzate, cu linia: G18 / G19, G93, R, M0 / M1 (timpul omului), M6 (`error:20` pe GRBL
-  1.1), axa A (v1), orice alt cuvânt; F lipsă sau 0 la tăiere (`error:22`), arcul fără I / J.
+- **cititorul**, ca `protocol.c` și `gcode.c`: comentariile `( … )` (una neînchisă ține până la capăt) și `;`, spațiile și
+  `/` ignorate, cel mult 79 de caractere utile (`error:11`); G0–G4, G17, G20 / G21, G61, G90 / G91, G91.1, G94, G40 / G49 /
+  G80 / G54–G59, M2–M5, M8 / M9, M30, F, S, T, N, P. Refuzate, cu linia, ca pe controler: două coduri din același grup
+  modal (`error:21`), valorile negative la F / S / P / T / N (`error:4`), T peste 255, N peste 10 000 000, pauza peste
+  contorul de 16 biți, F lipsă sau 0 la un G1–G3 scris sau modal (`error:22`), cuvintele de axă cu G80 (`error:31`), arcul
+  fără X / Y sau fără I / J, M7 (oprit din fabrică, `ENABLE_M7`), M6 (`error:20`). Refuzate fiindcă estimarea nu le știe:
+  G18 / G19, G93, R, axa A (v1), orice alt cod. **M0 și M1** sunt refuzate amândouă (timpul omului): pe GRBL 1.1h, M1 e
+  ignorat (`gcode.c`, „Optional stop not supported”), dar un program cu M1 e scris pentru o oprire; refuzul e prudent,
+  ales, nu al sursei. Cititorul rămâne mai strict decât GRBL pe intrări pe care postul nu le scrie (K în G17, `G4 P1 X10`,
+  caracterele de control);
+- **plafonul** (T23): cel mult 10 000 000 de blocuri pe program (cu segmentele arcelor), apoi refuz cu linia: un `$$` cu
+  `$12` foarte mic pe arce mari ar ține firul principal zeci de secunde.
 
-**Ipotezele, scrise:** fereastra mereu plină (un sender lent sau un USB întârziat lungesc timpul real); override-urile la
-100 %; scula pornește din zeroul programului (0, 0, 0); fără temporizarea pașilor și fără bufferul de segmente (~60 ms
-înaintea mișcării); dublă precizie, nu `float` pe 32 de biți: pe AVR, `20 · P` în `float` poate urca pauza cu un pas (de
-exemplu `G4 P0.3`: 0,35 s, nu 0,30); timpul de accelerare al axului e pauza programată, nu una măsurată.
+**Ipotezele, scrise:** fereastra mereu plină: un sender lent, un USB întârziat sau legătura serială însăși lungesc timpul
+real (la 115 200 baud trec cel mult ~575 de linii G1 de 20 de octeți pe secundă: contează doar la polilinii dense, la
+avans mare); override-urile la 100 %; scula pornește din zeroul programului (0, 0, 0); fără temporizarea pașilor și fără
+bufferul de segmente (~60 ms înaintea mișcării); fără `delay_ms($1)` din `st_go_idle` la fiecare oprire completă (25 ms
+din fabrică: câteva sutimi de secundă pe programele noastre); dublă precizie, nu `float` pe 32 de biți: pe AVR, `20 · P`
+în `float` poate urca pauza cu un pas (de exemplu `G4 P0.3`: 0,35 s, nu 0,30), iar `read_float` ține doar 8 cifre;
+timpul de accelerare al axului e pauza programată, nu una măsurată.
 
 **4. Secțiunile programului.** Eticheta IR primește `operatie` (cheia `<piesă>/<operație>`), lângă `element`. Postul
 întoarce, lângă text, `sectiuni`: linia comentariului fiecărei etichete cu element sau operație, apoi finalul (retragerea,
@@ -76,17 +89,20 @@ operație (o operație pe mai multe elemente sau instanțe are mai multe secțiu
 
 **5. Rezumatul în dialogul exportului.** După Exportă, sub starea descărcării: timpul estimat al fișierului descărcat
 (același SHA-256), mașina pe care s-a estimat (numele, sursa, vitezele și accelerațiile pe axe), avertismentul când
-avansul cerut trece de viteza maximă a mașinii, tabelul pe operații (cu restul și totalul: timp, tăiere, rapide) și cel pe
-scule. **„Setările mașinii ($$)”**: un câmp în care owner-ul lipește răspunsul controlerului la `$$`; e un parametru al
+avansul cerut trece de viteza maximă a mașinii (numărate liniile programului, nu segmentele arcelor), tabelul pe operații
+(cu restul și totalul: timp, tăiere, rapide) și cel pe scule; tabelele au nume, iar prima coloană e antetul rândului. **„Setările mașinii ($$)”**: un câmp în care owner-ul lipește răspunsul controlerului la `$$`; e un parametru al
 exportului (schimbat, rezumatul vechi dispare), ține cât e deschisă pagina (și după închiderea dialogului), nu se salvează
 (din etapa 3, senderul îl citește de la mașină). Un `$$` greșit nu oprește exportul: programul se descarcă, rezumatul spune
-linia. Textele prin `t()`, en + ro, în dicționarul exportului (la cerere, cu dialogul).
+linia. Textele prin `t()`, en + ro, în dicționarul exportului (la cerere, cu dialogul); motivul unui refuz (linia din `$$`
+sau din program) vine structurat, iar fraza e a interfeței; textul motivului rămâne al domeniului, în română, ca la
+celelalte motive ale exportului.
 
 **6. Pachetul.** Estimarea și citirea lui `$$` stau în bucata calculului exportului (`actiuniExportCalcul.ts`, adusă la
 primul export), nu în pornire; poarta build-ului are câte un marcaj pentru fiecare (`LA_CERERE` din
 `scripts/build-determinist.ts`): în bucata de pornire, build-ul pică. Fără worker: pe placa 2 (2 701 blocuri) estimarea
-ia câteva milisecunde; un program de milioane de segmente ar bloca firul principal o secundă, ca exportul însuși, până la
-bazinul de workere (etapa 4).
+ia câteva milisecunde. Măsurat de recenzie: 500 000 de linii G1, 0,77 s; 50 000 de semicercuri (3,9 M blocuri), 1,2 s;
+~0,3 µs pe bloc, deci la plafon ~3 s. Estimarea rulează înaintea descărcării, pe firul principal, ca exportul însuși, până
+la bazinul de workere (etapa 4).
 
 **7. Proba.** Scrise înaintea modelului: valorile pe hârtie (`test/unit/timp.test.ts`): T2 din placa 3 (200 mm la F1000:
 12,1667 s cu a = 100; 24,8333 s pe implicite, unde $110 = 500 taie avansul), trapezul și triunghiul, G0 în diagonală
@@ -96,7 +112,14 @@ cuantizarea, unitățile; `test/unit/rezumat.test.ts` (un program trecut prin po
 operații) și `test/unit/masina.setari.test.ts`. **Oracolul independent** (`test/oracles/timp.ts`, cu cazurile lui pe
 hârtie în `timp.cazuri.ts`) l-a scris o sesiune separată, fără acces la `src/`, din codul GRBL; deși felia e R2 (regula
 din `PLAN.md` §4.1 cere asta pentru R3), defectul ediției întâi era chiar autoconsistența. Aplicația și oracolul se compară
-pe un corpus (`test/unit/timp.oracol.test.ts`). Sabotajele: `test/otravuri/timp.py`.
+pe un corpus (`test/unit/timp.oracol.test.ts`): plăcile 1 și 2 pe două mașini și 300 de programe aleatoare pe profile
+aleatoare (fereastra 1–35, `$11`, `$12`, pașii; M3 / M4 / M5, S, M8 / M9, G4, G91, G20, M30 la mijloc): abaterea
+relativă cea mai mare, ~10⁻¹⁴, pe ~500 000 de blocuri; aplicația trece și cele 16 cazuri pe hârtie ale oracolului și
+refuză tot ce refuză el. Sabotajele: `test/otravuri/timp.py`.
+- **Recenzia** (un verificator adversarial, 18.10): niciun defect mare; remediate, cu proba lor: M3 → M4 golește bufferul,
+  M2 / M30 resetează modurile, o probă pe hârtie cu două operații (o rotire a timpilor pică), refuzurile ca pe controler
+  (linia lungă, valorile negative, `/` și paranteza ca în `protocol.c`), liniile limitate numărate pe linii, plafonul de
+  blocuri, motivul structurat, tabelele accesibile; scrise aici: ipotezele legăturii seriale și ale lui `$1`, M1.
 
 ## Consecințe
 
