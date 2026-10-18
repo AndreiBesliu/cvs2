@@ -2080,3 +2080,12 @@ ajunge la analiza funcțiilor (joburile rămăseseră pe contul implicit): acum 
 **A doua rulare (`1fe4dcc`, rulare 39120923857):** verde; joburile de backup rulează cu `backup-cncvs2`, callable-urile cu
 contul implicit; amprenta: toate țintele din `1fe4dcc`, arborele curat, `github:AndreiBesliu`. Prima rulare a backup-ului
 cu contul nou: 19.10, 03:00 / 05:00 (de verificat dimineața, în marcaje).
+
+## 2026-10-18 — PWA: aplicația pornește fără rețea (etapa 4, punctul 7; Model: Claude Opus 5.5)
+
+**Prompt:** „Pwa offline” (la propunerea feliilor fără mașină, cu plăcile netăiate: `PLAN.md` §4.6, punctul 7). **Started:**
+18.10 ~14:20, săptămânalul 50 %. Workerul la `/sw.js` (ia locul opritorului de azi, șterge cache-urile `cncvs-`), toată
+aplicația în cache în afară de Firebase (raportorul, `/admin`), `config.json` din rețea cu cache de rezervă, actualizarea
+oferită, nu impusă (blocarea în timpul jobului vine cu senderul), înregistrarea la cerere (pornirea rămâne 98,1 / 100 cu
+ușa). Workflow: implementarea, apoi 2 verificatori (offline și actualizarea; pachetul, securitatea și otrăvurile); estimat
+~1,1 M.
