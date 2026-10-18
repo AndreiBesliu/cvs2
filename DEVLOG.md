@@ -2089,3 +2089,20 @@ aplicația în cache în afară de Firebase (raportorul, `/admin`), `config.json
 oferită, nu impusă (blocarea în timpul jobului vine cu senderul), înregistrarea la cerere (pornirea rămâne 98,1 / 100 cu
 ușa). Workflow: implementarea, apoi 2 verificatori (offline și actualizarea; pachetul, securitatea și otrăvurile); estimat
 ~1,1 M.
+**Workflow 1 (~0,79 M):** implementarea (vite-plugin-pwa 2.0.0, `injectManifest`, `src/sw.ts`, workbox 7.4.1 fixate;
+`public/sw.js` scos, workerul nou la aceeași adresă) și 2 verificatori: 12 constatări, una mare (găsită de ambii): ruta
+navigărilor dădea aplicația pentru `/__/auth/handler`, deci login-ul Google de pe `/admin` (authDomain pe aceeași origine)
+ar fi primit aplicația în popup; medii: `/admin` blocat după o publicare, `config.json` lipsă offline după o singură vizită,
+raportorul stins după o publicare. **Workflow 2 (~0,49 M):** remedierile (navigările pe listă albă: doar `/` și
+`/index.html`; copia `config.json` la instalare; raportorul în precache, afară doar pagina `/admin`; mesajul `/admin` fără
+rețea; golurile din probe) și o reverificare: scenariile nu se mai reproduc; 5 constatări scăzute, integrate de mine
+(termen de 10 s pentru copia de la instalare, majusculele în probă, titlul ADR-ului, legătura din `main.tsx` scrisă ca gol
+cunoscut). ADR 0045 acceptat.
+**Pe test (măsurat în browser, 18.10 ~21:45):** workflow-ul `publica` (rularea 39154648776, reluată o dată după o cădere de
+rețea la API-ul indecșilor) a pus `f28a156`; prima încărcare: workerul activ la `/sw.js` (opritorul înlocuit), precache 32
+de fișiere, copia `config.json`, pagina necontrolată (fără `clients.claim`); a doua: controlată, pagina și cele 22 de
+bucăți din cache, 0 octeți din rețea; `/__/auth/handler` vine de la Firebase (scripturile lui), `/admin` din rețea, cu
+login-ul. Offline adevărat nu se poate comuta în panoul browserului: probat în e2e (`edge-pwa`).
+**Completed:** 18.10 21:50. Costul: workflow-urile ~1,28 M plus integrarea (estimat ~1,1 M). Nivelul rapid: 6 648 de
+teste, 0 picate (8 sărite); e2e 148 / 148 (o rulare intermediară: un `EBUSY` al lui Drive pe un fișier descărcat, trecut la
+reluare); emulatoarele 24 + 6; pornirea 93,9 / 100 kB, cu ușa 98,5 (strâmt).
