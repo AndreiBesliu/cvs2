@@ -7,9 +7,19 @@ import { numar, rotunjit, textAscii } from './numere.ts';
  * Postul unic (T9, ADR 0009): IR-ul în coordonatele documentului + montajul + contractul → textul programului.
  * Singurul loc din aplicație care scrie G-code. Nu știe de document și nu face geometrie (`PLAN.md` §3.3).
  */
+/**
+ * O secțiune a programului (ADR 0046): de la linia `linie` (numărată de la 0) începe lucrarea unei etichete din IR cu
+ * element sau operație, până la secțiunea următoare. Ultima, fără element, e finalul (retragerea, M5). Postul doar trece
+ * mai departe ce scrie în etichetă; rezumatul jobului le citește.
+ */
+export type Sectiune = { readonly linie: number; readonly element?: string; readonly operatie?: string };
+
 export type RezultatPost =
   /** `aproximari`: câte arce au ieșit segmente G1 (raza peste gardă), declarate, cu abaterea ≤ TOLERANTA_APROXIMARE. */
-  | { readonly ok: true; readonly text: string; readonly linii: number; readonly aproximari: number }
+  | {
+    readonly ok: true; readonly text: string; readonly linii: number; readonly aproximari: number;
+    readonly sectiuni: readonly Sectiune[];
+  }
   | { readonly ok: false; readonly motiv: string };
 
 export type OptiuniPost = {
@@ -48,7 +58,9 @@ export function posteaza(program: Program, montaj: Montaj, contract: Contract, o
   }
 }
 
-function scrie(program: Program, montaj: Montaj, k: Contract, optiuni: OptiuniPost): { text: string; linii: number; aproximari: number } {
+function scrie(
+  program: Program, montaj: Montaj, k: Contract, optiuni: OptiuniPost,
+): { text: string; linii: number; aproximari: number; sectiuni: Sectiune[] } {
   for (const axa of program.axe) {
     if (!k.axe.includes(axa)) throw new EroarePost(`axa ${axa} nu e în contractul ${k.nume}`);
   }
@@ -77,6 +89,7 @@ function scrie(program: Program, montaj: Montaj, k: Contract, optiuni: OptiuniPo
   const scris: Pos = { x: undefined, y: undefined, z: undefined };
   let avansCurent: number | undefined;
   let aproximari = 0;
+  const sectiuni: Sectiune[] = [];
 
   const masina = (x: number, y: number): { x: number; y: number } => aplicaMontaj(t, x, y);
   const avans = (f: number): string => {
@@ -239,6 +252,12 @@ function scrie(program: Program, montaj: Montaj, k: Contract, optiuni: OptiuniPo
         adauga(`${k.pauza.cuvant}${k.pauza.unitate === 's' ? numar(mv.secunde, 3) : String(Math.round(mv.secunde * 1000))}`);
         break;
       case 'eticheta':
+        if (mv.element !== undefined || mv.operatie !== undefined) {
+          sectiuni.push({
+            linie: linii.length, ...(mv.element !== undefined ? { element: mv.element } : {}),
+            ...(mv.operatie !== undefined ? { operatie: mv.operatie } : {}),
+          });
+        }
         comentariu(mv.text);
         break;
       default: {
@@ -248,8 +267,9 @@ function scrie(program: Program, montaj: Montaj, k: Contract, optiuni: OptiuniPo
     }
   }
 
+  sectiuni.push({ linie: linii.length });
   if (!pePozitie({ Z: zSigur })) adauga(`G0${cuvinte({ Z: zSigur })}`);
   adauga('M5');
   for (const l of k.final) adauga(l);
-  return { text: `${linii.join('\n')}\n`, linii: linii.length, aproximari };
+  return { text: `${linii.join('\n')}\n`, linii: linii.length, aproximari, sectiuni };
 }

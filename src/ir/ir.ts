@@ -44,9 +44,10 @@ export type Miscare =
   | { readonly tip: 'pauza'; readonly secunde: number }
   /**
    * O etichetă de lucrare (intrare, punte, finisaj…), scrisă ca comentariu. `element`: id-ul elementului documentului
-   * căruia îi aparțin mișcările de după ea, pentru mesajele interfeței; postul nu-l scrie.
+   * căruia îi aparțin mișcările de după ea, pentru mesajele interfeței; `operatie`: cheia operației lor
+   * (`<piesă>/<operație>`), pentru rezumatul jobului (ADR 0046). Postul nu le scrie, doar le trece în secțiunile lui.
    */
-  | { readonly tip: 'eticheta'; readonly text: string; readonly element?: string };
+  | { readonly tip: 'eticheta'; readonly text: string; readonly element?: string; readonly operatie?: string };
 
 export type Scula = { readonly numar: number; readonly nume: string; readonly diametru: number };
 

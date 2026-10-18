@@ -1084,6 +1084,17 @@ nav button[aria-pressed='true'] {
   font-size: var(--fs-2);
 }
 
+/* Răspunsul la $$ (ADR 0046): lățimea dialogului, cu literele egale ale consolei. */
+.dialog textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font: var(--fs-2) / 1.4 ui-monospace, monospace;
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+}
+
 .avertisment {
   color: var(--a);
 }

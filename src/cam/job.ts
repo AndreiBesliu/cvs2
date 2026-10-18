@@ -302,7 +302,9 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     }
     const tr = traseuProfil(treceri, regim, urechi, t.rampa ? { lungime: t.rampa.lungime } : undefined, intrari, degajari);
     if (!tr.ok) return { ok: false, motiv: `${t.idLume}: ${tr.motiv}` };
-    miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, ${latura}, ${t.adancime} mm`, element: t.idLume });
+    miscari.push({
+      tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, ${latura}, ${t.adancime} mm`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}`,
+    });
     // Fără `push(...listă)`: o listă foarte lungă depășește stiva de argumente.
     for (const m of tr.miscari) miscari.push(m);
   }

@@ -307,7 +307,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         descarca(r.program.octeti, `cncvs2-${p?.origine ?? 'stanga-jos'}.${r.program.extensie}`);
         // Exportul tocmai a scris operațiile: traseul arătat se reface pe documentul exportat.
         if (traseuArat.current) calculeazaTraseu();
-        setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente });
+        setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente, rezumat: r.rezumat });
       } else {
         setStareExport('cereConfirmare' in r ? { ok: false, motiv: r.motiv, cereConfirmare: r.cereConfirmare } : { ok: false, motiv: r.motiv });
       }
@@ -582,6 +582,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     exportInCurs.current = true;
     const r = ruleaza(registruExport, 'export.gcode', contextExport({
       origine, z0, ...(c.confirmareIesire ? { confirmareIesire: c.confirmareIesire } : {}),
+      ...(c.setariMasina ? { setariMasina: c.setariMasina } : {}),
     }, ++cerereExport.current));
     // Un export refuzat înainte de calcul (nimic de exportat, nicio operație) spune de ce, nu lasă rezultatul vechi.
     if (!r.ok) {

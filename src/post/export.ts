@@ -1,7 +1,7 @@
 import type { Program } from '../ir/ir.ts';
 import type { Montaj } from '../ir/montaj.ts';
 import type { Contract } from './contract.ts';
-import { posteaza, type OptiuniPost } from './post.ts';
+import { posteaza, type OptiuniPost, type Sectiune } from './post.ts';
 
 /**
  * Exportul: octeții exacți ai programului și amprenta lor SHA-256. Senderul trimite exact octeții ăștia și arată același
@@ -15,6 +15,8 @@ export type ProgramExportat = {
   readonly extensie: string;
   /** Arcele scrise ca segmente G1 (raza peste garda contractului), cu abaterea ≤ `TOLERANTA_APROXIMARE` (T2). */
   readonly aproximari: number;
+  /** Unde începe în program lucrarea fiecărei operații, apoi finalul (ADR 0046): pentru rezumatul jobului. */
+  readonly sectiuni: readonly Sectiune[];
 };
 
 export async function sha256Hex(octeti: Uint8Array<ArrayBuffer>): Promise<string> {
@@ -31,6 +33,9 @@ export async function exporta(
   if (octeti.length !== r.text.length) return { ok: false, motiv: 'programul conține caractere în afara ASCII' };
   return {
     ok: true,
-    exportat: { text: r.text, octeti, sha256: await sha256Hex(octeti), linii: r.linii, extensie: contract.extensie, aproximari: r.aproximari },
+    exportat: {
+      text: r.text, octeti, sha256: await sha256Hex(octeti), linii: r.linii, extensie: contract.extensie, aproximari: r.aproximari,
+      sectiuni: r.sectiuni,
+    },
   };
 }

@@ -56,11 +56,42 @@ export type ParametriExport = {
    * profilul mașinii).
    */
   readonly supracursa?: number;
+  /**
+   * Răspunsul mașinii la `$$`, lipit de om (ADR 0046): estimarea timpului îl pune peste implicitele GRBL 1.1h. Lipsă sau
+   * gol: implicitele. Nu schimbă programul, doar rezumatul.
+   */
+  readonly setariMasina?: string;
 };
+
+/** Timpul și distanțele unei bucăți a jobului (ADR 0046): secunde și milimetri. */
+export type TimpPortiune = { readonly secunde: number; readonly pauze: number; readonly taiere: number; readonly rapide: number };
+
+/**
+ * Rezumatul jobului (ADR 0046): estimarea timpului pe octeții exportați, cu modelul planificatorului GRBL, pe tot jobul,
+ * pe operație și pe sculă. `ok: false` nu oprește exportul (programul e scris oricum), doar spune de ce lipsește timpul.
+ */
+export type RezumatJob =
+  | {
+    readonly ok: true;
+    readonly total: TimpPortiune;
+    /** Pe operație, cu cheia rândurilor dialogului (`<piesă>/<operație>`), în ordinea în care începe tăierea lor. */
+    readonly peOperatie: ReadonlyArray<TimpPortiune & { readonly operatie: string }>;
+    /** Ce nu ține de nicio operație: pornirea (Z sigur, axul, pauza lui) și finalul (retragerea, oprirea axului). */
+    readonly restul: TimpPortiune;
+    readonly peScula: ReadonlyArray<TimpPortiune & { readonly numar: number; readonly nume: string; readonly diametru: number }>;
+    /** Mașina pe care s-a estimat, cu vitezele maxime (mm/min) și accelerațiile (mm/s²) pe X, Y, Z. */
+    readonly masina: {
+      readonly nume: string; readonly sursa: 'implicit' | 'setari';
+      readonly vitezaMaxima: readonly [number, number, number]; readonly acceleratie: readonly [number, number, number];
+    };
+    /** Câte blocuri de tăiere cer un avans peste viteza maximă a mașinii pe direcția lor (controlerul îl taie). */
+    readonly blocuriLimitate: number;
+  }
+  | { readonly ok: false; readonly motiv: string };
 
 export type RezultatExport =
   /** `avertismente`: ce s-a făcut altfel decât s-a cerut, fără să fie o greșeală (intrarea omisă, ADR 0030 §3). */
-  | { readonly ok: true; readonly program: ProgramExportat; readonly avertismente: readonly string[] }
+  | { readonly ok: true; readonly program: ProgramExportat; readonly avertismente: readonly string[]; readonly rezumat: RezumatJob }
   | { readonly ok: false; readonly motiv: string }
   /** Freza iese din foaie și omul n-a confirmat încă exact ieșirea asta: nu se scrie nimic. */
   | { readonly ok: false; readonly motiv: string; readonly cereConfirmare: IesireFoaie };

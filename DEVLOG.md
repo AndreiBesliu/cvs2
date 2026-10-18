@@ -2106,3 +2106,12 @@ login-ul. Offline adevărat nu se poate comuta în panoul browserului: probat î
 **Completed:** 18.10 21:50. Costul: workflow-urile ~1,28 M plus integrarea (estimat ~1,1 M). Nivelul rapid: 6 648 de
 teste, 0 picate (8 sărite); e2e 148 / 148 (o rulare intermediară: un `EBUSY` al lui Drive pe un fișier descărcat, trecut la
 reluare); emulatoarele 24 + 6; pornirea 93,9 / 100 kB, cu ușa 98,5 (strâmt).
+
+## 2026-10-18 — Estimarea timpului jobului (etapa 4, punctul 5; Model: Claude Opus 5.5)
+
+**Prompt:** „Pornește estimarea timpului jobului (etapa 4, punctul 5), la costul spus, într-o sesiune nouă.” **Started:**
+18.10 ~21:55, săptămânalul 56 %. Clasa R2 (`estimare.md`, D6), adusă din etapa 4 (plăcile netăiate: `PLAN.md` §4.6, punctul
+7). Modelul planificatorului GRBL 1.1h pe G-code-ul exportat (nu pe IR: GRBL planifică ce primește), profilul mașinii ca
+date (implicitele 1.1h, înlocuibile cu `$$`), rezumatul în dialogul exportului, calculat în bucata lui la cerere. Probele
+pe hârtie înaintea funcției; oracolul independent îl scrie un agent fără acces la `src/` (deși felia e R2: ediția întâi
+avea un estimator autoconsistent, niciodată comparat). Estimat ~1–1,5 M (oracolul, un verificator).
