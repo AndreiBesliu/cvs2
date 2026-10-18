@@ -2070,3 +2070,13 @@ commit-ului; amprenta citită înapoi: toate cele 4 ținte din `ee1357454fb0`, d
 acest sha și refuză altul. GitHub a citit workflow-ul (`publica`, activ). Nerulat: workflow-ul însuși (cere WIF și mediile).
 **Completed:** 18.10 11:35. Fără agenți. Nivelul rapid: 6 598 de teste, 0 picate (8 sărite); e2e 137 / 137; emulatoarele
 24 + 6; pornirea 93,5 / 100 kB (neschimbată), `/admin` 168,0 kB.
+**Pașii owner-ului pe test (18.10 ~12:30):** scriptul de Cloud Shell rulat (WIF, `publicare-cncvs2`, `backup-cncvs2` cu
+drepturile pe bucket, verificate prin GET), mediul GitHub `test` cu variabilele (două erau inversate; schimbate de asistent,
+la cererea owner-ului). **Prima rulare a workflow-ului `publica` pe test:** WIF a mers din prima; a căzut la verificarea Blaze
+a firebase-tools (cu un cont de serviciu, API-ul Cloud Billing trebuie pornit în proiect): pornit pe test, adăugat în
+scriptul de Cloud Shell, reluată → verde, amprenta a workflow-ului. Tot ea a arătat că `SA_BACKUP` din `process.env` nu
+ajunge la analiza funcțiilor (joburile rămăseseră pe contul implicit): acum e parametru (`defineString`), emulatoarele au
+`SA_BACKUP=` explicit (o valoare implicită goală = „nicio valoare”: emulatorul o cerea la tastatură și se agăța).
+**A doua rulare (`1fe4dcc`, rulare 39120923857):** verde; joburile de backup rulează cu `backup-cncvs2`, callable-urile cu
+contul implicit; amprenta: toate țintele din `1fe4dcc`, arborele curat, `github:AndreiBesliu`. Prima rulare a backup-ului
+cu contul nou: 19.10, 03:00 / 05:00 (de verificat dimineața, în marcaje).
