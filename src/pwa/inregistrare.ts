@@ -7,6 +7,10 @@
  * dată, când workerul nou o preia (`controllerchange`). Niciodată singură: o filă cu muncă nesalvată nu se reîncarcă sub
  * om, nici când altă filă a acceptat actualizarea (atunci clicul doar reîncarcă).
  *
+ * Browserul caută un `/sw.js` nou doar la navigare, deci o filă lăsată deschisă zile întregi ar afla de publicare abia la
+ * reîncărcare: aplicația îl caută și ea, cu `update()`, la fiecare oră și când fila redevine vizibilă după cel puțin o oră
+ * (ADR 0045 §5). Ce găsește trece prin aceeași ofertă.
+ *
  * De ce nu `virtual:pwa-register` (vite-plugin-pwa, peste workbox-window): în modul „prompt”, odată oferită actualizarea,
  * el reîncarcă fila la `controlling`, deci și când a acceptat-o ALTĂ filă; plus ~2,5 kB de workbox-window. Aici sunt cele
  * câteva evenimente ale API-ului, probate cu un container fals (`test/unit/pwa.actualizare.test.ts`).
@@ -23,11 +27,32 @@ export function actualizarePermisa(): boolean {
   return true;
 }
 
+/** Cât de des caută aplicația o versiune nouă (`update()`) cât fila stă deschisă: o oră (alegerea owner-ului, 19.10). */
+export const INTERVAL_VERIFICARE_MS = 3_600_000;
+
 type Container = Pick<ServiceWorkerContainer, 'register' | 'controller' | 'addEventListener'>;
+
+export interface Ceas {
+  /** Implicit `setInterval`. */
+  readonly repeta: (f: () => void, ms: number) => void;
+  /**
+   * Implicit `Date.now()`: ora peretelui, care curge și cât calculatorul doarme (ceasul monoton al paginii poate sta pe loc),
+   * deci fila revenită dimineața vede că a trecut ora.
+   */
+  readonly acum: () => number;
+}
+
+const CEAS: Ceas = {
+  repeta: (f, ms) => { setInterval(f, ms); },
+  acum: () => Date.now(),
+};
 
 export interface DepsInregistrare {
   /** Implicit `navigator.serviceWorker`. */
   readonly sw?: Container;
+  readonly ceas?: Ceas;
+  /** Implicit `document` (vizibilitatea filei). */
+  readonly doc?: Pick<Document, 'visibilityState' | 'addEventListener'>;
   /** Oferta actualizării: funcția de la clic, sau `null` când nu mai e nimic de oferit. */
   readonly oferta: (aplica: (() => void) | null) => void;
   /**
@@ -95,4 +120,24 @@ export async function inregistreaza(d: DepsInregistrare): Promise<void> {
   if (r.waiting && r.active) ofera(r.waiting);
   else urmareste(r.installing);
   r.addEventListener('updatefound', () => { urmareste(r.installing); });
+
+  // Verificarea orară (navigarea de acum tocmai a verificat). Ce găsește vine prin `updatefound`, deci oferta rămâne una pe
+  // worker: un `update()` care dă peste workerul care așteaptă deja nu găsește nimic nou. Eșecul (offline, serverul căzut)
+  // e o condiție a mediului: nimic în jurnal (ADR 0039 §6), nicio reîncercare până la verificarea următoare. Ora se scrie
+  // înaintea încercării, deci nici fila ascunsă și arătată în buclă, offline, nu verifică mai des de o oră.
+  const ceas = d.ceas ?? CEAS;
+  const doc = d.doc ?? document;
+  let ultima = ceas.acum();
+  const verifica = (): void => {
+    ultima = ceas.acum();
+    r.update().catch(() => undefined);
+  };
+  // Intervalul verifică mereu (nu doar „după o oră de la ultima”): ceasul lui și ora peretelui pot diferi cu puțin, iar o
+  // condiție l-ar face să sară o oră întreagă. O verificare în plus, lângă una la vizibilitate, nu costă nimic.
+  ceas.repeta(verifica, INTERVAL_VERIFICARE_MS);
+  // Fila înghețată (calculatorul a dormit, Edge a „adormit” fila) nu-și rulează intervalul: la întoarcere, omul vede oferta
+  // imediat, nu peste încă o oră.
+  doc.addEventListener('visibilitychange', () => {
+    if (doc.visibilityState === 'visible' && ceas.acum() - ultima >= INTERVAL_VERIFICARE_MS) verifica();
+  });
 }

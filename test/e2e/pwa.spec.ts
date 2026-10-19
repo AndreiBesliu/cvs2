@@ -374,3 +374,47 @@ test('actualizarea: oferită în bara de jos, nicio reîncărcare până la clic
     await inchide();
   }
 });
+
+test('verificarea orară: o publicare nouă, cu fila lăsată deschisă, ajunge la ofertă după o oră, fără nicio navigare', async ({ browser }) => {
+  const { page, server, inchide } = await deschide(browser);
+  try {
+    // Ceasul paginii e al lui Playwright (curge normal până la `fastForward`); workerul și browserul au ceasul real.
+    await page.clock.install();
+    await page.goto('/');
+    await workerActiv(page);
+    // Înregistrarea paginii reîncărcate a rulat (bucata ei a venit, din precache, după pauza de 2 s): verificarea orară e
+    // armată. (Ceasul fals golește și `performance`, deci semnalul e răspunsul văzut de Playwright.)
+    const bucata = page.waitForResponse(/\/assets\/inregistrare-[A-Za-z0-9_-]{8}\.js$/, { timeout: 20_000 });
+    await page.reload();
+    expect(await controlata(page)).toBe(true);
+    expect((await bucata).fromServiceWorker()).toBe(true);
+    await page.waitForTimeout(1000);
+    await page.evaluate(() => { window.__marcaj = 'fila lăsată deschisă'; });
+    let navigari = 0;
+    page.on('framenavigated', (f) => { if (f === page.mainFrame()) navigari++; });
+
+    // O publicare nouă pe aceeași adresă (pornirea redenumită, deci alt `sw.js`), cât fila stă deschisă.
+    const dosarB = `${dosar}-orar`;
+    publicareSimulata(dosar, dosarB, /^index-[A-Za-z0-9_-]{8}\.js$/);
+    server.dosar(dosarB);
+    // Martorul: fără ceasul avansat, nimic nu vine singur (nici de la browser), deci oferta de mai jos e a verificării.
+    await page.waitForTimeout(3000);
+    await expect(page.getByTestId('actualizare')).toHaveCount(0);
+    const inainte = server.cereri.length;
+
+    // O oră mai târziu (capacul laptopului închis și deschis): verificarea găsește workerul nou, care se instalează și așteaptă.
+    await page.clock.fastForward('01:00:00');
+    const anunt = page.getByTestId('actualizare');
+    await expect(anunt).toBeVisible({ timeout: 20_000 });
+    await expect(anunt).toContainText('Versiune nouă gata');
+    expect(server.cereri.slice(inainte)).toContain('/sw.js');
+    expect(await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting?.state)).toBe('installed');
+    // Oferta, nu actualizarea: aceeași pagină, fără reîncărcare, până la clic (proba de mai sus).
+    await page.waitForTimeout(2000);
+    expect(navigari).toBe(0);
+    expect(await page.evaluate(() => window.__marcaj)).toBe('fila lăsată deschisă');
+    await expect(anunt).toHaveCount(1);
+  } finally {
+    await inchide();
+  }
+});

@@ -2186,3 +2186,25 @@ de Node a porții din dialog rulează într-un proces Node (`test/e2e/simulare-n
 săptămânalul 65 → 74 % (comun cu sesiunea timpului). Tipurile (și ale funcțiilor), importurile (15 / 15), 7 001 teste unitare,
 0 picate (8 sărite), build-ul determinist, licențele; e2e 161 / 161 în Edge; emulatoarele 24 + 6; pornirea 94,3 / 100 kB,
 cu ușa 99,0 (strâmt), totalul 238,4 kB.
+
+## 2026-10-19 — PWA: verificarea orară a versiunii noi (ADR 0045 §5; Model: Claude Opus 5.5)
+
+**Prompt:** „Acum doar felia mică PWA (verificarea orară a versiunii noi), într-o sesiune nouă; simularea 3D după resetarea
+din 24.10.” **Started:** 19.10 20:20, săptămânalul 81 % (bugetul feliei: ~1–2 %, fără agenți). Rândul „4.7↑b”: întrebarea
+deschisă din ADR 0045 („Se redeschide dacă”, sesiunile lăsate deschise zile întregi), cu alegerea owner-ului:
+`registration.update()` la fiecare oră, în bucata înregistrării (pornirea nu crește). Oferta rămâne cea de azi (anunțul din
+bara de jos, reîncărcarea doar la clic); un eșec al verificării (offline) nu intră în jurnal. Probele întâi: unitare cu ceasul
+fals, e2e în `edge-pwa` cu ceasul Playwright și o publicare simulată.
+**Făcut:** `src/pwa/inregistrare.ts`: `update()` la fiecare oră (`INTERVAL_VERIFICARE_MS`) și când fila redevine vizibilă
+după cel puțin o oră (fila înghețată de Edge, calculatorul adormit; ora pe `Date.now()`); ce găsește trece prin aceeași
+ofertă; eșecul nu intră în jurnal, ora se scrie înaintea încercării (fără buclă). 6 probe unitare pe ceasul fals, 1 e2e
+(publicarea simulată cu fila deschisă: 3 s fără ofertă, `fastForward` de o oră, oferta fără navigare); ambele văzute
+picând înainte de funcție. ADR 0045 §5 (și Probele, Respinse, Neprobat, „Se redeschide dacă”).
+**Sabotajele:** 8 / 8 (7 unitare, 1 e2e: intervalul implicit oprit), sursa restaurată, `cmp` identic. La prima rulare,
+„ascunderea care verifică” a scăpat: proba ascundea fila înainte de prag; corectată, rerulate toate cele 7 unitare.
+**Mediul:** ceasul fals al lui Playwright golește și `performance` (intrările de resurse), deci semnalul „înregistrarea a
+rulat” e răspunsul bucății, văzut de Playwright (`fromServiceWorker`).
+**Completed:** 19.10 20:50. Fără agenți; săptămânalul 81 → 81 % (sub 1 %). Tipurile (și ale funcțiilor), importurile,
+7 012 teste unitare, 0 picate (8 sărite), build-ul determinist, licențele (`npm run rapid`, RC 0); e2e 162 / 162 în Edge;
+emulatoarele 24 + 6. Pornirea 94,4 / 100 kB, cu ușa 99,0, ca pe HEAD (aceeași mărime brută a bucății de pornire); bucata
+înregistrării 0,5 → 0,66 kB.

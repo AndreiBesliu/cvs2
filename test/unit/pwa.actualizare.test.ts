@@ -1,11 +1,11 @@
 /**
  * Înregistrarea workerului și actualizarea OFERITĂ (ADR 0045 §5, §7), cu un container de service worker fals: un worker
  * nou așteaptă, aplicația primește o ofertă, iar abia clicul trimite `SKIP_WAITING` și reîncarcă o singură dată, la
- * `controllerchange`. Fără clic, nimic nu se reîncarcă.
+ * `controllerchange`. Fără clic, nimic nu se reîncarcă. Verificarea orară (`update()`, ADR 0045 §5) merge pe un ceas fals.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { actualizarePermisa, inregistreaza, type DepsInregistrare } from '../../src/pwa/inregistrare.ts';
+import { actualizarePermisa, inregistreaza, INTERVAL_VERIFICARE_MS, type DepsInregistrare } from '../../src/pwa/inregistrare.ts';
 import { esteSkipWaiting, MESAJ_SKIP_WAITING } from '../../src/pwa/protocol.ts';
 
 class WorkerFals extends EventTarget {
@@ -37,6 +37,49 @@ class InregistrareFalsa extends EventTarget {
     if (this.active) this.waiting = w;
     w.treci('installed');
   }
+  verificari = 0;
+  /** Ce găsește `update()` pe server: implicit nimic nou. */
+  laVerificare: () => Promise<void> = async () => undefined;
+  update(): Promise<void> {
+    this.verificari++;
+    return this.laVerificare();
+  }
+}
+
+/** Ceasul fals: ora (`acum`) și intervalele (`repeta`), mutate doar de probă. */
+class CeasFals {
+  t = 0;
+  readonly intervale: Array<{ readonly f: () => void; readonly ms: number; urmator: number }> = [];
+  readonly acum = (): number => this.t;
+  readonly repeta = (f: () => void, ms: number): void => {
+    assert.ok(ms > 0, `interval de ${ms} ms`);
+    this.intervale.push({ f, ms, urmator: this.t + ms });
+  };
+  /** Timpul curge: fiecare interval rulează la fiecare scadență, în ordine, ca `setInterval`. */
+  avanseaza(ms: number): void {
+    const tinta = this.t + ms;
+    for (;;) {
+      const urm = this.intervale.filter((i) => i.urmator <= tinta).sort((a, b) => a.urmator - b.urmator)[0];
+      if (!urm) break;
+      this.t = urm.urmator;
+      urm.urmator += urm.ms;
+      urm.f();
+    }
+    this.t = tinta;
+  }
+  /** Ora sare fără ca vreun interval să ruleze: fila înghețată (calculatorul a dormit, fila „adormită” de Edge). */
+  sari(ms: number): void {
+    this.t += ms;
+    for (const i of this.intervale) i.urmator = Math.max(i.urmator, this.t + 1);
+  }
+}
+
+class DocFals extends EventTarget {
+  visibilityState: DocumentVisibilityState = 'visible';
+  arata(s: DocumentVisibilityState): void {
+    this.visibilityState = s;
+    this.dispatchEvent(new Event('visibilitychange'));
+  }
 }
 
 class ContainerFals extends EventTarget {
@@ -61,6 +104,8 @@ interface Banc {
   readonly locale: unknown[];
   reincarcari: number;
   permisa: boolean;
+  readonly ceas: CeasFals;
+  readonly doc: DocFals;
   readonly gata: Promise<void>;
 }
 
@@ -68,9 +113,11 @@ function banc(pregateste: (reg: InregistrareFalsa, sw: ContainerFals) => void = 
   const reg = new InregistrareFalsa();
   const sw = new ContainerFals(raspuns ?? (async () => reg));
   pregateste(reg, sw);
-  const b = { sw, reg, oferte: [], defecte: [], locale: [], reincarcari: 0, permisa: true } as unknown as Banc & { gata: Promise<void> };
+  const b = { sw, reg, oferte: [], defecte: [], locale: [], reincarcari: 0, permisa: true, ceas: new CeasFals(), doc: new DocFals() } as unknown as Banc & { gata: Promise<void> };
   const deps: DepsInregistrare = {
     sw: sw as unknown as NonNullable<DepsInregistrare['sw']>,
+    ceas: b.ceas,
+    doc: b.doc as unknown as NonNullable<DepsInregistrare['doc']>,
     oferta: (f) => { b.oferte.push(f); },
     jurnal: {
       adauga: (tip, e) => { assert.equal(tip, 'promisiune'); b.defecte.push(e); },
@@ -229,6 +276,114 @@ test('înregistrarea oprită de banc (Playwright `serviceWorkers: block` întoar
   const b = banc(undefined, async () => undefined);
   await b.gata;
   assert.deepEqual([b.defecte, b.locale, b.oferte], [[], [], []]);
+});
+
+const ORA = 3_600_000;
+/** O versiune nouă pe server: `update()` o găsește, iar ea se instalează și așteaptă. */
+const publicata = (b: Banc): WorkerFals => {
+  const w = new WorkerFals('installing');
+  b.reg.laVerificare = async () => { b.reg.gasit(w); b.reg.instalat(w); };
+  return w;
+};
+
+test('verificarea orară: un singur interval, de 3 600 000 ms, armat după înregistrare, fără verificare la pornire', async () => {
+  assert.equal(INTERVAL_VERIFICARE_MS, ORA);
+  const b = banc((reg, sw) => { reg.active = new WorkerFals('activated'); sw.controller = reg.active; });
+  await b.gata;
+  assert.deepEqual(b.ceas.intervale.map((i) => i.ms), [ORA]);
+  assert.equal(b.reg.verificari, 0, 'navigarea tocmai a verificat: încă o verificare la pornire e de prisos');
+});
+
+test('update() la o oră, nu mai devreme, apoi la fiecare oră', async () => {
+  const b = banc((reg, sw) => { reg.active = new WorkerFals('activated'); sw.controller = reg.active; });
+  await b.gata;
+  b.ceas.avanseaza(ORA - 1);
+  assert.equal(b.reg.verificari, 0);
+  b.ceas.avanseaza(1);
+  assert.equal(b.reg.verificari, 1);
+  b.ceas.avanseaza(ORA);
+  assert.equal(b.reg.verificari, 2);
+  b.ceas.avanseaza(5 * ORA);
+  assert.equal(b.reg.verificari, 7);
+});
+
+test('o versiune nouă găsită de verificarea orară: oferită o singură dată, fără mesaj și fără reîncărcare', async () => {
+  const b = banc((reg, sw) => { reg.active = new WorkerFals('activated'); sw.controller = reg.active; });
+  await b.gata;
+  const w = publicata(b);
+  b.ceas.avanseaza(ORA);
+  await asteapta();
+  assert.equal(b.oferte.length, 1);
+  assert.equal(typeof ultima(b), 'function');
+  // Verificările următoare nu găsesc nimic nou (workerul care așteaptă e chiar versiunea de pe server): nicio ofertă în plus.
+  b.reg.laVerificare = async () => undefined;
+  b.ceas.avanseaza(3 * ORA);
+  b.doc.arata('hidden');
+  b.ceas.sari(2 * ORA);
+  b.doc.arata('visible');
+  await asteapta();
+  assert.equal(b.reg.verificari, 5);
+  assert.equal(b.oferte.length, 1);
+  assert.deepEqual(w.mesaje, []);
+  assert.equal(b.reincarcari, 0);
+});
+
+test('verificarea eșuată (offline, server căzut): nimic în jurnal, nicio ofertă, fără reîncercare până la ora următoare', async () => {
+  const b = banc((reg, sw) => { reg.active = new WorkerFals('activated'); sw.controller = reg.active; });
+  await b.gata;
+  b.reg.laVerificare = async () => { throw new TypeError('Failed to update a ServiceWorker for scope (\'/\'): An unknown error occurred when fetching the script.'); };
+  b.ceas.avanseaza(ORA);
+  await asteapta();
+  assert.equal(b.reg.verificari, 1);
+  // Fila ascunsă și arătată de mai multe ori, sub o oră după eșec: nicio verificare nouă (fără buclă).
+  for (let i = 0; i < 5; i++) {
+    b.doc.arata('hidden');
+    b.ceas.avanseaza(60_000);
+    b.doc.arata('visible');
+  }
+  await asteapta();
+  assert.equal(b.reg.verificari, 1);
+  b.ceas.avanseaza(ORA - 5 * 60_000);
+  await asteapta();
+  assert.equal(b.reg.verificari, 2);
+  assert.deepEqual([b.defecte, b.locale, b.oferte], [[], [], []]);
+});
+
+test('fila redevenită vizibilă verifică doar dacă a trecut cel puțin o oră de la ultima verificare', async () => {
+  const b = banc((reg, sw) => { reg.active = new WorkerFals('activated'); sw.controller = reg.active; });
+  await b.gata;
+  b.doc.arata('hidden');
+  b.ceas.avanseaza(30 * 60_000);
+  b.doc.arata('visible');
+  assert.equal(b.reg.verificari, 0, 'la 30 de minute');
+  // Fila înghețată peste noapte (intervalul n-a rulat): la întoarcere, verificarea vine imediat, nu peste încă o oră.
+  b.doc.arata('hidden');
+  b.ceas.sari(8 * ORA);
+  assert.equal(b.reg.verificari, 0);
+  b.doc.arata('visible');
+  assert.equal(b.reg.verificari, 1);
+  // Ascunsă și arătată din nou, sub o oră: nimic; ascunderea însăși nu verifică.
+  b.doc.arata('hidden');
+  b.ceas.sari(ORA - 1);
+  b.doc.arata('visible');
+  assert.equal(b.reg.verificari, 1);
+  b.ceas.sari(1);
+  b.doc.arata('hidden');
+  assert.equal(b.reg.verificari, 1, 'ascunderea a verificat');
+  b.doc.arata('visible');
+  assert.equal(b.reg.verificari, 2);
+});
+
+test('fără înregistrare (refuzată sau oprită de banc): niciun interval, nicio verificare la vizibilitate', async () => {
+  for (const raspuns of [async () => { throw new TypeError('404'); }, async () => undefined]) {
+    const b = banc(undefined, raspuns);
+    await b.gata;
+    b.doc.arata('hidden');
+    b.ceas.sari(2 * ORA);
+    b.doc.arata('visible');
+    assert.deepEqual(b.ceas.intervale, []);
+    assert.equal(b.reg.verificari, 0);
+  }
 });
 
 test('protocolul: doar mesajul SKIP_WAITING trece', () => {

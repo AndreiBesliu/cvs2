@@ -4,7 +4,8 @@
 rețea; actualizarea e oferită și blocată cât rulează un job; CSP fără `eval`, probat pe build-ul servit”), adusă ca felie
 fără mașină. Scrie contractul lui ADR 0017 (Vite + vite-plugin-pwa) și împlinește ce cerea ADR 0042 („workerul PWA ține
 în cache ambele dicționare și toate bucățile la cerere”). **Continuă:** ADR 0040 §2 (`config.json` de la gazdă), ADR 0043
-(raportorul; o bucată care nu vine e defect), ADR 0044 (publicarea).
+(raportorul; o bucată care nu vine e defect), ADR 0044 (publicarea). **Completat pe 19.10.2026** (felia „4.7↑b”, alegerea
+owner-ului la întrebarea deschisă): verificarea orară a versiunii noi (punctul 5).
 
 **Problema.** Aplicația pornea doar cu rețea: fără ea, nici `index.html`. La aceeași adresă stătea `public/sw.js`,
 opritorul workerului ediției întâi (cache-urile `cncvs-…`), care cerea, în comentariul lui, ca workerul PWA să-i ia locul
@@ -80,6 +81,23 @@ mai nou, instalare eșuată) își retrage oferta.
 - **Abatere: fără `virtual:pwa-register`.** În modul „prompt”, odată oferită actualizarea, el adaugă un ascultător
   `controlling` care **reîncarcă fila** la preluare, deci și când a acceptat altă filă (muncă nesalvată), plus ~2,5 kB de
   workbox-window. Echivalentul de aici e câteva evenimente ale API-ului, probate cu un container fals.
+- **Verificarea orară (19.10, felia 4.7↑b).** Browserul caută un `/sw.js` nou doar la navigare, deci o filă lăsată
+  deschisă zile întregi afla de o publicare abia la reîncărcare. Acum o caută și aplicația: `registration.update()` la
+  fiecare oră (`INTERVAL_VERIFICARE_MS` = 3 600 000, `setInterval` armat după înregistrare, fără verificare la pornire,
+  fiindcă navigarea tocmai a verificat), plus **când fila redevine vizibilă și a trecut cel puțin o oră de la ultima
+  verificare**. A doua condiție e aleasă pentru fila înghețată: cu calculatorul adormit sau cu fila „adormită” de Edge
+  (după o vreme de nefolosire), intervalul nu rulează, iar omul care se întoarce dimineața ar vedea oferta abia după
+  încă o oră; așa o vede în câteva secunde. Timpul de la ultima verificare se măsoară pe `Date.now()`, care curge și cât
+  calculatorul doarme (ceasul monoton al paginii poate sta pe loc). Intervalul verifică **mereu**, nu „doar dacă a trecut o
+  oră”: ceasul lui și ora peretelui pot diferi cu puțin, iar condiția l-ar face să sară o oră întreagă; o verificare în plus,
+  lângă una la vizibilitate, e o cerere de câțiva kB (browserul le contopește pe cele simultane).
+  - Ce găsește verificarea vine prin `updatefound`, deci prin **aceeași ofertă**, una pe worker: un `update()` care dă
+    peste workerul care așteaptă deja nu găsește nimic nou. Anunțul și reîncărcarea doar la clic rămân neschimbate.
+  - **Eșecul (offline, serverul căzut, `/sw.js` 404) nu intră în jurnal**, nici local: e o condiție a mediului (ADR 0039
+    §6), iar o filă offline ar strânge o intrare pe oră. Un `sw.js` lipsă la publicare îl prinde poarta (punctul 8), nu
+    clientul. **Fără buclă:** ora se scrie înaintea încercării, deci nici fila ascunsă și arătată de zece ori, offline, nu
+    verifică mai des de o oră; reîncercarea e verificarea următoare.
+  - Codul stă în bucata înregistrării (la cerere): 0,5 → 0,66 kB gzip; pornirea nu se schimbă.
 
 **6. Preluarea de la aplicația veche.** La instalare, workerul întreabă dacă există cache-uri `cncvs-` doar prin `keys()`
 (`caches.open` ar crea cache-ul întrebat); dacă da (ediția întâi a fost aici), se activează imediat (`skipWaiting`, ca
@@ -119,7 +137,7 @@ lui `/admin`) și un stil fără bucata lui cer trecerea în `DOAR_ONLINE`; porn
 
 - Pornirea: 93,52 → **93,9 kB** (felia, cu remedierile recenziei; `src/pwa/pornire.ts` stă în pornire); cu ușa
   proiectului 98,12 → **98,5 / 100**. Strâmt, cum era (ADR 0042 „se redeschide” la ~95 kB).
-- Bucata înregistrării, la cerere: 0,5 kB. `sw.js`: 6,4 kB (intră în total: 211,8 → 218,3 / 300 kB).
+- Bucata înregistrării, la cerere: 0,5 kB (0,66 kB din 19.10, cu verificarea orară). `sw.js`: 6,4 kB (intră în total: 211,8 → 218,3 / 300 kB).
 - Precache: **32 de fișiere, 218,3 kB gzip** (cu raportorul și baza conexiunii, +18 kB față de prima variantă), aduse o
   dată la instalare, apoi doar ce s-a schimbat.
 
@@ -132,7 +150,10 @@ lui `/admin`) și un stil fără bucata lui cer trecerea în `DOAR_ONLINE`; porn
   refuzată, căutarea care nu creează cache-ul; termenul sub al aplicației; copia de la instalare: `no-store`, doar copia
   bună, fără cache creat degeaba, instalarea care nu cade la rețea sau la cotă); `test/unit/pwa.actualizare.test.ts` (prima
   instalare fără ofertă, oferta, clicul pe pagină controlată și necontrolată, alt tab, oferta retrasă,
-  `actualizarePermisa`, eșecurile înregistrării, blocarea lui Playwright, protocolul); `test/unit/pwa.navigare.test.ts`
+  `actualizarePermisa`, eșecurile înregistrării, blocarea lui Playwright, protocolul; verificarea orară pe un ceas fals:
+  intervalul unic de 3 600 000 ms, `update()` la o oră și nu la 3 599 999 ms, oferta unică a versiunii găsite, eșecul fără
+  jurnal și fără reîncercare, vizibilitatea cu pragul de o oră și fila înghețată, nimic fără înregistrare);
+  `test/unit/pwa.navigare.test.ts`
   (lista albă, caz cu caz: `/`, query-uri, `/index.html`; `/admin`, `/__/auth/*`, `/banc/*`, `/index`, rutele
   necunoscute, fișierele, altă origine); `test/unit/pwa.pornire.test.ts` (politica pauzei de 2 000 ms, garda prod / dev
   cu și fără `navigator.serviceWorker`, programarea cu un ceas fals).
@@ -149,7 +170,14 @@ lui `/admin`) și un stil fără bucata lui cer trecerea în `DOAR_ONLINE`; porn
   fila rămasă pe versiunea veche își ia raportorul vechi din precache); preluarea (un worker care imită ediția
   întâi, cu `cncvs-shell-v41`: workerul nou se activează singur, șterge doar `cncvs-`, fila nu se reîncarcă) și
   contraproba ei (fără `cncvs-`, workerul nou așteaptă); actualizarea (o a doua versiune a lui `sw.js` pe aceeași adresă:
-  anunțul, nicio reîncărcare 3 s, clicul, exact o reîncărcare, pagina răspunde ca workerul nou).
+  anunțul, nicio reîncărcare 3 s, clicul, exact o reîncărcare, pagina răspunde ca workerul nou); verificarea orară (ceasul
+  paginii al lui Playwright, `clock.install`; publicarea simulată cu fila deschisă și controlată: 3 s fără nicio ofertă,
+  apoi `fastForward` de o oră, oferta vine fără nicio navigare, cu cererea la `/sw.js` și workerul nou în așteptare).
+- **Sabotajele verificării orare (19.10):** 8, toate picate, sursa restaurată și verificată cu `cmp`. Unitare (7):
+  intervalul de 2 h, eșecul trimis în jurnal, vizibilitatea fără pragul de o oră, fără verificarea la vizibilitate, ora
+  scrisă doar după succes (buclă offline), verificarea și la pornire, ascunderea care verifică (scăpat la prima rulare: proba
+  ascundea fila înainte de prag; corectată, prins). E2e (1): intervalul implicit care nu pornește (unitarele merg pe ceasul
+  fals, deci doar e2e-ul vede `setInterval`).
 - **Sabotajele:** 32, fiecare pe codul pe care îl apără o probă, toate picate, restaurate octet cu octet (arborele verificat
   identic după). Unitare (15): prefixul `cncvs` fără cratimă, activarea care șterge precache-ul curent, copia căutată fără
   `cacheName` sau prin `caches.open`, orice 200 drept copie bună, termenul de 4 s, rețeaua lentă așteptată, clicul care
@@ -189,8 +217,12 @@ lui `/admin`) și un stil fără bucata lui cer trecerea în `DOAR_ONLINE`; porn
   ar ține pagina pe versiunea veche după o publicare. (Raportorul, cu Firebase-ul lui, a intrat după recenzie: punctul 2.)
 - **Navigările pe listă neagră** (`NavigationRoute` cu `denylist`, varianta de până la recenzie): uită exact ce nu știe
   (`/__/auth/*`, o rută nouă a hosting-ului, o rută necunoscută care ar trebui să rămână 404).
-- **Verificarea periodică a actualizării** (`reg.update()` la o oră, întrebarea implementatorului): neimplementată acum;
-  vezi „Se redeschide dacă”.
+- **Verificarea periodică doar prin browser** (de la recenzia din 18.10 până la felia 4.7↑b, 19.10): o filă lăsată deschisă
+  afla de publicare abia la navigare. Owner-ul a ales verificarea orară (punctul 5). Variantele ei respinse: **Periodic
+  Background Sync** (cere aplicația instalată, doar Chromium, frecvența o decide browserul); **doar la vizibilitate** (fila
+  văzută tot timpul, pe ecranul de lângă mașină, n-ar mai verifica niciodată); **intervalul cu condiția „o oră de la
+  ultima”** (sare ore întregi la o diferență mică de ceas); **la evenimentul `online`** (revenirea rețelei e urmată oricum de
+  verificarea orară, iar navigarea verifică singură); **eșecul în jurnal** (o filă offline ar strânge o intrare pe oră).
 - **`NetworkFirst` și `virtual:pwa-register`:** punctele 1 și 5.
 - **Worker modul (`rollupFormat: 'es'`):** cere `type: 'module'` la înregistrare, fără câștig aici.
 - **Înregistrarea în pornire** (sau un script injectat în `index.html`): octeți în plus la fiecare pornire și un al doilea
@@ -202,6 +234,8 @@ lui `/admin`) și un stil fără bucata lui cer trecerea în `DOAR_ONLINE`; porn
   ediția întâi. Probată cu un worker care o imită (cache-uri `cncvs-`, `clients.claim`); cea reală, la 3.9.
 - Firefox și Safari (doar Edge, ca restul e2e-ului).
 - Două file deschise, una acceptă actualizarea: doar unitar (containerul fals), nu în browser.
+- Verificarea la vizibilitate (fila ascunsă și arătată, fila înghețată de Edge, calculatorul adormit): doar unitar, pe ceasul
+  fals. În browser e probat doar intervalul (ceasul lui Playwright, `fastForward`, „capacul închis și deschis”).
 - Cota și evacuarea stocării (s7, §6).
 - Login-ul Google real pe `https://cncvectorstudio-test.firebaseapp.com` cu workerul activ și iframe-ul `/__/auth/iframe`
   creat de SDK: probate cu un handler simulat pe aceeași origine (navigarea și popup-ul); la publicarea pe test, primul
@@ -224,9 +258,10 @@ lui `/admin`) și un stil fără bucata lui cer trecerea în `DOAR_ONLINE`; porn
   prima folosire);
 - senderul cere altă blocare decât butonul (de exemplu amânarea instalării);
 - se cere instalarea ca aplicație (manifestul, iconițele);
-- **sesiunile lăsate deschise zile întregi** trebuie să afle de o versiune nouă fără navigare (întrebare deschisă pentru
-  owner, de la implementator): o verificare periodică, de exemplu `reg.update()` la o oră, într-o felie mică; azi
-  browserul verifică `/sw.js` doar la navigare (și la evenimentele workerului).
+- ~~**sesiunile lăsate deschise zile întregi** trebuie să afle de o versiune nouă fără navigare~~: **închis pe 19.10**
+  (felia 4.7↑b, alegerea owner-ului), verificarea orară de la punctul 5;
+- o oră se dovedește prea rar (o remediere urgentă care trebuie să ajungă repede la filele deschise) sau prea des (cererile
+  la `/sw.js` în jurnalele hosting-ului): intervalul e o singură constantă.
 
 ## Recenzia (18.10)
 
