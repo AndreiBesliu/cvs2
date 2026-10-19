@@ -44,6 +44,19 @@ test('prin foaie: o plonjare la −5 într-o foaie de 4 mm scoate doar cei 4 mm 
   assert.ok(Math.abs(adanc.volum / gros.volum - 4 / 5) <= 1e-12, `${adanc.volum} / ${gros.volum}`);
 });
 
+test('„prin foaie” la adâncimea exactă a foii, și pe grosimile care nu încap în Float32 (placajul de ½″ și ¾″)', () => {
+  for (const g of [4.2, 12, 12.7, 15.5, 18, 18.3, 19.05]) {
+    const p = pregatesteProgram({
+      axe: ['X', 'Y', 'Z'], scula: { numar: 1, nume: 'f', diametru: 6 }, turatie: 18000, zSigur: 5,
+      miscari: [{ tip: 'rapida', la: { Z: 5 } }, { tip: 'rapida', la: { X: 20, Y: 20 } }, { tip: 'taiere', la: { Z: -g }, avans: 300 }],
+    }, 0);
+    if (!p.ok) throw new Error(p.motiv);
+    const camp = { x0: 0, y0: 0, latime: 40, inaltime: 40, celula: 0.25, sus: 0 }, previzualizare = previzualizarePentru(camp);
+    const r = uneste(camp, previzualizare, -g, [calculeazaBanda({ camp, banda: { n: 1, w: 0 }, scula: p.scula, mutari: p.mutari, fund: -g, previzualizare })]);
+    assert.equal(r.prinFoaie, true, `grosimea ${g}: Z minim ${r.zMin}`);
+  }
+});
+
 test('previzualizarea: fiecare pixel e cel mai adânc punct al blocului lui de celule; netăiat = fața', () => {
   for (const id of ['arc-g3', 'gravura-v60', 'rampa-bila']) {
     const c = cazul(id), F = simuleazaCaz(c), r = rezumat(id, -18);

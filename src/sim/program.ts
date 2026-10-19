@@ -64,7 +64,7 @@ export function pregatesteProgram(p: Program, sus: number): ProgramSimulat {
     if (m.tip === 'arc') {
       const r = arc(m, x, y, nx, ny);
       if (typeof r === 'string') return refuz(r, q);
-      if (z !== nz && forma.tip !== 'plata') return refuz(`elicea cu ${forma.tip === 'bila' ? 'bila' : 'V-ul'} nu se simulează încă (doar cu freza plată)`, q);
+      if (z !== nz && forma.tip !== 'plata' && !inAer) return refuz(`elicea cu ${forma.tip === 'bila' ? 'bila' : 'V-ul'} nu se simulează încă (doar cu freza plată)`, q);
       if (!inAer) out.push(m.sens === 'trigonometric' ? ARC_TRIG : ARC_ORAR, x, y, z, nx, ny, nz, m.centru.x, m.centru.y, r);
     } else if (!inAer) {
       out.push(LINIE, x, y, z, nx, ny, nz, 0, 0, 0);
@@ -75,16 +75,32 @@ export function pregatesteProgram(p: Program, sus: number): ProgramSimulat {
 }
 
 /**
- * Baleiajul arcului (pozitiv, în radiani), cu regula IR-ului (`baleiajArc` din `ir.ts`), pe unghiurile deterministe ale
- * nucleului; sau motivul refuzului: centrul în capăt, ori capetele pe raze diferite.
+ * Cât pot diferi razele capetelor unui arc: nucleul desenează un singur cerc (raza startului; la G2, a capătului, după
+ * schimbarea capetelor), deci o diferență Δr mută peretele cu Δr, adică suprafața cu panta · Δr. La 1 nm, sub 10 nm până
+ * la panta 10 (V-ul de peste 11°). CAM-ul dă arce cu |Δr| ≤ 10⁻¹² mm (măsurat pe ~45 000 de arce, recenzia 19.10).
+ */
+const TOLERANTA_RAZA = 1e-9;
+/** Sub atât (rad) între capete, fără ca ele să fie același punct, un arc e ambiguu: punct sau cerc întreg. */
+const BALEIAJ_AMBIGUU = 1e-9;
+
+/**
+ * Baleiajul arcului (pozitiv, în radiani), cu regula IR-ului (`baleiajArc` din `ir.ts`): start = capăt, exact, e cercul
+ * întreg. Regula IR-ului trage linia la 10⁻¹² rad cu `Math.atan2`; aici unghiurile sunt cele deterministe, care pot diferi
+ * de `Math` cu câteva ulp-uri, deci lângă prag cele două reguli ar putea alege diferit (un punct aici, un cerc întreg pe
+ * mașină). Un arc cu capetele diferite la sub 10⁻⁹ rad e de aceea refuzat: departe de prag, regulile coincid. CAM-ul nu dă
+ * astfel de arce (sub 10⁻⁶ mm, arcul devine linie). Refuzat și: centrul în start, capetele pe raze diferite.
  */
 function arc(m: Extract<Miscare, { tip: 'arc' }>, x: number, y: number, nx: number, ny: number): number | string {
   const { x: cx, y: cy } = m.centru;
   if (!Number.isFinite(cx) || !Number.isFinite(cy)) return 'arcul are centrul nefinit';
   const r0 = Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy)), r1 = Math.sqrt((nx - cx) * (nx - cx) + (ny - cy) * (ny - cy));
   if (r0 < 1e-9) return 'arcul are raza zero (centrul e în start)';
-  if (Math.abs(r0 - r1) > 1e-6 * Math.max(1, r0)) return `arcul are capetele pe raze diferite (${r0} și ${r1} mm)`;
+  if (Math.abs(r0 - r1) > TOLERANTA_RAZA) return `arcul are capetele pe raze diferite (${r0} și ${r1} mm)`;
+  if (x === nx && y === ny) return DOI_PI;
   let b = atan2D(ny - cy, nx - cx) - atan2D(y - cy, x - cx);
-  if (m.sens === 'trigonometric') { while (b <= 1e-12) b += DOI_PI; } else { while (b >= -1e-12) b -= DOI_PI; }
+  let d = b < 0 ? -b : b;
+  if (d > Math.PI) d = DOI_PI - d;
+  if (d < BALEIAJ_AMBIGUU) return 'arcul are capetele aproape în același punct, dar nu în el: nu se știe dacă e un cerc întreg';
+  if (m.sens === 'trigonometric') { if (b < 0) b += DOI_PI; } else if (b > 0) b -= DOI_PI;
   return b < 0 ? -b : b;
 }

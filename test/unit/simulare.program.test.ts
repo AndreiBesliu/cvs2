@@ -58,6 +58,43 @@ test('elicea cu bilă sau cu V e refuzată (nesimulată exact încă); cu freza 
   assert.ok(pregatesteProgram(program(plan, { ...PLATA6, forma: { tip: 'bila' } }), 0).ok);
 });
 
+test('arcul cu capătul pe alt cerc (peste 1 nm) sau cu raza zero e refuzat; sub 1 nm trece (rotunjirea CAM-ului)', () => {
+  const pornire: Miscare[] = [{ tip: 'rapida', la: { Z: 5 } }, { tip: 'rapida', la: { X: 30, Y: 20 } }, { tip: 'taiere', la: { Z: -1 }, avans: 300 }];
+  const arc = (x: number, cx: number): Miscare => ({ tip: 'arc', la: { X: x, Y: 20 }, centru: { x: cx, y: 20 }, sens: 'orar', avans: 1000 });
+  // Startul la r = 10 de centru; capătul la 10,01, apoi la 10 + 2 nm: alt cerc (nucleul desenează unul singur).
+  for (const x of [9.99, 10 - 2e-9]) {
+    const r = pregatesteProgram(program([...pornire, arc(x, 20)]), 0);
+    assert.ok(!r.ok && r.miscare === 3 && /raze diferite/.test(r.motiv), `${x}: ${JSON.stringify(r)}`);
+  }
+  assert.ok(pregatesteProgram(program([...pornire, arc(10 - 5e-10, 20)]), 0).ok, 'jumătate de nanometru: rotunjire, nu alt cerc');
+  const z = pregatesteProgram(program([...pornire, arc(10, 30)]), 0);
+  assert.ok(!z.ok && z.miscare === 3 && /raza zero/.test(z.motiv), JSON.stringify(z));
+});
+
+test('arcul cu capetele aproape în același punct (sub 1e-9 rad, dar nu în el) e refuzat: punct sau cerc întreg, ambiguu', () => {
+  const pornire: Miscare[] = [{ tip: 'rapida', la: { Z: 5 } }, { tip: 'rapida', la: { X: 30, Y: 20 } }, { tip: 'taiere', la: { Z: -1 }, avans: 300 }];
+  const r = 10, u = 1e-10;
+  for (const sens of ['orar', 'trigonometric'] as const) {
+    const a = pregatesteProgram(program([...pornire, { tip: 'arc', la: { X: 20 + r * Math.cos(u), Y: 20 + r * Math.sin(u) }, centru: { x: 20, y: 20 }, sens, avans: 1000 }]), 0);
+    assert.ok(!a.ok && a.miscare === 3 && /aproape în același punct/.test(a.motiv), `${sens}: ${JSON.stringify(a)}`);
+    // La 1e-6 rad: un arc mic (trigonometric) sau aproape întreg (orar), fără ambiguitate.
+    const b = pregatesteProgram(program([...pornire, { tip: 'arc', la: { X: 20 + r * Math.cos(1e-6), Y: 20 + r * Math.sin(1e-6) }, centru: { x: 20, y: 20 }, sens, avans: 1000 }]), 0);
+    assert.ok(b.ok, sens);
+    const S = b.mutari[b.mutari.length - 1]!;
+    assert.ok(sens === 'trigonometric' ? Math.abs(S - 1e-6) < 1e-12 : Math.abs(S - (2 * Math.PI - 1e-6)) < 1e-12, `${sens}: baleiajul ${S}`);
+  }
+});
+
+test('elicea cu bilă sau cu V prin aer (deasupra feței) nu e refuzată: nu taie nimic', () => {
+  const m: Miscare[] = [
+    { tip: 'rapida', la: { Z: 5 } }, { tip: 'rapida', la: { X: 30, Y: 20 } },
+    { tip: 'arc', la: { X: 30, Y: 20, Z: 1 }, centru: { x: 20, y: 20 }, sens: 'trigonometric', avans: 1000 },
+  ];
+  const r = pregatesteProgram(program(m, { ...PLATA6, forma: { tip: 'bila' } }), 0);
+  assert.ok(r.ok, JSON.stringify(r));
+  assert.equal(r.mutari.length, 0);
+});
+
 test('scula și numerele invalide sunt refuzate, cu motiv', () => {
   const m: Miscare[] = [{ tip: 'rapida', la: { Z: 5 } }, { tip: 'rapida', la: { X: 0, Y: 0 } }];
   for (const s of [{ ...PLATA6, diametru: 0 }, { ...PLATA6, diametru: Number.NaN }, { ...PLATA6, diametru: 2000 },

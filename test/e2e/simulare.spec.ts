@@ -159,3 +159,24 @@ for (const nuclee of [1, 5]) {
     await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
   });
 }
+
+test('o tăietură prin foaie: harta are pixeli negri, iar simularea spune că trece prin foaie', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  // Gaura până la fața de jos a foii implicite (18 mm).
+  await page.locator('[data-operatie] input').nth(0).fill('18');
+  const descarcare = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await descarcare;
+  const s = page.getByTestId('export-simulare');
+  await expect(s.locator('[data-simulare="prin-foaie"]')).toHaveText('Scula ajunge la fața de jos a foii (18,0 mm): tăietura trece prin foaie.');
+  await expect(s.locator('[data-simulare="adancime"]')).toHaveText('Cea mai adâncă tăietură: 18,00 mm');
+  const negri = await s.locator('canvas').evaluate((c: HTMLCanvasElement) => {
+    const d = c.getContext('2d')?.getImageData(0, 0, c.width, c.height).data ?? new Uint8ClampedArray();
+    let n = 0;
+    for (let k = 0; k < d.length; k += 4) if (d[k] === 0 && d[k + 1] === 0 && d[k + 2] === 0) n++;
+    return n;
+  });
+  expect(negri).toBeGreaterThan(20);
+});

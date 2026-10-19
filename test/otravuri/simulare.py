@@ -66,6 +66,8 @@ o('N05', NUC, 'else sv = perp2 > 0 ? (-m * Math.sqrt(perp2)) / Math.sqrt(k2 - m2
 o('N06', NUC, 'let sv = mBila * srho;', 'let sv = 0;', 'sim', 'bila pe rampă: punctul de minim luat în dreptul proiecției')
 o('N07', NUC, '  const Re = raza(T, top - zlo) * (1 + 1e-12) + 1e-9, Re2 = Re * Re;', '  const Re = raza(T, top - zlo) * 0.9, Re2 = Re * Re;', 'sim',
   'raza efectivă a liniei prea mică (căutarea taie marginea șanțului)')
+o('N09', NUC, 'const xi = ri > 0 && wy * wy < ri * ri ? Math.sqrt(ri * ri - wy * wy) : -1;',
+  'const xi = ri > 0 && wy * wy < ri * ri ? Math.sqrt(ri * ri - wy * wy) + 3 * cell : -1;', 'sim', 'elicea sare și celulele de pe peretele interior al inelului')
 o('N08', NUC, '    if (bn > 1 && (j >> SH) % bn !== bw) continue;\n    const py = F.y0 + (j + 0.5) * cell, ey = py - cy;',
   '    const py = F.y0 + (j + 0.5) * cell, ey = py - cy;', 'sim', 'arcul scrie și în rândurile altor benzi')
 
@@ -90,7 +92,12 @@ o('B02', BAN, '    const re = (mutari[o] !== 0 && mutari[o + 3] !== mutari[o + 6
 o('B03', BAN, '    h1 = Math.imul(h1 ^ tx, P1);\n    h2 = Math.imul(h2 ^ tx, P2);\n', '', 'sim', 'amprenta rândului nu ține de coloana dalei')
 o('B04', BAN, '  randuri.sort((a, b) => a[0] - b[0]);', '', 'sim', 'unirea benzilor fără ordinea rândurilor (amprenta depinde de N)')
 o('B05', BAN, '        vol += F.sus - (v > fund ? v : fund);', '        vol += F.sus - v;', 'sim', 'volumul scoate și sub fața de jos a foii')
-o('B06', BAN, 'prinFoaie: zMin <= fund,', 'prinFoaie: zMin < fund - 1,', 'sim', '„prin foaie” cu 1 mm prea târziu')
+o('B06', BAN, 'prinFoaie: zMin <= Math.fround(fund),', 'prinFoaie: zMin < Math.fround(fund) - 1,', 'sim', '„prin foaie” cu 1 mm prea târziu')
+o('B10', BAN, 'prinFoaie: zMin <= Math.fround(fund),', 'prinFoaie: zMin <= fund,', 'sim',
+  '„prin foaie” comparat în Float64: 12,7 și 19,05 mm (placajul) ies false')
+o('B11', BAN, '      for (let k = 0; k < CELULE_DALA; k++) { const w = biti[b + k]!; h1 = Math.imul(h1 ^ w, P1); h2 = Math.imul(h2 ^ ((w << 7) | (w >>> 25)), P2); }',
+  '      for (let k = 0; k < CELULE_DALA; k++) { const w = biti[b + k]!; h1 = Math.imul(h1 ^ w, P1); h2 = Math.imul(h2 ^ (w >>> 7), P2); }', 'sim',
+  'a doua jumătate a amprentei nu vede cei 7 biți de jos (ca în s4)')
 o('B07', BAN, 'const px = Math.floor(i / bloc), py = Math.floor(j / bloc)', 'const px = Math.round(i / bloc), py = Math.round(j / bloc)', 'sim',
   'previzualizarea pune celula în blocul vecin')
 o('B08', BAN, "  amesteca(nx);\n  amesteca(ny);\n  for (const v of [p.x0, p.y0, p.celula]) { f64[0] = v; amesteca(u64[0]!); amesteca(u64[1]!); }\n", '', 'sim',
@@ -107,16 +114,21 @@ o('U03', UNG, '    case 1: return [c, -s];', '    case 1: return [c, s];', 'sim'
 o('U04', UNG, '  return atan2D(Math.sqrt((1 - c) * (1 + c)), c);', '  return atan2D(Math.sqrt(1 - c), c);', 'sim', 'acos fără (1 + c)')
 
 # ---- programul IR ----
-o('P01', PRG, "if (m.sens === 'trigonometric') { while (b <= 1e-12) b += DOI_PI; }", "if (m.sens === 'trigonometric') { while (b < 0) b += DOI_PI; }", 'sim',
-  'start = capăt nu mai e cercul întreg (G3)')
+o('P01', PRG, '  if (x === nx && y === ny) return DOI_PI;\n', '', 'sim', 'start = capăt nu mai e cercul întreg')
 o('P02', PRG, "      if (nz !== undefined && nz < sus) return refuz('mișcarea coboară în material dintr-o poziție necunoscută', q);\n", '', 'sim',
   'coborârea în material dintr-o poziție necunoscută, sărită în tăcere')
 o('P03', PRG, '    } else if (!inAer) {', "    } else if (!inAer && m.tip === 'taiere') {", 'sim', 'rapidele prin material nu mai taie în simulare')
 o('P04', PRG, "    if (la.A !== undefined) return refuz('axa A nu se simulează în v1 (doar X, Y, Z)', q);\n", '', 'sim', 'axa A dintr-o mutare ignorată')
-o('P05', PRG, "      if (z !== nz && forma.tip !== 'plata') return refuz(", "      if (false && z !== nz && forma.tip !== 'plata') return refuz(", 'sim',
+o('P05', PRG, "      if (z !== nz && forma.tip !== 'plata' && !inAer) return refuz(", "      if (false && z !== nz && forma.tip !== 'plata' && !inAer) return refuz(", 'sim',
   'elicea cu bilă / V nerefuzată (nucleul ar arunca la mijlocul jobului)')
-o('P06', PRG, '  if (Math.abs(r0 - r1) > 1e-6 * Math.max(1, r0)) return', '  if (Math.abs(r0 - r1) > 1) return', 'sim',
-  'arcul cu capetele pe raze diferite acceptat')
+o('P06', PRG, 'const TOLERANTA_RAZA = 1e-9;', 'const TOLERANTA_RAZA = 1e-6;', 'sim',
+  'arcul cu capetele pe raze diferite acceptat până la 1 µm (nucleul desenează un singur cerc)')
+o('P08', PRG, "  if (d < BALEIAJ_AMBIGUU) return 'arcul are capetele aproape în același punct, dar nu în el: nu se știe dacă e un cerc întreg';\n", '', 'sim',
+  'arcul ambiguu (capetele la sub 1e-9 rad) acceptat ca arc mic')
+o('P09', PRG, "if (z !== nz && forma.tip !== 'plata' && !inAer) return refuz(", "if (z !== nz && forma.tip !== 'plata') return refuz(", 'sim',
+  'elicea cu bilă / V refuzată și prin aer')
+o('P10', PRG, "  if (m.sens === 'trigonometric') { if (b < 0) b += DOI_PI; } else if (b > 0) b -= DOI_PI;", "  if (m.sens === 'trigonometric') { if (b < 0) b += DOI_PI; }", 'sim',
+  'arcul orar cu baleiajul greșit')
 o('P07', PRG, "const forma = p.scula.forma ?? { tip: 'plata' as const };", "const forma = { tip: 'plata' as const };", 'sim',
   'forma sculei din IR ignorată (bila și V-ul simulate ca freză plată)')
 

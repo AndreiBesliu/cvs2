@@ -22,7 +22,7 @@ function atan01(x: number): number {
   return 4 * (t * p);
 }
 
-/** Ca `Math.atan2(y, x)`: unghiul în (−π, π], cu −0 tratat ca `Math` (atan2(−0, −1) = −π). */
+/** Ca `Math.atan2(y, x)`: unghiul în (−π, π], cu −0 tratat ca `Math` (atan2(−0, −1) = −π); doar (±0, ±0) dă 0 (nucleul nu-l cere). */
 export function atan2D(y: number, x: number): number {
   if (x === 0 && y === 0) return 0;
   const ax = x < 0 ? -x : x, ay = y < 0 ? -y : y;

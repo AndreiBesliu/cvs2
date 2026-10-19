@@ -119,7 +119,10 @@ test('amprenta vede o singură celulă schimbată cu un ulp', () => {
   const u32 = new Uint32Array(f32.buffer);
   u32[0] = u32[0]! + 1;
   F.atlas[k] = f32[0]!;
-  assert.notEqual(amprentaCamp(F), inainte);
+  const dupa = amprentaCamp(F);
+  // Ambele jumătăți (h1, h2) văd ulp-ul: altfel amprenta ar fi, la diferențe mici, doar pe 32 de biți (recenzia 19.10).
+  assert.notEqual(dupa.slice(0, 8), inainte.slice(0, 8), 'prima jumătate n-a văzut ulp-ul');
+  assert.notEqual(dupa.slice(8), inainte.slice(8), 'a doua jumătate n-a văzut ulp-ul');
 });
 
 test('amprenta ține de grilă: același program pe o grilă mutată cu o celulă dă altă amprentă', () => {
@@ -182,9 +185,9 @@ test('o dală compactată (uniformă) scrisă din nou revine în atlas cu valoar
 
 test('detector de schimbare (nu probă de corectitudine): amprentele unor piese, înghețate la prima rulare', () => {
   const inghetate: Readonly<Record<string, string>> = {
-    'sant-bila': '1da6c7d01c88af63',
-    elice: 'b9d84526349bcc84',
-    'gravura-v60': '801ecec8432847e9',
+    'sant-bila': '07f9e3c0d1de9be8',
+    elice: 'b5470123384c1f4f',
+    'gravura-v60': 'f76411a410c46a51',
   };
   for (const [id, a] of Object.entries(inghetate)) assert.equal(amprentaCamp(simuleazaCaz(cazul(id))), a, id);
 });

@@ -6,7 +6,9 @@
  *
  * Amprenta (s4 §4.5): FNV-1a pe 2 × 32 de biți peste valorile Float32 ale celulelor (o dală uniformă = de 256 de ori
  * valoarea ei, ca amprenta să nu depindă de forma în care stă dala), pe rânduri, apoi peste rânduri, cu grila în față.
- * Câmpuri cu aceeași amprentă au, practic, aceleași celule.
+ * A doua jumătate amestecă cuvântul rotit cu 7 biți (nu deplasat: s4 pierdea cei 7 biți de jos, exact ulp-urile pe care
+ * poarta Node = browser trebuie să le vadă; recenzia 19.10 a găsit o coliziune pe 3 celule). Câmpuri cu aceeași amprentă
+ * au, practic, aceleași celule.
  */
 import { CELULE_DALA, compacteaza, campNou, dimensiuni, LATURA_DALA, NEATINSA, numaraDale, SH, UNIFORMA, type Banda, type Camp, type ParametriCamp } from './camp.ts';
 import { raza, ruleaza, silueta, STRIDE, type DateScula } from './nucleu.ts';
@@ -116,10 +118,10 @@ function amprentaRand(F: Camp, r: number, biti: Uint32Array, bitiUniforme: Uint3
     h2 = Math.imul(h2 ^ tx, P2);
     if (s === UNIFORMA) {
       const w = bitiUniforme[d]!;
-      for (let k = 0; k < CELULE_DALA; k++) { h1 = Math.imul(h1 ^ w, P1); h2 = Math.imul(h2 ^ (w >>> 7), P2); }
+      for (let k = 0; k < CELULE_DALA; k++) { h1 = Math.imul(h1 ^ w, P1); h2 = Math.imul(h2 ^ ((w << 7) | (w >>> 25)), P2); }
     } else {
       const b = s * CELULE_DALA;
-      for (let k = 0; k < CELULE_DALA; k++) { const w = biti[b + k]!; h1 = Math.imul(h1 ^ w, P1); h2 = Math.imul(h2 ^ (w >>> 7), P2); }
+      for (let k = 0; k < CELULE_DALA; k++) { const w = biti[b + k]!; h1 = Math.imul(h1 ^ w, P1); h2 = Math.imul(h2 ^ ((w << 7) | (w >>> 25)), P2); }
     }
   }
   return are ? [h1 >>> 0, h2 >>> 0] : null;
@@ -129,7 +131,7 @@ function amprentaRand(F: Camp, r: number, biti: Uint32Array, bitiUniforme: Uint3
 function amprentaDinRanduri(p: { readonly x0: number; readonly y0: number; readonly celula: number; readonly sus: number }, nx: number, ny: number,
   randuri: readonly (readonly [number, number, number])[]): string {
   let h1 = 0x811c9dc5 | 0, h2 = P1 ^ P2;
-  const amesteca = (w: number): void => { h1 = Math.imul(h1 ^ w, P1); h2 = Math.imul(h2 ^ (w >>> 7), P2); };
+  const amesteca = (w: number): void => { h1 = Math.imul(h1 ^ w, P1); h2 = Math.imul(h2 ^ ((w << 7) | (w >>> 25)), P2); };
   amesteca(nx);
   amesteca(ny);
   for (const v of [p.x0, p.y0, p.celula]) { f64[0] = v; amesteca(u64[0]!); amesteca(u64[1]!); }
@@ -215,7 +217,7 @@ export function uneste(p: ParametriCamp, prev: Previzualizare, fund: number, ben
   const sus = Math.fround(p.sus);
   return {
     amprenta: amprentaDinRanduri({ ...p, sus }, nx, ny, randuri.map(([r, a, b]) => [r, a, b] as const)),
-    volum, zMin, adancimeMax: sus - zMin, prinFoaie: zMin <= fund, celula: p.celula, sus, fund,
+    volum, zMin, adancimeMax: sus - zMin, prinFoaie: zMin <= Math.fround(fund), celula: p.celula, sus, fund,
     previzualizare: { ...prev, z }, dale: { total: ntx * nty, atinse, uniforme },
   };
 }

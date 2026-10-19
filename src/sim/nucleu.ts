@@ -260,39 +260,44 @@ function eliceaPlata(F: Camp, T: Silueta, ax: number, ay: number, az: number, bz
     const py = F.y0 + (j + 0.5) * cell, wy = py - cy;
     if (wy * wy > ro * ro) continue;
     const xo = Math.sqrt(ro * ro - wy * wy);
-    let i0 = Math.floor((cx - xo - F.x0) / cell - 0.5) - 1, i1 = Math.ceil((cx + xo - F.x0) / cell - 0.5) + 1;
-    if (i0 < 0) i0 = 0;
-    if (i1 > F.nx - 1) i1 = F.nx - 1;
+    // Inelul, nu tot discul: pe un cerc mare, interiorul (ρ < r − R) nu e atins (recenzia 19.10: 80 ms → câțiva ms la r = 500).
+    const xi = ri > 0 && wy * wy < ri * ri ? Math.sqrt(ri * ri - wy * wy) : -1;
     const roff = (j & M) << SH, trow = (j >> SH) * ntx;
-    let tcur = -1, d = -1, s = NEATINSA;
-    for (let i = i0; i <= i1; i++) {
-      const wx = F.x0 + (i + 0.5) * cell - cx, rho2 = wx * wx + wy * wy, rho = Math.sqrt(rho2);
-      if (rho > ro || (ri > 0 && rho < ri)) continue;
-      const C = rho > 1e-12 ? (rho2 + r * r - R2) / (2 * rho * r) : (r <= R ? -2 : 2);
-      if (C > 1) continue;
-      let u: number;
-      if (C <= -1) u = dz < 0 ? S : 0;
-      else {
-        const al = acosD(C);
-        let v = dir * (atan2D(wy, wx) - th0);
-        v = v - DOI_PI * Math.floor(v / DOI_PI);
-        u = -1;
-        for (let kk = -1; kk <= 1; kk++) {
-          const lo = Math.max(0, v - al + DOI_PI * kk), hi = Math.min(S, v + al + DOI_PI * kk);
-          if (lo > hi) continue;
-          const cand = dz < 0 ? hi : lo;
-          if (u < 0 || (dz < 0 ? cand > u : cand < u)) u = cand;
+    for (let parte = 0; parte < (xi >= 0 ? 2 : 1); parte++) {
+      const xlo = xi < 0 || parte === 0 ? cx - xo : cx + xi, xhi = xi < 0 || parte === 1 ? cx + xo : cx - xi;
+      let i0 = Math.floor((xlo - F.x0) / cell - 0.5) - 1, i1 = Math.ceil((xhi - F.x0) / cell - 0.5) + 1;
+      if (i0 < 0) i0 = 0;
+      if (i1 > F.nx - 1) i1 = F.nx - 1;
+      let tcur = -1, d = -1, s = NEATINSA;
+      for (let i = i0; i <= i1; i++) {
+        const wx = F.x0 + (i + 0.5) * cell - cx, rho2 = wx * wx + wy * wy, rho = Math.sqrt(rho2);
+        if (rho > ro || (ri > 0 && rho < ri)) continue;
+        const C = rho > 1e-12 ? (rho2 + r * r - R2) / (2 * rho * r) : (r <= R ? -2 : 2);
+        if (C > 1) continue;
+        let u: number;
+        if (C <= -1) u = dz < 0 ? S : 0;
+        else {
+          const al = acosD(C);
+          let v = dir * (atan2D(wy, wx) - th0);
+          v = v - DOI_PI * Math.floor(v / DOI_PI);
+          u = -1;
+          for (let kk = -1; kk <= 1; kk++) {
+            const lo = Math.max(0, v - al + DOI_PI * kk), hi = Math.min(S, v + al + DOI_PI * kk);
+            if (lo > hi) continue;
+            const cand = dz < 0 ? hi : lo;
+            if (u < 0 || (dz < 0 ? cand > u : cand < u)) u = cand;
+          }
+          if (u < 0) continue;
         }
-        if (u < 0) continue;
-      }
-      const zs = az + (dz * u) / S;
-      const tx = i >> SH;
-      if (tx !== tcur) { tcur = tx; d = trow + tx; s = loc[d]!; }
-      const kq = roff | (i & M);
-      const cur = s >= 0 ? atlas[(s << SH2) | kq]! : s === NEATINSA ? top : unif[d]!;
-      if (zs < cur) {
-        if (s < 0) { s = alocaDala(F, d); atlas = F.atlas; }
-        atlas[(s << SH2) | kq] = zs;
+        const zs = az + (dz * u) / S;
+        const tx = i >> SH;
+        if (tx !== tcur) { tcur = tx; d = trow + tx; s = loc[d]!; }
+        const kq = roff | (i & M);
+        const cur = s >= 0 ? atlas[(s << SH2) | kq]! : s === NEATINSA ? top : unif[d]!;
+        if (zs < cur) {
+          if (s < 0) { s = alocaDala(F, d); atlas = F.atlas; }
+          atlas[(s << SH2) | kq] = zs;
+        }
       }
     }
   }
