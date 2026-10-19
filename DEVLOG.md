@@ -2164,3 +2164,25 @@ amprenta Node = Edge, la 1 fir și la mai multe, poartă în e2e; o previzualiza
 Oracolul îl portează din s4 un agent care nu vede nucleul (o clonă fără el), și intră în CI înaintea lui. Lucrul stă într-o
 clonă în afara Drive-ului: în repo-ul din Drive scrie, în paralel, sesiunea timpului lângă traseu. Estimat ~1,5–2 M pentru
 agenți (oracolul, 1–2 verificatori).
+**Făcut:** oracolul întâi (`e0bb1d4`, agentul fără nucleu, ~0,40 M): `test/oracles/simulare.ts` (textul G-code, grila densă
+Float64, celula / 8 pe arcul adevărat, „nucleul nu e niciodată mai sus cu peste 10 nm”, marja derivată), 18 piese pe hârtie,
+cele 7 otrăvuri din s4 ca martori. Apoi probele nucleului pe corpusul lui și nucleul (`80180d4`): `src/sim/camp.ts` (dale de
+16 × 16 în atlas, uniformele ca număr), `nucleu.ts` (portat din s4, exact pe celulă), `unghi.ts` (trigonometria doar cu + − ×
+÷ √), `program.ts` (IR-ul, cu refuzurile), `banda.ts` (r mod N, amprenta pe rânduri), bazinul `src/jobs/`, regula
+`bazinul-doar-simularea`; măsurat: dale de 16 → 612 ms / 37,6 MB, de 32 → 626 ms / 60,7 MB (jobul 2D al sondei, un fir).
+Harta adâncimilor, materialul scos, cea mai adâncă tăietură în dialogul exportului (`f93d10b`); poarta Node = Edge în e2e prin
+workerul construit, pe 1 și 4 fire. ADR 0047.
+**Recenzia (doi verificatori, ~0,37 + 0,31 M):** nucleul fără material lăsat pe 32 900 de programe aleatoare și 779 din CAM;
+remediate „prin foaie” în Float32 (12,7 / 19,05 mm), arcul ambiguu lângă pragul cercului întreg, amprenta (a doua jumătate
+nu vedea 7 biți), raza capetelor, elicea (`3d297d7`); descărcarea care aștepta simularea (până la 9,8 s), workerul tăcut
+refolosit, eșecurile în afara jurnalului, poarta e2e fără pixeli, marcajele căutate doar în pornire (`bad8474`).
+**Otrăvurile** (`test/otravuri/simulare.py`, clone în afara Drive-ului): prima rundă 47 / 49 (P06, D03 → probe); a doua, pe
+codul final, 60 / 61, D05 → proba workerelor oprite la închidere: 61 / 61.
+**Mediul:** sesiunea timpului lângă traseu a scris în paralel în repo-ul din Drive și a publicat `f93d10b` pe test; munca de
+aici s-a refăcut peste merge-ul ei (`564f1f5`), cu un singur conflict de importuri în `actiuniExportCalcul.ts`. Testele
+unitare cu `--test-concurrency=8` (otrăvurile rulau în paralel); transpilerul Playwright strică clasele cavalier, deci partea
+de Node a porții din dialog rulează într-un proces Node (`test/e2e/simulare-node.ts`).
+**Completed:** 19.10 14:05. Costul: agenții ~1,08 M (oracolul 0,40, nucleul 0,37, integrarea 0,31), în estimarea de 1,5–2 M;
+săptămânalul 65 → 74 % (comun cu sesiunea timpului). Tipurile (și ale funcțiilor), importurile (15 / 15), 7 001 teste unitare,
+0 picate (8 sărite), build-ul determinist, licențele; e2e 161 / 161 în Edge; emulatoarele 24 + 6; pornirea 94,3 / 100 kB,
+cu ușa 99,0 (strâmt), totalul 238,4 kB.

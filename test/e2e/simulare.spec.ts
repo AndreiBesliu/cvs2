@@ -246,17 +246,42 @@ test('un worker care nu vine: exportul rămâne, dialogul spune de ce lipsește 
   await expect(page.getByTestId('jurnal')).toHaveText('1 eroare în jurnalul local');
 });
 
-test('dialogul închis în timpul simulării: fișierul e descărcat, simularea e oprită (nicio eroare)', async ({ page }) => {
+test('dialogul închis în timpul simulării: fișierul e descărcat, workerele simulării se opresc (nicio eroare)', async ({ page }) => {
   let elibereaza = (): void => {};
   const tinut = new Promise<void>((ok) => { elibereaza = ok; });
   await page.route(/lucratorSimulare-[^/]*\.js$/, async (r) => { await tinut; await r.continue(); });
+  // Numărătoarea workerelor, doar în probă: fiecare `new Worker` și fiecare `terminate()` din pagină.
+  await page.addInitScript(() => {
+    const g = window as unknown as { __workere: { pornite: number; oprite: number } };
+    g.__workere = { pornite: 0, oprite: 0 };
+    const W = window.Worker;
+    window.Worker = class extends W {
+      readonly simulare: boolean;
+      constructor(u: string | URL, o?: WorkerOptions) {
+        super(u, o);
+        this.simulare = String(u).includes('lucratorSimulare-');
+        if (this.simulare) g.__workere.pornite++;
+      }
+      override terminate(): void {
+        if (this.simulare) g.__workere.oprite++;
+        super.terminate();
+      }
+    };
+  });
+  const workere = (): Promise<{ pornite: number; oprite: number }> =>
+    page.evaluate(() => (window as unknown as { __workere: { pornite: number; oprite: number } }).__workere);
   await page.goto('/');
   await page.locator('[data-actiune="document.adauga-cerc"]').click();
   await page.locator('[data-actiune="export.gcode"]').click();
   const descarcare = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
   await descarcare;
+  const inainte = await workere();
+  expect(inainte.pornite).toBeGreaterThan(0);
+  expect(inainte.oprite).toBe(0);
   await page.getByRole('button', { name: 'Închide' }).click();
+  // Workerele se opresc la închidere, nu când ar termina (scriptul lor e încă ținut): simularea e anulată.
+  await expect.poll(async () => (await workere()).oprite, { timeout: 5_000 }).toBe(inainte.pornite);
   elibereaza();
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.getByTestId('export-simulare')).toHaveCount(0);

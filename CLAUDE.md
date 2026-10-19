@@ -63,6 +63,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   exportat, profilul mașinii ca date (`src/ir/masina.ts`; `$$` lipit în dialog), rezumatul pe operație și pe sculă în dialogul
   exportului; oracolul independent în `test/oracles/timp.ts`; comparația cu cronometrul vine cu plăcile 2 și 3. Pe 19.10,
   timpul apare și lângă traseu, după fiecare calcul (tasta T), iar `$$`-ul lipit e comun traseului și exportului.
+  **Simularea, nucleul CPU, felia 1 din 2 (ADR 0047, adusă din etapa 4)** gata pe 19.10: `src/sim/` (câmpul pe dale de
+  16 × 16 în atlas, calculul exact pe celulă cu freza plată, bila și V-ul, trigonometria proprie), bazinul `src/jobs/`
+  (rândurile de dale r mod N), oracolul independent `test/oracles/simulare.ts`; amprenta Node = Edge e poartă în e2e;
+  harta adâncimilor, volumul și adâncimea în dialogul exportului. Felia 2: afișarea în WebGL2 și fereastra de 0,1 mm.
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):

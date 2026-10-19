@@ -117,10 +117,10 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 ## F. Producție și interfață
 | Capabilitate | Sursă | Etapă | Stare | Commit |
 |---|---|---|---|---|
-| Simulare 3D a materialului: 3 axe în v1, apoi rotativ | S+D | v1 | de făcut | — |
+| Simulare 3D a materialului: 3 axe în v1, apoi rotativ | S+D | v1 | în lucru: nucleul CPU (câmpul pe dale în atlas, exact pe celulă, freza plată / bilă / V, amprenta Node = Edge în e2e) și harta adâncimilor în dialogul exportului, ADR 0047; rămân afișarea în WebGL2, fereastra de 0,1 mm, elicea cu bilă / V, rotativul | 80180d4, f93d10b, 3d297d7, bad8474 |
 | Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V, gravare, profil, formă desenată) | S+D | v1 | de făcut | — |
 | Trimiterea directă la mașină (senderul) | D | v1 | de făcut | — |
-| Calcul pe mai multe fire (workers) | D | v1 | de făcut | — |
+| Calcul pe mai multe fire (workers) | D | v1 | în lucru: bazinul de workere fără stare al simulării (rândurile de dale r mod N, același rezultat bit cu bit pe orice N), ADR 0047; rămân celelalte calcule grele (CAM-ul, relieful) | 80180d4, bad8474 |
 | Șabloane de operații (aceleași setări pe alt desen) și calcul în lot | S | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Două interfețe: asistent pas cu pas pentru începători + interfața completă | D | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Două șabloane ale interfeței complete: **modern** (prototipul B, ales 13.10) și **clasic**, familiar celor care vin din ArtCAM (organizarea, nu aspectul: fără interfață, iconițe sau texte copiate) sau din CNCVS 1; plus **aranjarea personalizată**: utilizatorul așază uneltele în interfață și salvează aranjamentul | owner (13.10) | v1; momentul îl alege asistentul, fără să miște planul | în lucru (carcasa modernă: 2.8a) | — |

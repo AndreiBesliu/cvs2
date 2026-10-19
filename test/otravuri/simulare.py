@@ -5,6 +5,11 @@
 # Alese de autorul feliei (plasa autorului, nu runda independentă din `PLAN.md` §4.3).
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
+#
+# Rezultatul: prima rundă (clona de la 3f2caee, 49 de otrăvuri): 43 / 44 unitare și 4 / 5 e2e; scăpate P06 (raza capetelor
+# arcului) și D03 (tăietura prin foaie pe hartă) → probele lor. A doua rundă, pe codul final cu remedierile celor două
+# recenzii (clona de la bad8474, 61): 60 / 61, toate prin probe, niciuna de termen; D05 (dialogul închis nu oprea
+# simularea: nimic pe ecran, workerele lucrau degeaba) scăpată → proba workerelor oprite la închidere, apoi prinsă: 61 / 61.
 O = []
 
 
@@ -157,5 +162,5 @@ o('D04', APP, "          if (!s.ok && s.eroare) jurnal.adauga('promisiune', new 
   'eșecul simulării nu intră în jurnal')
 o('D05', APP, '          onInchide={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); setDialogExport(false); }}',
   '          onInchide={() => { exportInCurs.current = false; setDialogExport(false); }}', 'e2e',
-  'dialogul închis nu oprește simularea: rezultatul vechi apare la redeschidere')
+  'dialogul închis nu oprește simularea (workerele ei lucrează degeaba)')
 o('D03', PRE, '  if (-z >= grosime) return 0;', '  if (-z > grosime * 2) return 0;', 'e2e', 'tăietura prin foaie nu mai e neagră pe hartă')
