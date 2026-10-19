@@ -83,11 +83,6 @@ export function campNou(p: ParametriCamp, banda: Banda = { n: 1, w: 0 }): Camp {
   };
 }
 
-/** Rândul de dale r e al benzii câmpului? */
-export function alBenzii(F: Camp, r: number): boolean {
-  return F.banda.n === 1 || r % F.banda.n === F.banda.w;
-}
-
 /**
  * Un loc nou în atlas pentru dala d (neatinsă sau uniformă), umplut cu valoarea ei; întoarce locul. Atlasul crește în
  * pași (cel mult 8 192 de locuri, 8 MB, odată), ca o placă mare să nu ceară dintr-odată dublul memoriei.

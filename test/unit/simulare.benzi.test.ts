@@ -157,6 +157,29 @@ test('compactarea: dalele uniforme devin un număr, valorile și amprenta rămâ
   assert.equal(amprentaCamp(F), amprenta);
 });
 
+test('o dală compactată (uniformă) scrisă din nou revine în atlas cu valoarea ei: aceleași celule ca fără compactare', () => {
+  const c = cazul('plonjare-plata');
+  const p = pregatesteProgram(programCaz(c), 0);
+  if (!p.ok) throw new Error(p.motiv);
+  // A doua plonjare, mai adâncă, alături: atinge și dalele devenite uniforme la −5.
+  const doua = pregatesteProgram(programCaz(c, [{ tip: 'linie', a: [21.5, 20, 5], b: [21.5, 20, -7] }]), 0);
+  if (!doua.ok) throw new Error(doua.motiv);
+  const g = parametriGrila(c.grila);
+  const a = campNou(g), b = campNou(g);
+  ruleaza(a, p.scula, p.mutari);
+  compacteaza(a);
+  assert.ok(a.loc.some((s) => s === -2), 'nicio dală uniformă după prima plonjare');
+  ruleaza(a, doua.scula, doua.mutari);
+  ruleaza(b, p.scula, p.mutari);
+  ruleaza(b, doua.scula, doua.mutari);
+  compacteaza(a);
+  compacteaza(b);
+  for (let j = 0; j < a.ny; j++) for (let i = 0; i < a.nx; i++) {
+    if (!Object.is(valoare(a, i, j), valoare(b, i, j))) assert.fail(`(${i}, ${j}): ${valoare(a, i, j)} cu compactare la mijloc, ${valoare(b, i, j)} fără`);
+  }
+  assert.equal(amprentaCamp(a), amprentaCamp(b));
+});
+
 test('detector de schimbare (nu probă de corectitudine): amprentele unor piese, înghețate la prima rulare', () => {
   const inghetate: Readonly<Record<string, string>> = {
     'sant-bila': '1da6c7d01c88af63',

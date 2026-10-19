@@ -131,12 +131,21 @@ for (const nuclee of [1, 5]) {
     // Harta are pixeli tăiați (mai închiși decât fața) și pixeli netăiați.
     const pixeli = await s.locator('canvas').evaluate((c: HTMLCanvasElement) => {
       const d = c.getContext('2d')?.getImageData(0, 0, c.width, c.height).data ?? new Uint8ClampedArray();
-      let fata = 0, taiat = 0;
-      for (let k = 0; k < d.length; k += 4) { if (d[k] === 235) fata++; else taiat++; }
-      return { fata, taiat };
+      let fata = 0, taiat = 0, sx = 0, sy = 0;
+      for (let k = 0; k < d.length; k += 4) {
+        if (d[k] === 235) { fata++; continue; }
+        taiat++;
+        sx += (k / 4) % c.width;
+        sy += Math.floor(k / 4 / c.width);
+      }
+      return { fata, taiat, x: sx / taiat / c.width, y: sy / taiat / c.height };
     });
     expect(pixeli.fata).toBeGreaterThan(100);
     expect(pixeli.taiat).toBeGreaterThan(100);
+    // Orientarea, ca pe pânză: formele noi stau lângă colțul stânga-jos al foii, deci tăietura e în stânga-jos a hărții
+    // (rândul 0 al previzualizării e marginea de jos a foii, rândul 0 al imaginii e sus).
+    expect(pixeli.x, 'harta e oglindită stânga-dreapta').toBeLessThan(0.5);
+    expect(pixeli.y, 'harta e întoarsă sus-jos').toBeGreaterThan(0.5);
     // Node, pe documentul salvat de aplicație (cu operațiile scrise la Exportă), prin aceeași funcție a exportului, într-un
     // proces Node (`simulare-node.ts`).
     const doc = await documentSalvat(page, 1);
