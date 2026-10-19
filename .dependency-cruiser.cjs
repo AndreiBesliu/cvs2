@@ -91,6 +91,13 @@ module.exports = {
       to: { path: '^src/', pathNot: '^src/(sim|ir)/' },
     },
     {
+      name: 'bazinul-doar-simularea',
+      severity: 'error',
+      comment: 'Bazinul de workere (src/jobs) transportă joburile simulării: importă doar nucleul (ADR 0047).',
+      from: { path: modul('jobs') },
+      to: { path: '^src/', pathNot: '^src/(jobs|sim)/' },
+    },
+    {
       name: 'masina-fara-post-si-document',
       severity: 'error',
       comment: 'Senderul primește programul ca date (octeți + manifest); nu importă postul și nici documentul.',
