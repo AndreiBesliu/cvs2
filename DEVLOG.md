@@ -2208,3 +2208,14 @@ rulat” e răspunsul bucății, văzut de Playwright (`fromServiceWorker`).
 7 012 teste unitare, 0 picate (8 sărite), build-ul determinist, licențele (`npm run rapid`, RC 0); e2e 162 / 162 în Edge;
 emulatoarele 24 + 6. Pornirea 94,4 / 100 kB, cu ușa 99,0, ca pe HEAD (aceeași mărime brută a bucății de pornire); bucata
 înregistrării 0,5 → 0,66 kB.
+
+## 2026-10-19 — Documentația admin: roadmap-ul vizual și ghidurile, generate din repo (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau altceva, daca tot avem admin, sa avem acolo o sectiune cu un roadmap, un roadmap cu detalii, dar focusat
+pe vizual.” + „si sa fie updatat constant” + „totodata vreau sa mentinem ideea de documentatie, una live si una admin, pe
+care o aveam la vechiul cncvs”. **Started:** 19.10 ~21:00, săptămânalul ~76 %. Felia aceasta: în `/admin`, fila Roadmap
+(etapele 1–30, feliile cu starea lor, plăcile, live-urile, ce așteaptă de la owner) și fila Documentație admin (ADR-urile,
+fișele, pașii owner-ului), generate la build din `PLAN.md`, `docs/etape/`, `docs/adr/`, cu o poartă care pică dacă un tabel
+nu se mai poate citi. Documentația live (manualul utilizatorului, en + ro, cu poarta de acoperire a acțiunilor) e felia
+următoare, după resetarea din 24.10. Ca în ediția întâi (`DocsView` + fila Operare): un singur cititor de markdown. Workflow:
+implementarea, 2 verificatori; estimat ~1,1 M.
