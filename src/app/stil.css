@@ -1094,6 +1094,17 @@ nav button[aria-pressed='true'] {
   color: var(--t);
 }
 
+/* Harta adâncimilor din simulare (ADR 0047 §5): pixelii nucleului, măriți fără netezire, cât lățimea dialogului. */
+.dialog .simulare canvas {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  image-rendering: pixelated;
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+}
+
 /* Răspunsul la $$ (ADR 0046): lățimea dialogului, cu literele egale ale consolei. */
 .dialog textarea {
   width: 100%;

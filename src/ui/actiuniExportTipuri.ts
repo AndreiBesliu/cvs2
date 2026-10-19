@@ -93,9 +93,38 @@ export type RezumatJob =
    */
   | { readonly ok: false; readonly sursa: 'setari' | 'program'; readonly linie: number; readonly motiv: string };
 
+/**
+ * Simularea programului exportat (ADR 0047 §5): nucleul pe CPU, în bazinul de workere, pe toată foaia. Interfața primește
+ * doar rezumatul: previzualizarea (cel mai jos Z pe bloc de celule, rândul 0 jos), volumul, adâncimea, amprenta. Ca la
+ * timp, `ok: false` nu oprește exportul, doar spune de ce lipsește simularea.
+ */
+export type SimulareExport =
+  | {
+    readonly ok: true;
+    /** Amprenta câmpului (16 cifre hexa): aceeași în Node și în orice browser, pe oricâte fire. */
+    readonly amprenta: string;
+    /** Volumul scos din foaie, în mm³. */
+    readonly volum: number;
+    /** Cât a coborât scula sub fața plăcii, în mm (poate trece de grosime: prin foaie). */
+    readonly adancimeMax: number;
+    readonly prinFoaie: boolean;
+    readonly grosime: number;
+    readonly celula: number;
+    /** Celulele grilei, pe X și pe Y. */
+    readonly celule: readonly [number, number];
+    readonly fire: number;
+    readonly ms: number;
+    /** Previzualizarea: `latime` × `inaltime` pixeli, `z` pe pixel (rândul 0 = marginea de jos a foii). */
+    readonly previzualizare: { readonly latime: number; readonly inaltime: number; readonly z: Float32Array };
+  }
+  | { readonly ok: false; readonly motiv: string };
+
 export type RezultatExport =
   /** `avertismente`: ce s-a făcut altfel decât s-a cerut, fără să fie o greșeală (intrarea omisă, ADR 0030 §3). */
-  | { readonly ok: true; readonly program: ProgramExportat; readonly avertismente: readonly string[]; readonly rezumat: RezumatJob }
+  | {
+    readonly ok: true; readonly program: ProgramExportat; readonly avertismente: readonly string[]; readonly rezumat: RezumatJob;
+    readonly simulare: SimulareExport;
+  }
   | { readonly ok: false; readonly motiv: string }
   /** Freza iese din foaie și omul n-a confirmat încă exact ieșirea asta: nu se scrie nimic. */
   | { readonly ok: false; readonly motiv: string; readonly cereConfirmare: IesireFoaie };

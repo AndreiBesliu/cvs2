@@ -163,6 +163,8 @@ const LA_CERERE: ReadonlyArray<readonly [string, string]> = [
   ['aria cere un contur închis', 'orientarea conturului (src/geom/contur.ts; pornirea importă doar conturBaza.ts) vine cu CAM-ul și offsetul'],
   ['până la omul de la mașină', 'estimarea timpului (src/sim/timp.ts, ADR 0046) vine cu calculul exportului'],
   ['nu conține nicio setare de mișcare', 'citirea setărilor mașinii (src/ir/masina.ts, ADR 0046) vine cu calculul exportului'],
+  ['nu se simulează încă', 'nucleul simulării (src/sim/nucleu.ts și program.ts, ADR 0047) vine cu calculul exportului și în workerul lui'],
+  ['workerul simulării a căzut', 'bazinul simulării (src/jobs/bazin.ts, ADR 0047) vine cu calculul exportului'],
 ];
 for (const [marcaj, ce] of LA_CERERE) {
   if (cod(bucataPornirii).includes(marcaj)) {

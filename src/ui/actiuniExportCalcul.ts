@@ -1,5 +1,6 @@
 import { iesireDinFoaie, type IesireFoaie } from '../cam/iesire.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
+import { simuleazaInBazin } from '../jobs/bazin.ts';
 import type { Program, Scula } from '../ir/ir.ts';
 import type { Montaj } from '../ir/montaj.ts';
 import { profilDinSetari, type ProfilMasina } from '../ir/masina.ts';
@@ -8,8 +9,10 @@ import { PLAFON, type Document } from '../model/document.ts';
 import { GRBL_11 } from '../post/contracte/grbl11.ts';
 import { exporta, type ProgramExportat } from '../post/export.ts';
 import { posteaza } from '../post/post.ts';
+import { campPentruFoaie, dimensiuni } from '../sim/camp.ts';
+import { pregatesteProgram } from '../sim/program.ts';
 import { estimeazaTimp, type Portiune } from '../sim/timp.ts';
-import type { ParametriExport, RezultatExport, RezumatJob } from './actiuniExportTipuri.ts';
+import type { ParametriExport, RezultatExport, RezumatJob, SimulareExport } from './actiuniExportTipuri.ts';
 
 /** Așteptarea axului după pornire: un parametru al mașinii; profilul mașinii vine în etapa 3. */
 const ASTEPTARE_AX = 3;
@@ -43,7 +46,31 @@ export async function calculeazaExport(doc: Document, p: ParametriExport): Promi
     asteptareAx: ASTEPTARE_AX,
     ...(iesire ? { iesireConfirmata: iesire.depasire } : {}),
   });
-  return e.ok ? { ok: true, program: e.exportat, avertismente: job.avertismente, rezumat: rezumatJob(e.exportat, job.program.scula, p.setariMasina) } : e;
+  if (!e.ok) return e;
+  return {
+    ok: true, program: e.exportat, avertismente: job.avertismente, rezumat: rezumatJob(e.exportat, job.program.scula, p.setariMasina),
+    simulare: await simuleazaExport(job.program, foaie.stoc),
+  };
+}
+
+/**
+ * Simularea programului exportat (ADR 0047 §5): IR-ul (coordonatele documentului), pe toată foaia, la 0,25 mm, în bazinul
+ * de workere. Un refuz sau un worker căzut nu oprește exportul: dialogul spune de ce lipsește simularea.
+ */
+export async function simuleazaExport(program: Program, foaie: { readonly latime: number; readonly inaltime: number; readonly grosime: number }): Promise<SimulareExport> {
+  const p = pregatesteProgram(program, 0);
+  if (!p.ok) return { ok: false, motiv: p.motiv };
+  const camp = campPentruFoaie(foaie), d = dimensiuni(camp.celula, camp.latime, camp.inaltime);
+  try {
+    const r = await simuleazaInBazin({ camp, scula: p.scula, mutari: p.mutari, fund: -foaie.grosime });
+    return {
+      ok: true, amprenta: r.amprenta, volum: r.volum, adancimeMax: r.adancimeMax, prinFoaie: r.prinFoaie, grosime: foaie.grosime,
+      celula: camp.celula, celule: [d.nx, d.ny],
+      fire: r.fire, ms: r.ms, previzualizare: { latime: r.previzualizare.latime, inaltime: r.previzualizare.inaltime, z: r.previzualizare.z },
+    };
+  } catch (e) {
+    return { ok: false, motiv: e instanceof Error ? e.message : String(e) };
+  }
 }
 
 const zero = (): { secunde: number; pauze: number; taiere: number; rapide: number } => ({ secunde: 0, pauze: 0, taiere: 0, rapide: 0 });

@@ -6,10 +6,11 @@ import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import {
   laturiOferite, MARGINI_OPERATIE, type Depasire, type IesireFoaie, type LaturaExport, type ParametriExport, type RezumatJob,
-  type TimpPortiune,
+  type SimulareExport, type TimpPortiune,
 } from './actiuniExportTipuri.ts';
 import { durata } from './durata.ts';
 import { citesteNumar, textNumar } from './numar.ts';
+import { PrevizualizareSimulare } from './PrevizualizareSimulare.tsx';
 import { useLimba } from './useLimba.ts';
 
 type Latura = LaturaExport;
@@ -52,7 +53,7 @@ export type CerereExport = ParametriExport & { readonly diametru: number; readon
 export type StareExport =
   | {
     readonly ok: true; readonly linii: number; readonly sha256: string; readonly avertismente: readonly string[];
-    readonly rezumat: RezumatJob;
+    readonly rezumat: RezumatJob; readonly simulare: SimulareExport;
   }
   | { readonly ok: false; readonly motiv: string; readonly cereConfirmare?: IesireFoaie };
 
@@ -544,6 +545,7 @@ export function DialogExport(
           </ul>
         )}
         {stare?.ok && <Rezumat r={stare.rezumat} operatii={operatii} limba={limba} />}
+        {stare?.ok && <PrevizualizareSimulare s={stare.simulare} limba={limba} />}
         {stare && !stare.ok && !cere && <p role="status" className="avertisment" data-testid="export-stare">{t('export.eroare', { motiv: stare.motiv })}</p>}
       </div>
     </div>
