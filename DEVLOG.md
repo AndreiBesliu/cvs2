@@ -2142,3 +2142,13 @@ licențele; e2e 152 / 152 în Edge; emulatoarele 24 + 6; pornirea 93,9 / 100 kB 
 fără mașină din rândul pragului („Timpul estimat, afișat imediat după fiecare calcul”): timpul în cipul traseului, după
 fiecare calcul (tasta T), cu aceeași estimare ca rezumatul exportului; câmpul `$$` urcă din dialog în aplicație, ca
 traseul și exportul să folosească același profil. Fără agenți.
+**Făcut:** probele întâi (`test/unit/durata.test.ts`, pragurile 59,95 s și 3 599,5 s; `rezumat.test.ts`: `timpProgram` pe
+programul de hârtie dă 11,394662 s, exact rezumatul exportului; e2e: cipul după T egal cu rezumatul, `$$` lipit îl schimbă,
+documentul schimbat îl stinge, `$$` greșit îl face să spună linia). Apoi `timpProgram` (postul pe stânga-jos, Z0 sus, apoi
+`rezumatJob`), cipul la cerere (`src/ui/CipTimpTraseu.tsx`; prima variantă, în `App.tsx`, urca pornirea cu 0,6 kB, la 99,1 cu
+ușa), durata într-un singur loc (`src/ui/durata.ts`, textele în dicționarul traseului), `$$` urcat în aplicație. ADR 0046 §8
+(amendează ADR 0038 §2: traseul la zi are acum cipul timpului). Capcana zilei: al treilea dreptunghi al probei cădea peste
+primul, deci traseul era refuzat de regiunea păstrată (proba, nu codul): Ctrl+Z înainte de T.
+**Completed:** 19.10 10:10. Fără agenți; săptămânalul 59 → 68 % (comun cu celelalte sesiuni, iar contextul acestei sesiuni a
+ajuns la ~0,68 M, deci fiecare pas e scump: felia următoare, într-o sesiune nouă). `npm run rapid` întreg verde (6 776 de
+teste, 0 picate, 8 sărite); e2e 154 / 154; emulatoarele 24 + 6; sabotajele 55 / 55; pornirea 94,2 / 100 kB, cu ușa 98,8.

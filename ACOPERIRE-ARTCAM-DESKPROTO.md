@@ -90,7 +90,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Degroșare 3D (în trepte Z) | S+D | v1 | de făcut | — |
 | Finisare paralelă (la orice unghi) | S+D | v1 | de făcut | — |
 | Animația traseului: freza care se mișcă pe traseu, pas cu pas, cu viteză reglabilă și glisor | S+D | v1 | de făcut | — |
-| Timpul estimat, afișat imediat după fiecare calcul, și rezumatul jobului | S+D | v1 | în lucru: modelul planificatorului GRBL 1.1h pe G-code-ul exportat și rezumatul în dialogul exportului (timpul, pe operație, pe sculă; `$$` lipit), ADR 0046; rămân comparația cu cronometrul (plăcile 2 și 3), timpul lângă traseul calculat și senderul care citește `$$` | 7d080c9, f81baf1 |
+| Timpul estimat, afișat imediat după fiecare calcul, și rezumatul jobului | S+D | v1 | în lucru: modelul planificatorului GRBL 1.1h pe G-code-ul exportat și rezumatul în dialogul exportului (timpul, pe operație, pe sculă; `$$` lipit), ADR 0046; timpul și lângă traseu, după fiecare calcul (T), ADR 0046 §8; rămân comparația cu cronometrul (plăcile 2 și 3) și senderul care citește `$$` | 7d080c9, f81baf1, fba9a78 |
 | Finisare: încrucișată, spirală, spirală în cutie, circulară, radială, bloc, offset 3D (start din interior sau din exterior), Z constant (waterline), doar contur; legături pe suprafață | S+D | v1.x | de făcut | — |
 | Pas lateral din înălțimea crestei (scallop), cu freză bilă / dreaptă / V / toroidală | peste prag | v1.x | de făcut | — |
 | Rest machining 3D | S | v1.x | de făcut | — |

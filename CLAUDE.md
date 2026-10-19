@@ -61,7 +61,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (ADR 0045, adusă din etapa 4)** gata pe 18.10: aplicația pornește fără rețea de la a doua încărcare, actualizarea e oferită.
   **Estimarea timpului jobului (ADR 0046, adusă din etapa 4)** gata pe 18.10: modelul planificatorului GRBL 1.1h pe G-code-ul
   exportat, profilul mașinii ca date (`src/ir/masina.ts`; `$$` lipit în dialog), rezumatul pe operație și pe sculă în dialogul
-  exportului; oracolul independent în `test/oracles/timp.ts`; comparația cu cronometrul vine cu plăcile 2 și 3.
+  exportului; oracolul independent în `test/oracles/timp.ts`; comparația cu cronometrul vine cu plăcile 2 și 3. Pe 19.10,
+  timpul apare și lângă traseu, după fiecare calcul (tasta T), iar `$$`-ul lipit e comun traseului și exportului.
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
