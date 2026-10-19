@@ -5,7 +5,8 @@
  *   numărul liniei;
  * - grila (indexul, centrul celulei, `sus`), scula (validarea, silueta față de formulele de hârtie);
  * - MARTORII COMPARATORULUI: o celulă ridicată cu 20 nm e prinsă, cu 5 nm nu; o celulă coborâtă peste marjă e prinsă,
- *   sub ea nu; oracolul cu div = 1 judecat cu marja lui div 8 iese din marjă; podeaua nu e luată drept perete; NaN;
+ *   sub ea nu; oracolul cu div = 1 judecat cu marja lui div 8 iese din marjă; podeaua și celula de lângă perete nu sunt
+ *   luate drept perete (treptele mici: `simulare-oracol.pereti.test.ts`); NaN;
  * - funcțiile de măsură pe câmpuri exacte;
  * - corpusul: piesele cerute, împărțirea pe fișiere, convenția de legătură (textul citit = mutările + legăturile),
  *   cele 7 otrăvuri.
@@ -343,11 +344,12 @@ test('martorul pereților „podeaua nu e perete”: un bloc 3×3 coborât cu 0,
   const n = Float64Array.from(o.z);
   for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) n[(100 + dj) * o.nx + 200 + di] = -1.5;
   assert.deepEqual([compara(n, o, FLAT6).maiJosPesteMarja, compara(n, o, FLAT6).pePerete], [9, 0]);
-  // Și unghiul mort, declarat: celula de chiar lângă peretele oracolului (y = 8,025, la 3,025 de traseu) coborâtă cu
-  // 1 mm intră în `pePerete`, nu în `maiJosPesteMarja` — acolo decide hârtia.
+  // Celula de chiar lângă peretele oracolului (y = 8,025, la 3,025 de traseu, deci la peste R + pas/2 de orice eșantion)
+  // coborâtă cu 1 mm: nucleul a tăiat unde exactul nu taie. Regula veche cu saltul dintre vecini o punea în `pePerete`
+  // (unghiul mort); pereții din `judeca` stau doar pe inelul de lângă margine, deci e prinsă.
   const m = Float64Array.from(o.z);
   m[Math.floor(8.025 / 0.05) * o.nx + 200] = -1;
-  assert.deepEqual([compara(m, o, FLAT6).maiJosPesteMarja, compara(m, o, FLAT6).pePerete], [0, 1]);
+  assert.deepEqual([compara(m, o, FLAT6).maiJosPesteMarja, compara(m, o, FLAT6).pePerete], [1, 0]);
 });
 
 test('martorul comparatorului „NaN”: o valoare care nu e număr e numărată la maiSus, iar mărimile greșite aruncă', () => {

@@ -43,7 +43,8 @@
  *    arcul ADEVĂRAT (cos/sin din centru, nu coarde); dacă raza de la start diferă de cea de la țintă (în toleranța
  *    GRBL), raza trece liniar de la una la alta, ca drumul să ajungă exact în țintă. Capetele sunt eșantioane exacte.
  *    La fiecare eșantion, pe toate celulele aflate la r ≤ D/2: z = min(z, zVârf + h(r)). G0 se simulează ca G1:
- *    scula scoate materialul pe unde trece (o rapidă prin material e treaba porții, `PLAN.md` §4.2 p. 3).
+ *    scula scoate materialul pe unde trece (o rapidă prin material e treaba porții, `PLAN.md` §4.2 p. 3). Pe lângă câmp,
+ *    judecata dă pereții: celulele în care marja nu mărginește exactul, cu o margine de jos a lui (derivarea la `judeca`).
  *
  * Proprietatea pe care stă comparația (s4 §4.2): eșantionarea nu poate găsi un punct mai adânc decât minimul exact,
  * deci pe fiecare celulă oracolul ≥ exactul. De aici regula din `PLAN.md` §4.1: nucleul NU e niciodată mai sus decât
@@ -103,7 +104,15 @@ export type RezultatOracol = {
   readonly mutariTaiate: number;
   /** Marja de eșantionare a rulării: max pe mutările tăiate din s_z + L·s_xy/2 (`marjaEsantionare`). */
   readonly marja: number;
+  /** Pereții rulării: celulele în care marja nu mărginește exactul, cu marginea lui de jos acolo (`judeca`, „PEREȚII”). */
+  readonly perete: PereteOracol;
 };
+
+/**
+ * Celulele (indexul j·nx + i, crescător) în care exactul poate fi sub oracol cu mai mult decât marja, fiecare cu o margine
+ * de jos a exactului (`jos[k]` e a celulei `celule[k]`). Derivarea e la `judeca`.
+ */
+export type PereteOracol = { readonly celule: Int32Array; readonly jos: Float64Array };
 
 /** Oracolul cum îl primește `compara`: minimul cerut, plus câmpurile opționale pe care le dă `judeca`. */
 export type OracolComparat = {
@@ -111,8 +120,8 @@ export type OracolComparat = {
   readonly nx: number;
   readonly ny: number;
   readonly pas: number;
-  /** Fără ea, `compara` nu poate recunoaște pereții: toate celulele intră în `maiJosPesteMarja`. */
-  readonly celula?: number;
+  /** Fără ei, `compara` nu recunoaște niciun perete: toate celulele sub marjă intră în `maiJosPesteMarja`. */
+  readonly perete?: PereteOracol;
   /** Fără `sus` și `varf`, panta sculei se ia pe toată silueta (marja cea mai largă). */
   readonly sus?: number;
   readonly varf?: number;
@@ -126,9 +135,9 @@ export type Comparatie = {
   readonly maiSusMax: number;
   /** Prima astfel de celulă, (i, j), în ordinea indexului. */
   readonly primaMaiSus?: readonly [number, number];
-  /** Celulele în care nucleul e sub oracol cu peste `marja` + `prag`, în afara pereților oracolului. */
+  /** Celulele în care nucleul e sub oracol cu peste `marja` + `prag` și nu e pe un perete, sau e sub marginea peretelui. */
   readonly maiJosPesteMarja: number;
-  /** La fel, dar pe partea de sus a unui perete al oracolului: acolo marja nu se aplică și decide hârtia. */
+  /** Celulele sub oracol cu peste `marja` + `prag`, dar pe un perete al oracolului, deasupra marginii lui de jos: decide hârtia. */
   readonly pePerete: number;
   /** max |nucleu − oracol| pe toate celulele. */
   readonly difMax: number;
@@ -442,6 +451,11 @@ function razaPana(S: Silueta, adancime: number): number {
   return hi;
 }
 
+/** rLim din `pantaUtila`: raza până la care panta siluetei e mărginită de L. */
+function razaLimita(S: Silueta, adancime: number, pas: number): number {
+  return Math.min(razaPana(S, adancime), S.raza - pas);
+}
+
 /**
  * Panta cea mai mare a siluetei (dh/dr) pe partea care poate coborî sub față: r ≤ min(rA, D/2 − pas), unde rA e raza
  * la care h(rA) = adâncimea. Ultimul pas de lângă marginea sculei e lăsat afară: dacă scula e îngropată mai adânc
@@ -451,7 +465,7 @@ function razaPana(S: Silueta, adancime: number): number {
 export function pantaUtila(scula: SculaOracol, adancime: number, pas: number): number {
   if (!(adancime > 0)) return 0;
   const S = silueta(scula);
-  const rLim = Math.min(razaPana(S, adancime), S.raza - pas);
+  const rLim = razaLimita(S, adancime, pas);
   if (!(rLim > 0)) return 0;
   switch (scula.tip) {
     case 'plata':
@@ -496,8 +510,9 @@ export function pantaUtila(scula: SculaOracol, adancime: number, pas: number): n
  * îngropate mai adânc decât h(D/2). Acolo zona acoperită a celulei poate fi mai scurtă decât un pas, niciun eșantion
  * n-o atinge, iar oracolul lasă netăiată o fâșie de lățime ≈ R − √(R² − (pas/2)²) (1,6·10⁻⁶ mm la Ø6 și pas 0,00625)
  * pe care exactul o taie la toată adâncimea; la bila îngropată (adâncime ≥ R), panta de lângă margine tinde la
- * infinit și (ii) nu mai e mărginit de L. Acolo decide hârtia; `compara` numără celulele acelea separat (`pePerete`).
- * Pe un corpus cu coordonate rotunde, niciun centru de celulă nu cade în fâșie.
+ * infinit și (ii) nu mai e mărginit de L. Acolo `judeca` dă, pe celulă, o margine de jos a exactului („PEREȚII”), iar
+ * `compara` numără separat celulele de deasupra ei (`pePerete`): decide hârtia. Pe un corpus cu coordonate rotunde,
+ * niciun centru de celulă nu cade în fâșie; pe coordonate nerotunde, da (proba: `simulare-oracol.pereti.test.ts`).
  */
 export function marjaEsantionare(scula: SculaOracol, pas: number, adancime = Infinity): number {
   return pas * (1 + pantaUtila(scula, adancime, pas) / 2);
@@ -548,8 +563,68 @@ export function grilaFereastra(g: GrilaOracol, f: Fereastra): { readonly grila: 
   return { grila, i0, j0 };
 }
 
+/** Lungimea drumului în XY pe care se aleg pașii: pe arc, |Δu|·max(r0, r1) + |r1 − r0| (≥ lungimea spiralei). */
+function lungimeXY(m: MutareOracol): number {
+  const [ax, ay] = m.a, [bx, by] = m.b;
+  if (m.tip === 'linie') return Math.hypot(bx - ax, by - ay);
+  const [cx, cy] = m.centru;
+  const r0 = Math.hypot(ax - cx, ay - cy), r1 = Math.hypot(bx - cx, by - cy);
+  return Math.abs(unghiArc(m)) * Math.max(r0, r1) + Math.abs(r1 - r0);
+}
+
+/** Jocul rotunjirilor pe razele pereților, mm (lărgește zona: o margine de jos rămâne margine de jos). */
+const JOC_PERETE = 1e-9;
+
+/** Panta cea mai mare a siluetei pe toată raza [0, D/2] (la bilă, infinită lângă margine). */
+function pantaMaxima(s: SculaOracol): number {
+  switch (s.tip) {
+    case 'plata':
+      return 0;
+    case 'v': {
+      const jum = (s.unghi / 2) * (Math.PI / 180);
+      return Math.cos(jum) / Math.sin(jum);
+    }
+    case 'bila':
+      return Infinity;
+    case 'profil': {
+      let m = 0;
+      for (let k = 0; k + 1 < s.puncte.length; k++) {
+        const [r0, h0] = s.puncte[k]!, [r1, h1] = s.puncte[k + 1]!;
+        m = Math.max(m, (h1 - h0) / (r1 - r0));
+      }
+      return m;
+    }
+  }
+}
+
 /**
  * Judecata brută (antetul, p. 6): grila densă după programul `text`, cu scula dată. `deplasare` ca la `citesteGcode`.
+ *
+ * PEREȚII: unde marja nu mărginește exactul (`marjaEsantionare`, „unde nu are sens”), judecata dă, pe celulă, o margine
+ * de jos a exactului. Notațiile de acolo: O oracolul, E exactul, t* punctul exact cel mai jos deasupra celulei c,
+ * ρ* = |c − p(t*)| în XY, E = z(t*) + h(ρ*); L și rLim din `pantaUtila` (panta siluetei e ≤ L pe [0, rLim]). Scula e
+ * „blândă” dacă panta ei e ≤ L pe toată raza (plata, V-ul, profilul fără o margine mai abruptă; bila nu e).
+ * Pe o mutare cu pașii s = s_xy > 0 și s_z, t* stă între două eșantioane consecutive a și b; fie n cel mai apropiat de t*
+ * (la cel mult s/2 în XY și s_z/2 în Z) și o celălalt (la cel mult s și s_z), cu distanțele r_n și r_o la celulă.
+ * (1) r_n ≤ rLim: n acoperă celula și O − E ≤ (z_n − z(t*)) + (h(r_n) − h(ρ*)) ≤ s_z/2 + L·s/2 ≤ marja.
+ * (2) Scula e blândă și r_n ≤ R: la fel, cu panta ≤ L până la R.
+ * (3) Scula e blândă și r_n > R ≥ r_o: ρ* ≥ r_n − s/2 > R − s/2 și O ≤ z_o + h(r_o) ≤ z_o + h(R), deci
+ *     O − E ≤ s_z + L·(R − ρ*) < s_z + L·s/2 ≤ marja.
+ * Deci, fără să știm care e n, marja ajunge pe perechea (a, b) dacă r_a, r_b ≤ rLim sau dacă scula e blândă și
+ * min(r_a, r_b) ≤ R. Altfel, pe pereche: z(t*) ≥ min(z_a, z_b) și ρ* ≥ d_ab, distanța celulei la bucata de drum dintre a
+ * și b (pe linie, distanța la segmentul ab; pe arc, la coarda ab minus săgeata bucății, care e ≤ s/2), deci
+ * E ≥ J_ab = min(z_a, z_b) + h(d_ab), dacă d_ab ≤ R (altfel t* nu e pe bucata asta). Cu J minimul lui J_ab pe perechile
+ * fără marjă, pe orice celulă E ≥ min(O − marja, J) (E și O sunt minimele pe mutări). Nu intră: mutarea verticală (s = 0,
+ * r_n = ρ*: (1) ține fără nicio pantă) și perechea cu ambele capete deasupra feței (E ≥ sus). Pe linie, J_ab e cel mult
+ * cu s_z sub cel mai jos punct al bucății, deci J e o margine strânsă.
+ * J coboară sub O − marja (aici sunt PEREȚII, `perete`: celulele cu J < O − marja și J-ul lor) doar (a) lângă marginea
+ * unei scule îngropate (h(R) sub față), unde drumul dintre a și b trece la ≤ R de celulă, dar niciunul nu o acoperă:
+ * oracolul ratează fâșia, exactul o taie; (b) lângă marginea unei scule neblânde îngropate dincolo de rLim (bila).
+ * Regula e geometrică, fără înălțimea treptei: o treaptă de 0,03 mm e un perete ca una de 3 mm. Regula veche din
+ * `compara` (un vecin mai jos în oracol cu peste √2·celula·(1 + L) + 2·marja) nu vedea treptele mai mici decât pragul,
+ * pe care și o pantă le face între doi vecini: o tăietură plată de 0,03 mm pe coordonate nerotunde dădea
+ * `maiJosPesteMarja` pe un câmp exact. Și invers: o celulă de lângă un perete înalt, dar în afara marginii (d_ab > R), pe
+ * care regula veche o lăsa pe perete, nu mai e perete.
  */
 export function judeca(
   text: string,
@@ -562,32 +637,71 @@ export function judeca(
   const { nx, ny } = dimensiuni(grila);
   const sus = grila.sus ?? 0;
   const c = grila.celula, x0 = grila.x0, y0 = grila.y0;
-  const z = new Float64Array(nx * ny).fill(sus);
   const pas = c / div;
   const S = silueta(scula);
   const R = S.raza, h = S.h;
-  let varf = sus;
-  let taiate = 0;
-  let ultimaAdancime = Number.NaN, ultimaRaza = R;
-  /** Pașii (s_z, s_xy) ai mutărilor tăiate, pentru marjă (panta depinde de vârful cel mai jos, știut la sfârșit). */
-  const pasi: number[] = [];
 
-  const stampila = (px: number, py: number, pz: number): void => {
-    if (pz >= sus) return;
-    const adanc = sus - pz;
-    if (adanc !== ultimaAdancime) {
-      ultimaAdancime = adanc;
-      ultimaRaza = razaPana(S, adanc);
+  // Întâi pașii mutărilor tăiate și vârful cel mai jos: panta L, rLim și marja trebuie știute înaintea ștampilelor.
+  const mutari: { readonly m: MutareOracol; readonly n: number; readonly sxy: number; readonly sz: number }[] = [];
+  let varf = sus;
+  for (const m of citesteGcode(text, optiuni.deplasare, sus)) {
+    const az = m.a[2], bz = m.b[2];
+    if (Math.min(az, bz) >= sus) continue;
+    varf = Math.min(varf, az, bz);
+    const lz = Math.abs(bz - az), lxy = lungimeXY(m);
+    const n = Math.max(1, Math.ceil(Math.max(lxy, lz) / pas));
+    mutari.push({ m, n, sxy: lxy / n, sz: lz / n });
+  }
+  const L = pantaUtila(scula, sus - varf, pas);
+  const rLim = razaLimita(S, sus - varf, pas);
+  const blanda = pantaMaxima(scula) <= L;
+  let marja = 0;
+  // O mutare verticală (s_xy = 0) are ρ constant: cel mai jos punct e capătul de jos, un eșantion, deci marja 0.
+  for (const p of mutari) if (p.sxy > 0) marja = Math.max(marja, p.sz + (L * p.sxy) / 2);
+
+  const z = new Float64Array(nx * ny).fill(sus);
+  /** J pe celulă (PEREȚII); Infinity = nicio pereche fără marjă. */
+  const J = new Float64Array(nx * ny).fill(Infinity);
+  /** Mutarea curentă: pasul în XY și săgeata bucăților de drum dintre eșantioane (0 pe linie). */
+  let sxy = 0, sageata = 0;
+  // razaPana pe adâncime, ținută pe ultimele două valori (ale ștampilei și ale perechii).
+  let adA = Number.NaN, rA = R, adB = Number.NaN, rB = R;
+  const raza = (ad: number): number => {
+    if (ad === adA) return rA;
+    if (ad === adB) return rB;
+    adB = adA;
+    rB = rA;
+    adA = ad;
+    rA = razaPana(S, ad);
+    return rA;
+  };
+
+  /** Ștampila eșantionului (px, py, pz) și perechea lui cu eșantionul următor al mutării, `urm` (null la capăt). */
+  const stampila = (px: number, py: number, pz: number, urm: Float64Array | null): void => {
+    const taie = pz < sus;
+    const pereche = urm !== null && sxy > 0 && (taie || urm[2]! < sus);
+    if (!taie && !pereche) return;
+    const re = taie ? raza(sus - pz) : -Infinity;
+    // Perechea: J_ab e sub față doar dacă d_ab < razaPana(adâncimea mai mare), deci celula e la cel mult atât + s +
+    // 2·săgeata de eșantion. Sub rLim − s, ambele distanțe sunt ≤ rLim (|r_b − r_a| ≤ s): marja ajunge.
+    let rp = -Infinity, vx = 0, vy = 0, l2 = 0, zp = 0;
+    if (urm !== null && pereche) {
+      zp = Math.min(pz, urm[2]!);
+      rp = Math.min(R, raza(sus - zp)) + sxy + 2 * sageata + JOC_PERETE;
+      vx = urm[0]! - px;
+      vy = urm[1]! - py;
+      l2 = vx * vx + vy * vy;
     }
-    const re = ultimaRaza;
-    // Rândurile și coloanele cu centrul la cel mult `re`, lărgite cu o celulă (rotunjirile nu pot pierde o celulă);
-    // filtrul exact rămâne r ≤ R. Dincolo de `re`, suprafața sculei e deasupra feței și nu schimbă nimic.
-    const jA = Math.max(0, Math.ceil((py - re - y0) / c - 0.5) - 1);
-    const jB = Math.min(ny - 1, Math.floor((py + re - y0) / c - 0.5) + 1);
+    const rJos = rLim - sxy - JOC_PERETE;
+    const rb = Math.max(re, rp);
+    // Rândurile și coloanele cu centrul la cel mult `rb`, lărgite cu o celulă (rotunjirile nu pot pierde o celulă);
+    // filtrele exacte rămân r ≤ R (ștampila) și r ≤ rp (perechea). Dincolo de `re`, suprafața sculei e deasupra feței.
+    const jA = Math.max(0, Math.ceil((py - rb - y0) / c - 0.5) - 1);
+    const jB = Math.min(ny - 1, Math.floor((py + rb - y0) / c - 0.5) + 1);
     for (let j = jA; j <= jB; j++) {
       const dy = y0 + (j + 0.5) * c - py;
       const dy2 = dy * dy;
-      const q = re * re - dy2;
+      const q = rb * rb - dy2;
       const w = q > 0 ? Math.sqrt(q) : 0;
       const iA = Math.max(0, Math.ceil((px - w - x0) / c - 0.5) - 1);
       const iB = Math.min(nx - 1, Math.floor((px + w - x0) / c - 0.5) + 1);
@@ -595,51 +709,89 @@ export function judeca(
       for (let i = iA; i <= iB; i++) {
         const dx = x0 + (i + 0.5) * c - px;
         const r = Math.sqrt(dx * dx + dy2);
-        if (r > R) continue;
-        const zt = pz + h(r);
         const k = baza + i;
-        if (zt < z[k]!) z[k] = zt;
+        if (taie && r <= R) {
+          const zt = pz + h(r);
+          if (zt < z[k]!) z[k] = zt;
+        }
+        if (r > rJos && r <= rp && !(blanda && r <= R)) {
+          const ex = dx - vx, ey = dy - vy;
+          const rn = Math.sqrt(ex * ex + ey * ey);
+          if (!((r <= rLim && rn <= rLim) || (blanda && rn <= R))) {
+            let t = l2 > 0 ? (dx * vx + dy * vy) / l2 : 0;
+            t = t < 0 ? 0 : t > 1 ? 1 : t;
+            const d = Math.hypot(dx - t * vx, dy - t * vy) - sageata;
+            if (d <= R + JOC_PERETE) {
+              const jk = zp + h(Math.min(R, Math.max(0, d)));
+              if (jk < J[k]!) J[k] = jk;
+            }
+          }
+        }
       }
     }
   };
 
-  for (const m of citesteGcode(text, optiuni.deplasare, sus)) {
+  const P = new Float64Array(3), Q = new Float64Array(3);
+  for (const mut of mutari) {
+    const { m, n } = mut;
     const [ax, ay, az] = m.a;
     const [bx, by, bz] = m.b;
-    if (Math.min(az, bz) >= sus) continue;
-    taiate++;
-    varf = Math.min(varf, az, bz);
-    const lz = Math.abs(bz - az);
+    sxy = mut.sxy;
+    let punct: (k: number, T: Float64Array) => void;
     if (m.tip === 'linie') {
-      const lxy = Math.hypot(bx - ax, by - ay);
-      const n = Math.max(1, Math.ceil(Math.max(lxy, lz) / pas));
-      pasi.push(lz / n, lxy / n);
-      for (let k = 0; k < n; k++) {
+      sageata = 0;
+      punct = (k, T) => {
+        if (k === n) {
+          T[0] = bx; T[1] = by; T[2] = bz;
+          return;
+        }
         const t = k / n;
-        stampila(ax + (bx - ax) * t, ay + (by - ay) * t, az + (bz - az) * t);
-      }
-      stampila(bx, by, bz);
+        T[0] = ax + (bx - ax) * t; T[1] = ay + (by - ay) * t; T[2] = az + (bz - az) * t;
+      };
     } else {
       const [cx, cy] = m.centru;
       const r0 = Math.hypot(ax - cx, ay - cy), r1 = Math.hypot(bx - cx, by - cy);
       const u0 = Math.atan2(ay - cy, ax - cx);
       const du = unghiArc(m);
-      const lxy = Math.abs(du) * Math.max(r0, r1) + Math.abs(r1 - r0);
-      const n = Math.max(1, Math.ceil(Math.max(lxy, lz) / pas));
-      pasi.push(lz / n, lxy / n);
-      for (let k = 0; k < n; k++) {
+      // Bucata de arc de rază r și lungime ≤ s stă la cel mult s²/(8r) de coardă; raza care trece de la r0 la r1 mai
+      // adaugă de două ori pasul ei. Oricum, orice punct al bucății e la cel mult s/2 de un capăt, deci de coardă.
+      const rMin = Math.min(r0, r1);
+      sageata = rMin > 0 ? Math.min(sxy / 2, (sxy * sxy) / (8 * rMin) + (2 * Math.abs(r1 - r0)) / n) : sxy / 2;
+      punct = (k, T) => {
+        if (k === n) {
+          T[0] = bx; T[1] = by; T[2] = bz;
+          return;
+        }
         const t = k / n;
         const u = u0 + du * t, r = r0 + (r1 - r0) * t;
-        stampila(cx + r * Math.cos(u), cy + r * Math.sin(u), az + (bz - az) * t);
+        T[0] = cx + r * Math.cos(u); T[1] = cy + r * Math.sin(u); T[2] = az + (bz - az) * t;
+      };
+    }
+    // Eșantioanele k = 0…n (n = capătul, exact), fiecare cu perechea lui spre următorul.
+    let A = P, B = Q;
+    punct(0, A);
+    for (let k = 0; k <= n; k++) {
+      let urm: Float64Array | null = null;
+      if (k < n) {
+        punct(k + 1, B);
+        urm = B;
       }
-      stampila(bx, by, bz);
+      stampila(A[0]!, A[1]!, A[2]!, urm);
+      const T = A;
+      A = B;
+      B = T;
     }
   }
-  const L = pantaUtila(scula, sus - varf, pas);
-  let marja = 0;
-  // O mutare verticală (s_xy = 0) are ρ constant: cel mai jos punct e capătul de jos, un eșantion, deci marja 0.
-  for (let k = 0; k + 1 < pasi.length; k += 2) if (pasi[k + 1]! > 0) marja = Math.max(marja, pasi[k]! + (L * pasi[k + 1]!) / 2);
-  return { nx, ny, z, pas, celula: c, sus, varf, mutariTaiate: taiate, marja };
+
+  const celule: number[] = [], jos: number[] = [];
+  for (let k = 0; k < z.length; k++) {
+    if (J[k]! < z[k]! - marja) {
+      celule.push(k);
+      jos.push(J[k]!);
+    }
+  }
+  const perete: PereteOracol = { celule: Int32Array.from(celule), jos: Float64Array.from(jos) };
+  return { nx, ny, z, pas, celula: c, sus, varf, mutariTaiate: mutari.length, marja, perete };
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -650,11 +802,11 @@ export function judeca(
  * niciodată mai sus decât oracolul cu peste `prag` (implicit 1e-5 mm = 10 nm) — acolo nucleul a lăsat material pe care
  * oracolul l-a tăiat; se verifică pe TOATE celulele, pereți incluși, iar o valoare care nu e număr se numără aici.
  * Nucleul mai jos e permis doar cât marja de eșantionare a rulării (`RezultatOracol.marja`; derivarea la
- * `marjaEsantionare`) plus același `prag` (zgomotul numeric, simetric). Pereții: o celulă e „pe perete” dacă un vecin (din cei 8) al ei e, în câmpul oracolului, mai
- * jos cu peste √2·celula·(1 + L) + 2·marja — mai mult decât poate urca o suprafață cu panta sculei plus o rampă de
- * 45°. Acolo (partea de sus a peretelui) oracolul poate rata o fâșie îngustă, deci celulele în care nucleul e mai jos
- * peste marjă se numără în `pePerete`, nu în `maiJosPesteMarja`; le judecă hârtia. Rampele mai abrupte de 45° și
- * treptele mai mici decât pragul nu se recunosc drept pereți. Pe corpus, ambele numere trebuie să fie 0.
+ * `marjaEsantionare`) plus același `prag` (zgomotul numeric, simetric). Pe pereții oracolului (`RezultatOracol.perete`,
+ * derivarea la `judeca`) exactul poate fi mai jos de atât, dar nu sub marginea de jos a peretelui: acolo celulele în care
+ * nucleul e sub marjă, dar deasupra marginii (cu același `prag`), se numără în `pePerete` și le judecă hârtia; sub margine,
+ * nucleul e mai adânc decât poate fi exactul și celula intră în `maiJosPesteMarja`. Fără pereți (un oracol construit de
+ * mână), toate intră acolo. Pe corpus, ambele numere trebuie să fie 0.
  * Nucleul și oracolul trebuie să judece ACELEAȘI numere: un text cu 3 zecimale mută traseul cu până la 0,5 µm pe
  * axă, adică peste pragul de 10 nm pe orice pantă, dacă nucleul primește coordonatele nerotunjite.
  */
@@ -663,23 +815,11 @@ export function compara(nucleu: ArrayLike<number>, oracol: OracolComparat, scula
   if (z.length !== nx * ny) throw new Error(`oracolul are ${z.length} celule, nu nx·ny = ${nx * ny}`);
   if (nucleu.length !== z.length) throw new Error(`nucleul are ${nucleu.length} celule, oracolul ${z.length}`);
   const adancime = oracol.sus !== undefined && oracol.varf !== undefined ? oracol.sus - oracol.varf : Infinity;
-  const L = pantaUtila(scula, adancime, pas);
   const marja = oracol.marja ?? marjaEsantionare(scula, pas, adancime);
-  const salt = oracol.celula !== undefined ? Math.SQRT2 * oracol.celula * (1 + L) + 2 * marja : Infinity;
-
-  const pePereteOracol = (i: number, j: number): boolean => {
-    const o = z[j * nx + i]!;
-    for (let dj = -1; dj <= 1; dj++) {
-      const jj = j + dj;
-      if (jj < 0 || jj >= ny) continue;
-      for (let di = -1; di <= 1; di++) {
-        const ii = i + di;
-        if ((di === 0 && dj === 0) || ii < 0 || ii >= nx) continue;
-        if (z[jj * nx + ii]! < o - salt) return true;
-      }
-    }
-    return false;
-  };
+  const pereti = oracol.perete?.celule ?? new Int32Array(0), josPerete = oracol.perete?.jos ?? new Float64Array(0);
+  if (pereti.length !== josPerete.length) throw new Error(`pereții au ${pereti.length} celule și ${josPerete.length} margini`);
+  /** Cursorul în pereți: celulele se parcurg în ordinea indexului, ca și ei. */
+  let p = 0;
 
   let maiSus = 0, maiSusMax = 0, maiJos = 0, pePerete = 0, difMax = 0;
   let prima: readonly [number, number] | undefined;
@@ -687,7 +827,8 @@ export function compara(nucleu: ArrayLike<number>, oracol: OracolComparat, scula
     for (let i = 0; i < nx; i++) {
       const k = j * nx + i;
       const o = z[k]!;
-      const d = Number(nucleu[k]) - o;
+      const n = Number(nucleu[k]);
+      const d = n - o;
       if (!(d <= prag)) {
         maiSus++;
         const v = Number.isNaN(d) ? Infinity : d;
@@ -697,7 +838,8 @@ export function compara(nucleu: ArrayLike<number>, oracol: OracolComparat, scula
       const ad = Number.isNaN(d) ? Infinity : Math.abs(d);
       if (ad > difMax) difMax = ad;
       if (-d > marja + prag) {
-        if (pePereteOracol(i, j)) pePerete++;
+        while (p < pereti.length && pereti[p]! < k) p++;
+        if (p < pereti.length && pereti[p] === k && n >= josPerete[p]! - prag) pePerete++;
         else maiJos++;
       }
     }
