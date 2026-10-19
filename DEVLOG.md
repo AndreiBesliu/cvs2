@@ -2135,3 +2135,14 @@ un joc deschis ține 17,5 GB): aceleași teste cu `--test-concurrency=8` au trec
 **Completed:** 18.10 23:40. Costul: agenții ~0,74 M (oracolul 0,36, verificatorul 0,38), plus bucla principală; săptămânalul
 56 → 59 %. Nivelul rapid: tipurile, importurile (14 / 14), 6 771 de teste unitare, 0 picate (8 sărite), build-ul determinist,
 licențele; e2e 152 / 152 în Edge; emulatoarele 24 + 6; pornirea 93,9 / 100 kB (cu ușa 98,5, neschimbată), totalul 224,7 kB.
+
+## 2026-10-19 — Simularea: nucleul CPU, felia 1 din 2 (etapa 4, punctul 2; Model: Claude Opus 5.5)
+
+**Prompt:** „Pornește simularea, nucleul CPU, felia 1 (etapa 4, punctul 2), cu oracolul din sonda s4, la costul spus, într-o
+sesiune nouă.” **Started:** 19.10 ~08:05, săptămânalul 65 %. Adusă din etapa 4 (plăcile netăiate: `PLAN.md` §4.6, punctul 7),
+rândul „4.2↑”. Nucleul din ADR 0010 în `src/sim/` (câmp rar pe dale mici într-un atlas, dalele uniforme ca un singur număr,
+calcul exact pe celulă, rândurile de dale intercalate pe bazinul de workere fără stare, ADR 0015), freza plată, bilă și V;
+amprenta Node = Edge, la 1 fir și la mai multe, poartă în e2e; o previzualizare 2D a adâncimilor în dialogul exportului.
+Oracolul îl portează din s4 un agent care nu vede nucleul (o clonă fără el), și intră în CI înaintea lui. Lucrul stă într-o
+clonă în afara Drive-ului: în repo-ul din Drive scrie, în paralel, sesiunea timpului lângă traseu. Estimat ~1,5–2 M pentru
+agenți (oracolul, 1–2 verificatori).
