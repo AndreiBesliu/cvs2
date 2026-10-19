@@ -1,10 +1,14 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import '../i18n/export.ts';
+// Durata în cuvinte (`durata.*`) stă în dicționarul traseului, comun cu cipul timpului de lângă traseu (ADR 0046 §8).
+import '../i18n/traseu.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
+import type { Limba } from '../i18n/tipuri.ts';
 import {
   laturiOferite, MARGINI_OPERATIE, type Depasire, type IesireFoaie, type LaturaExport, type ParametriExport, type RezumatJob,
   type TimpPortiune,
 } from './actiuniExportTipuri.ts';
+import { durata } from './durata.ts';
 import { citesteNumar, textNumar } from './numar.ts';
 import { useLimba } from './useLimba.ts';
 
@@ -75,6 +79,12 @@ type Props = {
   /** Un parametru s-a schimbat: rezultatul vechi (și ieșirea confirmată odată cu el) nu mai e al lor. */
   readonly onReseteaza: () => void;
   readonly stare: StareExport | null;
+  /**
+   * Răspunsul la `$$` lipit de om (ADR 0046 §5, §8): îl ține aplicația, cât e deschisă pagina, ca traseul și exportul să
+   * estimeze pe același profil. Nu se salvează: din etapa 3, senderul îl citește direct de la mașină.
+   */
+  readonly setariMasina: string;
+  readonly onSetariMasina: (text: string) => void;
 };
 
 const LATURI_FOAIE: ReadonlyArray<readonly [keyof Depasire, CheieSimpla]> = [
@@ -132,25 +142,8 @@ function intregInMargini(s: string, plafon: number): boolean {
   return x !== null && Number.isInteger(x) && x >= 1 && x <= plafon;
 }
 
-/**
- * Răspunsul la `$$` lipit de om (ADR 0046) rămâne cât e deschisă pagina, și după ce dialogul se închide: e al mașinii, nu
- * al proiectului. Nu se salvează: din etapa 3, senderul îl citește direct de la mașină.
- */
-let setariLipite = '';
-
-/** O durată în cuvinte: sub un minut cu o zecimală, apoi minute și secunde, apoi ore și minute. */
-function durata(s: number, limba: string): string {
-  if (s < 59.95) {
-    return t('export.durata.s', { s: new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(s) });
-  }
-  const sec = Math.round(s);
-  if (sec < 3600) return t('export.durata.min', { m: Math.floor(sec / 60), s: String(sec % 60).padStart(2, '0') });
-  const min = Math.round(s / 60);
-  return t('export.durata.h', { h: Math.floor(min / 60), m: String(min % 60).padStart(2, '0') });
-}
-
 /** Rezumatul jobului (ADR 0046): timpul, apoi tabelul pe operații și cel pe scule, cu distanțele de tăiere și de rapide. */
-function Rezumat({ r, operatii, limba }: { readonly r: RezumatJob; readonly operatii: readonly OperatieExport[]; readonly limba: string }) {
+function Rezumat({ r, operatii, limba }: { readonly r: RezumatJob; readonly operatii: readonly OperatieExport[]; readonly limba: Limba }) {
   if (!r.ok) {
     const cheie: CheieSimpla = r.sursa === 'setari'
       ? (r.linie > 0 ? 'export.rezumat.eroare.setari' : 'export.rezumat.eroare.setari-tot')
@@ -219,7 +212,10 @@ const CHEI_SENS: Readonly<Record<Sens, CheieSimpla>> = { urcare: 'export.sens.ur
  * înapoi în el la Exportă, ca o singură comandă (ADR 0025): se salvează și se anulează cu Ctrl+Z.
  */
 export function DialogExport(
-  { operatii, diametru: diametruInitial, freze, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare }: Props,
+  {
+    operatii, diametru: diametruInitial, freze, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
+    onSetariMasina,
+  }: Props,
 ) {
   const limba = useLimba();
   // În română, numerele se arată cu virgulă; se citesc cu oricare separator.
@@ -243,7 +239,6 @@ export function DialogExport(
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
-  const [setari, setSetari] = useState(setariLipite);
   const cere = stare && !stare.ok ? stare.cereConfirmare : undefined;
   /**
    * Ieșirea bifată: chiar obiectul primit de la export, nu un „da” general. Orice cerere nouă (alt traseu, alți parametri,
@@ -507,14 +502,13 @@ export function DialogExport(
         <details className="setari-masina">
           <summary>{t('export.setari.titlu')}</summary>
           <p className="nota">{t('export.setari.nota')}</p>
-          <textarea value={setari} data-camp="setari-masina" aria-label={t('export.setari.camp')} rows={4} spellCheck={false}
+          <textarea value={setariMasina} data-camp="setari-masina" aria-label={t('export.setari.camp')} rows={4} spellCheck={false}
             onChange={(e) => {
-              setariLipite = e.target.value;
-              setSetari(e.target.value);
+              onSetariMasina(e.target.value);
               schimbat();
             }} />
         </details>
-        {!valid &&<p role="status" className="avertisment" data-testid="export-invalid">{motivInvalid}</p>}
+        {!valid && <p role="status" className="avertisment" data-testid="export-invalid">{motivInvalid}</p>}
         {cere && (
           <div className="confirmare-iesire" data-testid="iesire-foaie" ref={cerereVizibila} tabIndex={-1}>
             <div role="alert">
@@ -537,7 +531,6 @@ export function DialogExport(
               onExporta({
                 origine, z0, diametru: d, valori: valori(),
                 ...(cere && bifat ? { confirmareIesire: cere } : {}),
-                ...(setari.trim() !== '' ? { setariMasina: setari } : {}),
               });
             }}>
             {t('export.exporta')}

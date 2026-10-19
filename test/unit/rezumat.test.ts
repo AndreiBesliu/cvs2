@@ -4,7 +4,7 @@ import type { Miscare, Program } from '../../src/ir/ir.ts';
 import { GRBL_11 } from '../../src/post/contracte/grbl11.ts';
 import { exporta } from '../../src/post/export.ts';
 import { posteaza } from '../../src/post/post.ts';
-import { calculeazaExport, rezumatJob } from '../../src/ui/actiuniExportCalcul.ts';
+import { calculeazaExport, rezumatJob, timpProgram } from '../../src/ui/actiuniExportCalcul.ts';
 import { documentPlaca02, programPlaca02, SCULA } from '../placi/placa-02/genereaza.ts';
 
 /** Rezumatul jobului (ADR 0046): secțiunile postului, împărțirea pe operații, profilul mașinii din `$$`. */
@@ -100,6 +100,29 @@ test('două operații despărțite de o pauză: fiecare are timpul ei pe hârtie
   aproape(r.peOperatie[1]?.pauze ?? 0, 1, 1e-12, 'pauza e a operației b');
   aproape(r.restul.secunde, 4.414213562, 1e-6, 'restul');
   aproape(r.total.secunde, 14.427995579, 1e-6, 'totalul');
+});
+
+test('timpul traseului (ADR 0046 §8): același program, aceeași valoare pe hârtie ca exportul (11,394662 s), fără să descarce', async () => {
+  const r = timpProgram(program(OP_A), FOAIA, undefined);
+  assert.ok(r.ok, r.ok ? '' : r.motiv);
+  if (!r.ok) return;
+  aproape(r.total.secunde, 11.394662246, 1e-6, 'totalul');
+  const e = await exporta(program(OP_A), MONTAJ, GRBL_11, { asteptareAx: 3 });
+  assert.ok(e.ok);
+  if (!e.ok) return;
+  // Exact rezumatul exportului cu montajul stânga-jos, Z0 sus: aceleași octeți, același timp.
+  assert.deepEqual(r, rezumatJob(e.exportat, program(OP_A).scula, undefined));
+  // Cu `$$` lipit, profilul lui; un `$$` greșit e spus, nu ignorat.
+  const rapid = timpProgram(program(OP_A), FOAIA, '$110=5000\n$111=5000\n$112=1000\n$120=500\n$121=500\n$122=200');
+  assert.ok(rapid.ok && rapid.total.secunde < r.total.secunde && rapid.masina.sursa === 'setari');
+  const rau = timpProgram(program(OP_A), FOAIA, '$110=abc');
+  assert.ok(!rau.ok && rau.sursa === 'setari' && rau.linie === 1);
+});
+
+test('timpul traseului pe un program pe care postul îl refuză: motivul, nu o excepție', () => {
+  const r = timpProgram({ ...program(OP_A), turatie: 0 }, FOAIA, undefined);
+  assert.equal(r.ok, false);
+  if (!r.ok) assert.deepEqual([r.sursa, r.linie], ['program', 0]);
 });
 
 test('placa 2: fiecare operație are timpul ei, iar operațiile plus restul dau totalul; `$$` mai rapid scurtează jobul', async () => {

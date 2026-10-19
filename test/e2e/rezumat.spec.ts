@@ -102,3 +102,46 @@ test('în engleză: titlul, timpul și rândurile au textele lor', async ({ brow
   await expect(rez.locator('tr[data-rand="restul"] th')).toHaveText('Start and end (safe Z, spindle and its wait, retract)');
   await ctx.close();
 });
+
+test('timpul lângă traseu (ADR 0046 §8): după T, cipul spune timpul jobului, același cu rezumatul exportului', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await page.locator('[data-actiune="vedere.traseu"]').click();
+  const cip = page.getByTestId('traseu-timp');
+  await expect(cip).toHaveText(/^Timpul jobului: \d+ min \d\d s$/);
+  await expect(cip).toHaveAttribute('data-sursa', 'implicit');
+  await expect(cip).toHaveAttribute('title', /GRBL 1\.1h cu setările din fabrică/);
+  const peTraseu = ((await cip.textContent()) ?? '').replace('Timpul jobului: ', '');
+  // Exportul aceluiași document, cu montajul stânga-jos, Z0 sus: același timp în rezumat.
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await exporta(page);
+  await expect(page.getByTestId('export-rezumat').locator('[data-rezumat="timp"]')).toHaveText(`Timpul estimat: ${peTraseu}`);
+  // `$$` lipit în dialog: cipul trece pe profilul lipit, fără alt calcul al traseului.
+  await page.locator('.setari-masina summary').click();
+  await page.locator('[data-camp="setari-masina"]').fill(RAPID);
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await expect(cip).toHaveAttribute('data-sursa', 'setari');
+  await expect(cip).not.toHaveText(`Timpul jobului: ${peTraseu}`);
+  // Documentul schimbat: traseul e vechi, deci și timpul lui; cipul timpului dispare până la T.
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await expect(page.getByTestId('traseu-stare')).toHaveAttribute('data-stare', 'traseu.vechi');
+  await expect(cip).toHaveCount(0);
+  // Dreptunghiul nou cade peste primul (regiunea păstrată îl refuză): Ctrl+Z îl scoate, iar T calculează din nou.
+  await page.keyboard.press('Control+z');
+  await page.locator('[data-actiune="vedere.traseu"]').click();
+  await expect(cip).toHaveText(/^Timpul jobului: /);
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
+test('timpul lângă traseu, cu un `$$` greșit: cipul spune linia, traseul rămâne desenat', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await page.locator('.setari-masina summary').click();
+  await page.locator('[data-camp="setari-masina"]').fill('$110=5000\n$120=abc\n');
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await page.locator('[data-actiune="vedere.traseu"]').click();
+  await expect(page.getByTestId('strat-traseu')).toHaveAttribute('data-varfuri', /^[1-9]/);
+  await expect(page.getByTestId('traseu-timp')).toHaveText(/^Fără timpul jobului: setările \$\$ lipite, linia 2: \$120/);
+});

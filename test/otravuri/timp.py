@@ -7,7 +7,7 @@
 # Rezultatul: prima rundă (clona de la 7d080c9, 38 de otrăvuri): 37 prinse; A06 (G2 cu startul în capăt) scăpată → proba
 # cercului întreg în sens orar; A05 prinsă doar de termen (bucla fără sfârșit a unui arc cu 2r ≤ $12) → plafonul de 65 535
 # de segmente și proba motivului. A doua rundă, pe codul final (clona de la f81baf1, 48, cu cele 10 noi ale remedierilor
-# recenziei): 48 / 48 prinse, niciuna de termen, bazele verzi (timp 38, timp2 157).
+# recenziei): 48 / 48 prinse, niciuna de termen, bazele verzi (timp 38, timp2 157). Timpul lângă traseu (19.10): V01–V07.
 O = []
 
 
@@ -21,8 +21,15 @@ POS = 'src/post/post.ts'
 REZ = 'src/ui/actiuniExportCalcul.ts'
 JOB = 'src/cam/job.ts'
 
+# Timpul lângă traseu (ADR 0046 §8, 19.10): spec-urile e2e ale setului „e2e” (build înainte de fiecare otravă).
+E2E = ['test/e2e/rezumat.spec.ts']
+CIP = 'src/ui/CipTimpTraseu.tsx'
+APP = 'src/app/App.tsx'
+DUR = 'src/ui/durata.ts'
+
 SETURI = {
-    'timp': ['test/unit/timp.test.ts', 'test/unit/masina.setari.test.ts', 'test/unit/rezumat.test.ts', 'test/unit/timp.oracol.test.ts'],
+    'timp': ['test/unit/timp.test.ts', 'test/unit/masina.setari.test.ts', 'test/unit/rezumat.test.ts', 'test/unit/timp.oracol.test.ts',
+             'test/unit/durata.test.ts'],
     'timp2': ['test/unit/timp.test.ts', 'test/unit/masina.setari.test.ts', 'test/unit/rezumat.test.ts', 'test/unit/timp.oracol.test.ts',
               'test/unit/timp-oracol.cazuri.test.ts', 'test/unit/post.grbl.test.ts', 'test/unit/job.test.ts', 'test/unit/placa02.test.ts'],
 }
@@ -80,6 +87,17 @@ o('P02', TIM, "    if (valoare < 0 && 'FNPST'.includes(litera))", '    if (false
 o('P03', TIM, " || c === '/') continue;", ') continue;', 'timp', '`/` refuzat, nu ignorat')
 o('P04', TIM, 'if (blocuri > plafonBlocuri) {', 'if (blocuri > plafonBlocuri + 1) {', 'timp', 'plafonul cu un bloc mai mare')
 o('R07', REZ, "    if (!s.ok) return { ok: false, sursa: 'setari',", "    if (!s.ok) return { ok: false, sursa: 'program',", 'timp', 'greșeala din `$$` atribuită programului')
+# ---- timpul lângă traseu (ADR 0046 §8, 19.10) ----
+o('V01', REZ, "  const r = posteaza(program, { foaie, origine: 'stanga-jos', z0: 'sus' }, GRBL_11,",
+  "  const r = posteaza(program, { foaie, origine: 'dreapta-sus', z0: 'sus' }, GRBL_11,", 'timp', 'traseul estimat pe alt montaj decât implicitul exportului')
+o('V02', DUR, '  if (s < 59.95) {', '  if (s < 60) {', 'timp', 'pragul secundelor: „60,0 s”')
+o('V03', DUR, '  if (sec < 3600) return', '  if (sec <= 3600) return', 'timp', 'pragul orelor: „60 min 00 s”')
+o('V04', APP, "        const timp = traseu.stare !== 'gata' || traseuVechi || !tt", "        const timp = traseu.stare !== 'gata' || !tt",
+  'e2e', 'timpul rămâne lângă un traseu vechi')
+o('V05', APP, '  }, [programTraseu, foaieStoc, setariMasina]);', '  }, [programTraseu, foaieStoc]);', 'e2e', '`$$` schimbat nu reface timpul traseului')
+o('V06', APP, "      ...(setariMasina.trim() !== '' ? { setariMasina } : {}),\n", '', 'e2e', 'exportul nu mai primește `$$`-ul aplicației')
+o('V07', CIP, "  const cheie = r.sursa === 'program' ? 'traseu.timp.fara' : r.linie > 0", "  const cheie = r.sursa === 'program' ? 'traseu.timp.fara' : r.linie > 99",
+  'e2e', 'cipul nu mai spune linia din `$$`')
 # ---- `$$` ----
 o('M01', MAS, '    const zeroValid = numarSetare === 11;', '    const zeroValid = numarSetare === 12;', 'timp', '$12 = 0 acceptat, $11 = 0 refuzat')
 o('M02', MAS, "    if (valori.has(numarSetare)) return { ok: false, motiv: `$${numarSetare} e scris de două ori`, linie: i + 1 };", '',

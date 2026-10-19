@@ -2,7 +2,7 @@ import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSync
 import { Panza } from '../canvas/Panza.tsx';
 import { treaptaZoom, type Bucata, type Vedere } from '../canvas/protocol.ts';
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
-import type { Miscare } from '../ir/ir.ts';
+import type { Miscare, Program } from '../ir/ir.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
 import { incarcaLimba, t, type CheieSimpla } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
@@ -25,6 +25,7 @@ import {
   ACTIUNI_IMPORT, preincarcaImport, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport,
 } from '../ui/actiuniImport.ts';
 import type { CerereExport, StareExport } from '../ui/DialogExport.tsx';
+import type { RezumatJob } from '../ui/actiuniExportTipuri.ts';
 import { incarcaNivelPiesa, ListaVectori, type RandLista } from '../ui/ListaVectori.tsx';
 import { useLimba } from '../ui/useLimba.ts';
 import type { RezultatConfig } from './config.ts';
@@ -93,6 +94,8 @@ const incarcaDialogImport = () => import('./ImportConectat.tsx');
 // Dialogurile vin legate de document (`ExportConectat`, `ImportConectat`): valorile operațiilor, citirea fișierelor și coada
 // importului pleacă din pachetul de pornire odată cu ferestrele lor.
 const DialogExport = lazy(() => incarcaDialogExport().then((m) => ({ default: m.ExportConectat }), () => ({ default: DialogNeincarcat })));
+// Cipul timpului de lângă traseu (ADR 0046 §8): la cerere, ca durata și textele lui să nu stea în pornire (ADR 0042).
+const CipTimpTraseu = lazy(() => import('../ui/CipTimpTraseu.tsx').then((m) => ({ default: m.CipTimpTraseu })));
 const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.ImportConectat }), () => ({ default: DialogNeincarcat })));
 /** Paleta de comenzi și panoul de proprietăți vin tot la cerere (prototipul B): nu intră în pachetul de pornire. */
 const incarcaPaleta = () => import('../ui/Paleta.tsx');
@@ -112,6 +115,8 @@ type StareTraseu = {
   readonly stare: 'calcul' | 'gata' | 'refuz';
   readonly rev: number;
   readonly miscari: readonly Miscare[] | null;
+  /** Programul calculat (doar „gata”), pentru timpul jobului de lângă traseu (ADR 0046 §8). */
+  readonly program?: Program;
   readonly motiv: string | null;
 };
 /** Bugetul de vârfuri al stratului la pornire (5 M de segmente țin 60 Hz pe iGPU, s6-V); se înjumătățește la un cadru lent. */
@@ -200,6 +205,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [cursor] = useState(() => semnal<PunctFoaie | null>(null));
   const [scara] = useState(() => semnal<number | null>(null));
   const [traseu, setTraseu] = useState<StareTraseu | null>(null);
+  // Răspunsul la `$$` lipit în dialogul exportului (ADR 0046 §8): cât e deschisă pagina, comun cu timpul traseului.
+  const [setariMasina, setSetariMasina] = useState('');
+  const [timpTraseu, setTimpTraseu] = useState<{ readonly program: Program; readonly setari: string; readonly r: RezumatJob } | null>(null);
   const [bugetTraseu, setBugetTraseu] = useState(BUGET_TRASEU);
   const [stareStrat, setStareStrat] = useState<StareStrat>('ok');
   const [cheieStrat, setCheieStrat] = useState(0);
@@ -315,6 +323,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   });
   const doc = istoric.doc;
   const foaie = doc.foi[0] ?? documentNou(FOAIA_IMPLICITA).foi[0];
+  const foaieStoc = foaie?.stoc;
   // Lista de desen și elementele în lume se refac doar când se schimbă documentul.
   const lume = useMemo(() => elementeFoaie(doc, 0), [doc]);
   const forme = useMemo(() => listaDesen(doc), [doc]);
@@ -458,7 +467,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         try {
           const r = programDinDocument(d);
           if (cerere !== cerereTraseu.current) return;
-          if (r.ok) setTraseu({ arata: true, stare: 'gata', rev: d.rev, miscari: r.program.miscari, motiv: null });
+          if (r.ok) setTraseu({ arata: true, stare: 'gata', rev: d.rev, miscari: r.program.miscari, program: r.program, motiv: null });
           else refuz(r.motiv);
         } catch (e) {
           refuz(e instanceof Error ? e.message : String(e));
@@ -481,6 +490,17 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     }, () => { if (viu) setTraseuPregatit(null); });
     return () => { viu = false; };
   }, [miscariTraseu, treapta, bugetTraseu]);
+  // Timpul jobului de lângă traseu (ADR 0046 §8): același calcul ca rezumatul exportului (postul pe montajul stânga-jos, Z0
+  // sus, apoi estimarea), adus la cerere cu calculul exportului; se reface și când se schimbă `$$`, fără CAM.
+  const programTraseu = traseu?.arata && traseu.stare === 'gata' ? traseu.program : undefined;
+  useEffect(() => {
+    if (!programTraseu || !foaieStoc) return;
+    let viu = true;
+    import('../ui/actiuniExportCalcul.ts').then(({ timpProgram }) => {
+      if (viu) setTimpTraseu({ program: programTraseu, setari: setariMasina, r: timpProgram(programTraseu, foaieStoc, setariMasina) });
+    }, () => { if (viu) setTimpTraseu(null); });
+    return () => { viu = false; };
+  }, [programTraseu, foaieStoc, setariMasina]);
   // Stins: programul unui document de dinainte (și un refuz pentru el nu mai e motivul de acum, recenzia 2.8e, F3), sau
   // programul vechi ținut sub cipul „se calculează” (F5).
   const traseuVechi = traseu !== null && traseu !== undefined
@@ -582,7 +602,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     exportInCurs.current = true;
     const r = ruleaza(registruExport, 'export.gcode', contextExport({
       origine, z0, ...(c.confirmareIesire ? { confirmareIesire: c.confirmareIesire } : {}),
-      ...(c.setariMasina ? { setariMasina: c.setariMasina } : {}),
+      ...(setariMasina.trim() !== '' ? { setariMasina } : {}),
     }, ++cerereExport.current));
     // Un export refuzat înainte de calcul (nimic de exportat, nicio operație) spune de ce, nu lasă rezultatul vechi.
     if (!r.ok) {
@@ -736,9 +756,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               : stareStrat === 'context-pierdut' ? ['traseu.context', 'cip cip-atentie', ''] as const
                 : traseuVechi ? ['traseu.vechi', 'cip cip-atentie', ''] as const
                   : traseuPregatit?.rarit ? ['traseu.rarit', 'cip', ''] as const : [null, '', ''] as const;
-        if (cheie === null) return null;
-        const text = t(cheie, { motiv });
-        return <span data-testid="traseu-stare" data-stare={cheie} className={clasa} role="status" title={text}>{text}</span>;
+        const text = cheie === null ? '' : t(cheie, { motiv });
+        const stareCip = cheie === null ? null
+          : <span data-testid="traseu-stare" data-stare={cheie} className={clasa} role="status" title={text}>{text}</span>;
+        // Timpul jobului, doar pentru traseul la zi și pentru `$$`-ul de acum (ADR 0046 §8).
+        const tt = timpTraseu;
+        const timp = traseu.stare !== 'gata' || traseuVechi || !tt || tt.program !== traseu.program || tt.setari !== setariMasina ? null
+          : <Suspense fallback={null}><CipTimpTraseu r={tt.r} /></Suspense>;
+        return stareCip === null && timp === null ? null : <>{stareCip}{timp}</>;
       }
     }
   };
@@ -888,6 +913,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           onExporta={(noi, c) => { exporta(noi, c); }}
           onInchide={() => { cerereExport.current++; exportInCurs.current = false; setDialogExport(false); }}
           onReseteaza={() => { cerereExport.current++; exportInCurs.current = false; setStareExport(null); }}
+          setariMasina={setariMasina}
+          onSetariMasina={setSetariMasina}
         />
       )}
       {coadaImport && (

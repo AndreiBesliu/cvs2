@@ -27,9 +27,14 @@ type Props = {
   readonly onExporta: (noi: ReadonlyMap<string, Operatie[]>, c: CerereExport) => void;
   readonly onInchide: () => void;
   readonly onReseteaza: () => void;
+  /** Răspunsul la `$$` lipit (ADR 0046 §8): îl ține aplicația, comun cu timpul de lângă traseu. */
+  readonly setariMasina: string;
+  readonly onSetariMasina: (text: string) => void;
 };
 
-export function ExportConectat({ doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza }: Props) {
+export function ExportConectat({
+  doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
+}: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
    * ei element în prima instanță a piesei. Freza e comună tuturor, până la schimbarea sculei. Se calculează doar cu
@@ -101,6 +106,8 @@ export function ExportConectat({ doc, dupaIdLume, lume, descriere, limba, baza, 
       onExporta={exporta}
       onInchide={onInchide}
       onReseteaza={onReseteaza}
+      setariMasina={setariMasina}
+      onSetariMasina={onSetariMasina}
     />
   );
 }

@@ -2135,3 +2135,10 @@ un joc deschis ține 17,5 GB): aceleași teste cu `--test-concurrency=8` au trec
 **Completed:** 18.10 23:40. Costul: agenții ~0,74 M (oracolul 0,36, verificatorul 0,38), plus bucla principală; săptămânalul
 56 → 59 %. Nivelul rapid: tipurile, importurile (14 / 14), 6 771 de teste unitare, 0 picate (8 sărite), build-ul determinist,
 licențele; e2e 152 / 152 în Edge; emulatoarele 24 + 6; pornirea 93,9 / 100 kB (cu ușa 98,5, neschimbată), totalul 224,7 kB.
+
+## 2026-10-19 — Timpul lângă traseu (estimarea, a doua parte; Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (în sesiunea estimării, după raportul ei). **Started:** 19.10 ~07:55, săptămânalul 59 %. Ce a rămas
+fără mașină din rândul pragului („Timpul estimat, afișat imediat după fiecare calcul”): timpul în cipul traseului, după
+fiecare calcul (tasta T), cu aceeași estimare ca rezumatul exportului; câmpul `$$` urcă din dialog în aplicație, ca
+traseul și exportul să folosească același profil. Fără agenți.

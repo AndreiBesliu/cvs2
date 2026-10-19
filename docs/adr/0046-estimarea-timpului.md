@@ -121,6 +121,17 @@ refuză tot ce refuză el. Sabotajele: `test/otravuri/timp.py`.
   (linia lungă, valorile negative, `/` și paranteza ca în `protocol.c`), liniile limitate numărate pe linii, plafonul de
   blocuri, motivul structurat, tabelele accesibile; scrise aici: ipotezele legăturii seriale și ale lui `$1`, M1.
 
+**8. Timpul lângă traseu (amendament, 19.10.2026).** Rândul pragului cere timpul „afișat imediat după fiecare calcul”:
+după „Arată traseul” (tasta T), lângă cipurile traseului apare **„Timpul jobului: …”**, cu titlul mașinii pe care s-a
+estimat. E același calcul ca rezumatul exportului (`timpProgram`: programul traseului prin același post și contract, cu
+montajul stânga-jos, Z0 sus, apoi `rezumatJob`), adus la cerere cu bucata calculului exportului; un program refuzat de
+post sau un `$$` greșit dau motivul în cip, iar traseul rămâne desenat. Cipul apare doar pentru traseul la zi (stins cu
+el când documentul se schimbă) și pentru `$$`-ul de acum: **câmpul `$$` urcă din dialog în aplicație** (o singură stare,
+cât e deschisă pagina), iar o schimbare a lui reface doar timpul, fără CAM. Montajele sunt translații, deci colțul ales la
+export schimbă timpul doar prin rotunjire. Cipul și durata în cuvinte (`src/ui/durata.ts`, comună cu rezumatul; textele
+`durata.*` în dicționarul traseului, adus și de dialog) vin la cerere; în pornire rămân starea și efectul: 93,9 → 94,2 /
+100 kB, cu ușa 98,5 → 98,8 (rămân 1,2 kB). Amendează ADR 0038 §2 („traseul la zi n-are cip”): are acum cipul timpului.
+
 ## Consecințe
 
 - Owner-ul vede timpul înainte să taie, pe mașina lui dacă lipește `$$`; cu implicitele din fabrică, timpul e cel al unui

@@ -1,11 +1,13 @@
 import { iesireDinFoaie, type IesireFoaie } from '../cam/iesire.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
-import type { Scula } from '../ir/ir.ts';
+import type { Program, Scula } from '../ir/ir.ts';
+import type { Montaj } from '../ir/montaj.ts';
 import { profilDinSetari, type ProfilMasina } from '../ir/masina.ts';
 import { PROFIL_GRBL_11H } from '../ir/masini/grbl11h.ts';
 import { PLAFON, type Document } from '../model/document.ts';
 import { GRBL_11 } from '../post/contracte/grbl11.ts';
 import { exporta, type ProgramExportat } from '../post/export.ts';
+import { posteaza } from '../post/post.ts';
 import { estimeazaTimp, type Portiune } from '../sim/timp.ts';
 import type { ParametriExport, RezultatExport, RezumatJob } from './actiuniExportTipuri.ts';
 
@@ -51,7 +53,7 @@ const zero = (): { secunde: number; pauze: number; taiere: number; rapide: numbe
  * răspunsul la `$$` lipit de om), împărțită pe secțiunile postului: fiecare operație adună secțiunile ei (o operație pe
  * mai multe elemente sau instanțe are mai multe), iar pornirea și finalul merg la „restul”.
  */
-export function rezumatJob(program: ProgramExportat, scula: Scula, setari: string | undefined): RezumatJob {
+export function rezumatJob(program: Pick<ProgramExportat, 'text' | 'sectiuni'>, scula: Scula, setari: string | undefined): RezumatJob {
   let profil: ProfilMasina = PROFIL_GRBL_11H;
   if (setari !== undefined && setari.trim() !== '') {
     const s = profilDinSetari(setari, PROFIL_GRBL_11H);
@@ -98,4 +100,15 @@ export function rezumatJob(program: ProgramExportat, scula: Scula, setari: strin
     },
     liniiLimitate: e.liniiLimitate,
   };
+}
+
+/**
+ * Timpul jobului de lângă traseu (ADR 0046 §8): programul traseului prin același post și același contract ca exportul,
+ * cu montajul stânga-jos și Z0 sus (implicitul dialogului), apoi rezumatul. Montajele sunt translații, deci colțul ales la
+ * export schimbă timpul doar prin rotunjirea coordonatelor. Nu descarcă nimic; un program refuzat de post dă motivul.
+ */
+export function timpProgram(program: Program, foaie: Montaj['foaie'], setari: string | undefined): RezumatJob {
+  const r = posteaza(program, { foaie, origine: 'stanga-jos', z0: 'sus' }, GRBL_11, { asteptareAx: ASTEPTARE_AX });
+  if (!r.ok) return { ok: false, sursa: 'program', linie: 0, motiv: r.motiv };
+  return rezumatJob(r, program.scula, setari);
 }
