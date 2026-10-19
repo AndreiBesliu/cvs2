@@ -4,6 +4,7 @@ import type { DictionarRoPentru } from './tipuri.ts';
 /** Mesajele simulării din dialogul exportului, în română: exact cheile din engleză (`simulare.en.ts`). */
 export const roSimulare = {
   'simulare.titlu': 'Simularea',
+  'simulare.calcul': 'Se simulează programul… (G-code-ul e deja descărcat)',
   'simulare.harta': 'Harta adâncimilor pe foaie, văzută de sus: alb = fața neatinsă, mai închis = mai adânc, negru = până la fața de jos.',
   'simulare.legenda': 'Alb: fața (0 mm) · gri cel mai închis: {adancime} mm adâncime · negru: prin foaie',
   'simulare.volum': 'Material scos: {cm3} cm³',

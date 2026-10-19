@@ -88,6 +88,25 @@ test('amprenta Node = Edge pe corpusul oracolului, prin workerul construit, pe 1
   expect(piese).toBe(20);
 });
 
+type SimulareNode =
+  | {
+    readonly ok: true; readonly amprenta: string; readonly volum: number; readonly adancimeMax: number; readonly grosime: number;
+    readonly previzualizare: { readonly latime: number; readonly inaltime: number; readonly z: readonly number[] };
+  }
+  | { readonly ok: false; readonly motiv: string };
+
+const zecimale = (n: number): Intl.NumberFormat => new Intl.NumberFormat('ro-RO', { minimumFractionDigits: n, maximumFractionDigits: n });
+
+/**
+ * Regula hărții, scrisă aici ca specificație (ADR 0047 §5): 235 la față, 60 la cea mai adâncă tăietură (cel mult grosimea),
+ * liniar între ele; 0 la fața de jos a foii sau sub ea.
+ */
+function griAsteptat(z: number, adancimeMax: number, grosime: number): number {
+  if (!(z < 0)) return 235;
+  if (-z >= grosime) return 0;
+  return Math.round(235 - 175 * Math.min(1, -z / Math.max(1e-6, Math.min(adancimeMax, grosime))));
+}
+
 async function documentSalvat(page: Page, rev: number): Promise<string> {
   let text: string | null = null;
   await expect.poll(async () => {
@@ -149,12 +168,26 @@ for (const nuclee of [1, 5]) {
     // Node, pe documentul salvat de aplicație (cu operațiile scrise la Exportă), prin aceeași funcție a exportului, într-un
     // proces Node (`simulare-node.ts`).
     const doc = await documentSalvat(page, 1);
-    const r = JSON.parse(execFileSync(process.execPath, ['test/e2e/simulare-node.ts'], { input: doc, encoding: 'utf8' })) as
-      { readonly ok: true; readonly amprenta: string; readonly volum: number } | { readonly ok: false; readonly motiv: string };
+    const r = JSON.parse(execFileSync(process.execPath, ['test/e2e/simulare-node.ts'], { input: doc, encoding: 'utf8' })) as SimulareNode;
     expect(r.ok, JSON.stringify(r)).toBe(true);
     if (!r.ok) return;
     await expect(s).toHaveAttribute('data-amprenta', r.amprenta);
     await expect(s).toHaveAttribute('data-volum', String(r.volum));
+    // Ce vede omul (recenzia 19.10: o hartă întoarsă, alte tonuri sau un volum de 10 ori mai mare treceau): cifrele scrise
+    // din valorile din Node, iar fiecare pixel al hărții după regula ei, din previzualizarea din Node.
+    await expect(s.locator('[data-simulare="volum"]')).toHaveText(`Material scos: ${zecimale(1).format(r.volum / 1000)} cm³`);
+    await expect(s.locator('[data-simulare="adancime"]')).toHaveText(`Cea mai adâncă tăietură: ${zecimale(2).format(r.adancimeMax)} mm`);
+    const rosu = await s.locator('canvas').evaluate((c: HTMLCanvasElement) => {
+      const d = c.getContext('2d')?.getImageData(0, 0, c.width, c.height).data ?? new Uint8ClampedArray();
+      return { latime: c.width, inaltime: c.height, v: Array.from(d.filter((_, k) => k % 4 === 0)) };
+    });
+    const { latime: W, inaltime: H, z } = r.previzualizare;
+    expect([rosu.latime, rosu.inaltime]).toEqual([W, H]);
+    let diferite = 0;
+    for (let py = 0; py < H; py++) for (let px = 0; px < W; px++) {
+      if (rosu.v[py * W + px] !== griAsteptat(z[(H - 1 - py) * W + px]!, r.adancimeMax, r.grosime)) diferite++;
+    }
+    expect(diferite, 'pixeli ai hărții care nu sunt cei din Node').toBe(0);
     await expect(s.locator('[data-simulare="amprenta"]')).toHaveText(`Amprenta ${r.amprenta}: aceeași în orice browser, pe oricâte fire.`);
     await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
   });
@@ -179,4 +212,53 @@ test('o tăietură prin foaie: harta are pixeli negri, iar simularea spune că t
     return n;
   });
   expect(negri).toBeGreaterThan(20);
+});
+
+test('descărcarea nu așteaptă simularea: fișierul vine, dialogul spune că simulează, apoi arată harta', async ({ page }) => {
+  let elibereaza = (): void => {};
+  const tinut = new Promise<void>((ok) => { elibereaza = ok; });
+  // Workerul simulării vine abia când îl lăsăm: simularea durează cât vrem noi.
+  await page.route(/lucratorSimulare-[^/]*\.js$/, async (r) => { await tinut; await r.continue(); });
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const descarcare = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await descarcare;
+  const s = page.getByTestId('export-simulare');
+  await expect(s).toHaveAttribute('data-stare', 'calcul');
+  await expect(s).toHaveAttribute('aria-busy', 'true');
+  await expect(s).toHaveText('Se simulează programul… (G-code-ul e deja descărcat)');
+  elibereaza();
+  await expect(s.locator('[data-simulare="adancime"]')).toHaveText('Cea mai adâncă tăietură: 8,00 mm');
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
+test('un worker care nu vine: exportul rămâne, dialogul spune de ce lipsește simularea, eroarea intră în jurnal', async ({ page }) => {
+  await page.route(/lucratorSimulare-[^/]*\.js$/, (r) => r.abort());
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const descarcare = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await descarcare;
+  await expect(page.getByTestId('export-simulare')).toHaveText(/^Simularea nu s-a putut face: /);
+  await expect(page.getByTestId('jurnal')).toHaveText('1 eroare în jurnalul local');
+});
+
+test('dialogul închis în timpul simulării: fișierul e descărcat, simularea e oprită (nicio eroare)', async ({ page }) => {
+  let elibereaza = (): void => {};
+  const tinut = new Promise<void>((ok) => { elibereaza = ok; });
+  await page.route(/lucratorSimulare-[^/]*\.js$/, async (r) => { await tinut; await r.continue(); });
+  await page.goto('/');
+  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const descarcare = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await descarcare;
+  await page.getByRole('button', { name: 'Închide' }).click();
+  elibereaza();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.getByTestId('export-simulare')).toHaveCount(0);
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });

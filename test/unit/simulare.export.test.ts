@@ -23,7 +23,7 @@ test('exportul plăcii 1: simularea e a nucleului pe același program, cu volumu
   const r = await calculeazaExport(doc, { origine: 'stanga-jos', z0: 'sus' });
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
-  const s = r.simulare;
+  const s = await r.simulare(new AbortController().signal);
   assert.ok(s.ok, s.ok ? '' : s.motiv);
   if (!s.ok) return;
   assert.equal(s.celula, 0.25);
@@ -60,14 +60,35 @@ test('exportul plăcii 1: simularea e a nucleului pe același program, cu volumu
 
 test('gaura de 8 mm într-o foaie de 8: simularea spune că trece prin foaie; volumul se oprește la fața de jos', async () => {
   // O foaie de 6 mm nu ajunge aici: exportul refuză adâncimea peste grosime (fără supracursă, ADR 0028 §2).
-  const r = await calculeazaExport(docDin({ latime: 300, inaltime: 200, grosime: 8 }, gaura), { origine: 'stanga-jos', z0: 'sus' });
-  const g = await calculeazaExport(docDin({ latime: 300, inaltime: 200, grosime: 18 }, gaura), { origine: 'stanga-jos', z0: 'sus' });
-  assert.ok(r.ok && r.simulare.ok && g.ok && g.simulare.ok);
-  if (!r.ok || !r.simulare.ok || !g.ok || !g.simulare.ok) return;
-  assert.equal(r.simulare.prinFoaie, true);
-  assert.equal(g.simulare.prinFoaie, false);
-  assert.equal(r.simulare.adancimeMax, 8);
+  const e8 = await calculeazaExport(docDin({ latime: 300, inaltime: 200, grosime: 8 }, gaura), { origine: 'stanga-jos', z0: 'sus' });
+  const e18 = await calculeazaExport(docDin({ latime: 300, inaltime: 200, grosime: 18 }, gaura), { origine: 'stanga-jos', z0: 'sus' });
+  assert.ok(e8.ok && e18.ok);
+  if (!e8.ok || !e18.ok) return;
+  const r = await e8.simulare(new AbortController().signal), g = await e18.simulare(new AbortController().signal);
+  assert.ok(r.ok && g.ok);
+  if (!r.ok || !g.ok) return;
+  assert.equal(r.prinFoaie, true);
+  assert.equal(g.prinFoaie, false);
+  assert.equal(r.adancimeMax, 8);
   // Același program, aceeași materie scoasă (8 mm < 18 mm și = 8 mm): volumul e același, amprenta la fel.
-  assert.ok(Object.is(r.simulare.volum, g.simulare.volum));
-  assert.equal(r.simulare.amprenta, g.simulare.amprenta);
+  assert.ok(Object.is(r.volum, g.volum));
+  assert.equal(r.amprenta, g.amprenta);
+});
+
+test('exportul nu așteaptă simularea: rezultatul vine cu funcția ei; anulată, ea spune „anulată”, fără eroare', async () => {
+  const e = await calculeazaExport(doc, { origine: 'stanga-jos', z0: 'sus' });
+  assert.ok(e.ok);
+  if (!e.ok) return;
+  assert.equal(typeof e.simulare, 'function');
+  const ac = new AbortController();
+  ac.abort();
+  const s = await e.simulare(ac.signal);
+  assert.deepEqual(s, { ok: false, motiv: 'simularea a fost anulată', eroare: false, anulata: true });
+});
+
+test('un program pe care simularea nu-l poate face (axa A) dă un refuz cu motiv, nu o eroare', async () => {
+  const { simuleazaExport } = await import('../../src/ui/actiuniExportCalcul.ts');
+  const p = programPlaca01();
+  const s = await simuleazaExport({ ...p, axe: ['X', 'Y', 'Z', 'A'] }, { latime: 300, inaltime: 200, grosime: 18 });
+  assert.ok(!s.ok && !s.eroare && /axa A/.test(s.motiv), JSON.stringify(s));
 });

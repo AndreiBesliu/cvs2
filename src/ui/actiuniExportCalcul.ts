@@ -1,6 +1,6 @@
 import { iesireDinFoaie, type IesireFoaie } from '../cam/iesire.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
-import { simuleazaInBazin } from '../jobs/bazin.ts';
+import { fireImplicite, simuleazaInBazin, SimulareAnulata } from '../jobs/bazin.ts';
 import type { Program, Scula } from '../ir/ir.ts';
 import type { Montaj } from '../ir/montaj.ts';
 import { profilDinSetari, type ProfilMasina } from '../ir/masina.ts';
@@ -49,7 +49,7 @@ export async function calculeazaExport(doc: Document, p: ParametriExport): Promi
   if (!e.ok) return e;
   return {
     ok: true, program: e.exportat, avertismente: job.avertismente, rezumat: rezumatJob(e.exportat, job.program.scula, p.setariMasina),
-    simulare: await simuleazaExport(job.program, foaie.stoc),
+    simulare: (semnal) => simuleazaExport(job.program, foaie.stoc, semnal),
   };
 }
 
@@ -57,19 +57,22 @@ export async function calculeazaExport(doc: Document, p: ParametriExport): Promi
  * Simularea programului exportat (ADR 0047 §5): IR-ul (coordonatele documentului), pe toată foaia, la 0,25 mm, în bazinul
  * de workere. Un refuz sau un worker căzut nu oprește exportul: dialogul spune de ce lipsește simularea.
  */
-export async function simuleazaExport(program: Program, foaie: { readonly latime: number; readonly inaltime: number; readonly grosime: number }): Promise<SimulareExport> {
+export async function simuleazaExport(
+  program: Program, foaie: { readonly latime: number; readonly inaltime: number; readonly grosime: number }, semnal?: AbortSignal,
+): Promise<SimulareExport> {
   const p = pregatesteProgram(program, 0);
-  if (!p.ok) return { ok: false, motiv: p.motiv };
+  if (!p.ok) return { ok: false, motiv: p.motiv, eroare: false };
   const camp = campPentruFoaie(foaie), d = dimensiuni(camp.celula, camp.latime, camp.inaltime);
   try {
-    const r = await simuleazaInBazin({ camp, scula: p.scula, mutari: p.mutari, fund: -foaie.grosime });
+    const r = await simuleazaInBazin({ camp, scula: p.scula, mutari: p.mutari, fund: -foaie.grosime }, fireImplicite(), semnal ? { semnal } : {});
     return {
       ok: true, amprenta: r.amprenta, volum: r.volum, adancimeMax: r.adancimeMax, prinFoaie: r.prinFoaie, grosime: foaie.grosime,
       celula: camp.celula, celule: [d.nx, d.ny],
       fire: r.fire, ms: r.ms, previzualizare: { latime: r.previzualizare.latime, inaltime: r.previzualizare.inaltime, z: r.previzualizare.z },
     };
   } catch (e) {
-    return { ok: false, motiv: e instanceof Error ? e.message : String(e) };
+    const motiv = e instanceof Error ? e.message : String(e);
+    return e instanceof SimulareAnulata ? { ok: false, motiv, eroare: false, anulata: true } : { ok: false, motiv, eroare: true };
   }
 }
 

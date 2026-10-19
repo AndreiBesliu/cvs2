@@ -1,8 +1,9 @@
 /**
  * Bazinul de workere al simulării (ADR 0010, ADR 0015, ADR 0047 §4): N workere, fiecare cu rândurile de dale r mod N.
- * Fără stare între joburi: fiecare cerere poartă tot ce-i trebuie (grila, scula, mutările benzii), iar workerul nu ține
- * nimic după răspuns; workerele însele rămân pornite, gata pentru jobul următor. Mutările se trimit doar pentru banda
- * fiecăruia, ca tablouri transferate, nu prin memorie partajată (ADR 0014: fără izolare cross-origin).
+ * Fără stare: fiecare cerere poartă tot ce-i trebuie (grila, scula, mutările benzii), iar workerele unui job se opresc la
+ * capătul lui — la răspuns, la eroare, la anulare sau la termen. Așa memoria benzilor se eliberează imediat (recenzia
+ * 19.10: ~340 MB ținuți ~60 s după un job pe toată foaia), iar un worker care tace nu mai poate fi refolosit. Mutările se
+ * trimit doar pentru banda fiecăruia, ca tablouri transferate, nu prin memorie partajată (ADR 0014).
  *
  * În Node (testele, fără `Worker`), benzile rulează pe rând, prin aceeași funcție (`calculeazaBanda`). În browser,
  * calculul nu atinge niciodată firul principal.
@@ -22,14 +23,21 @@ export type CerereSimulare = {
 export type RezultatBazin = RezumatSimulare & {
   /** Câte benzi (workere) au lucrat. */
   readonly fire: number;
-  /** Cât a durat jobul, de la cerere la rezumat, în ms. */
+  /** Cât a durat jobul, de la cerere la rezumat (cu pornirea workerelor), în ms. */
   readonly ms: number;
+};
+
+export type OptiuniBazin = {
+  /** Anularea jobului (un export nou, dialogul închis): workerele se opresc, promisiunea e respinsă. */
+  readonly semnal?: AbortSignal;
+  /** Cât așteaptă bazinul tot jobul, în ms (implicit `TERMEN_JOB_MS`). */
+  readonly termenMs?: number;
 };
 
 /** Plafonul firelor: peste 8, s4 a măsurat câștiguri mici (8,5× pe 16 fire, 6,4× pe 8). */
 export const FIRE_MAXIME = 8;
-/** Cât așteaptă bazinul o bandă înainte să o declare pierdută. */
-export const TERMEN_BANDA_MS = 120_000;
+/** Cât așteaptă bazinul un job; la plafonul grilei, pe un fir, recenzia a măsurat 9,8 s. */
+export const TERMEN_JOB_MS = 120_000;
 
 /** Câte fire pentru câte nuclee raportează browserul: unul rămâne interfeței, între 1 și 8. */
 export function firePentru(nuclee: number): number {
@@ -41,53 +49,56 @@ export function fireImplicite(): number {
   return firePentru(globalThis.navigator?.hardwareConcurrency ?? 1);
 }
 
-type InAsteptare = { readonly rezolva: (r: RaspunsBanda) => void; readonly respinge: (e: Error) => void; readonly termen: ReturnType<typeof setTimeout> };
-type Lucrator = { readonly w: Worker; readonly asteapta: Map<number, InAsteptare> };
-
-const lucratori: Array<Lucrator | undefined> = [];
-let urmatorul = 1;
-
-function lucratorul(k: number): Lucrator {
-  const gata = lucratori[k];
-  if (gata) return gata;
-  const w = new Worker(new URL('./lucratorSimulare.ts', import.meta.url), { type: 'module', name: `simulare-${k}` });
-  const l: Lucrator = { w, asteapta: new Map() };
-  const cade = (motiv: string): void => {
-    // Un worker căzut nu mai e folosit: următorul job pornește altul.
-    if (lucratori[k] === l) lucratori[k] = undefined;
-    w.terminate();
-    for (const a of l.asteapta.values()) { clearTimeout(a.termen); a.respinge(new Error(motiv)); }
-    l.asteapta.clear();
-  };
-  w.onmessage = (e: MessageEvent<RaspunsSimulare>) => {
-    const a = l.asteapta.get(e.data.id);
-    if (!a) return;
-    l.asteapta.delete(e.data.id);
-    clearTimeout(a.termen);
-    if (e.data.ok) a.rezolva(e.data.raspuns);
-    else a.respinge(new Error(e.data.motiv));
-  };
-  w.onerror = (e) => { e.preventDefault(); cade(`workerul simulării a căzut: ${e.message || 'fără mesaj'}`); };
-  w.onmessageerror = () => cade('workerul simulării a trimis un mesaj necitibil');
-  lucratori[k] = l;
-  return l;
+/** Eroarea unui job anulat: nu e o defecțiune, nu se trece în jurnal. */
+export class SimulareAnulata extends Error {
+  override readonly name = 'SimulareAnulata';
+  constructor() { super('simularea a fost anulată'); }
 }
 
-function trimite(k: number, cerere: CerereBanda): Promise<RaspunsBanda> {
-  const l = lucratorul(k), id = urmatorul++;
+/** Benzile în workere, câte unul pe bandă, toate oprite la capătul jobului. */
+function inWorkere(cereri: readonly CerereBanda[], semnal: AbortSignal | undefined, termenMs: number): Promise<RaspunsBanda[]> {
   return new Promise((rezolva, respinge) => {
-    const termen = setTimeout(() => {
-      l.asteapta.delete(id);
-      respinge(new Error(`banda ${cerere.banda.w} din ${cerere.banda.n} n-a răspuns în ${TERMEN_BANDA_MS / 1000} s`));
-    }, TERMEN_BANDA_MS);
-    l.asteapta.set(id, { rezolva, respinge, termen });
-    const m: MesajSimulare = { id, cerere };
-    l.w.postMessage(m, [cerere.mutari.buffer as ArrayBuffer]);
+    const workere: Worker[] = [];
+    const raspunsuri: Array<RaspunsBanda | undefined> = cereri.map(() => undefined);
+    let ramase = cereri.length, gata = false;
+    let termen: ReturnType<typeof setTimeout> | undefined;
+    const anuleaza = (): void => { cade(new SimulareAnulata()); };
+    function termina(): void {
+      gata = true;
+      clearTimeout(termen);
+      semnal?.removeEventListener('abort', anuleaza);
+      for (const w of workere) w.terminate();
+    }
+    function cade(e: Error): void {
+      if (gata) return;
+      termina();
+      respinge(e);
+    }
+    if (semnal?.aborted) { anuleaza(); return; }
+    semnal?.addEventListener('abort', anuleaza);
+    termen = setTimeout(() => { cade(new Error(`simularea n-a răspuns în ${Math.round(termenMs / 1000)} s`)); }, termenMs);
+    cereri.forEach((cerere, k) => {
+      if (gata) return;
+      const w = new Worker(new URL('./lucratorSimulare.ts', import.meta.url), { type: 'module', name: `simulare-${k}` });
+      workere.push(w);
+      w.onmessage = (e: MessageEvent<RaspunsSimulare>) => {
+        if (gata) return;
+        if (!e.data.ok) { cade(new Error(e.data.motiv)); return; }
+        raspunsuri[k] = e.data.raspuns;
+        if (--ramase > 0) return;
+        termina();
+        rezolva(raspunsuri as RaspunsBanda[]);
+      };
+      w.onerror = (e) => { e.preventDefault(); cade(new Error(`workerul simulării a căzut: ${e.message || 'fără mesaj'}`)); };
+      w.onmessageerror = () => { cade(new Error('workerul simulării a trimis un mesaj necitibil')); };
+      const m: MesajSimulare = { id: k + 1, cerere };
+      w.postMessage(m, [cerere.mutari.buffer as ArrayBuffer]);
+    });
   });
 }
 
 /** Simularea unui program pe `fire` benzi; rezultatul nu depinde de `fire` (ADR 0047 §4). */
-export async function simuleazaInBazin(c: CerereSimulare, fire = fireImplicite()): Promise<RezultatBazin> {
+export async function simuleazaInBazin(c: CerereSimulare, fire = fireImplicite(), o: OptiuniBazin = {}): Promise<RezultatBazin> {
   const t0 = performance.now();
   const n = Math.max(1, Math.floor(fire));
   const previzualizare = previzualizarePentru(c.camp);
@@ -96,6 +107,15 @@ export async function simuleazaInBazin(c: CerereSimulare, fire = fireImplicite()
     const banda = { n, w };
     cereri.push({ camp: c.camp, banda, scula: c.scula, fund: c.fund, previzualizare, mutari: mutariPentruBanda(c.mutari, c.scula, c.camp, banda) });
   }
-  const benzi = typeof Worker === 'undefined' ? cereri.map(calculeazaBanda) : await Promise.all(cereri.map((x, k) => trimite(k, x)));
+  let benzi: RaspunsBanda[];
+  if (typeof Worker === 'undefined') {
+    benzi = [];
+    for (const x of cereri) {
+      if (o.semnal?.aborted) throw new SimulareAnulata();
+      benzi.push(calculeazaBanda(x));
+    }
+  } else {
+    benzi = await inWorkere(cereri, o.semnal, o.termenMs ?? TERMEN_JOB_MS);
+  }
   return { ...uneste(c.camp, previzualizare, c.fund, benzi), fire: n, ms: performance.now() - t0 };
 }

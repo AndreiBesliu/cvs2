@@ -9,5 +9,7 @@ import type { Document } from '../../src/model/document.ts';
 
 const doc = JSON.parse(readFileSync(0, 'utf8')) as Document;
 const r = await calculeazaExport(doc, { origine: 'stanga-jos', z0: 'sus' });
-const s = r.ok ? r.simulare : { ok: false as const, motiv: r.motiv };
-process.stdout.write(JSON.stringify(s.ok ? { ok: true, amprenta: s.amprenta, volum: s.volum, adancimeMax: s.adancimeMax, fire: s.fire } : s));
+const s = r.ok ? await r.simulare(new AbortController().signal) : { ok: false as const, motiv: r.motiv };
+process.stdout.write(JSON.stringify(s.ok
+  ? { ok: true, amprenta: s.amprenta, volum: s.volum, adancimeMax: s.adancimeMax, grosime: s.grosime, previzualizare: { latime: s.previzualizare.latime, inaltime: s.previzualizare.inaltime, z: Array.from(s.previzualizare.z) } }
+  : s));

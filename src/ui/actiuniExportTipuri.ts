@@ -96,7 +96,8 @@ export type RezumatJob =
 /**
  * Simularea programului exportat (ADR 0047 §5): nucleul pe CPU, în bazinul de workere, pe toată foaia. Interfața primește
  * doar rezumatul: previzualizarea (cel mai jos Z pe bloc de celule, rândul 0 jos), volumul, adâncimea, amprenta. Ca la
- * timp, `ok: false` nu oprește exportul, doar spune de ce lipsește simularea.
+ * timp, `ok: false` nu oprește exportul, doar spune de ce lipsește simularea: `eroare` = s-a stricat ceva (un worker
+ * căzut, termenul; merge în jurnal), altfel programul nu se poate simula încă (un refuz cu motiv) sau jobul a fost anulat.
  */
 export type SimulareExport =
   | {
@@ -117,13 +118,17 @@ export type SimulareExport =
     /** Previzualizarea: `latime` × `inaltime` pixeli, `z` pe pixel (rândul 0 = marginea de jos a foii). */
     readonly previzualizare: { readonly latime: number; readonly inaltime: number; readonly z: Float32Array };
   }
-  | { readonly ok: false; readonly motiv: string };
+  | { readonly ok: false; readonly motiv: string; readonly eroare: boolean; readonly anulata?: true };
 
 export type RezultatExport =
   /** `avertismente`: ce s-a făcut altfel decât s-a cerut, fără să fie o greșeală (intrarea omisă, ADR 0030 §3). */
   | {
     readonly ok: true; readonly program: ProgramExportat; readonly avertismente: readonly string[]; readonly rezumat: RezumatJob;
-    readonly simulare: SimulareExport;
+    /**
+     * Simularea, pornită de aplicație DUPĂ descărcare (recenzia 19.10: descărcarea aștepta simularea, până la 10 s pe o
+     * foaie mare și un fir); semnalul o anulează (un export nou, un parametru schimbat, dialogul închis).
+     */
+    readonly simulare: (semnal: AbortSignal) => Promise<SimulareExport>;
   }
   | { readonly ok: false; readonly motiv: string }
   /** Freza iese din foaie și omul n-a confirmat încă exact ieșirea asta: nu se scrie nimic. */

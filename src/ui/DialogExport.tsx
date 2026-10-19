@@ -53,7 +53,8 @@ export type CerereExport = ParametriExport & { readonly diametru: number; readon
 export type StareExport =
   | {
     readonly ok: true; readonly linii: number; readonly sha256: string; readonly avertismente: readonly string[];
-    readonly rezumat: RezumatJob; readonly simulare: SimulareExport;
+    /** `calcul`: simularea rulează (după descărcare); apoi rezultatul ei. */
+    readonly rezumat: RezumatJob; readonly simulare: SimulareExport | 'calcul';
   }
   | { readonly ok: false; readonly motiv: string; readonly cereConfirmare?: IesireFoaie };
 

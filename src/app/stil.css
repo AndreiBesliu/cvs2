@@ -1100,6 +1100,7 @@ nav button[aria-pressed='true'] {
   width: 100%;
   max-width: 480px;
   height: auto;
+  box-sizing: border-box;
   image-rendering: pixelated;
   border: 1px solid var(--l-camp);
   border-radius: var(--r-1);

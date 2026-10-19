@@ -9,7 +9,7 @@ import type { SimulareExport } from './actiuniExportTipuri.ts';
  * de sus, cu Y în sus ca pe pânză,
  * plus volumul scos, cea mai adâncă tăietură și grila. Pixelii vin gata calculați din nucleu (cel mai jos Z pe bloc).
  */
-type Props = { readonly s: SimulareExport; readonly limba: string };
+type Props = { readonly s: SimulareExport | 'calcul'; readonly limba: string };
 
 /**
  * Nivelul de gri al unei celule: 235 la față, 60 la cea mai adâncă tăietură care nu trece prin foaie (`scala`, ca o
@@ -28,7 +28,7 @@ export function PrevizualizareSimulare({ s, limba }: Props) {
   const panza = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const c = panza.current;
-    if (!c || !s.ok) return;
+    if (!c || s === 'calcul' || !s.ok) return;
     const { latime: W, inaltime: H, z } = s.previzualizare;
     const scala = scalaGri(s.adancimeMax, s.grosime);
     const g = c.getContext('2d');
@@ -48,6 +48,9 @@ export function PrevizualizareSimulare({ s, limba }: Props) {
     g.putImageData(img, 0, 0);
   }, [s]);
 
+  if (s === 'calcul') {
+    return <p role="status" aria-busy="true" className="nota" data-testid="export-simulare" data-stare="calcul">{t('simulare.calcul')}</p>;
+  }
   if (!s.ok) {
     return <p role="status" className="avertisment" data-testid="export-simulare">{t('simulare.eroare', { motiv: s.motiv })}</p>;
   }
@@ -63,7 +66,7 @@ export function PrevizualizareSimulare({ s, limba }: Props) {
         ref={panza} width={s.previzualizare.latime} height={s.previzualizare.inaltime}
         role="img" aria-label={t('simulare.harta')} data-simulare="harta"
       />
-      <p className="nota" data-simulare="legenda">{t('simulare.legenda', { adancime: f(2).format(scalaGri(s.adancimeMax, s.grosime)) })}</p>
+      {s.adancimeMax > 0 && <p className="nota" data-simulare="legenda">{t('simulare.legenda', { adancime: f(2).format(scalaGri(s.adancimeMax, s.grosime)) })}</p>}
       <p data-simulare="volum"><strong>{t('simulare.volum', { cm3: f(1).format(s.volum / 1000) })}</strong></p>
       <p data-simulare="adancime">{t('simulare.adancime', { mm: f(2).format(s.adancimeMax) })}</p>
       {s.prinFoaie && <p className="nota" data-simulare="prin-foaie">{t('simulare.prin-foaie', { grosime: f(1).format(s.grosime) })}</p>}

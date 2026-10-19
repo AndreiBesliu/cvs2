@@ -137,15 +137,25 @@ o('Z01', BAZ, '  return Math.min(FIRE_MAXIME, Math.floor(nuclee) - 1);', '  retu
   'bazinul ia toate nucleele (niciunul pentru interfață)')
 o('Z02', BAZ, 'mutari: mutariPentruBanda(c.mutari, c.scula, c.camp, banda) });', 'mutari: c.mutari });', 'e2e',
   'toate benzile primesc același tablou: primul transfer îl detașează pentru celelalte')
-o('Z03', BAZ, '    if (e.data.ok) a.rezolva(e.data.raspuns);', '    if (e.data.ok) a.rezolva({ ...e.data.raspuns, randuri: e.data.raspuns.randuri.slice(1) });', 'e2e',
-  'răspunsul workerului pierde un rând la unire')
+o('Z03', BAZ, '        raspunsuri[k] = e.data.raspuns;', '        raspunsuri[k] = { ...e.data.raspuns, randuri: e.data.raspuns.randuri.slice(1) };', 'sim',
+  'răspunsul workerului pierde un rând la unire (proba cu workerul fals)')
+o('Z04', BAZ, '      for (const w of workere) w.terminate();', '', 'sim', 'workerele jobului nu se opresc la capăt (un worker tăcut rămâne)')
+o('Z05', BAZ, '    if (semnal?.aborted) { anuleaza(); return; }', '', 'sim', 'un job deja anulat pornește workere')
+o('Z06', BAZ, '    if (--ramase > 0) return;', '    if (--ramase > 1) return;', 'sim', 'jobul se termină înainte de ultima bandă')
 o('E01', EXP, '  const camp = campPentruFoaie(foaie), d = dimensiuni(camp.celula, camp.latime, camp.inaltime);',
   '  const camp = campPentruFoaie(foaie, 0.5), d = dimensiuni(camp.celula, camp.latime, camp.inaltime);', 'sim', 'exportul simulează la 0,5 mm')
-o('E02', EXP, 'scula: p.scula, mutari: p.mutari, fund: -foaie.grosime });', 'scula: p.scula, mutari: p.mutari, fund: foaie.grosime });', 'sim',
+o('E02', EXP, 'scula: p.scula, mutari: p.mutari, fund: -foaie.grosime }', 'scula: p.scula, mutari: p.mutari, fund: foaie.grosime }', 'sim',
   'fața de jos a foii cu semnul greșit')
-o('E03', EXP, '    simulare: await simuleazaExport(job.program, foaie.stoc),', "    simulare: { ok: false, motiv: 'oprită' },", 'sim',
+o('E03', EXP, '    simulare: (semnal) => simuleazaExport(job.program, foaie.stoc, semnal),', "    simulare: async () => ({ ok: false, motiv: 'oprită', eroare: false }),", 'sim',
   'exportul fără simulare')
+o('E04', EXP, '    return e instanceof SimulareAnulata ? { ok: false, motiv, eroare: false, anulata: true } : { ok: false, motiv, eroare: true };',
+  '    return { ok: false, motiv, eroare: false };', 'e2e', 'un worker căzut nu mai e o eroare (nu intră în jurnal)')
 o('D01', PRE, '      const rand = (H - 1 - py) * W;', '      const rand = py * W;', 'e2e', 'harta întoarsă sus-jos')
-o('D02', APP, 'rezumat: r.rezumat, simulare: r.simulare });', 'rezumat: r.rezumat, simulare: { ok: false, motiv: "x" } });', 'e2e',
-  'dialogul nu primește simularea exportului')
+o('D02', APP, "          setStareExport((v) => (v?.ok && v.simulare === 'calcul' ? { ...v, simulare: s } : v));", '', 'e2e',
+  'rezultatul simulării nu ajunge în dialog (rămâne „se simulează”)')
+o('D04', APP, "          if (!s.ok && s.eroare) jurnal.adauga('promisiune', new Error(`simularea: ${s.motiv}`));\n", '', 'e2e',
+  'eșecul simulării nu intră în jurnal')
+o('D05', APP, '          onInchide={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); setDialogExport(false); }}',
+  '          onInchide={() => { exportInCurs.current = false; setDialogExport(false); }}', 'e2e',
+  'dialogul închis nu oprește simularea: rezultatul vechi apare la redeschidere')
 o('D03', PRE, '  if (-z >= grosime) return 0;', '  if (-z > grosime * 2) return 0;', 'e2e', 'tăietura prin foaie nu mai e neagră pe hartă')

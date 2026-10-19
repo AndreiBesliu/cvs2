@@ -245,6 +245,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   /** Un export pornit, al cărui rezultat n-a venit încă (calculul se încarcă la cerere). */
   const exportInCurs = useRef(false);
   /**
+   * Simularea ultimului export (ADR 0047 §5), pornită după descărcare: un export nou, un parametru schimbat, un document
+   * venit din bază sau dialogul închis o anulează (workerele ei se opresc), ca să nu stea la coadă înaintea celei noi.
+   */
+  const simulareInCurs = useRef<AbortController | null>(null);
+  const opresteSimularea = (): void => {
+    simulareInCurs.current?.abort();
+    simulareInCurs.current = null;
+  };
+  /**
    * Câte documente au venit din bază de la pornire. Dialogul de export ia de aici valorile operațiilor din nou: o versiune
    * nouă (de la fila care scrie, sau la preluarea scrierii) le înlocuiește pe cele vechi. Propria scriere a dialogului nu
    * trece pe aici.
@@ -258,6 +267,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const dinBazaNou = (d: Document): void => {
     dinBaza.current = d;
     cerereExport.current++;
+    opresteSimularea();
     setStareExport(exportInCurs.current ? { ok: false, motiv: t('export.proiect-schimbat') } : null);
     exportInCurs.current = false;
     setBazaNoua((n) => n + 1);
@@ -315,7 +325,17 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         descarca(r.program.octeti, `cncvs2-${p?.origine ?? 'stanga-jos'}.${r.program.extensie}`);
         // Exportul tocmai a scris operațiile: traseul arătat se reface pe documentul exportat.
         if (traseuArat.current) calculeazaTraseu();
-        setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente, rezumat: r.rezumat, simulare: r.simulare });
+        setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente, rezumat: r.rezumat, simulare: 'calcul' });
+        // Simularea vine după fișier: descărcarea nu o așteaptă. Un eșec al ei (nu un refuz) intră în jurnal.
+        opresteSimularea();
+        const ac = new AbortController();
+        simulareInCurs.current = ac;
+        void r.simulare(ac.signal).then((s) => {
+          if (ac.signal.aborted || cerere !== cerereExport.current) return;
+          simulareInCurs.current = null;
+          if (!s.ok && s.eroare) jurnal.adauga('promisiune', new Error(`simularea: ${s.motiv}`));
+          setStareExport((v) => (v?.ok && v.simulare === 'calcul' ? { ...v, simulare: s } : v));
+        }, (e: unknown) => { jurnal.adauga('promisiune', e); });
       } else {
         setStareExport('cereConfirmare' in r ? { ok: false, motiv: r.motiv, cereConfirmare: r.cereConfirmare } : { ok: false, motiv: r.motiv });
       }
@@ -600,6 +620,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     }
     const { origine, z0 } = c;
     exportInCurs.current = true;
+    opresteSimularea();
     const r = ruleaza(registruExport, 'export.gcode', contextExport({
       origine, z0, ...(c.confirmareIesire ? { confirmareIesire: c.confirmareIesire } : {}),
       ...(setariMasina.trim() !== '' ? { setariMasina } : {}),
@@ -911,8 +932,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           doarCitire={doarCiteste(mod)}
           stare={stareExport}
           onExporta={(noi, c) => { exporta(noi, c); }}
-          onInchide={() => { cerereExport.current++; exportInCurs.current = false; setDialogExport(false); }}
-          onReseteaza={() => { cerereExport.current++; exportInCurs.current = false; setStareExport(null); }}
+          onInchide={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); setDialogExport(false); }}
+          onReseteaza={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); setStareExport(null); }}
           setariMasina={setariMasina}
           onSetariMasina={setSetariMasina}
         />

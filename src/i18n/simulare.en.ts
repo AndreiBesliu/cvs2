@@ -6,6 +6,7 @@ import type { Mesaj } from './tipuri.ts';
  */
 export const enSimulare = {
   'simulare.titlu': 'Simulation',
+  'simulare.calcul': 'Simulating the program… (the G-code is already downloaded)',
   'simulare.harta': 'Depth map of the sheet, seen from above: white is the untouched surface, darker is deeper, black reaches the bottom face.',
   'simulare.legenda': 'White: surface (0 mm) · darkest grey: {adancime} mm deep · black: through the sheet',
   'simulare.volum': 'Material removed: {cm3} cm³',

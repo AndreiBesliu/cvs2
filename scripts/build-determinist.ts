@@ -163,8 +163,6 @@ const LA_CERERE: ReadonlyArray<readonly [string, string]> = [
   ['aria cere un contur închis', 'orientarea conturului (src/geom/contur.ts; pornirea importă doar conturBaza.ts) vine cu CAM-ul și offsetul'],
   ['până la omul de la mașină', 'estimarea timpului (src/sim/timp.ts, ADR 0046) vine cu calculul exportului'],
   ['nu conține nicio setare de mișcare', 'citirea setărilor mașinii (src/ir/masina.ts, ADR 0046) vine cu calculul exportului'],
-  ['nu se simulează încă', 'nucleul simulării (src/sim/nucleu.ts și program.ts, ADR 0047) vine cu calculul exportului și în workerul lui'],
-  ['workerul simulării a căzut', 'bazinul simulării (src/jobs/bazin.ts, ADR 0047) vine cu calculul exportului'],
 ];
 for (const [marcaj, ce] of LA_CERERE) {
   if (cod(bucataPornirii).includes(marcaj)) {
@@ -183,6 +181,29 @@ for (const [marcaj, ce] of LA_CERERE) {
  * `PanouProprietati`; un import de valoare din baza conexiunii într-una dintre ele ar aduce Firebase la fiecare pornire).
  * Și nicio altă bucată nu importă static o bucată permisă: baza ar rămâne în bucata ei, dar ar veni odată cu importatorul.
  */
+/**
+ * Nucleul simulării și bazinul lui (ADR 0047) stau DOAR în bucata calculului exportului și în workerul simulării. Plasa
+ * caută în TOATE bucățile (recenzia 19.10: un import static din `PanouProprietati`, adus la pornire, scăpa unei căutări
+ * doar în bucata de pornire).
+ */
+const CU_SIMULARE = /^assets\/(?:actiuniExportCalcul|lucratorSimulare)-[A-Za-z0-9_-]{8}\.js$/;
+const MARCAJE_SIMULARE: ReadonlyArray<readonly [string, string, RegExp]> = [
+  ['nu se simulează încă', 'nucleul simulării (src/sim/nucleu.ts și program.ts)', CU_SIMULARE],
+  ['workerul simulării a căzut', 'bazinul simulării (src/jobs/bazin.ts)', /^assets\/actiuniExportCalcul-[A-Za-z0-9_-]{8}\.js$/],
+];
+for (const [marcaj, ce, permise] of MARCAJE_SIMULARE) {
+  const cu = [...bucati.keys()].filter((r) => cod(r).includes(marcaj));
+  if (cu.length === 0) {
+    console.error(`Niciun fișier al build-ului nu conține „${marcaj}”: plasa pentru ${ce} nu mai vede nimic (marcajul s-a schimbat?).`);
+    process.exit(1);
+  }
+  const straine = cu.filter((r) => !permise.test(r));
+  if (straine.length > 0) {
+    console.error(`„${marcaj}” (${ce}) e în ${straine.join(', ')}: simularea are voie doar în bucata calculului exportului și în workerul ei.`);
+    process.exit(1);
+  }
+}
+
 const CU_FIREBASE = /^assets\/(?:raportor|conexiuneBaza|PaginaAdmin)-[A-Za-z0-9_-]{8}\.js$/;
 const MARCAJE_FIREBASE: ReadonlyArray<readonly [string, string]> = [
   ['@firebase/app', 'aplicația Firebase (src/cloud/conexiuneBaza.ts)'],
@@ -315,7 +336,7 @@ if (lipsaDinManifest.length > 0 || inPlusInManifest.length > 0) {
 }
 // Raportorul și baza conexiunii sunt obligatorii (recenzia din 18.10): fila rămâne pe versiunea ei până la clic, deci și
 // raportorul ei trebuie să vină după o publicare, când bucata lui veche nu mai e pe hosting.
-const obligatorii = ['index.html', bucataPornirii, ...bucatiLimba, ...['ExportConectat', 'ImportConectat', 'actiuniAlegere', 'actiuniExportCalcul', 'lucrator', 'raportor', 'conexiuneBaza'].map(bucataNumita)];
+const obligatorii = ['index.html', bucataPornirii, ...bucatiLimba, ...['ExportConectat', 'ImportConectat', 'actiuniAlegere', 'actiuniExportCalcul', 'lucrator', 'lucratorSimulare', 'raportor', 'conexiuneBaza'].map(bucataNumita)];
 const lipsaObligatorii = obligatorii.filter((f) => !manifest.has(f));
 if (lipsaObligatorii.length > 0) {
   console.error(`Precache-ul nu are ${lipsaObligatorii.join(', ')}: offline, aplicația n-ar porni sau limba / ferestrele / raportorul n-ar veni (ADR 0042, ADR 0045 §2).`);
