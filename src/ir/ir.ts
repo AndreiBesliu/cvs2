@@ -49,7 +49,13 @@ export type Miscare =
    */
   | { readonly tip: 'eticheta'; readonly text: string; readonly element?: string; readonly operatie?: string };
 
-export type Scula = { readonly numar: number; readonly nume: string; readonly diametru: number };
+/**
+ * Forma muchiei tăietoare a sculei (ADR 0047): freza plată (fără `forma`), bila sau V-ul cu unghiul inclus, în grade.
+ * Postul n-o scrie; o citește simularea. Documentul are deocamdată doar freze plate.
+ */
+export type FormaScula = { readonly tip: 'plata' } | { readonly tip: 'bila' } | { readonly tip: 'v'; readonly unghi: number };
+
+export type Scula = { readonly numar: number; readonly nume: string; readonly diametru: number; readonly forma?: FormaScula };
 
 export type Program = {
   readonly axe: readonly Axa[];

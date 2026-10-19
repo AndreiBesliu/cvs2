@@ -2149,6 +2149,18 @@ documentul schimbat îl stinge, `$$` greșit îl face să spună linia). Apoi `t
 ușa), durata într-un singur loc (`src/ui/durata.ts`, textele în dicționarul traseului), `$$` urcat în aplicație. ADR 0046 §8
 (amendează ADR 0038 §2: traseul la zi are acum cipul timpului). Capcana zilei: al treilea dreptunghi al probei cădea peste
 primul, deci traseul era refuzat de regiunea păstrată (proba, nu codul): Ctrl+Z înainte de T.
-**Completed:** 19.10 10:10. Fără agenți; săptămânalul 59 → 68 % (comun cu celelalte sesiuni, iar contextul acestei sesiuni a
-ajuns la ~0,68 M, deci fiecare pas e scump: felia următoare, într-o sesiune nouă). `npm run rapid` întreg verde (6 776 de
+**Completed:** 19.10 10:10. Fără agenți; săptămânalul 59 → 68 %, dar comun: în paralel rula sesiunea simulării, cu agenții ei
+(65 % la pornirea ei, 08:05); contextul acestei sesiuni a ajuns la ~0,68 M, deci felia următoare, într-o sesiune nouă. Pe
+GitHub, `main` primise între timp simularea (`e0bb1d4`, `80180d4`): unite printr-un merge, doar DEVLOG-ul în conflict. `npm run rapid` întreg verde (6 776 de
 teste, 0 picate, 8 sărite); e2e 154 / 154; emulatoarele 24 + 6; sabotajele 55 / 55; pornirea 94,2 / 100 kB, cu ușa 98,8.
+
+## 2026-10-19 — Simularea: nucleul CPU, felia 1 din 2 (etapa 4, punctul 2; Model: Claude Opus 5.5)
+
+**Prompt:** „Pornește simularea, nucleul CPU, felia 1 (etapa 4, punctul 2), cu oracolul din sonda s4, la costul spus, într-o
+sesiune nouă.” **Started:** 19.10 ~08:05, săptămânalul 65 %. Adusă din etapa 4 (plăcile netăiate: `PLAN.md` §4.6, punctul 7),
+rândul „4.2↑”. Nucleul din ADR 0010 în `src/sim/` (câmp rar pe dale mici într-un atlas, dalele uniforme ca un singur număr,
+calcul exact pe celulă, rândurile de dale intercalate pe bazinul de workere fără stare, ADR 0015), freza plată, bilă și V;
+amprenta Node = Edge, la 1 fir și la mai multe, poartă în e2e; o previzualizare 2D a adâncimilor în dialogul exportului.
+Oracolul îl portează din s4 un agent care nu vede nucleul (o clonă fără el), și intră în CI înaintea lui. Lucrul stă într-o
+clonă în afara Drive-ului: în repo-ul din Drive scrie, în paralel, sesiunea timpului lângă traseu. Estimat ~1,5–2 M pentru
+agenți (oracolul, 1–2 verificatori).
