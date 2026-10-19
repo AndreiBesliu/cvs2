@@ -54,9 +54,33 @@ implicit n-are dreptul de export, eșecul apare în fila Erori și în Diagnoză
 | Primul login pe <https://cncvectorstudio-test.firebaseapp.com/admin> și documentul `staff/<uid>` cu `rol: "owner"`, creat în consola Firestore (pagina arată uid-ul și linkul) | 3.3: fila Erori și Diagnoza | după 3.3 |
 | Tăierea plăcilor 1 și 2 | 3.5 (transcrierile rejucate pe emulator) și prima felie a etapei | cât mai curând |
 | Placa de contact pentru Z | 3.7 | înainte de 3.7 |
-| WIF, conturile și PITR pe **live**: `scripts/wif/pregateste-proiect.sh cncvectorstudio live --pitr` în Cloud Shell, apoi mediul GitHub `live` cu **Required reviewers** și doar `main`, cu variabilele tipărite de script (ADR 0044, „Pașii owner-ului”). Pe test: făcut pe 18.10 (workflow-ul a publicat de două ori) | 3.9: prima publicare pe live | înainte de 3.9 |
+| Pe **live**, înaintea comutării (inventarul de mai jos): bucket-ul `gs://cncvectorstudio-backup` în `us-central1` (îl poate crea asistentul, la cerere); apoi `scripts/wif/pregateste-proiect.sh cncvectorstudio live --pitr` în Cloud Shell (WIF, contul de publicare, contul backup-ului, PITR); mediul GitHub `live` cu **Required reviewers** și doar `main`, cu variabilele tipărite de script (ADR 0044); protecția la ștergere a bazei (recomandată); un export manual chiar înaintea comutării. Pe test: făcut pe 18.10 | 3.9: prima publicare pe live | înainte de 3.9 |
 | Copia locală a aplicației vechi, verificată pe calculatorul de la mașină (decizia 8) | lucrul de zi cu zi după primul live | înainte de 3.9 |
 | Arhivarea repo-ului vechi pe GitHub | 3.9 | la comutare |
+
+## Inventarul proiectului live (19.10, doar citiri)
+
+Pentru comutarea din 3.9 (`PLAN.md` §5.3, punctul 8). Citit cu identitatea owner-ului, fără nicio scriere.
+- **Hosting:** aplicația veche, publicată pe 25.09, pe `cncvectorstudio.com` și `www`; versiunea rămâne în istoricul de hosting
+  (revenirea).
+- **Auth:** Google pornit, email cu parolă pornit; domeniile autorizate cuprind `cncvectorstudio.com`, `www`, `.web.app`,
+  `.firebaseapp.com`.
+- **App Check:** cheia „Cheie Appcheck CVS” înregistrată; Storage impus, Firestore și Auth neimpuse. Publicarea o citește singură
+  (ADR 0043 §7).
+- **Funcțiile:** 38 ale ediției întâi (gen2, codebase `default`, `europe-central2` și `us-central1`), plus extensiile
+  `firestore-stripe-payments` (invertase 0.3.12) și `firestore-send-email` (0.2.9); 6 joburi programate vechi (`weeklyFirestoreBackup`
+  duminica, `dailyDigest`, `trialReminder`, `purgeTrialLedger`, `aggregateExportStats`, `retryStripeDeletions`).
+- **Firestore:** `nam5`, 19 colecții (`users`, `customers`, `products`, `trialLedger`, `mail` …), fără indecși compuși, fără TTL.
+  **PITR oprit**, **protecția la ștergere oprită**.
+- **Backup:** **niciun bucket de backup** (doar Storage-ul aplicației și bucket-urile de build ale funcțiilor).
+- **`trialLedger`:** cel mai vechi `expiresAt` e **01.06.2028**: colecția și secretul `TRIAL_LEDGER_KEY` rămân cel puțin până
+  atunci (`docs/PORTARE.md` §3.6).
+- **Secrete (doar numele):** `ANTHROPIC_API_KEY`, `CVS_Appcheck_Key`, `TRIAL_LEDGER_KEY`, cele trei ale extensiei Stripe.
+
+**Deciziile owner-ului, de pus grupat înainte de 3.9** (implicitul recomandat în față): funcțiile vechi se șterg la comutare,
+în afară de extensii (contul Stripe live e blocat pe CAEN, deci probabil fără clienți plătitori: de verificat atunci);
+extensiile Stripe și Send Email rămân (publicarea noastră nu le atinge; facturarea vine în etapa 14); regulile noi refuză
+colecțiile vechi (o filă cu aplicația veche din cache nu mai citește nimic; workerul PWA preia, repetat pe test).
 
 ## Placa 3
 
