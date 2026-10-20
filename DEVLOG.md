@@ -2276,3 +2276,7 @@ Personal și Cont): mai e loc de ~11 kB.
 **Publicat pe test:** 20.10, workflow-ul `publica` pe `3637cb2` (după rapid-ul verde pe CI): regulile noi publicate,
 `administreazaPersonalul` și `acceptaInvitatia` create (fără App Check răspund 401, deci invocarea publică e pusă),
 versiunea `3637cb21e052` în pachet. Capturile filelor Personal (luminos, întunecat) și Cont trimise owner-ului.
+**Proba owner-ului pe test:** „Am încercat pe test: în fila Cont mi-am adăugat o parolă la contul Google, apoi am ieșit și
+am intrat cu adresa și parola. Pare ca a functionat.” Citit în Auth (doar citire): un singur cont, furnizorii `google.com`
+și `password`, parola pusă la 10:29 UTC; adresa apare acum neverificată (notat în ADR 0049 §6, pentru etapa 14). Rândul
+scos din „Ce îi trebuie owner-ului”.

@@ -52,7 +52,9 @@ e-mail / parolă). Fila **Cont** (pentru oricine e logat) arată metodele contul
 parolă” (cine a intrat cu Google), „Leagă Google” (cine are parolă), „Schimbă parola”. Parola se leagă cu `linkWithCredential`;
 dacă backend-ul răspunde „adresă folosită” (emulatorul de Auth o face pe propria adresă a contului, măsurat pe 20.10), parola
 se pune direct pe contul deschis (`updatePassword`), tot fără al doilea cont, iar la final contul trebuie să aibă metoda
-parolei, altfel e o eroare. Un Google deja folosit de alt cont
+parolei, altfel e o eroare. Probat pe test pe 20.10, cu contul Google al owner-ului: un singur cont, cu ambele metode;
+contul se citește apoi cu adresa „neverificată” (de ținut minte pentru etapa 14, dacă ceva va cere adresa verificată după
+ce omul și-a pus parola). Un Google deja folosit de alt cont
 e refuzat cu motivul; o operație care cere o intrare recentă cere întâi reintrarea. La intrare, un e-mail care are deja alt
 fel de cont primește mesajul „intră cu metoda pe care o ai, apoi leagă-o pe cealaltă din fila Cont”.
 
