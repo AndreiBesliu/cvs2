@@ -2375,3 +2375,4 @@ vârfuri): elipsa generatorului e acum tăiată pe sferturi, iar elipsele vechi 
 **Completed:** 20.10 19:30. Fără agenți; săptămânalul 89 → 90 %. `npm run rapid` RC 0 (7 111 teste unitare, 0 picate,
 8 sărite); e2e 168 / 168 în Edge. Pornirea 95,0 → 95,1 kB (cu ușa 99,7 → 99,8 / 100): rămân ~0,2 kB, deci următoarea felie
 care atinge pornirea eliberează loc întâi. Rămâne unirea / separarea vectorilor („in curand”).
+**Publicat pe test:** 20.10, workflow-ul `publica` pe `fde4a04` (după rapid-ul verde pe CI, 4 / 4 felii).
