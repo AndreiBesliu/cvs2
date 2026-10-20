@@ -2411,3 +2411,5 @@ proba e2e cade pe codul fără lipire (linia ghidajului lipsește); (2) rularea 
 **Completed:** 20.10 21:25. Fără agenți; săptămânalul 91 → 92 %. `npm run rapid` RC 0 (7 116 teste unitare, 0 picate,
 8 sărite); e2e 170 / 170 în Edge. Pornirea neschimbată: 95,1 kB (cu ușa 99,8 / 100).
 **Publicat pe test:** 20.10, workflow-ul `publica` pe `844902c` (după rapid-ul verde pe CI, 4 / 4 felii).
+**De făcut (cererea owner-ului, 20.10):** „O sa vrea roadmap si in engleza, dar dupa asta”: fila Roadmap din `/admin` (ADR 0048)
+și în engleză (azi se generează din fișele etapelor, scrise în română), după felia care urmează.
