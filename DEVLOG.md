@@ -2241,3 +2241,6 @@ pagini ale produsului). **Date:** cererea „primul login” scoasă din fișa e
 picate, 8 sărite; build-ul determinist; licențele); e2e 162 / 162 în Edge; emulatoarele 24 + 9. Pornirea 94,3 / 100 kB (cu ușa
 99,0), `/admin` 178,6 / 200 kB; documentația 59 de fișiere, 339 kB gzip, în afara precache-ului. Ultima reparație (lățimea
 coloanelor, doar CSS) e probată pe emulatoare (24 + 9) și pe captură; rapid-ul o reia pe CI înaintea publicării.
+**Publicat pe test:** 20.10, workflow-ul `publica` pe `c413d10` (după rapid-ul verde pe CI): versiunea `c413d10c14fd` în pachet,
+`/documentatie/roadmap.json` servit cu `no-cache` și `X-Robots-Tag: noindex` (33 de rânduri de etape, 5 cereri ale owner-ului,
+3.D în etapa 3). Capturile filelor (română; luminos, întunecat, telefon; Documentație) trimise owner-ului.
