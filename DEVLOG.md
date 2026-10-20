@@ -2244,3 +2244,32 @@ coloanelor, doar CSS) e probată pe emulatoare (24 + 9) și pe captură; rapid-u
 **Publicat pe test:** 20.10, workflow-ul `publica` pe `c413d10` (după rapid-ul verde pe CI): versiunea `c413d10c14fd` în pachet,
 `/documentatie/roadmap.json` servit cu `no-cache` și `X-Robots-Tag: noindex` (33 de rânduri de etape, 5 cereri ale owner-ului,
 3.D în etapa 3). Capturile filelor (română; luminos, întunecat, telefon; Documentație) trimise owner-ului.
+
+## 2026-10-20 — Personalul: roluri custom, invitații, conturi create de owner, un cont pe e-mail (Model: Claude Opus 5.5)
+
+**Prompt:** „defapt, vreau sa pot crea conturi, sau ca userii sa poata crea conturi, si sa pot atribui roluri. Sau, sa creez
+roluri custom si sa le atribui.” Deciziile owner-ului la întrebări: „Personalul /admin”, „Invitație pe e-mail” + „Cont cu
+parolă creat de tine”, „Bife dintr-un catalog”, „Acum, fără agenți”. În timpul lucrului: „o sa vreau ca, in general, si pe
+viitor, cand un user creeaza cont cu google, sa poata adauga si parola la cont. ca metoda de evitat dublarea contului la
+crearea si cu google si cu user/password”. **Started:** 20.10 09:50, săptămânalul 83 %. Felia 14.A↑ (fila Admini din etapa
+14, adusă în etapa 3, fără mașină; ADR 0049): catalogul de permisiuni, rolurile custom, invitațiile, conturile cu link de
+parolă, fila Personal și fila Cont (metodele legate la același cont). Citit pe 20.10: furnizorul e-mail / parolă și „un
+cont pe e-mail” sunt pornite pe test și pe live. Fără agenți; estimat 4–6 % din săptămânal.
+**Ce s-a făcut:** catalogul de permisiuni (`shared/personal.ts`: erori.citeste, erori.rezolva, diagnoza.citeste,
+audit.citeste, documentatie.citeste), `owner` fix; regulile citesc rolul din `staff/{uid}` și `roluri/{id}` la fiecare cerere
+(fără copii de ținut la zi); `administreazaPersonalul` (8 acțiuni, doar owner-ul, auditul în tranzacție, ultimul owner păzit)
+și `acceptaInvitatia` (doar pe adresa verificată din token); contul creat de owner fără parolă, cu linkul Firebase de setare
+(o oră) și „Link nou”; `marcheazaEroarea` cere acum `erori.rezolva`. În `/admin`: filele după permisiuni, fila Personal,
+fila Cont (metodele legate la același cont), intrarea cu parola și „Am uitat parola”. **Treceri:** (1) contractul, serverul,
+probele; (2) probele aveau aceeași oră pe toate acțiunile (ordinea auditului la întâmplare) și „nicio invitație” ieșea ca
+404 în consola paginii (acum un răspuns `{ ok: false }`); (3) emulatorul de Auth refuză `linkWithCredential` pe propria
+adresă a contului (`EMAIL_EXISTS` în `signUp`, citit în sursa firebase-tools): parola se pune atunci cu `updatePassword` pe
+contul deschis, verificată după `reload()`. Calea Google reală (fără rezervă) rămâne de probat pe test, cu contul owner-ului
+(rând nou în „Ce îi trebuie owner-ului”). Butoanele din grilele filei Personal se întindeau pe tot rândul (văzut pe captură).
+La recitirea de securitate: formularul „Adaugă un om” pornea cu `owner` ales când nu exista niciun rol custom (un clic
+grăbit făcea pe cineva owner); acum rolul se alege explicit, cu proba e2e.
+Probele scoase din numere fixe: lista owner-ului și feliile aduse (cresc cu fiecare felie).
+**Completed:** 20.10 11:22. Fără agenți; săptămânalul 83 → 83 % (contorul nu s-a mișcat). `npm run rapid` RC 0 (7 072 de
+teste unitare, 0 picate, 8 sărite; build-ul determinist; licențele); e2e 162 / 162 în Edge; emulatoarele 36 + 12 (3 noi:
+personalul cap-coadă). Pornirea 94,3 / 100 kB (cu ușa 99,0); `/admin` 178,6 → 189,0 / 200 kB (intrarea cu parola, filele
+Personal și Cont): mai e loc de ~11 kB.

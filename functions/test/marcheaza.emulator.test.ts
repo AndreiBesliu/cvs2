@@ -17,12 +17,19 @@ const db = getFirestore();
 
 const T0 = new Date(Date.UTC(2026, 9, 16, 12, 0));
 const ID = amprenta('client', 'randare', 'piesa 12 lipsă');
+/** Roluri custom (ADR 0049): unul care poate marca, unul care doar citește. */
+const SUPORT = 'RSuport0000000000000';
+const CITITOR = 'RCititor000000000000';
 
 beforeEach(async () => {
   const r = await fetch(`http://${gazda}/emulator/v1/projects/${PROIECT}/databases/(default)/documents`, { method: 'DELETE' });
   assert.equal(r.status, 200);
-  await db.doc('staff/sup').set({ rol: 'support' });
+  await db.doc(`roluri/${SUPORT}`).set({ nume: 'Suport', permisiuni: ['erori.citeste', 'erori.rezolva'] });
+  await db.doc(`roluri/${CITITOR}`).set({ nume: 'Cititor', permisiuni: ['erori.citeste'] });
+  await db.doc('staff/sup').set({ rol: SUPORT });
+  await db.doc('staff/cit').set({ rol: CITITOR });
   await db.doc('staff/fals').set({ rol: 'stapan' });
+  await db.doc('staff/vechi').set({ rol: 'support' });
   await scrieEroare(db, {
     sursa: 'client', tip: 'randare', mesaj: 'piesa 12 lipsă', stiva: '', build: 'b', instanta: 'local', adresa: '',
     browser: '', limba: 'ro', uid: 'u1',
@@ -49,7 +56,7 @@ test('personalul marchează rezolvat, cu auditul în aceeași tranzacție; aceea
   const a = await audit();
   assert.equal(a.length, 1);
   assert.deepEqual({ ...a[0], cand: undefined }, {
-    schema: 1, cand: undefined, cine: 'sup', rol: 'support', actiune: 'erori.marcheaza', tinta: `errorLogs/${ID}`,
+    schema: 1, cand: undefined, cine: 'sup', rol: SUPORT, actiune: 'erori.marcheaza', tinta: `errorLogs/${ID}`,
     inainte: { rezolvat: false }, dupa: { rezolvat: true },
   });
   assert.deepEqual(await marcheazaEroarea(db, 'sup', { amprenta: ID, rezolvat: true }, t1), { ok: true, schimbat: false });
@@ -59,10 +66,9 @@ test('personalul marchează rezolvat, cu auditul în aceeași tranzacție; aceea
   assert.equal((await audit()).length, 2);
 });
 
-test('refuzurile: fără cont, fără rol, cu rol necunoscut, cerere greșită, grup inexistent; niciunul nu scrie', async () => {
+test('refuzurile: fără cont, fără rol, rol necunoscut, treapta veche, rol fără erori.rezolva, cerere greșită, grup inexistent; niciunul nu scrie', async () => {
   assert.equal(await cod(marcheazaEroarea(db, null, { amprenta: ID, rezolvat: true })), 'unauthenticated');
-  assert.equal(await cod(marcheazaEroarea(db, 'om', { amprenta: ID, rezolvat: true })), 'permission-denied');
-  assert.equal(await cod(marcheazaEroarea(db, 'fals', { amprenta: ID, rezolvat: true })), 'permission-denied');
+  for (const uid of ['om', 'fals', 'vechi', 'cit']) assert.equal(await cod(marcheazaEroarea(db, uid, { amprenta: ID, rezolvat: true })), 'permission-denied', uid);
   assert.equal(await cod(marcheazaEroarea(db, 'sup', { amprenta: 'x', rezolvat: true })), 'invalid-argument');
   assert.equal(await cod(marcheazaEroarea(db, 'sup', { amprenta: ID, rezolvat: 'da' })), 'invalid-argument');
   assert.equal(await cod(marcheazaEroarea(db, 'sup', null)), 'invalid-argument');

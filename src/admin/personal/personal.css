@@ -1,0 +1,185 @@
+/* Filele Personal și Cont (ADR 0049): secțiuni pe panou, formulare pe o coloană, doar tokenurile temei. */
+.pers {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.pers-sectiune {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+}
+
+.pers-sectiune h2 {
+  margin: 0;
+  font-size: var(--fs-4);
+}
+
+.pers-sectiune > p {
+  margin: 0;
+}
+
+/* Un buton pus direct într-o grilă se întinde pe tot rândul: rămâne cât textul lui, la stânga. */
+.pers-sectiune > button,
+.pers-link > button,
+.pers-lista > li > button {
+  justify-self: start;
+}
+
+.pers-stare {
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--l-margine);
+  border-left: 4px solid var(--a);
+  border-radius: var(--r-2);
+  background: color-mix(in oklab, var(--a) 8%, var(--s-panou));
+}
+
+.pers-stare p {
+  margin: 0;
+}
+
+.pers-link {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.pers-link input {
+  font-family: var(--mono);
+  font-size: var(--fs-2);
+}
+
+.pers-formular,
+.pers-editor {
+  display: grid;
+  gap: var(--sp-3);
+  max-width: 34rem;
+}
+
+.pers-formular label,
+.pers-editor > label {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.pers input[type='email'],
+.pers input[type='password'],
+.pers input[type='text'],
+.pers select,
+.admin-parola input {
+  font: inherit;
+  font-size: var(--fs-3);
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--tinta);
+  padding: 0 var(--sp-3);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+}
+
+.pers-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.pers-lista > li {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+.pers-rand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-3);
+}
+
+.pers-cine {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.pers-rol {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.pers-rol select {
+  width: auto;
+  max-width: 100%;
+}
+
+.pers-permisiuni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.pers-permisiune {
+  padding: 0 var(--sp-2);
+  border-radius: 999px;
+  font-size: var(--fs-2);
+  background: var(--s-peste);
+}
+
+.pers-pericol:enabled {
+  color: var(--rosu);
+  border-color: var(--rosu);
+}
+
+.pers-editor fieldset {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-3);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+}
+
+.pers-bifa {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: var(--sp-2);
+}
+
+.pers-bifa input {
+  margin-top: 0.25rem;
+}
+
+.pers-bifa > span {
+  display: grid;
+}
+
+.pers-bifa-nume {
+  font-weight: 600;
+}
+
+.admin-parola {
+  display: grid;
+  gap: var(--sp-2);
+  width: min(100%, 24rem);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--l-margine);
+}
+
+.admin-parola label {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.admin-parola p {
+  margin: 0;
+}

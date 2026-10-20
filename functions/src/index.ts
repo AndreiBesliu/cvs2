@@ -3,6 +3,7 @@
  * se ating de aici: publicarea numește mereu `functions:cncvs2`.
  */
 import { initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { onCall } from 'firebase-functions/v2/https';
 import { defineString } from 'firebase-functions/params';
@@ -13,6 +14,7 @@ import { pornesteBackup, verificaBackup as verifica, type ClientExport } from '.
 import { cuMarcaj } from './joburi/marcaj.ts';
 import { trateazaRaportClient } from './erori/client.ts';
 import { marcheazaEroarea as marcheaza } from './erori/marcheaza.ts';
+import { acceptaInvitatia as accepta, administreazaPersonalul as administreaza } from './personal/actiuni.ts';
 import { REGIUNI } from './regiuni.ts';
 
 initializeApp();
@@ -38,6 +40,21 @@ export const logClientError = onCall(
 export const marcheazaEroarea = onCall(
   { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 2, memory: '256MiB', timeoutSeconds: 20 },
   async (cerere) => marcheaza(getFirestore(), cerere.auth?.uid ?? null, cerere.data),
+);
+
+/**
+ * Personalul (ADR 0049): rolurile custom, invitațiile, conturile create de owner, rolul și scoaterea; doar owner-ul,
+ * cu auditul în tranzacția fiecărei acțiuni.
+ */
+export const administreazaPersonalul = onCall(
+  { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 2, memory: '256MiB', timeoutSeconds: 30 },
+  async (cerere) => administreaza(getFirestore(), getAuth(), cerere.auth?.uid ?? null, cerere.data),
+);
+
+/** Invitația pe e-mail (ADR 0049 §4): omul logat cu adresa invitată și verificată intră în personal. */
+export const acceptaInvitatia = onCall(
+  { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 2, memory: '256MiB', timeoutSeconds: 20 },
+  async (cerere) => accepta(getFirestore(), cerere.auth?.uid ?? null, cerere.auth?.token ?? null),
 );
 
 /* ── Joburile programate (ADR 0041), fiecare cu marcajul lui de rulare ─────────────────────────────────────────────── */

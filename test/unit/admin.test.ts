@@ -4,7 +4,6 @@ import { proiectAsteptat, verificari, type DateDiagnoza } from '../../src/admin/
 import { aparitieDin, dataDin, laPlafonOameni, motivDin, randDin } from '../../src/admin/erori/date.ts';
 import { citesteConfig, esteRutaAdmin } from '../../src/app/config.ts';
 import { gazdaLocala } from '../../src/cloud/conexiune.ts';
-import { esteRol, nivelRol } from '../../shared/personal.ts';
 
 /** Pagina `/admin` (ADR 0040): funcțiile pure ale filelor, configurația și carantina emulatoarelor. */
 
@@ -130,12 +129,6 @@ test('ruta /admin și carantina emulatoarelor (doar pe gazda locală)', () => {
   assert.equal(gazdaLocala('127.0.0.1'), true);
   assert.equal(gazdaLocala('cncvectorstudio-test.firebaseapp.com'), false);
   assert.equal(gazdaLocala('localhost.evil.test'), false);
-});
-
-test('rolurile: scara și rolul necunoscut', () => {
-  assert.deepEqual(['support', 'admin', 'owner', 'stapan', undefined, 3].map(nivelRol), [1, 2, 3, 0, 0, 0]);
-  assert.equal(esteRol('owner'), true);
-  assert.equal(esteRol('Owner'), false);
 });
 
 test('Diagnoza joburilor: fiecare job din listă, și cel fără marcaj; marcajele necitite sunt eșec, nu „bine”', () => {

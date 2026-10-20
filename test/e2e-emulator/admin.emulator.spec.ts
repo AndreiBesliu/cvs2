@@ -13,6 +13,8 @@ const CONFIG = {
   firebase: { apiKey: 'demo-cheie', authDomain: `${PROIECT}.firebaseapp.com`, projectId: PROIECT, appId: '1:1:web:1' },
   emulatoare: { auth: 'http://127.0.0.1:9095', firestore: '127.0.0.1:8085', functions: '127.0.0.1:5005' },
 };
+/** Un rol custom (ADR 0049): citește și rezolvă erorile, vede Diagnoza. */
+const SUPORT = 'RSuport0000000000000';
 const G1 = '1'.repeat(32);
 const G2 = '2'.repeat(32);
 
@@ -83,7 +85,8 @@ test('fără rol: uid-ul și pasul owner-ului; cu rolul din staff: filele', asyn
   page.on('pageerror', (e) => { erori.push(e.message); });
   await deschideCuConfig(page);
   await intra(page);
-  await expect(page.locator('[data-admin="fara-rol"]')).toBeVisible();
+  // Fără document de personal, pagina încearcă întâi invitația (primul callable după pornirea emulatorului trece de 5 s).
+  await expect(page.locator('[data-admin="fara-rol"]')).toBeVisible({ timeout: 30_000 });
   const uid = (await page.locator('[data-admin="uid"]').textContent()) ?? '';
   expect(uid).toMatch(/^\w{20,}$/);
   await expect(page.locator('[data-fila="erori"]')).toHaveCount(0);
@@ -99,7 +102,8 @@ test('fila Erori: filtrul, detaliul și „Marchează rezolvată”, cu auditul;
   await deschideCuConfig(page);
   await intra(page);
   const uid = (await page.locator('[data-admin="uid"]').textContent()) ?? '';
-  await scrie(`staff/${uid}`, { rol: 'support' });
+  await scrie(`roluri/${SUPORT}`, { nume: 'Suport', permisiuni: ['erori.citeste', 'erori.rezolva', 'diagnoza.citeste'] });
+  await scrie(`staff/${uid}`, { rol: SUPORT });
   await page.locator('[data-admin="reincearca"]').click();
 
   // Nerezolvate: doar G1; toate: amândouă, cea mai recentă întâi.

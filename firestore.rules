@@ -6,44 +6,68 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Rolul de personal are o singură sursă: `staff/{uid}` (raportul de admin din Faza 2, §5.1, punctul 2).
-    // Un rol necunoscut nu dă nimic.
-    function nivelRol(rol) {
-      return rol == 'owner' ? 3 : (rol == 'admin' ? 2 : (rol == 'support' ? 1 : 0));
+    // Personalul (ADR 0049): rolul are o singură sursă, `staff/{uid}.rol`: `owner` (tot, plus administrarea personalului)
+    // sau id-ul unui rol din `roluri/{id}`, cu permisiunile lui din catalogul din cod (`shared/personal.ts`). Se citesc la
+    // fiecare cerere, deci o permisiune scoasă dintr-un rol nu mai deschide nimic de la cererea următoare. Un rol
+    // necunoscut (și treptele vechi din ADR 0040) nu dă nimic.
+    function caleStaff() {
+      return /databases/$(database)/documents/staff/$(request.auth.uid);
     }
-    function nivelDin(cale) {
-      return exists(cale) ? nivelRol(get(cale).data.get('rol', '')) : 0;
+    function rolul() {
+      return request.auth != null && exists(caleStaff()) ? get(caleStaff()).data.get('rol', '') : '';
     }
-    function nivelPersonal() {
-      return request.auth == null ? 0 : nivelDin(/databases/$(database)/documents/staff/$(request.auth.uid));
+    function eOwner() {
+      return rolul() == 'owner';
+    }
+    function permisiuniRol(r) {
+      return r is string && r.matches('^[A-Za-z0-9]{20}$') && exists(/databases/$(database)/documents/roluri/$(r))
+        ? get(/databases/$(database)/documents/roluri/$(r)).data.get('permisiuni', [])
+        : [];
+    }
+    function are(p) {
+      let r = rolul();
+      return r == 'owner' || (permisiuniRol(r) is list && permisiuniRol(r).hasAny([p]));
     }
 
+    // Fiecare își citește documentul lui (pagina arată filele după el); owner-ul citește tot personalul.
     match /staff/{uid} {
-      allow get: if request.auth != null && request.auth.uid == uid;
+      allow get: if request.auth != null && (request.auth.uid == uid || eOwner());
+      allow list: if eOwner();
+    }
+
+    // Rolurile: fiecare își citește rolul lui; owner-ul le citește pe toate.
+    match /roluri/{id} {
+      allow get: if eOwner() || (request.auth != null && rolul() == id);
+      allow list: if eOwner();
+    }
+
+    // Invitațiile (ADR 0049 §4): doar owner-ul.
+    match /invitatiiPersonal/{id} {
+      allow read: if eOwner();
     }
 
     match /errorLogs/{amprenta} {
-      allow read: if nivelPersonal() >= 1;
+      allow read: if are('erori.citeste');
 
       match /aparitii/{id} {
-        allow read: if nivelPersonal() >= 1;
+        allow read: if are('erori.citeste');
       }
     }
 
-    // Marcajele de rulare ale joburilor (ADR 0041 §5): scrise doar de joburi; citite de personal (Diagnoza).
+    // Marcajele de rulare ale joburilor (ADR 0041 §5): scrise doar de joburi; citite de Diagnoză.
     match /marcaje/{job} {
-      allow read: if nivelPersonal() >= 1;
+      allow read: if are('diagnoza.citeste');
     }
 
-    // Amprenta publicării (ADR 0044): scrisă doar de scriptul de publicare (prin IAM, nu prin reguli); citită de personal
-    // (Diagnoza). Restul colecției `meta` rămâne refuzat.
+    // Amprenta publicării (ADR 0044): scrisă doar de scriptul de publicare (prin IAM, nu prin reguli); citită de Diagnoză.
+    // Restul colecției `meta` rămâne refuzat.
     match /meta/deployment {
-      allow read: if nivelPersonal() >= 1;
+      allow read: if are('diagnoza.citeste');
     }
 
-    // Auditul (ADR 0040 §4): scris doar de callable-uri, în tranzacția acțiunii; citit de admin și owner.
+    // Auditul (ADR 0040 §4): scris doar de callable-uri, în tranzacția acțiunii.
     match /audit/{id} {
-      allow read: if nivelPersonal() >= 2;
+      allow read: if are('audit.citeste');
     }
   }
 }

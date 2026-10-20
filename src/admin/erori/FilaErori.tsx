@@ -13,7 +13,7 @@ const PLAFON_APARITII = 20;
  * Fila Erori (ADR 0040 §4): grupurile din `errorLogs`, cele mai recente întâi, citite la cerere prin reguli; deschis, un
  * grup arată ultima apariție și ultimele 20, plus „Rezolvat” / „Redeschide” prin callable.
  */
-export function FilaErori({ con }: { readonly con: Conexiune }): ReactElement {
+export function FilaErori({ con, poateMarca }: { readonly con: Conexiune; readonly poateMarca: boolean }): ReactElement {
   const l = useLimba();
   const [filtru, setFiltru] = useState<'nerezolvate' | 'toate'>('nerezolvate');
   const [lista, setLista] = useState<Masura<readonly RandGrup[]> | null>(null);
@@ -68,7 +68,7 @@ export function FilaErori({ con }: { readonly con: Conexiune }): ReactElement {
                         {deschis === g.id ? t('admin.erori.ascunde') : t('admin.erori.detaliu')}
                       </button>
                     </div>
-                    {deschis === g.id ? <DetaliuGrup con={con} grup={g} marcat={() => { setRev((r) => r + 1); }} /> : null}
+                    {deschis === g.id ? <DetaliuGrup con={con} grup={g} poateMarca={poateMarca} marcat={() => { setRev((r) => r + 1); }} /> : null}
                   </li>
                 ))}
               </ul>
@@ -90,7 +90,7 @@ function DetaliiAparitie({ a }: { readonly a: Aparitie }): ReactElement {
   );
 }
 
-function DetaliuGrup({ con, grup, marcat }: { readonly con: Conexiune; readonly grup: RandGrup; readonly marcat: () => void }): ReactElement {
+function DetaliuGrup({ con, grup, poateMarca, marcat }: { readonly con: Conexiune; readonly grup: RandGrup; readonly poateMarca: boolean; readonly marcat: () => void }): ReactElement {
   const l = useLimba();
   const [aparitii, setAparitii] = useState<Masura<readonly Aparitie[]> | null>(null);
   const [marcare, setMarcare] = useState<{ readonly faza: 'liber' } | { readonly faza: 'se-marcheaza' } | { readonly faza: 'esec'; readonly motiv: string }>({ faza: 'liber' });
@@ -116,13 +116,14 @@ function DetaliuGrup({ con, grup, marcat }: { readonly con: Conexiune; readonly 
   return (
     <div className="admin-detaliu">
       <DetaliiAparitie a={grup.ultima} />
-      <div className="admin-randuri">
+      {/* Fără `erori.rezolva` (ADR 0049), rolul doar citește: butonul nu se arată (serverul l-ar refuza oricum). */}
+      {poateMarca ? <div className="admin-randuri">
         <button type="button" data-admin="marcheaza" disabled={faraAppCheck || marcare.faza === 'se-marcheaza'} onClick={marcheaza}>
           {marcare.faza === 'se-marcheaza' ? t('admin.erori.se-marcheaza') : grup.rezolvat ? t('admin.erori.redeschide') : t('admin.erori.marcheaza')}
         </button>
         {faraAppCheck ? <span className="admin-slab" data-admin="fara-appcheck">{t('admin.erori.fara-appcheck')}</span> : null}
         {marcare.faza === 'esec' ? <span className="admin-eroare" role="alert">{t('admin.erori.marcare-esec', { motiv: marcare.motiv })}</span> : null}
-      </div>
+      </div> : null}
       <h3>{t('admin.erori.aparitii')}</h3>
       {aparitii === null ? <p className="admin-mesaj" aria-busy="true">{t('admin.erori.se-incarca')}</p>
         : !aparitii.ok ? <p className="admin-eroare" role="alert">{t('admin.erori.aparitii-citire', { motiv: aparitii.motiv })}</p>

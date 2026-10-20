@@ -189,7 +189,8 @@ test('cifrele: din aceleași date, nu scrise de mână', () => {
   assert.equal(c.felii.gata, toate.filter((f) => f.stare === 'gata').length);
   assert.equal(c.felii.deFacut, toate.filter((f) => f.stare === 'de-facut').length);
   assert.equal(c.felii.aduse, toate.filter((f) => f.adusa && f.stare === 'gata').length);
-  assert.equal(c.felii.aduse, 5);
+  // Feliile aduse înainte cresc cu fiecare felie fără mașină: un prag de jos (cele până pe 20.10), nu un număr fix.
+  assert.ok(c.felii.aduse >= 6, String(c.felii.aduse));
   assert.equal(c.etape, 30);
   assert.equal(c.tampoane, 3);
   assert.equal(c.saptamani, 33);
