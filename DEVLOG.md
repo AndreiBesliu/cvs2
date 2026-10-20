@@ -2397,3 +2397,16 @@ e-mail (decizia owner-ului).
 **Completed:** 20.10 20:55. Fără agenți (cererea owner-ului, deși ultracode e pornit); săptămânalul 90 → 91 %. `npm run rapid`
 RC 0 (7 115 teste unitare, 0 picate, 8 sărite); e2e 169 / 169 în Edge. Pornirea neschimbată: 95,1 kB (cu ușa 99,8 / 100).
 **Publicat pe test:** 20.10, workflow-ul `publica` pe `464fad4` (după rapid-ul verde pe CI, 4 / 4 felii).
+
+## 2026-10-20 — Lipirea mânerelor (Model: Claude Opus 5.5)
+
+**Prompt:** „Fă acum lipirea mânerelor de ghidaje, grilă și forme, fără agenți.”
+**Started:** 20.10 21:10, săptămânalul 91 %. Felia **6.F↑** (ADR 0055), fără agenți: mânerul de scalare tras se lipește, ca
+punct, de ghidaje, foaie, cutiile celorlalte forme și grilă (aceleași ținte și aceeași toleranță ca mutarea, ADR 0050), cu
+liniile de aliniere; Alt inversează lipirea (ADR 0052). Pe axa lipită scara nu se mai rotunjește, ca marginea să ajungă exact
+pe țintă; la colțul proporțional decide axa care s-a schimbat mai mult. Rotirea rămâne cu Shift (15°).
+**Treceri:** (1) calculul pur (`transformareManerLipita` și ținta exactă dată lui `transformareManer`), legătura în mânere
+(aceleași ținte și toleranță ca mutarea, liniile prin rigle, Alt), probele unitare și e2e, verzi din prima; controlul negativ:
+proba e2e cade pe codul fără lipire (linia ghidajului lipsește); (2) rularea completă verde.
+**Completed:** 20.10 21:25. Fără agenți; săptămânalul 91 → 92 %. `npm run rapid` RC 0 (7 116 teste unitare, 0 picate,
+8 sărite); e2e 170 / 170 în Edge. Pornirea neschimbată: 95,1 kB (cu ușa 99,8 / 100).

@@ -10,7 +10,7 @@ import { t } from '../i18n/t.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
 import { transforma, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
-import { cutiiAlese, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie, transformareManer, type Maner, type TransformareManer } from './editareCalcul.ts';
+import { cutiiAlese, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie, transformareManer, transformareManerLipita, type LipirePunct, type Maner, type TransformareManer } from './editareCalcul.ts';
 import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTE_UNELTE, UNELTE, type Unealta, type UnealtaDesen } from './desenCalcul.ts';
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
 import '../ui/actiuniDocumentCalcul.ts';
@@ -111,6 +111,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [locExtensie, setLocExtensie] = useState<HTMLElement | null>(null);
   useLayoutEffect(() => { setLoc(document.getElementById('loc-unelte')); setLocExtensie(document.getElementById('loc-extensie')); });
   const [liniiDesen, setLiniiDesen] = useState<readonly LinieGhid[]>([]);
+  // Liniile de aliniere ale mânerului lipit (ADR 0055), cât se trage.
+  const [liniiManere, setLiniiManere] = useState<readonly LinieGhid[]>([]);
   const tinteToate = useMemo(() => tinteFoaie(doc, new Set(), true), [doc]);
   // Gestul îl dă pânza printr-o funcție stabilă; starea de acum o citește de aici (fără închideri vechi).
   const scrieRaza = (r: number): void => { setRaza(r); setTextRaza(textNumar(r)); scrieLocal(CHEIE_RAZA, String(r)); };
@@ -281,7 +283,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       {foaie ? (
         <Rigle
           vedere={vedere} latime={marime.latime} inaltime={marime.inaltime} zona={zona} foaie={foaie.stoc}
-          ghidaje={ghidaje} linii={liniiDesen.length > 0 ? [...p.linii, ...liniiDesen] : p.linii} grila={pasGrila} lipestePoz={lipestePoz} doarCitire={p.doarCitire}
+          ghidaje={ghidaje} linii={liniiDesen.length > 0 || liniiManere.length > 0 ? [...p.linii, ...liniiDesen, ...liniiManere] : p.linii} grila={pasGrila} lipestePoz={lipestePoz} doarCitire={p.doarCitire}
           onNou={(axa, poz) => { scrieGhidaje([...ghidaje, { id: idGhidaj(ghidaje), axa, poz }]); }}
           onMuta={(id, poz) => { scrieGhidaje(ghidaje.map((g) => (g.id === id ? { ...g, poz } : g))); }}
           onSterge={(id) => { scrieGhidaje(ghidaje.filter((g) => g.id !== id)); }}
@@ -292,7 +294,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       ) : null}
       {unealta === 'transformare' && cutie && !p.doarCitire && selectie.length > 0 ? (
         <Manere cutie={cutie} vedere={vedere} doc={doc} selectie={selectie}
-          aplica={(tr) => { ruleaza('document.transforma', { transformare: () => tr }); }} />
+          aplica={(tr) => { ruleaza('document.transforma', { transformare: () => tr }); }}
+          lipire={(alt) => (lipire !== alt
+            ? (q) => lipeste(tinte, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
+            : null)}
+          onLinii={setLiniiManere} />
       ) : null}
       {traseu && deseneaza(unealta) ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="desen-previzualizare">
@@ -492,9 +498,12 @@ const CURSOR_MANER: Record<Maner | 'rotire', string> = {
  * (o scalare care n-ar mai fi exactă) se spune deasupra cutiei, cu motivul. Cât e apăsată pânza în altă parte (mutarea,
  * panoramarea), mânerele se ascund: n-ar urma forma.
  */
-function Manere({ cutie: c, vedere: v, doc, selectie, aplica }: {
+function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii }: {
   readonly cutie: Cutie; readonly vedere: Vedere; readonly doc: Document; readonly selectie: readonly string[];
   readonly aplica: (t: Transformare) => void;
+  /** Lipirea mânerului tras (ADR 0055), după Alt ținut (care o inversează): null = mânerul merge liber. */
+  readonly lipire: (alt: boolean) => LipirePunct | null;
+  readonly onLinii: (l: readonly LinieGhid[]) => void;
 }): ReactElement {
   const ex = (x: number): number => v.tx + x * v.scara;
   const ey = (y: number): number => v.ty - y * v.scara;
@@ -503,8 +512,8 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica }: {
   const [motiv, setMotiv] = useState<string | null>(null);
   const [ascunse, setAscunse] = useState(false);
   const radacina = useRef<HTMLDivElement | null>(null);
-  const acum = useRef({ c, v, doc, selectie, aplica });
-  acum.current = { c, v, doc, selectie, aplica };
+  const acum = useRef({ c, v, doc, selectie, aplica, lipire, onLinii });
+  acum.current = { c, v, doc, selectie, aplica, lipire, onLinii };
   // Motivul unui refuz rămâne până la următorul gest sau până se schimbă selecția.
   useEffect(() => { setMotiv(null); }, [selectie]);
   useEffect(() => {
@@ -542,7 +551,10 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica }: {
     };
     const misca = (e: PointerEvent): void => {
       if (g) {
-        if (e.pointerId === g.id) setGest({ m: g.m, t: transformareManer(acum.current.c, g.m, g.start, laFoaie(e), e.shiftKey) });
+        if (e.pointerId !== g.id) return;
+        const r = transformareManerLipita(acum.current.c, g.m, g.start, laFoaie(e), e.shiftKey, acum.current.lipire(e.altKey));
+        setGest({ m: g.m, t: r.t });
+        acum.current.onLinii(r.linii);
         return;
       }
       if (apasata !== null) return;
@@ -559,10 +571,11 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica }: {
       const s = g;
       g = null;
       setGest(null);
-      const { c: cutie, doc: d, selectie: alese, aplica: ap } = acum.current;
+      const { c: cutie, doc: d, selectie: alese, aplica: ap, lipire: lip, onLinii: linii } = acum.current;
+      linii([]);
       // Un clic (sub 3 px de tragere) nu e o transformare.
       if (Math.hypot(e.clientX - s.ecran.x, e.clientY - s.ecran.y) < MINIM_DESEN_PX) return;
-      const tr = transformareManer(cutie, s.m, s.start, laFoaie(e), e.shiftKey);
+      const tr = transformareManerLipita(cutie, s.m, s.start, laFoaie(e), e.shiftKey, lip(e.altKey)).t;
       if (tr.fel === 'rotire' ? tr.unghi === 0 : tr.sx === 1 && tr.sy === 1) return;
       const r = transforma(d, FOAIA, alese, tr);
       if (!r.ok) {
@@ -576,6 +589,7 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica }: {
       apasata = null;
       setGest(null);
       setAscunse(false);
+      acum.current.onLinii([]);
     };
     const tasta = (e: KeyboardEvent): void => {
       if (e.code === 'Space') spatiu = e.type === 'keydown';

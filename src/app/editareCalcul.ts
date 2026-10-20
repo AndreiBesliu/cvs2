@@ -1,6 +1,6 @@
 /** Editarea pe pânză (ADR 0050), partea pură: țintele lipirii, cutiile instanțelor alese, id-ul unui ghidaj nou. */
 import type { Cutie } from '../geom/cutie.ts';
-import { tinteCutie, tinteDin, tintePunct, type Tinte, type TintaLipire } from '../geom/lipire.ts';
+import { tinteCutie, tinteDin, tintePunct, type LinieLipire, type Tinte, type TintaLipire } from '../geom/lipire.ts';
 import { aplica } from '../geom/matrice.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
 import { cutieElement } from '../model/forme.ts';
@@ -77,7 +77,9 @@ export function punctManer(c: Cutie, m: Maner): Punct {
  * jurul centrului cutiei, Shift în pași de 15°. Scările și unghiul se rotunjesc (1e-4, 0,001°), ca pixelii mausului să nu
  * ajungă în geometrie.
  */
-export function transformareManer(c: Cutie, m: Maner | 'rotire', start: Punct, q: Punct, shift: boolean): TransformareManer {
+export function transformareManer(
+  c: Cutie, m: Maner | 'rotire', start: Punct, q: Punct, shift: boolean, tinta: { readonly x?: number; readonly y?: number } = {},
+): TransformareManer {
   const cx = (c.minX + c.maxX) / 2, cy = (c.minY + c.maxY) / 2;
   if (m === 'rotire') {
     let u = ((Math.atan2(q.y - cy, q.x - cx) - Math.atan2(start.y - cy, start.x - cx)) * 180) / Math.PI;
@@ -88,9 +90,10 @@ export function transformareManer(c: Cutie, m: Maner | 'rotire', start: Punct, q
   }
   const a = punctManer(c, OPUS[m]), h = punctManer(c, m);
   const rot = (v: number): number => Math.round(v * 10000) / 10000;
-  const hx = h.x + q.x - start.x, hy = h.y + q.y - start.y;
-  let fx = h.x === a.x ? 1 : rot((hx - a.x) / (h.x - a.x));
-  let fy = h.y === a.y ? 1 : rot((hy - a.y) / (h.y - a.y));
+  // Pe o axă lipită (`tinta`), mânerul ajunge exact pe țintă: scara ei nu se rotunjește (ADR 0055).
+  const hx = tinta.x ?? h.x + q.x - start.x, hy = tinta.y ?? h.y + q.y - start.y;
+  let fx = h.x === a.x ? 1 : tinta.x === undefined ? rot((hx - a.x) / (h.x - a.x)) : (hx - a.x) / (h.x - a.x);
+  let fy = h.y === a.y ? 1 : tinta.y === undefined ? rot((hy - a.y) / (h.y - a.y)) : (hy - a.y) / (h.y - a.y);
   if (m.length === 2 && !shift) {
     const f = Math.abs(fx - 1) >= Math.abs(fy - 1) ? fx : fy;
     fx = f;
@@ -126,4 +129,29 @@ export function manerLovit(c: Cutie, v: { readonly tx: number; readonly ty: numb
     if (Math.abs(px - ex(q.x)) <= LOVIRE_PX && Math.abs(py - ey(q.y)) <= LOVIRE_PX) return m;
   }
   return null;
+}
+
+/** Lipirea unui punct al foii (ADR 0055): liniile țintelor atinse (`poz` = ținta, exactă), sau null cu lipirea oprită. */
+export type LipirePunct = (p: Punct) => { readonly linii: readonly LinieLipire[] } | null;
+
+/**
+ * Pură: transformarea mânerului `m`, cu punctul lui lipit (ADR 0055). Mânerul tras (punctul lui + deplasarea cursorului) se
+ * lipește ca un punct de ținte; pe axele pe care mânerul le scalează și pe care s-a lipit, scara îl duce exact pe țintă. La
+ * colțul proporțional decide axa care s-a schimbat mai mult, deci o lipire pe cealaltă axă nu se folosește. Liniile întoarse
+ * sunt doar ale axelor pe care mânerul a ajuns chiar pe țintă. Rotirea nu se lipește (are Shift, în pași de 15°).
+ */
+export function transformareManerLipita(
+  c: Cutie, m: Maner | 'rotire', start: Punct, q: Punct, shift: boolean, lipire: LipirePunct | null,
+): { readonly t: TransformareManer; readonly linii: readonly LinieLipire[] } {
+  if (m === 'rotire' || !lipire) return { t: transformareManer(c, m, start, q, shift), linii: [] };
+  const h = punctManer(c, m);
+  const r = lipire({ x: h.x + q.x - start.x, y: h.y + q.y - start.y });
+  const x = m === 'n' || m === 's' ? undefined : r?.linii.find((l) => l.axa === 'x')?.poz;
+  const y = m === 'e' || m === 'v' ? undefined : r?.linii.find((l) => l.axa === 'y')?.poz;
+  const t = transformareManer(c, m, start, q, shift, { ...(x === undefined ? {} : { x }), ...(y === undefined ? {} : { y }) });
+  if (t.fel !== 'scalare' || !r) return { t, linii: [] };
+  // Unde a ajuns mânerul după scalare (la colțul proporțional, o axă poate fi dusă de cealaltă, nu de ținta ei).
+  const nx = t.ancora.x + (h.x - t.ancora.x) * t.sx, ny = t.ancora.y + (h.y - t.ancora.y) * t.sy;
+  const pe = (v: number, w: number | undefined): boolean => w !== undefined && Math.abs(v - w) <= 1e-9 * Math.max(1, Math.abs(w));
+  return { t, linii: r.linii.filter((l) => (l.axa === 'x' ? pe(nx, x) : pe(ny, y))) };
 }

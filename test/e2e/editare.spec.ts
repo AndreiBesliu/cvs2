@@ -556,3 +556,58 @@ test('oglindirea (ADR 0054): butoanele din extensie și Shift+H / Shift+V; ce se
   expect(await exportGcode(page)).toEqual(a);
   expect(erori).toEqual([]);
 });
+
+test('lipirea mânerelor (ADR 0055): latura trasă lângă un ghidaj ajunge exact pe el, cu linia lui; Alt o lasă liberă', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.goto('/');
+  await expect(page.getByTestId('rigla-stanga')).toBeVisible();
+  await adauga(page, 'dreptunghi');
+  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+
+  // Un ghidaj vertical exact la x = 200.
+  let v = await vedere(page);
+  let la = await ecran(page, v);
+  const stanga = await centruRigla(page, 'rigla-stanga');
+  await trageEcran(page, stanga, { x: la(200, 0).x, y: stanga.y });
+  const b = await page.locator('[data-ghidaj]').boundingBox();
+  if (!b) throw new Error('ghidajul n-are cutie');
+  await page.mouse.dblclick(b.x + b.width / 2, b.y + b.height * 0.6);
+  await page.getByTestId('ghidaj-camp').fill('200');
+  await page.getByTestId('ghidaj-camp').press('Enter');
+  await expect(page.locator('[data-ghidaj]')).toHaveAttribute('data-poz', '200');
+
+  // Transformarea; latura e (la x = 120) trasă până la 199,2: se lipește de ghidaj, iar linia lui se vede cât se trage.
+  await randuri(page).nth(0).click();
+  await page.locator('[data-unealta="transformare"]').click();
+  v = await vedere(page);
+  la = await ecran(page, v);
+  const e = await maner(page, 'e');
+  const tinta = la(199.2, 50);
+  await page.mouse.move(e.x, e.y);
+  await page.mouse.down();
+  await page.mouse.move((e.x + tinta.x) / 2, e.y, { steps: 3 });
+  await page.mouse.move(tinta.x, e.y + 6, { steps: 3 });
+  await expect(page.locator('line.aliniere[data-fel="ghidaj"]')).toHaveCount(1);
+  await page.mouse.up();
+  await expect(page.locator('line.aliniere')).toHaveCount(0);
+  await expect(randuri(page)).toHaveText(['dreptunghi 180.00 × 60.00 la X 20.00, Y 20.00']);
+  await expect(page.locator('[data-camp="forma-latime"]')).toHaveValue('180');
+
+  // Cu Alt ținut, aceeași tragere rămâne liberă: lățimea nu e 180.
+  await page.keyboard.press('Control+z');
+  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+  v = await vedere(page);
+  la = await ecran(page, v);
+  const e2 = await maner(page, 'e');
+  await page.mouse.move(e2.x, e2.y);
+  await page.keyboard.down('Alt');
+  await page.mouse.down();
+  await page.mouse.move(la(199.2, 50).x, e2.y, { steps: 4 });
+  await expect(page.locator('line.aliniere')).toHaveCount(0);
+  await page.mouse.up();
+  await page.keyboard.up('Alt');
+  await expect(randuri(page)).not.toHaveText(['dreptunghi 180.00 × 60.00 la X 20.00, Y 20.00']);
+  await expect(randuri(page)).toHaveText([/^dreptunghi 179\.\d\d × 60\.00 la X 20\.00, Y 20\.00$/]);
+  expect(erori).toEqual([]);
+});

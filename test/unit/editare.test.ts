@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cutiiAlese, idGhidaj, MANERE, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie, transformareManer } from '../../src/app/editareCalcul.ts';
+import { cutiiAlese, idGhidaj, MANERE, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie, transformareManer, transformareManerLipita } from '../../src/app/editareCalcul.ts';
 import { pasRigla } from '../../src/canvas/gradatii.ts';
-import { lipeste } from '../../src/geom/lipire.ts';
+import { lipeste, tinteDin } from '../../src/geom/lipire.ts';
 import type { Document } from '../../src/model/document.ts';
 import { docDin, ID } from './ajutor-document.ts';
 
@@ -106,4 +106,45 @@ test('mânerele pe ecran: sub 24 px pe o axă nu apar cele care o scalează; lov
   assert.equal(manerLovit(s, v, 10 + 30 - 4, 300 - 30 + 4), 'ne');
   // Mică (10 px): nimic de scalat, doar rotirea.
   assert.equal(manerLovit({ minX: 0, minY: 0, maxX: 5, maxY: 5 }, v, 20, 290), null);
+});
+
+test('mânerul lipit (ADR 0055): latura ajunge exact pe ghidaj, nerotunjită; colțul proporțional ia doar axa care decide', () => {
+  // Cutia 0…30 × 0…50; ghidajele x = 40,1 și y = 53; toleranța 2 mm, fără grilă.
+  const c = { minX: 0, minY: 0, maxX: 30, maxY: 50 };
+  const tinte = tinteDin([
+    { axa: 'x', poz: 40.1, de: -Infinity, la: Infinity, fel: 'ghidaj' },
+    { axa: 'y', poz: 53, de: -Infinity, la: Infinity, fel: 'ghidaj' },
+  ]);
+  const lip = (grila: number | null = null) => (p: { x: number; y: number }) => lipeste(tinte, { minX: p.x, minY: p.y, maxX: p.x, maxY: p.y }, 0, 0, { toleranta: 2, grila });
+  const axe = (r: { linii: readonly { axa: string }[] }): string[] => r.linii.map((l) => l.axa).sort();
+
+  // Latura e trasă la 39,5: se lipește la 40,1; scara 40,1 / 30 nu se rotunjește (fără lipire ar fi 1,3167).
+  const e = transformareManerLipita(c, 'e', { x: 30, y: 25 }, { x: 39.5, y: 52.5 }, false, lip());
+  assert.ok(e.t.fel === 'scalare' && Math.abs(e.t.ancora.x + 30 * e.t.sx - 40.1) <= 1e-12 && e.t.sy === 1);
+  assert.deepEqual(axe(e), ['x'], 'latura e nu ia lipirea pe y');
+  const liber = transformareManerLipita(c, 'e', { x: 30, y: 25 }, { x: 39.5, y: 25 }, false, null);
+  assert.deepEqual([liber.t.fel === 'scalare' ? liber.t.sx : 0, liber.linii.length], [1.3167, 0]);
+
+  // Colțul ne tras la (39,5; 52,5): x se lipește la 40,1 (schimbarea mai mare, 1,337 față de 1,06), y la 53 dar nu decide.
+  const ne = transformareManerLipita(c, 'ne', { x: 30, y: 50 }, { x: 39.5, y: 52.5 }, false, lip());
+  assert.ok(ne.t.fel === 'scalare' && ne.t.sx === ne.t.sy && Math.abs(30 * ne.t.sx - 40.1) <= 1e-12);
+  assert.deepEqual(axe(ne), ['x']);
+  // Cu Shift (liber pe axe): ambele ajung pe ghidaje.
+  const sh = transformareManerLipita(c, 'ne', { x: 30, y: 50 }, { x: 39.5, y: 52.5 }, true, lip());
+  assert.ok(sh.t.fel === 'scalare' && Math.abs(30 * sh.t.sx - 40.1) <= 1e-12 && Math.abs(50 * sh.t.sy - 53) <= 1e-12);
+  assert.deepEqual(axe(sh), ['x', 'y']);
+
+  // Latura n ignoră ghidajul pe x: doar înălțimea, până la 53.
+  const n = transformareManerLipita(c, 'n', { x: 15, y: 50 }, { x: 39.9, y: 52.4 }, false, lip());
+  assert.ok(n.t.fel === 'scalare' && n.t.sx === 1 && Math.abs(50 * n.t.sy - 53) <= 1e-12);
+  assert.deepEqual(axe(n), ['y']);
+
+  // Grila de 10: latura e trasă la 58,7 se lipește la 60 (fără ținte aproape).
+  const g = transformareManerLipita(c, 'e', { x: 30, y: 25 }, { x: 58.7, y: 25 }, false, lip(10));
+  assert.ok(g.t.fel === 'scalare' && g.t.sx === 2);
+  assert.deepEqual(g.linii.map((l) => l.fel), ['grila']);
+
+  // Rotirea nu se lipește.
+  const r = transformareManerLipita(c, 'rotire', { x: 15, y: 80 }, { x: 40.1, y: 53 }, false, lip());
+  assert.deepEqual([r.t.fel, r.linii.length], ['rotire', 0]);
 });
