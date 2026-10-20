@@ -2396,3 +2396,4 @@ e-mailul invitației (ADR 0049); recomandarea, `noreply@cncvectorstudio.com` cu 
 e-mail (decizia owner-ului).
 **Completed:** 20.10 20:55. Fără agenți (cererea owner-ului, deși ultracode e pornit); săptămânalul 90 → 91 %. `npm run rapid`
 RC 0 (7 115 teste unitare, 0 picate, 8 sărite); e2e 169 / 169 în Edge. Pornirea neschimbată: 95,1 kB (cu ușa 99,8 / 100).
+**Publicat pe test:** 20.10, workflow-ul `publica` pe `464fad4` (după rapid-ul verde pe CI, 4 / 4 felii).
