@@ -2410,3 +2410,4 @@ pe țintă; la colțul proporțional decide axa care s-a schimbat mai mult. Roti
 proba e2e cade pe codul fără lipire (linia ghidajului lipsește); (2) rularea completă verde.
 **Completed:** 20.10 21:25. Fără agenți; săptămânalul 91 → 92 %. `npm run rapid` RC 0 (7 116 teste unitare, 0 picate,
 8 sărite); e2e 170 / 170 în Edge. Pornirea neschimbată: 95,1 kB (cu ușa 99,8 / 100).
+**Publicat pe test:** 20.10, workflow-ul `publica` pe `844902c` (după rapid-ul verde pe CI, 4 / 4 felii).
