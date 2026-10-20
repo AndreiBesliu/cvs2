@@ -1,0 +1,139 @@
+/* Fila Documentație (ADR 0048): navigatorul pe categorii și documentul ales, doar cu tokenurile temei. */
+.doc {
+  display: grid;
+  gap: var(--sp-4);
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .doc {
+    grid-template-columns: 17rem minmax(0, 1fr);
+  }
+
+  .doc-nav {
+    position: sticky;
+    top: var(--sp-3);
+    max-height: calc(100vh - 2 * var(--sp-3));
+  }
+}
+
+.doc-nav {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+  overflow: auto;
+  max-height: 22rem;
+}
+
+@media (min-width: 900px) {
+  .doc-nav {
+    max-height: calc(100vh - 2 * var(--sp-3));
+  }
+}
+
+.doc-cauta {
+  font: inherit;
+  font-size: var(--fs-3);
+  width: 100%;
+  box-sizing: border-box;
+  min-height: var(--tinta);
+  padding: 0 var(--sp-3);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+}
+
+.doc-categorie h3 {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--t-slab);
+}
+
+.doc-cate {
+  font-weight: 400;
+}
+
+.doc-categorie ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.doc-categorie a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-1);
+  color: var(--t);
+  text-decoration: none;
+  font-size: var(--fs-2);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.doc-categorie a:hover {
+  background: var(--s-peste);
+}
+
+.doc-categorie a[aria-current='page'] {
+  background: var(--s-ales);
+  box-shadow: inset 3px 0 0 var(--a);
+  font-weight: 600;
+}
+
+.doc-stare {
+  flex-shrink: 0;
+  font-size: var(--fs-1);
+  padding: 0 var(--sp-1);
+  border-radius: var(--r-1);
+  background: color-mix(in oklab, var(--l-focus) 14%, var(--s-panou));
+  color: var(--t);
+}
+
+.doc-articol {
+  min-width: 0;
+  padding: var(--sp-4) var(--sp-5) var(--sp-5);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+}
+
+.doc-cap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.doc-cale {
+  font-family: var(--mono);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+  overflow-wrap: anywhere;
+}
+
+.doc-sursa {
+  margin: var(--sp-5) 0 0;
+}
+
+@media (max-width: 640px) {
+  .doc-articol {
+    padding-inline: var(--sp-3);
+  }
+}

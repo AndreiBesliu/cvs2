@@ -18,8 +18,12 @@ test('antetul CSP de pe Hosting e CSP-ul din build, plus frame-ancestors, fără
   assert.ok(csp.includes("frame-ancestors 'none'"));
   assert.ok(!csp.includes('unsafe-eval'));
   // Antetele se potrivesc pe calea cererii: „/” și „/index.html” sunt două căi, deci amândouă sunt fără cache.
-  for (const cale of ['/', '/index.html', '/config.json', '/sw.js']) {
+  // Documentația admin (ADR 0048) are nume fixe și se schimbă la fiecare publicare: fără cache, ca fila să n-o arate veche.
+  for (const cale of ['/', '/index.html', '/config.json', '/sw.js', '/documentatie/**']) {
     const r = cfg.hosting.headers.find((h) => h.source === cale);
     assert.equal(r?.headers.find((h) => h.key === 'Cache-Control')?.value, 'no-cache', cale);
   }
+  // Documentele repo-ului de pe domeniul produsului nu ajung în rezultatele căutării.
+  const doc = cfg.hosting.headers.find((h) => h.source === '/documentatie/**');
+  assert.equal(doc?.headers.find((h) => h.key === 'X-Robots-Tag')?.value, 'noindex');
 });

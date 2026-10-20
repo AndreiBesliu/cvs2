@@ -1,0 +1,681 @@
+/*
+ * Fila Roadmap (ADR 0048). Doar tokenurile temei (`src/app/stil.css`): culorile stărilor vin din tokenurile existente
+ * (verde = tăietura, chihlimbar = accentul, albastru = focusul), iar fundalurile de sub text sunt amestecuri ale lor cu
+ * panoul, deci textul rămâne `--t` în ambele teme. Fără bibliotecă de grafice: barele sunt CSS, lățimea vine din `--p`.
+ */
+.rm {
+  --rm-gata: var(--traseu-taiere);
+  --rm-lucru: var(--a);
+  --rm-urm: var(--l-focus);
+  --rm-viit: color-mix(in oklab, var(--t) 26%, var(--s-panou));
+  /* Bara unei etape viitoare (și mostra ei din legendă): vizibilă pe pistă, mai slabă decât stările începute. */
+  --rm-viit-fond: color-mix(in oklab, var(--t) 15%, var(--s-panou));
+  --rm-pista-fond: color-mix(in oklab, var(--t) 9%, var(--s-panou));
+  /* Înălțimea coloanelor cronologiei: umplerea crește de jos, ca un grafic cu coloane. */
+  --rm-h: 48px;
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.rm h2 {
+  margin: 0;
+  font-size: var(--fs-4);
+}
+
+.rm h3 {
+  margin: var(--sp-4) 0 var(--sp-2);
+  font-size: var(--fs-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--t-slab);
+}
+
+.rm-cifre,
+.rm-owner,
+.rm-cronologie,
+.rm-detalii {
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+}
+
+/* ── Cifrele ──────────────────────────────────────────────────────────────────────────────────────────────────── */
+
+.rm-cifre {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  overflow: hidden;
+}
+
+.rm-cifra {
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-4);
+  border-right: 1px solid var(--l-margine);
+}
+
+.rm-cifra:last-child {
+  border-right: 0;
+}
+
+.rm-cifra-nume {
+  font-size: var(--fs-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--t-slab);
+}
+
+.rm-cifra-valoare {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.rm-cifra-valoare small {
+  font-size: var(--fs-3);
+  font-weight: 500;
+  color: var(--t-slab);
+}
+
+.rm-cifra-bara,
+.rm-progres-bara {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--rm-pista-fond);
+  overflow: hidden;
+}
+
+.rm-cifra-bara > span,
+.rm-progres-bara > span {
+  display: block;
+  height: 100%;
+  width: calc(var(--p, 0) * 100%);
+  border-radius: inherit;
+  background: var(--rm-gata);
+}
+
+.rm-cifra[data-cifra='etapa'] .rm-cifra-bara > span {
+  background: var(--rm-lucru);
+}
+
+.rm-cifra[data-cifra='adr'] .rm-cifra-bara > span {
+  background: var(--rm-urm);
+}
+
+.rm-cifra-detaliu {
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+/* ── Ce așteaptă de la owner ─────────────────────────────────────────────────────────────────────────────────── */
+
+.rm-owner {
+  padding: var(--sp-4) var(--sp-5);
+  background: color-mix(in oklab, var(--a) 8%, var(--s-panou));
+  border-color: color-mix(in oklab, var(--a) 35%, var(--s-panou));
+  border-left: 4px solid var(--a);
+}
+
+.rm-owner h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.rm-numar {
+  min-width: 1.5rem;
+  padding: 0 var(--sp-2);
+  border-radius: 999px;
+  background: var(--a-plin);
+  color: var(--t-pe-a);
+  font-size: var(--fs-2);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.5rem;
+}
+
+.rm-owner-lista {
+  margin: var(--sp-3) 0 0;
+  padding-left: 1.4rem;
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.rm-owner-lista li {
+  padding-left: var(--sp-1);
+  line-height: 1.5;
+}
+
+.rm-owner-lista li::marker {
+  color: var(--a);
+  font-weight: 700;
+}
+
+.rm-owner-ce {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.rm-owner-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  margin-top: var(--sp-1);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.rm a {
+  color: var(--l-focus);
+  text-underline-offset: 0.15em;
+}
+
+/* ── Cronologia ───────────────────────────────────────────────────────────────────────────────────────────────── */
+
+.rm-cronologie {
+  padding: var(--sp-4) var(--sp-5);
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.rm-cap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-4);
+}
+
+.rm-legenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+.rm-legenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.rm-mostra {
+  display: inline-block;
+  width: 1.25rem;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.rm-pista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(2.6rem, 1fr));
+  gap: 6px 3px;
+}
+
+@media (min-width: 900px) {
+  .rm-pista {
+    grid-template-columns: repeat(33, minmax(0, 1fr));
+  }
+}
+
+.rm-etapa {
+  display: grid;
+  grid-template-rows: 0.8rem var(--rm-h) auto 0.75rem auto;
+  justify-items: center;
+  align-items: center;
+  gap: 3px;
+  /* Coloana interioară ocupă tot butonul: stilul global al butoanelor (`justify-content: center`) o lăsa cât textul cel mai
+     lat, deci bara (lățimea 100%) ieșea mai îngustă la etapele cu un număr dintr-o cifră (`S1` față de `S10`). */
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  padding: var(--sp-1) 1px;
+  border-radius: var(--r-1);
+  font-weight: 400;
+}
+
+.rm-etapa[aria-pressed='true'] {
+  font-weight: 400;
+}
+
+/* Cu litere mici și fără spațiere: „ACUM” era mai lat decât coloana și trecea peste chenarul etapei alese. */
+.rm-acum {
+  font-size: 0.625rem;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--a);
+  line-height: 1;
+}
+
+.rm-bara,
+.rm-mostra {
+  background: var(--rm-pista-fond);
+}
+
+.rm-bara {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: var(--rm-h);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.rm-umplere {
+  position: absolute;
+  inset: auto 0 0;
+  display: block;
+  height: calc(var(--p, 0) * 100%);
+}
+
+[data-stare='viitoare'] > .rm-bara {
+  background: var(--rm-viit-fond);
+}
+
+[data-stare='gata'] > .rm-bara,
+.rm-mostra[data-stare='gata'] {
+  background: var(--rm-gata);
+}
+
+[data-stare='in-lucru'] > .rm-bara,
+.rm-mostra[data-stare='in-lucru'] {
+  background: color-mix(in oklab, var(--rm-lucru) 30%, var(--s-panou));
+}
+
+[data-stare='in-lucru'] .rm-umplere {
+  background: var(--rm-lucru);
+}
+
+[data-stare='urmatoare'] > .rm-bara,
+.rm-mostra[data-stare='urmatoare'] {
+  background: color-mix(in oklab, var(--rm-urm) 22%, var(--s-panou));
+}
+
+[data-stare='urmatoare'] .rm-umplere {
+  background: var(--rm-urm);
+}
+
+.rm-mostra[data-stare='viitoare'] {
+  background: var(--rm-viit-fond);
+}
+
+/* Toate feliile gata, placa netăiată: verde dungat (etapa se închide cu placa). */
+[data-asteapta='true'] > .rm-bara,
+.rm-mostra[data-asteapta='true'] {
+  background: repeating-linear-gradient(135deg, var(--rm-gata) 0 4px, color-mix(in oklab, var(--rm-gata) 30%, var(--s-panou)) 4px 8px);
+}
+
+[data-asteapta='true'] .rm-umplere {
+  display: none;
+}
+
+.rm-etapa[data-tampon='true'] > .rm-bara {
+  height: 8px;
+  margin-block: calc((var(--rm-h) - 8px) / 2);
+  background: repeating-linear-gradient(90deg, var(--rm-viit) 0 3px, transparent 3px 6px);
+}
+
+.rm-etapa[aria-current='step'] > .rm-bara {
+  box-shadow: 0 0 0 2px var(--s-panou), 0 0 0 4px var(--a);
+}
+
+.rm-id {
+  font-size: var(--fs-2);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.rm-etapa[data-tampon='true'] .rm-id {
+  font-weight: 500;
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+.rm-etapa[data-stare='viitoare'] .rm-id {
+  color: var(--t-slab);
+}
+
+.rm-semne {
+  display: inline-flex;
+  gap: 2px;
+  height: 0.75rem;
+  align-items: center;
+}
+
+.rm-sapt {
+  font-size: 0.625rem;
+  color: var(--t-slab);
+  font-variant-numeric: tabular-nums;
+}
+
+.rm-semn {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+.rm-semn-placa {
+  border-radius: 50%;
+  border: 2px solid var(--t-slab);
+}
+
+.rm-semn-placa[data-taiata='true'] {
+  background: var(--rm-gata);
+  border-color: var(--rm-gata);
+}
+
+.rm-semn-live {
+  background: var(--rm-urm);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.rm-semn-reper {
+  width: 9px;
+  height: 9px;
+  background: var(--a);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.rm-semn-inline {
+  margin-left: var(--sp-2);
+  vertical-align: middle;
+}
+
+/* ── Panoul etapei ────────────────────────────────────────────────────────────────────────────────────────────── */
+
+.rm-detalii {
+  padding: var(--sp-4) var(--sp-5) var(--sp-5);
+  border-top: 4px solid var(--rm-viit);
+}
+
+.rm-detalii[data-stare='gata'] {
+  border-top-color: var(--rm-gata);
+}
+
+.rm-detalii[data-stare='in-lucru'] {
+  border-top-color: var(--rm-lucru);
+}
+
+.rm-detalii[data-stare='urmatoare'] {
+  border-top-color: var(--rm-urm);
+}
+
+.rm-detalii-cap {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.rm-detalii-cap h2 {
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.rm-insigna {
+  font-size: var(--fs-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--t-slab);
+  font-weight: 600;
+}
+
+.rm-cip-stare,
+.rm-cip-acum,
+.rm-cip-felie,
+.rm-cip-adusa {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--sp-2);
+  border-radius: 999px;
+  font-size: var(--fs-1);
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+  border: 1px solid var(--l-margine);
+  background: var(--s-peste);
+  color: var(--t);
+}
+
+[data-stare='gata'].rm-cip-stare,
+[data-stare='gata'].rm-cip-felie {
+  background: color-mix(in oklab, var(--rm-gata) 16%, var(--s-panou));
+  border-color: color-mix(in oklab, var(--rm-gata) 50%, var(--s-panou));
+}
+
+[data-stare='in-lucru'].rm-cip-stare,
+[data-stare='in-lucru'].rm-cip-felie,
+.rm-cip-acum {
+  background: color-mix(in oklab, var(--rm-lucru) 16%, var(--s-panou));
+  border-color: color-mix(in oklab, var(--rm-lucru) 50%, var(--s-panou));
+}
+
+[data-stare='urmatoare'].rm-cip-stare,
+.rm-cip-adusa {
+  background: color-mix(in oklab, var(--rm-urm) 14%, var(--s-panou));
+  border-color: color-mix(in oklab, var(--rm-urm) 45%, var(--s-panou));
+}
+
+[data-asteapta='true'].rm-cip-stare {
+  background: repeating-linear-gradient(135deg, color-mix(in oklab, var(--rm-gata) 18%, var(--s-panou)) 0 6px, var(--s-panou) 6px 12px);
+  border-color: color-mix(in oklab, var(--rm-gata) 50%, var(--s-panou));
+}
+
+.rm-fapte {
+  margin: var(--sp-4) 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--sp-3) var(--sp-5);
+}
+
+.rm-fapte > div {
+  min-width: 0;
+}
+
+.rm-fapte dt {
+  font-size: var(--fs-1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--t-slab);
+  margin-bottom: 2px;
+}
+
+.rm-fapte dd {
+  margin: 0;
+  font-size: var(--fs-3);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.rm-sub {
+  display: block;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.rm-progres {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.rm-progres-bara {
+  flex: 1;
+  max-width: 24rem;
+  height: 8px;
+}
+
+.rm-puncte {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.rm-puncte li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-1) 0;
+  font-size: var(--fs-3);
+}
+
+.rm-punct-nr {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  font-size: var(--fs-1);
+  font-weight: 700;
+  border: 1px solid var(--l-margine);
+  color: var(--t-slab);
+}
+
+.rm-puncte li[data-atins='true'] .rm-punct-nr {
+  border-color: var(--rm-urm);
+  color: var(--t);
+  background: color-mix(in oklab, var(--rm-urm) 14%, var(--s-panou));
+}
+
+.rm-felii {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.rm-felie {
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--l-margine);
+  border-left: 4px solid var(--rm-viit);
+  border-radius: var(--r-2);
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.rm-felie[data-stare='gata'] {
+  border-left-color: var(--rm-gata);
+}
+
+.rm-felie[data-stare='in-lucru'] {
+  border-left-color: var(--rm-lucru);
+}
+
+.rm-felie[data-sub='true'] {
+  margin-left: var(--sp-5);
+}
+
+.rm-felie-cap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-2);
+}
+
+.rm-felie-id {
+  font-family: var(--mono);
+  font-size: var(--fs-2);
+  font-weight: 700;
+  min-width: 3.25rem;
+}
+
+.rm-felie-titlu {
+  flex: 1 1 14rem;
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.rm-felie-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.rm-felie-cand {
+  font-variant-numeric: tabular-nums;
+}
+
+.rm-adr {
+  font-family: var(--mono);
+  font-size: var(--fs-1);
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: 999px;
+  background: var(--s-peste);
+  line-height: 1.6;
+  text-decoration: none;
+}
+
+.rm-adr:hover {
+  text-decoration: underline;
+}
+
+.rm-adr[data-lipsa='true'] {
+  color: var(--t-slab);
+}
+
+.rm-felie-nota {
+  font-size: var(--fs-2);
+  line-height: 1.5;
+}
+
+.rm-felie-nota summary {
+  cursor: pointer;
+  color: var(--t-slab);
+  overflow-wrap: anywhere;
+}
+
+.rm-felie-nota[open] summary {
+  margin-bottom: var(--sp-1);
+}
+
+.rm-felie-nota p {
+  margin: var(--sp-1) 0 0;
+  overflow-wrap: anywhere;
+}
+
+.rm-sursa {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .rm {
+    --rm-h: 36px;
+  }
+
+  .rm-owner,
+  .rm-cronologie,
+  .rm-detalii {
+    padding-inline: var(--sp-3);
+  }
+
+  .rm-cifra {
+    border-right: 0;
+    border-bottom: 1px solid var(--l-margine);
+  }
+
+  .rm-felie[data-sub='true'] {
+    margin-left: var(--sp-3);
+  }
+}

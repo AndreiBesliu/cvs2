@@ -59,7 +59,8 @@ export function publicareSimulata(dosarA: string, dosarB: string, re: RegExp): R
     const m = /^(.+-)([A-Za-z0-9_-]{8})(\.(?:js|css))$/.exec(vechi);
     if (!m) throw new Error(`fără amprentă: ${vechi}`);
     const amprenta = m[2] ?? '';
-    return { vechi, nou: `${m[1] ?? ''}${amprenta.slice(0, 7)}${amprenta.endsWith('Z') ? 'Y' : 'Z'}${m[3] ?? ''}` };
+    // Ultimul caracter se schimbă și fără majuscule: pe un disc care nu le deosebește (NTFS), `…z` → `…Z` ar fi același fișier.
+    return { vechi, nou: `${m[1] ?? ''}${amprenta.slice(0, 7)}${/[zZ]$/.test(amprenta) ? 'Y' : 'Z'}${m[3] ?? ''}` };
   });
   if (redenumiri.length === 0) throw new Error(`nicio bucată nu se potrivește cu ${String(re)}`);
   for (const { vechi, nou } of redenumiri) renameSync(join(dosarB, 'assets', vechi), join(dosarB, 'assets', nou));

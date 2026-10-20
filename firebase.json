@@ -81,6 +81,19 @@
             "value": "no-cache"
           }
         ]
+      },
+      {
+        "source": "/documentatie/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          },
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex"
+          }
+        ]
       }
     ]
   },

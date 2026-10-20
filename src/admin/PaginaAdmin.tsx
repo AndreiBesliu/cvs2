@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type ReactElement } from 'react';
 import type { User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { esteRol, type Rol } from '../../shared/personal.ts';
@@ -6,13 +6,18 @@ import { ascultaContul, conecteaza, iesi, intraCuGoogle, type ConfigCloud, type 
 import '../i18n/admin.ts';
 import { t } from '../i18n/t.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import { citesteAdresa, FILE, scrieAdresa, type Fila } from './adresa.ts';
 import { FilaDiagnoza } from './diagnoza/FilaDiagnoza.tsx';
+import { aducatorDocumentatie } from './documentatie/aducere.ts';
+import { FilaDocumentatie } from './documentatie/FilaDocumentatie.tsx';
 import { motivDin } from './erori/date.ts';
 import { FilaErori } from './erori/FilaErori.tsx';
+import { FilaRoadmap } from './roadmap/FilaRoadmap.tsx';
 import './admin.css';
 
 /**
- * Pagina `/admin` (ADR 0040): contul Google, rolul din `staff/{uid}`, apoi filele Erori și Diagnoză. Se încarcă la
+ * Pagina `/admin` (ADR 0040): contul Google, rolul din `staff/{uid}`, apoi filele Erori, Diagnoză, Roadmap și
+ * Documentație (ADR 0048; fila și documentul deschis stau în `#`, `adresa.ts`). Se încarcă la
  * cerere, din pornire, înaintea deschiderii proiectului: nu ia blocarea lui și nu aduce Firebase în pachetul de pornire.
  */
 export interface ProprietatiAdmin {
@@ -55,7 +60,32 @@ function Cadru({ children, antet }: { readonly children: ReactElement | ReactEle
 
 function Cont({ con, instanta, build }: { readonly con: Conexiune; readonly instanta: string; readonly build: string }): ReactElement {
   const [stare, setStare] = useState<StareCont>({ faza: 'verifica' });
-  const [fila, setFila] = useState<'erori' | 'diagnoza'>('erori');
+  const [adresa, setAdresa] = useState(() => citesteAdresa(globalThis.location?.hash ?? '') ?? { fila: 'erori' as Fila, document: null, ancora: null });
+  const [aducator] = useState(() => aducatorDocumentatie());
+  const deschide = useCallback((document: string, ancora?: string | null): void => {
+    setAdresa({ fila: 'documentatie', document, ancora: ancora ?? null });
+  }, []);
+  // Adresa din `#` urmează fila și documentul (fără intrări noi în istoric); un `#` schimbat de om (sau Înapoi) le mută.
+  useEffect(() => {
+    const noua = scrieAdresa(adresa);
+    if (globalThis.location.hash !== noua) history.replaceState(history.state, '', noua);
+  }, [adresa]);
+  useEffect(() => {
+    const asculta = (): void => {
+      const a = citesteAdresa(globalThis.location.hash);
+      if (a) setAdresa(a);
+    };
+    globalThis.addEventListener('hashchange', asculta);
+    return () => { globalThis.removeEventListener('hashchange', asculta); };
+  }, []);
+  const butoaneFile = useRef(new Map<Fila, HTMLButtonElement>());
+  const fila = adresa.fila;
+  // Întoarcerea la Documentație redeschide ultimul document citit.
+  const ultimulDocument = useRef<{ readonly document: string | null; readonly ancora: string | null }>({ document: null, ancora: null });
+  if (adresa.fila === 'documentatie') ultimulDocument.current = { document: adresa.document, ancora: adresa.ancora };
+  const alegeFila = (f: Fila): void => {
+    setAdresa((a) => (a.fila === f ? a : f === 'documentatie' ? { fila: f, ...ultimulDocument.current } : { fila: f, document: null, ancora: null }));
+  };
   const [copiat, setCopiat] = useState(false);
 
   const citesteRol = useCallback((user: User): void => {
@@ -132,15 +162,28 @@ function Cont({ con, instanta, build }: { readonly con: Conexiune; readonly inst
   }
   return (
     <Cadru antet={antet}>
-      <div className="admin-file" role="tablist">
-        {(['erori', 'diagnoza'] as const).map((f) => (
-          <button key={f} type="button" role="tab" aria-selected={fila === f} data-fila={f} onClick={() => { setFila(f); }}>
-            {t(f === 'erori' ? 'admin.fila.erori' : 'admin.fila.diagnoza')}
+      <div className="admin-file" role="tablist" aria-label={t('admin.file')} onKeyDown={(e: KeyboardEvent) => {
+        // Săgețile mută între file (tiparul tablist: o singură filă în ordinea Tab, cea aleasă).
+        const k = FILE.indexOf(fila);
+        const urm = { ArrowRight: k + 1, ArrowLeft: k - 1 + FILE.length, Home: 0, End: FILE.length - 1 }[e.key];
+        if (urm === undefined) return;
+        e.preventDefault();
+        const f = FILE[urm % FILE.length] ?? 'erori';
+        alegeFila(f);
+        butoaneFile.current.get(f)?.focus();
+      }}>
+        {FILE.map((f) => (
+          <button key={f} id={`fila-${f}`} ref={(b) => { if (b) butoaneFile.current.set(f, b); }} type="button" role="tab"
+            aria-selected={fila === f} aria-controls="panoul-filei" tabIndex={fila === f ? 0 : -1} data-fila={f} onClick={() => { alegeFila(f); }}>
+            {t(`admin.fila.${f}`)}
           </button>
         ))}
       </div>
-      <section role="tabpanel">
-        {fila === 'erori' ? <FilaErori con={con} /> : <FilaDiagnoza con={con} instanta={instanta} build={build} rol={stare.rol} />}
+      <section role="tabpanel" id="panoul-filei" aria-labelledby={`fila-${fila}`}>
+        {fila === 'erori' ? <FilaErori con={con} /> : null}
+        {fila === 'diagnoza' ? <FilaDiagnoza con={con} instanta={instanta} build={build} rol={stare.rol} /> : null}
+        {fila === 'roadmap' ? <FilaRoadmap aducator={aducator} deschide={deschide} /> : null}
+        {fila === 'documentatie' ? <FilaDocumentatie aducator={aducator} cale={adresa.document} ancora={adresa.ancora} deschide={deschide} /> : null}
       </section>
     </Cadru>
   );

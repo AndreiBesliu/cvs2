@@ -8,6 +8,7 @@ import { readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
+import { DIR_DOCUMENTATIE, FISIER_CATALOG, FISIER_ROADMAP, esteCatalog, esteRoadmap, fisierDocument } from '../shared/documentatie.ts';
 import { DOAR_ONLINE, inPrecache, motivPrecache } from '../shared/precache.ts';
 
 /**
@@ -358,13 +359,45 @@ for (const [marcaj, ce] of MARCAJE_ADMIN) {
   }
 }
 const FIREBASE_IN_PRECACHE = /^assets\/(?:raportor|conexiuneBaza)-[A-Za-z0-9_-]{8}\.js$/;
-const straineInPrecache = [...manifest].filter((f) => f === 'config.json' || f === 'sw.js' || f.startsWith('banc/')
+const straineInPrecache = [...manifest].filter((f) => f === 'config.json' || f === 'sw.js' || f.startsWith('banc/') || f.startsWith(`${DIR_DOCUMENTATIE}/`)
   || (f.endsWith('.js') && MARCAJE_ADMIN.some(([marcaj]) => cod(f).includes(marcaj)))
   || (f.endsWith('.js') && !FIREBASE_IN_PRECACHE.test(f) && MARCAJE_FIREBASE.some(([marcaj]) => cod(f).includes(marcaj))));
 if (straineInPrecache.length > 0) {
-  console.error(`Precache-ul conține ${straineInPrecache.join(', ')}: pagina /admin (Firestore, contul), config.json, sw.js și bancul rămân în afara lui; Firebase doar în raportor-* și conexiuneBaza-*.`);
+  console.error(`Precache-ul conține ${straineInPrecache.join(', ')}: pagina /admin (Firestore, contul), config.json, sw.js, bancul și documentația rămân în afara lui; Firebase doar în raportor-* și conexiuneBaza-*.`);
   process.exit(1);
 }
+
+/**
+ * Documentația admin (ADR 0048): build-ul a scris-o (pluginul pică el însuși pe un tabel care nu se mai poate citi),
+ * fiecare document din catalog are fișierul lui, iar ea vine din rețea la deschiderea filei, nu cu codul: niciun text al
+ * documentelor în vreo bucată JS (un `import …?raw` ar aduce-o în /admin), cu marcajul prezent în roadmap (plasa nu e vidă).
+ */
+const roadmapBrut = a.has(FISIER_ROADMAP) ? readFileSync(join('.tmp/build-1', FISIER_ROADMAP), 'utf8') : '';
+const catalogBrut = a.has(FISIER_CATALOG) ? readFileSync(join('.tmp/build-1', FISIER_CATALOG), 'utf8') : '';
+const roadmapCitit: unknown = roadmapBrut === '' ? null : JSON.parse(roadmapBrut);
+const catalogCitit: unknown = catalogBrut === '' ? null : JSON.parse(catalogBrut);
+if (!esteRoadmap(roadmapCitit) || !esteCatalog(catalogCitit)) {
+  console.error(`dist/${FISIER_ROADMAP} sau dist/${FISIER_CATALOG} lipsește sau are altă formă: documentația admin nu s-a generat (pluginul din vite.config.ts).`);
+  process.exit(1);
+}
+const faraFisier = catalogCitit.documente.filter((d) => !a.has(fisierDocument(d.cale)));
+if (faraFisier.length > 0) {
+  console.error(`Documente din catalog fără fișierul lor în dist/: ${faraFisier.map((d) => d.cale).join(', ')}.`);
+  process.exit(1);
+}
+const MARCAJ_DOCUMENTATIE = 'Un schelet care taie';
+if (!roadmapBrut.includes(MARCAJ_DOCUMENTATIE)) {
+  console.error(`dist/${FISIER_ROADMAP} nu conține „${MARCAJ_DOCUMENTATIE}”: plasa „documentația nu e în cod” nu mai vede nimic (marcajul s-a schimbat?).`);
+  process.exit(1);
+}
+const cuDocumentatie = [...bucati.keys()].filter((r) => cod(r).includes(MARCAJ_DOCUMENTATIE));
+if (cuDocumentatie.length > 0) {
+  console.error(`${cuDocumentatie.join(', ')} conține textul documentației („${MARCAJ_DOCUMENTATIE}”): ea vine din rețea, la deschiderea filei (ADR 0048), nu în cod.`);
+  process.exit(1);
+}
+const fisiereDoc = [...a.keys()].filter((f) => f.startsWith(`${DIR_DOCUMENTATIE}/`));
+const kbDocBrut = fisiereDoc.reduce((s, f) => s + statSync(join('.tmp/build-1', f)).size, 0) / 1024;
+const kbDocGz = fisiereDoc.reduce((s, f) => s + gz(join('.tmp/build-1', f)), 0);
 /** Cine pomenește o bucată JS: un import static sau dinamic (`./x.js`) ori un worker (`/assets/x.js`). */
 const referinte = (rel: string): string[] => {
   const nume = rel.replace('assets/', '');
@@ -407,7 +440,8 @@ const kbRaportorPornire = await kbModul(RAPORTOR_PORNIRE);
 console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri.`);
 console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}).`);
 console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
-console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f)).join(', ')}).`);
+console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`)).join(', ')} și ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere).`);
+console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip, ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
 console.log(`Cu un proiect salvat, ușa vine înaintea primei randări: +${kbUsa.toFixed(1)} kB (plafon ${PLAFON_USA_KB}; cu pornirea ${(pornire + kbUsa).toFixed(1)} / ${PLAFON_PORNIRE_KB}) (${inchidere(usa).map((r) => r.replace('assets/', '')).join(', ')}).`);
 rmSync('.tmp/build-1', { recursive: true, force: true });
 rmSync('.tmp/build-2', { recursive: true, force: true });

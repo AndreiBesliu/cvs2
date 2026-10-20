@@ -37,6 +37,9 @@ export function configHosting(publicDir: string): object {
         // Workerul PWA (ADR 0045), la adresa workerului ediției întâi: browserul trebuie să vadă imediat o versiune nouă
         // (actualizarea oferită, preluarea de la aplicația veche), nu una dintr-un cache HTTP.
         { source: '/sw.js', headers: [antet('Cache-Control', 'no-cache')] },
+        // Documentația admin (ADR 0048): nume fixe, conținut nou la fiecare publicare; fila Roadmap n-o arată veche. Documentele
+        // sunt cele din repo-ul public, dar nu sunt pagini ale produsului: motoarele de căutare nu le indexează pe domeniu.
+        { source: '/documentatie/**', headers: [antet('Cache-Control', 'no-cache'), antet('X-Robots-Tag', 'noindex')] },
       ],
     },
   };

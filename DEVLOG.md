@@ -2219,3 +2219,25 @@ fișele, pașii owner-ului), generate la build din `PLAN.md`, `docs/etape/`, `do
 nu se mai poate citi. Documentația live (manualul utilizatorului, en + ro, cu poarta de acoperire a acțiunilor) e felia
 următoare, după resetarea din 24.10. Ca în ediția întâi (`DocsView` + fila Operare): un singur cititor de markdown. Workflow:
 implementarea, 2 verificatori; estimat ~1,1 M.
+**Pauză:** 19.10 ~22:45, la cererea owner-ului („sa faci pauza cand poti”), pe ramura `wip/documentatia-admin`. Starea:
+implementarea gata, cu porțile verzi raportate de agent (rapid 7 062 / 0 picate, e2e 162 / 162, emulatoarele 24 + 9;
+pornirea cu ușa 99,0 / 100, `/admin` 178,6 / 200 kB; documentația generată 59 de fișiere, 339 kB gzip, în afara
+precache-ului). Verificatorii (corectitudinea și securitatea; aspectul) au fost opriți înainte să ruleze. **De reluat:** cele
+2 lentile (journal `wf_182e563b-461`; `resumeFromRunId` merge doar în aceeași sesiune, deci verificatorii se pornesc din nou),
+integrarea, merge pe main, publicarea pe test, capturile filei Roadmap pentru owner.
+**Reluare:** 20.10 08:20 („neata”, apoi „Verifica tu”: owner-ul a ales verificarea fără agenți, în locul celor 2 verificatori
+estimați la 4–6 % din săptămânal). Recenzia: codul feliei (generatorul și poarta, cititorul de markdown și linkurile, filele,
+adresa din `#`, aducerea, poarta de pachet), apoi capturile în română (luminos, întunecat, telefon; cronologia mărită).
+**7 reparații:** cronologia avea bare de 22 px, prea mici pentru o filă „vizuală”, acum coloane de 48 px (36 pe telefon)
+umplute de jos; coloanele cu un număr dintr-o cifră ieșeau mai înguste (stilul global al butoanelor, `justify-content:
+center`, lăsa coloana interioară cât textul; prima reparație, lățimea butonului, n-a schimbat nimic, văzut pe captura mărită); „ACUM” era mai
+lat decât coloana și trecea peste chenarul etapei alese; mostra „viitoare” din legendă avea altă culoare decât barele; un
+document nou se deschidea de la mijloc când erai derulat adânc în cel vechi (navigatorul e lipit sus; `scrollIntoView`
+`nearest` nu mișcă un element care depășește ecranul în ambele capete), cu probă e2e; poarta nu prindea aceeași felie adusă
+(`↑`) în jurnalele a două fișe, cu test; `X-Robots-Tag: noindex` pe `/documentatie/**` (documentele repo-ului public nu sunt
+pagini ale produsului). **Date:** cererea „primul login” scoasă din fișa etapei 3 (făcută pe 19.10); testele pe lista owner-ului
+(unitar și e2e) legate de fișă, nu de numărul 6, fiindcă lista se schimbă des. ADR 0048 acceptat; rândul 3.D în jurnalul etapei 3.
+**Completed:** 20.10 08:58. Fără agenți la reluare; săptămânalul 82 → 83 %. `npm run rapid` RC 0 (7 062 de teste unitare, 0
+picate, 8 sărite; build-ul determinist; licențele); e2e 162 / 162 în Edge; emulatoarele 24 + 9. Pornirea 94,3 / 100 kB (cu ușa
+99,0), `/admin` 178,6 / 200 kB; documentația 59 de fișiere, 339 kB gzip, în afara precache-ului. Ultima reparație (lățimea
+coloanelor, doar CSS) e probată pe emulatoare (24 + 9) și pe captură; rapid-ul o reia pe CI înaintea publicării.

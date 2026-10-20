@@ -2,7 +2,9 @@ import { execSync } from 'node:child_process';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { EroareDocumentatie, genereazaDocumentatia } from './scripts/documentatie.ts';
 import { CSP } from './shared/csp.ts';
+import { DIR_DOCUMENTATIE } from './shared/documentatie.ts';
 import { inPrecache } from './shared/precache.ts';
 
 /**
@@ -29,6 +31,57 @@ function cspInBuild(): Plugin {
         '<head>',
         `<head>\n    <meta http-equiv="Content-Security-Policy" content="${CSP}" />`,
       ),
+    },
+  };
+}
+
+/**
+ * Documentația admin (ADR 0048): la fiecare build, `scripts/documentatie.ts` citește `PLAN.md`, fișele din `docs/etape/`,
+ * ADR-urile, `CLAUDE.md` și `DEVLOG.md` și scrie `dist/documentatie/` (roadmap-ul, catalogul, documentele), pe care
+ * pagina `/admin` le cere abia la deschiderea filei. Un tabel care nu se mai poate citi oprește build-ul, cu fișierul și
+ * motivul. În dezvoltare, aceleași fișiere se generează la fiecare cerere (un document editat se vede la reîncărcare).
+ */
+function documentatie(): Plugin {
+  let radacina = process.cwd();
+  const genereaza = (): Map<string, string> => {
+    try {
+      return genereazaDocumentatia(radacina);
+    } catch (e) {
+      if (e instanceof EroareDocumentatie) throw new Error(`Documentația admin nu se poate genera (ADR 0048): ${e.message}`, { cause: e });
+      throw e;
+    }
+  };
+  return {
+    name: 'cncvs2-documentatie',
+    configResolved(c) {
+      radacina = c.root;
+    },
+    generateBundle() {
+      for (const [fileName, source] of genereaza()) this.emitFile({ type: 'asset', fileName, source });
+    },
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const cale = (req.url ?? '').split('?')[0] ?? '';
+        if (!cale.startsWith(`/${DIR_DOCUMENTATIE}/`)) {
+          next();
+          return;
+        }
+        let continut: string | undefined;
+        try {
+          continut = genereaza().get(decodeURIComponent(cale.slice(1)));
+        } catch (e) {
+          res.statusCode = 500;
+          res.end(e instanceof Error ? e.message : String(e));
+          return;
+        }
+        if (continut === undefined) {
+          res.statusCode = 404;
+          res.end();
+          return;
+        }
+        res.setHeader('Content-Type', cale.endsWith('.json') ? 'application/json; charset=utf-8' : 'text/markdown; charset=utf-8');
+        res.end(continut);
+      });
     },
   };
 }
@@ -62,7 +115,7 @@ function pwa(): Plugin[] {
 }
 
 export default defineConfig({
-  plugins: [react(), cspInBuild(), pwa()],
+  plugins: [react(), cspInBuild(), documentatie(), pwa()],
   define: {
     __VERSIUNE__: JSON.stringify(versiune()),
   },

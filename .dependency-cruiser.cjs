@@ -48,6 +48,14 @@ module.exports = {
       to: { path: '^src/', pathNot: '^src/i18n/' },
     },
     {
+      name: 'docs-izolat',
+      severity: 'error',
+      comment: 'Cititorul de markdown (src/docs, ADR 0048) nu importă nimic din restul aplicației: îl folosesc adminul, '
+        + 'documentația live și generatorul de la build, fiecare cu linkurile lui.',
+      from: { path: modul('docs') },
+      to: { path: '^src/', pathNot: '^src/docs/' },
+    },
+    {
       name: 'shared-izolat',
       severity: 'error',
       comment: 'Catalogul comun (client + server) nu importă nimic din src/.',

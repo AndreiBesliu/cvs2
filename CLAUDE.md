@@ -67,6 +67,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   16 × 16 în atlas, calculul exact pe celulă cu freza plată, bila și V-ul, trigonometria proprie), bazinul `src/jobs/`
   (rândurile de dale r mod N), oracolul independent `test/oracles/simulare.ts`; amprenta Node = Edge e poartă în e2e;
   harta adâncimilor, volumul și adâncimea în dialogul exportului. Felia 2: afișarea în WebGL2 și fereastra de 0,1 mm.
+  **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
+  așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
+  generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):
@@ -90,6 +93,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   sesiunile deschise în `cncvs2`. O sesiune deschisă din `Apps` nu-l încarcă, deci acolo regula rămâne disciplină.
 - **O singură sesiune scrie în repo** la un moment dat; celelalte lucrează în worktree-uri sau doar citesc.
 - **DEVLOG-ul e scurt:** `Started` / `Completed`, cu promptul exact și modelul.
+- **Fișele și ADR-urile alimentează roadmap-ul și documentația din `/admin`** (ADR 0048), generate la fiecare build. Tabelele
+  lor se țin în forma citită de poartă: „Feliile” (`| # | Felia | …`), „Jurnalul feliilor” (`| # | Started | Completed |
+  Treceri | Nota |`, câte un rând pe felie, cu `Completed` la final), „Ce îi trebuie owner-ului” (`| Ce | Pentru | Termen |`),
+  indexul ADR (un rând pe fiecare fișier); rândurile încep și se termină cu `|`, fără rânduri goale în tabel. O placă tăiată
+  primește în fișa ei `**Tăiată:** zz.ll.aaaa`. Un tabel care nu se mai poate citi oprește build-ul, cu fișierul și motivul.
 
 ## Surse
 

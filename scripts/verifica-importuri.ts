@@ -19,6 +19,7 @@ const ASTEPTATE: ReadonlyArray<readonly [string, string]> = [
   ['oracolele-fara-src', 'test/capcane/oracles/importa-src.ts'],
   ['geom-izolat', 'test/capcane/geom/importa-app.ts'],
   ['i18n-izolat', 'test/capcane/i18n/importa-app.ts'],
+  ['docs-izolat', 'test/capcane/docs/importa-app.ts'],
   ['shared-izolat', 'test/capcane/shared/importa-src.ts'],
   ['model-doar-geom', 'test/capcane/model/importa-app.ts'],
   ['io-doar-model-geom', 'test/capcane/io/importa-ui.ts'],

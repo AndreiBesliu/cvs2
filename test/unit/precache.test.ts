@@ -101,6 +101,16 @@ test('un fișier de alt fel e „necunoscut”: poarta cere o decizie, nu-l las�
   }
 });
 
+test('documentația generată (`documentatie/`, ADR 0048) nu intră: e doar online, ca pagina /admin care o cere', () => {
+  for (const f of ['documentatie/roadmap.json', 'documentatie/catalog.json', 'documentatie/doc/PLAN.md', 'documentatie/doc/docs/adr/0047-nucleul-de-simulare.md']) {
+    assert.equal(motivPrecache(f), 'documentatie', f);
+    assert.equal(inPrecache(f), false, f);
+  }
+  // Doar dosarul de la rădăcină: o bucată JS cu același nume rămâne o bucată a aplicației.
+  assert.equal(motivPrecache('assets/documentatie-abcdEF12.js'), 'precache');
+  assert.equal(motivPrecache('sub/documentatie/roadmap.json'), 'necunoscut');
+});
+
 test('lista bucăților doar online e doar pagina /admin (raportorul și baza conexiunii sunt în precache)', () => {
   assert.deepEqual([...DOAR_ONLINE], ['PaginaAdmin']);
 });

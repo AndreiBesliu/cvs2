@@ -13,7 +13,9 @@
  * - pagina `/admin` (`PaginaAdmin`, cu ce aduce doar ea: stilul ei), doar online: navigarea la ea vine din rețea
  *   (`src/pwa/navigare.ts`), iar fără rețea n-ar avea cu cine vorbi; precache-ul ar crește cu ~150 kB gzip;
  * - `config.json`: e al instanței și vine din rețea întâi, cu ultima copie bună în cache-ul lui (`src/pwa/configSw.ts`);
- * - `sw.js` (workerul însuși) și bancul vizual (`/banc/`, doar pe instanța de test).
+ * - `sw.js` (workerul însuși) și bancul vizual (`/banc/`, doar pe instanța de test);
+ * - documentația admin (`documentatie/`, ADR 0048: roadmap-ul, catalogul, documentele), doar online ca pagina `/admin`
+ *   care o cere la deschiderea filei; ~0,9 MB care n-au ce căuta pe discul fiecărui om.
  *
  * Orice alt fișier e „necunoscut”: poarta pică pe el, ca un fel nou de fișier (un font, o imagine în `assets/`) să fie
  * decis aici, nu lăsat tăcut în afara precache-ului.
@@ -22,7 +24,7 @@
 /** Modulele doar online, după numele bucății lor (`assets/<nume>-<amprentă de 8>.js|css`): doar pagina `/admin`. */
 export const DOAR_ONLINE = ['PaginaAdmin'] as const;
 
-export type MotivPrecache = 'precache' | 'doar-online' | 'configuratie' | 'worker' | 'banc' | 'necunoscut';
+export type MotivPrecache = 'precache' | 'doar-online' | 'configuratie' | 'worker' | 'banc' | 'documentatie' | 'necunoscut';
 
 /** Pură: de ce un fișier al build-ului (calea din `dist/`, cu `/`) intră sau nu în precache. */
 export function motivPrecache(cale: string): MotivPrecache {
@@ -30,6 +32,7 @@ export function motivPrecache(cale: string): MotivPrecache {
   if (cale === 'config.json') return 'configuratie';
   if (cale === 'sw.js') return 'worker';
   if (cale.startsWith('banc/')) return 'banc';
+  if (cale.startsWith('documentatie/')) return 'documentatie';
   const m = /^assets\/([^/]+)-[A-Za-z0-9_-]{8}\.(?:js|css)$/.exec(cale);
   if (!m) return 'necunoscut';
   return (DOAR_ONLINE as readonly string[]).includes(m[1] ?? '') ? 'doar-online' : 'precache';
