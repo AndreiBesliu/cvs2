@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { documentNou, PLAFON, type Ghidaj } from '../../src/model/document.ts';
 import { incarca } from '../../src/model/incarcare.ts';
-import { istoricNou, type Istoric } from '../../src/model/jurnal.ts';
+import { executa, istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import { creeazaRegistru, ruleaza, stare } from '../../src/ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
 import '../../src/ui/actiuniDocumentCalcul.ts';
@@ -133,4 +133,52 @@ test('document.transforma: scalarea schimbă piesa și locul, rotirea doar insta
   g.selecteaza([]);
   assert.deepEqual(stare(R, 'document.transforma', g), { ok: false, motiv: 'motiv.nicio-selectie' });
   assert.deepEqual(stare(R, 'document.transforma', context()), { ok: false, motiv: 'motiv.nimic-ales' });
+});
+
+test('document.forma (ADR 0053): forma singurei instanțe alese, un pas; aceeași formă nu e comandă; refuzurile cu motivul panoului', () => {
+  const lat = (cc: ReturnType<typeof context>) => {
+    const i = cc.h().doc.foi[0]?.instante.find((x) => x.id === 'e1');
+    const r = cc.h().doc.piese.find((p) => p.id === i?.piesa)?.radacina;
+    return r?.tip === 'element' ? r.forma : null;
+  };
+  const c = context(false, { formaEditata: () => ({ tip: 'dreptunghi', latime: 150, inaltime: 60, razaColt: 5 }) });
+  c.selecteaza(['e1']);
+  const trecut = c.h().trecut.length;
+  assert.deepEqual(ruleaza(R, 'document.forma', c), { ok: true });
+  assert.deepEqual(lat(c), { tip: 'dreptunghi', latime: 150, inaltime: 60, razaColt: 5 });
+  assert.equal(c.h().trecut.length, trecut + 1);
+  assert.ok(incarca(JSON.parse(JSON.stringify(c.h().doc))).ok);
+  ruleaza(R, 'document.forma', c);
+  assert.equal(c.h().trecut.length, trecut + 1, 'aceeași formă: nicio comandă');
+  ruleaza(R, 'istoric.anuleaza', c);
+  assert.deepEqual(lat(c), { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 0 });
+  // Raza colțurilor peste jumătatea laturii mai mici, o latură zero: refuzate de schemă, fără comandă.
+  for (const rea of [{ tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 31 }, { tip: 'dreptunghi', latime: 0, inaltime: 60, razaColt: 0 }, { tip: 'cerc', raza: -1 }] as const) {
+    const x = context(false, { formaEditata: () => rea });
+    x.selecteaza(['e1']);
+    const t = x.h().trecut.length;
+    assert.deepEqual(stare(R, 'document.forma', x), { ok: false, motiv: 'prop.forma.refuzata' }, JSON.stringify(rea));
+    ruleaza(R, 'document.forma', x);
+    assert.equal(x.h().trecut.length, t);
+  }
+  // Piesa împărțită (duplicatul legat ar schimba-o și pe ea): refuz.
+  const imp = context(false, { formaEditata: () => ({ tip: 'cerc', raza: 3 }) });
+  imp.selecteaza(['e1']);
+  const d = imp.h().doc;
+  const f0 = d.foi[0];
+  const i1 = f0?.instante.find((x) => x.id === 'e1');
+  if (!f0 || !i1) throw new Error('fără foaie');
+  imp.scrie(executa(imp.h(), { tip: 'adauga', foaie: f0.id, instanta: { ...i1, id: 'e9', x: 200 }, pozitie: f0.instante.length }));
+  imp.selecteaza(['e1']);
+  assert.deepEqual(stare(R, 'document.forma', imp), { ok: false, motiv: 'prop.forma.refuzata' });
+  // Două alese, niciuna, doar-citirea, fără formă.
+  const doua = context(false, { formaEditata: () => ({ tip: 'cerc', raza: 3 }) });
+  doua.selecteaza(['e1', 'e2']);
+  assert.deepEqual(stare(R, 'document.forma', doua), { ok: false, motiv: 'motiv.o-singura-selectie' });
+  doua.selecteaza([]);
+  assert.deepEqual(stare(R, 'document.forma', doua), { ok: false, motiv: 'motiv.nicio-selectie' });
+  const ro = context(true, { formaEditata: () => ({ tip: 'cerc', raza: 3 }) });
+  ro.selecteaza(['e2']);
+  assert.deepEqual(stare(R, 'document.forma', ro), { ok: false, motiv: 'motiv.doar-citire' });
+  assert.deepEqual(stare(R, 'document.forma', context()), { ok: false, motiv: 'motiv.nimic-ales' });
 });

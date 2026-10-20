@@ -322,15 +322,38 @@ button[data-icona]:disabled > .eticheta {
   box-shadow: var(--umbra-1);
 }
 
-/* Rândul de sus: marca, bara de acțiuni (centrată pe fereastră), uneltele. */
+/* Rândul de sus: marca, bara de acțiuni (centrată pe fereastră), uneltele; dedesubt, extensia barei. */
 .sus {
   grid-area: sus;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  grid-template-areas: 'marca bara unelte';
+  grid-template-areas: 'marca bara unelte' '. extensie .';
   align-items: start;
   gap: var(--sp-3);
   min-width: 0;
+}
+
+/*
+ * Extensia barei (ADR 0053): lipită sub bara de acțiuni, aliniată la stânga ei, mereu acolo (secțiunile se strâng, ea nu).
+ * Locul e rezervat de la pornire (și cât modulul editării e pe drum, goală și ascunsă), ca zona liberă și foaia potrivită
+ * în ea să nu sară la sosirea modulului.
+ */
+.extensie {
+  grid-area: extensie;
+  justify-self: start;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: calc(var(--tinta) + 8px);
+  margin: calc(-1 * var(--sp-3) - 1px) 0 0 var(--r-3);
+  padding: 3px 4px;
+  border-top: 0;
+  border-radius: 0 0 var(--r-2) var(--r-2);
+}
+
+.extensie:empty {
+  visibility: hidden;
 }
 
 .marca {
@@ -862,7 +885,7 @@ nav button[aria-pressed='true'] {
 @media (max-width: 75rem) {
   .sus {
     grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas: 'marca unelte' 'bara bara';
+    grid-template-areas: 'marca unelte' 'bara bara' 'extensie extensie';
   }
 
   .bara {

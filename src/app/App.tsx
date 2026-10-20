@@ -393,7 +393,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -825,6 +825,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               doc={doc} alese={selectieValida} elemente={selectieDesen.length} cutie={cutieSelectie} doarCitire={doarCiteste(mod)}
               onPozitie={(p) => aplicaDinPanou('document.pozitioneaza', { pozitieNoua: () => p })}
               onRotire={(r) => aplicaDinPanou('document.roteste', { rotireNoua: () => r })}
+              onForma={(f) => aplicaDinPanou('document.forma', { formaEditata: () => f })}
               onStoc={(s) => aplicaDinPanou('foaie.stoc', { stocNou: () => s })}
               onEditeazaOperatii={() => { executa('export.gcode'); }}
             />
@@ -858,6 +859,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           <div className="insula bara" role="toolbar" aria-label={t('bara.actiuni')}>
             {grupuri('sus')}
           </div>
+          {/* Extensia barei (ADR 0053): un rând lipit dedesubt, cu secțiunile modulului editării (alinierea întâi). */}
+          <div className="insula extensie" id="loc-extensie" />
           {aranjament.zone.unelte.length > 0 && <div className="insula unelte">{grupuri('unelte')}</div>}
         </header>
         {/* Fereastra de fișiere a importului: în afara barelor, ca importul să meargă din orice aranjament (și din paletă). */}

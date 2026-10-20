@@ -126,11 +126,16 @@ test('lipirea mutării de un ghidaj (Alt o oprește), alinierea față de foaie,
   await trageEcran(page, c, { x: c.x + dx * v.scara, y: c.y }, true);
   await expect(randuri(page)).not.toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 20.00']);
 
-  // Alinierea unei singure forme, față de foaie (300 × 200): centrul pe orizontală, apoi sus. Butoanele stau în sub-bara
-  // „Aliniere” din bara de sus (ADR 0052).
-  await expect(page.getByTestId('subbara-aliniere')).toHaveCount(0);
+  // Alinierea unei singure forme, față de foaie (300 × 200): centrul pe orizontală, apoi sus. Butoanele stau în extensia
+  // barei de sus, la vedere (ADR 0053); secțiunea se strânge spre stânga și se deschide la loc, iar extensia rămâne.
+  const ext = page.getByTestId('extensie-aliniere');
+  await expect(ext.locator('[data-aliniaza]')).toHaveCount(8);
   await page.locator('[data-editare="aliniere"]').click();
-  await expect(page.getByTestId('subbara-aliniere')).toBeVisible();
+  await expect(ext).toHaveAttribute('data-stransa', 'true');
+  await expect(ext.locator('[data-aliniaza]')).toHaveCount(0);
+  await expect(page.locator('#loc-extensie')).toBeVisible();
+  await page.locator('[data-editare="aliniere"]').click();
+  await expect(ext.locator('[data-aliniaza]')).toHaveCount(8);
   await page.locator('[data-aliniaza="centru-x"]').click();
   await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 20.00']);
   await page.locator('[data-aliniaza="sus"]').click();
@@ -223,8 +228,11 @@ test('uneltele de desen (ADR 0051): fiecare formă prin tragere, tastele, lipire
   await expect(page.locator('[data-camp="pozitie-x"]')).toHaveValue('60');
   await expect(page.locator('[data-camp="pozitie-y"]')).toHaveValue('105');
 
-  // Escape întoarce la selecție; un clic alege din nou, nu desenează.
+  // S alege Transformarea (care nu desenează: pânza alege la clic); Escape întoarce la selecție.
   await page.locator('body').focus();
+  await page.keyboard.press('s');
+  await expect(page.locator('[data-unealta="transformare"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('panza')).not.toHaveAttribute('data-desen', '');
   await page.keyboard.press('Escape');
   await expect(page.locator('[data-unealta="selectie"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('panza')).not.toHaveAttribute('data-desen', '');
@@ -254,6 +262,10 @@ test('transformările (ADR 0052): mânerele de scalare și rotire, refuzul inexa
   await page.goto('/');
   await expect(page.getByTestId('bara-editare')).toBeVisible();
   await adauga(page, 'dreptunghi');
+  // Cu Selecția, fără mânere: ele vin doar cu unealta Transformare (ADR 0053).
+  await expect(page.locator('[data-maner]')).toHaveCount(0);
+  await page.locator('[data-unealta="transformare"]').click();
+  await expect(page.locator('[data-unealta="transformare"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('[data-maner]')).toHaveCount(9);
   // Cât se mută forma, mânerele (care n-ar urma-o) se ascund; după eliberare revin.
   {
@@ -380,6 +392,7 @@ test('transformările (ADR 0052): mânerele de scalare și rotire, refuzul inexa
 
   mkdirSync('.tmp', { recursive: true });
   await randuri(page).nth(0).click();
+  await page.locator('[data-unealta="transformare"]').click();
   await vedere(page);
   await page.screenshot({ path: '.tmp/manere.png' });
   expect(erori).toEqual([]);
@@ -407,4 +420,70 @@ test('bara de sus (ADR 0052): uneltele încap între marcă și căutare la 1280
     }
     await page.locator('[data-editare="grila"]').click();
   }
+});
+
+test('editarea după plasare (ADR 0053): laturile și raza colțurilor dreptunghiului, raza cercului, laturile poligonului, razele elipsei', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.goto('/');
+  await expect(page.getByTestId('bara-editare')).toBeVisible();
+  const forma = page.getByTestId('prop-forma');
+  const scrieCamp = async (camp: string, valoare: string): Promise<void> => {
+    const c = page.locator(`[data-camp="${camp}"]`);
+    await c.fill(valoare);
+    await c.press('Enter');
+  };
+
+  // Dreptunghiul: lățimea (colțul stânga-jos rămâne), raza colțurilor; una peste jumătatea laturii mai mici e refuzată.
+  await adauga(page, 'dreptunghi');
+  await expect(forma).toHaveAttribute('data-forma', 'dreptunghi');
+  await scrieCamp('forma-latime', '150');
+  await expect(randuri(page)).toHaveText(['dreptunghi 150.00 × 60.00 la X 20.00, Y 20.00']);
+  await scrieCamp('forma-raza-colt', '40');
+  await expect(page.locator('[data-motiv="forma-raza-colt"]')).toContainText('jumătatea');
+  await page.locator('[data-camp="forma-raza-colt"]').press('Escape');
+  await scrieCamp('forma-raza-colt', '5');
+  await expect(page.locator('[data-camp="forma-raza-colt"]')).toHaveValue('5');
+  // Un pas de anulare pe câmp (cu focusul în afara câmpului: acolo Ctrl+Z e al textului).
+  await page.locator('[data-unealta="selectie"]').focus();
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('[data-camp="forma-raza-colt"]')).toHaveValue('0');
+
+  // Cercul: raza, centrul rămâne.
+  await adauga(page, 'cerc');
+  await expect(forma).toHaveAttribute('data-forma', 'cerc');
+  await scrieCamp('forma-raza', '25');
+  await expect(randuri(page).nth(1)).toHaveText('cerc R25.00 cu centrul la X 70.00, Y 50.00');
+
+  // Poligonul desenat (6 laturi, raza 20): 8 laturi, apoi raza 10; centrul rămâne.
+  await page.locator('[data-unealta="poligon"]').click();
+  const v = await vedere(page);
+  const la = await ecran(page, v);
+  await trageEcran(page, la(220, 120), la(240, 120));
+  await expect(forma).toHaveAttribute('data-forma', 'poligon');
+  await expect(page.locator('[data-camp="forma-laturi"]')).toHaveValue('6');
+  await expect(page.locator('[data-camp="forma-raza"]')).toHaveValue('20');
+  await scrieCamp('forma-laturi', '8');
+  await expect(randuri(page).nth(2)).toContainText('8 segmente');
+  await scrieCamp('forma-laturi', '2');
+  await expect(page.locator('[data-motiv="forma-laturi"]')).toBeVisible();
+  await page.locator('[data-camp="forma-laturi"]').press('Escape');
+  await scrieCamp('forma-raza', '10');
+  await expect(randuri(page).nth(2)).toContainText('20.00 × 20.00, 8 segmente, la X 210.00, Y 110.00');
+
+  // Elipsa desenată (razele 30 și 15): raza pe X devine 40, centrul rămâne.
+  await page.locator('[data-unealta="elipsa"]').click();
+  await trageEcran(page, la(30, 120), la(90, 150));
+  await expect(forma).toHaveAttribute('data-forma', 'elipsa');
+  await expect(page.locator('[data-camp="forma-rx"]')).toHaveValue('30');
+  await expect(page.locator('[data-camp="forma-ry"]')).toHaveValue('15');
+  // Cutia elipsei e exactă (extremele sunt vârfuri): colțul e 20, 120, nu 119,999999663.
+  await expect(page.locator('[data-camp="pozitie-y"]')).toHaveValue('120');
+  await scrieCamp('forma-rx', '40');
+  await expect(randuri(page).nth(3)).toContainText('80.00 × 30.00');
+  await expect(randuri(page).nth(3)).toContainText('la X 20.00, Y 120.00');
+
+  mkdirSync('.tmp', { recursive: true });
+  await page.screenshot({ path: '.tmp/forma-panou.png' });
+  expect(erori).toEqual([]);
 });

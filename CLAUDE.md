@@ -81,7 +81,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   tastele lor (V, R, O, E, L, P).
   **Transformările și bara de sus (ADR 0052)** gata pe 20.10: mânerele de scalare și rotire pe selecție (`document.transforma`,
   scalarea exactă a geometriei sau refuzul cu motiv; mânerele sunt doar desen, lovitura e geometrică), Alt inversează lipirea,
-  uneltele, Lipire, Grilă și alinierea (sub-bară) în bara de sus, raza cercului. Urmează 6.D↑ (editarea după plasare).
+  uneltele, Lipire, Grilă și alinierea (sub-bară) în bara de sus, raza cercului. **Unealta Transformare, extensia barei și
+  editarea formelor după plasare (ADR 0053)** gata pe 20.10: mânerele doar cu unealta Transformare (S); alinierea în extensia
+  barei de sus (`#loc-extensie`), strânsă spre stânga la cerere; panoul editează dreptunghiul, cercul, poligonul și elipsa
+  (`document.forma`, recunoscute din geometrie, `src/model/formeParametrice.ts`). Pornirea 99,8 / 100 kB cu ușa: ~0,2 kB rămași.
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):

@@ -17,7 +17,7 @@ colțul pânzei, cu alinierea întreagă la vedere.
 **1. Bara de sus.** Aranjamentul (`src/ui/aranjament.ts`) are un loc `unelte` în grupul „forme” al barei de sus; modulul
 editării (la cerere) îl umple printr-un portal: uneltele de desen, câmpul uneltei (laturile poligonului, raza cercului),
 Lipire și Grilă ca butoane cu pictogramă (pasul grilei apare când grila e pornită) și un singur buton „Aliniere” (▾) care
-deschide sub-bara cu cele 8 alinieri și distribuiri. Fără locul acesta (alt aranjament), bara plutește în colțul zonei
+deschide sub-bara cu cele 8 alinieri și distribuiri (ADR 0053: din 6.D↑, în extensia barei, mereu la vedere). Fără locul acesta (alt aranjament), bara plutește în colțul zonei
 libere, ca înainte. „Adaugă dreptunghi / cerc” pleacă din bara de sus, dar rămân în registru și în paleta de comenzi
 (Ctrl+K). Sub 95rem, „Caută o comandă” rămâne doar cu pictograma (numele îl păstrează cititorul de ecran): măsurat, la
 1280 px grupul din dreapta acoperea 62 px din „Exportă G-code”, la 1366 px 19 px, la 1440 px cu grila 7 px.
@@ -29,7 +29,7 @@ ghidajele). ADR 0050 §2 („Alt ține lipirea oprită”) se citește de acum a
 fără tragere pune un cerc cu raza din câmp, centrat în punctul (lipit) al clicului; o tragere desenează ca înainte și scrie
 raza ei în câmp. Editarea după plasare (raza, laturile, razele) e felia următoare (6.D↑).
 
-**4. Mânerele.** Cu unealta Selecție, pe cutia selecției (în afara doar-citirii): 8 mânere de scalare și unul de rotire,
+**4. Mânerele.** Cu unealta Selecție (ADR 0053: din 6.D↑, doar cu unealta Transformare), pe cutia selecției (în afara doar-citirii): 8 mânere de scalare și unul de rotire,
 deasupra. Colțurile scalează proporțional (după axa care s-a schimbat mai mult), cu Shift liber; laturile, pe o singură
 axă; ancora e mânerul opus. Rotirea e în jurul centrului cutiei, cu Shift în pași de 15°; unghiul ia drumul scurt (±180°).
 Mânerul urmează deplasarea cursorului față de apăsare: un clic pe mâner (sub 3 px de tragere) nu schimbă nimic. Scările se

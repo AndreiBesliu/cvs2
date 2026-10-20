@@ -2353,3 +2353,25 @@ geometrică (`manerLovit`), într-un ascultător pus înaintea pânzei, doar pen
 8 sărite); e2e 167 / 167 în Edge. Pornirea neschimbată: 95,0 kB (cu ușa 99,7 / 100). Rămâne 6.D↑ (editarea după
 plasare), apoi unirea / separarea vectorilor („in curand”, cererea owner-ului).
 **Publicat pe test:** 20.10, workflow-ul `publica` pe `67561b0` (după rapid-ul verde pe CI, 4 / 4 felii).
+
+## 2026-10-20 — Unealta Transformare, extensia barei, editarea formelor după plasare (Model: Claude Opus 5.5)
+
+**Prompt:** „NODURILE de control trebuie sa apara doar cand selectam unealta de transformare, cea care urmeaza sa fie
+dezvoltata. bara de aliniere ar trebui sa fie o extensie, nu un popup, si vreau sa fie mereu vizibila, dar sa fie
+colapsabila spre stanga. ideea este ca vor mai fi acolo elemente. deci colapsabil este meniul de aliniere, nu bara in
+sine. pune asta in felia 6.D” (după „Pornesc 6.D↑?”).
+**Started:** 20.10 18:56, săptămânalul 89 %. Felia **6.D↑** (ADR 0053), fără agenți: (1) unealta Transformare (tasta S) în
+bara de sus; mânerele apar doar cu ea, nu cu Selecția; (2) extensia barei de sus: un rând lipit sub bara uneltelor, mereu
+vizibil (locul rezervat de la pornire, ca foaia să nu sară), în care secțiunea Aliniere se strânge spre stânga (starea în
+browser); acolo vor intra și alte secțiuni; (3) editarea după plasare în panoul de proprietăți: dreptunghiul (laturile,
+raza colțurilor), cercul (raza), poligonul (laturile, raza) și elipsa (razele), recunoscute din geometrie (fără schemă nouă:
+poligonul regulat și elipsa generatorului comun cu unealta de desen), cu acțiunea `document.forma`.
+**Treceri:** (1) generatorii poligonului și elipsei mutați în `src/model/formeParametrice.ts` (comuni cu uneltele de desen), cu
+recunoașterea pe forma salvată; acțiunea `document.forma` (motivul refuzului din dicționarul panoului, ca pornirea să nu
+crească); câmpurile panoului; unealta Transformare; extensia barei (`#loc-extensie`, locul rezervat de la pornire); probele;
+(2) captura: colțul Y al elipsei în panou ieșea 119,999999663 (cutia din cubicele unei singure bucăți de 2π, cu extremele între
+vârfuri): elipsa generatorului e acum tăiată pe sferturi, iar elipsele vechi rămân recunoscute; o probă cerea poligonul refăcut
+„identic” (diferă cu ~1e-15): acum sub 1e-9; (3) e2e-ul complet verde din prima.
+**Completed:** 20.10 19:30. Fără agenți; săptămânalul 89 → 90 %. `npm run rapid` RC 0 (7 111 teste unitare, 0 picate,
+8 sărite); e2e 168 / 168 în Edge. Pornirea 95,0 → 95,1 kB (cu ușa 99,7 → 99,8 / 100): rămân ~0,2 kB, deci următoarea felie
+care atinge pornirea eliberează loc întâi. Rămâne unirea / separarea vectorilor („in curand”).

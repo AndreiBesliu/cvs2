@@ -3,19 +3,21 @@
  * exactă și locul instanței ei. Dreptunghiul și elipsa merg din colț în colț, cercul și poligonul din centru, linia din
  * capăt în capăt; Shift face pătrat / cerc sau pași de 15°. Elipsa se face cu aceeași funcție și toleranță ca importul SVG.
  */
-import { arcEliptic } from '../geom/elipsa.ts';
-import { TOLERANTA_IMPORT } from '../geom/toleranta.ts';
 import type { FormaDoc, VarfDoc } from '../model/document.ts';
+import { elipsa, LATURI_MAX, LATURI_MIN, poligonRegulat } from '../model/formeParametrice.ts';
 
-export const UNELTE = ['selectie', 'dreptunghi', 'cerc', 'elipsa', 'linie', 'poligon'] as const;
+export { LATURI_MAX, LATURI_MIN };
+
+/** Uneltele barei: Selecția, Transformarea (mânerele de scalare și rotire, ADR 0053) și cele de desen. */
+export const UNELTE = ['selectie', 'transformare', 'dreptunghi', 'cerc', 'elipsa', 'linie', 'poligon'] as const;
 export type Unealta = (typeof UNELTE)[number];
-export type UnealtaDesen = Exclude<Unealta, 'selectie'>;
+export type UnealtaDesen = Exclude<Unealta, 'selectie' | 'transformare'>;
+
+/** Pură: unealta desenează (pânza îi dă gestul), sau alege (Selecția, Transformarea). */
+export const deseneaza = (u: Unealta): u is UnealtaDesen => u !== 'selectie' && u !== 'transformare';
 
 /** Tasta fiecărei unelte (fără modificatori). */
-export const TASTE_UNELTE: Readonly<Record<string, Unealta>> = { v: 'selectie', r: 'dreptunghi', o: 'cerc', e: 'elipsa', l: 'linie', p: 'poligon' };
-
-export const LATURI_MIN = 3;
-export const LATURI_MAX = 64;
+export const TASTE_UNELTE: Readonly<Record<string, Unealta>> = { v: 'selectie', s: 'transformare', r: 'dreptunghi', o: 'cerc', e: 'elipsa', l: 'linie', p: 'poligon' };
 
 export interface FormaDesenata {
   readonly forma: FormaDoc;
@@ -70,18 +72,8 @@ export function formaDesenata(u: UnealtaDesen, a: P, b: P, laturi: number, minim
     case 'elipsa': {
       const rx = Math.abs(dx) / 2, ry = Math.abs(dy) / 2;
       if (rx < minim / 2 || ry < minim / 2) return null;
-      const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
-      // Razele egale (Shift): un cerc exact, nu cubice.
-      if (Math.abs(rx - ry) <= 1e-12 * Math.max(rx, ry)) return { forma: { tip: 'cerc', raza: rx }, x: cx, y: cy };
-      const start = { x: rx, y: 0 };
-      const lant = arcEliptic({ a: rx, b: 0, c: 0, d: ry, e: 0, f: 0 }, 0, 2 * Math.PI, start, start, TOLERANTA_IMPORT);
-      const varfuri: VarfDoc[] = [];
-      let p0: P = start;
-      for (const c of lant) {
-        varfuri.push({ p: { x: p0.x, y: p0.y }, s: { tip: 'C', c1: { x: c.c1.x, y: c.c1.y }, c2: { x: c.c2.x, y: c.c2.y } } });
-        p0 = c.b;
-      }
-      return { forma: { tip: 'cale', inchis: true, varfuri }, x: cx, y: cy };
+      // Centrată în originea piesei; razele egale (Shift) dau un cerc exact, nu cubice (generatorul comun, ADR 0053).
+      return { forma: elipsa({ x: 0, y: 0 }, rx, ry), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
     }
     case 'linie': {
       if (Math.hypot(dx, dy) < minim) return null;
@@ -89,11 +81,8 @@ export function formaDesenata(u: UnealtaDesen, a: P, b: P, laturi: number, minim
     }
     case 'poligon': {
       const r = Math.hypot(dx, dy);
-      const n = Math.round(Math.min(LATURI_MAX, Math.max(LATURI_MIN, laturi)));
       if (r < minim) return null;
-      const u0 = Math.atan2(dy, dx);
-      const varfuri = Array.from({ length: n }, (_, k) => L({ x: r * Math.cos(u0 + (2 * Math.PI * k) / n), y: r * Math.sin(u0 + (2 * Math.PI * k) / n) }));
-      return { forma: { tip: 'cale', inchis: true, varfuri }, x: a.x, y: a.y };
+      return { forma: poligonRegulat({ x: 0, y: 0 }, r, laturi, Math.atan2(dy, dx)), x: a.x, y: a.y };
     }
   }
 }

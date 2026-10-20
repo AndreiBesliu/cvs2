@@ -4,7 +4,8 @@ import '../ui/actiuniDocumentCalcul.ts';
 import '../i18n/carcasa.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
-import type { Document, Operatie } from '../model/document.ts';
+import type { Document, FormaDoc, Operatie } from '../model/document.ts';
+import { dinParametri, LATURI_MAX, LATURI_MIN, parametri, type Parametri } from '../model/formeParametrice.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import { CampNumeric } from '../ui/CampNumeric.tsx';
 import { valoareDerivata } from '../ui/numar.ts';
@@ -22,6 +23,8 @@ type Props = {
   /** Acțiunile panoului (ADR 0038 §4), prin registru: rezultatul lor, cu motivul unui refuz. */
   readonly onPozitie: (p: { readonly x?: number; readonly y?: number }) => RezultatActiune;
   readonly onRotire: (r: number) => RezultatActiune;
+  /** Forma nouă a singurei instanțe alese (ADR 0053): dreptunghiul, cercul, poligonul regulat, elipsa, editate după plasare. */
+  readonly onForma: (f: FormaDoc) => RezultatActiune;
   readonly onStoc: (s: { readonly latime?: number; readonly inaltime?: number; readonly grosime?: number }) => RezultatActiune;
   /** Deschide dialogul exportului, unde se schimbă operațiile. */
   readonly onEditeazaOperatii: () => void;
@@ -56,10 +59,11 @@ function operatie(o: Operatie, n: number): ReactNode {
 
 /**
  * Panoul de proprietăți (prototipul B; editabil din felia 2.8c, ADR 0038 §4): fără selecție, foaia (lățimea, înălțimea,
- * grosimea); cu selecție, colțul stânga-jos al cutiei ei și, la o singură formă, rotirea. Fiecare câmp aplică o acțiune a
+ * grosimea); cu selecție, colțul stânga-jos al cutiei ei și, la o singură formă, rotirea și forma (ADR 0053: laturile, raza,
+ * razele, laturile poligonului; o formă recunoscută din geometrie, fără câmp nou în document). Fiecare câmp aplică o acțiune a
  * registrului (un pas de anulare). Operațiile se arată și se schimbă din dialogul exportului. Se încarcă la cerere.
  */
-export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onStoc, onEditeazaOperatii }: Props): ReactNode {
+export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onEditeazaOperatii }: Props): ReactNode {
   useLimba();
   const foaie = doc.foi[0];
   const instanta = alese.length === 1 ? foaie?.instante.find((i) => i.id === alese[0]) : undefined;
@@ -71,6 +75,37 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
     <CampNumeric key={`${cheie}/${numeCamp}`} eticheta={eticheta} camp={numeCamp} valoare={valoare} unitate={unitate} semn={semn}
       dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})} onAplica={onAplica} />
   );
+
+  // Forma singurei instanțe alese, dacă piesa ei e un singur element cu parametri (ADR 0053).
+  const forma = instanta && piesa?.radacina.tip === 'element' ? piesa.radacina.forma : null;
+  const par = forma ? parametri(forma) : null;
+  const impartita = piesa ? doc.foi.reduce((n, f) => n + f.instante.filter((i) => i.piesa === piesa.id).length, 0) > 1 : false;
+  const schimba = (p: Parametri): RezultatActiune => onForma(dinParametri(p));
+  const campForma = (eticheta: string, numeCamp: string, valoare: number, unitate: string, onAplica: (x: number) => RezultatActiune): ReactNode =>
+    rand(eticheta, camp(eticheta, numeCamp, valoareDerivata(valoare), unitate, false, onAplica));
+  const campuriForma = (p: Parametri): ReactNode => {
+    switch (p.tip) {
+      case 'dreptunghi':
+        return [
+          campForma(t('prop.forma.latime'), 'forma-latime', p.latime, 'mm', (x) => schimba({ ...p, latime: x })),
+          campForma(t('prop.forma.inaltime'), 'forma-inaltime', p.inaltime, 'mm', (x) => schimba({ ...p, inaltime: x })),
+          campForma(t('prop.forma.raza-colt'), 'forma-raza-colt', p.razaColt, 'mm', (x) => schimba({ ...p, razaColt: x })),
+        ];
+      case 'cerc':
+        return campForma(t('prop.forma.raza'), 'forma-raza', p.raza, 'mm', (x) => schimba({ ...p, raza: x }));
+      case 'poligon':
+        return [
+          campForma(t('prop.forma.laturi'), 'forma-laturi', p.laturi, '', (n) => (Number.isInteger(n) && n >= LATURI_MIN && n <= LATURI_MAX
+            ? schimba({ ...p, laturi: n }) : { ok: false, motiv: 'prop.forma.refuzata' })),
+          campForma(t('prop.forma.raza'), 'forma-raza', p.raza, 'mm', (x) => schimba({ ...p, raza: x })),
+        ];
+      case 'elipsa':
+        return [
+          campForma(t('prop.forma.rx'), 'forma-rx', p.rx, 'mm', (x) => schimba({ ...p, rx: x })),
+          campForma(t('prop.forma.ry'), 'forma-ry', p.ry, 'mm', (y) => schimba({ ...p, ry: y })),
+        ];
+    }
+  };
 
   return (
     <div className="proprietati">
@@ -99,6 +134,12 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
             {cutie && rand(t('prop.cutia'), t('prop.mm2', { latime: mm(cutie.maxX - cutie.minX), inaltime: mm(cutie.maxY - cutie.minY) }))}
             {rand(t('prop.elemente'), elemente)}
           </dl>
+        </section>
+      )}
+      {par && (
+        <section data-testid="prop-forma" data-forma={par.tip}>
+          <h3>{t(`prop.forma.${par.tip}`)}</h3>
+          {impartita ? <p className="prop-nota">{t('prop.forma.impartita')}</p> : <dl>{campuriForma(par)}</dl>}
         </section>
       )}
       {piesa?.operatii.map((o, i) => operatie(o, i + 1))}

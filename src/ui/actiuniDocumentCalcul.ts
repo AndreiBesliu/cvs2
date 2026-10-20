@@ -289,6 +289,23 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (p) ctx.scrie(executa(ctx.istoric(), p));
     },
   },
+  // Panoul (ADR 0053): forma singurei instanțe alese, editată după plasare. Piesa trebuie să fie doar a ei și un singur
+  // element; documentul de după trece de schemele documentului (laturile, raza colțurilor, razele). Motivul refuzului e al
+  // panoului (dicționarul lui e adus cu el): acțiunea vine doar de acolo, cu forma nouă.
+  'document.forma': {
+    activa: (ctx) => {
+      if (!ctx.formaEditata) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
+      if (ctx.selectie().length > 1) return 'motiv.o-singura-selectie';
+      return comandaForma(ctx) === null ? 'prop.forma.refuzata' : true;
+    },
+    ruleaza: (ctx) => {
+      const c = comandaForma(ctx)?.comanda;
+      if (c) ctx.scrie(executa(ctx.istoric(), c));
+    },
+  },
   // Uneltele de desen (ADR 0051): forma trasă, ca piesă nouă cu instanța ei, aleasă după desen.
   'document.deseneaza': {
     activa: (ctx) => {
@@ -388,6 +405,27 @@ function comenziTransformare(ctx: ContextDocument): Comanda[] | null {
   const p = pas(comenzi);
   if (!p) return [];
   return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, p).doc))) ? comenzi : null;
+}
+
+/**
+ * Comanda formei editate din panou (ADR 0053): piesa singurei instanțe alese, cu forma nouă; `comanda: null` când forma e
+ * aceeași; null când nu se poate (piesa împărțită sau cu mai multe elemente, documentul de după refuzat de schemă).
+ */
+function comandaForma(ctx: ContextDocument): { readonly comanda: Comanda | null } | null {
+  const f = ctx.formaEditata?.();
+  const h = ctx.istoric();
+  const alese = ctx.selectie();
+  if (!f || alese.length !== 1) return null;
+  const i = foaieCurenta(h.doc).instante.find((x) => x.id === alese[0]);
+  const vechi = i ? h.doc.piese.find((p) => p.id === i.piesa) : undefined;
+  if (!vechi || vechi.radacina.tip !== 'element') return null;
+  let folosiri = 0;
+  for (const fo of h.doc.foi) for (const x of fo.instante) if (x.piesa === vechi.id) folosiri++;
+  if (folosiri > 1) return null;
+  const nou = { ...vechi, radacina: { ...vechi.radacina, forma: f } };
+  if (jsonCanonic(nou) === jsonCanonic(vechi)) return { comanda: null };
+  const comanda: Comanda = { tip: 'inlocuieste-piesa', vechi, nou };
+  return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, comanda).doc))) ? { comanda } : null;
 }
 
 /** Ghidajele unei liste trec de ușă: cel mult plafonul, id-uri bune și unice, axa x / y, poziția finită în plafon. */

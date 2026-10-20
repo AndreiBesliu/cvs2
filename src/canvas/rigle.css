@@ -215,7 +215,7 @@
   stroke-width: 1.4;
 }
 
-/* În bara de sus (ADR 0052): fără fundalul și umbra insulei plutitoare; alinierea într-o sub-bară sub butonul ei. */
+/* În bara de sus (ADR 0052): fără fundalul și umbra insulei plutitoare. */
 .bara-editare.bara-sus {
   position: static;
   padding: 0;
@@ -228,23 +228,15 @@
   display: contents;
 }
 
-.aliniere-loc {
-  position: relative;
+/* O secțiune a extensiei barei (ADR 0053): butonul ei (care o strânge spre stânga) și uneltele ei. */
+.sectiune-extensie {
   display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
-.subbara {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 5;
-  display: flex;
+.sectiune-extensie .strange {
   gap: 2px;
-  padding: 3px;
-  background: var(--s-panou);
-  border: 1px solid var(--l-margine);
-  border-radius: var(--r-2);
-  box-shadow: 0 2px 8px color-mix(in oklab, var(--t) 14%, transparent);
 }
 
 .raza {

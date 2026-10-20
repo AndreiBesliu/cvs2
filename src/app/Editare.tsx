@@ -11,14 +11,14 @@ import type { Document, Ghidaj } from '../model/document.ts';
 import { transforma, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
 import { cutiiAlese, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie, transformareManer, type Maner } from './editareCalcul.ts';
-import { capatConstrans, formaDesenata, LATURI_MAX, LATURI_MIN, TASTE_UNELTE, UNELTE, type Unealta, type UnealtaDesen } from './desenCalcul.ts';
+import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTE_UNELTE, UNELTE, type Unealta, type UnealtaDesen } from './desenCalcul.ts';
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
 import '../ui/actiuniDocumentCalcul.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 
 /**
- * Editarea pe pânză (ADR 0050, ADR 0051), la cerere după prima randare: riglele și ghidajele foii, grila, lipirea mutării
+ * Editarea pe pânză (ADR 0050–0053), la cerere după prima randare: riglele și ghidajele foii, grila, lipirea mutării
  * (dată pânzei), uneltele de desen (gestul dat pânzei, cu previzualizarea), bara uneltelor, a lipirii și a alinierii,
  * săgețile și tastele uneltelor. Documentul se schimbă doar prin acțiuni (`foaie.ghidaje`, `document.muta-instantele`,
  * `document.muta-selectia`, `document.deseneaza`); preferințele (lipirea, grila, laturile poligonului) stau în browser.
@@ -32,6 +32,7 @@ const CHEIE_GRILA = 'cncvs2.grila';
 const PAS_GRILA_IMPLICIT = 10;
 const CHEIE_LATURI = 'cncvs2.laturi';
 const CHEIE_RAZA = 'cncvs2.raza';
+const CHEIE_ALINIERE = 'cncvs2.aliniere-stransa';
 /** Raza cercului pus cu un clic, fără tragere (ADR 0052), până o schimbă omul. */
 const RAZA_IMPLICITA = 15;
 /** O tragere mai scurtă de atât (pe ecran) nu desenează nimic. */
@@ -103,10 +104,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     return n !== null && n > 0 ? n : RAZA_IMPLICITA;
   });
   const [textRaza, setTextRaza] = useState(() => textNumar(raza));
-  const [subbara, setSubbara] = useState(false);
+  // Secțiunea Aliniere a extensiei barei (ADR 0053): mereu acolo, strânsă spre stânga la cerere; starea, în browser.
+  const [stransa, setStransa] = useState(() => citeste(CHEIE_ALINIERE) === '1');
   // Locul uneltelor din bara de sus (ADR 0052): îl desenează aplicația, iar modulul ăsta îl umple, printr-un portal.
   const [loc, setLoc] = useState<HTMLElement | null>(null);
-  useLayoutEffect(() => { setLoc(document.getElementById('loc-unelte')); });
+  const [locExtensie, setLocExtensie] = useState<HTMLElement | null>(null);
+  useLayoutEffect(() => { setLoc(document.getElementById('loc-unelte')); setLocExtensie(document.getElementById('loc-extensie')); });
   const [liniiDesen, setLiniiDesen] = useState<readonly LinieGhid[]>([]);
   const tinteToate = useMemo(() => tinteFoaie(doc, new Set(), true), [doc]);
   // Gestul îl dă pânza printr-o funcție stabilă; starea de acum o citește de aici (fără închideri vechi).
@@ -116,7 +119,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [gestDesen] = useState(() => {
     const g: GestDesen = (faza, x, y, scara, mod) => {
       const s = acum.current;
-      if (faza === 'anulat' || s.unealta === 'selectie') {
+      if (faza === 'anulat' || !deseneaza(s.unealta)) {
         s.a = null;
         setTraseu(null);
         setLiniiDesen([]);
@@ -159,7 +162,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     return g;
   });
   useEffect(() => {
-    onDesen(unealta === 'selectie' || p.doarCitire ? null : gestDesen);
+    onDesen(!deseneaza(unealta) || p.doarCitire ? null : gestDesen);
   }, [unealta, p.doarCitire, onDesen, gestDesen]);
   useEffect(() => () => { onDesen(null); }, [onDesen]);
 
@@ -183,7 +186,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       const tinta = e.target;
       const peCorp = tinta === document.body || tinta === document.documentElement;
       // Pe pânză sau în bara uneltelor (după un clic pe „Aliniază”, săgețile continuă), dar nu într-un câmp.
-      const pePanza = tinta instanceof Element && tinta.closest('.panza-cutie, .bara-editare') !== null
+      const pePanza = tinta instanceof Element && tinta.closest('.panza-cutie, .bara-editare, .extensie') !== null
         && tinta.closest('input, textarea, select, [contenteditable="true"]') === null;
       if (!peCorp && !pePanza) return;
       // Tastele uneltelor (V, R, O, E, L, P); Escape anulează forma începută, apoi întoarce la selecție.
@@ -263,16 +266,36 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           citestePoz={(s) => citesteNumar(s, true)}
         />
       ) : null}
-      {unealta === 'selectie' && cutie && !p.doarCitire && selectie.length > 0 ? (
+      {unealta === 'transformare' && cutie && !p.doarCitire && selectie.length > 0 ? (
         <Manere cutie={cutie} vedere={vedere} doc={doc} selectie={selectie}
           aplica={(tr) => { ruleaza('document.transforma', { transformare: () => tr }); }} />
       ) : null}
-      {traseu && unealta !== 'selectie' ? (
+      {traseu && deseneaza(unealta) ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="desen-previzualizare">
           <Previzualizare unealta={unealta} a={traseu.a} b={traseu.b} laturi={laturi} vedere={vedere} />
         </svg>
       ) : null}
       {(() => {
+        const aliniereSectiune = (
+          <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.aliniere')} data-testid="extensie-aliniere" data-stransa={stransa}>
+            <button type="button" className="aliniaza strange" aria-expanded={!stransa}
+              title={stransa ? t('editare.aliniere.arata') : t('editare.aliniere.strange')}
+              aria-label={stransa ? t('editare.aliniere.arata') : t('editare.aliniere.strange')} data-editare="aliniere"
+              onClick={() => { setStransa(!stransa); scrieLocal(CHEIE_ALINIERE, stransa ? '0' : '1'); }}>
+              <Icona fel="stanga" /><span aria-hidden="true">{stransa ? '▸' : '◂'}</span>
+            </button>
+            {stransa ? null : FELURI_ALINIERE.map((fel) => {
+              const destule = selectie.length >= minimAliniere(fel) && !p.doarCitire;
+              const titlu = `${t(`editare.aliniaza.${fel}`)}${selectie.length === 1 && !fel.startsWith('distribuie') ? ` ${t('editare.aliniaza.fata-de-foaie')}` : ''}`;
+              return (
+                <button key={fel} type="button" className="aliniaza" disabled={!destule} title={titlu} aria-label={titlu} data-aliniaza={fel}
+                  onClick={() => { aliniere(fel); }}>
+                  <Icona fel={fel} />
+                </button>
+              );
+            })}
+          </span>
+        );
         const bara = (
           <div className={loc ? 'bara-editare bara-sus' : 'bara-editare'} role="toolbar" aria-label={t('editare.bara')} data-testid="bara-editare"
             style={loc ? undefined : { left: zona.x + GROSIME_RIGLA + 8, top: zona.y + zona.h - 52 }}>
@@ -323,31 +346,17 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                   if (n !== null && n >= 0.1 && n <= 1000) schimbaGrila({ pornita: true, pas: n });
                 }} />
             ) : null}
-            <span className="separator" aria-hidden="true" />
-            <span className="aliniere-loc">
-              <button type="button" className="aliniaza" aria-expanded={subbara} aria-haspopup="true" title={t('editare.aliniere')} aria-label={t('editare.aliniere')}
-                data-editare="aliniere" onClick={() => { setSubbara(!subbara); }}>
-                <Icona fel="stanga" /><span aria-hidden="true">▾</span>
-              </button>
-              {subbara ? (
-                <span className="subbara" role="toolbar" aria-label={t('editare.aliniere')} data-testid="subbara-aliniere">
-                  {FELURI_ALINIERE.map((fel) => {
-                    const destule = selectie.length >= minimAliniere(fel) && !p.doarCitire;
-                    const titlu = `${t(`editare.aliniaza.${fel}`)}${selectie.length === 1 && !fel.startsWith('distribuie') ? ` ${t('editare.aliniaza.fata-de-foaie')}` : ''}`;
-                    return (
-                      <button key={fel} type="button" className="aliniaza" disabled={!destule} title={titlu} aria-label={titlu} data-aliniaza={fel}
-                        onClick={() => { aliniere(fel); }}>
-                        <Icona fel={fel} />
-                      </button>
-                    );
-                  })}
-                </span>
-              ) : null}
-            </span>
+            {locExtensie ? null : aliniereSectiune}
           </div>
         );
-        // În bara de sus (locul `unelte` al aranjamentului, ADR 0052); fără el, plutitoare în colțul zonei libere.
-        return loc ? createPortal(bara, loc) : bara;
+        // În bara de sus (locul `unelte` al aranjamentului, ADR 0052); fără el, plutitoare în colțul zonei libere. Alinierea,
+        // în extensia barei (ADR 0053), dacă aranjamentul o are; altfel, în bara uneltelor.
+        return (
+          <>
+            {loc ? createPortal(bara, loc) : bara}
+            {locExtensie ? createPortal(aliniereSectiune, locExtensie) : null}
+          </>
+        );
       })()}
     </div>
   );
@@ -403,6 +412,13 @@ function IconaUnealta({ u }: { readonly u: Unealta | 'lipire' | 'grila' }): Reac
     elipsa: <ellipse cx="8" cy="8" rx="6" ry="3.8" className="contur" />,
     linie: <line x1="2.5" y1="13.5" x2="13.5" y2="2.5" className="contur" />,
     poligon: <polygon points="8,2 13.2,5 13.2,11 8,14 2.8,11 2.8,5" className="contur" />,
+    transformare: (
+      <>
+        <rect x="3.5" y="3.5" width="9" height="9" className="contur" strokeDasharray="2 1.6" />
+        <rect x="1.5" y="1.5" width="4" height="4" /><rect x="10.5" y="1.5" width="4" height="4" />
+        <rect x="1.5" y="10.5" width="4" height="4" /><rect x="10.5" y="10.5" width="4" height="4" />
+      </>
+    ),
   };
   return <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">{desen[u]}</svg>;
 }
