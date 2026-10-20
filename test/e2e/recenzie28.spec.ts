@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { adauga } from './ajutor-panza.ts';
 
 /**
  * Recenzia adversarială a feliilor 2.8c (panoul editabil) și 2.8d (traseul pe WebGL2), ADR 0038. Fiecare test arată o
@@ -35,8 +36,8 @@ async function coltX(page: Page, id: string): Promise<string> {
 
 test('C1 panoul: X scris și „ieșirea din câmp” printr-un clic pe altă formă de pe pânză aplică valoarea formei de atunci (ADR 0038 §5)', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click(); // e1: 100 × 60 din (20, 20)
-  await page.locator('[data-actiune="document.adauga-cerc"]').click(); // e2: R15 în (70, 50), ales
+  await adauga(page, 'dreptunghi'); // e1: 100 × 60 din (20, 20)
+  await adauga(page, 'cerc'); // e2: R15 în (70, 50), ales
   await panouDeschis(page);
   const x = camp(page, 'pozitie-x');
   await expect(x).toHaveValue('55');
@@ -52,8 +53,8 @@ test('C1 panoul: X scris și „ieșirea din câmp” printr-un clic pe altă fo
 
 test('C2 traseul: după ce CAM-ul refuză, „Arată traseul” nu se mai poate opri, iar motivul vechi rămâne după ce documentul e reparat', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click(); // două în același loc: refuz
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'dreptunghi'); // două în același loc: refuz
   await butonTraseu(page).click();
   await expect(cip(page)).toHaveAttribute('data-stare', 'traseu.refuz');
   // Documentul se repară: al doilea dreptunghi pleacă la x = 150 (foaia are 300 mm).
@@ -67,8 +68,8 @@ test('C2 traseul: după ce CAM-ul refuză, „Arată traseul” nu se mai poate 
 
 test('C2b traseul: cu refuzul pe ecran, butonul apăsat nu se mai poate dezapăsa (T doar recalculează același refuz)', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'dreptunghi');
   await butonTraseu(page).click();
   await expect(cip(page)).toHaveAttribute('data-stare', 'traseu.refuz');
   await expect(butonTraseu(page)).toHaveAttribute('aria-pressed', 'true');
@@ -78,7 +79,7 @@ test('C2b traseul: cu refuzul pe ecran, butonul apăsat nu se mai poate dezapăs
 
 test('C3 traseul: contextul WebGL pierdut și nerefăcut; T după o schimbare șterge cipul și nu desenează nimic (eșec tăcut, ADR 0038 §3)', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await butonTraseu(page).click();
   await expect(strat(page)).toHaveAttribute('data-varfuri', /^[1-9]/);
   await page.evaluate(() => {
@@ -87,7 +88,7 @@ test('C3 traseul: contextul WebGL pierdut și nerefăcut; T după o schimbare ș
   });
   await expect(cip(page)).toHaveAttribute('data-stare', 'traseu.context');
   // Documentul se schimbă, omul cere traseul din nou; placa nu revine (restoreContext nu se cheamă).
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await page.keyboard.press('t');
   await expect(butonTraseu(page)).toHaveAttribute('aria-pressed', 'true');
   // Ori stratul desenează traseul nou, ori un cip spune că nu se poate: nu amândouă lipsă. (Adaptat la integrare: după
@@ -144,7 +145,7 @@ test('C4 traseul: recalculat pe un document mare, cipul „Se calculează” nu 
 
 test('C7 traseul: după schimbarea temei, traseul rămâne în culorile temei vechi până la următorul pan / zoom', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await butonTraseu(page).click();
   await expect(strat(page)).toHaveAttribute('data-varfuri', /^[1-9]/);
   /** Culoarea celui mai opac pixel al stratului lângă (70, 17) mm: latura de jos a ramei. */

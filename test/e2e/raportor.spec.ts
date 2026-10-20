@@ -1,4 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { adauga } from './ajutor-panza.ts';
 
 /**
  * Raportorul de erori din client (felia 3.2, ADR 0043), pe build, fără cloud: nicio cerere nu iese din mașină (`route`
@@ -46,7 +47,7 @@ test.describe('raportorul de erori', () => {
   test('fără Firebase în config (local): o eroare nu cere bucata raportorului, nici Firebase, nici funcțiile', async ({ page }) => {
     const p = await plasa(page);
     await page.goto('/');
-    await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeEnabled();
+    await expect(page.locator('[data-actiune="import.svg"]')).toBeEnabled();
     await provoaca(page, 'eroare locală');
     await expect(jurnalul(page)).toHaveText('1 eroare în jurnalul local');
     await page.waitForTimeout(1500);
@@ -88,7 +89,7 @@ test.describe('raportorul de erori', () => {
       });
     });
     await page.goto('/');
-    await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeEnabled();
+    await expect(page.locator('[data-actiune="import.svg"]')).toBeEnabled();
     expect(p.bucati, 'nimic înaintea primei erori').toEqual([]);
 
     await provoaca(page, 'prima eroare');
@@ -118,7 +119,7 @@ test.describe('raportorul de erori', () => {
     await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(CONFIG_FIREBASE) }));
     await page.route(/\/assets\/raportor-[^/]+\.js$/, (r) => r.abort());
     await page.goto('/');
-    await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeEnabled();
+    await expect(page.locator('[data-actiune="import.svg"]')).toBeEnabled();
     await provoaca(page, 'unu');
     await expect(jurnalul(page)).toHaveText('1 eroare în jurnalul local');
     await page.waitForTimeout(1000);
@@ -134,7 +135,7 @@ test.describe('raportorul de erori', () => {
     const p = await plasa(page);
     await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(CONFIG_APP_CHECK) }));
     await page.goto('/');
-    await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeEnabled();
+    await expect(page.locator('[data-actiune="import.svg"]')).toBeEnabled();
     await expect(jurnalul(page)).toHaveText('0 erori în jurnalul local');
     await page.waitForTimeout(3500);
     expect(p.bucati).toEqual([]);
@@ -201,7 +202,7 @@ test.describe('raportorul de erori', () => {
     await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(CONFIG_FIREBASE) }));
     const apeluri = await functiaPrimeste(page);
     await page.goto('/');
-    await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+    await adauga(page, 'dreptunghi');
     await expect.poll(() => page.evaluate(() => new Promise<number>((ok) => {
       const r = indexedDB.open('cncvs2-proiecte');
       r.onsuccess = () => {
@@ -232,7 +233,7 @@ test.describe('raportorul de erori', () => {
       await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(CONFIG_APP_CHECK) }));
       await page.route(/^https:\/\/www\.google\.com\/recaptcha\/enterprise\.js/, raspunde);
       await page.goto('/');
-      await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeEnabled();
+      await expect(page.locator('[data-actiune="import.svg"]')).toBeEnabled();
       await provoaca(page, 'eroare cu reCAPTCHA blocat');
       await expect.poll(() => avertismente, { timeout: 20_000 }).toEqual(['raportorul de erori: stins (app-check)']);
       // Stins, nu agățat: a doua eroare e lăsată imediat, tot fără niciun apel.

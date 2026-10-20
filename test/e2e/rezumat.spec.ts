@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { PROFIL_GRBL_11H } from '../../src/ir/masini/grbl11h.ts';
 import { profilDinSetari } from '../../src/ir/masina.ts';
 import { estimeazaTimp } from '../../src/sim/timp.ts';
+import { adauga } from './ajutor-panza.ts';
 
 /**
  * Rezumatul jobului în dialogul exportului (ADR 0046): timpul estimat al fișierului descărcat, pe operații și pe sculă, cu
@@ -26,8 +27,8 @@ async function exporta(page: Page): Promise<string> {
 
 test('rezumatul: timpul fișierului descărcat, pe implicitele GRBL 1.1h, cu fiecare operație, restul, totalul și scula', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
   const text = await exporta(page);
   const e = estimeazaTimp(text, PROFIL_GRBL_11H);
@@ -51,7 +52,7 @@ test('rezumatul: timpul fișierului descărcat, pe implicitele GRBL 1.1h, cu fie
 
 test('`$$` lipit: rezumatul vechi dispare, exportul nou estimează pe mașina lipită; textul rămâne după închidere', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   await exporta(page);
   const rez = page.getByTestId('export-rezumat');
@@ -79,7 +80,7 @@ test('`$$` lipit: rezumatul vechi dispare, exportul nou estimează pe mașina li
 
 test('`$$` greșit: programul se descarcă oricum, rezumatul spune linia greșită', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   await page.locator('.setari-masina summary').click();
   await page.locator('[data-camp="setari-masina"]').fill('$110=5000\n$120=abc\n');
@@ -92,7 +93,7 @@ test('în engleză: titlul, timpul și rândurile au textele lor', async ({ brow
   const ctx = await browser.newContext({ locale: 'en-GB' });
   const page = await ctx.newPage();
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   await exporta(page);
   const rez = page.getByTestId('export-rezumat');
@@ -105,8 +106,8 @@ test('în engleză: titlul, timpul și rândurile au textele lor', async ({ brow
 
 test('timpul lângă traseu (ADR 0046 §8): după T, cipul spune timpul jobului, același cu rezumatul exportului', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
   await page.locator('[data-actiune="vedere.traseu"]').click();
   const cip = page.getByTestId('traseu-timp');
   await expect(cip).toHaveText(/^Timpul jobului: \d+ min \d\d s$/);
@@ -124,7 +125,7 @@ test('timpul lângă traseu (ADR 0046 §8): după T, cipul spune timpul jobului,
   await expect(cip).toHaveAttribute('data-sursa', 'setari');
   await expect(cip).not.toHaveText(`Timpul jobului: ${peTraseu}`);
   // Documentul schimbat: traseul e vechi, deci și timpul lui; cipul timpului dispare până la T.
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await expect(page.getByTestId('traseu-stare')).toHaveAttribute('data-stare', 'traseu.vechi');
   await expect(cip).toHaveCount(0);
   // Dreptunghiul nou cade peste primul (regiunea păstrată îl refuză): Ctrl+Z îl scoate, iar T calculează din nou.
@@ -136,7 +137,7 @@ test('timpul lângă traseu (ADR 0046 §8): după T, cipul spune timpul jobului,
 
 test('timpul lângă traseu, cu un `$$` greșit: cipul spune linia, traseul rămâne desenat', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   await page.locator('.setari-masina summary').click();
   await page.locator('[data-camp="setari-masina"]').fill('$110=5000\n$120=abc\n');

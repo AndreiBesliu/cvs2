@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cutiiAlese, idGhidaj, tinteFoaie } from '../../src/app/editareCalcul.ts';
+import { cutiiAlese, idGhidaj, MANERE, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie, transformareManer } from '../../src/app/editareCalcul.ts';
 import { pasRigla } from '../../src/canvas/gradatii.ts';
 import { lipeste } from '../../src/geom/lipire.ts';
 import type { Document } from '../../src/model/document.ts';
@@ -58,4 +58,52 @@ test('gradațiile: 1, 2 sau 5 × 10ⁿ mm, cel puțin 64 px între etichete; div
   assert.deepEqual(pasRigla(20), { mare: 5, mic: 1 });
   assert.deepEqual(pasRigla(1000).mare, 0.1);
   for (const s of [0.01, 0.37, 1, 3.3, 77, 1000]) assert.ok(pasRigla(s).mare * s >= 64 - 1e-9, String(s));
+});
+
+test('mânerele (ADR 0052): ancora e mânerul opus; colțul proporțional, Shift liber; latura pe o axă; rotirea în jurul centrului', () => {
+  const c = { minX: 0, minY: 0, maxX: 100, maxY: 50 };
+  assert.deepEqual(MANERE.map((m) => punctManer(c, m)), [
+    { x: 0, y: 50 }, { x: 50, y: 50 }, { x: 100, y: 50 }, { x: 100, y: 25 }, { x: 100, y: 0 }, { x: 50, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 25 },
+  ]);
+  // Colțul ne tras la (150, 60): x s-a schimbat mai mult (1,5 față de 1,2), deci ambele 1,5; ancora în sv.
+  assert.deepEqual(transformareManer(c, 'ne', { x: 100, y: 50 }, { x: 150, y: 60 }, false), { fel: 'scalare', sx: 1.5, sy: 1.5, ancora: { x: 0, y: 0 } });
+  assert.deepEqual(transformareManer(c, 'ne', { x: 100, y: 50 }, { x: 150, y: 60 }, true), { fel: 'scalare', sx: 1.5, sy: 1.2, ancora: { x: 0, y: 0 } });
+  // Latura v trasă la x = -100: doar x, ancora în mijlocul laturii e.
+  assert.deepEqual(transformareManer(c, 'v', { x: 0, y: 25 }, { x: -100, y: 99 }, false), { fel: 'scalare', sx: 2, sy: 1, ancora: { x: 100, y: 25 } });
+  // Mânerul urmează deplasarea: apăsat la 3 mm de punctul lui și neclintit, nu schimbă nimic; tras cu 50 mm, scalează cu 50 mm.
+  assert.deepEqual(transformareManer(c, 'n', { x: 52, y: 51.5 }, { x: 52, y: 51.5 }, false), { fel: 'scalare', sx: 1, sy: 1, ancora: { x: 50, y: 0 } });
+  assert.deepEqual(transformareManer(c, 'n', { x: 52, y: 51.5 }, { x: 40, y: 101.5 }, false), { fel: 'scalare', sx: 1, sy: 2, ancora: { x: 50, y: 0 } });
+  // Pixelii mausului nu intră în geometrie: scara se rotunjește la 1e-4.
+  const z = transformareManer(c, 'e', { x: 100, y: 25 }, { x: 133.333333, y: 25 }, false);
+  assert.equal(z.fel === 'scalare' ? z.sx : 0, 1.3333);
+  // Rotirea: un sfert de tură în jurul centrului (50, 25); Shift o prinde în pași de 15° (11,46° → 15°).
+  assert.deepEqual(transformareManer(c, 'rotire', { x: 50, y: 75 }, { x: 0, y: 25 }, false), { fel: 'rotire', unghi: 90, centru: { x: 50, y: 25 } });
+  const u = transformareManer(c, 'rotire', { x: 150, y: 25 }, { x: 50 + 100 * Math.cos(0.2), y: 25 + 100 * Math.sin(0.2) }, true);
+  assert.equal(u.fel === 'rotire' ? u.unghi : NaN, 15);
+  // Peste ±180° se ia drumul scurt: de la 170° la -170° sunt +20°, nu -340°.
+  const s = transformareManer(c, 'rotire', { x: 50 + Math.cos(170 * Math.PI / 180), y: 25 + Math.sin(170 * Math.PI / 180) },
+    { x: 50 + Math.cos(-170 * Math.PI / 180), y: 25 + Math.sin(-170 * Math.PI / 180) }, false);
+  assert.equal(s.fel === 'rotire' ? s.unghi : NaN, 20);
+});
+
+test('mânerele pe ecran: sub 24 px pe o axă nu apar cele care o scalează; lovitura: rotirea, colțurile, apoi laturile', () => {
+  assert.deepEqual(manereVazute(100, 100), MANERE);
+  // O linie orizontală: doar capetele (e, v); o formă mică pe ecran: niciunul, ca să rămână de apucat și mutat.
+  assert.deepEqual(manereVazute(200, 0), ['e', 'v']);
+  assert.deepEqual(manereVazute(23.9, 23.9), []);
+  // Cutia 0…100 × 0…50 mm, la 2 px/mm, cu originea foii în (10, 300) pe ecran: colțul ne în (210, 200), centrul sus în
+  // (110, 200), rotirea în (110, 200 − 26).
+  const c = { minX: 0, minY: 0, maxX: 100, maxY: 50 };
+  const v = { tx: 10, ty: 300, scara: 2 };
+  assert.equal(manerLovit(c, v, 210, 200), 'ne');
+  assert.equal(manerLovit(c, v, 215.9, 194.1), 'ne');
+  assert.equal(manerLovit(c, v, 216.1, 200), null);
+  assert.equal(manerLovit(c, v, 110, 200 - ROTIRE_PX), 'rotire');
+  assert.equal(manerLovit(c, v, 110, 203), 'n');
+  assert.equal(manerLovit(c, v, 110, 250), null, 'înăuntrul cutiei: forma, nu un mâner');
+  // Cutie strâmtă (30 px): colțul câștigă în fața laturii vecine.
+  const s = { minX: 0, minY: 0, maxX: 15, maxY: 15 };
+  assert.equal(manerLovit(s, v, 10 + 30 - 4, 300 - 30 + 4), 'ne');
+  // Mică (10 px): nimic de scalat, doar rotirea.
+  assert.equal(manerLovit({ minX: 0, minY: 0, maxX: 5, maxY: 5 }, v, 20, 290), null);
 });

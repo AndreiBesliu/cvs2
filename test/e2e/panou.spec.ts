@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { adauga } from './ajutor-panza.ts';
 
 /**
  * Panoul de proprietăți editabil (felia 2.8c, ADR 0038 §4–§5), în browserul adevărat: câmpul numeric unic (Enter, Escape,
@@ -16,7 +17,7 @@ const camp = (page: Page, nume: string) => page.locator(`[data-camp="${nume}"]`)
 
 test('colțul stânga-jos: Enter aplică, Anulează revine; virgula se citește; Escape renunță la textul scris', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await panouDeschis(page);
   const x = camp(page, 'pozitie-x');
   await expect(x).toHaveValue('20');
@@ -36,7 +37,7 @@ test('colțul stânga-jos: Enter aplică, Anulează revine; virgula se citește;
 
 test('o valoare greșită rămâne în câmp, cu motivul, și nu se aplică; Escape o șterge', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await panouDeschis(page);
   const x = camp(page, 'pozitie-x');
   await x.fill('abc');
@@ -55,7 +56,7 @@ test('o valoare greșită rămâne în câmp, cu motivul, și nu se aplică; Esc
 
 test('rotirea ține pe loc centrul: dreptunghiul de 100 × 60 rotit cu 90° are colțul la (40, 0); −90 se scrie 270', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await panouDeschis(page);
   const r = camp(page, 'rotire');
   await expect(r).toHaveValue('0');
@@ -89,7 +90,7 @@ test('foaia, fără selecție: lățimea se schimbă; zero e refuzat cu motiv; i
 
 test('fila care doar citește: câmpurile sunt oprite, cu motivul în titlu', async ({ page, context }) => {
   await page.goto('/');
-  await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeVisible();
+  await expect(page.locator('[data-actiune="import.svg"]')).toBeVisible();
   const b = await context.newPage();
   await b.goto('/');
   await panouDeschis(b);
@@ -99,7 +100,7 @@ test('fila care doar citește: câmpurile sunt oprite, cu motivul în titlu', as
 
 test('„Editează în Exportă G-code” deschide dialogul exportului', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await panouDeschis(page);
   await page.locator('[data-buton="editeaza-export"]').click();
   await expect(page.locator('[data-buton="exporta"]')).toBeVisible();

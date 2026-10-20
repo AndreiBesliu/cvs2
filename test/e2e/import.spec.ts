@@ -117,7 +117,7 @@ test('dialogul care nu se poate încărca (o publicare nouă a schimbat fișiere
   await expect(page.getByRole('alert')).toHaveText('Fereastra nu s-a putut încărca (aplicația s-a actualizat între timp sau rețeaua lipsește). Proiectul e salvat: reîncarcă pagina.');
   await page.getByRole('button', { name: 'Închide' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeEnabled();
+  await expect(page.locator('[data-actiune="import.svg"]')).toBeEnabled();
 });
 
 test('ușa care nu se poate aduce (o publicare nouă): dialogul spune asta și oferă reîncărcarea, nu „fișierul nu e un SVG”', async ({ page }) => {

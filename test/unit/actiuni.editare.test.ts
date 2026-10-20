@@ -94,3 +94,43 @@ test('document.deseneaza: o piesă nouă cu instanța ei, un pas de anulare, ale
   ruleaza(R, 'document.deseneaza', r);
   assert.equal(r.h().trecut.length, t);
 });
+
+test('document.transforma: scalarea schimbă piesa și locul, rotirea doar instanța, un pas; inexactul și doar-citirea sunt refuzate', () => {
+  const c = context(false, { transformare: () => ({ fel: 'scalare', sx: 2, sy: 2, ancora: { x: 20, y: 20 } }) });
+  c.selecteaza(['e1']);
+  const piesa = (cc: typeof c) => cc.h().doc.piese.find((p) => p.id === cc.h().doc.foi[0]?.instante.find((i) => i.id === 'e1')?.piesa);
+  const forma = (cc: typeof c) => { const r = piesa(cc)?.radacina; return r?.tip === 'element' ? r.forma : null; };
+  const trecut = c.h().trecut.length;
+  assert.deepEqual(ruleaza(R, 'document.transforma', c), { ok: true });
+  assert.deepEqual(forma(c), { tip: 'dreptunghi', latime: 200, inaltime: 120, razaColt: 0 });
+  assert.equal(c.h().trecut.length, trecut + 1, 'un singur pas');
+  assert.ok(incarca(JSON.parse(JSON.stringify(c.h().doc))).ok);
+  ruleaza(R, 'istoric.anuleaza', c);
+  assert.deepEqual(forma(c), { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 0 });
+
+  const r = context(false, { transformare: () => ({ fel: 'rotire', unghi: 90, centru: { x: 20, y: 20 } }) });
+  r.selecteaza(['e1']);
+  assert.deepEqual(ruleaza(R, 'document.transforma', r), { ok: true });
+  const i = r.h().doc.foi[0]?.instante.find((x) => x.id === 'e1');
+  assert.deepEqual([i?.x, i?.y, i?.rotire], [20, 20, 90]);
+  assert.deepEqual(forma(r), { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 0 }, 'rotirea nu atinge piesa');
+
+  // Cercul scalat neuniform ar deveni elipsă: refuz, nicio comandă.
+  const n = context(false, { transformare: () => ({ fel: 'scalare', sx: 2, sy: 1, ancora: { x: 0, y: 0 } }) });
+  n.selecteaza(['e2']);
+  const tn = n.h().trecut.length;
+  assert.deepEqual(stare(R, 'document.transforma', n), { ok: false, motiv: 'motiv.transformare-inexacta' });
+  ruleaza(R, 'document.transforma', n);
+  assert.equal(n.h().trecut.length, tn);
+  // Prea departe: locul nou trece de plafonul translației.
+  const d = context(false, { transformare: () => ({ fel: 'scalare', sx: 1e9, sy: 1e9, ancora: { x: 0, y: 0 } }) });
+  d.selecteaza(['e1']);
+  assert.equal(stare(R, 'document.transforma', d).ok, false);
+  const ro = context(true, { transformare: () => ({ fel: 'rotire', unghi: 15, centru: { x: 0, y: 0 } }) });
+  ro.selecteaza(['e1']);
+  assert.deepEqual(stare(R, 'document.transforma', ro), { ok: false, motiv: 'motiv.doar-citire' });
+  const g = context(false, { transformare: () => ({ fel: 'rotire', unghi: 15, centru: { x: 0, y: 0 } }) });
+  g.selecteaza([]);
+  assert.deepEqual(stare(R, 'document.transforma', g), { ok: false, motiv: 'motiv.nicio-selectie' });
+  assert.deepEqual(stare(R, 'document.transforma', context()), { ok: false, motiv: 'motiv.nimic-ales' });
+});

@@ -83,8 +83,8 @@ export const SCARA_MAXIMA = 1000;
  */
 export type LinieGhid = { readonly axa: 'x' | 'y'; readonly poz: number; readonly de: number; readonly la: number; readonly fel: string };
 
-/** Lipirea unei mutări: deplasarea cerută (mm) → cea lipită, cu liniile ei. */
-export type Lipeste = (dx: number, dy: number, scara: number) => { readonly dx: number; readonly dy: number; readonly linii: readonly LinieGhid[] };
+/** Lipirea unei mutări: deplasarea cerută (mm) → cea lipită, cu liniile ei; `alt` (ținut) inversează lipirea (ADR 0052). */
+export type Lipeste = (dx: number, dy: number, scara: number, alt: boolean) => { readonly dx: number; readonly dy: number; readonly linii: readonly LinieGhid[] };
 
 /**
  * Gestul unei unelte de desen (ADR 0051): cu o unealtă aleasă, apăsarea stângă pe pânză nu alege și nu mută, ci desenează.

@@ -5,6 +5,7 @@ import {
 } from '../model/document.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
+import type { Transformare } from '../model/transformare.ts';
 import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
 import type { Actiune } from './actiuni.ts';
 
@@ -43,6 +44,8 @@ export type ContextDocument = {
   readonly pozitieNoua?: () => { readonly x?: number; readonly y?: number };
   /** Panoul: rotirea nouă a singurei instanțe selectate, în grade (se normalizează în [0, 360)). */
   readonly rotireNoua?: () => number;
+  /** Rotirea sau scalarea selecției, din mânerele ei (ADR 0052). */
+  readonly transformare?: () => Transformare;
   /** Forma desenată cu o unealtă (ADR 0051): forma exactă și locul instanței ei, în mm ai foii. */
   readonly formaNoua?: () => { readonly forma: FormaDoc; readonly x: number; readonly y: number };
   /** Ghidajele noi ale foii (ADR 0050): lista întreagă, după un ghidaj adăugat, mutat sau șters. */
@@ -434,6 +437,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   laCerere('document.muta-instantele', 'actiune.muta-instantele', (ctx) => (ctx.deplasari ? true : 'motiv.nimic-ales')),
   // Uneltele de desen (ADR 0051): forma trasă pe pânză, ca o piesă nouă cu instanța ei.
   laCerere('document.deseneaza', 'actiune.deseneaza', (ctx) => (ctx.formaNoua ? true : 'motiv.nimic-ales')),
+  // Mânerele selecției (ADR 0052): rotirea și scalarea exactă a geometriei.
+  laCerere('document.transforma', 'actiune.transforma', (ctx) => (ctx.transformare ? true : 'motiv.nimic-ales')),
   {
     id: 'istoric.anuleaza',
     eticheta: 'actiune.anuleaza',

@@ -5,7 +5,7 @@
  */
 import { mkdirSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
-import { ecran, vedere } from './ajutor-panza.ts';
+import { ecran, vedere, adauga } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -80,7 +80,7 @@ test('riglele și ghidajele: din riglă, salvate în proiect, anulate, șterse p
 test('lipirea mutării de un ghidaj (Alt o oprește), alinierea față de foaie, săgețile, grila', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('rigla-stanga')).toBeVisible();
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
 
   // Un ghidaj vertical la x = 200, din rigla din stânga.
@@ -101,11 +101,12 @@ test('lipirea mutării de un ghidaj (Alt o oprește), alinierea față de foaie,
   v = await vedere(page);
   la = await ecran(page, v);
   const dx = 78.6;
-  const dinColt = la(20, 50);
+  // Apucat lângă marginea stângă, nu pe ea: pe margine stă mânerul de scalare (ADR 0052).
+  const dinColt = la(30, 50);
   await trageEcran(page, dinColt, { x: dinColt.x + dx * v.scara, y: dinColt.y });
   await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 20.00']);
   // Cât se trage, linia de aliniere a ghidajului se vede.
-  const a = la(100, 50);
+  const a = la(110, 50);
   await page.mouse.move(a.x, a.y);
   await page.mouse.down();
   await page.mouse.move(a.x + 3, a.y, { steps: 3 });
@@ -121,11 +122,15 @@ test('lipirea mutării de un ghidaj (Alt o oprește), alinierea față de foaie,
   await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
   v = await vedere(page);
   la = await ecran(page, v);
-  const c = la(20, 50);
+  const c = la(30, 50);
   await trageEcran(page, c, { x: c.x + dx * v.scara, y: c.y }, true);
   await expect(randuri(page)).not.toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 20.00']);
 
-  // Alinierea unei singure forme, față de foaie (300 × 200): centrul pe orizontală, apoi sus.
+  // Alinierea unei singure forme, față de foaie (300 × 200): centrul pe orizontală, apoi sus. Butoanele stau în sub-bara
+  // „Aliniere” din bara de sus (ADR 0052).
+  await expect(page.getByTestId('subbara-aliniere')).toHaveCount(0);
+  await page.locator('[data-editare="aliniere"]').click();
+  await expect(page.getByTestId('subbara-aliniere')).toBeVisible();
   await page.locator('[data-aliniaza="centru-x"]').click();
   await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 20.00']);
   await page.locator('[data-aliniaza="sus"]').click();
@@ -226,4 +231,180 @@ test('uneltele de desen (ADR 0051): fiecare formă prin tragere, tastele, lipire
   mkdirSync('.tmp', { recursive: true });
   await page.screenshot({ path: '.tmp/desen.png' });
   expect(erori).toEqual([]);
+});
+
+/** Rândul listei de vectori al unui dreptunghi, ca numere: [lățime, înălțime, X, Y]. */
+async function dreptunghi(page: Page, n = 0): Promise<number[]> {
+  const text = await randuri(page).nth(n).textContent() ?? '';
+  const m = /dreptunghi ([\d.]+) × ([\d.]+) la X ([\d.-]+), Y ([\d.-]+)/.exec(text);
+  if (!m) throw new Error(`rând neașteptat: ${text}`);
+  return m.slice(1).map(Number);
+}
+
+/** Centrul unui mâner pe ecran. */
+async function maner(page: Page, m: string): Promise<{ x: number; y: number }> {
+  const b = await page.locator(`[data-maner="${m}"]`).boundingBox();
+  if (!b) throw new Error(`mânerul ${m} n-are cutie`);
+  return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+}
+
+test('transformările (ADR 0052): mânerele de scalare și rotire, refuzul inexact, Alt care pornește lipirea, cercul cu raza din câmp', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.goto('/');
+  await expect(page.getByTestId('bara-editare')).toBeVisible();
+  await adauga(page, 'dreptunghi');
+  await expect(page.locator('[data-maner]')).toHaveCount(9);
+  // Cât se mută forma, mânerele (care n-ar urma-o) se ascund; după eliberare revin.
+  {
+    const v0 = await vedere(page);
+    const m = (await ecran(page, v0))(60, 50);
+    await page.mouse.move(m.x, m.y);
+    await page.mouse.down();
+    await page.mouse.move(m.x + 30, m.y, { steps: 3 });
+    await expect(page.locator('[data-maner="ne"]')).toBeHidden();
+    await page.mouse.move(m.x, m.y, { steps: 3 });
+    await page.mouse.up();
+    await expect(page.locator('[data-maner="ne"]')).toBeVisible();
+    await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+  }
+  // Mânerele sunt doar desen: rotița și butonul din mijloc, deasupra unui mâner, ajung la pânză (oracolul traseului
+  // panoramează din punctul cercului, unde stă mânerul e); un clic pe mâner, fără tragere, nu schimbă nimic.
+  {
+    const s0 = (await vedere(page)).scara;
+    const ne0 = await maner(page, 'ne');
+    await page.mouse.move(ne0.x, ne0.y);
+    await page.mouse.wheel(0, -200);
+    await expect.poll(async () => (await vedere(page)).scara).toBeGreaterThan(s0);
+    const tx0 = (await vedere(page)).tx;
+    const ne1 = await maner(page, 'ne');
+    await page.mouse.move(ne1.x, ne1.y);
+    await page.mouse.down({ button: 'middle' });
+    await page.mouse.move(ne1.x - 40, ne1.y, { steps: 3 });
+    await page.mouse.up({ button: 'middle' });
+    await expect.poll(async () => Math.round((await vedere(page)).tx - tx0)).toBe(-40);
+    const ne2 = await maner(page, 'ne');
+    await page.mouse.click(ne2.x + 3, ne2.y + 3);
+    await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+    await page.locator('[data-actiune="vedere.potriveste"]').click();
+  }
+
+  // Colțul ne tras spre (170, 110): proporțional, ancora în colțul opus (20, 20) rămâne pe loc.
+  let v = await vedere(page);
+  let la = await ecran(page, v);
+  const ne = await maner(page, 'ne');
+  await page.mouse.move(ne.x, ne.y);
+  await page.mouse.down();
+  await page.mouse.move(la(150, 100).x, la(150, 100).y, { steps: 4 });
+  await expect(page.getByTestId('manere-eticheta')).toContainText('mm');
+  await expect(page.getByTestId('manere-contur')).toHaveCount(1);
+  await page.mouse.move(la(170, 110).x, la(170, 110).y, { steps: 4 });
+  await page.mouse.up();
+  let [w = 0, h = 0, x = 0, y = 0] = await dreptunghi(page);
+  expect(Math.abs(w - 150)).toBeLessThan(1);
+  expect(Math.abs(h / w - 0.6)).toBeLessThan(0.002);
+  expect([x, y]).toEqual([20, 20]);
+  await expect(page.getByTestId('manere-contur')).toHaveCount(0);
+
+  // Latura e: doar lățimea; anularea întoarce mărimea.
+  await page.keyboard.press('Control+z');
+  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00']);
+  v = await vedere(page);
+  la = await ecran(page, v);
+  await trageEcran(page, await maner(page, 'e'), { x: la(160, 0).x, y: (await maner(page, 'e')).y + 30 });
+  [w = 0, h = 0, x = 0, y = 0] = await dreptunghi(page);
+  expect(Math.abs(w - 140)).toBeLessThan(1);
+  expect([h, x, y]).toEqual([60, 20, 20]);
+  await page.keyboard.press('Control+z');
+
+  // Rotirea cu Shift: un sfert de tură în jurul centrului (70, 50), în pași de 15°.
+  v = await vedere(page);
+  la = await ecran(page, v);
+  const r = await maner(page, 'rotire');
+  const centru = la(70, 50);
+  await page.keyboard.down('Shift');
+  await trageEcran(page, r, { x: centru.x - (r.y - centru.y) + 4, y: centru.y + 3 });
+  await page.keyboard.up('Shift');
+  await expect(page.locator('[data-camp="rotire"]')).toHaveValue(/^(90|270)$/);
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('[data-camp="rotire"]')).toHaveValue('0');
+
+  // Cercul scalat de pe o latură ar deveni elipsă: refuzul se spune, cercul rămâne.
+  await adauga(page, 'cerc');
+  await expect(randuri(page).nth(1)).toHaveText('cerc R15.00 cu centrul la X 70.00, Y 50.00');
+  const e = await maner(page, 'e');
+  await trageEcran(page, e, { x: e.x + 40, y: e.y });
+  await expect(page.getByTestId('manere-motiv')).toContainText('elipsă');
+  await expect(randuri(page).nth(1)).toHaveText('cerc R15.00 cu centrul la X 70.00, Y 50.00');
+  // Din colț, proporțional, trece: raza crește.
+  const se = await maner(page, 'se');
+  await trageEcran(page, se, { x: se.x + 30, y: se.y + 30 });
+  await expect(page.getByTestId('manere-motiv')).toHaveCount(0);
+  await expect(randuri(page).nth(1)).not.toHaveText('cerc R15.00 cu centrul la X 70.00, Y 50.00');
+  await page.keyboard.press('Control+z');
+
+  // Alt inversează lipirea: cu lipirea oprită și grila de 10 mm, mutarea cu Alt se prinde de grilă, fără Alt nu.
+  await page.locator('[data-editare="lipire"]').click();
+  await expect(page.locator('[data-editare="lipire"]')).toHaveAttribute('aria-pressed', 'false');
+  await page.locator('[data-editare="grila"]').click();
+  await page.locator('[data-editare="pas-grila"]').fill('10');
+  await randuri(page).nth(0).click();
+  v = await vedere(page);
+  la = await ecran(page, v);
+  const din = la(40, 35);
+  await trageEcran(page, din, { x: din.x + 19.2 * v.scara, y: din.y });
+  [w = 0, h = 0, x = 0, y = 0] = await dreptunghi(page);
+  expect(Math.abs(x - 39.2)).toBeLessThan(0.5);
+  expect(x).not.toBe(40);
+  await page.keyboard.press('Control+z');
+  v = await vedere(page);
+  la = await ecran(page, v);
+  const din2 = la(40, 35);
+  await trageEcran(page, din2, { x: din2.x + 19.2 * v.scara, y: din2.y }, true);
+  await expect(randuri(page).nth(0)).toHaveText('dreptunghi 100.00 × 60.00 la X 40.00, Y 20.00');
+  await page.locator('[data-editare="lipire"]').click();
+  await page.locator('[data-editare="grila"]').click();
+
+  // Cercul pus cu un clic are raza din câmp; o tragere scrie raza ei în câmp.
+  await page.locator('[data-unealta="cerc"]').click();
+  await page.locator('[data-editare="raza"]').fill('12');
+  v = await vedere(page);
+  la = await ecran(page, v);
+  const p = la(220, 140);
+  await page.mouse.click(p.x, p.y);
+  await expect(randuri(page).nth(2)).toHaveText(/^cerc R12\.00 cu centrul la X 2\d\d\.\d\d, Y 1\d\d\.\d\d$/);
+  await trageEcran(page, la(250, 60), la(258, 60));
+  await expect.poll(async () => Math.abs(Number((await page.locator('[data-editare="raza"]').inputValue()).replace(',', '.')) - 8)).toBeLessThan(0.05);
+  await page.locator('body').focus();
+  await page.keyboard.press('Escape');
+
+  mkdirSync('.tmp', { recursive: true });
+  await randuri(page).nth(0).click();
+  await vedere(page);
+  await page.screenshot({ path: '.tmp/manere.png' });
+  expect(erori).toEqual([]);
+});
+
+test('bara de sus (ADR 0052): uneltele încap între marcă și căutare la 1280, 1366 și 1440 px, și cu câmpul grilei deschis', async ({ page }) => {
+  for (const latime of [1280, 1366, 1440]) {
+    await page.setViewportSize({ width: latime, height: 760 });
+    await page.goto('/');
+    await expect(page.getByTestId('bara-editare')).toBeVisible();
+    for (const grila of [false, true]) {
+      if (grila) await page.locator('[data-editare="grila"]').click();
+      const [marca, bara, unelte] = await Promise.all(['.sus > .marca', '.sus > .bara', '.sus > .unelte'].map(async (s) => {
+        const b = await page.locator(s).boundingBox();
+        if (!b) throw new Error(`${s} n-are cutie`);
+        return b;
+      }));
+      const unde = `${latime} px${grila ? ', cu grila' : ''}`;
+      expect(marca!.x + marca!.width, unde).toBeLessThanOrEqual(bara!.x);
+      expect(bara!.x + bara!.width, unde).toBeLessThanOrEqual(unelte!.x);
+      // „Exportă” se vede întreg: punctul din mijlocul lui e chiar butonul, nu altceva peste el.
+      const e = await page.locator('[data-actiune="export.gcode"]').boundingBox();
+      const sus = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('[data-actiune]')?.getAttribute('data-actiune'), { x: e!.x + e!.width - 4, y: e!.y + e!.height / 2 });
+      expect(sus, unde).toBe('export.gcode');
+    }
+    await page.locator('[data-editare="grila"]').click();
+  }
 });

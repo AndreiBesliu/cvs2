@@ -153,7 +153,7 @@
 }
 
 .pas-grila {
-  width: 3.5rem;
+  width: 2.4rem;
   min-height: 30px;
   font: inherit;
   font-size: var(--fs-2);
@@ -213,4 +213,87 @@
   fill: none;
   stroke: currentColor;
   stroke-width: 1.4;
+}
+
+/* În bara de sus (ADR 0052): fără fundalul și umbra insulei plutitoare; alinierea într-o sub-bară sub butonul ei. */
+.bara-editare.bara-sus {
+  position: static;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.loc-unelte {
+  display: contents;
+}
+
+.aliniere-loc {
+  position: relative;
+  display: inline-flex;
+}
+
+.subbara {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 5;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  box-shadow: 0 2px 8px color-mix(in oklab, var(--t) 14%, transparent);
+}
+
+.raza {
+  width: 3.5rem;
+}
+
+/* Mânerele selecției (ADR 0052): scalarea (8) și rotirea (deasupra cutiei); doar desen, lovitura o decide `manerLovit`. */
+.manere {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.manere-tija {
+  stroke: var(--a);
+  stroke-width: 1;
+}
+
+.maner {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  background: var(--s-panou);
+  border: 1.5px solid var(--a);
+}
+
+.maner-rotire {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.manere-eticheta {
+  position: absolute;
+  transform: translateX(-50%);
+  padding: 1px var(--sp-1);
+  font-size: var(--fs-2);
+  white-space: nowrap;
+  color: var(--t);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+}
+
+.manere-motiv {
+  max-width: 24rem;
+  white-space: normal;
+  text-align: center;
+  color: var(--rosu, var(--t));
 }

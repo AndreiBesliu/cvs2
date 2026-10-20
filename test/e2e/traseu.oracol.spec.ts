@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { adauga } from './ajutor-panza.ts';
 import {
   aproximeaza, citesteProgram, deplaseaza, deseneaza, distanta, imagineDinPlat, inDocument, inPixeli, judeca,
   origineDinAntet, ProgramRefuzat, pxPeMm, razaOri,
@@ -465,7 +466,7 @@ for (const dpr of [1, 2]) {
 
     test(`dreptunghiul profilat pe exterior cu Ø6, la 10 px/mm (dpr ${dpr}): rama la 3 mm de contur, ±1 px; martorii pică`, async ({ page }) => {
       await page.goto('/');
-      await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+      await adauga(page, 'dreptunghi');
       const text = await exporta(page);
       expect(text).toContain('(e1/e1: dreptunghi, exterior, 3 mm)');
       expect(text).toContain('(scula T1 freza plata D6.000)');
@@ -517,8 +518,8 @@ for (const dpr of [1, 2]) {
 
 test('rapidele separat de tăieri: drumul lor, altă culoare; martorii: rapidele citite ca tăieri, desenate ca tăieri', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
   const text = await exporta(page);
   const prims = citesteProgram(text, origineDinAntet(text));
   // Pe hârtie (placa 1 A): gaura Ø30 cu Ø6 (raza 12, în două treceri), apoi rapidul din (82, 50) în colțul ramei (20, 17).
@@ -547,7 +548,7 @@ test('cercul Ø30 pe exterior la marginea foii de 2 440 mm, la 1 000 px/mm: raza
   await page.goto('/');
   await panouDeschis(page);
   await scrie(page, 'foaie-latime', '2440');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   // Colțul stânga-jos al cutiei cercului în (2400, 35): centrul în (2415, 50); centrul frezei ajunge la 2433, iar
   // marginea ei la 2436, la 4 mm de marginea foii (mai aproape, exportul cere confirmarea ieșirii din foaie).
   await scrie(page, 'pozitie-x', '2400');
@@ -594,7 +595,7 @@ test('peste contract: același cerc la plafonul foii (10 000 mm), la 1 000 px/mm
   await page.goto('/');
   await panouDeschis(page);
   await scrie(page, 'foaie-latime', '10000');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await scrie(page, 'pozitie-x', '9960');
   const text = await exporta(page, { 'e1/e1': 'exterior' });
   expect(text).toContain('foaia 10000.000 x 200.000');

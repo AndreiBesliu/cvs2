@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { judecaCerc, type Cerneala } from '../oracles/panza.ts';
-import { vedere } from './ajutor-panza.ts';
+import { vedere, adauga } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -37,7 +37,7 @@ async function cerneala(page: Page, x0: number, y0: number, w: number, h: number
 
 test('oracolul pânzei: cercul R15 desenat stă la cel mult 1 px de cercul de pe hârtie, fără goluri', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   // Mărim de două ori în jurul centrului cercului (70, 50 mm): raza trece de 100 px, iar cercul rămâne în pânză.
   let v = await vedere(page);
   const box = await page.getByTestId('panza').boundingBox();
@@ -63,8 +63,8 @@ test('oracolul pânzei: cercul R15 desenat stă la cel mult 1 px de cercul de pe
 
 test('clic, mutare prin tragere, anulare: totul prin acțiuni, cu poziția din linia de stare', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'cerc');
+  await adauga(page, 'dreptunghi');
   const v = await vedere(page);
   const box = await page.getByTestId('panza').boundingBox();
   if (!box) throw new Error('pânza n-are cutie');

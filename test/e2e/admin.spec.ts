@@ -20,13 +20,13 @@ test('/admin nu ia blocarea proiectului: aplicația deschisă după el e scriito
   // Dacă adminul ar fi deschis proiectul, fila aplicației ar fi a doua, deci doar ar citi: butoanele ar fi oprite.
   const aplicatia = await context.newPage();
   await aplicatia.goto('/');
-  await expect(aplicatia.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeEnabled();
+  await expect(aplicatia.locator('[data-actiune="import.svg"]')).toBeEnabled();
 });
 
 test('martorul: a doua filă a aplicației doar citește, deci butonul e oprit (proba de mai sus vede diferența)', async ({ page, context }) => {
   await page.goto('/');
-  await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeEnabled();
+  await expect(page.locator('[data-actiune="import.svg"]')).toBeEnabled();
   const a2 = await context.newPage();
   await a2.goto('/');
-  await expect(a2.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeDisabled();
+  await expect(a2.locator('[data-actiune="import.svg"]')).toBeDisabled();
 });

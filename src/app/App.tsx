@@ -393,7 +393,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -719,9 +719,11 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     return buton(id, atribut, p ? { ...extra, 'aria-pressed': panouri[p] } : extra);
   };
 
-  /** Un control care nu e acțiune: limba, ca butoane apăsate / neapăsate. */
+  /** Un control care nu e acțiune: limba, ca butoane apăsate / neapăsate; locul uneltelor, umplut de `Editare` (ADR 0052). */
   const control = (c: IdControl): ReactNode => {
     switch (c) {
+      case 'unelte':
+        return <div className="loc-unelte" id="loc-unelte" />;
       case 'limba':
         return (
           <nav aria-label={t('app.limba')}>

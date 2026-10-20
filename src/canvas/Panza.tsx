@@ -44,7 +44,7 @@ type Props = {
    * schimbarea vederii (ghidajul tras pe lângă margine nu mută vederea; zoomul rămâne al pânzei).
    */
   readonly suprapunere?: (vedere: Vedere, marime: { readonly latime: number; readonly inaltime: number }, linii: readonly LinieGhid[]) => ReactNode;
-  /** Lipirea mutării (ADR 0050 §2); Alt o oprește pe durata gestului. */
+  /** Lipirea mutării (ADR 0050 §2); Alt o inversează pe durata gestului (ADR 0052). */
   readonly lipeste?: Lipeste;
   /** O unealtă de desen aleasă (ADR 0051): apăsarea stângă desenează, în loc să aleagă. */
   readonly desen?: GestDesen;
@@ -249,7 +249,7 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
       gest.current = { ...g, tip: 'mutare' };
     }
     if (gest.current?.tip === 'mutare') {
-      const l = lipeste && !e.altKey ? lipeste(dx / g.v0.scara, -dy / g.v0.scara, g.v0.scara) : { dx: dx / g.v0.scara, dy: -dy / g.v0.scara, linii: [] };
+      const l = lipeste ? lipeste(dx / g.v0.scara, -dy / g.v0.scara, g.v0.scara, e.altKey) : { dx: dx / g.v0.scara, dy: -dy / g.v0.scara, linii: [] };
       setDeplasare({ dx: l.dx, dy: l.dy });
       setLinii(l.linii);
     }
@@ -264,7 +264,7 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
     }
     if (g?.tip === 'mutare') {
       const dx = (e.clientX - g.x0) / g.v0.scara, dy = -(e.clientY - g.y0) / g.v0.scara;
-      const l = lipeste && !e.altKey ? lipeste(dx, dy, g.v0.scara) : { dx, dy };
+      const l = lipeste ? lipeste(dx, dy, g.v0.scara, e.altKey) : { dx, dy };
       setDeplasare({ dx: 0, dy: 0 });
       setLinii([]);
       onMutare(l.dx, l.dy);

@@ -32,15 +32,16 @@ test('aranjamentul implicit: fiecare acțiune din el există în registru și ap
     assert.equal(new Set(ids).size, ids.length, `zona ${z} are o acțiune de două ori: ${ids.join(', ')}`);
   }
   // Plasa nu e vidă: bara de sus, uneltele, bara selecției și cea de jos au, împreună, acțiunile prototipului B, plus
-  // „Arată traseul” în bara de jos (2.8d).
-  assert.equal(numarate, 8 + 2 + 3 + 2);
+  // „Arată traseul” în bara de jos (2.8d), fără „Adaugă dreptunghi / cerc” (ADR 0052: locul uneltelor de desen).
+  assert.equal(numarate, 4 + 2 + 3 + 2);
   for (const p of PANOURI) assert.ok(REGISTRU.has(COMUTA_PANOU[p]), `panoul ${p}: comutatorul lipsește din registru`);
   assert.deepEqual(verificaAranjament(ARANJAMENT_MODERN, REGISTRU), []);
 });
 
 test('aranjamentul implicit e cel al prototipului B: bara de sus în aceeași ordine, panourile la locul lor', () => {
+  // Primul grup e locul uneltelor de desen (ADR 0052); „Adaugă dreptunghi / cerc” au ieșit din bară (rămân în paletă).
+  assert.deepEqual(ARANJAMENT_MODERN.zone.sus[0], { id: 'forme', intrari: [{ control: 'unelte' }] });
   assert.deepEqual(actiuniZona(ARANJAMENT_MODERN, 'sus'), [
-    'document.adauga-dreptunghi', 'document.adauga-cerc', 'document.duplica-selectia', 'document.sterge-selectia',
     'istoric.anuleaza', 'istoric.reface', 'import.svg', 'export.gcode',
   ]);
   assert.deepEqual(actiuniZona(ARANJAMENT_MODERN, 'selectie'), ['document.duplica-selectia', 'document.sterge-selectia', 'vedere.proprietati']);

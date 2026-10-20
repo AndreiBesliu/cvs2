@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { adauga } from './ajutor-panza.ts';
 
 /**
  * Otrăvurile scăpate ale feliilor 2.8c / 2.8d, prinse doar în browser (2.8e, sesiunea independentă, `test/otravuri/2.8.py`).
@@ -23,7 +24,7 @@ async function scrie(page: Page, nume: string, valoare: string): Promise<void> {
 
 test('P02 / P03: Y aplicat mută doar pe Y; un X negativ e primit și arătat cu semnul lui', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await panouDeschis(page);
   await scrie(page, 'pozitie-y', '5');
   await expect(camp(page, 'pozitie-y')).toHaveValue('5');
@@ -52,7 +53,7 @@ test('P06 / C07: înălțimea foii schimbă doar înălțimea; o dimensiune cu s
 
 test('C05: după un motiv, prima tastă îl scoate, cu aria-invalid, înaintea lui Enter', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await panouDeschis(page);
   await scrie(page, 'pozitie-x', 'abc');
   await expect(motiv(page, 'pozitie-x')).toContainText(INVALID);
@@ -64,7 +65,7 @@ test('C05: după un motiv, prima tastă îl scoate, cu aria-invalid, înaintea l
 
 test('C04: rotirea 360 pe o formă nerotită arată 0 și nu e o comandă (prima anulare scoate forma)', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await panouDeschis(page);
   await expect(camp(page, 'rotire')).toHaveValue('0');
   await scrie(page, 'rotire', '360');
@@ -75,8 +76,8 @@ test('C04: rotirea 360 pe o formă nerotită arată 0 și nu e o comandă (prima
 
 test('P01: textul greșit al unei forme nu trece la forma aleasă apoi; câmpul arată colțul ei, fără motiv', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
   await panouDeschis(page);
   await page.locator('[data-instanta="e2"]').click();
   const xCerc = await camp(page, 'pozitie-x').inputValue();
@@ -109,12 +110,12 @@ async function alfaMaxim(page: Page): Promise<number> {
 
 test('S06: traseul vechi e stins în pixeli (alfa ≈ 0,35 din cel la zi), nu doar în atribut', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await page.keyboard.press('t');
   await expect(strat(page)).toHaveAttribute('data-varfuri', /^[1-9]/);
   await expect.poll(() => alfaMaxim(page)).toBeGreaterThan(200);
   const laZi = await alfaMaxim(page);
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await expect(strat(page)).toHaveAttribute('data-stins', 'true');
   await expect.poll(async () => (await alfaMaxim(page)) / laZi).toBeLessThan(0.45);
   const raport = (await alfaMaxim(page)) / laZi;
@@ -123,7 +124,7 @@ test('S06: traseul vechi e stins în pixeli (alfa ≈ 0,35 din cel la zi), nu do
 
 test('S02: cu traseul cu totul în afara vederii, stratul nu urcă nicio bucată (data-varfuri = 0)', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await page.keyboard.press('t');
   await expect(strat(page)).toHaveAttribute('data-varfuri', /^[1-9]/);
   // Punctul (270, 170) mm al foii e gol (dreptunghiul stă la 20–120 × 20–80 mm): zoomul acolo scoate traseul din vedere.
@@ -143,7 +144,7 @@ test('AP07: la dpr 2, treapta de zoom ține săgeata sub ½ px FIZIC: același c
     const ctx = await browser.newContext({ deviceScaleFactor: dpr, locale: 'ro-RO', viewport: { width: 1280, height: 800 } });
     const page = await ctx.newPage();
     await page.goto('/');
-    await page.locator('[data-actiune="document.adauga-cerc"]').click();
+    await adauga(page, 'cerc');
     await page.keyboard.press('t');
     await expect(strat(page)).toHaveAttribute('data-varfuri', /^[1-9]/);
     const n = Number(await strat(page).getAttribute('data-varfuri'));

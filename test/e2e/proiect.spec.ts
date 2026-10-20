@@ -6,7 +6,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { poarta } from '../oracles/poarta.ts';
-import { ecran, vedere } from './ajutor-panza.ts';
+import { ecran, vedere, adauga } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -63,8 +63,8 @@ async function versiuni(page: Page): Promise<Array<[string, number]>> {
 test('proiectul rămâne după reîncărcare, cu formele mutate; lista arată ce e pe foaie', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('lista-vectori')).toContainText('Nimic pe foaie încă.');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
   await trage(page, 70, 50, 30);
   await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00', 'cerc R15.00 cu centrul la X 100.00, Y 50.00']);
   // Salvarea e asincronă: așteaptă ultima versiune (trei comenzi: rev 3).
@@ -80,23 +80,24 @@ test('proiectul rămâne după reîncărcare, cu formele mutate; lista arată ce
 
 test('a doua filă doar citește, se ține la zi cu fiecare salvare și devine scriitorul când prima se închide', async ({ page, context }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await expect.poll(async () => (await versiuni(page)).length).toBe(1);
   const a2 = await context.newPage();
   await a2.goto('/');
   await expect(a2.getByTestId('proiect')).toHaveText('Proiectul e deschis în altă filă: aici doar te uiți, iar nimic nu se salvează.');
   await expect(randuri(a2)).toHaveCount(1);
-  const adauga = a2.locator('[data-actiune="document.adauga-dreptunghi"]');
-  await expect(adauga).toBeDisabled();
-  await expect(adauga).toHaveAttribute('title', 'Proiectul e deschis în altă filă: aici doar îl citești.');
+  // Un buton care schimbă documentul (Importă SVG; „Adaugă” a trecut în paletă, ADR 0052) e oprit, cu motivul.
+  const importa = a2.locator('[data-actiune="import.svg"]');
+  await expect(importa).toBeDisabled();
+  await expect(importa).toHaveAttribute('title', 'Proiectul e deschis în altă filă: aici doar îl citești.');
   // Ce salvează prima filă apare în a doua fără reîncărcare: nici lista, nici exportul ei nu rămân pe o versiune veche.
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await expect(randuri(a2)).toHaveCount(2);
   // Prima filă se închide: a doua devine scriitorul, tot fără reîncărcare, și salvează de la ultima versiune.
   await page.close();
   await expect(a2.getByTestId('proiect')).toHaveCount(0);
-  await expect(adauga).toBeEnabled();
-  await adauga.click();
+  await expect(importa).toBeEnabled();
+  await adauga(a2, 'dreptunghi');
   await expect(randuri(a2)).toHaveCount(3);
   await expect.poll(async () => (await versiuni(a2)).map(([, r]) => r)).toEqual([1, 2, 3]);
 });
@@ -109,12 +110,12 @@ test('fără Web Locks (o origine nesigură), două file scriu, dar a doua nu o 
   await a2.goto('/');
   // A doua filă și-a deschis proiectul (gol) înainte ca prima să scrie: altfel l-ar citi pe al primei și n-ar fi niciun
   // conflict (cursa se vedea o dată din câteva rulări, și înainte de dicționarul limbii la cerere).
-  await expect(a2.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeEnabled();
-  await a1.locator('[data-actiune="document.adauga-cerc"]').click();
+  await expect(a2.locator('[data-actiune="import.svg"]')).toBeEnabled();
+  await adauga(a1, 'cerc');
   await expect.poll(async () => (await versiuni(a1)).length).toBe(1);
-  await a2.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(a2, 'dreptunghi');
   await expect(a2.getByTestId('proiect')).toHaveText('Altă filă a salvat proiectul între timp: aici modificările nu se mai salvează. Reîncarcă pagina.');
-  await expect(a2.locator('[data-actiune="document.adauga-cerc"]')).toBeDisabled();
+  await expect(a2.locator('[data-actiune="import.svg"]')).toBeDisabled();
   // Versiunea primei file a rămas singura: nimic n-a fost acoperit.
   expect(await versiuni(a1)).toEqual([['proiect', 1]]);
   await a1.reload();
@@ -128,7 +129,7 @@ test('un proiect salvat care nu se poate deschide nu se acoperă: fila lucrează
   await expect(page.getByTestId('proiect')).toContainText('Proiectul salvat nu s-a putut deschide');
   await expect(page.getByTestId('proiect')).toContainText('versiune mai nouă');
   // Desenul merge în memorie, dar nu se salvează peste proiectul vechi.
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await expect(randuri(page)).toHaveCount(1);
   await page.reload();
   await expect(page.getByTestId('proiect')).toContainText('Proiectul salvat nu s-a putut deschide');
@@ -146,13 +147,13 @@ test('un proiect v1 salvat se deschide prin migrare: forma stă unde era', async
   await expect(page.getByTestId('proiect')).toHaveCount(0);
   await expect(randuri(page)).toHaveText(['cerc R15.00 cu centrul la X 70.00, Y 50.00']);
   // Prima schimbare salvează documentul v2 la revizia următoare.
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await expect.poll(async () => (await versiuni(page)).map(([, r]) => r)).toEqual([4, 5]);
 });
 
 test('lista: forma care iese din foaie apare cu roșu, cu avertismentul în titlu', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await expect(randuri(page).first()).not.toHaveClass(/cu-avertisment/);
   await trage(page, 50, 50, 230);
   const rand = randuri(page).first();
@@ -172,15 +173,15 @@ test('lista: forma care iese din foaie apare cu roșu, cu avertismentul în titl
 
 test('Ctrl+D: o copie separată, decalată cu 20 mm, selectată; Ctrl+Z o scoate; exportul le vede pe toate', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await page.keyboard.press('Control+d');
   await expect(randuri(page)).toHaveText(['cerc R15.00 cu centrul la X 70.00, Y 50.00', 'cerc R15.00 cu centrul la X 90.00, Y 30.00']);
   await expect(page.getByTestId('selectie')).toHaveText('Selectat: cerc R15.00 cu centrul la X 90.00, Y 30.00');
   await page.keyboard.press('Control+z');
   await expect(randuri(page)).toHaveCount(1);
-  // Copia anulată nu rămâne selectată: bara spune „nimic selectat”, iar Duplică și Șterge sunt inactive.
+  // Copia anulată nu rămâne selectată: bara spune „nimic selectat”, iar bara selecției (Duplică, Șterge) a plecat.
   await expect(page.getByTestId('selectie')).toContainText('Nimic selectat');
-  await expect(page.locator('[data-actiune="document.duplica-selectia"]')).toBeDisabled();
+  await expect(page.locator('[data-context="document.duplica-selectia"]')).toHaveCount(0);
   await page.keyboard.press('Control+y');
   await expect(randuri(page)).toHaveCount(2);
   await page.locator('[data-actiune="export.gcode"]').click();
@@ -190,7 +191,7 @@ test('Ctrl+D: o copie separată, decalată cu 20 mm, selectată; Ctrl+Z o scoate
 test('pe un telefon (375 × 548), cu lista plină, pânza rămâne destul de mare ca să pornească și să primească gesturi', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 548 });
   await page.goto('/');
-  for (let i = 0; i < 6; i++) await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  for (let i = 0; i < 6; i++) await adauga(page, 'cerc');
   await expect.poll(async () => (await versiuni(page)).map(([, r]) => r)).toContain(6);
   await page.reload();
   await expect(randuri(page)).toHaveCount(6);
@@ -201,7 +202,7 @@ test('pe un telefon (375 × 548), cu lista plină, pânza rămâne destul de mar
 
 test('se păstrează ultimele 20 de versiuni: cele mai vechi pleacă, cea mai nouă rămâne și se redeschide', async ({ page }) => {
   await page.goto('/');
-  for (let i = 0; i < 25; i++) await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  for (let i = 0; i < 25; i++) await adauga(page, 'cerc');
   await expect.poll(async () => (await versiuni(page)).map(([, r]) => r)).toEqual(Array.from({ length: 20 }, (_, k) => k + 6));
   await page.reload();
   await expect(randuri(page)).toHaveCount(25);
@@ -209,7 +210,7 @@ test('se păstrează ultimele 20 de versiuni: cele mai vechi pleacă, cea mai no
 
 test('operațiile stau în document (ADR 0025): adâncimea din dialog intră la Exportă, Ctrl+Z o scoate, iar după reîncărcare rămâne', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   const adancime = page.locator('[data-operatie="e1/e1"] input').nth(0);
   const deschide = async (): Promise<void> => { await page.locator('[data-actiune="export.gcode"]').click(); };
   const inchide = async (): Promise<void> => { await page.getByRole('button', { name: 'Închide' }).click(); };
@@ -251,7 +252,7 @@ test('operațiile stau în document (ADR 0025): adâncimea din dialog intră la 
 
 test('în fila care doar citește, operațiile din dialog nu se pot schimba, dar exportul merge pe cele din document', async ({ page, context }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await expect.poll(async () => (await versiuni(page)).length).toBe(1);
   const a2 = await context.newPage();
   await a2.goto('/');
@@ -268,7 +269,7 @@ test('în fila care doar citește, operațiile din dialog nu se pot schimba, dar
 
 test('în fila care doar citește, urechile scrise de scriitor se văd, oprite, și intră în export', async ({ page, context }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   // Scriitorul taie gaura prin foaie, cu urechi (implicitele: 4 × 8 × 2, deci palierul la −16).
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/e1"]');
@@ -300,7 +301,7 @@ test('în fila care doar citește, urechile scrise de scriitor se văd, oprite, 
 
 test('dialogul din fila care citește urmează versiunile scriitorului și, după preluare, nu scrie înapoi valori vechi', async ({ page, context }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await expect.poll(async () => (await versiuni(page)).length).toBe(1);
   const b = await context.newPage();
   await b.goto('/');
@@ -372,7 +373,7 @@ test('freze amestecate într-un proiect salvat: dialogul le spune pe față, iar
 
 test('o versiune pe care fila care citește n-o poate deschide: o spune, iar la preluare lasă blocarea altei file', async ({ page, context }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await expect.poll(async () => (await versiuni(page)).length).toBe(1);
   const b = await context.newPage();
   await b.goto('/');
@@ -393,12 +394,12 @@ test('o versiune pe care fila care citește n-o poate deschide: o spune, iar la 
     return [...(q.held ?? []), ...(q.pending ?? [])].filter((l) => l.name === 'cncvs2-proiect-scriitor').length;
   })).toBe(0);
   await expect(b.getByTestId('proiect')).toContainText('n-o poate deschide');
-  await expect(b.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeDisabled();
+  await expect(b.locator('[data-actiune="import.svg"]')).toBeDisabled();
 });
 
 test('în fila care citește, cu dialogul deschis, scriitorul șterge tot: Exportă spune de ce nu exportă, nu tace', async ({ page, context }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await expect.poll(async () => (await versiuni(page)).length).toBe(1);
   const b = await context.newPage();
   await b.goto('/');
@@ -406,7 +407,7 @@ test('în fila care citește, cu dialogul deschis, scriitorul șterge tot: Expor
   await b.locator('[data-actiune="export.gcode"]').click();
   await expect(b.locator('[data-operatie]')).toHaveCount(1);
   // Scriitorul șterge cercul (e selectat după adăugare): versiunea 2, fără nimic pe foaie.
-  await page.locator('[data-actiune="document.sterge-selectia"]').click();
+  await page.locator('[data-context="document.sterge-selectia"]').click();
   await expect.poll(async () => (await versiuni(page)).map(([, r]) => r)).toContain(2);
   await expect(b.locator('[data-operatie]')).toHaveCount(0);
   let descarcari = 0;
@@ -418,7 +419,7 @@ test('în fila care citește, cu dialogul deschis, scriitorul șterge tot: Expor
 
 test('un export în curs în fila care citește, când scriitorul salvează: nu se descarcă, și se spune de ce', async ({ page, context }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await expect.poll(async () => (await versiuni(page)).length).toBe(1);
   const b = await context.newPage();
   // Calculul exportului se încarcă la cerere: în fila B îl întârziem 2 s, cât să salveze scriitorul între timp.
@@ -432,7 +433,7 @@ test('un export în curs în fila care citește, când scriitorul salvează: nu 
   b.on('download', () => { descarcari++; });
   await b.locator('[data-actiune="export.gcode"]').click();
   await b.locator('[data-buton="exporta"]').click();
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await expect(b.getByTestId('export-stare')).toContainText('Proiectul s-a schimbat în altă filă');
   await b.waitForTimeout(2500);
   expect(descarcari).toBe(0);
@@ -475,8 +476,9 @@ test('o cale salvată (inima din patru cubice, ADR 0034): în listă cu cutia ei
   const p = la(150, 100);
   await page.mouse.click(p.x, p.y);
   await expect(page.getByTestId('selectie')).toHaveText(`Selectat: ${text}`);
-  // Deasupra scobiturii, între lobi: nimic.
-  const q = la(150, 140);
+  // Deasupra scobiturii, între lobi: nimic. Sub marginea de sus a cutiei (138,3): pe margine stă mânerul de scalare (ADR 0052),
+  // iar între lobi, la (150, 132), conturul e la 3,4 mm (toleranța clicului: 4 px).
+  const q = la(150, 132);
   await page.mouse.click(q.x, q.y);
   await expect(page.getByTestId('selectie')).toContainText('Nimic selectat');
   // Exportul: inima iese din arce (biarcele), iar poarta invariantelor trece pe programul scris în browser.

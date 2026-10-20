@@ -23,7 +23,7 @@ reface ca orice altceva.
 mijlocul cutiei ei) se lipesc de cea mai apropiată țintă, dacă e la cel mult 6 px pe ecran. Țintele: ghidajele, marginile
 și mijlocul foii, marginile și mijlocul cutiei fiecărui element al celorlalte instanțe și capetele căilor deschise, plus
 grila (multiplii pasului), când e pornită. La egalitate, câștigă ținta care nu e grila. Cât se trage, pânza arată liniile
-tuturor țintelor pe care cade selecția după lipire (marginea pe un ghidaj și mijlocul pe mijlocul foii, deodată). Alt ține lipirea oprită pe durata gestului. Pornirea lipirii și a grilei (cu pasul ei) e o
+tuturor țintelor pe care cade selecția după lipire (marginea pe un ghidaj și mijlocul pe mijlocul foii, deodată). Alt inversează lipirea pe durata gestului (ADR 0052; la început Alt doar o oprea). Pornirea lipirii și a grilei (cu pasul ei) e o
 preferință a omului, în browser, nu în document.
 
 **3. Alinierea și distribuirea**, pure (`src/geom/aliniere.ts`), pe cutiile instanțelor alese: stânga, centrul, dreapta,

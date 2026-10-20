@@ -11,7 +11,7 @@ unde și cât trebuie, nici o elipsă, o linie sau un poligon.
 
 **1. Uneltele** stau în bara editării (ADR 0050 §5), la cerere: Selecție (V), Dreptunghi (R), Cerc (O), Elipsă (E), Linie
 (L), Poligon (P, cu numărul de laturi 3…64, implicit 6). O unealtă rămâne aleasă după o formă (se desenează mai multe la
-rând); Escape sau V întoarce la selecție. Butoanele „Adaugă dreptunghi / cerc” din bara de sus rămân cum erau.
+rând); Escape sau V întoarce la selecție. Butoanele „Adaugă dreptunghi / cerc” din bara de sus rămân cum erau (ADR 0052: din 20.10 stau doar în paleta de comenzi, iar uneltele trec în bara de sus).
 
 **2. Gestul:** apăsat și tras pe pânză, cu previzualizarea conturului; la eliberare, forma intră în document printr-o
 singură acțiune (`document.deseneaza`, un pas de anulare) și rămâne aleasă. O tragere sub 3 px nu face nimic. Fiecare

@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { adauga } from './ajutor-panza.ts';
 
 /**
  * Găurile de interfață găsite de otrăvurile feliei 2.3c (segmentul 2b, sesiune independentă): fiecare test trece pe
@@ -29,19 +30,19 @@ async function salveaza(page: Page, doc: { rev: number }): Promise<void> {
 
 test('E02: fila care doar citește și nu-și poate aduce ușa de încărcare spune „nu s-a putut citi acum”, nu tace', async ({ page, context }) => {
   await page.goto('/');
-  await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeVisible();
+  await expect(page.locator('[data-actiune="import.svg"]')).toBeVisible();
   const b = await context.newPage();
   await b.route(/incarcare-[^/]*\.js$/, (r) => r.abort());
   await b.goto('/');
-  await expect(b.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeVisible();
+  await expect(b.locator('[data-actiune="import.svg"]')).toBeVisible();
   // Fila A scrie prima versiune; fila B o recitește și are nevoie de ușă, care nu vine.
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await expect(b.getByTestId('proiect')).toContainText('nu s-a putut citi acum');
 });
 
 test('E03: în fila care doar citește, un SVG lăsat pe planșă nu deschide dialogul importului, nici pentru câteva cadre', async ({ page, context }) => {
   await page.goto('/');
-  await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeVisible();
+  await expect(page.locator('[data-actiune="import.svg"]')).toBeVisible();
   const b = await context.newPage();
   await b.goto('/');
   const panza = b.getByTestId('panza');
@@ -72,7 +73,7 @@ test('E03: în fila care doar citește, un SVG lăsat pe planșă nu deschide di
 
 test('E04: un rând cu un contur închis și o linie deschisă nu oferă stânga / dreapta (ele cer o singură cale)', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeVisible();
+  await expect(page.locator('[data-actiune="import.svg"]')).toBeVisible();
   const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
   await salveaza(page, {
     schema: 10, rev: 1,
@@ -115,7 +116,7 @@ test('E05: marcajul „despărțire” pus din dialog se vede bifat la redeschid
 
 test('E06: bifa „Despărțire” e inactivă pe un rând doar cu contururi închise', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('[data-operatie]')).toHaveCount(1);
   await expect(page.locator('[data-operatie] [data-camp="despartire"]')).toBeDisabled();

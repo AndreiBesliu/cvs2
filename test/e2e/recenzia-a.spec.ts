@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { adauga } from './ajutor-panza.ts';
 
 /**
  * Recenzia A (15.10), constatările interfeței și ale pornirii, fiecare pe cazul recenzentului, în browserul adevărat:
@@ -56,7 +57,7 @@ test('despărțirea se marchează din dialog: o linie de la o margine la alta, p
 
 test('ușa de încărcare care nu vine la reîncărcare: „n-a putut fi citit acum”, iar proiectul rămâne pentru o reîncărcare bună', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await expect.poll(() => versiuni(page)).toContain(1);
   await page.route(/incarcare-[^/]*\.js$/, (r) => r.abort());
   await page.reload();
@@ -83,5 +84,5 @@ test('coada importului: un dublu-clic pe „Importă” importă doar fișierul 
 test('config.json care nu răspunde: aplicația pornește după termen, cu instanța necunoscută, nu rămâne albă', async ({ page }) => {
   await page.route('**/config.json', () => { /* fără răspuns */ });
   await page.goto('/');
-  await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('[data-actiune="import.svg"]')).toBeVisible({ timeout: 10_000 });
 });

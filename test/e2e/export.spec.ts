@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { poarta, type ContextPoarta } from '../oracles/poarta.ts';
 import { regiuneDinDocument } from '../oracles/regiune.ts';
-import { ecran, vedere } from './ajutor-panza.ts';
+import { ecran, vedere, adauga } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -51,8 +51,8 @@ async function exporta(page: Page, origine: string): Promise<{ text: string; afi
 test('desenul din aplicație iese în G-code: cu originea stânga-jos, exact liniile plăcii 1 A', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('[data-actiune="export.gcode"]')).toBeDisabled();
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
   const { text, afisat, nume } = await exporta(page, 'stanga-jos');
   expect(nume).toBe('cncvs2-stanga-jos.nc');
   const aur = readFileSync('test/placi/placa-01/placa-01-A.nc', 'ascii');
@@ -71,8 +71,8 @@ test('desenul din aplicație iese în G-code: cu originea stânga-jos, exact lin
 
 test('cu originea dreapta-sus pe foaia de 300 × 200: cotele pe hârtie și poarta trece', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
   const { text } = await exporta(page, 'dreapta-sus');
   // Gaura pornește din (82, 50) mm; față de colțul dreapta-sus al foii 300 × 200: (82 − 300, 50 − 200).
   expect(text).toContain('\nG0 X-218.000 Y-150.000\n');
@@ -88,7 +88,7 @@ test('cu originea dreapta-sus pe foaia de 300 × 200: cotele pe hârtie și poar
 
 test('freza iese din foaie: avertismentul stă în bara de jos, iar exportul cere confirmarea și o scrie în antet', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await expect(page.getByTestId('avertisment')).toHaveCount(0);
   // Dreptunghiul (20…120 × 20…80 mm), tras cu 40 mm spre stânga: iese cu ~20 mm din foaie.
   const v = await vedere(page);
@@ -182,7 +182,7 @@ test('un rezultat de export întârziat, venit după schimbarea unui parametru, 
   let descarcari = 0;
   page.on('download', () => { descarcari++; });
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await trage(page, 70, 50, -40);
   await page.locator('[data-actiune="export.gcode"]').click();
   await page.locator('[data-buton="exporta"]').click();
@@ -201,22 +201,22 @@ test('dialogul exportului care nu se poate încărca (o publicare nouă a schimb
   // Dialogul vine legat de document, în bucata `ExportConectat` (cu `DialogExport` în ea).
   await page.route(/ExportConectat-[^/]*\.js$/, (r) => r.abort());
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.getByRole('alert')).toHaveText('Fereastra nu s-a putut încărca (aplicația s-a actualizat între timp sau rețeaua lipsește). Proiectul e salvat: reîncarcă pagina.');
   await expect(page.getByRole('button', { name: 'Reîncarcă' })).toBeVisible();
   await page.getByRole('button', { name: 'Închide' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   // Aplicația nu mai e inertă, iar documentul e cel de dinainte.
-  await expect(page.locator('[data-actiune="document.adauga-cerc"]')).toBeEnabled();
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await expect(page.locator('[data-actiune="import.svg"]')).toBeEnabled();
+  await adauga(page, 'cerc');
   await expect(page.getByTestId('selectie')).toContainText('Selectat: cerc R15');
 });
 
 test('mai multe forme în afara foii: un singur rând în bara de jos, cu lista în titlu', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'dreptunghi');
   // Primul (cel de deasupra) spre stânga; al doilea, apucat de unde nu-l mai acoperă primul (X 110), spre dreapta.
   await trage(page, 70, 50, -40);
   await trage(page, 110, 50, 230);
@@ -229,7 +229,7 @@ test('mai multe forme în afara foii: un singur rând în bara de jos, cu lista 
 
 test('sub dialog, aplicația e inertă: Shift+Tab nu iese din dialog, iar două Space-uri pe Exportă nu bifează confirmarea', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await trage(page, 70, 50, -40);
   const stare = (await page.getByTestId('selectie').textContent()) ?? '';
   await page.locator('[data-actiune="export.gcode"]').click();
@@ -252,7 +252,7 @@ test('sub dialog, aplicația e inertă: Shift+Tab nu iese din dialog, iar două 
 
 test('virgula zecimală: „2,5” înseamnă 2,5 mm, nu 25; un text care nu e număr oprește exportul, cu motivul spus', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
   const pas = page.locator('[data-operatie="e1/e1"] input').nth(1);
   await pas.fill('abc');
@@ -274,8 +274,8 @@ test('virgula zecimală: „2,5” înseamnă 2,5 mm, nu 25; un text care nu e n
 
 test('regiunea păstrată (ADR 0026): două dreptunghiuri puse unul peste altul nu se exportă, iar motivul se vede', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'dreptunghi');
   let descarcari = 0;
   page.on('download', () => { descarcari++; });
   await page.locator('[data-actiune="export.gcode"]').click();
@@ -293,7 +293,7 @@ test('regiunea păstrată (ADR 0026): două dreptunghiuri puse unul peste altul 
 
 test('sensul de tăiere (ADR 0027): gaura în urcare e trigonometric (G3); trecută pe opoziție, orar (G2); pe linie, sensul e oprit', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
   const sens = page.locator('[data-operatie="e1/e1"] select[data-camp="sens"]');
   await expect(sens).toHaveValue('urcare');
@@ -322,7 +322,7 @@ test('sensul de tăiere (ADR 0027): gaura în urcare e trigonometric (G3); trecu
 
 test('urechile (ADR 0028): bifate pe dreptunghi, cu implicitele 4 × 8 × 2, palierul la 2 mm de fața de jos; intră în document', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/e1"]');
   // Tăiat prin foaia de 18, în treceri de 6.
@@ -377,7 +377,7 @@ test('urechile (ADR 0028): bifate pe dreptunghi, cu implicitele 4 × 8 × 2, pal
 
 test('rampa (ADR 0029): bifată pe dreptunghi, freza coboară pe buclă, nu drept, fără ridicare între treceri; intră în document', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/e1"]');
   await rand.locator('input').nth(0).fill('12');
@@ -426,8 +426,8 @@ test('rampa (ADR 0029): bifată pe dreptunghi, freza coboară pe buclă, nu drep
 
 test('intrările (ADR 0030): bifate pe dreptunghi, freza plonjează în deșeu și intră tangent; pe gaura prea mică se omit, cu avertisment', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/e1"]');
   const bifa = rand.locator('[data-camp="intrari"]');
@@ -472,7 +472,7 @@ test('intrările (ADR 0030): bifate pe dreptunghi, freza plonjează în deșeu �
 
 test('intrările cu rampă (ADR 0031): rampa coboară pe sfertul intrării, la fiecare trecere; nota din dialog', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/e1"]');
   await rand.locator('input').nth(0).fill('12');
@@ -517,7 +517,7 @@ test('intrările cu rampă (ADR 0031): rampa coboară pe sfertul intrării, la f
 
 test('degajările (ADR 0032): dog-bone pe gaură, drumul din fiecare colț al traseului; intră în document; oprite pe linie', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/e1"]');
   await rand.locator('select[data-camp="latura"]').selectOption('interior');

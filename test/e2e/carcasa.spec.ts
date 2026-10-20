@@ -4,7 +4,7 @@
  * selecției, arborele și cursorul din bara de jos. Fiecare test are browserul lui, deci baza lui.
  */
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { ecran, vedere } from './ajutor-panza.ts';
+import { ecran, vedere, adauga } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -49,7 +49,8 @@ function aproape(a: string, b: string): boolean {
 
 test('paleta de comenzi (Ctrl+K): se deschide, filtrează fără diacritice, rulează o acțiune, Esc o închide, focusul se întoarce', async ({ page }) => {
   await page.goto('/');
-  const dreptunghi = page.locator('[data-actiune="document.adauga-dreptunghi"]');
+  // Focusul pe un buton al barei de sus (Importă SVG; „Adaugă” e doar în paletă din ADR 0052): paleta i-l întoarce.
+  const dreptunghi = page.locator('[data-actiune="import.svg"]');
   await dreptunghi.focus();
   await page.keyboard.press('Control+k');
   const paleta = page.getByRole('dialog', { name: 'Paleta de comenzi' });
@@ -126,7 +127,7 @@ test.describe('tema', () => {
 
 test('panourile se strâng și se deschid din colțul lor; foaia se potrivește în locul eliberat; bara selecției deschide proprietățile', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   const lista = page.locator('[data-actiune="vedere.lista"]');
   const prop = page.locator('[data-actiune="vedere.proprietati"]');
   const arbore = page.getByTestId('lista-vectori');

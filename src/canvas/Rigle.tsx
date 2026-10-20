@@ -25,8 +25,8 @@ type Props = {
   readonly linii: readonly LinieGhid[];
   /** Pasul grilei arătate, în mm, sau null. */
   readonly grila: number | null;
-  /** Lipirea poziției unui ghidaj tras (fără `liber`: Alt ținut). */
-  readonly lipestePoz: (axa: 'x' | 'y', poz: number, scara: number) => number;
+  /** Lipirea poziției unui ghidaj tras; `alt` (ținut) inversează lipirea. */
+  readonly lipestePoz: (axa: 'x' | 'y', poz: number, scara: number, alt: boolean) => number;
   readonly onNou: (axa: 'x' | 'y', poz: number) => void;
   readonly onMuta: (id: string, poz: number) => void;
   readonly onSterge: (id: string) => void;
@@ -62,10 +62,10 @@ export function Rigle(p: Props): ReactElement {
     const px = e.clientX - (r?.left ?? 0), py = e.clientY - (r?.top ?? 0);
     if (axa === 'y') {
       const brut = (v.ty - py) / v.scara;
-      return { poz: e.altKey ? brut : p.lipestePoz('y', brut, v.scara), peRigla: py < z.y + GROSIME_RIGLA };
+      return { poz: p.lipestePoz('y', brut, v.scara, e.altKey), peRigla: py < z.y + GROSIME_RIGLA };
     }
     const brut = (px - v.tx) / v.scara;
-    return { poz: e.altKey ? brut : p.lipestePoz('x', brut, v.scara), peRigla: px < z.x + GROSIME_RIGLA };
+    return { poz: p.lipestePoz('x', brut, v.scara, e.altKey), peRigla: px < z.x + GROSIME_RIGLA };
   };
 
   const incepe = (e: EvPointer<HTMLElement>, id: string | null, axa: 'x' | 'y'): void => {

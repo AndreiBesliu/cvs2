@@ -9,6 +9,7 @@ import { adancimeDeschise } from '../io/adancime.ts';
 import { cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { executa, type Comanda } from '../model/jurnal.ts';
+import { transforma } from '../model/transformare.ts';
 import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
 import {
   alesePreaDeparte, FOAIA, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
@@ -270,6 +271,24 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       ctx.scrie(executa(h, { tip: 'inlocuieste-ghidaje', foaie: foaie.id, vechi, nou: nou.map((g) => ({ ...g })) }));
     },
   },
+  // Mânerele selecției (ADR 0052): instanțele alese rotite sau scalate (cu piesele lor), într-un singur pas; refuzul are motivul
+  // lui în bara editării (dicționarul ei), aici unul singur.
+  'document.transforma': {
+    activa: (ctx) => {
+      const t = ctx.transformare?.();
+      if (!t) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
+      const c = comenziTransformare(ctx);
+      return c === null ? 'motiv.transformare-inexacta' : true;
+    },
+    ruleaza: (ctx) => {
+      const c = comenziTransformare(ctx);
+      const p = c ? pas(c) : null;
+      if (p) ctx.scrie(executa(ctx.istoric(), p));
+    },
+  },
   // Uneltele de desen (ADR 0051): forma trasă, ca piesă nouă cu instanța ei, aleasă după desen.
   'document.deseneaza': {
     activa: (ctx) => {
@@ -344,6 +363,31 @@ function comandaDesen(doc: Document, f: FormaNoua): ComandaDesen {
   }
   ultimulDesen = { doc, f, rez };
   return rez;
+}
+
+/** Comenzile unei transformări (instanțele și piesele schimbate), sau null dacă ar ieși inexactă sau n-ar trece de schemă. */
+function comenziTransformare(ctx: ContextDocument): Comanda[] | null {
+  const t = ctx.transformare?.();
+  if (!t) return null;
+  const h = ctx.istoric();
+  const r = transforma(h.doc, FOAIA, ctx.selectie(), t);
+  if (!r.ok) return null;
+  const foaie = foaieCurenta(h.doc);
+  const vechi = new Map(foaie.instante.map((i) => [i.id, i]));
+  const vechiPiese = new Map(h.doc.piese.map((p) => [p.id, p]));
+  const comenzi: Comanda[] = [];
+  for (const p of r.piese) {
+    const v = vechiPiese.get(p.id);
+    if (v) comenzi.push({ tip: 'inlocuieste-piesa', vechi: v, nou: p });
+  }
+  for (const i of r.instante) {
+    const v = vechi.get(i.id);
+    if (!v || instantaPreaDeparte(i.x, i.y)) return null;
+    comenzi.push({ tip: 'inlocuieste-instanta', foaie: foaie.id, vechi: v, nou: i });
+  }
+  const p = pas(comenzi);
+  if (!p) return [];
+  return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, p).doc))) ? comenzi : null;
 }
 
 /** Ghidajele unei liste trec de ușă: cel mult plafonul, id-uri bune și unice, axa x / y, poziția finită în plafon. */

@@ -4,7 +4,7 @@ import type { Mesaj } from './tipuri.ts';
 export const enEditare = {
   'editare.bara': 'Snapping and alignment',
   'editare.lipire': 'Snap',
-  'editare.lipire-sfat': 'Snap to guides, the sheet, other shapes and the grid (hold Alt to move freely)',
+  'editare.lipire-sfat': 'Snap to guides, the sheet, other shapes and the grid (Alt inverts it while dragging: off when on, on when off)',
   'editare.grila': 'Grid',
   'editare.grila-pas': 'Grid step, mm',
   'editare.aliniaza.stanga': 'Align left',
@@ -27,4 +27,13 @@ export const enEditare = {
   'editare.unealta.linie': 'Line (L): end to end; Shift: 15° steps',
   'editare.unealta.poligon': 'Polygon (P): from the centre; Shift: 15° steps',
   'editare.laturi': 'Polygon sides (3–64)',
+  'editare.raza': 'Circle radius, mm (a click places a circle with it; a drag changes it)',
+  'editare.aliniere': 'Align',
+  'editare.rotire': 'Rotate (Shift: 15° steps)',
+  'editare.transformare.neuniform-cerc': 'A circle scales only proportionally (it would become an ellipse).',
+  'editare.transformare.neuniform-arc': 'A path with arcs scales only proportionally (the arcs would become ellipses).',
+  'editare.transformare.neuniform-colt': 'A rectangle with rounded corners scales only proportionally.',
+  'editare.transformare.neuniform-rotit': 'A shape rotated at an angle scales only proportionally.',
+  'editare.transformare.piesa-impartita': 'The piece is used by other instances too: scaling would change them as well.',
+  'editare.transformare.scara-invalida': 'The handle passed the opposite side: the scale must stay positive.',
 } as const satisfies Readonly<Record<string, Mesaj>>;

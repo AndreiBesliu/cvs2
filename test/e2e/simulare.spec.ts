@@ -5,6 +5,7 @@ import { cazul } from '../oracles/simulare.cazuri.ts';
 import { calculeazaBanda, mutariPentruBanda, previzualizarePentru, uneste, type CerereBanda, type RaspunsBanda } from '../../src/sim/banda.ts';
 import { pregatesteProgram } from '../../src/sim/program.ts';
 import { parametriGrila, PIESE_1, PIESE_2, programCaz } from '../unit/ajutor-simulare.ts';
+import { adauga } from './ajutor-panza.ts';
 
 /**
  * Amprenta Node = browser (ADR 0010, ADR 0047 §6): poarta din `PLAN.md` §5.3, etapa 4, punctul 2. Același program dă
@@ -133,8 +134,8 @@ for (const nuclee of [1, 5]) {
   test(`dialogul exportului arată simularea; pe ${nuclee === 1 ? '1 fir' : '4 fire'}, amprenta e cea din Node`, async ({ page }) => {
     await page.addInitScript((n) => { Object.defineProperty(Navigator.prototype, 'hardwareConcurrency', { get: () => n }); }, nuclee);
     await page.goto('/');
-    await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-    await page.locator('[data-actiune="document.adauga-cerc"]').click();
+    await adauga(page, 'dreptunghi');
+    await adauga(page, 'cerc');
     await page.locator('[data-actiune="export.gcode"]').click();
     const descarcare = page.waitForEvent('download');
     await page.locator('[data-buton="exporta"]').click();
@@ -195,7 +196,7 @@ for (const nuclee of [1, 5]) {
 
 test('o tăietură prin foaie: harta are pixeli negri, iar simularea spune că trece prin foaie', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
   // Gaura până la fața de jos a foii implicite (18 mm).
   await page.locator('[data-operatie] input').nth(0).fill('18');
@@ -220,7 +221,7 @@ test('descărcarea nu așteaptă simularea: fișierul vine, dialogul spune că s
   // Workerul simulării vine abia când îl lăsăm: simularea durează cât vrem noi.
   await page.route(/lucratorSimulare-[^/]*\.js$/, async (r) => { await tinut; await r.continue(); });
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
   const descarcare = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
@@ -237,7 +238,7 @@ test('descărcarea nu așteaptă simularea: fișierul vine, dialogul spune că s
 test('un worker care nu vine: exportul rămâne, dialogul spune de ce lipsește simularea, eroarea intră în jurnal', async ({ page }) => {
   await page.route(/lucratorSimulare-[^/]*\.js$/, (r) => r.abort());
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
   const descarcare = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
@@ -271,7 +272,7 @@ test('dialogul închis în timpul simulării: fișierul e descărcat, workerele 
   const workere = (): Promise<{ pornite: number; oprite: number }> =>
     page.evaluate(() => (window as unknown as { __workere: { pornite: number; oprite: number } }).__workere);
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
   const descarcare = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();

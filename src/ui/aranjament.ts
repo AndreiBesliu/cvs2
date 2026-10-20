@@ -24,7 +24,8 @@ export const CIPURI = ['selectie', 'avertisment', 'proiect', 'config', 'actualiz
 export type IdCip = (typeof CIPURI)[number];
 
 /** Controalele care nu sunt acțiuni ale registrului: limba (butoanele RO / EN, apăsat = limba de acum). */
-export const CONTROALE = ['limba'] as const;
+/** `unelte`: locul uneltelor de desen, al lipirii și al alinierii (ADR 0052), umplut de modulul editării, la cerere. */
+export const CONTROALE = ['limba', 'unelte'] as const;
 export type IdControl = (typeof CONTROALE)[number];
 
 /**
@@ -74,10 +75,13 @@ export const ARANJAMENT_MODERN: Aranjament = {
   id: 'modern',
   zone: {
     sus: [
-      { id: 'forme', intrari: [{ actiune: 'document.adauga-dreptunghi' }, { actiune: 'document.adauga-cerc' }] },
-      { id: 'selectie', intrari: [{ actiune: 'document.duplica-selectia' }, { actiune: 'document.sterge-selectia' }] },
+      // Uneltele de desen, Lipire, Grilă și Aliniere (ADR 0052); „Adaugă dreptunghi / cerc” rămân în paleta de comenzi.
+      { id: 'forme', intrari: [{ control: 'unelte' }] },
+      // Duplică și Șterge stau în bara selecției, lângă ea (și Ctrl+D, Delete, paleta): în bara de sus erau a doua oară.
       { id: 'istoric', intrari: [{ actiune: 'istoric.anuleaza' }, { actiune: 'istoric.reface' }] },
-      { id: 'fisier', intrari: [{ actiune: 'import.svg', aspect: 'eticheta' }, { actiune: 'export.gcode', aspect: 'principal' }] },
+      // „Importă SVG” doar cu pictograma (eticheta în sfat): uneltele de desen au intrat în bară (ADR 0052) și altfel
+      // „Exportă G-code” ieșea din ecran la 1280 px.
+      { id: 'fisier', intrari: [{ actiune: 'import.svg' }, { actiune: 'export.gcode', aspect: 'principal' }] },
     ],
     unelte: [
       { id: 'vedere', intrari: [{ actiune: 'vedere.paleta', aspect: 'cauta' }, { control: 'limba' }, { actiune: 'vedere.tema' }] },

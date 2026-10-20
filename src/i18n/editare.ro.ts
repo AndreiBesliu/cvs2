@@ -5,7 +5,7 @@ import type { DictionarRoPentru } from './tipuri.ts';
 export const roEditare = {
   'editare.bara': 'Lipirea și alinierea',
   'editare.lipire': 'Lipire',
-  'editare.lipire-sfat': 'Lipire de ghidaje, foaie, celelalte forme și grilă (ține Alt ca să muți liber)',
+  'editare.lipire-sfat': 'Lipire de ghidaje, foaie, celelalte forme și grilă (Alt o inversează cât tragi: o oprește sau o pornește)',
   'editare.grila': 'Grilă',
   'editare.grila-pas': 'Pasul grilei, mm',
   'editare.aliniaza.stanga': 'Aliniază la stânga',
@@ -28,4 +28,13 @@ export const roEditare = {
   'editare.unealta.linie': 'Linie (L): din capăt în capăt; Shift: pași de 15°',
   'editare.unealta.poligon': 'Poligon (P): din centru; Shift: pași de 15°',
   'editare.laturi': 'Laturile poligonului (3–64)',
+  'editare.raza': 'Raza cercului, mm (un clic pune un cerc cu ea; o tragere o schimbă)',
+  'editare.aliniere': 'Aliniere',
+  'editare.rotire': 'Rotește (Shift: pași de 15°)',
+  'editare.transformare.neuniform-cerc': 'Un cerc se scalează doar proporțional (ar deveni elipsă).',
+  'editare.transformare.neuniform-arc': 'O cale cu arce se scalează doar proporțional (arcele ar deveni elipse).',
+  'editare.transformare.neuniform-colt': 'Un dreptunghi cu colțuri rotunjite se scalează doar proporțional.',
+  'editare.transformare.neuniform-rotit': 'O formă rotită oblic se scalează doar proporțional.',
+  'editare.transformare.piesa-impartita': 'Piesa e folosită și de alte instanțe: scalarea le-ar schimba și pe ele.',
+  'editare.transformare.scara-invalida': 'Mânerul a trecut de partea opusă: scara trebuie să rămână pozitivă.',
 } as const satisfies DictionarRoPentru<typeof enEditare>;

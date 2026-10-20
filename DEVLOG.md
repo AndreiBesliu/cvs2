@@ -2325,3 +2325,30 @@ felia următoare (6.C↑).
 **Publicat pe test:** 20.10, workflow-ul `publica` pe `4f20826` (după rapid-ul verde pe CI).
 **De făcut (cererea owner-ului, 20.10):** „in situatia in care snap este dezactivat, atunci 'alt' sa activeze temporar snap”: Alt
 inversează lipirea pe durata gestului (oprită → pornită, pornită → oprită); intră în felia 6.C↑, cu transformările.
+
+## 2026-10-20 — Transformările, Alt inversat, uneltele în bara de sus (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, fă acum transformările (mânerele de scalare și rotire pe selecție), împreună cu Alt care inversează lipirea,
+fără agenți. am incercat uneltele, acum par OKish, cercul, ar trebui sa aiba raza, cum hexagonul are numar de fete, si vreau
+sa poata fi editat si post placement. si, acum am cerc si rectangle in doua locuri. pe UI-ul asta, vreau ca toate uneltele
+astea sa fie in bara de sus, cu snap si grid, iar align/distribute options intr-o subbara, ca un submeniu”.
+**Started:** 20.10 16:10, săptămânalul 86 %. Împărțit în două felii (pornirea are ~0,3 kB liberi): **6.C↑** (ADR 0052):
+Alt inversează lipirea; uneltele, Lipire și Grilă în bara de sus, în locul butoanelor „Adaugă dreptunghi / cerc” (rămân în
+paleta de comenzi; e2e-ul le rulează de acolo); alinierea și distribuirea într-un submeniu; raza la unealta cercului (un
+clic fără tragere pune un cerc cu ea); mânerele de scalare (colțuri proporțional, Shift liber; laturi pe o axă) și de
+rotire (Shift: 15°) pe cutia selecției, cu acțiunea `document.transforma` (scalarea schimbă geometria piesei, exact;
+refuzată cu motiv unde n-ar mai fi exactă: scalare neuniformă pe un cerc, pe arce, pe o rotire care nu e multiplu de 90°).
+**6.D↑**: editarea după plasare în panoul de proprietăți (raza cercului, laturile și raza poligonului, razele elipsei,
+laturile dreptunghiului).
+**Treceri:** (1) modelul (`src/model/transformare.ts`), acțiunea, mânerele, probele; (2) captura: la 1280 / 1366 / 1440 px
+căutarea acoperea „Exportă G-code” (62 / 19 / 7 px): sub 95rem rămâne doar cu pictograma, cu proba nouă a barei de sus
+(control: cade pe CSS-ul vechi la 1280 px); o captură cu selecția veche venea din ajutorul e2e `vedere()`, care compara
+perechea cerere / afișare înaintea efectului ce trimite cererea nouă (acum așteaptă două cadre); (3) e2e-ul complet a prins
+două defecte ale mânerelor: un clic simplu pe mâner scala forma (scara din poziția absolută a cursorului; acum din
+deplasarea față de apăsare, cu prag de 3 px) și mânerele prindeau orice apăsare, deci panoramarea cu butonul din mijloc
+pornită de pe un mâner nu mai mergea (oracolele traseului la 1 000 px/mm): mânerele sunt acum doar desen, lovitura e
+geometrică (`manerLovit`), într-un ascultător pus înaintea pânzei, doar pentru butonul stâng fără Space; (4) pragul de
+24 px pe axă (o formă mică rămâne de mutat), ascunderea mânerelor cât se mută forma, probele lor.
+**Completed:** 20.10 17:40. Fără agenți; săptămânalul 86 → 89 %. `npm run rapid` RC 0 (7 106 teste unitare, 0 picate,
+8 sărite); e2e 167 / 167 în Edge. Pornirea neschimbată: 95,0 kB (cu ușa 99,7 / 100). Rămâne 6.D↑ (editarea după
+plasare), apoi unirea / separarea vectorilor („in curand”, cererea owner-ului).

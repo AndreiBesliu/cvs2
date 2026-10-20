@@ -79,6 +79,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). **Uneltele de desen
   prin tragere (ADR 0051)** gata pe 20.10, în același modul: dreptunghi, cerc, elipsă, linie, poligon, cu lipirea și
   tastele lor (V, R, O, E, L, P).
+  **Transformările și bara de sus (ADR 0052)** gata pe 20.10: mânerele de scalare și rotire pe selecție (`document.transforma`,
+  scalarea exactă a geometriei sau refuzul cu motiv; mânerele sunt doar desen, lovitura e geometrică), Alt inversează lipirea,
+  uneltele, Lipire, Grilă și alinierea (sub-bară) în bara de sus, raza cercului. Urmează 6.D↑ (editarea după plasare).
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):

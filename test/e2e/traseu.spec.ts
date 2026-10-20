@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { adauga } from './ajutor-panza.ts';
 
 /**
  * Traseul pe pânză (felia 2.8d, ADR 0038 §1–§3), în browserul adevărat (Edge, WebGL2): „Arată traseul” calculează și
@@ -39,7 +40,7 @@ async function arata(page: Page): Promise<void> {
 
 test('dreptunghiul profilat pe exterior cu Ø6: traseul cade la 3 mm de contur, nu pe el și nu înăuntru', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await arata(page);
   await expect(buton(page)).toHaveAttribute('aria-pressed', 'true');
   await expect(cip(page)).toHaveCount(0);
@@ -54,9 +55,9 @@ test('dreptunghiul profilat pe exterior cu Ø6: traseul cade la 3 mm de contur, 
 
 test('traseul vechi se stinge, cu cipul lui; T îl calculează din nou; încă un T, la zi, îl ascunde', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await arata(page);
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await expect(strat(page)).toHaveAttribute('data-stins', 'true');
   await expect(cip(page)).toHaveAttribute('data-stare', 'traseu.vechi');
   await page.keyboard.press('t');
@@ -70,8 +71,8 @@ test('traseul vechi se stinge, cu cipul lui; T îl calculează din nou; încă u
 test('un document pe care CAM-ul îl refuză: cipul spune de ce, fără strat', async ({ page }) => {
   await page.goto('/');
   // Două dreptunghiuri în același loc: regiunea păstrată nu se știe.
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'dreptunghi');
   await buton(page).click();
   await expect(cip(page)).toHaveAttribute('data-stare', 'traseu.refuz');
   await expect(cip(page)).toContainText('regiunea păstrată');
@@ -86,7 +87,7 @@ test('fără WebGL2: cipul spune că traseul nu se poate afișa; pânza merge ma
     } as typeof HTMLCanvasElement.prototype.getContext;
   });
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await buton(page).click();
   await expect(cip(page)).toHaveAttribute('data-stare', 'traseu.fara-webgl');
   await expect(page.getByTestId('lista-vectori').locator('li')).toHaveCount(1);
@@ -94,7 +95,7 @@ test('fără WebGL2: cipul spune că traseul nu se poate afișa; pânza merge ma
 
 test('contextul WebGL pierdut: cipul o spune; refăcut, traseul revine singur', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await arata(page);
   await page.evaluate(() => {
     const s = document.querySelector<HTMLCanvasElement>('[data-testid="strat-traseu"]');
@@ -110,9 +111,9 @@ test('contextul WebGL pierdut: cipul o spune; refăcut, traseul revine singur', 
 
 test('după un export reușit, traseul arătat se reface pe documentul exportat (nu mai e vechi)', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-actiune="document.adauga-dreptunghi"]').click();
+  await adauga(page, 'dreptunghi');
   await arata(page);
-  await page.locator('[data-actiune="document.adauga-cerc"]').click();
+  await adauga(page, 'cerc');
   await expect(strat(page)).toHaveAttribute('data-stins', 'true');
   await page.locator('[data-actiune="export.gcode"]').click();
   const d = page.waitForEvent('download');
