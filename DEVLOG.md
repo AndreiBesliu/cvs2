@@ -2352,3 +2352,4 @@ geometrică (`manerLovit`), într-un ascultător pus înaintea pânzei, doar pen
 **Completed:** 20.10 17:40. Fără agenți; săptămânalul 86 → 89 %. `npm run rapid` RC 0 (7 106 teste unitare, 0 picate,
 8 sărite); e2e 167 / 167 în Edge. Pornirea neschimbată: 95,0 kB (cu ușa 99,7 / 100). Rămâne 6.D↑ (editarea după
 plasare), apoi unirea / separarea vectorilor („in curand”, cererea owner-ului).
+**Publicat pe test:** 20.10, workflow-ul `publica` pe `67561b0` (după rapid-ul verde pe CI, 4 / 4 felii).
