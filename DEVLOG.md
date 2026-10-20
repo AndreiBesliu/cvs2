@@ -2301,3 +2301,4 @@ acțiunilor la cerere (cinci) au primit cele două noi.
 **Completed:** 20.10 14:20. Fără agenți; săptămânalul 83 → 84 %. `npm run rapid` RC 0 (7 091 de teste unitare, 0 picate, 8
 sărite; build-ul determinist; licențele); e2e 164 / 164 în Edge (2 noi). Pornirea 94,3 → 94,7 / 100 kB, cu ușa 99,0 → 99,4
 (rămân ~0,6 kB: următoarea felie care atinge pornirea trebuie să elibereze loc întâi).
+**Publicat pe test:** 20.10, workflow-ul `publica` pe `38f4da5` (după rapid-ul verde pe CI): versiunea `38f4da5a5892` în pachet.
