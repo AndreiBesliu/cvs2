@@ -179,3 +179,38 @@
   inset: 0;
   pointer-events: none;
 }
+
+/* Uneltele de desen (ADR 0051): cursorul în cruce, previzualizarea conturului, butonul uneltei alese. */
+.panza[data-desen] {
+  cursor: crosshair;
+}
+
+.desen-previzualizare {
+  fill: none;
+  stroke: var(--panza-selectie, var(--a));
+  stroke-width: 1.5;
+  stroke-dasharray: 6 3;
+}
+
+.bara-editare .unealta[aria-pressed='true'] {
+  background: var(--s-ales);
+  box-shadow: inset 0 0 0 1px var(--a);
+}
+
+.laturi {
+  width: 2.75rem;
+  min-height: 30px;
+  font: inherit;
+  font-size: var(--fs-2);
+  padding: 0 var(--sp-1);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+}
+
+.icona-aliniere .contur {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}

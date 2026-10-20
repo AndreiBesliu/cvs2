@@ -152,3 +152,78 @@ test('lipirea mutării de un ghidaj (Alt o oprește), alinierea față de foaie,
   await page.screenshot({ path: '.tmp/editare-intunecat.png' });
   await page.emulateMedia({ colorScheme: 'light' });
 });
+
+/** Desenează cu unealta aleasă, prin tragere între două puncte ale foii (mm). */
+async function deseneaza(page: Page, a: { x: number; y: number }, b: { x: number; y: number }, shift = false): Promise<void> {
+  const v = await vedere(page);
+  const la = await ecran(page, v);
+  if (shift) await page.keyboard.down('Shift');
+  await trageEcran(page, la(a.x, a.y), la(b.x, b.y));
+  if (shift) await page.keyboard.up('Shift');
+}
+
+test('uneltele de desen (ADR 0051): fiecare formă prin tragere, tastele, lipirea de un ghidaj, Escape, anularea', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.goto('/');
+  await expect(page.getByTestId('bara-editare')).toBeVisible();
+  await expect(page.locator('[data-unealta="selectie"]')).toHaveAttribute('aria-pressed', 'true');
+
+  // Dreptunghiul, din colț în colț (tasta R); unealta rămâne aleasă.
+  await page.keyboard.press('r');
+  await expect(page.locator('[data-unealta="dreptunghi"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('panza')).toHaveAttribute('data-desen', '');
+  await deseneaza(page, { x: 40, y: 30 }, { x: 140, y: 90 });
+  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 40.00, Y 30.00']);
+  // Shift: pătrat, în direcția tragerii.
+  await deseneaza(page, { x: 170, y: 20 }, { x: 210, y: 45 }, true);
+  await expect(randuri(page).nth(1)).toHaveText('dreptunghi 40.00 × 40.00 la X 170.00, Y 20.00');
+
+  // Cercul, din centru (butonul); elipsa, linia și poligonul (tastele); poligonul cu laturile lui.
+  await page.locator('[data-unealta="cerc"]').click();
+  await deseneaza(page, { x: 230, y: 130 }, { x: 245, y: 130 });
+  await expect(randuri(page).nth(2)).toHaveText('cerc R15.00 cu centrul la X 230.00, Y 130.00');
+  await page.locator('body').focus();
+  await page.keyboard.press('e');
+  await deseneaza(page, { x: 20, y: 150 }, { x: 70, y: 175 });
+  await page.keyboard.press('l');
+  await deseneaza(page, { x: 90, y: 140 }, { x: 120, y: 180 });
+  await page.keyboard.press('p');
+  await expect(page.locator('[data-editare="laturi"]')).toHaveValue('6');
+  await deseneaza(page, { x: 180, y: 165 }, { x: 180, y: 185 });
+  await expect(randuri(page)).toHaveCount(6);
+  // O tragere prea scurtă nu desenează nimic.
+  const v = await vedere(page);
+  const la = await ecran(page, v);
+  const q = la(60, 110);
+  await trageEcran(page, q, { x: q.x + 1, y: q.y + 1 });
+  await expect(randuri(page)).toHaveCount(6);
+
+  // Anularea scoate ultima formă, ca orice comandă.
+  await page.keyboard.press('Control+z');
+  await expect(randuri(page)).toHaveCount(5);
+
+  // Lipirea în timpul desenului: un ghidaj la x = 123, iar marginea trasă la 122,4 se lipește de el.
+  const stanga = await centruRigla(page, 'rigla-stanga');
+  await trageEcran(page, stanga, { x: la(150, 0).x - 40, y: stanga.y });
+  const b = await page.locator('[data-ghidaj]').boundingBox();
+  if (!b) throw new Error('ghidajul n-are cutie');
+  await page.mouse.dblclick(b.x + b.width / 2, b.y + b.height * 0.55);
+  await page.getByTestId('ghidaj-camp').fill('123');
+  await page.getByTestId('ghidaj-camp').press('Enter');
+  await page.locator('[data-unealta="dreptunghi"]').click();
+  await deseneaza(page, { x: 60, y: 105 }, { x: 122.4, y: 118.7 });
+  await expect(randuri(page).nth(5)).toHaveText('dreptunghi 63.00 × 13.70 la X 60.00, Y 105.00');
+  // Colțul nelipit e rotunjit la 0,001 mm (nu 60,000002661 din pixelii mausului): panoul arată valoarea exactă.
+  await expect(page.locator('[data-camp="pozitie-x"]')).toHaveValue('60');
+  await expect(page.locator('[data-camp="pozitie-y"]')).toHaveValue('105');
+
+  // Escape întoarce la selecție; un clic alege din nou, nu desenează.
+  await page.locator('body').focus();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-unealta="selectie"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('panza')).not.toHaveAttribute('data-desen', '');
+  mkdirSync('.tmp', { recursive: true });
+  await page.screenshot({ path: '.tmp/desen.png' });
+  expect(erori).toEqual([]);
+});

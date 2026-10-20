@@ -67,3 +67,30 @@ test('document.muta-instantele: fiecare cu deplasarea ei, un singur pas; necunos
   ruleaza(R, 'document.muta-instantele', { ...c, deplasari: () => [{ id: 'e1', dx: 0, dy: 0 }] });
   assert.equal(c.h().trecut.length, trecut);
 });
+
+test('document.deseneaza: o piesă nouă cu instanța ei, un pas de anulare, aleasă; linia deschisă e pe linie, la 1 mm', () => {
+  const c = context(false, { formaNoua: () => ({ forma: { tip: 'dreptunghi', latime: 30, inaltime: 10, razaColt: 0 }, x: 5, y: 6 }) });
+  const n = c.h().doc.foi[0]?.instante.length ?? 0;
+  assert.deepEqual(ruleaza(R, 'document.deseneaza', c), { ok: true });
+  const doc = c.h().doc;
+  const noua = doc.foi[0]?.instante.at(-1);
+  assert.equal(doc.foi[0]?.instante.length, n + 1);
+  assert.deepEqual([noua?.x, noua?.y, noua?.rotire], [5, 6, 0]);
+  assert.deepEqual(c.selectie(), [noua?.id], 'forma desenată rămâne aleasă');
+  assert.equal(doc.piese.find((p) => p.id === noua?.piesa)?.operatii[0]?.latura, 'exterior');
+  assert.ok(incarca(JSON.parse(JSON.stringify(doc))).ok);
+  ruleaza(R, 'istoric.anuleaza', c);
+  assert.equal(c.h().doc.foi[0]?.instante.length, n, 'un singur pas');
+
+  const l = context(false, { formaNoua: () => ({ forma: { tip: 'cale', inchis: false, varfuri: [{ p: { x: 0, y: 0 }, s: { tip: 'L' } }, { p: { x: 30, y: 40 }, s: { tip: 'L' } }] }, x: 1, y: 2 }) });
+  ruleaza(R, 'document.deseneaza', l);
+  const op = l.h().doc.piese.at(-1)?.operatii[0];
+  assert.deepEqual([op?.latura, op?.adancime, op?.pas], ['pe-linie', 1, 1]);
+  assert.deepEqual(stare(R, 'document.deseneaza', context(true, { formaNoua: () => ({ forma: { tip: 'cerc', raza: 3 }, x: 0, y: 0 }) })), { ok: false, motiv: 'motiv.doar-citire' });
+  // O formă pe care ușa n-o primește (raza zero) e refuzată, fără nicio comandă.
+  const r = context(false, { formaNoua: () => ({ forma: { tip: 'cerc', raza: 0 }, x: 0, y: 0 }) });
+  const t = r.h().trecut.length;
+  assert.equal(stare(R, 'document.deseneaza', r).ok, false);
+  ruleaza(R, 'document.deseneaza', r);
+  assert.equal(r.h().trecut.length, t);
+});

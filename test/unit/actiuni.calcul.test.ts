@@ -35,7 +35,7 @@ test('registrul păstrează cele cinci acțiuni la cerere, cu id-ul și eticheta
     'selectie.la-punct', 'selectie.din-lista', 'document.adauga-dreptunghi', 'document.adauga-cerc', 'document.importa',
     'document.muta-selectia', 'document.duplica-selectia', 'document.sterge-selectia', 'document.aplica-operatii',
     'document.pozitioneaza', 'document.roteste', 'foaie.stoc', 'foaie.ghidaje', 'document.muta-instantele',
-    'istoric.anuleaza', 'istoric.reface',
+    'document.deseneaza', 'istoric.anuleaza', 'istoric.reface',
   ]);
   const eticheta = new Map(ACTIUNI_DOCUMENT.map((a) => [a.id, a.eticheta]));
   assert.deepEqual(LA_CERERE.map((id) => eticheta.get(id)), [

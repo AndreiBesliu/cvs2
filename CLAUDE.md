@@ -76,8 +76,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   nimic; o permisiune nouă = cod + regulă + probă.
   **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
   (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
-  cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). Felia următoare: uneltele
-  de desen prin tragere, cu aceeași lipire.
+  cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). **Uneltele de desen
+  prin tragere (ADR 0051)** gata pe 20.10, în același modul: dreptunghi, cerc, elipsă, linie, poligon, cu lipirea și
+  tastele lor (V, R, O, E, L, P).
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):

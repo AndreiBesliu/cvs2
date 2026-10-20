@@ -8,6 +8,7 @@ import type { Varf } from '../geom/contur.ts';
 import { cutieContur, CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { operatieImplicita, PLAFON, type Document, type ElementNod, type Latura, type Operatie, type Piesa, type VarfDoc } from '../model/document.ts';
 import { incarca } from '../model/incarcare.ts';
+import { adancimeDeschise } from './adancime.ts';
 
 /**
  * O cale a importului, cum o dă ușa SVG: `inchis` e al ei (ADR 0037 §2). Lipsa câmpului înseamnă o cale închisă: ușa îl
@@ -67,14 +68,8 @@ export function numeDinFisier(fisier: string): string {
   return (fara || fisier).slice(0, PLAFON.numeLungime);
 }
 
-/**
- * Adâncimea căilor deschise importate (ADR 0037 §11, decizia owner-ului din 13.10): min(1 mm, grosimea foii / 2), într-o
- * singură trecere. O linie uitată în fișier lasă doar o urmă și nu desparte niciodată foaia din oficiu. Fără grosime
- * (apelurile din teste, de dinaintea căilor deschise): 1 mm.
- */
-export function adancimeDeschise(grosime?: number): number {
-  return grosime === undefined ? 1 : Math.min(1, grosime / 2);
-}
+// Mutată în `adancime.ts` (fără dependențe): uneltele de desen o folosesc fără să aducă ușa documentului (ADR 0051).
+export { adancimeDeschise };
 
 /**
  * Piesa și locul instanței ei. Coordonatele elementelor sunt ale paginii minus colțul stânga-jos al cutiei exacte a

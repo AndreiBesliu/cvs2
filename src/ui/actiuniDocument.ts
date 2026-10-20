@@ -43,6 +43,8 @@ export type ContextDocument = {
   readonly pozitieNoua?: () => { readonly x?: number; readonly y?: number };
   /** Panoul: rotirea nouă a singurei instanțe selectate, în grade (se normalizează în [0, 360)). */
   readonly rotireNoua?: () => number;
+  /** Forma desenată cu o unealtă (ADR 0051): forma exactă și locul instanței ei, în mm ai foii. */
+  readonly formaNoua?: () => { readonly forma: FormaDoc; readonly x: number; readonly y: number };
   /** Ghidajele noi ale foii (ADR 0050): lista întreagă, după un ghidaj adăugat, mutat sau șters. */
   readonly ghidajeNoi?: () => readonly Ghidaj[];
   /** Deplasările instanțelor, fiecare cu a ei, în mm (alinierea, distribuirea, săgețile; ADR 0050). */
@@ -430,6 +432,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   // Riglele și lipirea (ADR 0050), din modulul editării, la cerere: ghidajele foii și mutarea instanțelor cu deplasări proprii.
   laCerere('foaie.ghidaje', 'actiune.ghidaje', (ctx) => (ctx.ghidajeNoi ? true : 'motiv.nimic-ales')),
   laCerere('document.muta-instantele', 'actiune.muta-instantele', (ctx) => (ctx.deplasari ? true : 'motiv.nimic-ales')),
+  // Uneltele de desen (ADR 0051): forma trasă pe pânză, ca o piesă nouă cu instanța ei.
+  laCerere('document.deseneaza', 'actiune.deseneaza', (ctx) => (ctx.formaNoua ? true : 'motiv.nimic-ales')),
   {
     id: 'istoric.anuleaza',
     eticheta: 'actiune.anuleaza',

@@ -20,4 +20,11 @@ export const enEditare = {
   'editare.rigla-stanga': 'Vertical ruler, mm: drag right for a vertical guide',
   'editare.ghidaj': 'Guide at {poz} mm: drag to move, drop on the ruler to delete, double-click for the exact position',
   'editare.ghidaj-poz': 'Guide position, mm',
+  'editare.unealta.selectie': 'Select (V)',
+  'editare.unealta.dreptunghi': 'Rectangle (R): corner to corner; Shift: square',
+  'editare.unealta.cerc': 'Circle (O): from the centre',
+  'editare.unealta.elipsa': 'Ellipse (E): corner to corner; Shift: circle',
+  'editare.unealta.linie': 'Line (L): end to end; Shift: 15° steps',
+  'editare.unealta.poligon': 'Polygon (P): from the centre; Shift: 15° steps',
+  'editare.laturi': 'Polygon sides (3–64)',
 } as const satisfies Readonly<Record<string, Mesaj>>;

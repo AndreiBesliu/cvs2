@@ -1,6 +1,6 @@
 import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
-import { treaptaZoom, type Bucata, type Lipeste, type Vedere } from '../canvas/protocol.ts';
+import { treaptaZoom, type Bucata, type GestDesen, type Lipeste, type Vedere } from '../canvas/protocol.ts';
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
 import type { Miscare, Program } from '../ir/ir.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
@@ -215,6 +215,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [lipeste, setLipeste] = useState<Lipeste | null>(null);
   // Funcția de lipire se pune cu forma de actualizare a stării (o funcție dată direct ar fi luată drept actualizare).
   const [setLipesteStabil] = useState(() => (f: Lipeste | null) => { setLipeste(() => f); });
+  const [desen, setDesen] = useState<GestDesen | null>(null);
+  const [setDesenStabil] = useState(() => (f: GestDesen | null) => { setDesen(() => f); });
   const [cheieStrat, setCheieStrat] = useState(0);
   const [traseuPregatit, setTraseuPregatit] = useState<{ readonly bucati: readonly Bucata[]; readonly rarit: boolean } | null>(null);
   const cerereTraseu = useRef(0);
@@ -391,7 +393,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -889,10 +891,11 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             } : {})}
             {...(modal ? {} : { onFisiere: (fisiere: readonly File[], punct: { readonly x: number; readonly y: number } | null) => { pornesteImport(fisiere, punct); } })}
             {...(lipeste ? { lipeste } : {})}
+            {...(desen ? { desen } : {})}
             suprapunere={(v, m, l) => (
               <Suspense fallback={null}>
                 <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)}
-                  ruleaza={(id, extra) => { ruleazaDocument(id, context(extra)); }} onLipeste={setLipesteStabil} />
+                  ruleaza={(id, extra) => { ruleazaDocument(id, context(extra)); }} onLipeste={setLipesteStabil} onDesen={setDesenStabil} />
               </Suspense>
             )}
             textLasare={t('import.lasa-aici')}

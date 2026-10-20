@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import {
-  SCARA_MAXIMA, SCARA_MINIMA, type CerereDesen, type FormaDesen, type LinieGhid, type Lipeste, type RaspunsDesen, type Vedere,
+  SCARA_MAXIMA, SCARA_MINIMA, type CerereDesen, type FormaDesen, type GestDesen, type LinieGhid, type Lipeste, type RaspunsDesen, type Vedere,
 } from './protocol.ts';
 
 type Props = {
@@ -46,6 +46,8 @@ type Props = {
   readonly suprapunere?: (vedere: Vedere, marime: { readonly latime: number; readonly inaltime: number }, linii: readonly LinieGhid[]) => ReactNode;
   /** Lipirea mutării (ADR 0050 §2); Alt o oprește pe durata gestului. */
   readonly lipeste?: Lipeste;
+  /** O unealtă de desen aleasă (ADR 0051): apăsarea stângă desenează, în loc să aleagă. */
+  readonly desen?: GestDesen;
 };
 
 /** Pixelii de toleranță ai clicului și pragul de la care o apăsare devine tragere. */
@@ -78,7 +80,7 @@ export function vedereaPotrivita(
  * document: primește formele gata descrise și trimite înapoi gesturile (clic, mutare), pe care aplicația le rulează
  * prin registrul de acțiuni.
  */
-export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivire, cutie, children, onCursor, onScara, onFisiere, textLasare, strat, suprapunere, lipeste }: Props) {
+export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivire, cutie, children, onCursor, onScara, onFisiere, textLasare, strat, suprapunere, lipeste, desen }: Props) {
   const [trage, setTrage] = useState(false);
   const cuFisiere = (e: { readonly dataTransfer: DataTransfer }): boolean => [...e.dataTransfer.types].includes('Files');
   const panzaRef = useRef<HTMLCanvasElement | null>(null);
@@ -91,7 +93,7 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
   const [afisata, setAfisata] = useState(0);
   const [sageti, setSageti] = useState(0);
   const [trimisa, setTrimisa] = useState(0);
-  const gest = useRef<{ tip: 'pan' | 'mutare' | 'apasare'; x0: number; y0: number; v0: Vedere } | null>(null);
+  const gest = useRef<{ tip: 'pan' | 'mutare' | 'apasare' | 'desen'; x0: number; y0: number; v0: Vedere } | null>(null);
   const spatiu = useRef(false);
   // Culorile se citesc din CSS la fiecare desen: o temă schimbată (aleasă sau a sistemului) cere un desen nou.
   const [tema, setTema] = useState(0);
@@ -218,6 +220,12 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
     }
     if (e.button !== 0) return;
     const p = laDocument(e, vedere);
+    const mod = { alt: e.altKey, shift: e.shiftKey };
+    if (desen) {
+      gest.current = { tip: 'desen', x0: e.clientX, y0: e.clientY, v0: vedere };
+      desen('start', p.x, p.y, vedere.scara, mod);
+      return;
+    }
     onClic(p.x, p.y, TOLERANTA_PX / vedere.scara);
     gest.current = { tip: 'apasare', x0: e.clientX, y0: e.clientY, v0: vedere };
   };
@@ -229,6 +237,11 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
     }
     const g = gest.current;
     if (!g) return;
+    if (g.tip === 'desen') {
+      const p = laDocument(e, g.v0);
+      desen?.('misca', p.x, p.y, g.v0.scara, { alt: e.altKey, shift: e.shiftKey });
+      return;
+    }
     const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
     if (g.tip === 'pan') {
       setVedere({ ...g.v0, tx: g.v0.tx + dx, ty: g.v0.ty + dy });
@@ -245,6 +258,10 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
   const elibereaza = (e: React.PointerEvent<HTMLCanvasElement>): void => {
     const g = gest.current;
     gest.current = null;
+    if (g?.tip === 'desen') {
+      const p = laDocument(e, g.v0);
+      desen?.('gata', p.x, p.y, g.v0.scara, { alt: e.altKey, shift: e.shiftKey });
+    }
     if (g?.tip === 'mutare') {
       const dx = (e.clientX - g.x0) / g.v0.scara, dy = -(e.clientY - g.y0) / g.v0.scara;
       const l = lipeste && !e.altKey ? lipeste(dx, dy, g.v0.scara) : { dx, dy };
@@ -267,10 +284,11 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
       data-afisata={afisata}
       data-sageti={sageti}
       data-cerere={trimisa}
+      data-desen={desen ? '' : undefined}
       onPointerDown={apasa}
       onPointerMove={misca}
       onPointerUp={elibereaza}
-      onPointerCancel={() => { gest.current = null; setDeplasare({ dx: 0, dy: 0 }); setLinii([]); }}
+      onPointerCancel={() => { if (gest.current?.tip === 'desen') desen?.('anulat', 0, 0, 1, { alt: false, shift: false }); gest.current = null; setDeplasare({ dx: 0, dy: 0 }); setLinii([]); }}
       onPointerLeave={() => { onCursor?.(null); }}
       onContextMenu={(e) => { e.preventDefault(); }}
       onDragOver={(e) => {

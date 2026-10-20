@@ -85,3 +85,9 @@ export type LinieGhid = { readonly axa: 'x' | 'y'; readonly poz: number; readonl
 
 /** Lipirea unei mutări: deplasarea cerută (mm) → cea lipită, cu liniile ei. */
 export type Lipeste = (dx: number, dy: number, scara: number) => { readonly dx: number; readonly dy: number; readonly linii: readonly LinieGhid[] };
+
+/**
+ * Gestul unei unelte de desen (ADR 0051): cu o unealtă aleasă, apăsarea stângă pe pânză nu alege și nu mută, ci desenează.
+ * Punctele sunt în mm ai foii; `alt` oprește lipirea, `shift` constrânge forma. Pânza păstrează zoomul și deplasarea.
+ */
+export type GestDesen = (faza: 'start' | 'misca' | 'gata' | 'anulat', x: number, y: number, scara: number, mod: { readonly alt: boolean; readonly shift: boolean }) => void;

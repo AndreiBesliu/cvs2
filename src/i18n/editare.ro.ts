@@ -21,4 +21,11 @@ export const roEditare = {
   'editare.rigla-stanga': 'Rigla verticală, mm: trage spre dreapta pentru un ghidaj vertical',
   'editare.ghidaj': 'Ghidaj la {poz} mm: trage-l ca să-l muți, lasă-l pe riglă ca să-l ștergi, dublu clic pentru poziția exactă',
   'editare.ghidaj-poz': 'Poziția ghidajului, mm',
+  'editare.unealta.selectie': 'Selecție (V)',
+  'editare.unealta.dreptunghi': 'Dreptunghi (R): din colț în colț; Shift: pătrat',
+  'editare.unealta.cerc': 'Cerc (O): din centru',
+  'editare.unealta.elipsa': 'Elipsă (E): din colț în colț; Shift: cerc',
+  'editare.unealta.linie': 'Linie (L): din capăt în capăt; Shift: pași de 15°',
+  'editare.unealta.poligon': 'Poligon (P): din centru; Shift: pași de 15°',
+  'editare.laturi': 'Laturile poligonului (3–64)',
 } as const satisfies DictionarRoPentru<typeof enEditare>;

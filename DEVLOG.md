@@ -2302,3 +2302,23 @@ acțiunilor la cerere (cinci) au primit cele două noi.
 sărite; build-ul determinist; licențele); e2e 164 / 164 în Edge (2 noi). Pornirea 94,3 → 94,7 / 100 kB, cu ușa 99,0 → 99,4
 (rămân ~0,6 kB: următoarea felie care atinge pornirea trebuie să elibereze loc întâi).
 **Publicat pe test:** 20.10, workflow-ul `publica` pe `38f4da5` (după rapid-ul verde pe CI): versiunea `38f4da5a5892` în pachet.
+
+## 2026-10-20 — Uneltele de desen prin tragere (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, fă acum uneltele de desen prin tragere (dreptunghi, cerc, elipsă, linie, poligon), cu lipirea, fără agenți.”
+**Started:** 20.10 14:50, săptămânalul 84 %. Felia 6.B↑ (ADR 0051), în modulul editării, la cerere; pornirea are ~0,6 kB liberi.
+**Ce s-a făcut:** `src/app/desenCalcul.ts` (forma exactă a fiecărei unelte, Shift), acțiunea `document.deseneaza` (garda în
+registru, calculul la cerere: piesa nouă cu operația implicită, documentul de după prin ușă), cârligul gestului în pânză
+(apăsarea stângă desenează cu o unealtă aleasă; zoomul și deplasarea rămân), uneltele în bara editării, cu tastele,
+previzualizarea și lipirea capetelor. **Treceri:** (1) codul și probele, e2e verde din prima; (2) captura: pictograma
+dreptunghiului dispăruse (regula `rect { stroke: none }` a pictogramelor de aliniere), iar colțurile nelipite purtau
+zecimalele pixelilor (60,000002661): rotunjite la 0,001 mm. Am suprascris din greșeală `test/unit/desen.test.ts` (al listei
+de pe pânză) cu probele uneltelor: readus din git, probele mele în `unelte-desen.test.ts`.
+(3) porțile: `adancimeDeschise`, luată din `io/piesa.ts`, aducea ușa întreagă în calculul acțiunilor, iar schemele se lipeau de
+ușă într-o singură bucată (probele „schemele care nu vin” din la-cerere și raportor cădeau): funcția e acum în
+`io/adancime.ts`, fără dependențe, iar forma desenată se judecă cu `SchemaDocument`, nu cu ușa. Un e2e a rulat pe un `dist/`
+vechi (ReferenceError), reluat după build.
+**Completed:** 20.10 15:50. Fără agenți; săptămânalul 84 → 86 %. `npm run rapid` RC 0 (7 098 de teste unitare, 0 picate,
+8 sărite); e2e 165 / 165 în Edge. Pornirea 94,7 → 95,0 / 100 kB, cu ușa 99,4 → 99,7 (rămân ~0,3 kB: următoarea felie care
+atinge pornirea trebuie să elibereze loc întâi). Owner-ul a cerut în timpul feliei și „controls ca scale rotate etc.”:
+felia următoare (6.C↑).

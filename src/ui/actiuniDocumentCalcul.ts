@@ -2,8 +2,10 @@ import { uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
-import { instantaPreaDeparte, PLAFON, type Document, type Ghidaj, type Instanta, type Operatie, type Stoc } from '../model/document.ts';
-import { operatieInMargini } from '../model/schemaDocument.ts';
+import { instantaPreaDeparte, operatieImplicita, PLAFON, type Document, type FormaDoc, type Ghidaj, type Instanta, type Operatie, type Stoc } from '../model/document.ts';
+import { is } from 'valibot';
+import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
+import { adancimeDeschise } from '../io/adancime.ts';
 import { cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { executa, type Comanda } from '../model/jurnal.ts';
@@ -268,6 +270,26 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       ctx.scrie(executa(h, { tip: 'inlocuieste-ghidaje', foaie: foaie.id, vechi, nou: nou.map((g) => ({ ...g })) }));
     },
   },
+  // Uneltele de desen (ADR 0051): forma trasă, ca piesă nouă cu instanța ei, aleasă după desen.
+  'document.deseneaza': {
+    activa: (ctx) => {
+      const f = ctx.formaNoua?.();
+      if (!f) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaDesen(ctx.istoric().doc, f);
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      const f = ctx.formaNoua?.();
+      if (!f) return;
+      const h = ctx.istoric();
+      const r = comandaDesen(h.doc, f);
+      if (!r.ok) return;
+      ctx.scrie(executa(h, r.comanda));
+      ctx.selecteaza([r.id]);
+    },
+  },
   // Alinierea, distribuirea și săgețile (ADR 0050 §3): fiecare instanță cu deplasarea ei, într-un singur pas de anulare.
   'document.muta-instantele': {
     activa: (ctx) => {
@@ -289,6 +311,40 @@ export const CALCUL_DOCUMENT: CalculDocument = {
     },
   },
 };
+
+/**
+ * Comanda unei forme desenate (ADR 0051): piesa nouă, cu operația implicită (a dreptunghiului pentru formele închise, a
+ * liniilor deschise din import pentru linie: pe linie, `adancimeDeschise`, o trecere), și instanța ei. Documentul de după
+ * trebuie să treacă de plafoane și de ușa întreagă: ce se desenează se și redeschide. Ținută pe (document, formă).
+ */
+type ComandaDesen = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: 'motiv.plafon' | 'motiv.import-refuzat' };
+type FormaNoua = { readonly forma: FormaDoc; readonly x: number; readonly y: number };
+let ultimulDesen: { doc: Document; f: FormaNoua; rez: ComandaDesen } | null = null;
+function comandaDesen(doc: Document, f: FormaNoua): ComandaDesen {
+  if (ultimulDesen && ultimulDesen.doc === doc && ultimulDesen.f === f) return ultimulDesen.rez;
+  const id = idNou(doc);
+  const scula = sculaFoii(doc);
+  const foaie = foaieCurenta(doc);
+  const baza = scula ? operatieImplicita(id, f.forma, scula) : operatieImplicita(id, f.forma);
+  const deschisa = f.forma.tip === 'cale' && !f.forma.inchis;
+  const adancime = adancimeDeschise(foaie.stoc.grosime);
+  const operatie: Operatie = deschisa ? { ...baza, latura: 'pe-linie', adancime, pas: adancime } : baza;
+  const varfuri = f.forma.tip === 'cale' ? f.forma.varfuri.length : 0;
+  let rez: ComandaDesen;
+  if (!incape(doc, { noduri: 1, instante: 1, elementeLume: 1, operatii: 1, taieturi: 1, varfuri, varfuriLume: varfuri })) {
+    rez = { ok: false, motiv: 'motiv.plafon' };
+  } else {
+    const comanda: Comanda = {
+      tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: f.x, y: f.y, rotire: 0 }, pozitie: foaie.instante.length,
+      piesa: { piesa: { id, radacina: { tip: 'element', id, forma: f.forma, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [operatie] }, pozitie: doc.piese.length },
+    };
+    // Schemele documentului (cu judecata de ansamblu), nu ușa întreagă: ușa ar lipi schemele de ea într-o singură bucată la
+    // cerere (probele „schemele care nu vin” le cer separate), iar migrările și arcele în lume nu privesc o formă nouă.
+    rez = is(SchemaDocument, JSON.parse(JSON.stringify(executa(istoricDin(doc), comanda).doc))) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.import-refuzat' };
+  }
+  ultimulDesen = { doc, f, rez };
+  return rez;
+}
 
 /** Ghidajele unei liste trec de ușă: cel mult plafonul, id-uri bune și unice, axa x / y, poziția finită în plafon. */
 function ghidajeBune(g: readonly Ghidaj[]): boolean {
