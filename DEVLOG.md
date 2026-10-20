@@ -2273,3 +2273,6 @@ Probele scoase din numere fixe: lista owner-ului și feliile aduse (cresc cu fie
 teste unitare, 0 picate, 8 sărite; build-ul determinist; licențele); e2e 162 / 162 în Edge; emulatoarele 36 + 12 (3 noi:
 personalul cap-coadă). Pornirea 94,3 / 100 kB (cu ușa 99,0); `/admin` 178,6 → 189,0 / 200 kB (intrarea cu parola, filele
 Personal și Cont): mai e loc de ~11 kB.
+**Publicat pe test:** 20.10, workflow-ul `publica` pe `3637cb2` (după rapid-ul verde pe CI): regulile noi publicate,
+`administreazaPersonalul` și `acceptaInvitatia` create (fără App Check răspund 401, deci invocarea publică e pusă),
+versiunea `3637cb21e052` în pachet. Capturile filelor Personal (luminos, întunecat) și Cont trimise owner-ului.
