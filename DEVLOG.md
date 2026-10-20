@@ -2280,3 +2280,24 @@ versiunea `3637cb21e052` în pachet. Capturile filelor Personal (luminos, întun
 am intrat cu adresa și parola. Pare ca a functionat.” Citit în Auth (doar citire): un singur cont, furnizorii `google.com`
 și `password`, parola pusă la 10:29 UTC; adresa apare acum neverificată (notat în ADR 0049 §6, pentru etapa 14). Rândul
 scos din „Ce îi trebuie owner-ului”.
+
+## 2026-10-20 — Riglele, ghidajele, lipirea și alinierea (Model: Claude Opus 5.5)
+
+**Prompt:** „hmm, se poate sa aducem mai in fata niste lucruri. putem face mai multe unelte de desen acum? ruler si guides?”
++ „snapping system, aligning etc.?”. Deciziile owner-ului la întrebări: „Întâi rigle+lipire”, ghidajele „Da, în proiect”,
+lipirea de „Ghidaje și foaie”, „Punctele formelor” și „Grilă”, „Fără agenți”. **Started:** 20.10 13:40, săptămânalul
+83 %. Felia 6.A↑ (ADR 0050). Abatere de la ce i-am spus owner-ului la întrebare (v11): ghidajele intră în v10, fiindcă nu
+schimbă tăierea, iar v11 ar fi făcut o filă rămasă pe versiunea veche să refuze proiectul. Pornirea e la 99,0 / 100 kB
+cu ușa: totul vine la cerere.
+**Ce s-a făcut:** ghidajele pe foaie (tipul, ușa: plafonul 1 000, id-urile, poziția; comanda `inlocuieste-ghidaje`), lipirea
+și alinierea pure în `src/geom/`, acțiunile `foaie.ghidaje` și `document.muta-instantele` (în registru doar id-ul și garda,
+calculul la cerere), cârligele pânzei (stratul de deasupra, lipirea mutării, Alt), modulul `Editare` la cerere (riglele,
+ghidajele cu dublu clic pentru poziția exactă, grila, liniile de aliniere, bara lipirii și a alinierii, săgețile) și
+dicționarul lui. **Treceri:** (1) codul și probele; (2) e2e: banda ghidajului tras se scotea din pagină cât era trasă
+(`setPointerCapture` pe un element scos: gestul și dublul clic se pierdeau), iar lipirea arăta doar una din țintele atinse
+deodată (acum toate); (3) e2e-ul vechi: săgețile mutau forma și din arborele proiectului, iar o probă căuta „EN” după un nume
+parțial (găsea și „Aliniază centrele”); după un clic pe „Aliniază”, săgețile nu mai mergeau. Două probe care fixau lista
+acțiunilor la cerere (cinci) au primit cele două noi.
+**Completed:** 20.10 14:20. Fără agenți; săptămânalul 83 → 84 %. `npm run rapid` RC 0 (7 091 de teste unitare, 0 picate, 8
+sărite; build-ul determinist; licențele); e2e 164 / 164 în Edge (2 noi). Pornirea 94,3 → 94,7 / 100 kB, cu ușa 99,0 → 99,4
+(rămân ~0,6 kB: următoarea felie care atinge pornirea trebuie să elibereze loc întâi).

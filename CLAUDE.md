@@ -74,6 +74,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`shared/personal.ts`; `owner` fix, singurul care administrează), invitațiile pe e-mail, conturile create de owner cu link
   de parolă, fila Personal și fila Cont (un singur cont pe adresă, metodele legate). Treptele `support` / `admin` nu mai dau
   nimic; o permisiune nouă = cod + regulă + probă.
+  **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
+  (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
+  cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). Felia următoare: uneltele
+  de desen prin tragere, cu aceeași lipire.
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):

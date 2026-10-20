@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import {
-  SCARA_MAXIMA, SCARA_MINIMA, type CerereDesen, type FormaDesen, type RaspunsDesen, type Vedere,
+  SCARA_MAXIMA, SCARA_MINIMA, type CerereDesen, type FormaDesen, type LinieGhid, type Lipeste, type RaspunsDesen, type Vedere,
 } from './protocol.ts';
 
 type Props = {
@@ -39,6 +39,13 @@ type Props = {
    * gesturile să ajungă tot la pânză.
    */
   readonly strat?: (vedere: Vedere, marime: { readonly latime: number; readonly inaltime: number; readonly dpr: number }) => ReactNode;
+  /**
+   * Riglele, ghidajele și liniile de aliniere (ADR 0050), deasupra pânzei, cu vederea, mărimea, liniile mutării de acum și
+   * schimbarea vederii (ghidajul tras pe lângă margine nu mută vederea; zoomul rămâne al pânzei).
+   */
+  readonly suprapunere?: (vedere: Vedere, marime: { readonly latime: number; readonly inaltime: number }, linii: readonly LinieGhid[]) => ReactNode;
+  /** Lipirea mutării (ADR 0050 §2); Alt o oprește pe durata gestului. */
+  readonly lipeste?: Lipeste;
 };
 
 /** Pixelii de toleranță ai clicului și pragul de la care o apăsare devine tragere. */
@@ -71,7 +78,7 @@ export function vedereaPotrivita(
  * document: primește formele gata descrise și trimite înapoi gesturile (clic, mutare), pe care aplicația le rulează
  * prin registrul de acțiuni.
  */
-export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivire, cutie, children, onCursor, onScara, onFisiere, textLasare, strat }: Props) {
+export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivire, cutie, children, onCursor, onScara, onFisiere, textLasare, strat, suprapunere, lipeste }: Props) {
   const [trage, setTrage] = useState(false);
   const cuFisiere = (e: { readonly dataTransfer: DataTransfer }): boolean => [...e.dataTransfer.types].includes('Files');
   const panzaRef = useRef<HTMLCanvasElement | null>(null);
@@ -80,6 +87,7 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
   const [marime, setMarime] = useState({ latime: 0, inaltime: 0, dpr: 1 });
   const [vedere, setVedere] = useState<Vedere | null>(null);
   const [deplasare, setDeplasare] = useState({ dx: 0, dy: 0 });
+  const [linii, setLinii] = useState<readonly LinieGhid[]>([]);
   const [afisata, setAfisata] = useState(0);
   const [sageti, setSageti] = useState(0);
   const [trimisa, setTrimisa] = useState(0);
@@ -227,7 +235,11 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
     } else if (g.tip === 'apasare' && Math.hypot(dx, dy) >= PRAG_TRAGERE_PX && selectie.length > 0) {
       gest.current = { ...g, tip: 'mutare' };
     }
-    if (gest.current?.tip === 'mutare') setDeplasare({ dx: dx / g.v0.scara, dy: -dy / g.v0.scara });
+    if (gest.current?.tip === 'mutare') {
+      const l = lipeste && !e.altKey ? lipeste(dx / g.v0.scara, -dy / g.v0.scara, g.v0.scara) : { dx: dx / g.v0.scara, dy: -dy / g.v0.scara, linii: [] };
+      setDeplasare({ dx: l.dx, dy: l.dy });
+      setLinii(l.linii);
+    }
   };
 
   const elibereaza = (e: React.PointerEvent<HTMLCanvasElement>): void => {
@@ -235,8 +247,10 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
     gest.current = null;
     if (g?.tip === 'mutare') {
       const dx = (e.clientX - g.x0) / g.v0.scara, dy = -(e.clientY - g.y0) / g.v0.scara;
+      const l = lipeste && !e.altKey ? lipeste(dx, dy, g.v0.scara) : { dx, dy };
       setDeplasare({ dx: 0, dy: 0 });
-      onMutare(dx, dy);
+      setLinii([]);
+      onMutare(l.dx, l.dy);
     }
   };
 
@@ -256,7 +270,7 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
       onPointerDown={apasa}
       onPointerMove={misca}
       onPointerUp={elibereaza}
-      onPointerCancel={() => { gest.current = null; setDeplasare({ dx: 0, dy: 0 }); }}
+      onPointerCancel={() => { gest.current = null; setDeplasare({ dx: 0, dy: 0 }); setLinii([]); }}
       onPointerLeave={() => { onCursor?.(null); }}
       onContextMenu={(e) => { e.preventDefault(); }}
       onDragOver={(e) => {
@@ -275,6 +289,7 @@ export function Panza({ forme, foaie, selectie, onClic, onMutare, zona, potrivir
       }}
     />
     {strat && vedere && marime.latime > 0 && strat(vedere, marime)}
+    {suprapunere && vedere && marime.latime > 0 && suprapunere(vedere, marime, linii)}
     {trage && textLasare && <div className="lasa-aici" data-testid="lasa-aici">{textLasare}</div>}
     {/* Bara selecției: sub cutie dacă încape deasupra barei de jos, altfel deasupra cutiei; ascunsă cât se mută selecția. */}
     {children && cutie && vedere && deplasare.dx === 0 && deplasare.dy === 0 && (() => {

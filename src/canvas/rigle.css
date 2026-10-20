@@ -1,0 +1,181 @@
+/*
+ * Riglele, ghidajele, grila și liniile de aliniere (ADR 0050), deasupra pânzei. Doar tokenurile temei: ghidajele au
+ * culoarea focusului, liniile de aliniere accentul; stratul nu prinde evenimente, doar riglele și benzile ghidajelor.
+ */
+.rigle {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.rigle-desen {
+  position: absolute;
+  inset: 0;
+}
+
+.rigle-grila line {
+  stroke: color-mix(in oklab, var(--t) 14%, transparent);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.ghidaj {
+  stroke: var(--l-focus);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.ghidaj-tras {
+  stroke-dasharray: 4 3;
+}
+
+.ghidaj-sters {
+  stroke: var(--rosu);
+  stroke-dasharray: 2 3;
+}
+
+.aliniere {
+  stroke: var(--a);
+  stroke-width: 1;
+  stroke-dasharray: 5 3;
+  shape-rendering: crispEdges;
+}
+
+.ghidaj-apuca {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.ghidaj-apuca-x {
+  width: 9px;
+  cursor: ew-resize;
+}
+
+.ghidaj-apuca-y {
+  height: 9px;
+  cursor: ns-resize;
+}
+
+.rigla,
+.rigla-colt {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+  background: color-mix(in oklab, var(--s-panou) 92%, transparent);
+  border-color: var(--l-margine);
+  border-style: solid;
+  border-width: 0;
+}
+
+.rigla-sus {
+  height: 20px;
+  border-bottom-width: 1px;
+  cursor: s-resize;
+}
+
+.rigla-stanga {
+  width: 20px;
+  border-right-width: 1px;
+  cursor: e-resize;
+}
+
+.rigla-colt {
+  width: 20px;
+  height: 20px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  pointer-events: none;
+}
+
+.rigla svg {
+  display: block;
+  overflow: hidden;
+}
+
+.rigla line {
+  stroke: var(--t-slab);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.rigla text {
+  fill: var(--t-slab);
+  font-size: 9px;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+.ghidaj-camp {
+  position: absolute;
+  pointer-events: auto;
+  width: 6.5rem;
+  font: inherit;
+  font-size: var(--fs-2);
+  padding: 2px var(--sp-1);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-focus);
+  border-radius: var(--r-1);
+}
+
+/* Bara lipirii și a alinierii (ADR 0050): o insulă mică, în colțul de jos din stânga al zonei libere. */
+.bara-editare {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  pointer-events: auto;
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  box-shadow: 0 2px 8px color-mix(in oklab, var(--t) 14%, transparent);
+}
+
+.bara-editare button {
+  min-height: 34px;
+  min-width: 34px;
+  padding: 0 var(--sp-2);
+  font-size: var(--fs-2);
+}
+
+.bara-editare .aliniaza {
+  padding: 0;
+}
+
+.bara-editare .separator {
+  width: 1px;
+  align-self: stretch;
+  margin: 4px 2px;
+  background: var(--l-margine);
+}
+
+.pas-grila {
+  width: 3.5rem;
+  min-height: 30px;
+  font: inherit;
+  font-size: var(--fs-2);
+  padding: 0 var(--sp-1);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+}
+
+.icona-aliniere {
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.2;
+}
+
+.icona-aliniere rect {
+  stroke: none;
+}
+
+.editare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}

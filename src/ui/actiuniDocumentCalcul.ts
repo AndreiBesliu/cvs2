@@ -2,7 +2,7 @@ import { uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
-import { instantaPreaDeparte, PLAFON, type Document, type Instanta, type Operatie, type Stoc } from '../model/document.ts';
+import { instantaPreaDeparte, PLAFON, type Document, type Ghidaj, type Instanta, type Operatie, type Stoc } from '../model/document.ts';
 import { operatieInMargini } from '../model/schemaDocument.ts';
 import { cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
@@ -249,6 +249,77 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       ctx.scrie(executa(h, { tip: 'inlocuieste-stoc', foaie: foaie.id, vechi: foaie.stoc, nou }));
     },
   },
+  // Ghidajele foii (ADR 0050 §1): lista întreagă, judecată ca la ușă (plafonul, id-urile, poziția), ca proiectul să se
+  // redeschidă; aceeași listă nu e o comandă.
+  'foaie.ghidaje': {
+    activa: (ctx) => {
+      const g = ctx.ghidajeNoi?.();
+      if (!g) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      return ghidajeBune(g) ? true : 'motiv.prea-departe';
+    },
+    ruleaza: (ctx) => {
+      const nou = ctx.ghidajeNoi?.();
+      const h = ctx.istoric();
+      const foaie = foaieCurenta(h.doc);
+      const vechi = foaie.ghidaje ?? [];
+      if (!nou || !ghidajeBune(nou) || jsonCanonic(nou) === jsonCanonic(vechi)) return;
+      ctx.scrie(executa(h, { tip: 'inlocuieste-ghidaje', foaie: foaie.id, vechi, nou: nou.map((g) => ({ ...g })) }));
+    },
+  },
+  // Alinierea, distribuirea și săgețile (ADR 0050 §3): fiecare instanță cu deplasarea ei, într-un singur pas de anulare.
+  'document.muta-instantele': {
+    activa: (ctx) => {
+      const d = ctx.deplasari?.();
+      if (!d) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const c = comenziDeplasare(ctx.istoric().doc, d);
+      return typeof c === 'string' ? c : true;
+    },
+    ruleaza: (ctx) => {
+      const d = ctx.deplasari?.();
+      if (!d) return;
+      const h = ctx.istoric();
+      const c = comenziDeplasare(h.doc, d);
+      if (typeof c === 'string') return;
+      const p = pas(c);
+      if (p) ctx.scrie(executa(h, p));
+    },
+  },
 };
+
+/** Ghidajele unei liste trec de ușă: cel mult plafonul, id-uri bune și unice, axa x / y, poziția finită în plafon. */
+function ghidajeBune(g: readonly Ghidaj[]): boolean {
+  if (g.length > PLAFON.ghidaje) return false;
+  const ids = new Set<string>();
+  for (const x of g) {
+    if (typeof x.id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(x.id) || ids.has(x.id)) return false;
+    ids.add(x.id);
+    if ((x.axa !== 'x' && x.axa !== 'y') || !Number.isFinite(x.poz) || Math.abs(x.poz) > PLAFON.translatie) return false;
+  }
+  return true;
+}
+
+/**
+ * Comenzile deplasărilor: doar instanțele foii curente, fiecare o singură dată, cu deplasarea finită și locul nou în
+ * plafon; altfel motivul. Deplasările nule nu sunt comenzi.
+ */
+function comenziDeplasare(doc: Document, d: readonly { readonly id: string; readonly dx: number; readonly dy: number }[]): Comanda[] | 'motiv.nimic-ales' | 'motiv.prea-departe' {
+  const foaie = foaieCurenta(doc);
+  const dupaId = new Map(foaie.instante.map((i) => [i.id, i]));
+  const vazute = new Set<string>();
+  const comenzi: Comanda[] = [];
+  for (const { id, dx, dy } of d) {
+    const vechi = dupaId.get(id);
+    if (!vechi || vazute.has(id) || !Number.isFinite(dx) || !Number.isFinite(dy)) return 'motiv.nimic-ales';
+    vazute.add(id);
+    if (dx === 0 && dy === 0) continue;
+    if (instantaPreaDeparte(vechi.x + dx, vechi.y + dy)) return 'motiv.prea-departe';
+    comenzi.push({ tip: 'inlocuieste-instanta', foaie: foaie.id, vechi, nou: { ...vechi, x: vechi.x + dx, y: vechi.y + dy } });
+  }
+  return comenzi;
+}
 
 inregistreazaCalcul(CALCUL_DOCUMENT);

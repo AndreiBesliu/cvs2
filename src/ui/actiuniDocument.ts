@@ -1,7 +1,7 @@
 import type { CheieSimpla } from '../i18n/t.ts';
 import {
   instantaPreaDeparte, noduriPiesa, numara, operatieImplicita, plafonDepasit, type Document, type FormaDoc,
-  type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa,
+  type Ghidaj, type Instanta, type Nod, type Numaratoare, type Operatie, type Piesa,
 } from '../model/document.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
@@ -43,6 +43,10 @@ export type ContextDocument = {
   readonly pozitieNoua?: () => { readonly x?: number; readonly y?: number };
   /** Panoul: rotirea nouă a singurei instanțe selectate, în grade (se normalizează în [0, 360)). */
   readonly rotireNoua?: () => number;
+  /** Ghidajele noi ale foii (ADR 0050): lista întreagă, după un ghidaj adăugat, mutat sau șters. */
+  readonly ghidajeNoi?: () => readonly Ghidaj[];
+  /** Deplasările instanțelor, fiecare cu a ei, în mm (alinierea, distribuirea, săgețile; ADR 0050). */
+  readonly deplasari?: () => readonly { readonly id: string; readonly dx: number; readonly dy: number }[];
   /** Panoul, fără selecție: materialul nou al foii, în mm; doar mărimile scrise. */
   readonly stocNou?: () => { readonly latime?: number; readonly inaltime?: number; readonly grosime?: number };
 };
@@ -423,6 +427,9 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
     : ctx.selectie().length > 1 ? 'motiv.o-singura-selectie' : ctx.rotireNoua ? true : 'motiv.nicio-deplasare')),
   // Materialul foii, din panou, fără selecție (ADR 0038 §4). Operațiile nu se ating: exportul le judecă din nou.
   laCerere('foaie.stoc', 'actiune.foaie-stoc', (ctx) => (ctx.stocNou ? true : 'motiv.nimic-ales')),
+  // Riglele și lipirea (ADR 0050), din modulul editării, la cerere: ghidajele foii și mutarea instanțelor cu deplasări proprii.
+  laCerere('foaie.ghidaje', 'actiune.ghidaje', (ctx) => (ctx.ghidajeNoi ? true : 'motiv.nimic-ales')),
+  laCerere('document.muta-instantele', 'actiune.muta-instantele', (ctx) => (ctx.deplasari ? true : 'motiv.nimic-ales')),
   {
     id: 'istoric.anuleaza',
     eticheta: 'actiune.anuleaza',

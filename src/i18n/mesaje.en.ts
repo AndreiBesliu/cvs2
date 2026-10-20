@@ -29,6 +29,8 @@ export const en = {
   'actiune.pozitioneaza': 'Position the selection',
   'actiune.roteste': 'Rotate',
   'actiune.foaie-stoc': 'Sheet size',
+  'actiune.ghidaje': 'Sheet guides',
+  'actiune.muta-instantele': 'Align',
   'motiv.valoare-invalida': 'The value must be a number, with a point or a comma.',
   'motiv.o-singura-selectie': 'Rotation is set on one shape: select just one.',
   'motiv.foaie-invalida': 'The sheet width and height must be between 0 and 10,000 mm, and its thickness between 0 and 1,000 mm.',

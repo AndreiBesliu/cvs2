@@ -131,11 +131,14 @@ const SchemaInstanta = v.looseObject({
     v.check((c) => Object.keys(c).length <= PLAFON.campuri, `cel mult ${PLAFON.campuri} de câmpuri pe instanță`),
   )),
 });
+/** Ghidajele foii (ADR 0050): opționale, fără schemă nouă (nu schimbă tăierea); plafonul și poziția, ca la instanțe. */
+const SchemaGhidaj = v.looseObject({ id: Id, axa: v.picklist(['x', 'y']), poz: coordonata });
 const SchemaFoaie = v.looseObject({
   id: Id,
   nume: Nume,
   stoc: v.looseObject({ latime: pozitiv(PLAFON.latura), inaltime: pozitiv(PLAFON.latura), grosime: pozitiv(PLAFON.grosime) }),
   instante: v.array(SchemaInstanta),
+  ghidaje: v.optional(v.pipe(v.array(SchemaGhidaj), v.maxLength(PLAFON.ghidaje, `cel mult ${PLAFON.ghidaje} de ghidaje pe foaie`))),
 });
 
 /**
@@ -197,6 +200,11 @@ function problemaDeAnsamblu(d: Document): string | null {
   for (const f of d.foi) {
     if (foi.has(f.id)) return `două foi au id-ul ${f.id}`;
     foi.add(f.id);
+    const ghidaje = new Set<string>();
+    for (const g of f.ghidaje ?? []) {
+      if (ghidaje.has(g.id)) return `două ghidaje ale foii ${f.id} au id-ul ${g.id}`;
+      ghidaje.add(g.id);
+    }
     for (const i of f.instante) {
       if (instante.has(i.id)) return `două instanțe au id-ul ${i.id}`;
       instante.add(i.id);

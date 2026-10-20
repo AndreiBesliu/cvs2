@@ -60,6 +60,8 @@ export const PLAFON = {
   varfuri: 200_000,
   /** Vârfurile căilor în lume: instanțele înmulțite cu vârfurile căilor piesei lor. Pânza, CAM-ul și clicul sunt liniare în ele. */
   varfuriLume: 1_000_000,
+  /** Ghidajele unei foi (ADR 0050). */
+  ghidaje: 1_000,
 } as const;
 
 export type Matrice = { a: number; b: number; c: number; d: number; e: number; f: number };
@@ -116,7 +118,12 @@ export type Stoc = { latime: number; inaltime: number; grosime: number; [cheie: 
 export type Instanta = {
   id: string; piesa: string; x: number; y: number; rotire: number; campuri?: Record<string, string>; [cheie: string]: unknown;
 };
-export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; [cheie: string]: unknown };
+/**
+ * Un ghidaj al foii (ADR 0050): linia verticală `x = poz` (axa `x`) sau orizontală `y = poz` (axa `y`), în mm ai foii. Nu
+ * schimbă nimic din ce se taie, deci a intrat fără schemă nouă: o versiune care nu-l știe îl păstrează necunoscut.
+ */
+export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
+export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
 export type Document = { schema: 10; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */

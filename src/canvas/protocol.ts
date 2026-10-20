@@ -75,3 +75,13 @@ export type RaspunsDesen = { readonly tip: 'imagine'; readonly cerere: number; r
 /** Zoomul: cel mult 1 000 px/mm (T13), cel puțin cât să încapă o foaie de 10 m pe ecran. */
 export const SCARA_MINIMA = 0.01;
 export const SCARA_MAXIMA = 1000;
+
+/**
+ * O linie de aliniere arătată cât se trage (ADR 0050 §2): `x = poz` (axa `x`) sau `y = poz` (axa `y`), în mm ai foii,
+ * întinsă între `de` și `la` pe cealaltă axă. Aceeași formă ca `LinieLipire` din `src/geom/lipire.ts`, pe care pânza nu-l
+ * poate importa (interfața trece prin acțiuni).
+ */
+export type LinieGhid = { readonly axa: 'x' | 'y'; readonly poz: number; readonly de: number; readonly la: number; readonly fel: string };
+
+/** Lipirea unei mutări: deplasarea cerută (mm) → cea lipită, cu liniile ei. */
+export type Lipeste = (dx: number, dy: number, scara: number) => { readonly dx: number; readonly dy: number; readonly linii: readonly LinieGhid[] };

@@ -1,6 +1,6 @@
 import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
-import { treaptaZoom, type Bucata, type Vedere } from '../canvas/protocol.ts';
+import { treaptaZoom, type Bucata, type Lipeste, type Vedere } from '../canvas/protocol.ts';
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
 import type { Miscare, Program } from '../ir/ir.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
@@ -105,6 +105,8 @@ const Paleta = lazy(() => incarcaPaleta().then((m) => ({ default: m.Paleta }), (
 const PanouProprietati = lazy(() => incarcaProprietati().then((m) => ({ default: m.PanouProprietati }), () => ({ default: () => null })));
 /** Stratul traseului (ADR 0038 §3) vine la primul „Arată traseul”: WebGL2 nu intră în pachetul de pornire. */
 const StratTraseu = lazy(() => import('../canvas/StratTraseu.tsx').then((m) => ({ default: m.StratTraseu }), () => ({ default: () => null })));
+/** Riglele, ghidajele, lipirea și alinierea (ADR 0050): la cerere, după prima randare a pânzei. */
+const Editare = lazy(() => import('./Editare.tsx').then((m) => ({ default: m.Editare }), () => ({ default: () => null })));
 
 /**
  * Traseul de pe pânză (ADR 0038 §2): ultimul program calculat la „Arată traseul”, cu revizia documentului de atunci
@@ -210,6 +212,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [timpTraseu, setTimpTraseu] = useState<{ readonly program: Program; readonly setari: string; readonly r: RezumatJob } | null>(null);
   const [bugetTraseu, setBugetTraseu] = useState(BUGET_TRASEU);
   const [stareStrat, setStareStrat] = useState<StareStrat>('ok');
+  const [lipeste, setLipeste] = useState<Lipeste | null>(null);
+  // Funcția de lipire se pune cu forma de actualizare a stării (o funcție dată direct ar fi luată drept actualizare).
+  const [setLipesteStabil] = useState(() => (f: Lipeste | null) => { setLipeste(() => f); });
   const [cheieStrat, setCheieStrat] = useState(0);
   const [traseuPregatit, setTraseuPregatit] = useState<{ readonly bucati: readonly Bucata[]; readonly rarit: boolean } | null>(null);
   const cerereTraseu = useRef(0);
@@ -386,7 +391,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -883,6 +888,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               ),
             } : {})}
             {...(modal ? {} : { onFisiere: (fisiere: readonly File[], punct: { readonly x: number; readonly y: number } | null) => { pornesteImport(fisiere, punct); } })}
+            {...(lipeste ? { lipeste } : {})}
+            suprapunere={(v, m, l) => (
+              <Suspense fallback={null}>
+                <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)}
+                  ruleaza={(id, extra) => { ruleazaDocument(id, context(extra)); }} onLipeste={setLipesteStabil} />
+              </Suspense>
+            )}
             textLasare={t('import.lasa-aici')}
           >
             {/*

@@ -314,7 +314,7 @@ test('bara de jos arată cursorul pe foaie, în mm, și zoomul; fără maus pe p
   v = await vedere(page);
   await expect(zoom).toHaveText(`Zoom ${Math.round((v.scara / PX_PE_MM) * 100)} %`);
   // În engleză, același cip, tradus (cifrele rămân).
-  await page.getByRole('button', { name: 'EN' }).click();
+  await page.getByRole('button', { name: 'EN', exact: true }).click();
   await expect(zoom).toHaveText(`Zoom ${Math.round((v.scara / PX_PE_MM) * 100)} %`);
   await expect(cursor).toHaveAttribute('title', 'The cursor on the sheet, in mm from its lower left corner');
 });
