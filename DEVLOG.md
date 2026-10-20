@@ -2322,3 +2322,6 @@ vechi (ReferenceError), reluat după build.
 8 sărite); e2e 165 / 165 în Edge. Pornirea 94,7 → 95,0 / 100 kB, cu ușa 99,4 → 99,7 (rămân ~0,3 kB: următoarea felie care
 atinge pornirea trebuie să elibereze loc întâi). Owner-ul a cerut în timpul feliei și „controls ca scale rotate etc.”:
 felia următoare (6.C↑).
+**Publicat pe test:** 20.10, workflow-ul `publica` pe `4f20826` (după rapid-ul verde pe CI).
+**De făcut (cererea owner-ului, 20.10):** „in situatia in care snap este dezactivat, atunci 'alt' sa activeze temporar snap”: Alt
+inversează lipirea pe durata gestului (oprită → pornită, pornită → oprită); intră în felia 6.C↑, cu transformările.
