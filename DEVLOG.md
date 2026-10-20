@@ -2376,3 +2376,23 @@ vârfuri): elipsa generatorului e acum tăiată pe sferturi, iar elipsele vechi 
 8 sărite); e2e 168 / 168 în Edge. Pornirea 95,0 → 95,1 kB (cu ușa 99,7 → 99,8 / 100): rămân ~0,2 kB, deci următoarea felie
 care atinge pornirea eliberează loc întâi. Rămâne unirea / separarea vectorilor („in curand”).
 **Publicat pe test:** 20.10, workflow-ul `publica` pe `fde4a04` (după rapid-ul verde pe CI, 4 / 4 felii).
+
+## 2026-10-20 — Oglindirea selecției (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, fă acum unirea și separarea vectorilor, fără agenți.”, apoi, la întrebarea despre sensul unirii: „M-am
+razgandit, nu vreau asta acum. As face ceva mai mic.”, și din feliile mici propuse: „Oglindirea (Recomandat)”.
+**Started:** 20.10 20:38, săptămânalul 90 %. Felia **6.E↑** (ADR 0054), fără agenți: butoanele Oglindește orizontal /
+vertical (Shift+H / Shift+V) în extensia barei, pe selecție, în jurul centrului cutiei ei. Exactă: reflexia intră în matricea
+rădăcinii piesei (o similitudine, deci arcele rămân arce, cu semnul schimbat), locul instanței se oglindește, rotirea rămâne;
+CAM-ul inversează deja partea frezei pe căile deschise sub o matrice care oglindește (ADR 0037 §3). Prin acțiunea existentă
+`document.transforma` (fără nimic nou în pornire). Proba: programul documentului oglindit = oglinda programului inițial.
+**Treceri:** (1) modelul (`fel: 'oglindire'` în `src/model/transformare.ts`, reflexia L = R(−rotire)·S·R(rotire) în matricea
+rădăcinii) și probele; proba programului de tăiere compara întâi și coborârile / ridicările frezei, care cad la celălalt capăt al
+buclei după oglindire (oglinda întoarce sensul de rotire, iar urcarea cere parcurgerea inversă): acum compară tăieturile în plan,
+cu sensul arcelor (același), plus martorul pe partea liniei; (2) secțiunea Oglindire din extensie, Shift+H / Shift+V, e2e-ul pe
+G-code-ul exportat; captura: despărțitorul dintre secțiunile extensiei nu avea stil; (3) rularea completă verde din prima.
+Întrebarea owner-ului din timpul feliei (de pe ce adresă vine invitația pe e-mail): răspuns în chat, aplicația nu trimite încă
+e-mailul invitației (ADR 0049); recomandarea, `noreply@cncvectorstudio.com` cu Reply-To pe o adresă reală, cere un serviciu de
+e-mail (decizia owner-ului).
+**Completed:** 20.10 20:55. Fără agenți (cererea owner-ului, deși ultracode e pornit); săptămânalul 90 → 91 %. `npm run rapid`
+RC 0 (7 115 teste unitare, 0 picate, 8 sărite); e2e 169 / 169 în Edge. Pornirea neschimbată: 95,1 kB (cu ușa 99,8 / 100).

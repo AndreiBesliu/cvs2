@@ -58,7 +58,7 @@ rotunjesc la 1e-4, unghiul la 0,001° (pixelii mausului nu intră în geometrie)
 **6. Pornirea** nu primește nimic nou: mânerele, transformarea și calculul acțiunii vin cu modulul editării, la cerere;
 în registru stă doar acțiunea, cu garda ei. Pornirea rămâne 95,0 kB (cu ușa 99,7 / 100).
 
-**Amânate:** lipirea mânerelor de ținte (ghidaje, grilă), oglindirea, transformarea numerică a selecției multiple din
+**Amânate:** lipirea mânerelor de ținte (ghidaje, grilă), oglindirea (făcută în ADR 0054), transformarea numerică a selecției multiple din
 panou; editarea după plasare (6.D↑).
 
 ## Probele

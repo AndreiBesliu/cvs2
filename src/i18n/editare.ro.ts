@@ -38,6 +38,9 @@ export const roEditare = {
   'editare.transformare.neuniform-arc': 'O cale cu arce se scalează doar proporțional (arcele ar deveni elipse).',
   'editare.transformare.neuniform-colt': 'Un dreptunghi cu colțuri rotunjite se scalează doar proporțional.',
   'editare.transformare.neuniform-rotit': 'O formă rotită oblic se scalează doar proporțional.',
-  'editare.transformare.piesa-impartita': 'Piesa e folosită și de alte instanțe: scalarea le-ar schimba și pe ele.',
+  'editare.transformare.piesa-impartita': 'Piesa e folosită și de alte instanțe: schimbarea le-ar atinge și pe ele.',
+  'editare.oglindire': 'Oglindire',
+  'editare.oglindeste.orizontal': 'Oglindește orizontal: stânga ↔ dreapta (Shift+H)',
+  'editare.oglindeste.vertical': 'Oglindește vertical: sus ↔ jos (Shift+V)',
   'editare.transformare.scara-invalida': 'Mânerul a trecut de partea opusă: scara trebuie să rămână pozitivă.',
 } as const satisfies DictionarRoPentru<typeof enEditare>;

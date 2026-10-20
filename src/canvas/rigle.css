@@ -145,7 +145,8 @@
   padding: 0;
 }
 
-.bara-editare .separator {
+.bara-editare .separator,
+.extensie .separator {
   width: 1px;
   align-self: stretch;
   margin: 4px 2px;
@@ -237,6 +238,14 @@
 
 .sectiune-extensie .strange {
   gap: 2px;
+}
+
+/* Motivul unui refuz în extensie (oglindirea unei piese împărțite, ADR 0054). */
+.motiv-extensie {
+  margin-left: var(--sp-2);
+  max-width: 22rem;
+  font-size: var(--fs-2);
+  color: var(--rosu, var(--t));
 }
 
 .raza {

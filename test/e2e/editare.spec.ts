@@ -3,7 +3,7 @@
  * ghidaj tras din riglă se salvează în proiect (rămâne după reîncărcare), se anulează și se șterge lăsat pe riglă; mutarea
  * se lipește de ghidaj (Alt o oprește); alinierea față de foaie; săgețile; grila. Capturile merg în `.tmp/`.
  */
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { ecran, vedere, adauga } from './ajutor-panza.ts';
 
@@ -485,5 +485,74 @@ test('editarea după plasare (ADR 0053): laturile și raza colțurilor dreptungh
 
   mkdirSync('.tmp', { recursive: true });
   await page.screenshot({ path: '.tmp/forma-panou.png' });
+  expect(erori).toEqual([]);
+});
+
+/** Exportul G-code, ca omul: dialogul, descărcarea, închiderea; întoarce textul fișierului. */
+async function exportGcode(page: Page): Promise<string> {
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.locator('[data-camp="diametru"]')).toHaveValue('6');
+  const d = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const text = readFileSync(await (await d).path(), 'ascii');
+  await page.getByRole('button', { name: 'Închide' }).click();
+  return text;
+}
+
+/** Valorile unei axe din tăieturile în plan (G1 / G2 / G3 care o au), sortate. */
+const axa = (gcode: string, a: 'X' | 'Y'): number[] => gcode.split(/\r?\n/)
+  .filter((l) => /^G[123]\b/.test(l))
+  .flatMap((l) => { const m = new RegExp(`${a}(-?\\d+(?:\\.\\d+)?)`).exec(l); return m ? [Number(m[1])] : []; })
+  .sort((p, q) => p - q);
+
+/**
+ * B e oglinda lui A pe axă: perechile sortate (a_i, b_(n−1−i)) au aceeași sumă (de două ori axa oglinzii, în coordonatele
+ * mașinii), oricare ar fi originea aleasă în dialog.
+ */
+function inOglinda(a: readonly number[], b: readonly number[]): void {
+  expect(b.length).toBe(a.length);
+  expect(a.length).toBeGreaterThanOrEqual(6);
+  const suma = (a[0] ?? 0) + (b[b.length - 1] ?? 0);
+  a.forEach((x, i) => { expect(Math.abs(x + (b[b.length - 1 - i] ?? Number.NaN) - suma)).toBeLessThanOrEqual(0.002); });
+}
+
+test('oglindirea (ADR 0054): butoanele din extensie și Shift+H / Shift+V; ce se taie e oglinda, iar anularea întoarce exact', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.goto('/');
+  const orizontal = page.locator('[data-oglindeste="orizontal"]');
+  await expect(orizontal).toBeVisible();
+  await expect(orizontal).toBeDisabled();
+
+  // Un triunghi (nesimetric față de axa verticală): poligonul cu 3 laturi, din centrul (200, 100), primul vârf la (220, 100).
+  await page.locator('[data-unealta="poligon"]').click();
+  await page.locator('[data-editare="laturi"]').fill('3');
+  const v = await vedere(page);
+  const la = await ecran(page, v);
+  await trageEcran(page, la(200, 100), la(220, 100));
+  await expect(randuri(page)).toHaveCount(1);
+  await expect(orizontal).toBeEnabled();
+  const a = await exportGcode(page);
+
+  // Orizontal, din buton: cutia rămâne pe loc, X-urile tăieturilor sunt în oglindă, Y-urile neschimbate.
+  await orizontal.click();
+  const b = await exportGcode(page);
+  inOglinda(axa(a, 'X'), axa(b, 'X'));
+  expect(axa(b, 'Y')).toEqual(axa(a, 'Y'));
+  expect(b).not.toEqual(a);
+
+  // Vertical, cu Shift+V (focusul pe butonul din extensie): Y-urile în oglindă.
+  await page.keyboard.press('Shift+V');
+  const c = await exportGcode(page);
+  inOglinda(axa(b, 'Y'), axa(c, 'Y'));
+  expect(axa(c, 'X')).toEqual(axa(b, 'X'));
+
+  // Shift+H de două ori: înapoi exact; apoi anularea celor două oglindiri întoarce programul de la început.
+  await page.locator('[data-oglindeste="vertical"]').focus();
+  await page.keyboard.press('Shift+H');
+  await page.keyboard.press('Shift+H');
+  expect(await exportGcode(page)).toEqual(c);
+  for (let k = 0; k < 4; k++) await page.keyboard.press('Control+z');
+  expect(await exportGcode(page)).toEqual(a);
   expect(erori).toEqual([]);
 });

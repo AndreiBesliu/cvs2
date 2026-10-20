@@ -37,6 +37,9 @@ export const enEditare = {
   'editare.transformare.neuniform-arc': 'A path with arcs scales only proportionally (the arcs would become ellipses).',
   'editare.transformare.neuniform-colt': 'A rectangle with rounded corners scales only proportionally.',
   'editare.transformare.neuniform-rotit': 'A shape rotated at an angle scales only proportionally.',
-  'editare.transformare.piesa-impartita': 'The piece is used by other instances too: scaling would change them as well.',
+  'editare.transformare.piesa-impartita': 'The piece is used by other instances too: the change would reach them as well.',
+  'editare.oglindire': 'Mirror',
+  'editare.oglindeste.orizontal': 'Flip horizontally: left ↔ right (Shift+H)',
+  'editare.oglindeste.vertical': 'Flip vertically: top ↔ bottom (Shift+V)',
   'editare.transformare.scara-invalida': 'The handle passed the opposite side: the scale must stay positive.',
 } as const satisfies Readonly<Record<string, Mesaj>>;

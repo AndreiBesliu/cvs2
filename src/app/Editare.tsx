@@ -10,7 +10,7 @@ import { t } from '../i18n/t.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
 import { transforma, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
-import { cutiiAlese, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie, transformareManer, type Maner } from './editareCalcul.ts';
+import { cutiiAlese, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie, transformareManer, type Maner, type TransformareManer } from './editareCalcul.ts';
 import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTE_UNELTE, UNELTE, type Unealta, type UnealtaDesen } from './desenCalcul.ts';
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
 import '../ui/actiuniDocumentCalcul.ts';
@@ -180,6 +180,23 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // sus) sau într-un câmp, săgețile sunt ale lui. Un dialog deschis îl oprește garda ușii.
   const selectieRef = useRef(selectie);
   selectieRef.current = selectie;
+  // Oglindirea selecției (ADR 0054), față de centrul cutiei ei: exactă, prin `document.transforma`; refuzul (o piesă folosită
+  // și de alte instanțe) se spune în secțiunea ei din extensie, până la altă selecție.
+  const [motivOglinda, setMotivOglinda] = useState<string | null>(null);
+  useEffect(() => { setMotivOglinda(null); }, [selectie]);
+  const oglindeste = (directie: 'orizontal' | 'vertical'): void => {
+    if (!cutie || selectie.length === 0 || p.doarCitire) return;
+    const tr: Transformare = { fel: 'oglindire', directie, centru: { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 } };
+    const r = transforma(doc, FOAIA, selectie, tr);
+    if (!r.ok) {
+      setMotivOglinda(t(`editare.transformare.${r.motiv}`));
+      return;
+    }
+    setMotivOglinda(null);
+    ruleaza('document.transforma', { transformare: () => tr });
+  };
+  const oglindesteRef = useRef(oglindeste);
+  oglindesteRef.current = oglindeste;
   useEffect(() => {
     const apasa = (e: KeyboardEvent): void => {
       if (e.ctrlKey || e.metaKey || e.defaultPrevented) return;
@@ -194,6 +211,13 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       if (u) {
         e.preventDefault();
         setUnealta(u);
+        return;
+      }
+      // Oglindirea (ADR 0054): Shift+H orizontal, Shift+V vertical.
+      const o = e.shiftKey && !e.altKey ? ({ h: 'orizontal', v: 'vertical' } as const)[e.key.toLowerCase() as 'h' | 'v'] : undefined;
+      if (o) {
+        e.preventDefault();
+        oglindesteRef.current(o);
         return;
       }
       if (e.key === 'Escape') {
@@ -296,6 +320,25 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             })}
           </span>
         );
+        const poateOglindi = selectie.length > 0 && cutie !== null && !p.doarCitire;
+        const oglindireSectiune = (
+          <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.oglindire')} data-testid="extensie-oglindire">
+            {(['orizontal', 'vertical'] as const).map((d) => (
+              <button key={d} type="button" className="aliniaza" disabled={!poateOglindi} title={t(`editare.oglindeste.${d}`)}
+                aria-label={t(`editare.oglindeste.${d}`)} data-oglindeste={d} onClick={() => { oglindeste(d); }}>
+                <IconaOglinda directie={d} />
+              </button>
+            ))}
+            {motivOglinda ? <span className="motiv-extensie" role="status" data-testid="motiv-oglindire">{motivOglinda}</span> : null}
+          </span>
+        );
+        const sectiuni = (
+          <>
+            {aliniereSectiune}
+            <span className="separator" aria-hidden="true" />
+            {oglindireSectiune}
+          </>
+        );
         const bara = (
           <div className={loc ? 'bara-editare bara-sus' : 'bara-editare'} role="toolbar" aria-label={t('editare.bara')} data-testid="bara-editare"
             style={loc ? undefined : { left: zona.x + GROSIME_RIGLA + 8, top: zona.y + zona.h - 52 }}>
@@ -346,7 +389,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                   if (n !== null && n >= 0.1 && n <= 1000) schimbaGrila({ pornita: true, pas: n });
                 }} />
             ) : null}
-            {locExtensie ? null : aliniereSectiune}
+            {locExtensie ? null : sectiuni}
           </div>
         );
         // În bara de sus (locul `unelte` al aranjamentului, ADR 0052); fără el, plutitoare în colțul zonei libere. Alinierea,
@@ -354,7 +397,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         return (
           <>
             {loc ? createPortal(bara, loc) : bara}
-            {locExtensie ? createPortal(aliniereSectiune, locExtensie) : null}
+            {locExtensie ? createPortal(sectiuni, locExtensie) : null}
           </>
         );
       })()}
@@ -423,6 +466,19 @@ function IconaUnealta({ u }: { readonly u: Unealta | 'lipire' | 'grila' }): Reac
   return <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">{desen[u]}</svg>;
 }
 
+/** Oglindirea (ADR 0054): două figuri, una plină și una în contur, de o parte și de alta a axei punctate. */
+function IconaOglinda({ directie }: { readonly directie: 'orizontal' | 'vertical' }): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <g transform={directie === 'vertical' ? 'rotate(90 8 8)' : undefined}>
+        <polygon points="1.5,13 6.5,3 6.5,13" />
+        <polygon points="14.5,13 9.5,3 9.5,13" className="contur" />
+        <line x1="8" y1="1" x2="8" y2="15" className="contur" strokeDasharray="1.6 1.4" />
+      </g>
+    </svg>
+  );
+}
+
 /** Cursorul deasupra fiecărui mâner (pânza îl primește cât mausul stă pe el). */
 const CURSOR_MANER: Record<Maner | 'rotire', string> = {
   nv: 'nwse-resize', se: 'nwse-resize', ne: 'nesw-resize', sv: 'nesw-resize', n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', v: 'ew-resize', rotire: 'grab',
@@ -443,7 +499,7 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica }: {
   const ex = (x: number): number => v.tx + x * v.scara;
   const ey = (y: number): number => v.ty - y * v.scara;
   const cx = (c.minX + c.maxX) / 2, cy = (c.minY + c.maxY) / 2;
-  const [gest, setGest] = useState<{ readonly m: Maner | 'rotire'; readonly t: Transformare } | null>(null);
+  const [gest, setGest] = useState<{ readonly m: Maner | 'rotire'; readonly t: TransformareManer } | null>(null);
   const [motiv, setMotiv] = useState<string | null>(null);
   const [ascunse, setAscunse] = useState(false);
   const radacina = useRef<HTMLDivElement | null>(null);

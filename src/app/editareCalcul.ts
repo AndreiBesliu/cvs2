@@ -6,6 +6,9 @@ import type { Document, Ghidaj } from '../model/document.ts';
 import { cutieElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { Transformare } from '../model/transformare.ts';
+
+/** Ce poate da un mâner: rotirea sau scalarea (oglindirea are butoanele ei, ADR 0054). */
+export type TransformareManer = Exclude<Transformare, { readonly fel: 'oglindire' }>;
 import { FOAIA } from '../ui/actiuniDocument.ts';
 
 type Punct = { readonly x: number; readonly y: number };
@@ -74,7 +77,7 @@ export function punctManer(c: Cutie, m: Maner): Punct {
  * jurul centrului cutiei, Shift în pași de 15°. Scările și unghiul se rotunjesc (1e-4, 0,001°), ca pixelii mausului să nu
  * ajungă în geometrie.
  */
-export function transformareManer(c: Cutie, m: Maner | 'rotire', start: Punct, q: Punct, shift: boolean): Transformare {
+export function transformareManer(c: Cutie, m: Maner | 'rotire', start: Punct, q: Punct, shift: boolean): TransformareManer {
   const cx = (c.minX + c.maxX) / 2, cy = (c.minY + c.maxY) / 2;
   if (m === 'rotire') {
     let u = ((Math.atan2(q.y - cy, q.x - cx) - Math.atan2(start.y - cy, start.x - cx)) * 180) / Math.PI;

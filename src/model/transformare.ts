@@ -1,17 +1,21 @@
 /**
- * Transformările selecției (ADR 0052), pure: rotirea și scalarea instanțelor alese, față de un punct al foii. Rotirea
- * schimbă doar instanța (unghiul și locul). Scalarea schimbă geometria piesei, EXACT: dreptunghiul își schimbă laturile,
- * cercul raza, calea vârfurile și punctele de control; unde rezultatul n-ar mai fi exact se refuză cu motiv (o scalare
- * neuniformă pe un cerc, pe un arc sau pe un colț rotunjit; o scalare neuniformă pe o instanță sau un nod rotit altfel decât
- * cu un multiplu de 90°; o piesă folosită și de alte instanțe).
+ * Transformările selecției (ADR 0052, ADR 0054), pure: rotirea, scalarea și oglindirea instanțelor alese, față de un punct
+ * al foii. Rotirea schimbă doar instanța (unghiul și locul). Scalarea schimbă geometria piesei, EXACT: dreptunghiul își
+ * schimbă laturile, cercul raza, calea vârfurile și punctele de control; unde rezultatul n-ar mai fi exact se refuză cu
+ * motiv (o scalare neuniformă pe un cerc, pe un arc sau pe un colț rotunjit; o scalare neuniformă pe o instanță sau un nod
+ * rotit altfel decât cu un multiplu de 90°; o piesă folosită și de alte instanțe). Oglindirea pune reflexia în matricea
+ * rădăcinii piesei (o similitudine: arcele rămân arce) și oglindește locul instanței; rotirea instanței rămâne.
  */
+import { compune, rotatie } from '../geom/matrice.ts';
 import type { Document, FormaDoc, Instanta, Matrice, Nod, Piesa } from './document.ts';
 
 type P = { readonly x: number; readonly y: number };
 
 export type Transformare =
   | { readonly fel: 'rotire'; readonly unghi: number; readonly centru: P }
-  | { readonly fel: 'scalare'; readonly sx: number; readonly sy: number; readonly ancora: P };
+  | { readonly fel: 'scalare'; readonly sx: number; readonly sy: number; readonly ancora: P }
+  /** `orizontal`: stânga ↔ dreapta, față de dreapta verticală prin `centru`; `vertical`: sus ↔ jos, față de orizontala lui. */
+  | { readonly fel: 'oglindire'; readonly directie: 'orizontal' | 'vertical'; readonly centru: P };
 
 export type MotivTransformare = 'neuniform-cerc' | 'neuniform-arc' | 'neuniform-colt' | 'neuniform-rotit' | 'piesa-impartita' | 'scara-invalida';
 
@@ -102,13 +106,15 @@ export function transforma(doc: Document, indexFoaie: number, ids: readonly stri
       }),
     };
   }
-  const { sx, sy, ancora } = t;
-  // Fără oglindire din mânere: o scară care trece de zero (mânerul tras peste ancoră) e refuzată, nu întoarsă.
-  if (!Number.isFinite(sx) || !Number.isFinite(sy) || sx <= 0 || sy <= 0) return { ok: false, motiv: 'scara-invalida' };
-  // O piesă folosită de mai multe instanțe s-ar scala peste tot: refuz (copiile legate vin în etapa 11).
+  // O piesă folosită de mai multe instanțe s-ar schimba peste tot: refuz (copiile legate vin în etapa 11).
   const folosiri = new Map<string, number>();
   for (const f of doc.foi) for (const i of f.instante) folosiri.set(i.piesa, (folosiri.get(i.piesa) ?? 0) + 1);
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  if (t.fel === 'oglindire') return oglindeste(instante, piese, folosiri, t);
+  const { sx, sy, ancora } = t;
+  // Fără oglindire din mânere: o scară care trece de zero (mânerul tras peste ancoră) e refuzată, nu întoarsă (oglindirea
+  // are butoanele ei, ADR 0054).
+  if (!Number.isFinite(sx) || !Number.isFinite(sy) || sx <= 0 || sy <= 0) return { ok: false, motiv: 'scara-invalida' };
   const noiPiese: Piesa[] = [];
   const noiInstante: Instanta[] = [];
   for (const i of instante) {
@@ -125,6 +131,32 @@ export function transforma(doc: Document, indexFoaie: number, ids: readonly stri
     if (typeof radacina === 'string') return { ok: false, motiv: radacina };
     noiPiese.push({ ...piesa, radacina });
     noiInstante.push({ ...i, x: ancora.x + (i.x - ancora.x) * sx, y: ancora.y + (i.y - ancora.y) * sy });
+  }
+  return { ok: true, instante: noiInstante, piese: noiPiese };
+}
+
+/** −0 → 0 (o reflexie înmulțește zerourile cu −1): matricea scrisă în document rămâne aceeași la comparare. */
+const fara0 = (m: Matrice): Matrice => ({ a: m.a + 0, b: m.b + 0, c: m.c + 0, d: m.d + 0, e: m.e + 0, f: m.f + 0 });
+
+/**
+ * Oglindirea (ADR 0054). În lume, un punct p al piesei e T(loc)·R(rotire)·p. Oglinda S față de axa prin `centru` dă
+ * S·T(loc)·R(rotire)·p = T(loc′)·R(rotire)·L·p, cu loc′ = oglinda locului și L = R(−rotire)·S·R(rotire) (o reflexie): rotirea
+ * instanței rămâne, iar L intră în matricea rădăcinii piesei, înaintea ei. La multiplii de 90°, L e exactă (0 și ±1).
+ */
+function oglindeste(
+  instante: readonly Instanta[], piese: ReadonlyMap<string, Piesa>, folosiri: ReadonlyMap<string, number>,
+  t: Extract<Transformare, { fel: 'oglindire' }>,
+): RezultatTransformare {
+  const S: Matrice = t.directie === 'orizontal' ? { a: -1, b: 0, c: 0, d: 1, e: 0, f: 0 } : { a: 1, b: 0, c: 0, d: -1, e: 0, f: 0 };
+  const noiPiese: Piesa[] = [];
+  const noiInstante: Instanta[] = [];
+  for (const i of instante) {
+    const piesa = piese.get(i.piesa);
+    if (!piesa) continue;
+    if ((folosiri.get(i.piesa) ?? 0) > 1) return { ok: false, motiv: 'piesa-impartita' };
+    const L = compune(rotatie(-i.rotire), compune(S, rotatie(i.rotire)));
+    noiPiese.push({ ...piesa, radacina: { ...piesa.radacina, matrice: fara0(compune(L, piesa.radacina.matrice)) } });
+    noiInstante.push(t.directie === 'orizontal' ? { ...i, x: 2 * t.centru.x - i.x } : { ...i, y: 2 * t.centru.y - i.y });
   }
   return { ok: true, instante: noiInstante, piese: noiPiese };
 }
