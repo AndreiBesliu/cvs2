@@ -2469,3 +2469,5 @@ aduse din etapa 4: acum cu 4.3↑, legată de punctul 3 și de ADR 0057.
 unitare, una picată (lista fixată din proba documentației), reparată și rulată din nou; determinismul, licențele verzi. E2e
 176 / 176 în Edge (6 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,1 kB; cu ușa
 99,8 / 100); totalul 264,9 → 265,4 / 300 kB; bucata `Vedere3D` 6,7 kB gzip, la primul clic.
+**Publicat pe test:** 24.10, workflow-ul `publica` pe `fde0a05` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
+instanța de test: bucata `Vedere3D` cerută abia la clic; placa 300 × 200 simulată la 0,25 mm, blocul 1, adâncimea 3.
