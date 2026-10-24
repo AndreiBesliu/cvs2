@@ -2561,6 +2561,8 @@ din extensia barei (formularul ținut în browser), previzualizarea cutiilor cop
 probele: cazul „prea departe” din proba unitară verifica doar cazuri bune (refăcut cu o instanță aproape de plafonul
 translației, 10 km); Esc nu închidea panoul cu focusul pe butonul lui (acum Esc din extensia barei îl închide întâi); două
 probe fixau lista acțiunilor registrului și a calculelor la cerere (acțiunea nouă adăugată pe locul ei).
-**Completed:** 24.10 20:50. Fără agenți. `npm run rapid`: 7 160 de teste unitare, 2 picate (listele fixate), reparate și rulate
+**Completed:** 24.10 21:40. Fără agenți. `npm run rapid`: 7 160 de teste unitare, 2 picate (listele fixate), reparate și rulate
 din nou; determinismul, licențele verzi. E2e 189 / 189 în Edge (2 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e.
 Pornirea 95,1 → 95,2 kB (intrarea acțiunii și eticheta); cu ușa 99,8 / 100, deci mai e ~0,1 kB; totalul 274,2 → 276,8 / 300 kB.
+**Publicat pe test:** 24.10, workflow-ul `publica` pe `f0a0ca9` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
+instanța de test: rețeaua 2 × 2 a dreptunghiului dă 3 copii previzualizate, 4 forme, ultima copie la (130, 90).
