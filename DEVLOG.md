@@ -2497,3 +2497,6 @@ stilul global al lui `nav` (bara segmentată), iar pe telefon căutarea era stri
 teste unitare, 0 picate, 8 sărite); e2e 181 / 181 în Edge (5 noi și manualul offline în proba PWA); emulatoarele: 36 de probe
 ale funcțiilor, 13 e2e. Pornirea neschimbată (95,1 kB; cu ușa 99,8 / 100); totalul 265,4 → 271,6 / 300 kB (fereastra 1,8 kB,
 cititorul de markdown ieșit din `/admin` într-o bucată comună 3,9 kB); precache 50 de fișiere, cu manualul (RO 6,8, EN 6,6 kB gzip).
+**Publicat pe test:** 24.10, workflow-ul `publica` pe `3b44dd5` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
+instanța de test: F1 cu unealta Cerc deschide „Desenul”; 14 capitole; `manual/ro.json` cerut abia la deschidere și prezent în
+manifestul de precache al lui `sw.js`.
