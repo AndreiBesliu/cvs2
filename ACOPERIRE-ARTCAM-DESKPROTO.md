@@ -117,7 +117,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 ## F. Producție și interfață
 | Capabilitate | Sursă | Etapă | Stare | Commit |
 |---|---|---|---|---|
-| Simulare 3D a materialului: 3 axe în v1, apoi rotativ | S+D | v1 | în lucru: nucleul CPU (câmpul pe dale în atlas, exact pe celulă, freza plată / bilă / V, amprenta Node = Edge în e2e) și harta adâncimilor în dialogul exportului, ADR 0047; rămân afișarea în WebGL2, fereastra de 0,1 mm, elicea cu bilă / V, rotativul | 80180d4, f93d10b, 3d297d7, bad8474 |
+| Simulare 3D a materialului: 3 axe în v1, apoi rotativ | S+D | v1 | în lucru: nucleul CPU (câmpul pe dale în atlas, exact pe celulă, freza plată / bilă / V, amprenta Node = Edge în e2e) și harta adâncimilor în dialogul exportului, ADR 0047; vederea 3D în WebGL2, din celulele nucleului, cu fereastra de 0,1 mm la apropiere, ADR 0057; rămân elicea cu bilă / V, animarea sculei, rotativul | 80180d4, f93d10b, 3d297d7, bad8474 |
 | Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V, gravare, profil, formă desenată) | S+D | v1 | de făcut | — |
 | Trimiterea directă la mașină (senderul) | D | v1 | de făcut | — |
 | Calcul pe mai multe fire (workers) | D | v1 | în lucru: bazinul de workere fără stare al simulării (rândurile de dale r mod N, același rezultat bit cu bit pe orice N), ADR 0047; rămân celelalte calcule grele (CAM-ul, relieful) | 80180d4, bad8474 |

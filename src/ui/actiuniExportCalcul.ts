@@ -9,10 +9,12 @@ import { PLAFON, type Document } from '../model/document.ts';
 import { GRBL_11 } from '../post/contracte/grbl11.ts';
 import { exporta, type ProgramExportat } from '../post/export.ts';
 import { posteaza } from '../post/post.ts';
-import { campPentruFoaie, dimensiuni } from '../sim/camp.ts';
+import { reliefPentru } from '../sim/banda.ts';
+import { campPentruFoaie, dimensiuni, type ParametriCamp } from '../sim/camp.ts';
+import type { DateScula } from '../sim/nucleu.ts';
 import { pregatesteProgram } from '../sim/program.ts';
 import { estimeazaTimp, type Portiune } from '../sim/timp.ts';
-import type { ParametriExport, RezultatExport, RezumatJob, SimulareExport } from './actiuniExportTipuri.ts';
+import type { FereastraRelief, ParametriExport, ProgramSimulare, ReliefSimulat, RezultatExport, RezumatJob, SimulareExport } from './actiuniExportTipuri.ts';
 
 /** Așteptarea axului după pornire: un parametru al mașinii; profilul mașinii vine în etapa 3. */
 const ASTEPTARE_AX = 3;
@@ -69,6 +71,55 @@ export async function simuleazaExport(
       ok: true, amprenta: r.amprenta, volum: r.volum, adancimeMax: r.adancimeMax, prinFoaie: r.prinFoaie, grosime: foaie.grosime,
       celula: camp.celula, celule: [d.nx, d.ny],
       fire: r.fire, ms: r.ms, previzualizare: { latime: r.previzualizare.latime, inaltime: r.previzualizare.inaltime, z: r.previzualizare.z },
+    };
+  } catch (e) {
+    const motiv = e instanceof Error ? e.message : String(e);
+    return e instanceof SimulareAnulata ? { ok: false, motiv, eroare: false, anulata: true } : { ok: false, motiv, eroare: true };
+  }
+}
+
+/** Ce ține `ProgramSimulare.date`: scula și mutările nucleului (IR-ul, în coordonatele documentului). */
+type DateSimulare = { readonly scula: DateScula; readonly mutari: Float64Array };
+
+/**
+ * Programul documentului pentru vederea 3D (ADR 0057 §1): același CAM ca traseul și exportul (fără supracursă), apoi
+ * mutările nucleului, cu fața plăcii la Z 0. Pe firul principal, ca traseul; simularea, în bazin.
+ */
+export function programSimulare(doc: Document): ProgramSimulare {
+  const foaie = doc.foi[0];
+  if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
+  const job = programDinDocument(doc, REGIM_IMPLICIT, 0);
+  if (!job.ok) return { ok: false, motiv: job.motiv };
+  const p = pregatesteProgram(job.program, 0);
+  if (!p.ok) return { ok: false, motiv: p.motiv };
+  const date: DateSimulare = { scula: p.scula, mutari: p.mutari };
+  return { ok: true, foaie: { latime: foaie.stoc.latime, inaltime: foaie.stoc.inaltime, grosime: foaie.stoc.grosime }, date };
+}
+
+/** Fereastra plăcii întregi, la celula implicită (sau dublată, peste plafonul celulelor: ADR 0047 §1). */
+export function fereastraFoii(foaie: { readonly latime: number; readonly inaltime: number }): FereastraRelief {
+  const c = campPentruFoaie(foaie);
+  return { x0: c.x0, y0: c.y0, latime: c.latime, inaltime: c.inaltime, celula: c.celula };
+}
+
+/**
+ * Relieful unei ferestre (ADR 0057 §2, §4): placa întreagă, sau o parte a ei la 0,1 mm; în bazinul de workere, cu
+ * anularea vederii (un document schimbat, o fereastră nouă, vederea închisă). Ca la simularea exportului, `eroare` = s-a
+ * stricat ceva (merge în jurnal); un refuz sau o anulare nu.
+ */
+export async function simuleazaRelief(
+  program: Extract<ProgramSimulare, { ok: true }>, fereastra: FereastraRelief, semnal?: AbortSignal,
+): Promise<ReliefSimulat> {
+  const { scula, mutari } = program.date as DateSimulare;
+  const camp: ParametriCamp = { ...fereastra, sus: 0 };
+  const relief = reliefPentru(camp);
+  if (!relief) return { ok: false, motiv: `fereastra de ${fereastra.latime} × ${fereastra.inaltime} mm nu încape în relief la ${fereastra.celula} mm`, eroare: false };
+  try {
+    const r = await simuleazaInBazin({ camp, scula, mutari, fund: -program.foaie.grosime, relief }, fireImplicite(), semnal ? { semnal } : {});
+    if (!r.relief) return { ok: false, motiv: 'simularea n-a întors relieful', eroare: true };
+    return {
+      ok: true, fereastra, latime: r.relief.latime, inaltime: r.relief.inaltime, bloc: r.relief.bloc, z: r.relief.z, sus: r.sus,
+      fund: r.fund, adancimeMax: r.adancimeMax, prinFoaie: r.prinFoaie, fire: r.fire, ms: r.ms,
     };
   } catch (e) {
     const motiv = e instanceof Error ? e.message : String(e);

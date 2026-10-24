@@ -18,6 +18,32 @@ const P1 = 0x01000193, P2 = 0x5bd1e995;
 /** Previzualizarea: `latime` × `inaltime` pixeli, fiecare pe un bloc de `bloc` × `bloc` celule; rândul 0 e jos (y0). */
 export type Previzualizare = { readonly latime: number; readonly inaltime: number; readonly bloc: number };
 
+/**
+ * Relieful vederii 3D (ADR 0057 §2): ca previzualizarea, cel mai jos Z pe bloc, dar cu `bloc` ∈ {1, 2, 4, 8, 16}, deci
+ * fiecare rând de pixeli stă într-un singur rând de dale, al unei singure benzi: banda trimite doar rândurile ei, iar
+ * unirea le pune la loc fără să compare. La `bloc` 1, pixelii sunt chiar celulele nucleului (ADR 0010).
+ */
+export type Relief = Previzualizare;
+
+/** Plafoanele reliefului: pixelii (16 MB în Float32) și latura (o textură WebGL2 de cel puțin 4096). */
+export const RELIEF_MAXIM = 4_194_304;
+export const RELIEF_LATURA = 4096;
+
+/** Cel mai mic bloc (o putere a lui 2, cel mult o dală) cu care relieful câmpului încape sub plafoane; `null` dacă nu încape. */
+export function reliefPentru(p: ParametriCamp, maxim = RELIEF_MAXIM, latura = RELIEF_LATURA): Relief | null {
+  const { nx, ny } = dimensiuni(p.celula, p.latime, p.inaltime);
+  for (let bloc = 1; bloc <= LATURA_DALA; bloc *= 2) {
+    const latime = Math.ceil(nx / bloc), inaltime = Math.ceil(ny / bloc);
+    if (latime * inaltime <= maxim && latime <= latura && inaltime <= latura) return { latime, inaltime, bloc };
+  }
+  return null;
+}
+
+/** Câte rânduri de dale are banda: r = w, w + n, … (cele pe care le trimite relieful ei). */
+function randuriBanda(nty: number, b: Banda): number {
+  return b.w < nty ? Math.floor((nty - 1 - b.w) / b.n) + 1 : 0;
+}
+
 /** Ce primește un worker (doar date, fără stare: ADR 0015). */
 export type CerereBanda = {
   readonly camp: ParametriCamp;
@@ -27,6 +53,8 @@ export type CerereBanda = {
   /** Fața de jos a foii (−grosimea): volumul nu scoate material sub ea. */
   readonly fund: number;
   readonly previzualizare: Previzualizare;
+  /** Relieful vederii 3D (ADR 0057), doar la cerere. */
+  readonly relief?: Relief;
 };
 
 export type RaspunsBanda = {
@@ -39,6 +67,11 @@ export type RaspunsBanda = {
   readonly zMin: number;
   /** Cel mai jos Z al celulelor benzii pe fiecare pixel (fața plăcii unde banda n-a tăiat nimic). */
   readonly previzualizare: Float32Array;
+  /**
+   * Relieful benzii, la cerere: rândurile de pixeli ale rândurilor ei de dale (`LATURA_DALA / bloc` pe rând de dale), pe
+   * rând, câte `relief.latime` pixeli; fața plăcii unde n-a tăiat nimic.
+   */
+  readonly relief?: Float32Array;
   readonly atinse: number;
   readonly uniforme: number;
   readonly ms: number;
@@ -57,6 +90,8 @@ export type RezumatSimulare = {
   readonly sus: number;
   readonly fund: number;
   readonly previzualizare: Previzualizare & { readonly z: Float32Array };
+  /** Relieful vederii 3D, când a fost cerut: rândul 0 e jos (y0). */
+  readonly relief?: Relief & { readonly z: Float32Array };
   readonly dale: { readonly total: number; readonly atinse: number; readonly uniforme: number };
 };
 
@@ -164,6 +199,13 @@ export function calculeazaBanda(c: CerereBanda): RaspunsBanda {
   const { biti, bitiUniforme } = bitiCamp(F);
   const { latime: W, bloc } = c.previzualizare;
   const prev = new Float32Array(W * c.previzualizare.inaltime).fill(F.sus);
+  // Relieful: rândul q al benzii (rândul de dale w + q·n) are `pr` rânduri de pixeli, de la q·pr; `sb` = log2(bloc), pe întregi.
+  const rel = c.relief, pr = rel ? LATURA_DALA / rel.bloc : 0, sb = rel ? 31 - Math.clz32(rel.bloc) : 0;
+  if (rel && !(Number.isInteger(rel.bloc) && rel.bloc >= 1 && rel.bloc <= LATURA_DALA && (rel.bloc & (rel.bloc - 1)) === 0
+    && rel.latime === Math.ceil(F.nx / rel.bloc) && rel.inaltime === Math.ceil(F.ny / rel.bloc))) {
+    throw new Error(`relieful cere un bloc putere a lui 2 până la ${LATURA_DALA} și grila lui (${rel.latime} × ${rel.inaltime} pe blocul ${rel.bloc}, câmpul are ${F.nx} × ${F.ny} celule)`);
+  }
+  const relief = rel ? new Float32Array(randuriBanda(F.nty, F.banda) * pr * rel.latime).fill(F.sus) : undefined;
   const randuri: number[] = [], amprente: number[] = [], volume: number[] = [];
   let zMin = F.sus;
   const fund = c.fund;
@@ -183,6 +225,10 @@ export function calculeazaBanda(c: CerereBanda): RaspunsBanda {
         vol += F.sus - (v > fund ? v : fund);
         const px = Math.floor(i / bloc), py = Math.floor(j / bloc), kp = py * W + px;
         if (v < prev[kp]!) prev[kp] = v;
+        if (relief && rel) {
+          const kr = (((r - F.banda.w) / F.banda.n) * pr + ((j & (LATURA_DALA - 1)) >> sb)) * rel.latime + (i >> sb);
+          if (v < relief[kr]!) relief[kr] = v;
+        }
       }
     }
     randuri.push(r);
@@ -192,12 +238,33 @@ export function calculeazaBanda(c: CerereBanda): RaspunsBanda {
   const dale = numaraDale(F);
   return {
     banda: c.banda, randuri: Int32Array.from(randuri), amprente: Uint32Array.from(amprente), volume: Float64Array.from(volume),
-    zMin, previzualizare: prev, atinse: dale.atinse, uniforme: dale.uniforme, ms: performance.now() - t0,
+    zMin, previzualizare: prev, ...(relief ? { relief } : {}), atinse: dale.atinse, uniforme: dale.uniforme, ms: performance.now() - t0,
   };
 }
 
-/** Benzile unite, în ordinea rândurilor: același rezultat pentru orice împărțire. */
-export function uneste(p: ParametriCamp, prev: Previzualizare, fund: number, benzi: readonly RaspunsBanda[]): RezumatSimulare {
+/** Relieful unit din benzi: fiecare rând de pixeli vine dintr-o singură bandă, deci se copiază, nu se compară. */
+function unesteRelief(p: ParametriCamp, rel: Relief, benzi: readonly RaspunsBanda[]): Float32Array {
+  const { ny } = dimensiuni(p.celula, p.latime, p.inaltime);
+  const nty = (ny + LATURA_DALA - 1) >> SH, pr = LATURA_DALA / rel.bloc;
+  const z = new Float32Array(rel.latime * rel.inaltime).fill(Math.fround(p.sus));
+  for (const b of benzi) {
+    if (!b.relief) throw new Error(`banda ${b.banda.w} din ${b.banda.n} n-a trimis relieful`);
+    const k = randuriBanda(nty, b.banda);
+    if (b.relief.length !== k * pr * rel.latime) throw new Error(`relieful benzii ${b.banda.w} din ${b.banda.n} are ${b.relief.length} pixeli, nu ${k * pr * rel.latime}`);
+    for (let q = 0; q < k; q++) {
+      const r = b.banda.w + q * b.banda.n;
+      for (let l = 0; l < pr; l++) {
+        const py = r * pr + l;
+        if (py >= rel.inaltime) break;
+        z.set(b.relief.subarray((q * pr + l) * rel.latime, (q * pr + l + 1) * rel.latime), py * rel.latime);
+      }
+    }
+  }
+  return z;
+}
+
+/** Benzile unite, în ordinea rândurilor: același rezultat pentru orice împărțire (și relieful, dacă a fost cerut). */
+export function uneste(p: ParametriCamp, prev: Previzualizare, fund: number, benzi: readonly RaspunsBanda[], relief?: Relief): RezumatSimulare {
   const { nx, ny } = dimensiuni(p.celula, p.latime, p.inaltime);
   const ntx = (nx + LATURA_DALA - 1) >> SH, nty = (ny + LATURA_DALA - 1) >> SH;
   const randuri: Array<readonly [number, number, number, number]> = [];
@@ -218,6 +285,7 @@ export function uneste(p: ParametriCamp, prev: Previzualizare, fund: number, ben
   return {
     amprenta: amprentaDinRanduri({ ...p, sus }, nx, ny, randuri.map(([r, a, b]) => [r, a, b] as const)),
     volum, zMin, adancimeMax: sus - zMin, prinFoaie: zMin <= Math.fround(fund), celula: p.celula, sus, fund,
-    previzualizare: { ...prev, z }, dale: { total: ntx * nty, atinse, uniforme },
+    previzualizare: { ...prev, z }, ...(relief ? { relief: { ...relief, z: unesteRelief(p, relief, benzi) } } : {}),
+    dale: { total: ntx * nty, atinse, uniforme },
   };
 }

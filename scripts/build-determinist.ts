@@ -183,9 +183,9 @@ for (const [marcaj, ce] of LA_CERERE) {
  * Și nicio altă bucată nu importă static o bucată permisă: baza ar rămâne în bucata ei, dar ar veni odată cu importatorul.
  */
 /**
- * Nucleul simulării și bazinul lui (ADR 0047) stau DOAR în bucata calculului exportului și în workerul simulării. Plasa
- * caută în TOATE bucățile (recenzia 19.10: un import static din `PanouProprietati`, adus la pornire, scăpa unei căutări
- * doar în bucata de pornire).
+ * Nucleul simulării și bazinul lui (ADR 0047) stau DOAR în bucata calculului exportului și în workerul simulării; vederea
+ * 3D (ADR 0057) le cere tot prin bucata calculului exportului. Plasa caută în TOATE bucățile (recenzia 19.10: un import
+ * static din `PanouProprietati`, adus la pornire, scăpa unei căutări doar în bucata de pornire).
  */
 const CU_SIMULARE = /^assets\/(?:actiuniExportCalcul|lucratorSimulare)-[A-Za-z0-9_-]{8}\.js$/;
 const MARCAJE_SIMULARE: ReadonlyArray<readonly [string, string, RegExp]> = [
@@ -203,6 +203,23 @@ for (const [marcaj, ce, permise] of MARCAJE_SIMULARE) {
     console.error(`„${marcaj}” (${ce}) e în ${straine.join(', ')}: simularea are voie doar în bucata calculului exportului și în workerul ei.`);
     process.exit(1);
   }
+}
+
+/**
+ * Vederea 3D (ADR 0057): shaderele și camera ei stau DOAR în bucata ei, adusă la primul clic pe „3D”. Un import static din
+ * modulul editării ar aduce WebGL-ul ei la fiecare deschidere a aplicației, după prima randare; unul din pornire, la
+ * fiecare pornire.
+ */
+const MARCAJ_3D = 'texelFetch(u_z';
+const cu3d = [...bucati.keys()].filter((r) => cod(r).includes(MARCAJ_3D));
+if (cu3d.length === 0) {
+  console.error(`Niciun fișier al build-ului nu conține „${MARCAJ_3D}”: plasa pentru vederea 3D nu mai vede nimic (marcajul s-a schimbat?).`);
+  process.exit(1);
+}
+const straine3d = cu3d.filter((r) => !/^assets\/Vedere3D-[A-Za-z0-9_-]{8}\.js$/.test(r));
+if (straine3d.length > 0) {
+  console.error(`„${MARCAJ_3D}” (vederea 3D, src/app/Vedere3D.tsx) e în ${straine3d.join(', ')}: vederea 3D are voie doar în bucata ei.`);
+  process.exit(1);
 }
 
 const CU_FIREBASE = /^assets\/(?:raportor|conexiuneBaza|PaginaAdmin)-[A-Za-z0-9_-]{8}\.js$/;

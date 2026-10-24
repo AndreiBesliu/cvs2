@@ -441,6 +441,10 @@
       "ro": "Afișarea simulării în WebGL2.",
       "en": "Simulation display in WebGL2."
     },
+    "4c406e91372c2884": {
+      "ro": "**Simularea, felia 2 din 2: vederea 3D, adusă din etapa 4** (plăcile netăiate: `PLAN.md` §4.6, punctul 7; ADR 0057; „Vreau sa continui”, cu vederea separată, simularea la deschidere și 0,1 mm la apropiere). Butonul „3D” din extensia barei pune placa tăiată în locul pânzei: programul documentului de acum se simulează pe toată placa, iar relieful din benzi (cel mai jos Z pe bloc de 1–16 celule; la blocul 1, chiar celulele nucleului) urcă într-o textură WebGL2 și se desenează ca suprafață luminată, cu pereții marginilor. Tragerea rotește, butonul drept mută, rotița apropie spre cursor, iar încadrarea pune toată placa în zona liberă. Apropiată destul, zona de 204,8 mm din jurul centrului se simulează la 0,1 mm, peste placă. Bucata vine la primul clic (6,7 kB gzip); pornirea rămâne neschimbată (cu ușa 99,8 / 100). Foaia de 2440 × 1220 se simulează în 0,9 s, pe blocuri de 1 mm; fereastra fină, în 1,2 s. **Treceri:** (1) relieful în benzi, calculul camerei, vederea, probele unitare și e2e, cu controalele negative; (2) încadrarea pe colțuri (prima punea placa sub panouri), plasa din build, garda reliefului; plasa veche a nucleului a prins un `Math.log2` (înlocuit cu un calcul pe întregi).",
+      "en": "**Simulation, slice 2 of 2: the 3D view, brought forward from stage 4** (the plates are not cut yet: `PLAN.md` §4.6, point 7; ADR 0057; “I want to continue”, with a separate view, simulation on opening and 0.1 mm when zoomed in). The “3D” button in the bar extension puts the cut sheet in place of the canvas: the current document's program is simulated over the whole sheet, and the relief from the bands (the lowest Z per block of 1–16 cells; at block 1, the kernel cells themselves) goes into a WebGL2 texture and is drawn as a lit surface, with the edge walls. Dragging rotates, the right button pans, the wheel zooms towards the cursor, and fitting puts the whole sheet in the free area. Zoomed in far enough, the 204.8 mm area around the centre is simulated at 0.1 mm, drawn over the sheet. The chunk loads on the first click (6.7 kB gzip); startup stays unchanged (99.8 / 100 with the door). The 2440 × 1220 sheet simulates in 0.9 s, in 1 mm blocks; the fine window in 1.2 s. **Passes:** (1) the relief in bands, the camera maths, the view, the unit and e2e checks, with negative controls; (2) fitting by corners (the first version put the sheet under the panels), the build net, the relief guard; the kernel's old net caught a `Math.log2` (replaced with integer arithmetic)."
+    },
     "4e56c6f74c2be124": {
       "ro": "așezarea pe rânduri, vărsarea pe foaia 2, plăcuțele din CSV",
       "en": "row layout, spilling onto sheet 2, name plates from a CSV"
@@ -1097,6 +1101,10 @@
       "ro": "Backup-ul zilnic al Firestore, cu verificarea lui, și marcajele de rulare judecate în Diagnoză (P1, partea 1; ADR 0041)",
       "en": "Daily Firestore backup, with its verification, and the run markers judged in Diagnostics (P1, part 1; ADR 0041)"
     },
+    "d4adcd9b3b1ba0cb": {
+      "ro": "Simularea, felia 2 din 2: vederea 3D",
+      "en": "Simulation, slice 2 of 2: the 3D view"
+    },
     "d4ae1d95c08d4f07": {
       "ro": "da; **proba închisă pornește în săptămâna 15**",
       "en": "yes; **the closed trial starts in week 15**"
@@ -1260,6 +1268,10 @@
     "f3f56140bc9ac770": {
       "ro": "înainte de 3.9",
       "en": "before 3.9"
+    },
+    "f44192c419fd3094": {
+      "ro": "Vederea 3D a simulării",
+      "en": "The 3D view of the simulation"
     },
     "f69517a92ff2a4a3": {
       "ro": "Jog, zero XY / Z",

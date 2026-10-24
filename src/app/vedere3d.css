@@ -1,0 +1,65 @@
+/*
+ * Vederea 3D (ADR 0057), adusă cu bucata ei. Culorile materialului sunt ale plăcii, nu ale temei: lemnul feței, al
+ * tăieturilor (mai închis cu adâncimea), masa de sacrificiu unde freza a trecut prin foaie, pereții marginilor. Fundalul
+ * e al pânzei (`--panza-fundal`), deci urmează tema.
+ */
+:root {
+  --sim-lemn: #dcc093;
+  --sim-taiat: #b98a58;
+  --sim-prin: #5c6a78;
+  --sim-perete: #c29b6a;
+}
+
+.vedere-3d {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  background: var(--panza-fundal);
+}
+
+.vedere-3d canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: grab;
+  outline: none;
+}
+
+.vedere-3d canvas[data-gest] {
+  cursor: grabbing;
+}
+
+.vedere-3d canvas:focus-visible {
+  outline: 2px solid var(--l-focus);
+  outline-offset: -2px;
+}
+
+.stare-3d {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: min(32rem, calc(100% - 16px));
+  padding: 6px;
+}
+
+.randul-3d {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.sfat-3d {
+  font-size: var(--fs-2);
+  color: var(--t);
+}
+
+/* Bara selecției stă pe cutia 2D a selecției: în 3D n-ar arăta spre nimic. */
+.panza-cutie:has(.vedere-3d) .bara-selectie {
+  display: none;
+}

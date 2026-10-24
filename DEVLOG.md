@@ -2446,3 +2446,26 @@ reparată.
 teste unitare, 0 picate, 8 sărite); e2e 170 / 170 în Edge; emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea
 neschimbată (95,1 kB; cu ușa 99,8 / 100); `/admin` 189,1 → 189,4 / 200 kB; roadmap-ul în engleză 29,7 kB gzip, 0 netraduse.
 **Publicat pe test:** 24.10, workflow-ul `publica` pe `fb0ef10` (după rapid-ul verde pe CI, 4 / 4 felii); `documentatie/roadmap.en.json` servit, 0 texte netraduse.
+
+## 2026-10-24 — Simularea, felia 2: vederea 3D (Model: Claude Opus 5.5)
+
+**Prompt:** „Vreau sa continui”; la întrebări: „Vedere 3D separată (Recomandat)”, „La deschiderea 3D (Recomandat)”, „Automat la
+zoom (Recomandat)”.
+**Started:** 24.10, ~13:30. Felia **4.3↑** (PLAN §5.3, etapa 4 p. 3), fără agenți: un comutator 2D / 3D; în 3D, placa tăiată,
+luminată, rotită și apropiată cu mouse-ul, din celulele nucleului (ADR 0010: afișarea nu recalculează); la deschidere, programul
+documentului curent se calculează și se simulează (fără export); la o apropiere destulă, fereastra vizibilă se resimulează la
+0,1 mm, restul rămâne la 0,25 mm. Totul la cerere (pornirea e la 99,8 / 100 cu ușa).
+**Treceri:** (1) relieful în benzi (`reliefPentru`, blocul putere a lui 2, deci fiecare rând de pixeli e al unei singure
+benzi), calculul prin bucata exportului (`programSimulare`, `simuleazaRelief`), calculul camerei (`vedere3dCalcul.ts`),
+vederea (`Vedere3D.tsx`, la cerere din modulul editării), probele unitare și e2e, cu controale negative (relieful stricat cu o
+celulă, apropierea fără omotetie, fereastra în afara grilei cad); (2) încadrarea pe cele 8 colțuri (prima punea placa sub
+panouri), plasa din build pentru bucata vederii (controlul negativ: marcajul pus în bucata editării o face să cadă; primul
+control, cu un export nefolosit, fusese scos de build și nu dovedea nimic), garda reliefului în bandă. Plasa veche a nucleului
+a prins un `Math.log2` (poate diferi între motoare): înlocuit cu `31 - Math.clz32`. Proba documentației fixa lista feliilor
+aduse din etapa 4: acum cu 4.3↑, legată de punctul 3 și de ADR 0057.
+**Măsurat (local):** placa implicită 300 × 200 la blocul 1 (1200 × 800, chiar celulele); foaia de 2440 × 1220 simulată în
+0,9 s, pe blocuri de 1 mm; fereastra fină (2048 × 2048 de celule) în 1,2 s.
+**Completed:** 24.10 15:00. Fără agenți (regula proiectului: acordul și costul spuse înainte). `npm run rapid`: 7 133 de teste
+unitare, una picată (lista fixată din proba documentației), reparată și rulată din nou; determinismul, licențele verzi. E2e
+176 / 176 în Edge (6 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,1 kB; cu ușa
+99,8 / 100); totalul 264,9 → 265,4 / 300 kB; bucata `Vedere3D` 6,7 kB gzip, la primul clic.

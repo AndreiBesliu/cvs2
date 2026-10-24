@@ -66,7 +66,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Simularea, nucleul CPU, felia 1 din 2 (ADR 0047, adusă din etapa 4)** gata pe 19.10: `src/sim/` (câmpul pe dale de
   16 × 16 în atlas, calculul exact pe celulă cu freza plată, bila și V-ul, trigonometria proprie), bazinul `src/jobs/`
   (rândurile de dale r mod N), oracolul independent `test/oracles/simulare.ts`; amprenta Node = Edge e poartă în e2e;
-  harta adâncimilor, volumul și adâncimea în dialogul exportului. Felia 2: afișarea în WebGL2 și fereastra de 0,1 mm.
+  harta adâncimilor, volumul și adâncimea în dialogul exportului. **Felia 2 (ADR 0057)** gata pe 24.10: vederea 3D (butonul
+  „3D” din extensia barei; `src/app/Vedere3D.tsx`, la cerere), relieful din benzi (`reliefPentru`, blocul 1–16), simularea prin
+  bucata calculului exportului (`programSimulare`, `simuleazaRelief`), fereastra de 0,1 mm la apropiere.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

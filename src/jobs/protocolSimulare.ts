@@ -12,5 +12,7 @@ export type RaspunsSimulare =
 
 /** Tablourile unui răspuns, de transferat (nu de copiat) înapoi la firul principal. */
 export function transferabile(r: RaspunsBanda): Transferable[] {
-  return [r.randuri.buffer, r.amprente.buffer, r.volume.buffer, r.previzualizare.buffer] as Transferable[];
+  const t: ArrayBufferLike[] = [r.randuri.buffer, r.amprente.buffer, r.volume.buffer, r.previzualizare.buffer];
+  if (r.relief) t.push(r.relief.buffer);
+  return t as Transferable[];
 }

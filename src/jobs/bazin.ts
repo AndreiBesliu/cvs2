@@ -8,7 +8,7 @@
  * În Node (testele, fără `Worker`), benzile rulează pe rând, prin aceeași funcție (`calculeazaBanda`). În browser,
  * calculul nu atinge niciodată firul principal.
  */
-import { calculeazaBanda, mutariPentruBanda, previzualizarePentru, uneste, type CerereBanda, type RaspunsBanda, type RezumatSimulare } from '../sim/banda.ts';
+import { calculeazaBanda, mutariPentruBanda, previzualizarePentru, uneste, type CerereBanda, type RaspunsBanda, type Relief, type RezumatSimulare } from '../sim/banda.ts';
 import type { ParametriCamp } from '../sim/camp.ts';
 import type { DateScula } from '../sim/nucleu.ts';
 import type { MesajSimulare, RaspunsSimulare } from './protocolSimulare.ts';
@@ -18,6 +18,8 @@ export type CerereSimulare = {
   readonly scula: DateScula;
   readonly mutari: Float64Array;
   readonly fund: number;
+  /** Relieful vederii 3D (ADR 0057), dacă e cerut (`reliefPentru`). */
+  readonly relief?: Relief;
 };
 
 export type RezultatBazin = RezumatSimulare & {
@@ -105,7 +107,10 @@ export async function simuleazaInBazin(c: CerereSimulare, fire = fireImplicite()
   const cereri: CerereBanda[] = [];
   for (let w = 0; w < n; w++) {
     const banda = { n, w };
-    cereri.push({ camp: c.camp, banda, scula: c.scula, fund: c.fund, previzualizare, mutari: mutariPentruBanda(c.mutari, c.scula, c.camp, banda) });
+    cereri.push({
+      camp: c.camp, banda, scula: c.scula, fund: c.fund, previzualizare, ...(c.relief ? { relief: c.relief } : {}),
+      mutari: mutariPentruBanda(c.mutari, c.scula, c.camp, banda),
+    });
   }
   let benzi: RaspunsBanda[];
   if (typeof Worker === 'undefined') {
@@ -117,5 +122,5 @@ export async function simuleazaInBazin(c: CerereSimulare, fire = fireImplicite()
   } else {
     benzi = await inWorkere(cereri, o.semnal, o.termenMs ?? TERMEN_JOB_MS);
   }
-  return { ...uneste(c.camp, previzualizare, c.fund, benzi), fire: n, ms: performance.now() - t0 };
+  return { ...uneste(c.camp, previzualizare, c.fund, benzi, c.relief), fire: n, ms: performance.now() - t0 };
 }

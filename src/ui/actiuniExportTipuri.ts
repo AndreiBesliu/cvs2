@@ -120,6 +120,31 @@ export type SimulareExport =
   }
   | { readonly ok: false; readonly motiv: string; readonly eroare: boolean; readonly anulata?: true };
 
+/** Fereastra unui relief, în mm, cu celula ei (ADR 0057 §4): placa întreagă la celula implicită, sau o parte la 0,1 mm. */
+export type FereastraRelief = {
+  readonly x0: number; readonly y0: number; readonly latime: number; readonly inaltime: number; readonly celula: number;
+};
+
+/**
+ * Programul documentului, pregătit pentru vederea 3D (ADR 0057 §1): CAM-ul și mutările nucleului, o dată; fiecare relief
+ * (placa, apoi ferestrele fine) le refolosește. Mutările sunt opace pentru interfață: le citește doar calculul.
+ */
+export type ProgramSimulare =
+  | { readonly ok: true; readonly foaie: { readonly latime: number; readonly inaltime: number; readonly grosime: number }; readonly date: unknown }
+  | { readonly ok: false; readonly motiv: string };
+
+/**
+ * Un relief simulat (ADR 0057 §2): `z` pe pixel, rândul 0 jos; pixelul (i, j) acoperă celulele [i·bloc, (i+1)·bloc) ×
+ * [j·bloc, (j+1)·bloc) ale ferestrei. La `bloc` 1, pixelii sunt celulele nucleului.
+ */
+export type ReliefSimulat =
+  | {
+    readonly ok: true; readonly fereastra: FereastraRelief; readonly latime: number; readonly inaltime: number; readonly bloc: number;
+    readonly z: Float32Array; readonly sus: number; readonly fund: number; readonly adancimeMax: number; readonly prinFoaie: boolean;
+    readonly fire: number; readonly ms: number;
+  }
+  | { readonly ok: false; readonly motiv: string; readonly eroare: boolean; readonly anulata?: true };
+
 export type RezultatExport =
   /** `avertismente`: ce s-a făcut altfel decât s-a cerut, fără să fie o greșeală (intrarea omisă, ADR 0030 §3). */
   | {

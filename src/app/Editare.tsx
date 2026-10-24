@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElement, type RefObject } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElement, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { Rigle, GROSIME_RIGLA, type Zona } from '../canvas/Rigle.tsx';
 import type { GestDesen, LinieGhid, Lipeste, Vedere } from '../canvas/protocol.ts';
@@ -33,6 +33,18 @@ const PAS_GRILA_IMPLICIT = 10;
 const CHEIE_LATURI = 'cncvs2.laturi';
 const CHEIE_RAZA = 'cncvs2.raza';
 const CHEIE_ALINIERE = 'cncvs2.aliniere-stransa';
+
+/**
+ * Vederea 3D (ADR 0057): o bucată la cerere a modulului ăstuia, cu WebGL-ul și calculul ei; adusă abia la primul clic pe
+ * „3D”. Dacă nu vine (rețea, o versiune nouă publicată între timp), se spune, în locul plăcii.
+ */
+const Vedere3D = lazy(() => import('./Vedere3D.tsx').then((m) => ({ default: m.Vedere3D }), () => ({
+  default: ({ zona }: { readonly zona: Zona }) => (
+    <span className="cip cip-rosu" role="status" data-testid="vedere-3d-neincarcata" style={{ position: 'absolute', left: zona.x + 8, top: zona.y + 8, pointerEvents: 'auto' }}>
+      {t('editare.3d.neincarcata')}
+    </span>
+  ),
+})));
 /** Raza cercului pus cu un clic, fără tragere (ADR 0052), până o schimbă omul. */
 const RAZA_IMPLICITA = 15;
 /** O tragere mai scurtă de atât (pe ecran) nu desenează nimic. */
@@ -106,6 +118,10 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [textRaza, setTextRaza] = useState(() => textNumar(raza));
   // Secțiunea Aliniere a extensiei barei (ADR 0053): mereu acolo, strânsă spre stânga la cerere; starea, în browser.
   const [stransa, setStransa] = useState(() => citeste(CHEIE_ALINIERE) === '1');
+  // Vederea 3D (ADR 0057): în locul pânzei 2D, cât e pornită; nu se ține minte (ar porni o simulare la fiecare pornire).
+  const [vedere3d, setVedere3d] = useState(false);
+  const vedere3dRef = useRef(vedere3d);
+  vedere3dRef.current = vedere3d;
   // Locul uneltelor din bara de sus (ADR 0052): îl desenează aplicația, iar modulul ăsta îl umple, printr-un portal.
   const [loc, setLoc] = useState<HTMLElement | null>(null);
   const [locExtensie, setLocExtensie] = useState<HTMLElement | null>(null);
@@ -208,6 +224,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       const pePanza = tinta instanceof Element && tinta.closest('.panza-cutie, .bara-editare, .extensie') !== null
         && tinta.closest('input, textarea, select, [contenteditable="true"]') === null;
       if (!peCorp && !pePanza) return;
+      // În vederea 3D, tastele uneltelor și săgețile nu ating documentul (nu s-ar vedea); Escape întoarce la 2D.
+      if (vedere3dRef.current) {
+        if (e.key === 'Escape') setVedere3d(false);
+        return;
+      }
       // Tastele uneltelor (V, R, O, E, L, P); Escape anulează forma începută, apoi întoarce la selecție.
       const u = e.altKey || e.shiftKey ? undefined : TASTE_UNELTE[e.key.toLowerCase()];
       if (u) {
@@ -280,7 +301,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
 
   return (
     <div className="editare" ref={radacina}>
-      {foaie ? (
+      {vedere3d ? (
+        <Suspense fallback={null}>
+          <Vedere3D doc={doc} marime={marime} zona={zona} onInchide={() => { setVedere3d(false); }} />
+        </Suspense>
+      ) : null}
+      {foaie && !vedere3d ? (
         <Rigle
           vedere={vedere} latime={marime.latime} inaltime={marime.inaltime} zona={zona} foaie={foaie.stoc}
           ghidaje={ghidaje} linii={liniiDesen.length > 0 || liniiManere.length > 0 ? [...p.linii, ...liniiDesen, ...liniiManere] : p.linii} grila={pasGrila} lipestePoz={lipestePoz} doarCitire={p.doarCitire}
@@ -292,7 +318,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           citestePoz={(s) => citesteNumar(s, true)}
         />
       ) : null}
-      {unealta === 'transformare' && cutie && !p.doarCitire && selectie.length > 0 ? (
+      {unealta === 'transformare' && cutie && !p.doarCitire && selectie.length > 0 && !vedere3d ? (
         <Manere cutie={cutie} vedere={vedere} doc={doc} selectie={selectie}
           aplica={(tr) => { ruleaza('document.transforma', { transformare: () => tr }); }}
           lipire={(alt) => (lipire !== alt
@@ -300,7 +326,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             : null)}
           onLinii={setLiniiManere} />
       ) : null}
-      {traseu && deseneaza(unealta) ? (
+      {traseu && deseneaza(unealta) && !vedere3d ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="desen-previzualizare">
           <Previzualizare unealta={unealta} a={traseu.a} b={traseu.b} laturi={laturi} vedere={vedere} />
         </svg>
@@ -338,11 +364,21 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {motivOglinda ? <span className="motiv-extensie" role="status" data-testid="motiv-oglindire">{motivOglinda}</span> : null}
           </span>
         );
+        const vedereSectiune = (
+          <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.3d')} data-testid="extensie-vedere">
+            <button type="button" className="aliniaza vedere-3d-buton" aria-pressed={vedere3d} title={vedere3d ? t('editare.3d.ascunde') : t('editare.3d.arata')}
+              aria-label={vedere3d ? t('editare.3d.ascunde') : t('editare.3d.arata')} data-editare="vedere-3d" onClick={() => { setVedere3d(!vedere3d); }}>
+              3D
+            </button>
+          </span>
+        );
         const sectiuni = (
           <>
             {aliniereSectiune}
             <span className="separator" aria-hidden="true" />
             {oglindireSectiune}
+            <span className="separator" aria-hidden="true" />
+            {vedereSectiune}
           </>
         );
         const bara = (
@@ -352,7 +388,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               const titlu = t(`editare.unealta.${u}`);
               return (
                 <button key={u} type="button" className="unealta aliniaza" aria-pressed={unealta === u} title={titlu} aria-label={titlu} data-unealta={u}
-                  disabled={p.doarCitire && u !== 'selectie'} onClick={() => { setUnealta(u); }}>
+                  disabled={p.doarCitire && u !== 'selectie'} onClick={() => { setUnealta(u); setVedere3d(false); }}>
                   <IconaUnealta u={u} />
                 </button>
               );

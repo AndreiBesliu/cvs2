@@ -152,9 +152,13 @@ test('feliile aduse înainte (↑) stau la etapa lor (4), cu punctul din §5.3 �
   assert.equal(sim.jurnal, 'docs/etape/etapa-03.md');
   assert.deepEqual(sim.adr, ['0047']);
   assert.equal(sim.titlu, 'Simularea, nucleul CPU, felia 1 din 2');
-  assert.deepEqual(patru.felii.map((x) => x.id), ['4.7↑', '4.5↑', '4.5↑b', '4.2↑', '4.7↑b']);
+  assert.deepEqual(patru.felii.map((x) => x.id), ['4.7↑', '4.5↑', '4.5↑b', '4.2↑', '4.7↑b', '4.3↑']);
   assert.equal(patru.puncte.length, 9);
   assert.deepEqual(patru.puncte[1]?.felii, ['4.2↑']);
+  // Felia 2 a simulării (vederea 3D) e punctul 3 din §5.3, cu ADR-ul ei.
+  assert.deepEqual(patru.puncte[2]?.felii, ['4.3↑']);
+  assert.deepEqual(felie(patru, '4.3↑').adr, ['0057']);
+  assert.equal(felie(patru, '4.3↑').titlu, 'Simularea, felia 2 din 2: vederea 3D');
   assert.deepEqual(patru.puncte[4]?.felii, ['4.5↑', '4.5↑b']);
   assert.deepEqual(patru.puncte[6]?.felii, ['4.7↑', '4.7↑b']);
   assert.deepEqual(patru.puncte[0]?.felii, []);
