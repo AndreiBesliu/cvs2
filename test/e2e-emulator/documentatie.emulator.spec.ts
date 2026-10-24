@@ -116,6 +116,36 @@ test('fila Roadmap: etapele, etapa curentă, o felie cunoscută, feliile aduse, 
   expect(erori).toEqual([]);
 });
 
+test('fila Roadmap în engleză (ADR 0056): comutatorul EN din antet cere roadmap.en.json; feliile și cererile owner-ului în engleză', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  page.on('console', (m) => { if (m.type() === 'error') erori.push(m.text()); });
+  const cereri: string[] = [];
+  page.on('request', (r) => { if (r.url().includes('/documentatie/')) cereri.push(new URL(r.url()).pathname); });
+  await intraCaOwner(page);
+  await page.locator('[data-fila="roadmap"]').click();
+  await expect(page.locator('.rm-etapa')).toHaveCount(33);
+  const f = page.locator('[data-roadmap-etapa="3"] [data-felie="3.4a"]');
+  await expect(f).toContainText('Backup-ul zilnic al Firestore');
+
+  // EN din antet: interfața și roadmap-ul în engleză, din fișierul lui; nicio mențiune de texte netraduse.
+  const en = page.locator('.admin-limba [data-limba="en"]');
+  await en.click();
+  await expect(en).toHaveAttribute('aria-pressed', 'true');
+  await expect(f).toContainText('Daily Firestore backup');
+  await expect(page.locator('[data-roadmap="owner"]')).toContainText('The Z touch plate');
+  await expect(page.locator('[data-rm="netraduse"]')).toHaveCount(0);
+  expect(cereri).toEqual(['/documentatie/roadmap.json', '/documentatie/roadmap.en.json']);
+  mkdirSync('.tmp', { recursive: true });
+  await page.screenshot({ path: '.tmp/roadmap-en.png', fullPage: true });
+
+  // Înapoi în română: roadmap-ul român, deja adus pe pagină, fără cerere nouă.
+  await page.locator('.admin-limba [data-limba="ro"]').click();
+  await expect(f).toContainText('Backup-ul zilnic al Firestore');
+  expect(cereri).toEqual(['/documentatie/roadmap.json', '/documentatie/roadmap.en.json']);
+  expect(erori).toEqual([]);
+});
+
 test('fila Documentație: ADR-ul din roadmap, linkul intern din index, codul care numește un document, adresa din #', async ({ page }) => {
   const erori: string[] = [];
   page.on('pageerror', (e) => { erori.push(e.message); });

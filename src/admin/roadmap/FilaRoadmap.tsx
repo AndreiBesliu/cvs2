@@ -15,16 +15,17 @@ import './roadmap.css';
  * lor) și ce așteaptă de la owner, sus. Datele vin la deschiderea filei (`roadmap.json`), nu cu pagina.
  */
 export function FilaRoadmap({ aducator, deschide }: { readonly aducator: AducatorDocumentatie; readonly deschide: Deschide }): ReactElement {
-  useLimba();
+  // Limba activă alege fișierul (ADR 0056); la schimbarea ei, roadmap-ul se cere din nou.
+  const limba = useLimba();
   const [stare, setStare] = useState<{ readonly faza: 'se-incarca' } | { readonly faza: 'eroare'; readonly motiv: string } | { readonly faza: 'gata'; readonly r: Roadmap }>({ faza: 'se-incarca' });
   const viu = useRef(true);
   const incarca = useCallback((): void => {
     setStare({ faza: 'se-incarca' });
-    aducator.roadmap().then(
+    aducator.roadmap(limba).then(
       (r) => { if (viu.current) setStare({ faza: 'gata', r }); },
       (e: unknown) => { if (viu.current) setStare({ faza: 'eroare', motiv: e instanceof Error ? e.message : String(e) }); },
     );
-  }, [aducator]);
+  }, [aducator, limba]);
   useEffect(() => {
     viu.current = true;
     incarca();
@@ -93,6 +94,7 @@ function VedereRoadmap({ r, deschide }: { readonly r: Roadmap; readonly deschide
 
       {etapa ? <PanouEtapa e={etapa} r={r} legaturi={legaturi} deschide={deschide} /> : null}
       <p className="admin-slab rm-sursa">{t('admin.rm.generat')}</p>
+      {r.netraduse > 0 ? <p className="admin-slab rm-sursa" data-rm="netraduse">{t('admin.rm.netraduse', { n: r.netraduse })}</p> : null}
     </div>
   );
 }

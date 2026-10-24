@@ -89,6 +89,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   reflexia în matricea rădăcinii piesei (`document.transforma`); ce se taie e oglinda (probat pe programul de tăiere).
   **Lipirea mânerelor (ADR 0055)** gata pe 20.10: mânerul de scalare se lipește de ghidaje, foaie, forme și grilă, exact
   pe țintă, doar pe axele pe care le scalează (`transformareManerLipita`).
+  **Roadmap-ul în engleză (ADR 0056)** gata pe 24.10: fișele rămân în română, traducerea stă în `docs/traduceri/roadmap.en.json`
+  (cheia = amprenta textului român); build-ul scrie și `documentatie/roadmap.en.json`; antetul `/admin` are RO / EN. **Un rând nou
+  în fișe (o felie, o cerere, un ADR) cere traducerea în același commit:** `npm run traduceri`, apoi `en` completat (proba din
+  nivelul rapid cere zero lipsuri).
   Restul etapei cere o placă tăiată.
 
 **Regulile de proces din plan, pe scurt** (detaliile: `PLAN.md` §4–§5):

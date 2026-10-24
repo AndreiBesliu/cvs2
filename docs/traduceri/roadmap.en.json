@@ -1,0 +1,1313 @@
+{
+  "schema": 1,
+  "texte": {
+    "02292bc5bd879195": {
+      "ro": "buzunar + rest, insulă, găuri în pași, elice",
+      "en": "pocket + rest, island, peck holes, helix"
+    },
+    "023e7b55c8d345a9": {
+      "ro": "Textul și gravarea pe linie",
+      "en": "Text and on-line engraving"
+    },
+    "02624b13cd888fad": {
+      "ro": "Scheletul: `t()` en / ro cu paritatea verificată de compilator, ErrorBoundary + jurnalul local de erori, configul citit de la gazdă, CSP fără `unsafe-eval`",
+      "en": "The skeleton: `t()` en / ro with compiler-checked parity, ErrorBoundary + local error log, config read from the host, CSP without `unsafe-eval`"
+    },
+    "03247252a6788744": {
+      "ro": "Emulatorul GRBL și transcrierile ca fixturi",
+      "en": "The GRBL emulator and transcripts as fixtures"
+    },
+    "033ed581acb87520": {
+      "ro": "Fișa etapei și proba de mediu în Drive: instalarea, build-ul, nivelul rapid și Edge, de două ori, cu `git status` curat după",
+      "en": "Stage file and environment check in Drive: install, build, rapid level and Edge, twice, with a clean `git status` afterwards"
+    },
+    "03de60a45fe72b0d": {
+      "ro": "Riglele, ghidajele salvate pe foaie",
+      "en": "Rulers, guides saved on the sheet"
+    },
+    "04125177931fbd4a": {
+      "ro": "3.9",
+      "en": "3.9"
+    },
+    "0576698832e7cabf": {
+      "ro": "Roadmap-ul în engleză",
+      "en": "The roadmap in English"
+    },
+    "05fad3a74f8b47cf": {
+      "ro": "Raportorul din client",
+      "en": "The client reporter"
+    },
+    "068514652d40f327": {
+      "ro": "Intrările și ieșirile, alese față de regiunea păstrată (ADR 0030, documentul v7; portate, `docs/PORTARE.md` §3.2), fără rampă",
+      "en": "Lead-ins and lead-outs, chosen against the kept region (ADR 0030, document v7; ported, `docs/PORTARE.md` §3.2), without ramp"
+    },
+    "072b9e6cb83e4eaf": {
+      "ro": "**PWA offline, adusă din etapa 4** (plăcile netăiate: `PLAN.md` §4.6, punctul 7; ADR 0045): workerul la `/sw.js` (ia locul opritorului, șterge cache-urile ediției întâi), toată aplicația în cache (32 de fișiere, 218 kB; afară doar `/admin`), navigările din cache doar pentru `/`, `config.json` cu copie de rezervă, actualizarea oferită (la clic). Recenzia (12 constatări, una mare: login-ul Google) și reverificarea, remediate. **Pe test:** a doua încărcare din cache, 0 octeți din rețea; `/__/auth` și `/admin` din rețea.",
+      "en": "**Offline PWA, brought forward from stage 4** (the plates not cut: `PLAN.md` §4.6, point 7; ADR 0045): the worker at `/sw.js` (it replaces the stopper and clears the first edition's caches), the whole app in cache (32 files, 218 kB; only `/admin` outside), navigations from cache only for `/`, `config.json` with a backup copy, the update offered (on click). The review (12 findings, one big: the Google login) and the re-check, fixed. **On test:** the second load from cache, 0 bytes from the network; `/__/auth` and `/admin` from the network."
+    },
+    "07f253fcc3551030": {
+      "ro": "Repararea, conversia, cotele, transformarea traseelor",
+      "en": "Repair, conversion, dimensions, transforming toolpaths"
+    },
+    "093213b412929ab9": {
+      "ro": "**Riglele, ghidajele, lipirea și alinierea, adusă din etapa 6** (fără mașină; ADR 0050; cererea owner-ului: „ruler si guides”, „snapping system, aligning”, cu deciziile lui: întâi riglele și lipirea, ghidajele în proiect, lipirea de ghidaje, foaie, forme și grilă, fără agenți). Riglele în mm pe marginile zonei libere; ghidajele trase din riglă, salvate pe foaie (`foaie.ghidaje`, fără schemă nouă: nu schimbă tăierea, iar o versiune veche le păstrează), mutate, șterse pe riglă, cu poziția exactă la dublu clic; lipirea pe fiecare axă (6 px), cu liniile tuturor țintelor atinse; Alt mută liber; alinierea (6 feluri, față de foaie pentru o formă) și distribuirea; săgețile (1 / 10 / 0,1 mm); grila cu pas. Totul la cerere după prima randare: pornirea 94,3 → 94,7 kB (cu ușa 99,4 / 100). **Treceri:** (1) geometria pură, documentul, acțiunile, pânza; (2) e2e: banda ghidajului tras dispărea din pagină (gestul și dublul clic se pierdeau), lipirea arăta doar una din țintele atinse deodată; (3) săgețile prindeau și tastele arborelui proiectului (mutau forma), iar după un clic pe „Aliniază” nu mai mergeau: acum doar cu focusul pe pânză. Uneltele de desen prin tragere sunt felia următoare.",
+      "en": "**Rulers, guides, snapping and alignment, brought forward from stage 6** (without the machine; ADR 0050; the owner's request: “ruler and guides”, “snapping system, aligning”, with the owner's decisions: rulers and snapping first, guides in the project, snapping to guides, sheet, shapes and grid, no agents). Rulers in mm on the edges of the free area; guides dragged from a ruler, saved on the sheet (`foaie.ghidaje`, no new schema: they do not change the cut, and an old version keeps them), moved, deleted on the ruler, with the exact position on double-click; snapping on each axis (6 px), with the lines of all the targets hit; Alt moves freely; alignment (6 kinds, against the sheet for a single shape) and distribution; the arrows (1 / 10 / 0.1 mm); the grid with a step. Everything on demand after the first render: startup 94.3 → 94.7 kB (99.4 / 100 with the door). **Passes:** (1) the pure geometry, the document, the actions, the canvas; (2) e2e: the dragged guide's band disappeared from the page (the gesture and the double-click got lost), snapping showed only one of the targets hit at once; (3) the arrows also caught the project tree's keys (they moved the shape), and after a click on “Align” they stopped working: now only with the focus on the canvas. The drag drawing tools are the next slice."
+    },
+    "096a2988c9db5d60": {
+      "ro": "Măsurarea pe un laptop de atelier",
+      "en": "Measuring on a workshop laptop"
+    },
+    "09aab71ff263bc21": {
+      "ro": "Editor de forme; Relief din text; Operații; Estompare și pante; Analiza; Suprafață / volum / greutate",
+      "en": "Shape editor; Relief from text; Operations; Fading and slopes; Analysis; Surface / volume / weight"
+    },
+    "09dc619ec1de5bc7": {
+      "ro": "Ieșirea din foaie",
+      "en": "Leaving the sheet"
+    },
+    "0a030d1135b58273": {
+      "ro": "Fișa etapei și proba de mediu în Drive",
+      "en": "Stage file and environment check in Drive"
+    },
+    "0a1c9802a454f85f": {
+      "ro": "Textul",
+      "en": "Text"
+    },
+    "0a7887b0082312c0": {
+      "ro": "regiunea păstrată, urechile, intrările",
+      "en": "the kept region, tabs, lead-ins"
+    },
+    "0cd5bfb5a0eae1a9": {
+      "ro": "Intrările și ieșirile (ADR 0030, documentul v7 cu migrarea v6 → v7 și `intrari: null`): sferturi de cerc tangente pe partea deșeului (din regula sensului), alese din candidați (vârful 0, mijloacele celor mai lungi 12 segmente; raza, apoi jumătate) și verificate exact; bucla pornită din p₀ (urechile se mută cu ea); plonjarea în deșeu; intrarea omisă se spune la export (avertismentele, noi). Fără rampă: compunerea vine în 2.5c, până atunci refuz cu motiv. **Recenzia (o lentilă CAM + 3 verificatori, 0,74 M, 57 min) a prins două găuri ale contractului:** intrarea ignora marginea foii (la 7 mm de margine cerea confirmarea ieșirii, deși un alt candidat stătea în foaie: 384 din 1632 de așezări) și putea tăia legătura urechii unei piese vecine. Acum un semicerc încape doar dacă nu iese din foaie mai mult decât bucla și stă la cel puțin D + 1 mm de orice altă buclă cu urechi. O a treia constatare (ieșirea în miezul eliberat) a fost infirmată și trecută la limite. Oracolul (sesiune independentă, 0,69 M, 96 min): documentul v7, invariantele 9, 10, 11 amendate, 12 nouă, oracolul pe hârtie. Otrăvuri: 38 din 39 prinse; cea scăpată (dialogul care nu citește intrările din document) e acum prinsă: e2e-ul intrărilor redeschide dialogul, verificat cu otrava aplicată. Dialogul: câmpurile de număr mai înguste, ca opt coloane să încapă. **Treceri:** (1) contractul; (2) aplicația; (3) recenzia și reparațiile; (4) oracolul; (5) otrăvurile.",
+      "en": "Lead-ins and lead-outs (ADR 0030, document v7 with the v6 → v7 migration and `intrari: null`): tangent quarter circles on the waste side (from the direction rule), chosen from candidates (vertex 0, the midpoints of the 12 longest segments; the radius, then half) and checked exactly; the loop started at p₀ (tabs move with it); the plunge in the waste; a skipped lead-in is reported at export (warnings, new). No ramp: the combination comes in 2.5c, until then a refusal with a reason. **The review (one CAM lens + 3 verifiers, 0.74 M, 57 min) caught two holes in the contract:** the lead-in ignored the sheet edge (7 mm from the edge it asked to confirm leaving the sheet, although another candidate stayed on the sheet: 384 of 1632 placements) and could cut the tab bridge of a neighbouring part. Now a semicircle fits only if it does not leave the sheet more than the loop and stays at least D + 1 mm from any other loop with tabs. A third finding (the lead-out into the cleared core) was refuted and noted under limits. The oracle (independent session, 0.69 M, 96 min): document v7, invariants 9, 10, 11 amended, a new 12, the oracle on paper. Poisons: 38 of 39 caught; the one that escaped (the dialog that does not read lead-ins from the document) is now caught: the lead-in e2e reopens the dialog, checked with the poison applied. The dialog: narrower number fields, so eight columns fit. **Passes:** (1) the contract; (2) the app; (3) the review and the fixes; (4) the oracle; (5) the poisons."
+    },
+    "0df07b6dccc6a1ca": {
+      "ro": "Backup-ul zilnic al Firestore",
+      "en": "Daily Firestore backup"
+    },
+    "0ebe1a8fed00b751": {
+      "ro": "Regiunea păstrată și invarianta 2",
+      "en": "The kept region and invariant 2"
+    },
+    "0f09ffadf753a615": {
+      "ro": "`t()` en / ro: compilatorul refuză cheia lipsă, cheia în plus și pluralul românesc fără `few` (controale `@ts-expect-error`, probate și invers). ErrorBoundary + jurnalul local (50 de intrări, depozitul care aruncă trece în memorie) + „Copiază raportul”. Configul de la gazdă (`/config.json`, valibot). CSP fără `unsafe-eval` / `unsafe-inline`, doar în build: Edge refuză `eval` sub el, iar martorul fără CSP îl execută. 19 teste unitare, 7 e2e. A doua trecere: tipul importului CSS.",
+      "en": "`t()` en / ro: the compiler rejects a missing key, an extra key and a Romanian plural without `few` (`@ts-expect-error` controls, tested both ways). ErrorBoundary + local log (50 entries; a storage that throws falls back to memory) + “Copy report”. Config from the host (`/config.json`, valibot). CSP without `unsafe-eval` / `unsafe-inline`, build only: Edge refuses `eval` under it, while the control without CSP runs it. 19 unit tests, 7 e2e. Second pass: the CSS import type."
+    },
+    "0f89132f23c3abc1": {
+      "ro": "Timpul lângă traseu",
+      "en": "Time next to the toolpath"
+    },
+    "0fbf67949aa1461c": {
+      "ro": "Textura din freză, ghilotina (grila și așezarea aliniată), burghiele multiple, exportul pentru laser (LightBurn / RDWorks)",
+      "en": "Texture from the bit, the guillotine (grid and aligned layout), multiple drills, export for laser (LightBurn / RDWorks)"
+    },
+    "10dc9611cdfbd7cd": {
+      "ro": "Personalul și Diagnoza (P0, partea 2; ADR 0040): `staff/{uid}` și rolul în reguli, login Google, primul owner scris din consolă; pagina `/admin` cu fila Erori (și „Rezolvat” prin callable, cu auditul) și Diagnoza minimă (instanța, build-ul, App Check, erorile nerezolvate, funcțiile, marcajele); retenția de 90 de zile (TTL)",
+      "en": "Staff and Diagnostics (P0, part 2; ADR 0040): `staff/{uid}` and the role in the rules, Google login, the first owner written from the console; the `/admin` page with the Errors tab (and “Resolved” through a callable, with the audit) and minimal Diagnostics (the instance, the build, App Check, unresolved errors, functions, run markers); 90-day retention (TTL)"
+    },
+    "11b10003c6645f32": {
+      "ro": "Inlay în V și cu pereți drepți",
+      "en": "V inlay and straight-wall inlay"
+    },
+    "1265a56e89dd6376": {
+      "ro": "Estimarea timpului jobului",
+      "en": "Job time estimate"
+    },
+    "12d05b475aabee8c": {
+      "ro": "admin **P2**",
+      "en": "admin **P2**"
+    },
+    "139d32446eda749a": {
+      "ro": "Intrările cu rampă (ADR 0031, documentul rămâne v7). Fișa cerea compunerea cu bucla tăiată continuu, dar invarianta 1 o interzice: ieșirea trebuie coborâtă cu un pas la fiecare trecere, deci freza trece prin deșeu la fiecare trecere. Pe o buclă cu intrare, fiecare trecere coboară prin aer în A până la fața de sus, apoi pe sfertul intrării, ca elice (avansul plafonat); bucla și ieșirea rămân cele din ADR 0030. Buclele fără intrare păstrează rampa din ADR 0029. Sub rampă, doar razele cu sfertul de cel puțin 1 mm (2/π mm), cerute și în dialog; nota din dialog. **Recenzia (o lentilă CAM + 1 verificator, 0,47 M, 41 min) a prins o gaură moștenită din 2.5b:** intrarea (ieșirea la −d_k și intrarea plată, fără rampă) putea tăia puntea unei urechi a buclei înseși. Pe o gaură R8 cu 2 urechi, intrările fără rampă nu lăsau nicio punte întreagă, iar poarta nu vedea. Acum semicercul stă la cel puțin D de coloana fiecărei urechi proprii (precizarea din ADR 0031; pe corpusul amprentelor se schimbă 8 programe de intrări cu urechi). Oracolul (sesiune independentă, 0,63 M, 126 min): invariantele 9, 11, 12 amendate, rampa pe intrare pe hârtie, punțile pe câmpul de înălțimi, 19 martori, 34 de sabotaje (33 prinse, unul imposibil structural). Otrăvuri: 27 din 30 prinse; cele 3 scăpate: două închise cu teste noi (coloana ultimei urechi pe o buclă nesimetrică față de p₀; bucata buclei care se termină în mijlocul unui arc), una echivalentă (lipirea capătului bucății, scoasă din cod). **CI:** testele unitare ajunseseră la 452 s din 600 pe un singur job; acum rulează în 3 felii paralele. **Treceri:** (1) contractul; (2) aplicația; (3) recenzia și reparațiile; (4) oracolul; (5) CI-ul feliat; (6) otrăvurile.",
+      "en": "Ramped lead-ins (ADR 0031, the document stays v7). The stage file asked for combining with the continuously cut loop, but invariant 1 forbids it: the lead-out must be lowered by one step on every pass, so the bit goes through the waste on every pass. On a loop with a lead-in, each pass descends through air at A down to the top face, then along the lead-in quarter, as a helix (feed capped); the loop and the lead-out stay as in ADR 0030. Loops without a lead-in keep the ramp from ADR 0029. Under a ramp, only radii whose quarter is at least 1 mm (2/π mm), also required in the dialog; the note in the dialog. **The review (one CAM lens + 1 verifier, 0.47 M, 41 min) caught a hole inherited from 2.5b:** the lead-in (the lead-out at −d_k and the flat lead-in, without ramp) could cut the bridge of one of the loop's own tabs. On an R8 hole with 2 tabs, lead-ins without ramp left no whole bridge, and the gate did not see it. Now the semicircle stays at least D from the column of each of its own tabs (the clarification in ADR 0031; on the fingerprint corpus, 8 programs with lead-ins and tabs change). The oracle (independent session, 0.63 M, 126 min): invariants 9, 11, 12 amended, the ramp on the lead-in on paper, the bridges on the height field, 19 controls, 34 sabotages (33 caught, one structurally impossible). Poisons: 27 of 30 caught; of the 3 that escaped, two were closed with new tests (the last tab's column on a loop not symmetric around p₀; the loop piece that ends in the middle of an arc), one is equivalent (snapping the piece's end, removed from the code). **CI:** unit tests had reached 452 s of 600 on a single job; they now run in 3 parallel slices. **Passes:** (1) the contract; (2) the app; (3) the review and the fixes; (4) the oracle; (5) the sliced CI; (6) the poisons."
+    },
+    "14daa1cd690b3dce": {
+      "ro": "Degajările colțurilor (ADR 0032, documentul v8 cu migrarea v7 → v8 și `colturi: null`): pe fiecare colț concav pentru materialul păstrat, între două linii, traseul face drumul minim Q → E → Q, cu cercul frezei prin colțul piesei (dog-bone pe bisectoare, T-bone în peretele mai lung, ca la Vectric), la fiecare sosire în Q, și cu urechi, rampă și intrări. Ediția întâi punea un cerc separat cu centrul la r dincolo de colț: pe hârtie lăsa o așchie de ~0,29·r pe bisectoare. Condițiile: departe de buclele vecine (D + 1), de urechile buclei (D) și de marginea foii (1 mm); altfel, avertisment. Coloana Colțuri în dialog. **Recenzia (o lentilă CAM + 2 verificatori, 0,66 M, 38 min) a prins o gaură a contractului:** două găuri cu T-bone și un perete de 4–6 mm: fiecare crestătură trecea singură de condiție, dar se întâlneau și tăiau peretele, iar o bucată din piesă se desprindea fără avertisment. Acum candidatele se judecă și între ele (amândouă omise). Tot de la recenzie: marginea foii, conturul curățat ca la offset, avertismentul arcelor sub raza frezei, filtrul pe cutii (1600 de găuri: 1,3 s în loc de 13 s). Oracolul (sesiune independentă, 0,81 M, 96 min): documentul v8, invariantele 2, 9–12 amendate, 13 nouă, degajările pe hârtie, 15 martori, 37 de sabotaje (35 prinse, 2 echivalente). Otrăvuri: 35 din 36 prinse; cea scăpată e echivalentă (candidatele pe linie: o tăietură pe linie cu degajări e refuzată oricum de lucrare). **CI:** nivelul rapid în 4 felii. **Treceri:** (1) contractul; (2) aplicația și documentul v8; (3) recenzia și reparațiile; (4) oracolul; (5) CI-ul; (6) otrăvurile.",
+      "en": "Corner reliefs (ADR 0032, document v8 with the v7 → v8 migration and `colturi: null`): on each concave corner of the kept material, between two lines, the toolpath makes the minimal Q → E → Q trip, with the bit circle through the part's corner (dog-bone on the bisector, T-bone into the longer wall, as in Vectric), at every arrival at Q, and with tabs, ramp and lead-ins. The first edition put a separate circle centred r beyond the corner: on paper it left a sliver of ~0.29·r on the bisector. The conditions: away from neighbouring loops (D + 1), from the loop's tabs (D) and from the sheet edge (1 mm); otherwise, a warning. A Corners column in the dialog. **The review (one CAM lens + 2 verifiers, 0.66 M, 38 min) caught a hole in the contract:** two holes with T-bones and a 4–6 mm wall: each notch passed the condition on its own, but they met and cut the wall, and a piece of the part came loose without a warning. Now candidates are also judged against each other (both skipped). Also from the review: the sheet edge, the contour cleaned as for the offset, the warning for arcs under the bit radius, the box filter (1600 holes: 1.3 s instead of 13 s). The oracle (independent session, 0.81 M, 96 min): document v8, invariants 2, 9–12 amended, a new 13, the reliefs on paper, 15 controls, 37 sabotages (35 caught, 2 equivalent). Poisons: 35 of 36 caught; the one that escaped is equivalent (on-line candidates: an on-line cut with reliefs is refused by the job anyway). **CI:** the rapid level in 4 slices. **Passes:** (1) the contract; (2) the app and document v8; (3) the review and the fixes; (4) the oracle; (5) the CI; (6) the poisons."
+    },
+    "15898dcd6529cbdb": {
+      "ro": "Simularea, nucleul CPU, felia 1 din 2",
+      "en": "Simulation, the CPU core, slice 1 of 2"
+    },
+    "15c53c3e8c1fa61a": {
+      "ro": "îmbinările, textul în anvelopă",
+      "en": "the blends, the text in an envelope"
+    },
+    "1617942751de6e71": {
+      "ro": "Mașina, partea a doua",
+      "en": "The machine, part two"
+    },
+    "167efdf9d2d97663": {
+      "ro": "Profilul pe orice contur: și pe cele deschise, pe o parte (stânga / dreapta), la nivelul CAM, pentru importul SVG (din 09.10, lângă 2.7: n-are contururi deschise până la import)",
+      "en": "Profile on any contour: also on open ones, on one side (left / right), at the CAM level, for the SVG import (since 09.10, next to 2.7: there are no open contours until the import)"
+    },
+    "177e163eb20639aa": {
+      "ro": "Migrările pure vN → vN+1, cu corpus de aur (de acum există date pe live).",
+      "en": "Pure migrations vN → vN+1, with a golden corpus (from now on there is data on live)."
+    },
+    "17d7ce9a12b8a76a": {
+      "ro": "Comutarea pe live",
+      "en": "Switching to live"
+    },
+    "18666d92c213becf": {
+      "ro": "Conturul are trei primitive",
+      "en": "The contour has three primitives"
+    },
+    "19093c54d4ba0aa1": {
+      "ro": "da; **pachetul la ateliere**",
+      "en": "yes; **the package to the workshops**"
+    },
+    "190d4342a1e5401d": {
+      "ro": "Arhivarea repo-ului vechi pe GitHub",
+      "en": "Archiving the old repo on GitHub"
+    },
+    "19d606dd3525927c": {
+      "ro": "Relieful 4: două fețe, bas-relieful, conturul",
+      "en": "Relief 4: two sides, bas-relief, the contour"
+    },
+    "1b3e4c3fa116a3fe": {
+      "ro": "Un singur post",
+      "en": "A single post"
+    },
+    "1c2122dc6058fc5b": {
+      "ro": "Biarcele",
+      "en": "Biarcs"
+    },
+    "1dd5440b9046c454": {
+      "ro": "Regiunea păstrată (ADR 0026): inelele din laturile declarate (exterior = piesă, interior = gol), includerea, K și partea proprie, măsurate exact (distanța segment–segment pe linii și arce, `src/geom/apropiere.ts`); exportul refuză, cu motiv și loc, tăietura care intră într-o piesă, inelele care se ating și elementul cu ambele laturi. Oracolul (sesiune independentă, 0,49 M): acord în ambele sensuri pe 346 de documente (212 programe, 134 de refuzuri); 44 de sabotaje pe oracol, prinse. **Recenzia** (o lentilă + 3 verificatori, 0,62 M, 29 min): 3 constatări mici, reparate: rotunjirea postului intră în contract (pragul pe G-code e R − ε − 0,002), pragul nu coboară sub 1e-6 (freza Ø0,01), motivul spune marginea cea mai apropiată. **Plus:** un fals pozitiv vechi al porții (semicercul de 180,002° după rotunjire), reparat de sesiunea oracolului; fila care citește pierdea o versiune salvată între deschidere și abonare (test instabil, o dată din zece), reparat. **Otrăvuri:** 25, 22 prinse, 3 echivalente (o ramură redundantă, scoasă din cod). **Treceri:** (1) contractul și aplicația; (2) recenzia; (3) oracolul și falsul pozitiv al porții; (4) otrăvurile și abonarea filei care citește. 1068 de teste unitare, 36 e2e.",
+      "en": "The kept region (ADR 0026): rings from the declared sides (outside = part, inside = hole), nesting, K and the own side, measured exactly (segment–segment distance on lines and arcs, `src/geom/apropiere.ts`); the export refuses, with a reason and a location, a cut that enters a part, rings that touch and an element with both sides. The oracle (independent session, 0.49 M): agreement both ways on 346 documents (212 programs, 134 refusals); 44 sabotages on the oracle, caught. **The review** (one lens + 3 verifiers, 0.62 M, 29 min): 3 small findings, fixed: the post's rounding enters the contract (the threshold on G-code is R − ε − 0.002), the threshold does not drop below 1e-6 (the Ø0.01 bit), the reason names the nearest edge. **Plus:** an old false positive of the gate (the 180.002° semicircle after rounding), fixed by the oracle session; the reading tab lost a version saved between opening and subscribing (a flaky test, once in ten), fixed. **Poisons:** 25, 22 caught, 3 equivalent (a redundant branch, removed from the code). **Passes:** (1) the contract and the app; (2) the review; (3) the oracle and the gate's false positive; (4) the poisons and the reading tab's subscription. 1068 unit tests, 36 e2e."
+    },
+    "1ea6b137708996c6": {
+      "ro": "Intrările compuse cu rampa: rampa pe sfertul intrării (ADR 0031; din 10.10, nu „bucla tăiată continuu”: invarianta 1 cere ieșirea coborâtă cu un pas la fiecare trecere)",
+      "en": "Lead-ins combined with the ramp: the ramp on the lead-in quarter (ADR 0031; since 10.10, not “the loop cut continuously”: invariant 1 requires the lead-out lowered by one step on every pass)"
+    },
+    "1ee4d8fb578cf2ef": {
+      "ro": "**Personalul: rolurile custom, invitațiile, conturile create de owner, adusă din etapa 14** (fila „Admini”, fără mașină; ADR 0049; cererea owner-ului, cu deciziile lui: personalul din `/admin`, invitația pe e-mail și contul cu parolă, rolurile ca bife, acum, fără agenți; plus „un singur cont pe e-mail”). Catalogul de permisiuni în cod (`shared/personal.ts`), `owner` fix și niciodată lipsă; regulile citesc rolul la fiecare cerere din `staff/{uid}` și `roluri/{id}`; callable-urile `administreazaPersonalul` (8 acțiuni, doar owner-ul, auditul în tranzacție) și `acceptaInvitatia` (doar pe adresa verificată; „nicio invitație” e un răspuns, nu o eroare); contul creat de owner primește un link de setare a parolei, valabil o oră. În `/admin`: filele după permisiuni, fila Personal (oamenii, adăugarea, invitațiile, rolurile) și fila Cont (metodele legate la același cont: „Adaugă o parolă”, „Leagă Google”, „Schimbă parola”), intrarea cu parola și „Am uitat parola”. **Treceri:** (1) contractul, serverul și probele; (2) ordinea auditului în probe (aceeași oră pe toate acțiunile) și „nicio invitație” ca 404 în consolă; (3) emulatorul de Auth refuză legarea parolei pe aceeași adresă („adresă folosită”): parola se pune atunci direct pe contul deschis, verificată după reîncărcare. Pe test, owner-ul și-a adăugat parola la contul Google pe 20.10 („Pare ca a functionat”): un singur cont, cu `google.com` și `password` (citit în Auth).",
+      "en": "**Staff: custom roles, invitations, accounts created by the owner, brought forward from stage 14** (the “Admins” tab, without the machine; ADR 0049; the owner's request, with the owner's decisions: staff in `/admin`, the email invitation and the password account, roles as checkboxes, now, no agents; plus “a single account per email”). The permission catalogue in code (`shared/personal.ts`), `owner` fixed and never missing; the rules read the role on every request from `staff/{uid}` and `roluri/{id}`; the callables `administreazaPersonalul` (8 actions, owner only, the audit in a transaction) and `acceptaInvitatia` (only on the verified address; “no invitation” is an answer, not an error); an account created by the owner gets a password-setting link, valid for one hour. In `/admin`: tabs by permission, the Staff tab (the people, adding, invitations, roles) and the Account tab (the methods linked to the same account: “Add a password”, “Link Google”, “Change password”), password sign-in and “Forgot password”. **Passes:** (1) the contract, the server and the checks; (2) the audit order in the checks (the same time on every action) and “no invitation” as a 404 in the console; (3) the Auth emulator refuses linking a password on the same address (“address in use”): the password is then set directly on the open account, checked after reloading. On test, the owner added a password to their Google account on 20.10 (“It seems to have worked”): a single account, with `google.com` and `password` (read in Auth)."
+    },
+    "1f15088b5b31cbb1": {
+      "ro": "Postul: contractele grblHAL și FluidNC, cele 4 strategii de schimbare a sculei, pauza în unitatea controlerului, elicea, inch cu 5 zecimale",
+      "en": "The post: the grblHAL and FluidNC contracts, the 4 tool-change strategies, the dwell in the controller's unit, the helix, inch with 5 decimals"
+    },
+    "1f8b0484b8e08f98": {
+      "ro": "Urechile ca modificator Z",
+      "en": "Tabs as a Z modifier"
+    },
+    "211a91d78cbda042": {
+      "ro": "Buzunar cu mai multe freze; Găurire; Ordinea + un fișier pe sculă; Animația traseului; §10 Găurire în pași",
+      "en": "Pocket with several bits; Drilling; Ordering + one file per tool; Toolpath animation; §10 Peck drilling"
+    },
+    "22e8ac6ac6980b13": {
+      "ro": "**Editorul de vectori**",
+      "en": "**The vector editor**"
+    },
+    "23042c52d5cc20d4": {
+      "ro": "Sensul de tăiere pe operație (ADR 0027, documentul v4 cu migrarea v3 → v4), implicit urcare (decizia owner-ului); dialogul are coloana Sens; numerele cu virgulă în română; placa 1 regenerată. **Recenzia (0,48 M, 22 min) a prins o greșeală critică a contractului:** prima versiune a ADR-ului avea regula întoarsă (urcare = materialul în stânga), preluată din notițele ediției întâi; aplicația o urma întocmai, deci „urcare” tăia în opoziție, iar testele care copiau tabelul treceau. Reparat înainte de orice publicare: urcare = materialul păstrat în DREAPTA (G41 + M3); gaura rămâne în G3, insula trece în G2; convenția e ancorată într-un test fizic (modelul așchiei), care pică pe tabelul vechi. Oracolul (sesiune independentă, 0,62 M, 116 min, construit pe tabelul reparat și pe un model propriu al așchiei): documentul v4 și invarianta 9 în poartă; 370 de cazuri de lipire, 806 bucle judecate, fără încălcări; 40 de sabotaje, prinse. E2e-ul exportului dă porții documentul salvat (invariantele 2 și 9 pe programul din browser). Otrăvuri: 16 din 16 prinse. **Treceri:** (1) contractul și aplicația; (2) recenzia și tabelul reparat; (3) oracolul; (4) otrăvurile. 1434 de teste unitare, 37 e2e.",
+      "en": "Cutting direction per operation (ADR 0027, document v4 with the v3 → v4 migration), climb by default (the owner's decision); the dialog has a Direction column; numbers with a comma in Romanian; plate 1 regenerated. **The review (0.48 M, 22 min) caught a critical mistake in the contract:** the ADR's first version had the rule backwards (climb = material on the left), taken from the first edition's notes; the app followed it exactly, so “climb” cut conventional, and the tests that copied the table passed. Fixed before any publishing: climb = kept material on the RIGHT (G41 + M3); the hole stays G3, the island becomes G2; the convention is anchored in a physical test (the chip model), which fails on the old table. The oracle (independent session, 0.62 M, 116 min, built on the fixed table and its own chip model): document v4 and invariant 9 in the gate; 370 snapping cases, 806 loops judged, no violations; 40 sabotages, caught. The export e2e gives the gate the saved document (invariants 2 and 9 on the program from the browser). Poisons: 16 of 16 caught. **Passes:** (1) the contract and the app; (2) the review and the fixed table; (3) the oracle; (4) the poisons. 1434 unit tests, 37 e2e."
+    },
+    "231fe608e7d39571": {
+      "ro": "Caneluri, teșire, Raised Round, freze desenate",
+      "en": "Flutes, chamfer, Raised Round, drawn bits"
+    },
+    "249ae924a5467945": {
+      "ro": "Contur L / A / C cu bulge; aria exactă pe toate trei primitivele (cercul = πr² exact, cubica prin Gauss pe 3 noduri); matricea cu rotiri exacte la 90°; offsetul peste cavalier, cu eșecul spus. Cavalier adus din `v0.1.1`: 118 `!` doar pentru tipuri, probat linie cu linie și cu martorul npm (100 de cazuri, bit cu bit). Profilul exterior / interior / pe linie, cu treceri egale. 50 de teste, valori pe hârtie. Treceri: `!` pus greșit în partea stângă de reparatorul automat; două importuri de efect cu `.js`; ciclurile interne cavalier → regula fațadei.",
+      "en": "L / A / C contour with bulge; exact area on all three primitives (circle = πr² exactly, cubic via 3-point Gauss); matrix with exact 90° rotations; offset over cavalier, with failures reported. Cavalier vendored from `v0.1.1`: 118 `!` for types only, checked line by line and against the npm control (100 cases, bit for bit). Outside / inside / on-line profile, with equal passes. 50 tests, values on paper. Passes: a `!` misplaced on the left-hand side by the auto-fixer; two side-effect imports with `.js`; cavalier's internal cycles → the facade rule."
+    },
+    "266e79f8cd60b40f": {
+      "ro": "Trasarea din imagine; EPS și AI vechi, cu cititor propriu",
+      "en": "Tracing from an image; old EPS and AI, with our own reader"
+    },
+    "267a30b5608884ff": {
+      "ro": "Nivelul rapid local în 12 s: `tsc`, regulile de import (11 reguli, 10 capcane, 48 de module; controalele: o regulă stricată și o încălcare reală pică), 26 de teste, build determinist (69,9 kB gzip, plafon 100), licențele (4 dependențe de rulare, MIT). `dependency-cruiser` nu suportă TypeScript 7, deci citește prin swc. Cârligul `git add -A` în `.claude/`. Workflow-urile `rapid` (push) și `complet` (noaptea, e2e în Edge). Treceri: ciclul raportat o dată, binarul nedeclarat în `exports`, licențele din lanțul de dependențe, nu din marcajul `dev`.",
+      "en": "Local rapid level in 12 s: `tsc`, import rules (11 rules, 10 traps, 48 modules; controls: a broken rule and a real violation both fail), 26 tests, deterministic build (69.9 kB gzip, cap 100), licences (4 runtime dependencies, MIT). `dependency-cruiser` does not support TypeScript 7, so it reads through swc. The `git add -A` hook in `.claude/`. Workflows `rapid` (push) and `complet` (nightly, e2e in Edge). Passes: the cycle reported once, the binary not declared in `exports`, licences taken from the dependency chain, not from the `dev` flag."
+    },
+    "275bc7769f4a4622": {
+      "ro": "Forma „cale”",
+      "en": "The “path” shape"
+    },
+    "27ffa6ea0051aeaa": {
+      "ro": "Degajările colțurilor",
+      "en": "Corner reliefs"
+    },
+    "28580639bb4b5368": {
+      "ro": "Loc în pachetul de pornire",
+      "en": "Room in the startup bundle"
+    },
+    "2a0fbb5a2734e8a3": {
+      "ro": "Verificarea și repararea vectorilor; Cote; Tăierea și conversia; Transformarea traseelor",
+      "en": "Checking and repairing vectors; Dimensions; Cutting and conversion; Transforming toolpaths"
+    },
+    "2acd0e2d7acfcead": {
+      "ro": "Documentul v0",
+      "en": "Document v0"
+    },
+    "2aeda6f285063d2a": {
+      "ro": "Ușa SVG (ADR 0035): fișierul citit inert, unitățile și pagina (96 / 72 px, preselectat pentru Illustrator), transformările, cele șapte forme, gramatica căii; arcele rămân arce, elipsele devin cubice sub 1e-6 mm; latura din imbricare; piesa într-un pas de anulare; dialogul și butonul. **Oracolul (0,58 M)** a găsit centrul arcelor de 180° la √ε; **recenzia (2 lentile + 16 verificatori, 2,2 M)** 15 constatări, între ele imbricarea și perechile nonzero pătratice (334 s cu fila blocată), entitățile duble și ATTLIST, latura lipsă a paginii (×3,78), arcul aproape de 360°; toate reparate. Otrăvuri: 45 din 49; 3 cu teste noi, 1 cod mort scos. Pe test: „Importă SVG…”; logoul plăcii 2 tăiat la 80 + Ø6. Logourile de ecran (straturi suprapuse) se importă exact, dar exportul le refuză până la 2.8. **Treceri:** (1) contractul și ușa; (2) oracolul și constatările lui; (3) recenzia și reparațiile; (4) oracolul pe contractul precizat; (5) otrăvurile.",
+      "en": "The SVG door (ADR 0035): the file read inertly, the units and the page (96 / 72 px, preselected for Illustrator), transforms, the seven shapes, the path grammar; arcs stay arcs, ellipses become cubics within 1e-6 mm; the side from nesting; the part in one undo step; the dialog and the button. **The oracle (0.58 M)** found the centre of 180° arcs at √ε; **the review (2 lenses + 16 verifiers, 2.2 M)** 15 findings, among them quadratic nesting and nonzero pairs (334 s with the tab frozen), double entities and ATTLIST, the page's missing unit (×3.78), the arc close to 360°; all fixed. Poisons: 45 of 49; 3 with new tests, 1 piece of dead code removed. On test: “Import SVG…”; the plate 2 logo cut at 80 + Ø6. Screen logos (overlapping layers) import exactly, but the export refuses them until 2.8. **Passes:** (1) the contract and the door; (2) the oracle and its findings; (3) the review and the fixes; (4) the oracle on the clarified contract; (5) the poisons."
+    },
+    "2b39f62d5992da7b": {
+      "ro": "admin **P3**",
+      "en": "admin **P3**"
+    },
+    "2b928c08e30352d6": {
+      "ro": "Șabloane + lot; §10 Fișa de lucru; admin **P2+**",
+      "en": "Templates + batch; §10 Job sheet; admin **P2+**"
+    },
+    "2bbd11b5d0ea9e06": {
+      "ro": "Placa de contact pentru Z",
+      "en": "The Z touch plate"
+    },
+    "2c008c20927be9bd": {
+      "ro": "3.9: prima publicare pe live",
+      "en": "3.9: the first publish to live"
+    },
+    "2c5f23dfc38ae39d": {
+      "ro": "admin **P0** + **P1**",
+      "en": "admin **P0** + **P1**"
+    },
+    "2d490c858b139868": {
+      "ro": "da; runda 3 la ateliere",
+      "en": "yes; round 3 at the workshops"
+    },
+    "2dd17be3164bbd3f": {
+      "ro": "Riglele, ghidajele, lipirea și alinierea",
+      "en": "Rulers, guides, snapping and alignment"
+    },
+    "2e7ec09be96e6d83": {
+      "ro": "Personalul",
+      "en": "Staff"
+    },
+    "2fcd385ec36adccb": {
+      "ro": "Regula `nonzero` la ușă (ADR 0036): **designul** (3 prototipuri + judecător, 1,71 M) a scos PathKit de la ușă (pierdea tăcut detalii de µm la scara foii și refuza textul real); aranjamentul exact în double, cu toleranța relativă la întindere, calea rapidă exactă, geometria ieșirii a sursei. **Recenzia (1,77 M)**: 8 constatări, între ele încrucișările la unghi mic ratate (lentila de înfășurare 2 ieșea gaură, tăcut) și clasele CSS Illustrator ignorate; toate reparate. **Oracolul (0,87 M)**: K1 (calea cu un vârf), K7 (forma sub τ). Logoul AS Roma de pe test: 2 refuzuri din mânerul retras rămas la 1 ulp după închidere, reparat la ușă. Otrăvuri: 45 din 54, plus 4 cu teste noi (2 goluri reale, tăcute: bucla cubicei pe calea rapidă, incluziunea pe bucăți monotone pe x), 5 echivalente. **Treceri:** (1) designul; (2) portarea; (3) recenzia și reparațiile; (4) oracolul, K1 și K7; (5) logoul AS Roma; (6) otrăvurile.",
+      "en": "The `nonzero` rule at the door (ADR 0036): **the design** (3 prototypes + a judge, 1.71 M) took PathKit out of the door (it silently lost µm details at sheet scale and refused real text); the exact arrangement in doubles, with a tolerance relative to the extent, an exact fast path, the output geometry taken from the source. **The review (1.77 M)**: 8 findings, among them small-angle crossings missed (lens 2 of the winding came out as a hole, silently) and ignored Illustrator CSS classes; all fixed. **The oracle (0.87 M)**: K1 (the one-vertex path), K7 (the shape under τ). The AS Roma logo on test: 2 refusals from a retracted handle left 1 ulp off after closing, fixed at the door. Poisons: 45 of 54, plus 4 with new tests (2 real, silent gaps: the cubic's loop on the fast path, inclusion on pieces monotonic in x), 5 equivalent. **Passes:** (1) the design; (2) the port; (3) the review and the fixes; (4) the oracle, K1 and K7; (5) the AS Roma logo; (6) the poisons."
+    },
+    "3086cf468ccca87c": {
+      "ro": "nu",
+      "en": "no"
+    },
+    "309361ec64ef5499": {
+      "ro": "Forma „cale” în document (v9): contururi închise din linii, arce și cubice; desenul pe pânză; CAM-ul prin biarce",
+      "en": "The “path” shape in the document (v9): closed contours from lines, arcs and cubics; drawing on the canvas; CAM through biarcs"
+    },
+    "30b7d7208fd2b9a4": {
+      "ro": "Cele două interfețe, ghidul de pornire",
+      "en": "The two interfaces, the getting-started guide"
+    },
+    "31ff6e67bb98d088": {
+      "ro": "**Poarta invariantelor completă** și unealta de otrăvuri (§4.3), cu cele 7 otrăvuri din s4.",
+      "en": "**The complete invariant gate** and the poison tool (§4.3), with the 7 poisons from s4."
+    },
+    "324c01f4f6f85b73": {
+      "ro": "Pe **live**, înaintea comutării (inventarul de mai jos): bucket-ul `gs://cncvectorstudio-backup` în `us-central1` (îl poate crea asistentul, la cerere); apoi `scripts/wif/pregateste-proiect.sh cncvectorstudio live --pitr` în Cloud Shell (WIF, contul de publicare, contul backup-ului, PITR); mediul GitHub `live` cu **Required reviewers** și doar `main`, cu variabilele tipărite de script (ADR 0044); protecția la ștergere a bazei (recomandată); un export manual chiar înaintea comutării. Pe test: făcut pe 18.10",
+      "en": "On **live**, before switching over (the inventory below): the `gs://cncvectorstudio-backup` bucket in `us-central1` (the assistant can create it, on request); then `scripts/wif/pregateste-proiect.sh cncvectorstudio live --pitr` in Cloud Shell (WIF, the publishing account, the backup account, PITR); the GitHub `live` environment with **Required reviewers** and `main` only, with the variables printed by the script (ADR 0044); delete protection on the database (recommended); a manual export right before switching over. On test: done on 18.10"
+    },
+    "324f4eadc252ef3f": {
+      "ro": "logoul trasat; un EPS real",
+      "en": "the traced logo; a real EPS"
+    },
+    "32e55f096f4f3a7c": {
+      "ro": "fișierele tale reale",
+      "en": "your real files"
+    },
+    "342df8d8f658a46e": {
+      "ro": "regresia dintr-un cont plătit (test) și dintr-unul cu proba expirată",
+      "en": "regression from a paid account (test) and from one with an expired trial"
+    },
+    "35393447b253fd31": {
+      "ro": "**Un schelet care taie** (§5.3)",
+      "en": "**A skeleton that cuts** (§5.3)"
+    },
+    "3775e3c8b69ac9f6": {
+      "ro": "Publicarea pe live",
+      "en": "Publishing to live"
+    },
+    "37d4576e5ca5dcd7": {
+      "ro": "Comutarea pe live (repetată întâi pe test), pachetul T0–T7 generat de post, fișa plăcii 3, prima recalibrare",
+      "en": "Switching to live (rehearsed first on test), the T0–T7 package generated by the post, the plate 3 file, the first recalibration"
+    },
+    "3820afd70e4ef663": {
+      "ro": "Fișa plăcii 4 și placa de regresie definită",
+      "en": "The plate 4 file and the regression plate defined"
+    },
+    "3839dbbbcd413d94": {
+      "ro": "Estimarea timpului cu modelul planificatorului GRBL și rezumatul jobului",
+      "en": "Time estimate with the GRBL planner model and the job summary"
+    },
+    "3858a1e5bcd00932": {
+      "ro": "**3D din modele:** import, câmp conservativ, zone, decupare",
+      "en": "**3D from models:** import, conservative field, zones, trimming"
+    },
+    "3881aaaf7d8d3cb7": {
+      "ro": "la comutare",
+      "en": "at switchover"
+    },
+    "39684a7cdf5bc0b4": {
+      "ro": "șablonul aplicat în lot pe 3 nume",
+      "en": "the template applied in a batch to 3 names"
+    },
+    "39ee1f82d2c1726f": {
+      "ro": "**Unealta Transformare, extensia barei, editarea formelor după plasare, adusă din etapa 6** (fără mașină; ADR 0053; „NODURILE de control trebuie sa apara doar cand selectam unealta de transformare”, „bara de aliniere ar trebui sa fie o extensie, nu un popup […] colapsabil este meniul de aliniere, nu bara in sine”, „cercul, ar trebui sa aiba raza […] si vreau sa poata fi editat si post placement”). Unealta Transformare (S): mânerele doar cu ea; extensia barei de sus (`#loc-extensie`, al doilea rând, mereu acolo, locul rezervat de la pornire) cu secțiunea Aliniere strânsă spre stânga la cerere; panoul editează dreptunghiul (laturile, raza colțurilor), cercul (raza), poligonul regulat (laturile, raza) și elipsa (razele) prin `document.forma`, recunoscute din geometrie (`src/model/formeParametrice.ts`, generatorii comuni cu uneltele de desen; fără câmp nou în document). Pornirea 95,0 → 95,1 kB (cu ușa 99,8 / 100: ~0,2 kB rămași). **Treceri:** (1) generatorii și recunoașterea, acțiunea, panoul, unealta, extensia, probele; (2) captura: colțul Y al elipsei în panou, 119,999999663 (cutia din cubicele unei singure bucăți de 2π): elipsa e acum tăiată pe sferturi, cu extremele ca vârfuri exacte, iar cele vechi rămân recunoscute; o probă a poligonului cerea refacerea „identică” (zgomotul virgulei mobile, ~1e-15): acum sub 1e-9; (3) e2e-ul complet verde din prima.",
+      "en": "**The Transform tool, the bar extension, editing shapes after placement, brought forward from stage 6** (without the machine; ADR 0053; “the control NODES should appear only when we select the transform tool”, “the align bar should be an extension, not a popup […] the align menu is collapsible, not the bar itself”, “the circle should have a radius […] and I want it editable after placement too”). The Transform tool (S): the handles only with it; the top bar extension (`#loc-extensie`, the second row, always there, its space reserved from startup) with the Align section collapsing to the left on request; the panel edits the rectangle (sides, corner radius), the circle (radius), the regular polygon (sides, radius) and the ellipse (radii) through `document.forma`, recognised from the geometry (`src/model/formeParametrice.ts`, generators shared with the drawing tools; no new field in the document). Startup 95.0 → 95.1 kB (99.8 / 100 with the door: ~0.2 kB left). **Passes:** (1) the generators and recognition, the action, the panel, the tool, the extension, the checks; (2) the screenshot: the ellipse's Y corner in the panel read 119.999999663 (the box from the cubics of a single 2π piece): the ellipse is now split into quarters, with the extremes as exact vertices, and old ones are still recognised; a polygon check demanded an “identical” rebuild (floating-point noise, ~1e-15): now within 1e-9; (3) the full e2e green at once."
+    },
+    "3a8ca48872fe9ed5": {
+      "ro": "Textura din freză; Ghilotină + drillbanks (găurirea multiplă pe simulare și pe octeți)",
+      "en": "Texture from the bit; Guillotine + drillbanks (multiple drilling on simulation and on bytes)"
+    },
+    "3b007379d7b1ac08": {
+      "ro": "înainte de 3.7",
+      "en": "before 3.7"
+    },
+    "3cac31c2ed72eaa1": {
+      "ro": "**Profilul complet pe geometrie exactă** + importul SVG",
+      "en": "**The full profile on exact geometry** + SVG import"
+    },
+    "3cdad8651dc559b3": {
+      "ro": "**Nucleul de simulare CPU (2 felii):** dale mici într-un atlas, calcul exact pe celulă, benzi pe bazin; amprenta Node = browser în e2e.",
+      "en": "**The CPU simulation core (2 slices):** small tiles in an atlas, exact per-cell computation, bands on the pool; the Node = browser fingerprint in e2e."
+    },
+    "3d35cb85efc5e1ae": {
+      "ro": "CAM 3D doar pe câmpul conservativ",
+      "en": "3D CAM only on the conservative field"
+    },
+    "3e98c472d0a0bc17": {
+      "ro": "Fluxul senderului: cele 11 reguli din `docs/PORTARE.md` §3.4 (octeții, răspunsurile, eroarea în flux, bufferul pierdut, bariera, citirile, hold-ul, timpul real, WCS-ul), ca mașini de stare pure; sesiunea Web Serial; octeții exportați, cu hash",
+      "en": "The sender stream: the 11 rules from `docs/PORTARE.md` §3.4 (bytes, responses, an error in the stream, a lost buffer, the barrier, reads, hold, real time, WCS), as pure state machines; the Web Serial session; the exported bytes, with a hash"
+    },
+    "3f19b83fdc63d738": {
+      "ro": "Regula `nonzero` la ușă",
+      "en": "The `nonzero` rule at the door"
+    },
+    "3f19c47def4b4234": {
+      "ro": "Verificarea orară a versiunii noi",
+      "en": "Hourly check for a new version"
+    },
+    "4156b068e6443d05": {
+      "ro": "Stratul WebGL2 și panoul de proprietăți editabil",
+      "en": "The WebGL2 layer and the editable properties panel"
+    },
+    "4168b3fe52760f26": {
+      "ro": "Pânza v0: workerul desenează vectorii exacți pe pânză software (arcele cu `arc()`, linia de 1 px fizic, doar ultima cerere), firul principal afișează ImageBitmap-ul. Zoomul în jurul cursorului (0,01…1 000 px/mm), pan cu butonul din mijloc / Space, clic → acțiunea de selecție (distanța exactă + evenodd cu arce, în `src/geom`), tragere → acțiunea de mutare, Ctrl+Z / Ctrl+Y / Delete. Oracolul pânzei: centrul liniei pe 720 de normale la ≤ 0,5 px de cercul de pe hârtie, fără goluri; controalele (raza × 1,01, centrul + 1 px) pică. Treceri: „ResizeObserver loop” prins de jurnal (pânza scoasă din layout), rândul de grilă care lăsa pânza cu înălțimea 0, decupajul testului în afara pânzei, pragul de cerneală prea brutal pentru linia antialiasată. 98 de teste unitare, 11 e2e.",
+      "en": "Canvas v0: the worker draws the exact vectors on a software canvas (arcs with `arc()`, a 1 physical px line, only the last request), the main thread shows the ImageBitmap. Zoom around the cursor (0.01…1,000 px/mm), pan with the middle button / Space, click → the selection action (exact distance + evenodd with arcs, in `src/geom`), drag → the move action, Ctrl+Z / Ctrl+Y / Delete. The canvas oracle: the line centre on 720 normals within ≤ 0.5 px of the circle on paper, with no gaps; the controls (radius × 1.01, centre + 1 px) fail. Passes: a “ResizeObserver loop” caught by the log (canvas taken out of layout), the grid row that left the canvas 0 high, the test crop outside the canvas, an ink threshold too crude for the antialiased line. 98 unit tests, 11 e2e."
+    },
+    "41d6ab00a1773a0f": {
+      "ro": "Profil cu urechi, intrări, sens; dog-bone / T-bone",
+      "en": "Profile with tabs, lead-ins, direction; dog-bone / T-bone"
+    },
+    "42a72c90fedebdf5": {
+      "ro": "Relieful 3: îmbinări, straturi bitmap, sculptura, anvelopa",
+      "en": "Relief 3: blends, bitmap layers, sculpting, the envelope"
+    },
+    "4340a3f7ed53c109": {
+      "ro": "Documentul v2, varianta D (ADR 0024, „D, ok la toate”): piese cu arbore, instanțe pe foi. Migrarea v1 → v2 e exactă și validată cu schema v1 înghețată. Elementele în lume (`src/model/lume.ts`) sunt singura sursă pentru pânză, CAM, avertismente și selecție. Comenzile lucrează pe instanțe și piese, cu `lot` (un pas de anulare); Ctrl+D face o copie separată; ștergerea ultimei instanțe ia și piesa. Proiectul stă în IndexedDB, în tranzacție: un singur scriitor (Web Locks), revizia comparată la scriere, fila care citește ținută la zi și promovată când scriitorul se închide. Lista de vectori arată cu roșu formele care ies din foaie. Oracolul l-a scris o sesiune independentă, doar din ADR: 371 de teste de legătură, 51 de sabotaje pe oracol, 50 prinse (postordinea e un mutant echivalent). Recenzia adversarială (4 lentile + 4 verificatori, 1,42 M tokeni, 18 min): 15 constatări confirmate, toate reparate, 2 infirmate. 32 de otrăvuri pe aplicație, 31 prinse; cea scăpată a arătat o verificare redundantă, scoasă. **Treceri:** (1) implementarea; (2) primul contact cu oracolul (valibot scotea tăcut cheile `__proto__`) și recenzia (plafonul de elemente în lume, formele pe care consumatorii nu le pot desena, fila de citire rămasă în urmă, conflictul fără Web Locks, lista pătratică, pânza strivită pe telefon); (3) oracolul actualizat: `rotatie` renormaliza unghiurile din [0, 360), imbricarea se judecă și după migrare; (4) otrăvurile. 530 de teste unitare, 26 e2e; pornirea are 88,2 kB gzip.",
+      "en": "Document v2, variant D (ADR 0024, “D, ok to all”): parts with a tree, instances on sheets. The v1 → v2 migration is exact and validated with the frozen v1 schema. World elements (`src/model/lume.ts`) are the single source for the canvas, CAM, warnings and selection. Commands work on instances and parts, with `lot` (one undo step); Ctrl+D makes a separate copy; deleting the last instance also removes the part. The project lives in IndexedDB, in a transaction: a single writer (Web Locks), the revision compared on write, the reading tab kept up to date and promoted when the writer closes. The vector list shows in red the shapes that leave the sheet. The oracle was written by an independent session, from the ADR only: 371 binding tests, 51 sabotages on the oracle, 50 caught (post-order is an equivalent mutant). The adversarial review (4 lenses + 4 verifiers, 1.42 M tokens, 18 min): 15 confirmed findings, all fixed, 2 refuted. 32 poisons on the app, 31 caught; the one that escaped revealed a redundant check, removed. **Passes:** (1) the implementation; (2) first contact with the oracle (valibot silently dropped `__proto__` keys) and the review (the cap on world elements, shapes the consumers cannot draw, the reading tab falling behind, the conflict without Web Locks, the quadratic list, the canvas squashed on phones); (3) the oracle updated: `rotatie` renormalised angles from [0, 360), nesting is also judged after migration; (4) the poisons. 530 unit tests, 26 e2e; the startup bundle is 88.2 kB gzip."
+    },
+    "4355cf2227be976e": {
+      "ro": "Urechile",
+      "en": "Tabs"
+    },
+    "435fc4e939965859": {
+      "ro": "Biarcele (ADR 0033): cubica devine linii și arce sub 0,001 mm, cu bugetul de toleranță într-un singur loc (ținta 0,99, raza maximă a arcelor 9 900 mm, legată printr-un test de garda postului). Tăieturile: inflexiunile și vârfurile (din B′), regula liniei, extremele pe axe (bucăți monotone), înjumătățirea; abaterea în ambele sensuri, cu fiecare maxim local rafinat; refuzuri explicite. **Recenzia (o lentilă + 5 verificatori, 1,20 M, 67 min) a găsit abateri tăcute peste toleranță:** mânerul întors pe o cubică aproape dreaptă (18–414 × tol: întoarcerea cădea între eșantioane), vârfurile ratate din rotunjire (2,63 ×), vârful abaterii între eșantioane (1,13 ×), razele de până la 1e12 mm pe care postul le-ar fi aproximat a doua oară (2,05 ×). Toate reparate, cu cazurile în teste. Oracolul (sesiune independentă, 0,48 M, două treceri): 150 de cubice la 4 toleranțe, 229 de teste, 35 de sabotaje prinse. Otrăvuri: 13 din 26 la prima trecere; 4 au primit teste, 3 erau cod mort (scos), 5 sunt echivalente (căutare adversarială: 0,99000 × tol). Nimic vizibil pentru owner (cubicele intră cu 2.7b). **Treceri:** (1) contractul și fitter-ul; (2) oracolul și prima lui constatare; (3) recenzia și reparațiile; (4) oracolul pe contractul precizat; (5) otrăvurile.",
+      "en": "Biarcs (ADR 0033): the cubic becomes lines and arcs within 0.001 mm, with the tolerance budget in a single place (target 0.99, maximum arc radius 9,900 mm, tied by a test to the post's guard). The cuts: inflections and cusps (from B′), the line rule, the extremes on the axes (monotonic pieces), halving; the deviation in both directions, with every local maximum refined; explicit refusals. **The review (one lens + 5 verifiers, 1.20 M, 67 min) found silent deviations beyond tolerance:** a reversed handle on a nearly straight cubic (18–414 × tol: the reversal fell between samples), cusps missed through rounding (2.63 ×), the deviation peak between samples (1.13 ×), radii up to 1e12 mm that the post would have approximated a second time (2.05 ×). All fixed, with the cases in tests. The oracle (independent session, 0.48 M, two passes): 150 cubics at 4 tolerances, 229 tests, 35 sabotages caught. Poisons: 13 of 26 on the first pass; 4 got tests, 3 were dead code (removed), 5 are equivalent (adversarial search: 0.99000 × tol). Nothing visible for the owner (cubics come in with 2.7b). **Passes:** (1) the contract and the fitter; (2) the oracle and its first finding; (3) the review and the fixes; (4) the oracle on the clarified contract; (5) the poisons."
+    },
+    "449772f5c59a39f9": {
+      "ro": "Forma „cale” în document",
+      "en": "The “path” shape in the document"
+    },
+    "45d47929f6f3533a": {
+      "ro": "Carcasa interfeței, din prototipul ales de owner dintre trei",
+      "en": "The interface shell, from the prototype the owner chose out of three"
+    },
+    "470b43073b428a4c": {
+      "ro": "Fișa plăcii 2, cu programele de aur (`docs/etape/placa-02.md`, gata pe 16.10: exportul aplicației pe documentul plăcii, poarta cu regiunea, cotele pe hârtie)",
+      "en": "The plate 2 file, with the golden programs (`docs/etape/placa-02.md`, done on 16.10: the app's export on the plate document, the gate with the region, dimensions on paper)"
+    },
+    "48a839e2ee2640c3": {
+      "ro": "Geometria v0",
+      "en": "Geometry v0"
+    },
+    "48b4b815f5b981aa": {
+      "ro": "Estimarea timpului cu modelul planificatorului GRBL și rezumatul jobului, comparate cu cronometrul plăcilor 2 și 3.",
+      "en": "Time estimate with the GRBL planner model and the job summary, compared with the stopwatch on plates 2 and 3."
+    },
+    "490e21c559fce6fb": {
+      "ro": "CI rapid: `tsc`, regulile de import cu capcana, testele, build-ul determinist, lista albă de licențe; cârligul `git add -A`",
+      "en": "Rapid CI: `tsc`, import rules with their trap, tests, deterministic build, licence allow-list; the `git add -A` hook"
+    },
+    "4a5cb61a8fda6680": {
+      "ro": "Jurnalul de erori pe server",
+      "en": "Server-side error log"
+    },
+    "4aea7905acfeea1b": {
+      "ro": "Afișarea simulării în WebGL2.",
+      "en": "Simulation display in WebGL2."
+    },
+    "4e56c6f74c2be124": {
+      "ro": "așezarea pe rânduri, vărsarea pe foaia 2, plăcuțele din CSV",
+      "en": "row layout, spilling onto sheet 2, name plates from a CSV"
+    },
+    "4ea12beb3cc22efb": {
+      "ro": "Personalul: rolurile custom, invitațiile, conturile create de owner",
+      "en": "Staff: custom roles, invitations, accounts created by the owner"
+    },
+    "4f1cae7caf49c152": {
+      "ro": "PWA",
+      "en": "PWA"
+    },
+    "4f9a40a7649b8de8": {
+      "ro": "Stratul WebGL2 (traseul ca LINE_STRIP; foaia rămâne în workerul vectorilor până la etapa 4; ADR 0038) și panoul de proprietăți editabil, în carcasa din 2.8a; sub-feliile 2.8c–2.8e",
+      "en": "The WebGL2 layer (the toolpath as LINE_STRIP; the sheet stays in the vector worker until stage 4; ADR 0038) and the editable properties panel, in the 2.8a shell; sub-slices 2.8c–2.8e"
+    },
+    "5095d1e29bdaf3d4": {
+      "ro": "Carcasa interfeței (aranjamentul, tokenurile temei, componentele), din prototipul ales de owner dintre trei (13.10, „da, pornește prototipurile”)",
+      "en": "The interface shell (the layout, the theme tokens, the components), from the prototype the owner chose out of three (13.10, “yes, start the prototypes”)"
+    },
+    "50bf305566dde0c5": {
+      "ro": "Simulare 3D (3 axe); Timpul estimat; Calcul pe mai multe fire",
+      "en": "3D simulation (3 axes); estimated time; multi-threaded computation"
+    },
+    "513a4b1a76651fa9": {
+      "ro": "Contururile deschise (ADR 0037, documentul v10), în sub-feliile 2.3c-0…6: pe linie, pe stânga / dreapta, despărțirea foii marcată de om, ușa SVG cu liniile deschise, două recenzii, otrăvurile (115 rulate, 86 prinse din prima, 27 închise cu teste, 2 echivalente). Detaliile: blocul „2.3c, contururile deschise: încheiată pe 16.10” din „Feliile”. Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`. Ora încheierii nu e scrisă acolo.",
+      "en": "Open contours (ADR 0037, document v10), in sub-slices 2.3c-0…6: on-line, left / right, the sheet split marked by the user, the SVG door with open lines, two reviews, the poisons (115 run, 86 caught at once, 27 closed with tests, 2 equivalent). Details: the block “2.3c, open contours: finished on 16.10” in “Slices”. Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`. The finishing time is not written there."
+    },
+    "521f0121bd0e68a2": {
+      "ro": "Personalul și Diagnoza",
+      "en": "Staff and Diagnostics"
+    },
+    "5288744939fd59ea": {
+      "ro": "Loc în pachetul de pornire pentru 2.8: ușa de încărcare a proiectului vine la cerere, pornirea fără `await` la nivelul modulului; 99,9 → 96,1 kB din 100. Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`.",
+      "en": "Room in the startup bundle for 2.8: the project loading door comes on demand, startup without a module-level `await`; 99.9 → 96.1 kB of 100. Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`."
+    },
+    "52bf5a3bebab3608": {
+      "ro": "lucrul de zi cu zi după primul live",
+      "en": "day-to-day work after the first live"
+    },
+    "537a9248219301b8": {
+      "ro": "**Transformările, Alt inversat, uneltele în bara de sus, adusă din etapa 6** (fără mașină; ADR 0052; „Da, fă acum transformările (mânerele de scalare și rotire pe selecție), împreună cu Alt care inversează lipirea, fără agenți” și „toate uneltele astea sa fie in bara de sus, cu snap si grid, iar align/distribute options intr-o subbara”). Uneltele, Lipire și Grilă în bara de sus (portal în locul `unelte` al aranjamentului), alinierea și distribuirea într-o sub-bară; „Adaugă dreptunghi / cerc” doar în paleta de comenzi; Alt inversează lipirea; raza cercului (un clic pune un cerc cu ea, o tragere o scrie); 8 mânere de scalare (colțuri proporțional, Shift liber; laturi pe o axă; ancora opusă) și unul de rotire (Shift 15°), cu `document.transforma`: rotirea schimbă instanța, scalarea geometria piesei, exact, refuzată cu motiv (cerc, arce, colț rotunjit, rotire oblică, piesă împărțită). Sub 95rem, căutarea doar cu pictogramă (la 1280 px acoperea 62 px din „Exportă”). Pornirea neschimbată: 95,0 kB (cu ușa 99,7 / 100). **Treceri:** (1) modelul și acțiunea, mânerele, probele; (2) captura: căutarea peste „Exportă” la 1280 / 1366 / 1440 px (proba nouă, cu control: cade pe CSS-ul vechi); o captură cu selecția veche, din ajutorul `vedere()` care compara perechea cerere / afișare înaintea efectului (acum așteaptă două cadre); (3) e2e-ul complet: un clic simplu pe mâner scala forma (scara din poziția absolută a cursorului; acum din deplasare, cu prag de 3 px), iar mânerele prindeau orice apăsare, deci panoramarea cu butonul din mijloc pornită de pe un mâner nu mai mergea (oracolele traseului): mânerele sunt acum doar desen, lovitura se decide geometric, doar pentru butonul stâng; (4) pragul de 24 px pe axă, ascunderea la mutare, probele lor. Editarea după plasare (raza, laturile) e felia 6.D↑.",
+      "en": "**Transforms, inverted Alt, the tools in the top bar, brought forward from stage 6** (without the machine; ADR 0052; “Yes, do the transforms now (scale and rotate handles on the selection), together with Alt inverting snapping, no agents” and “all these tools should be in the top bar, with snap and grid, and the align/distribute options in a sub-bar”). The tools, Snap and Grid in the top bar (a portal into the layout's `unelte` slot), alignment and distribution in a sub-bar; “Add rectangle / circle” only in the command palette; Alt inverts snapping; the circle radius (a click places a circle with it, a drag writes it); 8 scale handles (corners proportional, Shift free; sides on one axis; the opposite anchor) and one rotate handle (Shift 15°), with `document.transforma`: rotation changes the instance, scaling the part's geometry, exactly, refused with a reason (circle, arcs, rounded corner, oblique rotation, shared part). Below 95rem, search shows only an icon (at 1280 px it covered 62 px of “Export”). Startup unchanged: 95.0 kB (99.7 / 100 with the door). **Passes:** (1) the model and the action, the handles, the checks; (2) the screenshot: search over “Export” at 1280 / 1366 / 1440 px (a new check, with a control: it fails on the old CSS); a screenshot with the old selection, from the `vedere()` helper comparing the request / display pair before the effect (it now waits two frames); (3) the full e2e: a plain click on a handle scaled the shape (the scale from the cursor's absolute position; now from the movement, with a 3 px threshold), and the handles caught every press, so a middle-button pan started on a handle no longer worked (the toolpath oracles): the handles are now just drawing, and hits are decided geometrically, only for the left button; (4) the 24 px per-axis threshold, hiding while moving, their checks. Editing after placement (radius, sides) is slice 6.D↑."
+    },
+    "53cf879c035a4170": {
+      "ro": "**Tampon**",
+      "en": "**Buffer**"
+    },
+    "54c4097b1742047b": {
+      "ro": "Profilul pe orice contur",
+      "en": "Profile on any contour"
+    },
+    "5719f26b67d851c3": {
+      "ro": "dopul intră; jocul pe linia de lipire",
+      "en": "the plug fits; the play on the glue line"
+    },
+    "57f5bb97210c67e5": {
+      "ro": "PWA offline",
+      "en": "Offline PWA"
+    },
+    "5842d67ec9fa1f43": {
+      "ro": "Atelierele, regresia, laptopul de atelier",
+      "en": "The workshops, regression, the workshop laptop"
+    },
+    "58cb13e082ae2683": {
+      "ro": "Nucleul de simulare pe CPU",
+      "en": "The CPU simulation core"
+    },
+    "58fd5727deabe53f": {
+      "ro": "pana de gri, calota, litofania",
+      "en": "the grey wedge, the dome, the lithophane"
+    },
+    "593852a1906efc94": {
+      "ro": "3D avansat; extrudare, sweep, spin, turn",
+      "en": "Advanced 3D; extrude, sweep, spin, turn"
+    },
+    "594a89e212d93cd3": {
+      "ro": "Exportul G-code din aplicație: dialogul (colțul de origine, Z0, freza, profilul fiecărui element; implicitele plăcii 1), acțiunea `export.gcode` (capabilitatea „export-gcode”), interioarele tăiate primele, descărcarea cu SHA-256 afișat. Proba: exportul din aplicație, stânga-jos, dă exact liniile de G-code ale fișierului de aur A; dreapta-sus pe foaia 300 × 200 dă cotele de pe hârtie și trece poarta. **Ținta etapei e atinsă în aplicație.** Treceri: bugetul la 99,9 / 100 kB (calculul exportului mutat la cerere: pornirea 78,4 kB), ciclul de tipuri prins de regula lui, `\\` pierdut iar de heredoc. 103 teste unitare, 13 e2e.",
+      "en": "G-code export from the app: the dialog (origin corner, Z0, the bit, each element's profile; the plate 1 defaults), the `export.gcode` action (the “export-gcode” capability), insides cut first, the download with the SHA-256 shown. The check: the export from the app, bottom-left, gives exactly the G-code lines of golden file A; top-right on the 300 × 200 sheet gives the dimensions on paper and passes the gate. **The stage goal is reached in the app.** Passes: the budget at 99.9 / 100 kB (the export calculation moved on demand: startup 78.4 kB), the type cycle caught by its rule, a `\\` lost again by a heredoc. 103 unit tests, 13 e2e."
+    },
+    "596f26ae1f465f53": {
+      "ro": "`firebase.json` generat din `shared/csp.ts` (CSP-ul și ca antet, cu `frame-ancestors`; `no-cache` pe `/`, `/index.html`, `/config.json`), `.firebaserc` doar cu `test`, `scripts/publica-canal.ts`. Aplicația pe canalul `etapa-01`: https://cncvectorstudio-test--etapa-01-bfzodaf1.web.app (expiră 06.11); verificat în browser: instanța „test” citită de la gazdă, formele adăugate și desenate, consola fără erori. Adresa principală rămâne neatinsă.",
+      "en": "`firebase.json` generated from `shared/csp.ts` (the CSP also as a header, with `frame-ancestors`; `no-cache` on `/`, `/index.html`, `/config.json`), `.firebaserc` with `test` only, `scripts/publica-canal.ts`. The app on the `etapa-01` channel: https://cncvectorstudio-test--etapa-01-bfzodaf1.web.app (expires 06.11); checked in the browser: the “test” instance read from the host, shapes added and drawn, a console without errors. The main address stays untouched."
+    },
+    "59f4607a172740dc": {
+      "ro": "Ușa SVG",
+      "en": "The SVG door"
+    },
+    "5ad66faba4962cb5": {
+      "ro": "șanțurile de calibrare",
+      "en": "the calibration grooves"
+    },
+    "5bc89b20f64f9d8a": {
+      "ro": "Jog, zero XY / Z, palparea Z cu placa de contact, G54–G59, bariera M6 (blocul de după, scris de post)",
+      "en": "Jog, zero XY / Z, Z probing with the touch plate, G54–G59, the M6 barrier (the block after it, written by the post)"
+    },
+    "5bece914e15c12d9": {
+      "ro": "Texturi; Export STL / OBJ; Clipart de relief; Laser",
+      "en": "Textures; STL / OBJ export; Relief clipart; Laser"
+    },
+    "5d642af2da946d6f": {
+      "ro": "Stack-ul",
+      "en": "The stack"
+    },
+    "5f06a637fd152da3": {
+      "ro": "Fișierele lăsate pe planșă (cererea owner-ului, 13.10): unul sau mai multe SVG-uri trase pe pânză trec prin dialogul importului pe rând și cad cu centrul unde au fost lăsate",
+      "en": "Files dropped on the board (the owner's request, 13.10): one or more SVGs dragged onto the canvas go through the import dialog one by one and land centred where they were dropped"
+    },
+    "5f3641a162caca02": {
+      "ro": "**Tampon:** coada de defecte, recalibrarea, placa de regresie",
+      "en": "**Buffer:** the defect queue, recalibration, the regression plate"
+    },
+    "5fd7dd989b9b86db": {
+      "ro": "Rampa (ADR 0029, documentul v6): bucla tăiată continuu, intrarea rotită, compusă cu urechile (portată, `docs/PORTARE.md` §3.2)",
+      "en": "Ramp (ADR 0029, document v6): the loop cut continuously, the rotated entry, combined with tabs (ported, `docs/PORTARE.md` §3.2)"
+    },
+    "6518f88023cee9a7": {
+      "ro": "Pânza v0: stratul de vectori în worker, pe pânză software; pan, zoom, selecție și mutare prin acțiuni; oracolul pânzei (marginea cercului)",
+      "en": "Canvas v0: the vector layer in a worker, on a software canvas; pan, zoom, selection and moving through actions; the canvas oracle (the circle's edge)"
+    },
+    "6617b1174d1aed2d": {
+      "ro": "Rampa (ADR 0029, documentul v6 cu migrarea v5 → v6 și `rampa: null`): bucla se taie continuu, fără ridicare între treceri; rampa pe Lr = min(lungime; P/2), Z = max(rampă, profil), tura plină care o re-acoperă și merge până la intrarea următoare, intrarea rotită și scoasă din zonele urechilor (fără coborârea verticală a ediției întâi). Parcurgerea buclei generalizată (`src/cam/parcurgere.ts`, desfășurată); urechile o folosesc neschimbat (396 de programe identice octet cu octet). Coloana Rampă în dialog (10 mm la bifă). **Recenzia (prima rulare moartă la limita săptămânală, 0,34 M; a doua, doar lentila CAM cu 2 verificatori, 0,60 M, 35 min) a prins o gaură a contractului:** rampa n-avea lungime minimă; la ≤ 1e-6 mm rămânea o pană de material pe primul segment al unei tăieturi prin foaie, iar sub rezoluția postului ieșea plonjare verticală. Acum: rampa minimă 1 mm, cu refuzuri, și toleranța declarată a invariantei 11 pentru bucata sub rezoluție. Oracolul (sesiune independentă, reluat după limită, 0,65 M): documentul v6, invariantele 9 și 10 amendate, invarianta 11, oracolul pe hârtie al rampei pe 8 cazuri × 8 montaje; 31 de sabotaje prinse; testele de legătură ale urechilor nu mai sunt sărite pe schema 6. Otrăvuri: 30 din 31 prinse; cea rămasă e echivalentă (IR identic pe 720 de bucle). **Treceri:** (1) contractul; (2) aplicația; (3) recenzia și reparațiile; (4) oracolul; (5) otrăvurile. 2386 de teste unitare (0 sărite), 40 e2e.",
+      "en": "Ramp (ADR 0029, document v6 with the v5 → v6 migration and `rampa: null`): the loop is cut continuously, with no lift between passes; the ramp over Lr = min(length; P/2), Z = max(ramp, profile), the full turn that re-covers it and runs to the next entry, the entry rotated and moved out of the tab zones (without the first edition's vertical plunge). Loop traversal generalised (`src/cam/parcurgere.ts`, unrolled); tabs use it unchanged (396 programs identical byte for byte). A Ramp column in the dialog (10 mm when ticked). **The review (the first run died at the weekly limit, 0.34 M; the second, only the CAM lens with 2 verifiers, 0.60 M, 35 min) caught a hole in the contract:** the ramp had no minimum length; at ≤ 1e-6 mm a wedge of material stayed on the first segment of a cut through the sheet, and below the post's resolution a vertical plunge came out. Now: a minimum ramp of 1 mm, with refusals, and invariant 11's declared tolerance for the piece below resolution. The oracle (independent session, resumed after the limit, 0.65 M): document v6, invariants 9 and 10 amended, invariant 11, the ramp oracle on paper over 8 cases × 8 setups; 31 sabotages caught; the tabs' binding tests are no longer skipped on schema 6. Poisons: 30 of 31 caught; the remaining one is equivalent (identical IR on 720 loops). **Passes:** (1) the contract; (2) the app; (3) the review and the fixes; (4) the oracle; (5) the poisons. 2386 unit tests (0 skipped), 40 e2e."
+    },
+    "66a74f16b35d9cd4": {
+      "ro": "Fișa plăcii 2, cu fișierul de aur: documentul plăcii trece de ușă, G-code-ul iese din aceeași funcție ca butonul Exportă (`placa-02.nc`, 587 de linii), poarta cu regiunea păstrată, cotele pe hârtie (`docs/etape/placa-02.md`). Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`.",
+      "en": "The plate 2 file, with the golden file: the plate document passes the door, the G-code comes from the same function as the Export button (`placa-02.nc`, 587 lines), the gate with the kept region, dimensions on paper (`docs/etape/placa-02.md`). Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`."
+    },
+    "6702fe39b22a2fb3": {
+      "ro": "**Documentația admin** (ADR 0048; cererea owner-ului: un roadmap „cu detalii, dar focusat pe vizual”, „updatat constant”, plus documentația admin ca în ediția întâi). În `/admin`, fila Roadmap: cele 30 de etape pe 33 de săptămâni, ca un grafic cu coloane umplute de jos după feliile gata, plăcile și live-urile ca semne, ce așteaptă de la owner sus, panoul etapei alese (feliile cu datele, trecerile și ADR-urile lor). Fila Documentație: planul, starea, fișele, plăcile și ADR-urile, cu linkurile dintre ele și adresa în `#`. Totul e generat la fiecare build în `dist/documentatie/` (doar online, în afara precache-ului), cu starea dedusă din fișe și o poartă care pică pe un tabel care nu se mai poate citi. Cititorul de markdown e comun (`src/docs/`, fără HTML brut), pentru documentația live. **Treceri:** (1) implementarea, un agent (workflow pe 19.10; verificatorii opriți la pauză); (2) recenzia, fără agenți, la cererea owner-ului („Verifica tu”): 7 reparații (cronologia de 22 px făcută grafic cu coloane de 48 px, coloanele de lățimi diferite, „ACUM” tăiat de chenar, mostra „viitoare” din legendă de altă culoare decât barele, documentul nou deschis la mijloc când erai derulat în cel vechi, felia adusă în două jurnale neprinsă de poartă, `X-Robots-Tag: noindex` pe documente); cererea „primul login” scoasă din lista owner-ului (făcută pe 19.10), testele pe listă legate de fișă, nu de un număr. `/admin` 178,6 / 200 kB; pornirea neschimbată.",
+      "en": "**Admin documentation** (ADR 0048; the owner's request: a roadmap “with details, but focused on the visual”, “constantly updated”, plus admin documentation as in the first edition). In `/admin`, the Roadmap tab: the 30 stages over 33 weeks, as a chart with columns filled from the bottom by the finished slices, the plates and lives as markers, what is waiting on the owner at the top, the panel of the chosen stage (the slices with their dates, passes and ADRs). The Documentation tab: the plan, the status, the stage files, the plates and the ADRs, with the links between them and the address in `#`. Everything is generated on every build into `dist/documentatie/` (online only, outside the precache), with the status deduced from the stage files and a gate that fails on a table that can no longer be read. The markdown reader is shared (`src/docs/`, no raw HTML), for the live documentation. **Passes:** (1) the implementation, one agent (a workflow on 19.10; the verifiers stopped at the break); (2) the review, without agents, at the owner's request (“Check it yourself”): 7 fixes (the 22 px timeline turned into a chart with 48 px columns, columns of different widths, “NOW” cut off by the border, the legend's “future” swatch a different colour from the bars, a new document opened in the middle when you were scrolled in the old one, a slice brought into two journals not caught by the gate, `X-Robots-Tag: noindex` on the documents); the “first login” request removed from the owner's list (done on 19.10), the list's tests tied to the stage file, not to a number. `/admin` 178.6 / 200 kB; startup unchanged."
+    },
+    "670a50da029d7c81": {
+      "ro": "CI rapid",
+      "en": "Rapid CI"
+    },
+    "681462eed9b23fdd": {
+      "ro": "Bancul vizual v1, cu martorii lui (gata pe 16.10: `npm run banc`, pagina `/banc/` pe instanța de test; unealta de otrăvuri comisă, `docs/otravuri.md`)",
+      "en": "Visual bench v1, with its controls (done on 16.10: `npm run banc`, the `/banc/` page on the test instance; the poison tool committed, `docs/otravuri.md`)"
+    },
+    "6acd2ce3f75f8abf": {
+      "ro": "Intrările și ieșirile",
+      "en": "Lead-ins and lead-outs"
+    },
+    "6c4a192ce7404e43": {
+      "ro": "Ieșirea din foaie, din notițele owner-ului de la prototipul planșelor. Avertismentul stă în bara de jos, pe un rând, niciodată pe pânză. Exportul cere confirmare când discul frezei trece de marginea foii cât taie. Măsurarea e exactă: arcele prin punctele de pe axe, iar rampele și elicele se taie la Z 0. Pragul e jumătate din rezoluția de 0,001 mm. Confirmarea e legată de traseul arătat (obiectul cererii + amprentă) și se scrie în antet. Oracolul l-a scris o sesiune independentă, în 2 commit-uri: 46 de sabotaje, toate prinse. **Treceri:** (1) implementarea, cu `\\`-uri pierdute de heredoc; (2) recenzia adversarială cu 10 agenți (~1,45 M tokeni) a găsit 17 probleme. Cele importante erau ocoliri ale confirmării: bifa boolean, Ctrl+Z sub dialog, un rezultat întârziat. Au fost reparate, iar oracolul a primit margini exacte și rapidele în afara foii; (3) reverificarea n-a găsit nicio ocolire, dar a scos la iveală Shift+Tab spre bară, Space dublu, o adâncime peste foaie (din 1.9c) și un pas absurd. Reparate: aplicația e inertă sub dialog, acțiunile de document trec printr-o singură ușă, adâncimea e plafonată la grosimea foii, iar trecerile la 1 000. 23 de otrăvuri pe aplicație, toate prinse. 147 de teste unitare, 17 e2e. **Durata:** fără estimare spusă dinainte; 85 de minute cu recenzia și reverificarea, față de 3–11 minute pentru celelalte felii ale etapei.",
+      "en": "Leaving the sheet, from the owner's notes on the sheet prototype. The warning sits in the bottom bar, on one line, never on the canvas. The export asks for confirmation when the cutter disc crosses the sheet edge while cutting. The measurement is exact: arcs through their points on the axes, while ramps and helices are cut at Z 0. The threshold is half of the 0.001 mm resolution. The confirmation is tied to the toolpath shown (the object of the request + a fingerprint) and written in the header. The oracle was written by an independent session, in 2 commits: 46 sabotages, all caught. **Passes:** (1) the implementation, with `\\` characters lost by a heredoc; (2) the adversarial review with 10 agents (~1.45 M tokens) found 17 problems. The important ones were ways around the confirmation: the boolean checkbox, Ctrl+Z under the dialog, a late result. They were fixed, and the oracle got exact edges and rapids outside the sheet; (3) the re-check found no way around, but turned up Shift+Tab to the bar, a double Space, a depth beyond the sheet (from 1.9c) and an absurd step. Fixed: the app is inert under the dialog, document actions go through a single door, depth is capped at the sheet thickness, and passes at 1,000. 23 poisons on the app, all caught. 147 unit tests, 17 e2e. **Duration:** no estimate given beforehand; 85 minutes with the review and the re-check, versus 3–11 minutes for the stage's other slices."
+    },
+    "6dff3c8d475a776d": {
+      "ro": "Caneluri / bevel / Raised Round; Freze de profil desenate; Biblioteca de freze (completă)",
+      "en": "Flutes / bevel / Raised Round; Drawn profile bits; The bit library (complete)"
+    },
+    "6f850eabd7c57b4a": {
+      "ro": "**Roadmap-ul în engleză** (ADR 0056; „O sa vrea roadmap si in engleza”, apoi „Fa oricum roadmapul in eng”). Fișele rămân singurul adevăr, în română; traducerea stă în `docs/traduceri/roadmap.en.json`, cu cheia pe amprenta textului român și româna lângă engleză; build-ul scrie și `roadmap.en.json`, cu textele netraduse numărate; fila alege fișierul după limbă, iar antetul `/admin` are acum RO / EN. Traduse: 325 de texte (~63 600 de caractere: țintele etapelor, feliile cu notele lor, cererile către owner, titlurile ADR-urilor). `npm run traduceri` pune dicționarul la zi, iar o probă din nivelul rapid cere zero lipsuri, deci traducerea vine în același commit cu fișa. Fila Documentație rămâne în română. **Treceri:** (1) generatorul, contractul, fila, comutatorul, probele; (2) traducerea textelor și controlul negativ al porții (cu o traducere golită, proba cade cu mesajul ei).",
+      "en": "**The roadmap in English** (ADR 0056; “I'll want the roadmap in English too”, then “Do the roadmap in English anyway”). The stage files stay the single source of truth, in Romanian; the translation lives in `docs/traduceri/roadmap.en.json`, keyed by the fingerprint of the Romanian text, with the Romanian next to the English; the build also writes `roadmap.en.json`, with untranslated texts counted; the tab picks the file by language, and the `/admin` header now has RO / EN. Translated: 325 texts (~63,600 characters: the stage goals, the slices with their notes, the requests to the owner, the ADR titles). `npm run traduceri` brings the dictionary up to date, and a check in the rapid level requires zero gaps, so the translation comes in the same commit as the stage file. The Documentation tab stays in Romanian. **Passes:** (1) the generator, the contract, the tab, the switch, the checks; (2) translating the texts and the gate's negative control (with one translation blanked, the check fails with its message)."
+    },
+    "6fd31b2b41912e6a": {
+      "ro": "Instanța de test și fișa plăcii 1",
+      "en": "The test instance and the plate 1 file"
+    },
+    "733512c823e0b297": {
+      "ro": "Buzunar, găurire, ordinea, frezele, animația",
+      "en": "Pocket, drilling, ordering, bits, animation"
+    },
+    "73b52ec8ea2c587e": {
+      "ro": "Partea documentului care nu depinde de A / D: catalogul de capabilități (`shared/`), schema v1 (foaia + elementele, comune ambelor variante) cu plafoane, câmpurile necunoscute păstrate, ușa unică de încărcare cu migrări pure, JSON canonic, jurnalul de comenzi (anulează / reface, 500), registrul de acțiuni cu capabilitatea obligatorie și motivele pe chei `t()`, regula „interfața doar prin acțiuni” cu capcana ei. Arborele variantei alese vine ca migrare v1 → v2. 92 de teste. Trecere: `Omit` pe tipul valibot cu index.",
+      "en": "The part of the document that does not depend on A / D: the capability catalogue (`shared/`), schema v1 (the sheet + the elements, common to both variants) with caps, unknown fields preserved, the single loading door with pure migrations, canonical JSON, the command journal (undo / redo, 500), the action registry with a mandatory capability and reasons on `t()` keys, the “interface only through actions” rule with its trap. The tree of the chosen variant comes as the v1 → v2 migration. 92 tests. Pass: `Omit` on the valibot type with an index."
+    },
+    "74a51029f7125771": {
+      "ro": "Import 2D (fără DGK / PIC, scoase pe 07.10)",
+      "en": "2D import (without DGK / PIC, removed on 07.10)"
+    },
+    "74b3d996b18f6dc6": {
+      "ro": "Gărzile offsetului (s1-V §5): intrarea curățată (vârfuri repetate, linii aproape coliniare, autointersecții refuzate cu motiv), ieșirea validată (buclă deschisă, gol, aria monotonă în distanță, segmente sub 1 µm), rezoluția declarată de 0,01 mm; corpusul din s1 / s1-V în CI",
+      "en": "Offset guards (s1-V §5): cleaned input (repeated vertices, nearly collinear lines, self-intersections refused with a reason), validated output (open loop, empty, area monotonic in distance, segments under 1 µm), a declared resolution of 0.01 mm; the s1 / s1-V corpus in CI"
+    },
+    "74c1594d34b9a39e": {
+      "ro": "fișierele T0–T7 pe GRBL",
+      "en": "files T0–T7 on GRBL"
+    },
+    "75ae1fd995077bbc": {
+      "ro": "Traseul pe pânză și panoul de proprietăți (ADR 0038): 2.8c, panoul editabil, și 2.8d, traseul pe WebGL2 (16.10); 2.8e, probele independente (17.10 11:10–14:45: oracolul stratului, recenzia, otrăvurile). Detaliile: blocul „2.8” din „Feliile”. Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`. Orele de pe 16.10 nu sunt scrise acolo.",
+      "en": "The toolpath on the canvas and the properties panel (ADR 0038): 2.8c, the editable panel, and 2.8d, the toolpath on WebGL2 (16.10); 2.8e, the independent checks (17.10 11:10–14:45: the layer oracle, the review, the poisons). Details: the “2.8” block in “Slices”. Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`. The times on 16.10 are not written there."
+    },
+    "763851f772b3f0d7": {
+      "ro": "**cele 7 contracte probate** (sau decizia ta de la §8.1)",
+      "en": "**the 7 contracts proven** (or your decision from §8.1)"
+    },
+    "78c32b33abe2c88e": {
+      "ro": "piesa unui străin, făcută fără ajutor",
+      "en": "a stranger's part, made without help"
+    },
+    "79a43543f70f4f0c": {
+      "ro": "Operațiile în document (ADR 0025, schema v3, migrarea v2 → v3): profilul, cu latura, adâncimea, pasul și freza, stă în piesă; se salvează, se anulează cu Ctrl+Z, iar exportul le citește din document. Placa 1 iese neschimbată după migrare (implicitele sunt cele de până acum). Oracolul v3 l-a scris o sesiune independentă: 752 de teste de legătură verzi pe aplicație, 38 de sabotaje pe oracol prinse. **Recenzia adversarială** (21 de agenți, 3,0 M, 100 min; anunțasem 1,5 M) a confirmat 15 din 17 constatări, cea mai gravă: în fila care citește, dialogul de export arăta valori vechi și, după preluarea scrierii, le scria înapoi peste munca celeilalte file. Plus virgula zecimală („2,5” era 25, salvat și tăiat), frezele amestecate, bucla pătratică, o filă care nu putea citi versiunea nouă și ținea blocarea. **Reverificarea** (un agent, 0,30 M): 7 din 7 reparate, 6 probleme noi mici, 5 reparate (colțul și Z0 nu se mai pierd la o versiune nouă, exportul în curs aruncat se spune, numerele se arată exact, fila „necitită” nu exportă versiunea veche, „aceeași sculă” = număr + diametru peste tot). **Otrăvuri:** 51 pe instantaneu și 33 pe codul final, într-un worktree în afara Drive-ului; toate prinse în afară de un mutant echivalent (garda din aplicație pentru o scriere pe care dialogul n-o permite); 5 goluri închise cu teste noi. **Treceri:** (1) implementarea, plus garda marginilor (Ø150 ar fi salvat un proiect care nu se mai deschide); (2) oracolul și elementul oglindit; (3) recenzia; (4) otrăvurile, cu 4 teste noi; (5) reverificarea; (6) runda finală de otrăvuri. 1022 de teste unitare, 35 e2e.",
+      "en": "Operations in the document (ADR 0025, schema v3, the v2 → v3 migration): the profile, with its side, depth, step and bit, lives in the part; it is saved, undone with Ctrl+Z, and the export reads it from the document. Plate 1 comes out unchanged after migration (the defaults are the ones used so far). The v3 oracle was written by an independent session: 752 binding tests green on the app, 38 sabotages on the oracle caught. **The adversarial review** (21 agents, 3.0 M, 100 min; I had announced 1.5 M) confirmed 15 of 17 findings, the worst: in the reading tab, the export dialog showed old values and, after taking over writing, wrote them back over the other tab's work. Plus the decimal comma (“2,5” was 25, saved and cut), mixed bits, the quadratic loop, a tab that could not read the new version and kept the lock. **The re-check** (one agent, 0.30 M): 7 of 7 fixed, 6 small new problems, 5 fixed (the corner and Z0 are no longer lost on a new version, a discarded running export is reported, numbers are shown exactly, the “unread” tab does not export the old version, “same tool” = number + diameter everywhere). **Poisons:** 51 on the snapshot and 33 on the final code, in a worktree outside Drive; all caught except one equivalent mutant (the app's guard for a write the dialog does not allow); 5 gaps closed with new tests. **Passes:** (1) the implementation, plus the bounds guard (Ø150 would have saved a project that no longer opens); (2) the oracle and the mirrored element; (3) the review; (4) the poisons, with 4 new tests; (5) the re-check; (6) the final round of poisons. 1022 unit tests, 35 e2e."
+    },
+    "7a4021a9f67961dd": {
+      "ro": "Carcasa interfeței, prototipul B ales de owner („ai dreptate, B arata cel mai bine”): pânza pe tot ecranul, insulele, paleta Ctrl+K, temele, aranjamentul din date (`src/ui/aranjament.ts`), arborele proiectului și cipurile cursorului din A; pornirea 99,0 / 100 kB. Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`.",
+      "en": "The interface shell, prototype B chosen by the owner (“you're right, B looks best”): the canvas filling the screen, the islands, the Ctrl+K palette, the themes, the layout from data (`src/ui/aranjament.ts`), the project tree and cursor chips from A; startup 99.0 / 100 kB. Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`."
+    },
+    "7a561c49522909ee": {
+      "ro": "**Simularea și verificarea;** calibrarea; celelalte contracte",
+      "en": "**Simulation and verification;** calibration; the other contracts"
+    },
+    "7b422aab61b170d4": {
+      "ro": "Sheets + Multi-Plate; §10 Listă de tăiere",
+      "en": "Sheets + Multi-Plate; §10 Cut list"
+    },
+    "7b8b7a77b8b58c94": {
+      "ro": "Un singur IR al traseului",
+      "en": "A single toolpath IR"
+    },
+    "7b9ef2336dbee5f8": {
+      "ro": "Operațiile în document",
+      "en": "Operations in the document"
+    },
+    "7c50450482c286a4": {
+      "ro": "Normalizarea `nonzero` la ușă (ADR 0036: aranjamentul exact în double, fără PathKit; înlocuiește fațada PathKit + R3 din plan), încărcată doar la import",
+      "en": "`nonzero` normalisation at the door (ADR 0036: the exact arrangement in doubles, without PathKit; replaces the plan's PathKit + R3 facade), loaded only on import"
+    },
+    "7c8ba2d37f2bb03f": {
+      "ro": "Conturile, dreptul de acces, proba de 14 zile; poarta devine „personal + invitați”",
+      "en": "Accounts, entitlements, the 14-day trial; the gate becomes “staff + invited”"
+    },
+    "7caf74088569d4c9": {
+      "ro": "— (pornește profilul)",
+      "en": "— (starts the profile)"
+    },
+    "7dc32a9cc991c2b6": {
+      "ro": "Backup-ul zilnic al Firestore și marcajele de rulare",
+      "en": "Daily Firestore backup and run markers"
+    },
+    "7e41744d8bd750f0": {
+      "ro": "**Uneltele de desen prin tragere, adusă din etapa 6** (fără mașină; ADR 0051; „Da, fă acum uneltele de desen prin tragere (dreptunghi, cerc, elipsă, linie, poligon), cu lipirea, fără agenți”). În bara editării: Selecție (V), Dreptunghi (R), Cerc (O), Elipsă (E), Linie (L), Poligon (P, 3–64 laturi); capetele gestului lipite ca puncte (nelipite: rotunjite la 0,001 mm), Shift pentru pătrat / cerc / 15°, previzualizarea conturului; forma intră printr-o acțiune (`document.deseneaza`, un pas, documentul de după trece de ușă), cu geometria exactă (elipsa ca la importul SVG) și operația implicită (linia: pe linie, ca la import). **Treceri:** (1) codul și probele (e2e verde din prima); (2) captura: pictograma dreptunghiului ștearsă de stilul alinierii, colțurile nelipite cu zecimalele pixelilor; (3) porțile: importul funcției adâncimii din modulul importului aducea ușa întreagă în calculul acțiunilor, iar schemele documentului se lipeau de ușă într-o singură bucată (probele „schemele care nu vin” cădeau): funcția stă acum într-un modul fără dependențe, iar forma desenată se judecă direct cu schemele. Pornirea 94,7 → 95,0 kB (cu ușa 99,7 / 100).",
+      "en": "**Drag drawing tools, brought forward from stage 6** (without the machine; ADR 0051; “Yes, do the drag drawing tools now (rectangle, circle, ellipse, line, polygon), with snapping, no agents”). In the editing bar: Select (V), Rectangle (R), Circle (O), Ellipse (E), Line (L), Polygon (P, 3–64 sides); the gesture's ends snapped as points (unsnapped: rounded to 0.001 mm), Shift for square / circle / 15°, the outline preview; the shape enters through an action (`document.deseneaza`, one step, the resulting document passes the door), with exact geometry (the ellipse as in the SVG import) and the default operation (the line: on-line, as on import). **Passes:** (1) the code and the checks (e2e green at once); (2) the screenshot: the rectangle icon wiped out by the alignment style, the unsnapped corners with the pixels' decimals; (3) the gates: importing the depth function from the import module brought the whole door into the action calculation, and the document schemas stuck to the door in a single chunk (the “schemas that do not come” checks failed): the function now lives in a module without dependencies, and the drawn shape is judged directly with the schemas. Startup 94.7 → 95.0 kB (99.7 / 100 with the door)."
+    },
+    "7e4bbae834b9a1a5": {
+      "ro": "țesătura, STL-ul închis; o piesă în felii pe laserul tău",
+      "en": "the weave, the closed STL; a part in slices on your laser"
+    },
+    "7e5dfa00908eb71e": {
+      "ro": "Gărzile offsetului, după contractul din fișă (versiunea 2). Oracolul l-a scris o sesiune independentă, doar din contract: 83 de teste de legătură, 22 de sabotaje pe oracol și 12 stricăciuni ale aplicației, toate prinse. **La primul contact a găsit un offset greșit și tăcut:** la halteră, exteriorul de 1 mm ieșea la 0,15 mm de intrare (arcele de peste 180°, pe care cavalier nu le primește); plus inelul refuzat degeaba și poligoanele dese refuzate de toleranța implicită a lui cavalier (1e-5). Ieșirea se verifică acum singură: distanța fiecărui punct, partea, atingerile, orientarea. Refuzuri pe „corect sau refuzat”: 2 din 213 (cavalier se taie singur pe un poligon de scara 1; se abate cu 0,017 mm pe o polilinie densă). La un gât lat exact cât 2d, a doua încercare cu +1e-4 mm dă cele două insule corecte. 19 otrăvuri pe fațadă, 18 prinse (cea scăpată, coarda în loc de curbă, e echivalentă după împărțirea arcelor mari). **Treceri:** (1) gărzile; (2) oracolul: haltera, inelul, poligoanele dese, apoi contractul v2 (zece pericole ale lui); (3) curățarea ieșirii muta arcele, deci rămân segmentele scurte reale; (4) otrăvurile: verificările ieșirii n-aveau caz care să le declanșeze, deci au devenit testabile direct. 624 de teste unitare, 26 e2e.",
+      "en": "Offset guards, by the contract in the stage file (version 2). The oracle was written by an independent session, from the contract only: 83 binding tests, 22 sabotages on the oracle and 12 breakages of the app, all caught. **On first contact it found a wrong and silent offset:** on the dumbbell, the 1 mm outside offset came out 0.15 mm from the input (arcs over 180°, which cavalier does not accept); plus the ring refused for nothing and dense polygons refused by cavalier's default tolerance (1e-5). The output now checks itself: the distance of each point, the side, touches, orientation. Refusals under “correct or refused”: 2 out of 213 (cavalier cuts itself on a polygon of scale 1; it deviates by 0.017 mm on a dense polyline). At a neck exactly 2d wide, the second attempt with +1e-4 mm gives the two correct islands. 19 poisons on the facade, 18 caught (the one that escaped, a chord instead of a curve, is equivalent after large arcs are split). **Passes:** (1) the guards; (2) the oracle: the dumbbell, the ring, dense polygons, then contract v2 (its ten hazards); (3) cleaning the output moved the arcs, so the real short segments stay; (4) the poisons: the output checks had no case to trigger them, so they became directly testable. 624 unit tests, 26 e2e."
+    },
+    "7f2dec9cbfdea42c": {
+      "ro": "**Lansarea**",
+      "en": "**The launch**"
+    },
+    "7f4b3df7c72cb66a": {
+      "ro": "**Oglindirea selecției, adusă din etapa 6** (fără mașină; ADR 0054; după „unirea și separarea vectorilor”, retrasă de owner: „As face ceva mai mic”, iar din feliile mici propuse, „Oglindirea”). Secțiunea Oglindire în extensia barei (orizontal / vertical, Shift+H / Shift+V), față de centrul cutiei selecției; exactă: reflexia intră în matricea rădăcinii piesei (arcele rămân arce), locul instanței se oglindește, rotirea rămâne; prin `document.transforma`, deci pornirea rămâne 95,1 kB (cu ușa 99,8 / 100). **Treceri:** (1) modelul și probele: lumea în oglindă la 0°, 90°, 30°, iar programul de tăiere al documentului oglindit e oglinda celui inițial; proba compara întâi și coborârile frezei, care cad la celălalt capăt al buclei (oglinda întoarce sensul, urcarea cere parcurgerea inversă): acum doar tăieturile în plan, cu sensul arcelor, plus martorul pe partea liniei; (2) interfața și e2e-ul (G-code-ul exportat înainte și după, X-urile și Y-urile în oglindă, anularea exactă); captura: despărțitorul dintre secțiunile extensiei lipsea; (3) rularea completă verde din prima.",
+      "en": "**Mirroring the selection, brought forward from stage 6** (without the machine; ADR 0054; after “joining and separating vectors”, withdrawn by the owner: “I'd do something smaller”, and of the small slices proposed, “Mirroring”). A Mirror section in the bar extension (horizontal / vertical, Shift+H / Shift+V), about the centre of the selection box; exact: the reflection goes into the matrix of the part's root (arcs stay arcs), the instance's position is mirrored, the rotation stays; through `document.transforma`, so startup stays at 95.1 kB (99.8 / 100 with the door). **Passes:** (1) the model and the checks: the world mirrored at 0°, 90°, 30°, and the cutting program of the mirrored document is the mirror of the original one; at first the check also compared the bit's plunges, which fall at the other end of the loop (the mirror reverses the direction, and climb requires reverse traversal): now only the in-plane cuts, with the arc direction, plus the control on the line's side; (2) the interface and the e2e (the G-code exported before and after, X and Y mirrored, undo exact); the screenshot: the separator between the extension's sections was missing; (3) the full run green at once."
+    },
+    "8008ba4a1ee5ee8c": {
+      "ro": "Proba de mediu trece de două ori de la `npm ci`: ci 8 s, `tsc` 2,8 s, unitățile 2,8 s, build 2,9 s, e2e în Edge 8 s. `dist/` identic între rulări, nimic readus de Drive, deci fără joncțiune. A doua trecere: un 404 pe `favicon.ico`, prins de e2e și reparat cu iconița.",
+      "en": "The environment check passes twice from `npm ci`: ci 8 s, `tsc` 2.8 s, unit tests 2.8 s, build 2.9 s, e2e in Edge 8 s. `dist/` is identical between runs and Drive brought nothing back, so no junction is needed. Second pass: a 404 on `favicon.ico`, caught by e2e and fixed with the icon."
+    },
+    "80b77831dab7eb23": {
+      "ro": "DXF-urile de referință + fișierele tale deschise în programele tale",
+      "en": "the reference DXFs + your files opened in your programs"
+    },
+    "843f39f162905f38": {
+      "ro": "Exportul G-code din aplicație",
+      "en": "G-code export from the app"
+    },
+    "844288bba9341576": {
+      "ro": "gaura prin față + lamajul din spate",
+      "en": "the hole through the front + the counterbore at the back"
+    },
+    "8501fc5d4473a245": {
+      "ro": "Pânza",
+      "en": "The canvas"
+    },
+    "8559f98ea9a29f45": {
+      "ro": "Fără calcul pe GPU în v1",
+      "en": "No GPU computation in v1"
+    },
+    "85bf225ebbcd2c0d": {
+      "ro": "Restul feliei: hosting pe adresa principală de test. Exportul Firestore l-a făcut owner-ul din consolă (`gcloud` n-avea cont), în bucket-ul nou `cncvectorstudio-test-backup` din `us-central1`: baza e în `nam5`, iar bucket-ul aplicației e în `europe-central2`, deci primul export a fost refuzat. `public/sw.js` oprește workerul aplicației vechi de la aceeași adresă (șterge cache-urile `cncvs-`, se dezînregistrează, nu reîncarcă nicio filă), cu proba lui e2e. `scripts/publica-test.ts`, doar hosting, cu pregătirea comună cu canalul. Verificat în browser pe https://cncvectorstudio-test.firebaseapp.com/: instanța „test”, `/sw.js` servit `no-cache` cu CSP-ul aplicației, consola curată. **Treceri:** (1) exportul refuzat pe locație; (2) opritorul workerului, descoperit înainte de publicare.",
+      "en": "The rest of the slice: hosting on the main test address. The Firestore export was made by the owner from the console (`gcloud` had no account), into the new `cncvectorstudio-test-backup` bucket in `us-central1`: the database is in `nam5` and the app's bucket in `europe-central2`, so the first export was refused. `public/sw.js` stops the old app's worker on the same address (clears the `cncvs-` caches, unregisters, reloads no tab), with its own e2e check. `scripts/publica-test.ts`, hosting only, sharing the preparation with the channel. Checked in the browser on https://cncvectorstudio-test.firebaseapp.com/: the “test” instance, `/sw.js` served `no-cache` with the app's CSP, a clean console. **Passes:** (1) the export refused on location; (2) the worker stopper, found before publishing."
+    },
+    "8778a730118ca4d3": {
+      "ro": "**Planșele:** piese, foi, instanțe, Multi-Plate, lista de tăiere",
+      "en": "**Sheets:** parts, sheets, instances, Multi-Plate, the cut list"
+    },
+    "88a65d8bf6bcaec1": {
+      "ro": "**Relieful 1:** nucleul, relieful din imagine, prelucrarea 3D din relief",
+      "en": "**Relief 1:** the core, relief from an image, 3D machining from the relief"
+    },
+    "89ee77330a573300": {
+      "ro": "Jurnalul de erori pe server (ADR 0039): funcțiile `cncvs2` pe test, fără să le atingă pe cele vechi; `errorLogs` grupat pe amprentă, cu aparițiile; `logServerError` care nu aruncă; `logClientError` cu App Check și plafon. Regulile noi probate pe emulator, nepublicate (3.3). 12 teste pe emulator, 12 sabotaje prinse (după ce martorul a arătat un eșec fals al instrumentului). **Pe test:** 401 fără App Check și cu un token nesemnat. Publicarea a cerut două reparații: excluderile ancorate (`/src`) și recrearea callable-ului (invocarea publică se pune doar la creare).",
+      "en": "Server-side error log (ADR 0039): the `cncvs2` functions on test, without touching the old ones; `errorLogs` grouped by fingerprint, with the occurrences; a `logServerError` that does not throw; `logClientError` with App Check and a cap. The new rules checked on the emulator, not published (3.3). 12 tests on the emulator, 12 sabotages caught (after the control showed a false failure of the tool). **On test:** 401 without App Check and with an unsigned token. Publishing needed two fixes: anchored exclusions (`/src`) and recreating the callable (public invocation is set only at creation)."
+    },
+    "8ac91e8e95e88e5a": {
+      "ro": "IR-ul v0 pe N axe",
+      "en": "IR v0 on N axes"
+    },
+    "8aca6c887b996fcf": {
+      "ro": "Jurnalul de erori pe server (P0, partea 1a; ADR 0039): funcțiile în TypeScript (codebase-ul `cncvs2`, `europe-central2`), `errorLogs` grupat pe amprentă, `logServerError` care nu aruncă, `logClientError` cu App Check și plafon de rată, regulile Firestore noi; testele pe emulator; publicat pe test",
+      "en": "Server-side error log (P0, part 1a; ADR 0039): functions in TypeScript (the `cncvs2` codebase, `europe-central2`), `errorLogs` grouped by fingerprint, a `logServerError` that does not throw, `logClientError` with App Check and a rate cap, the new Firestore rules; tests on the emulator; published on test"
+    },
+    "8afaa3dc86629746": {
+      "ro": "**Verificarea orară a versiunii noi** (ADR 0045 §5; întrebarea deschisă a feliei 4.7↑, alegerea owner-ului): o filă lăsată deschisă află de o publicare fără navigare, prin `registration.update()` la fiecare oră și când fila redevine vizibilă după cel puțin o oră (fila înghețată de Edge sau calculatorul adormit). Ce găsește trece prin aceeași ofertă din bara de jos (reîncărcarea doar la clic); eșecul (offline) nu intră în jurnal și nu se reîncearcă până la verificarea următoare. Codul în bucata înregistrării (0,5 → 0,66 kB, la cerere): pornirea neschimbată. Probele întâi: 6 unitare pe ceasul fals, 1 e2e în `edge-pwa` (ceasul Playwright, publicarea simulată, `fastForward` de o oră, oferta fără navigare). Fără agenți; sabotajele 8 / 8 (unul scăpat la prima rulare → proba corectată).",
+      "en": "**Hourly check for a new version** (ADR 0045 §5; the open question of slice 4.7↑, the owner's choice): a tab left open learns of a publish without navigating, through `registration.update()` every hour and when the tab becomes visible again after at least an hour (the tab frozen by Edge or the computer asleep). What it finds goes through the same offer in the bottom bar (reload only on click); a failure (offline) is not logged and is not retried until the next check. The code sits in the registration chunk (0.5 → 0.66 kB, on demand): startup unchanged. Checks first: 6 unit tests on a fake clock, 1 e2e in `edge-pwa` (the Playwright clock, a simulated publish, a one-hour `fastForward`, the offer without navigating). No agents; sabotages 8 / 8 (one escaped on the first run → the check corrected)."
+    },
+    "8c2512e6de725460": {
+      "ro": "Forma „cale” (ADR 0034, documentul v9): un contur închis din linii, arce și cubice; ușa (refuzurile, plafoanele de vârfuri, raza arcului ≤ 10 000 mm, matricea în lume), pânza exactă, clicul exact pe cubice, CAM-ul prin biarce o dată pe element. **Recenzia (2 lentile + 10 verificatori, 3,95 M) a găsit:** căile netede refuzate de offset (bucle de cavalier la liniile plate de lângă arce), contactele false ale arcelor mici tangente, arcul cu raza absurdă (un semicerc ascuns tăiat în piesă), matricile la limita similitudinii (pânza arunca la pornire), timpul O(n·m) (7 min → 2 s), atingerile scăpate, colțurile curbe tăcute; toate reparate. Oracolele (sesiuni independente): documentul / regiunea / poarta (~1,1 M) și cap-coadă pe G-code (~0,2 M, 0,99 × tol pe IR). Otrăvuri: 48, rulate din nou pe o clonă curată după pauză: 38 prinse; 4 au primit teste noi, probate pe otrava lor (refuzul biarcelor fără id-ul elementului, matricea în lume la ușă, Ctrl+D care copia formele, semnul din determinantul brut la oglindirea minusculă); 6 sunt echivalente, măsurat: regiunea care își recalculează conturul (aceleași biarce, deterministe; doar timpul), traversarea la capătul bucății (bisecția convergentă), rafinarea doar a minimului global (0 diferențe pe 200 000 de cubice), Newton fără secțiunea de aur și invers (cel mult 1,5e-12 mm, și pe 300 000 de cubice cu mânerul retras: fiecare ajunge singur). Nimic vizibil pentru owner (căile vin cu importul, 2.7c). **Treceri:** (1) contractul și codul; (2) oracolele; (3) recenzia și reparațiile; (4) oracolele pe contractul precizat; (5) C20; (6) otrăvurile.",
+      "en": "The “path” shape (ADR 0034, document v9): a closed contour from lines, arcs and cubics; the door (refusals, vertex caps, arc radius ≤ 10,000 mm, the world matrix), the exact canvas, the exact click on cubics, CAM through biarcs once per element. **The review (2 lenses + 10 verifiers, 3.95 M) found:** smooth paths refused by the offset (cavalier loops at flat lines next to arcs), false contacts of small tangent arcs, an arc with an absurd radius (a hidden semicircle cut into the part), matrices at the edge of similarity (the canvas threw at startup), O(n·m) time (7 min → 2 s), missed touches, silent curved corners; all fixed. The oracles (independent sessions): the document / region / gate (~1.1 M) and end to end on G-code (~0.2 M, 0.99 × tol on the IR). Poisons: 48, rerun on a clean clone after the break: 38 caught; 4 got new tests, checked against their poison (the biarc refusal without the element id, the world matrix at the door, Ctrl+D copying the shapes, the sign from the raw determinant in a tiny mirror); 6 are equivalent, measured: the region recomputing its contour (same biarcs, deterministic; only the time), the traversal at the piece's end (the bisection converges), refining only the global minimum (0 differences over 200,000 cubics), Newton without the golden section and vice versa (at most 1.5e-12 mm, also over 300,000 cubics with a retracted handle: each gets there on its own). Nothing visible for the owner (paths come with the import, 2.7c). **Passes:** (1) the contract and the code; (2) the oracles; (3) the review and the fixes; (4) the oracles on the clarified contract; (5) C20; (6) the poisons."
+    },
+    "8ebeb40e6301189a": {
+      "ro": "Fișierele lăsate pe planșă",
+      "en": "Files dropped on the board"
+    },
+    "8f70e8f713e43d92": {
+      "ro": "Gărzile offsetului",
+      "en": "Offset guards"
+    },
+    "90214645e1c0b62a": {
+      "ro": "N axe din prima zi",
+      "en": "N axes from day one"
+    },
+    "914606b0a34ade29": {
+      "ro": "Loc în pachetul de pornire pentru 2.8",
+      "en": "Room in the startup bundle for 2.8"
+    },
+    "91698bdb1c684e4d": {
+      "ro": "**Timpul lângă traseu** (ADR 0046 §8; partea fără mașină care rămăsese din rândul pragului, „afișat imediat după fiecare calcul”): după T, cipul „Timpul jobului”, cu același calcul ca rezumatul exportului (postul pe montajul stânga-jos, Z0 sus), la cerere; stins cu traseul vechi; `$$` comun cu exportul (urcat din dialog în aplicație); durata în cuvinte într-un singur loc. Pornirea 93,9 → 94,2 / 100 kB (cu ușa 98,8). Fără agenți; sabotajele 55 / 55 (7 noi, 4 în e2e).",
+      "en": "**Time next to the toolpath** (ADR 0046 §8; the machine-free part left over from the threshold row, “shown right after each calculation”): after T, the “Job time” chip, with the same calculation as the export summary (the post on the bottom-left setup, Z0 top), on demand; switched off with the old toolpath; `$$` shared with the export (moved up from the dialog into the app); the duration in words in a single place. Startup 93.9 → 94.2 / 100 kB (98.8 with the door). No agents; sabotages 55 / 55 (7 new, 4 in e2e)."
+    },
+    "919a5a3515461ec8": {
+      "ro": "**PWA:** pornește fără rețea; actualizarea e oferită și blocată cât rulează un job; CSP fără `eval`, probat pe build-ul servit.",
+      "en": "**PWA:** starts without a network; the update is offered and blocked while a job runs; CSP without `eval`, checked on the served build."
+    },
+    "922ebbecce673160": {
+      "ro": "Raportorul de erori din client",
+      "en": "The client error reporter"
+    },
+    "92d3d4781a981f7c": {
+      "ro": "Personalul, fila Erori și Diagnoza (ADR 0040): pagina `/admin` la cerere (164 kB, cu bugetul ei; pornirea 99,0 / 100 kB), login Google, rolul din `staff/{uid}`, fila Erori cu „Rezolvat” prin callable și audit în aceeași tranzacție, Diagnoza (7 verificări), TTL de 90 de zile, regulile noi publicate. 17 teste pe emulator, 3 e2e pe emulatoare (login-ul emulatorului de Auth inclus), 3 e2e fără configurație, 13 unitare; 7 sabotaje, prinse unde trebuie, cu martorii trecuți (un martor picat a arătat primul apel lent al callable-ului: termen de 30 s). **Pe test:** pagina pornește până la fereastra Google, fără încălcări de CSP.",
+      "en": "Staff, the Errors tab and Diagnostics (ADR 0040): the `/admin` page on demand (164 kB, with its own budget; startup 99.0 / 100 kB), Google login, the role from `staff/{uid}`, the Errors tab with “Resolved” through a callable and the audit in the same transaction, Diagnostics (7 checks), a 90-day TTL, the new rules published. 17 tests on the emulator, 3 e2e on emulators (the Auth emulator's login included), 3 e2e without configuration, 13 unit tests; 7 sabotages, caught where they should be, with the controls passing (a failed control revealed the callable's slow first call: a 30 s deadline). **On test:** the page starts up to the Google window, with no CSP violations."
+    },
+    "93603f6f0016b46b": {
+      "ro": "cupola, rotunjitul, planul înclinat, greutatea",
+      "en": "the dome, the rounding, the inclined plane, the weight"
+    },
+    "9365e78976b47c0c": {
+      "ro": "crestele pe hârtie, fundul plat",
+      "en": "the crests on paper, the flat bottom"
+    },
+    "9494cd00c92a6dab": {
+      "ro": "Traseul pe pânză și panoul de proprietăți editabil",
+      "en": "The toolpath on the canvas and the editable properties panel"
+    },
+    "94b899f357992435": {
+      "ro": "Fluxul senderului",
+      "en": "The sender stream"
+    },
+    "950c55ab39d07325": {
+      "ro": "Loc în pachetul de pornire (ADR 0042), felie fără mașină, prin workflow (măsurătoarea, 3 propuneri, judecătorul, implementarea, 4 verificatori): pornirea 99,1 → **92,3 / 100 kB**; cu un proiect salvat 101,5 → 96,9. Ferestrele exportului, importului și panoului își aduc calculul, schemele documentului stau în modulul lor, dicționarul limbii active și alegerea cu clicul vin la cerere. Recenzia: 9 constatări, 7 remediate cu proba lor (limba nu se mai abandonează după 4 s, ultimul clic de limbă câștigă, pagina „fără texte” accesibilă, otrava C01 repusă, ușa plafonată la 8 kB), fiecare probă pică pe sabotajul remedierii; 2 limite scrise (tragerea și tasta date înaintea sosirii alegerii).",
+      "en": "Room in the startup bundle (ADR 0042), a slice without the machine, through a workflow (the measurement, 3 proposals, the judge, the implementation, 4 verifiers): startup 99.1 → **92.3 / 100 kB**; with a saved project 101.5 → 96.9. The export, import and panel windows bring their own calculation, the document schemas live in their own module, the active language's dictionary and click selection come on demand. The review: 9 findings, 7 fixed with their checks (the language is no longer abandoned after 4 s, the last language click wins, the “no texts” page is accessible, poison C01 restored, the door capped at 8 kB), each check failing on the fix's sabotage; 2 limits written down (the drag and the key given before the selection arrives)."
+    },
+    "9544221e9fec5a06": {
+      "ro": "senzorul, palparea XY, reluarea, planarea",
+      "en": "the sensor, XY probing, resuming, surfacing"
+    },
+    "95e512c346491c54": {
+      "ro": "Urechile (ADR 0028, documentul v5 cu migrarea v4 → v5 și `urechi: null`): profilul Z(s) al ediției întâi, portat ca modificator peste trecerea din IR (liniile și arcele tăiate exact, flancul pe arc ca elice); vârful urechii de la fața de jos a foii, deci puntea are grosimea cerută și cu supracursă (parametru al exportului, implicit 0); lățimea care nu încape e refuzată, nu strânsă; coloana Urechi în dialog (implicitele plăcii 2: 4 × 8 × 2). Pe forma plăcii 2, cele 4 urechi cad pe laturile drepte. **Recenzia (1,16 M, 25 min, 6 constatări, toate reale) a prins o gaură a contractului:** pe axa tăieturii, puntea ține grosimea doar pe W − D, deci o ureche mai îngustă decât freza lăsa piesa liberă; acum e refuzată. Plus: bucățile de arc sub 1e-6 mm deveneau cercuri întregi (la W ~1e-11, 22 mm în piesă), flancul care coboară mergea pe verticală de până la 3,3 ori avansul de plonjare, un Exportă fără schimbare lăsa un pas de anulare fantomă după redeschidere; motivul și rândul urechilor din dialog. Oracolul (sesiune independentă, 0,67 M, 74 min): documentul v5, invarianta 9 amendată (Z-ul se schimbă sub fața de sus fără să rupă drumul), invarianta 10 (profilul pe fiecare buclă, refuzurile, viteza pe verticală), oracolul pe hârtie cu cele 6 cazuri vechi, gaura, placa 2 și supracursa; 36 de sabotaje prinse, 5 martori negativi. Otrăvuri: 37 din 37 prinse (una scăpase întâi; testul avansului pe flanc cere acum plafonul exact). Pauză 10.10 00:05–08:30. **Treceri:** (1) contractul; (2) aplicația; (3) recenzia și reparațiile; (4) oracolul; (5) otrăvurile. 1861 de teste unitare, 39 e2e.",
+      "en": "Tabs (ADR 0028, document v5 with the v4 → v5 migration and `urechi: null`): the first edition's Z(s) profile, ported as a modifier over the IR pass (lines and arcs cut exactly, the flank on an arc as a helix); the tab top from the bottom face of the sheet, so the bridge has the requested thickness even with overtravel (an export parameter, default 0); a width that does not fit is refused, not shrunk; a Tabs column in the dialog (plate 2 defaults: 4 × 8 × 2). On the plate 2 shape, the 4 tabs fall on the straight sides. **The review (1.16 M, 25 min, 6 findings, all real) caught a hole in the contract:** on the cut's axis, the bridge holds its thickness only over W − D, so a tab narrower than the bit left the part loose; now it is refused. Plus: arc pieces under 1e-6 mm became full circles (at W ~1e-11, 22 mm into the part), a descending flank went vertical at up to 3.3 times the plunge feed, an Export with no change left a phantom undo step after reopening; the reason and the tabs row in the dialog. The oracle (independent session, 0.67 M, 74 min): document v5, invariant 9 amended (Z changes below the top face without breaking the path), invariant 10 (the profile on each loop, the refusals, the vertical speed), the oracle on paper with the 6 old cases, the hole, plate 2 and overtravel; 36 sabotages caught, 5 negative controls. Poisons: 37 of 37 caught (one had escaped at first; the flank-feed test now requires the exact cap). Break 10.10 00:05–08:30. **Passes:** (1) the contract; (2) the app; (3) the review and the fixes; (4) the oracle; (5) the poisons. 1861 unit tests, 39 e2e."
+    },
+    "96bdd32759c297be": {
+      "ro": "Fără izolare cross-origin",
+      "en": "No cross-origin isolation"
+    },
+    "98068c1cdee265fa": {
+      "ro": "Două interfețe; §10 Ghid la prima pornire; admin **P4**",
+      "en": "Two interfaces; §10 First-run guide; admin **P4**"
+    },
+    "9a7e6ef50318aa04": {
+      "ro": "Unealta Transformare, extensia barei, editarea formelor după plasare",
+      "en": "The Transform tool, the bar extension, editing shapes after placement"
+    },
+    "9b00dd6cfa532ba7": {
+      "ro": "Unealta Transformare, extensia barei de sus",
+      "en": "The Transform tool, the top bar extension"
+    },
+    "9b0f6911b493d1a9": {
+      "ro": "Publicarea pe live (P1, partea 2): workflow-ul cu sha fixat, mediul `live` cu aprobarea owner-ului, WIF; amprenta `meta/deployment`, scrisă de pipeline (mutată din 3.3, ADR 0040 §7); contul de serviciu dedicat al backup-ului",
+      "en": "Publishing to live (P1, part 2): the workflow with a pinned sha, the `live` environment with the owner's approval, WIF; the `meta/deployment` fingerprint, written by the pipeline (moved from 3.3, ADR 0040 §7); the backup's dedicated service account"
+    },
+    "9b8d8f97eff6788f": {
+      "ro": "Bancul vizual v1 (`npm run banc`, pagina `/banc/` pe instanța de test), cu martorii lui negativi, și unealta de otrăvuri comisă (`scripts/otravuri.py`, `docs/otravuri.md`). Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`.",
+      "en": "Visual bench v1 (`npm run banc`, the `/banc/` page on the test instance), with its negative controls, and the poison tool committed (`scripts/otravuri.py`, `docs/otravuri.md`). Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`."
+    },
+    "9b8efb3a3c01a776": {
+      "ro": "CAM-ul lasă material implicit și are ieșirea mărginită",
+      "en": "CAM leaves material by default and has bounded output"
+    },
+    "9bd2d2099253a2ab": {
+      "ro": "cât mai curând",
+      "en": "as soon as possible"
+    },
+    "9fac1dff20d1f2ca": {
+      "ro": "Planșele",
+      "en": "Sheets"
+    },
+    "a0200c89a1cf4f47": {
+      "ro": "Operațiile în document (schema v3, cu migrarea v2 → v3): profilul ca operație a piesei, cu scula și parametrii; exportul le citește din document",
+      "en": "Operations in the document (schema v3, with the v2 → v3 migration): the profile as an operation of the part, with the tool and the parameters; the export reads them from the document"
+    },
+    "a04f6bc3c9ae1cd8": {
+      "ro": "**Lipirea mânerelor de scalare, adusă din etapa 6** (fără mașină; ADR 0055; „Fă acum lipirea mânerelor de ghidaje, grilă și forme, fără agenți”). Mânerul tras se lipește ca punct de ghidaje, foaie, formele nealese și grilă (aceleași ținte și toleranță ca mutarea), doar pe axele pe care le scalează; la colțul proporțional decide axa care s-a schimbat mai mult; pe axa lipită scara e exactă (latura ajunge pe țintă), nu rotunjită la 1e-4; liniile de aliniere cât se trage; Alt inversează. Pornirea neschimbată (cu ușa 99,8 / 100). **Treceri:** (1) calculul pur (`transformareManerLipita`), legătura în mânere, probele unitare și e2e, verzi din prima, cu controlul negativ (proba e2e cade pe codul fără lipire); (2) rularea completă verde.",
+      "en": "**Snapping the scale handles, brought forward from stage 6** (without the machine; ADR 0055; “Do the snapping of the handles to guides, grid and shapes now, no agents”). The dragged handle snaps as a point to guides, the sheet, the unselected shapes and the grid (the same targets and tolerance as moving), only on the axes it scales; at the proportional corner the axis that changed more decides; on the snapped axis the scale is exact (the side lands on the target), not rounded to 1e-4; the alignment lines while dragging; Alt inverts. Startup unchanged (99.8 / 100 with the door). **Passes:** (1) the pure calculation (`transformareManerLipita`), the wiring in the handles, the unit and e2e checks, green at once, with the negative control (the e2e check fails on the code without snapping); (2) the full run green."
+    },
+    "a0c32777416fd17d": {
+      "ro": "curba în arce, decuparea, traseul oglindit și rotit",
+      "en": "the curve into arcs, the trim, the mirrored and rotated toolpath"
+    },
+    "a17680231b9f3053": {
+      "ro": "Instanța de test (exportul Firestore confirmat de owner, apoi doar hosting) și fișa plăcii 1, cu programele A și B",
+      "en": "The test instance (Firestore export confirmed by the owner, then hosting only) and the plate 1 file, with programs A and B"
+    },
+    "a316b45e2a5823a3": {
+      "ro": "Backup-ul și marcajele (ADR 0041): `backupZilnic` și `verificaBackup` programate pe test (cu `BUCKET_BACKUP` din `functions/.env.cncvectorstudio-test`), marcajul în jurul fiecărui job (pornire, final, succes, eșecuri la rând, eroare, rând în fila Erori), judecata pură în `shared/joburi.ts` și câte o verificare pe job în Diagnoză; regula `marcaje`. 23 de teste pe emulator, 3 e2e, 7 unitare noi; 10 sabotaje prinse, cu martorii. Emulatorul a prins un import care trecea de tipuri și cădea la rulare (`{ v1 }` din pachetul CommonJS). Prima rulare reală: 17.10, 03:00 / 05:00.",
+      "en": "The backup and the markers (ADR 0041): `backupZilnic` and `verificaBackup` scheduled on test (with `BUCKET_BACKUP` from `functions/.env.cncvectorstudio-test`), a marker around each job (start, end, success, failures in a row, error, a row in the Errors tab), the pure judgement in `shared/joburi.ts` and one check per job in Diagnostics; the `marcaje` rule. 23 tests on the emulator, 3 e2e, 7 new unit tests; 10 sabotages caught, with the controls. The emulator caught an import that passed the types and failed at runtime (`{ v1 }` from the CommonJS package). The first real run: 17.10, 03:00 / 05:00."
+    },
+    "a4b831b0568aece6": {
+      "ro": "Regiunea păstrată (ADR 0026), cu oracolul întâi (invarianta 2 în poartă, sesiune independentă); exportul refuză tăietura care intră într-o piesă",
+      "en": "The kept region (ADR 0026), oracle first (invariant 2 in the gate, independent session); the export refuses a cut that enters a part"
+    },
+    "a5303f334c1b6866": {
+      "ro": "regresia completă (10 cote din 10 etape)",
+      "en": "the full regression (10 dimensions from 10 stages)"
+    },
+    "a6da42f42b6cfdae": {
+      "ro": "Senderul (complet); §10 Senzor de lungime, Colțul XY, Override + jurnal, Planarea",
+      "en": "The sender (complete); §10 Tool length sensor, XY corner, Override + log, Surfacing"
+    },
+    "a75abf755145bbba": {
+      "ro": "Sensul de tăiere",
+      "en": "Cutting direction"
+    },
+    "a86b02eef03388b8": {
+      "ro": "IR-ul v0 pe N axe, montajul (4 colțuri, Z0 sus sau jos, o singură matrice) și postul GRBL v0 (3 zecimale, I / J din startul rotunjit, gărzile, antetul, 70 de octeți, SHA-256)",
+      "en": "IR v0 on N axes, the setup (4 corners, Z0 top or bottom, a single matrix) and the GRBL v0 post (3 decimals, I / J from the rounded start, guards, header, 70 bytes, SHA-256)"
+    },
+    "a8d1125a16d83fcd": {
+      "ro": "Relieful 2: editorul de forme, textul, operațiile, analiza",
+      "en": "Relief 2: the shape editor, text, operations, analysis"
+    },
+    "a90e787d1df441f0": {
+      "ro": "modelul din felii, profilul extrudat, rozeta",
+      "en": "the sliced model, the extruded profile, the rosette"
+    },
+    "a93dd14ea6480464": {
+      "ro": "Dog-bone și T-bone",
+      "en": "Dog-bone and T-bone"
+    },
+    "aa58b21b01d6b8a9": {
+      "ro": "da",
+      "en": "yes"
+    },
+    "aaefda24719e9446": {
+      "ro": "Coliziunea cu mandrina; Zonele inaccesibile; Model înalt din felii; Extrudare; Two Rail / Spin / Turn",
+      "en": "Collision with the chuck; Unreachable zones; A tall model from slices; Extrude; Two Rail / Spin / Turn"
+    },
+    "ab0a61af4a1c14c3": {
+      "ro": "un job făcut doar prin asistent",
+      "en": "a job done only through the assistant"
+    },
+    "ab2f341922a3707a": {
+      "ro": "Transformările, Alt inversat, uneltele în bara de sus",
+      "en": "Transforms, inverted Alt, the tools in the top bar"
+    },
+    "ab63838d337db906": {
+      "ro": "Tichetele, configurarea, fișa de lucru, șabloanele, copiile în cloud",
+      "en": "Tickets, configuration, the job sheet, templates, cloud copies"
+    },
+    "ac0858ac19654dfe": {
+      "ro": "Importul, partea 2: Corel, WMF (+ EMF peste prag), DWG ca mesaj",
+      "en": "Import, part 2: Corel, WMF (+ EMF beyond the threshold), DWG as a message"
+    },
+    "ac777cee41886503": {
+      "ro": "lista de lansare (`BRIEF.md` §8)",
+      "en": "the launch list (`BRIEF.md` §8)"
+    },
+    "ad8412a5456d5c9d": {
+      "ro": "dreptunghi rotunjit rotit, reuniunea a două cercuri, rețele",
+      "en": "a rotated rounded rectangle, the union of two circles, arrays"
+    },
+    "afddc76c52ee6158": {
+      "ro": "Intrările compuse cu rampa",
+      "en": "Lead-ins combined with the ramp"
+    },
+    "b034161ec955aec1": {
+      "ro": "Postul",
+      "en": "The post"
+    },
+    "b052146a0aa660c8": {
+      "ro": "Geometria v0: L / A / C cu bulge, transformările exacte, cavalier adus în repo, profilul exterior și interior pe dreptunghi și cerc, cu treceri pe adâncime",
+      "en": "Geometry v0: L / A / C with bulge, exact transforms, cavalier vendored into the repo, outside and inside profile on rectangle and circle, with depth passes"
+    },
+    "b0bd74ff72e4e581": {
+      "ro": "Documentația admin",
+      "en": "Admin documentation"
+    },
+    "b1133c6354aaff80": {
+      "ro": "3.7",
+      "en": "3.7"
+    },
+    "b19268d56f328f8e": {
+      "ro": "Vectori, noduri, boolean, offset, aliniere; Transformare și copiere",
+      "en": "Vectors, nodes, boolean, offset, alignment; Transform and copy"
+    },
+    "b2486c8d30aa716f": {
+      "ro": "Fișa plăcii 1 și programele A și B",
+      "en": "The plate 1 file and programs A and B"
+    },
+    "b2abba4d729d7a11": {
+      "ro": "Regula de umplere",
+      "en": "The fill rule"
+    },
+    "b3247d3e0efd14c3": {
+      "ro": "**Estimarea timpului jobului, adusă din etapa 4** (plăcile netăiate: `PLAN.md` §4.6, punctul 7; ADR 0046): modelul planificatorului GRBL 1.1h (pașii, limitele pe axe, joncțiunile din $11, fereastra de 15 blocuri, arcele din `mc_arc`, pauza în pași de 50 ms, sincronizările), pe G-code-ul exportat; profilul mașinii ca date (implicitele 1.1h, peste ele `$$` lipit); rezumatul în dialogul exportului, pe operație și pe sculă, în bucata calculului exportului. Probele pe hârtie înaintea modelului; oracolul independent (o sesiune fără `src/`) se potrivește cu aplicația la 10⁻¹⁴ pe 300 de programe aleatoare și pe plăci, iar aplicația trece cele 16 cazuri pe hârtie ale lui. Recenzia (un verificator): niciun defect mare; M3 → M4, M30, cititorul ca `protocol.c`, două operații pe hârtie, plafonul, remediate cu proba lor. Sabotajele: 48 / 48 pe codul final. Placa 2: 10 min 23 s pe implicite (fișa plăcii cere cronometrul și `$$`). Comparația cu cronometrul: după tăiere.",
+      "en": "**Job time estimate, brought forward from stage 4** (the plates not cut: `PLAN.md` §4.6, point 7; ADR 0046): a model of the GRBL 1.1h planner (steps, per-axis limits, the junctions from $11, the 15-block window, arcs from `mc_arc`, the dwell in 50 ms steps, synchronisations), on the exported G-code; the machine profile as data (the 1.1h defaults, with pasted `$$` on top); the summary in the export dialog, per operation and per tool, in the export calculation chunk. The checks on paper before the model; the independent oracle (a session without `src/`) agrees with the app to 10⁻¹⁴ on 300 random programs and on the plates, and the app passes its 16 cases on paper. The review (one verifier): no big defect; M3 → M4, M30, the reader like `protocol.c`, two operations on paper, the cap, fixed with their checks. Sabotages: 48 / 48 on the final code. Plate 2: 10 min 23 s on the defaults (the plate file asks for the stopwatch and `$$`). The comparison with the stopwatch: after cutting."
+    },
+    "b3a774f3f3c7708d": {
+      "ro": "Oracolul G-code din s4 în `test/oracles/`",
+      "en": "The G-code oracle from s4 in `test/oracles/`"
+    },
+    "b4487110fe6a1b12": {
+      "ro": "Oglindirea selecției",
+      "en": "Mirroring the selection"
+    },
+    "b52896d7055ba085": {
+      "ro": "Simularea",
+      "en": "Simulation"
+    },
+    "b6a61b9a3e2551e5": {
+      "ro": "Export 2D cu vectori reali (importul: DXF, PDF, AI compatibil PDF)",
+      "en": "2D export with real vectors (import: DXF, PDF, PDF-compatible AI)"
+    },
+    "b6dca17873d5b1bc": {
+      "ro": "**lansarea**",
+      "en": "**the launch**"
+    },
+    "b842229b4b9f8e94": {
+      "ro": "Booleanul",
+      "en": "The boolean"
+    },
+    "b8d0fd78d524928f": {
+      "ro": "Sensul de tăiere (urcare / opoziție), pe operație, cu implicitul ales de owner; schema v4",
+      "en": "Cutting direction (climb / conventional), per operation, with the default chosen by the owner; schema v4"
+    },
+    "b95ec0666a09e278": {
+      "ro": "Loc în pachetul de pornire pentru 2.8 (99,9 → 96,1 kB din 100): ușa de încărcare a proiectului vine la cerere; pornirea fără `await` la nivelul modulului (altfel bucata adusă la cerere în timpul pornirii se bloca)",
+      "en": "Room in the startup bundle for 2.8 (99.9 → 96.1 kB of 100): the project loading door comes on demand; startup without a module-level `await` (otherwise the chunk loaded on demand during startup got stuck)"
+    },
+    "b96136cc4fe68a59": {
+      "ro": "matricea originii, sensul arcelor",
+      "en": "the origin matrix, arc direction"
+    },
+    "bd6ce3a6d08ac395": {
+      "ro": "Urechile ca modificator Z(s), portate cu cele 88 de verificări pe hârtie; vârful urechii măsurat de la fundul materialului (`docs/PORTARE.md` §3.1)",
+      "en": "Tabs as a Z(s) modifier, ported with the 88 checks on paper; the tab top measured from the bottom of the material (`docs/PORTARE.md` §3.1)"
+    },
+    "bdffd8ff08e09bbe": {
+      "ro": "Documentul v0: schema valibot cu versiune și o singură ușă de încărcare, arborele variantei alese, jurnalul de comenzi, IndexedDB în tranzacție, registrul de acțiuni cu capabilitatea pe fiecare acțiune; plus lista de vectori, cu avertismentele cu roșu (`BRIEF.md` §16.3)",
+      "en": "Document v0: versioned valibot schema with a single loading door, the tree of the chosen variant, the command journal, IndexedDB in a transaction, the action registry with a capability on every action; plus the vector list, with warnings in red (`BRIEF.md` §16.3)"
+    },
+    "bfca81120058bffa": {
+      "ro": "**Măsurarea pe un laptop de atelier** (bancul s6-V, cu pragurile din T13).",
+      "en": "**Measuring on a workshop laptop** (the s6-V bench, with the thresholds from T13)."
+    },
+    "c083a50de5467f32": {
+      "ro": "Transformările selecției, Alt care inversează lipirea",
+      "en": "Transforming the selection, Alt inverting snapping"
+    },
+    "c13aacc11d5d7cec": {
+      "ro": "Trasare din imagine (importul avansează)",
+      "en": "Tracing from an image (import moves forward)"
+    },
+    "c18376b038bc74d6": {
+      "ro": "Incrustațiile",
+      "en": "Inlays"
+    },
+    "c1c67c8e9871a34e": {
+      "ro": "Ieșirea din foaie (cerința owner-ului de la încercarea prototipului, `BRIEF.md` §16.3): avertismentul în bara de jos, niciodată pe pânză; exportul cere confirmare când discul frezei trece de marginea foii, iar confirmarea se scrie în antet; oracolul independent refuză tăierea în afara foii fără declarație",
+      "en": "Leaving the sheet (the owner's requirement from trying the prototype, `BRIEF.md` §16.3): the warning in the bottom bar, never on the canvas; the export asks for confirmation when the cutter disc crosses the sheet edge, and the confirmation is written in the header; the independent oracle refuses cutting outside the sheet without a declaration"
+    },
+    "c319e93753faa8e6": {
+      "ro": "Contururile deschise",
+      "en": "Open contours"
+    },
+    "c3f4ac7676f6a1a7": {
+      "ro": "Contractele NcStudio, RichAuto",
+      "en": "The NcStudio and RichAuto contracts"
+    },
+    "c45acda7aa7ec936": {
+      "ro": "Relieful 5: texturi, export STL, biblioteca, laserul 3D (felii exportate pentru LightBurn / RDWorks)",
+      "en": "Relief 5: textures, STL export, the library, 3D laser (slices exported for LightBurn / RDWorks)"
+    },
+    "c45ae6619f4d2a9f": {
+      "ro": "Publicarea pe live, partea fără conturi (ADR 0044): amprenta `meta/deployment` pe ținte, scrisă de scriptul de publicare și citită de Diagnoză; `publica.ts` pentru ambele instanțe (live doar din workflow, în mediul `live`; hosting-ul doar cu `dist/` al commit-ului); workflow-ul `publica` (sha pe `main`, rapid verde, pe live același sha publicat întreg pe test; WIF); contul dedicat al backup-ului din `.env`; scriptul de Cloud Shell al owner-ului. 10 sabotaje prinse. **Pe test:** amprenta întreagă din `ee1357454fb0`; garda a refuzat un `dist/` vechi. **Pașii owner-ului pe test făcuți (18.10):** workflow-ul a publicat pe test (a doua rulare verde, după API-ul Cloud Billing și contul backup-ului ca parametru); joburile de backup rulează cu `backup-cncvs2`. Rămâne live (3.9).",
+      "en": "Publishing to live, the part without accounts (ADR 0044): the `meta/deployment` fingerprint on the targets, written by the publishing script and read by Diagnostics; `publica.ts` for both instances (live only from the workflow, in the `live` environment; hosting only with the commit's `dist/`); the `publica` workflow (a sha on `main`, rapid green, on live the same sha published in full on test; WIF); the backup's dedicated account from `.env`; the owner's Cloud Shell script. 10 sabotages caught. **On test:** the full fingerprint from `ee1357454fb0`; the guard refused an old `dist/`. **The owner's steps on test done (18.10):** the workflow published on test (the second green run, after the Cloud Billing API and the backup account as a parameter); the backup jobs run as `backup-cncvs2`. Live remains (3.9)."
+    },
+    "c47d47f8c00b422a": {
+      "ro": "Text, text pe cale, fonturi",
+      "en": "Text, text on a path, fonts"
+    },
+    "c522fbef9a2f41e6": {
+      "ro": "Regiunea păstrată, cu oracolul întâi",
+      "en": "The kept region, oracle first"
+    },
+    "c69dae1f09b09782": {
+      "ro": "Tăierea plăcilor 1 și 2",
+      "en": "Cutting plates 1 and 2"
+    },
+    "c91bf52003a8439c": {
+      "ro": "V-carve",
+      "en": "V-carve"
+    },
+    "ca05b96eadd17573": {
+      "ro": "**V-carve** și gravarea inteligentă",
+      "en": "**V-carve** and smart engraving"
+    },
+    "caa76ff92bd0dde2": {
+      "ro": "Operațiile piesei",
+      "en": "Part operations"
+    },
+    "cae9bb161abc4bb2": {
+      "ro": "Îmbinări; Straturi bitmap; Sculptare; Deformare în anvelopă",
+      "en": "Blends; Bitmap layers; Sculpting; Envelope distortion"
+    },
+    "ccc5383ca51038b1": {
+      "ro": "Oracolul G-code în `test/oracles/` (zero importuri din `src/`): parserul propriu, codurile GRBL și regula de arc în float32, din s8 A.1. Poarta invariantelor 1, 3, 5, 6, 7, 8 pe un câmp de înălțimi (ca s4). Fiecare invariantă are otrava ei, scrisă de mână, și un program curat ca martor. Lanțul întreg trece poarta: gaura, insula, și insula pe 4 colțuri × Z0 sus / jos, cu cutia pe hârtie. A doua trecere: oracolul presupunea scula în (0, 0, 0) la pornire, deci cu Z0 jos vedea o rapidă prin material; acum startul necunoscut se judecă doar la capăt. 75 de teste.",
+      "en": "G-code oracle in `test/oracles/` (zero imports from `src/`): its own parser, GRBL codes and the arc rule in float32, from s8 A.1. The gate of invariants 1, 3, 5, 6, 7, 8 on a height field (as in s4). Each invariant has its own hand-written poison and a clean program as control. The whole chain passes the gate: the hole, the island, and the island on 4 corners × Z0 top / bottom, with the box on paper. Second pass: the oracle assumed the tool at (0, 0, 0) at start, so with Z0 bottom it saw a rapid through material; an unknown start is now judged only at its end. 75 tests."
+    },
+    "ccfd4cbed32bc5bf": {
+      "ro": "Offsetul",
+      "en": "The offset"
+    },
+    "cea9ea1933f36d03": {
+      "ro": "IR-ul pe N axe (axa A refuzată explicit în v1), montajul cu 4 colțuri ca translații și Z0 sus / jos, traseul de profil în IR, postul condus de contractul GRBL 1.1 (sursa fiecărui câmp, din s8). Pe hârtie: cele 4 colțuri, Z0 sus / jos, I / J din startul rotunjit, împărțirea la 180°, garda de coardă. Exportul cu SHA-256 verificat de `node:crypto`. Defecte prinse de teste: `toFixed` scria „1e+60” (acum refuzat peste 10⁹); garda de rază punea o coardă în loc de arc (acum segmente sub 0,001 mm, declarate); G0-urile fără efect. 65 de teste.",
+      "en": "IR on N axes (the A axis explicitly refused in v1), the setup with 4 corners as translations and Z0 top / bottom, the profile toolpath in the IR, the post driven by the GRBL 1.1 contract (the source of every field, from s8). On paper: the 4 corners, Z0 top / bottom, I / J from the rounded start, splitting at 180°, the chord guard. Export with SHA-256 checked by `node:crypto`. Defects caught by tests: `toFixed` wrote “1e+60” (now refused above 10⁹); the radius guard put a chord instead of an arc (now segments under 0.001 mm, declared); G0s with no effect. 65 tests."
+    },
+    "d08b2fedd4c4254d": {
+      "ro": "**Simularea, nucleul CPU, felia 1 din 2, adusă din etapa 4** (plăcile netăiate: `PLAN.md` §4.6, punctul 7; ADR 0047): oracolul portat din s4 de un agent fără acces la nucleu, în CI înaintea lui (18 piese pe hârtie, cele 7 otrăvuri ca martori); nucleul în `src/sim/` (câmpul pe dale de 16 × 16 în atlas, dalele uniforme ca un număr, calculul exact pe celulă cu freza plată / bila / V, trigonometria proprie doar cu + − × ÷ √), bazinul `src/jobs/` (rândurile de dale r mod N, workerele jobului); amprenta Node = Edge, pe 1 și 4 fire, poartă în e2e prin workerul construit; harta adâncimilor, materialul scos și cea mai adâncă tăietură în dialogul exportului, după descărcare. Măsurat: dale de 16 față de 32 (612 / 626 ms, 37,6 / 60,7 MB pe jobul 2D al sondei). Recenzia (doi verificatori): nucleul fără material lăsat pe 32 900 de programe aleatoare și 779 din CAM; remediate „prin foaie” în Float32, arcul ambiguu, amprenta pe 64 de biți, descărcarea care aștepta simularea, workerul tăcut, jurnalul, poarta pe pixeli. Otrăvurile: 61 / 61 pe codul final (prima rundă: 47 / 49, scăpatele → probe noi). Felia 2: afișarea în WebGL2 și fereastra de 0,1 mm.",
+      "en": "**Simulation, the CPU core, slice 1 of 2, brought forward from stage 4** (the plates not cut: `PLAN.md` §4.6, point 7; ADR 0047): the oracle ported from s4 by an agent without access to the core, in CI before it (18 pieces on paper, the 7 poisons as controls); the core in `src/sim/` (the field in 16 × 16 tiles in an atlas, uniform tiles as a single number, exact per-cell computation with the flat / ball / V bit, its own trigonometry using only + − × ÷ √), the `src/jobs/` pool (tile rows r mod N, the job workers); the Node = Edge fingerprint, on 1 and 4 threads, a gate in e2e through the built worker; the depth map, the material removed and the deepest cut in the export dialog, after the download. Measured: 16 versus 32 tiles (612 / 626 ms, 37.6 / 60.7 MB on the probe's 2D job). The review (two verifiers): the core leaves no material on 32,900 random programs and 779 from CAM; fixed “through the sheet” in Float32, the ambiguous arc, the 64-bit fingerprint, the download that waited for the simulation, the silent worker, the log, the pixel gate. Poisons: 61 / 61 on the final code (first round: 47 / 49, the escaped ones → new checks). Slice 2: the WebGL2 display and the 0.1 mm window."
+    },
+    "d2209e6152f6179f": {
+      "ro": "Fișa plăcii 4 și placa de regresie definită.",
+      "en": "The plate 4 file and the regression plate defined."
+    },
+    "d380eeb3855cbaa0": {
+      "ro": "Backup-ul zilnic al Firestore, cu verificarea lui, și marcajele de rulare judecate în Diagnoză (P1, partea 1; ADR 0041)",
+      "en": "Daily Firestore backup, with its verification, and the run markers judged in Diagnostics (P1, part 1; ADR 0041)"
+    },
+    "d4ae1d95c08d4f07": {
+      "ro": "da; **proba închisă pornește în săptămâna 15**",
+      "en": "yes; **the closed trial starts in week 15**"
+    },
+    "d51c2d881507ba36": {
+      "ro": "regresia pe live, dintr-un cont în probă",
+      "en": "regression on live, from an account in trial"
+    },
+    "d577deb84300207c": {
+      "ro": "Workerele nu țin date între joburi",
+      "en": "Workers keep no data between jobs"
+    },
+    "d578db0e7327a624": {
+      "ro": "canelura, încrucișarea, roundover",
+      "en": "the flute, the crossing, the roundover"
+    },
+    "d945d735d69509b0": {
+      "ro": "Bancul vizual v1",
+      "en": "Visual bench v1"
+    },
+    "d9e5d6d75bfed859": {
+      "ro": "Oracolul G-code din s4 în `test/oracles/`, cu valorile pe hârtie pentru cele 4 colțuri, regula de arc GRBL și poarta invariantelor 1, 3, 5, 6, 7, 8",
+      "en": "The G-code oracle from s4 in `test/oracles/`, with values on paper for the 4 corners, the GRBL arc rule and the gate of invariants 1, 3, 5, 6, 7, 8"
+    },
+    "da46659eb264a2e3": {
+      "ro": "Rampa",
+      "en": "Ramp"
+    },
+    "dbb48461078beeca": {
+      "ro": "V-carve (+ fund plat); Gravare pe linie + smart engrave",
+      "en": "V-carve (+ flat bottom); On-line engraving + smart engrave"
+    },
+    "dc0af46d0c9b1b55": {
+      "ro": "Fișierele lăsate pe planșă: unul sau mai multe SVG-uri trase pe pânză trec pe rând prin dialogul importului și cad cu centrul unde au fost lăsate; un fișier care nu e SVG e refuzat cu motiv. Pornirea 99,9 / 100 kB. Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`.",
+      "en": "Files dropped on the board: one or more SVGs dragged onto the canvas go through the import dialog one by one and land centred where they were dropped; a file that is not SVG is refused with a reason. Startup 99.9 / 100 kB. Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`."
+    },
+    "dc929192d3471597": {
+      "ro": "Partea documentului care nu depinde de A / D",
+      "en": "The part of the document that does not depend on A / D"
+    },
+    "dd16533ed4bd0df8": {
+      "ro": "Emulatorul GRBL și transcrierile ca fixturi: numără ce primește; rejucarea programelor plăcilor 1 și 2; 100 000 de linii fără pierderi",
+      "en": "The GRBL emulator and transcripts as fixtures: it counts what it receives; replaying the plate 1 and 2 programs; 100,000 lines without loss"
+    },
+    "de0643a0b03a958a": {
+      "ro": "Scheletul",
+      "en": "The skeleton"
+    },
+    "de5d692e2507f6fe": {
+      "ro": "Datele",
+      "en": "The data"
+    },
+    "dff5b7d3c0d98514": {
+      "ro": "Raportorul de erori din client (ADR 0043): erorile jurnalului local pleacă spre `logClientError`, cu Firebase adus la prima eroare (pornirea 93,5 kB, partea raportorului 1,20 kB); plafoanele pe sesiune (20 / 3), stingerea (401 / 403 / plafon / import / App Check), tokenul cerut explicit cu termen, reîncercarea doar când cererea n-a ajuns; cheia App Check citită la publicare din înregistrarea ei; CSP-ul reCAPTCHA; doar mediul omului rămâne „doar local”. Workflow-uri: implementarea + 4 verificatori (25 de constatări), remedierile + reverificarea (6), integrarea; otrăvurile 31 / 31. **Pe test:** 200 cu token (grupul în `errorLogs`), 401 fără. Pauză peste noapte pe `wip/3.2-raportor`, unită prin squash.",
+      "en": "The client error reporter (ADR 0043): the local log's errors go to `logClientError`, with Firebase loaded at the first error (startup 93.5 kB, the reporter's part 1.20 kB); per-session caps (20 / 3), switching off (401 / 403 / cap / import / App Check), the token requested explicitly with a deadline, retrying only when the request did not arrive; the App Check key read at publishing from its registration; the reCAPTCHA CSP; only the user's environment stays “local only”. Workflows: the implementation + 4 verifiers (25 findings), the fixes + the re-check (6), the integration; poisons 31 / 31. **On test:** 200 with a token (the group in `errorLogs`), 401 without. An overnight break on `wip/3.2-raportor`, merged by squash."
+    },
+    "e0493dfc8a8a9bd0": {
+      "ro": "Intrările cu rampă",
+      "en": "Ramped lead-ins"
+    },
+    "e18bff728797799e": {
+      "ro": "Biarcele proprii sunt singura ușă de aproximare",
+      "en": "Our own biarcs are the only approximation door"
+    },
+    "e1f70cb6ba59f161": {
+      "ro": "Senderul",
+      "en": "The sender"
+    },
+    "e2a199e5f1f08a88": {
+      "ro": "Importul SVG",
+      "en": "SVG import"
+    },
+    "e44f07e0d0c103b7": {
+      "ro": "Importul și exportul",
+      "en": "Import and export"
+    },
+    "e491a755d10a6603": {
+      "ro": "**Contractele NcStudio, RichAuto, Syntec, Mach3 / Mach4** și **pachetul de atelier** generat de aplicație (T0–T7, fișele cu setările controlerului și valorile pe hârtie).",
+      "en": "**The NcStudio, RichAuto, Syntec, Mach3 / Mach4 contracts** and the **workshop package** generated by the app (T0–T7, the files with the controller settings and values on paper)."
+    },
+    "e4ab8079b06fd0fe": {
+      "ro": "Afișarea simulării în WebGL2",
+      "en": "Simulation display in WebGL2"
+    },
+    "e6f23491f5419d35": {
+      "ro": "da; runda 2 la ateliere",
+      "en": "yes; round 2 at the workshops"
+    },
+    "e7160610eed64d2e": {
+      "ro": "`firebase.json` generat din `shared/csp.ts`",
+      "en": "`firebase.json` generated from `shared/csp.ts`"
+    },
+    "e73023bddd472912": {
+      "ro": "**Facturarea** (Stripe în mod de test) și partea legală",
+      "en": "**Billing** (Stripe in test mode) and the legal part"
+    },
+    "e7ad6a048899e69b": {
+      "ro": "Importul SVG: DOMParser inert, unități, viewBox, transformări, plafonul de mărime; biarcele (T6) cu bugetul de toleranță (`docs/PORTARE.md` §3.3); fațada PathKit minimă (reuniunea + R3) pentru normalizarea `nonzero` de la ușă",
+      "en": "SVG import: an inert DOMParser, units, viewBox, transforms, the size cap; biarcs (T6) with the tolerance budget (`docs/PORTARE.md` §3.3); a minimal PathKit facade (union + R3) for the `nonzero` normalisation at the door"
+    },
+    "e8ad40ee8d5bfa63": {
+      "ro": "Migrările pure vN → vN+1",
+      "en": "Pure migrations vN → vN+1"
+    },
+    "e930fc44f93eb2b1": {
+      "ro": "Uneltele de desen prin tragere",
+      "en": "Drag drawing tools"
+    },
+    "ea0986b31ece9b65": {
+      "ro": "**Senderul, postul cu contracte, observabilitatea**, primul live",
+      "en": "**The sender, the post with contracts, observability**, the first live"
+    },
+    "eb4b7358cb95c183": {
+      "ro": "Relief din imagine; Alinierea pixelilor; Litofanie; Combinarea; Rezoluția 4000²; Straturi; Relief ↔ 16 biți (Degroșarea și Finisarea pornesc, pe relief)",
+      "en": "Relief from an image; Pixel alignment; Lithophane; Combining; 4000² resolution; Layers; Relief ↔ 16 bits (Roughing and Finishing start, on relief)"
+    },
+    "eb51b242bf964a3d": {
+      "ro": "Copia locală a aplicației vechi, verificată pe calculatorul de la mașină (decizia 8)",
+      "en": "A local copy of the old app, checked on the computer at the machine (decision 8)"
+    },
+    "eca127da7c72e5f7": {
+      "ro": "Relief pe două fețe + întoarcere; Bas-relief din STL; Conturul vectorial al reliefului",
+      "en": "Two-sided relief + flipping; Bas-relief from STL; The relief's vector contour"
+    },
+    "ed9f5b522e78a9ba": {
+      "ro": "Fișa plăcii 2",
+      "en": "The plate 2 file"
+    },
+    "edbaa5695545ce85": {
+      "ro": "„20 mm” = 20,00 mm; diacritice; text pe arc",
+      "en": "“20 mm” = 20.00 mm; diacritics; text on an arc"
+    },
+    "ef010b74384aa699": {
+      "ro": "3.5 (transcrierile rejucate pe emulator) și prima felie a etapei",
+      "en": "3.5 (the transcripts replayed on the emulator) and the stage's first slice"
+    },
+    "ef590086e8e244da": {
+      "ro": "STL-ul de referință în trepte + semisfera",
+      "en": "the stepped reference STL + the hemisphere"
+    },
+    "ef81bb0498cc691c": {
+      "ro": "Nucleul de simulare CPU (2 felii)",
+      "en": "The CPU simulation core (2 slices)"
+    },
+    "efbfea901afba00d": {
+      "ro": "**da (primul)**",
+      "en": "**yes (the first)**"
+    },
+    "f20ea85a30832b0a": {
+      "ro": "Normalizarea `nonzero` la ușă",
+      "en": "`nonzero` normalisation at the door"
+    },
+    "f254e58163cfe205": {
+      "ro": "Lipirea mânerelor de scalare",
+      "en": "Snapping the scale handles"
+    },
+    "f3c947e953d5bc7b": {
+      "ro": "Fișa plăcii 1 (`docs/etape/placa-01.md`) și programele A (stânga-jos) și B (dreapta-sus), ca fișiere de aur în `test/placi/placa-01/`, cu SHA-256. Testul cere bytes identici cu ce generează postul acum, hash-urile în fișă și poarta trecută pe ambele. Hosting-ul pe test (restul feliei 1.9) așteaptă exportul Firestore confirmat de owner.",
+      "en": "The plate 1 file (`docs/etape/placa-01.md`) and programs A (bottom-left) and B (top-right), as golden files in `test/placi/placa-01/`, with SHA-256. The test requires bytes identical to what the post generates now, the hashes in the file and the gate passed on both. Hosting on test (the rest of slice 1.9) waits for the Firestore export confirmed by the owner."
+    },
+    "f3f56140bc9ac770": {
+      "ro": "înainte de 3.9",
+      "en": "before 3.9"
+    },
+    "f69517a92ff2a4a3": {
+      "ro": "Jog, zero XY / Z",
+      "en": "Jog, zero XY / Z"
+    },
+    "f6a65f9554963a48": {
+      "ro": "Biarcele (ADR 0033): cubica devine arce sub toleranța proiectului (0,001 mm), cu abaterea în ambele sensuri, eșecuri explicite, bugetul de toleranță într-un singur loc; doar geometria, cu oracolul",
+      "en": "Biarcs (ADR 0033): the cubic becomes arcs within the project tolerance (0.001 mm), with the deviation in both directions, explicit failures, the tolerance budget in a single place; geometry only, with the oracle"
+    },
+    "f6bb259ae5e8b83b": {
+      "ro": "Raportorul din client (P0, partea 1b): erorile jurnalului local pleacă spre `logClientError`, cu SDK-ul adus la prima eroare; App Check cu cheia instanței citită de la gazdă; CSP-ul; măsurat pe test: 200 cu token, 401 fără",
+      "en": "The client reporter (P0, part 1b): the local log's errors go to `logClientError`, with the SDK loaded at the first error; App Check with the instance key read from the host; the CSP; measured on test: 200 with a token, 401 without"
+    },
+    "f761a91abba82672": {
+      "ro": "Pânza v0",
+      "en": "Canvas v0"
+    },
+    "f960c0b00b8d3474": {
+      "ro": "Ușa SVG: DOMParser inert, unități, viewBox, transformări, elementele (path, rect, circle, ellipse, line, polyline, polygon), plafonul de mărime, avertismentele; butonul de import",
+      "en": "The SVG door: an inert DOMParser, units, viewBox, transforms, the elements (path, rect, circle, ellipse, line, polyline, polygon), the size cap, warnings; the import button"
+    },
+    "f96260c51b33320a": {
+      "ro": "placa de regresie",
+      "en": "the regression plate"
+    },
+    "fa41f158f389cb8e": {
+      "ro": "Import 3D; Zone; Decupare 3D; **Degroșare 3D; Finisare paralelă** (închise pe STL)",
+      "en": "3D import; Zones; 3D trimming; **3D roughing; Parallel finishing** (closed on STL)"
+    },
+    "fae22484fbb203f3": {
+      "ro": "Personalul, fila Erori și Diagnoza minimă",
+      "en": "Staff, the Errors tab and minimal Diagnostics"
+    },
+    "fb246777842bae23": {
+      "ro": "Poarta invariantelor completă și unealta de otrăvuri",
+      "en": "The complete invariant gate and the poison tool"
+    },
+    "fccd32764b724581": {
+      "ro": "**Importul și exportul cu vectori reali**; reparațiile cavalier",
+      "en": "**Import and export with real vectors**; the cavalier fixes"
+    },
+    "fd24b6d3ddb56f60": {
+      "ro": "Elipsa e un cerc sub o matrice neuniformă",
+      "en": "The ellipse is a circle under a non-uniform matrix"
+    },
+    "ff2897a9ec65e014": {
+      "ro": "textura, grila ghilotină; tăietura și gravura pe laserul tău Ruida",
+      "en": "the texture, the guillotine grid; the cut and the engraving on your Ruida laser"
+    }
+  }
+}

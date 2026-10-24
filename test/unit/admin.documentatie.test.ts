@@ -31,7 +31,7 @@ test('adresa: fila, documentul și ancora, dus-întors; ce nu e o filă sau o ca
 });
 
 const ROADMAP_MIC: Roadmap = {
-  schema: 1, etape: [], owner: [], adr: {},
+  schema: 1, limba: 'ro', netraduse: 0, etape: [], owner: [], adr: {},
   cifre: { saptamani: 0, etape: 0, tampoane: 0, etapeGata: 0, etapaCurenta: null, felii: { gata: 0, inLucru: 0, deFacut: 0, aduse: 0 }, adr: { total: 0, acceptate: 0, propuse: 0, inlocuite: 0, altele: 0 }, placi: { fise: 0, taiate: 0 } },
 };
 
@@ -45,9 +45,20 @@ const json = (x: unknown, status = 200): Promise<Response> => Promise.resolve(ne
 test('aducerea: o singură cerere pentru același fișier, la adresa lui', async () => {
   const f = fals([() => json(ROADMAP_MIC)]);
   const d = aducatorDocumentatie(f.aduce);
-  const [a, b] = await Promise.all([d.roadmap(), d.roadmap()]);
+  const [a, b] = await Promise.all([d.roadmap('ro'), d.roadmap('ro')]);
   assert.equal(a, b);
   assert.deepEqual(f.cereri, ['/documentatie/roadmap.json']);
+});
+
+test('aducerea în engleză (ADR 0056): fișierul ei, separat de cel român; fără `limba` / `netraduse`, forma e refuzată', async () => {
+  const f = fals([() => json({ ...ROADMAP_MIC, limba: 'en', netraduse: 2 }), () => json(ROADMAP_MIC)]);
+  const d = aducatorDocumentatie(f.aduce);
+  assert.equal((await d.roadmap('en')).netraduse, 2);
+  assert.equal((await d.roadmap('ro')).limba, 'ro');
+  assert.deepEqual(f.cereri, ['/documentatie/roadmap.en.json', '/documentatie/roadmap.json']);
+  const { limba: _l, ...faraLimba } = ROADMAP_MIC;
+  const g = fals([() => json(faraLimba)]);
+  await assert.rejects(aducatorDocumentatie(g.aduce).roadmap('ro'), (e: unknown) => e instanceof Error && e.message === 'forma');
 });
 
 test('aducerea: un eșec (rețeaua, 404, altă formă) nu rămâne ținut minte; cererea următoare încearcă din nou', async () => {
@@ -60,11 +71,11 @@ test('aducerea: un eșec (rețeaua, 404, altă formă) nu rămâne ținut minte;
     () => json(ROADMAP_MIC),
   ]);
   const d = aducatorDocumentatie(f.aduce);
-  await assert.rejects(d.roadmap(), /Failed to fetch/);
-  await assert.rejects(d.roadmap(), /HTTP 404/);
-  await assert.rejects(d.roadmap(), (e: unknown) => e instanceof Error && e.message === 'forma');
-  await assert.rejects(d.roadmap(), (e: unknown) => e instanceof Error && e.message === 'forma');
-  assert.equal((await d.roadmap()).schema, 1);
+  await assert.rejects(d.roadmap('ro'), /Failed to fetch/);
+  await assert.rejects(d.roadmap('ro'), /HTTP 404/);
+  await assert.rejects(d.roadmap('ro'), (e: unknown) => e instanceof Error && e.message === 'forma');
+  await assert.rejects(d.roadmap('ro'), (e: unknown) => e instanceof Error && e.message === 'forma');
+  assert.equal((await d.roadmap('ro')).schema, 1);
   assert.equal(f.cereri.length, 5);
 });
 

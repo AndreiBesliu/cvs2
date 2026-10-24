@@ -14,11 +14,12 @@
  *
  * Determinist: fără ore, fișierele în ordinea căilor, textul cu LF (un checkout cu CRLF dă aceiași octeți).
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { CALE_DICTIONAR_EN, citesteDictionar, traduceRoadmap } from './traducere.ts';
 import { join } from 'node:path';
 import { ancora, citesteTabel, parseazaInline, parseazaMarkdown, textSimplu, type Bloc, type TabelBrut } from '../src/docs/markdown.ts';
 import {
-  FISIER_CATALOG, FISIER_ROADMAP, fisierDocument,
+  FISIER_CATALOG, FISIER_ROADMAP, FISIER_ROADMAP_EN, fisierDocument,
   type AdrPeScurt, type Catalog, type Categorie, type CerereOwner, type DocumentCatalog, type Etapa, type Felie, type Punct,
   type Roadmap, type StareAdr, type StareFelie,
 } from '../shared/documentatie.ts';
@@ -576,6 +577,8 @@ export function construiesteRoadmap(surse: SurseRoadmap): Roadmap {
   const adrCu = (s: StareAdr): number => adrFisiere.filter((a) => a.stare === s).length;
   return {
     schema: 1,
+    limba: 'ro',
+    netraduse: 0,
     etape,
     owner,
     adr,
@@ -619,6 +622,11 @@ export function genereazaDocumentatia(radacina: string): Map<string, string> {
   const plan = citeste('PLAN.md');
   const indexAdr = citeste(INDEX_ADR);
   const roadmap = construiesteRoadmap({ plan, fise, placi, indexAdr, adr });
+  // Roadmap-ul în engleză (ADR 0056): din dicționarul din repo; un text fără traducere rămâne în română (numărat).
+  const caleDictionar = join(radacina, CALE_DICTIONAR_EN);
+  const dictionar = existsSync(caleDictionar) ? citesteDictionar(readFileSync(caleDictionar, 'utf8')) : null;
+  if (existsSync(caleDictionar) && !dictionar) throw new EroareDocumentatie(CALE_DICTIONAR_EN, 'dicționarul nu are forma { schema: 1, texte: { amprentă: { ro, en } } }');
+  const roadmapEn = traduceRoadmap(roadmap, dictionar, primaPropozitie).roadmap;
 
   const documente: DocumentCatalog[] = [];
   const texte = new Map<string, string>();
@@ -644,6 +652,7 @@ export function genereazaDocumentatia(radacina: string): Map<string, string> {
 
   const out: [string, string][] = [
     [FISIER_ROADMAP, JSON.stringify(roadmap)],
+    [FISIER_ROADMAP_EN, JSON.stringify(roadmapEn)],
     [FISIER_CATALOG, JSON.stringify(catalog)],
     ...[...texte].map(([cale, text]): [string, string] => [fisierDocument(cale), text]),
   ];

@@ -5,13 +5,14 @@
  * „Încearcă din nou” cere iar. Forma JSON-ului e verificată (`shared/documentatie.ts`); eroarea „forma” o traduce fila.
  */
 import {
-  FISIER_CATALOG, FISIER_ROADMAP, adresaFisier, esteCatalog, esteRoadmap, fisierDocument, type Catalog, type Roadmap,
+  FISIER_CATALOG, adresaFisier, esteCatalog, esteRoadmap, fisierDocument, fisierRoadmap, type Catalog, type Roadmap,
 } from '../../../shared/documentatie.ts';
 
 export type Aduce = (adresa: string) => Promise<Response>;
 
 export interface AducatorDocumentatie {
-  readonly roadmap: () => Promise<Roadmap>;
+  /** Roadmap-ul în limba dată (ADR 0056: `en` vine din dicționarul traducerilor). */
+  readonly roadmap: (limba: 'ro' | 'en') => Promise<Roadmap>;
   readonly catalog: () => Promise<Catalog>;
   readonly document: (cale: string) => Promise<string>;
 }
@@ -43,7 +44,7 @@ export function aducatorDocumentatie(aduce: Aduce = aducePrinRetea): AducatorDoc
     return x;
   };
   return {
-    roadmap: () => o(FISIER_ROADMAP, json(esteRoadmap)),
+    roadmap: (limba) => o(fisierRoadmap(limba), json(esteRoadmap)),
     catalog: () => o(FISIER_CATALOG, json(esteCatalog)),
     document: (cale) => o(fisierDocument(cale), (r) => r.text()),
   };

@@ -2413,3 +2413,35 @@ proba e2e cade pe codul fără lipire (linia ghidajului lipsește); (2) rularea 
 **Publicat pe test:** 20.10, workflow-ul `publica` pe `844902c` (după rapid-ul verde pe CI, 4 / 4 felii).
 **De făcut (cererea owner-ului, 20.10):** „O sa vrea roadmap si in engleza, dar dupa asta”: fila Roadmap din `/admin` (ADR 0048)
 și în engleză (azi se generează din fișele etapelor, scrise în română), după felia care urmează.
+
+## 2026-10-24 — Nivelul complet roșu din 21.10, apoi locul în pornire (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (după „Încep acum «Loc în pornire», apoi roadmap-ul în engleză?”).
+**Started:** 24.10, ~11:15, săptămânalul resetat (24.10 08:00). La verificarea de început: rularea de noapte roșie din 21.10,
+trei căderi, toate în e2e și toate trecute local: (1) bara de sus la 1280 px, marca peste bara de acțiuni pe fonturile de
+Linux (297 față de 282; butonul Transformare din 6.D↑ îngustase coloana); (2) exportul din fila care citește, o cursă: paleta
+din fila A (folosită de 6.C↑) trecea pe CI de cele 2 s fixe; (3) bucata alegerii care nu vine: Edge 156 pe Linux reîncearcă
+un `import()` eșuat (3 cereri), cel de pe Windows nu (1). Reparate în `8554e5e` (marca cu `max-width`, proba barei cu literele
+lățite, cu control; calculul exportului ținut până la salvare; proba alegerii acceptă ambele browsere). Rularea pornită de
+mână a avut e2e-ul verde, dar a fost oprită la plafonul de 30 de minute al job-ului (nivelul rapid nefeliat ia 14–24 min;
+rularea verde din 20.10 luase 29,3): plafonul ridicat la 60 în `9a4f3a4`, rularea reluată.
+**Locul în pornire:** compoziția măsurată (pornirea 92,9 kB gzip + dicționarul 2,2; React DOM e partea grea). Mutările ieftine
+aduc sub 1 kB; pârghiile mari (config fără valibot, React → Preact) sunt deciziile scrise în ADR 0042. Owner-ul a întrebat
+„De ce este necesar facem asta?”: răspuns, nu e urgent; a ales „Fa oricum roadmapul in eng”. Plafonul rămâne.
+**Completed:** 24.10 12:00, fără cod de produs în afara reparațiilor de CI.
+
+## 2026-10-24 — Roadmap-ul în engleză (Model: Claude Opus 5.5)
+
+**Prompt:** „Fa oricum roadmapul in eng”.
+**Started:** 24.10 12:00. Felia **3.E** (ADR 0056), fără agenți: fișele rămân singurul adevăr, în română; traducerea, într-un
+dicționar din repo cu cheia pe amprenta textului român; build-ul scrie și `roadmap.en.json`; fila alege după limbă, cu RO / EN
+în antetul `/admin`; o probă din nivelul rapid cere zero texte netraduse (traducerea vine cu fișa, `npm run traduceri`).
+**Treceri:** (1) generatorul (`scripts/traducere.ts`, legat în `scripts/documentatie.ts`), contractul (`limba`, `netraduse`,
+`roadmap.en.json`), aducerea și fila după limbă, comutatorul RO / EN din antetul `/admin`, poarta build-ului, probele; (2) cele
+327 de texte traduse (325, plus rândul feliei și titlul ADR-ului), controlul negativ al porții. Pe emulatoare: proba nouă a
+prins întâi „1 text netradus” (build-ul pornise cât scriam rândul ADR-ului: o cursă a mea, nu a codului) și o cădere veche din
+6.C↑: `raportor.emulator.spec` căuta butonul „Adaugă dreptunghi”, scos din bară (nopțile roșii nu ajunseseră la emulatoare);
+reparată.
+**Completed:** 24.10 12:50. Fără agenți (regula proiectului: acordul și costul spuse înainte). `npm run rapid` RC 0 (7 121 de
+teste unitare, 0 picate, 8 sărite); e2e 170 / 170 în Edge; emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea
+neschimbată (95,1 kB; cu ușa 99,8 / 100); `/admin` 189,1 → 189,4 / 200 kB; roadmap-ul în engleză 29,7 kB gzip, 0 netraduse.

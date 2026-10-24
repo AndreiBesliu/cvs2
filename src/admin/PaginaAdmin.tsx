@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactElement, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactElement, type ReactNode } from 'react';
 import type { User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { COLECTII_PERSONAL, esteIdRol, OWNER, permisiuniDin, type Permisiune } from '../../shared/personal.ts';
@@ -7,6 +7,7 @@ import {
 } from '../cloud/conexiune.ts';
 import '../i18n/admin.ts';
 import { t } from '../i18n/t.ts';
+import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { citesteAdresa, scrieAdresa, type Fila } from './adresa.ts';
 import { FilaDiagnoza } from './diagnoza/FilaDiagnoza.tsx';
@@ -31,7 +32,12 @@ import './admin.css';
 export interface ProprietatiAdmin {
   readonly config: { readonly ok: true; readonly config: ConfigCloud & { readonly instanta: string } } | { readonly ok: false; readonly motiv: string };
   readonly build: string;
+  /** Alegerea limbii (ADR 0056: roadmap-ul are și varianta în engleză): aceeași ca în aplicație, ținută în browser. */
+  readonly alegeLimba?: (l: Limba) => void;
 }
+
+/** Alegerea limbii, pentru antetul fiecărui cadru (fără ea, antetul n-are comutator). */
+const AlegeLimba = createContext<((l: Limba) => void) | null>(null);
 
 type StareCont =
   | { readonly faza: 'verifica' }
@@ -72,7 +78,11 @@ async function stareaPersonalului(con: Conexiune, user: User, cuInvitatie: boole
   };
 }
 
-export function PaginaAdmin({ config, build }: ProprietatiAdmin): ReactElement {
+export function PaginaAdmin({ alegeLimba, ...p }: ProprietatiAdmin): ReactElement {
+  return <AlegeLimba.Provider value={alegeLimba ?? null}><PaginaInterior {...p} /></AlegeLimba.Provider>;
+}
+
+function PaginaInterior({ config, build }: Omit<ProprietatiAdmin, 'alegeLimba'>): ReactElement {
   useLimba();
   const [con] = useState(() => (config.ok ? conecteaza(config.config) : null));
   if (!config.ok) return <Cadru><p className="admin-mesaj" role="alert">{t('admin.config-stricat', { motiv: config.motiv })}</p></Cadru>;
@@ -84,11 +94,20 @@ export function PaginaAdmin({ config, build }: ProprietatiAdmin): ReactElement {
 }
 
 function Cadru({ children, antet }: { readonly children: ReactNode; readonly antet?: ReactElement }): ReactElement {
+  const alege = useContext(AlegeLimba);
+  const activa = useLimba();
   return (
     <div className="admin">
       <header className="admin-antet">
         <h1>CNC Vector Studio · {t('admin.titlu')}</h1>
         {antet}
+        {alege ? (
+          <nav className="admin-limba" aria-label={t('app.limba')}>
+            {LIMBI.map((l) => (
+              <button key={l} type="button" aria-pressed={l === activa} data-limba={l} onClick={() => { alege(l); }}>{l.toUpperCase()}</button>
+            ))}
+          </nav>
+        ) : null}
         <a className="admin-inapoi" href="/">{t('admin.inapoi')}</a>
       </header>
       <main className="admin-corp">{children}</main>

@@ -18,6 +18,7 @@
     "importuri": "node scripts/verifica-importuri.ts",
     "licente": "node scripts/verifica-licente.ts",
     "determinism": "node scripts/build-determinist.ts",
+    "traduceri": "node scripts/traduceri.ts",
     "rapid": "npm run typecheck && npm run typecheck:functii && npm run importuri && npm test && npm run determinism && npm run licente",
     "test:emulator": "node scripts/test-emulator.ts",
     "publica:functii": "node scripts/publica-functii.ts",

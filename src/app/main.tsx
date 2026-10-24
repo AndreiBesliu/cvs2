@@ -243,7 +243,7 @@ async function porneste(): Promise<void> {
     createRoot(radacina).render(
       <StrictMode>
         <ErrorBoundary jurnal={jurnal} context={context}>
-          <PaginaAdmin config={config} build={__VERSIUNE__} />
+          <PaginaAdmin config={config} build={__VERSIUNE__} alegeLimba={alegeLimba} />
         </ErrorBoundary>
       </StrictMode>,
     );

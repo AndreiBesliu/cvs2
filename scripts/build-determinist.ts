@@ -8,7 +8,7 @@ import { readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
-import { DIR_DOCUMENTATIE, FISIER_CATALOG, FISIER_ROADMAP, esteCatalog, esteRoadmap, fisierDocument } from '../shared/documentatie.ts';
+import { DIR_DOCUMENTATIE, FISIER_CATALOG, FISIER_ROADMAP, FISIER_ROADMAP_EN, esteCatalog, esteRoadmap, fisierDocument } from '../shared/documentatie.ts';
 import { DOAR_ONLINE, inPrecache, motivPrecache } from '../shared/precache.ts';
 
 /**
@@ -380,6 +380,12 @@ if (!esteRoadmap(roadmapCitit) || !esteCatalog(catalogCitit)) {
   console.error(`dist/${FISIER_ROADMAP} sau dist/${FISIER_CATALOG} lipsește sau are altă formă: documentația admin nu s-a generat (pluginul din vite.config.ts).`);
   process.exit(1);
 }
+// Roadmap-ul în engleză (ADR 0056): același, din dicționarul traducerilor; textele netraduse se spun (proba unitară le cere 0).
+const roadmapEnCitit: unknown = a.has(FISIER_ROADMAP_EN) ? JSON.parse(readFileSync(join('.tmp/build-1', FISIER_ROADMAP_EN), 'utf8')) : null;
+if (!esteRoadmap(roadmapEnCitit) || roadmapEnCitit.limba !== 'en' || roadmapEnCitit.etape.length !== roadmapCitit.etape.length) {
+  console.error(`dist/${FISIER_ROADMAP_EN} lipsește, are altă formă sau alte etape decât dist/${FISIER_ROADMAP} (ADR 0056).`);
+  process.exit(1);
+}
 const faraFisier = catalogCitit.documente.filter((d) => !a.has(fisierDocument(d.cale)));
 if (faraFisier.length > 0) {
   console.error(`Documente din catalog fără fișierul lor în dist/: ${faraFisier.map((d) => d.cale).join(', ')}.`);
@@ -441,7 +447,7 @@ console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri
 console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}).`);
 console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
 console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`)).join(', ')} și ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere).`);
-console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip, ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
+console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip (în engleză ${gz(join('.tmp/build-1', FISIER_ROADMAP_EN)).toFixed(1)} kB, ${roadmapEnCitit.netraduse} texte netraduse), ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
 console.log(`Cu un proiect salvat, ușa vine înaintea primei randări: +${kbUsa.toFixed(1)} kB (plafon ${PLAFON_USA_KB}; cu pornirea ${(pornire + kbUsa).toFixed(1)} / ${PLAFON_PORNIRE_KB}) (${inchidere(usa).map((r) => r.replace('assets/', '')).join(', ')}).`);
 rmSync('.tmp/build-1', { recursive: true, force: true });
 rmSync('.tmp/build-2', { recursive: true, force: true });

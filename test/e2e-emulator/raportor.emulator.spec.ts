@@ -75,7 +75,8 @@ test('o eroare de randare din aplicație ajunge în errorLogs: grupul, tipul, bu
 
 test('a patra apariție identică nu mai pleacă: grupul rămâne la 3, iar o eroare nouă trece după ea', async ({ page }) => {
   const apeluri = await deschide(page, '/');
-  await expect(page.locator('[data-actiune="document.adauga-dreptunghi"]')).toBeEnabled();
+  // Aplicația gata de lucru: butonul de import din bara de sus e activ ("Adaugă dreptunghi" a plecat din bară în 6.C↑, ADR 0052).
+  await expect(page.locator('[data-actiune="import.svg"]')).toBeEnabled();
   for (let i = 0; i < 4; i++) await provoaca(page, 'aceeași eroare');
   // Trimiterile sunt pe rând: când apare grupul erorii de după, a patra (dacă ar fi plecat) ar fi ajuns înaintea ei.
   await provoaca(page, 'eroarea de după');

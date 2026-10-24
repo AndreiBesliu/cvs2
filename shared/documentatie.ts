@@ -10,6 +10,10 @@
 /** Rădăcina fișierelor generate, în `dist/` și pe hosting. */
 export const DIR_DOCUMENTATIE = 'documentatie';
 export const FISIER_ROADMAP = `${DIR_DOCUMENTATIE}/roadmap.json`;
+/** Roadmap-ul în engleză (ADR 0056): aceeași formă, cu textele din dicționarul `docs/traduceri/roadmap.en.json`. */
+export const FISIER_ROADMAP_EN = `${DIR_DOCUMENTATIE}/roadmap.en.json`;
+/** Fișierul roadmap-ului în limba dată. */
+export const fisierRoadmap = (limba: 'ro' | 'en'): string => (limba === 'en' ? FISIER_ROADMAP_EN : FISIER_ROADMAP);
 export const FISIER_CATALOG = `${DIR_DOCUMENTATIE}/catalog.json`;
 
 /** Calea fișierului generat pentru un document al repo-ului (`docs/adr/0047-….md` → `documentatie/doc/docs/adr/0047-….md`). */
@@ -110,6 +114,10 @@ export interface Cifre {
 
 export interface Roadmap {
   readonly schema: 1;
+  /** Limba textelor (ADR 0056): `ro`, din fișe; `en`, din dicționar. */
+  readonly limba: 'ro' | 'en';
+  /** Câte texte n-au încă traducere și apar în română (0 în română). */
+  readonly netraduse: number;
   readonly etape: readonly Etapa[];
   readonly owner: readonly CerereOwner[];
   readonly adr: Readonly<Record<string, AdrPeScurt>>;
@@ -145,6 +153,7 @@ const obiect = (x: unknown): x is Record<string, unknown> => typeof x === 'objec
  */
 export function esteRoadmap(x: unknown): x is Roadmap {
   if (!obiect(x) || x['schema'] !== 1 || !Array.isArray(x['etape']) || !Array.isArray(x['owner']) || !obiect(x['adr']) || !obiect(x['cifre'])) return false;
+  if ((x['limba'] !== 'ro' && x['limba'] !== 'en') || typeof x['netraduse'] !== 'number') return false;
   return x['etape'].every((e) => obiect(e) && typeof e['id'] === 'string' && typeof e['saptamana'] === 'number'
     && typeof e['stare'] === 'string' && Array.isArray(e['felii']) && Array.isArray(e['puncte'])
     && e['felii'].every((f) => obiect(f) && typeof f['id'] === 'string' && typeof f['stare'] === 'string' && Array.isArray(f['adr'])));

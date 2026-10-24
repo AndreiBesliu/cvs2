@@ -134,6 +134,7 @@ export const roAdmin = {
   'admin.doc.adr.altul': 'altă stare',
   'admin.doc.generat': 'Generată din repo la fiecare build: ce citești aici e ce a văzut build-ul.',
   'admin.rm.generat': 'Dedus la fiecare build din fișele etapelor, din plan și din ADR-uri: nimic de aici nu e scris de mână.',
+  'admin.rm.netraduse': 'Texte încă netraduse, arătate în română: {n}.',
   'admin.rm.cifra.etapa': 'Etapa curentă',
   'admin.rm.cifra.din': 'din {total}',
   'admin.rm.cifra.saptamana': 'săptămâna {s} din {total}',
