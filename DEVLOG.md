@@ -2584,3 +2584,7 @@ depindea de formă (acum doar de selecție); erorile de tipuri (iconița lipsă,
 **Completed:** 24.10 22:25. Fără agenți. `npm run rapid` RC 0 (7 166 de teste unitare, 6 noi, 0 picate, 8 sărite); determinismul,
 licențele verzi. E2e 192 / 192 în Edge (3 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,2 kB;
 cu ușa 99,9 / 100); totalul 276,8 → 280,1 / 300 kB; manualul are 15 capitole.
+**Publicat pe test:** 24.10, workflow-ul `publica` pe `7d5c0c0` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
+instanța de test (fereastra lată: uneltele apar în bara de sus): dreptunghiul are 4 noduri; dublu clic pe latura de jos dă 5,
+cu nodul nou ales, și o cale; colțul tras dă calea 126,15 × 80; Delete pe nodul nou îl scoate (forma rămâne); trei anulări
+readuc dreptunghiul 100 × 60; 0 erori în jurnal.
