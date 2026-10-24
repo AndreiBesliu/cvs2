@@ -1,6 +1,6 @@
 /**
  * Cititorul de markdown (ADR 0048 §4), partea pură: textul devine un arbore de blocuri și de noduri inline, fără HTML și
- * fără React. Îl randează `Markdown.tsx` (fila Documentație din `/admin` și, în felia următoare, documentația live), iar
+ * fără React. Îl randează `Markdown.tsx` (fila Documentație din `/admin` și manualul utilizatorului, ADR 0058), iar
  * generatorul documentației (`scripts/documentatie.ts`) citește tabelele fișelor cu aceleași funcții (`citesteTabel`,
  * `celule`): ce vede poarta e exact ce vede omul.
  *

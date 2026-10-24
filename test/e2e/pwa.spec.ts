@@ -33,7 +33,7 @@ async function workerActiv(page: Page): Promise<void> {
 const controlata = (page: Page): Promise<boolean> => page.evaluate(() => navigator.serviceWorker.controller !== null);
 const cacheuri = (page: Page): Promise<string[]> => page.evaluate(async () => (await caches.keys()).sort());
 
-test('offline, de la a doua încărcare: pornește, schimbă limba, deschide importul și exportul, config.json din cache', async ({ browser }) => {
+test('offline, de la a doua încărcare: pornește, schimbă limba, deschide importul, exportul și manualul, config.json din cache', async ({ browser }) => {
   const { page, server, inchide } = await deschide(browser);
   try {
     await page.goto('/');
@@ -69,6 +69,18 @@ test('offline, de la a doua încărcare: pornește, schimbă limba, deschide imp
     await expect(page.locator('[data-camp="origine"]')).toBeVisible();
     await page.locator('[data-buton="exporta"]').click();
     await expect(page.getByTestId('iesire-foaie')).toContainText('Freza iese din foaie:');
+    await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+    // Manualul (ADR 0058), offline, în ambele limbi: fereastra și fișierele lui vin din precache.
+    await page.getByRole('button', { name: 'Închide' }).click();
+    for (const [limba, titlu] of [['RO', 'Manualul CNC Vector Studio'], ['EN', 'CNC Vector Studio manual']] as const) {
+      await page.getByRole('button', { name: limba, exact: true }).click();
+      await page.locator('[data-editare="manual"]').click();
+      await expect(page.getByTestId('manual')).toHaveAttribute('data-stare', 'gata');
+      await expect(page.locator('#manual-titlu')).toHaveText(titlu);
+      await page.keyboard.press('Escape');
+      await expect(page.getByTestId('manual')).toHaveCount(0);
+    }
+    await page.getByRole('button', { name: 'RO', exact: true }).click();
     await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
     // Modul offline a oprit tot ce cer pagina și workerul: serverul n-a văzut nicio cerere a lor (nici `config.json`).
     // Doar verificarea de actualizare a lui `/sw.js` o face browserul însuși, pe lângă emularea rețelei a lui Playwright

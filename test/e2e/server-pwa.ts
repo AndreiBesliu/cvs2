@@ -49,20 +49,37 @@ export interface Redenumire { readonly vechi: string; readonly nou: string }
 /**
  * O publicare nouă, simulată: copia `dosarA` în `dosarB`, cu bucățile potrivite de `re` (calea din `assets/`) redenumite,
  * ca un commit nou (alt conținut, altă amprentă): numele vechi DISPAR, iar fiecare fișier text care le pomenea (index.html,
- * celelalte bucăți, manifestul din `sw.js`) primește numele nou. Revizia lui `index.html` din manifest se recalculează
- * (md5, ca workbox-build), iar `sw.js` iese diferit, deci browserul îl vede ca actualizare.
+ * celelalte bucăți, manifestul din `sw.js`) primește numele nou. Ca la un build adevărat (amprenta e a conținutului), o
+ * bucată care pomenea un nume schimbat își schimbă și ea numele, până nu se mai schimbă nimic: altfel ea ar ieși cu același
+ * nume și alt conținut, iar workerul ar servi copia veche din precache (recenzia 3.F: bucata comună a cititorului de
+ * markdown importa pornirea veche, deci React de două ori în `/admin`). Revizia lui `index.html` din manifest se
+ * recalculează (md5, ca workbox-build), iar `sw.js` iese diferit, deci browserul îl vede ca actualizare.
  */
 export function publicareSimulata(dosarA: string, dosarB: string, re: RegExp): Redenumire[] {
   rmSync(dosarB, { recursive: true, force: true });
   cpSync(dosarA, dosarB, { recursive: true });
-  const redenumiri: Redenumire[] = readdirSync(join(dosarB, 'assets')).filter((f) => re.test(f)).map((vechi) => {
+  const nume = (vechi: string): Redenumire => {
     const m = /^(.+-)([A-Za-z0-9_-]{8})(\.(?:js|css))$/.exec(vechi);
     if (!m) throw new Error(`fără amprentă: ${vechi}`);
     const amprenta = m[2] ?? '';
     // Ultimul caracter se schimbă și fără majuscule: pe un disc care nu le deosebește (NTFS), `…z` → `…Z` ar fi același fișier.
     return { vechi, nou: `${m[1] ?? ''}${amprenta.slice(0, 7)}${/[zZ]$/.test(amprenta) ? 'Y' : 'Z'}${m[3] ?? ''}` };
-  });
+  };
+  const bucati = readdirSync(join(dosarB, 'assets')).filter((f) => /\.(?:js|css)$/.test(f));
+  const redenumiri: Redenumire[] = bucati.filter((f) => re.test(f)).map(nume);
   if (redenumiri.length === 0) throw new Error(`nicio bucată nu se potrivește cu ${String(re)}`);
+  // Închiderea: bucățile care pomenesc o bucată redenumită se redenumesc și ele.
+  for (let schimbat = true; schimbat;) {
+    schimbat = false;
+    for (const f of bucati) {
+      if (redenumiri.some((r) => r.vechi === f)) continue;
+      const text = readFileSync(join(dosarB, 'assets', f), 'utf8');
+      if (redenumiri.some((r) => text.includes(r.vechi))) {
+        redenumiri.push(nume(f));
+        schimbat = true;
+      }
+    }
+  }
   for (const { vechi, nou } of redenumiri) renameSync(join(dosarB, 'assets', vechi), join(dosarB, 'assets', nou));
   const texte = ['index.html', 'sw.js', ...readdirSync(join(dosarB, 'assets')).map((f) => `assets/${f}`)];
   for (const f of texte) {

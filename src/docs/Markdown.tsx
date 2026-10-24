@@ -4,8 +4,8 @@ import './markdown.css';
 
 /**
  * Cititorul de markdown (ADR 0048 §4), partea React: arborele din `markdown.ts` devine elemente React, fără HTML brut
- * (React scrie doar text; nimic `dangerouslySetInnerHTML`). Reutilizabil: fila Documentație din `/admin` acum,
- * documentația live (manualul) în felia următoare. Cine îl folosește decide ce înseamnă un link intern (`legaturi`).
+ * (React scrie doar text; nimic `dangerouslySetInnerHTML`). Reutilizabil: fila Documentație din `/admin` și manualul
+ * utilizatorului (`src/app/Manual.tsx`, ADR 0058). Cine îl folosește decide ce înseamnă un link intern (`legaturi`).
  */
 
 /** Unde duce un link intern: adresa (pentru clicul de mijloc, „deschide în filă nouă”) și ce face clicul simplu. */

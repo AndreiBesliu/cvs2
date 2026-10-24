@@ -9,6 +9,7 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { DIR_DOCUMENTATIE, FISIER_CATALOG, FISIER_ROADMAP, FISIER_ROADMAP_EN, esteCatalog, esteRoadmap, fisierDocument } from '../shared/documentatie.ts';
+import { DIR_MANUAL, esteManual, fisierManual, LIMBI_MANUAL } from '../shared/manual.ts';
 import { DOAR_ONLINE, inPrecache, motivPrecache } from '../shared/precache.ts';
 
 /**
@@ -403,6 +404,14 @@ if (!esteRoadmap(roadmapEnCitit) || roadmapEnCitit.limba !== 'en' || roadmapEnCi
   console.error(`dist/${FISIER_ROADMAP_EN} lipsește, are altă formă sau alte etape decât dist/${FISIER_ROADMAP} (ADR 0056).`);
   process.exit(1);
 }
+// Manualul utilizatorului (ADR 0058): ambele limbi, cu aceleași capitole, și în precache (se citește și fără rețea).
+const manualeCitite = LIMBI_MANUAL.map((l): unknown => (a.has(fisierManual(l)) ? JSON.parse(readFileSync(join('.tmp/build-1', fisierManual(l)), 'utf8')) : null));
+const capitoleManual = manualeCitite.map((m) => (esteManual(m) ? m.capitole.map((c) => c.id).join(',') : null));
+if (capitoleManual.some((c, k) => c === null || c !== capitoleManual[0] || (manualeCitite[k] as { limba?: string }).limba !== LIMBI_MANUAL[k])
+  || LIMBI_MANUAL.some((l) => !manifest.has(fisierManual(l)))) {
+  console.error(`Manualul (dist/${DIR_MANUAL}/): lipsește, are altă formă, alte capitole într-o limbă sau nu e în precache (ADR 0058).`);
+  process.exit(1);
+}
 const faraFisier = catalogCitit.documente.filter((d) => !a.has(fisierDocument(d.cale)));
 if (faraFisier.length > 0) {
   console.error(`Documente din catalog fără fișierul lor în dist/: ${faraFisier.map((d) => d.cale).join(', ')}.`);
@@ -465,6 +474,7 @@ console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționar
 console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
 console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`)).join(', ')} și ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere).`);
 console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip (în engleză ${gz(join('.tmp/build-1', FISIER_ROADMAP_EN)).toFixed(1)} kB, ${roadmapEnCitit.netraduse} texte netraduse), ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
+console.log(`Manualul (în precache): ${LIMBI_MANUAL.map((l) => `${l} ${gz(join('.tmp/build-1', fisierManual(l))).toFixed(1)} kB gzip`).join(', ')}, ${capitoleManual[0]?.split(',').length ?? 0} capitole.`);
 console.log(`Cu un proiect salvat, ușa vine înaintea primei randări: +${kbUsa.toFixed(1)} kB (plafon ${PLAFON_USA_KB}; cu pornirea ${(pornire + kbUsa).toFixed(1)} / ${PLAFON_PORNIRE_KB}) (${inchidere(usa).map((r) => r.replace('assets/', '')).join(', ')}).`);
 rmSync('.tmp/build-1', { recursive: true, force: true });
 rmSync('.tmp/build-2', { recursive: true, force: true });

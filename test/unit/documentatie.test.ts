@@ -437,7 +437,14 @@ test('poarta pe arborele real copiat: un tabel stricat face generarea să pice, 
     for (const f of ['PLAN.md', 'CLAUDE.md', 'DEVLOG.md']) cpSync(f, join(dir, f));
     cpSync('docs/etape', join(dir, 'docs/etape'), { recursive: true });
     cpSync('docs/adr', join(dir, 'docs/adr'), { recursive: true });
+    cpSync('docs/manual', join(dir, 'docs/manual'), { recursive: true });
     assert.deepEqual([...genereazaDocumentatia(dir).keys()], [...GENERAT.keys()], 'copia întreagă se generează la fel');
+    // Manualul (ADR 0058) are aceeași poartă: un capitol fără id în engleză oprește generarea, cu fișierul lui.
+    const en = join(dir, 'docs/manual/en.md');
+    const textEn = readFileSync(en, 'utf8');
+    writeFileSync(en, textEn.replace(/%% capitol: export\r?\n/, ''));
+    pica(() => genereazaDocumentatia(dir), 'docs/manual/en.md', /n-are „%% capitol: id”/);
+    writeFileSync(en, textEn);
     const fisa3 = join(dir, 'docs/etape/etapa-03.md');
     writeFileSync(fisa3, readFileSync(fisa3, 'utf8').replace('| # | Started | Completed | Treceri | Nota |', '| # | Început | Completed | Treceri | Nota |'));
     pica(() => genereazaDocumentatia(dir), 'docs/etape/etapa-03.md', /Jurnalul/);

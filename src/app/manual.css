@@ -1,0 +1,150 @@
+/* Fereastra manualului (ADR 0058): cuprinsul în stânga, capitolul în dreapta; pe un ecran îngust, cuprinsul deasupra. */
+.manual {
+  width: min(1080px, calc(100vw - 32px));
+  height: min(820px, calc(100vh - 32px));
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--s-panou);
+  color: var(--t);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+  box-shadow: var(--umbra-2);
+  overflow: hidden;
+}
+
+.manual:not([open]) {
+  display: none;
+}
+
+.manual::backdrop {
+  background: var(--fond);
+}
+
+.manual-sus {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.manual-sus h2 {
+  margin: 0;
+  font-size: var(--fs-4);
+  flex: none;
+}
+
+.manual-cauta {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 24rem;
+  min-height: var(--tinta);
+  padding: 0 var(--sp-3);
+  font: inherit;
+  font-size: var(--fs-3);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+}
+
+.manual-cauta:focus-visible {
+  outline: 2px solid var(--l-focus);
+  outline-offset: 1px;
+}
+
+.manual-inchide {
+  margin-left: auto;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.manual-mesaj {
+  margin: var(--sp-4);
+}
+
+.manual-corp {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) 1fr;
+}
+
+/* Cuprinsul e un `nav`, dar nu bara segmentată a aplicației (stilul global al lui `nav`). */
+.manual-cuprins {
+  display: block;
+  overflow-y: auto;
+  padding: var(--sp-3) var(--sp-2);
+  border-radius: 0;
+  background: transparent;
+  border-right: 1px solid var(--l-margine);
+}
+
+.manual-cuprins ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.manual-cuprins button {
+  width: 100%;
+  min-height: var(--tinta);
+  padding: var(--sp-1) var(--sp-3);
+  justify-content: flex-start;
+  text-align: left;
+  border-radius: var(--r-1);
+  font-size: var(--fs-3);
+  font-weight: 400;
+  color: var(--t);
+}
+
+.manual-cuprins button[aria-current='page'] {
+  background: var(--s-ales);
+  font-weight: 600;
+}
+
+.manual-niciunul {
+  margin: var(--sp-3);
+  font-size: var(--fs-2);
+}
+
+.manual-text {
+  overflow-y: auto;
+  padding: var(--sp-4) var(--sp-5) var(--sp-5);
+  outline: none;
+}
+
+.manual-titlu-capitol {
+  margin-top: 0;
+  font-size: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .manual-sus {
+    flex-wrap: wrap;
+  }
+
+  .manual-cauta {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .manual-corp {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .manual-cuprins {
+    max-height: 9.5rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--l-margine);
+  }
+}

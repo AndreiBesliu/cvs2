@@ -45,6 +45,31 @@ const Vedere3D = lazy(() => import('./Vedere3D.tsx').then((m) => ({ default: m.V
     </span>
   ),
 })));
+
+/**
+ * Manualul (documentația live, ADR 0058): fereastra lui, adusă la primul „?” sau F1. Dacă nu vine, se spune, sus pe
+ * ecran, până la clic.
+ */
+const Manual = lazy(() => import('./Manual.tsx').then((m) => ({ default: m.Manual }), () => ({
+  default: ({ onInchide }: { readonly onInchide: () => void }) => (
+    <button type="button" className="cip cip-rosu" role="status" data-testid="manual-neincarcat" onClick={onInchide}
+      style={{ position: 'fixed', left: '50%', top: 96, translate: '-50% 0', zIndex: 20, pointerEvents: 'auto' }}>
+      {t('editare.manual.neincarcat')}
+    </button>
+  ),
+})));
+
+/**
+ * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
+ * paleta), apoi vederea 3D, altfel unealta aleasă. Id-urile sunt cele din `%% acopera:` ale manualului.
+ */
+function usaDeAcum(unealta: Unealta, vedere3d: boolean): string {
+  if (document.querySelector('[aria-labelledby="export-titlu"]')) return 'export.gcode';
+  if (document.querySelector('[aria-labelledby="import-titlu"]')) return 'import.svg';
+  if (document.querySelector('.paleta[role="dialog"]')) return 'vedere.paleta';
+  if (vedere3d) return 'editare.3d';
+  return `unealta.${unealta}`;
+}
 /** Raza cercului pus cu un clic, fără tragere (ADR 0052), până o schimbă omul. */
 const RAZA_IMPLICITA = 15;
 /** O tragere mai scurtă de atât (pe ecran) nu desenează nimic. */
@@ -122,6 +147,9 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [vedere3d, setVedere3d] = useState(false);
   const vedere3dRef = useRef(vedere3d);
   vedere3dRef.current = vedere3d;
+  // Manualul deschis, cu ușa de la deschidere (capitolul ei); `null`: închis.
+  const [manual, setManual] = useState<{ readonly usa: string | null } | null>(null);
+  const unealtaRef = useRef<Unealta>('selectie');
   // Locul uneltelor din bara de sus (ADR 0052): îl desenează aplicația, iar modulul ăsta îl umple, printr-un portal.
   const [loc, setLoc] = useState<HTMLElement | null>(null);
   const [locExtensie, setLocExtensie] = useState<HTMLElement | null>(null);
@@ -132,6 +160,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const tinteToate = useMemo(() => tinteFoaie(doc, new Set(), true), [doc]);
   // Gestul îl dă pânza printr-o funcție stabilă; starea de acum o citește de aici (fără închideri vechi).
   const scrieRaza = (r: number): void => { setRaza(r); setTextRaza(textNumar(r)); scrieLocal(CHEIE_RAZA, String(r)); };
+  unealtaRef.current = unealta;
   const acum = useRef({ unealta, laturi, raza, scrieRaza, lipire, pasGrila, tinteToate, ruleaza, a: null as Punct | null });
   acum.current = { ...acum.current, unealta, laturi, raza, scrieRaza, lipire, pasGrila, tinteToate, ruleaza };
   const [gestDesen] = useState(() => {
@@ -218,6 +247,13 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   useEffect(() => {
     const apasa = (e: KeyboardEvent): void => {
       if (e.ctrlKey || e.metaKey || e.defaultPrevented) return;
+      // F1 (ADR 0058): manualul, la capitolul de acum, de oriunde (și peste o fereastră a aplicației); altfel Edge și-ar
+      // deschide propriul ajutor.
+      if (e.key === 'F1') {
+        e.preventDefault();
+        setManual({ usa: usaDeAcum(unealtaRef.current, vedere3dRef.current) });
+        return;
+      }
       const tinta = e.target;
       const peCorp = tinta === document.body || tinta === document.documentElement;
       // Pe pânză sau în bara uneltelor (după un clic pe „Aliniază”, săgețile continuă), dar nu într-un câmp.
@@ -301,6 +337,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
 
   return (
     <div className="editare" ref={radacina}>
+      {manual ? (
+        <Suspense fallback={null}>
+          <Manual usa={manual.usa} onInchide={() => { setManual(null); }} />
+        </Suspense>
+      ) : null}
       {vedere3d ? (
         <Suspense fallback={null}>
           <Vedere3D doc={doc} marime={marime} zona={zona} onInchide={() => { setVedere3d(false); }} />
@@ -372,6 +413,14 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             </button>
           </span>
         );
+        const ajutorSectiune = (
+          <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.manual.sectiune')} data-testid="extensie-ajutor">
+            <button type="button" className="aliniaza manual-buton" title={t('editare.manual')} aria-label={t('editare.manual')} data-editare="manual"
+              onClick={() => { setManual({ usa: null }); }}>
+              ?
+            </button>
+          </span>
+        );
         const sectiuni = (
           <>
             {aliniereSectiune}
@@ -379,6 +428,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {oglindireSectiune}
             <span className="separator" aria-hidden="true" />
             {vedereSectiune}
+            <span className="separator" aria-hidden="true" />
+            {ajutorSectiune}
           </>
         );
         const bara = (

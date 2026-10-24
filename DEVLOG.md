@@ -2471,3 +2471,29 @@ unitare, una picată (lista fixată din proba documentației), reparată și rul
 99,8 / 100); totalul 264,9 → 265,4 / 300 kB; bucata `Vedere3D` 6,7 kB gzip, la primul clic.
 **Publicat pe test:** 24.10, workflow-ul `publica` pe `fde0a05` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
 instanța de test: bucata `Vedere3D` cerută abia la clic; placa 300 × 200 simulată la 0,25 mm, blocul 1, adâncimea 3.
+
+## 2026-10-24 — Documentația live: manualul utilizatorului (Model: Claude Opus 5.5)
+
+**Prompt:** „Trecem mai departe” (după „Vrei o recenzie independentă a feliei cu agenți, cam 1 M tokeni? Sau trecem mai
+departe fără ea?”).
+**Started:** 24.10, ~15:25. Felia următoare din fișe: **3.F, documentația live** (cererea din 19.10, „vreau sa mentinem ideea de
+documentatie, una live si una admin”; ADR 0048, „Felia următoare”), fără agenți: manualul utilizatorului în română și în
+engleză, în repo (`docs/manual/`), generat la build și ținut și offline, deschis din aplicație (butonul „?” și F1, la capitolul
+de acum), cu poarta de acoperire: fiecare acțiune din registru, fiecare unealtă și control al editării și fiecare scurtătură au
+un capitol care le numește cu eticheta din interfață, în ambele limbi.
+**Treceri:** (1) contractul (`shared/manual.ts`), generatorul și poarta lui (`scripts/manual.ts`, din generarea documentației;
+în precache), fereastra (`src/app/Manual.tsx`), butonul „?” și F1 în modulul editării, textul celor două limbi (14 capitole),
+poarta de acoperire (`test/unit/manual.test.ts`), probele e2e; (2) ce au prins porțile și controalele: poarta a găsit două
+texte care nu numeau butonul („vederea 3D” față de „Vedere 3D”; „applies the operations” față de „Apply the operations”);
+proba tastelor din manual era oarbă (Delete și Ctrl+Z se anulau: controlul negativ trecea), refăcută cu fiecare tastă pe rând;
+controlul plasei de precache s-a aplicat întâi nul (sed-ul nu se potrivea), refăcut cu un script, apoi a căzut cum trebuie;
+regula de import „docs-izolat” a cerut fereastra în afara lui `src/docs/` (mutată în `src/app/`); proba PWA „după o publicare”
+a căzut: simularea publicării redenumea doar câteva bucăți, dar rescria conținutul tuturor, deci bucata nouă a cititorului de
+markdown (comună cu `/admin`) păstra numele cu alt conținut, iar workerul servea copia veche (React de două ori). Verificat că
+un build adevărat redenumește bucata (o schimbare a pornirii: `Markdown-DNScKQQI` → `Markdown-D5T4IiLM`); simularea
+redenumește acum și bucățile care pomenesc un nume schimbat. Aspectul (capturi luminos / întunecat / telefon): cuprinsul lua
+stilul global al lui `nav` (bara segmentată), iar pe telefon căutarea era strivită; reparate.
+**Completed:** 24.10 16:50. Fără agenți (regula proiectului: acordul și costul spuse înainte). `npm run rapid` RC 0 (7 142 de
+teste unitare, 0 picate, 8 sărite); e2e 181 / 181 în Edge (5 noi și manualul offline în proba PWA); emulatoarele: 36 de probe
+ale funcțiilor, 13 e2e. Pornirea neschimbată (95,1 kB; cu ușa 99,8 / 100); totalul 265,4 → 271,6 / 300 kB (fereastra 1,8 kB,
+cititorul de markdown ieșit din `/admin` într-o bucată comună 3,9 kB); precache 50 de fișiere, cu manualul (RO 6,8, EN 6,6 kB gzip).

@@ -15,6 +15,7 @@
  * Determinist: fără ore, fișierele în ordinea căilor, textul cu LF (un checkout cu CRLF dă aceiași octeți).
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { EroareManual, genereazaManualul } from './manual.ts';
 import { CALE_DICTIONAR_EN, citesteDictionar, traduceRoadmap } from './traducere.ts';
 import { join } from 'node:path';
 import { ancora, citesteTabel, parseazaInline, parseazaMarkdown, textSimplu, type Bloc, type TabelBrut } from '../src/docs/markdown.ts';
@@ -649,8 +650,17 @@ export function genereazaDocumentatia(radacina: string): Map<string, string> {
     pune(a.cale, 'adr', a.text, `${x.numar} · ${textSimpluMd(x.titluScurt)}`, x);
   }
   const catalog: Catalog = { schema: 1, documente };
+  // Manualul utilizatorului (ADR 0058): aceeași generare, aceeași poartă (o sursă care nu se poate citi oprește build-ul).
+  let manual: Map<string, string>;
+  try {
+    manual = genereazaManualul(citeste);
+  } catch (e) {
+    if (e instanceof EroareManual) throw new EroareDocumentatie(e.cale, e.message.slice(e.cale.length + 2));
+    throw e;
+  }
 
   const out: [string, string][] = [
+    ...manual,
     [FISIER_ROADMAP, JSON.stringify(roadmap)],
     [FISIER_ROADMAP_EN, JSON.stringify(roadmapEn)],
     [FISIER_CATALOG, JSON.stringify(catalog)],
