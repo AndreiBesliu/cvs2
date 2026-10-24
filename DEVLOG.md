@@ -2606,3 +2606,8 @@ lungi tăiate cu „…” în cipul de jos: scurtate, detaliile rămân în man
 **Completed:** 24.10 23:15. Fără agenți. `npm run rapid` RC 0 (7 173 de teste unitare, 7 noi, 0 picate, 8 sărite); determinismul,
 licențele verzi. E2e 197 / 197 în Edge (5 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,2 kB;
 cu ușa 99,9 / 100); totalul 280,1 → 283,8 / 300 kB; manualul are 16 capitole.
+**Publicat pe test:** 24.10, workflow-ul `publica` pe `1ebd1ea` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
+instanța de test (după oferta de actualizare a PWA-ului): Pen-ul e în bară; un colț, un nod tras și încă un colț, apoi Enter,
+dau o cale deschisă de 2 segmente, aleasă, tăiată pe linie; în Noduri, nodul tras e „ambele”, cu 2 mânere și butonul lui apăsat;
+„pe o parte” dă înainte, din nou înapoi; „colț”, apoi „ambele” (mânerele pe linie); 0 erori în jurnal; anulările au readus
+documentul.
