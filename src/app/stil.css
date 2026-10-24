@@ -356,6 +356,10 @@ button[data-icona]:disabled > .eticheta {
   visibility: hidden;
 }
 
+/*
+ * Marca stă în coloana ei: cu un font mai lat (Linux, 24.10: 297 px peste bara care începea la 282, la 1280 px), titlul se
+ * strânge, cu „…”, în loc să intre peste bara de acțiuni. Fără `max-width`, lățimea ei minimă era tot textul (`nowrap`).
+ */
 .marca {
   grid-area: marca;
   justify-self: start;
@@ -365,6 +369,7 @@ button[data-icona]:disabled > .eticheta {
   min-height: calc(var(--tinta) + 10px);
   padding: 0 var(--sp-2) 0 var(--sp-4);
   min-width: 0;
+  max-width: 100%;
 }
 
 h1 {

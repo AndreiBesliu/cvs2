@@ -399,10 +399,13 @@ test('transformările (ADR 0052): mânerele de scalare și rotire, refuzul inexa
 });
 
 test('bara de sus (ADR 0052): uneltele încap între marcă și căutare la 1280, 1366 și 1440 px, și cu câmpul grilei deschis', async ({ page }) => {
-  for (const latime of [1280, 1366, 1440]) {
+  // A doua trecere lățește literele antetului: pe Linux (CI), fontul mai lat a dus marca peste bară (24.10), iar local nu.
+  for (const [latime, lat] of [[1280, false], [1366, false], [1440, false], [1280, true]] as const) {
     await page.setViewportSize({ width: latime, height: 760 });
     await page.goto('/');
     await expect(page.getByTestId('bara-editare')).toBeVisible();
+    // Prin CSSOM (CSP-ul aplicației refuză un <style> injectat, dar nu stilul pus din script).
+    if (lat) await page.evaluate(() => { for (const e of document.querySelectorAll<HTMLElement>('.sus h1, .sus .instanta, .sus .cu-eticheta')) e.style.letterSpacing = '2px'; });
     for (const grila of [false, true]) {
       if (grila) await page.locator('[data-editare="grila"]').click();
       const [marca, bara, unelte] = await Promise.all(['.sus > .marca', '.sus > .bara', '.sus > .unelte'].map(async (s) => {
@@ -410,7 +413,7 @@ test('bara de sus (ADR 0052): uneltele încap între marcă și căutare la 1280
         if (!b) throw new Error(`${s} n-are cutie`);
         return b;
       }));
-      const unde = `${latime} px${grila ? ', cu grila' : ''}`;
+      const unde = `${latime} px${grila ? ', cu grila' : ''}${lat ? ', litere lățite' : ''}`;
       expect(marca!.x + marca!.width, unde).toBeLessThanOrEqual(bara!.x);
       expect(bara!.x + bara!.width, unde).toBeLessThanOrEqual(unelte!.x);
       // „Exportă” se vede întreg: punctul din mijlocul lui e chiar butonul, nu altceva peste el.

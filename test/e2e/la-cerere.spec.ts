@@ -225,13 +225,20 @@ test.describe('alegerea cu clicul, la cerere', () => {
     await page.mouse.click(p.x, p.y);
     await expect(page.getByTestId('selectie')).toContainText('Nimic selectat');
     await expect(page.getByTestId('jurnal')).toHaveText('1 eroare în jurnalul local');
-    // Codul cere bucata din nou la fiecare clic (`alegereLaCerere` uită eșecul), dar Edge ține eșecul unui `import()` în
-    // harta modulelor până la reîncărcare: cererea nu mai pleacă în rețea, iar clicul spune din nou că n-a putut.
+    // Codul cere bucata din nou la fiecare clic (`alegereLaCerere` uită eșecul). Ce face browserul cu un `import()` eșuat
+    // diferă (măsurat pe 24.10, ambele Edge 156): pe Windows ține eșecul în harta modulelor până la reîncărcare (o singură
+    // cerere în rețea), pe Linux (CI) îl reîncearcă (montarea și cele două clicuri: 3 cereri). Clicul spune de fiecare dată
+    // că n-a putut.
     await page.mouse.click(p.x, p.y);
     await expect(page.getByTestId('jurnal')).toHaveText('2 erori în jurnalul local');
     await expect(page.getByTestId('selectie')).toContainText('Nimic selectat');
-    expect(cereri).toBe(1);
+    expect([1, 3]).toContain(cereri);
     await page.unroute(/actiuniAlegere-[^/]*\.js$/);
+    if (cereri === 3) {
+      // Unde browserul reîncearcă, rețeaua revenită ajunge fără reîncărcare: clicul următor alege.
+      await page.mouse.click(p.x, p.y);
+      await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00');
+    }
     await page.reload();
     const dupa = await ecran(page, await vedere(page));
     const q = dupa(30, 30);

@@ -422,9 +422,12 @@ test('un export în curs în fila care citește, când scriitorul salvează: nu 
   await adauga(page, 'cerc');
   await expect.poll(async () => (await versiuni(page)).length).toBe(1);
   const b = await context.newPage();
-  // Calculul exportului se încarcă la cerere: în fila B îl întârziem 2 s, cât să salveze scriitorul între timp.
+  // Calculul exportului se încarcă la cerere: în fila B îl ținem până salvează scriitorul (nu un timp fix: adăugarea prin
+  // paletă, în fila A, a trecut pe CI de 2 s, iar exportul ieșea înaintea salvării).
+  let elibereaza = (): void => undefined;
+  const salvat = new Promise<void>((r) => { elibereaza = r; });
   await b.route('**/assets/actiuniExportCalcul-*.js', async (route) => {
-    await new Promise((r) => { setTimeout(r, 2000); });
+    await salvat;
     await route.continue();
   });
   await b.goto('/');
@@ -434,8 +437,10 @@ test('un export în curs în fila care citește, când scriitorul salvează: nu 
   await b.locator('[data-actiune="export.gcode"]').click();
   await b.locator('[data-buton="exporta"]').click();
   await adauga(page, 'dreptunghi');
+  await expect.poll(async () => (await versiuni(page)).map(([, r]) => r)).toContain(2);
+  elibereaza();
   await expect(b.getByTestId('export-stare')).toContainText('Proiectul s-a schimbat în altă filă');
-  await b.waitForTimeout(2500);
+  await b.waitForTimeout(1500);
   expect(descarcari).toBe(0);
   // Exportul următor e al versiunii noi, cu ambele forme.
   const d = b.waitForEvent('download');
