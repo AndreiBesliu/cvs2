@@ -89,6 +89,25 @@ Freza e cea a foii (la început, freza plată Ø6). Operațiile se schimbă la e
 În paleta de comenzi mai sunt **Adaugă dreptunghi** (100 × 60 mm) și **Adaugă cerc** (raza 15 mm), care pun forma într-un
 loc fix pe foaie.
 
+## Unealta Pen
+%% capitol: pen
+%% acopera: unealta.pen
+
+Unealta **Pen** (`B`) desenează o cale nod cu nod, cu linii și curbe. Fiecare nod e un **colț** sau face **curbă**, pe ambele
+părți sau doar pe o parte; tipurile sunt aceleași ca în unealta [Noduri](#noduri), unde se pot schimba oricând.
+- **Clic**: un colț (segmentul până la el e drept, dacă nici nodul dinainte n-are mâner spre el).
+- **Tragere**: un nod cu **curbă pe ambele părți**; tragi mânerul de înainte, iar cel de înapoi stă în oglindă (nodul e neted).
+- **Shift + tragere**: **curbă pe o parte**, doar înainte: linia care vine intră dreaptă în nod, segmentul următor face curbă.
+- **Clic pe ultimul nod**: îi scoate mânerul de înainte (curba rămâne doar înapoi); o tragere din el îi pune unul nou.
+- **Clic pe primul nod** închide calea (o tragere de acolo îi pune mânerele primului nod). O cale închisă are cel puțin trei
+  noduri, sau două cu o curbă între ele.
+- **Enter** sau **dublu clic** termină calea deschisă; **Backspace** (sau Delete) scoate ultimul nod pus; **Esc** renunță la
+  calea începută (încă un Esc întoarce la Selecție).
+
+Nodurile se lipesc ca orice altceva (vezi Lipire în [Pânza](#panza)); mânerele nu. Segmentul următor se vede punctat până la
+maus. Forma terminată e aleasă, cu operația implicită a unei căi (vezi [Desenul](#desen)): închisă, o insulă; deschisă, tăiată
+pe linie. Pen-ul rămâne ales pentru calea următoare.
+
 ## Selecția și editarea
 %% capitol: selectie
 %% acopera: unealta.selectie, selectie.la-punct, selectie.din-lista, document.muta-selectia, document.duplica-selectia, document.sterge-selectia, istoric.anuleaza, istoric.reface, document.pozitioneaza, document.roteste, document.forma
@@ -161,6 +180,19 @@ Unealta **Noduri** (`N`) arată nodurile (vârfurile) formei alese și le schimb
 - **dublu clic pe o latură** adaugă un nod acolo, fără să schimbe forma (o linie, un arc sau o curbă se împart exact);
 - un **clic pe un nod** îl alege; **Delete** (sau Backspace) îl scoate, `Esc` îl lasă. Deocamdată se scot doar nodurile dintre
   două linii; o formă închisă păstrează cel puțin trei noduri.
+
+**Tipul nodului.** Un nod e un colț (pătrat pe pânză) sau face curbă (rotund), pe ambele părți sau doar pe o parte, ca în
+unealta [Pen](#pen). Nodul ales își arată mânerele; butoanele din bara de sus, de lângă unelte, îi schimbă tipul:
+- **Colț**: scoate mânerele (o curbă rămasă fără mânere redevine linie);
+- **Curbă pe ambele părți**: pune mânerele pe aceeași dreaptă (nodul devine neted), cele noi pe bisectoarea direcțiilor din nod,
+  cât o treime din segmentul lor;
+- **Curbă pe o parte**: păstrează mânerul de înainte (sau pune unul în prelungirea liniei care vine, ca linia să intre lin în
+  curbă) și îl scoate pe celălalt; încă un clic trece curba pe cealaltă parte.
+
+**Trage un mâner** ca să schimbi curba; pe un nod neted, mânerul de pe cealaltă parte se rotește odată cu el (își păstrează
+lungimea). Cu `Alt`, mânerele se despart (nodul rămâne curbă pe ambele părți, dar cu un colț). Lângă un arc (colțurile
+rotunjite, cercul), nodul nu primește mâner: arcul ar trebui aproximat, iar sfatul spune asta; Colț merge oricând. Capătul unei
+căi deschise are o singură parte.
 
 Nodurile se editează pe o singură formă, a cărei piesă are un singur contur și nu e folosită și de alte forme (o piesă
 importată cu mai multe contururi, deocamdată, nu). Un dreptunghi sau un cerc devine la prima schimbare o **cale** cu același
@@ -298,13 +330,16 @@ rămasă cum ai rotit-o. `Esc`, butonul 3D sau o unealtă de desen întorc la p�
 | `Ctrl+K` | Caută o comandă |
 | `Home` | Arată toată foaia |
 | `T` | Arată traseul |
-| `V` `S` `N` `R` `O` `E` `L` `P` | uneltele: Selecție, Transformare, Noduri, Dreptunghi, Cerc, Elipsă, Linie, Poligon |
+| `V` `S` `N` `B` `R` `O` `E` `L` `P` | uneltele: Selecție, Transformare, Noduri, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon |
 | `Shift+H`, `Shift+V` | Oglindește orizontal, Oglindește vertical |
 | săgețile | mută selecția 1 mm (Shift: 10 mm, Alt: 0,1 mm); în vederea 3D, rotesc placa |
 | `Shift` + clic, `Shift` + tragere | adaugă la selecție (la clic, o formă aleasă deja iese din ea) |
 | `Alt`, cât tragi | inversează lipirea |
 | `Delete`, `Backspace` (cu unealta Noduri și un nod ales) | scoate nodul ales |
-| `Esc` | anulează forma începută, lasă nodul ales, întoarce la Selecție, închide vederea 3D și ferestrele |
+| `Enter` (cu unealta Pen) | termină calea începută |
+| `Backspace`, `Delete` (cu unealta Pen și o cale începută) | scoate ultimul nod pus |
+| `Alt`, cât tragi un mâner (unealta Noduri) | desparte mânerele nodului |
+| `Esc` | anulează forma sau calea începută, lasă nodul ales, întoarce la Selecție, închide vederea 3D și ferestrele |
 | `F1` | manualul, la capitolul de acum |
 
 Pe Mac, `Ctrl` e `⌘`.

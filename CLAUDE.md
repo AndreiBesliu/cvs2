@@ -80,6 +80,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   din extensia barei (secțiunea Copiere), cu verdictul comun acțiunii (`motivCopiereRetea`); calculul pur în `src/model/retea.ts`.
   **Editarea nodurilor (ADR 0062)** gata pe 24.10: unealta Noduri (N), prin `document.forma` (nimic nou în pornire); mutarea cu
   lipirea, nodul nou exact pe linie, arc și cubică, scoaterea doar dintre linii; calculul pur în `src/model/noduri.ts`.
+  **Unealta Pen și tipurile nodurilor (ADR 0063)** gata pe 24.10: Pen-ul (B) prin `document.deseneaza`; colț / curbă pe ambele
+  părți / pe o parte, deduse din mânere (fără schemă nouă), schimbate din bara de sus în unealta Noduri; arcele nu primesc mâner.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

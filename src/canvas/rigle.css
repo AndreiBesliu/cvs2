@@ -155,6 +155,51 @@
   pointer-events: none;
 }
 
+/* Tipurile nodurilor și unealta Pen (ADR 0063): nodurile cu curbă rotunde, mânerele nodului ales, calea începută cu segmentul
+   următor punctat; tipurile nodului ales stau printre butoanele barei de sus. */
+.nod-curba {
+  shape-rendering: auto;
+}
+
+.maner-linie {
+  stroke: var(--l-focus);
+  stroke-width: 1;
+}
+
+.maner-nod {
+  fill: var(--s-panou);
+  stroke: var(--l-focus);
+  stroke-width: 1.5;
+}
+
+.pen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.panza-cutie:has(.pen) .panza {
+  cursor: crosshair;
+}
+
+.drum-pen {
+  fill: none;
+  stroke: var(--panza-selectie, var(--a));
+  stroke-width: 1.5;
+}
+
+.pen-elastic {
+  fill: none;
+  stroke: var(--panza-selectie, var(--a));
+  stroke-width: 1;
+  stroke-dasharray: 6 3;
+}
+
+.loc-noduri,
+.noduri-tipuri {
+  display: contents;
+}
+
 /* Copierea în rețea (ADR 0061): panoul sub butonul lui, previzualizarea copiilor pe pânză. */
 .sectiune-retea {
   position: relative;

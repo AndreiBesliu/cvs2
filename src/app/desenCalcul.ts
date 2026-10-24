@@ -9,15 +9,18 @@ import { elipsa, LATURI_MAX, LATURI_MIN, poligonRegulat } from '../model/formePa
 export { LATURI_MAX, LATURI_MIN };
 
 /** Uneltele barei: Selecția, Transformarea (mânerele de scalare și rotire, ADR 0053) și cele de desen. */
-export const UNELTE = ['selectie', 'transformare', 'noduri', 'dreptunghi', 'cerc', 'elipsa', 'linie', 'poligon'] as const;
+export const UNELTE = ['selectie', 'transformare', 'noduri', 'pen', 'dreptunghi', 'cerc', 'elipsa', 'linie', 'poligon'] as const;
 export type Unealta = (typeof UNELTE)[number];
-export type UnealtaDesen = Exclude<Unealta, 'selectie' | 'transformare' | 'noduri'>;
+export type UnealtaDesen = Exclude<Unealta, 'selectie' | 'transformare' | 'noduri' | 'pen'>;
 
-/** Pură: unealta desenează (pânza îi dă gestul), sau alege și editează (Selecția, Transformarea, Nodurile). */
-export const deseneaza = (u: Unealta): u is UnealtaDesen => u !== 'selectie' && u !== 'transformare' && u !== 'noduri';
+/**
+ * Pură: unealta desenează dintr-o tragere (pânza îi dă gestul), sau alege și editează (Selecția, Transformarea, Nodurile);
+ * Pen-ul desenează nod cu nod, cu gestul lui (ADR 0063).
+ */
+export const deseneaza = (u: Unealta): u is UnealtaDesen => u !== 'selectie' && u !== 'transformare' && u !== 'noduri' && u !== 'pen';
 
 /** Tasta fiecărei unelte (fără modificatori). */
-export const TASTE_UNELTE: Readonly<Record<string, Unealta>> = { v: 'selectie', s: 'transformare', n: 'noduri', r: 'dreptunghi', o: 'cerc', e: 'elipsa', l: 'linie', p: 'poligon' };
+export const TASTE_UNELTE: Readonly<Record<string, Unealta>> = { v: 'selectie', s: 'transformare', n: 'noduri', b: 'pen', r: 'dreptunghi', o: 'cerc', e: 'elipsa', l: 'linie', p: 'poligon' };
 
 export interface FormaDesenata {
   readonly forma: FormaDoc;

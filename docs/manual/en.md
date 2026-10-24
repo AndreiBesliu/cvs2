@@ -92,6 +92,26 @@ cutter is the sheet's (at first, a Ø6 flat cutter). Operations are changed at e
 The command palette also has **Add rectangle** (100 × 60 mm) and **Add circle** (radius 15 mm), which put the shape in a
 fixed place on the sheet.
 
+## The Pen tool
+%% capitol: pen
+%% acopera: unealta.pen
+
+The **Pen** tool (`B`) draws a path node by node, with lines and curves. Each node is a **corner** or makes a **curve**, on both
+sides or on one side only; the types are the same as in the [Nodes](#noduri) tool, where they can be changed at any time.
+- **Click**: a corner (the segment up to it is straight, unless the node before has a handle towards it).
+- **Drag**: a node with a **curve on both sides**; you drag the forward handle, and the backward one mirrors it (the node is
+  smooth).
+- **Shift + drag**: a **curve on one side**, forward only: the line coming in enters the node straight, the next segment curves.
+- **Click on the last node**: removes its forward handle (the curve stays backward only); a drag from it gives it a new one.
+- **Click on the first node** closes the path (a drag there sets the handles of the first node). A closed path has at least
+  three nodes, or two with a curve between them.
+- **Enter** or a **double-click** finishes the open path; **Backspace** (or Delete) removes the last node placed; **Esc** drops
+  the path you started (another Esc goes back to Select).
+
+Nodes snap like anything else (see Snap in [The canvas](#panza)); handles do not. The next segment shows dashed up to the
+mouse. The finished shape is chosen, with the default operation of a path (see [Drawing](#desen)): closed, an island; open, cut
+on the line. The Pen stays chosen for the next path.
+
 ## Selecting and editing
 %% capitol: selectie
 %% acopera: unealta.selectie, selectie.la-punct, selectie.din-lista, document.muta-selectia, document.duplica-selectia, document.sterge-selectia, istoric.anuleaza, istoric.reface, document.pozitioneaza, document.roteste, document.forma
@@ -167,6 +187,19 @@ The **Nodes** tool (`N`) shows the nodes (vertices) of the chosen shape and chan
 - **double-click on a side** to add a node there, without changing the shape (a line, an arc or a curve is split exactly);
 - a **click on a node** chooses it; **Delete** (or Backspace) removes it, `Esc` lets it go. For now only the nodes between two
   lines can be removed; a closed shape keeps at least three nodes.
+
+**The node type.** A node is a corner (square on the canvas) or makes a curve (round), on both sides or on one side only, as in
+the [Pen](#pen) tool. The chosen node shows its handles; the buttons in the top bar, next to the tools, change its type:
+- **Corner**: removes the handles (a curve left without handles becomes a line again);
+- **Curve on both sides**: puts the handles on one line (the node becomes smooth), new ones on the bisector of the directions at
+  the node, a third of their segment long;
+- **Curve on one side**: keeps the forward handle (or puts one in line with the incoming line, so the line flows into the
+  curve) and removes the other; another click moves the curve to the other side.
+
+**Drag a handle** to change the curve; on a smooth node, the handle on the other side turns with it (keeping its length). With
+`Alt`, the handles split (the node stays a curve on both sides, but with a corner). Next to an arc (rounded corners, the
+circle), the node gets no handle: the arc would have to be approximated, and the hint says so; Corner always works. The end of
+an open path has a single side.
 
 Nodes are edited on a single shape whose part has a single outline and is not used by other shapes (a part imported with
 several outlines, for now, is not). A rectangle or a circle becomes a **path** with the same outline at the first change (the
@@ -307,13 +340,16 @@ sheet left as you rotated it. `Esc`, the 3D button or a drawing tool go back to 
 | `Ctrl+K` | Search commands |
 | `Home` | Show the whole sheet |
 | `T` | Show toolpath |
-| `V` `S` `N` `R` `O` `E` `L` `P` | the tools: Select, Transform, Nodes, Rectangle, Circle, Ellipse, Line, Polygon |
+| `V` `S` `N` `B` `R` `O` `E` `L` `P` | the tools: Select, Transform, Nodes, Pen, Rectangle, Circle, Ellipse, Line, Polygon |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |
 | the arrow keys | move the selection 1 mm (Shift: 10 mm, Alt: 0.1 mm); in the 3D view, rotate the sheet |
 | `Shift` + click, `Shift` + drag | add to the selection (on a click, a shape already chosen leaves it) |
 | `Alt`, while dragging | inverts snapping |
 | `Delete`, `Backspace` (with the Nodes tool and a node chosen) | removes the chosen node |
-| `Esc` | cancels the shape you started, lets go of the chosen node, goes back to Select, closes the 3D view and the windows |
+| `Enter` (with the Pen tool) | finishes the path you started |
+| `Backspace`, `Delete` (with the Pen tool and a path started) | removes the last node placed |
+| `Alt`, while you drag a handle (Nodes tool) | splits the node's handles |
+| `Esc` | cancels the shape or path you started, lets go of the chosen node, goes back to Select, closes the 3D view and the windows |
 | `F1` | the manual, at the current chapter |
 
 On a Mac, `Ctrl` is `⌘`.

@@ -37,7 +37,7 @@ async function pregateste(page: Page, forma: 'dreptunghi' | 'cerc'): Promise<voi
 test('tragerea unui nod: dreptunghiul devine o cale cu colțul mutat; un pas de anulare', async ({ page }) => {
   await pregateste(page, 'dreptunghi');
   await expect(noduri(page)).toHaveAttribute('data-noduri', '4');
-  await expect(page.getByTestId('noduri-sfat')).toHaveText('Trage un nod; dublu clic pe o latură adaugă unul; Delete scoate nodul ales.');
+  await expect(page.getByTestId('noduri-sfat')).toHaveText('Trage un nod sau un mâner; dublu clic pe o latură: nod nou; Delete scoate nodul ales.');
   // Colțul dreapta-sus al dreptunghiului 100 × 60 din (20, 20), dus în (140, 90).
   await trage(page, { x: 120, y: 80 }, { x: 140, y: 90 });
   await expect(randuri(page).first()).toContainText('cale');

@@ -101,6 +101,10 @@
       "ro": "Textura din freză, ghilotina (grila și așezarea aliniată), burghiele multiple, exportul pentru laser (LightBurn / RDWorks)",
       "en": "Texture from the bit, the guillotine (grid and aligned layout), multiple drills, export for laser (LightBurn / RDWorks)"
     },
+    "10b3ffffc47b0db0": {
+      "ro": "Unealta Pen și tipurile nodurilor, aduse din etapa 6",
+      "en": "The Pen tool and the node types, brought forward from stage 6"
+    },
     "10dc9611cdfbd7cd": {
       "ro": "Personalul și Diagnoza (P0, partea 2; ADR 0040): `staff/{uid}` și rolul în reguli, login Google, primul owner scris din consolă; pagina `/admin` cu fila Erori (și „Rezolvat” prin callable, cu auditul) și Diagnoza minimă (instanța, build-ul, App Check, erorile nerezolvate, funcțiile, marcajele); retenția de 90 de zile (TTL)",
       "en": "Staff and Diagnostics (P0, part 2; ADR 0040): `staff/{uid}` and the role in the rules, Google login, the first owner written from the console; the `/admin` page with the Errors tab (and “Resolved” through a callable, with the audit) and minimal Diagnostics (the instance, the build, App Check, unresolved errors, functions, run markers); 90-day retention (TTL)"
@@ -316,6 +320,10 @@
     "324f4eadc252ef3f": {
       "ro": "logoul trasat; un EPS real",
       "en": "the traced logo; a real EPS"
+    },
+    "3251b711986a6b24": {
+      "ro": "Unealta Pen și tipurile nodurilor",
+      "en": "The Pen tool and the node types"
     },
     "32e55f096f4f3a7c": {
       "ro": "fișierele tale reale",
@@ -1152,6 +1160,10 @@
     "d578db0e7327a624": {
       "ro": "canelura, încrucișarea, roundover",
       "en": "the flute, the crossing, the roundover"
+    },
+    "d6afd5f4598f1f09": {
+      "ro": "**Unealta Pen și tipurile nodurilor, aduse din etapa 6** (fără mașină; ADR 0063; cererea owner-ului: „nodurile vor avea ori colturi ori vor crea curbe, ori in ambele parti ori doar intr-o singura parte”). Pen-ul (B) desenează o cale nod cu nod: clic = colț, tragere = curbă pe ambele părți, Shift + tragere = curbă pe o parte, clic pe ultimul nod = doar înapoi, clic pe primul nod închide, Enter sau dublu clic termină, Backspace scoate ultimul nod, Esc renunță. În unealta Noduri, nodurile cu curbă sunt rotunde, nodul ales își arată mânerele, iar trei butoane din bara de sus îi schimbă tipul (Colț, Curbă pe ambele părți, Curbă pe o parte; încă un clic: cealaltă parte); mânerul tras pe un nod neted îl rotește pe celălalt, Alt le desparte. Lângă un arc, nodul nu primește mâner (refuz cu motiv). Tipul se deduce din mânere: fără schemă nouă; pornirea neschimbată; manualul are capitolul „Unealta Pen”. **Treceri:** (1) modelul comun, Pen-ul, butoanele și mânerele, probele (7 unitare și 5 e2e noi, verzi din prima; patru mutații, în legătura cu interfața și în model, prinse); (2) sfaturile lungi se tăiau cu „…” în cipul de jos: scurtate (detaliile în manual și în titlul uneltei).",
+      "en": "**The Pen tool and the node types, brought forward from stage 6** (no machine; ADR 0063; the owner's request: „nodurile vor avea ori colturi ori vor crea curbe, ori in ambele parti ori doar intr-o singura parte”, i.e. nodes are either corners or make curves, on both sides or on one side only). The Pen (B) draws a path node by node: click = corner, drag = curve on both sides, Shift + drag = curve on one side, click on the last node = backward only, click on the first node closes, Enter or double-click finishes, Backspace removes the last node, Esc cancels. In the Nodes tool, curve nodes are round, the chosen node shows its handles, and three buttons in the top bar change its type (Corner, Curve on both sides, Curve on one side; click again: the other side); a handle dragged on a smooth node turns the other one, Alt splits them. Next to an arc, the node gets no handle (refused with a reason). The type is derived from the handles: no new schema; startup unchanged; the manual has the chapter „The Pen tool”. **Passes:** (1) the shared model, the Pen, the buttons and the handles, the tests (7 unit and 5 new e2e, green at first; four mutations, in the UI wiring and in the model, caught); (2) the long hints were cut with „…” in the bottom chip: shortened (the details are in the manual and in the tool's title)."
     },
     "d945d735d69509b0": {
       "ro": "Bancul vizual v1",

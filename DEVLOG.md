@@ -2588,3 +2588,21 @@ cu ușa 99,9 / 100); totalul 276,8 → 280,1 / 300 kB; manualul are 15 capitole.
 instanța de test (fereastra lată: uneltele apar în bara de sus): dreptunghiul are 4 noduri; dublu clic pe latura de jos dă 5,
 cu nodul nou ales, și o cale; colțul tras dă calea 126,15 × 80; Delete pe nodul nou îl scoate (forma rămâne); trei anulări
 readuc dreptunghiul 100 × 60; 0 erori în jurnal.
+
+## 2026-10-24 — Unealta Pen și tipurile nodurilor (Model: Claude Opus 5.5)
+
+**Prompt:** „unealta de noduri va trebui sa imprumute de la unealta Pen, care inca nu exista. nodurile vor avea ori colturi ori
+vor crea curbe, ori in ambele parti ori doar intr-o singura parte”
+**Started:** 24.10, ~22:40. Felia **6.I↑**, adusă din etapa 6, fără agenți: un model comun de nod (colț, curbă pe ambele părți,
+curbă pe o parte), dedus din mânere, fără schemă nouă; unealta Pen (B) care pune nodurile pe rând (clic, tragere, Shift +
+tragere), prin `document.deseneaza`; în unealta Noduri, mânerele nodului ales și trei butoane care îi schimbă tipul. Arcele nu
+primesc mâner (refuz cu motiv), ca forma să nu se schimbe în tăcere.
+**Treceri:** (1) modelul comun (`src/model/noduri.ts`: `manereNod`, `tipNod`, `schimbaTipNod`, `mutaManer`, `caleDinNoduri`),
+partea pură a Pen-ului (`src/app/penCalcul.ts`), unealta Pen și mânerele / butoanele din Noduri în modulul editării, manualul
+(capitolul „Unealta Pen”, tipurile în „Nodurile”, tastele B, Enter, Backspace), probele; 7 unitare și 5 e2e noi, verzi din prima,
+deci patru mutații ca să le văd dinții (Shift ignorat la Pen și mânerele mereu despărțite, în interfață: 2 e2e picate; rotirea
+mânerului opus și direcția curbei pe o parte, în model: 2 unitare picate), toate restaurate; (2) capturile au arătat sfaturile
+lungi tăiate cu „…” în cipul de jos: scurtate, detaliile rămân în manual și în titlul uneltei.
+**Completed:** 24.10 23:15. Fără agenți. `npm run rapid` RC 0 (7 173 de teste unitare, 7 noi, 0 picate, 8 sărite); determinismul,
+licențele verzi. E2e 197 / 197 în Edge (5 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,2 kB;
+cu ușa 99,9 / 100); totalul 280,1 → 283,8 / 300 kB; manualul are 16 capitole.
