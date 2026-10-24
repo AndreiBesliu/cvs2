@@ -2521,3 +2521,5 @@ pixelii mausului comparată cu toleranță; proba „bucata alegerii care nu vin
 **Completed:** 24.10 18:20. Fără agenți. `npm run rapid` RC 0 (7 149 de teste unitare, 0 picate, 8 sărite); e2e 185 / 185 în
 Edge (4 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e (pe codul de dinaintea mutării lui `instantaLa`, care nu le
 atinge). Pornirea 95,1 kB, cu ușa 99,8 / 100 (clicul: câteva zeci de octeți); totalul 271,6 → 273,2 / 300 kB.
+**Publicat pe test:** 24.10, workflow-ul `publica` pe `07fb822` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
+instanța de test: fereastra (spre dreapta) alege doar dreptunghiul cuprins; intersecția (spre stânga) și cercul atins.
