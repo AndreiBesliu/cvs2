@@ -20,22 +20,21 @@ type Cutie = { readonly minX: number; readonly minY: number; readonly maxX: numb
 
 /**
  * Unde stau riglele (ADR 0060), în pixelii pânzei: rigla de sus deasupra marginii de sus a foii, de la X 0 la lățimea ei,
- * rigla din stânga în stânga marginii din stânga, de la Y 0 la înălțimea ei; amândouă se mută cu foaia. Când marginea foii
- * iese din zona liberă, rigla se oprește pe marginea zonei (nu trece pe sub panouri și bare); întinderea ei se taie la zonă.
- * `null`: rigla n-are nimic de arătat (foaia e în afara zonei pe axa ei).
+ * rigla din stânga în stânga marginii din stânga, de la Y 0 la înălțimea ei; amândouă urmează foaia oriunde, și pe sub bare
+ * și panouri (care plutesc deasupra pânzei). Întinderea se taie doar la marginile pânzei (`pana`), ca o riglă la un zoom mare
+ * să nu fie un desen de kilometri. `null`: rigla e cu totul în afara pânzei.
  */
-export function pozitiaRiglelor(v: Vedere, z: Zona, foaie: { readonly latime: number; readonly inaltime: number }, grosime: number): {
+export function pozitiaRiglelor(v: Vedere, pana: Zona, foaie: { readonly latime: number; readonly inaltime: number }, grosime: number): {
   readonly sus: { readonly x0: number; readonly x1: number; readonly y: number } | null;
   readonly stanga: { readonly y0: number; readonly y1: number; readonly x: number } | null;
 } {
-  const limiteaza = (a: number, de: number, la: number): number => Math.min(Math.max(a, de), Math.max(de, la));
   const sx0 = v.tx, sx1 = v.tx + foaie.latime * v.scara, sySus = v.ty - foaie.inaltime * v.scara, syJos = v.ty;
-  const y = limiteaza(sySus - grosime, z.y, z.y + z.h - grosime);
-  const x = limiteaza(sx0 - grosime, z.x, z.x + z.w - grosime);
-  // Rigla de sus începe după colțul riglei din stânga, ca să nu se suprapună.
-  const x0 = Math.max(sx0, x + grosime), x1 = Math.min(sx1, z.x + z.w);
-  const y0 = Math.max(sySus, y + grosime), y1 = Math.min(syJos, z.y + z.h);
-  return { sus: x1 > x0 ? { x0, x1, y } : null, stanga: y1 > y0 ? { y0, y1, x } : null };
+  const y = sySus - grosime, x = sx0 - grosime;
+  const x0 = Math.max(sx0, pana.x), x1 = Math.min(sx1, pana.x + pana.w);
+  const y0 = Math.max(sySus, pana.y), y1 = Math.min(syJos, pana.y + pana.h);
+  const susVizibila = x1 > x0 && y + grosime > pana.y && y < pana.y + pana.h;
+  const stangaVizibila = y1 > y0 && x + grosime > pana.x && x < pana.x + pana.w;
+  return { sus: susVizibila ? { x0, x1, y } : null, stanga: stangaVizibila ? { y0, y1, x } : null };
 }
 
 /** Sub atât (mm), o formă nu iese din foaie (zgomotul de calcul al unei forme lipite de margine). */

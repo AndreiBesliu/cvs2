@@ -5,36 +5,36 @@ import { cotePeste, EPS_COTA, pozitiaRiglelor } from '../../src/canvas/gradatii.
 import { docDin, ID } from './ajutor-document.ts';
 
 /**
- * Rigla pe marginea foii (ADR 0060): lipită de marginea de sus și din stânga a foii, lungă cât foaia, mutată cu ea; oprită
- * pe marginea zonei libere când foaia iese din ea. Cotele: cât ies formele din foaie, pe fiecare parte.
+ * Rigla pe marginea foii (ADR 0060): lipită de marginea de sus și din stânga a foii, lungă cât foaia, mutată cu ea oriunde,
+ * și pe sub bare și panouri; tăiată doar la marginile pânzei. Cotele: cât ies formele din foaie, pe fiecare parte.
  */
 
 const G = 20;
-const zona = { x: 260, y: 100, w: 760, h: 560 };
+const pana = { x: 0, y: 0, w: 1280, h: 720 };
 const foaie = { latime: 300, inaltime: 200 };
 
 test('rigla de sus deasupra foii, cât foaia; rigla din stânga la stânga ei; colțul nu se suprapune', () => {
   // Foaia de 300 × 200 la 2 px/mm, cu colțul stânga-jos în (300, 600): de la x 300 la 900, de la y 200 la 600.
   const v = { scara: 2, tx: 300, ty: 600 };
-  const { sus, stanga } = pozitiaRiglelor(v, zona, foaie, G);
+  const { sus, stanga } = pozitiaRiglelor(v, pana, foaie, G);
   assert.deepEqual(sus, { x0: 300, x1: 900, y: 180 });
   assert.deepEqual(stanga, { y0: 200, y1: 600, x: 280 });
 });
 
-test('foaia trasă peste marginea zonei: rigla se oprește pe marginea zonei, întinderea se taie la zonă', () => {
-  // Foaia împinsă în sus-stânga: marginea de sus la y 50 (deasupra zonei), marginea din stânga la x 100 (sub panou).
+test('foaia trasă sub bare și panouri: rigla o urmează acolo; se taie doar la marginile pânzei', () => {
+  // Foaia împinsă în sus-stânga: marginea de sus la y 50 (sub bara de sus), marginea din stânga la x 100 (sub panou).
   const v = { scara: 2, tx: 100, ty: 450 };
-  const { sus, stanga } = pozitiaRiglelor(v, zona, foaie, G);
-  assert.equal(sus?.y, zona.y, 'sus: pe marginea de sus a zonei');
-  assert.equal(stanga?.x, zona.x, 'stânga: pe marginea din stânga a zonei');
-  assert.equal(sus?.x0, zona.x + G, 'după colțul riglei din stânga');
-  assert.equal(sus?.x1, 700, 'până la marginea din dreapta a foii');
-  assert.equal(stanga?.y0, zona.y + G);
-  assert.equal(stanga?.y1, 450);
-  // Foaia cu totul în dreapta zonei: rigla de sus n-are ce arăta; cea din stânga rămâne lipită pe marginea din dreapta a zonei.
-  const departe = pozitiaRiglelor({ scara: 2, tx: 1200, ty: 600 }, zona, foaie, G);
-  assert.equal(departe.sus, null);
-  assert.equal(departe.stanga?.x, zona.x + zona.w - G);
+  assert.deepEqual(pozitiaRiglelor(v, pana, foaie, G), { sus: { x0: 100, x1: 700, y: 30 }, stanga: { y0: 50, y1: 450, x: 80 } });
+  // Marginea de sus a foii deasupra pânzei: rigla de sus a ieșit din pânză; cea din stânga se taie la marginea de sus.
+  const sus = pozitiaRiglelor({ scara: 2, tx: 100, ty: 300 }, pana, foaie, G);
+  assert.equal(sus.sus, null);
+  assert.deepEqual(sus.stanga, { y0: 0, y1: 300, x: 80 });
+  // Foaia cu totul în dreapta pânzei: nicio riglă.
+  assert.deepEqual(pozitiaRiglelor({ scara: 2, tx: 1300, ty: 600 }, pana, foaie, G), { sus: null, stanga: null });
+  // La un zoom mare, întinderea se taie la pânză.
+  const zoom = pozitiaRiglelor({ scara: 100, tx: -5000, ty: 20000 }, pana, foaie, G);
+  assert.deepEqual(zoom.sus, null, 'marginea de sus e departe, sus');
+  assert.equal(pozitiaRiglelor({ scara: 100, tx: -5000, ty: 20500 }, pana, foaie, G).sus?.x1, 1280);
 });
 
 test('cotele: cât ies formele din foaie pe fiecare parte; nimic sub zgomot, nimic fără forme', () => {

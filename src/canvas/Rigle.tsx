@@ -9,8 +9,7 @@ import './rigle.css';
  * sunt ale foii (mm, originea în colțul stânga-jos, Y în sus); pânza le arată cu `vedere`.
  *
  * Riglele stau pe marginea foii (ADR 0060): cea de sus deasupra ei, cea din stânga la stânga ei, lungi cât foaia, mutate
- * odată cu ea; oprite pe marginea zonei libere când foaia iese din ea. Formele care ies din foaie au o linie de cotă care
- * continuă rigla, cu cât ies.
+ * odată cu ea, și pe sub bare și panouri. Formele care ies din foaie au o linie de cotă care continuă rigla, cu cât ies.
  */
 
 export const GROSIME_RIGLA = 20;
@@ -22,7 +21,7 @@ type Props = {
   readonly vedere: Vedere;
   readonly latime: number;
   readonly inaltime: number;
-  /** Zona liberă a pânzei, în pixeli din colțul ei: riglele nu ies din ea (se opresc pe marginea ei). */
+  /** Zona liberă a pânzei, în pixeli din colțul ei (ghidajele și liniile de aliniere stau în ea; riglele urmează foaia). */
   readonly zona: Zona;
   readonly foaie: { readonly latime: number; readonly inaltime: number };
   /** Cutia tuturor formelor foii (mm), pentru liniile de cotă ale celor care ies din foaie; `null`: nicio formă. */
@@ -55,7 +54,9 @@ export function Rigle(p: Props): ReactElement {
   const radacina = useRef<HTMLDivElement | null>(null);
   const [tragere, setTragere] = useState<Tragere | null>(null);
   const [editat, setEditat] = useState<{ readonly id: string; readonly text: string } | null>(null);
-  const poz = pozitiaRiglelor(v, z, p.foaie, GROSIME_RIGLA);
+  // Riglele urmează foaia și pe sub bare și panouri (ADR 0060 §2): limita lor e pânza întreagă, nu zona liberă.
+  const pana = { x: 0, y: 0, w: latime, h: inaltime };
+  const poz = pozitiaRiglelor(v, pana, p.foaie, GROSIME_RIGLA);
   const { sus: rs, stanga: rl } = poz;
 
   // Escape anulează un ghidaj tras.
@@ -131,14 +132,14 @@ export function Rigle(p: Props): ReactElement {
 
   /**
    * Liniile de cotă ale formelor care ies din foaie (ADR 0060): în banda riglei, în continuarea ei, de la marginea foii la
-   * marginea formelor, cu cât ies (mm); tăiate la zona liberă.
+   * marginea formelor, cu cât ies (mm); tăiate doar la marginile pânzei.
    */
   const cote = (): ReactElement[] => {
     const c = cotePeste(p.forme, p.foaie), r: ReactElement[] = [];
     const W = p.foaie.latime, H = p.foaie.inaltime, G = GROSIME_RIGLA;
     const eticheta = (mm: number): string => `${p.textPoz(Math.round(mm * 100) / 100)} mm`;
     const pe = (latura: LaturaCota, mm: number, a: number, b: number, orizontala: boolean, banda: number): void => {
-      const lo = Math.max(Math.min(a, b), orizontala ? z.x : z.y), hi = Math.min(Math.max(a, b), orizontala ? z.x + z.w : z.y + z.h);
+      const lo = Math.max(Math.min(a, b), 0), hi = Math.min(Math.max(a, b), orizontala ? latime : inaltime);
       if (hi - lo < 2) return;
       const L = hi - lo, t = eticheta(mm);
       // Eticheta stă la mijloc dacă încape (≈ 5,5 px pe caracter la 9 px monospațiat); altfel, după capătul dinspre forme.

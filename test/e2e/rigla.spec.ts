@@ -3,8 +3,8 @@ import { adauga, vedere } from './ajutor-panza.ts';
 
 /**
  * Rigla pe marginea foii (felia 3.H, ADR 0060), în Edge: rigla de sus deasupra foii și cea din stânga la stânga ei, lungi
- * cât foaia; trasă foaia peste marginea zonei libere, rigla se oprește pe marginea zonei; formele care ies din foaie au o
- * linie de cotă în continuarea riglei, cu cât ies.
+ * cât foaia; trasă foaia sub bare și panouri, rigla o urmează și acolo; formele care ies din foaie au o linie de cotă în
+ * continuarea riglei, cu cât ies.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -26,7 +26,7 @@ async function scrie(page: Page, camp: string, valoare: string): Promise<void> {
   await page.locator(`[data-camp="${camp}"]`).press('Enter');
 }
 
-test('riglele stau pe marginea foii, lungi cât ea; trasă foaia peste zonă, se opresc pe marginea zonei', async ({ page }) => {
+test('riglele stau pe marginea foii, lungi cât ea; trasă foaia sub bare și panouri, o urmează și acolo', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('rigla-sus')).toBeVisible();
   const f = await foaiePeEcran(page);
@@ -38,18 +38,25 @@ test('riglele stau pe marginea foii, lungi cât ea; trasă foaia peste zonă, se
   expect(Math.abs(st.y - f.sus)).toBeLessThan(1.5);
   expect(Math.abs(st.y + st.height - f.jos), 'cât foaia pe înălțime').toBeLessThan(1.5);
 
-  // Foaia trasă în sus și la stânga, pe sub bare și panouri: riglele rămân pe marginea zonei libere.
+  // Foaia trasă în sus și la stânga, pe sub bara de sus și panoul din stânga: riglele rămân lipite de ea.
   const p = await cutie(page, 'panza');
   await page.mouse.move(p.x + p.width / 2, p.y + p.height / 2);
   await page.mouse.down({ button: 'middle' });
-  await page.mouse.move(p.x + p.width / 2 - 250, p.y + p.height / 2 - 150, { steps: 6 });
+  await page.mouse.move(p.x + p.width / 2 - 250, p.y + p.height / 2 - 100, { steps: 6 });
   await page.mouse.up({ button: 'middle' });
   const zona = (await page.locator('.zona-libera').boundingBox())!;
-  await expect.poll(async () => Math.round((await cutie(page, 'rigla-sus')).y)).toBe(Math.round(zona.y));
-  expect(Math.round((await cutie(page, 'rigla-stanga')).x)).toBe(Math.round(zona.x));
+  await expect.poll(async () => (await foaiePeEcran(page)).st).toBeLessThan(zona.x - 30);
   const f2 = await foaiePeEcran(page);
-  const sus2 = await cutie(page, 'rigla-sus');
+  const sus2 = await cutie(page, 'rigla-sus'), st2 = await cutie(page, 'rigla-stanga');
+  expect(f2.sus, 'marginea de sus a foii a trecut deasupra zonei libere').toBeLessThan(zona.y);
+  expect(Math.abs(sus2.y + sus2.height - f2.sus), 'rigla de sus rămâne pe marginea foii, sub bară').toBeLessThan(1.5);
+  expect(Math.abs(sus2.x - f2.st), 'și începe la marginea din stânga a foii, sub panou').toBeLessThan(1.5);
   expect(Math.abs(sus2.x + sus2.width - f2.dr), 'tot până la marginea din dreapta a foii').toBeLessThan(1.5);
+  expect(Math.abs(st2.x + st2.width - f2.st), 'rigla din stânga, lângă marginea foii, sub panou').toBeLessThan(1.5);
+  // Bara de sus și panoul stau deasupra riglei: clicul acolo ajunge la ele, nu la riglă.
+  const panou = (await page.getByTestId('lista-vectori').boundingBox())!;
+  const deasupra = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest('[data-testid="rigla-stanga"]') !== null, [panou.x + panou.width - 5, st2.y + 40] as const);
+  expect(deasupra, 'panoul acoperă rigla').toBe(false);
 });
 
 test('formele care ies din foaie: linia de cotă continuă rigla, cu cât ies; înapoi pe foaie, dispare', async ({ page }) => {

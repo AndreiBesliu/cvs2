@@ -36,8 +36,7 @@ salvarea](#proiect).
 - **Arată toată foaia** (`Home`): încadrează foaia în spațiul dintre panouri.
 
 **Riglele**, în mm, stau pe marginea foii: cea de sus deasupra ei, cea din stânga la stânga ei, lungi cât foaia. La
-deplasare și la zoom se mută odată cu foaia; când marginea foii iese din spațiul dintre panouri, rigla rămâne pe marginea
-lui. Dacă formele ies din foaie, o **linie de cotă** continuă rigla și arată cu câți mm ies, pe fiecare parte.
+deplasare și la zoom se mută odată cu foaia, și pe sub bare și panouri. Dacă formele ies din foaie, o **linie de cotă** continuă rigla și arată cu câți mm ies, pe fiecare parte.
 
 **Ghidajele foii** se fac trăgând dintr-o riglă: din cea de sus iese un
 ghidaj orizontal, din cea din stânga unul vertical. Un ghidaj se mută trăgându-l și se șterge lăsându-l înapoi pe riglă;

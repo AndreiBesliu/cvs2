@@ -2537,6 +2537,11 @@ cu cât ies (mm), pe fiecare parte.
 cu probele lor; rigla nouă (lipită de foaie, oprită pe marginea zonei, gradațiile doar pe foaie, ștergerea ghidajului doar în
 banda riglei) și liniile de cotă; manualul (Pânza, Foaia); probele e2e; (2) capturile: pe o cotă scurtă (10 mm la zoomul de
 pornire), eticheta se călca peste linie: mutată după capătul dinspre forme.
-**Completed:** 24.10 19:25. Fără agenți. `npm run rapid` RC 0 (7 153 de teste unitare, 0 picate, 8 sărite); e2e 187 / 187 în
+**Completed:** 24.10 19:15. Fără agenți. `npm run rapid` RC 0 (7 153 de teste unitare, 0 picate, 8 sărite); e2e 187 / 187 în
 Edge (2 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,1 kB; cu ușa 99,8 / 100); totalul
 273,2 → 274,1 / 300 kB.
+**Publicat pe test:** 24.10, workflow-ul `publica` pe `09f135b` (după rapid-ul verde pe CI, 4 / 4 felii).
+**Corectura owner-ului:** „Rigla trebuie sa urmeze foaia chiar si pe sub meniu” (venit cât se publica). Rigla nu se mai oprește
+pe marginea zonei libere: rămâne lipită de foaie oriunde, și pe sub bare și panouri (care o acoperă, ca pe foaie), tăiată doar
+la marginile pânzei; la fel liniile de cotă. Probele unitare și e2e schimbate pe regula nouă (rigla sub panou, iar panoul
+deasupra ei, cu `elementFromPoint`); ADR 0060 §2, manualul (Pânza) și fișa la zi.
