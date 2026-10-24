@@ -5,6 +5,7 @@ import {
 } from '../model/document.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
+import type { Retea } from '../model/retea.ts';
 import type { Transformare } from '../model/transformare.ts';
 import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
 import type { Actiune } from './actiuni.ts';
@@ -56,6 +57,8 @@ export type ContextDocument = {
   readonly deplasari?: () => readonly { readonly id: string; readonly dx: number; readonly dy: number }[];
   /** Panoul, fără selecție: materialul nou al foii, în mm; doar mărimile scrise. */
   readonly stocNou?: () => { readonly latime?: number; readonly inaltime?: number; readonly grosime?: number };
+  /** Copierea în rețea a selecției (ADR 0061): rânduri × coloane sau pe cerc, din extensia barei. */
+  readonly retea?: () => Retea;
 };
 
 /** Foaia pe care se lucrează; Multi-Plate (mai multe foi pe ecran) vine în etapa 11. */
@@ -194,9 +197,8 @@ export function incape(doc: Document, plus: Numaratoare): boolean {
 }
 
 /** Cât adaugă o copie separată a fiecărei instanțe alese: piesa ei întreagă, cu operațiile ei, și o instanță. */
-function cresteCopia(ctx: ContextDocument): Numaratoare {
-  const doc = ctx.istoric().doc;
-  const alese = new Set(ctx.selectie());
+export function cresteCopia(doc: Document, selectie: readonly string[]): Numaratoare {
+  const alese = new Set(selectie);
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   const plus = { noduri: 0, instante: 0, elementeLume: 0, operatii: 0, taieturi: 0, varfuri: 0, varfuriLume: 0 };
   for (const i of foaieCurenta(doc).instante) {
@@ -232,7 +234,7 @@ export function alesePreaDeparte(ctx: ContextDocument, dx: number, dy: number): 
  * Copia arborelui unei piese pentru Ctrl+D: noduri noi, dar formele împărțite. Documentul nu se schimbă pe loc, deci o
  * formă poate sta în două piese; o cale de 50 000 de vârfuri nu se mai copiază în istoric la fiecare Ctrl+D (recenzia 2.7b).
  */
-function copieArbore(n: Nod): Nod {
+export function copieArbore(n: Nod): Nod {
   if (n.tip === 'element') {
     const { forma, ...rest } = n;
     return { ...structuredClone(rest), forma } as Nod;
@@ -358,7 +360,7 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
       if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
       const s = scrie(ctx);
       if (s !== true) return s;
-      if (!incape(ctx.istoric().doc, cresteCopia(ctx))) return 'motiv.plafon';
+      if (!incape(ctx.istoric().doc, cresteCopia(ctx.istoric().doc, ctx.selectie()))) return 'motiv.plafon';
       return alesePreaDeparte(ctx, DECALAJ_COPIE.dx, DECALAJ_COPIE.dy) ? 'motiv.prea-departe' : true;
     },
     ruleaza: (ctx) => {
@@ -444,6 +446,7 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   laCerere('document.deseneaza', 'actiune.deseneaza', (ctx) => (ctx.formaNoua ? true : 'motiv.nimic-ales')),
   // Mânerele selecției (ADR 0052): rotirea și scalarea exactă a geometriei.
   laCerere('document.transforma', 'actiune.transforma', (ctx) => (ctx.transformare ? true : 'motiv.nimic-ales')),
+  laCerere('document.copiaza-in-retea', 'actiune.copiaza-in-retea', (ctx) => (ctx.retea ? true : 'motiv.nimic-ales')),
   // Panoul (ADR 0053): forma singurei instanțe alese, editată după plasare.
   laCerere('document.forma', 'actiune.forma', (ctx) => (ctx.formaEditata ? true : 'motiv.nimic-ales')),
   {

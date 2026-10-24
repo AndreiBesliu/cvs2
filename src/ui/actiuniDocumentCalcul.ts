@@ -1,4 +1,4 @@
-import { uneste, type Cutie } from '../geom/cutie.ts';
+import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
@@ -11,8 +11,10 @@ import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { executa, type Comanda } from '../model/jurnal.ts';
 import { transforma } from '../model/transformare.ts';
 import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
+import { copiiRetea, instantaCopiei, motivRetea, type Retea } from '../model/retea.ts';
+import type { CheieSimpla } from '../i18n/t.ts';
 import {
-  alesePreaDeparte, FOAIA, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
+  alesePreaDeparte, copieArbore, cresteCopia, FOAIA, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
   type CalculDocument, type ContextDocument,
 } from './actiuniDocument.ts';
 
@@ -145,6 +147,33 @@ function stocCerut(ctx: ContextDocument): Stoc | 'motiv.foaie-invalida' {
   return { ...vechi, latime: n.latime ?? vechi.latime, inaltime: n.inaltime ?? vechi.inaltime, grosime: n.grosime ?? vechi.grosime };
 }
 
+/**
+ * Copierea în rețea (ADR 0061): copiile selecției, fiecare cu piesa ei (independente, ca la Duplică), sau motivul pentru care
+ * nu se poate. Verdictul e comun acțiunii și panoului din extensia barei (care îl arată sub câmpuri).
+ */
+function copiiPentru(doc: Document, selectie: readonly string[], r: Retea): { readonly copii: ReturnType<typeof copiiRetea>; readonly instante: Instanta[] } {
+  const alese = new Set(selectie);
+  const cutii = elementeFoaie(doc, FOAIA).filter((e) => alese.has(e.instanta)).map((e) => cutieElement(e));
+  const cutie = cutii.reduce(uneste, CUTIE_GOALA);
+  return { copii: cutii.length > 0 ? copiiRetea(cutie, r) : [], instante: foaieCurenta(doc).instante.filter((i) => alese.has(i.id)) };
+}
+
+export function motivCopiereRetea(doc: Document, selectie: readonly string[], r: Retea, doarCitire: boolean): CheieSimpla | null {
+  if (selectie.length === 0 || !foaieCurenta(doc).instante.some((i) => selectie.includes(i.id))) return 'motiv.nicio-selectie';
+  if (doarCitire) return 'motiv.doar-citire';
+  if (motivRetea(r)) return 'motiv.nimic-ales';
+  const { copii, instante } = copiiPentru(doc, selectie, r);
+  if (copii.length === 0) return 'motiv.nicio-selectie';
+  const una = cresteCopia(doc, selectie);
+  const toate = Object.fromEntries(Object.entries(una).map(([k, v]) => [k, v * copii.length])) as typeof una;
+  if (!incape(doc, toate)) return 'motiv.plafon';
+  for (const k of copii) for (const i of instante) {
+    const p = instantaCopiei(i, k);
+    if (instantaPreaDeparte(p.x, p.y)) return 'motiv.prea-departe';
+  }
+  return null;
+}
+
 /** Calculul celor cinci acțiuni, după id; `inregistreazaCalcul` îl leagă de registrul documentului. */
 export const CALCUL_DOCUMENT: CalculDocument = {
   'document.importa': {
@@ -273,6 +302,45 @@ export const CALCUL_DOCUMENT: CalculDocument = {
   },
   // Mânerele selecției (ADR 0052): instanțele alese rotite sau scalate (cu piesele lor), într-un singur pas; refuzul are motivul
   // lui în bara editării (dicționarul ei), aici unul singur.
+  // Copierea în rețea (ADR 0061): un singur pas pentru toate copiile; alese rămân originalele și copiile.
+  'document.copiaza-in-retea': {
+    activa: (ctx) => {
+      const r = ctx.retea?.();
+      if (!r) return 'motiv.nimic-ales';
+      return motivCopiereRetea(ctx.istoric().doc, ctx.selectie(), r, ctx.doarCitire?.() === true) ?? true;
+    },
+    ruleaza: (ctx) => {
+      const r = ctx.retea?.();
+      if (!r) return;
+      const h = ctx.istoric();
+      const { copii, instante } = copiiPentru(h.doc, ctx.selectie(), r);
+      const comenzi: Comanda[] = [];
+      const noi: string[] = [];
+      let doc = h.doc;
+      for (const k of copii) {
+        for (const original of instante) {
+          const piesaVeche = doc.piese.find((p) => p.id === original.piesa);
+          if (!piesaVeche) continue;
+          const id = idNou(doc);
+          const { radacina, ...restPiesa } = piesaVeche;
+          const foaie = foaieCurenta(doc);
+          const c: Comanda = {
+            tip: 'adauga', foaie: foaie.id,
+            instanta: { ...structuredClone(original), ...instantaCopiei(original, k), id, piesa: id },
+            pozitie: foaie.instante.length,
+            piesa: { piesa: { ...structuredClone(restPiesa), radacina: copieArbore(radacina), id }, pozitie: doc.piese.length },
+          };
+          doc = executa(istoricDin(doc), c).doc;
+          comenzi.push(c);
+          noi.push(id);
+        }
+      }
+      const c = pas(comenzi);
+      if (!c) return;
+      ctx.scrie(executa(h, c));
+      ctx.selecteaza([...instante.map((i) => i.id), ...noi]);
+    },
+  },
   'document.transforma': {
     activa: (ctx) => {
       const t = ctx.transformare?.();

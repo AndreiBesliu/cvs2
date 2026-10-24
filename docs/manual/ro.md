@@ -125,9 +125,9 @@ Lângă selecție apare bara ei, cu Duplică, Șterge și panoul de proprietăț
 Valoarea se aplică la Enter sau când ieși din câmp; Escape revine. O valoare care nu se poate aplica își spune motivul sub
 câmp.
 
-## Transformările și oglindirea
+## Transformările, oglindirea și copierea
 %% capitol: transformari
-%% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical
+%% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, document.copiaza-in-retea
 
 Unealta **Transformare** (`S`) arată mânerele pe cutia selecției și **transformă** forma exact (arcele rămân arce):
 - **colțurile** scalează proporțional, cu colțul opus fix; cu Shift, liber pe ambele axe;
@@ -140,6 +140,16 @@ sau o formă rotită oblic se scalează doar proporțional; o piesă folosită �
 
 **Oglindirea** stă în extensia barei: **Oglindește orizontal** (`Shift+H`, stânga ↔ dreapta) și **Oglindește vertical**
 (`Shift+V`, sus ↔ jos), față de centrul cutiei selecției. Se taie oglinda, cu același sens de tăiere.
+
+**Copiază în rețea** (secțiunea Copiere din extensia barei, butonul cu patru pătrate) face copii ale selecției, într-un
+singur pas de anulare. Copiile sunt piese independente (ca la Duplică): fiecare se poate schimba sau transforma separat.
+- **Rânduri și coloane**: câte coloane și câte rânduri (cu originalul în colțul stânga-jos, cel mult 1000 de forme), și
+  spațiul dintre copii pe fiecare direcție (mm, între cutiile lor). Copiile merg spre dreapta și în sus.
+- **Pe cerc**: câte forme, cu originalul; unghiul (360°: cercul întreg, la pas egal; mai puțin: de la original până la
+  ultima copie); centrul cercului (gol: centrul foii); **Rotește copiile** le rotește odată cu poziția, altfel doar le mută.
+
+Cât panoul e deschis, copiile se văd pe pânză, punctat. Dacă rețeaua nu se poate face (valori greșite, nimic ales, proiectul
+la plafon, copii prea departe), panoul spune de ce, iar Copiază rămâne inactiv. După copiere sunt alese originalul și copiile.
 
 ## Alinierea
 %% capitol: aliniere

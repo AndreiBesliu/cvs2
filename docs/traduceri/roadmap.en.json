@@ -1253,6 +1253,10 @@
       "ro": "**Senderul, postul cu contracte, observabilitatea**, primul live",
       "en": "**The sender, the post with contracts, observability**, the first live"
     },
+    "eae21f7a71d700db": {
+      "ro": "Copierea în rețea și pe cerc",
+      "en": "Array and circular copy"
+    },
     "eb4b7358cb95c183": {
       "ro": "Relief din imagine; Alinierea pixelilor; Litofanie; Combinarea; Rezoluția 4000²; Straturi; Relief ↔ 16 biți (Degroșarea și Finisarea pornesc, pe relief)",
       "en": "Relief from an image; Pixel alignment; Lithophane; Combining; 4000² resolution; Layers; Relief ↔ 16 bits (Roughing and Finishing start, on relief)"
@@ -1324,6 +1328,10 @@
     "f761a91abba82672": {
       "ro": "Pânza v0",
       "en": "Canvas v0"
+    },
+    "f7b2ca36d5c6c694": {
+      "ro": "**Copierea în rețea și pe cerc, adusă din etapa 6** (fără mașină; ADR 0061; „continua”: următorul pas al rândului „Transformare și copiere”). Secțiunea Copiere din extensia barei deschide panoul „Copiază în rețea”: rânduri × coloane, cu spațiul dintre copii, sau pe cerc, cu câte forme, unghiul, centrul și rotirea copiilor. Copiile se văd pe pânză cât panoul e deschis, sunt piese independente (ca la Duplică) și se fac într-un singur pas de anulare; panoul spune de ce nu se poate (valorile, nimic ales, plafonul, prea departe). Pornirea rămâne 99,8 / 100 cu ușa; manualul (capitolul transformărilor) e la zi. **Treceri:** (1) modulul pur, acțiunea cu verdictul comun panoului, panoul și previzualizarea, probele; (2) proba „prea departe” nu verifica refuzul (doar cazuri bune): refăcută cu o instanță aproape de plafonul translației; Esc nu închidea panoul cu focusul pe butonul lui: reparat.",
+      "en": "**Array and circular copy, brought forward from stage 6** (no machine; ADR 0061; “continue”: the next step of the “Transform and copy” row). The Copy section of the bar extension opens the “Copy in an array” panel: rows × columns, with the gap between copies, or on a circle, with how many shapes, the angle, the centre and the rotation of the copies. The copies show on the canvas while the panel is open, are independent parts (as with Duplicate) and are made in a single undo step; the panel says why it cannot be done (the values, nothing chosen, the cap, too far away). Startup stays at 99.8 / 100 with the door; the manual (the transforms chapter) is up to date. **Passes:** (1) the pure module, the action with the verdict shared with the panel, the panel and the preview, the checks; (2) the “too far away” check did not test the refusal (only good cases): redone with an instance close to the translation cap; Esc did not close the panel with the focus on its button: fixed."
     },
     "f960c0b00b8d3474": {
       "ro": "Ușa SVG: DOMParser inert, unități, viewBox, transformări, elementele (path, rect, circle, ellipse, line, polyline, polygon), plafonul de mărime, avertismentele; butonul de import",

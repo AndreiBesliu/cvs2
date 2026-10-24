@@ -129,9 +129,9 @@ Next to the selection, its own bar appears, with Duplicate, Delete and the prope
 A value applies on Enter or when you leave the field; Escape goes back. A value that cannot be applied says why under the
 field.
 
-## Transforming and mirroring
+## Transforming, mirroring and copying
 %% capitol: transformari
-%% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical
+%% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, document.copiaza-in-retea
 
 The **Transform** tool (`S`) shows the handles on the selection's box and transforms the shape exactly (arcs stay arcs):
 - the **corners** scale proportionally, with the opposite corner fixed; with Shift, freely on both axes;
@@ -144,6 +144,18 @@ corners or a shape rotated at an angle scale only proportionally; a part used by
 
 **Mirroring** is in the bar extension: **Flip horizontally** (`Shift+H`, left ↔ right) and **Flip vertically** (`Shift+V`,
 top ↔ bottom), about the centre of the selection's box. The mirror image is what gets cut, with the same cutting direction.
+
+**Copy in an array** (the Copy section of the bar extension, the button with four squares) makes copies of the selection, in
+a single undo step. The copies are independent parts (as with Duplicate): each one can be changed or transformed on its own.
+- **Rows and columns**: how many columns and rows (with the original in the bottom-left corner, at most 1000 shapes), and the
+  gap between copies in each direction (mm, between their boxes). The copies go to the right and up.
+- **On a circle**: how many shapes, with the original; the angle (360°: the full circle, at equal steps; less: from the
+  original to the last copy); the circle's centre (empty: the sheet's centre); **Rotate the copies** turns them with their
+  position, otherwise they only move.
+
+While the panel is open, the copies show on the canvas, dashed. If the array cannot be made (wrong values, nothing chosen,
+the project at its cap, copies too far away), the panel says why and Copy stays inactive. After copying, the original and
+the copies are chosen.
 
 ## Alignment
 %% capitol: aliniere

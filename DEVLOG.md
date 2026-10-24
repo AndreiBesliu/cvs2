@@ -2547,3 +2547,20 @@ la marginile pânzei; la fel liniile de cotă. Probele unitare și e2e schimbate
 deasupra ei, cu `elementFromPoint`); ADR 0060 §2, manualul (Pânza) și fișa la zi.
 **Publicat pe test (corectura):** 24.10, workflow-ul `publica` pe `80b0624` (după rapid-ul verde pe CI). Verificat în Edge pe
 instanța de test: foaia trasă sub bara de sus și sub panoul din stânga, iar riglele rămân lipite de marginile ei.
+
+## 2026-10-24 — Copierea în rețea și pe cerc (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (după selecția cu dreptunghi și rigla foii).
+**Started:** 24.10, ~19:55. Felia **6.G↑**, adusă din etapa 6 („Transformare și copiere”: mutarea, scalarea, rotirea și
+oglindirea sunt gata; rămân copierea în rețea și cea circulară), fără agenți: o secțiune Copiere în extensia barei, cu panoul
+„Copiază în rețea”: rânduri × coloane cu spațiul dintre copii, sau pe cerc (câte, centrul, unghiul, cu sau fără rotirea
+copiilor); previzualizarea copiilor pe pânză; copiile sunt piese independente (ca la Duplică), într-un singur pas de anulare.
+**Treceri:** (1) modulul pur (`src/model/retea.ts`: copiile, mișcarea rigidă, rotirea exactă la 90°, valorile), acțiunea
+`document.copiaza-in-retea` (o intrare în registru, calculul la cerere, verdictul `motivCopiereRetea` comun panoului), panoul
+din extensia barei (formularul ținut în browser), previzualizarea cutiilor copiilor, manualul, probele; (2) ce au prins
+probele: cazul „prea departe” din proba unitară verifica doar cazuri bune (refăcut cu o instanță aproape de plafonul
+translației, 10 km); Esc nu închidea panoul cu focusul pe butonul lui (acum Esc din extensia barei îl închide întâi); două
+probe fixau lista acțiunilor registrului și a calculelor la cerere (acțiunea nouă adăugată pe locul ei).
+**Completed:** 24.10 20:50. Fără agenți. `npm run rapid`: 7 160 de teste unitare, 2 picate (listele fixate), reparate și rulate
+din nou; determinismul, licențele verzi. E2e 189 / 189 în Edge (2 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e.
+Pornirea 95,1 → 95,2 kB (intrarea acțiunii și eticheta); cu ușa 99,8 / 100, deci mai e ~0,1 kB; totalul 274,2 → 276,8 / 300 kB.

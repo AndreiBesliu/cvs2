@@ -6,18 +6,19 @@ import type { Cutie } from '../geom/cutie.ts';
 import { aliniaza, FELURI_ALINIERE, minimAliniere, type FelAliniere } from '../geom/aliniere.ts';
 import { lipeste } from '../geom/lipire.ts';
 import '../i18n/editare.ts';
-import { t } from '../i18n/t.ts';
+import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
 import { transforma, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
-  adaugaLaSelectie, aleseInCadru, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie,
+  adaugaLaSelectie, aleseInCadru, citesteRetea, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, FORMULAR_RETEA, type FormularRetea, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie,
   transformareManer, transformareManerLipita, type LipirePunct, type Maner, type TransformareManer,
 } from './editareCalcul.ts';
 import { instantaLa } from '../model/alegere.ts';
 import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTE_UNELTE, UNELTE, type Unealta, type UnealtaDesen } from './desenCalcul.ts';
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
-import '../ui/actiuniDocumentCalcul.ts';
+import { motivCopiereRetea } from '../ui/actiuniDocumentCalcul.ts';
+import { copiiRetea, punctulCopiei, type Retea } from '../model/retea.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 
@@ -37,6 +38,23 @@ const PAS_GRILA_IMPLICIT = 10;
 const CHEIE_LATURI = 'cncvs2.laturi';
 const CHEIE_RAZA = 'cncvs2.raza';
 const CHEIE_ALINIERE = 'cncvs2.aliniere-stransa';
+const CHEIE_RETEA = 'cncvs2.retea';
+
+/** Formularul rețelei ținut în browser (ADR 0061); unul stricat sau al altei versiuni lasă implicitele. */
+function formularSalvat(): FormularRetea {
+  try {
+    const x: unknown = JSON.parse(citeste(CHEIE_RETEA) ?? 'null');
+    if (typeof x !== 'object' || x === null) return FORMULAR_RETEA;
+    const o = x as Record<string, unknown>;
+    const text = (k: keyof FormularRetea): string => (typeof o[k] === 'string' ? (o[k] as string) : (FORMULAR_RETEA[k] as string));
+    return {
+      fel: o.fel === 'cerc' ? 'cerc' : 'grila', coloane: text('coloane'), randuri: text('randuri'), spatiuX: text('spatiuX'), spatiuY: text('spatiuY'),
+      numar: text('numar'), centruX: text('centruX'), centruY: text('centruY'), unghi: text('unghi'), roteste: o.roteste !== false,
+    };
+  } catch {
+    return FORMULAR_RETEA;
+  }
+}
 
 /**
  * Vederea 3D (ADR 0057): o bucată la cerere a modulului ăstuia, cu WebGL-ul și calculul ei; adusă abia la primul clic pe
@@ -94,7 +112,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -155,6 +173,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [vedere3d, setVedere3d] = useState(false);
   const vedere3dRef = useRef(vedere3d);
   vedere3dRef.current = vedere3d;
+  // Copierea în rețea (ADR 0061): panoul din extensia barei, formularul lui (ținut în browser) și rețeaua citită din el.
+  const [panouRetea, setPanouRetea] = useState(false);
+  const panouReteaRef = useRef(panouRetea);
+  panouReteaRef.current = panouRetea;
+  const [formRetea, setFormRetea] = useState<FormularRetea>(formularSalvat);
+  const scrieFormular = (f: FormularRetea): void => { setFormRetea(f); scrieLocal(CHEIE_RETEA, JSON.stringify(f)); };
   // Manualul deschis, cu ușa de la deschidere (capitolul ei); `null`: închis.
   const [manual, setManual] = useState<{ readonly usa: string | null } | null>(null);
   const unealtaRef = useRef<Unealta>('selectie');
@@ -288,7 +312,9 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         return;
       }
       if (e.key === 'Escape') {
-        if (acum.current.a) gestDesen('anulat', 0, 0, 1, { alt: false, shift: false });
+        // Întâi panoul rețelei deschis (ADR 0061), apoi forma începută, apoi unealta.
+        if (panouReteaRef.current) setPanouRetea(false);
+        else if (acum.current.a) gestDesen('anulat', 0, 0, 1, { alt: false, shift: false });
         else setUnealta('selectie');
         return;
       }
@@ -465,6 +491,18 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             : null)}
           onLinii={setLiniiManere} />
       ) : null}
+      {panouRetea && cutie && selectie.length > 0 && !vedere3d ? (() => {
+        // Previzualizarea copiilor: cutia selecției mutată de fiecare copie, punctată.
+        const r = citesteRetea(formRetea, foaie?.stoc ?? { latime: 0, inaltime: 0 });
+        if (typeof r === 'string') return null;
+        const colturi = [{ x: cutie.minX, y: cutie.minY }, { x: cutie.maxX, y: cutie.minY }, { x: cutie.maxX, y: cutie.maxY }, { x: cutie.minX, y: cutie.maxY }];
+        const ecran = (q: { x: number; y: number }): string => `${vedere.tx + q.x * vedere.scara},${vedere.ty - q.y * vedere.scara}`;
+        return (
+          <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="retea-previzualizare">
+            {copiiRetea(cutie, r).map((k, i) => <polygon key={i} className="retea-copie" points={colturi.map((q) => ecran(punctulCopiei(q, k))).join(' ')} />)}
+          </svg>
+        );
+      })() : null}
       {cadru ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="cadru-selectie" data-fel={felCadru(cadru.a.x, cadru.b.x)}>
           <rect className={`cadru-${felCadru(cadru.a.x, cadru.b.x)}`} x={Math.min(cadru.a.x, cadru.b.x) + 0.5} y={Math.min(cadru.a.y, cadru.b.y) + 0.5}
@@ -509,6 +547,20 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {motivOglinda ? <span className="motiv-extensie" role="status" data-testid="motiv-oglindire">{motivOglinda}</span> : null}
           </span>
         );
+        const copiereSectiune = (
+          <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.copiere')} data-testid="extensie-copiere">
+            <button type="button" className="aliniaza" aria-expanded={panouRetea} aria-controls="panou-retea" title={t('editare.retea')} aria-label={t('editare.retea')}
+              data-editare="retea" onClick={() => { setPanouRetea(!panouRetea); }}>
+              <IconaRetea />
+            </button>
+            {panouRetea ? (
+              <PanouRetea form={formRetea} onForm={scrieFormular} foaie={foaie?.stoc ?? { latime: 0, inaltime: 0 }}
+                motivActiune={(r) => motivCopiereRetea(doc, selectie, r, p.doarCitire)}
+                onCopiaza={(r) => { ruleaza('document.copiaza-in-retea', { retea: () => r }); setPanouRetea(false); }}
+                onInchide={() => { setPanouRetea(false); }} />
+            ) : null}
+          </span>
+        );
         const vedereSectiune = (
           <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.3d')} data-testid="extensie-vedere">
             <button type="button" className="aliniaza vedere-3d-buton" aria-pressed={vedere3d} title={vedere3d ? t('editare.3d.ascunde') : t('editare.3d.arata')}
@@ -530,6 +582,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {aliniereSectiune}
             <span className="separator" aria-hidden="true" />
             {oglindireSectiune}
+            <span className="separator" aria-hidden="true" />
+            {copiereSectiune}
             <span className="separator" aria-hidden="true" />
             {vedereSectiune}
             <span className="separator" aria-hidden="true" />
@@ -661,6 +715,89 @@ function IconaUnealta({ u }: { readonly u: Unealta | 'lipire' | 'grila' }): Reac
     ),
   };
   return <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">{desen[u]}</svg>;
+}
+
+/** Copierea în rețea (ADR 0061): patru pătrate, unul plin (originalul) și trei în contur (copiile). */
+function IconaRetea(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="1.5" y="9" width="5.5" height="5.5" />
+      <rect x="9" y="9" width="5.5" height="5.5" className="contur" />
+      <rect x="1.5" y="1.5" width="5.5" height="5.5" className="contur" />
+      <rect x="9" y="1.5" width="5.5" height="5.5" className="contur" />
+    </svg>
+  );
+}
+
+/**
+ * Panoul copierii în rețea (ADR 0061), sub butonul lui din extensia barei: felul (rânduri și coloane, sau pe cerc), câmpurile,
+ * motivul pentru care nu se poate (valorile, sau verdictul acțiunii: nicio selecție, doar citire, plafonul, prea departe) și
+ * Copiază. Esc îl închide.
+ */
+function PanouRetea({ form, onForm, foaie, motivActiune, onCopiaza, onInchide }: {
+  readonly form: FormularRetea;
+  readonly onForm: (f: FormularRetea) => void;
+  readonly foaie: { readonly latime: number; readonly inaltime: number };
+  readonly motivActiune: (r: Retea) => CheieSimpla | null;
+  readonly onCopiaza: (r: Retea) => void;
+  readonly onInchide: () => void;
+}): ReactElement {
+  const r = citesteRetea(form, foaie);
+  const motiv = typeof r === 'string' ? t(`editare.retea.motiv.${r}`) : (() => {
+    const m = motivActiune(r);
+    return m === 'motiv.nicio-selectie' ? t('editare.retea.nicio-selectie') : m ? t(m) : null;
+  })();
+  const camp = (k: 'coloane' | 'randuri' | 'spatiuX' | 'spatiuY' | 'numar' | 'centruX' | 'centruY' | 'unghi', eticheta: string, loc?: string): ReactElement => (
+    <label className="camp-retea">
+      <span>{eticheta}</span>
+      <input value={form[k]} inputMode="decimal" placeholder={loc} data-retea={k} onChange={(e) => { onForm({ ...form, [k]: e.target.value }); }} />
+    </label>
+  );
+  return (
+    <div className="insula panou-retea" id="panou-retea" role="group" aria-label={t('editare.retea')} data-testid="panou-retea"
+      onKeyDown={(e) => {
+        if (e.key !== 'Escape') return;
+        e.preventDefault();
+        e.stopPropagation();
+        onInchide();
+      }}>
+      <div className="fel-retea" role="radiogroup" aria-label={t('editare.copiere')}>
+        {(['grila', 'cerc'] as const).map((f) => (
+          <button key={f} type="button" role="radio" aria-checked={form.fel === f} aria-pressed={form.fel === f} data-retea-fel={f}
+            onClick={() => { onForm({ ...form, fel: f }); }}>
+            {t(`editare.retea.${f}`)}
+          </button>
+        ))}
+      </div>
+      {form.fel === 'grila' ? (
+        <div className="campuri-retea">
+          {camp('coloane', t('editare.retea.coloane'))}
+          {camp('randuri', t('editare.retea.randuri'))}
+          {camp('spatiuX', t('editare.retea.spatiu-x'))}
+          {camp('spatiuY', t('editare.retea.spatiu-y'))}
+        </div>
+      ) : (
+        <div className="campuri-retea">
+          {camp('numar', t('editare.retea.numar'))}
+          {camp('unghi', t('editare.retea.unghi'))}
+          {camp('centruX', t('editare.retea.centru-x'), textNumar(foaie.latime / 2, true))}
+          {camp('centruY', t('editare.retea.centru-y'), textNumar(foaie.inaltime / 2, true))}
+          <label className="bifa-retea">
+            <input type="checkbox" checked={form.roteste} data-retea="roteste" onChange={(e) => { onForm({ ...form, roteste: e.target.checked }); }} />
+            <span>{t('editare.retea.roteste')}</span>
+          </label>
+        </div>
+      )}
+      {motiv ? <p className="motiv-retea" role="status" data-testid="motiv-retea">{motiv}</p> : null}
+      <div className="butoane-retea">
+        <button type="button" className="principal" data-retea="copiaza" disabled={motiv !== null || typeof r === 'string'}
+          onClick={() => { if (typeof r !== 'string') onCopiaza(r); }}>
+          {t('editare.retea.copiaza')}
+        </button>
+        <button type="button" data-retea="inchide" onClick={onInchide}>{t('editare.retea.inchide')}</button>
+      </div>
+    </div>
+  );
 }
 
 /** Oglindirea (ADR 0054): două figuri, una plină și una în contur, de o parte și de alta a axei punctate. */

@@ -125,6 +125,91 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Copierea în rețea (ADR 0061): panoul sub butonul lui, previzualizarea copiilor pe pânză. */
+.sectiune-retea {
+  position: relative;
+}
+
+.panou-retea {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 5;
+  width: 19rem;
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  box-shadow: var(--umbra-1);
+}
+
+.fel-retea {
+  display: flex;
+  gap: 2px;
+}
+
+.fel-retea button {
+  flex: 1 1 0;
+  font-size: var(--fs-2);
+}
+
+.campuri-retea {
+  display: grid;
+  gap: var(--sp-1) var(--sp-2);
+}
+
+.camp-retea {
+  display: grid;
+  grid-template-columns: 1fr 6rem;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-2);
+}
+
+.camp-retea input {
+  min-height: 30px;
+  padding: 0 var(--sp-2);
+  font: inherit;
+  text-align: right;
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+}
+
+.bifa-retea {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-2);
+}
+
+.motiv-retea {
+  margin: 0;
+  font-size: var(--fs-2);
+  color: var(--rosu);
+}
+
+.butoane-retea {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+.butoane-retea .principal:enabled {
+  background: var(--a-plin);
+  color: var(--t-pe-a);
+}
+
+.retea-copie {
+  fill: color-mix(in oklab, var(--a) 8%, transparent);
+  stroke: var(--a);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
 /* Linia de cotă a formelor care ies din foaie (ADR 0060): în continuarea riglei, în culoarea atenției. */
 .rigla-cota {
   position: absolute;

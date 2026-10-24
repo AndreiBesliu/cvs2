@@ -83,6 +83,6 @@ test('cu calculul încărcat, garda + calculul = calculul singur, pe toată matr
   }
 });
 
-test('calculul înregistrat acoperă exact cele cinci acțiuni la cerere, plus cele două ale editării (ADR 0050)', () => {
-  assert.deepEqual(Object.keys(CALCUL_DOCUMENT).sort(), [...LA_CERERE, 'foaie.ghidaje', 'document.muta-instantele', 'document.deseneaza', 'document.transforma', 'document.forma'].sort());
+test('calculul înregistrat acoperă exact cele cinci acțiuni la cerere, plus cele ale editării (ADR 0050–0053, 0061)', () => {
+  assert.deepEqual(Object.keys(CALCUL_DOCUMENT).sort(), [...LA_CERERE, 'foaie.ghidaje', 'document.muta-instantele', 'document.deseneaza', 'document.transforma', 'document.copiaza-in-retea', 'document.forma'].sort());
 });

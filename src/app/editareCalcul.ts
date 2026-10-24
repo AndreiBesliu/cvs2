@@ -6,11 +6,13 @@ import { aplica } from '../geom/matrice.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
 import { conturElement, cutieElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
+import { motivRetea, type MotivRetea, type Retea } from '../model/retea.ts';
 import type { Transformare } from '../model/transformare.ts';
 
 /** Ce poate da un mâner: rotirea sau scalarea (oglindirea are butoanele ei, ADR 0054). */
 export type TransformareManer = Exclude<Transformare, { readonly fel: 'oglindire' }>;
 import { FOAIA } from '../ui/actiuniDocument.ts';
+import { citesteNumar } from '../ui/numar.ts';
 
 type Punct = { readonly x: number; readonly y: number };
 
@@ -210,3 +212,30 @@ export function adaugaLaSelectie(veche: readonly string[], noi: readonly string[
 export function comutaInSelectie(veche: readonly string[], id: string): string[] {
   return veche.includes(id) ? veche.filter((x) => x !== id) : [...veche, id];
 }
+
+/**
+ * Formularul copierii în rețea (ADR 0061), ca text (cum îl scrie omul, cu punct sau virgulă), ținut în browser între
+ * deschideri. Centrul gol înseamnă centrul foii.
+ */
+export type FormularRetea = {
+  readonly fel: 'grila' | 'cerc';
+  readonly coloane: string; readonly randuri: string; readonly spatiuX: string; readonly spatiuY: string;
+  readonly numar: string; readonly centruX: string; readonly centruY: string; readonly unghi: string; readonly roteste: boolean;
+};
+
+export const FORMULAR_RETEA: FormularRetea = {
+  fel: 'grila', coloane: '3', randuri: '2', spatiuX: '10', spatiuY: '10', numar: '6', centruX: '', centruY: '', unghi: '360', roteste: true,
+};
+
+/** Pură: rețeaua din formular, sau motivul (câmpul greșit sau valorile în afara marginilor). */
+export function citesteRetea(f: FormularRetea, foaie: { readonly latime: number; readonly inaltime: number }): Retea | MotivRetea {
+  const n = (s: string, semn = false): number => citesteNumar(s, semn) ?? Number.NaN;
+  const r: Retea = f.fel === 'grila'
+    ? { fel: 'grila', coloane: n(f.coloane), randuri: n(f.randuri), spatiuX: n(f.spatiuX), spatiuY: n(f.spatiuY) }
+    : {
+      fel: 'cerc', numar: n(f.numar), unghi: n(f.unghi), roteste: f.roteste,
+      centru: { x: f.centruX.trim() === '' ? foaie.latime / 2 : n(f.centruX, true), y: f.centruY.trim() === '' ? foaie.inaltime / 2 : n(f.centruY, true) },
+    };
+  return motivRetea(r) ?? r;
+}
+
