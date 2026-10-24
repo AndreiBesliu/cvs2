@@ -2445,3 +2445,4 @@ reparată.
 **Completed:** 24.10 12:50. Fără agenți (regula proiectului: acordul și costul spuse înainte). `npm run rapid` RC 0 (7 121 de
 teste unitare, 0 picate, 8 sărite); e2e 170 / 170 în Edge; emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea
 neschimbată (95,1 kB; cu ușa 99,8 / 100); `/admin` 189,1 → 189,4 / 200 kB; roadmap-ul în engleză 29,7 kB gzip, 0 netraduse.
+**Publicat pe test:** 24.10, workflow-ul `publica` pe `fb0ef10` (după rapid-ul verde pe CI, 4 / 4 felii); `documentatie/roadmap.en.json` servit, 0 texte netraduse.
