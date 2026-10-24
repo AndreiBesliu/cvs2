@@ -14,6 +14,24 @@
   inset: 0;
 }
 
+/* Cadrul de selecție (ADR 0059), ca în CAD: fereastra (trasă spre dreapta) cu linie plină, intersecția (spre stânga) punctată. */
+.cadru-fereastra,
+.cadru-intersectie {
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.cadru-fereastra {
+  fill: color-mix(in oklab, var(--l-focus) 12%, transparent);
+  stroke: var(--l-focus);
+}
+
+.cadru-intersectie {
+  fill: color-mix(in oklab, var(--traseu-taiere) 12%, transparent);
+  stroke: var(--traseu-taiere);
+  stroke-dasharray: 5 4;
+}
+
 .rigle-grila line {
   stroke: color-mix(in oklab, var(--t) 14%, transparent);
   stroke-width: 1;

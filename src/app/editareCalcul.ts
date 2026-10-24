@@ -1,9 +1,10 @@
 /** Editarea pe pânză (ADR 0050), partea pură: țintele lipirii, cutiile instanțelor alese, id-ul unui ghidaj nou. */
+import { conturAtinge, cuprinsaIn } from '../geom/cadru.ts';
 import type { Cutie } from '../geom/cutie.ts';
 import { tinteCutie, tinteDin, tintePunct, type LinieLipire, type Tinte, type TintaLipire } from '../geom/lipire.ts';
 import { aplica } from '../geom/matrice.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
-import { cutieElement } from '../model/forme.ts';
+import { conturElement, cutieElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import type { Transformare } from '../model/transformare.ts';
 
@@ -154,4 +155,48 @@ export function transformareManerLipita(
   const nx = t.ancora.x + (h.x - t.ancora.x) * t.sx, ny = t.ancora.y + (h.y - t.ancora.y) * t.sy;
   const pe = (v: number, w: number | undefined): boolean => w !== undefined && Math.abs(v - w) <= 1e-9 * Math.max(1, Math.abs(w));
   return { t, linii: r.linii.filter((l) => (l.axa === 'x' ? pe(nx, x) : pe(ny, y))) };
+}
+
+/**
+ * Cadrul de selecție (ADR 0059): trasă spre dreapta, **fereastra** (doar formele cuprinse în întregime); trasă spre stânga,
+ * **intersecția** (orice formă al cărei contur îl atinge), ca în programele de CAD.
+ */
+export type FelCadru = 'fereastra' | 'intersectie';
+
+/** Felul cadrului după sensul tragerii pe orizontală (un cadru vertical, fără deplasare pe X, e o fereastră). */
+export function felCadru(x0: number, x1: number): FelCadru {
+  return x1 >= x0 ? 'fereastra' : 'intersectie';
+}
+
+/**
+ * Pură: instanțele foii curente prinse de cadrul `r` (mm), în ordinea documentului. Fereastra cere ca fiecare element al
+ * instanței (o piesă importată are mai multe contururi) să stea în cadru; intersecția, ca măcar unul să-l atingă.
+ */
+export function aleseInCadru(doc: Document, r: Cutie, fel: FelCadru): string[] {
+  const stare = new Map<string, boolean>();
+  for (const e of elementeFoaie(doc, FOAIA)) {
+    const pana = stare.get(e.instanta);
+    if (fel === 'fereastra') {
+      if (pana === false) continue;
+      stare.set(e.instanta, cuprinsaIn(cutieElement(e), r));
+    } else {
+      if (pana === true) continue;
+      const k = cutieElement(e);
+      const aproape = k.maxX >= r.minX && k.minX <= r.maxX && k.maxY >= r.minY && k.minY <= r.maxY;
+      stare.set(e.instanta, aproape && conturAtinge(conturElement(e), r));
+    }
+  }
+  return [...stare].filter(([, da]) => da).map(([id]) => id);
+}
+
+/** Selecția veche plus cele noi (Shift + cadru), fără dubluri, cele vechi întâi. */
+export function adaugaLaSelectie(veche: readonly string[], noi: readonly string[]): string[] {
+  const out = [...veche];
+  for (const id of noi) if (!out.includes(id)) out.push(id);
+  return out;
+}
+
+/** Shift + clic: forma intră în selecție, sau iese dacă era deja în ea. */
+export function comutaInSelectie(veche: readonly string[], id: string): string[] {
+  return veche.includes(id) ? veche.filter((x) => x !== id) : [...veche, id];
 }

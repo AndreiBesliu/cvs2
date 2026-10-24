@@ -90,8 +90,17 @@ loc fix pe foaie.
 %% acopera: unealta.selectie, selectie.la-punct, selectie.din-lista, document.muta-selectia, document.duplica-selectia, document.sterge-selectia, istoric.anuleaza, istoric.reface, document.pozitioneaza, document.roteste, document.forma
 
 Cu unealta **Selecție** (`V`), un clic pe o formă o **selectează**; un clic pe un rând din panoul Pe foaie face la fel. Un
-clic pe pânza goală golește selecția. Deocamdată, un clic alege o singură formă (o piesă importată dintr-un fișier e o
-singură formă, cu toate contururile ei).
+clic pe pânza goală golește selecția. O piesă importată dintr-un fișier e o singură formă, cu toate contururile ei.
+
+**Mai multe forme** se aleg cu un dreptunghi tras pe pânză, pornit de pe un loc gol, ca în programele de CAD:
+- **de la stânga la dreapta** (cadru albastru, cu linie plină): se aleg doar formele cuprinse **în întregime** în dreptunghi;
+- **de la dreapta la stânga** (cadru verde, punctat): se aleg toate formele pe care dreptunghiul le **atinge** (conturul lor,
+  nu interiorul: un dreptunghi tras în mijlocul unui cerc, fără să-i atingă marginea, nu-l alege);
+- **Shift + clic** pe o formă o adaugă la selecție sau o scoate; **Shift + tragere** adaugă formele prinse la cele alese deja;
+- un clic pe o formă dintr-o selecție de mai multe le păstrează pe toate, iar tragerea care urmează le mută împreună;
+- `Esc` renunță la dreptunghiul început.
+
+Dreptunghiul merge și cu unealta Transformare, în afara mânerelor.
 
 - **Mută selecția**: tragi forma pe pânză (se lipește, dacă Lipire e pornită), sau apeși săgețile: 1 mm, cu Shift 10 mm, cu
   Alt 0,1 mm.
@@ -144,7 +153,8 @@ Secțiunea **Aliniere** din extensia barei e mereu acolo; butonul ei o strânge 
 | Distribuie pe orizontală / Distribuie pe verticală | goluri egale între forme (cel puțin trei) |
 
 Cu o singură formă aleasă, alinierea o pune față de foaie (de exemplu, „Aliniază la stânga” o duce la marginea din stânga a
-foii). Fiecare aliniere se poate anula cu `Ctrl+Z`.
+foii). Mai multe forme se aleg cu dreptunghiul de selecție sau cu Shift + clic (vezi [Selecția și editarea](#selectie)).
+Fiecare aliniere se poate anula cu `Ctrl+Z`.
 
 ## Importul SVG
 %% capitol: import
@@ -261,6 +271,7 @@ rămasă cum ai rotit-o. `Esc`, butonul 3D sau o unealtă de desen întorc la p�
 | `V` `S` `R` `O` `E` `L` `P` | uneltele: Selecție, Transformare, Dreptunghi, Cerc, Elipsă, Linie, Poligon |
 | `Shift+H`, `Shift+V` | Oglindește orizontal, Oglindește vertical |
 | săgețile | mută selecția 1 mm (Shift: 10 mm, Alt: 0,1 mm); în vederea 3D, rotesc placa |
+| `Shift` + clic, `Shift` + tragere | adaugă la selecție (la clic, o formă aleasă deja iese din ea) |
 | `Alt`, cât tragi | inversează lipirea |
 | `Esc` | anulează forma începută, întoarce la Selecție, închide vederea 3D și ferestrele |
 | `F1` | manualul, la capitolul de acum |

@@ -72,6 +72,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Manualul utilizatorului (ADR 0058)** gata pe 24.10: `docs/manual/ro.md` și `en.md`, generate în `manual/*.json` (în
   precache), deschise cu „?” sau F1 (după context). **Un buton, o acțiune sau o etichetă nouă cere capitolul ei în ambele
   limbi** (`%% acopera:`), altfel `test/unit/manual.test.ts` cade; o tastă nouă intră în capitolul scurtăturilor.
+  **Selecția cu dreptunghi (ADR 0059)** gata pe 24.10: spre dreapta fereastra, spre stânga intersecția (conturul atins),
+  Shift adaugă; gestul în modulul editării (`Editare.tsx`, captură înaintea pânzei), geometria în `src/geom/cadru.ts`.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

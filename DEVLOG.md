@@ -2500,3 +2500,24 @@ cititorul de markdown ieșit din `/admin` într-o bucată comună 3,9 kB); preca
 **Publicat pe test:** 24.10, workflow-ul `publica` pe `3b44dd5` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
 instanța de test: F1 cu unealta Cerc deschide „Desenul”; 14 capitole; `manual/ro.json` cerut abia la deschidere și prezent în
 manifestul de precache al lui `sw.js`.
+
+## 2026-10-24 — Selecția cu dreptunghi, ca în CAD (Model: Claude Opus 5.5)
+
+**Prompt:** „Este ok, doar ca, vreau ca selectia sa functioneze ca inainte. De le stanga la dreapta trebuie sa selectezi toata
+forma, de la dreapta la stanga se selecteaza toate formele/vectorii atinsi de selectie” (după „Fac acum selecția multiplă
+(Shift+clic și dreptunghi de selecție), ca alinierea între forme să devină folosibilă? Sau preferi altă felie?”).
+**Started:** 24.10, ~17:00. Felia **3.G**, fără agenți: cadrul de selecție trasă de la stânga la dreapta alege doar formele
+cuprinse în întregime (fereastra), trasă de la dreapta la stânga alege tot ce atinge conturul (intersecția); Shift+clic adaugă
+sau scoate o formă, Shift+cadru adaugă; un clic pe o formă deja aleasă păstrează selecția multiplă (s-o poți muta trăgând).
+Gestul în modulul editării (nimic nou la pornire, în afară de clic), calculul exact și pe arce și pe curbe.
+**Treceri:** (1) geometria (`src/geom/cadru.ts`: linii prin Liang–Barsky, arce pe baleiaj, cubice prin subdivizare) cu un
+oracol independent prin eșantionare pe 2 000 de contururi aleatoare și controlul negativ (arcul fără baleiaj cade), alegerea
+pură (`aleseInCadru`), gestul în modulul editării (captură înaintea pânzei; mânerele și apăsarea pe o formă rămân ale lor),
+clicul care păstrează selecția multiplă, manualul (Selecția, Alinierea, Scurtăturile), probele e2e; (2) ce au prins probele:
+două date greșite în proba unitară (o linie care chiar tăia dreptunghiul, o bandă care chiar atingea cercul), mutarea din
+pixelii mausului comparată cu toleranță; proba „bucata alegerii care nu vine” (`la-cerere.spec`) a numărat 4 cereri în loc de
+1: modulul editării importa bucata alegerii, deci fără ea nu mai venea nici editarea. Calculul formei de sub punct s-a mutat în
+`src/model/alegere.ts`, comun; bucata alegerii a rămas o trimitere spre el.
+**Completed:** 24.10 18:20. Fără agenți. `npm run rapid` RC 0 (7 149 de teste unitare, 0 picate, 8 sărite); e2e 185 / 185 în
+Edge (4 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e (pe codul de dinaintea mutării lui `instantaLa`, care nu le
+atinge). Pornirea 95,1 kB, cu ușa 99,8 / 100 (clicul: câteva zeci de octeți); totalul 271,6 → 273,2 / 300 kB.

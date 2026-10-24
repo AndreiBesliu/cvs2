@@ -10,7 +10,11 @@ import { t } from '../i18n/t.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
 import { transforma, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
-import { cutiiAlese, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie, transformareManer, transformareManerLipita, type LipirePunct, type Maner, type TransformareManer } from './editareCalcul.ts';
+import {
+  adaugaLaSelectie, aleseInCadru, comutaInSelectie, cutiiAlese, felCadru, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie,
+  transformareManer, transformareManerLipita, type LipirePunct, type Maner, type TransformareManer,
+} from './editareCalcul.ts';
+import { instantaLa } from '../model/alegere.ts';
 import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTE_UNELTE, UNELTE, type Unealta, type UnealtaDesen } from './desenCalcul.ts';
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
 import '../ui/actiuniDocumentCalcul.ts';
@@ -90,7 +94,11 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese'>>;
+
+/** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
+const TOLERANTA_CLIC_PX = 4;
+const PRAG_CADRU_PX = 3;
 type Punct = { readonly x: number; readonly y: number };
 
 export type ProprietatiEditare = {
@@ -313,6 +321,93 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     return () => { ro.disconnect(); };
   }, [marime.latime, marime.inaltime, p.zona]);
 
+  // Cadrul de selecție (ADR 0059), cu uneltele Selecție și Transformare: o apăsare pe gol (sau cu Shift oriunde) e a lui;
+  // pânza nu o mai primește. Trasă spre dreapta, fereastra; spre stânga, intersecția. Un clic pe gol golește selecția, iar
+  // Shift + clic pe o formă o adaugă sau o scoate. Apăsarea pe o formă, fără Shift, rămâne a pânzei (alegerea și mutarea);
+  // cea pe un mâner, a mânerelor.
+  const [cadru, setCadru] = useState<{ readonly a: Punct; readonly b: Punct } | null>(null);
+  const pentruCadru = useRef({ unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza });
+  pentruCadru.current = { unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza };
+  useEffect(() => {
+    const el = radacina.current;
+    const panza = el?.closest('.panza-cutie')?.querySelector<HTMLCanvasElement>('canvas.panza');
+    if (!el || !panza) return undefined;
+    let spatiu = false;
+    let g: { readonly id: number; readonly a: Punct; readonly ecran: Punct; readonly lovita: string | null; readonly shift: boolean; tras: boolean } | null = null;
+    const local = (e: { clientX: number; clientY: number }): Punct => {
+      const r = el.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    };
+    const apasa = (e: PointerEvent): void => {
+      const s = pentruCadru.current;
+      if (e.target !== panza || e.button !== 0 || spatiu || e.defaultPrevented || s.vedere3d || (s.unealta !== 'selectie' && s.unealta !== 'transformare')) return;
+      const p = local(e), v = s.vedere;
+      if (s.unealta === 'transformare' && s.cutie && s.selectie.length > 0 && manerLovit(s.cutie, v, p.x, p.y)) return;
+      const lovita = instantaLa(s.doc, (p.x - v.tx) / v.scara, (v.ty - p.y) / v.scara, TOLERANTA_CLIC_PX / v.scara);
+      if (lovita && !e.shiftKey) return;
+      e.preventDefault();
+      e.stopPropagation();
+      panza.setPointerCapture(e.pointerId);
+      g = { id: e.pointerId, a: p, ecran: { x: e.clientX, y: e.clientY }, lovita, shift: e.shiftKey, tras: false };
+    };
+    const misca = (e: PointerEvent): void => {
+      if (!g || e.pointerId !== g.id) return;
+      if (!g.tras && Math.hypot(e.clientX - g.ecran.x, e.clientY - g.ecran.y) < PRAG_CADRU_PX) return;
+      g.tras = true;
+      setCadru({ a: g.a, b: local(e) });
+    };
+    const elibereaza = (e: PointerEvent): void => {
+      if (!g || e.pointerId !== g.id) return;
+      const x = g;
+      g = null;
+      setCadru(null);
+      const s = pentruCadru.current;
+      let noi: string[];
+      if (!x.tras) {
+        if (x.shift && !x.lovita) return;
+        noi = x.shift && x.lovita ? comutaInSelectie(s.selectie, x.lovita) : [];
+      } else {
+        const b = local(e), v = s.vedere;
+        const r = {
+          minX: (Math.min(x.a.x, b.x) - v.tx) / v.scara, maxX: (Math.max(x.a.x, b.x) - v.tx) / v.scara,
+          minY: (v.ty - Math.max(x.a.y, b.y)) / v.scara, maxY: (v.ty - Math.min(x.a.y, b.y)) / v.scara,
+        };
+        const prinse = aleseInCadru(s.doc, r, felCadru(x.a.x, b.x));
+        noi = x.shift ? adaugaLaSelectie(s.selectie, prinse) : prinse;
+      }
+      s.ruleaza('selectie.din-lista', { alese: () => noi });
+    };
+    const anuleaza = (): void => {
+      g = null;
+      setCadru(null);
+    };
+    const tasta = (e: KeyboardEvent): void => {
+      if (e.code === 'Space') spatiu = e.type === 'keydown';
+      if (e.type === 'keydown' && e.key === 'Escape' && g) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        anuleaza();
+      }
+    };
+    const uita = (): void => { spatiu = false; };
+    window.addEventListener('pointerdown', apasa, true);
+    window.addEventListener('pointermove', misca, true);
+    window.addEventListener('pointerup', elibereaza, true);
+    window.addEventListener('pointercancel', anuleaza, true);
+    window.addEventListener('keydown', tasta, true);
+    window.addEventListener('keyup', tasta, true);
+    window.addEventListener('blur', uita);
+    return () => {
+      window.removeEventListener('pointerdown', apasa, true);
+      window.removeEventListener('pointermove', misca, true);
+      window.removeEventListener('pointerup', elibereaza, true);
+      window.removeEventListener('pointercancel', anuleaza, true);
+      window.removeEventListener('keydown', tasta, true);
+      window.removeEventListener('keyup', tasta, true);
+      window.removeEventListener('blur', uita);
+    };
+  }, []);
+
   const scrieGhidaje = (nou: readonly Ghidaj[]): void => { ruleaza('foaie.ghidaje', { ghidajeNoi: () => nou }); };
   const lipestePoz = (axa: 'x' | 'y', poz: number, scara: number, alt: boolean): number => {
     if (lipire === alt) return poz;
@@ -366,6 +461,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             ? (q) => lipeste(tinte, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
             : null)}
           onLinii={setLiniiManere} />
+      ) : null}
+      {cadru ? (
+        <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="cadru-selectie" data-fel={felCadru(cadru.a.x, cadru.b.x)}>
+          <rect className={`cadru-${felCadru(cadru.a.x, cadru.b.x)}`} x={Math.min(cadru.a.x, cadru.b.x) + 0.5} y={Math.min(cadru.a.y, cadru.b.y) + 0.5}
+            width={Math.abs(cadru.b.x - cadru.a.x)} height={Math.abs(cadru.b.y - cadru.a.y)} />
+        </svg>
       ) : null}
       {traseu && deseneaza(unealta) && !vedere3d ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="desen-previzualizare">

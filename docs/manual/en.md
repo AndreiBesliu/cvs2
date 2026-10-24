@@ -93,8 +93,18 @@ fixed place on the sheet.
 %% acopera: unealta.selectie, selectie.la-punct, selectie.din-lista, document.muta-selectia, document.duplica-selectia, document.sterge-selectia, istoric.anuleaza, istoric.reface, document.pozitioneaza, document.roteste, document.forma
 
 With the **Select** tool (`V`), a click on a shape selects it; a click on a row of the On the sheet panel does the same. A
-click on empty canvas clears the selection. For now, a click picks a single shape (a part imported from one file is one shape,
-with all its outlines).
+click on empty canvas clears the selection. A part imported from one file is one shape, with all its outlines.
+
+**Several shapes** are picked with a rectangle dragged on the canvas, started from an empty spot, as in CAD programs:
+- **left to right** (blue frame, solid line): only the shapes **entirely** inside the rectangle are picked;
+- **right to left** (green frame, dashed): every shape the rectangle **touches** is picked (its outline, not its inside: a
+  rectangle dragged in the middle of a circle, without touching its edge, does not pick it);
+- **Shift + click** on a shape adds it to the selection or takes it out; **Shift + drag** adds the shapes caught to those
+  already chosen;
+- a click on a shape in a selection of several keeps them all, and the drag that follows moves them together;
+- `Esc` drops the rectangle you started.
+
+The rectangle also works with the Transform tool, outside the handles.
 
 - **Move selection**: drag the shape on the canvas (it snaps, if Snap is on), or press the arrow keys: 1 mm, with Shift
   10 mm, with Alt 0.1 mm.
@@ -147,7 +157,8 @@ buttons **align** the boxes of the chosen shapes:
 | Distribute horizontally / Distribute vertically | equal gaps between shapes (at least three) |
 
 With a single shape chosen, alignment places it against the sheet (for example, “Align left” takes it to the sheet's left
-edge). Each alignment can be undone with `Ctrl+Z`.
+edge). Several shapes are picked with the selection rectangle or with Shift + click (see [Selecting and editing](#selectie)).
+Each alignment can be undone with `Ctrl+Z`.
 
 ## Importing SVG
 %% capitol: import
@@ -267,6 +278,7 @@ sheet left as you rotated it. `Esc`, the 3D button or a drawing tool go back to 
 | `V` `S` `R` `O` `E` `L` `P` | the tools: Select, Transform, Rectangle, Circle, Ellipse, Line, Polygon |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |
 | the arrow keys | move the selection 1 mm (Shift: 10 mm, Alt: 0.1 mm); in the 3D view, rotate the sheet |
+| `Shift` + click, `Shift` + drag | add to the selection (on a click, a shape already chosen leaves it) |
 | `Alt`, while dragging | inverts snapping |
 | `Esc` | cancels the shape you started, goes back to Select, closes the 3D view and the windows |
 | `F1` | the manual, at the current chapter |

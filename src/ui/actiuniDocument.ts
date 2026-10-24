@@ -94,9 +94,13 @@ export function alegereLaCerere(aduce: () => Promise<Alegere>): { readonly incar
     if (!p) return;
     const nr = ++clicuri;
     const doc = ctx.istoric().doc;
+    // Un clic pe o formă dintr-o selecție multiplă (ADR 0059) o păstrează: tragerea care urmează le mută pe toate.
+    const alege = (id: string | null): void => {
+      const s = ctx.selectie();
+      ctx.selecteaza(id ? (s.length > 1 && s.includes(id) ? s : [id]) : []);
+    };
     if (modul) {
-      const id = modul.instantaLa(doc, p.x, p.y, p.toleranta);
-      ctx.selecteaza(id ? [id] : []);
+      alege(modul.instantaLa(doc, p.x, p.y, p.toleranta));
       return;
     }
     ctx.selecteaza([]);
@@ -107,8 +111,7 @@ export function alegereLaCerere(aduce: () => Promise<Alegere>): { readonly incar
         ctx.dinNou();
         return;
       }
-      const id = m.instantaLa(doc, p.x, p.y, p.toleranta);
-      ctx.selecteaza(id ? [id] : []);
+      alege(m.instantaLa(doc, p.x, p.y, p.toleranta));
     }, (e: unknown) => { ctx.jurnal?.(e); });
   };
   return { incarca, ruleaza };
