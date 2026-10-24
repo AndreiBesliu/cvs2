@@ -125,6 +125,36 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Unealta Noduri (ADR 0062): conturul formei, nodurile de apucat (cel ales, plin), sfatul jos în zona liberă. */
+.noduri {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.drum-noduri {
+  fill: none;
+  stroke: var(--l-focus);
+  stroke-width: 1.5;
+}
+
+.nod {
+  fill: var(--s-panou);
+  stroke: var(--l-focus);
+  stroke-width: 1.5;
+  shape-rendering: crispEdges;
+}
+
+.nod-ales {
+  fill: var(--l-focus);
+}
+
+.noduri-sfat {
+  position: absolute;
+  max-width: min(36rem, calc(100% - 16px));
+  pointer-events: none;
+}
+
 /* Copierea în rețea (ADR 0061): panoul sub butonul lui, previzualizarea copiilor pe pânză. */
 .sectiune-retea {
   position: relative;

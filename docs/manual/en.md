@@ -157,6 +157,22 @@ While the panel is open, the copies show on the canvas, dashed. If the array can
 the project at its cap, copies too far away), the panel says why and Copy stays inactive. After copying, the original and
 the copies are chosen.
 
+## Nodes
+%% capitol: noduri
+%% acopera: unealta.noduri
+
+The **Nodes** tool (`N`) shows the nodes (vertices) of the chosen shape and changes them:
+- **drag a node** to move it; it snaps like anything else (see Snap in [The canvas](#panza)), and the control points of the
+  neighbouring curves move with it;
+- **double-click on a side** to add a node there, without changing the shape (a line, an arc or a curve is split exactly);
+- a **click on a node** chooses it; **Delete** (or Backspace) removes it, `Esc` lets it go. For now only the nodes between two
+  lines can be removed; a closed shape keeps at least three nodes.
+
+Nodes are edited on a single shape whose part has a single outline and is not used by other shapes (a part imported with
+several outlines, for now, is not). A rectangle or a circle becomes a **path** with the same outline at the first change (the
+rounded corners stay arcs), and its fields no longer show in the panel. Each change can be undone with `Ctrl+Z`. At the
+bottom, a hint says what can be done or why the chosen shape cannot be edited.
+
 ## Alignment
 %% capitol: aliniere
 %% acopera: editare.aliniere, document.muta-instantele, aliniaza.stanga, aliniaza.centru-x, aliniaza.dreapta, aliniaza.sus, aliniaza.centru-y, aliniaza.jos, aliniaza.distribuie-x, aliniaza.distribuie-y
@@ -291,12 +307,13 @@ sheet left as you rotated it. `Esc`, the 3D button or a drawing tool go back to 
 | `Ctrl+K` | Search commands |
 | `Home` | Show the whole sheet |
 | `T` | Show toolpath |
-| `V` `S` `R` `O` `E` `L` `P` | the tools: Select, Transform, Rectangle, Circle, Ellipse, Line, Polygon |
+| `V` `S` `N` `R` `O` `E` `L` `P` | the tools: Select, Transform, Nodes, Rectangle, Circle, Ellipse, Line, Polygon |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |
 | the arrow keys | move the selection 1 mm (Shift: 10 mm, Alt: 0.1 mm); in the 3D view, rotate the sheet |
 | `Shift` + click, `Shift` + drag | add to the selection (on a click, a shape already chosen leaves it) |
 | `Alt`, while dragging | inverts snapping |
-| `Esc` | cancels the shape you started, goes back to Select, closes the 3D view and the windows |
+| `Delete`, `Backspace` (with the Nodes tool and a node chosen) | removes the chosen node |
+| `Esc` | cancels the shape you started, lets go of the chosen node, goes back to Select, closes the 3D view and the windows |
 | `F1` | the manual, at the current chapter |
 
 On a Mac, `Ctrl` is `⌘`.

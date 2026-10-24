@@ -19,6 +19,9 @@ import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTE
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
 import { motivCopiereRetea } from '../ui/actiuniDocumentCalcul.ts';
 import { copiiRetea, punctulCopiei, type Retea } from '../model/retea.ts';
+import { adaugaNod, caleDinForma, mutaNod, stergeNod, type FormaCale } from '../model/noduri.ts';
+import { conturNoduri, drumSvg, formaNoduri, inversa, laturaLovita, nodLovit, noduriPeEcran } from './noduriCalcul.ts';
+import { aplica } from '../geom/matrice.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 
@@ -112,7 +115,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -509,6 +512,14 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             width={Math.abs(cadru.b.x - cadru.a.x)} height={Math.abs(cadru.b.y - cadru.a.y)} />
         </svg>
       ) : null}
+      {unealta === 'noduri' && !vedere3d ? (
+        <Noduri doc={doc} selectie={selectie} vedere={vedere} marime={marime} zona={zona} doarCitire={p.doarCitire}
+          lipire={(alt) => (lipire !== alt
+            ? (q) => lipeste(tinte, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
+            : null)}
+          onLinii={setLiniiManere}
+          aplica={(f) => { ruleaza('document.forma', { formaEditata: () => f }); }} />
+      ) : null}
       {traseu && deseneaza(unealta) && !vedere3d ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="desen-previzualizare">
           <Previzualizare unealta={unealta} a={traseu.a} b={traseu.b} laturi={laturi} vedere={vedere} />
@@ -706,6 +717,12 @@ function IconaUnealta({ u }: { readonly u: Unealta | 'lipire' | 'grila' }): Reac
     elipsa: <ellipse cx="8" cy="8" rx="6" ry="3.8" className="contur" />,
     linie: <line x1="2.5" y1="13.5" x2="13.5" y2="2.5" className="contur" />,
     poligon: <polygon points="8,2 13.2,5 13.2,11 8,14 2.8,11 2.8,5" className="contur" />,
+    noduri: (
+      <>
+        <path className="contur" d="M3 12 L6 4 L13 6" />
+        <rect x="1.5" y="10.5" width="3" height="3" /><rect x="4.5" y="2.5" width="3" height="3" /><rect x="11.5" y="4.5" width="3" height="3" />
+      </>
+    ),
     transformare: (
       <>
         <rect x="3.5" y="3.5" width="9" height="9" className="contur" strokeDasharray="2 1.6" />
@@ -715,6 +732,163 @@ function IconaUnealta({ u }: { readonly u: Unealta | 'lipire' | 'grila' }): Reac
     ),
   };
   return <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">{desen[u]}</svg>;
+}
+
+/**
+ * Unealta Noduri (ADR 0062): pe forma aleasă singură (piesa doar a ei, un singur element), nodurile căii ei, de apucat.
+ * Tragerea mută nodul (cu lipirea, liniile de aliniere), dublu clic pe o latură adaugă un nod, Delete (sau Backspace) scoate
+ * nodul ales, Esc îl lasă. Forma nouă pleacă prin `document.forma`; dreptunghiul și cercul devin căi la prima schimbare.
+ * Apăsările pe noduri nu mai ajung la pânză (nici alegerea, nici mutarea); restul, da.
+ */
+function Noduri({ doc, selectie, vedere, marime, zona, doarCitire, lipire, onLinii, aplica: aplicaForma }: {
+  readonly doc: Document;
+  readonly selectie: readonly string[];
+  readonly vedere: Vedere;
+  readonly marime: { readonly latime: number; readonly inaltime: number };
+  readonly zona: Zona;
+  readonly doarCitire: boolean;
+  readonly lipire: (alt: boolean) => ((p: Punct) => ReturnType<typeof lipeste>) | null;
+  readonly onLinii: (l: readonly LinieGhid[]) => void;
+  readonly aplica: (f: FormaCale) => void;
+}): ReactElement {
+  const f = formaNoduri(doc, selectie);
+  const cale = typeof f === 'string' ? null : caleDinForma(f.forma);
+  const [ales, setAles] = useState<number | null>(null);
+  const [tras, setTras] = useState<FormaCale | null>(null);
+  const [motiv, setMotiv] = useState<string | null>(null);
+  // Altă formă aleasă: nodul ales și motivul se lasă (o schimbare a formei de acum le păstrează).
+  useEffect(() => { setAles(null); setMotiv(null); }, [selectie.join(' '), typeof f === 'string' ? f : f.instanta]);
+  const radacina = useRef<HTMLDivElement | null>(null);
+  const acum = useRef({ f, cale, vedere, ales, doarCitire, lipire, onLinii, aplicaForma });
+  acum.current = { f, cale, vedere, ales, doarCitire, lipire, onLinii, aplicaForma };
+  useEffect(() => {
+    const el = radacina.current;
+    const panza = el?.closest('.panza-cutie')?.querySelector<HTMLCanvasElement>('canvas.panza');
+    if (!el || !panza) return undefined;
+    let g: { readonly i: number; readonly id: number; readonly ecran: Punct } | null = null;
+    const local = (e: { clientX: number; clientY: number }): Punct => {
+      const r = el.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    };
+    const inLume = (q: Punct): Punct => ({ x: (q.x - acum.current.vedere.tx) / acum.current.vedere.scara, y: (acum.current.vedere.ty - q.y) / acum.current.vedere.scara });
+    /** Locul nou al nodului, în coordonatele elementului: punctul lumii lipit (sau rotunjit la 0,001 mm), prin inversa matricei. */
+    const tinta = (e: PointerEvent): { readonly la: Punct; readonly linii: readonly LinieGhid[] } | null => {
+      const s = acum.current;
+      if (typeof s.f === 'string') return null;
+      const inv = inversa(s.f.matrice);
+      if (!inv) return null;
+      const w = inLume(local(e));
+      const l = s.lipire(e.altKey);
+      const r = l ? l(w) : null;
+      const rot = (v: number): number => Math.round(v * 1000) / 1000;
+      const q = r && r.linii.length > 0
+        ? { x: r.linii.some((x) => x.axa === 'x') ? w.x + r.dx : rot(w.x), y: r.linii.some((x) => x.axa === 'y') ? w.y + r.dy : rot(w.y) }
+        : { x: rot(w.x), y: rot(w.y) };
+      return { la: aplica(inv, q), linii: r?.linii ?? [] };
+    };
+    const apasa = (e: PointerEvent): void => {
+      const s = acum.current;
+      if (e.target !== panza || e.button !== 0 || !s.cale || typeof s.f === 'string') return;
+      const p = local(e);
+      const i = nodLovit(noduriPeEcran(s.cale.varfuri, s.f.matrice, s.vedere), p.x, p.y, 6);
+      if (i === null) return;
+      e.preventDefault();
+      e.stopPropagation();
+      panza.setPointerCapture(e.pointerId);
+      setAles(i);
+      setMotiv(null);
+      g = { i, id: e.pointerId, ecran: { x: e.clientX, y: e.clientY } };
+    };
+    const misca = (e: PointerEvent): void => {
+      const s = acum.current;
+      if (!g || e.pointerId !== g.id || !s.cale || s.doarCitire) return;
+      if (Math.hypot(e.clientX - g.ecran.x, e.clientY - g.ecran.y) < 3) return;
+      const r = tinta(e);
+      if (!r) return;
+      setTras(mutaNod(s.cale, g.i, r.la));
+      s.onLinii(r.linii);
+    };
+    const elibereaza = (e: PointerEvent): void => {
+      const s = acum.current;
+      if (!g || e.pointerId !== g.id) return;
+      const x = g;
+      g = null;
+      setTras(null);
+      s.onLinii([]);
+      if (!s.cale || s.doarCitire || Math.hypot(e.clientX - x.ecran.x, e.clientY - x.ecran.y) < 3) return;
+      const r = tinta(e);
+      if (r) s.aplicaForma(mutaNod(s.cale, x.i, r.la));
+    };
+    const dublu = (e: MouseEvent): void => {
+      const s = acum.current;
+      if (e.target !== panza || !s.cale || typeof s.f === 'string' || s.doarCitire) return;
+      const p = local(e);
+      if (nodLovit(noduriPeEcran(s.cale.varfuri, s.f.matrice, s.vedere), p.x, p.y, 6) !== null) return;
+      const lat = laturaLovita(conturNoduri(s.cale, s.f.matrice), inLume(p), 6 / s.vedere.scara);
+      if (!lat || lat.t <= 1e-6 || lat.t >= 1 - 1e-6) return;
+      e.preventDefault();
+      e.stopPropagation();
+      s.aplicaForma(adaugaNod(s.cale, lat.i, lat.t));
+      setAles(lat.i + 1);
+      setMotiv(null);
+    };
+    const tasta = (e: KeyboardEvent): void => {
+      const s = acum.current;
+      if (s.ales === null || !s.cale || e.ctrlKey || e.metaKey) return;
+      const tinta = e.target;
+      if (tinta instanceof Element && tinta.closest('input, textarea, select, [contenteditable="true"], [role="dialog"], dialog') !== null) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        setAles(null);
+        return;
+      }
+      if ((e.key !== 'Delete' && e.key !== 'Backspace') || s.doarCitire) return;
+      // Delete e și scurtătura aplicației (Șterge selecția): cu un nod ales, e a nodului.
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const r = stergeNod(s.cale, s.ales);
+      if (typeof r === 'string') {
+        setMotiv(t(`editare.noduri.${r}`));
+        return;
+      }
+      s.aplicaForma(r);
+      setAles(null);
+      setMotiv(null);
+    };
+    const anuleaza = (): void => { g = null; setTras(null); acum.current.onLinii([]); };
+    window.addEventListener('pointerdown', apasa, true);
+    window.addEventListener('pointermove', misca, true);
+    window.addEventListener('pointerup', elibereaza, true);
+    window.addEventListener('pointercancel', anuleaza, true);
+    window.addEventListener('dblclick', dublu, true);
+    window.addEventListener('keydown', tasta, true);
+    return () => {
+      window.removeEventListener('pointerdown', apasa, true);
+      window.removeEventListener('pointermove', misca, true);
+      window.removeEventListener('pointerup', elibereaza, true);
+      window.removeEventListener('pointercancel', anuleaza, true);
+      window.removeEventListener('dblclick', dublu, true);
+      window.removeEventListener('keydown', tasta, true);
+      acum.current.onLinii([]);
+    };
+  }, []);
+
+  const sfat = typeof f === 'string' ? t(`editare.noduri.${f}`) : motiv ?? t('editare.noduri.sfat');
+  const vizibila = tras ?? cale;
+  return (
+    <div className="noduri" ref={radacina} data-testid="noduri" data-noduri={vizibila && typeof f !== 'string' ? vizibila.varfuri.length : 0} data-ales={ales ?? undefined}>
+      {vizibila && typeof f !== 'string' ? (
+        <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true">
+          <path className="drum-noduri" d={drumSvg(conturNoduri(vizibila, f.matrice), vedere)} />
+          {noduriPeEcran(vizibila.varfuri, f.matrice, vedere).map((q, k) => (
+            <rect key={k} className={k === ales ? 'nod nod-ales' : 'nod'} x={q.x - 4} y={q.y - 4} width={8} height={8} data-nod={k} />
+          ))}
+        </svg>
+      ) : null}
+      <span className={motiv ? 'cip cip-atentie noduri-sfat' : 'cip noduri-sfat'} role="status" data-testid="noduri-sfat" style={{ left: zona.x + 8, top: zona.y + zona.h - 44 }}>{sfat}</span>
+    </div>
+  );
 }
 
 /** Copierea în rețea (ADR 0061): patru pătrate, unul plin (originalul) și trei în contur (copiile). */

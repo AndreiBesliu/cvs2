@@ -2566,3 +2566,21 @@ din nou; determinismul, licențele verzi. E2e 189 / 189 în Edge (2 noi); emulat
 Pornirea 95,1 → 95,2 kB (intrarea acțiunii și eticheta); cu ușa 99,8 / 100, deci mai e ~0,1 kB; totalul 274,2 → 276,8 / 300 kB.
 **Publicat pe test:** 24.10, workflow-ul `publica` pe `f0a0ca9` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
 instanța de test: rețeaua 2 × 2 a dreptunghiului dă 3 copii previzualizate, 4 forme, ultima copie la (130, 90).
+
+## 2026-10-24 — Editarea nodurilor (Model: Claude Opus 5.5)
+
+**Prompt:** „ok, continua” (după copierea în rețea și pe cerc).
+**Started:** 24.10, ~22:00. Felia **6.H↑**, adusă din etapa 6 („Vectori, noduri…”), fără agenți: unealta Noduri (N) arată
+vârfurile căii formei alese singure (o piesă cu un singur contur, doar a ei); tragerea mută un nod (cu lipirea, cu punctele de
+control ale curbelor vecine mutate odată cu el), dublu clic pe o latură adaugă un nod exact (linia, arcul și curba împărțite fără
+aproximare), Delete scoate nodul ales dintre două linii. Dreptunghiul și cercul devin căi exacte la prima editare. Prin acțiunea
+existentă `document.forma`: nimic nou la pornire (mai e ~0,1 kB).
+**Treceri:** (1) modulul pur (`src/model/noduri.ts`: calea exactă a dreptunghiului și a cercului, mutarea cu punctele de control
+vecine, nodul nou pe linie, arc și cubică, scoaterea cu motiv), partea pură a unealtei (`src/app/noduriCalcul.ts`: ce formă se
+poate edita, nodul și latura lovite, drumul SVG), unealta în modulul editării (tasta N, sfatul de jos), manualul (capitolul
+„Nodurile”, tasta N la scurtături), probele; (2) ce au prins probele: cercul are doar două noduri, deci refuzul „prea puține” vine
+înaintea celui „lângă arce” (proba e2e adaugă întâi două noduri); nodul ales se pierdea după fiecare schimbare, fiindcă efectul
+depindea de formă (acum doar de selecție); erorile de tipuri (iconița lipsă, tipul lipirii) prinse de compilator.
+**Completed:** 24.10 22:25. Fără agenți. `npm run rapid` RC 0 (7 166 de teste unitare, 6 noi, 0 picate, 8 sărite); determinismul,
+licențele verzi. E2e 192 / 192 în Edge (3 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,2 kB;
+cu ușa 99,9 / 100); totalul 276,8 → 280,1 / 300 kB; manualul are 15 capitole.

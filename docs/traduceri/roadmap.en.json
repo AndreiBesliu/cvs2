@@ -109,6 +109,10 @@
       "ro": "Inlay în V și cu pereți drepți",
       "en": "V inlay and straight-wall inlay"
     },
+    "121f4d45d3b8daf4": {
+      "ro": "**Editarea nodurilor, adusă din etapa 6** (fără mașină; ADR 0062; „ok, continua”: următorul pas al rândului „Vectori, noduri…”). Unealta Noduri (N) arată nodurile formei alese: tragerea mută un nod (cu lipirea; punctele de control ale curbelor vecine se mută cu el), dublu clic pe o latură adaugă un nod fără să schimbe forma (linia, arcul și curba se împart exact), Delete scoate nodul ales dintre două linii, Esc îl lasă. Dreptunghiul și cercul devin căi cu același contur la prima schimbare; fiecare schimbare e un pas de anulare (prin `document.forma`). Sfatul de jos spune ce se poate face sau de ce forma aleasă nu se poate edita. Pornirea neschimbată (cu ușa 99,8 / 100); manualul are capitolul „Nodurile”. **Treceri:** (1) modulul pur, unealta, sfatul, probele; (2) cercul are doar două noduri, deci refuzul „prea puține” vine înaintea celui „lângă arce”: proba e2e adaugă întâi două noduri; nodul ales se pierdea după fiecare schimbare (efectul depindea de formă): legat doar de selecție.",
+      "en": "**Node editing, brought forward from stage 6** (no machine; ADR 0062; „ok, continua”: the next step of the row „Vectors, nodes…”). The Nodes tool (N) shows the nodes of the chosen shape: dragging moves a node (with snapping; the control points of the neighbouring curves move with it), a double-click on a side adds a node without changing the shape (the line, the arc and the curve are split exactly), Delete removes the chosen node between two lines, Esc lets it go. The rectangle and the circle become paths with the same outline at the first change; each change is one undo step (through `document.forma`). The hint at the bottom says what can be done or why the chosen shape cannot be edited. Startup unchanged (99.8 / 100 with the door); the manual has the chapter „Nodes”. **Passes:** (1) the pure module, the tool, the hint, the tests; (2) the circle has only two nodes, so the „too few” refusal comes before the „next to arcs” one: the e2e test adds two nodes first; the chosen node was lost after every change (the effect depended on the shape): tied to the selection only."
+    },
     "1265a56e89dd6376": {
       "ro": "Estimarea timpului jobului",
       "en": "Job time estimate"
@@ -140,6 +144,10 @@
     "167efdf9d2d97663": {
       "ro": "Profilul pe orice contur: și pe cele deschise, pe o parte (stânga / dreapta), la nivelul CAM, pentru importul SVG (din 09.10, lângă 2.7: n-are contururi deschise până la import)",
       "en": "Profile on any contour: also on open ones, on one side (left / right), at the CAM level, for the SVG import (since 09.10, next to 2.7: there are no open contours until the import)"
+    },
+    "168bdc4d7289a620": {
+      "ro": "Editarea nodurilor",
+      "en": "Node editing"
     },
     "177e163eb20639aa": {
       "ro": "Migrările pure vN → vN+1, cu corpus de aur (de acum există date pe live).",

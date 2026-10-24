@@ -151,6 +151,22 @@ singur pas de anulare. Copiile sunt piese independente (ca la Duplică): fiecare
 Cât panoul e deschis, copiile se văd pe pânză, punctat. Dacă rețeaua nu se poate face (valori greșite, nimic ales, proiectul
 la plafon, copii prea departe), panoul spune de ce, iar Copiază rămâne inactiv. După copiere sunt alese originalul și copiile.
 
+## Nodurile
+%% capitol: noduri
+%% acopera: unealta.noduri
+
+Unealta **Noduri** (`N`) arată nodurile (vârfurile) formei alese și le schimbă:
+- **trage un nod** ca să-l muți; se lipește ca orice altceva (vezi Lipire în [Pânza](#panza)), iar punctele de control ale
+  curbelor vecine se mută odată cu el;
+- **dublu clic pe o latură** adaugă un nod acolo, fără să schimbe forma (o linie, un arc sau o curbă se împart exact);
+- un **clic pe un nod** îl alege; **Delete** (sau Backspace) îl scoate, `Esc` îl lasă. Deocamdată se scot doar nodurile dintre
+  două linii; o formă închisă păstrează cel puțin trei noduri.
+
+Nodurile se editează pe o singură formă, a cărei piesă are un singur contur și nu e folosită și de alte forme (o piesă
+importată cu mai multe contururi, deocamdată, nu). Un dreptunghi sau un cerc devine la prima schimbare o **cale** cu același
+contur (colțurile rotunjite rămân arce), iar câmpurile lui din panou nu mai apar. Fiecare schimbare se poate anula cu `Ctrl+Z`.
+Jos, un sfat spune ce se poate face sau de ce forma aleasă nu se poate edita.
+
 ## Alinierea
 %% capitol: aliniere
 %% acopera: editare.aliniere, document.muta-instantele, aliniaza.stanga, aliniaza.centru-x, aliniaza.dreapta, aliniaza.sus, aliniaza.centru-y, aliniaza.jos, aliniaza.distribuie-x, aliniaza.distribuie-y
@@ -282,12 +298,13 @@ rămasă cum ai rotit-o. `Esc`, butonul 3D sau o unealtă de desen întorc la p�
 | `Ctrl+K` | Caută o comandă |
 | `Home` | Arată toată foaia |
 | `T` | Arată traseul |
-| `V` `S` `R` `O` `E` `L` `P` | uneltele: Selecție, Transformare, Dreptunghi, Cerc, Elipsă, Linie, Poligon |
+| `V` `S` `N` `R` `O` `E` `L` `P` | uneltele: Selecție, Transformare, Noduri, Dreptunghi, Cerc, Elipsă, Linie, Poligon |
 | `Shift+H`, `Shift+V` | Oglindește orizontal, Oglindește vertical |
 | săgețile | mută selecția 1 mm (Shift: 10 mm, Alt: 0,1 mm); în vederea 3D, rotesc placa |
 | `Shift` + clic, `Shift` + tragere | adaugă la selecție (la clic, o formă aleasă deja iese din ea) |
 | `Alt`, cât tragi | inversează lipirea |
-| `Esc` | anulează forma începută, întoarce la Selecție, închide vederea 3D și ferestrele |
+| `Delete`, `Backspace` (cu unealta Noduri și un nod ales) | scoate nodul ales |
+| `Esc` | anulează forma începută, lasă nodul ales, întoarce la Selecție, închide vederea 3D și ferestrele |
 | `F1` | manualul, la capitolul de acum |
 
 Pe Mac, `Ctrl` e `⌘`.

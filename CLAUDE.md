@@ -78,6 +78,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   owner-ului); linia de cotă pentru formele care ies din foaie (`pozitiaRiglelor`, `cotePeste` în `src/canvas/gradatii.ts`).
   **Copierea în rețea și pe cerc (ADR 0061)** gata pe 24.10: `document.copiaza-in-retea`, un pas, piese independente; panoul
   din extensia barei (secțiunea Copiere), cu verdictul comun acțiunii (`motivCopiereRetea`); calculul pur în `src/model/retea.ts`.
+  **Editarea nodurilor (ADR 0062)** gata pe 24.10: unealta Noduri (N), prin `document.forma` (nimic nou în pornire); mutarea cu
+  lipirea, nodul nou exact pe linie, arc și cubică, scoaterea doar dintre linii; calculul pur în `src/model/noduri.ts`.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
