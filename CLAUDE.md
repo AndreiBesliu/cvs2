@@ -74,6 +74,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   limbi** (`%% acopera:`), altfel `test/unit/manual.test.ts` cade; o tastă nouă intră în capitolul scurtăturilor.
   **Selecția cu dreptunghi (ADR 0059)** gata pe 24.10: spre dreapta fereastra, spre stânga intersecția (conturul atins),
   Shift adaugă; gestul în modulul editării (`Editare.tsx`, captură înaintea pânzei), geometria în `src/geom/cadru.ts`.
+  **Rigla pe marginea foii (ADR 0060)** gata pe 24.10: lungă cât foaia, mutată cu ea, oprită pe marginea zonei libere; linia de
+  cotă pentru formele care ies din foaie (`pozitiaRiglelor`, `cotePeste` în `src/canvas/gradatii.ts`).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

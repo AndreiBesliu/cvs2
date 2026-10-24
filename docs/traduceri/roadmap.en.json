@@ -233,6 +233,10 @@
       "ro": "Loc în pachetul de pornire",
       "en": "Room in the startup bundle"
     },
+    "2998b2828779115d": {
+      "ro": "Rigla pe marginea foii, cu linia de cotă",
+      "en": "The ruler on the sheet's edge, with the dimension line"
+    },
     "2a0fbb5a2734e8a3": {
       "ro": "Verificarea și repararea vectorilor; Cote; Tăierea și conversia; Transformarea traseelor",
       "en": "Checking and repairing vectors; Dimensions; Cutting and conversion; Transforming toolpaths"
@@ -412,6 +416,10 @@
     "435fc4e939965859": {
       "ro": "Biarcele (ADR 0033): cubica devine linii și arce sub 0,001 mm, cu bugetul de toleranță într-un singur loc (ținta 0,99, raza maximă a arcelor 9 900 mm, legată printr-un test de garda postului). Tăieturile: inflexiunile și vârfurile (din B′), regula liniei, extremele pe axe (bucăți monotone), înjumătățirea; abaterea în ambele sensuri, cu fiecare maxim local rafinat; refuzuri explicite. **Recenzia (o lentilă + 5 verificatori, 1,20 M, 67 min) a găsit abateri tăcute peste toleranță:** mânerul întors pe o cubică aproape dreaptă (18–414 × tol: întoarcerea cădea între eșantioane), vârfurile ratate din rotunjire (2,63 ×), vârful abaterii între eșantioane (1,13 ×), razele de până la 1e12 mm pe care postul le-ar fi aproximat a doua oară (2,05 ×). Toate reparate, cu cazurile în teste. Oracolul (sesiune independentă, 0,48 M, două treceri): 150 de cubice la 4 toleranțe, 229 de teste, 35 de sabotaje prinse. Otrăvuri: 13 din 26 la prima trecere; 4 au primit teste, 3 erau cod mort (scos), 5 sunt echivalente (căutare adversarială: 0,99000 × tol). Nimic vizibil pentru owner (cubicele intră cu 2.7b). **Treceri:** (1) contractul și fitter-ul; (2) oracolul și prima lui constatare; (3) recenzia și reparațiile; (4) oracolul pe contractul precizat; (5) otrăvurile.",
       "en": "Biarcs (ADR 0033): the cubic becomes lines and arcs within 0.001 mm, with the tolerance budget in a single place (target 0.99, maximum arc radius 9,900 mm, tied by a test to the post's guard). The cuts: inflections and cusps (from B′), the line rule, the extremes on the axes (monotonic pieces), halving; the deviation in both directions, with every local maximum refined; explicit refusals. **The review (one lens + 5 verifiers, 1.20 M, 67 min) found silent deviations beyond tolerance:** a reversed handle on a nearly straight cubic (18–414 × tol: the reversal fell between samples), cusps missed through rounding (2.63 ×), the deviation peak between samples (1.13 ×), radii up to 1e12 mm that the post would have approximated a second time (2.05 ×). All fixed, with the cases in tests. The oracle (independent session, 0.48 M, two passes): 150 cubics at 4 tolerances, 229 tests, 35 sabotages caught. Poisons: 13 of 26 on the first pass; 4 got tests, 3 were dead code (removed), 5 are equivalent (adversarial search: 0.99000 × tol). Nothing visible for the owner (cubics come in with 2.7b). **Passes:** (1) the contract and the fitter; (2) the oracle and its first finding; (3) the review and the fixes; (4) the oracle on the clarified contract; (5) the poisons."
+    },
+    "44518f3810246393": {
+      "ro": "**Rigla pe marginea foii, cu linia de cotă** (ADR 0060; „vreau sa modificam rigla, trebuie sa stea pe marginea planselor”, apoi „Vreau ca rigla sa tina cat foaia de lucru, dar, daca avem piese care depasesc, sa se extinda o linie cu cota de lungime”). Rigla de sus stă deasupra foii, cea din stânga la stânga ei, lungi cât foaia, mutate odată cu ea la deplasare și zoom; când marginea foii iese din spațiul dintre panouri, rigla rămâne pe marginea lui, deci nu mai trece pe sub panouri și bare. Formele care ies din foaie au o linie de cotă în continuarea riglei, cu câți mm ies, pe fiecare parte. Pornirea rămâne neschimbată; manualul (Pânza, Foaia) e la zi. **Treceri:** (1) poziția și cotele, pure, cu probele lor, rigla nouă, probele e2e; (2) capturile: pe o cotă scurtă, eticheta se călca peste linie: mutată după capătul dinspre forme.",
+      "en": "**The ruler on the sheet's edge, with the dimension line** (ADR 0060; “I want to change the ruler, it has to sit on the edge of the sheets”, then “I want the ruler to be as long as the work sheet, but if we have parts that go past it, a line with the length dimension should extend”). The top ruler sits above the sheet and the left one to its left, as long as the sheet, moving with it when panning and zooming; when the sheet's edge leaves the space between the panels, the ruler stays on its edge, so it no longer passes under the panels and bars. Shapes that go past the sheet get a dimension line continuing the ruler, with how many mm they go past, on each side. Startup stays unchanged; the manual (The canvas, The sheet) is up to date. **Passes:** (1) the position and the dimensions, pure, with their checks, the new ruler, the e2e checks; (2) the screenshots: on a short dimension the label overlapped the line: moved past the end towards the shapes."
     },
     "449772f5c59a39f9": {
       "ro": "Forma „cale” în document",
@@ -1156,6 +1164,10 @@
     "dc0af46d0c9b1b55": {
       "ro": "Fișierele lăsate pe planșă: unul sau mai multe SVG-uri trase pe pânză trec pe rând prin dialogul importului și cad cu centrul unde au fost lăsate; un fișier care nu e SVG e refuzat cu motiv. Pornirea 99,9 / 100 kB. Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`.",
       "en": "Files dropped on the board: one or more SVGs dragged onto the canvas go through the import dialog one by one and land centred where they were dropped; a file that is not SVG is refused with a reason. Startup 99.9 / 100 kB. Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`."
+    },
+    "dc46aed0e6abba07": {
+      "ro": "Rigla pe marginea foii",
+      "en": "The ruler on the sheet's edge"
     },
     "dc929192d3471597": {
       "ro": "Partea documentului care nu depinde de A / D",

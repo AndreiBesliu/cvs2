@@ -2523,3 +2523,20 @@ Edge (4 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e (pe codul de din
 atinge). Pornirea 95,1 kB, cu ușa 99,8 / 100 (clicul: câteva zeci de octeți); totalul 271,6 → 273,2 / 300 kB.
 **Publicat pe test:** 24.10, workflow-ul `publica` pe `07fb822` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
 instanța de test: fereastra (spre dreapta) alege doar dreptunghiul cuprins; intersecția (spre stânga) și cercul atins.
+
+## 2026-10-24 — Rigla pe marginea foii, cu linia de cotă (Model: Claude Opus 5.5)
+
+**Prompt:** „Si, vreau sa modificam rigla, trebuie sa stea pe marginea planselor. Acum se suprapun lucruri care ar trebui mai
+clar delimitate”; la întrebarea despre formă: „Vreau ca rigla sa tina cat foaia de lucru, dar, daca avem piese care depasesc,
+sa se extinda o linie cu cota de lungime”.
+**Started:** 24.10, ~18:35. Felia **3.H**, fără agenți: rigla de sus lipită de marginea de sus a foii și cea din stânga de
+marginea din stânga, lungi cât foaia, mutate odată cu ea la deplasare și zoom; când marginea foii iese din zona liberă, rigla
+rămâne pe marginea zonei (nu mai trece pe sub panouri și bare). Formele care ies din foaie: o linie de cotă care continuă rigla,
+cu cât ies (mm), pe fiecare parte.
+**Treceri:** (1) poziția riglelor și cotele, pure (`pozitiaRiglelor`, `cotePeste` în `src/canvas/gradatii.ts`; `cutieFormelor`),
+cu probele lor; rigla nouă (lipită de foaie, oprită pe marginea zonei, gradațiile doar pe foaie, ștergerea ghidajului doar în
+banda riglei) și liniile de cotă; manualul (Pânza, Foaia); probele e2e; (2) capturile: pe o cotă scurtă (10 mm la zoomul de
+pornire), eticheta se călca peste linie: mutată după capătul dinspre forme.
+**Completed:** 24.10 19:25. Fără agenți. `npm run rapid` RC 0 (7 153 de teste unitare, 0 picate, 8 sărite); e2e 187 / 187 în
+Edge (2 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,1 kB; cu ușa 99,8 / 100); totalul
+273,2 → 274,1 / 300 kB.

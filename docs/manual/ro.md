@@ -35,7 +35,11 @@ salvarea](#proiect).
 - **Deplasare**: tragi cu butonul din mijloc, sau ții Space și tragi.
 - **Arată toată foaia** (`Home`): încadrează foaia în spațiul dintre panouri.
 
-**Riglele** stau pe marginile pânzei, în mm. **Ghidajele foii** se fac trăgând dintr-o riglă: din cea de sus iese un
+**Riglele**, în mm, stau pe marginea foii: cea de sus deasupra ei, cea din stânga la stânga ei, lungi cât foaia. La
+deplasare și la zoom se mută odată cu foaia; când marginea foii iese din spațiul dintre panouri, rigla rămâne pe marginea
+lui. Dacă formele ies din foaie, o **linie de cotă** continuă rigla și arată cu câți mm ies, pe fiecare parte.
+
+**Ghidajele foii** se fac trăgând dintr-o riglă: din cea de sus iese un
 ghidaj orizontal, din cea din stânga unul vertical. Un ghidaj se mută trăgându-l și se șterge lăsându-l înapoi pe riglă;
 cu dublu clic pe el îi scrii poziția exactă. Ghidajele se salvează cu proiectul.
 
@@ -56,7 +60,8 @@ din câmp); Escape revine la valoarea veche.
 Toate pozițiile se măsoară din **colțul stânga-jos** al foii, cu X spre dreapta și Y în sus, ca pe mașină. Grosimea contează
 la tăiere: o operație nu coboară sub fața de jos a foii, iar vederea 3D arată ce trece prin ea.
 
-O formă care iese din foaie e semnalată în panoul Pe foaie și jos, în bara de stare.
+O formă care iese din foaie e semnalată în panoul Pe foaie, jos, în bara de stare, și pe riglă, cu linia de cotă (cu câți mm
+iese).
 
 ## Desenul
 %% capitol: desen

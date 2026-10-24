@@ -36,7 +36,11 @@ saving](#proiect).
 - **Pan**: drag with the middle button, or hold Space and drag.
 - **Show the whole sheet** (`Home`): fits the sheet in the space between the panels.
 
-The **rulers** sit on the canvas edges, in mm. **Sheet guides** are made by dragging out of a ruler: the top one gives a
+The **rulers**, in mm, sit on the sheet's edges: the top one above it, the left one to its left, as long as the sheet. When
+you pan and zoom they move with the sheet; when the sheet's edge leaves the space between the panels, the ruler stays on its
+edge. If shapes go past the sheet, a **dimension line** continues the ruler and shows by how many mm, on each side.
+
+**Sheet guides** are made by dragging out of a ruler: the top one gives a
 horizontal guide, the left one a vertical guide. Drag a guide to move it and drop it back on the ruler to delete it;
 double-click it to type its exact position. Guides are saved with the project.
 
@@ -58,7 +62,8 @@ All positions are measured from the sheet's **bottom-left corner**, with X to th
 thickness matters for cutting: an operation does not go below the sheet's bottom face, and the 3D view shows what goes
 through it.
 
-A shape that goes off the sheet is flagged in the On the sheet panel and at the bottom, in the status bar.
+A shape that goes off the sheet is flagged in the On the sheet panel, at the bottom in the status bar, and on the ruler, with
+the dimension line (by how many mm it goes past).
 
 ## Drawing
 %% capitol: desen

@@ -189,6 +189,16 @@ export function aleseInCadru(doc: Document, r: Cutie, fel: FelCadru): string[] {
   return [...stare].filter(([, da]) => da).map(([id]) => id);
 }
 
+/** Pură: cutia tuturor formelor foii curente (mm), sau `null` dacă foaia e goală (liniile de cotă ale riglelor, ADR 0060). */
+export function cutieFormelor(doc: Document): Cutie | null {
+  let r: { minX: number; minY: number; maxX: number; maxY: number } | null = null;
+  for (const e of elementeFoaie(doc, FOAIA)) {
+    const k = cutieElement(e);
+    r = r ? { minX: Math.min(r.minX, k.minX), minY: Math.min(r.minY, k.minY), maxX: Math.max(r.maxX, k.maxX), maxY: Math.max(r.maxY, k.maxY) } : { ...k };
+  }
+  return r;
+}
+
 /** Selecția veche plus cele noi (Shift + cadru), fără dubluri, cele vechi întâi. */
 export function adaugaLaSelectie(veche: readonly string[], noi: readonly string[]): string[] {
   const out = [...veche];

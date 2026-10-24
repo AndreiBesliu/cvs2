@@ -11,7 +11,7 @@ import type { Document, Ghidaj } from '../model/document.ts';
 import { transforma, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
-  adaugaLaSelectie, aleseInCadru, comutaInSelectie, cutiiAlese, felCadru, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie,
+  adaugaLaSelectie, aleseInCadru, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie,
   transformareManer, transformareManerLipita, type LipirePunct, type Maner, type TransformareManer,
 } from './editareCalcul.ts';
 import { instantaLa } from '../model/alegere.ts';
@@ -419,6 +419,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   };
 
   const cutiiInstante = useMemo(() => cutiiAlese(doc, alese), [doc, alese]);
+  // Cutia tuturor formelor foii, pentru liniile de cotă ale riglelor (ADR 0060).
+  const cutieForme = useMemo(() => cutieFormelor(doc), [doc]);
   const aliniere = (fel: FelAliniere): void => {
     if (!foaie) return;
     const d = aliniaza(cutiiInstante, fel, { minX: 0, minY: 0, maxX: foaie.stoc.latime, maxY: foaie.stoc.inaltime });
@@ -444,12 +446,13 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       ) : null}
       {foaie && !vedere3d ? (
         <Rigle
-          vedere={vedere} latime={marime.latime} inaltime={marime.inaltime} zona={zona} foaie={foaie.stoc}
+          vedere={vedere} latime={marime.latime} inaltime={marime.inaltime} zona={zona} foaie={foaie.stoc} forme={cutieForme}
           ghidaje={ghidaje} linii={liniiDesen.length > 0 || liniiManere.length > 0 ? [...p.linii, ...liniiDesen, ...liniiManere] : p.linii} grila={pasGrila} lipestePoz={lipestePoz} doarCitire={p.doarCitire}
           onNou={(axa, poz) => { scrieGhidaje([...ghidaje, { id: idGhidaj(ghidaje), axa, poz }]); }}
           onMuta={(id, poz) => { scrieGhidaje(ghidaje.map((g) => (g.id === id ? { ...g, poz } : g))); }}
           onSterge={(id) => { scrieGhidaje(ghidaje.filter((g) => g.id !== id)); }}
-          eticheta={(cheie, poz) => (cheie === 'sus' ? t('editare.rigla-sus') : cheie === 'stanga' ? t('editare.rigla-stanga') : t('editare.ghidaj', { poz: poz ?? '' }))}
+          eticheta={(cheie, poz) => (cheie === 'sus' ? t('editare.rigla-sus') : cheie === 'stanga' ? t('editare.rigla-stanga')
+            : cheie === 'poz' ? t('editare.ghidaj', { poz: poz ?? '' }) : t(`editare.${cheie}`, { mm: poz ?? '' }))}
           textPoz={(poz) => textNumar(Math.round(poz * 1000) / 1000, true)}
           citestePoz={(s) => citesteNumar(s, true)}
         />

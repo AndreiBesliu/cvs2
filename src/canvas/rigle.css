@@ -125,6 +125,32 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Linia de cotă a formelor care ies din foaie (ADR 0060): în continuarea riglei, în culoarea atenției. */
+.rigla-cota {
+  position: absolute;
+  pointer-events: auto;
+  background: color-mix(in oklab, var(--s-atentie) 90%, transparent);
+}
+
+.rigla-cota svg {
+  display: block;
+  overflow: visible;
+}
+
+.rigla-cota line {
+  stroke: var(--a);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.rigla-cota text {
+  fill: var(--a);
+  font-size: 9px;
+  font-weight: 600;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+}
+
 .ghidaj-camp {
   position: absolute;
   pointer-events: auto;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent as EvPointer, type ReactElement } from 'react';
-import { pasRigla } from './gradatii.ts';
+import { cotePeste, pasRigla, pozitiaRiglelor } from './gradatii.ts';
 import type { LinieGhid, Vedere } from './protocol.ts';
 import './rigle.css';
 
@@ -7,6 +7,10 @@ import './rigle.css';
  * Riglele, ghidajele, grila și liniile de aliniere (ADR 0050 §4), deasupra pânzei. Doar desenul și gesturile: datele
  * (ghidajele foii, lipirea poziției) le dă modulul editării, iar ce se schimbă pleacă prin el, ca acțiuni. Coordonatele
  * sunt ale foii (mm, originea în colțul stânga-jos, Y în sus); pânza le arată cu `vedere`.
+ *
+ * Riglele stau pe marginea foii (ADR 0060): cea de sus deasupra ei, cea din stânga la stânga ei, lungi cât foaia, mutate
+ * odată cu ea; oprite pe marginea zonei libere când foaia iese din ea. Formele care ies din foaie au o linie de cotă care
+ * continuă rigla, cu cât ies.
  */
 
 export const GROSIME_RIGLA = 20;
@@ -18,9 +22,11 @@ type Props = {
   readonly vedere: Vedere;
   readonly latime: number;
   readonly inaltime: number;
-  /** Zona liberă a pânzei, în pixeli din colțul ei: riglele stau pe marginea ei de sus și din stânga. */
+  /** Zona liberă a pânzei, în pixeli din colțul ei: riglele nu ies din ea (se opresc pe marginea ei). */
   readonly zona: Zona;
   readonly foaie: { readonly latime: number; readonly inaltime: number };
+  /** Cutia tuturor formelor foii (mm), pentru liniile de cotă ale celor care ies din foaie; `null`: nicio formă. */
+  readonly forme: { readonly minX: number; readonly minY: number; readonly maxX: number; readonly maxY: number } | null;
   readonly ghidaje: readonly GhidajDesen[];
   readonly linii: readonly LinieGhid[];
   /** Pasul grilei arătate, în mm, sau null. */
@@ -31,10 +37,12 @@ type Props = {
   readonly onMuta: (id: string, poz: number) => void;
   readonly onSterge: (id: string) => void;
   readonly doarCitire: boolean;
-  readonly eticheta: (cheie: 'sus' | 'stanga' | 'poz', poz?: string) => string;
+  readonly eticheta: (cheie: 'sus' | 'stanga' | 'poz' | LaturaCota, poz?: string) => string;
   readonly textPoz: (poz: number) => string;
   readonly citestePoz: (s: string) => number | null;
 };
+
+export type LaturaCota = 'cota-stanga' | 'cota-dreapta' | 'cota-jos' | 'cota-sus';
 
 const zecimale = (pas: number): number => Math.max(0, -Math.floor(Math.log10(pas) + 1e-9));
 
@@ -47,6 +55,8 @@ export function Rigle(p: Props): ReactElement {
   const radacina = useRef<HTMLDivElement | null>(null);
   const [tragere, setTragere] = useState<Tragere | null>(null);
   const [editat, setEditat] = useState<{ readonly id: string; readonly text: string } | null>(null);
+  const poz = pozitiaRiglelor(v, z, p.foaie, GROSIME_RIGLA);
+  const { sus: rs, stanga: rl } = poz;
 
   // Escape anulează un ghidaj tras.
   useEffect(() => {
@@ -60,12 +70,13 @@ export function Rigle(p: Props): ReactElement {
   const unde = (e: EvPointer<HTMLElement>, axa: 'x' | 'y'): { poz: number; peRigla: boolean } => {
     const r = radacina.current?.getBoundingClientRect();
     const px = e.clientX - (r?.left ?? 0), py = e.clientY - (r?.top ?? 0);
+    // „Pe riglă” (ghidajul lăsat acolo se șterge): în banda riglei lui, nu doar deasupra ei.
     if (axa === 'y') {
       const brut = (v.ty - py) / v.scara;
-      return { poz: p.lipestePoz('y', brut, v.scara, e.altKey), peRigla: py < z.y + GROSIME_RIGLA };
+      return { poz: p.lipestePoz('y', brut, v.scara, e.altKey), peRigla: rs !== null && py >= rs.y && py <= rs.y + GROSIME_RIGLA && px >= rs.x0 && px <= rs.x1 };
     }
     const brut = (px - v.tx) / v.scara;
-    return { poz: p.lipestePoz('x', brut, v.scara, e.altKey), peRigla: px < z.x + GROSIME_RIGLA };
+    return { poz: p.lipestePoz('x', brut, v.scara, e.altKey), peRigla: rl !== null && px >= rl.x && px <= rl.x + GROSIME_RIGLA && py >= rl.y0 && py <= rl.y1 };
   };
 
   const incepe = (e: EvPointer<HTMLElement>, id: string | null, axa: 'x' | 'y'): void => {
@@ -89,10 +100,8 @@ export function Rigle(p: Props): ReactElement {
   };
   const gest = { onPointerMove: misca, onPointerUp: termina, onPointerCancel: () => { setTragere(null); } };
 
-  // Gradațiile riglelor, doar cele din zona liberă.
+  // Gradațiile riglelor, doar pe întinderea lor (foaia, tăiată la zona liberă).
   const { mare, mic } = pasRigla(v.scara);
-  const z1x = (z.x - v.tx) / v.scara, z2x = (z.x + z.w - v.tx) / v.scara;
-  const z1y = (v.ty - (z.y + z.h)) / v.scara, z2y = (v.ty - z.y) / v.scara;
   const gradatii = (de: number, la: number): Array<{ readonly mm: number; readonly mare: boolean }> => {
     const pas = mic * v.scara >= 4 ? mic : mare;
     const r: Array<{ mm: number; mare: boolean }> = [];
@@ -116,6 +125,56 @@ export function Rigle(p: Props): ReactElement {
     }
     for (let y = 0; y <= p.foaie.inaltime + 1e-9 && r.length < 8000; y += pas) {
       r.push(<line key={`gy${y}`} x1={sx(0)} x2={sx(p.foaie.latime)} y1={sy(y)} y2={sy(y)} />);
+    }
+    return r;
+  };
+
+  /**
+   * Liniile de cotă ale formelor care ies din foaie (ADR 0060): în banda riglei, în continuarea ei, de la marginea foii la
+   * marginea formelor, cu cât ies (mm); tăiate la zona liberă.
+   */
+  const cote = (): ReactElement[] => {
+    const c = cotePeste(p.forme, p.foaie), r: ReactElement[] = [];
+    const W = p.foaie.latime, H = p.foaie.inaltime, G = GROSIME_RIGLA;
+    const eticheta = (mm: number): string => `${p.textPoz(Math.round(mm * 100) / 100)} mm`;
+    const pe = (latura: LaturaCota, mm: number, a: number, b: number, orizontala: boolean, banda: number): void => {
+      const lo = Math.max(Math.min(a, b), orizontala ? z.x : z.y), hi = Math.min(Math.max(a, b), orizontala ? z.x + z.w : z.y + z.h);
+      if (hi - lo < 2) return;
+      const L = hi - lo, t = eticheta(mm);
+      // Eticheta stă la mijloc dacă încape (≈ 5,5 px pe caracter la 9 px monospațiat); altfel, după capătul dinspre forme.
+      const incape = L >= t.length * 5.5 + 8;
+      const departe = latura === 'cota-dreapta' || latura === 'cota-jos' ? L + 3 : -3;
+      const ancora = incape ? 'middle' : latura === 'cota-dreapta' || latura === 'cota-sus' ? 'start' : 'end';
+      r.push(
+        <div key={latura} className={`rigla-cota rigla-cota-${orizontala ? 'x' : 'y'}`} data-testid={`rigla-${latura}`} data-mm={mm} title={p.eticheta(latura, p.textPoz(Math.round(mm * 100) / 100))}
+          style={orizontala ? { left: lo, top: banda, width: L, height: G } : { left: banda, top: lo, width: G, height: L }}>
+          <svg width={orizontala ? L : G} height={orizontala ? G : L} aria-hidden="true">
+            {orizontala ? (
+              <>
+                <line x1={0} x2={L} y1={G / 2} y2={G / 2} />
+                <line x1={0.5} x2={0.5} y1={4} y2={G - 4} />
+                <line x1={L - 0.5} x2={L - 0.5} y1={4} y2={G - 4} />
+                <text x={incape ? L / 2 : departe} y={G / 2 - 3} textAnchor={ancora}>{t}</text>
+              </>
+            ) : (
+              <>
+                <line y1={0} y2={L} x1={G / 2} x2={G / 2} />
+                <line y1={0.5} y2={0.5} x1={4} x2={G - 4} />
+                <line y1={L - 0.5} y2={L - 0.5} x1={4} x2={G - 4} />
+                <text x={G / 2 - 3} y={incape ? L / 2 : departe} textAnchor={ancora} transform={`rotate(-90 ${G / 2 - 3} ${incape ? L / 2 : departe})`}>{t}</text>
+              </>
+            )}
+          </svg>
+        </div>,
+      );
+    };
+    if (rs) {
+      if (c.dreapta !== null) pe('cota-dreapta', c.dreapta, sx(W), sx(W + c.dreapta), true, rs.y);
+      if (c.stanga !== null) pe('cota-stanga', c.stanga, sx(-c.stanga), sx(0), true, rs.y);
+    }
+    if (rl) {
+      if (c.sus !== null) pe('cota-sus', c.sus, sy(H + c.sus), sy(H), false, rl.x);
+      if (c.jos !== null) pe('cota-jos', c.jos, sy(0), sy(-c.jos), false, rl.x);
     }
     return r;
   };
@@ -150,41 +209,46 @@ export function Rigle(p: Props): ReactElement {
         );
       })}
 
-      <div className="rigla rigla-sus" style={{ left: z.x, top: z.y, width: z.w }} data-testid="rigla-sus" title={p.eticheta('sus')}
-        onPointerDown={(e) => { incepe(e, null, 'y'); }} {...gest}>
-        <svg width={z.w} height={GROSIME_RIGLA} aria-hidden="true">
-          {gradatii(z1x, z2x).map(({ mm, mare: m }) => {
-            const x = sx(mm) - z.x;
-            return (
-              <g key={mm}>
-                <line x1={x} x2={x} y1={m ? 4 : 13} y2={GROSIME_RIGLA} />
-                {m ? <text x={x + 3} y={11}>{text(mm)}</text> : null}
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-      <div className="rigla rigla-stanga" style={{ left: z.x, top: z.y, height: z.h }} data-testid="rigla-stanga" title={p.eticheta('stanga')}
-        onPointerDown={(e) => { incepe(e, null, 'x'); }} {...gest}>
-        <svg width={GROSIME_RIGLA} height={z.h} aria-hidden="true">
-          {gradatii(z1y, z2y).map(({ mm, mare: m }) => {
-            const y = sy(mm) - z.y;
-            return (
-              <g key={mm}>
-                <line y1={y} y2={y} x1={m ? 4 : 13} x2={GROSIME_RIGLA} />
-                {m ? <text x={11} y={y - 3} transform={`rotate(-90 11 ${y - 3})`}>{text(mm)}</text> : null}
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-      <div className="rigla-colt" style={{ left: z.x, top: z.y }} aria-hidden="true" />
+      {rs ? (
+        <div className="rigla rigla-sus" style={{ left: rs.x0, top: rs.y, width: rs.x1 - rs.x0 }} data-testid="rigla-sus" title={p.eticheta('sus')}
+          onPointerDown={(e) => { incepe(e, null, 'y'); }} {...gest}>
+          <svg width={rs.x1 - rs.x0} height={GROSIME_RIGLA} aria-hidden="true">
+            {gradatii((rs.x0 - v.tx) / v.scara, (rs.x1 - v.tx) / v.scara).map(({ mm, mare: m }) => {
+              const x = sx(mm) - rs.x0;
+              return (
+                <g key={mm}>
+                  <line x1={x} x2={x} y1={m ? 4 : 13} y2={GROSIME_RIGLA} />
+                  {m ? <text x={x + 3} y={11}>{text(mm)}</text> : null}
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+      ) : null}
+      {rl ? (
+        <div className="rigla rigla-stanga" style={{ left: rl.x, top: rl.y0, height: rl.y1 - rl.y0 }} data-testid="rigla-stanga" title={p.eticheta('stanga')}
+          onPointerDown={(e) => { incepe(e, null, 'x'); }} {...gest}>
+          <svg width={GROSIME_RIGLA} height={rl.y1 - rl.y0} aria-hidden="true">
+            {gradatii((v.ty - rl.y1) / v.scara, (v.ty - rl.y0) / v.scara).map(({ mm, mare: m }) => {
+              const y = sy(mm) - rl.y0;
+              return (
+                <g key={mm}>
+                  <line y1={y} y2={y} x1={m ? 4 : 13} x2={GROSIME_RIGLA} />
+                  {m ? <text x={11} y={y - 3} transform={`rotate(-90 11 ${y - 3})`}>{text(mm)}</text> : null}
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+      ) : null}
+      {rs && rl ? <div className="rigla-colt" style={{ left: rl.x, top: rs.y }} aria-hidden="true" /> : null}
+      {cote()}
 
       {editat ? (() => {
         const g = p.ghidaje.find((x) => x.id === editat.id);
         if (!g) return null;
         const pozPx = g.axa === 'x' ? sx(g.poz) : sy(g.poz);
-        const stil = g.axa === 'x' ? { left: pozPx + 6, top: z.y + GROSIME_RIGLA + 4 } : { top: pozPx + 6, left: z.x + GROSIME_RIGLA + 4 };
+        const stil = g.axa === 'x' ? { left: pozPx + 6, top: (rs?.y ?? z.y) + GROSIME_RIGLA + 4 } : { top: pozPx + 6, left: (rl?.x ?? z.x) + GROSIME_RIGLA + 4 };
         const aplica = (): void => {
           const n = p.citestePoz(editat.text);
           setEditat(null);
