@@ -2545,3 +2545,5 @@ Edge (2 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschi
 pe marginea zonei libere: rămâne lipită de foaie oriunde, și pe sub bare și panouri (care o acoperă, ca pe foaie), tăiată doar
 la marginile pânzei; la fel liniile de cotă. Probele unitare și e2e schimbate pe regula nouă (rigla sub panou, iar panoul
 deasupra ei, cu `elementFromPoint`); ADR 0060 §2, manualul (Pânza) și fișa la zi.
+**Publicat pe test (corectura):** 24.10, workflow-ul `publica` pe `80b0624` (după rapid-ul verde pe CI). Verificat în Edge pe
+instanța de test: foaia trasă sub bara de sus și sub panoul din stânga, iar riglele rămân lipite de marginile ei.
