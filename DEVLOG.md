@@ -2734,3 +2734,7 @@ Numărul de cubice din ADR, măsurat (nu calculat din cap): semicercul R15 = 3, 
 **Completed:** 25.10 12:25. Fără agenți. `npm run rapid` RC 0 (7 201 de teste unitare, 5 noi, 0 picate, 8 sărite); determinismul,
 licențele verzi. E2e 210 / 210 în Edge (2 noi, unul vechi scos: refuzul de lângă arc); emulatoarele: 36 de probe ale funcțiilor,
 13 e2e. Pornirea neschimbată (95,2 kB; cu ușa 99,9 / 100); totalul 291,5 → 292,4 / 300 kB.
+**Publicat pe test:** 25.10, workflow-ul `publica` pe `25052da` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
+instanța de test (după oferta de actualizare a PWA-ului): nodurile cercului, rotunde; nodul din dreapta „ambele”, cu 2 mânere și
+butonul apăsat; Colț, fără refuz: 6 noduri (semicercurile în câte 3 curbe), nodul colț; anularea readuce cercul; Scade (dreptunghiul
+minus cercul), apoi Noduri: 2 contururi, 6 noduri, fără refuz; anularea; 0 erori.
