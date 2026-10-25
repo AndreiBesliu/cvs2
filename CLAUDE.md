@@ -202,6 +202,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.10.2026: **testul pas cu pas devine, mai târziu, tutorialul utilizatorilor în aplicația live** („Ma gandesc sa folosim acest
+  test/tutorial si pe viitor, in aplicatia live, exact ca un turorial. Ceva care sa ajute userii sa lucreze cu aplicatia. Asa ca,
+  nu trebuie sa pierdem codul asta. Va fi repurposed”): codul ADR 0072 (panoul, pașii ca document, poza, raportul) rămâne și nu
+  se șterge la nicio curățenie; refolosirea lui pe live are felia ei (pașii și în engleză, alt conținut, bugetul și precache-ul
+  decise atunci). Tot atunci: testul se face pe adresa principală de test (publicată cu buzunarul, blocarea owner-ului și testul).
 - 25.10.2026: **owner-ul e fix în /admin** („in admin, contul meu nu ar trebui sa poata fi removed. nu din admin. si nici rolul nu
   ar trebui sa poata fi schimbat”, ADR 0071): nu se scoate și nu-și schimbă rolul de acolo, oricine ar cere-o; rolul `owner` se dă
   doar din consolă (alegerea asistentului, ca un owner dat din `/admin` să nu rămână fără cale de întoarcere).

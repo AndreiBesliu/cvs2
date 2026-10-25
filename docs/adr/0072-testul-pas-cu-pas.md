@@ -52,7 +52,16 @@ primește nimic (modulul editării e deja la cerere).
 - **Pozele urcate în Storage**: owner-ul a spus „nu ar trebui sa fie incarcata in server”.
 - **Raportul ca arhivă** (JSON + PNG-uri într-un ZIP): o bibliotecă în plus și un fișier pe care omul nu-l poate citi direct.
 
+## Mai departe
+
+Decizia owner-ului din aceeași zi: „Ma gandesc sa folosim acest test/tutorial si pe viitor, in aplicatia live, exact ca un
+turorial. Ceva care sa ajute userii sa lucreze cu aplicatia. Asa ca, nu trebuie sa pierdem codul asta. Va fi repurposed”.
+Codul de aici (panoul, pașii ca document cu generatorul lor, poza planșei, raportul) rămâne și nu se șterge; tutorialul pentru
+utilizatori pe live îl refolosește, într-o felie a lui.
+
 ## Se redeschide dacă
 
 - e nevoie de dialoguri în poze (atunci, captura filei, cu permisiunea ei, la cerere);
-- testul trebuie să meargă și offline (atunci, în precache, cu bucata lui în totalul aplicației).
+- testul trebuie să meargă și offline (atunci, în precache, cu bucata lui în totalul aplicației);
+- tutorialul ajunge pe live (decizia de mai sus): butonul și pe instanța live, pașii și în engleză, bucata în precache și în
+  totalul aplicației (sau un plafon al ei, decis atunci), poza și raportul doar unde au sens pentru utilizatori.

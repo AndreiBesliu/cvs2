@@ -2836,3 +2836,11 @@ Verificat în browserul aplicației: workerul PWA a servit întâi versiunea din
 Test (în fereastra de 1 280 px; în panoul îngust al browserului, de 595 px, extensia barei iese din ecran, cu „?” cu tot),
 panoul cu pasul 1, pașii aduși din `tutorial/unelte-desen.json` (doar online), OK apăsat, poza salvată, focusul înapoi
 pe pagină; 0 erori în consolă. Raportul (descărcarea) e probat în e2e, nu aici.
+
+## 2026-10-25 — Publicarea pe adresa principală de test (Model: Claude Opus 5.5)
+
+**Prompt:** „Pe pagina principala de test. Ma gandesc sa folosim acest test/tutorial si pe viitor, in aplicatia live, exact ca un
+turorial. Ceva care sa ajute userii sa lucreze cu aplicatia. Asa ca, nu trebuie sa pierdem codul asta. Va fi repurposed”
+**Started:** 25.10, ~16:40. Testul din artifact nu începuse (niciun rezultat), deci adresa principală nu mai trebuia ținută pe
+loc: se publică tot ce era pe canal (buzunarul, documentul v11, ușa curentă, pagina personalului, testul). Decizia owner-ului e
+în `CLAUDE.md` și în ADR 0072 („Mai departe”): codul testului rămâne, pentru tutorialul utilizatorilor de pe live.
