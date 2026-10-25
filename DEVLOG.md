@@ -2708,3 +2708,7 @@ gaura („+1”); două mutații (operanzii scăderii inversați, butonul Scade 
 licențele verzi. E2e 209 / 209 în Edge (4 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,2 kB;
 cu ușa 99,9 / 100); totalul 288,9 → 291,5 / 300 kB (mai sunt ~8,5 kB: o felie mare de interfață va cere loc); manualul are 17
 capitole.
+**Publicat pe test:** 25.10, workflow-ul `publica` pe `4f95f7e` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
+instanța de test (după oferta de actualizare a PWA-ului): dreptunghiul 100 × 60 ales, cercul R15 din mijloc cu Shift + clic,
+Scade: o singură piesă, „cale 100 × 60, 4 segmente (+1)”, cu 2 forme, profil exterior pe contur și interior pe gaură; anularea
+readuce ambele; 0 erori.
