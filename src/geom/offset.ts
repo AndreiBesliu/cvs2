@@ -1,6 +1,6 @@
-import { plineClosed, plineOpen, StaticAabb2dIndexBuilder, vec2, type Polyline } from './cavalier/index.ts';
+import { plineClosed, plineOpen, Shape, StaticAabb2dIndexBuilder, vec2, type Polyline } from './cavalier/index.ts';
 import {
-  LINIE, arc, arieCuSemn, cerculArcului, inSensTrigonometric, numarSegmente, segment, type Contur, type Punct, type Segment, type Varf,
+  LINIE, arc, arieCuSemn, cerculArcului, inSensTrigonometric, inverseaza, numarSegmente, segment, type Contur, type Punct, type Segment, type Varf,
 } from './contur.ts';
 import { CUTIE_GOALA, cuPunct, cutieArc, cutieContur, type Cutie } from './cutie.ts';
 import { distantaLaContur, distantaLaSegment, inRegiune, peArc, RIDICARE_RAZA, traversariSegment } from './distanta.ts';
@@ -463,8 +463,11 @@ function scoateBucleMici(c: Contur): Contur {
  * Ce e greșit în ieșirea offsetului `d` al conturului `intrare` (curățat, trigonometric), sau null. Ieșirea se verifică pe
  * ea însăși față de intrare, nu doar ca formă. Aria nu se mai verifică separat: o curbă închisă cu toate punctele la
  * exact |d| de intrare, pe partea cerută, e chiar curba de nivel, deci aria ei crește afară și scade înăuntru de la sine.
+ * Intrarea poate fi și o regiune (exteriorul cu găurile lui, `offsetRegiune`): distanța e la cel mai apropiat contur, iar
+ * partea cerută se judecă par-impar pe toate.
  */
-export function verificaIesire(intrare: Contur, d: number, iesire: readonly Contur[]): string | null {
+export function verificaIesire(intrare: Contur | readonly Contur[], d: number, iesire: readonly Contur[]): string | null {
+  const intrari: readonly Contur[] = 'varfuri' in intrare ? [intrare] : intrare;
   if (iesire.length === 0) return d < 0 ? 'scula nu încape: offsetul interior dispare' : 'offsetul exterior n-a dat niciun contur';
   for (const c of iesire) {
     if (!c.inchis) return 'offsetul a dat un contur deschis';
@@ -478,7 +481,7 @@ export function verificaIesire(intrare: Contur, d: number, iesire: readonly Cont
   }
   // Fiecare punct al traseului (vârfurile și mijloacele segmentelor) stă la |d| de intrare, pe partea cerută. Intrarea se
   // indexează o dată, iar distanța se caută doar până la |d| + toleranță; mesajul unui eșec o măsoară întreagă.
-  const ic = indexeaza(intrare);
+  const ic = intrari.length === 1 && intrari[0] ? indexeaza(intrari[0]) : indexeazaToate(intrari);
   const raza = Math.abs(d) + TOLERANTA_DISTANTA;
   for (const c of iesire) {
     for (let i = 0; i < c.varfuri.length; i++) {
@@ -487,7 +490,7 @@ export function verificaIesire(intrare: Contur, d: number, iesire: readonly Cont
       if (!v || !urm) continue;
       for (const p of [v.p, mijloc(v.p, urm.p, v.s)]) {
         if (Math.abs(distantaIndexata(p, ic, raza) - Math.abs(d)) > TOLERANTA_DISTANTA) {
-          const dist = distantaLaContur(p, intrare);
+          const dist = Math.min(...intrari.map((c) => distantaLaContur(p, c)));
           if (Math.abs(dist - Math.abs(d)) > TOLERANTA_DISTANTA) {
             return `offsetul a dat un punct la ${dist.toFixed(4)} mm de contur, nu la ${Math.abs(d)} mm`;
           }
@@ -550,6 +553,72 @@ export function offsetInchis(contur: Contur, distanta: number): RezultatOffset {
     // Interiorul care dispare nu e un accident numeric: scula chiar nu încape.
     if (prima.motiv.startsWith('scula nu încape')) return prima;
     const aDoua = incearca(trig, distanta + Math.sign(distanta) * PAS_REINCERCARE);
+    return aDoua.ok ? aDoua : { ok: false, motiv: `${prima.motiv} (și la a doua încercare)` };
+  } catch (e) {
+    return { ok: false, motiv: `offsetul a eșuat: ${e instanceof Error ? e.message : String(e)}` };
+  }
+}
+
+// ── Offsetul interior al unei regiuni cu găuri (ADR 0073) ──────────────────────────────────────────────────────────────
+
+/** O regiune: exteriorul (trigonometric) și găurile din el (orar), care nu se ating între ele. */
+export type Regiune = { readonly exterior: Contur; readonly gauri: readonly Contur[] };
+
+export type RezultatRegiune =
+  | { readonly ok: true; readonly regiuni: readonly Regiune[] }
+  | { readonly ok: false; readonly motiv: string };
+
+/** Contururile ieșirii, grupate: fiecare gaură (orar) în cel mai mic exterior (trigonometric) care o cuprinde. */
+function grupeazaRegiuni(contururi: readonly Contur[]): Regiune[] | string {
+  const regiuni = contururi.filter((c) => arieCuSemn(c) > 0).map((exterior) => ({ exterior, gauri: [] as Contur[], arie: arieCuSemn(exterior) }));
+  for (const g of contururi.filter((c) => arieCuSemn(c) < 0)) {
+    const p = g.varfuri[0]?.p;
+    let gazda: (typeof regiuni)[number] | undefined;
+    for (const r of regiuni) if (p && inRegiune(p, [r.exterior]) && (!gazda || r.arie < gazda.arie)) gazda = r;
+    if (!gazda) return 'offsetul a dat o gaură care nu stă în niciun exterior';
+    gazda.gauri.push(g);
+  }
+  return regiuni.map(({ exterior, gauri }) => ({ exterior, gauri }));
+}
+
+function incearcaRegiune(intrare: readonly Contur[], d: number): RezultatRegiune {
+  let iesire: Contur[];
+  try {
+    // cavalier: exteriorul trigonometric și găurile orare formează o figură; distanța pozitivă o strânge.
+    const s = Shape.fromPlines(intrare.map(laCavalier)).parallelOffset(-d);
+    iesire = [...s.ccwPlines, ...s.cwPlines].map((x) => curataIesire(scoateBucleMici(dinCavalier(x.polyline))));
+  } catch (e) {
+    return { ok: false, motiv: `offsetul a eșuat: ${e instanceof Error ? e.message : String(e)}` };
+  }
+  const problema = verificaIesire(intrare, d, iesire);
+  if (problema) return { ok: false, motiv: problema };
+  const g = grupeazaRegiuni(iesire);
+  return typeof g === 'string' ? { ok: false, motiv: g } : { ok: true, regiuni: g };
+}
+
+/**
+ * Offsetul spre interior (`distanta` < 0) al regiunii dintre `exterior` și `gauri` (contururi închise, găurile în exterior,
+ * fără să se atingă: le judecă cine le dă), prin figura lui cavalier (`Shape`). Aceleași gărzi ca `offsetInchis`: fiecare
+ * contur se curăță și e refuzat cu motiv dacă nu se poate decala; ieșirea se verifică față de toate contururile (fiecare punct
+ * la |d| de cel mai apropiat, în regiune; niciun contur atins; sensurile par-impar), cu o a doua încercare la |d| + 1e-4 mm.
+ * Ieșirea vine pe regiuni: fiecare exterior cu găurile lui. Fără găuri, e chiar offsetul conturului. Niciodată o excepție.
+ */
+export function offsetRegiune(exterior: Contur, gauri: readonly Contur[], distanta: number): RezultatRegiune {
+  if (!exterior.inchis || gauri.some((g) => !g.inchis)) return { ok: false, motiv: 'offsetul unei regiuni cere contururi închise' };
+  if (!(distanta < 0) || !Number.isFinite(distanta)) return { ok: false, motiv: `offsetul unei regiuni merge doar spre interior (${distanta})` };
+  if (-distanta < DISTANTA_MINIMA) return { ok: false, motiv: `distanța ${distanta} mm e sub rezoluția declarată (${REZOLUTIE} mm)` };
+  try {
+    const ce = curataIntrare(exterior);
+    if (!ce.ok) return ce;
+    const intrare: Contur[] = [inSensTrigonometric(ce.contur)];
+    for (const g of gauri) {
+      const cg = curataIntrare(g);
+      if (!cg.ok) return { ok: false, motiv: `o insulă: ${cg.motiv}` };
+      intrare.push(inverseaza(inSensTrigonometric(cg.contur)));
+    }
+    const prima = incearcaRegiune(intrare, distanta);
+    if (prima.ok || prima.motiv.startsWith('scula nu încape')) return prima;
+    const aDoua = incearcaRegiune(intrare, distanta - PAS_REINCERCARE);
     return aDoua.ok ? aDoua : { ok: false, motiv: `${prima.motiv} (și la a doua încercare)` };
   } catch (e) {
     return { ok: false, motiv: `offsetul a eșuat: ${e instanceof Error ? e.message : String(e)}` };

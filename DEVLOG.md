@@ -2864,3 +2864,21 @@ licențele; e2e 214 / 214 în Edge (1 nou); emulatoarele: 36 de probe ale funcț
 **Publicat pe canal:** 25.10, `buzunar` (<https://cncvectorstudio-test--buzunar-x95ick77.web.app>), după rapid-ul verde pe CI
 pe `99f0059` (rularea 40206238874). Verificat în browserul aplicației, la 1 280 px: după „Reîncarcă” (workerul nou), cele 9
 litere (V S N B R O E L P) pe butoanele uneltelor. Adresa principală rămâne pe `40582a6` cât owner-ul face testul.
+
+## 2026-10-25 — Insulele buzunarului (Model: Claude Opus 5.5)
+
+**Prompt:** „poti sa continui cu altceva intre timp” (și „continua” după întreruperea contextului; „Try again” după o comandă
+ruptă).
+**Started:** 25.10, ~17:10. Felia **5.2↑**, fără agenți (ADR 0073): buzunarele de pe foaie cu aceeași adâncime sunt unul
+singur, citit par-impar, peste piese și operații (insula, apoi iar buzunar în golul ei); cu altă adâncime, treaptă; cele care
+se ating, refuzate. În planul spus owner-ului, insula era „orice formă a piesei din buzunar”; am schimbat-o înainte de cod:
+formele desenate sunt piese separate și importul SVG împarte contururile în operații după imbricare, deci regula pe piesă n-ar
+fi prins nici dreptunghiul cu un cerc desenat în el, nici rama cu text (ADR 0073, „Respinse”). Offsetul unei regiuni
+(`offsetRegiune`, figura lui cavalier, aceleași gărzi; `verificaIesire` primește și o listă), inelele pe bucăți, legăturile
+departe și de insule, buclele unei bucăți de la cea mai apropiată. **Treceri:** (1) proba de arie la 10 mm cădea exact pe un
+prag (golul de 20 mm = 2d; a lucrat a doua încercare, cu 0,013 mm² mai puțin): mutată la 12 mm, iar pragul și-a primit proba;
+două heredoc-uri rupte în shell (scrise apoi cu editorul).
+**Completed:** 25.10 17:58. Nivelul rapid local: 7 237 de teste unitare (0 picate; 24 ale buzunarului, 3 ale regiunii),
+determinismul (147 de fișiere), licențele, importurile; e2e 214 / 214 în Edge. Pornirea neschimbată (95,3 kB); totalul
+295,4 → 297,5 / 300 kB (figura lui cavalier intră în bucata exportului). Mutațiile țintite: 18 / 18 prinse. Viteza (măsurată):
+240 de insule, 691 de bucle, inelele în 0,23 s, traseul în 0,07 s, dar 620 de ridicări pe două treceri (limita din ADR).

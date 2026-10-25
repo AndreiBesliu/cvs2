@@ -307,8 +307,15 @@ fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **
 lateral mai înăuntru, tăiate dinăuntru spre perete, pe fiecare trecere. Freza trece de la un inel la următorul fără să se
 ridice cât drumul rămâne în buzunar. Cu pasul lateral de cel mult jumătate din diametru, fundul iese neted peste tot; rămân
 doar colțurile pe care nicio freză rotundă nu le atinge (cu raza frezei). Unde buzunarul e mai îngust decât freza, ea nu
-intră. Pe un buzunar nu există urechi, rampă, intrări sau degajări. Deocamdată, un buzunar se face doar pe un contur închis
-și fără insule: un contur în altul, în aceeași operație, e refuzat (unește-le sau scade-le întâi cu booleanul).
+intră. Pe un buzunar nu există urechi, rampă, intrări sau degajări.
+
+**Insulele.** Buzunarele de pe foaie cu aceeași adâncime sunt un singur buzunar, oricare ar fi piesa lor: o formă cu
+buzunar aflată în întregime în alta e o **insulă** (rămâne în picioare, iar freza o ocolește, cu peretele ei tăiat ca al
+buzunarului), iar una aflată într-o insulă e iar buzunar. De exemplu, un dreptunghi și un text, amândouă cu buzunar de 3 mm:
+literele rămân în relief, iar golurile lor (din „O”, „A”) se golesc. Pasul lateral și sensul vin de la conturul din afară;
+ale insulei nu contează. Cu altă adâncime, fiecare buzunar se taie întreg: un buzunar mai adânc în altul face o treaptă.
+Două contururi de aceeași adâncime care se ating sau se intersectează sunt refuzate (unește-le întâi cu booleanul sau dă-le
+adâncimi diferite). Între o insulă și perete, un loc mai îngust decât freza rămâne netăiat.
 
 Freza (Ø, plată) e una pentru toată foaia: dacă formele au freze diferite, la export primesc toate freza scrisă sus. Regimul
 e fix deocamdată: axul la 18 000 rot/min (cu 3 s de așteptare), avansul 1 000 mm/min, plonjarea 300 mm/min, Z sigur 5 mm;

@@ -9,7 +9,7 @@ import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
 import { adancimiTreceri, profil } from './profil.ts';
 import { perete, regiunePastrata, verificaTaietura, type Perete } from './regiune.ts';
 import { apropiereContururi, distantaCutii } from '../geom/apropiere.ts';
-import { LINIE, type Contur } from '../geom/contur.ts';
+import { arieCuSemn, LINIE, type Contur } from '../geom/contur.ts';
 import { cutieContur, depasire, largita, type Cutie, type Depasire } from '../geom/cutie.ts';
 import { curataIntrare } from '../geom/offset.ts';
 import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
@@ -39,38 +39,60 @@ function departeDeUrechi(x: Contur, c: Contur, s: number, gu: GeometrieUrechi | 
 }
 
 /**
- * Buzunarele pe care lucrarea nu le taie (ADR 0069 §1, §6), cu motiv: unul care poartă ce e al profilului (latura alta decât
- * interior, urechi, rampă, intrări, degajări, despărțire: ușa nu le judecă, ca latura unei căi deschise, ADR 0037 §2); pe o
- * cale deschisă (n-are interior); într-o operație cu mai multe contururi în aceeași instanță, două contururi care se ating
- * sau unul în altul (insula vine mai târziu: buzunarul ar trebui să-l ocolească, iar acum l-ar scoate). Contururile disjuncte
- * sunt buzunare separate. Pasul lateral îl judecă inelele (`ineleBuzunar`).
+ * Buzunarele lucrării (ADR 0069 §1, §6; ADR 0073 §1): pentru fiecare buzunar care se taie (indexul tăieturii), insulele lui
+ * (indecșii); o insulă nu e în listă. Buzunarele de pe foaie cu aceeași adâncime sunt unul singur, citit par-impar: un
+ * contur strict în altul e o insulă, unul strict într-o insulă e iar buzunar (cu insulele lui), oricare ar fi instanța sau
+ * operația lor. Cu altă adâncime, fiecare se taie întreg (o treaptă). Refuzate, cu motiv: unul care poartă ce e al
+ * profilului (latura alta decât interior, urechi, rampă, intrări, degajări, despărțire: ușa nu le judecă, ca latura unei
+ * căi deschise, ADR 0037 §2); pe o cale deschisă (n-are interior); două contururi de aceeași adâncime care se ating sau se
+ * intersectează (par-impar n-ar mai spune ce e buzunar). Pasul lateral îl judecă inelele (`ineleBuzunar`).
  */
-function refuzBuzunare(taieturi: readonly Taietura[], conturDe: (t: Taietura) => Contur): string | null {
-  const grupuri = new Map<string, Taietura[]>();
-  for (const t of taieturi) {
+function buzunareSiInsule(taieturi: readonly Taietura[], conturDe: (t: Taietura) => Contur): Map<number, number[]> | string {
+  const grupuri = new Map<number, number[]>();
+  for (const [i, t] of taieturi.entries()) {
     if (t.tip !== 'buzunar') continue;
     if (t.latura !== 'interior' || t.urechi || t.rampa || t.intrari || t.colturi || t.despartire) {
       return `${t.idLume}: un buzunar stă înăuntrul conturului, fără urechi, rampă, intrări, degajări sau despărțire`;
     }
     if (esteCaleDeschisa(t.forma)) return `${t.idLume}: un buzunar cere un contur închis, iar calea e deschisă`;
-    const k = `${t.instanta}/${t.operatie}`;
-    grupuri.set(k, [...(grupuri.get(k) ?? []), t]);
+    grupuri.set(t.adancime, [...(grupuri.get(t.adancime) ?? []), i]);
   }
-  for (const g of grupuri.values()) {
-    for (let i = 0; i < g.length; i++) {
-      for (let j = i + 1; j < g.length; j++) {
-        const a = g[i] as Taietura, b = g[j] as Taietura;
-        const ca = conturDe(a), cb = conturDe(b);
-        if (distantaCutii(cutieContur(ca), cutieContur(cb)) > 0) continue;
-        if (apropiereContururi(ca, cb, 1e-6).distanta < 1e-6) return `${a.idLume} și ${b.idLume}: contururile aceluiași buzunar se ating sau se intersectează; unește-le întâi (booleanul)`;
-        const pa = ca.varfuri[0]?.p, pb = cb.varfuri[0]?.p;
-        if ((pa && inRegiune(pa, [cb])) || (pb && inRegiune(pb, [ca]))) {
-          return `${a.idLume} și ${b.idLume}: un contur al buzunarului stă în celălalt; buzunarul cu insule vine mai târziu`;
+  const rez = new Map<number, number[]>();
+  for (const [adancime, g] of grupuri) {
+    const x = g.map((i) => {
+      const c = conturDe(taieturi[i] as Taietura);
+      return { i, id: (taieturi[i] as Taietura).idLume, c, cutie: cutieContur(c), arie: Math.abs(arieCuSemn(c)) };
+    });
+    // Părintele fiecărui contur: cel mai mic care îl cuprinde strict. Contururile nu se ating, deci includerea e un arbore.
+    const parinte: number[] = x.map(() => -1);
+    const ia = (mic: number, mare: number): void => {
+      const p = parinte[mic] ?? -1;
+      if (p < 0 || (x[mare]?.arie ?? 0) < (x[p]?.arie ?? 0)) parinte[mic] = mare;
+    };
+    for (let a = 0; a < x.length; a++) {
+      for (let b = a + 1; b < x.length; b++) {
+        const A = x[a] as (typeof x)[number], B = x[b] as (typeof x)[number];
+        if (distantaCutii(A.cutie, B.cutie) > 0) continue;
+        if (A.id === B.id) return `${A.id}: același contur e de două ori în buzunarele de ${adancime} mm`;
+        if (apropiereContururi(A.c, B.c, 1e-6).distanta < 1e-6) {
+          return `${A.id} și ${B.id}: contururile buzunarelor de ${adancime} mm se ating sau se intersectează; unește-le întâi (booleanul) sau dă-le adâncimi diferite`;
         }
+        const pa = A.c.varfuri[0]?.p, pb = B.c.varfuri[0]?.p;
+        if (pa && inRegiune(pa, [B.c])) ia(a, b);
+        else if (pb && inRegiune(pb, [A.c])) ia(b, a);
       }
     }
+    // Adâncimea de includere pară = buzunar; insulele lui sunt copiii (adâncimea impară), în ordinea tăieturilor.
+    const adancimeIn = (k: number): number => {
+      let n = 0;
+      for (let p = parinte[k] ?? -1; p >= 0; p = parinte[p] ?? -1) n++;
+      return n;
+    };
+    for (const [k, y] of x.entries()) {
+      if (adancimeIn(k) % 2 === 0) rez.set(y.i, x.filter((_, j) => parinte[j] === k).map((z) => z.i));
+    }
   }
-  return null;
+  return rez;
 }
 
 /**
@@ -129,8 +151,8 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     contururi.set(t.idLume, r.contur);
   }
   const conturDe = (t: Taietura): Contur => contururi.get(t.idLume) as Contur;
-  const buzunar = refuzBuzunare(taieturi, conturDe);
-  if (buzunar) return { ok: false, motiv: buzunar };
+  const buzunare = buzunareSiInsule(taieturi, conturDe);
+  if (typeof buzunare === 'string') return { ok: false, motiv: buzunare };
   // Căile deschise (ADR 0037 §9): laturile care nu se potrivesc cu `inchis`, ce vine mai târziu pe ele și calea degenerată,
   // refuzate cu motiv înaintea regiunii (o cale deschisă n-are arie, deci nu poate fi inel) și a oricărui traseu.
   const refuz = refuzDeschise(taieturi, contururi);
@@ -202,17 +224,22 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       };
     }
     // Buzunarul (ADR 0069): inelele dinăuntru în afară, pe fiecare trecere. Nu e inel al regiunii păstrate: scoate material
-    // doar dinăuntrul conturului lui, până la adâncimea lui (§4), iar traseul lui stă înăuntru prin construcție (§5).
+    // doar dinăuntrul conturului lui, până la adâncimea lui (§4), iar traseul lui stă înăuntru prin construcție (§5). O
+    // insulă (ADR 0073) rămâne în picioare: n-are traseu, o ocolește buzunarul care o cuprinde.
     if (t.tip === 'buzunar') {
+      const insule = buzunare.get(it);
+      if (!insule) continue;
       const pasLateral = doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie)?.pasLateral;
       if (pasLateral === undefined) return { ok: false, motiv: `${t.idLume}: buzunarul n-are pasul lateral` };
-      const inele = ineleBuzunar(conturDe(t), R, pasLateral);
+      const ci = insule.map((j) => conturDe(taieturi[j] as Taietura));
+      const inele = ineleBuzunar(conturDe(t), R, pasLateral, ci);
       if (!inele.ok) return { ok: false, motiv: `${t.idLume}: ${inele.motiv}` };
       const adancimi = adancimiTreceri(t.adancime, t.pas);
       if (typeof adancimi === 'string') return { ok: false, motiv: `${t.idLume}: ${adancimi}` };
-      const tb = traseuBuzunar(conturDe(t), ordineInele(inele.radacini), { ...regim, sens: t.sens, raza: R, adancimi });
+      const tb = traseuBuzunar(conturDe(t), ordineInele(inele.radacini), { ...regim, sens: t.sens, raza: R, adancimi }, ci);
       if (!tb.ok) return { ok: false, motiv: `${t.idLume}: ${tb.motiv}` };
-      miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, buzunar, ${t.adancime} mm`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
+      const cuInsule = insule.length > 0 ? `, insule: ${insule.length}` : '';
+      miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, buzunar, ${t.adancime} mm${cuInsule}`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
       for (const m of tb.miscari) miscari.push(m);
       continue;
     }

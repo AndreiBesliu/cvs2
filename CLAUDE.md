@@ -93,10 +93,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Orice nod își schimbă tipul (ADR 0068)** gata pe 25.10: arcele vecine devin cubice la cerere (sub 0,001 mm), unealta Noduri
   editează fiecare contur al pieselor compuse (`document.forma` cu `nodEditat`). Urmează testul pas cu pas al owner-ului.
   **Buzunarul (ADR 0069, adus din etapa 5)** gata pe 25.10, cât owner-ul face testul, pe un canal de previzualizare: documentul
-  v11 (`tip: 'buzunar'`, `pasLateral` ≤ D / 2); inelele paralele cu conturul, dinăuntru în afară (`src/cam/buzunar.ts`); fără
-  insule, o singură freză. **Oracolul documentului v11 e scris de sesiunea aplicației, nu independent**: de reluat. Ușa unui
-  proiect salvat e despărțită (ADR 0070): la pornire doar `usaCurenta.ts`, migrările (`migrari.ts`) doar pentru un document
-  vechi; pornirea cu ușa 98,6 / 100 kB (~1,4 kB liberi).
+  v11 (`tip: 'buzunar'`, `pasLateral` ≤ D / 2); inelele paralele cu conturul, dinăuntru în afară (`src/cam/buzunar.ts`); o
+  singură freză. **Insulele (ADR 0073)** gata pe 25.10: buzunarele de aceeași adâncime de pe foaie sunt unul singur, citit
+  par-impar, peste piese (`offsetRegiune` în fațada offsetului); cu altă adâncime, treaptă.
+  **Oracolul documentului v11 e scris de sesiunea aplicației, nu independent**: de reluat. Ușa unui proiect salvat e
+  despărțită (ADR 0070): la pornire doar `usaCurenta.ts`, migrările (`migrari.ts`) doar pentru un document vechi; pornirea cu
+  ușa 98,6 / 100 kB (~1,4 kB liberi).
   **Testul pas cu pas, în aplicație (ADR 0072)** gata pe 25.10: butonul Test din extensie (în afara instanței live), pașii în
   `docs/tutorial/unelte-desen.md` (generați în `dist/tutorial/`), poza planșei compusă local, raportul HTML descărcat; totul în
   browser (IndexedDB `cncvs2-test`); bucata `TestPasCuPas` e doar online, cu plafonul ei (12 kB), în afara celor 300 kB.

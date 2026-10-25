@@ -316,9 +316,15 @@ The **pocket** clears the material in rings parallel to the outline: the first o
 one a side step further in, cut from the inside out to the wall, on every pass. The cutter goes from one ring to the next
 without lifting as long as the way stays inside the pocket. With a side step of at most half the diameter, the floor comes out
 clean everywhere; only the corners no round cutter can reach are left (with the cutter's radius). Where the pocket is
-narrower than the cutter, the cutter does not go in. A pocket has no tabs, ramp, leads or corner relief. For now, a pocket is
-made only on a closed outline and without islands: one outline inside another, in the same operation, is refused (join or
-subtract them first with the boolean).
+narrower than the cutter, the cutter does not go in. A pocket has no tabs, ramp, leads or corner relief.
+
+**Islands.** Pockets on the sheet with the same depth are one pocket, whatever their part: a shape with a pocket lying
+entirely inside another is an **island** (it stays standing and the cutter goes around it, cutting its wall like the
+pocket's), and one lying inside an island is a pocket again. For example, a rectangle and a text, both with a 3 mm pocket:
+the letters stay raised and their counters (in "O", "A") are cleared. The side step and the direction come from the outer
+outline; the island's own do not matter. With a different depth, each pocket is cut whole: a deeper pocket inside another
+makes a step. Two outlines with the same depth that touch or cross are refused (join them first with the boolean, or give
+them different depths). Between an island and the wall, a place narrower than the cutter stays uncut.
 
 The cutter (Ø, flat) is one for the whole sheet: if shapes have different cutters, on export they all get the cutter written
 at the top. The feeds and speeds are fixed for now: the spindle at 18,000 rpm (with a 3 s wait), feed 1,000 mm/min, plunge

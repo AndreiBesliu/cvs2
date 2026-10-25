@@ -11,6 +11,7 @@ import {
 import { programDinDocument } from '../../src/cam/job.ts';
 import { regiunePastrata } from '../../src/cam/regiune.ts';
 import { arc, arieCuSemn, LINIE, type Contur } from '../../src/geom/contur.ts';
+import { inRegiune } from '../../src/geom/distanta.ts';
 import type { Miscare } from '../../src/ir/ir.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import { taieturiFoaie } from '../../src/model/lume.ts';
@@ -63,11 +64,11 @@ test('inelele pe hârtie: dreptunghiul 100 × 60 cu Ø6 și pasul 2,4 dă 12 ine
   const o = ordineInele(r.radacini);
   // Dinăuntru în afară: un singur lanț, de la 29,4 la 3 (31,8 > 30, jumătatea lățimii: acolo freza nu mai încape).
   assert.deepEqual(o.map((x) => Number(x.d.toFixed(6))), [29.4, 27, 24.6, 22.2, 19.8, 17.4, 15, 12.6, 10.2, 7.8, 5.4, 3]);
-  const xs = o[0]!.bucla.varfuri.map((v) => v.p.x), ys = o[0]!.bucla.varfuri.map((v) => v.p.y);
+  const xs = o[0]!.bucle[0]!.varfuri.map((v) => v.p.x), ys = o[0]!.bucle[0]!.varfuri.map((v) => v.p.y);
   assert.ok(Math.abs(Math.min(...xs) - 29.4) < 1e-9 && Math.abs(Math.max(...xs) - 70.6) < 1e-9);
   assert.ok(Math.abs(Math.min(...ys) - 29.4) < 1e-9 && Math.abs(Math.max(...ys) - 30.6) < 1e-9);
   // Peretele: dreptunghiul de 94 × 54, în sens trigonometric (materialul de scos în dreapta mersului).
-  const perete = o[o.length - 1]!.bucla;
+  const perete = o[o.length - 1]!.bucle[0]!;
   assert.ok(Math.abs(arieCuSemn(perete) - 94 * 54) < 1e-6);
 });
 
@@ -75,7 +76,7 @@ test('inelele pe hârtie: cercul R20 cu Ø6 și pasul 3 dă cercurile de raze 17
   const r = ineleBuzunar(cerc(0, 0, 20), 3, 3);
   assert.ok(r.ok);
   if (!r.ok) return;
-  const raze = ordineInele(r.radacini).map((x) => Math.hypot(x.bucla.varfuri[0]!.p.x, x.bucla.varfuri[0]!.p.y));
+  const raze = ordineInele(r.radacini).map((x) => Math.hypot(x.bucle[0]!.varfuri[0]!.p.x, x.bucle[0]!.varfuri[0]!.p.y));
   assert.deepEqual(raze.map((x) => Number(x.toFixed(6))), [2, 5, 8, 11, 14, 17]);
 });
 
@@ -140,7 +141,7 @@ test('pragul de topologie: dreptunghiul 40 × 30 cu pasul 2,4 are inelul 6 exact
   if (!r.ok) return;
   const o = ordineInele(r.radacini);
   assert.deepEqual(o.map((x) => Number(x.d.toFixed(6))), [14.999, 12.6, 10.2, 7.8, 5.4, 3]);
-  const ys = o[0]!.bucla.varfuri.map((v) => v.p.y);
+  const ys = o[0]!.bucle[0]!.varfuri.map((v) => v.p.y);
   assert.ok(Math.abs(Math.max(...ys) - Math.min(...ys) - 0.002) < 1e-9, 'inelul degenerat are 0,002 mm');
 });
 
@@ -220,15 +221,17 @@ test('lucrarea: buzunarul nu e inel al regiunii păstrate, se taie înaintea ext
   assert.deepEqual(etichete, ['i/buz: dreptunghi, buzunar, 6 mm', 'i/contur: dreptunghi, exterior, 18 mm']);
 });
 
-test('lucrarea refuză buzunarul pe o cale deschisă și contururile aceluiași buzunar care se ating sau stau unul în altul', () => {
+test('lucrarea refuză buzunarul pe o cale deschisă și contururile de aceeași adâncime care se ating; unul în altul e o insulă', () => {
   const linie = { tip: 'cale', inchis: false, varfuri: [{ p: { x: 10, y: 10 }, s: { tip: 'L' } }, { p: { x: 60, y: 10 }, s: { tip: 'L' } }] };
   const a = programDinDocument(deschis(doc([{ id: 'l', forma: linie }], [buzunar(['l'])])));
   assert.deepEqual(a, { ok: false, motiv: 'i/l: un buzunar cere un contur închis, iar calea e deschisă' });
   const mare = { tip: 'dreptunghi', latime: 80, inaltime: 80, razaColt: 0 }, mic = { tip: 'cerc', raza: 10 };
+  // ADR 0073: cercul din dreptunghi e o insulă, nu un buzunar (o singură etichetă, cu insula numărată).
   const insula = programDinDocument(deschis(doc([{ id: 'm', forma: mare, e: 10, f: 10 }, { id: 'n', forma: mic, e: 50, f: 50 }], [buzunar(['m', 'n'])])));
-  assert.deepEqual(insula, { ok: false, motiv: 'i/m și i/n: un contur al buzunarului stă în celălalt; buzunarul cu insule vine mai târziu' });
+  assert.ok(insula.ok, insula.ok ? '' : insula.motiv);
+  if (insula.ok) assert.deepEqual(insula.program.miscari.flatMap((m) => (m.tip === 'eticheta' ? [m.text] : [])), ['i/m: dreptunghi, buzunar, 6 mm, insule: 1']);
   const ating = programDinDocument(deschis(doc([{ id: 'm', forma: mare, e: 10, f: 10 }, { id: 'n', forma: mic, e: 90, f: 50 }], [buzunar(['m', 'n'])])));
-  assert.ok(!ating.ok && /se ating sau se intersectează; unește-le întâi/.test(ating.motiv));
+  assert.deepEqual(ating, { ok: false, motiv: 'i/m și i/n: contururile buzunarelor de 6 mm se ating sau se intersectează; unește-le întâi (booleanul) sau dă-le adâncimi diferite' });
   // Două contururi disjuncte: două buzunare, fiecare cu eticheta lui.
   const doua = programDinDocument(deschis(doc([{ id: 'm', forma: mare, e: 10, f: 10 }, { id: 'n', forma: mic, e: 150, f: 50 }], [buzunar(['m', 'n'])])));
   assert.ok(doua.ok);
@@ -309,4 +312,197 @@ test('oracolul simulării: cercul R20, scos întreg, cu arcele', async () => {
   });
   assert.equal(r.gresite, 0, r.prima);
   assert.ok(/G[23] /.test(r.text), 'inelele rămân arce');
+});
+
+// ── Insulele (ADR 0073) ──────────────────────────────────────────────────────────────────────────────────────────────
+
+/** Un document v11 cu mai multe piese, fiecare cu o instanță la (x, y), pe aceeași foaie de 200 × 150 × 18. */
+function docPiese(piese: ReadonlyArray<{ id: string; elemente: ReadonlyArray<{ id: string; forma: Forma; e?: number; f?: number }>; operatii: Op[]; x: number; y: number }>): unknown {
+  const una = piese.map((p) => doc(p.elemente, p.operatii, p.x, p.y) as { piese: Array<Record<string, unknown>>; foi: Array<{ instante: Array<Record<string, unknown>> }> });
+  return {
+    schema: 11, rev: 0,
+    piese: una.map((d, k) => ({ ...d.piese[0], id: piese[k]!.id })),
+    foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: 18 }, instante: una.map((d, k) => ({ ...d.foi[0]!.instante[0], id: `i${k + 1}`, piesa: piese[k]!.id })) }],
+  };
+}
+const etichete = (j: ReturnType<typeof programDinDocument>): string[] => (j.ok ? j.program.miscari.flatMap((m) => (m.tip === 'eticheta' ? [m.text] : [])) : [j.motiv]);
+const ariaCercului = (r: number): number => Math.PI * r * r;
+
+test('insulele pe hârtie: dreptunghiul 100 × 60 cu insula 20 × 20 la mijloc, Ø6, pasul 2,4: inelul se rupe în două la 10,2 mm', () => {
+  const r = ineleBuzunar(drept(0, 0, 100, 60), 3, 2.4, [drept(40, 20, 20, 20)]);
+  assert.ok(r.ok, r.ok ? '' : r.motiv);
+  if (!r.ok) return;
+  // La 3, 5,4, 7,8: o bucată, cu bucla exterioară și cea din jurul insulei. Sus și jos, golul e de 20 mm: peste d = 10, se
+  // închide, iar bucata se rupe în stânga și dreapta (golul de 40 mm), până la 19,8 (la 22,2 > 20, freza nu mai încape).
+  assert.equal(r.numar, 3 * 2 + 2 * 5);
+  const o = ordineInele(r.radacini);
+  const lant = [19.8, 17.4, 15, 12.6, 10.2];
+  assert.deepEqual(o.map((x) => Number(x.d.toFixed(6))), [...lant, ...lant, 7.8, 5.4, 3]);
+  assert.deepEqual(o.map((x) => x.bucle.length), [...lant.map(() => 1), ...lant.map(() => 1), 2, 2, 2]);
+  // Cele două ramuri: una la stânga insulei, una la dreapta.
+  const xs = (k: number) => o[k]!.bucle[0]!.varfuri.map((v) => v.p.x);
+  assert.ok((Math.max(...xs(4)) < 40 && Math.min(...xs(9)) > 60) || (Math.max(...xs(9)) < 40 && Math.min(...xs(4)) > 60));
+  // Peretele: 94 × 54 trigonometric și bucla insulei, orar: 26 × 26 cu colțurile rotunjite cu raza 3.
+  const [ext, ins] = o.at(-1)!.bucle;
+  assert.ok(Math.abs(arieCuSemn(ext!) - 94 * 54) < 1e-6);
+  assert.ok(Math.abs(arieCuSemn(ins!) + (26 * 26 - (4 - Math.PI) * 9)) < 1e-6, String(arieCuSemn(ins!)));
+  // Fără insule, aceleași inele ca înainte (12, ADR 0069).
+  const fara = ineleBuzunar(drept(0, 0, 100, 60), 3, 2.4, []);
+  assert.ok(fara.ok && fara.numar === 12);
+});
+
+test('insulele pe hârtie: cercul R20 cu insula R5 la centru, pasul 3: inelele sunt coroane, cu bucla insulei crescând', () => {
+  const r = ineleBuzunar(cerc(0, 0, 20), 3, 3, [cerc(0, 0, 5)]);
+  assert.ok(r.ok, r.ok ? '' : r.motiv);
+  if (!r.ok) return;
+  // d = 3: exteriorul la 17, insula la 8; d = 6: la 14 și 11; d = 9: 11 și 14 s-ar încrucișa (coroana are 15 mm, 2·9 > 15).
+  const o = ordineInele(r.radacini);
+  assert.deepEqual(o.map((x) => Number(x.d.toFixed(6))), [6, 3]);
+  for (const [x, [re, ri]] of [[o[0]!, [14, 11]], [o[1]!, [17, 8]]] as const) {
+    assert.ok(Math.abs(arieCuSemn(x.bucle[0]!) - ariaCercului(re)) < 1e-6);
+    assert.ok(Math.abs(arieCuSemn(x.bucle[1]!) + ariaCercului(ri)) < 1e-6);
+  }
+});
+
+test('legătura la adâncime ocolește insula: peste ea, freza se ridică; pe lângă, la R − ε, rămâne jos', () => {
+  const c = drept(0, 0, 100, 60), ins = [drept(40, 20, 20, 20)];
+  assert.equal(legaturaInBuzunar({ x: 20, y: 30 }, { x: 80, y: 30 }, c, 3, ins), false, 'peste insulă');
+  assert.equal(legaturaInBuzunar({ x: 20, y: 30 }, { x: 80, y: 30 }, c, 3), true, 'fără insulă, drumul e liber');
+  assert.equal(legaturaInBuzunar({ x: 20, y: 10 }, { x: 80, y: 10 }, c, 3, ins), true);
+  assert.equal(legaturaInBuzunar({ x: 20, y: 17 + EPS_LEGATURA / 2 }, { x: 80, y: 17 + EPS_LEGATURA / 2 }, c, 3, ins), true, 'la R − ε/2 de insulă');
+  assert.equal(legaturaInBuzunar({ x: 20, y: 17.01 }, { x: 80, y: 17.01 }, c, 3, ins), false, 'la R − 0,01 de insulă');
+  // Înăuntrul insulei nu e buzunar.
+  assert.equal(legaturaInBuzunar({ x: 45, y: 30 }, { x: 55, y: 30 }, c, 1, ins), false);
+});
+
+test('oracolul simulării: dreptunghiul 100 × 60 cu insula 20 × 20 e scos peste tot unde ajunge freza, iar insula rămâne', async () => {
+  const [x0, y0, x1, y1] = [40, 40, 140, 100];
+  const d = doc([{ id: 'e', forma: DREPT }, { id: 'i', forma: { tip: 'dreptunghi', latime: 20, inaltime: 20, razaColt: 0 }, e: 40, f: 20 }], [buzunar(['e', 'i'])], x0, y0);
+  const m = 0.05;
+  const inInsula = (x: number, y: number, mm: number) => x > x0 + 40 + mm && x < x0 + 60 - mm && y > y0 + 20 + mm && y < y0 + 40 - mm;
+  const r = await simulat(d, { x0: 30, y0: 30, latime: 120, inaltime: 80 }, (x, y) => {
+    if (langa(x, y, x0, y0, x1, y1, 3, m) || (inInsula(x, y, -m) && !inInsula(x, y, m))) return null;
+    if (inInsula(x, y, m)) return 0;
+    return inDeschidere(x, y, x0, y0, x1, y1, 3, m) ? -6 : 0;
+  });
+  assert.equal(r.gresite, 0, r.prima);
+  assert.deepEqual(poarta(r.text, {
+    foaie: { latime: 200, inaltime: 150, grosime: 18 }, origine: 'stanga-jos', z0: 'sus', diametruScula: 6, pas: 3, supracursa: 0,
+    asteptareAx: 3, avansPlonjare: 300, cadru: { minX: 43, maxX: 137, minY: 43, maxY: 97 },
+  }), []);
+});
+
+test('oracolul simulării: între insulă și perete, un gol de 4 mm (sub Ø6) rămâne netăiat; nici insula, nici peretele nu se ating', async () => {
+  const [x0, y0, x1, y1] = [40, 40, 140, 100];
+  const d = doc([{ id: 'e', forma: DREPT }, { id: 'i', forma: { tip: 'dreptunghi', latime: 20, inaltime: 20, razaColt: 0 }, e: 4, f: 20 }], [buzunar(['e', 'i'])], x0, y0);
+  const m = 0.05;
+  const inInsula = (x: number, y: number, mm: number) => x > x0 + 4 + mm && x < x0 + 24 - mm && y > y0 + 20 + mm && y < y0 + 40 - mm;
+  const r = await simulat(d, { x0: 30, y0: 30, latime: 120, inaltime: 80 }, (x, y) => {
+    if (langa(x, y, x0, y0, x1, y1, 3, m) || (inInsula(x, y, -m) && !inInsula(x, y, m))) return null;
+    if (inInsula(x, y, m)) return 0;
+    // Mijlocul golului (la peste R de capetele lui): niciun disc de rază 3 nu încape acolo.
+    if (x > x0 + m && x < x0 + 4 - m && y > y0 + 23 + m && y < y0 + 37 - m) return 0;
+    // Capetele golului: tăiate pe jumătate, de discurile de dedesubt și de deasupra.
+    if (x < x0 + 7.5 && y > y0 + 16.5 && y < y0 + 43.5) return null;
+    return inDeschidere(x, y, x0, y0, x1, y1, 3, m) ? -6 : 0;
+  });
+  assert.equal(r.gresite, 0, r.prima);
+});
+
+test('oracolul simulării: un „O” din altă piesă, în buzunar: coroana e insulă, golul ei e iar buzunar (par-impar, peste instanțe)', async () => {
+  const [x0, y0, x1, y1] = [40, 40, 140, 100];
+  const cx = 90, cy = 70;
+  const d = docPiese([
+    { id: 'p', elemente: [{ id: 'e', forma: DREPT }], operatii: [buzunar(['e'])], x: x0, y: y0 },
+    { id: 'o', elemente: [{ id: 'ext', forma: { tip: 'cerc', raza: 15 } }, { id: 'gol', forma: { tip: 'cerc', raza: 7 } }], operatii: [buzunar(['ext', 'gol'], { pasLateral: 3 })], x: cx, y: cy },
+  ]);
+  assert.deepEqual(etichete(programDinDocument(deschis(d))), ['i1/e: dreptunghi, buzunar, 6 mm, insule: 1', 'i2/gol: cerc, buzunar, 6 mm']);
+  const m = 0.05;
+  const r = await simulat(d, { x0: 30, y0: 30, latime: 120, inaltime: 80 }, (x, y) => {
+    const q = Math.hypot(x - cx, y - cy);
+    if (langa(x, y, x0, y0, x1, y1, 3, m) || Math.abs(q - 15) < m || Math.abs(q - 7) < m) return null;
+    if (q < 7) return -6;
+    if (q < 15) return 0;
+    return inDeschidere(x, y, x0, y0, x1, y1, 3, m) ? -6 : 0;
+  });
+  assert.equal(r.gresite, 0, r.prima);
+});
+
+test('cu altă adâncime nu e insulă, ci treaptă: cercul de 10 mm din buzunarul de 6 mm se taie întreg, mai adânc', async () => {
+  const [x0, y0, x1, y1] = [40, 40, 140, 100];
+  const cx = 90, cy = 70;
+  const d = docPiese([
+    { id: 'p', elemente: [{ id: 'e', forma: DREPT }], operatii: [buzunar(['e'])], x: x0, y: y0 },
+    { id: 'c', elemente: [{ id: 'c', forma: { tip: 'cerc', raza: 15 } }], operatii: [buzunar(['c'], { adancime: 10, pasLateral: 3 })], x: cx, y: cy },
+  ]);
+  assert.deepEqual(etichete(programDinDocument(deschis(d))), ['i1/e: dreptunghi, buzunar, 6 mm', 'i2/c: cerc, buzunar, 10 mm']);
+  const m = 0.05;
+  const r = await simulat(d, { x0: 30, y0: 30, latime: 120, inaltime: 80 }, (x, y) => {
+    const q = Math.hypot(x - cx, y - cy);
+    if (langa(x, y, x0, y0, x1, y1, 3, m) || Math.abs(q - 15) < m) return null;
+    if (q < 15) return -10;
+    return inDeschidere(x, y, x0, y0, x1, y1, 3, m) ? -6 : 0;
+  });
+  assert.equal(r.gresite, 0, r.prima);
+});
+
+test('lucrarea refuză contururile de aceeași adâncime care se ating din piese diferite și același contur de două ori', () => {
+  const mare = { tip: 'dreptunghi', latime: 80, inaltime: 80, razaColt: 0 };
+  const ating = docPiese([
+    { id: 'a', elemente: [{ id: 'e', forma: mare }], operatii: [buzunar(['e'])], x: 10, y: 10 },
+    { id: 'b', elemente: [{ id: 'e', forma: { tip: 'cerc', raza: 10 } }], operatii: [buzunar(['e'])], x: 90, y: 50 },
+  ]);
+  assert.deepEqual(programDinDocument(deschis(ating)), { ok: false, motiv: 'i1/e și i2/e: contururile buzunarelor de 6 mm se ating sau se intersectează; unește-le întâi (booleanul) sau dă-le adâncimi diferite' });
+  // Cu altă adâncime, aceleași două forme sunt două buzunare (fiecare întreg).
+  const altfel = docPiese([
+    { id: 'a', elemente: [{ id: 'e', forma: mare }], operatii: [buzunar(['e'])], x: 10, y: 10 },
+    { id: 'b', elemente: [{ id: 'e', forma: { tip: 'cerc', raza: 10 } }], operatii: [buzunar(['e'], { adancime: 4, pas: 2 })], x: 90, y: 50 },
+  ]);
+  assert.deepEqual(etichete(programDinDocument(deschis(altfel))), ['i1/e: dreptunghi, buzunar, 6 mm', 'i2/e: cerc, buzunar, 4 mm']);
+  const dublu = doc([{ id: 'e', forma: mare, e: 10, f: 10 }], [buzunar(['e']), buzunar(['e'], { id: 'b2' })]);
+  assert.deepEqual(programDinDocument(deschis(dublu)), { ok: false, motiv: 'i/e: același contur e de două ori în buzunarele de 6 mm' });
+});
+
+test('buclele unui inel: după bucla exterioară, freza merge la adâncime în punctul cel mai apropiat al buclei din jurul insulei', () => {
+  const c = drept(0, 0, 100, 60), ins = [drept(40, 20, 20, 20)];
+  const r = ineleBuzunar(c, 3, 2.4, ins);
+  assert.ok(r.ok);
+  if (!r.ok) return;
+  const perete = r.radacini[0]!;
+  assert.equal(perete.bucle.length, 2);
+  const t = traseuBuzunar(c, [perete], { zSigur: 5, avans: 1000, avansPlonjare: 300, sens: 'urcare', raza: 3, adancimi: [3] }, ins);
+  assert.ok(t.ok);
+  if (!t.ok) return;
+  const xy = t.miscari.flatMap((m) => ((m.tip === 'taiere' || m.tip === 'rapida') && m.la.X !== undefined ? [{ tip: m.tip, p: { x: m.la.X, y: m.la.Y! } }] : []));
+  const laInsula = (p: { x: number; y: number }): number => Math.hypot(Math.max(40 - p.x, 0, p.x - 60), Math.max(20 - p.y, 0, p.y - 40));
+  const s0 = xy[0]!;
+  assert.equal(s0.tip, 'rapida');
+  // Prima mișcare pe bucla insulei (la 3 mm de ea) e legătura: la adâncime, cât distanța până la insulă minus raza.
+  const k = xy.findIndex((m) => Math.abs(laInsula(m.p) - 3) < 1e-9);
+  assert.ok(k > 0);
+  assert.equal(xy[k]!.tip, 'taiere');
+  assert.ok(Math.abs(Math.hypot(xy[k]!.p.x - s0.p.x, xy[k]!.p.y - s0.p.y) - (laInsula(s0.p) - 3)) < 1e-6);
+  // O singură coborâre pe trecere.
+  assert.equal(t.miscari.filter((m) => m.tip === 'rapida' && m.la.Z !== undefined).length, 2);
+});
+
+test('arborele inelelor: fiecare inel stă în regiunea părintelui (par-impar), și când golul unei insule în „C” se desparte', () => {
+  const C: Contur = {
+    inchis: true,
+    varfuri: ([[20, 20], [80, 20], [80, 45], [70, 45], [70, 30], [30, 30], [30, 70], [70, 70], [70, 55], [80, 55], [80, 80], [20, 80]] as const).map(([x, y]) => ({ p: { x, y }, s: LINIE })),
+  };
+  const r = ineleBuzunar(drept(0, 0, 100, 100), 3, 2.4, [C, drept(45, 45, 10, 10)]);
+  assert.ok(r.ok, r.ok ? '' : r.motiv);
+  if (!r.ok) return;
+  let golul = 0;
+  for (const stiva = [...r.radacini]; stiva.length > 0;) {
+    const x = stiva.pop()!;
+    for (const c of x.copii) {
+      assert.ok(inRegiune(c.bucle[0]!.varfuri[0]!.p, x.bucle), `inelul de la ${c.d} nu stă în părintele lui`);
+      stiva.push(c);
+    }
+    // Golul lui C, despărțit (deschiderea de 10 mm se închide peste 5 mm): mai mic de 40 × 40, cu bucla insulei mici.
+    if (x.d > 5 && arieCuSemn(x.bucle[0]!) < 40 * 40 && x.bucle.length === 2) golul++;
+  }
+  assert.ok(golul > 0);
 });

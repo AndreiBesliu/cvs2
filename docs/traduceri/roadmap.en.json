@@ -461,6 +461,10 @@
       "ro": "Forma „cale” în document",
       "en": "The “path” shape in the document"
     },
+    "45d08dc853b549c9": {
+      "ro": "Insulele buzunarului",
+      "en": "Pocket islands"
+    },
     "45d47929f6f3533a": {
       "ro": "Carcasa interfeței, din prototipul ales de owner dintre trei",
       "en": "The interface shell, from the prototype the owner chose out of three"
@@ -468,6 +472,10 @@
     "470b43073b428a4c": {
       "ro": "Fișa plăcii 2, cu programele de aur (`docs/etape/placa-02.md`, gata pe 16.10: exportul aplicației pe documentul plăcii, poarta cu regiunea, cotele pe hârtie)",
       "en": "The plate 2 file, with the golden programs (`docs/etape/placa-02.md`, done on 16.10: the app's export on the plate document, the gate with the region, dimensions on paper)"
+    },
+    "47f2cd95bc26544c": {
+      "ro": "**Insulele buzunarului, aduse din etapa 5** (fără mașină; ADR 0073; „poti sa continui cu altceva intre timp”, cât owner-ul face testul; publicat pe canalul de previzualizare). Buzunarele de pe foaie cu aceeași adâncime sunt un singur buzunar, din orice piese: o formă cu buzunar aflată în întregime în alta e o insulă (rămâne în picioare, freza o ocolește și îi taie peretele), una aflată într-o insulă e iar buzunar (golurile literelor). Cu altă adâncime, fiecare se taie întreg (o treaptă). Două contururi de aceeași adâncime care se ating sunt refuzate, cu motivul și ce e de făcut. Manualul („Operațiile de tăiere”) e la zi. **Treceri:** (1) offsetul unei regiuni cu găuri (figura lui cavalier, cu aceleași gărzi ca offsetul unui contur), inelele pe bucăți, legăturile, lucrarea; o probă pe hârtie la 10 mm a căzut exact pe un prag (golul de 20 mm = 2d): acolo decide a doua încercare, deci proba de arie s-a mutat la 12 mm, iar pragul a primit proba lui; oracolul simulării: insula, golul mai îngust decât freza, „O”-ul din altă piesă, treapta; 18 / 18 mutații prinse.",
+      "en": "**Pocket islands, brought forward from stage 5** (no machine; ADR 0073; \"poti sa continui cu altceva intre timp\", while the owner runs the test; published on the preview channel). Pockets on the sheet with the same depth are one pocket, from any parts: a shape with a pocket lying entirely inside another is an island (it stays standing, the cutter goes around it and cuts its wall), one lying inside an island is a pocket again (the counters of letters). With a different depth, each is cut whole (a step). Two outlines with the same depth that touch are refused, with the reason and what to do. The manual (\"Cutting operations\") is up to date. **Passes:** (1) the offset of a region with holes (the cavalier shape, with the same guards as the offset of one outline), the rings in pieces, the links, the job; a paper check at 10 mm fell exactly on a threshold (the 20 mm gap = 2d): there the second attempt decides, so the area check moved to 12 mm and the threshold got its own check; the simulation oracle: the island, the gap narrower than the cutter, the \"O\" from another part, the step; 18 / 18 mutations caught."
     },
     "487df071bff2d150": {
       "ro": "**Copierea de-a lungul unei curbe, adusă din etapa 6** (fără mașină; ADR 0066; „Da”: întâi curba, apoi booleanul, apoi testul owner-ului). Panoul „Copiază în rețea” are al treilea fel, Pe curbă: formele se aleg întâi, curba după ele, cu Shift + clic (curba e ultima aleasă); câte copii (1–1000), la distanțe egale pe lungimea curbei (deschisă: de la capăt la capăt; închisă: de jur împrejur), cu centrul cutiei formelor pe curbă, cu sau fără rotirea după tangentă; previzualizarea cutiilor. Copiile sunt piese independente, într-un singur pas; originalele și curba rămân. Prin aceeași acțiune: pornirea neschimbată. Rândul „Transformare și copiere” e acum complet. **Treceri:** (1) calculul pur (`src/model/curba.ts`), felul nou în rețea și în acțiune, panoul și previzualizarea, manualul, probele pe hârtie (linia, semicercul, dreptunghiul, cercul, cubica măsurată independent), verzi din prima, deci trei mutații (vârful, lungimea cubicei, curba aleasă în panou), toate prinse.",
@@ -776,6 +784,10 @@
     "80b77831dab7eb23": {
       "ro": "DXF-urile de referință + fișierele tale deschise în programele tale",
       "en": "the reference DXFs + your files opened in your programs"
+    },
+    "80dbf4e9d8b95734": {
+      "ro": "Insulele buzunarului, aduse din etapa 5",
+      "en": "Pocket islands, brought forward from stage 5"
     },
     "83edac4913407194": {
       "ro": "Documentația live: manualul utilizatorului",
