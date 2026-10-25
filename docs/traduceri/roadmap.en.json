@@ -13,13 +13,13 @@
       "ro": "Scheletul: `t()` en / ro cu paritatea verificată de compilator, ErrorBoundary + jurnalul local de erori, configul citit de la gazdă, CSP fără `unsafe-eval`",
       "en": "The skeleton: `t()` en / ro with compiler-checked parity, ErrorBoundary + local error log, config read from the host, CSP without `unsafe-eval`"
     },
-    "03247252a6788744": {
-      "ro": "Emulatorul GRBL și transcrierile ca fixturi",
-      "en": "The GRBL emulator and transcripts as fixtures"
-    },
     "033ed581acb87520": {
       "ro": "Fișa etapei și proba de mediu în Drive: instalarea, build-ul, nivelul rapid și Edge, de două ori, cu `git status` curat după",
       "en": "Stage file and environment check in Drive: install, build, rapid level and Edge, twice, with a clean `git status` afterwards"
+    },
+    "0360dd0ba18ef822": {
+      "ro": "Emulatorul GRBL 1.1h ca fixtură (ADR 0079): numără ce primește (bufferul de 128 de octeți, timpul real, pierderile), liniile, planificatorul de 15 blocuri cu timpul lui, stările (hold, alarmă, repornire), răspunsurile `$`; un flux de probă cu numărarea caracterelor; 100 000 de linii fără pierderi; rejucarea programelor plăcilor 1 și 2",
+      "en": "The GRBL 1.1h emulator as a fixture (ADR 0079): it counts what it receives (the 128-byte buffer, the realtime bytes, the losses), the lines, the 15-block planner with its timing, the states (hold, alarm, restart), the `$` replies; a test stream with character counting; 100,000 lines without losses; replaying the programs of plates 1 and 2"
     },
     "03de60a45fe72b0d": {
       "ro": "Riglele, ghidajele salvate pe foaie",
@@ -48,6 +48,10 @@
     "072b9e6cb83e4eaf": {
       "ro": "**PWA offline, adusă din etapa 4** (plăcile netăiate: `PLAN.md` §4.6, punctul 7; ADR 0045): workerul la `/sw.js` (ia locul opritorului, șterge cache-urile ediției întâi), toată aplicația în cache (32 de fișiere, 218 kB; afară doar `/admin`), navigările din cache doar pentru `/`, `config.json` cu copie de rezervă, actualizarea oferită (la clic). Recenzia (12 constatări, una mare: login-ul Google) și reverificarea, remediate. **Pe test:** a doua încărcare din cache, 0 octeți din rețea; `/__/auth` și `/admin` din rețea.",
       "en": "**Offline PWA, brought forward from stage 4** (the plates not cut: `PLAN.md` §4.6, point 7; ADR 0045): the worker at `/sw.js` (it replaces the stopper and clears the first edition's caches), the whole app in cache (32 files, 218 kB; only `/admin` outside), navigations from cache only for `/`, `config.json` with a backup copy, the update offered (on click). The review (12 findings, one big: the Google login) and the re-check, fixed. **On test:** the second load from cache, 0 bytes from the network; `/__/auth` and `/admin` from the network."
+    },
+    "0753c8cf58afa6c0": {
+      "ro": "**Emulatorul GRBL, fără placă** (ADR 0079; „continuă direct cu ce a rămas din etapa 3, începând cu emulatorul GRBL”). Un controler GRBL 1.1h fals, în teste, care numără singur ce primește: bufferul de 128 de octeți (octeții în plus se pierd și se numără), comenzile de timp real, limita liniei, planificatorul de 15 blocuri cu timpul lui, hold-ul, alarmele, repornirea, răspunsurile `$`. Cu el: 100 000 de linii scurte trec cu 0 pierderi, iar programele plăcilor 1 și 2 (exact octeții din fișele lor) se rejoacă fără nicio eroare. Constatare: la GRBL 1.1, „ș” și „ț” dintr-un comentariu sunt comenzi ale axului; postul scrie deja doar ASCII, iar senderul va refuza un program străin care nu e. Transcrierile de pe mașina reală rămân pentru 3.5b, după placă. **Treceri:** (1) cifrele verificate în sursele GRBL 1.1 (bufferul, linia, planificatorul, `M6`, `$#` doar în Idle); probele întâi (15 pe hârtie, 8 sub încărcare și martori), apoi emulatorul; avansurile probelor coborâte sub plafonul axelor (500 mm/min); mutațiile: 28 / 30, apoi 30 / 30 (linia închisă doar cu `\\r`, `G10 L20` cu valori nenule).",
+      "en": "**The GRBL emulator, without a plate** (ADR 0079; the owner’s request to continue directly with what remained of stage 3, starting with the GRBL emulator). A fake GRBL 1.1h controller, in the tests, that counts what it receives by itself: the 128-byte buffer (extra bytes are lost and counted), the realtime commands, the line limit, the 15-block planner with its timing, the hold, the alarms, the restart, the `$` replies. With it, 100,000 short lines go through with 0 losses, and the programs of plates 1 and 2 (exactly the bytes from their sheets) replay without a single error. A finding: on GRBL 1.1, “ș” and “ț” in a comment are spindle commands; the post already writes ASCII only, and the sender will refuse a foreign program that is not. The transcripts from the real machine are left for 3.5b, after the plate. **Passes:** (1) the figures checked in the GRBL 1.1 sources (the buffer, the line, the planner, `M6`, `$#` only when Idle); the checks first (15 on paper, 8 under load and witnesses), then the emulator; the feeds in the checks lowered under the axis limit (500 mm/min); mutations: 28 / 30, then 30 / 30 (a line closed only by `\r`, `G10 L20` with non-zero values)."
     },
     "07f253fcc3551030": {
       "ro": "Repararea, conversia, cotele, transformarea traseelor",
@@ -80,6 +84,10 @@
     "0a7887b0082312c0": {
       "ro": "regiunea păstrată, urechile, intrările",
       "en": "the kept region, tabs, lead-ins"
+    },
+    "0c71baf23a31780e": {
+      "ro": "Transcrierile reale ca fixturi",
+      "en": "Real transcripts as fixtures"
     },
     "0cd5bfb5a0eae1a9": {
       "ro": "Intrările și ieșirile (ADR 0030, documentul v7 cu migrarea v6 → v7 și `intrari: null`): sferturi de cerc tangente pe partea deșeului (din regula sensului), alese din candidați (vârful 0, mijloacele celor mai lungi 12 segmente; raza, apoi jumătate) și verificate exact; bucla pornită din p₀ (urechile se mută cu ea); plonjarea în deșeu; intrarea omisă se spune la export (avertismentele, noi). Fără rampă: compunerea vine în 2.5c, până atunci refuz cu motiv. **Recenzia (o lentilă CAM + 3 verificatori, 0,74 M, 57 min) a prins două găuri ale contractului:** intrarea ignora marginea foii (la 7 mm de margine cerea confirmarea ieșirii, deși un alt candidat stătea în foaie: 384 din 1632 de așezări) și putea tăia legătura urechii unei piese vecine. Acum un semicerc încape doar dacă nu iese din foaie mai mult decât bucla și stă la cel puțin D + 1 mm de orice altă buclă cu urechi. O a treia constatare (ieșirea în miezul eliberat) a fost infirmată și trecută la limite. Oracolul (sesiune independentă, 0,69 M, 96 min): documentul v7, invariantele 9, 10, 11 amendate, 12 nouă, oracolul pe hârtie. Otrăvuri: 38 din 39 prinse; cea scăpată (dialogul care nu citește intrările din document) e acum prinsă: e2e-ul intrărilor redeschide dialogul, verificat cu otrava aplicată. Dialogul: câmpurile de număr mai înguste, ca opt coloane să încapă. **Treceri:** (1) contractul; (2) aplicația; (3) recenzia și reparațiile; (4) oracolul; (5) otrăvurile.",
@@ -444,6 +452,10 @@
     "42a72c90fedebdf5": {
       "ro": "Relieful 3: îmbinări, straturi bitmap, sculptura, anvelopa",
       "en": "Relief 3: blends, bitmap layers, sculpting, the envelope"
+    },
+    "42bb461397ff2733": {
+      "ro": "Emulatorul GRBL, fixtura senderului",
+      "en": "The GRBL emulator, the sender’s fixture"
     },
     "43019b854632d2c9": {
       "ro": "**Documentația live: manualul utilizatorului** (ADR 0058; cererea din 19.10, „vreau sa mentinem ideea de documentatie, una live si una admin”, apoi „Trecem mai departe”). Manualul, în română și în engleză, stă în repo (`docs/manual/`), în 14 capitole: de la primii pași la vederea 3D și scurtături. Se generează la build și intră în precache, deci se citește și fără rețea. Se deschide cu butonul „?” din extensia barei sau cu F1, care sare la capitolul a ce faci acum (unealta, vederea 3D, fereastra exportului); are cuprins, căutare fără diacritice și linkuri între capitole. Poarta de acoperire, în nivelul rapid: fiecare dintre cele 49 de uși ale interfeței (acțiunile registrului, uneltele, alinierea, oglindirea, 3D, manualul) e numită cu eticheta ei din interfață în capitolul care o acoperă, în ambele limbi, iar fiecare tastă stă în capitolul scurtăturilor. Pornirea rămâne neschimbată (cu ușa 99,8 / 100). **Treceri:** (1) contractul, generatorul și poarta lui, fereastra, F1, textul celor două limbi, probele; (2) poarta a prins două texte care nu numeau butonul („vederea 3D” față de „Vedere 3D”, „applies the operations”); proba tastelor era oarbă (Delete și Ctrl+Z se anulau între ele: controlul negativ trecea), refăcută cu fiecare tastă pe rând; cuprinsul cu stilul global al lui `nav`, reparat; fereastra mutată din `src/docs/` (cititorul rămâne izolat, regula de import); simularea publicării din proba PWA redenumește acum și bucățile care pomenesc un nume schimbat, ca un build adevărat (bucata comună a cititorului păstra numele cu alt conținut, iar workerul servea copia veche).",
@@ -981,6 +993,10 @@
       "ro": "cât mai curând",
       "en": "as soon as possible"
     },
+    "9d1316d9f73dab70": {
+      "ro": "Transcrierile reale ca fixturi: sesiunea cu senderul nostru salvată la mașină și rejucată pe emulator; unde emulatorul diferă de mașină, mașina are dreptate",
+      "en": "Real transcripts as fixtures: the session with our sender saved at the machine and replayed on the emulator; where the emulator differs from the machine, the machine is right"
+    },
     "9e5b33599d483056": {
       "ro": "Plafonul total al aplicației",
       "en": "The total budget of the app"
@@ -1032,6 +1048,10 @@
     "a75abf755145bbba": {
       "ro": "Sensul de tăiere",
       "en": "Cutting direction"
+    },
+    "a81771a5db28cbb8": {
+      "ro": "Emulatorul GRBL 1.1h ca fixtură",
+      "en": "The GRBL 1.1h emulator as a fixture"
     },
     "a86b02eef03388b8": {
       "ro": "IR-ul v0 pe N axe, montajul (4 colțuri, Z0 sus sau jos, o singură matrice) și postul GRBL v0 (3 zecimale, I / J din startul rotunjit, gărzile, antetul, 70 de octeți, SHA-256)",
@@ -1332,10 +1352,6 @@
     "dc929192d3471597": {
       "ro": "Partea documentului care nu depinde de A / D",
       "en": "The part of the document that does not depend on A / D"
-    },
-    "dd16533ed4bd0df8": {
-      "ro": "Emulatorul GRBL și transcrierile ca fixturi: numără ce primește; rejucarea programelor plăcilor 1 și 2; 100 000 de linii fără pierderi",
-      "en": "The GRBL emulator and transcripts as fixtures: it counts what it receives; replaying the plate 1 and 2 programs; 100,000 lines without loss"
     },
     "de0643a0b03a958a": {
       "ro": "Scheletul",

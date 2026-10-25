@@ -298,7 +298,8 @@ Li se adaugă cele 100 000 de linii fără pierderi și linia de 80 de caractere
 
 **Martorii negativi:**
 - numărarea fără `+1`;
-- numărarea în UTF-16, pe un comentariu cu diacritice;
+- numărarea în UTF-16, pe un comentariu cu diacritice (**corectat în 3.5a, ADR 0079 §5:** la GRBL 1.1, octeții peste 0x7F
+  nu intră în buffer, deci nu se pierde nimic; în schimb „ș” și „ț” sunt override-uri ale axului: programul trebuie să fie ASCII);
 - linia de 128 de caractere;
 - `streaming` folosit cu ambele înțelesuri.
 

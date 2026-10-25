@@ -2962,3 +2962,20 @@ rămână sub 0,001 mm după înclinare, în lume.
 **Completed:** 25.10 22:14. Porțile: 7 264 de teste unitare (0 picate), e2e 220 / 220 în Edge, emulatoarele 36 + 13; pornirea
 95,3 / 100 kB, totalul 305,6 / 330. Mutațiile: 7 / 8 la prima rulare (scara elementului scăpa: la scara 2, numărul de cubice
 avea rezervă), apoi cazul cu scara 50: 8 / 8.
+**Publicat pe adresa principală de test:** 25.10, workflow-ul `publica` pe `8ec91b7` (rularea 40230471038), după rapid-ul verde
+(40229790668; publicarea pornită doar după concluzia „success”). Verificat în browserul aplicației, după actualizarea workerului
+(o versiune nouă aștepta): cercul R15 → bifa apare nebifată, motivul trimite la ea; bifată, 35° → „path 36.62 × 30.00, 6
+segments” (30 · √(1 + tan² 35°) = 36,62 pe hârtie), elipsa pe pânză; anularea readuce cercul.
+
+## 2026-10-25 — Emulatorul GRBL, fără placă (Model: Claude Opus 5.5)
+
+**Prompt:** „Lasă chenarul pentru mai târziu; continuă direct cu ce a rămas din etapa 3, începând cu emulatorul GRBL.” (cererea de
+dinainte: „iar dupa, vreau sa continuam cu ce a ramas din etapa 3”).
+**Started:** 25.10, ~22:20. Felia **3.5a**, fără agenți (ADR 0079): 3.5 despărțită în 3.5a (emulatorul, acum) și 3.5b
+(transcrierile reale, după placă). Cifrele verificate în sursele GRBL 1.1 (serial.h / serial.c, protocol.h / protocol.c,
+planner.h, gcode.c, report.h), citite pentru comportament, nu copiate. Constatări: octeții peste 0x7F nu intră în buffer (deci
+martorul UTF-16 din PORTARE nu pierde octeți), dar „ș” / „ț” sunt override-uri ale axului; `$#` și setările dau `error:8` în
+mișcare; avansul e plafonat de viteza axelor (500 mm/min implicit), deci probele cu F600 au coborât la F300.
+**Completed:** 25.10 23:06. Porțile: 7 287 de teste unitare (0 picate; două probe ale documentației citeau încă felia 3.5,
+actualizate), e2e 220 / 220 în Edge (o primă rulare a picat pe `EBUSY` la un fișier descărcat din `test-results`, în Drive,
+la o probă de export neatinsă de felie; a doua, curată). Mutațiile: 28 / 30, apoi 30 / 30.

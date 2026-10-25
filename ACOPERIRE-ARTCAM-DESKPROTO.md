@@ -31,7 +31,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Mai multe foi de material într-un proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate) — legat de sistemul de planșe | S | v1 (decis 06.10) | de făcut | — |
 | Vectori decorativi: guilloche, umbră vectorială din relief, chenar vectorial | S | v2 | de făcut | — |
 | Bibliotecă de clipart vectorial (proprie) | S | v2 | de făcut | — |
-| Transformare și copiere: mutare, scalare, rotire, înclinare, oglindire, copiere în rețea, circulară și de-a lungul unei curbe (rând nou) | S | v1 | făcut (25.10): mutarea, scalarea și rotirea cu mânere (ADR 0052), oglindirea (ADR 0054), copierea în rețea și pe cerc (ADR 0061), înclinarea (ADR 0065; și a formelor cu arce, cu arcele făcute curbe la cerere, cercul devine elipsă, ADR 0078), copierea de-a lungul unei curbe (ADR 0066) | 67561b0, 464fad4, f0a0ca9, a5e9d87, dcfa572, arcele înclinate: (felia 6.Q↑) |
+| Transformare și copiere: mutare, scalare, rotire, înclinare, oglindire, copiere în rețea, circulară și de-a lungul unei curbe (rând nou) | S | v1 | făcut (25.10): mutarea, scalarea și rotirea cu mânere (ADR 0052), oglindirea (ADR 0054), copierea în rețea și pe cerc (ADR 0061), înclinarea (ADR 0065; și a formelor cu arce, cu arcele făcute curbe la cerere, cercul devine elipsă, ADR 0078), copierea de-a lungul unei curbe (ADR 0066) | 67561b0, 464fad4, f0a0ca9, a5e9d87, dcfa572, arcele înclinate: 8ec91b7 |
 | Tăierea și conversia vectorilor: tăiere cu o linie, decupare la un contur, arce în loc de curbe, netezire, conversie în cercuri / dreptunghiuri (rând nou) | S | v1 (decis 06.10; era v1.x) | de făcut | — |
 
 ## B. Prelucrare 2D / 2.5D
@@ -119,7 +119,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 |---|---|---|---|---|
 | Simulare 3D a materialului: 3 axe în v1, apoi rotativ | S+D | v1 | în lucru: nucleul CPU (câmpul pe dale în atlas, exact pe celulă, freza plată / bilă / V, amprenta Node = Edge în e2e) și harta adâncimilor în dialogul exportului, ADR 0047; vederea 3D în WebGL2, din celulele nucleului, cu fereastra de 0,1 mm la apropiere, ADR 0057; rămân elicea cu bilă / V, animarea sculei, rotativul | 80180d4, f93d10b, 3d297d7, bad8474, fde0a05 |
 | Bibliotecă de freze cu geometrie reală (dreaptă, bilă, toroidală, V, gravare, profil, formă desenată) | S+D | v1 | de făcut | — |
-| Trimiterea directă la mașină (senderul) | D | v1 | de făcut | — |
+| Trimiterea directă la mașină (senderul) | D | v1 | în lucru (25.10: emulatorul GRBL 1.1h de probă, ADR 0079; senderul vine în 3.6) | emulatorul: (felia 3.5a) |
 | Calcul pe mai multe fire (workers) | D | v1 | în lucru: bazinul de workere fără stare al simulării (rândurile de dale r mod N, același rezultat bit cu bit pe orice N), ADR 0047; rămân celelalte calcule grele (CAM-ul, relieful) | 80180d4, bad8474 |
 | Șabloane de operații (aceleași setări pe alt desen) și calcul în lot | S | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Două interfețe: asistent pas cu pas pentru începători + interfața completă | D | v1 (decis 06.10; era v1.x) | de făcut | — |

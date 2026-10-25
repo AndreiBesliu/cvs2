@@ -112,8 +112,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   raza în fereastra exportului (`src/cam/coborare.ts`); elicea care nu încape coboară pe inel, cu avertisment. **Progresul
   etapelor viitoare în cronologie (ADR 0077)** gata pe 25.10: bara unei etape fără fișă se umple din rândurile de prag pe care
   le închide (coloana „Închide” × `ACOPERIRE`); un rând nou în prag schimbă cronologia la build. **Înclinarea formelor cu arce
-  (ADR 0078)** gata pe 25.10: bifa „Arcele devin curbe” în panou, cercul devine elipsă, sub 0,001 mm după înclinare. **Urmează:
-  chenarul întrerupt al uneltei Transformare, apoi ce a rămas din etapa 3** (cererile owner-ului).
+  (ADR 0078)** gata pe 25.10: bifa „Arcele devin curbe” în panou, cercul devine elipsă, sub 0,001 mm după înclinare. **Emulatorul
+  GRBL 1.1h (ADR 0079, felia 3.5a)** gata pe 25.10: fixtura senderului în `test/emulator/` (numără ce primește), 100 000 de
+  linii fără pierderi, programele plăcilor 1 și 2 rejucate; owner-ul: etapa 3 continuă fără placă (chenarul Transformării, mai
+  târziu). **Urmează: 3.6, fluxul senderului, probat pe emulator.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

@@ -66,7 +66,7 @@ test('fișa etapei 3: feliile, jurnalul (cu rândurile aduse ↑ și 3.P), ce î
   const f = citesteFisa('docs/etape/etapa-03.md', citeste('docs/etape/etapa-03.md'));
   assert.equal(f.numar, 3);
   assert.equal(f.pornita, '16.10.2026');
-  assert.deepEqual(f.felii.map((x) => x.id), ['3.1', '3.2', '3.3', '3.4a', '3.4b', '3.5', '3.6', '3.7', '3.8', '3.9']);
+  assert.deepEqual(f.felii.map((x) => x.id), ['3.1', '3.2', '3.3', '3.4a', '3.4b', '3.5a', '3.5b', '3.6', '3.7', '3.8', '3.9']);
   const ids = f.jurnal.map((x) => x.id);
   for (const id of ['3.1', '3.4b', '4.7↑', '4.5↑b', '4.2↑', '4.7↑b', '3.P']) assert.ok(ids.includes(id), id);
   const sim = f.jurnal.find((x) => x.id === '4.2↑');
@@ -126,7 +126,7 @@ test('roadmap-ul real: etapa curentă 3, 1 și 2 așteaptă placa, 4 e următoar
   assert.equal(etapa('1').placaTaiata, null);
 });
 
-test('o felie cunoscută cu datele ei: 3.4a gata, cu ADR 0041; 3.5 de făcut; 3.P din jurnal, fără rând în tabel', () => {
+test('o felie cunoscută cu datele ei: 3.4a gata, cu ADR 0041; 3.5a gata, 3.5b de făcut; 3.P din jurnal, fără rând în tabel', () => {
   const f = felie(etapa('3'), '3.4a');
   assert.equal(f.stare, 'gata');
   assert.equal(f.started, '16.10 21:35');
@@ -136,8 +136,11 @@ test('o felie cunoscută cu datele ei: 3.4a gata, cu ADR 0041; 3.5 de făcut; 3.
   assert.equal(f.titlu, 'Backup-ul zilnic al Firestore');
   assert.match(f.nota, /^Backup-ul și marcajele \(ADR 0041\)/);
   assert.ok(f.nota.length <= f.notaIntreaga.length);
-  assert.equal(felie(etapa('3'), '3.5').stare, 'de-facut');
-  assert.equal(felie(etapa('3'), '3.5').started, null);
+  // 3.5 s-a despărțit pe 25.10 (ADR 0079): emulatorul (3.5a) e gata, transcrierile reale (3.5b) așteaptă placa.
+  assert.equal(felie(etapa('3'), '3.5a').stare, 'gata');
+  assert.deepEqual(felie(etapa('3'), '3.5a').adr, ['0079']);
+  assert.equal(felie(etapa('3'), '3.5b').stare, 'de-facut');
+  assert.equal(felie(etapa('3'), '3.5b').started, null);
   assert.equal(felie(etapa('3'), '3.P').stare, 'gata');
   assert.equal(felie(etapa('3'), '3.P').titlu, 'Loc în pachetul de pornire');
   // Rândurile aduse din etapa 4 nu se numără la etapa 3.
