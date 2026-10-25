@@ -2636,3 +2636,8 @@ clicului; făcut exact (`exact: true`), și în `la-cerere.spec.ts` (3 × la râ
 determinismul, licențele verzi. E2e 200 / 200 în Edge (3 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea
 neschimbată (95,2 kB; cu ușa 99,8 / 100); totalul 283,8 → 285,8 / 300 kB (motorul offsetului într-o bucată la cerere, comună cu
 CAM-ul: ~85 kB brut); manualul are tot 16 capitole.
+A doua trecere: rapid 7 171 / 0, e2e 201 / 201 (după locatorii exacți), emulatoarele 36 + 13; pornirea cu ușa 99,9 / 100.
+**Publicat pe test:** 25.10, workflow-ul `publica` pe `edccc09`, apoi pe `9bcd26e` (după rapid-ul verde pe CI, 4 / 4 felii, de
+fiecare dată). Rularea de noapte din 25.10 (06:15 UTC) verde, 31 min. Verificat în Edge pe instanța de test (după oferta de
+actualizare a PWA-ului): dreptunghiul 100 × 60, panoul Offset cu 5 mm spre exterior, previzualizarea (1 contur), Aplică dă
+calea 110 × 70 cu 8 segmente, la (15, 15), aleasă; anularea o scoate; la 711 px, panoul stă în fereastră (399–703 px); 0 erori.
