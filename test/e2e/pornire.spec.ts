@@ -17,7 +17,7 @@ test.describe('limba', () => {
     await page.goto('/');
     await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
     await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
-    await page.getByRole('button', { name: 'EN' }).click();
+    await page.getByRole('button', { name: 'EN', exact: true }).click();
     await expect(page.getByTestId('jurnal')).toHaveText('0 errors in the local log');
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await page.reload();

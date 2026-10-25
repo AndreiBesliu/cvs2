@@ -2625,8 +2625,14 @@ fiecare contur închis în lume prin `offsetInchis`, formele deschise sărite, n
 manualul, probele pe hârtie (dreptunghiul 100 × 60 → 110 × 70 cu 4 arce de rază 5 și aria 6000 + 1600 + 25π, spre interior
 90 × 50 cu linii, cercul R20, aria neschimbată la rotire, forma în L: 5 arce spre exterior, 1 spre interior); e2e verzi din prima,
 deci o mutație în panou (sensul ignorat), prinsă (1 e2e picat), restaurată; fraza din manual despre colțuri era inexactă
-(spre interior se rotunjesc colțurile intrânde, nu niciunul): corectată, cu proba formei în L.
-**Completed:** 25.10 08:45. Fără agenți. `npm run rapid` RC 0 (7 179 de teste unitare, 6 noi, 0 picate, 8 sărite);
+(spre interior se rotunjesc colțurile intrânde, nu niciunul): corectată, cu proba formei în L; (2) verificarea pe test (după
+`edccc09`, publicat): offsetul merge (calea 110 × 70, 8 segmente, aleasă; anularea; 0 erori), dar la fereastra îngustă a
+panoului browserului (711 px) panoul Offset ieșea cu 180 px din fereastră, la fel cel al rețelei: `useInFereastra` le mută
+spre stânga cât ies; proba la 720 px cade fără reparație (marginea dreaptă la 890 px).
+Tot atunci, e2e-ul complet a prins o cursă veche în `pornire.spec.ts`: `getByRole('button', { name: 'EN' })` caută
+un subșir, deci prinde și „Pen…”, „Cerc… centru”, „Aliniază centrele” când modulul editării apucă să se încarce înaintea
+clicului; făcut exact (`exact: true`), și în `la-cerere.spec.ts` (3 × la rând, 42 / 42).
+**Completed:** 25.10 09:15 (prima trecere: 08:45). Fără agenți. `npm run rapid` RC 0 (7 179 de teste unitare, 6 noi, 0 picate, 8 sărite);
 determinismul, licențele verzi. E2e 200 / 200 în Edge (3 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea
 neschimbată (95,2 kB; cu ușa 99,8 / 100); totalul 283,8 → 285,8 / 300 kB (motorul offsetului într-o bucată la cerere, comună cu
 CAM-ul: ~85 kB brut); manualul are tot 16 capitole.

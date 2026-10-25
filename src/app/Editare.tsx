@@ -1273,6 +1273,26 @@ function IconaRetea(): ReactElement {
  * motivul pentru care nu se poate (valorile, sau verdictul acțiunii: nicio selecție, doar citire, plafonul, prea departe) și
  * Copiază. Esc îl închide.
  */
+/**
+ * Ține un panou plutitor al extensiei în fereastră: așezat sub butonul lui, iar dacă iese pe dreapta (o fereastră îngustă, un
+ * buton spre capătul extensiei), mutat spre stânga cât iese, fără să treacă de marginea stângă.
+ */
+function useInFereastra(ref: RefObject<HTMLElement | null>): void {
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const aseaza = (): void => {
+      el.style.left = '';
+      const r = el.getBoundingClientRect();
+      const iese = r.right - (window.innerWidth - 8);
+      if (iese > 0) el.style.left = `${-Math.min(iese, Math.max(0, r.left - 8))}px`;
+    };
+    aseaza();
+    window.addEventListener('resize', aseaza);
+    return () => { window.removeEventListener('resize', aseaza); };
+  }, [ref]);
+}
+
 function PanouRetea({ form, onForm, foaie, motivActiune, onCopiaza, onInchide }: {
   readonly form: FormularRetea;
   readonly onForm: (f: FormularRetea) => void;
@@ -1282,6 +1302,8 @@ function PanouRetea({ form, onForm, foaie, motivActiune, onCopiaza, onInchide }:
   readonly onInchide: () => void;
 }): ReactElement {
   const r = citesteRetea(form, foaie);
+  const radacina = useRef<HTMLDivElement | null>(null);
+  useInFereastra(radacina);
   const motiv = typeof r === 'string' ? t(`editare.retea.motiv.${r}`) : (() => {
     const m = motivActiune(r);
     return m === 'motiv.nicio-selectie' ? t('editare.retea.nicio-selectie') : m ? t(m) : null;
@@ -1293,7 +1315,7 @@ function PanouRetea({ form, onForm, foaie, motivActiune, onCopiaza, onInchide }:
     </label>
   );
   return (
-    <div className="insula panou-retea" id="panou-retea" role="group" aria-label={t('editare.retea')} data-testid="panou-retea"
+    <div className="insula panou-retea" id="panou-retea" ref={radacina} role="group" aria-label={t('editare.retea')} data-testid="panou-retea"
       onKeyDown={(e) => {
         if (e.key !== 'Escape') return;
         e.preventDefault();
@@ -1353,13 +1375,15 @@ function PanouOffset({ form, onForm, rez, motivActiune, onAplica, onInchide }: {
   readonly onInchide: () => void;
 }): ReactElement {
   const gata = rez !== null && rez !== 'eroare' && typeof rez !== 'string' ? rez : null;
+  const radacina = useRef<HTMLDivElement | null>(null);
+  useInFereastra(radacina);
   const motiv = rez === null ? t('editare.offset.incarca') : rez === 'eroare' ? t('editare.offset.neincarcat')
     : typeof rez === 'string' ? t(`editare.offset.motiv.${rez}`) : (() => {
       const m = motivActiune(rez.forme);
       return m === 'motiv.nimic-ales' ? t('editare.offset.motiv.nimic') : m ? t(m) : null;
     })();
   return (
-    <div className="insula panou-retea panou-offset" id="panou-offset" role="group" aria-label={t('editare.offset.sectiune')} data-testid="panou-offset"
+    <div className="insula panou-retea panou-offset" id="panou-offset" ref={radacina} role="group" aria-label={t('editare.offset.sectiune')} data-testid="panou-offset"
       onKeyDown={(e) => {
         if (e.key !== 'Escape') return;
         e.preventDefault();

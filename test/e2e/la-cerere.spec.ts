@@ -95,14 +95,14 @@ test('schemele documentului care nu vin (o publicare nouă): proiectul salvat e 
 test.describe('dicționarul limbii, la cerere', () => {
   test('engleza aleasă, al cărei dicționar nu vine: aplicația pornește în română, cu intrarea în jurnal; EN rămâne refuzat', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: 'EN' }).click();
+    await page.getByRole('button', { name: 'EN', exact: true }).click();
     await expect(page.getByTestId('jurnal')).toHaveText('0 errors in the local log');
     await page.route(/mesaje\.en-[^/]*\.js$/, (r) => r.abort());
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
     await expect(page.getByTestId('jurnal')).toHaveText('1 eroare în jurnalul local');
     // Butonul EN cere dicționarul din nou; nu vine, deci limba rămâne română (fără ecranul de eroare), cu încă o intrare.
-    await page.getByRole('button', { name: 'EN' }).click();
+    await page.getByRole('button', { name: 'EN', exact: true }).click();
     await expect(page.getByTestId('jurnal')).toHaveText('2 erori în jurnalul local');
     await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('CNC Vector Studio');
@@ -158,7 +158,7 @@ test.describe('dicționarul limbii, la cerere', () => {
     await page.route(/mesaje\.en-[^/]*\.js$/, async (r) => { await liber; await r.continue(); });
     await page.goto('/');
     await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
-    await page.getByRole('button', { name: 'EN' }).click();
+    await page.getByRole('button', { name: 'EN', exact: true }).click();
     await page.getByRole('button', { name: 'RO', exact: true }).click();
     const cerute = page.waitForResponse(/mesaje\.en-[^/]*\.js$/);
     elibereaza();

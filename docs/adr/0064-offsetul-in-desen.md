@@ -32,7 +32,8 @@ pornirea nu primește nimic.
 
 **5. Panoul** stă în extensia barei, lângă Copiere (butonul cu un pătrat într-un contur punctat): sensul (spre exterior / spre
 interior), distanța (0,01–1000 mm; rezoluția modelului e 0,01), motivul, câte forme deschise se sar, Aplică și Închide.
-Formularul se ține în browser. Cât panoul e deschis, contururile noi se văd pe pânză, punctat. Esc îl închide. Calculul (și
+Formularul se ține în browser. Cât panoul e deschis, contururile noi se văd pe pânză, punctat. Esc îl închide. Panoul (ca și
+cel al rețelei) rămâne în fereastră: dacă iese pe dreapta (o fereastră îngustă), se mută spre stânga cât iese. Calculul (și
 motorul, ~85 kB) se aduce abia la prima deschidere a panoului; dacă nu vine, panoul spune.
 
 ## Respinse
