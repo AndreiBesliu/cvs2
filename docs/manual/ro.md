@@ -396,7 +396,7 @@ după reîncărcare; **Începe din nou** le șterge, după o confirmare.
 | `Ctrl+K` | Caută o comandă |
 | `Home` | Arată toată foaia |
 | `T` | Arată traseul |
-| `V` `S` `N` `B` `R` `O` `E` `L` `P` | uneltele: Selecție, Transformare, Noduri, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon |
+| `V` `S` `N` `B` `R` `O` `E` `L` `P` | uneltele: Selecție, Transformare, Noduri, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon (tasta e scrisă și în colțul butonului) |
 | `Shift+H`, `Shift+V` | Oglindește orizontal, Oglindește vertical |
 | săgețile | mută selecția 1 mm (Shift: 10 mm, Alt: 0,1 mm); în vederea 3D, rotesc placa |
 | `Shift` + clic, `Shift` + tragere | adaugă la selecție (la clic, o formă aleasă deja iese din ea) |

@@ -21,6 +21,8 @@ export const deseneaza = (u: Unealta): u is UnealtaDesen => u !== 'selectie' && 
 
 /** Tasta fiecărei unelte (fără modificatori). */
 export const TASTE_UNELTE: Readonly<Record<string, Unealta>> = { v: 'selectie', s: 'transformare', n: 'noduri', b: 'pen', r: 'dreptunghi', o: 'cerc', e: 'elipsa', l: 'linie', p: 'poligon' };
+/** Eticheta tastei pe butonul uneltei (cererea owner-ului din 25.10), din aceeași hartă: nu poate arăta altă tastă. */
+export const TASTA_UNELTEI = Object.fromEntries(Object.entries(TASTE_UNELTE).map(([k, u]) => [u, k.toUpperCase()])) as Readonly<Record<Unealta, string>>;
 
 export interface FormaDesenata {
   readonly forma: FormaDoc;

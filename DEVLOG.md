@@ -2849,3 +2849,15 @@ loc: se publică tot ce era pe canal (buzunarul, documentul v11, ușa curentă, 
 <https://cncvectorstudio-test.firebaseapp.com/>: workerul PWA a oferit „Reîncarcă”; după el, versiunea nouă, proiectul vechi al
 browserului (v10, 2 forme) redeschis prin migrare (ușa curentă, apoi `incarcare` cu migrările, cum cere un document vechi),
 exportul cu „buzunar” între tăieturi, butonul Test, panoul la pasul 1 cu pașii de pe server (200); 0 erori în consolă.
+
+## 2026-10-25 — Tasta fiecărei unelte, pe butonul ei (Model: Claude Opus 5.5)
+
+**Prompt:** „poti sa continui cu altceva intre timp” (cererea notată pe 25.10: „vreau ca fiecare unealta sa aiba tasta de
+shortcut in coltul dreapta jos al butonului, langa iconita ei, fara sa o deranjeze cumva”).
+**Started:** 25.10, ~17:00. Felia **6.O↑**, fără agenți: o literă pe fiecare buton de unealtă, din aceeași hartă ca
+scurtăturile (`TASTA_UNELTEI` = inversul lui `TASTE_UNELTE`). Proba din Edge cere, pe fiecare buton: litera în sfertul
+dreapta-jos, cutia ei fără nicio atingere cu cutia iconiței, clicul pe literă ajunge la buton, iar tasta scrisă chiar alege
+unealta. **Treceri:** (1) la 9 px și 3 px de margini, cutia literei atingea cutia iconiței (16 px, de la 9 la 25 px) cu 1–2 px:
+măsurat pe fiecare buton, apoi 8 px, lipită de jos; privită la 2×, în ambele teme.
+**Completed:** 25.10 17:05. Nivelul rapid local: 7 224 de teste unitare (0 picate), determinismul (146 de fișiere identice),
+licențele; e2e 214 / 214 în Edge (1 nou); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,3 kB).

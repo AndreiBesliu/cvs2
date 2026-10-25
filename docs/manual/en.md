@@ -408,7 +408,7 @@ to any step. The results stay after a reload too; **Start over** deletes them, a
 | `Ctrl+K` | Search commands |
 | `Home` | Show the whole sheet |
 | `T` | Show toolpath |
-| `V` `S` `N` `B` `R` `O` `E` `L` `P` | the tools: Select, Transform, Nodes, Pen, Rectangle, Circle, Ellipse, Line, Polygon |
+| `V` `S` `N` `B` `R` `O` `E` `L` `P` | the tools: Select, Transform, Nodes, Pen, Rectangle, Circle, Ellipse, Line, Polygon (the key is also written in the button's corner) |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |
 | the arrow keys | move the selection 1 mm (Shift: 10 mm, Alt: 0.1 mm); in the 3D view, rotate the sheet |
 | `Shift` + click, `Shift` + drag | add to the selection (on a click, a shape already chosen leaves it) |

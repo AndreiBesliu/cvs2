@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { capatConstrans, formaDesenata } from '../../src/app/desenCalcul.ts';
+import { capatConstrans, formaDesenata, TASTA_UNELTEI, TASTE_UNELTE, UNELTE } from '../../src/app/desenCalcul.ts';
 import { TOLERANTA_IMPORT } from '../../src/geom/toleranta.ts';
 import { incarca } from '../../src/model/incarcare.ts';
 import { documentNou, operatieImplicita, type FormaDoc } from '../../src/model/document.ts';
@@ -78,4 +78,15 @@ test('fiecare formă desenată, pusă într-un document, trece de ușă', () => 
   };
   const r = incarca(JSON.parse(JSON.stringify(doc)));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
+});
+
+test('eticheta tastei pe buton (cererea owner-ului din 25.10): fiecare unealtă are o literă, exact inversul hărții tastelor', () => {
+  assert.deepEqual(Object.keys(TASTA_UNELTEI).sort(), [...UNELTE].sort());
+  for (const u of UNELTE) {
+    const k = TASTA_UNELTEI[u];
+    assert.match(k, /^[A-Z]$/, u);
+    assert.equal(TASTE_UNELTE[k.toLowerCase()], u, u);
+  }
+  assert.equal(TASTA_UNELTEI.dreptunghi, 'R');
+  assert.equal(TASTA_UNELTEI.pen, 'B');
 });

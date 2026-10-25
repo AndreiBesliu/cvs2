@@ -100,6 +100,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Testul pas cu pas, în aplicație (ADR 0072)** gata pe 25.10: butonul Test din extensie (în afara instanței live), pașii în
   `docs/tutorial/unelte-desen.md` (generați în `dist/tutorial/`), poza planșei compusă local, raportul HTML descărcat; totul în
   browser (IndexedDB `cncvs2-test`); bucata `TestPasCuPas` e doar online, cu plafonul ei (12 kB), în afara celor 300 kB.
+  **Tasta fiecărei unelte pe butonul ei** gata pe 25.10 (cererea owner-ului): litera în colțul dreapta-jos (`TASTA_UNELTEI`, din
+  aceeași hartă ca scurtăturile).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

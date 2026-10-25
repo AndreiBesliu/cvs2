@@ -15,7 +15,7 @@ import {
   transformareManer, transformareManerLipita, type LipirePunct, type Maner, type TransformareManer,
 } from './editareCalcul.ts';
 import { instantaLa } from '../model/alegere.ts';
-import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTE_UNELTE, UNELTE, type FormaDesenata, type Unealta, type UnealtaDesen } from './desenCalcul.ts';
+import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTA_UNELTEI, TASTE_UNELTE, UNELTE, type FormaDesenata, type Unealta, type UnealtaDesen } from './desenCalcul.ts';
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
 import { motivCopiereRetea, motivDesen } from '../ui/actiuniDocumentCalcul.ts';
 import type { FormaNoua } from '../ui/actiuniDocument.ts';
@@ -812,6 +812,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                 <button key={u} type="button" className="unealta aliniaza" aria-pressed={unealta === u} title={titlu} aria-label={titlu} data-unealta={u}
                   disabled={p.doarCitire && u !== 'selectie'} onClick={() => { setUnealta(u); setVedere3d(false); }}>
                   <IconaUnealta u={u} />
+                  <span className="tasta-unealta" aria-hidden="true">{TASTA_UNELTEI[u]}</span>
                 </button>
               );
             })}

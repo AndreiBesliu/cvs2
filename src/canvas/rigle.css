@@ -412,6 +412,23 @@
   stroke-dasharray: 6 3;
 }
 
+/* Tasta uneltei (cererea owner-ului din 25.10): în colțul dreapta-jos al butonului, lângă iconiță, fără s-o atingă (iconița de
+ * 16 px stă în centrul butonului de 34 px); nu prinde clicul. */
+.bara-editare .unealta {
+  position: relative;
+}
+
+.tasta-unealta {
+  position: absolute;
+  right: 2px;
+  bottom: 0;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--l-camp);
+  pointer-events: none;
+}
+
 .bara-editare .unealta[aria-pressed='true'] {
   background: var(--s-ales);
   box-shadow: inset 0 0 0 1px var(--a);

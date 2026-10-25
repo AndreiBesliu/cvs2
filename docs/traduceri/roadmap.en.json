@@ -349,6 +349,10 @@
       "ro": "regresia dintr-un cont plătit (test) și dintr-unul cu proba expirată",
       "en": "regression from a paid account (test) and from one with an expired trial"
     },
+    "34ffe5f429051146": {
+      "ro": "**Tasta fiecărei unelte, pe butonul ei** (cererea owner-ului: „vreau ca fiecare unealta sa aiba tasta de shortcut in coltul dreapta jos al butonului, langa iconita ei, fara sa o deranjeze cumva”). O literă mică (8 px, culoarea textului slab) în colțul dreapta-jos al fiecărui buton de unealtă, sub iconiță, fără s-o atingă și fără să prindă clicul; litera vine din aceeași hartă ca scurtăturile, deci nu poate arăta altă tastă. Manualul („Scurtăturile”) o pomenește. **Treceri:** (1) prima așezare (9 px, la 3 px de margini) atingea chenarul iconiței cu 1–2 px: măsurat, apoi coborâtă și micșorată, până când nicio literă nu mai atinge iconița.",
+      "en": "**Each tool’s key, on its button** (the owner’s request: “I want each tool to have its shortcut key in the bottom right corner of the button, next to its icon, without disturbing it in any way”). A small letter (8 px, in the muted text colour) in the bottom right corner of each tool button, below the icon, not touching it and not catching the click; the letter comes from the same map as the shortcuts, so it cannot show another key. The manual (“Keyboard shortcuts”) mentions it. **Passes:** (1) the first placement (9 px, 3 px from the edges) touched the icon’s box by 1–2 px: measured, then lowered and made smaller, until no letter touches the icon."
+    },
     "35393447b253fd31": {
       "ro": "**Un schelet care taie** (§5.3)",
       "en": "**A skeleton that cuts** (§5.3)"
@@ -1228,6 +1232,10 @@
     "d4ae1d95c08d4f07": {
       "ro": "da; **proba închisă pornește în săptămâna 15**",
       "en": "yes; **the closed trial starts in week 15**"
+    },
+    "d4d00339903ec776": {
+      "ro": "Tasta fiecărei unelte, pe butonul ei",
+      "en": "Each tool’s key, on its button"
     },
     "d51c2d881507ba36": {
       "ro": "regresia pe live, dintr-un cont în probă",
