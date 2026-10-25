@@ -249,7 +249,7 @@ function Cont({ con, instanta, build }: { readonly con: Conexiune; readonly inst
         {aratata === 'diagnoza' ? <FilaDiagnoza con={con} instanta={instanta} build={build} rol={stare.numeRol} /> : null}
         {aratata === 'roadmap' ? <FilaRoadmap aducator={aducator} deschide={deschide} /> : null}
         {aratata === 'documentatie' ? <FilaDocumentatie aducator={aducator} cale={adresa.document} ancora={adresa.ancora} deschide={deschide} /> : null}
-        {aratata === 'personal' ? <FilaPersonal con={con} eu={stare.user.uid} /> : null}
+        {aratata === 'personal' ? <FilaPersonal con={con} eu={stare.user.uid} emailEu={stare.user.email ?? null} /> : null}
         {aratata === 'cont' ? <FilaCont con={con} user={stare.user} /> : null}
       </section>
     </Cadru>

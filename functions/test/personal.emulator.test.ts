@@ -105,9 +105,13 @@ test('invitația: o singură pe adresă (a doua o înlocuiește), 7 zile; nu pen
   assert.equal(r.expiraLa, T0.getTime() + 1000 + 7 * 86_400_000);
   const i = (await db.doc(`invitatiiPersonal/${r.id ?? ''}`).get()).data();
   assert.deepEqual([i?.['email'], i?.['rol'], i?.['creatDe']], ['ana@exemplu.ro', SUPORT, 'own']);
-  await fa('own', { actiune: 'invita', email: 'ana@exemplu.ro', rol: 'owner' });
+  // ADR 0071: owner nu se dă din /admin (nici prin invitație, nici prin cont creat), iar refuzul nu scrie nimic.
+  assert.equal(await cod(fa('own', { actiune: 'invita', email: 'ana@exemplu.ro', rol: 'owner' })), 'failed-precondition');
+  assert.equal(await cod(fa('own', { actiune: 'creeaza-cont', email: 'nou@exemplu.ro', rol: 'owner' })), 'failed-precondition');
+  assert.equal((await auth.listUsers()).users.length, 0);
+  await fa('own', { actiune: 'invita', email: 'ana@exemplu.ro', rol: SUPORT });
   assert.equal((await db.collection('invitatiiPersonal').get()).size, 1);
-  assert.equal((await db.doc(`invitatiiPersonal/${r.id ?? ''}`).get()).get('rol'), 'owner');
+  assert.equal((await db.doc(`invitatiiPersonal/${r.id ?? ''}`).get()).get('rol'), SUPORT);
   assert.equal(await cod(fa('own', { actiune: 'invita', email: 'sup@exemplu.ro', rol: SUPORT })), 'already-exists');
   assert.equal(await cod(fa('own', { actiune: 'invita', email: 'b@exemplu.ro', rol: 'RNuExista00000000000' })), 'failed-precondition');
   assert.equal(await cod(fa('own', { actiune: 'invita', email: 'b@exemplu.ro', rol: 'admin' })), 'invalid-argument');
@@ -176,22 +180,29 @@ test('contul creat: dacă scrierea în personal cade, contul din Auth se șterge
   assert.equal((await db.collection('staff').where('email', '==', 'ion@exemplu.ro').get()).size, 0);
 });
 
-test('rolul și scoaterea: owner-ul schimbă și scoate; personalul nu rămâne fără owner; cu doi owneri, unul poate pleca', async () => {
+test('rolul și scoaterea: owner-ul schimbă și scoate personalul; un owner e fix (ADR 0071), chiar cu doi owneri', async () => {
   assert.deepEqual(await fa('own', { actiune: 'schimba-rolul', uid: 'sup', rol: SUPORT }), { ok: true, schimbat: false });
+  // Owner-ul nu se scoate și nu-și schimbă rolul, nici singur (nici măcar „același rol” nu trece drept schimbare).
   assert.equal(await cod(fa('own', { actiune: 'schimba-rolul', uid: 'own', rol: SUPORT })), 'failed-precondition');
+  assert.equal(await cod(fa('own', { actiune: 'schimba-rolul', uid: 'own', rol: 'owner' })), 'failed-precondition');
   assert.equal(await cod(fa('own', { actiune: 'scoate', uid: 'own' })), 'failed-precondition');
   assert.equal(await cod(fa('own', { actiune: 'schimba-rolul', uid: 'sup', rol: 'stapan' })), 'invalid-argument');
   assert.equal(await cod(fa('own', { actiune: 'schimba-rolul', uid: 'nimeni', rol: SUPORT })), 'not-found');
   assert.equal(await cod(fa('own', { actiune: 'schimba-rolul', uid: 'a/b', rol: SUPORT })), 'invalid-argument');
-  await fa('own', { actiune: 'schimba-rolul', uid: 'sup', rol: 'owner' });
-  assert.equal((await db.doc('staff/sup').get()).get('rol'), 'owner');
-  // Doi owneri: primul se poate retrage, iar al doilea rămâne.
-  await fa('own', { actiune: 'scoate', uid: 'own' });
-  assert.equal((await db.doc('staff/own').get()).exists, false);
-  assert.equal(await cod(fa('sup', { actiune: 'scoate', uid: 'sup' })), 'failed-precondition');
+  // Owner nu se dă din /admin.
+  assert.equal(await cod(fa('own', { actiune: 'schimba-rolul', uid: 'sup', rol: 'owner' })), 'failed-precondition');
+  // Un al doilea owner, pus din consolă: nici el nu-l poate scoate sau retrograda pe primul, nici primul pe el.
+  await db.doc('staff/own2').set({ rol: 'owner' });
+  assert.equal(await cod(fa('own2', { actiune: 'scoate', uid: 'own' })), 'failed-precondition');
+  assert.equal(await cod(fa('own2', { actiune: 'schimba-rolul', uid: 'own', rol: SUPORT })), 'failed-precondition');
+  assert.equal(await cod(fa('own', { actiune: 'scoate', uid: 'own2' })), 'failed-precondition');
+  assert.equal((await db.doc('staff/own').get()).get('rol'), 'owner');
+  assert.equal((await db.doc('staff/own2').get()).get('rol'), 'owner');
+  // Restul personalului se scoate, cu auditul; refuzurile n-au scris nimic.
+  await fa('own', { actiune: 'scoate', uid: 'sup' });
+  assert.equal((await db.doc('staff/sup').get()).exists, false);
   assert.deepEqual((await audit()).map((x) => [x['actiune'], x['inainte'], x['dupa']]), [
-    ['personal.schimba-rolul', { rol: SUPORT }, { rol: 'owner' }],
-    ['personal.scoate', { rol: 'owner', email: null }, null],
+    ['personal.scoate', { rol: SUPORT, email: 'sup@exemplu.ro' }, null],
   ]);
 });
 

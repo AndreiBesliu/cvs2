@@ -199,6 +199,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.10.2026: **owner-ul e fix în /admin** („in admin, contul meu nu ar trebui sa poata fi removed. nu din admin. si nici rolul nu
+  ar trebui sa poata fi schimbat”, ADR 0071): nu se scoate și nu-și schimbă rolul de acolo, oricine ar cere-o; rolul `owner` se dă
+  doar din consolă (alegerea asistentului, ca un owner dat din `/admin` să nu rămână fără cale de întoarcere).
 - 25.10.2026: **testul owner-ului devine un tutorial în aplicație, cu snapshot-ul planșei** („vreau ca testarea asta sa fie ca
   un tutorial direct in app. vreau si un buton cu care sa pot face snapshot la plansa. aceasta imagine se ataseaza automat la
   raportul pe care ti-l voi da la final. deci nu ar trebui sa fie incarcata in server. dar, termina ce task ai inceput acum”):

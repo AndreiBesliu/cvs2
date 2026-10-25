@@ -26,7 +26,7 @@ type Lucru =
   | { readonly faza: 'gata'; readonly mesaj: string; readonly link?: string | null }
   | { readonly faza: 'eroare'; readonly motiv: string };
 
-export function FilaPersonal({ con, eu }: { readonly con: Conexiune; readonly eu: string }): ReactElement {
+export function FilaPersonal({ con, eu, emailEu }: { readonly con: Conexiune; readonly eu: string; readonly emailEu: string | null }): ReactElement {
   const limba = useLimba();
   const [date, setDate] = useState<{ readonly ok: true; readonly d: Date_ } | { readonly ok: false; readonly motiv: string } | null>(null);
   const [rev, setRev] = useState(0);
@@ -72,7 +72,7 @@ export function FilaPersonal({ con, eu }: { readonly con: Conexiune; readonly eu
     <div className="pers">
       <Stare lucru={lucru} />
       <Adauga roluri={roluri} ocupat={ocupat} fa={fa} limba={limba} />
-      <Oameni oameni={oameni} roluri={roluri} eu={eu} ocupat={ocupat} fa={fa} limba={limba} />
+      <Oameni oameni={oameni} roluri={roluri} eu={eu} emailEu={emailEu} ocupat={ocupat} fa={fa} limba={limba} />
       <Invitatii invitatii={invitatii} roluri={roluri} ocupat={ocupat} fa={fa} limba={limba} />
       <Roluri roluri={roluri} oameni={oameni} invitatii={invitatii} ocupat={ocupat} fa={fa} />
     </div>
@@ -104,19 +104,14 @@ function Stare({ lucru }: { readonly lucru: Lucru }): ReactElement | null {
   );
 }
 
-/** Opțiunile de rol: owner-ul, apoi rolurile custom după nume. */
+/** Opțiunile de rol: rolurile custom după nume. `owner` se dă doar din consolă (ADR 0071). */
 function OptiuniRol({ roluri }: { readonly roluri: readonly RolCustom[] }): ReactElement {
-  return (
-    <>
-      {roluri.map((r) => <option key={r.id} value={r.id}>{r.nume}</option>)}
-      <option value={OWNER}>{t('admin.pers.rol-owner')}</option>
-    </>
-  );
+  return <>{roluri.map((r) => <option key={r.id} value={r.id}>{r.nume}</option>)}</>;
 }
 
 function Adauga({ roluri, ocupat, fa, limba }: { readonly roluri: readonly RolCustom[]; readonly ocupat: boolean; readonly fa: Fa; readonly limba: string }): ReactElement {
   const [email, setEmail] = useState('');
-  // Fără rol preselectat: un clic grăbit nu face pe nimeni owner (singurul rol când nu există încă roluri custom).
+  // Fără rol preselectat: un clic grăbit nu dă cuiva un rol pe care nu l-a ales.
   const [rol, setRol] = useState('');
   const trimite = (actiune: 'invita' | 'creeaza-cont') => (e?: FormEvent): void => {
     e?.preventDefault();
@@ -158,8 +153,9 @@ function Adauga({ roluri, ocupat, fa, limba }: { readonly roluri: readonly RolCu
 
 const SURSE = { consola: 'admin.pers.sursa.consola', invitatie: 'admin.pers.sursa.invitatie', 'cont-creat': 'admin.pers.sursa.cont-creat' } as const;
 
-function Oameni({ oameni, roluri, eu, ocupat, fa, limba }: {
-  readonly oameni: readonly Om[]; readonly roluri: readonly RolCustom[]; readonly eu: string; readonly ocupat: boolean; readonly fa: Fa; readonly limba: string;
+function Oameni({ oameni, roluri, eu, emailEu, ocupat, fa, limba }: {
+  readonly oameni: readonly Om[]; readonly roluri: readonly RolCustom[]; readonly eu: string; readonly emailEu: string | null; readonly ocupat: boolean;
+  readonly fa: Fa; readonly limba: string;
 }): ReactElement {
   const [deScos, setDeScos] = useState<string | null>(null);
   return (
@@ -167,8 +163,10 @@ function Oameni({ oameni, roluri, eu, ocupat, fa, limba }: {
       <h2 id="pers-oameni">{t('admin.pers.oameni')} <span className="admin-slab">{oameni.length}</span></h2>
       <ul className="pers-lista">
         {oameni.map((o) => {
-          const cine = o.email ?? o.uid;
+          const cine = o.email ?? (o.uid === eu ? emailEu : null) ?? o.uid;
           const nume = numeRol(o.rol, roluri);
+          // ADR 0071: owner-ul e fix aici (nici scos, nici alt rol); se schimbă doar din consolă.
+          const fix = o.rol === OWNER;
           return (
             <li key={o.uid} data-om={o.email ?? o.uid}>
               <div className="pers-rand">
@@ -176,21 +174,28 @@ function Oameni({ oameni, roluri, eu, ocupat, fa, limba }: {
                 <span className="admin-slab">{t(SURSE[o.sursa])} · {dataScurta(o.adaugatLa, limba)}</span>
               </div>
               <div className="admin-randuri">
-                <label className="pers-rol">
-                  <span className="admin-slab">{t('admin.pers.rol')}</span>
-                  <select value={nume === null ? '' : (o.rol ?? '')} disabled={ocupat} aria-label={t('admin.pers.rolul-lui', { cine })} data-personal="rol"
-                    onChange={(e) => { fa({ actiune: 'schimba-rolul', uid: o.uid, rol: e.target.value }, () => t('admin.pers.rol-schimbat', { cine })); }}>
-                    {nume === null ? <option value="" disabled>{t('admin.pers.rol-necunoscut', { rol: o.rol ?? '—' })}</option> : null}
-                    <OptiuniRol roluri={roluri} />
-                  </select>
-                </label>
+                {fix ? (
+                  <span className="pers-rol" data-personal="owner-fix" title={t('admin.pers.owner-fix')}>
+                    <span className="admin-slab">{t('admin.pers.rol')}</span> {t('admin.pers.rol-owner')}
+                    <span className="admin-slab"> · {t('admin.pers.owner-fix')}</span>
+                  </span>
+                ) : (
+                  <label className="pers-rol">
+                    <span className="admin-slab">{t('admin.pers.rol')}</span>
+                    <select value={nume === null ? '' : (o.rol ?? '')} disabled={ocupat} aria-label={t('admin.pers.rolul-lui', { cine })} data-personal="rol"
+                      onChange={(e) => { fa({ actiune: 'schimba-rolul', uid: o.uid, rol: e.target.value }, () => t('admin.pers.rol-schimbat', { cine })); }}>
+                      {nume === null ? <option value="" disabled>{t('admin.pers.rol-necunoscut', { rol: o.rol ?? '—' })}</option> : null}
+                      <OptiuniRol roluri={roluri} />
+                    </select>
+                  </label>
+                )}
                 {o.sursa === 'cont-creat' ? (
                   <button type="button" disabled={ocupat} data-personal="link-nou"
                     onClick={() => { fa({ actiune: 'link-parola', uid: o.uid }, () => t('admin.pers.link-nou-gata', { cine })); }}>
                     {t('admin.pers.link-nou')}
                   </button>
                 ) : null}
-                {deScos === o.uid ? (
+                {fix ? null : deScos === o.uid ? (
                   <>
                     <button type="button" className="pers-pericol" disabled={ocupat} data-personal="scoate-confirma"
                       onClick={() => { setDeScos(null); fa({ actiune: 'scoate', uid: o.uid }, () => t('admin.pers.scos', { cine })); }}>

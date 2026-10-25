@@ -225,6 +225,7 @@ export const roAdmin = {
   'admin.pers.sursa.cont-creat': 'cont creat aici',
   'admin.pers.oameni': 'Oamenii',
   'admin.pers.tu': 'tu',
+  'admin.pers.owner-fix': 'fix: nu se scoate și nu-și schimbă rolul de aici, doar din consolă',
   'admin.pers.rolul-lui': 'Rolul lui {cine}',
   'admin.pers.rol-schimbat': 'Rolul lui {cine} e schimbat.',
   'admin.pers.rol-necunoscut': 'rol necunoscut ({rol})',

@@ -130,17 +130,34 @@ test('owner-ul: un rol din bife, o invitație, un cont cu parolă; omul își pu
 test('invitația: omul intră cu Google pe adresa invitată și ajunge singur în personal, cu rolul ei', async ({ page }) => {
   await intraCaOwner(page);
   await page.locator('[data-fila="personal"]').click();
+  // ADR 0071: rândul owner-ului e fix (nici rol de ales, nici Scoate), iar owner nu e printre rolurile de dat.
+  const own = page.locator('[data-om]').first();
+  await expect(own.locator('[data-personal="owner-fix"]')).toContainText('owner');
+  await expect(own.locator('[data-personal="rol"], [data-personal="scoate"]')).toHaveCount(0);
+  await expect(page.locator('[data-personal="rol-nou"] option', { hasText: 'owner' })).toHaveCount(0);
+  // Un rol care vede personalul (fila lui), apoi invitația cu el.
+  await page.locator('[data-personal="rol-nou-buton"]').click();
+  await page.locator('[data-personal="nume-rol"]').fill('Vede personalul');
+  await page.locator('[data-permisiune="erori.citeste"]').check();
+  await page.locator('[data-personal="salveaza-rol"]').click();
+  await expect(page.locator('[data-personal="gata"]')).toContainText('Vede personalul', LENT);
   await page.locator('[data-personal="email"]').fill('dana@exemplu.ro');
-  await page.locator('[data-personal="rol-nou"]').selectOption({ label: 'owner (tot, inclusiv personalul)' });
+  await page.locator('[data-personal="rol-nou"]').selectOption({ label: 'Vede personalul' });
   await page.locator('[data-personal="invita"]').click();
   await expect(page.locator('[data-invitatie="dana@exemplu.ro"]')).toBeVisible(LENT);
   await iesi(page);
 
   await intraCuGoogle(page, 'dana@exemplu.ro');
-  await expect(page.locator('[data-admin="cont"]')).toContainText('dana@exemplu.ro · owner', LENT);
+  await expect(page.locator('[data-admin="cont"]')).toContainText('dana@exemplu.ro · Vede personalul', LENT);
+  await iesi(page);
+  await intraCaOwner(page);
   await page.locator('[data-fila="personal"]').click();
-  await expect(page.locator('[data-om]')).toHaveCount(2);
+  // `intraCaOwner` face de fiecare dată un cont nou: doi owneri (amândoi ficși, fără Scoate) și dana.
+  await expect(page.locator('[data-om]')).toHaveCount(3, LENT);
+  await expect(page.locator('[data-personal="owner-fix"]')).toHaveCount(2);
+  await expect(page.locator('[data-personal="scoate"]')).toHaveCount(1);
   await expect(page.locator('[data-om="dana@exemplu.ro"]')).toContainText('prin invitație');
+  await expect(page.locator('[data-om="dana@exemplu.ro"] [data-personal="scoate"]')).toBeVisible();
   await expect(page.locator('[data-invitatie]')).toHaveCount(0);
 
   // Un om din afară, fără invitație: „nu ești în personal”, fără eroare.

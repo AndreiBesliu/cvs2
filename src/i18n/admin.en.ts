@@ -226,6 +226,7 @@ export const enAdmin = {
   'admin.pers.sursa.cont-creat': 'account created here',
   'admin.pers.oameni': 'People',
   'admin.pers.tu': 'you',
+  'admin.pers.owner-fix': 'fixed: not removed and its role not changed from here, only from the console',
   'admin.pers.rolul-lui': 'Role of {cine}',
   'admin.pers.rol-schimbat': 'The role of {cine} is changed.',
   'admin.pers.rol-necunoscut': 'unknown role ({rol})',

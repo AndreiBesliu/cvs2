@@ -12,7 +12,8 @@ import { drepturiIn } from './drepturi.ts';
 /**
  * Administrarea personalului (ADR 0049): rolurile custom, invitațiile pe e-mail, conturile create de owner, schimbarea
  * rolului și scoaterea din personal. Doar owner-ul, citit în tranzacția fiecărei acțiuni; fiecare schimbare are rândul
- * ei de audit în aceeași tranzacție. Personalul nu rămâne niciodată fără owner.
+ * ei de audit în aceeași tranzacție. Owner-ul e fix în /admin (ADR 0071, cererea owner-ului): nu se scoate, nu i se
+ * schimbă rolul și nu se dă de aici (doar din consolă), deci personalul nu rămâne niciodată fără owner.
  */
 
 /** Ce folosește serverul din Firebase Auth (Admin SDK), ca testele să poată numi exact ce se cere. */
@@ -45,15 +46,14 @@ async function cereOwner(tx: Transaction, db: Firestore, uid: string): Promise<v
   if (!(await drepturiIn(tx, db, uid)).owner) throw new HttpsError('permission-denied', 'doar owner-ul administrează personalul');
 }
 
-/** Rolul cerut există: `owner` sau un rol custom din `roluri`. */
+/** Rolul cerut se poate da din /admin: un rol custom din `roluri`. `owner` se dă doar din consolă (ADR 0071). */
 async function cereRol(tx: Transaction, db: Firestore, rol: string): Promise<void> {
-  if (rol === OWNER) return;
+  if (rol === OWNER) throw new HttpsError('failed-precondition', 'rolul owner se dă doar din consolă');
   if (!(await tx.get(colectie(db, 'roluri').doc(rol))).exists) throw new HttpsError('failed-precondition', 'rolul nu există');
 }
 
-async function owneri(tx: Transaction, db: Firestore): Promise<number> {
-  return (await tx.get(colectie(db, 'staff').where('rol', '==', OWNER))).size;
-}
+/** ADR 0071: un owner nu se scoate și nu-și schimbă rolul din /admin, oricine ar cere-o (și el însuși). */
+const OWNER_FIX = 'owner-ul nu se scoate și nu-și schimbă rolul din /admin (doar din consolă)';
 
 const egale = (a: unknown, b: readonly string[]): boolean => Array.isArray(a) && a.length === b.length && a.every((x, k) => x === b[k]);
 
@@ -233,8 +233,8 @@ async function schimbaRolul(db: Firestore, uid: string, d: Record<string, unknow
     const s = await tx.get(ref);
     if (!s.exists) throw new HttpsError('not-found', 'omul nu e în personal');
     const vechi: unknown = s.get('rol');
+    if (vechi === OWNER) throw new HttpsError('failed-precondition', OWNER_FIX);
     if (vechi === rol) return { ok: true, schimbat: false };
-    if (vechi === OWNER && (await owneri(tx, db)) <= 1) throw new HttpsError('failed-precondition', 'personalul nu rămâne fără owner');
     const cand = Timestamp.fromDate(acum);
     tx.update(ref, { rol, modificatLa: cand, modificatDe: uid });
     scrieAudit(tx, db, { cand, cine: uid, rol: OWNER, actiune: 'personal.schimba-rolul', tinta: `staff/${tinta}`, inainte: { rol: vechi ?? null }, dupa: { rol } });
@@ -251,7 +251,7 @@ async function scoate(db: Firestore, uid: string, d: Record<string, unknown>, ac
     const s = await tx.get(ref);
     if (!s.exists) throw new HttpsError('not-found', 'omul nu e în personal');
     const vechi: unknown = s.get('rol');
-    if (vechi === OWNER && (await owneri(tx, db)) <= 1) throw new HttpsError('failed-precondition', 'personalul nu rămâne fără owner');
+    if (vechi === OWNER) throw new HttpsError('failed-precondition', OWNER_FIX);
     tx.delete(ref);
     scrieAudit(tx, db, {
       cand: Timestamp.fromDate(acum), cine: uid, rol: OWNER, actiune: 'personal.scoate', tinta: `staff/${tinta}`,

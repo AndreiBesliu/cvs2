@@ -2793,3 +2793,16 @@ Export (descărcarea oprită în pagină, doar pentru verificare): 86 de linii, 
 18,0 cm³ (pe hârtie: (6 000 − 4·(9 − 9π/4))·3 = 17 977 mm³); după reîncărcare, proiectul v11 se deschide prin ușa curentă
 (`usaCurenta` + `schemaDocument` la 186 ms, înaintea primei randări; `incarcare` vine abia la ~1,2 s, cu bucățile aduse în gol),
 rândul e tot buzunar; 0 erori în consolă.
+
+## 2026-10-25 — Owner-ul fix în /admin (Model: Claude Opus 5.5)
+
+**Prompt:** „in admin, contul meu nu ar trebui sa poata fi removed. nu din admin. si nici rolul nu ar trebui sa poata fi schimbat”
+(cu captura filei Personal: rândul lui, cu rolul de ales și „Remove”).
+**Started:** 25.10, ~15:00. Felia **14.A↑b**, fără agenți, după buzunar. Serverul refuza doar ultimul owner; cu un al doilea
+owner (dat din /admin), oricare îl putea scoate pe celălalt. ADR 0071: un owner nu se scoate și nu-și schimbă rolul din /admin,
+oricine ar cere-o; rolul owner se dă doar din consolă (alegerea mea, ca un owner dat de aici să nu rămână fără cale de
+întoarcere); rândul owner-ului e doar de citit și arată adresa contului logat (înainte, uid-ul).
+**Treceri:** (1) callable-ul, pagina, probele pe emulatoare; e2e-ul invitației cerea un owner (trecut pe un rol custom) și
+număra doi oameni, deși  face de fiecare dată un cont nou (trei: doi owneri ficși și invitata).
+**Completed:** 25.10 15:21. Emulatoarele: 36 de probe ale funcțiilor, 13 e2e; nivelul rapid local cu codurile păstrate: 7 218
+teste unitare (0 picate, 8 sărite), determinismul (142 de fișiere identice), /admin 189,8 / 200 kB.
