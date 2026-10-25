@@ -2803,6 +2803,10 @@ owner (dat din /admin), oricare îl putea scoate pe celălalt. ADR 0071: un owne
 oricine ar cere-o; rolul owner se dă doar din consolă (alegerea mea, ca un owner dat de aici să nu rămână fără cale de
 întoarcere); rândul owner-ului e doar de citit și arată adresa contului logat (înainte, uid-ul).
 **Treceri:** (1) callable-ul, pagina, probele pe emulatoare; e2e-ul invitației cerea un owner (trecut pe un rol custom) și
-număra doi oameni, deși  face de fiecare dată un cont nou (trei: doi owneri ficși și invitata).
+număra doi oameni, deși `intraCaOwner` face de fiecare dată un cont nou (trei: doi owneri ficși și invitata).
 **Completed:** 25.10 15:21. Emulatoarele: 36 de probe ale funcțiilor, 13 e2e; nivelul rapid local cu codurile păstrate: 7 218
 teste unitare (0 picate, 8 sărite), determinismul (142 de fișiere identice), /admin 189,8 / 200 kB.
+**Publicat:** 25.10, după rapid-ul verde pe CI (4 / 4 felii) pe `d367a1d`: serverul pe test (`npm run publica:functii`: cele 6
+funcții `cncvs2`, regulile neschimbate, indecșii; amprenta în `meta/deployment`), deci refuzul e activ de acum și pe adresa
+principală; pagina, pe canalul buzunar (<https://cncvectorstudio-test--buzunar-x95ick77.web.app/admin>: se deschide la intrare,
+0 erori; intrarea ca owner nu se poate verifica de aici). Pe adresa principală de test, pagina vine după testul owner-ului.
