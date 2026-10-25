@@ -2831,3 +2831,8 @@ două probe aduse la zi: copia arborelui documentației cere și `docs/tutorial/
 determinismul (146 de fișiere identice), licențele; e2e 213 / 213 în Edge (2 noi; manualul are acum 18 capitole);
 emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea 95,3 kB, cu ușa 98,6 / 100; totalul 295,3 / 300; testul pas cu pas
 5,8 / 12 kB, doar online (în afara precache-ului: bucata, stilul și pașii).
+**Publicat pe canal:** 25.10, după rapid-ul verde pe CI (4 / 4 felii) pe `c0d2806`: <https://cncvectorstudio-test--buzunar-x95ick77.web.app>.
+Verificat în browserul aplicației: workerul PWA a servit întâi versiunea dinainte, apoi a oferit „Reîncarcă”; după el, butonul
+Test (în fereastra de 1 280 px; în panoul îngust al browserului, de 595 px, extensia barei iese din ecran, cu „?” cu tot),
+panoul cu pasul 1, pașii aduși din `tutorial/unelte-desen.json` (doar online), OK apăsat, poza salvată, focusul înapoi
+pe pagină; 0 erori în consolă. Raportul (descărcarea) e probat în e2e, nu aici.
