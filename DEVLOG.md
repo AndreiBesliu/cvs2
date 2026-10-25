@@ -2660,3 +2660,7 @@ cutiei, manualul; probele pe hârtie și în lume (instanță rotită cu 30°, o
 licențele verzi. E2e 201 / 203 în Edge, iar cele 2 picate (`import`, `rezumat`) au căzut pe `EBUSY` la citirea fișierului
 descărcat din `test-results` (Drive-ul îl ținea): rerulate de 3 ori, 48 / 48; cele 2 noi, verzi. Emulatoarele: 36 de probe ale
 funcțiilor, 13 e2e. Pornirea neschimbată (95,2 kB; cu ușa 99,9 / 100); totalul 285,9 → 287,3 / 300 kB.
+**Publicat pe test:** 25.10, workflow-ul `publica` pe `a5e9d87` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
+instanța de test (după oferta de actualizare a PWA-ului): dreptunghiul 100 × 60 din (20, 20), Înclină cu 45° pe orizontală,
+previzualizarea, fără motiv; rezultatul, calea 160 × 60 cu 4 segmente, la X −10, Y 20 (paralelogramul de pe hârtie); anularea
+readuce dreptunghiul; panoul în fereastră (399–703 din 711 px); 0 erori.
