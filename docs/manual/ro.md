@@ -232,13 +232,17 @@ unealta [Pen](#pen). Nodul ales își arată mânerele; butoanele din bara de su
   curbă) și îl scoate pe celălalt; încă un clic trece curba pe cealaltă parte.
 
 **Trage un mâner** ca să schimbi curba; pe un nod neted, mânerul de pe cealaltă parte se rotește odată cu el (își păstrează
-lungimea). Cu `Alt`, mânerele se despart (nodul rămâne curbă pe ambele părți, dar cu un colț). Lângă un arc (colțurile
-rotunjite, cercul), nodul nu primește mâner: arcul ar trebui aproximat, iar sfatul spune asta; Colț merge oricând. Capătul unei
-căi deschise are o singură parte.
+lungimea). Cu `Alt`, mânerele se despart (nodul rămâne curbă pe ambele părți, dar cu un colț). Capătul unei căi deschise are o
+singură parte.
 
-Nodurile se editează pe o singură formă, a cărei piesă are un singur contur și nu e folosită și de alte forme (o piesă
-importată cu mai multe contururi, deocamdată, nu). Un dreptunghi sau un cerc devine la prima schimbare o **cale** cu același
-contur (colțurile rotunjite rămân arce), iar câmpurile lui din panou nu mai apar. Fiecare schimbare se poate anula cu `Ctrl+Z`.
+**Orice nod, din orice unealtă.** Un nod de pe un arc (cercul, colțurile rotunjite, rezultatele offsetului și ale booleanului) e
+și el o curbă (rotund), iar mânerele lui sunt tangentele arcului. Când îi schimbi tipul sau îi tragi un mâner, arcul vecin
+devine întâi curbe ale aceluiași cerc, cu noduri noi între ele (un semicerc de rază 15 devine 3 curbe), abătute de cerc cu cel
+mult 0,001 mm, cât toleranța de tăiere: forma nu se schimbă până n-o schimbi tu.
+
+Nodurile se editează pe o singură formă, a cărei piesă nu e folosită și de alte forme. La o piesă cu mai multe contururi (un
+import, un boolean cu găuri), fiecare contur își arată nodurile și se editează separat. Un dreptunghi sau un cerc devine la
+prima schimbare o **cale** cu același contur (colțurile rotunjite rămân arce), iar câmpurile lui din panou nu mai apar. Fiecare schimbare se poate anula cu `Ctrl+Z`.
 Jos, un sfat spune ce se poate face sau de ce forma aleasă nu se poate edita.
 
 ## Alinierea

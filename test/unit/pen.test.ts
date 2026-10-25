@@ -18,6 +18,12 @@ const patrat: FormaCale = { tip: 'cale', inchis: true, varfuri: [{ p: P(0, 0), s
 const aproape = (a: { x: number; y: number } | null, b: { x: number; y: number }, mesaj: string): void => {
   assert.ok(a && Math.abs(a.x - b.x) < 1e-9 && Math.abs(a.y - b.y) < 1e-9, `${mesaj}: ${JSON.stringify(a)} ≠ ${JSON.stringify(b)}`);
 };
+/** Tipul cerut, reușit (calea nouă); nodul își păstrează indexul pe căile fără arce. */
+const tip = (c: FormaCale, i: number, t: Parameters<typeof schimbaTipNod>[2]): FormaCale => {
+  const r = schimbaTipNod(c, i, t);
+  assert.ok(typeof r !== 'string', String(r));
+  return r.cale;
+};
 const valida = (f: FormaCale): boolean => v.is(SchemaDocument, docDin({ latime: 300, inaltime: 200, grosime: 18 }, { id: 'p', forma: f, matrice: ID }));
 
 test('tipul nodului vine din mânere: o linie sau un punct de control lipit de nod = fără mâner', () => {
@@ -33,8 +39,7 @@ test('tipul nodului vine din mânere: o linie sau un punct de control lipit de n
 });
 
 test('colțul pătratului devine curbă pe ambele părți: mânerele pe bisectoare, o treime din latură, netede; colțul îl readuce exact', () => {
-  const r = schimbaTipNod(patrat, 1, 'ambele');
-  assert.ok(typeof r !== 'string');
+  const r = tip(patrat, 1, 'ambele');
   assert.equal(tipNod(r, 1), 'ambele');
   assert.ok(neted(r, 1));
   const k = 10 / Math.SQRT2;
@@ -44,47 +49,40 @@ test('colțul pătratului devine curbă pe ambele părți: mânerele pe bisectoa
   assert.equal(r.varfuri[0]!.s.tip, 'C');
   assert.equal(r.varfuri[2]!.s.tip, 'L', 'segmentele nevecine rămân linii');
   assert.ok(valida(r));
-  assert.deepEqual(schimbaTipNod(r, 1, 'colt'), patrat, 'cubicele fără mânere redevin linii');
+  assert.deepEqual(schimbaTipNod(r, 1, 'colt'), { cale: patrat, nod: 1 }, 'cubicele fără mânere redevin linii');
 });
 
 test('curba pe o parte: în prelungirea liniei care vine; cerută din nou trece pe cealaltă parte, pe aceeași dreaptă', () => {
-  const a = schimbaTipNod(patrat, 1, 'o-parte');
-  assert.ok(typeof a !== 'string');
+  const a = tip(patrat, 1, 'o-parte');
   assert.equal(tipNod(a, 1), 'inainte');
   aproape(manereNod(a, 1).inainte, P(40, 0), 'linia (0,0)→(30,0) continuă drept în curbă');
   assert.equal(a.varfuri[0]!.s.tip, 'L', 'partea dinainte rămâne linie');
-  const b = schimbaTipNod(a, 1, 'o-parte');
-  assert.ok(typeof b !== 'string');
+  const b = tip(a, 1, 'o-parte');
   assert.equal(tipNod(b, 1), 'inapoi');
   aproape(manereNod(b, 1).inapoi, P(20, 0), 'pe dreapta mânerului de dinainte');
   assert.equal(b.varfuri[1]!.s.tip, 'L', 'cubica rămasă fără mânere redevine linie');
-  const c = schimbaTipNod(b, 1, 'o-parte');
-  assert.ok(typeof c !== 'string');
+  const c = tip(b, 1, 'o-parte');
   assert.equal(tipNod(c, 1), 'inainte');
   // Din ambele, pe o parte păstrează mânerul de înainte.
-  const d = schimbaTipNod(schimbaTipNod(patrat, 2, 'ambele') as FormaCale, 2, 'o-parte') as FormaCale;
+  const d = tip(tip(patrat, 2, 'ambele'), 2, 'o-parte');
   assert.equal(tipNod(d, 2), 'inainte');
 });
 
-test('refuzurile: lângă un arc (nu se aproximează), la capătul unei căi deschise; colțul trece și lângă arc', () => {
+test('refuzul la capătul unei căi deschise (o singură parte); lângă un arc nu mai e refuz (ADR 0068)', () => {
   const cuArc: FormaCale = { tip: 'cale', inchis: true, varfuri: [{ p: P(0, 0), s: L }, { p: P(30, 0), s: { tip: 'A', bulge: 0.4 } }, { p: P(30, 30), s: L }, { p: P(0, 30), s: L }] };
-  assert.equal(schimbaTipNod(cuArc, 1, 'ambele'), 'arc');
-  assert.equal(schimbaTipNod(cuArc, 2, 'ambele'), 'arc');
-  assert.equal(schimbaTipNod(cuArc, 1, 'o-parte'), 'arc', 'înainte e arcul');
-  assert.equal(tipNod(schimbaTipNod(cuArc, 2, 'o-parte') as FormaCale, 2), 'inainte', 'înainte de nodul 2 e o linie');
-  assert.notEqual(typeof schimbaTipNod(cuArc, 1, 'colt'), 'string');
+  for (const t of ['ambele', 'o-parte', 'colt'] as const) assert.notEqual(typeof schimbaTipNod(cuArc, 1, t), 'string', t);
   const deschisa: FormaCale = { tip: 'cale', inchis: false, varfuri: [{ p: P(0, 0), s: L }, { p: P(10, 0), s: L }, { p: P(20, 5), s: L }] };
   assert.equal(schimbaTipNod(deschisa, 0, 'ambele'), 'capat');
   assert.equal(schimbaTipNod(deschisa, 2, 'ambele'), 'capat');
-  assert.equal(tipNod(schimbaTipNod(deschisa, 0, 'o-parte') as FormaCale, 0), 'inainte', 'începutul are doar partea dinainte');
-  const sfarsit = schimbaTipNod(deschisa, 2, 'o-parte') as FormaCale;
+  assert.equal(tipNod(tip(deschisa, 0, 'o-parte'), 0), 'inainte', 'începutul are doar partea dinainte');
+  const sfarsit = tip(deschisa, 2, 'o-parte');
   assert.equal(tipNod(sfarsit, 2), 'inapoi');
   assert.equal(schimbaTipNod(sfarsit, 2, 'o-parte'), 'capat', 'sfârșitul n-are partea dinainte');
   assert.ok(valida(sfarsit));
 });
 
 test('mânerul tras pe un nod neted îl rotește pe celălalt (cu lungimea lui); Alt îi desparte; pe nod, mânerul dispare', () => {
-  const r = schimbaTipNod(patrat, 1, 'ambele') as FormaCale;
+  const r = tip(patrat, 1, 'ambele');
   const lung = Math.hypot(manereNod(r, 1).inapoi!.x - 30, manereNod(r, 1).inapoi!.y);
   const m = mutaManer(r, 1, 'inainte', P(30, 20), false);
   aproape(manereNod(m, 1).inainte, P(30, 20), 'mânerul tras');

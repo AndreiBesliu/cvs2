@@ -89,7 +89,8 @@ test('ce formă se poate edita: una singură, cu piesa doar a ei și un singur e
   assert.equal(formaNoduri(d, ['r', 'c']), 'mai-multe');
   const f = formaNoduri(d, ['r']);
   assert.ok(typeof f !== 'string');
-  assert.deepEqual(aplica(f.matrice, P(0, 0)), P(20, 20));
+  assert.equal(f.elemente.length, 1);
+  assert.deepEqual(aplica(f.elemente[0]!.matrice, P(0, 0)), P(20, 20));
   const m = compune({ ...rotatie(30), e: 5, f: -7 }, { a: 2, b: 0, c: 0, d: -2, e: 1, f: 3 });
   const inv = inversa(m)!;
   for (const q of [P(0, 0), P(3, -4), P(100, 50)]) {
@@ -101,7 +102,10 @@ test('ce formă se poate edita: una singură, cu piesa doar a ei și un singur e
   const imp = { ...d, foi: [{ ...d.foi[0]!, instante: [...d.foi[0]!.instante, { id: 'r2', piesa: 'r', x: 0, y: 0, rotire: 0 }] }] };
   assert.equal(formaNoduri(imp, ['r']), 'piesa-impartita');
   const comp = { ...d, piese: d.piese.map((p) => (p.id === 'c' ? { ...p, radacina: { tip: 'grup' as const, id: 'c', matrice: ID, copii: [p.radacina] } } : p)) };
-  assert.equal(formaNoduri(comp, ['c']), 'piesa-compusa');
+  // O piesă cu mai multe contururi (ADR 0068): fiecare contur, cu id-ul elementului lui.
+  const fc = formaNoduri(comp, ['c']);
+  assert.ok(typeof fc !== 'string');
+  assert.deepEqual(fc.elemente.map((e) => e.nod), ['c']);
 });
 
 test('nodul și latura de sub cursor; drumul SVG al conturului', () => {

@@ -12,13 +12,15 @@ import { conturElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 import { FOAIA } from '../ui/actiuniDocument.ts';
 
-/** Forma de sub unealtă: instanța, forma elementului și matricea lui în lume. */
-export type FormaNoduri = { readonly instanta: string; readonly forma: FormaDoc; readonly matrice: Matrice };
-export type MotivNoduri = 'nimic' | 'mai-multe' | 'piesa-compusa' | 'piesa-impartita';
+/** Un contur de sub unealtă: id-ul elementului în piesă, forma lui și matricea lui în lume. */
+export type ElementNoduri = { readonly nod: string; readonly forma: FormaDoc; readonly matrice: Matrice };
+/** Forma de sub unealtă: instanța și contururile piesei ei (unul la o formă desenată; mai multe la un import sau un boolean cu găuri). */
+export type FormaNoduri = { readonly instanta: string; readonly elemente: readonly ElementNoduri[] };
+export type MotivNoduri = 'nimic' | 'mai-multe' | 'piesa-impartita';
 
 /**
- * Pură: forma pe care unealta Noduri o poate edita: o singură instanță aleasă, cu piesa doar a ei și un singur element
- * (prin `document.forma`, care înlocuiește forma acelui element); altfel motivul.
+ * Pură: forma pe care unealta Noduri o poate edita: o singură instanță aleasă, cu piesa doar a ei, cu toate contururile ei
+ * (fiecare se editează separat, prin `document.forma` cu elementul lui, ADR 0068); altfel motivul.
  */
 export function formaNoduri(doc: Document, selectie: readonly string[]): FormaNoduri | MotivNoduri {
   if (selectie.length === 0) return 'nimic';
@@ -27,12 +29,11 @@ export function formaNoduri(doc: Document, selectie: readonly string[]): FormaNo
   const i = foaie?.instante.find((x) => x.id === selectie[0]);
   const piesa = i ? doc.piese.find((p) => p.id === i.piesa) : undefined;
   if (!i || !piesa) return 'nimic';
-  if (piesa.radacina.tip !== 'element') return 'piesa-compusa';
   let folosiri = 0;
   for (const f of doc.foi) for (const x of f.instante) if (x.piesa === piesa.id) folosiri++;
   if (folosiri > 1) return 'piesa-impartita';
-  const e = elementeFoaie(doc, FOAIA).find((x) => x.instanta === i.id);
-  return e ? { instanta: i.id, forma: e.forma, matrice: e.matrice } : 'nimic';
+  const elemente = elementeFoaie(doc, FOAIA).filter((x) => x.instanta === i.id).map((x) => ({ nod: x.nod, forma: x.forma, matrice: x.matrice }));
+  return elemente.length > 0 ? { instanta: i.id, elemente } : 'nimic';
 }
 
 /** Inversa unei matrice afine (din `geom/inversa.ts`, locul ei). */

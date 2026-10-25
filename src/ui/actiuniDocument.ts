@@ -55,6 +55,8 @@ export type ContextDocument = {
   readonly transformare?: () => Transformare;
   /** Panoul (ADR 0053): forma nouă a singurei instanțe alese, editată după plasare (laturile, raza, razele, laturile poligonului). */
   readonly formaEditata?: () => FormaDoc;
+  /** Unealta Noduri (ADR 0068): elementul piesei (id-ul nodului) căruia i se înlocuiește forma; lipsă = rădăcina-element. */
+  readonly nodEditat?: () => string;
   /**
    * Forma desenată cu o unealtă (ADR 0051): forma exactă și locul instanței ei, în mm ai foii; sau mai multe deodată (offsetul,
    * ADR 0064), adăugate într-un singur pas de anulare.

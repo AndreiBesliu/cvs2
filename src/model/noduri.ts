@@ -4,6 +4,7 @@
  * două arce ale aceluiași cerc, cubica prin de Casteljau; nimic nu se aproximează.
  */
 import { cerculArcului, conturCerc, conturDreptunghi, type Contur, type Punct } from '../geom/conturBaza.ts';
+import { TOLERANTA_PROIECT } from '../geom/toleranta.ts';
 import type { FormaDoc, SegmentDoc, VarfDoc } from './document.ts';
 
 export type FormaCale = Extract<FormaDoc, { tip: 'cale' }>;
@@ -111,13 +112,22 @@ export type TipNod = 'colt' | 'ambele' | 'inainte' | 'inapoi';
 export type ParteNod = 'inainte' | 'inapoi';
 /** Ce tip se poate cere: curba „pe o parte” alege singură partea (la a doua cerere, cealaltă). */
 export type TipCerut = 'colt' | 'ambele' | 'o-parte';
-/** De ce un nod nu-și schimbă tipul: un arc vecin (ar trebui aproximat) sau capătul unei căi deschise (o singură parte). */
-export type MotivTip = 'arc' | 'capat';
+/**
+ * De ce un nod nu-și schimbă tipul: capătul unei căi deschise are o singură parte. (Un arc vecin nu mai refuză: devine
+ * curbe la cerere, ADR 0068.)
+ */
+export type MotivTip = 'capat';
 
 /** Un nod cu mânerele lui (în coordonatele căii); `null` = fără mâner pe partea aceea. */
 export type NodCuManere = { readonly p: Punct; readonly inapoi: Punct | null; readonly inainte: Punct | null };
 
 const egale = (a: Punct, b: Punct): boolean => a.x === b.x && a.y === b.y;
+
+/** Segmentul `j` e un arc adevărat (nu o linie scrisă ca arc plat). */
+const eArc = (c: FormaCale, j: number): boolean => {
+  const s = j >= 0 ? c.varfuri[j]!.s : null;
+  return s?.tip === 'A' && Math.abs(s.bulge) > 1e-12;
+};
 
 /** Indexul segmentului care vine în nodul `i` (al vârfului dinainte), sau -1 la începutul unei căi deschise. */
 function segmentInapoi(c: FormaCale, i: number): number {
@@ -141,10 +151,11 @@ export function manereNod(c: FormaCale, i: number): { readonly inapoi: Punct | n
   };
 }
 
-/** Tipul nodului `i`, după mânerele lui. */
+/** Tipul nodului `i`, după mânerele lui; o parte cu arc face și ea curbă (tangenta arcului e mânerul ei, ADR 0068). */
 export function tipNod(c: FormaCale, i: number): TipNod {
   const m = manereNod(c, i);
-  return m.inapoi && m.inainte ? 'ambele' : m.inainte ? 'inainte' : m.inapoi ? 'inapoi' : 'colt';
+  const inapoi = m.inapoi !== null || eArc(c, segmentInapoi(c, i)), inainte = m.inainte !== null || eArc(c, segmentInainte(c, i));
+  return inapoi && inainte ? 'ambele' : inainte ? 'inainte' : inapoi ? 'inapoi' : 'colt';
 }
 
 const unitar = (x: number, y: number): Punct | null => {
@@ -209,11 +220,6 @@ function puneManere(c: FormaCale, i: number, inapoi: Punct | null | undefined, i
   return { ...c, varfuri };
 }
 
-const eArc = (c: FormaCale, j: number): boolean => {
-  const s = j >= 0 ? c.varfuri[j]!.s : null;
-  return s?.tip === 'A' && Math.abs(s.bulge) > 1e-12;
-};
-
 /**
  * Nodul `i` cu tipul cerut. Colțul scoate mânerele (o cubică rămasă fără ele redevine linie). Curba pe ambele părți pune
  * mânerele pe aceeași dreaptă: cele existente își păstrează lungimea, cele noi au o treime din coarda segmentului lor, pe
@@ -221,7 +227,16 @@ const eArc = (c: FormaCale, j: number): boolean => {
  * părți, ca linia să intre lin în curbă) și îl scoate pe celălalt; cerută din nou, trece pe cealaltă parte. Un arc vecin pe
  * partea care ar primi un mâner refuză (arcul nu se aproximează), la fel o cerere imposibilă la capătul unei căi deschise.
  */
-export function schimbaTipNod(c: FormaCale, i: number, tip: TipCerut): FormaCale | MotivTip {
+export function schimbaTipNod(c: FormaCale, i: number, tip: TipCerut): { readonly cale: FormaCale; readonly nod: number } | MotivTip {
+  if (!c.varfuri[i]) return { cale: c, nod: i };
+  // Arcele vecine devin întâi curbe (ADR 0068): mânerele lor pornesc pe tangentele arcelor, deci forma nu se schimbă.
+  const { cale, nod } = arceInCubice(c, i, ['inapoi', 'inainte']);
+  const r = tipFaraArce(cale, nod, tip);
+  return typeof r === 'string' ? r : { cale: r, nod };
+}
+
+/** Tipul cerut pe un nod fără arce vecine (`schimbaTipNod`, după conversia lor). */
+function tipFaraArce(c: FormaCale, i: number, tip: TipCerut): FormaCale | MotivTip {
   const v = c.varfuri[i];
   if (!v) return c;
   const p = v.p;
@@ -230,7 +245,6 @@ export function schimbaTipNod(c: FormaCale, i: number, tip: TipCerut): FormaCale
   if (tip === 'colt') return puneManere(c, i, null, null);
   if (tip === 'ambele') {
     if (ji < 0 || jo < 0) return 'capat';
-    if (eArc(c, ji) || eArc(c, jo)) return 'arc';
     const uo = m.inainte ? unitar(m.inainte.x - p.x, m.inainte.y - p.y) : null;
     const ui = m.inapoi ? unitar(p.x - m.inapoi.x, p.y - m.inapoi.y) : null;
     const tIn = ui ?? directieSosire(c, ji), tOut = uo ?? directieStart(c, jo);
@@ -243,9 +257,7 @@ export function schimbaTipNod(c: FormaCale, i: number, tip: TipCerut): FormaCale
   // Pe o parte: partea de acum trece în cealaltă; din colț sau din ambele, înainte (dacă există).
   const t = tipNod(c, i);
   const parte: ParteNod = t === 'inainte' ? 'inapoi' : t === 'inapoi' ? 'inainte' : jo >= 0 ? 'inainte' : 'inapoi';
-  const j = parte === 'inainte' ? jo : ji;
-  if (j < 0) return 'capat';
-  if (eArc(c, j)) return 'arc';
+  if ((parte === 'inainte' ? jo : ji) < 0) return 'capat';
   if (parte === 'inainte') {
     if (m.inainte) return puneManere(c, i, null, undefined);
     const d = (ji >= 0 ? directieSosire(c, ji) : null) ?? directieStart(c, jo);
@@ -258,6 +270,68 @@ export function schimbaTipNod(c: FormaCale, i: number, tip: TipCerut): FormaCale
   if (!d) return c;
   const l = coarda(c, ji) / 3;
   return puneManere(c, i, { x: p.x - d.x * l, y: p.y - d.y * l }, null);
+}
+
+/** Eroarea radială maximă a cubicei standard pentru un arc de unghi φ (rad) și rază r: r · 2·sin⁶(φ/4) / (27·cos²(φ/4)). */
+function eroareCubica(raza: number, phi: number): number {
+  const s = Math.sin(Math.abs(phi) / 4), c = Math.cos(Math.abs(phi) / 4);
+  return (raza * 2 * s ** 6) / (27 * c * c);
+}
+
+/**
+ * Pură: arcul din `a` în `b` (bulge) ca n cubice ale aceluiași cerc, cu n cel mai mic (cel puțin o bucată la 90°) la care
+ * abaterea de la cerc e sub `tol` (implicit, toleranța proiectului, 0,001 mm, ca biarcele tăierii). Vârfurile lor încep în `a`
+ * (fără `b`); punctele de control sunt pe tangente, la 4/3 · tan(φ/4) · r, deci la capete tangenta arcului rămâne.
+ */
+export function arcInCubice(a: Punct, b: Punct, bulge: number, tol = TOLERANTA_PROIECT): VarfDoc[] {
+  const { centru, raza, start, baleiaj } = cerculArcului(a, b, bulge);
+  let n = Math.max(1, Math.ceil(Math.abs(baleiaj) / (Math.PI / 2) - 1e-12));
+  while (n < 64 && eroareCubica(raza, baleiaj / n) > tol) n++;
+  const pe = (u: number): Punct => ({ x: centru.x + raza * Math.cos(u), y: centru.y + raza * Math.sin(u) });
+  const out: VarfDoc[] = [];
+  for (let k = 0; k < n; k++) {
+    const u0 = start + (baleiaj * k) / n, u1 = start + (baleiaj * (k + 1)) / n;
+    const h = (4 / 3) * Math.tan((u1 - u0) / 4) * raza;
+    const p0 = k === 0 ? { x: a.x, y: a.y } : pe(u0), p3 = k === n - 1 ? b : pe(u1);
+    out.push({
+      p: p0,
+      s: { tip: 'C', c1: { x: p0.x - h * Math.sin(u0), y: p0.y + h * Math.cos(u0) }, c2: { x: p3.x + h * Math.sin(u1), y: p3.y - h * Math.cos(u1) } },
+    });
+  }
+  return out;
+}
+
+/**
+ * Pură: arcele de pe părțile cerute ale nodului `i` devin cubice (`arcInCubice`); vârfurile noi intră între capetele arcului,
+ * deci nodul își poate schimba indexul (`nod`). Fără arce pe părțile acelea: calea neschimbată.
+ */
+export function arceInCubice(c: FormaCale, i: number, parti: readonly ParteNod[]): { readonly cale: FormaCale; readonly nod: number } {
+  let cale = c, nod = i;
+  const inlocuieste = (j: number): void => {
+    const v = cale.varfuri[j]!, b = cale.varfuri[(j + 1) % cale.varfuri.length]!;
+    if (v.s.tip !== 'A') return;
+    const bucati = arcInCubice(v.p, b.p, v.s.bulge);
+    const varfuri = [...cale.varfuri];
+    varfuri.splice(j, 1, ...bucati);
+    cale = { ...cale, varfuri };
+    if (j < nod) nod += bucati.length - 1;
+  };
+  // Întâi segmentul care pleacă din nod (inserează după el), apoi cel care vine (poate muta nodul).
+  if (parti.includes('inainte') && eArc(cale, segmentInainte(cale, nod))) inlocuieste(segmentInainte(cale, nod));
+  if (parti.includes('inapoi') && eArc(cale, segmentInapoi(cale, nod))) inlocuieste(segmentInapoi(cale, nod));
+  return { cale, nod };
+}
+
+/**
+ * Mânerele de arătat ale nodului `i`: cele adevărate, iar pe o parte cu arc, mânerul pe care l-ar avea după conversie (tangenta
+ * arcului, ADR 0068): tras, arcul devine curbe întâi.
+ */
+export function manereAfisate(c: FormaCale, i: number): { readonly inapoi: Punct | null; readonly inainte: Punct | null } {
+  const m = manereNod(c, i);
+  if (m.inapoi && m.inainte) return m;
+  const { cale, nod } = arceInCubice(c, i, ['inapoi', 'inainte']);
+  const v = manereNod(cale, nod);
+  return { inapoi: m.inapoi ?? v.inapoi, inainte: m.inainte ?? v.inainte };
 }
 
 /** Mânerele sunt pe aceeași dreaptă, de o parte și de alta a nodului (nodul e neted), cu o toleranță de 0,001 rad. */

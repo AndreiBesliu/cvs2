@@ -2712,3 +2712,25 @@ capitole.
 instanța de test (după oferta de actualizare a PWA-ului): dreptunghiul 100 × 60 ales, cercul R15 din mijloc cu Shift + clic,
 Scade: o singură piesă, „cale 100 × 60, 4 segmente (+1)”, cu 2 forme, profil exterior pe contur și interior pe gaură; anularea
 readuce ambele; 0 erori.
+
+## 2026-10-25 — Orice nod își schimbă tipul (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok, dar, vreau inca un lucru inainte, vreau ca orice nod creata de orice unealta sa poata activa curbele sau schimba
+tipul de inflexiune”
+**Started:** 25.10, ~11:50. Felia **6.N↑**, fără agenți: două goluri ale uneltei Noduri, pe care cererea le închide: nodurile de
+lângă arce (refuz „arcul ar trebui aproximat”, ADR 0063) și piesele cu mai multe contururi (refuzate cu totul). Arcele devin
+cubice la cerere, sub toleranța proiectului; unealta editează fiecare contur. Schimbă ADR 0063 (punctul respins), la cererea
+explicită a owner-ului.
+**Treceri:** (1) modelul (`arcInCubice`: n cel mai mic, cel puțin o bucată la 90°, cu abaterea r·2·sin⁶(φ/4)/(27·cos²(φ/4)) sub
+0,001 mm; `arceInCubice`: întâi segmentul de după nod, apoi cel dinainte, cu indexul nodului mutat; `tipNod` cu arcele ca părți
+cu curbă; `manereAfisate`: mânerul de după conversie; `schimbaTipNod` întoarce și indexul, fără refuzul arcelor), `formaNoduri`
+cu toate elementele, `document.forma` cu `nodEditat`, unealta Noduri rescrisă pe contururi (nodul ales = contur + nod; mânerul de
+pe arc convertește la apăsare, iar o apăsare fără tragere pune nodul ales la loc), manualul; probele vechi adaptate (semnătura
+nouă, refuzul arcelor înlocuit); probele noi (abaterea pe patru arce, semicercul R15 în 3 cubice, cercul neted după „ambele”,
+colțul rotunjit, indexul pe o cale închisă, un contur dintr-un grup; documentul de probă trebuia să aibă operațiile pe `c1` / `c2`);
+două mutații: criteriul de abatere scos (prinsă), conversia sărită la mânerul de pe arc (A SUPRAVIEȚUIT: proba e2e cerea doar
+„cale” în rând, iar cercul salvat neschimbat ca o cale trecea; întărită cu 6 noduri și altă cutie, apoi prinsă).
+Numărul de cubice din ADR, măsurat (nu calculat din cap): semicercul R15 = 3, R100 = 4 (scrisesem 5), R500 = 5.
+**Completed:** 25.10 12:25. Fără agenți. `npm run rapid` RC 0 (7 201 de teste unitare, 5 noi, 0 picate, 8 sărite); determinismul,
+licențele verzi. E2e 210 / 210 în Edge (2 noi, unul vechi scos: refuzul de lângă arc); emulatoarele: 36 de probe ale funcțiilor,
+13 e2e. Pornirea neschimbată (95,2 kB; cu ușa 99,9 / 100); totalul 291,5 → 292,4 / 300 kB.

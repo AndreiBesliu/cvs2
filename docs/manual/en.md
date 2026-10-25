@@ -242,13 +242,16 @@ the [Pen](#pen) tool. The chosen node shows its handles; the buttons in the top 
   curve) and removes the other; another click moves the curve to the other side.
 
 **Drag a handle** to change the curve; on a smooth node, the handle on the other side turns with it (keeping its length). With
-`Alt`, the handles split (the node stays a curve on both sides, but with a corner). Next to an arc (rounded corners, the
-circle), the node gets no handle: the arc would have to be approximated, and the hint says so; Corner always works. The end of
-an open path has a single side.
+`Alt`, the handles split (the node stays a curve on both sides, but with a corner). The end of an open path has a single side.
 
-Nodes are edited on a single shape whose part has a single outline and is not used by other shapes (a part imported with
-several outlines, for now, is not). A rectangle or a circle becomes a **path** with the same outline at the first change (the
-rounded corners stay arcs), and its fields no longer show in the panel. Each change can be undone with `Ctrl+Z`. At the
+**Any node, from any tool.** A node on an arc (the circle, rounded corners, the results of offset and boolean) is a curve too
+(round), and its handles are the arc's tangents. When you change its type or drag one of its handles, the neighbouring arc first
+becomes curves of the same circle, with new nodes between them (a semicircle of radius 15 becomes 3 curves), off the circle by
+at most 0.001 mm, the cutting tolerance: the shape does not change until you change it.
+
+Nodes are edited on a single shape whose part is not used by other shapes. For a part with several outlines (an import, a
+boolean with holes), each outline shows its nodes and is edited on its own. A rectangle or a circle becomes a **path** with the
+same outline at the first change (the rounded corners stay arcs), and its fields no longer show in the panel. Each change can be undone with `Ctrl+Z`. At the
 bottom, a hint says what can be done or why the chosen shape cannot be edited.
 
 ## Alignment

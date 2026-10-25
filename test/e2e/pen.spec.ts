@@ -160,15 +160,3 @@ test('Noduri: colțul devine curbă pe ambele părți, mânerul tras îl roteșt
   for (let k = 0; k < 5; k++) await page.locator('[data-actiune="istoric.anuleaza"]').click();
   await expect(randuri(page).first()).toContainText('dreptunghi 100.00 × 60.00');
 });
-
-test('Noduri: lângă un arc, nodul nu primește mâner (refuzul cu motiv); colțul nu schimbă nimic', async ({ page }) => {
-  await fara(page);
-  await adauga(page, 'cerc');
-  await unealta(page, 'noduri');
-  await clic(page, { x: 85, y: 50 });
-  await expect(noduri(page)).toHaveAttribute('data-ales', '0');
-  await page.locator('[data-editare="nod-ambele"]').click();
-  await expect(page.getByTestId('noduri-sfat')).toHaveText('Lângă un arc, nodul nu primește mâner (arcul ar trebui aproximat).');
-  await page.locator('[data-editare="nod-colt"]').click();
-  await expect(randuri(page).first()).toContainText('cerc');
-});

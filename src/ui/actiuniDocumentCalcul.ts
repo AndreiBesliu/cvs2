@@ -2,7 +2,7 @@ import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
-import { instantaPreaDeparte, operatieImplicita, PLAFON, type Document, type FormaDoc, type Ghidaj, type Instanta, type Operatie, type Piesa, type Stoc } from '../model/document.ts';
+import { instantaPreaDeparte, operatieImplicita, PLAFON, type Document, type FormaDoc, type Ghidaj, type Instanta, type Nod, type Operatie, type Piesa, type Stoc } from '../model/document.ts';
 import { is } from 'valibot';
 import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
 import { adancimeDeschise } from '../io/adancime.ts';
@@ -536,11 +536,24 @@ function comandaForma(ctx: ContextDocument): { readonly comanda: Comanda | null 
   if (!f || alese.length !== 1) return null;
   const i = foaieCurenta(h.doc).instante.find((x) => x.id === alese[0]);
   const vechi = i ? h.doc.piese.find((p) => p.id === i.piesa) : undefined;
-  if (!vechi || vechi.radacina.tip !== 'element') return null;
+  if (!vechi) return null;
   let folosiri = 0;
   for (const fo of h.doc.foi) for (const x of fo.instante) if (x.piesa === vechi.id) folosiri++;
   if (folosiri > 1) return null;
-  const nou = { ...vechi, radacina: { ...vechi.radacina, forma: f } };
+  // Elementul cerut (ADR 0068): rădăcina, dacă e element (fără `nodEditat` sau cu id-ul ei), altfel elementul cu id-ul dat din grup.
+  const id = ctx.nodEditat?.();
+  let gasit = false;
+  const inlocuieste = (n: Nod): Nod => {
+    if (n.tip === 'element') {
+      if (id !== undefined && n.id !== id) return n;
+      gasit = true;
+      return { ...n, forma: f };
+    }
+    return id === undefined ? n : { ...n, copii: n.copii.map(inlocuieste) };
+  };
+  const radacina = inlocuieste(vechi.radacina);
+  if (!gasit) return null;
+  const nou = { ...vechi, radacina };
   if (jsonCanonic(nou) === jsonCanonic(vechi)) return { comanda: null };
   const comanda: Comanda = { tip: 'inlocuieste-piesa', vechi, nou };
   return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, comanda).doc))) ? { comanda } : null;
