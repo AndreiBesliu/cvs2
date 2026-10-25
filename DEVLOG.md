@@ -2664,3 +2664,22 @@ funcțiilor, 13 e2e. Pornirea neschimbată (95,2 kB; cu ușa 99,9 / 100); totalu
 instanța de test (după oferta de actualizare a PWA-ului): dreptunghiul 100 × 60 din (20, 20), Înclină cu 45° pe orizontală,
 previzualizarea, fără motiv; rezultatul, calea 160 × 60 cu 4 segmente, la X −10, Y 20 (paralelogramul de pe hârtie); anularea
 readuce dreptunghiul; panoul în fereastră (399–703 din 711 px); 0 erori.
+
+## 2026-10-25 — Copierea de-a lungul unei curbe (Model: Claude Opus 5.5)
+
+**Prompt:** „Da” (la întrebarea: „Includem booleanul (unire, scădere, intersecție) în uneltele de desen, înainte de test?”, cu
+varianta „Da: întâi copierea de-a lungul unei curbe, apoi booleanul, apoi testul”).
+**Started:** 25.10, ~10:20. Decizia owner-ului scrisă în `CLAUDE.md` (Decizii luate) și în memorie. Felia **6.L↑**, adusă din
+etapa 6, fără agenți: al treilea fel al rețelei, Pe curbă (curba = ultima formă aleasă, copiile la distanțe egale pe lungime,
+cu sau fără rotirea după tangentă), prin `document.copiaza-in-retea`.
+**Treceri:** (1) calculul pur (`src/model/curba.ts`: lungimea exactă pe linii și arce, Gauss–Legendre pe 32 de bucăți și Newton pe
+cubice; locurile cu tangenta segmentului care pleacă din vârf; copiile cu centrul cutiei formelor în loc), felul `curba` în
+rețea (motivele `copii`, `curba`), în `copiiPentru` (curba nu se copiază, nu e aleasă după), formularul (`copiiCurba`), panoul
+(nota despre curbă, motivele curbei înaintea verdictului acțiunii), previzualizarea, manualul; probele pe hârtie (linia: 0, 25,
+50, 75, 100; semicercul de rază 10: (10, 0) / 90°, (0, 10) / 180°, (−10, 0) / 270°; dreptunghiul 100 × 60: pas de 80, tangenta în
+vârf; cercul: coarda unui sfert 10√2; cubica: locurile față de o linie frântă de 200 000 de bucăți, sub 1e-3 mm), verzi din
+prima, deci trei mutații: vârful cu tangenta celui care ajunge, lungimea cubicei pe coarde, curba = prima formă aleasă (în
+panou): toate prinse, restaurate.
+**Completed:** 25.10 10:50. Fără agenți. `npm run rapid` RC 0 (7 190 de teste unitare, 6 noi, 0 picate, 8 sărite); determinismul,
+licențele verzi. E2e 205 / 205 în Edge (2 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,2 kB;
+cu ușa 99,9 / 100); totalul 287,3 → 288,9 / 300 kB.

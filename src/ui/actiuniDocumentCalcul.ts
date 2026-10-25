@@ -12,6 +12,7 @@ import { executa, type Comanda } from '../model/jurnal.ts';
 import { transforma } from '../model/transformare.ts';
 import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
 import { copiiRetea, instantaCopiei, motivRetea, type Retea } from '../model/retea.ts';
+import { copiiPeCurba } from '../model/curba.ts';
 import type { CheieSimpla } from '../i18n/t.ts';
 import {
   alesePreaDeparte, copieArbore, cresteCopia, FOAIA, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
@@ -152,6 +153,11 @@ function stocCerut(ctx: ContextDocument): Stoc | 'motiv.foaie-invalida' {
  * nu se poate. Verdictul e comun acțiunii și panoului din extensia barei (care îl arată sub câmpuri).
  */
 function copiiPentru(doc: Document, selectie: readonly string[], r: Retea): { readonly copii: ReturnType<typeof copiiRetea>; readonly instante: Instanta[] } {
+  // Pe curbă (ADR 0066): locurile vin din curbă, iar curba nu se copiază.
+  if (r.fel === 'curba') {
+    const c = copiiPeCurba(doc, FOAIA, selectie, r);
+    return typeof c === 'string' ? { copii: [], instante: [] } : c;
+  }
   const alese = new Set(selectie);
   const cutii = elementeFoaie(doc, FOAIA).filter((e) => alese.has(e.instanta)).map((e) => cutieElement(e));
   const cutie = cutii.reduce(uneste, CUTIE_GOALA);

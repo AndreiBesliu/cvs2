@@ -218,21 +218,26 @@ export function comutaInSelectie(veche: readonly string[], id: string): string[]
  * deschideri. Centrul gol înseamnă centrul foii.
  */
 export type FormularRetea = {
-  readonly fel: 'grila' | 'cerc';
+  readonly fel: 'grila' | 'cerc' | 'curba';
   readonly coloane: string; readonly randuri: string; readonly spatiuX: string; readonly spatiuY: string;
   readonly numar: string; readonly centruX: string; readonly centruY: string; readonly unghi: string; readonly roteste: boolean;
+  /** Pe curbă (ADR 0066): câte copii se așază pe curbă (originalele rămân). */
+  readonly copiiCurba: string;
 };
 
 export const FORMULAR_RETEA: FormularRetea = {
-  fel: 'grila', coloane: '3', randuri: '2', spatiuX: '10', spatiuY: '10', numar: '6', centruX: '', centruY: '', unghi: '360', roteste: true,
+  fel: 'grila', coloane: '3', randuri: '2', spatiuX: '10', spatiuY: '10', numar: '6', centruX: '', centruY: '', unghi: '360', roteste: true, copiiCurba: '5',
 };
 
-/** Pură: rețeaua din formular, sau motivul (câmpul greșit sau valorile în afara marginilor). */
-export function citesteRetea(f: FormularRetea, foaie: { readonly latime: number; readonly inaltime: number }): Retea | MotivRetea {
+/**
+ * Pură: rețeaua din formular, sau motivul (câmpul greșit sau valorile în afara marginilor). Pe curbă, `curba` e ultima formă
+ * aleasă (`null`: nicio selecție de cel puțin două forme).
+ */
+export function citesteRetea(f: FormularRetea, foaie: { readonly latime: number; readonly inaltime: number }, curba: string | null = null): Retea | MotivRetea {
   const n = (s: string, semn = false): number => citesteNumar(s, semn) ?? Number.NaN;
   const r: Retea = f.fel === 'grila'
     ? { fel: 'grila', coloane: n(f.coloane), randuri: n(f.randuri), spatiuX: n(f.spatiuX), spatiuY: n(f.spatiuY) }
-    : {
+    : f.fel === 'curba' ? { fel: 'curba', curba: curba ?? '', numar: n(f.copiiCurba), roteste: f.roteste } : {
       fel: 'cerc', numar: n(f.numar), unghi: n(f.unghi), roteste: f.roteste,
       centru: { x: f.centruX.trim() === '' ? foaie.latime / 2 : n(f.centruX, true), y: f.centruY.trim() === '' ? foaie.inaltime / 2 : n(f.centruY, true) },
     };

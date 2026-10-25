@@ -445,6 +445,10 @@
       "ro": "Fișa plăcii 2, cu programele de aur (`docs/etape/placa-02.md`, gata pe 16.10: exportul aplicației pe documentul plăcii, poarta cu regiunea, cotele pe hârtie)",
       "en": "The plate 2 file, with the golden programs (`docs/etape/placa-02.md`, done on 16.10: the app's export on the plate document, the gate with the region, dimensions on paper)"
     },
+    "487df071bff2d150": {
+      "ro": "**Copierea de-a lungul unei curbe, adusă din etapa 6** (fără mașină; ADR 0066; „Da”: întâi curba, apoi booleanul, apoi testul owner-ului). Panoul „Copiază în rețea” are al treilea fel, Pe curbă: formele se aleg întâi, curba după ele, cu Shift + clic (curba e ultima aleasă); câte copii (1–1000), la distanțe egale pe lungimea curbei (deschisă: de la capăt la capăt; închisă: de jur împrejur), cu centrul cutiei formelor pe curbă, cu sau fără rotirea după tangentă; previzualizarea cutiilor. Copiile sunt piese independente, într-un singur pas; originalele și curba rămân. Prin aceeași acțiune: pornirea neschimbată. Rândul „Transformare și copiere” e acum complet. **Treceri:** (1) calculul pur (`src/model/curba.ts`), felul nou în rețea și în acțiune, panoul și previzualizarea, manualul, probele pe hârtie (linia, semicercul, dreptunghiul, cercul, cubica măsurată independent), verzi din prima, deci trei mutații (vârful, lungimea cubicei, curba aleasă în panou), toate prinse.",
+      "en": "**Copying along a curve, brought forward from stage 6** (no machine; ADR 0066; „Da”, i.e. yes: first the curve, then the boolean, then the owner's test). The „Copy in an array” panel has a third kind, On a curve: the shapes are chosen first, the curve after them, with Shift + click (the curve is the last one chosen); how many copies (1–1000), at equal distances along the curve's length (open: from end to end; closed: all around), with the centre of the shapes' box on the curve, with or without rotating along the tangent; the copies' boxes previewed. The copies are independent parts, in a single step; the originals and the curve stay. Through the same action: startup unchanged. The row „Transform and copy” is now complete. **Passes:** (1) the pure calculation (`src/model/curba.ts`), the new kind in the array and in the action, the panel and the preview, the manual, the tests on paper (the line, the semicircle, the rectangle, the circle, the cubic measured independently), green at first, so three mutations (the node, the cubic's length, the curve chosen in the panel), all caught."
+    },
     "48a839e2ee2640c3": {
       "ro": "Geometria v0",
       "en": "Geometry v0"
@@ -1344,6 +1348,10 @@
     "f3f56140bc9ac770": {
       "ro": "înainte de 3.9",
       "en": "before 3.9"
+    },
+    "f3fa2adf59a56cb0": {
+      "ro": "Copierea de-a lungul unei curbe",
+      "en": "Copying along a curve"
     },
     "f44192c419fd3094": {
       "ro": "Vederea 3D a simulării",

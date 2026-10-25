@@ -4,6 +4,8 @@
  *   copii, spre dreapta și în sus;
  * - **cercul**: `numar` de copii (cu originalul) în jurul unui centru, pe `unghi` grade (360: cercul întreg, pas egal; mai
  *   puțin: capetele incluse), cu sau fără rotirea copiilor (fără: fiecare copie doar se mută, cu centrul cutiei pe cerc).
+ * - **curba** (ADR 0066): `numar` de copii la distanțe egale pe o curbă aleasă (`curba`, o instanță a selecției), cu sau fără
+ *   rotirea după tangentă; originalele rămân. Locurile le dă `src/model/curba.ts` (au nevoie de document).
  * O copie e o mișcare rigidă: rotirea cu `unghi` în jurul lui `centru`, apoi translația (`dx`, `dy`).
  */
 import type { Cutie } from '../geom/cutie.ts';
@@ -13,7 +15,8 @@ export type Punct = { readonly x: number; readonly y: number };
 
 export type Retea =
   | { readonly fel: 'grila'; readonly coloane: number; readonly randuri: number; readonly spatiuX: number; readonly spatiuY: number }
-  | { readonly fel: 'cerc'; readonly numar: number; readonly centru: Punct; readonly unghi: number; readonly roteste: boolean };
+  | { readonly fel: 'cerc'; readonly numar: number; readonly centru: Punct; readonly unghi: number; readonly roteste: boolean }
+  | { readonly fel: 'curba'; readonly curba: string; readonly numar: number; readonly roteste: boolean };
 
 export type CopieRetea = { readonly unghi: number; readonly centru: Punct; readonly dx: number; readonly dy: number };
 
@@ -22,7 +25,7 @@ export const RETEA_MAXIM = 1000;
 /** Latura și spațiile, în mm (cât foaia cea mai mare). */
 const MAXIM_MM = 10_000;
 
-export type MotivRetea = 'grila' | 'spatiu' | 'numar' | 'unghi' | 'centru';
+export type MotivRetea = 'grila' | 'spatiu' | 'numar' | 'unghi' | 'centru' | 'copii' | 'curba';
 
 const intreg = (n: number, de: number, la: number): boolean => Number.isInteger(n) && n >= de && n <= la;
 
@@ -33,15 +36,20 @@ export function motivRetea(r: Retea): MotivRetea | null {
     if (![r.spatiuX, r.spatiuY].every((s) => Number.isFinite(s) && s >= 0 && s <= MAXIM_MM)) return 'spatiu';
     return null;
   }
+  if (r.fel === 'curba') return r.curba === '' ? 'curba' : intreg(r.numar, 1, RETEA_MAXIM) ? null : 'copii';
   if (!intreg(r.numar, 2, 360)) return 'numar';
   if (!(Number.isFinite(r.unghi) && r.unghi > 0 && r.unghi <= 360)) return 'unghi';
   if (![r.centru.x, r.centru.y].every((v) => Number.isFinite(v) && Math.abs(v) <= 1_000_000)) return 'centru';
   return null;
 }
 
-/** Copiile rețelei (fără original), pentru o selecție cu cutia `c`; rețeaua trebuie să fie validă (`motivRetea`). */
+/**
+ * Copiile rețelei (fără original), pentru o selecție cu cutia `c`; rețeaua trebuie să fie validă (`motivRetea`). Curba își are
+ * copiile din document (`copiiPeCurba`), deci aici nu dă nimic.
+ */
 export function copiiRetea(c: Cutie, r: Retea): CopieRetea[] {
   const out: CopieRetea[] = [];
+  if (r.fel === 'curba') return out;
   const zero = { x: 0, y: 0 };
   if (r.fel === 'grila') {
     const pasX = c.maxX - c.minX + r.spatiuX, pasY = c.maxY - c.minY + r.spatiuY;

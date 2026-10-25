@@ -200,6 +200,13 @@
   display: contents;
 }
 
+/* Copierea pe curbă (ADR 0066): nota despre curbă, sub câmpuri. */
+.nota-retea {
+  margin: 0;
+  color: var(--t-slab);
+  font-size: var(--fs-1, 12px);
+}
+
 /* Offsetul (ADR 0064): contururile noi, punctate, cât panoul e deschis. */
 .offset-previzualizare {
   fill: none;

@@ -180,6 +180,12 @@ a single undo step. The copies are independent parts (as with Duplicate): each o
 - **On a circle**: how many shapes, with the original; the angle (360°: the full circle, at equal steps; less: from the
   original to the last copy); the circle's centre (empty: the sheet's centre); **Rotate the copies** turns them with their
   position, otherwise they only move.
+- **On a curve**: choose the shapes to copy, then the curve (a line, a path, a circle, a rectangle), with Shift + click: the
+  curve is the last shape chosen. **How many copies on the curve** (1–1000) are placed at equal distances along its length,
+  with the centre of the shapes' box on the curve: on an open curve, from one end to the other; on a closed one, all around,
+  from its first node. **Rotate the copies along the curve** turns them with the curve's direction at each place (a shape drawn
+  "pointing right" follows it). The originals and the curve stay in place; the curve is not copied. The curve must be a single
+  shape (not a part with several outlines).
 
 While the panel is open, the copies show on the canvas, dashed. If the array cannot be made (wrong values, nothing chosen,
 the project at its cap, copies too far away), the panel says why and Copy stays inactive. After copying, the original and

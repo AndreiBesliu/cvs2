@@ -20,6 +20,7 @@ import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTE
 import { motivCopiereRetea, motivDesen } from '../ui/actiuniDocumentCalcul.ts';
 import type { FormaNoua } from '../ui/actiuniDocument.ts';
 import { copiiRetea, punctulCopiei, type Retea } from '../model/retea.ts';
+import { copiiPeCurba } from '../model/curba.ts';
 import {
   adaugaNod, caleDinForma, caleDinNoduri, manereNod, mutaManer, mutaNod, schimbaTipNod, stergeNod, tipNod, type FormaCale, type NodCuManere, type ParteNod,
   type TipCerut,
@@ -87,8 +88,8 @@ function formularSalvat(): FormularRetea {
     const o = x as Record<string, unknown>;
     const text = (k: keyof FormularRetea): string => (typeof o[k] === 'string' ? (o[k] as string) : (FORMULAR_RETEA[k] as string));
     return {
-      fel: o.fel === 'cerc' ? 'cerc' : 'grila', coloane: text('coloane'), randuri: text('randuri'), spatiuX: text('spatiuX'), spatiuY: text('spatiuY'),
-      numar: text('numar'), centruX: text('centruX'), centruY: text('centruY'), unghi: text('unghi'), roteste: o.roteste !== false,
+      fel: o.fel === 'cerc' || o.fel === 'curba' ? o.fel : 'grila', coloane: text('coloane'), randuri: text('randuri'), spatiuX: text('spatiuX'), spatiuY: text('spatiuY'),
+      numar: text('numar'), centruX: text('centruX'), centruY: text('centruY'), unghi: text('unghi'), roteste: o.roteste !== false, copiiCurba: text('copiiCurba'),
     };
   } catch {
     return FORMULAR_RETEA;
@@ -219,6 +220,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   panouRef.current = panou;
   const panouRetea = panou === 'retea', panouOffset = panou === 'offset', panouInclinare = panou === 'inclinare';
   const [formRetea, setFormRetea] = useState<FormularRetea>(formularSalvat);
+  // Pe curbă (ADR 0066): curba e ultima formă aleasă (Shift + clic după formele de copiat).
+  const curbaAleasa = selectie.length > 0 ? selectie[selectie.length - 1]! : null;
   const scrieFormular = (f: FormularRetea): void => { setFormRetea(f); scrieLocal(CHEIE_RETEA, JSON.stringify(f)); };
   // Offsetul (ADR 0064): panoul din extensia barei, formularul lui (în browser) și calculul, adus la prima deschidere.
   const [formOffset, setFormOffset] = useState<FormularOffset>(offsetSalvat);
@@ -560,14 +563,18 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           onLinii={setLiniiManere} />
       ) : null}
       {panouRetea && cutie && selectie.length > 0 && !vedere3d ? (() => {
-        // Previzualizarea copiilor: cutia selecției mutată de fiecare copie, punctată.
-        const r = citesteRetea(formRetea, foaie?.stoc ?? { latime: 0, inaltime: 0 });
+        // Previzualizarea copiilor: cutia selecției mutată de fiecare copie, punctată (pe curbă: cutia formelor, fără curbă).
+        const r = citesteRetea(formRetea, foaie?.stoc ?? { latime: 0, inaltime: 0 }, curbaAleasa);
         if (typeof r === 'string') return null;
-        const colturi = [{ x: cutie.minX, y: cutie.minY }, { x: cutie.maxX, y: cutie.minY }, { x: cutie.maxX, y: cutie.maxY }, { x: cutie.minX, y: cutie.maxY }];
+        const pc = r.fel === 'curba' ? copiiPeCurba(doc, FOAIA, selectie, r) : null;
+        if (typeof pc === 'string') return null;
+        const c = pc ? pc.cutie : cutie;
+        const copii = pc ? pc.copii : copiiRetea(cutie, r);
+        const colturi = [{ x: c.minX, y: c.minY }, { x: c.maxX, y: c.minY }, { x: c.maxX, y: c.maxY }, { x: c.minX, y: c.maxY }];
         const ecran = (q: { x: number; y: number }): string => `${vedere.tx + q.x * vedere.scara},${vedere.ty - q.y * vedere.scara}`;
         return (
           <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="retea-previzualizare">
-            {copiiRetea(cutie, r).map((k, i) => <polygon key={i} className="retea-copie" points={colturi.map((q) => ecran(punctulCopiei(q, k))).join(' ')} />)}
+            {copii.map((k, i) => <polygon key={i} className="retea-copie" points={colturi.map((q) => ecran(punctulCopiei(q, k))).join(' ')} />)}
           </svg>
         );
       })() : null}
@@ -668,8 +675,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               <IconaRetea />
             </button>
             {panouRetea ? (
-              <PanouRetea form={formRetea} onForm={scrieFormular} foaie={foaie?.stoc ?? { latime: 0, inaltime: 0 }}
-                motivActiune={(r) => motivCopiereRetea(doc, selectie, r, p.doarCitire)}
+              <PanouRetea form={formRetea} onForm={scrieFormular} foaie={foaie?.stoc ?? { latime: 0, inaltime: 0 }} curba={curbaAleasa}
+                motivActiune={(r) => {
+                  // Pe curbă, întâi motivul curbei (lipsă, compusă, fără lungime, nimic de copiat), apoi verdictul acțiunii.
+                  const c = r.fel === 'curba' && selectie.length > 0 ? copiiPeCurba(doc, FOAIA, selectie, r) : null;
+                  return typeof c === 'string' ? (`editare.retea.motiv.${c}` as const) : motivCopiereRetea(doc, selectie, r, p.doarCitire);
+                }}
                 onCopiaza={(r) => { ruleaza('document.copiaza-in-retea', { retea: () => r }); setPanou(null); }}
                 onInchide={() => { setPanou(null); }} />
             ) : null}
@@ -1338,22 +1349,24 @@ function useInFereastra(ref: RefObject<HTMLElement | null>): void {
   }, [ref]);
 }
 
-function PanouRetea({ form, onForm, foaie, motivActiune, onCopiaza, onInchide }: {
+function PanouRetea({ form, onForm, foaie, curba, motivActiune, onCopiaza, onInchide }: {
   readonly form: FormularRetea;
   readonly onForm: (f: FormularRetea) => void;
   readonly foaie: { readonly latime: number; readonly inaltime: number };
+  /** Pe curbă: ultima formă aleasă (ADR 0066). */
+  readonly curba: string | null;
   readonly motivActiune: (r: Retea) => CheieSimpla | null;
   readonly onCopiaza: (r: Retea) => void;
   readonly onInchide: () => void;
 }): ReactElement {
-  const r = citesteRetea(form, foaie);
+  const r = citesteRetea(form, foaie, curba);
   const radacina = useRef<HTMLDivElement | null>(null);
   useInFereastra(radacina);
   const motiv = typeof r === 'string' ? t(`editare.retea.motiv.${r}`) : (() => {
     const m = motivActiune(r);
     return m === 'motiv.nicio-selectie' ? t('editare.retea.nicio-selectie') : m ? t(m) : null;
   })();
-  const camp = (k: 'coloane' | 'randuri' | 'spatiuX' | 'spatiuY' | 'numar' | 'centruX' | 'centruY' | 'unghi', eticheta: string, loc?: string): ReactElement => (
+  const camp = (k: 'coloane' | 'randuri' | 'spatiuX' | 'spatiuY' | 'numar' | 'centruX' | 'centruY' | 'unghi' | 'copiiCurba', eticheta: string, loc?: string): ReactElement => (
     <label className="camp-retea">
       <span>{eticheta}</span>
       <input value={form[k]} inputMode="decimal" placeholder={loc} data-retea={k} onChange={(e) => { onForm({ ...form, [k]: e.target.value }); }} />
@@ -1368,7 +1381,7 @@ function PanouRetea({ form, onForm, foaie, motivActiune, onCopiaza, onInchide }:
         onInchide();
       }}>
       <div className="fel-retea" role="radiogroup" aria-label={t('editare.copiere')}>
-        {(['grila', 'cerc'] as const).map((f) => (
+        {(['grila', 'cerc', 'curba'] as const).map((f) => (
           <button key={f} type="button" role="radio" aria-checked={form.fel === f} aria-pressed={form.fel === f} data-retea-fel={f}
             onClick={() => { onForm({ ...form, fel: f }); }}>
             {t(`editare.retea.${f}`)}
@@ -1381,6 +1394,15 @@ function PanouRetea({ form, onForm, foaie, motivActiune, onCopiaza, onInchide }:
           {camp('randuri', t('editare.retea.randuri'))}
           {camp('spatiuX', t('editare.retea.spatiu-x'))}
           {camp('spatiuY', t('editare.retea.spatiu-y'))}
+        </div>
+      ) : form.fel === 'curba' ? (
+        <div className="campuri-retea">
+          {camp('copiiCurba', t('editare.retea.copii-curba'))}
+          <label className="bifa-retea">
+            <input type="checkbox" checked={form.roteste} data-retea="roteste" onChange={(e) => { onForm({ ...form, roteste: e.target.checked }); }} />
+            <span>{t('editare.retea.roteste-curba')}</span>
+          </label>
+          <p className="nota-retea">{t('editare.retea.curba-ales')}</p>
         </div>
       ) : (
         <div className="campuri-retea">
