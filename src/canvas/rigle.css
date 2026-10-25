@@ -200,6 +200,14 @@
   display: contents;
 }
 
+/* Offsetul (ADR 0064): contururile noi, punctate, cât panoul e deschis. */
+.offset-previzualizare {
+  fill: none;
+  stroke: var(--panza-selectie, var(--a));
+  stroke-width: 1.5;
+  stroke-dasharray: 6 3;
+}
+
 /* Copierea în rețea (ADR 0061): panoul sub butonul lui, previzualizarea copiilor pe pânză. */
 .sectiune-retea {
   position: relative;

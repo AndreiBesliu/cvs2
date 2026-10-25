@@ -15,6 +15,9 @@ import type { Actiune } from './actiuni.ts';
  * ascuns, fiecare are piesa ei, iar selecția ține id-uri de instanțe. O formă nouă vine cu operația ei implicită.
  * Contextul e starea curentă și felul în care se scrie înapoi; acțiunile sunt pure față de restul interfeței.
  */
+/** O formă nouă (ADR 0051): forma exactă și locul instanței ei, în mm ai foii. */
+export type FormaNoua = { readonly forma: FormaDoc; readonly x: number; readonly y: number };
+
 export type ContextDocument = {
   readonly istoric: () => Istoric;
   readonly scrie: (h: Istoric) => void;
@@ -49,8 +52,11 @@ export type ContextDocument = {
   readonly transformare?: () => Transformare;
   /** Panoul (ADR 0053): forma nouă a singurei instanțe alese, editată după plasare (laturile, raza, razele, laturile poligonului). */
   readonly formaEditata?: () => FormaDoc;
-  /** Forma desenată cu o unealtă (ADR 0051): forma exactă și locul instanței ei, în mm ai foii. */
-  readonly formaNoua?: () => { readonly forma: FormaDoc; readonly x: number; readonly y: number };
+  /**
+   * Forma desenată cu o unealtă (ADR 0051): forma exactă și locul instanței ei, în mm ai foii; sau mai multe deodată (offsetul,
+   * ADR 0064), adăugate într-un singur pas de anulare.
+   */
+  readonly formaNoua?: () => FormaNoua | readonly FormaNoua[];
   /** Ghidajele noi ale foii (ADR 0050): lista întreagă, după un ghidaj adăugat, mutat sau șters. */
   readonly ghidajeNoi?: () => readonly Ghidaj[];
   /** Deplasările instanțelor, fiecare cu a ei, în mm (alinierea, distribuirea, săgețile; ADR 0050). */

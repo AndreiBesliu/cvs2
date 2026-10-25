@@ -15,7 +15,7 @@ import { copiiRetea, instantaCopiei, motivRetea, type Retea } from '../model/ret
 import type { CheieSimpla } from '../i18n/t.ts';
 import {
   alesePreaDeparte, copieArbore, cresteCopia, FOAIA, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
-  type CalculDocument, type ContextDocument,
+  type CalculDocument, type ContextDocument, type FormaNoua,
 } from './actiuniDocument.ts';
 
 /**
@@ -391,7 +391,7 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       const r = comandaDesen(h.doc, f);
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
-      ctx.selecteaza([r.id]);
+      ctx.selecteaza(r.ids);
     },
   },
   // Alinierea, distribuirea și săgețile (ADR 0050 §3): fiecare instanță cu deplasarea ei, într-un singur pas de anulare.
@@ -417,37 +417,61 @@ export const CALCUL_DOCUMENT: CalculDocument = {
 };
 
 /**
- * Comanda unei forme desenate (ADR 0051): piesa nouă, cu operația implicită (a dreptunghiului pentru formele închise, a
- * liniilor deschise din import pentru linie: pe linie, `adancimeDeschise`, o trecere), și instanța ei. Documentul de după
- * trebuie să treacă de plafoane și de ușa întreagă: ce se desenează se și redeschide. Ținută pe (document, formă).
+ * Comanda formelor desenate (ADR 0051; mai multe deodată, ADR 0064): fiecare formă e o piesă nouă, cu operația implicită (a
+ * dreptunghiului pentru formele închise, a liniilor deschise din import pentru linie: pe linie, `adancimeDeschise`, o
+ * trecere), și instanța ei; mai multe intră într-un singur pas. Documentul de după trebuie să treacă de plafoane și de ușa
+ * întreagă: ce se desenează se și redeschide. Ținută pe (document, forme).
  */
-type ComandaDesen = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: 'motiv.plafon' | 'motiv.import-refuzat' };
-type FormaNoua = { readonly forma: FormaDoc; readonly x: number; readonly y: number };
-let ultimulDesen: { doc: Document; f: FormaNoua; rez: ComandaDesen } | null = null;
-function comandaDesen(doc: Document, f: FormaNoua): ComandaDesen {
+type ComandaDesen =
+  | { readonly ok: true; readonly comanda: Comanda; readonly ids: readonly string[] }
+  | { readonly ok: false; readonly motiv: 'motiv.nimic-ales' | 'motiv.plafon' | 'motiv.import-refuzat' };
+let ultimulDesen: { doc: Document; f: FormaNoua | readonly FormaNoua[]; rez: ComandaDesen } | null = null;
+function comandaDesen(doc: Document, f: FormaNoua | readonly FormaNoua[]): ComandaDesen {
   if (ultimulDesen && ultimulDesen.doc === doc && ultimulDesen.f === f) return ultimulDesen.rez;
-  const id = idNou(doc);
-  const scula = sculaFoii(doc);
-  const foaie = foaieCurenta(doc);
-  const baza = scula ? operatieImplicita(id, f.forma, scula) : operatieImplicita(id, f.forma);
-  const deschisa = f.forma.tip === 'cale' && !f.forma.inchis;
-  const adancime = adancimeDeschise(foaie.stoc.grosime);
-  const operatie: Operatie = deschisa ? { ...baza, latura: 'pe-linie', adancime, pas: adancime } : baza;
-  const varfuri = f.forma.tip === 'cale' ? f.forma.varfuri.length : 0;
+  const forme: readonly FormaNoua[] = 'forma' in f ? [f] : f;
+  const varfuri = forme.reduce((n, x) => n + (x.forma.tip === 'cale' ? x.forma.varfuri.length : 0), 0);
+  const k = forme.length;
   let rez: ComandaDesen;
-  if (!incape(doc, { noduri: 1, instante: 1, elementeLume: 1, operatii: 1, taieturi: 1, varfuri, varfuriLume: varfuri })) {
+  if (k === 0) rez = { ok: false, motiv: 'motiv.nimic-ales' };
+  else if (!incape(doc, { noduri: k, instante: k, elementeLume: k, operatii: k, taieturi: k, varfuri, varfuriLume: varfuri })) {
     rez = { ok: false, motiv: 'motiv.plafon' };
   } else {
-    const comanda: Comanda = {
-      tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: f.x, y: f.y, rotire: 0 }, pozitie: foaie.instante.length,
-      piesa: { piesa: { id, radacina: { tip: 'element', id, forma: f.forma, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [operatie] }, pozitie: doc.piese.length },
-    };
+    const scula = sculaFoii(doc);
+    const comenzi: Comanda[] = [];
+    const ids: string[] = [];
+    let dupa = doc;
+    for (const x of forme) {
+      const id = idNou(dupa);
+      const foaie = foaieCurenta(dupa);
+      const baza = scula ? operatieImplicita(id, x.forma, scula) : operatieImplicita(id, x.forma);
+      const deschisa = x.forma.tip === 'cale' && !x.forma.inchis;
+      const adancime = adancimeDeschise(foaie.stoc.grosime);
+      const operatie: Operatie = deschisa ? { ...baza, latura: 'pe-linie', adancime, pas: adancime } : baza;
+      const comanda: Comanda = {
+        tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: x.x, y: x.y, rotire: 0 }, pozitie: foaie.instante.length,
+        piesa: { piesa: { id, radacina: { tip: 'element', id, forma: x.forma, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [operatie] }, pozitie: dupa.piese.length },
+      };
+      dupa = executa(istoricDin(dupa), comanda).doc;
+      comenzi.push(comanda);
+      ids.push(id);
+    }
+    const comanda = pas(comenzi);
     // Schemele documentului (cu judecata de ansamblu), nu ușa întreagă: ușa ar lipi schemele de ea într-o singură bucată la
     // cerere (probele „schemele care nu vin” le cer separate), iar migrările și arcele în lume nu privesc o formă nouă.
-    rez = is(SchemaDocument, JSON.parse(JSON.stringify(executa(istoricDin(doc), comanda).doc))) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.import-refuzat' };
+    rez = comanda && is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, ids } : { ok: false, motiv: 'motiv.import-refuzat' };
   }
   ultimulDesen = { doc, f, rez };
   return rez;
+}
+
+/**
+ * Pură: de ce formele noi nu s-ar putea adăuga acum (același verdict ca acțiunea `document.deseneaza`: doar citire, nimic,
+ * plafonul documentului, schema), sau null. Panoul offsetului (ADR 0064) îl arată înainte de Aplică.
+ */
+export function motivDesen(doc: Document, forme: readonly FormaNoua[], doarCitire: boolean): CheieSimpla | null {
+  if (doarCitire) return 'motiv.doar-citire';
+  const r = comandaDesen(doc, forme);
+  return r.ok ? null : r.motiv;
 }
 
 /** Comenzile unei transformări (instanțele și piesele schimbate), sau null dacă ar ieși inexactă sau n-ar trece de schemă. */

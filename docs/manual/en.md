@@ -149,9 +149,9 @@ Next to the selection, its own bar appears, with Duplicate, Delete and the prope
 A value applies on Enter or when you leave the field; Escape goes back. A value that cannot be applied says why under the
 field.
 
-## Transforming, mirroring and copying
+## Transforming, mirroring, copying and offset
 %% capitol: transformari
-%% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, document.copiaza-in-retea
+%% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, document.copiaza-in-retea, editare.offset
 
 The **Transform** tool (`S`) shows the handles on the selection's box and transforms the shape exactly (arcs stay arcs):
 - the **corners** scale proportionally, with the opposite corner fixed; with Shift, freely on both axes;
@@ -176,6 +176,16 @@ a single undo step. The copies are independent parts (as with Duplicate): each o
 While the panel is open, the copies show on the canvas, dashed. If the array cannot be made (wrong values, nothing chosen,
 the project at its cap, copies too far away), the panel says why and Copy stays inactive. After copying, the original and
 the copies are chosen.
+
+**Offset** (in the bar extension, next to Copy, the button with a square inside a dashed outline) draws a contour parallel to
+each closed shape chosen, at the distance written (mm, between 0.01 and 1000), **outwards** or **inwards**. The contour comes
+from the same engine as cutting: exact, made of lines and arcs; the corners it goes around are rounded with a radius equal to
+the distance (outwards, the outer corners; inwards, the inner ones), and the others stay sharp. Each shape is offset by its own inside (for a part with several outlines, each outline on
+its own), and a contour that breaks into pieces gives several shapes. The new shapes are independent paths, with their default
+operation, chosen after Apply; the originals stay, and it is all a single undo step.
+- While the panel is open, the new contours show on the canvas, dashed.
+- Open shapes chosen are skipped (the panel says how many); with only open ones, the offset cannot be made.
+- Inwards, a shape too small for the distance asked stops it all, with the reason: nothing is done halfway.
 
 ## Nodes
 %% capitol: noduri

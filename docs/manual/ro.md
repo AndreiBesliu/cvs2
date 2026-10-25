@@ -144,9 +144,9 @@ Lângă selecție apare bara ei, cu Duplică, Șterge și panoul de proprietăț
 Valoarea se aplică la Enter sau când ieși din câmp; Escape revine. O valoare care nu se poate aplica își spune motivul sub
 câmp.
 
-## Transformările, oglindirea și copierea
+## Transformările, oglindirea, copierea și offsetul
 %% capitol: transformari
-%% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, document.copiaza-in-retea
+%% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, document.copiaza-in-retea, editare.offset
 
 Unealta **Transformare** (`S`) arată mânerele pe cutia selecției și **transformă** forma exact (arcele rămân arce):
 - **colțurile** scalează proporțional, cu colțul opus fix; cu Shift, liber pe ambele axe;
@@ -169,6 +169,16 @@ singur pas de anulare. Copiile sunt piese independente (ca la Duplică): fiecare
 
 Cât panoul e deschis, copiile se văd pe pânză, punctat. Dacă rețeaua nu se poate face (valori greșite, nimic ales, proiectul
 la plafon, copii prea departe), panoul spune de ce, iar Copiază rămâne inactiv. După copiere sunt alese originalul și copiile.
+
+**Offset** (în extensia barei, lângă Copiere, butonul cu un pătrat într-un contur punctat) desenează un contur paralel cu
+fiecare formă închisă aleasă, la distanța scrisă (mm, între 0,01 și 1000), **spre exterior** sau **spre interior**. Conturul
+vine din același motor ca tăierea: exact, din linii și arce; colțurile ocolite se rotunjesc cu raza egală cu distanța (spre
+exterior, colțurile ieșite; spre interior, cele intrânde), iar celelalte rămân ascuțite. Fiecare formă se decalează după interiorul ei (la o piesă cu mai multe contururi, fiecare
+contur separat), iar un contur care se rupe în bucăți dă mai multe forme. Formele noi sunt căi independente, cu operația lor
+implicită, alese după Aplică; originalele rămân, iar totul e un singur pas de anulare.
+- Cât panoul e deschis, contururile noi se văd pe pânză, punctat.
+- Formele deschise alese se sar (panoul spune câte); doar deschise, offsetul nu se poate face.
+- Spre interior, o formă prea mică pentru distanța cerută oprește tot, cu motivul: nimic nu se face pe jumătate.
 
 ## Nodurile
 %% capitol: noduri

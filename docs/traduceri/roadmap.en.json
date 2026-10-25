@@ -377,6 +377,10 @@
       "ro": "înainte de 3.7",
       "en": "before 3.7"
     },
+    "3c08e9ebfad4e03c": {
+      "ro": "**Offsetul formelor în desen, adus din etapa 6** (fără mașină; ADR 0064; „neata, continua”; decizia 16 din `PLAN.md`: din arce, același motor ca CAM-ul). Secțiunea Offset din extensia barei (lângă Copiere) deschide un panou: spre exterior / spre interior, distanța (0,01–1000 mm), contururile noi punctate pe pânză, Aplică. Fiecare contur închis ales se decalează după interiorul lui, exact (linii și arce; colțurile ocolite rotunjite cu raza egală cu distanța); formele noi sunt căi independente, alese, într-un singur pas de anulare; originalele rămân. Formele deschise se sar (numărate); prea adânc spre interior = motivul, nimic pe jumătate. Prin `document.deseneaza`, care primește acum și o listă de forme: pornirea neschimbată; motorul (~85 kB) se aduce la prima deschidere a panoului. Manualul (capitolul transformărilor) e la zi. **Treceri:** (1) acțiunea cu lista, calculul pur, panoul și previzualizarea, probele pe valori de hârtie (110 × 70 cu arce de rază 5 și aria exactă, 90 × 50, cercul R20, forma în L), e2e verzi din prima, cu o mutație în panou prinsă; fraza din manual despre colțuri, corectată (spre interior se rotunjesc colțurile intrânde) și probată.",
+      "en": "**Offsetting shapes in drawing, brought forward from stage 6** (no machine; ADR 0064; „neata, continua”, i.e. good morning, continue; decision 16 of `PLAN.md`: from arcs, the same engine as CAM). The Offset section of the bar extension (next to Copy) opens a panel: outwards / inwards, the distance (0.01–1000 mm), the new contours dashed on the canvas, Apply. Each closed outline chosen is offset by its own inside, exactly (lines and arcs; the corners it goes around rounded with a radius equal to the distance); the new shapes are independent paths, chosen, in a single undo step; the originals stay. Open shapes are skipped (counted); too deep inwards = the reason, nothing done halfway. Through `document.deseneaza`, which now also takes a list of shapes: startup unchanged; the engine (~85 kB) is fetched when the panel first opens. The manual (the transformations chapter) is up to date. **Passes:** (1) the action with the list, the pure calculation, the panel and the preview, the tests on paper values (110 × 70 with arcs of radius 5 and the exact area, 90 × 50, the R20 circle, the L shape), e2e green at first, with a mutation in the panel caught; the manual's sentence about corners, corrected (inwards, the inner corners are rounded) and tested."
+    },
     "3cac31c2ed72eaa1": {
       "ro": "**Profilul complet pe geometrie exactă** + importul SVG",
       "en": "**The full profile on exact geometry** + SVG import"
@@ -820,6 +824,10 @@
     "92d3d4781a981f7c": {
       "ro": "Personalul, fila Erori și Diagnoza (ADR 0040): pagina `/admin` la cerere (164 kB, cu bugetul ei; pornirea 99,0 / 100 kB), login Google, rolul din `staff/{uid}`, fila Erori cu „Rezolvat” prin callable și audit în aceeași tranzacție, Diagnoza (7 verificări), TTL de 90 de zile, regulile noi publicate. 17 teste pe emulator, 3 e2e pe emulatoare (login-ul emulatorului de Auth inclus), 3 e2e fără configurație, 13 unitare; 7 sabotaje, prinse unde trebuie, cu martorii trecuți (un martor picat a arătat primul apel lent al callable-ului: termen de 30 s). **Pe test:** pagina pornește până la fereastra Google, fără încălcări de CSP.",
       "en": "Staff, the Errors tab and Diagnostics (ADR 0040): the `/admin` page on demand (164 kB, with its own budget; startup 99.0 / 100 kB), Google login, the role from `staff/{uid}`, the Errors tab with “Resolved” through a callable and the audit in the same transaction, Diagnostics (7 checks), a 90-day TTL, the new rules published. 17 tests on the emulator, 3 e2e on emulators (the Auth emulator's login included), 3 e2e without configuration, 13 unit tests; 7 sabotages, caught where they should be, with the controls passing (a failed control revealed the callable's slow first call: a 30 s deadline). **On test:** the page starts up to the Google window, with no CSP violations."
+    },
+    "9349481461342270": {
+      "ro": "Offsetul formelor în desen, adus din etapa 6",
+      "en": "Offsetting shapes in drawing, brought forward from stage 6"
     },
     "93603f6f0016b46b": {
       "ro": "cupola, rotunjitul, planul înclinat, greutatea",
@@ -1380,6 +1388,10 @@
     "fd24b6d3ddb56f60": {
       "ro": "Elipsa e un cerc sub o matrice neuniformă",
       "en": "The ellipse is a circle under a non-uniform matrix"
+    },
+    "fd62de0c9b1c5f17": {
+      "ro": "Offsetul formelor în desen",
+      "en": "Offsetting shapes in drawing"
     },
     "ff2897a9ec65e014": {
       "ro": "textura, grila ghilotină; tăietura și gravura pe laserul tău Ruida",

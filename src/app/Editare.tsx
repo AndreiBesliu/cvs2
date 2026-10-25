@@ -17,7 +17,8 @@ import {
 import { instantaLa } from '../model/alegere.ts';
 import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTE_UNELTE, UNELTE, type FormaDesenata, type Unealta, type UnealtaDesen } from './desenCalcul.ts';
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
-import { motivCopiereRetea } from '../ui/actiuniDocumentCalcul.ts';
+import { motivCopiereRetea, motivDesen } from '../ui/actiuniDocumentCalcul.ts';
+import type { FormaNoua } from '../ui/actiuniDocument.ts';
 import { copiiRetea, punctulCopiei, type Retea } from '../model/retea.ts';
 import {
   adaugaNod, caleDinForma, caleDinNoduri, manereNod, mutaManer, mutaNod, schimbaTipNod, stergeNod, tipNod, type FormaCale, type NodCuManere, type ParteNod,
@@ -46,6 +47,23 @@ const CHEIE_LATURI = 'cncvs2.laturi';
 const CHEIE_RAZA = 'cncvs2.raza';
 const CHEIE_ALINIERE = 'cncvs2.aliniere-stransa';
 const CHEIE_RETEA = 'cncvs2.retea';
+const CHEIE_OFFSET = 'cncvs2.offset';
+
+/** Calculul offsetului (ADR 0064): o bucată la cerere, adusă la prima deschidere a panoului (cu motorul CAM). */
+type ModulOffset = typeof import('./offsetCalcul.ts');
+type FormularOffset = { readonly distanta: string; readonly sens: 'exterior' | 'interior' };
+
+/** Formularul offsetului ținut în browser; unul stricat lasă implicitele (5 mm spre exterior). */
+function offsetSalvat(): FormularOffset {
+  try {
+    const x: unknown = JSON.parse(citeste(CHEIE_OFFSET) ?? 'null');
+    if (typeof x !== 'object' || x === null) return { distanta: '5', sens: 'exterior' };
+    const o = x as Record<string, unknown>;
+    return { distanta: typeof o.distanta === 'string' ? o.distanta : '5', sens: o.sens === 'interior' ? 'interior' : 'exterior' };
+  } catch {
+    return { distanta: '5', sens: 'exterior' };
+  }
+}
 
 /** Formularul rețelei ținut în browser (ADR 0061); unul stricat sau al altei versiuni lasă implicitele. */
 function formularSalvat(): FormularRetea {
@@ -186,6 +204,24 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   panouReteaRef.current = panouRetea;
   const [formRetea, setFormRetea] = useState<FormularRetea>(formularSalvat);
   const scrieFormular = (f: FormularRetea): void => { setFormRetea(f); scrieLocal(CHEIE_RETEA, JSON.stringify(f)); };
+  // Offsetul (ADR 0064): panoul din extensia barei, formularul lui (în browser) și calculul, adus la prima deschidere.
+  const [panouOffset, setPanouOffset] = useState(false);
+  const panouOffsetRef = useRef(panouOffset);
+  panouOffsetRef.current = panouOffset;
+  const [formOffset, setFormOffset] = useState<FormularOffset>(offsetSalvat);
+  const scrieOffset = (f: FormularOffset): void => { setFormOffset(f); scrieLocal(CHEIE_OFFSET, JSON.stringify(f)); };
+  const [modOffset, setModOffset] = useState<ModulOffset | 'eroare' | null>(null);
+  useEffect(() => {
+    if (!panouOffset || (modOffset !== null && modOffset !== 'eroare')) return;
+    let viu = true;
+    import('./offsetCalcul.ts').then((m) => { if (viu) setModOffset(m); }, () => { if (viu) setModOffset('eroare'); });
+    return () => { viu = false; };
+  }, [panouOffset, modOffset]);
+  const rezOffset = useMemo(() => {
+    if (!panouOffset || modOffset === null || modOffset === 'eroare') return null;
+    const d = citesteNumar(formOffset.distanta);
+    return d === null ? ('distanta' as const) : modOffset.offsetSelectie(doc, selectie, formOffset.sens === 'exterior' ? d : -d);
+  }, [panouOffset, modOffset, formOffset, doc, selectie]);
   // Manualul deschis, cu ușa de la deschidere (capitolul ei); `null`: închis.
   const [manual, setManual] = useState<{ readonly usa: string | null } | null>(null);
   const unealtaRef = useRef<Unealta>('selectie');
@@ -321,8 +357,9 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         return;
       }
       if (e.key === 'Escape') {
-        // Întâi panoul rețelei deschis (ADR 0061), apoi forma începută, apoi unealta.
+        // Întâi panoul deschis (rețeaua, ADR 0061; offsetul, ADR 0064), apoi forma începută, apoi unealta.
         if (panouReteaRef.current) setPanouRetea(false);
+        else if (panouOffsetRef.current) setPanouOffset(false);
         else if (acum.current.a) gestDesen('anulat', 0, 0, 1, { alt: false, shift: false });
         else setUnealta('selectie');
         return;
@@ -512,6 +549,13 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           </svg>
         );
       })() : null}
+      {rezOffset !== null && typeof rezOffset !== 'string' && !vedere3d ? (
+        // Previzualizarea offsetului: contururile noi, punctate, cât panoul e deschis.
+        <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="offset-previzualizare"
+          data-contururi={rezOffset.contururi.length}>
+          {rezOffset.contururi.map((k, i) => <path key={i} className="offset-previzualizare" d={drumSvg(k, vedere)} />)}
+        </svg>
+      ) : null}
       {cadru ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="cadru-selectie" data-fel={felCadru(cadru.a.x, cadru.b.x)}>
           <rect className={`cadru-${felCadru(cadru.a.x, cadru.b.x)}`} x={Math.min(cadru.a.x, cadru.b.x) + 0.5} y={Math.min(cadru.a.y, cadru.b.y) + 0.5}
@@ -575,7 +619,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         const copiereSectiune = (
           <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.copiere')} data-testid="extensie-copiere">
             <button type="button" className="aliniaza" aria-expanded={panouRetea} aria-controls="panou-retea" title={t('editare.retea')} aria-label={t('editare.retea')}
-              data-editare="retea" onClick={() => { setPanouRetea(!panouRetea); }}>
+              data-editare="retea" onClick={() => { setPanouRetea(!panouRetea); setPanouOffset(false); }}>
               <IconaRetea />
             </button>
             {panouRetea ? (
@@ -583,6 +627,20 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                 motivActiune={(r) => motivCopiereRetea(doc, selectie, r, p.doarCitire)}
                 onCopiaza={(r) => { ruleaza('document.copiaza-in-retea', { retea: () => r }); setPanouRetea(false); }}
                 onInchide={() => { setPanouRetea(false); }} />
+            ) : null}
+          </span>
+        );
+        const offsetSectiune = (
+          <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.offset.sectiune')} data-testid="extensie-offset">
+            <button type="button" className="aliniaza" aria-expanded={panouOffset} aria-controls="panou-offset" title={t('editare.offset')} aria-label={t('editare.offset')}
+              data-editare="offset" onClick={() => { setPanouOffset(!panouOffset); setPanouRetea(false); }}>
+              <IconaOffset />
+            </button>
+            {panouOffset ? (
+              <PanouOffset form={formOffset} onForm={scrieOffset} rez={modOffset === 'eroare' ? 'eroare' : rezOffset}
+                motivActiune={(f) => motivDesen(doc, f, p.doarCitire)}
+                onAplica={(f) => { ruleaza('document.deseneaza', { formaNoua: () => f }); setPanouOffset(false); }}
+                onInchide={() => { setPanouOffset(false); }} />
             ) : null}
           </span>
         );
@@ -609,6 +667,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {oglindireSectiune}
             <span className="separator" aria-hidden="true" />
             {copiereSectiune}
+            {offsetSectiune}
             <span className="separator" aria-hidden="true" />
             {vedereSectiune}
             <span className="separator" aria-hidden="true" />
@@ -1277,6 +1336,70 @@ function PanouRetea({ form, onForm, foaie, motivActiune, onCopiaza, onInchide }:
         <button type="button" data-retea="inchide" onClick={onInchide}>{t('editare.retea.inchide')}</button>
       </div>
     </div>
+  );
+}
+
+/**
+ * Panoul offsetului (ADR 0064): distanța, sensul (spre exterior / spre interior), motivul pentru care nu se poate (calculul,
+ * apoi verdictul acțiunii `document.deseneaza`), câte forme deschise se sar, Aplică și Închide. Cât calculul nu e încă adus,
+ * o notă; dacă nu vine, se spune. Esc îl închide.
+ */
+function PanouOffset({ form, onForm, rez, motivActiune, onAplica, onInchide }: {
+  readonly form: FormularOffset;
+  readonly onForm: (f: FormularOffset) => void;
+  readonly rez: ReturnType<ModulOffset['offsetSelectie']> | 'eroare' | null;
+  readonly motivActiune: (f: readonly FormaNoua[]) => CheieSimpla | null;
+  readonly onAplica: (f: readonly FormaNoua[]) => void;
+  readonly onInchide: () => void;
+}): ReactElement {
+  const gata = rez !== null && rez !== 'eroare' && typeof rez !== 'string' ? rez : null;
+  const motiv = rez === null ? t('editare.offset.incarca') : rez === 'eroare' ? t('editare.offset.neincarcat')
+    : typeof rez === 'string' ? t(`editare.offset.motiv.${rez}`) : (() => {
+      const m = motivActiune(rez.forme);
+      return m === 'motiv.nimic-ales' ? t('editare.offset.motiv.nimic') : m ? t(m) : null;
+    })();
+  return (
+    <div className="insula panou-retea panou-offset" id="panou-offset" role="group" aria-label={t('editare.offset.sectiune')} data-testid="panou-offset"
+      onKeyDown={(e) => {
+        if (e.key !== 'Escape') return;
+        e.preventDefault();
+        e.stopPropagation();
+        onInchide();
+      }}>
+      <div className="fel-retea" role="radiogroup" aria-label={t('editare.offset.sectiune')}>
+        {(['exterior', 'interior'] as const).map((k) => (
+          <button key={k} type="button" role="radio" aria-checked={form.sens === k} aria-pressed={form.sens === k} data-offset-sens={k}
+            onClick={() => { onForm({ ...form, sens: k }); }}>
+            {t(`editare.offset.${k}`)}
+          </button>
+        ))}
+      </div>
+      <div className="campuri-retea">
+        <label className="camp-retea">
+          <span>{t('editare.offset.distanta')}</span>
+          <input value={form.distanta} inputMode="decimal" data-offset="distanta" onChange={(e) => { onForm({ ...form, distanta: e.target.value }); }} />
+        </label>
+      </div>
+      {gata && gata.sarite > 0 ? <p className="motiv-retea" data-testid="offset-sarite">{t('editare.offset.sarite', { n: String(gata.sarite) })}</p> : null}
+      {motiv ? <p className="motiv-retea" role="status" data-testid="motiv-offset">{motiv}</p> : null}
+      <div className="butoane-retea">
+        <button type="button" className="principal" data-offset="aplica" disabled={motiv !== null || !gata}
+          onClick={() => { if (gata) onAplica(gata.forme); }}>
+          {t('editare.offset.aplica')}
+        </button>
+        <button type="button" data-offset="inchide" onClick={onInchide}>{t('editare.retea.inchide')}</button>
+      </div>
+    </div>
+  );
+}
+
+/** Offsetul (ADR 0064): forma plină și conturul ei paralel, punctat, în jur. */
+function IconaOffset(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="5" y="5" width="6" height="6" rx="0.5" />
+      <rect x="1.8" y="1.8" width="12.4" height="12.4" rx="3.2" className="contur" strokeDasharray="2 1.5" />
+    </svg>
   );
 }
 

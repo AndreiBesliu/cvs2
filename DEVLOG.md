@@ -2611,3 +2611,22 @@ instanța de test (după oferta de actualizare a PWA-ului): Pen-ul e în bară; 
 dau o cale deschisă de 2 segmente, aleasă, tăiată pe linie; în Noduri, nodul tras e „ambele”, cu 2 mânere și butonul lui apăsat;
 „pe o parte” dă înainte, din nou înapoi; „colț”, apoi „ambele” (mânerele pe linie); 0 erori în jurnal; anulările au readus
 documentul.
+
+## 2026-10-25 — Offsetul formelor în desen (Model: Claude Opus 5.5)
+
+**Prompt:** „neata, continua”
+**Started:** 25.10, ~08:15 (la pornire: `main` curat, rapid verde pe `1ebd1ea`, rularea de noapte în lucru). Felia **6.J↑**,
+adusă din etapa 6, fără agenți: din rândul „Vectori, noduri, boolean, offset” lipsea offsetul (booleanul e amânat de owner);
+decizia 16 din `PLAN.md` cere același motor ca CAM-ul. Panoul din extensia barei (spre exterior / interior, distanța,
+previzualizarea, Aplică), formele noi prin `document.deseneaza` generalizat la o listă (nimic nou la pornire), motorul adus la
+cerere.
+**Treceri:** (1) acțiunea cu lista (`comandaDesen` cu `lot`, `motivDesen` comun panoului), calculul pur (`src/app/offsetCalcul.ts`:
+fiecare contur închis în lume prin `offsetInchis`, formele deschise sărite, nimic pe jumătate), panoul cu previzualizarea,
+manualul, probele pe hârtie (dreptunghiul 100 × 60 → 110 × 70 cu 4 arce de rază 5 și aria 6000 + 1600 + 25π, spre interior
+90 × 50 cu linii, cercul R20, aria neschimbată la rotire, forma în L: 5 arce spre exterior, 1 spre interior); e2e verzi din prima,
+deci o mutație în panou (sensul ignorat), prinsă (1 e2e picat), restaurată; fraza din manual despre colțuri era inexactă
+(spre interior se rotunjesc colțurile intrânde, nu niciunul): corectată, cu proba formei în L.
+**Completed:** 25.10 08:45. Fără agenți. `npm run rapid` RC 0 (7 179 de teste unitare, 6 noi, 0 picate, 8 sărite);
+determinismul, licențele verzi. E2e 200 / 200 în Edge (3 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea
+neschimbată (95,2 kB; cu ușa 99,8 / 100); totalul 283,8 → 285,8 / 300 kB (motorul offsetului într-o bucată la cerere, comună cu
+CAM-ul: ~85 kB brut); manualul are tot 16 capitole.
