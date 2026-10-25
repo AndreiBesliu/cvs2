@@ -2882,3 +2882,8 @@ două heredoc-uri rupte în shell (scrise apoi cu editorul).
 determinismul (147 de fișiere), licențele, importurile; e2e 214 / 214 în Edge. Pornirea neschimbată (95,3 kB); totalul
 295,4 → 297,5 / 300 kB (figura lui cavalier intră în bucata exportului). Mutațiile țintite: 18 / 18 prinse. Viteza (măsurată):
 240 de insule, 691 de bucle, inelele în 0,23 s, traseul în 0,07 s, dar 620 de ridicări pe două treceri (limita din ADR).
+**Publicat pe canal:** 25.10, `buzunar` (<https://cncvectorstudio-test--buzunar-x95ick77.web.app>), după rapid-ul verde pe CI
+pe `e295276` (rularea 40209524518). Verificat în browserul aplicației: un cerc R12 pus în dreptunghiul 100 × 60 (din panoul de
+proprietăți), amândouă buzunare de 3 mm în fereastra exportului: exportul trece, rezumatul are o singură operație (a
+dreptunghiului), harta simulării arată insula albă în buzunar, iar materialul scos e 16,6 cm³ (pe hârtie: (6 000 − 7,73 colțurile
+− 452,4 insula) × 3 = 16,62 cm³; fără insulă ar fi 17,98). Adresa principală rămâne pe `40582a6` cât owner-ul face testul.
