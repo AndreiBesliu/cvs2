@@ -296,13 +296,13 @@ converted to outlines in the drawing program before export.
 %% capitol: operatii
 %% acopera: document.aplica-operatii
 
-Each shape has a **profile** operation: the cutter runs along the outline, in passes, down to the depth. Operations are
-changed in the **Export G-code** window, one row per shape; on export, the window does **Apply the operations**: it writes
-them into the project.
+Each shape has an operation: a **profile** (the cutter runs along the outline, in passes, down to the depth) or a **pocket**
+(the cutter clears all the material inside a closed outline, down to the depth). Operations are changed in the **Export
+G-code** window, one row per shape; on export, the window does **Apply the operations**: it writes them into the project.
 
 | Field | What it means |
 |---|---|
-| Profile | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
+| Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
 | Direction | **climb**: the material that stays is on the right of the travel (M3 spindle); **conventional**: the opposite. It does not matter on the line |
 | Depth, Step down | how deep it cuts and how far one pass goes down (mm) |
 | Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face) |
@@ -310,6 +310,15 @@ them into the project.
 | Leads | the cutter enters and leaves the outline on a quarter circle, through the waste, so the part's wall keeps no mark |
 | Corners | relief for the corners the cutter cannot reach: **dog-bone** (on the diagonal) or **T-bone** (into the longer wall) |
 | Split | an open path cut through the whole sheet, outside the parts: it is cut last, to split the sheet |
+| Side step | only on a pocket: the distance between the rings, at most half the cutter diameter (40% by default) |
+
+The **pocket** clears the material in rings parallel to the outline: the first one a cutter radius from the wall, each next
+one a side step further in, cut from the inside out to the wall, on every pass. The cutter goes from one ring to the next
+without lifting as long as the way stays inside the pocket. With a side step of at most half the diameter, the floor comes out
+clean everywhere; only the corners no round cutter can reach are left (with the cutter's radius). Where the pocket is
+narrower than the cutter, the cutter does not go in. A pocket has no tabs, ramp, leads or corner relief. For now, a pocket is
+made only on a closed outline and without islands: one outline inside another, in the same operation, is refused (join or
+subtract them first with the boolean).
 
 The cutter (Ø, flat) is one for the whole sheet: if shapes have different cutters, on export they all get the cutter written
 at the top. The feeds and speeds are fixed for now: the spindle at 18,000 rpm (with a 3 s wait), feed 1,000 mm/min, plunge

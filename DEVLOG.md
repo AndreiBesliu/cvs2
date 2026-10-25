@@ -2746,3 +2746,43 @@ minus cercul), apoi Noduri: 2 contururi, 6 noduri, fără refuz; anularea; 0 ero
 unelte, fiecare cu ce faci / ce trebuie să vezi, Bine / Nu / Sărit și o notă; rezultatele se citesc cu `ArtifactData` (colecția
 `rezultate`, un document pe pas). Verificat: citirea colecției (goală). Rândul în „Ce îi trebuie owner-ului” din fișă. Cât
 testează owner-ul, adresa de test nu se schimbă: feliile următoare se publică pe un canal de previzualizare.
+
+## 2026-10-25 — Buzunarul (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok, dar, in timp ce eu voi face testul, vreau sa poti lucra la ce urmeaza”
+**Started:** 25.10, ~12:55. Felia **5.1↑**, fără agenți, cât owner-ul face testul uneltelor de desen: buzunarul (etapa 5), ales
+pentru că nu cere o decizie a owner-ului (textul, din etapa 7, cere un parser de fonturi de ~45 kB, iar totalul e la
+292,4 / 300) și se probează pe simulare. Publicat pe un canal de previzualizare: adresa de test rămâne cea a testului.
+**Treceri:** (1) documentul v11 (`tip: 'buzunar'`, `pasLateral` ≤ D / 2, latura interior și nimic din profil, cerute de ușă;
+migrarea v10 → v11 doar cu numărul, un v10 cu buzunar sau cu `pasLateral` refuzat); inelele (`src/cam/buzunar.ts`: offsetul
+interior la R + k·s, arborele, postordinea, legătura dreaptă la adâncime cât rămâne la R − 0,005 mm de contur), lucrarea
+(refuzurile: calea deschisă, insula, contururile care se ating; buzunarul nu e inel al regiunii păstrate), dialogul („buzunar”
+în selectul tăieturii, pasul lateral sub rând, ce e al profilului oprit), panoul de proprietăți, manualul. Probele: pe hârtie
+(12 inele la 100 × 60, cercurile 2…17 la R20), oracolul simulării pe G-code-ul exportat (dreptunghiul, L-ul cu s = R în
+opoziție, cercul: scoși întregi în deschidere, neatinși în afară), poarta fără regiune, e2e. Prima probă a sensului a găsit un
+prag de topologie: dreptunghiul 40 × 30 cu s = 2,4 are inelul 6 exact la 15 mm (o linie), refuzat de offset, deci tot buzunarul
+cădea; inelul se ia acum puțin mai aproape de contur (14,999 mm). Al doilea: `document.aplica-operatii` refuza schimbarea
+felului operației (`tip` egal cerut), deci dialogul n-ar fi putut scrie buzunarul; felul e acum o valoare. Schema nouă a cerut
+oracolul documentului pe v11 și lipirea lui cu aplicația (~24 de fișiere de probe: lanțurile `migreazaVkV11O`, `PE_V11`,
+otrăvurile „schema mai nouă” de la 11 la 12, câmpul `tip` al tăieturii): 2 351 de teste picate la primul pas, toate din
+versiune, niciunul din conținut. **Oracolul v11 e scris de aceeași sesiune, nu independent** (agenții erau opriți): de reluat.
+(2) Plafonul: pornirea cu ușa ajunsese la 100,2 / 100 kB (măsurat pe un build al lui `HEAD`: 93,02 + 2,21 + 4,69 = 99,91; cu
+buzunarul, ușa 4,79). Variantele măsurate: verificarea potrivirii buzunarului mutată din ușă în lucrare (−0,13 kB; și mai bine
+pentru om: proiectul se deschide, exportul spune motivul), migrarea fără verificare (99,96, dar ar fi lăsat să treacă un v4 … v10
+cu un buzunar), migrarea „compactă” cu un singur motiv (mai mare: textele lui v9 → v10 se comprimau împreună). Soluția (ADR
+0070): ușa despărțită în `usaCurenta.ts` / `migrari.ts` / `incarcare.ts`; la pornire vin doar verificările, migrările (1,85 kB)
+doar pentru un document mai vechi; pornirea cu ușa 98,6 / 100. Pasul `determinism` picase la prima rulare, dar ieșirea lui
+era ascunsă de un `| tail` (codul de ieșire al lanțului era al ultimei comenzi): porțile se rulează de acum cu `&&`.
+Mutațiile țintite: 14 / 14 prinse (pasul dublu, legătura mereu la adâncime, sensul, pragul de topologie, preordinea, pasul
+peste rază, buzunarul ca inel, insula, cele două verificări ale migrării, buzunarul cu urechi, fără pas, ușa curentă care nu
+cere migrările, pasul nejudecat de ușă).
+Între timp, owner-ul: „vreau ca testarea asta sa fie ca un tutorial direct in app. vreau si un buton cu care sa pot face
+snapshot la plansa. aceasta imagine se ataseaza automat la raportul pe care ti-l voi da la final. deci nu ar trebui sa fie
+incarcata in server. dar, termina ce task ai inceput acum. si, noteaza ca vreau ca fiecare unealta sa aiba tasta de shortcut
+in coltul dreapta jos al butonului, langa iconita ei, fara sa o deranjeze cumva”: notat în `CLAUDE.md` (decizii), urmează după
+buzunar.
+**Completed:** 25.10 14:50. Fără agenți. Nivelul rapid local, cu fiecare cod de ieșire păstrat: tipurile, importurile (579 de
+module, 0 încălcări), 7 215 teste unitare (0 picate, 8 sărite; plus cele 3 noi ale ușii curente, rulate separat),
+determinismul (141 de fișiere identice), licențele. E2e 211 / 211 în Edge (cel nou al buzunarului; două probe ale ușii care nu
+vine, mutate pe bucata `usaCurenta`; un EBUSY al descărcărilor din Drive, verde la reluare); emulatoarele: 36 de probe ale
+funcțiilor, 13 e2e. Pornirea 95,3 kB; cu ușa 99,9 → 98,6 / 100; totalul 292,4 → 295,1 / 300 kB.

@@ -23,7 +23,7 @@ test('ușa: un document fără ghidaje rămâne neatins (câmpul e opțional, f�
   const r = incarca(JSON.parse(JSON.stringify(d)));
   assert.ok(r.ok);
   assert.equal(jsonCanonic(r.doc), jsonCanonic(d));
-  assert.equal(r.doc.schema, 10);
+  assert.equal(r.doc.schema, 11);
 });
 
 test('ușa: ghidajele bune trec, cu câmpurile lor necunoscute păstrate', () => {

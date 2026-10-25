@@ -66,6 +66,7 @@ function comandaImport(doc: Document, pregatit: ImportPregatit, la: Loc = null):
 /**
  * Dialogul schimbă doar valorile operațiilor existente: aceleași operații, în aceeași ordine, pe aceleași noduri. Așa
  * referințele, unicitatea și plafoanele rămân cum le-a lăsat ușa; valorile noi trebuie doar să fie în marginile schemei.
+ * Felul operației e o valoare (ADR 0069 §7): un profil devine buzunar și invers, cu ce cere schema pe fiecare.
  */
 function operatiiAcceptate(doc: Document, noi: ReadonlyMap<string, readonly Operatie[]>): boolean {
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
@@ -74,7 +75,7 @@ function operatiiAcceptate(doc: Document, noi: ReadonlyMap<string, readonly Oper
     if (!vechi || vechi.length !== operatii.length) return false;
     for (const [k, o] of operatii.entries()) {
       const v = vechi[k];
-      if (!v || o.id !== v.id || o.tip !== v.tip || o.noduri.length !== v.noduri.length || o.noduri.some((n, j) => n !== v.noduri[j])) return false;
+      if (!v || o.id !== v.id || o.noduri.length !== v.noduri.length || o.noduri.some((n, j) => n !== v.noduri[j])) return false;
       if (!operatieInMargini(o)) return false;
     }
   }

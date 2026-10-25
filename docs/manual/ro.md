@@ -287,12 +287,13 @@ transformat în contururi în programul de desen înainte de export.
 %% capitol: operatii
 %% acopera: document.aplica-operatii
 
-Fiecare formă are o operație de **profil**: freza merge de-a lungul conturului, în treceri, până la adâncime. Operațiile se
-schimbă din fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **aplică operațiile** în proiect.
+Fiecare formă are o operație: un **profil** (freza merge de-a lungul conturului, în treceri, până la adâncime) sau un
+**buzunar** (freza scoate tot materialul dinăuntrul unui contur închis, până la adâncime). Operațiile se schimbă din
+fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **aplică operațiile** în proiect.
 
 | Câmpul | Ce înseamnă |
 |---|---|
-| Profilul | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
+| Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
 | Sens | **urcare**: materialul care rămâne e în dreapta sensului de mers (ax M3); **opoziție**: invers. Pe linie nu contează |
 | Adâncimea, Pasul | cât de adânc se taie și cât coboară o trecere (mm) |
 | Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos) |
@@ -300,6 +301,14 @@ schimbă din fereastra **Exportă G-code**, câte un rând pe formă; la export,
 | Intrări | freza intră pe contur și iese pe câte un sfert de cerc, prin deșeu, ca peretele piesei să nu păstreze urma |
 | Colțuri | degajarea colțurilor în care freza nu intră: **dog-bone** (pe diagonală) sau **T-bone** (în peretele mai lung) |
 | Despărțire | o cale deschisă, tăiată prin toată foaia, în afara pieselor: se taie la urmă, ca să despartă foaia |
+| Pasul lateral | doar pe un buzunar: distanța dintre inele, cel mult jumătate din diametrul frezei (implicit 40 %) |
+
+**Buzunarul** scoate materialul în inele paralele cu conturul: primul la o rază de freză de perete, fiecare următor cu un pas
+lateral mai înăuntru, tăiate dinăuntru spre perete, pe fiecare trecere. Freza trece de la un inel la următorul fără să se
+ridice cât drumul rămâne în buzunar. Cu pasul lateral de cel mult jumătate din diametru, fundul iese neted peste tot; rămân
+doar colțurile pe care nicio freză rotundă nu le atinge (cu raza frezei). Unde buzunarul e mai îngust decât freza, ea nu
+intră. Pe un buzunar nu există urechi, rampă, intrări sau degajări. Deocamdată, un buzunar se face doar pe un contur închis
+și fără insule: un contur în altul, în aceeași operație, e refuzat (unește-le sau scade-le întâi cu booleanul).
 
 Freza (Ø, plată) e una pentru toată foaia: dacă formele au freze diferite, la export primesc toate freza scrisă sus. Regimul
 e fix deocamdată: axul la 18 000 rot/min (cu 3 s de așteptare), avansul 1 000 mm/min, plonjarea 300 mm/min, Z sigur 5 mm;

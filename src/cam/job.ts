@@ -5,13 +5,14 @@ import { judecaDeschisa, NEATINS_PESTE_D, refuzDeschise } from './deschise.ts';
 import { conturElement } from '../model/forme.ts';
 import { taieturiFoaie, type Taietura } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
-import { profil } from './profil.ts';
+import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
+import { adancimiTreceri, profil } from './profil.ts';
 import { perete, regiunePastrata, verificaTaietura, type Perete } from './regiune.ts';
 import { apropiereContururi, distantaCutii } from '../geom/apropiere.ts';
 import { LINIE, type Contur } from '../geom/contur.ts';
 import { cutieContur, depasire, largita, type Cutie, type Depasire } from '../geom/cutie.ts';
 import { curataIntrare } from '../geom/offset.ts';
-import { distantaLaContur } from '../geom/distanta.ts';
+import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
 import { arceSubRaza, colturiCurbe, colturiDeDegajat, cubiceSubRaza, EPS_COLT, type Degajare } from './degajari.ts';
 import { bucataBuclei, lungimeBucla } from './parcurgere.ts';
 import { PRAG_REZOLUTIE } from './iesire.ts';
@@ -35,6 +36,41 @@ function departeDeUrechi(x: Contur, c: Contur, s: number, gu: GeometrieUrechi | 
     const d = coloana.varfuri.length > 1 ? apropiereContururi(x, coloana, D).distanta : p ? distantaLaContur(p, x) : Infinity;
     return d >= D;
   });
+}
+
+/**
+ * Buzunarele pe care lucrarea nu le taie (ADR 0069 §1, §6), cu motiv: unul care poartă ce e al profilului (latura alta decât
+ * interior, urechi, rampă, intrări, degajări, despărțire: ușa nu le judecă, ca latura unei căi deschise, ADR 0037 §2); pe o
+ * cale deschisă (n-are interior); într-o operație cu mai multe contururi în aceeași instanță, două contururi care se ating
+ * sau unul în altul (insula vine mai târziu: buzunarul ar trebui să-l ocolească, iar acum l-ar scoate). Contururile disjuncte
+ * sunt buzunare separate. Pasul lateral îl judecă inelele (`ineleBuzunar`).
+ */
+function refuzBuzunare(taieturi: readonly Taietura[], conturDe: (t: Taietura) => Contur): string | null {
+  const grupuri = new Map<string, Taietura[]>();
+  for (const t of taieturi) {
+    if (t.tip !== 'buzunar') continue;
+    if (t.latura !== 'interior' || t.urechi || t.rampa || t.intrari || t.colturi || t.despartire) {
+      return `${t.idLume}: un buzunar stă înăuntrul conturului, fără urechi, rampă, intrări, degajări sau despărțire`;
+    }
+    if (esteCaleDeschisa(t.forma)) return `${t.idLume}: un buzunar cere un contur închis, iar calea e deschisă`;
+    const k = `${t.instanta}/${t.operatie}`;
+    grupuri.set(k, [...(grupuri.get(k) ?? []), t]);
+  }
+  for (const g of grupuri.values()) {
+    for (let i = 0; i < g.length; i++) {
+      for (let j = i + 1; j < g.length; j++) {
+        const a = g[i] as Taietura, b = g[j] as Taietura;
+        const ca = conturDe(a), cb = conturDe(b);
+        if (distantaCutii(cutieContur(ca), cutieContur(cb)) > 0) continue;
+        if (apropiereContururi(ca, cb, 1e-6).distanta < 1e-6) return `${a.idLume} și ${b.idLume}: contururile aceluiași buzunar se ating sau se intersectează; unește-le întâi (booleanul)`;
+        const pa = ca.varfuri[0]?.p, pb = cb.varfuri[0]?.p;
+        if ((pa && inRegiune(pa, [cb])) || (pb && inRegiune(pb, [ca]))) {
+          return `${a.idLume} și ${b.idLume}: un contur al buzunarului stă în celălalt; buzunarul cu insule vine mai târziu`;
+        }
+      }
+    }
+  }
+  return null;
 }
 
 /**
@@ -93,6 +129,8 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     contururi.set(t.idLume, r.contur);
   }
   const conturDe = (t: Taietura): Contur => contururi.get(t.idLume) as Contur;
+  const buzunar = refuzBuzunare(taieturi, conturDe);
+  if (buzunar) return { ok: false, motiv: buzunar };
   // Căile deschise (ADR 0037 §9): laturile care nu se potrivesc cu `inchis`, ce vine mai târziu pe ele și calea degenerată,
   // refuzate cu motiv înaintea regiunii (o cale deschisă n-are arie, deci nu poate fi inel) și a oricărui traseu.
   const refuz = refuzDeschise(taieturi, contururi);
@@ -162,6 +200,21 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
           ? `${t.idLume}: adâncimea ${t.adancime} mm trece de grosimea foii (${grosime} mm) plus supracursa (${supracursa} mm)`
           : `${t.idLume}: adâncimea ${t.adancime} mm trece de grosimea foii (${grosime} mm)`,
       };
+    }
+    // Buzunarul (ADR 0069): inelele dinăuntru în afară, pe fiecare trecere. Nu e inel al regiunii păstrate: scoate material
+    // doar dinăuntrul conturului lui, până la adâncimea lui (§4), iar traseul lui stă înăuntru prin construcție (§5).
+    if (t.tip === 'buzunar') {
+      const pasLateral = doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie)?.pasLateral;
+      if (pasLateral === undefined) return { ok: false, motiv: `${t.idLume}: buzunarul n-are pasul lateral` };
+      const inele = ineleBuzunar(conturDe(t), R, pasLateral);
+      if (!inele.ok) return { ok: false, motiv: `${t.idLume}: ${inele.motiv}` };
+      const adancimi = adancimiTreceri(t.adancime, t.pas);
+      if (typeof adancimi === 'string') return { ok: false, motiv: `${t.idLume}: ${adancimi}` };
+      const tb = traseuBuzunar(conturDe(t), ordineInele(inele.radacini), { ...regim, sens: t.sens, raza: R, adancimi });
+      if (!tb.ok) return { ok: false, motiv: `${t.idLume}: ${tb.motiv}` };
+      miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, buzunar, ${t.adancime} mm`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
+      for (const m of tb.miscari) miscari.push(m);
+      continue;
     }
     // Urechile (ADR 0028 §2): vârful lor se măsoară de la fața de jos a foii, deci puntea are grosimea cerută oricât de
     // adânc merge tăietura.

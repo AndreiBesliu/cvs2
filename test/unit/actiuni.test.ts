@@ -214,6 +214,10 @@ test('Aplică operațiile (ADR 0025): o singură comandă cu valorile noi; nimic
   for (const alta of structuri) {
     assert.deepEqual(stare(r, 'document.aplica-operatii', cu(alta)), { ok: false, motiv: 'motiv.operatie-invalida' });
   }
+  // Felul e o valoare (ADR 0069 §7): profilul devine buzunar; un pas lateral peste plafonul ușii (50 mm) e în afara schemei.
+  const buzunar: Operatie = { ...op, tip: 'buzunar', pasLateral: 2.4, latura: 'interior', urechi: null, rampa: null, intrari: null, colturi: null };
+  assert.deepEqual(stare(r, 'document.aplica-operatii', cu(new Map([[cerc.id, [buzunar]]]))), { ok: true });
+  assert.deepEqual(stare(r, 'document.aplica-operatii', cu(new Map([[cerc.id, [{ ...buzunar, pasLateral: 60 }]]]))), { ok: false, motiv: 'motiv.operatie-invalida' });
   assert.equal(ctx.h(), doar);
   // Fila care doar citește nu scrie; fără operații noi, acțiunea n-are pe ce lucra.
   assert.deepEqual(stare(r, 'document.aplica-operatii', { ...cu(noi), doarCitire: () => true }), { ok: false, motiv: 'motiv.doar-citire' });

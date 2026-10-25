@@ -14,8 +14,16 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
   const colturi = v === undefined ? o.colturi : v.colturi && o.colturi ? { ...o.colturi, ...v.colturi } : v.colturi;
   // Despărțirea (ADR 0037 §8): bifată, `true`; nebifată, câmpul pleacă (lipsă = false), ca un document fără marcaj să rămână
   // octet cu octet ce era.
-  const { despartire: _vechi, ...rest } = { ...o, ...(v ?? {}), urechi, rampa, intrari, colturi, scula: { ...o.scula, numar: scula.numar, diametru: scula.diametru } };
-  void _vechi;
+  const { despartire: _vechi, pasLateral: _pas, tip: _tip, ...rest } = {
+    ...o, ...(v ?? {}), urechi, rampa, intrari, colturi, scula: { ...o.scula, numar: scula.numar, diametru: scula.diametru },
+  };
+  void _vechi; void _pas; void _tip;
+  // Buzunarul (ADR 0069 §1): latura interior, nimic din profil, cu pasul lateral (al rândului, al operației, sau 40 % din D).
+  const tip = v === undefined ? o.tip : v.tip ?? 'profil';
+  if (tip === 'buzunar') {
+    const pasLateral = v?.pasLateral ?? o.pasLateral ?? Math.round(scula.diametru * 4) / 10;
+    return { ...rest, tip, pasLateral, latura: 'interior', urechi: null, rampa: null, intrari: null, colturi: null };
+  }
   const despartire = v?.despartire ?? o.despartire;
-  return despartire ? { ...rest, despartire: true } : rest;
+  return despartire ? { ...rest, tip, despartire: true } : { ...rest, tip };
 }

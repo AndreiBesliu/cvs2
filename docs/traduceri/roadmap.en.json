@@ -29,6 +29,10 @@
       "ro": "3.9",
       "en": "3.9"
     },
+    "04c8301864ef8b86": {
+      "ro": "**Buzunarul, adus din etapa 5** (fără mașină; ADR 0069; „Ok, dar, in timp ce eu voi face testul, vreau sa poti lucra la ce urmeaza”: lucrat cât owner-ul face testul uneltelor de desen, publicat pe un canal de previzualizare, nu pe adresa de test). În fereastra exportului, „buzunar” e încă o tăietură a rândului (coloana se cheamă acum „Tăietura”): freza scoate tot materialul dinăuntrul conturului, până la adâncime, în inele paralele cu conturul, la un pas lateral de cel mult jumătate din diametru (implicit 40 %), dinăuntru spre perete; între inele nu se ridică cât drumul rămâne în buzunar. Documentul v11 (migrarea doar cu numărul). Refuzate, cu motiv: calea deschisă, insulele, contururile care se ating, freza care nu încape. Manualul („Operațiile de tăiere”) e la zi. Ca să încapă, ușa unui proiect salvat s-a despărțit (ADR 0070): la pornire vin doar verificările, migrările doar pentru un document vechi; pornirea cu ușa 99,9 → 98,6 / 100 kB. **Treceri:** (1) schema v11 și ușa, inelele (arborele, postordinea), legăturile, lucrarea (buzunarul nu e inel), dialogul; oracolul simulării pe G-code-ul exportat: dreptunghiul, L-ul cu pasul maxim, cercul, scoase întregi; o probă pe hârtie a găsit un prag de topologie (40 × 30, pasul 2,4: inelul exact la jumătatea lățimii, o linie, refuzat de offset): inelul se ia la 14,999 mm; `document.aplica-operatii` refuza schimbarea felului (prins de e2e), acum felul e o valoare; pornirea cu ușa ajunsese la 100,2 / 100 kB, de unde ADR 0070; oracolul documentului v11 și lipirea cu el (~24 de fișiere de probe) scrise de aceeași sesiune, nu independent.",
+      "en": "**The pocket, brought forward from stage 5** (no machine; ADR 0069; “Ok, but while I do the test, I want you to be able to work on what comes next”: done while the owner runs the drawing tools test, published on a preview channel, not on the test address). In the export window, “pocket” is one more cut for a row (the column is now called “Cut”): the cutter clears all the material inside the outline, down to the depth, in rings parallel to the outline, a side step of at most half the diameter apart (40% by default), from the inside out to the wall; between rings it does not lift as long as the way stays inside the pocket. Document v11 (the migration only changes the number). Refused, with a reason: the open path, islands, outlines that touch, a cutter that does not fit. The manual (“The cutting operations”) is up to date. To make it fit, the door of a saved project was split (ADR 0070): at startup only the checks come, the migrations only for an older document; startup with the door 99.9 → 98.6 / 100 kB. **Passes:** (1) schema v11 and the door, the rings (the tree, post-order), the links, the job (the pocket is not a ring), the dialog; the simulation oracle on the exported G-code: the rectangle, the L with the maximum step, the circle, cleared whole; a paper test found a topology threshold (40 × 30, step 2.4: the ring exactly at half the width, a line, refused by the offset): the ring is taken at 14.999 mm; `document.aplica-operatii` refused changing the kind (caught by e2e), now the kind is a value; startup with the door had reached 100.2 / 100 kB, hence ADR 0070; the v11 document oracle and its glue (~24 test files) written by the same session, not independently."
+    },
     "0576698832e7cabf": {
       "ro": "Roadmap-ul în engleză",
       "en": "The roadmap in English"
@@ -316,6 +320,10 @@
     "30b7d7208fd2b9a4": {
       "ro": "Cele două interfețe, ghidul de pornire",
       "en": "The two interfaces, the getting-started guide"
+    },
+    "319b2eab9f275712": {
+      "ro": "Buzunarul",
+      "en": "The pocket"
     },
     "31ff6e67bb98d088": {
       "ro": "**Poarta invariantelor completă** și unealta de otrăvuri (§4.3), cu cele 7 otrăvuri din s4.",
@@ -1061,6 +1069,10 @@
       "ro": "Oglindirea selecției",
       "en": "Mirroring the selection"
     },
+    "b4f2ae0ab84496c5": {
+      "ro": "Buzunarul, adus din etapa 5",
+      "en": "The pocket, brought forward from stage 5"
+    },
     "b52896d7055ba085": {
       "ro": "Simularea",
       "en": "Simulation"
@@ -1276,6 +1288,10 @@
     "e2a199e5f1f08a88": {
       "ro": "Importul SVG",
       "en": "SVG import"
+    },
+    "e4053df5f106173a": {
+      "ro": "Ușa documentului curent",
+      "en": "The current document’s door"
     },
     "e44f07e0d0c103b7": {
       "ro": "Importul și exportul",

@@ -33,6 +33,12 @@ export type ValoriOperatie = {
    * neschimbată. Exportul cere marcajul pe o tăietură deschisă prin foaie care ajunge la marginea foii.
    */
   readonly despartire?: boolean;
+  /**
+   * Buzunarul (ADR 0069): `tip: 'buzunar'` cu distanța dintre inele (mm); lipsă = profil. Pe un buzunar, latura e
+   * `interior`, iar urechile, rampa, intrările și degajările lipsesc.
+   */
+  readonly tip?: 'profil' | 'buzunar';
+  readonly pasLateral?: number;
 };
 
 /**
@@ -107,10 +113,13 @@ const CHEI_COLT: Readonly<Record<(typeof COLTURI)[number], CheieSimpla>> = {
   'stanga-jos': 'export.colt.stanga-jos', 'dreapta-jos': 'export.colt.dreapta-jos',
   'dreapta-sus': 'export.colt.dreapta-sus', 'stanga-sus': 'export.colt.stanga-sus',
 };
-const CHEI_LATURA: Readonly<Record<Latura, CheieSimpla>> = {
+const CHEI_LATURA: Readonly<Record<Latura | 'buzunar', CheieSimpla>> = {
   exterior: 'export.latura.exterior', interior: 'export.latura.interior', 'pe-linie': 'export.latura.pe-linie',
-  stanga: 'export.latura.stanga', dreapta: 'export.latura.dreapta',
+  stanga: 'export.latura.stanga', dreapta: 'export.latura.dreapta', buzunar: 'export.latura.buzunar',
 };
+
+/** Pasul lateral cu care pornește un buzunar nou: 40 % din diametrul frezei (ADR 0069 §1), la 0,1 mm. */
+export const pasLateralImplicit = (diametru: number): number => Math.round(diametru * 4) / 10;
 
 /** În (0, plafon]: marginile schemei v3, ca operațiile scrise în document să treacă de ușă la redeschidere. */
 function inMargini(s: string, plafon: number, minim = 0): boolean {
@@ -127,6 +136,9 @@ type Rand = {
   /** Degajările: „” = fără. */
   readonly colturi: '' | ColturiOperatie['tip'];
   readonly despartire: boolean;
+  /** Buzunarul (ADR 0069): felul rândului și pasul lateral, ca text; pasul rămâne scris și pe un profil. */
+  readonly tip: 'profil' | 'buzunar';
+  readonly pasLateral: string;
 };
 
 /** Raza cu care pornește bifa intrărilor pe un rând care n-avea (ADR 0030 §1). */
@@ -238,6 +250,8 @@ export function DialogExport(
       intrari: inchise && o.valori.intrari !== null, razaIntrare: text((o.valori.intrari ?? INTRARI_IMPLICITE).raza),
       colturi: inchise ? o.valori.colturi?.tip ?? '' : '',
       despartire: !inchise && o.valori.despartire === true,
+      tip: inchise && o.valori.tip === 'buzunar' ? 'buzunar' : 'profil',
+      pasLateral: text(o.valori.pasLateral ?? pasLateralImplicit(diametruInitial)),
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
@@ -270,25 +284,31 @@ export function DialogExport(
   useEffect(() => { if (cere) cerereVizibila.current?.focus(); }, [cere]);
   const diametruBun = inMargini(diametru, MARGINI_OPERATIE.diametru);
   // Câmpurile urechilor se judecă doar cu bifa pusă: oprite, nu intră în document.
+  // Pasul lateral al unui buzunar: cel mult raza frezei din dialog (ADR 0069 §3); fără o freză bună, nu se judecă.
+  const dFreza = citesteNumar(diametru);
   const randBun = (p: Rand | undefined): {
     adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean; rampa: boolean; intrari: boolean;
+    pasLateral: boolean;
   } => ({
     adancime: p !== undefined && inMargini(p.adancime, MARGINI_OPERATIE.adancime),
     pas: p !== undefined && inMargini(p.pas, MARGINI_OPERATIE.adancime),
-    numar: p !== undefined && (!p.urechi || intregInMargini(p.numarUrechi, MARGINI_OPERATIE.urechi)),
-    latime: p !== undefined && (!p.urechi || inMargini(p.latimeUreche, MARGINI_OPERATIE.latimeUreche)),
-    grosime: p !== undefined && (!p.urechi || inMargini(p.grosimeUreche, MARGINI_OPERATIE.grosimeUreche)),
-    rampa: p !== undefined && (!p.rampa || inMargini(p.lungimeRampa, MARGINI_OPERATIE.lungimeRampa, MARGINI_OPERATIE.lungimeRampaMinima)),
+    // Pe un buzunar, urechile și rampa nu se aplică (ADR 0069 §1): bifele sunt oprite, deci nu se judecă.
+    numar: p !== undefined && (p.tip === 'buzunar' || !p.urechi || intregInMargini(p.numarUrechi, MARGINI_OPERATIE.urechi)),
+    latime: p !== undefined && (p.tip === 'buzunar' || !p.urechi || inMargini(p.latimeUreche, MARGINI_OPERATIE.latimeUreche)),
+    grosime: p !== undefined && (p.tip === 'buzunar' || !p.urechi || inMargini(p.grosimeUreche, MARGINI_OPERATIE.grosimeUreche)),
+    rampa: p !== undefined && (p.tip === 'buzunar' || !p.rampa || inMargini(p.lungimeRampa, MARGINI_OPERATIE.lungimeRampa, MARGINI_OPERATIE.lungimeRampaMinima)),
     // Pe linie, intrările nu se cer (bifa e oprită), deci nici nu se judecă. Cu rampă, raza are pragul ei (ADR 0031 §2).
-    intrari: p !== undefined && (!p.intrari || p.latura === 'pe-linie' || inMargini(p.razaIntrare, MARGINI_OPERATIE.razaIntrare,
+    intrari: p !== undefined && (p.tip === 'buzunar' || !p.intrari || p.latura === 'pe-linie' || inMargini(p.razaIntrare, MARGINI_OPERATIE.razaIntrare,
       p.rampa ? MARGINI_OPERATIE.razaIntrareMinimaRampa : MARGINI_OPERATIE.razaIntrareMinima)),
+    pasLateral: p !== undefined && (p.tip !== 'buzunar' || (dFreza !== null && inMargini(p.pasLateral, dFreza / 2))),
   });
   const randuri = operatii.map((o) => randBun(param[o.cheie]));
   const operatiiBune = diametruBun && randuri.every((b) => b.adancime && b.pas);
   const urechiBune = randuri.every((b) => b.numar && b.latime && b.grosime);
   const rampeBune = randuri.every((b) => b.rampa);
   const intrariBune = randuri.every((b) => b.intrari);
-  const valid = operatiiBune && urechiBune && rampeBune && intrariBune;
+  const pasiBuni = randuri.every((b) => b.pasLateral);
+  const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -303,11 +323,19 @@ export function DialogExport(
       return vechi ? { ...v, [id]: { ...vechi, ...p } } : v;
     });
   };
-  const valori = (): Map<string, ValoriOperatie> => new Map(operatii.flatMap((o) => {
+  const valori = (): Map<string, ValoriOperatie> => new Map(operatii.flatMap((o): Array<readonly [string, ValoriOperatie]> => {
     const p = param[o.cheie];
     const adancime = p ? citesteNumar(p.adancime) : null;
     const pas = p ? citesteNumar(p.pas) : null;
     if (!p || adancime === null || pas === null) return [];
+    // Buzunarul (ADR 0069 §1): latura interior, nimic din profil, cu pasul lateral.
+    if (p.tip === 'buzunar') {
+      const pasLateral = citesteNumar(p.pasLateral);
+      if (pasLateral === null) return [];
+      return [[o.cheie, {
+        latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'buzunar', pasLateral,
+      }] as const];
+    }
     const numar = citesteNumar(p.numarUrechi), latime = citesteNumar(p.latimeUreche), grosime = citesteNumar(p.grosimeUreche);
     if (p.urechi && (numar === null || latime === null || grosime === null)) return [];
     const urechi = p.urechi && numar !== null && latime !== null && grosime !== null ? { numar, latime, grosime } : null;
@@ -335,6 +363,7 @@ export function DialogExport(
     ...(rampeBune ? [] : [t('motiv.rampa-invalida', {
       minim: fmtFreza.format(MARGINI_OPERATIE.lungimeRampaMinima), lungime: fmtFreza.format(MARGINI_OPERATIE.lungimeRampa),
     })]),
+    ...(pasiBuni ? [] : [t('motiv.pas-lateral-invalid', { max: dFreza !== null ? fmtFreza.format(dFreza / 2) : '–' })]),
     ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
       ? t('motiv.intrari-invalide-rampa', {
         minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinimaRampa), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
@@ -394,15 +423,22 @@ export function DialogExport(
               const b = randBun(p);
               // Rândul are căi deschise (ADR 0037 §12): doar pe linie, fără urechi, rampă, intrări și degajări, cu motivul în titlu.
               const deschis = o.deschise > 0;
-              const titluDeschis = deschis ? t('export.deschise.titlu') : undefined;
+              // Pe un buzunar (ADR 0069 §1), ce e al profilului e oprit, cu motivul în titlu, ca pe o cale deschisă.
+              const buz = p.tip === 'buzunar';
+              const titluDeschis = deschis ? t('export.deschise.titlu') : buz ? t('export.buzunar.nu-se-aplica') : undefined;
               return (
                 <Fragment key={o.cheie}>
                 <tr data-operatie={o.cheie}>
                   <td>{o.descriere}</td>
                   <td>
-                    <select value={p.latura} data-camp="latura" disabled={doarCitire} title={deschis ? t('export.latura.deschise.titlu') : undefined}
-                      onChange={(ev) => { schimba(o.cheie, { latura: ev.target.value as Latura }); }}>
+                    {/* Buzunarul (ADR 0069) e încă o alegere a tăieturii, doar pe un rând cu contururi închise. */}
+                    <select value={buz ? 'buzunar' : p.latura} data-camp="latura" disabled={doarCitire} title={deschis ? t('export.latura.deschise.titlu') : undefined}
+                      onChange={(ev) => {
+                        const v = ev.target.value;
+                        schimba(o.cheie, v === 'buzunar' ? { tip: 'buzunar' } : { tip: 'profil', latura: v as Latura });
+                      }}>
                       {laturiOferite(o.deschise, o.noduri, p.latura).map((l) => <option key={l} value={l}>{t(CHEI_LATURA[l])}</option>)}
+                      {!deschis && <option value="buzunar">{t(CHEI_LATURA.buzunar)}</option>}
                     </select>
                   </td>
                   <td>
@@ -415,22 +451,22 @@ export function DialogExport(
                   <td><input type="text" inputMode="decimal" value={p.adancime} disabled={doarCitire} aria-invalid={!b.adancime} onChange={(ev) => { schimba(o.cheie, { adancime: ev.target.value }); }} /></td>
                   <td><input type="text" inputMode="decimal" value={p.pas} disabled={doarCitire} aria-invalid={!b.pas} onChange={(ev) => { schimba(o.cheie, { pas: ev.target.value }); }} /></td>
                   <td>
-                    <input type="checkbox" checked={p.urechi} data-camp="urechi" disabled={doarCitire || deschis} aria-label={t('export.urechi')}
+                    <input type="checkbox" checked={p.urechi && !buz} data-camp="urechi" disabled={doarCitire || deschis || buz} aria-label={t('export.urechi')}
                       title={titluDeschis ?? t('export.urechi.titlu')} onChange={(ev) => { schimba(o.cheie, { urechi: ev.target.checked }); }} />
                   </td>
                   <td>
-                    <input type="checkbox" checked={p.rampa} data-camp="rampa" disabled={doarCitire || deschis} aria-label={t('export.rampa')}
+                    <input type="checkbox" checked={p.rampa && !buz} data-camp="rampa" disabled={doarCitire || deschis || buz} aria-label={t('export.rampa')}
                       title={titluDeschis ?? t('export.rampa.titlu')} onChange={(ev) => { schimba(o.cheie, { rampa: ev.target.checked }); }} />
                   </td>
                   <td>
                     {/* Pe linie, freza taie ambii pereți: nu există parte de deșeu pentru intrare (ADR 0030 §6). */}
-                    <input type="checkbox" checked={p.intrari && p.latura !== 'pe-linie'} data-camp="intrari"
-                      disabled={doarCitire || deschis || p.latura === 'pe-linie'} aria-label={t('export.intrari')}
+                    <input type="checkbox" checked={p.intrari && p.latura !== 'pe-linie' && !buz} data-camp="intrari"
+                      disabled={doarCitire || deschis || buz || p.latura === 'pe-linie'} aria-label={t('export.intrari')}
                       title={titluDeschis ?? t('export.intrari.titlu')} onChange={(ev) => { schimba(o.cheie, { intrari: ev.target.checked }); }} />
                   </td>
                   <td>
                     {/* Pe linie, nu există parte de deșeu pentru degajare (ADR 0032 §6). */}
-                    <select value={p.latura === 'pe-linie' ? '' : p.colturi} data-camp="colturi" disabled={doarCitire || deschis || p.latura === 'pe-linie'}
+                    <select value={p.latura === 'pe-linie' || buz ? '' : p.colturi} data-camp="colturi" disabled={doarCitire || deschis || buz || p.latura === 'pe-linie'}
                       aria-label={t('export.colturi')} title={titluDeschis ?? t('export.colturi.titlu')}
                       onChange={(ev) => { schimba(o.cheie, { colturi: ev.target.value === 'dog-bone' || ev.target.value === 't-bone' ? ev.target.value : '' }); }}>
                       <option value="">{t('export.colturi.fara')}</option>
@@ -444,13 +480,22 @@ export function DialogExport(
                       title={t('export.despartire.titlu')} onChange={(ev) => { schimba(o.cheie, { despartire: ev.target.checked }); }} />
                   </td>
                 </tr>
-                {(p.urechi || p.rampa || (p.intrari && p.latura !== 'pe-linie')) && (
+                {(buz || p.urechi || p.rampa || (p.intrari && p.latura !== 'pe-linie')) && (
                   // Câmpurile urechilor și ale rampei, pe un rând al lor sub operație: tabelul rămâne îngust.
                   <tr className="detalii" data-detalii={o.cheie}>
                     <td />
                     <td colSpan={9}>
                       <div className="campuri-detalii">
-                      {p.urechi && (
+                      {buz && (
+                      <div className="campuri-buzunar" data-buzunar={o.cheie}>
+                      <label title={t('export.pas-lateral.titlu')}>
+                        {t('export.pas-lateral')}
+                        <input type="text" inputMode="decimal" value={p.pasLateral} data-camp="pas-lateral" disabled={doarCitire}
+                          aria-invalid={!b.pasLateral} onChange={(ev) => { schimba(o.cheie, { pasLateral: ev.target.value }); }} />
+                      </label>
+                      </div>
+                      )}
+                      {p.urechi && !buz && (
                       <div className="campuri-urechi" data-urechi={o.cheie}>
                       <label>
                         {t('export.urechi.numar')}
@@ -469,7 +514,7 @@ export function DialogExport(
                       </label>
                       </div>
                       )}
-                      {p.rampa && (
+                      {p.rampa && !buz && (
                       <div className="campuri-rampa" data-rampa={o.cheie}>
                       <label title={t('export.rampa.lungime.titlu')}>
                         {t('export.rampa.lungime')}
@@ -482,7 +527,7 @@ export function DialogExport(
                       )}
                       </div>
                       )}
-                      {p.intrari && p.latura !== 'pe-linie' && (
+                      {p.intrari && p.latura !== 'pe-linie' && !buz && (
                       <div className="campuri-intrari" data-intrari={o.cheie}>
                       <label title={t('export.intrari.raza.titlu')}>
                         {t('export.intrari.raza')}

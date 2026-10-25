@@ -1,5 +1,5 @@
 import type { Document } from '../model/document.ts';
-import type { RezultatIncarcare } from '../model/incarcare.ts';
+import type { RezultatIncarcare } from '../model/usaCurenta.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 
 /**
@@ -105,14 +105,16 @@ async function ultimaVersiune(store: IDBObjectStore): Promise<Versiune | null> {
   return { rev: cheie[1], valoare: cursor.value };
 }
 
-type Usa = (brut: unknown) => RezultatIncarcare;
+type Usa = (brut: unknown) => RezultatIncarcare | Promise<RezultatIncarcare>;
 
 /**
- * Ușa de încărcare (`incarca`, cu migrările) vine la cerere: e nevoie de ea doar când există o versiune salvată, iar
- * deschiderea e oricum asincronă. Așa nu ocupă pachetul de pornire. Workerul PWA (ADR 0017) trebuie s-o țină și pe ea
- * în cache, cu celelalte bucăți încărcate la cerere: altfel, offline, proiectul salvat nu s-ar deschide.
+ * Ușa de încărcare vine la cerere: e nevoie de ea doar când există o versiune salvată, iar deschiderea e oricum
+ * asincronă. Așa nu ocupă pachetul de pornire. Întâi doar ușa documentului curent (ADR 0070); migrările (`incarcare.ts`)
+ * se aduc abia pentru un document mai vechi, o dată după o actualizare a aplicației. Workerul PWA (ADR 0017) le ține pe
+ * amândouă în cache, cu celelalte bucăți încărcate la cerere: altfel, offline, proiectul salvat nu s-ar deschide.
  */
-const usaLaCerere = (): Promise<Usa> => import('../model/incarcare.ts').then((m) => m.incarca);
+const usaLaCerere = (): Promise<Usa> => import('../model/usaCurenta.ts').then((m) => (brut: unknown) =>
+  m.incarcaCurent(brut) ?? import('../model/incarcare.ts').then((x) => x.incarca(brut)));
 
 /**
  * Versiunea citită, prin singura ușă. Orice valoare care nu e text e un proiect care nu se deschide, nu „niciun proiect”.
@@ -129,7 +131,7 @@ async function documentDin(
   } catch {
     return { ok: false, motiv: 'textul salvat nu e JSON' };
   }
-  const r = (await usa())(brut);
+  const r = await (await usa())(brut);
   return r.ok ? { ok: true, doc: r.doc } : r;
 }
 

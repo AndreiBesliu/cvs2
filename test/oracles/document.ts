@@ -164,6 +164,19 @@
  *   `false`), altfel categoria nouă `[despartire]`; ușa nu judecă dacă are sens (calea închisă, adâncimea sub grosimea
  *   foii: le refuză CAM-ul, §8);
  * - plafoanele rămân aceleași; vârfurile căilor deschise se numără la fel, cu tot cu vârful final.
+ *
+ * Din ADR 0069 §1–§2 (documentul v11: buzunarul, felia 5.1↑). ATENȚIE: scris de aceeași sesiune care a scris aplicația,
+ * din textul ADR-ului, NU de o sesiune independentă (agenții erau opriți în timpul testului owner-ului); de reluat de una
+ * independentă. Oracolul e pe v11: `SCHEMA_CURENTA_O` = 11, `ridicaO` dă v11 (`ridicaV10O` păstrează lanțul până la 10),
+ * `verificaO` e ușa v11 (`verificaPanaLaV10O` e ușa unei aplicații rămase pe 10); migrarea v10 → v11 (`migreazaV10V11O`)
+ * schimbă doar numărul, iar un v10 (sau mai vechi) cu un câmp propriu `pasLateral` pe o operație e o ciocnire
+ * (`ciocniriPasLateralO`). Contractul ușii v11:
+ * - `tip` ∈ { profil, buzunar } (`[operatie]` altfel);
+ * - `pasLateral`, câmpul opțional al operației: dacă există, un număr finit în (0, 50] (jumătatea plafonului diametrului);
+ *   altfel categoria nouă `[buzunar]`;
+ * - ușa NU judecă potrivirea buzunarului (pasul lipsă sau peste raza frezei, latura alta decât interior, urechile, rampa,
+ *   intrările, degajările, despărțirea pe un buzunar; pasul pe un profil), nici dacă are sens (calea deschisă, insulele,
+ *   freza care nu încape): le refuză CAM-ul, cu motiv (§1, §6), ca latura unei căi deschise (ADR 0037 §2).
  */
 
 export type MatriceO = {
@@ -270,7 +283,7 @@ export type CategorieO =
   | 'schema' | 'id' | 'unic-piese' | 'unic-foi' | 'unic-instante' | 'unic-noduri' | 'unic-elemente' | 'referinta'
   | 'adancime' | 'rotire' | 'finit' | 'plafon' | 'foi' | 'pozitiv' | 'margini' | 'ciocnire' | 'forma'
   | 'operatie' | 'unic-operatii' | 'referinta-op' | 'scula' | 'sens' | 'urechi' | 'rampa' | 'intrari' | 'colturi' | 'cale'
-  | 'despartire';
+  | 'despartire' | 'buzunar';
 
 /** ADR 0037 §2: laturile documentului v10, exact (ASCII, ca `opozitie`). */
 export const LATURI_V10_O = ['interior', 'pe-linie', 'exterior', 'stanga', 'dreapta'] as const;
@@ -286,6 +299,11 @@ export type OperatieV10O = Liber & {
 };
 export type PiesaV10O = PiesaO & { operatii: OperatieV10O[] };
 export type DocV10O = Liber & { schema: 10; rev: number; piese: PiesaV10O[]; foi: FoaieO[] };
+
+/** ADR 0069 §1: operația v11 = v10 cu felul `buzunar` și, doar pe el, `pasLateral`. */
+export type OperatieV11O = Liber & Omit<OperatieV10O, 'tip'> & { tip: 'profil' | 'buzunar'; pasLateral?: number };
+export type PiesaV11O = PiesaO & { operatii: OperatieV11O[] };
+export type DocV11O = Liber & { schema: 11; rev: number; piese: PiesaV11O[]; foi: FoaieO[] };
 
 /** ADR 0027 §5: valorile primite ale sensului, exact; implicitul migrării și al operației noi. */
 export const SENSURI_O: readonly SensO[] = ['urcare', 'opozitie'];
@@ -309,7 +327,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 10;
+export const SCHEMA_CURENTA_O = 11;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -664,6 +682,8 @@ const PASI_O: ReadonlyArray<{ readonly de: number; readonly camp: string | null;
   { de: 7, camp: 'colturi', implicit: COLTURI_IMPLICITE_O }, { de: 8, camp: null, implicit: null },
   // ADR 0037 §2: v9 → v10 schimbă doar numărul (ciocnirea `despartire` o judecă ușa, `ciocniriDespartireO`).
   { de: 9, camp: null, implicit: null },
+  // ADR 0069 §2: v10 → v11 schimbă doar numărul (ciocnirea `pasLateral` o judecă ușa, `ciocniriPasLateralO`).
+  { de: 10, camp: null, implicit: null },
 ];
 
 /** Pasul vk → vk+1 (k = 3 … 9), pe loc, pe un document deja copiat (și deja verificat: nicio ciocnire). */
@@ -916,11 +936,46 @@ export function migreazaV1V10O(v1: DocV1O): DocV10O {
 }
 
 /**
- * Orice versiune primită, adusă la versiunea curentă, v10 (o copie; un v10 rămâne neschimbat). Felia 2.3c-2: până la
- * v9 era `ridicaO` de atunci (păstrat ca `ridicaV9O`).
+ * Orice versiune primită până la 10, adusă la v10 (o copie; un v10 rămâne neschimbat): `ridicaO` de dinainte de ADR 0069.
+ * Felia 2.3c-2: până la v9 era `ridicaO` de atunci (păstrat ca `ridicaV9O`).
  */
-export function ridicaO(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O): DocV10O {
+export function ridicaV10O(doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O): DocV10O {
   return ridicaLaO<DocV10O>(doc, 10);
+}
+
+/** Documentul v11 pe care ADR 0069 §2 îl cere din v10: doar `schema: 11`; tot restul rămâne, cu câmpurile necunoscute. */
+export function migreazaV10V11O(v10: DocV10O): DocV11O {
+  return { ...structuredClone(v10), schema: 11 } as unknown as DocV11O;
+}
+
+/** v9 → v10 → v11, …, v1 → … → v11, în lanț (felia 5.1↑: lanțurile spre ultima versiune primesc pasul v10 → v11). */
+export function migreazaV9V11O(v9: DocV9O): DocV11O {
+  return ridicaLaO<DocV11O>(v9, 11);
+}
+export function migreazaV8V11O(v8: DocV8O): DocV11O {
+  return ridicaLaO<DocV11O>(v8, 11);
+}
+export function migreazaV7V11O(v7: DocV7O): DocV11O {
+  return ridicaLaO<DocV11O>(v7, 11);
+}
+export function migreazaV6V11O(v6: DocV6O): DocV11O {
+  return ridicaLaO<DocV11O>(v6, 11);
+}
+export function migreazaV5V11O(v5: DocV5O): DocV11O {
+  return ridicaLaO<DocV11O>(v5, 11);
+}
+export function migreazaV4V11O(v4: DocV4O): DocV11O {
+  return ridicaLaO<DocV11O>(v4, 11);
+}
+export function migreazaV1V11O(v1: DocV1O): DocV11O {
+  return ridicaLaO<DocV11O>(v1, 11);
+}
+
+/** Orice versiune primită, adusă la versiunea curentă, v11 (o copie; un v11 rămâne neschimbat). */
+export function ridicaO(
+  doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | DocV11O,
+): DocV11O {
+  return ridicaLaO<DocV11O>(doc, 11);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -1152,7 +1207,7 @@ export function problemeColturiO(op: Liber): string[] {
  * Lista încălcărilor contractului v2 (`schema` 2), v3 (`schema` 3, cu operațiile), v4 (`schema` 4, cu sensul fiecărei
  * operații) sau v5 (`schema` 5, cu urechile); goală = document valid. Merge iterativ: un arbore adânc nu umple stiva.
  */
-function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10): string[] {
+function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11): string[] {
   const probleme: string[] = [];
   const semnaleaza: Semnaleaza = (categorie, mesaj) => { probleme.push(`[${categorie}] ${mesaj}`); };
   const u = unelte(semnaleaza, schema);
@@ -1242,7 +1297,11 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 1
         if (idOperatii.has(ido)) semnaleaza('unic-operatii', `${cp}: id-ul de operație ${ido} se repetă în aceeași piesă`);
         idOperatii.add(ido);
       }
-      if (op['tip'] !== 'profil') semnaleaza('operatie', `${co}.tip = ${JSON.stringify(op['tip'])} nu e 'profil'`);
+      // ADR 0069 §1: în v11, și `buzunar`, cu regulile lui (categoria `[buzunar]`).
+      if (schema >= 11) {
+        if (op['tip'] !== 'profil' && op['tip'] !== 'buzunar') semnaleaza('operatie', `${co}.tip = ${JSON.stringify(op['tip'])} nu e 'profil' sau 'buzunar'`);
+        for (const m of problemeBuzunarO(op)) semnaleaza('buzunar', `${co} ${m}`);
+      } else if (op['tip'] !== 'profil') semnaleaza('operatie', `${co}.tip = ${JSON.stringify(op['tip'])} nu e 'profil'`);
       // ADR 0037 §2: în v10, și `stanga` / `dreapta`.
       const laturi: readonly string[] = schema >= 10 ? LATURI_V10_O : ORDINEA_LATURILOR_O;
       if (!(schema >= 10 ? LATURI_V10_SET_O : LATURI_O).has(op['latura'])) semnaleaza('operatie', `${co}.latura = ${JSON.stringify(op['latura'])} nu e una dintre ${laturi.join(', ')}`);
@@ -1468,6 +1527,34 @@ export function verificaV9(doc: unknown): string[] {
  */
 export function verificaV10(doc: unknown): string[] {
   return verificaArboreO(doc, 10);
+}
+
+/** ADR 0069 §1: `pasLateral`, dacă există, e un număr finit în (0, 50]; potrivirea lui cu buzunarul e a CAM-ului. */
+function problemeBuzunarO(op: Liber): string[] {
+  if (!Object.hasOwn(op, 'pasLateral')) return [];
+  const s = op['pasLateral'];
+  return typeof s === 'number' && Number.isFinite(s) && s > 0 && s <= PLAFOANE_O.sculaDiametru / 2
+    ? [] : [`.pasLateral = ${JSON.stringify(s) ?? String(s)} nu e în (0, ${PLAFOANE_O.sculaDiametru / 2}]`];
+}
+
+/** Lista încălcărilor contractului v11 (… + ADR 0069 §1: buzunarul); goală = document v11 valid. */
+export function verificaV11(doc: unknown): string[] {
+  return verificaArboreO(doc, 11);
+}
+
+/** ADR 0069 §2: un v10 (sau mai vechi) cu un câmp propriu `pasLateral` pe o operație: în v11 câmpul capătă sens. */
+export function ciocniriPasLateralO(doc: unknown): string[] {
+  const rez: string[] = [];
+  if (!esteObiect(doc) || !Array.isArray(doc['piese'])) return rez;
+  doc['piese'].forEach((p: unknown, i) => {
+    if (!esteObiect(p) || !Array.isArray(p['operatii'])) return;
+    p['operatii'].forEach((op: unknown, k) => {
+      if (esteObiect(op) && Object.hasOwn(op, 'pasLateral')) {
+        rez.push(`[ciocnire] piese[${i}].operatii[${k}]: câmpul „pasLateral” al operației v${String(doc['schema'])} s-ar pierde în migrare`);
+      }
+    });
+  });
+  return rez;
 }
 
 /** Ciocnirile pasului vk → vk+1 (k = 3 … 7): o operație care are deja câmpul nou al pasului, oricare i-ar fi valoarea. */
@@ -1829,6 +1916,27 @@ export function verificaV9V10(doc: unknown): string[] {
  * corpusul; `verificaV9V10` face și pasul întreg).
  */
 export function verificaO(doc: unknown): string[] {
+  if (!esteObiect(doc)) return ['[schema] documentul nu e un obiect'];
+  const s = doc['schema'];
+  if (s === 11) return verificaV11(doc);
+  if (s === 10) {
+    const p = verificaV10(doc);
+    return p.length > 0 ? p : ciocniriPasLateralO(doc);
+  }
+  if (s === 1 || s === 2 || s === 3 || s === 4 || s === 5 || s === 6 || s === 7 || s === 8 || s === 9) {
+    const p = verificaPanaLaV9O(doc);
+    if (p.length > 0) return p;
+    const c = ciocniriDespartireO(doc);
+    return c.length > 0 ? c : ciocniriPasLateralO(doc);
+  }
+  return [`[schema] schema = ${JSON.stringify(s)} nu e 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 sau 11`];
+}
+
+/**
+ * Ușa unei aplicații rămase pe schema 10 (înainte de felia 5.1↑), pentru lipire: schema 11 e refuzată („scris de o
+ * versiune mai nouă”), iar buzunarul nu e valid. Până la 5.1↑ era `verificaO`.
+ */
+export function verificaPanaLaV10O(doc: unknown): string[] {
   if (!esteObiect(doc)) return ['[schema] documentul nu e un obiect'];
   const s = doc['schema'];
   if (s === 10) return verificaV10(doc);

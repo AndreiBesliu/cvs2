@@ -5,7 +5,7 @@ import {
 } from './document.ts';
 
 /**
- * Schemele documentului v10 (T16, ADR 0016): ușa (`incarcare.ts`) și marginile unei operații scrise din interfață
+ * Schemele documentului v11 (T16, ADR 0016): ușa (`incarcare.ts`) și marginile unei operații scrise din interfață
  * (`operatieInMargini`, la Exportă). Stau într-un modul al lor, nu în `document.ts`: tipurile, plafoanele și numărătoarea
  * le folosește pachetul de pornire, schemele (cu valibot) doar ușa și fereastra exportului, care vin la cerere (loc în
  * pachetul de pornire, 17.10). Contractul e cel din `document.ts` și din ADR-uri; textul schemelor e mutat neschimbat.
@@ -98,7 +98,7 @@ const SchemaNod: v.GenericSchema<unknown, Nod> = v.variant('tip', [
 
 const SchemaOperatie = v.looseObject({
   id: Id,
-  tip: v.literal('profil'),
+  tip: v.picklist(['profil', 'buzunar']),
   noduri: v.pipe(v.array(Id), v.minLength(1), v.maxLength(PLAFON.noduriOperatie)),
   scula: v.looseObject({
     numar: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(PLAFON.numarScula)),
@@ -118,6 +118,9 @@ const SchemaOperatie = v.looseObject({
   intrari: v.nullable(v.looseObject({ raza: pozitiv(PLAFON.latura) })),
   colturi: v.nullable(v.looseObject({ tip: v.picklist(['dog-bone', 't-bone']) })),
   despartire: v.optional(v.boolean()),
+  // ADR 0069 §1: pasul lateral al buzunarului; potrivirea lui cu freza și cu felul operației e a lucrării, nu a ușii (ca la
+  // latura unei căi deschise, ADR 0037 §2).
+  pasLateral: v.optional(pozitiv(PLAFON.diametruScula / 2)),
 });
 const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
 const SchemaInstanta = v.looseObject({

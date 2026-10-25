@@ -19,9 +19,9 @@ export type RezultatTraseu = { readonly ok: true; readonly miscari: readonly Mis
 /**
  * Bucla c la o trecere, de la vârful ei 0 înapoi la el: pe profilul urechilor dacă trecerea le traversează (ADR 0028),
  * altfel cu liniile și arcele ei (arcele rămân arce). Freza e deja în vârful 0, la −adâncime. La fiecare sosire într-un
- * colț de degajat, drumul Q → E → Q (ADR 0032 §4). Întoarce refuzul, sau `null`.
+ * colț de degajat, drumul Q → E → Q (ADR 0032 §4). Întoarce refuzul, sau `null`. Și inelele buzunarului (ADR 0069).
  */
-function taieBucla(
+export function taieBucla(
   m: Miscare[], c: Contur, adancime: number, p: ParametriTraseu, urechi: ParametriUrechi | undefined, degajari?: readonly Degajare[],
 ): string | null {
   if (urechi && adancime > urechi.varf + EPS_VARF) {

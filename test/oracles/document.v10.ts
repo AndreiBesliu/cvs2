@@ -34,7 +34,7 @@ import {
 } from './document.ts';
 
 export {
-  ciocniriDespartireO, migreazaV9V10O, ridicaO as ridicaV10O, verificaO as verificaO10, verificaV10, verificaV9V10,
+  ciocniriDespartireO, migreazaV9V10O, ridicaV10O, verificaPanaLaV10O as verificaO10, verificaV10, verificaV9V10,
 } from './document.ts';
 export type { DocV10O, FormaCaleV10O, LaturaV10O, OperatieV10O, PiesaV10O } from './document.ts';
 

@@ -84,7 +84,7 @@ import {
   COLTURI_IMPLICITE_O, migreazaV1V8O, migreazaV4V8O, migreazaV5V8O, migreazaV6V8O, migreazaV7V8O, ridicaV7O, taieturiV8O, TIPURI_COLTURI_O,
   verificaPanaLaV7O, verificaV7V8, verificaV8, type ColturiO, type DocV8O,
   migreazaV1V9O, migreazaV4V9O, migreazaV8V9O, ridicaV8O, verificaPanaLaV8O, verificaV8V9, verificaV9, type DocV9O,
-  migreazaV9V10O, ridicaV9O,
+  migreazaV9V10O, ridicaV9O, migreazaV10V11O,
 } from '../oracles/document.ts';
 import {
   areRampaPeOperatii, areUrechiPeOperatii, CAZURI_HARTIE, CAZURI_TAIETURI, CORPUS_V1, CORPUS_V2, CORPUS_V3, CORPUS_V4,
@@ -119,7 +119,7 @@ for (const { nume, v7, v8 } of MIGRARI_V7_HARTIE) {
     assert.equal(diferenta(migreazaV7V8O(v7), v8), undefined);
     assert.equal(diferenta(ridicaV8O(v7), v8), undefined);
     assert.equal(diferenta(ridicaV9O(v7), migreazaV8V9O(v8 as DocV8O)), undefined);
-    assert.equal(diferenta(ridicaO(v7), migreazaV9V10O(migreazaV8V9O(v8 as DocV8O))), undefined);
+    assert.equal(diferenta(ridicaO(v7), migreazaV10V11O(migreazaV9V10O(migreazaV8V9O(v8 as DocV8O)))), undefined);
     assert.deepEqual(verificaV8(v8), []);
     assert.deepEqual(verificaO(v8), []);
     assert.deepEqual(verificaPanaLaV7O(v7), [], 'ușa unei aplicații pe 7: `colturi` în afara operațiilor e necunoscut oarecare');

@@ -251,9 +251,16 @@ for (const r of bucati.keys()) {
     }
   }
 }
-// Prețul unui proiect salvat: ușa (`incarcare`) și ce aduce ea în afara pornirii vin înaintea primei randări.
-const usa = bucataNumita('incarcare');
+// Prețul unui proiect salvat: ușa documentului curent (`usaCurenta`, ADR 0070) și ce aduce ea în afara pornirii vin
+// înaintea primei randări. Migrările (`migrari.ts`, în bucata `incarcare`) vin doar pentru un document mai vechi: a doua
+// plasă, pe artefact, e un text pe care îl are doar migrarea v1 → v2, care trebuie să fie în `incarcare` și nu în ușă.
+const usa = bucataNumita('usaCurenta');
 const kbUsa = kbInchidere(usa);
+const MARCAJ_MIGRARI = 'pe care v2 îl folosește';
+if (!cod(bucataNumita('incarcare')).includes(MARCAJ_MIGRARI) || inchidere(usa).some((r) => cod(r).includes(MARCAJ_MIGRARI))) {
+  console.error(`Migrările („${MARCAJ_MIGRARI}”) trebuie să fie în bucata incarcare-*.js și în afara ușii de la pornire (${inchidere(usa).join(', ')}).`);
+  process.exit(1);
+}
 
 /**
  * Dicționarul limbii active (`mesaje.ro` / `mesaje.en`, `t.ts`) vine la cerere, dar înaintea primei randări, la FIECARE

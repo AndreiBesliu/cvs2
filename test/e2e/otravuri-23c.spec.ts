@@ -32,7 +32,8 @@ test('E02: fila care doar citește și nu-și poate aduce ușa de încărcare sp
   await page.goto('/');
   await expect(page.locator('[data-actiune="import.svg"]')).toBeVisible();
   const b = await context.newPage();
-  await b.route(/incarcare-[^/]*\.js$/, (r) => r.abort());
+  // ADR 0070: un document al versiunii curente cere doar ușa curentă; migrările (`incarcare`) doar unul vechi. Ambele oprite.
+  await b.route(/(usaCurenta|incarcare)-[^/]*\.js$/, (r) => r.abort());
   await b.goto('/');
   await expect(b.locator('[data-actiune="import.svg"]')).toBeVisible();
   // Fila A scrie prima versiune; fila B o recitește și are nevoie de ușă, care nu vine.

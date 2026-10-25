@@ -92,7 +92,7 @@
  */
 import {
   ridicaV9O, taieturiV8O, type ColturiO, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type DocV7O, type DocV8O, type DocV9O, type IntrariO, type LaturaO,
-  type DocV10O, type LaturaV10O, type MatriceO, type RampaO, type SensO, type UrechiO,
+  type DocV10O, type DocV11O, type LaturaV10O, type MatriceO, type RampaO, type SensO, type UrechiO,
 } from './document.ts';
 import { esteDeschisaO, taieturiV10O, type TaieturaV10O } from './document.v10.ts';
 
@@ -786,7 +786,13 @@ export function regiuneDinInele(
  * v7 se aduce întâi la v8 (sensul `urcare`, ADR 0027 §5; urechile `null`, ADR 0028 §1; rampa `null`, ADR 0029 §1;
  * intrările `null`, ADR 0030 §1; degajările `null`, ADR 0032 §1). Un v10 (ADR 0037) se citește ca atare: vezi mai jos.
  */
-export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O): Regiune {
+export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | DocV11O): Regiune {
+  if (doc.schema === 11) {
+    // ADR 0069 §4 (felia 5.1↑, scris de sesiunea aplicației): un buzunar nu e inel, deci K nu se schimbă; restul se
+    // citește ca în v10. Poarta nu judecă încă traseul buzunarului față de K (îl judecă oracolul simulării).
+    const piese = doc.piese.map((p) => ({ ...p, operatii: p.operatii.filter((o) => o.tip !== 'buzunar') }));
+    return regiuneDinDocument({ ...doc, schema: 10, piese } as unknown as DocV10O);
+  }
   if (doc.schema === 10) {
     // ADR 0037 (felia 2.3c-2): tăieturile în ordinea de la §8, căile deschise rămân deschise și nu sunt inele; alături,
     // regiunea pe care o construia oracolul de dinainte din același document (pentru modul `inainteDe0037`).

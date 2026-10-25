@@ -66,6 +66,8 @@ export function elementeFoaie(doc: Document, indexFoaie = 0): ElementLume[] {
  */
 export type Taietura = ElementLume & {
   readonly operatie: string;
+  /** Felul operației (ADR 0069): profilul conturului sau buzunarul dinăuntrul lui (pasul lateral îl citește lucrarea). */
+  readonly tip: Operatie['tip'];
   readonly latura: Operatie['latura'];
   readonly sens: Operatie['sens'];
   readonly adancime: number;
@@ -110,7 +112,7 @@ export function taieturiFoaie(doc: Document, indexFoaie = 0): Taietura[] {
         const e = elemente.get(n);
         if (!e) continue;
         rez.push({
-          ...e, operatie: o.id, latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, scula: o.scula, urechi: o.urechi,
+          ...e, operatie: o.id, tip: o.tip, latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, scula: o.scula, urechi: o.urechi,
           rampa: o.rampa, intrari: o.intrari, colturi: o.colturi, ...(o.despartire === true ? { despartire: true } : {}),
         });
       }

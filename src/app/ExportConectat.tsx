@@ -69,6 +69,7 @@ export function ExportConectat({
           intrari: o.intrari ? { raza: o.intrari.raza } : null,
           colturi: o.colturi ? { tip: o.colturi.tip } : null,
           ...(o.despartire ? { despartire: true } : {}),
+          ...(o.tip === 'buzunar' && o.pasLateral !== undefined ? { tip: 'buzunar' as const, pasLateral: o.pasLateral } : {}),
         },
       };
     }));

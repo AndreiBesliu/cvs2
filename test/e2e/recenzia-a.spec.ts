@@ -59,11 +59,12 @@ test('ușa de încărcare care nu vine la reîncărcare: „n-a putut fi citit a
   await page.goto('/');
   await adauga(page, 'dreptunghi');
   await expect.poll(() => versiuni(page)).toContain(1);
-  await page.route(/incarcare-[^/]*\.js$/, (r) => r.abort());
+  // ADR 0070: un document al versiunii curente cere doar ușa curentă; migrările (`incarcare`) doar unul vechi. Ambele oprite.
+  await page.route(/(usaCurenta|incarcare)-[^/]*\.js$/, (r) => r.abort());
   await page.reload();
   await expect(page.getByTestId('proiect')).toContainText('Proiectul salvat n-a putut fi citit acum');
   await expect(page.getByTestId('proiect')).not.toContainText('nu permite memoria locală');
-  await page.unroute(/incarcare-[^/]*\.js$/);
+  await page.unroute(/(usaCurenta|incarcare)-[^/]*\.js$/);
   await page.reload();
   await expect(page.getByTestId('lista-vectori').locator('li')).toHaveCount(1);
 });

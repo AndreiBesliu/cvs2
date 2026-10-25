@@ -24,7 +24,7 @@ test('un document valid trece prin ușa unică, neschimbat', () => {
   const r = incarca(JSON.parse(JSON.stringify(d)));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (r.ok) assert.deepEqual(r.doc, d);
-  assert.equal(VERSIUNE_SCHEMA, 10);
+  assert.equal(VERSIUNE_SCHEMA, 11);
 });
 
 test('ușa refuză, cu motiv: ce nu e obiect, fără versiune, dintr-o versiune mai nouă, cu valori absurde', () => {
@@ -246,9 +246,9 @@ test('migrarea refuză ciocnirile de nume și matricile v1 peste margini; câmpu
 });
 
 test('cheile __proto__, constructor și prototype rămân date: ușa nu le scoate și nu schimbă prototipul', () => {
-  const text = '{"schema":10,"rev":0,"__proto__":{"x":1},"piese":[{"id":"p","constructor":3,"operatii":[],"radacina":{"tip":"element","id":"a","forma":{"tip":"cerc","raza":1},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}}}],"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[{"id":"i","piesa":"p","x":0,"y":0,"rotire":0,"campuri":{"__proto__":"v","prototype":"w"}}]}]}';
-  // Și prin migrarea v9 → v10: cheile rămân date și după copia migrării.
-  const r9 = incarca(JSON.parse(text.replace('"schema":10', '"schema":9')));
+  const text = '{"schema":11,"rev":0,"__proto__":{"x":1},"piese":[{"id":"p","constructor":3,"operatii":[],"radacina":{"tip":"element","id":"a","forma":{"tip":"cerc","raza":1},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}}}],"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[{"id":"i","piesa":"p","x":0,"y":0,"rotire":0,"campuri":{"__proto__":"v","prototype":"w"}}]}]}';
+  // Și prin migrările v9 → v10 → v11: cheile rămân date și după copia migrării.
+  const r9 = incarca(JSON.parse(text.replace('"schema":11', '"schema":9')));
   assert.ok(r9.ok && jsonCanonic(r9.doc) === jsonCanonic(JSON.parse(text)), r9.ok ? 'v9' : r9.motiv);
   const r = incarca(JSON.parse(text));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
@@ -334,7 +334,8 @@ test('operațiile v3: id unic în piesă, noduri distincte, doar elemente ale pi
   assert.match(motiv((x) => { x.piese[0].operatii[0].noduri = ['e1', 'e1']; }), /referă un nod de două ori/);
   assert.match(motiv((x) => { x.piese[0].operatii[0].noduri = ['lipsa']; }), /referă lipsa, care nu e un element al piesei/);
   assert.equal(ok((x) => { x.piese[0].operatii[0].noduri = []; }), false, 'fără noduri');
-  assert.equal(ok((x) => { x.piese[0].operatii[0].tip = 'buzunar'; }), false, 'alt tip decât profil');
+  // Din v11 (ADR 0069), și `buzunar`; un fel necunoscut rămâne refuzat.
+  assert.equal(ok((x) => { x.piese[0].operatii[0].tip = 'gaurire'; }), false, 'un fel necunoscut');
   assert.equal(ok((x) => { x.piese[0].operatii[0].latura = 'sus'; }), false, 'latura necunoscută');
   assert.equal(ok((x) => { delete x.piese[0].operatii; }), false, 'v3 fără câmpul operatii');
   for (const [camp, rau, bun] of [

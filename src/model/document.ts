@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 10;
+export const VERSIUNE_SCHEMA = 11;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -109,10 +109,18 @@ export type Colturi = { tip: 'dog-bone' | 't-bone'; [cheie: string]: unknown };
  * marcată de om; se taie la urmă. Lipsă = nemarcată: aplicația n-o ghicește.
  */
 export type Operatie = {
-  id: string; tip: 'profil'; noduri: string[]; scula: Scula; latura: Latura; sens: Sens; adancime: number; pas: number;
+  id: string; tip: TipOperatie; noduri: string[]; scula: Scula; latura: Latura; sens: Sens; adancime: number; pas: number;
   urechi: Urechi | null; rampa: Rampa | null; intrari: Intrari | null; colturi: Colturi | null; despartire?: boolean;
+  /** Pe un buzunar (ADR 0069), distanța dintre inele, în mm; un profil n-o are (ușa o cere doar pe buzunar). */
+  pasLateral?: number;
   [cheie: string]: unknown;
 };
+/**
+ * Felul operației (ADR 0069, documentul v11): `profil` taie conturul; `buzunar` scoate materialul dinăuntrul unui contur
+ * închis, până la adâncime, în inele paralele cu conturul, la `pasLateral` mm unul de altul (cel mult raza frezei). Pe un
+ * buzunar, latura e `interior` (freza stă înăuntru), iar urechile, rampa, intrările, degajările și despărțirea nu există.
+ */
+export type TipOperatie = 'profil' | 'buzunar';
 export type Piesa = { id: string; nume?: string; radacina: Nod; operatii: Operatie[]; [cheie: string]: unknown };
 export type Stoc = { latime: number; inaltime: number; grosime: number; [cheie: string]: unknown };
 export type Instanta = {
@@ -124,7 +132,7 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
-export type Document = { schema: 10; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 11; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

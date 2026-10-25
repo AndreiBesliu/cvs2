@@ -92,6 +92,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   în fațada `geom/offset.ts`); rezultatul le înlocuiește într-un pas (`document.deseneaza` cu `sterge` și `gauri`).
   **Orice nod își schimbă tipul (ADR 0068)** gata pe 25.10: arcele vecine devin cubice la cerere (sub 0,001 mm), unealta Noduri
   editează fiecare contur al pieselor compuse (`document.forma` cu `nodEditat`). Urmează testul pas cu pas al owner-ului.
+  **Buzunarul (ADR 0069, adus din etapa 5)** gata pe 25.10, cât owner-ul face testul, pe un canal de previzualizare: documentul
+  v11 (`tip: 'buzunar'`, `pasLateral` ≤ D / 2); inelele paralele cu conturul, dinăuntru în afară (`src/cam/buzunar.ts`); fără
+  insule, o singură freză. **Oracolul documentului v11 e scris de sesiunea aplicației, nu independent**: de reluat. Ușa unui
+  proiect salvat e despărțită (ADR 0070): la pornire doar `usaCurenta.ts`, migrările (`migrari.ts`) doar pentru un document
+  vechi; pornirea cu ușa 98,6 / 100 kB (~1,4 kB liberi).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -194,6 +199,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 25.10.2026: **testul owner-ului devine un tutorial în aplicație, cu snapshot-ul planșei** („vreau ca testarea asta sa fie ca
+  un tutorial direct in app. vreau si un buton cu care sa pot face snapshot la plansa. aceasta imagine se ataseaza automat la
+  raportul pe care ti-l voi da la final. deci nu ar trebui sa fie incarcata in server. dar, termina ce task ai inceput acum”):
+  după buzunar; pozele rămân în browser și intră în raportul final, descărcat, nimic pe server. Tot atunci, notat: **fiecare
+  unealtă își arată tasta de scurtătură** în colțul dreapta-jos al butonului, lângă iconiță, fără s-o încurce. Și, **după test,
+  cronologia roadmap-ului** („dupa test, sa actualizezi si zona asta din roadmap”, captura „Timeline, by week” din `/admin`):
+  etapele 4, 5, 6 și 14 își arată feliile aduse înainte (acum stau doar în fișa etapei 3).
 - 25.10.2026: **booleanul intră în uneltele de desen, înaintea testului owner-ului** („Da”, la întrebare): întâi copierea de-a
   lungul unei curbe (ADR 0066), apoi booleanul (unire, scădere, intersecție), apoi un **test pas cu pas pe care owner-ul îl urmează**
   pe instanța de test și spune ce merge și ce nu (cererea lui din aceeași zi: „dupa ce terminam cu uneltele de desen”).
