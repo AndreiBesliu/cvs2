@@ -2909,3 +2909,7 @@ vederea 3D și simularea n-ar merge offline până la prima folosire). Apoi: 7 2
 dreptunghi de deasupra alege acum cercul, ADR 0074 §1); emulatoarele: 13 e2e. Pornirea neschimbată (95,3 kB). Mutațiile
 țintite: 18 / 20 prinse; cele două rămase sunt o gardă dublă (direcția și cea mai apropiată intersecție), prinsă ca pereche;
 distanța la original și atingerea au primit câte o probă care le ocolește pe celelalte.
+**Publicat pe adresa principală de test:** 25.10, workflow-ul `publica` pe `1d5a69d` (rularea 40218100027), după rapid-ul verde
+(40217419646). Verificat în browserul aplicației pe <https://cncvectorstudio-test.firebaseapp.com/>, după „Reîncarcă”: tastele pe
+butoane; offsetul spre exterior implicit „Ca originalul” (calea 110 × 70, 4 segmente); clicul în dreptunghi alege dreptunghiul,
+între contururi calea nouă, pe marginea cercului cercul.
