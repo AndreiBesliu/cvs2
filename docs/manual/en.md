@@ -151,7 +151,7 @@ field.
 
 ## Transforming, mirroring, copying and offset
 %% capitol: transformari
-%% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, document.copiaza-in-retea, editare.offset
+%% acopera: unealta.transformare, document.transforma, oglindeste.orizontal, oglindeste.vertical, editare.inclinare, document.copiaza-in-retea, editare.offset
 
 The **Transform** tool (`S`) shows the handles on the selection's box and transforms the shape exactly (arcs stay arcs):
 - the **corners** scale proportionally, with the opposite corner fixed; with Shift, freely on both axes;
@@ -164,6 +164,14 @@ corners or a shape rotated at an angle scale only proportionally; a part used by
 
 **Mirroring** is in the bar extension: **Flip horizontally** (`Shift+H`, left ↔ right) and **Flip vertically** (`Shift+V`,
 top ↔ bottom), about the centre of the selection's box. The mirror image is what gets cut, with the same cutting direction.
+
+**Skew** (next to mirroring, the button with a square and its parallelogram) opens a panel with two angles, in degrees,
+between −75° and 75° (empty = 0): **Horizontal** moves points to the right the higher they are (a negative angle, to the
+left), then **Vertical** raises them the further right they are, about the centre of the selection box. The area stays the
+same. While the panel is open, the skewed box shows on the canvas, dashed. Skewing goes exactly into the geometry: lines and
+curves stay lines and curves, and a rectangle becomes a path (a parallelogram). A shape with arcs (a circle, a rectangle with
+rounded corners, a path with arcs) is not skewed, as the arcs would become ellipses: the panel says so, and Skew stays
+inactive. A single undo step.
 
 **Copy in an array** (the Copy section of the bar extension, the button with four squares) makes copies of the selection, in
 a single undo step. The copies are independent parts (as with Duplicate): each one can be changed or transformed on its own.

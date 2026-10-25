@@ -4,6 +4,7 @@
  * `src/model/noduri.ts`.
  */
 import { cerculArcului, numarSegmente, segment, type Contur, type Punct } from '../geom/conturBaza.ts';
+import { inversa } from '../geom/inversa.ts';
 import { aplica, type Matrice } from '../geom/matrice.ts';
 import { peArc } from '../geom/distanta.ts';
 import type { Document, FormaDoc } from '../model/document.ts';
@@ -34,12 +35,8 @@ export function formaNoduri(doc: Document, selectie: readonly string[]): FormaNo
   return e ? { instanta: i.id, forma: e.forma, matrice: e.matrice } : 'nimic';
 }
 
-/** Inversa unei matrice afine, sau `null` dacă e degenerată. */
-export function inversa(m: Matrice): Matrice | null {
-  const det = m.a * m.d - m.b * m.c;
-  if (!(Math.abs(det) > 1e-300)) return null;
-  return { a: m.d / det, b: -m.b / det, c: -m.c / det, d: m.a / det, e: (m.c * m.f - m.d * m.e) / det, f: (m.b * m.e - m.a * m.f) / det };
-}
+/** Inversa unei matrice afine (din `geom/inversa.ts`, locul ei). */
+export { inversa };
 
 /** Indexul nodului (din punctele lui pe ecran) cel mai apropiat de (px, py), la cel mult `raza` px; sau `null`. */
 export function nodLovit(noduri: readonly Punct[], px: number, py: number, raza: number): number | null {

@@ -76,11 +76,11 @@ test('o cale deschisă (Pen) nu are offset: motivul; fără nimic ales, alt moti
   await expect(motiv(page)).toHaveText('Alege formele cărora să le faci offsetul.');
 });
 
-test('la o fereastră îngustă, panourile Offset și Copiază în rețea rămân în fereastră', async ({ page }) => {
+test('la o fereastră îngustă, panourile Offset, Copiază în rețea și Înclină rămân în fereastră', async ({ page }) => {
   await page.setViewportSize({ width: 720, height: 820 });
   await page.goto('/');
   await adauga(page, 'dreptunghi');
-  for (const [buton, id] of [['offset', 'panou-offset'], ['retea', 'panou-retea']] as const) {
+  for (const [buton, id] of [['offset', 'panou-offset'], ['retea', 'panou-retea'], ['inclinare', 'panou-inclinare']] as const) {
     await page.locator(`[data-editare="${buton}"]`).click();
     const cutie = await page.getByTestId(id).boundingBox();
     expect(cutie, id).not.toBeNull();

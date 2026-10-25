@@ -31,7 +31,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Mai multe foi de material într-un proiect (Sheets) și plăcuțe cu date variabile din CSV (Multi-Plate) — legat de sistemul de planșe | S | v1 (decis 06.10) | de făcut | — |
 | Vectori decorativi: guilloche, umbră vectorială din relief, chenar vectorial | S | v2 | de făcut | — |
 | Bibliotecă de clipart vectorial (proprie) | S | v2 | de făcut | — |
-| Transformare și copiere: mutare, scalare, rotire, înclinare, oglindire, copiere în rețea, circulară și de-a lungul unei curbe (rând nou) | S | v1 | în lucru: mutarea, scalarea și rotirea cu mânere (ADR 0052), oglindirea (ADR 0054), copierea în rețea și pe cerc (ADR 0061); rămân înclinarea și copierea de-a lungul unei curbe | 67561b0, 464fad4 |
+| Transformare și copiere: mutare, scalare, rotire, înclinare, oglindire, copiere în rețea, circulară și de-a lungul unei curbe (rând nou) | S | v1 | în lucru: mutarea, scalarea și rotirea cu mânere (ADR 0052), oglindirea (ADR 0054), copierea în rețea și pe cerc (ADR 0061), înclinarea (ADR 0065); rămâne copierea de-a lungul unei curbe | 67561b0, 464fad4, f0a0ca9, (6.K↑) |
 | Tăierea și conversia vectorilor: tăiere cu o linie, decupare la un contur, arce în loc de curbe, netezire, conversie în cercuri / dreptunghiuri (rând nou) | S | v1 (decis 06.10; era v1.x) | de făcut | — |
 
 ## B. Prelucrare 2D / 2.5D

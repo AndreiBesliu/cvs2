@@ -4,10 +4,13 @@
  * schimbă laturile, cercul raza, calea vârfurile și punctele de control; unde rezultatul n-ar mai fi exact se refuză cu
  * motiv (o scalare neuniformă pe un cerc, pe un arc sau pe un colț rotunjit; o scalare neuniformă pe o instanță sau un nod
  * rotit altfel decât cu un multiplu de 90°; o piesă folosită și de alte instanțe). Oglindirea pune reflexia în matricea
- * rădăcinii piesei (o similitudine: arcele rămân arce) și oglindește locul instanței; rotirea instanței rămâne.
+ * rădăcinii piesei (o similitudine: arcele rămân arce) și oglindește locul instanței; rotirea instanței rămâne. Înclinarea
+ * (ADR 0065) intră în geometrie: liniile și cubicele rămân exacte, arcele (cercul, colțurile rotunjite) se refuză.
  */
-import { compune, rotatie } from '../geom/matrice.ts';
+import { inversa } from '../geom/inversa.ts';
+import { aplica, compune, rotatie, translatie } from '../geom/matrice.ts';
 import type { Document, FormaDoc, Instanta, Matrice, Nod, Piesa } from './document.ts';
+import { caleDinForma } from './noduri.ts';
 
 type P = { readonly x: number; readonly y: number };
 
@@ -15,9 +18,26 @@ export type Transformare =
   | { readonly fel: 'rotire'; readonly unghi: number; readonly centru: P }
   | { readonly fel: 'scalare'; readonly sx: number; readonly sy: number; readonly ancora: P }
   /** `orizontal`: stânga ↔ dreapta, față de dreapta verticală prin `centru`; `vertical`: sus ↔ jos, față de orizontala lui. */
-  | { readonly fel: 'oglindire'; readonly directie: 'orizontal' | 'vertical'; readonly centru: P };
+  | { readonly fel: 'oglindire'; readonly directie: 'orizontal' | 'vertical'; readonly centru: P }
+  /**
+   * Înclinarea (ADR 0065), față de `centru`: întâi orizontal (x crește cu tan(unghiX) · distanța pe y), apoi vertical (y crește
+   * cu tan(unghiY) · distanța pe x); unghiurile în grade, cel mult 75° în valoare absolută.
+   */
+  | { readonly fel: 'inclinare'; readonly unghiX: number; readonly unghiY: number; readonly centru: P };
 
-export type MotivTransformare = 'neuniform-cerc' | 'neuniform-arc' | 'neuniform-colt' | 'neuniform-rotit' | 'piesa-impartita' | 'scara-invalida';
+export type MotivTransformare =
+  | 'neuniform-cerc' | 'neuniform-arc' | 'neuniform-colt' | 'neuniform-rotit' | 'piesa-impartita' | 'scara-invalida' | 'inclinare-arc' | 'unghi-invalid';
+
+/** Cel mai mare unghi de înclinare acceptat, în grade (tan 75° ≈ 3,7). */
+export const UNGHI_MAXIM_INCLINARE = 75;
+
+/** Pură: matricea afină a înclinării față de `centru`: întâi orizontal cu `unghiX`, apoi vertical cu `unghiY` (grade). */
+export function matriceInclinare(unghiX: number, unghiY: number, centru: P): Matrice {
+  const kx = Math.tan((unghiX * Math.PI) / 180), ky = Math.tan((unghiY * Math.PI) / 180);
+  // H = Hy · Hx (determinantul 1: aria se păstrează), mutată în centru.
+  const H: Matrice = { a: 1, b: ky, c: kx, d: kx * ky + 1, e: 0, f: 0 };
+  return compune(translatie(centru.x, centru.y), compune(H, translatie(-centru.x, -centru.y)));
+}
 
 export type RezultatTransformare =
   | { readonly ok: true; readonly instante: readonly Instanta[]; readonly piese: readonly Piesa[] }
@@ -111,6 +131,7 @@ export function transforma(doc: Document, indexFoaie: number, ids: readonly stri
   for (const f of doc.foi) for (const i of f.instante) folosiri.set(i.piesa, (folosiri.get(i.piesa) ?? 0) + 1);
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   if (t.fel === 'oglindire') return oglindeste(instante, piese, folosiri, t);
+  if (t.fel === 'inclinare') return inclina(instante, piese, folosiri, t);
   const { sx, sy, ancora } = t;
   // Fără oglindire din mânere: o scară care trece de zero (mânerul tras peste ancoră) e refuzată, nu întoarsă (oglindirea
   // are butoanele ei, ADR 0054).
@@ -159,4 +180,53 @@ function oglindeste(
     noiInstante.push(t.directie === 'orizontal' ? { ...i, x: 2 * t.centru.x - i.x } : { ...i, y: 2 * t.centru.y - i.y });
   }
   return { ok: true, instante: noiInstante, piese: noiPiese };
+}
+
+/** Forma elementului cu harta afină `A` aplicată geometriei: o cale (dreptunghiul devine conturul lui), sau refuzul la arce. */
+function aplicaFormei(f: FormaDoc, A: Matrice): FormaDoc | MotivTransformare {
+  const c = caleDinForma(f);
+  if (c.varfuri.some((v) => v.s.tip === 'A' && v.s.bulge !== 0)) return 'inclinare-arc';
+  const p = (q: { readonly x: number; readonly y: number }) => aplica(A, q);
+  return { ...c, varfuri: c.varfuri.map((v) => ({ p: p(v.p), s: v.s.tip === 'C' ? { tip: 'C' as const, c1: p(v.s.c1), c2: p(v.s.c2) } : { tip: 'L' as const } })) };
+}
+
+/**
+ * Nodul cu înclinarea `H` (în lume) trecută în geometria fiecărui element: punctul p al unui element, cu matricea lui în lume
+ * W, ajunge în H·W·p = W·(W⁻¹·H·W)·p, deci geometria primește A = W⁻¹·H·W, iar matricele (instanța, nodurile) rămân.
+ */
+function inclinaNod(n: Nod, sus: Matrice, H: Matrice): Nod | MotivTransformare {
+  const W = compune(sus, n.matrice);
+  if (n.tip === 'element') {
+    const inv = inversa(W);
+    if (!inv) return 'unghi-invalid';
+    const f = aplicaFormei(n.forma, compune(inv, compune(H, W)));
+    return typeof f === 'string' ? f : { ...n, forma: f };
+  }
+  const copii: Nod[] = [];
+  for (const c of n.copii) {
+    const r = inclinaNod(c, W, H);
+    if (typeof r === 'string') return r;
+    copii.push(r);
+  }
+  return { ...n, copii };
+}
+
+/** Înclinarea (ADR 0065): geometria pieselor primește înclinarea, locul și rotirea instanțelor rămân. */
+function inclina(
+  instante: readonly Instanta[], piese: ReadonlyMap<string, Piesa>, folosiri: ReadonlyMap<string, number>,
+  t: Extract<Transformare, { fel: 'inclinare' }>,
+): RezultatTransformare {
+  const bun = (u: number): boolean => Number.isFinite(u) && Math.abs(u) <= UNGHI_MAXIM_INCLINARE;
+  if (!bun(t.unghiX) || !bun(t.unghiY)) return { ok: false, motiv: 'unghi-invalid' };
+  const H = matriceInclinare(t.unghiX, t.unghiY, t.centru);
+  const noiPiese: Piesa[] = [];
+  for (const i of instante) {
+    const piesa = piese.get(i.piesa);
+    if (!piesa) continue;
+    if ((folosiri.get(i.piesa) ?? 0) > 1) return { ok: false, motiv: 'piesa-impartita' };
+    const radacina = inclinaNod(piesa.radacina, compune(translatie(i.x, i.y), rotatie(i.rotire)), H);
+    if (typeof radacina === 'string') return { ok: false, motiv: radacina };
+    noiPiese.push({ ...piesa, radacina });
+  }
+  return { ok: true, instante: [], piese: noiPiese };
 }

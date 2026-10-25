@@ -9,8 +9,8 @@ import { elementeFoaie } from '../model/lume.ts';
 import { motivRetea, type MotivRetea, type Retea } from '../model/retea.ts';
 import type { Transformare } from '../model/transformare.ts';
 
-/** Ce poate da un mâner: rotirea sau scalarea (oglindirea are butoanele ei, ADR 0054). */
-export type TransformareManer = Exclude<Transformare, { readonly fel: 'oglindire' }>;
+/** Ce poate da un mâner: rotirea sau scalarea (oglindirea și înclinarea au butoanele lor, ADR 0054, ADR 0065). */
+export type TransformareManer = Exclude<Transformare, { readonly fel: 'oglindire' | 'inclinare' }>;
 import { FOAIA } from '../ui/actiuniDocument.ts';
 import { citesteNumar } from '../ui/numar.ts';
 

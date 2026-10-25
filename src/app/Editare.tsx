@@ -8,7 +8,7 @@ import { lipeste } from '../geom/lipire.ts';
 import '../i18n/editare.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
-import { transforma, type Transformare } from '../model/transformare.ts';
+import { matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
   adaugaLaSelectie, aleseInCadru, citesteRetea, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, FORMULAR_RETEA, type FormularRetea, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie,
@@ -48,6 +48,20 @@ const CHEIE_RAZA = 'cncvs2.raza';
 const CHEIE_ALINIERE = 'cncvs2.aliniere-stransa';
 const CHEIE_RETEA = 'cncvs2.retea';
 const CHEIE_OFFSET = 'cncvs2.offset';
+const CHEIE_INCLINARE = 'cncvs2.inclinare';
+type FormularInclinare = { readonly x: string; readonly y: string };
+
+/** Formularul înclinării ținut în browser; unul stricat lasă implicitele (15° pe orizontală). */
+function inclinareSalvata(): FormularInclinare {
+  try {
+    const o: unknown = JSON.parse(citeste(CHEIE_INCLINARE) ?? 'null');
+    if (typeof o !== 'object' || o === null) return { x: '15', y: '0' };
+    const r = o as Record<string, unknown>;
+    return { x: typeof r.x === 'string' ? r.x : '15', y: typeof r.y === 'string' ? r.y : '0' };
+  } catch {
+    return { x: '15', y: '0' };
+  }
+}
 
 /** Calculul offsetului (ADR 0064): o bucată la cerere, adusă la prima deschidere a panoului (cu motorul CAM). */
 type ModulOffset = typeof import('./offsetCalcul.ts');
@@ -199,17 +213,26 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const vedere3dRef = useRef(vedere3d);
   vedere3dRef.current = vedere3d;
   // Copierea în rețea (ADR 0061): panoul din extensia barei, formularul lui (ținut în browser) și rețeaua citită din el.
-  const [panouRetea, setPanouRetea] = useState(false);
-  const panouReteaRef = useRef(panouRetea);
-  panouReteaRef.current = panouRetea;
+  // Panoul deschis din extensia barei, unul singur: rețeaua (ADR 0061), offsetul (ADR 0064), înclinarea (ADR 0065).
+  const [panou, setPanou] = useState<'retea' | 'offset' | 'inclinare' | null>(null);
+  const panouRef = useRef(panou);
+  panouRef.current = panou;
+  const panouRetea = panou === 'retea', panouOffset = panou === 'offset', panouInclinare = panou === 'inclinare';
   const [formRetea, setFormRetea] = useState<FormularRetea>(formularSalvat);
   const scrieFormular = (f: FormularRetea): void => { setFormRetea(f); scrieLocal(CHEIE_RETEA, JSON.stringify(f)); };
   // Offsetul (ADR 0064): panoul din extensia barei, formularul lui (în browser) și calculul, adus la prima deschidere.
-  const [panouOffset, setPanouOffset] = useState(false);
-  const panouOffsetRef = useRef(panouOffset);
-  panouOffsetRef.current = panouOffset;
   const [formOffset, setFormOffset] = useState<FormularOffset>(offsetSalvat);
   const scrieOffset = (f: FormularOffset): void => { setFormOffset(f); scrieLocal(CHEIE_OFFSET, JSON.stringify(f)); };
+  const [formInclinare, setFormInclinare] = useState<FormularInclinare>(inclinareSalvata);
+  const scrieInclinare = (f: FormularInclinare): void => { setFormInclinare(f); scrieLocal(CHEIE_INCLINARE, JSON.stringify(f)); };
+  // Înclinarea din panou: unghiurile citite (null: un câmp greșit) și transformarea, față de centrul cutiei selecției.
+  const inclinare = useMemo((): Transformare | 'unghi' | 'zero' | null => {
+    if (!panouInclinare || !cutie) return null;
+    const ux = citesteNumar(formInclinare.x.replace(/^\s*$/, '0'), true), uy = citesteNumar(formInclinare.y.replace(/^\s*$/, '0'), true);
+    if (ux === null || uy === null || Math.abs(ux) > UNGHI_MAXIM_INCLINARE || Math.abs(uy) > UNGHI_MAXIM_INCLINARE) return 'unghi';
+    if (ux === 0 && uy === 0) return 'zero';
+    return { fel: 'inclinare', unghiX: ux, unghiY: uy, centru: { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 } };
+  }, [panouInclinare, cutie, formInclinare]);
   const [modOffset, setModOffset] = useState<ModulOffset | 'eroare' | null>(null);
   useEffect(() => {
     if (!panouOffset || (modOffset !== null && modOffset !== 'eroare')) return;
@@ -358,8 +381,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       }
       if (e.key === 'Escape') {
         // Întâi panoul deschis (rețeaua, ADR 0061; offsetul, ADR 0064), apoi forma începută, apoi unealta.
-        if (panouReteaRef.current) setPanouRetea(false);
-        else if (panouOffsetRef.current) setPanouOffset(false);
+        if (panouRef.current) setPanou(null);
         else if (acum.current.a) gestDesen('anulat', 0, 0, 1, { alt: false, shift: false });
         else setUnealta('selectie');
         return;
@@ -549,6 +571,17 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           </svg>
         );
       })() : null}
+      {inclinare !== null && typeof inclinare !== 'string' && inclinare.fel === 'inclinare' && cutie && !vedere3d ? (() => {
+        // Previzualizarea înclinării: cutia selecției, înclinată, punctată.
+        const H = matriceInclinare(inclinare.unghiX, inclinare.unghiY, inclinare.centru);
+        const colturi = [{ x: cutie.minX, y: cutie.minY }, { x: cutie.maxX, y: cutie.minY }, { x: cutie.maxX, y: cutie.maxY }, { x: cutie.minX, y: cutie.maxY }];
+        const pe = (q: Punct): string => { const w = aplica(H, q); return `${vedere.tx + w.x * vedere.scara},${vedere.ty - w.y * vedere.scara}`; };
+        return (
+          <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="inclinare-previzualizare">
+            <polygon className="retea-copie" points={colturi.map(pe).join(' ')} />
+          </svg>
+        );
+      })() : null}
       {rezOffset !== null && typeof rezOffset !== 'string' && !vedere3d ? (
         // Previzualizarea offsetului: contururile noi, punctate, cât panoul e deschis.
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="offset-previzualizare"
@@ -606,41 +639,53 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         );
         const poateOglindi = selectie.length > 0 && cutie !== null && !p.doarCitire;
         const oglindireSectiune = (
-          <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.oglindire')} data-testid="extensie-oglindire">
+          <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.oglindire')} data-testid="extensie-oglindire">
             {(['orizontal', 'vertical'] as const).map((d) => (
               <button key={d} type="button" className="aliniaza" disabled={!poateOglindi} title={t(`editare.oglindeste.${d}`)}
                 aria-label={t(`editare.oglindeste.${d}`)} data-oglindeste={d} onClick={() => { oglindeste(d); }}>
                 <IconaOglinda directie={d} />
               </button>
             ))}
+            <button type="button" className="aliniaza" aria-expanded={panouInclinare} aria-controls="panou-inclinare" title={t('editare.inclinare')}
+              aria-label={t('editare.inclinare')} data-editare="inclinare" onClick={() => { setPanou(panouInclinare ? null : 'inclinare'); }}>
+              <IconaInclinare />
+            </button>
             {motivOglinda ? <span className="motiv-extensie" role="status" data-testid="motiv-oglindire">{motivOglinda}</span> : null}
+            {panouInclinare ? (
+              <PanouInclinare form={formInclinare} onForm={scrieInclinare}
+                motiv={selectie.length === 0 || !cutie ? t('editare.inclinare.nicio-selectie') : p.doarCitire ? t('motiv.doar-citire')
+                  : inclinare === 'unghi' ? t('editare.inclinare.motiv.unghi') : inclinare === 'zero' ? t('editare.inclinare.motiv.zero')
+                    : inclinare === null ? null : (() => { const r = transforma(doc, FOAIA, selectie, inclinare); return r.ok ? null : t(`editare.transformare.${r.motiv}`); })()}
+                onAplica={() => { if (inclinare !== null && typeof inclinare !== 'string') ruleaza('document.transforma', { transformare: () => inclinare }); setPanou(null); }}
+                onInchide={() => { setPanou(null); }} />
+            ) : null}
           </span>
         );
         const copiereSectiune = (
           <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.copiere')} data-testid="extensie-copiere">
             <button type="button" className="aliniaza" aria-expanded={panouRetea} aria-controls="panou-retea" title={t('editare.retea')} aria-label={t('editare.retea')}
-              data-editare="retea" onClick={() => { setPanouRetea(!panouRetea); setPanouOffset(false); }}>
+              data-editare="retea" onClick={() => { setPanou(panouRetea ? null : 'retea'); }}>
               <IconaRetea />
             </button>
             {panouRetea ? (
               <PanouRetea form={formRetea} onForm={scrieFormular} foaie={foaie?.stoc ?? { latime: 0, inaltime: 0 }}
                 motivActiune={(r) => motivCopiereRetea(doc, selectie, r, p.doarCitire)}
-                onCopiaza={(r) => { ruleaza('document.copiaza-in-retea', { retea: () => r }); setPanouRetea(false); }}
-                onInchide={() => { setPanouRetea(false); }} />
+                onCopiaza={(r) => { ruleaza('document.copiaza-in-retea', { retea: () => r }); setPanou(null); }}
+                onInchide={() => { setPanou(null); }} />
             ) : null}
           </span>
         );
         const offsetSectiune = (
           <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.offset.sectiune')} data-testid="extensie-offset">
             <button type="button" className="aliniaza" aria-expanded={panouOffset} aria-controls="panou-offset" title={t('editare.offset')} aria-label={t('editare.offset')}
-              data-editare="offset" onClick={() => { setPanouOffset(!panouOffset); setPanouRetea(false); }}>
+              data-editare="offset" onClick={() => { setPanou(panouOffset ? null : 'offset'); }}>
               <IconaOffset />
             </button>
             {panouOffset ? (
               <PanouOffset form={formOffset} onForm={scrieOffset} rez={modOffset === 'eroare' ? 'eroare' : rezOffset}
                 motivActiune={(f) => motivDesen(doc, f, p.doarCitire)}
-                onAplica={(f) => { ruleaza('document.deseneaza', { formaNoua: () => f }); setPanouOffset(false); }}
-                onInchide={() => { setPanouOffset(false); }} />
+                onAplica={(f) => { ruleaza('document.deseneaza', { formaNoua: () => f }); setPanou(null); }}
+                onInchide={() => { setPanou(null); }} />
             ) : null}
           </span>
         );
@@ -1414,6 +1459,56 @@ function PanouOffset({ form, onForm, rez, motivActiune, onAplica, onInchide }: {
         <button type="button" data-offset="inchide" onClick={onInchide}>{t('editare.retea.inchide')}</button>
       </div>
     </div>
+  );
+}
+
+/**
+ * Panoul înclinării (ADR 0065): unghiul pe orizontală și pe verticală (grade, cel mult 75°), motivul pentru care nu se poate
+ * (selecția, unghiurile, verdictul modelului: arcele, piesa împărțită), Înclină și Închide. Esc îl închide.
+ */
+function PanouInclinare({ form, onForm, motiv, onAplica, onInchide }: {
+  readonly form: FormularInclinare;
+  readonly onForm: (f: FormularInclinare) => void;
+  readonly motiv: string | null;
+  readonly onAplica: () => void;
+  readonly onInchide: () => void;
+}): ReactElement {
+  const radacina = useRef<HTMLDivElement | null>(null);
+  useInFereastra(radacina);
+  const camp = (k: 'x' | 'y', eticheta: string): ReactElement => (
+    <label className="camp-retea">
+      <span>{eticheta}</span>
+      <input value={form[k]} inputMode="decimal" data-inclinare={k} onChange={(e) => { onForm({ ...form, [k]: e.target.value }); }} />
+    </label>
+  );
+  return (
+    <div className="insula panou-retea panou-inclinare" id="panou-inclinare" ref={radacina} role="group" aria-label={t('editare.inclinare')} data-testid="panou-inclinare"
+      onKeyDown={(e) => {
+        if (e.key !== 'Escape') return;
+        e.preventDefault();
+        e.stopPropagation();
+        onInchide();
+      }}>
+      <div className="campuri-retea">
+        {camp('x', t('editare.inclinare.x'))}
+        {camp('y', t('editare.inclinare.y'))}
+      </div>
+      {motiv ? <p className="motiv-retea" role="status" data-testid="motiv-inclinare">{motiv}</p> : null}
+      <div className="butoane-retea">
+        <button type="button" className="principal" data-inclinare="aplica" disabled={motiv !== null} onClick={onAplica}>{t('editare.inclinare.aplica')}</button>
+        <button type="button" data-inclinare="inchide" onClick={onInchide}>{t('editare.retea.inchide')}</button>
+      </div>
+    </div>
+  );
+}
+
+/** Înclinarea (ADR 0065): un pătrat punctat și paralelogramul lui, înclinat. */
+function IconaInclinare(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="2" y="4" width="8" height="8" className="contur" strokeDasharray="1.6 1.4" />
+      <polygon points="6,4 14,4 10,12 2,12" className="contur" />
+    </svg>
   );
 }
 

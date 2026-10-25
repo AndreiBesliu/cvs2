@@ -84,6 +84,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   părți / pe o parte, deduse din mânere (fără schemă nouă), schimbate din bara de sus în unealta Noduri; arcele nu primesc mâner.
   **Offsetul în desen (ADR 0064)** gata pe 25.10: panoul din extensia barei, motorul CAM (`offsetInchis`), adus la cerere;
   formele noi prin `document.deseneaza`, care primește și o listă (un pas). Pornirea neschimbată.
+  **Înclinarea (ADR 0065)** gata pe 25.10: `fel: 'inclinare'` în `document.transforma`, exactă în geometrie (W⁻¹·H·W), arcele
+  refuzate; panoul din secțiunea Oglindire; panourile extensiei = o singură stare (`panou`).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

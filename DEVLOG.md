@@ -2641,3 +2641,22 @@ A doua trecere: rapid 7 171 / 0, e2e 201 / 201 (după locatorii exacți), emulat
 fiecare dată). Rularea de noapte din 25.10 (06:15 UTC) verde, 31 min. Verificat în Edge pe instanța de test (după oferta de
 actualizare a PWA-ului): dreptunghiul 100 × 60, panoul Offset cu 5 mm spre exterior, previzualizarea (1 contur), Aplică dă
 calea 110 × 70 cu 8 segmente, la (15, 15), aleasă; anularea o scoate; la 711 px, panoul stă în fereastră (399–703 px); 0 erori.
+
+## 2026-10-25 — Înclinarea (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua, la un moment dat, o sa vreau sa imi faci un test pe care sa il urmez eu si sa iti spun ce a iesit bine si
+ce nu. Dar, asta dupa ce terminam cu uneltele de desen”
+**Started:** 25.10, ~09:20. Cererea testului pentru owner, notată (în memorie): vine după ce se închid uneltele de desen. Felia
+**6.K↑**, adusă din etapa 6, fără agenți: din „Transformare și copiere” rămăseseră înclinarea și copierea de-a lungul unei curbe
+(plus booleanul, amânat de owner pe 20.10). Înclinarea: `fel: 'inclinare'` prin `document.transforma`, exactă în geometrie,
+arcele refuzate; panoul din secțiunea Oglindire.
+**Treceri:** (1) modelul (`matriceInclinare` cu H = Hy·Hx, determinantul 1; fiecare element primește A = W⁻¹·H·W în geometrie,
+matricele rămân; dreptunghiul devine cale prin `caleDinForma`; arcele, piesa împărțită și unghiul peste 75° se refuză), inversa
+afină mutată din `noduriCalcul` într-un modul al ei (`geom/inversa.ts`; întâi în `geom/matrice.ts`, dar acela e în pornire:
+95,2 → 95,3 kB, deci scoasă de acolo), panoul (o singură stare pentru panourile extensiei), previzualizarea
+cutiei, manualul; probele pe hârtie și în lume (instanță rotită cu 30°, o piesă-grup scalată și rotită, cubice: fiecare punct
+în H·p), verzi din prima, deci o mutație în conjugarea cu W⁻¹: prinsă (2 probe picate), restaurată.
+**Completed:** 25.10 10:15. Fără agenți. `npm run rapid` RC 0 (7 184 de teste unitare, 5 noi, 0 picate, 8 sărite); determinismul,
+licențele verzi. E2e 201 / 203 în Edge, iar cele 2 picate (`import`, `rezumat`) au căzut pe `EBUSY` la citirea fișierului
+descărcat din `test-results` (Drive-ul îl ținea): rerulate de 3 ori, 48 / 48; cele 2 noi, verzi. Emulatoarele: 36 de probe ale
+funcțiilor, 13 e2e. Pornirea neschimbată (95,2 kB; cu ușa 99,9 / 100); totalul 285,9 → 287,3 / 300 kB.
