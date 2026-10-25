@@ -397,6 +397,10 @@
       "ro": "CAM 3D doar pe câmpul conservativ",
       "en": "3D CAM only on the conservative field"
     },
+    "3e1d10abf56b0ccb": {
+      "ro": "remedierile editorului (6.A↑–6.N↑), înaintea textului",
+      "en": "the editor's fixes (6.A↑–6.N↑), before the text"
+    },
     "3e98c472d0a0bc17": {
       "ro": "Fluxul senderului: cele 11 reguli din `docs/PORTARE.md` §3.4 (octeții, răspunsurile, eroarea în flux, bufferul pierdut, bariera, citirile, hold-ul, timpul real, WCS-ul), ca mașini de stare pure; sesiunea Web Serial; octeții exportați, cu hash",
       "en": "The sender stream: the 11 rules from `docs/PORTARE.md` §3.4 (bytes, responses, an error in the stream, a lost buffer, the barrier, reads, hold, real time, WCS), as pure state machines; the Web Serial session; the exported bytes, with a hash"
@@ -601,6 +605,10 @@
       "ro": "Rampa (ADR 0029, documentul v6): bucla tăiată continuu, intrarea rotită, compusă cu urechile (portată, `docs/PORTARE.md` §3.2)",
       "en": "Ramp (ADR 0029, document v6): the loop cut continuously, the rotated entry, combined with tabs (ported, `docs/PORTARE.md` §3.2)"
     },
+    "6252cd766270cd60": {
+      "ro": "Testul uneltelor de desen, pas cu pas (31 de pași, cu Bine / Nu / Sărit și note): <https://claude.ai/artifact/S4w78746bv7zLGAqzZixnw>, pe instanța de test; adresa de test nu se schimbă cât durează (feliile noi merg pe un canal de previzualizare)",
+      "en": "The drawing tools test, step by step (31 steps, with Good / No / Skipped and notes): <https://claude.ai/artifact/S4w78746bv7zLGAqzZixnw>, on the test instance; the test address does not change while it lasts (new slices go to a preview channel)"
+    },
     "6518f88023cee9a7": {
       "ro": "Pânza v0: stratul de vectori în worker, pe pânză software; pan, zoom, selecție și mutare prin acțiuni; oracolul pânzei (marginea cercului)",
       "en": "Canvas v0: the vector layer in a worker, on a software canvas; pan, zoom, selection and moving through actions; the canvas oracle (the circle's edge)"
@@ -676,6 +684,10 @@
     "763851f772b3f0d7": {
       "ro": "**cele 7 contracte probate** (sau decizia ta de la §8.1)",
       "en": "**the 7 contracts proven** (or your decision from §8.1)"
+    },
+    "7721c722a0965f76": {
+      "ro": "acum (cerut de owner pe 25.10)",
+      "en": "now (requested by the owner on 25.10)"
     },
     "78c32b33abe2c88e": {
       "ro": "piesa unui străin, făcută fără ajutor",

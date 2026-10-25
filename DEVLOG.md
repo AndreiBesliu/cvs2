@@ -2738,3 +2738,11 @@ licențele verzi. E2e 210 / 210 în Edge (2 noi, unul vechi scos: refuzul de lâ
 instanța de test (după oferta de actualizare a PWA-ului): nodurile cercului, rotunde; nodul din dreapta „ambele”, cu 2 mânere și
 butonul apăsat; Colț, fără refuz: 6 noduri (semicercurile în câte 3 curbe), nodul colț; anularea readuce cercul; Scade (dreptunghiul
 minus cercul), apoi Noduri: 2 contururi, 6 noduri, fără refuz; anularea; 0 erori.
+
+## 2026-10-25 — Testul owner-ului pentru uneltele de desen (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok, dar, in timp ce eu voi face testul, vreau sa poti lucra la ce urmeaza”
+**Started / Completed:** 25.10, ~12:35 / ~12:50. Pagina testului (artifact privat, cu baza ei de rezultate): 31 de pași pe
+unelte, fiecare cu ce faci / ce trebuie să vezi, Bine / Nu / Sărit și o notă; rezultatele se citesc cu `ArtifactData` (colecția
+`rezultate`, un document pe pas). Verificat: citirea colecției (goală). Rândul în „Ce îi trebuie owner-ului” din fișă. Cât
+testează owner-ul, adresa de test nu se schimbă: feliile următoare se publică pe un canal de previzualizare.

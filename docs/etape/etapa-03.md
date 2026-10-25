@@ -54,6 +54,7 @@ implicit n-are dreptul de export, eșecul apare în fila Erori și în Diagnoză
 | Tăierea plăcilor 1 și 2 | 3.5 (transcrierile rejucate pe emulator) și prima felie a etapei | cât mai curând |
 | Placa de contact pentru Z | 3.7 | înainte de 3.7 |
 | Pe **live**, înaintea comutării (inventarul de mai jos): bucket-ul `gs://cncvectorstudio-backup` în `us-central1` (îl poate crea asistentul, la cerere); apoi `scripts/wif/pregateste-proiect.sh cncvectorstudio live --pitr` în Cloud Shell (WIF, contul de publicare, contul backup-ului, PITR); mediul GitHub `live` cu **Required reviewers** și doar `main`, cu variabilele tipărite de script (ADR 0044); protecția la ștergere a bazei (recomandată); un export manual chiar înaintea comutării. Pe test: făcut pe 18.10 | 3.9: prima publicare pe live | înainte de 3.9 |
+| Testul uneltelor de desen, pas cu pas (31 de pași, cu Bine / Nu / Sărit și note): <https://claude.ai/artifact/S4w78746bv7zLGAqzZixnw>, pe instanța de test; adresa de test nu se schimbă cât durează (feliile noi merg pe un canal de previzualizare) | remedierile editorului (6.A↑–6.N↑), înaintea textului | acum (cerut de owner pe 25.10) |
 | Copia locală a aplicației vechi, verificată pe calculatorul de la mașină (decizia 8) | lucrul de zi cu zi după primul live | înainte de 3.9 |
 | Arhivarea repo-ului vechi pe GitHub | 3.9 | la comutare |
 
