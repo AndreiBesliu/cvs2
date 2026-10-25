@@ -2861,3 +2861,6 @@ unealta. **Treceri:** (1) la 9 px și 3 px de margini, cutia literei atingea cut
 măsurat pe fiecare buton, apoi 8 px, lipită de jos; privită la 2×, în ambele teme.
 **Completed:** 25.10 17:05. Nivelul rapid local: 7 224 de teste unitare (0 picate), determinismul (146 de fișiere identice),
 licențele; e2e 214 / 214 în Edge (1 nou); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,3 kB).
+**Publicat pe canal:** 25.10, `buzunar` (<https://cncvectorstudio-test--buzunar-x95ick77.web.app>), după rapid-ul verde pe CI
+pe `99f0059` (rularea 40206238874). Verificat în browserul aplicației, la 1 280 px: după „Reîncarcă” (workerul nou), cele 9
+litere (V S N B R O E L P) pe butoanele uneltelor. Adresa principală rămâne pe `40582a6` cât owner-ul face testul.
