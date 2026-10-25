@@ -70,6 +70,20 @@ test('fila Roadmap: etapele, etapa curentă, o felie cunoscută, feliile aduse, 
   await expect(page.locator('[data-etapa="4"]')).toHaveAttribute('data-stare', 'urmatoare');
   await expect(page.locator('[data-etapa="T1"]')).toHaveAttribute('data-tampon', 'true');
 
+  // Etapele viitoare își arată lucrul făcut înainte (ADR 0077): editorul de vectori (6) are ambele rânduri de prag făcute,
+  // buzunarul (5) unul din patru în lucru; umplerea se vede (are culoare și înălțimea ei).
+  const umplere = (id: string) => page.locator(`[data-etapa="${id}"] .rm-umplere`).evaluate((el) => ({
+    p: el.getBoundingClientRect().height / (el.parentElement?.getBoundingClientRect().height ?? 1), fond: getComputedStyle(el).backgroundColor,
+  }));
+  const sase = page.locator('[data-etapa="6"]');
+  await expect(sase).toHaveAttribute('data-progres', 'prag');
+  await expect(sase).toHaveAttribute('aria-label', /Rândurile de prag: 2 \/ 2 făcute, 0 în lucru/);
+  const u6 = await umplere('6'), u5 = await umplere('5');
+  expect(u6.p).toBeCloseTo(1, 2);
+  expect(u6.fond).not.toBe('rgba(0, 0, 0, 0)');
+  expect(u5.p).toBeCloseTo(0.125, 2);
+  await expect(page.locator('[data-etapa="5"]')).toHaveAttribute('aria-label', /1 în lucru \(un punct fără rând în prag\)/);
+
   // O felie cunoscută, cu starea, intervalul, trecerile și ADR-ul ei; una de făcut.
   const panou = page.locator('[data-roadmap-etapa="3"]');
   const f = panou.locator('[data-felie="3.4a"]');

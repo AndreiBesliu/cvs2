@@ -22,7 +22,7 @@ import { join } from 'node:path';
 import { ancora, citesteTabel, parseazaInline, parseazaMarkdown, textSimplu, type Bloc, type TabelBrut } from '../src/docs/markdown.ts';
 import {
   FISIER_CATALOG, FISIER_ROADMAP, FISIER_ROADMAP_EN, fisierDocument,
-  type AdrPeScurt, type Catalog, type Categorie, type CerereOwner, type DocumentCatalog, type Etapa, type Felie, type Punct,
+  type AdrPeScurt, type Catalog, type Categorie, type CerereOwner, type DocumentCatalog, type Etapa, type Felie, type Prag, type Punct,
   type Roadmap, type StareAdr, type StareFelie,
 } from '../shared/documentatie.ts';
 
@@ -398,6 +398,64 @@ export function citestePlaca(cale: string, text: string): Placa {
 // ——— ADR ———
 
 const INDEX_ADR = 'docs/adr/README.md';
+const ACOPERIRE = 'ACOPERIRE-ARTCAM-DESKPROTO.md';
+const ANTET_PRAG = ['Capabilitate', 'Sursă', 'Etapă', 'Stare', 'Commit'] as const;
+
+export interface RandPrag {
+  readonly capabilitate: string;
+  readonly stare: 'facut' | 'in-lucru' | 'de-facut';
+}
+
+/**
+ * Pură: rândurile pragului, din toate tabelele cu antetul | Capabilitate | Sursă | Etapă | Stare | Commit | (grupele); starea
+ * începe cu „făcut”, „în lucru” sau „de făcut” (CLAUDE.md, „Surse”), altfel poarta oprește build-ul.
+ */
+export function citesteAcoperirea(text: string): RandPrag[] {
+  const s: Sectiune = { linii: liniiDin(text), titlu: '', linie: 0 };
+  const out: RandPrag[] = [];
+  for (const t of tabele(ACOPERIRE, s, 'pragul')) {
+    if (t.antet.length !== ANTET_PRAG.length || !t.antet.every((c, k) => c === ANTET_PRAG[k])) continue;
+    for (const [k] of t.randuri.entries()) {
+      const [capabilitate = '', , , stare = ''] = celuleExacte(ACOPERIRE, t, k, 'pragul');
+      const fel = /^făcut\b/.test(stare) ? 'facut' : /^în lucru\b/.test(stare) ? 'in-lucru' : /^de făcut\b/.test(stare) ? 'de-facut' : null;
+      if (!fel) throw new EroareDocumentatie(ACOPERIRE, `rândul de la linia ${t.linii[k] ?? '?'} („${capabilitate.slice(0, 40)}”): starea începe cu „făcut”, „în lucru” sau „de făcut”, nu „${stare.slice(0, 30)}”`);
+      out.push({ capabilitate, stare: fel });
+    }
+  }
+  if (out.length === 0) throw new EroareDocumentatie(ACOPERIRE, `niciun tabel cu antetul | ${ANTET_PRAG.join(' | ')} |`);
+  return out;
+}
+
+const GOALE = new Set(['și', 'cu', 'de', 'pe', 'a', 'al', 'un', 'o', 'în', 'din', 'la', 'fără', 'sau']);
+const normal = (s: string): string => s.replace(/[*`]/g, '').trim().toLowerCase();
+const cuvinte = (s: string): Set<string> => new Set([...normal(s).matchAll(/[\p{L}\p{N}²]+/gu)].map((m) => m[0]).filter((w) => w.length > 1 && !GOALE.has(w)));
+
+/**
+ * Pură: rândul de prag al unui punct din coloana „Închide”: cel al cărui nume începe cu punctul (`Găurire`, `Animația
+ * traseului`), altfel singurul care îi conține toate cuvintele (`Buzunar cu mai multe freze`); mai multe sau niciunul: null.
+ */
+export function randulPragului(punct: string, randuri: readonly RandPrag[]): RandPrag | null {
+  const p = normal(punct);
+  const prefix = randuri.filter((r) => normal(r.capabilitate).startsWith(p));
+  if (prefix.length === 1) return prefix[0] ?? null;
+  const w = cuvinte(punct);
+  if (w.size === 0) return null;
+  const toate = randuri.filter((r) => { const c = cuvinte(r.capabilitate); return [...w].every((x) => c.has(x)); });
+  return toate.length === 1 ? toate[0] ?? null : null;
+}
+
+/** Pură: cât din rândurile de prag ale coloanei „Închide” e făcut (punctele despărțite cu „;”). */
+export function pragEtapei(inchide: string, randuri: readonly RandPrag[]): Prag {
+  let facut = 0, inLucru = 0, deFacut = 0, fara = 0;
+  for (const punct of inchide.split(';').map((x) => x.trim()).filter((x) => x !== '' && x !== '—')) {
+    const r = randulPragului(punct, randuri);
+    if (!r) fara++;
+    else if (r.stare === 'facut') facut++;
+    else if (r.stare === 'in-lucru') inLucru++;
+    else deFacut++;
+  }
+  return { facut, inLucru, deFacut, fara };
+}
 
 export interface RandIndexAdr {
   readonly numar: string;
@@ -443,6 +501,8 @@ export function citesteAdr(cale: string, text: string): Adr {
 
 export interface SurseRoadmap {
   readonly plan: string;
+  /** `ACOPERIRE-ARTCAM-DESKPROTO.md`: starea rândurilor de prag. */
+  readonly acoperire: string;
   readonly fise: readonly { readonly cale: string; readonly text: string }[];
   readonly placi: readonly { readonly cale: string; readonly text: string }[];
   readonly indexAdr: string;
@@ -502,6 +562,7 @@ function felii(randuri: readonly Rand[]): Felie[] {
 /** Pură: roadmap-ul dedus din surse (stările din fișe, nimic scris de mână în altă parte), cu poarta pe fiecare tabel. */
 export function construiesteRoadmap(surse: SurseRoadmap): Roadmap {
   const planul = citesteEtapele(surse.plan);
+  const prag = citesteAcoperirea(surse.acoperire);
   const detalii = citesteDetaliile(surse.plan);
   const numere = new Set(planul.flatMap((e) => (e.numar === null ? [] : [e.numar])));
   for (const n of detalii.keys()) {
@@ -572,6 +633,7 @@ export function construiesteRoadmap(surse: SurseRoadmap): Roadmap {
       id: e.id, numar: e.numar, saptamana: e.saptamana, tinta: e.tinta, inchide: e.inchide, placa: e.placa, live: e.live,
       areLive: e.areLive, stare, curenta: e.numar !== null && e.numar === curenta, asteaptaPlaca: fisa !== undefined && toateGata && taiata === null,
       fisa: fisa?.cale ?? null, pornita: fisa?.pornita ?? null, fisaPlacii: placa?.cale ?? null, placaTaiata: taiata, felii: lista, puncte,
+      prag: pragEtapei(e.inchide, prag),
     };
   });
 
@@ -631,7 +693,7 @@ export function genereazaDocumentatia(radacina: string): Map<string, string> {
   }
   const plan = citeste('PLAN.md');
   const indexAdr = citeste(INDEX_ADR);
-  const roadmap = construiesteRoadmap({ plan, fise, placi, indexAdr, adr });
+  const roadmap = construiesteRoadmap({ plan, acoperire: citeste(ACOPERIRE), fise, placi, indexAdr, adr });
   // Roadmap-ul în engleză (ADR 0056): din dicționarul din repo; un text fără traducere rămâne în română (numărat).
   const caleDictionar = join(radacina, CALE_DICTIONAR_EN);
   const dictionar = existsSync(caleDictionar) ? citesteDictionar(readFileSync(caleDictionar, 'utf8')) : null;

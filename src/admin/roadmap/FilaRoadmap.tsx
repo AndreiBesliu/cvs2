@@ -6,7 +6,7 @@ import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
 import type { AducatorDocumentatie } from '../documentatie/aducere.ts';
 import { legaturaDocument, legaturiSpreDocumente, type Deschide } from '../documentatie/legaturi.ts';
-import { aduseGata, etapaImplicita, interval, progresEtapa, reperLive } from './vedere.ts';
+import { aduseGata, etapaImplicita, interval, progresEtapa, reperLive, type Progres } from './vedere.ts';
 import './roadmap.css';
 
 /**
@@ -141,6 +141,7 @@ function Legenda(): ReactElement {
         <li key={s}><span className="rm-mostra" data-stare={s} aria-hidden="true" />{t(`admin.rm.stare.${s}`)}</li>
       ))}
       <li><span className="rm-mostra" data-stare="in-lucru" data-asteapta="true" aria-hidden="true" />{t('admin.rm.asteapta-placa')}</li>
+      <li><span className="rm-mostra" data-stare="viitoare" data-inainte="true" aria-hidden="true" />{t('admin.rm.leg.inainte')}</li>
       <li><span className="rm-semn rm-semn-placa" aria-hidden="true" />{t('admin.rm.leg.placa')}</li>
       <li><span className="rm-semn rm-semn-placa" data-taiata="true" aria-hidden="true" />{t('admin.rm.leg.placa-taiata')}</li>
       <li><span className="rm-semn rm-semn-live" aria-hidden="true" />{t('admin.rm.leg.live')}</li>
@@ -167,7 +168,7 @@ function Pista({ etape, ales, alege }: { readonly etape: readonly Etapa[]; reado
       {etape.map((e) => {
         const p = progresEtapa(e);
         const reper = e.areLive ? reperLive(e.live) : null;
-        const progres = p.total > 0 ? `, ${t(p.fel === 'felii' ? 'admin.rm.progres' : 'admin.rm.progres-puncte', { gata: p.gata, n: p.total })}` : '';
+        const progres = p.total > 0 ? `, ${textProgres(e, p)}` : '';
         const n = aduseGata(e);
         const eticheta = t('admin.rm.eticheta-etapa', {
           nume: numeEtapa(e), s: e.saptamana, stare: textStare(e), progres, aduse: n > 0 ? `, ${t('admin.rm.aduse-n', { n })}` : '',
@@ -205,6 +206,14 @@ function Pista({ etape, ales, alege }: { readonly etape: readonly Etapa[]; reado
       })}
     </div>
   );
+}
+
+/** Progresul etapei, în cuvinte: feliile, punctele planului sau rândurile de prag (cu cele nemăsurate). */
+function textProgres(e: Etapa, p: Progres): string {
+  if (p.fel === 'felii') return t('admin.rm.progres', { gata: p.gata, n: p.total });
+  if (p.fel === 'puncte') return t('admin.rm.progres-puncte', { gata: p.gata, n: p.total });
+  const prag = t('admin.rm.progres-prag', { facut: e.prag.facut, inLucru: e.prag.inLucru, n: p.total });
+  return e.prag.fara > 0 ? `${prag} ${t('admin.rm.prag-fara', { n: e.prag.fara })}` : prag;
 }
 
 function PanouEtapa({ e, r, legaturi, deschide }: { readonly e: Etapa; readonly r: Roadmap; readonly legaturi: Legaturi; readonly deschide: Deschide }): ReactElement {
@@ -256,7 +265,7 @@ function PanouEtapa({ e, r, legaturi, deschide }: { readonly e: Etapa; readonly 
       {p.total > 0 ? (
         <div className="rm-progres">
           <span className="rm-progres-bara" aria-hidden="true"><span style={umplere(p.gata / p.total)} /></span>
-          <span>{t(p.fel === 'felii' ? 'admin.rm.progres' : 'admin.rm.progres-puncte', { gata: p.gata, n: p.total })}</span>
+          <span>{textProgres(e, p)}</span>
         </div>
       ) : null}
 

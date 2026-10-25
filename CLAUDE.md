@@ -109,7 +109,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   rotunjite (`src/geom/colturi.ts`); copierea pe curbă pe ea / la stânga / la dreapta; Pen: dublu clic închide, anularea în
   desen, Ctrl+Shift+Z redeschide; Alt și C unesc mânerele; cronologia roadmap-ului cu feliile aduse (↑N). **Coborârea în buzunar
   (ADR 0076, documentul v12)** gata pe 25.10: plonjare (implicit), rampă pe inel, zigzag sau elice, cu unghiul, lungimea și
-  raza în fereastra exportului (`src/cam/coborare.ts`); elicea care nu încape coboară pe inel, cu avertisment. **Urmează:
+  raza în fereastra exportului (`src/cam/coborare.ts`); elicea care nu încape coboară pe inel, cu avertisment. **Progresul
+  etapelor viitoare în cronologie (ADR 0077)** gata pe 25.10: bara unei etape fără fișă se umple din rândurile de prag pe care
+  le închide (coloana „Închide” × `ACOPERIRE`); un rând nou în prag schimbă cronologia la build. **Urmează:
   înclinarea cu arcele făcute curbe (cercul → elipsă), apoi chenarul întrerupt al uneltei Transformare** (cererile owner-ului).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),

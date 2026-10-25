@@ -39,7 +39,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 |---|---|---|---|---|
 | Profil, cu urechi de susținere, intrări / ieșiri, direcție de tăiere | S+D | v1 | în lucru: operația în document (2.2), direcția (2.3b), urechile (2.4), rampa (2.5a), intrările / ieșirile (2.5b), intrările cu rampa (2.5c), profilul pe căile deschise: pe linie, pe stânga / dreapta, despărțirea foii marcată de om (2.3c, ADR 0037); fișa plăcii 2 gata (2.10), rămâne tăierea ei | 18cf16d, c73a217, db586c6, 6db1103, 9538bc7, bfb92ce, 01c84ec |
 | Fileturi la colțuri interioare: dog-bone și T-bone | S+D | v1 | în lucru: degajările pe operație, pe colțurile dintre linii (2.6, ADR 0032); rămân colțurile cu arce (2.7) și placa 2 | 91211c5, 98a22bf |
-| Buzunar (curățare de suprafață), cu mai multe freze | S+D | v1 | în lucru (pe 25.10: buzunarul cu o freză, în inele paralele cu conturul, cu fundul scos întreg, ADR 0069; insulele, par-impar între buzunarele de aceeași adâncime, ADR 0073; coborârea pe rampă, zigzag sau elice, configurabilă, ADR 0076; rămân degroșarea + finisarea cu două freze) | 07d8bca, insulele: e295276, coborârea: (felia 5.3↑) |
+| Buzunar (curățare de suprafață), cu mai multe freze | S+D | v1 | în lucru (pe 25.10: buzunarul cu o freză, în inele paralele cu conturul, cu fundul scos întreg, ADR 0069; insulele, par-impar între buzunarele de aceeași adâncime, ADR 0073; coborârea pe rampă, zigzag sau elice, configurabilă, ADR 0076; rămân degroșarea + finisarea cu două freze) | 07d8bca, insulele: e295276, coborârea: 2d8467d |
 | V-carve (inclusiv cu freză dreaptă pentru fund plat) | S+D | v1 | de făcut | — |
 | Găurire | S+D | v1 | de făcut | — |
 | Ordinea operațiilor și a vectorilor; câte un fișier separat pe sculă | S+D | v1 | de făcut | — |

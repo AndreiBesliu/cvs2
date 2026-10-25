@@ -17,6 +17,7 @@ const etapa = (felii: Felie[]): Etapa => ({
   id: '3', numar: 3, saptamana: 3, tinta: 'Ținta', inchide: '—', placa: 'placa 3', live: 'da', areLive: true, stare: 'in-lucru',
   curenta: true, asteaptaPlaca: false, fisa: 'docs/etape/etapa-03.md', pornita: '16.10', fisaPlacii: null, placaTaiata: null,
   felii, puncte: [{ numar: 1, titlu: 'Punctul', descriere: 'Descrierea punctului.', felii: [] }],
+  prag: { facut: 0, inLucru: 0, deFacut: 0, fara: 0 },
 });
 const MIC: Roadmap = {
   schema: 1, limba: 'ro', netraduse: 0,

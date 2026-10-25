@@ -4,14 +4,19 @@ import type { Etapa, Roadmap } from '../../../shared/documentatie.ts';
 export interface Progres {
   readonly gata: number;
   readonly total: number;
-  /** `felii`: din fișa etapei; `puncte`: fără fișă, punctele din `PLAN.md` §5.3 atinse de felii aduse înainte. */
-  readonly fel: 'felii' | 'puncte' | 'nimic';
+  /**
+   * `felii`: din fișa etapei; `puncte`: fără fișă, punctele din `PLAN.md` §5.3 atinse de felii aduse înainte; `prag`: fără
+   * fișă și fără puncte, rândurile de prag pe care le închide etapa (făcut = 1, în lucru = ½).
+   */
+  readonly fel: 'felii' | 'puncte' | 'prag' | 'nimic';
 }
 
 /** Pură: cât din etapă e făcut, pentru umplerea barei ei. */
 export function progresEtapa(e: Etapa): Progres {
   if (e.felii.length > 0 && e.fisa !== null) return { gata: e.felii.filter((f) => f.stare === 'gata').length, total: e.felii.length, fel: 'felii' };
   if (e.puncte.length > 0) return { gata: e.puncte.filter((p) => p.felii.length > 0).length, total: e.puncte.length, fel: 'puncte' };
+  const n = e.prag.facut + e.prag.inLucru + e.prag.deFacut;
+  if (e.fisa === null && n > 0) return { gata: e.prag.facut + e.prag.inLucru / 2, total: n, fel: 'prag' };
   return { gata: 0, total: 0, fel: 'nimic' };
 }
 

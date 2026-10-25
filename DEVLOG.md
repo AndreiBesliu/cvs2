@@ -2930,3 +2930,19 @@ Edge; emulatoarele 13 / 13. Pornirea 95,3 / 100 kB, totalul 305,1 / 330, `/admin
 plină de la adâncime; bucla după elice; zigzagul mai lung decât bucla), 29 / 30 directe, garda legăturii elicei (a doua plasă)
 prinsă în pereche, una echivalentă (un 2π în unghiul de pornire al elicei) scoasă din cod. Porțile au picat o dată pe regula
 de import (dialogul lua tipul `Coborare` direct din model; acum prin `actiuniExportTipuri`).
+**Publicat pe adresa principală de test:** 25.10, workflow-ul `publica` pe `2d8467d` (rularea 40225274835), după rapid-ul verde
+(40224561619). Verificat în browserul aplicației pe <https://cncvectorstudio-test.firebaseapp.com/>, după actualizarea workerului:
+cercul R15 trecut pe buzunar are Descent (Plunge implicit); Zigzag: 3°, 20 mm, „4 ramps per pass” (pasul de 4 mm); Helix: raza 3;
+unghiul de 60° marchează câmpul și dă motivul. Fără export acolo (descărcarea și programul sunt probate în e2e).
+
+## 2026-10-25 — Progresul etapelor viitoare în cronologie (Model: Claude Opus 5.5)
+
+**Prompt:** „si tot nu vad in acest timeline ce progres avem deja facut” (cu două capturi ale cronologiei din `/admin`: etapele
+5, 6 și 14 gri, doar cu „↑2”, „↑16”, „↑2”), venit cât felia coborârii era la porți.
+**Started:** 25.10, ~21:10. Felia **3.J**, fără agenți (ADR 0077). Cauza: bara unei etape fără fișă se umplea doar din punctele
+ei din `PLAN.md` §5.3 (descrise doar pentru primele etape), iar umplerea unei etape viitoare n-avea culoare. Acum: rândurile de
+prag din coloana „Închide”, cu starea din `ACOPERIRE`; legătura punct → rând măsurată întâi pe tot planul (prefixul prinde
+jumătate, cuvintele încă o parte; adminul și §10 rămân nemăsurate).
+**Completed:** 25.10 21:26. Porțile: 7 259 de teste unitare (0 picate), e2e 219 / 219 în Edge, emulatoarele 36 + 13 (proba nouă:
+bara etapei 6 plină și colorată, a etapei 5 la ⅛); `/admin` 190,2 / 200 kB. Mutațiile: 7 / 7 prinse, una echivalentă (o
+verificare de prisos în `randulPragului`, scoasă).

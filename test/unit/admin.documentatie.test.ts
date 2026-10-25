@@ -96,7 +96,8 @@ const felie = (id: string, stare: Felie['stare'], adusa = false): Felie => ({
 });
 const etapa = (x: Partial<Etapa>): Etapa => ({
   id: '1', numar: 1, saptamana: 1, tinta: '', inchide: '', placa: '', live: '', areLive: false, stare: 'viitoare', curenta: false,
-  asteaptaPlaca: false, fisa: null, pornita: null, fisaPlacii: null, placaTaiata: null, felii: [], puncte: [], ...x,
+  asteaptaPlaca: false, fisa: null, pornita: null, fisaPlacii: null, placaTaiata: null, felii: [], puncte: [],
+  prag: { facut: 0, inLucru: 0, deFacut: 0, fara: 0 }, ...x,
 });
 
 test('progresul unei etape: feliile gata din toate; fără fișă, punctele planului atinse de felii aduse', () => {
@@ -106,6 +107,13 @@ test('progresul unei etape: feliile gata din toate; fără fișă, punctele plan
     puncte: [{ numar: 1, titlu: '', descriere: '', felii: [] }, { numar: 2, titlu: '', descriere: '', felii: ['4.2↑'] }],
   })), { gata: 1, total: 2, fel: 'puncte' });
   assert.deepEqual(progresEtapa(etapa({})), { gata: 0, total: 0, fel: 'nimic' });
+  // Fără fișă și fără puncte: rândurile de prag pe care le închide (făcut = 1, în lucru = ½); cele fără rând nu intră.
+  const prag = { facut: 1, inLucru: 1, deFacut: 2, fara: 1 };
+  assert.deepEqual(progresEtapa(etapa({ prag })), { gata: 1.5, total: 4, fel: 'prag' });
+  // Punctele planului și fișa au întâietate.
+  assert.equal(progresEtapa(etapa({ prag, puncte: [{ numar: 1, titlu: '', descriere: '', felii: [] }] })).fel, 'puncte');
+  assert.equal(progresEtapa(etapa({ prag, fisa: 'a.md', felii: [felie('1.1', 'gata')] })).fel, 'felii');
+  assert.deepEqual(progresEtapa(etapa({ prag: { facut: 0, inLucru: 0, deFacut: 0, fara: 3 } })), { gata: 0, total: 0, fel: 'nimic' });
 });
 
 test('cronologia: feliile aduse înainte și gata, numărate pe etapele fără fișă; pe etapa cu fișă, nimic în plus', () => {

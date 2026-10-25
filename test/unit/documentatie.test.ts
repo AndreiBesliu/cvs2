@@ -9,8 +9,8 @@ import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync }
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-  EroareDocumentatie, citesteAdr, citesteDetaliile, citesteEtapele, citesteFisa, citesteIndexAdr, citestePlaca,
-  construiesteRoadmap, genereazaDocumentatia, primaPropozitie, titluScurt, type SurseRoadmap,
+  EroareDocumentatie, citesteAcoperirea, citesteAdr, citesteDetaliile, citesteEtapele, citesteFisa, citesteIndexAdr, citestePlaca,
+  construiesteRoadmap, genereazaDocumentatia, pragEtapei, primaPropozitie, randulPragului, titluScurt, type SurseRoadmap,
 } from '../../scripts/documentatie.ts';
 import { parseazaMarkdown } from '../../src/docs/markdown.ts';
 import { esteCatalog, esteRoadmap, type Catalog, type Etapa, type Felie, type Roadmap } from '../../shared/documentatie.ts';
@@ -336,8 +336,32 @@ const INDEX = `# ADR
 const ADR_1 = '# ADR 0001 — Prima decizie (T1)\n\n**Starea:** acceptat pe 07.10.2026.\n';
 const ADR_2 = '# ADR 0002: A doua: cu detalii\n\n**Starea:** propus pe 19.10.2026.\n';
 
+/** Pragul mic: două grupe (același antet), un rând al etapei 2 („x”) în lucru. */
+const ACOPERIRE_MIC = `# Prag
+
+## A
+
+| Capabilitate | Sursă | Etapă | Stare | Commit |
+|---|---|---|---|---|
+| x: ceva | S | v1 | în lucru (pe 01.01) | abc |
+| Altceva | S | v1 | de făcut | — |
+
+## B
+
+| Capabilitate | Sursă | Etapă | Stare | Commit |
+|---|---|---|---|---|
+| y | D | v1 | făcut (02.01) | def |
+
+## Scoase
+
+| Capabilitate | De ce |
+|---|---|
+| z | nu |
+`;
+
 const surse = (schimba: Partial<SurseRoadmap> = {}): SurseRoadmap => ({
   plan: PLAN_MIC,
+  acoperire: ACOPERIRE_MIC,
   fise: [{ cale: 'docs/etape/etapa-01.md', text: FISA_1 }, { cale: 'docs/etape/etapa-02.md', text: FISA_2 }],
   placi: [{ cale: 'docs/etape/placa-01.md', text: '# Fișa plăcii 1\n\nCe probează.\n' }],
   indexAdr: INDEX,
@@ -378,6 +402,38 @@ test('fixtura: stările deduse (așteaptă placa, în lucru curentă, tamponul u
   assert.equal(r.etape[1]?.areLive, true);
   assert.equal(r.etape[0]?.areLive, false);
   assert.equal(r.adr['0002']?.titlu, 'A doua');
+  // Pragul fiecărei etape, din coloana „Închide” (etapa 2: „x”, în lucru; etapa 3: „y”, făcut; „—” nu e un punct).
+  assert.deepEqual(r.etape.map((e) => [e.id, e.prag]), [
+    ['1', { facut: 0, inLucru: 0, deFacut: 0, fara: 0 }], ['2', { facut: 0, inLucru: 1, deFacut: 0, fara: 0 }],
+    ['T1', { facut: 0, inLucru: 0, deFacut: 0, fara: 0 }], ['3', { facut: 1, inLucru: 0, deFacut: 0, fara: 0 }],
+  ]);
+});
+
+test('pragul: rândurile din toate grupele (nu și „Scoase”), starea din primul cuvânt, poarta pe o stare necunoscută', () => {
+  assert.deepEqual(citesteAcoperirea(ACOPERIRE_MIC), [
+    { capabilitate: 'x: ceva', stare: 'in-lucru' }, { capabilitate: 'Altceva', stare: 'de-facut' }, { capabilitate: 'y', stare: 'facut' },
+  ]);
+  pica(() => citesteAcoperirea(ACOPERIRE_MIC.replace('| de făcut |', '| poate |')), 'ACOPERIRE-ARTCAM-DESKPROTO.md', /Altceva.*poate/);
+  pica(() => citesteAcoperirea('# Prag\n'), 'ACOPERIRE-ARTCAM-DESKPROTO.md', /niciun tabel/);
+});
+
+test('pragul unui punct din „Închide”: numele care începe cu el, altfel singurul cu toate cuvintele lui; ambiguu sau fără rând: nimic', () => {
+  const r = citesteAcoperirea(citeste('ACOPERIRE-ARTCAM-DESKPROTO.md'));
+  const nume = (p: string): string | undefined => randulPragului(p, r)?.capabilitate;
+  assert.equal(nume('Găurire'), 'Găurire', 'prefixul, deși „găurire” apare și în altele');
+  assert.match(nume('Animația traseului') ?? '', /^Animația traseului: /);
+  assert.match(nume('Buzunar cu mai multe freze') ?? '', /^Buzunar \(curățare de suprafață\), cu mai multe freze/, 'toate cuvintele');
+  assert.match(nume('Ordinea + un fișier pe sculă') ?? '', /^Ordinea operațiilor/);
+  for (const p of ['admin **P2**', '§10 Găurire în pași', '—', 'Straturi', 'nimic de felul ăsta']) assert.equal(randulPragului(p, r), null, p);
+  assert.deepEqual(pragEtapei('Găurire; admin **P0**; —; x', citesteAcoperirea(ACOPERIRE_MIC)), { facut: 0, inLucru: 1, deFacut: 0, fara: 2 });
+});
+
+test('pragul pe arborele real: editorul de vectori (etapa 6) are ambele rânduri făcute; buzunarul (etapa 5) e în lucru', () => {
+  assert.deepEqual(etapa('6').prag, { facut: 2, inLucru: 0, deFacut: 0, fara: 0 });
+  const cinci = etapa('5').prag;
+  assert.equal(cinci.inLucru, 1, 'buzunarul cu mai multe freze');
+  assert.equal(cinci.facut + cinci.inLucru + cinci.deFacut, 4, 'buzunarul, găurirea, ordinea, animația');
+  assert.equal(cinci.fara, 1, '§10 Găurire în pași');
 });
 
 test('fixtura: placa tăiată (**Tăiată:** pe fișa plăcii) încheie etapa cu toate feliile gata', () => {
@@ -440,7 +496,7 @@ test('poarta, ADR: un fișier lipsă din index, un rând din index fără fișie
 test('poarta pe arborele real copiat: un tabel stricat face generarea să pice, cu fișierul și motivul', () => {
   const dir = mkdtempSync(join(tmpdir(), 'cncvs2-doc-'));
   try {
-    for (const f of ['PLAN.md', 'CLAUDE.md', 'DEVLOG.md']) cpSync(f, join(dir, f));
+    for (const f of ['PLAN.md', 'CLAUDE.md', 'DEVLOG.md', 'ACOPERIRE-ARTCAM-DESKPROTO.md']) cpSync(f, join(dir, f));
     cpSync('docs/etape', join(dir, 'docs/etape'), { recursive: true });
     cpSync('docs/adr', join(dir, 'docs/adr'), { recursive: true });
     cpSync('docs/manual', join(dir, 'docs/manual'), { recursive: true });

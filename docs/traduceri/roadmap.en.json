@@ -509,6 +509,10 @@
       "ro": "așezarea pe rânduri, vărsarea pe foaia 2, plăcuțele din CSV",
       "en": "row layout, spilling onto sheet 2, name plates from a CSV"
     },
+    "4e7c5753dc6f15c1": {
+      "ro": "**Progresul etapelor viitoare în cronologie** (ADR 0077; „si tot nu vad in acest timeline ce progres avem deja facut”, cu captura cronologiei: etapele 5, 6 și 14 gri, doar cu ↑N). O etapă fără fișă își umple bara din rândurile de prag pe care le închide (coloana „Închide” din plan, cu starea din `ACOPERIRE-ARTCAM-DESKPROTO.md`: făcut întreg, în lucru pe jumătate), în verdele stins al lucrului făcut înainte, cu mostra lui în legendă; textul spune câte rânduri sunt făcute și câte puncte n-au rând în prag. Etapa 6 (editorul de vectori) apare plină, etapa 5 la o optime (buzunarul în lucru); etapa 14 rămâne cu ↑2 (adminul n-are rânduri de prag). **Treceri:** (1) legătura punct → rând (numele care începe cu punctul, altfel singurul cu toate cuvintele lui; ambiguu = nemăsurat), poarta pe starea rândurilor, probele pe fixtură, pe arborele real și pe emulatoare (umplerea vizibilă, cu înălțimea ei); mutațiile 7 / 7 prinse, una echivalentă (o verificare de prisos, scoasă din cod).",
+      "en": "**The progress of future stages on the timeline** (ADR 0077; the owner’s note that the timeline still did not show the progress already made, with a screenshot of it: stages 5, 6 and 14 grey, only with ↑N). A stage without a sheet fills its bar from the threshold rows it closes (the “Closes” column of the plan, with the state from `ACOPERIRE-ARTCAM-DESKPROTO.md`: done counts whole, in progress counts half), in the muted green of work done early, with its swatch in the legend; the text says how many rows are done and how many items have no threshold row. Stage 6 (the vector editor) shows full, stage 5 at one eighth (the pocket in progress); stage 14 keeps ↑2 (the admin has no threshold rows). **Passes:** (1) the item → row link (the name that starts with the item, otherwise the only one with all its words; ambiguous = unmeasured), the gate on the state of the rows, the checks on the fixture, on the real tree and on the emulators (the fill visible, with its height); mutations 7 / 7 caught, one equivalent (a redundant check, removed from the code)."
+    },
     "4ea12beb3cc22efb": {
       "ro": "Personalul: rolurile custom, invitațiile, conturile create de owner",
       "en": "Staff: custom roles, invitations, accounts created by the owner"
@@ -660,6 +664,10 @@
     "6c4a192ce7404e43": {
       "ro": "Ieșirea din foaie, din notițele owner-ului de la prototipul planșelor. Avertismentul stă în bara de jos, pe un rând, niciodată pe pânză. Exportul cere confirmare când discul frezei trece de marginea foii cât taie. Măsurarea e exactă: arcele prin punctele de pe axe, iar rampele și elicele se taie la Z 0. Pragul e jumătate din rezoluția de 0,001 mm. Confirmarea e legată de traseul arătat (obiectul cererii + amprentă) și se scrie în antet. Oracolul l-a scris o sesiune independentă, în 2 commit-uri: 46 de sabotaje, toate prinse. **Treceri:** (1) implementarea, cu `\\`-uri pierdute de heredoc; (2) recenzia adversarială cu 10 agenți (~1,45 M tokeni) a găsit 17 probleme. Cele importante erau ocoliri ale confirmării: bifa boolean, Ctrl+Z sub dialog, un rezultat întârziat. Au fost reparate, iar oracolul a primit margini exacte și rapidele în afara foii; (3) reverificarea n-a găsit nicio ocolire, dar a scos la iveală Shift+Tab spre bară, Space dublu, o adâncime peste foaie (din 1.9c) și un pas absurd. Reparate: aplicația e inertă sub dialog, acțiunile de document trec printr-o singură ușă, adâncimea e plafonată la grosimea foii, iar trecerile la 1 000. 23 de otrăvuri pe aplicație, toate prinse. 147 de teste unitare, 17 e2e. **Durata:** fără estimare spusă dinainte; 85 de minute cu recenzia și reverificarea, față de 3–11 minute pentru celelalte felii ale etapei.",
       "en": "Leaving the sheet, from the owner's notes on the sheet prototype. The warning sits in the bottom bar, on one line, never on the canvas. The export asks for confirmation when the cutter disc crosses the sheet edge while cutting. The measurement is exact: arcs through their points on the axes, while ramps and helices are cut at Z 0. The threshold is half of the 0.001 mm resolution. The confirmation is tied to the toolpath shown (the object of the request + a fingerprint) and written in the header. The oracle was written by an independent session, in 2 commits: 46 sabotages, all caught. **Passes:** (1) the implementation, with `\\` characters lost by a heredoc; (2) the adversarial review with 10 agents (~1.45 M tokens) found 17 problems. The important ones were ways around the confirmation: the boolean checkbox, Ctrl+Z under the dialog, a late result. They were fixed, and the oracle got exact edges and rapids outside the sheet; (3) the re-check found no way around, but turned up Shift+Tab to the bar, a double Space, a depth beyond the sheet (from 1.9c) and an absurd step. Fixed: the app is inert under the dialog, document actions go through a single door, depth is capped at the sheet thickness, and passes at 1,000. 23 poisons on the app, all caught. 147 unit tests, 17 e2e. **Duration:** no estimate given beforehand; 85 minutes with the review and the re-check, versus 3–11 minutes for the stage's other slices."
+    },
+    "6d845b0a46fa9278": {
+      "ro": "Progresul etapelor viitoare în cronologie",
+      "en": "The progress of future stages on the timeline"
     },
     "6dff3c8d475a776d": {
       "ro": "Caneluri / bevel / Raised Round; Freze de profil desenate; Biblioteca de freze (completă)",
@@ -932,6 +940,10 @@
     "992da111fc122ed2": {
       "ro": "Remedierile din testul uneltelor de desen",
       "en": "The fixes from the drawing tools test"
+    },
+    "9a3c1ae6540a935d": {
+      "ro": "Progresul etapelor viitoare",
+      "en": "The progress of future stages"
     },
     "9a7e6ef50318aa04": {
       "ro": "Unealta Transformare, extensia barei, editarea formelor după plasare",

@@ -5,7 +5,7 @@ acolo o sectiune cu un roadmap, un roadmap cu detalii, dar focusat pe vizual” 
 mentinem ideea de documentatie, una live si una admin, pe care o aveam la vechiul cncvs”). **Continuă:** ADR 0040 (pagina
 `/admin`, personalul), ADR 0045 (precache-ul: `/admin` doar online), ADR 0042 (pornirea nu crește). Ediția întâi avea
 `DocsView` (manualul) și fila admin „Operare” (ghidurile din `docs/*.md`, importate cu `?raw`), cu un singur cititor de
-markdown: ideea se păstrează, forma nu.
+markdown: ideea se păstrează, forma nu. Umplerea barei unei etape fără fișă: schimbată de ADR 0077 (din prag).
 
 **Problema.** Starea proiectului stă în fișele etapelor (`docs/etape/`), în `PLAN.md` și în ADR-uri: corectă, dar
 citibilă doar ca text, în repo. Owner-ul vrea o imagine (unde suntem pe cele 30 de etape, ce e gata, ce așteaptă de la el)

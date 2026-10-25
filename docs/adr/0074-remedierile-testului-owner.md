@@ -3,7 +3,8 @@
 **Starea:** acceptat pe 25.10.2026, din raportul testului pas cu pas al owner-ului (ADR 0072; 29 de pași bine, 2 nemarcați,
 notele lui), trimis cu „deocamdata uite raportul testului”. Felia 6.P↑, adusă din etapa 6 în etapa 3, fără mașină.
 **Schimbă:** ADR 0059 §5 (alegerea cu clicul), ADR 0064 §1 și „Respinse” (colțurile offsetului), ADR 0066 (poziția față de
-curbă), ADR 0063 (închiderea și anularea Pen-ului, mânerele). **Documentul:** neschimbat (v11).
+curbă), ADR 0063 (închiderea și anularea Pen-ului, mânerele). **Documentul:** neschimbat (v11). §6 completat de ADR 0077
+(umplerea barelor etapelor viitoare, din prag).
 
 **Problema.** Notele raportului, pe scurt: offsetul exterior rotunjea singur colțurile („nu vreau sa se pun automat colturile
 rotunjite. vreau sa fie doar ca optiune”), iar după el nu se mai putea alege cu clicul ce era înăuntru; spre interior lipsea

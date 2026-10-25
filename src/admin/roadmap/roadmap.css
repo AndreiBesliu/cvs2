@@ -308,6 +308,12 @@
   background: var(--rm-viit-fond);
 }
 
+/* O etapă viitoare cu lucru făcut înainte (felii aduse, rânduri de prag): umplerea în verdele lui „gata”, mai stins. */
+[data-stare='viitoare'] .rm-umplere,
+.rm-mostra[data-inainte='true'] {
+  background: color-mix(in oklab, var(--rm-gata) 55%, var(--rm-viit-fond));
+}
+
 /* Toate feliile gata, placa netăiată: verde dungat (etapa se închide cu placa). */
 [data-asteapta='true'] > .rm-bara,
 .rm-mostra[data-asteapta='true'] {

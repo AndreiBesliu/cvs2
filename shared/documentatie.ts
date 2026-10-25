@@ -63,6 +63,17 @@ export interface Punct {
   readonly felii: readonly string[];
 }
 
+/**
+ * Rândurile de prag pe care le închide o etapă (coloana „Închide” din `PLAN.md` §5.4), cu starea lor din
+ * `ACOPERIRE-ARTCAM-DESKPROTO.md`; `fara` = punctele coloanei fără rând în prag (adminul, §10, listele), nemăsurate.
+ */
+export interface Prag {
+  readonly facut: number;
+  readonly inLucru: number;
+  readonly deFacut: number;
+  readonly fara: number;
+}
+
 export interface Etapa {
   /** `1`…`30` sau `T1`… (tampoanele). */
   readonly id: string;
@@ -83,6 +94,7 @@ export interface Etapa {
   readonly placaTaiata: string | null;
   readonly felii: readonly Felie[];
   readonly puncte: readonly Punct[];
+  readonly prag: Prag;
 }
 
 export interface CerereOwner {
@@ -156,6 +168,7 @@ export function esteRoadmap(x: unknown): x is Roadmap {
   if ((x['limba'] !== 'ro' && x['limba'] !== 'en') || typeof x['netraduse'] !== 'number') return false;
   return x['etape'].every((e) => obiect(e) && typeof e['id'] === 'string' && typeof e['saptamana'] === 'number'
     && typeof e['stare'] === 'string' && Array.isArray(e['felii']) && Array.isArray(e['puncte'])
+    && obiect(e['prag']) && ['facut', 'inLucru', 'deFacut', 'fara'].every((k) => typeof (e['prag'] as Record<string, unknown>)[k] === 'number')
     && e['felii'].every((f) => obiect(f) && typeof f['id'] === 'string' && typeof f['stare'] === 'string' && Array.isArray(f['adr'])));
 }
 
