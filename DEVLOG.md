@@ -2786,3 +2786,10 @@ module, 0 încălcări), 7 215 teste unitare (0 picate, 8 sărite; plus cele 3 n
 determinismul (141 de fișiere identice), licențele. E2e 211 / 211 în Edge (cel nou al buzunarului; două probe ale ușii care nu
 vine, mutate pe bucata `usaCurenta`; un EBUSY al descărcărilor din Drive, verde la reluare); emulatoarele: 36 de probe ale
 funcțiilor, 13 e2e. Pornirea 95,3 kB; cu ușa 99,9 → 98,6 / 100; totalul 292,4 → 295,1 / 300 kB.
+**Publicat pe canal:** 25.10, `node scripts/publica-canal.ts buzunar` pe `07d8bca` (după rapid-ul verde pe CI, 4 / 4 felii):
+<https://cncvectorstudio-test--buzunar-x95ick77.web.app> (30 de zile; adresa principală de test rămâne cea a testului owner-ului).
+Verificat în browserul aplicației: dreptunghiul 100 × 60, rândul trecut pe „pocket”, pasul 2.4, urechile oprite cu motivul;
+Export (descărcarea oprită în pagină, doar pentru verificare): 86 de linii, 5 min 40 s, simularea: dreptunghiul scos la 3,00 mm,
+18,0 cm³ (pe hârtie: (6 000 − 4·(9 − 9π/4))·3 = 17 977 mm³); după reîncărcare, proiectul v11 se deschide prin ușa curentă
+(`usaCurenta` + `schemaDocument` la 186 ms, înaintea primei randări; `incarcare` vine abia la ~1,2 s, cu bucățile aduse în gol),
+rândul e tot buzunar; 0 erori în consolă.
