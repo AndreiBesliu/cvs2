@@ -15,8 +15,11 @@ import type { Actiune } from './actiuni.ts';
  * ascuns, fiecare are piesa ei, iar selecția ține id-uri de instanțe. O formă nouă vine cu operația ei implicită.
  * Contextul e starea curentă și felul în care se scrie înapoi; acțiunile sunt pure față de restul interfeței.
  */
-/** O formă nouă (ADR 0051): forma exactă și locul instanței ei, în mm ai foii. */
-export type FormaNoua = { readonly forma: FormaDoc; readonly x: number; readonly y: number };
+/**
+ * O formă nouă (ADR 0051): forma exactă și locul instanței ei, în mm ai foii; cu `gauri` (booleanul, ADR 0067), o piesă cu
+ * conturul și găurile lui (un grup, ca la import), în aceleași coordonate.
+ */
+export type FormaNoua = { readonly forma: FormaDoc; readonly x: number; readonly y: number; readonly gauri?: readonly FormaDoc[] };
 
 export type ContextDocument = {
   readonly istoric: () => Istoric;
@@ -65,7 +68,30 @@ export type ContextDocument = {
   readonly stocNou?: () => { readonly latime?: number; readonly inaltime?: number; readonly grosime?: number };
   /** Copierea în rețea a selecției (ADR 0061): rânduri × coloane sau pe cerc, din extensia barei. */
   readonly retea?: () => Retea;
+  /** Instanțele șterse în același pas cu formele noi din `formaNoua` (booleanul le înlocuiește, ADR 0067). */
+  readonly sterge?: () => readonly string[];
 };
+
+/**
+ * Comenzile care șterg instanțele `ids` ale foii curente, fiecare calculată pe documentul de după cele dinainte (pozițiile și
+ * „ultima instanță” a piesei sunt cele reale; o piesă folosită și de alte instanțe rămâne); anularea lotului le pune la loc
+ * în ordine inversă.
+ */
+export function comenziStergere(start: Document, ids: ReadonlySet<string>): { readonly comenzi: Comanda[]; readonly doc: Document } {
+  const comenzi: Comanda[] = [];
+  let doc = start;
+  for (const instanta of foaieCurenta(start).instante.filter((i) => ids.has(i.id))) {
+    const foaie = foaieCurenta(doc);
+    const pozitie = foaie.instante.findIndex((i) => i.id === instanta.id);
+    const altele = doc.foi.some((f) => f.instante.some((i) => i.piesa === instanta.piesa && i.id !== instanta.id));
+    const pozPiesa = doc.piese.findIndex((p) => p.id === instanta.piesa);
+    const piesa = doc.piese[pozPiesa];
+    const c: Comanda = { tip: 'sterge', foaie: foaie.id, instanta, pozitie, ...(altele || !piesa ? {} : { piesa: { piesa, pozitie: pozPiesa } }) };
+    doc = executa(istoricDin(doc), c).doc;
+    comenzi.push(c);
+  }
+  return { comenzi, doc };
+}
 
 /** Foaia pe care se lucrează; Multi-Plate (mai multe foi pe ecran) vine în etapa 11. */
 export const FOAIA = 0;
@@ -408,28 +434,7 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
     activa: (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie' : scrie(ctx)),
     ruleaza: (ctx) => {
       const h = ctx.istoric();
-      const alese = new Set(ctx.selectie());
-      const comenzi: Comanda[] = [];
-      // Fiecare ștergere se calculează pe documentul de după cele dinainte, ca pozițiile și „ultima instanță” să fie
-      // cele reale; anularea lotului le pune la loc în ordine inversă.
-      let doc = h.doc;
-      for (const instanta of foaieCurenta(h.doc).instante.filter((i) => alese.has(i.id))) {
-        const foaie = foaieCurenta(doc);
-        const pozitie = foaie.instante.findIndex((i) => i.id === instanta.id);
-        const altele = doc.foi.some((f) => f.instante.some((i) => i.piesa === instanta.piesa && i.id !== instanta.id));
-        const pozPiesa = doc.piese.findIndex((p) => p.id === instanta.piesa);
-        const piesa = doc.piese[pozPiesa];
-        const c: Comanda = {
-          tip: 'sterge',
-          foaie: foaie.id,
-          instanta,
-          pozitie,
-          ...(altele || !piesa ? {} : { piesa: { piesa, pozitie: pozPiesa } }),
-        };
-        doc = executa(istoricDin(doc), c).doc;
-        comenzi.push(c);
-      }
-      const c = pas(comenzi);
+      const c = pas(comenziStergere(h.doc, new Set(ctx.selectie())).comenzi);
       if (c) ctx.scrie(executa(h, c));
       ctx.selecteaza([]);
     },

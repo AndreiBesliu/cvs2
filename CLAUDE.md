@@ -88,6 +88,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   refuzate; panoul din secțiunea Oglindire; panourile extensiei = o singură stare (`panou`).
   **Copierea de-a lungul unei curbe (ADR 0066)** gata pe 25.10: felul `curba` al rețelei, curba = ultima formă aleasă (Shift +
   clic); locurile la distanțe egale pe lungime (`src/model/curba.ts`). Rândul „Transformare și copiere” e complet.
+  **Booleanul (ADR 0067)** gata pe 25.10: Unește / Scade / Intersectează pe două forme închise, prin cavalier (`booleanContururi`
+  în fațada `geom/offset.ts`); rezultatul le înlocuiește într-un pas (`document.deseneaza` cu `sterge` și `gauri`). Urmează testul
+  pas cu pas al owner-ului.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

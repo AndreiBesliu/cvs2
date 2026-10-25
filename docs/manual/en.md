@@ -201,6 +201,27 @@ operation, chosen after Apply; the originals stay, and it is all a single undo s
 - Open shapes chosen are skipped (the panel says how many); with only open ones, the offset cannot be made.
 - Inwards, a shape too small for the distance asked stops it all, with the reason: nothing is done halfway.
 
+## The boolean: unite, subtract, intersect
+%% capitol: boolean
+%% acopera: boolean.uneste, boolean.scade, boolean.intersecteaza
+
+The Boolean section of the bar extension works on **exactly two closed shapes**, chosen in order: first one, then the second
+with Shift + click on the canvas. The result **replaces** both, in a single undo step, and stays chosen.
+- **Unite**: the two shapes become one (their union). A rectangle and a circle centred on one of its corners give a single
+  outline, with the circle's arc that stays outside.
+- **Subtract**: the **last** shape chosen is taken out of the **first**. If the last is inside the first, the result is the first
+  with a hole.
+- **Intersect**: only the shared part remains.
+
+The outlines are the ones the cutter would cut, and the result is exact: lines stay lines, arcs stay arcs of the same circles. A
+curve (drawn with the Pen or imported) goes in as arcs, at the project tolerance (0.001 mm), as for cutting. A result with
+holes stays a single part: the outline with an outside profile, the holes with an inside profile (as on import). If the result
+has several separate pieces, each is a new shape.
+
+The buttons are active only with two shapes chosen. The boolean is refused, with the reason shown next to the buttons, if a
+shape is open (a line) or has several outlines (an imported part), if the shapes do not touch (uniting or subtracting would not
+change them), if they have nothing in common (intersecting) or if nothing remains of the first (subtracting).
+
 ## Nodes
 %% capitol: noduri
 %% acopera: unealta.noduri

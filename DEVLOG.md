@@ -2687,3 +2687,24 @@ cu ușa 99,9 / 100); totalul 287,3 → 288,9 / 300 kB.
 instanța de test (după oferta de actualizare a PWA-ului): cercul R15 ales, apoi dreptunghiul 100 × 60 cu Shift + clic (curba,
 închisă), Pe curbă, 4 copii: previzualizarea (4), fără motiv; copiile cu centrul la (20, 20), (100, 20), (120, 80), (40, 80), adică
 la pas de 80 pe perimetrul de 320, alese cu originalul, fără dreptunghi; anularea le scoate; 0 erori.
+
+## 2026-10-25 — Booleanul (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok” (după copierea de-a lungul unei curbe; decizia owner-ului din 25.10: booleanul înaintea testului lui).
+**Started:** 25.10, ~11:00. Felia **6.M↑**, adusă din etapa 6, fără agenți: Unește, Scade, Intersectează pe exact două forme
+închise (în ordinea alegerii), prin booleanul cavalier expus în fațada `geom/offset.ts`; rezultatul înlocuiește formele într-un
+pas, cu găurile în aceeași piesă.
+**Treceri:** (1) `booleanContururi` în fațadă (curățare, sens trigonometric, găurile puse în exteriorul care le cuprinde, prin
+numărul de înfășurare), modelul pur (`src/model/boolean.ts`: contururile tăiate, cubicele ca biarce la 0,001 mm, refuzurile),
+acțiunea (`FormaNoua.gauri`, `ContextDocument.sterge`, ștergerea mutată într-o singură funcție, `comenziStergere`, folosită și
+de „Șterge selecția”), secțiunea Boolean (calculul adus la primul clic), manualul (capitolul „Booleanul”, 17 capitole), probele
+pe hârtie; două date greșite în probe (un pătrat „cuprins” care ieșea din celălalt; aria bombăturii cubice: −20,4, nu −12),
+corectate după calculul refăcut, codul avea dreptate (195,40006 față de 195,4); e2e: Shift + clic în listă nu adaugă la
+selecție (pe pânză da), documentul rămâne salvat între reîncărcări (o probă pe test, nu două), săgețile n-au mers cu focusul
+pe un buton al barei (cercul pus cu unealta Cerc); proba Scade număra doar rândurile (o unire ar fi trecut): acum cere și
+gaura („+1”); două mutații (operanzii scăderii inversați, butonul Scade legat la unire): prinse, restaurate; fraza din manual
+„un sfert de arc” era greșită (trei sferturi rămân în afară): reformulată.
+**Completed:** 25.10 11:40. Fără agenți. `npm run rapid` RC 0 (7 196 de teste unitare, 6 noi, 0 picate, 8 sărite); determinismul,
+licențele verzi. E2e 209 / 209 în Edge (4 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,2 kB;
+cu ușa 99,9 / 100); totalul 288,9 → 291,5 / 300 kB (mai sunt ~8,5 kB: o felie mare de interfață va cere loc); manualul are 17
+capitole.

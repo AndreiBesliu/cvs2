@@ -2,7 +2,7 @@ import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
-import { instantaPreaDeparte, operatieImplicita, PLAFON, type Document, type FormaDoc, type Ghidaj, type Instanta, type Operatie, type Stoc } from '../model/document.ts';
+import { instantaPreaDeparte, operatieImplicita, PLAFON, type Document, type FormaDoc, type Ghidaj, type Instanta, type Operatie, type Piesa, type Stoc } from '../model/document.ts';
 import { is } from 'valibot';
 import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
 import { adancimeDeschise } from '../io/adancime.ts';
@@ -16,7 +16,7 @@ import { copiiPeCurba } from '../model/curba.ts';
 import type { CheieSimpla } from '../i18n/t.ts';
 import {
   alesePreaDeparte, copieArbore, cresteCopia, FOAIA, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
-  type CalculDocument, type ContextDocument, type FormaNoua,
+  comenziStergere, type CalculDocument, type ContextDocument, type FormaNoua,
 } from './actiuniDocument.ts';
 
 /**
@@ -387,14 +387,14 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (!f) return 'motiv.nimic-ales';
       const s = scrie(ctx);
       if (s !== true) return s;
-      const r = comandaDesen(ctx.istoric().doc, f);
+      const r = comandaDesen(ctx.istoric().doc, f, ctx.sterge?.());
       return r.ok ? true : r.motiv;
     },
     ruleaza: (ctx) => {
       const f = ctx.formaNoua?.();
       if (!f) return;
       const h = ctx.istoric();
-      const r = comandaDesen(h.doc, f);
+      const r = comandaDesen(h.doc, f, ctx.sterge?.());
       if (!r.ok) return;
       ctx.scrie(executa(h, r.comanda));
       ctx.selecteaza(r.ids);
@@ -431,31 +431,50 @@ export const CALCUL_DOCUMENT: CalculDocument = {
 type ComandaDesen =
   | { readonly ok: true; readonly comanda: Comanda; readonly ids: readonly string[] }
   | { readonly ok: false; readonly motiv: 'motiv.nimic-ales' | 'motiv.plafon' | 'motiv.import-refuzat' };
-let ultimulDesen: { doc: Document; f: FormaNoua | readonly FormaNoua[]; rez: ComandaDesen } | null = null;
-function comandaDesen(doc: Document, f: FormaNoua | readonly FormaNoua[]): ComandaDesen {
-  if (ultimulDesen && ultimulDesen.doc === doc && ultimulDesen.f === f) return ultimulDesen.rez;
+let ultimulDesen: { doc: Document; f: FormaNoua | readonly FormaNoua[]; sterge: readonly string[] | undefined; rez: ComandaDesen } | null = null;
+function comandaDesen(doc: Document, f: FormaNoua | readonly FormaNoua[], sterge?: readonly string[]): ComandaDesen {
+  if (ultimulDesen && ultimulDesen.doc === doc && ultimulDesen.f === f && ultimulDesen.sterge === sterge) return ultimulDesen.rez;
   const forme: readonly FormaNoua[] = 'forma' in f ? [f] : f;
-  const varfuri = forme.reduce((n, x) => n + (x.forma.tip === 'cale' ? x.forma.varfuri.length : 0), 0);
+  const varfuriForma = (x: FormaDoc): number => (x.tip === 'cale' ? x.varfuri.length : 0);
+  const varfuri = forme.reduce((n, x) => n + varfuriForma(x.forma) + (x.gauri ?? []).reduce((m, g) => m + varfuriForma(g), 0), 0);
+  const elemente = forme.reduce((n, x) => n + 1 + (x.gauri?.length ?? 0), 0);
+  const grupuri = forme.filter((x) => (x.gauri?.length ?? 0) > 0).length;
   const k = forme.length;
   let rez: ComandaDesen;
   if (k === 0) rez = { ok: false, motiv: 'motiv.nimic-ales' };
-  else if (!incape(doc, { noduri: k, instante: k, elementeLume: k, operatii: k, taieturi: k, varfuri, varfuriLume: varfuri })) {
+  else if (!incape(doc, { noduri: elemente + grupuri, instante: k, elementeLume: elemente, operatii: k + grupuri, taieturi: elemente, varfuri, varfuriLume: varfuri })) {
     rez = { ok: false, motiv: 'motiv.plafon' };
   } else {
     const scula = sculaFoii(doc);
-    const comenzi: Comanda[] = [];
+    // Întâi ștergerile (booleanul înlocuiește formele alese), apoi formele noi, cu id-uri care nu le refolosesc pe cele șterse.
+    const sterse = new Set(sterge ?? []);
+    const st = comenziStergere(doc, sterse);
+    const comenzi: Comanda[] = [...st.comenzi];
     const ids: string[] = [];
-    let dupa = doc;
+    let dupa = st.doc;
+    const ID = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
     for (const x of forme) {
-      const id = idNou(dupa);
+      const id = idNou(dupa, sterse);
       const foaie = foaieCurenta(dupa);
       const baza = scula ? operatieImplicita(id, x.forma, scula) : operatieImplicita(id, x.forma);
       const deschisa = x.forma.tip === 'cale' && !x.forma.inchis;
       const adancime = adancimeDeschise(foaie.stoc.grosime);
       const operatie: Operatie = deschisa ? { ...baza, latura: 'pe-linie', adancime, pas: adancime } : baza;
+      // Cu găuri: un grup, ca la import (conturul `c1` tăiat pe exterior, găurile `c2`… pe interior).
+      const gauri = x.gauri ?? [];
+      const piesa: Piesa = gauri.length === 0
+        ? { id, radacina: { tip: 'element', id, forma: x.forma, matrice: ID }, operatii: [operatie] }
+        : {
+          id,
+          radacina: { tip: 'grup', id: 'g', matrice: ID, copii: [x.forma, ...gauri].map((forma, j) => ({ tip: 'element' as const, id: `c${j + 1}`, forma, matrice: ID })) },
+          operatii: [
+            { ...baza, id: 'exterior', noduri: ['c1'], latura: 'exterior' },
+            { ...baza, id: 'interior', noduri: gauri.map((_, j) => `c${j + 2}`), latura: 'interior' },
+          ],
+        };
       const comanda: Comanda = {
         tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: x.x, y: x.y, rotire: 0 }, pozitie: foaie.instante.length,
-        piesa: { piesa: { id, radacina: { tip: 'element', id, forma: x.forma, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [operatie] }, pozitie: dupa.piese.length },
+        piesa: { piesa, pozitie: dupa.piese.length },
       };
       dupa = executa(istoricDin(dupa), comanda).doc;
       comenzi.push(comanda);
@@ -466,17 +485,18 @@ function comandaDesen(doc: Document, f: FormaNoua | readonly FormaNoua[]): Coman
     // cerere (probele „schemele care nu vin” le cer separate), iar migrările și arcele în lume nu privesc o formă nouă.
     rez = comanda && is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, ids } : { ok: false, motiv: 'motiv.import-refuzat' };
   }
-  ultimulDesen = { doc, f, rez };
+  ultimulDesen = { doc, f, sterge, rez };
   return rez;
 }
 
 /**
  * Pură: de ce formele noi nu s-ar putea adăuga acum (același verdict ca acțiunea `document.deseneaza`: doar citire, nimic,
- * plafonul documentului, schema), sau null. Panoul offsetului (ADR 0064) îl arată înainte de Aplică.
+ * plafonul documentului, schema), sau null. Panoul offsetului (ADR 0064) îl arată înainte de Aplică; booleanul (ADR 0067),
+ * cu instanțele pe care le înlocuiește.
  */
-export function motivDesen(doc: Document, forme: readonly FormaNoua[], doarCitire: boolean): CheieSimpla | null {
+export function motivDesen(doc: Document, forme: readonly FormaNoua[], doarCitire: boolean, sterge?: readonly string[]): CheieSimpla | null {
   if (doarCitire) return 'motiv.doar-citire';
-  const r = comandaDesen(doc, forme);
+  const r = comandaDesen(doc, forme, sterge);
   return r.ok ? null : r.motiv;
 }
 

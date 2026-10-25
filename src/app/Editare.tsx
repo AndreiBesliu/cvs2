@@ -66,6 +66,8 @@ function inclinareSalvata(): FormularInclinare {
 
 /** Calculul offsetului (ADR 0064): o bucată la cerere, adusă la prima deschidere a panoului (cu motorul CAM). */
 type ModulOffset = typeof import('./offsetCalcul.ts');
+/** Booleanul (ADR 0067): o bucată la cerere, adusă la primul clic pe Unește / Scade / Intersectează (cu cavalier). */
+type ModulBoolean = typeof import('../model/boolean.ts');
 type FormularOffset = { readonly distanta: string; readonly sens: 'exterior' | 'interior' };
 
 /** Formularul offsetului ținut în browser; unul stricat lasă implicitele (5 mm spre exterior). */
@@ -152,7 +154,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -334,6 +336,30 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // și de alte instanțe) se spune în secțiunea ei din extensie, până la altă selecție.
   const [motivOglinda, setMotivOglinda] = useState<string | null>(null);
   useEffect(() => { setMotivOglinda(null); }, [selectie]);
+  // Booleanul (ADR 0067): pe exact două forme alese; rezultatul le înlocuiește, într-un pas (`document.deseneaza` cu `sterge`).
+  // Refuzul se spune în secțiunea lui, până la altă selecție.
+  const [motivBoolean, setMotivBoolean] = useState<string | null>(null);
+  useEffect(() => { setMotivBoolean(null); }, [selectie]);
+  const modBoolean = useRef<ModulBoolean | null>(null);
+  const booleanul = (op: 'reuniune' | 'diferenta' | 'intersectie'): void => {
+    if (selectie.length !== 2 || p.doarCitire) return;
+    const fa = (m: ModulBoolean): void => {
+      const r = m.booleanSelectie(doc, FOAIA, selectie, op);
+      if (typeof r === 'string') {
+        setMotivBoolean(t(`editare.boolean.motiv.${r}`));
+        return;
+      }
+      const v = motivDesen(doc, r.forme, p.doarCitire, r.sterse);
+      if (v) {
+        setMotivBoolean(t(v));
+        return;
+      }
+      setMotivBoolean(null);
+      ruleaza('document.deseneaza', { formaNoua: () => r.forme, sterge: () => r.sterse });
+    };
+    if (modBoolean.current) fa(modBoolean.current);
+    else import('../model/boolean.ts').then((m) => { modBoolean.current = m; fa(m); }, () => { setMotivBoolean(t('editare.boolean.neincarcat')); });
+  };
   const oglindeste = (directie: 'orizontal' | 'vertical'): void => {
     if (!cutie || selectie.length === 0 || p.doarCitire) return;
     const tr: Transformare = { fel: 'oglindire', directie, centru: { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 } };
@@ -700,6 +726,24 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             ) : null}
           </span>
         );
+        const douaAlese = selectie.length === 2 && !p.doarCitire;
+        const booleanSectiune = (
+          <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.boolean')} data-testid="extensie-boolean">
+            <button type="button" className="aliniaza" disabled={!douaAlese} title={t('editare.boolean.uneste')} aria-label={t('editare.boolean.uneste')}
+              data-editare="boolean-uneste" onClick={() => { booleanul('reuniune'); }}>
+              <IconaBoolean fel="uneste" />
+            </button>
+            <button type="button" className="aliniaza" disabled={!douaAlese} title={t('editare.boolean.scade')} aria-label={t('editare.boolean.scade')}
+              data-editare="boolean-scade" onClick={() => { booleanul('diferenta'); }}>
+              <IconaBoolean fel="scade" />
+            </button>
+            <button type="button" className="aliniaza" disabled={!douaAlese} title={t('editare.boolean.intersecteaza')} aria-label={t('editare.boolean.intersecteaza')}
+              data-editare="boolean-intersecteaza" onClick={() => { booleanul('intersectie'); }}>
+              <IconaBoolean fel="intersecteaza" />
+            </button>
+            {motivBoolean ? <span className="motiv-extensie" role="status" data-testid="motiv-boolean">{motivBoolean}</span> : null}
+          </span>
+        );
         const vedereSectiune = (
           <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.3d')} data-testid="extensie-vedere">
             <button type="button" className="aliniaza vedere-3d-buton" aria-pressed={vedere3d} title={vedere3d ? t('editare.3d.ascunde') : t('editare.3d.arata')}
@@ -724,6 +768,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             <span className="separator" aria-hidden="true" />
             {copiereSectiune}
             {offsetSectiune}
+            <span className="separator" aria-hidden="true" />
+            {booleanSectiune}
             <span className="separator" aria-hidden="true" />
             {vedereSectiune}
             <span className="separator" aria-hidden="true" />
@@ -1521,6 +1567,22 @@ function PanouInclinare({ form, onForm, motiv, onAplica, onInchide }: {
         <button type="button" data-inclinare="inchide" onClick={onInchide}>{t('editare.retea.inchide')}</button>
       </div>
     </div>
+  );
+}
+
+/** Booleanul (ADR 0067): două pătrate suprapuse; plină, partea care rămâne (toată, prima fără a doua, cea comună). */
+function IconaBoolean({ fel }: { readonly fel: 'uneste' | 'scade' | 'intersecteaza' }): ReactElement {
+  const plin: Record<typeof fel, string> = {
+    uneste: 'M2 2 H10 V6 H14 V14 H6 V10 H2 Z',
+    scade: 'M2 2 H10 V6 H6 V10 H2 Z',
+    intersecteaza: 'M6 6 H10 V10 H6 Z',
+  };
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d={plin[fel]} />
+      <rect x="2" y="2" width="8" height="8" className="contur" />
+      <rect x="6" y="6" width="8" height="8" className="contur" />
+    </svg>
   );
 }
 

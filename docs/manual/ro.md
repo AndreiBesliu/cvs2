@@ -192,6 +192,26 @@ implicită, alese după Aplică; originalele rămân, iar totul e un singur pas 
 - Formele deschise alese se sar (panoul spune câte); doar deschise, offsetul nu se poate face.
 - Spre interior, o formă prea mică pentru distanța cerută oprește tot, cu motivul: nimic nu se face pe jumătate.
 
+## Booleanul: unirea, scăderea, intersecția
+%% capitol: boolean
+%% acopera: boolean.uneste, boolean.scade, boolean.intersecteaza
+
+Secțiunea Boolean din extensia barei lucrează pe **exact două forme închise**, alese în ordine: întâi una, apoi a doua cu
+Shift + clic pe pânză. Rezultatul le **înlocuiește** pe amândouă, într-un singur pas de anulare, și rămâne ales.
+- **Unește**: cele două forme devin una (reuniunea lor). Un dreptunghi și un cerc cu centrul într-un colț al lui dau un singur
+  contur, cu arcul cercului rămas în afară.
+- **Scade**: din **prima** formă aleasă se scoate **ultima**. Dacă ultima e înăuntrul primei, rezultatul e prima cu o gaură.
+- **Intersectează**: rămâne doar partea comună.
+
+Contururile sunt cele pe care le-ar tăia freza, iar rezultatul e exact: liniile rămân linii, arcele rămân arce din aceleași
+cercuri. O curbă (desenată cu Pen sau importată) intră ca arce, la toleranța proiectului (0,001 mm), ca la tăiere. Un rezultat
+cu găuri rămâne o singură piesă: conturul cu profil exterior, găurile cu profil interior (ca la import). Dacă rezultatul are
+mai multe bucăți separate, fiecare e o formă nouă.
+
+Butoanele sunt active doar cu două forme alese. Booleanul se refuză, cu motivul spus lângă butoane, dacă o formă e deschisă
+(o linie) sau are mai multe contururi (o piesă importată), dacă formele nu se ating (unirea și scăderea nu le-ar schimba), dacă
+nu au nimic în comun (intersecția) sau dacă din prima nu rămâne nimic (scăderea).
+
 ## Nodurile
 %% capitol: noduri
 %% acopera: unealta.noduri

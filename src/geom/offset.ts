@@ -1,4 +1,4 @@
-import { plineClosed, plineOpen, StaticAabb2dIndexBuilder, type Polyline } from './cavalier/index.ts';
+import { plineClosed, plineOpen, StaticAabb2dIndexBuilder, vec2, type Polyline } from './cavalier/index.ts';
 import {
   LINIE, arc, arieCuSemn, cerculArcului, inSensTrigonometric, numarSegmente, segment, type Contur, type Punct, type Segment, type Varf,
 } from './contur.ts';
@@ -1014,5 +1014,51 @@ export function offsetDeschis(contur: Contur, distanta: number): RezultatOffsetD
     return aDoua.ok ? aDoua : { ok: false, motiv: `${prima.motiv} (și la a doua încercare)` };
   } catch (e) {
     return { ok: false, motiv: `offsetul a eșuat: ${e instanceof Error ? e.message : String(e)}` };
+  }
+}
+
+// ── Booleanul pe contururi închise (ADR 0067) ────────────────────────────────────────────────────────────────────────
+
+/** Operația booleană între două contururi închise: reuniunea, intersecția, diferența (primul minus al doilea). */
+export type OperatieBoolean = 'reuniune' | 'intersectie' | 'diferenta';
+
+/** O regiune a rezultatului: conturul exterior și găurile lui. */
+export type RegiuneBoolean = { readonly exterior: Contur; readonly gauri: readonly Contur[] };
+
+/**
+ * Rezultatul booleanului: regiunile (fiecare exterior cu găurile din el) și ce s-a întâmplat (`disjuncte`: nu se ating și
+ * niciunul nu-l cuprinde pe celălalt; `intersectate`; `cuprins`: unul e în celălalt, fără intersecții; `identice`), sau
+ * motivul. Niciodată o excepție.
+ */
+export type RezultatBoolean =
+  | { readonly ok: true; readonly regiuni: readonly RegiuneBoolean[]; readonly relatie: 'disjuncte' | 'intersectate' | 'cuprins' | 'identice' }
+  | { readonly ok: false; readonly motiv: string };
+
+/**
+ * Booleanul a două contururi închise, din linii și arce (cubicele intră ca biarce, înainte), prin cavalier: intrările se
+ * curăță și se aduc în sens trigonometric; ieșirea păstrează arcele (aceleași cercuri); fiecare gaură e pusă în exteriorul
+ * care o cuprinde (numărul de înfășurare al unui punct al ei).
+ */
+export function booleanContururi(a: Contur, b: Contur, op: OperatieBoolean): RezultatBoolean {
+  if (!a.inchis || !b.inchis) return { ok: false, motiv: 'booleanul cere contururi închise' };
+  try {
+    const ca = curataIntrare(a), cb = curataIntrare(b);
+    if (!ca.ok) return ca;
+    if (!cb.ok) return cb;
+    const r = laCavalier(inSensTrigonometric(ca.contur)).boolean(laCavalier(inSensTrigonometric(cb.contur)), op === 'reuniune' ? 'or' : op === 'intersectie' ? 'and' : 'not');
+    if (r.resultInfo === 'invalidInput') return { ok: false, motiv: 'cavalier: intrare invalidă' };
+    const ext = r.posPlines.map((x) => x.pline);
+    const gauri = r.negPlines.map((x) => curataIesire(dinCavalier(x.pline)));
+    const regiuni = ext.map((pl) => ({ pl, exterior: curataIesire(dinCavalier(pl)), gauri: [] as Contur[] }));
+    for (const g of gauri) {
+      const q = g.varfuri[0]?.p;
+      const gazda = q ? regiuni.find((x) => x.pl.windingNumber(vec2(q.x, q.y)) !== 0) : undefined;
+      if (!gazda) return { ok: false, motiv: 'o gaură a rezultatului nu stă în niciun contur exterior' };
+      gazda.gauri.push(g);
+    }
+    const relatie = r.resultInfo === 'disjoint' ? 'disjuncte' : r.resultInfo === 'intersected' ? 'intersectate' : r.resultInfo === 'overlapping' ? 'identice' : 'cuprins';
+    return { ok: true, regiuni: regiuni.map(({ exterior, gauri: g }) => ({ exterior, gauri: g })), relatie };
+  } catch (e) {
+    return { ok: false, motiv: `booleanul a eșuat: ${e instanceof Error ? e.message : String(e)}` };
   }
 }
