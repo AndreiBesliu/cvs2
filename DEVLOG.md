@@ -2979,3 +2979,6 @@ mișcare; avansul e plafonat de viteza axelor (500 mm/min implicit), deci probel
 **Completed:** 25.10 23:06. Porțile: 7 287 de teste unitare (0 picate; două probe ale documentației citeau încă felia 3.5,
 actualizate), e2e 220 / 220 în Edge (o primă rulare a picat pe `EBUSY` la un fișier descărcat din `test-results`, în Drive,
 la o probă de export neatinsă de felie; a doua, curată). Mutațiile: 28 / 30, apoi 30 / 30.
+**Publicat pe adresa principală de test:** 25.10, workflow-ul `publica` pe `031cd83` (rularea 40234510313), după rapid-ul verde
+(40233828008). Verificat `documentatie/roadmap.json` publicat: 3.5a gata (ADR 0079), 3.5b de făcut. Owner-ul: „continuam maine”
+(pauză; următoarea felie propusă: 3.6, fluxul senderului pe emulator; chenarul Transformării, amânat).
