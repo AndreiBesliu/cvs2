@@ -2844,3 +2844,8 @@ turorial. Ceva care sa ajute userii sa lucreze cu aplicatia. Asa ca, nu trebuie 
 **Started:** 25.10, ~16:40. Testul din artifact nu începuse (niciun rezultat), deci adresa principală nu mai trebuia ținută pe
 loc: se publică tot ce era pe canal (buzunarul, documentul v11, ușa curentă, pagina personalului, testul). Decizia owner-ului e
 în `CLAUDE.md` și în ADR 0072 („Mai departe”): codul testului rămâne, pentru tutorialul utilizatorilor de pe live.
+**Completed / publicat:** 25.10, workflow-ul `publica` (instanța test) pe `40582a6`, după rapid-ul verde pe CI (rularea
+40204222756: „Commit-ul cerut” și „Publicarea” reușite). Verificat în browserul aplicației pe
+<https://cncvectorstudio-test.firebaseapp.com/>: workerul PWA a oferit „Reîncarcă”; după el, versiunea nouă, proiectul vechi al
+browserului (v10, 2 forme) redeschis prin migrare (ușa curentă, apoi `incarcare` cu migrările, cum cere un document vechi),
+exportul cu „buzunar” între tăieturi, butonul Test, panoul la pasul 1 cu pașii de pe server (200); 0 erori în consolă.
