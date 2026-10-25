@@ -2683,3 +2683,7 @@ panou): toate prinse, restaurate.
 **Completed:** 25.10 10:50. Fără agenți. `npm run rapid` RC 0 (7 190 de teste unitare, 6 noi, 0 picate, 8 sărite); determinismul,
 licențele verzi. E2e 205 / 205 în Edge (2 noi); emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea neschimbată (95,2 kB;
 cu ușa 99,9 / 100); totalul 287,3 → 288,9 / 300 kB.
+**Publicat pe test:** 25.10, workflow-ul `publica` pe `dcfa572` (după rapid-ul verde pe CI, 4 / 4 felii). Verificat în Edge pe
+instanța de test (după oferta de actualizare a PWA-ului): cercul R15 ales, apoi dreptunghiul 100 × 60 cu Shift + clic (curba,
+închisă), Pe curbă, 4 copii: previzualizarea (4), fără motiv; copiile cu centrul la (20, 20), (100, 20), (120, 80), (40, 80), adică
+la pas de 80 pe perimetrul de 320, alese cu originalul, fără dreptunghi; anularea le scoate; 0 erori.
