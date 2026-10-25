@@ -192,16 +192,16 @@ test('migrarea v10 → v11 schimbă doar numărul; un v10 cu un buzunar sau cu p
   const v10 = { ...(doc([{ id: 'e', forma: DREPT }], [profil('o', 'e', 'exterior')]) as Record<string, unknown>), schema: 10, extra: 1 };
   const r = incarca(v10);
   assert.ok(r.ok);
-  if (r.ok) assert.deepEqual(r.doc, { ...v10, schema: 11 });
+  if (r.ok) assert.deepEqual(r.doc, { ...v10, schema: 12 });
   const cuBuzunar = { ...(doc([{ id: 'e', forma: DREPT }], [buzunar(['e'])]) as Record<string, unknown>), schema: 10 };
   const a = incarca(cuBuzunar);
   assert.ok(!a.ok && /operația v10 b din piesa p are tipul „buzunar”, pe care v10 nu-l cunoaște: nu e un document v10 valid/.test(a.motiv));
   const cuPas = { ...(doc([{ id: 'e', forma: DREPT }], [profil('o', 'e', 'exterior', { pasLateral: 2 })]) as Record<string, unknown>), schema: 10 };
   const b = incarca(cuPas);
   assert.ok(!b.ok && /are câmpul „pasLateral”, pe care v11 îl folosește: nu e un document v10 valid/.test(b.motiv));
-  // Un v11 cu schema peste a aplicației e refuzat cu motivul versiunii.
-  const c = incarca({ ...(doc([{ id: 'e', forma: DREPT }], []) as Record<string, unknown>), schema: 12 });
-  assert.ok(!c.ok && /versiune mai nouă \(schema 12, aici 11\)/.test(c.motiv));
+  // Un document cu schema peste a aplicației (din 5.3↑, v12) e refuzat cu motivul versiunii.
+  const c = incarca({ ...(doc([{ id: 'e', forma: DREPT }], []) as Record<string, unknown>), schema: 13 });
+  assert.ok(!c.ok && /versiune mai nouă \(schema 13, aici 12\)/.test(c.motiv));
 });
 
 test('lucrarea: buzunarul nu e inel al regiunii păstrate, se taie înaintea exteriorului piesei și stă înăuntrul ei', () => {

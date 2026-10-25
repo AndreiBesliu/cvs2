@@ -18,7 +18,7 @@ import { VERSIUNE_SCHEMA } from '../../src/model/document.ts';
 import { taieturiFoaie } from '../../src/model/lume.ts';
 import {
   categoriiO, diferenta, migreazaV10V11O, ridicaO, SCHEMA_CURENTA_O, taieturiV8O, verificaO, verificaPanaLaV9O, verificaV10, verificaV9, type DocV8O, type DocV9O,
-  type Liber,
+  type Liber, migreazaV10V12O, migreazaV11V12O,
 } from '../oracles/document.ts';
 import { migreazaV9V10O, ridicaV10O, taieturiV10O, verificaO10, verificaV9V10, type DocV10O } from '../oracles/document.v10.ts';
 import {
@@ -26,7 +26,7 @@ import {
 } from '../oracles/document.v10.cazuri.ts';
 import { CORPUS_V9, VALIDE_DIFICILE_V9, mareV9 } from '../oracles/document.v9.cazuri.ts';
 import { CORPUS_V8, VALIDE_DIFICILE_V8 } from '../oracles/document.cazuri.ts';
-import { mare, mareOperatii, PE_V11 } from './ajutor-document-oracol.ts';
+import { mare, mareOperatii, PE_V11, PE_V12 } from './ajutor-document-oracol.ts';
 
 const SCHEMA_APP = VERSIUNE_SCHEMA as number;
 const DOAR_V10 = SCHEMA_APP >= 10 ? false : `aplicația e încă pe schema ${SCHEMA_APP}; documentul v10 (ADR 0037 §2) vine cu felia 2.3c-2`;
@@ -118,13 +118,13 @@ test('(o) `despartire` în afara operației, într-un v9, e un câmp necunoscut 
 });
 
 // Felia 5.1↑ (ADR 0069): oracolul e pe v11; pe un v9 (fără `pasLateral` pe operații), ușa curentă dă tot ce dă pasul v9 → v10.
-test('(o) oracolul e pe v11: SCHEMA_CURENTA_O = 11, `ridicaO` dă v11 (lanțul până la 9, apoi doar numărul), iar ușa curentă pe un v9 dă exact ce dă pasul întreg v9 → v10 (contractul v10 îl cuprinde pe cel v9)', () => {
-  assert.equal(SCHEMA_CURENTA_O, 11);
+test('(o) oracolul e pe v12: SCHEMA_CURENTA_O = 12, `ridicaO` dă v12 (lanțul până la 9, apoi doar numărul), iar ușa curentă pe un v9 dă exact ce dă pasul întreg v9 → v10 (contractul v10 îl cuprinde pe cel v9)', () => {
+  assert.equal(SCHEMA_CURENTA_O, 12);
   let n = 0;
   for (const { nume, doc } of [...v9Mici(), ...REFUZATE_V9.map((r) => ({ nume: r.nume, doc: r.doc as DocV9O })), ...PRIMITE_V9.map((c) => ({ nume: c.nume, doc: c.doc as unknown as DocV9O }))]) {
     assert.deepEqual(verificaO(doc), verificaV9V10(doc), nume);
     if (verificaO(doc).length === 0) {
-      assert.equal(diferenta(ridicaO(doc), migreazaV10V11O(migreazaV9V10O(doc))), undefined, nume);
+      assert.equal(diferenta(ridicaO(doc), migreazaV11V12O(migreazaV10V11O(migreazaV9V10O(doc)))), undefined, nume);
       n++;
     }
   }
@@ -177,7 +177,7 @@ for (const { nume, doc } of [...VALIDE_V10, ...VALIDE_PLAFON_V10]) {
     const r = incarca(structuredClone(doc));
     if (!r.ok) return assert.fail(`incarca a refuzat: ${String(r.motiv)}`);
     // Felia 5.1↑ (ADR 0069 §2): pe 11, ușa îl duce la v11, doar cu numărul.
-    assert.equal(diferenta(r.doc, PE_V11 ? migreazaV10V11O(doc) : doc), undefined);
+    assert.equal(diferenta(r.doc, PE_V12 ? migreazaV10V12O(doc) : PE_V11 ? migreazaV10V11O(doc) : doc), undefined);
   });
 }
 
@@ -201,12 +201,12 @@ test('(m10) un v9 valid iese din ușa aplicației exact cu numărul schimbat (pe
   for (const { nume, v9, v10 } of MIGRARI_V9_HARTIE) {
     const r = incarca(structuredClone(v9));
     if (!r.ok) return assert.fail(`${nume}: ${String(r.motiv)}`);
-    assert.equal(diferenta(r.doc, PE_V11 ? migreazaV10V11O(v10 as DocV10O) : v10), undefined, nume);
+    assert.equal(diferenta(r.doc, PE_V12 ? migreazaV10V12O(v10 as DocV10O) : PE_V11 ? migreazaV10V11O(v10 as DocV10O) : v10), undefined, nume);
   }
   for (const { nume, doc } of [...v9Mici().slice(0, 20), ...PRIMITE_V9.map((c) => ({ nume: c.nume, doc: c.doc as unknown as DocV9O }))]) {
     const r = incarca(structuredClone(doc));
     if (!r.ok) return assert.fail(`${nume}: ${String(r.motiv)}`);
-    assert.equal(diferenta(r.doc, PE_V11 ? migreazaV10V11O(migreazaV9V10O(doc)) : migreazaV9V10O(doc)), undefined, nume);
+    assert.equal(diferenta(r.doc, PE_V12 ? migreazaV11V12O(migreazaV10V11O(migreazaV9V10O(doc))) : PE_V11 ? migreazaV10V11O(migreazaV9V10O(doc)) : migreazaV9V10O(doc)), undefined, nume);
   }
 });
 

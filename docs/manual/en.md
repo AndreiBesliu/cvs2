@@ -327,12 +327,31 @@ G-code** window, one row per shape; on export, the window does **Apply the opera
 | Corners | relief for the corners the cutter cannot reach: **dog-bone** (on the diagonal) or **T-bone** (into the longer wall) |
 | Split | an open path cut through the whole sheet, outside the parts: it is cut last, to split the sheet |
 | Side step | only on a pocket: the distance between the rings, at most half the cutter diameter (40% by default) |
+| Descent | only on a pocket: how the cutter enters the material on each pass: **plunge** (default), **ramp along the ring**, **zigzag** or **helix**, with their values (see below) |
 
 The **pocket** clears the material in rings parallel to the outline: the first one a cutter radius from the wall, each next
 one a side step further in, cut from the inside out to the wall, on every pass. The cutter goes from one ring to the next
 without lifting as long as the way stays inside the pocket. With a side step of at most half the diameter, the floor comes out
 clean everywhere; only the corners no round cutter can reach are left (with the cutter's radius). Where the pocket is
-narrower than the cutter, the cutter does not go in. A pocket has no tabs, ramp, leads or corner relief.
+narrower than the cutter, the cutter does not go in. A pocket has no tabs, leads or corner relief, and the profile's ramp
+is replaced by the descent.
+
+**Descent.** On every pass, the cutter enters the pocket at the start of the first ring (and wherever it has to lift between
+rings). The kind is chosen under **Descent**:
+
+- **Plunge (no ramp)**, the default: straight down, at the plunge feed.
+- **Ramp along the ring**: the cutter goes down along the ring, with the slope given by the **angle** (between 0.5° and 45°,
+  3° by default), then makes one more full round at depth, over everything the ramp cut higher up.
+- **Zigzag**: back and forth on the first millimetres of the ring (the **length**, 20 mm by default), with a slope of at most
+  the angle; the window shows how many ramps one pass takes (from the angle, the length and the depth per pass). Then one
+  full round at depth.
+- **Helix**: on a circle of the given **radius** (half the cutter diameter by default), with the centre picked by the app
+  where it fits; after the helix, a full circle at depth, then the ring. Where the helix does not fit, the cutter goes down
+  along the ring at the same angle, and the export summary says so.
+
+Each one first goes down, at the plunge feed, to the floor of the previous pass (where the material is already cleared),
+then cuts on the slope with a feed chosen so that the cutter never goes down faster than when plunging. The descent paths
+stay inside the pocket: on the ring, or on the helix's circle, in its piece.
 
 **Islands.** Pockets on the sheet with the same depth are one pocket, whatever their part: a shape with a pocket lying
 entirely inside another is an **island** (it stays standing and the cutter goes around it, cutting its wall like the

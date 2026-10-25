@@ -229,15 +229,18 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     if (t.tip === 'buzunar') {
       const insule = buzunare.get(it);
       if (!insule) continue;
-      const pasLateral = doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie)?.pasLateral;
+      const op = doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie);
+      const pasLateral = op?.pasLateral;
       if (pasLateral === undefined) return { ok: false, motiv: `${t.idLume}: buzunarul n-are pasul lateral` };
       const ci = insule.map((j) => conturDe(taieturi[j] as Taietura));
       const inele = ineleBuzunar(conturDe(t), R, pasLateral, ci);
       if (!inele.ok) return { ok: false, motiv: `${t.idLume}: ${inele.motiv}` };
       const adancimi = adancimiTreceri(t.adancime, t.pas);
       if (typeof adancimi === 'string') return { ok: false, motiv: `${t.idLume}: ${adancimi}` };
-      const tb = traseuBuzunar(conturDe(t), ordineInele(inele.radacini), { ...regim, sens: t.sens, raza: R, adancimi }, ci);
+      // Coborârea (ADR 0076): a operației; lipsă, plonjarea dreaptă.
+      const tb = traseuBuzunar(conturDe(t), ordineInele(inele.radacini), { ...regim, sens: t.sens, raza: R, adancimi, ...(op?.coborare ? { coborare: op.coborare } : {}) }, ci);
       if (!tb.ok) return { ok: false, motiv: `${t.idLume}: ${tb.motiv}` };
+      for (const a of tb.avertismente) avertismente.push(`${t.idLume}: ${a}`);
       const cuInsule = insule.length > 0 ? `, insule: ${insule.length}` : '';
       miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, buzunar, ${t.adancime} mm${cuInsule}`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
       for (const m of tb.miscari) miscari.push(m);

@@ -310,8 +310,30 @@ function v10v11(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v11 → v12 (ADR 0076): doar numărul. v12 adaugă coborârea în buzunar (`coborare`, opțională), deci un document v11 e un
+ * document v12 valid, cu același program (fără coborare, plonjarea de până acum). Un document marcat v11 cu un câmp propriu
+ * `coborare` pe o operație e refuzat: v11 nu-l cunoaște, deci nu e un v11 valid. (O versiune v11 refuză un document v12:
+ * ar plonja acolo unde omul a cerut rampa, iar o freză care nu taie în centru s-ar rupe.)
+ */
+function v11v12(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (typeof p !== 'object' || p === null) continue;
+    const piesa = p as Brut;
+    for (const o of Array.isArray(piesa['operatii']) ? piesa['operatii'] as unknown[] : []) {
+      if (typeof o !== 'object' || o === null) continue;
+      const op = o as Brut;
+      if (Object.hasOwn(op, 'coborare')) {
+        return { ok: false, motiv: `operația v11 ${String(op['id'])} din piesa ${String(piesa['id'])} are câmpul „coborare”, pe care v12 îl folosește: nu e un document v11 valid` };
+      }
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 12 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
- * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v10 → v11
+ * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v11 → v12
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
  */
 export const MIGRARI: Readonly<Record<number, Migrare>> = {
@@ -336,5 +358,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   8: v8v9,
   9: v9v10,
   10: v10v11,
+  11: v11v12,
 };
 

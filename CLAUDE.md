@@ -107,8 +107,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Testul owner-ului făcut pe 25.10** (29 de pași bine, 2 nemarcați). **Remedierile din notele lui (ADR 0074)** gata pe 25.10:
   clicul alege conturul cel mai apropiat, apoi forma cea mai mică; colțurile offsetului din desen ca originalul (implicit) sau
   rotunjite (`src/geom/colturi.ts`); copierea pe curbă pe ea / la stânga / la dreapta; Pen: dublu clic închide, anularea în
-  desen, Ctrl+Shift+Z redeschide; Alt și C unesc mânerele; cronologia roadmap-ului cu feliile aduse (↑N). **Urmează: coborârea
-  în buzunar pe rampă sau elice, configurabilă (unghi, lungime, număr de rampe), cu varianta „fără”** (cererea owner-ului).
+  desen, Ctrl+Shift+Z redeschide; Alt și C unesc mânerele; cronologia roadmap-ului cu feliile aduse (↑N). **Coborârea în buzunar
+  (ADR 0076, documentul v12)** gata pe 25.10: plonjare (implicit), rampă pe inel, zigzag sau elice, cu unghiul, lungimea și
+  raza în fereastra exportului (`src/cam/coborare.ts`); elicea care nu încape coboară pe inel, cu avertisment. **Urmează:
+  înclinarea cu arcele făcute curbe (cercul → elipsă), apoi chenarul întrerupt al uneltei Transformare** (cererile owner-ului).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

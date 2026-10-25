@@ -37,6 +37,15 @@ const rand = (eticheta: string, valoare: ReactNode): ReactNode => (
   <div className="prop-rand" key={eticheta}><dt>{eticheta}</dt><dd>{valoare}</dd></div>
 );
 
+/** Coborârea unui buzunar, pe scurt (ADR 0076): felul și valorile lui. */
+function coborare(c: Operatie['coborare']): string {
+  if (!c || c.fel === 'plonjare') return t('export.coborare.plonjare');
+  const nume = t(`export.coborare.${c.fel}`);
+  if (c.fel === 'zigzag') return t('prop.coborare.zigzag', { nume, unghi: c.unghi, mm: mm(c.lungime) });
+  if (c.fel === 'elice') return t('prop.coborare.elice', { nume, unghi: c.unghi, mm: mm(c.raza) });
+  return t('prop.coborare.rampa', { nume, unghi: c.unghi });
+}
+
 function operatie(o: Operatie, n: number): ReactNode {
   return (
     <section key={o.id} className="prop-operatie">
@@ -44,6 +53,7 @@ function operatie(o: Operatie, n: number): ReactNode {
       <dl>
         {rand(t('export.latura'), o.tip === 'buzunar' ? t('export.latura.buzunar') : t(`export.latura.${o.latura}`))}
         {o.tip === 'buzunar' && o.pasLateral !== undefined && rand(t('export.pas-lateral'), mm(o.pasLateral))}
+        {o.tip === 'buzunar' && rand(t('export.coborare'), coborare(o.coborare))}
         {rand(t('export.sens'), t(`export.sens.${o.sens}`))}
         {rand(t('export.adancime'), mm(o.adancime))}
         {rand(t('export.pas'), mm(o.pas))}

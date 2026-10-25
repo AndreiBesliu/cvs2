@@ -2,7 +2,8 @@ import type { IesireFoaie } from '../cam/iesire.ts';
 import { RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA } from '../cam/intrariMinima.ts';
 import { RAMPA_MINIMA } from '../cam/rampaMinima.ts';
 import type { ColtOrigine } from '../ir/montaj.ts';
-import { PLAFON, type Document, type Latura } from '../model/document.ts';
+import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAXIM } from '../model/document.ts';
+export type { Coborare } from '../model/document.ts';
 import type { ProgramExportat } from '../post/export.ts';
 
 export type { Depasire } from '../geom/cutie.ts';
@@ -16,6 +17,9 @@ export const MARGINI_OPERATIE = {
   diametru: PLAFON.diametruScula, adancime: PLAFON.adancimeOperatie, urechi: PLAFON.urechi, latimeUreche: PLAFON.latura,
   grosimeUreche: PLAFON.grosime, lungimeRampa: PLAFON.latura, lungimeRampaMinima: RAMPA_MINIMA,
   razaIntrare: PLAFON.latura, razaIntrareMinima: RAZA_INTRARE_MINIMA, razaIntrareMinimaRampa: RAZA_INTRARE_MINIMA_RAMPA,
+  // Coborârea în buzunar (ADR 0076): unghiul, zigzagul și raza elicei, cu pragurile lucrării.
+  unghiCoborare: UNGHI_COBORARE_MAXIM, unghiCoborareMinim: COBORARE_MINIME.unghi, lungimeZigzag: PLAFON.latura,
+  lungimeZigzagMinima: COBORARE_MINIME.lungime, razaElice: PLAFON.diametruScula, razaEliceMinima: COBORARE_MINIME.raza,
 } as const;
 
 /** Latura unei operații de profil, cum o arată dialogul (ADR 0037 §2). */

@@ -49,6 +49,9 @@ export const roCarcasa = {
   'prop.freza.valoare': 'T{numar}, Ø{diametru} mm',
   'prop.urechi.valoare': '{numar} × {latime} mm, puntea {grosime} mm',
   'prop.rampa.valoare': 'lungă de {mm} mm',
+  'prop.coborare.rampa': '{nume}, {unghi}°',
+  'prop.coborare.zigzag': '{nume}, {unghi}° pe {mm} mm',
+  'prop.coborare.elice': '{nume}, {unghi}°, raza {mm} mm',
   'prop.intrari.valoare': 'raza {mm} mm',
   'prop.fara': 'nu',
   'prop.selectate': {

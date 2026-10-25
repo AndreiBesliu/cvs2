@@ -316,12 +316,29 @@ fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **
 | Colțuri | degajarea colțurilor în care freza nu intră: **dog-bone** (pe diagonală) sau **T-bone** (în peretele mai lung) |
 | Despărțire | o cale deschisă, tăiată prin toată foaia, în afara pieselor: se taie la urmă, ca să despartă foaia |
 | Pasul lateral | doar pe un buzunar: distanța dintre inele, cel mult jumătate din diametrul frezei (implicit 40 %) |
+| Coborârea | doar pe un buzunar: cum intră freza în material la fiecare trecere: **plonjare** (implicit), **rampă pe inel**, **zigzag** sau **elice**, cu valorile lor (vezi mai jos) |
 
 **Buzunarul** scoate materialul în inele paralele cu conturul: primul la o rază de freză de perete, fiecare următor cu un pas
 lateral mai înăuntru, tăiate dinăuntru spre perete, pe fiecare trecere. Freza trece de la un inel la următorul fără să se
 ridice cât drumul rămâne în buzunar. Cu pasul lateral de cel mult jumătate din diametru, fundul iese neted peste tot; rămân
 doar colțurile pe care nicio freză rotundă nu le atinge (cu raza frezei). Unde buzunarul e mai îngust decât freza, ea nu
-intră. Pe un buzunar nu există urechi, rampă, intrări sau degajări.
+intră. Pe un buzunar nu există urechi, intrări sau degajări, iar rampa profilului e înlocuită de coborâre.
+
+**Coborârea.** La fiecare trecere, freza intră în buzunar la începutul primului inel (și acolo unde trebuie să se ridice
+între inele). Felul se alege la **Coborârea**:
+
+- **Plonjare (fără rampă)**, implicit: drept în jos, cu avansul de plonjare.
+- **Rampă pe inel**: freza coboară de-a lungul inelului, cu panta dată de **unghi** (între 0,5° și 45°, implicit 3°), apoi
+  mai face o tură întreagă la adâncime, peste tot ce a tăiat rampa mai sus.
+- **Zigzag**: dus-întors pe primii milimetri ai inelului (**lungimea**, implicit 20 mm), cu panta cel mult unghiul; fereastra
+  arată câte rampe ies pe o trecere (din unghi, lungime și pasul pe trecere). Apoi o tură întreagă la adâncime.
+- **Elice**: pe un cerc de **raza** dată (implicit jumătate din diametrul frezei), cu centrul ales de aplicație acolo unde
+  încape; după elice, un cerc plin la adâncime, apoi inelul. Unde elicea nu încape, freza coboară pe inel, cu același unghi,
+  iar rezumatul exportului spune asta.
+
+Fiecare coboară întâi, cu avansul de plonjare, până la fundul trecerii de dinainte (acolo materialul e deja scos), apoi taie
+în pantă cu un avans ales așa încât freza să nu coboare mai repede decât la plonjare. Drumurile coborârii stau în buzunar:
+pe inel sau pe cercul elicei, în bucata lui.
 
 **Insulele.** Buzunarele de pe foaie cu aceeași adâncime sunt un singur buzunar, oricare ar fi piesa lor: o formă cu
 buzunar aflată în întregime în alta e o **insulă** (rămâne în picioare, iar freza o ocolește, cu peretele ei tăiat ca al

@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 11;
+export const VERSIUNE_SCHEMA = 12;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -113,8 +113,28 @@ export type Operatie = {
   urechi: Urechi | null; rampa: Rampa | null; intrari: Intrari | null; colturi: Colturi | null; despartire?: boolean;
   /** Pe un buzunar (ADR 0069), distanța dintre inele, în mm; un profil n-o are (ușa o cere doar pe buzunar). */
   pasLateral?: number;
+  /** Pe un buzunar (ADR 0076, documentul v12), cum coboară freza în material; lipsă = plonjarea dreaptă (ca în v11). */
+  coborare?: Coborare;
   [cheie: string]: unknown;
 };
+/**
+ * Coborârea în buzunar (ADR 0076): `plonjare` (dreaptă, ca până în v11), `rampa` (de-a lungul primului inel, cu `unghi`
+ * grade față de orizontală), `zigzag` (dus-întors pe primii `lungime` mm ai inelului, cu panta cel mult `unghi`) sau `elice`
+ * (pe un cerc de rază `raza` mm, cu `unghi`). Unghiul e în (0, 45]; potrivirea cu buzunarul o judecă lucrarea.
+ */
+export type Coborare =
+  | { fel: 'plonjare'; [cheie: string]: unknown }
+  | { fel: 'rampa'; unghi: number; [cheie: string]: unknown }
+  | { fel: 'zigzag'; unghi: number; lungime: number; [cheie: string]: unknown }
+  | { fel: 'elice'; unghi: number; raza: number; [cheie: string]: unknown };
+/** Unghiul cel mai mare al rampei, al zigzagului și al elicei, în grade. */
+export const UNGHI_COBORARE_MAXIM = 45;
+/**
+ * Pragurile de jos ale coborârii (ADR 0076 §1), judecate de lucrare și de dialog: unghiul (grade; sub el, drumul de coborâre
+ * ajunge de sute de ori lungimea buclei), zigzagul (mm, ca rampa minimă a profilului, ADR 0029 §2), raza elicei (mm; mai mică,
+ * e o plonjare cu alt nume).
+ */
+export const COBORARE_MINIME = { unghi: 0.5, lungime: 1, raza: 0.5 } as const;
 /**
  * Felul operației (ADR 0069, documentul v11): `profil` taie conturul; `buzunar` scoate materialul dinăuntrul unui contur
  * închis, până la adâncime, în inele paralele cu conturul, la `pasLateral` mm unul de altul (cel mult raza frezei). Pe un
@@ -132,7 +152,7 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
-export type Document = { schema: 11; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 12; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

@@ -2913,3 +2913,20 @@ distanța la original și atingerea au primit câte o probă care le ocolește p
 (40217419646). Verificat în browserul aplicației pe <https://cncvectorstudio-test.firebaseapp.com/>, după „Reîncarcă”: tastele pe
 butoane; offsetul spre exterior implicit „Ca originalul” (calea 110 × 70, 4 segmente); clicul în dreptunghi alege dreptunghiul,
 între contururi calea nouă, pe marginea cercului cercul.
+
+## 2026-10-25 — Coborârea în buzunar (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește felia rampei / elicei în buzunar, configurabilă, cu varianta fără.” (cererea de dinainte: „coborarea in
+buzunar pe rampa sau elice, si ar trebui sa fie configurabila de user, unghi, lungime, numar de rampe etc.”, „si eventual sa poata
+fi si evitata”); între timp, puse la coadă: înclinarea cu arcele făcute curbe („ar trebui sa am optiunea de a transforma cerul in
+elipsa, sau colturile”), chenarul întrerupt al uneltei Transformare („initial si default sa fie un border dashed”) și cronologia
+roadmap-ului („si tot nu vad in acest timeline ce progres avem deja facut”).
+**Started:** 25.10, ~19:50. Felia **5.3↑**, fără agenți (ADR 0076): documentul v12 (`Operatie.coborare`), felurile în
+`src/cam/coborare.ts` (plonjare, rampă pe inel, zigzag, elice), centrul elicei ales în bucată (`centruElice`), căderea pe inel cu
+avertisment, dialogul și panoul. Cele ~116 probe legate de numărul schemei mutate pe v12. O probă cu insula presupunea greșit că
+elicea nu încape. Heredoc-ul a mâncat un `\n` din scriptul mutațiilor (scris apoi cu Edit).
+**Completed:** 25.10 21:08. Porțile: 7 256 de teste unitare (0 picate), determinismul, licențele, importurile; e2e 219 / 219 în
+Edge; emulatoarele 13 / 13. Pornirea 95,3 / 100 kB, totalul 305,1 / 330, `/admin` 189,9 / 200. Mutațiile țintite: 24 / 31 la prima rulare; după probele noi (centrul elicei, direct; tura
+plină de la adâncime; bucla după elice; zigzagul mai lung decât bucla), 29 / 30 directe, garda legăturii elicei (a doua plasă)
+prinsă în pereche, una echivalentă (un 2π în unghiul de pornire al elicei) scoasă din cod. Porțile au picat o dată pe regula
+de import (dialogul lua tipul `Coborare` direct din model; acum prin `actiuniExportTipuri`).

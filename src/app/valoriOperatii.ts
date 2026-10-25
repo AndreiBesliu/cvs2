@@ -14,15 +14,19 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
   const colturi = v === undefined ? o.colturi : v.colturi && o.colturi ? { ...o.colturi, ...v.colturi } : v.colturi;
   // Despărțirea (ADR 0037 §8): bifată, `true`; nebifată, câmpul pleacă (lipsă = false), ca un document fără marcaj să rămână
   // octet cu octet ce era.
-  const { despartire: _vechi, pasLateral: _pas, tip: _tip, ...rest } = {
+  const { despartire: _vechi, pasLateral: _pas, tip: _tip, coborare: _cob, ...rest } = {
     ...o, ...(v ?? {}), urechi, rampa, intrari, colturi, scula: { ...o.scula, numar: scula.numar, diametru: scula.diametru },
   };
-  void _vechi; void _pas; void _tip;
+  void _vechi; void _pas; void _tip; void _cob;
   // Buzunarul (ADR 0069 §1): latura interior, nimic din profil, cu pasul lateral (al rândului, al operației, sau 40 % din D).
   const tip = v === undefined ? o.tip : v.tip ?? 'profil';
   if (tip === 'buzunar') {
     const pasLateral = v?.pasLateral ?? o.pasLateral ?? Math.round(scula.diametru * 4) / 10;
-    return { ...rest, tip, pasLateral, latura: 'interior', urechi: null, rampa: null, intrari: null, colturi: null };
+    // Coborârea (ADR 0076): a rândului (lipsă = plonjarea, care nu se scrie), sau a operației fără valori din dialog; pe
+    // același fel se ÎMBINĂ cu cea din document, ca restul (un câmp necunoscut rămâne, ordinea cheilor la fel).
+    const coborare = v === undefined ? o.coborare
+      : v.coborare && o.coborare?.fel === v.coborare.fel ? { ...o.coborare, ...v.coborare } : v.coborare;
+    return { ...rest, tip, pasLateral, latura: 'interior', urechi: null, rampa: null, intrari: null, colturi: null, ...(coborare ? { coborare } : {}) };
   }
   const despartire = v?.despartire ?? o.despartire;
   return despartire ? { ...rest, tip, despartire: true } : { ...rest, tip };

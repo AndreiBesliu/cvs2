@@ -5,7 +5,7 @@ import '../i18n/traseu.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import {
-  laturiOferite, MARGINI_OPERATIE, type Depasire, type IesireFoaie, type LaturaExport, type ParametriExport, type RezumatJob,
+  laturiOferite, MARGINI_OPERATIE, type Coborare, type Depasire, type IesireFoaie, type LaturaExport, type ParametriExport, type RezumatJob,
   type SimulareExport, type TimpPortiune,
 } from './actiuniExportTipuri.ts';
 import { durata } from './durata.ts';
@@ -39,6 +39,8 @@ export type ValoriOperatie = {
    */
   readonly tip?: 'profil' | 'buzunar';
   readonly pasLateral?: number;
+  /** Coborârea în buzunar (ADR 0076); lipsă = plonjarea dreaptă. */
+  readonly coborare?: Coborare;
 };
 
 /**
@@ -139,7 +141,16 @@ type Rand = {
   /** Buzunarul (ADR 0069): felul rândului și pasul lateral, ca text; pasul rămâne scris și pe un profil. */
   readonly tip: 'profil' | 'buzunar';
   readonly pasLateral: string;
+  /** Coborârea în buzunar (ADR 0076), cu valorile tuturor felurilor scrise, ca o schimbare de fel să nu le piardă. */
+  readonly coborare: Coborare['fel'];
+  readonly unghiCoborare: string; readonly lungimeZigzag: string; readonly razaElice: string;
 };
+
+/** Valorile cu care pornește coborârea pe un rând care n-o avea (ADR 0076 §5): 3°, zigzagul de 20 mm, elicea cât raza frezei. */
+const UNGHI_COBORARE_IMPLICIT = 3;
+const LUNGIME_ZIGZAG_IMPLICITA = 20;
+export const razaEliceImplicita = (diametru: number): number => Math.round(diametru * 5) / 10;
+const FELURI_COBORARE: ReadonlyArray<Coborare['fel']> = ['plonjare', 'rampa', 'zigzag', 'elice'];
 
 /** Raza cu care pornește bifa intrărilor pe un rând care n-avea (ADR 0030 §1). */
 const INTRARI_IMPLICITE: IntrariOperatie = { raza: 3 };
@@ -252,6 +263,10 @@ export function DialogExport(
       despartire: !inchise && o.valori.despartire === true,
       tip: inchise && o.valori.tip === 'buzunar' ? 'buzunar' : 'profil',
       pasLateral: text(o.valori.pasLateral ?? pasLateralImplicit(diametruInitial)),
+      coborare: o.valori.coborare?.fel ?? 'plonjare',
+      unghiCoborare: text(o.valori.coborare && o.valori.coborare.fel !== 'plonjare' ? o.valori.coborare.unghi : UNGHI_COBORARE_IMPLICIT),
+      lungimeZigzag: text(o.valori.coborare?.fel === 'zigzag' ? o.valori.coborare.lungime : LUNGIME_ZIGZAG_IMPLICITA),
+      razaElice: text(o.valori.coborare?.fel === 'elice' ? o.valori.coborare.raza : razaEliceImplicita(diametruInitial)),
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
@@ -288,7 +303,7 @@ export function DialogExport(
   const dFreza = citesteNumar(diametru);
   const randBun = (p: Rand | undefined): {
     adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean; rampa: boolean; intrari: boolean;
-    pasLateral: boolean;
+    pasLateral: boolean; coborare: boolean;
   } => ({
     adancime: p !== undefined && inMargini(p.adancime, MARGINI_OPERATIE.adancime),
     pas: p !== undefined && inMargini(p.pas, MARGINI_OPERATIE.adancime),
@@ -301,6 +316,11 @@ export function DialogExport(
     intrari: p !== undefined && (p.tip === 'buzunar' || !p.intrari || p.latura === 'pe-linie' || inMargini(p.razaIntrare, MARGINI_OPERATIE.razaIntrare,
       p.rampa ? MARGINI_OPERATIE.razaIntrareMinimaRampa : MARGINI_OPERATIE.razaIntrareMinima)),
     pasLateral: p !== undefined && (p.tip !== 'buzunar' || (dFreza !== null && inMargini(p.pasLateral, dFreza / 2))),
+    // Coborârea (ADR 0076): doar pe un buzunar și doar câmpurile felului ales.
+    coborare: p !== undefined && (p.tip !== 'buzunar' || p.coborare === 'plonjare' || (
+      inMargini(p.unghiCoborare, MARGINI_OPERATIE.unghiCoborare, MARGINI_OPERATIE.unghiCoborareMinim)
+      && (p.coborare !== 'zigzag' || inMargini(p.lungimeZigzag, MARGINI_OPERATIE.lungimeZigzag, MARGINI_OPERATIE.lungimeZigzagMinima))
+      && (p.coborare !== 'elice' || inMargini(p.razaElice, MARGINI_OPERATIE.razaElice, MARGINI_OPERATIE.razaEliceMinima)))),
   });
   const randuri = operatii.map((o) => randBun(param[o.cheie]));
   const operatiiBune = diametruBun && randuri.every((b) => b.adancime && b.pas);
@@ -308,7 +328,8 @@ export function DialogExport(
   const rampeBune = randuri.every((b) => b.rampa);
   const intrariBune = randuri.every((b) => b.intrari);
   const pasiBuni = randuri.every((b) => b.pasLateral);
-  const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni;
+  const coborariBune = randuri.every((b) => b.coborare);
+  const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -332,8 +353,18 @@ export function DialogExport(
     if (p.tip === 'buzunar') {
       const pasLateral = citesteNumar(p.pasLateral);
       if (pasLateral === null) return [];
+      // Coborârea (ADR 0076): plonjarea nu se scrie (documentul rămâne cel de dinainte, cu același program).
+      const unghi = citesteNumar(p.unghiCoborare), lungime = citesteNumar(p.lungimeZigzag), raza = citesteNumar(p.razaElice);
+      let coborare: Coborare | undefined;
+      if (p.coborare !== 'plonjare') {
+        if (unghi === null) return [];
+        if (p.coborare === 'rampa') coborare = { fel: 'rampa', unghi };
+        else if (p.coborare === 'zigzag') { if (lungime === null) return []; coborare = { fel: 'zigzag', unghi, lungime }; }
+        else { if (raza === null) return []; coborare = { fel: 'elice', unghi, raza }; }
+      }
       return [[o.cheie, {
         latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'buzunar', pasLateral,
+        ...(coborare ? { coborare } : {}),
       }] as const];
     }
     const numar = citesteNumar(p.numarUrechi), latime = citesteNumar(p.latimeUreche), grosime = citesteNumar(p.grosimeUreche);
@@ -364,6 +395,10 @@ export function DialogExport(
       minim: fmtFreza.format(MARGINI_OPERATIE.lungimeRampaMinima), lungime: fmtFreza.format(MARGINI_OPERATIE.lungimeRampa),
     })]),
     ...(pasiBuni ? [] : [t('motiv.pas-lateral-invalid', { max: dFreza !== null ? fmtFreza.format(dFreza / 2) : '–' })]),
+    ...(coborariBune ? [] : [t('motiv.coborare-invalida', {
+      unghiMinim: fmtFreza.format(MARGINI_OPERATIE.unghiCoborareMinim), unghi: fmtFreza.format(MARGINI_OPERATIE.unghiCoborare),
+      lungime: fmtFreza.format(MARGINI_OPERATIE.lungimeZigzagMinima), raza: fmtFreza.format(MARGINI_OPERATIE.razaEliceMinima),
+    })]),
     ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
       ? t('motiv.intrari-invalide-rampa', {
         minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinimaRampa), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
@@ -493,6 +528,45 @@ export function DialogExport(
                         <input type="text" inputMode="decimal" value={p.pasLateral} data-camp="pas-lateral" disabled={doarCitire}
                           aria-invalid={!b.pasLateral} onChange={(ev) => { schimba(o.cheie, { pasLateral: ev.target.value }); }} />
                       </label>
+                      {/* Coborârea în buzunar (ADR 0076): felul, apoi câmpurile lui. */}
+                      <label title={t('export.coborare.titlu')}>
+                        {t('export.coborare')}
+                        <select value={p.coborare} data-camp="coborare" disabled={doarCitire}
+                          onChange={(ev) => { const f = FELURI_COBORARE.find((x) => x === ev.target.value); if (f) schimba(o.cheie, { coborare: f }); }}>
+                          {FELURI_COBORARE.map((f) => <option key={f} value={f}>{t(`export.coborare.${f}`)}</option>)}
+                        </select>
+                      </label>
+                      {p.coborare !== 'plonjare' && (
+                      <label title={t('export.coborare.unghi.titlu')}>
+                        {t('export.coborare.unghi')}
+                        <input type="text" inputMode="decimal" value={p.unghiCoborare} data-camp="unghi-coborare" disabled={doarCitire}
+                          aria-invalid={!b.coborare && !inMargini(p.unghiCoborare, MARGINI_OPERATIE.unghiCoborare, MARGINI_OPERATIE.unghiCoborareMinim)}
+                          onChange={(ev) => { schimba(o.cheie, { unghiCoborare: ev.target.value }); }} />
+                      </label>
+                      )}
+                      {p.coborare === 'zigzag' && (
+                      <label title={t('export.coborare.lungime.titlu')}>
+                        {t('export.coborare.lungime')}
+                        <input type="text" inputMode="decimal" value={p.lungimeZigzag} data-camp="lungime-zigzag" disabled={doarCitire}
+                          aria-invalid={!inMargini(p.lungimeZigzag, MARGINI_OPERATIE.lungimeZigzag, MARGINI_OPERATIE.lungimeZigzagMinima)}
+                          onChange={(ev) => { schimba(o.cheie, { lungimeZigzag: ev.target.value }); }} />
+                      </label>
+                      )}
+                      {p.coborare === 'zigzag' && (() => {
+                        // Câte rampe face zigzagul pe o trecere (cu pasul rândului), cum le va tăia lucrarea.
+                        const u = citesteNumar(p.unghiCoborare), l = citesteNumar(p.lungimeZigzag), pas = citesteNumar(p.pas);
+                        if (u === null || l === null || pas === null || !(u > 0 && l > 0 && pas > 0)) return null;
+                        const n = Math.max(1, Math.ceil(pas / (l * Math.tan((u * Math.PI) / 180)) - 1e-9));
+                        return <span className="nota-coborare" data-camp="rampe-zigzag">{t('export.coborare.rampe', { n })}</span>;
+                      })()}
+                      {p.coborare === 'elice' && (
+                      <label title={t('export.coborare.raza.titlu')}>
+                        {t('export.coborare.raza')}
+                        <input type="text" inputMode="decimal" value={p.razaElice} data-camp="raza-elice" disabled={doarCitire}
+                          aria-invalid={!inMargini(p.razaElice, MARGINI_OPERATIE.razaElice, MARGINI_OPERATIE.razaEliceMinima)}
+                          onChange={(ev) => { schimba(o.cheie, { razaElice: ev.target.value }); }} />
+                      </label>
+                      )}
                       </div>
                       )}
                       {p.urechi && !buz && (

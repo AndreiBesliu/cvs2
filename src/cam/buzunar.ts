@@ -1,12 +1,14 @@
 import { apropiereContururi, distantaCutii } from '../geom/apropiere.ts';
 import { cerculArcului, inverseaza, LINIE, numarSegmente, segment, type Contur, type Punct } from '../geom/contur.ts';
 import { cutieContur, type Cutie } from '../geom/cutie.ts';
-import { inRegiune, peArc } from '../geom/distanta.ts';
+import { distantaLaContur, inRegiune, peArc } from '../geom/distanta.ts';
 import { offsetRegiune } from '../geom/offset.ts';
 import type { Miscare } from '../ir/ir.ts';
-import { incepeLa } from './parcurgere.ts';
+import type { Coborare } from '../model/document.ts';
+import { incepeLa, punctLa } from './parcurgere.ts';
 import type { Sens } from './profil.ts';
-import { taieBucla, type ParametriTraseu, type RezultatTraseu } from './traseu.ts';
+import { intrareElice, intrarePlonjare, intrareRampa, intrareZigzag, refuzCoborare, type Intrare } from './coborare.ts';
+import { taieBucla, type ParametriTraseu } from './traseu.ts';
 
 /**
  * Buzunarul (ADR 0069): materialul dinăuntrul unui contur închis, scos până la adâncime, în inele paralele cu conturul.
@@ -190,28 +192,106 @@ export type ParametriBuzunar = ParametriTraseu & {
   readonly raza: number;
   /** Adâncimile trecerilor (`adancimiTreceri`), în ordine. */
   readonly adancimi: readonly number[];
+  /** Coborârea la fiecare intrare (ADR 0076); lipsă = plonjarea dreaptă. */
+  readonly coborare?: Coborare;
 };
+
+/** Traseul buzunarului și ce n-a putut face fără să fie o greșeală (elicea care nu încape, ADR 0076 §4). */
+export type RezultatBuzunar =
+  | { readonly ok: true; readonly miscari: readonly Miscare[]; readonly avertismente: readonly string[] }
+  | { readonly ok: false; readonly motiv: string };
 
 /** Două puncte mai apropiate de atât (mm) sunt același: legătura lipsește. */
 const EPS_PUNCT = 1e-9;
+/** Câte puncte pe latură are grila în care se caută centrul elicei, în cutia bucății. */
+const GRILA_ELICE = 9;
+
+/**
+ * Centrul elicei de rază `razaElice` în bucata `inel` (ADR 0076 §3), sau null dacă nu încape: un punct al bucății (în bucla
+ * exterioară, în afara celor ale insulelor) la cel puțin `razaElice` de toate buclele ei, adunat cu ce are bucata în plus față
+ * de raza frezei (d − R): în bucata de la d, distanța la margine a unui punct e d plus distanța lui la buclele bucății, deci
+ * tot cercul elicei stă la cel puțin R de margine. Dintre centrul de greutate al vârfurilor și o grilă în cutia bucății, cel
+ * cu cel mai mult loc.
+ */
+export function centruElice(inel: InelBuzunar, razaFrezei: number, razaElice: number): Punct | null {
+  const ext = inel.bucle[0];
+  if (!ext || ext.varfuri.length === 0) return null;
+  const k = cutieContur(ext);
+  const candidati: Punct[] = [{
+    x: ext.varfuri.reduce((a, v) => a + v.p.x, 0) / ext.varfuri.length, y: ext.varfuri.reduce((a, v) => a + v.p.y, 0) / ext.varfuri.length,
+  }];
+  for (let i = 0; i < GRILA_ELICE; i++) {
+    for (let j = 0; j < GRILA_ELICE; j++) {
+      candidati.push({ x: k.minX + ((i + 0.5) * (k.maxX - k.minX)) / GRILA_ELICE, y: k.minY + ((j + 0.5) * (k.maxY - k.minY)) / GRILA_ELICE });
+    }
+  }
+  let cel: { readonly c: Punct; readonly loc: number } | null = null;
+  for (const c of candidati) {
+    if (!inRegiune(c, inel.bucle)) continue;
+    const loc = Math.min(...inel.bucle.map((b) => distantaLaContur(c, b))) + (inel.d - razaFrezei);
+    if (!cel || loc > cel.loc) cel = { c, loc };
+  }
+  return cel && cel.loc >= razaElice ? cel.c : null;
+}
 
 /**
  * Traseul buzunarului: pe fiecare trecere, inelele în ordinea dată (`ordineInele`), iar buclele unui inel de la cea mai
- * apropiată de freză. Prima buclă a trecerii se taie de la vârful ei 0, cu coborârea cu avansul de plonjare; fiecare buclă
- * următoare pornește din punctul ei cel mai apropiat de freză, la care se ajunge la adâncime, în linie dreaptă, dacă drumul
- * rămâne în buzunar (departe de contur și de insule), altfel prin ridicare. Sensul (ADR 0027): buclele vin cu regiunea în
- * stânga, deci cu materialul de scos (peretele, insula) în dreapta mersului: urcarea le ia așa, opoziția le întoarce. După
- * fiecare trecere, freza se ridică la Z-ul de siguranță.
+ * apropiată de freză. Fiecare buclă după prima pornește din punctul ei cel mai apropiat de freză, la care se ajunge la
+ * adâncime, în linie dreaptă, dacă drumul rămâne în buzunar (departe de contur și de insule). Altfel (și la prima buclă a
+ * trecerii) e o intrare: freza se ridică, vine deasupra și coboară cu `coborare` (ADR 0076; lipsă = plonjarea dreaptă, de la
+ * vârful 0). Elicea care nu încape în bucata ei (sau nu se poate lega la buclă) coboară pe inel, cu același unghi, și spune
+ * asta. Sensul (ADR 0027): buclele vin cu regiunea în stânga, deci cu materialul de scos (peretele, insula) în dreapta
+ * mersului: urcarea le ia așa, opoziția le întoarce (și elicea merge la fel). După fiecare trecere, freza se ridică la Z-ul de
+ * siguranță.
  */
-export function traseuBuzunar(contur: Contur, inele: readonly InelBuzunar[], p: ParametriBuzunar, insule: readonly Contur[] = []): RezultatTraseu {
+export function traseuBuzunar(contur: Contur, inele: readonly InelBuzunar[], p: ParametriBuzunar, insule: readonly Contur[] = []): RezultatBuzunar {
   if (!(p.zSigur > 0)) return { ok: false, motiv: `Z-ul de siguranță trebuie să fie deasupra materialului (${p.zSigur})` };
   if (!(p.avans > 0 && p.avansPlonjare > 0)) return { ok: false, motiv: 'avansurile trebuie să fie pozitive' };
+  const cob: Coborare = p.coborare ?? { fel: 'plonjare' };
+  const refuz = refuzCoborare(cob);
+  if (refuz) return { ok: false, motiv: refuz };
   const margine = marginea(contur, insule);
   const componente = inele.map((x) => x.bucle.map((b) => (p.sens === 'urcare' ? b : inverseaza(b))));
   const m: Miscare[] = [];
-  for (const d of p.adancimi) {
+  const avertismente = new Set<string>();
+  const centre = new Map<InelBuzunar, Punct | null>();
+  /** Intrarea pe bucla b (pornită din punctul ei de intrare) a bucății `inel`, la trecerea de la −dp la −d: unde rămâne freza. */
+  const intra = (b: Contur, inel: InelBuzunar, d: number, dp: number): Punct | string => {
+    const pun = (r: Intrare | string): Punct | string => {
+      if (typeof r === 'string') return r;
+      for (const x of r.miscari) m.push(x);
+      return r.la;
+    };
+    if (cob.fel === 'plonjare') {
+      const la = pun(intrarePlonjare(b, d, p));
+      if (typeof la === 'string') return la;
+      return taieBucla(m, b, d, p, undefined) ?? la;
+    }
+    if (cob.fel === 'zigzag') return pun(intrareZigzag(b, dp, d, cob.unghi, cob.lungime, p));
+    if (cob.fel === 'elice') {
+      if (!centre.has(inel)) centre.set(inel, centruElice(inel, p.raza, cob.raza));
+      const c = centre.get(inel);
+      if (c) {
+        // Punctul buclei cel mai apropiat de centru: acolo duce raza pe care se termină elicea, apoi bucla pornește din el.
+        const q = celMaiApropiat(b, c);
+        const qp = punctLa(b, q.s)?.p;
+        const e = qp ? intrareElice(c, cob.raza, qp, dp, d, cob.unghi, p.sens === 'urcare', p) : 'bucla n-are lungime';
+        if (qp && typeof e !== 'string' && (Math.hypot(e.la.x - qp.x, e.la.y - qp.y) <= EPS_PUNCT || legaturaLibera(e.la, qp, margine, p.raza))) {
+          pun(e);
+          if (Math.hypot(e.la.x - qp.x, e.la.y - qp.y) > EPS_PUNCT) m.push({ tip: 'taiere', la: { X: qp.x, Y: qp.y }, avans: p.avans });
+          return taieBucla(m, incepeLa(b, q.s), d, p, undefined) ?? qp;
+        }
+      }
+      avertismente.add(`elicea de rază ${cob.raza} mm nu încape în bucata de la ${inel.d.toFixed(3)} mm de contur: acolo coboară pe inel, cu ${cob.unghi}°`);
+    }
+    return pun(intrareRampa(b, dp, d, cob.unghi, p));
+  };
+  for (const [kp, d] of p.adancimi.entries()) {
+    const dp = kp === 0 ? 0 : (p.adancimi[kp - 1] ?? 0);
     let la: Punct | null = null;
-    for (const bucle of componente) {
+    for (const [ic, bucle] of componente.entries()) {
+      const inel = inele[ic];
+      if (!inel) continue;
       const ramase = [...bucle];
       while (ramase.length > 0) {
         // Bucla cea mai apropiată de freză (prima a trecerii: cea exterioară, de la vârful 0).
@@ -230,17 +310,17 @@ export function traseuBuzunar(contur: Contur, inele: readonly InelBuzunar[], p: 
         if (!start) continue;
         if (la && legaturaLibera(la, start, margine, p.raza)) {
           if (Math.hypot(start.x - la.x, start.y - la.y) > EPS_PUNCT) m.push({ tip: 'taiere', la: { X: start.x, Y: start.y }, avans: p.avans });
-        } else {
-          m.push({ tip: 'rapida', la: { Z: p.zSigur } });
-          m.push({ tip: 'rapida', la: { X: start.x, Y: start.y } });
-          m.push({ tip: 'taiere', la: { Z: -d }, avans: p.avansPlonjare });
+          const e = taieBucla(m, b, d, p, undefined);
+          if (e) return { ok: false, motiv: e };
+          la = start;
+          continue;
         }
-        const e = taieBucla(m, b, d, p, undefined);
-        if (e) return { ok: false, motiv: e };
-        la = start;
+        const r = intra(b, inel, d, dp);
+        if (typeof r === 'string') return { ok: false, motiv: r };
+        la = r;
       }
     }
     m.push({ tip: 'rapida', la: { Z: p.zSigur } });
   }
-  return { ok: true, miscari: m };
+  return { ok: true, miscari: m, avertismente: [...avertismente] };
 }

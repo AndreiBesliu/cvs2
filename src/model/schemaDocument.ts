@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import { compune, esteSimilitudine, IDENTITATE } from '../geom/matrice.ts';
 import {
-  areArce, instantaPreaDeparte, noduriPiesa, numara, plafonDepasit, PLAFON, VERSIUNE_SCHEMA, type Document, type Nod, type Piesa,
+  areArce, instantaPreaDeparte, noduriPiesa, numara, plafonDepasit, PLAFON, UNGHI_COBORARE_MAXIM, VERSIUNE_SCHEMA, type Document, type Nod, type Piesa,
 } from './document.ts';
 
 /**
@@ -121,6 +121,13 @@ const SchemaOperatie = v.looseObject({
   // ADR 0069 §1: pasul lateral al buzunarului; potrivirea lui cu freza și cu felul operației e a lucrării, nu a ușii (ca la
   // latura unei căi deschise, ADR 0037 §2).
   pasLateral: v.optional(pozitiv(PLAFON.diametruScula / 2)),
+  // ADR 0076: coborârea în buzunar (v12); potrivirea ei (unghiul prea mic, elicea care nu încape) e a lucrării.
+  coborare: v.optional(v.variant('fel', [
+    v.looseObject({ fel: v.literal('plonjare') }),
+    v.looseObject({ fel: v.literal('rampa'), unghi: pozitiv(UNGHI_COBORARE_MAXIM) }),
+    v.looseObject({ fel: v.literal('zigzag'), unghi: pozitiv(UNGHI_COBORARE_MAXIM), lungime: pozitiv(PLAFON.latura) }),
+    v.looseObject({ fel: v.literal('elice'), unghi: pozitiv(UNGHI_COBORARE_MAXIM), raza: pozitiv(PLAFON.diametruScula) }),
+  ])),
 });
 const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
 const SchemaInstanta = v.looseObject({
