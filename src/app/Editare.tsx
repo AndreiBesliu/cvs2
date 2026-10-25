@@ -68,17 +68,21 @@ function inclinareSalvata(): FormularInclinare {
 type ModulOffset = typeof import('./offsetCalcul.ts');
 /** Booleanul (ADR 0067): o bucată la cerere, adusă la primul clic pe Unește / Scade / Intersectează (cu cavalier). */
 type ModulBoolean = typeof import('../model/boolean.ts');
-type FormularOffset = { readonly distanta: string; readonly sens: 'exterior' | 'interior' };
+type FormularOffset = { readonly distanta: string; readonly sens: 'exterior' | 'interior'; readonly colturi: 'ca-originalul' | 'rotunjite' };
 
-/** Formularul offsetului ținut în browser; unul stricat lasă implicitele (5 mm spre exterior). */
+/** Formularul offsetului ținut în browser; unul stricat lasă implicitele (5 mm spre exterior, colțurile ca originalul). */
 function offsetSalvat(): FormularOffset {
+  const implicit: FormularOffset = { distanta: '5', sens: 'exterior', colturi: 'ca-originalul' };
   try {
     const x: unknown = JSON.parse(citeste(CHEIE_OFFSET) ?? 'null');
-    if (typeof x !== 'object' || x === null) return { distanta: '5', sens: 'exterior' };
+    if (typeof x !== 'object' || x === null) return implicit;
     const o = x as Record<string, unknown>;
-    return { distanta: typeof o.distanta === 'string' ? o.distanta : '5', sens: o.sens === 'interior' ? 'interior' : 'exterior' };
+    return {
+      distanta: typeof o.distanta === 'string' ? o.distanta : '5', sens: o.sens === 'interior' ? 'interior' : 'exterior',
+      colturi: o.colturi === 'rotunjite' ? 'rotunjite' : 'ca-originalul',
+    };
   } catch {
-    return { distanta: '5', sens: 'exterior' };
+    return implicit;
   }
 }
 
@@ -92,6 +96,7 @@ function formularSalvat(): FormularRetea {
     return {
       fel: o.fel === 'cerc' || o.fel === 'curba' ? o.fel : 'grila', coloane: text('coloane'), randuri: text('randuri'), spatiuX: text('spatiuX'), spatiuY: text('spatiuY'),
       numar: text('numar'), centruX: text('centruX'), centruY: text('centruY'), unghi: text('unghi'), roteste: o.roteste !== false, copiiCurba: text('copiiCurba'),
+      pozitieCurba: o.pozitieCurba === 'stanga' || o.pozitieCurba === 'dreapta' ? o.pozitieCurba : 'centru', distantaCurba: text('distantaCurba'),
     };
   } catch {
     return FORMULAR_RETEA;
@@ -191,11 +196,21 @@ export type ProprietatiEditare = {
   readonly onDesen: (f: GestDesen | null) => void;
   /** Testul pas cu pas (ADR 0072): doar pe instanța de test (și local), cu versiunea și instanța pentru raport. */
   readonly test?: { readonly versiune: string; readonly instanta: string };
+  /** Se poate reface un pas al proiectului (Ctrl+Shift+Z redeschide un desen Pen doar dacă nu, ADR 0074 §4). */
+  readonly reface?: boolean;
 };
 
 export function Editare(p: ProprietatiEditare): ReactElement | null {
   useLimba();
   const { doc, selectie, cutie, vedere, marime, ruleaza, onLipeste, onDesen } = p;
+  // Ultimul desen al Pen-ului (ADR 0074 §4): pașii lui și proiectul de dinainte / de după, ca Ctrl+Shift+Z să-l redeschidă.
+  const ultimulPen = useRef<{ readonly desen: DesenPen; readonly inainte: Document; dupa: Document | null } | null>(null);
+  useEffect(() => {
+    const u = ultimulPen.current;
+    if (u && u.dupa === null && doc !== u.inainte) u.dupa = doc;
+  }, [doc]);
+  // Desenul redeschis intră o singură dată în Pen (la schimbarea cheii); după, Pen-ul pornește gol.
+  const [penRedeschis, setPenRedeschis] = useState<{ readonly cheie: number; readonly desen: DesenPen | null }>({ cheie: 0, desen: null });
   const foaie = doc.foi[FOAIA];
   const ghidaje = useMemo(() => foaie?.ghidaje ?? [], [foaie]);
   const [lipire, setLipire] = useState(() => citeste(CHEIE_LIPIRE) !== '0');
@@ -214,6 +229,10 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
 
   // Uneltele de desen (ADR 0051): unealta aleasă rămâne după o formă; capetele gestului se lipesc ca puncte.
   const [unealta, setUnealta] = useState<Unealta>('selectie');
+  // Altă unealtă: un desen redeschis și lăsat nu mai vine înapoi la întoarcerea în Pen.
+  useEffect(() => {
+    if (unealta !== 'pen') setPenRedeschis((x) => (x.desen ? { cheie: x.cheie, desen: null } : x));
+  }, [unealta]);
   const [laturi, setLaturi] = useState(() => {
     const n = Number(citeste(CHEIE_LATURI));
     return Number.isInteger(n) && n >= LATURI_MIN && n <= LATURI_MAX ? n : 6;
@@ -263,7 +282,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const rezOffset = useMemo(() => {
     if (!panouOffset || modOffset === null || modOffset === 'eroare') return null;
     const d = citesteNumar(formOffset.distanta);
-    return d === null ? ('distanta' as const) : modOffset.offsetSelectie(doc, selectie, formOffset.sens === 'exterior' ? d : -d);
+    return d === null ? ('distanta' as const) : modOffset.offsetSelectie(doc, selectie, formOffset.sens === 'exterior' ? d : -d, formOffset.colturi);
   }, [panouOffset, modOffset, formOffset, doc, selectie]);
   // Manualul deschis, cu ușa de la deschidere (capitolul ei); `null`: închis.
   const [manual, setManual] = useState<{ readonly usa: string | null } | null>(null);
@@ -662,8 +681,21 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           lipire={(alt) => (lipire !== alt
             ? (q) => lipeste(tinteToate, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
             : null)}
-          onLinii={setLiniiManere}
-          termina={(f) => { ruleaza('document.deseneaza', { formaNoua: () => f }); }} />
+          onLinii={setLiniiManere} key={penRedeschis.cheie} initial={penRedeschis.desen}
+          termina={(f, desen) => {
+            ultimulPen.current = { desen, inainte: doc, dupa: null };
+            setPenRedeschis((x) => (x.desen ? { cheie: x.cheie, desen: null } : x));
+            ruleaza('document.deseneaza', { formaNoua: () => f });
+          }}
+          redeschide={() => {
+            // Doar imediat după desen: proiectul e cel lăsat de el și nu e nimic de refăcut (altfel Ctrl+Shift+Z reface).
+            const u = ultimulPen.current;
+            if (!u || u.dupa !== doc || p.reface === true) return false;
+            ultimulPen.current = null;
+            ruleaza('istoric.anuleaza', {});
+            setPenRedeschis((x) => ({ cheie: x.cheie + 1, desen: u.desen }));
+            return true;
+          }} />
       ) : null}
       {traseu && deseneaza(unealta) && !vedere3d ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="desen-previzualizare">
@@ -1233,6 +1265,9 @@ function IconaTipNod({ tip }: { readonly tip: TipCerut }): ReactElement {
   return <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">{desen[tip]}</svg>;
 }
 
+/** Un desen al Pen-ului (ADR 0074 §4): nodurile și pașii lui (nodurile dinaintea fiecărui pas), ca să poată fi redeschis. */
+type DesenPen = { readonly noduri: readonly NodCuManere[]; readonly trecut: ReadonlyArray<readonly NodCuManere[]> };
+
 /** Cât de aproape (px pe ecran) de un nod prinde un clic al uneltei Pen. */
 const RAZA_NOD_PX = 6;
 
@@ -1240,24 +1275,35 @@ const RAZA_NOD_PX = 6;
  * Unealta Pen (ADR 0063): calea pusă nod cu nod, cu tipurile comune uneltei Noduri. Clic = colț; tragere = curbă pe ambele
  * părți (mânerele în oglindă); Shift + tragere = curbă doar înainte (segmentul care vine intră drept). Clic pe ultimul nod îi
  * scoate mânerul de înainte (curba rămâne doar înapoi), tragerea din el îi pune unul nou; clic pe primul nod închide calea
- * (tragerea de acolo îi pune mânerele); Enter sau dublu clic o termină deschisă; Backspace scoate ultimul nod; Esc renunță.
- * Nodurile se lipesc (Alt inversează), mânerele nu. Forma pleacă prin `document.deseneaza`; apăsările pe pânză sunt ale
- * Pen-ului (nu aleg și nu mută), afară de deplasarea cu Space.
+ * (tragerea de acolo îi pune mânerele, cu calea închisă arătată cât tragi; Shift schimbă doar curba de închidere); dublu
+ * clic o închide (ADR 0074 §4), Enter o termină deschisă; Backspace scoate ultimul nod; Esc renunță. Ctrl+Z anulează ultimul
+ * pas al desenului, Ctrl+Y / Ctrl+Shift+Z îl reface; imediat după un desen terminat, fără nimic de refăcut în proiect,
+ * Ctrl+Shift+Z îl redeschide (`redeschide`), cu pașii lui. Nodurile se lipesc (Alt inversează), mânerele nu. Forma pleacă prin
+ * `document.deseneaza`; apăsările pe pânză sunt ale Pen-ului (nu aleg și nu mută), afară de deplasarea cu Space.
  */
-function Pen({ vedere, marime, zona, lipire, onLinii, termina }: {
+function Pen({ vedere, marime, zona, lipire, onLinii, termina, initial, redeschide }: {
   readonly vedere: Vedere;
   readonly marime: { readonly latime: number; readonly inaltime: number };
   readonly zona: Zona;
   readonly lipire: (alt: boolean) => ((p: Punct) => ReturnType<typeof lipeste>) | null;
   readonly onLinii: (l: readonly LinieGhid[]) => void;
-  readonly termina: (f: FormaDesenata) => void;
+  /** Desenul terminat, cu nodurile și pașii lui (pentru redeschidere). */
+  readonly termina: (f: FormaDesenata, desen: DesenPen) => void;
+  /** Un desen redeschis: nodurile și pașii lui; altfel null. */
+  readonly initial: DesenPen | null;
+  /** Ctrl+Shift+Z fără nimic desenat: redeschide ultimul desen, dacă se poate (true: s-a redeschis). */
+  readonly redeschide: () => boolean;
 }): ReactElement {
-  const [noduri, setNoduri] = useState<readonly NodCuManere[]>([]);
+  const [noduri, setNoduri] = useState<readonly NodCuManere[]>(() => initial?.noduri ?? []);
+  // Cât tragi din primul nod: calea se arată închisă.
+  const [inchidere, setInchidere] = useState(false);
   // Punctul de sub maus (în lume, lipit), pentru segmentul următor; `null` cât se trage sau în afara pânzei.
   const [cursor, setCursor] = useState<Punct | null>(null);
   const radacina = useRef<HTMLDivElement | null>(null);
-  const acum = useRef({ noduri, vedere, lipire, onLinii, termina });
-  acum.current = { ...acum.current, vedere, lipire, onLinii, termina };
+  const acum = useRef({ noduri, vedere, lipire, onLinii, termina, redeschide });
+  acum.current = { ...acum.current, vedere, lipire, onLinii, termina, redeschide };
+  // Pașii desenului (ADR 0074 §4): nodurile dinaintea fiecărui pas (un clic sau o tragere, Backspace) și cei anulați.
+  const pasi = useRef<{ trecut: Array<readonly NodCuManere[]>; viitor: Array<readonly NodCuManere[]> }>({ trecut: [...(initial?.trecut ?? [])], viitor: [] });
   useEffect(() => {
     const el = radacina.current;
     const panza = el?.closest('.panza-cutie')?.querySelector<HTMLCanvasElement>('canvas.panza');
@@ -1282,11 +1328,15 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina }: {
       if (!r || r.linii.length === 0) return { q: { x: rot(w.x), y: rot(w.y) }, linii: [] };
       return { q: { x: r.linii.some((x) => x.axa === 'x') ? w.x + r.dx : rot(w.x), y: r.linii.some((x) => x.axa === 'y') ? w.y + r.dy : rot(w.y) }, linii: r.linii };
     };
+    /** Un pas nou al desenului: nodurile de dinainte intră în trecut, cei anulați se uită. */
+    const pas = (n: readonly NodCuManere[]): void => { pasi.current.trecut.push(n); pasi.current.viitor = []; };
     const gata = (inchis: boolean, n: readonly NodCuManere[]): void => {
       const f = formaPen(n, inchis);
-      if (f) acum.current.termina(f);
+      if (f) acum.current.termina(f, { noduri: n, trecut: [...pasi.current.trecut] });
+      pasi.current = { trecut: [], viitor: [] };
       scrie([]);
       setCursor(null);
+      setInchidere(false);
       acum.current.onLinii([]);
     };
     const apasa = (e: PointerEvent): void => {
@@ -1298,6 +1348,7 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina }: {
       const prim = n[0], ultim = n[n.length - 1];
       const ecranul = { x: e.clientX, y: e.clientY };
       setCursor(null);
+      pas(n);
       if (prim && n.length >= 2 && aproape(prim.p, p)) {
         g = { id: e.pointerId, a: prim.p, ecran: ecranul, fel: 'primul', nod: prim, tras: false };
       } else if (ultim && aproape(ultim.p, p)) {
@@ -1326,8 +1377,10 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina }: {
       if (g.fel === 'nou') scrie([...n.slice(0, -1), nodPus(g.a, b, e.shiftKey)]);
       else if (g.fel === 'ultimul' && g.nod) scrie([...n.slice(0, -1), { ...g.nod, inainte: b }]);
       else if (g.fel === 'primul' && g.nod) {
-        const m = nodPus(g.a, b, e.shiftKey);
-        scrie([{ ...m, inapoi: e.shiftKey ? g.nod.inapoi : m.inapoi }, ...n.slice(1)]);
+        // Mânerele primului nod, în oglindă; cu Shift doar cel de înapoi, al curbei de închidere (primul segment rămâne).
+        const m = nodPus(g.a, b, false);
+        setInchidere(true);
+        scrie([e.shiftKey ? { ...g.nod, inapoi: m.inapoi } : m, ...n.slice(1)]);
       }
     };
     const elibereaza = (e: PointerEvent): void => {
@@ -1336,29 +1389,59 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina }: {
       g = null;
       acum.current.onLinii([]);
       const n = acum.current.noduri;
+      setInchidere(false);
       if (x.fel === 'ultimul' && !x.tras && x.nod) scrie([...n.slice(0, -1), { ...x.nod, inainte: null }]);
       else if (x.fel === 'primul' && sePoateInchide(n)) gata(true, n);
     };
+    // Dublu clic: calea se închide pe primul nod (ADR 0074 §4); cu prea puține noduri ca să se închidă, rămâne deschisă.
     const dublu = (e: MouseEvent): void => {
-      if (e.target !== panza || acum.current.noduri.length === 0) return;
+      const n = acum.current.noduri;
+      if (e.target !== panza || n.length === 0) return;
       e.preventDefault();
       e.stopPropagation();
-      gata(false, acum.current.noduri);
+      gata(sePoateInchide(n), n);
     };
     const tasta = (e: KeyboardEvent): void => {
       if (e.code === 'Space') spatiu = e.type === 'keydown';
       const n = acum.current.noduri;
-      if (e.type !== 'keydown' || n.length === 0 || e.ctrlKey || e.metaKey) return;
+      if (e.type !== 'keydown') return;
       const tinta = e.target;
       if (tinta instanceof Element && tinta.closest('input, textarea, select, [contenteditable="true"], [role="dialog"], dialog') !== null) return;
-      if (e.key !== 'Enter' && e.key !== 'Escape' && e.key !== 'Backspace' && e.key !== 'Delete') return;
+      if (e.ctrlKey || e.metaKey) {
+        // Anularea și refacerea sunt ale desenului cât are pași; fără nimic desenat, Ctrl+Shift+Z poate redeschide ultimul desen.
+        const k = e.key.toLowerCase(), p = pasi.current;
+        const anuleaza = k === 'z' && !e.shiftKey, reface = (k === 'z' && e.shiftKey) || (k === 'y' && !e.shiftKey);
+        if (!anuleaza && !reface) return;
+        let al = false;
+        if (anuleaza && n.length > 0) {
+          const inainte = p.trecut.pop();
+          p.viitor.push(n);
+          scrie(inainte ?? []);
+          al = true;
+        } else if (reface && p.viitor.length > 0) {
+          p.trecut.push(n);
+          scrie(p.viitor.pop() ?? n);
+          al = true;
+        } else if (reface && n.length > 0) al = true;
+        else if (k === 'z' && e.shiftKey && n.length === 0) al = acum.current.redeschide();
+        if (!al) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        g = null;
+        setCursor(null);
+        return;
+      }
+      if (n.length === 0 || (e.key !== 'Enter' && e.key !== 'Escape' && e.key !== 'Backspace' && e.key !== 'Delete')) return;
       // Cât e o cale începută, tastele sunt ale ei: Esc nu schimbă unealta, Delete nu șterge selecția.
       e.preventDefault();
       e.stopImmediatePropagation();
       g = null;
       if (e.key === 'Enter') gata(false, n);
       else if (e.key === 'Escape') gata(false, []);
-      else scrie(n.slice(0, -1));
+      else {
+        pas(n);
+        scrie(n.slice(0, -1));
+      }
     };
     const anuleaza = (): void => { g = null; acum.current.onLinii([]); };
     const iese = (): void => { if (!g) setCursor(null); };
@@ -1401,7 +1484,7 @@ function Pen({ vedere, marime, zona, lipire, onLinii, termina }: {
     <div className="pen" ref={radacina} data-testid="pen" data-noduri={noduri.length}>
       {noduri.length > 0 ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true">
-          <path className="drum-pen" d={drumSvg(conturNoduri(caleDinNoduri(noduri, false), IDENTITATE), vedere)} />
+          <path className="drum-pen" d={drumSvg(conturNoduri(caleDinNoduri(noduri, inchidere && sePoateInchide(noduri)), IDENTITATE), vedere)} />
           {elastic ? <path className="pen-elastic" d={elastic} /> : null}
           {ultim ? (['inapoi', 'inainte'] as const).map((k) => {
             const q = ultim[k];
@@ -1479,7 +1562,7 @@ function PanouRetea({ form, onForm, foaie, curba, motivActiune, onCopiaza, onInc
     const m = motivActiune(r);
     return m === 'motiv.nicio-selectie' ? t('editare.retea.nicio-selectie') : m ? t(m) : null;
   })();
-  const camp = (k: 'coloane' | 'randuri' | 'spatiuX' | 'spatiuY' | 'numar' | 'centruX' | 'centruY' | 'unghi' | 'copiiCurba', eticheta: string, loc?: string): ReactElement => (
+  const camp = (k: 'coloane' | 'randuri' | 'spatiuX' | 'spatiuY' | 'numar' | 'centruX' | 'centruY' | 'unghi' | 'copiiCurba' | 'distantaCurba', eticheta: string, loc?: string): ReactElement => (
     <label className="camp-retea">
       <span>{eticheta}</span>
       <input value={form[k]} inputMode="decimal" placeholder={loc} data-retea={k} onChange={(e) => { onForm({ ...form, [k]: e.target.value }); }} />
@@ -1515,6 +1598,16 @@ function PanouRetea({ form, onForm, foaie, curba, motivActiune, onCopiaza, onInc
             <input type="checkbox" checked={form.roteste} data-retea="roteste" onChange={(e) => { onForm({ ...form, roteste: e.target.checked }); }} />
             <span>{t('editare.retea.roteste-curba')}</span>
           </label>
+          {/* Poziția față de curbă (ADR 0074 §3): pe ea (centrul), la stânga sau la dreapta mersului, și distanța. */}
+          <div className="fel-retea" role="radiogroup" aria-label={t('editare.retea.pozitie-curba')}>
+            {(['centru', 'stanga', 'dreapta'] as const).map((k) => (
+              <button key={k} type="button" role="radio" aria-checked={form.pozitieCurba === k} aria-pressed={form.pozitieCurba === k} data-retea-pozitie={k}
+                title={t(`editare.retea.pozitie-curba.${k}.titlu`)} onClick={() => { onForm({ ...form, pozitieCurba: k }); }}>
+                {t(`editare.retea.pozitie-curba.${k}`)}
+              </button>
+            ))}
+          </div>
+          {camp('distantaCurba', t(form.pozitieCurba === 'centru' ? 'editare.retea.distanta-centru' : 'editare.retea.distanta-curba'))}
           <p className="nota-retea">{t('editare.retea.curba-ales')}</p>
         </div>
       ) : (
@@ -1583,6 +1676,15 @@ function PanouOffset({ form, onForm, rez, motivActiune, onAplica, onInchide }: {
           <span>{t('editare.offset.distanta')}</span>
           <input value={form.distanta} inputMode="decimal" data-offset="distanta" onChange={(e) => { onForm({ ...form, distanta: e.target.value }); }} />
         </label>
+      </div>
+      {/* Colțurile (ADR 0074 §2): implicit ca la original; rotunjite cu raza egală cu distanța, în ambele sensuri. */}
+      <div className="fel-retea" role="radiogroup" aria-label={t('editare.offset.colturi')}>
+        {(['ca-originalul', 'rotunjite'] as const).map((k) => (
+          <button key={k} type="button" role="radio" aria-checked={form.colturi === k} aria-pressed={form.colturi === k} data-offset-colturi={k}
+            title={t(`editare.offset.colturi.${k}.titlu`)} onClick={() => { onForm({ ...form, colturi: k }); }}>
+            {t(`editare.offset.colturi.${k}`)}
+          </button>
+        ))}
       </div>
       {gata && gata.sarite > 0 ? <p className="motiv-retea" data-testid="offset-sarite">{t('editare.offset.sarite', { n: String(gata.sarite) })}</p> : null}
       {motiv ? <p className="motiv-retea" role="status" data-testid="motiv-offset">{motiv}</p> : null}

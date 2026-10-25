@@ -99,10 +99,16 @@ părți sau doar pe o parte; tipurile sunt aceleași ca în unealta [Noduri](#no
 - **Tragere**: un nod cu **curbă pe ambele părți**; tragi mânerul de înainte, iar cel de înapoi stă în oglindă (nodul e neted).
 - **Shift + tragere**: **curbă pe o parte**, doar înainte: linia care vine intră dreaptă în nod, segmentul următor face curbă.
 - **Clic pe ultimul nod**: îi scoate mânerul de înainte (curba rămâne doar înapoi); o tragere din el îi pune unul nou.
-- **Clic pe primul nod** închide calea (o tragere de acolo îi pune mânerele primului nod). O cale închisă are cel puțin trei
+- **Clic pe primul nod** închide calea. O tragere de acolo îi pune mânerele primului nod, cu calea închisă arătată cât tragi;
+  cu **Shift**, se schimbă doar curba care închide (primul segment rămâne cum l-ai desenat). O cale închisă are cel puțin trei
   noduri, sau două cu o curbă între ele.
-- **Enter** sau **dublu clic** termină calea deschisă; **Backspace** (sau Delete) scoate ultimul nod pus; **Esc** renunță la
-  calea începută (încă un Esc întoarce la Selecție).
+- **Dublu clic** pune ultimul nod și închide calea pe primul (cu prea puține noduri ca să se închidă, o termină deschisă);
+  **Enter** termină calea deschisă; **Backspace** (sau Delete) scoate ultimul nod pus; **Esc** renunță la calea începută (încă
+  un Esc întoarce la Selecție).
+- **Ctrl+Z** cât desenezi anulează ultimul pas al căii (un nod, o tragere), nu ce era pe planșă înainte; **Ctrl+Y** (sau
+  Ctrl+Shift+Z) îl reface. După ce ai terminat, Ctrl+Z anulează pe planșă, ca de obicei. **Ctrl+Shift+Z imediat după** ce ai
+  terminat o cale (fără nimic de refăcut pe planșă) o redeschide, cu pașii ei: Ctrl+Z îi anulează pe rând, iar terminarea o pune
+  din nou. Lăsată cu Esc, calea redeschisă se întoarce cu Ctrl+Y.
 
 Nodurile se lipesc ca orice altceva (vezi Lipire în [Pânza](#panza)); mânerele nu. Segmentul următor se vede punctat până la
 maus. Forma terminată e aleasă, cu operația implicită a unei căi (vezi [Desenul](#desen)): închisă, o insulă; deschisă, tăiată
@@ -176,17 +182,23 @@ singur pas de anulare. Copiile sunt piese independente (ca la Duplică): fiecare
 - **Pe curbă**: alege formele de copiat, apoi curba (o linie, o cale, un cerc, un dreptunghi), cu Shift + clic: curba e ultima
   formă aleasă. **Câte copii pe curbă** (1–1000) se așază la distanțe egale pe lungimea ei, cu centrul cutiei formelor pe
   curbă: pe o curbă deschisă, de la un capăt la celălalt; pe una închisă, de jur împrejur, de la primul ei vârf. **Rotește
-  copiile după curbă** le întoarce după direcția curbei în fiecare loc (o formă desenată „spre dreapta” o urmează). Originalele
-  și curba rămân pe loc; curba nu se copiază. Curba trebuie să fie o singură formă (nu o piesă cu mai multe contururi).
+  copiile după curbă** le întoarce după direcția curbei în fiecare loc (o formă desenată „spre dreapta” o urmează). **Față de
+  curbă**: **Pe ea** (centrul pe curbă; o distanță îl mută spre stânga mersului curbei, una negativă spre dreapta), **La stânga**
+  sau **La dreapta** (formele lângă curbă, de acea parte, privind în sensul ei, cu punctul cel mai apropiat la distanța scrisă:
+  0 = tangente). Un dreptunghi sau un cerc desenat merge în sens trigonometric, deci „la stânga” e înăuntru. Originalele și
+  curba rămân pe loc; curba nu se copiază. Curba trebuie să fie o singură formă (nu o piesă cu mai multe contururi).
 
 Cât panoul e deschis, copiile se văd pe pânză, punctat. Dacă rețeaua nu se poate face (valori greșite, nimic ales, proiectul
 la plafon, copii prea departe), panoul spune de ce, iar Copiază rămâne inactiv. După copiere sunt alese originalul și copiile.
 
 **Offset** (în extensia barei, lângă Copiere, butonul cu un pătrat într-un contur punctat) desenează un contur paralel cu
 fiecare formă închisă aleasă, la distanța scrisă (mm, între 0,01 și 1000), **spre exterior** sau **spre interior**. Conturul
-vine din același motor ca tăierea: exact, din linii și arce; colțurile ocolite se rotunjesc cu raza egală cu distanța (spre
-exterior, colțurile ieșite; spre interior, cele intrânde), iar celelalte rămân ascuțite. Fiecare formă se decalează după interiorul ei (la o piesă cu mai multe contururi, fiecare
-contur separat), iar un contur care se rupe în bucăți dă mai multe forme. Formele noi sunt căi independente, cu operația lor
+vine din același motor ca tăierea, exact, din linii și arce. **Colțurile:**
+- **Ca originalul** (implicit): un colț ascuțit rămâne ascuțit, cu laturile prelungite până se întâlnesc. Un colț mai ascuțit
+  de ~11° rămâne rotunjit (altfel vârful ar fugi departe de formă), la fel unul care s-ar apropia de altă parte a formei.
+- **Rotunjite**: fiecare colț se rotunjește cu raza egală cu distanța, în ambele sensuri. Pe un dreptunghi, și spre interior.
+
+Fiecare formă se decalează după interiorul ei (la o piesă cu mai multe contururi, fiecare contur separat), iar un contur care se rupe în bucăți dă mai multe forme. Formele noi sunt căi independente, cu operația lor
 implicită, alese după Aplică; originalele rămân, iar totul e un singur pas de anulare.
 - Cât panoul e deschis, contururile noi se văd pe pânză, punctat.
 - Formele deschise alese se sar (panoul spune câte); doar deschise, offsetul nu se poate face.
@@ -226,14 +238,16 @@ Unealta **Noduri** (`N`) arată nodurile (vârfurile) formei alese și le schimb
 **Tipul nodului.** Un nod e un colț (pătrat pe pânză) sau face curbă (rotund), pe ambele părți sau doar pe o parte, ca în
 unealta [Pen](#pen). Nodul ales își arată mânerele; butoanele din bara de sus, de lângă unelte, îi schimbă tipul:
 - **Colț**: scoate mânerele (o curbă rămasă fără mânere redevine linie);
-- **Curbă pe ambele părți**: pune mânerele pe aceeași dreaptă (nodul devine neted), cele noi pe bisectoarea direcțiilor din nod,
-  cât o treime din segmentul lor;
+- **Curbă pe ambele părți**: pune mânerele pe aceeași dreaptă, pe bisectoarea direcțiilor din nod, și cu aceeași lungime
+  (nodul devine neted): media celor două, lungimea celui care există, sau, fără niciunul, câte o treime din segmentul lui. Pe un
+  nod cu mânerele despărțite, le unește din nou;
 - **Curbă pe o parte**: păstrează mânerul de înainte (sau pune unul în prelungirea liniei care vine, ca linia să intre lin în
   curbă) și îl scoate pe celălalt; încă un clic trece curba pe cealaltă parte.
 
 **Trage un mâner** ca să schimbi curba; pe un nod neted, mânerul de pe cealaltă parte se rotește odată cu el (își păstrează
-lungimea). Cu `Alt`, mânerele se despart (nodul rămâne curbă pe ambele părți, dar cu un colț). Capătul unei căi deschise are o
-singură parte.
+lungimea). Cu `Alt`, mânerele se despart (nodul rămâne curbă pe ambele părți, dar cu un colț); pe mânerele despărțite, `Alt`
+le unește din nou: celălalt devine oglinda celui tras, pe aceeași dreaptă și cu aceeași lungime. Capătul unei căi deschise are
+o singură parte.
 
 **Orice nod, din orice unealtă.** Un nod de pe un arc (cercul, colțurile rotunjite, rezultatele offsetului și ale booleanului) e
 și el o curbă (rotund), iar mânerele lui sunt tangentele arcului. Când îi schimbi tipul sau îi tragi un mâner, arcul vecin
@@ -410,8 +424,10 @@ după reîncărcare; **Începe din nou** le șterge, după o confirmare.
 | `Alt`, cât tragi | inversează lipirea |
 | `Delete`, `Backspace` (cu unealta Noduri și un nod ales) | scoate nodul ales |
 | `Enter` (cu unealta Pen) | termină calea începută |
+| `Ctrl+Z`, `Ctrl+Y` (cu unealta Pen și o cale începută) | anulează / reface ultimul pas al căii |
+| `Ctrl+Shift+Z` (imediat după o cale terminată cu Pen) | redeschide calea, cu pașii ei |
 | `Backspace`, `Delete` (cu unealta Pen și o cale începută) | scoate ultimul nod pus |
-| `Alt`, cât tragi un mâner (unealta Noduri) | desparte mânerele nodului |
+| `Alt`, cât tragi un mâner (unealta Noduri) | desparte mânerele nodului; pe cele despărțite, le unește din nou |
 | `Esc` | anulează forma sau calea începută, lasă nodul ales, întoarce la Selecție, închide vederea 3D și ferestrele |
 | `F1` | manualul, la capitolul de acum |
 

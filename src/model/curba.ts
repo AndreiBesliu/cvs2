@@ -9,7 +9,7 @@ import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import type { Document, Instanta } from './document.ts';
 import { conturElement, cutieElement } from './forme.ts';
 import { elementeFoaie } from './lume.ts';
-import type { CopieRetea } from './retea.ts';
+import type { CopieRetea, PozitieCurba } from './retea.ts';
 
 /** Un loc pe curbă: punctul și direcția tangentei (grade, trigonometric, în sensul curbei). */
 export type LocPeCurba = { readonly p: Punct; readonly unghi: number };
@@ -126,12 +126,50 @@ export function locuriPeCurba(c: Contur, numar: number): LocPeCurba[] {
 }
 
 /**
+ * Cât ajung contururile, de la punctul b, pe direcția unitară v (max ⟨p − b, v⟩ pe ele): exact pe linii (capetele), pe arce
+ * (și punctul cercului spre v, dacă e pe arc) și pe cubice (și rădăcinile lui ⟨B′(t), v⟩ = 0, o ecuație de gradul doi).
+ */
+export function suport(contururi: readonly Contur[], b: Punct, v: Punct): number {
+  let m = Number.NEGATIVE_INFINITY;
+  const ia = (p: Punct): void => { m = Math.max(m, (p.x - b.x) * v.x + (p.y - b.y) * v.y); };
+  for (const c of contururi) {
+    for (let i = 0; i < numarSegmente(c); i++) {
+      const { a, b: q, s } = segment(c, i);
+      ia(a);
+      ia(q);
+      if (s.tip === 'A' && Math.abs(s.bulge) > 1e-12) {
+        const { centru, raza, start, baleiaj } = cerculArcului(a, q, s.bulge);
+        // Unghiul lui v, dus de la start în sensul baleiajului: pe arc dacă e cel mult cât baleiajul.
+        const u = Math.atan2(v.y, v.x), doiPi = 2 * Math.PI;
+        const rel = (((baleiaj >= 0 ? u - start : start - u) % doiPi) + doiPi) % doiPi;
+        if (rel <= Math.abs(baleiaj)) ia({ x: centru.x + raza * v.x, y: centru.y + raza * v.y });
+      } else if (s.tip === 'C') {
+        const k = { a, c1: s.c1, c2: s.c2, b: q };
+        const d = (p: Punct, r: Punct): number => (r.x - p.x) * v.x + (r.y - p.y) * v.y;
+        const A0 = d(a, s.c1), A1 = d(s.c1, s.c2), A2 = d(s.c2, q);
+        const A = A0 - 2 * A1 + A2, B = 2 * (A1 - A0);
+        const radacini = Math.abs(A) < 1e-15 ? (Math.abs(B) < 1e-15 ? [] : [-A0 / B]) : (() => {
+          const disc = B * B - 4 * A * A0;
+          return disc < 0 ? [] : [(-B - Math.sqrt(disc)) / (2 * A), (-B + Math.sqrt(disc)) / (2 * A)];
+        })();
+        for (const t of radacini) if (t > 0 && t < 1) ia(peCubica(k, t));
+      }
+    }
+  }
+  return m;
+}
+
+/**
  * Pură: copiile selecției de-a lungul curbei `curba` (o instanță din selecție, cu o piesă dintr-un singur element), `numar`
  * copii, fiecare cu centrul cutiei formelor (fără curbă) într-un loc al curbei; cu `roteste`, rotită cu tangenta locului
  * (originalul stă cum e, deci o formă desenată „spre dreapta” urmează curba). Formele copiate sunt cele alese, fără curbă.
+ * Poziția (ADR 0074 §3): `centru` mută centrul cu `distanta` pe normala din stânga mersului; `stanga` / `dreapta` așază
+ * copia de acea parte, cu punctul ei cel mai apropiat de curbă (exact, pe contururi, cu rotirea copiei) la `distanta` de
+ * tangenta locului.
  */
 export function copiiPeCurba(
-  doc: Document, indexFoaie: number, selectie: readonly string[], r: { readonly curba: string; readonly numar: number; readonly roteste: boolean },
+  doc: Document, indexFoaie: number, selectie: readonly string[],
+  r: { readonly curba: string; readonly numar: number; readonly roteste: boolean; readonly pozitie?: PozitieCurba; readonly distanta?: number },
 ): { readonly copii: CopieRetea[]; readonly instante: Instanta[]; readonly cutie: Cutie } | MotivCurba {
   const foaie = doc.foi[indexFoaie];
   if (!foaie || !selectie.includes(r.curba) || !foaie.instante.some((i) => i.id === r.curba)) return 'curba';
@@ -143,8 +181,23 @@ export function copiiPeCurba(
   if (instante.length === 0) return 'fara-forme';
   const locuri = locuriPeCurba(conturElement(deCurba[0]!), r.numar);
   if (locuri.length === 0) return 'curba-scurta';
-  const cutie = elemente.filter((e) => forme.has(e.instanta)).map((e) => cutieElement(e)).reduce(uneste, CUTIE_GOALA);
+  const alese = elemente.filter((e) => forme.has(e.instanta));
+  const cutie = alese.map((e) => cutieElement(e)).reduce(uneste, CUTIE_GOALA);
   const b = { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 };
-  const copii = locuri.map((l) => ({ unghi: r.roteste ? l.unghi : 0, centru: b, dx: l.p.x - b.x, dy: l.p.y - b.y }));
+  const pozitie = r.pozitie ?? 'centru', distanta = r.distanta ?? 0;
+  const contururi = pozitie === 'centru' ? [] : alese.map((e) => conturElement(e));
+  const copii = locuri.map((l) => {
+    const unghi = r.roteste ? l.unghi : 0;
+    const u = (l.unghi * Math.PI) / 180, n = { x: -Math.sin(u), y: Math.cos(u) };
+    let s = distanta;
+    if (pozitie !== 'centru') {
+      // Cât ajunge copia spre curbă: suportul formelor pe direcția spre curbă, adusă în cadrul lor (rotirea copiei, inversă).
+      const semn = pozitie === 'stanga' ? 1 : -1, w = (-unghi * Math.PI) / 180;
+      const spre = { x: -semn * n.x, y: -semn * n.y };
+      const v = { x: spre.x * Math.cos(w) - spre.y * Math.sin(w), y: spre.x * Math.sin(w) + spre.y * Math.cos(w) };
+      s = semn * (suport(contururi, b, v) + distanta);
+    }
+    return { unghi, centru: b, dx: l.p.x - b.x + n.x * s, dy: l.p.y - b.y + n.y * s };
+  });
   return { copii, instante, cutie };
 }

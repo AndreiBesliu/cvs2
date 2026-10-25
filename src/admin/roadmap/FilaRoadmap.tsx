@@ -6,7 +6,7 @@ import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
 import type { AducatorDocumentatie } from '../documentatie/aducere.ts';
 import { legaturaDocument, legaturiSpreDocumente, type Deschide } from '../documentatie/legaturi.ts';
-import { etapaImplicita, interval, progresEtapa, reperLive } from './vedere.ts';
+import { aduseGata, etapaImplicita, interval, progresEtapa, reperLive } from './vedere.ts';
 import './roadmap.css';
 
 /**
@@ -145,6 +145,7 @@ function Legenda(): ReactElement {
       <li><span className="rm-semn rm-semn-placa" data-taiata="true" aria-hidden="true" />{t('admin.rm.leg.placa-taiata')}</li>
       <li><span className="rm-semn rm-semn-live" aria-hidden="true" />{t('admin.rm.leg.live')}</li>
       <li><span className="rm-semn rm-semn-reper" aria-hidden="true" />{t('admin.rm.leg.reper')}</li>
+      <li><span className="rm-aduse" aria-hidden="true">↑</span>{t('admin.rm.leg.aduse')}</li>
     </ul>
   );
 }
@@ -167,8 +168,10 @@ function Pista({ etape, ales, alege }: { readonly etape: readonly Etapa[]; reado
         const p = progresEtapa(e);
         const reper = e.areLive ? reperLive(e.live) : null;
         const progres = p.total > 0 ? `, ${t(p.fel === 'felii' ? 'admin.rm.progres' : 'admin.rm.progres-puncte', { gata: p.gata, n: p.total })}` : '';
+        const n = aduseGata(e);
         const eticheta = t('admin.rm.eticheta-etapa', {
-          nume: numeEtapa(e), s: e.saptamana, stare: textStare(e), progres, acum: e.curenta ? `, ${t('admin.rm.acum')}` : '',
+          nume: numeEtapa(e), s: e.saptamana, stare: textStare(e), progres, aduse: n > 0 ? `, ${t('admin.rm.aduse-n', { n })}` : '',
+          acum: e.curenta ? `, ${t('admin.rm.acum')}` : '',
         });
         return (
           <button
@@ -192,6 +195,7 @@ function Pista({ etape, ales, alege }: { readonly etape: readonly Etapa[]; reado
             <span className="rm-bara" aria-hidden="true"><span className="rm-umplere" style={umplere(p.total > 0 ? p.gata / p.total : 0)} /></span>
             <span className="rm-id" aria-hidden="true">{e.numar ?? e.id}</span>
             <span className="rm-semne" aria-hidden="true">
+              {n > 0 ? <span className="rm-aduse" data-rm="aduse">↑{n}</span> : null}
               {e.fisaPlacii ? <span className="rm-semn rm-semn-placa" data-taiata={e.placaTaiata !== null || undefined} /> : null}
               {e.areLive ? <span className={reper ? 'rm-semn rm-semn-reper' : 'rm-semn rm-semn-live'} /> : null}
             </span>

@@ -6,7 +6,7 @@ import { aplica } from '../geom/matrice.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
 import { conturElement, cutieElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
-import { motivRetea, type MotivRetea, type Retea } from '../model/retea.ts';
+import { motivRetea, type MotivRetea, type PozitieCurba, type Retea } from '../model/retea.ts';
 import type { Transformare } from '../model/transformare.ts';
 
 /** Ce poate da un mâner: rotirea sau scalarea (oglindirea și înclinarea au butoanele lor, ADR 0054, ADR 0065). */
@@ -223,10 +223,14 @@ export type FormularRetea = {
   readonly numar: string; readonly centruX: string; readonly centruY: string; readonly unghi: string; readonly roteste: boolean;
   /** Pe curbă (ADR 0066): câte copii se așază pe curbă (originalele rămân). */
   readonly copiiCurba: string;
+  /** Pe curbă (ADR 0074 §3): centrul pe ea sau formele lângă ea, la stânga / la dreapta, și distanța (mm, cu semn). */
+  readonly pozitieCurba: PozitieCurba;
+  readonly distantaCurba: string;
 };
 
 export const FORMULAR_RETEA: FormularRetea = {
   fel: 'grila', coloane: '3', randuri: '2', spatiuX: '10', spatiuY: '10', numar: '6', centruX: '', centruY: '', unghi: '360', roteste: true, copiiCurba: '5',
+  pozitieCurba: 'centru', distantaCurba: '0',
 };
 
 /**
@@ -237,7 +241,10 @@ export function citesteRetea(f: FormularRetea, foaie: { readonly latime: number;
   const n = (s: string, semn = false): number => citesteNumar(s, semn) ?? Number.NaN;
   const r: Retea = f.fel === 'grila'
     ? { fel: 'grila', coloane: n(f.coloane), randuri: n(f.randuri), spatiuX: n(f.spatiuX), spatiuY: n(f.spatiuY) }
-    : f.fel === 'curba' ? { fel: 'curba', curba: curba ?? '', numar: n(f.copiiCurba), roteste: f.roteste } : {
+    : f.fel === 'curba' ? {
+      fel: 'curba', curba: curba ?? '', numar: n(f.copiiCurba), roteste: f.roteste, pozitie: f.pozitieCurba,
+      distanta: f.distantaCurba.trim() === '' ? 0 : n(f.distantaCurba, true),
+    } : {
       fel: 'cerc', numar: n(f.numar), unghi: n(f.unghi), roteste: f.roteste,
       centru: { x: f.centruX.trim() === '' ? foaie.latime / 2 : n(f.centruX, true), y: f.centruY.trim() === '' ? foaie.inaltime / 2 : n(f.centruY, true) },
     };

@@ -97,6 +97,30 @@ test('mânerul tras pe un nod neted îl rotește pe celălalt (cu lungimea lui);
   assert.equal(mutaManer(patrat, 1, 'inainte', P(1, 1), false), patrat, 'un colț n-are mâner de tras');
 });
 
+test('ADR 0074 §5: pe mânerele despărțite, Alt le unește (oglinda celui tras); C le pune pe aceeași dreaptă, cu lungimea medie', () => {
+  const r = tip(patrat, 1, 'ambele');
+  const rupt = mutaManer(r, 1, 'inainte', P(40, 12), true);
+  assert.equal(neted(rupt, 1), false);
+  // Fără Alt, celălalt rămâne pe loc (despărțite); cu Alt, devine oglinda celui tras: aceeași dreaptă, aceeași lungime.
+  assert.deepEqual(manereNod(mutaManer(rupt, 1, 'inainte', P(38, 8), false), 1).inapoi, manereNod(rupt, 1).inapoi);
+  const unit = mutaManer(rupt, 1, 'inainte', P(38, 8), true);
+  aproape(manereNod(unit, 1).inainte, P(38, 8), 'mânerul tras');
+  aproape(manereNod(unit, 1).inapoi, P(22, -8), 'celălalt, oglinda lui față de nodul (30, 0)');
+  assert.ok(neted(unit, 1));
+  // C (curbă pe ambele părți) pe nodul despărțit: pe bisectoare, amândouă cu media lungimilor.
+  const m = manereNod(rupt, 1);
+  const la = Math.hypot(m.inainte!.x - 30, m.inainte!.y), li = Math.hypot(m.inapoi!.x - 30, m.inapoi!.y);
+  const c = tip(rupt, 1, 'ambele');
+  const n = manereNod(c, 1);
+  assert.ok(neted(c, 1));
+  for (const q of [n.inainte!, n.inapoi!]) assert.ok(Math.abs(Math.hypot(q.x - 30, q.y) - (la + li) / 2) < 1e-9, 'lungimea medie');
+  // Un singur mâner: celălalt primește lungimea lui.
+  const unul = tip(patrat, 1, 'o-parte');
+  const lu = Math.hypot(manereNod(unul, 1).inainte!.x - 30, manereNod(unul, 1).inainte!.y);
+  const doua = manereNod(tip(unul, 1, 'ambele'), 1);
+  for (const q of [doua.inainte!, doua.inapoi!]) assert.ok(Math.abs(Math.hypot(q.x - 30, q.y) - lu) < 1e-9, 'lungimea celui existent');
+});
+
 test('Pen: clicul pune un colț, tragerea mânerele în oglindă, Shift doar pe cel de înainte; forma pornește din primul nod', () => {
   assert.deepEqual(nodPus(P(5, 5), null, false), { p: P(5, 5), inapoi: null, inainte: null });
   assert.deepEqual(nodPus(P(5, 5), P(5, 5), false), { p: P(5, 5), inapoi: null, inainte: null }, 'fără tragere');

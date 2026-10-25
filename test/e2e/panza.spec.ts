@@ -69,10 +69,13 @@ test('clic, mutare prin tragere, anulare: totul prin acțiuni, cu poziția din l
   const box = await page.getByTestId('panza').boundingBox();
   if (!box) throw new Error('pânza n-are cutie');
   const ecran = (x: number, y: number) => ({ x: box.x + v.tx + x * v.scara, y: box.y + v.ty - y * v.scara });
-  // Clic pe marginea cercului (85, 50 mm), care e și înăuntrul dreptunghiului: cercul e cel de deasupra? Nu: ultimul
-  // adăugat e dreptunghiul, deci el e deasupra și e selectat.
+  // Clic pe marginea cercului (85, 50 mm), care e și înăuntrul dreptunghiului (adăugat după, deci deasupra): conturul cel mai
+  // apropiat câștigă (ADR 0074 §1), deci cercul; departe de cerc, înăuntrul dreptunghiului, dreptunghiul.
   const p = ecran(85, 50);
   await page.mouse.click(p.x, p.y);
+  await expect(page.getByTestId('selectie')).toContainText('cerc R15.00 cu centrul la X 70.00, Y 50.00');
+  const inDreptunghi = ecran(30, 30);
+  await page.mouse.click(inDreptunghi.x, inDreptunghi.y);
   await expect(page.getByTestId('selectie')).toContainText('dreptunghi 100.00 × 60.00 la X 20.00, Y 20.00');
   // Clic în afara oricărei forme: nimic selectat.
   const gol = ecran(250, 150);

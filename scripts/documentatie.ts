@@ -545,6 +545,14 @@ export function construiesteRoadmap(surse: SurseRoadmap): Roadmap {
     }
   }
 
+  // Feliile aduse, după feliile proprii, în ordinea în care s-au început: jurnalul unei fișe le ține în ordinea în care au
+  // fost scrise rândurile, nu a timpului. `Started` n-are anul (zz.ll hh:mm), deci ordinea e cea a zilelor din an.
+  const inceput = (r: Rand): number => {
+    const m = /^(\d{2})\.(\d{2})(?: (\d{2}):(\d{2}))?/.exec(r.jurnal?.started ?? '');
+    return m ? ((Number(m[2]) * 31 + Number(m[1])) * 24 + Number(m[3] ?? 0)) * 60 + Number(m[4] ?? 0) : Number.POSITIVE_INFINITY;
+  };
+  for (const [n, l] of randuri) randuri.set(n, [...l.filter((r) => !r.adusa), ...l.filter((r) => r.adusa).sort((a, b) => inceput(a) - inceput(b))]);
+
   const curenta = fise.at(-1)?.numar ?? null;
   const pozCurenta = planul.findIndex((e) => e.numar === curenta);
   const etape = planul.map((e, poz): Etapa => {

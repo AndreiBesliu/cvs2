@@ -51,6 +51,34 @@ test('cercul copiat de 4 ori pe linie: previzualizarea, copiile la pas egal, ale
   await expect(randuri(page)).toHaveCount(2);
 });
 
+test('față de curbă (ADR 0074 §3): la stânga, la 2 mm, cercurile R15 stau cu centrul la 15 + 2 deasupra liniei', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-editare="lipire"]').click();
+  await adauga(page, 'cerc');
+  await page.locator('[data-unealta="linie"]').click();
+  await trage(page, { x: 100, y: 150 }, { x: 250, y: 150 });
+  await page.locator('[data-unealta="selectie"]').click();
+  await randuri(page).first().click();
+  const pe = (await ecran(page, await vedere(page)))(175, 150);
+  await page.keyboard.down('Shift');
+  await page.mouse.click(pe.x, pe.y);
+  await page.keyboard.up('Shift');
+  await page.locator('[data-editare="retea"]').click();
+  await page.locator('[data-retea-fel="curba"]').click();
+  await page.locator('[data-retea="copiiCurba"]').fill('4');
+  await page.locator('[data-retea="roteste"]').uncheck();
+  await page.locator('[data-retea-pozitie="stanga"]').click();
+  await expect(page.locator('[data-retea-pozitie="stanga"]')).toHaveAttribute('aria-checked', 'true');
+  await page.locator('[data-retea="distantaCurba"]').fill('2');
+  await page.locator('[data-retea="distantaCurba"]').fill('abc');
+  await expect(page.getByTestId('motiv-retea')).toHaveText('Distanța față de curbă: un număr de la −10 000 la 10 000 mm.');
+  await page.locator('[data-retea="distantaCurba"]').fill('2');
+  await expect(page.getByTestId('motiv-retea')).toHaveCount(0);
+  await page.locator('[data-retea="copiaza"]').click();
+  await expect(randuri(page)).toHaveCount(6);
+  for (const x of ['100.00', '150.00', '200.00', '250.00']) await expect(page.getByTestId('lista-vectori')).toContainText(`X ${x}, Y 167.00`);
+});
+
 test('doar curba aleasă: motivul, Copiază oprit', async ({ page }) => {
   await page.goto('/');
   await adauga(page, 'dreptunghi');

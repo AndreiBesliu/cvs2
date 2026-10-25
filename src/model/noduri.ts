@@ -222,8 +222,8 @@ function puneManere(c: FormaCale, i: number, inapoi: Punct | null | undefined, i
 
 /**
  * Nodul `i` cu tipul cerut. Colțul scoate mânerele (o cubică rămasă fără ele redevine linie). Curba pe ambele părți pune
- * mânerele pe aceeași dreaptă: cele existente își păstrează lungimea, cele noi au o treime din coarda segmentului lor, pe
- * bisectoarea direcțiilor din nod. Curba pe o parte păstrează mânerul de pe partea ei (sau pune unul în prelungirea celeilalte
+ * mânerele pe aceeași dreaptă, pe bisectoarea direcțiilor din nod, și cu aceeași lungime (ADR 0074 §5): media celor două, sau
+ * lungimea celui care există; fără niciunul, câte o treime din coarda segmentului lui. Curba pe o parte păstrează mânerul de pe partea ei (sau pune unul în prelungirea celeilalte
  * părți, ca linia să intre lin în curbă) și îl scoate pe celălalt; cerută din nou, trece pe cealaltă parte. Un arc vecin pe
  * partea care ar primi un mâner refuză (arcul nu se aproximează), la fel o cerere imposibilă la capătul unei căi deschise.
  */
@@ -250,8 +250,10 @@ function tipFaraArce(c: FormaCale, i: number, tip: TipCerut): FormaCale | MotivT
     const tIn = ui ?? directieSosire(c, ji), tOut = uo ?? directieStart(c, jo);
     const d = (tIn && tOut ? unitar(tIn.x + tOut.x, tIn.y + tOut.y) : null) ?? tOut ?? tIn;
     if (!d) return c;
-    const lo = m.inainte ? Math.hypot(m.inainte.x - p.x, m.inainte.y - p.y) : coarda(c, jo) / 3;
-    const li = m.inapoi ? Math.hypot(m.inapoi.x - p.x, m.inapoi.y - p.y) : coarda(c, ji) / 3;
+    const lInainte = m.inainte ? Math.hypot(m.inainte.x - p.x, m.inainte.y - p.y) : null;
+    const lInapoi = m.inapoi ? Math.hypot(m.inapoi.x - p.x, m.inapoi.y - p.y) : null;
+    const comun = lInainte !== null && lInapoi !== null ? (lInainte + lInapoi) / 2 : lInainte ?? lInapoi;
+    const lo = comun ?? coarda(c, jo) / 3, li = comun ?? coarda(c, ji) / 3;
     return puneManere(c, i, { x: p.x - d.x * li, y: p.y - d.y * li }, { x: p.x + d.x * lo, y: p.y + d.y * lo });
   }
   // Pe o parte: partea de acum trece în cealaltă; din colț sau din ambele, înainte (dacă există).
@@ -344,18 +346,20 @@ export function neted(c: FormaCale, i: number): boolean {
 
 /**
  * Mânerul `parte` al nodului `i` dus în `la`. Pe un nod neted, mânerul de pe cealaltă parte se rotește odată cu el (își
- * păstrează lungimea), ca nodul să rămână neted; `rupe` (Alt) le desparte. Un mâner adus pe nod dispare (o cubică fără
- * mânere redevine linie). Fără mâner pe partea aceea: nimic.
+ * păstrează lungimea), ca nodul să rămână neted; `alt` (Alt) le desparte. Pe un nod cu mânerele despărțite, celălalt rămâne,
+ * iar `alt` le unește din nou (ADR 0074 §5): celălalt devine oglinda lui, pe aceeași dreaptă și cu aceeași lungime. Un mâner
+ * adus pe nod dispare (o cubică fără mânere redevine linie). Fără mâner pe partea aceea: nimic.
  */
-export function mutaManer(c: FormaCale, i: number, parte: ParteNod, la: Punct, rupe: boolean): FormaCale {
+export function mutaManer(c: FormaCale, i: number, parte: ParteNod, la: Punct, alt: boolean): FormaCale {
   const v = c.varfuri[i], m = manereNod(c, i);
   if (!v || !m[parte]) return c;
   const p = v.p;
   const celalalt = parte === 'inainte' ? m.inapoi : m.inainte;
   let opus: Punct | undefined;
-  if (!rupe && celalalt && neted(c, i)) {
+  if (celalalt && neted(c, i) !== alt) {
+    // Neted fără Alt: celălalt se rotește, cu lungimea lui. Despărțit cu Alt: celălalt e oglinda celui tras.
     const d = unitar(la.x - p.x, la.y - p.y);
-    const l = Math.hypot(celalalt.x - p.x, celalalt.y - p.y);
+    const l = alt ? Math.hypot(la.x - p.x, la.y - p.y) : Math.hypot(celalalt.x - p.x, celalalt.y - p.y);
     opus = d ? { x: p.x - d.x * l, y: p.y - d.y * l } : undefined;
   }
   const nou = egale(la, p) ? null : la;

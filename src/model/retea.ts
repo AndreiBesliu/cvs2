@@ -5,7 +5,9 @@
  * - **cercul**: `numar` de copii (cu originalul) în jurul unui centru, pe `unghi` grade (360: cercul întreg, pas egal; mai
  *   puțin: capetele incluse), cu sau fără rotirea copiilor (fără: fiecare copie doar se mută, cu centrul cutiei pe cerc).
  * - **curba** (ADR 0066): `numar` de copii la distanțe egale pe o curbă aleasă (`curba`, o instanță a selecției), cu sau fără
- *   rotirea după tangentă; originalele rămân. Locurile le dă `src/model/curba.ts` (au nevoie de document).
+ *   rotirea după tangentă; originalele rămân. Locurile le dă `src/model/curba.ts` (au nevoie de document). Poziția față de
+ *   curbă (ADR 0074 §3): centrul pe curbă (mutat cu `distanta` spre stânga mersului), sau formele lângă ea, la stânga ori la
+ *   dreapta, cu marginea cea mai apropiată la `distanta` de tangentă (0: tangente).
  * O copie e o mișcare rigidă: rotirea cu `unghi` în jurul lui `centru`, apoi translația (`dx`, `dy`).
  */
 import type { Cutie } from '../geom/cutie.ts';
@@ -16,7 +18,13 @@ export type Punct = { readonly x: number; readonly y: number };
 export type Retea =
   | { readonly fel: 'grila'; readonly coloane: number; readonly randuri: number; readonly spatiuX: number; readonly spatiuY: number }
   | { readonly fel: 'cerc'; readonly numar: number; readonly centru: Punct; readonly unghi: number; readonly roteste: boolean }
-  | { readonly fel: 'curba'; readonly curba: string; readonly numar: number; readonly roteste: boolean };
+  | {
+    readonly fel: 'curba'; readonly curba: string; readonly numar: number; readonly roteste: boolean;
+    readonly pozitie?: PozitieCurba; readonly distanta?: number;
+  };
+
+/** Unde stau copiile față de curbă: cu centrul pe ea, sau lângă ea, la stânga ori la dreapta mersului ei. */
+export type PozitieCurba = 'centru' | 'stanga' | 'dreapta';
 
 export type CopieRetea = { readonly unghi: number; readonly centru: Punct; readonly dx: number; readonly dy: number };
 
@@ -25,7 +33,7 @@ export const RETEA_MAXIM = 1000;
 /** Latura și spațiile, în mm (cât foaia cea mai mare). */
 const MAXIM_MM = 10_000;
 
-export type MotivRetea = 'grila' | 'spatiu' | 'numar' | 'unghi' | 'centru' | 'copii' | 'curba';
+export type MotivRetea = 'grila' | 'spatiu' | 'numar' | 'unghi' | 'centru' | 'copii' | 'curba' | 'distanta-curba';
 
 const intreg = (n: number, de: number, la: number): boolean => Number.isInteger(n) && n >= de && n <= la;
 
@@ -36,7 +44,11 @@ export function motivRetea(r: Retea): MotivRetea | null {
     if (![r.spatiuX, r.spatiuY].every((s) => Number.isFinite(s) && s >= 0 && s <= MAXIM_MM)) return 'spatiu';
     return null;
   }
-  if (r.fel === 'curba') return r.curba === '' ? 'curba' : intreg(r.numar, 1, RETEA_MAXIM) ? null : 'copii';
+  if (r.fel === 'curba') {
+    if (r.curba === '') return 'curba';
+    if (!intreg(r.numar, 1, RETEA_MAXIM)) return 'copii';
+    return r.distanta === undefined || (Number.isFinite(r.distanta) && Math.abs(r.distanta) <= MAXIM_MM) ? null : 'distanta-curba';
+  }
   if (!intreg(r.numar, 2, 360)) return 'numar';
   if (!(Number.isFinite(r.unghi) && r.unghi > 0 && r.unghi <= 360)) return 'unghi';
   if (![r.centru.x, r.centru.y].every((v) => Number.isFinite(v) && Math.abs(v) <= 1_000_000)) return 'centru';

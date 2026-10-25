@@ -4,8 +4,9 @@
  * Fiecare contur închis al selecției (în lume, cu matricea lui) se decalează separat, după interiorul lui; fiecare contur care
  * iese devine o formă nouă (o cale). Modulul se încarcă abia la deschiderea panoului: motorul nu intră în pornire.
  */
-import type { Contur } from '../geom/conturBaza.ts';
-import { offsetInchis, REZOLUTIE } from '../geom/offset.ts';
+import { aplicaColturi, type Colturi } from '../geom/colturi.ts';
+import { inSensTrigonometric, type Contur } from '../geom/contur.ts';
+import { curataIntrare, offsetInchis, REZOLUTIE } from '../geom/offset.ts';
 import type { Document, VarfDoc } from '../model/document.ts';
 import { conturElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
@@ -35,9 +36,10 @@ export function formaDinContur(k: Contur): FormaNoua {
 /**
  * Pură: offsetul formelor alese cu `distanta` mm (pozitivă spre exterior, negativă spre interior). Formele deschise se sar
  * (numărate); dacă nu rămâne nicio formă închisă, motivul. Un contur pe care motorul îl refuză oprește tot (nimic pe
- * jumătate): interiorul care dispare e „nu încape”, restul „a eșuat”.
+ * jumătate): interiorul care dispare e „nu încape”, restul „a eșuat”. Colțurile (ADR 0074 §2): implicit ca la original
+ * (ascuțite unde originalul e ascuțit), sau rotunjite cu raza egală cu distanța.
  */
-export function offsetSelectie(doc: Document, selectie: readonly string[], distanta: number): Offset | MotivOffset {
+export function offsetSelectie(doc: Document, selectie: readonly string[], distanta: number, colturi: Colturi = 'ca-originalul'): Offset | MotivOffset {
   if (selectie.length === 0) return 'nimic';
   const d = Math.abs(distanta);
   if (!Number.isFinite(distanta) || d < DISTANTA_MINIMA_OFFSET || d > DISTANTA_MAXIMA_OFFSET) return 'distanta';
@@ -54,7 +56,10 @@ export function offsetSelectie(doc: Document, selectie: readonly string[], dista
     }
     const r = offsetInchis(c, distanta);
     if (!r.ok) return r.motiv.startsWith('scula nu încape') ? 'nu-incape' : 'esuat';
-    for (const k of r.contururi) {
+    // Același original ca în motor (curățat, trigonometric): arcele de colț ale ieșirii stau în vârfurile lui.
+    const curat = curataIntrare(c);
+    const iesire = curat.ok ? aplicaColturi(inSensTrigonometric(curat.contur), distanta, r.contururi, colturi) : r.contururi;
+    for (const k of iesire) {
       forme.push(formaDinContur(k));
       contururi.push(k);
     }

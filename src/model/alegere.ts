@@ -1,3 +1,4 @@
+import { arieCuSemn } from '../geom/contur.ts';
 import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
 import type { Document } from './document.ts';
 import { conturElement, cutieElement } from './forme.ts';
@@ -14,11 +15,15 @@ import { elementeFoaie } from './lume.ts';
 const FOAIA = 0;
 
 /**
- * Instanța de sub un punct al documentului: cea al cărei element, cel mai de sus, are conturul la cel mult `toleranta` mm
- * sau punctul înăuntru (regula evenodd). Sau null.
+ * Instanța de sub un punct al documentului (ADR 0074 §1). Întâi conturul: cel mai apropiat dintre cele la cel mult
+ * `toleranta` mm (la egalitate, cel de deasupra). Altfel, interiorul: dintre formele închise care cuprind punctul (regula
+ * evenodd), cea mai mică, ca o formă dinăuntrul alteia să rămână de ales cu un clic (testul owner-ului: după un offset spre
+ * exterior, conturul nou, deasupra, prindea orice clic dinăuntru). Sau null.
  */
 export function instantaLa(doc: Document, x: number, y: number, toleranta: number): string | null {
   const lume = elementeFoaie(doc, FOAIA);
+  let peContur: { readonly id: string; readonly d: number } | null = null;
+  let inauntru: { readonly id: string; readonly arie: number } | null = null;
   for (let i = lume.length - 1; i >= 0; i--) {
     const e = lume[i];
     if (!e) continue;
@@ -26,7 +31,13 @@ export function instantaLa(doc: Document, x: number, y: number, toleranta: numbe
     const k = cutieElement(e);
     if (x < k.minX - toleranta || x > k.maxX + toleranta || y < k.minY - toleranta || y > k.maxY + toleranta) continue;
     const c = conturElement(e);
-    if (distantaLaContur({ x, y }, c) <= toleranta || inRegiune({ x, y }, [c])) return e.instanta;
+    const d = distantaLaContur({ x, y }, c);
+    if (d <= toleranta) {
+      if (!peContur || d < peContur.d) peContur = { id: e.instanta, d };
+    } else if (!peContur && c.inchis && inRegiune({ x, y }, [c])) {
+      const arie = Math.abs(arieCuSemn(c));
+      if (!inauntru || arie < inauntru.arie) inauntru = { id: e.instanta, arie };
+    }
   }
-  return null;
+  return peContur?.id ?? inauntru?.id ?? null;
 }

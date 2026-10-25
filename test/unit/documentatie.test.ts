@@ -164,6 +164,12 @@ test('feliile aduse înainte (↑) stau la etapa lor (4), cu punctul din §5.3 �
   assert.deepEqual(patru.puncte[0]?.felii, []);
   // Etapele cu fișă nu-și repetă punctele din plan: fișa le înlocuiește.
   assert.deepEqual(etapa('3').puncte, []);
+  // Etapa 6, fără puncte în §5.3: feliile aduse, în ordinea în care s-au început (jurnalul le ține altfel).
+  const sase = etapa('6');
+  assert.equal(sase.puncte.length, 0);
+  assert.deepEqual(sase.felii.slice(0, 8).map((x) => x.id), ['6.A↑', '6.B↑', '6.C↑', '6.D↑', '6.E↑', '6.F↑', '6.G↑', '6.H↑']);
+  assert.ok(sase.felii.every((x) => x.adusa && x.stare === 'gata'));
+  assert.deepEqual(etapa('14').felii.map((x) => x.id), ['14.A↑', '14.A↑b']);
 });
 
 test('o felie împărțită fără rând propriu ia starea din sub-felii (2.7 din 2.7a–d); sub-feliile își știu părintele', () => {

@@ -101,9 +101,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   ușa 98,6 / 100 kB (~1,4 kB liberi).
   **Testul pas cu pas, în aplicație (ADR 0072)** gata pe 25.10: butonul Test din extensie (în afara instanței live), pașii în
   `docs/tutorial/unelte-desen.md` (generați în `dist/tutorial/`), poza planșei compusă local, raportul HTML descărcat; totul în
-  browser (IndexedDB `cncvs2-test`); bucata `TestPasCuPas` e doar online, cu plafonul ei (12 kB), în afara celor 300 kB.
+  browser (IndexedDB `cncvs2-test`); bucata `TestPasCuPas` e doar online, cu plafonul ei (12 kB), în afara totalului (330 kB din 25.10, ADR 0075).
   **Tasta fiecărei unelte pe butonul ei** gata pe 25.10 (cererea owner-ului): litera în colțul dreapta-jos (`TASTA_UNELTEI`, din
   aceeași hartă ca scurtăturile).
+  **Testul owner-ului făcut pe 25.10** (29 de pași bine, 2 nemarcați). **Remedierile din notele lui (ADR 0074)** gata pe 25.10:
+  clicul alege conturul cel mai apropiat, apoi forma cea mai mică; colțurile offsetului din desen ca originalul (implicit) sau
+  rotunjite (`src/geom/colturi.ts`); copierea pe curbă pe ea / la stânga / la dreapta; Pen: dublu clic închide, anularea în
+  desen, Ctrl+Shift+Z redeschide; Alt și C unesc mânerele; cronologia roadmap-ului cu feliile aduse (↑N). **Urmează: coborârea
+  în buzunar pe rampă sau elice, configurabilă (unghi, lungime, număr de rampe), cu varianta „fără”** (cererea owner-ului).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

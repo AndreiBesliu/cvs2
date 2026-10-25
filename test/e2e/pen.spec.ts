@@ -48,7 +48,7 @@ async function fara(page: Page): Promise<void> {
 test('Pen: clic = colț, tragere = curbă pe ambele părți; Enter termină o cale deschisă, aleasă; în Noduri, nodul tras e neted', async ({ page }) => {
   await fara(page);
   await unealta(page, 'pen');
-  await expect(page.getByTestId('pen-sfat')).toHaveText('Clic: colț; trage: curbă; Shift + trage: pe o parte; primul nod închide; Enter termină.');
+  await expect(page.getByTestId('pen-sfat')).toHaveText('Clic: colț; trage: curbă; Shift + trage: pe o parte; primul nod sau dublu clic închide; Enter termină.');
   await clic(page, { x: 20, y: 20 });
   await trage(page, { x: 60, y: 20 }, { x: 70, y: 30 });
   await clic(page, { x: 100, y: 20 });
@@ -123,6 +123,68 @@ test('Pen: Backspace scoate ultimul nod, Delete nu șterge selecția cât e o ca
   // Fără cale începută, Esc întoarce la Selecție.
   await page.keyboard.press('Escape');
   await expect(page.locator('[data-unealta="selectie"]')).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('Pen (ADR 0074 §4): dublu clic închide calea; Ctrl+Z / Ctrl+Y sunt ale desenului; Ctrl+Shift+Z redeschide desenul terminat', async ({ page }) => {
+  await fara(page);
+  await unealta(page, 'pen');
+  // Dublu clic: nodul lui, apoi calea închisă pe primul (trei segmente).
+  await clic(page, { x: 50, y: 50 });
+  await clic(page, { x: 100, y: 50 });
+  const s = await peEcran(page, { x: 100, y: 100 });
+  await page.mouse.dblclick(s.x, s.y);
+  await expect(pen(page)).toHaveAttribute('data-noduri', '0');
+  await expect(randuri(page)).toHaveCount(1);
+  await expect(randuri(page).first()).toContainText('3 segmente');
+  // Ctrl+Z anulează ultimul pas al desenului, Ctrl+Y îl reface; proiectul nu se schimbă.
+  await clic(page, { x: 150, y: 50 });
+  await clic(page, { x: 180, y: 50 });
+  await clic(page, { x: 180, y: 80 });
+  await expect(pen(page)).toHaveAttribute('data-noduri', '3');
+  await page.keyboard.press('Control+Z');
+  await expect(pen(page)).toHaveAttribute('data-noduri', '2');
+  await page.keyboard.press('Control+Z');
+  await expect(pen(page)).toHaveAttribute('data-noduri', '1');
+  await page.keyboard.press('Control+Y');
+  await expect(pen(page)).toHaveAttribute('data-noduri', '2');
+  await expect(randuri(page)).toHaveCount(1);
+  await page.keyboard.press('Enter');
+  await expect(randuri(page)).toHaveCount(2);
+  // Imediat după desen, Ctrl+Shift+Z îl redeschide (forma pleacă din proiect, nodurile revin în Pen), cu pașii lui.
+  await page.keyboard.press('Control+Shift+Z');
+  await expect(randuri(page)).toHaveCount(1);
+  await expect(pen(page)).toHaveAttribute('data-noduri', '2');
+  await page.keyboard.press('Control+Z');
+  await expect(pen(page)).toHaveAttribute('data-noduri', '1');
+  // Lăsat cu Esc, desenul se întoarce cu refacerea proiectului.
+  await page.keyboard.press('Escape');
+  await expect(pen(page)).toHaveAttribute('data-noduri', '0');
+  await page.keyboard.press('Control+Y');
+  await expect(randuri(page)).toHaveCount(2);
+  // Cu ceva de refăcut, Ctrl+Shift+Z reface (nu redeschide): anulare, apoi refacere.
+  await page.keyboard.press('Control+Z');
+  await expect(randuri(page)).toHaveCount(1);
+  await page.keyboard.press('Control+Shift+Z');
+  await expect(randuri(page)).toHaveCount(2);
+  await expect(pen(page)).toHaveAttribute('data-noduri', '0');
+});
+
+test('Pen (ADR 0074 §4): tragerea din primul nod arată calea închisă cât tragi; la eliberare, calea închisă cu curba ei', async ({ page }) => {
+  await fara(page);
+  await unealta(page, 'pen');
+  await clic(page, { x: 50, y: 150 });
+  await clic(page, { x: 100, y: 150 });
+  await clic(page, { x: 100, y: 190 });
+  const [a, b] = [await peEcran(page, { x: 50, y: 150 }), await peEcran(page, { x: 45, y: 170 })];
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move((a.x + b.x) / 2, (a.y + b.y) / 2, { steps: 4 });
+  await page.mouse.move(b.x, b.y, { steps: 4 });
+  await expect(pen(page).locator('path.drum-pen')).toHaveAttribute('d', /Z\s*$/);
+  await page.mouse.up();
+  await expect(pen(page)).toHaveAttribute('data-noduri', '0');
+  await expect(randuri(page)).toHaveCount(1);
+  await expect(randuri(page).first()).toContainText('cale');
 });
 
 test('Noduri: colțul devine curbă pe ambele părți, mânerul tras îl rotește pe celălalt, pe o parte trece dintr-o parte în alta, colț; anulările', async ({ page }) => {

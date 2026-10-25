@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { citesteAdresa, scrieAdresa } from '../../src/admin/adresa.ts';
 import { aducatorDocumentatie } from '../../src/admin/documentatie/aducere.ts';
-import { etapaImplicita, interval, progresEtapa, reperLive } from '../../src/admin/roadmap/vedere.ts';
+import { aduseGata, etapaImplicita, interval, progresEtapa, reperLive } from '../../src/admin/roadmap/vedere.ts';
 import type { Etapa, Felie, Roadmap } from '../../shared/documentatie.ts';
 
 test('adresa: fila, documentul și ancora, dus-întors; ce nu e o filă sau o cale de document e ignorat', () => {
@@ -106,6 +106,13 @@ test('progresul unei etape: feliile gata din toate; fără fișă, punctele plan
     puncte: [{ numar: 1, titlu: '', descriere: '', felii: [] }, { numar: 2, titlu: '', descriere: '', felii: ['4.2↑'] }],
   })), { gata: 1, total: 2, fel: 'puncte' });
   assert.deepEqual(progresEtapa(etapa({})), { gata: 0, total: 0, fel: 'nimic' });
+});
+
+test('cronologia: feliile aduse înainte și gata, numărate pe etapele fără fișă; pe etapa cu fișă, nimic în plus', () => {
+  const aduse = [felie('6.A↑', 'gata', true), felie('6.B↑', 'gata', true), felie('6.C↑', 'in-lucru', true)];
+  assert.equal(aduseGata(etapa({ felii: aduse })), 2);
+  assert.equal(aduseGata(etapa({ fisa: 'docs/etape/etapa-03.md', felii: [felie('3.1', 'gata'), felie('6.A↑', 'gata', true)] })), 0);
+  assert.equal(aduseGata(etapa({ felii: [felie('5.1', 'gata')] })), 0);
 });
 
 test('intervalul unei felii: aceeași zi o singură dată; zile diferite întregi; neterminată cu săgeata deschisă', () => {

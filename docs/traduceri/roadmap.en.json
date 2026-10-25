@@ -929,6 +929,10 @@
       "ro": "Două interfețe; §10 Ghid la prima pornire; admin **P4**",
       "en": "Two interfaces; §10 First-run guide; admin **P4**"
     },
+    "992da111fc122ed2": {
+      "ro": "Remedierile din testul uneltelor de desen",
+      "en": "The fixes from the drawing tools test"
+    },
     "9a7e6ef50318aa04": {
       "ro": "Unealta Transformare, extensia barei, editarea formelor după plasare",
       "en": "The Transform tool, the bar extension, editing shapes after placement"
@@ -952,6 +956,10 @@
     "9bd2d2099253a2ab": {
       "ro": "cât mai curând",
       "en": "as soon as possible"
+    },
+    "9e5b33599d483056": {
+      "ro": "Plafonul total al aplicației",
+      "en": "The total budget of the app"
     },
     "9fac1dff20d1f2ca": {
       "ro": "Planșele",
@@ -1236,6 +1244,10 @@
     "d380eeb3855cbaa0": {
       "ro": "Backup-ul zilnic al Firestore, cu verificarea lui, și marcajele de rulare judecate în Diagnoză (P1, partea 1; ADR 0041)",
       "en": "Daily Firestore backup, with its verification, and the run markers judged in Diagnostics (P1, part 1; ADR 0041)"
+    },
+    "d49e636700fcb2e9": {
+      "ro": "**Remedierile din testul uneltelor de desen** (ADR 0074; raportul testului pas cu pas: 29 de pași bine, 2 nemarcați, notele owner-ului). Clicul alege conturul cel mai apropiat, apoi cea mai mică formă care cuprinde punctul (după un offset spre exterior, forma dinăuntru se alege iar cu un clic). Offsetul din desen are Colțurile: Ca originalul (implicit, colțurile ascuțite rămân ascuțite) sau Rotunjite (cu raza distanței, și spre interior). Copierea pe curbă: pe ea, la stânga sau la dreapta, tangente sau la o distanță. Pen-ul: dublu clic închide calea, tragerea din primul nod arată închiderea, Ctrl+Z / Ctrl+Y anulează și refac pașii desenului, Ctrl+Shift+Z imediat după îl redeschide. Mânerele despărțite se unesc din nou cu Alt sau cu Curbă pe ambele părți. Cronologia din roadmap arată feliile aduse înainte pe etapele viitoare (↑N). Manualul și pașii testului sunt la zi. **Treceri:** (1) cele șase remedieri cu probele lor; pe hârtie, două greșeli găsite și reparate înainte de commit (colțul unui contur cu trei vârfuri nu se prelungea; capătul unui braț lat cât 2d nu se rotunjea întreg), iar o valoare a probei era calculată greșit (colțul intrând al L-ului adaugă arie la offsetul exact, nu scade).",
+      "en": "**The fixes from the drawing tools test** (ADR 0074; the report of the step-by-step test: 29 steps fine, 2 unmarked, the owner’s notes). A click picks the nearest outline, then the smallest shape holding the point (after an outward offset, the shape inside can be picked with a click again). The drawing offset has Corners: Like the original (the default, sharp corners stay sharp) or Rounded (with the distance as radius, inwards too). Copying along a curve: on it, on the left or on the right, touching or at a distance. The Pen: a double-click closes the path, dragging from the first node shows the closing, Ctrl+Z / Ctrl+Y undo and redo the steps of the drawing, Ctrl+Shift+Z right after reopens it. Split handles join again with Alt or with Curve on both sides. The roadmap timeline shows the slices brought forward on the future stages (↑N). The manual and the test steps are up to date. **Passes:** (1) the six fixes with their checks; on paper, two mistakes found and fixed before the commit (the corner of a three-node outline was not extended; the end of an arm as wide as 2d was not rounded whole), and one value of a check was computed wrong (the inner corner of the L adds area to the exact offset, it does not take it away)."
     },
     "d4adcd9b3b1ba0cb": {
       "ro": "Simularea, felia 2 din 2: vederea 3D",

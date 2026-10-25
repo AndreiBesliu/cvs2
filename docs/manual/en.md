@@ -103,10 +103,16 @@ sides or on one side only; the types are the same as in the [Nodes](#noduri) too
   smooth).
 - **Shift + drag**: a **curve on one side**, forward only: the line coming in enters the node straight, the next segment curves.
 - **Click on the last node**: removes its forward handle (the curve stays backward only); a drag from it gives it a new one.
-- **Click on the first node** closes the path (a drag there sets the handles of the first node). A closed path has at least
+- **Click on the first node** closes the path. A drag there sets the handles of the first node, with the closed path shown while
+  you drag; with **Shift**, only the closing curve changes (the first segment stays as you drew it). A closed path has at least
   three nodes, or two with a curve between them.
-- **Enter** or a **double-click** finishes the open path; **Backspace** (or Delete) removes the last node placed; **Esc** drops
-  the path you started (another Esc goes back to Select).
+- A **double-click** places the last node and closes the path on the first (with too few nodes to close, it finishes it open);
+  **Enter** finishes the open path; **Backspace** (or Delete) removes the last node placed; **Esc** drops the path you started
+  (another Esc goes back to Select).
+- **Ctrl+Z** while you draw undoes the last step of the path (a node, a drag), not what was on the sheet before; **Ctrl+Y** (or
+  Ctrl+Shift+Z) redoes it. Once you have finished, Ctrl+Z undoes on the sheet, as usual. **Ctrl+Shift+Z right after** you
+  finish a path (with nothing to redo on the sheet) reopens it, with its steps: Ctrl+Z undoes them in turn, and finishing puts it
+  back. Dropped with Esc, the reopened path comes back with Ctrl+Y.
 
 Nodes snap like anything else (see Snap in [The canvas](#panza)); handles do not. The next segment shows dashed up to the
 mouse. The finished shape is chosen, with the default operation of a path (see [Drawing](#desen)): closed, an island; open, cut
@@ -184,8 +190,11 @@ a single undo step. The copies are independent parts (as with Duplicate): each o
   curve is the last shape chosen. **How many copies on the curve** (1–1000) are placed at equal distances along its length,
   with the centre of the shapes' box on the curve: on an open curve, from one end to the other; on a closed one, all around,
   from its first node. **Rotate the copies along the curve** turns them with the curve's direction at each place (a shape drawn
-  "pointing right" follows it). The originals and the curve stay in place; the curve is not copied. The curve must be a single
-  shape (not a part with several outlines).
+  "pointing right" follows it). **From the curve**: **On it** (the centre on the curve; a distance moves it to the left of the
+  curve's direction, a negative one to the right), **On the left** or **On the right** (the shapes beside the curve, on that
+  side, looking along it, with their nearest point at the distance written: 0 = touching). A drawn rectangle or circle runs
+  counterclockwise, so "on the left" is inside. The originals and the curve stay in place; the curve is not copied. The curve
+  must be a single shape (not a part with several outlines).
 
 While the panel is open, the copies show on the canvas, dashed. If the array cannot be made (wrong values, nothing chosen,
 the project at its cap, copies too far away), the panel says why and Copy stays inactive. After copying, the original and
@@ -193,9 +202,13 @@ the copies are chosen.
 
 **Offset** (in the bar extension, next to Copy, the button with a square inside a dashed outline) draws a contour parallel to
 each closed shape chosen, at the distance written (mm, between 0.01 and 1000), **outwards** or **inwards**. The contour comes
-from the same engine as cutting: exact, made of lines and arcs; the corners it goes around are rounded with a radius equal to
-the distance (outwards, the outer corners; inwards, the inner ones), and the others stay sharp. Each shape is offset by its own inside (for a part with several outlines, each outline on
-its own), and a contour that breaks into pieces gives several shapes. The new shapes are independent paths, with their default
+from the same engine as cutting, exact, made of lines and arcs. **Corners:**
+- **Like the original** (the default): a sharp corner stays sharp, with the sides extended until they meet. A corner sharper
+  than ~11° stays rounded (otherwise the tip would run far from the shape), as does one that would come close to another part
+  of the shape.
+- **Rounded**: every corner is rounded with a radius equal to the distance, in both directions. On a rectangle, inwards too.
+
+Each shape is offset by its own inside (for a part with several outlines, each outline on its own), and a contour that breaks into pieces gives several shapes. The new shapes are independent paths, with their default
 operation, chosen after Apply; the originals stay, and it is all a single undo step.
 - While the panel is open, the new contours show on the canvas, dashed.
 - Open shapes chosen are skipped (the panel says how many); with only open ones, the offset cannot be made.
@@ -236,13 +249,16 @@ The **Nodes** tool (`N`) shows the nodes (vertices) of the chosen shape and chan
 **The node type.** A node is a corner (square on the canvas) or makes a curve (round), on both sides or on one side only, as in
 the [Pen](#pen) tool. The chosen node shows its handles; the buttons in the top bar, next to the tools, change its type:
 - **Corner**: removes the handles (a curve left without handles becomes a line again);
-- **Curve on both sides**: puts the handles on one line (the node becomes smooth), new ones on the bisector of the directions at
-  the node, a third of their segment long;
+- **Curve on both sides**: puts the handles on one line, on the bisector of the directions at the node, and with the same length
+  (the node becomes smooth): the average of the two, the length of the one there is, or, with none, a third of each segment. On
+  a node with split handles, it joins them again;
 - **Curve on one side**: keeps the forward handle (or puts one in line with the incoming line, so the line flows into the
   curve) and removes the other; another click moves the curve to the other side.
 
 **Drag a handle** to change the curve; on a smooth node, the handle on the other side turns with it (keeping its length). With
-`Alt`, the handles split (the node stays a curve on both sides, but with a corner). The end of an open path has a single side.
+`Alt`, the handles split (the node stays a curve on both sides, but with a corner); on split handles, `Alt` joins them again:
+the other becomes the mirror of the one dragged, on one line and with the same length. The end of an open path has a single
+side.
 
 **Any node, from any tool.** A node on an arc (the circle, rounded corners, the results of offset and boolean) is a curve too
 (round), and its handles are the arc's tangents. When you change its type or drag one of its handles, the neighbouring arc first
@@ -421,8 +437,10 @@ to any step. The results stay after a reload too; **Start over** deletes them, a
 | `Alt`, while dragging | inverts snapping |
 | `Delete`, `Backspace` (with the Nodes tool and a node chosen) | removes the chosen node |
 | `Enter` (with the Pen tool) | finishes the path you started |
+| `Ctrl+Z`, `Ctrl+Y` (with the Pen tool and a path started) | undoes / redoes the last step of the path |
+| `Ctrl+Shift+Z` (right after a path finished with the Pen) | reopens the path, with its steps |
 | `Backspace`, `Delete` (with the Pen tool and a path started) | removes the last node placed |
-| `Alt`, while you drag a handle (Nodes tool) | splits the node's handles |
+| `Alt`, while you drag a handle (Nodes tool) | splits the node's handles; on split ones, joins them again |
 | `Esc` | cancels the shape or path you started, lets go of the chosen node, goes back to Select, closes the 3D view and the windows |
 | `F1` | the manual, at the current chapter |
 

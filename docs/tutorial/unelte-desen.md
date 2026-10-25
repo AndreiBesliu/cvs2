@@ -122,23 +122,27 @@ Același panou, Pe cerc: 6 forme, 360°, Rotește copiile bifat.
 Desenează o linie (sau o cale cu Pen). Alege o formă mică, apoi linia cu `Shift` + clic. Același panou, Pe curbă:
 5 copii.
 %% vezi
-5 copii la distanțe egale pe linie, de la un capăt la altul; linia rămâne, nu se copiază.
+5 copii la distanțe egale pe linie, de la un capăt la altul; linia rămâne, nu se copiază. Față de curbă: La stânga (tangente,
+distanța 0), apoi La dreapta cu 5 mm, apoi Pe ea mutată cu 3 mm: copiile se mută de partea cerută.
 
 ## Offsetul
 
 ### Spre exterior
 %% pas: o-exterior
 %% faci
-Alege un dreptunghi; Offset (pătratul în contur punctat), Spre exterior, 5, Aplică.
+Alege un dreptunghi; Offset (pătratul în contur punctat), Spre exterior, 5, Colțurile: Ca originalul, Aplică. Apoi, pe
+același dreptunghi, Colțurile: Rotunjite. Clic în dreptunghiul dinăuntru.
 %% vezi
-Conturul nou, punctat, înainte; după, o formă nouă cu colțurile rotunjite, iar originalul rămâne.
+Conturul nou, punctat, înainte; după, o formă nouă cu colțurile ascuțite, ca originalul; cu Rotunjite, colțurile rotunjite.
+Originalul rămâne, iar clicul dinăuntru îl alege pe el, nu conturul nou.
 
 ### Spre interior
 %% pas: o-interior
 %% faci
-Pe același dreptunghi: Spre interior, 5; apoi 100.
+Pe același dreptunghi: Spre interior, 5 (Ca originalul, apoi Rotunjite); apoi 100.
 %% vezi
-Cu 5, un contur mai mic, cu colțuri drepte. Cu 100, motivul „o formă e prea mică” și Aplică oprit.
+Cu 5, un contur mai mic, cu colțuri drepte; cu Rotunjite, colțurile lui rotunjite. Cu 100, motivul „o formă e prea mică” și
+Aplică oprit.
 
 ## Booleanul
 
@@ -176,16 +180,19 @@ O cale deschisă, cu o curbă la nodul tras; segmentul următor se vede punctat 
 ### Curba pe o parte și închiderea
 %% pas: pen-parti
 %% faci
-`Shift` + tragere (curbă doar înainte); clic pe ultimul nod pus (curba rămâne doar înapoi); clic pe primul nod.
+`Shift` + tragere (curbă doar înainte); clic pe ultimul nod pus (curba rămâne doar înapoi); trage din primul nod.
 %% vezi
-Calea se închide pe primul nod; în Noduri, nodurile cu curbă sunt rotunde, colțurile pătrate.
+Cât tragi din primul nod, calea se vede închisă, cu curba ei; la eliberare se închide; în Noduri, nodurile cu curbă sunt
+rotunde, colțurile pătrate.
 
 ### Tastele
 %% pas: pen-taste
 %% faci
-Pune câteva noduri: `Backspace`; apoi `Esc`; apoi pune iar câteva și termină cu dublu clic.
+Pune câteva noduri: `Backspace`; `Ctrl+Z`, `Ctrl+Y`; apoi `Esc`; apoi pune iar câteva și termină cu dublu clic; imediat,
+`Ctrl+Shift+Z`, apoi `Ctrl+Z`.
 %% vezi
-Backspace scoate ultimul nod; Esc renunță la cale; dublu clic termină o cale deschisă.
+Backspace scoate ultimul nod; Ctrl+Z / Ctrl+Y anulează și refac pașii căii, nu planșa; Esc renunță la cale; dublu clic
+închide calea pe primul nod; Ctrl+Shift+Z o redeschide, iar Ctrl+Z îi scoate ultimul nod.
 
 ## Nodurile
 
@@ -199,10 +206,11 @@ Colțul se mută (dreptunghiul devine o cale); apare un nod nou; Delete scoate n
 ### Tipul nodului
 %% pas: n-tipuri
 %% faci
-Pe un colț: Curbă pe ambele părți; trage un mâner (apoi cu `Alt`); Curbă pe o parte, de două ori; Colț.
+Pe un colț: Curbă pe ambele părți; trage un mâner (apoi cu `Alt`, apoi iar cu `Alt`); despărțite, Curbă pe ambele părți;
+Curbă pe o parte, de două ori; Colț.
 %% vezi
-Mânerele pe aceeași dreaptă (celălalt se rotește cu cel tras); cu Alt se despart; „pe o parte” trece dintr-o parte în
-alta; Colț le scoate.
+Mânerele pe aceeași dreaptă (celălalt se rotește cu cel tras); cu Alt se despart, iar cu Alt din nou se unesc (oglindă, aceeași
+lungime); Curbă pe ambele părți le unește și ea; „pe o parte” trece dintr-o parte în alta; Colț le scoate.
 
 ### Nodurile de pe arce
 %% pas: n-cerc

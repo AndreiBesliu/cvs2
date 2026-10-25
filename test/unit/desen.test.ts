@@ -32,3 +32,24 @@ test('selecția la clic: pe contur în toleranță, înăuntru, iar cel de deasu
   assert.equal(instantaLa(doc, 19.7, 50, 0.5), 'e1', 'lângă latura stângă, din afară');
   assert.equal(instantaLa(doc, 200, 150, 0.5), null, 'în afara oricărei forme');
 });
+
+test('selecția la clic (ADR 0074 §1): forma dinăuntrul alteia, desenată înaintea ei, rămâne de ales; conturul cel mai apropiat câștigă', () => {
+  // Testul owner-ului: după un offset spre exterior, conturul nou (deasupra, mai mare) prindea orice clic dinăuntru.
+  const d: Document = docDin(
+    { latime: 300, inaltime: 200, grosime: 18 },
+    { id: 'mic', forma: { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 0 }, matrice: { ...ID, e: 20, f: 20 } },
+    { id: 'mare', forma: { tip: 'dreptunghi', latime: 110, inaltime: 70, razaColt: 5 }, matrice: { ...ID, e: 15, f: 15 } },
+  );
+  assert.equal(instantaLa(d, 70, 50, 0.5), 'mic', 'înăuntrul ambelor: cea mai mică');
+  assert.equal(instantaLa(d, 17, 50, 0.5), 'mare', 'între contururi: doar cea mare cuprinde punctul');
+  assert.equal(instantaLa(d, 15.2, 50, 0.5), 'mare', 'pe conturul celei mari');
+  assert.equal(instantaLa(d, 20.1, 50, 0.5), 'mic', 'pe conturul celei mici, deși cea mare e deasupra');
+  // Două contururi în toleranță: cel mai apropiat, nu cel de deasupra.
+  const strans: Document = docDin(
+    { latime: 300, inaltime: 200, grosime: 18 },
+    { id: 'a', forma: { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 0 }, matrice: { ...ID, e: 20, f: 20 } },
+    { id: 'b', forma: { tip: 'dreptunghi', latime: 100.6, inaltime: 60.6, razaColt: 0 }, matrice: { ...ID, e: 19.7, f: 19.7 } },
+  );
+  assert.equal(instantaLa(strans, 20.05, 50, 0.5), 'a');
+  assert.equal(instantaLa(strans, 19.75, 50, 0.5), 'b');
+});

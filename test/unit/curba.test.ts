@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { conturCerc, conturDreptunghi, type Contur } from '../../src/geom/conturBaza.ts';
-import { copiiPeCurba, locuriPeCurba, lungimeCurba } from '../../src/model/curba.ts';
+import { copiiPeCurba, locuriPeCurba, lungimeCurba, suport } from '../../src/model/curba.ts';
 import { istoricNou } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import { cutieElement } from '../../src/model/forme.ts';
@@ -107,6 +107,54 @@ test('copiile: centrul cutiei formelor în fiecare loc, rotite cu tangenta (sau 
   assert.equal(motivRetea({ fel: 'curba', curba: 'k', numar: 0, roteste: true }), 'copii');
   assert.equal(motivRetea({ fel: 'curba', curba: '', numar: 3, roteste: true }), 'curba');
   assert.equal(motivRetea({ fel: 'curba', curba: 'k', numar: 1000, roteste: true }), null);
+});
+
+test('poziția față de curbă (ADR 0074 §3): pe ea mutată cu distanța; la stânga / la dreapta, tangente sau la distanță, exact', () => {
+  const stoc = { latime: 300, inaltime: 200, grosime: 18 };
+  // Dreptunghiul 10 × 4 și linia de la (50, 100) la (150, 100), spre dreapta: stânga mersului e +y.
+  const doc = docDin(stoc,
+    { id: 'p', forma: { tip: 'dreptunghi', latime: 10, inaltime: 4, razaColt: 0 }, matrice: { ...ID, e: 10, f: 150 } },
+    { id: 'k', forma: { tip: 'cale', inchis: false, varfuri: [{ p: P(0, 0), s: L }, { p: P(100, 0), s: L }] }, matrice: { ...ID, e: 50, f: 100 } });
+  const p = doc.foi[0]!.instante.find((i) => i.id === 'p')!;
+  const cutii = (r: Retea & { fel: 'curba' }) => {
+    const c = copiiPeCurba(doc, 0, ['p', 'k'], r);
+    assert.ok(typeof c !== 'string', String(c));
+    return c.copii.map((k) => cutieElement(elementeFoaie({ ...doc, foi: [{ ...doc.foi[0]!, instante: [{ ...p, ...instantaCopiei(p, k) }] }] }, 0)[0]!));
+  };
+  const r = { fel: 'curba' as const, curba: 'k', numar: 3, roteste: true };
+  // Pe ea: centrul pe linie (y 98…102); mutată cu 3: y 101…105.
+  for (const b of cutii(r)) { aproape(b.minY, 98, 'centru'); aproape(b.maxY, 102, 'centru'); }
+  for (const b of cutii({ ...r, pozitie: 'centru', distanta: 3 })) aproape(b.minY, 101, 'centru + 3');
+  // La stânga, tangente: marginea de jos pe linie; la 2 mm: y 102…106. La dreapta: marginea de sus pe linie (y 96…100).
+  for (const b of cutii({ ...r, pozitie: 'stanga', distanta: 0 })) { aproape(b.minY, 100, 'stânga'); aproape(b.maxY, 104, 'stânga'); }
+  for (const b of cutii({ ...r, pozitie: 'stanga', distanta: 2 })) aproape(b.minY, 102, 'stânga + 2');
+  for (const b of cutii({ ...r, pozitie: 'dreapta', distanta: 0 })) { aproape(b.maxY, 100, 'dreapta'); aproape(b.minY, 96, 'dreapta'); }
+  // Pe semicercul de rază 50 (spre stânga, trigonometric: stânga = spre centru), rotite cu tangenta: la stânga, tangente,
+  // centrul fiecărei copii la 50 − 2 de centrul cercului (jumătatea înălțimii, 2, spre interior).
+  const sc = docDin(stoc,
+    { id: 'p', forma: { tip: 'dreptunghi', latime: 10, inaltime: 4, razaColt: 0 }, matrice: { ...ID, e: 10, f: 150 } },
+    { id: 'k', forma: { tip: 'cale', inchis: false, varfuri: [{ p: P(0, 0), s: { tip: 'A', bulge: 1 } }, { p: P(-100, 0), s: L }] }, matrice: { ...ID, e: 200, f: 50 } });
+  const c = copiiPeCurba(sc, 0, ['p', 'k'], { curba: 'k', numar: 3, roteste: true, pozitie: 'stanga', distanta: 0 });
+  assert.ok(typeof c !== 'string');
+  for (const k of c.copii) aproape(Math.hypot(k.centru.x + k.dx - 150, k.centru.y + k.dy - 50), 48, 'raza centrului');
+  // Un cerc R5 nerotit, pe o linie la 45°, la dreapta: tangent exact (suportul cercului), nu după cutie (care ar da 5√2).
+  const diag = docDin(stoc,
+    { id: 'o', forma: { tip: 'cerc', raza: 5 }, matrice: { ...ID, e: 20, f: 20 } },
+    { id: 'k', forma: { tip: 'cale', inchis: false, varfuri: [{ p: P(0, 0), s: L }, { p: P(100, 100), s: L }] }, matrice: { ...ID, e: 50, f: 50 } });
+  const d = copiiPeCurba(diag, 0, ['o', 'k'], { curba: 'k', numar: 2, roteste: false, pozitie: 'dreapta', distanta: 0 });
+  assert.ok(typeof d !== 'string');
+  for (const k of d.copii) {
+    const cx = k.centru.x + k.dx, cy = k.centru.y + k.dy;
+    // Distanța de la centrul cercului la dreapta y = x (cu semn: dreapta mersului e sub ea): −5.
+    aproape((cy - cx) / Math.SQRT2, -5, 'cercul tangent la dreapta');
+  }
+  // Suportul pe o cubică: cocoașa (0, 0) → (20, 0) cu punctele de control (0, 10), (20, 10) urcă până la 30·t(1 − t) = 7,5 la
+  // t = ½ (capetele stau pe 0, deci fără rădăcinile lui ⟨B′(t), v⟩ ar ieși 0).
+  const cocoasa: Contur = { inchis: true, varfuri: [{ p: P(0, 0), s: { tip: 'C', c1: P(0, 10), c2: P(20, 10) } }, { p: P(20, 0), s: L }] };
+  aproape(suport([cocoasa], P(0, 0), P(0, 1)), 7.5, 'suportul cubicei în sus');
+  aproape(suport([cocoasa], P(0, 0), P(0, -1)), 0, 'în jos, capetele');
+  assert.equal(motivRetea({ fel: 'curba', curba: 'k', numar: 3, roteste: true, distanta: Number.NaN }), 'distanta-curba');
+  assert.equal(motivRetea({ fel: 'curba', curba: 'k', numar: 3, roteste: true, pozitie: 'stanga', distanta: -2 }), null);
 });
 
 test('prin `document.copiaza-in-retea`: copiile intră într-un pas, sunt alese cu originalele (fără curbă); verdictul comun', () => {

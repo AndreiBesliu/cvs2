@@ -352,6 +352,21 @@
   align-items: center;
 }
 
+/* Feliile aduse înainte (↑) și gata: pe etapele viitoare, câte sunt. */
+.rm-aduse {
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--rm-gata);
+  font-variant-numeric: tabular-nums;
+}
+
+.rm-legenda .rm-aduse {
+  display: inline-block;
+  width: 8px;
+  text-align: center;
+}
+
 .rm-sapt {
   font-size: 0.625rem;
   color: var(--t-slab);

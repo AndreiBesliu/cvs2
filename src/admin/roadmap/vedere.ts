@@ -15,6 +15,14 @@ export function progresEtapa(e: Etapa): Progres {
   return { gata: 0, total: 0, fel: 'nimic' };
 }
 
+/**
+ * Pură: câte felii ale etapei, aduse înainte (↑) în fișa altei etape, sunt gata. Cronologia le arată pe fiecare etapă viitoare
+ * (o etapă fără puncte în `PLAN.md` §5.3 n-are altfel ce umple); pe etapa cu fișă, feliile ei sunt deja în bară.
+ */
+export function aduseGata(e: Etapa): number {
+  return e.fisa !== null ? 0 : e.felii.filter((f) => f.adusa && f.stare === 'gata').length;
+}
+
 /** Pură: `16.10 21:35 → 22:20` (aceeași zi o singură dată); neterminată: `02.01 12:00 →`. */
 export function interval(started: string | null, completed: string | null): string {
   if (started === null) return '';

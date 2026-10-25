@@ -2887,3 +2887,25 @@ pe `e295276` (rularea 40209524518). Verificat în browserul aplicației: un cerc
 proprietăți), amândouă buzunare de 3 mm în fereastra exportului: exportul trece, rezumatul are o singură operație (a
 dreptunghiului), harta simulării arată insula albă în buzunar, iar materialul scos e 16,6 cm³ (pe hârtie: (6 000 − 7,73 colțurile
 − 452,4 insula) × 3 = 16,62 cm³; fără insulă ar fi 17,98). Adresa principală rămâne pe `40582a6` cât owner-ul face testul.
+
+## 2026-10-25 — Remedierile din testul uneltelor de desen (Model: Claude Opus 5.5)
+
+**Prompt:** „mai tarziu. deocamdata uite raportul testului:” (cu raportul HTML al testului pas cu pas, programul exportat la
+pasul x-export și captura rezumatului lui); între timp, despre buzunar: „coborarea in buzunar pe rampa sau elice, si ar trebui
+sa fie configurabila de user, unghi, lungime, numar de rampe etc.” și „si eventual sa poata fi si evitata” (felia următoare).
+**Started:** 25.10, ~18:25. Raportul citit din fișier (datele JSON și cele 30 de poze, scoase local): 29 de pași bine, 0 nu,
+2 nemarcați (Shift + clic, fără notă: codul comută selecția, proba e2e trece; offsetul exterior, cu notă), note pe 8 pași.
+Avertismentul portocaliu din captura exportului („avansul trece de viteza maximă a mașinii”) e al profilului GRBL din fabrică
+(500 mm/min) față de avansul de 1 000: dispare cu `$$` lipit (ADR 0046). Felia **6.P↑**, fără agenți (ADR 0074): clicul,
+colțurile offsetului, poziția față de curbă, Pen-ul (dublu clic, închiderea, anularea, redeschiderea), mânerele, cronologia
+roadmap-ului (cererea de după test). Înainte, `e295276` (insulele, tastele) publicat pe adresa principală de test (rularea
+40211865906). **Treceri:** (1) pe hârtie: colțul unui contur rămas cu trei vârfuri nu se prelungea (indexul de după arc nu
+trecea peste capăt), capătul unui braț lat cât 2d nu se racorda întreg (un segment consumat exact era refuzat); o valoare a probei
+era greșită (colțul intrând al L-ului adaugă arie la offsetul exact); trei heredoc-uri rupte în shell (scrise apoi din fișier).
+**Completed:** 25.10 19:37. Porțile întâi au picat pe totalul JS: 302,1 kB peste plafonul de 300 (colțurile, ~2,4 kB gzip, nu
+dublau nimic; măsurat pe bucata offsetului): **ADR 0075**, plafonul total 330 kB, totul rămâne în precache (altfel importul,
+vederea 3D și simularea n-ar merge offline până la prima folosire). Apoi: 7 249 de teste unitare (0 picate), determinismul
+(150 de fișiere), licențele, importurile; e2e 218 / 218 în Edge (proba pânzei rescrisă: clicul pe marginea cercului dintr-un
+dreptunghi de deasupra alege acum cercul, ADR 0074 §1); emulatoarele: 13 e2e. Pornirea neschimbată (95,3 kB). Mutațiile
+țintite: 18 / 20 prinse; cele două rămase sunt o gardă dublă (direcția și cea mai apropiată intersecție), prinsă ca pereche;
+distanța la original și atingerea au primit câte o probă care le ocolește pe celelalte.

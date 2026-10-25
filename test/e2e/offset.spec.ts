@@ -53,6 +53,31 @@ test('spre interior: 5 mm dă 90 × 50; 31 mm nu încape (Aplică oprit); distan
   await expect(panou(page)).toHaveCount(0);
 });
 
+test('colțurile (ADR 0074 §2): implicit ca originalul (4 segmente), Rotunjite (8); un clic dinăuntru alege dreptunghiul, nu conturul nou', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-editare="offset"]').click();
+  await expect(page.locator('[data-offset-colturi="ca-originalul"]')).toHaveAttribute('aria-checked', 'true');
+  await page.locator('[data-offset="aplica"]').click();
+  await expect(randuri(page).nth(1)).toContainText('110.00 × 70.00, 4 segmente');
+  await page.locator('[data-actiune="istoric.anuleaza"]').click();
+  await expect(randuri(page)).toHaveCount(1);
+  await randuri(page).first().click();
+  await page.locator('[data-editare="offset"]').click();
+  await page.locator('[data-offset-colturi="rotunjite"]').click();
+  await page.locator('[data-offset="aplica"]').click();
+  await expect(randuri(page).nth(1)).toContainText('110.00 × 70.00, 8 segmente');
+  // Selecția la clic (ADR 0074 §1): înăuntrul ambelor, cea mică; între contururi, cea mare.
+  const e = await ecran(page, await vedere(page));
+  const centru = e(70, 50), intre = e(17.5, 50);
+  await page.mouse.click(centru.x, centru.y);
+  await expect(randuri(page).first()).toHaveAttribute('aria-pressed', 'true');
+  await expect(randuri(page).nth(1)).toHaveAttribute('aria-pressed', 'false');
+  await page.mouse.click(intre.x, intre.y);
+  await expect(randuri(page).nth(1)).toHaveAttribute('aria-pressed', 'true');
+  await expect(randuri(page).first()).toHaveAttribute('aria-pressed', 'false');
+});
+
 test('o cale deschisă (Pen) nu are offset: motivul; fără nimic ales, alt motiv', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-editare="lipire"]').click();
