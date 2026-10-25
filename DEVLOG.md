@@ -2810,3 +2810,24 @@ teste unitare (0 picate, 8 sărite), determinismul (142 de fișiere identice), /
 funcții `cncvs2`, regulile neschimbate, indecșii; amprenta în `meta/deployment`), deci refuzul e activ de acum și pe adresa
 principală; pagina, pe canalul buzunar (<https://cncvectorstudio-test--buzunar-x95ick77.web.app/admin>: se deschide la intrare,
 0 erori; intrarea ca owner nu se poate verifica de aici). Pe adresa principală de test, pagina vine după testul owner-ului.
+
+## 2026-10-25 — Testul pas cu pas, în aplicație (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau ca testarea asta sa fie ca un tutorial direct in app. vreau si un buton cu care sa pot face snapshot la
+plansa. aceasta imagine se ataseaza automat la raportul pe care ti-l voi da la final. deci nu ar trebui sa fie incarcata in
+server. dar, termina ce task ai inceput acum. […]”, apoi „Da, pornește tutorialul de test în aplicație, cu butonul de snapshot
+al planșei.”
+**Started:** 25.10, ~15:40. Felia **3.I**, fără agenți (ADR 0072). Pagina din artifact n-avea niciun rezultat scris, deci a
+fost înlocuită fără pierderi. Bugetul total era la 295,1 / 300 kB: bucata testului (5,7 kB gzip) n-ar fi încăput, așa că e a
+doua parte doar online, cu plafonul ei, ca `/admin` (testul există doar pe instanța de test; nimeni altcineva n-o descarcă).
+**Treceri:** (1) pașii ca document (`docs/tutorial/unelte-desen.md`, cu generatorul și poarta lui; tastele ca cod inline,
+fiindcă cititorul de markdown nu știe `<kbd>`), panoul (pașii, Bine / Nu / Sărit, nota, lista pașilor, focusul dat înapoi
+paginii după fiecare clic), stocarea în IndexedDB, poza planșei, raportul HTML, butonul (doar în afara live), manualul,
+probele (generatorul, raportul cu o notă care încearcă `</script>`, e2e cap-coadă și „pe live, fără buton”). Prima poză,
+privită cu ochii: foaia, riglele, formele și linia mânerului de rotire, dar fără mânere: cele ale transformării sunt
+elemente HTML, nu SVG; desenate acum din stilul lor, iar a doua poză arată ca ecranul.
+**Completed:** 25.10 16:15. Fără agenți. Nivelul rapid local, cu codurile păstrate: 7 223 de teste unitare (0 picate, 8 sărite;
+două probe aduse la zi: copia arborelui documentației cere și `docs/tutorial/`, lista părților doar online are și testul),
+determinismul (146 de fișiere identice), licențele; e2e 213 / 213 în Edge (2 noi; manualul are acum 18 capitole);
+emulatoarele: 36 de probe ale funcțiilor, 13 e2e. Pornirea 95,3 kB, cu ușa 98,6 / 100; totalul 295,3 / 300; testul pas cu pas
+5,8 / 12 kB, doar online (în afara precache-ului: bucata, stilul și pașii).

@@ -6,6 +6,7 @@ import { EroareDocumentatie, genereazaDocumentatia } from './scripts/documentati
 import { CSP } from './shared/csp.ts';
 import { DIR_DOCUMENTATIE } from './shared/documentatie.ts';
 import { DIR_MANUAL } from './shared/manual.ts';
+import { DIR_TUTORIAL } from './shared/tutorial.ts';
 import { inPrecache } from './shared/precache.ts';
 
 /**
@@ -64,7 +65,7 @@ function documentatie(): Plugin {
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const cale = (req.url ?? '').split('?')[0] ?? '';
-        if (!cale.startsWith(`/${DIR_DOCUMENTATIE}/`) && !cale.startsWith(`/${DIR_MANUAL}/`)) {
+        if (![DIR_DOCUMENTATIE, DIR_MANUAL, DIR_TUTORIAL].some((d) => cale.startsWith(`/${d}/`))) {
           next();
           return;
         }

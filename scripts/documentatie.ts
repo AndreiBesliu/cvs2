@@ -16,6 +16,7 @@
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { EroareManual, genereazaManualul } from './manual.ts';
+import { EroareTutorial, genereazaTutorialele } from './tutorial.ts';
 import { CALE_DICTIONAR_EN, citesteDictionar, traduceRoadmap } from './traducere.ts';
 import { join } from 'node:path';
 import { ancora, citesteTabel, parseazaInline, parseazaMarkdown, textSimplu, type Bloc, type TabelBrut } from '../src/docs/markdown.ts';
@@ -653,9 +654,10 @@ export function genereazaDocumentatia(radacina: string): Map<string, string> {
   // Manualul utilizatorului (ADR 0058): aceeași generare, aceeași poartă (o sursă care nu se poate citi oprește build-ul).
   let manual: Map<string, string>;
   try {
-    manual = genereazaManualul(citeste);
+    // Și testul pas cu pas al owner-ului (ADR 0072), din `docs/tutorial/`, cu poarta lui.
+    manual = new Map([...genereazaManualul(citeste), ...genereazaTutorialele(citeste)]);
   } catch (e) {
-    if (e instanceof EroareManual) throw new EroareDocumentatie(e.cale, e.message.slice(e.cale.length + 2));
+    if (e instanceof EroareManual || e instanceof EroareTutorial) throw new EroareDocumentatie(e.cale, e.message.slice(e.cale.length + 2));
     throw e;
   }
 

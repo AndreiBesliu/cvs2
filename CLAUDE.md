@@ -97,6 +97,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   insule, o singură freză. **Oracolul documentului v11 e scris de sesiunea aplicației, nu independent**: de reluat. Ușa unui
   proiect salvat e despărțită (ADR 0070): la pornire doar `usaCurenta.ts`, migrările (`migrari.ts`) doar pentru un document
   vechi; pornirea cu ușa 98,6 / 100 kB (~1,4 kB liberi).
+  **Testul pas cu pas, în aplicație (ADR 0072)** gata pe 25.10: butonul Test din extensie (în afara instanței live), pașii în
+  `docs/tutorial/unelte-desen.md` (generați în `dist/tutorial/`), poza planșei compusă local, raportul HTML descărcat; totul în
+  browser (IndexedDB `cncvs2-test`); bucata `TestPasCuPas` e doar online, cu plafonul ei (12 kB), în afara celor 300 kB.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

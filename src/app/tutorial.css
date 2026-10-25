@@ -1,0 +1,89 @@
+/*
+ * Testul pas cu pas (ADR 0072): un panou plutitor, peste bare și dialoguri (pasul se citește și cu un dialog deschis),
+ * în stânga-jos, mutat din titlu. Doar tokenurile temei.
+ */
+.test-pas {
+  position: fixed;
+  left: 16px;
+  bottom: 56px;
+  z-index: 30;
+  box-sizing: border-box;
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 8px 12px 10px;
+  background: var(--s-panou);
+  color: var(--t);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+  box-shadow: var(--umbra-1);
+  font-size: 13px;
+}
+
+.test-pas-titlu {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+}
+
+.test-pas-titlu select {
+  flex: 1;
+  min-width: 0;
+}
+
+.test-pas h2 {
+  margin: 2px 0 6px;
+  font-size: 15px;
+}
+
+.test-pas p {
+  margin: 4px 0;
+}
+
+.test-pas-sectiune,
+.test-pas-slab {
+  color: var(--l-camp);
+}
+
+.test-pas-sectiune {
+  margin-top: 8px;
+}
+
+.test-pas-rand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.test-pas textarea {
+  box-sizing: border-box;
+  width: 100%;
+  resize: vertical;
+}
+
+.test-pas-stare[aria-pressed="true"] {
+  font-weight: 600;
+  outline: 2px solid currentColor;
+}
+
+.test-pas-bine[aria-pressed="true"] {
+  color: var(--traseu-taiere);
+}
+
+.test-pas-nu[aria-pressed="true"],
+.test-pas-pericol {
+  color: var(--rosu);
+}
+
+.test-pas-inainte {
+  margin-left: auto;
+}
+
+.test-pas-mesaj {
+  font-weight: 600;
+}

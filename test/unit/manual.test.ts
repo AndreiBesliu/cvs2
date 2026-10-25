@@ -47,6 +47,7 @@ const USI: readonly Usa[] = [
   { id: 'editare.inclinare', eticheta: eticheta('editare.inclinare') },
   ...(['uneste', 'scade', 'intersecteaza'] as const).map((b) => ({ id: `boolean.${b}`, eticheta: eticheta(`editare.boolean.${b}`) })),
   { id: 'editare.manual', eticheta: eticheta('editare.manual') },
+  { id: 'editare.test', eticheta: eticheta('editare.test') },
 ];
 
 /**
@@ -55,7 +56,7 @@ const USI: readonly Usa[] = [
  */
 const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   lipire: 'editare.lipire', grila: 'editare.grila', 'pas-grila': 'editare.grila', laturi: 'unealta.poligon', raza: 'unealta.cerc',
-  aliniere: 'editare.aliniere', 'vedere-3d': 'editare.3d', manual: 'editare.manual', retea: 'document.copiaza-in-retea',
+  aliniere: 'editare.aliniere', 'vedere-3d': 'editare.3d', manual: 'editare.manual', test: 'editare.test', retea: 'document.copiaza-in-retea',
   offset: 'editare.offset', inclinare: 'editare.inclinare',
   'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri',
 };
@@ -88,13 +89,13 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 57)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 58)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
   assert.equal(numeScurt('Importă SVG…'), 'Importă SVG');
   assert.equal(numeScurt('Oglindește orizontal: stânga ↔ dreapta (Shift+H)'), 'Oglindește orizontal');
-  assert.equal(USI.length, 57);
+  assert.equal(USI.length, 58);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

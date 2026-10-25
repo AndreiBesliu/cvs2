@@ -111,6 +111,19 @@ const Vedere3D = lazy(() => import('./Vedere3D.tsx').then((m) => ({ default: m.V
 })));
 
 /**
+ * Testul pas cu pas al owner-ului (ADR 0072): o bucată doar online, adusă la primul clic pe Test (butonul există doar pe
+ * instanța de test). Dacă nu vine, se spune, ca la manual.
+ */
+const TestPasCuPas = lazy(() => import('./TestPasCuPas.tsx').then((m) => ({ default: m.TestPasCuPas }), () => ({
+  default: ({ onInchide }: { readonly onInchide: () => void }) => (
+    <button type="button" className="cip cip-rosu" role="status" data-testid="test-neincarcat" onClick={onInchide}
+      style={{ position: 'fixed', left: '50%', top: 96, translate: '-50% 0', zIndex: 30, pointerEvents: 'auto' }}>
+      {t('editare.manual.neincarcat')}
+    </button>
+  ),
+})));
+
+/**
  * Manualul (documentația live, ADR 0058): fereastra lui, adusă la primul „?” sau F1. Dacă nu vine, se spune, sus pe
  * ecran, până la clic.
  */
@@ -176,6 +189,8 @@ export type ProprietatiEditare = {
   readonly onLipeste: (f: Lipeste | null) => void;
   /** Gestul uneltei de desen, dat pânzei (null: selecția, sau modulul plecat). */
   readonly onDesen: (f: GestDesen | null) => void;
+  /** Testul pas cu pas (ADR 0072): doar pe instanța de test (și local), cu versiunea și instanța pentru raport. */
+  readonly test?: { readonly versiune: string; readonly instanta: string };
 };
 
 export function Editare(p: ProprietatiEditare): ReactElement | null {
@@ -252,6 +267,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   }, [panouOffset, modOffset, formOffset, doc, selectie]);
   // Manualul deschis, cu ușa de la deschidere (capitolul ei); `null`: închis.
   const [manual, setManual] = useState<{ readonly usa: string | null } | null>(null);
+  const [testDeschis, setTestDeschis] = useState(false);
   const unealtaRef = useRef<Unealta>('selectie');
   // Locul uneltelor din bara de sus (ADR 0052): îl desenează aplicația, iar modulul ăsta îl umple, printr-un portal.
   const [loc, setLoc] = useState<HTMLElement | null>(null);
@@ -562,6 +578,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           <Manual usa={manual.usa} onInchide={() => { setManual(null); }} />
         </Suspense>
       ) : null}
+      {testDeschis && p.test ? (
+        <Suspense fallback={null}>
+          <TestPasCuPas versiune={p.test.versiune} instanta={p.test.instanta} onInchide={() => { setTestDeschis(false); }} />
+        </Suspense>
+      ) : null}
       {vedere3d ? (
         <Suspense fallback={null}>
           <Vedere3D doc={doc} marime={marime} zona={zona} onInchide={() => { setVedere3d(false); }} />
@@ -758,6 +779,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               onClick={() => { setManual({ usa: null }); }}>
               ?
             </button>
+            {p.test ? (
+              <button type="button" className="aliniaza" aria-pressed={testDeschis} title={t('editare.test')} aria-label={t('editare.test')} data-editare="test"
+                onClick={(e) => { setTestDeschis(!testDeschis); e.currentTarget.blur(); }}>
+                Test
+              </button>
+            ) : null}
           </span>
         );
         const sectiuni = (

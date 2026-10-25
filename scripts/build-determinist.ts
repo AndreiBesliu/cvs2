@@ -35,6 +35,12 @@ const PLAFON_ADMIN_KB = 200;
 const PLAFON_USA_KB = 8;
 const BUCATA_ADMIN = /^assets\/PaginaAdmin-[^/]+\.js$/;
 /**
+ * Testul pas cu pas al owner-ului (ADR 0072): o bucată doar online, ca `/admin` (vine doar pe instanța de test, la clicul pe
+ * Test), cu plafonul ei, în afara totalului aplicației, pe care nimeni altcineva n-o descarcă.
+ */
+const BUCATA_TEST = /^assets\/TestPasCuPas-[^/]+\.js$/;
+const PLAFON_TEST_KB = 12;
+/**
  * Raportorul de erori (ADR 0043): bucata la cerere cu Firebase-ul ei (17,5 kB după recenzia 3.2), descărcată la prima
  * eroare. Nu numără `enterprise.js` (reCAPTCHA, terț), adus în plus pe o instanță cu App Check.
  */
@@ -98,6 +104,8 @@ let pornire = 0;
 let total = 0;
 let admin = 0;
 let bucatiAdmin = 0;
+let testPasCuPas = 0;
+let bucatiTest = 0;
 /** Fiecare bucată JavaScript (calea din `dist/`, ca în `index.html`), cu mărimea ei gzip. */
 const bucati = new Map<string, number>();
 for (const p of fisiere('.tmp/build-1')) {
@@ -114,8 +122,21 @@ for (const p of fisiere('.tmp/build-1')) {
     }
     continue;
   }
+  if (BUCATA_TEST.test(rel)) {
+    testPasCuPas += kb;
+    bucatiTest++;
+    if (laPornire.has(rel)) {
+      console.error(`${rel}: testul pas cu pas a ajuns în pachetul de pornire.`);
+      process.exit(1);
+    }
+    continue;
+  }
   total += kb;
   if (laPornire.has(rel)) pornire += kb;
+}
+if (bucatiTest !== 1) {
+  console.error(`Testul pas cu pas trebuie să fie exact o bucată separată (TestPasCuPas-*.js, ADR 0072); găsite: ${bucatiTest}.`);
+  process.exit(1);
 }
 if (bucatiAdmin !== 1) {
   // Fără bucata ei, Firebase-ul adminului s-ar număra în altă parte (sau deloc): măsurătoarea ar minți.
@@ -477,7 +498,7 @@ if (!cod(inregistrare).includes('/sw.js')) {
 
 const kbRaportorPornire = await kbModul(RAPORTOR_PORNIRE);
 console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri.`);
-console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}).`);
+console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}); testul pas cu pas: ${testPasCuPas.toFixed(1)} kB (plafon ${PLAFON_TEST_KB}, doar online).`);
 console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
 console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`)).join(', ')} și ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere).`);
 console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip (în engleză ${gz(join('.tmp/build-1', FISIER_ROADMAP_EN)).toFixed(1)} kB, ${roadmapEnCitit.netraduse} texte netraduse), ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
@@ -493,7 +514,7 @@ if (kbRaportorPornire > PLAFON_RAPORTOR_PORNIRE_KB || kbRaportor > PLAFON_RAPORT
   console.error(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}).`);
   process.exit(1);
 }
-if (pornire > PLAFON_PORNIRE_KB || total > PLAFON_TOTAL_KB || admin > PLAFON_ADMIN_KB) {
+if (pornire > PLAFON_PORNIRE_KB || total > PLAFON_TOTAL_KB || admin > PLAFON_ADMIN_KB || testPasCuPas > PLAFON_TEST_KB) {
   console.error('Mărimea pachetului trece de plafon.');
   process.exit(1);
 }

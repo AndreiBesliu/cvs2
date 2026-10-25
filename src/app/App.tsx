@@ -900,7 +900,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             suprapunere={(v, m, l) => (
               <Suspense fallback={null}>
                 <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)}
-                  ruleaza={(id, extra) => { ruleazaDocument(id, context(extra)); }} onLipeste={setLipesteStabil} onDesen={setDesenStabil} />
+                  ruleaza={(id, extra) => { ruleazaDocument(id, context(extra)); }} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
+                  {...(config.ok && config.config.instanta !== 'live' ? { test: { versiune: __VERSIUNE__, instanta: config.config.instanta } } : {})} />
               </Suspense>
             )}
             textLasare={t('import.lasa-aici')}

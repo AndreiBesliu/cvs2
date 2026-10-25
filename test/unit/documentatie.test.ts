@@ -438,6 +438,8 @@ test('poarta pe arborele real copiat: un tabel stricat face generarea să pice, 
     cpSync('docs/etape', join(dir, 'docs/etape'), { recursive: true });
     cpSync('docs/adr', join(dir, 'docs/adr'), { recursive: true });
     cpSync('docs/manual', join(dir, 'docs/manual'), { recursive: true });
+    // Și testul pas cu pas al owner-ului (ADR 0072), generat odată cu manualul.
+    cpSync('docs/tutorial', join(dir, 'docs/tutorial'), { recursive: true });
     assert.deepEqual([...genereazaDocumentatia(dir).keys()], [...GENERAT.keys()], 'copia întreagă se generează la fel');
     // Manualul (ADR 0058) are aceeași poartă: un capitol fără id în engleză oprește generarea, cu fișierul lui.
     const en = join(dir, 'docs/manual/en.md');

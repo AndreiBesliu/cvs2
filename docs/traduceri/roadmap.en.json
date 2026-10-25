@@ -617,10 +617,6 @@
       "ro": "Rampa (ADR 0029, documentul v6): bucla tăiată continuu, intrarea rotită, compusă cu urechile (portată, `docs/PORTARE.md` §3.2)",
       "en": "Ramp (ADR 0029, document v6): the loop cut continuously, the rotated entry, combined with tabs (ported, `docs/PORTARE.md` §3.2)"
     },
-    "6252cd766270cd60": {
-      "ro": "Testul uneltelor de desen, pas cu pas (31 de pași, cu Bine / Nu / Sărit și note): <https://claude.ai/artifact/S4w78746bv7zLGAqzZixnw>, pe instanța de test; adresa de test nu se schimbă cât durează (feliile noi merg pe un canal de previzualizare)",
-      "en": "The drawing tools test, step by step (31 steps, with Good / No / Skipped and notes): <https://claude.ai/artifact/S4w78746bv7zLGAqzZixnw>, on the test instance; the test address does not change while it lasts (new slices go to a preview channel)"
-    },
     "6518f88023cee9a7": {
       "ro": "Pânza v0: stratul de vectori în worker, pe pânză software; pan, zoom, selecție și mutare prin acțiuni; oracolul pânzei (marginea cercului)",
       "en": "Canvas v0: the vector layer in a worker, on a software canvas; pan, zoom, selection and moving through actions; the canvas oracle (the circle's edge)"
@@ -813,6 +809,10 @@
       "ro": "Jurnalul de erori pe server (ADR 0039): funcțiile `cncvs2` pe test, fără să le atingă pe cele vechi; `errorLogs` grupat pe amprentă, cu aparițiile; `logServerError` care nu aruncă; `logClientError` cu App Check și plafon. Regulile noi probate pe emulator, nepublicate (3.3). 12 teste pe emulator, 12 sabotaje prinse (după ce martorul a arătat un eșec fals al instrumentului). **Pe test:** 401 fără App Check și cu un token nesemnat. Publicarea a cerut două reparații: excluderile ancorate (`/src`) și recrearea callable-ului (invocarea publică se pune doar la creare).",
       "en": "Server-side error log (ADR 0039): the `cncvs2` functions on test, without touching the old ones; `errorLogs` grouped by fingerprint, with the occurrences; a `logServerError` that does not throw; `logClientError` with App Check and a cap. The new rules checked on the emulator, not published (3.3). 12 tests on the emulator, 12 sabotages caught (after the control showed a false failure of the tool). **On test:** 401 without App Check and with an unsigned token. Publishing needed two fixes: anchored exclusions (`/src`) and recreating the callable (public invocation is set only at creation)."
     },
+    "8a9708f14f83de88": {
+      "ro": "Testul pas cu pas, în aplicație",
+      "en": "The step-by-step test, in the app"
+    },
     "8ac91e8e95e88e5a": {
       "ro": "IR-ul v0 pe N axe",
       "en": "IR v0 on N axes"
@@ -953,6 +953,10 @@
       "ro": "curba în arce, decuparea, traseul oglindit și rotit",
       "en": "the curve into arcs, the trim, the mirrored and rotated toolpath"
     },
+    "a0f350c79902c559": {
+      "ro": "Testul pas cu pas",
+      "en": "The step-by-step test"
+    },
     "a17680231b9f3053": {
       "ro": "Instanța de test (exportul Firestore confirmat de owner, apoi doar hosting) și fișa plăcii 1, cu programele A și B",
       "en": "The test instance (Firestore export confirmed by the owner, then hosting only) and the plate 1 file, with programs A and B"
@@ -1020,6 +1024,10 @@
     "ab63838d337db906": {
       "ro": "Tichetele, configurarea, fișa de lucru, șabloanele, copiile în cloud",
       "en": "Tickets, configuration, the job sheet, templates, cloud copies"
+    },
+    "abd82743551cc043": {
+      "ro": "**Testul pas cu pas, în aplicație** (ADR 0072; cererea owner-ului: „vreau ca testarea asta sa fie ca un tutorial direct in app. vreau si un buton cu care sa pot face snapshot la plansa. aceasta imagine se ataseaza automat la raportul pe care ti-l voi da la final. deci nu ar trebui sa fie incarcata in server”). Butonul Test (lângă „?”, doar în afara instanței live) deschide un panou plutitor cu cei 31 de pași ai testului uneltelor (scriși ca document, `docs/tutorial/`): Bine / Nu / Sărit, o notă, Poză a planșei (pânza, straturile, mânerele, compuse local), o listă a pașilor, raportul descărcat ca un singur fișier HTML (pozele încorporate, datele citibile), „Începe din nou”. Totul în browser; bucata lui e doar online, cu plafonul ei (12 kB), în afara precache-ului și a totalului. Manualul („Testul pas cu pas”) e la zi. **Treceri:** (1) generatorul și poarta pașilor, panoul, stocarea, poza, raportul, probele; prima poză nu avea mânerele transformării (sunt elemente HTML, nu SVG): adăugate și ele.",
+      "en": "**The step-by-step test, in the app** (ADR 0072; the owner’s request: “I want this testing to be like a tutorial right in the app. I also want a button to take a snapshot of the board. this image is attached automatically to the report I will give you at the end. so it should not be uploaded to a server”). The Test button (next to “?”, only outside the live instance) opens a floating panel with the 31 steps of the tools test (written as a document, `docs/tutorial/`): OK / No / Skipped, a note, a Snapshot of the board (the canvas, the layers, the handles, composed locally), a list of the steps, the report downloaded as a single HTML file (snapshots embedded, data readable), “Start over”. Everything in the browser; its chunk is online-only, with its own budget (12 kB), outside the precache and the total. The manual (“The step-by-step test”) is up to date. **Passes:** (1) the steps generator and its gate, the panel, the storage, the snapshot, the report, the tests; the first snapshot lacked the transform handles (they are HTML elements, not SVG): added too."
     },
     "ac0858ac19654dfe": {
       "ro": "Importul, partea 2: Corel, WMF (+ EMF peste prag), DWG ca mesaj",
@@ -1368,6 +1376,10 @@
     "eca127da7c72e5f7": {
       "ro": "Relief pe două fețe + întoarcere; Bas-relief din STL; Conturul vectorial al reliefului",
       "en": "Two-sided relief + flipping; Bas-relief from STL; The relief's vector contour"
+    },
+    "ecfb11b67115a294": {
+      "ro": "Testul uneltelor de desen, pas cu pas, **în aplicație** (ADR 0072): butonul **Test** din extensia barei, lângă „?” (31 de pași, Bine / Nu / Sărit, o notă, **Poză** a planșei, ținută în browser); deocamdată pe canalul <https://cncvectorstudio-test--buzunar-x95ick77.web.app> (adresa principală de test rămâne neschimbată cât testezi); la final, **Descarcă raportul** și trimite-mi fișierul",
+      "en": "The drawing tools test, step by step, **in the app** (ADR 0072): the **Test** button in the bar’s extension, next to “?” (31 steps, OK / No / Skipped, a note, a **Snapshot** of the board, kept in the browser); for now on the channel <https://cncvectorstudio-test--buzunar-x95ick77.web.app> (the main test address stays unchanged while you test); at the end, **Download the report** and send me the file"
     },
     "ed9f5b522e78a9ba": {
       "ro": "Fișa plăcii 2",

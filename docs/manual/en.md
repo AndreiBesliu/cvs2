@@ -385,6 +385,17 @@ sheet left as you rotated it. `Esc`, the 3D button or a drawing tool go back to 
 - **The error journal**: at the bottom, the chip says how many errors the browser's local journal holds. If something breaks,
   the app shows “Something went wrong”, with “Copy the report” (you can send it) and “Reload”.
 
+## The step-by-step test
+%% capitol: test
+%% acopera: editare.test
+
+On the test instance, the **Test** button in the bar's extension, next to “?” (its title: “Step-by-step test”), opens the
+drawing tools test in a floating panel that you move by dragging its title and collapse with ▾. Each step says what you do
+and what you should see; you mark **OK**, **No** or **Skipped** and can write a note. **Snapshot** saves the image of the
+board (the drawing, the rulers, the guides, the handles, the toolpath) in the browser: nothing goes to a server. **Download
+the report** writes a single HTML file with the results, the notes and the snapshots, to send on. The list at the top goes
+to any step. The results stay after a reload too; **Start over** deletes them, after a confirmation.
+
 ## Keyboard shortcuts
 %% capitol: scurtaturi
 

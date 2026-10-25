@@ -148,6 +148,7 @@ export const enEditare = {
   'editare.retea.motiv.curba-scurta': 'The curve chosen has no length.',
   'editare.retea.motiv.fara-forme': 'Choose the shapes to copy too, not just the curve (the curve is the last one chosen).',
   'editare.manual': 'Manual (F1)',
+  'editare.test': 'Step-by-step test',
   'editare.manual.sectiune': 'Help',
   'editare.manual.titlu': 'Manual',
   'editare.manual.cauta': 'Search the manual',
