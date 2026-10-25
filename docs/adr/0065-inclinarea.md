@@ -3,7 +3,8 @@
 **Starea:** acceptat pe 25.10.2026. Felia aleasă de asistent la „Continua […] dupa ce terminam cu uneltele de desen”: din rândul
 „Transformare și copiere” al acoperirii rămăseseră înclinarea și copierea de-a lungul unei curbe. **Intră în:** etapa 6
 („Editorul de vectori”), adusă în etapa 3, fără mașină. **Continuă:** ADR 0052 (scalarea exactă a geometriei), ADR 0054
-(oglindirea), ADR 0061 / 0064 (panourile din extensie).
+(oglindirea), ADR 0061 / 0064 (panourile din extensie). §2 (arcele refuzate) schimbat de ADR 0078: cu bifa omului, arcele devin
+curbe înaintea înclinării.
 
 **Problema.** O formă nu se putea înclina (oblic, ca un text italic sau o ramă în perspectivă): mutarea, scalarea, rotirea și
 oglindirea erau gata, înclinarea nu.

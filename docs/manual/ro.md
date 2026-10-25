@@ -170,8 +170,10 @@ sau o formă rotită oblic se scalează doar proporțional; o piesă folosită �
 −75° și 75° (gol = 0): **Orizontal** mută punctele spre dreapta cu cât sunt mai sus (un unghi negativ, spre stânga), apoi
 **Vertical** le ridică cu cât sunt mai la dreapta, față de centrul cutiei selecției. Aria rămâne aceeași. Cât panoul e deschis,
 cutia înclinată se vede pe pânză, punctat. Înclinarea intră exact în geometrie: liniile și curbele rămân linii și curbe, iar un
-dreptunghi devine o cale (un paralelogram). O formă cu arce (un cerc, un dreptunghi cu colțuri rotunjite, o cale cu arce) nu se
-înclină, fiindcă arcele ar deveni elipse: panoul spune asta, iar Înclină rămâne inactiv. Un singur pas de anulare.
+dreptunghi devine o cale (un paralelogram). O formă cu arce (un cerc, un dreptunghi cu colțuri rotunjite, o cale cu arce) se
+înclină doar cu bifa **Arcele devin curbe (cercul devine elipsă)**, care apare în panou doar atunci: arcele devin curbe Bézier,
+la cel mult 0,001 mm de arcul înclinat, iar cercul iese o elipsă (o cale). Fără bifă, panoul spune de ce nu, iar Înclină rămâne
+inactiv: cercul rămâne cerc dacă nu ceri altfel. Bifa pornește scoasă la fiecare deschidere a panoului. Un singur pas de anulare.
 
 **Copiază în rețea** (secțiunea Copiere din extensia barei, butonul cu patru pătrate) face copii ale selecției, într-un
 singur pas de anulare. Copiile sunt piese independente (ca la Duplică): fiecare se poate schimba sau transforma separat.

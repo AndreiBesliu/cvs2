@@ -95,10 +95,11 @@ Forma se oglindește stânga ↔ dreapta, apoi sus ↔ jos, față de centrul ei
 ### Înclinarea
 %% pas: t-inclina
 %% faci
-Alege un dreptunghi; butonul Înclină (lângă oglindire), 30 pe orizontală, Înclină. Apoi încearcă pe un cerc.
+Alege un dreptunghi; butonul Înclină (lângă oglindire), 30 pe orizontală, Înclină. Apoi pe un cerc: întâi fără bifă, apoi
+cu „Arcele devin curbe”.
 %% vezi
-Cutia înclinată, punctată, înainte; după, un paralelogram (o cale). Pe cerc, motivul „arcele ar deveni elipse” și butonul
-oprit.
+Cutia înclinată, punctată, înainte; după, un paralelogram (o cale). Pe cerc, fără bifă, motivul și butonul oprit; cu bifa,
+cercul devine o elipsă (o cale).
 
 ## Copierea
 

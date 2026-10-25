@@ -2946,3 +2946,19 @@ jumătate, cuvintele încă o parte; adminul și §10 rămân nemăsurate).
 **Completed:** 25.10 21:26. Porțile: 7 259 de teste unitare (0 picate), e2e 219 / 219 în Edge, emulatoarele 36 + 13 (proba nouă:
 bara etapei 6 plină și colorată, a etapei 5 la ⅛); `/admin` 190,2 / 200 kB. Mutațiile: 7 / 7 prinse, una echivalentă (o
 verificare de prisos în `randulPragului`, scoasă).
+**Publicat pe adresa principală de test:** 25.10, workflow-ul `publica` pe `d637757` (rularea 40227687800), după rapid-ul verde
+(40226995385). `/admin` cere login (nu-l fac eu): verificat `documentatie/roadmap.json` publicat: etapa 6 are 2 / 2 rânduri de prag
+făcute, etapa 5 unul în lucru din 4 (și un punct nemăsurat), etapa 14 doar punctul adminului, nemăsurat; desenul barei, probat pe
+emulatoare (captura `.tmp/roadmap.png`, trimisă owner-ului).
+
+## 2026-10-25 — Înclinarea formelor cu arce (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește înclinarea cu arcele făcute curbe.” (cererea de dinainte, cu captura panoului care refuza un cerc: „ar
+trebui sa am optiunea de a transforma cerul in elipsa, sau colturile”); între timp: „iar dupa, vreau sa continuam cu ce a ramas
+din etapa 3”.
+**Started:** 25.10, ~21:35. Felia **6.Q↑**, fără agenți (ADR 0078), pe calea scrisă în ADR 0065 („Se redeschide dacă”): bifa în
+panou, arcele făcute cubice (ADR 0068) cu toleranța împărțită la scara elementului și la întinderea înclinării, ca abaterea să
+rămână sub 0,001 mm după înclinare, în lume.
+**Completed:** 25.10 22:14. Porțile: 7 264 de teste unitare (0 picate), e2e 220 / 220 în Edge, emulatoarele 36 + 13; pornirea
+95,3 / 100 kB, totalul 305,6 / 330. Mutațiile: 7 / 8 la prima rulare (scara elementului scăpa: la scara 2, numărul de cubice
+avea rezervă), apoi cazul cu scara 50: 8 / 8.

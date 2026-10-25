@@ -8,7 +8,7 @@ import { lipeste } from '../geom/lipire.ts';
 import '../i18n/editare.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
-import { matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
+import { areArce, matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
   adaugaLaSelectie, aleseInCadru, citesteRetea, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, FORMULAR_RETEA, type FormularRetea, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie,
@@ -264,14 +264,21 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const scrieOffset = (f: FormularOffset): void => { setFormOffset(f); scrieLocal(CHEIE_OFFSET, JSON.stringify(f)); };
   const [formInclinare, setFormInclinare] = useState<FormularInclinare>(inclinareSalvata);
   const scrieInclinare = (f: FormularInclinare): void => { setFormInclinare(f); scrieLocal(CHEIE_INCLINARE, JSON.stringify(f)); };
+  // Arcele făcute curbe înaintea înclinării (ADR 0078): o alegere a omului, nebifată la fiecare deschidere a panoului (cercul
+  // rămâne cerc dacă nu cere altfel); bifa apare doar când selecția are arce.
+  const [arceInCurbe, setArceInCurbe] = useState(false);
+  const cuArce = useMemo(() => panouInclinare && areArce(doc, FOAIA, selectie), [panouInclinare, doc, selectie]);
   // Înclinarea din panou: unghiurile citite (null: un câmp greșit) și transformarea, față de centrul cutiei selecției.
   const inclinare = useMemo((): Transformare | 'unghi' | 'zero' | null => {
     if (!panouInclinare || !cutie) return null;
     const ux = citesteNumar(formInclinare.x.replace(/^\s*$/, '0'), true), uy = citesteNumar(formInclinare.y.replace(/^\s*$/, '0'), true);
     if (ux === null || uy === null || Math.abs(ux) > UNGHI_MAXIM_INCLINARE || Math.abs(uy) > UNGHI_MAXIM_INCLINARE) return 'unghi';
     if (ux === 0 && uy === 0) return 'zero';
-    return { fel: 'inclinare', unghiX: ux, unghiY: uy, centru: { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 } };
-  }, [panouInclinare, cutie, formInclinare]);
+    return {
+      fel: 'inclinare', unghiX: ux, unghiY: uy, centru: { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 },
+      ...(arceInCurbe ? { arceInCurbe: true } : {}),
+    };
+  }, [panouInclinare, cutie, formInclinare, arceInCurbe]);
   const [modOffset, setModOffset] = useState<ModulOffset | 'eroare' | null>(null);
   useEffect(() => {
     if (!panouOffset || (modOffset !== null && modOffset !== 'eroare')) return;
@@ -733,12 +740,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               </button>
             ))}
             <button type="button" className="aliniaza" aria-expanded={panouInclinare} aria-controls="panou-inclinare" title={t('editare.inclinare')}
-              aria-label={t('editare.inclinare')} data-editare="inclinare" onClick={() => { setPanou(panouInclinare ? null : 'inclinare'); }}>
+              aria-label={t('editare.inclinare')} data-editare="inclinare" onClick={() => { setPanou(panouInclinare ? null : 'inclinare'); setArceInCurbe(false); }}>
               <IconaInclinare />
             </button>
             {motivOglinda ? <span className="motiv-extensie" role="status" data-testid="motiv-oglindire">{motivOglinda}</span> : null}
             {panouInclinare ? (
-              <PanouInclinare form={formInclinare} onForm={scrieInclinare}
+              <PanouInclinare form={formInclinare} onForm={scrieInclinare} arce={cuArce ? arceInCurbe : null} onArce={setArceInCurbe}
                 motiv={selectie.length === 0 || !cutie ? t('editare.inclinare.nicio-selectie') : p.doarCitire ? t('motiv.doar-citire')
                   : inclinare === 'unghi' ? t('editare.inclinare.motiv.unghi') : inclinare === 'zero' ? t('editare.inclinare.motiv.zero')
                     : inclinare === null ? null : (() => { const r = transforma(doc, FOAIA, selectie, inclinare); return r.ok ? null : t(`editare.transformare.${r.motiv}`); })()}
@@ -1700,12 +1707,15 @@ function PanouOffset({ form, onForm, rez, motivActiune, onAplica, onInchide }: {
 }
 
 /**
- * Panoul înclinării (ADR 0065): unghiul pe orizontală și pe verticală (grade, cel mult 75°), motivul pentru care nu se poate
- * (selecția, unghiurile, verdictul modelului: arcele, piesa împărțită), Înclină și Închide. Esc îl închide.
+ * Panoul înclinării (ADR 0065): unghiul pe orizontală și pe verticală (grade, cel mult 75°), bifa care face arcele curbe (ADR
+ * 0078; doar când selecția are arce: `arce` null altfel), motivul pentru care nu se poate (selecția, unghiurile, verdictul
+ * modelului: arcele, piesa împărțită), Înclină și Închide. Esc îl închide.
  */
-function PanouInclinare({ form, onForm, motiv, onAplica, onInchide }: {
+function PanouInclinare({ form, onForm, arce, onArce, motiv, onAplica, onInchide }: {
   readonly form: FormularInclinare;
   readonly onForm: (f: FormularInclinare) => void;
+  readonly arce: boolean | null;
+  readonly onArce: (da: boolean) => void;
   readonly motiv: string | null;
   readonly onAplica: () => void;
   readonly onInchide: () => void;
@@ -1730,6 +1740,12 @@ function PanouInclinare({ form, onForm, motiv, onAplica, onInchide }: {
         {camp('x', t('editare.inclinare.x'))}
         {camp('y', t('editare.inclinare.y'))}
       </div>
+      {arce !== null ? (
+        <label className="bifa-retea" title={t('editare.inclinare.arce.titlu')}>
+          <input type="checkbox" checked={arce} data-inclinare="arce" onChange={(e) => { onArce(e.target.checked); }} />
+          <span>{t('editare.inclinare.arce')}</span>
+        </label>
+      ) : null}
       {motiv ? <p className="motiv-retea" role="status" data-testid="motiv-inclinare">{motiv}</p> : null}
       <div className="butoane-retea">
         <button type="button" className="principal" data-inclinare="aplica" disabled={motiv !== null} onClick={onAplica}>{t('editare.inclinare.aplica')}</button>

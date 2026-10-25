@@ -6,7 +6,8 @@ import type { Document, Nod } from '../../src/model/document.ts';
 import { conturElement } from '../../src/model/forme.ts';
 import { istoricNou } from '../../src/model/jurnal.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
-import { matriceInclinare, transforma, type Transformare } from '../../src/model/transformare.ts';
+import { areArce, matriceInclinare, transforma, type Transformare } from '../../src/model/transformare.ts';
+import { cerculArcului } from '../../src/geom/conturBaza.ts';
 import { creeazaRegistru, ruleaza } from '../../src/ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocument.ts';
 import '../../src/ui/actiuniDocumentCalcul.ts';
@@ -104,4 +105,132 @@ test('prin `document.transforma`: un pas de anulare, iar anularea readuce dreptu
   assert.equal(h.trecut.length, 1);
   ruleaza(R, 'istoric.anuleaza', c);
   assert.equal(h.doc.piese[0]!.radacina.tip === 'element' && h.doc.piese[0]!.radacina.forma.tip, 'dreptunghi');
+});
+
+// ——— Arcele făcute curbe (ADR 0078) ———
+
+type Q = { readonly x: number; readonly y: number };
+/** Conturul în lume, des: liniile la capete, arcele pe 20 000 de pași de unghi (curba exactă, înainte de înclinare). */
+function des(c: ReturnType<typeof conturElement>): Q[] {
+  const out: Q[] = [];
+  const n = c.varfuri.length;
+  for (let k = 0; k < n; k++) {
+    const v = c.varfuri[k]!, b = c.varfuri[(k + 1) % n]!;
+    out.push(v.p);
+    if (v.s.tip === 'A' && v.s.bulge !== 0) {
+      const { centru, raza, start, baleiaj } = cerculArcului(v.p, b.p, v.s.bulge);
+      for (let j = 1; j < 20000; j++) out.push({ x: centru.x + raza * Math.cos(start + (baleiaj * j) / 20000), y: centru.y + raza * Math.sin(start + (baleiaj * j) / 20000) });
+    }
+  }
+  out.push(c.varfuri[0]!.p);
+  return out;
+}
+/** Punctele cubicelor (40 pe fiecare) și vârfurile conturului din lume. */
+function esantioane(c: ReturnType<typeof conturElement>): Q[] {
+  const out: Q[] = [];
+  const n = c.varfuri.length;
+  for (let k = 0; k < n; k++) {
+    const v = c.varfuri[k]!, b = c.varfuri[(k + 1) % n]!;
+    out.push(v.p);
+    if (v.s.tip !== 'C') continue;
+    for (let j = 1; j < 40; j++) {
+      const t = j / 40, u = 1 - t;
+      out.push({
+        x: u * u * u * v.p.x + 3 * u * u * t * v.s.c1.x + 3 * u * t * t * v.s.c2.x + t * t * t * b.p.x,
+        y: u * u * u * v.p.y + 3 * u * u * t * v.s.c1.y + 3 * u * t * t * v.s.c2.y + t * t * t * b.p.y,
+      });
+    }
+  }
+  return out;
+}
+/** Abaterea cea mai mare a eșantioanelor față de linia frântă (distanța la cel mai apropiat segment). */
+function abatere(es: readonly Q[], linie: readonly Q[]): number {
+  let max = 0;
+  for (const q of es) {
+    let min = Infinity;
+    for (let k = 0; k + 1 < linie.length; k++) {
+      const a = linie[k]!, b = linie[k + 1]!;
+      const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
+      const t = l2 > 0 ? Math.max(0, Math.min(1, ((q.x - a.x) * dx + (q.y - a.y) * dy) / l2)) : 0;
+      min = Math.min(min, Math.hypot(q.x - a.x - t * dx, q.y - a.y - t * dy));
+    }
+    max = Math.max(max, min);
+  }
+  return max;
+}
+const elementul = (d: Document, id: string) => elementeFoaie(d, 0).find((e) => e.instanta === id)!;
+
+test('cercul R50 cu arcele făcute curbe, orizontal 30°: doar cubice, la cel mult 0,001 mm de elipsa exactă, aceeași arie; fără bifă, refuz', () => {
+  const doc = docDin(stoc, { id: 'o', forma: { tip: 'cerc', raza: 50 }, matrice: { ...ID, e: 120, f: 90 } });
+  const t: Transformare = { fel: 'inclinare', unghiX: 30, unghiY: 0, centru: P(120, 90), arceInCurbe: true };
+  assert.deepEqual(transforma(doc, 0, ['o'], { ...t, arceInCurbe: false }), { ok: false, motiv: 'inclinare-arc' });
+  const H = matriceInclinare(30, 0, P(120, 90));
+  const d = aplicat(doc, ['o'], t);
+  const c = conturElement(elementul(d, 'o'));
+  assert.equal(elementul(d, 'o').forma.tip, 'cale');
+  assert.ok(c.varfuri.every((v) => v.s.tip === 'C'), 'doar cubice');
+  const exact = des(conturElement(elementul(doc, 'o'))).map((q) => aplica(H, q));
+  const a = abatere(esantioane(c), exact);
+  assert.ok(a <= 0.001, `abaterea ${a}`);
+  // Vârfurile cubicelor sunt pe cerc, deci pe elipsă, exact.
+  assert.ok(abatere(c.varfuri.map((v) => v.p), exact) < 1e-6);
+  assert.ok(Math.abs(Math.abs(arieCuSemn(conturElement(elementul(d, 'o')))) - Math.PI * 2500) < 0.5, 'aria πr²');
+});
+
+test('cazul cel mai întins (75° și 75°), pe o instanță rotită, în grupuri scalate de 2 și de 50: tot sub 0,001 mm în lume', () => {
+  // Scara grupului contează: un cerc R1 sub scara 50 e unul de 50 mm în lume, cu toleranța împărțită și la 50.
+  for (const [scara, raza] of [[2, 20], [50, 1]] as const) {
+    const cerc: Nod = { tip: 'element', id: 'k', forma: { tip: 'cerc', raza }, matrice: { ...ID, e: 3 / scara, f: -2 / scara } };
+    let doc = docDin(stoc, { id: 'x', forma: { tip: 'dreptunghi', latime: 1, inaltime: 1, razaColt: 0 }, matrice: { ...ID } });
+    const grup: Nod = { tip: 'grup', id: 'g', matrice: { a: scara * Math.cos(0.4), b: scara * Math.sin(0.4), c: -scara * Math.sin(0.4), d: scara * Math.cos(0.4), e: 10, f: 5 }, copii: [cerc] };
+    doc = { ...doc, piese: [...doc.piese, { id: 'g', radacina: grup, operatii: [] }], foi: doc.foi.map((f) => ({ ...f, instante: [...f.instante, { id: 'g', piesa: 'g', x: 150, y: 100, rotire: 30 }] })) };
+    const t: Transformare = { fel: 'inclinare', unghiX: 75, unghiY: 75, centru: P(150, 100), arceInCurbe: true };
+    const H = matriceInclinare(75, 75, P(150, 100));
+    const d = aplicat(doc, ['g'], t);
+    const exact = des(conturElement(elementul(doc, 'g'))).map((q) => aplica(H, q));
+    const a = abatere(esantioane(conturElement(elementul(d, 'g'))), exact);
+    assert.ok(a <= 0.001, `scara ${scara}: abaterea ${a}`);
+  }
+});
+
+test('dreptunghiul cu colțuri rotunjite (100 × 60, raza 10), 45°: laturile rămân linii, colțurile devin cubice, sub 0,001 mm', () => {
+  const doc = docDin(stoc, { id: 'r', forma: { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 10 }, matrice: { ...ID, e: 20, f: 20 } });
+  const t: Transformare = { fel: 'inclinare', unghiX: 45, unghiY: 0, centru: P(70, 50), arceInCurbe: true };
+  const H = matriceInclinare(45, 0, P(70, 50));
+  const d = aplicat(doc, ['r'], t);
+  const c = conturElement(elementul(d, 'r'));
+  assert.equal(c.varfuri.filter((v) => v.s.tip === 'L').length, 4, 'cele patru laturi');
+  assert.equal(c.varfuri.filter((v) => v.s.tip === 'A').length, 0);
+  const a = abatere(esantioane(c), des(conturElement(elementul(doc, 'r'))).map((q) => aplica(H, q)));
+  assert.ok(a <= 0.001, `abaterea ${a}`);
+});
+
+test('fără arce, bifa nu schimbă nimic; `areArce` spune când apare bifa (cercul, colțurile, arcul, nu și bulge 0)', () => {
+  const doc = docDin(stoc,
+    { id: 'p', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 0 }, matrice: { ...ID, e: 20, f: 20 } },
+    { id: 'o', forma: { tip: 'cerc', raza: 10 }, matrice: { ...ID, e: 100, f: 50 } },
+    { id: 'r', forma: { tip: 'dreptunghi', latime: 40, inaltime: 20, razaColt: 3 }, matrice: { ...ID, e: 150, f: 50 } },
+    { id: 'z', forma: { tip: 'cale', inchis: true, varfuri: [{ p: P(0, 0), s: { tip: 'A', bulge: 0 } }, { p: P(20, 0), s: L }, { p: P(10, 10), s: L }] }, matrice: { ...ID, e: 200, f: 50 } });
+  const t: Transformare = { fel: 'inclinare', unghiX: 20, unghiY: 10, centru: P(40, 30) };
+  assert.deepEqual(transforma(doc, 0, ['p', 'z'], { ...t, arceInCurbe: true }), transforma(doc, 0, ['p', 'z'], t));
+  assert.deepEqual(['p', 'o', 'r', 'z'].map((id) => areArce(doc, 0, [id])), [false, true, true, false]);
+  assert.equal(areArce(doc, 0, ['p', 'o']), true);
+  assert.equal(areArce(doc, 0, []), false);
+});
+
+test('o cale deschisă: arcul din mijloc devine cubice, iar „arcul” ultimului vârf (fără segment) nu adaugă nimic', () => {
+  const deschisa = { tip: 'cale' as const, inchis: false, varfuri: [{ p: P(0, 0), s: L }, { p: P(20, 0), s: { tip: 'A' as const, bulge: 1 } }, { p: P(40, 0), s: { tip: 'A' as const, bulge: 1 } }] };
+  const doc = docDin(stoc, { id: 'd', forma: deschisa, matrice: { ...ID, e: 50, f: 50 } });
+  const d = aplicat(doc, ['d'], { fel: 'inclinare', unghiX: 20, unghiY: 0, centru: P(70, 50), arceInCurbe: true });
+  const c = conturElement(elementul(d, 'd'));
+  assert.equal(c.inchis, false);
+  const H = matriceInclinare(20, 0, P(70, 50));
+  // Primul și ultimul vârf rămân capetele căii (înclinate); între ele, linia și semicercul ca cubice.
+  aproape(c.varfuri[0]!.p, aplica(H, P(50, 50)), 'începutul');
+  aproape(c.varfuri.at(-1)!.p, aplica(H, P(90, 50)), 'capătul');
+  assert.ok(c.varfuri.slice(1, -1).every((v) => v.s.tip === 'C'), 'semicercul, din cubice');
+  // Semicercul exact, în lume: centrul (80, 50), raza 10, înclinat; cubicele din mijloc, la cel mult 0,001 mm de el.
+  const cerc = Array.from({ length: 40001 }, (_, j) => aplica(H, P(80 + 10 * Math.cos((2 * Math.PI * j) / 40000), 50 + 10 * Math.sin((2 * Math.PI * j) / 40000))));
+  const a = abatere(esantioane({ inchis: false, varfuri: c.varfuri.slice(1) }), cerc);
+  assert.ok(a <= 0.001, `abaterea ${a}`);
 });

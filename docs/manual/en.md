@@ -176,8 +176,10 @@ between −75° and 75° (empty = 0): **Horizontal** moves points to the right t
 left), then **Vertical** raises them the further right they are, about the centre of the selection box. The area stays the
 same. While the panel is open, the skewed box shows on the canvas, dashed. Skewing goes exactly into the geometry: lines and
 curves stay lines and curves, and a rectangle becomes a path (a parallelogram). A shape with arcs (a circle, a rectangle with
-rounded corners, a path with arcs) is not skewed, as the arcs would become ellipses: the panel says so, and Skew stays
-inactive. A single undo step.
+rounded corners, a path with arcs) is skewed only with the tick **Arcs become curves (the circle becomes an ellipse)**, which
+shows in the panel only then: the arcs become Bézier curves, within 0.001 mm of the skewed arc, and the circle comes out an
+ellipse (a path). Without the tick, the panel says why not, and Skew stays inactive: a circle stays a circle unless you ask
+otherwise. The tick starts cleared each time the panel opens. A single undo step.
 
 **Copy in an array** (the Copy section of the bar extension, the button with four squares) makes copies of the selection, in
 a single undo step. The copies are independent parts (as with Duplicate): each one can be changed or transformed on its own.
