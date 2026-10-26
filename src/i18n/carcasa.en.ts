@@ -63,5 +63,13 @@ export const enCarcasa = {
     one: 'Profile ({latura}) on {n} contour: {adancime} mm in passes of {pas} mm, T{t} Ø{d}',
     other: 'Profile ({latura}) on {n} contours: {adancime} mm in passes of {pas} mm, T{t} Ø{d}',
   },
+  'arbore.buzunar': {
+    one: 'Pocket on {n} contour: {adancime} mm in passes of {pas} mm, T{t} Ø{d}',
+    other: 'Pocket on {n} contours: {adancime} mm in passes of {pas} mm, T{t} Ø{d}',
+  },
+  'arbore.gaurire': {
+    one: 'Drilling on {n} circle: {adancime} mm in steps of {pas} mm, T{t} Ø{d}',
+    other: 'Drilling on {n} circles: {adancime} mm in steps of {pas} mm, T{t} Ø{d}',
+  },
   'arbore.fara-operatii': 'No cutting operation',
 } as const satisfies Readonly<Record<string, Mesaj>>;

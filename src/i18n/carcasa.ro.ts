@@ -65,5 +65,15 @@ export const roCarcasa = {
     few: 'Profil {latura} pe {n} contururi: {adancime} mm în treceri de {pas} mm, T{t} Ø{d}',
     other: 'Profil {latura} pe {n} de contururi: {adancime} mm în treceri de {pas} mm, T{t} Ø{d}',
   },
+  'arbore.buzunar': {
+    one: 'Buzunar pe {n} contur: {adancime} mm în treceri de {pas} mm, T{t} Ø{d}',
+    few: 'Buzunar pe {n} contururi: {adancime} mm în treceri de {pas} mm, T{t} Ø{d}',
+    other: 'Buzunar pe {n} de contururi: {adancime} mm în treceri de {pas} mm, T{t} Ø{d}',
+  },
+  'arbore.gaurire': {
+    one: 'Găurire pe {n} cerc: {adancime} mm în pași de {pas} mm, T{t} Ø{d}',
+    few: 'Găurire pe {n} cercuri: {adancime} mm în pași de {pas} mm, T{t} Ø{d}',
+    other: 'Găurire pe {n} de cercuri: {adancime} mm în pași de {pas} mm, T{t} Ø{d}',
+  },
   'arbore.fara-operatii': 'Nicio operație de tăiere',
 } as const satisfies DictionarRoPentru<typeof enCarcasa>;

@@ -50,8 +50,11 @@ test('buzunarul din fereastra exportului: dreptunghiul 100 × 60 se golește la 
     }
   }
   expect(gresite).toBe(0);
-  // Operația a intrat în proiect: la redeschidere, rândul e tot un buzunar, cu pasul lui.
+  // Operația a intrat în proiect: în arbore (numită buzunar, nu „Profil interior”) și la redeschidere, cu pasul lui.
   await page.getByRole('button', { name: 'Închide' }).click();
+  const comuta = page.locator('button[data-comuta]').first();
+  if ((await comuta.getAttribute('aria-expanded')) !== 'true') await comuta.click();
+  await expect(page.locator('[data-nod="operatie"]')).toHaveText(['Buzunar pe 1 contur: 3 mm în treceri de 3 mm, T1 Ø6']);
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]')).toHaveValue('buzunar');
   await expect(page.locator('[data-camp="pas-lateral"]')).toHaveValue('2,4');

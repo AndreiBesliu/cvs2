@@ -89,6 +89,10 @@ test('găurirea din fereastra exportului: refuzul cu motiv, ciocănirea în cent
   if ((await panou.getAttribute('data-deschis')) !== 'true') await page.locator('[data-actiune="vedere.proprietati"]').first().click();
   await expect(panou).toContainText('găurire');
   await expect(panou).toContainText('Iese la fiecare al … pas');
+  // Arborele proiectului numește felul, nu „Profil interior” (pasul scris în dialog: 3).
+  const comuta = page.locator('button[data-comuta]').first();
+  if ((await comuta.getAttribute('aria-expanded')) !== 'true') await comuta.click();
+  await expect(page.locator('[data-nod="operatie"]')).toHaveText(['Găurire pe 1 cerc: 10 mm în pași de 3 mm, T1 Ø16']);
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('tr[data-operatie]').first().locator('[data-camp="latura"]')).toHaveValue('gaurire');
   await expect(page.locator('[data-camp="retragere"]')).toHaveValue('2');

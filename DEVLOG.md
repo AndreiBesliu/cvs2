@@ -3154,3 +3154,6 @@ interfață, 9 / 9. **Găsit pe drum:** în manual, fraza despre o singură frez
 acum; în intrarea 3.K a DEVLOG-ului, calea npm stricată de un heredoc (fiecare `\n` din ea devenise rând nou), scrisă din nou. **Proba fizică**
 (găurile ciocănite și în elice, cotele măsurate) e a plăcii etapei 5; decizia din 07.10 („pe simulare și pe octeții postului”)
 privea doar găurirea multiplă (drillbanks), nu pe aceasta. **npm lipsește încă** din instalarea Node: porțile au rulat cu `node`.
+**Trecerea 2 (21:12), găsită la verificarea pe test:** arborele proiectului descria orice operație ca „Profil {latura}”, deci
+buzunarul (din 5.1↑) și găurirea apăreau „Profil interior”. Acum le numește („Buzunar pe 1 contur: …”, „Găurire pe 1 cerc: … în
+pași de …”), cu proba în e2e-ul fiecăruia și 2 / 2 mutații (felul pierdut, felurile încurcate).
