@@ -122,6 +122,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   docul din dreapta (`vedere.masina`). **Jog-ul, zero-ul și palparea Z (ADR 0082, felia 3.7a)** gata pe 26.10, pe mașina simulată:
   procedurile pure (`src/machine/proceduri.ts`), zero-ul și palparea în WCS-ul programului, WCS-ul activ citit (`$G`), starea
   modală pusă la loc după palpare; placa simulată la Z −25. 3.7b (aceleași pe mașină) cere placa de contact a owner-ului.
+  **Postul familiei GRBL (ADR 0083, felia 3.8a)** gata pe 26.10: contractele grblHAL și FluidNC (`src/post/contracte/`), inch cu
+  5 zecimale, schimbarea sculei ca eveniment în IR (`schimba-scula`), cu 4 strategii și blocul de după `M6`, probată prin sender
+  pe emulator. Jobul cu mai multe scule din document (CAM, dialog, simulare, fișierele separate în interfață): 3.8b.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

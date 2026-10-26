@@ -66,7 +66,7 @@ test('fișa etapei 3: feliile, jurnalul (cu rândurile aduse ↑ și 3.P), ce î
   const f = citesteFisa('docs/etape/etapa-03.md', citeste('docs/etape/etapa-03.md'));
   assert.equal(f.numar, 3);
   assert.equal(f.pornita, '16.10.2026');
-  assert.deepEqual(f.felii.map((x) => x.id), ['3.1', '3.2', '3.3', '3.4a', '3.4b', '3.5a', '3.5b', '3.6a', '3.6b', '3.7a', '3.7b', '3.8', '3.9']);
+  assert.deepEqual(f.felii.map((x) => x.id), ['3.1', '3.2', '3.3', '3.4a', '3.4b', '3.5a', '3.5b', '3.6a', '3.6b', '3.7a', '3.7b', '3.8a', '3.8b', '3.9']);
   const ids = f.jurnal.map((x) => x.id);
   for (const id of ['3.1', '3.4b', '4.7↑', '4.5↑b', '4.2↑', '4.7↑b', '3.P']) assert.ok(ids.includes(id), id);
   const sim = f.jurnal.find((x) => x.id === '4.2↑');
@@ -431,10 +431,10 @@ test('pragul unui punct din „Închide”: numele care începe cu el, altfel si
   assert.deepEqual(pragEtapei('Găurire; admin **P0**; —; x', citesteAcoperirea(ACOPERIRE_MIC)), { facut: 0, inLucru: 1, deFacut: 0, fara: 2 });
 });
 
-test('pragul pe arborele real: editorul de vectori (etapa 6) are ambele rânduri făcute; buzunarul (etapa 5) e în lucru', () => {
+test('pragul pe arborele real: editorul de vectori (etapa 6) are ambele rânduri făcute; buzunarul și ordinea (etapa 5) sunt în lucru', () => {
   assert.deepEqual(etapa('6').prag, { facut: 2, inLucru: 0, deFacut: 0, fara: 0 });
   const cinci = etapa('5').prag;
-  assert.equal(cinci.inLucru, 1, 'buzunarul cu mai multe freze');
+  assert.equal(cinci.inLucru, 2, 'buzunarul cu mai multe freze; ordinea, cu fișierele pe sculă din post (3.8a)');
   assert.equal(cinci.facut + cinci.inLucru + cinci.deFacut, 4, 'buzunarul, găurirea, ordinea, animația');
   assert.equal(cinci.fara, 1, '§10 Găurire în pași');
 });

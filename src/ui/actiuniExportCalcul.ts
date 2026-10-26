@@ -6,6 +6,7 @@ import type { Montaj } from '../ir/montaj.ts';
 import { profilDinSetari, type ProfilMasina } from '../ir/masina.ts';
 import { PROFIL_GRBL_11H } from '../ir/masini/grbl11h.ts';
 import { PLAFON, type Document } from '../model/document.ts';
+import { CONTRACTE } from '../post/contracte/index.ts';
 import { GRBL_11 } from '../post/contracte/grbl11.ts';
 import { exporta, type ProgramExportat } from '../post/export.ts';
 import { posteaza } from '../post/post.ts';
@@ -27,7 +28,7 @@ function aceeasiIesire(a: IesireFoaie | undefined, b: IesireFoaie): boolean {
   return egal(x.stanga, y.stanga) && egal(x.dreapta, y.dreapta) && egal(x.jos, y.jos) && egal(x.sus, y.sus);
 }
 
-/** Exportul propriu-zis: documentul → profilele → IR → postul GRBL → octeții cu SHA-256. Se încarcă la cerere. */
+/** Exportul propriu-zis: documentul → profilele → IR → postul ales (ADR 0083) → octeții cu SHA-256. Se încarcă la cerere. */
 export async function calculeazaExport(doc: Document, p: ParametriExport): Promise<RezultatExport> {
   const foaie = doc.foi[0];
   if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
@@ -44,8 +45,8 @@ export async function calculeazaExport(doc: Document, p: ParametriExport): Promi
       return { ok: false, motiv: 'freza iese din foaie: exportul cere confirmarea ta', cereConfirmare: iesire };
     }
   }
-  const e = await exporta(job.program, { foaie: foaie.stoc, origine: p.origine, z0: p.z0 }, GRBL_11, {
-    asteptareAx: ASTEPTARE_AX,
+  const e = await exporta(job.program, { foaie: foaie.stoc, origine: p.origine, z0: p.z0 }, CONTRACTE[p.post ?? 'grbl-11'], {
+    asteptareAx: ASTEPTARE_AX, unitati: p.unitati ?? 'mm',
     ...(iesire ? { iesireConfirmata: iesire.depasire } : {}),
   });
   if (!e.ok) return e;

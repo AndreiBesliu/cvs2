@@ -383,9 +383,12 @@ browser.
 %% capitol: export
 %% acopera: export.gcode
 
-**Export G-code** opens the export window (GRBL 1.1). Besides the [operations](#operatii), you choose:
+**Export G-code** opens the export window. Besides the [operations](#operatii), you choose:
 - the sheet's **origin corner** (bottom left, bottom right, top right, top left): where X/Y zero is on the machine;
 - **Z0**: the top of the material or the bottom of the material (the spoilboard);
+- the **Post**: the machine's controller, from the GRBL family (GRBL 1.1, grblHAL, FluidNC). A post written only from the
+  controller's documentation, not yet tested on a machine, carries a note: watch the first program run in the air;
+- the **Units**: mm (the default) or inch (G20, with 5 decimals and the feed in inch/min); the header stays in mm;
 - the **flat bit Ø** (mm), the cutter for the whole sheet.
 
 The **Export** button downloads the file and shows how many lines it has and its SHA-256 fingerprint (with it you check that

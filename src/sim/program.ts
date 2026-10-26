@@ -49,6 +49,8 @@ export function pregatesteProgram(p: Program, sus: number): ProgramSimulat {
   const out: number[] = [];
   let x: number | undefined, y: number | undefined, z: number | undefined;
   for (const [q, m] of p.miscari.entries()) {
+    // O singură sculă pe simulare: după o schimbare, alt diametru ar tăia cu cel vechi, pe tăcute (ADR 0083; vine cu 3.8b).
+    if (m.tip === 'schimba-scula') return refuz('schimbarea sculei nu se simulează încă (o singură sculă pe program)', q);
     if (m.tip !== 'rapida' && m.tip !== 'taiere' && m.tip !== 'arc') continue;
     const la = m.la;
     if (la.A !== undefined) return refuz('axa A nu se simulează în v1 (doar X, Y, Z)', q);

@@ -3040,3 +3040,20 @@ dezactivat cât mașina era în Jog (corect); **Probe Z (G54)**: „Z0 written i
 thickness 20 mm.”, poziția de lucru Z 25.000, apoi `G0 G21 G90` în jurnal; **Zero XY (G54)**: „Zero XY written in G54.”,
 poziția de lucru X 0 Y 0; 0 erori în jurnalul local. (Workerul PWA ținea versiunea veche: verificarea după ștergerea cache-ului.)
 
+## 2026-10-26 — Postul familiei GRBL, cu schimbarea sculei (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește 3.8: postul, cu contractele grblHAL și FluidNC și schimbarea sculei (blocul de după M6), probat pe
+emulator.”
+**Started:** 26.10, ~11:45. Felia **3.8a**, fără agenți (ADR 0083): 3.8 despărțită în 3.8a (postul întreg, probat pe hârtie și
+pe emulator) și 3.8b (joburile cu mai multe scule din document: CAM-ul cu diametrul fiecărei tăieturi, freza pe operație în
+dialog, simularea și estimarea peste schimbări, fișierele separate în interfață). Contractele grblHAL și FluidNC ca date (s8,
+A.2 / A.3), câmpurile noi ale contractului (inch, elicea, strategiile), evenimentul `schimba-scula` în IR, postul cu cele 4
+strategii și blocul de după, fereastra exportului cu Postul și Unitățile.
+**Completed:** 26.10 12:26. Porțile: 7 371 de teste unitare (0 picate, 8 sărite), e2e 229 / 229 în Edge, emulatoarele 36 + 13.
+Pornirea 95,6 / 100 kB, totalul 322,2 / 330 (contractele intră în bucata dialogului și a calculului exportului).
+**Găsit pe drum:** (1) palparea noii scule la oprire a dat ALARM:4: la Z sigur (5 mm peste material), freza e sub fața unei plăci
+de 20 mm, deci omul trebuie să ridice freza cu jog înainte de palpare (corect; proba o face); (2) proba `/admin` de pe emulatoare
+citește pragul real: rândul „Ordinea + un fișier pe sculă” trecut în lucru a mutat bara etapei 5 de la 0,125 la 0,25 (prins de
+`test:emulator`, rulat după lecția din 26.10). Mutațiile: 30 / 31 (F ținut minte peste schimbare → probă nouă), apoi 31 / 31; pe
+fereastra exportului, 4 / 4 prinse de e2e. Programul în mm a rămas octet cu octet (fișierele de aur ale plăcilor).
+

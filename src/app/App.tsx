@@ -632,11 +632,11 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       setStareExport({ ok: false, motiv: t(scris.motiv) });
       return;
     }
-    const { origine, z0 } = c;
+    const { origine, z0, post, unitati } = c;
     exportInCurs.current = true;
     opresteSimularea();
     const r = ruleaza(registruExport, 'export.gcode', contextExport({
-      origine, z0, ...(c.confirmareIesire ? { confirmareIesire: c.confirmareIesire } : {}),
+      origine, z0, ...(post ? { post } : {}), ...(unitati ? { unitati } : {}), ...(c.confirmareIesire ? { confirmareIesire: c.confirmareIesire } : {}),
       ...(setariMasina.trim() !== '' ? { setariMasina } : {}),
     }, ++cerereExport.current));
     // Un export refuzat înainte de calcul (nimic de exportat, nicio operație) spune de ce, nu lasă rezultatul vechi.

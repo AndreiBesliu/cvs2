@@ -47,7 +47,12 @@ export type Miscare =
    * căruia îi aparțin mișcările de după ea, pentru mesajele interfeței; `operatie`: cheia operației lor
    * (`<piesă>/<operație>`), pentru rezumatul jobului (ADR 0046). Postul nu le scrie, doar le trece în secțiunile lui.
    */
-  | { readonly tip: 'eticheta'; readonly text: string; readonly element?: string; readonly operatie?: string };
+  | { readonly tip: 'eticheta'; readonly text: string; readonly element?: string; readonly operatie?: string }
+  /**
+   * Schimbarea sculei (ADR 0083, s8 §5.4): un eveniment, nu G-code; contractul o traduce într-una din cele 4 strategii.
+   * După ea, poziția XY nu se mai știe (omul a mutat freza ca s-o schimbe), iar axul pornește cu turația noii scule.
+   */
+  | { readonly tip: 'schimba-scula'; readonly scula: Scula; readonly turatie: number };
 
 /**
  * Forma muchiei tăietoare a sculei (ADR 0047): freza plată (fără `forma`), bila sau V-ul cu unghiul inclus, în grade.

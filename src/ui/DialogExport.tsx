@@ -5,8 +5,8 @@ import '../i18n/traseu.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import {
-  laturiOferite, MARGINI_OPERATIE, type Coborare, type Depasire, type IesireFoaie, type LaturaExport, type ParametriExport, type RezumatJob,
-  type SimulareExport, type TimpPortiune,
+  laturiOferite, MARGINI_OPERATIE, POSTURI_EXPORT, type Coborare, type Depasire, type IdContract, type IesireFoaie, type LaturaExport,
+  type ParametriExport, type RezumatJob, type SimulareExport, type TimpPortiune, type Unitati,
 } from './actiuniExportTipuri.ts';
 import { durata } from './durata.ts';
 import { citesteNumar, textNumar } from './numar.ts';
@@ -247,6 +247,9 @@ export function DialogExport(
   const text = (x: number): string => textNumar(x, limba === 'ro');
   const [origine, setOrigine] = useState<(typeof COLTURI)[number]>('stanga-jos');
   const [z0, setZ0] = useState<'sus' | 'jos'>('sus');
+  const [post, setPost] = useState<IdContract>('grbl-11');
+  const [unitati, setUnitati] = useState<Unitati>('mm');
+  const postAles = POSTURI_EXPORT.find((x) => x.id === post);
   // Valorile se țin ca text, cum le scrie omul; se citesc abia la verificare și la Exportă.
   const [diametru, setDiametru] = useState(() => text(diametruInitial));
   // Pe un rând cu căi deschise, urechile, rampa, intrările și degajările vin mai târziu (ADR 0037 §9, §12): bifele pornesc
@@ -426,12 +429,31 @@ export function DialogExport(
               <option value="jos">{t('export.z0.jos')}</option>
             </select>
           </label>
+          <label title={t('export.post.titlu')}>
+            {t('export.post')}
+            <select value={post} data-camp="post" onChange={(e) => {
+              const id = POSTURI_EXPORT.find((x) => x.id === e.target.value)?.id;
+              if (id) { schimbat(); setPost(id); }
+            }}>
+              {POSTURI_EXPORT.map((x) => <option key={x.id} value={x.id}>{x.nume}</option>)}
+            </select>
+          </label>
+          <label>
+            {t('export.unitati')}
+            <select value={unitati} data-camp="unitati" onChange={(e) => { schimbat(); setUnitati(e.target.value === 'inch' ? 'inch' : 'mm'); }}>
+              <option value="mm">{t('export.unitati.mm')}</option>
+              <option value="inch">{t('export.unitati.inch')}</option>
+            </select>
+          </label>
           <label>
             {t('export.freza')}
             <input type="text" inputMode="decimal" value={diametru} data-camp="diametru" disabled={doarCitire} aria-invalid={!diametruBun}
               onChange={(e) => { schimbat(); setDiametru(e.target.value); }} />
           </label>
         </div>
+        {postAles && !postAles.probat && (
+          <p className="nota" data-testid="post-documentat">{t('export.post.documentat', { nume: postAles.nume })}</p>
+        )}
         {freze.length > 1 && (
           <p className="nota avertisment" data-testid="freze-diferite">
             {t(doarCitire ? 'export.freze-diferite.citire' : 'export.freze-diferite', {
@@ -650,7 +672,7 @@ export function DialogExport(
               const d = citesteNumar(diametru);
               if (!valid || d === null) return;
               onExporta({
-                origine, z0, diametru: d, valori: valori(),
+                origine, z0, post, unitati, diametru: d, valori: valori(),
                 ...(cere && bifat ? { confirmareIesire: cere } : {}),
               });
             }}>

@@ -5,7 +5,7 @@ import { baleiajArc, type Miscare, type Program } from '../ir/ir.ts';
  * Cât iese freza din foaie cât taie. Decizia owner-ului (07.10.2026): o formă poate ieși din foaie intenționat, freza o
  * urmează și în afara foii, iar exportul cere confirmare, scrisă apoi în antetul programului.
  *
- * Se măsoară pe traseul real, nu pe vector: discul frezei (raza = diametrul / 2) purtat pe porțiunea de sub fața de sus a
+ * Se măsoară pe traseul real, nu pe vector: discul frezei de atunci (raza = diametrul / 2) purtat pe porțiunea de sub fața de sus a
  * fiecărei tăieri (G1, G2, G3). O mișcare care trece prin fața de sus (o rampă, o elice de intrare) se taie exact în
  * punctul unde Z = 0. Rapidele nu contează: trec prin aer, la Z sigur.
  *
@@ -65,7 +65,7 @@ function amprentaText(text: string): string {
 }
 
 export function iesireDinFoaie(program: Program, foaie: { readonly latime: number; readonly inaltime: number }): IesireFoaie | null {
-  const raza = program.scula.diametru / 2;
+  let raza = program.scula.diametru / 2;
   let x: number | undefined;
   let y: number | undefined;
   let z: number | undefined;
@@ -74,6 +74,8 @@ export function iesireDinFoaie(program: Program, foaie: { readonly latime: numbe
   const elemente: string[] = [];
   for (const m of program.miscari) {
     if (m.tip === 'eticheta') { element = m.element; continue; }
+    // După o schimbare (ADR 0083), discul e al noii scule.
+    if (m.tip === 'schimba-scula') { raza = m.scula.diametru / 2; continue; }
     if (m.tip !== 'rapida' && m.tip !== 'taiere' && m.tip !== 'arc') continue;
     const nx = m.la.X ?? x;
     const ny = m.la.Y ?? y;

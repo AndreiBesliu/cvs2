@@ -369,9 +369,12 @@ ascunde. Dacă programul nu se poate calcula, semnul spune de ce. Traseul cere W
 %% capitol: export
 %% acopera: export.gcode
 
-**Exportă G-code** deschide fereastra exportului (GRBL 1.1). Pe lângă [operații](#operatii), alegi:
+**Exportă G-code** deschide fereastra exportului. Pe lângă [operații](#operatii), alegi:
 - **colțul de origine** al foii (stânga-jos, dreapta-jos, dreapta-sus, stânga-sus): unde e zero-ul X/Y pe mașină;
 - **Z0**: fața de sus a materialului sau fața de jos (masa de sacrificiu);
+- **Postul**: controlerul mașinii, din familia GRBL (GRBL 1.1, grblHAL, FluidNC). Un post scris doar după documentația
+  controlerului, încă neprobat pe o mașină, poartă o notă: urmărește primul program în aer;
+- **Unitățile**: mm (implicit) sau inch (G20, cu 5 zecimale și avansul în inch/min); antetul rămâne în mm;
 - **freza plată Ø** (mm).
 
 Butonul **Exportă** descarcă fișierul și arată câte linii are și amprenta lui SHA-256 (cu ea verifici că pe mașină ajunge

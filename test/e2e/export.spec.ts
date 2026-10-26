@@ -540,3 +540,36 @@ test('degajările (ADR 0032): dog-bone pe gaură, drumul din fiecare colț al tr
   await expect(colturi).toBeDisabled();
   await expect(colturi).toHaveValue('');
 });
+
+test('postul grblHAL și unitățile inch (ADR 0083): antetul, 5 zecimale, aceleași mișcări ca placa 1 A împărțite la 25,4; nota postului neprobat', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.getByTestId('post-documentat')).toContainText('Postul GRBL 1.1: scris după documentația controlerului');
+  await page.locator('[data-camp="post"]').selectOption('grblhal');
+  await page.locator('[data-camp="unitati"]').selectOption('inch');
+  await expect(page.getByTestId('post-documentat')).toContainText('Postul grblHAL');
+  const descarcare = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const text = readFileSync(await (await descarcare).path(), 'ascii');
+  await expect(page.getByTestId('export-stare')).toContainText('34 de linii');
+  // Rezumatul jobului (estimarea citește G20) și simularea merg și în inch.
+  await expect(page.locator('[data-rezumat="scule"]')).toBeVisible();
+  const linii = text.split('\n');
+  expect(linii[1]).toBe('(post grblHAL)');
+  expect(linii).toContain('G90 G17 G20 G94');
+  const aur = faraComentarii(readFileSync('test/placi/placa-01/placa-01-A.nc', 'ascii'));
+  const inch = faraComentarii(text);
+  expect(inch.length).toBe(aur.length);
+  for (const [k, l] of inch.entries()) {
+    const a = aur[k] ?? '';
+    if (l.startsWith('G90')) continue;
+    for (const m of l.matchAll(/([XYZIJF])(-?[\d.]+)/g)) {
+      const v = Number(m[2]), w = Number(new RegExp(`${m[1]}(-?[\\d.]+)`).exec(a)?.[1]);
+      const tol = m[1] === 'F' ? 0.07 : 7e-4;
+      expect(Math.abs(v * 25.4 - w), `${l} | ${a}`).toBeLessThanOrEqual(tol);
+      if (m[1] !== 'F') expect(m[2], l).toMatch(/\.\d{5}$/);
+    }
+  }
+});

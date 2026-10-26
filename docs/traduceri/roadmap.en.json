@@ -185,6 +185,10 @@
       "ro": "Conturul are trei primitive",
       "en": "The contour has three primitives"
     },
+    "18d6a845c7f5e98f": {
+      "ro": "Postul familiei GRBL (ADR 0083): contractele grblHAL și FluidNC ca date, alese în fereastra exportului, inch cu 5 zecimale, elicea doar unde contractul o declară, pauza în unitatea controlerului; schimbarea sculei ca eveniment în IR, cu cele 4 strategii și blocul de după `M6` (PORTARE §3.4), probată prin sender pe emulator",
+      "en": "The GRBL-family post (ADR 0083): the grblHAL and FluidNC contracts as data, chosen in the export window, inches with 5 decimals, the helix only where the contract declares it, the dwell in the controller’s unit; the tool change as an event in the IR, with the 4 strategies and the block after `M6` (PORTARE §3.4), proven through the sender on the emulator"
+    },
     "19093c54d4ba0aa1": {
       "ro": "da; **pachetul la ateliere**",
       "en": "yes; **the package to the workshops**"
@@ -381,6 +385,10 @@
       "ro": "Jog, zero XY / Z, palparea Z cu placa de contact, G54–G59, pe mașina simulată (ADR 0082): procedurile pure, WCS-ul citit, starea modală pusă la loc, refuzurile cu motiv; e2e pe emulator",
       "en": "Jog, XY / Z zero, Z probing with the touch plate, G54–G59, on the simulated machine (ADR 0082): the pure procedures, the work coordinate system read back, the modal state restored, refusals with a reason; e2e on the emulator"
     },
+    "3660b7114be7ec7c": {
+      "ro": "Joburile cu mai multe scule din document: freza pe operație în fereastra exportului, ordinea, jobul CAM cu diametrul fiecărei tăieturi, simularea și estimarea peste schimbări, strategia aleasă, fișierele separate descărcate și încărcate în sender",
+      "en": "Multi-tool jobs from the document: the bit per operation in the export window, the order, the CAM job with each cut’s diameter, simulation and estimation across changes, the chosen strategy, separate files downloaded and loaded into the sender"
+    },
     "3775e3c8b69ac9f6": {
       "ro": "Publicarea pe live",
       "en": "Publishing to live"
@@ -480,6 +488,10 @@
     "449772f5c59a39f9": {
       "ro": "Forma „cale” în document",
       "en": "The “path” shape in the document"
+    },
+    "45b472faaf813b41": {
+      "ro": "Joburile cu mai multe scule din document",
+      "en": "Multi-tool jobs from the document"
     },
     "45d08dc853b549c9": {
       "ro": "Insulele buzunarului",
@@ -857,6 +869,10 @@
       "ro": "Restul feliei: hosting pe adresa principală de test. Exportul Firestore l-a făcut owner-ul din consolă (`gcloud` n-avea cont), în bucket-ul nou `cncvectorstudio-test-backup` din `us-central1`: baza e în `nam5`, iar bucket-ul aplicației e în `europe-central2`, deci primul export a fost refuzat. `public/sw.js` oprește workerul aplicației vechi de la aceeași adresă (șterge cache-urile `cncvs-`, se dezînregistrează, nu reîncarcă nicio filă), cu proba lui e2e. `scripts/publica-test.ts`, doar hosting, cu pregătirea comună cu canalul. Verificat în browser pe https://cncvectorstudio-test.firebaseapp.com/: instanța „test”, `/sw.js` servit `no-cache` cu CSP-ul aplicației, consola curată. **Treceri:** (1) exportul refuzat pe locație; (2) opritorul workerului, descoperit înainte de publicare.",
       "en": "The rest of the slice: hosting on the main test address. The Firestore export was made by the owner from the console (`gcloud` had no account), into the new `cncvectorstudio-test-backup` bucket in `us-central1`: the database is in `nam5` and the app's bucket in `europe-central2`, so the first export was refused. `public/sw.js` stops the old app's worker on the same address (clears the `cncvs-` caches, unregisters, reloads no tab), with its own e2e check. `scripts/publica-test.ts`, hosting only, sharing the preparation with the channel. Checked in the browser on https://cncvectorstudio-test.firebaseapp.com/: the “test” instance, `/sw.js` served `no-cache` with the app's CSP, a clean console. **Passes:** (1) the export refused on location; (2) the worker stopper, found before publishing."
     },
+    "871227fd0d578ae3": {
+      "ro": "**Postul familiei GRBL, cu schimbarea sculei** (ADR 0083; „Da, pornește 3.8: postul, cu contractele grblHAL și FluidNC și schimbarea sculei (blocul de după M6), probat pe emulator.”). În fereastra exportului: **Postul** (GRBL 1.1, grblHAL, FluidNC; o notă cât un post e doar documentat, neprobat pe mașină) și **Unitățile** (mm sau inch, G20 cu 5 zecimale și avansul în inch/min). Postul știe schimbarea sculei: oprirea în senderul nostru la `T2 M6` (implicit), M6 la controler (grblHAL, FluidNC), M0 cu comentariu sau câte un fișier pe sculă; după oprire, blocul de după (modalul, WCS-ul, Z sigur, axul cu turația noii scule și pauza). Elicea iese în segmente pe un controler care n-o declară. Jobul cu mai multe freze din document vine în 3.8b, deci schimbarea se probează deocamdată pe emulator, nu din interfață. **Treceri:** (1) contractele și postul, cu programul în mm neschimbat octet cu octet (fișierele de aur ale plăcilor); prin sender, palparea noii scule la oprire a dat întâi ALARM:4 (la Z sigur, freza era sub fața plăcii de 20 mm), corect, deci proba ridică freza cu jog înainte, ca omul; mutațiile: 30 / 31 (F ținut minte peste schimbare, prins de o probă nouă), pe fereastră 4 / 4 prinse de e2e.",
+      "en": "**The GRBL-family post, with the tool change** (ADR 0083; “Da, pornește 3.8: postul, cu contractele grblHAL și FluidNC și schimbarea sculei (blocul de după M6), probat pe emulator.”). In the export window: **Post** (GRBL 1.1, grblHAL, FluidNC; a note while a post is only documented, not tested on a machine) and **Units** (mm or inch, G20 with 5 decimals and the feed in inch/min). The post knows the tool change: a stop in our sender at `T2 M6` (the default), M6 at the controller (grblHAL, FluidNC), M0 with a comment, or one file per tool; after the stop, the block after (the modal state, the work coordinate system, safe Z, the spindle at the new tool’s speed and the dwell). The helix comes out as segments on a controller that does not declare it. The multi-tool job from the document comes in 3.8b, so for now the change is proven on the emulator, not from the interface. **Passes:** (1) the contracts and the post, with the mm program unchanged byte for byte (the plates’ golden files); through the sender, probing the new tool at the stop first gave ALARM:4 (at safe Z, the bit was below the top of the 20 mm plate), which is correct, so the test raises the bit with a jog first, as a person would; mutations: 30 / 31 (F kept across the change, caught by a new test), on the window 4 / 4 caught by e2e."
+    },
     "8778a730118ca4d3": {
       "ro": "**Planșele:** piese, foi, instanțe, Multi-Plate, lista de tăiere",
       "en": "**Sheets:** parts, sheets, instances, Multi-Plate, the cut list"
@@ -972,6 +988,10 @@
     "98068c1cdee265fa": {
       "ro": "Două interfețe; §10 Ghid la prima pornire; admin **P4**",
       "en": "Two interfaces; §10 First-run guide; admin **P4**"
+    },
+    "98f83a36839f5a72": {
+      "ro": "Postul familiei GRBL",
+      "en": "The GRBL-family post"
     },
     "992da111fc122ed2": {
       "ro": "Remedierile din testul uneltelor de desen",
@@ -1129,10 +1149,6 @@
       "ro": "Intrările compuse cu rampa",
       "en": "Lead-ins combined with the ramp"
     },
-    "b034161ec955aec1": {
-      "ro": "Postul",
-      "en": "The post"
-    },
     "b052146a0aa660c8": {
       "ro": "Geometria v0: L / A / C cu bulge, transformările exacte, cavalier adus în repo, profilul exterior și interior pe dreptunghi și cerc, cu treceri pe adâncime",
       "en": "Geometry v0: L / A / C with bulge, exact transforms, cavalier vendored into the repo, outside and inside profile on rectangle and circle, with depth passes"
@@ -1172,10 +1188,6 @@
     "b52896d7055ba085": {
       "ro": "Simularea",
       "en": "Simulation"
-    },
-    "b5cdf0256bc129db": {
-      "ro": "Postul: contractele grblHAL și FluidNC, cele 4 strategii de schimbare a sculei (cu blocul de după `M6`, PORTARE §3.4), pauza în unitatea controlerului, elicea, inch cu 5 zecimale",
-      "en": "The post: the grblHAL and FluidNC contracts, the 4 tool-change strategies (with the block after `M6`, PORTARE §3.4), the dwell in the controller’s unit, the helix, inches with 5 decimals"
     },
     "b6987a4aa69113ee": {
       "ro": "**Panoul mașinii, cu mașina simulată** (ADR 0081; „Da, pornește 3.6b: portul Web Serial și panoul mașinii, cu o mașină simulată (emulatorul) pe instanța de test, ca să-l pot încerca fără CNC.”). Panoul **Mașina** (în dreapta, sub proprietăți): conectarea la mașină prin USB (Web Serial, în Chrome sau Edge) și, pe instanța de test, **Mașină simulată** (un GRBL simulat, cu viteza 1×, 10× sau 100×); starea și poziția din rapoarte; programul, din ultimul export (exact octeții lui, aceeași amprentă SHA-256) sau dintr-un fișier verificat; Pornește, Pauză / Reia, Reia după eroare, Continuă la o schimbare de sculă, Oprește, Deblochează; comenzile manuale și jurnalul. Mașina simulată e doar online, pe test; panoul și senderul merg și fără internet. Manualul are capitolul „Mașina”. **Treceri:** (1) sesiunea cu un ceas fals (portul căzut, scrierea căzută, linia ruptă între bucăți), apoi panoul și legarea în carcasă; emulatorul mutat din teste în aplicație, cu răspunsul „nu e modelat” în loc de aruncare; e2e-ul (mașina simulată, un fișier refuzat, un port Web Serial fals, fără Web Serial) a trecut din prima; mutațiile: 12 / 13, apoi 13 / 13 (ceasul rămas după deconectare, prins de proba reconectării).",

@@ -4,7 +4,11 @@ import { RAMPA_MINIMA } from '../cam/rampaMinima.ts';
 import type { ColtOrigine } from '../ir/montaj.ts';
 import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAXIM } from '../model/document.ts';
 export type { Coborare } from '../model/document.ts';
+import type { Unitati } from '../post/contract.ts';
+import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../post/contracte/index.ts';
 import type { ProgramExportat } from '../post/export.ts';
+export type { IdContract } from '../post/contracte/index.ts';
+export type { Unitati } from '../post/contract.ts';
 
 export type { Depasire } from '../geom/cutie.ts';
 export type { IesireFoaie } from '../cam/iesire.ts';
@@ -21,6 +25,14 @@ export const MARGINI_OPERATIE = {
   unghiCoborare: UNGHI_COBORARE_MAXIM, unghiCoborareMinim: COBORARE_MINIME.unghi, lungimeZigzag: PLAFON.latura,
   lungimeZigzagMinima: COBORARE_MINIME.lungime, razaElice: PLAFON.diametruScula, razaEliceMinima: COBORARE_MINIME.raza,
 } as const;
+
+/**
+ * Posturile din fereastra exportului (ADR 0083): id-ul, numele și dacă e probat pe o mașină (toate câmpurile contractului
+ * „probate”); unul doar documentat poartă o notă.
+ */
+export const POSTURI_EXPORT: readonly { readonly id: IdContract; readonly nume: string; readonly probat: boolean }[] = ID_CONTRACTE.map((id) => ({
+  id, nume: CONTRACTE[id].nume, probat: Object.values(CONTRACTE[id].surse).every((s) => s.stare === 'probat'),
+}));
 
 /** Latura unei operații de profil, cum o arată dialogul (ADR 0037 §2). */
 export type LaturaExport = Latura;
@@ -49,6 +61,10 @@ export function laturiOferite(deschise: number, noduri: number, curenta: LaturaE
 export type ParametriExport = {
   readonly origine: ColtOrigine;
   readonly z0: 'sus' | 'jos';
+  /** Postul (ADR 0083): implicit GRBL 1.1. */
+  readonly post?: IdContract;
+  /** Unitățile programului: implicit mm. */
+  readonly unitati?: Unitati;
   /**
    * Ieșirea din foaie pe care omul a văzut-o și a confirmat-o, așa cum a primit-o de la export. Trece doar dacă e exact cea
    * calculată acum, pe același traseu (amprenta): altă freză, alt profil sau o formă mutată cer o confirmare nouă, chiar
