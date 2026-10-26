@@ -5,7 +5,7 @@ import type { DictionarRoPentru } from './tipuri.ts';
 export const roExport = {
   'export.freze-diferite': 'Operațiile de pe foaie au freze diferite ({freze}). La Exportă primesc toate freza de mai sus.',
   'export.freze-diferite.citire': 'Operațiile de pe foaie au freze diferite ({freze}): exportul le refuză până când fila care scrie proiectul le aduce la o singură freză.',
-  'export.titlu': 'Exportă G-code (GRBL 1.1)',
+  'export.titlu': 'Exportă G-code ({post})',
   'export.origine': 'Colțul de origine',
   'export.colt.stanga-jos': 'stânga-jos',
   'export.colt.dreapta-jos': 'dreapta-jos',

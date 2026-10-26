@@ -3056,4 +3056,9 @@ de 20 mm, deci omul trebuie să ridice freza cu jog înainte de palpare (corect;
 citește pragul real: rândul „Ordinea + un fișier pe sculă” trecut în lucru a mutat bara etapei 5 de la 0,125 la 0,25 (prins de
 `test:emulator`, rulat după lecția din 26.10). Mutațiile: 30 / 31 (F ținut minte peste schimbare → probă nouă), apoi 31 / 31; pe
 fereastra exportului, 4 / 4 prinse de e2e. Programul în mm a rămas octet cu octet (fișierele de aur ale plăcilor).
+**Publicat pe adresa principală de test:** 26.10, `publica` pe `3b978db` (rularea 40308563472), după rapid-ul verde
+(40307495608). Verificat în browserul aplicației, fără descărcare: fereastra exportului are **Post** (GRBL 1.1, grblHAL, FluidNC)
+și **Units** (mm, inch), iar nota postului neprobat se schimbă cu postul ales. **Găsit la verificare:** titlul ferestrei spunea
+tot „Export G-code (GRBL 1.1)” cu grblHAL ales → titlul numește postul ales (`export.titlu` cu `{post}`), cu proba lui în e2e;
+porțile: 7 371 / 229 (o cădere `EBUSY` a Drive-ului în `test-results`, trecută la rularea din nou).
 

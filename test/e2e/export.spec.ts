@@ -550,6 +550,7 @@ test('postul grblHAL și unitățile inch (ADR 0083): antetul, 5 zecimale, acele
   await page.locator('[data-camp="post"]').selectOption('grblhal');
   await page.locator('[data-camp="unitati"]').selectOption('inch');
   await expect(page.getByTestId('post-documentat')).toContainText('Postul grblHAL');
+  await expect(page.locator('#export-titlu')).toHaveText('Exportă G-code (grblHAL)');
   const descarcare = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
   const text = readFileSync(await (await descarcare).path(), 'ascii');

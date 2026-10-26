@@ -9,7 +9,7 @@ import type { Mesaj } from './tipuri.ts';
 export const enExport = {
   'export.freze-diferite': 'The operations on this sheet use different cutters ({freze}). Export gives them all the cutter above.',
   'export.freze-diferite.citire': 'The operations on this sheet use different cutters ({freze}): export refuses them until the tab that writes the project sets one cutter.',
-  'export.titlu': 'Export G-code (GRBL 1.1)',
+  'export.titlu': 'Export G-code ({post})',
   'export.origine': 'Origin corner',
   'export.colt.stanga-jos': 'bottom left',
   'export.colt.dreapta-jos': 'bottom right',

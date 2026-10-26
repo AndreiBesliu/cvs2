@@ -414,7 +414,7 @@ export function DialogExport(
   return (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="export-titlu">
       <div className="dialog-cutie" ref={cutie} tabIndex={-1}>
-        <h2 id="export-titlu">{t('export.titlu')}</h2>
+        <h2 id="export-titlu">{t('export.titlu', { post: postAles?.nume ?? '' })}</h2>
         <div className="campuri">
           <label>
             {t('export.origine')}
