@@ -60,3 +60,15 @@ jobs:
       - name: Licențele dependențelor de rulare
         if: matrix.felia == 1
         run: npm run licente
+      # Exportul 2D (ADR 0088): corpusul scris de aplicație, recitit de ezdxf (un cititor independent, doar pentru test) și
+      # comparat cu valorile pe hârtie din `test/oracles-py/export2d.py`.
+      - uses: actions/setup-python@v6
+        if: matrix.felia == 2
+        with:
+          python-version: '3.12'
+      - name: Oracolul exportului 2D (ezdxf)
+        if: matrix.felia == 2
+        run: |
+          python -m pip install --quiet -r test/oracles-py/requirements.txt
+          node scripts/export2d-corpus.ts .tmp/export2d
+          python test/oracles-py/export2d.py .tmp/export2d

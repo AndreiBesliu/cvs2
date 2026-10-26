@@ -255,11 +255,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const vedere3dRef = useRef(vedere3d);
   vedere3dRef.current = vedere3d;
   // Copierea în rețea (ADR 0061): panoul din extensia barei, formularul lui (ținut în browser) și rețeaua citită din el.
-  // Panoul deschis din extensia barei, unul singur: rețeaua (ADR 0061), offsetul (ADR 0064), înclinarea (ADR 0065).
-  const [panou, setPanou] = useState<'retea' | 'offset' | 'inclinare' | null>(null);
+  // Panoul deschis din extensia barei, unul singur: rețeaua (ADR 0061), offsetul (ADR 0064), înclinarea (ADR 0065), exportul
+  // vectorilor (ADR 0088).
+  const [panou, setPanou] = useState<'retea' | 'offset' | 'inclinare' | 'vectori' | null>(null);
   const panouRef = useRef(panou);
   panouRef.current = panou;
-  const panouRetea = panou === 'retea', panouOffset = panou === 'offset', panouInclinare = panou === 'inclinare';
+  const panouRetea = panou === 'retea', panouOffset = panou === 'offset', panouInclinare = panou === 'inclinare', panouVectori = panou === 'vectori';
   const [formRetea, setFormRetea] = useState<FormularRetea>(formularSalvat);
   // Pe curbă (ADR 0066): curba e ultima formă aleasă (Shift + clic după formele de copiat).
   const curbaAleasa = selectie.length > 0 ? selectie[selectie.length - 1]! : null;
@@ -809,6 +810,15 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {motivBoolean ? <span className="motiv-extensie" role="status" data-testid="motiv-boolean">{motivBoolean}</span> : null}
           </span>
         );
+        const vectoriSectiune = (
+          <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.vectori.sectiune')} data-testid="extensie-vectori">
+            <button type="button" className="aliniaza" aria-expanded={panouVectori} aria-controls="panou-vectori" title={t('editare.vectori')} aria-label={t('editare.vectori')}
+              data-editare="vectori" onClick={() => { setPanou(panouVectori ? null : 'vectori'); }}>
+              <IconaVectori />
+            </button>
+            {panouVectori ? <PanouVectori doc={doc} onInchide={() => { setPanou(null); }} /> : null}
+          </span>
+        );
         const vedereSectiune = (
           <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.3d')} data-testid="extensie-vedere">
             <button type="button" className="aliniaza vedere-3d-buton" aria-pressed={vedere3d} title={vedere3d ? t('editare.3d.ascunde') : t('editare.3d.arata')}
@@ -841,6 +851,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {offsetSectiune}
             <span className="separator" aria-hidden="true" />
             {booleanSectiune}
+            <span className="separator" aria-hidden="true" />
+            {vectoriSectiune}
             <span className="separator" aria-hidden="true" />
             {vedereSectiune}
             <span className="separator" aria-hidden="true" />
@@ -1793,6 +1805,79 @@ function IconaOffset(): ReactElement {
       <rect x="5" y="5" width="6" height="6" rx="0.5" />
       <rect x="1.8" y="1.8" width="12.4" height="12.4" rx="3.2" className="contur" strokeDasharray="2 1.5" />
     </svg>
+  );
+}
+
+/** Exportul vectorilor (ADR 0088): o curbă cu nodurile ei, deasupra săgeții de descărcare. */
+function IconaVectori(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M2 7C4 1 8 1 10 4S14 7 14 3" className="contur" />
+      <rect x="1" y="6" width="2" height="2" />
+      <rect x="13" y="2" width="2" height="2" />
+      <path d="M8 9v6M5.5 12.5 8 15l2.5-2.5" className="contur" />
+    </svg>
+  );
+}
+
+/** Descarcă textul unui fișier (exportul vectorilor): aceleași caractere, fără nicio prelucrare. */
+function descarcaText(text: string, nume: string, tip: string): void {
+  const url = URL.createObjectURL(new Blob([text], { type: tip }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nume;
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); }, 10_000);
+}
+
+type ModulVectori = typeof import('../io/exportVectori.ts');
+
+/**
+ * Panoul exportului vectorilor (ADR 0088): formatul (DXF R2007, implicit, sau SVG), conturul foii la cerere, Exportă și
+ * ce s-a descărcat (câte entități, pe câte straturi). Scriitorii vin la primul Exportă: nu stau în pachetul de pornire.
+ * Esc îl închide.
+ */
+function PanouVectori({ doc, onInchide }: { readonly doc: Document; readonly onInchide: () => void }): ReactElement {
+  const [format, setFormat] = useState<'dxf' | 'svg'>('dxf');
+  const [cuFoaia, setCuFoaia] = useState(false);
+  const [stare, setStare] = useState<string | null>(null);
+  const radacina = useRef<HTMLDivElement | null>(null);
+  useInFereastra(radacina);
+  const exporta = (): void => {
+    import('../io/exportVectori.ts').then((m: ModulVectori) => {
+      const f = m.exportaVectori(doc, FOAIA, format, cuFoaia);
+      if (f.entitati === 0) { setStare(t('editare.vectori.gol')); return; }
+      descarcaText(f.text, f.nume, f.tip);
+      setStare(t('editare.vectori.gata', { nume: f.nume, n: String(f.entitati), s: String(f.straturi) }));
+    }, () => { setStare(t('editare.vectori.neincarcat')); });
+  };
+  return (
+    <div className="insula panou-retea panou-vectori" id="panou-vectori" ref={radacina} role="group" aria-label={t('editare.vectori.sectiune')} data-testid="panou-vectori"
+      onKeyDown={(e) => {
+        if (e.key !== 'Escape') return;
+        e.preventDefault();
+        e.stopPropagation();
+        onInchide();
+      }}>
+      <div className="fel-retea" role="radiogroup" aria-label={t('editare.vectori.format')}>
+        {(['dxf', 'svg'] as const).map((k) => (
+          <button key={k} type="button" role="radio" aria-checked={format === k} aria-pressed={format === k} data-vectori-format={k}
+            onClick={() => { setFormat(k); setStare(null); }}>
+            {t(`editare.vectori.${k}`)}
+          </button>
+        ))}
+      </div>
+      <p className="nota-retea">{t('editare.vectori.nota')}</p>
+      <label className="bifa-retea">
+        <input type="checkbox" checked={cuFoaia} data-vectori="foaia" onChange={(e) => { setCuFoaia(e.target.checked); setStare(null); }} />
+        <span>{t('editare.vectori.foaia')}</span>
+      </label>
+      {stare ? <p className="motiv-retea" role="status" data-testid="stare-vectori">{stare}</p> : null}
+      <div className="butoane-retea">
+        <button type="button" className="principal" data-vectori="exporta" onClick={exporta}>{t('editare.vectori.exporta')}</button>
+        <button type="button" data-vectori="inchide" onClick={onInchide}>{t('editare.retea.inchide')}</button>
+      </div>
+    </div>
   );
 }
 

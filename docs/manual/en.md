@@ -422,6 +422,24 @@ answer to `$$` (from the sender's console) under “Machine settings”; the pro
 After the download, the window **simulates** the program: the depth map of the sheet, the material removed, the deepest cut
 and whether the cutter goes through the sheet. For the sheet seen in 3D, see [The 3D view](#vedere-3d).
 
+## Exporting vectors
+%% capitol: vectori
+%% acopera: editare.vectori
+
+**Export vectors** (in the bar extension, next to the 3D view) writes the sheet as a drawing file, for other programs
+(ArtCAM, Inkscape, Illustrator / Corel, AutoCAD / LibreCAD) or for the laser:
+- **DXF (R2007)**, the default, or **SVG**;
+- in mm, at 1:1 scale, from the lower left corner of the sheet (in SVG, the sheet has its size in mm);
+- **circles, arcs and curves stay what they are**: a circle is a circle (CIRCLE), the lines and arcs of a shape are a
+  polyline with arcs, curves are curves (SPLINE in DXF, `C` in SVG), with no approximated points;
+- **one layer per role**, from the first operation that cuts the shape: EXTERIOR, INTERIOR, PE_LINIE (on the line),
+  PE_O_PARTE (a path cut on its left or right), BUZUNAR (pocket), GAURIRE (drilling) and FARA_OPERATIE (no operation), each
+  with its colour; only the layers in use are written;
+- **With the sheet outline** adds the sheet rectangle, on the FOAIE layer.
+
+**Export** downloads the file and says how many entities and layers it has. A shape with both lines and curves comes out
+in pieces joined end to end (a polyline, then a curve). PDF and EPS come in a later version.
+
 ## The machine
 %% capitol: masina
 %% acopera: vedere.masina

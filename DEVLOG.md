@@ -3166,3 +3166,23 @@ mm, T1 Ø6”; la redeschidere, găurirea și 2; 0 erori în consolă. Exportul 
 (comportamentul ferestrei: aplică operațiile, apoi calculează), iar istoricul se pierde la reîncărcare: în proiectul de probă al
 browserului, cercul a rămas cu găurire. Programul descărcat (ciocănirea, elicea) e probat de e2e pe același build, nu în panoul
 browserului (fără descărcări acolo).
+
+## 2026-10-26 — Exportul 2D: DXF și SVG (Model: Claude Opus 5.5)
+
+**Prompt:** „cel care se face mai repede” (la „Ce felie pornesc acum?”: V-carve sau exportul 2D).
+**Started:** 26.10, 21:27. Felia **9.1↑**, adusă din etapa 9, fără mașină și fără agenți (ADR 0088). Exportul 2D e cel mai
+rapid: V-carve-ul cere axa mediană și adâncimea pe freza în V (un algoritm CAM nou, cu oracolele lui), exportul scrie geometria
+pe care documentul o are deja exactă. Din rând, felia ia DXF R2007 și SVG; PDF și EPS rămân pentru una următoare (biblioteca
+PDF din s2 n-ar încăpea în plafonul total, iar npm lipsește, deci nici biblioteca DXF nu se poate adăuga: scriitorii sunt ai
+noștri, cu ezdxf ca oracol independent, într-un venv în `.tmp`).
+**Completed:** 26.10 22:16. „Exportă vectori” (extensia barei) scrie foaia în mm, la 1:1, ca DXF R2007 (implicit) sau SVG:
+cercul CIRCLE, liniile și arcele o LWPOLYLINE cu bulge, curbele SPLINE (Bézier în lanț, exacte); straturile = rolurile, cu
+culori; conturul foii la cerere. Scriitorii, în `src/io/`, la cerere: 3,9 kB gzip, totalul 305,3 → 309,9 / 330, pornirea 96,0
+(cu ușa 99,3). **Oracolul independent nou**, în Python: `test/oracles-py/export2d.py` (ezdxf 1.4.4) pe corpusul din
+`scripts/export2d-corpus.ts`, 0 erori și 0 reparații, totul cât pe hârtie; rulat în CI (felia 2). Porțile: 7 434 de teste
+unitare (0 picate), build-ul determinist, e2e 240 / 241 (o descărcare anulată sub încărcare în `editare.spec`, oglindirea,
+trecută rulată singură), emulatoarele 36 + 13. Mutațiile: 36 / 40 la prima rulare (două „prinderi” erau căderi ale mediului,
+numărate ca supraviețuitoare), 40 / 40 cu probele noi; opt le prinde doar oracolul. **Găsit pe drum:** (1) scriptul corpusului
+scria `test/corpus.*` când îl importa Playwright (șterse; acum scrie doar pornit direct); (2) extensia barei (991 px) era mai
+lată decât bara (718 px) și lărgea coloana din mijloc a rândului de sus, iar titlul ajungea la 0 px la 1280 px (îl avea ~20 și
+înainte): extensia se întinde acum pe toate coloanele, centrată, iar titlul are 124 px la orice lățime.

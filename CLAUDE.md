@@ -140,6 +140,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Găurirea (ADR 0087, documentul v13, adusă din etapa 5)** gata pe 26.10: `tip: 'gaurire'` pe cercuri (`src/cam/gaurire.ts`):
   cercul cât freza (± 0,02 mm) ciocănit în centru, cu `retragereCompleta` (ieșirea la al N-lea pas), cel până la 2·D în elice
   pe perete, restul refuzat; doar G0–G3, fără ciclurile fixe; în fereastra exportului doar pe rândurile numai cu cercuri.
+  **Exportul 2D, DXF R2007 și SVG (ADR 0088, adus din etapa 9)** gata pe 26.10: „Exportă vectori” în extensia barei; scriitorii
+  proprii în `src/io/` (`vectori.ts`, `dxfExport.ts`, `svgExport.ts`), la cerere; straturile = rolurile. **Oracolul independent
+  e Python** (`test/oracles-py/export2d.py`, ezdxf 1.4.4, în CI pe felia 2; local: `python -m venv .tmp/venv-export2d`, apoi
+  `pip install -r test/oracles-py/requirements.txt`), pe corpusul din `scripts/export2d-corpus.ts`: un caz nou = descrierea în
+  corpus + valorile pe hârtie în oracol. PDF, EPS și DXF R12 vin mai târziu.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

@@ -47,6 +47,7 @@ const USI: readonly Usa[] = [
   { id: 'editare.3d', eticheta: eticheta('editare.3d.arata') },
   { id: 'editare.offset', eticheta: eticheta('editare.offset') },
   { id: 'editare.inclinare', eticheta: eticheta('editare.inclinare') },
+  { id: 'editare.vectori', eticheta: eticheta('editare.vectori') },
   ...(['uneste', 'scade', 'intersecteaza'] as const).map((b) => ({ id: `boolean.${b}`, eticheta: eticheta(`editare.boolean.${b}`) })),
   { id: 'editare.manual', eticheta: eticheta('editare.manual') },
   { id: 'editare.test', eticheta: eticheta('editare.test') },
@@ -59,7 +60,7 @@ const USI: readonly Usa[] = [
 const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   lipire: 'editare.lipire', grila: 'editare.grila', 'pas-grila': 'editare.grila', laturi: 'unealta.poligon', raza: 'unealta.cerc',
   aliniere: 'editare.aliniere', 'vedere-3d': 'editare.3d', manual: 'editare.manual', test: 'editare.test', retea: 'document.copiaza-in-retea',
-  offset: 'editare.offset', inclinare: 'editare.inclinare',
+  offset: 'editare.offset', inclinare: 'editare.inclinare', vectori: 'editare.vectori',
   'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri',
 };
 
@@ -97,7 +98,7 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
   assert.equal(numeScurt('Importă SVG…'), 'Importă SVG');
   assert.equal(numeScurt('Oglindește orizontal: stânga ↔ dreapta (Shift+H)'), 'Oglindește orizontal');
-  assert.equal(USI.length, 59);
+  assert.equal(USI.length, 60);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
