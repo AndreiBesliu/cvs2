@@ -42,7 +42,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Buzunar (curățare de suprafață), cu mai multe freze | S+D | v1 | în lucru (pe 25.10: buzunarul cu o freză, în inele paralele cu conturul, cu fundul scos întreg, ADR 0069; insulele, par-impar între buzunarele de aceeași adâncime, ADR 0073; coborârea pe rampă, zigzag sau elice, configurabilă, ADR 0076; rămân degroșarea + finisarea cu două freze) | 07d8bca, insulele: e295276, coborârea: 2d8467d |
 | V-carve (inclusiv cu freză dreaptă pentru fund plat) | S+D | v1 | de făcut | — |
 | Găurire | S+D | v1 | de făcut | — |
-| Ordinea operațiilor și a vectorilor; câte un fișier separat pe sculă | S+D | v1 | în lucru (26.10: postul scrie câte un fișier pe sculă și schimbarea sculei într-un singur program, cu 4 strategii, ADR 0083; ordinea și jobul cu mai multe scule din document, 3.8b) | postul: (felia 3.8a) |
+| Ordinea operațiilor și a vectorilor; câte un fișier separat pe sculă | S+D | v1 | în lucru (26.10: postul scrie câte un fișier pe sculă și schimbarea sculei într-un singur program, cu 4 strategii, ADR 0083; ordinea și jobul cu mai multe scule din document, 3.8b) | postul: 3b978db |
 | Gravare pe linie; gravare „inteligentă” cu colțuri ascuțite (smart engrave) | S+D | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Inlay în V (D) ȘI inlay cu pereți drepți, simplu sau în trepte (S), fiecare cu criteriul lui | S+D | v1 (decis 06.10; era v1.x) | de făcut | — |
 | Caneluri (cu încrucișări împletite), teșire (bevel carving), Raised Round (adâncitură cu profil) | S | v1 (decis 06.10; era v1.x) | de făcut | — |

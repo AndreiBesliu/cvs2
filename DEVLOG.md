@@ -3061,4 +3061,6 @@ fereastra exportului, 4 / 4 prinse de e2e. Programul în mm a rămas octet cu oc
 și **Units** (mm, inch), iar nota postului neprobat se schimbă cu postul ales. **Găsit la verificare:** titlul ferestrei spunea
 tot „Export G-code (GRBL 1.1)” cu grblHAL ales → titlul numește postul ales (`export.titlu` cu `{post}`), cu proba lui în e2e;
 porțile: 7 371 / 229 (o cădere `EBUSY` a Drive-ului în `test-results`, trecută la rularea din nou).
+**Publicat din nou pe test:** `publica` pe `c3f5894` (rularea 40311488776), după rapid-ul verde (40310337105); verificat: cu FluidNC
+ales, titlul e „Export G-code (FluidNC)”, iar nota numește FluidNC.
 
