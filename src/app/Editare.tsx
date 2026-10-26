@@ -6,7 +6,8 @@ import type { Cutie } from '../geom/cutie.ts';
 import { aliniaza, FELURI_ALINIERE, minimAliniere, type FelAliniere } from '../geom/aliniere.ts';
 import { lipeste } from '../geom/lipire.ts';
 import '../i18n/editare.ts';
-import { t, type CheieSimpla } from '../i18n/t.ts';
+import { mesajeGata } from '../i18n/laCerere.ts';
+import { cuMesaje, t, type CheieSimpla } from '../i18n/t.ts';
 import type { Document, Ghidaj } from '../model/document.ts';
 import { areArce, matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
@@ -30,6 +31,10 @@ import { conturNoduri, drumSvg, formaNoduri, inversa, laturaLovita, nodLovit, no
 import { aplica, IDENTITATE } from '../geom/matrice.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
+
+/** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
+export const mesaje = mesajeGata();
+mesaje.catch(() => undefined);
 
 /**
  * Editarea pe pânză (ADR 0050–0053), la cerere după prima randare: riglele și ghidajele foii, grila, lipirea mutării
@@ -107,7 +112,7 @@ function formularSalvat(): FormularRetea {
  * Vederea 3D (ADR 0057): o bucată la cerere a modulului ăstuia, cu WebGL-ul și calculul ei; adusă abia la primul clic pe
  * „3D”. Dacă nu vine (rețea, o versiune nouă publicată între timp), se spune, în locul plăcii.
  */
-const Vedere3D = lazy(() => import('./Vedere3D.tsx').then((m) => ({ default: m.Vedere3D }), () => ({
+const Vedere3D = lazy(() => import('./Vedere3D.tsx').then(cuMesaje).then((m) => ({ default: m.Vedere3D }), () => ({
   default: ({ zona }: { readonly zona: Zona }) => (
     <span className="cip cip-rosu" role="status" data-testid="vedere-3d-neincarcata" style={{ position: 'absolute', left: zona.x + 8, top: zona.y + 8, pointerEvents: 'auto' }}>
       {t('editare.3d.neincarcata')}
@@ -132,7 +137,7 @@ const TestPasCuPas = lazy(() => import('./TestPasCuPas.tsx').then((m) => ({ defa
  * Manualul (documentația live, ADR 0058): fereastra lui, adusă la primul „?” sau F1. Dacă nu vine, se spune, sus pe
  * ecran, până la clic.
  */
-const Manual = lazy(() => import('./Manual.tsx').then((m) => ({ default: m.Manual }), () => ({
+const Manual = lazy(() => import('./Manual.tsx').then(cuMesaje).then((m) => ({ default: m.Manual }), () => ({
   default: ({ onInchide }: { readonly onInchide: () => void }) => (
     <button type="button" className="cip cip-rosu" role="status" data-testid="manual-neincarcat" onClick={onInchide}
       style={{ position: 'fixed', left: '50%', top: 96, translate: '-50% 0', zIndex: 20, pointerEvents: 'auto' }}>

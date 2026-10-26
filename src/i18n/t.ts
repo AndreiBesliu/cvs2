@@ -128,6 +128,12 @@ export function limbaDePornire(salvata: string | null, browser: readonly string[
   return 'ro';
 }
 
+/**
+ * Un modul încărcat la cerere, după ce i-au venit mesajele (ADR 0086): modulul exportă promisiunea lor (`mesaje`), iar
+ * încărcarea o așteaptă. Stă aici, în pornire (o linie), ca aducerea mesajelor să vină doar cu modulele care le folosesc.
+ */
+export const cuMesaje = <M extends { readonly mesaje: Promise<void> }>(m: M): Promise<M> => m.mesaje.then(() => m);
+
 export function t(cheie: CheieSimpla, param?: Parametri): string;
 export function t(cheie: CheiePlural, param: Parametri & { readonly n: number }): string;
 export function t(cheie: Cheie, param?: Parametri): string {

@@ -1,7 +1,13 @@
+import '../i18n/traseu.ts';
 import { t } from '../i18n/t.ts';
 import type { RezumatJob } from './actiuniExportTipuri.ts';
 import { durata } from './durata.ts';
 import { useLimba } from './useLimba.ts';
+import { mesajeGata } from '../i18n/laCerere.ts';
+
+/** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
+export const mesaje = mesajeGata();
+mesaje.catch(() => undefined);
 
 /**
  * Timpul jobului lângă traseu (ADR 0046 §8): estimarea programului traseului, sau motivul pentru care lipsește (un `$$`

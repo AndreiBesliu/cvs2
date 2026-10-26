@@ -8,6 +8,11 @@ import { textNumar } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { apropie, cuprinde, fereastraFina, incadreaza, matrici, panorameaza, rgb, roteste, subCursor, type Camera, type ZonaNdc } from './vedere3dCalcul.ts';
 import './vedere3d.css';
+import { mesajeGata } from '../i18n/laCerere.ts';
+
+/** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
+export const mesaje = mesajeGata();
+mesaje.catch(() => undefined);
 
 /**
  * Vederea 3D a plăcii tăiate (ADR 0057), la cerere din modulul editării: la deschidere, programul documentului de acum

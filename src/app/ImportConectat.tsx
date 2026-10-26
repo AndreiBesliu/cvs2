@@ -4,6 +4,11 @@ import '../ui/actiuniDocumentCalcul.ts';
 import { ruleaza, type Registru, type RezultatActiune } from '../ui/actiuni.ts';
 import { PLAFON_IMPORT, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport } from '../ui/actiuniImport.ts';
 import { DialogImport } from '../ui/DialogImport.tsx';
+import { mesajeGata } from '../i18n/laCerere.ts';
+
+/** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
+export const mesaje = mesajeGata();
+mesaje.catch(() => undefined);
 
 /** Locul lăsării pe planșă (mm ai foii), sau null (butonul, ori lăsate în afara pânzei). */
 type Loc = { readonly x: number; readonly y: number } | null;

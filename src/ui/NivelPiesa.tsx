@@ -4,6 +4,11 @@ import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
 import { textNumar } from './numar.ts';
 import { useLimba } from './useLimba.ts';
+import { mesajeGata } from '../i18n/laCerere.ts';
+
+/** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
+export const mesaje = mesajeGata();
+mesaje.catch(() => undefined);
 
 /**
  * O operație, cum o arată arborele proiectului. Operația din document (ADR 0025) are aceeași formă, deci trece direct,

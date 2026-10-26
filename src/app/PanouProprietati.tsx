@@ -10,6 +10,11 @@ import type { RezultatActiune } from '../ui/actiuni.ts';
 import { CampNumeric } from '../ui/CampNumeric.tsx';
 import { valoareDerivata } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import { mesajeGata } from '../i18n/laCerere.ts';
+
+/** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
+export const mesaje = mesajeGata();
+mesaje.catch(() => undefined);
 
 type Props = {
   readonly doc: Document;

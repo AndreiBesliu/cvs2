@@ -7,6 +7,11 @@ import { useLimba } from '../ui/useLimba.ts';
 import { normalizeazaCautare as normalizeaza } from '../docs/cautare.ts';
 import { Markdown, TextMd, type Legaturi } from '../docs/Markdown.tsx';
 import './manual.css';
+import { mesajeGata } from '../i18n/laCerere.ts';
+
+/** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
+export const mesaje = mesajeGata();
+mesaje.catch(() => undefined);
 
 /**
  * Fereastra manualului (documentația live, ADR 0058), la cerere din modulul editării: butonul „?” din extensia barei sau

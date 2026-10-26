@@ -35,6 +35,7 @@ import '../../src/ui/actiuniDocumentCalcul.ts';
 import { poarta } from '../oracles/poarta.ts';
 import { regiuneDinDocument } from '../oracles/regiune.ts';
 import { citeste, pagina } from './ajutor-svg.ts';
+import { servesteMesajele } from './ajutor-mesaje.ts';
 
 const puncte = (v: readonly Varf[]) => v.map((x) => [+x.p.x.toFixed(9), +x.p.y.toFixed(9), x.s.tip]);
 
@@ -141,7 +142,8 @@ test('ușa (§11): `stroke-width` nu se citește; refuzul `gol` înseamnă „ni
 });
 
 test('textele noi (en + ro): numărul căilor deschise importate, sumarul, nota grosimii liniei, „gol”, descrierea din listă', async () => {
-  await import('../../src/i18n/import.ts');
+  const f = servesteMesajele();
+  await import('../../src/i18n/import.ts').then((m) => m.gata).finally(() => { f.restaureaza(); });
   assert.equal(traduce('ro', 'import.deschise', { n: 1 }), '1 cale deschisă, tăiată pe linie: un canal de cel mult 1 mm (jumătate din foaie, dacă e mai subțire), într-o trecere');
   assert.equal(traduce('en', 'import.deschise', { n: 3 }), '3 open paths, cut on the line: a groove at most 1 mm deep (half the sheet, if thinner), in one pass');
   assert.equal(traduce('ro', 'import.grosime-linie'), 'Grosimea liniei din fișier nu contează: canalul are diametrul frezei.');

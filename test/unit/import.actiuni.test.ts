@@ -12,6 +12,7 @@ import { ACTIUNI_DOCUMENT, type ContextDocument } from '../../src/ui/actiuniDocu
 import '../../src/ui/actiuniDocumentCalcul.ts';
 import { ACTIUNI_IMPORT, type PrevizualizareImport } from '../../src/ui/actiuniImport.ts';
 import { octeti, pagina } from './ajutor-svg.ts';
+import { servesteMesajele } from './ajutor-mesaje.ts';
 
 const registru = creeazaRegistru(ACTIUNI_DOCUMENT, () => true);
 
@@ -93,7 +94,8 @@ test('acțiunea de citire: oprită în fila care doar citește; întoarce previz
 
 test('mesajele importului vin cu dialogul: înainte de încărcare lipsesc (eroare clară), după, în ambele limbi', async () => {
   assert.throws(() => traduce('ro', 'import.titlu', { nume: 'x' }), /nu e încărcat/);
-  await import('../../src/i18n/import.ts');
+  const f = servesteMesajele();
+  await import('../../src/i18n/import.ts').then((m) => m.gata).finally(() => { f.restaureaza(); });
   assert.equal(traduce('ro', 'import.titlu', { nume: 'logo' }), 'Importă SVG: logo');
   // Din 2.3c-3, `deschise` numără căile deschise IMPORTATE (ADR 0037 §11).
   assert.equal(traduce('en', 'import.av.deschise', { n: 2 }), '2 open paths (no closing Z, not filled) imported as lines, to cut on the line');

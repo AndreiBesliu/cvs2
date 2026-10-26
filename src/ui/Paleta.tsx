@@ -3,6 +3,11 @@ import '../i18n/carcasa.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { RezultatActiune } from './actiuni.ts';
 import { useLimba } from './useLimba.ts';
+import { mesajeGata } from '../i18n/laCerere.ts';
+
+/** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
+export const mesaje = mesajeGata();
+mesaje.catch(() => undefined);
 
 /** O acțiune a registrului, cum o arată paleta: din `toate()` (`actiuni.ts`). */
 export type ElementPaleta = { readonly id: string; readonly eticheta: CheieSimpla; readonly stare: RezultatActiune };

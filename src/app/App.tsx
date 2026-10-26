@@ -4,7 +4,7 @@ import { treaptaZoom, type Bucata, type GestDesen, type Lipeste, type Vedere } f
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
 import type { Miscare, Program } from '../ir/ir.ts';
 import { CUTIE_GOALA, uneste } from '../geom/cutie.ts';
-import { incarcaLimba, t, type CheieSimpla } from '../i18n/t.ts';
+import { cuMesaje, incarcaLimba, t, type CheieSimpla } from '../i18n/t.ts';
 import { LIMBI, type Limba } from '../i18n/tipuri.ts';
 import { avertismente } from '../model/avertismente.ts';
 import { documentNou, type Document, type Operatie } from '../model/document.ts';
@@ -87,28 +87,33 @@ function DialogNeincarcat({ onInchide }: { readonly onInchide: () => void }) {
 /**
  * Dialogurile se încarcă la cerere: nu intră în pachetul de pornire (plafonul de 100 kB, `PLAN.md` §4.4), pe care îl
  * plătește fiecare deschidere a aplicației. Se aduc în fundal după pornire (`useEffect` de mai jos), ca prima deschidere
- * să nu aștepte rețeaua; un eșec al încărcării arată `DialogNeincarcat`, nu ecranul de eroare.
+ * să nu aștepte rețeaua; un eșec al încărcării arată `DialogNeincarcat`, nu ecranul de eroare. Fiecare modul vine abia după
+ * mesajele lui (`cuMesaje`, ADR 0086: textele modulelor sunt date, cerute când modulul se evaluează).
  */
-const incarcaDialogExport = () => import('./ExportConectat.tsx');
-const incarcaDialogImport = () => import('./ImportConectat.tsx');
+const incarcaDialogExport = () => import('./ExportConectat.tsx').then(cuMesaje);
+const incarcaDialogImport = () => import('./ImportConectat.tsx').then(cuMesaje);
 // Dialogurile vin legate de document (`ExportConectat`, `ImportConectat`): valorile operațiilor, citirea fișierelor și coada
 // importului pleacă din pachetul de pornire odată cu ferestrele lor.
 const DialogExport = lazy(() => incarcaDialogExport().then((m) => ({ default: m.ExportConectat }), () => ({ default: DialogNeincarcat })));
 // Cipul timpului de lângă traseu (ADR 0046 §8): la cerere, ca durata și textele lui să nu stea în pornire (ADR 0042).
-const CipTimpTraseu = lazy(() => import('../ui/CipTimpTraseu.tsx').then((m) => ({ default: m.CipTimpTraseu })));
+const CipTimpTraseu = lazy(() => import('../ui/CipTimpTraseu.tsx').then(cuMesaje).then((m) => ({ default: m.CipTimpTraseu })));
 const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.ImportConectat }), () => ({ default: DialogNeincarcat })));
 /** Paleta de comenzi și panoul de proprietăți vin tot la cerere (prototipul B): nu intră în pachetul de pornire. */
-const incarcaPaleta = () => import('../ui/Paleta.tsx');
-const incarcaProprietati = () => import('./PanouProprietati.tsx');
+const incarcaPaleta = () => import('../ui/Paleta.tsx').then(cuMesaje);
+const incarcaProprietati = () => import('./PanouProprietati.tsx').then(cuMesaje);
 const Paleta = lazy(() => incarcaPaleta().then((m) => ({ default: m.Paleta }), () => ({ default: DialogNeincarcat })));
 // Panoul care nu se poate aduce rămâne gol: e doar de citit, iar selecția se vede și în listă și în bara de jos.
 const PanouProprietati = lazy(() => incarcaProprietati().then((m) => ({ default: m.PanouProprietati }), () => ({ default: () => null })));
 /** Panoul mașinii (ADR 0081): senderul și conexiunea vin la prima deschidere, nu în pornire. */
-const PanouMasina = lazy(() => import('./PanouMasina.tsx').then((m) => ({ default: m.PanouMasina }), () => ({ default: () => null })));
+const PanouMasina = lazy(() => import('./PanouMasina.tsx').then(cuMesaje).then((m) => ({ default: m.PanouMasina }), () => ({ default: () => null })));
 /** Stratul traseului (ADR 0038 §3) vine la primul „Arată traseul”: WebGL2 nu intră în pachetul de pornire. */
 const StratTraseu = lazy(() => import('../canvas/StratTraseu.tsx').then((m) => ({ default: m.StratTraseu }), () => ({ default: () => null })));
-/** Riglele, ghidajele, lipirea și alinierea (ADR 0050): la cerere, după prima randare a pânzei. */
-const Editare = lazy(() => import('./Editare.tsx').then((m) => ({ default: m.Editare }), () => ({ default: () => null })));
+/**
+ * Riglele, ghidajele, lipirea și alinierea (ADR 0050): la cerere, după prima randare a pânzei. Mesajele editării pornesc odată
+ * cu bucata, nu după ea (ADR 0086): până se montează editarea, gesturile ei (Shift + clic) nu există.
+ */
+const Editare = lazy(() => Promise.all([import('./Editare.tsx'), import('../i18n/editare.ts')]).then(([m]) => cuMesaje(m))
+  .then((m) => ({ default: m.Editare }), () => ({ default: () => null })));
 
 /**
  * Traseul de pe pânză (ADR 0038 §2): ultimul program calculat la „Arată traseul”, cu revizia documentului de atunci
@@ -498,8 +503,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     const refuz = (motiv: string): void => {
       if (cerere === cerereTraseu.current) setTraseu({ arata: true, stare: 'refuz', rev: d.rev, miscari: null, motiv });
     };
-    // Mesajele cipului vin înaintea lui (dicționarul traseului, la cerere), apoi CAM-ul.
-    Promise.all([import('../cam/job.ts'), import('../i18n/traseu.ts')]).then(([{ programDinDocument }]) => {
+    // Mesajele cipului vin înaintea lui (ale traseului, ca date, ADR 0086), apoi CAM-ul.
+    Promise.all([import('../cam/job.ts'), import('../i18n/traseu.ts').then((m) => m.gata)]).then(([{ programDinDocument }]) => {
       if (cerere !== cerereTraseu.current) return;
       setTraseu((v) => ({ arata: true, stare: 'calcul', rev: d.rev, miscari: v?.miscari ?? null, motiv: null }));
       // Cu modulele deja aduse, un `setTimeout(0)` simplu pornea CAM-ul înaintea desenării cipului (recenzia 2.8e, F5):

@@ -3114,3 +3114,24 @@ pressed” (și „portul s-a închis”, „controlerul a repornit”), cu prob
 **Publicat din nou pe test:** `publica` pe `7caf466` (rularea 40344444299), după rapid-ul verde (40343404729, cea mai lentă felie
 6 min 14 s); verificat după „Versiune nouă → Reîncarcă”: Oprește în mișcare dă „întreruptă (ai apăsat Oprește): se pornește din
 nou de la început” și cardul „ALARM:3 — Repornit în timpul unei mișcări”; deblocat cu confirmarea, Idle, 0 erori în jurnal.
+
+## 2026-10-26 — Loc în bugetul JavaScript (Model: Claude Opus 5.5)
+
+**Prompt:** „Fă loc în bugetul JavaScript: mută la cerere ce se poate (de exemplu panoul mașinii sau textele lui), fără să
+ridici plafonul, și spune-mi cât s-a câștigat.”
+**Started:** 26.10, ~17:35. Felia **3.K**, fără agenți (ADR 0086). Măsurătoarea întâi (hărțile de surse, bucată cu bucată):
+totalul numără toate bucățile, fiindcă toate stau în precache, deci „la cerere” scade doar pornirea, nu totalul; panoul
+mașinii era deja la cerere. Textele modulelor la cerere: ~24 kB gzip, cu ambele limbi în fiecare bucată.
+**Completed:** 26.10 19:10. Textele celor șapte module sunt date (`mesaje/<modul>.json`, în precache). **Totalul JavaScript
+328,2 → 304,3 / 330 kB (−23,9)**, pornirea 95,9 → 96,0 / 100 (cu ușa 99,3), precache-ul întreg 380,1 → 381,5 kB; plafonul
+neschimbat. Porțile: 7 414 teste unitare (0 picate, 8 sărite), e2e 237 / 237 (o cădere `EBUSY` a Drive-ului în `test-results`,
+trecută la rularea din nou), emulatoarele 13. **Găsit pe drum:** (1) primul încărcător stătea în pornire (+0,3 kB): fiecare modul
+își exportă acum promisiunea mesajelor; (2) o cerere căzută era uitată imediat (proba a prins-o: textele căzute înaintea
+codului ar fi dat ecranul de eroare); (3) un fișier pe limbă: 29,4 kB în 14 fișiere, unul pe modul: 25,6 în 7; (4) proba
+booleanului (Shift + clic imediat după încărcare) a prins fereastra în care editarea nu e montată, lungită de textele ei: acum
+vin în paralel cu bucata. **npm lipsește din instalarea Node** (`C:\Program Files
+odejs
+ode_modules
+pm` golit la 17:11,
+în afara proiectului): porțile au rulat direct cu `node` (Playwright și emulatoarele printr-o configurare locală în `.tmp/`,
+cu serverul pornit fără `npm run preview`); CI-ul are npm-ul lui.

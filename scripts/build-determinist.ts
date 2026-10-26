@@ -11,6 +11,8 @@ import { gzipSync } from 'node:zlib';
 import { DIR_DOCUMENTATIE, FISIER_CATALOG, FISIER_ROADMAP, FISIER_ROADMAP_EN, esteCatalog, esteRoadmap, fisierDocument } from '../shared/documentatie.ts';
 import { DIR_CODURI, esteDictionarCoduri, fisierCoduri, LIMBI_CODURI } from '../shared/coduri.ts';
 import { DIR_MANUAL, esteManual, fisierManual, LIMBI_MANUAL } from '../shared/manual.ts';
+import { DIR_MESAJE, esteFisierMesaje, fisierMesaje, MODULE_MESAJE } from '../shared/mesaje.ts';
+import { DICTIONARE_MODULE } from './mesaje.ts';
 import { DOAR_ONLINE, inPrecache, motivPrecache } from '../shared/precache.ts';
 
 /**
@@ -477,6 +479,29 @@ if (formaCodurilor.some((f, k) => f === null || f !== formaCodurilor[0] || (codu
   console.error(`Dicționarul codurilor (dist/${DIR_CODURI}/): lipsește, are altă formă, alte tabele într-o limbă, nu e în precache sau trece de ${PLAFON_CODURI_KB} kB gzip (${kbCoduri.map((kb) => kb.toFixed(1)).join(', ')}; ADR 0085).`);
   process.exit(1);
 }
+// Mesajele modulelor la cerere (ADR 0086): un fișier pe modul, ambele limbi cu aceleași chei, în precache; textele lor nu
+// mai stau în JavaScript (cel mai lung mesaj al fiecărui modul, căutat în fiecare bucată, marcajul care nu trebuie să apară).
+const problemeMesaje: string[] = [];
+let kbMesaje = 0;
+for (const m of MODULE_MESAJE) {
+  const f = fisierMesaje(m);
+  if (!a.has(f) || !manifest.has(f)) problemeMesaje.push(`${f} lipsește sau nu e în precache`);
+  else {
+    kbMesaje += gz(join('.tmp/build-1', f));
+    if (!esteFisierMesaje(JSON.parse(readFileSync(join('.tmp/build-1', f), 'utf8')))) problemeMesaje.push(`${f} nu are forma așteptată`);
+  }
+  // Doar ASCII fără ghilimele: minificatorul ar putea scrie altfel un caracter peste 0x7F sau o ghilimea, și marcajul n-ar
+  // mai găsi nimic.
+  const marcaj = Object.values(DICTIONARE_MODULE[m].en).filter((v): v is string => typeof v === 'string' && /^[ !#-&(-[\]-~]+$/.test(v))
+    .sort((x, y) => y.length - x.length)[0] ?? '';
+  if (marcaj.length < 20) problemeMesaje.push(`${m}: niciun marcaj ASCII destul de lung`);
+  const inCod = [...bucati.keys()].filter((r) => marcaj !== '' && cod(r).includes(marcaj));
+  if (inCod.length > 0) problemeMesaje.push(`textele modulului ${m} sunt încă în JavaScript (${inCod.join(', ')})`);
+}
+if (problemeMesaje.length > 0) {
+  console.error(`Mesajele modulelor (dist/${DIR_MESAJE}/, ADR 0086): ${problemeMesaje.join('; ')}.`);
+  process.exit(1);
+}
 const faraFisier = catalogCitit.documente.filter((d) => !a.has(fisierDocument(d.cale)));
 if (faraFisier.length > 0) {
   console.error(`Documente din catalog fără fișierul lor în dist/: ${faraFisier.map((d) => d.cale).join(', ')}.`);
@@ -540,6 +565,7 @@ console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB
 console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`)).join(', ')} și ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere).`);
 console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip (în engleză ${gz(join('.tmp/build-1', FISIER_ROADMAP_EN)).toFixed(1)} kB, ${roadmapEnCitit.netraduse} texte netraduse), ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
 console.log(`Manualul (în precache): ${LIMBI_MANUAL.map((l) => `${l} ${gz(join('.tmp/build-1', fisierManual(l))).toFixed(1)} kB gzip`).join(', ')}, ${capitoleManual[0]?.split(',').length ?? 0} capitole.`);
+console.log(`Mesajele modulelor la cerere (date, în precache): ${MODULE_MESAJE.length} fișiere, ${kbMesaje.toFixed(1)} kB gzip (ambele limbi; ADR 0086).`);
 console.log(`Dicționarul codurilor (în precache): ${LIMBI_CODURI.map((l, k) => `${l} ${(kbCoduri[k] ?? 0).toFixed(1)} kB gzip`).join(', ')} (plafon ${PLAFON_CODURI_KB} pe limbă).`);
 console.log(`Cu un proiect salvat, ușa vine înaintea primei randări: +${kbUsa.toFixed(1)} kB (plafon ${PLAFON_USA_KB}; cu pornirea ${(pornire + kbUsa).toFixed(1)} / ${PLAFON_PORNIRE_KB}) (${inchidere(usa).map((r) => r.replace('assets/', '')).join(', ')}).`);
 rmSync('.tmp/build-1', { recursive: true, force: true });

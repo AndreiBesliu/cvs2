@@ -132,6 +132,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   sursele firmware-ului; familia din banner și `$I`); textele, date în precache (`coduri/*.json`, generate la build), nu JavaScript;
   deblocarea după o alarmă care pierde poziția cere confirmarea. **Un cod nou al unui controler = rând în tabel + text în ambele
   limbi** (proba numerelor din `test/unit/coduri.test.ts` se schimbă doar cu sursa citată).
+  **Mesajele modulelor la cerere, ca date (ADR 0086, felia 3.K)** gata pe 26.10: textele editării, exportului, mașinii,
+  importului, carcasei, traseului și simulării stau în `mesaje/<modul>.json` (generate din `src/i18n/<modul>.en.ts` / `.ro.ts`,
+  în precache), nu în JavaScript; totalul 328,2 → 304,3 / 330 kB. **Un modul nou la cerere care folosește aceste texte exportă
+  `mesaje = mesajeGata()` și se încarcă cu `.then(cuMesaje)`** (compilatorul cere exportul); dicționarele de bază, `/admin` și
+  testul pas cu pas rămân în cod.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

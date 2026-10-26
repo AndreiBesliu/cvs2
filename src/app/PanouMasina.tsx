@@ -25,6 +25,11 @@ import { SesiuneMasina, type Ceas, type LinieJurnal, type Procedura, type StareS
 import { useLimba } from '../ui/useLimba.ts';
 import { CardCod, ConfirmareDeblocare, cuTitlu, deblocareCuConfirmare, titluCod, useDictionarCoduri, type StareDictionar } from './PanouCod.tsx';
 import './masina.css';
+import { mesajeGata } from '../i18n/laCerere.ts';
+
+/** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
+export const mesaje = mesajeGata();
+mesaje.catch(() => undefined);
 
 /** Programul ultimului export (octeții exacți și amprenta lor), dat de carcasă. */
 export type ExportPentruMasina = { readonly octeti: Uint8Array; readonly sha256: string; readonly nume: string };

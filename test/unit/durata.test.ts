@@ -1,12 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import '../../src/i18n/traseu.ts';
+import { adaugaMesaje } from '../../src/i18n/t.ts';
+import { DICTIONARE_MODULE } from '../../scripts/mesaje.ts';
 import { durata } from '../../src/ui/durata.ts';
 
 /**
  * Durata în cuvinte (ADR 0046 §5, §8): o singură funcție pentru rezumatul exportului și cipul traseului. Sub un minut cu o
  * zecimală, apoi minute și secunde, apoi ore și minute; pragurile cad unde rotunjirea ar scrie „60”.
  */
+
+// Mesajele traseului (cu `durata.*`), înregistrate direct: aici contează doar formatul, nu aducerea lor (ADR 0086).
+adaugaMesaje(DICTIONARE_MODULE.traseu);
 
 test('sub un minut: o zecimală, cu virgula în română și punctul în engleză', () => {
   assert.equal(durata(0, 'ro'), '0,0 s');

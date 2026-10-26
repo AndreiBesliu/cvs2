@@ -1,12 +1,12 @@
 import { lazy, Suspense, useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { t } from '../i18n/t.ts';
+import { cuMesaje, t } from '../i18n/t.ts';
 import type { OperatieArbore } from './NivelPiesa.tsx';
 
 /**
  * Nivelul de sub instanță (piesa și operațiile ei) vine la cerere, cu mesajele lui: nu intră în pachetul de pornire. Dacă
  * nu se poate aduce (o publicare nouă i-a schimbat numele), arborele rămâne cu foaia și instanțele.
  */
-export const incarcaNivelPiesa = () => import('./NivelPiesa.tsx');
+export const incarcaNivelPiesa = () => import('./NivelPiesa.tsx').then(cuMesaje);
 const NivelPiesa = lazy(() => incarcaNivelPiesa().then((m) => ({ default: m.NivelPiesa }), () => ({ default: () => null })));
 
 /**

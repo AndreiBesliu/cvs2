@@ -19,7 +19,8 @@
  *
  * Manualul utilizatorului (`manual/ro.json`, `manual/en.json`, ADR 0058) intră: se citește și fără rețea, ca aplicația. La
  * fel dicționarul codurilor controlerului (`coduri/ro.json`, `coduri/en.json`, ADR 0085): explicația unei alarme trebuie să
- * vină și în atelier.
+ * vină și în atelier. Și mesajele modulelor la cerere (`mesaje/<modul>.json`, ADR 0086), fără de care modulele nu
+ * se pot arăta.
  *
  * Testul pas cu pas al owner-ului (ADR 0072: bucata `TestPasCuPas`, cu stilul ei, și pașii din `tutorial/`) rămâne afară,
  * ca `/admin`: există doar pe instanța de test, deci n-are ce căuta pe discul fiecărui om. La fel mașina simulată (ADR 0081:
@@ -43,6 +44,7 @@ export function motivPrecache(cale: string): MotivPrecache {
   if (cale.startsWith('documentatie/')) return 'documentatie';
   if (/^manual\/(?:ro|en)\.json$/.test(cale)) return 'precache';
   if (/^coduri\/(?:ro|en)\.json$/.test(cale)) return 'precache';
+  if (/^mesaje\/[a-z]+\.json$/.test(cale)) return 'precache';
   if (/^tutorial\/[a-z0-9-]+\.json$/.test(cale)) return 'doar-online';
   const m = /^assets\/([^/]+)-[A-Za-z0-9_-]{8}\.(?:js|css)$/.exec(cale);
   if (!m) return 'necunoscut';

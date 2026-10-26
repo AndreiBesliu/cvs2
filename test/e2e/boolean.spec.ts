@@ -16,6 +16,8 @@ async function alegeDreptunghiulApoiCercul(page: Page): Promise<void> {
   await adauga(page, 'dreptunghi');
   await adauga(page, 'cerc');
   await randuri(page).first().click();
+  // Shift + clic e un gest al modulului editării (la cerere): întâi montat, ca pentru omul care îi vede bara.
+  await expect(page.locator('[data-editare="lipire"]')).toBeAttached();
   const pe = (await ecran(page, await vedere(page)))(85, 50);
   await page.keyboard.down('Shift');
   await page.mouse.click(pe.x, pe.y);

@@ -7,6 +7,7 @@ import { CSP } from './shared/csp.ts';
 import { DIR_DOCUMENTATIE } from './shared/documentatie.ts';
 import { DIR_CODURI } from './shared/coduri.ts';
 import { DIR_MANUAL } from './shared/manual.ts';
+import { DIR_MESAJE } from './shared/mesaje.ts';
 import { DIR_TUTORIAL } from './shared/tutorial.ts';
 import { inPrecache } from './shared/precache.ts';
 
@@ -44,7 +45,7 @@ function cspInBuild(): Plugin {
  * pagina `/admin` le cere abia la deschiderea filei. Un tabel care nu se mai poate citi oprește build-ul, cu fișierul și
  * motivul. În dezvoltare, aceleași fișiere se generează la fiecare cerere (un document editat se vede la reîncărcare).
  * Tot aici se generează manualul utilizatorului (ADR 0058), în `dist/manual/`, și dicționarul codurilor controlerului (ADR
- * 0085), în `dist/coduri/`.
+ * 0085), în `dist/coduri/`, și mesajele modulelor la cerere (ADR 0086), în `dist/mesaje/`.
  */
 function documentatie(): Plugin {
   let radacina = process.cwd();
@@ -67,7 +68,7 @@ function documentatie(): Plugin {
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const cale = (req.url ?? '').split('?')[0] ?? '';
-        if (![DIR_DOCUMENTATIE, DIR_MANUAL, DIR_TUTORIAL, DIR_CODURI].some((d) => cale.startsWith(`/${d}/`))) {
+        if (![DIR_DOCUMENTATIE, DIR_MANUAL, DIR_TUTORIAL, DIR_CODURI, DIR_MESAJE].some((d) => cale.startsWith(`/${d}/`))) {
           next();
           return;
         }

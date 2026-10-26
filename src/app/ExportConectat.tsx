@@ -5,6 +5,11 @@ import { esteCaleDeschisa, type Document, type Operatie } from '../model/documen
 import type { ElementLume } from '../model/lume.ts';
 import { DialogExport, type CerereExport, type OperatieExport, type StareExport } from '../ui/DialogExport.tsx';
 import { operatieDinDialog } from './valoriOperatii.ts';
+import { mesajeGata } from '../i18n/laCerere.ts';
+
+/** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
+export const mesaje = mesajeGata();
+mesaje.catch(() => undefined);
 
 /**
  * Dialogul de export legat de document: rândurile operațiilor și harta operațiilor noi de la Exportă. Vine la cerere, cu
