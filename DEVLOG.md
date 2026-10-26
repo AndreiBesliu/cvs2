@@ -3085,4 +3085,6 @@ strategii ale GRBL 1.1), cu T1 Ø3 pe cerc „T1 has two diameters (6, 3 mm): ea
 **Găsit la verificare:** câmpurile T și Ø stăteau unul sub altul, la fel de late → alăturate, T îngust (CSS); porțile din nou:
 7 381 / 231. Fluxul pe mașina simulată (export, oprirea, palparea, Continuă) e probat în e2e: pe test, exportul ar cere o
 descărcare.
+**Publicat din nou pe test:** `publica` pe `3c72702` (rularea 40326096761), după rapid-ul verde (40325257548); verificat: T și Ø
+alăturate pe rând (T îngust, 52 px).
 
