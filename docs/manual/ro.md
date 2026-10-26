@@ -422,6 +422,19 @@ Panoul **Mașina** (în dreapta, sub proprietăți) trimite programul la mașin�
 
 Lucrarea e „gata” abia după ultimul răspuns al mașinii și după ce raportează Idle: o pauză nu o încheie.
 
+**Erorile și alarmele mașinii.** Când mașina răspunde cu un cod (`error:N`, o linie refuzată; `ALARM:N`, mașina s-a oprit), sub
+stare apare explicația lui: ce s-a întâmplat, unde (linia programului, comanda, jog-ul, palparea) și **Ce faci**, cu butoanele
+care ajută: **Oprește** (când mașina cere repornirea, „Reset to continue”), **Deblochează ($X)**, **Reia** (după ușa de
+siguranță), **Mergi la jog** și **Mergi la palpare** (te duc la butoanele lor). **Am înțeles** ascunde explicația până la codul
+următor; lista erorilor și jurnalul arată și ele titlul fiecărui cod.
+- Explicația vine din tabelul controlerului tău, după cum se prezintă la conectare: GRBL 1.1, grblHAL sau FluidNC (până atunci,
+  GRBL 1.1, scris sub explicație). Același număr înseamnă altceva la fiecare: `ALARM:10` e al doilea limitator al unei axe duble
+  la GRBL, oprirea de urgență la grblHAL. Un cod pe care tabelul nu-l are se arată ca atare, fără o explicație ghicită.
+- După o alarmă care pierde poziția (un limitator atins, o repornire în mișcare, un homing eșuat), **Deblochează** cere întâi
+  confirmarea: poziția nu mai e sigură, deci fă homing (`$H`) sau refă zero-ul X, Y și Z. **Deblochează oricum** trimite `$X`,
+  **Renunță** nu trimite nimic.
+- Explicațiile merg și fără rețea, după prima încărcare a aplicației.
+
 **Poziționarea** (cu mașina conectată):
 - **Coordonatele de lucru**: sistemul activ al mașinii (G54–G59), citit de la ea; poziția de lucru se arată în el. Dacă
   programul încărcat taie în altul, panoul o spune și oferă **Treci pe** acela.

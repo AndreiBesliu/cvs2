@@ -3088,3 +3088,9 @@ descărcare.
 **Publicat din nou pe test:** `publica` pe `3c72702` (rularea 40326096761), după rapid-ul verde (40325257548); verificat: T și Ø
 alăturate pe rând (T îngust, 52 px).
 
+## 2026-10-26 — Dicționarul codurilor controlerului (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește dicționarul codurilor GRBL: error:N și ALARM:N cu explicații și ce faci, în panoul mașinii.”
+**Started:** 26.10, ~15:10. Felia **3.6c**, fără agenți (ADR 0085): un tabel pe familie (GRBL 1.1, grblHAL, FluidNC), cu
+numerele citite din sursele firmware-ului, textele noastre în ambele limbi, generate ca date în precache; familia din banner și
+`$I`; ultimul cod cu locul lui și alarma care ține mașina, în sesiune; cardul din panou și confirmarea deblocării.

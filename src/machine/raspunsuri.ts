@@ -98,7 +98,8 @@ export function citesteRaspuns(linie: string): Raspuns {
     const r = raport(t.slice(1, -1));
     return r ? { tip: 'raport', raport: r } : { tip: 'necunoscut', text: t };
   }
-  if (/^Grbl \S+/.test(t)) return { tip: 'banner', text: t };
+  // grblHAL se prezintă „GrblHAL 1.1f […]” (sau „Grbl 1.1f”, cu compatibilitatea pornită), FluidNC „Grbl 3.9 [FluidNC …]”.
+  if (/^Grbl(?:HAL)? \S+/.test(t)) return { tip: 'banner', text: t };
   m = /^\[MSG:(.*)\]$/.exec(t);
   if (m) return { tip: 'mesaj', text: m[1] ?? '' };
   if (/^\[[A-Z0-9.]+:.*\]$/.test(t) || /^\$\d+=/.test(t)) return { tip: 'date', text: t };
@@ -115,4 +116,16 @@ export function pozitieDeLucru(r: Raport, wco: readonly number[] | null): Poziti
   const w = r.wco ?? wco;
   if (!w || w.length !== r.pozitie.valori.length) return null;
   return { cadru: 'lucru', valori: r.pozitie.valori.map((v, k) => v - (w[k] ?? 0)) };
+}
+
+/** Familia controlerului (tabelul codurilor lui, ADR 0085), după cum se prezintă: bannerul, `[VER:…]` sau `[FIRMWARE:…]` (`$I`). */
+export type FamilieControler = 'grbl-11' | 'grblhal' | 'fluidnc';
+
+/** Familia spusă de o linie a controlerului; null dacă linia n-o spune (un `[VER:1.1f…]` poate fi și GRBL, și grblHAL). */
+export function familieDinLinie(linie: string): FamilieControler | null {
+  const t = linie.trim();
+  if (/^GrblHAL \S+/.test(t) || t === '[FIRMWARE:grblHAL]') return 'grblhal';
+  if (/^Grbl \S+ \[FluidNC /.test(t) || /^\[VER:[^\]]* FluidNC /.test(t)) return 'fluidnc';
+  if (/^Grbl \S+/.test(t)) return 'grbl-11';
+  return null;
 }

@@ -186,3 +186,33 @@
   color: var(--t-slab);
   font-size: var(--fs-1);
 }
+
+/* Codul controlerului (ADR 0085): ultimul error / ALARM, explicat; confirmarea deblocării cu poziția pierdută. */
+.masina section.masina-cod {
+  margin: var(--sp-2) 0;
+  padding: var(--sp-2);
+  border: 1px solid var(--rosu);
+  border-left-width: 4px;
+  border-radius: var(--r-1);
+}
+
+.masina-cod p {
+  margin: 0 0 var(--sp-2);
+}
+
+.masina-cod-meta {
+  color: var(--t-slab);
+  font-size: var(--fs-1);
+}
+
+.masina-confirmare {
+  margin: var(--sp-2) 0;
+  padding: var(--sp-2);
+  border-radius: var(--r-1);
+  border: 1px solid var(--a);
+  background: var(--s-atentie);
+}
+
+.masina-confirmare p {
+  margin: 0 0 var(--sp-1);
+}

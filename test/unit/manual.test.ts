@@ -127,12 +127,19 @@ const CONTROALE_MASINA: Readonly<Record<string, string | null>> = {
   wcs: 'masina.wcs', 'wcs-program': 'masina.wcs.treci', jog: 'masina.jog', 'pas-jog': 'masina.jog.pas', 'avans-jog': 'masina.jog.avans',
   'anuleaza-jog': 'masina.jog.opreste', 'zero-xy': 'masina.zero.xy', 'zero-z': 'masina.zero.z', 'palpare-grosime': 'masina.palpare.grosime',
   'palpare-distanta': 'masina.palpare.distanta', 'palpare-avans': 'masina.palpare.avans', palpeaza: 'masina.palpare.porneste',
+  // Cardul codului controlerului (ADR 0085, `PanouCod.tsx`).
+  'cod-repornire': 'masina.opreste', 'cod-deblocare': 'masina.deblocheaza', 'cod-eliberare': 'masina.eliberare', 'cod-jog': 'masina.cod.la-jog',
+  'cod-palpare': 'masina.cod.la-palpare', 'cod-ascunde': 'masina.cod.ascunde', 'deblocheaza-oricum': 'masina.deblocare.oricum',
+  'deblocare-renunta': 'masina.deblocare.renunta',
 };
 
 test('fiecare control al panoului mașinii (data-masina) e numit în capitolul „masina”, în ambele limbi', () => {
-  const sursa = citeste('src/app/PanouMasina.tsx');
+  const sursa = `${citeste('src/app/PanouMasina.tsx')}
+${citeste('src/app/PanouCod.tsx')}`;
+  // Un `data-masina` calculat (`={…}`) ar ocoli proba: fiecare control își scrie numele.
+  assert.doesNotMatch(sursa, /data-masina=\{/);
   const controale = [...new Set([...sursa.matchAll(/data-masina="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();
-  assert.ok(controale.length >= 25, `${controale.length} controale`);
+  assert.ok(controale.length >= 33, `${controale.length} controale`);
   for (const m of manuale()) {
     const cap = m.capitole.find((c) => c.id === 'masina');
     assert.ok(cap, `${m.limba}: capitolul „masina”`);

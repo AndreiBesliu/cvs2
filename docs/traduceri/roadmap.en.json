@@ -857,6 +857,10 @@
       "ro": "gaura prin față + lamajul din spate",
       "en": "the hole through the front + the counterbore at the back"
     },
+    "846569d435e51c74": {
+      "ro": "**Dicționarul codurilor controlerului** (ADR 0085; „Da, pornește dicționarul codurilor GRBL: error:N și ALARM:N cu explicații și ce faci, în panoul mașinii.”). Când mașina răspunde cu un cod, sub stare apare explicația lui: ce s-a întâmplat, unde (linia programului, comanda, jog-ul, palparea), **Ce faci**, cu butoanele care ajută (Oprește, Deblochează, Reia, Mergi la jog, Mergi la palpare); lista erorilor și jurnalul arată titlul codului. Tabelul e al controlerului, după cum se prezintă (GRBL 1.1, grblHAL, FluidNC; numerele din sursele firmware-ului), iar un cod pe care tabelul nu-l are nu primește o explicație ghicită. După o alarmă care pierde poziția, deblocarea cere confirmarea. Textele (en + ro, ale noastre) sunt date în precache (`coduri/*.json`, 8,9 kB pe limbă), nu JavaScript. **Treceri:** (1) tabelele, textele, generatorul, sesiunea, cardul; găsit pe drum: bannerul grblHAL („GrblHAL 1.1f”) nu era recunoscut ca repornire; la FluidNC, `$H` fără homing e `error:5` și linia lungă `error:14` (alt înțeles decât la GRBL); `ALARM:10` are trei înțelesuri; mutațiile: 29 / 31, o resetare echivalentă scoasă, o probă nouă pentru blocare (31 / 31); pe interfață, 10 / 10 prin e2e (una, căzută întâi la build, refăcută ca să se construiască).",
+      "en": "**The controller code dictionary** (ADR 0085; “Da, pornește dicționarul codurilor GRBL: error:N și ALARM:N cu explicații și ce faci, în panoul mașinii.”). When the machine answers with a code, its explanation appears under the state: what happened, where (the program line, the command, the jog, the probing), **What to do**, with the buttons that help (Stop, Unlock, Resume, Go to the jog, Go to probing); the error list and the log show the code’s title. The table is the controller’s own, as it introduces itself (GRBL 1.1, grblHAL, FluidNC; the numbers from the firmware sources), and a code the table does not have gets no guessed explanation. After an alarm that loses the position, unlocking asks for confirmation. The texts (en + ro, our own) are data in the precache (`coduri/*.json`, 8.9 kB per language), not JavaScript. **Passes:** (1) the tables, the texts, the generator, the session, the card; found on the way: the grblHAL banner (“GrblHAL 1.1f”) was not recognised as a reset; on FluidNC, `$H` without homing is `error:5` and a long line `error:14` (another meaning than on GRBL); `ALARM:10` has three meanings; mutations: 29 / 31, one equivalent reset removed, one new test for the lock (31 / 31); on the interface, 10 / 10 through e2e (one, which first failed at build, redone so that it builds)."
+    },
     "8501fc5d4473a245": {
       "ro": "Pânza",
       "en": "The canvas"
@@ -1040,6 +1044,10 @@
     "9e5b33599d483056": {
       "ro": "Plafonul total al aplicației",
       "en": "The total budget of the app"
+    },
+    "9f170145980966b8": {
+      "ro": "Dicționarul codurilor controlerului (ADR 0085): `error:N` și `ALARM:N` explicate în panoul mașinii, pe familia controlerului (GRBL 1.1, grblHAL, FluidNC), cu ce faci și butoanele care ajută; alarma care ține mașina, „Reset to continue”, confirmarea deblocării cu poziția pierdută; e2e pe mașina simulată și pe un port fals",
+      "en": "The controller code dictionary (ADR 0085): `error:N` and `ALARM:N` explained in the machine panel, by the controller’s family (GRBL 1.1, grblHAL, FluidNC), with what to do and the buttons that help; the alarm holding the machine, “Reset to continue”, the unlock confirmation when the position is lost; e2e on the simulated machine and on a fake port"
     },
     "9fac1dff20d1f2ca": {
       "ro": "Planșele",
@@ -1588,6 +1596,10 @@
     "f891c5d216967f65": {
       "ro": "Jog-ul, zero-ul și palparea pe mașina reală",
       "en": "Jog, zero and probing on the real machine"
+    },
+    "f8f9641ed9df785e": {
+      "ro": "Dicționarul codurilor controlerului",
+      "en": "The controller code dictionary"
     },
     "f960c0b00b8d3474": {
       "ro": "Ușa SVG: DOMParser inert, unități, viewBox, transformări, elementele (path, rect, circle, ellipse, line, polyline, polygon), plafonul de mărime, avertismentele; butonul de import",

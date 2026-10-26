@@ -327,6 +327,8 @@ Li se adaugă cele 100 000 de linii fără pierderi și linia de 80 de caractere
 
   Traducerea în ro le urmează.
 - Contractele grblHAL și FluidNC își aduc propriile coduri.
+- **Aplicat în 3.6c (ADR 0085):** numerele, gravitatea și confirmarea au trecut, pe trei familii; textele s-au scris toate din
+  nou (nu doar cele trei), din înțelesul codurilor în sursele firmware-ului; remediile sunt butoanele panoului nou.
 
 ### 3.6 Registrul probei (etapa 14, cu o grijă la comutarea din etapa 3)
 

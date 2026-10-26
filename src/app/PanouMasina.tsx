@@ -8,8 +8,13 @@
  * zero-ul XY / Z și palparea Z cu placa de contact. Zero-ul și palparea se scriu în WCS-ul programului încărcat (altfel în cel
  * activ), cu numele lui pe buton; nepotrivirea cu WCS-ul activ se spune; lângă zero stă Z0-ul declarat de program (lecțiile
  * ediției întâi). Un buton care nu se poate folosi acum e dezactivat, cu motivul alături.
+ *
+ * Codurile controlerului (ADR 0085, felia 3.6c): ultimul `error:N` / `ALARM:N` se explică într-un card sub stare (`PanouCod`),
+ * din tabelul familiei controlerului; lista erorilor și jurnalul își arată titlul. Deblocarea după o alarmă care pierde
+ * poziția cere confirmarea, și de pe butonul lucrării.
  */
-import { useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import type { ActiuneCod } from '../../shared/coduri.ts';
 import '../i18n/masina.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import { PALPARE_IMPLICITA, WCS, esteWcs, type AxaJog, type FelMiscare, type Wcs } from '../machine/proceduri.ts';
@@ -18,6 +23,7 @@ import { pozitieDeLucru } from '../machine/raspunsuri.ts';
 import { deschideSerial, serialDisponibil } from '../machine/serial.ts';
 import { SesiuneMasina, type Ceas, type LinieJurnal, type Procedura, type StareSesiune } from '../machine/sesiune.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import { CardCod, ConfirmareDeblocare, cuTitlu, deblocareCuConfirmare, titluCod, useDictionarCoduri, type StareDictionar } from './PanouCod.tsx';
 import './masina.css';
 
 /** Programul ultimului export (octeții exacți și amprenta lor), dat de carcasă. */
@@ -49,9 +55,9 @@ const DIRECTII: readonly ({ readonly id: string; readonly simbol: string; readon
 type Refuz = Extract<RezultatIncarcare, { ok: false }>;
 /** Motivul portului închis: gol (închis de dispozitiv) sau un cod al nostru se traduc; altfel, textul browserului. */
 const textMotiv = (m: string): string => (m === '' ? t('masina.motiv.inchis') : m === 'fara-web-serial' || m === 'port-fara-scriere' ? t(`masina.motiv.${m}`) : m);
-/** O linie a jurnalului: ce spune sesiunea (un cod) în limba omului; restul, cum l-a trimis controlerul. */
-const textJurnal = (l: LinieJurnal): string => {
-  if (l.cod === undefined) return l.fel === 'trimis' ? `> ${l.text}` : l.text;
+/** O linie a jurnalului: ce spune sesiunea (un cod) în limba omului; restul, cum l-a trimis controlerul (un cod, cu titlul lui). */
+const textJurnal = (l: LinieJurnal, d: StareDictionar, st: StareSesiune): string => {
+  if (l.cod === undefined) return l.fel === 'trimis' ? `> ${l.text}` : cuTitlu(l.text, d, st);
   if (l.cod === 'port-inchis') return t('masina.eroare', { motiv: textMotiv(l.motiv ?? '') });
   if (l.cod === 'miscare') return t('masina.jurnal.miscare', { motiv: t(`masina.miscare.${l.motiv ?? 'ocupata'}` as CheieSimpla) });
   return t(`masina.jurnal.${l.cod}` as CheieSimpla);
@@ -95,6 +101,12 @@ export function PanouMasina({ ultimulExport, simulare }: {
   const exportAles = ultimulExport?.[fisierAles] ?? ultimulExport?.[0] ?? null;
   const fisier = useRef<HTMLInputElement | null>(null);
   const idComanda = useRef(0);
+  const dict = useDictionarCoduri();
+  // Cardul codului ascuns cu „Am înțeles” (numărul lui): următorul cod îl arată din nou.
+  const [ascuns, setAscuns] = useState<number | null>(null);
+  const [confirmDeblocare, setConfirmDeblocare] = useState(false);
+  const nrAlarma = st.alarma?.nr ?? null;
+  useEffect(() => { setConfirmDeblocare(false); }, [nrAlarma]);
 
   const f = st.flux;
   const conectat = st.conexiune === 'conectat';
@@ -129,13 +141,34 @@ export function PanouMasina({ ultimulExport, simulare }: {
     setComanda('');
   };
 
+  const deblocheaza = (): void => { s.eveniment({ tip: 'manual', id: `om-${++idComanda.current}`, text: '$X' }); };
+  const cereDeblocare = (): void => { if (deblocareCuConfirmare(dict, st)) setConfirmDeblocare(true); else deblocheaza(); };
+  const actiune = (a: ActiuneCod): void => {
+    switch (a) {
+      case 'repornire': s.eveniment({ tip: 'opreste' }); break;
+      case 'deblocare': cereDeblocare(); break;
+      case 'eliberare': s.eveniment({ tip: 'eliberare' }); break;
+      // Jog-ul și palparea: panoul duce omul la ele (un buton dezactivat acum primește doar derularea).
+      case 'jog': case 'palpare': {
+        const b = document.querySelector<HTMLButtonElement>(a === 'jog' ? '[data-masina="jog"][data-jog="Z+"]' : '[data-masina="palpeaza"]');
+        b?.scrollIntoView({ block: 'center' });
+        b?.focus();
+        break;
+      }
+    }
+  };
+  const cod = st.cod !== null && st.cod.nr !== ascuns ? st.cod : null;
+  const confirmare = confirmDeblocare && conectat && r?.stare === 'Alarm'
+    ? <ConfirmareDeblocare onDa={() => { setConfirmDeblocare(false); deblocheaza(); }} onNu={() => { setConfirmDeblocare(false); }} />
+    : null;
+
   // La o oprire pentru schimbarea frezei (ADR 0084), ce freză se montează, din comentariul postului.
   const deMontat = f.faza === 'bariera' && f.bariera && f.program ? sculaLaOprire(f.program, f.bariera.linie, f.bariera.ultima) : null;
   const faza = f.faza === 'bariera' && f.bariera
     ? deMontat !== null
       ? t('masina.faza.bariera.montare', { linie: f.bariera.linie + 1, scula: deMontat })
       : t(f.bariera.m6 ? 'masina.faza.bariera.scula' : 'masina.faza.bariera', { linie: f.bariera.linie + 1 })
-    : f.faza === 'pierdut' ? t('masina.faza.pierdut', { motiv: f.motiv ?? '' }) : t(`masina.faza.${f.faza}` as CheieSimpla);
+    : f.faza === 'pierdut' ? t('masina.faza.pierdut', { motiv: cuTitlu(f.motiv ?? '', dict, st) }) : t(`masina.faza.${f.faza}` as CheieSimpla);
   const inHold = r?.stare === 'Hold';
 
   return (
@@ -178,6 +211,8 @@ export function PanouMasina({ ultimulExport, simulare }: {
           )}
         </dl>
       </section>
+
+      {cod && <CardCod d={dict} st={st} cod={cod} confirmare={confirmare} onActiune={actiune} onAscunde={() => { setAscuns(cod.nr); }} />}
 
       {conectat && <Pozitionare s={s} st={st} />}
 
@@ -223,7 +258,10 @@ export function PanouMasina({ ultimulExport, simulare }: {
         )}
         {f.erori.length > 0 && (
           <ul className="masina-erori" aria-label={t('masina.erori')} data-testid="masina-erori">
-            {f.erori.map((e, k) => <li key={k}>{t('masina.eroare.linie', { linie: e.linie + 1, cod: e.cod })}</li>)}
+            {f.erori.map((e, k) => {
+              const titlu = titluCod(dict, st, 'eroare', e.cod);
+              return <li key={k}>{t('masina.eroare.linie', { linie: e.linie + 1, cod: e.cod })}{titlu === null ? '' : ` — ${titlu}`}</li>;
+            })}
           </ul>
         )}
         <div className="masina-butoane">
@@ -237,9 +275,10 @@ export function PanouMasina({ ultimulExport, simulare }: {
             : <button type="button" data-masina="pauza" onClick={() => { s.eveniment({ tip: 'hold' }); }}>{t('masina.pauza')}</button>)}
           {conectat && <button type="button" className="masina-opreste" data-masina="opreste" title={t('masina.opreste.titlu')} onClick={() => { s.eveniment({ tip: 'opreste' }); }}>{t('masina.opreste')}</button>}
           {conectat && r?.stare === 'Alarm' && (
-            <button type="button" data-masina="deblocheaza" onClick={() => { s.eveniment({ tip: 'manual', id: `om-${++idComanda.current}`, text: '$X' }); }}>{t('masina.deblocheaza')}</button>
+            <button type="button" data-masina="deblocheaza" onClick={cereDeblocare}>{t('masina.deblocheaza')}</button>
           )}
         </div>
+        {!cod && confirmare}
       </section>
 
       <section aria-label={t('masina.comanda')}>
@@ -249,7 +288,7 @@ export function PanouMasina({ ultimulExport, simulare }: {
           <button type="submit" data-masina="trimite" disabled={!conectat || comanda.trim() === ''}>{t('masina.comanda.trimite')}</button>
         </form>
         <ol className="masina-jurnal" aria-label={t('masina.jurnal')} data-testid="masina-jurnal">
-          {st.jurnal.slice(-60).map((l, k) => <li key={k} data-fel={l.fel}>{textJurnal(l)}</li>)}
+          {st.jurnal.slice(-60).map((l, k) => <li key={k} data-fel={l.fel}>{textJurnal(l, dict, st)}</li>)}
         </ol>
       </section>
     </div>

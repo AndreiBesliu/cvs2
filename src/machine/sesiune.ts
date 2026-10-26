@@ -18,7 +18,7 @@ import {
   comandaJog, comandaZero, modalDinGc, motivMiscare, pasPalpare, pornestePalpare, restaurarePalpare,
   type AxaJog, type FelMiscare, type MotivMiscare, type ParametriPalpare, type RaspunsProcedura, type StarePalpare, type Wcs,
 } from './proceduri.ts';
-import { citesteRaspuns } from './raspunsuri.ts';
+import { citesteRaspuns, familieDinLinie, type FamilieControler, type Raspuns } from './raspunsuri.ts';
 
 export interface Transport {
   readonly fel: 'serial' | 'simulat';
@@ -49,6 +49,18 @@ export type Procedura =
   | { readonly fel: 'zero'; readonly axe: readonly AxaJog[]; readonly wcs: Wcs; readonly rezultat: RezultatComanda }
   | { readonly fel: 'wcs'; readonly wcs: Wcs; readonly rezultat: RezultatComanda }
   | { readonly fel: 'palpare'; readonly stare: StarePalpare };
+/** Unde a venit un cod: linia programului, comanda omului, jog-ul, o procedură, ori controlerul singur (alarmele, citirile). */
+export type LocCod =
+  | { readonly tip: 'program'; readonly linie: number }
+  | { readonly tip: 'comanda'; readonly text: string }
+  | { readonly tip: 'jog' }
+  | { readonly tip: 'procedura' }
+  | { readonly tip: 'controler' };
+/**
+ * Ultimul cod al controlerului, explicat de panou din dicționar (ADR 0085): `error:N`, `ALARM:N`, sau `blocare` (starea Alarm
+ * fără cod, `'$H'|'$X' to unlock`, cod 0). `nr` crește la fiecare: panoul știe că a venit unul nou.
+ */
+export type CodControler = { readonly nr: number; readonly fel: 'eroare' | 'alarma' | 'blocare'; readonly cod: number; readonly la: LocCod };
 const inCurs = (p: Procedura | null): boolean =>
   p !== null && (p.fel === 'palpare' ? p.stare.pas !== 'gata' && p.stare.pas !== 'esuat' : p.rezultat === 'in-curs');
 
@@ -63,6 +75,13 @@ export type StareSesiune = {
   readonly wcsActiv: Wcs | null;
   /** Procedura de acum sau ultima (cu rezultatul ei). */
   readonly procedura: Procedura | null;
+  /** Familia controlerului, după cum s-a prezentat; null: nu s-a prezentat încă (panoul presupune GRBL 1.1). */
+  readonly familie: FamilieControler | null;
+  readonly cod: CodControler | null;
+  /** Alarma care ține mașina acum (sau blocarea fără cod): până la un raport în afara stării Alarm; deblocarea o citește. */
+  readonly alarma: CodControler | null;
+  /** Controlerul a spus „Reset to continue” (o oprire critică): până la repornire nu face nimic altceva. */
+  readonly repornire: boolean;
 };
 
 export const PERIOADA_RAPORT_MS = 200;
@@ -81,7 +100,10 @@ export class SesiuneMasina {
   private scrieri: Promise<void> = Promise.resolve();
   private abonati = new Set<() => void>();
   private publicarePlanificata = false;
-  private s: StareSesiune = { conexiune: 'deconectat', transport: null, flux: fluxNou(), jurnal: [], eroare: null, wcsActiv: null, procedura: null };
+  private s: StareSesiune = {
+    conexiune: 'deconectat', transport: null, flux: fluxNou(), jurnal: [], eroare: null, wcsActiv: null, procedura: null, familie: null,
+    cod: null, alarma: null, repornire: false,
+  };
   private ids = 0;
   /** Id-ul comenzii procedurii care așteaptă răspuns. */
   private idProcedura: string | null = null;
@@ -91,6 +113,9 @@ export class SesiuneMasina {
   private restaurare: string | null = null;
   /** Comanda G-code a procedurii care așteaptă un Idle proaspăt. */
   private amanata: string | null = null;
+  /** Textele comenzilor omului încă fără răspuns: locul unui `error:N`. */
+  private texteManuale = new Map<string, string>();
+  private nrCod = 0;
 
   constructor(ceas: Ceas, capacitate = 128) {
     this.ceas = ceas;
@@ -110,7 +135,8 @@ export class SesiuneMasina {
     if (this.transport) await this.deconecteaza();
     this.transport = t;
     this.rest = '';
-    this.s = { ...this.s, conexiune: 'conectat', transport: t.fel, eroare: null, wcsActiv: null };
+    // Familia, alarma și repornirea le-a șters închiderea portului de dinainte (`inchis`); codul rămâne până aici, cu explicația lui.
+    this.s = { ...this.s, conexiune: 'conectat', transport: t.fel, eroare: null, wcsActiv: null, cod: null };
     this.citesteWcs = true;
     this.jurnalizeaza('sesiune', '', { cod: t.fel === 'serial' ? 'conectat-serial' : 'conectat-simulat' });
     t.porneste((o) => { if (this.transport === t) this.primit(o); }, (motiv) => { if (this.transport === t) this.inchis(motiv); });
@@ -139,6 +165,7 @@ export class SesiuneMasina {
     }
     if (e.tip === 'manual') {
       this.jurnalizeaza('trimis', e.text);
+      if (!e.id.startsWith('#')) this.texteManuale.set(e.id, e.text);
       if (!e.id.startsWith('#') && !linieCurata(e.text).startsWith('$')) this.manualeGcode.add(e.id);
     }
     this.aplica(pas(this.s.flux, e));
@@ -203,14 +230,48 @@ export class SesiuneMasina {
       const cap = this.s.flux.inZbor[0];
       const alManualei = cap?.sursa.tip === 'manual' && (r.tip === 'ok' || r.tip === 'eroare' || r.tip === 'date' || r.tip === 'mesaj');
       if (!alManualei && r.tip !== 'ok' && r.tip !== 'raport' && r.tip !== 'alarma' && linie.trim() !== '') this.jurnalizeaza('primit', linie);
+      this.codDin(r, linie, cap);
       // Repornit, controlerul e iar în G54 (starea modală din fabrică); se citește, nu se presupune.
       if (r.tip === 'banner') {
-        this.s = { ...this.s, wcsActiv: null };
+        this.s = { ...this.s, wcsActiv: null, repornire: false };
         this.citesteWcs = true;
         if (inCurs(this.s.procedura)) this.inainteaza({ tip: 'raspuns', date: [], rezultat: 'pierdut' });
       }
       this.aplica(pas(this.s.flux, { tip: 'primit', linie }));
     }
+  }
+
+  /**
+   * Ce spune o linie despre controler și codurile lui: familia (bannerul, `$I`), ultimul cod cu locul lui, oprirea critică
+   * („Reset to continue”, cu sau fără prefixul FluidNC `INFO:` / `ERR:`) și blocarea fără cod de după o pornire.
+   */
+  private codDin(r: Raspuns, linie: string, cap: StareFlux['inZbor'][number] | undefined): void {
+    const familie = familieDinLinie(linie);
+    if (familie !== null) this.s = { ...this.s, familie };
+    if (r.tip === 'eroare') this.noteazaCod('eroare', r.cod, this.locul(cap));
+    else if (r.tip === 'alarma') this.noteazaCod('alarma', r.cod, { tip: 'controler' });
+    else if (r.tip === 'raport') { if (r.raport.stare !== 'Alarm' && this.s.alarma !== null) this.s = { ...this.s, alarma: null }; }
+    else if (r.tip === 'mesaj') {
+      if (/reset to continue/i.test(r.text)) this.s = { ...this.s, repornire: true };
+      // După o alarmă, repornirea aduce aceeași blocare: explicația rămâne a alarmei.
+      if (/'\$H'\|'\$X' to unlock/.test(r.text) && this.s.alarma === null) this.noteazaCod('blocare', 0, { tip: 'controler' });
+    }
+  }
+
+  private noteazaCod(fel: CodControler['fel'], cod: number, la: LocCod): void {
+    const c: CodControler = { nr: ++this.nrCod, fel, cod, la };
+    this.s = { ...this.s, cod: c, ...(fel === 'eroare' ? {} : { alarma: c }) };
+  }
+
+  /** Locul unui `error:N`: comanda din capul celor în zbor (răspunsurile vin în ordine). */
+  private locul(cap: StareFlux['inZbor'][number] | undefined): LocCod {
+    if (!cap) return { tip: 'controler' };
+    if (cap.sursa.tip === 'program') return { tip: 'program', linie: cap.sursa.linie };
+    const id = cap.sursa.id;
+    if (id.startsWith('#J')) return { tip: 'jog' };
+    if (id.startsWith('#P') || id.startsWith('#R')) return { tip: 'procedura' };
+    const text = this.texteManuale.get(id);
+    return text === undefined ? { tip: 'controler' } : { tip: 'comanda', text };
   }
 
   private inchis(motiv: string | null): void {
@@ -222,7 +283,8 @@ export class SesiuneMasina {
     this.citesteWcs = false;
     this.restaurare = null;
     this.manualeGcode.clear();
-    this.s = { ...this.s, conexiune: 'deconectat', transport: null, eroare: motiv, wcsActiv: null };
+    this.texteManuale.clear();
+    this.s = { ...this.s, conexiune: 'deconectat', transport: null, eroare: motiv, wcsActiv: null, familie: null, alarma: null, repornire: false };
     this.jurnalizeaza('sesiune', '', motiv === null ? { cod: 'deconectat' } : { cod: 'port-inchis', motiv });
     this.publica(true);
   }
@@ -254,6 +316,7 @@ export class SesiuneMasina {
       if (m) this.s = { ...this.s, wcsActiv: m.wcs };
       return;
     }
+    this.texteManuale.delete(a.id);
     for (const d of a.date) this.jurnalizeaza('raspuns', d);
     this.jurnalizeaza('raspuns', a.rezultat === 'ok' ? 'ok' : a.rezultat === 'pierdut' ? 'pierdut' : `error:${a.rezultat}`);
     // Un `$G` cerut de om spune și el WCS-ul; o comandă G-code a omului îl poate schimba.

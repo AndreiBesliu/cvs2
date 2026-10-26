@@ -15,6 +15,7 @@
  * Determinist: fără ore, fișierele în ordinea căilor, textul cu LF (un checkout cu CRLF dă aceiași octeți).
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { genereazaCodurile } from './coduri.ts';
 import { EroareManual, genereazaManualul } from './manual.ts';
 import { EroareTutorial, genereazaTutorialele } from './tutorial.ts';
 import { CALE_DICTIONAR_EN, citesteDictionar, traduceRoadmap } from './traducere.ts';
@@ -733,6 +734,8 @@ export function genereazaDocumentatia(radacina: string): Map<string, string> {
 
   const out: [string, string][] = [
     ...manual,
+    // Dicționarul codurilor controlerului (ADR 0085): date pentru panoul mașinii, în precache, ca manualul.
+    ...genereazaCodurile(),
     [FISIER_ROADMAP, JSON.stringify(roadmap)],
     [FISIER_ROADMAP_EN, JSON.stringify(roadmapEn)],
     [FISIER_CATALOG, JSON.stringify(catalog)],

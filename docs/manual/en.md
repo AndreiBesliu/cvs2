@@ -438,6 +438,20 @@ state.
 
 The job is “done” only after the machine’s last reply and after it reports Idle: a pause does not end it.
 
+**The machine’s errors and alarms.** When the machine answers with a code (`error:N`, a refused line; `ALARM:N`, the machine
+stopped), its explanation appears under the state: what happened, where (the program line, the command, the jog, the probing)
+and **What to do**, with the buttons that help: **Stop** (when the machine asks for a reset, “Reset to continue”), **Unlock
+($X)**, **Resume** (after the safety door), **Go to the jog** and **Go to probing** (they take you to their buttons). **Got it**
+hides the explanation until the next code; the error list and the log also show each code’s title.
+- The explanation comes from your controller’s table, as it introduces itself when connecting: GRBL 1.1, grblHAL or FluidNC
+  (until then, GRBL 1.1, written under the explanation). The same number means something else on each: `ALARM:10` is the second
+  switch of a dual axis on GRBL, the emergency stop on grblHAL. A code the table does not have is shown as it is, with no guessed
+  explanation.
+- After an alarm that loses the position (a limit switch hit, a reset during a move, a failed homing), **Unlock** first asks for
+  confirmation: the position is no longer certain, so home it (`$H`) or set the X, Y and Z zero again. **Unlock anyway** sends
+  `$X`, **Cancel** sends nothing.
+- The explanations work without a network too, after the app has loaded once.
+
 **Positioning** (with the machine connected):
 - **Work coordinates**: the machine’s active system (G54–G59), read from it; the work position is shown in it. If the loaded
   program cuts in another one, the panel says so and offers **Switch to** that one.

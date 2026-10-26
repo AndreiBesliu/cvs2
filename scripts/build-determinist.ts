@@ -9,6 +9,7 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { DIR_DOCUMENTATIE, FISIER_CATALOG, FISIER_ROADMAP, FISIER_ROADMAP_EN, esteCatalog, esteRoadmap, fisierDocument } from '../shared/documentatie.ts';
+import { DIR_CODURI, esteDictionarCoduri, fisierCoduri, LIMBI_CODURI } from '../shared/coduri.ts';
 import { DIR_MANUAL, esteManual, fisierManual, LIMBI_MANUAL } from '../shared/manual.ts';
 import { DOAR_ONLINE, inPrecache, motivPrecache } from '../shared/precache.ts';
 
@@ -58,6 +59,11 @@ const PLAFON_RAPORTOR_KB = 25;
  * (în loc de `import type`) ar trage Firebase după ea și ar sări plafonul.
  */
 const PLAFON_RAPORTOR_PORNIRE_KB = 1.5;
+/**
+ * Dicționarul codurilor controlerului (ADR 0085): date (JSON), nu JavaScript, cerute de panoul mașinii la primul cod și ținute
+ * în precache (explicația unei alarme vine și fără rețea). Plafonul e pe fișierul unei limbi, comprimat (8,9 kB la felia 3.6c).
+ */
+const PLAFON_CODURI_KB = 12;
 const RAPORTOR_PORNIRE = 'src/app/raportorPornire.ts';
 
 function fisiere(dir: string): string[] {
@@ -462,6 +468,15 @@ if (capitoleManual.some((c, k) => c === null || c !== capitoleManual[0] || (manu
   console.error(`Manualul (dist/${DIR_MANUAL}/): lipsește, are altă formă, alte capitole într-o limbă sau nu e în precache (ADR 0058).`);
   process.exit(1);
 }
+// Dicționarul codurilor (ADR 0085): ambele limbi, cu aceleași tabele, în precache, sub plafon.
+const coduriCitite = LIMBI_CODURI.map((l): unknown => (a.has(fisierCoduri(l)) ? JSON.parse(readFileSync(join('.tmp/build-1', fisierCoduri(l)), 'utf8')) : null));
+const formaCodurilor = coduriCitite.map((d) => (esteDictionarCoduri(d) ? JSON.stringify(d.familii) : null));
+const kbCoduri = LIMBI_CODURI.map((l) => (a.has(fisierCoduri(l)) ? gz(join('.tmp/build-1', fisierCoduri(l))) : 0));
+if (formaCodurilor.some((f, k) => f === null || f !== formaCodurilor[0] || (coduriCitite[k] as { limba?: string }).limba !== LIMBI_CODURI[k])
+  || LIMBI_CODURI.some((l) => !manifest.has(fisierCoduri(l))) || kbCoduri.some((kb) => kb > PLAFON_CODURI_KB)) {
+  console.error(`Dicționarul codurilor (dist/${DIR_CODURI}/): lipsește, are altă formă, alte tabele într-o limbă, nu e în precache sau trece de ${PLAFON_CODURI_KB} kB gzip (${kbCoduri.map((kb) => kb.toFixed(1)).join(', ')}; ADR 0085).`);
+  process.exit(1);
+}
 const faraFisier = catalogCitit.documente.filter((d) => !a.has(fisierDocument(d.cale)));
 if (faraFisier.length > 0) {
   console.error(`Documente din catalog fără fișierul lor în dist/: ${faraFisier.map((d) => d.cale).join(', ')}.`);
@@ -525,6 +540,7 @@ console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB
 console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`)).join(', ')} și ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere).`);
 console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip (în engleză ${gz(join('.tmp/build-1', FISIER_ROADMAP_EN)).toFixed(1)} kB, ${roadmapEnCitit.netraduse} texte netraduse), ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
 console.log(`Manualul (în precache): ${LIMBI_MANUAL.map((l) => `${l} ${gz(join('.tmp/build-1', fisierManual(l))).toFixed(1)} kB gzip`).join(', ')}, ${capitoleManual[0]?.split(',').length ?? 0} capitole.`);
+console.log(`Dicționarul codurilor (în precache): ${LIMBI_CODURI.map((l, k) => `${l} ${(kbCoduri[k] ?? 0).toFixed(1)} kB gzip`).join(', ')} (plafon ${PLAFON_CODURI_KB} pe limbă).`);
 console.log(`Cu un proiect salvat, ușa vine înaintea primei randări: +${kbUsa.toFixed(1)} kB (plafon ${PLAFON_USA_KB}; cu pornirea ${(pornire + kbUsa).toFixed(1)} / ${PLAFON_PORNIRE_KB}) (${inchidere(usa).map((r) => r.replace('assets/', '')).join(', ')}).`);
 rmSync('.tmp/build-1', { recursive: true, force: true });
 rmSync('.tmp/build-2', { recursive: true, force: true });
