@@ -2,7 +2,9 @@
 # Commit-urile care ating doar .md nu-l pornesc.
 # Testele unitare rulează în 4 felii paralele (`--test-shard`, pe fișiere): pe un singur job ajunseseră la 452 s din cele
 # 600 permise (felia 2.5b), iar oracolul feliei 2.5c le-ar fi dus peste; din 2.6 (oracolul documentului v8 și al
-# degajărilor) sunt 4 felii, ca fiecare să rămână sub 5 minute. Fiecare push rulează tot; restul pașilor, o dată.
+# degajărilor) sunt 4 felii, ca fiecare să rămână sub 5 minute. Din 3.6c, 6: fișierele se împart după poziția lor în listă,
+# deci trei fișiere noi au adus în felia 4 teste grele (peste 10 minute, oprită de limită). Fiecare push rulează tot; restul
+# pașilor, o dată.
 # `--test-shard` trebuie să stea ÎNAINTEA fișierelor: după ele, Node îl ignoră pe tăcute (măsurat pe 10.10).
 name: rapid
 
@@ -21,13 +23,13 @@ concurrency:
 
 jobs:
   rapid:
-    name: Nivelul rapid (felia ${{ matrix.felia }} din 4)
+    name: Nivelul rapid (felia ${{ matrix.felia }} din 6)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        felia: [1, 2, 3, 4]
+        felia: [1, 2, 3, 4, 5, 6]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -48,10 +50,10 @@ jobs:
       - name: Regulile de import, cu capcanele
         if: matrix.felia == 1
         run: npm run importuri
-      - name: Testele unitare (felia ${{ matrix.felia }} din 4)
+      - name: Testele unitare (felia ${{ matrix.felia }} din 6)
         run: npm run test:felie
         env:
-          FELIA: ${{ matrix.felia }}/4
+          FELIA: ${{ matrix.felia }}/6
       - name: Build-ul determinist și mărimea pachetului
         if: matrix.felia == 1
         run: npm run determinism
