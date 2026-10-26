@@ -3186,3 +3186,9 @@ numărate ca supraviețuitoare), 40 / 40 cu probele noi; opt le prinde doar orac
 scria `test/corpus.*` când îl importa Playwright (șterse; acum scrie doar pornit direct); (2) extensia barei (991 px) era mai
 lată decât bara (718 px) și lărgea coloana din mijloc a rândului de sus, iar titlul ajungea la 0 px la 1280 px (îl avea ~20 și
 înainte): extensia se întinde acum pe toate coloanele, centrată, iar titlul are 124 px la orice lățime.
+**Publicat pe adresa principală de test:** `publica` pe `8cd80ea` (rularea 40395209013), după rapid-ul verde (40393958354, cea
+mai lentă felie 7 min 38 s; pasul nou „Oracolul exportului 2D (ezdxf)”, pe felia 2: 13 entități, toate cât pe hârtie, 0 erori,
+0 reparații). Verificat după „Versiune nouă → Reîncarcă”: butonul din extensia barei deschide panoul (DXF (R2007) ales, SVG,
+Cu conturul foii, Exportă, Închide), titlul și extensia la locul lor, 0 erori în consolă; fără descărcare în panoul browserului
+(fișierele le verifică e2e-ul și oracolul). La verificare, nota panoului spunea „Un strat pe operație”, iar straturile sunt pe
+rol: textul (și eticheta butonului) corectat la 22:28 și publicat din nou.
