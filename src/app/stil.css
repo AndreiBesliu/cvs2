@@ -1108,6 +1108,20 @@ nav button[aria-pressed='true'] {
   max-width: 5.5rem;
 }
 
+/* Freza rândului (ADR 0084): numărul sculei și diametrul, alăturate; T are cel mult trei cifre. */
+.dialog td.freza {
+  white-space: nowrap;
+}
+
+.dialog td.freza input.numar-scula {
+  max-width: 3.25rem;
+  margin-right: var(--sp-1);
+}
+
+.dialog td.freza input:not(.numar-scula) {
+  max-width: 4.5rem;
+}
+
 /* Câmpul greșit se vede, nu doar motivul. */
 .dialog input[aria-invalid='true'] {
   border-color: var(--rosu);

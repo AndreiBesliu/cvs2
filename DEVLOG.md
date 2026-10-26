@@ -3079,4 +3079,10 @@ deci fișierele separate au ordinea în nume (`-1-T2`, `-2-T1`, `-3-T2`); (3) **
 (`if (false)` în `export.ts`, după rularea de mutații): prinsă de proba fișierelor separate, apoi fiecare fișier mutat verificat
 față de textul original (`verifica-mutatii.py`), inclusiv rulările 3.7a și 3.8a (curate). Mutațiile: 23 / 28, apoi 26 / 26 pe
 codul final (două echivalente scoase); pe interfață, 5 / 5 prinse de e2e.
+**Publicat pe adresa principală de test:** `publica` pe `6137acf` (rularea 40323431019), după rapid-ul verde (40322263620).
+Verificat în browserul aplicației (fără descărcare): fiecare rând are T și Ø; cu T2 pe cerc apare „Tool change” (cele trei
+strategii ale GRBL 1.1), cu T1 Ø3 pe cerc „T1 has two diameters (6, 3 mm): each bit needs its own number.” și Export oprit.
+**Găsit la verificare:** câmpurile T și Ø stăteau unul sub altul, la fel de late → alăturate, T îngust (CSS); porțile din nou:
+7 381 / 231. Fluxul pe mașina simulată (export, oprirea, palparea, Continuă) e probat în e2e: pe test, exportul ar cere o
+descărcare.
 
