@@ -3111,3 +3111,6 @@ un program la 1×, Oprește în mișcare → „ALARM:3 — Reset during a move�
 oricum → `$X`, Idle; în română, același card („Repornit în timpul unei mișcări”) și titlul în jurnal. **Găsit la verificare:**
 faza întreruptă spunea „interrupted (oprit)”: motivul era codul intern al fluxului, netradus → „ai apăsat Oprește” / „Stop
 pressed” (și „portul s-a închis”, „controlerul a repornit”), cu proba în e2e; porțile din nou: 7 409 / 237, totalul 328,2.
+**Publicat din nou pe test:** `publica` pe `7caf466` (rularea 40344444299), după rapid-ul verde (40343404729, cea mai lentă felie
+6 min 14 s); verificat după „Versiune nouă → Reîncarcă”: Oprește în mișcare dă „întreruptă (ai apăsat Oprește): se pornește din
+nou de la început” și cardul „ALARM:3 — Repornit în timpul unei mișcări”; deblocat cu confirmarea, Idle, 0 erori în jurnal.
