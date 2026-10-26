@@ -91,7 +91,7 @@ test('fila Roadmap: etapele, etapa curentă, o felie cunoscută, feliile aduse, 
   await expect(f).toContainText('Backup-ul zilnic al Firestore');
   await expect(f).toContainText('16.10 21:35 → 22:20');
   await expect(f.locator('[data-adr="0041"]')).toBeVisible();
-  await expect(panou.locator('[data-felie="3.5"]')).toHaveAttribute('data-stare', 'de-facut');
+  await expect(panou.locator('[data-felie="3.5b"]')).toHaveAttribute('data-stare', 'de-facut');
 
   // Ce așteaptă de la owner: sus, cu cererile din roadmap-ul generat (fișa etapei 3; lista se schimbă des).
   const owner = page.locator('[data-roadmap="owner"]');

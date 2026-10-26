@@ -42,6 +42,12 @@ const BUCATA_ADMIN = /^assets\/PaginaAdmin-[^/]+\.js$/;
 const BUCATA_TEST = /^assets\/TestPasCuPas-[^/]+\.js$/;
 const PLAFON_TEST_KB = 12;
 /**
+ * Mașina simulată a panoului mașinii (ADR 0081): emulatorul GRBL, doar pe instanța de test, la clicul pe „Mașină simulată”;
+ * o bucată doar online, cu plafonul ei, în afara totalului (ca testul pas cu pas).
+ */
+const BUCATA_SIMULATA = /^assets\/MasinaSimulata-[^/]+\.js$/;
+const PLAFON_SIMULATA_KB = 8;
+/**
  * Raportorul de erori (ADR 0043): bucata la cerere cu Firebase-ul ei (17,5 kB după recenzia 3.2), descărcată la prima
  * eroare. Nu numără `enterprise.js` (reCAPTCHA, terț), adus în plus pe o instanță cu App Check.
  */
@@ -107,6 +113,8 @@ let admin = 0;
 let bucatiAdmin = 0;
 let testPasCuPas = 0;
 let bucatiTest = 0;
+let simulata = 0;
+let bucatiSimulata = 0;
 /** Fiecare bucată JavaScript (calea din `dist/`, ca în `index.html`), cu mărimea ei gzip. */
 const bucati = new Map<string, number>();
 for (const p of fisiere('.tmp/build-1')) {
@@ -132,11 +140,24 @@ for (const p of fisiere('.tmp/build-1')) {
     }
     continue;
   }
+  if (BUCATA_SIMULATA.test(rel)) {
+    simulata += kb;
+    bucatiSimulata++;
+    if (laPornire.has(rel)) {
+      console.error(`${rel}: mașina simulată a ajuns în pachetul de pornire.`);
+      process.exit(1);
+    }
+    continue;
+  }
   total += kb;
   if (laPornire.has(rel)) pornire += kb;
 }
 if (bucatiTest !== 1) {
   console.error(`Testul pas cu pas trebuie să fie exact o bucată separată (TestPasCuPas-*.js, ADR 0072); găsite: ${bucatiTest}.`);
+  process.exit(1);
+}
+if (bucatiSimulata !== 1) {
+  console.error(`Mașina simulată trebuie să fie exact o bucată separată (MasinaSimulata-*.js, ADR 0081); găsite: ${bucatiSimulata}.`);
   process.exit(1);
 }
 if (bucatiAdmin !== 1) {
@@ -499,7 +520,7 @@ if (!cod(inregistrare).includes('/sw.js')) {
 
 const kbRaportorPornire = await kbModul(RAPORTOR_PORNIRE);
 console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri.`);
-console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}); testul pas cu pas: ${testPasCuPas.toFixed(1)} kB (plafon ${PLAFON_TEST_KB}, doar online).`);
+console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}); testul pas cu pas: ${testPasCuPas.toFixed(1)} kB (plafon ${PLAFON_TEST_KB}, doar online); mașina simulată: ${simulata.toFixed(1)} kB (plafon ${PLAFON_SIMULATA_KB}, doar online).`);
 console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
 console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`)).join(', ')} și ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere).`);
 console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip (în engleză ${gz(join('.tmp/build-1', FISIER_ROADMAP_EN)).toFixed(1)} kB, ${roadmapEnCitit.netraduse} texte netraduse), ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
@@ -515,7 +536,7 @@ if (kbRaportorPornire > PLAFON_RAPORTOR_PORNIRE_KB || kbRaportor > PLAFON_RAPORT
   console.error(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}).`);
   process.exit(1);
 }
-if (pornire > PLAFON_PORNIRE_KB || total > PLAFON_TOTAL_KB || admin > PLAFON_ADMIN_KB || testPasCuPas > PLAFON_TEST_KB) {
+if (pornire > PLAFON_PORNIRE_KB || total > PLAFON_TOTAL_KB || admin > PLAFON_ADMIN_KB || testPasCuPas > PLAFON_TEST_KB || simulata > PLAFON_SIMULATA_KB) {
   console.error('Mărimea pachetului trece de plafon.');
   process.exit(1);
 }

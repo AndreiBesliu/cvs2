@@ -1173,6 +1173,10 @@
       "ro": "Simularea",
       "en": "Simulation"
     },
+    "b6987a4aa69113ee": {
+      "ro": "**Panoul mașinii, cu mașina simulată** (ADR 0081; „Da, pornește 3.6b: portul Web Serial și panoul mașinii, cu o mașină simulată (emulatorul) pe instanța de test, ca să-l pot încerca fără CNC.”). Panoul **Mașina** (în dreapta, sub proprietăți): conectarea la mașină prin USB (Web Serial, în Chrome sau Edge) și, pe instanța de test, **Mașină simulată** (un GRBL simulat, cu viteza 1×, 10× sau 100×); starea și poziția din rapoarte; programul, din ultimul export (exact octeții lui, aceeași amprentă SHA-256) sau dintr-un fișier verificat; Pornește, Pauză / Reia, Reia după eroare, Continuă la o schimbare de sculă, Oprește, Deblochează; comenzile manuale și jurnalul. Mașina simulată e doar online, pe test; panoul și senderul merg și fără internet. Manualul are capitolul „Mașina”. **Treceri:** (1) sesiunea cu un ceas fals (portul căzut, scrierea căzută, linia ruptă între bucăți), apoi panoul și legarea în carcasă; emulatorul mutat din teste în aplicație, cu răspunsul „nu e modelat” în loc de aruncare; e2e-ul (mașina simulată, un fișier refuzat, un port Web Serial fals, fără Web Serial) a trecut din prima; mutațiile: 12 / 13, apoi 13 / 13 (ceasul rămas după deconectare, prins de proba reconectării).",
+      "en": "**The machine panel, with the simulated machine** (ADR 0081; the owner’s request to start 3.6b, the Web Serial port and the machine panel, with a simulated machine (the emulator) on the test instance, to try it without a CNC). The **Machine** panel (on the right, under the properties): connecting to the machine over USB (Web Serial, in Chrome or Edge) and, on the test instance, **Simulated machine** (a simulated GRBL, at 1×, 10× or 100× speed); the state and the position from the reports; the program, from the last export (exactly its bytes, the same SHA-256 fingerprint) or from a checked file; Start, Pause / Resume, Resume after the error, Continue at a tool change, Stop, Unlock; manual commands and the log. The simulated machine is online only, on test; the panel and the sender work without internet too. The manual has the “Machine” chapter. **Passes:** (1) the session with a fake clock (the lost port, the failed write, a line split between chunks), then the panel and its place in the shell; the emulator moved from the tests into the app, answering “not modelled” instead of throwing; the e2e (the simulated machine, a refused file, a fake Web Serial port, no Web Serial) passed at once; mutations: 12 / 13, then 13 / 13 (the clock left running after a disconnect, caught by the reconnect check)."
+    },
     "b6a61b9a3e2551e5": {
       "ro": "Export 2D cu vectori reali (importul: DXF, PDF, AI compatibil PDF)",
       "en": "2D export with real vectors (import: DXF, PDF, PDF-compatible AI)"
@@ -1180,6 +1184,10 @@
     "b6dca17873d5b1bc": {
       "ro": "**lansarea**",
       "en": "**the launch**"
+    },
+    "b71d1f60af6c4352": {
+      "ro": "Panoul mașinii, portul Web Serial și mașina simulată",
+      "en": "The machine panel, the Web Serial port and the simulated machine"
     },
     "b842229b4b9f8e94": {
       "ro": "Booleanul",

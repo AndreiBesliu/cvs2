@@ -84,6 +84,7 @@ export const en = {
   'vedere.paleta': 'Search commands',
   'vedere.lista': 'Sheet list panel',
   'vedere.proprietati': 'Properties panel',
+  'vedere.masina': 'Machine',
   'vedere.potriveste': 'Show the whole sheet',
   'vedere.traseu': 'Show toolpath',
   'vedere.tema': 'Theme',

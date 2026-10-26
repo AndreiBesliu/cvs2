@@ -1,0 +1,139 @@
+/* Panoul mașinii (ADR 0081), adus odată cu el: aceleași tokenuri ca panoul de proprietăți. */
+
+.masina {
+  padding: var(--sp-1) var(--sp-3) var(--sp-3);
+  font-size: var(--fs-2);
+}
+
+.masina h2 {
+  padding-left: 0;
+}
+
+.masina section {
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.masina section:last-child {
+  border-bottom: 0;
+}
+
+.masina-cap {
+  margin: 0 0 var(--sp-2);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.masina-nota {
+  margin: 0 0 var(--sp-2);
+  padding: 6px var(--sp-2);
+  border-radius: var(--r-1);
+  border: 1px dashed var(--a);
+  background: var(--s-atentie);
+  font-size: var(--fs-1);
+}
+
+.masina-butoane {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin: var(--sp-1) 0;
+}
+
+.masina-opreste:enabled {
+  color: var(--rosu);
+  border-color: var(--rosu);
+}
+
+.masina-camp {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--t-slab);
+}
+
+.masina dl {
+  margin: 0;
+}
+
+.masina-rand {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sp-2);
+  padding: 2px 0;
+}
+
+.masina-rand dt {
+  color: var(--t-slab);
+}
+
+.masina-rand dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.masina-program {
+  margin: var(--sp-1) 0 0;
+  overflow-wrap: anywhere;
+}
+
+.masina-sha {
+  color: var(--t-slab);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: var(--fs-1);
+}
+
+.masina-progres {
+  display: grid;
+  gap: 2px;
+  margin-bottom: var(--sp-1);
+  color: var(--t-slab);
+  font-size: var(--fs-1);
+}
+
+.masina-progres progress {
+  width: 100%;
+  accent-color: var(--a);
+}
+
+.masina-erori {
+  margin: 0 0 var(--sp-1);
+  padding-left: var(--sp-3);
+  color: var(--rosu);
+  font-size: var(--fs-1);
+}
+
+.masina-comanda {
+  display: flex;
+  gap: var(--sp-1);
+}
+
+.masina-comanda input {
+  flex: 1;
+  min-width: 0;
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.masina-jurnal {
+  list-style: none;
+  margin: var(--sp-2) 0 0;
+  padding: var(--sp-1);
+  max-height: 12rem;
+  overflow: auto;
+  border-radius: var(--r-1);
+  background: var(--s-peste);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: var(--fs-1);
+  overflow-wrap: anywhere;
+}
+
+.masina-jurnal li[data-fel='alarma'],
+.masina-jurnal li[data-fel='refuz'] {
+  color: var(--rosu);
+}
+
+.masina-jurnal li[data-fel='trimis'] {
+  color: var(--t-slab);
+}

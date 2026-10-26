@@ -111,8 +111,13 @@ test('documentația generată (`documentatie/`, ADR 0048) nu intră: e doar onli
   assert.equal(motivPrecache('sub/documentatie/roadmap.json'), 'necunoscut');
 });
 
-test('lista bucăților doar online: pagina /admin și testul pas cu pas (raportorul și baza conexiunii sunt în precache)', () => {
-  assert.deepEqual([...DOAR_ONLINE], ['PaginaAdmin', 'TestPasCuPas']);
+test('lista bucăților doar online: pagina /admin, testul pas cu pas și mașina simulată (raportorul și baza conexiunii sunt în precache)', () => {
+  assert.deepEqual([...DOAR_ONLINE], ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata']);
+});
+
+test('mașina simulată (ADR 0081) nu intră; panoul mașinii și senderul intră (merg și fără rețea)', () => {
+  assert.equal(motivPrecache('assets/MasinaSimulata-D-MmqwFO.js'), 'doar-online');
+  for (const f of ['assets/PanouMasina-Ab12Cd34.js', 'assets/PanouMasina-Ab12Cd34.css']) assert.equal(motivPrecache(f), 'precache', f);
 });
 
 test('testul pas cu pas (ADR 0072) nu intră: bucata lui, stilul ei și pașii din `tutorial/` sunt doar online', () => {

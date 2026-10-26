@@ -16,7 +16,7 @@
  */
 
 /** Panourile carcasei. */
-export const PANOURI = ['lista', 'proprietati'] as const;
+export const PANOURI = ['lista', 'proprietati', 'masina'] as const;
 export type IdPanou = (typeof PANOURI)[number];
 
 /** Cipurile de stare: ce știe carcasa să arate ca stare (de obicei jos). */
@@ -61,6 +61,7 @@ export type Aranjament = {
 export const COMUTA_PANOU: { readonly [P in IdPanou]: string } = {
   lista: 'vedere.lista',
   proprietati: 'vedere.proprietati',
+  masina: 'vedere.masina',
 };
 
 /** Zonele care își poartă uneltele cu `data-actiune` (localizatorii e2e le cer unice pe pagină). */
@@ -100,7 +101,7 @@ export const ARANJAMENT_MODERN: Aranjament = {
       { id: 'vedere', intrari: [{ cip: 'traseu' }, { cip: 'cursor' }, { cip: 'zoom' }, { cip: 'jurnal' }, { actiune: 'vedere.traseu' }, { actiune: 'vedere.potriveste' }] },
     ],
   },
-  docuri: { stanga: ['lista'], dreapta: ['proprietati'] },
+  docuri: { stanga: ['lista'], dreapta: ['proprietati', 'masina'] },
 };
 
 /** Cheia unei intrări într-o zonă: o acțiune, un control sau un cip apar cel mult o dată pe zonă (și ca cheie React). */

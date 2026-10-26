@@ -3,7 +3,7 @@
  * neconfirmați stau cel mult cât bufferul). **Nu e senderul** (felia 3.6, `src/machine`): n-are bariera, citirile, hold-ul sau
  * reluarea; martorii negativi îi schimbă doar numărarea.
  */
-import type { EmulatorGrbl } from './grbl.ts';
+import type { EmulatorGrbl } from '../../src/machine/emulator.ts';
 
 /** Cât costă o linie în buffer. */
 export type Numarare = (linie: string) => number;

@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { EmulatorGrbl } from '../emulator/grbl.ts';
+import { EmulatorGrbl } from '../../src/machine/emulator.ts';
 import { ruleazaFlux } from '../emulator/flux.ts';
 
 /** Zece linii cu deplasarea totală zero, de 1–11 octeți: goale, comentarii, mișcări modale fără G, cu spații. */

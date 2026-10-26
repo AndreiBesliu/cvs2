@@ -6,7 +6,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { EmulatorGrbl } from '../emulator/grbl.ts';
+import { EmulatorGrbl } from '../../src/machine/emulator.ts';
 
 const pas = (e: EmulatorGrbl, ms = 0): string[] => { e.timp(ms); return e.citeste(); };
 

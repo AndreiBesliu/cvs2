@@ -3,7 +3,7 @@
 **Starea:** acceptat pe 25.10.2026. Felia 3.5a, la cererea owner-ului de a continua etapa 3 fără placă („continuă direct cu ce a
 rămas din etapa 3, începând cu emulatorul GRBL”). **Continuă:** ADR 0020 (T20: „emulatorul GRBL și transcrierile sunt
 fixturi”), `docs/PORTARE.md` §3.4 (cele 11 reguli ale fluxului; regula 10: emulatorul numără ce primește). **Documentul:**
-neschimbat.
+neschimbat. §1 schimbat de ADR 0081: emulatorul e și mașina simulată a panoului, pe instanța de test (`src/machine/emulator.ts`).
 
 **Problema.** Senderul (3.6) trebuie probat înainte să atingă mașina. În ediția întâi, plasa ferestrei număra cu aceeași sumă pe
 care o otrăvea (oarbă prin construcție), iar reluarea își era propriul oracol. Proba are nevoie de un controler fals care să se

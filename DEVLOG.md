@@ -2993,3 +2993,19 @@ la o probă de export neatinsă de felie; a doua, curată). Mutațiile: 28 / 30,
 **Completed:** 26.10 07:32. Porțile: 7 310 teste unitare (0 picate; proba documentației citea încă felia 3.6, actualizată),
 e2e 220 / 220 în Edge; pornirea neschimbată (95,3 kB; senderul încă nu e legat de interfață). Mutațiile: 32 / 33, cea rămasă
 echivalentă (scoasă din cod), cu o probă nouă pentru eroarea din fața unei bariere.
+
+## 2026-10-26 — Panoul mașinii, cu mașina simulată (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește 3.6b: portul Web Serial și panoul mașinii, cu o mașină simulată (emulatorul) pe instanța de test, ca
+să-l pot încerca fără CNC.”
+**Started:** 26.10, ~07:45. Felia **3.6b**, fără agenți (ADR 0081): sesiunea (`src/machine/sesiune.ts`), portul Web Serial
+(`serial.ts`), mașina simulată (`MasinaSimulata.ts`, emulatorul mutat cu `git mv` din `test/emulator/` în
+`src/machine/emulator.ts`, cu `laNemodelat: 'eroare'` în aplicație), panoul (`src/app/PanouMasina.tsx`, la cerere, în docul din
+dreapta), dicționarul `masina.*`, capitolul din manual, bucata doar online cu plafonul ei. Fluxul a primit evenimentul
+`deconectat` (regula 4).
+**Completed:** 26.10 08:30. Porțile: 7 320 de teste unitare (0 picate; probele-paznic ale aranjamentului, ale listei doar
+online și ale numărului de uși au cerut panoul nou), e2e 224 / 224 în Edge (manualul are acum 19 capitole), emulatoarele
+36 + 13. Pornirea 95,5 / 100 kB (cu ușa 98,9), totalul 314,2 / 330, mașina simulată 5,1 / 8 (doar online). Mutațiile: 12 / 13,
+apoi 13 / 13. **Lecție:** proba `/admin` de pe emulatoare citește roadmap-ul real: despărțirea lui 3.5 (felia 3.5a) a stricat-o,
+iar la 3.5a și 3.6a n-am rulat `test:emulator` (rularea de noapte de pe `4a016ea` o va arăta roșie); reparată aici. O schimbare
+în tabelul feliilor cere și `npm run test:emulator`.

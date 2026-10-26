@@ -100,6 +100,7 @@ export const ro = {
   'vedere.paleta': 'Caută o comandă',
   'vedere.lista': 'Panoul listei',
   'vedere.proprietati': 'Panoul de proprietăți',
+  'vedere.masina': 'Mașina',
   'vedere.potriveste': 'Arată toată foaia',
   'vedere.traseu': 'Arată traseul',
   'vedere.tema': 'Tema',

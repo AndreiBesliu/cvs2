@@ -3,7 +3,7 @@
  * `primit`, ceasul cere rapoarte (`tic`), iar evenimentele programate (comenzile omului, întâmplările emulatorului) vin la timpul
  * lor. Ce scrie senderul și ce primește emulatorul se numără separat (regula 10).
  */
-import { EmulatorGrbl } from '../emulator/grbl.ts';
+import { EmulatorGrbl } from '../../src/machine/emulator.ts';
 import { pas, type Actiune, type Eveniment, type Faza, type StareFlux } from '../../src/machine/flux.ts';
 
 export type Programat =

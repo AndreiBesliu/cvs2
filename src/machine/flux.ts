@@ -4,7 +4,8 @@
  * 1. o linie costă octeții ei + 1; neconfirmați stau cel mult cât bufferul controlerului (128 la GRBL);
  * 2. `ok` și `error:N` se potrivesc în ordine; răspunsul unei comenzi manuale (cu datele dinaintea lui) se leagă de ea;
  * 3. `error:N` pe o linie a programului: hold (`!`) și flux suspendat, nu terminat; reluarea continuă de la prima linie netrimisă;
- * 4. ALARM, Ctrl-X și bannerul de repornire golesc bufferul: punctul de reluare e pierdut, reluarea se refuză;
+ * 4. ALARM, Ctrl-X, bannerul de repornire și pierderea portului golesc bufferul (sau îl fac necunoscut): punctul de reluare e
+ *    pierdut, reluarea se refuză;
  * 5. lucrarea e terminată doar după ultimul `ok` și un raport Idle venit după el (hold-ul eliberat);
  * 6. `M0`, `M1`, `M6` nu pleacă la controler: fluxul se oprește în fața lor, așteaptă confirmarea a tot ce a plecat și Idle, la
  *    schimbarea sculei trimite `M5`; barierele vecine sunt o singură oprire;
@@ -73,6 +74,8 @@ export type Eveniment =
   | { readonly tip: 'reia' }
   | { readonly tip: 'continua' }
   | { readonly tip: 'opreste' }
+  /** Portul s-a închis (cablul scos, deconectarea): bufferul controlerului nu se mai știe (regula 4). */
+  | { readonly tip: 'deconectat' }
   | { readonly tip: 'hold' }
   | { readonly tip: 'eliberare' }
   /** Ceasul sesiunii: cere un raport. */
@@ -205,6 +208,10 @@ export function pas(s0: StareFlux, e: Eveniment): { readonly stare: StareFlux; r
     case 'opreste':
       realtime(TIMP_REAL.reset);
       pierde('oprit');
+      break;
+    case 'deconectat':
+      pierde('deconectat');
+      s.raport = null;
       break;
     case 'hold': realtime(TIMP_REAL.hold); break;
     case 'eliberare': realtime(TIMP_REAL.reluare); break;

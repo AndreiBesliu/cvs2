@@ -399,6 +399,35 @@ answer to `$$` (from the sender's console) under “Machine settings”; the pro
 After the download, the window **simulates** the program: the depth map of the sheet, the material removed, the deepest cut
 and whether the cutter goes through the sheet. For the sheet seen in 3D, see [The 3D view](#vedere-3d).
 
+## The machine
+%% capitol: masina
+%% acopera: vedere.masina
+
+The **Machine** panel (on the right, under the properties) sends the program to the machine over the USB cable and shows its
+state.
+
+- **Connect (USB)** lets you choose the machine’s port (GRBL, 115,200 baud). It works only in Chrome or Edge on a computer
+  (Web Serial); otherwise, the panel says so. On the test instance there is also **Simulated machine**: a simulated GRBL
+  controller, to try the panel without a CNC, with **Speed** 1×, 10× or 100×.
+- **State** comes from the machine’s reports (5 times a second): Idle, Run, Hold:0 (stopped), Hold:1 (still braking), Alarm,
+  and the position (the work position when known; otherwise the machine’s).
+- **Program**: **Last export** loads exactly the file of the last Export G-code (the SHA-256 fingerprint matches the one in
+  the export window); **File…** loads G-code from another program, checked first. A program is refused, with the line, if it
+  has characters outside ASCII (on GRBL, “ș” and “ț” would change the spindle speed), Windows line endings (`\r`), lines over
+  70 bytes, sets no work coordinate system (`G54`–`G59`) before its first move, changes the tool (`M6`) without being exported
+  from here, or has no line end at the end.
+- **Start** sends the program line by line, as much as fits in the machine’s memory. The job shows its phase and line.
+  **Pause** stops the motion (Hold), **Resume** continues it. A machine error on a line stops the job on hold and lists it;
+  **Resume after the error** continues from the first line not yet sent. At a tool change (`M6`) or a pause in the program
+  (`M0`), the job stops once the machine has finished its moves (at a tool change, with the spindle off); you jog, probe, set
+  zero, then **Continue**.
+- **Stop** is the machine’s reset (Ctrl-X): it stops at once, and the job cannot be resumed (it starts again from the
+  beginning). The same after an alarm or if the cable is lost. **Unlock ($X)** shows when the machine is in alarm.
+- **Command** sends a line to the machine (for example `$G`, `$#`, `G0 X10`), only when no job is running; the reply shows in
+  the **log**. `$` reads go only while the machine is at rest (otherwise GRBL refuses them).
+
+The job is “done” only after the machine’s last reply and after it reports Idle: a pause does not end it.
+
 ## The 3D view
 %% capitol: vedere-3d
 %% acopera: editare.3d

@@ -1,6 +1,7 @@
 /**
- * Emulatorul GRBL 1.1h (ADR 0079), fixtura senderului (T20, ADR 0020). Numără ce **primește** pe fir, nu ce crede senderul că
- * a trimis (`docs/PORTARE.md` §3.4, regula 10). Cifrele și regulile vin din sursele GRBL 1.1 (citite pentru comportament, nu
+ * Emulatorul GRBL 1.1h (ADR 0079), fixtura senderului (T20, ADR 0020) și mașina simulată a panoului de pe instanța de test
+ * (ADR 0081, bucata doar online `MasinaSimulata`). Numără ce **primește** pe fir, nu ce crede senderul că a trimis
+ * (`docs/PORTARE.md` §3.4, regula 10). Cifrele și regulile vin din sursele GRBL 1.1 (citite pentru comportament, nu
  * copiate: GPL-3.0):
  * - bufferul serial ține 128 de octeți; un octet care nu mai încape se pierde, tăcut (inelul are 129 de locuri);
  * - octeții de timp real (`?`, `!`, `~`, Ctrl-X, override-urile 0x90–0x9D, 0x84, 0x85, 0x9E, 0xA0, 0xA1) se iau la sosire și nu
@@ -14,7 +15,8 @@
  * Modelul nostru, de verificat pe transcrierile reale (felia 3.5b; unde diferă, mașina are dreptate): frânarea (`franare` ms, cu
  * poziția oprită pe loc), starea Idle în timpul unei pauze `G4`, poziția din mijlocul unui bloc (pe segment sau pe arc), lipsa
  * accelerației din timpul blocurilor, rapoartele fără `Ov:` și `WCO:`. Ce nu modelează aruncă `Nemodelat`: un test nu trece
- * niciodată pe un răspuns inventat.
+ * niciodată pe un răspuns inventat. Mașina simulată din aplicație (`laNemodelat: 'eroare'`) răspunde în schimb cu un mesaj și
+ * `error:20`, ca omul să vadă ce nu știe simularea, iar fluxul să nu rămână fără răspuns.
  */
 
 export type ContractEmulator = {
@@ -116,6 +118,7 @@ function cuvinte(text: string): Cuvant[] | number {
 
 export class EmulatorGrbl {
   readonly contract: ContractEmulator;
+  private readonly laNemodelat: 'arunca' | 'eroare';
   readonly contoare = { primiti: 0, pastrati: 0, pierduti: 0, aruncati: 0, timpReal: 0, varfRx: 0, varfPlanificator: 0, linii: 0 };
   readonly override = { avans: 100, rapid: 100, ax: 100 };
   private rx: number[] = [];
@@ -141,8 +144,9 @@ export class EmulatorGrbl {
   private turatie = 0;
   private scula = 0;
 
-  constructor(contract: ContractEmulator = GRBL_11H) {
+  constructor(contract: ContractEmulator = GRBL_11H, opt: { readonly laNemodelat?: 'arunca' | 'eroare' } = {}) {
     this.contract = contract;
+    this.laNemodelat = opt.laNemodelat ?? 'arunca';
   }
 
   get rxOcupat(): number { return this.rx.length; }
@@ -330,9 +334,25 @@ export class EmulatorGrbl {
       const consuma = (): void => { this.rx.splice(0, capat + 1); this.contoare.linii++; };
       if (depasire) { consuma(); this.trimite('error:11'); continue; }
       if (text === '') { consuma(); this.trimite('ok'); continue; }
-      if (text.startsWith('$')) { consuma(); this.sistem(text); continue; }
-      if (this.alarmat) { consuma(); this.trimite('error:9'); continue; }
-      const r = this.gcode(text);
+      try {
+        if (text.startsWith('$')) { consuma(); this.sistem(text); continue; }
+        if (this.alarmat) { consuma(); this.trimite('error:9'); continue; }
+      } catch (e) {
+        if (!(e instanceof Nemodelat) || this.laNemodelat === 'arunca') throw e;
+        this.trimite(`[MSG:Simulare: ${e.message} nu e modelat]`);
+        this.trimite('error:20');
+        continue;
+      }
+      let r: ReturnType<EmulatorGrbl['gcode']>;
+      try {
+        r = this.gcode(text);
+      } catch (e) {
+        if (!(e instanceof Nemodelat) || this.laNemodelat === 'arunca') throw e;
+        consuma();
+        this.trimite(`[MSG:Simulare: ${e.message} nu e modelat]`);
+        this.trimite('error:20');
+        continue;
+      }
       if (r === 'asteapta') return;
       consuma();
       if (typeof r === 'number') this.trimite(`error:${r}`);

@@ -5,7 +5,7 @@ import type { Actiune } from './actiuni.ts';
  * rămâne la butoanele RO / EN din bară.
  * Nu ating documentul; trec totuși prin registru, ca bara, tastatura și paleta să fie vederi ale aceluiași registru.
  */
-export type ContextVedere = { readonly [K in 'paleta' | 'lista' | 'proprietati' | 'potriveste' | 'tema' | 'traseu']: () => void };
+export type ContextVedere = { readonly [K in 'paleta' | 'lista' | 'proprietati' | 'masina' | 'potriveste' | 'tema' | 'traseu']: () => void };
 
 const vedere = (ce: keyof ContextVedere): Actiune<ContextVedere> => ({
   id: `vedere.${ce}`,
@@ -16,4 +16,5 @@ const vedere = (ce: keyof ContextVedere): Actiune<ContextVedere> => ({
 });
 
 // `traseu`: „Arată traseul” (ADR 0038 §2), un comutator al vederii; calculul îl pornește aplicația, la cerere.
-export const ACTIUNI_VEDERE: readonly Actiune<ContextVedere>[] = (['paleta', 'lista', 'proprietati', 'potriveste', 'tema', 'traseu'] as const).map(vedere);
+// `masina`: panoul mașinii (ADR 0081): conexiunea, programul, lucrarea; conținutul vine la prima deschidere.
+export const ACTIUNI_VEDERE: readonly Actiune<ContextVedere>[] = (['paleta', 'lista', 'proprietati', 'masina', 'potriveste', 'tema', 'traseu'] as const).map(vedere);

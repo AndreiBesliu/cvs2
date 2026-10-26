@@ -384,6 +384,33 @@ mașinii” răspunsul controlerului la `$$` (din consola senderului); programul
 După descărcare, fereastra **simulează** programul: harta adâncimilor pe foaie, materialul scos, cea mai adâncă tăietură și
 dacă freza trece prin foaie. Pentru placa văzută în 3D, vezi [Vederea 3D](#vedere-3d).
 
+## Mașina
+%% capitol: masina
+%% acopera: vedere.masina
+
+Panoul **Mașina** (în dreapta, sub proprietăți) trimite programul la mașină, prin cablul USB, și îi arată starea.
+
+- **Conectează (USB)** te lasă să alegi portul mașinii (GRBL, 115 200 baud). Merge doar în Chrome sau Edge pe un calculator
+  (Web Serial); altfel, panoul spune asta. Pe instanța de test mai e și **Mașină simulată**: un controler GRBL simulat, ca să
+  încerci panoul fără CNC, cu **Viteza** 1×, 10× sau 100×.
+- **Starea** vine din rapoartele mașinii (de 5 ori pe secundă): Idle, Run, Hold:0 (oprită), Hold:1 (încă frânează), Alarm, și
+  poziția (de lucru, când se știe; altfel a mașinii).
+- **Programul**: **Ultimul export** încarcă exact fișierul ultimului Exportă G-code (amprenta SHA-256 e aceeași cu cea din
+  fereastra exportului); **Fișier…** încarcă un G-code din alt program, verificat întâi. Un program se refuză, cu linia, dacă are
+  caractere în afara ASCII (la GRBL, „ș” și „ț” ar schimba turația axului), capete de linie Windows (`\r`), linii de peste 70 de
+  octeți, nu alege un sistem de coordonate (`G54`–`G59`) înaintea primei mișcări, schimbă scula (`M6`) fără să fie exportat de
+  aici sau n-are capăt de linie la sfârșit.
+- **Pornește** trimite programul linie cu linie, cât încape în memoria mașinii. Lucrarea arată faza și linia. **Pauză** oprește
+  mișcarea (Hold), **Reia** o continuă. O eroare a mașinii pe o linie oprește lucrarea în pauză și o arată în listă; **Reia după
+  eroare** continuă de la prima linie netrimisă. La o schimbare de sculă (`M6`) sau o pauză din program (`M0`), lucrarea se
+  oprește după ce mașina termină mișcările (la sculă, cu axul oprit); muți, palpezi, faci zero, apoi **Continuă**.
+- **Oprește** e repornirea mașinii (Ctrl-X): se oprește pe loc, iar lucrarea nu se mai poate relua (se pornește din nou de la
+  început). La fel după o alarmă sau dacă se pierde cablul. **Deblochează ($X)** apare când mașina e în alarmă.
+- **Comanda** trimite o linie la mașină (de exemplu `$G`, `$#`, `G0 X10`), doar când nu merge o lucrare; răspunsul apare în
+  **jurnal**. Citirile `$` pleacă doar când mașina stă (altfel GRBL le refuză).
+
+Lucrarea e „gata” abia după ultimul răspuns al mașinii și după ce raportează Idle: o pauză nu o încheie.
+
 ## Vederea 3D
 %% capitol: vedere-3d
 %% acopera: editare.3d

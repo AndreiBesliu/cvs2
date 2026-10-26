@@ -103,6 +103,8 @@ const incarcaProprietati = () => import('./PanouProprietati.tsx');
 const Paleta = lazy(() => incarcaPaleta().then((m) => ({ default: m.Paleta }), () => ({ default: DialogNeincarcat })));
 // Panoul care nu se poate aduce rămâne gol: e doar de citit, iar selecția se vede și în listă și în bara de jos.
 const PanouProprietati = lazy(() => incarcaProprietati().then((m) => ({ default: m.PanouProprietati }), () => ({ default: () => null })));
+/** Panoul mașinii (ADR 0081): senderul și conexiunea vin la prima deschidere, nu în pornire. */
+const PanouMasina = lazy(() => import('./PanouMasina.tsx').then((m) => ({ default: m.PanouMasina }), () => ({ default: () => null })));
 /** Stratul traseului (ADR 0038 §3) vine la primul „Arată traseul”: WebGL2 nu intră în pachetul de pornire. */
 const StratTraseu = lazy(() => import('../canvas/StratTraseu.tsx').then((m) => ({ default: m.StratTraseu }), () => ({ default: () => null })));
 /** Riglele, ghidajele, lipirea și alinierea (ADR 0050): la cerere, după prima randare a pânzei. */
@@ -200,8 +202,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * nevoie de loc. Nu se țin minte după reîncărcare (aranjamentul salvat vine mai târziu, `aranjament.ts`).
    */
   const [panouri, setPanouri] = useState<Readonly<Record<IdPanou, boolean>>>(() => ({
-    lista: true, proprietati: matchMedia('(min-width: 64rem)').matches,
+    lista: true, proprietati: matchMedia('(min-width: 64rem)').matches, masina: false,
   }));
+  /** Programul ultimului export (octeții exacți, amprenta), pentru panoul mașinii (ADR 0081): doar cât e deschisă pagina. */
+  const [ultimulExport, setUltimulExport] = useState<{ readonly octeti: Uint8Array; readonly sha256: string; readonly nume: string } | null>(null);
   const comutaPanou = (p: IdPanou): void => { setPanouri((s) => ({ ...s, [p]: !s[p] })); };
   /** Cursorul pe foaie și scara vederii, pentru cipurile de jos: se schimbă des, deci doar cipul lor se redesenează. */
   const [cursor] = useState(() => semnal<PunctFoaie | null>(null));
@@ -314,6 +318,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     paleta: () => { focusPaleta.current = document.activeElement; setPaleta(true); },
     lista: () => { comutaPanou('lista'); },
     proprietati: () => { comutaPanou('proprietati'); },
+    masina: () => { comutaPanou('masina'); },
     potriveste: () => { setPotrivire((n) => n + 1); },
     traseu: () => { comutaTraseu(); },
     tema: () => {
@@ -329,7 +334,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       if (cerere !== cerereExport.current) return;
       exportInCurs.current = false;
       if (r.ok) {
-        descarca(r.program.octeti, `cncvs2-${p?.origine ?? 'stanga-jos'}.${r.program.extensie}`);
+        const numeFisier = `cncvs2-${p?.origine ?? 'stanga-jos'}.${r.program.extensie}`;
+        descarca(r.program.octeti, numeFisier);
+        setUltimulExport({ octeti: r.program.octeti, sha256: r.program.sha256, nume: numeFisier });
         // Exportul tocmai a scris operațiile: traseul arătat se reface pe documentul exportat.
         if (traseuArat.current) calculeazaTraseu();
         setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente, rezumat: r.rezumat, simulare: 'calcul' });
@@ -829,6 +836,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               onStoc={(s) => aplicaDinPanou('foaie.stoc', { stocNou: () => s })}
               onEditeazaOperatii={() => { executa('export.gcode'); }}
             />
+          </Suspense>
+        );
+      case 'masina':
+        return (
+          <Suspense fallback={null}>
+            <PanouMasina ultimulExport={ultimulExport} simulare={config.ok && config.config.instanta !== 'live'} />
           </Suspense>
         );
     }

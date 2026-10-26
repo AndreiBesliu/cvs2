@@ -45,7 +45,8 @@ test('aranjamentul implicit e cel al prototipului B: bara de sus în aceeași or
     'istoric.anuleaza', 'istoric.reface', 'import.svg', 'export.gcode',
   ]);
   assert.deepEqual(actiuniZona(ARANJAMENT_MODERN, 'selectie'), ['document.duplica-selectia', 'document.sterge-selectia', 'vedere.proprietati']);
-  assert.deepEqual(ARANJAMENT_MODERN.docuri, { stanga: ['lista'], dreapta: ['proprietati'] });
+  // Panoul mașinii (ADR 0081) stă sub proprietăți.
+  assert.deepEqual(ARANJAMENT_MODERN.docuri, { stanga: ['lista'], dreapta: ['proprietati', 'masina'] });
   // Fiecare panou stă undeva: altfel nu s-ar mai putea deschide.
   assert.deepEqual(DOCURI.flatMap((d) => ARANJAMENT_MODERN.docuri[d]).sort(), [...PANOURI].sort());
 });

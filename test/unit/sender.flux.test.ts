@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { EmulatorGrbl } from '../emulator/grbl.ts';
+import { EmulatorGrbl } from '../../src/machine/emulator.ts';
 import { fluxNou, pas, type Actiune, type StareFlux } from '../../src/machine/flux.ts';
 import { incarcaProgram, type ProgramIncarcat } from '../../src/machine/program.ts';
 import { octeti, primitiFaraTimpReal, ruleaza } from './ajutor-sender.ts';
@@ -221,4 +221,19 @@ test('regulile 3 și 6: o eroare chiar în fața unei bariere: suspendat; după 
   const r3 = ruleaza(emu, r2.stare, { evenimente: [{ la: 0, e: { tip: 'continua' } }] });
   assert.equal(r3.stare.faza, 'terminat');
   assert.equal(emu.pozitie.x, 0);
+});
+
+test('regula 4: portul pierdut în flux (deconectat): pierdut, cu motivul; comenzile manuale din zbor primesc „pierdut”; raportul se uită', async () => {
+  const emu = new EmulatorGrbl();
+  const text = `${ANTET}${Array.from({ length: 40 }, (_, k) => `G1 X${k % 2 ? 0 : 1} F300`).join('\n')}\n`;
+  const r = ruleaza(emu, incarcat(await program(text)), { evenimente: START, timpMaxim: 300, pana: () => false });
+  const d = pas(r.stare, { tip: 'deconectat' });
+  assert.equal(d.stare.faza, 'pierdut');
+  assert.equal(d.stare.motiv, 'deconectat');
+  assert.equal(d.stare.raport, null);
+  assert.deepEqual(d.stare.inZbor, []);
+  let m = pas(fluxNou(), { tip: 'manual', id: 'a', text: '$G' });
+  m = pas(pas(m.stare, { tip: 'primit', linie: '<Idle|MPos:0,0,0|FS:0,0>' }).stare, { tip: 'deconectat' });
+  assert.deepEqual(m.actiuni, [{ tip: 'raspuns', id: 'a', date: [], rezultat: 'pierdut' }]);
+  assert.equal(m.stare.faza, 'liber', 'în afara fluxului, faza rămâne');
 });
