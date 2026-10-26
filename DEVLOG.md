@@ -3034,4 +3034,9 @@ workerul PWA ținea CSS-ul vechi (butoanele jog-ului fără margine): verificare
 Mutațiile: 55 / 59; două echivalente scoase din cod (citirile interne oprite și în timpul unei proceduri; refuzul fluxului pentru
 o comandă a procedurii, de neatins), două prinse de probe noi (repornirea cât un zero așteaptă Idle-ul; portul fără banner);
 pe panou, 4 / 4 prinse de e2e. Manualul are o poartă nouă: fiecare control `data-masina` e numit în capitolul „Mașina”.
+**Publicat pe adresa principală de test:** 26.10, `publica` pe `3299b59` (rularea 40299960682), după rapid-ul verde
+(40298814404). Verificat în browserul aplicației, în engleză, pe mașina simulată: WCS-ul G54 citit, 10 butoane de jog; Zero XY
+dezactivat cât mașina era în Jog (corect); **Probe Z (G54)**: „Z0 written in G54: the plate touched at machine Z -25.000,
+thickness 20 mm.”, poziția de lucru Z 25.000, apoi `G0 G21 G90` în jurnal; **Zero XY (G54)**: „Zero XY written in G54.”,
+poziția de lucru X 0 Y 0; 0 erori în jurnalul local. (Workerul PWA ținea versiunea veche: verificarea după ștergerea cache-ului.)
 
