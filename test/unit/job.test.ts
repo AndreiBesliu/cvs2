@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { programDinDocument } from '../../src/cam/job.ts';
+import type { Miscare } from '../../src/ir/ir.ts';
 import { elementeFoaie } from '../../src/model/lume.ts';
 import { documentNou, type Document, type Operatie } from '../../src/model/document.ts';
 import { cuDiametru, cuOperatie, docDin, ID } from './ajutor-document.ts';
@@ -67,14 +68,71 @@ test('parametrii vin din operațiile documentului: latura, adâncimea, pasul și
   if (job.ok) assert.deepEqual(job.program.scula, { numar: 1, nume: 'freza plata', diametru: 3.175 });
 });
 
-test('o singură sculă pe program: altă freză (număr sau diametru) e refuzată cu motiv, până la schimbarea sculei', () => {
-  const d = doc(300, 200);
-  const altNumar = programDinDocument(cuOperatie(d, 'e1', { scula: { numar: 2, nume: 'freza plata', diametru: 6 } }));
-  assert.match(altNumar.ok ? '' : altNumar.motiv, /e1\/e1: altă sculă \(T2, Ø6\) decât T1, Ø6/);
-  const altDiametru = programDinDocument(cuOperatie(d, 'e1', { scula: { numar: 1, nume: 'freza plata', diametru: 8 } }));
-  assert.match(altDiametru.ok ? '' : altDiametru.motiv, /e1\/e1: altă sculă \(T1, Ø8\)/);
-  // Doar numele diferă: aceeași sculă pentru mașină.
-  assert.ok(programDinDocument(cuOperatie(d, 'e1', { scula: { numar: 1, nume: 'alt nume', diametru: 6 } })).ok);
+test('două scule (ADR 0084): fiecare tăietură cu diametrul ei, o schimbare între ele, cu turația regimului; doar numele diferit = aceeași sculă', () => {
+  const T2 = { numar: 2, nume: 'freza plata', diametru: 3 };
+  const d = cuOperatie(doc(300, 200), 'e1', { scula: T2 });
+  const job = programDinDocument(d);
+  assert.ok(job.ok, job.ok ? '' : job.motiv);
+  if (!job.ok) return;
+  assert.deepEqual(job.program.scula, { numar: 1, nume: 'freza plata', diametru: 6 }, 'scula de antet e a primei tăieturi (gaura, T1)');
+  const m = job.program.miscari;
+  const k = m.findIndex((x) => x.tip === 'schimba-scula');
+  assert.deepEqual(m[k], { tip: 'schimba-scula', scula: T2, turatie: 18000 });
+  assert.equal(m.filter((x) => x.tip === 'schimba-scula').length, 1);
+  assert.equal((m[k + 1] as { text?: string }).text, 'e1/e1: dreptunghi, exterior, 3 mm');
+  // Exteriorul dreptunghiului 20…120 × 20…80, cu raza 1,5 (nu 3): traseul la X 18,5 … 121,5.
+  const xs = m.slice(k).flatMap((x) => (x.tip === 'taiere' || x.tip === 'arc') && x.la.X !== undefined ? [x.la.X] : []);
+  assert.ok(Math.abs(Math.min(...xs) - 18.5) < 1e-9 && Math.abs(Math.max(...xs) - 121.5) < 1e-9, `${Math.min(...xs)} … ${Math.max(...xs)}`);
+  // Doar numele diferă: aceeași sculă pentru mașină, nicio schimbare.
+  const nume = programDinDocument(cuOperatie(doc(300, 200), 'e1', { scula: { numar: 1, nume: 'alt nume', diametru: 6 } }));
+  assert.ok(nume.ok && !nume.program.miscari.some((x) => x.tip === 'schimba-scula'));
+});
+
+test('degajările și buzunarul se socotesc cu freza tăieturii lor, nu cu a primei (ADR 0084)', () => {
+  const T1 = { numar: 1, nume: 'freza plata', diametru: 6 }, T2 = { numar: 2, nume: 'freza plata', diametru: 3 };
+  // Gaura e2 (T1 Ø6) întâi în document, apoi dreptunghiul e1 cu dog-bone (T2 Ø3). Bucla găurii stă la ~5,7 mm de drumul
+  // degajării din colțul (100, 100): peste pragul lui T2 (3 + 1), sub al lui T1 (6 + 1).
+  const gaura = { id: 'e2', forma: { tip: 'cerc' as const, raza: 5 }, matrice: { ...ID, e: 95, f: 95 } };
+  const drept = { id: 'e1', forma: { tip: 'dreptunghi' as const, latime: 40, inaltime: 30, razaColt: 0 }, matrice: { ...ID, e: 100, f: 100 } };
+  const stoc = { latime: 300, inaltime: 200, grosime: 18 };
+  const cuDrept = (d: Document): Document => cuOperatie(d, 'e1', { scula: T2, latura: 'interior', adancime: 3, pas: 3, colturi: { tip: 'dog-bone' } });
+  const ambele = programDinDocument(cuOperatie(cuDrept(docDin(stoc, gaura, drept)), 'e2', { scula: T1, latura: 'interior', adancime: 3, pas: 3 }));
+  const singur = programDinDocument(cuDrept(docDin(stoc, drept)));
+  assert.ok(ambele.ok && singur.ok, ambele.ok ? (singur.ok ? '' : singur.motiv) : ambele.motiv);
+  if (!ambele.ok || !singur.ok) return;
+  assert.deepEqual(ambele.avertismente, []);
+  const aleLui = (m: readonly Miscare[]) => {
+    const i = m.findIndex((x) => x.tip === 'eticheta' && x.text.startsWith('e1/e1'));
+    return m.slice(i);
+  };
+  assert.deepEqual(aleLui(ambele.program.miscari), aleLui(singur.program.miscari), 'aceleași mișcări ca singur, cu T2');
+  // Un buzunar pe altă freză: schimbarea vine înaintea lui.
+  const buz = programDinDocument(cuOperatie(cuOperatie(docDin(stoc, gaura, { ...drept, id: 'e1' }), 'e2', { scula: T1, latura: 'interior', adancime: 3, pas: 3 }),
+    'e1', { scula: T2, tip: 'buzunar', latura: 'interior', adancime: 3, pas: 3, pasLateral: 1.2 } as Partial<Operatie>));
+  assert.ok(buz.ok, buz.ok ? '' : buz.motiv);
+  if (!buz.ok) return;
+  const k = buz.program.miscari.findIndex((x) => x.tip === 'eticheta' && x.text.includes('buzunar'));
+  assert.deepEqual(buz.program.miscari[k - 1], { tip: 'schimba-scula', scula: T2, turatie: 18000 });
+});
+
+test('același număr cu două diametre e refuzat cu motiv (omul ar monta o singură freză sub T1)', () => {
+  const r = programDinDocument(cuOperatie(doc(300, 200), 'e1', { scula: { numar: 1, nume: 'freza plata', diametru: 8 } }));
+  assert.deepEqual(r, { ok: false, motiv: 'e1/e1: T1 are două diametre (6 și 8 mm): fiecare freză cere numărul ei' });
+});
+
+test('în aceeași clasă, tăieturile se grupează pe sculă; o clasă nouă începe cu scula deja montată (cât mai puține schimbări)', () => {
+  const T = (numar: number, diametru = 3) => ({ numar, nume: 'freza plata', diametru });
+  const cerc = (id: string, x: number) => ({ id, forma: { tip: 'cerc' as const, raza: 6 }, matrice: { ...ID, e: x, f: 100 } });
+  const baza = docDin({ latime: 300, inaltime: 200, grosime: 18 }, cerc('a', 40), cerc('b', 80), cerc('c', 120), cerc('d', 160), cerc('e', 200));
+  const cu = (d: Document, id: string, o: Partial<Operatie>): Document => cuOperatie(d, id, o);
+  // Interioarele: a T1, b T2, c T1 → a, c (T1), apoi b (T2). Pe linie: d T1, e T2 → e întâi (T2 e montată), apoi d.
+  let d = cu(cu(cu(baza, 'a', { scula: T(1), latura: 'interior' }), 'b', { scula: T(2), latura: 'interior' }), 'c', { scula: T(1), latura: 'interior' });
+  d = cu(cu(d, 'd', { scula: T(1), latura: 'pe-linie' }), 'e', { scula: T(2), latura: 'pe-linie' });
+  const job = programDinDocument(d);
+  assert.ok(job.ok, job.ok ? '' : job.motiv);
+  if (!job.ok) return;
+  const ordine = job.program.miscari.flatMap((m) => (m.tip === 'eticheta' ? [m.text.split(':')[0]] : m.tip === 'schimba-scula' ? [`T${m.scula.numar}`] : []));
+  assert.deepEqual(ordine, ['a/a', 'c/c', 'T2', 'b/b', 'e/e', 'T1', 'd/d']);
 });
 
 test('ordinea tăieturilor: latura, apoi instanța, apoi operația, apoi nodul din operație; elementul fără operație nu se taie', () => {

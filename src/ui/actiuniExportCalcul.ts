@@ -12,7 +12,7 @@ import { exporta, type ProgramExportat } from '../post/export.ts';
 import { posteaza } from '../post/post.ts';
 import { reliefPentru } from '../sim/banda.ts';
 import { campPentruFoaie, dimensiuni, type ParametriCamp } from '../sim/camp.ts';
-import type { DateScula } from '../sim/nucleu.ts';
+import type { DateScula, GrupSimulare } from '../sim/nucleu.ts';
 import { pregatesteProgram } from '../sim/program.ts';
 import { estimeazaTimp, type Portiune } from '../sim/timp.ts';
 import type { FereastraRelief, ParametriExport, ProgramSimulare, ReliefSimulat, RezultatExport, RezumatJob, SimulareExport } from './actiuniExportTipuri.ts';
@@ -46,12 +46,16 @@ export async function calculeazaExport(doc: Document, p: ParametriExport): Promi
     }
   }
   const e = await exporta(job.program, { foaie: foaie.stoc, origine: p.origine, z0: p.z0 }, CONTRACTE[p.post ?? 'grbl-11'], {
-    asteptareAx: ASTEPTARE_AX, unitati: p.unitati ?? 'mm',
+    asteptareAx: ASTEPTARE_AX, unitati: p.unitati ?? 'mm', ...(p.strategieScula ? { strategieScula: p.strategieScula } : {}),
     ...(iesire ? { iesireConfirmata: iesire.depasire } : {}),
   });
   if (!e.ok) return e;
   return {
-    ok: true, program: e.exportat, avertismente: job.avertismente, rezumat: rezumatJob(e.exportat, job.program.scula, p.setariMasina),
+    ok: true, program: e.exportat, fisiere: e.fisiere, avertismente: job.avertismente,
+    // Cu fișiere separate, fiecare are scula lui; altfel, sculele programului, în ordinea în care se montează.
+    rezumat: e.fisiere.length > 1
+      ? unesteRezumate(e.fisiere.map((f) => rezumatJob(f, f.scula ? [f.scula] : sculeProgram(job.program), p.setariMasina)))
+      : rezumatJob(e.exportat, sculeProgram(job.program), p.setariMasina),
     simulare: (semnal) => simuleazaExport(job.program, foaie.stoc, semnal),
   };
 }
@@ -67,7 +71,7 @@ export async function simuleazaExport(
   if (!p.ok) return { ok: false, motiv: p.motiv, eroare: false };
   const camp = campPentruFoaie(foaie), d = dimensiuni(camp.celula, camp.latime, camp.inaltime);
   try {
-    const r = await simuleazaInBazin({ camp, scula: p.scula, mutari: p.mutari, fund: -foaie.grosime }, fireImplicite(), semnal ? { semnal } : {});
+    const r = await simuleazaInBazin({ camp, scula: p.scula, mutari: p.mutari, ...(p.apoi ? { apoi: p.apoi } : {}), fund: -foaie.grosime }, fireImplicite(), semnal ? { semnal } : {});
     return {
       ok: true, amprenta: r.amprenta, volum: r.volum, adancimeMax: r.adancimeMax, prinFoaie: r.prinFoaie, grosime: foaie.grosime,
       celula: camp.celula, celule: [d.nx, d.ny],
@@ -79,8 +83,8 @@ export async function simuleazaExport(
   }
 }
 
-/** Ce ține `ProgramSimulare.date`: scula și mutările nucleului (IR-ul, în coordonatele documentului). */
-type DateSimulare = { readonly scula: DateScula; readonly mutari: Float64Array };
+/** Ce ține `ProgramSimulare.date`: scula și mutările nucleului (IR-ul, în coordonatele documentului), cu grupurile de după schimbări. */
+type DateSimulare = { readonly scula: DateScula; readonly mutari: Float64Array; readonly apoi?: readonly GrupSimulare[] };
 
 /**
  * Programul documentului pentru vederea 3D (ADR 0057 §1): același CAM ca traseul și exportul (fără supracursă), apoi
@@ -93,7 +97,7 @@ export function programSimulare(doc: Document): ProgramSimulare {
   if (!job.ok) return { ok: false, motiv: job.motiv };
   const p = pregatesteProgram(job.program, 0);
   if (!p.ok) return { ok: false, motiv: p.motiv };
-  const date: DateSimulare = { scula: p.scula, mutari: p.mutari };
+  const date: DateSimulare = { scula: p.scula, mutari: p.mutari, ...(p.apoi ? { apoi: p.apoi } : {}) };
   return { ok: true, foaie: { latime: foaie.stoc.latime, inaltime: foaie.stoc.inaltime, grosime: foaie.stoc.grosime }, date };
 }
 
@@ -111,12 +115,12 @@ export function fereastraFoii(foaie: { readonly latime: number; readonly inaltim
 export async function simuleazaRelief(
   program: Extract<ProgramSimulare, { ok: true }>, fereastra: FereastraRelief, semnal?: AbortSignal,
 ): Promise<ReliefSimulat> {
-  const { scula, mutari } = program.date as DateSimulare;
+  const { scula, mutari, apoi } = program.date as DateSimulare;
   const camp: ParametriCamp = { ...fereastra, sus: 0 };
   const relief = reliefPentru(camp);
   if (!relief) return { ok: false, motiv: `fereastra de ${fereastra.latime} × ${fereastra.inaltime} mm nu încape în relief la ${fereastra.celula} mm`, eroare: false };
   try {
-    const r = await simuleazaInBazin({ camp, scula, mutari, fund: -program.foaie.grosime, relief }, fireImplicite(), semnal ? { semnal } : {});
+    const r = await simuleazaInBazin({ camp, scula, mutari, ...(apoi ? { apoi } : {}), fund: -program.foaie.grosime, relief }, fireImplicite(), semnal ? { semnal } : {});
     if (!r.relief) return { ok: false, motiv: 'simularea n-a întors relieful', eroare: true };
     return {
       ok: true, fereastra, latime: r.relief.latime, inaltime: r.relief.inaltime, bloc: r.relief.bloc, z: r.relief.z, sus: r.sus,
@@ -130,22 +134,50 @@ export async function simuleazaRelief(
 
 const zero = (): { secunde: number; pauze: number; taiere: number; rapide: number } => ({ secunde: 0, pauze: 0, taiere: 0, rapide: 0 });
 
+/** Sculele unui program IR, în ordinea în care se montează (scula de antet, apoi fiecare schimbare), fiecare o dată. */
+export function sculeProgram(p: Program): Scula[] {
+  const rez: Scula[] = [p.scula];
+  for (const m of p.miscari) if (m.tip === 'schimba-scula' && !rez.some((s) => s.numar === m.scula.numar)) rez.push(m.scula);
+  return rez;
+}
+
+/** Rezumatul mai multor fișiere (câte unul pe sculă): sumele, operațiile și sculele lor, mașina primului. */
+export function unesteRezumate(r: readonly RezumatJob[]): RezumatJob {
+  const gresit = r.find((x) => !x.ok);
+  if (gresit) return gresit;
+  const bune = r.filter((x): x is Extract<RezumatJob, { ok: true }> => x.ok);
+  const prim = bune[0];
+  if (!prim) return { ok: false, sursa: 'program', linie: 0, motiv: 'niciun fișier' };
+  const suma = (f: (x: Extract<RezumatJob, { ok: true }>) => ReturnType<typeof zero>) => bune.reduce((s, x) => {
+    const p = f(x);
+    return { secunde: s.secunde + p.secunde, pauze: s.pauze + p.pauze, taiere: s.taiere + p.taiere, rapide: s.rapide + p.rapide };
+  }, zero());
+  return {
+    ok: true, total: suma((x) => x.total), restul: suma((x) => x.restul), peOperatie: bune.flatMap((x) => x.peOperatie),
+    peScula: bune.flatMap((x) => x.peScula), masina: prim.masina, liniiLimitate: bune.reduce((s, x) => s + x.liniiLimitate, 0),
+    // Fișierele separate n-au opriri: fiecare e al unei singure freze.
+    opriri: 0,
+  };
+}
+
 /**
  * Rezumatul jobului (ADR 0046): estimarea pe octeții exportați, cu profilul mașinii (implicitele GRBL 1.1h, sau peste ele
  * răspunsul la `$$` lipit de om), împărțită pe secțiunile postului: fiecare operație adună secțiunile ei (o operație pe
- * mai multe elemente sau instanțe are mai multe), iar pornirea și finalul merg la „restul”.
+ * mai multe elemente sau instanțe are mai multe), iar pornirea și finalul merg la „restul”. Pe scule (ADR 0084): fiecare
+ * secțiune merge la scula montată atunci (`scule[0]` de la pornire, apoi cea din secțiunea de după fiecare schimbare);
+ * opririle pentru schimbare se numără, fără timp (estimarea cu opririle senderului).
  */
-export function rezumatJob(program: Pick<ProgramExportat, 'text' | 'sectiuni'>, scula: Scula, setari: string | undefined): RezumatJob {
+export function rezumatJob(program: Pick<ProgramExportat, 'text' | 'sectiuni'>, scule: readonly Scula[], setari: string | undefined): RezumatJob {
   let profil: ProfilMasina = PROFIL_GRBL_11H;
   if (setari !== undefined && setari.trim() !== '') {
     const s = profilDinSetari(setari, PROFIL_GRBL_11H);
     if (!s.ok) return { ok: false, sursa: 'setari', linie: s.linie, motiv: s.motiv };
     profil = s.profil;
   }
-  const e = estimeazaTimp(program.text, profil, program.sectiuni.map((s) => s.linie));
+  const e = estimeazaTimp(program.text, profil, program.sectiuni.map((s) => s.linie), undefined, { opriri: true });
   if (!e.ok) return { ok: false, sursa: 'program', linie: e.linie, motiv: e.motiv };
-  const adauga = (la: ReturnType<typeof zero>, p: Portiune | undefined): void => {
-    if (!p) return;
+  const adauga = (la: ReturnType<typeof zero> | undefined, p: Portiune | undefined): void => {
+    if (!la || !p) return;
     la.secunde += p.secunde;
     la.pauze += p.pauze;
     la.taiere += p.taiere;
@@ -154,8 +186,13 @@ export function rezumatJob(program: Pick<ProgramExportat, 'text' | 'sectiuni'>, 
   const restul = zero();
   adauga(restul, e.portiuni[0]);
   const peOperatie = new Map<string, ReturnType<typeof zero>>();
+  const peScula = new Map<number, ReturnType<typeof zero>>(scule.map((s) => [s.numar, zero()]));
+  let montata = scule[0]?.numar;
+  adauga(peScula.get(montata ?? -1), e.portiuni[0]);
   for (const [k, s] of program.sectiuni.entries()) {
     const p = e.portiuni[k + 1];
+    if (s.scula !== undefined) montata = s.scula;
+    adauga(peScula.get(montata ?? -1), p);
     if (s.operatie === undefined) {
       adauga(restul, p);
       continue;
@@ -173,8 +210,8 @@ export function rezumatJob(program: Pick<ProgramExportat, 'text' | 'sectiuni'>, 
     total: e.total,
     peOperatie: [...peOperatie].map(([operatie, p]) => ({ operatie, ...p })),
     restul,
-    // O singură sculă pe program până la schimbarea sculei (etapa 3): scula are tot jobul.
-    peScula: [{ numar: scula.numar, nume: scula.nume, diametru: scula.diametru, ...e.total }],
+    peScula: scule.map((s) => ({ numar: s.numar, nume: s.nume, diametru: s.diametru, ...(peScula.get(s.numar) ?? zero()) })),
+    opriri: e.opriri,
     masina: {
       nume: profil.nume, sursa: profil.sursa,
       vitezaMaxima: [axa('X').vitezaMaxima, axa('Y').vitezaMaxima, axa('Z').vitezaMaxima],
@@ -192,5 +229,5 @@ export function rezumatJob(program: Pick<ProgramExportat, 'text' | 'sectiuni'>, 
 export function timpProgram(program: Program, foaie: Montaj['foaie'], setari: string | undefined): RezumatJob {
   const r = posteaza(program, { foaie, origine: 'stanga-jos', z0: 'sus' }, GRBL_11, { asteptareAx: ASTEPTARE_AX });
   if (!r.ok) return { ok: false, sursa: 'program', linie: 0, motiv: r.motiv };
-  return rezumatJob(r, program.scula, setari);
+  return rezumatJob(r, sculeProgram(program), setari);
 }

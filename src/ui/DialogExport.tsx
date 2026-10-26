@@ -6,7 +6,7 @@ import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import {
   laturiOferite, MARGINI_OPERATIE, POSTURI_EXPORT, type Coborare, type Depasire, type IdContract, type IesireFoaie, type LaturaExport,
-  type ParametriExport, type RezumatJob, type SimulareExport, type TimpPortiune, type Unitati,
+  type ParametriExport, type RezumatJob, type SimulareExport, type StrategieScula, type TimpPortiune, type Unitati,
 } from './actiuniExportTipuri.ts';
 import { durata } from './durata.ts';
 import { citesteNumar, textNumar } from './numar.ts';
@@ -14,7 +14,6 @@ import { PrevizualizareSimulare } from './PrevizualizareSimulare.tsx';
 import { useLimba } from './useLimba.ts';
 
 type Latura = LaturaExport;
-/** Ce se schimbă dintr-o operație de profil în dialog; scula (freza) e comună tuturor, până la schimbarea sculei. */
 /** Sensul de tăiere (ADR 0027): urcare = materialul păstrat în dreapta sensului de mers, cu axul M3. */
 type Sens = 'urcare' | 'opozitie';
 /** Urechile (ADR 0028): câte pe buclă, lungimea palierului pe traseul frezei, grosimea punții de la fața de jos (mm). */
@@ -25,7 +24,11 @@ export type RampaOperatie = { readonly lungime: number };
 export type IntrariOperatie = { readonly raza: number };
 /** Degajările colțurilor (ADR 0032): dog-bone sau T-bone. */
 export type ColturiOperatie = { readonly tip: 'dog-bone' | 't-bone' };
+/** Freza unei operații (ADR 0084): numărul (T) și diametrul; aceeași sculă = același număr și același diametru. */
+export type SculaOperatie = { readonly numar: number; readonly diametru: number };
+/** Ce se schimbă dintr-o operație în dialog, cu freza ei (ADR 0084: fiecare rând are freza lui; lipsă = cea din document). */
 export type ValoriOperatie = {
+  readonly scula?: SculaOperatie;
   readonly latura: Latura; readonly sens: Sens; readonly adancime: number; readonly pas: number; readonly urechi: UrechiOperatie | null;
   readonly rampa: RampaOperatie | null; readonly intrari: IntrariOperatie | null; readonly colturi: ColturiOperatie | null;
   /**
@@ -51,8 +54,8 @@ export type OperatieExport = {
   readonly cheie: string; readonly descriere: string; readonly deschise: number; readonly noduri: number; readonly valori: ValoriOperatie;
 };
 
-/** Ce trimite dialogul la Exportă: montajul, valorile operațiilor (se scriu în document) și confirmarea. */
-export type CerereExport = ParametriExport & { readonly diametru: number; readonly valori: ReadonlyMap<string, ValoriOperatie> };
+/** Ce trimite dialogul la Exportă: montajul, postul, valorile operațiilor cu frezele lor (se scriu în document) și confirmarea. */
+export type CerereExport = ParametriExport & { readonly valori: ReadonlyMap<string, ValoriOperatie> };
 
 /**
  * Ultimul rezultat: liniile și SHA-256 cu rezumatul jobului (ADR 0046), motivul, sau ieșirea din foaie care așteaptă
@@ -61,6 +64,8 @@ export type CerereExport = ParametriExport & { readonly diametru: number; readon
 export type StareExport =
   | {
     readonly ok: true; readonly linii: number; readonly sha256: string; readonly avertismente: readonly string[];
+    /** Cu fișiere separate pe sculă (ADR 0084): fiecare fișier descărcat, cu liniile și amprenta lui. */
+    readonly fisiere?: readonly { readonly nume: string; readonly linii: number; readonly sha256: string }[];
     /** `calcul`: simularea rulează (după descărcare); apoi rezultatul ei. */
     readonly rezumat: RezumatJob; readonly simulare: SimulareExport | 'calcul';
   }
@@ -68,13 +73,6 @@ export type StareExport =
 
 type Props = {
   readonly operatii: readonly OperatieExport[];
-  /** Diametrul frezei arătat: al primei operații. */
-  readonly diametru: number;
-  /**
-   * Frezele distincte ale operațiilor de pe foaie, după ce compară exportul (număr și diametru): mai multe înseamnă freze
-   * amestecate, spuse pe față.
-   */
-  readonly freze: ReadonlyArray<{ readonly numar: number; readonly diametru: number }>;
   /**
    * Crește cu fiecare document venit din bază (o versiune a altei file, preluarea scrierii). Valorile operațiilor îl
    * urmează; montajul ales (colțul, Z0) rămâne.
@@ -131,6 +129,8 @@ function inMargini(s: string, plafon: number, minim = 0): boolean {
 
 /** Urechile pornite sau nu; câmpurile lor rămân scrise și cu bifa scoasă, ca o bifă pusă la loc să nu le piardă. */
 type Rand = {
+  /** Freza rândului (ADR 0084), ca text: numărul și diametrul. */
+  readonly numarScula: string; readonly diametruScula: string;
   readonly latura: Latura; readonly sens: Sens; readonly adancime: string; readonly pas: string;
   readonly urechi: boolean; readonly numarUrechi: string; readonly latimeUreche: string; readonly grosimeUreche: string;
   readonly rampa: boolean; readonly lungimeRampa: string;
@@ -199,6 +199,7 @@ function Rezumat({ r, operatii, limba }: { readonly r: RezumatJob; readonly oper
     <section className="rezumat" data-testid="export-rezumat" aria-labelledby="rezumat-titlu">
       <h3 id="rezumat-titlu">{t('export.rezumat.titlu')}</h3>
       <p data-rezumat="timp" role="status"><strong>{t('export.rezumat.timp', { timp: durata(r.total.secunde, limba) })}</strong></p>
+      {r.opriri > 0 && <p className="nota" data-rezumat="opriri">{t('export.rezumat.opriri', { n: r.opriri })}</p>}
       <p className="nota" data-rezumat="masina" data-sursa={m.sursa}>
         {t(m.sursa === 'setari' ? 'export.rezumat.masina.setari' : 'export.rezumat.masina.implicit', masina)}
       </p>
@@ -238,8 +239,7 @@ const CHEI_SENS: Readonly<Record<Sens, CheieSimpla>> = { urcare: 'export.sens.ur
  */
 export function DialogExport(
   {
-    operatii, diametru: diametruInitial, freze, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
-    onSetariMasina,
+    operatii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina, onSetariMasina,
   }: Props,
 ) {
   const limba = useLimba();
@@ -250,14 +250,17 @@ export function DialogExport(
   const [post, setPost] = useState<IdContract>('grbl-11');
   const [unitati, setUnitati] = useState<Unitati>('mm');
   const postAles = POSTURI_EXPORT.find((x) => x.id === post);
+  // Strategia schimbării sculei (ADR 0084): aleasă de om, dacă postul ales o acceptă; altfel, implicita postului.
+  const [strategieCeruta, setStrategie] = useState<StrategieScula | null>(null);
+  const strategie: StrategieScula | undefined = strategieCeruta !== null && postAles?.strategii.includes(strategieCeruta) ? strategieCeruta : postAles?.strategii[0];
   // Valorile se țin ca text, cum le scrie omul; se citesc abia la verificare și la Exportă.
-  const [diametru, setDiametru] = useState(() => text(diametruInitial));
   // Pe un rând cu căi deschise, urechile, rampa, intrările și degajările vin mai târziu (ADR 0037 §9, §12): bifele pornesc
   // scoase și rămân oprite, iar Exportă le scrie scoase (ce refuză exportul nu se oferă).
   const dinDocument = (): Record<string, Rand> => Object.fromEntries(operatii.map((o) => {
     const u = o.valori.urechi ?? URECHI_IMPLICITE;
     const inchise = o.deschise === 0;
     return [o.cheie, {
+      numarScula: text(o.valori.scula?.numar ?? 1), diametruScula: text(o.valori.scula?.diametru ?? 6),
       latura: o.valori.latura, sens: o.valori.sens, adancime: text(o.valori.adancime), pas: text(o.valori.pas),
       urechi: inchise && o.valori.urechi !== null, numarUrechi: text(u.numar), latimeUreche: text(u.latime), grosimeUreche: text(u.grosime),
       rampa: inchise && o.valori.rampa !== null, lungimeRampa: text((o.valori.rampa ?? RAMPA_IMPLICITA).lungime),
@@ -265,11 +268,11 @@ export function DialogExport(
       colturi: inchise ? o.valori.colturi?.tip ?? '' : '',
       despartire: !inchise && o.valori.despartire === true,
       tip: inchise && o.valori.tip === 'buzunar' ? 'buzunar' : 'profil',
-      pasLateral: text(o.valori.pasLateral ?? pasLateralImplicit(diametruInitial)),
+      pasLateral: text(o.valori.pasLateral ?? pasLateralImplicit(o.valori.scula?.diametru ?? 6)),
       coborare: o.valori.coborare?.fel ?? 'plonjare',
       unghiCoborare: text(o.valori.coborare && o.valori.coborare.fel !== 'plonjare' ? o.valori.coborare.unghi : UNGHI_COBORARE_IMPLICIT),
       lungimeZigzag: text(o.valori.coborare?.fel === 'zigzag' ? o.valori.coborare.lungime : LUNGIME_ZIGZAG_IMPLICITA),
-      razaElice: text(o.valori.coborare?.fel === 'elice' ? o.valori.coborare.raza : razaEliceImplicita(diametruInitial)),
+      razaElice: text(o.valori.coborare?.fel === 'elice' ? o.valori.coborare.raza : razaEliceImplicita(o.valori.scula?.diametru ?? 6)),
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
@@ -288,7 +291,6 @@ export function DialogExport(
   const [bazaVazuta, setBazaVazuta] = useState(baza);
   if (bazaVazuta !== baza) {
     setBazaVazuta(baza);
-    setDiametru(text(diametruInitial));
     setParam(dinDocument());
     setConfirmata(null);
   }
@@ -300,14 +302,13 @@ export function DialogExport(
   // Când apare cererea, focusul trece pe textul ei, nu pe bifă: butonul Exportă devine inactiv și focusul ar cădea pe
   // pagină, iar pe bifă un al doilea Space ar bifa-o fără ca omul s-o fi citit. Bifa e la un Tab distanță.
   useEffect(() => { if (cere) cerereVizibila.current?.focus(); }, [cere]);
-  const diametruBun = inMargini(diametru, MARGINI_OPERATIE.diametru);
   // Câmpurile urechilor se judecă doar cu bifa pusă: oprite, nu intră în document.
-  // Pasul lateral al unui buzunar: cel mult raza frezei din dialog (ADR 0069 §3); fără o freză bună, nu se judecă.
-  const dFreza = citesteNumar(diametru);
+  // Pasul lateral al unui buzunar: cel mult raza frezei rândului (ADR 0069 §3); fără o freză bună, nu se judecă.
   const randBun = (p: Rand | undefined): {
-    adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean; rampa: boolean; intrari: boolean;
+    scula: boolean; adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean; rampa: boolean; intrari: boolean;
     pasLateral: boolean; coborare: boolean;
   } => ({
+    scula: p !== undefined && intregInMargini(p.numarScula, MARGINI_OPERATIE.numarScula) && inMargini(p.diametruScula, MARGINI_OPERATIE.diametru),
     adancime: p !== undefined && inMargini(p.adancime, MARGINI_OPERATIE.adancime),
     pas: p !== undefined && inMargini(p.pas, MARGINI_OPERATIE.adancime),
     // Pe un buzunar, urechile și rampa nu se aplică (ADR 0069 §1): bifele sunt oprite, deci nu se judecă.
@@ -318,7 +319,7 @@ export function DialogExport(
     // Pe linie, intrările nu se cer (bifa e oprită), deci nici nu se judecă. Cu rampă, raza are pragul ei (ADR 0031 §2).
     intrari: p !== undefined && (p.tip === 'buzunar' || !p.intrari || p.latura === 'pe-linie' || inMargini(p.razaIntrare, MARGINI_OPERATIE.razaIntrare,
       p.rampa ? MARGINI_OPERATIE.razaIntrareMinimaRampa : MARGINI_OPERATIE.razaIntrareMinima)),
-    pasLateral: p !== undefined && (p.tip !== 'buzunar' || (dFreza !== null && inMargini(p.pasLateral, dFreza / 2))),
+    pasLateral: p !== undefined && (p.tip !== 'buzunar' || ((d) => d !== null && inMargini(p.pasLateral, d / 2))(citesteNumar(p.diametruScula))),
     // Coborârea (ADR 0076): doar pe un buzunar și doar câmpurile felului ales.
     coborare: p !== undefined && (p.tip !== 'buzunar' || p.coborare === 'plonjare' || (
       inMargini(p.unghiCoborare, MARGINI_OPERATIE.unghiCoborare, MARGINI_OPERATIE.unghiCoborareMinim)
@@ -326,7 +327,16 @@ export function DialogExport(
       && (p.coborare !== 'elice' || inMargini(p.razaElice, MARGINI_OPERATIE.razaElice, MARGINI_OPERATIE.razaEliceMinima)))),
   });
   const randuri = operatii.map((o) => randBun(param[o.cheie]));
-  const operatiiBune = diametruBun && randuri.every((b) => b.adancime && b.pas);
+  const sculeBune = randuri.every((b) => b.scula);
+  // Frezele rândurilor (ADR 0084): același număr cu două diametre ar fi două freze sub același T.
+  const scule = new Map<number, Set<number>>();
+  for (const o of operatii) {
+    const p = param[o.cheie];
+    const n = p ? citesteNumar(p.numarScula) : null, d = p ? citesteNumar(p.diametruScula) : null;
+    if (n !== null && d !== null) scule.set(n, (scule.get(n) ?? new Set()).add(d));
+  }
+  const conflict = [...scule].find(([, ds]) => ds.size > 1);
+  const operatiiBune = sculeBune && !conflict && randuri.every((b) => b.adancime && b.pas);
   const urechiBune = randuri.every((b) => b.numar && b.latime && b.grosime);
   const rampeBune = randuri.every((b) => b.rampa);
   const intrariBune = randuri.every((b) => b.intrari);
@@ -351,7 +361,9 @@ export function DialogExport(
     const p = param[o.cheie];
     const adancime = p ? citesteNumar(p.adancime) : null;
     const pas = p ? citesteNumar(p.pas) : null;
-    if (!p || adancime === null || pas === null) return [];
+    const numarScula = p ? citesteNumar(p.numarScula) : null, diametruScula = p ? citesteNumar(p.diametruScula) : null;
+    if (!p || adancime === null || pas === null || numarScula === null || diametruScula === null) return [];
+    const scula = { numar: numarScula, diametru: diametruScula };
     // Buzunarul (ADR 0069 §1): latura interior, nimic din profil, cu pasul lateral.
     if (p.tip === 'buzunar') {
       const pasLateral = citesteNumar(p.pasLateral);
@@ -366,7 +378,7 @@ export function DialogExport(
         else { if (raza === null) return []; coborare = { fel: 'elice', unghi, raza }; }
       }
       return [[o.cheie, {
-        latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'buzunar', pasLateral,
+        scula, latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'buzunar', pasLateral,
         ...(coborare ? { coborare } : {}),
       }] as const];
     }
@@ -385,19 +397,23 @@ export function DialogExport(
     const colturi = p.colturi !== '' && p.latura !== 'pe-linie' ? { tip: p.colturi } : null;
     // Despărțirea se scrie doar pe un rând cu căi deschise (pe celelalte, bifa e oprită).
     const despartire = o.deschise > 0 ? { despartire: p.despartire } : {};
-    return [[o.cheie, { latura: p.latura, sens: p.sens, adancime, pas, urechi, rampa, intrari, colturi, ...despartire }] as const];
+    return [[o.cheie, { scula, latura: p.latura, sens: p.sens, adancime, pas, urechi, rampa, intrari, colturi, ...despartire }] as const];
   }));
   const fmtFreza = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3 });
   // Motivul spune ce câmp e greșit: valorile operației, urechile, sau amândouă (recenzia feliei 2.4).
   const motivInvalid = [
-    ...(operatiiBune ? [] : [t('motiv.operatie-invalida')]),
+    ...(sculeBune ? [] : [t('motiv.scula-invalida', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
+    ...(conflict ? [t('motiv.scula-conflict', { numar: conflict[0], diametre: [...conflict[1]].map((d) => fmtFreza.format(d)).join(', ') })] : []),
+    ...(operatiiBune || !sculeBune || conflict ? [] : [t('motiv.operatie-invalida')]),
     ...(urechiBune ? [] : [t('motiv.urechi-invalide', {
       n: MARGINI_OPERATIE.urechi, latime: fmtFreza.format(MARGINI_OPERATIE.latimeUreche), grosime: fmtFreza.format(MARGINI_OPERATIE.grosimeUreche),
     })]),
     ...(rampeBune ? [] : [t('motiv.rampa-invalida', {
       minim: fmtFreza.format(MARGINI_OPERATIE.lungimeRampaMinima), lungime: fmtFreza.format(MARGINI_OPERATIE.lungimeRampa),
     })]),
-    ...(pasiBuni ? [] : [t('motiv.pas-lateral-invalid', { max: dFreza !== null ? fmtFreza.format(dFreza / 2) : '–' })]),
+    ...(pasiBuni ? [] : [t('motiv.pas-lateral-invalid', {
+      max: ((d) => (d !== null ? fmtFreza.format(d / 2) : '–'))(citesteNumar(param[operatii.find((o, i) => !randuri[i]?.pasLateral)?.cheie ?? '']?.diametruScula ?? '')),
+    })]),
     ...(coborariBune ? [] : [t('motiv.coborare-invalida', {
       unghiMinim: fmtFreza.format(MARGINI_OPERATIE.unghiCoborareMinim), unghi: fmtFreza.format(MARGINI_OPERATIE.unghiCoborare),
       lungime: fmtFreza.format(MARGINI_OPERATIE.lungimeZigzagMinima), raza: fmtFreza.format(MARGINI_OPERATIE.razaEliceMinima),
@@ -445,26 +461,25 @@ export function DialogExport(
               <option value="inch">{t('export.unitati.inch')}</option>
             </select>
           </label>
-          <label>
-            {t('export.freza')}
-            <input type="text" inputMode="decimal" value={diametru} data-camp="diametru" disabled={doarCitire} aria-invalid={!diametruBun}
-              onChange={(e) => { schimbat(); setDiametru(e.target.value); }} />
-          </label>
+          {scule.size > 1 && (
+            <label title={t('export.strategie.titlu')}>
+              {t('export.strategie')}
+              <select value={strategie} data-camp="strategie" onChange={(e) => {
+                const s = postAles?.strategii.find((x) => x === e.target.value);
+                if (s) { schimbat(); setStrategie(s); }
+              }}>
+                {(postAles?.strategii ?? []).map((x) => <option key={x} value={x}>{t(`export.strategie.${x}` as CheieSimpla)}</option>)}
+              </select>
+            </label>
+          )}
         </div>
         {postAles && !postAles.probat && (
           <p className="nota" data-testid="post-documentat">{t('export.post.documentat', { nume: postAles.nume })}</p>
         )}
-        {freze.length > 1 && (
-          <p className="nota avertisment" data-testid="freze-diferite">
-            {t(doarCitire ? 'export.freze-diferite.citire' : 'export.freze-diferite', {
-              freze: freze.map((f) => `T${f.numar} Ø${fmtFreza.format(f.diametru)}`).join(', '),
-            })}
-          </p>
-        )}
         <table>
           <thead>
             <tr>
-              <th>{t('export.element')}</th><th>{t('export.latura')}</th><th title={t('export.sens.titlu')}>{t('export.sens')}</th>
+              <th>{t('export.element')}</th><th title={t('export.freza.titlu')}>{t('export.freza')}</th><th>{t('export.latura')}</th><th title={t('export.sens.titlu')}>{t('export.sens')}</th>
               <th>{t('export.adancime')}</th><th>{t('export.pas')}</th>
               <th title={t('export.urechi.titlu')}>{t('export.urechi')}</th>
               <th title={t('export.rampa.titlu')}>{t('export.rampa')}</th>
@@ -487,6 +502,12 @@ export function DialogExport(
                 <Fragment key={o.cheie}>
                 <tr data-operatie={o.cheie}>
                   <td>{o.descriere}</td>
+                  <td className="freza">
+                    <input type="text" inputMode="numeric" value={p.numarScula} data-camp="scula" disabled={doarCitire} aria-label={t('export.freza.numar')}
+                      aria-invalid={!b.scula || conflict !== undefined} className="numar-scula" onChange={(ev) => { schimba(o.cheie, { numarScula: ev.target.value }); }} />
+                    <input type="text" inputMode="decimal" value={p.diametruScula} data-camp="diametru" disabled={doarCitire} aria-label={t('export.freza.diametru')}
+                      aria-invalid={!b.scula || conflict !== undefined} onChange={(ev) => { schimba(o.cheie, { diametruScula: ev.target.value }); }} />
+                  </td>
                   <td>
                     {/* Buzunarul (ADR 0069) e încă o alegere a tăieturii, doar pe un rând cu contururi închise. */}
                     <select value={buz ? 'buzunar' : p.latura} data-camp="latura" disabled={doarCitire} title={deschis ? t('export.latura.deschise.titlu') : undefined}
@@ -505,8 +526,8 @@ export function DialogExport(
                       {SENSURI.map((s) => <option key={s} value={s}>{t(CHEI_SENS[s])}</option>)}
                     </select>
                   </td>
-                  <td><input type="text" inputMode="decimal" value={p.adancime} disabled={doarCitire} aria-invalid={!b.adancime} onChange={(ev) => { schimba(o.cheie, { adancime: ev.target.value }); }} /></td>
-                  <td><input type="text" inputMode="decimal" value={p.pas} disabled={doarCitire} aria-invalid={!b.pas} onChange={(ev) => { schimba(o.cheie, { pas: ev.target.value }); }} /></td>
+                  <td><input type="text" inputMode="decimal" value={p.adancime} data-camp="adancime" disabled={doarCitire} aria-invalid={!b.adancime} onChange={(ev) => { schimba(o.cheie, { adancime: ev.target.value }); }} /></td>
+                  <td><input type="text" inputMode="decimal" value={p.pas} data-camp="pas" disabled={doarCitire} aria-invalid={!b.pas} onChange={(ev) => { schimba(o.cheie, { pas: ev.target.value }); }} /></td>
                   <td>
                     <input type="checkbox" checked={p.urechi && !buz} data-camp="urechi" disabled={doarCitire || deschis || buz} aria-label={t('export.urechi')}
                       title={titluDeschis ?? t('export.urechi.titlu')} onChange={(ev) => { schimba(o.cheie, { urechi: ev.target.checked }); }} />
@@ -669,10 +690,9 @@ export function DialogExport(
           <button type="button" disabled={!valid || (cere !== undefined && !bifat)} data-buton="exporta"
             title={valid ? undefined : motivInvalid}
             onClick={() => {
-              const d = citesteNumar(diametru);
-              if (!valid || d === null) return;
+              if (!valid) return;
               onExporta({
-                origine, z0, post, unitati, diametru: d, valori: valori(),
+                origine, z0, post, unitati, valori: valori(), ...(scule.size > 1 && strategie ? { strategieScula: strategie } : {}),
                 ...(cere && bifat ? { confirmareIesire: cere } : {}),
               });
             }}>
@@ -680,7 +700,13 @@ export function DialogExport(
           </button>
           <button type="button" onClick={onInchide}>{t('export.inchide')}</button>
         </div>
-        {stare?.ok && <p role="status" data-testid="export-stare">{t('export.gata', { n: stare.linii, sha: stare.sha256 })}</p>}
+        {stare?.ok && (stare.fisiere && stare.fisiere.length > 1
+          ? (
+            <ul role="status" data-testid="export-stare">
+              {stare.fisiere.map((f) => <li key={f.nume} data-fisier={f.nume}>{t('export.gata.fisier', { nume: f.nume, n: f.linii, sha: f.sha256 })}</li>)}
+            </ul>
+          )
+          : <p role="status" data-testid="export-stare">{t('export.gata', { n: stare.linii, sha: stare.sha256 })}</p>)}
         {stare?.ok && stare.avertismente.length > 0 && (
           <ul className="avertisment" data-testid="export-avertismente">
             {stare.avertismente.map((a) => <li key={a}>{t('export.avertisment', { text: a })}</li>)}

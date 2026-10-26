@@ -30,6 +30,8 @@ export type EstimareTimp =
     readonly blocuri: number;
     /** Câte linii ale programului cer un avans peste viteza maximă a mașinii pe direcția lor (tăiat de controler). */
     readonly liniiLimitate: number;
+    /** Opririle omului (`M0`, `M1`, `M6`, cu `opriri`), al căror timp nu se estimează; altfel 0. */
+    readonly opriri: number;
   }
   /** `linie`: linia programului (de la 1), sau 0 când e vina profilului. */
   | { readonly ok: false; readonly motiv: string; readonly linie: number };
@@ -145,19 +147,24 @@ const NUMAR = /^[+-]?(\d+\.?\d*|\.\d+)$/;
 /**
  * Estimarea programului `text` pe mașina `profil`. `limite`: liniile (numărate de la 0, crescător) unde începe câte o
  * porțiune, de exemplu secțiunile postului; porțiunea 0 e tot ce vine înaintea primei limite.
+ *
+ * `opriri` (ADR 0084): programul trece prin senderul aplicației, care nu trimite liniile cu `M0`, `M1` sau `M6` (ADR 0080,
+ * regula 6) și oprește până continuă omul. O astfel de linie golește planificatorul, se numără și nu intră în timp. Fără
+ * opțiune, estimarea e a programului trimis întreg la GRBL 1.1h, care le refuză (oracolul o judecă așa).
  */
 export function estimeazaTimp(
   text: string, profil: ProfilMasina, limite: readonly number[] = [], plafonBlocuri = PLAFON_BLOCURI,
+  optiuni: { readonly opriri?: boolean } = {},
 ): EstimareTimp {
   try {
-    return estimeaza(text, profil, limite, plafonBlocuri);
+    return estimeaza(text, profil, limite, plafonBlocuri, optiuni.opriri === true);
   } catch (e) {
     if (e instanceof EroareEstimare) return { ok: false, motiv: e.message, linie: e.linie };
     throw e;
   }
 }
 
-function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[], plafonBlocuri: number): EstimareTimp {
+function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[], plafonBlocuri: number, cuOpriri: boolean): EstimareTimp {
   const axe: AxaMasina[] = AXE.map((a) => {
     const x = profil.axe[a];
     if (!x) throw new EroareEstimare(0, `profilul ${profil.nume} n-are axa ${a}`);
@@ -178,6 +185,7 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
   const acum: Acumulator[] = Array.from({ length: limite.length + 1 }, gol);
   const plan = new Planificator(fw.blocuriPlanificator, acum);
   let blocuri = 0;
+  let opriri = 0;
   const limitate = new Set<number>();
   let linieCurenta = 0;
 
@@ -326,6 +334,12 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
     linieCurenta = nr;
     const cuvinte = cuvinteLinie(linii[n] as string, nr);
     if (cuvinte.length === 0) continue;
+    // O barieră a senderului (M0, M1, M6): linia nu pleacă, programul așteaptă omul.
+    if (cuOpriri && cuvinte.some(([l, v]) => l === 'M' && (v === 0 || v === 1 || v === 6))) {
+      sincronizeaza();
+      opriri++;
+      continue;
+    }
 
     let g4 = false;
     let g49 = false;
@@ -468,7 +482,7 @@ function estimeaza(text: string, profil: ProfilMasina, limite: readonly number[]
   const total = acum.reduce<Acumulator>((s, p) => ({
     secunde: s.secunde + p.secunde, pauze: s.pauze + p.pauze, taiere: s.taiere + p.taiere, rapide: s.rapide + p.rapide,
   }), gol());
-  return { ok: true, total, portiuni: acum, blocuri, liniiLimitate: limitate.size };
+  return { ok: true, total, portiuni: acum, blocuri, liniiLimitate: limitate.size, opriri };
 }
 
 /**

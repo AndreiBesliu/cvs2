@@ -102,8 +102,8 @@ test('E05: marcajul „despărțire” pus din dialog se vede bifat la redeschid
   await page.locator('[data-buton="importa"]').click();
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/deschise"]');
-  await rand.locator('input').nth(0).fill('18');
-  await rand.locator('input').nth(1).fill('6');
+  await rand.locator('[data-camp="adancime"]').fill('18');
+  await rand.locator('[data-camp="pas"]').fill('6');
   await rand.locator('[data-camp="despartire"]').check();
   await page.locator('[data-buton="exporta"]').click();
   await page.locator('[data-camp="confirma-iesire"]').check();

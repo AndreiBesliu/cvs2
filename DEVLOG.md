@@ -3064,3 +3064,19 @@ porțile: 7 371 / 229 (o cădere `EBUSY` a Drive-ului în `test-results`, trecut
 **Publicat din nou pe test:** `publica` pe `c3f5894` (rularea 40311488776), după rapid-ul verde (40310337105); verificat: cu FluidNC
 ales, titlul e „Export G-code (FluidNC)”, iar nota numește FluidNC.
 
+## 2026-10-26 — Joburile cu mai multe freze (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește 3.8b: joburile cu mai multe freze din document (freza pe operație, jobul CAM, simularea și estimarea
+peste schimbări, fișierele separate), ca să pot încerca schimbarea sculei pe mașina simulată.”
+**Started:** 26.10, ~12:55. Felia **3.8b**, fără agenți (ADR 0084): jobul CAM cu diametrul fiecărei tăieturi și schimbările,
+ordinea grupată pe freză, simularea în grupuri, estimarea cu opririle senderului, rezumatul pe freze, freza pe rând în fereastra
+exportului, strategia și fișierele separate, panoul mașinii cu lista fișierelor și freza de montat la oprire.
+**Completed:** 26.10 14:40. Porțile: 7 381 de teste unitare (0 picate, 8 sărite), e2e 231 / 231 în Edge, emulatoarele 36 + 13;
+pornirea 95,9 / 100 kB, totalul 324,5 / 330 (strâmt: ~5,5 kB). **Găsit pe drum:** (1) gruparea pe freză pusă în `taieturiFoaie` schimba
+contractul ordinii documentului (ADR 0025 / 0037), judecat de oracolul documentului (54 de probe roșii): gruparea e acum a
+programului (`grupeazaPeScula`), lista documentului rămâne; (2) placa 2 cu o piesă pe T2 dă T2, T1, T2 (clasele nu se amestecă),
+deci fișierele separate au ordinea în nume (`-1-T2`, `-2-T1`, `-3-T2`); (3) **Drive-ul a readus o mutație deja restaurată**
+(`if (false)` în `export.ts`, după rularea de mutații): prinsă de proba fișierelor separate, apoi fiecare fișier mutat verificat
+față de textul original (`verifica-mutatii.py`), inclusiv rulările 3.7a și 3.8a (curate). Mutațiile: 23 / 28, apoi 26 / 26 pe
+codul final (două echivalente scoase); pe interfață, 5 / 5 prinse de e2e.
+

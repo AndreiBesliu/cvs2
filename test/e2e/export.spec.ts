@@ -254,7 +254,7 @@ test('virgula zecimală: „2,5” înseamnă 2,5 mm, nu 25; un text care nu e n
   await page.goto('/');
   await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
-  const pas = page.locator('[data-operatie="e1/e1"] input').nth(1);
+  const pas = page.locator('[data-operatie="e1/e1"] [data-camp="pas"]');
   await pas.fill('abc');
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
   await expect(page.getByTestId('export-invalid')).toContainText('cu punct sau cu virgulă');
@@ -269,7 +269,7 @@ test('virgula zecimală: „2,5” înseamnă 2,5 mm, nu 25; un text care nu e n
   // Redeschis, în română, pasul se arată cu virgulă, cum l-a scris omul.
   await page.getByRole('button', { name: 'Închide' }).click();
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('[data-operatie="e1/e1"] input').nth(1)).toHaveValue('2,5');
+  await expect(page.locator('[data-operatie="e1/e1"] [data-camp="pas"]')).toHaveValue('2,5');
 });
 
 test('regiunea păstrată (ADR 0026): două dreptunghiuri puse unul peste altul nu se exportă, iar motivul se vede', async ({ page }) => {
@@ -326,8 +326,8 @@ test('urechile (ADR 0028): bifate pe dreptunghi, cu implicitele 4 × 8 × 2, pal
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/e1"]');
   // Tăiat prin foaia de 18, în treceri de 6.
-  await rand.locator('input').nth(0).fill('18');
-  await rand.locator('input').nth(1).fill('6');
+  await rand.locator('[data-camp="adancime"]').fill('18');
+  await rand.locator('[data-camp="pas"]').fill('6');
   const bifa = rand.locator('[data-camp="urechi"]');
   await expect(bifa).not.toBeChecked();
   await expect(page.locator('[data-urechi="e1/e1"]')).toHaveCount(0);
@@ -380,8 +380,8 @@ test('rampa (ADR 0029): bifată pe dreptunghi, freza coboară pe buclă, nu drep
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/e1"]');
-  await rand.locator('input').nth(0).fill('12');
-  await rand.locator('input').nth(1).fill('4');
+  await rand.locator('[data-camp="adancime"]').fill('12');
+  await rand.locator('[data-camp="pas"]').fill('4');
   const bifa = rand.locator('[data-camp="rampa"]');
   await expect(bifa).not.toBeChecked();
   await expect(page.locator('[data-rampa="e1/e1"]')).toHaveCount(0);
@@ -475,8 +475,8 @@ test('intrările cu rampă (ADR 0031): rampa coboară pe sfertul intrării, la f
   await adauga(page, 'dreptunghi');
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/e1"]');
-  await rand.locator('input').nth(0).fill('12');
-  await rand.locator('input').nth(1).fill('4');
+  await rand.locator('[data-camp="adancime"]').fill('12');
+  await rand.locator('[data-camp="pas"]').fill('4');
   await rand.locator('[data-camp="rampa"]').check();
   const nota = page.locator('[data-rampa="e1/e1"] [data-nota="rampa-pe-intrare"]');
   await expect(nota).toHaveCount(0);

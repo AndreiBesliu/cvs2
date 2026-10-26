@@ -12,7 +12,11 @@ import { numar, rotunjit, textAscii } from './numere.ts';
  * element sau operație, până la secțiunea următoare. Ultima, fără element, e finalul (retragerea, M5). Postul doar trece
  * mai departe ce scrie în etichetă; rezumatul jobului le citește.
  */
-export type Sectiune = { readonly linie: number; readonly element?: string; readonly operatie?: string };
+export type Sectiune = {
+  readonly linie: number; readonly element?: string; readonly operatie?: string;
+  /** De aici e montată scula asta (ADR 0084): secțiunea de după o schimbare (blocul de după, fără operație). */
+  readonly scula?: number;
+};
 
 export type RezultatPost =
   /** `aproximari`: câte arce au ieșit segmente G1 (raza peste gardă, elicea nedeclarată), cu abaterea ≤ TOLERANTA_APROXIMARE. */
@@ -339,6 +343,8 @@ function scrie(
           comentariu(descrieScula(s));
           adauga(`T${s.numar} M6`);
         }
+        // Ce urmează e al noii scule (rezumatul pe scule): blocul de după, apoi operațiile ei.
+        sectiuni.push({ linie: linii.length, scula: s.numar });
         // Blocul de după (PORTARE §3.4): starea modală întâi (palparea sau o comandă a omului pot lăsa G91 / G20), WCS-ul,
         // Z sigur, axul cu turația noii scule și pauza; F se scrie din nou la prima tăiere. XY nu se mai știe: următoarea
         // deplasare se scrie întreagă.

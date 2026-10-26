@@ -41,6 +41,8 @@ export const enMasina = {
   'masina.faza.golire': 'finishing the moves before a stop',
   'masina.faza.bariera': 'stopped at line {linie}',
   'masina.faza.bariera.scula': 'stopped at line {linie} for a tool change: the spindle is off',
+  'masina.faza.bariera.montare': 'stopped at line {linie}: mount {scula}, jog up, probe Z, then Continue',
+  'masina.program.export.fisier': 'File of the last export',
   'masina.faza.terminare': 'all sent, finishing',
   'masina.faza.terminat': 'done',
   'masina.faza.pierdut': 'interrupted ({motiv}): start again from the beginning',

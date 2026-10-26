@@ -494,7 +494,7 @@ test('editarea după plasare (ADR 0053): laturile și raza colțurilor dreptungh
 /** Exportul G-code, ca omul: dialogul, descărcarea, închiderea; întoarce textul fișierului. */
 async function exportGcode(page: Page): Promise<string> {
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('[data-camp="diametru"]')).toHaveValue('6');
+  for (const d of await page.locator('[data-camp="diametru"]').all()) await expect(d).toHaveValue('6');
   const d = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
   const text = readFileSync(await (await d).path(), 'ascii');

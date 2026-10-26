@@ -10,13 +10,15 @@
  */
 import { calculeazaBanda, mutariPentruBanda, previzualizarePentru, uneste, type CerereBanda, type RaspunsBanda, type Relief, type RezumatSimulare } from '../sim/banda.ts';
 import type { ParametriCamp } from '../sim/camp.ts';
-import type { DateScula } from '../sim/nucleu.ts';
+import type { DateScula, GrupSimulare } from '../sim/nucleu.ts';
 import type { MesajSimulare, RaspunsSimulare } from './protocolSimulare.ts';
 
 export type CerereSimulare = {
   readonly camp: ParametriCamp;
   readonly scula: DateScula;
   readonly mutari: Float64Array;
+  /** Grupurile de după fiecare schimbare a sculei (ADR 0084). */
+  readonly apoi?: readonly GrupSimulare[];
   readonly fund: number;
   /** Relieful vederii 3D (ADR 0057), dacă e cerut (`reliefPentru`). */
   readonly relief?: Relief;
@@ -94,7 +96,7 @@ function inWorkere(cereri: readonly CerereBanda[], semnal: AbortSignal | undefin
       w.onerror = (e) => { e.preventDefault(); cade(new Error(`workerul simulării a căzut: ${e.message || 'fără mesaj'}`)); };
       w.onmessageerror = () => { cade(new Error('workerul simulării a trimis un mesaj necitibil')); };
       const m: MesajSimulare = { id: k + 1, cerere };
-      w.postMessage(m, [cerere.mutari.buffer as ArrayBuffer]);
+      w.postMessage(m, [cerere.mutari.buffer, ...(cerere.apoi ?? []).map((g) => g.mutari.buffer)] as ArrayBuffer[]);
     });
   });
 }
@@ -110,6 +112,7 @@ export async function simuleazaInBazin(c: CerereSimulare, fire = fireImplicite()
     cereri.push({
       camp: c.camp, banda, scula: c.scula, fund: c.fund, previzualizare, ...(c.relief ? { relief: c.relief } : {}),
       mutari: mutariPentruBanda(c.mutari, c.scula, c.camp, banda),
+      ...(c.apoi ? { apoi: c.apoi.map((g) => ({ scula: g.scula, mutari: mutariPentruBanda(g.mutari, g.scula, c.camp, banda) })) } : {}),
     });
   }
   let benzi: RaspunsBanda[];

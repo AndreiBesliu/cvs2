@@ -211,7 +211,7 @@ test('se păstrează ultimele 20 de versiuni: cele mai vechi pleacă, cea mai no
 test('operațiile stau în document (ADR 0025): adâncimea din dialog intră la Exportă, Ctrl+Z o scoate, iar după reîncărcare rămâne', async ({ page }) => {
   await page.goto('/');
   await adauga(page, 'cerc');
-  const adancime = page.locator('[data-operatie="e1/e1"] input').nth(0);
+  const adancime = page.locator('[data-operatie="e1/e1"] [data-camp="adancime"]');
   const deschide = async (): Promise<void> => { await page.locator('[data-actiune="export.gcode"]').click(); };
   const inchide = async (): Promise<void> => { await page.getByRole('button', { name: 'Închide' }).click(); };
   await deschide();
@@ -258,7 +258,7 @@ test('în fila care doar citește, operațiile din dialog nu se pot schimba, dar
   await a2.goto('/');
   await expect(a2.getByTestId('proiect')).toContainText('doar te uiți');
   await a2.locator('[data-actiune="export.gcode"]').click();
-  await expect(a2.locator('[data-operatie="e1/e1"] input').nth(0)).toBeDisabled();
+  await expect(a2.locator('[data-operatie="e1/e1"] [data-camp="adancime"]')).toBeDisabled();
   await expect(a2.locator('[data-operatie="e1/e1"] select[data-camp="latura"]')).toBeDisabled();
   await expect(a2.locator('[data-operatie="e1/e1"] select[data-camp="sens"]')).toBeDisabled();
   await expect(a2.locator('[data-camp="diametru"]')).toBeDisabled();
@@ -273,8 +273,8 @@ test('în fila care doar citește, urechile scrise de scriitor se văd, oprite, 
   // Scriitorul taie gaura prin foaie, cu urechi (implicitele: 4 × 8 × 2, deci palierul la −16).
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/e1"]');
-  await rand.locator('input').nth(0).fill('18');
-  await rand.locator('input').nth(1).fill('6');
+  await rand.locator('[data-camp="adancime"]').fill('18');
+  await rand.locator('[data-camp="pas"]').fill('6');
   await rand.locator('[data-camp="urechi"]').check();
   const d1 = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
@@ -307,13 +307,13 @@ test('dialogul din fila care citește urmează versiunile scriitorului și, dup�
   await b.goto('/');
   await expect(b.getByTestId('proiect')).toContainText('doar te uiți');
   await b.locator('[data-actiune="export.gcode"]').click();
-  const adancimeB = b.locator('[data-operatie="e1/e1"] input').nth(0);
+  const adancimeB = b.locator('[data-operatie="e1/e1"] [data-camp="adancime"]');
   await expect(adancimeB).toHaveValue('8');
   // Montajul ales în fila care citește (colțul, Z0) e al omului de aici: o versiune nouă nu-l schimbă.
   await b.locator('[data-camp="origine"]').selectOption('dreapta-sus');
   // Scriitorul schimbă adâncimea la 5 și freza la Ø8, apoi exportă: versiunea 2.
   await page.locator('[data-actiune="export.gcode"]').click();
-  await page.locator('[data-operatie="e1/e1"] input').nth(0).fill('5');
+  await page.locator('[data-operatie="e1/e1"] [data-camp="adancime"]').fill('5');
   await page.locator('[data-camp="diametru"]').fill('8');
   const da = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
@@ -342,13 +342,13 @@ test('dialogul din fila care citește urmează versiunile scriitorului și, dup�
   expect((await versiuni(b)).map(([, r]) => r)).toEqual([1, 2]);
 });
 
-test('freze amestecate într-un proiect salvat: dialogul le spune pe față, iar Exportă le aduce la freza arătată', async ({ page }) => {
+test('freze amestecate într-un proiect salvat (ADR 0084): fiecare rând își arată freza; T1 cu două diametre oprește exportul, cu motivul; cu numere diferite, un program cu schimbările', async ({ page }) => {
   await page.goto('/');
   const op = (id: string, numar: number, d: number) => ({ id, tip: 'profil', noduri: [id], scula: { numar, nume: 'freza plata', diametru: d }, latura: 'interior', adancime: 3, pas: 3 });
   const piesa = (id: string, numar: number, d: number) => ({
     id, radacina: { tip: 'element', id, forma: { tip: 'cerc', raza: 10 }, matrice: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } }, operatii: [op(id, numar, d)],
   });
-  // Trei freze: T2 Ø6 diferă de T1 Ø6 doar prin număr, T1 Ø8 doar prin diametru. Exportul le compară pe amândouă.
+  // Trei freze: T2 Ø6 diferă de T1 Ø6 doar prin număr, T1 Ø8 doar prin diametru: același T cu două diametre.
   const doc = {
     schema: 3, rev: 5, piese: [piesa('a', 1, 6), piesa('b', 2, 6), piesa('c', 1, 8)],
     foi: [{
@@ -360,15 +360,27 @@ test('freze amestecate într-un proiect salvat: dialogul le spune pe față, iar
   await page.reload();
   await expect(randuri(page)).toHaveCount(3);
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.getByTestId('freze-diferite')).toContainText('T1 Ø6, T2 Ø6, T1 Ø8');
-  await expect(page.locator('[data-camp="diametru"]')).toHaveValue('6');
+  const scula = (r: string) => page.locator(`[data-operatie="${r}/${r}"] [data-camp="scula"]`);
+  const diametru = (r: string) => page.locator(`[data-operatie="${r}/${r}"] [data-camp="diametru"]`);
+  await expect(scula('a')).toHaveValue('1');
+  await expect(scula('b')).toHaveValue('2');
+  await expect(diametru('c')).toHaveValue('8');
+  await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
+  await expect(page.getByTestId('export-invalid')).toContainText('T1 are două diametre (6, 8 mm): fiecare freză cere numărul ei.');
+  await scula('c').fill('3');
+  await expect(page.locator('[data-buton="exporta"]')).toBeEnabled();
+  await expect(page.locator('[data-camp="strategie"]')).toHaveValue('bariera-sender');
   const d = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
-  // Un singur program, cu T1 Ø6 pentru toate trei (altfel CAM-ul l-ar fi refuzat: „altă sculă”).
-  expect(readFileSync(await (await d).path(), 'ascii')).toContain('(scula T1 freza plata D6.000)');
+  const text = readFileSync(await (await d).path(), 'ascii');
+  expect(text).toContain('(scula T1 freza plata D6.000)');
+  expect(text.split('\n').filter((l) => / M6$/.test(l))).toEqual(['T2 M6', 'T3 M6']);
+  await expect(page.locator('[data-rezumat="opriri"]')).toContainText('Plus 2 opriri pentru schimbarea frezei');
   await page.getByRole('button', { name: 'Închide' }).click();
+  // Frezele rândurilor au intrat în document: la redeschidere, T3 Ø8 rămâne.
   await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.getByTestId('freze-diferite')).toHaveCount(0);
+  await expect(scula('c')).toHaveValue('3');
+  await expect(diametru('c')).toHaveValue('8');
 });
 
 test('o versiune pe care fila care citește n-o poate deschide: o spune, iar la preluare lasă blocarea altei file', async ({ page, context }) => {

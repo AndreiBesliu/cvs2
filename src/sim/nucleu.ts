@@ -31,6 +31,9 @@ const DOI_PI = 6.283185307179586;
 /** Scula ca date (o primește workerul): forma și diametrul. */
 export type DateScula = { readonly forma: FormaScula; readonly diametru: number };
 
+/** Mutările unei scule (ADR 0084): după o schimbare, aceeași foaie se taie mai departe cu alta. */
+export type GrupSimulare = { readonly scula: DateScula; readonly mutari: Float64Array };
+
 /** Silueta: felul (0 plată, 1 bilă, 2 V), raza, pătratul ei și panta V-ului (h = k·r). */
 export type Silueta = { readonly fel: 0 | 1 | 2; readonly R: number; readonly R2: number; readonly k: number };
 

@@ -169,6 +169,60 @@ test('în alarmă (palparea fără atingere): jog-ul și zero-ul refuzate, cu mo
   await expect(page.getByTestId('masina-wcs-nepotrivit')).toHaveCount(0);
 });
 
+/** Exportul cu două freze (ADR 0084): cercul (gaura, se taie întâi) cu T2 Ø3, dreptunghiul cu T1 Ø6. */
+async function exportDouaFreze(page: import('@playwright/test').Page, strategie?: string): Promise<string[]> {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const rand = page.locator('[data-operatie="e2/e2"]');
+  await rand.locator('[data-camp="scula"]').fill('2');
+  await rand.locator('[data-camp="diametru"]').fill('3');
+  await expect(page.locator('[data-camp="strategie"]')).toHaveValue('bariera-sender');
+  if (strategie) await page.locator('[data-camp="strategie"]').selectOption(strategie);
+  const nume: string[] = [];
+  page.on('download', (d) => { nume.push(d.suggestedFilename()); });
+  await page.locator('[data-buton="exporta"]').click();
+  await expect(page.getByTestId('export-stare')).toContainText('Descărcat');
+  await page.getByRole('button', { name: 'Închide' }).click();
+  return nume;
+}
+
+test('două freze pe mașina simulată (ADR 0084): lucrarea se oprește la schimbare, spune freza de montat; palparea, Continuă, gata', async ({ page }) => {
+  const nume = await exportDouaFreze(page);
+  expect(nume).toEqual(['cncvs2-stanga-jos.nc']);
+  await simulata(page);
+  await page.locator('[data-masina="export"]').click();
+  await page.locator('[data-masina="start"]').click();
+  await expect(page.getByTestId('masina-faza')).toHaveAttribute('data-faza', 'bariera', { timeout: 60_000 });
+  // Gaura (T2) s-a tăiat; urmează dreptunghiul, cu T1.
+  await expect(page.getByTestId('masina-faza')).toContainText('montează T1 freza plata D6.000');
+  // La oprire, freza e la Z sigur (5), peste placa simulată (Z −25): palparea o găsește la 30 mm.
+  await page.locator('[data-masina="palpeaza"]').click();
+  await expect(page.getByTestId('masina-procedura')).toContainText('Z0 scris în G54', { timeout: 30_000 });
+  await page.locator('[data-masina="continua"]').click();
+  await expect(page.getByTestId('masina-faza')).toHaveAttribute('data-faza', 'terminat', { timeout: 60_000 });
+  await expect(page.getByTestId('masina-erori')).toHaveCount(0);
+  await expect(page.getByTestId('masina-jurnal')).not.toContainText('T1 M6');
+  await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
+});
+
+test('câte un fișier pe freză (ADR 0084): două descărcări, în ordine; panoul mașinii alege fișierul de încărcat', async ({ page }) => {
+  const nume = await exportDouaFreze(page, 'fisiere-separate');
+  await expect.poll(() => nume.length).toBe(2);
+  expect(nume).toEqual(['cncvs2-stanga-jos-1-T2.nc', 'cncvs2-stanga-jos-2-T1.nc']);
+  await expect(page.getByTestId('export-stare')).toHaveCount(0);
+  await simulata(page);
+  const alege = page.locator('[data-masina="export-fisier"]');
+  await expect(alege.locator('option')).toHaveText(nume);
+  await alege.selectOption({ label: 'cncvs2-stanga-jos-2-T1.nc' });
+  await page.locator('[data-masina="export"]').click();
+  await expect(page.getByTestId('masina-program')).toContainText('cncvs2-stanga-jos-2-T1.nc');
+  await page.locator('[data-masina="start"]').click();
+  await expect(page.getByTestId('masina-faza')).toHaveAttribute('data-faza', 'terminat', { timeout: 60_000 });
+  await expect(page.getByTestId('masina-erori')).toHaveCount(0);
+});
+
 test.describe('în engleză', () => {
   test.use({ locale: 'en-US' });
   test('jurnalul sesiunii e în limba omului: „connected to the simulated machine”, „disconnected”', async ({ page }) => {

@@ -205,7 +205,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     lista: true, proprietati: matchMedia('(min-width: 64rem)').matches, masina: false,
   }));
   /** Programul ultimului export (octeții exacți, amprenta), pentru panoul mașinii (ADR 0081): doar cât e deschisă pagina. */
-  const [ultimulExport, setUltimulExport] = useState<{ readonly octeti: Uint8Array; readonly sha256: string; readonly nume: string } | null>(null);
+  // Fișierele ultimului export (unul, sau câte unul pe freză, ADR 0084), pentru panoul mașinii.
+  const [ultimulExport, setUltimulExport] = useState<readonly { readonly octeti: Uint8Array; readonly sha256: string; readonly nume: string }[] | null>(null);
   const comutaPanou = (p: IdPanou): void => { setPanouri((s) => ({ ...s, [p]: !s[p] })); };
   /** Cursorul pe foaie și scara vederii, pentru cipurile de jos: se schimbă des, deci doar cipul lor se redesenează. */
   const [cursor] = useState(() => semnal<PunctFoaie | null>(null));
@@ -334,12 +335,20 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       if (cerere !== cerereExport.current) return;
       exportInCurs.current = false;
       if (r.ok) {
-        const numeFisier = `cncvs2-${p?.origine ?? 'stanga-jos'}.${r.program.extensie}`;
-        descarca(r.program.octeti, numeFisier);
-        setUltimulExport({ octeti: r.program.octeti, sha256: r.program.sha256, nume: numeFisier });
+        // Un fișier, sau câte unul pe freză (ADR 0084): numele poartă atunci ordinea și numărul frezei (aceeași freză poate
+        // reveni: interioarele, apoi exterioarele).
+        const baza = `cncvs2-${p?.origine ?? 'stanga-jos'}`;
+        const fisiere = r.fisiere.map((f, k) => ({
+          octeti: f.octeti, sha256: f.sha256, linii: f.linii, nume: f.scula ? `${baza}-${k + 1}-T${f.scula.numar}.${f.extensie}` : `${baza}.${f.extensie}`,
+        }));
+        for (const f of fisiere) descarca(f.octeti, f.nume);
+        setUltimulExport(fisiere.map(({ octeti, sha256, nume }) => ({ octeti, sha256, nume })));
         // Exportul tocmai a scris operațiile: traseul arătat se reface pe documentul exportat.
         if (traseuArat.current) calculeazaTraseu();
-        setStareExport({ ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente, rezumat: r.rezumat, simulare: 'calcul' });
+        setStareExport({
+          ok: true, linii: r.program.linii, sha256: r.program.sha256, avertismente: r.avertismente, rezumat: r.rezumat, simulare: 'calcul',
+          ...(fisiere.length > 1 ? { fisiere: fisiere.map(({ nume, linii, sha256 }) => ({ nume, linii, sha256 })) } : {}),
+        });
         // Simularea vine după fișier: descărcarea nu o așteaptă. Un eșec al ei (nu un refuz) intră în jurnal.
         opresteSimularea();
         const ac = new AbortController();
@@ -632,11 +641,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       setStareExport({ ok: false, motiv: t(scris.motiv) });
       return;
     }
-    const { origine, z0, post, unitati } = c;
+    const { origine, z0, post, unitati, strategieScula } = c;
     exportInCurs.current = true;
     opresteSimularea();
     const r = ruleaza(registruExport, 'export.gcode', contextExport({
-      origine, z0, ...(post ? { post } : {}), ...(unitati ? { unitati } : {}), ...(c.confirmareIesire ? { confirmareIesire: c.confirmareIesire } : {}),
+      origine, z0, ...(post ? { post } : {}), ...(unitati ? { unitati } : {}), ...(strategieScula ? { strategieScula } : {}),
+      ...(c.confirmareIesire ? { confirmareIesire: c.confirmareIesire } : {}),
       ...(setariMasina.trim() !== '' ? { setariMasina } : {}),
     }, ++cerereExport.current));
     // Un export refuzat înainte de calcul (nimic de exportat, nicio operație) spune de ce, nu lasă rezultatul vechi.

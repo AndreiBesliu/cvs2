@@ -121,3 +121,27 @@ export function taieturiFoaie(doc: Document, indexFoaie = 0): Taietura[] {
   // Sortarea e stabilă: în aceeași clasă rămâne ordinea de mai sus.
   return rez.sort((a, b) => clasa(a) - clasa(b));
 }
+
+/**
+ * Ordinea programului cu mai multe freze (ADR 0084): tăieturile contractului (`taieturiFoaie`), cu fiecare clasă grupată pe
+ * sculă, ca schimbările să fie cât mai puține: întâi scula montată la capătul clasei de dinainte, apoi celelalte în ordinea
+ * în care apar; în fiecare grup, ordinea contractului. Clasele rămân în ordinea lor (interioarele tot întâi). Cu o singură
+ * sculă, chiar ordinea contractului.
+ */
+export function grupeazaPeScula(taieturi: readonly Taietura[]): Taietura[] {
+  const cheie = (x: Taietura): string => `${x.scula.numar}/${x.scula.diametru}`;
+  const ordonate: Taietura[] = [];
+  let montata: string | null = null;
+  for (let i = 0; i < taieturi.length;) {
+    let j = i;
+    while (j < taieturi.length && clasa(taieturi[j] as Taietura) === clasa(taieturi[i] as Taietura)) j++;
+    const grupuri = new Map<string, Taietura[]>();
+    for (const x of taieturi.slice(i, j)) grupuri.set(cheie(x), [...(grupuri.get(cheie(x)) ?? []), x]);
+    const chei = [...grupuri.keys()];
+    if (montata !== null && grupuri.has(montata)) chei.sort((a, b) => Number(b === montata) - Number(a === montata));
+    for (const k of chei) ordonate.push(...(grupuri.get(k) ?? []));
+    montata = chei.at(-1) ?? montata;
+    i = j;
+  }
+  return ordonate;
+}

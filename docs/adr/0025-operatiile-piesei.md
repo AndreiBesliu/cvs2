@@ -48,7 +48,7 @@ din document.
    în dialog. Numele nu schimbă ce face mașina.
 2. **O formă nouă (Adaugă) primește freza foii** când toate operațiile de pe foaie au una singură; altfel, implicita
    (T1, Ø6). Așa, un document făcut doar din interfață are o singură sculă.
-3. **Dialogul are o singură freză** până la schimbarea sculei (etapa 3): la Exportă, toate operațiile de pe foaie primesc
+3. **(Schimbat de ADR 0084: fiecare rând are freza lui.)** **Dialogul are o singură freză** până la schimbarea sculei (etapa 3): la Exportă, toate operațiile de pe foaie primesc
    numărul primei operații și diametrul din dialog. Când operațiile au freze diferite (un proiect vechi sau importat),
    dialogul o spune pe față, cu fiecare freză (`T1 Ø6, T2 Ø6`), înainte de unificare.
 4. **Numerele din dialog** se scriu cu punct sau cu virgulă zecimală și nimic altceva (`src/ui/numar.ts`); un text care

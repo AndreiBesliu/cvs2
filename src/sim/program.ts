@@ -6,13 +6,15 @@
  * - eticheta, axul și pauza nu mișcă nimic; mutările întregi deasupra feței nu se trimit nucleului;
  * - arcele rămân arce (centrul, sensul și baleiajul, cu regula IR-ului: start = capăt înseamnă cercul întreg), nu se sparg
  *   în segmente; elicea (Z diferit la capete) doar cu freza plată;
- * - axa A e refuzată explicit (T22, ADR 0022: simularea e pe XYZ în v1).
+ * - axa A e refuzată explicit (T22, ADR 0022: simularea e pe XYZ în v1);
+ * - o schimbare a sculei (ADR 0084) începe un grup nou, cu scula ei: primul grup e `scula` + `mutari`, celelalte, în ordine,
+ *   `apoi`; nucleul le taie pe același câmp, unul după altul.
  */
 import type { Miscare, Program } from '../ir/ir.ts';
-import { ARC_ORAR, ARC_TRIG, LINIE, STRIDE, type DateScula } from './nucleu.ts';
+import { ARC_ORAR, ARC_TRIG, LINIE, STRIDE, type DateScula, type GrupSimulare } from './nucleu.ts';
 import { atan2D } from './unghi.ts';
 
-export { STRIDE, type DateScula } from './nucleu.ts';
+export { STRIDE, type DateScula, type GrupSimulare } from './nucleu.ts';
 
 /** Diametrul cel mai mare pe care îl primește nucleul (un plafon de bun-simț; documentul are plafonul lui). */
 export const DIAMETRU_MAXIM = 1000;
@@ -20,7 +22,8 @@ export const DIAMETRU_MAXIM = 1000;
 const DOI_PI = 6.283185307179586;
 
 export type ProgramSimulat =
-  | { readonly ok: true; readonly mutari: Float64Array; readonly scula: DateScula }
+  /** `apoi`: grupurile de după fiecare schimbare a sculei, în ordine; lipsă cu o singură sculă. */
+  | { readonly ok: true; readonly mutari: Float64Array; readonly scula: DateScula; readonly apoi?: readonly GrupSimulare[] }
   /** `miscare`: indexul mișcării refuzate în program (−1: programul întreg, de exemplu scula). */
   | { readonly ok: false; readonly motiv: string; readonly miscare: number };
 
@@ -28,8 +31,8 @@ function refuz(motiv: string, miscare: number): ProgramSimulat {
   return { ok: false, motiv, miscare };
 }
 
-function sculaRefuzata(p: Program): string | null {
-  const { diametru, forma } = p.scula;
+function sculaRefuzata(s: Program['scula']): string | null {
+  const { diametru, forma } = s;
   if (!(Number.isFinite(diametru) && diametru > 0 && diametru <= DIAMETRU_MAXIM)) {
     return `scula are diametrul ${diametru}, în afara (0, ${DIAMETRU_MAXIM}] mm`;
   }
@@ -43,14 +46,21 @@ const finit = (v: number | undefined): boolean => v === undefined || Number.isFi
 
 export function pregatesteProgram(p: Program, sus: number): ProgramSimulat {
   if (p.axe.some((a) => a !== 'X' && a !== 'Y' && a !== 'Z')) return refuz('axa A nu se simulează în v1 (doar X, Y, Z)', -1);
-  const s = sculaRefuzata(p);
+  const s = sculaRefuzata(p.scula);
   if (s) return refuz(s, -1);
-  const forma = p.scula.forma ?? { tip: 'plata' as const };
-  const out: number[] = [];
+  let forma = p.scula.forma ?? { tip: 'plata' as const };
+  let out: number[] = [];
+  const grupuri: { scula: DateScula; out: number[] }[] = [{ scula: { forma, diametru: p.scula.diametru }, out }];
   let x: number | undefined, y: number | undefined, z: number | undefined;
   for (const [q, m] of p.miscari.entries()) {
-    // O singură sculă pe simulare: după o schimbare, alt diametru ar tăia cu cel vechi, pe tăcute (ADR 0083; vine cu 3.8b).
-    if (m.tip === 'schimba-scula') return refuz('schimbarea sculei nu se simulează încă (o singură sculă pe program)', q);
+    if (m.tip === 'schimba-scula') {
+      const r = sculaRefuzata(m.scula);
+      if (r) return refuz(r, q);
+      forma = m.scula.forma ?? { tip: 'plata' as const };
+      out = [];
+      grupuri.push({ scula: { forma, diametru: m.scula.diametru }, out });
+      continue;
+    }
     if (m.tip !== 'rapida' && m.tip !== 'taiere' && m.tip !== 'arc') continue;
     const la = m.la;
     if (la.A !== undefined) return refuz('axa A nu se simulează în v1 (doar X, Y, Z)', q);
@@ -73,7 +83,9 @@ export function pregatesteProgram(p: Program, sus: number): ProgramSimulat {
     }
     x = nx; y = ny; z = nz;
   }
-  return { ok: true, mutari: Float64Array.from(out), scula: { forma, diametru: p.scula.diametru } };
+  const [prim, ...rest] = grupuri;
+  const apoi = rest.map((g) => ({ scula: g.scula, mutari: Float64Array.from(g.out) }));
+  return { ok: true, mutari: Float64Array.from(prim?.out ?? []), scula: prim?.scula ?? { forma, diametru: p.scula.diametru }, ...(apoi.length > 0 ? { apoi } : {}) };
 }
 
 /**

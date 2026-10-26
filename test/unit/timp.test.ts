@@ -286,3 +286,16 @@ test('ce nu se poate estima e refuzat cu linia: planul G18, arcul cu R, M0 (timp
     if (!r.ok) assert.equal(r.linie, linie, `${text}: ${r.motiv}`);
   }
 });
+
+test('opririle senderului (ADR 0084): cu `opriri`, liniile cu M0, M1 sau M6 nu se trimit: golesc planificatorul, se numără, fără timp', () => {
+  const cu = ok(estimeazaTimp(linii('G1 X10 F600', 'T2 M6', 'G1 X20', 'M0', 'G1 X30', 'M1'), profil(), [], undefined, { opriri: true }));
+  // Pe hârtie: ca trei programe separate (fiecare linie din repaus în repaus), adică liniile despărțite de G4 P0 (golire, 0 s).
+  const g4 = ok(estimeazaTimp(linii('G1 X10 F600', 'G4 P0', 'G1 X20', 'G4 P0', 'G1 X30'), profil()));
+  aproape(cu.total.secunde, g4.total.secunde, 1e-12, 'timpul');
+  assert.equal(cu.opriri, 3);
+  assert.equal(ok(estimeazaTimp(linii('G1 X10 F600', 'G1 X20'), profil())).opriri, 0);
+  // Fără opțiune, programul e al GRBL 1.1h, care le refuză (oracolul o judecă așa).
+  assert.equal(estimeazaTimp(linii('G1 X10 F600', 'T2 M6'), profil()).ok, false);
+  // T-ul liniei de oprire nu se citește: un T peste 255 acolo nu contează (linia nu pleacă).
+  assert.equal(ok(estimeazaTimp(linii('G1 X10 F600', 'T300 M6'), profil(), [], undefined, { opriri: true })).opriri, 1);
+});

@@ -123,7 +123,7 @@ const CONTROALE_MASINA: Readonly<Record<string, string | null>> = {
   conecteaza: 'masina.conecteaza', simulata: 'masina.simulata', viteza: 'masina.viteza', deconecteaza: 'masina.deconecteaza',
   export: 'masina.program.export', fisier: 'masina.program.fisier', 'fisier-ales': null, start: 'masina.start', reia: 'masina.reia',
   continua: 'masina.continua', pauza: 'masina.pauza', eliberare: 'masina.eliberare', opreste: 'masina.opreste',
-  deblocheaza: 'masina.deblocheaza', comanda: 'masina.comanda', trimite: null,
+  deblocheaza: 'masina.deblocheaza', comanda: 'masina.comanda', trimite: null, 'export-fisier': 'masina.program.export.fisier',
   wcs: 'masina.wcs', 'wcs-program': 'masina.wcs.treci', jog: 'masina.jog', 'pas-jog': 'masina.jog.pas', 'avans-jog': 'masina.jog.avans',
   'anuleaza-jog': 'masina.jog.opreste', 'zero-xy': 'masina.zero.xy', 'zero-z': 'masina.zero.z', 'palpare-grosime': 'masina.palpare.grosime',
   'palpare-distanta': 'masina.palpare.distanta', 'palpare-avans': 'masina.palpare.avans', palpeaza: 'masina.palpare.porneste',

@@ -44,6 +44,8 @@ export const roMasina = {
   'masina.faza.golire': 'se termină mișcările dinaintea unei opriri',
   'masina.faza.bariera': 'oprită la linia {linie}',
   'masina.faza.bariera.scula': 'oprită la linia {linie} pentru schimbarea sculei: axul e oprit',
+  'masina.faza.bariera.montare': 'oprită la linia {linie}: montează {scula}, ridică freza, palpează Z, apoi Continuă',
+  'masina.program.export.fisier': 'Fișierul ultimului export',
   'masina.faza.terminare': 'totul trimis, se termină',
   'masina.faza.terminat': 'gata',
   'masina.faza.pierdut': 'întreruptă ({motiv}): se pornește din nou de la început',

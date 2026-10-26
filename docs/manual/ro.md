@@ -84,7 +84,7 @@ nouă, cu operația ei implicită; unealta rămâne aleasă pentru forma următo
 
 **Operația implicită** a unei forme noi: cercul e o gaură (profil interior, 8 mm în două treceri), dreptunghiul, elipsa,
 poligonul și conturul închis sunt insule (profil exterior, 3 mm), iar linia se taie pe linie, un canal de cel mult 1 mm.
-Freza e cea a foii (la început, freza plată Ø6). Operațiile se schimbă la export: vezi [Operațiile](#operatii).
+Freza e cea a foii (la început, freza plată Ø6); fiecare operație poate avea alta, în fereastra exportului: vezi [Operațiile](#operatii).
 
 În paleta de comenzi mai sunt **Adaugă dreptunghi** (100 × 60 mm) și **Adaugă cerc** (raza 15 mm), care pun forma într-un
 loc fix pe foaie.
@@ -375,7 +375,13 @@ ascunde. Dacă programul nu se poate calcula, semnul spune de ce. Traseul cere W
 - **Postul**: controlerul mașinii, din familia GRBL (GRBL 1.1, grblHAL, FluidNC). Un post scris doar după documentația
   controlerului, încă neprobat pe o mașină, poartă o notă: urmărește primul program în aer;
 - **Unitățile**: mm (implicit) sau inch (G20, cu 5 zecimale și avansul în inch/min); antetul rămâne în mm;
-- **freza plată Ø** (mm).
+- **Schimbarea frezei**, doar când rândurile au freze diferite: **oprire în senderul aplicației** (implicit: lucrarea se
+  oprește la `T… M6`, scoți freza, o pui pe următoarea, palpezi Z și **Continui**), **M6 la controler** (grblHAL, FluidNC, cu
+  schimbarea configurată acolo), **M0, cu freza în comentariu** sau **câte un fișier pe freză** (se descarcă toate).
+
+Fiecare rând are **freza** lui: numărul sculei (T) și diametrul frezei plate (mm). Rândurile cu freze diferite se taie cu o
+schimbare între ele: în fiecare clasă (interioarele, apoi pe linie, apoi exterioarele), întâi freza deja montată, ca
+schimbările să fie cât mai puține. Același număr cu două diametre e refuzat: fiecare freză cere numărul ei.
 
 Butonul **Exportă** descarcă fișierul și arată câte linii are și amprenta lui SHA-256 (cu ea verifici că pe mașină ajunge
 exact fișierul ăsta). Dacă freza ar ieși din foaie, fereastra spune cu cât și unde, iar exportul cere confirmarea ta că acolo
@@ -402,11 +408,13 @@ Panoul **Mașina** (în dreapta, sub proprietăți) trimite programul la mașin�
   fereastra exportului); **Fișier…** încarcă un G-code din alt program, verificat întâi. Un program se refuză, cu linia, dacă are
   caractere în afara ASCII (la GRBL, „ș” și „ț” ar schimba turația axului), capete de linie Windows (`\r`), linii de peste 70 de
   octeți, nu alege un sistem de coordonate (`G54`–`G59`) înaintea primei mișcări, schimbă scula (`M6`) fără să fie exportat de
-  aici sau n-are capăt de linie la sfârșit.
+  aici sau n-are capăt de linie la sfârșit. Cu câte un fișier pe freză, **Fișierul ultimului export** alege care se încarcă.
 - **Pornește** trimite programul linie cu linie, cât încape în memoria mașinii. Lucrarea arată faza și linia. **Pauză** oprește
   mișcarea (Hold), **Reia** o continuă. O eroare a mașinii pe o linie oprește lucrarea în pauză și o arată în listă; **Reia după
   eroare** continuă de la prima linie netrimisă. La o schimbare de sculă (`M6`) sau o pauză din program (`M0`), lucrarea se
-  oprește după ce mașina termină mișcările (la sculă, cu axul oprit); muți, palpezi, faci zero, apoi **Continuă**.
+  oprește după ce mașina termină mișcările (la sculă, cu axul oprit); muți, palpezi, faci zero, apoi **Continuă**. La o schimbare
+  de freză, lucrarea spune ce freză se montează (de exemplu „montează T2 freza plata D3.000”); ridică freza cu jog înainte de
+  palpare: la Z sigur e sub fața plăcii.
 - **Oprește** e repornirea mașinii (Ctrl-X): se oprește pe loc, iar lucrarea nu se mai poate relua (se pornește din nou de la
   început). La fel după o alarmă sau dacă se pierde cablul. **Deblochează ($X)** apare când mașina e în alarmă.
 - **Comanda** trimite o linie la mașină (de exemplu `$G`, `$#`, `G0 X10`), doar când nu merge o lucrare; răspunsul apare în

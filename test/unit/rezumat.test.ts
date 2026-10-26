@@ -64,7 +64,7 @@ test('rezumatul pe hârtie, implicitele GRBL 1.1h: pornirea (G0 Z5 + G4 P3) și 
   const e = await exporta(program(OP_A), MONTAJ, GRBL_11, { asteptareAx: 3 });
   assert.ok(e.ok);
   if (!e.ok) return;
-  const r = rezumatJob(e.exportat, program(OP_A).scula, undefined);
+  const r = rezumatJob(e.exportat, [program(OP_A).scula], undefined);
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
   aproape(r.restul.secunde, 4.414213562, 1e-6, 'restul');
@@ -91,7 +91,7 @@ test('două operații despărțite de o pauză: fiecare are timpul ei pe hârtie
   const e = await exporta(program(miscari), MONTAJ, GRBL_11, { asteptareAx: 3 });
   assert.ok(e.ok);
   if (!e.ok) return;
-  const r = rezumatJob(e.exportat, program(miscari).scula, undefined);
+  const r = rezumatJob(e.exportat, [program(miscari).scula], undefined);
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
   assert.deepEqual(r.peOperatie.map((o) => o.operatie), ['p1/o1', 'p1/o2']);
@@ -111,7 +111,7 @@ test('timpul traseului (ADR 0046 §8): același program, aceeași valoare pe hâ
   assert.ok(e.ok);
   if (!e.ok) return;
   // Exact rezumatul exportului cu montajul stânga-jos, Z0 sus: aceleași octeți, același timp.
-  assert.deepEqual(r, rezumatJob(e.exportat, program(OP_A).scula, undefined));
+  assert.deepEqual(r, rezumatJob(e.exportat, [program(OP_A).scula], undefined));
   // Cu `$$` lipit, profilul lui; un `$$` greșit e spus, nu ignorat.
   const rapid = timpProgram(program(OP_A), FOAIA, '$110=5000\n$111=5000\n$112=1000\n$120=500\n$121=500\n$122=200');
   assert.ok(rapid.ok && rapid.total.secunde < r.total.secunde && rapid.masina.sursa === 'setari');
@@ -128,7 +128,7 @@ test('timpul traseului pe un program pe care postul îl refuză: motivul, nu o e
 test('placa 2: fiecare operație are timpul ei, iar operațiile plus restul dau totalul; `$$` mai rapid scurtează jobul', async () => {
   const pr = await programPlaca02();
   const doc = documentPlaca02();
-  const r = rezumatJob(pr, SCULA, undefined);
+  const r = rezumatJob(pr, [SCULA], undefined);
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (!r.ok) return;
   const chei = doc.piese.flatMap((p) => p.operatii.map((o) => `${p.id}/${o.id}`)).sort();
@@ -137,7 +137,7 @@ test('placa 2: fiecare operație are timpul ei, iar operațiile plus restul dau 
   const suma = r.peOperatie.reduce((s, o) => s + o.secunde, r.restul.secunde);
   aproape(suma, r.total.secunde, 1e-6, 'suma');
   aproape(r.total.pauze, 3, 1e-12, 'o singură pauză, după M3');
-  const rapid = rezumatJob(pr, SCULA, '$110=5000\n$111=5000\n$112=1000\n$120=500\n$121=500\n$122=200\n');
+  const rapid = rezumatJob(pr, [SCULA], '$110=5000\n$111=5000\n$112=1000\n$120=500\n$121=500\n$122=200\n');
   assert.ok(rapid.ok, rapid.ok ? '' : rapid.motiv);
   if (!rapid.ok) return;
   assert.equal(rapid.masina.sursa, 'setari');
@@ -159,4 +159,56 @@ test('`$$` greșit nu oprește exportul: programul iese, rezumatul spune linia',
     assert.equal(fara.program.sha256, r.program.sha256, 'setările mașinii nu schimbă programul');
     assert.equal(fara.rezumat.ok, true);
   }
+});
+
+test('rezumatul pe scule (ADR 0084): fiecare secțiune la scula montată atunci; schimbarea, o oprire fără timp; suma sculelor = totalul', () => {
+  const T2 = { numar: 2, nume: 'freza plata', diametru: 3 };
+  const miscari: Miscare[] = [
+    ...OP_A,
+    { tip: 'schimba-scula', scula: T2, turatie: 16000 },
+    { tip: 'eticheta', text: 'b', element: 'i1/e2', operatie: 'p1/o2' },
+    { tip: 'rapida', la: { X: 40, Y: 0 } },
+    { tip: 'taiere', la: { Z: -1 }, avans: 300 },
+    { tip: 'taiere', la: { X: 60 }, avans: 1000 },
+  ];
+  const r = posteaza(program(miscari), MONTAJ, GRBL_11, { asteptareAx: 3 });
+  assert.ok(r.ok);
+  if (!r.ok) return;
+  // Secțiunea de după schimbare poartă scula nouă și începe după linia `T2 M6`.
+  const k = r.sectiuni.findIndex((s) => s.scula === 2);
+  assert.equal(r.text.split('\n')[(r.sectiuni[k]?.linie ?? 0) - 1], 'T2 M6');
+  const z = rezumatJob(r, [program(miscari).scula, T2], undefined);
+  assert.ok(z.ok);
+  if (!z.ok) return;
+  assert.equal(z.opriri, 1);
+  assert.deepEqual(z.peScula.map((s) => s.numar), [1, 2]);
+  // Pe hârtie: fiecare sculă are pauza ei de pornire a axului (G4 P3), 3 s.
+  assert.deepEqual(z.peScula.map((s) => s.pauze), [3, 3]);
+  aproape(z.peScula.reduce((s, x) => s + x.secunde, 0), z.total.secunde, 1e-9, 'suma sculelor');
+  // T2: plonjarea de la Z sigur (5, scris din nou după schimbare) la −1, apoi linia de 20.
+  aproape(z.peScula[1]?.taiere ?? 0, 6 + 20, 1e-9, 'T2: plonjarea de 6 mm și linia de 20');
+});
+
+test('fișierele separate în calculul exportului: câte unul pe freză, `program` e primul, rezumatul le adună', async () => {
+  const doc = documentPlaca02();
+  const cuDoua = { ...doc, piese: doc.piese.map((p, i) => (i === 0 ? { ...p, operatii: p.operatii.map((o) => ({ ...o, scula: { ...o.scula, numar: 2, diametru: 3 } })) } : p)) };
+  const unu = await calculeazaExport(cuDoua, { origine: 'stanga-jos', z0: 'sus' });
+  assert.ok(unu.ok, unu.ok ? '' : unu.motiv);
+  const doua = await calculeazaExport(cuDoua, { origine: 'stanga-jos', z0: 'sus', strategieScula: 'fisiere-separate' });
+  assert.ok(doua.ok, doua.ok ? '' : doua.motiv);
+  if (!unu.ok || !doua.ok) return;
+  assert.equal(unu.fisiere.length, 1);
+  assert.equal(unu.fisiere[0]?.scula, null);
+  assert.ok(unu.program.text.includes(' M6\n'));
+  // Pe placa 2, piesa întâi cu T2: interioarele T2, T1, apoi exterioarele T1 (montată), T2: două schimbări, trei fișiere, în ordine.
+  assert.equal(unu.rezumat.ok && unu.rezumat.opriri, 2);
+  assert.deepEqual(doua.fisiere.map((f) => f.scula?.numar), [2, 1, 2]);
+  assert.equal(doua.program, doua.fisiere[0]);
+  assert.ok(doua.fisiere.every((f) => !f.text.includes('M6')));
+  assert.ok(unu.rezumat.ok && doua.rezumat.ok);
+  if (!unu.rezumat.ok || !doua.rezumat.ok) return;
+  assert.equal(doua.rezumat.opriri, 0);
+  assert.deepEqual(doua.rezumat.peScula.map((s) => s.numar), [2, 1, 2]);
+  assert.deepEqual(unu.rezumat.peScula.map((s) => s.numar), [2, 1]);
+  assert.deepEqual(new Set(doua.rezumat.peOperatie.map((o) => o.operatie)), new Set(unu.rezumat.peOperatie.map((o) => o.operatie)));
 });

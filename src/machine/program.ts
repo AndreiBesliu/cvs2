@@ -101,6 +101,19 @@ export function montajDeclarat(p: ProgramIncarcat): MontajDeclarat | null {
 }
 
 /**
+ * Scula de montat la o oprire (ADR 0084): comentariul postului de dinaintea ei („(scula T2 freza plata D3.000)” sau
+ * „(SCHIMBA SCULA: T2 …, apoi zero Z)”), căutat de la două linii înaintea barierei până la ultima ei. Null: o oprire fără
+ * schimbare de sculă, sau un program care n-o descrie.
+ */
+export function sculaLaOprire(p: ProgramIncarcat, linie: number, ultima: number): string | null {
+  for (let k = Math.max(0, linie - 2); k <= ultima; k++) {
+    const m = /^\((?:scula|SCHIMBA SCULA:) (T\d+ [^,)]*)/.exec(p.linii[k]?.text ?? '');
+    if (m) return m[1] ?? null;
+  }
+  return null;
+}
+
+/**
  * Grupul de bariere care începe la linia `i`: ultima linie a grupului (cu linii goale sau doar comentarii între bariere) și
  * dacă grupul are o schimbare de sculă (`M6`). „M0, apoi T5 M6, apoi M3 S…” e o singură oprire, cu sculă.
  */

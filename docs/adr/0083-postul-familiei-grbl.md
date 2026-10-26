@@ -6,6 +6,8 @@ contracte ca date), ADR 0008 (T8: IR-ul), ADR 0022 (T22: N axe), ADR 0080 (regul
 ADR 0082 (jog-ul, zero-ul și palparea la oprire), `docs/PORTARE.md` §3.4 (blocul de după `M6` îl scrie postul). Sursa
 faptelor: sonda s8 (`docs/faza2/sonde/s8-posturi/RAPORT.md`, §5 și Anexa A.1–A.3). **Documentul:** neschimbat.
 
+**Completat de:** ADR 0084 (joburile cu mai multe freze din document; simularea nu mai refuză schimbările).
+
 **Problema.** Postul scria doar GRBL 1.1, în mm, cu o singură sculă pe program: exportul refuza operațiile cu freze diferite
 („schimbarea sculei vine în etapa 3”). Planul (§5.3, punctul 4) cere familia GRBL întreagă, cu cele 4 strategii de schimbare
 a sculei, pauza în unitatea controlerului, elicea și inch cu 5 zecimale.

@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { bariereLinie, grupBariere, incarcaProgram, linieCurata, montajDeclarat } from '../../src/machine/program.ts';
+import { bariereLinie, grupBariere, incarcaProgram, linieCurata, montajDeclarat, sculaLaOprire } from '../../src/machine/program.ts';
 import { citesteRaspuns, pozitieDeLucru, type Raport } from '../../src/machine/raspunsuri.ts';
 import { octeti } from './ajutor-sender.ts';
 
@@ -99,4 +99,26 @@ test('poziția de lucru: din WPos; din MPos − WCO (al raportului sau ultimul c
   assert.equal(pozitieDeLucru(raport('<Idle|MPos:10,20,3>'), null), null);
   assert.equal(pozitieDeLucru(raport('<Idle|MPos:10,20,3>'), [1, 2, 3, 4]), null);
   assert.equal(pozitieDeLucru(raport('<Idle|FS:0,0>'), [0, 0, 0]), null);
+});
+
+test('scula de montat la o oprire (ADR 0084): din comentariul postului, de dinainte sau din grup; M0 cu comentariu; fără, null', async () => {
+  const p = await incarcaProgram(octeti(`${ANTET}G0 Z5
+M5
+(scula T2 freza plata D3.000)
+T2 M6
+G0 Z5
+M5
+(SCHIMBA SCULA: T3 freza mare D12.000, apoi zero Z)
+M0
+G0 X1
+M0
+`), { sursa: 'export' });
+  assert.ok(p.ok);
+  if (!p.ok) return;
+  const k = p.program.linii.findIndex((l) => l.text === 'T2 M6');
+  assert.equal(sculaLaOprire(p.program, k, k), 'T2 freza plata D3.000');
+  const m0 = p.program.linii.findIndex((l) => l.text === 'M0');
+  assert.equal(sculaLaOprire(p.program, m0, m0), 'T3 freza mare D12.000');
+  const simplu = p.program.linii.length - 1;
+  assert.equal(sculaLaOprire(p.program, simplu, simplu), null, 'o pauză simplă, fără sculă');
 });

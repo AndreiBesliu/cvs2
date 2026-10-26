@@ -199,7 +199,7 @@ test('o tăietură prin foaie: harta are pixeli negri, iar simularea spune că t
   await adauga(page, 'cerc');
   await page.locator('[data-actiune="export.gcode"]').click();
   // Gaura până la fața de jos a foii implicite (18 mm).
-  await page.locator('[data-operatie] input').nth(0).fill('18');
+  await page.locator('[data-operatie] [data-camp="adancime"]').first().fill('18');
   const descarcare = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
   await descarcare;

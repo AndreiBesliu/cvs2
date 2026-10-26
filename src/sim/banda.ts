@@ -11,7 +11,7 @@
  * au, practic, aceleași celule.
  */
 import { CELULE_DALA, compacteaza, campNou, dimensiuni, LATURA_DALA, NEATINSA, numaraDale, SH, UNIFORMA, type Banda, type Camp, type ParametriCamp } from './camp.ts';
-import { raza, ruleaza, silueta, STRIDE, type DateScula } from './nucleu.ts';
+import { raza, ruleaza, silueta, STRIDE, type DateScula, type GrupSimulare } from './nucleu.ts';
 
 const P1 = 0x01000193, P2 = 0x5bd1e995;
 
@@ -50,6 +50,8 @@ export type CerereBanda = {
   readonly banda: Banda;
   readonly scula: DateScula;
   readonly mutari: Float64Array;
+  /** Grupurile de după fiecare schimbare a sculei (ADR 0084), tăiate pe același câmp, în ordine. */
+  readonly apoi?: readonly GrupSimulare[];
   /** Fața de jos a foii (−grosimea): volumul nu scoate material sub ea. */
   readonly fund: number;
   readonly previzualizare: Previzualizare;
@@ -195,6 +197,7 @@ export function calculeazaBanda(c: CerereBanda): RaspunsBanda {
   const t0 = performance.now();
   const F = campNou(c.camp, c.banda);
   ruleaza(F, c.scula, c.mutari);
+  for (const g of c.apoi ?? []) ruleaza(F, g.scula, g.mutari);
   compacteaza(F);
   const { biti, bitiUniforme } = bitiCamp(F);
   const { latime: W, bloc } = c.previzualizare;

@@ -63,6 +63,7 @@ export function ExportConectat({
         }).length,
         noduri: o.noduri.length,
         valori: {
+          scula: { numar: o.scula.numar, diametru: o.scula.diametru },
           latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
           urechi: o.urechi ? { numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime } : null,
           rampa: o.rampa ? { lungime: o.rampa.lungime } : null,
@@ -74,14 +75,9 @@ export function ExportConectat({
         },
       };
     }));
-    const operatii = lista.flatMap(({ piesa }) => piesa.operatii);
     return {
       piese: lista,
       randuri: randuriOp,
-      diametru: operatii[0]?.scula.diametru ?? 6,
-      // Freza la care Exportă aduce toate operațiile: numărul primei, cu diametrul din dialog.
-      numar: operatii[0]?.scula.numar ?? 1,
-      freze: [...new Map(operatii.map((o) => [`${o.scula.numar}/${o.scula.diametru}`, { numar: o.scula.numar, diametru: o.scula.diametru }])).values()],
       descrieri: new Map(lume.map((e) => [e.idLume, descriere(e)])),
     };
     // `limba`: descrierile sunt texte traduse.
@@ -91,7 +87,10 @@ export function ExportConectat({
   const exporta = (c: CerereExport): void => {
     const noi = new Map<string, Operatie[]>();
     for (const { piesa } of exportFoaie.piese) {
-      noi.set(piesa.id, piesa.operatii.map((o) => operatieDinDialog(o, c.valori.get(`${piesa.id}/${o.id}`), { numar: exportFoaie.numar, diametru: c.diametru })));
+      noi.set(piesa.id, piesa.operatii.map((o) => {
+        const v = c.valori.get(`${piesa.id}/${o.id}`);
+        return operatieDinDialog(o, v, v?.scula ?? o.scula);
+      }));
     }
     onExporta(noi, c);
   };
@@ -100,8 +99,6 @@ export function ExportConectat({
     <DialogExport
       baza={baza}
       operatii={exportFoaie.randuri}
-      diametru={exportFoaie.diametru}
-      freze={exportFoaie.freze}
       descrieri={exportFoaie.descrieri}
       doarCitire={doarCitire}
       stare={stare}

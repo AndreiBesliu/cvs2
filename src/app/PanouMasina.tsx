@@ -13,7 +13,7 @@ import { useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import '../i18n/masina.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import { PALPARE_IMPLICITA, WCS, esteWcs, type AxaJog, type FelMiscare, type Wcs } from '../machine/proceduri.ts';
-import { incarcaProgram, montajDeclarat, type RezultatIncarcare } from '../machine/program.ts';
+import { incarcaProgram, montajDeclarat, sculaLaOprire, type RezultatIncarcare } from '../machine/program.ts';
 import { pozitieDeLucru } from '../machine/raspunsuri.ts';
 import { deschideSerial, serialDisponibil } from '../machine/serial.ts';
 import { SesiuneMasina, type Ceas, type LinieJurnal, type Procedura, type StareSesiune } from '../machine/sesiune.ts';
@@ -76,7 +76,8 @@ const textRefuz = (r: Refuz): string => {
 };
 
 export function PanouMasina({ ultimulExport, simulare }: {
-  readonly ultimulExport: ExportPentruMasina | null;
+  /** Fișierele ultimului export: unul, sau câte unul pe freză (ADR 0084). */
+  readonly ultimulExport: readonly ExportPentruMasina[] | null;
   /** Mașina simulată se oferă (în afara instanței live). */
   readonly simulare: boolean;
 }): ReactNode {
@@ -89,6 +90,9 @@ export function PanouMasina({ ultimulExport, simulare }: {
   const vitezaRef = useRef(viteza);
   vitezaRef.current = viteza;
   const [comanda, setComanda] = useState('');
+  // Fișierul ales din ultimul export, când are câte unul pe freză (ADR 0084).
+  const [fisierAles, setFisierAles] = useState(0);
+  const exportAles = ultimulExport?.[fisierAles] ?? ultimulExport?.[0] ?? null;
   const fisier = useRef<HTMLInputElement | null>(null);
   const idComanda = useRef(0);
 
@@ -125,8 +129,12 @@ export function PanouMasina({ ultimulExport, simulare }: {
     setComanda('');
   };
 
+  // La o oprire pentru schimbarea frezei (ADR 0084), ce freză se montează, din comentariul postului.
+  const deMontat = f.faza === 'bariera' && f.bariera && f.program ? sculaLaOprire(f.program, f.bariera.linie, f.bariera.ultima) : null;
   const faza = f.faza === 'bariera' && f.bariera
-    ? t(f.bariera.m6 ? 'masina.faza.bariera.scula' : 'masina.faza.bariera', { linie: f.bariera.linie + 1 })
+    ? deMontat !== null
+      ? t('masina.faza.bariera.montare', { linie: f.bariera.linie + 1, scula: deMontat })
+      : t(f.bariera.m6 ? 'masina.faza.bariera.scula' : 'masina.faza.bariera', { linie: f.bariera.linie + 1 })
     : f.faza === 'pierdut' ? t('masina.faza.pierdut', { motiv: f.motiv ?? '' }) : t(`masina.faza.${f.faza}` as CheieSimpla);
   const inHold = r?.stare === 'Hold';
 
@@ -175,9 +183,15 @@ export function PanouMasina({ ultimulExport, simulare }: {
 
       <section aria-label={t('masina.program')}>
         <div className="masina-butoane">
-          <button type="button" data-masina="export" disabled={!ultimulExport || IN_FLUX.has(f.faza)}
-            title={ultimulExport ? t('masina.program.export.titlu') : t('masina.program.export.lipsa')}
-            onClick={() => { if (ultimulExport) void incarca(ultimulExport.octeti, 'export', ultimulExport.nume, ultimulExport.sha256); }}>
+          {ultimulExport && ultimulExport.length > 1 && (
+            <select value={fisierAles} data-masina="export-fisier" aria-label={t('masina.program.export.fisier')}
+              onChange={(e) => { setFisierAles(Number(e.target.value)); }}>
+              {ultimulExport.map((x, k) => <option key={x.nume} value={k}>{x.nume}</option>)}
+            </select>
+          )}
+          <button type="button" data-masina="export" disabled={!exportAles || IN_FLUX.has(f.faza)}
+            title={exportAles ? t('masina.program.export.titlu') : t('masina.program.export.lipsa')}
+            onClick={() => { if (exportAles) void incarca(exportAles.octeti, 'export', exportAles.nume, exportAles.sha256); }}>
             {t('masina.program.export')}
           </button>
           <button type="button" data-masina="fisier" disabled={IN_FLUX.has(f.faza)} title={t('masina.program.fisier.titlu')} onClick={() => fisier.current?.click()}>

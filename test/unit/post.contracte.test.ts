@@ -277,7 +277,7 @@ test('numărul sculei: un întreg între 0 și 255 (GRBL: error:38 peste); tura�
   assert.deepEqual(cu({}, 1.5), { ok: false, motiv: 'turație nevalidă: 1.5' });
 });
 
-test('după o schimbare: ieșirea din foaie se măsoară cu discul noii scule; simularea o refuză, cu motiv (o singură sculă, până la 3.8b)', () => {
+test('după o schimbare: ieșirea din foaie se măsoară cu discul noii scule; simularea taie mai departe cu ea (ADR 0084)', () => {
   // T2 cu Ø20 taie la 5 mm de marginea stângă: discul iese cu 5 mm; cu Ø6 n-ar ieși.
   const mare: Scula = { numar: 2, nume: 'freza mare', diametru: 20 };
   const p = program([
@@ -289,5 +289,5 @@ test('după o schimbare: ieșirea din foaie se măsoară cu discul noii scule; s
   assert.ok(ies && Math.abs(ies.depasire.stanga - 5) < 1e-9, JSON.stringify(ies?.depasire));
   assert.equal(iesireDinFoaie({ ...p, miscari: p.miscari.filter((m) => m.tip !== 'schimba-scula') }, FOAIA), null);
   const s = pregatesteProgram({ ...p, miscari: [{ tip: 'rapida', la: { Z: 5 } }, ...p.miscari] }, 0);
-  assert.deepEqual(s.ok ? null : s.motiv, 'schimbarea sculei nu se simulează încă (o singură sculă pe program)');
+  assert.ok(s.ok && s.apoi?.length === 1 && s.apoi[0]?.scula.diametru === 20);
 });

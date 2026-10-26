@@ -38,8 +38,8 @@ test('despărțirea se marchează din dialog: o linie de la o margine la alta, p
   await page.locator('[data-actiune="export.gcode"]').click();
   const rand = page.locator('[data-operatie="e1/deschise"]');
   // Adâncimea și pasul sunt primele două câmpuri de text ale rândului (ca în proiect.spec.ts).
-  await rand.locator('input').nth(0).fill('18');
-  await rand.locator('input').nth(1).fill('6');
+  await rand.locator('[data-camp="adancime"]').fill('18');
+  await rand.locator('[data-camp="pas"]').fill('6');
   await page.locator('[data-buton="exporta"]').click();
   await expect(page.getByTestId('export-stare')).toContainText('marcheaz-o «despărțire»');
   // Bifa e activă doar pe rândurile cu căi deschise.

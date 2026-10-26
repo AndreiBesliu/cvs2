@@ -87,7 +87,7 @@ its default operation; the tool stays chosen for the next shape.
 
 The **default operation** of a new shape: a circle is a hole (inside profile, 8 mm in two passes); a rectangle, an ellipse, a
 polygon and a closed outline are islands (outside profile, 3 mm); a line is cut on the line, a groove of at most 1 mm. The
-cutter is the sheet's (at first, a Ø6 flat cutter). Operations are changed at export: see [The operations](#operatii).
+cutter is the sheet's (at first, a Ø6 flat cutter); each operation can have another, in the export window: see [The operations](#operatii).
 
 The command palette also has **Add rectangle** (100 × 60 mm) and **Add circle** (radius 15 mm), which put the shape in a
 fixed place on the sheet.
@@ -389,7 +389,13 @@ browser.
 - the **Post**: the machine's controller, from the GRBL family (GRBL 1.1, grblHAL, FluidNC). A post written only from the
   controller's documentation, not yet tested on a machine, carries a note: watch the first program run in the air;
 - the **Units**: mm (the default) or inch (G20, with 5 decimals and the feed in inch/min); the header stays in mm;
-- the **flat bit Ø** (mm), the cutter for the whole sheet.
+- the **Tool change**, only when the rows have different bits: **stop in this app's sender** (the default: the job stops at
+  `T… M6`, you take the bit out, put in the next one, probe Z and **Continue**), **M6 at the controller** (grblHAL, FluidNC,
+  with the change set up there), **M0, with the bit in a comment** or **one file per bit** (all of them are downloaded).
+
+Each row has its own **bit**: the tool number (T) and the flat bit's diameter (mm). Rows with different bits are cut with a
+change between them: in each class (insides, then on the line, then outsides), the bit already mounted first, so there are as
+few changes as possible. The same number with two diameters is refused: each bit needs its own number.
 
 The **Export** button downloads the file and shows how many lines it has and its SHA-256 fingerprint (with it you check that
 exactly this file reaches the machine). If the cutter would leave the sheet, the window says by how much and where, and the
@@ -418,12 +424,13 @@ state.
   the export window); **File…** loads G-code from another program, checked first. A program is refused, with the line, if it
   has characters outside ASCII (on GRBL, “ș” and “ț” would change the spindle speed), Windows line endings (`\r`), lines over
   70 bytes, sets no work coordinate system (`G54`–`G59`) before its first move, changes the tool (`M6`) without being exported
-  from here, or has no line end at the end.
+  from here, or has no line end at the end. With one file per bit, **File of the last export** picks which one loads.
 - **Start** sends the program line by line, as much as fits in the machine’s memory. The job shows its phase and line.
   **Pause** stops the motion (Hold), **Resume** continues it. A machine error on a line stops the job on hold and lists it;
   **Resume after the error** continues from the first line not yet sent. At a tool change (`M6`) or a pause in the program
   (`M0`), the job stops once the machine has finished its moves (at a tool change, with the spindle off); you jog, probe, set
-  zero, then **Continue**.
+  zero, then **Continue**. At a bit change, the job says which bit to mount (for example “mount T2 freza plata D3.000”); jog the
+  bit up before probing: at safe Z it is below the top of the plate.
 - **Stop** is the machine’s reset (Ctrl-X): it stops at once, and the job cannot be resumed (it starts again from the
   beginning). The same after an alarm or if the cable is lost. **Unlock ($X)** shows when the machine is in alarm.
 - **Command** sends a line to the machine (for example `$G`, `$#`, `G0 X10`), only when no job is running; the reply shows in
