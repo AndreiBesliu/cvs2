@@ -3135,3 +3135,7 @@ ode_modules
 pm` golit la 17:11,
 în afara proiectului): porțile au rulat direct cu `node` (Playwright și emulatoarele printr-o configurare locală în `.tmp/`,
 cu serverul pornit fără `npm run preview`); CI-ul are npm-ul lui.
+**Publicat pe adresa principală de test:** `publica` pe `5fc443e` (rularea 40368863005), după rapid-ul verde (40367523590, cea
+mai lentă felie 8 min 17 s). Verificat după „Versiune nouă → Reîncarcă”: pagina cere cele 7 fișiere `mesaje/*.json`; editarea
+(bara), panoul mașinii, paleta, arborele și fereastra exportului își arată textele, iar după EN fereastra deschisă trece pe
+engleză („Export G-code (GRBL 1.1)”); 0 erori în jurnal; dreptunghiul de probă anulat.
