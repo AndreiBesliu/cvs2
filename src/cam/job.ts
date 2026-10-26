@@ -6,6 +6,7 @@ import { conturElement } from '../model/forme.ts';
 import { grupeazaPeScula, taieturiFoaie, type Taietura } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
+import { traseuGaurire } from './gaurire.ts';
 import { adancimiTreceri, profil } from './profil.ts';
 import { perete, regiunePastrata, verificaTaietura, type Perete } from './regiune.ts';
 import { apropiereContururi, distantaCutii } from '../geom/apropiere.ts';
@@ -39,6 +40,17 @@ function departeDeUrechi(x: Contur, c: Contur, s: number, gu: GeometrieUrechi | 
     const d = coloana.varfuri.length > 1 ? apropiereContururi(x, coloana, D).distanta : p ? distantaLaContur(p, x) : Infinity;
     return d >= D;
   });
+}
+
+/**
+ * Cercul unei găuriri, în lume (ADR 0087 §1): centrul și diametrul, din forma `cerc` și matricea elementului, care pe un cerc
+ * e o asemănare (rotire, oglindire, scară uniformă): ușa refuză arcele sub o matrice neuniformă, iar conturul tăieturii,
+ * calculat înainte, n-ar trece de `transformaContur`. Altă formă, refuzată.
+ */
+function cercInLume(t: Taietura): { readonly centru: { readonly x: number; readonly y: number }; readonly diametru: number } | string {
+  if (t.forma.tip !== 'cerc') return `${t.idLume}: găurirea cere un cerc (forma e ${t.forma.tip})`;
+  const m = t.matrice;
+  return { centru: { x: m.e, y: m.f }, diametru: 2 * t.forma.raza * Math.hypot(m.a, m.b) };
 }
 
 /**
@@ -246,6 +258,25 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
           ? `${t.idLume}: adâncimea ${t.adancime} mm trece de grosimea foii (${grosime} mm) plus supracursa (${supracursa} mm)`
           : `${t.idLume}: adâncimea ${t.adancime} mm trece de grosimea foii (${grosime} mm)`,
       };
+    }
+    // Găurirea (ADR 0087): în centru, în pași, pe un cerc cât freza; în elice, pe perete, pe unul mai mare. Ca buzunarul, nu
+    // e inel al regiunii păstrate (scoate material doar din cercul ei) și stă în cerc prin construcție.
+    if (t.tip === 'gaurire') {
+      if (t.latura !== 'interior' || t.urechi || t.rampa || t.intrari || t.colturi || t.despartire) {
+        return { ok: false, motiv: `${t.idLume}: o găurire stă înăuntrul cercului, fără urechi, rampă, intrări, degajări sau despărțire` };
+      }
+      const cerc = cercInLume(t);
+      if (typeof cerc === 'string') return { ok: false, motiv: cerc };
+      const op = doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie);
+      const g = traseuGaurire({
+        centru: cerc.centru, diametru: cerc.diametru, diametruScula: D, adancime: t.adancime, pas: t.pas,
+        retragereCompleta: op?.retragereCompleta ?? 1, trigonometric: t.sens === 'urcare', ...regim,
+      });
+      if (!g.ok) return { ok: false, motiv: `${t.idLume}: ${g.motiv}` };
+      montata(t);
+      miscari.push({ tip: 'eticheta', text: `${t.idLume}: cerc, găurire${g.fel === 'elice' ? ' în elice' : ''}, ${t.adancime} mm`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
+      for (const m of g.miscari) miscari.push(m);
+      continue;
     }
     // Buzunarul (ADR 0069): inelele dinăuntru în afară, pe fiecare trecere. Nu e inel al regiunii păstrate: scoate material
     // doar dinăuntrul conturului lui, până la adâncimea lui (§4), iar traseul lui stă înăuntru prin construcție (§5). O

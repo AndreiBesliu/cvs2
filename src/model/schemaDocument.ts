@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import { compune, esteSimilitudine, IDENTITATE } from '../geom/matrice.ts';
 import {
-  areArce, instantaPreaDeparte, noduriPiesa, numara, plafonDepasit, PLAFON, UNGHI_COBORARE_MAXIM, VERSIUNE_SCHEMA, type Document, type Nod, type Piesa,
+  areArce, instantaPreaDeparte, noduriPiesa, numara, plafonDepasit, PLAFON, RETRAGERE_COMPLETA_MAXIMA, UNGHI_COBORARE_MAXIM, VERSIUNE_SCHEMA, type Document, type Nod, type Piesa,
 } from './document.ts';
 
 /**
@@ -98,7 +98,7 @@ const SchemaNod: v.GenericSchema<unknown, Nod> = v.variant('tip', [
 
 const SchemaOperatie = v.looseObject({
   id: Id,
-  tip: v.picklist(['profil', 'buzunar']),
+  tip: v.picklist(['profil', 'buzunar', 'gaurire']),
   noduri: v.pipe(v.array(Id), v.minLength(1), v.maxLength(PLAFON.noduriOperatie)),
   scula: v.looseObject({
     numar: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(PLAFON.numarScula)),
@@ -128,6 +128,8 @@ const SchemaOperatie = v.looseObject({
     v.looseObject({ fel: v.literal('zigzag'), unghi: pozitiv(UNGHI_COBORARE_MAXIM), lungime: pozitiv(PLAFON.latura) }),
     v.looseObject({ fel: v.literal('elice'), unghi: pozitiv(UNGHI_COBORARE_MAXIM), raza: pozitiv(PLAFON.diametruScula) }),
   ])),
+  // ADR 0087: retragerea completă a găuririi (v13), un întreg; pe alt fel de operație nu schimbă nimic (o judecă lucrarea).
+  retragereCompleta: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(RETRAGERE_COMPLETA_MAXIMA))),
 });
 const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
 const SchemaInstanta = v.looseObject({

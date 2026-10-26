@@ -92,7 +92,7 @@
  */
 import {
   ridicaV9O, taieturiV8O, type ColturiO, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type DocV7O, type DocV8O, type DocV9O, type IntrariO, type LaturaO,
-  type DocV10O, type DocV11O, type DocV12O, type LaturaV10O, type MatriceO, type RampaO, type SensO, type UrechiO,
+  type DocV10O, type DocV11O, type DocV12O, type DocV13O, type LaturaV10O, type MatriceO, type RampaO, type SensO, type UrechiO,
 } from './document.ts';
 import { esteDeschisaO, taieturiV10O, type TaieturaV10O } from './document.v10.ts';
 
@@ -786,7 +786,13 @@ export function regiuneDinInele(
  * v7 se aduce întâi la v8 (sensul `urcare`, ADR 0027 §5; urechile `null`, ADR 0028 §1; rampa `null`, ADR 0029 §1;
  * intrările `null`, ADR 0030 §1; degajările `null`, ADR 0032 §1). Un v10 (ADR 0037) se citește ca atare: vezi mai jos.
  */
-export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | DocV11O | DocV12O): Regiune {
+export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | DocV11O | DocV12O | DocV13O): Regiune {
+  // ADR 0087 §5 (felia 5.4↑, scris de sesiunea aplicației): o găurire nu e inel (scoate material doar din cercul ei), deci
+  // K nu se schimbă; un v13 se citește ca un v12, fără găuriri.
+  if (doc.schema === 13) {
+    const piese = doc.piese.map((p) => ({ ...p, operatii: p.operatii.filter((o) => o.tip !== 'gaurire') }));
+    return regiuneDinDocument({ ...doc, schema: 12, piese } as unknown as DocV12O);
+  }
   // ADR 0076 (felia 5.3↑): coborârea în buzunar nu schimbă regiunea; un v12 se citește ca un v11.
   if (doc.schema === 12) return regiuneDinDocument({ ...doc, schema: 11 } as unknown as DocV11O);
   if (doc.schema === 11) {

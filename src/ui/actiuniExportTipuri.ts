@@ -2,7 +2,7 @@ import type { IesireFoaie } from '../cam/iesire.ts';
 import { RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA } from '../cam/intrariMinima.ts';
 import { RAMPA_MINIMA } from '../cam/rampaMinima.ts';
 import type { ColtOrigine } from '../ir/montaj.ts';
-import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAXIM } from '../model/document.ts';
+import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAXIM, RETRAGERE_COMPLETA_MAXIMA } from '../model/document.ts';
 export type { Coborare } from '../model/document.ts';
 import type { StrategieScula, Unitati } from '../post/contract.ts';
 import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../post/contracte/index.ts';
@@ -25,6 +25,8 @@ export const MARGINI_OPERATIE = {
   // Coborârea în buzunar (ADR 0076): unghiul, zigzagul și raza elicei, cu pragurile lucrării.
   unghiCoborare: UNGHI_COBORARE_MAXIM, unghiCoborareMinim: COBORARE_MINIME.unghi, lungimeZigzag: PLAFON.latura,
   lungimeZigzagMinima: COBORARE_MINIME.lungime, razaElice: PLAFON.diametruScula, razaEliceMinima: COBORARE_MINIME.raza,
+  // Găurirea (ADR 0087): la al câtelea pas iese freza din gaură, un întreg 1–100.
+  retragereCompleta: RETRAGERE_COMPLETA_MAXIMA,
 } as const;
 
 /**

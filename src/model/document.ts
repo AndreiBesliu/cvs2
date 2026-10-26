@@ -1,5 +1,5 @@
 /**
- * Documentul v10 (T16, ADR 0016): varianta D a planșelor (ADR 0024, decizia owner-ului din 08.10.2026), adică piese cu
+ * Documentul (T16, ADR 0016), din v10: varianta D a planșelor (ADR 0024, decizia owner-ului din 08.10.2026), adică piese cu
  * arbore propriu, puse ca instanțe pe foi, plus operațiile piesei (ADR 0025): profilul stă în piesă și se taie la fel în
  * fiecare instanță, în sensul de tăiere al operației (ADR 0027, v4), cu urechile (ADR 0028, v5), rampa (ADR 0029, v6) și
  * intrările ei (ADR 0030, v7) și degajările colțurilor (ADR 0032, v8). Forma „cale” (ADR 0034, v9) e un contur din linii,
@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 12;
+export const VERSIUNE_SCHEMA = 13;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -115,6 +115,11 @@ export type Operatie = {
   pasLateral?: number;
   /** Pe un buzunar (ADR 0076, documentul v12), cum coboară freza în material; lipsă = plonjarea dreaptă (ca în v11). */
   coborare?: Coborare;
+  /**
+   * Pe o găurire (ADR 0087, documentul v13), la al câtelea pas freza iese din gaură, la Z-ul de siguranță (între, se retrage
+   * `RETRAGERE_PARTIALA` mm, cât să rupă așchia); lipsă = 1, la fiecare pas.
+   */
+  retragereCompleta?: number;
   [cheie: string]: unknown;
 };
 /**
@@ -139,8 +144,12 @@ export const COBORARE_MINIME = { unghi: 0.5, lungime: 1, raza: 0.5 } as const;
  * Felul operației (ADR 0069, documentul v11): `profil` taie conturul; `buzunar` scoate materialul dinăuntrul unui contur
  * închis, până la adâncime, în inele paralele cu conturul, la `pasLateral` mm unul de altul (cel mult raza frezei). Pe un
  * buzunar, latura e `interior` (freza stă înăuntru), iar urechile, rampa, intrările, degajările și despărțirea nu există.
+ * `gaurire` (ADR 0087, documentul v13) găurește un cerc: în pași, în centru, dacă cercul e cât freza; în elice, pe perete,
+ * dacă e mai mare (cel mult de două ori freza). Ca pe buzunar, latura e `interior`, iar ce e al profilului nu există.
  */
-export type TipOperatie = 'profil' | 'buzunar';
+export type TipOperatie = 'profil' | 'buzunar' | 'gaurire';
+/** Cel mai mare număr de pași dintre două ieșiri complete ale găuririi (ADR 0087). */
+export const RETRAGERE_COMPLETA_MAXIMA = 100;
 export type Piesa = { id: string; nume?: string; radacina: Nod; operatii: Operatie[]; [cheie: string]: unknown };
 export type Stoc = { latime: number; inaltime: number; grosime: number; [cheie: string]: unknown };
 export type Instanta = {
@@ -152,7 +161,7 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
-export type Document = { schema: 12; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 13; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

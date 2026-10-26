@@ -314,13 +314,14 @@ converted to outlines in the drawing program before export.
 %% capitol: operatii
 %% acopera: document.aplica-operatii
 
-Each shape has an operation: a **profile** (the cutter runs along the outline, in passes, down to the depth) or a **pocket**
-(the cutter clears all the material inside a closed outline, down to the depth). Operations are changed in the **Export
+Each shape has an operation: a **profile** (the cutter runs along the outline, in passes, down to the depth), a **pocket**
+(the cutter clears all the material inside a closed outline, down to the depth) or, on circles, a **drilling** (a hole the
+size of the circle, see below). Operations are changed in the **Export
 G-code** window, one row per shape; on export, the window does **Apply the operations**: it writes them into the project.
 
 | Field | What it means |
 |---|---|
-| Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
+| Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
 | Direction | **climb**: the material that stays is on the right of the travel (M3 spindle); **conventional**: the opposite. It does not matter on the line |
 | Depth, Step down | how deep it cuts and how far one pass goes down (mm) |
 | Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face) |
@@ -330,6 +331,7 @@ G-code** window, one row per shape; on export, the window does **Apply the opera
 | Split | an open path cut through the whole sheet, outside the parts: it is cut last, to split the sheet |
 | Side step | only on a pocket: the distance between the rings, at most half the cutter diameter (40% by default) |
 | Descent | only on a pocket: how the cutter enters the material on each pass: **plunge** (default), **ramp along the ring**, **zigzag** or **helix**, with their values (see below) |
+| Clear every … step | only on a drilling: after how many steps the cutter leaves the hole to clear the chips (1–100, 1 by default) |
 
 The **pocket** clears the material in rings parallel to the outline: the first one a cutter radius from the wall, each next
 one a side step further in, cut from the inside out to the wall, on every pass. The cutter goes from one ring to the next
@@ -363,8 +365,20 @@ outline; the island's own do not matter. With a different depth, each pocket is 
 makes a step. Two outlines with the same depth that touch or cross are refused (join them first with the boolean, or give
 them different depths). Between an island and the wall, a place narrower than the cutter stays uncut.
 
-The cutter (Ø, flat) is one for the whole sheet: if shapes have different cutters, on export they all get the cutter written
-at the top. The feeds and speeds are fixed for now: the spindle at 18,000 rpm (with a 3 s wait), feed 1,000 mm/min, plunge
+**Drilling.** On a row with nothing but circles, Cut also offers **drilling**: the hole comes out the size of the circle in the
+drawing, with the row's flat cutter, written with plain moves only (G0, G1, G2, G3), without the G81–G83 drilling cycles GRBL
+does not have.
+- A **circle the size of the cutter** (its diameter, ± 0.02 mm) is drilled at its centre, **by pecking**: the cutter goes down
+  by the step per pass, at the plunge feed; after each step it lifts 1 mm (breaks the chip), and every Nth step, the number
+  under **Clear every … step**, it goes up to safe Z (clears the chips) and comes back down fast to 0.5 mm above the floor.
+- A **larger circle**, up to two cutter diameters, is cut **as a helix** along the wall: turns of at most one step per pass,
+  then a full circle at the floor, so the floor comes out clean. The direction: climb is counter-clockwise, conventional
+  clockwise. The cutter never goes down faster than when plunging.
+- A circle smaller than the cutter, or over two cutter diameters, is refused, with the reason (over two diameters, a core
+  would stay in the middle: use a pocket). A drilling has no tabs, ramp, leads, corner relief or split; holes are cut with
+  the insides.
+
+Each row has its own cutter (see [Exporting G-code](#export)). The feeds and speeds are fixed for now: the spindle at 18,000 rpm (with a 3 s wait), feed 1,000 mm/min, plunge
 300 mm/min, safe Z 5 mm; insides are cut first.
 
 ## The toolpath on the canvas

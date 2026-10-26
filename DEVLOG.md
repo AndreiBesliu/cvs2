@@ -3129,13 +3129,28 @@ trecută la rularea din nou), emulatoarele 13. **Găsit pe drum:** (1) primul î
 își exportă acum promisiunea mesajelor; (2) o cerere căzută era uitată imediat (proba a prins-o: textele căzute înaintea
 codului ar fi dat ecranul de eroare); (3) un fișier pe limbă: 29,4 kB în 14 fișiere, unul pe modul: 25,6 în 7; (4) proba
 booleanului (Shift + clic imediat după încărcare) a prins fereastra în care editarea nu e montată, lungită de textele ei: acum
-vin în paralel cu bucata. **npm lipsește din instalarea Node** (`C:\Program Files
-odejs
-ode_modules
-pm` golit la 17:11,
+vin în paralel cu bucata. **npm lipsește din instalarea Node** (`C:\Program Files\nodejs\node_modules\npm` golit la 17:11,
 în afara proiectului): porțile au rulat direct cu `node` (Playwright și emulatoarele printr-o configurare locală în `.tmp/`,
 cu serverul pornit fără `npm run preview`); CI-ul are npm-ul lui.
 **Publicat pe adresa principală de test:** `publica` pe `5fc443e` (rularea 40368863005), după rapid-ul verde (40367523590, cea
 mai lentă felie 8 min 17 s). Verificat după „Versiune nouă → Reîncarcă”: pagina cere cele 7 fișiere `mesaje/*.json`; editarea
 (bara), panoul mașinii, paleta, arborele și fereastra exportului își arată textele, iar după EN fereastra deschisă trece pe
 engleză („Export G-code (GRBL 1.1)”); 0 erori în jurnal; dreptunghiul de probă anulat.
+
+## 2026-10-26 — Găurirea (Model: Claude Opus 5.5)
+
+**Prompt:** „1” (la „Ce urmeaza?”: „Găurirea (recomandarea mea pentru acum)…”).
+**Started:** 26.10, 19:56. Felia **5.4↑**, adusă din etapa 5, fără mașină și fără agenți (ADR 0087, documentul v13): găurile
+din cercurile desenului, ciocănite în centru sau în elice pe perete, scrise doar cu G0–G3.
+**Completed:** 26.10 20:55. Pe un rând numai cu cercuri, fereastra exportului are „găurire”: cercul cât freza (± 0,02 mm) se
+ciocănește în centru (pașii pe trecere, 1 mm de retragere între ei, ieșirea la Z sigur la fiecare al N-lea pas, „Iese la
+fiecare al … pas”, 1–100), unul până la două diametre se face în elice pe perete, cu o tură la fund; restul e refuzat, cu
+motiv. Doar G0–G3. Documentul v13. Porțile: 7 427 de teste unitare (o cădere: proba pragului real al etapei 5, care număra 2
+rânduri în lucru, acum 3 cu găurirea; actualizată, la fel în e2e-ul de emulator), build-ul determinist, pornirea 96,0 / 100
+(cu ușa 99,3), totalul 305,3 / 330 (+1,0), `/admin` 190,2; e2e 237 / 239 (două descărcări anulate la 30 s sub încărcare, în
+`export.spec` și `rezumat.spec`, trecute la rularea din nou, 22 / 22); emulatoarele 36 + 13. Mutațiile: 36 / 44 la prima
+rulare, 43 / 43 cu probele noi; verificarea elipsei din lucrare era cod mort (ușa și conturul o refuză înainte), scoasă; pe
+interfață, 9 / 9. **Găsit pe drum:** în manual, fraza despre o singură freză pe foaie era veche din 3.8b (ADR 0084), la zi
+acum; în intrarea 3.K a DEVLOG-ului, calea npm stricată de un heredoc (fiecare `\n` din ea devenise rând nou), scrisă din nou. **Proba fizică**
+(găurile ciocănite și în elice, cotele măsurate) e a plăcii etapei 5; decizia din 07.10 („pe simulare și pe octeții postului”)
+privea doar găurirea multiplă (drillbanks), nu pe aceasta. **npm lipsește încă** din instalarea Node: porțile au rulat cu `node`.

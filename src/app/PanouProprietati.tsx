@@ -56,9 +56,10 @@ function operatie(o: Operatie, n: number): ReactNode {
     <section key={o.id} className="prop-operatie">
       <h3>{t('prop.operatia', { n })}</h3>
       <dl>
-        {rand(t('export.latura'), o.tip === 'buzunar' ? t('export.latura.buzunar') : t(`export.latura.${o.latura}`))}
+        {rand(t('export.latura'), o.tip === 'buzunar' ? t('export.latura.buzunar') : o.tip === 'gaurire' ? t('export.latura.gaurire') : t(`export.latura.${o.latura}`))}
         {o.tip === 'buzunar' && o.pasLateral !== undefined && rand(t('export.pas-lateral'), mm(o.pasLateral))}
         {o.tip === 'buzunar' && rand(t('export.coborare'), coborare(o.coborare))}
+        {o.tip === 'gaurire' && rand(t('export.gaurire.retragere'), String(o.retragereCompleta ?? 1))}
         {rand(t('export.sens'), t(`export.sens.${o.sens}`))}
         {rand(t('export.adancime'), mm(o.adancime))}
         {rand(t('export.pas'), mm(o.pas))}

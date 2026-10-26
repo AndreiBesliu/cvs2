@@ -273,6 +273,10 @@
       "ro": "Loc în pachetul de pornire",
       "en": "Room in the startup bundle"
     },
+    "28a524bfa8c7b00a": {
+      "ro": "**Găurirea, adusă din etapa 5** (fără mașină; ADR 0087; „1”, la „Ce urmeaza?”: găurirea, înaintea V-carve-ului și a exportului 2D). În fereastra exportului, pe un rând numai cu cercuri, Tăietura are și „găurire”: gaura iese cât cercul, cu freza rândului. Un cerc cât freza (± 0,02 mm) se găurește în centru, cu ciocănire (pașii pe trecere, retragerea de 1 mm între ei, ieșirea din gaură la fiecare al N-lea pas, „Iese la fiecare al … pas”, 1–100, implicit 1); unul mai mare, până la două diametre ale frezei, în elice pe perete, cu o tură la fund. Doar G0–G3, fără ciclurile G81–G83 (GRBL nu le are). Refuzate, cu motiv: cercul mai mic decât freza, peste două diametre (ar rămâne un miez), elipsa, ce e al profilului. Panoul de proprietăți arată găurirea. Documentul v13 (migrarea doar cu numărul). Manualul („Operațiile de tăiere”) e la zi. **Treceri:** (1) schema v13 și ușa, `src/cam/gaurire.ts`, lucrarea, dialogul și panoul; pe hârtie: pașii și retragerile, elicea pe cercul de rază 2; oracolul simulării: Ø6 în centru, Ø10 și Ø12 în elice, scoase cât cercul (± 0,02 mm); probele legate de numărul schemei mutate pe v13 (oracolul documentului v13, al aceleiași sesiuni); mutațiile: 36 / 44 prinse la prima rulare, apoi probe noi (cercul scalat și rotit, centrul și sensul celei de-a doua găuri în lucrare, viteza pe Z pe o elice strânsă, unde limita contează, rândul care mai poartă valori de profil): 43 / 43; verificarea elipsei din lucrare era cod mort (ușa și conturul o refuză înainte), scoasă; pe interfață, 9 / 9 prin e2e; în manual, fraza veche despre o singură freză pe foaie, la zi (ADR 0084).",
+      "en": "**Drilling, brought forward from stage 5** (no machine; ADR 0087; “1”, to “Ce urmeaza?”: drilling, before V-carve and the 2D export). In the export window, on a row with nothing but circles, Cut also offers “drilling”: the hole comes out the size of the circle, with the row’s cutter. A circle the size of the cutter (± 0.02 mm) is drilled at its centre by pecking (the steps per pass, a 1 mm retract between them, leaving the hole every Nth step, “Clear every … step”, 1–100, 1 by default); a larger one, up to two cutter diameters, as a helix along the wall, with one turn at the floor. Only G0–G3, without the G81–G83 cycles (GRBL does not have them). Refused, with the reason: a circle smaller than the cutter, over two diameters (a core would stay), an ellipse, anything of a profile. The properties panel shows the drilling. Document v13 (the migration only changes the number). The manual (“The cutting operations”) is up to date. **Passes:** (1) the v13 schema and the door, `src/cam/gaurire.ts`, the job, the window and the panel; on paper: the steps and the retracts, the helix on the circle of radius 2; the simulation oracle: Ø6 at the centre, Ø10 and Ø12 as a helix, cleared to the size of the circle (± 0.02 mm); the tests tied to the schema number moved to v13 (the v13 document oracle, written by the same session); mutations: 36 / 44 caught on the first run, then new tests (the scaled and rotated circle, the centre and the direction of the second hole in the job, the Z speed on a tight helix, where the limit matters, the row that still carries profile values): 43 / 43; the job’s ellipse check was dead code (the door and the outline refuse it first), removed; in the interface, 9 / 9 through e2e; in the manual, the old sentence about a single cutter per sheet, brought up to date (ADR 0084)."
+    },
     "2998b2828779115d": {
       "ro": "Rigla pe marginea foii, cu linia de cotă",
       "en": "The ruler on the sheet's edge, with the dimension line"
@@ -1420,6 +1424,10 @@
     "dc46aed0e6abba07": {
       "ro": "Rigla pe marginea foii",
       "en": "The ruler on the sheet's edge"
+    },
+    "dc66580b19c6ae48": {
+      "ro": "Găurirea",
+      "en": "Drilling"
     },
     "dc929192d3471597": {
       "ro": "Partea documentului care nu depinde de A / D",

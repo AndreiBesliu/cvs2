@@ -332,8 +332,32 @@ function v11v12(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v12 → v13 (ADR 0087): doar numărul. v13 adaugă felul `gaurire` al operației, cu `retragereCompleta` (opțională), deci un
+ * document v12 e un document v13 valid, cu același program. Un document marcat v12 cu o găurire sau cu un câmp propriu
+ * `retragereCompleta` pe o operație e refuzat: v12 nu le cunoaște, deci nu e un v12 valid. (O versiune v12 refuză un
+ * document v13: n-ar ști să găurească cercul.)
+ */
+function v12v13(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (typeof p !== 'object' || p === null) continue;
+    const piesa = p as Brut;
+    for (const o of Array.isArray(piesa['operatii']) ? piesa['operatii'] as unknown[] : []) {
+      if (typeof o !== 'object' || o === null) continue;
+      const op = o as Brut;
+      const unde = `operația v12 ${String(op['id'])} din piesa ${String(piesa['id'])}`;
+      if (op['tip'] === 'gaurire') return { ok: false, motiv: `${unde} are tipul „gaurire”, pe care v12 nu-l cunoaște: nu e un document v12 valid` };
+      if (Object.hasOwn(op, 'retragereCompleta')) {
+        return { ok: false, motiv: `${unde} are câmpul „retragereCompleta”, pe care v13 îl folosește: nu e un document v12 valid` };
+      }
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 13 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
- * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v11 → v12
+ * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v12 → v13
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
  */
 export const MIGRARI: Readonly<Record<number, Migrare>> = {
@@ -359,5 +383,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   9: v9v10,
   10: v10v11,
   11: v11v12,
+  12: v12v13,
 };
 

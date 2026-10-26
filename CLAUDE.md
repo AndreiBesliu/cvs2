@@ -137,6 +137,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   în precache), nu în JavaScript; totalul 328,2 → 304,3 / 330 kB. **Un modul nou la cerere care folosește aceste texte exportă
   `mesaje = mesajeGata()` și se încarcă cu `.then(cuMesaje)`** (compilatorul cere exportul); dicționarele de bază, `/admin` și
   testul pas cu pas rămân în cod.
+  **Găurirea (ADR 0087, documentul v13, adusă din etapa 5)** gata pe 26.10: `tip: 'gaurire'` pe cercuri (`src/cam/gaurire.ts`):
+  cercul cât freza (± 0,02 mm) ciocănit în centru, cu `retragereCompleta` (ieșirea la al N-lea pas), cel până la 2·D în elice
+  pe perete, restul refuzat; doar G0–G3, fără ciclurile fixe; în fereastra exportului doar pe rândurile numai cu cercuri.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

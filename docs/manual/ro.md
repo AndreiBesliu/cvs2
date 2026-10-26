@@ -303,13 +303,14 @@ transformat în contururi în programul de desen înainte de export.
 %% capitol: operatii
 %% acopera: document.aplica-operatii
 
-Fiecare formă are o operație: un **profil** (freza merge de-a lungul conturului, în treceri, până la adâncime) sau un
-**buzunar** (freza scoate tot materialul dinăuntrul unui contur închis, până la adâncime). Operațiile se schimbă din
+Fiecare formă are o operație: un **profil** (freza merge de-a lungul conturului, în treceri, până la adâncime), un
+**buzunar** (freza scoate tot materialul dinăuntrul unui contur închis, până la adâncime) sau, pe cercuri, o **găurire**
+(gaura cât cercul, vezi mai jos). Operațiile se schimbă din
 fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **aplică operațiile** în proiect.
 
 | Câmpul | Ce înseamnă |
 |---|---|
-| Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
+| Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
 | Sens | **urcare**: materialul care rămâne e în dreapta sensului de mers (ax M3); **opoziție**: invers. Pe linie nu contează |
 | Adâncimea, Pasul | cât de adânc se taie și cât coboară o trecere (mm) |
 | Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos) |
@@ -319,6 +320,7 @@ fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **
 | Despărțire | o cale deschisă, tăiată prin toată foaia, în afara pieselor: se taie la urmă, ca să despartă foaia |
 | Pasul lateral | doar pe un buzunar: distanța dintre inele, cel mult jumătate din diametrul frezei (implicit 40 %) |
 | Coborârea | doar pe un buzunar: cum intră freza în material la fiecare trecere: **plonjare** (implicit), **rampă pe inel**, **zigzag** sau **elice**, cu valorile lor (vezi mai jos) |
+| Iese la fiecare al … pas | doar pe o găurire: după câți pași iese freza din gaură ca să scoată așchia (1–100, implicit 1) |
 
 **Buzunarul** scoate materialul în inele paralele cu conturul: primul la o rază de freză de perete, fiecare următor cu un pas
 lateral mai înăuntru, tăiate dinăuntru spre perete, pe fiecare trecere. Freza trece de la un inel la următorul fără să se
@@ -350,8 +352,19 @@ ale insulei nu contează. Cu altă adâncime, fiecare buzunar se taie întreg: u
 Două contururi de aceeași adâncime care se ating sau se intersectează sunt refuzate (unește-le întâi cu booleanul sau dă-le
 adâncimi diferite). Între o insulă și perete, un loc mai îngust decât freza rămâne netăiat.
 
-Freza (Ø, plată) e una pentru toată foaia: dacă formele au freze diferite, la export primesc toate freza scrisă sus. Regimul
-e fix deocamdată: axul la 18 000 rot/min (cu 3 s de așteptare), avansul 1 000 mm/min, plonjarea 300 mm/min, Z sigur 5 mm;
+**Găurirea.** Pe un rând numai cu cercuri, Tăietura are și **găurire**: gaura iese cât cercul din desen, cu freza plată a
+rândului, scrisă doar cu mișcări simple (G0, G1, G2, G3), fără ciclurile de găurire G81–G83 pe care GRBL nu le are.
+- Un **cerc cât freza** (diametrul ei, ± 0,02 mm) se găurește în centru, **cu ciocănire**: freza coboară cu pasul pe trecere,
+  cu avansul de plonjare; după fiecare pas se ridică 1 mm (rupe așchia), iar la fiecare al câtelea pas scris la **Iese la
+  fiecare al … pas** iese până la Z sigur (scoate așchia) și coboară repede până la 0,5 mm deasupra fundului.
+- Un **cerc mai mare**, până la două diametre ale frezei, se face **în elice** pe perete: ture de cel mult un pas pe trecere,
+  apoi un cerc plin la fund, ca fundul să iasă neted. Sensul: la urcare, trigonometric; la opoziție, orar. Freza nu coboară
+  mai repede decât la plonjare.
+- Un cerc mai mic decât freza sau peste două diametre ale ei e refuzat, cu motivul (peste două diametre, în mijloc ar rămâne
+  un miez: folosește buzunarul). Pe o găurire nu există urechi, rampă, intrări, degajări sau despărțire; găurile se taie cu
+  interioarele.
+
+Fiecare rând își are freza lui (vezi [Exportul G-code](#export)). Regimul e fix deocamdată: axul la 18 000 rot/min (cu 3 s de așteptare), avansul 1 000 mm/min, plonjarea 300 mm/min, Z sigur 5 mm;
 interioarele se taie primele.
 
 ## Traseul pe pânză
