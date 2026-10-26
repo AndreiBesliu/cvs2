@@ -97,6 +97,10 @@
       "ro": "Backup-ul zilnic al Firestore",
       "en": "Daily Firestore backup"
     },
+    "0e5df82ede66ffb6": {
+      "ro": "Fluxul senderului ca mașini de stare pure",
+      "en": "The sender flow as pure state machines"
+    },
     "0ebe1a8fed00b751": {
       "ro": "Regiunea păstrată și invarianta 2",
       "en": "The kept region and invariant 2"
@@ -252,6 +256,10 @@
     "267a30b5608884ff": {
       "ro": "Nivelul rapid local în 12 s: `tsc`, regulile de import (11 reguli, 10 capcane, 48 de module; controalele: o regulă stricată și o încălcare reală pică), 26 de teste, build determinist (69,9 kB gzip, plafon 100), licențele (4 dependențe de rulare, MIT). `dependency-cruiser` nu suportă TypeScript 7, deci citește prin swc. Cârligul `git add -A` în `.claude/`. Workflow-urile `rapid` (push) și `complet` (noaptea, e2e în Edge). Treceri: ciclul raportat o dată, binarul nedeclarat în `exports`, licențele din lanțul de dependențe, nu din marcajul `dev`.",
       "en": "Local rapid level in 12 s: `tsc`, import rules (11 rules, 10 traps, 48 modules; controls: a broken rule and a real violation both fail), 26 tests, deterministic build (69.9 kB gzip, cap 100), licences (4 runtime dependencies, MIT). `dependency-cruiser` does not support TypeScript 7, so it reads through swc. The `git add -A` hook in `.claude/`. Workflows `rapid` (push) and `complet` (nightly, e2e in Edge). Passes: the cycle reported once, the binary not declared in `exports`, licences taken from the dependency chain, not from the `dev` flag."
+    },
+    "27578d1a54a1df39": {
+      "ro": "Fluxul senderului, ca mașină de stare pură",
+      "en": "The sender flow, as a pure state machine"
     },
     "275bc7769f4a4622": {
       "ro": "Forma „cale”",
@@ -425,10 +433,6 @@
       "ro": "remedierile editorului (6.A↑–6.N↑), înaintea textului",
       "en": "the editor's fixes (6.A↑–6.N↑), before the text"
     },
-    "3e98c472d0a0bc17": {
-      "ro": "Fluxul senderului: cele 11 reguli din `docs/PORTARE.md` §3.4 (octeții, răspunsurile, eroarea în flux, bufferul pierdut, bariera, citirile, hold-ul, timpul real, WCS-ul), ca mașini de stare pure; sesiunea Web Serial; octeții exportați, cu hash",
-      "en": "The sender stream: the 11 rules from `docs/PORTARE.md` §3.4 (bytes, responses, an error in the stream, a lost buffer, the barrier, reads, hold, real time, WCS), as pure state machines; the Web Serial session; the exported bytes, with a hash"
-    },
     "3f19b83fdc63d738": {
       "ro": "Regula `nonzero` la ușă",
       "en": "The `nonzero` rule at the door"
@@ -541,6 +545,10 @@
       "ro": "Stratul WebGL2 (traseul ca LINE_STRIP; foaia rămâne în workerul vectorilor până la etapa 4; ADR 0038) și panoul de proprietăți editabil, în carcasa din 2.8a; sub-feliile 2.8c–2.8e",
       "en": "The WebGL2 layer (the toolpath as LINE_STRIP; the sheet stays in the vector worker until stage 4; ADR 0038) and the editable properties panel, in the 2.8a shell; sub-slices 2.8c–2.8e"
     },
+    "508b2f15dfad2a60": {
+      "ro": "Sesiunea Web Serial și panoul mașinii",
+      "en": "The Web Serial session and the machine panel"
+    },
     "5095d1e29bdaf3d4": {
       "ro": "Carcasa interfeței (aranjamentul, tokenurile temei, componentele), din prototipul ales de owner dintre trei (13.10, „da, pornește prototipurile”)",
       "en": "The interface shell (the layout, the theme tokens, the components), from the prototype the owner chose out of three (13.10, “yes, start the prototypes”)"
@@ -552,6 +560,10 @@
     "513a4b1a76651fa9": {
       "ro": "Contururile deschise (ADR 0037, documentul v10), în sub-feliile 2.3c-0…6: pe linie, pe stânga / dreapta, despărțirea foii marcată de om, ușa SVG cu liniile deschise, două recenzii, otrăvurile (115 rulate, 86 prinse din prima, 27 închise cu teste, 2 echivalente). Detaliile: blocul „2.3c, contururile deschise: încheiată pe 16.10” din „Feliile”. Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`. Ora încheierii nu e scrisă acolo.",
       "en": "Open contours (ADR 0037, document v10), in sub-slices 2.3c-0…6: on-line, left / right, the sheet split marked by the user, the SVG door with open lines, two reviews, the poisons (115 run, 86 caught at once, 27 closed with tests, 2 equivalent). Details: the block “2.3c, open contours: finished on 16.10” in “Slices”. Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`. The finishing time is not written there."
+    },
+    "517b543066be9e3b": {
+      "ro": "**Fluxul senderului, fără mașină** (ADR 0080; „continua”). Senderul ca mașină de stare pură în `src/machine/`, fără port și fără timp: încărcarea programului (exact octeții exportați, cu amprenta SHA-256; refuzuri cu linia pentru caracterele în afara ASCII, `\\r`, liniile peste 70 de octeți, lipsa WCS-ului, `M6` într-un program străin, finalul fără `\\n`, altă amprentă), citirea răspunsurilor și a rapoartelor pe N axe, apoi fluxul cu cele 11 reguli: fereastra de 128 de octeți, răspunsurile în ordine, eroarea care suspendă (hold) și reluarea, alarma și repornirea care pierd punctul de reluare, sfârșitul doar pe un Idle proaspăt, barierele `M0` / `M1` / `M6` care nu pleacă (cu `M5` la sculă, o singură oprire pentru un grup), citirile `$` doar în repaus. Probat pe emulatorul GRBL: 100 000 de linii și programele plăcilor ajung octet cu octet, fără pierderi. Portul (Web Serial) și panoul mașinii vin în 3.6b. **Treceri:** (1) probele întâi pe emulator, apoi modulele; cinci probe cădeau din ajutorul de probă (comenzile omului date în afara buclei, deci octeții nu ajungeau la emulator), una dintr-o presupunere greșită (un program de 20 de linii pleacă tot înaintea erorii); o probă nouă pentru Idle-ul vechi (pauza `G4`, apoi o mișcare confirmată pe loc); mutațiile: 32 / 33, cea rămasă echivalentă, scoasă din cod, cu o probă pentru eroarea din fața unei bariere.",
+      "en": "**The sender flow, without a machine** (ADR 0080; “continua”). The sender as a pure state machine in `src/machine/`, with no port and no clock: loading the program (exactly the exported bytes, with their SHA-256 fingerprint; refusals with the line for characters outside ASCII, `\\r`, lines over 70 bytes, a missing WCS, `M6` in a foreign program, an ending without `\\n`, another fingerprint), reading the replies and the reports on N axes, then the flow with the 11 rules: the 128-byte window, the replies in order, the error that suspends (hold) and the resume, the alarm and the restart that lose the resume point, the end only on a fresh Idle, the `M0` / `M1` / `M6` barriers that are never sent (with `M5` at a tool change, a single stop for a group), the `$` reads only at rest. Proven on the GRBL emulator: 100,000 lines and the plate programs arrive byte for byte, without losses. The port (Web Serial) and the machine panel come in 3.6b. **Passes:** (1) the checks first on the emulator, then the modules; five checks failed because of the test helper (the operator’s commands given outside the loop, so the bytes never reached the emulator), one because of a wrong assumption (a 20-line program is sent whole before the error comes back); a new check for the stale Idle (a `G4` pause, then a move confirmed at once); mutations: 32 / 33, the remaining one equivalent, removed from the code, with a check for the error right before a barrier."
     },
     "521f0121bd0e68a2": {
       "ro": "Personalul și Diagnoza",
@@ -937,10 +949,6 @@
       "ro": "Traseul pe pânză și panoul de proprietăți editabil",
       "en": "The toolpath on the canvas and the editable properties panel"
     },
-    "94b899f357992435": {
-      "ro": "Fluxul senderului",
-      "en": "The sender stream"
-    },
     "950c55ab39d07325": {
       "ro": "Loc în pachetul de pornire (ADR 0042), felie fără mașină, prin workflow (măsurătoarea, 3 propuneri, judecătorul, implementarea, 4 verificatori): pornirea 99,1 → **92,3 / 100 kB**; cu un proiect salvat 101,5 → 96,9. Ferestrele exportului, importului și panoului își aduc calculul, schemele documentului stau în modulul lor, dicționarul limbii active și alegerea cu clicul vin la cerere. Recenzia: 9 constatări, 7 remediate cu proba lor (limba nu se mai abandonează după 4 s, ultimul clic de limbă câștigă, pagina „fără texte” accesibilă, otrava C01 repusă, ușa plafonată la 8 kB), fiecare probă pică pe sabotajul remedierii; 2 limite scrise (tragerea și tasta date înaintea sosirii alegerii).",
       "en": "Room in the startup bundle (ADR 0042), a slice without the machine, through a workflow (the measurement, 3 proposals, the judge, the implementation, 4 verifiers): startup 99.1 → **92.3 / 100 kB**; with a saved project 101.5 → 96.9. The export, import and panel windows bring their own calculation, the document schemas live in their own module, the active language's dictionary and click selection come on demand. The review: 9 findings, 7 fixed with their checks (the language is no longer abandoned after 4 s, the last language click wins, the “no texts” page is accessible, poison C01 restored, the door capped at 8 kB), each check failing on the fix's sabotage; 2 limits written down (the drag and the key given before the selection arrives)."
@@ -1048,6 +1056,10 @@
     "a75abf755145bbba": {
       "ro": "Sensul de tăiere",
       "en": "Cutting direction"
+    },
+    "a777e4e0b6f7cbc8": {
+      "ro": "Sesiunea Web Serial și panoul mașinii: conectarea, rapoartele, încărcarea și trimiterea programului cu hash-ul arătat, hold / reluare / oprire, comenzile manuale; e2e pe emulator în browser",
+      "en": "The Web Serial session and the machine panel: connecting, the reports, loading and sending the program with its hash shown, hold / resume / stop, manual commands; e2e on the emulator in the browser"
     },
     "a81771a5db28cbb8": {
       "ro": "Emulatorul GRBL 1.1h ca fixtură",
@@ -1188,6 +1200,10 @@
     "b96136cc4fe68a59": {
       "ro": "matricea originii, sensul arcelor",
       "en": "the origin matrix, arc direction"
+    },
+    "bb6a0f611110b2d4": {
+      "ro": "Fluxul senderului ca mașini de stare pure (ADR 0080): încărcarea programului (octeții exportați, hash-ul, refuzurile: ASCII, `\\r`, liniile peste 70 de octeți, WCS-ul, `M6` străin, finalul), citirea răspunsurilor și a rapoartelor pe N axe, cele 11 reguli din `docs/PORTARE.md` §3.4 (octeții, răspunsurile, eroarea în flux, bufferul pierdut, sfârșitul, bariera, citirile, hold-ul, timpul real, WCS-ul); probat pe emulator",
+      "en": "The sender flow as pure state machines (ADR 0080): loading the program (the exported bytes, the hash, the refusals: ASCII, `\\r`, lines over 70 bytes, the WCS, a foreign `M6`, the ending), reading the replies and the reports on N axes, the 11 rules of `docs/PORTARE.md` §3.4 (the bytes, the replies, the error in the stream, the lost buffer, the end, the barrier, the reads, the hold, realtime, the WCS); proven on the emulator"
     },
     "bd6ce3a6d08ac395": {
       "ro": "Urechile ca modificator Z(s), portate cu cele 88 de verificări pe hârtie; vârful urechii măsurat de la fundul materialului (`docs/PORTARE.md` §3.1)",

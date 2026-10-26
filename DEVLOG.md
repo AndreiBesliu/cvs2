@@ -2982,3 +2982,14 @@ la o probă de export neatinsă de felie; a doua, curată). Mutațiile: 28 / 30,
 **Publicat pe adresa principală de test:** 25.10, workflow-ul `publica` pe `031cd83` (rularea 40234510313), după rapid-ul verde
 (40233828008). Verificat `documentatie/roadmap.json` publicat: 3.5a gata (ADR 0079), 3.5b de făcut. Owner-ul: „continuam maine”
 (pauză; următoarea felie propusă: 3.6, fluxul senderului pe emulator; chenarul Transformării, amânat).
+
+## 2026-10-26 — Fluxul senderului, fără mașină (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (după pauza de aseară; propunerea rămasă: 3.6, fluxul senderului, probat pe emulator).
+**Started:** 26.10, ~07:05. Începutul sesiunii: `main` curat, rapid verde pe `031cd83`, noaptea verde (25.10 06:15 UTC, sub
+26 h). Felia 3.6 despărțită în **3.6a** (fluxul, acum, fără mașină) și **3.6b** (sesiunea Web Serial și panoul). Fără agenți
+(ADR 0080): `src/machine/program.ts`, `raspunsuri.ts`, `flux.ts`; probele pe emulatorul din 3.5a, cu ajutorul
+`test/unit/ajutor-sender.ts` (acțiunile ajung la emulator, liniile lui se întorc ca evenimente, ceasul cere rapoarte).
+**Completed:** 26.10 07:32. Porțile: 7 310 teste unitare (0 picate; proba documentației citea încă felia 3.6, actualizată),
+e2e 220 / 220 în Edge; pornirea neschimbată (95,3 kB; senderul încă nu e legat de interfață). Mutațiile: 32 / 33, cea rămasă
+echivalentă (scoasă din cod), cu o probă nouă pentru eroarea din fața unei bariere.

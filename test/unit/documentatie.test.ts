@@ -66,7 +66,7 @@ test('fișa etapei 3: feliile, jurnalul (cu rândurile aduse ↑ și 3.P), ce î
   const f = citesteFisa('docs/etape/etapa-03.md', citeste('docs/etape/etapa-03.md'));
   assert.equal(f.numar, 3);
   assert.equal(f.pornita, '16.10.2026');
-  assert.deepEqual(f.felii.map((x) => x.id), ['3.1', '3.2', '3.3', '3.4a', '3.4b', '3.5a', '3.5b', '3.6', '3.7', '3.8', '3.9']);
+  assert.deepEqual(f.felii.map((x) => x.id), ['3.1', '3.2', '3.3', '3.4a', '3.4b', '3.5a', '3.5b', '3.6a', '3.6b', '3.7', '3.8', '3.9']);
   const ids = f.jurnal.map((x) => x.id);
   for (const id of ['3.1', '3.4b', '4.7↑', '4.5↑b', '4.2↑', '4.7↑b', '3.P']) assert.ok(ids.includes(id), id);
   const sim = f.jurnal.find((x) => x.id === '4.2↑');
