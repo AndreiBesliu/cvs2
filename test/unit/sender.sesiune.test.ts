@@ -8,33 +8,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { deschideSimulata } from '../../src/machine/MasinaSimulata.ts';
 import { incarcaProgram } from '../../src/machine/program.ts';
-import { SesiuneMasina, type Ceas, type Transport } from '../../src/machine/sesiune.ts';
-import { octeti, primitiFaraTimpReal } from './ajutor-sender.ts';
-
-/** Un ceas fals: timerele pornesc doar la `avanseaza`, iar între ele se golesc promisiunile (scrierile sesiunii). */
-class CeasFals implements Ceas {
-  t = 0;
-  private urm = 1;
-  private timere: { id: number; la: number; perioada: number | null; f: () => void }[] = [];
-  readonly setInterval = (f: () => void, ms: number): number => { const id = this.urm++; this.timere.push({ id, la: this.t + ms, perioada: ms, f }); return id; };
-  readonly setTimeout = (f: () => void, ms: number): number => { const id = this.urm++; this.timere.push({ id, la: this.t + ms, perioada: null, f }); return id; };
-  readonly clearInterval = (id: unknown): void => { this.timere = this.timere.filter((x) => x.id !== id); };
-  async avanseaza(ms: number): Promise<void> {
-    const tinta = this.t + ms;
-    await golire();
-    for (;;) {
-      const x = [...this.timere].sort((a, b) => a.la - b.la || a.id - b.id)[0];
-      if (!x || x.la > tinta) break;
-      this.t = x.la;
-      if (x.perioada === null) this.timere = this.timere.filter((y) => y !== x);
-      else x.la += x.perioada;
-      x.f();
-      await golire();
-    }
-    this.t = tinta;
-  }
-}
-const golire = (): Promise<void> => new Promise((r) => { setImmediate(r); });
+import { SesiuneMasina, type Transport } from '../../src/machine/sesiune.ts';
+import { CeasFals, octeti, primitiFaraTimpReal } from './ajutor-sender.ts';
 
 /** Un transport fals, condus de probă: ce scrie sesiunea se ține minte, iar proba trimite octeți sau închide portul. */
 function transportFals(opt: { readonly scrieCade?: boolean } = {}) {
@@ -81,7 +56,9 @@ test('programul plăcii 1 (A) pe mașina simulată, la 100×: terminat, exact oc
   for (let k = 0; k < 600 && s.stare().flux.faza !== 'terminat'; k++) await ceas.avanseaza(100);
   assert.equal(s.stare().flux.faza, 'terminat');
   assert.deepEqual(s.stare().flux.erori, []);
-  assert.equal(primitiFaraTimpReal(sim.emulator), text);
+  // Apoi, pe Idle, citirea proprie a sesiunii: WCS-ul de după program (`M30` îl readuce la G54).
+  assert.equal(primitiFaraTimpReal(sim.emulator), `${text}$G\n`);
+  assert.equal(s.stare().wcsActiv, 'G54');
   assert.ok(publicari < ceas.t / 100 + 10, `${publicari} publicări în ${ceas.t} ms`);
 });
 
@@ -149,13 +126,27 @@ test('jurnalul unei comenzi manuale: trimis, datele, ok; ce nu știe simularea: 
   await ceas.avanseaza(200);
   s.eveniment({ tip: 'manual', id: 'a', text: '$G' });
   await ceas.avanseaza(200);
-  s.eveniment({ tip: 'manual', id: 'b', text: '$J=G91X1F100' });
+  s.eveniment({ tip: 'manual', id: 'b', text: 'G28' });
   await ceas.avanseaza(200);
   const j = s.stare().jurnal.filter((l) => l.fel !== 'sesiune' && !l.text.startsWith('Grbl')).map((l) => `${l.fel}:${l.text}`);
   assert.deepEqual(j, [
     'trimis:$G', 'raspuns:[GC:G0 G54 G17 G21 G90 G94 M5 M9 T0 F0 S0]', 'raspuns:ok',
-    'trimis:$J=G91X1F100', 'raspuns:[MSG:Not simulated: comanda $J=G91X1F100]', 'raspuns:error:20',
+    'trimis:G28', 'raspuns:[MSG:Not simulated: G28]', 'raspuns:error:20',
   ]);
+});
+
+test('un port fără banner la deschidere (placa nu repornește): WCS-ul se citește tot, pe primul Idle', async () => {
+  const ceas = new CeasFals();
+  const s = new SesiuneMasina(ceas);
+  const f = transportFals();
+  await s.conecteaza(f.t);
+  await ceas.avanseaza(0);
+  assert.deepEqual(f.scrise, []);
+  f.trimite('<Idle|MPos:0.000,0.000,0.000|FS:0,0>\r\n');
+  await ceas.avanseaza(0);
+  assert.deepEqual(f.scrise, ['$G\n']);
+  f.trimite('[GC:G0 G55 G17 G21 G90 G94 M5 M9 T0 F0 S0]\r\nok\r\n');
+  assert.equal(s.stare().wcsActiv, 'G55');
 });
 
 test('după o deconectare și o reconectare, rapoartele se cer o dată la 200 ms (nu rămân două ceasuri)', async () => {

@@ -11,10 +11,17 @@
  * - planificatorul are 15 blocuri; `ok`-ul unei mișcări vine când intră în el; o linie care nu are loc stă în buffer; `G4`, `M3`
  *   / `M5`, `M8` / `M9`, `M0`, `M2` / `M30` și `G10` așteaptă golirea lui;
  * - `$#`, `$$`, `$I`, `$H` și setările cer starea Idle sau Alarm (altfel `error:8`); `$G` merge oricând;
- * - avansul și rapidele sunt plafonate de viteza maximă a axelor ($110–$112); override-urile scalează avansul și rapidele.
+ * - avansul și rapidele sunt plafonate de viteza maximă a axelor ($110–$112); override-urile scalează avansul și rapidele;
+ * - jog-ul (`$J=`, ADR 0082): doar în Idle sau Jog (altfel `error:8`), cu `F` obligatoriu, fără să schimbe starea modală;
+ *   0x85 îl anulează; palparea `G38.2` / `G38.3` pe Z, spre o placă de contact simulată (`placa`): atinsă, `[PRB:…:1]` și
+ *   `ok` la capătul mișcării; neatinsă, `ALARM:5` (`G38.2`) sau `[PRB:…:0]` (`G38.3`); atinsă dinainte, `ALARM:4`; G-code-ul
+ *   cât ține jog-ul, `error:9`;
+ * - `WCO:` (ADR 0082) în primul raport după pornire, în cel de după o schimbare a decalajului, apoi o dată la 10 rapoarte în
+ *   repaus sau la 30 în mișcare.
  * Modelul nostru, de verificat pe transcrierile reale (felia 3.5b; unde diferă, mașina are dreptate): frânarea (`franare` ms, cu
  * poziția oprită pe loc), starea Idle în timpul unei pauze `G4`, poziția din mijlocul unui bloc (pe segment sau pe arc), lipsa
- * accelerației din timpul blocurilor, rapoartele fără `Ov:` și `WCO:`. Ce nu modelează aruncă `Nemodelat`: un test nu trece
+ * accelerației din timpul blocurilor, rapoartele fără `Ov:` și `Pn:`, schimbarea decalajului văzută la raport (GRBL o marchează
+ * la comandă, și când valoarea rămâne aceeași). Ce nu modelează aruncă `Nemodelat`: un test nu trece
  * niciodată pe un răspuns inventat. Mașina simulată din aplicație (`laNemodelat: 'eroare'`) răspunde în schimb cu un mesaj și
  * `error:20`, ca omul să vadă ce nu știe simularea, iar fluxul să nu rămână fără răspuns.
  */
@@ -40,7 +47,7 @@ export const GRBL_11H: ContractEmulator = {
 /** Ce emulatorul nu modelează (o comandă, un caz): testul cade, nu primește un răspuns inventat. */
 export class Nemodelat extends Error {}
 
-export type Stare = 'Idle' | 'Run' | 'Hold:0' | 'Hold:1' | 'Alarm';
+export type Stare = 'Idle' | 'Run' | 'Jog' | 'Hold:0' | 'Hold:1' | 'Alarm';
 export type Eveniment = { readonly t: number; readonly dir: 'in' | 'out'; readonly text: string };
 type Vec = { x: number; y: number; z: number };
 type Axa = 'x' | 'y' | 'z';
@@ -56,6 +63,8 @@ type Bloc = {
   readonly rapid: boolean;
   /** Arcul: centrul, unghiul de pornire, baleiajul (rad, cu semn). */
   readonly arc: { readonly cx: number; readonly cy: number; readonly r: number; readonly u0: number; readonly baleiaj: number } | null;
+  /** O mișcare de jog (0x85 o anulează; starea e Jog). */
+  readonly jog?: boolean;
   parcurs: number;
 };
 
@@ -135,8 +144,16 @@ export class EmulatorGrbl {
   private critica = false;
   /** Pauza `G4` în curs (ms rămase); protocolul nu citește bufferul cât ține. */
   private pauza: number | null = null;
+  /** Palparea în curs: cu sau fără contact, felul ei; protocolul nu citește bufferul până la capătul ei. */
+  private sonda: { readonly g: number; readonly contact: boolean } | null = null;
+  private ultimaSonda: { readonly p: Vec; readonly reusita: boolean } = { p: { x: 0, y: 0, z: 0 }, reusita: false };
+  /** Fața de sus a plăcii de contact simulate, în Z-ul mașinii (null: nicio placă sub freză). */
+  placa: { readonly z: number } | null;
   private setari = new Map<number, number>(SETARI.map(([n, v]) => [n, v]));
   private wcs: Vec[] = Array.from({ length: 6 }, () => ({ x: 0, y: 0, z: 0 }));
+  /** Rapoartele de dat până la următorul `WCO:` (0: chiar următorul) și decalajul trimis ultima oară. */
+  private contorWco = 0;
+  private ultimulWco: Vec | null = null;
   private g92: Vec = { x: 0, y: 0, z: 0 };
   private tlo = 0;
   private modal = { miscare: 0, wcs: 0, plan: 17, unitati: 21, distanta: 90, avansMod: 94, ax: 5, racire: 9 };
@@ -144,9 +161,10 @@ export class EmulatorGrbl {
   private turatie = 0;
   private scula = 0;
 
-  constructor(contract: ContractEmulator = GRBL_11H, opt: { readonly laNemodelat?: 'arunca' | 'eroare' } = {}) {
+  constructor(contract: ContractEmulator = GRBL_11H, opt: { readonly laNemodelat?: 'arunca' | 'eroare'; readonly placa?: { readonly z: number } | null } = {}) {
     this.contract = contract;
     this.laNemodelat = opt.laNemodelat ?? 'arunca';
+    this.placa = opt.placa ?? null;
   }
 
   get rxOcupat(): number { return this.rx.length; }
@@ -156,6 +174,7 @@ export class EmulatorGrbl {
   get stare(): Stare {
     if (this.alarmat) return 'Alarm';
     if (this.hold) return this.hold;
+    if (this.plan[0]?.jog) return 'Jog';
     return this.plan.length > 0 ? 'Run' : 'Idle';
   }
   /** Poziția mașinii acum (în mijlocul unui bloc: pe segment sau pe arc). */
@@ -235,6 +254,7 @@ export class EmulatorGrbl {
         this.ceas += ramas; rest -= ramas;
         this.pozMasina = { ...b.tinta };
         this.plan.shift();
+        if (this.sonda && this.plan.length === 0) this.incheieSonda();
       } else {
         b.parcurs += v * rest; this.ceas += rest; rest = 0;
       }
@@ -281,7 +301,15 @@ export class EmulatorGrbl {
       case 0x9c: this.override.ax = limit(this.override.ax + 1); return true;
       case 0x9d: this.override.ax = limit(this.override.ax - 1); return true;
       // Ușa, anularea jog-ului, oprirea axului în hold, răcirea: luate (nu ocupă bufferul), fără efect modelat aici.
-      case 0x84: case 0x85: case 0x9e: case 0xa0: case 0xa1: return true;
+      case 0x85:
+        // Anularea jog-ului: mișcările de jog se opresc pe loc (modelul; GRBL frânează), cele ale programului rămân.
+        if (this.plan[0]?.jog) {
+          this.pozMasina = this.pozitie;
+          this.plan = this.plan.filter((x) => !x.jog);
+          this.pozParser = { ...this.pozMasina };
+        }
+        return true;
+      case 0x84: case 0x9e: case 0xa0: case 0xa1: return true;
       default: return false;
     }
   }
@@ -294,7 +322,17 @@ export class EmulatorGrbl {
     const bf = (masca & 2) ? `|Bf:${this.contract.planificator - this.plan.length},${this.contract.rx - this.rx.length}` : '';
     const b = this.plan[0];
     const avans = this.stare === 'Run' && b ? Math.round(this.viteza(b)) : 0;
-    return `<${this.stare}|${poz}${bf}|FS:${avans},${Math.round(this.ax)}>`;
+    const u = this.ultimulWco;
+    if (u && (u.x !== wco.x || u.y !== wco.y || u.z !== wco.z)) this.contorWco = 0;
+    let campWco = '';
+    if (this.contorWco > 0) {
+      this.contorWco--;
+    } else {
+      this.contorWco = (this.stare === 'Idle' || this.stare === 'Alarm' ? 10 : 30) - 1;
+      this.ultimulWco = wco;
+      campWco = `|WCO:${f3(wco.x)},${f3(wco.y)},${f3(wco.z)}`;
+    }
+    return `<${this.stare}|${poz}${bf}|FS:${avans},${Math.round(this.ax)}${campWco}>`;
   }
 
   private wco(): Vec {
@@ -322,12 +360,13 @@ export class EmulatorGrbl {
     this.g92 = { x: 0, y: 0, z: 0 };
     this.avans = 0; this.turatie = 0; this.scula = 0;
     this.override.avans = 100; this.override.rapid = 100; this.override.ax = 100;
+    this.contorWco = 0;
   }
 
   /** Bucla protocolului: liniile complete din buffer, cât au loc (planificatorul, golirea cerută). */
   private proceseaza(): void {
     for (;;) {
-      if (this.critica || this.pauza !== null) return;
+      if (this.critica || this.pauza !== null || this.sonda !== null) return;
       const capat = this.rx.findIndex((c) => c === 0x0a || c === 0x0d);
       if (capat < 0) return;
       const { text, depasire } = curata(this.rx.slice(0, capat), this.contract.linie);
@@ -335,8 +374,16 @@ export class EmulatorGrbl {
       if (depasire) { consuma(); this.trimite('error:11'); continue; }
       if (text === '') { consuma(); this.trimite('ok'); continue; }
       try {
+        if (text.startsWith('$J=')) {
+          const j = this.jog(text.slice(3));
+          if (j === 'asteapta') return;
+          consuma();
+          this.trimite(typeof j === 'number' ? `error:${j}` : 'ok');
+          continue;
+        }
         if (text.startsWith('$')) { consuma(); this.sistem(text); continue; }
-        if (this.alarmat) { consuma(); this.trimite('error:9'); continue; }
+        // Ca GRBL 1.1 (`protocol_execute_line`): G-code-ul se refuză în alarmă și cât ține un jog.
+        if (this.alarmat || this.stare === 'Jog') { consuma(); this.trimite('error:9'); continue; }
       } catch (e) {
         if (!(e instanceof Nemodelat) || this.laNemodelat === 'arunca') throw e;
         this.trimite(`[MSG:Not simulated: ${e.message}]`);
@@ -361,7 +408,7 @@ export class EmulatorGrbl {
   }
 
   private sistem(text: string): void {
-    const ocupat = this.stare === 'Run' || this.stare === 'Hold:0' || this.stare === 'Hold:1';
+    const ocupat = this.stare === 'Run' || this.stare === 'Jog' || this.stare === 'Hold:0' || this.stare === 'Hold:1';
     if (text === '$') { this.trimite('[HLP:$$ $# $G $I $N $x=val $Nx=line $J=line $SLP $C $X $H ~ ! ? ctrl-x]'); this.trimite('ok'); return; }
     if (text === '$G') {
       const m = this.modal;
@@ -380,7 +427,7 @@ export class EmulatorGrbl {
       this.trimite('ok');
       return;
     }
-    if (/^\$(C|J=|N|SLP|RST=)/.test(text)) throw new Nemodelat(`comanda ${text}`);
+    if (/^\$(C|N|SLP|RST=)/.test(text)) throw new Nemodelat(`comanda ${text}`);
     if (ocupat) { this.trimite('error:8'); return; }
     if (text === '$#') {
       for (const [k, w] of this.wcs.entries()) this.trimite(`[G${54 + k}:${f3(w.x)},${f3(w.y)},${f3(w.z)}]`);
@@ -388,7 +435,8 @@ export class EmulatorGrbl {
       this.trimite('[G30:0.000,0.000,0.000]');
       this.trimite(`[G92:${f3(this.g92.x)},${f3(this.g92.y)},${f3(this.g92.z)}]`);
       this.trimite(`[TLO:${f3(this.tlo)}]`);
-      this.trimite('[PRB:0.000,0.000,0.000:0]');
+      const s = this.ultimaSonda;
+      this.trimite(`[PRB:${f3(s.p.x)},${f3(s.p.y)},${f3(s.p.z)}:${s.reusita ? 1 : 0}]`);
       this.trimite('ok');
       return;
     }
@@ -434,14 +482,16 @@ export class EmulatorGrbl {
       if (grupe.has(grupa)) throw new Nemodelat(`două coduri din grupa ${grupa} pe linia ${text}`);
       grupe.add(grupa);
     }
-    for (const g of gs) if ([28, 28.1, 30, 30.1, 38.2, 38.3, 38.4, 38.5, 93, 18, 19].includes(g)) throw new Nemodelat(`G${g}`);
+    for (const g of gs) if ([28, 28.1, 30, 30.1, 38.4, 38.5, 93, 18, 19].includes(g)) throw new Nemodelat(`G${g}`);
+    const g38 = gs.find((g) => g === 38.2 || g === 38.3);
+    if (g38 !== undefined && (val.has('X') || val.has('Y') || !val.has('Z'))) throw new Nemodelat('palparea în afara axei Z');
     if (val.has('R')) throw new Nemodelat('arcul cu R');
     if (val.has('N')) throw new Nemodelat('numerele de linie');
 
     // Starea nouă, aplicată doar dacă linia trece (o eroare nu schimbă nimic).
     const modal = { ...this.modal };
     for (const g of gs) {
-      if ([0, 1, 2, 3, 80].includes(g)) modal.miscare = g;
+      if ([0, 1, 2, 3, 80, 38.2, 38.3].includes(g)) modal.miscare = g;
       else if (g >= 54 && g <= 59) modal.wcs = g - 54;
       else if (g === 17) modal.plan = g;
       else if (g === 20 || g === 21) modal.unitati = g;
@@ -453,7 +503,7 @@ export class EmulatorGrbl {
     if (val.has('F')) avans = (val.get('F') ?? 0) * k;
     const nemodal = gs.find((g) => [4, 10, 53, 92, 92.1].includes(g));
     const axe = AXE.filter((a) => val.has(a.toUpperCase()));
-    const sincron = gs.includes(4) || gs.includes(10) || ms.some((m) => [0, 2, 30, 3, 4, 5, 8, 9].includes(m));
+    const sincron = gs.includes(4) || gs.includes(10) || g38 !== undefined || ms.some((m) => [0, 2, 30, 3, 4, 5, 8, 9].includes(m));
 
     // Ținta mișcării (coordonatele mașinii).
     let tinta: Vec | null = null;
@@ -487,6 +537,23 @@ export class EmulatorGrbl {
     const bloc = tinta ? this.bloc(this.pozParser, tinta, arc, miscare === 0, avans) : null;
     if (sincron && this.plan.length > 0) return 'asteapta';
     if (bloc && this.plan.length >= this.contract.planificator) return 'asteapta';
+
+    // Palparea (sincronă: planificatorul e gol aici): atinsă dinainte, ALARM:4; altfel blocul până la placă sau la țintă.
+    if (g38 !== undefined && tinta) {
+      if (!(avans > 0)) return 22;
+      const z0 = this.pozParser.z;
+      if (this.placa && z0 <= this.placa.z + EPS) { this.alarma(4); return 'pauza'; }
+      const contact = this.placa !== null && tinta.z <= this.placa.z;
+      const capat = { ...tinta, z: contact && this.placa ? this.placa.z : tinta.z };
+      const b = this.bloc(this.pozParser, capat, null, false, avans);
+      this.modal = modal;
+      this.avans = avans;
+      this.pozParser = capat;
+      this.sonda = { g: g38, contact };
+      if (b) this.plan.push(b);
+      else this.incheieSonda();
+      return 'pauza';
+    }
 
     // Se aplică.
     this.modal = modal;
@@ -533,6 +600,52 @@ export class EmulatorGrbl {
       this.pauza = (val.get('P') ?? 0) * 1000;
       if (this.pauza <= EPS) { this.pauza = null; return 'ok'; }
       return 'pauza';
+    }
+    return 'ok';
+  }
+
+  /** Capătul palpării: atinsă, PRB și ok; neatinsă, ALARM:5 (`G38.2`) sau PRB cu 0 și ok (`G38.3`). */
+  private incheieSonda(): void {
+    const s = this.sonda;
+    if (!s) return;
+    this.sonda = null;
+    const p = { ...this.pozMasina };
+    this.ultimaSonda = { p, reusita: s.contact };
+    if (!s.contact && s.g === 38.2) { this.alarma(5); return; }
+    this.trimite(`[PRB:${f3(p.x)},${f3(p.y)},${f3(p.z)}:${s.contact ? 1 : 0}]`);
+    this.trimite('ok');
+  }
+
+  /**
+   * Jog-ul (`$J=…`): doar în Idle sau Jog (`error:8`), cu `F` obligatoriu (`error:22`, modelul); `G90` / `G91`, `G20` / `G21`,
+   * `G53` și axele, fără să schimbe starea modală a parserului. Planificatorul plin: așteaptă.
+   */
+  private jog(corp: string): 'ok' | 'asteapta' | number {
+    if (this.stare !== 'Idle' && this.stare !== 'Jog') return 8;
+    const w = cuvinte(corp);
+    if (typeof w === 'number') return w;
+    const gs = w.filter((x) => x.l === 'G').map((x) => x.v);
+    const val = new Map(w.filter((x) => x.l !== 'G').map((x) => [x.l, x.v] as const));
+    for (const l of val.keys()) if (!'XYZF'.includes(l)) throw new Nemodelat(`jog cu ${l}`);
+    for (const g of gs) if (![20, 21, 53, 90, 91].includes(g)) throw new Nemodelat(`jog cu G${g}`);
+    const f = val.get('F');
+    if (f === undefined || !(f > 0)) return 22;
+    const k = (gs.includes(20) ? 20 : gs.includes(21) ? 21 : this.modal.unitati) === 20 ? 25.4 : 1;
+    const incremental = (gs.includes(91) ? 91 : gs.includes(90) ? 90 : this.modal.distanta) === 91;
+    const w0 = this.wcs[this.modal.wcs] ?? { x: 0, y: 0, z: 0 };
+    const wco = { x: w0.x + this.g92.x, y: w0.y + this.g92.y, z: w0.z + this.g92.z + this.tlo };
+    const tinta = { ...this.pozParser };
+    for (const a of AXE) {
+      const v = val.get(a.toUpperCase());
+      if (v === undefined) continue;
+      tinta[a] = gs.includes(53) ? v * k : incremental ? this.pozParser[a] + v * k : v * k + wco[a];
+    }
+    if (this.plan.length >= this.contract.planificator) return 'asteapta';
+    const b = this.bloc(this.pozParser, tinta, null, false, f * k);
+    this.pozParser = tinta;
+    if (b) {
+      this.plan.push({ ...b, jog: true });
+      this.contoare.varfPlanificator = Math.max(this.contoare.varfPlanificator, this.plan.length);
     }
     return 'ok';
   }

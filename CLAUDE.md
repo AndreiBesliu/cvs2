@@ -119,7 +119,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (ADR 0080, felia 3.6a)** gata pe 26.10: `src/machine/` (`program.ts` încărcarea și refuzurile, `raspunsuri.ts` rapoartele pe N
   axe, `flux.ts` mașina de stare pură, `pas(stare, eveniment)`), probat pe emulator. **Panoul mașinii (ADR 0081, felia 3.6b)** gata pe 26.10:
   sesiunea (`src/machine/sesiune.ts`), portul Web Serial, mașina simulată doar pe test (`MasinaSimulata`, doar online), panoul în
-  docul din dreapta (`vedere.masina`). **Urmează: 3.7, jog, zero și palparea.**
+  docul din dreapta (`vedere.masina`). **Jog-ul, zero-ul și palparea Z (ADR 0082, felia 3.7a)** gata pe 26.10, pe mașina simulată:
+  procedurile pure (`src/machine/proceduri.ts`), zero-ul și palparea în WCS-ul programului, WCS-ul activ citit (`$G`), starea
+  modală pusă la loc după palpare; placa simulată la Z −25. 3.7b (aceleași pe mașină) cere placa de contact a owner-ului.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

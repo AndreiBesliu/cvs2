@@ -392,7 +392,7 @@ Panoul **Mașina** (în dreapta, sub proprietăți) trimite programul la mașin�
 
 - **Conectează (USB)** te lasă să alegi portul mașinii (GRBL, 115 200 baud). Merge doar în Chrome sau Edge pe un calculator
   (Web Serial); altfel, panoul spune asta. Pe instanța de test mai e și **Mașină simulată**: un controler GRBL simulat, ca să
-  încerci panoul fără CNC, cu **Viteza** 1×, 10× sau 100×.
+  încerci panoul fără CNC, cu **Viteza** 1×, 10× sau 100×. **Deconectează** închide portul.
 - **Starea** vine din rapoartele mașinii (de 5 ori pe secundă): Idle, Run, Hold:0 (oprită), Hold:1 (încă frânează), Alarm, și
   poziția (de lucru, când se știe; altfel a mașinii).
 - **Programul**: **Ultimul export** încarcă exact fișierul ultimului Exportă G-code (amprenta SHA-256 e aceeași cu cea din
@@ -410,6 +410,22 @@ Panoul **Mașina** (în dreapta, sub proprietăți) trimite programul la mașin�
   **jurnal**. Citirile `$` pleacă doar când mașina stă (altfel GRBL le refuză).
 
 Lucrarea e „gata” abia după ultimul răspuns al mașinii și după ce raportează Idle: o pauză nu o încheie.
+
+**Poziționarea** (cu mașina conectată):
+- **Coordonatele de lucru**: sistemul activ al mașinii (G54–G59), citit de la ea; poziția de lucru se arată în el. Dacă
+  programul încărcat taie în altul, panoul o spune și oferă **Treci pe** acela.
+- **Jog**: săgețile mută freza cu **Pasul** ales (0,1, 1, 10 sau 100 mm) și cu **Avansul** dat; diagonalele sunt o singură
+  mișcare, în linie dreaptă; Z+ și Z− în dreapta. **Oprește jog-ul** apare cât mașina e în Jog.
+- **Zero XY** și **Zero Z** fac poziția de acum 0 în sistemul programului încărcat (altfel în cel activ), scris pe buton.
+  Dedesubt: unde e Z0 pentru programul exportat de aici (fața de sus a materialului sau cea de jos, pe masă) și colțul
+  originii XY.
+- **Palparea Z**: pune placa de contact sub freză (pe material, dacă Z0 e sus; pe masă, dacă e jos), prinde clema și apasă
+  **Palpează Z**. Freza coboară până atinge placa (cel mult **Distanța de căutare**, cu **Avansul căutării**), se ridică 2 mm,
+  atinge din nou încet, scrie Z0 (atingerea minus **Grosimea plăcii**) și se ridică 5 mm. După palpare, mașina e în modul de
+  dinainte (de obicei G90, în mm). Fără atingere, mașina intră în alarmă (ALARM:5); dacă freza atingea deja placa, ALARM:4:
+  deblochează ($X) și încearcă din nou.
+- Ce nu se poate acum e dezactivat, cu motivul alături („Nu acum: mașina e în alarmă…”): în alarmă, cât merge o lucrare sau o
+  procedură. Oprit la o schimbare de sculă, merg jog-ul, palparea și zero-ul Z, nu și zero-ul XY.
 
 ## Vederea 3D
 %% capitol: vedere-3d

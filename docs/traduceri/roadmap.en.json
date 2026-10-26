@@ -221,10 +221,6 @@
       "ro": "**Personalul: rolurile custom, invitațiile, conturile create de owner, adusă din etapa 14** (fila „Admini”, fără mașină; ADR 0049; cererea owner-ului, cu deciziile lui: personalul din `/admin`, invitația pe e-mail și contul cu parolă, rolurile ca bife, acum, fără agenți; plus „un singur cont pe e-mail”). Catalogul de permisiuni în cod (`shared/personal.ts`), `owner` fix și niciodată lipsă; regulile citesc rolul la fiecare cerere din `staff/{uid}` și `roluri/{id}`; callable-urile `administreazaPersonalul` (8 acțiuni, doar owner-ul, auditul în tranzacție) și `acceptaInvitatia` (doar pe adresa verificată; „nicio invitație” e un răspuns, nu o eroare); contul creat de owner primește un link de setare a parolei, valabil o oră. În `/admin`: filele după permisiuni, fila Personal (oamenii, adăugarea, invitațiile, rolurile) și fila Cont (metodele legate la același cont: „Adaugă o parolă”, „Leagă Google”, „Schimbă parola”), intrarea cu parola și „Am uitat parola”. **Treceri:** (1) contractul, serverul și probele; (2) ordinea auditului în probe (aceeași oră pe toate acțiunile) și „nicio invitație” ca 404 în consolă; (3) emulatorul de Auth refuză legarea parolei pe aceeași adresă („adresă folosită”): parola se pune atunci direct pe contul deschis, verificată după reîncărcare. Pe test, owner-ul și-a adăugat parola la contul Google pe 20.10 („Pare ca a functionat”): un singur cont, cu `google.com` și `password` (citit în Auth).",
       "en": "**Staff: custom roles, invitations, accounts created by the owner, brought forward from stage 14** (the “Admins” tab, without the machine; ADR 0049; the owner's request, with the owner's decisions: staff in `/admin`, the email invitation and the password account, roles as checkboxes, now, no agents; plus “a single account per email”). The permission catalogue in code (`shared/personal.ts`), `owner` fixed and never missing; the rules read the role on every request from `staff/{uid}` and `roluri/{id}`; the callables `administreazaPersonalul` (8 actions, owner only, the audit in a transaction) and `acceptaInvitatia` (only on the verified address; “no invitation” is an answer, not an error); an account created by the owner gets a password-setting link, valid for one hour. In `/admin`: tabs by permission, the Staff tab (the people, adding, invitations, roles) and the Account tab (the methods linked to the same account: “Add a password”, “Link Google”, “Change password”), password sign-in and “Forgot password”. **Passes:** (1) the contract, the server and the checks; (2) the audit order in the checks (the same time on every action) and “no invitation” as a 404 in the console; (3) the Auth emulator refuses linking a password on the same address (“address in use”): the password is then set directly on the open account, checked after reloading. On test, the owner added a password to their Google account on 20.10 (“It seems to have worked”): a single account, with `google.com` and `password` (read in Auth)."
     },
-    "1f15088b5b31cbb1": {
-      "ro": "Postul: contractele grblHAL și FluidNC, cele 4 strategii de schimbare a sculei, pauza în unitatea controlerului, elicea, inch cu 5 zecimale",
-      "en": "The post: the grblHAL and FluidNC contracts, the 4 tool-change strategies, the dwell in the controller's unit, the helix, inch with 5 decimals"
-    },
     "1f8b0484b8e08f98": {
       "ro": "Urechile ca modificator Z",
       "en": "Tabs as a Z modifier"
@@ -321,6 +317,10 @@
       "ro": "Riglele, ghidajele, lipirea și alinierea",
       "en": "Rulers, guides, snapping and alignment"
     },
+    "2e1cf19d4b9aaece": {
+      "ro": "Jog-ul, zero-ul și palparea pe mașina reală, cu placa de contact; transcrierea lor, rejucată pe emulator",
+      "en": "Jog, zero and probing on the real machine, with the touch plate; their transcript, replayed on the emulator"
+    },
     "2e7ec09be96e6d83": {
       "ro": "Personalul",
       "en": "Staff"
@@ -377,6 +377,10 @@
       "ro": "**Un schelet care taie** (§5.3)",
       "en": "**A skeleton that cuts** (§5.3)"
     },
+    "35c407c4f8470b69": {
+      "ro": "Jog, zero XY / Z, palparea Z cu placa de contact, G54–G59, pe mașina simulată (ADR 0082): procedurile pure, WCS-ul citit, starea modală pusă la loc, refuzurile cu motiv; e2e pe emulator",
+      "en": "Jog, XY / Z zero, Z probing with the touch plate, G54–G59, on the simulated machine (ADR 0082): the pure procedures, the work coordinate system read back, the modal state restored, refusals with a reason; e2e on the emulator"
+    },
     "3775e3c8b69ac9f6": {
       "ro": "Publicarea pe live",
       "en": "Publishing to live"
@@ -412,10 +416,6 @@
     "3a8ca48872fe9ed5": {
       "ro": "Textura din freză; Ghilotină + drillbanks (găurirea multiplă pe simulare și pe octeți)",
       "en": "Texture from the bit; Guillotine + drillbanks (multiple drilling on simulation and on bytes)"
-    },
-    "3b007379d7b1ac08": {
-      "ro": "înainte de 3.7",
-      "en": "before 3.7"
     },
     "3cac31c2ed72eaa1": {
       "ro": "**Profilul complet pe geometrie exactă** + importul SVG",
@@ -641,10 +641,6 @@
       "ro": "șanțurile de calibrare",
       "en": "the calibration grooves"
     },
-    "5bc89b20f64f9d8a": {
-      "ro": "Jog, zero XY / Z, palparea Z cu placa de contact, G54–G59, bariera M6 (blocul de după, scris de post)",
-      "en": "Jog, zero XY / Z, Z probing with the touch plate, G54–G59, the M6 barrier (the block after it, written by the post)"
-    },
     "5bece914e15c12d9": {
       "ro": "Texturi; Export STL / OBJ; Clipart de relief; Laser",
       "en": "Textures; STL / OBJ export; Relief clipart; Laser"
@@ -752,6 +748,10 @@
     "7721c722a0965f76": {
       "ro": "acum (cerut de owner pe 25.10)",
       "en": "now (requested by the owner on 25.10)"
+    },
+    "777c207aa2e71768": {
+      "ro": "înainte de 3.7b",
+      "en": "before 3.7b"
     },
     "78c32b33abe2c88e": {
       "ro": "piesa unui străin, făcută fără ajutor",
@@ -945,6 +945,10 @@
       "ro": "crestele pe hârtie, fundul plat",
       "en": "the crests on paper, the flat bottom"
     },
+    "9461ca760824bf61": {
+      "ro": "Jog-ul, zero-ul, WCS-ul și palparea Z",
+      "en": "Jog, zero, the work coordinate system and Z probing"
+    },
     "9494cd00c92a6dab": {
       "ro": "Traseul pe pânză și panoul de proprietăți editabil",
       "en": "The toolpath on the canvas and the editable properties panel"
@@ -1137,10 +1141,6 @@
       "ro": "Documentația admin",
       "en": "Admin documentation"
     },
-    "b1133c6354aaff80": {
-      "ro": "3.7",
-      "en": "3.7"
-    },
     "b19268d56f328f8e": {
       "ro": "Vectori, noduri, boolean, offset, aliniere; Transformare și copiere",
       "en": "Vectors, nodes, boolean, offset, alignment; Transform and copy"
@@ -1172,6 +1172,10 @@
     "b52896d7055ba085": {
       "ro": "Simularea",
       "en": "Simulation"
+    },
+    "b5cdf0256bc129db": {
+      "ro": "Postul: contractele grblHAL și FluidNC, cele 4 strategii de schimbare a sculei (cu blocul de după `M6`, PORTARE §3.4), pauza în unitatea controlerului, elicea, inch cu 5 zecimale",
+      "en": "The post: the grblHAL and FluidNC contracts, the 4 tool-change strategies (with the block after `M6`, PORTARE §3.4), the dwell in the controller’s unit, the helix, inches with 5 decimals"
     },
     "b6987a4aa69113ee": {
       "ro": "**Panoul mașinii, cu mașina simulată** (ADR 0081; „Da, pornește 3.6b: portul Web Serial și panoul mașinii, cu o mașină simulată (emulatorul) pe instanța de test, ca să-l pot încerca fără CNC.”). Panoul **Mașina** (în dreapta, sub proprietăți): conectarea la mașină prin USB (Web Serial, în Chrome sau Edge) și, pe instanța de test, **Mașină simulată** (un GRBL simulat, cu viteza 1×, 10× sau 100×); starea și poziția din rapoarte; programul, din ultimul export (exact octeții lui, aceeași amprentă SHA-256) sau dintr-un fișier verificat; Pornește, Pauză / Reia, Reia după eroare, Continuă la o schimbare de sculă, Oprește, Deblochează; comenzile manuale și jurnalul. Mașina simulată e doar online, pe test; panoul și senderul merg și fără internet. Manualul are capitolul „Mașina”. **Treceri:** (1) sesiunea cu un ceas fals (portul căzut, scrierea căzută, linia ruptă între bucăți), apoi panoul și legarea în carcasă; emulatorul mutat din teste în aplicație, cu răspunsul „nu e modelat” în loc de aruncare; e2e-ul (mașina simulată, un fișier refuzat, un port Web Serial fals, fără Web Serial) a trecut din prima; mutațiile: 12 / 13, apoi 13 / 13 (ceasul rămas după deconectare, prins de proba reconectării).",
@@ -1268,6 +1272,10 @@
     "c522fbef9a2f41e6": {
       "ro": "Regiunea păstrată, cu oracolul întâi",
       "en": "The kept region, oracle first"
+    },
+    "c631eb99a8754857": {
+      "ro": "**Jog, zero și palparea Z, pe mașina simulată** (ADR 0082; „Da, pornește 3.7: jog, zero XY / Z, palparea Z cu placa de contact și G54–G59, întâi pe mașina simulată.”). În panoul **Mașina**, secțiunea Poziționare: **Coordonatele de lucru** (G54–G59, citite de la mașină), jog-ul cu pași de 0,1–100 mm (diagonalele într-o singură mișcare, **Oprește jog-ul**), **Zero XY** / **Zero Z** și **Palpează Z** cu placa de contact (două atingeri, Z0 = atingerea minus grosimea, freza ridicată la capăt, modul mașinii pus la loc). Zero-ul și palparea se scriu în sistemul programului încărcat, cu numele lui pe buton; nepotrivirea cu cel activ se spune; lângă zero, unde e Z0 pentru programul exportat. Ce nu se poate acum e dezactivat, cu motivul (alarma, lucrarea, mașina în mișcare). Pe instanța de test, mașina simulată are placa la Z −25. **Treceri:** (1) emulatorul întâi (jog-ul, palparea, `WCO:` în rapoarte: fără el, un zero nu se vedea pe ecran), procedurile pure, sesiunea, panoul; prima palpare pe emulator a picat cu `error:9`: atingerea fină pleca cât retragerea (un jog) încă mergea, iar GRBL refuză G-code-ul în Jog, deci G-code-ul procedurilor pleacă doar pe un Idle proaspăt; mutațiile: 55 / 59, două echivalente scoase din cod, două prinse de probe noi (o repornire cât un zero așteaptă, un port fără banner); pe panou, 4 / 4 prinse de e2e.",
+      "en": "**Jog, zero and Z probing, on the simulated machine** (ADR 0082; “Da, pornește 3.7: jog, zero XY / Z, palparea Z cu placa de contact și G54–G59, întâi pe mașina simulată.”). In the **Machine** panel, the Positioning section: **Work coordinates** (G54–G59, read from the machine), jog in steps of 0.1–100 mm (the diagonals as a single move, **Stop the jog**), **Zero XY** / **Zero Z** and **Probe Z** with the touch plate (two touches, Z0 = the touch minus the thickness, the bit lifted at the end, the machine’s mode restored). The zero and the probing are written to the loaded program’s system, named on the button; a mismatch with the active one is stated; next to the zero, where Z0 is for the exported program. What cannot be done now is disabled, with the reason (alarm, a running job, the machine moving). On the test instance, the simulated machine has the plate at Z −25. **Passes:** (1) the emulator first (jog, probing, `WCO:` in the reports: without it, a zero did not show on screen), the pure procedures, the session, the panel; the first probing on the emulator failed with `error:9`: the slow touch was sent while the back-off (a jog) was still running, and GRBL refuses G-code during a jog, so the procedures’ G-code goes only on a fresh Idle; mutations: 55 / 59, two equivalent ones removed from the code, two caught by new tests (a reset while a zero waits, a port without a banner); on the panel, 4 / 4 caught by e2e."
     },
     "c69dae1f09b09782": {
       "ro": "Tăierea plăcilor 1 și 2",
@@ -1533,6 +1541,10 @@
       "ro": "Vederea 3D a simulării",
       "en": "The 3D view of the simulation"
     },
+    "f5f9377648ddce6f": {
+      "ro": "3.7b",
+      "en": "3.7b"
+    },
     "f69517a92ff2a4a3": {
       "ro": "Jog, zero XY / Z",
       "en": "Jog, zero XY / Z"
@@ -1552,6 +1564,10 @@
     "f7b2ca36d5c6c694": {
       "ro": "**Copierea în rețea și pe cerc, adusă din etapa 6** (fără mașină; ADR 0061; „continua”: următorul pas al rândului „Transformare și copiere”). Secțiunea Copiere din extensia barei deschide panoul „Copiază în rețea”: rânduri × coloane, cu spațiul dintre copii, sau pe cerc, cu câte forme, unghiul, centrul și rotirea copiilor. Copiile se văd pe pânză cât panoul e deschis, sunt piese independente (ca la Duplică) și se fac într-un singur pas de anulare; panoul spune de ce nu se poate (valorile, nimic ales, plafonul, prea departe). Pornirea rămâne 99,8 / 100 cu ușa; manualul (capitolul transformărilor) e la zi. **Treceri:** (1) modulul pur, acțiunea cu verdictul comun panoului, panoul și previzualizarea, probele; (2) proba „prea departe” nu verifica refuzul (doar cazuri bune): refăcută cu o instanță aproape de plafonul translației; Esc nu închidea panoul cu focusul pe butonul lui: reparat.",
       "en": "**Array and circular copy, brought forward from stage 6** (no machine; ADR 0061; “continue”: the next step of the “Transform and copy” row). The Copy section of the bar extension opens the “Copy in an array” panel: rows × columns, with the gap between copies, or on a circle, with how many shapes, the angle, the centre and the rotation of the copies. The copies show on the canvas while the panel is open, are independent parts (as with Duplicate) and are made in a single undo step; the panel says why it cannot be done (the values, nothing chosen, the cap, too far away). Startup stays at 99.8 / 100 with the door; the manual (the transforms chapter) is up to date. **Passes:** (1) the pure module, the action with the verdict shared with the panel, the panel and the preview, the checks; (2) the “too far away” check did not test the refusal (only good cases): redone with an instance close to the translation cap; Esc did not close the panel with the focus on its button: fixed."
+    },
+    "f891c5d216967f65": {
+      "ro": "Jog-ul, zero-ul și palparea pe mașina reală",
+      "en": "Jog, zero and probing on the real machine"
     },
     "f960c0b00b8d3474": {
       "ro": "Ușa SVG: DOMParser inert, unități, viewBox, transformări, elementele (path, rect, circle, ellipse, line, polyline, polygon), plafonul de mărime, avertismentele; butonul de import",

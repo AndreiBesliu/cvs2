@@ -2,18 +2,25 @@
  * Mașina simulată (ADR 0081): emulatorul GRBL 1.1h (ADR 0079) ca transport, ca omul să încerce panoul mașinii fără CNC. Doar pe
  * instanța de test și doar online (bucata `MasinaSimulata`, în afara precache-ului, cu plafonul ei): nu e o funcție a produsului,
  * ci o mașină de probă. Timpul simulării merge cu ceasul paginii, înmulțit cu viteza aleasă (1×, 10×, 100×); ce nu știe simularea
- * răspunde cu un mesaj și `error:20`, nu cu un răspuns inventat.
+ * răspunde cu un mesaj și `error:20`, nu cu un răspuns inventat. Sub freză stă o placă de contact (ADR 0082), cu fața de sus la
+ * Z −25 în coordonatele mașinii: palparea Z se încearcă de la pornire (Z 0), cu distanța implicită (30 mm).
  */
 import { EmulatorGrbl } from './emulator.ts';
 import type { Ceas, Transport } from './sesiune.ts';
 
 export const PAS_SIMULARE_MS = 10;
 export const VITEZE_SIMULARE = [1, 10, 100] as const;
+export const PLACA_SIMULATA_Z = -25;
 
 const octeti = (t: string): Uint8Array => Uint8Array.from(t, (c) => c.charCodeAt(0) & 0xff);
 
-export function deschideSimulata(opt: { readonly ceas: Ceas; readonly viteza: () => number }): Transport & { readonly emulator: EmulatorGrbl } {
-  const emu = new EmulatorGrbl(undefined, { laNemodelat: 'eroare' });
+export function deschideSimulata(opt: {
+  readonly ceas: Ceas;
+  readonly viteza: () => number;
+  /** Placa de contact (null: niciuna, palparea nu atinge nimic). */
+  readonly placa?: { readonly z: number } | null;
+}): Transport & { readonly emulator: EmulatorGrbl } {
+  const emu = new EmulatorGrbl(undefined, { laNemodelat: 'eroare', placa: opt.placa === undefined ? { z: PLACA_SIMULATA_Z } : opt.placa });
   let primit: ((o: Uint8Array) => void) | null = null;
   let ticker: unknown = null;
   const trimiteIesirea = (): void => {

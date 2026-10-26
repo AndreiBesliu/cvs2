@@ -66,13 +66,13 @@ test('fișa etapei 3: feliile, jurnalul (cu rândurile aduse ↑ și 3.P), ce î
   const f = citesteFisa('docs/etape/etapa-03.md', citeste('docs/etape/etapa-03.md'));
   assert.equal(f.numar, 3);
   assert.equal(f.pornita, '16.10.2026');
-  assert.deepEqual(f.felii.map((x) => x.id), ['3.1', '3.2', '3.3', '3.4a', '3.4b', '3.5a', '3.5b', '3.6a', '3.6b', '3.7', '3.8', '3.9']);
+  assert.deepEqual(f.felii.map((x) => x.id), ['3.1', '3.2', '3.3', '3.4a', '3.4b', '3.5a', '3.5b', '3.6a', '3.6b', '3.7a', '3.7b', '3.8', '3.9']);
   const ids = f.jurnal.map((x) => x.id);
   for (const id of ['3.1', '3.4b', '4.7↑', '4.5↑b', '4.2↑', '4.7↑b', '3.P']) assert.ok(ids.includes(id), id);
   const sim = f.jurnal.find((x) => x.id === '4.2↑');
   assert.deepEqual([sim?.started, sim?.completed, sim?.treceri], ['19.10 08:05', '19.10 14:05', 2]);
   // Lista se schimbă des (o cerere făcută iese din tabel): un rând stabil, nu numărul lor.
-  assert.ok(f.owner.some((o) => /Placa de contact pentru Z/.test(o.ce) && o.pentru === '3.7' && o.termen === 'înainte de 3.7'));
+  assert.ok(f.owner.some((o) => /Placa de contact pentru Z/.test(o.ce) && o.pentru === '3.7b' && o.termen === 'înainte de 3.7b'));
 });
 
 test('fișa etapei 1: rândul 1.10 citit întreg (era rupt de un heredoc), și în tabelul feliilor', () => {

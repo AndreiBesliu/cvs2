@@ -4,7 +4,7 @@
 cu o mașină simulată (emulatorul) pe instanța de test, ca să-l pot încerca fără CNC.”). **Continuă:** ADR 0020 (T20: sesiunea
 Web Serial, octeții exportați cu hash), ADR 0080 (fluxul senderului). **Schimbă:** ADR 0079 §1 (emulatorul nu mai e doar o
 fixtură de test: e și mașina simulată a panoului, pe instanța de test) și §3 („Se redeschide dacă: se cere emulatorul și în
-aplicație”, cerut acum). **Documentul:** neschimbat.
+aplicație”, cerut acum). **Documentul:** neschimbat. **Completat de:** ADR 0082 (poziționarea: jog, zero, WCS, palparea Z).
 
 **Problema.** Fluxul senderului (ADR 0080) era probat, dar nimic din aplicație nu-l folosea: omul nu avea cu ce trimite un
 program la mașină și nici cum să încerce senderul fără CNC.

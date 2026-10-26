@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { bariereLinie, grupBariere, incarcaProgram, linieCurata } from '../../src/machine/program.ts';
+import { bariereLinie, grupBariere, incarcaProgram, linieCurata, montajDeclarat } from '../../src/machine/program.ts';
 import { citesteRaspuns, pozitieDeLucru, type Raport } from '../../src/machine/raspunsuri.ts';
 import { octeti } from './ajutor-sender.ts';
 
@@ -43,6 +43,18 @@ test('refuzurile, cu linia: gol, octet peste 0x7F, \\r, peste 70 de octeți, fă
   assert.equal(await refuz(`${ANTET}T2 M6\n`, 'export'), 'ok', 'din export, M6 e o barieră');
   assert.equal(await refuz(`${ANTET}G0 X1`), 'fara-final@2');
   assert.equal(await refuz(`${ANTET}G0 X1\n`, 'export', '0'.repeat(64)), 'hash@null');
+});
+
+test('montajul declarat de antetul postului (ADR 0082): originea și Z0 din comentariu; un program străin nu-l are', async () => {
+  const placa = await incarcaProgram(new Uint8Array(readFileSync('test/placi/placa-01/placa-01-A.nc')), { sursa: 'export' });
+  assert.ok(placa.ok);
+  if (placa.ok) assert.deepEqual(montajDeclarat(placa.program), { origine: 'stanga-jos', z0: 'sus' });
+  const jos = await incarcaProgram(octeti(`(CNC Vector Studio)\n(origine dreapta-sus, Z0 jos, foaia 1 x 1 x 1 mm)\n${ANTET}G0 X1\n`), { sursa: 'fisier' });
+  assert.ok(jos.ok);
+  if (jos.ok) assert.deepEqual(montajDeclarat(jos.program), { origine: 'dreapta-sus', z0: 'jos' });
+  const strain = await incarcaProgram(octeti(`${ANTET}(origine undeva, Z0 sus, foaia)\nG0 X1\n`), { sursa: 'fisier' });
+  assert.ok(strain.ok);
+  if (strain.ok) assert.equal(montajDeclarat(strain.program), null);
 });
 
 test('barierele: M0, M00, M1, M01, M6, M06, T5 M6; nu M3, M30, M60, M10, nici în comentarii; grupul: „M0, T5 M6” e o oprire, cu sculă', () => {

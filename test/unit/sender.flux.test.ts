@@ -236,4 +236,19 @@ test('regula 4: portul pierdut în flux (deconectat): pierdut, cu motivul; comen
   m = pas(pas(m.stare, { tip: 'primit', linie: '<Idle|MPos:0,0,0|FS:0,0>' }).stare, { tip: 'deconectat' });
   assert.deepEqual(m.actiuni, [{ tip: 'raspuns', id: 'a', date: [], rezultat: 'pierdut' }]);
   assert.equal(m.stare.faza, 'liber', 'în afara fluxului, faza rămâne');
+  // Comenzile încă la coadă (o citire care așteaptă Idle-ul) nu pleacă pe portul următor: primesc și ele „pierdut”.
+  let c = pas(fluxNou(), { tip: 'manual', id: 'b', text: 'G0 X1' });
+  c = pas(c.stare, { tip: 'manual', id: 'c', text: '$#' });
+  assert.equal(c.stare.coada.length, 1);
+  c = pas(c.stare, { tip: 'deconectat' });
+  assert.deepEqual(c.actiuni, [{ tip: 'raspuns', id: 'b', date: [], rezultat: 'pierdut' }, { tip: 'raspuns', id: 'c', date: [], rezultat: 'pierdut' }]);
+  assert.deepEqual(c.stare.coada, []);
+});
+
+test('anularea jog-ului (0x85) e un octet de timp real: pleacă pe loc, în orice fază, fără să intre în socoteală', () => {
+  for (const s0 of [fluxNou(), pas(fluxNou(), { tip: 'manual', id: 'j', text: '$J=G91 G21 X10 F300' }).stare]) {
+    const r = pas(s0, { tip: 'anuleaza-jog' });
+    assert.deepEqual(r.actiuni, [{ tip: 'scrie', octeti: Uint8Array.of(0x85) }]);
+    assert.equal(r.stare.suma, s0.suma);
+  }
 });

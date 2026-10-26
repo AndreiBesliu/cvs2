@@ -3015,3 +3015,23 @@ iar la 3.5a și 3.6a n-am rulat `test:emulator` (rularea de noapte de pe `4a016e
 traduse de panou (`CodJurnal`, `masina.jurnal.*`, `masina.motiv.*`), mesajul emulatorului pentru ce nu e simulat în engleză (ca
 mesajele GRBL), o probă e2e în engleză; porțile: 7 320 / 225 / 36 + 13. Nivelul complet, pornit din nou pe `7ff5a3c` după noaptea
 roșie (proba `/admin`, 3.5).
+
+## 2026-10-26 — Jog, zero și palparea Z, pe mașina simulată (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește 3.7: jog, zero XY / Z, palparea Z cu placa de contact și G54–G59, întâi pe mașina simulată.”
+**Started:** 26.10, ~09:40. Felia **3.7a**, fără agenți (ADR 0082): 3.7 despărțită în 3.7a (pe mașina simulată, acum) și 3.7b
+(pe mașină, cu placa de contact); blocul de după `M6` trece la post (3.8). Emulatorul întâi (jog-ul `$J=`, 0x85, palparea
+`G38.2` / `G38.3` pe o placă simulată, G-code-ul refuzat în Jog, `WCO:` în rapoarte), apoi procedurile pure
+(`src/machine/proceduri.ts`), legarea în sesiune (WCS-ul citit singur, G-code-ul procedurii doar pe un Idle proaspăt, starea
+modală pusă la loc după palpare), panoul (secțiunea Poziționare) și probele pe hârtie și pe emulator.
+**Completed:** 26.10 11:25. Porțile: 7 356 de teste unitare (0 picate, 8 sărite), e2e 228 / 228 în Edge, emulatoarele 36 + 13.
+Pornirea 95,5 / 100 kB (cu ușa 98,9), totalul 319,9 / 330, `/admin` 190,2 / 200, mașina simulată 5,9 / 8 (doar online).
+**Găsit pe drum:** (1) prima palpare pe emulator a picat cu `error:9`: `ok`-ul jog-ului de retragere vine la planificare, iar
+atingerea fină pleca cât jog-ul încă mergea (GRBL 1.1 refuză G-code-ul în Jog, modelat acum și în emulator) → G-code-ul
+procedurilor pleacă doar pe un Idle proaspăt; (2) emulatorul nu trimitea `WCO:`, deci panoul arăta doar poziția mașinii și un
+zero nu se vedea → `WCO:` ca GRBL (primul raport, după o schimbare, la 10 / 30 de rapoarte); (3) pe pagina servită local,
+workerul PWA ținea CSS-ul vechi (butoanele jog-ului fără margine): verificarea s-a făcut după ștergerea cache-ului.
+Mutațiile: 55 / 59; două echivalente scoase din cod (citirile interne oprite și în timpul unei proceduri; refuzul fluxului pentru
+o comandă a procedurii, de neatins), două prinse de probe noi (repornirea cât un zero așteaptă Idle-ul; portul fără banner);
+pe panou, 4 / 4 prinse de e2e. Manualul are o poartă nouă: fiecare control `data-masina` e numit în capitolul „Mașina”.
+

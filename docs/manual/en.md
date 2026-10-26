@@ -408,7 +408,7 @@ state.
 
 - **Connect (USB)** lets you choose the machine’s port (GRBL, 115,200 baud). It works only in Chrome or Edge on a computer
   (Web Serial); otherwise, the panel says so. On the test instance there is also **Simulated machine**: a simulated GRBL
-  controller, to try the panel without a CNC, with **Speed** 1×, 10× or 100×.
+  controller, to try the panel without a CNC, with **Speed** 1×, 10× or 100×. **Disconnect** closes the port.
 - **State** comes from the machine’s reports (5 times a second): Idle, Run, Hold:0 (stopped), Hold:1 (still braking), Alarm,
   and the position (the work position when known; otherwise the machine’s).
 - **Program**: **Last export** loads exactly the file of the last Export G-code (the SHA-256 fingerprint matches the one in
@@ -427,6 +427,22 @@ state.
   the **log**. `$` reads go only while the machine is at rest (otherwise GRBL refuses them).
 
 The job is “done” only after the machine’s last reply and after it reports Idle: a pause does not end it.
+
+**Positioning** (with the machine connected):
+- **Work coordinates**: the machine’s active system (G54–G59), read from it; the work position is shown in it. If the loaded
+  program cuts in another one, the panel says so and offers **Switch to** that one.
+- **Jog**: the arrows move the bit by the chosen **Step** (0.1, 1, 10 or 100 mm) at the given **Feed**; the diagonals are a
+  single straight move; Z+ and Z− on the right. **Stop the jog** shows while the machine is in Jog.
+- **Zero XY** and **Zero Z** make the current position 0 in the loaded program’s system (otherwise the active one), named on
+  the button. Below: where Z0 is for a program exported from here (the top of the material or the bottom, on the table) and
+  the corner of the XY origin.
+- **Z probe**: put the touch plate under the bit (on the material if Z0 is at the top; on the table if it is at the bottom),
+  attach the clip and press **Probe Z**. The bit lowers until it touches the plate (at most the **Search distance**, at the
+  **Search feed**), backs off 2 mm, touches again slowly, writes Z0 (the touch minus the **Plate thickness**) and lifts 5 mm.
+  After probing, the machine is back in its previous mode (usually G90, in mm). With no touch, the machine goes into alarm
+  (ALARM:5); if the bit was already touching the plate, ALARM:4: unlock ($X) and try again.
+- What cannot be done now is disabled, with the reason next to it (“Not now: the machine is in alarm…”): in alarm, while a
+  job or a procedure runs. Stopped at a tool change, jog, probing and Zero Z work, Zero XY does not.
 
 ## The 3D view
 %% capitol: vedere-3d

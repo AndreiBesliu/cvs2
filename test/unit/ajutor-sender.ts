@@ -5,6 +5,7 @@
  */
 import { EmulatorGrbl } from '../../src/machine/emulator.ts';
 import { pas, type Actiune, type Eveniment, type Faza, type StareFlux } from '../../src/machine/flux.ts';
+import type { Ceas } from '../../src/machine/sesiune.ts';
 
 export type Programat =
   | { readonly la: number; readonly e: Eveniment }
@@ -64,9 +65,34 @@ export function ruleaza(emu: EmulatorGrbl, s0: StareFlux, opt: {
   return { stare: s, actiuni, timp: t, sumaMaxima, faze };
 }
 
-/** Octeții primiți de emulator, fără cei de timp real ai sesiunii (`?`, `!`, `~`, Ctrl-X). */
+/** Octeții primiți de emulator, fără cei de timp real ai sesiunii (`?`, `!`, `~`, Ctrl-X, 0x85). */
 export function primitiFaraTimpReal(emu: EmulatorGrbl): string {
-  return emu.transcriere().filter((x) => x.dir === 'in').map((x) => x.text).join('').replace(/[?!~\x18]/g, '');
+  return emu.transcriere().filter((x) => x.dir === 'in').map((x) => x.text).join('').replace(/[?!~\x18\x85]/g, '');
 }
 
 export const octeti = (text: string): Uint8Array => Uint8Array.from(text, (c) => c.charCodeAt(0));
+
+/** Un ceas fals: timerele pornesc doar la `avanseaza`, iar între ele se golesc promisiunile (scrierile sesiunii). */
+export class CeasFals implements Ceas {
+  t = 0;
+  private urm = 1;
+  private timere: { id: number; la: number; perioada: number | null; f: () => void }[] = [];
+  readonly setInterval = (f: () => void, ms: number): number => { const id = this.urm++; this.timere.push({ id, la: this.t + ms, perioada: ms, f }); return id; };
+  readonly setTimeout = (f: () => void, ms: number): number => { const id = this.urm++; this.timere.push({ id, la: this.t + ms, perioada: null, f }); return id; };
+  readonly clearInterval = (id: unknown): void => { this.timere = this.timere.filter((x) => x.id !== id); };
+  async avanseaza(ms: number): Promise<void> {
+    const tinta = this.t + ms;
+    await golire();
+    for (;;) {
+      const x = [...this.timere].sort((a, b) => a.la - b.la || a.id - b.id)[0];
+      if (!x || x.la > tinta) break;
+      this.t = x.la;
+      if (x.perioada === null) this.timere = this.timere.filter((y) => y !== x);
+      else x.la += x.perioada;
+      x.f();
+      await golire();
+    }
+    this.t = tinta;
+  }
+}
+const golire = (): Promise<void> => new Promise((r) => { setImmediate(r); });

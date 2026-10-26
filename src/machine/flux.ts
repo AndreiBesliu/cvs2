@@ -12,7 +12,7 @@
  * 7. citirile `$#`, `$$`, `$G`, `$I`, `$N` pleacă doar când nicio comandă nu mai așteaptă răspuns și ultimul raport, venit după
  *    ultimul răspuns, e Idle;
  * 8. `Hold:0` diferă de `Hold:1` (rapoartele le citesc separat, `raspunsuri.ts`);
- * 9. octeții de timp real (`?`, `!`, `~`, Ctrl-X) ocolesc bufferul și nu intră în socoteală;
+ * 9. octeții de timp real (`?`, `!`, `~`, Ctrl-X, 0x85 anularea jog-ului) ocolesc bufferul și nu intră în socoteală;
  * 11. WCS-ul e obligatoriu (îl cere încărcarea, `program.ts`).
  * Faza spune un singur lucru (în ediția întâi, `streaming` avea două înțelesuri, `LECTII.md` §2.2).
  */
@@ -78,6 +78,8 @@ export type Eveniment =
   | { readonly tip: 'deconectat' }
   | { readonly tip: 'hold' }
   | { readonly tip: 'eliberare' }
+  /** Anularea jog-ului (0x85): mișcările de jog se opresc, ce e din program rămâne (GRBL 1.1). */
+  | { readonly tip: 'anuleaza-jog' }
   /** Ceasul sesiunii: cere un raport. */
   | { readonly tip: 'tic' }
   /** O linie de la controler. */
@@ -93,7 +95,7 @@ export type Actiune =
   | { readonly tip: 'mesaj'; readonly text: string };
 
 /** Octeții de timp real (regula 9): nu intră în buffer, nu intră în socoteală. */
-export const TIMP_REAL = { raport: 0x3f, hold: 0x21, reluare: 0x7e, reset: 0x18 } as const;
+export const TIMP_REAL = { raport: 0x3f, hold: 0x21, reluare: 0x7e, reset: 0x18, anulareJog: 0x85 } as const;
 /** Comanda internă a barierei de sculă (regula 6). */
 const ID_M5 = '#M5';
 const CITIRE = /^\$(#|G|\$|I|N)$/;
@@ -211,10 +213,14 @@ export function pas(s0: StareFlux, e: Eveniment): { readonly stare: StareFlux; r
       break;
     case 'deconectat':
       pierde('deconectat');
+      // Comenzile încă neplecate erau pentru controlerul de pe portul închis: nu pleacă pe următorul.
+      for (const c of s.coada) actiuni.push({ tip: 'raspuns', id: c.id, date: [], rezultat: 'pierdut' });
+      s.coada = [];
       s.raport = null;
       break;
     case 'hold': realtime(TIMP_REAL.hold); break;
     case 'eliberare': realtime(TIMP_REAL.reluare); break;
+    case 'anuleaza-jog': realtime(TIMP_REAL.anulareJog); break;
     case 'tic': realtime(TIMP_REAL.raport); break;
     case 'manual': {
       const t = e.text;

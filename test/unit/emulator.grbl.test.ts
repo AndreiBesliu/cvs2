@@ -27,7 +27,7 @@ test('timpul real ocolește bufferul: ?, !, ~, Ctrl-X și override-urile nu ocup
   e.scrie('G1X1');
   e.scrie('?');
   assert.equal(e.rxOcupat, 4);
-  assert.match(pas(e)[0] ?? '', /^<Idle\|MPos:0\.000,0\.000,0\.000\|FS:0,0>$/);
+  assert.match(pas(e)[0] ?? '', /^<Idle\|MPos:0\.000,0\.000,0\.000\|FS:0,0\|WCO:0\.000,0\.000,0\.000>$/);
   e.scrie(Uint8Array.of(0x91, 0x9a));
   assert.equal(e.rxOcupat, 4);
   assert.deepEqual(e.override, { avans: 110, rapid: 100, ax: 110 });
@@ -219,5 +219,107 @@ test('transcrierea: ce a primit (octeții, cu timpul) și ce a răspuns, în ord
   e.scrie('?');
   e.citeste();
   const t = e.transcriere();
-  assert.deepEqual(t.map((x) => [x.t, x.dir, x.text]), [[0, 'in', 'G90\n'], [0, 'out', 'ok'], [5, 'in', '?'], [5, 'out', '<Idle|MPos:0.000,0.000,0.000|FS:0,0>']]);
+  assert.deepEqual(t.map((x) => [x.t, x.dir, x.text]), [[0, 'in', 'G90\n'], [0, 'out', 'ok'], [5, 'in', '?'], [5, 'out', '<Idle|MPos:0.000,0.000,0.000|FS:0,0|WCO:0.000,0.000,0.000>']]);
+});
+
+test('jog-ul ($J=): ok la planificare, starea Jog, fără să schimbe starea modală; F lipsă → 22; în alarmă sau în mișcare → 8', () => {
+  const e = new EmulatorGrbl();
+  // F300 = 5 mm/s: 10 mm țin 2 s; G91 doar pentru jog.
+  e.scrie('$J=G91 G21 X10 F300\n');
+  assert.deepEqual(pas(e), ['ok']);
+  assert.equal(e.stare, 'Jog');
+  e.timp(2000);
+  assert.equal(e.stare, 'Idle');
+  assert.equal(e.pozitie.x, 10);
+  e.scrie('$G\n');
+  assert.deepEqual(pas(e), ['[GC:G0 G54 G17 G21 G90 G94 M5 M9 T0 F0 S0]', 'ok'], 'G90 rămâne');
+  // Cât ține jog-ul, G-code-ul se refuză (GRBL 1.1: `error:9`), jog-urile următoare se planifică.
+  e.scrie('$J=G91 G21 X10 F300\n');
+  assert.deepEqual(pas(e), ['ok']);
+  e.scrie('G10 L20 P1 X0\n$J=G91 G21 X1 F300\n');
+  assert.deepEqual(pas(e), ['error:9', 'ok']);
+  e.timp(3000);
+  assert.equal(e.stare, 'Idle');
+  assert.equal(e.pozitie.x, 21);
+  e.scrie('G10 L20 P1 X0\n');
+  assert.deepEqual(pas(e), ['ok'], 'în Idle, da');
+  e.scrie('$J=G91 X1\n');
+  assert.deepEqual(pas(e), ['error:22']);
+  e.scrie('G1 X20 F300\n$J=G91 X1 F300\n');
+  assert.deepEqual(pas(e), ['ok', 'error:8']);
+  e.timp(5000);
+  e.alarma(5);
+  e.citeste();
+  e.scrie('$J=G91 X1 F300\n');
+  assert.deepEqual(pas(e), ['error:8']);
+});
+
+test('WCO: în primul raport, apoi o dată la 10 în repaus (30 în mișcare); după o schimbare a decalajului, în raportul următor', () => {
+  const e = new EmulatorGrbl();
+  const rapoarte = (n: number): string[] => Array.from({ length: n }, () => { e.scrie('?'); return pas(e)[0] ?? ''; });
+  const cu = (r: readonly string[]) => r.map((x, k) => (x.includes('|WCO:') ? k : -1)).filter((k) => k >= 0);
+  assert.deepEqual(cu(rapoarte(21)), [0, 10, 20]);
+  e.scrie('$J=G91 G21 X10 F300\n');
+  pas(e, 1000);
+  e.timp(2000);
+  e.scrie('G10 L20 P1 X0\n');
+  assert.deepEqual(pas(e), ['ok']);
+  const dupa = rapoarte(11);
+  assert.equal(dupa[0], '<Idle|MPos:10.000,0.000,0.000|FS:0,0|WCO:10.000,0.000,0.000>');
+  assert.deepEqual(cu(dupa), [0, 10]);
+  e.scrie('G1 X100 F300\n');
+  pas(e);
+  const run = rapoarte(40);
+  assert.ok(run.every((x) => x.startsWith('<Run|')));
+  assert.deepEqual(cu(run), [9, 39], 'ciclul pornit în repaus se încheie, apoi o dată la 30');
+  // Repornit (Ctrl-X), controlerul trimite WCO-ul în primul raport, ca la pornire.
+  e.scrie(Uint8Array.of(0x18));
+  e.citeste();
+  e.scrie('$X\n');
+  e.citeste();
+  assert.ok((rapoarte(1)[0] ?? '').includes('|WCO:'));
+});
+
+test('anularea jog-ului (0x85): mișcarea de jog se oprește pe loc, Idle; poziția rămâne unde a ajuns', () => {
+  const e = new EmulatorGrbl();
+  e.scrie('$J=G91 X100 F300\n');
+  pas(e, 1000);
+  assert.equal(e.stare, 'Jog');
+  e.scrie(Uint8Array.of(0x85));
+  assert.equal(e.stare, 'Idle');
+  assert.ok(Math.abs(e.pozitie.x - 5) < 1e-9, `${e.pozitie.x}`);
+  e.timp(5000);
+  assert.ok(Math.abs(e.pozitie.x - 5) < 1e-9);
+  e.scrie('$J=G91 X1 F300\n');
+  pas(e, 1000);
+  assert.ok(Math.abs(e.pozitie.x - 6) < 1e-9, 'următorul jog pornește de acolo');
+});
+
+test('palparea G38.2 spre placa simulată (Z −25): PRB și ok la atingere, după ce mișcarea dinainte s-a terminat; $# o ține minte', () => {
+  const e = new EmulatorGrbl(undefined, { placa: { z: -25 } });
+  e.scrie('G1 X5 F300\nG38.2 Z-30 F300\n');
+  assert.deepEqual(pas(e), ['ok'], 'G38.2 așteaptă golirea');
+  assert.deepEqual(pas(e, 1000), [], 'mișcarea X (1 s) abia s-a terminat');
+  assert.deepEqual(pas(e, 4999), [], '25 mm la 5 mm/s: 5 s');
+  assert.deepEqual(pas(e, 1), ['[PRB:5.000,0.000,-25.000:1]', 'ok']);
+  assert.equal(e.pozitie.z, -25);
+  e.scrie('$#\n');
+  assert.ok(pas(e).includes('[PRB:5.000,0.000,-25.000:1]'));
+});
+
+test('palparea fără contact: G38.2 → ALARM:5 (bufferul golit, fără ok); G38.3 → PRB cu 0 și ok; atinsă dinainte → ALARM:4; fără F → 22', () => {
+  const a = new EmulatorGrbl();
+  a.scrie('G38.2 Z-10 F600\nG0 X1\n');
+  assert.deepEqual(pas(a, 5000), ['ALARM:5']);
+  assert.equal(a.stare, 'Alarm');
+  assert.equal(a.rxOcupat, 0);
+  const b = new EmulatorGrbl();
+  b.scrie('G38.3 Z-10 F600\n');
+  assert.deepEqual(pas(b, 5000), ['[PRB:0.000,0.000,-10.000:0]', 'ok']);
+  const c = new EmulatorGrbl(undefined, { placa: { z: 0 } });
+  c.scrie('G38.2 Z-10 F100\n');
+  assert.deepEqual(pas(c), ['ALARM:4']);
+  const d = new EmulatorGrbl(undefined, { placa: { z: -5 } });
+  d.scrie('G38.2 Z-10\n');
+  assert.deepEqual(pas(d), ['error:22']);
 });

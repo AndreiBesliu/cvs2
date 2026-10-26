@@ -5,6 +5,8 @@ import { TASTE_UNELTE, UNELTE } from '../../src/app/desenCalcul.ts';
 import { FELURI_ALINIERE } from '../../src/geom/aliniere.ts';
 import { enEditare } from '../../src/i18n/editare.en.ts';
 import { roEditare } from '../../src/i18n/editare.ro.ts';
+import { enMasina } from '../../src/i18n/masina.en.ts';
+import { roMasina } from '../../src/i18n/masina.ro.ts';
 import { en } from '../../src/i18n/mesaje.en.ts';
 import { ro } from '../../src/i18n/mesaje.ro.ts';
 import { ACTIUNI_DOCUMENT } from '../../src/ui/actiuniDocument.ts';
@@ -26,7 +28,7 @@ import { capitolPentru, esteManual, LIMBI_MANUAL, type LimbaManual, type Manual 
 
 type Usa = { readonly id: string; readonly eticheta: Readonly<Record<LimbaManual, string>> };
 
-const dictionar = { ro: { ...ro, ...roEditare } as Record<string, unknown>, en: { ...en, ...enEditare } as Record<string, unknown> };
+const dictionar = { ro: { ...ro, ...roEditare, ...roMasina } as Record<string, unknown>, en: { ...en, ...enEditare, ...enMasina } as Record<string, unknown> };
 const eticheta = (cheie: string): Record<LimbaManual, string> => {
   const r = dictionar.ro[cheie], e = dictionar.en[cheie];
   if (typeof r !== 'string' || typeof e !== 'string') throw new Error(`cheia „${cheie}” nu e un text simplu în ambele dicționare`);
@@ -111,6 +113,39 @@ test('poarta are dinți: o ușă scoasă din capitol, o etichetă schimbată, o 
   assert.ok(lipsuri(m, alta).some((x) => x.includes('„document.duplica-selectia” fără s-o numească („Clonează”)')));
   const straina = { ...m, capitole: m.capitole.map((c, k) => (k === 0 ? { ...c, acopera: [...c.acopera, 'document.inexistent'] } : c)) };
   assert.ok(lipsuri(straina, USI).some((x) => x.includes('„document.inexistent”, care nu e o ușă')));
+});
+
+/**
+ * Controalele panoului mașinii (`data-masina` în `src/app/PanouMasina.tsx`) și eticheta fiecăruia, care trebuie numită în
+ * capitolul „masina” (null: un control fără etichetă proprie, numit prin altul). Unul nou, lipsă de aici, face proba să cadă.
+ */
+const CONTROALE_MASINA: Readonly<Record<string, string | null>> = {
+  conecteaza: 'masina.conecteaza', simulata: 'masina.simulata', viteza: 'masina.viteza', deconecteaza: 'masina.deconecteaza',
+  export: 'masina.program.export', fisier: 'masina.program.fisier', 'fisier-ales': null, start: 'masina.start', reia: 'masina.reia',
+  continua: 'masina.continua', pauza: 'masina.pauza', eliberare: 'masina.eliberare', opreste: 'masina.opreste',
+  deblocheaza: 'masina.deblocheaza', comanda: 'masina.comanda', trimite: null,
+  wcs: 'masina.wcs', 'wcs-program': 'masina.wcs.treci', jog: 'masina.jog', 'pas-jog': 'masina.jog.pas', 'avans-jog': 'masina.jog.avans',
+  'anuleaza-jog': 'masina.jog.opreste', 'zero-xy': 'masina.zero.xy', 'zero-z': 'masina.zero.z', 'palpare-grosime': 'masina.palpare.grosime',
+  'palpare-distanta': 'masina.palpare.distanta', 'palpare-avans': 'masina.palpare.avans', palpeaza: 'masina.palpare.porneste',
+};
+
+test('fiecare control al panoului mașinii (data-masina) e numit în capitolul „masina”, în ambele limbi', () => {
+  const sursa = citeste('src/app/PanouMasina.tsx');
+  const controale = [...new Set([...sursa.matchAll(/data-masina="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();
+  assert.ok(controale.length >= 25, `${controale.length} controale`);
+  for (const m of manuale()) {
+    const cap = m.capitole.find((c) => c.id === 'masina');
+    assert.ok(cap, `${m.limba}: capitolul „masina”`);
+    const text = `${cap.titlu}\n${cap.text}`.toLocaleLowerCase(m.limba).replace(/\s+/g, ' ');
+    for (const c of controale) {
+      assert.ok(c in CONTROALE_MASINA, `controlul data-masina="${c}" lipsește din CONTROALE_MASINA (și din manual)`);
+      const cheie = CONTROALE_MASINA[c];
+      if (!cheie) continue;
+      // Numele fără parametri („Zero XY ({wcs})” → „Zero XY”, „Treci pe {wcs}” → „Treci pe”).
+      const nume = numeScurt(eticheta(cheie)[m.limba].replace(/\s*\{[a-z]+\}/g, '')).toLocaleLowerCase(m.limba);
+      assert.ok(text.includes(nume), `${m.limba}: „${nume}” (data-masina="${c}") nu e în capitolul „masina”`);
+    }
+  }
 });
 
 test('fiecare control cu data-editare din bara editării are ușa lui (un control nou cere capitolul lui)', () => {

@@ -137,3 +137,52 @@
 .masina-jurnal li[data-fel='trimis'] {
   color: var(--t-slab);
 }
+
+/* Poziționarea (ADR 0082): jog-ul pe o grilă 4 × 3 (XY cu diagonalele, Z în dreapta), zero-ul, palparea. */
+.masina h3 {
+  margin: var(--sp-2) 0 var(--sp-1);
+  font-size: var(--fs-2);
+  font-weight: 600;
+}
+
+.masina-jog {
+  display: grid;
+  grid-template-columns: repeat(4, var(--tinta));
+  gap: var(--sp-1);
+  margin: var(--sp-1) 0;
+}
+
+/* Butoanele care mișcă sau scriu la mașină se văd ca butoane (cu margine), nu ca etichete. */
+.masina-jog button,
+.masina-pozitionare .masina-butoane button,
+.masina-wcs-nepotrivit button {
+  border-color: var(--l-camp);
+}
+
+.masina-jog button {
+  padding: 0;
+}
+
+.masina-jog button:nth-child(4n) {
+  margin-left: var(--sp-2);
+}
+
+.masina-numar {
+  width: 7ch;
+}
+
+.masina-palpare {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.masina-palpare .masina-camp {
+  justify-content: space-between;
+}
+
+.masina-motiv,
+.masina-z0 {
+  margin: 0 0 var(--sp-1);
+  color: var(--t-slab);
+  font-size: var(--fs-1);
+}
