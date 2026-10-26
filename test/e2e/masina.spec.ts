@@ -101,3 +101,17 @@ test('fără Web Serial (Firefox, Safari): panoul spune ce browser trebuie, în 
   await expect(page.locator('[data-masina="conecteaza"]')).toHaveCount(0);
   await expect(page.locator('.masina')).toContainText('folosește Chrome sau Edge');
 });
+
+test.describe('în engleză', () => {
+  test.use({ locale: 'en-US' });
+  test('jurnalul sesiunii e în limba omului: „connected to the simulated machine”, „disconnected”', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('[data-actiune="vedere.masina"]').click();
+    await page.locator('[data-masina="simulata"]').click();
+    await expect(page.getByTestId('masina-conexiune')).toHaveText('Connected to the simulated machine');
+    await expect(page.getByTestId('masina-jurnal')).toContainText('connected to the simulated machine');
+    await page.locator('[data-masina="deconecteaza"]').click();
+    await expect(page.getByTestId('masina-jurnal')).toContainText('disconnected');
+    await expect(page.getByTestId('masina-jurnal')).not.toContainText('conectat');
+  });
+});

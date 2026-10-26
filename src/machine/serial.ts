@@ -24,11 +24,11 @@ export function serialDisponibil(): boolean {
 /** Cere un port omului și îl deschide; aruncă dacă omul renunță sau portul nu se deschide (ocupat de alt program). */
 export async function deschideSerial(baud = BAUD_GRBL): Promise<Transport> {
   const serial = (navigator as unknown as { readonly serial?: Serial }).serial;
-  if (!serial) throw new Error('Web Serial lipsește');
+  if (!serial) throw new Error('fara-web-serial');
   const port = await serial.requestPort();
   await port.open({ baudRate: baud });
   const scriitor = port.writable?.getWriter();
-  if (!scriitor) { await port.close().catch(() => undefined); throw new Error('portul nu se poate scrie'); }
+  if (!scriitor) { await port.close().catch(() => undefined); throw new Error('port-fara-scriere'); }
   let cititor: ReadableStreamDefaultReader<Uint8Array> | null = null;
   let inchis = false;
   return {
@@ -49,7 +49,8 @@ export async function deschideSerial(baud = BAUD_GRBL): Promise<Transport> {
               cititor.releaseLock();
             }
           }
-          laInchidere(inchis ? null : 'portul s-a închis');
+          // Închis de dispozitiv, fără eroare: motivul gol (panoul îl spune în limba omului).
+          laInchidere(inchis ? null : '');
         } catch (e) {
           laInchidere(inchis ? null : e instanceof Error ? e.message : String(e));
         }

@@ -5,7 +5,7 @@
  * abonaților, cel mult o dată la `PERIOADA_PUBLICARE_MS` (un program de 100 000 de linii nu redesenează panoul la fiecare `ok`).
  * Timpul vine din afară (`Ceas`), ca sesiunea să se probeze în Node, cu un ceas fals.
  */
-import { fluxNou, pas, type Actiune, type Eveniment, type StareFlux } from './flux.ts';
+import { fluxNou, pas, type Actiune, type CodRefuzFlux, type Eveniment, type StareFlux } from './flux.ts';
 import { citesteRaspuns } from './raspunsuri.ts';
 
 export interface Transport {
@@ -23,7 +23,10 @@ export type Ceas = {
 };
 
 export type FelJurnal = 'trimis' | 'primit' | 'raspuns' | 'alarma' | 'refuz' | 'mesaj' | 'sesiune';
-export type LinieJurnal = { readonly fel: FelJurnal; readonly text: string };
+/** Ce spune sesiunea însăși (nu controlerul), ca un cod: textul îl dă panoul, în limba omului. */
+export type CodJurnal = 'conectat-serial' | 'conectat-simulat' | 'deconectat' | 'port-inchis' | 'neconectat' | CodRefuzFlux;
+/** O linie a jurnalului: textul controlerului (sau comanda trimisă), ori codul sesiunii (cu evenimentul refuzat în `text`). */
+export type LinieJurnal = { readonly fel: FelJurnal; readonly text: string; readonly cod?: CodJurnal; readonly motiv?: string };
 
 export type StareSesiune = {
   readonly conexiune: 'deconectat' | 'conectat';
@@ -69,7 +72,7 @@ export class SesiuneMasina {
     this.transport = t;
     this.rest = '';
     this.s = { ...this.s, conexiune: 'conectat', transport: t.fel, eroare: null };
-    this.jurnalizeaza('sesiune', t.fel === 'serial' ? 'conectat la portul serial' : 'conectat la mașina simulată');
+    this.jurnalizeaza('sesiune', '', { cod: t.fel === 'serial' ? 'conectat-serial' : 'conectat-simulat' });
     t.porneste((o) => { if (this.transport === t) this.primit(o); }, (motiv) => { if (this.transport === t) this.inchis(motiv); });
     this.ticker = this.ceas.setInterval(() => { this.eveniment({ tip: 'tic' }); }, PERIOADA_RAPORT_MS);
     this.publica(true);
@@ -85,7 +88,7 @@ export class SesiuneMasina {
   /** Un eveniment al omului (sau al ceasului): trece prin flux; cele care scriu cer portul. */
   eveniment(e: Eveniment): void {
     if (CER_PORT.has(e.tip) && !this.transport) {
-      this.jurnalizeaza('refuz', `${e.tip}: neconectat`);
+      this.jurnalizeaza('refuz', e.tip, { cod: 'neconectat' });
       this.publica();
       return;
     }
@@ -117,7 +120,7 @@ export class SesiuneMasina {
     this.transport = null;
     this.aplica(pas(this.s.flux, { tip: 'deconectat' }));
     this.s = { ...this.s, conexiune: 'deconectat', transport: null, eroare: motiv };
-    this.jurnalizeaza('sesiune', motiv === null ? 'deconectat' : `portul s-a închis: ${motiv}`);
+    this.jurnalizeaza('sesiune', '', motiv === null ? { cod: 'deconectat' } : { cod: 'port-inchis', motiv });
     this.publica(true);
   }
 
@@ -130,7 +133,7 @@ export class SesiuneMasina {
           for (const d of a.date) this.jurnalizeaza('raspuns', d);
           this.jurnalizeaza('raspuns', a.rezultat === 'ok' ? 'ok' : a.rezultat === 'pierdut' ? 'pierdut' : `error:${a.rezultat}`);
           break;
-        case 'refuz': this.jurnalizeaza('refuz', `${a.eveniment}: ${a.cod}`); break;
+        case 'refuz': this.jurnalizeaza('refuz', a.eveniment, { cod: a.cod }); break;
         case 'alarma': this.jurnalizeaza('alarma', `ALARM:${a.cod}`); break;
         case 'mesaj': break;
       }
@@ -146,9 +149,9 @@ export class SesiuneMasina {
     });
   }
 
-  private jurnalizeaza(fel: FelJurnal, text: string): void {
+  private jurnalizeaza(fel: FelJurnal, text: string, extra: { readonly cod?: CodJurnal; readonly motiv?: string } = {}): void {
     const j = this.s.jurnal.length >= JURNAL_MAXIM ? this.s.jurnal.slice(-(JURNAL_MAXIM - 1)) : this.s.jurnal;
-    this.s = { ...this.s, jurnal: [...j, { fel, text }] };
+    this.s = { ...this.s, jurnal: [...j, { fel, text, ...extra }] };
   }
 
   private publica(acum = false): void {

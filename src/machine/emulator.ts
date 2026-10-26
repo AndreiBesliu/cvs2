@@ -339,7 +339,7 @@ export class EmulatorGrbl {
         if (this.alarmat) { consuma(); this.trimite('error:9'); continue; }
       } catch (e) {
         if (!(e instanceof Nemodelat) || this.laNemodelat === 'arunca') throw e;
-        this.trimite(`[MSG:Simulare: ${e.message} nu e modelat]`);
+        this.trimite(`[MSG:Not simulated: ${e.message}]`);
         this.trimite('error:20');
         continue;
       }
@@ -349,7 +349,7 @@ export class EmulatorGrbl {
       } catch (e) {
         if (!(e instanceof Nemodelat) || this.laNemodelat === 'arunca') throw e;
         consuma();
-        this.trimite(`[MSG:Simulare: ${e.message} nu e modelat]`);
+        this.trimite(`[MSG:Not simulated: ${e.message}]`);
         this.trimite('error:20');
         continue;
       }

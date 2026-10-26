@@ -56,6 +56,7 @@ test('mașina simulată: bannerul în jurnal, rapoartele la 200 ms, Idle; decone
   assert.equal(s.stare().conexiune, 'conectat');
   assert.equal(s.stare().transport, 'simulat');
   assert.ok(s.stare().jurnal.some((l) => l.fel === 'primit' && l.text === "Grbl 1.1h ['$' for help]"));
+  assert.deepEqual(s.stare().jurnal[0], { fel: 'sesiune', text: '', cod: 'conectat-simulat' });
   assert.equal(s.stare().flux.raport, null);
   await ceas.avanseaza(200);
   assert.equal(s.stare().flux.raport?.stare, 'Idle');
@@ -103,7 +104,7 @@ test('fără port: start, reia, comenzile se refuză în jurnal; încărcarea me
   const s = new SesiuneMasina(new CeasFals());
   s.eveniment({ tip: 'start' });
   s.eveniment({ tip: 'manual', id: 'x', text: '$G' });
-  assert.deepEqual(s.stare().jurnal.map((l) => [l.fel, l.text]), [['refuz', 'start: neconectat'], ['refuz', 'manual: neconectat']]);
+  assert.deepEqual(s.stare().jurnal.map((l) => [l.fel, l.text, l.cod]), [['refuz', 'start', 'neconectat'], ['refuz', 'manual', 'neconectat']]);
   const p = await incarcaProgram(octeti('G54\nG0 X1\n'), { sursa: 'fisier' });
   assert.ok(p.ok);
   if (p.ok) s.eveniment({ tip: 'incarca', program: p.program });
@@ -125,6 +126,7 @@ test('portul se închide în flux (cablul scos): deconectat, cu motivul; fluxul 
   f.inchide('cablul scos');
   assert.equal(s.stare().conexiune, 'deconectat');
   assert.equal(s.stare().eroare, 'cablul scos');
+  assert.deepEqual(s.stare().jurnal.at(-1), { fel: 'sesiune', text: '', cod: 'port-inchis', motiv: 'cablul scos' });
   assert.equal(s.stare().flux.faza, 'pierdut');
   assert.equal(s.stare().flux.motiv, 'deconectat');
   await ceas.avanseaza(1000);
@@ -152,7 +154,7 @@ test('jurnalul unei comenzi manuale: trimis, datele, ok; ce nu știe simularea: 
   const j = s.stare().jurnal.filter((l) => l.fel !== 'sesiune' && !l.text.startsWith('Grbl')).map((l) => `${l.fel}:${l.text}`);
   assert.deepEqual(j, [
     'trimis:$G', 'raspuns:[GC:G0 G54 G17 G21 G90 G94 M5 M9 T0 F0 S0]', 'raspuns:ok',
-    'trimis:$J=G91X1F100', 'raspuns:[MSG:Simulare: comanda $J=G91X1F100 nu e modelat]', 'raspuns:error:20',
+    'trimis:$J=G91X1F100', 'raspuns:[MSG:Not simulated: comanda $J=G91X1F100]', 'raspuns:error:20',
   ]);
 });
 

@@ -3009,3 +3009,9 @@ online și ale numărului de uși au cerut panoul nou), e2e 224 / 224 în Edge (
 apoi 13 / 13. **Lecție:** proba `/admin` de pe emulatoare citește roadmap-ul real: despărțirea lui 3.5 (felia 3.5a) a stricat-o,
 iar la 3.5a și 3.6a n-am rulat `test:emulator` (rularea de noapte de pe `4a016ea` o va arăta roșie); reparată aici. O schimbare
 în tabelul feliilor cere și `npm run test:emulator`.
+**Publicat pe adresa principală de test:** 26.10, `publica` pe `7ff5a3c` (rularea 40282496339), după rapid-ul verde
+(40281719278). Verificat în browserul aplicației: panoul „Machine” în dreapta, Mașina simulată conectată, starea Idle, poziția
+0 / 0 / 0. **Găsit la verificare:** liniile sesiunii din jurnal erau scrise în română în cod (și în interfața engleză) → coduri
+traduse de panou (`CodJurnal`, `masina.jurnal.*`, `masina.motiv.*`), mesajul emulatorului pentru ce nu e simulat în engleză (ca
+mesajele GRBL), o probă e2e în engleză; porțile: 7 320 / 225 / 36 + 13. Nivelul complet, pornit din nou pe `7ff5a3c` după noaptea
+roșie (proba `/admin`, 3.5).

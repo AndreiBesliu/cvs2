@@ -10,7 +10,7 @@ import { t, type CheieSimpla } from '../i18n/t.ts';
 import { incarcaProgram, type RezultatIncarcare } from '../machine/program.ts';
 import { pozitieDeLucru } from '../machine/raspunsuri.ts';
 import { deschideSerial, serialDisponibil } from '../machine/serial.ts';
-import { SesiuneMasina, type Ceas } from '../machine/sesiune.ts';
+import { SesiuneMasina, type Ceas, type LinieJurnal } from '../machine/sesiune.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import './masina.css';
 
@@ -34,6 +34,14 @@ const VITEZE = [1, 10, 100] as const;
 const IN_FLUX = new Set(['trimite', 'golire', 'terminare']);
 
 type Refuz = Extract<RezultatIncarcare, { ok: false }>;
+/** Motivul portului închis: gol (închis de dispozitiv) sau un cod al nostru se traduc; altfel, textul browserului. */
+const textMotiv = (m: string): string => (m === '' ? t('masina.motiv.inchis') : m === 'fara-web-serial' || m === 'port-fara-scriere' ? t(`masina.motiv.${m}`) : m);
+/** O linie a jurnalului: ce spune sesiunea (un cod) în limba omului; restul, cum l-a trimis controlerul. */
+const textJurnal = (l: LinieJurnal): string => {
+  if (l.cod === undefined) return l.fel === 'trimis' ? `> ${l.text}` : l.text;
+  if (l.cod === 'port-inchis') return t('masina.eroare', { motiv: textMotiv(l.motiv ?? '') });
+  return t(`masina.jurnal.${l.cod}` as CheieSimpla);
+};
 const textRefuz = (r: Refuz): string => {
   const cod = r.cod === 'fara-wcs' && r.linie !== null ? 'fara-wcs-linie' : r.cod;
   return t(`masina.refuz.${cod}` as CheieSimpla, { linie: (r.linie ?? 0) + 1 });
@@ -75,7 +83,7 @@ export function PanouMasina({ ultimulExport, simulare }: {
       await s.conecteaza(await deschideSerial());
     } catch (e) {
       // Omul a închis fereastra de alegere: nimic de spus.
-      if (!(e instanceof DOMException && e.name === 'NotFoundError')) setRefuz(e instanceof Error ? e.message : String(e));
+      if (!(e instanceof DOMException && e.name === 'NotFoundError')) setRefuz(textMotiv(e instanceof Error ? e.message : String(e)));
     }
   };
   const conecteazaSimulata = async (): Promise<void> => {
@@ -102,7 +110,7 @@ export function PanouMasina({ ultimulExport, simulare }: {
         <p className="masina-cap" data-testid="masina-conexiune">
           {conectat ? t(st.transport === 'simulat' ? 'masina.conectat.simulat' : 'masina.conectat.serial') : t('masina.deconectat')}
         </p>
-        {st.eroare && <p className="masina-nota" role="status">{t('masina.eroare', { motiv: st.eroare })}</p>}
+        {st.eroare !== null && <p className="masina-nota" role="status">{t('masina.eroare', { motiv: textMotiv(st.eroare) })}</p>}
         <div className="masina-butoane">
           {!conectat && (serialDisponibil()
             ? <button type="button" data-masina="conecteaza" title={t('masina.conecteaza.titlu')} onClick={() => { void conecteazaSerial(); }}>{t('masina.conecteaza')}</button>
@@ -197,7 +205,7 @@ export function PanouMasina({ ultimulExport, simulare }: {
           <button type="submit" data-masina="trimite" disabled={!conectat || comanda.trim() === ''}>{t('masina.comanda.trimite')}</button>
         </form>
         <ol className="masina-jurnal" aria-label={t('masina.jurnal')} data-testid="masina-jurnal">
-          {st.jurnal.slice(-60).map((l, k) => <li key={k} data-fel={l.fel}>{l.fel === 'trimis' ? `> ${l.text}` : l.text}</li>)}
+          {st.jurnal.slice(-60).map((l, k) => <li key={k} data-fel={l.fel}>{textJurnal(l)}</li>)}
         </ol>
       </section>
     </div>
