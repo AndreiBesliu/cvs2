@@ -154,4 +154,7 @@ export const roMasina = {
   'masina.deblocare.confirma': 'După alarma asta, poziția mașinii nu mai e sigură. Deblocarea o lasă să se miște de unde crede că e: fă homing ($H), sau refă zero-ul X, Y și Z înainte de a tăia.',
   'masina.deblocare.oricum': 'Deblochează oricum',
   'masina.deblocare.renunta': 'Renunță',
+  'masina.pierdut.oprit': 'ai apăsat Oprește',
+  'masina.pierdut.deconectat': 'portul s-a închis',
+  'masina.pierdut.repornire': 'controlerul a repornit',
 } as const satisfies DictionarRoPentru<typeof enMasina>;

@@ -3094,3 +3094,20 @@ alăturate pe rând (T îngust, 52 px).
 **Started:** 26.10, ~15:10. Felia **3.6c**, fără agenți (ADR 0085): un tabel pe familie (GRBL 1.1, grblHAL, FluidNC), cu
 numerele citite din sursele firmware-ului, textele noastre în ambele limbi, generate ca date în precache; familia din banner și
 `$I`; ultimul cod cu locul lui și alarma care ține mașina, în sesiune; cardul din panou și confirmarea deblocării.
+**Completed:** 26.10 16:30. Porțile: 7 409 teste unitare (0 picate, 8 sărite), e2e 237 / 237 în Edge, emulatoarele; pornirea
+95,9 / 100 kB, totalul 328,1 / 330 (+3,7 kB: cardul, textele lui în ambele limbi, încărcarea dicționarului; mai sunt ~1,9 kB);
+dicționarul, date în precache: 8,9 kB (ro) și 8,5 kB (en) gzip. **Găsit pe drum:** (1) bannerul grblHAL („GrblHAL 1.1f”) nu era
+recunoscut ca repornire (fluxul nu se golea, WCS-ul nu se recitea); (2) la FluidNC, `$H` fără homing dă `error:5`, iar o linie
+lungă `error:14`, deci tabelele sunt pe familie; `ALARM:10` are trei înțelesuri; (3) un text al `error:8` spunea „doar în
+Idle”, deși GRBL primește comenzile `$` și în Alarm. Mutațiile: 29 / 31 la prima rulare (o resetare echivalentă scoasă din
+`conecteaza`, o probă nouă pentru blocare: 31 / 31); pe interfață 10 / 10 prin e2e (una, căzută întâi la build, refăcută ca
+să se construiască); fișierele verificate după rulări (`verifica-mutatii.py`): curate.
+**CI:** rularea 40337287129 „cancelled”: felia 4 a testelor unitare a trecut de 10 minute, fiindcă `--test-shard` împarte
+fișierele după poziție și cele trei fișiere noi au mutat acolo teste grele. CI rapid în 6 felii (`3b15484`), verde
+(40339240275, cea mai lentă 8 min 21 s).
+**Publicat pe adresa principală de test:** `publica` pe `3b15484` (rularea 40340505948). Verificat în browserul aplicației, cu
+mașina simulată: `G1 X10` → cardul „error:22 — No feed rate given”, „At the command “G1 X10”.”, ce faci, tabelul GRBL 1.1;
+un program la 1×, Oprește în mișcare → „ALARM:3 — Reset during a move”, Deblochează → confirmarea în card, apoi Deblochează
+oricum → `$X`, Idle; în română, același card („Repornit în timpul unei mișcări”) și titlul în jurnal. **Găsit la verificare:**
+faza întreruptă spunea „interrupted (oprit)”: motivul era codul intern al fluxului, netradus → „ai apăsat Oprește” / „Stop
+pressed” (și „portul s-a închis”, „controlerul a repornit”), cu proba în e2e; porțile din nou: 7 409 / 237, totalul 328,2.

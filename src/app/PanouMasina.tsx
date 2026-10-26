@@ -62,6 +62,9 @@ const textJurnal = (l: LinieJurnal, d: StareDictionar, st: StareSesiune): string
   if (l.cod === 'miscare') return t('masina.jurnal.miscare', { motiv: t(`masina.miscare.${l.motiv ?? 'ocupata'}` as CheieSimpla) });
   return t(`masina.jurnal.${l.cod}` as CheieSimpla);
 };
+/** De ce s-a întrerupt lucrarea: un cod al fluxului, în limba omului, sau linia alarmei cu titlul ei. */
+const textPierdut = (m: string, d: StareDictionar, st: StareSesiune): string =>
+  (m === 'oprit' || m === 'deconectat' || m === 'repornire' ? t(`masina.pierdut.${m}`) : cuTitlu(m, d, st));
 /** Ce a făcut ultima procedură (zero, WCS, palparea), în limba omului; gol când nu e nimic de spus. */
 function textProcedura(p: Procedura): string {
   if (p.fel !== 'palpare') {
@@ -168,7 +171,7 @@ export function PanouMasina({ ultimulExport, simulare }: {
     ? deMontat !== null
       ? t('masina.faza.bariera.montare', { linie: f.bariera.linie + 1, scula: deMontat })
       : t(f.bariera.m6 ? 'masina.faza.bariera.scula' : 'masina.faza.bariera', { linie: f.bariera.linie + 1 })
-    : f.faza === 'pierdut' ? t('masina.faza.pierdut', { motiv: cuTitlu(f.motiv ?? '', dict, st) }) : t(`masina.faza.${f.faza}` as CheieSimpla);
+    : f.faza === 'pierdut' ? t('masina.faza.pierdut', { motiv: textPierdut(f.motiv ?? '', dict, st) }) : t(`masina.faza.${f.faza}` as CheieSimpla);
   const inHold = r?.stare === 'Hold';
 
   return (

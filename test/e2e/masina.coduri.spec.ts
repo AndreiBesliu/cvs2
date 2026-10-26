@@ -72,6 +72,8 @@ test('Oprește în timpul unei mișcări (ALARM:3): poziția pierdută, deblocar
   await expect(card).toHaveAttribute('data-cod', 'ALARM:3');
   await expect(card).toContainText('Repornit în timpul unei mișcări');
   await expect(page.getByTestId('masina-stare')).toHaveText('Alarm');
+  // Motivul întreruperii, în cuvinte (nu codul intern al fluxului).
+  await expect(page.getByTestId('masina-faza')).toHaveText('întreruptă (ai apăsat Oprește): se pornește din nou de la început');
 
   await page.locator('[data-masina="deblocheaza"]').click();
   const confirmare = page.getByTestId('masina-confirmare-deblocare');

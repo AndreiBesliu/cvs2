@@ -151,4 +151,7 @@ export const enMasina = {
   'masina.deblocare.confirma': 'After this alarm, the machine position is no longer certain. Unlocking lets it move from where it believes it is: home it ($H), or set the X, Y and Z zero again before cutting.',
   'masina.deblocare.oricum': 'Unlock anyway',
   'masina.deblocare.renunta': 'Cancel',
+  'masina.pierdut.oprit': 'Stop pressed',
+  'masina.pierdut.deconectat': 'the port closed',
+  'masina.pierdut.repornire': 'the controller restarted',
 } as const;
