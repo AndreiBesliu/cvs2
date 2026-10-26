@@ -3157,3 +3157,12 @@ privea doar găurirea multiplă (drillbanks), nu pe aceasta. **npm lipsește în
 **Trecerea 2 (21:12), găsită la verificarea pe test:** arborele proiectului descria orice operație ca „Profil {latura}”, deci
 buzunarul (din 5.1↑) și găurirea apăreau „Profil interior”. Acum le numește („Buzunar pe 1 contur: …”, „Găurire pe 1 cerc: … în
 pași de …”), cu proba în e2e-ul fiecăruia și 2 / 2 mutații (felul pierdut, felurile încurcate).
+**Publicat pe adresa principală de test:** `publica` pe `720e888` (rularea 40383237286), după rapid-ul verde (40381952913, cea
+mai lentă felie 7 min 34 s), apoi pe `b8b5113` (40385633377), după rapid-ul verde (40384618062, cea mai lentă 6 min 10 s).
+Verificat după „Versiune nouă → Reîncarcă”: pe dreptunghi „găurire” lipsește, pe cerc apare; rândul arată „Iese la fiecare al …
+pas” (1), cu urechile, rampa și intrările oprite; 0 oprește exportul, cu motivul; cu freza Ø6, cercul de Ø30 e refuzat („trece de
+două diametre ale frezei (Ø6): în centru ar rămâne un miez”), fără descărcare; arborele: „Găurire pe 1 cerc: 8 mm în pași de 4
+mm, T1 Ø6”; la redeschidere, găurirea și 2; 0 erori în consolă. Exportul refuzat a scris totuși operația în proiect
+(comportamentul ferestrei: aplică operațiile, apoi calculează), iar istoricul se pierde la reîncărcare: în proiectul de probă al
+browserului, cercul a rămas cu găurire. Programul descărcat (ciocănirea, elicea) e probat de e2e pe același build, nu în panoul
+browserului (fără descărcări acolo).
