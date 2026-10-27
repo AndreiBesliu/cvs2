@@ -163,6 +163,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Frezele de rest (ADR 0093, documentul v17)** gata pe 27.10: `rest` pe buzunar și pe fundul plat; fiecare freză mai mică doar
   unde cea dinainte n-a ajuns (`src/cam/rest.ts`: inelele ei la peste R_a − R de zona centrului celei dinainte), pe aceleași treceri;
   fundul plat al V-carve-ului (gravarea inteligentă) cu mai multe freze drepte. Totalul 328,0 / 330 kB: strâmt.
+  **Strategia paralelă a buzunarului (ADR 0094, documentul v18)** gata pe 27.10: `strategie: { fel: 'paralel', unghi }`; liniile
+  în zigzag (`src/cam/paralel.ts`), apoi trecerea de profil pe margine; aceeași acoperire ca inelele. **Totalul 329,2 / 330 kB: o
+  felie nouă cu cod în plus cere întâi loc în pachet** (owner-ul decide: plafonul sau mutarea unui modul la cerere).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

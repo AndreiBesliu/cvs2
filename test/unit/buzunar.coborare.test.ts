@@ -28,7 +28,7 @@ const buzunar = (extra: Op = {}): Op => ({
 /** Un document v14 cu dreptunghiul `latime` × `inaltime` (buzunarul `op`) la (x, y), pe o foaie 200 × 150 × 18. */
 function doc(op: Op, latime = 100, inaltime = 60, x = 40, y = 40): unknown {
   return {
-    schema: 17, rev: 0,
+    schema: 18, rev: 0,
     piese: [{ id: 'p', radacina: { tip: 'element', id: 'e', matrice: { ...I }, forma: { tip: 'dreptunghi', latime, inaltime, razaColt: 0 } }, operatii: [op] }],
     foi: [{ id: 'f1', stoc: { latime: 200, inaltime: 150, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x, y, rotire: 0 }] }],
   };
@@ -169,7 +169,7 @@ test('ușa v12: coborârea are felul și parametrii în margini (unghiul în (0,
   const fara = { ...(doc(buzunar()) as Record<string, unknown>), schema: 11 };
   const a = incarca(fara);
   assert.ok(a.ok);
-  if (a.ok) assert.deepEqual(a.doc, { ...fara, schema: 17 });
+  if (a.ok) assert.deepEqual(a.doc, { ...fara, schema: 18 });
 });
 
 /** Programul exportat, judecat de oracolul simulării: scos la −6 în deschiderea dreptunghiului, neatins în afară. */

@@ -29,7 +29,7 @@ const inst = (id: string, p: string, x: number, y: number, rotire: number): Inst
 const laV9 = (d: unknown): unknown => {
   if (!esteObiectL(d)) return d;
   if (d['schema'] === 8) d['schema'] = 9;
-  else if (d['schema'] === 9) d['schema'] = 18;
+  else if (d['schema'] === 9) d['schema'] = 19;
   else if (d['schema'] === '8') d['schema'] = '9';
   return d;
 };

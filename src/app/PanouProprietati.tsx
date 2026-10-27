@@ -60,7 +60,8 @@ function operatie(o: Operatie, n: number): ReactNode {
       <dl>
         {rand(t('export.latura'), o.tip === 'buzunar' ? t('export.latura.buzunar') : o.tip === 'gaurire' ? t('export.latura.gaurire') : o.tip === 'vcarve' ? t('export.latura.vcarve') : t(`export.latura.${o.latura}`))}
         {o.tip === 'buzunar' && o.pasLateral !== undefined && rand(t('export.pas-lateral'), mm(o.pasLateral))}
-        {o.tip === 'buzunar' && rand(t('export.coborare'), coborare(o.coborare))}
+        {o.tip === 'buzunar' && rand(t('export.paralel'), o.strategie ? t('prop.strategie.paralel', { unghi: o.strategie.unghi }) : t('export.paralel.inele'))}
+        {o.tip === 'buzunar' && !o.strategie && rand(t('export.coborare'), coborare(o.coborare))}
         {o.tip === 'gaurire' && rand(t('export.gaurire.retragere'), String(o.retragereCompleta ?? 1))}
         {rand(t('export.sens'), t(`export.sens.${o.sens}`))}
         {rand(t('export.adancime'), mm(o.adancime))}

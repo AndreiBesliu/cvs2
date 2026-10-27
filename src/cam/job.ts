@@ -6,6 +6,7 @@ import { conturElement } from '../model/forme.ts';
 import { grupeazaPeScula, taieturiFoaie, type Taietura } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
+import { traseuParalel } from './paralel.ts';
 import { bucatiRestInLant, taieBucati } from './rest.ts';
 import { traseuGaurire } from './gaurire.ts';
 import { traseuVcarve } from './vcarve.ts';
@@ -184,6 +185,8 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   for (const t of taieturi) {
     const op = operatieDe(t);
     if (op?.rest && t.tip !== 'buzunar') return { ok: false, motiv: `${t.idLume}: frezele de rest sunt doar ale unui buzunar (pe un V-carve, ale fundului plat)` };
+    // Strategia (ADR 0094): doar a unui buzunar.
+    if (op?.strategie && t.tip !== 'buzunar') return { ok: false, motiv: `${t.idLume}: strategia paralelă e doar a unui buzunar` };
     const liste: ReadonlyArray<readonly [Taietura['scula'], readonly FrezaRest[]]> = [
       ...(op?.rest ? [[t.scula, op.rest] as const] : []), ...(op?.fundPlat?.rest ? [[op.fundPlat.scula, op.fundPlat.rest] as const] : []),
     ];
@@ -427,12 +430,23 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       const pasLateral = op?.pasLateral;
       if (pasLateral === undefined) return { ok: false, motiv: `${t.idLume}: buzunarul n-are pasul lateral` };
       const ci = insule.map((j) => conturDe(taieturi[j] as Taietura));
-      const inele = ineleBuzunar(conturDe(t), R, pasLateral, ci);
-      if (!inele.ok) return { ok: false, motiv: `${t.idLume}: ${inele.motiv}` };
       const adancimi = adancimiTreceri(t.adancime, t.pas);
       if (typeof adancimi === 'string') return { ok: false, motiv: `${t.idLume}: ${adancimi}` };
-      // Coborârea (ADR 0076): a operației; lipsă, plonjarea dreaptă.
-      const tb = traseuBuzunar(conturDe(t), ordineInele(inele.radacini), { ...regim, sens: t.sens, raza: R, adancimi, ...(op?.coborare ? { coborare: op.coborare } : {}) }, ci);
+      // Strategia paralelă (ADR 0094): liniile, apoi trecerea de profil; coborârea, doar prin plonjare.
+      const paralel = op?.strategie?.fel === 'paralel' ? op.strategie : null;
+      if (paralel && op?.coborare && op.coborare.fel !== 'plonjare') {
+        return { ok: false, motiv: `${t.idLume}: strategia paralelă coboară prin plonjare; rampa, zigzagul și elicea sunt ale inelelor` };
+      }
+      let tb: { readonly ok: true; readonly miscari: readonly Miscare[]; readonly avertismente: readonly string[] } | { readonly ok: false; readonly motiv: string };
+      if (paralel) {
+        const tp = traseuParalel(conturDe(t), { ...regim, sens: t.sens, raza: R, pasLateral, unghi: paralel.unghi, adancimi }, ci);
+        tb = tp.ok ? { ok: true, miscari: tp.miscari, avertismente: [] } : tp;
+      } else {
+        const inele = ineleBuzunar(conturDe(t), R, pasLateral, ci);
+        if (!inele.ok) return { ok: false, motiv: `${t.idLume}: ${inele.motiv}` };
+        // Coborârea (ADR 0076): a operației; lipsă, plonjarea dreaptă.
+        tb = traseuBuzunar(conturDe(t), ordineInele(inele.radacini), { ...regim, sens: t.sens, raza: R, adancimi, ...(op?.coborare ? { coborare: op.coborare } : {}) }, ci);
+      }
       if (!tb.ok) return { ok: false, motiv: `${t.idLume}: ${tb.motiv}` };
       for (const a of tb.avertismente) avertismente.push(`${t.idLume}: ${a}`);
       const cuInsule = insule.length > 0 ? `, insule: ${insule.length}` : '';

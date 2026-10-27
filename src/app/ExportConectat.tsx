@@ -83,6 +83,7 @@ export function ExportConectat({
           ...(o.tip === 'profil' && o.latura === 'pe-linie' && o.directie ? { directie: o.directie } : {}),
           ...(o.tip === 'buzunar' && o.pasLateral !== undefined ? { tip: 'buzunar' as const, pasLateral: o.pasLateral } : {}),
           ...(o.tip === 'buzunar' && o.coborare ? { coborare: o.coborare } : {}),
+          ...(o.tip === 'buzunar' && o.strategie ? { strategie: { fel: 'paralel' as const, unghi: o.strategie.unghi } } : {}),
           ...(o.tip === 'buzunar' && o.rest ? { rest: o.rest.map((r) => ({ numar: r.scula.numar, diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
           ...(o.tip === 'vcarve' ? {
             tip: 'vcarve' as const,

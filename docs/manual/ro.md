@@ -328,6 +328,13 @@ ridice cât drumul rămâne în buzunar. Cu pasul lateral de cel mult jumătate 
 doar colțurile pe care nicio freză rotundă nu le atinge (cu raza frezei). Unde buzunarul e mai îngust decât freza, ea nu
 intră. Pe un buzunar nu există urechi, intrări sau degajări, iar rampa profilului e înlocuită de coborâre.
 
+**Traseul buzunarului.** Sub rândul unui buzunar, **Traseul** alege între **inele (paralele cu conturul)**, implicit, și
+**linii paralele**, la **Unghiul** dat față de X (de la 0 până sub 180°), cu pasul lateral între ele. Pe fiecare trecere, freza
+trece întâi pe linii, legate la adâncime doar cu linia vecină și doar dacă drumul rămâne în buzunar (altfel se ridică), apoi pe
+o **trecere de profil** de-a lungul marginii, ca peretele să iasă exact pe vector, nu în trepte. Liniile coboară prin plonjare
+(rampa, zigzagul și elicea sunt ale inelelor); pe linii, freza taie dus-întors, deci alternativ în urcare și în opoziție, iar
+trecerea de profil urmează sensul rândului. Insulele și frezele de rest merg la fel ca la inele.
+
 **Frezele de rest.** Sub rândul unui buzunar, **Adaugă o freză de rest** pune după freza rândului una mai mică (implicit
 jumătate din diametru, cu T-ul următor liber și pasul de 40 %); se pot pune mai multe, fiecare mai mică decât cea dinainte, și
 se scot cu ×. Fiecare taie doar unde cea dinainte n-a ajuns: colțurile și fâșiile mai înguste decât ea, pe aceleași treceri;

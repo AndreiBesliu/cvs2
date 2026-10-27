@@ -54,6 +54,7 @@ export const enCarcasa = {
   'prop.freza.valoare-v-varf': 'T{numar}, V {unghi}° with a {varf} mm tip, Ø{diametru} mm',
   'prop.fund': 'Flat floor',
   'prop.rest': 'Rest bits',
+  'prop.strategie.paralel': 'parallel lines at {unghi}°',
   'prop.rest.valoare': 'T{numar}, Ø{diametru} mm, stepover {pas} mm',
   'prop.fund.valoare': 'T{numar}, Ø{diametru} mm, stepover {pas} mm',
   'prop.urechi.valoare': '{numar} × {latime} mm, bridge {grosime} mm',

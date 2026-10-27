@@ -340,6 +340,13 @@ clean everywhere; only the corners no round cutter can reach are left (with the 
 narrower than the cutter, the cutter does not go in. A pocket has no tabs, leads or corner relief, and the profile's ramp
 is replaced by the descent.
 
+**Pocket path.** Under a pocket row, **Path** chooses between **rings (offset)**, the default, and **parallel lines**, at the
+given **Angle** to X (from 0 up to below 180°), with the stepover between them. On each pass, the bit first runs the lines,
+linked at depth only to the next line and only when the way stays inside the pocket (otherwise it lifts), then a **profile pass**
+along the edge, so the wall comes out exactly on the vector, not in steps. Lines plunge straight (the ramp, zigzag and helix
+belong to the rings); on the lines the bit cuts back and forth, so alternately climb and conventional, and the profile pass
+follows the row's direction. Islands and rest bits work as with rings.
+
 **Rest bits.** Under a pocket row, **Add a rest bit** puts a smaller bit after the row's bit (by default half the diameter,
 with the next free T and a 40 % stepover); you can add several, each smaller than the one before, and remove them with ×. Each
 one cuts only where the one before could not reach: the corners and the strips narrower than it, on the same passes; it does

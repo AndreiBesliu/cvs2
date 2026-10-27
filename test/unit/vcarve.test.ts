@@ -201,7 +201,7 @@ const vcarve = (noduri: string[], extra: Op = {}): Op => ({
   urechi: null, rampa: null, intrari: null, colturi: null, ...extra,
 });
 /** O piesă cu formele date și operațiile ei, la (x, y) pe o foaie de 200 × 150 × 18. */
-function doc(forme: ReadonlyArray<{ id: string; forma: Op; e?: number; f?: number }>, operatii: Op[], x = 0, y = 0, schema = 17): unknown {
+function doc(forme: ReadonlyArray<{ id: string; forma: Op; e?: number; f?: number }>, operatii: Op[], x = 0, y = 0, schema = 18): unknown {
   const noduri = forme.map((c) => ({ tip: 'element', id: c.id, matrice: { ...I, e: c.e ?? 0, f: c.f ?? 0 }, forma: c.forma }));
   return {
     schema, rev: 0, piese: [{ id: 'p', radacina: { tip: 'grup', id: 'r', matrice: { ...I }, copii: noduri }, operatii }],
@@ -386,7 +386,7 @@ test('fiecare trecere scoate cel mult pasul: prefixele programului pe oracol (ax
 
 // ── Ușa v14 și ce scrie Exportă ──────────────────────────────────────────────────────────────────────────────────────
 
-test('ușa v14: forma frezei e `{ tip: "v", unghi ∈ [1, 179] }` (câmpurile necunoscute rămân); „vcarve” sau „forma” într-un v13 nu fac un v13 valid; un v13 curat urcă (prin v14, v15 și v16) la v17', () => {
+test('ușa v14: forma frezei e `{ tip: "v", unghi ∈ [1, 179] }` (câmpurile necunoscute rămân); „vcarve” sau „forma” într-un v13 nu fac un v13 valid; un v13 curat urcă (prin v14–v17) la v18', () => {
   const dr = [{ id: 'a', forma: DR, e: 20, f: 20 }];
   for (const unghi of [1, 60, 90.5, 179]) deschis(doc(dr, [vcarve(['a'], { scula: { ...V(90), forma: { tip: 'v', unghi } } })]));
   const cuCamp = deschis(doc(dr, [vcarve(['a'], { scula: { ...V(90), forma: { tip: 'v', unghi: 60, cod: 'X' } } })]));
@@ -404,7 +404,7 @@ test('ușa v14: forma frezei e `{ tip: "v", unghi ∈ [1, 179] }` (câmpurile ne
   const curat = doc(dr, [{ ...vcarve(['a']), tip: 'profil', scula: { numar: 1, nume: 'freza plata', diametru: 6 } }], 0, 0, 13);
   const c = incarca(curat);
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...(curat as Record<string, unknown>), schema: 17 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...(curat as Record<string, unknown>), schema: 18 }, 'doar numărul');
 });
 
 test('ce scrie Exportă (ADR 0090): V-carve-ul cu latura interior și nimic din profil; forma frezei, cu numele după ea doar când se schimbă', () => {

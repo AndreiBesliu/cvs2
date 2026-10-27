@@ -3344,3 +3344,24 @@ avertisment, ca la buzunar. Rândul gravării inteligente din prag: „făcut”
 2D). Verificat în browser la 1440 px, după „Reîncarcă”: pe dreptunghiul 100 × 60, rândul pus pe buzunar cu Ø12; „Adaugă o freză de
 rest” pune T2, Ø6, pasul 2,4; una cât freza rândului oprește exportul cu motivul; cu Ø3 și pasul încă 2,4 (peste raza ei), tot
 oprit; cu pasul 1,2, permis; lățimea tabelului neschimbată (1 156 px); fără erori în consolă.
+
+## 2026-10-27 — Strategia paralelă a buzunarului (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, continuă cu strategia paralelă (raster) a buzunarului, cu trecerea de profil; dacă pachetul nu mai încape, spune-mi
+întâi.”
+**Started:** 27.10, 21:16 (intrarea scrisă la încheiere: am uitat-o la pornire). Felia **5.6↑**, adusă din etapa 5, fără mașină și fără
+agenți (ADR 0094). Planul: liniile paralele la un unghi, în zona centrului frezei, legate în zigzag prin buzunar, apoi trecerea de
+profil pe margine; documentul v18 (`strategie`); pachetul măsurat întâi (328,0 / 330 kB).
+
+**Completed:** 27.10 21:57. Sub rândul unui buzunar, Traseul: inele sau linii paralele, la Unghiul dat față de X (`src/cam/paralel.ts`);
+pe fiecare trecere, liniile în zigzag (legate doar cu linia vecină și doar prin buzunar), apoi trecerea de profil, ca peretele să
+iasă pe vector; liniile coboară prin plonjare. Aceeași acoperire ca la inele, deci insulele și frezele de rest merg neschimbate. Pe
+criteriul din cercetare (80 × 40 × 10 cu Ø12, pasul 4,8), pe oracolul simulării: fundul la −10 ± 0,02 în afara colțurilor R6, la 0°
+și la 30°; peretele la x = 20 ± 0,02; liniile la 4,8 mm (pe hârtie). **Pachetul a încăput:** nucleul și lucrarea au adăugat 0,8 kB,
+fereastra 0,4: totalul 328,0 → 329,2 / 330 (rămân 0,8 kB), pornirea 96,0 (cu ușa 99,5); marginea zonei e aplatizată (coardele, cu
+săgeata cel mult 0,0005 mm, spre interior) în loc de intersecțiile exacte cu arcele. Porțile: 7 521 unitare (0 picate, 8 sărite),
+build-ul determinist, e2e 247 / 247, emulatoarele 36 + 13. Mutațiile: 22 / 22 din prima. Rândul buzunarului din prag: „făcut”
+(rămâne placa etapei 5). **Găsit pe drum:** cheia `export.strategie` exista (schimbarea frezei), deci câmpul nou e „Traseul”
+(`export.paralel.*`); testele care fixau starea reală a etapei 5 (pragul, umplerea barei în cronologie, 0,375 → 0,5) urmează schimbarea;
+o primă rulare a build-ului determinist a dat `sw.js` diferit între două build-uri, iar următoarele trei au fost identice (de urmărit
+dacă reapare); scriptul de trecere a testelor la o versiune nouă de document (de acum generic) punea o paranteză în plus pe două linii.

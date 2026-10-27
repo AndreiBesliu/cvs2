@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 17;
+export const VERSIUNE_SCHEMA = 18;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -145,8 +145,14 @@ export type Operatie = {
    * doar unde aceea n-a ajuns (colțuri, fâșii înguste). Lipsă = una singură (ca în v16).
    */
   rest?: FrezaRest[];
+  /**
+   * Pe un buzunar (ADR 0094, documentul v18), strategia: `paralel` = linii paralele la `unghi` grade față de X, în [0, 180), cu
+   * trecerea de profil pe margine. Lipsă = inelele paralele cu conturul (ca în v17).
+   */
+  strategie?: StrategieBuzunar;
   [cheie: string]: unknown;
 };
+export type StrategieBuzunar = { fel: 'paralel'; unghi: number; [cheie: string]: unknown };
 /**
  * O freză de rest (ADR 0093): plată, cu distanța dintre inelele ei, în mm (cel mult raza ei). Potrivirea (mai mică decât
  * freza dinainte, plată, alt număr) o judecă lucrarea.
@@ -198,7 +204,7 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
-export type Document = { schema: 17; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 18; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

@@ -60,6 +60,8 @@ export type ValoriOperatie = {
   readonly directie?: DirectieOperatie;
   /** Frezele de rest ale unui buzunar (ADR 0093), în ordine; goală = niciuna. */
   readonly rest?: readonly FrezaRestOperatie[];
+  /** Strategia unui buzunar (ADR 0094): liniile paralele la unghiul dat; lipsă = inelele. */
+  readonly strategie?: { readonly fel: 'paralel'; readonly unghi: number };
 };
 /** O freză de rest (ADR 0093): numărul (T), diametrul și distanța dintre inele (mm). */
 export type FrezaRestOperatie = { readonly numar: number; readonly diametru: number; readonly pasLateral: number };
@@ -183,6 +185,8 @@ type Rand = {
   readonly fundPlat: boolean; readonly numarSculaFund: string; readonly diametruSculaFund: string; readonly pasLateralFund: string;
   /** Frezele de rest (ADR 0093), ca text: ale buzunarului și ale fundului plat. */
   readonly rest: readonly RandRest[]; readonly restFund: readonly RandRest[];
+  /** Strategia buzunarului (ADR 0094) și unghiul liniilor, ca text; unghiul rămâne scris și pe inele. */
+  readonly strategie: 'inele' | 'paralel'; readonly unghiParalel: string;
 };
 /** O freză de rest pe rândul ei, ca text: numărul, diametrul și pasul lateral. */
 type RandRest = { readonly numar: string; readonly diametru: string; readonly pas: string };
@@ -352,6 +356,7 @@ export function DialogExport(
       // Frezele de rest (ADR 0093), ale buzunarului și ale fundului plat.
       rest: (o.valori.rest ?? []).map((r) => ({ numar: text(r.numar), diametru: text(r.diametru), pas: text(r.pasLateral) })),
       restFund: (fund?.rest ?? []).map((r) => ({ numar: text(r.numar), diametru: text(r.diametru), pas: text(r.pasLateral) })),
+      strategie: o.valori.strategie ? 'paralel' : 'inele', unghiParalel: text(o.valori.strategie?.unghi ?? 0),
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
@@ -386,7 +391,10 @@ export function DialogExport(
   const randBun = (p: Rand | undefined): {
     scula: boolean; adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean; rampa: boolean; intrari: boolean;
     pasLateral: boolean; coborare: boolean; retragere: boolean; vcarve: boolean; fund: boolean; varf: boolean; vPeLinie: boolean; rest: boolean;
+    strategie: boolean;
   } => ({
+    // Strategia paralelă (ADR 0094): unghiul liniilor în [0, 180).
+    strategie: p !== undefined && (p.tip !== 'buzunar' || p.strategie === 'inele' || ((u) => u !== null && u >= 0 && u < 180)(citesteNumar(p.unghiParalel))),
     // Frezele de rest (ADR 0093): ale buzunarului; ale fundului plat, doar cu bifa pusă.
     rest: p !== undefined && (p.tip !== 'buzunar' || restBun(p.rest, p.diametruScula).every(Boolean))
       && (p.tip !== 'vcarve' || !p.fundPlat || restBun(p.restFund, p.diametruSculaFund).every(Boolean)),
@@ -414,7 +422,7 @@ export function DialogExport(
       p.rampa ? MARGINI_OPERATIE.razaIntrareMinimaRampa : MARGINI_OPERATIE.razaIntrareMinima)),
     pasLateral: p !== undefined && (p.tip !== 'buzunar' || ((d) => d !== null && inMargini(p.pasLateral, d / 2))(citesteNumar(p.diametruScula))),
     // Coborârea (ADR 0076): doar pe un buzunar și doar câmpurile felului ales.
-    coborare: p !== undefined && (p.tip !== 'buzunar' || p.coborare === 'plonjare' || (
+    coborare: p !== undefined && (p.tip !== 'buzunar' || p.strategie === 'paralel' || p.coborare === 'plonjare' || (
       inMargini(p.unghiCoborare, MARGINI_OPERATIE.unghiCoborare, MARGINI_OPERATIE.unghiCoborareMinim)
       && (p.coborare !== 'zigzag' || inMargini(p.lungimeZigzag, MARGINI_OPERATIE.lungimeZigzag, MARGINI_OPERATIE.lungimeZigzagMinima))
       && (p.coborare !== 'elice' || inMargini(p.razaElice, MARGINI_OPERATIE.razaElice, MARGINI_OPERATIE.razaEliceMinima)))),
@@ -463,8 +471,9 @@ export function DialogExport(
   const varfuriBune = randuri.every((b) => b.varf);
   const vPeLinie = randuri.every((b) => b.vPeLinie);
   const resturiBune = randuri.every((b) => b.rest);
+  const strategiiBune = randuri.every((b) => b.strategie);
   const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
-    && varfuriBune && vPeLinie && resturiBune;
+    && varfuriBune && vPeLinie && resturiBune && strategiiBune;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -558,8 +567,12 @@ export function DialogExport(
       if (pasLateral === null || rest === null) return [];
       // Coborârea (ADR 0076): plonjarea nu se scrie (documentul rămâne cel de dinainte, cu același program).
       const unghi = citesteNumar(p.unghiCoborare), lungime = citesteNumar(p.lungimeZigzag), raza = citesteNumar(p.razaElice);
+      // Strategia paralelă (ADR 0094): unghiul liniilor; coborârea, doar prin plonjare (nu se scrie).
+      const unghiParalel = p.strategie === 'paralel' ? citesteNumar(p.unghiParalel) : null;
+      if (p.strategie === 'paralel' && unghiParalel === null) return [];
+      const strategie = unghiParalel !== null ? { strategie: { fel: 'paralel' as const, unghi: unghiParalel } } : {};
       let coborare: Coborare | undefined;
-      if (p.coborare !== 'plonjare') {
+      if (p.coborare !== 'plonjare' && p.strategie !== 'paralel') {
         if (unghi === null) return [];
         if (p.coborare === 'rampa') coborare = { fel: 'rampa', unghi };
         else if (p.coborare === 'zigzag') { if (lungime === null) return []; coborare = { fel: 'zigzag', unghi, lungime }; }
@@ -567,7 +580,7 @@ export function DialogExport(
       }
       return [[o.cheie, {
         scula, latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'buzunar', pasLateral,
-        ...(coborare ? { coborare } : {}), rest,
+        ...(coborare ? { coborare } : {}), rest, ...strategie,
       }] as const];
     }
     const numar = citesteNumar(p.numarUrechi), latime = citesteNumar(p.latimeUreche), grosime = citesteNumar(p.grosimeUreche);
@@ -613,6 +626,7 @@ export function DialogExport(
     ...(vPeLinie ? [] : [t('motiv.v-pe-linie')]),
     ...(funduriBune ? [] : [t('motiv.fund-plat-invalid', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
     ...(resturiBune ? [] : [t('motiv.rest-invalid', { n: MARGINI_OPERATIE.numarScula })]),
+    ...(strategiiBune ? [] : [t('motiv.strategie-invalida')]),
     ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
       ? t('motiv.intrari-invalide-rampa', {
         minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinimaRampa), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
@@ -832,7 +846,24 @@ export function DialogExport(
                         <input type="text" inputMode="decimal" value={p.pasLateral} data-camp="pas-lateral" disabled={doarCitire}
                           aria-invalid={!b.pasLateral} onChange={(ev) => { schimba(o.cheie, { pasLateral: ev.target.value }); }} />
                       </label>
-                      {/* Coborârea în buzunar (ADR 0076): felul, apoi câmpurile lui. */}
+                      {/* Strategia (ADR 0094): inelele sau liniile paralele, cu unghiul lor. */}
+                      <label title={t('export.paralel.titlu')}>
+                        {t('export.paralel')}
+                        <select value={p.strategie} data-camp="strategie" disabled={doarCitire}
+                          onChange={(ev) => { schimba(o.cheie, { strategie: ev.target.value === 'paralel' ? 'paralel' : 'inele' }); }}>
+                          <option value="inele">{t('export.paralel.inele')}</option>
+                          <option value="paralel">{t('export.paralel.linii')}</option>
+                        </select>
+                      </label>
+                      {p.strategie === 'paralel' && (
+                      <label title={t('export.paralel.unghi.titlu')}>
+                        {t('export.paralel.unghi')}
+                        <input type="text" inputMode="decimal" value={p.unghiParalel} data-camp="unghi-paralel" disabled={doarCitire}
+                          aria-invalid={!b.strategie} onChange={(ev) => { schimba(o.cheie, { unghiParalel: ev.target.value }); }} />
+                      </label>
+                      )}
+                      {/* Coborârea în buzunar (ADR 0076): felul, apoi câmpurile lui; strategia paralelă coboară prin plonjare. */}
+                      {p.strategie === 'inele' && (<>
                       <label title={t('export.coborare.titlu')}>
                         {t('export.coborare')}
                         <select value={p.coborare} data-camp="coborare" disabled={doarCitire}
@@ -871,6 +902,7 @@ export function DialogExport(
                           onChange={(ev) => { schimba(o.cheie, { razaElice: ev.target.value }); }} />
                       </label>
                       )}
+                      </>)}
                       {frezeRest(o.cheie, p, false, doarCitire)}
                       </div>
                       )}

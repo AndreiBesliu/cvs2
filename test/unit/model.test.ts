@@ -24,7 +24,7 @@ test('un document valid trece prin ușa unică, neschimbat', () => {
   const r = incarca(JSON.parse(JSON.stringify(d)));
   assert.ok(r.ok, r.ok ? '' : r.motiv);
   if (r.ok) assert.deepEqual(r.doc, d);
-  assert.equal(VERSIUNE_SCHEMA, 17);
+  assert.equal(VERSIUNE_SCHEMA, 18);
 });
 
 test('ușa refuză, cu motiv: ce nu e obiect, fără versiune, dintr-o versiune mai nouă, cu valori absurde', () => {
@@ -246,9 +246,9 @@ test('migrarea refuză ciocnirile de nume și matricile v1 peste margini; câmpu
 });
 
 test('cheile __proto__, constructor și prototype rămân date: ușa nu le scoate și nu schimbă prototipul', () => {
-  const text = '{"schema":17,"rev":0,"__proto__":{"x":1},"piese":[{"id":"p","constructor":3,"operatii":[],"radacina":{"tip":"element","id":"a","forma":{"tip":"cerc","raza":1},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}}}],"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[{"id":"i","piesa":"p","x":0,"y":0,"rotire":0,"campuri":{"__proto__":"v","prototype":"w"}}]}]}';
+  const text = '{"schema":18,"rev":0,"__proto__":{"x":1},"piese":[{"id":"p","constructor":3,"operatii":[],"radacina":{"tip":"element","id":"a","forma":{"tip":"cerc","raza":1},"matrice":{"a":1,"b":0,"c":0,"d":1,"e":0,"f":0}}}],"foi":[{"id":"f1","stoc":{"latime":10,"inaltime":10,"grosime":1},"instante":[{"id":"i","piesa":"p","x":0,"y":0,"rotire":0,"campuri":{"__proto__":"v","prototype":"w"}}]}]}';
   // Și prin migrările v9 → v10 → v11: cheile rămân date și după copia migrării.
-  const r9 = incarca(JSON.parse(text.replace('"schema":17', '"schema":9')));
+  const r9 = incarca(JSON.parse(text.replace('"schema":18', '"schema":9')));
   assert.ok(r9.ok && jsonCanonic(r9.doc) === jsonCanonic(JSON.parse(text)), r9.ok ? 'v9' : r9.motiv);
   const r = incarca(JSON.parse(text));
   assert.ok(r.ok, r.ok ? '' : r.motiv);

@@ -151,6 +151,8 @@ const SchemaOperatie = v.looseObject({
   directie: v.optional(v.picklist(['invers', 'scurt'])),
   // ADR 0093: frezele de rest ale buzunarului (v17); pe alt fel le refuză lucrarea.
   rest: v.optional(SchemaRest),
+  // ADR 0094: strategia buzunarului (v18): liniile paralele la unghiul dat, în [0, 180); pe alt fel o refuză lucrarea.
+  strategie: v.optional(v.looseObject({ fel: v.literal('paralel'), unghi: v.pipe(v.number(), v.finite(), v.minValue(0), v.ltValue(180)) })),
 });
 const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
 const SchemaInstanta = v.looseObject({

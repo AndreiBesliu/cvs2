@@ -60,10 +60,10 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
   const colturi = v === undefined ? o.colturi : v.colturi && o.colturi ? { ...o.colturi, ...v.colturi } : v.colturi;
   // Despărțirea (ADR 0037 §8): bifată, `true`; nebifată, câmpul pleacă (lipsă = false), ca un document fără marcaj să rămână
   // octet cu octet ce era.
-  const { despartire: _vechi, pasLateral: _pas, tip: _tip, coborare: _cob, retragereCompleta: _retr, fundPlat: _fund, directie: _dir, rest: _rest, ...rest } = {
+  const { despartire: _vechi, pasLateral: _pas, tip: _tip, coborare: _cob, retragereCompleta: _retr, fundPlat: _fund, directie: _dir, rest: _rest, strategie: _str, ...rest } = {
     ...o, ...(v ?? {}), urechi, rampa, intrari, colturi, scula: sculaScrisa(o.scula, scula),
   };
-  void _vechi; void _pas; void _tip; void _cob; void _retr; void _fund; void _dir; void _rest;
+  void _vechi; void _pas; void _tip; void _cob; void _retr; void _fund; void _dir; void _rest; void _str;
   // Buzunarul (ADR 0069 §1): latura interior, nimic din profil, cu pasul lateral (al rândului, al operației, sau 40 % din D).
   const tip = v === undefined ? o.tip : v.tip ?? 'profil';
   // Găurirea (ADR 0087 §1): latura interior, nimic din profil; ieșirea la al câtelea pas, a rândului sau a operației. Implicitul
@@ -87,9 +87,11 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
       : v.coborare && o.coborare?.fel === v.coborare.fel ? { ...o.coborare, ...v.coborare } : v.coborare;
     // Frezele de rest (ADR 0093): ale rândului (goală: câmpul pleacă), sau ale operației fără valori din dialog.
     const frezeRest = v === undefined ? o.rest : restScris(o.rest, v.rest ?? [], 'freza plata');
+    // Strategia (ADR 0094): a rândului (inelele: câmpul pleacă), îmbinată cu cea din document; sau a operației.
+    const strategie = v === undefined ? o.strategie : v.strategie ? { ...(o.strategie ?? {}), ...v.strategie } : undefined;
     return {
       ...rest, tip, pasLateral, latura: 'interior', urechi: null, rampa: null, intrari: null, colturi: null, ...(coborare ? { coborare } : {}),
-      ...(frezeRest && frezeRest.length > 0 ? { rest: frezeRest } : {}),
+      ...(frezeRest && frezeRest.length > 0 ? { rest: frezeRest } : {}), ...(strategie ? { strategie } : {}),
     };
   }
   const despartire = v?.despartire ?? o.despartire;

@@ -32,7 +32,7 @@ const buz = (noduri: string[], extra: Op = {}): Op => ({
   urechi: null, rampa: null, intrari: null, colturi: null, pasLateral: 4.8, rest: [R(2, 3)], ...extra,
 });
 type Forma = { id: string; forma: Op; e?: number; f?: number };
-function doc(forme: readonly Forma[], operatii: Op[], schema = 17): unknown {
+function doc(forme: readonly Forma[], operatii: Op[], schema = 18): unknown {
   const noduri = forme.map((c) => ({ tip: 'element', id: c.id, matrice: { ...I, e: c.e ?? 0, f: c.f ?? 0 }, forma: c.forma }));
   return {
     schema, rev: 0, piese: [{ id: 'p', radacina: { tip: 'grup', id: 'r', matrice: { ...I }, copii: noduri }, operatii }],
@@ -360,7 +360,7 @@ test('fundul plat cu Ø6 și Ø2: în colț, materialul lăsat față de anvelop
 
 // ── Ușa v17 ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-test('ușa v17: `rest` = 1–8 freze, fiecare cu scula și pasul în (0, 50] (câmpurile necunoscute rămân); un v16 cu el nu e valid; un v16 curat urcă la v17', () => {
+test('ușa v17: `rest` = 1–8 freze, fiecare cu scula și pasul în (0, 50] (câmpurile necunoscute rămân); un v16 cu el nu e valid; un v16 curat urcă (prin v17) la v18', () => {
   const d = deschis(doc([DR80], [buz(['a'], { rest: [{ ...R(2, 3), nota: 'n' }] })]));
   assert.equal((d.piese[0]!.operatii[0]!.rest?.[0] as Record<string, unknown>)['nota'], 'n');
   for (const rau of [[], 'T2', [{}], [{ scula: F(2, 3) }], [{ pasLateral: 1 }], [{ scula: F(2, 3), pasLateral: 0 }], [{ scula: F(2, 3), pasLateral: 51 }],
@@ -376,7 +376,7 @@ test('ușa v17: `rest` = 1–8 freze, fiecare cu scula și pasul în (0, 50] (c�
   const curat = doc([DR80], [buz(['a'], { rest: undefined })], 16);
   const c = incarca(JSON.parse(JSON.stringify(curat)));
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...(JSON.parse(JSON.stringify(curat)) as Record<string, unknown>), schema: 17 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...(JSON.parse(JSON.stringify(curat)) as Record<string, unknown>), schema: 18 }, 'doar numărul');
 });
 
 // ── Ce scrie Exportă ─────────────────────────────────────────────────────────────────────────────────────────────────

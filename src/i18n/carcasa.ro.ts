@@ -51,6 +51,7 @@ export const roCarcasa = {
   'prop.freza.valoare-v-varf': 'T{numar}, V {unghi}° cu vârful de {varf} mm, Ø{diametru} mm',
   'prop.fund': 'Fundul plat',
   'prop.rest': 'Frezele de rest',
+  'prop.strategie.paralel': 'linii paralele la {unghi}°',
   'prop.rest.valoare': 'T{numar}, Ø{diametru} mm, pasul lateral {pas} mm',
   'prop.fund.valoare': 'T{numar}, Ø{diametru} mm, pasul lateral {pas} mm',
   'prop.urechi.valoare': '{numar} × {latime} mm, puntea {grosime} mm',
