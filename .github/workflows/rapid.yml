@@ -60,18 +60,32 @@ jobs:
       - name: Licențele dependențelor de rulare
         if: matrix.felia == 1
         run: npm run licente
-      # Exportul 2D (ADR 0088, ADR 0089): corpusul scris de aplicație, recitit de cititori independenți, doar pentru test
-      # (ezdxf pentru DXF, PyMuPDF pentru PDF, Ghostscript pentru EPS), și comparat cu valorile pe hârtie din
-      # `test/oracles-py/export2d.py`.
+
+  # Exportul 2D (ADR 0088, ADR 0089): corpusul scris de aplicație, recitit de cititori independenți, doar pentru test (ezdxf
+  # pentru DXF, PyMuPDF pentru PDF, Ghostscript pentru EPS), și comparat cu valorile pe hârtie din `test/oracles-py/export2d.py`.
+  # Job separat, cu limita lui: pe 27.10, în felia 2 (după unitarele ei, 6 min 48 s), `apt` a dus felia la limita de 10 minute.
+  # `apt-get update` întâi: cu indexul imaginii, pachetele Ghostscript nu se mai găseau pe oglinzi.
+  oracol-export2d:
+    name: Oracolul exportului 2D (ezdxf, PyMuPDF, Ghostscript)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
       - uses: actions/setup-python@v6
-        if: matrix.felia == 2
         with:
           python-version: '3.12'
-      - name: Oracolul exportului 2D (ezdxf, PyMuPDF, Ghostscript)
-        if: matrix.felia == 2
+      - name: Ghostscript și cititorii Python
         run: |
+          sudo apt-get update -qq
           sudo apt-get install -y -qq ghostscript > /dev/null
           python -m pip install --quiet -r test/oracles-py/requirements.txt
+      - name: Corpusul, recitit și comparat cu hârtia
+        run: |
           node scripts/export2d-corpus.ts .tmp/export2d
           gs -q -dSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pdfwrite -dCompressPages=false -sOutputFile=.tmp/export2d/corpus-eps.pdf .tmp/export2d/corpus.eps
           python test/oracles-py/export2d.py .tmp/export2d

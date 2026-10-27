@@ -44,7 +44,8 @@ la cel mult 0,001 mm (la EPS, și că n-are straturi). Bucata adusă la cerere c
     toleranță, și trecut prin **Ghostscript** (interpretorul PostScript real; în CI din pachetele Ubuntu, local din
     `@jspawn/ghostscript-wasm`, doar pentru test, AGPL), care dovedește că e PostScript valid ce desenează formele: Ghostscript
     mută desenul cu până la ~0,002 mm (543 → 542,99907; măsurat), deci acolo toleranța e 0,003 mm;
-  - rulat în CI pe felia 2 a nivelului rapid, după ezdxf.
+  - rulat în CI, la fiecare push, într-un job separat al nivelului rapid (`oracol-export2d`): în felia 2, după unitarele ei,
+    instalarea Ghostscript ducea felia la limita de 10 minute.
 - **Testele unitare**: numărul de cubice (minim, sub toleranță, R0,01 … R2440), arcul cu bulge (capetele exacte, partea după
   semn, sensul orar), drumurile (cercul din (cx + r, cy), închiderea), PDF-ul (ASCII, offseturile xref, startxref, /Length,
   straturile, pagina, scara), EPS-ul (cutiile, căile, culorile), cutia lărgită de o formă ieșită din foaie.

@@ -3209,3 +3209,7 @@ Mutațiile: 28 / 30 la prima rulare, 30 / 30 cu probele noi. **Găsit pe drum:**
 exactitatea EPS-ului o probează cititorul direct; (2) oracolul căuta distanța la o cubică pe 200 de puncte (eroare ~0,4 mm)
 și nu verifica acoperirea (o bucată lipsă trecea): ambele reparate înaintea mutațiilor; (3) comanda `firebase` lipsea din
 PATH-ul sesiunii (CLI-ul e în `AppData\Roaming\npm`): emulatoarele au rulat cu el adăugat doar pentru comandă.
+**CI, întâi pe ramura `export-pdf-eps`** (ca `main` să nu se înroșească dacă Ghostscript-ul din Ubuntu se poartă altfel decât
+cel local): felia 2 oprită la 10 minute; unitarele ei au urcat la 6 min 48 s (fișierul de test nou a mutat teste grele în
+ea), iar `apt-get install ghostscript` a așteptat 2 min 44 s pachete pe care indexul imaginii nu le mai găsea. Oracolul are
+acum jobul lui (`oracol-export2d`, cu `apt-get update` întâi).

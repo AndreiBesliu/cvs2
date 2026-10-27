@@ -142,7 +142,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   pe perete, restul refuzat; doar G0–G3, fără ciclurile fixe; în fereastra exportului doar pe rândurile numai cu cercuri.
   **Exportul 2D, DXF R2007 și SVG (ADR 0088, adus din etapa 9)** gata pe 26.10: „Exportă vectori” în extensia barei; scriitorii
   proprii în `src/io/` (`vectori.ts`, `dxfExport.ts`, `svgExport.ts`), la cerere; straturile = rolurile. **Oracolul independent
-  e Python** (`test/oracles-py/export2d.py`, ezdxf 1.4.4, în CI pe felia 2; local: `python -m venv .tmp/venv-export2d`, apoi
+  e Python** (`test/oracles-py/export2d.py`, ezdxf 1.4.4, în CI în jobul `oracol-export2d` al nivelului rapid; local: `python -m venv .tmp/venv-export2d`, apoi
   `pip install -r test/oracles-py/requirements.txt`), pe corpusul din `scripts/export2d-corpus.ts`: un caz nou = descrierea în
   corpus + valorile pe hârtie în oracol. **PDF și EPS (ADR 0089)** gata pe 27.10: arcele din cubice sub 0,001 mm (`cubice.ts`),
   PDF 1.5 cu straturi OCG, EPS fără straturi; oracolul: PyMuPDF, un cititor direct al EPS-ului și Ghostscript (CI: `apt`; local:
