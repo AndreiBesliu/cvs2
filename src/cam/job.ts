@@ -155,18 +155,30 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   if (taieturi.length === 0) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
   const prima = taieturi[0];
   if (!prima) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
+  const operatieDe = (t: Taietura) => doc.piese.find((p) => p.id === t.piesa)?.operatii.find((o) => o.id === t.operatie);
+  // Fundul plat (ADR 0091): doar pe un V-carve, cu o freză dreaptă (plată).
+  for (const t of taieturi) {
+    const fp = operatieDe(t)?.fundPlat;
+    if (!fp) continue;
+    if (t.tip !== 'vcarve') return { ok: false, motiv: `${t.idLume}: fundul plat cu freza dreaptă e doar al unui V-carve` };
+    if (fp.scula.forma) return { ok: false, motiv: `${t.idLume}: freza fundului plat (T${fp.scula.numar}) trebuie să fie dreaptă, nu în V` };
+  }
   // Aceeași sculă = același număr, același diametru și aceeași formă (ADR 0025, precizarea 1; ADR 0090). Un număr cu două
-  // diametre sau două forme ar fi două freze sub același T, iar omul de la mașină ar monta una singură (ADR 0084).
+  // diametre sau două forme ar fi două freze sub același T, iar omul de la mașină ar monta una singură (ADR 0084). Și freza
+  // fundului plat (ADR 0091).
   const forma = (s: Taietura['scula']): string => (s.forma ? `în V de ${s.forma.unghi}°` : 'plată');
   const freze = new Map<number, Taietura['scula']>();
   for (const t of taieturi) {
-    const s = freze.get(t.scula.numar);
-    if (s === undefined) { freze.set(t.scula.numar, t.scula); continue; }
-    if (s.diametru !== t.scula.diametru) {
-      return { ok: false, motiv: `${t.idLume}: T${t.scula.numar} are două diametre (${s.diametru} și ${t.scula.diametru} mm): fiecare freză cere numărul ei` };
-    }
-    if (forma(s) !== forma(t.scula)) {
-      return { ok: false, motiv: `${t.idLume}: T${t.scula.numar} are două freze de Ø${s.diametru} (${forma(s)} și ${forma(t.scula)}): fiecare freză cere numărul ei` };
+    const fp = t.tip === 'vcarve' ? operatieDe(t)?.fundPlat : undefined;
+    for (const u of fp ? [t.scula, fp.scula] : [t.scula]) {
+      const s = freze.get(u.numar);
+      if (s === undefined) { freze.set(u.numar, u); continue; }
+      if (s.diametru !== u.diametru) {
+        return { ok: false, motiv: `${t.idLume}: T${u.numar} are două diametre (${s.diametru} și ${u.diametru} mm): fiecare freză cere numărul ei` };
+      }
+      if (forma(s) !== forma(u)) {
+        return { ok: false, motiv: `${t.idLume}: T${u.numar} are două freze de Ø${s.diametru} (${forma(s)} și ${forma(u)}): fiecare freză cere numărul ei` };
+      }
     }
   }
   const scula: Scula = sculaIR(prima.scula);
@@ -254,13 +266,18 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   };
   /** Cât trece discul frezei (raza R) de fiecare latură a foii, pe un traseu (măsura ieșirii din foaie). */
   const iese = (x: Contur, R: number): Depasire => depasire(largita(cutieContur(x), R), foaie.stoc.latime, foaie.stoc.inaltime, PRAG_REZOLUTIE);
-  /** Scula montată; o tăietură cu alta cere întâi schimbarea (ADR 0084). Numărul o spune: un T are o singură freză (mai sus). */
-  let curenta = scula;
-  const montata = (t: Taietura): void => {
-    if (t.scula.numar === curenta.numar) return;
-    curenta = sculaIR(t.scula);
+  /**
+   * Scula montată; o tăietură cu alta cere întâi schimbarea (ADR 0084). Numărul o spune: un T are o singură freză (mai sus).
+   * Prima montată e scula programului (ADR 0091 §3: un V-carve cu fund plat începe cu freza dreaptă).
+   */
+  let initiala: Scula | null = null, curenta: Scula | null = null;
+  const monteaza = (s: Taietura['scula']): void => {
+    if (curenta === null) { curenta = initiala = sculaIR(s); return; }
+    if (s.numar === curenta.numar) return;
+    curenta = sculaIR(s);
     miscari.push({ tip: 'schimba-scula', scula: curenta, turatie: regim.turatie });
   };
+  const montata = (t: Taietura): void => { monteaza(t.scula); };
   // V-carve-urile făcute (ADR 0090): toate contururile unei operații dintr-o instanță se taie odată, la prima lor tăietură.
   const vcarveFacute = new Set<string>();
   for (const [it, t] of taieturi.entries()) {
@@ -286,13 +303,22 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       const forma = t.scula.forma;
       if (forma?.tip !== 'v') return { ok: false, motiv: `${t.idLume}: V-carve-ul cere o freză în V (T${t.scula.numar} e plată)` };
       const ale = taieturi.filter((u) => u.tip === 'vcarve' && `${u.instanta}/${u.piesa}/${u.operatie}` === cheie);
+      const fp = operatieDe(t)?.fundPlat;
       const v = traseuVcarve({
         contururi: ale.map(conturDe), unghi: forma.unghi, diametruScula: D, adancime: t.adancime, pas: t.pas,
         avans: regim.avans, avansPlonjare: regim.avansPlonjare, zSigur: regim.zSigur,
+        ...(fp ? { fundPlat: { diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: t.sens } } : {}),
       });
       if (!v.ok) return { ok: false, motiv: `${t.idLume}: ${v.motiv}` };
+      const nume = `${t.idLume}${ale.length > 1 ? ` (+${ale.length - 1})` : ''}`;
+      // Fundul plat (ADR 0091 §3): întâi freza dreaptă, dacă taie ceva; apoi freza în V.
+      if (fp && v.fund.length > 0) {
+        monteaza(fp.scula);
+        miscari.push({ tip: 'eticheta', text: `${nume}: V-carve, fundul plat cu T${fp.scula.numar} Ø${fp.scula.diametru}`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
+        for (const m of v.fund) miscari.push(m);
+      }
       montata(t);
-      miscari.push({ tip: 'eticheta', text: `${t.idLume}${ale.length > 1 ? ` (+${ale.length - 1})` : ''}: V-carve, până la ${t.adancime} mm`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
+      miscari.push({ tip: 'eticheta', text: `${nume}: V-carve, până la ${t.adancime} mm`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
       for (const m of v.miscari) miscari.push(m);
       for (const a of v.avertismente) avertismente.push(`${t.idLume}: ${a}`);
       continue;
@@ -486,5 +512,5 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     // Fără `push(...listă)`: o listă foarte lungă depășește stiva de argumente.
     for (const m of tr.miscari) miscari.push(m);
   }
-  return { ok: true, program: { axe: AXE_XYZ, scula, turatie: regim.turatie, zSigur: regim.zSigur, miscari }, avertismente };
+  return { ok: true, program: { axe: AXE_XYZ, scula: initiala ?? scula, turatie: regim.turatie, zSigur: regim.zSigur, miscari }, avertismente };
 }

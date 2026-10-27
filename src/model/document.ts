@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 14;
+export const VERSIUNE_SCHEMA = 15;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -127,8 +127,15 @@ export type Operatie = {
    * `RETRAGERE_PARTIALA` mm, cât să rupă așchia); lipsă = 1, la fiecare pas.
    */
   retragereCompleta?: number;
+  /** Pe un V-carve (ADR 0091, documentul v15), freza dreaptă care scoate fundul plat; lipsă = fundul rămâne (ca în v14). */
+  fundPlat?: FundPlat;
   [cheie: string]: unknown;
 };
+/**
+ * Fundul plat al unui V-carve (ADR 0091): freza dreaptă (plată; numărul ei e al altei freze decât V-ul) și distanța dintre
+ * inelele ei, în mm (cel mult raza ei). Potrivirea o judecă lucrarea.
+ */
+export type FundPlat = { scula: Scula; pasLateral: number; [cheie: string]: unknown };
 /**
  * Coborârea în buzunar (ADR 0076): `plonjare` (dreaptă, ca până în v11), `rampa` (de-a lungul primului inel, cu `unghi`
  * grade față de orizontală), `zigzag` (dus-întors pe primii `lungime` mm ai inelului, cu panta cel mult `unghi`) sau `elice`
@@ -170,7 +177,7 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
-export type Document = { schema: 14; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 15; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

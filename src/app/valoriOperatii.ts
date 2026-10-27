@@ -1,5 +1,5 @@
-import type { Operatie } from '../model/document.ts';
-import type { SculaOperatie, ValoriOperatie } from '../ui/DialogExport.tsx';
+import type { FundPlat, Operatie } from '../model/document.ts';
+import type { FundPlatOperatie, SculaOperatie, ValoriOperatie } from '../ui/DialogExport.tsx';
 
 /**
  * Scula scrisă de Exportă (ADR 0084, ADR 0090): numărul și diametrul rândului, forma lui (în V cu unghiul, sau plată: câmpul
@@ -17,6 +17,16 @@ function sculaScrisa(o: Operatie['scula'], s: SculaOperatie): Operatie['scula'] 
 }
 
 /**
+ * Fundul plat scris de Exportă (ADR 0091): freza dreaptă și pasul rândului peste cel din document (ÎMBINAT: un câmp
+ * necunoscut rămâne, ordinea cheilor la fel); freza e plată, deci o `forma` veche pleacă; numele nou, „freza dreapta”.
+ */
+function fundScris(o: FundPlat | undefined, f: FundPlatOperatie): FundPlat {
+  const { forma: _forma, ...baza } = o?.scula ?? { numar: f.numar, nume: 'freza dreapta', diametru: f.diametru };
+  void _forma;
+  return { ...(o ?? {}), scula: { ...baza, numar: f.numar, diametru: f.diametru }, pasLateral: f.pasLateral };
+}
+
+/**
  * Operația pe care o scrie Exportă: valorile din dialog peste cea din document, cu freza arătată. Urechile, rampa,
  * intrările, degajările și scula se
  * ÎMBINĂ, nu se înlocuiesc: un câmp necunoscut din ele rămâne (ADR 0016), iar ordinea cheilor din document (cea salvată,
@@ -29,16 +39,20 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
   const colturi = v === undefined ? o.colturi : v.colturi && o.colturi ? { ...o.colturi, ...v.colturi } : v.colturi;
   // Despărțirea (ADR 0037 §8): bifată, `true`; nebifată, câmpul pleacă (lipsă = false), ca un document fără marcaj să rămână
   // octet cu octet ce era.
-  const { despartire: _vechi, pasLateral: _pas, tip: _tip, coborare: _cob, retragereCompleta: _retr, ...rest } = {
+  const { despartire: _vechi, pasLateral: _pas, tip: _tip, coborare: _cob, retragereCompleta: _retr, fundPlat: _fund, ...rest } = {
     ...o, ...(v ?? {}), urechi, rampa, intrari, colturi, scula: sculaScrisa(o.scula, scula),
   };
-  void _vechi; void _pas; void _tip; void _cob; void _retr;
+  void _vechi; void _pas; void _tip; void _cob; void _retr; void _fund;
   // Buzunarul (ADR 0069 §1): latura interior, nimic din profil, cu pasul lateral (al rândului, al operației, sau 40 % din D).
   const tip = v === undefined ? o.tip : v.tip ?? 'profil';
   // Găurirea (ADR 0087 §1): latura interior, nimic din profil; ieșirea la al câtelea pas, a rândului sau a operației. Implicitul
   // (1) nu se scrie pe o operație care nu-l avea, ca un Exportă fără nicio schimbare să nu scrie o comandă.
-  // V-carve-ul (ADR 0090): latura interior, nimic din profil (freza în V o cere CAM-ul, cu motiv).
-  if (tip === 'vcarve') return { ...rest, tip, latura: 'interior', urechi: null, rampa: null, intrari: null, colturi: null };
+  // V-carve-ul (ADR 0090): latura interior, nimic din profil (freza în V o cere CAM-ul, cu motiv). Fundul plat (ADR 0091): al
+  // rândului (bifa scoasă: câmpul pleacă), sau al operației fără valori din dialog.
+  if (tip === 'vcarve') {
+    const fundPlat = v === undefined ? o.fundPlat : v.fundPlat ? fundScris(o.fundPlat, v.fundPlat) : undefined;
+    return { ...rest, tip, latura: 'interior', urechi: null, rampa: null, intrari: null, colturi: null, ...(fundPlat ? { fundPlat } : {}) };
+  }
   if (tip === 'gaurire') {
     const retragereCompleta = v === undefined ? o.retragereCompleta : v.retragereCompleta ?? o.retragereCompleta;
     const scrie = retragereCompleta !== undefined && (retragereCompleta !== 1 || o.retragereCompleta !== undefined);

@@ -370,8 +370,13 @@ tan(θ/2), unde θ e unghiul frezei (la 90°, cât distanța; la 60°, de 1,73 o
 contur, iar colțurile ascuțite rămân ascuțite: literele, ornamentele, conturul unui logo.
 - Contururile rândului se citesc împreună, par-impar: un „O” e inelul dintre cele două contururi, nu două forme.
 - **Adâncimea** e cea maximă. Unde forma e mai lată decât freza la acea adâncime, freza merge la ea pe mijloc și pe un contur
-  paralel cu peretele, iar fundul plat dintre ele rămâne netăiat (îl va face o freză dreaptă, într-o versiune viitoare);
-  exportul o spune, ca avertisment.
+  paralel cu peretele, iar între ele rămâne un **fund plat**.
+- **Fundul plat cu freza dreaptă**: bifa de sub rândul V-carve-ului, cu freza dreaptă (numărul ei, alt T decât V-ul; implicit
+  T-ul V-ului + 1, Ø3,175) și pasul ei lateral (cel mult jumătate din diametru, implicit 40 %). Întâi freza dreaptă scoate
+  fundul, nivel cu nivel, fără să atingă pereții; apoi freza în V taie pereții și colțurile în care cea dreaptă nu ajunge
+  (colțurile ascuțite ale fundului și canalele mai înguste decât ea), cu inele dese: acolo rămâne o creastă de cel mult
+  0,05 mm. Programul are o schimbare de freză între ele. Fără bifă, fundul rămâne netăiat, iar exportul o spune, ca
+  avertisment; o formă fără fund plat nu montează freza dreaptă deloc.
 - **Pasul**: la fiecare trecere, freza coboară cel mult cu pasul față de trecerea de dinainte.
 - Freza rândului trebuie să fie **în V** (vezi [Exportul G-code](#export)), iar conul ei, (diametrul / 2) / tan(θ/2), trebuie
   să ajungă la adâncimea cerută; altfel exportul e refuzat, cu motivul. Pe un V-carve nu există urechi, rampă, intrări,

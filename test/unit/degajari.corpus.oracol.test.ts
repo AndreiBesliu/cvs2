@@ -26,7 +26,7 @@ const cheie = (i: Incalcare): string => `${i.invarianta}|${i.mesaj}`;
 test('lipire: corpusul degajărilor (din sămânță): orice program trece toată poarta; avertismentele sunt exact colțurile omise; refuzurile au motiv și nu vin din degajări; fără drumuri, geometria e a programului fără colturi', async () => {
   // Felia 2.3c-2: v10 (ADR 0037) adaugă căile deschise; documentele fără ele se taie la fel (ADR 0037 §2, §13), deci și pe 10.
   // Felia 5.1↑ (ADR 0069): v11 adaugă buzunarul; documentele fără el se taie la fel (doar numărul), deci și pe 11.
-  assert.ok(SCHEMA >= 8 && SCHEMA <= 14, `schema ${SCHEMA}`);
+  assert.ok(SCHEMA >= 8 && SCHEMA <= 15, `schema ${SCHEMA}`);
   const rele: string[] = [];
   let programe = 0, refuzuri = 0, drumuri = 0, pastrate = 0, omise = 0, banda = 0, ascutite = 0, obtuze = 0, tee = 0, dogb = 0, arce = 0;
   const preexistente: string[] = [];

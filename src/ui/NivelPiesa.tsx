@@ -23,6 +23,8 @@ export type OperatieArbore = {
   readonly adancime: number;
   readonly pas: number;
   readonly scula: { readonly numar: number; readonly diametru: number };
+  /** Freza dreaptă a fundului plat al unui V-carve (ADR 0091). */
+  readonly fundPlat?: { readonly scula: { readonly numar: number; readonly diametru: number } };
 };
 
 /**
@@ -46,6 +48,7 @@ export function NivelPiesa({ elemente, operatii }: { readonly elemente: number; 
                 n: o.noduri.length, latura: t(`export.latura.${o.latura}`), adancime: n(o.adancime), pas: n(o.pas),
                 t: o.scula.numar, d: n(o.scula.diametru),
               })}
+              {o.tip === 'vcarve' && o.fundPlat && t('arbore.vcarve.fund', { t: o.fundPlat.scula.numar, d: n(o.fundPlat.scula.diametru) })}
             </div>
           ))}
       </div>

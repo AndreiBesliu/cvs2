@@ -51,6 +51,8 @@ export const enCarcasa = {
   'prop.freza': 'Cutter',
   'prop.freza.valoare': 'T{numar}, Ø{diametru} mm',
   'prop.freza.valoare-v': 'T{numar}, V {unghi}°, Ø{diametru} mm',
+  'prop.fund': 'Flat floor',
+  'prop.fund.valoare': 'T{numar}, Ø{diametru} mm, stepover {pas} mm',
   'prop.urechi.valoare': '{numar} × {latime} mm, bridge {grosime} mm',
   'prop.rampa.valoare': '{mm} mm long',
   'prop.coborare.rampa': '{nume}, {unghi}°',
@@ -76,5 +78,6 @@ export const enCarcasa = {
     one: 'V-carve on {n} contour: up to {adancime} mm, in passes of {pas} mm, T{t} Ø{d}',
     other: 'V-carve on {n} contours: up to {adancime} mm, in passes of {pas} mm, T{t} Ø{d}',
   },
+  'arbore.vcarve.fund': ', flat floor with T{t} Ø{d}',
   'arbore.fara-operatii': 'No cutting operation',
 } as const satisfies Readonly<Record<string, Mesaj>>;

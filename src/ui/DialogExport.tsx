@@ -47,7 +47,11 @@ export type ValoriOperatie = {
   readonly coborare?: Coborare;
   /** Găurirea (ADR 0087): la al câtelea pas iese freza din gaură. */
   readonly retragereCompleta?: number;
+  /** Fundul plat al unui V-carve (ADR 0091): freza dreaptă și pasul ei lateral; `null` = fără (bifa scoasă). */
+  readonly fundPlat?: FundPlatOperatie | null;
 };
+/** Freza dreaptă a fundului plat (ADR 0091): numărul (T), diametrul și distanța dintre inele (mm). */
+export type FundPlatOperatie = { readonly numar: number; readonly diametru: number; readonly pasLateral: number };
 
 /**
  * Un rând: o operație a unei piese (ADR 0025), cu cheia `<piesă>/<operație>`. `deschise`: câte din nodurile ei sunt căi
@@ -134,6 +138,8 @@ function inMargini(s: string, plafon: number, minim = 0): boolean {
 
 /** Unghiul implicit al frezei în V (ADR 0090), în grade. */
 const UNGHI_V_IMPLICIT = 60;
+/** Diametrul implicit al frezei drepte a fundului plat (ADR 0091 §4), în mm (1/8″). */
+const DIAMETRU_FUND_IMPLICIT = 3.175;
 
 /** Urechile pornite sau nu; câmpurile lor rămân scrise și cu bifa scoasă, ca o bifă pusă la loc să nu le piardă. */
 type Rand = {
@@ -156,6 +162,8 @@ type Rand = {
   /** Coborârea în buzunar (ADR 0076), cu valorile tuturor felurilor scrise, ca o schimbare de fel să nu le piardă. */
   readonly coborare: Coborare['fel'];
   readonly unghiCoborare: string; readonly lungimeZigzag: string; readonly razaElice: string;
+  /** Fundul plat al V-carve-ului (ADR 0091): bifa și freza dreaptă, ca text; câmpurile rămân scrise și cu bifa scoasă. */
+  readonly fundPlat: boolean; readonly numarSculaFund: string; readonly diametruSculaFund: string; readonly pasLateralFund: string;
 };
 
 /** Valorile cu care pornește coborârea pe un rând care n-o avea (ADR 0076 §5): 3°, zigzagul de 20 mm, elicea cât raza frezei. */
@@ -271,6 +279,8 @@ export function DialogExport(
   const dinDocument = (): Record<string, Rand> => Object.fromEntries(operatii.map((o) => {
     const u = o.valori.urechi ?? URECHI_IMPLICITE;
     const inchise = o.deschise === 0;
+    const fund = o.valori.fundPlat ?? null;
+    const diametruFund = fund?.diametru ?? DIAMETRU_FUND_IMPLICIT;
     return [o.cheie, {
       numarScula: text(o.valori.scula?.numar ?? 1), diametruScula: text(o.valori.scula?.diametru ?? 6),
       formaScula: o.valori.scula?.forma ? 'v' : 'plata', unghiV: text(o.valori.scula?.forma?.unghi ?? UNGHI_V_IMPLICIT),
@@ -288,6 +298,10 @@ export function DialogExport(
       unghiCoborare: text(o.valori.coborare && o.valori.coborare.fel !== 'plonjare' ? o.valori.coborare.unghi : UNGHI_COBORARE_IMPLICIT),
       lungimeZigzag: text(o.valori.coborare?.fel === 'zigzag' ? o.valori.coborare.lungime : LUNGIME_ZIGZAG_IMPLICITA),
       razaElice: text(o.valori.coborare?.fel === 'elice' ? o.valori.coborare.raza : razaEliceImplicita(o.valori.scula?.diametru ?? 6)),
+      // Fundul plat (ADR 0091 §4): T-ul V-ului + 1, Ø3,175, pasul 40 % din diametru.
+      fundPlat: inchise && o.valori.tip === 'vcarve' && fund !== null,
+      numarSculaFund: text(fund?.numar ?? (o.valori.scula?.numar ?? 1) + 1), diametruSculaFund: text(diametruFund),
+      pasLateralFund: text(fund?.pasLateral ?? pasLateralImplicit(diametruFund)),
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
@@ -321,12 +335,15 @@ export function DialogExport(
   // Pasul lateral al unui buzunar: cel mult raza frezei rândului (ADR 0069 §3); fără o freză bună, nu se judecă.
   const randBun = (p: Rand | undefined): {
     scula: boolean; adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean; rampa: boolean; intrari: boolean;
-    pasLateral: boolean; coborare: boolean; retragere: boolean; vcarve: boolean;
+    pasLateral: boolean; coborare: boolean; retragere: boolean; vcarve: boolean; fund: boolean;
   } => ({
     scula: p !== undefined && intregInMargini(p.numarScula, MARGINI_OPERATIE.numarScula) && inMargini(p.diametruScula, MARGINI_OPERATIE.diametru)
       && (p.formaScula !== 'v' || inMargini(p.unghiV, MARGINI_OPERATIE.unghiV, MARGINI_OPERATIE.unghiVMinim)),
     // V-carve-ul (ADR 0090) cere freza în V.
     vcarve: p !== undefined && (p.tip !== 'vcarve' || p.formaScula === 'v'),
+    // Fundul plat (ADR 0091): doar cu bifa pusă; pasul lateral cel mult raza frezei drepte.
+    fund: p !== undefined && (p.tip !== 'vcarve' || !p.fundPlat || (intregInMargini(p.numarSculaFund, MARGINI_OPERATIE.numarScula)
+      && inMargini(p.diametruSculaFund, MARGINI_OPERATIE.diametru) && ((d) => d !== null && inMargini(p.pasLateralFund, d / 2))(citesteNumar(p.diametruSculaFund)))),
     adancime: p !== undefined && inMargini(p.adancime, MARGINI_OPERATIE.adancime),
     pas: p !== undefined && inMargini(p.pas, MARGINI_OPERATIE.adancime),
     // Pe un buzunar și pe o găurire, urechile și rampa nu se aplică (ADR 0069 §1, ADR 0087 §1): bifele sunt oprite, deci nu
@@ -349,13 +366,23 @@ export function DialogExport(
   });
   const randuri = operatii.map((o) => randBun(param[o.cheie]));
   const sculeBune = randuri.every((b) => b.scula);
+  const fmtFreza = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3 });
   // Frezele rândurilor (ADR 0084): același număr cu două diametre (sau două forme, ADR 0090) ar fi două freze sub același T.
-  const scule = new Map<number, Set<string>>();
+  // Freza se compară după valorile exacte; în motiv apare scrisă după limbă.
+  const scule = new Map<number, Map<string, string>>();
+  const adaugaFreza = (n: number, d: number, u: number | null): void => {
+    const m = scule.get(n) ?? new Map<string, string>();
+    m.set(u !== null ? `${d} V${u}` : `${d}`, u !== null ? `Ø${fmtFreza.format(d)} mm V${fmtFreza.format(u)}°` : `Ø${fmtFreza.format(d)} mm`);
+    scule.set(n, m);
+  };
   for (const o of operatii) {
     const p = param[o.cheie];
     const n = p ? citesteNumar(p.numarScula) : null, d = p ? citesteNumar(p.diametruScula) : null;
     const u = p && p.formaScula === 'v' ? citesteNumar(p.unghiV) : null;
-    if (n !== null && d !== null) scule.set(n, (scule.get(n) ?? new Set()).add(u !== null ? `Ø${String(d)} mm V${String(u)}°` : `Ø${String(d)} mm`));
+    if (n !== null && d !== null) adaugaFreza(n, d, u);
+    // Și freza dreaptă a fundului plat (ADR 0091), cu bifa pusă.
+    const nf = p?.tip === 'vcarve' && p.fundPlat ? citesteNumar(p.numarSculaFund) : null, df = p ? citesteNumar(p.diametruSculaFund) : null;
+    if (nf !== null && df !== null) adaugaFreza(nf, df, null);
   }
   const conflict = [...scule].find(([, ds]) => ds.size > 1);
   const operatiiBune = sculeBune && !conflict && randuri.every((b) => b.adancime && b.pas);
@@ -366,7 +393,8 @@ export function DialogExport(
   const coborariBune = randuri.every((b) => b.coborare);
   const retrageriBune = randuri.every((b) => b.retragere);
   const vcarveBune = randuri.every((b) => b.vcarve);
-  const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune;
+  const funduriBune = randuri.every((b) => b.fund);
+  const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -390,9 +418,12 @@ export function DialogExport(
     const unghiV = p.formaScula === 'v' ? citesteNumar(p.unghiV) : null;
     if (p.formaScula === 'v' && unghiV === null) return [];
     const scula: SculaOperatie = { numar: numarScula, diametru: diametruScula, ...(unghiV !== null ? { forma: { tip: 'v' as const, unghi: unghiV } } : {}) };
-    // V-carve-ul (ADR 0090): latura interior, nimic din profil; adâncimea e cea maximă.
+    // V-carve-ul (ADR 0090): latura interior, nimic din profil; adâncimea e cea maximă. Fundul plat (ADR 0091): cu bifa pusă.
     if (p.tip === 'vcarve') {
-      return [[o.cheie, { scula, latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'vcarve' }] as const];
+      const numar = citesteNumar(p.numarSculaFund), diametru = citesteNumar(p.diametruSculaFund), pasLateral = citesteNumar(p.pasLateralFund);
+      if (p.fundPlat && (numar === null || diametru === null || pasLateral === null)) return [];
+      const fundPlat = p.fundPlat && numar !== null && diametru !== null && pasLateral !== null ? { numar, diametru, pasLateral } : null;
+      return [[o.cheie, { scula, latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'vcarve', fundPlat }] as const];
     }
     // Găurirea (ADR 0087 §1): latura interior, nimic din profil, cu ieșirea la al câtelea pas.
     if (p.tip === 'gaurire') {
@@ -437,11 +468,10 @@ export function DialogExport(
     const despartire = o.deschise > 0 ? { despartire: p.despartire } : {};
     return [[o.cheie, { scula, latura: p.latura, sens: p.sens, adancime, pas, urechi, rampa, intrari, colturi, ...despartire }] as const];
   }));
-  const fmtFreza = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 3 });
   // Motivul spune ce câmp e greșit: valorile operației, urechile, sau amândouă (recenzia feliei 2.4).
   const motivInvalid = [
     ...(sculeBune ? [] : [t('motiv.scula-invalida', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
-    ...(conflict ? [t('motiv.scula-conflict', { numar: conflict[0], diametre: [...conflict[1]].join(', ') })] : []),
+    ...(conflict ? [t('motiv.scula-conflict', { numar: conflict[0], diametre: [...conflict[1].values()].join(', ') })] : []),
     ...(operatiiBune || !sculeBune || conflict ? [] : [t('motiv.operatie-invalida')]),
     ...(urechiBune ? [] : [t('motiv.urechi-invalide', {
       n: MARGINI_OPERATIE.urechi, latime: fmtFreza.format(MARGINI_OPERATIE.latimeUreche), grosime: fmtFreza.format(MARGINI_OPERATIE.grosimeUreche),
@@ -458,6 +488,7 @@ export function DialogExport(
     })]),
     ...(retrageriBune ? [] : [t('motiv.retragere-invalida', { max: MARGINI_OPERATIE.retragereCompleta })]),
     ...(vcarveBune ? [] : [t('motiv.vcarve-freza')]),
+    ...(funduriBune ? [] : [t('motiv.fund-plat-invalid', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
     ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
       ? t('motiv.intrari-invalide-rampa', {
         minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinimaRampa), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
@@ -619,8 +650,32 @@ export function DialogExport(
                     <td />
                     <td colSpan={9}>
                       <div className="campuri-detalii">
-                      {/* V-carve-ul (ADR 0090): adâncimea e cea maximă; fundul plat vine cu freza dreaptă. */}
+                      {/* V-carve-ul (ADR 0090): adâncimea e cea maximă; fundul plat vine cu freza dreaptă (ADR 0091). */}
                       {vc && <p className="nota-vcarve" data-vcarve={o.cheie}>{t('export.vcarve.nota')}</p>}
+                      {vc && (
+                      <div className="campuri-fund" data-fund={o.cheie}>
+                      <label title={t('export.fund.titlu')}>
+                        <input type="checkbox" checked={p.fundPlat} data-camp="fund-plat" disabled={doarCitire}
+                          onChange={(ev) => { schimba(o.cheie, { fundPlat: ev.target.checked }); }} />
+                        {t('export.fund')}
+                      </label>
+                      <label>
+                        {t('export.freza.numar')}
+                        <input type="text" inputMode="numeric" value={p.numarSculaFund} data-camp="fund-scula" disabled={doarCitire || !p.fundPlat}
+                          aria-invalid={p.fundPlat && (!b.fund || conflict !== undefined)} onChange={(ev) => { schimba(o.cheie, { numarSculaFund: ev.target.value }); }} />
+                      </label>
+                      <label>
+                        {t('export.freza.diametru')}
+                        <input type="text" inputMode="decimal" value={p.diametruSculaFund} data-camp="fund-diametru" disabled={doarCitire || !p.fundPlat}
+                          aria-invalid={p.fundPlat && (!b.fund || conflict !== undefined)} onChange={(ev) => { schimba(o.cheie, { diametruSculaFund: ev.target.value }); }} />
+                      </label>
+                      <label title={t('export.fund.pas.titlu')}>
+                        {t('export.pas-lateral')}
+                        <input type="text" inputMode="decimal" value={p.pasLateralFund} data-camp="fund-pas" disabled={doarCitire || !p.fundPlat}
+                          aria-invalid={p.fundPlat && !b.fund} onChange={(ev) => { schimba(o.cheie, { pasLateralFund: ev.target.value }); }} />
+                      </label>
+                      </div>
+                      )}
                       {/* Găurirea (ADR 0087): pasul e cât coboară freza între două retrageri; aici, când iese din gaură. */}
                       {gaura && (
                       <div className="campuri-gaurire" data-gaurire={o.cheie}>

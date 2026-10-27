@@ -150,8 +150,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **V-carve-ul (ADR 0090, documentul v14, adus din etapa 8)** gata pe 27.10: freza are o formă (`scula.forma`: `v` cu unghiul;
   lipsă = plată), aleasă pe rândul exportului; `tip: 'vcarve'` pe contururi închise, citite par-impar ca o regiune; axa medială în
   `src/cam/axaMediala.ts` (Delaunay pe eșantioane, `delaunator` + `robust-predicates`, raza recalculată exact), traseul în
-  `src/cam/vcarve.ts`; probele: oracolul simulării cu conul V, față de suprafața ideală −min(D, d·cot(θ/2)) pe hârtie. Fundul
-  plat dintre pereți rămâne, cu avertisment: freza dreaptă e felia 8.2↑.
+  `src/cam/vcarve.ts`; probele: oracolul simulării cu conul V, față de suprafața ideală −min(D, d·cot(θ/2)) pe hârtie.
+  **Fundul plat cu freza dreaptă (ADR 0091, documentul v15)** gata pe 27.10: `fundPlat: { scula, pasLateral }` pe V-carve;
+  întâi freza dreaptă (buzunarul pe fiecare nivel, în {d ≥ L·tan(θ/2) + 0,002}), apoi V-ul, cu axa doar unde ea n-ajunge și inele
+  dese (creasta 0,05) în colțuri; prima sculă a programului e prima montată. Probele: oracolul judecă programul tăiat la
+  `T… M6`, pe sculă, cu suprafețele unite prin minim.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

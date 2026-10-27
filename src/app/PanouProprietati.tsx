@@ -36,6 +36,8 @@ type Props = {
 };
 
 const mm = (x: number): string => x.toFixed(2);
+/** Diametrul unei freze: cu a treia zecimală când o are (Ø3,175, 1/8″), altfel ca restul (Ø6.00). */
+const mmFreza = (x: number): string => (x.toFixed(3).endsWith('0') ? x.toFixed(2) : x.toFixed(3));
 
 /** Un rând „etichetă: valoare”, doar de citit. */
 const rand = (eticheta: string, valoare: ReactNode): ReactNode => (
@@ -63,8 +65,10 @@ function operatie(o: Operatie, n: number): ReactNode {
         {rand(t('export.sens'), t(`export.sens.${o.sens}`))}
         {rand(t('export.adancime'), mm(o.adancime))}
         {rand(t('export.pas'), mm(o.pas))}
-        {rand(t('prop.freza'), o.scula.forma ? t('prop.freza.valoare-v', { numar: o.scula.numar, unghi: o.scula.forma.unghi, diametru: mm(o.scula.diametru) })
-          : t('prop.freza.valoare', { numar: o.scula.numar, diametru: mm(o.scula.diametru) }))}
+        {rand(t('prop.freza'), o.scula.forma ? t('prop.freza.valoare-v', { numar: o.scula.numar, unghi: o.scula.forma.unghi, diametru: mmFreza(o.scula.diametru) })
+          : t('prop.freza.valoare', { numar: o.scula.numar, diametru: mmFreza(o.scula.diametru) }))}
+        {o.tip === 'vcarve' && rand(t('prop.fund'), o.fundPlat
+          ? t('prop.fund.valoare', { numar: o.fundPlat.scula.numar, diametru: mmFreza(o.fundPlat.scula.diametru), pas: mm(o.fundPlat.pasLateral) }) : t('prop.fara'))}
         {rand(t('export.urechi'), o.urechi
           ? t('prop.urechi.valoare', { numar: o.urechi.numar, latime: mm(o.urechi.latime), grosime: mm(o.urechi.grosime) }) : t('prop.fara'))}
         {rand(t('export.rampa'), o.rampa ? t('prop.rampa.valoare', { mm: mm(o.rampa.lungime) }) : t('prop.fara'))}

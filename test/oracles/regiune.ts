@@ -92,7 +92,7 @@
  */
 import {
   ridicaV9O, taieturiV8O, type ColturiO, type DocV3O, type DocV4O, type DocV5O, type DocV6O, type DocV7O, type DocV8O, type DocV9O, type IntrariO, type LaturaO,
-  type DocV10O, type DocV11O, type DocV12O, type DocV13O, type DocV14O, type LaturaV10O, type MatriceO, type RampaO, type SensO, type UrechiO,
+  type DocV10O, type DocV11O, type DocV12O, type DocV13O, type DocV14O, type DocV15O, type LaturaV10O, type MatriceO, type RampaO, type SensO, type UrechiO,
 } from './document.ts';
 import { esteDeschisaO, taieturiV10O, type TaieturaV10O } from './document.v10.ts';
 
@@ -786,9 +786,11 @@ export function regiuneDinInele(
  * v7 se aduce întâi la v8 (sensul `urcare`, ADR 0027 §5; urechile `null`, ADR 0028 §1; rampa `null`, ADR 0029 §1;
  * intrările `null`, ADR 0030 §1; degajările `null`, ADR 0032 §1). Un v10 (ADR 0037) se citește ca atare: vezi mai jos.
  */
-export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | DocV11O | DocV12O | DocV13O | DocV14O): Regiune {
+export function regiuneDinDocument(doc: DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | DocV11O | DocV12O | DocV13O | DocV14O | DocV15O): Regiune {
   // ADR 0090 §4 (felia 8.1↑, scris de sesiunea aplicației): un V-carve nu e inel (sapă doar înăuntrul regiunii lui), deci
   // K nu se schimbă; un v14 se citește ca un v13, fără V-carve.
+  // ADR 0091 (felia 8.2↑, scris de sesiunea aplicației): fundul plat e al V-carve-ului, deci un v15 se citește ca un v14.
+  if (doc.schema === 15) return regiuneDinDocument({ ...doc, schema: 14 } as unknown as DocV14O);
   if (doc.schema === 14) {
     const piese = doc.piese.map((p) => ({ ...p, operatii: p.operatii.filter((o) => o.tip !== 'vcarve') }));
     return regiuneDinDocument({ ...doc, schema: 13, piese } as unknown as DocV13O);

@@ -79,7 +79,10 @@ export function ExportConectat({
           ...(o.despartire ? { despartire: true } : {}),
           ...(o.tip === 'buzunar' && o.pasLateral !== undefined ? { tip: 'buzunar' as const, pasLateral: o.pasLateral } : {}),
           ...(o.tip === 'buzunar' && o.coborare ? { coborare: o.coborare } : {}),
-          ...(o.tip === 'vcarve' ? { tip: 'vcarve' as const } : {}),
+          ...(o.tip === 'vcarve' ? {
+            tip: 'vcarve' as const,
+            fundPlat: o.fundPlat ? { numar: o.fundPlat.scula.numar, diametru: o.fundPlat.scula.diametru, pasLateral: o.fundPlat.pasLateral } : null,
+          } : {}),
           ...(o.tip === 'gaurire' ? { tip: 'gaurire' as const, ...(o.retragereCompleta !== undefined ? { retragereCompleta: o.retragereCompleta } : {}) } : {}),
         },
       };

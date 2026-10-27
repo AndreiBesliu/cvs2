@@ -3240,3 +3240,25 @@ artefactul descărcării), emulatoarele 36 + 13. Mutațiile: 66 / 66, plus
 operație; (2) o cale deschisă pe un V-carve primea textul profilului; (3) la porți, lucrarea compara doar diametrele sub același
 T: T1 Ø6 plată și T1 Ø6 V90° dintr-un document salvat ar fi trecut cu o singură freză montată (schimbarea se decide după număr);
 acum refuzat, cu motivul; (4) textul conflictului din fereastră pierduse „mm”; (5) două teste vechi cereau schema 13.
+
+## 2026-10-27 — Fundul plat al V-carve-ului (Model: Claude Opus 5.5)
+
+**Prompt:** „continua”.
+**Started:** 27.10, 11:03. Felia **8.2↑**, adusă din etapa 8, fără mașină și fără agenți (ADR 0091): fundul plat dintre pereții
+V-carve-ului, cu freza dreaptă, după s3 §4 și §6. Planul: `fundPlat` pe operație (documentul v15), freza dreaptă întâi
+(buzunarul existent, pe fiecare nivel, în zona {d ≥ L·tan(θ/2) + m}), apoi V-ul cu axa tăiată unde ajunge freza dreaptă și inele
+dese în colțurile pe care ea nu le atinge; bifa în fereastra exportului; probele pe oracol, judecat pe sculă.
+
+**Completed:** 27.10 12:26. Operația V-carve are acum, opțional, freza dreaptă a fundului plat (documentul v15, `fundPlat`),
+aleasă cu o bifă sub rândul din fereastra exportului. Întâi freza dreaptă scoate fundul nivel cu nivel (buzunarul existent, în
+zona {d ≥ L·tan(θ/2) + 0,002}), apoi freza V face pereții, axa doar unde freza dreaptă n-a ajuns și inele dese (creasta cel mult
+0,05 mm) în colțurile pe care ea nu le atinge; programul începe cu prima freză montată. Oracolul simulării, judecat pe sculă:
+dreptunghiul 40 × 20 la V90 cu Ø3, nimic mai adânc și nimic lăsat departe de colțuri, creasta 0,025 în colțuri; V60, fundul lat
+de 16,536 mm; haltera cu canalul îngust, creasta 0,0503; fiecare trecere a fiecărei freze ≤ pasul. Totalul 322,7 → 324,5 / 330,
+pornirea 96,0 (cu ușa 99,4). Porțile: 7 464 de teste unitare (0 picate, 8 sărite: logourile externe), build-ul determinist, e2e
+244 / 244, emulatoarele 36 + 13. Mutațiile: 46 / 47 prinse; a 47-a e echivalentă (o mutare de 0,00005–0,00025 mm, sub rotunjire),
+iar „prinderea” ei pe toată suita era testul traducerilor, încă necompletate. **Găsit pe drum:** (1) un offset pe un prag de
+topologie (inelul colțurilor exact cât jumătatea lățimii) refuza toată lucrarea: acum se reia puțin mai departe de contur;
+(2) pragul R − s_v tăia un inel V inutil pe fiecare perete (acum R − s_v/2, cu demonstrația în ADR); (3) panoul arăta Ø3.17
+pentru o freză de 3,175; (4) motivul conflictului scria zecimalele cu punct în română; (5) indexul ADR avea 0090 înaintea lui
+0089.

@@ -384,8 +384,13 @@ tan(θ/2), where θ is the bit's angle (at 90°, the distance itself; at 60°, 1
 on the outline, and sharp corners stay sharp: lettering, ornaments, the outline of a logo.
 - The row's outlines are read together, even-odd: an "O" is the ring between its two outlines, not two shapes.
 - **Depth** is the maximum. Where the shape is wider than the bit at that depth, the bit runs at it along the middle and along
-  an outline parallel to the wall, and the flat floor between them is left uncut (a straight bit will do it, in a future
-  version); the export says so, as a warning.
+  an outline parallel to the wall, and a **flat floor** remains between them.
+- **Flat floor with a straight bit**: the box under the V-carve row, with the straight bit (its own number, a different T from
+  the V bit; the V bit's T + 1 and Ø3.175 by default) and its stepover (at most half the diameter, 40 % by default). The
+  straight bit clears the floor first, level by level, without touching the walls; then the V bit cuts the walls and the
+  corners the straight bit cannot reach (the floor's sharp corners and channels narrower than it), with close rings: a ridge
+  of at most 0.05 mm stays there. The program has a bit change between them. Without the box, the floor is left uncut and the
+  export says so, as a warning; a shape with no flat floor does not mount the straight bit at all.
 - **Step**: on each pass, the bit goes at most one step deeper than the pass before.
 - The row's bit must be a **V** bit (see [Exporting G-code](#export)), and its cone, (diameter / 2) / tan(θ/2), must reach the
   depth asked for; otherwise the export is refused, with the reason. A V-carve has no tabs, ramp, leads, corner relief or

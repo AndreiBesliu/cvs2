@@ -48,6 +48,8 @@ export const roCarcasa = {
   'prop.freza': 'Freza',
   'prop.freza.valoare': 'T{numar}, Ø{diametru} mm',
   'prop.freza.valoare-v': 'T{numar}, V {unghi}°, Ø{diametru} mm',
+  'prop.fund': 'Fundul plat',
+  'prop.fund.valoare': 'T{numar}, Ø{diametru} mm, pasul lateral {pas} mm',
   'prop.urechi.valoare': '{numar} × {latime} mm, puntea {grosime} mm',
   'prop.rampa.valoare': 'lungă de {mm} mm',
   'prop.coborare.rampa': '{nume}, {unghi}°',
@@ -81,5 +83,6 @@ export const roCarcasa = {
     few: 'V-carve pe {n} contururi: până la {adancime} mm, în treceri de {pas} mm, T{t} Ø{d}',
     other: 'V-carve pe {n} de contururi: până la {adancime} mm, în treceri de {pas} mm, T{t} Ø{d}',
   },
+  'arbore.vcarve.fund': ', fundul plat cu T{t} Ø{d}',
   'arbore.fara-operatii': 'Nicio operație de tăiere',
 } as const satisfies DictionarRoPentru<typeof enCarcasa>;

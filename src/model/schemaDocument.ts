@@ -96,17 +96,19 @@ const SchemaNod: v.GenericSchema<unknown, Nod> = v.variant('tip', [
   }),
 ]) as v.GenericSchema<unknown, Nod>;
 
+const SchemaScula = v.looseObject({
+  numar: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(PLAFON.numarScula)),
+  nume: v.pipe(v.string(), v.maxLength(PLAFON.numeLungime)),
+  diametru: pozitiv(PLAFON.diametruScula),
+  // ADR 0090: forma frezei (v14); lipsă = plată.
+  forma: v.optional(v.looseObject({ tip: v.literal('v'), unghi: v.pipe(v.number(), v.finite(), v.minValue(UNGHI_V_MINIM), v.maxValue(UNGHI_V_MAXIM)) })),
+});
+
 const SchemaOperatie = v.looseObject({
   id: Id,
   tip: v.picklist(['profil', 'buzunar', 'gaurire', 'vcarve']),
   noduri: v.pipe(v.array(Id), v.minLength(1), v.maxLength(PLAFON.noduriOperatie)),
-  scula: v.looseObject({
-    numar: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(PLAFON.numarScula)),
-    nume: v.pipe(v.string(), v.maxLength(PLAFON.numeLungime)),
-    diametru: pozitiv(PLAFON.diametruScula),
-    // ADR 0090: forma frezei (v14); lipsă = plată.
-    forma: v.optional(v.looseObject({ tip: v.literal('v'), unghi: v.pipe(v.number(), v.finite(), v.minValue(UNGHI_V_MINIM), v.maxValue(UNGHI_V_MAXIM)) })),
-  }),
+  scula: SchemaScula,
   latura: v.picklist(['exterior', 'interior', 'pe-linie', 'stanga', 'dreapta']),
   sens: v.picklist(['urcare', 'opozitie']),
   adancime: pozitiv(PLAFON.adancimeOperatie),
@@ -132,6 +134,9 @@ const SchemaOperatie = v.looseObject({
   ])),
   // ADR 0087: retragerea completă a găuririi (v13), un întreg; pe alt fel de operație nu schimbă nimic (o judecă lucrarea).
   retragereCompleta: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(RETRAGERE_COMPLETA_MAXIMA))),
+  // ADR 0091: freza dreaptă a fundului plat (v15); potrivirea (doar pe V-carve, plată, pasul cel mult raza ei, alt număr
+  // decât V-ul) e a lucrării.
+  fundPlat: v.optional(v.looseObject({ scula: SchemaScula, pasLateral: pozitiv(PLAFON.diametruScula / 2) })),
 });
 const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
 const SchemaInstanta = v.looseObject({
