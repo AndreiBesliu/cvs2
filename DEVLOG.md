@@ -3212,4 +3212,9 @@ PATH-ul sesiunii (CLI-ul e în `AppData\Roaming\npm`): emulatoarele au rulat cu 
 **CI, întâi pe ramura `export-pdf-eps`** (ca `main` să nu se înroșească dacă Ghostscript-ul din Ubuntu se poartă altfel decât
 cel local): felia 2 oprită la 10 minute; unitarele ei au urcat la 6 min 48 s (fișierul de test nou a mutat teste grele în
 ea), iar `apt-get install ghostscript` a așteptat 2 min 44 s pachete pe care indexul imaginii nu le mai găsea. Oracolul are
-acum jobul lui (`oracol-export2d`, cu `apt-get update` întâi).
+acum jobul lui (`oracol-export2d`, cu `apt-get update` întâi). Pe ramură, apoi verde: oracolul în 53 s, Ghostscript 10.02.1 din
+Ubuntu cu aceeași abatere ca local (0,002474 mm), felia 2 în 5 min 30 s; ramura adusă în `main` (fast-forward) și ștearsă.
+**Publicat pe adresa principală de test:** `publica` pe `d83ce38` (rularea 40459583903), după rapid-ul verde pe `main`
+(40458720217). Verificat la 1440 px (panoul browserului, îngust, ascunde extensia barei): patru formate în panou (DXF (R2007),
+SVG, PDF, EPS), nota despre curbe la PDF, foaia goală dă „Nimic de exportat”, fără descărcare, titlul întreg (123,5 px), 0 erori
+în consolă; fișierele descărcate le verifică e2e-ul și oracolul.
