@@ -24,29 +24,6 @@ export function nrDxf(x: number): string {
   return x.toFixed(20).replace(/\.?0+$/, '');
 }
 
-/** Cutia entităților și a foii, pentru $EXTMIN / $EXTMAX (punctele de control ale curbelor o cuprind). */
-function cutie(v: VectoriFoaie): { minX: number; minY: number; maxX: number; maxY: number } {
-  let minX = 0, minY = 0, maxX = v.latime, maxY = v.inaltime;
-  const pune = (x: number, y: number): void => { minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x); maxY = Math.max(maxY, y); };
-  for (const e of v.entitati) {
-    if (e.fel === 'cerc') { pune(e.centru.x - e.raza, e.centru.y - e.raza); pune(e.centru.x + e.raza, e.centru.y + e.raza); }
-    else if (e.fel === 'spline') for (const p of e.puncte) pune(p.x, p.y);
-    else {
-      // Un arc poate ieși din cutia vârfurilor cel mult cât raza lui; aici e o margine, nu o cutie exactă.
-      for (let i = 0; i < e.varfuri.length; i++) {
-        const a = e.varfuri[i]!, b = e.varfuri[(i + 1) % e.varfuri.length]!;
-        pune(a.x, a.y);
-        if (a.bulge !== 0) {
-          const r = Math.hypot(b.x - a.x, b.y - a.y) / (2 * Math.sin(2 * Math.atan(Math.abs(a.bulge))));
-          pune(a.x - r, a.y - r);
-          pune(a.x + r, a.y + r);
-        }
-      }
-    }
-  }
-  return { minX, minY, maxX, maxY };
-}
-
 export function scrieDxf(v: VectoriFoaie): string {
   const out: string[] = [];
   const g = (cod: number, val: string | number): void => { out.push(String(cod), typeof val === 'number' ? nrDxf(val) : val); };
@@ -63,7 +40,7 @@ export function scrieDxf(v: VectoriFoaie): string {
   const folosite = STRATURI.filter((s) => v.entitati.some((e) => e.strat === s));
   const straturi = new Map<string, string>([['0', handle()], ...folosite.map((s) => [s, handle()] as const)]);
   const entitati = v.entitati.map((e) => ({ e, h: handle() }));
-  const c = cutie(v);
+  const c = v.cutie;
 
   const sectiune = (nume: string, corp: () => void): void => { g(0, 'SECTION'); g(2, nume); corp(); g(0, 'ENDSEC'); };
   const tabel = (nume: string, h: string, n: number, corp: () => void, extra?: () => void): void => {

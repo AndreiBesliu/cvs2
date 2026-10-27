@@ -412,16 +412,18 @@ dacă freza trece prin foaie. Pentru placa văzută în 3D, vezi [Vederea 3D](#v
 
 **Exportă vectori** (în extensia barei, lângă vederea 3D) scrie foaia ca fișier de desen, pentru alte programe (ArtCAM,
 Inkscape, Illustrator / Corel, AutoCAD / LibreCAD) sau pentru laser:
-- **DXF (R2007)**, implicit, sau **SVG**;
+- **DXF (R2007)**, implicit, **SVG**, **PDF** sau **EPS**;
 - în mm, la scara 1:1, din colțul stânga-jos al foii (în SVG, foaia are mărimea ei în mm);
 - **cercurile, arcele și curbele rămân ce sunt**: cercul e cerc (CIRCLE), liniile și arcele unei forme sunt o polilinie cu
-  arce, curbele sunt curbe (SPLINE în DXF, `C` în SVG), fără puncte aproximate;
+  arce, curbele sunt curbe (SPLINE în DXF, `C` în SVG), fără puncte aproximate. PDF-ul și EPS-ul n-au arce: acolo cercurile
+  și arcele ies din câteva curbe, la cel mult 0,001 mm de ele (cercul R50 din 7);
 - **un strat pe rol**, după prima operație care taie forma: EXTERIOR, INTERIOR, PE_LINIE, PE_O_PARTE (o cale tăiată pe
-  stânga sau pe dreapta), BUZUNAR, GAURIRE și FARA_OPERATIE, fiecare cu culoarea lui; scrise doar straturile folosite;
+  stânga sau pe dreapta), BUZUNAR, GAURIRE și FARA_OPERATIE, fiecare cu culoarea lui; scrise doar straturile folosite. În PDF
+  sunt straturi PDF (le vezi și le ascunzi în cititor); EPS-ul n-are straturi, deci rolul rămâne doar în culoare;
 - **Cu conturul foii** adaugă dreptunghiul foii, pe stratul FOAIE.
 
 **Exportă** descarcă fișierul și spune câte entități și câte straturi are. O formă cu și linii, și curbe iese în bucăți
-legate cap la cap (o polilinie, apoi o curbă). PDF-ul și EPS-ul vin într-o versiune următoare.
+legate cap la cap (o polilinie, apoi o curbă).
 
 ## Mașina
 %% capitol: masina

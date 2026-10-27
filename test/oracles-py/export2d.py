@@ -1,8 +1,10 @@
-"""Oracolul independent al exportului 2D (ADR 0088): recitește `corpus.dxf` cu ezdxf și îl compară cu valorile pe hârtie.
+"""Oracolul independent al exportului 2D (ADR 0088, ADR 0089): recitește corpusul (`corpus.dxf` cu ezdxf, `corpus.pdf` și
+`corpus-eps.pdf`, adică EPS-ul trecut prin Ghostscript, cu PyMuPDF) și îl compară cu valorile pe hârtie.
 
 Corpusul e descris în `scripts/export2d-corpus.ts`; valorile de aici sunt scrise din descriere, cu formule, nu din codul
 aplicației (nimic din `src/`). Folosire: `python test/oracles-py/export2d.py <dosar>`; codul de ieșire 1 la orice abatere.
-Cere ezdxf 1.4.4 (`test/oracles-py/requirements.txt`).
+Cere ezdxf 1.4.4 și PyMuPDF 1.26.3 (`test/oracles-py/requirements.txt`); `corpus-eps.pdf` îl face Ghostscript înainte (CI: `gs`,
+local: `.tmp/eps2pdf.cjs`), iar lipsa lui e o abatere.
 """
 import math
 import sys
@@ -10,6 +12,8 @@ from collections import Counter
 
 import ezdxf
 from ezdxf import recover
+
+from export2d_pdf import desene_eps, verifica_pdf
 
 # Consola Windows (cp1252) nu are ă, ț: ieșirea e UTF-8 oriunde.
 sys.stdout.reconfigure(encoding='utf-8')
@@ -60,7 +64,7 @@ def rotit(x, y, unghi, tx, ty):
     return (c * x - s * y + tx, s * x + c * y + ty)
 
 
-def main(dosar):
+def verifica_dxf(dosar):
     doc, auditor = recover.readfile(f'{dosar}/corpus.dxf')
     verifica(not auditor.has_errors and len(auditor.fixes) == 0, f'recover: {len(auditor.errors)} erori, {len(auditor.fixes)} reparații')
     audit = doc.audit()
@@ -175,12 +179,35 @@ def main(dosar):
         v = [tuple(x) for x in f[0].get_points('xyb')]
         verifica(f[0].closed and v == [(0, 0, 0), (600, 0, 0), (600, 400, 0), (0, 400, 0)], f'foaia: {v}')
 
+    return len(msp)
+
+
+# Toleranța formatelor fără arc: cubicele sunt sub 0,001 mm (PLAN T2); PyMuPDF citește coordonatele pe float32 (~4e-5 mm
+# pe o foaie de 600 mm). Ghostscript mută desenul cu până la ~0,002 mm (măsurat pe 27.10: 543 → 542,99907, 380 → 380,00165),
+# deci prin el se probează că EPS-ul e PostScript valid care desenează formele, iar exactitatea, cu cititorul direct al
+# textului (`desene_eps`), la toleranța PDF-ului.
+TOL_PDF = 0.001 + 1e-4
+TOL_GS = 0.003
+
+
+def main(dosar):
+    import os
+    n = verifica_dxf(dosar)
+    ab_pdf, c_pdf = verifica_pdf(f'{dosar}/corpus.pdf', True, TOL_PDF, verifica)
+    ab_eps, c_eps = verifica_pdf(f'{dosar}/corpus.eps', False, TOL_PDF, verifica, desene_eps(f'{dosar}/corpus.eps'))
+    if os.path.exists(f'{dosar}/corpus-eps.pdf'):
+        ab_gs, c_gs = verifica_pdf(f'{dosar}/corpus-eps.pdf', False, TOL_GS, verifica)
+    else:
+        verifica(False, 'corpus-eps.pdf lipsește: EPS-ul n-a trecut prin Ghostscript')
+        ab_gs, c_gs = float('nan'), 0
     if probleme:
         print('EXPORTUL 2D: abateri față de hârtie:')
         for x in probleme:
             print('  -', x)
         sys.exit(1)
-    print(f'exportul 2D: {len(msp)} entități, toate cât pe hârtie (ezdxf {ezdxf.__version__}: 0 erori, 0 reparații)')
+    print(f'exportul 2D: DXF {n} entități, toate cât pe hârtie (ezdxf {ezdxf.__version__}: 0 erori, 0 reparații); '
+          f'PDF {c_pdf} căi pe 7 straturi, abaterea max {ab_pdf:.6f} mm; EPS {c_eps} căi, abaterea max {ab_eps:.6f} mm '
+          f'(prin Ghostscript: {c_gs} căi, {ab_gs:.6f} mm)')
 
 
 if __name__ == '__main__':

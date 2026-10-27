@@ -1833,12 +1833,12 @@ function descarcaText(text: string, nume: string, tip: string): void {
 type ModulVectori = typeof import('../io/exportVectori.ts');
 
 /**
- * Panoul exportului vectorilor (ADR 0088): formatul (DXF R2007, implicit, sau SVG), conturul foii la cerere, Exportă și
- * ce s-a descărcat (câte entități, pe câte straturi). Scriitorii vin la primul Exportă: nu stau în pachetul de pornire.
- * Esc îl închide.
+ * Panoul exportului vectorilor (ADR 0088, ADR 0089): formatul (DXF R2007, implicit, SVG, PDF cu straturi sau EPS; la PDF și
+ * EPS, nota despre arcele din curbe), conturul foii la cerere, Exportă și ce s-a descărcat (câte entități, pe câte
+ * straturi). Scriitorii vin la primul Exportă: nu stau în pachetul de pornire. Esc îl închide.
  */
 function PanouVectori({ doc, onInchide }: { readonly doc: Document; readonly onInchide: () => void }): ReactElement {
-  const [format, setFormat] = useState<'dxf' | 'svg'>('dxf');
+  const [format, setFormat] = useState<'dxf' | 'svg' | 'pdf' | 'eps'>('dxf');
   const [cuFoaia, setCuFoaia] = useState(false);
   const [stare, setStare] = useState<string | null>(null);
   const radacina = useRef<HTMLDivElement | null>(null);
@@ -1860,7 +1860,7 @@ function PanouVectori({ doc, onInchide }: { readonly doc: Document; readonly onI
         onInchide();
       }}>
       <div className="fel-retea" role="radiogroup" aria-label={t('editare.vectori.format')}>
-        {(['dxf', 'svg'] as const).map((k) => (
+        {(['dxf', 'svg', 'pdf', 'eps'] as const).map((k) => (
           <button key={k} type="button" role="radio" aria-checked={format === k} aria-pressed={format === k} data-vectori-format={k}
             onClick={() => { setFormat(k); setStare(null); }}>
             {t(`editare.vectori.${k}`)}
@@ -1868,6 +1868,7 @@ function PanouVectori({ doc, onInchide }: { readonly doc: Document; readonly onI
         ))}
       </div>
       <p className="nota-retea">{t('editare.vectori.nota')}</p>
+      {format === 'pdf' || format === 'eps' ? <p className="nota-retea" data-testid="nota-curbe">{t(`editare.vectori.nota-${format}`)}</p> : null}
       <label className="bifa-retea">
         <input type="checkbox" checked={cuFoaia} data-vectori="foaia" onChange={(e) => { setCuFoaia(e.target.checked); setStare(null); }} />
         <span>{t('editare.vectori.foaia')}</span>

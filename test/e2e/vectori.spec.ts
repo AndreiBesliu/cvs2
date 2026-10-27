@@ -69,6 +69,22 @@ test('panoul: DXF implicit (polilinia închisă a dreptunghiului, cercul, stratu
   const svg = await descarca(page);
   await expect(page.getByTestId('stare-vectori')).toHaveText('Descărcat cncvs2-foaia-1.svg (entități: 4, straturi: 3)');
   expect(svg).toMatch(/width="300mm" height="200mm" viewBox="0 0 300 200"/);
+  // PDF (ADR 0089): nota despre arcele din curbe apare doar la PDF și EPS; fișierul are straturile și pagina foii.
+  await expect(page.getByTestId('nota-curbe')).toHaveCount(0);
+  await page.locator('[data-vectori-format="pdf"]').click();
+  await expect(page.getByTestId('nota-curbe')).toContainText('straturi PDF');
+  const pdf = await descarca(page);
+  await expect(page.getByTestId('stare-vectori')).toHaveText('Descărcat cncvs2-foaia-1.pdf (entități: 4, straturi: 3)');
+  expect(pdf.startsWith('%PDF-1.5\n')).toBe(true);
+  expect(pdf).toContain('/Type /OCG /Name (EXTERIOR)');
+  expect(pdf).toContain('/MediaBox [0 0 850.393701 566.929134]');
+  // EPS: fără straturi, rolul în culoare.
+  await page.locator('[data-vectori-format="eps"]').click();
+  await expect(page.getByTestId('nota-curbe')).toContainText('rolul rămâne în culoare');
+  const eps = await descarca(page);
+  await expect(page.getByTestId('stare-vectori')).toHaveText('Descărcat cncvs2-foaia-1.eps (entități: 4, straturi: 3)');
+  expect(eps.startsWith('%!PS-Adobe-3.0 EPSF-3.0\n')).toBe(true);
+  expect(eps).toContain('%%BoundingBox: 0 0 851 567');
   // Esc închide panoul.
   await page.keyboard.press('Escape');
   await expect(panou).toHaveCount(0);

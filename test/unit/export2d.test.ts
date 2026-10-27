@@ -112,7 +112,7 @@ test('SVG pe hârtie: mm, Y întors, cercul `<circle>`, arcul cu raza lui și st
     // Semicercul (0, 20) → (10, 20), bulge 1: R5. Arcul cu bulge −0,5 (106,26°): coarda 10, R = 5 / sin(53,13°) = 6,25.
     // Arcul cu bulge 2 (253,74°): R = 5 / sin(126,87°) = 6,25, mare.
     { fel: 'polilinie', strat: 'PE_LINIE', element: 'p', inchis: false, varfuri: [{ x: 0, y: 20, bulge: 1 }, { x: 10, y: 20, bulge: -0.5 }, { x: 20, y: 20, bulge: 2 }, { x: 30, y: 20, bulge: 0 }] },
-  ] } as const;
+  ], cutie: { minX: 0, minY: 0, maxX: 100, maxY: 50 } } as const;
   const svg = scrieSvg(v);
   assert.match(svg, /width="100mm" height="50mm" viewBox="0 0 100 50"/);
   assert.match(svg, /<circle cx="30" cy="40" r="5"\/>/);
@@ -120,7 +120,7 @@ test('SVG pe hârtie: mm, Y întors, cercul `<circle>`, arcul cu raza lui și st
   assert.match(svg, /<g id="INTERIOR" inkscape:groupmode="layer" inkscape:label="INTERIOR"[^>]*stroke="#1f77b4"/);
   assert.doesNotMatch(svg, /id="EXTERIOR"/, 'doar straturile folosite');
   // O polilinie închisă scrie și segmentul de la ultimul vârf la primul (aici un arc), apoi Z.
-  const inchisa = scrieSvg({ latime: 10, inaltime: 10, entitati: [{ fel: 'polilinie', strat: 'FOAIE', element: 'f', inchis: true, varfuri: [{ x: 0, y: 0, bulge: 0 }, { x: 4, y: 0, bulge: 1 }] }] });
+  const inchisa = scrieSvg({ latime: 10, inaltime: 10, cutie: { minX: 0, minY: 0, maxX: 10, maxY: 10 }, entitati: [{ fel: 'polilinie', strat: 'FOAIE', element: 'f', inchis: true, varfuri: [{ x: 0, y: 0, bulge: 0 }, { x: 4, y: 0, bulge: 1 }] }] });
   assert.match(inchisa, /d="M0 10L4 10A2 2 0 0 0 0 10Z"/);
 });
 

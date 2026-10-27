@@ -144,7 +144,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   proprii în `src/io/` (`vectori.ts`, `dxfExport.ts`, `svgExport.ts`), la cerere; straturile = rolurile. **Oracolul independent
   e Python** (`test/oracles-py/export2d.py`, ezdxf 1.4.4, în CI pe felia 2; local: `python -m venv .tmp/venv-export2d`, apoi
   `pip install -r test/oracles-py/requirements.txt`), pe corpusul din `scripts/export2d-corpus.ts`: un caz nou = descrierea în
-  corpus + valorile pe hârtie în oracol. PDF, EPS și DXF R12 vin mai târziu.
+  corpus + valorile pe hârtie în oracol. **PDF și EPS (ADR 0089)** gata pe 27.10: arcele din cubice sub 0,001 mm (`cubice.ts`),
+  PDF 1.5 cu straturi OCG, EPS fără straturi; oracolul: PyMuPDF, un cititor direct al EPS-ului și Ghostscript (CI: `apt`; local:
+  `.tmp/eps2pdf.cjs` cu `@jspawn/ghostscript-wasm` despachetat în `.tmp/gs-wasm`). DXF R12 doar dacă un program îl cere.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

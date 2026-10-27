@@ -428,17 +428,19 @@ and whether the cutter goes through the sheet. For the sheet seen in 3D, see [Th
 
 **Export vectors** (in the bar extension, next to the 3D view) writes the sheet as a drawing file, for other programs
 (ArtCAM, Inkscape, Illustrator / Corel, AutoCAD / LibreCAD) or for the laser:
-- **DXF (R2007)**, the default, or **SVG**;
+- **DXF (R2007)**, the default, **SVG**, **PDF** or **EPS**;
 - in mm, at 1:1 scale, from the lower left corner of the sheet (in SVG, the sheet has its size in mm);
 - **circles, arcs and curves stay what they are**: a circle is a circle (CIRCLE), the lines and arcs of a shape are a
-  polyline with arcs, curves are curves (SPLINE in DXF, `C` in SVG), with no approximated points;
+  polyline with arcs, curves are curves (SPLINE in DXF, `C` in SVG), with no approximated points. PDF and EPS have no arcs:
+  there, circles and arcs come out of a few curves, at most 0.001 mm from them (the R50 circle from 7);
 - **one layer per role**, from the first operation that cuts the shape: EXTERIOR, INTERIOR, PE_LINIE (on the line),
   PE_O_PARTE (a path cut on its left or right), BUZUNAR (pocket), GAURIRE (drilling) and FARA_OPERATIE (no operation), each
-  with its colour; only the layers in use are written;
+  with its colour; only the layers in use are written. In PDF they are PDF layers (you can show and hide them in the viewer);
+  EPS has no layers, so the role stays only in the colour;
 - **With the sheet outline** adds the sheet rectangle, on the FOAIE layer.
 
 **Export** downloads the file and says how many entities and layers it has. A shape with both lines and curves comes out
-in pieces joined end to end (a polyline, then a curve). PDF and EPS come in a later version.
+in pieces joined end to end (a polyline, then a curve).
 
 ## The machine
 %% capitol: masina

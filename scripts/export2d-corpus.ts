@@ -1,6 +1,6 @@
 /**
- * Corpusul exportului 2D (ADR 0088): un document cu cazurile grele, trecut prin ușă, exportat ca `corpus.dxf` și
- * `corpus.svg` în dosarul dat. Oracolul independent (`test/oracles-py/export2d.py`, ezdxf) îl recitește și îl compară cu
+ * Corpusul exportului 2D (ADR 0088, ADR 0089): un document cu cazurile grele, trecut prin ușă, exportat ca `corpus.dxf`,
+ * `corpus.svg`, `corpus.pdf` și `corpus.eps` în dosarul dat. Oracolul independent (`test/oracles-py/export2d.py`, ezdxf) îl recitește și îl compară cu
  * valorile pe hârtie, scrise acolo din aceeași descriere, nu din cod. Descrierea, pe scurt (foaia 600 × 400):
  * - piesa A (instanța în (0, 0)):
  *   - `drept`: dreptunghiul 200 × 100 cu colțurile R10, rotit 30° în jurul colțului lui stânga-jos, mutat în (150, 100);
@@ -24,6 +24,8 @@ import { incarca } from '../src/model/incarcare.ts';
 import { vectoriFoaie } from '../src/io/vectori.ts';
 import { scrieDxf } from '../src/io/dxfExport.ts';
 import { scrieSvg } from '../src/io/svgExport.ts';
+import { scriePdf } from '../src/io/pdfExport.ts';
+import { scrieEps } from '../src/io/epsExport.ts';
 
 const I = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
 const SCULA = { numar: 1, nume: 'freza plata', diametru: 6 };
@@ -111,5 +113,7 @@ if (dosar) {
   mkdirSync(dosar, { recursive: true });
   writeFileSync(join(dosar, 'corpus.dxf'), scrieDxf(vec));
   writeFileSync(join(dosar, 'corpus.svg'), scrieSvg(vec));
+  writeFileSync(join(dosar, 'corpus.pdf'), scriePdf(vec));
+  writeFileSync(join(dosar, 'corpus.eps'), scrieEps(vec, 'corpus'));
   console.log(`corpusul exportului 2D: ${vec.entitati.length} entități, în ${dosar}`);
 }

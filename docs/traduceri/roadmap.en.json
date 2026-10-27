@@ -45,6 +45,10 @@
       "ro": "Intrările și ieșirile, alese față de regiunea păstrată (ADR 0030, documentul v7; portate, `docs/PORTARE.md` §3.2), fără rampă",
       "en": "Lead-ins and lead-outs, chosen against the kept region (ADR 0030, document v7; ported, `docs/PORTARE.md` §3.2), without ramp"
     },
+    "0698565ce61ee31e": {
+      "ro": "**Exportul 2D: PDF și EPS, adus din etapa 9** (fără mașină; ADR 0089; „continua”). „Exportă vectori” are acum patru formate: DXF (R2007, implicit), SVG, **PDF** și **EPS**. PDF-ul (1.5, scris de noi) are câte un strat PDF pe rol, conținutul în mm și pagina cât foaia; EPS-ul (EPSF-3.0) n-are straturi, rolul rămâne în culoare. Formatele n-au arc: cercurile și arcele ies din cubice, câte e nevoie ca abaterea măsurată să rămână sub 0,001 mm (cercul R50 din 7, ca în s2); panoul o spune. Pagina e foaia, lărgită exact cât iese o formă din ea (și întinderea DXF-ului). Bucata la cerere: 3,9 → 5,5 kB gzip, totalul 311,6 / 330, pornirea neschimbată. **Treceri:** (1) cubicele, drumurile, scriitorii, panoul; oracolul extins: PDF-ul citit de PyMuPDF (straturile, culorile, fiecare punct pe forma de pe hârtie și fiecare bucată de pe hârtie pe cale, la 0,0011 mm), EPS-ul citit direct de un cititor Python mic și trecut prin Ghostscript (în CI din Ubuntu, local în WASM, doar pentru test); găsit pe drum: Ghostscript mută desenul cu ~0,002 mm (543 → 542,99907), deci acolo toleranța e 0,003 mm, iar exactitatea o probează cititorul direct; distanța la o cubică, căutată pe 200 de puncte, greșea cu ~0,4 mm (rafinată); o bucată lipsă dintr-un contur ar fi trecut (acum și acoperirea); mutațiile: 28 / 30 prinse la prima rulare, apoi probe noi (contururile închise se închid și în fișier, cutia lărgită de un dreptunghi): 30 / 30.",
+      "en": "**2D export: PDF and EPS, brought forward from stage 9** (no machine; ADR 0089; “continua”). “Export vectors” now has four formats: DXF (R2007, the default), SVG, **PDF** and **EPS**. The PDF (1.5, our own writer) has one PDF layer per role, the content in mm and the page the size of the sheet; the EPS (EPSF-3.0) has no layers, the role stays in the colour. The formats have no arcs: circles and arcs come out of cubics, as many as needed for the measured deviation to stay under 0.001 mm (the R50 circle from 7, as in s2); the panel says so. The page is the sheet, widened exactly as far as a shape goes out of it (and so is the DXF extent). The on-demand chunk: 3.9 → 5.5 kB gzip, the total 311.6 / 330, startup unchanged. **Passes:** (1) the cubics, the paths, the writers, the panel; the oracle extended: the PDF read by PyMuPDF (the layers, the colours, every point on the shape on paper and every piece on paper on the path, at 0.0011 mm), the EPS read directly by a small Python reader and run through Ghostscript (in CI from Ubuntu, locally in WASM, test only); found on the way: Ghostscript moves the drawing by ~0.002 mm (543 → 542.99907), so its tolerance is 0.003 mm and exactness is proven by the direct reader; the distance to a cubic, searched on 200 points, was off by ~0.4 mm (refined); a missing piece of an outline would have passed (now coverage too); mutations: 28 / 30 caught on the first run, then new tests (closed outlines are closed in the file too, the box widened by a rectangle): 30 / 30."
+    },
     "072b9e6cb83e4eaf": {
       "ro": "**PWA offline, adusă din etapa 4** (plăcile netăiate: `PLAN.md` §4.6, punctul 7; ADR 0045): workerul la `/sw.js` (ia locul opritorului, șterge cache-urile ediției întâi), toată aplicația în cache (32 de fișiere, 218 kB; afară doar `/admin`), navigările din cache doar pentru `/`, `config.json` cu copie de rezervă, actualizarea oferită (la clic). Recenzia (12 constatări, una mare: login-ul Google) și reverificarea, remediate. **Pe test:** a doua încărcare din cache, 0 octeți din rețea; `/__/auth` și `/admin` din rețea.",
       "en": "**Offline PWA, brought forward from stage 4** (the plates not cut: `PLAN.md` §4.6, point 7; ADR 0045): the worker at `/sw.js` (it replaces the stopper and clears the first edition's caches), the whole app in cache (32 files, 218 kB; only `/admin` outside), navigations from cache only for `/`, `config.json` with a backup copy, the update offered (on click). The review (12 findings, one big: the Google login) and the re-check, fixed. **On test:** the second load from cache, 0 bytes from the network; `/__/auth` and `/admin` from the network."
@@ -308,6 +312,10 @@
     "2c008c20927be9bd": {
       "ro": "3.9: prima publicare pe live",
       "en": "3.9: the first publish to live"
+    },
+    "2c34f30c9be189f1": {
+      "ro": "Exportul 2D: PDF și EPS, adus din etapa 9",
+      "en": "2D export: PDF and EPS, brought forward from stage 9"
     },
     "2c5f23dfc38ae39d": {
       "ro": "admin **P0** + **P1**",
@@ -1560,6 +1568,10 @@
     "edbaa5695545ce85": {
       "ro": "„20 mm” = 20,00 mm; diacritice; text pe arc",
       "en": "“20 mm” = 20.00 mm; diacritics; text on an arc"
+    },
+    "edc8f938cdeea3ab": {
+      "ro": "Exportul 2D în PDF și EPS",
+      "en": "2D export to PDF and EPS"
     },
     "ef010b74384aa699": {
       "ro": "3.5 (transcrierile rejucate pe emulator) și prima felie a etapei",

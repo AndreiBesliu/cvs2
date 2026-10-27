@@ -3192,3 +3192,20 @@ mai lentă felie 7 min 38 s; pasul nou „Oracolul exportului 2D (ezdxf)”, pe 
 Cu conturul foii, Exportă, Închide), titlul și extensia la locul lor, 0 erori în consolă; fără descărcare în panoul browserului
 (fișierele le verifică e2e-ul și oracolul). La verificare, nota panoului spunea „Un strat pe operație”, iar straturile sunt pe
 rol: textul (și eticheta butonului) corectat la 22:28 și publicat din nou.
+
+## 2026-10-27 — Exportul 2D: PDF și EPS (Model: Claude Opus 5.5)
+
+**Prompt:** „continua”.
+**Started:** 27.10, 07:10. Felia **9.2↑**, adusă din etapa 9, fără mașină și fără agenți (ADR 0089): restul rândului de export,
+PDF-ul cu straturi și EPS-ul, după DXF și SVG. La început: `main` verde (rapid-ul pe `46bf3b3`); rularea de noapte din 27.10
+încă nepornită de GitHub la 05:11 UTC (cron 01:23, întârziat ieri până la 06:23), deci sub pragul de 26 h; cea programată din
+26.10 picase, cea pornită de mână la 06:57 trecuse.
+**Completed:** 27.10 07:42. „Exportă vectori” scrie acum și **PDF** (1.5, un strat PDF pe rol, conținutul în mm, pagina cât foaia)
+și **EPS** (EPSF-3.0, rolul în culoare); arcele și cercurile, din cubice sub 0,001 mm (cercul R50 din 7, ca în s2), iar panoul o
+spune. Bucata la cerere 3,9 → 5,5 kB gzip, totalul 309,9 → 311,6 / 330, pornirea 96,0 (cu ușa 99,3). Oracolul: PyMuPDF pe PDF,
+un cititor Python direct pe EPS și Ghostscript (în CI din Ubuntu; local, `@jspawn/ghostscript-wasm` despachetat în `.tmp`,
+doar pentru test). Porțile: 7 441 de teste unitare (0 picate), build-ul determinist, e2e 241 / 241, emulatoarele 36 + 13.
+Mutațiile: 28 / 30 la prima rulare, 30 / 30 cu probele noi. **Găsit pe drum:** (1) Ghostscript mută desenul cu ~0,002 mm, deci
+exactitatea EPS-ului o probează cititorul direct; (2) oracolul căuta distanța la o cubică pe 200 de puncte (eroare ~0,4 mm)
+și nu verifica acoperirea (o bucată lipsă trecea): ambele reparate înaintea mutațiilor; (3) comanda `firebase` lipsea din
+PATH-ul sesiunii (CLI-ul e în `AppData\Roaming\npm`): emulatoarele au rulat cu el adăugat doar pentru comandă.

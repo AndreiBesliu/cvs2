@@ -5,11 +5,13 @@
  * - liniile și arcele vecine ale unui contur sunt o polilinie cu `bulge` (ca LWPOLYLINE), închisă dacă tot conturul e așa;
  * - cubicele vecine sunt o curbă Bézier în lanț (3k + 1 puncte), adică o SPLINE de grad 3 cu nodurile triple, exactă.
  * Stratul e rolul formei: felul primei operații a piesei care o taie (în ordinea documentului), sau „fără operație”.
- * Conturul foii intră doar la cerere, pe stratul lui.
+ * Conturul foii intră doar la cerere, pe stratul lui. Cutia e foaia, lărgită exact cât iese o formă din ea (cu extremele
+ * arcelor și ale cubicelor): pagina PDF / EPS și întinderea DXF-ului.
  */
 import { numarSegmente, segment, type Contur, type Punct } from '../geom/conturBaza.ts';
+import type { Cutie } from '../geom/cutie.ts';
 import type { Document, Operatie } from '../model/document.ts';
-import { conturElement } from '../model/forme.ts';
+import { conturElement, cutieElement } from '../model/forme.ts';
 import { elementeFoaie } from '../model/lume.ts';
 
 /** Straturile, în ordinea în care se scriu; numele sunt ASCII, ca orice program să le citească la fel. */
@@ -26,6 +28,8 @@ export type VectoriFoaie = {
   readonly latime: number;
   readonly inaltime: number;
   readonly entitati: readonly Entitate[];
+  /** Foaia, cu formele care ies din ea (exact). */
+  readonly cutie: Cutie;
 };
 
 /** Rolul unei forme, după prima operație care o taie. */
@@ -90,13 +94,18 @@ export function vectoriFoaie(doc: Document, indexFoaie: number, cuFoaia: boolean
   const { latime, inaltime } = foaie.stoc;
   const piese = new Map(doc.piese.map((p) => [p.id, p]));
   const entitati: Entitate[] = [];
+  let minX = 0, minY = 0, maxX = latime, maxY = inaltime;
   for (const e of elementeFoaie(doc, indexFoaie)) {
     const strat = stratOperatiei(piese.get(e.piesa)?.operatii.find((o) => o.noduri.includes(e.nod)));
     if (e.forma.tip === 'cerc') {
       const m = e.matrice;
-      entitati.push({ fel: 'cerc', strat, element: e.idLume, centru: { x: m.e, y: m.f }, raza: e.forma.raza * Math.hypot(m.a, m.b) });
+      const raza = e.forma.raza * Math.hypot(m.a, m.b);
+      entitati.push({ fel: 'cerc', strat, element: e.idLume, centru: { x: m.e, y: m.f }, raza });
+      minX = Math.min(minX, m.e - raza); minY = Math.min(minY, m.f - raza); maxX = Math.max(maxX, m.e + raza); maxY = Math.max(maxY, m.f + raza);
     } else {
       for (const x of bucatiContur(conturElement(e), strat, e.idLume)) entitati.push(x);
+      const c = cutieElement(e);
+      minX = Math.min(minX, c.minX); minY = Math.min(minY, c.minY); maxX = Math.max(maxX, c.maxX); maxY = Math.max(maxY, c.maxY);
     }
   }
   if (cuFoaia) {
@@ -105,5 +114,5 @@ export function vectoriFoaie(doc: Document, indexFoaie: number, cuFoaia: boolean
       varfuri: [{ x: 0, y: 0, bulge: 0 }, { x: latime, y: 0, bulge: 0 }, { x: latime, y: inaltime, bulge: 0 }, { x: 0, y: inaltime, bulge: 0 }],
     });
   }
-  return { latime, inaltime, entitati };
+  return { latime, inaltime, entitati, cutie: { minX, minY, maxX, maxY } };
 }
