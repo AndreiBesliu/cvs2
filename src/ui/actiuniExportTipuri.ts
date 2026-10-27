@@ -2,7 +2,7 @@ import type { IesireFoaie } from '../cam/iesire.ts';
 import { RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA } from '../cam/intrariMinima.ts';
 import { RAMPA_MINIMA } from '../cam/rampaMinima.ts';
 import type { ColtOrigine } from '../ir/montaj.ts';
-import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAXIM, RETRAGERE_COMPLETA_MAXIMA } from '../model/document.ts';
+import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAXIM, RETRAGERE_COMPLETA_MAXIMA, UNGHI_V_MAXIM, UNGHI_V_MINIM } from '../model/document.ts';
 export type { Coborare } from '../model/document.ts';
 import type { StrategieScula, Unitati } from '../post/contract.ts';
 import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../post/contracte/index.ts';
@@ -27,6 +27,8 @@ export const MARGINI_OPERATIE = {
   lungimeZigzagMinima: COBORARE_MINIME.lungime, razaElice: PLAFON.diametruScula, razaEliceMinima: COBORARE_MINIME.raza,
   // Găurirea (ADR 0087): la al câtelea pas iese freza din gaură, un întreg 1–100.
   retragereCompleta: RETRAGERE_COMPLETA_MAXIMA,
+  // Freza în V (ADR 0090): unghiul inclus, în grade.
+  unghiV: UNGHI_V_MAXIM, unghiVMinim: UNGHI_V_MINIM,
 } as const;
 
 /**

@@ -44,9 +44,10 @@ export const roCarcasa = {
   'prop.forma.ry': 'Raza pe Y',
   'prop.forma.impartita': 'Piesa e folosită de mai multe instanțe: forma ei se schimbă doar când e a uneia singure.',
   'prop.forma.refuzata': 'Forma nu poate lua valoarea asta (o latură sau o rază zero sau prea mare, raza colțurilor peste jumătatea laturii mai mici, laturile poligonului în afara 3–64).',
-  'prop.operatia': 'Operația {n}: profil',
+  'prop.operatia': 'Operația {n}',
   'prop.freza': 'Freza',
   'prop.freza.valoare': 'T{numar}, Ø{diametru} mm',
+  'prop.freza.valoare-v': 'T{numar}, V {unghi}°, Ø{diametru} mm',
   'prop.urechi.valoare': '{numar} × {latime} mm, puntea {grosime} mm',
   'prop.rampa.valoare': 'lungă de {mm} mm',
   'prop.coborare.rampa': '{nume}, {unghi}°',
@@ -74,6 +75,11 @@ export const roCarcasa = {
     one: 'Găurire pe {n} cerc: {adancime} mm în pași de {pas} mm, T{t} Ø{d}',
     few: 'Găurire pe {n} cercuri: {adancime} mm în pași de {pas} mm, T{t} Ø{d}',
     other: 'Găurire pe {n} de cercuri: {adancime} mm în pași de {pas} mm, T{t} Ø{d}',
+  },
+  'arbore.vcarve': {
+    one: 'V-carve pe {n} contur: până la {adancime} mm, în treceri de {pas} mm, T{t} Ø{d}',
+    few: 'V-carve pe {n} contururi: până la {adancime} mm, în treceri de {pas} mm, T{t} Ø{d}',
+    other: 'V-carve pe {n} de contururi: până la {adancime} mm, în treceri de {pas} mm, T{t} Ø{d}',
   },
   'arbore.fara-operatii': 'Nicio operație de tăiere',
 } as const satisfies DictionarRoPentru<typeof enCarcasa>;

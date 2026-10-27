@@ -366,7 +366,7 @@ test('freze amestecate într-un proiect salvat (ADR 0084): fiecare rând își a
   await expect(scula('b')).toHaveValue('2');
   await expect(diametru('c')).toHaveValue('8');
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();
-  await expect(page.getByTestId('export-invalid')).toContainText('T1 are două diametre (6, 8 mm): fiecare freză cere numărul ei.');
+  await expect(page.getByTestId('export-invalid')).toContainText('T1 are două freze (Ø6 mm, Ø8 mm): fiecare freză cere numărul ei.');
   await scula('c').fill('3');
   await expect(page.locator('[data-buton="exporta"]')).toBeEnabled();
   await expect(page.locator('[data-camp="strategie"]')).toHaveValue('bariera-sender');

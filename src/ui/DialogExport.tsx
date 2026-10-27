@@ -25,7 +25,8 @@ export type IntrariOperatie = { readonly raza: number };
 /** Degajările colțurilor (ADR 0032): dog-bone sau T-bone. */
 export type ColturiOperatie = { readonly tip: 'dog-bone' | 't-bone' };
 /** Freza unei operații (ADR 0084): numărul (T) și diametrul; aceeași sculă = același număr și același diametru. */
-export type SculaOperatie = { readonly numar: number; readonly diametru: number };
+/** Freza unui rând (ADR 0084), cu forma ei (ADR 0090): lipsă = plată; `v` = freza în V, cu unghiul inclus. */
+export type SculaOperatie = { readonly numar: number; readonly diametru: number; readonly forma?: { readonly tip: 'v'; readonly unghi: number } };
 /** Ce se schimbă dintr-o operație în dialog, cu freza ei (ADR 0084: fiecare rând are freza lui; lipsă = cea din document). */
 export type ValoriOperatie = {
   readonly scula?: SculaOperatie;
@@ -40,7 +41,7 @@ export type ValoriOperatie = {
    * Buzunarul (ADR 0069): `tip: 'buzunar'` cu distanța dintre inele (mm); lipsă = profil. Pe un buzunar, latura e
    * `interior`, iar urechile, rampa, intrările și degajările lipsesc.
    */
-  readonly tip?: 'profil' | 'buzunar' | 'gaurire';
+  readonly tip?: 'profil' | 'buzunar' | 'gaurire' | 'vcarve';
   readonly pasLateral?: number;
   /** Coborârea în buzunar (ADR 0076); lipsă = plonjarea dreaptă. */
   readonly coborare?: Coborare;
@@ -131,10 +132,15 @@ function inMargini(s: string, plafon: number, minim = 0): boolean {
   return x !== null && Number.isFinite(x) && x > 0 && x >= minim && x <= plafon;
 }
 
+/** Unghiul implicit al frezei în V (ADR 0090), în grade. */
+const UNGHI_V_IMPLICIT = 60;
+
 /** Urechile pornite sau nu; câmpurile lor rămân scrise și cu bifa scoasă, ca o bifă pusă la loc să nu le piardă. */
 type Rand = {
   /** Freza rândului (ADR 0084), ca text: numărul și diametrul. */
   readonly numarScula: string; readonly diametruScula: string;
+  /** Forma frezei (ADR 0090) și unghiul V, ca text. */
+  readonly formaScula: 'plata' | 'v'; readonly unghiV: string;
   readonly latura: Latura; readonly sens: Sens; readonly adancime: string; readonly pas: string;
   readonly urechi: boolean; readonly numarUrechi: string; readonly latimeUreche: string; readonly grosimeUreche: string;
   readonly rampa: boolean; readonly lungimeRampa: string;
@@ -143,7 +149,7 @@ type Rand = {
   readonly colturi: '' | ColturiOperatie['tip'];
   readonly despartire: boolean;
   /** Buzunarul (ADR 0069) sau găurirea (ADR 0087): felul rândului; pasul lateral, ca text, rămâne scris și pe un profil. */
-  readonly tip: 'profil' | 'buzunar' | 'gaurire';
+  readonly tip: 'profil' | 'buzunar' | 'gaurire' | 'vcarve';
   /** Găurirea: la al câtelea pas iese freza din gaură, ca text. */
   readonly retragereCompleta: string;
   readonly pasLateral: string;
@@ -267,13 +273,15 @@ export function DialogExport(
     const inchise = o.deschise === 0;
     return [o.cheie, {
       numarScula: text(o.valori.scula?.numar ?? 1), diametruScula: text(o.valori.scula?.diametru ?? 6),
+      formaScula: o.valori.scula?.forma ? 'v' : 'plata', unghiV: text(o.valori.scula?.forma?.unghi ?? UNGHI_V_IMPLICIT),
       latura: o.valori.latura, sens: o.valori.sens, adancime: text(o.valori.adancime), pas: text(o.valori.pas),
       urechi: inchise && o.valori.urechi !== null, numarUrechi: text(u.numar), latimeUreche: text(u.latime), grosimeUreche: text(u.grosime),
       rampa: inchise && o.valori.rampa !== null, lungimeRampa: text((o.valori.rampa ?? RAMPA_IMPLICITA).lungime),
       intrari: inchise && o.valori.intrari !== null, razaIntrare: text((o.valori.intrari ?? INTRARI_IMPLICITE).raza),
       colturi: inchise ? o.valori.colturi?.tip ?? '' : '',
       despartire: !inchise && o.valori.despartire === true,
-      tip: inchise && o.valori.tip === 'buzunar' ? 'buzunar' : o.cercuri === true && o.valori.tip === 'gaurire' ? 'gaurire' : 'profil',
+      tip: inchise && o.valori.tip === 'buzunar' ? 'buzunar' : inchise && o.valori.tip === 'vcarve' ? 'vcarve'
+        : o.cercuri === true && o.valori.tip === 'gaurire' ? 'gaurire' : 'profil',
       retragereCompleta: text(o.valori.retragereCompleta ?? 1),
       pasLateral: text(o.valori.pasLateral ?? pasLateralImplicit(o.valori.scula?.diametru ?? 6)),
       coborare: o.valori.coborare?.fel ?? 'plonjare',
@@ -313,9 +321,12 @@ export function DialogExport(
   // Pasul lateral al unui buzunar: cel mult raza frezei rândului (ADR 0069 §3); fără o freză bună, nu se judecă.
   const randBun = (p: Rand | undefined): {
     scula: boolean; adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean; rampa: boolean; intrari: boolean;
-    pasLateral: boolean; coborare: boolean; retragere: boolean;
+    pasLateral: boolean; coborare: boolean; retragere: boolean; vcarve: boolean;
   } => ({
-    scula: p !== undefined && intregInMargini(p.numarScula, MARGINI_OPERATIE.numarScula) && inMargini(p.diametruScula, MARGINI_OPERATIE.diametru),
+    scula: p !== undefined && intregInMargini(p.numarScula, MARGINI_OPERATIE.numarScula) && inMargini(p.diametruScula, MARGINI_OPERATIE.diametru)
+      && (p.formaScula !== 'v' || inMargini(p.unghiV, MARGINI_OPERATIE.unghiV, MARGINI_OPERATIE.unghiVMinim)),
+    // V-carve-ul (ADR 0090) cere freza în V.
+    vcarve: p !== undefined && (p.tip !== 'vcarve' || p.formaScula === 'v'),
     adancime: p !== undefined && inMargini(p.adancime, MARGINI_OPERATIE.adancime),
     pas: p !== undefined && inMargini(p.pas, MARGINI_OPERATIE.adancime),
     // Pe un buzunar și pe o găurire, urechile și rampa nu se aplică (ADR 0069 §1, ADR 0087 §1): bifele sunt oprite, deci nu
@@ -338,12 +349,13 @@ export function DialogExport(
   });
   const randuri = operatii.map((o) => randBun(param[o.cheie]));
   const sculeBune = randuri.every((b) => b.scula);
-  // Frezele rândurilor (ADR 0084): același număr cu două diametre ar fi două freze sub același T.
-  const scule = new Map<number, Set<number>>();
+  // Frezele rândurilor (ADR 0084): același număr cu două diametre (sau două forme, ADR 0090) ar fi două freze sub același T.
+  const scule = new Map<number, Set<string>>();
   for (const o of operatii) {
     const p = param[o.cheie];
     const n = p ? citesteNumar(p.numarScula) : null, d = p ? citesteNumar(p.diametruScula) : null;
-    if (n !== null && d !== null) scule.set(n, (scule.get(n) ?? new Set()).add(d));
+    const u = p && p.formaScula === 'v' ? citesteNumar(p.unghiV) : null;
+    if (n !== null && d !== null) scule.set(n, (scule.get(n) ?? new Set()).add(u !== null ? `Ø${String(d)} mm V${String(u)}°` : `Ø${String(d)} mm`));
   }
   const conflict = [...scule].find(([, ds]) => ds.size > 1);
   const operatiiBune = sculeBune && !conflict && randuri.every((b) => b.adancime && b.pas);
@@ -353,7 +365,8 @@ export function DialogExport(
   const pasiBuni = randuri.every((b) => b.pasLateral);
   const coborariBune = randuri.every((b) => b.coborare);
   const retrageriBune = randuri.every((b) => b.retragere);
-  const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune;
+  const vcarveBune = randuri.every((b) => b.vcarve);
+  const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -374,7 +387,13 @@ export function DialogExport(
     const pas = p ? citesteNumar(p.pas) : null;
     const numarScula = p ? citesteNumar(p.numarScula) : null, diametruScula = p ? citesteNumar(p.diametruScula) : null;
     if (!p || adancime === null || pas === null || numarScula === null || diametruScula === null) return [];
-    const scula = { numar: numarScula, diametru: diametruScula };
+    const unghiV = p.formaScula === 'v' ? citesteNumar(p.unghiV) : null;
+    if (p.formaScula === 'v' && unghiV === null) return [];
+    const scula: SculaOperatie = { numar: numarScula, diametru: diametruScula, ...(unghiV !== null ? { forma: { tip: 'v' as const, unghi: unghiV } } : {}) };
+    // V-carve-ul (ADR 0090): latura interior, nimic din profil; adâncimea e cea maximă.
+    if (p.tip === 'vcarve') {
+      return [[o.cheie, { scula, latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'vcarve' }] as const];
+    }
     // Găurirea (ADR 0087 §1): latura interior, nimic din profil, cu ieșirea la al câtelea pas.
     if (p.tip === 'gaurire') {
       const retragereCompleta = citesteNumar(p.retragereCompleta);
@@ -422,7 +441,7 @@ export function DialogExport(
   // Motivul spune ce câmp e greșit: valorile operației, urechile, sau amândouă (recenzia feliei 2.4).
   const motivInvalid = [
     ...(sculeBune ? [] : [t('motiv.scula-invalida', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
-    ...(conflict ? [t('motiv.scula-conflict', { numar: conflict[0], diametre: [...conflict[1]].map((d) => fmtFreza.format(d)).join(', ') })] : []),
+    ...(conflict ? [t('motiv.scula-conflict', { numar: conflict[0], diametre: [...conflict[1]].join(', ') })] : []),
     ...(operatiiBune || !sculeBune || conflict ? [] : [t('motiv.operatie-invalida')]),
     ...(urechiBune ? [] : [t('motiv.urechi-invalide', {
       n: MARGINI_OPERATIE.urechi, latime: fmtFreza.format(MARGINI_OPERATIE.latimeUreche), grosime: fmtFreza.format(MARGINI_OPERATIE.grosimeUreche),
@@ -438,6 +457,7 @@ export function DialogExport(
       lungime: fmtFreza.format(MARGINI_OPERATIE.lungimeZigzagMinima), raza: fmtFreza.format(MARGINI_OPERATIE.razaEliceMinima),
     })]),
     ...(retrageriBune ? [] : [t('motiv.retragere-invalida', { max: MARGINI_OPERATIE.retragereCompleta })]),
+    ...(vcarveBune ? [] : [t('motiv.vcarve-freza')]),
     ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
       ? t('motiv.intrari-invalide-rampa', {
         minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinimaRampa), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
@@ -517,8 +537,9 @@ export function DialogExport(
               const deschis = o.deschise > 0;
               // Pe un buzunar (ADR 0069 §1) și pe o găurire (ADR 0087 §1), ce e al profilului e oprit, cu motivul în titlu, ca pe
               // o cale deschisă.
-              const buz = p.tip === 'buzunar', gaura = p.tip === 'gaurire', nuProfil = buz || gaura;
-              const titluDeschis = deschis ? t('export.deschise.titlu') : buz ? t('export.buzunar.nu-se-aplica') : gaura ? t('export.gaurire.nu-se-aplica') : undefined;
+              const buz = p.tip === 'buzunar', gaura = p.tip === 'gaurire', vc = p.tip === 'vcarve', nuProfil = buz || gaura || vc;
+              const titluDeschis = deschis ? t('export.deschise.titlu') : buz ? t('export.buzunar.nu-se-aplica') : gaura ? t('export.gaurire.nu-se-aplica')
+                : vc ? t('export.vcarve.nu-se-aplica') : undefined;
               return (
                 <Fragment key={o.cheie}>
                 <tr data-operatie={o.cheie}>
@@ -528,6 +549,16 @@ export function DialogExport(
                       aria-invalid={!b.scula || conflict !== undefined} className="numar-scula" onChange={(ev) => { schimba(o.cheie, { numarScula: ev.target.value }); }} />
                     <input type="text" inputMode="decimal" value={p.diametruScula} data-camp="diametru" disabled={doarCitire} aria-label={t('export.freza.diametru')}
                       aria-invalid={!b.scula || conflict !== undefined} onChange={(ev) => { schimba(o.cheie, { diametruScula: ev.target.value }); }} />
+                    {/* Forma frezei (ADR 0090): plată sau în V, cu unghiul inclus. */}
+                    <select value={p.formaScula} data-camp="forma-scula" disabled={doarCitire} aria-label={t('export.freza.forma')}
+                      aria-invalid={!b.vcarve} onChange={(ev) => { schimba(o.cheie, { formaScula: ev.target.value === 'v' ? 'v' : 'plata' }); }}>
+                      <option value="plata">{t('export.freza.plata')}</option>
+                      <option value="v">{t('export.freza.v')}</option>
+                    </select>
+                    {p.formaScula === 'v' && (
+                      <input type="text" inputMode="decimal" value={p.unghiV} data-camp="unghi-v" disabled={doarCitire} aria-label={t('export.freza.unghi')}
+                        title={t('export.freza.unghi')} className="unghi-v" aria-invalid={!b.scula} onChange={(ev) => { schimba(o.cheie, { unghiV: ev.target.value }); }} />
+                    )}
                   </td>
                   <td>
                     {/* Buzunarul (ADR 0069) e încă o alegere a tăieturii, doar pe un rând cu contururi închise; găurirea (ADR 0087),
@@ -535,11 +566,12 @@ export function DialogExport(
                     <select value={nuProfil ? p.tip : p.latura} data-camp="latura" disabled={doarCitire} title={deschis ? t('export.latura.deschise.titlu') : undefined}
                       onChange={(ev) => {
                         const v = ev.target.value;
-                        schimba(o.cheie, v === 'buzunar' || v === 'gaurire' ? { tip: v } : { tip: 'profil', latura: v as Latura });
+                        schimba(o.cheie, v === 'buzunar' || v === 'gaurire' || v === 'vcarve' ? { tip: v } : { tip: 'profil', latura: v as Latura });
                       }}>
                       {laturiOferite(o.deschise, o.noduri, p.latura).map((l) => <option key={l} value={l}>{t(CHEI_LATURA[l])}</option>)}
                       {!deschis && <option value="buzunar">{t(CHEI_LATURA.buzunar)}</option>}
                       {!deschis && o.cercuri === true && <option value="gaurire">{t('export.latura.gaurire')}</option>}
+                      {!deschis && <option value="vcarve">{t('export.latura.vcarve')}</option>}
                     </select>
                   </td>
                   <td>
@@ -587,6 +619,8 @@ export function DialogExport(
                     <td />
                     <td colSpan={9}>
                       <div className="campuri-detalii">
+                      {/* V-carve-ul (ADR 0090): adâncimea e cea maximă; fundul plat vine cu freza dreaptă. */}
+                      {vc && <p className="nota-vcarve" data-vcarve={o.cheie}>{t('export.vcarve.nota')}</p>}
                       {/* Găurirea (ADR 0087): pasul e cât coboară freza între două retrageri; aici, când iese din gaură. */}
                       {gaura && (
                       <div className="campuri-gaurire" data-gaurire={o.cheie}>

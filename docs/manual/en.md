@@ -315,13 +315,13 @@ converted to outlines in the drawing program before export.
 %% acopera: document.aplica-operatii
 
 Each shape has an operation: a **profile** (the cutter runs along the outline, in passes, down to the depth), a **pocket**
-(the cutter clears all the material inside a closed outline, down to the depth) or, on circles, a **drilling** (a hole the
-size of the circle, see below). Operations are changed in the **Export
+(the cutter clears all the material inside a closed outline, down to the depth), on circles a **drilling** (a hole the
+size of the circle, see below) or a **V-carve** (the V bit carves the shape along its middle, see below). Operations are changed in the **Export
 G-code** window, one row per shape; on export, the window does **Apply the operations**: it writes them into the project.
 
 | Field | What it means |
 |---|---|
-| Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
+| Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles), **V-carve** (carves the shape with the V bit, see below); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
 | Direction | **climb**: the material that stays is on the right of the travel (M3 spindle); **conventional**: the opposite. It does not matter on the line |
 | Depth, Step down | how deep it cuts and how far one pass goes down (mm) |
 | Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face) |
@@ -378,6 +378,19 @@ does not have.
   would stay in the middle: use a pocket). A drilling has no tabs, ramp, leads, corner relief or split; holes are cut with
   the insides.
 
+**V-carve.** On closed outlines, Cut also offers **V-carve**: the V bit runs along the middle of the shape (its medial axis)
+and goes down at each point as far as fits between the walls: the depth is the distance to the nearest wall divided by
+tan(θ/2), where θ is the bit's angle (at 90°, the distance itself; at 60°, 1.73 times more). The walls come out sloped, right
+on the outline, and sharp corners stay sharp: lettering, ornaments, the outline of a logo.
+- The row's outlines are read together, even-odd: an "O" is the ring between its two outlines, not two shapes.
+- **Depth** is the maximum. Where the shape is wider than the bit at that depth, the bit runs at it along the middle and along
+  an outline parallel to the wall, and the flat floor between them is left uncut (a straight bit will do it, in a future
+  version); the export says so, as a warning.
+- **Step**: on each pass, the bit goes at most one step deeper than the pass before.
+- The row's bit must be a **V** bit (see [Exporting G-code](#export)), and its cone, (diameter / 2) / tan(θ/2), must reach the
+  depth asked for; otherwise the export is refused, with the reason. A V-carve has no tabs, ramp, leads, corner relief or
+  split, and an open path is refused.
+
 Each row has its own cutter (see [Exporting G-code](#export)). The feeds and speeds are fixed for now: the spindle at 18,000 rpm (with a 3 s wait), feed 1,000 mm/min, plunge
 300 mm/min, safe Z 5 mm; insides are cut first.
 
@@ -407,9 +420,11 @@ browser.
   `T… M6`, you take the bit out, put in the next one, probe Z and **Continue**), **M6 at the controller** (grblHAL, FluidNC,
   with the change set up there), **M0, with the bit in a comment** or **one file per bit** (all of them are downloaded).
 
-Each row has its own **bit**: the tool number (T) and the flat bit's diameter (mm). Rows with different bits are cut with a
-change between them: in each class (insides, then on the line, then outsides), the bit already mounted first, so there are as
-few changes as possible. The same number with two diameters is refused: each bit needs its own number.
+Each row has its own **bit**: the tool number (T), the diameter (mm) and the shape: **flat** or **V**, with the included angle
+of the tip (from 1° to 179°, 60° by default; for a V bit, the diameter is that of the cutting part). Rows with different bits
+are cut with a change between them: in each class (insides, then on the line, then outsides), the bit already mounted first,
+so there are as few changes as possible. The same number with two diameters or two shapes is refused: each bit needs its own
+number.
 
 The **Export** button downloads the file and shows how many lines it has and its SHA-256 fingerprint (with it you check that
 exactly this file reaches the machine). If the cutter would leave the sheet, the window says by how much and where, and the

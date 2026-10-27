@@ -47,9 +47,10 @@ export const enCarcasa = {
   'prop.forma.ry': 'Y radius',
   'prop.forma.impartita': 'The piece is used by several instances: its shape changes only when it belongs to a single one.',
   'prop.forma.refuzata': 'The shape cannot take this value (a zero or too large side or radius, a corner radius over half the shorter side, polygon sides outside 3–64).',
-  'prop.operatia': 'Operation {n}: profile',
+  'prop.operatia': 'Operation {n}',
   'prop.freza': 'Cutter',
   'prop.freza.valoare': 'T{numar}, Ø{diametru} mm',
+  'prop.freza.valoare-v': 'T{numar}, V {unghi}°, Ø{diametru} mm',
   'prop.urechi.valoare': '{numar} × {latime} mm, bridge {grosime} mm',
   'prop.rampa.valoare': '{mm} mm long',
   'prop.coborare.rampa': '{nume}, {unghi}°',
@@ -70,6 +71,10 @@ export const enCarcasa = {
   'arbore.gaurire': {
     one: 'Drilling on {n} circle: {adancime} mm in steps of {pas} mm, T{t} Ø{d}',
     other: 'Drilling on {n} circles: {adancime} mm in steps of {pas} mm, T{t} Ø{d}',
+  },
+  'arbore.vcarve': {
+    one: 'V-carve on {n} contour: up to {adancime} mm, in passes of {pas} mm, T{t} Ø{d}',
+    other: 'V-carve on {n} contours: up to {adancime} mm, in passes of {pas} mm, T{t} Ø{d}',
   },
   'arbore.fara-operatii': 'No cutting operation',
 } as const satisfies Readonly<Record<string, Mesaj>>;

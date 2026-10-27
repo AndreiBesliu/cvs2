@@ -26,9 +26,11 @@
     "banc": "playwright test -c playwright.banc.config.ts"
   },
   "dependencies": {
+    "delaunator": "5.1.0",
     "firebase": "12.19.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "robust-predicates": "3.0.3",
     "valibot": "1.5.0",
     "workbox-core": "7.4.1",
     "workbox-precaching": "7.4.1",

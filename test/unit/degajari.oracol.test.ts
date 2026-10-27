@@ -217,7 +217,7 @@ test('(o) drumurile dus-întors: o fantă cât freza (A → B → A, cu sau făr
 // Felia 2.3c-2: v10 (ADR 0037) adaugă căile deschise; documentele fără ele se taie la fel (ADR 0037 §2, §13), deci și pe 10.
 // Felia 5.1↑ (ADR 0069): v11 adaugă buzunarul; documentele fără el se taie la fel (doar numărul), deci și pe 11.
 test('lipire: aplicația e pe schema 8–11 (ADR 0032; v9 = forma cale, ADR 0034; v10 = căile deschise, ADR 0037; v11 = buzunarul, ADR 0069); pe alta testul PICĂ, nu se sare', () => {
-  assert.ok(SCHEMA >= 8 && SCHEMA <= 13, `schema ${SCHEMA}`);
+  assert.ok(SCHEMA >= 8 && SCHEMA <= 14, `schema ${SCHEMA}`);
 });
 
 for (const c of CAZURI_DEG) {

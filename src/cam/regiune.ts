@@ -59,8 +59,9 @@ export function regiunePastrata(taieturi: readonly Taietura[], contururi?: Reado
   for (const t of taieturi) {
     // Inelele vin doar din exterior / interior: pe linie nu păstrează nimic (ADR 0026 §6), iar o cale deschisă tăiată pe o
     // parte nu e inel (ADR 0037 §10: K nu se schimbă). Nici buzunarul (ADR 0069 §4): scoate material doar până la adâncimea
-    // lui, deci nu desparte nimic de foaie. Nici găurirea (ADR 0087 §5): scoate material doar din cercul ei.
-    if (t.tip === 'buzunar' || t.tip === 'gaurire' || (t.latura !== 'exterior' && t.latura !== 'interior')) continue;
+    // lui, deci nu desparte nimic de foaie. Nici găurirea (ADR 0087 §5): scoate material doar din cercul ei. Nici V-carve-ul
+    // (ADR 0090): sapă doar înăuntrul regiunii lui.
+    if (t.tip === 'buzunar' || t.tip === 'gaurire' || t.tip === 'vcarve' || (t.latura !== 'exterior' && t.latura !== 'interior')) continue;
     const x = laturi.get(t.idLume) ?? { exterior: false, interior: false, t };
     x[t.latura] = true;
     laturi.set(t.idLume, x);

@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 13;
+export const VERSIUNE_SCHEMA = 14;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -85,7 +85,14 @@ export type ElementNod = {
 };
 export type GrupNod = { tip: 'grup'; id: string; nume?: string; matrice: Matrice; copii: Nod[]; [cheie: string]: unknown };
 export type Nod = ElementNod | GrupNod;
-export type Scula = { numar: number; nume: string; diametru: number; [cheie: string]: unknown };
+/**
+ * Forma frezei (ADR 0090, documentul v14): lipsă = freza plată (ca până în v13); `v` = freza în V, cu unghiul inclus, în
+ * grade, în [`UNGHI_V_MINIM`, `UNGHI_V_MAXIM`]. Diametrul e cel al părții tăietoare (cât lasă V-ul la suprafață, cel mult).
+ */
+export type FormaSculaDoc = { tip: 'v'; unghi: number; [cheie: string]: unknown };
+export type Scula = { numar: number; nume: string; diametru: number; forma?: FormaSculaDoc; [cheie: string]: unknown };
+export const UNGHI_V_MINIM = 1;
+export const UNGHI_V_MAXIM = 179;
 /**
  * Latura profilului: exterior / interior pe contururile închise, pe linie pe oricare, stânga / dreapta (partea FREZEI, în
  * sensul desenului, ADR 0037 §3) pe căile deschise. Potrivirea cu `inchis` o judecă CAM-ul, nu ușa (ADR 0037 §2).
@@ -146,8 +153,10 @@ export const COBORARE_MINIME = { unghi: 0.5, lungime: 1, raza: 0.5 } as const;
  * buzunar, latura e `interior` (freza stă înăuntru), iar urechile, rampa, intrările, degajările și despărțirea nu există.
  * `gaurire` (ADR 0087, documentul v13) găurește un cerc: în pași, în centru, dacă cercul e cât freza; în elice, pe perete,
  * dacă e mai mare (cel mult de două ori freza). Ca pe buzunar, latura e `interior`, iar ce e al profilului nu există.
+ * `vcarve` (ADR 0090, documentul v14) sapă regiunea contururilor închise (par-impar) cu freza în V, pe axa ei medială, până
+ * la adâncimea operației (cea maximă); latura e `interior`, ce e al profilului nu există, iar freza trebuie să fie în V.
  */
-export type TipOperatie = 'profil' | 'buzunar' | 'gaurire';
+export type TipOperatie = 'profil' | 'buzunar' | 'gaurire' | 'vcarve';
 /** Cel mai mare număr de pași dintre două ieșiri complete ale găuririi (ADR 0087). */
 export const RETRAGERE_COMPLETA_MAXIMA = 100;
 export type Piesa = { id: string; nume?: string; radacina: Nod; operatii: Operatie[]; [cheie: string]: unknown };
@@ -161,7 +170,7 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
-export type Document = { schema: 13; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 14; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

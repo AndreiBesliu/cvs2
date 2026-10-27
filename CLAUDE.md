@@ -147,6 +147,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   corpus + valorile pe hârtie în oracol. **PDF și EPS (ADR 0089)** gata pe 27.10: arcele din cubice sub 0,001 mm (`cubice.ts`),
   PDF 1.5 cu straturi OCG, EPS fără straturi; oracolul: PyMuPDF, un cititor direct al EPS-ului și Ghostscript (CI: `apt`; local:
   `.tmp/eps2pdf.cjs` cu `@jspawn/ghostscript-wasm` despachetat în `.tmp/gs-wasm`). DXF R12 doar dacă un program îl cere.
+  **V-carve-ul (ADR 0090, documentul v14, adus din etapa 8)** gata pe 27.10: freza are o formă (`scula.forma`: `v` cu unghiul;
+  lipsă = plată), aleasă pe rândul exportului; `tip: 'vcarve'` pe contururi închise, citite par-impar ca o regiune; axa medială în
+  `src/cam/axaMediala.ts` (Delaunay pe eșantioane, `delaunator` + `robust-predicates`, raza recalculată exact), traseul în
+  `src/cam/vcarve.ts`; probele: oracolul simulării cu conul V, față de suprafața ideală −min(D, d·cot(θ/2)) pe hârtie. Fundul
+  plat dintre pereți rămâne, cu avertisment: freza dreaptă e felia 8.2↑.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

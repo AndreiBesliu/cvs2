@@ -304,13 +304,13 @@ transformat în contururi în programul de desen înainte de export.
 %% acopera: document.aplica-operatii
 
 Fiecare formă are o operație: un **profil** (freza merge de-a lungul conturului, în treceri, până la adâncime), un
-**buzunar** (freza scoate tot materialul dinăuntrul unui contur închis, până la adâncime) sau, pe cercuri, o **găurire**
-(gaura cât cercul, vezi mai jos). Operațiile se schimbă din
+**buzunar** (freza scoate tot materialul dinăuntrul unui contur închis, până la adâncime), pe cercuri o **găurire**
+(gaura cât cercul, vezi mai jos) sau un **V-carve** (freza în V sapă forma pe mijlocul ei, vezi mai jos). Operațiile se schimbă din
 fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **aplică operațiile** în proiect.
 
 | Câmpul | Ce înseamnă |
 |---|---|
-| Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
+| Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
 | Sens | **urcare**: materialul care rămâne e în dreapta sensului de mers (ax M3); **opoziție**: invers. Pe linie nu contează |
 | Adâncimea, Pasul | cât de adânc se taie și cât coboară o trecere (mm) |
 | Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos) |
@@ -364,6 +364,19 @@ rândului, scrisă doar cu mișcări simple (G0, G1, G2, G3), fără ciclurile d
   un miez: folosește buzunarul). Pe o găurire nu există urechi, rampă, intrări, degajări sau despărțire; găurile se taie cu
   interioarele.
 
+**V-carve-ul.** Pe contururi închise, Tăietura are și **V-carve**: freza în V merge pe mijlocul formei (axa ei medială) și
+coboară în fiecare punct cât încape între pereți: adâncimea e distanța până la cel mai apropiat perete împărțită la
+tan(θ/2), unde θ e unghiul frezei (la 90°, cât distanța; la 60°, de 1,73 ori mai mult). Pereții ies înclinați, exact pe
+contur, iar colțurile ascuțite rămân ascuțite: literele, ornamentele, conturul unui logo.
+- Contururile rândului se citesc împreună, par-impar: un „O” e inelul dintre cele două contururi, nu două forme.
+- **Adâncimea** e cea maximă. Unde forma e mai lată decât freza la acea adâncime, freza merge la ea pe mijloc și pe un contur
+  paralel cu peretele, iar fundul plat dintre ele rămâne netăiat (îl va face o freză dreaptă, într-o versiune viitoare);
+  exportul o spune, ca avertisment.
+- **Pasul**: la fiecare trecere, freza coboară cel mult cu pasul față de trecerea de dinainte.
+- Freza rândului trebuie să fie **în V** (vezi [Exportul G-code](#export)), iar conul ei, (diametrul / 2) / tan(θ/2), trebuie
+  să ajungă la adâncimea cerută; altfel exportul e refuzat, cu motivul. Pe un V-carve nu există urechi, rampă, intrări,
+  degajări sau despărțire, iar o cale deschisă e refuzată.
+
 Fiecare rând își are freza lui (vezi [Exportul G-code](#export)). Regimul e fix deocamdată: axul la 18 000 rot/min (cu 3 s de așteptare), avansul 1 000 mm/min, plonjarea 300 mm/min, Z sigur 5 mm;
 interioarele se taie primele.
 
@@ -392,9 +405,10 @@ ascunde. Dacă programul nu se poate calcula, semnul spune de ce. Traseul cere W
   oprește la `T… M6`, scoți freza, o pui pe următoarea, palpezi Z și **Continui**), **M6 la controler** (grblHAL, FluidNC, cu
   schimbarea configurată acolo), **M0, cu freza în comentariu** sau **câte un fișier pe freză** (se descarcă toate).
 
-Fiecare rând are **freza** lui: numărul sculei (T) și diametrul frezei plate (mm). Rândurile cu freze diferite se taie cu o
+Fiecare rând are **freza** lui: numărul sculei (T), diametrul (mm) și forma: **plată** sau **în V**, cu unghiul inclus al
+vârfului (între 1° și 179°, implicit 60°; la V, diametrul e cel al părții tăietoare). Rândurile cu freze diferite se taie cu o
 schimbare între ele: în fiecare clasă (interioarele, apoi pe linie, apoi exterioarele), întâi freza deja montată, ca
-schimbările să fie cât mai puține. Același număr cu două diametre e refuzat: fiecare freză cere numărul ei.
+schimbările să fie cât mai puține. Același număr cu două diametre sau două forme e refuzat: fiecare freză cere numărul ei.
 
 Butonul **Exportă** descarcă fișierul și arată câte linii are și amprenta lui SHA-256 (cu ea verifici că pe mașină ajunge
 exact fișierul ăsta). Dacă freza ar ieși din foaie, fereastra spune cu cât și unde, iar exportul cere confirmarea ta că acolo

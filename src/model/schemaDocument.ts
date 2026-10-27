@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import { compune, esteSimilitudine, IDENTITATE } from '../geom/matrice.ts';
 import {
-  areArce, instantaPreaDeparte, noduriPiesa, numara, plafonDepasit, PLAFON, RETRAGERE_COMPLETA_MAXIMA, UNGHI_COBORARE_MAXIM, VERSIUNE_SCHEMA, type Document, type Nod, type Piesa,
+  areArce, instantaPreaDeparte, noduriPiesa, numara, plafonDepasit, PLAFON, RETRAGERE_COMPLETA_MAXIMA, UNGHI_COBORARE_MAXIM, UNGHI_V_MAXIM, UNGHI_V_MINIM, VERSIUNE_SCHEMA, type Document, type Nod, type Piesa,
 } from './document.ts';
 
 /**
@@ -98,12 +98,14 @@ const SchemaNod: v.GenericSchema<unknown, Nod> = v.variant('tip', [
 
 const SchemaOperatie = v.looseObject({
   id: Id,
-  tip: v.picklist(['profil', 'buzunar', 'gaurire']),
+  tip: v.picklist(['profil', 'buzunar', 'gaurire', 'vcarve']),
   noduri: v.pipe(v.array(Id), v.minLength(1), v.maxLength(PLAFON.noduriOperatie)),
   scula: v.looseObject({
     numar: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(PLAFON.numarScula)),
     nume: v.pipe(v.string(), v.maxLength(PLAFON.numeLungime)),
     diametru: pozitiv(PLAFON.diametruScula),
+    // ADR 0090: forma frezei (v14); lipsă = plată.
+    forma: v.optional(v.looseObject({ tip: v.literal('v'), unghi: v.pipe(v.number(), v.finite(), v.minValue(UNGHI_V_MINIM), v.maxValue(UNGHI_V_MAXIM)) })),
   }),
   latura: v.picklist(['exterior', 'interior', 'pe-linie', 'stanga', 'dreapta']),
   sens: v.picklist(['urcare', 'opozitie']),

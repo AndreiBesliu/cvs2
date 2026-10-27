@@ -117,8 +117,8 @@ export const OTRAVURI_V10: readonly OtravaV10[] = [
   otrava('X24 ultimul vârf cu un arc care, citit închis, ar avea capetele în același punct', 'cale', (f) => { f['varfuri'] = [vL(0, 0), vL(10, 5), vA(0, 0, 0.3)]; }),
   { nume: 'X25 o cale deschisă cu 50 001 de vârfuri', categorie: 'plafon', doc: docV10O(deschisaLunga(50_001)) },
   otrava('X26 p.y NaN pe ultimul vârf (punctul lui se judecă)', 'finit', (f) => { (ultim(f)['p'] as Liber)['y'] = NaN; }),
-  // Felia 5.1↑ (ADR 0069): ușa curentă era v11, deci „mai nouă” era 12; din 5.3↑ (ADR 0076), v12, deci 13; din 5.4↑ (ADR 0087), 14.
-  otrava('X27 schema 14', 'schema', (_f, d) => { (d as unknown as Liber)['schema'] = 14; }),
+  // Felia 5.1↑ (ADR 0069): ușa curentă era v11, deci „mai nouă” era 12; din 5.3↑ (ADR 0076), v12, deci 13; din 5.4↑ (ADR 0087), 14; din 8.1↑ (ADR 0090), 15.
+  otrava('X27 schema 15', 'schema', (_f, d) => { (d as unknown as Liber)['schema'] = 15; }),
   otrava('X28 cale deschisă cu arce sub o forfecare', 'forma', () => {}, { matrice: SHEAR }),
 ];
 

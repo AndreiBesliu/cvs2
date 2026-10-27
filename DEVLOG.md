@@ -3218,3 +3218,25 @@ Ubuntu cu aceeași abatere ca local (0,002474 mm), felia 2 în 5 min 30 s; ramur
 (40458720217). Verificat la 1440 px (panoul browserului, îngust, ascunde extensia barei): patru formate în panou (DXF (R2007),
 SVG, PDF, EPS), nota despre curbe la PDF, foaia goală dă „Nimic de exportat”, fără descărcare, titlul întreg (123,5 px), 0 erori
 în consolă; fișierele descărcate le verifică e2e-ul și oracolul.
+
+## 2026-10-27 — V-carve-ul (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu ce era in ordine”.
+**Started:** 27.10, 08:33. Felia **8.1↑**, adusă din etapa 8, fără mașină și fără agenți (ADR 0090): următoarea din ordinea dată
+de owner (găurirea, V-carve-ul, exportul 2D; exportul 2D a trecut înainte, fiind mai repede). Planul: freza cu forma ei în
+document (v14), axa medială după T7 / s3 (candidatul (a): Delaunay pe eșantioane, legalizarea pe stivă, raza exactă), traseul
+cu adâncimea maximă și trecerile, rândul din fereastra exportului, probele pe hârtie și pe oracolul simulării cu conul V.
+
+**Completed:** 27.10 10:45. Freza are acum o formă în document (v14): plată sau în V, cu unghiul inclus (1–179°, implicit 60°),
+aleasă pe rândul ferestrei de export; operația nouă **V-carve** sapă înăuntrul contururilor închise ale rândului, ca o singură
+regiune par-impar, la z = −min(D, r·cot(θ/2)), pe axa medială (Delaunay pe eșantioane la 0,02 mm, delaunator 5.1.0, legalizată
+pe stivă cu robust-predicates 3.0.3, raza recalculată exact); unde forma e mai lată decât freza la D, pereții pe inelul decalat,
+iar fundul plat rămâne, cu avertisment (freza dreaptă e 8.2↑). Totalul 311,6 → 322,7 / 330 kB, pornirea 96,0 (cu ușa 99,4).
+Oracolul simulării cu conul V, față de suprafața ideală pe hârtie, pe cinci forme: mai adânc ≤ 0,0011 mm, material lăsat
+≤ 0,0054 mm. Porțile: 7 453 de teste unitare (0 picate, 8 sărite: logourile externe), build-ul determinist, e2e 243 / 243 pe
+codul final (la prima rulare 241: `proiect.spec` cerea textul vechi al conflictului, iar `rezumat.spec` a picat pe `EBUSY` la
+artefactul descărcării), emulatoarele 36 + 13. Mutațiile: 66 / 66, plus
+3 / 3 pe verificarea formei din lucrare. **Găsit pe drum:** (1) titlul panoului de proprietăți spunea „profil” la orice
+operație; (2) o cale deschisă pe un V-carve primea textul profilului; (3) la porți, lucrarea compara doar diametrele sub același
+T: T1 Ø6 plată și T1 Ø6 V90° dintr-un document salvat ar fi trecut cu o singură freză montată (schimbarea se decide după număr);
+acum refuzat, cu motivul; (4) textul conflictului din fereastră pierduse „mm”; (5) două teste vechi cereau schema 13.

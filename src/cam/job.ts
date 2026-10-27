@@ -7,6 +7,7 @@ import { grupeazaPeScula, taieturiFoaie, type Taietura } from '../model/lume.ts'
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
 import { traseuGaurire } from './gaurire.ts';
+import { traseuVcarve } from './vcarve.ts';
 import { adancimiTreceri, profil } from './profil.ts';
 import { perete, regiunePastrata, verificaTaietura, type Perete } from './regiune.ts';
 import { apropiereContururi, distantaCutii } from '../geom/apropiere.ts';
@@ -25,7 +26,8 @@ import { traseuProfil } from './traseu.ts';
 import { EPS_VARF, geometrieUrechi, type GeometrieUrechi, type ParametriUrechi } from './urechi.ts';
 
 /** Scula din operație, în IR: numărul, numele și diametrul (câmpurile necunoscute ale documentului rămân acolo). */
-const sculaIR = (s: Taietura['scula']): Scula => ({ numar: s.numar, nume: s.nume, diametru: s.diametru });
+// Forma frezei (ADR 0090) trece în IR: simularea și postul o citesc de acolo.
+const sculaIR = (s: Taietura['scula']): Scula => ({ numar: s.numar, nume: s.nume, diametru: s.diametru, ...(s.forma ? { forma: { tip: 'v' as const, unghi: s.forma.unghi } } : {}) });
 
 /**
  * Traseul x stă la cel puțin D de coloana fiecărei urechi a buclei c, cu urechile numărate de la poziția s pe c (ADR 0031,
@@ -153,15 +155,19 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   if (taieturi.length === 0) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
   const prima = taieturi[0];
   if (!prima) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
-  // Aceeași sculă = același număr și același diametru (ADR 0025, precizarea 1). Un număr cu două diametre ar fi două freze
-  // sub același T, iar omul de la mașină ar monta una singură (ADR 0084).
-  const diametre = new Map<number, number>();
+  // Aceeași sculă = același număr, același diametru și aceeași formă (ADR 0025, precizarea 1; ADR 0090). Un număr cu două
+  // diametre sau două forme ar fi două freze sub același T, iar omul de la mașină ar monta una singură (ADR 0084).
+  const forma = (s: Taietura['scula']): string => (s.forma ? `în V de ${s.forma.unghi}°` : 'plată');
+  const freze = new Map<number, Taietura['scula']>();
   for (const t of taieturi) {
-    const d = diametre.get(t.scula.numar);
-    if (d !== undefined && d !== t.scula.diametru) {
-      return { ok: false, motiv: `${t.idLume}: T${t.scula.numar} are două diametre (${d} și ${t.scula.diametru} mm): fiecare freză cere numărul ei` };
+    const s = freze.get(t.scula.numar);
+    if (s === undefined) { freze.set(t.scula.numar, t.scula); continue; }
+    if (s.diametru !== t.scula.diametru) {
+      return { ok: false, motiv: `${t.idLume}: T${t.scula.numar} are două diametre (${s.diametru} și ${t.scula.diametru} mm): fiecare freză cere numărul ei` };
     }
-    diametre.set(t.scula.numar, t.scula.diametru);
+    if (forma(s) !== forma(t.scula)) {
+      return { ok: false, motiv: `${t.idLume}: T${t.scula.numar} are două freze de Ø${s.diametru} (${forma(s)} și ${forma(t.scula)}): fiecare freză cere numărul ei` };
+    }
   }
   const scula: Scula = sculaIR(prima.scula);
   // Conturul de tăiat al fiecărui element (ADR 0034 §6): o singură dată, în lume, cu cubicele ca biarce (ADR 0033 §7).
@@ -176,6 +182,15 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   const conturDe = (t: Taietura): Contur => contururi.get(t.idLume) as Contur;
   const buzunare = buzunareSiInsule(taieturi, conturDe);
   if (typeof buzunare === 'string') return { ok: false, motiv: buzunare };
+  // V-carve-ul (ADR 0090), ca buzunarul: înăuntrul contururilor închise, fără nimic din profil; înaintea căilor deschise,
+  // ca motivul să fie al lui, nu al profilului.
+  for (const t of taieturi) {
+    if (t.tip !== 'vcarve') continue;
+    if (t.latura !== 'interior' || t.urechi || t.rampa || t.intrari || t.colturi || t.despartire) {
+      return { ok: false, motiv: `${t.idLume}: un V-carve sapă înăuntrul contururilor, fără urechi, rampă, intrări, degajări sau despărțire` };
+    }
+    if (esteCaleDeschisa(t.forma)) return { ok: false, motiv: `${t.idLume}: V-carve-ul cere contururi închise, iar calea e deschisă` };
+  }
   // Căile deschise (ADR 0037 §9): laturile care nu se potrivesc cu `inchis`, ce vine mai târziu pe ele și calea degenerată,
   // refuzate cu motiv înaintea regiunii (o cale deschisă n-are arie, deci nu poate fi inel) și a oricărui traseu.
   const refuz = refuzDeschise(taieturi, contururi);
@@ -239,13 +254,15 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   };
   /** Cât trece discul frezei (raza R) de fiecare latură a foii, pe un traseu (măsura ieșirii din foaie). */
   const iese = (x: Contur, R: number): Depasire => depasire(largita(cutieContur(x), R), foaie.stoc.latime, foaie.stoc.inaltime, PRAG_REZOLUTIE);
-  /** Scula montată; o tăietură cu alta cere întâi schimbarea (ADR 0084). Numărul o spune: un T are un singur diametru (mai sus). */
+  /** Scula montată; o tăietură cu alta cere întâi schimbarea (ADR 0084). Numărul o spune: un T are o singură freză (mai sus). */
   let curenta = scula;
   const montata = (t: Taietura): void => {
     if (t.scula.numar === curenta.numar) return;
     curenta = sculaIR(t.scula);
     miscari.push({ tip: 'schimba-scula', scula: curenta, turatie: regim.turatie });
   };
+  // V-carve-urile făcute (ADR 0090): toate contururile unei operații dintr-o instanță se taie odată, la prima lor tăietură.
+  const vcarveFacute = new Set<string>();
   for (const [it, t] of taieturi.entries()) {
     const latura = t.latura;
     // Diametrul și raza sculei acestei tăieturi.
@@ -258,6 +275,27 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
           ? `${t.idLume}: adâncimea ${t.adancime} mm trece de grosimea foii (${grosime} mm) plus supracursa (${supracursa} mm)`
           : `${t.idLume}: adâncimea ${t.adancime} mm trece de grosimea foii (${grosime} mm)`,
       };
+    }
+    // V-carve-ul (ADR 0090): contururile operației din instanța ei sunt o singură regiune par-impar (literele, cu golurile
+    // lor), săpată cu freza în V pe axa ei medială. Ca buzunarul, nu e inel al regiunii păstrate și stă în regiune prin
+    // construcție (raza exactă în fiecare punct).
+    if (t.tip === 'vcarve') {
+      const cheie = `${t.instanta}/${t.piesa}/${t.operatie}`;
+      if (vcarveFacute.has(cheie)) continue;
+      vcarveFacute.add(cheie);
+      const forma = t.scula.forma;
+      if (forma?.tip !== 'v') return { ok: false, motiv: `${t.idLume}: V-carve-ul cere o freză în V (T${t.scula.numar} e plată)` };
+      const ale = taieturi.filter((u) => u.tip === 'vcarve' && `${u.instanta}/${u.piesa}/${u.operatie}` === cheie);
+      const v = traseuVcarve({
+        contururi: ale.map(conturDe), unghi: forma.unghi, diametruScula: D, adancime: t.adancime, pas: t.pas,
+        avans: regim.avans, avansPlonjare: regim.avansPlonjare, zSigur: regim.zSigur,
+      });
+      if (!v.ok) return { ok: false, motiv: `${t.idLume}: ${v.motiv}` };
+      montata(t);
+      miscari.push({ tip: 'eticheta', text: `${t.idLume}${ale.length > 1 ? ` (+${ale.length - 1})` : ''}: V-carve, până la ${t.adancime} mm`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
+      for (const m of v.miscari) miscari.push(m);
+      for (const a of v.avertismente) avertismente.push(`${t.idLume}: ${a}`);
+      continue;
     }
     // Găurirea (ADR 0087): în centru, în pași, pe un cerc cât freza; în elice, pe perete, pe unul mai mare. Ca buzunarul, nu
     // e inel al regiunii păstrate (scoate material doar din cercul ei) și stă în cerc prin construcție.

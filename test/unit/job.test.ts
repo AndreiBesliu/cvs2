@@ -120,6 +120,17 @@ test('același număr cu două diametre e refuzat cu motiv (omul ar monta o sing
   assert.deepEqual(r, { ok: false, motiv: 'e1/e1: T1 are două diametre (6 și 8 mm): fiecare freză cere numărul ei' });
 });
 
+test('același număr cu două forme e refuzat la fel (ADR 0090): plată și în V, sau două unghiuri; schimbarea vine doar după număr', () => {
+  const V = (unghi: number) => ({ numar: 1, nume: `freza V${unghi}`, diametru: 6, forma: { tip: 'v' as const, unghi } });
+  assert.deepEqual(programDinDocument(cuOperatie(doc(300, 200), 'e1', { scula: V(90) })),
+    { ok: false, motiv: 'e1/e1: T1 are două freze de Ø6 (plată și în V de 90°): fiecare freză cere numărul ei' });
+  assert.deepEqual(programDinDocument(cuOperatie(cuOperatie(doc(300, 200), 'e1', { scula: V(90) }), 'e2', { scula: V(60) })),
+    { ok: false, motiv: 'e1/e1: T1 are două freze de Ø6 (în V de 60° și în V de 90°): fiecare freză cere numărul ei' });
+  // Controlul: aceeași freză V pe ambele trece de verificare.
+  const aceeasi = programDinDocument(cuOperatie(cuOperatie(doc(300, 200), 'e1', { scula: V(90) }), 'e2', { scula: V(90) }));
+  assert.ok(aceeasi.ok || !/două freze|două diametre/.test(aceeasi.motiv), aceeasi.ok ? '' : aceeasi.motiv);
+});
+
 test('în aceeași clasă, tăieturile se grupează pe sculă; o clasă nouă începe cu scula deja montată (cât mai puține schimbări)', () => {
   const T = (numar: number, diametru = 3) => ({ numar, nume: 'freza plata', diametru });
   const cerc = (id: string, x: number) => ({ id, forma: { tip: 'cerc' as const, raza: 6 }, matrice: { ...ID, e: x, f: 100 } });

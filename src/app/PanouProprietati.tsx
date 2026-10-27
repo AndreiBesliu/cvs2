@@ -56,14 +56,15 @@ function operatie(o: Operatie, n: number): ReactNode {
     <section key={o.id} className="prop-operatie">
       <h3>{t('prop.operatia', { n })}</h3>
       <dl>
-        {rand(t('export.latura'), o.tip === 'buzunar' ? t('export.latura.buzunar') : o.tip === 'gaurire' ? t('export.latura.gaurire') : t(`export.latura.${o.latura}`))}
+        {rand(t('export.latura'), o.tip === 'buzunar' ? t('export.latura.buzunar') : o.tip === 'gaurire' ? t('export.latura.gaurire') : o.tip === 'vcarve' ? t('export.latura.vcarve') : t(`export.latura.${o.latura}`))}
         {o.tip === 'buzunar' && o.pasLateral !== undefined && rand(t('export.pas-lateral'), mm(o.pasLateral))}
         {o.tip === 'buzunar' && rand(t('export.coborare'), coborare(o.coborare))}
         {o.tip === 'gaurire' && rand(t('export.gaurire.retragere'), String(o.retragereCompleta ?? 1))}
         {rand(t('export.sens'), t(`export.sens.${o.sens}`))}
         {rand(t('export.adancime'), mm(o.adancime))}
         {rand(t('export.pas'), mm(o.pas))}
-        {rand(t('prop.freza'), t('prop.freza.valoare', { numar: o.scula.numar, diametru: mm(o.scula.diametru) }))}
+        {rand(t('prop.freza'), o.scula.forma ? t('prop.freza.valoare-v', { numar: o.scula.numar, unghi: o.scula.forma.unghi, diametru: mm(o.scula.diametru) })
+          : t('prop.freza.valoare', { numar: o.scula.numar, diametru: mm(o.scula.diametru) }))}
         {rand(t('export.urechi'), o.urechi
           ? t('prop.urechi.valoare', { numar: o.urechi.numar, latime: mm(o.urechi.latime), grosime: mm(o.urechi.grosime) }) : t('prop.fara'))}
         {rand(t('export.rampa'), o.rampa ? t('prop.rampa.valoare', { mm: mm(o.rampa.lungime) }) : t('prop.fara'))}

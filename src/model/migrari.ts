@@ -356,8 +356,33 @@ function v12v13(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v13 → v14 (ADR 0090): doar numărul. v14 adaugă felul `vcarve` al operației și forma frezei (`scula.forma`, opțională), deci
+ * un document v13 e un document v14 valid, cu același program. Un document marcat v13 cu un V-carve sau cu un câmp propriu
+ * `forma` pe scula unei operații e refuzat: v13 nu le cunoaște, deci nu e un v13 valid. (O versiune v13 refuză un document
+ * v14: n-ar ști să sape cu freza în V.)
+ */
+function v13v14(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (typeof p !== 'object' || p === null) continue;
+    const piesa = p as Brut;
+    for (const o of Array.isArray(piesa['operatii']) ? piesa['operatii'] as unknown[] : []) {
+      if (typeof o !== 'object' || o === null) continue;
+      const op = o as Brut;
+      const unde = `operația v13 ${String(op['id'])} din piesa ${String(piesa['id'])}`;
+      if (op['tip'] === 'vcarve') return { ok: false, motiv: `${unde} are tipul „vcarve”, pe care v13 nu-l cunoaște: nu e un document v13 valid` };
+      const scula = op['scula'];
+      if (typeof scula === 'object' && scula !== null && Object.hasOwn(scula, 'forma')) {
+        return { ok: false, motiv: `${unde} are câmpul „forma” pe sculă, pe care v14 îl folosește: nu e un document v13 valid` };
+      }
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 14 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
- * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v12 → v13
+ * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v13 → v14
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
  */
 export const MIGRARI: Readonly<Record<number, Migrare>> = {
@@ -384,5 +409,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   10: v10v11,
   11: v11v12,
   12: v12v13,
+  13: v13v14,
 };
 

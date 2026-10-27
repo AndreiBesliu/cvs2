@@ -70,7 +70,7 @@ export function ExportConectat({
         // Găurirea (ADR 0087): doar pe un rând numai cu cercuri.
         cercuri: o.noduri.length > 0 && o.noduri.every((n) => dupaIdLume.get(`${inst}/${n}`)?.forma.tip === 'cerc'),
         valori: {
-          scula: { numar: o.scula.numar, diametru: o.scula.diametru },
+          scula: { numar: o.scula.numar, diametru: o.scula.diametru, ...(o.scula.forma ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi } } : {}) },
           latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
           urechi: o.urechi ? { numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime } : null,
           rampa: o.rampa ? { lungime: o.rampa.lungime } : null,
@@ -79,6 +79,7 @@ export function ExportConectat({
           ...(o.despartire ? { despartire: true } : {}),
           ...(o.tip === 'buzunar' && o.pasLateral !== undefined ? { tip: 'buzunar' as const, pasLateral: o.pasLateral } : {}),
           ...(o.tip === 'buzunar' && o.coborare ? { coborare: o.coborare } : {}),
+          ...(o.tip === 'vcarve' ? { tip: 'vcarve' as const } : {}),
           ...(o.tip === 'gaurire' ? { tip: 'gaurire' as const, ...(o.retragereCompleta !== undefined ? { retragereCompleta: o.retragereCompleta } : {}) } : {}),
         },
       };
