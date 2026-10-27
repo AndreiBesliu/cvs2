@@ -39,6 +39,10 @@ function sculaRefuzata(s: Program['scula']): string | null {
   if (forma?.tip === 'v' && !(Number.isFinite(forma.unghi) && forma.unghi > 0 && forma.unghi < 180)) {
     return `scula V are unghiul ${forma.unghi}°, în afara (0°, 180°)`;
   }
+  // ADR 0092: vârful plat al V-ului, sub diametru (un vârf cât diametrul ar fi o freză plată).
+  if (forma?.tip === 'v' && forma.varf !== undefined && !(Number.isFinite(forma.varf) && forma.varf >= 0 && forma.varf < diametru)) {
+    return `scula V are vârful de ${forma.varf} mm, în afara [0, ${diametru}) mm`;
+  }
   return null;
 }
 

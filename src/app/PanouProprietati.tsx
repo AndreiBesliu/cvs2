@@ -65,8 +65,12 @@ function operatie(o: Operatie, n: number): ReactNode {
         {rand(t('export.sens'), t(`export.sens.${o.sens}`))}
         {rand(t('export.adancime'), mm(o.adancime))}
         {rand(t('export.pas'), mm(o.pas))}
-        {rand(t('prop.freza'), o.scula.forma ? t('prop.freza.valoare-v', { numar: o.scula.numar, unghi: o.scula.forma.unghi, diametru: mmFreza(o.scula.diametru) })
+        {rand(t('prop.freza'), o.scula.forma
+          ? o.scula.forma.varf
+            ? t('prop.freza.valoare-v-varf', { numar: o.scula.numar, unghi: o.scula.forma.unghi, diametru: mmFreza(o.scula.diametru), varf: mmFreza(o.scula.forma.varf) })
+            : t('prop.freza.valoare-v', { numar: o.scula.numar, unghi: o.scula.forma.unghi, diametru: mmFreza(o.scula.diametru) })
           : t('prop.freza.valoare', { numar: o.scula.numar, diametru: mmFreza(o.scula.diametru) }))}
+        {o.tip === 'profil' && o.latura === 'pe-linie' && rand(t('export.directie'), t(o.directie === 'invers' ? 'export.directie.invers' : o.directie === 'scurt' ? 'export.directie.scurt' : 'export.directie.desen'))}
         {o.tip === 'vcarve' && rand(t('prop.fund'), o.fundPlat
           ? t('prop.fund.valoare', { numar: o.fundPlat.scula.numar, diametru: mmFreza(o.fundPlat.scula.diametru), pas: mm(o.fundPlat.pasLateral) }) : t('prop.fara'))}
         {rand(t('export.urechi'), o.urechi

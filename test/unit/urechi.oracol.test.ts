@@ -463,7 +463,7 @@ test('(o) amendamentul 9 (ADR 0028 §5): fiecare trecere cu urechi e o buclă î
 
 test('lipire: aplicația e pe schema 5–10 (ușa primește un v5; v9 adaugă forma cale, v10 căile deschise, niciuna nu schimbă urechile); pe alta testul PICĂ, nu se sare', () => {
   // Felia 5.1↑ (ADR 0069): și 11 (buzunarul n-are urechi; profilele nu se schimbă).
-  assert.ok(SCHEMA >= 5 && SCHEMA <= 15, `schema ${SCHEMA}`);
+  assert.ok(SCHEMA >= 5 && SCHEMA <= 16, `schema ${SCHEMA}`);
 });
 
 for (const c of CAZURI_URECHI) {

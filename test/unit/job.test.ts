@@ -121,13 +121,18 @@ test('același număr cu două diametre e refuzat cu motiv (omul ar monta o sing
 });
 
 test('același număr cu două forme e refuzat la fel (ADR 0090): plată și în V, sau două unghiuri; schimbarea vine doar după număr', () => {
-  const V = (unghi: number) => ({ numar: 1, nume: `freza V${unghi}`, diametru: 6, forma: { tip: 'v' as const, unghi } });
-  assert.deepEqual(programDinDocument(cuOperatie(doc(300, 200), 'e1', { scula: V(90) })),
+  // Freza în V taie pe linie (ADR 0092 §3): altfel ar fi refuzată înaintea conflictului.
+  const V = (unghi: number, varf?: number) => ({ numar: 1, nume: `freza V${unghi}`, diametru: 6, forma: { tip: 'v' as const, unghi, ...(varf ? { varf } : {}) } });
+  const pe = (unghi: number, varf?: number) => ({ scula: V(unghi, varf), latura: 'pe-linie' as const });
+  assert.deepEqual(programDinDocument(cuOperatie(doc(300, 200), 'e1', pe(90))),
     { ok: false, motiv: 'e1/e1: T1 are două freze de Ø6 (plată și în V de 90°): fiecare freză cere numărul ei' });
-  assert.deepEqual(programDinDocument(cuOperatie(cuOperatie(doc(300, 200), 'e1', { scula: V(90) }), 'e2', { scula: V(60) })),
-    { ok: false, motiv: 'e1/e1: T1 are două freze de Ø6 (în V de 60° și în V de 90°): fiecare freză cere numărul ei' });
+  assert.deepEqual(programDinDocument(cuOperatie(cuOperatie(doc(300, 200), 'e1', pe(90)), 'e2', pe(60))),
+    { ok: false, motiv: 'e2/e2: T1 are două freze de Ø6 (în V de 90° și în V de 60°): fiecare freză cere numărul ei' });
+  // ADR 0092: același unghi, alt vârf = altă freză.
+  assert.deepEqual(programDinDocument(cuOperatie(cuOperatie(doc(300, 200), 'e1', pe(90)), 'e2', pe(90, 0.5))),
+    { ok: false, motiv: 'e2/e2: T1 are două freze de Ø6 (în V de 90° și în V de 90° cu vârful de 0.5 mm): fiecare freză cere numărul ei' });
   // Controlul: aceeași freză V pe ambele trece de verificare.
-  const aceeasi = programDinDocument(cuOperatie(cuOperatie(doc(300, 200), 'e1', { scula: V(90) }), 'e2', { scula: V(90) }));
+  const aceeasi = programDinDocument(cuOperatie(cuOperatie(doc(300, 200), 'e1', pe(90)), 'e2', pe(90)));
   assert.ok(aceeasi.ok || !/două freze|două diametre/.test(aceeasi.motiv), aceeasi.ok ? '' : aceeasi.motiv);
 });
 

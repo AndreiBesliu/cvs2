@@ -70,13 +70,17 @@ export function ExportConectat({
         // Găurirea (ADR 0087): doar pe un rând numai cu cercuri.
         cercuri: o.noduri.length > 0 && o.noduri.every((n) => dupaIdLume.get(`${inst}/${n}`)?.forma.tip === 'cerc'),
         valori: {
-          scula: { numar: o.scula.numar, diametru: o.scula.diametru, ...(o.scula.forma ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi } } : {}) },
+          scula: {
+            numar: o.scula.numar, diametru: o.scula.diametru,
+            ...(o.scula.forma ? { forma: { tip: 'v' as const, unghi: o.scula.forma.unghi, ...(o.scula.forma.varf !== undefined ? { varf: o.scula.forma.varf } : {}) } } : {}),
+          },
           latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas,
           urechi: o.urechi ? { numar: o.urechi.numar, latime: o.urechi.latime, grosime: o.urechi.grosime } : null,
           rampa: o.rampa ? { lungime: o.rampa.lungime } : null,
           intrari: o.intrari ? { raza: o.intrari.raza } : null,
           colturi: o.colturi ? { tip: o.colturi.tip } : null,
           ...(o.despartire ? { despartire: true } : {}),
+          ...(o.tip === 'profil' && o.latura === 'pe-linie' && o.directie ? { directie: o.directie } : {}),
           ...(o.tip === 'buzunar' && o.pasLateral !== undefined ? { tip: 'buzunar' as const, pasLateral: o.pasLateral } : {}),
           ...(o.tip === 'buzunar' && o.coborare ? { coborare: o.coborare } : {}),
           ...(o.tip === 'vcarve' ? {

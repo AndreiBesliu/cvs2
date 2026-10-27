@@ -100,8 +100,11 @@ const SchemaScula = v.looseObject({
   numar: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(PLAFON.numarScula)),
   nume: v.pipe(v.string(), v.maxLength(PLAFON.numeLungime)),
   diametru: pozitiv(PLAFON.diametruScula),
-  // ADR 0090: forma frezei (v14); lipsă = plată.
-  forma: v.optional(v.looseObject({ tip: v.literal('v'), unghi: v.pipe(v.number(), v.finite(), v.minValue(UNGHI_V_MINIM), v.maxValue(UNGHI_V_MAXIM)) })),
+  // ADR 0090: forma frezei (v14); lipsă = plată. ADR 0092: vârful plat (v16); sub diametru o judecă lucrarea.
+  forma: v.optional(v.looseObject({
+    tip: v.literal('v'), unghi: v.pipe(v.number(), v.finite(), v.minValue(UNGHI_V_MINIM), v.maxValue(UNGHI_V_MAXIM)),
+    varf: v.optional(pozitiv(PLAFON.diametruScula)),
+  })),
 });
 
 const SchemaOperatie = v.looseObject({
@@ -137,6 +140,8 @@ const SchemaOperatie = v.looseObject({
   // ADR 0091: freza dreaptă a fundului plat (v15); potrivirea (doar pe V-carve, plată, pasul cel mult raza ei, alt număr
   // decât V-ul) e a lucrării.
   fundPlat: v.optional(v.looseObject({ scula: SchemaScula, pasLateral: pozitiv(PLAFON.diametruScula / 2) })),
+  // ADR 0092: direcția tăieturii pe linie (v16); pe altă latură o refuză lucrarea.
+  directie: v.optional(v.picklist(['invers', 'scurt'])),
 });
 const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
 const SchemaInstanta = v.looseObject({

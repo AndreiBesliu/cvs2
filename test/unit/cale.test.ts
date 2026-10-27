@@ -27,7 +27,7 @@ function stricat(d: Document, f: (forma: Record<string, any>) => void): unknown 
 }
 
 test('o cale trece prin ușă neschimbată, cu câmpurile necunoscute pe formă, pe vârf, pe segment și pe punct', () => {
-  assert.equal(VERSIUNE_SCHEMA, 15);
+  assert.equal(VERSIUNE_SCHEMA, 16);
   for (const forma of [INIMA, D]) {
     const d = cu(forma);
     const r = prinUsa(d);
@@ -107,7 +107,7 @@ test('migrarea v8 → v9 schimbă doar numărul; un document mai nou decât apli
   const r = incarca(v8);
   assert.ok(r.ok, motiv(r));
   if (r.ok) assert.deepEqual(r.doc, d);
-  assert.match(motiv(incarca({ ...v8, schema: 16 })), /versiune mai nouă \(schema 16, aici 15\)/);
+  assert.match(motiv(incarca({ ...v8, schema: 17 })), /versiune mai nouă \(schema 17, aici 16\)/);
   // Un document marcat v8 care conține o cale nu e un v8 valid (v8 n-o cunoaște): refuzat, și când calea stă într-un grup.
   const cuCale = incarca({ ...JSON.parse(JSON.stringify(cu(INIMA))), schema: 8 });
   assert.match(motiv(cuCale), /elementul v8 c are o formă „cale”, pe care v8 n-o cunoaște/);

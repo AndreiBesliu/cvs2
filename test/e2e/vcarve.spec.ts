@@ -83,6 +83,8 @@ test('același T cu două forme e un conflict de freze: T1 plată Ø6 și T1 V90
   const randuri = page.locator('tr[data-operatie]');
   await expect(randuri).toHaveCount(2);
   for (let k = 0; k < 2; k++) await randuri.nth(k).locator('[data-camp="diametru"]').fill('6');
+  // Freza în V taie pe linie (ADR 0092 §3): cercul, pe linie.
+  await randuri.nth(1).locator('[data-camp="latura"]').selectOption('pe-linie');
   await randuri.nth(1).locator('[data-camp="forma-scula"]').selectOption('v');
   await randuri.nth(1).locator('[data-camp="unghi-v"]').fill('90');
   await expect(page.locator('[data-buton="exporta"]')).toBeDisabled();

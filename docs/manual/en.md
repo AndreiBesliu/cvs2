@@ -322,7 +322,7 @@ G-code** window, one row per shape; on export, the window does **Apply the opera
 | Field | What it means |
 |---|---|
 | Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles), **V-carve** (carves the shape with the V bit, see below); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |
-| Direction | **climb**: the material that stays is on the right of the travel (M3 spindle); **conventional**: the opposite. It does not matter on the line |
+| Direction | **climb**: the material that stays is on the right of the travel (M3 spindle); **conventional**: the opposite. It does not matter on the line; there, next to it, **Line direction**: **as drawn**, **reversed** or **shortest path** (an open path starts from the end nearer to where the bit was left; a closed loop stays as drawn) |
 | Depth, Step down | how deep it cuts and how far one pass goes down (mm) |
 | Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face) |
 | Ramp | the cutter goes down along the loop, not straight into the material; the ramp length (at least 1 mm) |
@@ -392,9 +392,27 @@ on the outline, and sharp corners stay sharp: lettering, ornaments, the outline 
   of at most 0.05 mm stays there. The program has a bit change between them. Without the box, the floor is left uncut and the
   export says so, as a warning; a shape with no flat floor does not mount the straight bit at all.
 - **Step**: on each pass, the bit goes at most one step deeper than the pass before.
-- The row's bit must be a **V** bit (see [Exporting G-code](#export)), and its cone, (diameter / 2) / tan(θ/2), must reach the
-  depth asked for; otherwise the export is refused, with the reason. A V-carve has no tabs, ramp, leads, corner relief or
-  split, and an open path is refused.
+- The row's bit must be a **V** bit (see [Exporting G-code](#export)), and its cone, ((diameter − tip) / 2) / tan(θ/2), must
+  reach the depth asked for; otherwise the export is refused, with the reason. A V-carve has no tabs, ramp, leads, corner
+  relief or split, and an open path is refused.
+
+**A V bit with a flat tip (an engraving bit).** For a V bit, next to the angle, **Tip** is the diameter of the flat at its
+point, in mm: 0 = a sharp tip (the default), otherwise below the bit diameter. The simulation and the export take it into
+account: on the line, the bottom of the groove is as wide as the tip; in a V-carve, the bit goes down only where the shape is
+wider than the tip, and sharp corners stay rounded by half the tip (a region narrower than the tip everywhere is refused, with
+the reason). Two bits with the same T, the same angle and a different tip are two bits: the export asks for different numbers.
+
+**Engraving on the line.** On the line, the bit can also be a V bit: its centre runs exactly on the vector, at the row's depth,
+and the groove comes out tip + 2 · depth · tan(θ/2) wide (with V90 at 1 mm: 2 mm), with sloped walls. The bit's cone must reach
+the depth, as in a V-carve. **On a side** (outside, inside, left, right), **in a pocket** or **for drilling**, a V bit is
+refused, with the reason: there the job would offset it like a flat bit, and the wall would not come out where it is drawn
+(chamfering along an outline comes later).
+
+**Smart engraving** is a V-carve with a flat bottom and an engraving bit: the straight bit clears the inside of the letters,
+then the V bit with a flat tip (usually 15° per flank, that is 30° as the V angle) cuts the sloped walls and rises into the
+corners to sharpen them. For example, a 20 mm square at 2 mm, with a Ø2 straight bit and a 30° engraving bit with a 0.25 mm
+tip: the walls come out at 15°, and the corners at the surface have a 0.13 mm radius (with Ø2 alone it would be 1 mm). For now
+a single straight bit clears the bottom; several, from the largest to the smallest, come with the pocket with several bits.
 
 Each row has its own cutter (see [Exporting G-code](#export)). The feeds and speeds are fixed for now: the spindle at 18,000 rpm (with a 3 s wait), feed 1,000 mm/min, plunge
 300 mm/min, safe Z 5 mm; insides are cut first.

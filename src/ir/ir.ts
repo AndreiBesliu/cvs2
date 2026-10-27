@@ -55,10 +55,12 @@ export type Miscare =
   | { readonly tip: 'schimba-scula'; readonly scula: Scula; readonly turatie: number };
 
 /**
- * Forma muchiei tăietoare a sculei (ADR 0047): freza plată (fără `forma`), bila sau V-ul cu unghiul inclus, în grade.
- * Postul n-o scrie; o citește simularea. Documentul are deocamdată doar freze plate.
+ * Forma muchiei tăietoare a sculei (ADR 0047): freza plată (fără `forma`), bila sau V-ul cu unghiul inclus, în grade, cu
+ * diametrul vârfului plat (`varf`, ADR 0092: freza de gravare, conul trunchiat; lipsă = ascuțit). Postul n-o scrie; o citește
+ * simularea.
  */
-export type FormaScula = { readonly tip: 'plata' } | { readonly tip: 'bila' } | { readonly tip: 'v'; readonly unghi: number };
+export type FormaScula =
+  | { readonly tip: 'plata' } | { readonly tip: 'bila' } | { readonly tip: 'v'; readonly unghi: number; readonly varf?: number };
 
 export type Scula = { readonly numar: number; readonly nume: string; readonly diametru: number; readonly forma?: FormaScula };
 

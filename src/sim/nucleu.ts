@@ -34,15 +34,18 @@ export type DateScula = { readonly forma: FormaScula; readonly diametru: number 
 /** Mutările unei scule (ADR 0084): după o schimbare, aceeași foaie se taie mai departe cu alta. */
 export type GrupSimulare = { readonly scula: DateScula; readonly mutari: Float64Array };
 
-/** Silueta: felul (0 plată, 1 bilă, 2 V), raza, pătratul ei și panta V-ului (h = k·r). */
-export type Silueta = { readonly fel: 0 | 1 | 2; readonly R: number; readonly R2: number; readonly k: number };
+/**
+ * Silueta: felul (0 plată, 1 bilă, 2 V), raza, pătratul ei, panta V-ului și raza vârfului lui plat (ADR 0092; 0 = ascuțit):
+ * h = k·max(0, r − a).
+ */
+export type Silueta = { readonly fel: 0 | 1 | 2; readonly R: number; readonly R2: number; readonly k: number; readonly a: number };
 
 export function silueta(s: DateScula): Silueta {
   const R = s.diametru / 2;
   const f = s.forma;
-  if (f.tip === 'plata') return { fel: 0, R, R2: R * R, k: 0 };
-  if (f.tip === 'bila') return { fel: 1, R, R2: R * R, k: 0 };
-  return { fel: 2, R, R2: R * R, k: 1 / tanD((f.unghi * Math.PI) / 360) };
+  if (f.tip === 'plata') return { fel: 0, R, R2: R * R, k: 0, a: 0 };
+  if (f.tip === 'bila') return { fel: 1, R, R2: R * R, k: 0, a: 0 };
+  return { fel: 2, R, R2: R * R, k: 1 / tanD((f.unghi * Math.PI) / 360), a: (f.varf ?? 0) / 2 };
 }
 
 /** h(d), d în [0, R]. */
@@ -52,7 +55,7 @@ function H(T: Silueta, d: number): number {
     const q = T.R2 - d * d;
     return T.R - Math.sqrt(q > 0 ? q : 0);
   }
-  return T.k * d;
+  return d > T.a ? T.k * (d - T.a) : 0;
 }
 
 /** Raza până la care scula mai coboară sub fața plăcii, cu vârful la `adanc` sub ea. */
@@ -64,7 +67,7 @@ export function raza(T: Silueta, adanc: number): number {
     const q = T.R2 - (T.R - adanc) * (T.R - adanc);
     return Math.min(T.R, Math.sqrt(q > 0 ? q : 0));
   }
-  return Math.min(T.R, adanc / T.k);
+  return Math.min(T.R, T.a + adanc / T.k);
 }
 
 /** Primul și ultimul rând de celule de scris, tăiate la câmp. */
@@ -82,7 +85,7 @@ export function taieLinie(F: Camp, T: Silueta, ax: number, ay: number, az: numbe
   const cell = F.celula, R = T.R, R2 = T.R2, loc = F.loc, unif = F.uniforma, ntx = F.ntx, bn = F.banda.n, bw = F.banda.w;
   const dx = bx - ax, dy = by - ay, dz = bz - az;
   const L2 = dx * dx + dy * dy, L = Math.sqrt(L2), plonjare = L2 < 1e-18;
-  const m = plonjare ? 0 : dz / L, fel = T.fel, k = T.k, k2 = k * k, m2 = m * m;
+  const m = plonjare ? 0 : dz / L, fel = T.fel, k = T.k, k2 = k * k, m2 = m * m, va = T.a, va2 = va * va;
   const invL2 = plonjare ? 0 : 1 / L2, invL = plonjare ? 0 : 1 / L, mBila = -m / Math.sqrt(1 + m2);
   const zlo = az < bz ? az : bz;
   // Căutarea e limitată la raza efectivă (mai departe scula nu coboară sub față); calculul pe celulă rămâne exact.
@@ -149,13 +152,23 @@ export function taieLinie(F: Camp, T: Silueta, ax: number, ay: number, az: numbe
           const q = rho2 - sv * sv;
           zs = az + dz * tp + m * sv + R - Math.sqrt(q > 0 ? q : 0);
         } else {
+          // z(s) + k·max(0, √(s² + p²) − a), convexă în s: minimul liber, apoi tăiat la [sa, sb]. Cu vârful plat (a > 0,
+          // ADR 0092) și p < a, pe discul vârfului (|s| ≤ c, c = √(a² − p²)) funcția e liniară (panta m); punctul staționar al
+          // conului, dacă iese în disc, se mută pe marginea lui din partea care coboară (acolo 0 e în subgradient).
           const sa = (ta - tp) * L, sb = (tb - tp) * L;
           let sv: number;
           if (m >= k) sv = sa;
           else if (m <= -k) sv = sb;
-          else sv = perp2 > 0 ? (-m * Math.sqrt(perp2)) / Math.sqrt(k2 - m2) : 0;
+          else {
+            sv = perp2 > 0 ? (-m * Math.sqrt(perp2)) / Math.sqrt(k2 - m2) : 0;
+            if (perp2 < va2) {
+              const c = Math.sqrt(va2 - perp2);
+              if (sv < c && sv > -c) sv = m > 0 ? -c : m < 0 ? c : sv;
+            }
+          }
           if (sv < sa) sv = sa; else if (sv > sb) sv = sb;
-          zs = az + dz * tp + m * sv + k * Math.sqrt(sv * sv + perp2);
+          const rho = Math.sqrt(sv * sv + perp2);
+          zs = az + dz * tp + m * sv + (rho > va ? k * (rho - va) : 0);
         }
       }
       if (zs < cur) {

@@ -3277,3 +3277,33 @@ ramurile tăiate ×25), eșantioanele pe hârtie, colțurile convexe atinse, dou
 două dreptunghiuri la 0,004 mm. **64 / 66**; două echivalente la toleranța contractului (punctele absorbite trunchiate, vecinii
 peste capătul buclei), cu motivul în fișă. Găsit pe drum: un perete mai subțire decât h (0,01 față de 0,02) rămâne netăiat,
 eșantioanele decalate punând centrele pe contur; adâncimea lui ideală e 0,005 mm, în contract (s3: „detaliile sub pasul h”).
+
+## 2026-10-27 — Gravarea pe linie cu freza în V și gravarea inteligentă (Model: Claude Opus 5.5)
+
+**Prompt:** „continua”.
+**Started:** 27.10, 17:17. Felia **8.3↑**, adusă din etapa 8 (ultimul rând al ei, `PLAN.md`: „Gravare pe linie + smart engrave”),
+fără mașină și fără agenți (ADR 0092). Planul: freza în V cu vârf plat (documentul v16: `forma.varf`), în simulare și în CAM;
+gravarea pe linie cu freza în V (canalul t + 2·d·tan(θ/2), centrul pe vector) și sensul ei (ca desenul, invers, cel mai scurt
+drum; `directie`); gravarea inteligentă = V-carve-ul cu fundul plat și o freză de gravare (con cu vârf plat), probată pe criteriul
+din cercetare (pătratul 20 × 20, D = 2, Ø2 + vârful 0,25 la 15° pe flanc: colțurile ≤ 0,15 mm, pereții 15° ± 0,5°, Ø2 nu atinge
+pereții). Găsit înainte de lucru: fereastra lasă freza în V pe orice rând, iar pe un profil exterior / interior, un buzunar sau
+o găurire lucrarea o decala cu Ø/2, ca pe una plată (V90 Ø6, 1 mm, pe un pătrat de 20: traseul la 3 mm de contur, piesa cu
+2 mm mai mare pe fiecare parte, fără niciun mesaj); de refuzat cu motiv.
+
+**Completed:** 27.10 18:52. Freza în V are acum, opțional, un vârf plat (documentul v16, `forma.varf`: freza de gravare), în
+simulare (conul trunchiat, exact pe segment) și în CAM: V-carve-ul coboară pe axă la −min(D, (r − a)·cot(θ/2)), doar unde r > a,
+cu inelul peretelui la a + D·tan(θ/2) și inelele colțurilor la t + 2c·tan(θ/2). Pe linie, freza în V merge cu centrul pe vector
+(canalul t + 2·d·tan(θ/2)), cu **Direcția** alături de sens (ca desenul, invers, cel mai scurt drum; `directie`). Gravarea
+inteligentă = V-carve-ul cu fundul plat și freza de gravare. Freza în V pe o parte, într-un buzunar sau la găurire e refuzată,
+cu motiv (defectul găsit la început; teșirea e a etapei 16). Probele, pe oracolul simulării (freza dată ca sculă de profil,
+independent de formula nucleului): nucleul pe 6 piese (aceleași pică fără vârf); pe linie, V90 la 1 mm, canalul de 2,00 mm cu
+centrul pe vector, pe o linie și pe un cerc; criteriul gravării inteligente din cercetare (pătratul 20 × 20, D = 2, Ø2 + vârful
+0,25 la 15° pe flanc): peretele la 15,0000°, colțurile la suprafață cu raza 0,128 mm (martorul cu Ø2: 0,999), freza dreaptă la
+0,00765 mm deasupra pereților, în colț 0,0008 mm față de anvelopa frezei calculată pe hârtie. Totalul 324,5 → 325,9 / 330, pornirea
+96,0 (cu ușa 99,4). Porțile: 7 493 de teste unitare (0 picate, 8 sărite: logourile externe), build-ul determinist, e2e 245 / 245,
+emulatoarele 36 + 13. Mutațiile: 34 / 36 din prima, traducerile completate înainte de rulare (controlul verde); cele două scăpate
+(vârful nejudecat de V-carve chemat fără lucrare; „cel mai scurt drum” care întorcea și o buclă închisă după altă tăietură) au
+probe noi, verificate cu mutația aplicată: **36 / 36**. Rândul din prag: „în lucru” (rămân lista de freze de golire, cu buzunarul
+cu mai multe freze, și placa etapei 8). **Găsit pe drum:** trei teste vechi foloseau chiar `varf` ca exemplu de câmp necunoscut al
+formei (o coincidență din 8.1, mutate pe `cod`); în engleză, „Direction” era deja numele sensului de tăiere, deci câmpul nou e „Line
+direction”; o tăiere a axei la r > a din V-carve era redundantă (prima trecere taie deja doar sub 0), scoasă.

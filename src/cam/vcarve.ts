@@ -16,6 +16,10 @@
  *   deci nicio trecere nu scoate mai mult decât pasul: conul se mută cu cel mult un pas între treceri.
  * - Legăturile: lanțurile în ordinea capătului cel mai apropiat (inversate la nevoie), ridicare la Z-ul de siguranță între
  *   ele; o bucată care coboară, cu viteza pe Z cel mult cea a plonjării (`avansCoborare`).
+ * - Freza de gravare (ADR 0092 §2): un V cu vârful plat de diametru t = 2a. Pe axă, z = −min(D, (r − a)·cot(θ/2)), doar unde
+ *   r > a (mai îngust, vârful n-are loc nici la suprafață); peretele de la −D e tot la D·tan(θ/2) de contur, deci inelul lui
+ *   (centrul) la a + D·tan(θ/2), iar inelele colțurilor la 2a + 2c·tan(θ/2) unul de altul (creasta tot c). Gravarea
+ *   inteligentă (smart engrave) e chiar asta: fundul cu freza dreaptă, pereții și colțurile cu freza de gravare.
  */
 import type { Contur, Punct } from '../geom/conturBaza.ts';
 import { arieCuSemn, cerculArcului, inverseaza, numarSegmente, segment } from '../geom/contur.ts';
@@ -44,6 +48,8 @@ export type ParametriVcarve = {
   readonly contururi: readonly Contur[];
   /** Unghiul inclus al frezei, în grade (0, 180). */
   readonly unghi: number;
+  /** Diametrul vârfului plat al frezei (ADR 0092), în mm, sub diametrul ei; 0 / lipsă = vârful ascuțit. */
+  readonly varf?: number;
   /** Diametrul frezei în V, în mm: conul ei are înălțimea (D / 2) / tan(θ/2); mai adânc, ar tăia coada. */
   readonly diametruScula: number;
   /** Adâncimea maximă (D), în mm. */
@@ -365,6 +371,8 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   if (!(p.adancime > 0)) return { ok: false, motiv: `adâncimea maximă trebuie să fie pozitivă (${p.adancime} mm)` };
   if (!(p.pas > 0)) return { ok: false, motiv: `pasul pe trecere trebuie să fie pozitiv (${p.pas} mm)` };
   if (p.contururi.length === 0 || p.contururi.some((c) => !c.inchis)) return { ok: false, motiv: 'V-carve-ul cere contururi închise' };
+  const varf = p.varf ?? 0, a = varf / 2;
+  if (!(varf >= 0 && varf < p.diametruScula)) return { ok: false, motiv: `vârful frezei în V, de ${varf} mm, trebuie să fie în [0, Ø${p.diametruScula})` };
   const Rf = p.fundPlat ? p.fundPlat.diametru / 2 : 0;
   if (p.fundPlat) {
     if (!(Rf > 0 && Number.isFinite(Rf))) return { ok: false, motiv: `diametrul frezei drepte trebuie să fie pozitiv (${p.fundPlat.diametru} mm)` };
@@ -373,7 +381,8 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
     }
   }
   const tan = Math.tan((p.unghi * Math.PI) / 360), cot = 1 / tan;
-  const D = p.adancime, wD = D * tan;
+  // wP: peretele la −D (de la contur); wD: centrul frezei acolo (cu vârful plat, cu a mai departe).
+  const D = p.adancime, wP = D * tan, wD = a + wP;
   const index: IndexContur = indexContururi(p.contururi);
   let graf;
   try {
@@ -395,9 +404,10 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   }
   const fundPlat = razaMax > wD + 1e-9;
   const cuFreza = fundPlat && p.fundPlat !== undefined;
-  // Cu freza dreaptă, axa rămâne doar unde centrul ei n-ajunge (r < wD + m + Rf): mai departe, ea a scos-o deja la −D.
-  const axa: P3[][] = (cuFreza ? ramuri.flatMap((pts) => sub(pts, wD + MARJA_FUND + Rf)) : ramuri)
-    .map((pts) => cuTreceri(pts, wD).map((q) => [q[0], q[1], -Math.min(D, q[2] * cot)] as const));
+  // Cu freza dreaptă, axa rămâne doar unde centrul ei n-ajunge (r < wP + m + Rf): mai departe, ea a scos-o deja la −D. Cu
+  // vârful plat, z ≥ 0 unde r ≤ a: bucățile acelea le scoate prima trecere (doar sub nivelul de dinainte, adică sub 0).
+  const axa: P3[][] = (cuFreza ? ramuri.flatMap((pts) => sub(pts, wP + MARJA_FUND + Rf)) : ramuri)
+    .map((pts) => cuTreceri(pts, wD).map((q) => [q[0], q[1], -Math.min(D, (q[2] - a) * cot)] as const));
   // Peretele unde regiunea e mai lată decât freza la D: inelele regiunii decalate cu wD, la −D.
   const inele: Contur[] = [];
   const avertismente: string[] = [];
@@ -416,8 +426,9 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   } else if (p.fundPlat) {
     avertismente.push(`regiunea nu e nicăieri mai lată decât freza în V la ${D} mm (${(2 * wD).toFixed(3)} mm): n-are fund plat, deci freza dreaptă nu se montează`);
   }
-  const adancimeMax = Math.min(D, razaMax * cot);
-  const con = (p.diametruScula / 2) * cot;
+  if (!(razaMax > a)) return { ok: false, motiv: `regiunea nu e nicăieri mai lată decât vârful frezei (${varf} mm): freza n-are unde coborî` };
+  const adancimeMax = Math.min(D, (razaMax - a) * cot);
+  const con = ((p.diametruScula - varf) / 2) * cot;
   if (adancimeMax > con + 1e-9) {
     return { ok: false, motiv: `regiunea cere ${adancimeMax.toFixed(3)} mm, iar conul frezei în V (Ø${p.diametruScula}, ${p.unghi}°) are ${con.toFixed(3)} mm: micșorează adâncimea maximă sau alege o freză mai lată` };
   }
@@ -457,10 +468,11 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
     // Zona centrului frezei drepte la −D: un punct la cel mult Rf de ea e scos de freză. Inelele V rămân unde sunt la peste
     // Rf − sv/2: un punct neatins (la peste Rf) e atunci la peste sv/2 de inelul următor, deci la sub sv/2 de unul păstrat
     // (creasta cel mult c); un inel paralel cu un perete drept, la wD + sv, e atins (marja m < sv/2) și nu se taie.
-    const sv = 2 * CREASTA_FUND * tan;
+    // Cu vârful plat (ADR 0092 §2), două inele la sv = t + 2c·tan(θ/2) lasă tot creasta c (vârfurile acoperă t din ea).
+    const sv = varf + 2 * CREASTA_FUND * tan;
     const zona: Contur[] = [];
     for (const g of grupe) {
-      const o = offsetDepartat(g, wD + MARJA_FUND + Rf);
+      const o = offsetDepartat(g, wP + MARJA_FUND + Rf);
       if (!o.ok) {
         if (nuIncape(o.motiv)) continue;
         return { ok: false, motiv: `zona frezei drepte: ${o.motiv}` };

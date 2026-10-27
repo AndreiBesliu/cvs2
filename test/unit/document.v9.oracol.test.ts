@@ -20,7 +20,7 @@ import assert from 'node:assert/strict';
 import { incarca, jsonCanonic } from '../../src/model/incarcare.ts';
 import {
   categoriiO, diferenta, migreazaV8V9O, migreazaV9V10O, migreazaV10V11O, ridicaO, ridicaV9O, taieturiV8O, verificaO, verificaPanaLaV8O, verificaPanaLaV9O, verificaV8,
-  verificaV8V9, verificaV9, type DocV10O, type DocV9O, type Liber, migreazaV10V12O, migreazaV11V12O, migreazaV10V13O, migreazaV12V13O, migreazaV10V14O, migreazaV13V14O, migreazaV10V15O, migreazaV14V15O,
+  verificaV8V9, verificaV9, type DocV10O, type DocV9O, type Liber, migreazaV10V12O, migreazaV11V12O, migreazaV10V13O, migreazaV12V13O, migreazaV10V14O, migreazaV13V14O, migreazaV10V15O, migreazaV14V15O, migreazaV15V16O, migreazaV10V16O,
 } from '../oracles/document.ts';
 import { CORPUS_V8, VALIDE_DIFICILE_V8, OTRAVURI_V8 } from '../oracles/document.cazuri.ts';
 import {
@@ -28,7 +28,7 @@ import {
   mareV9, varfuriDeCale,
 } from '../oracles/document.v9.cazuri.ts';
 import { regiuneDinDocument } from '../oracles/regiune.ts';
-import { accepta, aceeasiFoaie, DOAR_V9, mare, mareOperatii, PE_V10, PE_V11, text, v9PentruApp, PE_V12, PE_V13, PE_V14, PE_V15 } from './ajutor-document-oracol.ts';
+import { accepta, aceeasiFoaie, DOAR_V9, mare, mareOperatii, PE_V10, PE_V11, text, v9PentruApp, PE_V12, PE_V13, PE_V14, PE_V15, PE_V16 } from './ajutor-document-oracol.ts';
 
 /** Formele `cale` ale unui document (toate piesele), cu vârfurile lor. */
 function caiDin(d: unknown): Liber[] {
@@ -53,7 +53,7 @@ for (const { nume, v8, v9 } of MIGRARI_V8_HARTIE) {
     assert.equal(diferenta(migreazaV8V9O(v8), v9), undefined);
     assert.equal(diferenta(ridicaV9O(v8), v9), undefined);
     // Felia 2.3c-2: `ridicaO` dă v10 (doar numărul, ADR 0037 §2).
-    assert.equal(diferenta(ridicaO(v8), migreazaV14V15O(migreazaV13V14O(migreazaV12V13O(migreazaV11V12O(migreazaV10V11O(migreazaV9V10O(v9 as DocV9O))))))), undefined);
+    assert.equal(diferenta(ridicaO(v8), migreazaV15V16O(migreazaV14V15O(migreazaV13V14O(migreazaV12V13O(migreazaV11V12O(migreazaV10V11O(migreazaV9V10O(v9 as DocV9O)))))))), undefined);
     assert.deepEqual(verificaV9(v9), []);
     assert.deepEqual(verificaO(v9), []);
     assert.deepEqual(verificaPanaLaV8O(v8), [], 'ușa unei aplicații pe 8');
@@ -229,5 +229,5 @@ test(`(f9) un document v9 cu o cale, rescris ca schema 10: ${PE_V10 ? 'pe 10, un
   // Felia 2.3c-2 (ADR 0037 §2): calea închisă e o cale v10 validă; ușa v10 (a oracolului și a aplicației) îl primește.
   // Felia 5.1↑ (ADR 0069 §2): pe 11, ușa îl duce la v11, doar cu numărul.
   assert.deepEqual(verificaO(d), []);
-  assert.equal(diferenta(accepta(structuredClone(d)), PE_V15 ? migreazaV10V15O(d as unknown as DocV10O) : PE_V14 ? migreazaV10V14O(d as unknown as DocV10O) : PE_V13 ? migreazaV10V13O(d as unknown as DocV10O) : PE_V12 ? migreazaV10V12O(d as unknown as DocV10O) : PE_V11 ? migreazaV10V11O(d as unknown as DocV10O) : d), undefined);
+  assert.equal(diferenta(accepta(structuredClone(d)), PE_V16 ? migreazaV10V16O(d as unknown as DocV10O) : PE_V15 ? migreazaV10V15O(d as unknown as DocV10O) : PE_V14 ? migreazaV10V14O(d as unknown as DocV10O) : PE_V13 ? migreazaV10V13O(d as unknown as DocV10O) : PE_V12 ? migreazaV10V12O(d as unknown as DocV10O) : PE_V11 ? migreazaV10V11O(d as unknown as DocV10O) : d), undefined);
 });

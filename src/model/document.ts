@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 15;
+export const VERSIUNE_SCHEMA = 16;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -88,8 +88,10 @@ export type Nod = ElementNod | GrupNod;
 /**
  * Forma frezei (ADR 0090, documentul v14): lipsă = freza plată (ca până în v13); `v` = freza în V, cu unghiul inclus, în
  * grade, în [`UNGHI_V_MINIM`, `UNGHI_V_MAXIM`]. Diametrul e cel al părții tăietoare (cât lasă V-ul la suprafață, cel mult).
+ * `varf` (ADR 0092, documentul v16): diametrul vârfului plat al unei freze de gravare (conul trunchiat), în mm; lipsă = vârful
+ * ascuțit. Potrivirea lui cu diametrul o judecă lucrarea.
  */
-export type FormaSculaDoc = { tip: 'v'; unghi: number; [cheie: string]: unknown };
+export type FormaSculaDoc = { tip: 'v'; unghi: number; varf?: number; [cheie: string]: unknown };
 export type Scula = { numar: number; nume: string; diametru: number; forma?: FormaSculaDoc; [cheie: string]: unknown };
 export const UNGHI_V_MINIM = 1;
 export const UNGHI_V_MAXIM = 179;
@@ -100,6 +102,11 @@ export const UNGHI_V_MAXIM = 179;
 export type Latura = 'exterior' | 'interior' | 'pe-linie' | 'stanga' | 'dreapta';
 /** Sensul de tăiere (ADR 0027), cu axul M3: urcare = materialul păstrat în dreapta sensului de mers. */
 export type Sens = 'urcare' | 'opozitie';
+/**
+ * Direcția unei tăieturi pe linie (ADR 0092, documentul v16): `invers` = în sens opus desenului; `scurt` = o cale deschisă
+ * pornește din capătul mai apropiat de unde a rămas freza. Lipsă = în sensul desenului (ca până în v15).
+ */
+export type Directie = 'invers' | 'scurt';
 /**
  * Urechile unei operații de profil (ADR 0028): câte pe fiecare buclă, lungimea palierului pe traseul centrului frezei și
  * grosimea punții de la fața de jos a foii, în mm.
@@ -129,6 +136,8 @@ export type Operatie = {
   retragereCompleta?: number;
   /** Pe un V-carve (ADR 0091, documentul v15), freza dreaptă care scoate fundul plat; lipsă = fundul rămâne (ca în v14). */
   fundPlat?: FundPlat;
+  /** Pe o tăietură pe linie (ADR 0092, documentul v16), direcția ei; lipsă = în sensul desenului. */
+  directie?: Directie;
   [cheie: string]: unknown;
 };
 /**
@@ -177,7 +186,7 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
-export type Document = { schema: 15; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 16; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

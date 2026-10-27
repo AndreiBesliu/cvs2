@@ -311,7 +311,7 @@ fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **
 | Câmpul | Ce înseamnă |
 |---|---|
 | Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |
-| Sens | **urcare**: materialul care rămâne e în dreapta sensului de mers (ax M3); **opoziție**: invers. Pe linie nu contează |
+| Sens | **urcare**: materialul care rămâne e în dreapta sensului de mers (ax M3); **opoziție**: invers. Pe linie nu contează; acolo, alături, **Direcția**: **ca desenul**, **invers** sau **cel mai scurt drum** (o cale deschisă pornește din capătul mai apropiat de locul în care a rămas freza; o buclă închisă rămâne cum e desenată) |
 | Adâncimea, Pasul | cât de adânc se taie și cât coboară o trecere (mm) |
 | Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos) |
 | Rampă | freza coboară de-a lungul buclei, nu drept în material; lungimea rampei (cel puțin 1 mm) |
@@ -378,9 +378,27 @@ contur, iar colțurile ascuțite rămân ascuțite: literele, ornamentele, contu
   0,05 mm. Programul are o schimbare de freză între ele. Fără bifă, fundul rămâne netăiat, iar exportul o spune, ca
   avertisment; o formă fără fund plat nu montează freza dreaptă deloc.
 - **Pasul**: la fiecare trecere, freza coboară cel mult cu pasul față de trecerea de dinainte.
-- Freza rândului trebuie să fie **în V** (vezi [Exportul G-code](#export)), iar conul ei, (diametrul / 2) / tan(θ/2), trebuie
-  să ajungă la adâncimea cerută; altfel exportul e refuzat, cu motivul. Pe un V-carve nu există urechi, rampă, intrări,
+- Freza rândului trebuie să fie **în V** (vezi [Exportul G-code](#export)), iar conul ei, ((diametrul − vârful) / 2) / tan(θ/2),
+  trebuie să ajungă la adâncimea cerută; altfel exportul e refuzat, cu motivul. Pe un V-carve nu există urechi, rampă, intrări,
   degajări sau despărțire, iar o cale deschisă e refuzată.
+
+**Freza în V cu vârf plat (freza de gravare).** La freza în V, lângă unghi, **Vârful** e diametrul platoului de la vârful ei,
+în mm: 0 = vârful ascuțit (implicit), altfel sub diametrul frezei. Simularea și exportul țin cont de el: pe linie, fundul
+canalului e lat cât vârful; în V-carve, freza coboară doar unde forma e mai lată decât vârful, iar colțurile ascuțite rămân
+rotunjite cu jumătate din vârf (o regiune peste tot mai îngustă decât vârful e refuzată, cu motivul). Două freze cu același
+T, același unghi și alt vârf sunt două freze: exportul cere numere diferite.
+
+**Gravarea pe linie.** Pe linie, freza poate fi și în V: centrul ei merge exact pe vector, la adâncimea rândului, iar canalul
+iese lat de vârful + 2 · adâncimea · tan(θ/2) (la V90 și 1 mm: 2 mm), cu pereții înclinați. Conul frezei trebuie să ajungă la
+adâncime, ca la V-carve. **Pe o parte** (exterior, interior, stânga, dreapta), **într-un buzunar** sau **la găurire**, freza
+în V e refuzată, cu motivul: acolo lucrarea ar decala-o ca pe o freză plată, iar peretele n-ar ieși unde e desenat (teșirea
+pe contur vine mai târziu).
+
+**Gravarea inteligentă** (smart engrave) e un V-carve cu fund plat și o freză de gravare: freza dreaptă golește interiorul
+literelor, apoi freza în V cu vârf plat (de obicei 15° pe flanc, adică 30° la Unghiul V) face pereții înclinați și urcă în
+colțuri ca să le ascută. De exemplu, un pătrat de 20 mm la 2 mm, cu freza dreaptă Ø2 și freza de gravare de 30° cu vârful de
+0,25 mm: pereții ies la 15°, iar colțurile la suprafață au raza de 0,13 mm (cu Ø2 singură ar fi 1 mm). Deocamdată fundul îl
+scoate o singură freză dreaptă; mai multe, de la cea mai mare la cea mai mică, vin cu buzunarul cu mai multe freze.
 
 Fiecare rând își are freza lui (vezi [Exportul G-code](#export)). Regimul e fix deocamdată: axul la 18 000 rot/min (cu 3 s de așteptare), avansul 1 000 mm/min, plonjarea 300 mm/min, Z sigur 5 mm;
 interioarele se taie primele.

@@ -16,6 +16,8 @@ import { useLimba } from './useLimba.ts';
 type Latura = LaturaExport;
 /** Sensul de tăiere (ADR 0027): urcare = materialul păstrat în dreapta sensului de mers, cu axul M3. */
 type Sens = 'urcare' | 'opozitie';
+/** Direcția tăieturii pe linie (ADR 0092 §4): invers, sau cel mai scurt drum; lipsă = ca desenul. */
+export type DirectieOperatie = 'invers' | 'scurt';
 /** Urechile (ADR 0028): câte pe buclă, lungimea palierului pe traseul frezei, grosimea punții de la fața de jos (mm). */
 export type UrechiOperatie = { readonly numar: number; readonly latime: number; readonly grosime: number };
 /** Rampa (ADR 0029): lungimea în plan pe care coboară o trecere (mm). */
@@ -25,8 +27,13 @@ export type IntrariOperatie = { readonly raza: number };
 /** Degajările colțurilor (ADR 0032): dog-bone sau T-bone. */
 export type ColturiOperatie = { readonly tip: 'dog-bone' | 't-bone' };
 /** Freza unei operații (ADR 0084): numărul (T) și diametrul; aceeași sculă = același număr și același diametru. */
-/** Freza unui rând (ADR 0084), cu forma ei (ADR 0090): lipsă = plată; `v` = freza în V, cu unghiul inclus. */
-export type SculaOperatie = { readonly numar: number; readonly diametru: number; readonly forma?: { readonly tip: 'v'; readonly unghi: number } };
+/**
+ * Freza unui rând (ADR 0084), cu forma ei (ADR 0090): lipsă = plată; `v` = freza în V, cu unghiul inclus și diametrul vârfului
+ * plat (ADR 0092; lipsă = ascuțit).
+ */
+export type SculaOperatie = {
+  readonly numar: number; readonly diametru: number; readonly forma?: { readonly tip: 'v'; readonly unghi: number; readonly varf?: number };
+};
 /** Ce se schimbă dintr-o operație în dialog, cu freza ei (ADR 0084: fiecare rând are freza lui; lipsă = cea din document). */
 export type ValoriOperatie = {
   readonly scula?: SculaOperatie;
@@ -49,6 +56,8 @@ export type ValoriOperatie = {
   readonly retragereCompleta?: number;
   /** Fundul plat al unui V-carve (ADR 0091): freza dreaptă și pasul ei lateral; `null` = fără (bifa scoasă). */
   readonly fundPlat?: FundPlatOperatie | null;
+  /** Direcția pe linie (ADR 0092 §4): doar pe un profil pe linie; lipsă = ca desenul. */
+  readonly directie?: DirectieOperatie;
 };
 /** Freza dreaptă a fundului plat (ADR 0091): numărul (T), diametrul și distanța dintre inele (mm). */
 export type FundPlatOperatie = { readonly numar: number; readonly diametru: number; readonly pasLateral: number };
@@ -145,8 +154,10 @@ const DIAMETRU_FUND_IMPLICIT = 3.175;
 type Rand = {
   /** Freza rândului (ADR 0084), ca text: numărul și diametrul. */
   readonly numarScula: string; readonly diametruScula: string;
-  /** Forma frezei (ADR 0090) și unghiul V, ca text. */
-  readonly formaScula: 'plata' | 'v'; readonly unghiV: string;
+  /** Forma frezei (ADR 0090), unghiul V și diametrul vârfului plat (ADR 0092; 0 = ascuțit), ca text. */
+  readonly formaScula: 'plata' | 'v'; readonly unghiV: string; readonly varfV: string;
+  /** Direcția pe linie (ADR 0092 §4): „” = ca desenul. */
+  readonly directie: '' | DirectieOperatie;
   readonly latura: Latura; readonly sens: Sens; readonly adancime: string; readonly pas: string;
   readonly urechi: boolean; readonly numarUrechi: string; readonly latimeUreche: string; readonly grosimeUreche: string;
   readonly rampa: boolean; readonly lungimeRampa: string;
@@ -284,6 +295,7 @@ export function DialogExport(
     return [o.cheie, {
       numarScula: text(o.valori.scula?.numar ?? 1), diametruScula: text(o.valori.scula?.diametru ?? 6),
       formaScula: o.valori.scula?.forma ? 'v' : 'plata', unghiV: text(o.valori.scula?.forma?.unghi ?? UNGHI_V_IMPLICIT),
+      varfV: text(o.valori.scula?.forma?.varf ?? 0), directie: o.valori.directie ?? '',
       latura: o.valori.latura, sens: o.valori.sens, adancime: text(o.valori.adancime), pas: text(o.valori.pas),
       urechi: inchise && o.valori.urechi !== null, numarUrechi: text(u.numar), latimeUreche: text(u.latime), grosimeUreche: text(u.grosime),
       rampa: inchise && o.valori.rampa !== null, lungimeRampa: text((o.valori.rampa ?? RAMPA_IMPLICITA).lungime),
@@ -335,12 +347,16 @@ export function DialogExport(
   // Pasul lateral al unui buzunar: cel mult raza frezei rândului (ADR 0069 §3); fără o freză bună, nu se judecă.
   const randBun = (p: Rand | undefined): {
     scula: boolean; adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean; rampa: boolean; intrari: boolean;
-    pasLateral: boolean; coborare: boolean; retragere: boolean; vcarve: boolean; fund: boolean;
+    pasLateral: boolean; coborare: boolean; retragere: boolean; vcarve: boolean; fund: boolean; varf: boolean; vPeLinie: boolean;
   } => ({
     scula: p !== undefined && intregInMargini(p.numarScula, MARGINI_OPERATIE.numarScula) && inMargini(p.diametruScula, MARGINI_OPERATIE.diametru)
       && (p.formaScula !== 'v' || inMargini(p.unghiV, MARGINI_OPERATIE.unghiV, MARGINI_OPERATIE.unghiVMinim)),
     // V-carve-ul (ADR 0090) cere freza în V.
     vcarve: p !== undefined && (p.tip !== 'vcarve' || p.formaScula === 'v'),
+    // Vârful plat (ADR 0092): de la 0 (ascuțit) până sub diametru.
+    varf: p !== undefined && (p.formaScula !== 'v' || ((v, d) => v !== null && d !== null && v >= 0 && v < d)(citesteNumar(p.varfV), citesteNumar(p.diametruScula))),
+    // Freza în V (ADR 0092 §3) taie pe linie sau într-un V-carve; pe o parte, într-un buzunar sau la găurire, nu.
+    vPeLinie: p !== undefined && (p.formaScula !== 'v' || p.tip === 'vcarve' || (p.tip === 'profil' && p.latura === 'pe-linie')),
     // Fundul plat (ADR 0091): doar cu bifa pusă; pasul lateral cel mult raza frezei drepte.
     fund: p !== undefined && (p.tip !== 'vcarve' || !p.fundPlat || (intregInMargini(p.numarSculaFund, MARGINI_OPERATIE.numarScula)
       && inMargini(p.diametruSculaFund, MARGINI_OPERATIE.diametru) && ((d) => d !== null && inMargini(p.pasLateralFund, d / 2))(citesteNumar(p.diametruSculaFund)))),
@@ -370,16 +386,20 @@ export function DialogExport(
   // Frezele rândurilor (ADR 0084): același număr cu două diametre (sau două forme, ADR 0090) ar fi două freze sub același T.
   // Freza se compară după valorile exacte; în motiv apare scrisă după limbă.
   const scule = new Map<number, Map<string, string>>();
-  const adaugaFreza = (n: number, d: number, u: number | null): void => {
+  const adaugaFreza = (n: number, d: number, u: number | null, v: number | null = null): void => {
     const m = scule.get(n) ?? new Map<string, string>();
-    m.set(u !== null ? `${d} V${u}` : `${d}`, u !== null ? `Ø${fmtFreza.format(d)} mm V${fmtFreza.format(u)}°` : `Ø${fmtFreza.format(d)} mm`);
+    // ADR 0092: același unghi cu alt vârf e altă freză.
+    const varf = u !== null && v !== null && v > 0 ? v : null;
+    m.set(u !== null ? `${d} V${u}${varf !== null ? ` t${varf}` : ''}` : `${d}`, u !== null
+      ? `Ø${fmtFreza.format(d)} mm V${fmtFreza.format(u)}°${varf !== null ? ` ${t('export.freza.varf-scurt', { mm: fmtFreza.format(varf) })}` : ''}`
+      : `Ø${fmtFreza.format(d)} mm`);
     scule.set(n, m);
   };
   for (const o of operatii) {
     const p = param[o.cheie];
     const n = p ? citesteNumar(p.numarScula) : null, d = p ? citesteNumar(p.diametruScula) : null;
     const u = p && p.formaScula === 'v' ? citesteNumar(p.unghiV) : null;
-    if (n !== null && d !== null) adaugaFreza(n, d, u);
+    if (n !== null && d !== null) adaugaFreza(n, d, u, p ? citesteNumar(p.varfV) : null);
     // Și freza dreaptă a fundului plat (ADR 0091), cu bifa pusă.
     const nf = p?.tip === 'vcarve' && p.fundPlat ? citesteNumar(p.numarSculaFund) : null, df = p ? citesteNumar(p.diametruSculaFund) : null;
     if (nf !== null && df !== null) adaugaFreza(nf, df, null);
@@ -394,7 +414,10 @@ export function DialogExport(
   const retrageriBune = randuri.every((b) => b.retragere);
   const vcarveBune = randuri.every((b) => b.vcarve);
   const funduriBune = randuri.every((b) => b.fund);
-  const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune;
+  const varfuriBune = randuri.every((b) => b.varf);
+  const vPeLinie = randuri.every((b) => b.vPeLinie);
+  const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
+    && varfuriBune && vPeLinie;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -416,8 +439,13 @@ export function DialogExport(
     const numarScula = p ? citesteNumar(p.numarScula) : null, diametruScula = p ? citesteNumar(p.diametruScula) : null;
     if (!p || adancime === null || pas === null || numarScula === null || diametruScula === null) return [];
     const unghiV = p.formaScula === 'v' ? citesteNumar(p.unghiV) : null;
-    if (p.formaScula === 'v' && unghiV === null) return [];
-    const scula: SculaOperatie = { numar: numarScula, diametru: diametruScula, ...(unghiV !== null ? { forma: { tip: 'v' as const, unghi: unghiV } } : {}) };
+    const varfV = p.formaScula === 'v' ? citesteNumar(p.varfV) : null;
+    if (p.formaScula === 'v' && (unghiV === null || varfV === null)) return [];
+    // Vârful 0 = ascuțit: nu se scrie (ADR 0092).
+    const scula: SculaOperatie = {
+      numar: numarScula, diametru: diametruScula,
+      ...(unghiV !== null ? { forma: { tip: 'v' as const, unghi: unghiV, ...(varfV !== null && varfV > 0 ? { varf: varfV } : {}) } } : {}),
+    };
     // V-carve-ul (ADR 0090): latura interior, nimic din profil; adâncimea e cea maximă. Fundul plat (ADR 0091): cu bifa pusă.
     if (p.tip === 'vcarve') {
       const numar = citesteNumar(p.numarSculaFund), diametru = citesteNumar(p.diametruSculaFund), pasLateral = citesteNumar(p.pasLateralFund);
@@ -466,7 +494,9 @@ export function DialogExport(
     const colturi = p.colturi !== '' && p.latura !== 'pe-linie' ? { tip: p.colturi } : null;
     // Despărțirea se scrie doar pe un rând cu căi deschise (pe celelalte, bifa e oprită).
     const despartire = o.deschise > 0 ? { despartire: p.despartire } : {};
-    return [[o.cheie, { scula, latura: p.latura, sens: p.sens, adancime, pas, urechi, rampa, intrari, colturi, ...despartire }] as const];
+    // Direcția (ADR 0092 §4): doar pe linie; ca desenul nu se scrie.
+    const directie = p.latura === 'pe-linie' && p.directie !== '' ? { directie: p.directie } : {};
+    return [[o.cheie, { scula, latura: p.latura, sens: p.sens, adancime, pas, urechi, rampa, intrari, colturi, ...despartire, ...directie }] as const];
   }));
   // Motivul spune ce câmp e greșit: valorile operației, urechile, sau amândouă (recenzia feliei 2.4).
   const motivInvalid = [
@@ -488,6 +518,8 @@ export function DialogExport(
     })]),
     ...(retrageriBune ? [] : [t('motiv.retragere-invalida', { max: MARGINI_OPERATIE.retragereCompleta })]),
     ...(vcarveBune ? [] : [t('motiv.vcarve-freza')]),
+    ...(varfuriBune ? [] : [t('motiv.varf-invalid')]),
+    ...(vPeLinie ? [] : [t('motiv.v-pe-linie')]),
     ...(funduriBune ? [] : [t('motiv.fund-plat-invalid', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
     ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
       ? t('motiv.intrari-invalide-rampa', {
@@ -582,13 +614,18 @@ export function DialogExport(
                       aria-invalid={!b.scula || conflict !== undefined} onChange={(ev) => { schimba(o.cheie, { diametruScula: ev.target.value }); }} />
                     {/* Forma frezei (ADR 0090): plată sau în V, cu unghiul inclus. */}
                     <select value={p.formaScula} data-camp="forma-scula" disabled={doarCitire} aria-label={t('export.freza.forma')}
-                      aria-invalid={!b.vcarve} onChange={(ev) => { schimba(o.cheie, { formaScula: ev.target.value === 'v' ? 'v' : 'plata' }); }}>
+                      aria-invalid={!b.vcarve || !b.vPeLinie} onChange={(ev) => { schimba(o.cheie, { formaScula: ev.target.value === 'v' ? 'v' : 'plata' }); }}>
                       <option value="plata">{t('export.freza.plata')}</option>
                       <option value="v">{t('export.freza.v')}</option>
                     </select>
                     {p.formaScula === 'v' && (
                       <input type="text" inputMode="decimal" value={p.unghiV} data-camp="unghi-v" disabled={doarCitire} aria-label={t('export.freza.unghi')}
                         title={t('export.freza.unghi')} className="unghi-v" aria-invalid={!b.scula} onChange={(ev) => { schimba(o.cheie, { unghiV: ev.target.value }); }} />
+                    )}
+                    {/* Vârful plat (ADR 0092): freza de gravare; 0 = ascuțit. */}
+                    {p.formaScula === 'v' && (
+                      <input type="text" inputMode="decimal" value={p.varfV} data-camp="varf-v" disabled={doarCitire} aria-label={t('export.freza.varf')}
+                        title={t('export.freza.varf.titlu')} className="unghi-v" aria-invalid={!b.varf} onChange={(ev) => { schimba(o.cheie, { varfV: ev.target.value }); }} />
                     )}
                   </td>
                   <td>
@@ -611,6 +648,15 @@ export function DialogExport(
                       onChange={(ev) => { schimba(o.cheie, { sens: ev.target.value === 'opozitie' ? 'opozitie' : 'urcare' }); }}>
                       {SENSURI.map((s) => <option key={s} value={s}>{t(CHEI_SENS[s])}</option>)}
                     </select>
+                    {/* Pe linie, direcția (ADR 0092 §4): ca desenul, invers sau cel mai scurt drum. */}
+                    {p.tip === 'profil' && p.latura === 'pe-linie' && (
+                      <select value={p.directie} data-camp="directie" disabled={doarCitire} aria-label={t('export.directie')} title={t('export.directie.titlu')}
+                        onChange={(ev) => { const v = ev.target.value; schimba(o.cheie, { directie: v === 'invers' || v === 'scurt' ? v : '' }); }}>
+                        <option value="">{t('export.directie.desen')}</option>
+                        <option value="invers">{t('export.directie.invers')}</option>
+                        <option value="scurt">{t('export.directie.scurt')}</option>
+                      </select>
+                    )}
                   </td>
                   <td><input type="text" inputMode="decimal" value={p.adancime} data-camp="adancime" disabled={doarCitire} aria-invalid={!b.adancime} onChange={(ev) => { schimba(o.cheie, { adancime: ev.target.value }); }} /></td>
                   <td><input type="text" inputMode="decimal" value={p.pas} data-camp="pas" disabled={doarCitire} aria-invalid={!b.pas} onChange={(ev) => { schimba(o.cheie, { pas: ev.target.value }); }} /></td>

@@ -155,6 +155,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   întâi freza dreaptă (buzunarul pe fiecare nivel, în {d ≥ L·tan(θ/2) + 0,002}), apoi V-ul, cu axa doar unde ea n-ajunge și inele
   dese (creasta 0,05) în colțuri; prima sculă a programului e prima montată. Probele: oracolul judecă programul tăiat la
   `T… M6`, pe sculă, cu suprafețele unite prin minim.
+  **Gravarea pe linie cu freza în V și gravarea inteligentă (ADR 0092, documentul v16)** gata pe 27.10: vârful plat al frezei în
+  V (`scula.forma.varf`, freza de gravare), în simulare (`src/sim/nucleu.ts`, conul trunchiat) și în CAM; freza în V doar pe linie
+  sau în V-carve (pe o parte, într-un buzunar, la găurire, refuzată: teșirea e a etapei 16); direcția pe linie (`directie`: invers,
+  cel mai scurt drum); gravarea inteligentă = V-carve-ul cu fundul plat și freza de gravare. Oracolul simulării n-are un V cu vârf:
+  freza i se dă ca sculă de profil.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

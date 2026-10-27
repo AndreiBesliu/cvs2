@@ -402,8 +402,40 @@ function v14v15(doc: Brut): ReturnType<Migrare> {
 }
 
 /**
+ * v15 → v16 (ADR 0092): doar numărul. v16 adaugă vârful plat al frezei în V (`scula.forma.varf`) și direcția tăieturii pe
+ * linie (`directie`), ambele opționale, deci un document v15 e un document v16 valid, cu același program. Un document marcat
+ * v15 cu un câmp propriu `directie` pe o operație sau `varf` în forma unei freze (a operației sau a fundului plat) e refuzat:
+ * v15 nu le cunoaște, deci nu e un v15 valid. (O versiune v15 refuză un document v16: ar tăia cu un vârf ascuțit unde freza
+ * are un platou, sau în sensul desenului.)
+ */
+function v15v16(doc: Brut): ReturnType<Migrare> {
+  const piese = doc['piese'];
+  const areVarf = (s: unknown): boolean => {
+    const f = typeof s === 'object' && s !== null ? (s as Brut)['forma'] : undefined;
+    return typeof f === 'object' && f !== null && Object.hasOwn(f, 'varf');
+  };
+  for (const p of Array.isArray(piese) ? piese : []) {
+    if (typeof p !== 'object' || p === null) continue;
+    const piesa = p as Brut;
+    for (const o of Array.isArray(piesa['operatii']) ? piesa['operatii'] as unknown[] : []) {
+      if (typeof o !== 'object' || o === null) continue;
+      const op = o as Brut;
+      const unde = `operația v15 ${String(op['id'])} din piesa ${String(piesa['id'])}`;
+      if (Object.hasOwn(op, 'directie')) {
+        return { ok: false, motiv: `${unde} are câmpul „directie”, pe care v16 îl folosește: nu e un document v15 valid` };
+      }
+      const fp = op['fundPlat'];
+      if (areVarf(op['scula']) || (typeof fp === 'object' && fp !== null && areVarf((fp as Brut)['scula']))) {
+        return { ok: false, motiv: `${unde} are câmpul „varf” în forma frezei, pe care v16 îl folosește: nu e un document v15 valid` };
+      }
+    }
+  }
+  return { ok: true, doc: { ...doc, schema: 16 } };
+}
+
+/**
  * Migrările pure, vN → vN+1. Cheia e versiunea de PLECARE. Lista crește; o migrare scrisă nu se mai schimbă. Fiecare
- * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v14 → v15
+ * lucrează doar pe forma pe care o promite: v1 → v2 își validează intrarea cu schema v1 înghețată; v2 → v3 … v15 → v16
  * lucrează defensiv, iar schema curentă (care conține toate regulile de dinainte) judecă rezultatul.
  */
 export const MIGRARI: Readonly<Record<number, Migrare>> = {
@@ -432,5 +464,6 @@ export const MIGRARI: Readonly<Record<number, Migrare>> = {
   12: v12v13,
   13: v13v14,
   14: v14v15,
+  15: v15v16,
 };
 

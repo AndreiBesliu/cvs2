@@ -11,7 +11,7 @@ import { traseuVcarve } from './vcarve.ts';
 import { adancimiTreceri, profil } from './profil.ts';
 import { perete, regiunePastrata, verificaTaietura, type Perete } from './regiune.ts';
 import { apropiereContururi, distantaCutii } from '../geom/apropiere.ts';
-import { arieCuSemn, LINIE, type Contur } from '../geom/contur.ts';
+import { arieCuSemn, inverseaza, LINIE, type Contur } from '../geom/contur.ts';
 import { cutieContur, depasire, largita, type Cutie, type Depasire } from '../geom/cutie.ts';
 import { curataIntrare } from '../geom/offset.ts';
 import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
@@ -27,7 +27,22 @@ import { EPS_VARF, geometrieUrechi, type GeometrieUrechi, type ParametriUrechi }
 
 /** Scula din operație, în IR: numărul, numele și diametrul (câmpurile necunoscute ale documentului rămân acolo). */
 // Forma frezei (ADR 0090) trece în IR: simularea și postul o citesc de acolo.
-const sculaIR = (s: Taietura['scula']): Scula => ({ numar: s.numar, nume: s.nume, diametru: s.diametru, ...(s.forma ? { forma: { tip: 'v' as const, unghi: s.forma.unghi } } : {}) });
+const sculaIR = (s: Taietura['scula']): Scula => ({
+  numar: s.numar, nume: s.nume, diametru: s.diametru,
+  ...(s.forma ? { forma: { tip: 'v' as const, unghi: s.forma.unghi, ...(s.forma.varf !== undefined ? { varf: s.forma.varf } : {}) } } : {}),
+});
+
+/** Ultima poziție în plan a frezei, din mișcările de până acum; null înainte de prima. */
+function ultimaPozitie(miscari: readonly Miscare[]): { readonly x: number; readonly y: number } | null {
+  let x: number | undefined, y: number | undefined;
+  for (let i = miscari.length - 1; i >= 0 && (x === undefined || y === undefined); i--) {
+    const m = miscari[i]!;
+    if (!('la' in m)) continue;
+    if (x === undefined && m.la.X !== undefined) x = m.la.X;
+    if (y === undefined && m.la.Y !== undefined) y = m.la.Y;
+  }
+  return x === undefined || y === undefined ? null : { x, y };
+}
 
 /**
  * Traseul x stă la cel puțin D de coloana fiecărei urechi a buclei c, cu urechile numărate de la poziția s pe c (ADR 0031,
@@ -163,10 +178,28 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     if (t.tip !== 'vcarve') return { ok: false, motiv: `${t.idLume}: fundul plat cu freza dreaptă e doar al unui V-carve` };
     if (fp.scula.forma) return { ok: false, motiv: `${t.idLume}: freza fundului plat (T${fp.scula.numar}) trebuie să fie dreaptă, nu în V` };
   }
+  // Freza în V (ADR 0092 §3): pe linie (centrul pe vector) sau într-un V-carve. Pe o parte, într-un buzunar sau la găurire,
+  // lucrarea ar decala-o cu Ø/2, ca pe una plată, iar peretele n-ar ieși unde e desenat. Vârful plat e sub diametru.
+  // Direcția (§4) e doar a tăieturii pe linie.
+  for (const t of taieturi) {
+    const f = t.scula.forma, peLinie = t.tip === 'profil' && t.latura === 'pe-linie';
+    if (f) {
+      if (f.varf !== undefined && !(f.varf < t.scula.diametru)) {
+        return { ok: false, motiv: `${t.idLume}: vârful frezei în V (T${t.scula.numar}), de ${f.varf} mm, trebuie să fie sub diametrul ei (Ø${t.scula.diametru})` };
+      }
+      if (t.tip !== 'vcarve' && !peLinie) {
+        const unde = t.tip === 'buzunar' ? 'într-un buzunar' : t.tip === 'gaurire' ? 'la o găurire' : 'pe o parte';
+        return { ok: false, motiv: `${t.idLume}: freza în V (T${t.scula.numar}) taie pe linie sau într-un V-carve; ${unde}, peretele n-ar ieși unde e desenat` };
+      }
+    }
+    if (operatieDe(t)?.directie !== undefined && !peLinie) {
+      return { ok: false, motiv: `${t.idLume}: direcția (invers, cel mai scurt drum) e doar a tăieturii pe linie` };
+    }
+  }
   // Aceeași sculă = același număr, același diametru și aceeași formă (ADR 0025, precizarea 1; ADR 0090). Un număr cu două
   // diametre sau două forme ar fi două freze sub același T, iar omul de la mașină ar monta una singură (ADR 0084). Și freza
   // fundului plat (ADR 0091).
-  const forma = (s: Taietura['scula']): string => (s.forma ? `în V de ${s.forma.unghi}°` : 'plată');
+  const forma = (s: Taietura['scula']): string => (s.forma ? `în V de ${s.forma.unghi}°${s.forma.varf ? ` cu vârful de ${s.forma.varf} mm` : ''}` : 'plată');
   const freze = new Map<number, Taietura['scula']>();
   for (const t of taieturi) {
     const fp = t.tip === 'vcarve' ? operatieDe(t)?.fundPlat : undefined;
@@ -305,7 +338,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       const ale = taieturi.filter((u) => u.tip === 'vcarve' && `${u.instanta}/${u.piesa}/${u.operatie}` === cheie);
       const fp = operatieDe(t)?.fundPlat;
       const v = traseuVcarve({
-        contururi: ale.map(conturDe), unghi: forma.unghi, diametruScula: D, adancime: t.adancime, pas: t.pas,
+        contururi: ale.map(conturDe), unghi: forma.unghi, varf: forma.varf ?? 0, diametruScula: D, adancime: t.adancime, pas: t.pas,
         avans: regim.avans, avansPlonjare: regim.avansPlonjare, zSigur: regim.zSigur,
         ...(fp ? { fundPlat: { diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: t.sens } } : {}),
       });
@@ -365,6 +398,15 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, buzunar, ${t.adancime} mm${cuInsule}`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
       for (const m of tb.miscari) miscari.push(m);
       continue;
+    }
+    // Gravarea pe linie cu freza în V (ADR 0092 §3): conul ajunge la adâncime doar dacă ((Ø − t) / 2)·cot(θ/2) ≥ adâncimea;
+    // mai adânc, ar tăia coada frezei.
+    const fv = t.scula.forma;
+    if (fv) {
+      const con = (D - (fv.varf ?? 0)) / 2 / Math.tan((fv.unghi * Math.PI) / 360);
+      if (t.adancime > con + 1e-9) {
+        return { ok: false, motiv: `${t.idLume}: tăietura cere ${t.adancime} mm, iar conul frezei în V (Ø${D}, ${fv.unghi}°) are ${con.toFixed(3)} mm: ar tăia coada frezei` };
+      }
     }
     // Urechile (ADR 0028 §2): vârful lor se măsoară de la fața de jos a foii, deci puntea are grosimea cerută oricât de
     // adânc merge tăietura.
@@ -502,6 +544,16 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
         if (!bucle.some((b) => distantaLaContur(c.v, b) <= (2 * R) / c.cosJumatate)) continue;
         avertismente.push(`${t.idLume}: degajarea omisă la colțul (${c.v.x.toFixed(3)}, ${c.v.y.toFixed(3)}): o latură a colțului e curbă`);
       }
+    }
+    // Direcția pe linie (ADR 0092 §4): `invers` = fiecare buclă în sens opus desenului; `scurt` = o cale deschisă pornește
+    // din capătul mai apropiat de unde a rămas freza (o buclă închisă rămâne cum e desenată).
+    const directie = operatieDe(t)?.directie;
+    if (directie !== undefined) {
+      const c0 = treceri[0]?.contururi[0], aici = ultimaPozitie(miscari);
+      const a = c0?.varfuri[0]?.p, b = c0?.varfuri[c0.varfuri.length - 1]?.p;
+      const scurt = directie === 'scurt' && c0 !== undefined && !c0.inchis && aici !== null && a !== undefined && b !== undefined
+        && Math.hypot(b.x - aici.x, b.y - aici.y) < Math.hypot(a.x - aici.x, a.y - aici.y);
+      if (directie === 'invers' || scurt) treceri = treceri.map((x) => ({ ...x, contururi: x.contururi.map(inverseaza) }));
     }
     const tr = traseuProfil(treceri, regim, urechi, t.rampa ? { lungime: t.rampa.lungime } : undefined, intrari, degajari);
     if (!tr.ok) return { ok: false, motiv: `${t.idLume}: ${tr.motiv}` };

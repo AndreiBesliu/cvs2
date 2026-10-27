@@ -2,16 +2,21 @@ import type { FundPlat, Operatie } from '../model/document.ts';
 import type { FundPlatOperatie, SculaOperatie, ValoriOperatie } from '../ui/DialogExport.tsx';
 
 /**
- * Scula scrisă de Exportă (ADR 0084, ADR 0090): numărul și diametrul rândului, forma lui (în V cu unghiul, sau plată: câmpul
- * pleacă); forma de pe același fel se ÎMBINĂ cu cea din document (un câmp necunoscut rămâne). Numele urmează forma doar
- * când ea se schimbă („freza V60”, „freza plata”), ca un Exportă fără schimbare să nu scrie o comandă.
+ * Scula scrisă de Exportă (ADR 0084, ADR 0090): numărul și diametrul rândului, forma lui (în V cu unghiul și vârful, sau
+ * plată: câmpul pleacă); forma de pe același fel se ÎMBINĂ cu cea din document (un câmp necunoscut rămâne), iar vârful 0
+ * (ascuțit) nu se scrie (ADR 0092). Numele urmează forma doar când ea se schimbă („freza V60”, „freza V30 varf 0.25”,
+ * „freza plata”), ca un Exportă fără schimbare să nu scrie o comandă.
  */
 function sculaScrisa(o: Operatie['scula'], s: SculaOperatie): Operatie['scula'] {
   const { forma: _vechi, ...baza } = o;
   void _vechi;
   if (s.forma) {
-    const nume = o.forma && o.forma.unghi === s.forma.unghi ? o.nume : `freza V${s.forma.unghi}`;
-    return { ...baza, numar: s.numar, diametru: s.diametru, nume, forma: { ...(o.forma ?? {}), tip: 'v', unghi: s.forma.unghi } };
+    const varf = s.forma.varf ?? 0;
+    const nume = o.forma && o.forma.unghi === s.forma.unghi && (o.forma.varf ?? 0) === varf ? o.nume
+      : `freza V${s.forma.unghi}${varf > 0 ? ` varf ${varf}` : ''}`;
+    const { varf: _v, ...formaVeche } = o.forma ?? {};
+    void _v;
+    return { ...baza, numar: s.numar, diametru: s.diametru, nume, forma: { ...formaVeche, tip: 'v', unghi: s.forma.unghi, ...(varf > 0 ? { varf } : {}) } };
   }
   return { ...baza, numar: s.numar, diametru: s.diametru, nume: o.forma ? 'freza plata' : o.nume };
 }
@@ -39,10 +44,10 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
   const colturi = v === undefined ? o.colturi : v.colturi && o.colturi ? { ...o.colturi, ...v.colturi } : v.colturi;
   // Despărțirea (ADR 0037 §8): bifată, `true`; nebifată, câmpul pleacă (lipsă = false), ca un document fără marcaj să rămână
   // octet cu octet ce era.
-  const { despartire: _vechi, pasLateral: _pas, tip: _tip, coborare: _cob, retragereCompleta: _retr, fundPlat: _fund, ...rest } = {
+  const { despartire: _vechi, pasLateral: _pas, tip: _tip, coborare: _cob, retragereCompleta: _retr, fundPlat: _fund, directie: _dir, ...rest } = {
     ...o, ...(v ?? {}), urechi, rampa, intrari, colturi, scula: sculaScrisa(o.scula, scula),
   };
-  void _vechi; void _pas; void _tip; void _cob; void _retr; void _fund;
+  void _vechi; void _pas; void _tip; void _cob; void _retr; void _fund; void _dir;
   // Buzunarul (ADR 0069 §1): latura interior, nimic din profil, cu pasul lateral (al rândului, al operației, sau 40 % din D).
   const tip = v === undefined ? o.tip : v.tip ?? 'profil';
   // Găurirea (ADR 0087 §1): latura interior, nimic din profil; ieșirea la al câtelea pas, a rândului sau a operației. Implicitul
@@ -67,5 +72,8 @@ export function operatieDinDialog(o: Operatie, v: ValoriOperatie | undefined, sc
     return { ...rest, tip, pasLateral, latura: 'interior', urechi: null, rampa: null, intrari: null, colturi: null, ...(coborare ? { coborare } : {}) };
   }
   const despartire = v?.despartire ?? o.despartire;
-  return despartire ? { ...rest, tip, despartire: true } : { ...rest, tip };
+  // Direcția pe linie (ADR 0092 §4): a rândului (ca desenul: câmpul pleacă), sau a operației fără valori din dialog; pe altă
+  // latură pleacă.
+  const directie = rest.latura !== 'pe-linie' ? undefined : v === undefined ? o.directie : v.directie;
+  return { ...rest, tip, ...(despartire ? { despartire: true } : {}), ...(directie ? { directie } : {}) };
 }
