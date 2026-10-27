@@ -3307,3 +3307,9 @@ probe noi, verificate cu mutația aplicată: **36 / 36**. Rândul din prag: „�
 cu mai multe freze, și placa etapei 8). **Găsit pe drum:** trei teste vechi foloseau chiar `varf` ca exemplu de câmp necunoscut al
 formei (o coincidență din 8.1, mutate pe `cod`); în engleză, „Direction” era deja numele sensului de tăiere, deci câmpul nou e „Line
 direction”; o tăiere a axei la r > a din V-carve era redundantă (prima trecere taie deja doar sub 0), scoasă.
+
+**Publicat pe test (27.10, 19:15)**, din workflow (run 40546474097, `5c6d143`), cu CI-ul rapid verde (6 felii + oracolul exportului
+2D). Verificat în browser la 1440 px, după „Reîncarcă”: pe un dreptunghi, freza în V pe exterior oprește exportul cu motivul nou;
+pe linie apar Vârful (0 implicit) și Direcția (ca desenul / invers / cel mai scurt drum); vârful cât diametrul oprește exportul;
+cu V30, vârful 0,25 și Ø3,175, exportul e permis; fără erori în consolă. De notat, nu din felia asta: tabelul ferestrei derulează
+pe orizontală și fără ea (1 156 px într-o cutie de 894 la 1440); câmpurile noi adaugă cel mult 200 px, doar pe un rând V pe linie.
