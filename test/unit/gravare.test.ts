@@ -35,7 +35,7 @@ const op = (noduri: string[], extra: Op = {}): Op => ({
   urechi: null, rampa: null, intrari: null, colturi: null, ...extra,
 });
 type Forma = { id: string; forma: Op; e?: number; f?: number };
-function doc(forme: readonly Forma[], operatii: Op[], schema = 16): unknown {
+function doc(forme: readonly Forma[], operatii: Op[], schema = 17): unknown {
   const noduri = forme.map((c) => ({ tip: 'element', id: c.id, matrice: { ...I, e: c.e ?? 0, f: c.f ?? 0 }, forma: c.forma }));
   return {
     schema, rev: 0, piese: [{ id: 'p', radacina: { tip: 'grup', id: 'r', matrice: { ...I }, copii: noduri }, operatii }],
@@ -357,7 +357,7 @@ test('programul poartă vârful frezei (IR), ca simularea exportului să taie cu
 
 // ── Ușa v16 ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-test('ușa v16: vârful în (0, 100] și direcția invers / scurt (câmpurile necunoscute rămân); un v15 cu ele nu e valid; un v15 curat urcă la v16', () => {
+test('ușa v16: vârful în (0, 100] și direcția invers / scurt (câmpurile necunoscute rămân); un v15 cu ele nu e valid; un v15 curat urcă (prin v16) la v17', () => {
   const d = deschis(doc([DR20], [op(['a'], { scula: { ...V(30, 3.175, 0.25), forma: { tip: 'v', unghi: 30, varf: 0.25, cod: 'X' } }, directie: 'scurt' })]));
   const o = d.piese[0]!.operatii[0]!;
   assert.equal(o.scula.forma?.varf, 0.25);
@@ -376,7 +376,7 @@ test('ușa v16: vârful în (0, 100] și direcția invers / scurt (câmpurile ne
   const curat = doc([DR20], [op(['a'])], 15);
   const c = incarca(curat);
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...(curat as Record<string, unknown>), schema: 16 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...(curat as Record<string, unknown>), schema: 17 }, 'doar numărul');
 });
 
 // ── Ce scrie Exportă ─────────────────────────────────────────────────────────────────────────────────────────────────

@@ -230,6 +230,17 @@
  * - `directie`, câmpul opțional al operației: dacă există, 'invers' sau 'scurt'; altfel categoria nouă `[directie]`;
  * - ușa NU judecă potrivirea lor (vârful cel puțin cât diametrul, direcția pe altă latură decât pe linie, freza în V pe un
  *   profil pe o parte, pe un buzunar sau pe o găurire): le judecă CAM-ul.
+ *
+ * Din ADR 0093 §1 (documentul v17: frezele de rest, felia 5.5↑). ATENȚIE: tot de aceeași sesiune, din textul ADR-ului.
+ * Oracolul e pe v17: `SCHEMA_CURENTA_O` = 17, `ridicaO` dă v17 (`ridicaV16O` păstrează lanțul până la 16), `verificaO` e ușa
+ * v17 (`verificaPanaLaV16O` e ușa unei aplicații rămase pe 16); migrarea v16 → v17 (`migreazaV16V17O`) schimbă doar numărul,
+ * iar un v16 (sau mai vechi) cu un câmp propriu `rest` pe o operație sau pe fundul ei plat e o ciocnire (`ciocniriRestO`).
+ * Contractul ușii v17:
+ * - `rest`, câmpul opțional al operației și al fundului plat: dacă există, o listă cu 1–8 obiecte, fiecare cu `scula`
+ *   (aceleași reguli ca scula operației, categoriile `[scula]` și `[vcarve]`) și `pasLateral` un număr finit în (0, 50];
+ *   altfel categoria nouă `[rest]`;
+ * - ușa NU judecă potrivirea lor (pe alt fel decât buzunar, o freză de rest în V, una cel puțin cât cea dinainte, pasul peste
+ *   raza ei, același T): le judecă CAM-ul.
  */
 
 export type MatriceO = {
@@ -336,7 +347,7 @@ export type CategorieO =
   | 'schema' | 'id' | 'unic-piese' | 'unic-foi' | 'unic-instante' | 'unic-noduri' | 'unic-elemente' | 'referinta'
   | 'adancime' | 'rotire' | 'finit' | 'plafon' | 'foi' | 'pozitiv' | 'margini' | 'ciocnire' | 'forma'
   | 'operatie' | 'unic-operatii' | 'referinta-op' | 'scula' | 'sens' | 'urechi' | 'rampa' | 'intrari' | 'colturi' | 'cale'
-  | 'despartire' | 'buzunar' | 'coborare' | 'gaurire' | 'vcarve' | 'fund-plat' | 'directie';
+  | 'despartire' | 'buzunar' | 'coborare' | 'gaurire' | 'vcarve' | 'fund-plat' | 'directie' | 'rest';
 
 /** ADR 0037 §2: laturile documentului v10, exact (ASCII, ca `opozitie`). */
 export const LATURI_V10_O = ['interior', 'pe-linie', 'exterior', 'stanga', 'dreapta'] as const;
@@ -383,6 +394,11 @@ export type OperatieV16O = OperatieV15O & { directie?: 'invers' | 'scurt' };
 export type PiesaV16O = PiesaO & { operatii: OperatieV16O[] };
 export type DocV16O = Liber & { schema: 16; rev: number; piese: PiesaV16O[]; foi: FoaieO[] };
 
+/** ADR 0093 §1: operația v17 = v16 cu `rest` opțional (frezele de rest; și pe fundul plat). */
+export type OperatieV17O = OperatieV16O & { rest?: Liber[] };
+export type PiesaV17O = PiesaO & { operatii: OperatieV17O[] };
+export type DocV17O = Liber & { schema: 17; rev: number; piese: PiesaV17O[]; foi: FoaieO[] };
+
 /** ADR 0027 §5: valorile primite ale sensului, exact; implicitul migrării și al operației noi. */
 export const SENSURI_O: readonly SensO[] = ['urcare', 'opozitie'];
 export const SENS_IMPLICIT_O: SensO = 'urcare';
@@ -405,7 +421,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 16;
+export const SCHEMA_CURENTA_O = 17;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -772,6 +788,8 @@ const PASI_O: ReadonlyArray<{ readonly de: number; readonly camp: string | null;
   { de: 14, camp: null, implicit: null },
   // ADR 0092 §1: v15 → v16 schimbă doar numărul (ciocnirile `directie` / `varf` le judecă ușa, `ciocniriV16O`).
   { de: 15, camp: null, implicit: null },
+  // ADR 0093 §1: v16 → v17 schimbă doar numărul (ciocnirea `rest` o judecă ușa, `ciocniriRestO`).
+  { de: 16, camp: null, implicit: null },
 ];
 
 /** Pasul vk → vk+1 (k = 3 … 9), pe loc, pe un document deja copiat (și deja verificat: nicio ciocnire). */
@@ -1279,11 +1297,64 @@ export function migreazaV15V16O(v15: DocV15O): DocV16O {
   return { ...structuredClone(v15), schema: 16 } as unknown as DocV16O;
 }
 
-/** Orice versiune primită, adusă la versiunea curentă, v16 (o copie; un v16 rămâne neschimbat). */
-export function ridicaO(
+/** v15 → … → v17, …, v1 → … → v17, în lanț (felia 5.5↑: lanțurile spre ultima versiune primesc pasul v16 → v17). */
+export function migreazaV15V17O(v15: DocV15O): DocV17O {
+  return ridicaLaO<DocV17O>(v15, 17);
+}
+export function migreazaV14V17O(v14: DocV14O): DocV17O {
+  return ridicaLaO<DocV17O>(v14, 17);
+}
+export function migreazaV13V17O(v13: DocV13O): DocV17O {
+  return ridicaLaO<DocV17O>(v13, 17);
+}
+export function migreazaV12V17O(v12: DocV12O): DocV17O {
+  return ridicaLaO<DocV17O>(v12, 17);
+}
+export function migreazaV11V17O(v11: DocV11O): DocV17O {
+  return ridicaLaO<DocV17O>(v11, 17);
+}
+export function migreazaV10V17O(v10: DocV10O): DocV17O {
+  return ridicaLaO<DocV17O>(v10, 17);
+}
+export function migreazaV9V17O(v9: DocV9O): DocV17O {
+  return ridicaLaO<DocV17O>(v9, 17);
+}
+export function migreazaV8V17O(v8: DocV8O): DocV17O {
+  return ridicaLaO<DocV17O>(v8, 17);
+}
+export function migreazaV7V17O(v7: DocV7O): DocV17O {
+  return ridicaLaO<DocV17O>(v7, 17);
+}
+export function migreazaV6V17O(v6: DocV6O): DocV17O {
+  return ridicaLaO<DocV17O>(v6, 17);
+}
+export function migreazaV5V17O(v5: DocV5O): DocV17O {
+  return ridicaLaO<DocV17O>(v5, 17);
+}
+export function migreazaV4V17O(v4: DocV4O): DocV17O {
+  return ridicaLaO<DocV17O>(v4, 17);
+}
+export function migreazaV1V17O(v1: DocV1O): DocV17O {
+  return ridicaLaO<DocV17O>(v1, 17);
+}
+
+/** Orice versiune primită până la 16, adusă la v16 (o copie): `ridicaO` de dinainte de ADR 0093. */
+export function ridicaV16O(
   doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O,
 ): DocV16O {
   return ridicaLaO<DocV16O>(doc, 16);
+}
+
+/** Documentul v17 pe care ADR 0093 §1 îl cere din v16: doar `schema: 17`; tot restul rămâne, cu câmpurile necunoscute. */
+export function migreazaV16V17O(v16: DocV16O): DocV17O {
+  return { ...structuredClone(v16), schema: 17 } as unknown as DocV17O;
+}
+
+/** Orice versiune primită, adusă la versiunea curentă, v17 (o copie; un v17 rămâne neschimbat). */
+export function ridicaO(
+  doc: DocV1O | DocV2O | DocV3O | DocV4O | DocV5O | DocV6O | DocV7O | DocV8O | DocV9O | DocV10O | DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O,
+): DocV17O {
+  return ridicaLaO<DocV17O>(doc, 17);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -1515,7 +1586,7 @@ export function problemeColturiO(op: Liber): string[] {
  * Lista încălcărilor contractului v2 (`schema` 2), v3 (`schema` 3, cu operațiile), v4 (`schema` 4, cu sensul fiecărei
  * operații) sau v5 (`schema` 5, cu urechile); goală = document valid. Merge iterativ: un arbore adânc nu umple stiva.
  */
-function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16): string[] {
+function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17): string[] {
   const probleme: string[] = [];
   const semnaleaza: Semnaleaza = (categorie, mesaj) => { probleme.push(`[${categorie}] ${mesaj}`); };
   const u = unelte(semnaleaza, schema);
@@ -1603,6 +1674,20 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 1
     }
   };
 
+  /** ADR 0093 §1: lista frezelor de rest: 1–8 obiecte, fiecare cu scula și pasul lateral în (0, 50]. */
+  const rest = (cale: string, v: unknown): void => {
+    if (!Array.isArray(v) || v.length < 1 || v.length > 8) {
+      semnaleaza('rest', `${cale} = ${JSON.stringify(v) ?? String(v)} nu e o listă cu 1–8 freze`);
+      return;
+    }
+    v.forEach((x: unknown, i) => {
+      if (!esteObiect(x)) { semnaleaza('rest', `${cale}[${i}] nu e obiect`); return; }
+      scula(`${cale}[${i}].scula`, x['scula']);
+      const pl = x['pasLateral'];
+      if (typeof pl !== 'number' || !Number.isFinite(pl) || pl <= 0 || pl > 50) semnaleaza('rest', `${cale}[${i}].pasLateral = ${String(pl)} nu e în (0, 50]`);
+    });
+  };
+
   /** Operațiile unei piese v3. Întoarce câte sunt și câte referințe la noduri au (pentru plafoane). */
   const operatii = (cp: string, v: unknown, idElemente: ReadonlySet<string>, idGrupuri: ReadonlySet<string>) => {
     if (!Array.isArray(v)) { semnaleaza('operatie', `${cp}.operatii lipsește sau nu e listă`); return { numar: 0, referinte: 0 }; }
@@ -1642,8 +1727,11 @@ function verificaArboreO(doc: unknown, schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 1
           if (typeof pl !== 'number' || !Number.isFinite(pl) || pl <= 0 || pl > 50) {
             semnaleaza('fund-plat', `${co}.fundPlat.pasLateral = ${String(pl)} nu e în (0, 50]`);
           }
+          if (schema >= 17 && Object.hasOwn(fp, 'rest')) rest(`${co}.fundPlat.rest`, fp['rest']);
         }
       }
+      // ADR 0093 §1: în v17, frezele de rest opționale ale operației (categoria `[rest]`).
+      if (schema >= 17 && Object.hasOwn(op, 'rest')) rest(`${co}.rest`, op['rest']);
       // ADR 0092 §1: în v16, direcția opțională a tăieturii pe linie (categoria `[directie]`).
       if (schema >= 16 && Object.hasOwn(op, 'directie') && op['directie'] !== 'invers' && op['directie'] !== 'scurt') {
         semnaleaza('directie', `${co}.directie = ${JSON.stringify(op['directie']) ?? String(op['directie'])} nu e 'invers' sau 'scurt'`);
@@ -1931,6 +2019,28 @@ export function verificaV14(doc: unknown): string[] {
 /** Lista încălcărilor contractului v15 (… + ADR 0091 §1: fundul plat al V-carve-ului); goală = document v15 valid. */
 export function verificaV15(doc: unknown): string[] {
   return verificaArboreO(doc, 15);
+}
+
+/** Lista încălcărilor contractului v17 (… + ADR 0093 §1: frezele de rest); goală = document v17 valid. */
+export function verificaV17(doc: unknown): string[] {
+  return verificaArboreO(doc, 17);
+}
+
+/** ADR 0093 §1: un v16 (sau mai vechi) cu un câmp propriu `rest` pe o operație sau pe fundul ei plat: în v17 capătă sens. */
+export function ciocniriRestO(doc: unknown): string[] {
+  const rez: string[] = [];
+  if (!esteObiect(doc) || !Array.isArray(doc['piese'])) return rez;
+  doc['piese'].forEach((p: unknown, i) => {
+    if (!esteObiect(p) || !Array.isArray(p['operatii'])) return;
+    p['operatii'].forEach((op: unknown, k) => {
+      if (!esteObiect(op)) return;
+      const fp = op['fundPlat'];
+      if (Object.hasOwn(op, 'rest') || (esteObiect(fp) && Object.hasOwn(fp, 'rest'))) {
+        rez.push(`[ciocnire] piese[${i}].operatii[${k}]: câmpul „rest” v${String(doc['schema'])} s-ar pierde în migrare`);
+      }
+    });
+  });
+  return rez;
 }
 
 /** Lista încălcărilor contractului v16 (… + ADR 0092 §1: vârful frezei, direcția pe linie); goală = document v16 valid. */
@@ -2395,6 +2505,21 @@ export function verificaV9V10(doc: unknown): string[] {
  * corpusul; `verificaV9V10` face și pasul întreg).
  */
 export function verificaO(doc: unknown): string[] {
+  if (!esteObiect(doc)) return ['[schema] documentul nu e un obiect'];
+  if (doc['schema'] === 17) return verificaV17(doc);
+  // Felia 5.5↑ (ADR 0093 §1): orice versiune de până la 16, după ușa ei, apoi ciocnirea pasului v16 → v17.
+  const p = verificaPanaLaV16O(doc);
+  if (p.length === 1 && p[0]?.startsWith('[schema] schema =')) {
+    return [`[schema] schema = ${JSON.stringify(doc['schema'])} nu e 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 sau 17`];
+  }
+  return p.length > 0 ? p : ciocniriRestO(doc);
+}
+
+/**
+ * Ușa unei aplicații rămase pe schema 16 (înainte de felia 5.5↑), pentru lipire: schema 17 e refuzată („scris de o
+ * versiune mai nouă”), iar frezele de rest nu sunt valide. Până la 5.5↑ era `verificaO`.
+ */
+export function verificaPanaLaV16O(doc: unknown): string[] {
   if (!esteObiect(doc)) return ['[schema] documentul nu e un obiect'];
   if (doc['schema'] === 16) return verificaV16(doc);
   // Felia 8.3↑ (ADR 0092 §1): orice versiune de până la 15, după ușa ei, apoi ciocnirile pasului v15 → v16.

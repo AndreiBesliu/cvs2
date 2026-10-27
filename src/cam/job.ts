@@ -1,4 +1,4 @@
-import { esteCaleDeschisa, type Document } from '../model/document.ts';
+import { esteCaleDeschisa, type Document, type FrezaRest } from '../model/document.ts';
 import { oglindeste } from '../model/parte.ts';
 import { conturDeTaiat } from './contur.ts';
 import { judecaDeschisa, NEATINS_PESTE_D, refuzDeschise } from './deschise.ts';
@@ -6,6 +6,7 @@ import { conturElement } from '../model/forme.ts';
 import { grupeazaPeScula, taieturiFoaie, type Taietura } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
+import { bucatiRestInLant, taieBucati } from './rest.ts';
 import { traseuGaurire } from './gaurire.ts';
 import { traseuVcarve } from './vcarve.ts';
 import { adancimiTreceri, profil } from './profil.ts';
@@ -178,6 +179,28 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     if (t.tip !== 'vcarve') return { ok: false, motiv: `${t.idLume}: fundul plat cu freza dreaptă e doar al unui V-carve` };
     if (fp.scula.forma) return { ok: false, motiv: `${t.idLume}: freza fundului plat (T${fp.scula.numar}) trebuie să fie dreaptă, nu în V` };
   }
+  // Frezele de rest (ADR 0093): doar pe un buzunar (și pe fundul plat al unui V-carve, ADR 0091); fiecare plată, mai mică
+  // decât freza dinainte, cu pasul lateral cel mult raza ei.
+  for (const t of taieturi) {
+    const op = operatieDe(t);
+    if (op?.rest && t.tip !== 'buzunar') return { ok: false, motiv: `${t.idLume}: frezele de rest sunt doar ale unui buzunar (pe un V-carve, ale fundului plat)` };
+    const liste: ReadonlyArray<readonly [Taietura['scula'], readonly FrezaRest[]]> = [
+      ...(op?.rest ? [[t.scula, op.rest] as const] : []), ...(op?.fundPlat?.rest ? [[op.fundPlat.scula, op.fundPlat.rest] as const] : []),
+    ];
+    for (const [prima, lista] of liste) {
+      let dinainte = prima.diametru;
+      for (const r of lista) {
+        if (r.scula.forma) return { ok: false, motiv: `${t.idLume}: freza de rest T${r.scula.numar} trebuie să fie plată, nu în V` };
+        if (!(r.scula.diametru < dinainte)) {
+          return { ok: false, motiv: `${t.idLume}: freza de rest T${r.scula.numar} (Ø${r.scula.diametru}) trebuie să fie mai mică decât cea dinainte (Ø${dinainte})` };
+        }
+        if (!(r.pasLateral <= r.scula.diametru / 2)) {
+          return { ok: false, motiv: `${t.idLume}: pasul lateral al frezei de rest T${r.scula.numar}, de ${r.pasLateral} mm, trebuie să fie cel mult raza ei (${r.scula.diametru / 2} mm): altfel rămâne material între inele` };
+        }
+        dinainte = r.scula.diametru;
+      }
+    }
+  }
   // Freza în V (ADR 0092 §3): pe linie (centrul pe vector) sau într-un V-carve. Pe o parte, într-un buzunar sau la găurire,
   // lucrarea ar decala-o cu Ø/2, ca pe una plată, iar peretele n-ar ieși unde e desenat. Vârful plat e sub diametru.
   // Direcția (§4) e doar a tăieturii pe linie.
@@ -202,8 +225,11 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   const forma = (s: Taietura['scula']): string => (s.forma ? `în V de ${s.forma.unghi}°${s.forma.varf ? ` cu vârful de ${s.forma.varf} mm` : ''}` : 'plată');
   const freze = new Map<number, Taietura['scula']>();
   for (const t of taieturi) {
-    const fp = t.tip === 'vcarve' ? operatieDe(t)?.fundPlat : undefined;
-    for (const u of fp ? [t.scula, fp.scula] : [t.scula]) {
+    const op = operatieDe(t);
+    const fp = t.tip === 'vcarve' ? op?.fundPlat : undefined;
+    // Și frezele de rest (ADR 0093), ale buzunarului și ale fundului plat.
+    const rest = [...(t.tip === 'buzunar' ? op?.rest ?? [] : []), ...(fp?.rest ?? [])].map((r) => r.scula);
+    for (const u of [t.scula, ...(fp ? [fp.scula] : []), ...rest]) {
       const s = freze.get(u.numar);
       if (s === undefined) { freze.set(u.numar, u); continue; }
       if (s.diametru !== u.diametru) {
@@ -340,7 +366,12 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       const v = traseuVcarve({
         contururi: ale.map(conturDe), unghi: forma.unghi, varf: forma.varf ?? 0, diametruScula: D, adancime: t.adancime, pas: t.pas,
         avans: regim.avans, avansPlonjare: regim.avansPlonjare, zSigur: regim.zSigur,
-        ...(fp ? { fundPlat: { diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: t.sens } } : {}),
+        ...(fp ? {
+          fundPlat: {
+            diametru: fp.scula.diametru, pasLateral: fp.pasLateral, sens: t.sens,
+            ...(fp.rest ? { rest: fp.rest.map((r) => ({ diametru: r.scula.diametru, pasLateral: r.pasLateral })) } : {}),
+          },
+        } : {}),
       });
       if (!v.ok) return { ok: false, motiv: `${t.idLume}: ${v.motiv}` };
       const nume = `${t.idLume}${ale.length > 1 ? ` (+${ale.length - 1})` : ''}`;
@@ -349,6 +380,17 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
         monteaza(fp.scula);
         miscari.push({ tip: 'eticheta', text: `${nume}: V-carve, fundul plat cu T${fp.scula.numar} Ø${fp.scula.diametru}`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
         for (const m of v.fund) miscari.push(m);
+      }
+      // Frezele de rest ale fundului (ADR 0093), fiecare doar dacă taie ceva.
+      for (const [k, r] of (fp?.rest ?? []).entries()) {
+        const mr = v.fundRest[k] ?? [];
+        if (mr.length === 0) {
+          avertismente.push(`${t.idLume}: freza de rest a fundului T${r.scula.numar} (Ø${r.scula.diametru}) n-are ce scoate: frezele dinainte au ajuns peste tot unde ajunge și ea`);
+          continue;
+        }
+        monteaza(r.scula);
+        miscari.push({ tip: 'eticheta', text: `${nume}: V-carve, restul fundului cu T${r.scula.numar} Ø${r.scula.diametru}`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
+        for (const m of mr) miscari.push(m);
       }
       montata(t);
       miscari.push({ tip: 'eticheta', text: `${nume}: V-carve, până la ${t.adancime} mm`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
@@ -397,6 +439,22 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       montata(t);
       miscari.push({ tip: 'eticheta', text: `${t.idLume}: ${t.forma.tip}, buzunar, ${t.adancime} mm${cuInsule}`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
       for (const m of tb.miscari) miscari.push(m);
+      // Frezele de rest (ADR 0093): fiecare doar unde cea dinainte n-a ajuns, pe aceleași treceri; una care n-are ce scoate
+      // nu se montează (avertisment).
+      const rest = op?.rest ?? [];
+      const lant = bucatiRestInLant(conturDe(t), ci, R, rest.map((r) => ({ diametru: r.scula.diametru, pasLateral: r.pasLateral })), t.sens);
+      if (!lant.ok) return { ok: false, motiv: `${t.idLume}: freza de rest T${rest[lant.freza]?.scula.numar}: ${lant.motiv}` };
+      for (const [k, r] of rest.entries()) {
+        const b = { bucati: lant.bucati[k] ?? [] };
+        if (b.bucati.length === 0) {
+          avertismente.push(`${t.idLume}: freza de rest T${r.scula.numar} (Ø${r.scula.diametru}) n-are ce scoate: frezele dinainte au ajuns peste tot unde ajunge și ea`);
+          continue;
+        }
+        const tr = taieBucati(adancimi.map((adancime) => ({ adancime, bucati: b.bucati })), regim);
+        monteaza(r.scula);
+        miscari.push({ tip: 'eticheta', text: `${t.idLume}: buzunar, restul cu T${r.scula.numar} Ø${r.scula.diametru}`, element: t.idLume, operatie: `${t.piesa}/${t.operatie}` });
+        for (const m of tr.miscari) miscari.push(m);
+      }
       continue;
     }
     // Gravarea pe linie cu freza în V (ADR 0092 §3): conul ajunge la adâncime doar dacă ((Ø − t) / 2)·cot(θ/2) ≥ adâncimea;

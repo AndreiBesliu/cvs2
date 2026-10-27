@@ -3313,3 +3313,29 @@ direction”; o tăiere a axei la r > a din V-carve era redundantă (prima trece
 pe linie apar Vârful (0 implicit) și Direcția (ca desenul / invers / cel mai scurt drum); vârful cât diametrul oprește exportul;
 cu V30, vârful 0,25 și Ø3,175, exportul e permis; fără erori în consolă. De notat, nu din felia asta: tabelul ferestrei derulează
 pe orizontală și fără ea (1 156 px într-o cutie de 894 la 1440); câmpurile noi adaugă cel mult 200 px, doar pe un rând V pe linie.
+
+## 2026-10-27 — Buzunarul cu mai multe freze (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua cu ce vrei”.
+**Started:** 27.10, 19:12. Felia **5.5↑**, adusă din etapa 5 (rândul din prag „Buzunar (curățare de suprafață), cu mai multe
+freze”), fără mașină și fără agenți (ADR 0093). Planul: frezele de rest (documentul v17: `rest`, o listă de freze plate cu pasul
+lor, de la mare la mică), pe buzunar și pe fundul plat al V-carve-ului (lista de freze de golire a gravării inteligente, rămasă
+din 8.3↑). Nucleul: inelele frezei mici, păstrate doar unde discul ei poate atinge material lăsat de freza dinainte (deschiderea
+regiunii cu raza ei), pe aceleași treceri. Probele pe oracolul simulării, cu criteriul din cercetare (buzunarul 80 × 40 × 10 cu
+Ø12, apoi Ø3, pasul 40 %: fundul la −10,00 ± 0,02 fără insule peste 0,05, colțurile cu raza 1,5, Ø3 doar în colțuri și fâșii
+înguste, inelele Ø12 la 4,8 mm).
+
+**Completed:** 27.10 20:36. Buzunarul are frezele de rest (documentul v17, `rest`): după freza rândului, fiecare mai mică doar unde
+cea dinainte n-a ajuns (colțurile, fâșiile înguste), pe aceleași treceri, cu schimbarea de sculă; aceeași mașinărie dă fundului
+plat al V-carve-ului mai multe freze drepte (lista de freze de golire a gravării inteligente). Nucleul în `src/cam/rest.ts`: inelele
+frezei mici, păstrate unde stau la peste R_a − R de zona centrului celei dinainte. În fereastra exportului, Frezele de rest (T, Ø,
+pasul, ×) și Adaugă o freză de rest. Criteriul din cercetare (80 × 40 × 10, Ø12 apoi Ø3), pe oracolul simulării judecat pe sculă:
+fundul la −10 ± 0,02 în afara colțurilor, colțurile cu raza 1,485 (doar Ø12: 5,992), Ø3 doar în afara deschiderii cu Ø12 (2 912
+celule), traseul ei nu trece pe lângă pereți; inelele Ø12 la 6, 10,8, 15,6. Totalul 325,9 → 328,0 / 330 kB (rămân 2 kB), pornirea
+96,0 (cu ușa 99,5). Porțile: 7 509 unitare (0 picate, 8 sărite), build-ul determinist, e2e 246 / 246, emulatoarele 36 + 13.
+Mutațiile: 26 / 29 din prima (traducerile complete, controlul verde); cele trei scăpate au probe noi, verificate cu mutația
+aplicată: **29 / 29**. **Găsit pe drum:** pragul cu marjă (R_a − R − h) păstra tot inelul de lângă perete al frezei mici (exact la
+prag), deci ea făcea tot conturul prin aer: acum R_a − R + 10⁻⁴, cu eșantionarea la 0,02; bucățile inversate pentru drumul cel mai
+scurt ar fi schimbat sensul de tăiere: acum se păstrează; o freză de rest a fundului fără nimic de scos se monta degeaba: acum
+avertisment, ca la buzunar. Rândul gravării inteligente din prag: „făcut” (rămâne placa etapei 8); al buzunarului: „în lucru”
+(strategia paralelă și adaosul de finisare).

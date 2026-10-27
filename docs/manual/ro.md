@@ -328,6 +328,14 @@ ridice cât drumul rămâne în buzunar. Cu pasul lateral de cel mult jumătate 
 doar colțurile pe care nicio freză rotundă nu le atinge (cu raza frezei). Unde buzunarul e mai îngust decât freza, ea nu
 intră. Pe un buzunar nu există urechi, intrări sau degajări, iar rampa profilului e înlocuită de coborâre.
 
+**Frezele de rest.** Sub rândul unui buzunar, **Adaugă o freză de rest** pune după freza rândului una mai mică (implicit
+jumătate din diametru, cu T-ul următor liber și pasul de 40 %); se pot pune mai multe, fiecare mai mică decât cea dinainte, și
+se scot cu ×. Fiecare taie doar unde cea dinainte n-a ajuns: colțurile și fâșiile mai înguste decât ea, pe aceleași treceri;
+nu mai trece pe lângă pereții pe care cea mare i-a tăiat deja. Colțurile rămân cu raza celei mai mici. De exemplu, un buzunar
+de 80 × 40 cu Ø12 și apoi Ø3: Ø12 scoate aproape tot, Ø3 doar cele patru colțuri, rotunjite cu 1,5 mm în loc de 6. O freză de
+rest care n-are ce scoate (un cerc pe care cea mare îl golește întreg) nu se montează, iar exportul o spune. Fiecare freză
+cere numărul ei (T); programul o schimbă după cea dinainte. Ele coboară drept, pe o adâncime de cel mult un pas.
+
 **Coborârea.** La fiecare trecere, freza intră în buzunar la începutul primului inel (și acolo unde trebuie să se ridice
 între inele). Felul se alege la **Coborârea**:
 
@@ -376,7 +384,9 @@ contur, iar colțurile ascuțite rămân ascuțite: literele, ornamentele, contu
   fundul, nivel cu nivel, fără să atingă pereții; apoi freza în V taie pereții și colțurile în care cea dreaptă nu ajunge
   (colțurile ascuțite ale fundului și canalele mai înguste decât ea), cu inele dese: acolo rămâne o creastă de cel mult
   0,05 mm. Programul are o schimbare de freză între ele. Fără bifă, fundul rămâne netăiat, iar exportul o spune, ca
-  avertisment; o formă fără fund plat nu montează freza dreaptă deloc.
+  avertisment; o formă fără fund plat nu montează freza dreaptă deloc. Sub freza dreaptă, **Adaugă o freză de rest** pune
+  după ea alte freze drepte, tot mai mici, care scot fundul doar unde cea dinainte n-a ajuns (ca la buzunar); freza în V
+  vine după toate, doar unde n-a ajuns cea mai mică.
 - **Pasul**: la fiecare trecere, freza coboară cel mult cu pasul față de trecerea de dinainte.
 - Freza rândului trebuie să fie **în V** (vezi [Exportul G-code](#export)), iar conul ei, ((diametrul − vârful) / 2) / tan(θ/2),
   trebuie să ajungă la adâncimea cerută; altfel exportul e refuzat, cu motivul. Pe un V-carve nu există urechi, rampă, intrări,

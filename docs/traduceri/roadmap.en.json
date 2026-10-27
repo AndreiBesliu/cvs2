@@ -93,6 +93,10 @@
       "ro": "regiunea păstrată, urechile, intrările",
       "en": "the kept region, tabs, lead-ins"
     },
+    "0a85bfda7cc862e9": {
+      "ro": "Frezele de rest",
+      "en": "Rest bits"
+    },
     "0c71baf23a31780e": {
       "ro": "Transcrierile reale ca fixturi",
       "en": "Real transcripts as fixtures"
@@ -684,6 +688,10 @@
     "59f4607a172740dc": {
       "ro": "Ușa SVG",
       "en": "The SVG door"
+    },
+    "5a5410bb26525103": {
+      "ro": "Buzunarul cu mai multe freze, adus din etapa 5",
+      "en": "The pocket with several bits, brought forward from stage 5"
     },
     "5ad66faba4962cb5": {
       "ro": "șanțurile de calibrare",
@@ -1696,6 +1704,10 @@
     "fae22484fbb203f3": {
       "ro": "Personalul, fila Erori și Diagnoza minimă",
       "en": "Staff, the Errors tab and minimal Diagnostics"
+    },
+    "fae6acbf478d5cff": {
+      "ro": "**Buzunarul cu mai multe freze, adus din etapa 5** (fără mașină; ADR 0093; „Continua cu ce vrei”). Buzunarul are acum frezele de rest (documentul v17: `rest`, o listă de freze plate cu pasul lor): după freza rândului, fiecare mai mică decât cea dinainte, doar unde aceea n-a ajuns (colțurile și fâșiile mai înguste decât ea), pe aceleași treceri, cu schimbarea de sculă. Aceeași mașinărie dă fundului plat al V-carve-ului mai multe freze drepte (lista de freze de golire a gravării inteligente, rămasă din 8.3↑): freza în V vine după toate, față de cea mai mică. Nucleul (`src/cam/rest.ts`): inelele frezei mici, păstrate unde stau la peste R_a − R de zona centrului celei dinainte (deschiderea cu discul ei); pe un perete drept inelul e exact la prag, deci freza mică nu mai trece pe lângă pereții tăiați. În fereastra exportului, sub buzunar și sub freza fundului: **Frezele de rest** (T, Ø, pasul, ×) și **Adaugă o freză de rest** (T-ul următor liber, jumătate din diametru, pasul 40 %). Pe criteriul din cercetare (buzunarul 80 × 40 × 10, Ø12 apoi Ø3, pasul 40 %), pe oracolul simulării judecat pe sculă: fundul la −10 ± 0,02 peste tot în afara colțurilor, colțurile cu raza 1,485 (doar cu Ø12: 5,992), Ø3 scoate 2 912 celule, toate în afara deschiderii cu Ø12, iar traseul ei nu trece pe lângă pereți; inelele Ø12 la 6, 10,8 și 15,6 mm. Totalul 325,9 → 328,0 / 330 kB (strâmt: rămân 2 kB), pornirea 96,0 (cu ușa 99,5). **Treceri:** (1) documentul v17 (schema, migrarea, oracolul documentului mutat pe v17), nucleul, buzunarul, fundul plat, lucrarea (refuzurile, conflictul de freze, freza fără nimic de scos nemontată, cu avertisment), fereastra, Exportă, panoul, manualul; probele: o fâșie de 8 mm, o insulă cu fâșii de 6 mm, trei freze, sensul păstrat pe colț, fundul cu Ø6 și Ø2 (freza V face exact ce face cu Ø2 singură; în colț, 0,0004 mm față de anvelopa frezei de gravare); e2e. Mutațiile: 26 / 29 din prima; cele trei scăpate (două verificări din nucleu aflate în spatele celor din lucrare, freza de rest a fundului montată degeaba) au probe noi: **29 / 29**. Găsit pe drum: pragul cu marjă (R_a − R − h) păstra tot inelul de lângă perete, deci freza mică făcea tot conturul prin aer; bucățile inversate pentru drumul cel mai scurt ar fi schimbat sensul de tăiere (urcare / opoziție): acum se păstrează. Rămân strategia paralelă (raster) cu trecerea de profil și adaosul de finisare.",
+      "en": "**The pocket with several bits, brought forward from stage 5** (no machine; ADR 0093; “Continua cu ce vrei”). A pocket now has rest bits (document v17: `rest`, a list of flat bits with their stepover): after the row's bit, each one smaller than the one before, only where that one could not reach (the corners and the strips narrower than it), on the same passes, with the tool change. The same machinery gives the V-carve's flat floor several straight bits (the clearing-bit list of smart engraving left over from 8.3↑): the V bit comes after all of them, against the smallest one. The core (`src/cam/rest.ts`): the small bit's rings, kept where they are farther than R_a − R from the centre zone of the one before (the opening with its disc); along a straight wall the ring is exactly at the threshold, so the small bit no longer runs along the walls already cut. In the export dialog, under the pocket and under the floor bit: **Rest bits** (T, Ø, stepover, ×) and **Add a rest bit** (the next free T, half the diameter, a 40 % stepover). On the research criterion (the 80 × 40 × 10 pocket, Ø12 then Ø3, a 40 % stepover), on the simulation oracle judged per bit: the floor at −10 ± 0.02 everywhere outside the corners, the corners with a 1.485 radius (with Ø12 alone: 5.992), Ø3 removes 2,912 cells, all outside the opening with Ø12, and its path does not run along the walls; the Ø12 rings at 6, 10.8 and 15.6 mm. Total 325.9 → 328.0 / 330 kB (tight: 2 kB left), startup 96.0 (with the door 99.5). **Passes:** (1) document v17 (schema, migration, the document oracle moved to v17), the core, the pocket, the flat floor, the job (refusals, the bit conflict, a bit with nothing to clear not mounted, with a warning), the dialog, Export, the panel, the manual; the proofs: an 8 mm strip, an island with 6 mm strips, three bits, the direction kept around a corner, the floor with Ø6 and Ø2 (the V bit does exactly what it does with Ø2 alone; in the corner, 0.0004 mm against the engraving bit's envelope); e2e. Mutations: 26 / 29 at first; the three that escaped (two checks in the core behind those of the job, the floor's rest bit mounted for nothing) have new proofs: **29 / 29**. Found on the way: the threshold with a margin (R_a − R − h) kept the whole ring next to the wall, so the small bit ran the whole outline in the air; pieces reversed for the shortest path would have changed the direction of cut (climb / conventional): it is now kept. What remains: the parallel (raster) strategy with the profile pass, and the finishing allowance."
     },
     "fb246777842bae23": {
       "ro": "Poarta invariantelor completă și unealta de otrăvuri",

@@ -160,6 +160,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   sau în V-carve (pe o parte, într-un buzunar, la găurire, refuzată: teșirea e a etapei 16); direcția pe linie (`directie`: invers,
   cel mai scurt drum); gravarea inteligentă = V-carve-ul cu fundul plat și freza de gravare. Oracolul simulării n-are un V cu vârf:
   freza i se dă ca sculă de profil.
+  **Frezele de rest (ADR 0093, documentul v17)** gata pe 27.10: `rest` pe buzunar și pe fundul plat; fiecare freză mai mică doar
+  unde cea dinainte n-a ajuns (`src/cam/rest.ts`: inelele ei la peste R_a − R de zona centrului celei dinainte), pe aceleași treceri;
+  fundul plat al V-carve-ului (gravarea inteligentă) cu mai multe freze drepte. Totalul 328,0 / 330 kB: strâmt.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

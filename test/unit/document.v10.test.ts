@@ -39,7 +39,7 @@ function stricat(d: Document, f: (forma: Record<string, any>) => void): unknown 
 
 test('v10: o cale deschisă trece prin ușă neschimbată, cu câmpurile necunoscute, și pe segmentul ultimului vârf', () => {
   // Felia 5.1↑ (ADR 0069): aplicația e pe v11, iar căile deschise rămân cum erau.
-  assert.equal(VERSIUNE_SCHEMA, 16);
+  assert.equal(VERSIUNE_SCHEMA, 17);
   for (const forma of [LINIA, deschisa([0, 0], [50, 0], [50, 50], [0, 50], [0, 0])]) {
     const d = cu(forma);
     const r = prinUsa(d);
@@ -130,12 +130,12 @@ test('migrarea v9 → v10 schimbă doar numărul: același document, cu câmpuri
   assert.ok(r.ok, motiv(r));
   if (!r.ok) return;
   // Din felia 5.1↑ (ADR 0069), ușa merge mai departe, la v11, din 5.3↑ (ADR 0076) la v12, din 5.4↑ (ADR 0087) la v13, din 8.1↑ (ADR
-  // 0090) la v14, din 8.2↑ (ADR 0091) la v15, din 8.3↑ (ADR 0092) la v16, tot doar cu numărul.
-  assert.equal(r.doc.schema, 16);
-  assert.deepEqual(r.doc, { ...v9, schema: 16 });
+  // 0090) la v14, din 8.2↑ (ADR 0091) la v15, din 8.3↑ (ADR 0092) la v16, din 5.5↑ (ADR 0093) la v17, tot doar cu numărul.
+  assert.equal(r.doc.schema, 17);
+  assert.deepEqual(r.doc, { ...v9, schema: 17 });
   // Fără piese: nimic de verificat, doar numărul.
   const gol = incarca({ schema: 9, rev: 2, piese: [], foi: [{ id: 'f1', stoc: F, instante: [] }] });
-  assert.ok(gol.ok && gol.doc.schema === 16);
+  assert.ok(gol.ok && gol.doc.schema === 17);
 });
 
 test('migrarea v9 → v10 refuză un v9 cu o cale deschisă, cu stânga / dreapta sau cu câmpul despartire: nu e un v9 valid', () => {

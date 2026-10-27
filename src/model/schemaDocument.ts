@@ -107,6 +107,13 @@ const SchemaScula = v.looseObject({
   })),
 });
 
+// ADR 0093: frezele de rest (v17), o listă nevidă; potrivirea (mai mică decât freza dinainte, plată, pasul cel mult raza ei) e
+// a lucrării.
+const SchemaRest = v.pipe(
+  v.array(v.looseObject({ scula: SchemaScula, pasLateral: pozitiv(PLAFON.diametruScula / 2) })),
+  v.minLength(1), v.maxLength(PLAFON.freziRest),
+);
+
 const SchemaOperatie = v.looseObject({
   id: Id,
   tip: v.picklist(['profil', 'buzunar', 'gaurire', 'vcarve']),
@@ -139,9 +146,11 @@ const SchemaOperatie = v.looseObject({
   retragereCompleta: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(RETRAGERE_COMPLETA_MAXIMA))),
   // ADR 0091: freza dreaptă a fundului plat (v15); potrivirea (doar pe V-carve, plată, pasul cel mult raza ei, alt număr
   // decât V-ul) e a lucrării.
-  fundPlat: v.optional(v.looseObject({ scula: SchemaScula, pasLateral: pozitiv(PLAFON.diametruScula / 2) })),
+  fundPlat: v.optional(v.looseObject({ scula: SchemaScula, pasLateral: pozitiv(PLAFON.diametruScula / 2), rest: v.optional(SchemaRest) })),
   // ADR 0092: direcția tăieturii pe linie (v16); pe altă latură o refuză lucrarea.
   directie: v.optional(v.picklist(['invers', 'scurt'])),
+  // ADR 0093: frezele de rest ale buzunarului (v17); pe alt fel le refuză lucrarea.
+  rest: v.optional(SchemaRest),
 });
 const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
 const SchemaInstanta = v.looseObject({

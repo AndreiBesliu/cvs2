@@ -1117,6 +1117,26 @@ nav button[aria-pressed='true'] {
   max-width: 5.5rem;
 }
 
+/* Frezele de rest (ADR 0093): pe rândul lor, câte una (T, Ø, pasul, ×), apoi „Adaugă”. */
+.dialog .campuri-rest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-basis: 100%;
+}
+
+.dialog .campuri-rest .freza-rest {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  white-space: nowrap;
+}
+
+.dialog .campuri-rest input.numar-scula {
+  max-width: 3.25rem;
+}
+
 /* Freza rândului (ADR 0084): numărul sculei și diametrul, alăturate; T are cel mult trei cifre. */
 .dialog td.freza {
   white-space: nowrap;

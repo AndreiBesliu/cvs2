@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import '../i18n/export.ts';
 // Durata în cuvinte (`durata.*`) stă în dicționarul traseului, comun cu cipul timpului de lângă traseu (ADR 0046 §8).
 import '../i18n/traseu.ts';
@@ -58,9 +58,15 @@ export type ValoriOperatie = {
   readonly fundPlat?: FundPlatOperatie | null;
   /** Direcția pe linie (ADR 0092 §4): doar pe un profil pe linie; lipsă = ca desenul. */
   readonly directie?: DirectieOperatie;
+  /** Frezele de rest ale unui buzunar (ADR 0093), în ordine; goală = niciuna. */
+  readonly rest?: readonly FrezaRestOperatie[];
 };
-/** Freza dreaptă a fundului plat (ADR 0091): numărul (T), diametrul și distanța dintre inele (mm). */
-export type FundPlatOperatie = { readonly numar: number; readonly diametru: number; readonly pasLateral: number };
+/** O freză de rest (ADR 0093): numărul (T), diametrul și distanța dintre inele (mm). */
+export type FrezaRestOperatie = { readonly numar: number; readonly diametru: number; readonly pasLateral: number };
+/** Freza dreaptă a fundului plat (ADR 0091): numărul (T), diametrul și distanța dintre inele (mm), cu frezele ei de rest. */
+export type FundPlatOperatie = {
+  readonly numar: number; readonly diametru: number; readonly pasLateral: number; readonly rest?: readonly FrezaRestOperatie[];
+};
 
 /**
  * Un rând: o operație a unei piese (ADR 0025), cu cheia `<piesă>/<operație>`. `deschise`: câte din nodurile ei sunt căi
@@ -175,7 +181,36 @@ type Rand = {
   readonly unghiCoborare: string; readonly lungimeZigzag: string; readonly razaElice: string;
   /** Fundul plat al V-carve-ului (ADR 0091): bifa și freza dreaptă, ca text; câmpurile rămân scrise și cu bifa scoasă. */
   readonly fundPlat: boolean; readonly numarSculaFund: string; readonly diametruSculaFund: string; readonly pasLateralFund: string;
+  /** Frezele de rest (ADR 0093), ca text: ale buzunarului și ale fundului plat. */
+  readonly rest: readonly RandRest[]; readonly restFund: readonly RandRest[];
 };
+/** O freză de rest pe rândul ei, ca text: numărul, diametrul și pasul lateral. */
+type RandRest = { readonly numar: string; readonly diametru: string; readonly pas: string };
+/** Câte freze de rest are o listă (ADR 0093, plafonul documentului). */
+const MAXIM_REST = 8;
+/**
+ * O listă de freze de rest e bună dacă fiecare are numărul în margini, diametrul pozitiv și mai mic decât al celei dinainte
+ * (prima: `dinainte`) și pasul lateral cel mult raza ei. Câte una, ca câmpul greșit să se vadă.
+ */
+function restBun(lista: readonly RandRest[], dinainte: string): boolean[] {
+  let d0 = citesteNumar(dinainte);
+  return lista.map((r) => {
+    const d = citesteNumar(r.diametru);
+    const ok = intregInMargini(r.numar, MARGINI_OPERATIE.numarScula) && d0 !== null && d !== null && d > 0 && d < d0 && inMargini(r.pas, d / 2);
+    d0 = d;
+    return ok;
+  });
+}
+/** Frezele de rest citite, sau null dacă una nu se poate citi. */
+function citesteRest(lista: readonly RandRest[]): FrezaRestOperatie[] | null {
+  const rez: FrezaRestOperatie[] = [];
+  for (const r of lista) {
+    const numar = citesteNumar(r.numar), diametru = citesteNumar(r.diametru), pasLateral = citesteNumar(r.pas);
+    if (numar === null || diametru === null || pasLateral === null) return null;
+    rez.push({ numar, diametru, pasLateral });
+  }
+  return rez;
+}
 
 /** Valorile cu care pornește coborârea pe un rând care n-o avea (ADR 0076 §5): 3°, zigzagul de 20 mm, elicea cât raza frezei. */
 const UNGHI_COBORARE_IMPLICIT = 3;
@@ -314,6 +349,9 @@ export function DialogExport(
       fundPlat: inchise && o.valori.tip === 'vcarve' && fund !== null,
       numarSculaFund: text(fund?.numar ?? (o.valori.scula?.numar ?? 1) + 1), diametruSculaFund: text(diametruFund),
       pasLateralFund: text(fund?.pasLateral ?? pasLateralImplicit(diametruFund)),
+      // Frezele de rest (ADR 0093), ale buzunarului și ale fundului plat.
+      rest: (o.valori.rest ?? []).map((r) => ({ numar: text(r.numar), diametru: text(r.diametru), pas: text(r.pasLateral) })),
+      restFund: (fund?.rest ?? []).map((r) => ({ numar: text(r.numar), diametru: text(r.diametru), pas: text(r.pasLateral) })),
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
@@ -347,8 +385,11 @@ export function DialogExport(
   // Pasul lateral al unui buzunar: cel mult raza frezei rândului (ADR 0069 §3); fără o freză bună, nu se judecă.
   const randBun = (p: Rand | undefined): {
     scula: boolean; adancime: boolean; pas: boolean; numar: boolean; latime: boolean; grosime: boolean; rampa: boolean; intrari: boolean;
-    pasLateral: boolean; coborare: boolean; retragere: boolean; vcarve: boolean; fund: boolean; varf: boolean; vPeLinie: boolean;
+    pasLateral: boolean; coborare: boolean; retragere: boolean; vcarve: boolean; fund: boolean; varf: boolean; vPeLinie: boolean; rest: boolean;
   } => ({
+    // Frezele de rest (ADR 0093): ale buzunarului; ale fundului plat, doar cu bifa pusă.
+    rest: p !== undefined && (p.tip !== 'buzunar' || restBun(p.rest, p.diametruScula).every(Boolean))
+      && (p.tip !== 'vcarve' || !p.fundPlat || restBun(p.restFund, p.diametruSculaFund).every(Boolean)),
     scula: p !== undefined && intregInMargini(p.numarScula, MARGINI_OPERATIE.numarScula) && inMargini(p.diametruScula, MARGINI_OPERATIE.diametru)
       && (p.formaScula !== 'v' || inMargini(p.unghiV, MARGINI_OPERATIE.unghiV, MARGINI_OPERATIE.unghiVMinim)),
     // V-carve-ul (ADR 0090) cere freza în V.
@@ -403,6 +444,11 @@ export function DialogExport(
     // Și freza dreaptă a fundului plat (ADR 0091), cu bifa pusă.
     const nf = p?.tip === 'vcarve' && p.fundPlat ? citesteNumar(p.numarSculaFund) : null, df = p ? citesteNumar(p.diametruSculaFund) : null;
     if (nf !== null && df !== null) adaugaFreza(nf, df, null);
+    // Și frezele de rest (ADR 0093): ale buzunarului și, cu bifa pusă, ale fundului plat.
+    for (const r of [...(p?.tip === 'buzunar' ? p.rest : []), ...(p?.tip === 'vcarve' && p.fundPlat ? p.restFund : [])]) {
+      const nr = citesteNumar(r.numar), dr = citesteNumar(r.diametru);
+      if (nr !== null && dr !== null) adaugaFreza(nr, dr, null);
+    }
   }
   const conflict = [...scule].find(([, ds]) => ds.size > 1);
   const operatiiBune = sculeBune && !conflict && randuri.every((b) => b.adancime && b.pas);
@@ -416,8 +462,9 @@ export function DialogExport(
   const funduriBune = randuri.every((b) => b.fund);
   const varfuriBune = randuri.every((b) => b.varf);
   const vPeLinie = randuri.every((b) => b.vPeLinie);
+  const resturiBune = randuri.every((b) => b.rest);
   const valid = operatiiBune && urechiBune && rampeBune && intrariBune && pasiBuni && coborariBune && retrageriBune && vcarveBune && funduriBune
-    && varfuriBune && vPeLinie;
+    && varfuriBune && vPeLinie && resturiBune;
   /**
    * Orice parametru schimbat face vechi rezultatul. Bifa nu mai trebuie ștearsă aici: cererea următoare e alt obiect, deci
    * vine oricum nebifată.
@@ -431,6 +478,45 @@ export function DialogExport(
       const vechi = v[id];
       return vechi ? { ...v, [id]: { ...vechi, ...p } } : v;
     });
+  };
+  /**
+   * Frezele de rest ale unui rând (ADR 0093): câte un rând cu T, Ø și pasul, scos cu ×; „Adaugă” pune una cu T-ul următor
+   * liber, jumătate din diametrul celei dinainte și pasul de 40 %. `fund`: lista fundului plat (oprită fără bifă).
+   */
+  const frezeRest = (cheie: string, p: Rand, fund: boolean, oprit: boolean): ReactNode => {
+    const lista = fund ? p.restFund : p.rest, prima = fund ? p.diametruSculaFund : p.diametruScula, pre = fund ? 'fund-' : '';
+    const pune = (nou: readonly RandRest[]): void => { schimba(cheie, fund ? { restFund: nou } : { rest: nou }); };
+    const bune = restBun(lista, prima);
+    const adauga = (): void => {
+      // Numerele folosite: freza fiecărui rând, frezele de rest ale buzunarelor și, cu bifa pusă, freza fundului și ale ei.
+      const toate = Object.values(param).flatMap((r) => [
+        r.numarScula, ...(r.tip === 'buzunar' ? r.rest.map((x) => x.numar) : []),
+        ...(r.tip === 'vcarve' && r.fundPlat ? [r.numarSculaFund, ...r.restFund.map((x) => x.numar)] : []),
+      ]);
+      const t0 = Math.max(0, ...toate.map((x) => citesteNumar(x) ?? 0));
+      const d0 = citesteNumar(lista.at(-1)?.diametru ?? prima) ?? 6, d = Math.round((d0 / 2) * 1000) / 1000;
+      pune([...lista, { numar: text(Math.min(MARGINI_OPERATIE.numarScula, t0 + 1)), diametru: text(d), pas: text(pasLateralImplicit(d)) }]);
+    };
+    return (
+      <div className="campuri-rest" data-rest={fund ? `fund:${cheie}` : cheie}>
+        <span title={t('export.rest.titlu')}>{t('export.rest')}</span>
+        {lista.map((r, k) => (
+          <span className="freza-rest" data-rest-rand={k} key={k}>
+            <input type="text" inputMode="numeric" value={r.numar} data-camp={`${pre}rest-scula`} disabled={oprit} aria-label={t('export.freza.numar')}
+              className="numar-scula" aria-invalid={!bune[k]} onChange={(ev) => { pune(lista.map((x, i) => (i === k ? { ...x, numar: ev.target.value } : x))); }} />
+            <input type="text" inputMode="decimal" value={r.diametru} data-camp={`${pre}rest-diametru`} disabled={oprit} aria-label={t('export.freza.diametru')}
+              aria-invalid={!bune[k]} onChange={(ev) => { pune(lista.map((x, i) => (i === k ? { ...x, diametru: ev.target.value } : x))); }} />
+            <input type="text" inputMode="decimal" value={r.pas} data-camp={`${pre}rest-pas`} disabled={oprit} aria-label={t('export.pas-lateral')}
+              title={t('export.pas-lateral.titlu')} aria-invalid={!bune[k]} onChange={(ev) => { pune(lista.map((x, i) => (i === k ? { ...x, pas: ev.target.value } : x))); }} />
+            <button type="button" data-camp={`${pre}rest-scoate`} disabled={oprit} aria-label={t('export.rest.scoate')} title={t('export.rest.scoate')}
+              onClick={() => { pune(lista.filter((_, i) => i !== k)); }}>×</button>
+          </span>
+        ))}
+        <button type="button" data-camp={`${pre}rest-adauga`} disabled={oprit || lista.length >= MAXIM_REST} title={t('export.rest.titlu')} onClick={adauga}>
+          {t('export.rest.adauga')}
+        </button>
+      </div>
+    );
   };
   const valori = (): Map<string, ValoriOperatie> => new Map(operatii.flatMap((o): Array<readonly [string, ValoriOperatie]> => {
     const p = param[o.cheie];
@@ -450,7 +536,10 @@ export function DialogExport(
     if (p.tip === 'vcarve') {
       const numar = citesteNumar(p.numarSculaFund), diametru = citesteNumar(p.diametruSculaFund), pasLateral = citesteNumar(p.pasLateralFund);
       if (p.fundPlat && (numar === null || diametru === null || pasLateral === null)) return [];
-      const fundPlat = p.fundPlat && numar !== null && diametru !== null && pasLateral !== null ? { numar, diametru, pasLateral } : null;
+      const restFund = citesteRest(p.restFund);
+      if (p.fundPlat && restFund === null) return [];
+      const fundPlat = p.fundPlat && numar !== null && diametru !== null && pasLateral !== null
+        ? { numar, diametru, pasLateral, ...(restFund && restFund.length > 0 ? { rest: restFund } : {}) } : null;
       return [[o.cheie, { scula, latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'vcarve', fundPlat }] as const];
     }
     // Găurirea (ADR 0087 §1): latura interior, nimic din profil, cu ieșirea la al câtelea pas.
@@ -464,7 +553,9 @@ export function DialogExport(
     // Buzunarul (ADR 0069 §1): latura interior, nimic din profil, cu pasul lateral.
     if (p.tip === 'buzunar') {
       const pasLateral = citesteNumar(p.pasLateral);
-      if (pasLateral === null) return [];
+      // Frezele de rest (ADR 0093): lista rândului, goală = niciuna.
+      const rest = citesteRest(p.rest);
+      if (pasLateral === null || rest === null) return [];
       // Coborârea (ADR 0076): plonjarea nu se scrie (documentul rămâne cel de dinainte, cu același program).
       const unghi = citesteNumar(p.unghiCoborare), lungime = citesteNumar(p.lungimeZigzag), raza = citesteNumar(p.razaElice);
       let coborare: Coborare | undefined;
@@ -476,7 +567,7 @@ export function DialogExport(
       }
       return [[o.cheie, {
         scula, latura: 'interior', sens: p.sens, adancime, pas, urechi: null, rampa: null, intrari: null, colturi: null, tip: 'buzunar', pasLateral,
-        ...(coborare ? { coborare } : {}),
+        ...(coborare ? { coborare } : {}), rest,
       }] as const];
     }
     const numar = citesteNumar(p.numarUrechi), latime = citesteNumar(p.latimeUreche), grosime = citesteNumar(p.grosimeUreche);
@@ -521,6 +612,7 @@ export function DialogExport(
     ...(varfuriBune ? [] : [t('motiv.varf-invalid')]),
     ...(vPeLinie ? [] : [t('motiv.v-pe-linie')]),
     ...(funduriBune ? [] : [t('motiv.fund-plat-invalid', { n: MARGINI_OPERATIE.numarScula, diametru: fmtFreza.format(MARGINI_OPERATIE.diametru) })]),
+    ...(resturiBune ? [] : [t('motiv.rest-invalid', { n: MARGINI_OPERATIE.numarScula })]),
     ...(intrariBune ? [] : [operatii.some((o, i) => !randuri[i]?.intrari && param[o.cheie]?.rampa)
       ? t('motiv.intrari-invalide-rampa', {
         minim: fmtFreza.format(MARGINI_OPERATIE.razaIntrareMinimaRampa), raza: fmtFreza.format(MARGINI_OPERATIE.razaIntrare),
@@ -720,6 +812,7 @@ export function DialogExport(
                         <input type="text" inputMode="decimal" value={p.pasLateralFund} data-camp="fund-pas" disabled={doarCitire || !p.fundPlat}
                           aria-invalid={p.fundPlat && !b.fund} onChange={(ev) => { schimba(o.cheie, { pasLateralFund: ev.target.value }); }} />
                       </label>
+                      {frezeRest(o.cheie, p, true, doarCitire || !p.fundPlat)}
                       </div>
                       )}
                       {/* Găurirea (ADR 0087): pasul e cât coboară freza între două retrageri; aici, când iese din gaură. */}
@@ -778,6 +871,7 @@ export function DialogExport(
                           onChange={(ev) => { schimba(o.cheie, { razaElice: ev.target.value }); }} />
                       </label>
                       )}
+                      {frezeRest(o.cheie, p, false, doarCitire)}
                       </div>
                       )}
                       {p.urechi && !nuProfil && (

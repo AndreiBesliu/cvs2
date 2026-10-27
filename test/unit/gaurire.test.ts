@@ -288,7 +288,7 @@ test('oracolul simulării: gaura Ø10 în elice și Ø12 (cât două diametre), 
 
 // ── Documentul v13 și ce scrie Exportă ───────────────────────────────────────────────────────────────────────────────
 
-test('ușa v13: `retragereCompleta` e un întreg 1–100; tipul „gaurire” și câmpul lui într-un v12 nu fac un v12 valid; un v12 curat urcă (prin v13, v14, v15) la v16', () => {
+test('ușa v13: `retragereCompleta` e un întreg 1–100; tipul „gaurire” și câmpul lui într-un v12 nu fac un v12 valid; un v12 curat urcă (prin v13, v14, v15, v16) la v17', () => {
   const cerc = [{ id: 'a', raza: 3, e: 20, f: 20 }];
   for (const bun of [1, 7, 100]) deschis(doc(cerc, [gaurire(['a'], { retragereCompleta: bun })]));
   deschis(doc(cerc, [gaurire(['a'])]));
@@ -303,7 +303,7 @@ test('ușa v13: `retragereCompleta` e un întreg 1–100; tipul „gaurire” ș
   const curat = v12({ ...gaurire(['a']), tip: 'profil' });
   const c = incarca(curat);
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...curat, schema: 16 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...curat, schema: 17 }, 'doar numărul');
 });
 
 test('ce scrie Exportă (ADR 0087 §1): găurirea rândului cu latura interior și nimic din profil; implicitul 1 nu se scrie pe o operație care nu-l avea', () => {

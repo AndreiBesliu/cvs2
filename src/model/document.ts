@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 16;
+export const VERSIUNE_SCHEMA = 17;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -50,6 +50,8 @@ export const PLAFON = {
   numarScula: 999,
   /** Diametrul sculei, în mm. */
   diametruScula: 100,
+  /** Frezele de rest ale unui buzunar sau ale unui fund plat (ADR 0093). */
+  freziRest: 8,
   /** Adâncimea și pasul unei operații, în mm (cât grosimea maximă a unei foi). */
   adancimeOperatie: 1_000,
   /** Urechile pe o buclă a traseului (ADR 0028). */
@@ -138,13 +140,23 @@ export type Operatie = {
   fundPlat?: FundPlat;
   /** Pe o tăietură pe linie (ADR 0092, documentul v16), direcția ei; lipsă = în sensul desenului. */
   directie?: Directie;
+  /**
+   * Pe un buzunar (ADR 0093, documentul v17), frezele de rest, după freza operației: fiecare mai mică decât cea dinainte,
+   * doar unde aceea n-a ajuns (colțuri, fâșii înguste). Lipsă = una singură (ca în v16).
+   */
+  rest?: FrezaRest[];
   [cheie: string]: unknown;
 };
+/**
+ * O freză de rest (ADR 0093): plată, cu distanța dintre inelele ei, în mm (cel mult raza ei). Potrivirea (mai mică decât
+ * freza dinainte, plată, alt număr) o judecă lucrarea.
+ */
+export type FrezaRest = { scula: Scula; pasLateral: number; [cheie: string]: unknown };
 /**
  * Fundul plat al unui V-carve (ADR 0091): freza dreaptă (plată; numărul ei e al altei freze decât V-ul) și distanța dintre
  * inelele ei, în mm (cel mult raza ei). Potrivirea o judecă lucrarea.
  */
-export type FundPlat = { scula: Scula; pasLateral: number; [cheie: string]: unknown };
+export type FundPlat = { scula: Scula; pasLateral: number; rest?: FrezaRest[]; [cheie: string]: unknown };
 /**
  * Coborârea în buzunar (ADR 0076): `plonjare` (dreaptă, ca până în v11), `rampa` (de-a lungul primului inel, cu `unghi`
  * grade față de orizontală), `zigzag` (dus-întors pe primii `lungime` mm ai inelului, cu panta cel mult `unghi`) sau `elice`
@@ -186,7 +198,7 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
-export type Document = { schema: 16; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 17; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

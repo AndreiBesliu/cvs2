@@ -340,6 +340,14 @@ clean everywhere; only the corners no round cutter can reach are left (with the 
 narrower than the cutter, the cutter does not go in. A pocket has no tabs, leads or corner relief, and the profile's ramp
 is replaced by the descent.
 
+**Rest bits.** Under a pocket row, **Add a rest bit** puts a smaller bit after the row's bit (by default half the diameter,
+with the next free T and a 40 % stepover); you can add several, each smaller than the one before, and remove them with ×. Each
+one cuts only where the one before could not reach: the corners and the strips narrower than it, on the same passes; it does
+not run again along the walls the big one has already cut. The corners keep the radius of the smallest one. For example, an
+80 × 40 pocket with Ø12 and then Ø3: Ø12 clears almost everything, Ø3 only the four corners, rounded to 1.5 mm instead of 6.
+A rest bit with nothing to clear (a circle the big one empties entirely) is not mounted, and the export says so. Each bit needs
+its own number (T); the program changes to it after the one before. They plunge straight, at most one step deep.
+
 **Descent.** On every pass, the cutter enters the pocket at the start of the first ring (and wherever it has to lift between
 rings). The kind is chosen under **Descent**:
 
@@ -390,7 +398,9 @@ on the outline, and sharp corners stay sharp: lettering, ornaments, the outline 
   straight bit clears the floor first, level by level, without touching the walls; then the V bit cuts the walls and the
   corners the straight bit cannot reach (the floor's sharp corners and channels narrower than it), with close rings: a ridge
   of at most 0.05 mm stays there. The program has a bit change between them. Without the box, the floor is left uncut and the
-  export says so, as a warning; a shape with no flat floor does not mount the straight bit at all.
+  export says so, as a warning; a shape with no flat floor does not mount the straight bit at all. Under the straight bit,
+  **Add a rest bit** adds more straight bits after it, each smaller, that clear the floor only where the one before could not
+  reach (as in a pocket); the V bit comes after all of them, only where the smallest one could not reach.
 - **Step**: on each pass, the bit goes at most one step deeper than the pass before.
 - The row's bit must be a **V** bit (see [Exporting G-code](#export)), and its cone, ((diameter − tip) / 2) / tan(θ/2), must
   reach the depth asked for; otherwise the export is refused, with the reason. A V-carve has no tabs, ramp, leads, corner

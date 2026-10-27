@@ -22,14 +22,14 @@
  *   inteligentă (smart engrave) e chiar asta: fundul cu freza dreaptă, pereții și colțurile cu freza de gravare.
  */
 import type { Contur, Punct } from '../geom/conturBaza.ts';
-import { arieCuSemn, cerculArcului, inverseaza, numarSegmente, segment } from '../geom/contur.ts';
+import { arieCuSemn, inverseaza } from '../geom/contur.ts';
 import { inRegiune } from '../geom/distanta.ts';
-import { offsetRegiune } from '../geom/offset.ts';
 import type { Miscare } from '../ir/ir.ts';
 import { axaMediala, indexContururi, type IndexContur } from './axaMediala.ts';
 import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
 import { avansCoborare, lungimeBucla, parcurge } from './parcurgere.ts';
 import { adancimiTreceri, type Sens } from './profil.ts';
+import { bucatiNeatinse, bucatiRestInLant, offsetDepartat, taieBucati } from './rest.ts';
 
 /** Pasul eșantionării conturului, în mm (T7: h ≤ 0,02 pe trăsăturile fine; aici uniform). */
 export const PAS_ESANTIOANE = 0.02;
@@ -40,8 +40,6 @@ export const TOLERANTA_GARDA = 0.0005;
 export const MARJA_FUND = 0.002;
 /** Creasta lăsată de inelele V în colțurile pe care freza dreaptă nu le atinge (mm, s3: un compromis cost / precizie). */
 export const CREASTA_FUND = 0.05;
-/** Săgeata cea mai mare a coardelor cu care se aplatizează arcele inelelor colțurilor (mm). */
-const SAGEATA_COLTURI = 0.0005;
 
 export type ParametriVcarve = {
   /** Contururile închise ale regiunii, citite par-impar (literele, cu golurile lor). */
@@ -62,15 +60,23 @@ export type ParametriVcarve = {
   readonly fundPlat?: FundPlatVcarve;
 };
 
-export type FundPlatVcarve = { readonly diametru: number; readonly pasLateral: number; readonly sens: Sens };
+/**
+ * `rest` (ADR 0093): frezele drepte de după ea, fiecare mai mică decât cea dinainte, doar unde aceea n-a ajuns (colțurile și
+ * fâșiile fundului mai înguste decât ea).
+ */
+export type FundPlatVcarve = {
+  readonly diametru: number; readonly pasLateral: number; readonly sens: Sens;
+  readonly rest?: ReadonlyArray<{ readonly diametru: number; readonly pasLateral: number }>;
+};
 
 /**
- * `fund`: mișcările frezei drepte (goale: n-a tăiat nimic, deci nu se montează); `miscari`: ale frezei în V, după ea.
+ * `fund`: mișcările frezei drepte (goale: n-a tăiat nimic, deci nu se montează); `fundRest`: ale frezelor ei de rest, în
+ * ordine (goale: aceea nu se montează); `miscari`: ale frezei în V, după ele.
  */
 export type RezultatVcarve =
   | {
-    readonly ok: true; readonly fund: readonly Miscare[]; readonly miscari: readonly Miscare[]; readonly avertismente: readonly string[];
-    readonly statistici: StatisticiVcarve;
+    readonly ok: true; readonly fund: readonly Miscare[]; readonly fundRest: readonly (readonly Miscare[])[]; readonly miscari: readonly Miscare[];
+    readonly avertismente: readonly string[]; readonly statistici: StatisticiVcarve;
   }
   | { readonly ok: false; readonly motiv: string };
 
@@ -80,6 +86,8 @@ export type StatisticiVcarve = {
   readonly sfarsitTreceri: readonly number[];
   /** Indicele, în `fund`, de după fiecare nivel al frezei drepte. */
   readonly sfarsitFund: readonly number[];
+  /** La fel, pentru fiecare freză de rest a fundului (ADR 0093). */
+  readonly sfarsitFundRest: readonly (readonly number[])[];
   /** Câte bucăți de inel taie freza V în colțurile pe care freza dreaptă nu le atinge (pe trecere). */
   readonly ineleColturi: number;
 };
@@ -287,85 +295,6 @@ export function grupeRegiune(contururi: readonly Contur[]): { readonly exterior:
   return grupe.map(({ exterior, gauri }) => ({ exterior, gauri }));
 }
 
-/**
- * Punctele unei bucle, pe linii și pe arce (coardele arcelor cu săgeata cel mult `SAGEATA_COLTURI`), la cel mult `pasMax`
- * unul de altul, de la vârful 0 înapoi la el.
- */
-export function puncteBucla(c: Contur, pasMax: number): Punct[] {
-  const rez: Punct[] = [];
-  for (let i = 0; i < numarSegmente(c); i++) {
-    const { a, b, s } = segment(c, i);
-    if (i === 0) rez.push(a);
-    if (s.tip === 'A') {
-      const { centru, raza, start, baleiaj } = cerculArcului(a, b, s.bulge);
-      const pasUnghi = Math.min(pasMax / raza, 2 * Math.acos(Math.max(-1, 1 - SAGEATA_COLTURI / raza)));
-      const n = Math.max(1, Math.ceil(Math.abs(baleiaj) / pasUnghi));
-      for (let k = 1; k < n; k++) {
-        const u = start + (baleiaj * k) / n;
-        rez.push({ x: centru.x + raza * Math.cos(u), y: centru.y + raza * Math.sin(u) });
-      }
-    } else {
-      const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / pasMax));
-      for (let k = 1; k < n; k++) rez.push({ x: a.x + ((b.x - a.x) * k) / n, y: a.y + ((b.y - a.y) * k) / n });
-    }
-    rez.push(b);
-  }
-  return rez;
-}
-
-/**
- * Bucățile buclei (cu punctele `puncteBucla`) pe care `atins` le dă false, cu capetele căutate prin înjumătățire pe coarda
- * dintre ultimul punct neatins și primul atins. O buclă neatinsă nicăieri iese întreagă, închisă.
- */
-export function bucatiNeatinse(c: Contur, atins: (q: Punct) => boolean, pasMax: number): Punct[][] {
-  const pts = puncteBucla(c, pasMax);
-  if (pts.length > 1) pts.pop();
-  const n = pts.length;
-  const stare = pts.map(atins);
-  const k0 = stare.indexOf(true);
-  if (k0 < 0) return n > 1 ? [[...pts, pts[0]!]] : [];
-  const granita = (a: Punct, b: Punct): Punct => {
-    // a neatins, b atins: granița pe coarda ab.
-    let lo = 0, hi = 1;
-    for (let it = 0; it < 30; it++) {
-      const t = (lo + hi) / 2;
-      if (atins({ x: a.x + t * (b.x - a.x), y: a.y + t * (b.y - a.y) })) hi = t; else lo = t;
-    }
-    return { x: a.x + lo * (b.x - a.x), y: a.y + lo * (b.y - a.y) };
-  };
-  const rez: Punct[][] = [];
-  let cur: Punct[] | null = null;
-  for (let s = 1; s <= n; s++) {
-    const i = (k0 + s) % n, prev = (k0 + s - 1) % n;
-    if (!stare[i]) {
-      if (!cur) cur = [granita(pts[i]!, pts[prev]!)];
-      cur.push(pts[i]!);
-    } else if (cur) {
-      cur.push(granita(pts[prev]!, pts[i]!));
-      rez.push(cur);
-      cur = null;
-    }
-  }
-  return rez;
-}
-
-/** Cât se mută un offset care cade pe un prag de topologie (mm), în ordine; spre axă, deci departe de pereți. */
-const PRAGURI_OFFSET = [0.001, 0.002, 0.005] as const;
-
-/**
- * Regiunea decalată cu −d; pe un prag de topologie (d exact cât raza cercului înscris, unde regiunea e o linie, sau un gât lat
- * exact 2d: offsetul „se atinge singur”), din nou puțin mai departe de contur (`PRAGURI_OFFSET`), ca inelele buzunarului:
- * acolo nici freza V la −D, nici marginea frezei drepte nu ajung în pereți.
- */
-function offsetDepartat(g: { readonly exterior: Contur; readonly gauri: readonly Contur[] }, d: number): ReturnType<typeof offsetRegiune> {
-  let o = offsetRegiune(g.exterior, g.gauri, -d);
-  for (const a of PRAGURI_OFFSET) {
-    if (o.ok || o.motiv.startsWith('scula nu încape')) break;
-    o = offsetRegiune(g.exterior, g.gauri, -(d + a));
-  }
-  return o;
-}
-
 export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   if (!(p.unghi > 0 && p.unghi < 180)) return { ok: false, motiv: `unghiul frezei în V trebuie să fie în (0°, 180°) (${p.unghi}°)` };
   if (!(p.adancime > 0)) return { ok: false, motiv: `adâncimea maximă trebuie să fie pozitivă (${p.adancime} mm)` };
@@ -379,7 +308,17 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
     if (!(p.fundPlat.pasLateral > 0 && p.fundPlat.pasLateral <= Rf)) {
       return { ok: false, motiv: `pasul lateral al frezei drepte, de ${p.fundPlat.pasLateral} mm, trebuie să fie în (0, ${Rf}] (raza ei): altfel rămâne material între inele` };
     }
+    let dinainte = p.fundPlat.diametru;
+    for (const r of p.fundPlat.rest ?? []) {
+      if (!(r.diametru > 0 && r.diametru < dinainte)) return { ok: false, motiv: `freza de rest a fundului (Ø${r.diametru}) trebuie să fie mai mică decât cea dinainte (Ø${dinainte})` };
+      if (!(r.pasLateral > 0 && r.pasLateral <= r.diametru / 2)) {
+        return { ok: false, motiv: `pasul lateral al frezei de rest Ø${r.diametru}, de ${r.pasLateral} mm, trebuie să fie în (0, ${r.diametru / 2}] (raza ei)` };
+      }
+      dinainte = r.diametru;
+    }
   }
+  /** Raza celei mai mici freze drepte a fundului: până la ea, frezele drepte au scos deschiderea fundului cu discul ei. */
+  const Rmin = p.fundPlat ? (p.fundPlat.rest?.at(-1)?.diametru ?? p.fundPlat.diametru) / 2 : 0;
   const tan = Math.tan((p.unghi * Math.PI) / 360), cot = 1 / tan;
   // wP: peretele la −D (de la contur); wD: centrul frezei acolo (cu vârful plat, cu a mai departe).
   const D = p.adancime, wP = D * tan, wD = a + wP;
@@ -404,9 +343,10 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   }
   const fundPlat = razaMax > wD + 1e-9;
   const cuFreza = fundPlat && p.fundPlat !== undefined;
-  // Cu freza dreaptă, axa rămâne doar unde centrul ei n-ajunge (r < wP + m + Rf): mai departe, ea a scos-o deja la −D. Cu
+  // Cu freza dreaptă, axa rămâne doar unde centrul ei n-ajunge (r < wP + m + R, R a celei mai mici, ADR 0093): mai departe,
+  // frezele drepte au scos-o deja la −D. Cu
   // vârful plat, z ≥ 0 unde r ≤ a: bucățile acelea le scoate prima trecere (doar sub nivelul de dinainte, adică sub 0).
-  const axa: P3[][] = (cuFreza ? ramuri.flatMap((pts) => sub(pts, wP + MARJA_FUND + Rf)) : ramuri)
+  const axa: P3[][] = (cuFreza ? ramuri.flatMap((pts) => sub(pts, wP + MARJA_FUND + Rmin)) : ramuri)
     .map((pts) => cuTreceri(pts, wD).map((q) => [q[0], q[1], -Math.min(D, (q[2] - a) * cot)] as const));
   // Peretele unde regiunea e mai lată decât freza la D: inelele regiunii decalate cu wD, la −D.
   const inele: Contur[] = [];
@@ -438,6 +378,8 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   // iar zona fiecărui nivel e în cea a nivelului de dinainte, deci fiecare nivel scoate cel mult pasul.
   const fund: Miscare[] = [];
   const sfarsitFund: number[] = [];
+  /** Bucățile fiecărei freze de rest a fundului (ADR 0093), pe fiecare nivel. */
+  const restPeNivel: Array<Array<{ adancime: number; bucati: Punct[][] }>> = (p.fundPlat?.rest ?? []).map(() => []);
   /** Colțurile pe care freza dreaptă nu le atinge: bucățile inelelor V, la −D. */
   const colturi: Punct[][] = [];
   if (cuFreza && p.fundPlat) {
@@ -462,17 +404,28 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
           if (!t.ok) return { ok: false, motiv: `fundul plat la ${w.toFixed(3)} mm de contur: ${t.motiv}` };
           for (const x of t.miscari) fund.push(x);
         }
+        // Frezele de rest (ADR 0093): în aceeași regiune a nivelului, fiecare doar unde cea dinainte n-a ajuns.
+        for (const r of f.rest?.length ? o.regiuni : []) {
+          const b = bucatiRestInLant(r.exterior, r.gauri, Rf, f.rest ?? [], f.sens);
+          if (!b.ok) return { ok: false, motiv: `fundul plat la ${w.toFixed(3)} mm de contur, freza de rest Ø${f.rest?.[b.freza]?.diametru}: ${b.motiv}` };
+          b.bucati.forEach((bk, k) => {
+            const lista = restPeNivel[k]!;
+            const nivelK = lista.at(-1)?.adancime === nivel ? lista.at(-1)! : (lista.push({ adancime: nivel, bucati: [] }), lista.at(-1)!);
+            nivelK.bucati.push(...bk.map((x) => [...x]));
+          });
+        }
       }
       sfarsitFund.push(fund.length);
     }
-    // Zona centrului frezei drepte la −D: un punct la cel mult Rf de ea e scos de freză. Inelele V rămân unde sunt la peste
+    // Zona centrului celei mai mici freze drepte la −D (ADR 0093: până la ea, frezele drepte au scos deschiderea fundului cu
+    // discul ei; Rf mai jos e raza ei): un punct la cel mult Rf de ea e scos. Inelele V rămân unde sunt la peste
     // Rf − sv/2: un punct neatins (la peste Rf) e atunci la peste sv/2 de inelul următor, deci la sub sv/2 de unul păstrat
     // (creasta cel mult c); un inel paralel cu un perete drept, la wD + sv, e atins (marja m < sv/2) și nu se taie.
     // Cu vârful plat (ADR 0092 §2), două inele la sv = t + 2c·tan(θ/2) lasă tot creasta c (vârfurile acoperă t din ea).
     const sv = varf + 2 * CREASTA_FUND * tan;
     const zona: Contur[] = [];
     for (const g of grupe) {
-      const o = offsetDepartat(g, wP + MARJA_FUND + Rf);
+      const o = offsetDepartat(g, wP + MARJA_FUND + Rmin);
       if (!o.ok) {
         if (nuIncape(o.motiv)) continue;
         return { ok: false, motiv: `zona frezei drepte: ${o.motiv}` };
@@ -480,10 +433,10 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
       for (const r of o.regiuni) zona.push(r.exterior, ...r.gauri);
     }
     const iz = zona.length > 0 ? indexContururi(zona) : null;
-    const atins = (q: Punct): boolean => iz !== null && (iz.inauntru(q) || iz.distanta(q, Rf) <= Rf - sv / 2);
-    if (iz === null) avertismente.push(`freza dreaptă (Ø${f.diametru}) nu încape nicăieri în fundul plat: îl fac inelele frezei în V, la ${sv.toFixed(4)} mm unul de altul`);
-    // Inelele V la wD + j·sv, cât poate fi un punct neatins (sub wD + m + Rf de contur), plus unul.
-    for (let j = 1; j * sv <= Rf + MARJA_FUND + sv; j++) {
+    const atins = (q: Punct): boolean => iz !== null && (iz.inauntru(q) || iz.distanta(q, Rmin) <= Rmin - sv / 2);
+    if (iz === null) avertismente.push(`freza dreaptă (Ø${2 * Rmin}) nu încape nicăieri în fundul plat: îl fac inelele frezei în V, la ${sv.toFixed(4)} mm unul de altul`);
+    // Inelele V la wD + j·sv, cât poate fi un punct neatins (sub wD + m + R de contur), plus unul.
+    for (let j = 1; j * sv <= Rmin + MARJA_FUND + sv; j++) {
       let gol = true;
       for (const g of grupe) {
         const o = offsetDepartat(g, wD + j * sv);
@@ -543,11 +496,13 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   });
   if (!toate) return { ok: false, motiv: 'un inel al peretelui nu se poate parcurge' };
   m.push({ tip: 'rapida', la: { Z: p.zSigur } });
+  const regim = { zSigur: p.zSigur, avans: p.avans, avansPlonjare: p.avansPlonjare };
+  const resturi = restPeNivel.map((niv) => taieBucati(niv, regim));
   return {
-    ok: true, fund, miscari: m, avertismente,
+    ok: true, fund, fundRest: resturi.map((x) => x.miscari), miscari: m, avertismente,
     statistici: {
       esantioane: graf.statistici.esantioane, lanturi: axa.length, raza: razaMax, treceri: niveluri.length, fundPlat, sfarsitTreceri, sfarsitFund,
-      ineleColturi: colturi.length,
+      sfarsitFundRest: resturi.map((x) => x.sfarsitTreceri), ineleColturi: colturi.length,
     },
   };
 }
