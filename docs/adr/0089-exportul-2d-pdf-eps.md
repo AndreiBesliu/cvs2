@@ -67,4 +67,7 @@ la cel mult 0,001 mm (la EPS, și că n-are straturi). Bucata adusă la cerere c
 ## Se redeschide dacă
 
 - un program al owner-ului citește greșit straturile PDF sau EPS-ul;
-- e nevoie de text ca text sau de mai multe foi într-un singur PDF.
+- e nevoie de text ca text sau de mai multe foi într-un singur PDF;
+- **gruparea în EPS** (27.10, testul owner-ului în Illustrator: vectorii ies vectori, dar căile de același rol, deci de aceeași
+  culoare, ajung unite într-un Compound Path, câte unul pe rol, într-un grup): owner-ul o vrea lucrată mai târziu, probabil
+  odată cu nesting-ul („deocamdata este ok”); atunci, gruparea pe piesă / formă și, eventual, straturile.

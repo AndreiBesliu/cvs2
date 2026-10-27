@@ -249,6 +249,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 27.10.2026: **exportul EPS rămâne așa deocamdată** („nu stiu daca sunt fericit cu acest export eps. deocamdata este ok,
+  vectorii au fost exportati ca vectori. dar, o sa mai lucram la gruparea lor, dar asta mai tarziu, cand vom face sistemul de
+  nesting probabil”): deschis în Illustrator, formele ies vectori, dar căile de aceeași culoare (același rol) ajung unite într-un
+  singur Compound Path, câte unul pe rol, într-un grup. Gruparea (pe piesă / formă, eventual straturile) se reia odată cu
+  nesting-ul (rândul din prag, v2), nu acum (ADR 0089, „Se redeschide dacă”).
 - 25.10.2026: **testul pas cu pas devine, mai târziu, tutorialul utilizatorilor în aplicația live** („Ma gandesc sa folosim acest
   test/tutorial si pe viitor, in aplicatia live, exact ca un turorial. Ceva care sa ajute userii sa lucreze cu aplicatia. Asa ca,
   nu trebuie sa pierdem codul asta. Va fi repurposed”): codul ADR 0072 (panoul, pașii ca document, poza, raportul) rămâne și nu
