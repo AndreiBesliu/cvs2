@@ -3269,3 +3269,11 @@ supraviețuiesc: tăierea ramurilor cu toleranța ×25, Douglas–Peucker fără
 care refuză tot, muchiile eșantioanelor vecine păstrate, vecinii peste capătul buclei, colțurile convexe nelegate, liniile
 eșantionate de 10 ori mai rar. Probele lor sunt de făcut; rândul 8.1↑ din fișă e corectat. (Felia 8.2↑ a tradus înaintea
 verificării: 46 / 47, a 47-a echivalentă.)
+
+**Probele supraviețuitoarelor 8.1↑ (27.10, 14:54)**, la cererea owner-ului („Da, scrie acum probele pentru cele 8 mutații din 8.1
+care supraviețuiesc.”), fără agenți. Un banc de explorare (forme candidate pe oracol, cu și fără fiecare mutație) a ales formele;
+probele noi, în `test/unit/vcarve.test.ts`: elipsa ca poligon cu 720 de laturi în oracol (prinde Douglas–Peucker fără r și
+ramurile tăiate ×25), eșantioanele pe hârtie, colțurile convexe atinse, două grupe dintre care una fără fund plat, muchiile axei pe
+două dreptunghiuri la 0,004 mm. **64 / 66**; două echivalente la toleranța contractului (punctele absorbite trunchiate, vecinii
+peste capătul buclei), cu motivul în fișă. Găsit pe drum: un perete mai subțire decât h (0,01 față de 0,02) rămâne netăiat,
+eșantioanele decalate punând centrele pe contur; adâncimea lui ideală e 0,005 mm, în contract (s3: „detaliile sub pasul h”).

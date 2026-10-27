@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import Delaunator from 'delaunator';
 import { incircle, orient2d } from 'robust-predicates';
 import { operatieDinDialog } from '../../src/app/valoriOperatii.ts';
-import { legalizeaza } from '../../src/cam/axaMediala.ts';
+import { axaMediala, legalizeaza } from '../../src/cam/axaMediala.ts';
 import { programDinDocument } from '../../src/cam/job.ts';
 import { regiunePastrata } from '../../src/cam/regiune.ts';
 import { traseuVcarve, type ParametriVcarve } from '../../src/cam/vcarve.ts';
@@ -82,6 +82,47 @@ test('trecerile pe hârtie: dreptunghiul 12 × 6 la 90°, 3 mm în pași de cel 
   // Program închis: pleacă și se termină la Z-ul de siguranță.
   assert.deepEqual(r.miscari[0], { tip: 'rapida', la: { Z: 5 } });
   assert.deepEqual(r.miscari.at(-1), { tip: 'rapida', la: { Z: 5 } });
+});
+
+test('eșantioanele pe hârtie: dreptunghiul 12 × 6 la h = 0,02 are 2·(600 + 300) = 1 800 (câte unul la cel mult h, fără capătul fiecărei laturi)', () => {
+  assert.equal(bun(P([conturDreptunghi(0, 0, 12, 6, 0)])).statistici.esantioane, 1800);
+});
+
+test('colțurile convexe: freza ajunge în vârful fiecăruia (la z = 0), pe dreptunghi și pe cele 5 vârfuri ale stelei', () => {
+  const stea = poligon(Array.from({ length: 10 }, (_, k) => {
+    const r = k % 2 === 0 ? 8 : 3.2, u = Math.PI / 2 + (k * Math.PI) / 5;
+    return { x: r * Math.cos(u), y: r * Math.sin(u) };
+  }));
+  const varfuriStea = stea.varfuri.filter((_, k) => k % 2 === 0).map((v) => v.p);
+  for (const [nume, c, colturi] of [
+    ['dreptunghiul', conturDreptunghi(0, 0, 12, 6, 0), [{ x: 0, y: 0 }, { x: 12, y: 0 }, { x: 12, y: 6 }, { x: 0, y: 6 }]],
+    ['steaua', stea, varfuriStea],
+  ] as const) {
+    const r = bun(P([c]));
+    const pe: Punct[] = [];
+    let x = 0, y = 0;
+    for (const m of r.miscari) {
+      if (m.tip !== 'rapida' && m.tip !== 'taiere') continue;
+      x = m.la.X ?? x; y = m.la.Y ?? y;
+      pe.push({ x, y });
+    }
+    for (const k of colturi) assert.ok(pe.some((q) => Math.hypot(q.x - k.x, q.y - k.y) <= 1e-6), `${nume}: colțul (${k.x}, ${k.y})`);
+  }
+});
+
+// Două dreptunghiuri la 0,004 mm, cu eșantioanele decalate cu h/2: în golul îngust, triunghiurile de afară au centrul în
+// regiune, deci muchiile duale ale laturilor de contur ar lega noduri de lângă contur. Ele nu intră în axă: măsurat 1 811
+// muchii pe 1 810 noduri; cu ele, 2 407 (iar programul crește de trei ori, calculul de 50 de ori). Pragul stă între.
+test('axa nu primește muchiile duale ale laturilor de contur: două dreptunghiuri la 0,004 mm, cel mult noduri + 50 de muchii', () => {
+  const g = axaMediala([conturDreptunghi(0, 0, 6, 6, 0), conturDreptunghi(6.004, 0.01, 6, 6, 0)], 0.02);
+  const muchii = g.vecini.reduce((n, v) => n + v.length, 0) / 2;
+  assert.ok(muchii <= g.noduri.length + 50, `${muchii} muchii pe ${g.noduri.length} noduri`);
+});
+
+test('două grupe, una mai îngustă decât freza la D: pereții doar pe cea lată (cea îngustă n-are inel), fără refuz', () => {
+  const r = bun(P([conturDreptunghi(0, 0, 12, 6, 0), conturDreptunghi(20, 0, 40, 20, 0)], { adancime: 5, pas: 5 }));
+  assert.equal(r.statistici.fundPlat, true);
+  assert.ok(Math.abs(zMin(r.miscari) + 5) < 1e-9);
 });
 
 test('refuzurile traseului: calea deschisă, unghiul în afara (0°, 180°), adâncimea sau pasul ne-pozitive, conul prea scurt', () => {
@@ -241,6 +282,9 @@ const STEA: Punct[] = Array.from({ length: 10 }, (_, k) => {
   const r = k % 2 === 0 ? 8 : 3.2, u = Math.PI / 2 + (k * Math.PI) / 5;
   return { x: r * Math.cos(u), y: r * Math.sin(u) };
 });
+// Elipsa 10 × 4 ca poligon cu 720 de laturi: axa e un segment drept pe care raza nu variază liniar (r = 4·√(1 − x²/84) pe
+// mijloc), deci simplificarea trebuie să țină cont de r; vârfurile aproape plate dau ramuri mici, de tăiat doar sub 0,004.
+const ELIPSA: Punct[] = Array.from({ length: 720 }, (_, k) => ({ x: 10 * Math.cos((2 * Math.PI * k) / 720), y: 4 * Math.sin((2 * Math.PI * k) / 720) }));
 const CAZURI: Caz[] = [
   { nume: 'dreptunghiul 12 × 6, 90°', forme: [{ id: 'a', forma: DR, e: 20, f: 20 }], unghi: 90, adancime: 10,
     grila: { x0: 18, y0: 18, latime: 16, inaltime: 10, celula: 0.05 },
@@ -254,6 +298,9 @@ const CAZURI: Caz[] = [
   { nume: 'steaua R8 / R3,2 (colțuri concave), 90°', forme: [{ id: 'a', forma: { tip: 'cale', inchis: true, varfuri: STEA.map((p) => ({ p, s: { tip: 'L' } })) }, e: 30, f: 30 }],
     unghi: 90, adancime: 10, grila: { x0: 21.5, y0: 21.5, latime: 17, inaltime: 17, celula: 0.05 },
     d: (x, y) => { const q = laPoligon({ x: x - 30, y: y - 30 }, STEA); return q.in ? q.d : null; } },
+  { nume: 'elipsa 10 × 4 (720 de laturi), 60°', forme: [{ id: 'a', forma: { tip: 'cale', inchis: true, varfuri: ELIPSA.map((p) => ({ p, s: { tip: 'L' } })) }, e: 30, f: 30 }],
+    unghi: 60, adancime: 10, grila: { x0: 19.5, y0: 25.5, latime: 21, inaltime: 9, celula: 0.05 },
+    d: (x, y) => { const q = laPoligon({ x: x - 30, y: y - 30 }, ELIPSA); return q.in ? q.d : null; } },
   { nume: 'dreptunghiul rotunjit 20 × 10, R3, 120°', forme: [{ id: 'a', forma: { tip: 'dreptunghi', latime: 20, inaltime: 10, razaColt: 3 }, e: 20, f: 20 }],
     unghi: 120, adancime: 10, grila: { x0: 19, y0: 19, latime: 22, inaltime: 12, celula: 0.05 },
     d: (x, y) => {
