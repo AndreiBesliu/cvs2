@@ -3365,3 +3365,8 @@ build-ul determinist, e2e 247 / 247, emulatoarele 36 + 13. Mutațiile: 22 / 22 d
 (`export.paralel.*`); testele care fixau starea reală a etapei 5 (pragul, umplerea barei în cronologie, 0,375 → 0,5) urmează schimbarea;
 o primă rulare a build-ului determinist a dat `sw.js` diferit între două build-uri, iar următoarele trei au fost identice (de urmărit
 dacă reapare); scriptul de trecere a testelor la o versiune nouă de document (de acum generic) punea o paranteză în plus pe două linii.
+
+**Publicat pe test (27.10, 22:20)**, din workflow (run 40575021475, `9f1bdf3`), cu CI-ul rapid verde (6 felii + oracolul exportului
+2D). Verificat în browser la 1440 px, după „Reîncarcă” (oferta a apărut abia după închiderea ferestrei exportului): pe rândul pus pe
+buzunar, Traseul are „inele (paralele cu conturul)” și „linii paralele”; cu liniile, coborârea dispare și Unghiul pornește de la 0;
+180° oprește exportul cu motivul, 30° îl permite; lățimea tabelului neschimbată (1 156 px); fără erori în consolă.
