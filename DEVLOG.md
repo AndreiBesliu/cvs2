@@ -3339,3 +3339,8 @@ prag), deci ea făcea tot conturul prin aer: acum R_a − R + 10⁻⁴, cu eșan
 scurt ar fi schimbat sensul de tăiere: acum se păstrează; o freză de rest a fundului fără nimic de scos se monta degeaba: acum
 avertisment, ca la buzunar. Rândul gravării inteligente din prag: „făcut” (rămâne placa etapei 8); al buzunarului: „în lucru”
 (strategia paralelă și adaosul de finisare).
+
+**Publicat pe test (27.10, 21:05)**, din workflow (run 40562936401, `0e7d7d6`), cu CI-ul rapid verde (6 felii + oracolul exportului
+2D). Verificat în browser la 1440 px, după „Reîncarcă”: pe dreptunghiul 100 × 60, rândul pus pe buzunar cu Ø12; „Adaugă o freză de
+rest” pune T2, Ø6, pasul 2,4; una cât freza rândului oprește exportul cu motivul; cu Ø3 și pasul încă 2,4 (peste raza ei), tot
+oprit; cu pasul 1,2, permis; lățimea tabelului neschimbată (1 156 px); fără erori în consolă.
