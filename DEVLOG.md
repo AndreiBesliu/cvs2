@@ -3262,3 +3262,10 @@ topologie (inelul colțurilor exact cât jumătatea lățimii) refuza toată luc
 (2) pragul R − s_v tăia un inel V inutil pe fiecare perete (acum R − s_v/2, cu demonstrația în ADR); (3) panoul arăta Ø3.17
 pentru o freză de 3,175; (4) motivul conflictului scria zecimalele cu punct în română; (5) indexul ADR avea 0090 înaintea lui
 0089.
+
+**Corectură (27.10, 13:33), la felia 8.1↑:** mutațiile V-carve-ului erau **58 / 66**, nu 66 / 66. Opt „prinderi” ale plasei a doua
+(toate unitarele) erau testul traducerilor, roșu cât traducerea se completa în timpul rulării. Reluate cu traducerile complete,
+supraviețuiesc: tăierea ramurilor cu toleranța ×25, Douglas–Peucker fără r, punctele absorbite trunchiate la unul, grupa îngustă
+care refuză tot, muchiile eșantioanelor vecine păstrate, vecinii peste capătul buclei, colțurile convexe nelegate, liniile
+eșantionate de 10 ori mai rar. Probele lor sunt de făcut; rândul 8.1↑ din fișă e corectat. (Felia 8.2↑ a tradus înaintea
+verificării: 46 / 47, a 47-a echivalentă.)
