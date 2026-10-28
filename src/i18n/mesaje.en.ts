@@ -49,7 +49,7 @@ export const en = {
   'motiv.nimic-de-refacut': 'Nothing to redo.',
   'motiv.niciun-punct': 'No point was given.',
   'motiv.nimic-ales': 'Nothing was chosen.',
-  'motiv.transformare-inexacta': 'The transform would no longer be exact.',
+  'motiv.transformare-inexacta': 'The transform cannot be done: the piece would go past the document limits (a side or radius over 10 m, a place too far away) or would no longer be exact.',
   'motiv.plafon': 'The project is at its limit of shapes: this would make it too large to open again.',
   'motiv.prea-departe': 'The shape would end up over 10,000 km from the sheet: the project could not be opened again.',
   'motiv.doar-citire': 'The project is open in another tab: this one only reads it.',

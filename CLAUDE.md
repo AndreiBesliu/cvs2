@@ -295,6 +295,21 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 28.10.2026: **degruparea vectorilor, cât mai devreme** („Si vreau cat mai devreme sa avem functie de ungroup vectors. Pe click
+  dreapta, dar, si in meniu, langa booleans”): o piesă cu mai multe forme (un import SVG / DXF, o formă cu găuri) se desface în
+  piese separate, din clic dreapta pe pânză și din butonul de lângă boolean. Vine imediat după reparația scalării (9.3↑b),
+  înaintea reluării importului PDF (9.4↑). „Unirea și separarea vectorilor” fusese amânată pe 20.10 („As face ceva mai mic”).
+- 28.10.2026: **importul PDF și AI acum** („4.”, din lista: calculul CAM în workere, animația 3D, găurile pe puncte, textul,
+  importul PDF / AI, reordonarea de mână) și **butoanele de import și export, într-un spațiu al lor** („vreau ca toate
+  butoanele care tin de import si export sa fie comasate intr-un spatiu dedicat si unificat. Ele isi au locul impreuna.”):
+  importul (SVG, DXF, PDF, AI), „Exportă G-code” și „Exportă vectori” (până acum în extensia barei) stau împreună, separat
+  de uneltele de desen; vin cu felia 9.4↑.
+- 28.10.2026: **rolurile de tăiere, alese înaintea exportului, cu traseul la zi** („o sa vreau sa setam rolurile de taiere
+  inainte sa intru la export g code si sa sefaca update si la toolpath”): operațiile (exterior, interior, pe linie, buzunar…)
+  se aleg și din panoul de proprietăți, nu doar din fereastra exportului, iar traseul de pe pânză se recalculează singur.
+  Schimbă ADR 0038 (panoul editează poziția, rotirea și foaia; operațiile rămân în dialogul exportului; recalculul automat
+  abia cu bazinul din etapa 4): întâi calculul CAM în workere (etapa 4, „Calcul pe mai multe fire”), apoi rolurile în panou
+  și traseul la zi, cu un ADR nou. De făcut după 9.4↑.
 - 28.10.2026: **coborârea directă între treceri, la alegere, notată pentru mai târziu** („In fisierele de test am vazut ca z
   se duce la -4 apoi iar la 5. Vreau ca asta sa fie optional. Userul poate ar vrea sa nu se mai ridice freza si sa coboare
   direct la -8mm. Noteaza pentru viitor.”, la programul A al plăcii 1: gaura D30, Z −4 → 5 → −8). Acum, fără rampă, freza

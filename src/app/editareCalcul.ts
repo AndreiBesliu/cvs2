@@ -118,6 +118,20 @@ export function manereVazute(w: number, h: number): readonly Maner[] {
   return MANERE.filter((m) => (m === 'e' || m === 'v' ? x : m === 'n' || m === 's' ? y : x && y));
 }
 
+/** Înălțimea etichetei mânerelor, cu spațiul de lângă ea (pixeli). */
+export const ETICHETA_PX = 34;
+
+/**
+ * Pură: marginea de sus a etichetei mânerelor (mărimea, unghiul, motivul unui refuz), pe cutia de pe ecran dintre `sus` și
+ * `jos`, în banda vizibilă (sub barele de sus, deasupra celei de jos): deasupra mânerului de rotire; dacă acolo ar intra sub
+ * bare, sub cutie; dacă nici acolo nu se vede (o piesă mai mare decât ecranul), chiar sub bare (DXF-ul owner-ului, 28.10).
+ */
+export function susEticheta(sus: number, jos: number, vizibil: { readonly sus: number; readonly jos: number }): number {
+  const deasupra = sus - ROTIRE_PX - ETICHETA_PX;
+  if (deasupra >= vizibil.sus) return deasupra;
+  return jos + 16 + ETICHETA_PX <= vizibil.jos ? jos + 16 : vizibil.sus;
+}
+
 /**
  * Pură: mânerul de sub punctul (px, py) al pânzei (pixeli din colțul ei), sau null: întâi rotirea, apoi colțurile, apoi
  * laturile (pe o cutie strâmtă, colțul câștigă).

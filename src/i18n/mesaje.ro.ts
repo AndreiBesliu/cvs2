@@ -53,7 +53,7 @@ export const ro = {
   'motiv.nimic-de-refacut': 'Nimic de refăcut.',
   'motiv.niciun-punct': 'Nu s-a dat niciun punct.',
   'motiv.nimic-ales': 'N-ai ales nimic.',
-  'motiv.transformare-inexacta': 'Transformarea n-ar mai fi exactă.',
+  'motiv.transformare-inexacta': 'Transformarea nu se poate face: piesa ar trece de plafoanele documentului (o latură sau o rază peste 10 m, un loc prea departe) sau n-ar mai fi exactă.',
   'motiv.plafon': 'Proiectul e la plafonul de forme: cu asta n-ar mai putea fi deschis.',
   'motiv.prea-departe': 'Forma ar ajunge la peste 10 000 km de foaie: proiectul n-ar mai putea fi deschis.',
   'motiv.doar-citire': 'Proiectul e deschis în altă filă: aici doar îl citești.',

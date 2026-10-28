@@ -398,6 +398,36 @@ test('transformările (ADR 0052): mânerele de scalare și rotire, refuzul inexa
   expect(erori).toEqual([]);
 });
 
+test('o scalare peste plafoanele documentului se refuză cu motivul ei, nu în tăcere (ADR 0102)', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.goto('/');
+  await expect(page.getByTestId('bara-editare')).toBeVisible();
+  // Vederea depărtată cu rotița, din mijlocul pânzei, ca un dreptunghi de 8 × 6 m să încapă pe ecran.
+  const p = await page.getByTestId('panza').boundingBox();
+  if (!p) throw new Error('pânza n-are cutie');
+  await page.mouse.move(p.x + p.width / 2, p.y + p.height / 2);
+  await page.mouse.wheel(0, 2000);
+  await page.mouse.wheel(0, 1000);
+  await expect.poll(async () => (await vedere(page)).scara).toBeLessThan(0.07);
+  await page.keyboard.press('r');
+  await deseneaza(page, { x: -4000, y: -3000 }, { x: 4000, y: 3000 });
+  const inainte = await dreptunghi(page);
+  expect(inainte[0]).toBeGreaterThan(7900);
+  await randuri(page).nth(0).click();
+  await page.locator('[data-unealta="transformare"]').click();
+  // Colțul tras cu încă 2 500 mm pe fiecare axă: lățimea ar trece de latura documentului (10 000 mm). Scalarea pură ar
+  // merge; ușa documentului o refuză, iar motivul se vede (înainte, cutia revenea fără niciun cuvânt).
+  const s = (await vedere(page)).scara;
+  const ne = await maner(page, 'ne');
+  await trageEcran(page, ne, { x: ne.x + 2500 * s, y: ne.y - 2500 * s });
+  const motiv = page.getByTestId('manere-motiv');
+  await expect(motiv).toContainText('plafoanele documentului');
+  await expect(motiv).toBeInViewport({ ratio: 1 });
+  expect(await dreptunghi(page)).toEqual(inainte);
+  expect(erori).toEqual([]);
+});
+
 test('bara de sus (ADR 0052): uneltele încap între marcă și căutare la 1280, 1366 și 1440 px, și cu câmpul grilei deschis', async ({ page }) => {
   // A doua trecere lățește literele antetului: pe Linux (CI), fontul mai lat a dus marca peste bară (24.10), iar local nu.
   for (const [latime, lat] of [[1280, false], [1366, false], [1440, false], [1280, true]] as const) {

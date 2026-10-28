@@ -10,8 +10,8 @@
  */
 import { inversa } from '../geom/inversa.ts';
 import { aplica, compune, rotatie, translatie } from '../geom/matrice.ts';
-import { TOLERANTA_PROIECT } from '../geom/toleranta.ts';
-import type { Document, FormaDoc, Instanta, Matrice, Nod, Piesa, VarfDoc } from './document.ts';
+import { TOLERANTA_IMPORT, TOLERANTA_PROIECT } from '../geom/toleranta.ts';
+import { PLAFON, type Document, type FormaDoc, type Instanta, type Matrice, type Nod, type Piesa, type VarfDoc } from './document.ts';
 import { arcInCubice, caleDinForma } from './noduri.ts';
 
 type P = { readonly x: number; readonly y: number };
@@ -99,10 +99,19 @@ function scaleazaForma(f: FormaDoc, sx: number, sy: number): FormaDoc | MotivTra
     case 'cale': {
       if (!u && f.varfuri.some((v) => v.s.tip === 'A')) return 'neuniform-arc';
       const p = (q: { readonly x: number; readonly y: number; readonly [k: string]: unknown }) => ({ ...q, x: q.x * sx, y: q.y * sy });
-      return {
-        ...f,
-        varfuri: f.varfuri.map((v) => ({ ...v, p: p(v.p), s: v.s.tip === 'C' ? { ...v.s, c1: p(v.s.c1), c2: p(v.s.c2) } : v.s })),
-      };
+      const scalate = f.varfuri.map((v) => ({ ...v, p: p(v.p), s: v.s.tip === 'C' ? { ...v.s, c1: p(v.s.c1), c2: p(v.s.c2) } : v.s }));
+      // Un arc pe care mărirea îl duce peste latura documentului (raza din coardă și bulge, ca schema, cu marja de 0,1 % a
+      // importului) devine cubice sub toleranța importului, ca un arc plat la import (ADR 0035 §6, ADR 0102): altfel schema
+      // ar refuza documentul, iar piesa n-ar mai crește deloc.
+      const n = scalate.length;
+      const varfuri = scalate.flatMap((v, i) => {
+        const urm = scalate[(i + 1) % n];
+        if (v.s.tip !== 'A' || !urm || (!f.inchis && i === n - 1)) return [v];
+        const k = Math.abs(v.s.bulge);
+        const raza = (Math.hypot(urm.p.x - v.p.x, urm.p.y - v.p.y) / 4) * (k + 1 / k);
+        return raza <= PLAFON.latura * 0.999 ? [v] : arcInCubice(v.p, urm.p, v.s.bulge, TOLERANTA_IMPORT);
+      });
+      return { ...f, varfuri };
     }
   }
 }

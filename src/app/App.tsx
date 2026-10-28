@@ -477,9 +477,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       window.removeEventListener('drop', lasa);
     };
   }, []);
-  const ruleazaDocument = (id: string, ctx: ContextDocument): void => {
-    if (dialogDeschis.current) return;
-    ruleaza(registru, id, ctx);
+  const ruleazaDocument = (id: string, ctx: ContextDocument): RezultatActiune => {
+    if (dialogDeschis.current) return { ok: false, motiv: 'motiv.nimic-ales' };
+    return ruleaza(registru, id, ctx);
   };
   /**
    * „Arată traseul” (ADR 0038 §2): cu traseul arătat și la zi, îl ascunde; altfel calculează programul documentului de
@@ -943,7 +943,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             suprapunere={(v, m, l) => (
               <Suspense fallback={null}>
                 <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)}
-                  ruleaza={(id, extra) => { ruleazaDocument(id, context(extra)); }} onLipeste={setLipesteStabil} onDesen={setDesenStabil} reface={stareActiune('istoric.reface').ok}
+                  ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil} reface={stareActiune('istoric.reface').ok}
                   {...(config.ok && config.config.instanta !== 'live' ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />
               </Suspense>
             )}

@@ -73,6 +73,64 @@ test('refuzurile: colțul rotunjit neuniform, rotirea oblică neuniformă, scara
   assert.deepEqual(transforma(imp, 0, ['p'], { fel: 'scalare', sx: 2, sy: 2, ancora: { x: 0, y: 0 } }), { ok: false, motiv: 'piesa-impartita' });
 });
 
+test('un arc mărit peste latura documentului devine cubice, pe cercul lui, sub toleranța importului; documentul trece de ușă (ADR 0102)', () => {
+  /** Calea mărită de 10 ori din origine, cu arcul (coarda `c` pe axa X, bulge `k`) devenit cubice: vârfurile ei. */
+  const marita = (c: number, k: number): FormaDoc & { tip: 'cale' } => {
+    const cale: FormaDoc = { tip: 'cale', inchis: false, varfuri: [{ p: { x: 0, y: 0 }, s: { tip: 'A', bulge: k } }, { p: { x: c, y: 0 }, s: { tip: 'L' } }] };
+    const r = transforma(doc1(cale, 0, 0), 0, ['p'], { fel: 'scalare', sx: 10, sy: 10, ancora: { x: 0, y: 0 } });
+    const f = r.ok && r.piese[0]?.radacina.tip === 'element' ? r.piese[0].radacina.forma : null;
+    if (f?.tip !== 'cale') throw new Error('scalarea n-a dat o cale');
+    assert.deepEqual([f.varfuri[0]?.p, f.varfuri[f.varfuri.length - 1]?.p], [{ x: 0, y: 0 }, { x: 10 * c, y: 0 }]);
+    assert.ok(f.varfuri.slice(0, -1).every((v) => v.s.tip === 'C'));
+    return f;
+  };
+  /**
+   * Cât de departe de cercul arcului mărit ajunge cea mai rea cubică (21 de puncte pe fiecare, cu mijlocul, unde stă eroarea).
+   * Pe hârtie: săgeata s = β·C / 2, raza R = (C / 4)·(β + 1/β) pe coarda mărită C; bulge pozitiv = trigonometric, deci centrul
+   * stă la stânga coardei (în sus), în (C / 2, R − s), iar arcul coboară la (C / 2, −s).
+   */
+  const departe = (f: FormaDoc & { tip: 'cale' }, c: number, k: number): number => {
+    const C = 10 * c, s = (k * C) / 2, raza = (C / 4) * (k + 1 / k);
+    let max = 0;
+    for (const [i, v] of f.varfuri.slice(0, -1).entries()) {
+      if (v.s.tip !== 'C') continue;
+      const a: { x: number; y: number } = v.p;
+      const b: { x: number; y: number } = (f.varfuri[i + 1] ?? v).p;
+      const { c1, c2 } = v.s;
+      for (let j = 0; j <= 20; j++) {
+        const t = j / 20, u = 1 - t;
+        const x = u * u * u * a.x + 3 * u * u * t * c1.x + 3 * u * t * t * c2.x + t * t * t * b.x;
+        const y = u * u * u * a.y + 3 * u * u * t * c1.y + 3 * u * t * t * c2.y + t * t * t * b.y;
+        max = Math.max(max, Math.abs(Math.hypot(x - C / 2, y - (raza - s)) - raza));
+      }
+    }
+    return max;
+  };
+  // Coarda 10 mm, bulge 1/800: raza (c / 4)·(β + 1/β) ≈ 2 000 mm, sub latură. Mărit de 10 ori: coarda 100, raza ≈ 20 000 mm,
+  // peste latura documentului (10 000), deci schema l-ar refuza (DXF-ul owner-ului, 28.10: piesa nu se mai mărea).
+  const k = 1 / 800;
+  const f = marita(10, k);
+  assert.ok(departe(f, 10, k) <= 1.01e-6);
+  // Un arc larg: baleiajul 0,3 rad (bulge tan 0,075), coarda 360 mm, raza ≈ 1 204 mm; mărit, raza ≈ 12 045 mm. Pe hârtie,
+  // eroarea a n cubice e R·2·sin⁶(φ / 4n) / (27·cos²(φ / 4n)): 0,00016 mm cu una, 0,0000025 cu două, 0,0000002 cu trei:
+  // trei cubice, sub toleranța importului (0,000001).
+  const larg = Math.tan(0.075);
+  const g = marita(360, larg);
+  assert.equal(g.varfuri.length, 4);
+  assert.ok(departe(g, 360, larg) <= 1.01e-6, `${departe(g, 360, larg)} mm de cerc`);
+  const d = doc1({ tip: 'cale', inchis: false, varfuri: [{ p: { x: 0, y: 0 }, s: { tip: 'A', bulge: k } }, { p: { x: 10, y: 0 }, s: { tip: 'L' } }] }, 0, 0);
+  const r = transforma(d, 0, ['p'], { fel: 'scalare', sx: 10, sy: 10, ancora: { x: 0, y: 0 } });
+  assert.ok(r.ok);
+  if (!r.ok) return;
+  const nou: Document = { ...d, piese: r.piese.slice(), foi: [{ ...d.foi[0], id: 'f1', stoc: STOC, instante: r.instante.slice() }] };
+  const u = incarca(JSON.parse(JSON.stringify(nou)));
+  assert.ok(u.ok, u.ok ? '' : u.motiv);
+  // Un arc care rămâne sub latură își păstrează bulge-ul (doar se mărește).
+  const mic = transforma(d, 0, ['p'], { fel: 'scalare', sx: 2, sy: 2, ancora: { x: 0, y: 0 } });
+  const fm = mic.ok && mic.piese[0]?.radacina.tip === 'element' ? mic.piese[0].radacina.forma : null;
+  assert.deepEqual(fm?.tip === 'cale' ? fm.varfuri : null, [{ p: { x: 0, y: 0 }, s: { tip: 'A', bulge: k } }, { p: { x: 20, y: 0 }, s: { tip: 'L' } }]);
+});
+
 test('documentul după o scalare trece de ușă', () => {
   const d = doc1(R);
   const r = transforma(d, 0, ['p'], { fel: 'scalare', sx: 1.25, sy: 0.75, ancora: { x: 60, y: 50 } });

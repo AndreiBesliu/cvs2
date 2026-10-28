@@ -3541,3 +3541,28 @@ X 100, Y 50, cu cutia 60 × 40 mm; jurnalul cu 0 erori, consola curată. Pragul:
 poate ar vrea sa nu se mai ridice freza si sa coboare direct la -8mm. Noteaza pentru viitor.” (cu pozele programului A al plăcii 1).
 Notat în CLAUDE.md („Decizii luate”) și în rândul de prag „Profil”: coborârea directă între treceri, fără ridicare, ca a treia
 alegere lângă ridicarea de acum și rampa (ADR 0029); cel mai devreme odată cu rampa pornită implicit, după placa 1.
+
+## 2026-10-28 — Importul PDF și AI, cu spațiul fișierelor (Model: Claude Opus 5.5)
+
+**Prompt:** „4. Si vreau ca toate butoanele care tin de import si export sa fie comasate intr-un spatiu dedicat si unificat. Ele isi
+au locul impreuna. Si o sa vreau sa setam rolurile de taiere inainte sa intru la export g code si sa sefaca update si la toolpath.”
+(la „Pe care o iau: calculul în workere, sau alta din listă?”, „4.” = importul PDF și AI)
+**Started:** 28.10, 19:45. Felia **9.4↑**, fără mașină și fără agenți: importul PDF și AI (compatibil PDF), adus din etapa 9 (rândul
+de prag „Import 2D”), cu un cititor propriu (pdf.js, din sonda s2, are ~300 kB), și butoanele de import și export strânse într-un
+spațiu al lor. Rolurile de tăiere alese înaintea exportului, cu traseul la zi, sunt notate în CLAUDE.md pentru după: cer întâi
+calculul CAM în workere (ADR 0038).
+
+## 2026-10-28 — Scalarea unei piese importate cu arce plate (Model: Claude Opus 5.5)
+
+**Prompt:** „Am importat un dxf cu succes, dar nu il pot scala”, apoi „Ce-i drept, era un fisier complex” (cu pozele: dialogul
+importului pentru 6o33pjon.dxf, 25,04 × 39,25 mm, 247 de contururi, fără unități, 6 arce plate; piesa cu mânerele Transformării).
+**Started:** 28.10, 20:00. Felia **9.3↑b**, între felii (9.4↑ așteaptă): de ce o piesă importată nu se mărește.
+**Completed:** 28.10, 20:55. Cauza: un arc aproape drept are raza mare, (c / 4) · (β + 1/β); mărit, trece de latura
+documentului (10 000 mm), pe care schema o cere pe fiecare arc. Scalarea pură trecea, dar acțiunea refuza documentul la schemă,
+iar mânerele nu spuneau nimic. Reparat (ADR 0102): la scalarea uniformă a unei căi, arcul care ar trece de 9 990 mm devine
+cubicele aceluiași cerc, sub 0,000001 mm (`arcInCubice` cu `TOLERANTA_IMPORT`, ca arcul plat la import); mânerele citesc
+rezultatul acțiunii și arată refuzul ușii (`motiv.transformare-inexacta`); eticheta rămâne în banda vizibilă (`susEticheta`:
+deasupra rotirii, sub cutie, sau chiar sub bare la o piesă mai mare decât ecranul). Probele: arcul plat și unul larg (exact 3
+cubice, pe hârtie), banda etichetei, un DXF mărit din colț până sub bare (e2e) și un dreptunghi de 8 m mărit peste 10 m (e2e:
+motivul ușii). Mutațiile: 7 / 7; 2 au trecut întâi (toleranța proiectului, pe un arc care încăpea oricum într-o cubică;
+eticheta, pe o piesă care nu urca până la bare), prinse de probele noi.

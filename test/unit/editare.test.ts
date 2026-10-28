@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cutiiAlese, idGhidaj, MANERE, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie, transformareManer, transformareManerLipita } from '../../src/app/editareCalcul.ts';
+import { cutiiAlese, idGhidaj, MANERE, manerLovit, manereVazute, punctManer, ROTIRE_PX, susEticheta, tinteFoaie, transformareManer, transformareManerLipita } from '../../src/app/editareCalcul.ts';
 import { pasRigla } from '../../src/canvas/gradatii.ts';
 import { lipeste, tinteDin } from '../../src/geom/lipire.ts';
 import type { Document } from '../../src/model/document.ts';
@@ -84,6 +84,19 @@ test('mânerele (ADR 0052): ancora e mânerul opus; colțul proporțional, Shift
   const s = transformareManer(c, 'rotire', { x: 50 + Math.cos(170 * Math.PI / 180), y: 25 + Math.sin(170 * Math.PI / 180) },
     { x: 50 + Math.cos(-170 * Math.PI / 180), y: 25 + Math.sin(-170 * Math.PI / 180) }, false);
   assert.equal(s.fel === 'rotire' ? s.unghi : NaN, 20);
+});
+
+test('eticheta mânerelor rămâne în banda vizibilă: deasupra rotirii, apoi sub cutie, apoi chiar sub bare (ADR 0102)', () => {
+  const banda = { sus: 60, jos: 800 };
+  // Cutia de la 200 la 400 px: eticheta la 200 − 26 − 34 = 140, deasupra mânerului de rotire.
+  assert.equal(susEticheta(200, 400, banda), 140);
+  // Exact la marginea benzii încă stă deasupra; un pixel mai sus ar intra sub bare și coboară sub cutie (400 + 16).
+  assert.equal(susEticheta(120, 400, banda), 60);
+  assert.equal(susEticheta(119, 400, banda), 416);
+  // Sub cutie încape până la 800 − 34 − 16 = 750; mai jos (o piesă mai mare decât ecranul), eticheta stă chiar sub bare.
+  assert.equal(susEticheta(70, 750, banda), 766);
+  assert.equal(susEticheta(70, 751, banda), 60);
+  assert.equal(susEticheta(-500, 2000, banda), 60);
 });
 
 test('mânerele pe ecran: sub 24 px pe o axă nu apar cele care o scalează; lovitura: rotirea, colțurile, apoi laturile', () => {

@@ -29,6 +29,10 @@
       "ro": "3.9",
       "en": "3.9"
     },
+    "0429b74ebae753ae": {
+      "ro": "**Scalarea unei piese importate cu arce plate** (fără mașină; ADR 0102; owner-ul, după 9.3↑: „Am importat un dxf cu succes, dar nu il pot scala”, „Ce-i drept, era un fisier complex”: 247 de contururi, fără unități, 6 arce plate). Un arc aproape drept are raza mare; mărit, trecea de latura documentului (10 000 mm), iar ușa refuza documentul fără niciun cuvânt: cutia revenea la loc. Acum arcul care ar trece de 9 990 mm devine cubicele aceluiași cerc, sub 0,000001 mm (ca la import); un refuz al ușii se arată lângă mânere, iar eticheta rămâne pe ecran (deasupra rotirii, sub cutie sau chiar sub bare). **Treceri:** (1) cauza (schema, nu scalarea), conversia, motivul, eticheta. Mutațiile: 7 / 7; 2 au trecut întâi (toleranța, pe un arc care încăpea oricum într-o cubică; eticheta, pe o piesă care nu urca până la bare): probe noi.",
+      "en": "**Scaling an imported piece with flat arcs** (no machine; ADR 0102; the owner, after 9.3↑: “Am importat un dxf cu succes, dar nu il pot scala”, “Ce-i drept, era un fisier complex”: 247 contours, no units, 6 flat arcs). A nearly straight arc has a large radius; scaled up, it went past the document side (10,000 mm), and the document door refused the document without a word: the box sprang back. Now an arc that would go past 9,990 mm becomes cubics of the same circle, within 0.000001 mm (as on import); a refusal by the door shows next to the handles, and the label stays on screen (above the rotation handle, under the box, or right under the bars). **Passes:** (1) the cause (the schema, not the scaling), the conversion, the reason, the label. Mutations: 7 / 7; 2 passed at first (the tolerance, on an arc that fit in one cubic anyway; the label, on a piece that did not reach the bars): new tests."
+    },
     "049c05fe0913de27": {
       "ro": "**Plafonul total 400 kB și progresul actualizării** (fără mașină; ADR 0096, 0097; „sunt ok cu marirea plafonului […] eventual sa avem si o zona sau un popup care arata progresul actualizarii in curs”, apoi „Și progresul”). Plafonul total 330 → 400 kB, decizia owner-ului: precache-ul se descarcă în fundal, o actualizare aduce doar ce s-a schimbat (probat în e2e; dar, măsurat pe test, o publicare fără cod re-aduce ~72 % din octeți, fiindcă aproape toate bucățile importă bucata de pornire, care se redenumește la fiecare publicare), codul nefolosit nu rulează; pornirea rămâne la 100 kB. Cât workerul nou se instalează, bara de jos arată „Se descarcă versiunea nouă: N %” (la prima vizită, „Pregătesc lucrul offline: N %”), apoi oferta, ca până acum: un plugin pe strategia precache-ului Workbox adună octeții gata din mărimile scrise în manifest la build (poarta le cere pe toate) și trimite procentul filelor deschise. **Totalul: 325,0 → 326,1 / 400 kB**; pornirea 96,2 → 96,3 (cu ușa 99,8 / 100). **Treceri:** (2) pluginul, pagina, cipul; în e2e, actualizarea nu arăta nimic: `register()` stă în coada de joburi cât instalarea găsită de navigarea însăși, deci fila asculta prea târziu; acum ascultă înaintea lui, ia înregistrarea cu `getRegistration()` și întreabă workerul de progresul de până atunci. Mutațiile: **23 / 23** (17 pe probele unitare, 4 în fereastră, pe e2e, 2 pe poarta build-ului); 7 au cerut a doua rulare: tiparele lor aveau sfârșitul de linie greșit (fișierele au CRLF), deci nu se aplicaseră.",
       "en": "**The 400 kB total cap and the update progress** (no machine; ADR 0096, 0097; “I'm ok with raising the cap […] maybe we could also have an area or a popup showing the progress of the update in progress”, then “And the progress”). The total cap goes 330 → 400 kB, the owner's decision: the precache downloads in the background, an update fetches only what changed (proven in e2e; but, measured on test, a publish without code fetches ~72% of the bytes again, because almost all chunks import the startup chunk, which is renamed at every publish), unused code does not run; startup stays at 100 kB. While the new worker installs, the bottom bar shows “Downloading the new version: N%” (on the first visit, “Preparing offline use: N%”), then the offer, as before: a plugin on the Workbox precache strategy adds up the bytes done from the sizes written into the manifest at build time (the gate requires all of them) and sends the percentage to the open tabs. **Total: 325.0 → 326.1 / 400 kB**; startup 96.2 → 96.3 (with the door 99.8 / 100). **Passes:** (2) the plugin, the page, the chip; in e2e the update showed nothing: `register()` waits in the job queue while the install found by the navigation itself runs, so the tab listened too late; now it listens before it, takes the registration with `getRegistration()` and asks the worker for the progress so far. Mutations: **23 / 23** (17 on the unit tests, 4 in the window, on e2e, 2 on the build gate); 7 needed a second run: their patterns had the wrong line ending (the files use CRLF), so they had not been applied."
@@ -248,6 +252,10 @@
     "1f8b0484b8e08f98": {
       "ro": "Urechile ca modificator Z",
       "en": "Tabs as a Z modifier"
+    },
+    "2021cb0a946f06c5": {
+      "ro": "Scalarea unui arc peste latura documentului",
+      "en": "Scaling an arc past the document side"
     },
     "211a91d78cbda042": {
       "ro": "Buzunar cu mai multe freze; Găurire; Ordinea + un fișier pe sculă; Animația traseului; §10 Găurire în pași",
@@ -1124,6 +1132,10 @@
     "9bd2d2099253a2ab": {
       "ro": "cât mai curând",
       "en": "as soon as possible"
+    },
+    "9d07669c55d80ab1": {
+      "ro": "Scalarea unei piese importate cu arce plate",
+      "en": "Scaling an imported piece with flat arcs"
     },
     "9d1316d9f73dab70": {
       "ro": "Transcrierile reale ca fixturi: sesiunea cu senderul nostru salvată la mașină și rejucată pe emulator; unde emulatorul diferă de mașină, mașina are dreptate",

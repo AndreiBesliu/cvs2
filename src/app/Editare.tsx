@@ -12,7 +12,7 @@ import type { Document, Ghidaj } from '../model/document.ts';
 import { areArce, matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
-  adaugaLaSelectie, aleseInCadru, citesteRetea, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, FORMULAR_RETEA, type FormularRetea, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, tinteFoaie,
+  adaugaLaSelectie, aleseInCadru, citesteRetea, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, FORMULAR_RETEA, type FormularRetea, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, susEticheta, tinteFoaie,
   transformareManer, transformareManerLipita, type LipirePunct, type Maner, type TransformareManer,
 } from './editareCalcul.ts';
 import { instantaLa } from '../model/alegere.ts';
@@ -20,6 +20,7 @@ import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTA
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
 import { motivCopiereRetea, motivDesen } from '../ui/actiuniDocumentCalcul.ts';
 import type { FormaNoua } from '../ui/actiuniDocument.ts';
+import type { RezultatActiune } from '../ui/actiuni.ts';
 import { copiiRetea, punctulCopiei, type Retea } from '../model/retea.ts';
 import { copiiPeCurba } from '../model/curba.ts';
 import {
@@ -193,8 +194,8 @@ export type ProprietatiEditare = {
   readonly linii: readonly LinieGhid[];
   readonly zona: RefObject<HTMLElement | null>;
   readonly doarCitire: boolean;
-  /** Rulează o acțiune a documentului prin ușa aplicației (garda dialogului deschis). */
-  readonly ruleaza: (id: string, extra: Extra) => void;
+  /** Rulează o acțiune a documentului prin ușa aplicației (garda dialogului deschis), cu rezultatul ei (motivul unui refuz). */
+  readonly ruleaza: (id: string, extra: Extra) => RezultatActiune;
   /** Lipirea mutării, dată pânzei (null: lipirea oprită sau modulul plecat). */
   readonly onLipeste: (f: Lipeste | null) => void;
   /** Gestul uneltei de desen, dat pânzei (null: selecția, sau modulul plecat). */
@@ -635,7 +636,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       ) : null}
       {unealta === 'transformare' && cutie && !p.doarCitire && selectie.length > 0 && !vedere3d ? (
         <Manere cutie={cutie} vedere={vedere} doc={doc} selectie={selectie}
-          aplica={(tr) => { ruleaza('document.transforma', { transformare: () => tr }); }}
+          aplica={(tr) => ruleaza('document.transforma', { transformare: () => tr })}
           lipire={(alt) => (lipire !== alt
             ? (q) => lipeste(tinte, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
             : null)}
@@ -1910,7 +1911,8 @@ const CURSOR_MANER: Record<Maner | 'rotire', string> = {
  */
 function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii }: {
   readonly cutie: Cutie; readonly vedere: Vedere; readonly doc: Document; readonly selectie: readonly string[];
-  readonly aplica: (t: Transformare) => void;
+  /** Acțiunea `document.transforma`, cu rezultatul ei: un refuz al ușii documentului (schema) se spune ca unul al scalării. */
+  readonly aplica: (t: Transformare) => RezultatActiune;
   /** Lipirea mânerului tras (ADR 0055), după Alt ținut (care o inversează): null = mânerul merge liber. */
   readonly lipire: (alt: boolean) => LipirePunct | null;
   readonly onLinii: (l: readonly LinieGhid[]) => void;
@@ -1992,7 +1994,10 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii }:
         setMotiv(t(`editare.transformare.${r.motiv}`));
         return;
       }
-      ap(tr);
+      // Și refuzul ușii documentului (schema: o rază, o latură, un loc peste plafon), nu doar al scalării: altfel cutia
+      // revenea fără niciun motiv (DXF-ul owner-ului, 28.10).
+      const rez = ap(tr);
+      if (!rez.ok) setMotiv(t(rez.motiv));
     };
     const anuleaza = (): void => {
       g = null;
@@ -2047,6 +2052,18 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii }:
     : null;
   const sus = ey(c.maxY);
   const vazute = manereVazute((c.maxX - c.minX) * v.scara, (c.maxY - c.minY) * v.scara);
+  // Banda în care eticheta se vede: între barele de sus și cea de jos, măsurată când eticheta apare.
+  const [vizibil, setVizibil] = useState({ sus: 0, jos: Number.POSITIVE_INFINITY });
+  const arataEticheta = eticheta !== null || motiv !== null;
+  useLayoutEffect(() => {
+    if (!arataEticheta) return;
+    const r = radacina.current?.getBoundingClientRect();
+    if (!r) return;
+    const sus = document.querySelector('header.sus')?.getBoundingClientRect().bottom ?? r.top;
+    const jos = document.querySelector('footer.jos')?.getBoundingClientRect().top ?? r.bottom;
+    setVizibil({ sus: sus - r.top + 8, jos: jos - r.top - 8 });
+  }, [arataEticheta]);
+  const topEticheta = susEticheta(sus, ey(c.minY), vizibil);
   return (
     <div className="manere" ref={radacina} data-testid="manere" style={ascunse ? { visibility: 'hidden' } : undefined}>
       <svg className="rigle-desen" width="100%" height="100%" aria-hidden="true">
@@ -2060,7 +2077,7 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii }:
       <div className="maner maner-rotire" style={{ left: ex(cx) - 6, top: sus - ROTIRE_PX - 6 }} data-maner="rotire" />
       {eticheta || motiv ? (
         <span className={motiv && !eticheta ? 'manere-eticheta manere-motiv' : 'manere-eticheta'} role={motiv && !eticheta ? 'status' : undefined}
-          style={{ left: ex(cx), top: sus - ROTIRE_PX - 34 }} data-testid={motiv && !eticheta ? 'manere-motiv' : 'manere-eticheta'}>
+          style={{ left: ex(cx), top: topEticheta }} data-testid={motiv && !eticheta ? 'manere-motiv' : 'manere-eticheta'}>
           {eticheta ?? motiv}
         </span>
       ) : null}
