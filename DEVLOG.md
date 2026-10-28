@@ -3391,3 +3391,10 @@ formei stau în pornire, care numără mai departe dicționarul. Porțile: 7 523
 un minificator mai bun (terser peste Oxc) ar fi scos doar ~1,3 kB. Pârghiile mai mari rămân decizii ale owner-ului: workerul PWA
 fără Workbox (~4 kB din cei 7,2 ai lui `sw.js`) și Preact în locul lui React (react-dom ~62,5 kB). Poarta build-ului nu are mutații
 proprii (o probă a ei cere un build stricat): a trecut pe build-ul real.
+
+**Publicat pe test (28.10, 08:44)**, din workflow (run 40644177102, `080bd48`), cu CI-ul rapid verde (6 felii + oracolul
+exportului 2D). Pe test, `/mesaje/ro.json` și `/mesaje/en.json` răspund 200 cu `Cache-Control: no-cache` (și mesajele modulelor,
+de exemplu `carcasa.json`, înainte `max-age=3600`). Verificat în browser la 1440 px: la prima vizită (fără worker), pornirea a cerut
+`/mesaje/en.json` (limba browserului), apoi `ro.json` în fundal, nicio bucată `mesaje.*.js`; RO din bară schimbă interfața; după
+reîncărcare, sub workerul nou, pornirea cere întâi `ro.json` (limba aleasă), iar ambele dicționare sunt în precache; jurnalul cu 0
+erori, consola fără erori.
