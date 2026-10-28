@@ -3491,3 +3491,11 @@ modelul animației, care doar afișează: scos din ea, ca estimarea timpului. Po
 nume nou în lista de preîncărcare, nimic din animație); totalul 326,1 → 330,3 / 400 kB. Porțile: 7 570 unitare (0 picate, 8
 sărite), build-ul determinist, e2e 256 / 256, emulatoarele 36 + 13. Mutațiile: 28 / 28 (24 pe probele unitare, 4 în fereastră, pe
 e2e); una a cerut întâi o probă e2e mai strictă (pixelii frezei treceau singuri de prag).
+
+**Publicat pe test (28.10, 16:49)**, din workflow (run 40709255415, `a56ee45`), cu CI-ul rapid verde (run 40708011351, 6 felii +
+oracolul exportului 2D). Verificat în browser la 1440 px: fila de pe `3c6ff0a` a primit oferta, iar după „Reîncarcă” rulează
+`a56ee45e12fb`, controlată de worker. Pe o foaie goală: un dreptunghi din paletă, `T`, apoi cipul „Timpul jobului: 52,6 s” cu
+„Animează”; panoul (viteza implicită 1×, fiindcă jobul ține sub un minut) arată, după nouă pași, „38,5 s din 52,6 s · Pasul 9 din
+12”, „Arc, F 1000 · e1/e1: dreptunghi, exterior, 3 mm” și „X 120,000 Y 17,000 Z -3,000 · Freza T1, Ø6,000 mm”, iar pe pânză drumul
+parcurs e colorat și freza stă în colțul dreptunghiului; Escape închide panoul și stratul frezei; jurnalul cu 0 erori, consola
+curată. Pragul: rândul animației poartă commit-ul `a56ee45`.
