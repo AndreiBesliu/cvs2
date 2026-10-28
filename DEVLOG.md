@@ -3606,3 +3606,7 @@ focalizat (Ctrl+Shift+G), booleanul inactiv, Duplică (Ctrl+D) și Șterge selec
 „trei-contururi”, toate alese, meniul închis; Ctrl+Z: unul singur. **Găsit:** meniul deschis lângă panoul de proprietăți intra
 sub el (tasta se vedea tăiată): mărginit acum la zona liberă a pânzei (`.zona-libera`), cu probă e2e și mutație (29 / 29), în
 commit-ul următor.
+
+**Publicat pe test (28.10, 22:28)**, din workflow (run 40763130405, `7a5b07e`), cu CI-ul rapid verde (run 40761904082). Verificat
+în browser la 1440 px: pagina e pe `7a5b07ea1f96`, controlată de worker; clic dreapta lângă marginea din dreapta a pânzei: meniul
+stă între x 961 și 1164, în zona liberă (marginea ei: 1168), înaintea panoului de proprietăți (1180), cu toate tastele întregi.
