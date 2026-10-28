@@ -34,3 +34,13 @@ export const CSP = [
   "base-uri 'self'",
   "form-action 'self'",
 ].join('; ');
+
+/**
+ * CSP-ul cu amprentele scripturilor inline ale unei pagini (ADR 0098: harta importurilor din `index.html`), în `script-src`,
+ * după `'self'`; fiecare o singură dată. Fără amprente, exact `CSP`. Rămâne fără `unsafe-inline`: doar textul exact al hărții
+ * rulează, orice alt script inline e refuzat.
+ */
+export function cspCu(hashuri: readonly string[]): string {
+  const unice = [...new Set(hashuri)];
+  return unice.length === 0 ? CSP : CSP.replace("script-src 'self'", `script-src 'self' ${unice.join(' ')}`);
+}

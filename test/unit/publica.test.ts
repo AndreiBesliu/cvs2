@@ -42,12 +42,13 @@ test('cine publică: workflow-ul cu actorul și rularea; altfel „local”', ()
   assert.equal(cinePublica({}), 'local');
 });
 
-test('dist/ al commit-ului: versiunea (12 caractere) între ghilimele, în oricare bucată; alt commit sau doar un prefix nu', () => {
-  assert.equal(distEsteAlCommitului(['x', 'const v=`abc123def456`;'], SHA), true);
-  assert.equal(distEsteAlCommitului(['v="abc123def456"'], SHA), true);
-  assert.equal(distEsteAlCommitului(["v='abc123def456'"], SHA), true);
-  assert.equal(distEsteAlCommitului(['v=`fedcba987654`'], SHA), false);
-  assert.equal(distEsteAlCommitului(['v=`abc123def4567`', 'abc123def456'], SHA), false, 'fără ghilimele, sau mai lung');
+test('dist/ al commit-ului: versiunea (12 caractere) din antetul lui index.html (ADR 0098); alt commit, un prefix sau doar textul nu', () => {
+  const html = (v: string): string => `<!doctype html><head>\n    <meta name="cncvs2-versiune" content="${v}" />\n</head>`;
+  assert.equal(distEsteAlCommitului(html('abc123def456'), SHA), true);
+  assert.equal(distEsteAlCommitului(html('fedcba987654'), SHA), false);
+  assert.equal(distEsteAlCommitului(html('abc123def4567'), SHA), false, 'mai lung');
+  assert.equal(distEsteAlCommitului(html('abc123def45'), SHA), false, 'mai scurt');
+  assert.equal(distEsteAlCommitului('<script>const v="abc123def456"</script>', SHA), false, 'doar în text, nu în antet');
 });
 
 /* ── Amprenta pe Firestore ─────────────────────────────────────────────────────────────────────────────────────── */

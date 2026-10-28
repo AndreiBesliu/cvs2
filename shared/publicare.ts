@@ -89,7 +89,7 @@ export function amprentaDin(x: unknown): Amprenta | 'nevalid' {
   return { schema: SCHEMA_AMPRENTA, app: APP, projectId, tinte };
 }
 
-/** Primele 12 caractere ale sha-ului: așa îl poartă build-ul (`__VERSIUNE__`, `vite.config.ts`). */
+/** Primele 12 caractere ale sha-ului: așa îl poartă build-ul (antetul lui `index.html`, `shared/versiune.ts`). */
 export function shaScurt(sha: string): string {
   return sha.slice(0, 12);
 }

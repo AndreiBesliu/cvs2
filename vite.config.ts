@@ -3,7 +3,8 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { EroareDocumentatie, genereazaDocumentatia } from './scripts/documentatie.ts';
-import { CSP } from './shared/csp.ts';
+import { cspPentru } from './scripts/cspHtml.ts';
+import { META_VERSIUNE } from './shared/versiune.ts';
 import { DIR_DOCUMENTATIE } from './shared/documentatie.ts';
 import { DIR_CODURI } from './shared/coduri.ts';
 import { DIR_MANUAL } from './shared/manual.ts';
@@ -17,6 +18,9 @@ import { inPrecache } from './shared/precache.ts';
  * `GITHUB_SHA` doar fără `git`. Exact 12 caractere: scriptul de publicare le caută în `dist/`.
  */
 function versiune(): string {
+  // Doar proba cascadei (`scripts/build-determinist.ts`, ADR 0098): același arbore, altă versiune.
+  const ceruta = process.env['CNCVS2_VERSIUNE'];
+  if (ceruta) return ceruta;
   try {
     return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim().slice(0, 12);
   } catch {
@@ -24,18 +28,47 @@ function versiune(): string {
   }
 }
 
-/** CSP-ul intră doar în build: serverul de dezvoltare are nevoie de scripturile inline ale lui React. */
+/**
+ * Un meta pus imediat după `<meta charset>`: codarea paginii rămâne în primii 1024 de octeți (CSP-ul e lung), iar meta-ul
+ * vine înaintea oricărui script. O pagină fără `<meta charset>` oprește build-ul.
+ */
+function dupaCharset(html: string, eticheta: string): string {
+  const cu = html.replace(/<meta charset="[^"]*"\s*\/?>/i, (m) => `${m}\n    ${eticheta}`);
+  if (cu === html) throw new Error('index.html n-are <meta charset>: meta-urile build-ului n-au unde sta');
+  return cu;
+}
+
+/**
+ * CSP-ul intră doar în build: serverul de dezvoltare are nevoie de scripturile inline ale lui React. Se scrie pe pagina
+ * finală (`generateBundle`, după ce Vite a pus în ea harta importurilor: transformările `post` rulează înaintea ei), cu
+ * amprenta hărții (ADR 0098). Fișierul separat al hărții (`importmap.json`) nu mai e nevoie: harta e în pagină.
+ */
 function cspInBuild(): Plugin {
   return {
     name: 'cncvs2-csp-in-build',
     apply: 'build',
-    transformIndexHtml: {
+    enforce: 'post',
+    generateBundle: {
       order: 'post',
-      handler: (html) => html.replace(
-        '<head>',
-        `<head>\n    <meta http-equiv="Content-Security-Policy" content="${CSP}" />`,
-      ),
+      handler(_iesire, bundle) {
+        const pagina = bundle['index.html'];
+        if (pagina?.type !== 'asset') return;
+        const html = typeof pagina.source === 'string' ? pagina.source : new TextDecoder().decode(pagina.source);
+        pagina.source = dupaCharset(html, `<meta http-equiv="Content-Security-Policy" content="${cspPentru(html)}" />`);
+        delete bundle['importmap.json'];
+      },
     },
+  };
+}
+
+/**
+ * Versiunea build-ului în antetul paginii (ADR 0098, `shared/versiune.ts`), nu într-o bucată: o publicare fără cod schimbă
+ * atunci doar `index.html`, iar bucățile își păstrează numele (proba: `scripts/build-determinist.ts`).
+ */
+function versiuneInPagina(): Plugin {
+  return {
+    name: 'cncvs2-versiune-in-pagina',
+    transformIndexHtml: (html) => dupaCharset(html, `<meta name="${META_VERSIUNE}" content="${versiune()}" />`),
   };
 }
 
@@ -123,15 +156,15 @@ function pwa(): Plugin[] {
 }
 
 export default defineConfig({
-  plugins: [react(), cspInBuild(), documentatie(), pwa()],
-  define: {
-    __VERSIUNE__: JSON.stringify(versiune()),
-  },
+  plugins: [react(), versiuneInPagina(), cspInBuild(), documentatie(), pwa()],
   build: {
     target: 'es2023',
     sourcemap: false,
     // Fără polyfill-ul `modulepreload`: toate browserele țintă (es2023) îl au nativ, iar polyfill-ul stătea în pornire.
     modulePreload: { polyfill: false },
+    // Harta importurilor (ADR 0098): bucățile se importă după nume stabile, traduse de harta din `index.html` în numele cu
+    // amprentă. O bucată schimbată nu mai redenumește bucățile care o importă (înainte: ~72 % din octeți la fiecare publicare).
+    chunkImportMap: true,
     rolldownOptions: {
       output: {
         // Tot ce importă static intrarea stă într-o singură bucată, `index.html` cere un singur script (plasa din

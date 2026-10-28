@@ -100,10 +100,28 @@ test('sub CSP-ul din build, calea App Check / reCAPTCHA / funcții e permisă, i
   expect(externe).not.toContain('https://example.com');
 });
 
-test('aplicația merge sub CSP-ul ei, fără nicio încălcare raportată', async ({ page }) => {
+test('aplicația merge sub CSP-ul ei, fără nicio încălcare raportată, cu bucățile la cerere aduse prin harta importurilor', async ({ page }) => {
+  // Harta importurilor (ADR 0098) e un script inline: fără amprenta ei în CSP, nicio bucată nu s-ar mai rezolva.
+  expect(readFileSync('dist/index.html', 'utf8')).toMatch(/<script type="importmap">\{"imports":\{"\/assets\//);
   const incalcari: string[] = [];
   page.on('console', (m) => { if (/Content Security Policy|Refused to/i.test(m.text())) incalcari.push(m.text()); });
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  // O bucată la cerere (manualul), adusă prin hartă.
+  await page.locator('[data-editare="manual"]').click();
+  await expect(page.getByTestId('manual')).toHaveAttribute('data-stare', 'gata');
   expect(incalcari).toEqual([]);
+});
+
+test('sub CSP-ul din build, doar harta are amprentă: alt script inline e refuzat', async ({ page }) => {
+  await page.route('**/proba-csp-inline.html', (r) => r.fulfill({
+    contentType: 'text/html',
+    body: `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="${cspDinBuild()}"><script>document.title = 'inline-mers';</script><script src="/proba-csp-inline.js"></script></head><body></body></html>`,
+  }));
+  await page.route('**/proba-csp-inline.js', (r) => r.fulfill({
+    contentType: 'text/javascript',
+    body: "if (document.title !== 'inline-mers') document.title = 'inline-refuzat';",
+  }));
+  await page.goto('/proba-csp-inline.html');
+  await expect(page).toHaveTitle('inline-refuzat');
 });

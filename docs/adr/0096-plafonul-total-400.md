@@ -54,7 +54,8 @@ Cei +1,1 kB sunt progresul (ADR 0097): pluginul din worker, răspunsul lui la ce
 - **Cascada amprentelor.** Orice publicare re-aduce ~72 % din octeții precache-ului, nu doar ce s-a schimbat. Nu atinge viteza
   aplicației, doar actualizarea: ~300 kB gzip pe versiune, cu progresul în bara de jos (ADR 0097). Remediul ține de împărțirea
   bucăților: codul comun într-o bucată fără numele bucăților la cerere, ca o schimbare să redenumească doar bucata ei și pornirea.
-  E o felie a ei, nu a deciziei de aici.
+  E o felie a ei, nu a deciziei de aici. **(Rezolvat de ADR 0098: harta importurilor; o publicare fără cod schimbă doar
+  `index.html` și `sw.js`.)**
 
 ## Se redeschide dacă
 

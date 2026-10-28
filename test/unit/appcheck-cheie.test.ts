@@ -135,3 +135,26 @@ test('pregătirea publicării (dependențele injectate) scrie config.json cu che
     rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test('pregătirea publicării: antetul CSP din firebase.json poartă amprenta hărții importurilor din index.html-ul build-ului (ADR 0098)', async () => {
+  const tmp = mkdtempSync(join(tmpdir(), 'cncvs2-publicare-'));
+  try {
+    const dist = join(tmp, 'dist');
+    mkdirSync(dist);
+    // Amprenta, pe hârtie: base64(sha256) al textului dintre etichete, calculat cu `hashlib` din Python.
+    writeFileSync(join(dist, 'index.html'), '<!doctype html><head><script type="importmap">{"imports":{"/assets/a-AAAAAAAA.js":"/assets/a-BBBBBBBB.js"}}</script></head>');
+    const dir = await pregatestePublicare({
+      dist,
+      dir: join(tmp, 'publicare'),
+      configWeb: (p) => ({ ...FIREBASE, projectId: p }),
+      cheie: async () => ({ stare: 'inregistrata', cheieSite: CHEIE }),
+    });
+    const cfg = JSON.parse(readFileSync(join(dir, 'firebase.json'), 'utf8')) as {
+      hosting: { headers: Array<{ source: string; headers: Array<{ key: string; value: string }> }> };
+    };
+    const csp = cfg.hosting.headers.find((h) => h.source === '**')?.headers.find((h) => h.key === 'Content-Security-Policy')?.value ?? '';
+    assert.match(csp, /script-src 'self' 'sha256-k5SyWn6dTVsoqC1RdwYS3Fg\/VEL82ia4WxSZblb33zk=' /);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});

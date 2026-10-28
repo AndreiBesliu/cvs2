@@ -7,9 +7,13 @@
  * căi diferite, deci amândouă primesc `no-cache`.
  */
 import { writeFileSync } from 'node:fs';
-import { CSP } from '../shared/csp.ts';
+import { cspCu } from '../shared/csp.ts';
 
-export function configHosting(publicDir: string): object {
+/**
+ * `hashuri`: amprentele scripturilor inline ale build-ului publicat (harta importurilor, ADR 0098), puse de publicare din
+ * `index.html`-ul lui; antetul se aplică și paginii, deci fără ele harta ar fi refuzată. Fișierul din repo n-are build: fără.
+ */
+export function configHosting(publicDir: string, hashuri: readonly string[] = []): object {
   const antet = (key: string, value: string) => ({ key, value });
   return {
     hosting: {
@@ -24,7 +28,7 @@ export function configHosting(publicDir: string): object {
         {
           source: '**',
           headers: [
-            antet('Content-Security-Policy', `${CSP}; frame-ancestors 'none'`),
+            antet('Content-Security-Policy', `${cspCu(hashuri)}; frame-ancestors 'none'`),
             antet('X-Content-Type-Options', 'nosniff'),
             antet('Referrer-Policy', 'strict-origin-when-cross-origin'),
             antet('Permissions-Policy', 'camera=(), microphone=(), geolocation=()'),

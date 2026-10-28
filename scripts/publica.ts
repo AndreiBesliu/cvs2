@@ -13,12 +13,13 @@
  * `publica-test.ts` (hosting) și `publica-functii.ts` (serverul) sunt scurtăturile instanței de test.
  */
 import { execFileSync, execSync } from 'node:child_process';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   esteInstanta, PROIECTE, SHA_COMPLET, shaScurt, TINTE, TINTE_SERVER, TOATE_TINTELE, type Instanta, type Publicare, type Tinta,
 } from '../shared/publicare.ts';
+import { META_VERSIUNE } from '../shared/versiune.ts';
 import { scrieAmprenta } from './amprenta.ts';
 import { clientFirebaseTools } from './firebase-api.ts';
 import { pregatestePublicare } from './pregateste-publicare.ts';
@@ -69,12 +70,11 @@ export function cinePublica(env: Mediu): string {
 }
 
 /**
- * `dist/` e build-ul commit-ului: una dintre bucățile lui poartă versiunea (`__VERSIUNE__`, primele 12 caractere), ca text
- * între ghilimele (minificatorul pune backtick-uri: măsurat pe 18.10).
+ * `dist/` e build-ul commit-ului: `index.html` poartă versiunea (primele 12 caractere) în antet (ADR 0098, `shared/versiune.ts`),
+ * nu într-o bucată JavaScript, ca o publicare fără cod să nu redenumească bucățile.
  */
-export function distEsteAlCommitului(bucati: readonly string[], sha: string): boolean {
-  const v = shaScurt(sha);
-  return bucati.some((b) => ['"', "'", '`'].some((g) => b.includes(`${g}${v}${g}`)));
+export function distEsteAlCommitului(html: string, sha: string): boolean {
+  return new RegExp(`<meta name="${META_VERSIUNE}" content="([^"]*)"`).exec(html)?.[1] === shaScurt(sha);
 }
 
 function git(...args: string[]): string {
@@ -98,9 +98,7 @@ export async function publica(c: Cerere, env: Mediu = process.env): Promise<void
   const server = c.tinte.filter((t) => t !== 'hosting');
   let builtAt: string | undefined;
   if (c.tinte.includes('hosting')) {
-    const assets = join('dist', 'assets');
-    const bucati = readdirSync(assets).filter((f) => f.endsWith('.js')).map((f) => readFileSync(join(assets, f), 'utf8'));
-    if (!distEsteAlCommitului(bucati, gitSha)) throw new Error(`dist/ nu e build-ul lui ${shaScurt(gitSha)}: rulează întâi npm run build`);
+    if (!distEsteAlCommitului(readFileSync(join('dist', 'index.html'), 'utf8'), gitSha)) throw new Error(`dist/ nu e build-ul lui ${shaScurt(gitSha)}: rulează întâi npm run build`);
     builtAt = statSync(join('dist', 'index.html')).mtime.toISOString();
   }
   if (!arboreCurat) console.warn(`\n⚠ Arborele are modificări necomise: amprenta o spune (arboreCurat: false).\n`);

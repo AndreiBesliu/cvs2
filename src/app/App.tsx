@@ -30,6 +30,7 @@ import { incarcaNivelPiesa, ListaVectori, type RandLista } from '../ui/ListaVect
 import { useLimba } from '../ui/useLimba.ts';
 import type { RezultatConfig } from './config.ts';
 import type { ProgresActualizare } from '../pwa/inregistrare.ts';
+import { versiuneDin } from '../../shared/versiune.ts';
 import { listaDesen } from './desen.ts';
 import type { Jurnal } from './jurnalErori.ts';
 import { ConflictDeScriere, type DepozitProiect, type ProiectDeschis } from './proiectLocal.ts';
@@ -942,7 +943,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               <Suspense fallback={null}>
                 <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)}
                   ruleaza={(id, extra) => { ruleazaDocument(id, context(extra)); }} onLipeste={setLipesteStabil} onDesen={setDesenStabil} reface={stareActiune('istoric.reface').ok}
-                  {...(config.ok && config.config.instanta !== 'live' ? { test: { versiune: __VERSIUNE__, instanta: config.config.instanta } } : {})} />
+                  {...(config.ok && config.config.instanta !== 'live' ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />
               </Suspense>
             )}
             textLasare={t('import.lasa-aici')}

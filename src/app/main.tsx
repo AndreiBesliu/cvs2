@@ -5,6 +5,7 @@ import type { Limba } from '../i18n/tipuri.ts';
 import type { ProgresActualizare } from '../pwa/inregistrare.ts';
 import { programeazaPwa } from '../pwa/pornire.ts';
 import { semnal } from '../ui/CipuriVedere.tsx';
+import { versiuneDin } from '../../shared/versiune.ts';
 import { App } from './App.tsx';
 import { esteRutaAdmin, incarcaConfig } from './config.ts';
 import { ErrorBoundary } from './ErrorBoundary.tsx';
@@ -38,10 +39,12 @@ const jurnal = creeazaJurnal(depozit, () => new Date(), () => location.href);
  * proiectului care nu vin pleacă: o publicare stricată arată la fel, iar cu rețeaua căzută nici raportorul n-ar veni
  * (reverificarea 3.2).
  */
+/** Commit-ul build-ului, din antetul paginii (ADR 0098): nu stă în bucata de pornire, ca o publicare fără cod s-o lase neschimbată. */
+const VERSIUNE = versiuneDin(document);
 const raportor = creeazaRaportor({
   jurnal,
   adu: () => import('../cloud/raportor.ts'),
-  build: __VERSIUNE__,
+  build: VERSIUNE,
   limba,
 });
 window.addEventListener('error', (e) => { jurnal.adauga('fereastra', e.error ?? e.message); });
@@ -210,7 +213,7 @@ async function porneste(): Promise<void> {
 
   const context = (): Context => ({
     aplicatia: 'CNC Vector Studio',
-    versiunea: __VERSIUNE__,
+    versiunea: VERSIUNE,
     instanta: config.ok ? config.config.instanta : 'necunoscută',
     limba: limba(),
     browserul: navigator.userAgent,
@@ -246,7 +249,7 @@ async function porneste(): Promise<void> {
     createRoot(radacina).render(
       <StrictMode>
         <ErrorBoundary jurnal={jurnal} context={context}>
-          <PaginaAdmin config={config} build={__VERSIUNE__} alegeLimba={alegeLimba} />
+          <PaginaAdmin config={config} build={VERSIUNE} alegeLimba={alegeLimba} />
         </ErrorBoundary>
       </StrictMode>,
     );

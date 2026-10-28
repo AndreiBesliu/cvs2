@@ -16,6 +16,7 @@ import { cpSync, existsSync, readdirSync, readFileSync, renameSync, rmSync, writ
 import { createServer, type Server } from 'node:http';
 import type { Socket } from 'node:net';
 import { extname, join, normalize } from 'node:path';
+import { cspPentru } from '../../scripts/cspHtml.ts';
 
 const TIPURI: Readonly<Record<string, string>> = {
   '.html': 'text/html; charset=utf-8',
@@ -90,6 +91,11 @@ export function publicareSimulata(dosarA: string, dosarB: string, re: RegExp): R
     const dupa = redenumiri.reduce((s, { vechi, nou }) => s.split(vechi).join(nou), inainte);
     if (dupa !== inainte) writeFileSync(cale, dupa);
   }
+  // Harta importurilor din index.html are nume noi, deci CSP-ul ei își schimbă amprenta (ADR 0098), ca la un build adevărat.
+  const html = readFileSync(join(dosarB, 'index.html'), 'utf8');
+  const cuCsp = html.replace(/(<meta http-equiv="Content-Security-Policy" content=")[^"]*(")/, `$1${cspPentru(html)}$2`);
+  if (cuCsp === html && !html.includes(cspPentru(html))) throw new Error('index.html n-are meta-ul CSP');
+  writeFileSync(join(dosarB, 'index.html'), cuCsp);
   const sw = readFileSync(join(dosarB, 'sw.js'), 'utf8');
   const revizie = createHash('md5').update(readFileSync(join(dosarB, 'index.html'))).digest('hex');
   const swNou = sw.replace(/("revision":")[0-9a-f]{32}(","url":"index\.html")/, `$1${revizie}$2`);

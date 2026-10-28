@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { CSP } from '../../shared/csp.ts';
-import { textFirebaseJson } from '../../scripts/firebase-json.ts';
+import { CSP, cspCu } from '../../shared/csp.ts';
+import { configHosting, textFirebaseJson } from '../../scripts/firebase-json.ts';
 
 test('firebase.json din repo e exact cel generat din sursele lui (CSP-ul din shared/csp.ts)', () => {
   assert.equal(readFileSync('firebase.json', 'utf8'), textFirebaseJson());
@@ -27,4 +27,13 @@ test('antetul CSP de pe Hosting e CSP-ul din build, plus frame-ancestors, fără
   // Documentele repo-ului de pe domeniul produsului nu ajung în rezultatele căutării.
   const doc = cfg.hosting.headers.find((h) => h.source === '/documentatie/**');
   assert.equal(doc?.headers.find((h) => h.key === 'X-Robots-Tag')?.value, 'noindex');
+});
+
+test('antetul CSP primește amprentele scripturilor inline ale build-ului (harta importurilor, ADR 0098), pe toate căile', () => {
+  const HASH = "'sha256-k5SyWn6dTVsoqC1RdwYS3Fg/VEL82ia4WxSZblb33zk='";
+  const cfg = configHosting('dist', [HASH]) as { hosting: { headers: Array<{ source: string; headers: Array<{ key: string; value: string }> }> } };
+  const csp = cfg.hosting.headers.find((h) => h.source === '**')?.headers.find((h) => h.key === 'Content-Security-Policy')?.value;
+  assert.equal(csp, `${cspCu([HASH])}; frame-ancestors 'none'`);
+  const fara = configHosting('dist') as typeof cfg;
+  assert.equal(fara.hosting.headers.find((h) => h.source === '**')?.headers.find((h) => h.key === 'Content-Security-Policy')?.value, `${CSP}; frame-ancestors 'none'`);
 });

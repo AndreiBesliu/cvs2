@@ -3437,3 +3437,23 @@ cod re-aduce 38 din 71 de fișiere, 941 din 1 314 kB necomprimați (~72 %): buca
 la cerere, iar aproape toate bucățile o importă, deci toate se redenumesc. Scris în ADR 0096 (Limite) și în rândul 3.M. Tot acum,
 din lista owner-ului: scos „Testul uneltelor de desen, pas cu pas, în aplicație” (făcut pe 25.10, remedierile în 6.P↑).
 
+## 2026-10-28 — Harta importurilor: o publicare aduce doar ce s-a schimbat (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, repar-o” (la întrebarea „Repar cascada, ca o actualizare să aducă doar ce s-a schimbat?”)
+**Started:** 28.10, 13:55. Felia **3.N**, fără mașină și fără agenți. Măsurat pe test (3.M): o publicare fără cod re-aducea 38 din
+71 de fișiere (~72 % din octeți), fiindcă fiecare bucată poartă numele celor pe care le importă, bucata de pornire le poartă pe
+toate (și versiunea), iar aproape toate o importă. Planul: `build.chunkImportMap` (Vite 8.3.3 / Rolldown, experimental): bucățile se
+importă după nume stabile, traduse de o hartă din `index.html`; harta e un script inline, deci amprenta ei exactă intră în CSP (meta
+și antetul de pe Hosting), fără `unsafe-inline`; versiunea iese din JavaScript în antetul paginii. Proba, scrisă întâi: un al
+treilea build, cu altă versiune, poate schimba doar `index.html` și `sw.js` (azi: 78 de fișiere).
+
+**Completed:** 28.10 15:05. Bucățile se importă după nume stabile (`build.chunkImportMap`), traduse de harta din `index.html`;
+amprenta exactă a hărții intră în CSP (meta-ul paginii, scris în `generateBundle`, și antetul scris de publicare), tot fără
+`unsafe-inline`: orice alt script inline e refuzat (probat în Edge). Versiunea stă în `<meta name="cncvs2-versiune">`, citită de
+aplicație și de verificarea publicării. **Proba din poartă:** un al treilea build, cu altă versiune, schimbă doar `index.html` și
+`sw.js` (înainte: 78 de fișiere). **Găsit pe drum:** Vite pune harta după transformările `post` ale paginii, deci amprenta se
+scrie pe pagina finală; cu CSP-ul mai lung, codarea paginii ajunsese la octetul 996 din 1 024 (meta-urile stau acum după `<meta
+charset>`, la octetul 46; poarta o verifică); poarta citea importurile după numele reale, deci traduce acum numele stabile prin
+hartă. Pornirea și totalul neschimbate: 96,3 (cu ușa 99,8) / 100 și 326,1 / 400 kB. Porțile: 7 544 unitare (0 picate, 8 sărite),
+build-ul determinist (cu proba cascadei), e2e 251 / 251, emulatoarele 36 + 13. Mutațiile: 16 / 16 din prima (9 pe probele unitare,
+5 pe poarta build-ului, 2 în fereastră, pe e2e).

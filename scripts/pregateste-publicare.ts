@@ -7,10 +7,11 @@
  * `apps:sdkconfig`): valorile sunt publice, dar nu stau în repo, ca să nu rămână în urma proiectului. La fel cheia App
  * Check a instanței (ADR 0043 §7), din înregistrarea App Check a aplicației web (`appcheck-cheie.ts`, doar GET).
  */
-import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { citesteCheieAppCheck, configPublicat, type CheieAppCheck, type ConfigWeb } from './appcheck-cheie.ts';
+import { hashuriInline } from './cspHtml.ts';
 import { configHosting } from './firebase-json.ts';
 import { PROIECTE, type Instanta } from '../shared/publicare.ts';
 
@@ -64,7 +65,9 @@ export async function pregatestePublicare(deps: DepsPublicare = {}): Promise<str
   if (avertisment) console.warn(`\n⚠ ${avertisment}\n`);
   else console.log(`App Check: cheia reCAPTCHA Enterprise a instanței intră în config.json (${proiect}).`);
   writeFileSync(join(dir, 'public', 'config.json'), json);
-  writeFileSync(join(dir, 'firebase.json'), `${JSON.stringify(configHosting('public'), null, 2)}\n`);
+  // Antetul CSP primește amprenta hărții importurilor din index.html-ul acestui build (ADR 0098), ca meta-ul din pagină.
+  const hashuri = hashuriInline(readFileSync(join(dist, 'index.html'), 'utf8'));
+  writeFileSync(join(dir, 'firebase.json'), `${JSON.stringify(configHosting('public', hashuri), null, 2)}\n`);
   writeFileSync(join(dir, '.firebaserc'), `${JSON.stringify({ projects: { [instanta]: proiect } }, null, 2)}\n`);
   return dir;
 }

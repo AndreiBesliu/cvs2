@@ -175,6 +175,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   oferta; procentul vine din mărimile scrise în manifest (`marime`, cerute de poarta build-ului), adunate de pluginul
   `src/pwa/progres.ts`; fila ascultă înaintea lui `register()` (care stă la coadă cât instalarea găsită de navigare).
   **Totalul 326,1 / 400 kB, pornirea 96,3 (cu ușa 99,8 / 100: strâmt).**
+  **Harta importurilor (ADR 0098)** gata pe 28.10: bucățile se importă după nume stabile (`build.chunkImportMap`), traduse de
+  harta din `index.html`, deci o publicare redenumește doar bucățile schimbate (înainte: ~72 % din octeți la fiecare publicare).
+  **Harta e un script inline: amprenta ei intră în CSP** (meta-ul, scris în `generateBundle`, și antetul scris de publicare din
+  `dist/index.html`); orice alt script inline e refuzat. Versiunea stă în `<meta name="cncvs2-versiune">` (`shared/versiune.ts`),
+  nu în JavaScript. Poarta: un build cu altă versiune schimbă doar `index.html` și `sw.js`.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

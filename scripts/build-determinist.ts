@@ -14,6 +14,7 @@ import { DIR_MANUAL, esteManual, fisierManual, LIMBI_MANUAL } from '../shared/ma
 import { DIR_MESAJE, esteDictionarMesaje, esteFisierMesaje, fisierBaza, fisierMesaje, MODULE_MESAJE, type Limba } from '../shared/mesaje.ts';
 import { DICTIONARE_BAZA, DICTIONARE_MODULE } from './mesaje.ts';
 import { DOAR_ONLINE, inPrecache, motivPrecache } from '../shared/precache.ts';
+import { cspPentru, hashuriInline } from './cspHtml.ts';
 
 /**
  * Plafoanele JavaScript-ului comprimat, în kB:
@@ -86,10 +87,11 @@ function amprenta(dir: string): Map<string, string> {
 /** Vite rulat direct prin Node, fără shell: argumentele ajung neatinse, pe orice platformă. */
 const VITE = fileURLToPath(new URL('../node_modules/vite/bin/vite.js', import.meta.url));
 
-function construieste(outDir: string): Map<string, string> {
+function construieste(outDir: string, mediu: Readonly<Record<string, string>> = {}): Map<string, string> {
   rmSync(outDir, { recursive: true, force: true });
   execFileSync(process.execPath, [VITE, 'build', '--outDir', outDir, '--emptyOutDir', '--logLevel', 'warn'], {
     stdio: 'inherit',
+    env: { ...process.env, ...mediu },
   });
   return amprenta(outDir);
 }
@@ -103,8 +105,45 @@ if (diferente.length) {
   process.exit(1);
 }
 
+/**
+ * O publicare redenumește doar ce s-a schimbat (ADR 0098). Proba: un al treilea build, al aceluiași arbore cu altă versiune
+ * (`CNCVS2_VERSIUNE`, citită de `vite.config.ts` doar pentru proba asta), poate schimba doar `index.html` (versiunea stă în
+ * antetul lui) și `sw.js` (revizia lui `index.html` din manifest). Fără harta importurilor, fiecare bucată purta numele
+ * celorlalte, iar versiunea stătea în bucata de pornire, importată de aproape toate: măsurat pe test, o publicare fără cod
+ * re-aducea 38 din 71 de fișiere, ~72 % din octeți (ADR 0096, „Limite”).
+ */
+const VERSIUNE_PROBA = 'proba-cascada';
+const c = construieste('.tmp/build-3', { CNCVS2_VERSIUNE: VERSIUNE_PROBA });
+const schimbateDeVersiune = [...new Set([...a.keys(), ...c.keys()])].filter((f) => a.get(f) !== c.get(f)).sort();
+const PERMISE_LA_VERSIUNE = ['index.html', 'sw.js'];
+const cascada = schimbateDeVersiune.filter((f) => !PERMISE_LA_VERSIUNE.includes(f));
+if (cascada.length > 0) {
+  console.error(`O versiune nouă schimbă ${cascada.length} fișiere în afara lui index.html și sw.js (cascada amprentelor, ADR 0098):`);
+  for (const f of cascada) console.error(`  ✗ ${f}`);
+  process.exit(1);
+}
+// Martorul: proba vede versiunea (altfel „nimic schimbat” ar trece și cu versiunea uitată în afara build-ului).
+if (!schimbateDeVersiune.includes('index.html') || !readFileSync('.tmp/build-3/index.html', 'utf8').includes(VERSIUNE_PROBA)) {
+  console.error('Proba cascadei e oarbă: index.html din build-ul cu altă versiune nu poartă versiunea cerută.');
+  process.exit(1);
+}
+
 const gz = (p: string): number => gzipSync(readFileSync(p), { level: 9 }).length / 1024;
 const html = readFileSync('.tmp/build-1/index.html', 'utf8');
+// Harta importurilor (ADR 0098) e singurul script inline al paginii, iar CSP-ul din meta are exact amprenta ei: fără ea,
+// nicio bucată nu s-ar mai rezolva; cu `unsafe-inline` sau cu alt script inline, CSP-ul n-ar mai fi cel scris.
+const inline = hashuriInline(html);
+const cspMeta = /<meta http-equiv="Content-Security-Policy" content="([^"]*)"/.exec(html)?.[1];
+// Codarea (`<meta charset>`) stă în primii 1024 de octeți ai paginii, înaintea CSP-ului lung (`vite.config.ts`, `dupaCharset`).
+const octetCharset = Buffer.from(html, 'utf8').indexOf('<meta charset');
+if (octetCharset < 0 || octetCharset > 1024 - 30 || octetCharset > html.indexOf('Content-Security-Policy')) {
+  console.error(`index.html: <meta charset> e la octetul ${octetCharset}: trebuie în primii 1024 de octeți, înaintea CSP-ului.`);
+  process.exit(1);
+}
+if (!html.includes('<script type="importmap">') || inline.length !== 1 || cspMeta !== cspPentru(html)) {
+  console.error(`index.html: harta importurilor lipsește, are alte scripturi inline (${inline.length}) sau CSP-ul din meta n-are amprenta ei.`);
+  process.exit(1);
+}
 const laPornire = new Set([...html.matchAll(/(?:src|href)="\/(assets\/[^"]+\.js)"/g)].map((m) => m[1] ?? ''));
 if (laPornire.size === 0) {
   console.error('index.html nu cere niciun script: măsurătoarea pachetului de pornire ar fi vidă.');
@@ -175,7 +214,21 @@ if (bucatiAdmin !== 1) {
   process.exit(1);
 }
 
-const cod = (rel: string): string => readFileSync(join('.tmp/build-1', rel), 'utf8');
+/**
+ * Harta importurilor (ADR 0098): bucățile se pomenesc între ele după numele stabile din hartă, nu după numele fișierelor.
+ * `cod()` le traduce înapoi în numele reale, ca măsurătorile de mai jos (închiderile, importurile cerute) să citească
+ * fișierele build-ului. Fiecare nume stabil trebuie să ducă la un fișier care există.
+ */
+const hartaImporturi = /<script type="importmap">([\s\S]*?)<\/script>/.exec(html)?.[1] ?? '{"imports":{}}';
+const traduceri = Object.entries((JSON.parse(hartaImporturi) as { imports: Record<string, string> }).imports)
+  .map(([stabil, real]) => [stabil.replace(/^\/assets\//, ''), real.replace(/^\/assets\//, '')] as const);
+const hartaFaraFisier = traduceri.filter(([, real]) => !a.has(`assets/${real}`));
+if (traduceri.length === 0 || hartaFaraFisier.length > 0) {
+  console.error(`Harta importurilor e goală sau trimite la fișiere care nu există: ${hartaFaraFisier.map(([s, r]) => `${s} → ${r}`).join(', ')}.`);
+  process.exit(1);
+}
+const cod = (rel: string): string =>
+  traduceri.reduce((text, [stabil, real]) => text.split(stabil).join(real), readFileSync(join('.tmp/build-1', rel), 'utf8'));
 const bucataPornirii = [...laPornire][0] ?? '';
 /** Bucata unui modul după numele ei (`assets/<nume>-<hash>.js`): exact una, altfel măsurătoarea de mai jos n-ar avea obiect. */
 function bucataNumita(nume: string): string {
@@ -580,6 +633,7 @@ if (!cod(inregistrare).includes('/sw.js')) {
 
 const kbRaportorPornire = await kbModul(RAPORTOR_PORNIRE);
 console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri.`);
+console.log(`O versiune nouă schimbă doar ${schimbateDeVersiune.join(' și ')} (harta importurilor, ADR 0098): ${traduceri.length} bucăți pomenite după nume stabile.`);
 console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (date, ${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}); testul pas cu pas: ${testPasCuPas.toFixed(1)} kB (plafon ${PLAFON_TEST_KB}, doar online); mașina simulată: ${simulata.toFixed(1)} kB (plafon ${PLAFON_SIMULATA_KB}, doar online).`);
 console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
 console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`)).join(', ')} și ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere).`);
