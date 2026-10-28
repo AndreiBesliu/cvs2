@@ -3457,3 +3457,10 @@ charset>`, la octetul 46; poarta o verifică); poarta citea importurile după nu
 hartă. Pornirea și totalul neschimbate: 96,3 (cu ușa 99,8) / 100 și 326,1 / 400 kB. Porțile: 7 544 unitare (0 picate, 8 sărite),
 build-ul determinist (cu proba cascadei), e2e 251 / 251, emulatoarele 36 + 13. Mutațiile: 16 / 16 din prima (9 pe probele unitare,
 5 pe poarta build-ului, 2 în fereastră, pe e2e).
+
+**Publicat pe test (28.10, 15:35)**, din workflow (run 40694614506, `7eac37d`), cu CI-ul rapid verde (run 40693448278). Pe test:
+antetul CSP are amprenta hărții, egală cu amprenta recalculată (Python) din harta servită, la fel meta-ul, fără `unsafe-inline`;
+`<meta charset>` la octetul 46, versiunea `7eac37de22e6` în antet. Verificat în browser la 1440 px: fila rămasă pe versiunea
+dinainte a primit oferta, iar după „Reîncarcă” versiunea nouă pornește controlată de worker, cu harta (59 de intrări), bara
+editării și manualul (adus prin hartă), 0 încălcări CSP, jurnalul cu 0 erori, consola curată. Prima actualizare spre versiunea asta
+re-aduce aproape tot o singură dată (numele stabile sunt noi); măsurătoarea care contează e publicarea commit-ului ăstuia, fără cod.
