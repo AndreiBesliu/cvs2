@@ -185,6 +185,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   traseului); timpul fiecărei mișcări din estimarea planificatorului pe liniile postului (`liniiMiscari`, suma = timpul din
   cip); modelul pur în `src/sim/animatie.ts`, playerul în `src/ui/actiuniAnimatie.ts`. **Pornirea cu ușa 99,9 / 100 kB:**
   fiecare bucată nouă la cerere, comună mai multor module, adaugă un nume în lista de preîncărcare din pornire.
+  **Plafonul pornirii 110 kB (ADR 0100, decizia owner-ului) și importul DXF (ADR 0101, adus din etapa 9)** gata pe 28.10:
+  „Importă SVG / DXF…” citește DXF-ul ASCII (`src/io/dxf.ts`, cititor propriu): unitățile din $INSUNITS (lipsă: mm, cu
+  alegerea în dialog), entitățile cu OCS-ul (0, 0, ±1), blocurile (INSERT, MINSERT, stratul 0 moștenit), spline-urile în
+  Bézier exact (forma polară, și periodice), bucățile deschise legate capăt la capăt pe același strat; desenul stă unde e în
+  fișier (`pozitie: 'fisier'`), cu stratul ca nume. Verificările căii (plafonul, praful, linia fără arie) sunt comune ușilor,
+  în `src/io/caleImport.ts`. **Corpusul DXF e Python** (`test/oracles-py/dxf_import_corpus.py`, ezdxf): un caz nou = entitatea
+  în generator + valoarea pe hârtie, verificată acolo față de ezdxf, apoi `test/fixtures/dxf/` regenerat și comis. **Pornirea
+  96,5 (cu ușa 100,0 / 110 kB), totalul 338,3 / 400.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

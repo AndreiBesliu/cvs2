@@ -96,7 +96,7 @@ test('mesajele importului vin cu dialogul: înainte de încărcare lipsesc (eroa
   assert.throws(() => traduce('ro', 'import.titlu', { nume: 'x' }), /nu e încărcat/);
   const f = servesteMesajele();
   await import('../../src/i18n/import.ts').then((m) => m.gata).finally(() => { f.restaureaza(); });
-  assert.equal(traduce('ro', 'import.titlu', { nume: 'logo' }), 'Importă SVG: logo');
+  assert.equal(traduce('ro', 'import.titlu', { nume: 'logo' }), 'Importă: logo');
   // Din 2.3c-3, `deschise` numără căile deschise IMPORTATE (ADR 0037 §11).
   assert.equal(traduce('en', 'import.av.deschise', { n: 2 }), '2 open paths (no closing Z, not filled) imported as lines, to cut on the line');
   assert.equal(traduce('ro', 'import.av.deschise', { n: 20 }), '20 de căi deschise (fără Z de închidere, neumplute) importate ca linii, de tăiat pe linie');

@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 // Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
 import '../ui/actiuniDocumentCalcul.ts';
 import { ruleaza, type Registru, type RezultatActiune } from '../ui/actiuni.ts';
-import { PLAFON_IMPORT, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport } from '../ui/actiuniImport.ts';
+import { formatImport } from '../io/formatImport.ts';
+import {
+  PLAFON_IMPORT, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport, type UnitateDxf,
+} from '../ui/actiuniImport.ts';
 import { DialogImport } from '../ui/DialogImport.tsx';
 import { mesajeGata } from '../i18n/laCerere.ts';
 
@@ -14,11 +17,13 @@ mesaje.catch(() => undefined);
 type Loc = { readonly x: number; readonly y: number } | null;
 
 /**
- * Importul SVG (ADR 0035 §9): fișierul ales, px-ul și previzualizarea. Cât e deschis, documentul nu se schimbă pe altă
- * cale (aplicația e inertă sub dialog): „Importă” adaugă exact ce arată dialogul.
+ * Importul SVG (ADR 0035 §9) și DXF (ADR 0101 §8): fișierul ales, px-ul (SVG), unitatea (un DXF care nu și-o declară) și
+ * previzualizarea. Cât e deschis, documentul nu se schimbă pe altă cale (aplicația e inertă sub dialog): „Importă” adaugă
+ * exact ce arată dialogul.
  */
 type StareDialog = {
   readonly fisier: FisierImport | null; readonly nume: string; readonly px: 96 | 72; readonly pxAutomat: boolean;
+  readonly unitate: UnitateDxf;
   readonly stare: PrevizualizareImport | 'citire';
   /** Se recitește cu alt px: previzualizarea veche rămâne pe ecran (și focusul pe alegere), dar „Importă” e oprit. */
   readonly seRecitesc?: boolean;
@@ -29,8 +34,8 @@ type Props = {
   readonly fisiere: readonly File[];
   readonly punct: Loc;
   readonly registruImport: Registru<ContextImport>;
-  /** Contextul ușii SVG pentru un fișier și un px (limba, fila care doar citește, jurnalul: ale aplicației). */
-  readonly contextImport: (f: FisierImport | null, px: 96 | 72, rezultat: (r: PrevizualizareImport) => void) => ContextImport;
+  /** Contextul ușilor pentru un fișier, un px și o unitate (limba, fila care doar citește, jurnalul: ale aplicației). */
+  readonly contextImport: (f: FisierImport | null, px: 96 | 72, unitate: UnitateDxf, rezultat: (r: PrevizualizareImport) => void) => ContextImport;
   /** Starea și rularea lui `document.importa`, prin registrul și contextul aplicației. */
   readonly stareImporta: (p: ImportPregatit, loc: Loc) => RezultatActiune;
   readonly importa: (p: ImportPregatit, loc: Loc) => RezultatActiune;
@@ -38,13 +43,14 @@ type Props = {
 };
 
 /**
- * Starea de la care pornește dialogul pentru un fișier al cozii. Deocamdată doar SVG (după nume sau tip); celelalte
- * formate vin mai târziu. Peste plafon, fișierul nu se citește deloc (ADR 0035 §1).
+ * Starea de la care pornește dialogul pentru un fișier al cozii: SVG sau DXF (după nume sau tip); celelalte formate vin mai
+ * târziu. Peste plafon, fișierul nu se citește deloc (ADR 0035 §1).
  */
 function stareInitiala(f: File): StareDialog {
-  if (!/\.svg$/i.test(f.name) && f.type !== 'image/svg+xml') return { fisier: null, nume: f.name, px: 96, pxAutomat: false, stare: { ok: false, cod: 'tip' } };
-  if (f.size > PLAFON_IMPORT.octeti) return { fisier: null, nume: f.name, px: 96, pxAutomat: false, stare: { ok: false, cod: 'octeti', detaliu: String(f.size) } };
-  return { fisier: null, nume: f.name, px: 96, pxAutomat: false, stare: 'citire' };
+  const baza = { fisier: null, nume: f.name, px: 96, pxAutomat: false, unitate: 'mm' } as const;
+  if (formatImport(f.name, f.type) === null) return { ...baza, stare: { ok: false, cod: 'tip' } };
+  if (f.size > PLAFON_IMPORT.octeti) return { ...baza, stare: { ok: false, cod: 'octeti', detaliu: String(f.size) } };
+  return { ...baza, stare: 'citire' };
 }
 
 /**
@@ -62,21 +68,21 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
     onInchide();
   };
   /**
-   * Citește fișierul ales cu `px` px pe țol. Un fișier pe care îl spune Illustrator și a cărui mapare depinde de px se
-   * recitește o dată cu 72 (ADR 0035 §2), iar dialogul spune de ce.
+   * Citește fișierul ales cu `px` px pe țol și unitatea `unitate` (un DXF fără unități). Un fișier pe care îl spune
+   * Illustrator și a cărui mapare depinde de px se recitește o dată cu 72 (ADR 0035 §2), iar dialogul spune de ce.
    */
-  const citeste = (f: FisierImport, px: 96 | 72, automat: boolean, vechi?: PrevizualizareImport): void => {
+  const citeste = (f: FisierImport, px: 96 | 72, automat: boolean, vechi?: PrevizualizareImport, unitate: UnitateDxf = 'mm'): void => {
     const c = ++cerere.current;
     setDialog(vechi
-      ? { fisier: f, nume: f.nume, px, pxAutomat: automat, stare: vechi, seRecitesc: true }
-      : { fisier: f, nume: f.nume, px, pxAutomat: automat, stare: 'citire' });
-    const pornit = ruleaza(registruImport, 'import.svg', contextImport(f, px, (r) => {
+      ? { fisier: f, nume: f.nume, px, pxAutomat: automat, unitate, stare: vechi, seRecitesc: true }
+      : { fisier: f, nume: f.nume, px, pxAutomat: automat, unitate, stare: 'citire' });
+    const pornit = ruleaza(registruImport, 'import.svg', contextImport(f, px, unitate, (r) => {
       if (c !== cerere.current) return;
-      if (!automat && px === 96 && r.ok && r.px && r.illustrator) {
+      if (!automat && px === 96 && r.ok && r.format === 'svg' && r.px && r.illustrator) {
         citeste(f, 72, true);
         return;
       }
-      setDialog({ fisier: f, nume: f.nume, px, pxAutomat: automat, stare: r });
+      setDialog({ fisier: f, nume: f.nume, px, pxAutomat: automat, unitate, stare: r });
     }));
     // Acțiunea oprită (fila a trecut între timp pe „doar citire”): dialogul nu așteaptă un rezultat care nu vine.
     if (!pornit.ok) inchide();
@@ -90,7 +96,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
     f.arrayBuffer().then((b) => {
       if (c === cerere.current) citeste({ nume: f.name, octeti: new Uint8Array(b) }, 96, false);
     }, (e: unknown) => {
-      if (c === cerere.current) setDialog({ fisier: null, nume: f.name, px: 96, pxAutomat: false, stare: { ok: false, cod: 'parsare', detaliu: String(e) } });
+      if (c === cerere.current) setDialog({ fisier: null, nume: f.name, px: 96, pxAutomat: false, unitate: 'mm', stare: { ok: false, cod: 'parsare', detaliu: String(e) } });
     });
   };
   // Primul fișier, la montare (o coadă nouă e o montare nouă: aplicația scoate dialogul la închidere). La demontare, un
@@ -121,10 +127,14 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
       stare={dialog.stare}
       pxPeTol={dialog.px}
       pxAutomat={dialog.pxAutomat}
+      unitate={dialog.unitate}
       seRecitesc={dialog.seRecitesc === true}
       motiv={stareOk && !stareOk.ok ? stareOk.motiv : null}
       onPx={(px) => {
-        if (dialog.fisier) citeste(dialog.fisier, px, dialog.pxAutomat, ok ?? undefined);
+        if (dialog.fisier) citeste(dialog.fisier, px, dialog.pxAutomat, ok ?? undefined, dialog.unitate);
+      }}
+      onUnitate={(u) => {
+        if (dialog.fisier) citeste(dialog.fisier, dialog.px, dialog.pxAutomat, ok ?? undefined, u);
       }}
       onImporta={() => {
         // Un dublu-clic nu importă de două ori: clicul e un eveniment discret, deci React închide dialogul înaintea

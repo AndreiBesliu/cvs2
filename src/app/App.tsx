@@ -22,7 +22,7 @@ import { ACTIUNI_VEDERE, type ContextVedere } from '../ui/actiuniVedere.ts';
 import { actiuneaTastei, tastaActiunii, tastaApasata } from '../ui/scurtaturi.ts';
 import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type RezultatExport } from '../ui/actiuniExport.ts';
 import {
-  ACTIUNI_IMPORT, preincarcaImport, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport,
+  ACTIUNI_IMPORT, preincarcaImport, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport, type UnitateDxf,
 } from '../ui/actiuniImport.ts';
 import type { CerereExport, StareExport } from '../ui/DialogExport.tsx';
 import type { RezumatJob } from '../ui/actiuniExportTipuri.ts';
@@ -89,7 +89,7 @@ function DialogNeincarcat({ onInchide }: { readonly onInchide: () => void }) {
 }
 
 /**
- * Dialogurile se încarcă la cerere: nu intră în pachetul de pornire (plafonul de 100 kB, `PLAN.md` §4.4), pe care îl
+ * Dialogurile se încarcă la cerere: nu intră în pachetul de pornire (plafonul pornirii, ADR 0100), pe care îl
  * plătește fiecare deschidere a aplicației. Se aduc în fundal după pornire (`useEffect` de mai jos), ca prima deschidere
  * să nu aștepte rețeaua; un eșec al încărcării arată `DialogNeincarcat`, nu ecranul de eroare. Fiecare modul vine abia după
  * mesajele lui (`cuMesaje`, ADR 0086: textele modulelor sunt date, cerute când modulul se evaluează).
@@ -566,7 +566,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   };
 
   /** Contextul importului înainte de alegerea fișierului: doar starea butonului (fila care doar citește îl oprește). */
-  const importFaraFisier = (): ContextImport => contextImport(null, 96, () => undefined);
+  const importFaraFisier = (): ContextImport => contextImport(null, 96, 'mm', () => undefined);
   /** Starea oricărei acțiuni din bare și din paletă, citită din registrul ei. */
   const stareActiune = (id: string): RezultatActiune => (
     id === 'import.svg' ? stare(registruImport, id, importFaraFisier())
@@ -666,10 +666,11 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     }
   };
 
-  /** Contextul ușii SVG pentru un fișier și un px; citirea lui o face dialogul (`ImportConectat`). */
-  const contextImport = (f: FisierImport | null, px: 96 | 72, rezultat: (r: PrevizualizareImport) => void): ContextImport => ({
+  /** Contextul ușilor pentru un fișier, un px (SVG) și o unitate (DXF); citirea lui o face dialogul (`ImportConectat`). */
+  const contextImport = (f: FisierImport | null, px: 96 | 72, unitate: UnitateDxf, rezultat: (r: PrevizualizareImport) => void): ContextImport => ({
     fisier: () => f,
     pxPeTol: () => px,
+    unitate: () => unitate,
     limba: () => limbaActiva,
     doarCitire: () => doarCiteste(mod),
     rezultat,
@@ -906,7 +907,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           {aranjament.zone.unelte.length > 0 && <div className="insula unelte">{grupuri('unelte')}</div>}
         </header>
         {/* Fereastra de fișiere a importului: în afara barelor, ca importul să meargă din orice aranjament (și din paletă). */}
-        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml" multiple hidden data-camp="fisier-svg"
+        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml,.dxf,image/vnd.dxf,application/dxf" multiple hidden data-camp="fisier-svg"
           onChange={(e) => { alesFisier(e.target.files); e.target.value = ''; }} />
         <div className="lucru">
           <Panza

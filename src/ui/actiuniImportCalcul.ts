@@ -1,8 +1,30 @@
+import { citesteDxf } from '../io/dxf.ts';
 import { laturiDinImbricare } from '../io/imbricare.ts';
 import { PLAFON_IMPORT } from '../io/svgCoduri.ts';
-import { caleInchisa, cutieCai, numeDinFisier, pregateste } from '../io/piesa.ts';
+import { caleInchisa, cutieCai, numeDinFisier, pregateste, type CaleImport } from '../io/piesa.ts';
 import { citesteSvg } from '../io/svg.ts';
-import type { FisierImport, PrevizualizareImport } from './actiuniImportTipuri.ts';
+import { PLAFON } from '../model/document.ts';
+import { formatImport } from '../io/formatImport.ts';
+import type { FisierImport, PrevizualizareImport, UnitateDxf } from './actiuniImportTipuri.ts';
+
+/** Ce cer ușile: px-ul (SVG), limba (`switch` din SVG), unitatea aleasă (DXF fără unități). */
+export type OptiuniPrevizualizare = { readonly pxPeTol: 96 | 72; readonly limba: string; readonly unitate?: UnitateDxf };
+
+/** Imbricarea, mărimea desenului și numărătorile, comune ușilor; null dacă imbricarea trece de plafonul ei. */
+function comune(f: FisierImport, cai: ReadonlyArray<CaleImport>, pagina: { readonly latime: number; readonly inaltime: number } | null, pozitie?: 'fisier') {
+  const laturi = laturiDinImbricare(cai, PLAFON_IMPORT.includeri);
+  if (!laturi) return null;
+  const cutie = cutieCai(cai);
+  return {
+    ok: true as const,
+    pregatit: pregateste({ nume: numeDinFisier(f.nume), cai, laturi, pagina, ...(pozitie ? { pozitie } : {}) }),
+    latime: cutie.maxX - cutie.minX,
+    inaltime: cutie.maxY - cutie.minY,
+    exterioare: laturi.filter((l, k) => l === 'exterior' && caleInchisa(cai[k] ?? {})).length,
+    interioare: laturi.filter((l, k) => l === 'interior' && caleInchisa(cai[k] ?? {})).length,
+    deschise: cai.filter((c) => !caleInchisa(c)).length,
+  };
+}
 
 /**
  * Previzualizarea SVG (ADR 0035 §9): ușa, imbricarea și mărimea desenului. Se încarcă la cerere. Fiecare cale se citește
@@ -12,20 +34,29 @@ import type { FisierImport, PrevizualizareImport } from './actiuniImportTipuri.t
  */
 export function previzualizareSvg(f: FisierImport, pxPeTol: 96 | 72, limba: string): PrevizualizareImport {
   const r = citesteSvg(f.octeti, { pxPeTol, limba });
-  if (!r.ok) return r;
-  const laturi = laturiDinImbricare(r.cai, PLAFON_IMPORT.includeri);
-  if (!laturi) return { ok: false, cod: 'plafon', detaliu: 'includeri', avertismente: r.avertismente };
-  const cutie = cutieCai(r.cai);
-  return {
-    ok: true,
-    pregatit: pregateste({ nume: numeDinFisier(f.nume), cai: r.cai, laturi, pagina: r.pagina }),
-    latime: cutie.maxX - cutie.minX,
-    inaltime: cutie.maxY - cutie.minY,
-    exterioare: laturi.filter((l, k) => l === 'exterior' && caleInchisa(r.cai[k] ?? {})).length,
-    interioare: laturi.filter((l, k) => l === 'interior' && caleInchisa(r.cai[k] ?? {})).length,
-    deschise: r.cai.filter((c) => !caleInchisa(c)).length,
-    px: r.px,
-    illustrator: r.illustrator,
-    avertismente: r.avertismente,
-  };
+  if (!r.ok) return { ...r, format: 'svg' };
+  const c = comune(f, r.cai, r.pagina);
+  if (!c) return { ok: false, cod: 'plafon', detaliu: 'includeri', format: 'svg', avertismente: r.avertismente };
+  return { ...c, format: 'svg', px: r.px, illustrator: r.illustrator, avertismente: r.avertismente };
+}
+
+/**
+ * Previzualizarea DXF (ADR 0101 §8): ușa DXF, apoi aceeași imbricare și aceeași piesă ca la SVG. Fiecare cale poartă
+ * numele stratului ei; desenul stă unde e în fișier (originea DXF-ului e originea foii).
+ */
+export function previzualizareDxf(f: FisierImport, unitate?: UnitateDxf): PrevizualizareImport {
+  const r = citesteDxf(f.octeti, unitate ? { unitate } : {});
+  if (!r.ok) return { ...r, format: 'dxf' };
+  const cai = r.cai.map((c) => ({ varfuri: c.varfuri, inchis: c.inchis, nume: c.strat.slice(0, PLAFON.numeLungime) }));
+  const c = comune(f, cai, null, 'fisier');
+  if (!c) return { ok: false, cod: 'plafon', detaliu: 'includeri', format: 'dxf', avertismente: r.avertismente };
+  return { ...c, format: 'dxf', unitati: { mmPeUnitate: r.unitati.mmPeUnitate, declarate: r.unitati.declarate, unitate: r.unitati.unitate }, avertismente: r.avertismente };
+}
+
+/** Ușa după formatul fișierului (numele): SVG sau DXF; altul, refuzat (`tip`). */
+export function previzualizare(f: FisierImport, o: OptiuniPrevizualizare): PrevizualizareImport {
+  const format = formatImport(f.nume, '');
+  if (format === 'dxf') return previzualizareDxf(f, o.unitate);
+  if (format === 'svg') return previzualizareSvg(f, o.pxPeTol, o.limba);
+  return { ok: false, cod: 'tip' };
 }

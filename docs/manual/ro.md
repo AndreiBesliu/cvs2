@@ -280,24 +280,37 @@ Cu o singură formă aleasă, alinierea o pune față de foaie (de exemplu, „A
 foii). Mai multe forme se aleg cu dreptunghiul de selecție sau cu Shift + clic (vezi [Selecția și editarea](#selectie)).
 Fiecare aliniere se poate anula cu `Ctrl+Z`.
 
-## Importul SVG
+## Importul SVG și DXF
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-Butonul **Importă SVG** din bara de sus deschide fereastra de fișiere (poți alege mai multe). Sau tragi fișierele SVG direct
-pe pânză: fiecare cade cu centrul unde îl lași.
+Butonul **Importă SVG / DXF** din bara de sus deschide fereastra de fișiere (poți alege mai multe). Sau tragi fișierele SVG
+sau DXF direct pe pânză: fiecare cade cu centrul unde îl lași.
 
 Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului și cum se va tăia:
 - **contururile închise**: cele din afară pe exterior, găurile din ele pe interior (după imbricare);
 - **căile deschise**: pe linie, un canal de cel mult 1 mm (jumătate din foaie, dacă e mai subțire), într-o trecere; grosimea
   liniei din fișier nu contează, canalul are diametrul frezei;
-- **cât înseamnă un px**: 1/96 țol (standardul CSS, Inkscape) sau 1/72 țol (Illustrator); un fișier scris de Illustrator e
-  recunoscut;
-- ce nu se importă sau se citește altfel (textele, clonele `<use>`, imaginile, formele ascunse), cu numărul lor.
+- la un SVG, **cât înseamnă un px**: 1/96 țol (standardul CSS, Inkscape) sau 1/72 țol (Illustrator); un fișier scris de
+  Illustrator e recunoscut;
+- la un DXF, **unitățile**: cele declarate de fișier se folosesc ca atare; unul care nu le declară (de exemplu un R12) se
+  citește în mm, iar fereastra te lasă să alegi mm, cm, m, țol sau picior (mărimea desenului se schimbă pe loc);
+- ce nu se importă sau se citește altfel, cu numărul lor (la un SVG: textele, clonele `<use>`, imaginile, formele ascunse).
 
 **Importă** pune desenul pe foaie ca o singură formă, selectată; **Sari peste** trece la fișierul următor, **Renunță** și
-**Renunță la toate** închid fereastra. Se importă doar fișiere SVG, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul trebuie
-transformat în contururi în programul de desen înainte de export.
+**Renunță la toate** închid fereastra. Se importă doar fișiere SVG și DXF, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul
+trebuie transformat în contururi în programul de desen înainte de export.
+
+Un **DXF** se citește așa:
+- DXF-ul text (ASCII), de la R12 la cele noi; unul binar e refuzat (salvează-l ca ASCII);
+- desenul ajunge pe foaie unde e în fișier: originea DXF-ului e colțul foii (lăsat pe pânză, cade unde îl lași);
+- fiecare formă își păstrează numele stratului;
+- liniile, arcele, cercurile, poliliniile cu arce, elipsele și curbele (spline) intră exact: cercul rămâne cerc, curbele devin
+  curbe Bézier; blocurile se desfac, cu scara, rotirea și matricea lor;
+- bucățile deschise de pe același strat care se ating (capetele la cel mult 0,01 mm) se leagă: patru linii care fac un
+  dreptunghi devin un contur închis; unde se întâlnesc trei capete (un T), nu se leagă;
+- se sar, numărate: textele, hașurile, cotele, punctele, entitățile 3D, imaginile, straturile oprite sau înghețate și spațiul
+  hârtiei (layout-urile).
 
 ## Operațiile de tăiere
 %% capitol: operatii

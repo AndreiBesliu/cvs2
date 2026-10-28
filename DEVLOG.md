@@ -3499,3 +3499,31 @@ oracolul exportului 2D). Verificat în browser la 1440 px: fila de pe `3c6ff0a` 
 12”, „Arc, F 1000 · e1/e1: dreptunghi, exterior, 3 mm” și „X 120,000 Y 17,000 Z -3,000 · Freza T1, Ø6,000 mm”, iar pe pânză drumul
 parcurs e colorat și freza stă în colțul dreptunghiului; Escape închide panoul și stratul frezei; jurnalul cu 0 erori, consola
 curată. Pragul: rândul animației poartă commit-ul `a56ee45`.
+
+## 2026-10-28 — Importul DXF și plafonul pornirii 110 kB (Model: Claude Opus 5.5)
+
+**Prompt:** „Ridică plafonul” (la întrebarea „Next slice: raise the startup cap, or make room in it first?”, butonul „Ridică
+plafonul pornirii, cu ADR, și continuă cu felia următoare.”)
+**Started:** 28.10, 17:00. Două lucruri, fără mașină și fără agenți. **Plafonul pornirii 100 → 110 kB** (ADR 0100), cu pornirea
+măsurată în Edge înainte. Apoi felia **9.3↑, importul DXF, adus din etapa 9** (ADR 0101): rândul de prag „Import 2D” are SVG-ul
+gata, iar DXF-ul e primul format din lista lui. Planul: corpusul cu valorile pe hârtie, scris cu ezdxf
+(`test/oracles-py/dxf_import_corpus.py`: R2018 în mm, R2000 în inch, R12 fără unități); cititorul propriu (`src/io/dxf.ts`,
+fără pachetul `dxf`, care aduce lodash): unitățile, OCS-ul, blocurile imbricate, bulge-ul, NURBS-ul în Bézier, elipsele, legarea
+capetelor; ușa DXF în dialogul importului, cu aceleași căi ca SVG-ul.
+
+**Completed:** 28.10 19:10. **Plafonul pornirii 110 kB** (ADR 0100), cu pornirea măsurată în Edge pe build-ul 5.7↑. A doua
+pornire, din worker, fără rețea: 42 ms cu procesorul ×1, 102 ms cu ×4. Prima vizită, pe 750 kbit/s cu 150 ms latență: 1,8 s, cu
+99,4 kB transferați și 62 ms după ultimul octet. 10 kB în plus ≈ 0,11 s la prima vizită. **Importul DXF** (ADR 0101): „Importă SVG
+/ DXF…” citește DXF-ul ASCII (R12 … R2018) cu un cititor propriu: unitățile din $INSUNITS (lipsă: mm, cu alegerea omului în
+dialog), liniile, arcele, cercurile, elipsele, poliliniile cu arce, spline-urile (Bézier exact prin forma polară, și cele
+periodice), blocurile (INSERT, MINSERT, stratul 0 moștenit), OCS-ul oglindit; bucățile deschise de pe același strat se leagă capăt
+la capăt (4 linii fac un dreptunghi închis; în T nu); ce e ascuns sau nu e desen se sare, numărat. Desenul stă unde e în fișier, cu
+stratul ca nume pe fiecare formă. Verificările căii (praful, linia fără arie, plafonul) sunt acum comune cu ușa SVG
+(`src/io/caleImport.ts`, mutate neschimbate). **Găsit pe drum:** o formulă greșită în valorile pe hârtie ale blocului imbricat
+(corectată; generatorul verifică acum fiecare valoare față de entitățile exacte ale lui ezdxf, nu față de desenul lui, unde arcele
+sunt cubice aproximate); R12-ul sondei își scrie numerele cu 9 zecimale (proba ia precizia fișierului); elipsa lui din 112 arce
+are două perechi vecine pe același cerc (unite: 110, verificat cu ezdxf); `formatImport` și listele DXF ajunseseră în bucata de
+pornire prin modulul acțiunilor (+0,6 kB), mutate în module la cerere (+0,1). Pornirea 96,4 → 96,5 (cu ușa 99,9 / 100 → 100,0 /
+110); totalul 330,3 → 338,3 / 400 kB. Porțile: 7 648 unitare (0 picate, 8 sărite), build-ul determinist, e2e 258 / 258, emulatoarele 36 + 13. Mutațiile: 55 / 55 (51 pe probele unitare, 4 în fereastră, pe e2e); 6 au
+trecut întâi și au cerut probe noi (un nod în plus la spline, arcul NURBS de 120° și sensul lui, dus-întorsul pe același cerc, R2007
+cu UTF-8, perechile fără secțiune).

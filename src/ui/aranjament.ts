@@ -80,7 +80,7 @@ export const ARANJAMENT_MODERN: Aranjament = {
       { id: 'forme', intrari: [{ control: 'unelte' }] },
       // Duplică și Șterge stau în bara selecției, lângă ea (și Ctrl+D, Delete, paleta): în bara de sus erau a doua oară.
       { id: 'istoric', intrari: [{ actiune: 'istoric.anuleaza' }, { actiune: 'istoric.reface' }] },
-      // „Importă SVG” doar cu pictograma (eticheta în sfat): uneltele de desen au intrat în bară (ADR 0052) și altfel
+      // „Importă SVG / DXF” doar cu pictograma (eticheta în sfat): uneltele de desen au intrat în bară (ADR 0052) și altfel
       // „Exportă G-code” ieșea din ecran la 1280 px.
       { id: 'fisier', intrari: [{ actiune: 'import.svg' }, { actiune: 'export.gcode', aspect: 'principal' }] },
     ],

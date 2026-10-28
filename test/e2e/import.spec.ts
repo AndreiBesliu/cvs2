@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { poarta } from '../oracles/poarta.ts';
 import { regiuneDinDocument } from '../oracles/regiune.ts';
 import { ecran, vedere } from './ajutor-panza.ts';
+import { cerc, dxf, linie } from '../unit/ajutor-dxf.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -305,15 +306,15 @@ test('lăsarea pe planșă (2.8b): două SVG-uri trec prin dialog pe rând și c
   expect(inst[1]?.y).toBeCloseTo(p.y - 20, 6);
 });
 
-test('lăsarea pe planșă (2.8b): „Sari peste” trece la următorul, un fișier care nu e SVG e refuzat cu motiv, „Renunță la toate” închide', async ({ page }) => {
+test('lăsarea pe planșă (2.8b): „Sari peste” trece la următorul, un fișier care nu e SVG sau DXF e refuzat cu motiv, „Renunță la toate” închide', async ({ page }) => {
   await page.goto('/');
   await lasaPePanza(page, [
-    { nume: 'desen.dxf', text: '0\nSECTION', tip: 'application/dxf' },
+    { nume: 'desen.pdf', text: '%PDF-1.4', tip: 'application/pdf' },
     { nume: 'unu.svg', text: PATRAT, tip: 'image/svg+xml' },
     { nume: 'doi.svg', text: PATRAT, tip: 'image/svg+xml' },
   ], 0.4, 0.6);
   await expect(page.getByTestId('import-coada')).toHaveText('(1 din 3)');
-  await expect(page.getByTestId('import-refuz')).toContainText('Doar fișierele SVG se importă deocamdată');
+  await expect(page.getByTestId('import-refuz')).toContainText('Doar fișierele SVG și DXF se importă deocamdată');
   await page.click('[data-buton="sari"]');
   await expect(page.getByTestId('import-coada')).toHaveText('(2 din 3)');
   await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 20.00 × 20.00 mm');
@@ -321,4 +322,59 @@ test('lăsarea pe planșă (2.8b): „Sari peste” trece la următorul, un fiș
   await expect(page.locator('.dialog')).toHaveCount(0);
   // Nimic importat: lista e goală.
   await expect(page.locator('[data-instanta]')).toHaveCount(0);
+});
+
+/* ── DXF (ADR 0101) ─────────────────────────────────────────────────────────────────────────────────────────────────── */
+
+// Un dreptunghi 60 × 40 din patru linii, în (100, 50), cu o gaură R5 și o linie de gravat, pe straturi.
+const RAFT = linie(100, 50, 160, 50, { strat: 'TAIERE' }) + linie(160, 50, 160, 90, { strat: 'TAIERE' }) + linie(160, 90, 100, 90, { strat: 'TAIERE' })
+  + linie(100, 90, 100, 50, { strat: 'TAIERE' }) + cerc(130, 70, 5, { strat: 'GAURI' }) + linie(110, 60, 120, 60, { strat: 'GRAVARE' });
+const fisierDxf = (nume: string, text: string) => ({ name: nume, mimeType: 'application/dxf', buffer: Buffer.from(text, 'utf8') });
+
+test('DXF: patru linii devin un contur închis, gaura e interior, unitățile spuse; piesa stă pe foaie unde e în fișier, cu straturile ca nume', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierDxf('Raft lateral.dxf', dxf({ antet: [['$INSUNITS', 70, 4]], entitati: RAFT })));
+  await expect(page.locator('#import-titlu')).toHaveText('Importă: Raft lateral.dxf');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 60.00 × 40.00 mm');
+  await expect(page.getByTestId('import-cai')).toHaveText('2 contururi închise: 1 tăiate pe exterior, 1 pe interior (din imbricare)');
+  await expect(page.getByTestId('import-deschise')).toContainText('1 cale deschisă, tăiată pe linie');
+  await expect(page.getByTestId('import-unitati')).toHaveText('Unitățile fișierului: un milimetru (mm).');
+  await expect(page.locator('[data-camp="unitate"]')).toHaveCount(0);
+  await expect(page.locator('[data-camp="px"]')).toHaveCount(0);
+  await expect(page.locator('[data-avertisment="unite"]')).toHaveText('4 bucăți deschise legate capăt la capăt în căi mai lungi (același strat, capetele la cel mult 0,01 mm)');
+  await page.click('[data-buton="importa"]');
+  await expect(page.locator('.dialog')).toHaveCount(0);
+  await expect(page.getByTestId('lista-vectori').locator('li')).toHaveCount(1);
+  const doc = await documentSalvat(page, 1) as {
+    foi: Array<{ instante: Array<{ x: number; y: number }> }>;
+    piese: Array<{ nume: string; radacina: { copii: Array<{ nume?: string }> } }>;
+  };
+  // Originea DXF-ului e originea foii: colțul desenului, (100, 50), e unde stă instanța.
+  expect(doc.foi[0]?.instante.map((i) => [i.x, i.y])).toEqual([[100, 50]]);
+  expect(doc.piese[0]?.nume).toBe('Raft lateral');
+  expect(doc.piese[0]?.radacina.copii.map((c) => c.nume)).toEqual(['TAIERE', 'GAURI', 'GRAVARE']);
+});
+
+test('DXF fără unități: mm, cu alegerea lor; țolul mărește desenul de 25,4 ori; DXF-ul binar și cel rupt, refuzate cu motivul lor', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierDxf('vechi.dxf', dxf({ entitati: RAFT })));
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 60.00 × 40.00 mm');
+  await expect(page.locator('[data-camp="unitate"]')).toHaveValue('mm');
+  await expect(page.getByTestId('import-unitati')).toHaveText('Fișierul nu-și declară unitățile: alege-le, iar mărimea desenului de mai sus se schimbă.');
+  await expect(page.locator('[data-avertisment="unitati-nedeclarate"]')).toHaveText('Fișierul nu-și declară unitățile ($INSUNITS): le alegi mai sus (până atunci, mm)');
+  await page.locator('[data-camp="unitate"]').selectOption('inch');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 1524.00 × 1016.00 mm');
+  await expect(page.locator('[data-camp="unitate"]')).toHaveValue('inch');
+  await page.locator('[data-buton="renunta"]').click();
+  await expect(page.locator('.dialog')).toHaveCount(0);
+
+  const binar = Buffer.concat([Buffer.from('AutoCAD Binary DXF\r\n', 'ascii'), Buffer.from([0x1a, 0, 1, 2, 3])]);
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles([
+    { name: 'binar.dxf', mimeType: 'application/dxf', buffer: binar },
+    fisierDxf('rupt.dxf', '0\nSECTION\n2\nENTITIES\n0'),
+  ]);
+  await expect(page.getByTestId('import-refuz')).toHaveText('Fișierul e un DXF binar: salvează-l ca DXF ASCII (text) în programul tău.');
+  await expect(page.locator('[data-buton="importa"]')).toHaveCount(0);
+  await page.click('[data-buton="sari"]');
+  await expect(page.getByTestId('import-refuz')).toHaveText('Fișierul nu e un DXF valid (linia 5 nu se poate citi).');
 });

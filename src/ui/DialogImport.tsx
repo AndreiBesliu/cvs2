@@ -1,15 +1,17 @@
 import { useEffect, useRef } from 'react';
 import '../i18n/import.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
+import { CODURI_AVERTISMENT_DXF, UNITATI_DXF } from '../io/dxfCoduri.ts';
 import {
-  CODURI_AVERTISMENT, CODURI_ENTITATI, type Avertismente, type CodAvertisment, type CodEntitati, type CodRefuz, type PrevizualizareImport,
+  CODURI_AVERTISMENT, CODURI_ENTITATI, type Avertismente, type AvertismenteDxf, type CodAvertisment, type CodAvertismentDxf, type CodEntitati,
+  type CodRefuzImport, type FormatImport, type PrevizualizareImport, type UnitateDxf,
 } from './actiuniImport.ts';
 import { useLimba } from './useLimba.ts';
 
-const REFUZ: Readonly<Record<CodRefuz, CheieSimpla>> = {
+const REFUZ: Readonly<Record<CodRefuzImport, CheieSimpla>> = {
   octeti: 'import.refuz.octeti', svgz: 'import.refuz.svgz', entitati: 'import.refuz.entitati', parsare: 'import.refuz.parsare',
   radacina: 'import.refuz.radacina', gol: 'import.refuz.gol', departe: 'import.refuz.departe', plafon: 'import.refuz.plafon',
-  neincarcat: 'dialog.neincarcat', tip: 'import.refuz.tip',
+  neincarcat: 'dialog.neincarcat', tip: 'import.refuz.tip', binar: 'import.refuz.binar', dxf: 'import.refuz.dxf',
 };
 
 /** Motivul refuzului entităților, tradus din codul ușii: niciun text din fișier nu ajunge în interfață. */
@@ -32,27 +34,51 @@ const AVERTISMENT = {
   'sub-rezolutie': 'import.av.sub-rezolutie',
 } as const satisfies Readonly<Record<CodAvertisment, string>>;
 
-function ListaAvertismente({ a }: { readonly a: Avertismente | undefined }) {
-  const randuri = a ? CODURI_AVERTISMENT.filter((c) => a[c] > 0) : [];
-  if (!a || randuri.length === 0) return null;
+/** Raportul ușii DXF (ADR 0101 §9), cod cu cod. */
+const AVERTISMENT_DXF = {
+  'unitati-nedeclarate': 'import.dxf.unitati-nedeclarate', 'unitati-necunoscute': 'import.dxf.unitati-necunoscute',
+  'deschise': 'import.dxf.deschise', 'unite': 'import.dxf.unite', 'goluri': 'import.dxf.goluri', 'degenerate': 'import.dxf.degenerate',
+  'sub-rezolutie': 'import.dxf.sub-rezolutie', 'prea-mari': 'import.dxf.prea-mari', 'ascunse': 'import.dxf.ascunse',
+  'hartie': 'import.dxf.hartie', 'sarit-text': 'import.dxf.sarit-text', 'sarit-hasura': 'import.dxf.sarit-hasura',
+  'sarit-cota': 'import.dxf.sarit-cota', 'sarit-punct': 'import.dxf.sarit-punct', 'sarit-3d': 'import.dxf.sarit-3d',
+  'sarit-imagine': 'import.dxf.sarit-imagine', 'sarit-altele': 'import.dxf.sarit-altele', 'inclinate': 'import.dxf.inclinate',
+  'proiectate': 'import.dxf.proiectate', 'blocuri-lipsa': 'import.dxf.blocuri-lipsa', 'blocuri-adanci': 'import.dxf.blocuri-adanci',
+  'xref': 'import.dxf.xref', 'singulare': 'import.dxf.singulare', 'arce-eliptice': 'import.dxf.arce-eliptice',
+  'arce-plate': 'import.dxf.arce-plate', 'cubice-din-arce': 'import.dxf.cubice-din-arce',
+  'spline-aproximate': 'import.dxf.spline-aproximate', 'spline-fara-control': 'import.dxf.spline-fara-control',
+  'spline-invalide': 'import.dxf.spline-invalide', 'eroare-date': 'import.dxf.eroare-date',
+} as const satisfies Readonly<Record<CodAvertismentDxf, string>>;
+
+/** Unitățile de ales pentru un DXF care nu și le declară, cu numele lor. */
+const UNITATE = {
+  mm: 'import.unitati.mm', cm: 'import.unitati.cm', m: 'import.unitati.m', inch: 'import.unitati.inch', ft: 'import.unitati.ft',
+} as const satisfies Readonly<Record<UnitateDxf, CheieSimpla>>;
+
+/** Raportul ușii care a citit fișierul, în ordinea codurilor ei. */
+function ListaAvertismente({ a, format }: { readonly a: Avertismente | AvertismenteDxf | undefined; readonly format: FormatImport | undefined }) {
+  const randuri: ReadonlyArray<{ readonly cod: string; readonly text: string }> = !a ? [] : format === 'dxf'
+    ? CODURI_AVERTISMENT_DXF.filter((c) => ((a as AvertismenteDxf)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT_DXF[c], { n: (a as AvertismenteDxf)[c] }) }))
+    : CODURI_AVERTISMENT.filter((c) => ((a as Avertismente)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT[c], { n: (a as Avertismente)[c] }) }));
+  if (randuri.length === 0) return null;
   return (
     <>
       <p>{t('import.avertismente')}</p>
       <ul className="avertisment" data-testid="import-avertismente">
-        {randuri.map((c) => <li key={c} data-avertisment={c}>{t(AVERTISMENT[c], { n: a[c] })}</li>)}
+        {randuri.map((r) => <li key={r.cod} data-avertisment={r.cod}>{r.text}</li>)}
       </ul>
     </>
   );
 }
 
 /** Textul unui refuz: codul ușii, cu detaliul lui tradus (entitățile, plafonul includerilor, mărimea fișierului). */
-function textRefuz(cod: CodRefuz, detaliu: string | undefined): string {
+function textRefuz(cod: CodRefuzImport, detaliu: string | undefined): string {
   if (cod === 'entitati') {
     const motiv = (CODURI_ENTITATI as readonly string[]).includes(detaliu ?? '') ? ENTITATI[detaliu as CodEntitati] : 'import.entitati.valoare';
     return t('import.refuz.entitati', { motiv: t(motiv) });
   }
   if (cod === 'plafon' && detaliu === 'includeri') return t('import.refuz.includeri');
   if (cod === 'plafon' && detaliu === 'css') return t('import.refuz.css');
+  if (cod === 'dxf') return t('import.refuz.dxf', { linie: detaliu ?? '?' });
   return t(REFUZ[cod], { mb: (Number(detaliu ?? 0) / 1048576).toFixed(1) });
 }
 
@@ -63,11 +89,14 @@ type Props = {
   readonly pxPeTol: 96 | 72;
   /** `pxPeTol` = 72 a fost ales după comentariul Illustrator din fișier. */
   readonly pxAutomat: boolean;
+  /** Unitatea aleasă pentru un DXF care nu și le declară (ADR 0101 §2). */
+  readonly unitate: UnitateDxf;
   /** Se recitește cu alt px: previzualizarea de pe ecran e cea veche, deci „Importă” așteaptă. */
   readonly seRecitesc: boolean;
   /** De ce nu se poate importa (plafonul, ușa documentului, fila care doar citește), sau null. */
   readonly motiv: CheieSimpla | null;
   readonly onPx: (px: 96 | 72) => void;
+  readonly onUnitate: (u: UnitateDxf) => void;
   readonly onImporta: () => void;
   readonly onInchide: () => void;
   /** Mai multe fișiere lăsate deodată (felia 2.8b): al câtelea e acesta; „Renunță” le închide pe toate. */
@@ -77,12 +106,13 @@ type Props = {
 };
 
 /**
- * Dialogul importului SVG (ADR 0035 §9, ADR 0037 §12): ce ar adăuga „Importă”, înainte de a schimba documentul. Mărimea
- * desenului, contururile închise pe laturi, căile deschise (tăiate pe linie) cu nota grosimii liniei, alegerea px-ului
- * când contează și raportul.
+ * Dialogul importului SVG (ADR 0035 §9, ADR 0037 §12) și DXF (ADR 0101 §8): ce ar adăuga „Importă”, înainte de a schimba
+ * documentul. Mărimea desenului, contururile închise pe laturi, căile deschise (tăiate pe linie) cu nota grosimii liniei,
+ * alegerea px-ului (SVG) sau a unităților (un DXF care nu și le declară) când contează și raportul.
  */
-export function DialogImport({ nume, stare, pxPeTol, pxAutomat, seRecitesc, motiv, onPx, onImporta, onInchide, coada, onSari }: Props) {
-  useLimba();
+export function DialogImport({ nume, stare, pxPeTol, pxAutomat, unitate, seRecitesc, motiv, onPx, onUnitate, onImporta, onInchide, coada, onSari }: Props) {
+  const limba = useLimba();
+  const mm = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumSignificantDigits: 12 });
   const cutie = useRef<HTMLDivElement>(null);
   useEffect(() => { cutie.current?.focus(); }, []);
   // Escape închide dialogul oriunde ar fi focusul (și când a căzut pe pagină; recenzia 2.7c).
@@ -105,7 +135,7 @@ export function DialogImport({ nume, stare, pxPeTol, pxAutomat, seRecitesc, moti
         {stare !== 'citire' && !stare.ok && (
           <>
             <p role="alert" className="avertisment" data-testid="import-refuz">{textRefuz(stare.cod, stare.detaliu)}</p>
-            <ListaAvertismente a={stare.avertismente} />
+            <ListaAvertismente a={stare.avertismente} format={stare.format} />
           </>
         )}
         {ok && (
@@ -121,7 +151,22 @@ export function DialogImport({ nume, stare, pxPeTol, pxAutomat, seRecitesc, moti
                 <p data-testid="import-grosime-linie">{t('import.grosime-linie')}</p>
               </>
             )}
-            {ok.px && (
+            {ok.format === 'dxf' && (ok.unitati.declarate ? (
+              <p data-testid="import-unitati">
+                {t('import.unitati.declarate', { unitate: ok.unitati.unitate ? t(UNITATE[ok.unitati.unitate]) : t('import.unitati.alta', { mm: mm.format(ok.unitati.mmPeUnitate) }) })}
+              </p>
+            ) : (
+              <div className="campuri">
+                <label>
+                  {t('import.unitati')}
+                  <select value={unitate} data-camp="unitate" onChange={(e) => { onUnitate(UNITATI_DXF.find((u) => u === e.target.value) ?? 'mm'); }}>
+                    {UNITATI_DXF.map((u) => <option key={u} value={u}>{t(UNITATE[u])}</option>)}
+                  </select>
+                </label>
+                <p data-testid="import-unitati">{t('import.unitati.nedeclarate')}</p>
+              </div>
+            ))}
+            {ok.format === 'svg' && ok.px && (
               <div className="campuri">
                 <label>
                   {t('import.px')}
@@ -133,7 +178,7 @@ export function DialogImport({ nume, stare, pxPeTol, pxAutomat, seRecitesc, moti
                 {pxAutomat && pxPeTol === 72 && <p>{t('import.px.illustrator')}</p>}
               </div>
             )}
-            <ListaAvertismente a={ok.avertismente} />
+            <ListaAvertismente a={ok.avertismente} format={ok.format} />
           </>
         )}
         {ok && motiv && <p role="status" className="avertisment" data-testid="import-motiv">{t(motiv)}</p>}

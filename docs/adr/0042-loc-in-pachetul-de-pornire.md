@@ -1,7 +1,7 @@
 # ADR 0042: Loc în pachetul de pornire: codul ferestrelor vine cu ele
 
 **Starea:** acceptat pe 17.10.2026, odată cu felia „loc în pachetul de pornire” (pornită la „atunci tu continua”, după
-2.8e), cu remedierile recenziei (secțiunea „Recenzia”). **Intră în:** etapa 3, felie fără mașină (`PLAN.md` §4.6, punctul 7). Nu schimbă nicio
+2.8e), cu remedierile recenziei (secțiunea „Recenzia”). **(Plafonul pornirii, cu ușa: 110 kB din 28.10, ADR 0100.)** **Intră în:** etapa 3, felie fără mașină (`PLAN.md` §4.6, punctul 7). Nu schimbă nicio
 decizie de până acum: plafonul de 100 kB (`PLAN.md` §4.4), React, valibot (ADR 0016) și ușa documentului rămân.
 
 **Problema.** Pornirea ajunsese la 99,1 / 100 kB: orice funcție nouă de interfață s-ar fi lovit de plafon. Ținta: loc

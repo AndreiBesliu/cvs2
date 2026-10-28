@@ -18,7 +18,7 @@ export const enCarcasa = {
   'paleta.gest.selectie.la-punct': 'Click a shape on the canvas.',
   'paleta.gest.selectie.din-lista': 'Click a row in the sheet list.',
   'paleta.gest.document.muta-selectia': 'Drag the selection on the canvas.',
-  'paleta.gest.document.importa': 'From the Import SVG window.',
+  'paleta.gest.document.importa': 'From the Import SVG / DXF window.',
   'paleta.gest.document.aplica-operatii': 'With Export, from its window.',
   'paleta.gest.panou': 'From the properties panel.',
   'prop.titlu': 'Properties',

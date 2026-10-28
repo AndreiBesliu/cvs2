@@ -19,12 +19,16 @@ export type CaleImport = { readonly varfuri: readonly Varf[]; readonly inchis?: 
 /** Calea e închisă: doar un `inchis: false` explicit o deschide. */
 export const caleInchisa = (c: { readonly inchis?: boolean }): boolean => c.inchis !== false;
 
-/** Ce a citit previzualizarea: căile în mm pe pagină, latura fiecăreia, numele piesei și dacă pagina are mărime. */
+/**
+ * Ce a citit previzualizarea: căile în mm pe pagină, latura fiecăreia, numele piesei și dacă pagina are mărime. `pozitie:
+ * 'fisier'`: coordonatele fișierului sunt ale foii, fără pagină (DXF, ADR 0101 §8), deci desenul stă unde e în fișier.
+ */
 export type DateImport = {
   readonly nume: string;
   readonly cai: ReadonlyArray<CaleImport>;
   readonly laturi: readonly Latura[];
   readonly pagina: { readonly latime: number; readonly inaltime: number } | null;
+  readonly pozitie?: 'fisier';
 };
 
 /** Ce știe foaia la import: freza ei (dacă are una singură) și grosimea (adâncimea căilor deschise, ADR 0037 §11). */
@@ -64,7 +68,7 @@ export function cutieCai(cai: ReadonlyArray<CaleImport>): Cutie {
 
 /** Numele piesei din numele fișierului: fără extensie, tăiat la plafonul numelor. */
 export function numeDinFisier(fisier: string): string {
-  const fara = fisier.replace(/\.svg$/i, '');
+  const fara = fisier.replace(/\.(svg|dxf)$/i, '');
   return (fara || fisier).slice(0, PLAFON.numeLungime);
 }
 
@@ -73,7 +77,8 @@ export { adancimeDeschise };
 
 /**
  * Piesa și locul instanței ei. Coordonatele elementelor sunt ale paginii minus colțul stânga-jos al cutiei exacte a
- * desenului; instanța stă în acel colț (pagina fără mărime: în origine). Pe foaie, desenul ajunge unde era pe pagină.
+ * desenului; instanța stă în acel colț (pagina fără mărime: în origine). Pe foaie, desenul ajunge unde era pe pagină, iar
+ * un DXF (`pozitie: 'fisier'`), unde e în fișier.
  *
  * Operațiile, în ordinea asta (ordinea tăierii o hotărăște CAM-ul, ADR 0037 §8): `exterior` și `interior` (cele din
  * imbricare, operația implicită a dreptunghiului cu latura ei), apoi `deschise` (ADR 0037 §11): pe linie, adâncimea
@@ -124,5 +129,5 @@ export function piesaDinImport(p: DateImport, id: string, scula?: Operatie['scul
   };
   const latime = cutie.maxX - cutie.minX;
   const inaltime = cutie.maxY - cutie.minY;
-  return p.pagina ? { piesa, x: dx, y: dy, latime, inaltime } : { piesa, x: 0, y: 0, latime, inaltime };
+  return p.pagina || p.pozitie === 'fisier' ? { piesa, x: dx, y: dy, latime, inaltime } : { piesa, x: 0, y: 0, latime, inaltime };
 }

@@ -20,7 +20,8 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  * Plafoanele JavaScript-ului comprimat, în kB:
  * - la pornire, ce cere `index.html` (scriptul de intrare și `modulepreload`): măsurat 81 kB la felia 1.9c (React +
  *   valibot + aplicația; calculul exportului se încarcă la cerere); din 17.10, plus dicționarul limbii active, cerut
- *   înaintea primei randări la fiecare pornire (99,1 kB înainte de „loc în pachetul de pornire”);
+ *   înaintea primei randări la fiecare pornire (99,1 kB înainte de „loc în pachetul de pornire”); 100 kB până pe 28.10, 110 kB
+ *   din 28.10 (ADR 0100: decizia owner-ului; fiecare bucată nouă la cerere își pune numele în lista de preîncărcare din pornire);
  * - totalul, cu bucățile încărcate la cerere (exportul: cavalier + CAM + post, ~23 kB) și workerul; 330 kB din 25.10 (ADR 0075:
  *   totul rămâne în precache, ca aplicația să meargă întreagă offline), 400 kB din 28.10 (ADR 0096: decizia owner-ului; se
  *   descarcă în fundal, cu progresul în bara de jos, ADR 0097);
@@ -30,7 +31,7 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  *   eroare. Din 3.2, Firebase-ul comun (aplicația, App Check, funcțiile: `conexiuneBaza-*`) e o bucată împărțită de admin
  *   și de raportor: adminul se măsoară cu tot ce aduce (închiderea lui), raportorul la fel, cu plafonul lui.
  */
-const PLAFON_PORNIRE_KB = 100;
+const PLAFON_PORNIRE_KB = 110;
 const PLAFON_TOTAL_KB = 400;
 const PLAFON_ADMIN_KB = 200;
 /**

@@ -291,24 +291,38 @@ With a single shape chosen, alignment places it against the sheet (for example, 
 edge). Several shapes are picked with the selection rectangle or with Shift + click (see [Selecting and editing](#selectie)).
 Each alignment can be undone with `Ctrl+Z`.
 
-## Importing SVG
+## Importing SVG and DXF
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-The **Import SVG** button in the top bar opens the file window (you can pick several). Or drag SVG files straight onto the
-canvas: each one lands centred where you drop it.
+The **Import SVG / DXF** button in the top bar opens the file window (you can pick several). Or drag SVG or DXF files straight
+onto the canvas: each one lands centred where you drop it.
 
 For each file a window opens that shows the drawing's size and how it will be cut:
 - **closed outlines**: the outer ones on the outside, the holes in them on the inside (from nesting);
 - **open paths**: on the line, a groove of at most 1 mm (half the sheet, if it is thinner), in one pass; the line width in the
   file does not matter, the groove has the cutter's diameter;
-- **what a px means**: 1/96 inch (the CSS standard, Inkscape) or 1/72 inch (Illustrator); a file written by Illustrator is
-  recognised;
-- what is not imported or is read differently (texts, `<use>` clones, images, hidden shapes), with their count.
+- for an SVG, **what a px means**: 1/96 inch (the CSS standard, Inkscape) or 1/72 inch (Illustrator); a file written by
+  Illustrator is recognised;
+- for a DXF, **the units**: the ones the file declares are used as they are; a file that declares none (an R12, for example)
+  is read in mm, and the window lets you choose mm, cm, m, inch or foot (the drawing's size changes at once);
+- what is not imported or is read differently, with their count (for an SVG: texts, `<use>` clones, images, hidden shapes).
 
 **Import** puts the drawing on the sheet as a single shape, selected; **Skip** moves on to the next file; **Cancel** and
-**Cancel all** close the window. Only SVG files are imported, up to 16 MB, not compressed (no `.svgz`). Text has to be
+**Cancel all** close the window. Only SVG and DXF files are imported, up to 16 MB, not compressed (no `.svgz`). Text has to be
 converted to outlines in the drawing program before export.
+
+A **DXF** is read like this:
+- the text (ASCII) DXF, from R12 to the new ones; a binary one is refused (save it as ASCII);
+- the drawing lands on the sheet where it is in the file: the DXF's origin is the sheet's corner (dropped on the canvas, it
+  lands where you drop it);
+- every shape keeps the name of its layer;
+- lines, arcs, circles, polylines with arcs, ellipses and curves (splines) come in exactly: a circle stays a circle, curves
+  become Bézier curves; blocks are taken apart, with their scale, rotation and array;
+- open pieces on the same layer that touch (ends at most 0.01 mm apart) are joined: four lines that make a rectangle become a
+  closed outline; where three ends meet (a T), they are not joined;
+- skipped, and counted: texts, hatches, dimensions, points, 3D entities, images, layers that are off or frozen, and paper space
+  (the layouts).
 
 ## The cutting operations
 %% capitol: operatii

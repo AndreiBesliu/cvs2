@@ -61,4 +61,5 @@ Cei +1,1 kB sunt progresul (ADR 0097): pluginul din worker, răspunsul lui la ce
 
 - totalul trece de 400 kB (întâi ce se poate scoate fără să piardă offline-ul, apoi decizia owner-ului);
 - instalarea se simte pe o rețea lentă (progresul din bara de jos o arată);
-- pornirea ajunge la plafonul ei. Asta e altă decizie: plafonul de aici nu ajută pornirea.
+- pornirea ajunge la plafonul ei. Asta e altă decizie: plafonul de aici nu ajută pornirea. **(ADR 0100: pornirea 110 kB din
+  28.10.)**
