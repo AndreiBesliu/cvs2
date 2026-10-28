@@ -15,6 +15,7 @@ import { campPentruFoaie, dimensiuni, type ParametriCamp } from '../sim/camp.ts'
 import type { DateScula, GrupSimulare } from '../sim/nucleu.ts';
 import { pregatesteProgram } from '../sim/program.ts';
 import { estimeazaTimp, type Portiune } from '../sim/timp.ts';
+import type { Timpi } from '../sim/animatie.ts';
 import type { FereastraRelief, ParametriExport, ProgramSimulare, ReliefSimulat, RezultatExport, RezumatJob, SimulareExport } from './actiuniExportTipuri.ts';
 
 /** Așteptarea axului după pornire: un parametru al mașinii; profilul mașinii vine în etapa 3. */
@@ -168,12 +169,9 @@ export function unesteRezumate(r: readonly RezumatJob[]): RezumatJob {
  * opririle pentru schimbare se numără, fără timp (estimarea cu opririle senderului).
  */
 export function rezumatJob(program: Pick<ProgramExportat, 'text' | 'sectiuni'>, scule: readonly Scula[], setari: string | undefined): RezumatJob {
-  let profil: ProfilMasina = PROFIL_GRBL_11H;
-  if (setari !== undefined && setari.trim() !== '') {
-    const s = profilDinSetari(setari, PROFIL_GRBL_11H);
-    if (!s.ok) return { ok: false, sursa: 'setari', linie: s.linie, motiv: s.motiv };
-    profil = s.profil;
-  }
+  const pm = profilMasina(setari);
+  if (!pm.ok) return { ok: false, sursa: 'setari', linie: pm.linie, motiv: pm.motiv };
+  const profil = pm.profil;
   const e = estimeazaTimp(program.text, profil, program.sectiuni.map((s) => s.linie), undefined, { opriri: true });
   if (!e.ok) return { ok: false, sursa: 'program', linie: e.linie, motiv: e.motiv };
   const adauga = (la: ReturnType<typeof zero> | undefined, p: Portiune | undefined): void => {
@@ -229,5 +227,31 @@ export function rezumatJob(program: Pick<ProgramExportat, 'text' | 'sectiuni'>, 
 export function timpProgram(program: Program, foaie: Montaj['foaie'], setari: string | undefined): RezumatJob {
   const r = posteaza(program, { foaie, origine: 'stanga-jos', z0: 'sus' }, GRBL_11, { asteptareAx: ASTEPTARE_AX });
   if (!r.ok) return { ok: false, sursa: 'program', linie: 0, motiv: r.motiv };
-  return rezumatJob(r, sculeProgram(program), setari);
+  const rez = rezumatJob(r, sculeProgram(program), setari);
+  // Animația traseului (ADR 0099) pornește din cipul timpului: programul și mașina lui vin cu rezumatul.
+  return rez.ok ? { ...rez, traseu: { program, foaie, setari } } : rez;
+}
+
+/** Mașina estimării: profilul implicit, sau cel din setările `$$` lipite (cu linia unei setări pe care n-o poate citi). */
+function profilMasina(setari: string | undefined): { ok: true; profil: ProfilMasina } | { ok: false; linie: number; motiv: string } {
+  if (setari === undefined || setari.trim() === '') return { ok: true, profil: PROFIL_GRBL_11H };
+  const s = profilDinSetari(setari, PROFIL_GRBL_11H);
+  return s.ok ? { ok: true, profil: s.profil } : { ok: false, linie: s.linie, motiv: s.motiv };
+}
+
+/**
+ * Timpul fiecărei mișcări a programului traseului, pentru animație (ADR 0099): același post și aceeași mașină ca
+ * `timpProgram`, cu estimarea împărțită la liniile la care începe fiecare mișcare (`liniiMiscari`). Suma e exact timpul
+ * jobului. `null` când postul refuză programul sau setările `$$` nu se pot citi: animația merge atunci pe timpi simpli.
+ */
+export function secundePeMiscare(program: Program, foaie: Montaj['foaie'], setari: string | undefined): (Timpi & { readonly miscari: Float64Array }) | null {
+  const r = posteaza(program, { foaie, origine: 'stanga-jos', z0: 'sus' }, GRBL_11, { asteptareAx: ASTEPTARE_AX });
+  const pm = profilMasina(setari);
+  if (!r.ok || !pm.ok) return null;
+  const e = estimeazaTimp(r.text, pm.profil, r.liniiMiscari, undefined, { opriri: true });
+  if (!e.ok) return null;
+  const n = program.miscari.length;
+  const miscari = new Float64Array(n);
+  for (let k = 0; k < n; k++) miscari[k] = e.portiuni[k + 1]?.secunde ?? 0;
+  return { pregatire: e.portiuni[0]?.secunde ?? 0, miscari, final: e.portiuni[n + 1]?.secunde ?? 0 };
 }

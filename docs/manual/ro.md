@@ -431,6 +431,13 @@ fabrică ale GRBL 1.1h, sau setările `$$` lipite în fereastra exportului).
 Când schimbi desenul, traseul vechi se stinge, cu un semn jos; `T` îl calculează din nou. Încă un `T`, pe traseul la zi, îl
 ascunde. Dacă programul nu se poate calcula, semnul spune de ce. Traseul cere WebGL2 în browser.
 
+**Animează**, lângă timpul jobului, deschide animația traseului: freza merge pe traseu în timpul mașinii (aceeași estimare
+ca timpul jobului), iar drumul parcurs se colorează pe pânză. În panou: **Rulează** / **Pauză**, **Pasul anterior** și
+**Pasul următor** (câte o mișcare a programului), **Viteza** (1× înseamnă timpul real; implicit, toată animația ține cam un
+minut) și glisorul (`Home` la început, `End` la final). Dedesubt: timpul din total, pasul, ce face freza (deplasare, tăiere
+cu avansul, arc, pauză, schimbarea sculei) și lucrarea ei, poziția X Y Z și freza montată. Cercul frezei e cât diametrul ei,
+plin cât e în material. `Esc` sau **×** închid animația; dacă schimbi desenul, se închide singură.
+
 ## Exportul G-code
 %% capitol: export
 %% acopera: export.gcode

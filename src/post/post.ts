@@ -23,6 +23,11 @@ export type RezultatPost =
   | {
     readonly ok: true; readonly text: string; readonly linii: number; readonly aproximari: number;
     readonly sectiuni: readonly Sectiune[];
+    /**
+     * Linia (de la 0) la care începe fiecare mișcare a programului, în ordinea lor, plus una la sfârșit: unde începe
+     * finalul. O mișcare care nu scrie nimic are linia următoarei. Animația traseului (ADR 0099) le dă estimării ca limite.
+     */
+    readonly liniiMiscari: readonly number[];
   }
   | { readonly ok: false; readonly motiv: string };
 
@@ -112,7 +117,7 @@ const DESCRIERE_STRATEGIE: Readonly<Record<Exclude<StrategieScula, 'fisiere-sepa
 
 function scrie(
   program: Program, montaj: Montaj, k: Contract, optiuni: OptiuniPost,
-): { text: string; linii: number; aproximari: number; sectiuni: Sectiune[] } {
+): { text: string; linii: number; aproximari: number; sectiuni: Sectiune[]; liniiMiscari: number[] } {
   for (const axa of program.axe) {
     if (!k.axe.includes(axa)) throw new EroarePost(`axa ${axa} nu e în contractul ${k.nume}`);
   }
@@ -296,7 +301,9 @@ function scrie(
   adauga(`G0${cuvinte({ Z: zSigur })}`);
   pornesteAx(program.turatie);
 
+  const liniiMiscari: number[] = [];
   for (const mv of program.miscari) {
+    liniiMiscari.push(linii.length);
     switch (mv.tip) {
       case 'rapida': {
         if (pePozitie(mv.la)) break;
@@ -365,8 +372,9 @@ function scrie(
   }
 
   sectiuni.push({ linie: linii.length });
+  liniiMiscari.push(linii.length);
   if (!pePozitie({ Z: zSigur })) adauga(`G0${cuvinte({ Z: zSigur })}`);
   adauga('M5');
   for (const l of k.final) adauga(l);
-  return { text: `${linii.join('\n')}\n`, linii: linii.length, aproximari, sectiuni };
+  return { text: `${linii.join('\n')}\n`, linii: linii.length, aproximari, sectiuni, liniiMiscari };
 }

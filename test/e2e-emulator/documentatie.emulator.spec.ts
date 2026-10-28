@@ -81,10 +81,10 @@ test('fila Roadmap: etapele, etapa curentă, o felie cunoscută, feliile aduse, 
   const u6 = await umplere('6'), u5 = await umplere('5');
   expect(u6.p).toBeCloseTo(1, 2);
   expect(u6.fond).not.toBe('rgba(0, 0, 0, 0)');
-  // Etapa 5: buzunarul cu mai multe freze făcut (5.5↑, 5.6↑), găurirea (5.4↑) și ordinea (fișierele pe sculă, din postul 3.8a)
-  // în lucru, câte o jumătate: (1 + 0,5 + 0,5) din 4.
-  expect(u5.p).toBeCloseTo(0.5, 2);
-  await expect(page.locator('[data-etapa="5"]')).toHaveAttribute('aria-label', /1 \/ 4 făcute, 2 în lucru \(un punct fără rând în prag\)/);
+  // Etapa 5: buzunarul cu mai multe freze (5.5↑, 5.6↑) și animația traseului (5.7↑) făcute, găurirea (5.4↑) și ordinea
+  // (fișierele pe sculă, din postul 3.8a) în lucru, câte o jumătate: (2 + 0,5 + 0,5) din 4.
+  expect(u5.p).toBeCloseTo(0.75, 2);
+  await expect(page.locator('[data-etapa="5"]')).toHaveAttribute('aria-label', /2 \/ 4 făcute, 2 în lucru \(un punct fără rând în prag\)/);
 
   // O felie cunoscută, cu starea, intervalul, trecerile și ADR-ul ei; una de făcut.
   const panou = page.locator('[data-roadmap-etapa="3"]');

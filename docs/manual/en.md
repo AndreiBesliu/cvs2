@@ -446,6 +446,14 @@ When you change the drawing, the old toolpath dims, with a note at the bottom; `
 up-to-date toolpath, hides it. If the program cannot be computed, the note says why. The toolpath needs WebGL2 in the
 browser.
 
+**Animate**, next to the job time, opens the toolpath animation: the bit moves along the toolpath in machine time (the same
+estimate as the job time), and the path covered is coloured on the canvas. In the panel: **Play** / **Pause**, **Previous
+step** and **Next step** (one program move at a time), **Speed** (1× is real time; by default the whole animation lasts about
+a minute) and the slider (`Home` to the start, `End` to the end). Below: the time out of the total, the step, what the bit is
+doing (rapid move, cutting with its feed, arc, dwell, tool change) and its operation, the X Y Z position and the mounted bit.
+The bit's circle is its diameter, filled while it is in the material. `Esc` or **×** closes the animation; if you change the
+drawing, it closes by itself.
+
 ## Exporting G-code
 %% capitol: export
 %% acopera: export.gcode

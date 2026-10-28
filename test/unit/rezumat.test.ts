@@ -110,8 +110,11 @@ test('timpul traseului (ADR 0046 §8): același program, aceeași valoare pe hâ
   const e = await exporta(program(OP_A), MONTAJ, GRBL_11, { asteptareAx: 3 });
   assert.ok(e.ok);
   if (!e.ok) return;
-  // Exact rezumatul exportului cu montajul stânga-jos, Z0 sus: aceleași octeți, același timp.
-  assert.deepEqual(r, rezumatJob(e.exportat, [program(OP_A).scula], undefined));
+  // Exact rezumatul exportului cu montajul stânga-jos, Z0 sus: aceleași octeți, același timp. În plus, doar programul și
+  // mașina lui, pentru animația traseului (ADR 0099).
+  const { traseu, ...rest } = r;
+  assert.deepEqual(rest, rezumatJob(e.exportat, [program(OP_A).scula], undefined));
+  assert.deepEqual(traseu, { program: program(OP_A), foaie: FOAIA, setari: undefined });
   // Cu `$$` lipit, profilul lui; un `$$` greșit e spus, nu ignorat.
   const rapid = timpProgram(program(OP_A), FOAIA, '$110=5000\n$111=5000\n$112=1000\n$120=500\n$121=500\n$122=200');
   assert.ok(rapid.ok && rapid.total.secunde < r.total.secunde && rapid.masina.sursa === 'setari');

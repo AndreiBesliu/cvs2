@@ -58,10 +58,16 @@ test('sinD, cosD, tanD = Math pe [−8π, 8π] la cel mult 4 ulp-uri; tan(30°)�
   assert.ok(Math.abs(tanD(Math.PI / 6) * Math.sqrt(3) - 1) <= 4 * ULP);
 });
 
+/**
+ * Fișierele din `src/sim/` care nu sunt nucleul (nu scriu celule, deci nu trebuie să iasă la fel bit cu bit în Node și în
+ * Edge): estimarea timpului (`timp.ts`, ADR 0046) și animația traseului (`animatie.ts`, ADR 0099), care doar arată freza pe
+ * pânză. Restul dosarului e nucleul.
+ */
+const NU_SUNT_NUCLEU = ['timp.ts', 'animatie.ts'];
+
 test('a doua plasă, pe sursă: nucleul nu cheamă funcții Math care pot diferi între motoare (sin, cos, atan2, hypot, pow…)', () => {
   const dosar = new URL('../../src/sim/', import.meta.url);
-  // `timp.ts` (estimarea, ADR 0046) nu scrie celule; restul dosarului e nucleul.
-  const fisiere = readdirSync(dosar).filter((f) => f.endsWith('.ts') && f !== 'timp.ts');
+  const fisiere = readdirSync(dosar).filter((f) => f.endsWith('.ts') && !NU_SUNT_NUCLEU.includes(f));
   assert.ok(fisiere.includes('nucleu.ts') && fisiere.includes('unghi.ts'), fisiere.join(', '));
   // `**` e `Math.pow`; în comentarii nu contează (se scot întâi, păstrând liniile).
   const interzise = /Math\.(sin|cos|tan|asin|acos|atan|atan2|sinh|cosh|tanh|asinh|acosh|atanh|exp|expm1|log|log1p|log2|log10|pow|cbrt|hypot)\b|[\w)\]]\s*\*\*\s*[\w(.-]/;
@@ -80,7 +86,8 @@ test('din IR, nucleul importă doar tipuri: o funcție de acolo (baleiajArc, cu 
   const dosar = new URL('../../src/sim/', import.meta.url);
   const importuri = /^\s*import\s+(type\s+)?[^;]*?from\s+'(\.\.\/ir\/[^']+)'/gm;
   let vazute = 0;
-  for (const f of readdirSync(dosar).filter((x) => x.endsWith('.ts'))) {
+  // Animația (doar afișare) ia `baleiajArc` din IR; estimarea timpului importă și ea doar tipuri, deci rămâne în plasă.
+  for (const f of readdirSync(dosar).filter((x) => x.endsWith('.ts') && x !== 'animatie.ts')) {
     for (const m of readFileSync(new URL(f, dosar), 'utf8').matchAll(importuri)) {
       vazute++;
       assert.ok(m[1], `${f}: importă o valoare din ${m[2]}`);

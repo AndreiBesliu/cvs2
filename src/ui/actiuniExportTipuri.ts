@@ -1,7 +1,8 @@
 import type { IesireFoaie } from '../cam/iesire.ts';
 import { RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA } from '../cam/intrariMinima.ts';
 import { RAMPA_MINIMA } from '../cam/rampaMinima.ts';
-import type { ColtOrigine } from '../ir/montaj.ts';
+import type { Program } from '../ir/ir.ts';
+import type { ColtOrigine, Montaj } from '../ir/montaj.ts';
 import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAXIM, RETRAGERE_COMPLETA_MAXIMA, UNGHI_V_MAXIM, UNGHI_V_MINIM } from '../model/document.ts';
 export type { Coborare } from '../model/document.ts';
 import type { StrategieScula, Unitati } from '../post/contract.ts';
@@ -123,6 +124,8 @@ export type RezumatJob =
     };
     /** Câte blocuri de tăiere cer un avans peste viteza maximă a mașinii pe direcția lor (controlerul îl taie). */
     readonly liniiLimitate: number;
+    /** Doar la timpul de lângă traseu (`timpProgram`): programul și mașina lui, pentru animația traseului (ADR 0099). */
+    readonly traseu?: { readonly program: Program; readonly foaie: Montaj['foaie']; readonly setari: string | undefined };
   }
   /**
    * `sursa`: ce n-a putut citi estimarea, setările lipite sau programul; `linie`: linia din textul lor (de la 1), sau 0.

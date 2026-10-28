@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import type { Bucata, Vedere } from './protocol.ts';
+import { StratAnimatie } from './StratAnimatie.tsx';
 
 /** Starea stratului, pentru cipul aplicației: desenat, fără WebGL2, sau cu contextul pierdut (revine singur). */
 export type StareStrat = 'ok' | 'fara-webgl' | 'context-pierdut';
@@ -230,5 +231,11 @@ export function StratTraseu({ bucati, vedere, marime, stins, onStare, onLent }: 
 
   useEffect(cere, [bucati, vedere, marime, stins]);
 
-  return <canvas ref={ref} className="strat-traseu" data-testid="strat-traseu" data-stins={stins} aria-hidden="true" />;
+  // Animația traseului (ADR 0099) se desenează deasupra, cât playerul ei e activ.
+  return (
+    <>
+      <canvas ref={ref} className="strat-traseu" data-testid="strat-traseu" data-stins={stins} aria-hidden="true" />
+      <StratAnimatie vedere={vedere} marime={marime} />
+    </>
+  );
 }

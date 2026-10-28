@@ -3470,3 +3470,24 @@ adus o singură intrare nouă în precache, `index.html`: 5 335 din 1 318 400 de
 ~9 s). După „Reîncarcă”: versiunea `3c6ff0a96f7c`, precache-ul cu 71 de intrări, bara editării cu toate controalele, jurnalul cu 0
 erori, consola curată. (Bara editării apare abia când pagina se desenează: cu panoul browserului ascuns, modulul așteaptă; nu ține
 de hartă.) Scris în ADR 0098.
+
+## 2026-10-28 — Animația traseului (Model: Claude Opus 5.5)
+
+**Prompt:** „continua”
+**Started:** 28.10, 15:26. Felia **5.7↑**, fără mașină și fără agenți. Etapa 3 nu mai are felii fără mașină (3.5b, 3.7b cer plăcile,
+3.9 live-ul); după `PLAN.md`, rândul de prag din cea mai devreme etapă care mai are ceva fără mașină e „Animația traseului: freza
+care se mișcă pe traseu, pas cu pas, cu viteză reglabilă și glisor” (etapa 5, v1). Planul: timpul fiecărei mișcări din estimarea
+planificatorului (postul spune linia fiecărei mișcări), modelul pur (cronologia, poziția, pașii, drumul parcurs), un player,
+panoul lângă timpul jobului și freza pe pânză, totul la cerere (pornirea are 0,2 kB liberi).
+
+**Completed:** 28.10 16:25. „Animează”, lângă timpul jobului, deschide animația traseului: freza merge pe traseu în timpul mașinii
+(estimarea planificatorului, împărțită la liniile la care începe fiecare mișcare în post: suma e exact timpul jobului din cip), cu
+rulează / pauză, pasul anterior și următor, viteza (1× … 500×, implicit cam un minut pentru toată animația), glisorul și citirile
+(timpul, pasul, mișcarea cu avansul și lucrarea, X Y Z, freza); pe pânză, freza (cât diametrul ei, plină în material) și drumul
+parcurs. **Găsit pe drum:** „Pasul următor” arăta începutul pasului de după (capătul unui pas e acum al lui); cu un final fără timp
+(programul se termină la Z sigur), la capăt se arăta ultima mișcare în locul finalului; ramura cu timpi simpli, fără estimare, era
+de neatins din interfață (scoasă); plasa nucleului simulării (trigonometria lui `Math`, importurile de valori din IR) prindea și
+modelul animației, care doar afișează: scos din ea, ca estimarea timpului. Pornirea 96,3 → 96,4 (cu ușa 99,8 → 99,9 / 100: un
+nume nou în lista de preîncărcare, nimic din animație); totalul 326,1 → 330,3 / 400 kB. Porțile: 7 570 unitare (0 picate, 8
+sărite), build-ul determinist, e2e 256 / 256, emulatoarele 36 + 13. Mutațiile: 28 / 28 (24 pe probele unitare, 4 în fereastră, pe
+e2e); una a cerut întâi o probă e2e mai strictă (pixelii frezei treceau singuri de prag).

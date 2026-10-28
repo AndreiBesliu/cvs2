@@ -20,6 +20,7 @@
   --panza-selectie: #c25e00;
   --traseu-taiere: #0a7d53;
   --traseu-rapid: #7d8590;
+  --animatie: #c2410c;
   --s-panou: #ffffff;
   --t: #1d232b;
   --a: #a64d00;
@@ -43,6 +44,7 @@
     --panza-selectie: #f2a33a;
     --traseu-taiere: #3ccf91;
     --traseu-rapid: #8b949e;
+    --animatie: #ff8a4c;
     --s-panou: #1e2329;
     --t: #e8e4dc;
     --a: #f2a33a;
@@ -65,6 +67,7 @@
   --panza-selectie: #f2a33a;
   --traseu-taiere: #3ccf91;
   --traseu-rapid: #8b949e;
+  --animatie: #ff8a4c;
   --s-panou: #1e2329;
   --t: #e8e4dc;
   --a: #f2a33a;
@@ -1581,4 +1584,61 @@ main h1 {
 
 [data-icona='vedere.traseu'] {
   --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19c3-1 4-4 6-7s4-6 10-7'/%3E%3Cpath d='M4 13h3M10 19h3' stroke-dasharray='1 2.5'/%3E%3Ccircle cx='20' cy='5' r='1.6'/%3E%3C/svg%3E");
+}
+
+/* Animația traseului (ADR 0099): panoul de deasupra cipului timpului și stratul frezei de pe pânză. */
+.cip-timp-traseu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.panou-animatie {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 5;
+  width: min(360px, calc(100vw - 32px));
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  pointer-events: auto;
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-2);
+  box-shadow: var(--umbra-1);
+  color: var(--t);
+  white-space: normal;
+}
+
+.panou-animatie header,
+.panou-animatie .comenzi {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.panou-animatie header h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 1em;
+}
+
+.panou-animatie input[type='range'] {
+  width: 100%;
+  accent-color: var(--animatie);
+}
+
+.panou-animatie .citire {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.strat-animatie {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }

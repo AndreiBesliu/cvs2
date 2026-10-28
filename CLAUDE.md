@@ -180,6 +180,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Harta e un script inline: amprenta ei intră în CSP** (meta-ul, scris în `generateBundle`, și antetul scris de publicare din
   `dist/index.html`); orice alt script inline e refuzat. Versiunea stă în `<meta name="cncvs2-versiune">` (`shared/versiune.ts`),
   nu în JavaScript. Poarta: un build cu altă versiune schimbă doar `index.html` și `sw.js`.
+  **Animația traseului (ADR 0099, adusă din etapa 5)** gata pe 28.10: „Animează” lângă timpul jobului; panoul (rulează / pauză,
+  pașii, viteza, glisorul, citirile) și freza cu drumul parcurs pe pânză (`src/canvas/StratAnimatie.tsx`, montat de stratul
+  traseului); timpul fiecărei mișcări din estimarea planificatorului pe liniile postului (`liniiMiscari`, suma = timpul din
+  cip); modelul pur în `src/sim/animatie.ts`, playerul în `src/ui/actiuniAnimatie.ts`. **Pornirea cu ușa 99,9 / 100 kB:**
+  fiecare bucată nouă la cerere, comună mai multor module, adaugă un nume în lista de preîncărcare din pornire.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
