@@ -3429,3 +3429,11 @@ oracolul exportului 2D). Verificat în browser la 1440 px: fila rămasă pe vers
 pluginul progresului; jurnalul cu 0 erori. Progresul unei actualizări se vede abia de la publicarea următoare (fila trebuie să aibă
 deja codul lui): commit-ul ăsta, publicat și el pe test, e acea actualizare.
 
+**Progresul, văzut pe test (28.10, 13:40):** `8b536e1` publicat (run 40681022393; doar `.md`, deci fără nivel rapid propriu: publicarea
+acceptă strămoșul verde `b74dbab`). În fila rămasă pe `b74dbab`, cu un înregistrator al cipurilor, verificarea versiunii (`update()`,
+ca la verificarea orară) a dat „Se descarcă versiunea nouă” de la 0 la 100 % în ~9 s (35 de mesaje), apoi „Versiune nouă gata”;
+după „Reîncarcă”, precache-ul are 71 de intrări (cele vechi șterse), jurnalul 0 erori, consola curată. **Găsit:** o publicare fără
+cod re-aduce 38 din 71 de fișiere, 941 din 1 314 kB necomprimați (~72 %): bucata de pornire conține versiunea și numele bucăților
+la cerere, iar aproape toate bucățile o importă, deci toate se redenumesc. Scris în ADR 0096 (Limite) și în rândul 3.M. Tot acum,
+din lista owner-ului: scos „Testul uneltelor de desen, pas cu pas, în aplicație” (făcut pe 25.10, remedierile în 6.P↑).
+

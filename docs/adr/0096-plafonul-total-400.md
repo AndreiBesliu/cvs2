@@ -12,7 +12,11 @@ mai mare face aplicația mai lentă sau mai slabă. Răspunsul, verificat în co
 - **precache-ul se descarcă în fundal.** Workerul pornește la 2 s după prima randare (`PAUZA_PWA_MS`), iar Workbox aduce
   fișierele unul câte unul. La o actualizare, fila rămâne pe versiunea ei, întreagă, până la clic;
 - **o actualizare aduce doar ce s-a schimbat.** Workbox păstrează intrările cu aceeași cheie (adresa cu amprenta, sau revizia).
-  Probat în e2e: o publicare care redenumește o bucată aduce doar bucata și ce o pomenește;
+  Probat în e2e: o publicare care redenumește o bucată aduce doar bucata și ce o pomenește. **Dar „ce o pomenește” e aproape
+  tot** (măsurat pe test, 28.10, la publicarea unui commit doar cu DEVLOG): 38 din 71 de fișiere, 941 din 1 314 kB necomprimați
+  (~72 %), în ~9 s, câte un fișier pe rând. Bucata de pornire conține versiunea și numele bucăților la cerere, deci se
+  redenumește la orice publicare, iar aproape toate bucățile o importă. Rămân în cache doar datele (mesajele, manualul, codurile).
+  Vezi „Limite”;
 - **codul descărcat nu rulează până nu e folosit.** Stă în Cache Storage, pe disc, nu în memorie. Un modul se compilează la
   prima deschidere, de pe disc;
 - **viteza în lucru nu ține de mărimea pachetului.** Desenul, calculul CAM și simularea rulează pe algoritmi și workere;
@@ -44,6 +48,13 @@ Cei +1,1 kB sunt progresul (ADR 0097): pluginul din worker, răspunsul lui la ce
 - **Plafonul scos de tot:** poarta ține pachetul la vedere, iar o creștere mare cere din nou o decizie scrisă.
 - **Workerul fără Workbox (~4 kB) sau Preact în locul lui React (~55 kB):** ar face loc, dar cu riscul lor (ADR 0095). Owner-ul
   a ales plafonul.
+
+## Limite
+
+- **Cascada amprentelor.** Orice publicare re-aduce ~72 % din octeții precache-ului, nu doar ce s-a schimbat. Nu atinge viteza
+  aplicației, doar actualizarea: ~300 kB gzip pe versiune, cu progresul în bara de jos (ADR 0097). Remediul ține de împărțirea
+  bucăților: codul comun într-o bucată fără numele bucăților la cerere, ca o schimbare să redenumească doar bucata ei și pornirea.
+  E o felie a ei, nu a deciziei de aici.
 
 ## Se redeschide dacă
 
