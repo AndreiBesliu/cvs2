@@ -13,7 +13,8 @@ import { servesteMesajele } from './ajutor-mesaje.ts';
 
 test('generatorul: un fișier pe modul, cu ambele limbi și aceleași chei, în forma citită de aplicație', () => {
   const f = genereazaMesajele();
-  assert.deepEqual([...f.keys()], MODULE_MESAJE.map((m) => `mesaje/${m}.json`));
+  // Întâi dicționarele de bază (ADR 0095), câte unul pe limbă; apoi modulele.
+  assert.deepEqual([...f.keys()], ['mesaje/ro.json', 'mesaje/en.json', ...MODULE_MESAJE.map((m) => `mesaje/${m}.json`)]);
   for (const m of MODULE_MESAJE) {
     const x: unknown = JSON.parse(f.get(fisierMesaje(m)) ?? 'null');
     assert.ok(esteFisierMesaje(x), m);

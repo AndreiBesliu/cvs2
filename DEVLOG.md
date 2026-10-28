@@ -3370,3 +3370,24 @@ dacă reapare); scriptul de trecere a testelor la o versiune nouă de document (
 2D). Verificat în browser la 1440 px, după „Reîncarcă” (oferta a apărut abia după închiderea ferestrei exportului): pe rândul pus pe
 buzunar, Traseul are „inele (paralele cu conturul)” și „linii paralele”; cu liniile, coborârea dispare și Unghiul pornește de la 0;
 180° oprește exportul cu motivul, 30° îl permite; lățimea tabelului neschimbată (1 156 px); fără erori în consolă.
+
+## 2026-10-28 — Loc în pachet: dicționarele de bază ca date (Model: Claude Opus 5.5)
+
+**Prompt:** „continua”
+**Started:** 28.10, 07:15. Felia **3.L**, fără mașină și fără agenți. Totalul JavaScript e 329,2 / 330 kB, deci o felie nouă cu cod nu
+mai încape; aleg să fac loc, nu să ridic plafonul (plafonul e decizia owner-ului). Măsurat pe hărțile de surse: react-dom ~62,5 kB,
+`src/geom` ~51, `src/app` ~50; textele rămase în JavaScript sunt mai ales dicționarele de bază (~4,4 kB, ambele limbi). Planul: ele
+devin date (`mesaje/ro.json`, `mesaje/en.json`, în precache), ca mesajele modulelor (ADR 0086), cu aceeași pornire, același ecran
+„fără texte” și același raport; `/mesaje/**` primește `no-cache` (pe test e `max-age=3600`: la o adresă fixă, un dicționar vechi ar
+putea veni o oră după o publicare).
+
+**Completed:** 28.10 07:51. Dicționarele de bază sunt date: `mesaje/ro.json` și `mesaje/en.json`, câte unul pe limbă, în
+precache, generate din aceleași surse TypeScript; `incarcaLimba` le aduce cu `fetch` (un HTTP căzut sau altă formă respinge, cu calea
+în motiv), iar pornirea din `main.tsx` e neschimbată (rezerva la 4 s, ecranul „fără texte”, raportul). `/mesaje/**` e fără cache pe
+Hosting. **Totalul 329,2 → 325,0 / 330 kB (−4,2)**; pornirea 96,0 → 96,2 (cu ușa 99,5 → 99,7), fiindcă aducerea și verificarea
+formei stau în pornire, care numără mai departe dicționarul. Porțile: 7 523 unitare (0 picate, 8 sărite), build-ul determinist, e2e
+247 / 247, emulatoarele 36 + 13. Mutațiile: 11 / 11 din prima (9 pe probele unitare, 2 în fereastră, pe e2e). **Găsit pe drum:**
+`shared/mesaje.ts` ajungea întreg în pornire (+0,32 kB), deci adresa și forma dicționarului stau acum în `shared/dictionar.ts` (+0,24);
+un minificator mai bun (terser peste Oxc) ar fi scos doar ~1,3 kB. Pârghiile mai mari rămân decizii ale owner-ului: workerul PWA
+fără Workbox (~4 kB din cei 7,2 ai lui `sw.js`) și Preact în locul lui React (react-dom ~62,5 kB). Poarta build-ului nu are mutații
+proprii (o probă a ei cere un build stricat): a trecut pe build-ul real.

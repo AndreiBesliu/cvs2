@@ -69,7 +69,8 @@ test('pe build-ul real: totul în precache, în afară de pagina /admin, config.
 
 test('ambele dicționare, bucățile la cerere, workerul pânzei, index.html și favicon intră', () => {
   for (const f of [
-    'assets/mesaje.ro-DiAdfLkf.js', 'assets/mesaje.en-CJbzhZWY.js', 'assets/ExportConectat-rR2tOARF.js',
+    // Dicționarele de bază sunt date din 28.10 (ADR 0095), ca mesajele modulelor (ADR 0086).
+    'mesaje/ro.json', 'mesaje/en.json', 'mesaje/editare.json', 'assets/ExportConectat-rR2tOARF.js',
     'assets/ImportConectat-DYEWkEUO.js', 'assets/actiuniAlegere-M8-q1zoq.js', 'assets/lucrator-zecPKZ0t.js',
     'assets/index-By72-50K.css', 'index.html', 'favicon.svg',
   ]) assert.ok(inPrecache(f), f);

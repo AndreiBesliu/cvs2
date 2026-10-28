@@ -11,8 +11,8 @@ import { gzipSync } from 'node:zlib';
 import { DIR_DOCUMENTATIE, FISIER_CATALOG, FISIER_ROADMAP, FISIER_ROADMAP_EN, esteCatalog, esteRoadmap, fisierDocument } from '../shared/documentatie.ts';
 import { DIR_CODURI, esteDictionarCoduri, fisierCoduri, LIMBI_CODURI } from '../shared/coduri.ts';
 import { DIR_MANUAL, esteManual, fisierManual, LIMBI_MANUAL } from '../shared/manual.ts';
-import { DIR_MESAJE, esteFisierMesaje, fisierMesaje, MODULE_MESAJE } from '../shared/mesaje.ts';
-import { DICTIONARE_MODULE } from './mesaje.ts';
+import { DIR_MESAJE, esteDictionarMesaje, esteFisierMesaje, fisierBaza, fisierMesaje, MODULE_MESAJE, type Limba } from '../shared/mesaje.ts';
+import { DICTIONARE_BAZA, DICTIONARE_MODULE } from './mesaje.ts';
 import { DOAR_ONLINE, inPrecache, motivPrecache } from '../shared/precache.ts';
 
 /**
@@ -314,18 +314,20 @@ if (!cod(bucataNumita('incarcare')).includes(MARCAJ_MIGRARI) || inchidere(usa).s
 }
 
 /**
- * Dicționarul limbii active (`mesaje.ro` / `mesaje.en`, `t.ts`) vine la cerere, dar înaintea primei randări, la FIECARE
- * pornire: se numără în pornire (cel mai mare dintre ele, cu ce aduce el), altfel cifra ar ascunde ~2 kB. Exact două
- * bucăți de limbă: una lipsă înseamnă că dicționarul a ajuns înapoi în pornire (sau a dispărut din build), una în plus,
- * că s-a rupt în bucăți pe care poarta nu le mai vede.
+ * Dicționarul limbii active (`mesaje/ro.json` / `mesaje/en.json`, ADR 0095; `t.ts`) vine la cerere, ca date, dar înaintea
+ * primei randări, la FIECARE pornire: se numără în pornire (cel mai mare dintre ele, gzip), altfel cifra ar ascunde ~2 kB.
+ * Ambele fișiere există, cu forma citită de aplicație, iar nicio bucată JavaScript nu mai e o bucată de limbă
+ * (`mesaje.*.js`: dicționarul ar fi ajuns înapoi în cod). Textele lor, căutate în cod, mai jos, cu mesajele modulelor.
  */
-const LIMBI_BUILD = ['mesaje.ro', 'mesaje.en'];
+const LIMBI_BAZA: readonly Limba[] = ['ro', 'en'];
+const fisiereBaza = LIMBI_BAZA.map(fisierBaza);
 const bucatiLimba = [...bucati.keys()].filter((r) => /^assets\/mesaje\.[^/]+\.js$/.test(r));
-if (bucatiLimba.length !== LIMBI_BUILD.length) {
-  console.error(`Build-ul trebuie să aibă exact ${LIMBI_BUILD.length} bucăți de limbă (mesaje.*.js); găsite: ${bucatiLimba.length} (${bucatiLimba.join(', ')}).`);
+const bazaStricata = fisiereBaza.filter((f) => !a.has(f) || !esteDictionarMesaje(JSON.parse(readFileSync(join('.tmp/build-1', f), 'utf8'))));
+if (bucatiLimba.length > 0 || bazaStricata.length > 0) {
+  console.error(`Dicționarele de bază (ADR 0095) stau în ${fisiereBaza.join(', ')}, nu în JavaScript: bucăți de limbă ${bucatiLimba.join(', ') || '—'}; lipsă sau cu altă formă ${bazaStricata.join(', ') || '—'}.`);
   process.exit(1);
 }
-const kbLimba = Math.max(...LIMBI_BUILD.map((n) => kbInchidere(bucataNumita(n))));
+const kbLimba = Math.max(...fisiereBaza.map((f) => gz(join('.tmp/build-1', f))));
 pornire += kbLimba;
 
 /**
@@ -413,7 +415,7 @@ if (lipsaDinManifest.length > 0 || inPlusInManifest.length > 0) {
 }
 // Raportorul și baza conexiunii sunt obligatorii (recenzia din 18.10): fila rămâne pe versiunea ei până la clic, deci și
 // raportorul ei trebuie să vină după o publicare, când bucata lui veche nu mai e pe hosting.
-const obligatorii = ['index.html', bucataPornirii, ...bucatiLimba, ...['ExportConectat', 'ImportConectat', 'actiuniAlegere', 'actiuniExportCalcul', 'lucrator', 'lucratorSimulare', 'raportor', 'conexiuneBaza'].map(bucataNumita)];
+const obligatorii = ['index.html', bucataPornirii, ...fisiereBaza, ...['ExportConectat', 'ImportConectat', 'actiuniAlegere', 'actiuniExportCalcul', 'lucrator', 'lucratorSimulare', 'raportor', 'conexiuneBaza'].map(bucataNumita)];
 const lipsaObligatorii = obligatorii.filter((f) => !manifest.has(f));
 if (lipsaObligatorii.length > 0) {
   console.error(`Precache-ul nu are ${lipsaObligatorii.join(', ')}: offline, aplicația n-ar porni sau limba / ferestrele / raportorul n-ar veni (ADR 0042, ADR 0045 §2).`);
@@ -498,8 +500,15 @@ for (const m of MODULE_MESAJE) {
   const inCod = [...bucati.keys()].filter((r) => marcaj !== '' && cod(r).includes(marcaj));
   if (inCod.length > 0) problemeMesaje.push(`textele modulului ${m} sunt încă în JavaScript (${inCod.join(', ')})`);
 }
+for (const l of LIMBI_BAZA) {
+  const marcaj = Object.values(DICTIONARE_BAZA[l]).filter((v): v is string => typeof v === 'string' && /^[ !#-&(-[\]-~]+$/.test(v))
+    .sort((x, y) => y.length - x.length)[0] ?? '';
+  if (marcaj.length < 20) problemeMesaje.push(`dicționarul de bază ${l}: niciun marcaj ASCII destul de lung`);
+  const inCod = [...bucati.keys()].filter((r) => marcaj !== '' && cod(r).includes(marcaj));
+  if (inCod.length > 0) problemeMesaje.push(`dicționarul de bază ${l} e încă în JavaScript (${inCod.join(', ')})`);
+}
 if (problemeMesaje.length > 0) {
-  console.error(`Mesajele modulelor (dist/${DIR_MESAJE}/, ADR 0086): ${problemeMesaje.join('; ')}.`);
+  console.error(`Mesajele (dist/${DIR_MESAJE}/, ADR 0086, 0095): ${problemeMesaje.join('; ')}.`);
   process.exit(1);
 }
 const faraFisier = catalogCitit.documente.filter((d) => !a.has(fisierDocument(d.cale)));
@@ -560,12 +569,12 @@ if (!cod(inregistrare).includes('/sw.js')) {
 
 const kbRaportorPornire = await kbModul(RAPORTOR_PORNIRE);
 console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri.`);
-console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}); testul pas cu pas: ${testPasCuPas.toFixed(1)} kB (plafon ${PLAFON_TEST_KB}, doar online); mașina simulată: ${simulata.toFixed(1)} kB (plafon ${PLAFON_SIMULATA_KB}, doar online).`);
+console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (date, ${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}); testul pas cu pas: ${testPasCuPas.toFixed(1)} kB (plafon ${PLAFON_TEST_KB}, doar online); mașina simulată: ${simulata.toFixed(1)} kB (plafon ${PLAFON_SIMULATA_KB}, doar online).`);
 console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
 console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`)).join(', ')} și ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere).`);
 console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip (în engleză ${gz(join('.tmp/build-1', FISIER_ROADMAP_EN)).toFixed(1)} kB, ${roadmapEnCitit.netraduse} texte netraduse), ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
 console.log(`Manualul (în precache): ${LIMBI_MANUAL.map((l) => `${l} ${gz(join('.tmp/build-1', fisierManual(l))).toFixed(1)} kB gzip`).join(', ')}, ${capitoleManual[0]?.split(',').length ?? 0} capitole.`);
-console.log(`Mesajele modulelor la cerere (date, în precache): ${MODULE_MESAJE.length} fișiere, ${kbMesaje.toFixed(1)} kB gzip (ambele limbi; ADR 0086).`);
+console.log(`Mesajele modulelor la cerere (date, în precache): ${MODULE_MESAJE.length} fișiere, ${kbMesaje.toFixed(1)} kB gzip (ambele limbi; ADR 0086); dicționarele de bază: ${fisiereBaza.map((f) => `${f} ${gz(join('.tmp/build-1', f)).toFixed(1)} kB`).join(', ')} gzip (ADR 0095).`);
 console.log(`Dicționarul codurilor (în precache): ${LIMBI_CODURI.map((l, k) => `${l} ${(kbCoduri[k] ?? 0).toFixed(1)} kB gzip`).join(', ')} (plafon ${PLAFON_CODURI_KB} pe limbă).`);
 console.log(`Cu un proiect salvat, ușa vine înaintea primei randări: +${kbUsa.toFixed(1)} kB (plafon ${PLAFON_USA_KB}; cu pornirea ${(pornire + kbUsa).toFixed(1)} / ${PLAFON_PORNIRE_KB}) (${inchidere(usa).map((r) => r.replace('assets/', '')).join(', ')}).`);
 rmSync('.tmp/build-1', { recursive: true, force: true });

@@ -8,6 +8,7 @@ import type { enTraseu } from './traseu.en.ts';
 import type { enEditare } from './editare.en.ts';
 import type { enMasina } from './masina.en.ts';
 import type { en } from './mesaje.en.ts';
+import { esteDictionarMesaje, fisierBaza } from '../../shared/dictionar.ts';
 import { LIMBI, type Limba, type Mesaj } from './tipuri.ts';
 
 /**
@@ -43,23 +44,27 @@ export function adaugaMesaje(m: Readonly<Record<Limba, Readonly<Record<string, M
 }
 
 /**
- * Dicționarele de bază (`mesaje.*.ts`) vin la cerere (loc în pachetul de pornire, 17.10): pornirea aduce doar limba
- * activă, înaintea primei randări (`main.tsx`), iar aplicația pe cealaltă, în fundal. `t()` aruncă pe un mesaj neîncărcat,
- * deci o limbă se alege doar după ce i-a venit dicționarul (`schimbaLimba`).
+ * Dicționarele de bază (`mesaje.*.ts`) vin la cerere (loc în pachetul de pornire, 17.10), ca date (ADR 0095:
+ * `mesaje/<limbă>.json`, scrise de build, în precache): pornirea aduce doar limba activă, înaintea primei randări
+ * (`main.tsx`), iar aplicația pe cealaltă, în fundal. `t()` aruncă pe un mesaj neîncărcat, deci o limbă se alege doar după
+ * ce i-a venit dicționarul (`schimbaLimba`). Un fișier care nu vine sau are altă formă respinge, cu calea lui în motiv.
  */
-const DE_BAZA: Readonly<Record<Limba, () => Promise<Readonly<Record<string, Mesaj>>>>> = {
-  ro: () => import('./mesaje.ro.ts').then((m) => m.ro),
-  en: () => import('./mesaje.en.ts').then((m) => m.en),
-};
+async function deBaza(l: Limba): Promise<Readonly<Record<string, Mesaj>>> {
+  const cale = `/${fisierBaza(l)}`;
+  const r = await fetch(cale);
+  if (!r.ok) throw new Error(`dicționarul ${l} (${cale}): HTTP ${r.status}`);
+  const x: unknown = await r.json();
+  if (!esteDictionarMesaje(x)) throw new Error(`dicționarul ${l} (${cale}): fișierul nu are forma așteptată`);
+  return x;
+}
 const cereri = new Map<Limba, Promise<void>>();
 const incarcate = new Set<Limba>();
 
 /**
  * Dicționarul de bază al limbii `l`, adus o singură dată (aceeași promisiune la fiecare cerere). Un eșec (rețeaua, o
- * publicare nouă) nu rămâne ținut minte: cererea următoare îl cere din nou (Edge ține însă eșecul unui `import()` până la
- * reîncărcare). `aduce` e doar pentru probe.
+ * publicare nouă) nu rămâne ținut minte: cererea următoare îl cere din nou. `aduce` e doar pentru probe.
  */
-export function incarcaLimba(l: Limba, aduce: () => Promise<Readonly<Record<string, Mesaj>>> = DE_BAZA[l]): Promise<void> {
+export function incarcaLimba(l: Limba, aduce: () => Promise<Readonly<Record<string, Mesaj>>> = () => deBaza(l)): Promise<void> {
   const veche = cereri.get(l);
   if (veche) return veche;
   const noua = aduce().then((d) => {

@@ -40,6 +40,9 @@ export function configHosting(publicDir: string): object {
         // Documentația admin (ADR 0048): nume fixe, conținut nou la fiecare publicare; fila Roadmap n-o arată veche. Documentele
         // sunt cele din repo-ul public, dar nu sunt pagini ale produsului: motoarele de căutare nu le indexează pe domeniu.
         { source: '/documentatie/**', headers: [antet('Cache-Control', 'no-cache'), antet('X-Robots-Tag', 'noindex')] },
+        // Mesajele ca date (ADR 0086, 0095): nume fixe, chei noi la o publicare nouă. Dicționarul de bază vine la fiecare
+        // pornire: cu `max-age=3600` (implicitul Hosting), o pagină fără worker ar putea primi o oră dicționarul vechi.
+        { source: '/mesaje/**', headers: [antet('Cache-Control', 'no-cache')] },
       ],
     },
   };

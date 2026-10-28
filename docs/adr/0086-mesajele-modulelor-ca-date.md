@@ -34,7 +34,8 @@ apar în nicio bucată JavaScript (cel mai lung mesaj ASCII al modulului, căuta
 build.
 
 **5. Rămân în cod:** dicționarele de bază (`mesaje.ro.ts` / `.en.ts`, vin înaintea primei randări, cu poarta lor din ADR
-0042 și 0043), `/admin` și testul pas cu pas (bucăți doar online, în afara totalului).
+0042 și 0043), `/admin` și testul pas cu pas (bucăți doar online, în afara totalului). **(Schimbat de ADR 0095: dicționarele de
+bază sunt și ele date, `mesaje/<limbă>.json`.)**
 
 **6. Editarea își cere mesajele odată cu bucata**, nu după ea: se montează singură după prima randare, iar până atunci
 gesturile ei (Shift + clic, mânerele) nu există. Proba booleanului (Shift + clic imediat după două forme adăugate) a prins

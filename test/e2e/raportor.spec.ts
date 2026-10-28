@@ -170,11 +170,12 @@ test.describe('raportorul de erori', () => {
   test('o publicare fără dicționare (defectul nostru, nu rețeaua omului): ecranul „fără texte”, iar raportul pleacă', async ({ page }) => {
     const p = await plasa(page);
     await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(CONFIG_FIREBASE) }));
-    await page.route(/\/assets\/mesaje\.(ro|en)-[^/]+\.js$/, (r) => r.fulfill({ status: 404, body: '' }));
+    await page.route(/\/mesaje\/(ro|en)\.json$/, (r) => r.fulfill({ status: 404, body: '' }));
     const apeluri = await functiaPrimeste(page);
     await page.goto('/');
     await expect(page.locator('[data-eroare="fara-texte"]')).toBeVisible({ timeout: 40_000 });
-    await expect.poll(() => apeluri.join('\n'), { timeout: 15_000 }).toContain('mesaje.');
+    // Motivul poartă calea fișierului (ADR 0095: dicționarele sunt date, `mesaje/<limbă>.json`).
+    await expect.poll(() => apeluri.join('\n'), { timeout: 15_000 }).toMatch(/\/mesaje\/(ro|en)\.json\): HTTP 404/);
     // Și eșecul total (pornirea renunță): semnul că aplicația n-a pornit pentru nimeni.
     await expect.poll(() => apeluri.join('\n'), { timeout: 15_000 }).toContain('AggregateError');
     expect(p.externe).toEqual([]);

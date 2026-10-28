@@ -135,8 +135,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Mesajele modulelor la cerere, ca date (ADR 0086, felia 3.K)** gata pe 26.10: textele editării, exportului, mașinii,
   importului, carcasei, traseului și simulării stau în `mesaje/<modul>.json` (generate din `src/i18n/<modul>.en.ts` / `.ro.ts`,
   în precache), nu în JavaScript; totalul 328,2 → 304,3 / 330 kB. **Un modul nou la cerere care folosește aceste texte exportă
-  `mesaje = mesajeGata()` și se încarcă cu `.then(cuMesaje)`** (compilatorul cere exportul); dicționarele de bază, `/admin` și
-  testul pas cu pas rămân în cod.
+  `mesaje = mesajeGata()` și se încarcă cu `.then(cuMesaje)`** (compilatorul cere exportul); `/admin` și testul pas cu pas
+  rămân în cod (dicționarele de bază sunt date din 28.10, ADR 0095).
   **Găurirea (ADR 0087, documentul v13, adusă din etapa 5)** gata pe 26.10: `tip: 'gaurire'` pe cercuri (`src/cam/gaurire.ts`):
   cercul cât freza (± 0,02 mm) ciocănit în centru, cu `retragereCompleta` (ieșirea la al N-lea pas), cel până la 2·D în elice
   pe perete, restul refuzat; doar G0–G3, fără ciclurile fixe; în fereastra exportului doar pe rândurile numai cu cercuri.
@@ -166,6 +166,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Strategia paralelă a buzunarului (ADR 0094, documentul v18)** gata pe 27.10: `strategie: { fel: 'paralel', unghi }`; liniile
   în zigzag (`src/cam/paralel.ts`), apoi trecerea de profil pe margine; aceeași acoperire ca inelele. **Totalul 329,2 / 330 kB: o
   felie nouă cu cod în plus cere întâi loc în pachet** (owner-ul decide: plafonul sau mutarea unui modul la cerere).
+  **Dicționarele de bază ca date (ADR 0095)** gata pe 28.10: `mesaje/ro.json` și `mesaje/en.json`, aduse de `incarcaLimba`
+  înaintea primei randări (aceeași rezervă, același ecran „fără texte”), `/mesaje/**` fără cache pe Hosting. **Totalul 325,0 /
+  330 kB, pornirea 96,2 (cu ușa 99,7: strâmt).** Pârghiile mai mari (workerul PWA fără Workbox ~4 kB, Preact ~55 kB) sunt
+  decizii ale owner-ului.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

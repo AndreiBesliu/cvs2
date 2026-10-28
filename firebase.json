@@ -94,6 +94,15 @@
             "value": "noindex"
           }
         ]
+      },
+      {
+        "source": "/mesaje/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ]
   },

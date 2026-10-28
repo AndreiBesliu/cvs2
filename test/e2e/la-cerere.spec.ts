@@ -97,7 +97,7 @@ test.describe('dicționarul limbii, la cerere', () => {
     await page.goto('/');
     await page.getByRole('button', { name: 'EN', exact: true }).click();
     await expect(page.getByTestId('jurnal')).toHaveText('0 errors in the local log');
-    await page.route(/mesaje\.en-[^/]*\.js$/, (r) => r.abort());
+    await page.route(/\/mesaje\/en\.json$/, (r) => r.abort());
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
     await expect(page.getByTestId('jurnal')).toHaveText('1 eroare în jurnalul local');
@@ -109,7 +109,7 @@ test.describe('dicționarul limbii, la cerere', () => {
   });
 
   test('niciun dicționar nu vine: o pagină de eroare în ambele limbi, cu Reîncarcă, nu o pagină albă', async ({ page }) => {
-    await page.route(/mesaje\.(ro|en)-[^/]*\.js$/, (r) => r.abort());
+    await page.route(/\/mesaje\/(ro|en)\.json$/, (r) => r.abort());
     await page.goto('/');
     const ecran = page.locator('[data-eroare="fara-texte"]');
     await expect(ecran).toBeVisible();
@@ -120,15 +120,15 @@ test.describe('dicționarul limbii, la cerere', () => {
     await expect(ecran.locator('h1 [lang="en"]')).toHaveText('The app could not start');
     await expect(page.getByRole('button', { name: 'Reîncarcă · Reload' })).toBeFocused();
     await expect(page.getByRole('button').locator('[lang="ro"]')).toHaveText('Reîncarcă');
-    await page.unroute(/mesaje\.(ro|en)-[^/]*\.js$/);
+    await page.unroute(/\/mesaje\/(ro|en)\.json$/);
     await page.getByRole('button', { name: 'Reîncarcă · Reload' }).click();
     await expect(page.locator('[data-actiune="import.svg"]')).toBeVisible();
   });
 
   /** Răspunsurile dicționarelor, întârziate (ms) pe limbă; o limbă fără întârziere trece neatinsă. */
   async function dictionareIntarziate(page: Page, ms: { ro?: number; en?: number }): Promise<void> {
-    await page.route(/mesaje\.(ro|en)-[^/]*\.js$/, async (r) => {
-      const l = /mesaje\.(ro|en)-/.exec(r.request().url())?.[1] as 'ro' | 'en';
+    await page.route(/\/mesaje\/(ro|en)\.json$/, async (r) => {
+      const l = /\/mesaje\/(ro|en)\.json/.exec(r.request().url())?.[1] as 'ro' | 'en';
       await new Promise((ok) => setTimeout(ok, ms[l] ?? 0));
       await r.continue();
     });
@@ -155,18 +155,18 @@ test.describe('dicționarul limbii, la cerere', () => {
   test('clic pe EN (dicționarul pe drum), apoi pe RO: câștigă ultimul clic, și la sosirea englezei, și după reîncărcare', async ({ page }) => {
     let elibereaza: () => void = () => undefined;
     const liber = new Promise<void>((ok) => { elibereaza = ok; });
-    await page.route(/mesaje\.en-[^/]*\.js$/, async (r) => { await liber; await r.continue(); });
+    await page.route(/\/mesaje\/en\.json$/, async (r) => { await liber; await r.continue(); });
     await page.goto('/');
     await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
     await page.getByRole('button', { name: 'EN', exact: true }).click();
     await page.getByRole('button', { name: 'RO', exact: true }).click();
-    const cerute = page.waitForResponse(/mesaje\.en-[^/]*\.js$/);
+    const cerute = page.waitForResponse(/\/mesaje\/en\.json$/);
     elibereaza();
     await cerute;
     await page.waitForTimeout(500);
     await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
     await expect(page.getByRole('button', { name: 'RO', exact: true })).toHaveAttribute('aria-pressed', 'true');
-    await page.unroute(/mesaje\.en-[^/]*\.js$/);
+    await page.unroute(/\/mesaje\/en\.json$/);
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
   });

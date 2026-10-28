@@ -19,7 +19,8 @@ test('antetul CSP de pe Hosting e CSP-ul din build, plus frame-ancestors, fără
   assert.ok(!csp.includes('unsafe-eval'));
   // Antetele se potrivesc pe calea cererii: „/” și „/index.html” sunt două căi, deci amândouă sunt fără cache.
   // Documentația admin (ADR 0048) are nume fixe și se schimbă la fiecare publicare: fără cache, ca fila să n-o arate veche.
-  for (const cale of ['/', '/index.html', '/config.json', '/sw.js', '/documentatie/**']) {
+  // Mesajele ca date (ADR 0095): dicționarul de bază vine la fiecare pornire, de la o adresă fixă.
+  for (const cale of ['/', '/index.html', '/config.json', '/sw.js', '/documentatie/**', '/mesaje/**']) {
     const r = cfg.hosting.headers.find((h) => h.source === cale);
     assert.equal(r?.headers.find((h) => h.key === 'Cache-Control')?.value, 'no-cache', cale);
   }
