@@ -1,0 +1,520 @@
+{
+ "in-forme.pdf": {
+  "pagina": [
+   299.9999997222222,
+   200.00000922222222
+  ],
+  "pagini": 1,
+  "xref": "flux",
+  "linii_frante": [
+   {
+    "ce": "re",
+    "puncte": [
+     [
+      10,
+      10
+     ],
+     [
+      60,
+      10
+     ],
+     [
+      60,
+      40
+     ],
+     [
+      10,
+      40
+     ]
+    ],
+    "inchis": true
+   },
+   {
+    "ce": "polilinia",
+    "puncte": [
+     [
+      80,
+      10
+     ],
+     [
+      100,
+      30
+     ],
+     [
+      120,
+      10
+     ]
+    ],
+    "inchis": false
+   },
+   {
+    "ce": "triunghiul cu h",
+    "puncte": [
+     [
+      140,
+      10
+     ],
+     [
+      180,
+      10
+     ],
+     [
+      160,
+      40
+     ]
+    ],
+    "inchis": true
+   },
+   {
+    "ce": "linia sub decupaj",
+    "puncte": [
+     [
+      190,
+      120
+     ],
+     [
+      250,
+      120
+     ]
+    ],
+    "inchis": false
+   },
+   {
+    "ce": "translația",
+    "puncte": [
+     [
+      250,
+      150
+     ],
+     [
+      270,
+      150
+     ]
+    ],
+    "inchis": false
+   },
+   {
+    "ce": "rotirea și scara",
+    "puncte": [
+     [
+      280,
+      10
+     ],
+     [
+      280,
+      30
+     ]
+    ],
+    "inchis": false
+   }
+  ],
+  "bezier": [
+   {
+    "ce": "c",
+    "puncte": [
+     [
+      10,
+      60
+     ],
+     [
+      30,
+      90
+     ],
+     [
+      60,
+      30
+     ],
+     [
+      80,
+      60
+     ]
+    ]
+   },
+   {
+    "ce": "v",
+    "puncte": [
+     [
+      100,
+      60
+     ],
+     [
+      100,
+      60
+     ],
+     [
+      120,
+      90
+     ],
+     [
+      140,
+      60
+     ]
+    ]
+   },
+   {
+    "ce": "y",
+    "puncte": [
+     [
+      160,
+      60
+     ],
+     [
+      180,
+      90
+     ],
+     [
+      200,
+      60
+     ],
+     [
+      200,
+      60
+     ]
+    ]
+   }
+  ],
+  "arii": [
+   {
+    "ce": "umplut fără h",
+    "arie": 600,
+    "cutie": [
+     220,
+     10,
+     260,
+     40
+    ]
+   },
+   {
+    "ce": "reuniunea nonzero",
+    "arie": 2800,
+    "cutie": [
+     10,
+     110,
+     70,
+     170
+    ]
+   },
+   {
+    "ce": "par-impar, exteriorul",
+    "arie": 3600,
+    "cutie": [
+     100,
+     110,
+     160,
+     170
+    ]
+   },
+   {
+    "ce": "par-impar, golul",
+    "arie": 900,
+    "cutie": [
+     115,
+     125,
+     145,
+     155
+    ]
+   }
+  ],
+  "numar_cai": {
+   "inchise": 6,
+   "deschise": 7
+  },
+  "raport": {
+   "sarit-text": 1,
+   "sarit-imagine": 2,
+   "decupaje": 1,
+   "nepictate": 1,
+   "inchise-de-umplere": 1,
+   "nonzero-normalizate": 1
+  }
+ },
+ "in-straturi.pdf#1": {
+  "pagina": [
+   299.9999997222222,
+   200.00000922222222
+  ],
+  "pagini": 3,
+  "xref": "tabel",
+  "straturi": [
+   "DECUPARE",
+   "GRAVARE"
+  ],
+  "linii_frante": [
+   {
+    "ce": "dreptunghiul pe DECUPARE",
+    "puncte": [
+     [
+      20,
+      20
+     ],
+     [
+      120,
+      20
+     ],
+     [
+      120,
+      80
+     ],
+     [
+      20,
+      80
+     ]
+    ],
+    "inchis": true,
+    "strat": "DECUPARE"
+   },
+   {
+    "ce": "linia pe GRAVARE",
+    "puncte": [
+     [
+      150,
+      50
+     ],
+     [
+      250,
+      50
+     ]
+    ],
+    "inchis": false,
+    "strat": "GRAVARE"
+   }
+  ],
+  "numar_cai": {
+   "inchise": 1,
+   "deschise": 1
+  },
+  "raport": {
+   "ascunse": 1
+  }
+ },
+ "in-straturi.pdf#2": {
+  "pagina": [
+   299.9999997222222,
+   200.00000922222222
+  ],
+  "pagini": 3,
+  "pagina_aleasa": 2,
+  "linii_frante": [
+   {
+    "ce": "triunghiul din Form XObject",
+    "puncte": [
+     [
+      110.00001988888887,
+      60.0000211111111
+     ],
+     [
+      190.0001421111111,
+      60.0000211111111
+     ],
+     [
+      150.000081,
+      140.0001433333333
+     ]
+    ],
+    "inchis": true
+   }
+  ],
+  "numar_cai": {
+   "inchise": 1,
+   "deschise": 0
+  },
+  "raport": {}
+ },
+ "in-straturi.pdf#3": {
+  "pagina": [
+   170.00000924999998,
+   260.00000422777777
+  ],
+  "pagini": 3,
+  "pagina_aleasa": 3,
+  "linii_frante": [
+   {
+    "ce": "polilinia pe pagina decupată și rotită",
+    "puncte": [
+     [
+      49.999998833333336,
+      230.00000444444444
+     ],
+     [
+      49.999998833333336,
+      130.00000444444444
+     ],
+     [
+      89.99999883333334,
+      130.00000444444444
+     ]
+    ],
+    "inchis": false
+   }
+  ],
+  "numar_cai": {
+   "inchise": 0,
+   "deschise": 1
+  },
+  "raport": {}
+ },
+ "in-rotiri.pdf#1": {
+  "pagina": [
+   299.9999997222222,
+   200.00000922222222
+  ],
+  "pagini": 3,
+  "pagina_aleasa": 1,
+  "raport": {},
+  "linii_frante": [
+   {
+    "ce": "polilinia rotită cu 180°",
+    "puncte": [
+     [
+      249.99999972222219,
+      140.00000922222222
+     ],
+     [
+      149.99999972222219,
+      140.00000922222222
+     ],
+     [
+      149.99999972222219,
+      100.00000922222222
+     ]
+    ],
+    "inchis": false
+   }
+  ],
+  "numar_cai": {
+   "inchise": 0,
+   "deschise": 1
+  }
+ },
+ "in-rotiri.pdf#2": {
+  "pagina": [
+   200.00000922222222,
+   299.9999997222222
+  ],
+  "pagini": 3,
+  "pagina_aleasa": 2,
+  "raport": {},
+  "linii_frante": [
+   {
+    "ce": "polilinia rotită cu 270°",
+    "puncte": [
+     [
+      140.00000922222222,
+      50
+     ],
+     [
+      140.00000922222222,
+      150
+     ],
+     [
+      100.00000922222222,
+      150
+     ]
+    ],
+    "inchis": false
+   }
+  ],
+  "numar_cai": {
+   "inchise": 0,
+   "deschise": 1
+  }
+ },
+ "in-rotiri.pdf#3": {
+  "pagina": [
+   299.9999997222222,
+   200.00000922222222
+  ],
+  "pagini": 3,
+  "pagina_aleasa": 3,
+  "raport": {},
+  "linii_frante": [
+   {
+    "ce": "polilinia cu UserUnit 2",
+    "puncte": [
+     [
+      50,
+      60
+     ],
+     [
+      150,
+      60
+     ],
+     [
+      150,
+      100
+     ]
+    ],
+    "inchis": false
+   }
+  ],
+  "numar_cai": {
+   "inchise": 0,
+   "deschise": 1
+  }
+ },
+ "incremental.pdf": {
+  "pagina": [
+   299.9999997222222,
+   200.00000922222222
+  ],
+  "pagini": 1,
+  "raport": {},
+  "linii_frante": [
+   {
+    "ce": "linia din secțiunea nouă",
+    "puncte": [
+     [
+      10,
+      30
+     ],
+     [
+      60,
+      30
+     ]
+    ],
+    "inchis": false
+   }
+  ],
+  "numar_cai": {
+   "inchise": 0,
+   "deschise": 1
+  }
+ },
+ "xref-stricat.pdf": {
+  "pagina": [
+   299.9999997222222,
+   200.00000922222222
+  ],
+  "pagini": 1,
+  "raport": {
+   "xref-reconstruit": 1
+  },
+  "linii_frante": [
+   {
+    "ce": "triunghiul, după reconstruire",
+    "puncte": [
+     [
+      20,
+      20
+     ],
+     [
+      120,
+      20
+     ],
+     [
+      120,
+      80
+     ]
+    ],
+    "inchis": true
+   }
+  ],
+  "numar_cai": {
+   "inchise": 1,
+   "deschise": 0
+  }
+ },
+ "criptat.pdf": {
+  "refuz": "criptat"
+ }
+}
