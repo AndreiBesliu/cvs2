@@ -3527,3 +3527,17 @@ pornire prin modulul acțiunilor (+0,6 kB), mutate în module la cerere (+0,1). 
 110); totalul 330,3 → 338,3 / 400 kB. Porțile: 7 648 unitare (0 picate, 8 sărite), build-ul determinist, e2e 258 / 258, emulatoarele 36 + 13. Mutațiile: 55 / 55 (51 pe probele unitare, 4 în fereastră, pe e2e); 6 au
 trecut întâi și au cerut probe noi (un nod în plus la spline, arcul NURBS de 120° și sensul lui, dus-întorsul pe același cerc, R2007
 cu UTF-8, perechile fără secțiune).
+
+**Publicat pe test (28.10, 19:24)**, din workflow (run 40734978544, `179051e`), cu CI-ul rapid verde (run 40733428433, 6 felii +
+oracolul exportului 2D). Verificat în browser la 1440 px: fila de pe `a56ee45` a primit oferta; după „Reîncarcă” a trecut întâi pe
+`b1083b3` (workerul care aștepta de la publicarea de după 5.7), apoi, la a doua ofertă, pe `179051e7184f`, controlată de worker.
+Fereastra de fișiere acceptă `.dxf`, butonul e „Importă SVG / DXF…”. Un DXF dat ferestrei (dreptunghiul 60 × 40 din 4 linii, în
+(100, 50), cu o gaură R5 și o linie de gravat, pe straturi): „Importă: Raft lateral.dxf”, „Desenul: 60.00 × 40.00 mm”, „2 contururi
+închise: 1 tăiate pe exterior, 1 pe interior (din imbricare)”, calea deschisă, „Unitățile fișierului: un milimetru (mm).” și „4
+bucăți deschise legate capăt la capăt”; după „Importă”, piesa „Raft lateral” (3 forme: profil exterior, interior și pe linie) stă la
+X 100, Y 50, cu cutia 60 × 40 mm; jurnalul cu 0 erori, consola curată. Pragul: rândul „Import 2D” poartă commit-ul `179051e`.
+
+**Prompt (28.10, 19:20):** „In fisierele de test am vazut ca z se duce la -4 apoi iar la 5. Vreau ca asta sa fie optional. Userul
+poate ar vrea sa nu se mai ridice freza si sa coboare direct la -8mm. Noteaza pentru viitor.” (cu pozele programului A al plăcii 1).
+Notat în CLAUDE.md („Decizii luate”) și în rândul de prag „Profil”: coborârea directă între treceri, fără ridicare, ca a treia
+alegere lângă ridicarea de acum și rampa (ADR 0029); cel mai devreme odată cu rampa pornită implicit, după placa 1.

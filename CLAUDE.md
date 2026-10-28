@@ -295,6 +295,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 28.10.2026: **coborârea directă între treceri, la alegere, notată pentru mai târziu** („In fisierele de test am vazut ca z
+  se duce la -4 apoi iar la 5. Vreau ca asta sa fie optional. Userul poate ar vrea sa nu se mai ridice freza si sa coboare
+  direct la -8mm. Noteaza pentru viitor.”, la programul A al plăcii 1: gaura D30, Z −4 → 5 → −8). Acum, fără rampă, freza
+  urcă la Z sigur între treceri; cu rampa (ADR 0029, oprită implicit până la placa 1), bucla se taie continuu, coborând pe
+  rampă. Cererea e a treia alegere pe operație: coborârea verticală direct la trecerea următoare, fără ridicare (cere o freză
+  cu tăiș în capăt, ca Ø6 a plăcii 1). Momentul îl alege asistentul; cel mai devreme odată cu rampa pornită implicit, după
+  placa 1 (aceeași legătură între treceri), cu ADR-ul ei.
 - 27.10.2026: **exportul EPS rămâne așa deocamdată** („nu stiu daca sunt fericit cu acest export eps. deocamdata este ok,
   vectorii au fost exportati ca vectori. dar, o sa mai lucram la gruparea lor, dar asta mai tarziu, cand vom face sistemul de
   nesting probabil”): deschis în Illustrator, formele ies vectori, dar căile de aceeași culoare (același rol) ajung unite într-un
