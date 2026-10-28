@@ -74,7 +74,8 @@ ofertă, iar bara de jos arată cipul `actualizare` (`aranjament.ts`): „Versiu
 clicul trimite `SKIP_WAITING`, iar pagina se reîncarcă **o singură dată**, la `controllerchange` (o pagină necontrolată, la
 activarea workerului nou). **Niciodată singură:** dacă altă filă a acceptat, fila asta nu se reîncarcă (controlorul i se
 schimbă, codul ei rămâne cel vechi), iar clicul ei doar reîncarcă. Un worker oferit care devine inutil (înlocuit de unul și
-mai nou, instalare eșuată) își retrage oferta.
+mai nou, instalare eșuată) își retrage oferta. **(Completat de ADR 0097: cât workerul nou se instalează, același loc din bara de
+jos îi arată progresul.)**
 - **Blocarea cât rulează un job vine cu senderul** (etapa 3.6+): punctul de legătură e `actualizarePermisa()`, care azi
   întoarce `true`. Cât o întoarce `false`, clicul nu trimite nimic și nu reîncarcă (probat); senderul o va lega de starea
   jobului, iar anunțul va spune atunci de ce butonul așteaptă.

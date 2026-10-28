@@ -2,7 +2,7 @@
 
 **Starea:** acceptat pe 25.10.2026, de asistent, la felia 6.P↑ (ADR 0074), care a dus totalul la 302,1 kB. **Schimbă:** plafonul
 total din `scripts/build-determinist.ts` (ADR 0042, ADR 0045 „Se redeschide dacă”). Pornirea (100 kB), `/admin` (200 kB),
-ușa (8 kB) și testul pas cu pas (12 kB) rămân.
+ușa (8 kB) și testul pas cu pas (12 kB) rămân. **(Schimbat de ADR 0096: 400 kB din 28.10, decizia owner-ului.)**
 
 **Problema.** Totalul JS al aplicației (tot ce intră în precache, fără `/admin` și testul pas cu pas) era 297,5 / 300 kB după
 insulele buzunarului (ADR 0073); remedierile din testul owner-ului (colțurile offsetului, ~2,4 kB gzip; poziția față de curbă;

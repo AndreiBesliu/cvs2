@@ -170,6 +170,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   înaintea primei randări (aceeași rezervă, același ecran „fără texte”), `/mesaje/**` fără cache pe Hosting. **Totalul 325,0 /
   330 kB, pornirea 96,2 (cu ușa 99,7: strâmt).** Pârghiile mai mari (workerul PWA fără Workbox ~4 kB, Preact ~55 kB) sunt
   decizii ale owner-ului.
+  **Plafonul total 400 kB (ADR 0096, decizia owner-ului) și progresul instalării (ADR 0097)** gata pe 28.10: cât workerul nou
+  se instalează, bara de jos arată „Se descarcă versiunea nouă: N %” (la prima vizită, „Pregătesc lucrul offline: N %”), apoi
+  oferta; procentul vine din mărimile scrise în manifest (`marime`, cerute de poarta build-ului), adunate de pluginul
+  `src/pwa/progres.ts`; fila ascultă înaintea lui `register()` (care stă la coadă cât instalarea găsită de navigare).
+  **Totalul 326,1 / 400 kB, pornirea 96,3 (cu ușa 99,8 / 100: strâmt).**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

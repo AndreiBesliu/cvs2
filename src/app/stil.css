@@ -864,11 +864,17 @@ nav button[aria-pressed='true'] {
   border-radius: var(--r-2);
 }
 
-/* „Versiune nouă gata” cu butonul lângă text (ADR 0045 §5). */
+/* „Versiune nouă gata” cu butonul lângă text (ADR 0045 §5), sau progresul descărcării, cu bara lui (ADR 0097). */
 .cip-actualizare {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
+}
+
+.cip-actualizare progress {
+  inline-size: 64px;
+  block-size: 6px;
+  accent-color: var(--a);
 }
 
 .jos .cip-buton {

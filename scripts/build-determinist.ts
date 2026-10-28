@@ -21,7 +21,8 @@ import { DOAR_ONLINE, inPrecache, motivPrecache } from '../shared/precache.ts';
  *   valibot + aplicația; calculul exportului se încarcă la cerere); din 17.10, plus dicționarul limbii active, cerut
  *   înaintea primei randări la fiecare pornire (99,1 kB înainte de „loc în pachetul de pornire”);
  * - totalul, cu bucățile încărcate la cerere (exportul: cavalier + CAM + post, ~23 kB) și workerul; 330 kB din 25.10 (ADR 0075:
- *   totul rămâne în precache, ca aplicația să meargă întreagă offline);
+ *   totul rămâne în precache, ca aplicația să meargă întreagă offline), 400 kB din 28.10 (ADR 0096: decizia owner-ului; se
+ *   descarcă în fundal, cu progresul în bara de jos, ADR 0097);
  * - pagina `/admin` (ADR 0040, decizia din 16.10): bucata ei (`PaginaAdmin-*`, cu Firebase: contul, Firestore, funcțiile,
  *   App Check; 170 kB la felia 3.3) are plafonul ei și nu intră în totalul aplicației, fiindcă aplicația n-o descarcă
  *   niciodată. Firebase-ul pe care îl aduce raportorul de erori (3.2, ADR 0043) intră în total: îl descarcă oricine are o
@@ -29,7 +30,7 @@ import { DOAR_ONLINE, inPrecache, motivPrecache } from '../shared/precache.ts';
  *   și de raportor: adminul se măsoară cu tot ce aduce (închiderea lui), raportorul la fel, cu plafonul lui.
  */
 const PLAFON_PORNIRE_KB = 100;
-const PLAFON_TOTAL_KB = 330;
+const PLAFON_TOTAL_KB = 400;
 const PLAFON_ADMIN_KB = 200;
 /**
  * Ușa de încărcare a proiectului vine înaintea primei randări pentru oricine are un proiect salvat (proiectLocal): are
@@ -411,6 +412,16 @@ const lipsaDinManifest = dePrecache.filter((f) => !manifest.has(f));
 const inPlusInManifest = [...manifest].filter((f) => !dePrecache.includes(f));
 if (lipsaDinManifest.length > 0 || inPlusInManifest.length > 0) {
   console.error(`Manifestul precache-ului din sw.js nu e cel din shared/precache.ts: lipsesc ${lipsaDinManifest.join(', ') || '—'}; în plus ${inPlusInManifest.join(', ') || '—'}.`);
+  process.exit(1);
+}
+/**
+ * Mărimile din manifest (ADR 0097): progresul instalării le adună, deci fiecare intrare are una, egală cu fișierul din build.
+ * Una lipsă ar opri progresul (totalul 0) sau l-ar arăta greșit. Workbox scrie intrarea cu cheile în ordine alfabetică.
+ */
+const marimiManifest = new Map([...codSw.matchAll(/\{"marime":(\d+),"revision":(?:null|"[0-9a-f]+"),"url":"([^"]+)"\}/g)].map((m) => [m[2] ?? '', Number(m[1])]));
+const marimiGresite = dePrecache.filter((f) => marimiManifest.get(f) !== statSync(join('.tmp/build-1', f)).size);
+if (marimiManifest.size !== manifest.size || marimiGresite.length > 0) {
+  console.error(`Manifestul din sw.js n-are mărimea fișierului (marime) la ${marimiGresite.join(', ') || `${manifest.size - marimiManifest.size} intrări`}: progresul instalării ar fi greșit (ADR 0097, vite.config.ts).`);
   process.exit(1);
 }
 // Raportorul și baza conexiunii sunt obligatorii (recenzia din 18.10): fila rămâne pe versiunea ei până la clic, deci și

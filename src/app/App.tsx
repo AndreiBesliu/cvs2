@@ -29,6 +29,7 @@ import type { RezumatJob } from '../ui/actiuniExportTipuri.ts';
 import { incarcaNivelPiesa, ListaVectori, type RandLista } from '../ui/ListaVectori.tsx';
 import { useLimba } from '../ui/useLimba.ts';
 import type { RezultatConfig } from './config.ts';
+import type { ProgresActualizare } from '../pwa/inregistrare.ts';
 import { listaDesen } from './desen.ts';
 import type { Jurnal } from './jurnalErori.ts';
 import { ConflictDeScriere, type DepozitProiect, type ProiectDeschis } from './proiectLocal.ts';
@@ -49,6 +50,8 @@ type Props = {
   readonly aranjament?: Aranjament;
   /** Oferta actualizării PWA (ADR 0045 §5): funcția clicului „Reîncarcă”, cât un worker nou așteaptă. */
   readonly actualizare: Semnal<(() => void) | null>;
+  /** Progresul instalării workerului (ADR 0097): o versiune nouă, sau lucrul offline la prima vizită. */
+  readonly progresActualizare: Semnal<ProgresActualizare | null>;
 };
 
 /** Diagnosticul `?diagnostic=eroare-de-randare` aruncă la randare, ca ErrorBoundary-ul să se poată proba pe build. */
@@ -181,9 +184,10 @@ function mesajProiect(mod: ModFila, p: ProiectDeschis, motivNecitit: string): st
   return null;
 }
 
-export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect, aranjament = ARANJAMENT_MODERN, actualizare }: Props) {
+export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect, aranjament = ARANJAMENT_MODERN, actualizare, progresActualizare }: Props) {
   const limbaActiva = useLimba();
   const aplicaActualizare = useSyncExternalStore(actualizare.asculta, actualizare.citeste);
+  const progres = useSyncExternalStore(progresActualizare.asculta, progresActualizare.citeste);
   const intrari = useSyncExternalStore(jurnal.asculta, () => jurnal.citeste().length);
   const docPornire = useMemo(
     () => ((proiect.mod === 'scriitor' || proiect.mod === 'doar-citire') && proiect.doc ? proiect.doc : documentNou(FOAIA_IMPLICITA)),
@@ -786,8 +790,17 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       case 'config':
         return config.ok ? null : <p role="status" className="cip cip-atentie avertisment">{t('eroare.config', { motiv: config.motiv })}</p>;
       case 'actualizare':
-        // Doar oferită: abia clicul aplică versiunea nouă (o reîncărcare singură ar pierde munca nesalvată).
-        return aplicaActualizare && (
+        // Doar oferită: abia clicul aplică versiunea nouă (o reîncărcare singură ar pierde munca nesalvată). Până atunci,
+        // progresul descărcării (ADR 0097), fără `role="status"`: un cititor de ecran n-ar citi fiecare procent.
+        if (!aplicaActualizare) {
+          return progres && (
+            <span className="cip cip-actualizare" data-testid="actualizare-progres">
+              {t(progres.prima ? 'actualizare.offline' : 'actualizare.descarca', { procent: progres.procent })}
+              <progress max={100} value={progres.procent} aria-hidden="true" />
+            </span>
+          );
+        }
+        return (
           <span className="cip cip-atentie cip-actualizare" data-testid="actualizare" role="status">
             {t('actualizare.gata')}
             <button type="button" onClick={aplicaActualizare}>{t('eroare.reincarca')}</button>

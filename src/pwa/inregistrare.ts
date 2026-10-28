@@ -2,6 +2,9 @@
  * Înregistrarea workerului PWA și actualizarea OFERITĂ (ADR 0045 §5, §7). Bucata vine la cerere, după prima randare
  * (`main.tsx`), deci nu stă în pachetul de pornire.
  *
+ * Cât un worker se instalează, bara de jos îi arată progresul (ADR 0097): procentul trimis de el (`src/pwa/progres.ts`),
+ * ascultat înaintea înregistrării (`urmaresteProgresul`).
+ *
  * Un worker nou (o publicare nouă) se instalează și AȘTEAPTĂ: aplicația primește o ofertă (`oferta`), pe care bara de jos
  * o arată („Versiune nouă gata” + „Reîncarcă”). Abia clicul trimite `SKIP_WAITING`, iar pagina se reîncarcă o singură
  * dată, când workerul nou o preia (`controllerchange`). Niciodată singură: o filă cu muncă nesalvată nu se reîncarcă sub
@@ -16,7 +19,7 @@
  * câteva evenimente ale API-ului, probate cu un container fals (`test/unit/pwa.actualizare.test.ts`).
  */
 import type { Jurnal } from '../app/jurnalErori.ts';
-import { MESAJ_SKIP_WAITING } from './protocol.ts';
+import { esteProgres, MESAJ_CERE_PROGRES, MESAJ_SKIP_WAITING, procentDin } from './protocol.ts';
 
 /**
  * Punctul de legătură cu senderul (etapa 3.6+, ADR 0017: „blocată cât rulează un job”): cât trimite un job la mașină,
@@ -30,7 +33,13 @@ export function actualizarePermisa(): boolean {
 /** Cât de des caută aplicația o versiune nouă (`update()`) cât fila stă deschisă: o oră (alegerea owner-ului, 19.10). */
 export const INTERVAL_VERIFICARE_MS = 3_600_000;
 
-type Container = Pick<ServiceWorkerContainer, 'register' | 'controller' | 'addEventListener'>;
+type Container = Pick<ServiceWorkerContainer, 'register' | 'getRegistration' | 'controller' | 'addEventListener' | 'startMessages'>;
+
+/** Progresul instalării unui worker (ADR 0097): procentul și dacă e prima (niciun worker activ: lucrul offline). */
+export interface ProgresActualizare {
+  readonly procent: number;
+  readonly prima: boolean;
+}
 
 export interface Ceas {
   /** Implicit `setInterval`. */
@@ -55,6 +64,8 @@ export interface DepsInregistrare {
   readonly doc?: Pick<Document, 'visibilityState' | 'addEventListener'>;
   /** Oferta actualizării: funcția de la clic, sau `null` când nu mai e nimic de oferit. */
   readonly oferta: (aplica: (() => void) | null) => void;
+  /** Progresul instalării în curs, sau `null` când nu se instalează nimic. */
+  readonly progres: (p: ProgresActualizare | null) => void;
   /**
    * Înregistrarea refuzată de browser: un defect (ADR 0043, pleacă la server), afară de datele site-ului blocate
    * (`SecurityError`), o condiție a mediului omului, doar locală (ca la proiectul local, ADR 0039 §6).
@@ -67,10 +78,45 @@ export interface DepsInregistrare {
 
 const deMediu = (e: unknown): boolean => (e as { name?: unknown } | null)?.name === 'SecurityError';
 
+/**
+ * Progresul instalării (ADR 0097), ascultat ÎNAINTEA lui `register()`: o actualizare găsită de navigarea însăși ține
+ * `register()` în coada de joburi a workerului până la sfârșitul instalării ei (văzut în e2e: fila afla de ea abia când nu
+ * mai era nimic de arătat). Înregistrarea existentă vine din `getRegistration()`, care nu stă la coadă, iar workerul ei care
+ * se instalează deja e întrebat de progresul de până acum. Procentul vine doar de la un worker încă în `installing` (un
+ * mesaj întârziat ar lăsa altfel procentul pe ecran) și se golește o singură dată, când acel worker iese din instalare
+ * (gata sau căzută); schimbările altui worker nu-l ating.
+ */
+function urmaresteProgresul(sw: Container, progres: DepsInregistrare['progres'], inregistrarea: () => ServiceWorkerRegistration | undefined): void {
+  let existenta: ServiceWorkerRegistration | undefined;
+  const urmariti = new WeakSet<ServiceWorker>();
+  sw.addEventListener('message', (e) => {
+    const { data, source } = e;
+    const w = source as ServiceWorker | null;
+    if (!esteProgres(data) || w?.state !== 'installing') return;
+    if (!urmariti.has(w)) {
+      urmariti.add(w);
+      const sfarsit = (): void => {
+        if (w.state === 'installing') return;
+        w.removeEventListener('statechange', sfarsit);
+        progres(null);
+      };
+      w.addEventListener('statechange', sfarsit);
+    }
+    // Prima instalare (lucrul offline): niciun worker activ. O filă controlată are mereu unul.
+    progres({ procent: procentDin(data), prima: sw.controller === null && !(inregistrarea() ?? existenta)?.active });
+  });
+  sw.startMessages();
+  sw.getRegistration().then((r) => {
+    existenta = r;
+    r?.installing?.postMessage(MESAJ_CERE_PROGRES);
+  }).catch(() => undefined);
+}
+
 export async function inregistreaza(d: DepsInregistrare): Promise<void> {
   const sw = d.sw ?? navigator.serviceWorker;
   const reincarca = d.reincarca ?? ((): void => { location.reload(); });
   let reg: ServiceWorkerRegistration | undefined;
+  urmaresteProgresul(sw, d.progres, () => reg);
   try {
     reg = await sw.register('/sw.js', { scope: '/' });
   } catch (e) {

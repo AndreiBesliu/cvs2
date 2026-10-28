@@ -115,7 +115,9 @@ function pwa(): Plugin[] {
       // fișierul; probat în recenzia din 18.10 cu 100 kB), iar poarta mai verifică și ea manifestul. 8 MB lasă loc bucății
       // de pornire (peste 500 kB minificată) și workerului pânzei, fără să mute eroarea în build la fiecare creștere.
       maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
-      manifestTransforms: [(intrari) => ({ manifest: intrari.filter((i) => inPrecache(i.url)), warnings: [] })],
+      // Mărimea fiecărui fișier intră în manifest (`marime`): progresul instalării o adună (ADR 0097). Workbox scoate din
+      // intrări doar `size`, după transformări; restul câmpurilor rămân în `sw.js`.
+      manifestTransforms: [(intrari) => ({ manifest: intrari.filter((i) => inPrecache(i.url)).map((i) => ({ ...i, marime: i.size })), warnings: [] })],
     },
   });
 }

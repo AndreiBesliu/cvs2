@@ -581,8 +581,10 @@ sheet left as you rotated it. `Esc`, the 3D button or a drawing tool go back to 
 - The project **saves itself**, in this browser (local storage), on every change; no account is needed.
 - Open in **two tabs**, the project is written from only one; the other shows it, read only, and says so at the bottom.
 - If another tab saved in the meantime, this tab stops saving and asks you to reload the page.
-- The app also works **offline** after the first load (the manual too). When a new version is out, “New version ready”
-  appears at the bottom; it loads on your click, not in the middle of your work.
+- The app also works **offline** after the first load (the manual too). On the first visit, “Preparing offline use” appears at
+  the bottom, with the percentage; once it is gone, the app works without a network too. When a new version is out, “Downloading
+  the new version” appears first, with the percentage, then “New version ready”; it loads on your click, not in the middle of
+  your work.
 - **The error journal**: at the bottom, the chip says how many errors the browser's local journal holds. If something breaks,
   the app shows “Something went wrong”, with “Copy the report” (you can send it) and “Reload”.
 

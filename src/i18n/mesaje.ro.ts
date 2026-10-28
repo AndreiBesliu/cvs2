@@ -91,6 +91,8 @@ export const ro = {
   'depozit.nu-se-deschide': 'Proiectul salvat nu s-a putut deschide ({motiv}). Am pornit unul nou; cel vechi rămâne în browser.',
   'depozit.eroare': 'Salvarea n-a mers: {motiv}',
   'actualizare.gata': 'Versiune nouă gata',
+  'actualizare.descarca': 'Se descarcă versiunea nouă: {procent} %',
+  'actualizare.offline': 'Pregătesc lucrul offline: {procent} %',
   'admin.cere-retea': 'Pagina de administrare cere rețea: reîncarcă pagina când ai rețea.',
   'dialog.neincarcat': 'Fereastra nu s-a putut încărca (aplicația s-a actualizat între timp sau rețeaua lipsește). Proiectul e salvat: reîncarcă pagina.',
   'actiune.importa-svg': 'Importă SVG…',

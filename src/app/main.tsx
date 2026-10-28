@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { incarcaLimba, limba, limbaDePornire, schimbaLimba, t } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
+import type { ProgresActualizare } from '../pwa/inregistrare.ts';
 import { programeazaPwa } from '../pwa/pornire.ts';
 import { semnal } from '../ui/CipuriVedere.tsx';
 import { App } from './App.tsx';
@@ -47,6 +48,8 @@ window.addEventListener('error', (e) => { jurnal.adauga('fereastra', e.error ?? 
 window.addEventListener('unhandledrejection', (e) => { jurnal.adauga('promisiune', e.reason); });
 /** Oferta actualizării (ADR 0045 §5): funcția clicului „Reîncarcă” din bara de jos, pusă de înregistrarea workerului. */
 const actualizare = semnal<(() => void) | null>(null);
+/** Progresul instalării workerului (ADR 0097), pus de înregistrarea lui cât se instalează. */
+const progresActualizare = semnal<ProgresActualizare | null>(null);
 
 let salvata: string | null = null;
 try {
@@ -184,7 +187,7 @@ function pornestePwa(): void {
     prod: import.meta.env.PROD,
     nav: navigator,
     porneste: () => {
-      import('../pwa/inregistrare.ts').then((m) => m.inregistreaza({ oferta: actualizare.scrie, jurnal }))
+      import('../pwa/inregistrare.ts').then((m) => m.inregistreaza({ oferta: actualizare.scrie, progres: progresActualizare.scrie, jurnal }))
         .catch((e: unknown) => { jurnal.adauga('promisiune', e); });
     },
   });
@@ -270,6 +273,7 @@ async function porneste(): Promise<void> {
           alegeTema={alegeTema}
           proiect={proiect}
           actualizare={actualizare}
+          progresActualizare={progresActualizare}
         />
       </ErrorBoundary>
     </StrictMode>,

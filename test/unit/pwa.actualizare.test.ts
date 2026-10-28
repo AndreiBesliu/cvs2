@@ -5,8 +5,8 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { actualizarePermisa, inregistreaza, INTERVAL_VERIFICARE_MS, type DepsInregistrare } from '../../src/pwa/inregistrare.ts';
-import { esteSkipWaiting, MESAJ_SKIP_WAITING } from '../../src/pwa/protocol.ts';
+import { actualizarePermisa, inregistreaza, INTERVAL_VERIFICARE_MS, type DepsInregistrare, type ProgresActualizare } from '../../src/pwa/inregistrare.ts';
+import { esteSkipWaiting, MESAJ_CERE_PROGRES, MESAJ_SKIP_WAITING, TIP_PROGRES } from '../../src/pwa/protocol.ts';
 
 class WorkerFals extends EventTarget {
   readonly mesaje: unknown[] = [];
@@ -94,12 +94,23 @@ class ContainerFals extends EventTarget {
     this.cereri.push([url, optiuni]);
     return this.raspuns();
   }
+  /** Înregistrarea existentă (`getRegistration`, fără coada de joburi a lui `register`). */
+  existenta: InregistrareFalsa | undefined;
+  getRegistration(): Promise<InregistrareFalsa | undefined> { return Promise.resolve(this.existenta); }
+  /** De câte ori a cerut pagina mesajele workerilor (`startMessages`). */
+  porniri = 0;
+  startMessages(): void { this.porniri++; }
+  /** Un mesaj de la un worker (`postMessage` din worker), cu workerul ca sursă. */
+  mesaj(data: unknown, source: WorkerFals | null): void {
+    this.dispatchEvent(Object.assign(new Event('message'), { data, source }));
+  }
 }
 
 interface Banc {
   readonly sw: ContainerFals;
   readonly reg: InregistrareFalsa;
   readonly oferte: Array<(() => void) | null>;
+  readonly progrese: Array<ProgresActualizare | null>;
   readonly defecte: unknown[];
   readonly locale: unknown[];
   reincarcari: number;
@@ -112,13 +123,15 @@ interface Banc {
 function banc(pregateste: (reg: InregistrareFalsa, sw: ContainerFals) => void = () => undefined, raspuns?: () => Promise<InregistrareFalsa | undefined>): Banc {
   const reg = new InregistrareFalsa();
   const sw = new ContainerFals(raspuns ?? (async () => reg));
+  sw.existenta = reg;
   pregateste(reg, sw);
-  const b = { sw, reg, oferte: [], defecte: [], locale: [], reincarcari: 0, permisa: true, ceas: new CeasFals(), doc: new DocFals() } as unknown as Banc & { gata: Promise<void> };
+  const b = { sw, reg, oferte: [], progrese: [], defecte: [], locale: [], reincarcari: 0, permisa: true, ceas: new CeasFals(), doc: new DocFals() } as unknown as Banc & { gata: Promise<void> };
   const deps: DepsInregistrare = {
     sw: sw as unknown as NonNullable<DepsInregistrare['sw']>,
     ceas: b.ceas,
     doc: b.doc as unknown as NonNullable<DepsInregistrare['doc']>,
     oferta: (f) => { b.oferte.push(f); },
+    progres: (p) => { b.progrese.push(p); },
     jurnal: {
       adauga: (tip, e) => { assert.equal(tip, 'promisiune'); b.defecte.push(e); },
       adaugaLocala: (tip, e) => { assert.equal(tip, 'promisiune'); b.locale.push(e); },
@@ -390,4 +403,142 @@ test('protocolul: doar mesajul SKIP_WAITING trece', () => {
   assert.equal(esteSkipWaiting(MESAJ_SKIP_WAITING), true);
   assert.equal(esteSkipWaiting({ type: 'SKIP_WAITING' }), true);
   for (const m of [null, undefined, 'SKIP_WAITING', { type: 'altceva' }, {}, 1]) assert.equal(esteSkipWaiting(m), false);
+});
+
+/* ── Progresul instalării (ADR 0097): doar de la workerul care se instalează încă. ─────────────────────────────────── */
+
+const progres = (gata: number, total = 1000): unknown => ({ type: TIP_PROGRES, gata, total });
+
+test('progresul: pagina cere mesajele workerilor o dată, după ce le ascultă', async () => {
+  const b = banc();
+  await b.gata;
+  assert.equal(b.sw.porniri, 1);
+});
+
+test('prima instalare: procentul, „prima” (niciun worker activ), apoi nimic la sfârșitul instalării', async () => {
+  const b = banc();
+  await b.gata;
+  const w = new WorkerFals('installing');
+  b.reg.gasit(w);
+  b.sw.mesaj(progres(250), w);
+  b.sw.mesaj(progres(999), w);
+  assert.deepEqual(b.progrese, [{ procent: 25, prima: true }, { procent: 99, prima: true }]);
+  b.reg.instalat(w);
+  assert.deepEqual(b.progrese.at(-1), null);
+  w.treci('activating');
+  w.treci('activated');
+  assert.equal(b.progrese.filter((p) => p === null).length, 1, 'golit o singură dată, la ieșirea din instalare');
+  assert.deepEqual(b.oferte, []);
+});
+
+test('o actualizare: procentul fără „prima”, apoi oferta, după ce progresul s-a golit', async () => {
+  const b = banc((reg, sw) => { reg.active = new WorkerFals('activated'); sw.controller = reg.active; });
+  await b.gata;
+  const w = new WorkerFals('installing');
+  b.reg.gasit(w);
+  b.sw.mesaj(progres(400), w);
+  assert.deepEqual(b.progrese, [{ procent: 40, prima: false }]);
+  assert.deepEqual(b.oferte, []);
+  b.reg.instalat(w);
+  assert.deepEqual(b.progrese, [{ procent: 40, prima: false }, null]);
+  assert.equal(typeof ultima(b), 'function');
+});
+
+test('instalarea căzută (redundant): progresul se golește, nicio ofertă', async () => {
+  const b = banc((reg, sw) => { reg.active = new WorkerFals('activated'); sw.controller = reg.active; });
+  await b.gata;
+  const w = new WorkerFals('installing');
+  b.reg.gasit(w);
+  b.sw.mesaj(progres(500), w);
+  b.reg.installing = null;
+  w.treci('redundant');
+  assert.deepEqual(b.progrese, [{ procent: 50, prima: false }, null]);
+  assert.deepEqual(b.oferte, []);
+});
+
+test('un mesaj întârziat, de la un worker care nu se mai instalează, nu mai pune procentul pe ecran', async () => {
+  const b = banc((reg, sw) => { reg.active = new WorkerFals('activated'); sw.controller = reg.active; });
+  await b.gata;
+  const w = new WorkerFals('installing');
+  b.reg.gasit(w);
+  b.reg.instalat(w);
+  b.sw.mesaj(progres(1000), w);
+  b.sw.mesaj(progres(1000), b.reg.active);
+  b.sw.mesaj(progres(1000), null);
+  assert.deepEqual(b.progrese, []);
+});
+
+test('alte mesaje (SKIP_WAITING, forme greșite) nu sunt progres', async () => {
+  const b = banc();
+  await b.gata;
+  const w = new WorkerFals('installing');
+  b.reg.gasit(w);
+  for (const m of [MESAJ_SKIP_WAITING, null, 'PROGRES_INSTALARE', progres(11, 10), progres(1, 0)]) b.sw.mesaj(m, w);
+  assert.deepEqual(b.progrese, []);
+});
+
+test('o instalare în curs la înregistrare: workerul e întrebat de progres, iar progresul se golește la sfârșit', async () => {
+  const w = new WorkerFals('installing');
+  const b = banc((reg) => { reg.installing = w; });
+  await b.gata;
+  await asteapta();
+  assert.deepEqual(w.mesaje, [MESAJ_CERE_PROGRES]);
+  b.sw.mesaj(progres(10), w);
+  b.reg.instalat(w);
+  assert.deepEqual(b.progrese, [{ procent: 1, prima: true }, null]);
+});
+
+test('workerul care aștepta, activat de altă filă cât unul mai nou se instalează, nu golește progresul celui nou', async () => {
+  const vechi = new WorkerFals('installing');
+  const b = banc((reg, sw) => { reg.active = new WorkerFals('activated'); sw.controller = reg.active; });
+  await b.gata;
+  b.reg.gasit(vechi);
+  b.sw.mesaj(progres(900), vechi);
+  b.reg.instalat(vechi);
+  const nou = new WorkerFals('installing');
+  b.reg.gasit(nou);
+  b.sw.mesaj(progres(300), nou);
+  vechi.treci('activating');
+  vechi.treci('activated');
+  assert.deepEqual(b.progrese, [{ procent: 90, prima: false }, null, { procent: 30, prima: false }]);
+});
+
+test('fără instalare în curs la înregistrare, nimeni nu e întrebat; un worker găsit mai târziu își trimite singur progresul', async () => {
+  const activ = new WorkerFals('activated');
+  const b = banc((reg, sw) => { reg.active = activ; sw.controller = activ; });
+  await b.gata;
+  await asteapta();
+  const w = new WorkerFals('installing');
+  b.reg.gasit(w);
+  assert.deepEqual(activ.mesaje, []);
+  assert.deepEqual(w.mesaje, []);
+});
+
+test('o actualizare găsită de navigare: register() așteaptă sfârșitul instalării, dar progresul se vede cât ține', async () => {
+  const activ = new WorkerFals('activated');
+  const w = new WorkerFals('installing');
+  let intoarce: ((r: InregistrareFalsa) => void) | undefined;
+  const b = banc((reg, sw) => { reg.active = activ; reg.installing = w; sw.controller = activ; },
+    () => new Promise((ok) => { intoarce = ok; }));
+  await asteapta();
+  assert.deepEqual(w.mesaje, [MESAJ_CERE_PROGRES], 'întrebat înainte ca register() să se întoarcă');
+  b.sw.mesaj(progres(600), w);
+  assert.deepEqual(b.progrese, [{ procent: 60, prima: false }]);
+  b.reg.instalat(w);
+  assert.deepEqual(b.progrese, [{ procent: 60, prima: false }, null]);
+  assert.ok(intoarce);
+  intoarce(b.reg);
+  await b.gata;
+  assert.equal(typeof ultima(b), 'function', 'oferta vine cu workerul care așteaptă, la întoarcerea lui register()');
+});
+
+test('prima instalare, cu register() pornind-o: fără înregistrare existentă, nimeni de întrebat, procentul „prima”', async () => {
+  const b = banc((_reg, sw) => { sw.existenta = undefined; });
+  await b.gata;
+  await asteapta();
+  const w = new WorkerFals('installing');
+  b.reg.gasit(w);
+  assert.deepEqual(w.mesaje, []);
+  b.sw.mesaj(progres(70), w);
+  assert.deepEqual(b.progrese, [{ procent: 7, prima: true }]);
 });

@@ -387,6 +387,96 @@ test('actualizarea: oferită în bara de jos, nicio reîncărcare până la clic
   }
 });
 
+/**
+ * Progresul instalării (ADR 0097), pe bucata workerului simulării: pagina n-o cere la pornire, deci întârzierea ei ține doar
+ * instalarea workerului, nu și pagina. Workbox aduce precache-ul câte un fișier, deci instalarea stă pe ea cât e întârziată.
+ */
+const LENTA = /^\/assets\/lucratorSimulare-[A-Za-z0-9_-]{8}\.js$/;
+const progresul = (page: Page) => page.getByTestId('actualizare-progres');
+/** Procentul arătat de bara cipului (`<progress>`). */
+const valoarea = async (page: Page): Promise<number> => Number(await progresul(page).locator('progress').getAttribute('value'));
+
+test('progresul, la prima vizită: „Pregătesc lucrul offline” cu procentul, apoi nimic, când workerul e gata', async ({ browser }) => {
+  const { page, server, inchide } = await deschide(browser);
+  try {
+    server.intarzie(LENTA, 6000);
+    await page.goto('/');
+    await expect(progresul(page)).toBeVisible({ timeout: 20_000 });
+    await expect(progresul(page)).toHaveText(/^Pregătesc lucrul offline: \d{1,2} %$/);
+    const p = await valoarea(page);
+    expect(p).toBeGreaterThanOrEqual(0);
+    expect(p).toBeLessThan(100);
+    expect(await progresul(page).textContent()).toContain(`${p} %`);
+    await workerActiv(page);
+    await expect(progresul(page)).toHaveCount(0);
+    await expect(page.getByTestId('actualizare')).toHaveCount(0);
+    expect(server.cereri.some((c) => LENTA.test(c))).toBe(true);
+  } finally {
+    await inchide();
+  }
+});
+
+/** O publicare nouă cu bucata workerului simulării (și ce o pomenește) redenumită: workerul nou trebuie s-o aducă. */
+async function publicaCuBucataLenta(page: Page, server: ServerPwa): Promise<{ readonly lenta: RegExp; readonly noi: ReadonlySet<string> }> {
+  await page.goto('/');
+  await workerActiv(page);
+  await page.reload();
+  expect(await controlata(page)).toBe(true);
+  const redenumite = publicareSimulata(dosar, `${dosar}-progres`, /^lucratorSimulare-[A-Za-z0-9_-]{8}\.js$/);
+  const lenta = redenumite.find((r) => r.vechi.startsWith('lucratorSimulare-'));
+  if (!lenta) throw new Error('bucata workerului simulării nu s-a redenumit');
+  server.dosar(`${dosar}-progres`);
+  return { lenta: new RegExp(`^/assets/${lenta.nou.replace(/[.]/g, '\\.')}$`), noi: new Set(redenumite.map((r) => `/assets/${r.nou}`)) };
+}
+
+test('progresul unei actualizări: „Se descarcă versiunea nouă” crește, apoi oferta îi ia locul', async ({ browser }) => {
+  const { page, server, inchide } = await deschide(browser);
+  try {
+    const { lenta, noi } = await publicaCuBucataLenta(page, server);
+    server.intarzie(lenta, 6000);
+    const inainte = server.cereri.length;
+    await page.reload();
+    await expect(progresul(page)).toBeVisible({ timeout: 20_000 });
+    await expect(progresul(page)).toHaveText(/^Se descarcă versiunea nouă: \d{1,2} %$/);
+    const p = await valoarea(page);
+    expect(p).toBeLessThan(100);
+    // Fără ofertă cât se descarcă: workerul nou nu e încă instalat.
+    await expect(page.getByTestId('actualizare')).toHaveCount(0);
+    const anunt = page.getByTestId('actualizare');
+    await expect(anunt).toBeVisible({ timeout: 20_000 });
+    await expect(anunt).toContainText('Versiune nouă gata');
+    await expect(progresul(page)).toHaveCount(0);
+    // Actualizarea aduce doar ce s-a schimbat (ADR 0096): din `/assets/`, numai bucățile redenumite; restul vine din precache.
+    const aduse = server.cereri.slice(inainte).filter((c) => c.startsWith('/assets/'));
+    expect(aduse.filter((c) => !noi.has(c))).toEqual([]);
+    expect(aduse.some((c) => lenta.test(c))).toBe(true);
+  } finally {
+    await inchide();
+  }
+});
+
+test('o actualizare care cade (o bucată lipsă): progresul dispare, fără ofertă, iar fila rămâne pe versiunea ei', async ({ browser }) => {
+  const { page, server, inchide } = await deschide(browser);
+  try {
+    const { lenta } = await publicaCuBucataLenta(page, server);
+    server.intarzie(lenta, 4000);
+    server.lipsa(lenta);
+    await page.reload();
+    await expect(progresul(page)).toBeVisible({ timeout: 20_000 });
+    await expect(progresul(page)).toHaveCount(0, { timeout: 20_000 });
+    await expect.poll(() => page.evaluate(async () => {
+      const r = await navigator.serviceWorker.getRegistration();
+      return `${r?.installing?.state ?? '—'} ${r?.waiting?.state ?? '—'}`;
+    }), { timeout: 20_000 }).toBe('— —');
+    await page.waitForTimeout(1000);
+    await expect(page.getByTestId('actualizare')).toHaveCount(0);
+    await expect(progresul(page)).toHaveCount(0);
+    await expect(page.getByTestId('lista-vectori')).toBeVisible();
+  } finally {
+    await inchide();
+  }
+});
+
 test('verificarea orară: o publicare nouă, cu fila lăsată deschisă, ajunge la ofertă după o oră, fără nicio navigare', async ({ browser }) => {
   const { page, server, inchide } = await deschide(browser);
   try {

@@ -3398,3 +3398,28 @@ de exemplu `carcasa.json`, înainte `max-age=3600`). Verificat în browser la 14
 `/mesaje/en.json` (limba browserului), apoi `ro.json` în fundal, nicio bucată `mesaje.*.js`; RO din bară schimbă interfața; după
 reîncărcare, sub workerul nou, pornirea cere întâi `ro.json` (limba aleasă), iar ambele dicționare sunt în precache; jurnalul cu 0
 erori, consola fără erori.
+
+## 2026-10-28 — Plafonul total 400 kB și progresul actualizării (Model: Claude Opus 5.5)
+
+**Prompt:** „Și progresul” (la întrebarea „Ridic plafonul total la 400 kB, cu ADR?”, după „sunt ok cu marirea plafonului, ma
+gandesc ca putem prioritiza si ordinea in care se descarca lucruri si putem avea unele care se fac in fundal. eventual sa avem si o
+zona sau un popup care arata progresul actualizarii in curs.”)
+**Started:** 28.10, 10:59. Felia **3.M**, fără mașină și fără agenți. Două decizii, câte un ADR: plafonul total 330 → 400 kB
+(owner-ul e de acord cu mărirea; pornirea rămâne la 100 kB, ușa la 8) și progresul descărcării în bara de jos, în locul cipului
+„Versiune nouă gata” cât workerul nou se instalează (și la prima vizită: „Pregătesc lucrul offline”). Workbox aduce precache-ul
+câte un fișier, în ordine: un plugin numără octeții gata din mărimile scrise în manifest la build și trimite procentul filelor
+deschise; pagina îl arată doar cât workerul e în `installing`. Pornirea are 0,3 kB liberi: codul nou stă în bucata înregistrării,
+în pornire doar cipul.
+
+**Completed:** 28.10 11:50. Plafonul total e 400 kB (ADR 0096, decizia owner-ului; pornirea rămâne la 100 kB, ușa la 8). Cât
+workerul nou se instalează, bara de jos arată „Se descarcă versiunea nouă: N %” cu o bară, apoi oferta „Versiune nouă gata”, ca
+până acum; la prima vizită, „Pregătesc lucrul offline: N %” (ADR 0097). Procentul = octeții gata din total, după mărimile scrise
+în manifest la build (`marime`, cerute de poarta build-ului), adunate de un plugin pe strategia precache-ului Workbox
+(`src/pwa/progres.ts`), trimise tuturor filelor. **Găsit pe drum:** în e2e, actualizarea nu arăta nimic: navigarea însăși găsește
+workerul nou, iar `register()` stă în coada de joburi până la sfârșitul instalării ei, deci fila asculta prea târziu. Acum
+ascultă înaintea lui `register()`, ia înregistrarea cu `getRegistration()` și întreabă workerul de progresul de până atunci. Tot
+în e2e: o actualizare aduce din `/assets/` doar bucățile redenumite. **Totalul 325,0 → 326,1 / 400 kB** (`sw.js` 7,2 → 7,9);
+pornirea 96,2 → 96,3 (cu ușa 99,8 / 100). Porțile: 7 537 unitare (0 picate, 8 sărite), build-ul determinist, e2e 250 / 250,
+emulatoarele 36 + 13. Mutațiile: 23 / 23 (17 pe probele unitare, 4 în fereastră, pe e2e, 2 pe poarta build-ului); 7 au cerut a
+doua rulare, fiindcă tiparele lor se terminau în LF, iar fișierele au CRLF, deci nu se aplicaseră (VOID, nu supraviețuitoare).
+

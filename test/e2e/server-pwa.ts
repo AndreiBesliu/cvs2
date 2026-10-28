@@ -37,6 +37,8 @@ export interface ServerPwa {
   dosar(d: string): void;
   /** Căile care primesc 404 (`null`: niciuna). */
   lipsa(re: RegExp | null): void;
+  /** Căile servite abia după `ms` (`null`: niciuna), ca o rețea lentă; lipsa (404) vine și ea după întârziere. */
+  intarzie(re: RegExp | null, ms?: number): void;
   opreste(): Promise<void>;
 }
 
@@ -109,6 +111,7 @@ export async function pornesteServer(dosarInitial: string): Promise<ServerPwa> {
   let sw: string | null = null;
   let config: string | null = null;
   let lipsa: RegExp | null = null;
+  let lente: { readonly re: RegExp; readonly ms: number } | null = null;
   const cereri: string[] = [];
   const conexiuni = new Set<Socket>();
   const trimite = (r: import('node:http').ServerResponse, status: number, tip: string, corp: string | Buffer): void => {
@@ -118,6 +121,13 @@ export async function pornesteServer(dosarInitial: string): Promise<ServerPwa> {
   const server: Server = createServer((cerere, r) => {
     const cale = decodeURIComponent(new URL(cerere.url ?? '/', 'http://x').pathname);
     cereri.push(cale);
+    if (lente?.re.test(cale)) {
+      setTimeout(() => { raspunde(cale, r); }, lente.ms);
+      return;
+    }
+    raspunde(cale, r);
+  });
+  const raspunde = (cale: string, r: import('node:http').ServerResponse): void => {
     if (lipsa?.test(cale)) return trimite(r, 404, 'text/plain', 'nu există');
     if (cale.startsWith('/__/auth/')) return trimite(r, 200, TIPURI['.html'] ?? '', `<!doctype html><meta charset="utf-8"><title>handler</title><p id="handler">${PAGINA_HANDLER}</p>`);
     if (cale === '/sw.js' && sw !== null) return trimite(r, 200, TIPURI['.js'] ?? '', sw);
@@ -127,7 +137,7 @@ export async function pornesteServer(dosarInitial: string): Promise<ServerPwa> {
     const fisier = normalize(join(dosar, tinta));
     if (!fisier.startsWith(normalize(dosar)) || !existsSync(fisier) || tinta.endsWith('/')) return trimite(r, 404, 'text/plain', 'nu există');
     return trimite(r, 200, TIPURI[extname(fisier)] ?? 'application/octet-stream', readFileSync(fisier));
-  });
+  };
   server.on('connection', (s) => {
     conexiuni.add(s);
     s.on('close', () => { conexiuni.delete(s); });
@@ -143,6 +153,7 @@ export async function pornesteServer(dosarInitial: string): Promise<ServerPwa> {
     config: (t) => { config = t; },
     dosar: (d) => { dosar = d; },
     lipsa: (re) => { lipsa = re; },
+    intarzie: (re, ms = 0) => { lente = re === null ? null : { re, ms }; },
     opreste: () => new Promise<void>((ok) => {
       for (const s of conexiuni) s.destroy();
       server.close(() => { ok(); });

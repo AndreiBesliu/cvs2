@@ -561,8 +561,9 @@ rămasă cum ai rotit-o. `Esc`, butonul 3D sau o unealtă de desen întorc la p�
 - Proiectul se **salvează singur**, în browserul ăsta (memoria locală), la fiecare schimbare; nu e nevoie de cont.
 - Deschis în **două file**, proiectul se scrie doar dintr-una; cealaltă îl arată, doar de citit, și o spune jos.
 - Dacă altă filă a salvat între timp, fila de aici se oprește din salvat și îți cere să reîncarci pagina.
-- Aplicația merge și **fără rețea**, după prima încărcare (și manualul). Când apare o versiune nouă, jos apare „Versiune nouă
-  gata”; se încarcă la clicul tău, nu în mijlocul lucrului.
+- Aplicația merge și **fără rețea**, după prima încărcare (și manualul). La prima vizită, jos apare „Pregătesc lucrul offline”,
+  cu procentul; când dispare, aplicația merge și fără rețea. Când apare o versiune nouă, jos apare întâi „Se descarcă versiunea
+  nouă”, cu procentul, apoi „Versiune nouă gata”; se încarcă la clicul tău, nu în mijlocul lucrului.
 - **Jurnalul de erori**: jos, cipul spune câte erori are jurnalul local al browserului. Dacă ceva se strică, aplicația arată
   „Ceva n-a mers”, cu „Copiază raportul” (îl poți trimite) și „Reîncarcă”.
 

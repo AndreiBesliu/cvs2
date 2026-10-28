@@ -75,6 +75,8 @@ export const en = {
   'depozit.nu-se-deschide': 'The saved project could not be opened ({motiv}). A new project was started; the old one stays in this browser.',
   'depozit.eroare': 'Saving failed: {motiv}',
   'actualizare.gata': 'New version ready',
+  'actualizare.descarca': 'Downloading the new version: {procent}%',
+  'actualizare.offline': 'Preparing offline use: {procent}%',
   'admin.cere-retea': 'The administration page needs a network connection: reload the page once you are online.',
   'dialog.neincarcat': 'This window could not be loaded (the app was updated meanwhile, or the network is down). Your project is saved: reload the page.',
   'actiune.importa-svg': 'Import SVG…',
