@@ -1026,7 +1026,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           </>
         );
       })()}
-      {meniu ? <MeniuContext refMeniu={refMeniu} la={meniu} articole={articoleMeniu()} motiv={motivMeniu} /> : null}
+      {meniu ? <MeniuContext refMeniu={refMeniu} la={meniu} zona={zona} articole={articoleMeniu()} motiv={motivMeniu} /> : null}
     </div>
   );
 }
@@ -1040,22 +1040,24 @@ type ArticolMeniu = {
 const TASTE_MENIU: ReadonlySet<string> = new Set(['ArrowUp', 'ArrowDown', 'Home', 'End', 'Enter', ' ', 'Tab', 'Shift', 'Control', 'Alt', 'Meta']);
 
 /**
- * Meniul de clic dreapta (ADR 0103), la punctul clicului, mutat cât să încapă în editare. Primul rând activ primește focusul;
+ * Meniul de clic dreapta (ADR 0103), la punctul clicului, mutat cât să încapă în zona liberă a pânzei (pânza trece și pe sub
+ * panouri, la verificarea pe instanța de test meniul intra sub panoul din dreapta). Primul rând activ primește focusul;
  * săgețile, Home și End trec între rânduri, Enter rulează; motivul unui refuz stă sub rânduri.
  */
-function MeniuContext({ refMeniu, la, articole, motiv }: {
-  readonly refMeniu: RefObject<HTMLDivElement | null>; readonly la: Punct; readonly articole: readonly ArticolMeniu[]; readonly motiv: string | null;
+function MeniuContext({ refMeniu, la, zona, articole, motiv }: {
+  readonly refMeniu: RefObject<HTMLDivElement | null>; readonly la: Punct; readonly zona: Zona; readonly articole: readonly ArticolMeniu[];
+  readonly motiv: string | null;
 }): ReactElement {
   const [loc, setLoc] = useState(la);
   useLayoutEffect(() => {
-    const el = refMeniu.current, parinte = el?.parentElement;
-    if (!el || !parinte) return;
+    const el = refMeniu.current;
+    if (!el) return;
     setLoc({
-      x: Math.max(4, Math.min(la.x, parinte.clientWidth - el.offsetWidth - 4)),
-      y: Math.max(4, Math.min(la.y, parinte.clientHeight - el.offsetHeight - 4)),
+      x: Math.max(zona.x + 4, Math.min(la.x, zona.x + zona.w - el.offsetWidth - 4)),
+      y: Math.max(zona.y + 4, Math.min(la.y, zona.y + zona.h - el.offsetHeight - 4)),
     });
     el.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus();
-  }, [la, refMeniu]);
+  }, [la, zona, refMeniu]);
   const tasta = (e: TastaReact<HTMLDivElement>): void => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.stopPropagation();

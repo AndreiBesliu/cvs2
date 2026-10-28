@@ -96,3 +96,7 @@ multe contururi”). „Unirea și separarea vectorilor” fusese amânată pe 2
 - trebuie și gruparea, sau desfacerea pe toate nivelurile;
 - un V-carve trebuie desfăcut pe litere (fiecare literă cu golurile ei, recunoscută din imbricare);
 - ordinea în clasă trebuie păstrată și pentru piesele cu mai multe operații pe aceleași contururi.
+
+**Adăugat la verificarea pe instanța de test (28.10):** meniul de clic dreapta se mărginește la zona liberă a pânzei
+(`.zona-libera`), nu la editare: pânza trece și pe sub panouri, iar meniul deschis lângă marginea din dreapta intra sub panoul
+de proprietăți (tasta Ctrl+Shift+G se vedea tăiată). Proba e2e deschide meniul lângă margine; mutația ei e prinsă (29 / 29).

@@ -503,6 +503,17 @@ test('degruparea (ADR 0103): piesa unui DXF se desface pe contururi, din clic dr
   await page.keyboard.press('Escape');
   await expect(meniu).toHaveCount(0);
   await expect(page.locator('[data-unealta="transformare"]')).toHaveAttribute('aria-pressed', 'true');
+  // Lângă marginea din dreapta a zonei libere (pânza trece și pe sub panoul din dreapta), meniul rămâne întreg în zonă.
+  const zona = await page.locator('.zona-libera').boundingBox();
+  if (!zona) throw new Error('zona liberă n-are cutie');
+  await page.mouse.click(zona.x + zona.width - 6, zona.y + zona.height / 2, { button: 'right' });
+  await expect(meniu).toBeVisible();
+  const mz = await meniu.boundingBox();
+  if (!mz) throw new Error('meniul n-are cutie');
+  expect(mz.x + mz.width).toBeLessThanOrEqual(zona.x + zona.width);
+  expect(mz.y + mz.height).toBeLessThanOrEqual(zona.y + zona.height);
+  await page.keyboard.press('Escape');
+  await expect(meniu).toHaveCount(0);
   // Altă tastă închide meniul și își face treaba ei (V: unealta Selecție).
   await page.mouse.click(mic.x, mic.y, { button: 'right' });
   await expect(meniu).toBeVisible();

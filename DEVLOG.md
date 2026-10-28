@@ -3597,3 +3597,12 @@ booleanul, Duplică, Șterge, cu tastele; săgețile, Escape, altă tastă îl �
 selecției. Manualul: „Degruparea”, „Meniul de clic dreapta”, tasta. Mutațiile: 28 / 28; prima rundă din editare refăcută,
 fiindcă îi căzuse controlul (un pas nou al probei pica pe codul bun: React scotea meniul din pagină înaintea tastei, care nu
 mai schimba unealta; acum meniul se închide după ce tasta își face drumul).
+
+**Publicat pe test (28.10, 21:59)**, din workflow (run 40758784810, `622e4cc`), cu CI-ul rapid verde (run 40757544852, 6 felii +
+oracolul exportului 2D). Verificat în browser la 1440 px: după „Reîncarcă”, pagina e pe `622e4cc0e134`, controlată de worker;
+butonul Degrupează stă în secțiunea Boolean. Un DXF cu trei contururi dat ferestrei („Desenul: 63.00 × 73.00 mm”, „3 contururi
+închise: 2 tăiate pe exterior, 1 pe interior”); clic dreapta pe latura de jos a dreptunghiului: meniul, cu Degrupează activ și
+focalizat (Ctrl+Shift+G), booleanul inactiv, Duplică (Ctrl+D) și Șterge selecția (Delete); Degrupează: trei rânduri
+„trei-contururi”, toate alese, meniul închis; Ctrl+Z: unul singur. **Găsit:** meniul deschis lângă panoul de proprietăți intra
+sub el (tasta se vedea tăiată): mărginit acum la zona liberă a pânzei (`.zona-libera`), cu probă e2e și mutație (29 / 29), în
+commit-ul următor.
