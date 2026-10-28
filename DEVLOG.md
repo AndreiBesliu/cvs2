@@ -3423,3 +3423,9 @@ pornirea 96,2 → 96,3 (cu ușa 99,8 / 100). Porțile: 7 537 unitare (0 picate, 
 emulatoarele 36 + 13. Mutațiile: 23 / 23 (17 pe probele unitare, 4 în fereastră, pe e2e, 2 pe poarta build-ului); 7 au cerut a
 doua rulare, fiindcă tiparele lor se terminau în LF, iar fișierele au CRLF, deci nu se aplicaseră (VOID, nu supraviețuitoare).
 
+**Publicat pe test (28.10, 12:14)**, din workflow (run 40670152062, `b74dbab`), cu CI-ul rapid verde (run 40669226779, 6 felii +
+oracolul exportului 2D). Verificat în browser la 1440 px: fila rămasă pe versiunea 3.L (fără codul progresului) a primit oferta
+„Versiune nouă gata”, iar după „Reîncarcă” rulează versiunea nouă; `sw.js` de pe test are mărimile în manifest (71 de intrări) și
+pluginul progresului; jurnalul cu 0 erori. Progresul unei actualizări se vede abia de la publicarea următoare (fila trebuie să aibă
+deja codul lui): commit-ul ăsta, publicat și el pe test, e acea actualizare.
+
