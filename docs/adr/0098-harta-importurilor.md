@@ -50,9 +50,13 @@ actualizare să aducă doar ce s-a schimbat?”.
 
 | | Înainte (3.M) | După (3.N) |
 |---|---|---|
-| O publicare fără cod schimbă | 38 de fișiere, ~72 % din octeți (pe test) | `index.html` și `sw.js` (în poartă; de re-măsurat pe test) |
+| O publicare fără cod schimbă (pe test) | 38 din 71 de fișiere, 941 din 1 314 kB necomprimați (~72 %), ~9 s | doar `index.html`: 5,3 din 1 318 kB (0,40 %), 0,8 s |
 | Pornirea (cu ușa) | 96,3 (99,8) / 100 kB | 96,3 (99,8) / 100 kB |
 | Totalul JavaScript | 326,1 / 400 kB | 326,1 / 400 kB |
+
+Măsurat pe test pe 28.10, la publicarea unui commit doar cu DEVLOG (`3c6ff0a`), în fila de pe `7eac37d`: precache-ul de după
+actualizare a avut o singură intrare nouă, `index.html`. Progresul (ADR 0097) a trecut de la 0 la 100 % în ~40 ms, fiindcă tot
+restul era deja în cache.
 
 O publicare cu cod schimbă bucățile atinse, plus `index.html` și `sw.js`. Bucata de pornire se redenumește doar când se schimbă
 codul ei.

@@ -3464,3 +3464,9 @@ antetul CSP are amprenta hărții, egală cu amprenta recalculată (Python) din 
 dinainte a primit oferta, iar după „Reîncarcă” versiunea nouă pornește controlată de worker, cu harta (59 de intrări), bara
 editării și manualul (adus prin hartă), 0 încălcări CSP, jurnalul cu 0 erori, consola curată. Prima actualizare spre versiunea asta
 re-aduce aproape tot o singură dată (numele stabile sunt noi); măsurătoarea care contează e publicarea commit-ului ăstuia, fără cod.
+
+**Măsurat pe test (28.10, 15:25):** `3c6ff0a` (doar DEVLOG) publicat (run 40695336518). În fila de pe `7eac37d`, verificarea versiunii a
+adus o singură intrare nouă în precache, `index.html`: 5 335 din 1 318 400 de octeți (0,40 %), în 0,8 s (la 3.M: 38 de fișiere, ~72 %,
+~9 s). După „Reîncarcă”: versiunea `3c6ff0a96f7c`, precache-ul cu 71 de intrări, bara editării cu toate controalele, jurnalul cu 0
+erori, consola curată. (Bara editării apare abia când pagina se desenează: cu panoul browserului ascuns, modulul așteaptă; nu ține
+de hartă.) Scris în ADR 0098.
