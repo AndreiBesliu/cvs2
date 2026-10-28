@@ -3566,3 +3566,34 @@ deasupra rotirii, sub cutie, sau chiar sub bare la o piesă mai mare decât ecra
 cubice, pe hârtie), banda etichetei, un DXF mărit din colț până sub bare (e2e) și un dreptunghi de 8 m mărit peste 10 m (e2e:
 motivul ușii). Mutațiile: 7 / 7; 2 au trecut întâi (toleranța proiectului, pe un arc care încăpea oricum într-o cubică;
 eticheta, pe o piesă care nu urca până la bare), prinse de probele noi.
+
+**Publicat pe test (28.10, 21:04)**, din workflow (run 40750584928, `4c91f98`), cu CI-ul rapid verde (run 40749163335, 6 felii +
+oracolul exportului 2D). Verificat în browser la 1440 px: după „Reîncarcă”, pagina e pe `4c91f98b1f3f`, controlată de worker. Un
+DXF dat ferestrei (pătratul de 40 mm cu latura de jos un arc de bulge 1/400, R ≈ 4 000 mm, și un cerc R5): „Desenul: 40.00 × 40.05
+mm”; cu Transformarea, colțul ne tras până sub bare: cutia 207.69 × 207.95 mm, fără refuz (înainte, raza de ~20 770 mm o
+refuza tăcut). Trasă pe latură: „O cale cu arce se scalează doar proporțional (arcele ar deveni elipse).”, sub cutie, între
+bare. **Găsit:** motivul cădea pe jumătate sub insula selecției (Duplică, Șterge, proprietățile): reparat în felia următoare
+(6.R↑), cu proba lui.
+
+## 2026-10-28 — Degruparea vectorilor (Model: Claude Opus 5.5)
+
+**Prompt:** „Si vreau cat mai devreme sa avem functie de ungroup vectors. Pe click dreapta, dar, si in meniu, langa booleans”
+(în timpul reparației scalării; cardul de sesiune nouă nu s-a putut arăta de pe telefon, deci aici, după reparație). Apoi, în
+timpul feliei: „Notite: 1. Sistem de history pentru modificari, unde, daca vrem sa revenim la o stare, dar, vrem sa pastram unele
+modificari care sa se pastreze, ce dificultati ar implica? 2. Buton de centrare un plansa, nu doar centrare orizontala si apoi
+verticala. 3. Avem situatia unde degrupam niste vectori importati si duplicam si dupa aliniem. Ei se suprapun, si devine super
+complicat sa pastram structura aia, daca nu ne dam seama imediat ca avem zeci chiar sute de vectori degrupati si asezati in alte
+foste grupari de vectori. Ar trebui ca alinierea sa detecteze situatii de genul asta si sa creeze grupari automat si sa
+functioneze in paralel si cu sistemul de history unde poti pune exceptii la unele modificari cand dai restore.” (cu poza
+panoului ornamental): notate în CLAUDE.md, răspunsul la 1 în raport.
+**Started:** 28.10, 20:55. Felia **6.R↑**, fără mașină și fără agenți: degruparea, înaintea reluării lui 9.4↑ (PDF / AI).
+**Completed:** 28.10, 21:47. ADR 0103: o piesă-grup se desface, un nivel, în câte o piesă pe copil (`src/model/degrupare.ts`,
+`partiDegrupare`), la bit în lume (cu matricea grupului compusă, dacă are una), cu operațiile ei pe nodurile ei; G-code-ul
+GRBL, fără comentarii, iese același (probat). Comanda `degrupeaza` / `regrupeaza` în jurnal, liniară (măsurat: 20 000 de părți,
+aplicarea 3 ms, anularea 4 ms; calea veche, ~3 s fiecare). Refuzurile, cu motiv: V-carve-ul peste părți, piesa împărțită,
+plafonul operațiilor (o operație pe N contururi devine N). Ușile: `document.degrupeaza` (registru, paletă, Ctrl+Shift+G, garda
+„Editarea se încarcă încă” înaintea modulului), butonul de lângă boolean, meniul de clic dreapta (`MeniuContext`: Degrupează,
+booleanul, Duplică, Șterge, cu tastele; săgețile, Escape, altă tastă îl închide). Și: banda etichetei mânerelor ocolește insula
+selecției. Manualul: „Degruparea”, „Meniul de clic dreapta”, tasta. Mutațiile: 28 / 28; prima rundă din editare refăcută,
+fiindcă îi căzuse controlul (un pas nou al probei pica pe codul bun: React scotea meniul din pagină înaintea tastei, care nu
+mai schimba unealta; acum meniul se închide după ce tasta își face drumul).

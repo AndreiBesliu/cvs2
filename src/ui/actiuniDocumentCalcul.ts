@@ -8,7 +8,8 @@ import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
 import { adancimeDeschise } from '../io/adancime.ts';
 import { cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
-import { executa, type Comanda } from '../model/jurnal.ts';
+import { executa, type Comanda, type Degrupata } from '../model/jurnal.ts';
+import { partiDegrupare } from '../model/degrupare.ts';
 import { transforma } from '../model/transformare.ts';
 import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
 import { copiiRetea, instantaCopiei, motivRetea, type Retea } from '../model/retea.ts';
@@ -381,6 +382,22 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       if (c) ctx.scrie(executa(ctx.istoric(), c));
     },
   },
+  // Degruparea (ADR 0103): instanțele alese ale pieselor-grup devin părțile lor, într-un pas; alese rămân părțile.
+  'document.degrupeaza': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaDegrupare(ctx.istoric().doc, ctx.selectie());
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      const h = ctx.istoric();
+      const r = comandaDegrupare(h.doc, ctx.selectie());
+      if (!r.ok) return;
+      ctx.scrie(executa(h, r.comanda));
+      ctx.selecteaza(r.ids);
+    },
+  },
   // Uneltele de desen (ADR 0051): forma trasă, ca piesă nouă cu instanța ei, aleasă după desen.
   'document.deseneaza': {
     activa: (ctx) => {
@@ -488,6 +505,74 @@ function comandaDesen(doc: Document, f: FormaNoua | readonly FormaNoua[], sterge
   }
   ultimulDesen = { doc, f, sterge, rez };
   return rez;
+}
+
+/**
+ * Comanda degrupării (ADR 0103): pe foaia de lucru, fiecare instanță aleasă a unei piese-grup își lasă locul părților
+ * (`partiDegrupare`), fiecare cu piesa ei, id-uri noi și o copie a instanței vechi (locul, rotirea, câmpurile). Instanțele
+ * care n-au ce desface rămân și rămân alese. Refuzată, cu motiv: un V-carve pe contururi din părți diferite, o piesă
+ * folosită și de alte instanțe, nimic de desfăcut, documentul de după peste schemele documentului (plafoanele). Ținută pe
+ * (document, selecție): `activa` și `ruleaza` cer aceeași judecată.
+ */
+type ComandaDegrupare = { readonly ok: true; readonly comanda: Comanda; readonly ids: readonly string[] } | { readonly ok: false; readonly motiv: CheieSimpla };
+let ultimaDegrupare: { readonly doc: Document; readonly selectie: readonly string[]; readonly rez: ComandaDegrupare } | null = null;
+export function comandaDegrupare(doc: Document, selectie: readonly string[]): ComandaDegrupare {
+  if (ultimaDegrupare && ultimaDegrupare.doc === doc && ultimaDegrupare.selectie === selectie) return ultimaDegrupare.rez;
+  const rez = judecaDegruparea(doc, selectie);
+  ultimaDegrupare = { doc, selectie, rez };
+  return rez;
+}
+
+function judecaDegruparea(doc: Document, selectie: readonly string[]): ComandaDegrupare {
+  const foaie = foaieCurenta(doc);
+  const alese = new Set(selectie);
+  const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  const folosiri = new Map<string, number>();
+  // Id-urile noi ca `idNou` (`e<n>`), fără să recitească documentul la fiecare parte.
+  const ocupate = new Set(piese.keys());
+  for (const f of doc.foi) {
+    for (const i of f.instante) {
+      folosiri.set(i.piesa, (folosiri.get(i.piesa) ?? 0) + 1);
+      ocupate.add(i.id);
+    }
+  }
+  let n = doc.piese.length + 1;
+  const idLiber = (): string => {
+    while (ocupate.has(`e${n}`)) n++;
+    const id = `e${n}`;
+    ocupate.add(id);
+    return id;
+  };
+  const degrupate: Degrupata[] = [];
+  const ids: string[] = [];
+  for (const i of foaie.instante) {
+    if (!alese.has(i.id)) continue;
+    const p = piese.get(i.piesa);
+    const parti = p ? partiDegrupare(p) : 'o-singura-forma';
+    if (!p || parti === 'o-singura-forma') {
+      ids.push(i.id);
+      continue;
+    }
+    if (parti === 'vcarve') return { ok: false, motiv: 'motiv.degrupare-vcarve' };
+    if ((folosiri.get(p.id) ?? 0) > 1) return { ok: false, motiv: 'motiv.degrupare-impartita' };
+    const { radacina: _radacina, operatii: _operatii, ...rest } = p;
+    degrupate.push({
+      instanta: i,
+      piesa: p,
+      parti: parti.map((x) => {
+        const id = idLiber();
+        ids.push(id);
+        return {
+          instanta: { ...structuredClone(i), id, piesa: id },
+          piesa: { ...structuredClone(rest), id, radacina: copieArbore(x.radacina), operatii: structuredClone([...x.operatii]) },
+        };
+      }),
+    });
+  }
+  if (degrupate.length === 0) return { ok: false, motiv: 'motiv.nimic-de-degrupat' };
+  const comanda: Comanda = { tip: 'degrupeaza', foaie: foaie.id, degrupate };
+  const dupa = executa(istoricDin(doc), comanda).doc;
+  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, ids } : { ok: false, motiv: 'motiv.plafon' };
 }
 
 /**

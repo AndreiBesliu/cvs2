@@ -118,6 +118,11 @@ export function manereVazute(w: number, h: number): readonly Maner[] {
   return MANERE.filter((m) => (m === 'e' || m === 'v' ? x : m === 'n' || m === 's' ? y : x && y));
 }
 
+/** Numele scurt al unei etichete (rândul ei în meniul de clic dreapta): înaintea parantezei sau a celor două puncte, fără „…”. */
+export function numeScurt(e: string): string {
+  return (e.split(/ \(|:/)[0] ?? e).replace(/…$/, '').trim();
+}
+
 /** Înălțimea etichetei mânerelor, cu spațiul de lângă ea (pixeli). */
 export const ETICHETA_PX = 34;
 

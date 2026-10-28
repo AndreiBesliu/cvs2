@@ -8,6 +8,7 @@ export const TASTE: ReadonlyArray<readonly [tasta: string, actiune: string]> = [
   ['Ctrl+Shift+Z', 'istoric.reface'],
   ['Ctrl+Shift+Y', 'istoric.reface'],
   ['Ctrl+D', 'document.duplica-selectia'],
+  ['Ctrl+Shift+G', 'document.degrupeaza'],
   ['Delete', 'document.sterge-selectia'],
   ['Ctrl+K', 'vedere.paleta'],
   ['Home', 'vedere.potriveste'],

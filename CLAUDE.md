@@ -193,6 +193,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   în `src/io/caleImport.ts`. **Corpusul DXF e Python** (`test/oracles-py/dxf_import_corpus.py`, ezdxf): un caz nou = entitatea
   în generator + valoarea pe hârtie, verificată acolo față de ezdxf, apoi `test/fixtures/dxf/` regenerat și comis. **Pornirea
   96,5 (cu ușa 100,0 / 110 kB), totalul 338,3 / 400.**
+  **Scalarea pieselor cu arce plate (ADR 0102)** gata pe 28.10: arcul care ar trece de 10 m la mărire devine cubice (sub
+  0,000001 mm), refuzul ușii se spune lângă mânere. **Degruparea (ADR 0103)** gata pe 28.10: o piesă-grup se desface în
+  câte o piesă pe contur (butonul de lângă boolean, meniul de clic dreapta, Ctrl+Shift+G), cu G-code-ul neschimbat; comanda
+  `degrupeaza` / `regrupeaza` e liniară. **Pornirea 97,1 (cu ușa 100,6 / 110 kB), totalul 341,0 / 400.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -295,6 +299,23 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 28.10.2026: **conturile, întâi ale personalului, și sugestiile** („Vreau sa cream si sistemul de account pentru useri, inclusiv
+  admini, scopul acum imediat este pentru admini, si, sa avem un sistem de feedback unde ei pot nota sugestii, iar eu sa pot decide
+  ce sa implementam”): acum, pentru personal (conturile din `/admin` există, ADR 0040, 0049): sugestiile scrise de personal și
+  decizia owner-ului pe fiecare; conturile clienților vin cu partea comercială (nivelurile, proba de 14 zile, Stripe). Planul și
+  întrebările grupate, în raportul feliei 6.R↑.
+- 28.10.2026: **notițele owner-ului, notate pentru după degrupare** („Notite:”, cu poza panoului ornamental din DXF):
+  1. „Sistem de history pentru modificari, unde, daca vrem sa revenim la o stare, dar, vrem sa pastram unele modificari care sa
+     se pastreze, ce dificultati ar implica?”: întrebare; răspunsul (dependențele, reaplicarea pe altă bază, conflictele,
+     validarea, istoricul ca arbore, interfața, memoria) e în raportul feliei 6.R↑. Peste jurnal (ADR 0016), cu un ADR nou.
+  2. „Buton de centrare un plansa, nu doar centrare orizontala si apoi verticala.”: „Centrează pe foaie” într-un clic, pe
+     ambele axe; cu mai multe forme alese, ca un bloc (azi, alinierea mută fiecare formă).
+  3. „Avem situatia unde degrupam niste vectori importati si duplicam si dupa aliniem. Ei se suprapun […] Ar trebui ca
+     alinierea sa detecteze situatii de genul asta si sa creeze grupari automat si sa functioneze in paralel si cu sistemul de
+     history unde poti pune exceptii la unele modificari cand dai restore.”: alinierea mai multor forme le suprapune;
+     recomandarea asistentului: gruparea (Ctrl+G), alinierea selecției ca bloc la alegere, un avertisment imediat când
+     contururile ajung să se atingă (exportul le refuză oricum, ADR 0026 §2); gruparea ghicită din suprapuneri, doar ca
+     propunere vizibilă. Ordinea și forma le alege owner-ul.
 - 28.10.2026: **degruparea vectorilor, cât mai devreme** („Si vreau cat mai devreme sa avem functie de ungroup vectors. Pe click
   dreapta, dar, si in meniu, langa booleans”): o piesă cu mai multe forme (un import SVG / DXF, o formă cu găuri) se desface în
   piese separate, din clic dreapta pe pânză și din butonul de lângă boolean. Vine imediat după reparația scalării (9.3↑b),

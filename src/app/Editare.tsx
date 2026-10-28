@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElement, type RefObject } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent as TastaReact, type ReactElement, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { Rigle, GROSIME_RIGLA, type Zona } from '../canvas/Rigle.tsx';
 import type { GestDesen, LinieGhid, Lipeste, Vedere } from '../canvas/protocol.ts';
@@ -12,7 +12,7 @@ import type { Document, Ghidaj } from '../model/document.ts';
 import { areArce, matriceInclinare, transforma, UNGHI_MAXIM_INCLINARE, type Transformare } from '../model/transformare.ts';
 import { FOAIA, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
-  adaugaLaSelectie, aleseInCadru, citesteRetea, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, FORMULAR_RETEA, type FormularRetea, idGhidaj, manerLovit, manereVazute, punctManer, ROTIRE_PX, susEticheta, tinteFoaie,
+  adaugaLaSelectie, aleseInCadru, citesteRetea, comutaInSelectie, cutieFormelor, cutiiAlese, felCadru, FORMULAR_RETEA, type FormularRetea, idGhidaj, manerLovit, manereVazute, numeScurt, punctManer, ROTIRE_PX, susEticheta, tinteFoaie,
   transformareManer, transformareManerLipita, type LipirePunct, type Maner, type TransformareManer,
 } from './editareCalcul.ts';
 import { instantaLa } from '../model/alegere.ts';
@@ -31,6 +31,7 @@ import { formaPen, nodPus, sePoateInchide } from './penCalcul.ts';
 import { conturNoduri, drumSvg, formaNoduri, inversa, laturaLovita, nodLovit, noduriPeEcran } from './noduriCalcul.ts';
 import { aplica, IDENTITATE } from '../geom/matrice.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
+import { tastaActiunii } from '../ui/scurtaturi.ts';
 import { useLimba } from '../ui/useLimba.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
@@ -390,24 +391,47 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [motivBoolean, setMotivBoolean] = useState<string | null>(null);
   useEffect(() => { setMotivBoolean(null); }, [selectie]);
   const modBoolean = useRef<ModulBoolean | null>(null);
-  const booleanul = (op: 'reuniune' | 'diferenta' | 'intersectie'): void => {
-    if (selectie.length !== 2 || p.doarCitire) return;
-    const fa = (m: ModulBoolean): void => {
+  /** Rulează booleanul; promisiunea dă motivul unui refuz (spus și în secțiunea lui), sau null când s-a făcut. */
+  const booleanul = (op: 'reuniune' | 'diferenta' | 'intersectie'): Promise<string | null> => {
+    if (selectie.length !== 2 || p.doarCitire) return Promise.resolve(null);
+    const fa = (m: ModulBoolean): string | null => {
       const r = m.booleanSelectie(doc, FOAIA, selectie, op);
-      if (typeof r === 'string') {
-        setMotivBoolean(t(`editare.boolean.motiv.${r}`));
-        return;
+      let motiv: string | null;
+      if (typeof r === 'string') motiv = t(`editare.boolean.motiv.${r}`);
+      else {
+        const v = motivDesen(doc, r.forme, p.doarCitire, r.sterse);
+        motiv = v ? t(v) : null;
+        if (!v) ruleaza('document.deseneaza', { formaNoua: () => r.forme, sterge: () => r.sterse });
       }
-      const v = motivDesen(doc, r.forme, p.doarCitire, r.sterse);
-      if (v) {
-        setMotivBoolean(t(v));
-        return;
-      }
-      setMotivBoolean(null);
-      ruleaza('document.deseneaza', { formaNoua: () => r.forme, sterge: () => r.sterse });
+      setMotivBoolean(motiv);
+      return motiv;
     };
-    if (modBoolean.current) fa(modBoolean.current);
-    else import('../model/boolean.ts').then((m) => { modBoolean.current = m; fa(m); }, () => { setMotivBoolean(t('editare.boolean.neincarcat')); });
+    if (modBoolean.current) return Promise.resolve(fa(modBoolean.current));
+    return import('../model/boolean.ts').then((m) => { modBoolean.current = m; return fa(m); }, () => {
+      const motiv = t('editare.boolean.neincarcat');
+      setMotivBoolean(motiv);
+      return motiv;
+    });
+  };
+  // Degruparea (ADR 0103): piesele-grup alese se desfac în părțile lor, prin acțiunea registrului (și din meniul de clic
+  // dreapta, din paletă, cu Ctrl+Shift+G). Refuzul se spune lângă butoane, până la altă selecție.
+  const [motivDegrupare, setMotivDegrupare] = useState<string | null>(null);
+  useEffect(() => { setMotivDegrupare(null); }, [selectie]);
+  const grupAles = useMemo(() => {
+    const piese = new Map(doc.piese.map((x) => [x.id, x]));
+    const instante = new Map((foaie?.instante ?? []).map((i) => [i.id, i]));
+    return selectie.some((id) => {
+      const r = piese.get(instante.get(id)?.piesa ?? '')?.radacina;
+      return r?.tip === 'grup' && r.copii.length >= 2;
+    });
+  }, [doc.piese, foaie, selectie]);
+  /** Rulează degruparea; dă motivul unui refuz (spus și lângă butoane), sau null când s-a făcut. */
+  const degrupeaza = (): string | null => {
+    if (!grupAles || p.doarCitire) return null;
+    const r = ruleaza('document.degrupeaza', {});
+    const motiv = r.ok ? null : t(r.motiv);
+    setMotivDegrupare(motiv);
+    return motiv;
   };
   const oglindeste = (directie: 'orizontal' | 'vertical'): void => {
     if (!cutie || selectie.length === 0 || p.doarCitire) return;
@@ -498,6 +522,9 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Shift + clic pe o formă o adaugă sau o scoate. Apăsarea pe o formă, fără Shift, rămâne a pânzei (alegerea și mutarea);
   // cea pe un mâner, a mânerelor.
   const [cadru, setCadru] = useState<{ readonly a: Punct; readonly b: Punct } | null>(null);
+  // Meniul de clic dreapta (ADR 0103), în pixeli din colțul editării, cu motivul ultimului refuz din el.
+  const [meniu, setMeniu] = useState<Punct | null>(null);
+  const [motivMeniu, setMotivMeniu] = useState<string | null>(null);
   const pentruCadru = useRef({ unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza });
   pentruCadru.current = { unealta, vedere3d, selectie, doc, vedere, cutie, ruleaza };
   useEffect(() => {
@@ -562,6 +589,18 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       }
     };
     const uita = (): void => { spatiu = false; };
+    // Clicul dreapta pe pânză deschide meniul (ADR 0103): pe o formă neselectată, întâi o alege, ca un clic; pe gol, lasă
+    // selecția. În vederea 3D, nu (acolo tragerea rotește placa).
+    const meniuContext = (e: MouseEvent): void => {
+      const s = pentruCadru.current;
+      if (e.target !== panza || s.vedere3d) return;
+      e.preventDefault();
+      const p = local(e), v = s.vedere;
+      const lovita = instantaLa(s.doc, (p.x - v.tx) / v.scara, (v.ty - p.y) / v.scara, TOLERANTA_CLIC_PX / v.scara);
+      if (lovita && !s.selectie.includes(lovita)) s.ruleaza('selectie.din-lista', { alese: () => [lovita] });
+      setMotivMeniu(null);
+      setMeniu(p);
+    };
     window.addEventListener('pointerdown', apasa, true);
     window.addEventListener('pointermove', misca, true);
     window.addEventListener('pointerup', elibereaza, true);
@@ -569,6 +608,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     window.addEventListener('keydown', tasta, true);
     window.addEventListener('keyup', tasta, true);
     window.addEventListener('blur', uita);
+    window.addEventListener('contextmenu', meniuContext, true);
     return () => {
       window.removeEventListener('pointerdown', apasa, true);
       window.removeEventListener('pointermove', misca, true);
@@ -577,8 +617,65 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       window.removeEventListener('keydown', tasta, true);
       window.removeEventListener('keyup', tasta, true);
       window.removeEventListener('blur', uita);
+      window.removeEventListener('contextmenu', meniuContext, true);
     };
   }, []);
+
+  // Meniul se închide cu Escape, cu un clic în afara lui, cu rotița, când fereastra își schimbă mărimea sau pierde focul,
+  // la orice altă tastă (care își face apoi treaba ei) și după o comandă făcută.
+  const refMeniu = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!meniu) return undefined;
+    const inchide = (): void => { setMeniu(null); };
+    const apasa = (e: PointerEvent): void => {
+      if (!(e.target instanceof Node && refMeniu.current?.contains(e.target))) inchide();
+    };
+    const tasta = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        inchide();
+      } else if (!TASTE_MENIU.has(e.key)) {
+        // După ce tasta își face drumul: închis pe loc, meniul ar ieși din pagină între ascultători (React golește coada după
+        // fiecare), iar tastele editării n-ar mai vedea că focusul era pe pânză.
+        setTimeout(inchide, 0);
+      }
+    };
+    window.addEventListener('pointerdown', apasa, true);
+    window.addEventListener('keydown', tasta, true);
+    window.addEventListener('wheel', inchide, true);
+    window.addEventListener('resize', inchide);
+    window.addEventListener('blur', inchide);
+    return () => {
+      window.removeEventListener('pointerdown', apasa, true);
+      window.removeEventListener('keydown', tasta, true);
+      window.removeEventListener('wheel', inchide, true);
+      window.removeEventListener('resize', inchide);
+      window.removeEventListener('blur', inchide);
+    };
+  }, [meniu]);
+  const articoleMeniu = (): readonly ArticolMeniu[] => {
+    const facut = (motiv: string | null): void => {
+      if (motiv === null) setMeniu(null);
+      else setMotivMeniu(motiv);
+    };
+    const din = (id: string): void => {
+      const r = ruleaza(id, {});
+      facut(r.ok ? null : t(r.motiv));
+    };
+    const poate = !p.doarCitire;
+    const doua = selectie.length === 2 && poate;
+    return [
+      { id: 'degrupeaza', eticheta: t('actiune.degrupeaza'), tasta: tastaActiunii('document.degrupeaza'), activ: grupAles && poate, ruleaza: () => { facut(degrupeaza()); } },
+      'separator',
+      { id: 'uneste', eticheta: numeScurt(t('editare.boolean.uneste')), activ: doua, ruleaza: () => { void booleanul('reuniune').then(facut); } },
+      { id: 'scade', eticheta: numeScurt(t('editare.boolean.scade')), activ: doua, ruleaza: () => { void booleanul('diferenta').then(facut); } },
+      { id: 'intersecteaza', eticheta: numeScurt(t('editare.boolean.intersecteaza')), activ: doua, ruleaza: () => { void booleanul('intersectie').then(facut); } },
+      'separator',
+      { id: 'duplica', eticheta: t('actiune.duplica-selectia'), tasta: tastaActiunii('document.duplica-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.duplica-selectia'); } },
+      { id: 'sterge', eticheta: t('actiune.sterge-selectia'), tasta: tastaActiunii('document.sterge-selectia'), activ: selectie.length > 0 && poate, ruleaza: () => { din('document.sterge-selectia'); } },
+    ];
+  };
 
   const scrieGhidaje = (nou: readonly Ghidaj[]): void => { ruleaza('foaie.ghidaje', { ghidajeNoi: () => nou }); };
   const lipestePoz = (axa: 'x' | 'y', poz: number, scara: number, alt: boolean): number => {
@@ -797,18 +894,23 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         const booleanSectiune = (
           <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.boolean')} data-testid="extensie-boolean">
             <button type="button" className="aliniaza" disabled={!douaAlese} title={t('editare.boolean.uneste')} aria-label={t('editare.boolean.uneste')}
-              data-editare="boolean-uneste" onClick={() => { booleanul('reuniune'); }}>
+              data-editare="boolean-uneste" onClick={() => { void booleanul('reuniune'); }}>
               <IconaBoolean fel="uneste" />
             </button>
             <button type="button" className="aliniaza" disabled={!douaAlese} title={t('editare.boolean.scade')} aria-label={t('editare.boolean.scade')}
-              data-editare="boolean-scade" onClick={() => { booleanul('diferenta'); }}>
+              data-editare="boolean-scade" onClick={() => { void booleanul('diferenta'); }}>
               <IconaBoolean fel="scade" />
             </button>
             <button type="button" className="aliniaza" disabled={!douaAlese} title={t('editare.boolean.intersecteaza')} aria-label={t('editare.boolean.intersecteaza')}
-              data-editare="boolean-intersecteaza" onClick={() => { booleanul('intersectie'); }}>
+              data-editare="boolean-intersecteaza" onClick={() => { void booleanul('intersectie'); }}>
               <IconaBoolean fel="intersecteaza" />
             </button>
+            <button type="button" className="aliniaza" disabled={!grupAles || p.doarCitire} title={t('editare.degrupeaza')} aria-label={t('editare.degrupeaza')}
+              data-editare="degrupeaza" onClick={() => { degrupeaza(); }}>
+              <IconaDegrupare />
+            </button>
             {motivBoolean ? <span className="motiv-extensie" role="status" data-testid="motiv-boolean">{motivBoolean}</span> : null}
+            {motivDegrupare ? <span className="motiv-extensie" role="status" data-testid="motiv-degrupare">{motivDegrupare}</span> : null}
           </span>
         );
         const vectoriSectiune = (
@@ -924,6 +1026,60 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           </>
         );
       })()}
+      {meniu ? <MeniuContext refMeniu={refMeniu} la={meniu} articole={articoleMeniu()} motiv={motivMeniu} /> : null}
+    </div>
+  );
+}
+
+/** Un rând al meniului de clic dreapta (ADR 0103), sau o linie între grupuri. */
+type ArticolMeniu = {
+  readonly id: string; readonly eticheta: string; readonly tasta?: string | undefined; readonly activ: boolean; readonly ruleaza: () => void;
+} | 'separator';
+
+/** Tastele cu care se lucrează în meniu; orice altă tastă îl închide și își face treaba ei. */
+const TASTE_MENIU: ReadonlySet<string> = new Set(['ArrowUp', 'ArrowDown', 'Home', 'End', 'Enter', ' ', 'Tab', 'Shift', 'Control', 'Alt', 'Meta']);
+
+/**
+ * Meniul de clic dreapta (ADR 0103), la punctul clicului, mutat cât să încapă în editare. Primul rând activ primește focusul;
+ * săgețile, Home și End trec între rânduri, Enter rulează; motivul unui refuz stă sub rânduri.
+ */
+function MeniuContext({ refMeniu, la, articole, motiv }: {
+  readonly refMeniu: RefObject<HTMLDivElement | null>; readonly la: Punct; readonly articole: readonly ArticolMeniu[]; readonly motiv: string | null;
+}): ReactElement {
+  const [loc, setLoc] = useState(la);
+  useLayoutEffect(() => {
+    const el = refMeniu.current, parinte = el?.parentElement;
+    if (!el || !parinte) return;
+    setLoc({
+      x: Math.max(4, Math.min(la.x, parinte.clientWidth - el.offsetWidth - 4)),
+      y: Math.max(4, Math.min(la.y, parinte.clientHeight - el.offsetHeight - 4)),
+    });
+    el.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus();
+  }, [la, refMeniu]);
+  const tasta = (e: TastaReact<HTMLDivElement>): void => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.stopPropagation();
+      return;
+    }
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    e.stopPropagation();
+    const randuri = [...e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')];
+    const k = randuri.findIndex((b) => b === document.activeElement);
+    const n = randuri.length;
+    const urm = e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : e.key === 'ArrowDown' ? (k + 1) % n : (k - 1 + n) % n;
+    randuri[urm]?.focus();
+  };
+  return (
+    <div ref={refMeniu} className="meniu-context" role="menu" aria-label={t('editare.meniu')} data-testid="meniu-context"
+      style={{ left: loc.x, top: loc.y }} onKeyDown={tasta} onContextMenu={(e) => { e.preventDefault(); }}>
+      {articole.map((a, k) => (a === 'separator' ? <div key={`s${k}`} className="meniu-separator" role="separator" /> : (
+        <button key={a.id} type="button" role="menuitem" disabled={!a.activ} data-meniu={a.id} onClick={a.ruleaza}>
+          <span>{a.eticheta}</span>
+          {a.tasta ? <kbd>{a.tasta}</kbd> : null}
+        </button>
+      )))}
+      {motiv ? <p className="meniu-motiv" role="status" data-testid="meniu-motiv">{motiv}</p> : null}
     </div>
   );
 }
@@ -1789,6 +1945,17 @@ function IconaBoolean({ fel }: { readonly fel: 'uneste' | 'scade' | 'intersectea
   );
 }
 
+/** Degruparea (ADR 0103): cadrul punctat al grupului și cele două forme din el, despărțite. */
+function IconaDegrupare(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="13" height="13" className="contur" strokeDasharray="1.6 1.4" />
+      <rect x="3.5" y="3.5" width="5" height="5" />
+      <rect x="9.5" y="8.5" width="3.5" height="4.5" />
+    </svg>
+  );
+}
+
 /** Înclinarea (ADR 0065): un pătrat punctat și paralelogramul lui, înclinat. */
 function IconaInclinare(): ReactElement {
   return (
@@ -2052,7 +2219,8 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii }:
     : null;
   const sus = ey(c.maxY);
   const vazute = manereVazute((c.maxX - c.minX) * v.scara, (c.maxY - c.minY) * v.scara);
-  // Banda în care eticheta se vede: între barele de sus și cea de jos, măsurată când eticheta apare.
+  // Banda în care eticheta se vede: între barele de sus și bara de jos sau insula selecției de deasupra ei (care altfel o
+  // acoperea, la verificarea lui 9.3↑b), măsurată când eticheta apare.
   const [vizibil, setVizibil] = useState({ sus: 0, jos: Number.POSITIVE_INFINITY });
   const arataEticheta = eticheta !== null || motiv !== null;
   useLayoutEffect(() => {
@@ -2060,7 +2228,10 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii }:
     const r = radacina.current?.getBoundingClientRect();
     if (!r) return;
     const sus = document.querySelector('header.sus')?.getBoundingClientRect().bottom ?? r.top;
-    const jos = document.querySelector('footer.jos')?.getBoundingClientRect().top ?? r.bottom;
+    const jos = Math.min(
+      document.querySelector('footer.jos')?.getBoundingClientRect().top ?? r.bottom,
+      document.querySelector('.bara-selectie .insula')?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY,
+    );
     setVizibil({ sus: sus - r.top + 8, jos: jos - r.top - 8 });
   }, [arataEticheta]);
   const topEticheta = susEticheta(sus, ey(c.minY), vizibil);

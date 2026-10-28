@@ -488,6 +488,62 @@
   width: 3.5rem;
 }
 
+/* Meniul de clic dreapta pe pânză (ADR 0103): rândurile cu tasta lor, liniile între grupuri, motivul unui refuz. */
+.meniu-context {
+  position: absolute;
+  z-index: 15;
+  min-width: 12rem;
+  max-width: 22rem;
+  padding: var(--sp-1);
+  pointer-events: auto;
+  font-size: var(--fs-2);
+  color: var(--t);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+  box-shadow: var(--umbra-1);
+}
+
+.meniu-context button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 30px;
+  padding: 4px var(--sp-2);
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: var(--r-1);
+  cursor: pointer;
+}
+
+.meniu-context button:hover:not(:disabled),
+.meniu-context button:focus-visible {
+  background: var(--s-ales);
+  outline: none;
+  box-shadow: inset 2px 0 0 var(--a);
+}
+
+.meniu-context button:disabled {
+  color: var(--t-slab);
+  cursor: default;
+}
+
+.meniu-separator {
+  height: 1px;
+  margin: var(--sp-1) 0;
+  background: var(--l-margine);
+}
+
+.meniu-motiv {
+  margin: var(--sp-1) var(--sp-2) 0;
+  color: var(--rosu, var(--t));
+}
+
 /* Mânerele selecției (ADR 0052): scalarea (8) și rotirea (deasupra cutiei); doar desen, lovitura o decide `manerLovit`. */
 .manere {
   position: absolute;

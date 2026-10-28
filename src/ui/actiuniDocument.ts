@@ -462,6 +462,10 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   laCerere('document.copiaza-in-retea', 'actiune.copiaza-in-retea', (ctx) => (ctx.retea ? true : 'motiv.nimic-ales')),
   // Panoul (ADR 0053): forma singurei instanțe alese, editată după plasare.
   laCerere('document.forma', 'actiune.forma', (ctx) => (ctx.formaEditata ? true : 'motiv.nimic-ales')),
+  // Degruparea (ADR 0103): din bara editării, din meniul de clic dreapta, din paletă și cu Ctrl+Shift+G. N-are date de
+  // fereastră: calculul vine cu modulul editării, iar până atunci acțiunea spune că se încarcă (nu aruncă).
+  laCerere('document.degrupeaza', 'actiune.degrupeaza', (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie'
+    : calcul === null ? 'motiv.editare-se-incarca' : true)),
   {
     id: 'istoric.anuleaza',
     eticheta: 'actiune.anuleaza',

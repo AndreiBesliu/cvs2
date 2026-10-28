@@ -226,6 +226,35 @@ Butoanele sunt active doar cu două forme alese. Booleanul se refuză, cu motivu
 (o linie) sau are mai multe contururi (o piesă importată), dacă formele nu se ating (unirea și scăderea nu le-ar schimba), dacă
 nu au nimic în comun (intersecția) sau dacă din prima nu rămâne nimic (scăderea).
 
+## Degruparea
+%% capitol: degrupare
+%% acopera: document.degrupeaza
+
+Un import SVG sau DXF e o singură piesă, cu toate contururile fișierului; la fel o formă cu găuri, făcută de boolean.
+**Degrupează** (butonul de lângă boolean, meniul de clic dreapta, `Ctrl+Shift+G`) o desface: fiecare contur devine o piesă a
+lui, care se alege, se mută, se scalează și se șterge singură. Desfacerea e pe un singur nivel: un subgrup (o literă cu golul
+ei) rămâne întreg.
+
+Fiecare parte stă exact unde era și își păstrează operația (latura, adâncimea, freza): **ce se taie rămâne același**. Ordinea
+tăierii păstrează clasele (întâi interioarele, apoi liniile, la urmă exterioarele); o piesă cu mai multe operații pe aceleași
+contururi (degroșare și finisare) le taie, după degrupare, contur cu contur. După degrupare, alese sunt toate părțile, iar un
+singur `Ctrl+Z` le adună la loc.
+
+Degruparea se refuză, cu motivul spus lângă butoane, dacă un **V-carve** își sapă contururile împreună (literele cu golurile
+lor: despărțite, golurile s-ar săpa și ele), dacă piesa e folosită și de alte instanțe sau dacă nicio formă aleasă nu e un grup.
+
+## Meniul de clic dreapta
+%% capitol: meniu
+%% acopera: editare.meniu
+
+Clicul dreapta pe pânză deschide **meniul de clic dreapta**, cu ce se poate face pe selecție: **Degrupează**, apoi **Unește**,
+**Scade** și **Intersectează** (booleanul), apoi **Duplică** și **Șterge selecția**, fiecare cu tasta lui. Pe o formă care nu e
+aleasă, clicul dreapta o alege întâi; pe gol, selecția rămâne. Un rând e activ doar când se poate (booleanul, cu două forme;
+degruparea, cu un grup ales); un refuz își spune motivul în meniu.
+
+Săgețile trec între rânduri, `Enter` rulează rândul, `Esc` închide meniul; se închide și la un clic în afara lui, la rotiță sau
+după o comandă făcută. În vederea 3D, clicul dreapta nu deschide meniul.
+
 ## Nodurile
 %% capitol: noduri
 %% acopera: unealta.noduri
@@ -606,6 +635,7 @@ după reîncărcare; **Începe din nou** le șterge, după o confirmare.
 | `Ctrl+Z` | Anulează |
 | `Ctrl+Y`, `Ctrl+Shift+Z`, `Ctrl+Shift+Y` | Reface |
 | `Ctrl+D` | Duplică |
+| `Ctrl+Shift+G` | Degrupează |
 | `Delete` | Șterge selecția |
 | `Ctrl+K` | Caută o comandă |
 | `Home` | Arată toată foaia |

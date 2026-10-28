@@ -237,6 +237,36 @@ The buttons are active only with two shapes chosen. The boolean is refused, with
 shape is open (a line) or has several outlines (an imported part), if the shapes do not touch (uniting or subtracting would not
 change them), if they have nothing in common (intersecting) or if nothing remains of the first (subtracting).
 
+## Ungrouping
+%% capitol: degrupare
+%% acopera: document.degrupeaza
+
+An SVG or DXF import is a single part, with all the outlines of the file; so is a shape with holes made by the boolean.
+**Ungroup** (the button next to the boolean, the right-click menu, `Ctrl+Shift+G`) takes it apart: each outline becomes a part of
+its own, which is chosen, moved, scaled and deleted on its own. It goes one level down: a subgroup (a letter with its hole)
+stays whole.
+
+Each part stays exactly where it was and keeps its operation (the side, the depth, the cutter): **what is cut stays the same**.
+The cutting order keeps its classes (insides first, then lines, outsides last); a part with several operations on the same
+outlines (roughing and finishing) cuts them, after ungrouping, outline by outline. After ungrouping, all the parts are chosen,
+and a single `Ctrl+Z` puts them back together.
+
+Ungrouping is refused, with the reason shown next to the buttons, if a **V-carve** cuts its outlines together (letters with
+their holes: apart, the holes would be cut too), if the part is also used by other instances, or if none of the chosen shapes is
+a group.
+
+## The right-click menu
+%% capitol: meniu
+%% acopera: editare.meniu
+
+A right click on the canvas opens the **right-click menu**, with what can be done to the selection: **Ungroup**, then **Unite**,
+**Subtract** and **Intersect** (the boolean), then **Duplicate** and **Delete selection**, each with its key. On a shape that is
+not chosen, the right click chooses it first; on empty space, the selection stays. A row is active only when it can run (the
+boolean with two shapes, ungrouping with a group chosen); a refusal shows its reason in the menu.
+
+The arrow keys move between rows, `Enter` runs the row, `Esc` closes the menu; it also closes on a click outside it, on the
+wheel or after a command has run. In the 3D view, a right click does not open the menu.
+
 ## Nodes
 %% capitol: noduri
 %% acopera: unealta.noduri
@@ -629,6 +659,7 @@ to any step. The results stay after a reload too; **Start over** deletes them, a
 | `Ctrl+Z` | Undo |
 | `Ctrl+Y`, `Ctrl+Shift+Z`, `Ctrl+Shift+Y` | Redo |
 | `Ctrl+D` | Duplicate |
+| `Ctrl+Shift+G` | Ungroup |
 | `Delete` | Delete selection |
 | `Ctrl+K` | Search commands |
 | `Home` | Show the whole sheet |

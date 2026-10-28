@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { TASTE_UNELTE, UNELTE } from '../../src/app/desenCalcul.ts';
+import { numeScurt } from '../../src/app/editareCalcul.ts';
 import { FELURI_ALINIERE } from '../../src/geom/aliniere.ts';
 import { enEditare } from '../../src/i18n/editare.en.ts';
 import { roEditare } from '../../src/i18n/editare.ro.ts';
@@ -50,6 +51,7 @@ const USI: readonly Usa[] = [
   { id: 'editare.vectori', eticheta: eticheta('editare.vectori') },
   ...(['uneste', 'scade', 'intersecteaza'] as const).map((b) => ({ id: `boolean.${b}`, eticheta: eticheta(`editare.boolean.${b}`) })),
   { id: 'editare.manual', eticheta: eticheta('editare.manual') },
+  { id: 'editare.meniu', eticheta: eticheta('editare.meniu') },
   { id: 'editare.test', eticheta: eticheta('editare.test') },
 ];
 
@@ -61,13 +63,11 @@ const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   lipire: 'editare.lipire', grila: 'editare.grila', 'pas-grila': 'editare.grila', laturi: 'unealta.poligon', raza: 'unealta.cerc',
   aliniere: 'editare.aliniere', 'vedere-3d': 'editare.3d', manual: 'editare.manual', test: 'editare.test', retea: 'document.copiaza-in-retea',
   offset: 'editare.offset', inclinare: 'editare.inclinare', vectori: 'editare.vectori',
-  'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri',
+  'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri',
 };
 
-/** Numele scurt al unei etichete: înaintea parantezei sau a celor două puncte, fără „…”. */
-export function numeScurt(e: string): string {
-  return (e.split(/ \(|:/)[0] ?? e).replace(/…$/, '').trim();
-}
+// Numele scurt al unei etichete (înaintea parantezei sau a celor două puncte, fără „…”) e cel din `editareCalcul.ts`: același
+// nume scrie și rândurile meniului de clic dreapta (ADR 0103).
 
 const citeste = (cale: string): string => readFileSync(new URL(`../../${cale}`, import.meta.url), 'utf8');
 const manuale = (): Manual[] => LIMBI_MANUAL.map((l) => citesteManual(citeste(sursaManual(l)), l, sursaManual(l)));
@@ -92,13 +92,13 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 59)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 62)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
   assert.equal(numeScurt('Importă SVG…'), 'Importă SVG');
   assert.equal(numeScurt('Oglindește orizontal: stânga ↔ dreapta (Shift+H)'), 'Oglindește orizontal');
-  assert.equal(USI.length, 60);
+  assert.equal(USI.length, 62);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

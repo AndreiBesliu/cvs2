@@ -422,4 +422,92 @@ test('DXF cu un arc aproape drept (R ≈ 4 000 mm), mărit din colț: piesa cre�
   if (!m) throw new Error('motivul n-are cutie');
   expect(m.y).toBeGreaterThanOrEqual(bare.y + bare.height);
   await expect(motiv).toBeInViewport({ ratio: 1 });
+  // Nici insula selecției (Duplică, Șterge, proprietățile), de deasupra barei de jos, nu-l acoperă (verificarea lui 9.3↑b).
+  const insula = await page.locator('.bara-selectie .insula').boundingBox();
+  if (!insula) throw new Error('insula selecției n-are cutie');
+  expect(m.y + m.height <= insula.y || m.y >= insula.y + insula.height || m.x + m.width <= insula.x || m.x >= insula.x + insula.width).toBe(true);
+});
+
+test('degruparea (ADR 0103): piesa unui DXF se desface pe contururi, din clic dreapta, din butonul de lângă boolean și cu Ctrl+Shift+G; Ctrl+Z o adună', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.goto('/');
+  // Dreptunghiul 60 × 40 din (20, 20), cu o gaură R5 în mijloc, și un cerc R3 alături: o singură piesă, cu trei forme.
+  const lw = grupuri([0, 'LWPOLYLINE'], [8, 'TAIERE'], [90, 4], [70, 1], [10, 20], [20, 20], [10, 80], [20, 20], [10, 80], [20, 60], [10, 20], [20, 60]);
+  const entitati = lw + cerc(50, 40, 5, { strat: 'TAIERE' }) + cerc(100, 40, 3, { strat: 'TAIERE' });
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierDxf('raft.dxf', dxf({ antet: [['$INSUNITS', 70, 4]], entitati })));
+  await page.click('[data-buton="importa"]');
+  await expect(page.locator('.dialog')).toHaveCount(0);
+  const randuri = page.getByTestId('lista-vectori').locator('button[data-instanta]');
+  const alese = page.getByTestId('lista-vectori').locator('button[data-instanta][aria-pressed="true"]');
+  await expect(randuri).toHaveCount(1);
+  await expect(page.getByTestId('bara-editare')).toBeVisible();
+  const la = await ecran(page, await vedere(page));
+
+  // Clic dreapta pe latura de jos a dreptunghiului: meniul, cu Degrupează activ și tasta lui; booleanul cere două forme.
+  const jos = la(50, 20);
+  await page.mouse.click(jos.x, jos.y, { button: 'right' });
+  const meniu = page.getByTestId('meniu-context');
+  await expect(meniu).toBeVisible();
+  await expect(meniu.locator('[data-meniu="degrupeaza"]')).toBeEnabled();
+  await expect(meniu.locator('[data-meniu="degrupeaza"] kbd')).toHaveText('Ctrl+Shift+G');
+  await expect(meniu.locator('[data-meniu="uneste"]')).toBeDisabled();
+  await expect(meniu.locator('[data-meniu="degrupeaza"]')).toBeFocused();
+  await meniu.locator('[data-meniu="degrupeaza"]').click();
+  await expect(meniu).toHaveCount(0);
+  await expect(randuri).toHaveCount(3);
+  await expect(alese).toHaveCount(3);
+
+  // Ctrl+Z le adună într-o singură piesă; butonul de lângă boolean le desface din nou.
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+z');
+  await expect(randuri).toHaveCount(1);
+  await randuri.nth(0).click();
+  await page.locator('[data-editare="degrupeaza"]').click();
+  await expect(randuri).toHaveCount(3);
+  // Și cu Ctrl+Shift+G, după încă un Ctrl+Z.
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+z');
+  await expect(randuri).toHaveCount(1);
+  await randuri.nth(0).click();
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+Shift+G');
+  await expect(randuri).toHaveCount(3);
+
+  // Cu unealta Transformare, un clic pe gol golește selecția; clic dreapta pe cercul mic îl alege doar pe el, iar Degrupează e
+  // inactiv, în meniu și în bară.
+  await page.keyboard.press('s');
+  await expect(page.locator('[data-unealta="transformare"]')).toHaveAttribute('aria-pressed', 'true');
+  const gol = la(150, 150);
+  await page.mouse.click(gol.x, gol.y);
+  await expect(alese).toHaveCount(0);
+  const mic = la(103, 40);
+  await page.mouse.click(mic.x, mic.y, { button: 'right' });
+  await expect(meniu).toBeVisible();
+  await expect(alese).toHaveCount(1);
+  await expect(meniu.locator('[data-meniu="degrupeaza"]')).toBeDisabled();
+  await expect(page.locator('[data-editare="degrupeaza"]')).toBeDisabled();
+  await expect(meniu.locator('[data-meniu="duplica"]')).toBeEnabled();
+  // Săgețile trec între rândurile active; Escape închide meniul fără să schimbe unealta sau selecția.
+  await expect(meniu.locator('[data-meniu="duplica"]')).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(meniu.locator('[data-meniu="sterge"]')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(meniu).toHaveCount(0);
+  await expect(alese).toHaveCount(1);
+  await expect(page.locator('[data-unealta="transformare"]')).toHaveAttribute('aria-pressed', 'true');
+  // La fel cu focusul în afara meniului (un clic pe un rând inactiv îl poate lua): Escape închide doar meniul.
+  await page.mouse.click(mic.x, mic.y, { button: 'right' });
+  await expect(meniu).toBeVisible();
+  await page.evaluate(() => { if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); });
+  await page.keyboard.press('Escape');
+  await expect(meniu).toHaveCount(0);
+  await expect(page.locator('[data-unealta="transformare"]')).toHaveAttribute('aria-pressed', 'true');
+  // Altă tastă închide meniul și își face treaba ei (V: unealta Selecție).
+  await page.mouse.click(mic.x, mic.y, { button: 'right' });
+  await expect(meniu).toBeVisible();
+  await page.keyboard.press('v');
+  await expect(meniu).toHaveCount(0);
+  await expect(page.locator('[data-unealta="selectie"]')).toHaveAttribute('aria-pressed', 'true');
+  expect(erori).toEqual([]);
 });

@@ -11,6 +11,8 @@ import type { Document, Ghidaj, Instanta, Piesa, Stoc } from './document.ts';
  * - `inlocuieste-instanta` / `inlocuieste-piesa` schimbă una cu valorile ei noi;
  * - `inlocuieste-stoc` schimbă materialul unei foi (lățimea, înălțimea, grosimea; ADR 0038 §4);
  * - `inlocuieste-ghidaje` schimbă lista ghidajelor unei foi (ADR 0050);
+ * - `degrupeaza` / `regrupeaza` pun în locul fiecărei instanțe (și piese) vechi părțile ei, sau invers, într-o singură
+ *   trecere prin liste (ADR 0103): o degrupare de mii de părți nu copiază listele o dată pe parte;
  * - `lot` e un singur pas de anulare pentru o acțiune pe mai multe lucruri.
  */
 export type Comanda =
@@ -25,7 +27,16 @@ export type Comanda =
   | { readonly tip: 'inlocuieste-piesa'; readonly vechi: Piesa; readonly nou: Piesa }
   | { readonly tip: 'inlocuieste-stoc'; readonly foaie: string; readonly vechi: Stoc; readonly nou: Stoc }
   | { readonly tip: 'inlocuieste-ghidaje'; readonly foaie: string; readonly vechi: readonly Ghidaj[]; readonly nou: readonly Ghidaj[] }
+  | { readonly tip: 'degrupeaza'; readonly foaie: string; readonly degrupate: readonly Degrupata[] }
+  | { readonly tip: 'regrupeaza'; readonly foaie: string; readonly degrupate: readonly Degrupata[] }
   | { readonly tip: 'lot'; readonly comenzi: readonly Comanda[] };
+
+/** O instanță degrupată (ADR 0103): cea veche, cu piesa ei (doar a ei), și părțile care îi iau locul, în ordine. */
+export type Degrupata = {
+  readonly instanta: Instanta;
+  readonly piesa: Piesa;
+  readonly parti: ReadonlyArray<{ readonly instanta: Instanta; readonly piesa: Piesa }>;
+};
 
 export type Istoric = {
   readonly doc: Document;
@@ -46,8 +57,63 @@ function indexFoaie(doc: Document, id: string): number {
   return i;
 }
 
+/**
+ * Degruparea și inversa ei (ADR 0103), într-o trecere: fiecare instanță veche își lasă locul părților (regrupat: prima parte,
+ * instanței vechi; celelalte pleacă), la fel piesele. Totul trebuie să fie unde spune comanda, iar după ea fiecare instanță,
+ * de pe orice foaie, trimite la o piesă care există și niciun id nu se repetă.
+ */
+function aplicaDegrupare(doc: Document, c: Extract<Comanda, { readonly tip: 'degrupeaza' | 'regrupeaza' }>): Document {
+  const fi = indexFoaie(doc, c.foaie);
+  const foaie = doc.foi[fi];
+  if (!foaie) throw new Error(`foaia ${c.foaie} nu există`);
+  const instante = new Map<string, readonly Instanta[]>();
+  const piese = new Map<string, readonly Piesa[]>();
+  for (const d of c.degrupate) {
+    if (d.parti.length === 0) throw new Error(`instanța ${d.instanta.id} n-are părți`);
+    if (c.tip === 'degrupeaza') {
+      instante.set(d.instanta.id, d.parti.map((x) => x.instanta));
+      piese.set(d.piesa.id, d.parti.map((x) => x.piesa));
+    } else {
+      d.parti.forEach((x, k) => {
+        instante.set(x.instanta.id, k === 0 ? [d.instanta] : []);
+        piese.set(x.piesa.id, k === 0 ? [d.piesa] : []);
+      });
+    }
+  }
+  let gasite = 0;
+  const lista = foaie.instante.flatMap((i) => {
+    const noi = instante.get(i.id);
+    if (!noi) return [i];
+    gasite++;
+    return noi;
+  });
+  if (gasite !== instante.size) throw new Error(`${c.tip}: ${instante.size - gasite} instanțe lipsesc de pe foaia ${c.foaie}`);
+  gasite = 0;
+  const pieseNoi = doc.piese.flatMap((p) => {
+    const noi = piese.get(p.id);
+    if (!noi) return [p];
+    gasite++;
+    return noi;
+  });
+  if (gasite !== piese.size) throw new Error(`${c.tip}: ${piese.size - gasite} piese lipsesc din document`);
+  const foi = [...doc.foi];
+  foi[fi] = { ...foaie, instante: lista };
+  const idPiese = new Set(pieseNoi.map((p) => p.id));
+  if (idPiese.size !== pieseNoi.length) throw new Error(`${c.tip}: un id de piesă s-ar repeta`);
+  const idInstante = new Set<string>();
+  for (const f of foi) {
+    for (const i of f.instante) {
+      if (idInstante.has(i.id)) throw new Error(`${c.tip}: instanța ${i.id} s-ar repeta`);
+      idInstante.add(i.id);
+      if (!idPiese.has(i.piesa)) throw new Error(`${c.tip}: instanța ${i.id} ar trimite la piesa lipsă ${i.piesa}`);
+    }
+  }
+  return { ...doc, piese: pieseNoi, foi };
+}
+
 function aplicaPas(doc: Document, c: Comanda): Document {
   if (c.tip === 'lot') return c.comenzi.reduce(aplicaPas, doc);
+  if (c.tip === 'degrupeaza' || c.tip === 'regrupeaza') return aplicaDegrupare(doc, c);
   if (c.tip === 'inlocuieste-piesa') {
     const i = doc.piese.findIndex((p) => p.id === c.vechi.id);
     if (i < 0) throw new Error(`piesa ${c.vechi.id} nu există`);
@@ -109,6 +175,8 @@ function inversa(c: Comanda): Comanda {
     case 'inlocuieste-piesa': return { tip: c.tip, vechi: c.nou, nou: c.vechi };
     case 'inlocuieste-stoc': return { tip: c.tip, foaie: c.foaie, vechi: c.nou, nou: c.vechi };
     case 'inlocuieste-ghidaje': return { tip: c.tip, foaie: c.foaie, vechi: c.nou, nou: c.vechi };
+    case 'degrupeaza': return { ...c, tip: 'regrupeaza' };
+    case 'regrupeaza': return { ...c, tip: 'degrupeaza' };
   }
 }
 
