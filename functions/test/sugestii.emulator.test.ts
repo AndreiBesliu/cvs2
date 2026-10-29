@@ -137,6 +137,21 @@ test('editarea: doar autorul, doar fără decizie, pe versiunea văzută; acela�
   assert.equal((await sugestia(r.id))['titlu'], 'Grila cu magneți');
 });
 
+test('editarea: fiecare câmp schimbat singur e o schimbare, cu versiunea nouă și rândul de audit (titlul, descrierea, tipul, zona)', async () => {
+  const r = await scrie('ana');
+  let curent: Record<string, unknown> = { ...CONTINUT };
+  let v = 1;
+  for (const x of [{ titlu: 'Alt titlu' }, { descriere: 'Alt text' }, { tip: 'problema' }, { zona: 'cam' }, { zona: null }]) {
+    curent = { ...curent, ...x };
+    const e = await fa('ana', { actiune: 'editeaza', id: r.id, versiune: v, ...curent });
+    assert.deepEqual([e.schimbat, e.versiune], [true, v + 1], JSON.stringify(x));
+    v = e.versiune;
+  }
+  const d = await sugestia(r.id);
+  assert.deepEqual([d['titlu'], d['descriere'], d['tip'], d['zona'], d['versiune']], ['Alt titlu', 'Alt text', 'problema', null, 6]);
+  assert.equal((await audit()).filter((x) => x['actiune'] === 'sugestii.editeaza').length, 5);
+});
+
 test('decizia: doar owner-ul, o stare din listă și o notă, pe versiunea văzută; aceeași decizie nu scrie; auditul', async () => {
   const r = await scrie('ana');
   const de = (uid: string | null, extra: Record<string, unknown> = {}) => fa(uid, { actiune: 'decide', id: r.id, versiune: 1, stare: 'acceptata', nota: 'Bună idee.', ...extra });
