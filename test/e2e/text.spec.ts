@@ -161,6 +161,12 @@ test('textul pe curbă (ADR 0108): clic pe conturul unui cerc R50, „LEMN” ur
   await page.mouse.click(sus.x, sus.y);
   const sectiune = page.getByTestId('text-curba');
   await expect(sectiune.locator('legend')).toHaveText('Pe curbă (314,16 mm)');
+  // Pe un ecran scund, panoul se derulează în zona liberă, fără să-și strângă câmpurile: previzualizarea rămâne cât e
+  // (4rem), fără o bară de derulare laterală.
+  const panou = page.getByTestId('panou-text');
+  await expect.poll(() => page.getByTestId('text-previzualizare').evaluate((e) => e.getBoundingClientRect().height)).toBeGreaterThan(60);
+  expect(await panou.evaluate((e) => e.scrollWidth - e.clientWidth)).toBe(0);
+  expect(await panou.evaluate((e) => e.scrollHeight > e.clientHeight)).toBe(true);
   await page.click('[data-text="adauga"]');
   const d2 = await documentSalvat(page, 2) as Doc;
   const text = d2.piese[1]!;

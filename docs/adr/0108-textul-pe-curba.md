@@ -40,8 +40,8 @@ acum, un font se vedea doar după ce era ales în panou, iar unul din Google, do
    punctul cel mai apropiat de pe contur (`pozitiePeCurba`: eșantioane la 0,25 mm, secțiunea de aur, apoi zeroul derivatei
    distanței prin bisecție, sub 1e-9 mm; minimul singur iese doar la ~1e-7 mm, fiindcă distanța e plată acolo), iar panoul
    arată secțiunea **Pe curbă** (cu lungimea curbei) și opțiunile ei. **Pe linie dreaptă** așază textul drept, cu curba
-   ținută aleasă (**Pe curbă** îl pune înapoi). Panoul textului se derulează în zona liberă: pe un ecran scund, secțiunea
-   curbei îl făcea să treacă sub bara de jos.
+   ținută aleasă (**Pe curbă** îl pune înapoi). Panoul textului se derulează în zona liberă, fără să-și strângă câmpurile:
+   pe un ecran scund, secțiunea curbei îl făcea să treacă sub bara de jos.
 5. **Proba fonturilor, înainte de a le folosi** (fereastra „Adaugă fonturi…”): un câmp **Textul de probă** (primul rând din
    panou sau, gol, o probă a limbii: „Aa Ăă Ââ Îî Șș Țț 0123”), scris cu fiecare font din listă.
    - **Fonturile mele și cele ale sistemului:** proba e așezată de cititorul aplicației (`aduceFont`, aceeași cale și
