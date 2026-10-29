@@ -3760,3 +3760,21 @@ Roboto Slab, Regular → Bold, cu fețele lui); textul de probă cu diacritice (
 latin-ext, chirilicele nu; Fonturile mele (Droid Serif, Lobster) desenate din contururi. Prima publicare avea
 previzualizarea din panoul textului strânsă la o dungă: a doua trecere a reparat-o (64 px, fără bară laterală, panoul se
 derulează). 0 erori în jurnal și în consolă.
+
+## 2026-10-29 — Unirea sugestiilor în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (la întrebarea: unesc ramura `wip/14.B-sugestii` în `main`, cu cele 3 conflicte de documente
+rezolvate păstrând ambele rânduri, cu porțile și publicarea pe test?).
+**Started:** 29.10, 21:53. **Completed:** 29.10, 22:27. Commit-ul de unire `7d0ea40`: ramura 14.B↑ (80be4b0, f4f3a14,
+ebfa9e6), lucrată de sesiunea paralelă în worktree-ul ei (`C:\Users\besli\cncvs2-lucru\sugestii`), fără să atingă `main`.
+Conflictele, doar în documente (DEVLOG, indexul ADR, jurnalul fișei etapei 3), rezolvate cu ambele părți, în ordinea
+pornirii (14.B↑ la 19:35, 7.3↑ la 19:56). Citite înainte: regulile noi (o sugestie se citește cu `sugestii.citeste` sau, cu
+`sugestii.scrie`, doar de autorul ei; nicio scriere din client), callable-ul `sugestii` (App Check, drepturile și auditul în
+tranzacție), scripturile pentru asistent (doar citire); în diff nicio cheie reală (doar cele false ale emulatorului). Porțile
+pe rezultat: compilatorul (aplicația și funcțiile), importurile, licențele, traducerile (467, 0 lipsă), suita unitară (7 779
+de teste, 0 picate; 8 sărite), build-ul determinist (211 fișiere; pornirea 97,4 / 110 kB, totalul 374,4 / 400, `/admin` 194,2
+/ 200), e2e-ul (271), emulatoarele (funcțiile 46, `/admin` 15). CI-ul rapid verde (run 40947228894).
+**Publicat pe test (29.10, 22:25)**, din workflow (run 40948486818, `7d0ea40`): regulile, funcția `sugestii` creată, celelalte
+actualizate. Verificat: `sugestii` răspunde fără App Check cu 401 JSON („Unauthenticated”), ca `fonturiGoogle` (publică la
+gazdă, refuzul e al ei); `/admin` pe `7d0ea4033da8`, fără erori în consolă. Fila Sugestii însăși n-am văzut-o pe test: cere
+logarea owner-ului, pe care asistentul n-o face; e probată pe emulatoare (e2e-ul `/admin`).
