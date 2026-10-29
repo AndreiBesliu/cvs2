@@ -11,13 +11,16 @@ const ID = 'AbCdEfGhIjKlMnOpQrSt';
 const p = (...x: Permisiune[]): ReadonlySet<Permisiune> => new Set(x);
 
 test('filele: owner-ul le vede pe toate; un rol, doar pe ale permisiunilor lui; Cont mereu; Personal doar owner-ul', () => {
-  assert.deepEqual(fileVizibile(true, p()), ['erori', 'diagnoza', 'roadmap', 'documentatie', 'personal', 'cont']);
-  assert.deepEqual(fileVizibile(false, new Set(PERMISIUNI)), ['erori', 'diagnoza', 'roadmap', 'documentatie', 'cont'], 'tot catalogul tot nu dă Personal');
+  assert.deepEqual(fileVizibile(true, p()), ['erori', 'diagnoza', 'roadmap', 'documentatie', 'sugestii', 'personal', 'cont']);
+  assert.deepEqual(fileVizibile(false, new Set(PERMISIUNI)), ['erori', 'diagnoza', 'roadmap', 'documentatie', 'sugestii', 'cont'], 'tot catalogul tot nu dă Personal');
   assert.deepEqual(fileVizibile(false, p('erori.citeste')), ['erori', 'cont']);
   assert.deepEqual(fileVizibile(false, p('erori.rezolva')), ['cont'], 'a rezolva fără a citi nu deschide fila');
   assert.deepEqual(fileVizibile(false, p('documentatie.citeste', 'diagnoza.citeste')), ['diagnoza', 'roadmap', 'documentatie', 'cont']);
   assert.deepEqual(fileVizibile(false, p('audit.citeste')), ['cont']);
   assert.deepEqual(fileVizibile(false, p()), ['cont']);
+  // Sugestiile (ADR 0107): scrierea sau citirea tuturor deschide fila, fiecare singură.
+  assert.deepEqual(fileVizibile(false, p('sugestii.scrie')), ['sugestii', 'cont']);
+  assert.deepEqual(fileVizibile(false, p('sugestii.citeste')), ['sugestii', 'cont']);
 });
 
 test('omul: sursa lipsă = pus în consolă; ce lipsește e necunoscut (null), nu inventat', () => {

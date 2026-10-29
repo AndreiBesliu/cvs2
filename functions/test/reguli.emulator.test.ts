@@ -1,12 +1,13 @@
 import { after, before, test } from 'node:test';
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestEnvironment } from '@firebase/rules-unit-testing';
-import { collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 
 /**
- * Regulile Firestore (`firestore.rules`, ADR 0039 §7, ADR 0049) pe emulator: cine citește ce, după permisiunile rolului
- * lui (rolurile custom din `roluri/{id}`, owner-ul fix), nimeni nu scrie din client, colecțiile aplicației vechi sunt
- * refuzate. Tokenurile emulatorului nu sunt semnate: se probează regulile, nu autenticitatea tokenurilor.
+ * Regulile Firestore (`firestore.rules`, ADR 0039 §7, ADR 0049, ADR 0107) pe emulator: cine citește ce, după permisiunile
+ * rolului lui (rolurile custom din `roluri/{id}`, owner-ul fix), nimeni nu scrie din client, colecțiile aplicației vechi
+ * sunt refuzate. Tokenurile emulatorului nu sunt semnate: se probează regulile, nu autenticitatea tokenurilor.
  */
 
 let env: RulesTestEnvironment | undefined;
@@ -17,6 +18,8 @@ const AUDIT = 'RAudit00000000000000';
 const GOL = 'RGol0000000000000000';
 const STRICAT = 'RStricat000000000000';
 const LIPSA = 'RLipsa00000000000000';
+const SCRIE = 'RScrie00000000000000';
+const CITESTE = 'RCiteste000000000000';
 
 before(async () => {
   const e = await initializeTestEnvironment({
@@ -38,6 +41,17 @@ before(async () => {
     await setDoc(doc(db, 'staff/lipsa'), { rol: LIPSA });
     await setDoc(doc(db, 'staff/own'), { rol: 'owner' });
     await setDoc(doc(db, 'staff/fals'), { rol: 'stapan' });
+    // Sugestiile (ADR 0107): doi autori, un cititor al tuturor; o sugestie fără autor și una a unui om fără drepturi.
+    await setDoc(doc(db, `roluri/${SCRIE}`), { nume: 'Scrie', permisiuni: ['sugestii.scrie'] });
+    await setDoc(doc(db, `roluri/${CITESTE}`), { nume: 'Citește', permisiuni: ['sugestii.citeste'] });
+    await setDoc(doc(db, 'staff/scr'), { rol: SCRIE });
+    await setDoc(doc(db, 'staff/scr2'), { rol: SCRIE });
+    await setDoc(doc(db, 'staff/cit'), { rol: CITESTE });
+    await setDoc(doc(db, 'sugestii/s1'), { autor: 'scr', titlu: 'a', stare: 'noua' });
+    await setDoc(doc(db, 'sugestii/s2'), { autor: 'scr2', titlu: 'b', stare: 'acceptata' });
+    await setDoc(doc(db, 'sugestii/s3'), { titlu: 'fără autor', stare: 'noua' });
+    await setDoc(doc(db, 'sugestii/s4'), { autor: 'gol', titlu: 'a unui rol gol', stare: 'noua' });
+    await setDoc(doc(db, 'limiteSugestii/scr'), { zi: '2026-10-29', numar: 1 });
     // Treptele vechi (ADR 0040) nu mai dau nimic.
     await setDoc(doc(db, 'staff/vechi'), { rol: 'admin' });
     await setDoc(doc(db, 'invitatiiPersonal/i1'), { email: 'a@b.ro', rol: SUPORT });
@@ -134,6 +148,50 @@ test('invitațiile le citește doar owner-ul; nu le scrie nimeni din client', as
   for (const uid of [...FARA_NIMIC, 'sup', 'aud']) await assertFails(getDoc(doc(ca(uid), 'invitatiiPersonal/i1')));
   await assertFails(setDoc(doc(ca('own'), 'invitatiiPersonal/i2'), { email: 'x@y.ro', rol: 'owner' }));
   await assertFails(setDoc(doc(ca('om'), 'invitatiiPersonal/i1'), { email: 'om@y.ro', rol: 'owner' }));
+});
+
+test('sugestiile: cei cu sugestii.citeste și owner-ul le citesc și le listează pe toate; autorul, doar pe ale lui', async () => {
+  for (const uid of ['cit', 'own']) {
+    await assertSucceeds(getDoc(doc(ca(uid), 'sugestii/s1')));
+    await assertSucceeds(getDoc(doc(ca(uid), 'sugestii/s3')));
+    assert.equal((await assertSucceeds(getDocs(collection(ca(uid), 'sugestii')))).size, 4, uid);
+  }
+  // Autorul: documentul lui și lista filtrată pe el (chiar întoarce rândul lui); nu și ale altora, nici lista întreagă.
+  await assertSucceeds(getDoc(doc(ca('scr'), 'sugestii/s1')));
+  const ale = await assertSucceeds(getDocs(query(collection(ca('scr'), 'sugestii'), where('autor', '==', 'scr'))));
+  assert.deepEqual(ale.docs.map((d) => d.id), ['s1']);
+  await assertFails(getDoc(doc(ca('scr'), 'sugestii/s2')));
+  await assertFails(getDoc(doc(ca('scr'), 'sugestii/s3')));
+  await assertFails(getDocs(collection(ca('scr'), 'sugestii')));
+  await assertFails(getDocs(query(collection(ca('scr'), 'sugestii'), where('autor', '==', 'scr2'))));
+  await assertFails(getDocs(query(collection(ca('scr'), 'sugestii'), where('stare', '==', 'noua'))));
+  // Fără permisiuni: nimic, nici sugestia pe care o are ca autor (un rol gol), nici fără cont.
+  for (const uid of [...FARA_NIMIC, 'sup', 'aud']) {
+    await assertFails(getDoc(doc(ca(uid), 'sugestii/s4')));
+    await assertFails(getDocs(collection(ca(uid), 'sugestii')));
+  }
+  await assertFails(getDocs(query(collection(ca('gol'), 'sugestii'), where('autor', '==', 'gol'))));
+});
+
+test('sugestiile: o permisiune scoasă din rol nu mai deschide nici sugestiile proprii, de la cererea următoare', async () => {
+  await assertSucceeds(getDoc(doc(ca('scr'), 'sugestii/s1')));
+  await env?.withSecurityRulesDisabled(async (ctx) => { await setDoc(doc(ctx.firestore(), `roluri/${SCRIE}`), { nume: 'Scrie', permisiuni: [] }); });
+  await assertFails(getDoc(doc(ca('scr'), 'sugestii/s1')));
+  await assertFails(getDocs(query(collection(ca('scr'), 'sugestii'), where('autor', '==', 'scr'))));
+  await env?.withSecurityRulesDisabled(async (ctx) => { await setDoc(doc(ctx.firestore(), `roluri/${SCRIE}`), { nume: 'Scrie', permisiuni: ['sugestii.scrie'] }); });
+  await assertSucceeds(getDoc(doc(ca('scr'), 'sugestii/s1')));
+});
+
+test('sugestiile și contoarele lor zilnice: nimeni nu le scrie din client, nici autorul, nici owner-ul; contoarele nu se citesc', async () => {
+  for (const uid of [null, 'scr', 'cit', 'own']) {
+    const db = ca(uid);
+    await assertFails(setDoc(doc(db, 'sugestii/noua'), { autor: uid ?? 'x', titlu: 'x', stare: 'noua' }));
+    await assertFails(updateDoc(doc(db, 'sugestii/s1'), { stare: 'acceptata' }));
+    await assertFails(updateDoc(doc(db, 'sugestii/s1'), { titlu: 'altul' }));
+    await assertFails(deleteDoc(doc(db, 'sugestii/s1')));
+    await assertFails(getDoc(doc(db, 'limiteSugestii/scr')));
+    await assertFails(setDoc(doc(db, 'limiteSugestii/scr'), { zi: '2026-10-29', numar: 0 }));
+  }
 });
 
 test('auditul îl citesc cei cu audit.citeste și owner-ul; nu-l scrie nimeni din client', async () => {
