@@ -3728,3 +3728,28 @@ Roboto Slab, Regular → Bold, cu fețele lui); textul de probă cu diacritice (
 latin-ext, chirilicele nu; Fonturile mele (Droid Serif, Lobster) desenate din contururi. Prima publicare avea
 previzualizarea din panoul textului strânsă la o dungă: a doua trecere a reparat-o (64 px, fără bară laterală, panoul se
 derulează). 0 erori în jurnal și în consolă.
+
+## 2026-10-29 — Etapa 4: calculul CAM în bazinul de workere (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau o subsesiune care sa lucreze la inca ceva la care poate sa lucreze fara sa afecteze celelalte sesiuni”.
+Sesiunea părinte a ales calculul CAM în workere: rândul de prag „Calcul pe mai multe fire”, primul pas al deciziei din 28.10
+(rolurile de tăiere în panou, cu traseul la zi).
+**Started:** 29.10, 21:40. Felia **4.A↑**, fără mașină, în worktree-ul `wip/4.A-cam-workere`. Programul CAM al exportului, al
+traseului și al vederii 3D se calculează în bazinul `src/jobs/`, cu anulare și cu rezultatul transferat. G-code-ul rămâne
+același, octet cu octet.
+**Oprită:** 29.10, 22:05, înainte de cod, la poarta mărimii. Regula din brief: dacă workerul dublează codul CAM și totalul
+trece de 400 kB, mă opresc și spun, fără să ridic plafonul.
+- **Măsurat cu `node scripts/build-determinist.ts`, pe experimente refăcute după măsurare:**
+  - workerul CAM construit are 70,2 kB gzip;
+  - cu CAM-ul doar în worker, totalul e 410,8 / 400 kB;
+  - pragul de jos, cu postul, estimarea și pregătirea simulării scoase și ele din firul principal, e 401,9 / 400 kB;
+  - pornirea, 97,2 / 110.
+- **Cauza:** Vite construiește workerul separat, iar harta importurilor (ADR 0098) nu se aplică în workere. Workerul își ia
+  deci propria copie din cavalier (25,5 kB, folosit pe firul principal și de offsetul din desen, de boolean și de import) și
+  din geometria din bucata de pornire.
+- **Timpii de azi, pe firul principal** (Node 26): pe 2 304 forme (78 336 de mișcări), CAM-ul ia 0,47–0,50 s, iar exportul
+  întreg 1,53 s.
+- **Decizia e a owner-ului:**
+  - plafonul 450 kB, cu un ADR nou (recomandat);
+  - sau cavalier doar în worker, ~380 kB, cu o felie mai mare;
+  - sau amânarea.
