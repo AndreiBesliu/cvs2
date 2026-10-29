@@ -7,12 +7,11 @@
  * același strat, cercul ca două semicercuri.
  */
 import { arc, cerculArcului, conturCerc, LINIE, type Punct, type Segment, type Varf } from '../geom/contur.ts';
-import { cutieContur } from '../geom/cutie.ts';
 import { arcEliptic, bucatiArcEliptic, valoareSingularaMaxima, type HartaElipsa } from '../geom/elipsa.ts';
 import { aplica, compune, determinantNormat, IDENTITATE, rotatie, scalare, translatie, type Matrice } from '../geom/matrice.ts';
 import { REZOLUTIE, TOLERANTA_IMPORT } from '../geom/toleranta.ts';
 import { PLAFON } from '../model/document.ts';
-import { bucla, deschisa, inMargini, peODreapta, praf, similitudine, type CaleCitita } from './caleImport.ts';
+import { bucla, deschisa, peODreapta, praf, preaDeparte, similitudine, type CaleCitita } from './caleImport.ts';
 import { CODURI_AVERTISMENT_DXF, MM_PE_UNITATE, UNITATI_DXF, type AvertismenteDxf, type CodAvertismentDxf, type UnitateDxf } from './dxfCoduri.ts';
 import { PLAFON_IMPORT } from './svgCoduri.ts';
 
@@ -1023,18 +1022,7 @@ export function citesteDxf(octeti: Uint8Array, optiuni: OptiuniDxf = {}): Rezult
     cai.push({ varfuri: c.varfuri, inchis: c.inchis, strat: l.strat });
   }
   // Ca la ușa SVG: fiecare punct în margini, și față de colțul cutiei desenului (unde stă instanța piesei).
-  let departe = cai.some((c) => !c.varfuri.every((v) => inMargini(v)));
-  if (!departe && cai.length > 0) {
-    let minX = Infinity, minY = Infinity;
-    for (const c of cai) {
-      const k = cutieContur({ inchis: c.inchis, varfuri: c.varfuri });
-      minX = Math.min(minX, k.minX);
-      minY = Math.min(minY, k.minY);
-    }
-    departe = cai.some((c) => c.varfuri.some((v) => [v.p, ...(v.s.tip === 'C' ? [v.s.c1, v.s.c2] : [])]
-      .some((q) => !(Math.abs(q.x - minX) <= PLAFON.translatie && Math.abs(q.y - minY) <= PLAFON.translatie))));
-  }
-  if (departe) return { ok: false, cod: 'departe', avertismente: n };
+  if (preaDeparte(cai)) return { ok: false, cod: 'departe', avertismente: n };
   const primite = cai.reduce((x, c) => x + c.varfuri.length, 0);
   if (primite > PLAFON.varfuri) return { ok: false, cod: 'plafon', detaliu: String(primite), avertismente: n };
   if (cai.length === 0) return { ok: false, cod: 'gol', avertismente: n };

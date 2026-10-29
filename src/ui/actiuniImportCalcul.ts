@@ -1,4 +1,5 @@
 import { citesteDxf } from '../io/dxf.ts';
+import { citestePdf } from '../io/pdf.ts';
 import { laturiDinImbricare } from '../io/imbricare.ts';
 import { PLAFON_IMPORT } from '../io/svgCoduri.ts';
 import { caleInchisa, cutieCai, numeDinFisier, pregateste, type CaleImport } from '../io/piesa.ts';
@@ -7,8 +8,10 @@ import { PLAFON } from '../model/document.ts';
 import { formatImport } from '../io/formatImport.ts';
 import type { FisierImport, PrevizualizareImport, UnitateDxf } from './actiuniImportTipuri.ts';
 
-/** Ce cer ușile: px-ul (SVG), limba (`switch` din SVG), unitatea aleasă (DXF fără unități). */
-export type OptiuniPrevizualizare = { readonly pxPeTol: 96 | 72; readonly limba: string; readonly unitate?: UnitateDxf };
+/** Ce cer ușile: px-ul (SVG), limba (`switch` din SVG), unitatea aleasă (DXF fără unități), pagina (PDF, de la 1). */
+export type OptiuniPrevizualizare = {
+  readonly pxPeTol: 96 | 72; readonly limba: string; readonly unitate?: UnitateDxf; readonly pagina?: number;
+};
 
 /** Imbricarea, mărimea desenului și numărătorile, comune ușilor; null dacă imbricarea trece de plafonul ei. */
 function comune(f: FisierImport, cai: ReadonlyArray<CaleImport>, pagina: { readonly latime: number; readonly inaltime: number } | null, pozitie?: 'fisier') {
@@ -53,9 +56,24 @@ export function previzualizareDxf(f: FisierImport, unitate?: UnitateDxf): Previz
   return { ...c, format: 'dxf', unitati: { mmPeUnitate: r.unitati.mmPeUnitate, declarate: r.unitati.declarate, unitate: r.unitati.unitate }, avertismente: r.avertismente };
 }
 
-/** Ușa după formatul fișierului (numele): SVG sau DXF; altul, refuzat (`tip`). */
-export function previzualizare(f: FisierImport, o: OptiuniPrevizualizare): PrevizualizareImport {
+/**
+ * Previzualizarea PDF și AI (ADR 0104 §7): pagina aleasă, prin aceeași imbricare și aceeași piesă ca la SVG. Căile sunt
+ * în mm față de colțul stânga-jos al paginii afișate, deci desenul ajunge pe foaie unde era pe pagină; stratul (OCG) devine
+ * numele elementului, ca la DXF.
+ */
+export async function previzualizarePdf(f: FisierImport, pagina?: number): Promise<PrevizualizareImport> {
+  const r = await citestePdf(f.octeti, pagina ? { pagina } : {});
+  if (!r.ok) return { ...r, format: 'pdf' };
+  const cai = r.cai.map((c) => ({ varfuri: c.varfuri, inchis: c.inchis, ...(c.strat ? { nume: c.strat.slice(0, PLAFON.numeLungime) } : {}) }));
+  const c = comune(f, cai, r.marime);
+  if (!c) return { ok: false, cod: 'plafon', detaliu: 'includeri', format: 'pdf', pagini: r.pagini, avertismente: r.avertismente };
+  return { ...c, format: 'pdf', pagini: r.pagini, pagina: r.pagina, straturi: r.straturi, avertismente: r.avertismente };
+}
+
+/** Ușa după formatul fișierului (numele): SVG, DXF sau PDF (și AI); altul, refuzat (`tip`). */
+export async function previzualizare(f: FisierImport, o: OptiuniPrevizualizare): Promise<PrevizualizareImport> {
   const format = formatImport(f.nume, '');
+  if (format === 'pdf') return previzualizarePdf(f, o.pagina);
   if (format === 'dxf') return previzualizareDxf(f, o.unitate);
   if (format === 'svg') return previzualizareSvg(f, o.pxPeTol, o.limba);
   return { ok: false, cod: 'tip' };

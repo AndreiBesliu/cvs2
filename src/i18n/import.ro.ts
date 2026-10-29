@@ -1,7 +1,7 @@
 import type { enImport } from './import.en.ts';
 import type { DictionarRoPentru } from './tipuri.ts';
 
-/** Mesajele dialogului de import SVG și DXF, în română: exact cheile din engleză (`import.en.ts`). */
+/** Mesajele dialogului de import SVG, DXF și PDF / AI, în română: exact cheile din engleză (`import.en.ts`). */
 export const roImport = {
   'import.titlu': 'Importă: {nume}',
   'import.citeste': 'Se citește fișierul…',
@@ -27,7 +27,7 @@ export const roImport = {
   'import.renunta-toate': 'Renunță la toate',
   'import.sari': 'Sari peste',
   'import.coada': '({k} din {n})',
-  'import.refuz.tip': 'Doar fișierele SVG și DXF se importă deocamdată (PDF și celelalte formate vin mai târziu).',
+  'import.refuz.tip': 'Doar fișierele SVG, DXF, PDF și AI se importă deocamdată (celelalte formate vin mai târziu).',
   'import.refuz.octeti': 'Fișierul are {mb} MB: plafonul importului e 16 MB.',
   'import.refuz.svgz': 'Fișierul e arhivat (.svgz): dezarhivează-l întâi.',
   'import.refuz.entitati': 'Fișierul declară entități XML periculoase ({motiv}): refuzat.',
@@ -112,4 +112,36 @@ export const roImport = {
   'import.dxf.spline-fara-control': { one: '{n} spline doar cu puncte de trecere (fără puncte de control), sărit', few: '{n} spline-uri doar cu puncte de trecere (fără puncte de control), sărite', other: '{n} de spline-uri doar cu puncte de trecere (fără puncte de control), sărite' },
   'import.dxf.spline-invalide': { one: '{n} spline cu nodurile sau ponderile greșite, sărit', few: '{n} spline-uri cu nodurile sau ponderile greșite, sărite', other: '{n} de spline-uri cu nodurile sau ponderile greșite, sărite' },
   'import.dxf.eroare-date': { one: '{n} entitate cu un număr ilizibil, sărită', few: '{n} entități cu un număr ilizibil, sărite', other: '{n} de entități cu un număr ilizibil, sărite' },
+  'import.refuz.citire': 'Fișierul nu s-a putut citi (eroarea a ajuns în jurnalul de erori).',
+  'import.pdf.pagina': 'Pagina (din {n})',
+  'import.pdf.straturi': {
+    one: '{n} strat, păstrat ca numele formelor: {straturi}',
+    few: '{n} straturi, păstrate ca numele formelor: {straturi}',
+    other: '{n} de straturi, păstrate ca numele formelor: {straturi}',
+  },
+  'import.pdf.nu-e-pdf': 'Fișierul nu e un PDF (nu începe cu %PDF-).',
+  'import.pdf.ai-vechi': 'Fișierul e PostScript (un AI de dinainte de Illustrator 9, sau un EPS), nu PDF: salvează-l ca PDF, sau ca AI cu „Create PDF Compatible File” bifat.',
+  'import.pdf.criptat': 'Fișierul e protejat (cu parolă sau cu restricții de editare): salvează o copie fără protecție.',
+  'import.pdf.pdf': 'Fișierul nu e un PDF valid (structura lui nu se poate citi, nici refăcută din obiectele lui).',
+  'import.pdf.pagina-lipsa': 'Pagina cerută nu e în fișier.',
+  'import.pdf.gol': 'Pagina n-are nicio cale de importat (textul, imaginile și umbririle se sar).',
+  'import.pdf.gol-ai': 'Pagina n-are nicio cale de importat. Un AI salvat fără „Create PDF Compatible File” arată doar o notă: salvează-l din nou din Illustrator, cu opțiunea bifată.',
+  'import.pdf.decodare': 'Fișierul se dezarhivează în prea multe date (peste 128 MB într-un flux, sau peste 512 MB cu totul): refuzat.',
+  'import.pdf.deschise': { one: '{n} cale deschisă (trasă, neînchisă) importată ca linie, de tăiat pe linie', few: '{n} căi deschise (trase, neînchise) importate ca linii, de tăiat pe linie', other: '{n} de căi deschise (trase, neînchise) importate ca linii, de tăiat pe linie' },
+  'import.pdf.degenerate': { one: '{n} cale fără arie sau lungime, sărită', few: '{n} căi fără arie sau lungime, sărite', other: '{n} de căi fără arie sau lungime, sărite' },
+  'import.pdf.prea-mari': { one: '{n} cale cu peste 50 000 de puncte, sărită', few: '{n} căi cu peste 50 000 de puncte, sărite', other: '{n} de căi cu peste 50 000 de puncte, sărite' },
+  'import.pdf.sub-rezolutie': { one: '{n} cale mai mică de 0,01 mm, sărită', few: '{n} căi mai mici de 0,01 mm, sărite', other: '{n} de căi mai mici de 0,01 mm, sărite' },
+  'import.pdf.sarit-text': { one: '{n} bloc de text sărit: transformă textul în contururi în programul tău', few: '{n} blocuri de text sărite: transformă textul în contururi în programul tău', other: '{n} de blocuri de text sărite: transformă textul în contururi în programul tău' },
+  'import.pdf.sarit-imagine': { one: '{n} imagine sărită', few: '{n} imagini sărite', other: '{n} de imagini sărite' },
+  'import.pdf.sarit-umbrire': { one: '{n} umbrire (gradient) sărită', few: '{n} umbriri (gradiente) sărite', other: '{n} de umbriri (gradiente) sărite' },
+  'import.pdf.decupaje': { one: '{n} decupaj (mască de tăiere) neaplicat: ce decupează se importă întreg', few: '{n} decupaje (măști de tăiere) neaplicate: ce decupează se importă întreg', other: '{n} de decupaje (măști de tăiere) neaplicate: ce decupează se importă întreg' },
+  'import.pdf.nepictate': { one: '{n} cale nici trasă, nici umplută, sărită', few: '{n} căi nici trase, nici umplute, sărite', other: '{n} de căi nici trase, nici umplute, sărite' },
+  'import.pdf.ascunse': { one: '{n} formă de pe un strat oprit, sărită', few: '{n} forme de pe straturi oprite, sărite', other: '{n} de forme de pe straturi oprite, sărite' },
+  'import.pdf.inchise-de-umplere': { one: '{n} formă umplută fără segmentul de închidere, închisă cu o linie, cum o umplu programele de afișare', few: '{n} forme umplute fără segmentul de închidere, închise cu o linie, cum le umplu programele de afișare', other: '{n} de forme umplute fără segmentul de închidere, închise cu o linie, cum le umplu programele de afișare' },
+  'import.pdf.inchise-la-usa': { one: '{n} contur cu capetele la cel mult 0,01 mm, închis cu o linie', few: '{n} contururi cu capetele la cel mult 0,01 mm, închise cu o linie', other: '{n} de contururi cu capetele la cel mult 0,01 mm, închise cu o linie' },
+  'import.pdf.nonzero-normalizate': { one: '{n} formă umplută după regula nonzero (suprapuneri, imbricări în același sens) redesenată ca marginea zonei ei pline, pe curbele originale', few: '{n} forme umplute după regula nonzero (suprapuneri, imbricări în același sens) redesenate ca marginea zonei lor pline, pe curbele originale', other: '{n} de forme umplute după regula nonzero (suprapuneri, imbricări în același sens) redesenate ca marginea zonei lor pline, pe curbele originale' },
+  'import.pdf.nonzero-refuzate': { one: '{n} formă nonzero nu s-a putut redesena exact și se citește par-impar: găurile pot diferi de fișier', few: '{n} forme nonzero nu s-au putut redesena exact și se citesc par-impar: găurile pot diferi de fișier', other: '{n} de forme nonzero nu s-au putut redesena exact și se citesc par-impar: găurile pot diferi de fișier' },
+  'import.pdf.forme-adanci': { one: '{n} desen inclus (Form XObject) mai adânc de 16 niveluri, sau care se include pe sine, sărit', few: '{n} desene incluse (Form XObject) mai adânci de 16 niveluri, sau care se includ pe sine, sărite', other: '{n} de desene incluse (Form XObject) mai adânci de 16 niveluri, sau care se includ pe sine, sărite' },
+  'import.pdf.fluxuri-stricate': { one: '{n} flux de conținut nu s-a putut decoda (sau doar până la o eroare): desenul poate fi incomplet', few: '{n} fluxuri de conținut nu s-au putut decoda (sau doar până la o eroare): desenul poate fi incomplet', other: '{n} de fluxuri de conținut nu s-au putut decoda (sau doar până la o eroare): desenul poate fi incomplet' },
+  'import.pdf.xref-reconstruit': { one: 'Tabelul obiectelor (xref) era stricat și l-am refăcut din obiectele fișierului: verifică desenul', few: 'Tabelul obiectelor (xref) era stricat și l-am refăcut din obiectele fișierului: verifică desenul', other: 'Tabelul obiectelor (xref) era stricat și l-am refăcut din obiectele fișierului: verifică desenul' },
 } as const satisfies DictionarRoPentru<typeof enImport>;

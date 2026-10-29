@@ -9,10 +9,10 @@ import { scrieSvg } from '../../src/io/svgExport.ts';
 test.use({ locale: 'ro-RO' });
 
 /**
- * Exportul vectorilor (ADR 0088), în Edge: panoul din extensia barei (DXF implicit, SVG, conturul foii), fișierele descărcate
- * (DXF: entitățile și straturile; SVG: geometria măsurată de motorul SVG al browserului, un cititor independent) și, tot în
- * motorul browserului, corpusul cu cazurile grele: lungimile pe hârtie, punctul din mijlocul arcelor (sensul lor după
- * întoarcerea axei Y), cercurile.
+ * Exportul vectorilor (ADR 0088), în Edge: panoul din grupul fișierelor al barei de sus (ADR 0104 §8; DXF implicit, SVG,
+ * conturul foii), fișierele descărcate (DXF: entitățile și straturile; SVG: geometria măsurată de motorul SVG al browserului,
+ * un cititor independent) și, tot în motorul browserului, corpusul cu cazurile grele: lungimile pe hârtie, punctul din
+ * mijlocul arcelor (sensul lor după întoarcerea axei Y), cercurile.
  */
 
 /** Geometria unui SVG, măsurată de browser: lungimea și punctul de la o distanță pe fiecare `path`, cutia fiecărui element. */

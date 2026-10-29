@@ -1,8 +1,8 @@
 import type { Mesaj } from './tipuri.ts';
 
 /**
- * Mesajele dialogului de import SVG (ADR 0035) și DXF (ADR 0101), în engleză. Se încarcă odată cu dialogul (`import.ts`), nu la pornire:
- * pachetul de pornire are un plafon (`PLAN.md` §4.4).
+ * Mesajele dialogului de import SVG (ADR 0035), DXF (ADR 0101) și PDF / AI (ADR 0104), în engleză. Se încarcă odată cu
+ * dialogul (`import.ts`), nu la pornire: pachetul de pornire are un plafon (`PLAN.md` §4.4).
  */
 export const enImport = {
   'import.titlu': 'Import: {nume}',
@@ -24,7 +24,7 @@ export const enImport = {
   'import.renunta-toate': 'Cancel all',
   'import.sari': 'Skip',
   'import.coada': '({k} of {n})',
-  'import.refuz.tip': 'Only SVG and DXF files can be imported for now (PDF and the other formats come later).',
+  'import.refuz.tip': 'Only SVG, DXF, PDF and AI files can be imported for now (the other formats come later).',
   'import.refuz.octeti': 'The file has {mb} MB: the import limit is 16 MB.',
   'import.refuz.svgz': 'The file is compressed (.svgz): unpack it first.',
   'import.refuz.entitati': 'The file declares unsafe XML entities ({motiv}): refused.',
@@ -109,4 +109,32 @@ export const enImport = {
   'import.dxf.spline-fara-control': { one: '{n} spline with fit points only (no control points) skipped', other: '{n} splines with fit points only (no control points) skipped' },
   'import.dxf.spline-invalide': { one: '{n} spline with invalid knots or weights skipped', other: '{n} splines with invalid knots or weights skipped' },
   'import.dxf.eroare-date': { one: '{n} entity with an unreadable number skipped', other: '{n} entities with an unreadable number skipped' },
+  'import.refuz.citire': 'The file could not be read (the error went to the error log).',
+  'import.pdf.pagina': 'Page (of {n})',
+  'import.pdf.straturi': { one: '{n} layer, kept as the shapes’ name: {straturi}', other: '{n} layers, kept as the shapes’ names: {straturi}' },
+  'import.pdf.nu-e-pdf': 'The file is not a PDF (it does not start with %PDF-).',
+  'import.pdf.ai-vechi': 'The file is PostScript (an AI from before Illustrator 9, or an EPS), not PDF: save it as PDF, or as AI with “Create PDF Compatible File” ticked.',
+  'import.pdf.criptat': 'The file is protected (by a password or by editing restrictions): save a copy without protection.',
+  'import.pdf.pdf': 'The file is not a valid PDF (its structure cannot be read, not even rebuilt from its objects).',
+  'import.pdf.pagina-lipsa': 'The requested page is not in the file.',
+  'import.pdf.gol': 'The page has no path to import (text, images and shadings are skipped).',
+  'import.pdf.gol-ai': 'The page has no path to import. An AI saved without “Create PDF Compatible File” shows only a notice: save it again from Illustrator with the option ticked.',
+  'import.pdf.decodare': 'The file unpacks to too much data (over 128 MB in one stream, or over 512 MB in all): refused.',
+  'import.pdf.deschise': { one: '{n} open path (stroked, not closed) imported as a line, to cut on the line', other: '{n} open paths (stroked, not closed) imported as lines, to cut on the line' },
+  'import.pdf.degenerate': { one: '{n} path without area or length skipped', other: '{n} paths without area or length skipped' },
+  'import.pdf.prea-mari': { one: '{n} path with more than 50,000 points skipped', other: '{n} paths with more than 50,000 points skipped' },
+  'import.pdf.sub-rezolutie': { one: '{n} path smaller than 0.01 mm skipped', other: '{n} paths smaller than 0.01 mm skipped' },
+  'import.pdf.sarit-text': { one: '{n} text block skipped: convert the text to outlines in your program', other: '{n} text blocks skipped: convert the text to outlines in your program' },
+  'import.pdf.sarit-imagine': { one: '{n} image skipped', other: '{n} images skipped' },
+  'import.pdf.sarit-umbrire': { one: '{n} shading (gradient) skipped', other: '{n} shadings (gradients) skipped' },
+  'import.pdf.decupaje': { one: '{n} clipping path not applied: what it clips is imported whole', other: '{n} clipping paths not applied: what they clip is imported whole' },
+  'import.pdf.nepictate': { one: '{n} path neither stroked nor filled skipped', other: '{n} paths neither stroked nor filled skipped' },
+  'import.pdf.ascunse': { one: '{n} shape on a hidden layer skipped', other: '{n} shapes on hidden layers skipped' },
+  'import.pdf.inchise-de-umplere': { one: '{n} filled shape without a closing segment closed with a line, as viewers fill it', other: '{n} filled shapes without a closing segment closed with a line, as viewers fill them' },
+  'import.pdf.inchise-la-usa': { one: '{n} outline with its ends at most 0.01 mm apart closed with a line', other: '{n} outlines with their ends at most 0.01 mm apart closed with a line' },
+  'import.pdf.nonzero-normalizate': { one: '{n} shape filled by the nonzero rule (overlaps, same-sense nesting) redrawn as the outline of its filled area, on the original curves', other: '{n} shapes filled by the nonzero rule (overlaps, same-sense nesting) redrawn as the outline of their filled area, on the original curves' },
+  'import.pdf.nonzero-refuzate': { one: '{n} nonzero shape could not be redrawn exactly and is read as even-odd: holes may differ from the file', other: '{n} nonzero shapes could not be redrawn exactly and are read as even-odd: holes may differ from the file' },
+  'import.pdf.forme-adanci': { one: '{n} embedded drawing (Form XObject) nested deeper than 16 levels, or calling itself, skipped', other: '{n} embedded drawings (Form XObjects) nested deeper than 16 levels, or calling themselves, skipped' },
+  'import.pdf.fluxuri-stricate': { one: '{n} content stream could not be decoded (or only up to an error): the drawing may be incomplete', other: '{n} content streams could not be decoded (or only up to an error): the drawing may be incomplete' },
+  'import.pdf.xref-reconstruit': { one: 'The object table (xref) was broken and was rebuilt from the file’s objects: check the drawing', other: 'The object table (xref) was broken and was rebuilt from the file’s objects: check the drawing' },
 } as const satisfies Readonly<Record<string, Mesaj>>;

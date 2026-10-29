@@ -263,6 +263,11 @@ button[data-icona]:disabled > .eticheta {
   transition-delay: 0.35s;
 }
 
+/* Un buton cu panoul lui deschis (exportul vectorilor) nu-și mai arată sfatul: ar sta pe jumătate sub panou. */
+[data-icona][aria-expanded='true'] > .sfat {
+  visibility: hidden;
+}
+
 .sfat kbd {
   color: inherit;
   background: transparent;
@@ -361,6 +366,16 @@ button[data-icona]:disabled > .eticheta {
 
 .extensie:empty {
   visibility: hidden;
+}
+
+/*
+ * Ce coboară din bara de sus (sfatul unui buton, panoul exportului vectorilor, ADR 0104 §8) trece peste extensia lipită
+ * dedesubt: bara urcă peste ea doar cât e nevoie. Linia ei de jos, acoperită altfel de extensie, devine transparentă (se
+ * vede fundalul barei, același cu al extensiei), ca îmbinarea să nu se schimbe.
+ */
+.insula.bara:has(:hover > .sfat, :focus-visible > .sfat, .panou-retea) {
+  z-index: 3;
+  border-bottom-color: transparent;
 }
 
 /*
@@ -1442,6 +1457,11 @@ main h1 {
 [data-icona='import.svg'],
 [data-icona='document.importa'] {
   --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12M7 10l5 5 5-5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4'/%3E%3C/svg%3E");
+}
+
+/* Exportul vectorilor (ADR 0088): o curbă cu nodurile ei, deasupra săgeții de descărcare. */
+[data-icona='export.vectori'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 10.5C7 2 12 2 14.5 6S19.5 10 19.5 4.5'/%3E%3Crect x='2.5' y='9' width='3' height='3' rx='.5'/%3E%3Crect x='18' y='2.5' width='3' height='3' rx='.5'/%3E%3Cpath d='M12 13v8M8.5 17.5 12 21l3.5-3.5'/%3E%3C/svg%3E");
 }
 
 [data-icona='export.gcode'] {

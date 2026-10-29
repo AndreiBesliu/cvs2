@@ -25,7 +25,8 @@ export type IdCip = (typeof CIPURI)[number];
 
 /** Controalele care nu sunt acțiuni ale registrului: limba (butoanele RO / EN, apăsat = limba de acum). */
 /** `unelte`: locul uneltelor de desen, al lipirii și al alinierii (ADR 0052), umplut de modulul editării, la cerere. */
-export const CONTROALE = ['limba', 'unelte'] as const;
+/** `vectori`: locul exportului vectorilor (ADR 0088), lângă import și G-code (ADR 0104 §8), umplut tot de modulul editării. */
+export const CONTROALE = ['limba', 'unelte', 'vectori'] as const;
 export type IdControl = (typeof CONTROALE)[number];
 
 /**
@@ -80,9 +81,10 @@ export const ARANJAMENT_MODERN: Aranjament = {
       { id: 'forme', intrari: [{ control: 'unelte' }] },
       // Duplică și Șterge stau în bara selecției, lângă ea (și Ctrl+D, Delete, paleta): în bara de sus erau a doua oară.
       { id: 'istoric', intrari: [{ actiune: 'istoric.anuleaza' }, { actiune: 'istoric.reface' }] },
-      // „Importă SVG / DXF” doar cu pictograma (eticheta în sfat): uneltele de desen au intrat în bară (ADR 0052) și altfel
-      // „Exportă G-code” ieșea din ecran la 1280 px.
-      { id: 'fisier', intrari: [{ actiune: 'import.svg' }, { actiune: 'export.gcode', aspect: 'principal' }] },
+      // Fișierele, împreună și departe de uneltele de desen (cererea owner-ului din 28.10, ADR 0104 §8): importul (SVG, DXF,
+      // PDF, AI), exportul vectorilor și G-code-ul. Primele două doar cu pictograma (eticheta în sfat): uneltele de desen au
+      // intrat în bară (ADR 0052) și altfel „Exportă G-code” ieșea din ecran la 1280 px.
+      { id: 'fisier', intrari: [{ actiune: 'import.svg' }, { control: 'vectori' }, { actiune: 'export.gcode', aspect: 'principal' }] },
     ],
     unelte: [
       { id: 'vedere', intrari: [{ actiune: 'vedere.paleta', aspect: 'cauta' }, { control: 'limba' }, { actiune: 'vedere.tema' }] },

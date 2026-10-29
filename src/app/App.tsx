@@ -22,7 +22,7 @@ import { ACTIUNI_VEDERE, type ContextVedere } from '../ui/actiuniVedere.ts';
 import { actiuneaTastei, tastaActiunii, tastaApasata } from '../ui/scurtaturi.ts';
 import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type RezultatExport } from '../ui/actiuniExport.ts';
 import {
-  ACTIUNI_IMPORT, preincarcaImport, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport, type UnitateDxf,
+  ACTIUNI_IMPORT, preincarcaImport, type ContextImport, type FisierImport, type ImportPregatit, type PrevizualizareImport, type AlegeriImport,
 } from '../ui/actiuniImport.ts';
 import type { CerereExport, StareExport } from '../ui/DialogExport.tsx';
 import type { RezumatJob } from '../ui/actiuniExportTipuri.ts';
@@ -566,7 +566,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   };
 
   /** Contextul importului înainte de alegerea fișierului: doar starea butonului (fila care doar citește îl oprește). */
-  const importFaraFisier = (): ContextImport => contextImport(null, 96, 'mm', () => undefined);
+  const importFaraFisier = (): ContextImport => contextImport(null, { pxPeTol: 96, unitate: 'mm', pagina: 1 }, () => undefined);
   /** Starea oricărei acțiuni din bare și din paletă, citită din registrul ei. */
   const stareActiune = (id: string): RezultatActiune => (
     id === 'import.svg' ? stare(registruImport, id, importFaraFisier())
@@ -666,11 +666,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     }
   };
 
-  /** Contextul ușilor pentru un fișier, un px (SVG) și o unitate (DXF); citirea lui o face dialogul (`ImportConectat`). */
-  const contextImport = (f: FisierImport | null, px: 96 | 72, unitate: UnitateDxf, rezultat: (r: PrevizualizareImport) => void): ContextImport => ({
+  /**
+   * Contextul ușilor pentru un fișier și alegerile lui (px-ul unui SVG, unitatea unui DXF, pagina unui PDF); citirea lui o
+   * face dialogul (`ImportConectat`).
+   */
+  const contextImport = (f: FisierImport | null, a: AlegeriImport, rezultat: (r: PrevizualizareImport) => void): ContextImport => ({
     fisier: () => f,
-    pxPeTol: () => px,
-    unitate: () => unitate,
+    pxPeTol: () => a.pxPeTol,
+    unitate: () => a.unitate,
+    pagina: () => a.pagina,
     limba: () => limbaActiva,
     doarCitire: () => doarCiteste(mod),
     rezultat,
@@ -747,11 +751,16 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     return buton(id, atribut, p ? { ...extra, 'aria-pressed': panouri[p] } : extra);
   };
 
-  /** Un control care nu e acțiune: limba, ca butoane apăsate / neapăsate; locul uneltelor, umplut de `Editare` (ADR 0052). */
+  /**
+   * Un control care nu e acțiune: limba, ca butoane apăsate / neapăsate; locul uneltelor (ADR 0052) și al exportului
+   * vectorilor (ADR 0104 §8), umplute de `Editare`.
+   */
   const control = (c: IdControl): ReactNode => {
     switch (c) {
       case 'unelte':
         return <div className="loc-unelte" id="loc-unelte" />;
+      case 'vectori':
+        return <div className="loc-vectori" id="loc-vectori" />;
       case 'limba':
         return (
           <nav aria-label={t('app.limba')}>
@@ -907,7 +916,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           {aranjament.zone.unelte.length > 0 && <div className="insula unelte">{grupuri('unelte')}</div>}
         </header>
         {/* Fereastra de fișiere a importului: în afara barelor, ca importul să meargă din orice aranjament (și din paletă). */}
-        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml,.dxf,image/vnd.dxf,application/dxf" multiple hidden data-camp="fisier-svg"
+        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml,.dxf,image/vnd.dxf,application/dxf,.pdf,application/pdf,.ai" multiple hidden data-camp="fisier-svg"
           onChange={(e) => { alesFisier(e.target.files); e.target.value = ''; }} />
         <div className="lucru">
           <Panza

@@ -147,6 +147,7 @@ export const enEditare = {
   'editare.retea.inchide': 'Close',
   'editare.vectori': 'Export vectors: the sheet as DXF, SVG, PDF or EPS, at 1:1 scale, one layer per role (outside, inside, pocket…)',
   'editare.vectori.sectiune': 'Vector export',
+  'editare.vectori.scurt': 'Export vectors…',
   'editare.vectori.format': 'Format',
   'editare.vectori.dxf': 'DXF (R2007)',
   'editare.vectori.svg': 'SVG',

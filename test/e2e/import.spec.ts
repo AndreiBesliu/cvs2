@@ -4,6 +4,7 @@ import { poarta } from '../oracles/poarta.ts';
 import { regiuneDinDocument } from '../oracles/regiune.ts';
 import { ecran, vedere } from './ajutor-panza.ts';
 import { cerc, dxf, grupuri, linie } from '../unit/ajutor-dxf.ts';
+import { flux, pagini, pdf } from '../unit/ajutor-pdf.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -306,15 +307,15 @@ test('lăsarea pe planșă (2.8b): două SVG-uri trec prin dialog pe rând și c
   expect(inst[1]?.y).toBeCloseTo(p.y - 20, 6);
 });
 
-test('lăsarea pe planșă (2.8b): „Sari peste” trece la următorul, un fișier care nu e SVG sau DXF e refuzat cu motiv, „Renunță la toate” închide', async ({ page }) => {
+test('lăsarea pe planșă (2.8b): „Sari peste” trece la următorul, un fișier de alt format e refuzat cu motiv, „Renunță la toate” închide', async ({ page }) => {
   await page.goto('/');
   await lasaPePanza(page, [
-    { nume: 'desen.pdf', text: '%PDF-1.4', tip: 'application/pdf' },
+    { nume: 'desen.eps', text: '%!PS-Adobe-3.0 EPSF-3.0', tip: 'application/postscript' },
     { nume: 'unu.svg', text: PATRAT, tip: 'image/svg+xml' },
     { nume: 'doi.svg', text: PATRAT, tip: 'image/svg+xml' },
   ], 0.4, 0.6);
   await expect(page.getByTestId('import-coada')).toHaveText('(1 din 3)');
-  await expect(page.getByTestId('import-refuz')).toContainText('Doar fișierele SVG și DXF se importă deocamdată');
+  await expect(page.getByTestId('import-refuz')).toContainText('Doar fișierele SVG, DXF, PDF și AI se importă deocamdată');
   await page.click('[data-buton="sari"]');
   await expect(page.getByTestId('import-coada')).toHaveText('(2 din 3)');
   await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 20.00 × 20.00 mm');
@@ -521,4 +522,157 @@ test('degruparea (ADR 0103): piesa unui DXF se desface pe contururi, din clic dr
   await expect(meniu).toHaveCount(0);
   await expect(page.locator('[data-unealta="selectie"]')).toHaveAttribute('aria-pressed', 'true');
   expect(erori).toEqual([]);
+});
+
+/* ── PDF și AI (ADR 0104) și fișierele din bara de sus ────────────────────────────────────────────────────────────── */
+
+const fisierPdf = (nume: string, octeti: Buffer) => ({ name: nume, mimeType: 'application/pdf', buffer: octeti });
+
+test('PDF cu trei pagini: mărimea, straturile ca nume, raportul; pagina aleasă din listă; piesa cade unde era pe pagină', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/fixtures/pdf/in-straturi.pdf');
+  await expect(page.locator('#import-titlu')).toHaveText('Importă: in-straturi.pdf');
+  // Pagina 1: dreptunghiul (20, 20)–(120, 80) pe DECUPARE și linia (150, 50)–(250, 50) pe GRAVARE; forma de pe stratul oprit, sărită.
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 230.00 × 60.00 mm');
+  const pagina = page.locator('[data-camp="pagina"]');
+  await expect(pagina).toHaveValue('1');
+  await expect(pagina.locator('option')).toHaveText(['1', '2', '3']);
+  await expect(page.locator('label', { has: pagina })).toContainText('Pagina (din 3)');
+  await expect(page.getByTestId('import-cai')).toHaveText('1 contur închis: 1 tăiate pe exterior, 0 pe interior (din imbricare)');
+  await expect(page.getByTestId('import-deschise')).toContainText('1 cale deschisă, tăiată pe linie');
+  await expect(page.getByTestId('import-straturi')).toHaveText('2 straturi, păstrate ca numele formelor: DECUPARE, GRAVARE');
+  await expect(page.locator('[data-avertisment]')).toHaveText([
+    '1 cale deschisă (trasă, neînchisă) importată ca linie, de tăiat pe linie',
+    '1 formă de pe un strat oprit, sărită',
+  ]);
+  await expect(page.locator('[data-camp="px"], [data-camp="unitate"]')).toHaveCount(0);
+  // Pagina 3 (decupată și rotită): polilinia de 40 × 100 mm, fără straturi; apoi înapoi la prima.
+  await pagina.selectOption('3');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 40.00 × 100.00 mm');
+  await expect(page.getByTestId('import-straturi')).toHaveCount(0);
+  await expect(pagina).toHaveValue('3');
+  await pagina.selectOption('1');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 230.00 × 60.00 mm');
+  await page.click('[data-buton="importa"]');
+  await expect(page.locator('.dialog')).toHaveCount(0);
+  const doc = await documentSalvat(page, 1) as {
+    foi: Array<{ instante: Array<{ x: number; y: number }> }>;
+    piese: Array<{ nume: string; radacina: { copii: Array<{ nume?: string }> } }>;
+  };
+  // Colțul stânga-jos al paginii e colțul foii: colțul desenului, (20, 20) mm, e unde stă instanța.
+  const inst = doc.foi[0]?.instante ?? [];
+  expect(inst).toHaveLength(1);
+  expect(inst[0]?.x).toBeCloseTo(20, 4);
+  expect(inst[0]?.y).toBeCloseTo(20, 4);
+  expect(doc.piese[0]?.nume).toBe('in-straturi');
+  expect(doc.piese[0]?.radacina.copii.map((c) => c.nume)).toEqual(['DECUPARE', 'GRAVARE']);
+});
+
+test('PDF și AI refuzate cu motivul lor (protejat, PostScript, AI fără conținut PDF); coperta goală oferă pagina a doua; un AI care e PDF se importă', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles([
+    fisierPdf('criptat.pdf', readFileSync('test/fixtures/pdf/criptat.pdf')),
+    { name: 'vechi.ai', mimeType: 'application/postscript', buffer: Buffer.from('%!PS-Adobe-3.0\n%%Creator: Adobe Illustrator(TM) 8.0\n', 'latin1') },
+    fisierPdf('Planse.pdf', pagini(['BT /F1 12 Tf (Titlu) Tj ET', '0 0 72 36 re S'])),
+    { name: 'logo.ai', mimeType: 'application/illustrator', buffer: pagini(['0 0 72 72 re f']) },
+    // Un AI salvat fără „Create PDF Compatible File”: pagina PDF are doar nota Illustrator-ului, ca text.
+    { name: 'nota.ai', mimeType: 'application/illustrator', buffer: pagini(['BT /F1 12 Tf (This is an Adobe Illustrator File) Tj ET']) },
+  ]);
+  await expect(page.getByTestId('import-coada')).toHaveText('(1 din 5)');
+  await expect(page.getByTestId('import-refuz')).toHaveText('Fișierul e protejat (cu parolă sau cu restricții de editare): salvează o copie fără protecție.');
+  await expect(page.locator('[data-buton="importa"]')).toHaveCount(0);
+  await expect(page.locator('[data-camp="pagina"]')).toHaveCount(0);
+  await page.click('[data-buton="sari"]');
+  await expect(page.getByTestId('import-refuz')).toHaveText(
+    'Fișierul e PostScript (un AI de dinainte de Illustrator 9, sau un EPS), nu PDF: salvează-l ca PDF, sau ca AI cu „Create PDF Compatible File” bifat.',
+  );
+  await page.click('[data-buton="sari"]');
+  // Coperta are doar un titlu: refuzul spune de ce, iar lista paginilor rămâne, ca să aleagă desenul de pe a doua.
+  await expect(page.getByTestId('import-coada')).toHaveText('(3 din 5)');
+  await expect(page.getByTestId('import-refuz')).toHaveText('Pagina n-are nicio cale de importat (textul, imaginile și umbririle se sar).');
+  await expect(page.locator('[data-avertisment="sarit-text"]')).toHaveText('1 bloc de text sărit: transformă textul în contururi în programul tău');
+  const lista = page.locator('[data-camp="pagina"]');
+  await lista.focus();
+  await lista.selectOption('2');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 25.40 × 12.70 mm');
+  await expect(page.getByTestId('import-refuz')).toHaveCount(0);
+  // Cât se recitește, refuzul rămâne pe ecran (cu lista): lista nu dispare, deci focusul rămâne pe ea.
+  await expect(lista).toBeFocused();
+  await page.click('[data-buton="importa"]');
+  // Un AI de la Illustrator 9 încolo e un PDF: se citește, iar numele piesei e fără extensie.
+  await expect(page.getByTestId('import-coada')).toHaveText('(4 din 5)');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 25.40 × 25.40 mm');
+  await page.click('[data-buton="importa"]');
+  await expect(page.getByTestId('import-coada')).toHaveText('(5 din 5)');
+  await expect(page.getByTestId('import-refuz')).toHaveText(
+    'Pagina n-are nicio cale de importat. Un AI salvat fără „Create PDF Compatible File” arată doar o notă: salvează-l din nou din Illustrator, cu opțiunea bifată.',
+  );
+  await page.click('[data-buton="renunta"]');
+  await expect(page.locator('.dialog')).toHaveCount(0);
+  const doc = await documentSalvat(page, 2) as { piese: Array<{ nume: string }> };
+  expect(doc.piese.map((p) => p.nume)).toEqual(['Planse', 'logo']);
+});
+
+test('numele unui strat scris de fișier se taie în dialog la 60 de caractere (piesa îl păstrează până la plafonul numelor)', async ({ page }) => {
+  const lung = 'STRAT-'.repeat(20);
+  const octeti = pdf([
+    '<< /Type /Catalog /Pages 2 0 R /OCProperties << /OCGs [5 0 R] /D << >> >> >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 72 72] /Contents 4 0 R /Resources << /Properties << /L1 5 0 R >> >> >>',
+    flux('', '/OC /L1 BDC 0 0 m 72 0 l S EMC'),
+    `<< /Type /OCG /Name (${lung}) >>`,
+  ]);
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierPdf('strat.pdf', octeti));
+  await expect(page.getByTestId('import-straturi')).toHaveText(`1 strat, păstrat ca numele formelor: ${lung.slice(0, 60)}…`);
+  await page.click('[data-buton="importa"]');
+  const doc = await documentSalvat(page, 1) as { piese: Array<{ radacina: { copii: Array<{ nume?: string }> } }> };
+  expect(doc.piese[0]?.radacina.copii[0]?.nume).toBe(lung);
+});
+
+test('fișierele stau împreună în bara de sus (cererea din 28.10): import, exportul vectorilor, G-code; panoul vectorilor peste extensie', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto('/');
+  const grup = page.locator('[data-grup="fisier"]');
+  await expect(grup.locator('[data-editare="vectori"]')).toBeVisible();
+  const ordine = await grup.locator('button').evaluateAll((b) => b.map((x) => x.getAttribute('data-actiune') ?? x.getAttribute('data-editare')));
+  expect(ordine).toEqual(['import.svg', 'vectori', 'export.gcode']);
+  // Extensia barei nu-l mai are; bara întreagă încape lângă marcă și lângă uneltele din dreapta.
+  await expect(page.locator('#loc-extensie [data-editare="vectori"]')).toHaveCount(0);
+  await expect(page.locator('[data-camp="fisier-svg"]')).toHaveAttribute('accept', /\.dxf,image\/vnd\.dxf,application\/dxf,\.pdf,application\/pdf,\.ai$/);
+  const cutie = async (s: string) => {
+    const b = await page.locator(s).boundingBox();
+    if (!b) throw new Error(`${s} n-are cutie`);
+    return b;
+  };
+  const bara = await cutie('.insula.bara'), marca = await cutie('.marca'), unelte = await cutie('.insula.unelte');
+  expect(marca.x + marca.width).toBeLessThanOrEqual(bara.x);
+  expect(bara.x + bara.width).toBeLessThanOrEqual(unelte.x);
+  // Sfatul unui buton al barei coboară peste extensie: bara urcă deasupra ei doar cât e nevoie.
+  const zBara = () => page.locator('.insula.bara').evaluate((el) => getComputedStyle(el).zIndex);
+  await page.mouse.move(640, 600);
+  await expect.poll(zBara).toBe('1');
+  await page.locator('[data-actiune="import.svg"]').hover();
+  await expect.poll(zBara).toBe('3');
+  await page.mouse.move(640, 600);
+  await expect.poll(zBara).toBe('1');
+  // Panoul se deschide sub buton, peste extensia lipită dedesubt (cele patru colțuri sunt ale panoului, la lovire), și cu
+  // mausul plecat de pe bară; sfatul butonului nu se mai arată, cât panoul e deschis.
+  const vectori = page.locator('[data-editare="vectori"]');
+  await vectori.click();
+  const panou = page.getByTestId('panou-vectori');
+  await expect(panou).toBeVisible();
+  await page.waitForTimeout(700);
+  expect(await vectori.locator('.sfat').evaluate((el) => getComputedStyle(el).visibility)).toBe('hidden');
+  await page.mouse.move(640, 600);
+  const p = await panou.boundingBox();
+  if (!p) throw new Error('panoul n-are cutie');
+  expect(p.x + p.width).toBeLessThanOrEqual(1280);
+  const colturi = await page.evaluate(([x, y, w, h]) => {
+    const el = document.querySelector('[data-testid="panou-vectori"]');
+    return [[x + 4, y + 4], [x + w - 4, y + 4], [x + 4, y + h - 4], [x + w - 4, y + h - 4]].map(([a, b]) => el?.contains(document.elementFromPoint(a ?? 0, b ?? 0)) === true);
+  }, [p.x, p.y, p.width, p.height] as const);
+  expect(colturi).toEqual([true, true, true, true]);
+  await page.locator('[data-vectori="inchide"]').click();
+  await expect(panou).toHaveCount(0);
 });

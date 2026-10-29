@@ -8,7 +8,8 @@ CNC Vector Studio desenează piese pentru o freză CNC și scrie programul (G-co
 **foaie** (placa de material), pui pe ea forme, fiecare cu **operația** ei de tăiere, apoi exporți G-code-ul.
 
 **Ecranul.** Pânza ține tot ecranul; deasupra ei plutesc:
-- **bara de sus**: uneltele de desen, Lipire și Grilă, Anulează și Reface, importul și „Exportă G-code”;
+- **bara de sus**: uneltele de desen, Lipire și Grilă, Anulează și Reface și, la capăt, fișierele: importul, „Exportă
+  vectori” și „Exportă G-code”;
 - **extensia barei**, dedesubt: alinierea, oglindirea, vederea 3D și manualul;
 - în dreapta sus: „Caută o comandă”, limba (RO / EN) și tema;
 - în stânga, panoul **Pe foaie**: formele foii, cu piesa și operațiile fiecăreia; în dreapta, panoul **Proprietăți**;
@@ -230,7 +231,7 @@ nu au nimic în comun (intersecția) sau dacă din prima nu rămâne nimic (scă
 %% capitol: degrupare
 %% acopera: document.degrupeaza
 
-Un import SVG sau DXF e o singură piesă, cu toate contururile fișierului; la fel o formă cu găuri, făcută de boolean.
+Un import (SVG, DXF, PDF) e o singură piesă, cu toate contururile fișierului; la fel o formă cu găuri, făcută de boolean.
 **Degrupează** (butonul de lângă boolean, meniul de clic dreapta, `Ctrl+Shift+G`) o desface: fiecare contur devine o piesă a
 lui, care se alege, se mută, se scalează și se șterge singură. Desfacerea e pe un singur nivel: un subgrup (o literă cu golul
 ei) rămâne întreg.
@@ -309,12 +310,13 @@ Cu o singură formă aleasă, alinierea o pune față de foaie (de exemplu, „A
 foii). Mai multe forme se aleg cu dreptunghiul de selecție sau cu Shift + clic (vezi [Selecția și editarea](#selectie)).
 Fiecare aliniere se poate anula cu `Ctrl+Z`.
 
-## Importul SVG și DXF
+## Importul SVG, DXF, PDF și AI
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-Butonul **Importă SVG / DXF** din bara de sus deschide fereastra de fișiere (poți alege mai multe). Sau tragi fișierele SVG
-sau DXF direct pe pânză: fiecare cade cu centrul unde îl lași.
+Butonul **Importă SVG / DXF / PDF / AI** din bara de sus (primul dintre fișiere, lângă „Exportă vectori” și „Exportă
+G-code”) deschide fereastra de fișiere (poți alege mai multe). Sau tragi fișierele direct pe pânză: fiecare cade cu centrul
+unde îl lași.
 
 Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului și cum se va tăia:
 - **contururile închise**: cele din afară pe exterior, găurile din ele pe interior (după imbricare);
@@ -324,10 +326,11 @@ Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului �
   Illustrator e recunoscut;
 - la un DXF, **unitățile**: cele declarate de fișier se folosesc ca atare; unul care nu le declară (de exemplu un R12) se
   citește în mm, iar fereastra te lasă să alegi mm, cm, m, țol sau picior (mărimea desenului se schimbă pe loc);
+- la un PDF cu mai multe pagini, **pagina** de importat (vezi mai jos);
 - ce nu se importă sau se citește altfel, cu numărul lor (la un SVG: textele, clonele `<use>`, imaginile, formele ascunse).
 
 **Importă** pune desenul pe foaie ca o singură formă, selectată; **Sari peste** trece la fișierul următor, **Renunță** și
-**Renunță la toate** închid fereastra. Se importă doar fișiere SVG și DXF, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul
+**Renunță la toate** închid fereastra. Se importă fișiere SVG, DXF, PDF și AI, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul
 trebuie transformat în contururi în programul de desen înainte de export.
 
 Un **DXF** se citește așa:
@@ -340,6 +343,20 @@ Un **DXF** se citește așa:
   dreptunghi devin un contur închis; unde se întâlnesc trei capete (un T), nu se leagă;
 - se sar, numărate: textele, hașurile, cotele, punctele, entitățile 3D, imaginile, straturile oprite sau înghețate și spațiul
   hârtiei (layout-urile).
+
+Un **PDF** se citește așa (un **AI** salvat de Illustrator 9 sau mai nou e tot un PDF și se citește la fel):
+- se importă o singură pagină: fereastra o citește pe prima, iar la un fișier cu mai multe pagini alegi alta din lista
+  **Pagina**, și după un refuz (o copertă doar cu text n-are nimic de importat);
+- desenul ajunge pe foaie unde era pe pagină: colțul stânga-jos al paginii afișate (cu decuparea și rotirea ei) e colțul
+  foii;
+- liniile și curbele intră exact, la scara 1:1 (curbele rămân curbe Bézier); o formă umplută după regula nonzero se
+  redesenează ca la SVG;
+- fiecare formă își păstrează numele stratului (OCG), dacă fișierul are straturi; formele de pe straturile oprite se sar;
+- se sar, numărate: textele, imaginile și umbririle (gradientele); măștile de tăiere nu se aplică (ce decupează se importă
+  întreg);
+- un fișier protejat (cu parolă sau cu restricții de editare) e refuzat: salvează o copie fără protecție. Un AI de dinainte
+  de Illustrator 9 sau un EPS e PostScript, nu PDF: salvează-l ca PDF, sau ca AI cu „Create PDF Compatible File” bifat (un AI
+  salvat fără opțiunea asta arată doar o notă de text, iar fereastra îți spune s-o bifezi).
 
 ## Operațiile de tăiere
 %% capitol: operatii
@@ -513,7 +530,7 @@ dacă freza trece prin foaie. Pentru placa văzută în 3D, vezi [Vederea 3D](#v
 %% capitol: vectori
 %% acopera: editare.vectori
 
-**Exportă vectori** (în extensia barei, lângă vederea 3D) scrie foaia ca fișier de desen, pentru alte programe (ArtCAM,
+**Exportă vectori** (în bara de sus, între import și „Exportă G-code”) scrie foaia ca fișier de desen, pentru alte programe (ArtCAM,
 Inkscape, Illustrator / Corel, AutoCAD / LibreCAD) sau pentru laser:
 - **DXF (R2007)**, implicit, **SVG**, **PDF** sau **EPS**;
 - în mm, la scara 1:1, din colțul stânga-jos al foii (în SVG, foaia are mărimea ei în mm);

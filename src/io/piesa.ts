@@ -68,7 +68,7 @@ export function cutieCai(cai: ReadonlyArray<CaleImport>): Cutie {
 
 /** Numele piesei din numele fișierului: fără extensie, tăiat la plafonul numelor. */
 export function numeDinFisier(fisier: string): string {
-  const fara = fisier.replace(/\.(svg|dxf)$/i, '');
+  const fara = fisier.replace(/\.(svg|dxf|pdf|ai)$/i, '');
   return (fara || fisier).slice(0, PLAFON.numeLungime);
 }
 

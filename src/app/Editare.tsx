@@ -306,9 +306,15 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Locul uneltelor din bara de sus (ADR 0052): îl desenează aplicația, iar modulul ăsta îl umple, printr-un portal.
   const [loc, setLoc] = useState<HTMLElement | null>(null);
   const [locExtensie, setLocExtensie] = useState<HTMLElement | null>(null);
+  // Locul exportului vectorilor, cu fișierele din bara de sus (ADR 0104 §8); fără el, în extensie.
+  const [locVectori, setLocVectori] = useState<HTMLElement | null>(null);
   // Locul tipurilor nodului ales (ADR 0063), în bara de sus, cât unealta Noduri e aleasă.
   const [locNoduri, setLocNoduri] = useState<HTMLElement | null>(null);
-  useLayoutEffect(() => { setLoc(document.getElementById('loc-unelte')); setLocExtensie(document.getElementById('loc-extensie')); });
+  useLayoutEffect(() => {
+    setLoc(document.getElementById('loc-unelte'));
+    setLocExtensie(document.getElementById('loc-extensie'));
+    setLocVectori(document.getElementById('loc-vectori'));
+  });
   const [liniiDesen, setLiniiDesen] = useState<readonly LinieGhid[]>([]);
   // Liniile de aliniere ale mânerului lipit (ADR 0055), cât se trage.
   const [liniiManere, setLiniiManere] = useState<readonly LinieGhid[]>([]);
@@ -913,12 +919,22 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {motivDegrupare ? <span className="motiv-extensie" role="status" data-testid="motiv-degrupare">{motivDegrupare}</span> : null}
           </span>
         );
+        // Exportul vectorilor (ADR 0088): cu fișierele din bara de sus (ADR 0104 §8), ca butoanele vecine (iconița din CSS,
+        // numele scurt în sfat); fără locul acela, în extensie, ca celelalte secțiuni.
         const vectoriSectiune = (
           <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.vectori.sectiune')} data-testid="extensie-vectori">
-            <button type="button" className="aliniaza" aria-expanded={panouVectori} aria-controls="panou-vectori" title={t('editare.vectori')} aria-label={t('editare.vectori')}
-              data-editare="vectori" onClick={() => { setPanou(panouVectori ? null : 'vectori'); }}>
-              <IconaVectori />
-            </button>
+            {locVectori ? (
+              <button type="button" aria-expanded={panouVectori} aria-controls="panou-vectori" data-editare="vectori" data-icona="export.vectori"
+                onClick={() => { setPanou(panouVectori ? null : 'vectori'); }}>
+                <span className="eticheta">{t('editare.vectori')}</span>
+                <span className="sfat" aria-hidden="true">{t('editare.vectori.scurt')}</span>
+              </button>
+            ) : (
+              <button type="button" className="aliniaza" aria-expanded={panouVectori} aria-controls="panou-vectori" title={t('editare.vectori')}
+                aria-label={t('editare.vectori')} data-editare="vectori" onClick={() => { setPanou(panouVectori ? null : 'vectori'); }}>
+                <IconaVectori />
+              </button>
+            )}
             {panouVectori ? <PanouVectori doc={doc} onInchide={() => { setPanou(null); }} /> : null}
           </span>
         );
@@ -955,8 +971,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             <span className="separator" aria-hidden="true" />
             {booleanSectiune}
             <span className="separator" aria-hidden="true" />
-            {vectoriSectiune}
-            <span className="separator" aria-hidden="true" />
+            {locVectori ? null : (
+              <>
+                {vectoriSectiune}
+                <span className="separator" aria-hidden="true" />
+              </>
+            )}
             {vedereSectiune}
             <span className="separator" aria-hidden="true" />
             {ajutorSectiune}
@@ -1023,6 +1043,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           <>
             {loc ? createPortal(bara, loc) : bara}
             {locExtensie ? createPortal(sectiuni, locExtensie) : null}
+            {locVectori ? createPortal(vectoriSectiune, locVectori) : null}
           </>
         );
       })()}

@@ -197,6 +197,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   0,000001 mm), refuzul ușii se spune lângă mânere. **Degruparea (ADR 0103)** gata pe 28.10: o piesă-grup se desface în
   câte o piesă pe contur (butonul de lângă boolean, meniul de clic dreapta, Ctrl+Shift+G), cu G-code-ul neschimbat; comanda
   `degrupeaza` / `regrupeaza` e liniară. **Pornirea 97,1 (cu ușa 100,6 / 110 kB), totalul 341,0 / 400.**
+  **Importul PDF și AI (ADR 0104)** gata pe 29.10: „Importă SVG / DXF / PDF / AI…” citește o pagină a unui PDF (și AI-ul
+  de la Illustrator 9, care e PDF), aleasă din listă, cu un cititor propriu (`src/io/pdfObiecte.ts`, `src/io/pdf.ts`):
+  desenul unde era pe pagină, straturile ca nume, textul și imaginile sărite, PostScript-ul și fișierele protejate refuzate.
+  **Corpusul PDF e Python** (`test/oracles-py/pdf_import_corpus.py`, PyMuPDF): un caz nou = desenul în generator + valoarea
+  pe hârtie, verificată acolo față de MuPDF, apoi `test/fixtures/pdf/` regenerat și comis. **Fișierele stau împreună** în
+  bara de sus (importul, „Exportă vectori”, „Exportă G-code”; controlul `vectori` al aranjamentului, umplut de editare).
+  **Pornirea 97,2 (cu ușa 100,7 / 110 kB), totalul 349,7 / 400.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

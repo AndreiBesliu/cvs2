@@ -8,7 +8,8 @@ CNC Vector Studio draws parts for a CNC router and writes the program (G-code) t
 board of material), put shapes on it, each with its own cutting **operation**, then export the G-code.
 
 **The screen.** The canvas fills the screen; floating above it are:
-- the **top bar**: the drawing tools, Snap and Grid, Undo and Redo, import and “Export G-code”;
+- the **top bar**: the drawing tools, Snap and Grid, Undo and Redo and, at its end, the files: import, “Export vectors”
+  and “Export G-code”;
 - the **bar extension** just below: alignment, mirroring, the 3D view and the manual;
 - top right: “Search commands”, the language (RO / EN) and the theme;
 - on the left, the **On the sheet** panel: the sheet's shapes, with the part and operations of each; on the right, the
@@ -241,7 +242,7 @@ change them), if they have nothing in common (intersecting) or if nothing remain
 %% capitol: degrupare
 %% acopera: document.degrupeaza
 
-An SVG or DXF import is a single part, with all the outlines of the file; so is a shape with holes made by the boolean.
+An import (SVG, DXF, PDF) is a single part, with all the outlines of the file; so is a shape with holes made by the boolean.
 **Ungroup** (the button next to the boolean, the right-click menu, `Ctrl+Shift+G`) takes it apart: each outline becomes a part of
 its own, which is chosen, moved, scaled and deleted on its own. It goes one level down: a subgroup (a letter with its hole)
 stays whole.
@@ -321,12 +322,13 @@ With a single shape chosen, alignment places it against the sheet (for example, 
 edge). Several shapes are picked with the selection rectangle or with Shift + click (see [Selecting and editing](#selectie)).
 Each alignment can be undone with `Ctrl+Z`.
 
-## Importing SVG and DXF
+## Importing SVG, DXF, PDF and AI
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-The **Import SVG / DXF** button in the top bar opens the file window (you can pick several). Or drag SVG or DXF files straight
-onto the canvas: each one lands centred where you drop it.
+The **Import SVG / DXF / PDF / AI** button in the top bar (the first of the files, next to “Export vectors” and “Export
+G-code”) opens the file window (you can pick several). Or drag the files straight onto the canvas: each one lands centred
+where you drop it.
 
 For each file a window opens that shows the drawing's size and how it will be cut:
 - **closed outlines**: the outer ones on the outside, the holes in them on the inside (from nesting);
@@ -336,10 +338,11 @@ For each file a window opens that shows the drawing's size and how it will be cu
   Illustrator is recognised;
 - for a DXF, **the units**: the ones the file declares are used as they are; a file that declares none (an R12, for example)
   is read in mm, and the window lets you choose mm, cm, m, inch or foot (the drawing's size changes at once);
+- for a PDF with several pages, **the page** to import (see below);
 - what is not imported or is read differently, with their count (for an SVG: texts, `<use>` clones, images, hidden shapes).
 
 **Import** puts the drawing on the sheet as a single shape, selected; **Skip** moves on to the next file; **Cancel** and
-**Cancel all** close the window. Only SVG and DXF files are imported, up to 16 MB, not compressed (no `.svgz`). Text has to be
+**Cancel all** close the window. SVG, DXF, PDF and AI files are imported, up to 16 MB, not compressed (no `.svgz`). Text has to be
 converted to outlines in the drawing program before export.
 
 A **DXF** is read like this:
@@ -353,6 +356,20 @@ A **DXF** is read like this:
   closed outline; where three ends meet (a T), they are not joined;
 - skipped, and counted: texts, hatches, dimensions, points, 3D entities, images, layers that are off or frozen, and paper space
   (the layouts).
+
+A **PDF** is read like this (an **AI** saved by Illustrator 9 or newer is a PDF too and is read the same way):
+- one page is imported: the window reads the first one, and for a file with several pages you pick another from the
+  **Page** list, also after a refusal (a cover with only text has nothing to import);
+- the drawing lands on the sheet where it was on the page: the lower left corner of the displayed page (with its crop and
+  rotation) is the sheet's corner;
+- lines and curves come in exactly, at 1:1 scale (curves stay Bézier curves); a shape filled by the nonzero rule is redrawn
+  as for SVG;
+- every shape keeps the name of its layer (OCG), if the file has layers; shapes on layers that are off are skipped;
+- skipped, and counted: texts, images and shadings (gradients); clipping paths are not applied (what they clip is imported
+  whole);
+- a protected file (with a password or editing restrictions) is refused: save a copy without protection. An AI from before
+  Illustrator 9, or an EPS, is PostScript, not PDF: save it as PDF, or as AI with “Create PDF Compatible File” ticked (an AI
+  saved without that option shows only a text notice, and the window tells you to tick it).
 
 ## The cutting operations
 %% capitol: operatii
@@ -533,7 +550,7 @@ and whether the cutter goes through the sheet. For the sheet seen in 3D, see [Th
 %% capitol: vectori
 %% acopera: editare.vectori
 
-**Export vectors** (in the bar extension, next to the 3D view) writes the sheet as a drawing file, for other programs
+**Export vectors** (in the top bar, between import and “Export G-code”) writes the sheet as a drawing file, for other programs
 (ArtCAM, Inkscape, Illustrator / Corel, AutoCAD / LibreCAD) or for the laser:
 - **DXF (R2007)**, the default, **SVG**, **PDF** or **EPS**;
 - in mm, at 1:1 scale, from the lower left corner of the sheet (in SVG, the sheet has its size in mm);

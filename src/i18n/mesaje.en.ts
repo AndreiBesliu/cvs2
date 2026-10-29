@@ -84,7 +84,7 @@ export const en = {
   'actualizare.offline': 'Preparing offline use: {procent}%',
   'admin.cere-retea': 'The administration page needs a network connection: reload the page once you are online.',
   'dialog.neincarcat': 'This window could not be loaded (the app was updated meanwhile, or the network is down). Your project is saved: reload the page.',
-  'actiune.importa-svg': 'Import SVG / DXF…',
+  'actiune.importa-svg': 'Import SVG / DXF / PDF / AI…',
   'import.lasa-aici': 'Drop SVG files here: each one lands centred where you drop it',
   'actiune.importa': 'Import',
   'motiv.import-refuzat': 'The imported drawing would not pass the project check, so the project could not be opened again.',

@@ -148,6 +148,7 @@ export const roEditare = {
   'editare.retea.inchide': 'Închide',
   'editare.vectori': 'Exportă vectori: foaia ca DXF, SVG, PDF sau EPS, la scara 1:1, cu un strat pe rol (exterior, interior, buzunar…)',
   'editare.vectori.sectiune': 'Exportul vectorilor',
+  'editare.vectori.scurt': 'Exportă vectori…',
   'editare.vectori.format': 'Formatul',
   'editare.vectori.dxf': 'DXF (R2007)',
   'editare.vectori.svg': 'SVG',

@@ -461,7 +461,8 @@
   background: transparent;
 }
 
-.loc-unelte {
+.loc-unelte,
+.loc-vectori {
   display: contents;
 }
 

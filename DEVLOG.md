@@ -3617,3 +3617,17 @@ cititorul obiectelor (`src/io/pdfObiecte.ts`: xref clasic și flux, /Prev, fluxu
 (`incheieSubcalea`, `normalizeazaForma`, `preaDeparte`) mutate în `caleImport.ts`; corpusul PyMuPDF (6 fișiere, 10 seturi) citit
 11 / 11; ușile SVG, DXF, PDF și importul: 1 711 teste, 0 picate. Rămân: probele țintite, dialogul (.pdf / .ai, pagina, raportul),
 spațiul fișierelor, manualul, e2e-ul, mutațiile, ADR 0104, fișa, porțile, publicarea.
+
+**Reluat (29.10, 07:59)**, la „continua”: ramura `wip/9.4-pdf` adusă pe `main` (squash), apoi restul feliei.
+**Completed:** 29.10, 10:00. ADR 0104. Probele țintite ale cititorului (`test/unit/pdf.obiecte.test.ts`, 12): lexerul,
+filtrele cu vectorii lor (ASCII85 din Python, LZW din specificație), predictorii pe hârtie, Flate trunchiat și bomba sub
+plafon, xref ca flux cu flux de obiecte scrise de mână, ciclurile, OCMD-urile, imaginea inline, refuzurile, decupajul
+pictat; găsit: `--5` se citea +5 (acum −5, ca în Adobe Reader). Dialogul: `.pdf` și `.ai` (și după tipul MIME), lista
+**Pagina** (și după un refuz: coperta doar cu text, cu numărul paginilor în refuz; cât se recitește, refuzul și focusul
+rămân), straturile numite, raportul cu 17 coduri și refuzurile noi în ambele limbi; o eroare a cititorului nu mai spune
+„nu e un SVG” la un DXF sau PDF; un AI fără conținut PDF își primește sfatul. Spațiul fișierelor: „Exportă vectori” stă
+între import și „Exportă G-code”, în bara de sus (controlul `vectori` al aranjamentului, umplut de editare), cu iconița
+și sfatul vecinilor. Găsit la verificarea locală (1280 și 1440 px): panoul vectorilor se deschidea sub extensie, iar
+sfaturile barei de sus stăteau sub ea de la ADR 0053; acum bara urcă peste extensie cât coboară un sfat sau un panou al
+ei, iar sfatul unui buton cu panoul deschis nu se mai arată. Manualul: „Importul SVG, DXF, PDF și AI”, ecranul, exportul
+vectorilor. Mutațiile: 28 / 28 (17 pe probele unitare, 11 pe e2e, controlul verde înainte și după); una a trecut întâi: decupajul pictat (`W … S`) nenumărat, fiindcă probele aveau doar `W n`: probă nouă. Pornirea 97,1 → 97,2 (cu ușa 100,7 / 110 kB); totalul 341,0 → 349,7 / 400.

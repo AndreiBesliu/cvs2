@@ -21,11 +21,11 @@ test('formatul importului: după extensie, apoi după tipul MIME; altul, nimic',
   assert.equal(formatImport('Piesa.DXF', 'application/octet-stream'), 'dxf');
   assert.equal(formatImport('fara-extensie', 'image/svg+xml'), 'svg');
   for (const t of ['image/vnd.dxf', 'application/dxf', 'image/x-dxf', 'application/x-dxf']) assert.equal(formatImport('x', t), 'dxf');
-  assert.equal(formatImport('desen.pdf', 'application/pdf'), null);
+  assert.equal(formatImport('nota.txt', 'text/plain'), null);
 });
 
-test('previzualizarea DXF: mărimea desenului, exteriorul și gaura din imbricare, calea deschisă, unitățile; piesa unde e în fișier', () => {
-  const p = previzualizare({ nume: 'Raft lateral.dxf', octeti: inMm(DESEN) }, { pxPeTol: 96, limba: 'ro' });
+test('previzualizarea DXF: mărimea desenului, exteriorul și gaura din imbricare, calea deschisă, unitățile; piesa unde e în fișier', async () => {
+  const p = await previzualizare({ nume: 'Raft lateral.dxf', octeti: inMm(DESEN) }, { pxPeTol: 96, limba: 'ro' });
   assert.ok(p.ok && p.format === 'dxf');
   assert.deepEqual([p.latime, p.inaltime, p.exterioare, p.interioare, p.deschise], [60, 40, 1, 1, 1]);
   assert.deepEqual(p.unitati, { mmPeUnitate: 1, declarate: true, unitate: 'mm' });
@@ -40,24 +40,24 @@ test('previzualizarea DXF: mărimea desenului, exteriorul și gaura din imbricar
   assert.deepEqual(piesa.operatii.map((o) => [o.id, o.latura, o.noduri.length]), [['exterior', 'exterior', 1], ['interior', 'interior', 1], ['deschise', 'pe-linie', 1]]);
 });
 
-test('previzualizarea DXF fără unități: mm, apoi unitatea aleasă (țol: desenul de 25,4 ori mai mare)', () => {
+test('previzualizarea DXF fără unități: mm, apoi unitatea aleasă (țol: desenul de 25,4 ori mai mare)', async () => {
   const f = { nume: 'vechi.dxf', octeti: octeti(dxf({ entitati: DESEN })) };
-  const mm = previzualizare(f, { pxPeTol: 96, limba: 'ro' });
+  const mm = await previzualizare(f, { pxPeTol: 96, limba: 'ro' });
   assert.ok(mm.ok && mm.format === 'dxf');
   assert.deepEqual(mm.unitati, { mmPeUnitate: 1, declarate: false, unitate: 'mm' });
   assert.equal(mm.avertismente['unitati-nedeclarate'], 1);
-  const inch = previzualizare(f, { pxPeTol: 96, limba: 'ro', unitate: 'inch' });
+  const inch = await previzualizare(f, { pxPeTol: 96, limba: 'ro', unitate: 'inch' });
   assert.ok(inch.ok && inch.format === 'dxf');
   assert.deepEqual([inch.latime, inch.inaltime], [60 * 25.4, 40 * 25.4]);
   assert.deepEqual(inch.pregatit.piesa('p1', {}).x, 100 * 25.4);
 });
 
-test('refuzurile DXF poartă formatul (dialogul alege raportul după el)', () => {
-  const bin = previzualizare({ nume: 'b.dxf', octeti: new Uint8Array([...octeti('AutoCAD Binary DXF\r\n'), 0x1a, 0]) }, { pxPeTol: 96, limba: 'ro' });
+test('refuzurile DXF poartă formatul (dialogul alege raportul după el)', async () => {
+  const bin = await previzualizare({ nume: 'b.dxf', octeti: new Uint8Array([...octeti('AutoCAD Binary DXF\r\n'), 0x1a, 0]) }, { pxPeTol: 96, limba: 'ro' });
   assert.deepEqual(bin, { ok: false, cod: 'binar', format: 'dxf' });
-  const gol = previzualizare({ nume: 'g.dxf', octeti: inMm('') }, { pxPeTol: 96, limba: 'ro' });
+  const gol = await previzualizare({ nume: 'g.dxf', octeti: inMm('') }, { pxPeTol: 96, limba: 'ro' });
   assert.ok(!gol.ok && gol.cod === 'gol' && gol.format === 'dxf');
-  assert.deepEqual(previzualizare({ nume: 'x.pdf', octeti: new Uint8Array() }, { pxPeTol: 96, limba: 'ro' }), { ok: false, cod: 'tip' });
+  assert.deepEqual(await previzualizare({ nume: 'x.txt', octeti: new Uint8Array() }, { pxPeTol: 96, limba: 'ro' }), { ok: false, cod: 'tip' });
 });
 
 test('acțiunea importului citește un DXF cu unitatea din context (ușa încărcată la cerere)', async () => {
