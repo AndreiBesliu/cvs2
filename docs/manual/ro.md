@@ -115,6 +115,33 @@ Nodurile se lipesc ca orice altceva (vezi Lipire în [Pânza](#panza)); mânerel
 maus. Forma terminată e aleasă, cu operația implicită a unei căi (vezi [Desenul](#desen)): închisă, o insulă; deschisă, tăiată
 pe linie. Pen-ul rămâne ales pentru calea următoare.
 
+## Textul
+%% capitol: text
+%% acopera: unealta.text, document.text
+
+Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea aleasă:
+- un **clic pe foaie** pune ancora (o cruce): acolo începe linia de bază a primului rând (aliniat la stânga), îi stă
+  mijlocul (centrat) sau capătul (la dreapta);
+- un **clic pe un text** îl alege, ca să-l editezi.
+
+În panoul uneltei scrii textul (Enter: rând nou) și alegi:
+- **fontul**: Roboto sau Droid Serif, incluse (merg și fără rețea);
+- **înălțimea majusculelor**, în mm: la „20 mm”, H, N sau E au exact 20 mm (literele rotunde, ca O sau C, trec puțin peste
+  linie, ca în orice font);
+- **spațiul dintre litere** (în mm; negativ, mai strâns), **distanța dintre rânduri** (ca multiplu al rândului fontului) și
+  **alinierea** față de ancoră.
+
+**Adaugă** pune textul pe foaie ca o piesă: fiecare literă e un grup, cu golurile ei, tăiată ca un import (profilul pe
+exterior pe contururile de afară, pe interior pe goluri; le schimbi în fereastra exportului, de exemplu în V-carve).
+**Aplică** înlocuiește textul ales cu cel din panou, într-un singur pas de anulare; operațiile lui rămân, mutate pe literele
+noi (profilul pe exterior pe contururile de afară, cel pe interior pe goluri, restul pe toate). În paletă, comanda e
+**Scrie textul**.
+
+Textul rămâne editabil și după salvare, cât timp contururile lui nu se schimbă pe altă cale: mutarea, rotirea, oglindirea și
+scalarea uniformă îl păstrează (scalarea crește și înălțimea din panou); o scalare neuniformă, o înclinare sau o editare de
+noduri îl fac vectori obișnuiți. **Degrupează** îl desface în litere, ca vectori. Ș și Ț se scriu cu virgulă (Ș ș Ț ț), ca
+în română. Un caracter pe care fontul nu-l are nu se desenează, iar panoul îl spune.
+
 ## Selecția și editarea
 %% capitol: selectie
 %% acopera: unealta.selectie, selectie.la-punct, selectie.din-lista, document.muta-selectia, document.duplica-selectia, document.sterge-selectia, istoric.anuleaza, istoric.reface, document.pozitioneaza, document.roteste, document.forma
@@ -657,7 +684,7 @@ după reîncărcare; **Începe din nou** le șterge, după o confirmare.
 | `Ctrl+K` | Caută o comandă |
 | `Home` | Arată toată foaia |
 | `T` | Arată traseul |
-| `V` `S` `N` `B` `R` `O` `E` `L` `P` | uneltele: Selecție, Transformare, Noduri, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon (tasta e scrisă și în colțul butonului) |
+| `V` `S` `N` `B` `R` `O` `E` `L` `P` `X` | uneltele: Selecție, Transformare, Noduri, Pen, Dreptunghi, Cerc, Elipsă, Linie, Poligon, Text (tasta e scrisă și în colțul butonului) |
 | `Shift+H`, `Shift+V` | Oglindește orizontal, Oglindește vertical |
 | săgețile | mută selecția 1 mm (Shift: 10 mm, Alt: 0,1 mm); în vederea 3D, rotesc placa |
 | `Shift` + clic, `Shift` + tragere | adaugă la selecție (la clic, o formă aleasă deja iese din ea) |

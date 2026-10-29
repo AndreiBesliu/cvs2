@@ -3641,4 +3641,25 @@ fără să atingă marca sau insula din dreapta. Un PDF de două pagini lăsat p
 de importat…”, cu blocul de text numărat) și lista **Pagina (din 2)**; pagina 2: „Desenul: 70.00 × 60.00 mm”, conturul pe
 exterior, linia deschisă, „1 strat, păstrat ca numele formelor: DECUPARE”, forma de pe stratul oprit sărită, focusul rămas pe
 listă; „Importă” a pus piesa „Planse” cu cele două profiluri. Panoul vectorilor s-a deschis sub buton, peste extensie și peste
-proprietăți (cele patru colțuri ale lui sunt ale lui, la lovire).
+proprietăți (la lovire, cele patru colțuri sunt ale panoului).
+
+## 2026-10-29 — Etapa 7: textul (Model: Claude Opus 5.5)
+
+**Prompt:** „poti sa lucrezi si la etapa 7 in paralel?”, apoi „Da, etapa 7” (la „Încep etapa 7 (textul) aici, acum?”: o
+sesiune paralelă nu se poate porni cât owner-ul lucrează prin Remote Control).
+**Started:** 29.10, 11:05. Felia **7.1↑**, fără mașină și fără agenți: textul, adus din etapa 7 (rândul de prag „Text, text
+pe cale, fonturi”). Un cititor TrueType propriu (contururile, cmap, avansurile, crenarea), înălțimea textului = înălțimea
+majusculei verificată pe H (ADR 0019), cuadraticele ridicate exact la cubice, glifele normalizate nonzero la intrare
+(ADR 0036), diacriticele ș ț cu virgulă, blocul de text editabil în document (v19), unealta Text, fonturile incluse
+(Roboto 2.001, Apache 2.0, de pe mașina asta, fără descărcări). Textul pe curbă, fonturile omului (și CFF), fonturile cu o
+singură linie și restul parametrilor vin în feliile următoare ale etapei.
+**Completed:** 29.10, 12:08. ADR 0105. Cititorul TrueType propriu (`src/text/font.ts`): glifele simple și compuse (cu
+transformările, deplasarea scalată sau nu și componentele puse pe puncte), `cmap` 4, `loca` scurt și lung, majuscula verificată
+pe H, crenarea din `GPOS` (formatele 1 și 2). Așezarea (`src/text/asezare.ts`): mm din majusculă, crenarea și spațierea doar
+între litere, rândurile, alinierea, cubicele exacte, normalizarea nonzero. Piesa: un grup pe literă, blocul pe rădăcină cu
+amprenta contururilor (nu o schemă nouă; o editare de noduri îl face vectori, scalarea uniformă îl crește), operațiile mutate pe
+contururile noi la editare. Unealta Text (X), panoul, acțiunea `document.text`, fonturile Roboto și Droid Serif (subseturi,
+Apache 2.0, în precache), manualul („Textul”, tasta), regula de import a lui `src/text` (cu capcana). Corpusul fontTools: 10
+așezări, glifele compuse brute, crenarea tuturor perechilor. Găsit pe drum: varianta cu accentele peste literă se normalizează
+(corect), deci componentele se probează brute; la e2e, ancora cădea pe panou. Mutațiile: 39 / 39 (33 pe probele unitare, 6 pe e2e, controlul verde înainte și după); 4 au trecut întâi: crenarea pe clase (perechile corpusului nu atingeau subtabelul pe clase), primul subtabel care câștigă și acoperirea pe intervale (fonturile livrate nu le pot arăta), „Adaugă” fără ancoră (proba verifica butonul înaintea textului): probe noi (crenarea tuturor perechilor față de fontTools, o variantă cu clasa 0 / 0 la 777, acoperirea pe octeți scriși de mână, textul scris înaintea ancorei). Pornirea 97,2 → 97,4 (cu ușa
+100,9 / 110 kB); totalul 349,7 → 358,6 / 400.

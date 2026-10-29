@@ -349,6 +349,10 @@
       "ro": "Exportul 2D: PDF și EPS, adus din etapa 9",
       "en": "2D export: PDF and EPS, brought forward from stage 9"
     },
+    "2c5146f3dd598845": {
+      "ro": "Textul și fonturile",
+      "en": "Text and fonts"
+    },
     "2c5f23dfc38ae39d": {
       "ro": "admin **P0** + **P1**",
       "en": "admin **P0** + **P1**"
@@ -1285,6 +1289,10 @@
       "ro": "lista de lansare (`BRIEF.md` §8)",
       "en": "the launch list (`BRIEF.md` §8)"
     },
+    "ad44a2848057e358": {
+      "ro": "**Textul, adus din etapa 7** (fără mașină; ADR 0105; „poti sa lucrezi si la etapa 7 in paralel?”, apoi „Da, etapa 7”: o sesiune paralelă nu se poate porni sub Remote Control). Unealta Text (X): un clic pe foaie pune ancora, un clic pe un text îl alege; în panou, textul (pe rânduri), fontul (Roboto sau Droid Serif, incluse, Apache 2.0), înălțimea majusculelor în mm („20 mm”: H, N, E de exact 20 mm), spațierea, rândurile, alinierea; Adaugă și Aplică. Literele, cu ș și ț cu virgulă, sunt contururi exacte (cuadraticele TrueType ridicate la cubice), normalizate, câte un grup pe literă, tăiate ca un import; textul rămâne editabil și după salvare (blocul pe rădăcină, legat de contururi prin amprentă: o editare de noduri îl face vectori, scalarea uniformă îl crește). Cititorul de fonturi e propriu (opentype.js are ~170 kB). Pornirea 97,2 → 97,4 (cu ușa 100,9 / 110); totalul 349,7 → 358,6 / 400 kB. **Treceri:** (1) cititorul și corpusul fontTools (10 așezări, glifele compuse brute, crenarea tuturor perechilor), așezarea, blocul, unealta; găsit pe drum: componentele variantei care se suprapun cu litera se normalizează (corect), deci se probează brute; la e2e, clicul ancorei cădea pe panou. Mutațiile: 39 / 39 (33 pe probele unitare, 6 pe e2e, controlul verde înainte și după); 4 au trecut întâi: crenarea pe clase (perechile corpusului nu atingeau subtabelul pe clase), primul subtabel care câștigă și acoperirea pe intervale (fonturile livrate nu le pot arăta), „Adaugă” fără ancoră (proba verifica butonul înaintea textului): probe noi (crenarea tuturor perechilor față de fontTools, o variantă cu clasa 0 / 0 la 777, acoperirea pe octeți scriși de mână, textul scris înaintea ancorei).",
+      "en": "**Text, brought forward from stage 7** (no machine; ADR 0105; “poti sa lucrezi si la etapa 7 in paralel?”, then “Da, etapa 7”: a parallel session cannot be started under Remote Control). The Text tool (X): a click on the sheet puts the anchor, a click on a text chooses it; in the panel, the text (in lines), the font (Roboto or Droid Serif, included, Apache 2.0), the capital height in mm (“20 mm”: H, N, E exactly 20 mm), the spacing, the lines, the alignment; Add and Apply. The letters, with ș and ț with a comma, are exact outlines (TrueType quadratics raised to cubics), normalized, one group per letter, cut like an import; the text stays editable after saving too (the block on the root, tied to the outlines by a fingerprint: a node edit turns it into vectors, uniform scaling grows it). The font reader is our own (opentype.js is ~170 kB). The startup 97.2 → 97.4 (with the door 100.9 / 110); the total 349.7 → 358.6 / 400 kB. **Passes:** (1) the reader and the fontTools corpus (10 layouts, the raw composite glyphs, the kerning of every pair), the layout, the block, the tool; found along the way: the variant’s components that overlap the letter get normalized (correctly), so they are tested raw; in the e2e, the anchor click landed on the panel. Mutations: 39 / 39 (33 on the unit tests, 6 on e2e, the control green before and after); 4 got through at first: class kerning (the corpus pairs did not reach the class subtable), the first matching subtable winning and range coverage (the shipped fonts cannot show them), “Add” without an anchor (the test checked the button before the text): new tests (the kerning of every pair against fontTools, a variant with class 0 / 0 at 777, coverage on hand-written bytes, the text typed before the anchor)."
+    },
     "ad8412a5456d5c9d": {
       "ro": "dreptunghi rotunjit rotit, reuniunea a două cercuri, rețele",
       "en": "a rotated rounded rectangle, the union of two circles, arrays"
@@ -1392,6 +1400,10 @@
     "bd6ce3a6d08ac395": {
       "ro": "Urechile ca modificator Z(s), portate cu cele 88 de verificări pe hârtie; vârful urechii măsurat de la fundul materialului (`docs/PORTARE.md` §3.1)",
       "en": "Tabs as a Z(s) modifier, ported with the 88 checks on paper; the tab top measured from the bottom of the material (`docs/PORTARE.md` §3.1)"
+    },
+    "bdf91ff4474e1bba": {
+      "ro": "Textul, adus din etapa 7",
+      "en": "Text, brought forward from stage 7"
     },
     "bdf96771a9decc77": {
       "ro": "**Coborârea în buzunar, adusă din etapa 5** (fără mașină; ADR 0076; „coborarea in buzunar pe rampa sau elice, si ar trebui sa fie configurabila de user, unghi, lungime, numar de rampe etc.”, „si eventual sa poata fi si evitata”). Sub rândul unui buzunar, în fereastra exportului, Coborârea: Plonjare (fără rampă, implicit), Rampă pe inel, Zigzag sau Elice, cu unghiul (0,5°–45°, implicit 3°), lungimea zigzagului (implicit 20 mm, cu numărul de rampe pe trecere arătat lângă) și raza elicei (implicit jumătate din diametru). Centrul elicei îl alege aplicația, unde încape; unde nu încape, freza coboară pe inel, cu același unghi, iar rezumatul exportului spune asta. Panoul de proprietăți arată coborârea. Documentul v12 (migrarea doar cu numărul). Manualul („Operațiile de tăiere”) e la zi. **Treceri:** (1) schema v12 și ușa, felurile în `src/cam/coborare.ts`, intrarea în buzunar, dialogul și panoul; pe hârtie: rampa de 30 mm pe trecere, zigzagul de 2 rampe, elicea pe cercul din (90, 70) și legătura ei; oracolul simulării cu fiecare fel și cu o insulă: deschiderea scoasă întreagă, poarta curată; o probă cu insula presupunea greșit că elicea nu încape (încape în ramurile din stânga și dreapta insulei); cele ~116 probe legate de numărul schemei mutate pe v12; mutațiile: 24 / 31 prinse la prima rulare, apoi probe noi (centrul elicei, direct; tura plină de la adâncime; bucla după elice; zigzagul mai lung decât bucla): 29 / 30 directe, garda legăturii elicei prinsă în pereche, una echivalentă (scoasă din cod).",

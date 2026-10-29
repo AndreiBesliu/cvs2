@@ -16,6 +16,8 @@ import {
   transformareManer, transformareManerLipita, type LipirePunct, type Maner, type TransformareManer,
 } from './editareCalcul.ts';
 import { instantaLa } from '../model/alegere.ts';
+import { blocText } from '../model/blocText.ts';
+import { PanouText } from './PanouText.tsx';
 import { capatConstrans, deseneaza, formaDesenata, LATURI_MAX, LATURI_MIN, TASTA_UNELTEI, TASTE_UNELTE, UNELTE, type FormaDesenata, type Unealta, type UnealtaDesen } from './desenCalcul.ts';
 // Calculul acțiunilor `foaie.ghidaje` și `document.muta-instantele` se înregistrează odată cu modulul ăsta.
 import { motivCopiereRetea, motivDesen } from '../ui/actiuniDocumentCalcul.ts';
@@ -179,7 +181,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -660,6 +662,43 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       window.removeEventListener('blur', inchide);
     };
   }, [meniu]);
+
+  // Unealta Text (ADR 0105 §5): un clic pe foaie pune ancora unui text nou; unul pe un text (cu blocul valid) îl alege, ca
+  // să se editeze în panou. Pânza nu primește clicul (nici alegerea, nici mutarea). Textul ales intră în panou.
+  const [ancoraText, setAncoraText] = useState<Punct | null>(null);
+  useEffect(() => { if (unealta !== 'text') setAncoraText(null); }, [unealta]);
+  const textAles = useMemo(() => {
+    if (selectie.length !== 1) return null;
+    const inst = doc.foi[FOAIA]?.instante.find((i) => i.id === selectie[0]);
+    const piesa = inst ? doc.piese.find((x) => x.id === inst.piesa) : undefined;
+    const bloc = piesa ? blocText(piesa.radacina) : null;
+    return inst && bloc ? { instanta: inst.id, bloc } : null;
+  }, [doc, selectie]);
+  useEffect(() => {
+    if (unealta !== 'text') return undefined;
+    const el = radacina.current;
+    const panza = el?.closest('.panza-cutie')?.querySelector<HTMLCanvasElement>('canvas.panza');
+    if (!el || !panza) return undefined;
+    const apasa = (e: PointerEvent): void => {
+      const s = pentruCadru.current;
+      if (e.target !== panza || e.button !== 0 || e.defaultPrevented || s.vedere3d) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const r = el.getBoundingClientRect(), v = s.vedere;
+      const x = (e.clientX - r.left - v.tx) / v.scara, y = (v.ty - (e.clientY - r.top)) / v.scara;
+      const lovita = instantaLa(s.doc, x, y, TOLERANTA_CLIC_PX / v.scara);
+      const inst = lovita ? s.doc.foi[FOAIA]?.instante.find((i) => i.id === lovita) : undefined;
+      const piesa = inst ? s.doc.piese.find((q) => q.id === inst.piesa) : undefined;
+      if (lovita && piesa && blocText(piesa.radacina)) {
+        s.ruleaza('selectie.din-lista', { alese: () => [lovita] });
+        return;
+      }
+      setAncoraText({ x, y });
+      if (s.selectie.length > 0) s.ruleaza('selectie.din-lista', { alese: () => [] });
+    };
+    window.addEventListener('pointerdown', apasa, true);
+    return () => { window.removeEventListener('pointerdown', apasa, true); };
+  }, [unealta]);
   const articoleMeniu = (): readonly ArticolMeniu[] => {
     const facut = (motiv: string | null): void => {
       if (motiv === null) setMeniu(null);
@@ -818,6 +857,18 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="desen-previzualizare">
           <Previzualizare unealta={unealta} a={traseu.a} b={traseu.b} laturi={laturi} vedere={vedere} />
         </svg>
+      ) : null}
+      {unealta === 'text' && !vedere3d ? (
+        <>
+          {ancoraText ? (
+            <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="ancora-text">
+              <path className="ancora-text" d={`M${vedere.tx + ancoraText.x * vedere.scara - 8} ${vedere.ty - ancoraText.y * vedere.scara} h16 `
+                + `M${vedere.tx + ancoraText.x * vedere.scara} ${vedere.ty - ancoraText.y * vedere.scara - 8} v16`} />
+            </svg>
+          ) : null}
+          <PanouText ancora={ancoraText} editat={textAles} doarCitire={p.doarCitire} ruleaza={(c) => ruleaza('document.text', { textNou: () => c })}
+            onInchide={() => { setUnealta('selectie'); }} stil={{ left: zona.x + GROSIME_RIGLA + 12, top: zona.y + GROSIME_RIGLA + 12 }} />
+        </>
       ) : null}
       {(() => {
         const aliniereSectiune = (
@@ -1157,6 +1208,7 @@ function IconaUnealta({ u }: { readonly u: Unealta | 'lipire' | 'grila' }): Reac
     elipsa: <ellipse cx="8" cy="8" rx="6" ry="3.8" className="contur" />,
     linie: <line x1="2.5" y1="13.5" x2="13.5" y2="2.5" className="contur" />,
     poligon: <polygon points="8,2 13.2,5 13.2,11 8,14 2.8,11 2.8,5" className="contur" />,
+    text: <path className="contur" d="M3 4.5 V3 H13 V4.5 M8 3 V13.5 M5.5 13.5 H10.5" />,
     pen: (
       <>
         <path className="contur" d="M8 1.5 L12.5 8.5 L8 14.5 L3.5 8.5 Z M8 1.5 V7.2" />

@@ -6,12 +6,14 @@
  * rotit altfel decât cu un multiplu de 90°; o piesă folosită și de alte instanțe). Oglindirea pune reflexia în matricea
  * rădăcinii piesei (o similitudine: arcele rămân arce) și oglindește locul instanței; rotirea instanței rămâne. Înclinarea
  * (ADR 0065) intră în geometrie: liniile și cubicele rămân exacte; arcele (cercul, colțurile rotunjite) se refuză, sau, la
- * cererea omului, devin întâi cubice (ADR 0078), cu abaterea de după înclinare sub toleranța proiectului.
+ * cererea omului, devin întâi cubice (ADR 0078), cu abaterea de după înclinare sub toleranța proiectului. Blocul unui text
+ * (ADR 0105 §4) crește cu o scalare uniformă; orice altă schimbare a contururilor lui îl lasă doar vectori.
  */
 import { inversa } from '../geom/inversa.ts';
 import { aplica, compune, rotatie, translatie } from '../geom/matrice.ts';
 import { TOLERANTA_IMPORT, TOLERANTA_PROIECT } from '../geom/toleranta.ts';
 import { PLAFON, type Document, type FormaDoc, type Instanta, type Matrice, type Nod, type Piesa, type VarfDoc } from './document.ts';
+import { blocScalat } from './blocText.ts';
 import { arcInCubice, caleDinForma } from './noduri.ts';
 
 type P = { readonly x: number; readonly y: number };
@@ -182,8 +184,10 @@ export function transforma(doc: Document, indexFoaie: number, ids: readonly stri
       if (q === null) return { ok: false, motiv: 'neuniform-rotit' };
       [lx, ly] = inAxe(sx, sy, q);
     }
-    const radacina = scaleazaNod(piesa.radacina, lx, ly);
-    if (typeof radacina === 'string') return { ok: false, motiv: radacina };
+    const scalata = scaleazaNod(piesa.radacina, lx, ly);
+    if (typeof scalata === 'string') return { ok: false, motiv: scalata };
+    // Un bloc de text (ADR 0105 §4) crește cu o scalare uniformă; una neuniformă îl face vectori.
+    const radacina = blocScalat(piesa.radacina, scalata, lx, ly, uniforma(sx, sy));
     noiPiese.push({ ...piesa, radacina });
     noiInstante.push({ ...i, x: ancora.x + (i.x - ancora.x) * sx, y: ancora.y + (i.y - ancora.y) * sy });
   }

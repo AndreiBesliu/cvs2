@@ -35,7 +35,8 @@ test('registrul păstrează cele cinci acțiuni la cerere, cu id-ul și eticheta
     'selectie.la-punct', 'selectie.din-lista', 'document.adauga-dreptunghi', 'document.adauga-cerc', 'document.importa',
     'document.muta-selectia', 'document.duplica-selectia', 'document.sterge-selectia', 'document.aplica-operatii',
     'document.pozitioneaza', 'document.roteste', 'foaie.stoc', 'foaie.ghidaje', 'document.muta-instantele',
-    'document.deseneaza', 'document.transforma', 'document.copiaza-in-retea', 'document.forma', 'document.degrupeaza', 'istoric.anuleaza',
+    'document.deseneaza', 'document.transforma', 'document.copiaza-in-retea', 'document.forma', 'document.degrupeaza', 'document.text',
+    'istoric.anuleaza',
     'istoric.reface',
   ]);
   const eticheta = new Map(ACTIUNI_DOCUMENT.map((a) => [a.id, a.eticheta]));

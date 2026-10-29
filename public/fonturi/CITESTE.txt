@@ -1,0 +1,21 @@
+Fonturile textului din CNC Vector Studio (ADR 0105)
+
+Ambele fonturi sunt licențiate sub Apache License, Version 2.0 (textul întreg: LICENTA-Apache-2.0.txt, alături).
+
+roboto.ttf
+  Roboto Regular, Version 2.001047; 2015.
+  Copyright 2015 Google Inc. All Rights Reserved. Roboto is a trademark of Google.
+
+droid-serif.ttf
+  Droid Serif Regular, Version 1.00 build 113.
+  Digitized data copyright (c) 2007, Google Corporation. Droid is a trademark of Google and may be registered in certain
+  jurisdictions.
+
+Modificări (cerute de licență, secțiunea 4.b): fișierele sunt subseturi făcute cu fontTools (pyftsubset): doar literele
+latine (U+0020-007E, U+00A0-017F), Ș ș Ț ț (U+0218-021B) și câteva semne de punctuație (U+2013-2014, U+2018-201E,
+U+2020-2022, U+2026, U+2030, U+2039-203A, U+20AC, U+2122); fără instrucțiunile de hinting; din GPOS rămâne doar
+crenarea (caracteristica kern). Contururile literelor păstrate sunt neschimbate.
+
+Text fonts of CNC Vector Studio (ADR 0105). Both fonts are licensed under the Apache License, Version 2.0 (full text in
+LICENTA-Apache-2.0.txt, next to this file). Modifications: subsets made with fontTools (pyftsubset), as listed above,
+without hinting instructions, keeping only the kern feature of GPOS; the outlines of the kept letters are unchanged.

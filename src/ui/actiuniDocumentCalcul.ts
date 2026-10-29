@@ -10,6 +10,7 @@ import { cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { executa, type Comanda, type Degrupata } from '../model/jurnal.ts';
 import { partiDegrupare } from '../model/degrupare.ts';
+import { blocText } from '../model/blocText.ts';
 import { transforma } from '../model/transformare.ts';
 import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
 import { copiiRetea, instantaCopiei, motivRetea, type Retea } from '../model/retea.ts';
@@ -17,7 +18,7 @@ import { copiiPeCurba } from '../model/curba.ts';
 import type { CheieSimpla } from '../i18n/t.ts';
 import {
   alesePreaDeparte, copieArbore, cresteCopia, FOAIA, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
-  comenziStergere, type CalculDocument, type ContextDocument, type FormaNoua,
+  comenziStergere, type CalculDocument, type CerereText, type ContextDocument, type FormaNoua,
 } from './actiuniDocument.ts';
 
 /**
@@ -180,6 +181,50 @@ export function motivCopiereRetea(doc: Document, selectie: readonly string[], r:
     if (instantaPreaDeparte(p.x, p.y)) return 'motiv.prea-departe';
   }
   return null;
+}
+
+/**
+ * Comanda unui text (ADR 0105 §5): o piesă nouă cu instanța ei în ancoră, sau piesa editată în locul celei vechi (același
+ * id, aceeași instanță), într-un singur pas. Se editează doar un bloc de text valid (contururile neschimbate de altceva), al
+ * unei piese folosite de o singură instanță. Documentul de după trece de ușa întreagă. Ținută pe (document, cerere).
+ */
+type ComandaText = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: CheieSimpla };
+const MOTIV_TEXT = { gol: 'motiv.text-gol', includeri: 'motiv.text-includeri', plafon: 'motiv.plafon' } as const;
+let ultimulText: { doc: Document; cerere: CerereText; rez: ComandaText } | null = null;
+export function comandaText(doc: Document, cerere: CerereText): ComandaText {
+  if (ultimulText && ultimulText.doc === doc && ultimulText.cerere === cerere) return ultimulText.rez;
+  const rez = judecaTextul(doc, cerere);
+  ultimulText = { doc, cerere, rez };
+  return rez;
+}
+
+function judecaTextul(doc: Document, c: CerereText): ComandaText {
+  const foaie = foaieCurenta(doc);
+  let comanda: Comanda;
+  let id: string;
+  if (c.fel === 'nou') {
+    if (instantaPreaDeparte(c.loc.x, c.loc.y)) return { ok: false, motiv: 'motiv.prea-departe' };
+    id = idNou(doc);
+    const r = c.piesa(id, sculaFoii(doc));
+    if (!r.ok) return { ok: false, motiv: MOTIV_TEXT[r.motiv] };
+    comanda = {
+      tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: c.loc.x, y: c.loc.y, rotire: 0 }, pozitie: foaie.instante.length,
+      piesa: { piesa: r.piesa, pozitie: doc.piese.length },
+    };
+  } else {
+    const inst = foaie.instante.find((i) => i.id === c.instanta);
+    const vechi = inst ? doc.piese.find((p) => p.id === inst.piesa) : undefined;
+    if (!inst || !vechi) return { ok: false, motiv: 'motiv.nimic-ales' };
+    if (!blocText(vechi.radacina)) return { ok: false, motiv: 'motiv.text-vectori' };
+    const folosiri = doc.foi.reduce((n, f) => n + f.instante.filter((i) => i.piesa === vechi.id).length, 0);
+    if (folosiri > 1) return { ok: false, motiv: 'motiv.text-impartit' };
+    const r = c.piesa(vechi);
+    if (!r.ok) return { ok: false, motiv: MOTIV_TEXT[r.motiv] };
+    id = inst.id;
+    comanda = { tip: 'inlocuieste-piesa', vechi, nou: r.piesa };
+  }
+  const dupa = executa(istoricDin(doc), comanda).doc;
+  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.plafon' };
 }
 
 /** Calculul celor cinci acțiuni, după id; `inregistreazaCalcul` îl leagă de registrul documentului. */
@@ -380,6 +425,24 @@ export const CALCUL_DOCUMENT: CalculDocument = {
     ruleaza: (ctx) => {
       const c = comandaForma(ctx)?.comanda;
       if (c) ctx.scrie(executa(ctx.istoric(), c));
+    },
+  },
+  // Textul (ADR 0105 §5): un text nou sau unul editat, într-un pas; ales rămâne textul.
+  'document.text': {
+    activa: (ctx) => {
+      if (!ctx.textNou) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaText(ctx.istoric().doc, ctx.textNou());
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      if (!ctx.textNou) return;
+      const h = ctx.istoric();
+      const r = comandaText(h.doc, ctx.textNou());
+      if (!r.ok) return;
+      ctx.scrie(executa(h, r.comanda));
+      ctx.selecteaza([r.id]);
     },
   },
   // Degruparea (ADR 0103): instanțele alese ale pieselor-grup devin părțile lor, într-un pas; alese rămân părțile.

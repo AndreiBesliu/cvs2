@@ -7,6 +7,8 @@ import {
 import type { ImportPregatit } from '../io/piesa.ts';
 import type { Retea } from '../model/retea.ts';
 import type { Transformare } from '../model/transformare.ts';
+// Doar tipul: piesa textului o face modulul textului, adus la cerere de panoul lui (ADR 0105 §5).
+import type { RezultatPiesaText } from '../text/piesaText.ts';
 import { anuleaza, executa, reface, type Comanda, type Istoric } from '../model/jurnal.ts';
 import type { Actiune } from './actiuni.ts';
 
@@ -20,6 +22,14 @@ import type { Actiune } from './actiuni.ts';
  * conturul și găurile lui (un grup, ca la import), în aceleași coordonate.
  */
 export type FormaNoua = { readonly forma: FormaDoc; readonly x: number; readonly y: number; readonly gauri?: readonly FormaDoc[] };
+
+/**
+ * Textul (ADR 0105 §5), din panoul uneltei Text: unul nou (constructorul piesei, cu id-ul ei și freza foii, și ancora, în mm
+ * ai foii) sau unul editat (instanța aleasă și constructorul piesei noi din cea veche, al cărei id rămâne).
+ */
+export type CerereText =
+  | { readonly fel: 'nou'; readonly loc: { readonly x: number; readonly y: number }; readonly piesa: (id: string, scula?: Operatie['scula']) => RezultatPiesaText }
+  | { readonly fel: 'editat'; readonly instanta: string; readonly piesa: (vechi: Piesa) => RezultatPiesaText };
 
 export type ContextDocument = {
   readonly istoric: () => Istoric;
@@ -72,6 +82,8 @@ export type ContextDocument = {
   readonly retea?: () => Retea;
   /** Instanțele șterse în același pas cu formele noi din `formaNoua` (booleanul le înlocuiește, ADR 0067). */
   readonly sterge?: () => readonly string[];
+  /** Textul nou sau editat, din panoul uneltei Text (ADR 0105 §5). */
+  readonly textNou?: () => CerereText;
 };
 
 /**
@@ -466,6 +478,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   // fereastră: calculul vine cu modulul editării, iar până atunci acțiunea spune că se încarcă (nu aruncă).
   laCerere('document.degrupeaza', 'actiune.degrupeaza', (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie'
     : calcul === null ? 'motiv.editare-se-incarca' : true)),
+  // Textul (ADR 0105): din panoul uneltei Text, un text nou sau unul editat, ca o piesă.
+  laCerere('document.text', 'actiune.text', (ctx) => (ctx.textNou ? true : 'motiv.nimic-ales')),
   {
     id: 'istoric.anuleaza',
     eticheta: 'actiune.anuleaza',

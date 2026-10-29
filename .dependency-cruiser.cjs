@@ -78,6 +78,14 @@ module.exports = {
       to: { path: '^src/', pathNot: '^src/(io|model|geom)/' },
     },
     {
+      name: 'text-doar-io-model-geom',
+      severity: 'error',
+      comment: 'Textul (src/text, ADR 0105) face din fonturi contururi pentru document, ca o ușă de import: importă doar '
+        + 'regulile căii comune ușilor (src/io), modelul și geometria. Interfața îl cheamă, nu invers.',
+      from: { path: modul('text') },
+      to: { path: '^src/', pathNot: '^src/(text|io|model|geom)/' },
+    },
+    {
       name: 'cam-fara-post-sim-masina-interfata',
       severity: 'error',
       comment: 'CAM-ul produce IR; nu știe de post, de simulare, de mașină sau de interfață.',

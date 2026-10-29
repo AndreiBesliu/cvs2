@@ -83,6 +83,11 @@ test('raportorul de erori și baza conexiunii intră: raportorul versiunii din f
   }
 });
 
+test('fonturile textului și licența lor intră (ADR 0105): textul se scrie și fără rețea; alt fel de font, sau mai adânc, nu', () => {
+  for (const f of ['fonturi/roboto.ttf', 'fonturi/droid-serif.ttf', 'fonturi/LICENTA-Apache-2.0.txt', 'fonturi/CITESTE.txt']) assert.ok(inPrecache(f), f);
+  for (const f of ['fonturi/roboto.woff2', 'fonturi/sub/roboto.ttf']) assert.equal(motivPrecache(f), 'necunoscut', f);
+});
+
 test('bancul vizual (`/banc/`) nu intră, oricât de adânc', () => {
   for (const f of ['banc/index.html', 'banc/poza.png', 'banc/a/b/martor.json']) assert.equal(motivPrecache(f), 'banc', f);
 });

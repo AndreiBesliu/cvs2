@@ -17,6 +17,7 @@
  * - documentația admin (`documentatie/`, ADR 0048: roadmap-ul, catalogul, documentele), doar online ca pagina `/admin`
  *   care o cere la deschiderea filei; ~0,9 MB care n-au ce căuta pe discul fiecărui om.
  *
+ * Fonturile textului (`fonturi/*.ttf`, cu licența lor, ADR 0105) intră: textul se scrie și fără rețea, în atelier.
  * Manualul utilizatorului (`manual/ro.json`, `manual/en.json`, ADR 0058) intră: se citește și fără rețea, ca aplicația. La
  * fel dicționarul codurilor controlerului (`coduri/ro.json`, `coduri/en.json`, ADR 0085): explicația unei alarme trebuie să
  * vină și în atelier. Și mesajele modulelor la cerere (`mesaje/<modul>.json`, ADR 0086), fără de care modulele nu
@@ -45,6 +46,7 @@ export function motivPrecache(cale: string): MotivPrecache {
   if (/^manual\/(?:ro|en)\.json$/.test(cale)) return 'precache';
   if (/^coduri\/(?:ro|en)\.json$/.test(cale)) return 'precache';
   if (/^mesaje\/[a-z]+\.json$/.test(cale)) return 'precache';
+  if (/^fonturi\/[A-Za-z0-9.-]+\.(?:ttf|txt)$/.test(cale)) return 'precache';
   if (/^tutorial\/[a-z0-9-]+\.json$/.test(cale)) return 'doar-online';
   const m = /^assets\/([^/]+)-[A-Za-z0-9_-]{8}\.(?:js|css)$/.exec(cale);
   if (!m) return 'necunoscut';

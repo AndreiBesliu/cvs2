@@ -466,6 +466,27 @@
   display: contents;
 }
 
+/* Panoul uneltei Text (ADR 0105 §5): în colțul zonei libere, nu sub un buton; câmpul textului, pe rânduri. */
+.panou-text {
+  width: 21rem;
+}
+
+.continut-text {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 4.5rem;
+  resize: vertical;
+  font: inherit;
+  padding: var(--sp-1) var(--sp-2);
+}
+
+/* Ancora unui text nou: o cruce în punctul ales, unde începe (sau stă la mijloc, la dreapta) linia de bază. */
+.ancora-text {
+  fill: none;
+  stroke: var(--panza-selectie, var(--a));
+  stroke-width: 1.5;
+}
+
 /* O secțiune a extensiei barei (ADR 0053): butonul ei (care o strânge spre stânga) și uneltele ei. */
 .sectiune-extensie {
   display: inline-flex;

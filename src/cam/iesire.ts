@@ -1,5 +1,6 @@
 import { areDepasire, CUTIE_GOALA, cuPunct, cutieArc, depasire, largita, uneste, type Cutie, type Depasire } from '../geom/cutie.ts';
 import { baleiajArc, type Miscare, type Program } from '../ir/ir.ts';
+import { amprentaSir } from '../model/amprenta.ts';
 
 /**
  * Cât iese freza din foaie cât taie. Decizia owner-ului (07.10.2026): o formă poate ieși din foaie intenționat, freza o
@@ -52,18 +53,6 @@ function cutieSubSuprafata(a: P3, b: P3, m: Extract<Miscare, { tip: 'taiere' | '
   return cutieArc(pe(f0), pe(f1), m.centru, (f1 - f0) * baleiaj);
 }
 
-/** Două variante FNV-1a pe 32 de biți, alăturate: o amprentă de egalitate, nu de securitate. */
-function amprentaText(text: string): string {
-  let h1 = 0x811c9dc5;
-  let h2 = 0x01000193 ^ text.length;
-  for (let i = 0; i < text.length; i++) {
-    const c = text.charCodeAt(i);
-    h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
-    h2 = Math.imul(h2 ^ c, 0x5bd1e995) >>> 0;
-  }
-  return h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0');
-}
-
 export function iesireDinFoaie(program: Program, foaie: { readonly latime: number; readonly inaltime: number }): IesireFoaie | null {
   let raza = program.scula.diametru / 2;
   let x: number | undefined;
@@ -97,6 +86,6 @@ export function iesireDinFoaie(program: Program, foaie: { readonly latime: numbe
   }
   const d = depasire(total, foaie.latime, foaie.inaltime, PRAG_REZOLUTIE);
   if (!areDepasire(d)) return null;
-  const amprenta = amprentaText(JSON.stringify([program.miscari, program.scula.diametru, foaie.latime, foaie.inaltime]));
+  const amprenta = amprentaSir(JSON.stringify([program.miscari, program.scula.diametru, foaie.latime, foaie.inaltime]));
   return { depasire: d, elemente, amprenta };
 }

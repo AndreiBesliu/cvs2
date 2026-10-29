@@ -9,18 +9,19 @@ import { elipsa, LATURI_MAX, LATURI_MIN, poligonRegulat } from '../model/formePa
 export { LATURI_MAX, LATURI_MIN };
 
 /** Uneltele barei: Selecția, Transformarea (mânerele de scalare și rotire, ADR 0053) și cele de desen. */
-export const UNELTE = ['selectie', 'transformare', 'noduri', 'pen', 'dreptunghi', 'cerc', 'elipsa', 'linie', 'poligon'] as const;
+export const UNELTE = ['selectie', 'transformare', 'noduri', 'pen', 'dreptunghi', 'cerc', 'elipsa', 'linie', 'poligon', 'text'] as const;
 export type Unealta = (typeof UNELTE)[number];
-export type UnealtaDesen = Exclude<Unealta, 'selectie' | 'transformare' | 'noduri' | 'pen'>;
+export type UnealtaDesen = Exclude<Unealta, 'selectie' | 'transformare' | 'noduri' | 'pen' | 'text'>;
 
 /**
  * Pură: unealta desenează dintr-o tragere (pânza îi dă gestul), sau alege și editează (Selecția, Transformarea, Nodurile);
- * Pen-ul desenează nod cu nod, cu gestul lui (ADR 0063).
+ * Pen-ul desenează nod cu nod, cu gestul lui (ADR 0063); Textul pune ancora cu un clic și se scrie în panoul lui (ADR 0105).
  */
-export const deseneaza = (u: Unealta): u is UnealtaDesen => u !== 'selectie' && u !== 'transformare' && u !== 'noduri' && u !== 'pen';
+export const deseneaza = (u: Unealta): u is UnealtaDesen => u !== 'selectie' && u !== 'transformare' && u !== 'noduri' && u !== 'pen' && u !== 'text';
 
 /** Tasta fiecărei unelte (fără modificatori). */
-export const TASTE_UNELTE: Readonly<Record<string, Unealta>> = { v: 'selectie', s: 'transformare', n: 'noduri', b: 'pen', r: 'dreptunghi', o: 'cerc', e: 'elipsa', l: 'linie', p: 'poligon' };
+// T e „Arată traseul” (ADR 0038): Textul are X.
+export const TASTE_UNELTE: Readonly<Record<string, Unealta>> = { v: 'selectie', s: 'transformare', n: 'noduri', b: 'pen', r: 'dreptunghi', o: 'cerc', e: 'elipsa', l: 'linie', p: 'poligon', x: 'text' };
 /** Eticheta tastei pe butonul uneltei (cererea owner-ului din 25.10), din aceeași hartă: nu poate arăta altă tastă. */
 export const TASTA_UNELTEI = Object.fromEntries(Object.entries(TASTE_UNELTE).map(([k, u]) => [u, k.toUpperCase()])) as Readonly<Record<Unealta, string>>;
 

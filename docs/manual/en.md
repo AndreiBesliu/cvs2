@@ -119,6 +119,33 @@ Nodes snap like anything else (see Snap in [The canvas](#panza)); handles do not
 mouse. The finished shape is chosen, with the default operation of a path (see [Drawing](#desen)): closed, an island; open, cut
 on the line. The Pen stays chosen for the next path.
 
+## Text
+%% capitol: text
+%% acopera: unealta.text, document.text
+
+The **Text** tool (`X`; `T` is “Show toolpath”) writes text to cut. With it chosen:
+- a **click on the sheet** puts the anchor (a cross): there the baseline of the first line starts (left aligned), has its
+  middle (centred) or its end (right aligned);
+- a **click on a text** chooses it, to edit it.
+
+In the tool's panel you type the text (Enter: new line) and choose:
+- the **font**: Roboto or Droid Serif, included (they work offline too);
+- the **capital height**, in mm: at “20 mm”, H, N or E are exactly 20 mm tall (round letters, like O or C, go slightly over
+  the line, as in any font);
+- the **space between letters** (in mm; negative, tighter), the **distance between lines** (a multiple of the font's line)
+  and the **alignment** to the anchor.
+
+**Add** puts the text on the sheet as a part: each letter is a group, with its holes, cut like an import (the outside
+profile on the outer outlines, the inside one on the holes; you change them in the export window, to a V-carve for example).
+**Apply** replaces the chosen text with the one in the panel, in a single undo step; its operations stay, moved onto the new
+letters (the outside profile onto the outer outlines, the inside one onto the holes, the rest onto all). In the palette the
+command is **Write the text**.
+
+The text stays editable after saving too, as long as its outlines are not changed some other way: moving, rotating,
+mirroring and uniform scaling keep it (scaling also grows the height in the panel); a non-uniform scaling, a skew or a node
+edit turn it into ordinary vectors. **Ungroup** takes it apart into letters, as vectors. Ș and Ț are written with a comma
+(Ș ș Ț ț), as in Romanian. A character the font does not have is not drawn, and the panel says so.
+
 ## Selecting and editing
 %% capitol: selectie
 %% acopera: unealta.selectie, selectie.la-punct, selectie.din-lista, document.muta-selectia, document.duplica-selectia, document.sterge-selectia, istoric.anuleaza, istoric.reface, document.pozitioneaza, document.roteste, document.forma
@@ -681,7 +708,7 @@ to any step. The results stay after a reload too; **Start over** deletes them, a
 | `Ctrl+K` | Search commands |
 | `Home` | Show the whole sheet |
 | `T` | Show toolpath |
-| `V` `S` `N` `B` `R` `O` `E` `L` `P` | the tools: Select, Transform, Nodes, Pen, Rectangle, Circle, Ellipse, Line, Polygon (the key is also written in the button's corner) |
+| `V` `S` `N` `B` `R` `O` `E` `L` `P` `X` | the tools: Select, Transform, Nodes, Pen, Rectangle, Circle, Ellipse, Line, Polygon, Text (the key is also written in the button's corner) |
 | `Shift+H`, `Shift+V` | Flip horizontally, Flip vertically |
 | the arrow keys | move the selection 1 mm (Shift: 10 mm, Alt: 0.1 mm); in the 3D view, rotate the sheet |
 | `Shift` + click, `Shift` + drag | add to the selection (on a click, a shape already chosen leaves it) |

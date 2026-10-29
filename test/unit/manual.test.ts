@@ -92,13 +92,13 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 62)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 64)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
   assert.equal(numeScurt('Importă SVG…'), 'Importă SVG');
   assert.equal(numeScurt('Oglindește orizontal: stânga ↔ dreapta (Shift+H)'), 'Oglindește orizontal');
-  assert.equal(USI.length, 62);
+  assert.equal(USI.length, 64);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

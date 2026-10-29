@@ -9,7 +9,7 @@ test.use({ locale: 'ro-RO', viewport: { width: 1400, height: 900 } });
 test('tasta fiecărei unelte: în colțul dreapta-jos, lângă iconiță, fără s-o atingă și fără să prindă clicul; tasta chiar alege unealta', async ({ page }) => {
   await page.goto('/');
   const butoane = page.locator('.bara-editare .unealta');
-  await expect(butoane).toHaveCount(9);
+  await expect(butoane).toHaveCount(10);
   const masuri = await butoane.evaluateAll((bb) => bb.map((b) => {
     const r = b.getBoundingClientRect();
     const e = b.querySelector('.tasta-unealta')!.getBoundingClientRect();
@@ -23,7 +23,7 @@ test('tasta fiecărei unelte: în colțul dreapta-jos, lângă iconiță, fără
     };
   }));
   expect(masuri.map((m) => [m.unealta, m.tasta])).toEqual([
-    ['selectie', 'V'], ['transformare', 'S'], ['noduri', 'N'], ['pen', 'B'], ['dreptunghi', 'R'], ['cerc', 'O'], ['elipsa', 'E'], ['linie', 'L'], ['poligon', 'P'],
+    ['selectie', 'V'], ['transformare', 'S'], ['noduri', 'N'], ['pen', 'B'], ['dreptunghi', 'R'], ['cerc', 'O'], ['elipsa', 'E'], ['linie', 'L'], ['poligon', 'P'], ['text', 'X'],
   ]);
   for (const m of masuri) expect([m.unealta, m.inSfert, m.atingeIconita, m.clicPeButon]).toEqual([m.unealta, true, false, true]);
   for (const m of masuri) {
