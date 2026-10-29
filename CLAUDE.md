@@ -224,6 +224,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`shared/personal.ts`; `owner` fix, singurul care administrează), invitațiile pe e-mail, conturile create de owner cu link
   de parolă, fila Personal și fila Cont (un singur cont pe adresă, metodele legate). Treptele `support` / `admin` nu mai dau
   nimic; o permisiune nouă = cod + regulă + probă.
+  **Sugestiile personalului (ADR 0107, felia 14.B↑, adusă din etapa 14)** gata pe 29.10: fila Sugestii din `/admin`;
+  „Sugestii: scrie” (omul scrie o sugestie, își vede sugestiile și decizia, le editează cât n-au decizie) și „Sugestii: citește
+  toate”; decizia e doar a owner-ului (acceptată, amânată, respinsă, în lucru, făcută, cu o notă), prin callable-ul `sugestii`
+  (auditul în tranzacție, pe versiunea văzută, cel mult 20 pe om pe zi); regulile dau doar citirea, fără index compus.
   **Riglele, ghidajele, lipirea și alinierea (ADR 0050, aduse din etapa 6)** gata pe 20.10: ghidajele pe foaie
   (`foaie.ghidaje`, fără schemă nouă), lipirea pură (`src/geom/lipire.ts`), alinierea (`src/geom/aliniere.ts`), totul la
   cerere după prima randare (`src/app/Editare.tsx`); pornirea 99,4 / 100 kB cu ușa (foarte strâmt). **Uneltele de desen
@@ -260,6 +264,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - Local, tot nivelul rapid: `npm run rapid`. E2e-ul în Edge: `npm run build && npm run e2e`.
   - Funcțiile, regulile și pagina `/admin` pe emulatoare: `npm run test:emulator` (Java ≥ 21: pe mașina asta, JBR-ul din
     Android Studio, ales de script; în CI, în nivelul complet).
+  - Sugestiile personalului acceptate de owner: `node scripts/sugestii.ts` (cele de făcut și cele în lucru, cu nota lui;
+    `--toate` pentru restul; ADR 0107 §7). O sugestie acceptată intră în propunerile de felii, în lista grupată pentru owner.
   - Bancul vizual (2.9, `PLAN.md` §4.5): `npm run build && npm run banc` scrie `dist/banc/` (poza, cifra, martorul);
     publicat odată cu aplicația, la `/banc/` pe instanța de test. Otrăvurile: `scripts/otravuri.py`, `docs/otravuri.md`.
 - **Cârligul `.claude/hooks/fara-add-all.ts`** refuză `git add -A` / `--all` / `-u` / `.` și `git commit -a` în

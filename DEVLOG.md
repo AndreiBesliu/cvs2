@@ -3689,3 +3689,35 @@ căutările Extension din `GPOS`. Sondajul fonturilor de pe mașina asta (566 de
 variabile, 296 cu `kern` (180 fără `GPOS`), 81 cu căutări Extension, 296 fără `sCapHeight`, 11 fără `cmap` Unicode.
 Fonturile variabile se citesc în instanța lor implicită; celelalte instanțe vin într-o felie următoare.
 **Completed:** 29.10, 19:03. ADR 0106. Cititorul pentru fonturile reale: CFF (`src/text/cff.ts`: indexurile, DICT-urile, CID cu FDSelect, interpretorul Type 2 cu cele patru flex-uri, subrutinele cu toate decalajele, sugestiile, `seac`), TTC, `cmap` 4 / 6 / 12 și simbolul Windows, tabelul `kern` vechi (Microsoft și Apple, perechile într-o hartă), căutările Extension, WOFF 1.0 (`woff.ts`); majuscula = vârful lui H. „Fonturile mele” (`biblioteca.ts`, IndexedDB), fonturile sistemului (`sistem.ts`, Local Font Access), id-urile din bloc (`iduriFont.ts`) și numele fontului în bloc; Google Fonts prin funcția `fonturiGoogle` (contractul în `shared/fonturiGoogle.ts`, fără cheie API), clientul la cerere (`src/cloud/apelFonturiGoogle.ts`); panoul cu lista în trei grupuri și previzualizarea, fereastra **Fonturi…** (la cerere), manualul. Sondajul fonturilor reale: 557 din 566 de fețe identice cu fontTools (52 CFF, 505 TrueType). Corpusul fontTools: 20 de așezări, 84 de glife brute, crenarea în 9 fonturi (Inter și Source Han subsetate de pe mașina asta, OFL; un CFF scris de mână). Găsite pe drum: Elephant cu perechile `kern` neordonate, 77 de fețe cu `sCapHeight` diferit de H, matricea rotunjită a lui Inter, panoul textului peste fereastra fonturilor (la e2e). Funcțiile publicate pe test, din workflow, cu felia. Mutațiile: 74 / 74 (65 pe probele unitare, 9 pe e2e, controlul verde înainte și după); 6 au trecut întâi: FDSelect în formatul 3 (fixtura CID avea formatul 0), octeții de după un `cmap` 6 (erau zero), subtabelele `kern` cross-stream și „minimum” (aveau doar perechi acoperite de override), un WOFF cu directorul neordonat, un font încărcat a doua oară spus „adăugat”: probe noi; a șasea, o verificare redundantă a feței (`< 1024` după trei cifre), scoasă. Pornirea 97,4 neschimbată (cu ușa 100,9 / 110 kB); totalul 358,6 → 370,5 / 400.
+
+## 2026-10-29 — Sugestiile personalului în /admin (Model: Claude Opus 5.5)
+
+**Prompt:** „Vreau sa cream si sistemul de account pentru useri, inclusiv admini, scopul acum imediat este pentru admini, si, sa
+avem un sistem de feedback unde ei pot nota sugestii, iar eu sa pot decide ce sa implementam” (28.10, în timpul feliei 6.R↑;
+planul, în raportul ei; ordinea, „Întâi PDF-ul”), apoi, pe 29.10, „acum poti sa deschizi subtask/session?”: sesiunea principală
+a pornit o sesiune paralelă cu brief-ul feliei (fila Sugestii, o permisiune nouă din catalog, decizia owner-ului cu o notă,
+regulile probate pe emulator, auditul ca la personal, ro + en, ADR 0107; doar pe ramura ei, fără publicare).
+**Started:** 29.10, 19:35. Felia **14.B↑**, fără mașină și fără agenți, într-un worktree în afara Drive-ului
+(`C:\Users\besli\cncvs2-lucru\sugestii`, ramura `wip/14.B-sugestii`, din `bddd84c`), cât sesiunea principală publica 7.2↑. Planul
+din 6.R↑ („toți văd lista”; stările acceptată, amânată, respinsă, în lucru, făcută; tipul) și brief-ul („își vede sugestiile”;
+„de făcut / mai târziu / respinsă”; zona) nu lăsau o întrebare care să oprească lucrul: vizibilitatea o aleg bifele owner-ului pe
+fiecare rol (două permisiuni), stările sunt cele din plan, iar tipul și zona intră amândouă.
+**Completed:** 29.10, 21:35. ADR 0107. Catalogul: `sugestii.scrie` și `sugestii.citeste`; decizia, doar a owner-ului. Callable-ul
+`sugestii` (`functions/src/sugestii/actiuni.ts`): scrie, editeaza, decide, cu drepturile și auditul în tranzacție, pe versiunea
+văzută, cel mult 20 pe om pe zi UTC (`limiteSugestii/{uid}`); câmpurile curățate de aceleași funcții ca în pagină
+(`shared/sugestii.ts`). Regulile: doar citirea (toate, sau doar ale autorului), fără index compus (lista autorului se ordonează în
+pagină). Fila Sugestii (`src/admin/sugestii/`): formularul (tipul ales de om, fără implicit), filtrele pe stare cu numărul lor,
+„Doar ale mele”, decizia cu nota; „Editează” și „Decide” deschid formularul pe versiunea de atunci. Scriptul asistentului:
+`node scripts/sugestii.ts` (REST, cu identitatea `firebase login`); `clientFirebaseTools` ia `firebase-tools` din dosarul global
+al lui npm (`%APPDATA%`) când npm lipsește din instalarea Node, ca pe mașina asta. Citit pe test, doar citire: „0 în total”
+(colecția vine cu publicarea). Găsit pe drum: e2e-ul a prins formularul deciziei rămas deschis pe versiunea veche după
+„Reîncarcă”; acum se închide, iar eroarea veche nu mai trece în formularul nou. Mutațiile: **39 / 39** (21 pe emulatoare, pe
+reguli și pe server; 15 pe probele unitare; 3 pe e2e, tot pe emulatoare), cu restaurarea verificată și arborele identic cu HEAD
+la final; una a trecut întâi: editarea care schimbă doar zona (probă nouă: fiecare câmp schimbat singur e o schimbare). Porțile
+locale: compilatorul (aplicația și funcțiile), importurile, licențele, traducerile (0 lipsă), suita unitară (7 752 de teste, 0
+picate, 8 sărite: logourile owner-ului), build-ul determinist, e2e-ul în Edge (270; `rest.spec.ts` a picat întâi cu `EBUSY` la
+citirea unei descărcări și a trecut la reluare), emulatoarele (funcțiile și regulile 46, e2e-ul `/admin` 15). Cât portul 4173 l-a
+ținut altă sesiune, e2e-ul a rulat pe 4183 (unde pică doar probele raportorului, care cer `http://localhost:4173/`); rularea
+finală e pe 4173. Emulatoarele, împărțite cu sesiunea textului pe curbă: rulările s-au anunțat una alteia, pe rând. Pornirea
+neschimbată (97,4; cu ușa 100,9 / 110 kB), totalul 370,5 / 400; `/admin` 190,2 → 194,2 / 200 kB (strâmt: ~5,8 kB).
+Nepublicată: fuziunea în `main` și publicarea le decide owner-ul.

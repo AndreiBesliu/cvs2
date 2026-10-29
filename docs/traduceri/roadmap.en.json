@@ -589,6 +589,10 @@
       "ro": "CI rapid: `tsc`, regulile de import cu capcana, testele, build-ul determinist, lista albă de licențe; cârligul `git add -A`",
       "en": "Rapid CI: `tsc`, import rules with their trap, tests, deterministic build, licence allow-list; the `git add -A` hook"
     },
+    "49dfa3b57f05bf0e": {
+      "ro": "Bifează „Sugestii: scrie” pe rolurile adminilor care scriu sugestii (și „Sugestii: citește toate”, dacă vrei să vadă și sugestiile celorlalți), în fila Personal din `/admin`",
+      "en": "Tick “Suggestions: write” on the roles of the admins who write suggestions (and “Suggestions: read all” if you want them to see the others’ suggestions too), in the Staff tab of `/admin`"
+    },
     "4a5cb61a8fda6680": {
       "ro": "Jurnalul de erori pe server",
       "en": "Server-side error log"
@@ -956,6 +960,10 @@
     "80dbf4e9d8b95734": {
       "ro": "Insulele buzunarului, aduse din etapa 5",
       "en": "Pocket islands, brought forward from stage 5"
+    },
+    "8108a6373dfdea25": {
+      "ro": "14.B↑: fila Sugestii",
+      "en": "14.B↑: the Suggestions tab"
     },
     "83edac4913407194": {
       "ro": "Documentația live: manualul utilizatorului",
@@ -1365,6 +1373,10 @@
       "ro": "**lansarea**",
       "en": "**the launch**"
     },
+    "b6deee017f1b68a7": {
+      "ro": "**Sugestiile personalului, aduse din etapa 14** (fila Sugestii din `/admin`, fără mașină; ADR 0107; cererea owner-ului: „sa avem un sistem de feedback unde ei pot nota sugestii, iar eu sa pot decide ce sa implementam”; planul, în raportul feliei 6.R↑). Două permisiuni noi în catalog: „Sugestii: scrie” (omul scrie o sugestie, cu titlul, descrierea, tipul și zona, își vede sugestiile cu decizia owner-ului și le editează cât n-au decizie) și „Sugestii: citește toate”. Owner-ul decide pe fiecare: acceptată (de făcut), amânată, respinsă, în lucru sau făcută, cu o notă pe care o vede autorul. Scrierile trec prin callable-ul `sugestii` (App Check, auditul în tranzacție, cel mult 20 pe om pe zi), pe versiunea văzută: o decizie pe o sugestie schimbată între timp e refuzată. Regulile dau doar citirea (toate, sau doar ale tale), fără index compus. La începutul unei sesiuni, asistentul citește ce s-a acceptat: `node scripts/sugestii.ts`. Lucrată într-o sesiune paralelă, pe ramura `wip/14.B-sugestii`. **Treceri:** (1) contractul, serverul, regulile, fila și probele; (2) e2e-ul a prins formularul deciziei rămas deschis pe versiunea veche după „Reîncarcă”: acum se închide, iar eroarea veche nu mai trece în formularul nou. Mutațiile: **39 / 39** (36 pe reguli, server, validări și file, 3 pe e2e); una a trecut întâi: editarea care schimbă doar zona nu era probată (probă nouă: fiecare câmp schimbat singur).",
+      "en": "**Staff suggestions, brought forward from stage 14** (the Suggestions tab in `/admin`, no machine; ADR 0107; the owner’s request: “we should have a feedback system where they can note suggestions, and I can decide what we implement”; the plan, in the report of slice 6.R↑). Two new permissions in the catalog: “Suggestions: write” (a person writes a suggestion, with the title, the description, the type and the area, sees their suggestions with the owner’s decision and edits them while they have no decision) and “Suggestions: read all”. The owner decides on each: accepted (to do), postponed, rejected, in progress or done, with a note the author sees. Writes go through the `sugestii` callable (App Check, the audit in the transaction, at most 20 per person per day), on the version seen: a decision on a suggestion changed in the meantime is refused. The rules only allow reading (all of them, or only your own), with no composite index. At the start of a session, the assistant reads what was accepted: `node scripts/sugestii.ts`. Built in a parallel session, on the `wip/14.B-sugestii` branch. **Passes:** (1) the contract, the server, the rules, the tab and the tests; (2) e2e caught the decision form left open on the old version after “Reload”: it now closes, and the old error no longer carries into the new form. Mutations: **39 / 39** (36 on the rules, the server, the validations and the tabs, 3 on e2e); one passed at first: the edit that changes only the area was not tested (new test: each field changed on its own)."
+    },
     "b71d1f60af6c4352": {
       "ro": "Panoul mașinii, portul Web Serial și mașina simulată",
       "en": "The machine panel, the Web Serial port and the simulated machine"
@@ -1396,6 +1408,10 @@
     "bc17ea1b8d908d4a": {
       "ro": "**Strategia paralelă a buzunarului, adusă din etapa 5** (fără mașină; ADR 0094; „Da, continuă cu strategia paralelă (raster) a buzunarului, cu trecerea de profil; dacă pachetul nu mai încape, spune-mi întâi.”). Sub rândul unui buzunar, **Traseul**: inele (ca până acum) sau **linii paralele**, la **Unghiul** dat față de X (documentul v18: `strategie`). Pe fiecare trecere, liniile în zigzag, legate la adâncime doar cu linia vecină și doar prin buzunar, apoi trecerea de profil pe marginea zonei centrului, ca peretele să iasă pe vector; liniile coboară prin plonjare. Acoperirea e aceeași deschidere ca la inele, deci insulele și frezele de rest merg neschimbate. Pe criteriul din cercetare (80 × 40 × 10 cu Ø12, pasul 4,8), pe oracolul simulării: fundul la −10 ± 0,02 în afara colțurilor R6, la 0° și la 30°, peretele la x = 20 ± 0,02, liniile la 4,8 mm (pe hârtie: y = 26 + 4,8·k). Pachetul a încăput: totalul 328,0 → 329,2 / 330 kB (rămân 0,8 kB), pornirea 96,0 (cu ușa 99,5); marginea zonei centrului aplatizată (coardele, cu săgeata cel mult 0,0005 mm, spre interior), ca să nu adaug intersecțiile cu arcele. **Treceri:** (1) documentul v18 (schema, migrarea, oracolul documentului mutat pe v18), nucleul (`src/cam/paralel.ts`), lucrarea (refuzurile: pe alt fel, cu coborârea în rampă), fereastra, Exportă, panoul, manualul; probele: insula, frezele de rest după linii, sensul buclei la opoziție, o singură înlănțuire pe trecere; e2e. Mutațiile: **22 / 22** din prima. Rândul buzunarului din prag: „făcut” (criteriul îndeplinit; adaosul de finisare și adâncimea proprie pe freză, la cerere; rămâne placa etapei 5).",
       "en": "**The parallel pocket strategy, brought forward from stage 5** (no machine; ADR 0094; “Da, continuă cu strategia paralelă (raster) a buzunarului, cu trecerea de profil; dacă pachetul nu mai încape, spune-mi întâi.”). Under a pocket row, **Path**: rings (as before) or **parallel lines**, at the given **Angle** to X (document v18: `strategie`). On each pass, the lines in zigzag, linked at depth only to the next line and only through the pocket, then the profile pass along the edge of the centre zone, so the wall comes out on the vector; lines plunge straight. The coverage is the same opening as with rings, so islands and rest bits work unchanged. On the research criterion (80 × 40 × 10 with Ø12, stepover 4.8), on the simulation oracle: the floor at −10 ± 0.02 outside the R6 corners, at 0° and at 30°, the wall at x = 20 ± 0.02, the lines 4.8 mm apart (on paper: y = 26 + 4.8·k). The bundle fitted: total 328.0 → 329.2 / 330 kB (0.8 kB left), startup 96.0 (with the door 99.5); the edge of the centre zone flattened (chords with a sagitta of at most 0.0005 mm, inward), so as not to add the intersections with arcs. **Passes:** (1) document v18 (schema, migration, the document oracle moved to v18), the core (`src/cam/paralel.ts`), the job (refusals: on another kind, with a ramp descent), the dialog, Export, the panel, the manual; the proofs: the island, rest bits after lines, the loop's direction when conventional, a single chain per pass; e2e. Mutations: **22 / 22** at first. The threshold's pocket row: “done” (the criterion met; the finishing allowance and the own depth per bit, on request; the stage 5 plate remains)."
+    },
+    "bcc165a580f1ee11": {
+      "ro": "Sugestiile personalului, aduse din etapa 14",
+      "en": "Staff suggestions, brought forward from stage 14"
     },
     "bcc1f02d66a99ec9": {
       "ro": "Importul PDF și AI",
@@ -1744,6 +1760,10 @@
     "f254e58163cfe205": {
       "ro": "Lipirea mânerelor de scalare",
       "en": "Snapping the scale handles"
+    },
+    "f3956330cdccb992": {
+      "ro": "după publicarea pe test",
+      "en": "after publishing on test"
     },
     "f3c947e953d5bc7b": {
       "ro": "Fișa plăcii 1 (`docs/etape/placa-01.md`) și programele A (stânga-jos) și B (dreapta-sus), ca fișiere de aur în `test/placi/placa-01/`, cu SHA-256. Testul cere bytes identici cu ce generează postul acum, hash-urile în fișă și poarta trecută pe ambele. Hosting-ul pe test (restul feliei 1.9) așteaptă exportul Firestore confirmat de owner.",
