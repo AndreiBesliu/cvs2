@@ -6,6 +6,7 @@ import {
 import { connectFirestoreEmulator, getFirestore, type Firestore } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import type { CererePersonal, RaspunsInvitatie, RaspunsPersonal } from '../../shared/personal.ts';
+import type { CerereSugestie, RaspunsSugestie } from '../../shared/sugestii.ts';
 import { conecteazaBaza, hostPort, type ConexiuneBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
 
 /**
@@ -134,6 +135,11 @@ export async function administreazaPersonalul(c: Conexiune, cerere: CererePerson
 /** Invitația pe adresa contului deschis (verificată): intrarea în personal, cu rolul invitației; fără ea, `{ ok: false }`. */
 export async function acceptaInvitatia(c: Conexiune): Promise<RaspunsInvitatie> {
   return (await httpsCallable<null, RaspunsInvitatie>(c.functii, 'acceptaInvitatia')(null)).data;
+}
+
+/** Sugestiile personalului (ADR 0107): scrierea, editarea autorului, decizia owner-ului; refuzurile vin cu motivul serverului. */
+export async function sugestii(c: Conexiune, cerere: CerereSugestie): Promise<RaspunsSugestie> {
+  return (await httpsCallable<CerereSugestie, RaspunsSugestie>(c.functii, 'sugestii')(cerere)).data;
 }
 
 export async function marcheazaEroarea(c: Conexiune, amprenta: string, rezolvat: boolean): Promise<{ ok: true; schimbat: boolean }> {

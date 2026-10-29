@@ -473,6 +473,10 @@
       "ro": "Textura din freză; Ghilotină + drillbanks (găurirea multiplă pe simulare și pe octeți)",
       "en": "Texture from the bit; Guillotine + drillbanks (multiple drilling on simulation and on bytes)"
     },
+    "3ad86e19435ea190": {
+      "ro": "Sugestiile personalului în /admin",
+      "en": "Staff suggestions in /admin"
+    },
     "3cac31c2ed72eaa1": {
       "ro": "**Profilul complet pe geometrie exactă** + importul SVG",
       "en": "**The full profile on exact geometry** + SVG import"

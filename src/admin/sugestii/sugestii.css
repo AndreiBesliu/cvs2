@@ -1,0 +1,79 @@
+/* Fila Sugestii (ADR 0107): secțiunile și listele filei Personal (`personal.css`), plus starea și textele sugestiei. */
+.sug textarea {
+  font: inherit;
+  font-size: var(--fs-3);
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+  resize: vertical;
+}
+
+.sug-formular {
+  max-width: 44rem;
+}
+
+.sug-ajutor {
+  margin: calc(-1 * var(--sp-2)) 0 0;
+}
+
+.sug-alegeri {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+.sug-alegeri > label {
+  display: grid;
+  flex: 1 1 14rem;
+  gap: var(--sp-1);
+}
+
+/* Starea: textul și conturul în culoarea ei, pe fondul panoului (contrastul tokenurilor de text, în ambele teme). */
+.sug-stare {
+  padding: 0 var(--sp-2);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--t-slab);
+}
+
+.sug-stare[data-stare='acceptata'],
+.sug-stare[data-stare='in-lucru'] {
+  color: var(--a);
+}
+
+.sug-stare[data-stare='facuta'] {
+  color: var(--traseu-taiere);
+}
+
+.sug-stare[data-stare='respinsa'] {
+  color: var(--rosu);
+}
+
+.sug-meta,
+.sug-text {
+  margin: 0;
+}
+
+.sug-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.sug-decizia {
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  border-left: 4px solid var(--a);
+  border-radius: var(--r-1);
+  background: color-mix(in oklab, var(--a) 8%, var(--s-panou));
+}
+
+.sug-decizia p {
+  margin: 0;
+}

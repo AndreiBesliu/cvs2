@@ -46,6 +46,13 @@ service cloud.firestore {
       allow read: if eOwner();
     }
 
+    // Sugestiile personalului (ADR 0107), scrise doar de callable-ul `sugestii`: cei cu `sugestii.citeste` (și owner-ul) le
+    // citesc pe toate; cei cu `sugestii.scrie`, doar pe ale lor (o listă trebuie să filtreze ea `autor` pe uid-ul omului).
+    // Contoarele zilnice (`limiteSugestii`) n-au regulă: le citește și le scrie doar serverul.
+    match /sugestii/{id} {
+      allow read: if are('sugestii.citeste') || (are('sugestii.scrie') && resource.data.autor == request.auth.uid);
+    }
+
     match /errorLogs/{amprenta} {
       allow read: if are('erori.citeste');
 

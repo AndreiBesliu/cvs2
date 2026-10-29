@@ -20,14 +20,15 @@ import { motivCont } from './cont/motive.ts';
 import { fileVizibile } from './personal/date.ts';
 import { FilaPersonal } from './personal/FilaPersonal.tsx';
 import { FilaRoadmap } from './roadmap/FilaRoadmap.tsx';
+import { FilaSugestii } from './sugestii/FilaSugestii.tsx';
 import './admin.css';
 
 /**
  * Pagina `/admin` (ADR 0040): contul (Google sau parola, ADR 0049), rolul din `staff/{uid}` și permisiunile lui din
  * `roluri/{rol}`, apoi filele pe care le dau: Erori, Diagnoză, Roadmap și Documentație (ADR 0048; fila și documentul
- * deschis stau în `#`, `adresa.ts`), Personal (owner-ul), Cont (oricine). Un om fără document de personal, cu o
- * invitație pe adresa lui verificată, intră singur în personal. Se încarcă la
- * cerere, din pornire, înaintea deschiderii proiectului: nu ia blocarea lui și nu aduce Firebase în pachetul de pornire.
+ * deschis stau în `#`, `adresa.ts`), Sugestii (ADR 0107), Personal (owner-ul), Cont (oricine). Un om fără document de
+ * personal, cu o invitație pe adresa lui verificată, intră singur în personal. Se încarcă la cerere, din pornire, înaintea
+ * deschiderii proiectului: nu ia blocarea lui și nu aduce Firebase în pachetul de pornire.
  */
 export interface ProprietatiAdmin {
   readonly config: { readonly ok: true; readonly config: ConfigCloud & { readonly instanta: string } } | { readonly ok: false; readonly motiv: string };
@@ -249,6 +250,7 @@ function Cont({ con, instanta, build }: { readonly con: Conexiune; readonly inst
         {aratata === 'diagnoza' ? <FilaDiagnoza con={con} instanta={instanta} build={build} rol={stare.numeRol} /> : null}
         {aratata === 'roadmap' ? <FilaRoadmap aducator={aducator} deschide={deschide} /> : null}
         {aratata === 'documentatie' ? <FilaDocumentatie aducator={aducator} cale={adresa.document} ancora={adresa.ancora} deschide={deschide} /> : null}
+        {aratata === 'sugestii' ? <FilaSugestii con={con} eu={stare.user.uid} owner={stare.owner} permisiuni={stare.permisiuni} /> : null}
         {aratata === 'personal' ? <FilaPersonal con={con} eu={stare.user.uid} emailEu={stare.user.email ?? null} /> : null}
         {aratata === 'cont' ? <FilaCont con={con} user={stare.user} /> : null}
       </section>
