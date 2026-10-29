@@ -3663,3 +3663,14 @@ Apache 2.0, în precache), manualul („Textul”, tasta), regula de import a lu
 așezări, glifele compuse brute, crenarea tuturor perechilor. Găsit pe drum: varianta cu accentele peste literă se normalizează
 (corect), deci componentele se probează brute; la e2e, ancora cădea pe panou. Mutațiile: 39 / 39 (33 pe probele unitare, 6 pe e2e, controlul verde înainte și după); 4 au trecut întâi: crenarea pe clase (perechile corpusului nu atingeau subtabelul pe clase), primul subtabel care câștigă și acoperirea pe intervale (fonturile livrate nu le pot arăta), „Adaugă” fără ancoră (proba verifica butonul înaintea textului): probe noi (crenarea tuturor perechilor față de fontTools, o variantă cu clasa 0 / 0 la 777, acoperirea pe octeți scriși de mână, textul scris înaintea ancorei). Pornirea 97,2 → 97,4 (cu ușa
 100,9 / 110 kB); totalul 349,7 → 358,6 / 400.
+
+**Publicat pe test (29.10, 12:32)**, din workflow (run 40857939520, `56945d1`), cu CI-ul rapid verde (run 40856852065, 6
+felii + oracolul exportului 2D). Porțile locale: compilatorul (aplicația și funcțiile), importurile, licențele, traducerile,
+suita unitară (7 716 teste; 2 picate întâi: listele fixate ale acțiunilor la cerere, fără `document.text`: puse, verzi; 8
+sărite: logourile owner-ului, lipsă local), build-ul determinist, e2e-ul (267; testul tastelor fixa 9 unelte: acum 10,
+reluat singur: verde), emulatoarele (36 + 13). Verificat în browser la 1440 px, în română: pagina e pe `56945d109971`, cu
+Textul a zecea unealtă (X). Un clic pe foaie a pus ancora, iar „LEMN Șțăâî” cu „Adaugă” a pus piesa: 16 forme, profilul
+exterior pe 14 contururi și cel interior pe 2 (ochiurile lui ă și â), aleasă și gata de editat („Editezi textul ales…”).
+Droid Serif la 30 mm, cu „Aplică”, a înlocuit-o (cutia 231,05 × 41,49 mm): Ș și ț cu virgula dedesubt, ă, â, î cu semnele
+lor. Mutată din câmpul X la 20 mm, a rămas text editabil, iar „14 forme ies din foaie” a dispărut; un „H” aplicat peste ea:
+cutia 30,12 × 30,00 mm (majuscula de exact 30 mm), apoi textul pus înapoi. 0 erori în jurnal și în consolă.
