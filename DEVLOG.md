@@ -3674,3 +3674,18 @@ exterior pe 14 contururi și cel interior pe 2 (ochiurile lui ă și â), aleas�
 Droid Serif la 30 mm, cu „Aplică”, a înlocuit-o (cutia 231,05 × 41,49 mm): Ș și ț cu virgula dedesubt, ă, â, î cu semnele
 lor. Mutată din câmpul X la 20 mm, a rămas text editabil, iar „14 forme ies din foaie” a dispărut; un „H” aplicat peste ea:
 cutia 30,12 × 30,00 mm (majuscula de exact 30 mm), apoi textul pus înapoi. 0 erori în jurnal și în consolă.
+
+## 2026-10-29 — Etapa 7: fonturile omului (Model: Claude Opus 5.5)
+
+**Prompt:** „Fonturile mele, si vreau sa se foloseasca fonturile sistemului, dar si cu posibilitatea de descarcare din google
+fonts” (la „Ce felie din etapa 7 urmează?”, după 7.1↑).
+**Started:** 29.10, 12:56. Felia **7.2↑**, fără mașină și fără agenți: fonturile omului, din trei surse. (1) Încărcate de el
+(`.ttf`, `.otf`, `.ttc`, `.woff`), ținute în browser („Fonturile mele”); (2) ale sistemului, prin Local Font Access
+(`queryLocalFonts`, Chrome / Edge pe desktop, cu permisiunea omului); (3) din Google Fonts: catalogul și adresa fișierului
+TTF al fiecărei variante vin printr-o funcție a proiectului (fără cheie API: catalogul public și CSS API v2), fontul se
+descarcă din `fonts.gstatic.com` și rămâne în „Fonturile mele”. Cititorul crește pentru fonturile reale: contururile CFF
+(OpenType `.otf`, și cele CID, ca Source Han), colecțiile TTC, `cmap` 12 și fonturile simbol, tabelul `kern` vechi,
+căutările Extension din `GPOS`. Sondajul fonturilor de pe mașina asta (566 de fețe): 52 CFF (2 CID), 15 colecții, 6
+variabile, 296 cu `kern` (180 fără `GPOS`), 81 cu căutări Extension, 296 fără `sCapHeight`, 11 fără `cmap` Unicode.
+Fonturile variabile se citesc în instanța lor implicită; celelalte instanțe vin într-o felie următoare.
+**Completed:** 29.10, 19:03. ADR 0106. Cititorul pentru fonturile reale: CFF (`src/text/cff.ts`: indexurile, DICT-urile, CID cu FDSelect, interpretorul Type 2 cu cele patru flex-uri, subrutinele cu toate decalajele, sugestiile, `seac`), TTC, `cmap` 4 / 6 / 12 și simbolul Windows, tabelul `kern` vechi (Microsoft și Apple, perechile într-o hartă), căutările Extension, WOFF 1.0 (`woff.ts`); majuscula = vârful lui H. „Fonturile mele” (`biblioteca.ts`, IndexedDB), fonturile sistemului (`sistem.ts`, Local Font Access), id-urile din bloc (`iduriFont.ts`) și numele fontului în bloc; Google Fonts prin funcția `fonturiGoogle` (contractul în `shared/fonturiGoogle.ts`, fără cheie API), clientul la cerere (`src/cloud/apelFonturiGoogle.ts`); panoul cu lista în trei grupuri și previzualizarea, fereastra **Fonturi…** (la cerere), manualul. Sondajul fonturilor reale: 557 din 566 de fețe identice cu fontTools (52 CFF, 505 TrueType). Corpusul fontTools: 20 de așezări, 84 de glife brute, crenarea în 9 fonturi (Inter și Source Han subsetate de pe mașina asta, OFL; un CFF scris de mână). Găsite pe drum: Elephant cu perechile `kern` neordonate, 77 de fețe cu `sCapHeight` diferit de H, matricea rotunjită a lui Inter, panoul textului peste fereastra fonturilor (la e2e). Funcțiile publicate pe test, din workflow, cu felia. Mutațiile: 74 / 74 (65 pe probele unitare, 9 pe e2e, controlul verde înainte și după); 6 au trecut întâi: FDSelect în formatul 3 (fixtura CID avea formatul 0), octeții de după un `cmap` 6 (erau zero), subtabelele `kern` cross-stream și „minimum” (aveau doar perechi acoperite de override), un WOFF cu directorul neordonat, un font încărcat a doua oară spus „adăugat”: probe noi; a șasea, o verificare redundantă a feței (`< 1024` după trei cifre), scoasă. Pornirea 97,4 neschimbată (cu ușa 100,9 / 110 kB); totalul 358,6 → 370,5 / 400.

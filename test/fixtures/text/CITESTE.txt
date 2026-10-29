@@ -1,0 +1,20 @@
+Fixturile de fonturi ale probelor textului (ADR 0105, ADR 0106), scrise de test/oracles-py/text_corpus.py.
+
+Din fonturi Apache 2.0 (textul: public/fonturi/LICENTA-Apache-2.0.txt): roboto-*.ttf, roboto-droid.ttc, roboto.woff, variante
+ale lui Roboto și Droid Serif din public/fonturi/ (tabelele schimbate sunt spuse în generator: loca, componentele, cmap,
+kern, GPOS, fvar, OS/2), pentru probe.
+
+Din fonturi SIL Open Font License 1.1 (textul: LICENTA-OFL-1.1.txt, alături):
+- inter-subset.otf, inter-cff2.otf: subseturi ale lui Inter Regular (Copyright © 2020 The Inter Project Authors), din
+  JetBrains Runtime-ul lui Android Studio; inter-cff2.otf are contururile convertite în CFF2. Modificări: subsetul
+  literelor probelor, făcut cu fontTools.
+- source-han-subset.otf: subset al lui Source Han Sans JP Normal (© 2014-2019 Adobe, with Reserved Font Name 'Source'),
+  din fonturile Windows. Modificări: subsetul a opt caractere, FDSelect în formatul 3; numele familiei schimbat în
+  „CNCVS Proba CID”, fiindcă o versiune modificată nu poate folosi numele rezervat.
+
+Scris aici: cff-sintetic.otf (programe Type 2 de mână, peste un font gol).
+
+Font fixtures of the text tests, written by test/oracles-py/text_corpus.py: variants of the Apache 2.0 fonts in
+public/fonturi/; subsets of Inter and Source Han Sans JP under the SIL Open Font License 1.1 (full text in
+LICENTA-OFL-1.1.txt; the Source Han subset is renamed “CNCVS Proba CID”, as the licence asks of a modified version that
+would otherwise use the Reserved Font Name “Source”); cff-sintetic.otf, written by hand.

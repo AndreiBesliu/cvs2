@@ -121,7 +121,7 @@ on the line. The Pen stays chosen for the next path.
 
 ## Text
 %% capitol: text
-%% acopera: unealta.text, document.text
+%% acopera: unealta.text, document.text, editare.text.fonturi
 
 The **Text** tool (`X`; `T` is “Show toolpath”) writes text to cut. With it chosen:
 - a **click on the sheet** puts the anchor (a cross): there the baseline of the first line starts (left aligned), has its
@@ -129,7 +129,8 @@ The **Text** tool (`X`; `T` is “Show toolpath”) writes text to cut. With it 
 - a **click on a text** chooses it, to edit it.
 
 In the tool's panel you type the text (Enter: new line) and choose:
-- the **font**: Roboto or Droid Serif, included (they work offline too);
+- the **font**: the **included** ones (Roboto, Droid Serif), **My fonts** (loaded by you or downloaded from Google Fonts)
+  and, once you allow access, the **system fonts**; below the fields you see the text as it will be cut;
 - the **capital height**, in mm: at “20 mm”, H, N or E are exactly 20 mm tall (round letters, like O or C, go slightly over
   the line, as in any font);
 - the **space between letters** (in mm; negative, tighter), the **distance between lines** (a multiple of the font's line)
@@ -140,6 +141,20 @@ profile on the outer outlines, the inside one on the holes; you change them in t
 **Apply** replaces the chosen text with the one in the panel, in a single undo step; its operations stay, moved onto the new
 letters (the outside profile onto the outer outlines, the inside one onto the holes, the rest onto all). In the palette the
 command is **Write the text**.
+
+**Fonts…**, below the font, opens the fonts window:
+- **My fonts**: **Load fonts…** takes TTF, OTF (CFF outlines too, like Adobe fonts), TTC (all the faces) and WOFF; the
+  fonts stay in this browser, work offline and go nowhere. **Use** chooses the font in the panel, **Delete** removes it (a
+  text made with it stays, it just cannot be edited here until you load the font again);
+- **Google Fonts**: you search a family (by name, by category, only with the Romanian diacritics), choose the style and
+  **Download**: the font comes once and goes into My fonts. On another computer, a text in a Google font asks for it again
+  in one click (**Download again**);
+- **System fonts**: **Allow access to the system fonts** (Chrome and Edge, on a computer) puts the installed fonts in the
+  panel's list. They are copied nowhere: the text can be edited only where the font is installed.
+
+The height in mm is measured on the font's letter **H** (its top is at “20 mm”); a font without an H uses the capital height
+written in it. A variable font (like Bahnschrift) is read only in its default style for now, and a WOFF2 is loaded after
+converting it to TTF or OTF.
 
 The text stays editable after saving too, as long as its outlines are not changed some other way: moving, rotating,
 mirroring and uniform scaling keep it (scaling also grows the height in the panel); a non-uniform scaling, a skew or a node

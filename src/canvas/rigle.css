@@ -487,6 +487,74 @@
   stroke-width: 1.5;
 }
 
+/* Fonturile omului (ADR 0106 §5): butonul ferestrei lângă font, previzualizarea textului în panou. */
+.fonturi-retea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+.previzualizare-text {
+  display: block;
+  width: 100%;
+  height: 4rem;
+  border: 1px solid var(--l-camp);
+  border-radius: 4px;
+  background: var(--panza-foaie);
+}
+
+.previzualizare-text path {
+  fill: var(--panza-linie);
+}
+
+/* Fereastra fonturilor: filele, listele (cu căutarea în Google Fonts) derulate în fereastră. */
+.dialog-fonturi .dialog-cutie {
+  width: min(40rem, calc(100vw - 2rem));
+}
+
+.file-fonturi {
+  display: flex;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-2);
+}
+
+.file-fonturi [aria-selected='true'] {
+  background: var(--a-plin);
+  color: var(--t-pe-a);
+}
+
+.lista-fonturi {
+  list-style: none;
+  margin: var(--sp-2) 0 0;
+  padding: 0;
+  max-height: 18rem;
+  overflow-y: auto;
+}
+
+.lista-fonturi li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) 0;
+  border-bottom: 1px solid var(--l-camp);
+}
+
+.lista-fonturi li[aria-current='true'] .nume-font {
+  font-weight: 600;
+}
+
+.lista-fonturi .nume-font {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.lista-fonturi .detalii-font {
+  flex: 0 0 auto;
+  opacity: 0.75;
+  font-size: 0.85em;
+}
+
 /* O secțiune a extensiei barei (ADR 0053): butonul ei (care o strânge spre stânga) și uneltele ei. */
 .sectiune-extensie {
   display: inline-flex;

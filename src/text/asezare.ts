@@ -9,8 +9,9 @@
  * - **Între litere:** avansul glifei, crenarea perechii (`GPOS`, ADR 0105 §1) și `spatiere` mm, numai între două litere ale
  *   aceluiași rând.
  * - **Contururile:** cuadraticele TrueType devin cubice exact (ADR 0001: c1 = p0 + 2/3 (q − p0), c2 = p2 + 2/3 (q − p2)),
- *   punctele de pe curbă subînțelese (între două puncte de control) se pun la mijloc; regulile căii sunt cele ale ușilor
- *   importului (`incheieSubcalea`), iar fiecare glifă se normalizează din `nonzero` (ADR 0036, T3), o dată, aici.
+ *   punctele de pe curbă subînțelese (între două puncte de control) se pun la mijloc; cubicele CFF trec cum sunt (ADR 0106);
+ *   regulile căii sunt cele ale ușilor importului (`incheieSubcalea`), iar fiecare glifă se normalizează din `nonzero`
+ *   (ADR 0036, T3), o dată, aici.
  *
  * Un caracter pe care fontul nu-l are nu se desenează (o cutie `.notdef` s-ar tăia): se numără în `lipsa`.
  */
@@ -92,6 +93,36 @@ function varfuriDinContur(c: ConturFont, harta: (q: P) => Punct): { varfuri: Var
   return { varfuri, start: harta(start) };
 }
 
+/**
+ * Vârfurile unui contur CFF în mm: pornește din punctul mutării (pe curbă), punctele de control vin câte două, urmate de
+ * capătul cubicei; închiderea e o linie spre start, dacă nu e deja acolo. Segmentele de lungime zero se sar.
+ */
+function varfuriDinCubice(c: ConturFont, harta: (q: P) => Punct): { varfuri: Varf[]; start: Punct } | null {
+  const n = c.length;
+  const start = c[0];
+  if (n < 2 || !start?.peCurba) return null;
+  const varfuri: Varf[] = [];
+  let cur: P = start;
+  for (let k = 1; k < n;) {
+    const q = c[k]!;
+    if (q.peCurba) {
+      if (q.x !== cur.x || q.y !== cur.y) varfuri.push({ p: harta(cur), s: LINIE });
+      cur = q;
+      k += 1;
+      continue;
+    }
+    const c2 = c[k + 1], capat = c[k + 2];
+    if (!c2 || c2.peCurba || !capat?.peCurba) return null;
+    if (!(q.x === cur.x && q.y === cur.y && c2.x === cur.x && c2.y === cur.y && capat.x === cur.x && capat.y === cur.y)) {
+      varfuri.push({ p: harta(cur), s: { tip: 'C', c1: harta(q), c2: harta(c2) } });
+    }
+    cur = capat;
+    k += 3;
+  }
+  if (cur.x !== start.x || cur.y !== start.y) varfuri.push({ p: harta(cur), s: LINIE });
+  return { varfuri, start: harta(start) };
+}
+
 /** Așază textul (ADR 0105 §2): pură, determinată de font și de parametri. */
 export function aseazaText(font: Font, p: ParametriText): TextAsezat {
   const raport: RaportText = { lipsa: 0, 'glife-stricate': 0, 'prea-mari': 0, 'nonzero-normalizate': 0, 'nonzero-refuzate': 0, 'sub-rezolutie': 0, degenerate: 0 };
@@ -133,7 +164,7 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
       }
       const cai: CaleCitita[] = [];
       for (const c of contururi) {
-        const v = varfuriDinContur(c, harta);
+        const v = font.cubice ? varfuriDinCubice(c, harta) : varfuriDinContur(c, harta);
         if (!v || v.varfuri.length === 0) {
           raport.degenerate++;
           continue;

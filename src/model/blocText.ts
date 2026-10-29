@@ -15,9 +15,12 @@ import { jsonCanonic } from './jsonCanonic.ts';
 
 export const ALINIERI_TEXT = ['stanga', 'centru', 'dreapta'] as const;
 
-/** Marginile blocului: caracterele, înălțimea majusculei și spațierea în mm, rândurile (multiplu), numele fontului. */
+/**
+ * Marginile blocului: caracterele, înălțimea majusculei și spațierea în mm, rândurile (multiplu), id-ul fontului (ADR 0106:
+ * și `g:<familia>:<varianta>`, `s:<numele PostScript>`) și numele lui arătat.
+ */
 export const LIMITE_TEXT = {
-  caractere: 1_000, inaltimeMinima: 0.1, inaltimeMaxima: 1_000, spatiere: 1_000, interlinieMinima: 0.5, interlinieMaxima: 5, font: 64,
+  caractere: 1_000, inaltimeMinima: 0.1, inaltimeMaxima: 1_000, spatiere: 1_000, interlinieMinima: 0.5, interlinieMaxima: 5, font: 128, numeFont: 128,
 } as const;
 
 const numar = (min: number, max: number) => v.pipe(v.number(), v.finite(), v.minValue(min), v.maxValue(max));
@@ -25,6 +28,8 @@ const numar = (min: number, max: number) => v.pipe(v.number(), v.finite(), v.min
 export const SchemaBlocText = v.object({
   continut: v.pipe(v.string(), v.minLength(1), v.maxLength(LIMITE_TEXT.caractere)),
   font: v.pipe(v.string(), v.minLength(1), v.maxLength(LIMITE_TEXT.font)),
+  /** Numele fontului, arătat când fontul lipsește (unul al sistemului, pe alt calculator); lipsă la fonturile incluse. */
+  numeFont: v.optional(v.pipe(v.string(), v.maxLength(LIMITE_TEXT.numeFont))),
   inaltime: numar(LIMITE_TEXT.inaltimeMinima, LIMITE_TEXT.inaltimeMaxima),
   spatiere: numar(-LIMITE_TEXT.spatiere, LIMITE_TEXT.spatiere),
   interlinie: numar(LIMITE_TEXT.interlinieMinima, LIMITE_TEXT.interlinieMaxima),

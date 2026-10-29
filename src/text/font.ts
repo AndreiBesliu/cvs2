@@ -1,35 +1,52 @@
 /**
- * Cititorul de fonturi TrueType (ADR 0105 §1), propriu: opentype.js (ales de sonda s2) are ~170 kB și aduce și scrierea
- * fonturilor și modelarea completă, de care textul n-are nevoie, iar totalul aplicației mai are ~50 kB. Citește doar ce
- * cere așezarea literelor: `head`, `maxp`, `hhea`, `hmtx`, `cmap` (formatul 4, platforma Windows Unicode sau Unicode),
- * `loca` (scurt și lung), `glyf` (glifele simple și compuse, cu transformarea și locul fiecărei componente, ca fontTools),
- * `OS/2` (înălțimea majusculei) și, din `GPOS`, crenarea: perechile caracteristicii `kern` (formatele 1 și 2). Literele se
- * pun una după alta, fără `GSUB` (ADR 0019: „GSUB are rezervă literă cu literă”).
+ * Cititorul de fonturi (ADR 0105 §1, ADR 0106 §1), propriu: opentype.js (ales de sonda s2) are ~170 kB și aduce și scrierea
+ * fonturilor și modelarea completă, de care textul n-are nevoie. Citește doar ce cere așezarea literelor:
+ * - containerul (`sfnt.ts`): un font singur sau o față dintr-o colecție TTC, numele din `name`;
+ * - `head`, `maxp`, `hhea`, `hmtx`; `cmap` (formatele 4, 6 și 12, din subtabelul Unicode cel mai bun; un font simbol,
+ *   Windows (3, 0), caută și în zona U+F000, ca Windows);
+ * - contururile: TrueType (`loca` scurt și lung, `glyf`: glifele simple și compuse, cu transformarea și locul fiecărei
+ *   componente, ca fontTools) sau CFF (`cff.ts`: OpenType `.otf`, și cele CID);
+ * - `OS/2` (înălțimea majusculei) și crenarea: din `GPOS`, perechile caracteristicii `kern` (formatele 1 și 2, și prin
+ *   căutările Extension); fără ea, din tabelul `kern` vechi (subtabelele orizontale de formatul 0, Microsoft și Apple);
+ * - `fvar`: instanțele numite ale unui font variabil, ca fonturile sistemului să nu dea instanța implicită în locul alteia.
+ * Literele se pun una după alta, fără `GSUB` (ADR 0019: „GSUB are rezervă literă cu literă”).
  *
- * Înălțimea majusculei (ADR 0019): `OS/2.sCapHeight`, verificată pe conturul literei H (vârful lui); fără ea, vârful lui H.
- * Un font în care cele două nu se potrivesc e refuzat (`majuscula`): „20 mm” n-ar mai ieși 20 mm.
+ * Înălțimea majusculei (ADR 0019, ADR 0106 §1): vârful conturului literei H, adică litera tăiată („20 mm” = H de 20 mm);
+ * fără H, `OS/2.sCapHeight`; fără niciuna, fontul e refuzat (`majuscula`). `sCapHeight` diferă de H în fonturi reale
+ * (Candara: 1308 / 1302 unități; Gabriola, HarmonyOS), deci nu mai e o verificare.
  *
- * Coordonatele rămân în unitățile fontului, cu Y în sus; așezarea (`asezare.ts`) le duce în mm. Un font CFF (OpenType cu
- * contururi PostScript, `.otf`) e refuzat deocamdată (`cff`): vine cu fonturile omului.
+ * Coordonatele rămân în unitățile fontului, cu Y în sus; așezarea (`asezare.ts`) le duce în mm. Un font variabil se citește
+ * în instanța lui implicită (contururile din `glyf`, avansurile din `hmtx`); CFF2 e refuzat.
  */
+import { citesteCff } from './cff.ts';
+import {
+  COLECTIE, FontStricat, inceputuriFete, numeDupaId, numeFont, Octeti, SFNT_APPLE, SFNT_CFF, SFNT_TRUETYPE, tabele, WOFF, WOFF2,
+  type ConturFont, type NumeFont, type PunctFont, type Tabele,
+} from './sfnt.ts';
 
-/** Un punct al unui contur TrueType, în unitățile fontului: pe curbă, sau punct de control al unei pătratice. */
-export type PunctFont = { readonly x: number; readonly y: number; readonly peCurba: boolean };
-/** Un contur TrueType: punctele lui, închis prin definiție (ultimul se leagă de primul). */
-export type ConturFont = readonly PunctFont[];
+export { Octeti, type ConturFont, type NumeFont, type PunctFont };
 
-export type CodRefuzFont = 'nu-e-font' | 'cff' | 'tabel-lipsa' | 'stricat' | 'majuscula' | 'fara-unicode';
+export type CodRefuzFont =
+  | 'nu-e-font' | 'woff' | 'woff2' | 'cff2' | 'tabel-lipsa' | 'stricat' | 'majuscula' | 'fara-unicode' | 'fata-lipsa';
+
+/** O instanță numită a unui font variabil: numele stilului, cel PostScript (dacă îl are) și dacă e chiar cea implicită. */
+export type InstantaFont = { readonly stil: string; readonly postscript: string | null; readonly implicita: boolean };
 
 export type Font = {
   readonly familie: string;
+  readonly nume: NumeFont;
   readonly unitsPerEm: number;
-  /** Înălțimea majusculei, în unitățile fontului, verificată pe H. */
+  /** Înălțimea majusculei, în unitățile fontului: vârful lui H (fără H, `sCapHeight`). */
   readonly majuscula: number;
   /** Din `hhea`: urcarea, coborârea (negativă) și spațiul dintre rânduri. */
   readonly urcare: number;
   readonly coborare: number;
   readonly spatiuRanduri: number;
   readonly numarGlife: number;
+  /** Contururi cubice (CFF: punctele de control câte două), nu pătratice (TrueType). */
+  readonly cubice: boolean;
+  /** Instanțele numite, dacă fontul e variabil (`fvar`); contururile sunt ale instanței implicite. */
+  readonly instante: readonly InstantaFont[] | null;
   /** Glifa unui caracter (codul Unicode), sau 0 (`.notdef`) dacă fontul n-o are. */
   glifa(cod: number): number;
   /** Avansul glifei (lățimea ei de așezare), în unitățile fontului. */
@@ -42,93 +59,59 @@ export type Font = {
 
 export type RezultatFont = { readonly ok: true; readonly font: Font } | { readonly ok: false; readonly cod: CodRefuzFont; readonly detaliu?: string };
 
-/** O greșeală a fișierului (un offset în afara lui, o structură ruptă): fontul e refuzat, nu aruncă mai departe. */
-class FontStricat extends Error {}
-
 /** Imbricarea glifelor compuse: mai adânc (sau o glifă care se conține pe sine), refuzat. */
 const ADANCIME_COMPUSE = 16;
-/** Câte unități pot despărți `sCapHeight` de vârful lui H (rotunjirea unui font bine făcut, ca în sonda s2). */
-const ABATERE_MAJUSCULA = 2;
 
-/** Citirea octeților în ordinea big-endian a fonturilor, cu marginile verificate (exportată pentru probe). */
-export class Octeti {
-  readonly v: DataView;
-  readonly lungime: number;
-
-  constructor(b: Uint8Array) {
-    this.v = new DataView(b.buffer, b.byteOffset, b.byteLength);
-    this.lungime = b.byteLength;
-  }
-
-  private verifica(p: number, n: number): void {
-    if (p < 0 || p + n > this.lungime || !Number.isInteger(p)) throw new FontStricat(`citire în afara fișierului (${p})`);
-  }
-
-  u8(p: number): number { this.verifica(p, 1); return this.v.getUint8(p); }
-  i8(p: number): number { this.verifica(p, 1); return this.v.getInt8(p); }
-  u16(p: number): number { this.verifica(p, 2); return this.v.getUint16(p); }
-  i16(p: number): number { this.verifica(p, 2); return this.v.getInt16(p); }
-  u32(p: number): number { this.verifica(p, 4); return this.v.getUint32(p); }
-  /** F2Dot14: un număr cu semn, 2 biți întregi și 14 fracționari (transformarea componentelor). */
-  f2dot14(p: number): number { return this.i16(p) / 16384; }
-  tag(p: number): string { this.verifica(p, 4); return String.fromCharCode(this.u8(p), this.u8(p + 1), this.u8(p + 2), this.u8(p + 3)); }
+/** Ce fel de fișier e, după primii patru octeți (fără să-l citească): font, colecție, WOFF, WOFF2 sau altceva. */
+export function felFisier(octeti: Uint8Array): 'font' | 'colectie' | 'woff' | 'woff2' | 'necunoscut' {
+  if (octeti.byteLength < 4) return 'necunoscut';
+  const v = new DataView(octeti.buffer, octeti.byteOffset, 4).getUint32(0);
+  if (v === SFNT_TRUETYPE || v === SFNT_CFF || v === SFNT_APPLE) return 'font';
+  return v === COLECTIE ? 'colectie' : v === WOFF ? 'woff' : v === WOFF2 ? 'woff2' : 'necunoscut';
 }
 
-type Tabele = ReadonlyMap<string, { readonly pos: number; readonly lungime: number }>;
-
-/** Directorul tabelelor: eticheta, poziția și lungimea fiecăruia (verificate față de fișier). */
-function tabele(o: Octeti): Tabele {
-  const n = o.u16(4);
-  const t = new Map<string, { pos: number; lungime: number }>();
-  for (let k = 0; k < n; k++) {
-    const r = 12 + 16 * k;
-    const pos = o.u32(r + 8), lungime = o.u32(r + 12);
-    if (pos + lungime > o.lungime) throw new FontStricat(`tabelul ${o.tag(r)} iese din fișier`);
-    t.set(o.tag(r), { pos, lungime });
+/** Fețele unui fișier (una pentru un font singur, toate pentru o colecție), cu numele lor; null: nu e un font citibil. */
+export function feteFont(octeti: Uint8Array): readonly NumeFont[] | null {
+  try {
+    const o = new Octeti(octeti);
+    if (felFisier(octeti) !== 'font' && felFisier(octeti) !== 'colectie') return null;
+    return inceputuriFete(o).map((s) => numeFont(o, tabele(o, s)));
+  } catch (e) {
+    if (e instanceof FontStricat) return null;
+    throw e;
   }
-  return t;
 }
 
-/** Numele familiei, din tabelul `name` (ID 1, Windows Unicode, apoi Macintosh Roman); lipsă: „Font”. */
-function familie(o: Octeti, t: Tabele): string {
-  const nume = t.get('name');
-  if (!nume) return 'Font';
-  const n = o.u16(nume.pos + 2), sir = nume.pos + o.u16(nume.pos + 4);
-  let mac: string | null = null;
-  for (let k = 0; k < n; k++) {
-    const r = nume.pos + 6 + 12 * k;
-    const platforma = o.u16(r), cod = o.u16(r + 2), id = o.u16(r + 6), lungime = o.u16(r + 8), pos = sir + o.u16(r + 10);
-    if (id !== 1) continue;
-    if (platforma === 3 && (cod === 1 || cod === 10)) {
-      let s = '';
-      for (let i = 0; i + 1 < lungime; i += 2) s += String.fromCharCode(o.u16(pos + i));
-      return s;
-    }
-    if (platforma === 1 && cod === 0 && mac === null) {
-      mac = '';
-      for (let i = 0; i < lungime; i++) mac += String.fromCharCode(o.u8(pos + i));
-    }
-  }
-  return mac ?? 'Font';
-}
+type SubtabelCmap = { readonly pos: number; readonly format: number };
 
-/** `cmap` formatul 4 (segmentele BMP), din subtabelul Windows Unicode (3, 1) sau Unicode (0, 3); null dacă lipsește. */
-function cmap(o: Octeti, t: Tabele): ((cod: number) => number) | null {
+/**
+ * Subtabelul `cmap` cel mai bun, în ordinea lui fontTools (`getBestCmap`): Windows 3/10, Unicode 0/6, 0/4, Windows 3/1,
+ * Unicode 0/3, 0/2, 0/1, 0/0; abia apoi simbolul Windows (3/0). Doar formatele 4, 6 și 12; restul (Shift-JIS, Mac Roman) nu.
+ */
+const PREFERINTE_CMAP = ['3/10', '0/6', '0/4', '3/1', '0/3', '0/2', '0/1', '0/0', '3/0'];
+
+function alegeCmap(o: Octeti, t: Tabele): { sub: SubtabelCmap; simbol: boolean } | null {
   const c = t.get('cmap');
   if (!c) return null;
   const n = o.u16(c.pos + 2);
-  let sub = -1;
+  let bun: { sub: SubtabelCmap; rang: number } | null = null;
   for (let k = 0; k < n; k++) {
     const r = c.pos + 4 + 8 * k;
-    const platforma = o.u16(r), cod = o.u16(r + 2), pos = c.pos + o.u32(r + 4);
-    if (o.u16(pos) !== 4) continue;
-    if ((platforma === 3 && cod === 1) || (platforma === 0 && cod === 3 && sub < 0)) sub = pos;
+    const rang = PREFERINTE_CMAP.indexOf(`${o.u16(r)}/${o.u16(r + 2)}`), pos = c.pos + o.u32(r + 4);
+    const format = o.u16(pos);
+    if (rang < 0 || (format !== 4 && format !== 6 && format !== 12)) continue;
+    if (!bun || rang < bun.rang) bun = { sub: { pos, format }, rang };
   }
-  if (sub < 0) return null;
-  const segmente = o.u16(sub + 6) / 2;
-  const sfarsit = sub + 14, inceput = sfarsit + 2 * segmente + 2, delta = inceput + 2 * segmente, deplasare = delta + 2 * segmente;
-  return (cod) => {
+  return bun ? { sub: bun.sub, simbol: PREFERINTE_CMAP[bun.rang] === '3/0' } : null;
+}
+
+/** Glifa unui cod în subtabelul ales (formatele 4, 6, 12), sau 0. */
+function glifaCmap(o: Octeti, sub: SubtabelCmap, cod: number): number {
+  const p = sub.pos;
+  if (sub.format === 4) {
     if (cod > 0xffff) return 0;
+    const segmente = o.u16(p + 6) / 2;
+    const sfarsit = p + 14, inceput = sfarsit + 2 * segmente + 2, delta = inceput + 2 * segmente, deplasare = delta + 2 * segmente;
     // Segmentele sunt ordonate după capătul lor: primul care nu se termină înainte de cod.
     let st = 0, dr = segmente - 1;
     while (st < dr) {
@@ -141,7 +124,21 @@ function cmap(o: Octeti, t: Tabele): ((cod: number) => number) | null {
     if (dep === 0) return (cod + d) & 0xffff;
     const g = o.u16(deplasare + 2 * st + dep + 2 * (cod - o.u16(inceput + 2 * st)));
     return g === 0 ? 0 : (g + d) & 0xffff;
-  };
+  }
+  if (sub.format === 6) {
+    const prim = o.u16(p + 6), n = o.u16(p + 8);
+    return cod >= prim && cod < prim + n ? o.u16(p + 10 + 2 * (cod - prim)) : 0;
+  }
+  // Formatul 12: grupuri [început, sfârșit, prima glifă], ordonate.
+  const n = o.u32(p + 12);
+  let st = 0, dr = n - 1;
+  while (st <= dr) {
+    const m = (st + dr) >> 1, r = p + 16 + 12 * m;
+    if (cod < o.u32(r)) dr = m - 1;
+    else if (cod > o.u32(r + 4)) st = m + 1;
+    else return o.u32(r + 8) + cod - o.u32(r);
+  }
+  return 0;
 }
 
 /** Acoperirea OpenType (formatele 1 și 2): indexul glifei în acoperire, sau −1. */
@@ -206,12 +203,15 @@ function avansDinValoare(o: Octeti, pos: number, format: number): number {
   return o.i16(pos + 2 * (format & 0x0001) + 2 * ((format & 0x0002) >> 1));
 }
 
+type Crenare = (a: number, b: number) => number;
+
 /**
- * Crenarea din `GPOS` (ADR 0105 §1): căutările (tipul 2, perechile) ale caracteristicii `kern`, în ordinea lor; în fiecare
- * căutare, primul subtabel care potrivește perechea o hotărăște. Formatul 1: perechi anume (glifa a doua căutată binar);
- * formatul 2: clasele celor două glife. Valoarea e XAdvance al primei glife.
+ * Crenarea din `GPOS` (ADR 0105 §1, ADR 0106 §1): căutările de perechi (tipul 2, sau tipul 9, Extension, care trimite la
+ * unul de tipul 2) ale caracteristicii `kern`, în ordinea lor; în fiecare căutare, primul subtabel care potrivește perechea
+ * o hotărăște. Formatul 1: perechi anume (glifa a doua căutată binar); formatul 2: clasele celor două glife. Valoarea e
+ * XAdvance al primei glife. Null: `GPOS` n-are crenare.
  */
-function crenareGpos(o: Octeti, t: Tabele): ((a: number, b: number) => number) | null {
+function crenareGpos(o: Octeti, t: Tabele): Crenare | null {
   const g = t.get('GPOS');
   if (!g) return null;
   const caracteristici = g.pos + o.u16(g.pos + 6), cautari = g.pos + o.u16(g.pos + 8);
@@ -227,11 +227,17 @@ function crenareGpos(o: Octeti, t: Tabele): ((a: number, b: number) => number) |
   const subtabele: number[][] = [];
   for (const i of [...indici].sort((a, b) => a - b)) {
     const c = cautari + o.u16(cautari + 2 + 2 * i);
-    if (o.u16(c) !== 2) continue;
+    const tip = o.u16(c);
+    if (tip !== 2 && tip !== 9) continue;
     const n = o.u16(c + 4);
     const lista: number[] = [];
-    for (let s = 0; s < n; s++) lista.push(c + o.u16(c + 6 + 2 * s));
-    subtabele.push(lista);
+    for (let s = 0; s < n; s++) {
+      const st = c + o.u16(c + 6 + 2 * s);
+      if (tip === 2) lista.push(st);
+      // Extension: formatul 1, tipul căutării din ea, offsetul pe 32 de biți, de la începutul ei.
+      else if (o.u16(st) === 1 && o.u16(st + 2) === 2) lista.push(st + o.u32(st + 4));
+    }
+    if (lista.length > 0) subtabele.push(lista);
   }
   if (subtabele.length === 0) return null;
   const subtabel = (st: number, a: number, b: number): number | null => {
@@ -276,45 +282,221 @@ function crenareGpos(o: Octeti, t: Tabele): ((a: number, b: number) => number) |
   };
 }
 
+/**
+ * Crenarea din tabelul `kern` vechi (ADR 0106 §1), pentru fonturile fără crenare în `GPOS`: subtabelele orizontale de
+ * formatul 0 (perechile stânga, dreapta, valoare), din antetul Microsoft (versiunea 0) sau Apple (versiunea 1.0); valorile se
+ * adună, iar un subtabel Microsoft cu steagul „override” o înlocuiește pe cea de până la el. Null: fără tabel sau perechi.
+ */
+function crenareKern(o: Octeti, t: Tabele): Crenare | null {
+  const k = t.get('kern');
+  if (!k) return null;
+  const apple = o.u16(k.pos) === 1;
+  const n = apple ? o.u32(k.pos + 4) : o.u16(k.pos + 2);
+  const liste: { pos: number; n: number; inlocuieste: boolean }[] = [];
+  let p = k.pos + (apple ? 8 : 4);
+  const capat = k.pos + k.lungime;
+  for (let i = 0; i < n && p < capat; i++) {
+    let lungime: number, format: number, orizontal: boolean, inlocuieste = false, antet: number;
+    if (apple) {
+      lungime = o.u32(p);
+      const acoperireA = o.u16(p + 4);
+      format = acoperireA & 0xff;
+      orizontal = (acoperireA & 0xe000) === 0;
+      antet = 8;
+    } else {
+      lungime = o.u16(p + 2);
+      const acoperireM = o.u16(p + 4);
+      format = acoperireM >> 8;
+      orizontal = (acoperireM & 0x0007) === 0x0001;
+      inlocuieste = (acoperireM & 0x0008) !== 0;
+      antet = 6;
+    }
+    if (format === 0) {
+      const perechi = o.u16(p + antet);
+      if (orizontal) liste.push({ pos: p + antet + 8, n: perechi, inlocuieste });
+      // Lungimea Microsoft e pe 16 biți și se rupe la tabelele mari: după formatul 0, se merge pe numărul perechilor.
+      lungime = antet + 8 + 6 * perechi;
+    }
+    if (lungime <= 0) break;
+    p += lungime;
+  }
+  if (liste.length === 0) return null;
+  // Perechile ar trebui să fie ordonate după (stânga, dreapta), dar fonturi reale (Elephant) le au după glifa din dreapta:
+  // fiecare subtabel devine o hartă, la prima crenare cerută; o pereche scrisă de două ori o ține pe ultima, ca fontTools.
+  let harti: { harta: Map<number, number>; inlocuieste: boolean }[] | null = null;
+  return (a, b) => {
+    harti ??= liste.map((l) => {
+      const harta = new Map<number, number>();
+      for (let i = 0; i < l.n; i++) {
+        const r = l.pos + 6 * i;
+        harta.set(o.u16(r) * 65536 + o.u16(r + 2), o.i16(r + 4));
+      }
+      return { harta, inlocuieste: l.inlocuieste };
+    });
+    const cheie = a * 65536 + b;
+    let total = 0;
+    for (const h of harti) {
+      const v = h.harta.get(cheie);
+      if (v !== undefined) total = (h.inlocuieste ? 0 : total) + v;
+    }
+    return total;
+  };
+}
+
+/** Instanțele numite din `fvar` (null: fontul nu e variabil). */
+function instante(o: Octeti, t: Tabele, familie: string): InstantaFont[] | null {
+  const f = t.get('fvar');
+  if (!f) return null;
+  const axe = f.pos + o.u16(f.pos + 4), nAxe = o.u16(f.pos + 8), marimeAxa = o.u16(f.pos + 10);
+  const n = o.u16(f.pos + 12), marime = o.u16(f.pos + 14);
+  const implicite: number[] = [];
+  for (let k = 0; k < nAxe; k++) implicite.push(o.fixed(axe + k * marimeAxa + 8));
+  const rez: InstantaFont[] = [];
+  const prima = axe + nAxe * marimeAxa;
+  for (let k = 0; k < n; k++) {
+    const r = prima + k * marime;
+    let implicita = true;
+    for (let a = 0; a < nAxe; a++) if (o.fixed(r + 4 + 4 * a) !== implicite[a]) implicita = false;
+    const idPs = marime >= 6 + 4 * nAxe ? o.u16(r + 4 + 4 * nAxe) : 0xffff;
+    rez.push({
+      stil: numeDupaId(o, t, o.u16(r)) ?? `${familie} ${k + 1}`,
+      postscript: idPs !== 0xffff ? numeDupaId(o, t, idPs) : null,
+      implicita,
+    });
+  }
+  return rez;
+}
+
 /** Steagurile componentelor unei glife compuse (spec. OpenType, `glyf`). */
 const CUVINTE = 0x0001, XY = 0x0002, SCARA = 0x0008, MAI_MULTE = 0x0020, SCARA_XY = 0x0040, DOI_PE_DOI = 0x0080;
 const DEPLASARE_SCALATA = 0x0800;
 
 /**
- * Citește un font TrueType (ADR 0105 §1). Nu aruncă: un fișier greșit e un refuz cu cod. Glifele se citesc la cerere, cu
- * memorie (o glifă compusă își refolosește componentele).
+ * Citește fața `fata` (0 pentru un font singur) a unui font TrueType sau OpenType (ADR 0105 §1, ADR 0106 §1). Nu aruncă: un
+ * fișier greșit e un refuz cu cod. Glifele se citesc la cerere, cu memorie (o glifă compusă își refolosește componentele).
  */
-export function citesteFont(octeti: Uint8Array): RezultatFont {
+export function citesteFont(octeti: Uint8Array, fata = 0): RezultatFont {
   try {
-    return citeste(new Octeti(octeti));
+    return citeste(new Octeti(octeti), fata);
   } catch (e) {
     if (e instanceof FontStricat) return { ok: false, cod: 'stricat', detaliu: e.message };
     throw e;
   }
 }
 
-function citeste(o: Octeti): RezultatFont {
+function citeste(o: Octeti, fata: number): RezultatFont {
   if (o.lungime < 12) return { ok: false, cod: 'nu-e-font' };
-  const versiune = o.u32(0);
-  if (versiune === 0x4f54544f) return { ok: false, cod: 'cff' };
-  if (versiune !== 0x00010000 && versiune !== 0x74727565) return { ok: false, cod: 'nu-e-font' };
-  const t = tabele(o);
-  for (const nume of ['head', 'maxp', 'hhea', 'hmtx', 'loca', 'glyf']) {
-    if (!t.has(nume)) return t.has('CFF ') || t.has('CFF2') ? { ok: false, cod: 'cff' } : { ok: false, cod: 'tabel-lipsa', detaliu: nume };
+  const fel = felFisier(new Uint8Array(o.v.buffer, o.v.byteOffset, 4));
+  if (fel === 'woff') return { ok: false, cod: 'woff' };
+  if (fel === 'woff2') return { ok: false, cod: 'woff2' };
+  if (fel !== 'font' && fel !== 'colectie') return { ok: false, cod: 'nu-e-font' };
+  const inceputuri = inceputuriFete(o);
+  const start = inceputuri[fata];
+  if (start === undefined) return { ok: false, cod: 'fata-lipsa', detaliu: `${fata} din ${inceputuri.length}` };
+  const versiune = o.u32(start);
+  if (versiune !== SFNT_TRUETYPE && versiune !== SFNT_CFF && versiune !== SFNT_APPLE) return { ok: false, cod: 'nu-e-font' };
+  const t = tabele(o, start);
+  const cff = t.get('CFF ');
+  if (!cff && t.has('CFF2')) return { ok: false, cod: 'cff2' };
+  for (const nume of ['head', 'maxp', 'hhea', 'hmtx', ...(cff ? [] : ['loca', 'glyf'])]) {
+    if (!t.has(nume)) return { ok: false, cod: 'tabel-lipsa', detaliu: nume };
   }
   const head = t.get('head')!.pos, maxp = t.get('maxp')!.pos, hhea = t.get('hhea')!.pos, hmtx = t.get('hmtx')!.pos;
-  const loca = t.get('loca')!, glyf = t.get('glyf')!;
   const unitsPerEm = o.u16(head + 18);
   if (unitsPerEm < 16 || unitsPerEm > 16384) throw new FontStricat(`unitsPerEm ${unitsPerEm}`);
-  const locaLunga = o.i16(head + 50) === 1;
   const numarGlife = o.u16(maxp + 4);
   const metrici = o.u16(hhea + 34);
   if (metrici === 0 || metrici > numarGlife) throw new FontStricat(`numberOfHMetrics ${metrici}`);
-  // Avansurile și locurile glifelor se citesc la cerere: lungimile tabelelor se verifică aici, o dată.
+  // Avansurile se citesc la cerere: lungimea tabelului se verifică aici, o dată.
   if (t.get('hmtx')!.lungime < 4 * metrici) throw new FontStricat('hmtx e prea scurt');
+  const cmap = alegeCmap(o, t);
+  if (!cmap) return { ok: false, cod: 'fara-unicode' };
+  const glifaCod = (cod: number): number => {
+    const g = glifaCmap(o, cmap.sub, cod);
+    // Un font simbol (Windows 3/0) își pune glifele la U+F020–U+F0FF: un caracter obișnuit le caută acolo, ca Windows.
+    return g === 0 && cmap.simbol && cod >= 0x20 && cod <= 0xff ? glifaCmap(o, cmap.sub, 0xf000 + cod) : g;
+  };
+
+  let contururiGlifa: (g: number) => readonly ConturFont[];
+  if (cff) {
+    const c = citesteCff(o, cff.pos, numarGlife, unitsPerEm);
+    const memorie = new Map<number, readonly ConturFont[]>();
+    contururiGlifa = (g) => {
+      const gata = memorie.get(g);
+      if (gata) return gata;
+      const r = c.contururi(g);
+      memorie.set(g, r);
+      return r;
+    };
+  } else {
+    contururiGlifa = contururiTrueType(o, t, numarGlife, o.i16(head + 50) === 1);
+  }
+
+  const avans = (g: number): number => {
+    if (g < 0 || g >= numarGlife) return 0;
+    return o.u16(hmtx + 4 * Math.min(g, metrici - 1));
+  };
+
+  // Înălțimea majusculei (ADR 0019, ADR 0106 §1): vârful conturului lui H, adică ce se taie; fără H, `OS/2.sCapHeight`.
+  const gH = glifaCod(0x48);
+  const varfH = gH === 0 ? null : contururiGlifa(gH).flat().reduce((m, q) => Math.max(m, q.y), -Infinity);
+  let majuscula: number;
+  if (varfH !== null && Number.isFinite(varfH) && varfH > 0) majuscula = varfH;
+  else {
+    const os2 = t.get('OS/2');
+    const capOs2 = os2 && o.u16(os2.pos) >= 2 && os2.lungime >= 90 ? o.i16(os2.pos + 88) : 0;
+    if (capOs2 <= 0) return { ok: false, cod: 'majuscula', detaliu: 'fără H și fără sCapHeight' };
+    majuscula = capOs2;
+  }
+
+  const crenare = crenareGpos(o, t) ?? crenareKern(o, t);
+  const nume = numeFont(o, t);
+  const font: Font = {
+    familie: nume.familie,
+    nume,
+    unitsPerEm,
+    majuscula,
+    urcare: o.i16(hhea + 4),
+    coborare: o.i16(hhea + 6),
+    spatiuRanduri: o.i16(hhea + 8),
+    numarGlife,
+    cubice: !!cff,
+    instante: instante(o, t, nume.familie),
+    glifa: (cod) => {
+      try {
+        return glifaCod(cod);
+      } catch (e) {
+        if (e instanceof FontStricat) return 0;
+        throw e;
+      }
+    },
+    avans,
+    crenare: (a, b) => {
+      if (!crenare) return 0;
+      try {
+        return crenare(a, b);
+      } catch (e) {
+        if (e instanceof FontStricat) return 0;
+        throw e;
+      }
+    },
+    contururi: (g) => {
+      try {
+        return contururiGlifa(g);
+      } catch (e) {
+        if (e instanceof FontStricat) return null;
+        throw e;
+      }
+    },
+  };
+  return { ok: true, font };
+}
+
+/** Contururile TrueType (`loca` + `glyf`), cu memorie; aruncă `FontStricat` pentru o glifă stricată. */
+function contururiTrueType(o: Octeti, t: Tabele, numarGlife: number, locaLunga: boolean): (g: number) => readonly ConturFont[] {
+  const loca = t.get('loca')!, glyf = t.get('glyf')!;
+  // Locurile glifelor se citesc la cerere: lungimea lui `loca` se verifică aici, o dată.
   if (loca.lungime < (numarGlife + 1) * (locaLunga ? 4 : 2)) throw new FontStricat('loca e prea scurt');
-  const glifaCod = cmap(o, t);
-  if (!glifaCod) return { ok: false, cod: 'fara-unicode' };
 
   /** Începutul și sfârșitul datelor glifei în `glyf` (egale: glifă goală, ca spațiul). */
   const locul = (g: number): readonly [number, number] => {
@@ -440,62 +622,5 @@ function citeste(o: Octeti): RezultatFont {
     return rez;
   };
 
-  const avans = (g: number): number => {
-    if (g < 0 || g >= numarGlife) return 0;
-    return o.u16(hmtx + 4 * Math.min(g, metrici - 1));
-  };
-
-  // Înălțimea majusculei (ADR 0019): OS/2 (de la versiunea 2), verificată pe vârful conturului lui H.
-  const gH = glifaCod(0x48);
-  const varfH = gH === 0 ? null : contururi(gH, []).flat().reduce((m, q) => Math.max(m, q.y), -Infinity);
-  const os2 = t.get('OS/2');
-  const capOs2 = os2 && o.u16(os2.pos) >= 2 && os2.lungime >= 90 ? o.i16(os2.pos + 88) : 0;
-  let majuscula: number;
-  if (varfH === null || !Number.isFinite(varfH) || varfH <= 0) {
-    if (capOs2 <= 0) return { ok: false, cod: 'majuscula', detaliu: 'fără H și fără sCapHeight' };
-    majuscula = capOs2;
-  } else if (capOs2 > 0) {
-    if (Math.abs(capOs2 - varfH) > ABATERE_MAJUSCULA) return { ok: false, cod: 'majuscula', detaliu: `sCapHeight ${capOs2}, H ${varfH}` };
-    majuscula = capOs2;
-  } else {
-    majuscula = varfH;
-  }
-
-  const crenare = crenareGpos(o, t);
-  const font: Font = {
-    familie: familie(o, t),
-    unitsPerEm,
-    majuscula,
-    urcare: o.i16(hhea + 4),
-    coborare: o.i16(hhea + 6),
-    spatiuRanduri: o.i16(hhea + 8),
-    numarGlife,
-    glifa: (cod) => {
-      try {
-        return glifaCod(cod);
-      } catch (e) {
-        if (e instanceof FontStricat) return 0;
-        throw e;
-      }
-    },
-    avans,
-    crenare: (a, b) => {
-      if (!crenare) return 0;
-      try {
-        return crenare(a, b);
-      } catch (e) {
-        if (e instanceof FontStricat) return 0;
-        throw e;
-      }
-    },
-    contururi: (g) => {
-      try {
-        return contururi(g, []);
-      } catch (e) {
-        if (e instanceof FontStricat) return null;
-        throw e;
-      }
-    },
-  };
-  return { ok: true, font };
+  return (g) => contururi(g, []);
 }

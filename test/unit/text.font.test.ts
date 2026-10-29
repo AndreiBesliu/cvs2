@@ -2,13 +2,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { aseazaText } from '../../src/text/asezare.ts';
-import { acoperire, citesteFont, clasa, Octeti, type Font, type RezultatFont } from '../../src/text/font.ts';
+import { acoperire, citesteFont, clasa, feteFont, felFisier, Octeti, type Font, type RezultatFont } from '../../src/text/font.ts';
 
 /**
- * Cititorul de fonturi pe bucăți (ADR 0105 §1): glifele compuse, brute, față de fontTools (componentele puse pe puncte,
- * deplasarea scalată ca la Apple, 2 × 2, scara pe X și Y, o glifă compusă din alta compusă), refuzurile (CFF, majuscula
- * mincinoasă, tabelele lipsă, fișierul tăiat), glifa care se conține pe sine (sărită, numărată), crenarea și avansurile pe
- * valorile citite din font. Așezarea întreagă e în `text.corpus.test.ts`.
+ * Cititorul de fonturi pe bucăți (ADR 0105 §1, ADR 0106 §1): glifele brute față de fontTools (componentele TrueType puse
+ * pe puncte, deplasarea scalată ca la Apple, 2 × 2, scara pe X și Y, o glifă compusă din alta compusă; CFF: Inter, Source
+ * Han CID, cel scris de mână cu `seac`, flex, sugestii și subrutinele cu toate decalajele), refuzurile (CFF2, WOFF, WOFF2,
+ * fața lipsă, tabelele lipsă, fișierul tăiat, fără H și fără `sCapHeight`), majuscula din H, colecțiile, `cmap` 12, 6 și
+ * simbol, instanțele unui font variabil, crenarea fiecărei perechi (GPOS, Extension, `kern` Microsoft și Apple). Așezarea
+ * întreagă e în `text.corpus.test.ts`.
  */
 
 const RAD = new URL('../../', import.meta.url);
@@ -32,7 +34,7 @@ function faraTabel(b: Uint8Array, tag: string): Uint8Array {
   return c;
 }
 
-test('glifele compuse, brute, față de fontTools: pe puncte, deplasarea scalată, 2 × 2, scara pe X și Y, compusă din compusă', () => {
+test('glifele brute, față de fontTools: TrueType compuse (pe puncte, deplasarea scalată, 2 × 2, X și Y, compusă din compusă), CFF', () => {
   const fonturi = new Map<string, Font>();
   for (const [cheie, contururi] of Object.entries(GLIFE)) {
     const [fisier, ch] = cheie.split(':') as [string, string];
@@ -51,9 +53,10 @@ test('glifele compuse, brute, față de fontTools: pe puncte, deplasarea scalat�
   }
 });
 
-test('fontul: familia, unitățile, majuscula verificată pe H, rândul din hhea; caracterul lipsă dă glifa 0', () => {
+test('fontul: familia, numele, unitățile, majuscula din H, rândul din hhea; caracterul lipsă dă glifa 0', () => {
   const f = ok(citesteFont(octeti('public/fonturi/roboto.ttf')));
-  assert.deepEqual([f.familie, f.unitsPerEm, f.majuscula, f.urcare, f.coborare, f.spatiuRanduri], ['Roboto', 2048, 1456, 2146, -555, 0]);
+  assert.deepEqual([f.familie, f.unitsPerEm, f.majuscula, f.urcare, f.coborare, f.spatiuRanduri, f.cubice, f.instante], ['Roboto', 2048, 1456, 2146, -555, 0, false, null]);
+  assert.deepEqual(f.nume, { familie: 'Roboto', stil: 'Regular', complet: 'Roboto Regular', postscript: 'Roboto-Regular' });
   assert.equal(f.glifa(0x2603), 0);
   assert.ok(f.glifa(0x0219) > 0 && f.glifa(0x021b) > 0, 'ș și ț cu virgulă');
   // Crenarea „AV” e negativă (din oracol: verificată în generator), „AA” n-are pereche.
@@ -61,19 +64,79 @@ test('fontul: familia, unitățile, majuscula verificată pe H, rândul din hhea
   assert.equal(f.crenare(f.glifa(0x41), f.glifa(0x41)), 0);
   const s = ok(citesteFont(octeti('public/fonturi/droid-serif.ttf')));
   assert.deepEqual([s.familie, s.majuscula], ['Droid Serif', 1462]);
+  const c = ok(citesteFont(octeti('test/fixtures/text/cff-sintetic.otf')));
+  assert.deepEqual([c.familie, c.unitsPerEm, c.majuscula, c.cubice], ['CNCVS Sintetic', 1000, 700, true]);
 });
 
-test('refuzurile: CFF (OpenType cu contururi PostScript), alt fișier, majuscula mincinoasă, tabelele lipsă, fișierul tăiat', () => {
-  assert.deepEqual(citesteFont(octeti('test/fixtures/text/inter-cff.otf')), { ok: false, cod: 'cff' });
+test('majuscula (ADR 0106 §1): vârful lui H, chiar când sCapHeight minte; fără H, sCapHeight; fără niciuna, refuzul', () => {
+  // sCapHeight 1300, H 1456: contează litera tăiată (77 de fețe Windows aveau sCapHeight diferit de H, ca Candara).
+  assert.equal(ok(citesteFont(octeti('test/fixtures/text/roboto-majuscula-gresita.ttf'))).majuscula, 1456);
+  const faraH = octeti('test/fixtures/text/roboto-fara-h.ttf');
+  const f = ok(citesteFont(faraH));
+  assert.deepEqual([f.glifa(0x48), f.majuscula], [0, 1400]);
+  assert.deepEqual(citesteFont(faraTabel(faraH, 'OS/2')), { ok: false, cod: 'majuscula', detaliu: 'fără H și fără sCapHeight' });
+});
+
+test('refuzurile: CFF2, WOFF și WOFF2 (de despachetat întâi), alt fișier, fața lipsă, tabelele lipsă, fișierul tăiat', () => {
+  assert.deepEqual(citesteFont(octeti('test/fixtures/text/inter-cff2.otf')), { ok: false, cod: 'cff2' });
+  assert.deepEqual(citesteFont(octeti('test/fixtures/text/roboto.woff')), { ok: false, cod: 'woff' });
+  const woff2 = new Uint8Array(64);
+  woff2.set([0x77, 0x4f, 0x46, 0x32]);
+  assert.deepEqual(citesteFont(woff2), { ok: false, cod: 'woff2' });
+  assert.deepEqual(
+    [felFisier(woff2), felFisier(octeti('test/fixtures/text/roboto.woff')), felFisier(octeti('test/fixtures/text/roboto-droid.ttc')), felFisier(octeti('public/fonturi/roboto.ttf')), felFisier(new Uint8Array(3))],
+    ['woff2', 'woff', 'colectie', 'font', 'necunoscut'],
+  );
   assert.deepEqual(citesteFont(new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg"/>')), { ok: false, cod: 'nu-e-font' });
   assert.deepEqual(citesteFont(new Uint8Array(4)), { ok: false, cod: 'nu-e-font' });
-  const m = citesteFont(octeti('test/fixtures/text/roboto-majuscula-gresita.ttf'));
-  assert.ok(!m.ok && m.cod === 'majuscula' && m.detaliu === 'sCapHeight 1300, H 1456', JSON.stringify(m));
+  assert.deepEqual(citesteFont(octeti('test/fixtures/text/roboto-droid.ttc'), 2), { ok: false, cod: 'fata-lipsa', detaliu: '2 din 2' });
+  assert.deepEqual(citesteFont(octeti('public/fonturi/roboto.ttf'), 1), { ok: false, cod: 'fata-lipsa', detaliu: '1 din 1' });
   const roboto = octeti('public/fonturi/roboto.ttf');
   assert.deepEqual(citesteFont(faraTabel(roboto, 'loca')), { ok: false, cod: 'tabel-lipsa', detaliu: 'loca' });
   assert.deepEqual(citesteFont(faraTabel(roboto, 'cmap')), { ok: false, cod: 'fara-unicode' });
+  const inter = octeti('test/fixtures/text/inter-subset.otf');
+  assert.deepEqual(citesteFont(faraTabel(inter, 'hmtx')), { ok: false, cod: 'tabel-lipsa', detaliu: 'hmtx' });
   const taiat = citesteFont(roboto.slice(0, 2000));
   assert.ok(!taiat.ok && taiat.cod === 'stricat', JSON.stringify(taiat));
+  const taiatCff = citesteFont(inter.slice(0, 3000));
+  assert.ok(!taiatCff.ok && taiatCff.cod === 'stricat', JSON.stringify(taiatCff));
+});
+
+const STRUCTURA = JSON.parse(readFileSync(new URL('test/fixtures/text/structura.json', RAD), 'utf8')) as {
+  readonly 'test/fixtures/text/roboto-droid.ttc': ReadonlyArray<{ familie: string; complet: string; postscript: string; majuscula: number }>;
+  readonly 'test/fixtures/text/roboto-fvar.ttf': ReadonlyArray<{ stil: string; postscript: string | null; implicita: boolean }>;
+};
+
+test('colecția TTC: fețele cu numele lor, fiecare citită singură (familia, majuscula, contururile ca în fontul ei)', () => {
+  const ttc = octeti('test/fixtures/text/roboto-droid.ttc');
+  const asteptat = STRUCTURA['test/fixtures/text/roboto-droid.ttc'];
+  assert.deepEqual(feteFont(ttc)?.map((n) => [n.familie, n.complet, n.postscript]), asteptat.map((n) => [n.familie, n.complet, n.postscript]));
+  assert.deepEqual(feteFont(octeti('public/fonturi/roboto.ttf'))?.map((n) => n.postscript), ['Roboto-Regular']);
+  assert.equal(feteFont(new Uint8Array(64)), null);
+  asteptat.forEach((n, k) => {
+    const f = ok(citesteFont(ttc, k));
+    assert.deepEqual([f.familie, f.majuscula], [n.familie, n.majuscula]);
+    const singur = ok(citesteFont(octeti(k === 0 ? 'public/fonturi/roboto.ttf' : 'public/fonturi/droid-serif.ttf')));
+    for (const ch of 'AĂș') assert.deepEqual(f.contururi(f.glifa(ch.codePointAt(0)!)), singur.contururi(singur.glifa(ch.codePointAt(0)!)), ch);
+  });
+});
+
+test('`cmap`: 3/10 (formatul 12) câștigă peste un 3/1 care minte; formatul 6, un singur interval; simbolul caută la U+F000', () => {
+  const r = ok(citesteFont(octeti('public/fonturi/roboto.ttf')));
+  const c12 = ok(citesteFont(octeti('test/fixtures/text/roboto-cmap12.ttf')));
+  for (const ch of 'ABș€') assert.equal(c12.glifa(ch.codePointAt(0)!), r.glifa(ch.codePointAt(0)!), ch);
+  const c6 = ok(citesteFont(octeti('test/fixtures/text/roboto-cmap6.ttf')));
+  assert.deepEqual([...' A~'].map((ch) => c6.glifa(ch.codePointAt(0)!)), [...' A~'].map((ch) => r.glifa(ch.codePointAt(0)!)));
+  assert.deepEqual([c6.glifa(0x1f), c6.glifa(0x7f), c6.glifa(0x103)], [0, 0, 0]);
+  const s = ok(citesteFont(octeti('test/fixtures/text/roboto-simbol.ttf')));
+  assert.deepEqual([s.glifa(0x48), s.glifa(0xf048), s.glifa(0xe9), s.glifa(0x1f), s.glifa(0x100), s.majuscula], [r.glifa(0x48), r.glifa(0x48), r.glifa(0xe9), 0, 0, 1456]);
+});
+
+test('fontul variabil: instanțele numite din fvar (stilul, numele PostScript, cea implicită); contururile, ale instanței implicite', () => {
+  const f = ok(citesteFont(octeti('test/fixtures/text/roboto-fvar.ttf')));
+  assert.deepEqual(f.instante, STRUCTURA['test/fixtures/text/roboto-fvar.ttf']);
+  const r = ok(citesteFont(octeti('public/fonturi/roboto.ttf')));
+  assert.deepEqual(f.contururi(f.glifa(0x41)), r.contururi(r.glifa(0x41)));
 });
 
 test('o glifă compusă care se conține pe sine e sărită și numărată; celelalte litere rămân', () => {
@@ -109,7 +172,7 @@ test('glifele care se suprapun pe ele însele (accentele variantei, peste liter�
   assert.equal(r.raport['nonzero-refuzate'], 0);
 });
 
-test('crenarea fiecărei perechi (literele, cifrele, semnele, diacriticele), în ambele fonturi, față de fontTools', () => {
+test('crenarea fiecărei perechi (literele, cifrele, semnele, diacriticele), în fiecare font și variantă, față de fontTools', () => {
   const asteptat = JSON.parse(readFileSync(new URL('test/fixtures/text/crenari.json', RAD), 'utf8')) as Record<string, { set: string; perechi: Record<string, number> }>;
   for (const [fisier, { set, perechi }] of Object.entries(asteptat)) {
     const f = ok(citesteFont(octeti(fisier)));

@@ -329,7 +329,8 @@ if (straine3d.length > 0) {
   process.exit(1);
 }
 
-const CU_FIREBASE = /^assets\/(?:raportor|conexiuneBaza|PaginaAdmin)-[A-Za-z0-9_-]{8}\.js$/;
+// Google Fonts (ADR 0106 §4): clientul funcției `fonturiGoogle` vine tot la cerere, prin import() din fereastra fonturilor.
+const CU_FIREBASE = /^assets\/(?:raportor|conexiuneBaza|PaginaAdmin|apelFonturiGoogle)-[A-Za-z0-9_-]{8}\.js$/;
 const MARCAJE_FIREBASE: ReadonlyArray<readonly [string, string]> = [
   ['@firebase/app', 'aplicația Firebase (src/cloud/conexiuneBaza.ts)'],
   ['content-firebaseappcheck.googleapis.com', 'App Check'],
@@ -344,7 +345,7 @@ for (const [marcaj, ce] of MARCAJE_FIREBASE) {
   }
   const straine = cu.filter((r) => !CU_FIREBASE.test(r));
   if (straine.length > 0) {
-    console.error(`„${marcaj}” (${ce}) e în ${straine.join(', ')}: Firebase are voie doar în raportor-*, conexiuneBaza-* și PaginaAdmin-* (vine la cerere, cu raportorul de erori și cu /admin).`);
+    console.error(`„${marcaj}” (${ce}) e în ${straine.join(', ')}: Firebase are voie doar în raportor-*, conexiuneBaza-*, PaginaAdmin-* și apelFonturiGoogle-* (vine la cerere, cu raportorul de erori, cu /admin și cu Google Fonts).`);
     process.exit(1);
   }
 }

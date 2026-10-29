@@ -117,7 +117,7 @@ pe linie. Pen-ul rămâne ales pentru calea următoare.
 
 ## Textul
 %% capitol: text
-%% acopera: unealta.text, document.text
+%% acopera: unealta.text, document.text, editare.text.fonturi
 
 Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea aleasă:
 - un **clic pe foaie** pune ancora (o cruce): acolo începe linia de bază a primului rând (aliniat la stânga), îi stă
@@ -125,7 +125,8 @@ Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea a
 - un **clic pe un text** îl alege, ca să-l editezi.
 
 În panoul uneltei scrii textul (Enter: rând nou) și alegi:
-- **fontul**: Roboto sau Droid Serif, incluse (merg și fără rețea);
+- **fontul**: cele **incluse** (Roboto, Droid Serif), **Fonturile mele** (încărcate de tine sau descărcate din Google
+  Fonts) și, după ce permiți accesul, cele **ale sistemului**; sub câmpuri se vede textul, cum se va tăia;
 - **înălțimea majusculelor**, în mm: la „20 mm”, H, N sau E au exact 20 mm (literele rotunde, ca O sau C, trec puțin peste
   linie, ca în orice font);
 - **spațiul dintre litere** (în mm; negativ, mai strâns), **distanța dintre rânduri** (ca multiplu al rândului fontului) și
@@ -136,6 +137,20 @@ exterior pe contururile de afară, pe interior pe goluri; le schimbi în fereast
 **Aplică** înlocuiește textul ales cu cel din panou, într-un singur pas de anulare; operațiile lui rămân, mutate pe literele
 noi (profilul pe exterior pe contururile de afară, cel pe interior pe goluri, restul pe toate). În paletă, comanda e
 **Scrie textul**.
+
+**Fonturi…**, sub font, deschide fereastra fonturilor:
+- **Fonturile mele**: **Încarcă fonturi…** primește TTF, OTF (și cele cu contururi CFF, ca fonturile Adobe), TTC (toate
+  fețele) și WOFF; fonturile rămân în browserul ăsta, merg și fără rețea și nu pleacă nicăieri. **Folosește** alege fontul
+  în panou, **Șterge** îl scoate (un text făcut cu el rămâne, doar nu se mai editează aici până nu-l încarci din nou);
+- **Google Fonts**: cauți o familie (după nume, după categorie, doar cu diacriticele românești), alegi stilul și
+  **Descarcă**: fontul vine o dată și intră în Fonturile mele. Pe alt calculator, un text cu un font Google îl cere din
+  nou dintr-un clic (**Descarcă din nou**);
+- **Ale sistemului**: **Permite accesul la fonturile sistemului** (Chrome și Edge, pe calculator) pune fonturile
+  instalate în lista din panou. Nu se copiază nicăieri: textul se editează doar unde fontul e instalat.
+
+Înălțimea în mm se măsoară pe litera **H** a fontului (vârful ei e la „20 mm”); un font fără H folosește înălțimea
+majusculelor scrisă în el. Un font variabil (ca Bahnschrift) se citește deocamdată doar în stilul lui implicit, iar un
+WOFF2 se încarcă întâi convertit în TTF sau OTF.
 
 Textul rămâne editabil și după salvare, cât timp contururile lui nu se schimbă pe altă cale: mutarea, rotirea, oglindirea și
 scalarea uniformă îl păstrează (scalarea crește și înălțimea din panou); o scalare neuniformă, o înclinare sau o editare de

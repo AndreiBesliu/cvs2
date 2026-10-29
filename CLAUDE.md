@@ -208,8 +208,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`src/text/`), înălțimea majusculei verificată pe H, blocul editabil pe rădăcina piesei (legat de contururi prin amprentă,
   nu o schemă nouă), Roboto și Droid Serif incluse (`public/fonturi/`, Apache 2.0, în precache). **Corpusul textului e
   Python** (`test/oracles-py/text_corpus.py`, fontTools): un caz nou = așezarea în generator, apoi `test/fixtures/text/`
-  regenerat și comis. Urmează în etapa 7: textul pe curbă, fonturile omului (și CFF), fonturile cu o singură linie.
-  **Pornirea 97,4 (cu ușa 100,9 / 110 kB), totalul 358,6 / 400.**
+  regenerat și comis. **Pornirea 97,4 (cu ușa 100,9 / 110 kB), totalul 358,6 / 400.**
+  **Fonturile omului (ADR 0106, felia 7.2↑)** gata pe 29.10: „Fonturile mele” (încărcate: TTF, OTF / CFF, TTC, WOFF;
+  ținute în browser, IndexedDB `cncvs2-fonturi`), fonturile sistemului (Local Font Access, cu permisiunea din clic) și Google
+  Fonts (funcția `fonturiGoogle`, fără cheie: metadatele publice și CSS API v2; fișierul TTF îl descarcă browserul din
+  `fonts.gstatic.com`, permis în CSP); cititorul: CFF (și CID), TTC, `cmap` 12 / 6 / simbol, `kern` vechi, Extension;
+  **majuscula = vârful lui H** (nu `sCapHeight`). Blocul ține id-ul fontului (`f:` amprenta, `g:` Google, `s:` PostScript)
+  și numele lui. Pe cele 566 de fețe ale mașinii, 557 identice cu fontTools (sonda locală, `.tmp/sonda_fonturi_sistem.py`).
+  Urmează în etapa 7: textul pe curbă, instanțele fonturilor variabile, fonturile cu o singură linie. **Pornirea 97,4 (cu
+  ușa 100,9 / 110 kB), totalul 370,5 / 400.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

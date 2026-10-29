@@ -12,6 +12,9 @@
  * `www.gstatic.com/recaptcha/`, `recaptcha.google.com/recaptcha/`, plus `connect-src https://www.google.com/recaptcha/`.
  * App Check schimbă tokenul la `content-firebaseappcheck.googleapis.com` și aduce `www.google.com/recaptcha/enterprise.js`
  * (constantele `BASE_ENDPOINT` și `RECAPTCHA_ENTERPRISE_URL` din `@firebase/app-check`).
+ *
+ * Google Fonts (ADR 0106 §4): fișierele TTF se descarcă din `fonts.gstatic.com` (catalogul și adresele vin prin funcția
+ * `fonturiGoogle`, deja permisă); doar `connect-src`, fiindcă fontul se citește ca octeți, nu se încarcă în pagină.
  */
 const PROIECTE = ['cncvectorstudio-test', 'cncvectorstudio'] as const;
 export const DOMENII_AUTH = PROIECTE.map((p) => `https://${p}.firebaseapp.com`);
@@ -26,7 +29,7 @@ export const CSP = [
   [
     "connect-src 'self'", 'https://identitytoolkit.googleapis.com', 'https://securetoken.googleapis.com',
     'https://firestore.googleapis.com', 'https://content-firebaseappcheck.googleapis.com', 'https://www.google.com/recaptcha/',
-    ...ORIGINI_FUNCTII,
+    ...ORIGINI_FUNCTII, 'https://fonts.gstatic.com',
   ].join(' '),
   ['frame-src', ...DOMENII_AUTH, 'https://www.google.com/recaptcha/', 'https://recaptcha.google.com/recaptcha/'].join(' '),
   "worker-src 'self' blob:",

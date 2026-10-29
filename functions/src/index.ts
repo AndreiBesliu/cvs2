@@ -15,6 +15,7 @@ import { cuMarcaj } from './joburi/marcaj.ts';
 import { trateazaRaportClient } from './erori/client.ts';
 import { marcheazaEroarea as marcheaza } from './erori/marcheaza.ts';
 import { acceptaInvitatia as accepta, administreazaPersonalul as administreaza } from './personal/actiuni.ts';
+import { memorieNoua, trateazaFonturiGoogle } from './fonturi/google.ts';
 import { REGIUNI } from './regiuni.ts';
 
 initializeApp();
@@ -55,6 +56,17 @@ export const administreazaPersonalul = onCall(
 export const acceptaInvitatia = onCall(
   { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 2, memory: '256MiB', timeoutSeconds: 20 },
   async (cerere) => accepta(getFirestore(), cerere.auth?.uid ?? null, cerere.auth?.token ?? null),
+);
+
+const memorieGoogle = memorieNoua();
+
+/**
+ * Google Fonts (ADR 0106 §4): catalogul și adresa TTF a unei variante, fără cheie API (metadatele publice și CSS API v2,
+ * cerute de aici, unde CORS-ul și agentul nu mai opresc); App Check impus, fără cont cerut. Fontul îl descarcă browserul.
+ */
+export const fonturiGoogle = onCall(
+  { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 5, memory: '256MiB', timeoutSeconds: 30 },
+  async (cerere) => trateazaFonturiGoogle(cerere.data, { cere: fetch, acum: Date.now }, memorieGoogle),
 );
 
 /* ── Joburile programate (ADR 0041), fiecare cu marcajul lui de rulare ─────────────────────────────────────────────── */
