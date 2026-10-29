@@ -97,6 +97,88 @@ function masoara(c: Contur, i: number): SegmentMasurat {
   return { lungime: l, la: (d) => ({ p: l > 0 ? { x: a.x + ((b.x - a.x) * d) / l, y: a.y + ((b.y - a.y) * d) / l } : a, unghi }) };
 }
 
+/**
+ * Curba măsurată pentru textul pe curbă (ADR 0108 §1): lungimea și locul la orice distanță `s` (mm, pe curbă), și dincolo de
+ * capete: o curbă închisă se reia (s modulo lungimea), una deschisă continuă pe tangenta capătului (înapoi, înainte de
+ * început). Într-un vârf, tangenta e a segmentului care pleacă din el; segmentele fără lungime nu dau tangenta capetelor.
+ */
+export type Parcurgere = { readonly lungime: number; readonly la: (s: number) => LocPeCurba };
+
+export function parcurgere(c: Contur): Parcurgere | null {
+  const segmente = Array.from({ length: numarSegmente(c) }, (_, i) => masoara(c, i));
+  const cumul = [0];
+  for (const x of segmente) cumul.push(cumul[cumul.length - 1]! + x.lungime);
+  const total = cumul[segmente.length]!;
+  if (!(total > LUNGIME_MINIMA)) return null;
+  const pline = segmente.map((x, i) => i).filter((i) => segmente[i]!.lungime > 0);
+  const primul = segmente[pline[0]!]!, ultimul = segmente[pline[pline.length - 1]!]!;
+  const pe = (loc: LocPeCurba, d: number): LocPeCurba => {
+    const u = (loc.unghi * Math.PI) / 180;
+    return { p: { x: loc.p.x + d * Math.cos(u), y: loc.p.y + d * Math.sin(u) }, unghi: loc.unghi };
+  };
+  return {
+    lungime: total,
+    la: (s0) => {
+      let s = s0;
+      if (c.inchis) s = ((s % total) + total) % total;
+      else if (s < 0) return pe(primul.la(0), s);
+      else if (s > total) return pe(ultimul.la(ultimul.lungime), s - total);
+      // Ultimul segment cu lungime care începe cel mult la s (căutare binară pe lungimile cumulate).
+      let st = 0, dr = pline.length - 1;
+      while (st < dr) {
+        const m = (st + dr + 1) >> 1;
+        if (cumul[pline[m]!]! <= s) st = m;
+        else dr = m - 1;
+      }
+      const j = pline[st]!;
+      return segmente[j]!.la(Math.min(Math.max(s - cumul[j]!, 0), segmente[j]!.lungime));
+    },
+  };
+}
+
+/**
+ * Distanța pe curbă (mm, de la început) a punctului curbei cel mai apropiat de `q` (ADR 0108 §3: ancora unui text pe curbă):
+ * eșantioane la cel mult 0,25 mm pe fiecare segment, secțiunea de aur în jurul celui mai bun, apoi zeroul derivatei distanței,
+ * (P(s) − q) · T(s), prin bisecție, sub 1e-9 mm. Minimul singur nu se poate găsi mai bine de ~1e-7 mm: distanța e plată acolo
+ * (pătratică), iar derivata trece prin zero oblic. Într-un colț, derivata sare peste zero, iar bisecția ajunge în colț.
+ */
+export function pozitiePeCurba(c: Contur, q: Punct): number | null {
+  const par = parcurgere(c);
+  if (!par) return null;
+  const d = (s: number): number => { const p = par.la(s).p; return Math.hypot(p.x - q.x, p.y - q.y); };
+  const derivata = (s: number): number => {
+    const l = par.la(s), u = (l.unghi * Math.PI) / 180;
+    return (l.p.x - q.x) * Math.cos(u) + (l.p.y - q.y) * Math.sin(u);
+  };
+  const n = Math.min(200_000, Math.max(64, Math.ceil(par.lungime / 0.25)));
+  const pas = par.lungime / n;
+  let best = 0, bd = Infinity;
+  for (let k = 0; k <= n; k++) {
+    const v = d(k * pas);
+    if (v < bd) { bd = v; best = k * pas; }
+  }
+  const g = (Math.sqrt(5) - 1) / 2;
+  let lo = c.inchis ? best - pas : Math.max(0, best - pas), hi = c.inchis ? best + pas : Math.min(par.lungime, best + pas);
+  let x1 = hi - g * (hi - lo), x2 = lo + g * (hi - lo), f1 = d(x1), f2 = d(x2);
+  for (let it = 0; it < 200 && hi - lo > 1e-10; it++) {
+    if (f1 <= f2) { hi = x2; x2 = x1; f2 = f1; x1 = hi - g * (hi - lo); f1 = d(x1); }
+    else { lo = x1; x1 = x2; f1 = f2; x2 = lo + g * (hi - lo); f2 = d(x2); }
+  }
+  let s = f1 <= f2 ? x1 : x2;
+  // Zeroul derivatei lângă minimul găsit: ea crește prin zero (distanța scade, apoi crește).
+  let a = c.inchis ? s - 1e-4 : Math.max(0, s - 1e-4), b = c.inchis ? s + 1e-4 : Math.min(par.lungime, s + 1e-4);
+  if (derivata(a) < 0 && derivata(b) > 0) {
+    for (let it = 0; it < 100 && b - a > 1e-13; it++) {
+      const m = (a + b) / 2;
+      if (derivata(m) < 0) a = m;
+      else b = m;
+    }
+    if (d((a + b) / 2) <= d(s) + 1e-12) s = (a + b) / 2;
+  }
+  const rez = d(s) <= bd ? s : best;
+  return c.inchis ? ((rez % par.lungime) + par.lungime) % par.lungime : rez;
+}
+
 /** Lungimea curbei (mm, pe curbă). */
 export function lungimeCurba(c: Contur): number {
   let s = 0;

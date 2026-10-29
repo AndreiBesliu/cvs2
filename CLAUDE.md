@@ -215,8 +215,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `fonts.gstatic.com`, permis în CSP); cititorul: CFF (și CID), TTC, `cmap` 12 / 6 / simbol, `kern` vechi, Extension;
   **majuscula = vârful lui H** (nu `sCapHeight`). Blocul ține id-ul fontului (`f:` amprenta, `g:` Google, `s:` PostScript)
   și numele lui. Pe cele 566 de fețe ale mașinii, 557 identice cu fontTools (sonda locală, `.tmp/sonda_fonturi_sistem.py`).
-  Urmează în etapa 7: textul pe curbă, instanțele fonturilor variabile, fonturile cu o singură linie. **Pornirea 97,4 (cu
-  ușa 100,9 / 110 kB), totalul 370,5 / 400.**
+  **Pornirea 97,4 (cu ușa 100,9 / 110 kB), totalul 370,5 / 400.**
+  **Textul pe curbă și proba fonturilor (ADR 0108, felia 7.3↑)** gata pe 29.10: cu unealta Text, un clic lângă conturul
+  unei forme pune ancora pe el și textul urmează curba (literele întregi, rotite sau verticale; deasupra, pe linia de bază,
+  centrat, dedesubt, la o distanță; partea cealaltă; întins pe toată curba); curba stă în blocul textului, în sistemul
+  piesei (`src/text/peCurba.ts`, `parcurgere` și `pozitiePeCurba` în `src/model/curba.ts`). **Corpusul pe curbă e Python**
+  (`pe_curba` în `test/oracles-py/text_corpus.py`, `test/fixtures/text/pe-curba.json`): un caz nou = rândul în
+  `CAZURI_CURBA`, apoi fixtura regenerată și comisă. Fereastra fonturilor („Adaugă fonturi…”) are textul de probă: contururile
+  aplicației pentru fonturile omului și ale sistemului, fețele de afișare Google înainte de descărcare (CSS API v2 din
+  browser, `fonts.googleapis.com` / `fonts.gstatic.com` în CSP). Urmează în etapa 7: instanțele fonturilor variabile,
+  fonturile cu o singură linie. **Pornirea 97,4 (cu ușa 100,9 / 110 kB), totalul 374,4 / 400.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

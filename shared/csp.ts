@@ -13,8 +13,9 @@
  * App Check schimbă tokenul la `content-firebaseappcheck.googleapis.com` și aduce `www.google.com/recaptcha/enterprise.js`
  * (constantele `BASE_ENDPOINT` și `RECAPTCHA_ENTERPRISE_URL` din `@firebase/app-check`).
  *
- * Google Fonts (ADR 0106 §4): fișierele TTF se descarcă din `fonts.gstatic.com` (catalogul și adresele vin prin funcția
- * `fonturiGoogle`, deja permisă); doar `connect-src`, fiindcă fontul se citește ca octeți, nu se încarcă în pagină.
+ * Google Fonts (ADR 0106 §4, ADR 0108 §5): fișierele TTF se descarcă din `fonts.gstatic.com` (catalogul și adresele vin prin
+ * funcția `fonturiGoogle`, deja permisă); previzualizarea înainte de descărcare cere CSS API (`fonts.googleapis.com`, în
+ * `connect-src`: citit cu fetch, nu ca foaie de stil) și fețele lui de afișare (WOFF2 din `fonts.gstatic.com`, în `font-src`).
  */
 const PROIECTE = ['cncvectorstudio-test', 'cncvectorstudio'] as const;
 export const DOMENII_AUTH = PROIECTE.map((p) => `https://${p}.firebaseapp.com`);
@@ -25,11 +26,11 @@ export const CSP = [
   "script-src 'self' https://apis.google.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/",
   "style-src 'self'",
   "img-src 'self' data: blob:",
-  "font-src 'self'",
+  "font-src 'self' https://fonts.gstatic.com",
   [
     "connect-src 'self'", 'https://identitytoolkit.googleapis.com', 'https://securetoken.googleapis.com',
     'https://firestore.googleapis.com', 'https://content-firebaseappcheck.googleapis.com', 'https://www.google.com/recaptcha/',
-    ...ORIGINI_FUNCTII, 'https://fonts.gstatic.com',
+    ...ORIGINI_FUNCTII, 'https://fonts.gstatic.com', 'https://fonts.googleapis.com',
   ].join(' '),
   ['frame-src', ...DOMENII_AUTH, 'https://www.google.com/recaptcha/', 'https://recaptcha.google.com/recaptcha/'].join(' '),
   "worker-src 'self' blob:",

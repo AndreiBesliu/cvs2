@@ -126,6 +126,8 @@ on the line. The Pen stays chosen for the next path.
 The **Text** tool (`X`; `T` is “Show toolpath”) writes text to cut. With it chosen:
 - a **click on the sheet** puts the anchor (a cross): there the baseline of the first line starts (left aligned), has its
   middle (centred) or its end (right aligned);
+- a **click near a shape's outline** (a circle, an arc, a curve, a rectangle) puts the anchor on the outline, at the
+  nearest point, and the text **follows the curve** (below);
 - a **click on a text** chooses it, to edit it.
 
 In the tool's panel you type the text (Enter: new line) and choose:
@@ -142,7 +144,26 @@ profile on the outer outlines, the inside one on the holes; you change them in t
 letters (the outside profile onto the outer outlines, the inside one onto the holes, the rest onto all). In the palette the
 command is **Write the text**.
 
-**Fonts…**, below the font, opens the fonts window:
+On a curve, the panel shows the **On the curve** section (with the curve's length), with:
+- the **Position to the curve**: **Above** (the letters sit over the curve, their descenders on it), **On the baseline**,
+  **Centred on the curve** (the middle of the capitals on the curve) or **Below** (the top of the capitals on the curve);
+- the **Distance from the curve** (mm), extra, upwards (negative: towards the curve and past it);
+- **On the other side**: the text moves to the other side of the curve (on a circle, inside);
+- **Upright letters**: the letters stand upright instead of turning with the curve;
+- **Stretched over the whole curve**: the space between letters grows until the text covers the curve (an open one from
+  end to end, a closed one all the way round, with the same space between the last letter and the first too).
+
+On a circle or another closed shape, the text sits outside and reads from left to right; the anchor stays where you clicked
+and the text is aligned to it (left, centred or right). Longer than an open curve, the text continues straight past the
+ends; on a closed one it wraps round. The letters move whole, they do not bend, so the outlines stay exact. **On a straight
+line** writes the text straight, from the anchor (the curve stays chosen: **On the curve** puts it back). The curve is kept
+in the text: if you change or delete the shape, the text stays as it was; to follow the new shape, click near it again.
+
+**Add fonts…**, below the font, opens the fonts window. At the top, the **Sample text** (the panel's first line or, when
+empty, a default sample) is shown written with every font in the list: in My fonts and in the system fonts, drawn from the
+font's outlines, as it will be cut (the letters missing from the font are named); in Google Fonts, with each family, in the
+chosen style, **before downloading** (the browser fetches from Google only the alphabets of the sample text, and what is cut
+comes from the downloaded file). The tabs:
 - **My fonts**: **Load fonts…** takes TTF, OTF (CFF outlines too, like Adobe fonts), TTC (all the faces) and WOFF; the
   fonts stay in this browser, work offline and go nowhere. **Use** chooses the font in the panel, **Delete** removes it (a
   text made with it stays, it just cannot be edited here until you load the font again);
@@ -150,7 +171,8 @@ command is **Write the text**.
   **Download**: the font comes once and goes into My fonts. On another computer, a text in a Google font asks for it again
   in one click (**Download again**);
 - **System fonts**: **Allow access to the system fonts** (Chrome and Edge, on a computer) puts the installed fonts in the
-  panel's list. They are copied nowhere: the text can be edited only where the font is installed.
+  panel's list and in the window, with a search, each one's sample and **Use**. They are copied nowhere: the text can be
+  edited only where the font is installed.
 
 The height in mm is measured on the font's letter **H** (its top is at “20 mm”); a font without an H uses the capital height
 written in it. A variable font (like Bahnschrift) is read only in its default style for now, and a WOFF2 is loaded after

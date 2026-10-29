@@ -3,7 +3,9 @@ import { CATEGORII_GOOGLE, type CatalogGoogle, type CategorieGoogle } from '../.
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import { catalogGoogle, descarcaInBiblioteca } from './fonturiGoogleClient.ts';
-import { textRefuzFont } from './texteFont.ts';
+import { familieGoogle } from './previzualizareFont.ts';
+import { Previzualizare } from './PrevizualizareText.tsx';
+import { textIncarcare, textRefuzFont } from './texteFont.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -12,6 +14,8 @@ type ModulText = typeof import('../text/calcul.ts');
 type FontSalvat = import('../text/biblioteca.ts').FontSalvat;
 type RezultatAdaugare = import('../text/biblioteca.ts').RezultatAdaugare;
 type StareSistem = import('../text/sistem.ts').StareSistem;
+type FontSistem = import('../text/sistem.ts').FontSistem;
+type TextAsezat = import('../text/asezare.ts').TextAsezat;
 
 type Fila = 'mele' | 'google' | 'sistem';
 const FILE: readonly Fila[] = ['mele', 'google', 'sistem'];
@@ -23,6 +27,84 @@ const CATEGORIE: Record<CategorieGoogle, CheieSimpla> = {
 };
 
 const mb = (octeti: number): string => (octeti / (1024 * 1024)).toFixed(octeti < 1024 * 1024 ? 2 : 1);
+
+/** Un element care s-a văzut o dată pe ecran (în fereastra derulată): previzualizarea lui se aduce abia atunci. */
+function useVizibil<T extends Element>(): [{ current: T | null }, boolean] {
+  const ref = useRef<T | null>(null);
+  const [vizibil, setVizibil] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || vizibil) return undefined;
+    if (typeof IntersectionObserver === 'undefined') {
+      setVizibil(true);
+      return undefined;
+    }
+    const o = new IntersectionObserver((e) => { if (e.some((x) => x.isIntersecting)) { setVizibil(true); o.disconnect(); } });
+    o.observe(el);
+    return () => { o.disconnect(); };
+  }, [vizibil]);
+  return [ref, vizibil];
+}
+
+/** Cât așteaptă proba după o literă scrisă în textul de probă, înainte să recitească fontul. */
+const ASTEPTARE_PROBA_MS = 200;
+
+/**
+ * Proba unui font din „Fonturile mele” sau al sistemului (ADR 0108 §5): textul de probă așezat de cititorul aplicației, deci
+ * contururile care se vor tăia (caracterele lipsă, numite), sau motivul pentru care panoul nu l-ar putea folosi. Fontul se
+ * citește când rândul ajunge pe ecran și nu se ține: rămân doar contururile probei.
+ */
+function ProbaFont({ modul, id, nume, text }: { readonly modul: ModulText; readonly id: string; readonly nume: string; readonly text: string }): ReactElement {
+  const [ref, vizibil] = useVizibil<HTMLSpanElement>();
+  const [proba, setProba] = useState<{ readonly asezat: TextAsezat } | { readonly motiv: string } | null>(null);
+  useEffect(() => {
+    if (!vizibil || text.trim() === '') {
+      setProba(null);
+      return undefined;
+    }
+    let viu = true;
+    const ceas = setTimeout(() => {
+      void modul.aduceFont(id).then((r) => {
+        if (!viu) return;
+        setProba(r.ok
+          ? { asezat: modul.aseazaText(r.font, { continut: text, inaltime: 10, spatiere: 0, interlinie: 1, aliniere: 'stanga' }) }
+          : { motiv: textIncarcare(r, nume) });
+      });
+    }, proba ? ASTEPTARE_PROBA_MS : 0);
+    return () => { viu = false; clearTimeout(ceas); };
+  }, [vizibil, id, text]);
+  const lipsa = proba && 'asezat' in proba ? proba.asezat.caractereLipsa : [];
+  return (
+    <span ref={ref} className="proba-font" data-proba={proba === null ? 'asteapta' : 'motiv' in proba ? 'eroare' : 'gata'}>
+      {proba && 'asezat' in proba ? <Previzualizare asezat={proba.asezat} clasa="proba-contur" testid="proba-font" laStanga /> : null}
+      {proba && 'motiv' in proba ? <span className="proba-motiv" data-testid="proba-motiv">{proba.motiv}</span> : null}
+      {lipsa.length > 0 ? <span className="proba-motiv" data-testid="proba-lipsa">{t('editare.fonturi.proba-lipsa', { caractere: lipsa.join(' ') })}</span> : null}
+    </span>
+  );
+}
+
+/**
+ * Previzualizarea unei variante Google Fonts înainte de descărcare (ADR 0108 §5): textul de probă scris de browser cu fețele
+ * de afișare ale variantei (WOFF2 din gstatic, doar alfabetele textului), aduse când rândul ajunge pe ecran.
+ */
+function ProbaGoogle({ familie, varianta, text }: { readonly familie: string; readonly varianta: string; readonly text: string }): ReactElement {
+  const [ref, vizibil] = useVizibil<HTMLSpanElement>();
+  // Numele fețelor de afișare; null: încă nu; false: n-au venit (fără rețea, familia scoasă), rândul rămâne fără probă.
+  const [alias, setAlias] = useState<string | null | false>(null);
+  useEffect(() => {
+    if (!vizibil) return undefined;
+    let viu = true;
+    setAlias(null);
+    void familieGoogle(familie, varianta, text).then((a) => { if (viu) setAlias(a ?? false); });
+    return () => { viu = false; };
+  }, [vizibil, familie, varianta, text]);
+  return (
+    <span ref={ref} className="proba-google" data-proba={alias ? 'gata' : alias === false ? 'eroare' : 'asteapta'}
+      style={alias ? { fontFamily: `"${alias}"` } : undefined}>
+      {alias ? text : ''}
+    </span>
+  );
+}
 
 /** Ce a ieșit dintr-o încărcare sau o descărcare: fonturile adăugate, cele care erau deja, cele refuzate (cu motivul). */
 function Rezultat({ r }: { readonly r: RezultatAdaugare }): ReactElement {
@@ -39,16 +121,19 @@ function Rezultat({ r }: { readonly r: RezultatAdaugare }): ReactElement {
  * Fereastra fonturilor (ADR 0106 §5): „Fonturile mele” (încărcarea fișierelor, lista, ștergerea), Google Fonts (căutarea în
  * catalog, stilul, descărcarea) și fonturile sistemului (permisiunea, cerută la clic). Un font adăugat se alege în panou.
  */
-export function DialogFonturi({ modul, ales, onSchimbat, onFoloseste, onInchide }: {
+export function DialogFonturi({ modul, ales, textProba, onSchimbat, onFoloseste, onInchide }: {
   readonly modul: ModulText;
   /** Fontul ales acum în panou. */
   readonly ales: string;
+  /** Textul din panou (primul rând), ca text de probă; gol: proba implicită a limbii (în română, cu diacriticele). */
+  readonly textProba: string;
   /** Biblioteca sau permisiunea s-au schimbat (`id`: fontul atins): panoul își recitește listele. */
   readonly onSchimbat: (id?: string) => void;
   readonly onFoloseste: (id: string) => void;
   readonly onInchide: () => void;
 }): ReactElement {
   const [fila, setFila] = useState<Fila>('mele');
+  const [proba, setProba] = useState(() => textProba.trim() || t('editare.fonturi.proba-implicit'));
   const cutie = useRef<HTMLDivElement>(null);
   useEffect(() => { cutie.current?.focus(); }, []);
   // Escape închide fereastra oriunde ar fi focusul, nu și panoul de sub ea.
@@ -68,6 +153,12 @@ export function DialogFonturi({ modul, ales, onSchimbat, onFoloseste, onInchide 
     <div className="dialog dialog-fonturi" role="dialog" aria-modal="true" aria-labelledby="fonturi-titlu" data-testid="dialog-fonturi">
       <div className="dialog-cutie" ref={cutie} tabIndex={-1}>
         <h2 id="fonturi-titlu">{t('editare.fonturi.titlu')}</h2>
+        <div className="campuri">
+          <label className="camp-proba">
+            {t('editare.fonturi.proba')}
+            <input type="text" value={proba} maxLength={60} data-camp="text-proba" onChange={(e) => { setProba(e.target.value); }} />
+          </label>
+        </div>
         <div className="file-fonturi" role="tablist" aria-label={t('editare.fonturi.titlu')}>
           {FILE.map((f) => (
             <button key={f} type="button" role="tab" aria-selected={fila === f} data-fila-fonturi={f} onClick={() => { setFila(f); }}>
@@ -76,9 +167,9 @@ export function DialogFonturi({ modul, ales, onSchimbat, onFoloseste, onInchide 
           ))}
         </div>
         <div role="tabpanel">
-          {fila === 'mele' ? <FilaMele modul={modul} ales={ales} onSchimbat={onSchimbat} onFoloseste={onFoloseste} /> : null}
-          {fila === 'google' ? <FilaGoogle modul={modul} onSchimbat={onSchimbat} onFoloseste={onFoloseste} /> : null}
-          {fila === 'sistem' ? <FilaSistem modul={modul} onSchimbat={onSchimbat} /> : null}
+          {fila === 'mele' ? <FilaMele modul={modul} ales={ales} proba={proba} onSchimbat={onSchimbat} onFoloseste={onFoloseste} /> : null}
+          {fila === 'google' ? <FilaGoogle modul={modul} proba={proba} onSchimbat={onSchimbat} onFoloseste={onFoloseste} /> : null}
+          {fila === 'sistem' ? <FilaSistem modul={modul} ales={ales} proba={proba} onSchimbat={onSchimbat} onFoloseste={onFoloseste} /> : null}
         </div>
         <div className="butoane">
           <button type="button" data-buton="inchide-fonturi" onClick={onInchide}>{t('editare.retea.inchide')}</button>
@@ -88,8 +179,8 @@ export function DialogFonturi({ modul, ales, onSchimbat, onFoloseste, onInchide 
   );
 }
 
-function FilaMele({ modul, ales, onSchimbat, onFoloseste }: {
-  readonly modul: ModulText; readonly ales: string; readonly onSchimbat: (id?: string) => void; readonly onFoloseste: (id: string) => void;
+function FilaMele({ modul, ales, proba, onSchimbat, onFoloseste }: {
+  readonly modul: ModulText; readonly ales: string; readonly proba: string; readonly onSchimbat: (id?: string) => void; readonly onFoloseste: (id: string) => void;
 }): ReactElement {
   const [lista, setLista] = useState<readonly FontSalvat[] | null>(null);
   const [eroare, setEroare] = useState<string | null>(null);
@@ -148,6 +239,7 @@ function FilaMele({ modul, ales, onSchimbat, onFoloseste }: {
               <button type="button" data-buton="sterge-font" onClick={() => {
                 void modul.stergeFont(f.id).then(() => { citeste(); onSchimbat(f.id); }, () => { setEroare(t('editare.text.font.fara-stocare')); });
               }}>{t('editare.fonturi.sterge')}</button>
+              <ProbaFont modul={modul} id={f.id} nume={f.nume.complet} text={proba} />
             </li>
           ))}
         </ul>
@@ -156,8 +248,8 @@ function FilaMele({ modul, ales, onSchimbat, onFoloseste }: {
   );
 }
 
-function FilaGoogle({ modul, onSchimbat, onFoloseste }: {
-  readonly modul: ModulText; readonly onSchimbat: (id?: string) => void; readonly onFoloseste: (id: string) => void;
+function FilaGoogle({ modul, proba, onSchimbat, onFoloseste }: {
+  readonly modul: ModulText; readonly proba: string; readonly onSchimbat: (id?: string) => void; readonly onFoloseste: (id: string) => void;
 }): ReactElement {
   const [catalog, setCatalog] = useState<CatalogGoogle | string | null>(null);
   const [cauta, setCauta] = useState('');
@@ -233,6 +325,7 @@ function FilaGoogle({ modul, onSchimbat, onFoloseste }: {
                   <button type="button" data-buton="descarca-google" disabled={lucru !== null} onClick={() => { descarca(f.familie, v); }}>
                     {t('editare.fonturi.descarca')}
                   </button>
+                  <ProbaGoogle familie={f.familie} varianta={v} text={proba} />
                 </li>
               );
             })}
@@ -243,20 +336,28 @@ function FilaGoogle({ modul, onSchimbat, onFoloseste }: {
   );
 }
 
-function FilaSistem({ modul, onSchimbat }: { readonly modul: ModulText; readonly onSchimbat: (id?: string) => void }): ReactElement {
+function FilaSistem({ modul, ales, proba, onSchimbat, onFoloseste }: {
+  readonly modul: ModulText; readonly ales: string; readonly proba: string; readonly onSchimbat: (id?: string) => void; readonly onFoloseste: (id: string) => void;
+}): ReactElement {
   const [stare, setStare] = useState<StareSistem | null>(null);
-  const [numar, setNumar] = useState<number | null>(null);
+  const [lista, setLista] = useState<readonly FontSistem[] | null>(null);
+  const [cauta, setCauta] = useState('');
   const citeste = (): void => {
     void modul.stareSistem().then((s) => {
       setStare(s);
-      if (s === 'permis') void modul.listaSistem().then((l) => { setNumar(l.length); }, () => { setNumar(0); });
+      if (s === 'permis') void modul.listaSistem().then(setLista, () => { setLista([]); });
     });
   };
   useEffect(citeste, [modul]);
   const permite = (): void => {
     // Cererea pornește din clic: browserul întreabă omul (permisiunea „local-fonts”).
-    void modul.listaSistem().then((l) => { setStare('permis'); setNumar(l.length); onSchimbat(); }, () => { citeste(); });
+    void modul.listaSistem().then((l) => { setStare('permis'); setLista(l); onSchimbat(); }, () => { citeste(); });
   };
+  const numar = lista?.length ?? null;
+  const gasite = useMemo(() => {
+    const c = cauta.trim().toLocaleLowerCase();
+    return (lista ?? []).filter((f) => !c || f.complet.toLocaleLowerCase().includes(c));
+  }, [lista, cauta]);
   return (
     <section data-testid="fonturi-sistem">
       <p>{t('editare.fonturi.sistem.nota')}</p>
@@ -268,6 +369,26 @@ function FilaSistem({ modul, onSchimbat }: { readonly modul: ModulText; readonly
         </div>
       ) : null}
       {stare === 'permis' && numar !== null ? <p role="status" data-testid="sistem-stare">{t('editare.fonturi.sistem.permis', { n: numar })}</p> : null}
+      {stare === 'permis' && lista && lista.length > 0 ? (
+        <>
+          <div className="campuri">
+            <label>
+              {t('editare.fonturi.cauta')}
+              <input type="text" value={cauta} data-camp="cauta-sistem" onChange={(e) => { setCauta(e.target.value); }} />
+            </label>
+          </div>
+          {gasite.length > ARATATE ? <p role="status">{t('editare.fonturi.primele', { n: ARATATE })}</p> : null}
+          <ul className="lista-fonturi">
+            {gasite.slice(0, ARATATE).map((f) => (
+              <li key={f.id} data-font={f.id} aria-current={f.id === ales ? 'true' : undefined}>
+                <span className="nume-font">{f.complet}</span>
+                <button type="button" data-buton="foloseste-font" onClick={() => { onFoloseste(f.id); }}>{t('editare.fonturi.foloseste')}</button>
+                <ProbaFont modul={modul} id={f.id} nume={f.complet} text={proba} />
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
     </section>
   );
 }

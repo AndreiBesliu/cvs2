@@ -113,3 +113,24 @@ export function urlDinCss(css: string): string | null {
   const gasite = [...css.matchAll(/src:\s*url\(([^)\s]+)\)\s*format\('truetype'\)/g)].map((m) => m[1]!);
   return gasite.length === 1 && URL_TTF.test(gasite[0]!) ? gasite[0]! : null;
 }
+
+/** Adresa unui WOFF2 de afișare pe gstatic (o bucată a unui alfabet, cum îl dă CSS API unui browser modern). */
+const URL_WOFF2 = /^https:\/\/fonts\.gstatic\.com\/s\/[a-z0-9]+\/v\d+\/[A-Za-z0-9_-]+\.woff2$/;
+const INTERVAL = /^U\+[0-9A-Fa-f?]{1,6}(?:-[0-9A-Fa-f]{1,6})?(?:,\s*U\+[0-9A-Fa-f?]{1,6}(?:-[0-9A-Fa-f]{1,6})?)*$/;
+
+/**
+ * Fețele de afișare din CSS-ul dat browserului (ADR 0108 §5, previzualizarea înainte de descărcare): pentru fiecare
+ * `@font-face`, adresa WOFF2 (doar pe gstatic) și intervalul Unicode al alfabetului. Browserul aduce doar alfabetele
+ * textului afișat; textul omului nu pleacă la Google.
+ */
+export function feteDeAfisare(css: string): { readonly url: string; readonly interval: string }[] {
+  const rez: { url: string; interval: string }[] = [];
+  for (const bloc of css.matchAll(/@font-face\s*\{([^}]*)\}/g)) {
+    const url = /src:\s*url\(([^)\s]+)\)\s*format\('woff2'\)/.exec(bloc[1]!)?.[1];
+    // Fără interval: tot fontul; unul care nu se poate citi: fața se sare.
+    const declarat = bloc[1]!.includes('unicode-range');
+    const interval = /unicode-range:\s*([^;]+);/.exec(bloc[1]!)?.[1]?.trim() ?? (declarat ? '' : 'U+0-10FFFF');
+    if (url && URL_WOFF2.test(url) && INTERVAL.test(interval)) rez.push({ url, interval });
+  }
+  return rez;
+}

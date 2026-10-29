@@ -466,9 +466,16 @@
   display: contents;
 }
 
-/* Panoul uneltei Text (ADR 0105 §5): în colțul zonei libere, nu sub un buton; câmpul textului, pe rânduri. */
+/* Panoul uneltei Text (ADR 0105 §5): în colțul zonei libere, nu sub un buton; câmpul textului, pe rânduri. Cât zona liberă
+   (cu secțiunea curbei, ADR 0108, nu încape pe un ecran scund): se derulează, butoanele rămân la îndemână. Câmpurile nu se
+   strâng ca să încapă (previzualizarea ar ajunge o dungă): panoul e o coloană flex. */
 .panou-text {
   width: 21rem;
+  overflow-y: auto;
+}
+
+.panou-text > * {
+  flex-shrink: 0;
 }
 
 .continut-text {
@@ -494,8 +501,44 @@
   gap: var(--sp-1);
 }
 
+/* Un buton care se vede ca buton (owner-ul, 29.10: „cum fac sa adaug fonturi”), cu chenarul câmpurilor de lângă el. */
+.fonturi-retea button {
+  min-height: 30px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+  background: var(--s-camp);
+  font-size: var(--fs-2);
+}
+
+/* Textul pe curbă (ADR 0108): opțiunile, într-un chenar al lor. */
+.curba-text {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-2);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+}
+
+.curba-text legend {
+  padding: 0 var(--sp-1);
+  font-size: var(--fs-2);
+}
+
+.curba-text > button {
+  justify-self: start;
+  min-height: 28px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+  background: var(--s-camp);
+  font-size: var(--fs-2);
+}
+
 .previzualizare-text {
   display: block;
+  box-sizing: border-box;
   width: 100%;
   height: 4rem;
   border: 1px solid var(--l-camp);
@@ -551,6 +594,52 @@
 
 .lista-fonturi .detalii-font {
   flex: 0 0 auto;
+  opacity: 0.75;
+  font-size: 0.85em;
+}
+
+/* Proba fiecărui font (ADR 0108 §5), pe un rând al ei sub nume: contururile citite de aplicație sau, pentru Google Fonts
+   înainte de descărcare, textul scris de browser; înălțimea fixă, ca lista să nu sară cât se aduc. */
+.lista-fonturi li {
+  flex-wrap: wrap;
+}
+
+/* Textul de probă, cât fereastra. */
+.dialog-fonturi .camp-proba {
+  flex: 1 1 100%;
+}
+
+.dialog-fonturi .camp-proba input {
+  width: 100%;
+  max-width: none;
+}
+
+.proba-font,
+.proba-google {
+  flex: 1 0 100%;
+  min-height: 2.25rem;
+}
+
+.proba-google {
+  overflow: hidden;
+  font-size: 1.5rem;
+  line-height: 2.25rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.proba-contur {
+  display: block;
+  width: 100%;
+  height: 2.25rem;
+}
+
+.proba-contur path {
+  fill: currentColor;
+}
+
+.proba-motiv {
+  display: block;
   opacity: 0.75;
   font-size: 0.85em;
 }

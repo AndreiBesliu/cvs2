@@ -2,12 +2,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { catalogGoogle, descarcaGoogle, type ApelGoogle } from '../../src/cloud/apelFonturiGoogle.ts';
 import { memorieNoua, trateazaFonturiGoogle } from '../../functions/src/fonturi/google.ts';
-import { adresaCss, AGENT_TTF, catalogDinMetadate, cerereGoogle, METADATE_GOOGLE, urlDinCss } from '../../shared/fonturiGoogle.ts';
+import { familieGoogle } from '../../src/app/previzualizareFont.ts';
+import { adresaCss, AGENT_TTF, catalogDinMetadate, cerereGoogle, feteDeAfisare, METADATE_GOOGLE, urlDinCss } from '../../shared/fonturiGoogle.ts';
 
 /**
  * Google Fonts (ADR 0106 §4): contractul comun (cererea, catalogul din metadate, adresa CSS, adresa TTF din CSS), funcția
  * (memoria catalogului și a adreselor, motivele, agentul vechi) și clientul (adresa verificată, plafonul, rețeaua), cu
- * rețeaua falsă. Răspunsurile adevărate ale lui Google, măsurate pe 29.10, stau în formele de aici.
+ * rețeaua falsă. Răspunsurile adevărate ale lui Google, măsurate pe 29.10, stau în formele de aici. Proba înainte de descărcare
+ * (ADR 0108 §5): fețele WOFF2 din CSS-ul pentru browser (doar de pe gstatic, cu intervalul alfabetului) și adăugarea lor în
+ * document, sub un nume al aplicației.
  */
 
 const URL1 = 'https://fonts.gstatic.com/s/roboto/v51/KFOKCnqEu92Fr1Mu53ZEC9_Vu3r1gIhOszmOClHrs6ljXfMMLmbXiA8.ttf';
@@ -153,4 +156,81 @@ test('clientul: catalogul și motivele; fișierul doar de pe gstatic, cu plafonu
   const lipsa = retea({ [URL1]: () => new Response('nu', { status: 404 }) });
   assert.deepEqual(await descarcaGoogle(apel(URL1), 'Roboto', '700i', lipsa.cere), { ok: false, motiv: 'google-indisponibil' });
   assert.deepEqual(await descarcaGoogle(apel(URL1), 'Roboto', '700i', retea({}).cere), { ok: false, motiv: 'retea' });
+});
+
+/** CSS-ul pentru un browser nou, cum îl dă CSS API v2 (măsurat pe 29.10, pe Lobster): câte o față WOFF2 pe alfabet. */
+const WOFF2 = (alfabet: string): string => `https://fonts.gstatic.com/s/lobster/v32/neILzCirqoswsqX9zo-${alfabet}.woff2`;
+const CSS_WOFF2 = [
+  `/* cyrillic */\n@font-face {\n  font-family: 'Lobster';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(${WOFF2('mL')}) format('woff2');\n  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;\n}`,
+  `/* latin-ext */\n@font-face {\n  font-family: 'Lobster';\n  src: url(${WOFF2('Xe')}) format('woff2');\n  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+1E00-1E9F, U+2C60-2C7F, U+A720-A7FF;\n}`,
+  // O față de pe altă gazdă, un format vechi și un interval care ar ieși din regula CSS: sărite.
+  `@font-face {\n  src: url(https://evil.example/s/lobster/v32/x.woff2) format('woff2');\n  unicode-range: U+0000-00FF;\n}`,
+  `@font-face {\n  src: url(${URL1}) format('truetype');\n}`,
+  `@font-face {\n  src: url(${WOFF2('rau')}) format('woff2');\n  unicode-range: U+0000-00FF} body { color: red;\n}`,
+  // Fără interval: tot fontul.
+  `@font-face {\n  src: url(${WOFF2('tot')}) format('woff2');\n}`,
+].join('\n');
+
+test('fețele de afișare din CSS: WOFF2 doar de pe gstatic, cu intervalul fiecăruia (lipsă: tot), restul sărite', () => {
+  assert.deepEqual(feteDeAfisare(CSS_WOFF2), [
+    { url: WOFF2('mL'), interval: 'U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116' },
+    { url: WOFF2('Xe'), interval: 'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+1E00-1E9F, U+2C60-2C7F, U+A720-A7FF' },
+    { url: WOFF2('tot'), interval: 'U+0-10FFFF' },
+  ]);
+  assert.deepEqual(feteDeAfisare(CSS_TTF), [], 'CSS-ul pentru agentul vechi n-are WOFF2');
+  assert.deepEqual(feteDeAfisare('<html>eroare</html>'), []);
+});
+
+test('proba Google: CSS-ul cerut fără acreditări, fețele adăugate sub un nume al aplicației, ținute; o cerere căzută se reia', async () => {
+  const g = globalThis as unknown as Record<string, unknown>;
+  const vechi = { fetch: g['fetch'], FontFace: g['FontFace'], document: g['document'] };
+  const cereri: Array<{ url: string; credentials: string | undefined }> = [];
+  const adaugate: Array<{ familie: string; sursa: string; interval: string | undefined }> = [];
+  const incarcate: Array<[string, string]> = [];
+  let raspuns = (): Response => new Response('', { status: 503 });
+  g['fetch'] = async (url: string, o?: RequestInit) => { cereri.push({ url, credentials: o?.credentials }); return raspuns(); };
+  g['FontFace'] = class {
+    readonly familie: string; readonly sursa: string; readonly d: { unicodeRange?: string };
+    constructor(familie: string, sursa: string, d: { unicodeRange?: string }) { this.familie = familie; this.sursa = sursa; this.d = d; }
+  };
+  g['document'] = {
+    fonts: {
+      add: (f: { familie: string; sursa: string; d: { unicodeRange?: string } }) => { adaugate.push({ familie: f.familie, sursa: f.sursa, interval: f.d.unicodeRange }); },
+      load: async (font: string, text: string) => { incarcate.push([font, text]); return []; },
+    },
+  };
+  try {
+    assert.equal(await familieGoogle('Lobster', '400', 'Ușă'), null, 'Google nu răspunde');
+    assert.equal(adaugate.length, 0);
+    raspuns = () => new Response(CSS_WOFF2);
+    const alias = await familieGoogle('Lobster', '400', 'Ușă');
+    assert.match(alias ?? '', /^cncvs2-proba-\d+$/);
+    assert.deepEqual(cereri, [
+      { url: 'https://fonts.googleapis.com/css2?family=Lobster:ital,wght@0,400', credentials: 'omit' },
+      { url: 'https://fonts.googleapis.com/css2?family=Lobster:ital,wght@0,400', credentials: 'omit' },
+    ], 'textul omului nu intră în adresă; a doua oară, cererea se reia');
+    assert.deepEqual(adaugate.map((f) => [f.familie, f.interval]), [
+      [alias, 'U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116'],
+      [alias, 'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+1E00-1E9F, U+2C60-2C7F, U+A720-A7FF'],
+      [alias, 'U+0-10FFFF'],
+    ]);
+    assert.equal(adaugate[0]!.sursa, `url(${WOFF2('mL')}) format('woff2')`);
+    // Aceeași variantă, alt text: fețele sunt ținute (nicio cerere nouă); browserul aduce alfabetele textului nou.
+    assert.equal(await familieGoogle('Lobster', '400', 'Lemn'), alias);
+    assert.equal(cereri.length, 2);
+    assert.deepEqual(incarcate.at(-1), [`16px "${alias}"`, 'Lemn']);
+    // Altă variantă: alt nume, altă cerere.
+    const italic = await familieGoogle('Lobster', '400i', 'Lemn');
+    assert.notEqual(italic, alias);
+    assert.equal(cereri.at(-1)!.url, 'https://fonts.googleapis.com/css2?family=Lobster:ital,wght@1,400');
+    // Un CSS fără fețe WOFF2 (altă formă a răspunsului): fără probă, cerut din nou data viitoare.
+    raspuns = () => new Response(CSS_TTF);
+    assert.equal(await familieGoogle('Roboto', '700i', 'A'), null);
+    assert.equal(await familieGoogle('Roboto', '700i', 'A'), null);
+    assert.equal(cereri.filter((c) => c.url.includes('Roboto')).length, 2);
+  } finally {
+    g['fetch'] = vechi.fetch;
+    g['FontFace'] = vechi.FontFace;
+    g['document'] = vechi.document;
+  }
 });

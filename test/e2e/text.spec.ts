@@ -34,6 +34,8 @@ async function documentSalvat(page: Page, rev: number): Promise<unknown> {
 
 type P = { x: number; y: number };
 type Nod = { tip: 'element' | 'grup'; id: string; nume?: string; copii?: Nod[]; text?: Record<string, unknown>; forma?: { varfuri: Array<{ p: P; s: { tip: string; c1?: P; c2?: P } }> } };
+/** Un cerc pus cu unealta Cerc: elementul cu raza, mutat de matricea lui (rădăcina sau primul copil). */
+type Cerc = { tip: 'element' | 'grup'; copii?: Cerc[]; forma: unknown; matrice: { e: number; f: number } };
 type Doc = { rev: number; piese: Array<{ id: string; nume: string; radacina: Nod }>; foi: Array<{ instante: Array<{ id: string; piesa: string; x: number; y: number }> }> };
 
 /** Ordonatele tuturor punctelor unei litere (vârfurile și mânerele cubicelor), în mm ai piesei. */
@@ -134,4 +136,75 @@ test('panoul textului spune ce lipsește: caracterele pe care fontul nu le are, 
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('panou-text')).toHaveCount(0);
   await expect(page.locator('[data-unealta="selectie"]')).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('textul pe curbă (ADR 0108): clic pe conturul unui cerc R50, „LEMN” urmează cercul pe dinafară; dedesubt; pe linie dreaptă', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-unealta="cerc"]').click();
+  await page.locator('[data-editare="raza"]').fill('50');
+  let la = await ecran(page, await vedere(page));
+  const c = la(150, 100);
+  await page.mouse.click(c.x, c.y);
+  const d1 = await documentSalvat(page, 1) as Doc;
+  // Centrul cercului, din document: cercul n-are centru propriu, îl dă locul instanței (plus mutarea elementului).
+  const ic = d1.foi[0]!.instante[0]!;
+  const rc = d1.piese[0]!.radacina as unknown as Cerc;
+  const el = rc.tip === 'element' ? rc : rc.copii![0]!;
+  expect(el.forma).toEqual({ tip: 'cerc', raza: 50 });
+  const cx = ic.x + el.matrice.e, cy = ic.y + el.matrice.f;
+
+  await page.locator('[data-unealta="text"]').click();
+  await page.locator('[data-text="continut"]').fill('LEMN');
+  await page.locator('[data-text="inaltime"]').fill('10');
+  la = await ecran(page, await vedere(page));
+  const sus = la(cx, cy + 50);
+  await page.mouse.click(sus.x, sus.y);
+  const sectiune = page.getByTestId('text-curba');
+  await expect(sectiune.locator('legend')).toHaveText('Pe curbă (314,16 mm)');
+  // Pe un ecran scund, panoul se derulează în zona liberă, fără să-și strângă câmpurile: previzualizarea rămâne cât e
+  // (4rem), fără o bară de derulare laterală.
+  const panou = page.getByTestId('panou-text');
+  await expect.poll(() => page.getByTestId('text-previzualizare').evaluate((e) => e.getBoundingClientRect().height)).toBeGreaterThan(60);
+  expect(await panou.evaluate((e) => e.scrollWidth - e.clientWidth)).toBe(0);
+  expect(await panou.evaluate((e) => e.scrollHeight > e.clientHeight)).toBe(true);
+  await page.click('[data-text="adauga"]');
+  const d2 = await documentSalvat(page, 2) as Doc;
+  const text = d2.piese[1]!;
+  const inst = d2.foi[0]!.instante[1]!;
+  const curba = text.radacina.text!['curba'] as { inchis: boolean; s: number; pozitie: string; distanta: number; invers: boolean; orientare: string; intinsa: boolean; varfuri: Array<{ p: P }> };
+  expect(curba).toMatchObject({ inchis: true, pozitie: 'baza', distanta: 0, invers: false, orientare: 'rotita', intinsa: false });
+  // Ancora e pe cerc, sus (la rezoluția unui clic), iar curba e în sistemul piesei: originea e ancora.
+  expect(Math.hypot(inst.x - cx, inst.y - cy)).toBeCloseTo(50, 9);
+  expect(Math.abs(curba.s - 25 * Math.PI)).toBeLessThan(1);
+  expect(curba.varfuri.map((x) => [x.p.x + inst.x - cx, x.p.y + inst.y - cy].map((n) => Math.round(n * 1e6) / 1e6))).toEqual([[50, 0], [-50, 0]]);
+  /** Distanțele punctelor literelor (vârfuri și mânere) față de centrul cercului. */
+  const raze = (d: Doc): number[] => {
+    const p = d.piese[1]!, i = d.foi[0]!.instante[1]!;
+    return (p.radacina.copii ?? []).flatMap((g) => (g.copii ?? []).flatMap((e) => (e.forma?.varfuri ?? []).flatMap((v) => [v.p, ...(v.s.c1 && v.s.c2 ? [v.s.c1, v.s.c2] : [])])))
+      .map((q) => Math.hypot(q.x + i.x - cx, q.y + i.y - cy));
+  };
+  // Pe linia de bază, pe dinafară: de la cerc (50) până la vârful majusculelor (60), cu colțurile drepte ale literelor puțin peste.
+  let r = raze(d2);
+  expect(Math.min(...r)).toBeGreaterThanOrEqual(50 - 1e-6);
+  expect(Math.max(...r)).toBeLessThan(60.6);
+  expect(Math.max(...r)).toBeGreaterThan(59.9);
+
+  // Dedesubt: vârful majusculelor pe cerc, literele înăuntru.
+  await page.locator('select[data-text="pozitie"]').selectOption('dedesubt');
+  await page.click('[data-text="aplica"]');
+  const d3 = await documentSalvat(page, 3) as Doc;
+  expect(d3.piese[1]!.radacina.text!['curba']).toMatchObject({ pozitie: 'dedesubt' });
+  r = raze(d3);
+  expect(Math.max(...r)).toBeLessThan(50.6);
+  expect(Math.min(...r)).toBeGreaterThan(39.4);
+
+  // Pe linie dreaptă: curba pleacă din bloc, textul stă drept din ancoră.
+  await page.click('[data-text="drept"]');
+  await expect(sectiune.locator('legend')).toHaveText('Pe linie dreaptă (curba rămâne aleasă)');
+  await page.click('[data-text="aplica"]');
+  const d4 = await documentSalvat(page, 4) as Doc;
+  expect(d4.piese[1]!.radacina.text!['curba']).toBeUndefined();
+  const ys = (d4.piese[1]!.radacina.copii ?? []).flatMap((g) => (g.copii ?? []).flatMap((e) => (e.forma?.varfuri ?? []).map((v) => v.p.y)));
+  expect(Math.min(...ys)).toBeCloseTo(0, 9);
+  expect(Math.max(...ys)).toBeCloseTo(10, 9);
 });

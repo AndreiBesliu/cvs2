@@ -3690,6 +3690,19 @@ variabile, 296 cu `kern` (180 fără `GPOS`), 81 cu căutări Extension, 296 fă
 Fonturile variabile se citesc în instanța lor implicită; celelalte instanțe vin într-o felie următoare.
 **Completed:** 29.10, 19:03. ADR 0106. Cititorul pentru fonturile reale: CFF (`src/text/cff.ts`: indexurile, DICT-urile, CID cu FDSelect, interpretorul Type 2 cu cele patru flex-uri, subrutinele cu toate decalajele, sugestiile, `seac`), TTC, `cmap` 4 / 6 / 12 și simbolul Windows, tabelul `kern` vechi (Microsoft și Apple, perechile într-o hartă), căutările Extension, WOFF 1.0 (`woff.ts`); majuscula = vârful lui H. „Fonturile mele” (`biblioteca.ts`, IndexedDB), fonturile sistemului (`sistem.ts`, Local Font Access), id-urile din bloc (`iduriFont.ts`) și numele fontului în bloc; Google Fonts prin funcția `fonturiGoogle` (contractul în `shared/fonturiGoogle.ts`, fără cheie API), clientul la cerere (`src/cloud/apelFonturiGoogle.ts`); panoul cu lista în trei grupuri și previzualizarea, fereastra **Fonturi…** (la cerere), manualul. Sondajul fonturilor reale: 557 din 566 de fețe identice cu fontTools (52 CFF, 505 TrueType). Corpusul fontTools: 20 de așezări, 84 de glife brute, crenarea în 9 fonturi (Inter și Source Han subsetate de pe mașina asta, OFL; un CFF scris de mână). Găsite pe drum: Elephant cu perechile `kern` neordonate, 77 de fețe cu `sCapHeight` diferit de H, matricea rotunjită a lui Inter, panoul textului peste fereastra fonturilor (la e2e). Funcțiile publicate pe test, din workflow, cu felia. Mutațiile: 74 / 74 (65 pe probele unitare, 9 pe e2e, controlul verde înainte și după); 6 au trecut întâi: FDSelect în formatul 3 (fixtura CID avea formatul 0), octeții de după un `cmap` 6 (erau zero), subtabelele `kern` cross-stream și „minimum” (aveau doar perechi acoperite de override), un WOFF cu directorul neordonat, un font încărcat a doua oară spus „adăugat”: probe noi; a șasea, o verificare redundantă a feței (`< 1024` după trei cifre), scoasă. Pornirea 97,4 neschimbată (cu ușa 100,9 / 110 kB); totalul 358,6 → 370,5 / 400.
 
+**Publicat pe test (29.10, 19:43)**, din workflow (run 40923407698, `bddd84c`: hosting, funcțiile cu `fonturiGoogle` creată,
+regulile, indecșii), cu CI-ul rapid verde (run 40922146978, 6 felii + oracolul exportului 2D). Porțile locale: compilatorul
+(aplicația și funcțiile), importurile, licențele, traducerile, suita unitară (7 742 de teste, 0 picate; 8 sărite: logourile
+owner-ului, lipsă local), build-ul determinist (209 fișiere), e2e-ul (270), emulatoarele (36 + 13; `fonturiGoogle` se
+încarcă). Verificat în browser la 1440 px, în română: pagina e pe `bddd84c9572e`; unealta Text are lista fonturilor în grupuri,
+previzualizarea și **Fonturi…**. Google Fonts adevărat, prin funcția publicată (App Check): catalogul în 3,3 s (pornirea la
+rece), 1 535 de familii cu diacriticele românești; „Lobster” descărcat în 0,6 s, „Adăugat în Fonturile mele: Lobster
+Regular”, ales în panou; „Lemn de stejar” de 25 mm cu el: piesa cu 20 de forme (13 pe exterior, 7 pe interior), blocul cu
+`font: g:Lobster:400`, `numeFont: Lobster Regular`. Încărcarea (Droid Serif, ca fișier): „Adăugat în Fonturile mele: Droid
+Serif”, `f:58a99f6327be17b5`, lista cu sursa și mărimea. Fonturile sistemului: în browserul aplicației permisiunea
+`local-fonts` e refuzată din oficiu, iar fila spune cum se permite; butonul „Permite accesul” rămâne de încercat în Chrome / Edge.
+0 erori în jurnal și în consolă.
+
 ## 2026-10-29 — Sugestiile personalului în /admin (Model: Claude Opus 5.5)
 
 **Prompt:** „Vreau sa cream si sistemul de account pentru useri, inclusiv admini, scopul acum imediat este pentru admini, si, sa
@@ -3721,3 +3734,29 @@ citirea unei descărcări și a trecut la reluare), emulatoarele (funcțiile și
 finală e pe 4173. Emulatoarele, împărțite cu sesiunea textului pe curbă: rulările s-au anunțat una alteia, pe rând. Pornirea
 neschimbată (97,4; cu ușa 100,9 / 110 kB), totalul 370,5 / 400; `/admin` 190,2 → 194,2 / 200 kB (strâmt: ~5,8 kB).
 Nepublicată: fuziunea în `main` și publicarea le decide owner-ul.
+
+## 2026-10-29 — Etapa 7: textul pe curbă (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua tu ce aveai la rand” (după raportul feliei 7.2↑, care recomanda textul pe curbă).
+**Started:** 29.10, 19:56. Felia **7.3↑**, fără mașină și fără agenți: textul pe curbă (criteriul din cercetare: întins pe
+un cerc R50, textul ocupă 314,16 mm de arc, ±1 %). Cu unealta Text, un clic pe un contur (care nu e text) pune ancora pe el,
+în punctul cel mai apropiat; literele urmează curba (deschisă sau închisă; peste capetele unei curbe deschise, pe tangentă),
+câte una, rotită după tangentă sau verticală; poziția față de curbă (deasupra, pe linia de bază, centrat, dedesubt, la o
+distanță), partea cealaltă, întins pe toată curba, mai multe rânduri. Curba intră în blocul textului (editabil după salvare).
+Oracolul: așezarea scrisă din nou în Python (fontTools pentru glife și lungimile cubicelor).
+**Prompturi pe parcurs:** „cum fac sa adaug fonturi” (cu o captură a panoului Text) și „vreau sa se poata face preview la un
+font, de oriunde este el, mai ales din google fonts, inainte sa descarci fontul” (intrate în aceeași felie).
+**Completed:** 29.10, 21:15. ADR 0108. Textul pe curbă: `parcurgere` și `pozitiePeCurba` în `src/model/curba.ts` (dincolo de capete, reluată sau pe tangentă; ancora din zeroul derivatei distanței, sub 1e-9 mm), `src/text/peCurba.ts` (literele întregi, rotite sau verticale; deasupra, pe linia de bază, centrat, dedesubt, cu distanța; sensul: o curbă închisă parcursă în sensul acelor, partea cealaltă; întins pe toată curba, cu golurile egale), curba în blocul textului (`SchemaCurbaText`, scalată cu el); clicul lângă un contur în `Editare.tsx`, secțiunea **Pe curbă** în panou (care se derulează acum în zona liberă). Proba fonturilor în fereastra **Adaugă fonturi…** (butonul redenumit, cu chenar): **Textul de probă**, contururile aplicației pentru fonturile mele și ale sistemului (`aduceFont`, fără să le țină; lista sistemului cu căutarea și **Folosește**), fețele de afișare Google înainte de descărcare (`src/app/previzualizareFont.ts`, CSS API v2 din browser; CSP-ul primește `fonts.googleapis.com` și `fonts.gstatic.com`). Oracolul Python: 16 cazuri pe curbă, aplicația sub 2e-11 mm; a prins alinierea textului întins pe o curbă închisă (număra golul de după ultima literă). Proba țintită a prins precizia ancorei (~5e-7 mm din minimul singur), e2e-ul panoul care trecea sub bara de jos, proba Google un `unicode-range` stricat primit cu tot intervalul. Mutațiile: 47 / 47 (37 pe probele unitare, 10 pe e2e, controlul verde înainte și după); una a trecut întâi: segmentele fără lungime nesărite (doar la capetele unei curbe deschise): probă nouă. Pornirea 97,4 neschimbată (cu ușa 100,9 / 110 kB); totalul 370,5 → 374,4 / 400.
+
+**Publicat pe test (29.10, 21:49)**, din workflow (run 40939484104, `17cc058`; apoi run 40942837161, `320529d`, a doua
+trecere), cu CI-ul rapid verde (run 40938278284 și 40941298454: 6 felii + oracolul exportului 2D). Porțile locale:
+compilatorul (aplicația și funcțiile), importurile, licențele, traducerile, suita unitară (7 769 de teste, 0 picate; 8
+sărite: logourile owner-ului, lipsă local), build-ul determinist (209 fișiere), e2e-ul (271, înainte și după a doua
+trecere), emulatoarele (36 + 13). Verificat în browser la 1440 px, în română, pe `320529d74a9d`: un cerc R50 desenat, apoi,
+cu unealta Text, un clic sus pe el: „Pe curbă (314,16 mm)”; „CNC VECTOR STUDIO” în Lobster, 12 mm, centrat, adăugat:
+arcuit deasupra cercului, pe dinafară, citit de la stânga la dreapta (piesa cu 15 forme, profilul pe exterior). Fereastra
+**Adaugă fonturi…**: Google Fonts, catalogul în 2,8 s, fiecare familie scrisă cu ea însăși înainte de descărcare (Pacifico;
+Roboto Slab, Regular → Bold, cu fețele lui); textul de probă cu diacritice („Ușă de stejar țâșnită”) aduce și alfabetul
+latin-ext, chirilicele nu; Fonturile mele (Droid Serif, Lobster) desenate din contururi. Prima publicare avea
+previzualizarea din panoul textului strânsă la o dungă: a doua trecere a reparat-o (64 px, fără bară laterală, panoul se
+derulează). 0 erori în jurnal și în consolă.

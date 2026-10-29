@@ -1,7 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactElement } from 'react';
 import { createPortal } from 'react-dom';
 import { cuMesaje, t } from '../i18n/t.ts';
-import { LIMITE_TEXT, type BlocText } from '../model/blocText.ts';
+import type { Contur } from '../geom/conturBaza.ts';
+import { LIMITE_TEXT, POZITII_PE_CURBA, type BlocText, type CurbaText } from '../model/blocText.ts';
 import { FONT_IMPLICIT, FONTURI_INCLUSE } from '../text/fonturi.ts';
 import { numeVarianta, sursaFont } from '../text/iduriFont.ts';
 import type { AliniereText } from '../text/asezare.ts';
@@ -9,7 +10,8 @@ import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { CerereText } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { descarcaInBiblioteca } from './fonturiGoogleClient.ts';
-import { textRefuzFont } from './texteFont.ts';
+import { Previzualizare } from './PrevizualizareText.tsx';
+import { textIncarcare } from './texteFont.ts';
 
 type ModulText = typeof import('../text/calcul.ts');
 type RezultatIncarcare = Awaited<ReturnType<ModulText['incarcaFont']>>;
@@ -30,18 +32,28 @@ const DialogFonturi = lazy(() => import('./DialogFonturi.tsx').then(cuMesaje).th
   ),
 })));
 
+type PozitiePeCurba = (typeof POZITII_PE_CURBA)[number];
+
 /** Ce scrie omul în panou; câmpurile numerice rămân text până la citire (un câmp greșit se spune, nu se rotunjește). */
 type Formular = {
   readonly continut: string; readonly font: string; readonly inaltime: string; readonly spatiere: string; readonly interlinie: string;
   readonly aliniere: AliniereText;
+  /** Textul pe curbă (ADR 0108): poziția față de curbă, distanța, partea cealaltă, literele verticale, întins pe toată curba. */
+  readonly pozitie: PozitiePeCurba; readonly distanta: string; readonly invers: boolean; readonly verticala: boolean; readonly intinsa: boolean;
 };
+
+/** Curba la care stă textul: conturul în sistemul piesei (originea în ancoră) și distanța ancorei pe el. */
+type CurbaAleasa = { readonly contur: Contur; readonly s: number };
 
 const CHEIE = 'cncvs2.text';
 const ALINIERI: readonly AliniereText[] = ['stanga', 'centru', 'dreapta'];
 
 /** Alegerile de data trecută (fontul, mărimile, alinierea), fără text: ținute în browser, ca la celelalte panouri. */
 function formularSalvat(): Formular {
-  const baza: Formular = { continut: '', font: FONT_IMPLICIT, inaltime: '20', spatiere: '0', interlinie: '1', aliniere: 'stanga' };
+  const baza: Formular = {
+    continut: '', font: FONT_IMPLICIT, inaltime: '20', spatiere: '0', interlinie: '1', aliniere: 'stanga',
+    pozitie: 'baza', distanta: '0', invers: false, verticala: false, intinsa: false,
+  };
   try {
     const s = JSON.parse(localStorage.getItem(CHEIE) ?? 'null') as Partial<Record<keyof Formular, unknown>> | null;
     if (!s || typeof s !== 'object') return baza;
@@ -51,6 +63,8 @@ function formularSalvat(): Formular {
       font: typeof s.font === 'string' && sursaFont(s.font) ? s.font : baza.font,
       inaltime: sir(s.inaltime, baza.inaltime), spatiere: sir(s.spatiere, baza.spatiere), interlinie: sir(s.interlinie, baza.interlinie),
       aliniere: ALINIERI.find((a) => a === s.aliniere) ?? baza.aliniere,
+      pozitie: POZITII_PE_CURBA.find((x) => x === s.pozitie) ?? baza.pozitie, distanta: sir(s.distanta, baza.distanta),
+      invers: s.invers === true, verticala: s.verticala === true, intinsa: s.intinsa === true,
     };
   } catch {
     return baza;
@@ -59,14 +73,20 @@ function formularSalvat(): Formular {
 
 function salveaza(f: Formular): void {
   try {
-    localStorage.setItem(CHEIE, JSON.stringify({ font: f.font, inaltime: f.inaltime, spatiere: f.spatiere, interlinie: f.interlinie, aliniere: f.aliniere }));
+    localStorage.setItem(CHEIE, JSON.stringify({
+      font: f.font, inaltime: f.inaltime, spatiere: f.spatiere, interlinie: f.interlinie, aliniere: f.aliniere,
+      pozitie: f.pozitie, distanta: f.distanta, invers: f.invers, verticala: f.verticala, intinsa: f.intinsa,
+    }));
   } catch {
     // Fără stocare (fereastră privată): alegerile țin cât pagina.
   }
 }
 
-/** Parametrii citiți din formular, în marginile blocului (ADR 0105 §3), sau cheia câmpului greșit. */
-function parametri(f: Formular, numeFont: string | null): Omit<BlocText, 'amprenta'> | 'continut' | 'inaltime' | 'spatiere' | 'interlinie' {
+/**
+ * Parametrii citiți din formular, în marginile blocului (ADR 0105 §3), cu curba textului dacă stă pe una (ADR 0108), sau
+ * cheia câmpului greșit.
+ */
+function parametri(f: Formular, numeFont: string | null, curba: CurbaAleasa | null): Omit<BlocText, 'amprenta'> | 'continut' | 'inaltime' | 'spatiere' | 'interlinie' | 'distanta' {
   if (f.continut.trim() === '' || f.continut.length > LIMITE_TEXT.caractere) return 'continut';
   const inaltime = citesteNumar(f.inaltime);
   if (inaltime === null || inaltime < LIMITE_TEXT.inaltimeMinima || inaltime > LIMITE_TEXT.inaltimeMaxima) return 'inaltime';
@@ -74,61 +94,22 @@ function parametri(f: Formular, numeFont: string | null): Omit<BlocText, 'ampren
   if (spatiere === null || Math.abs(spatiere) > LIMITE_TEXT.spatiere) return 'spatiere';
   const interlinie = citesteNumar(f.interlinie);
   if (interlinie === null || interlinie < LIMITE_TEXT.interlinieMinima || interlinie > LIMITE_TEXT.interlinieMaxima) return 'interlinie';
+  let pe: CurbaText | null = null;
+  if (curba) {
+    const distanta = citesteNumar(f.distanta, true);
+    if (distanta === null || Math.abs(distanta) > LIMITE_TEXT.distantaCurba) return 'distanta';
+    pe = {
+      inchis: curba.contur.inchis,
+      varfuri: curba.contur.varfuri.map((v) => ({ p: { x: v.p.x, y: v.p.y }, s: v.s.tip === 'C' ? { tip: 'C', c1: { ...v.s.c1 }, c2: { ...v.s.c2 } } : v.s.tip === 'A' ? { tip: 'A', bulge: v.s.bulge } : { tip: 'L' } })),
+      s: curba.s, pozitie: f.pozitie, distanta, invers: f.invers, orientare: f.verticala ? 'verticala' : 'rotita', intinsa: f.intinsa,
+    };
+  }
   const bloc = { continut: f.continut, font: f.font, inaltime, spatiere, interlinie, aliniere: f.aliniere };
-  return numeFont ? { ...bloc, numeFont: numeFont.slice(0, LIMITE_TEXT.numeFont) } : bloc;
+  return { ...bloc, ...(numeFont ? { numeFont: numeFont.slice(0, LIMITE_TEXT.numeFont) } : {}), ...(pe ? { curba: pe } : {}) };
 }
 
-/** Mesajul unui font care nu s-a putut aduce (ADR 0106 §2): lipsește aici, cere permisiunea, e o instanță necitită… */
-function textIncarcare(r: Exclude<RezultatIncarcare, { ok: true }>, nume: string): string {
-  switch (r.cod) {
-    case 'lipseste': return t('editare.text.font.lipseste', { nume });
-    case 'permisiune': return t('editare.text.font.permisiune', { nume });
-    case 'instanta-variabila': return t('editare.text.font.instanta', { stil: r.detaliu ?? nume });
-    case 'fara-stocare': return t('editare.text.font.fara-stocare');
-    case 'retea': return t('editare.text.font.retea', { detaliu: r.detaliu ?? '' });
-    case 'necunoscut': return t('editare.text.font.necunoscut');
-    default: return textRefuzFont(r.cod, r.detaliu);
-  }
-}
-
-/** Calea SVG a textului așezat (Y în sus devine Y în jos) și cutia ei: previzualizarea din panou. */
-function caleText(a: TextAsezat): { readonly d: string; readonly cutie: readonly [number, number, number, number] } | null {
-  let d = '', x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-  const n = (v: number): string => (Math.round(v * 1000) / 1000).toString();
-  const pune = (x: number, y: number): string => {
-    if (x < x0) x0 = x;
-    if (x > x1) x1 = x;
-    if (-y < y0) y0 = -y;
-    if (-y > y1) y1 = -y;
-    return `${n(x)} ${n(-y)}`;
-  };
-  for (const g of a.glife) {
-    for (const c of g.cai) {
-      const v = c.varfuri;
-      if (v.length === 0) continue;
-      d += `M${pune(v[0]!.p.x, v[0]!.p.y)}`;
-      v.forEach((q, k) => {
-        const urm = v[(k + 1) % v.length]!.p;
-        d += q.s.tip === 'C' ? `C${pune(q.s.c1.x, q.s.c1.y)} ${pune(q.s.c2.x, q.s.c2.y)} ${pune(urm.x, urm.y)}` : `L${pune(urm.x, urm.y)}`;
-      });
-      d += 'Z';
-    }
-  }
-  return d === '' ? null : { d, cutie: [x0, y0, x1, y1] };
-}
-
-function Previzualizare({ asezat }: { readonly asezat: TextAsezat }): ReactElement | null {
-  const c = useMemo(() => caleText(asezat), [asezat]);
-  if (!c) return null;
-  const [x0, y0, x1, y1] = c.cutie;
-  const m = Math.max(x1 - x0, y1 - y0) * 0.04;
-  return (
-    <svg className="previzualizare-text" viewBox={`${x0 - m} ${y0 - m} ${x1 - x0 + 2 * m} ${y1 - y0 + 2 * m}`} preserveAspectRatio="xMidYMid meet"
-      role="img" aria-label={t('editare.text.previzualizare')} data-testid="text-previzualizare">
-      <path d={c.d} fillRule="evenodd" />
-    </svg>
-  );
-}
+/** Curba unui bloc salvat, ca un contur în sistemul piesei. */
+const curbaDinBloc = (c: CurbaText): CurbaAleasa => ({ contur: { inchis: c.inchis, varfuri: c.varfuri }, s: c.s });
 
 /**
  * Panoul uneltei Text (ADR 0105 §5, ADR 0106 §5): textul (pe rânduri), fontul (cele incluse, „Fonturile mele”, ale
@@ -138,8 +119,10 @@ function Previzualizare({ asezat }: { readonly asezat: TextAsezat }): ReactEleme
  * Fonts, permisiunea pentru fonturile sistemului. Modulul textului vine la prima deschidere, fontul la prima folosire;
  * caracterele pe care fontul nu le are se spun pe loc, ca și un font care lipsește de pe calculatorul ăsta.
  */
-export function PanouText({ ancora, editat, ruleaza, onInchide, doarCitire, stil }: {
+export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitire, stil }: {
   readonly ancora: Punct | null;
+  /** Curba pe care a căzut ancora (ADR 0108 §3): conturul în coordonatele foii și distanța ancorei pe el. */
+  readonly curba: { readonly contur: Contur; readonly s: number } | null;
   /** Textul ales, cu blocul lui valid: „Aplică” îl înlocuiește. */
   readonly editat: { readonly instanta: string; readonly bloc: BlocText } | null;
   readonly ruleaza: (cerere: CerereText) => RezultatActiune;
@@ -155,6 +138,8 @@ export function PanouText({ ancora, editat, ruleaza, onInchide, doarCitire, stil
   const [dialog, setDialog] = useState(false);
   const [motiv, setMotiv] = useState<string | null>(null);
   const [descarc, setDescarc] = useState(false);
+  // „Pe linie dreaptă”: textul nu urmează curba (cea aleasă acum sau a textului editat), deși are una.
+  const [drept, setDrept] = useState(false);
   const scrie = (f: Formular): void => { setForm(f); salveaza(f); setMotiv(null); };
 
   useEffect(() => {
@@ -174,12 +159,34 @@ export function PanouText({ ancora, editat, ruleaza, onInchide, doarCitire, stil
   useEffect(() => {
     if (!editat) return;
     const b = editat.bloc;
-    setForm({
-      continut: b.continut, font: b.font, inaltime: textNumar(b.inaltime), spatiere: textNumar(b.spatiere),
+    setForm((f) => ({
+      ...f, continut: b.continut, font: b.font, inaltime: textNumar(b.inaltime), spatiere: textNumar(b.spatiere),
       interlinie: textNumar(b.interlinie), aliniere: b.aliniere,
-    });
+      ...(b.curba ? {
+        pozitie: b.curba.pozitie, distanta: textNumar(b.curba.distanta), invers: b.curba.invers, verticala: b.curba.orientare === 'verticala',
+        intinsa: b.curba.intinsa,
+      } : {}),
+    }));
     setMotiv(null);
+    setDrept(false);
   }, [cheieEditat]);
+  // O ancoră nouă (pe o curbă sau nu) pornește din nou pe curbă.
+  const cheieCurba = curba ? `${curba.s}:${curba.contur.varfuri.length}:${ancora?.x ?? ''}:${ancora?.y ?? ''}` : null;
+  useEffect(() => { setDrept(false); }, [cheieCurba]);
+  // Curba textului: a celui editat (din blocul lui), altfel cea pe care a căzut ancora, adusă în sistemul ancorei.
+  const curbaPosibila = useMemo((): CurbaAleasa | null => {
+    if (editat) return editat.bloc.curba ? curbaDinBloc(editat.bloc.curba) : null;
+    if (!curba || !ancora) return null;
+    const m = (q: Punct): Punct => ({ x: q.x - ancora.x, y: q.y - ancora.y });
+    return {
+      contur: {
+        inchis: curba.contur.inchis,
+        varfuri: curba.contur.varfuri.map((v) => ({ p: m(v.p), s: v.s.tip === 'C' ? { tip: 'C', c1: m(v.s.c1), c2: m(v.s.c2) } : v.s })),
+      },
+      s: curba.s,
+    };
+  }, [editat, curba, ancora]);
+  const curbaActiva = drept ? null : curbaPosibila;
   const rezFont = fonturi.get(form.font);
   useEffect(() => {
     if (modul === null || modul === 'eroare' || fonturi.has(form.font)) return;
@@ -203,11 +210,16 @@ export function PanouText({ ancora, editat, ruleaza, onInchide, doarCitire, stil
     if (sursa?.fel === 'sistem') return sursa.postscript;
     return id;
   };
-  const p = parametri(form, FONTURI_INCLUSE.some((f) => f.id === form.font) ? null : numeFont(form.font));
+  const p = parametri(form, FONTURI_INCLUSE.some((f) => f.id === form.font) ? null : numeFont(form.font), curbaActiva);
   const asezat = useMemo(() => {
     if (modul === null || modul === 'eroare' || !rezFont?.ok || typeof p === 'string') return null;
-    return modul.aseazaText(rezFont.font, p);
+    const dreptul = modul.aseazaText(rezFont.font, p);
+    if (!p.curba) return dreptul;
+    const c = p.curba;
+    return modul.aseazaPeCurba(dreptul, { contur: { inchis: c.inchis, varfuri: c.varfuri }, s: c.s, pozitie: c.pozitie, distanta: c.distanta,
+      invers: c.invers, orientare: c.orientare, intinsa: c.intinsa }, p.inaltime, p.aliniere);
   }, [modul, rezFont, typeof p === 'string' ? p : JSON.stringify(p)]);
+  const lungimeCurba = useMemo(() => (curbaPosibila && modul !== null && modul !== 'eroare' ? modul.lungimeCurba(curbaPosibila.contur) : 0), [curbaPosibila, modul]);
 
   const mesaj = ((): string | null => {
     if (motiv) return motiv;
@@ -290,6 +302,34 @@ export function PanouText({ ancora, editat, ruleaza, onInchide, doarCitire, stil
             <button type="button" data-text="descarca-din-nou" disabled={descarc} onClick={descarcaDinNou}>{t('editare.text.font.descarca-din-nou')}</button>
           ) : null}
         </div>
+        {curbaPosibila ? (
+          <fieldset className="curba-text" data-testid="text-curba">
+            <legend>{curbaActiva ? t('editare.text.curba.sectiune', { lungime: textNumar(Math.round(lungimeCurba * 100) / 100, true) }) : t('editare.text.curba.drept')}</legend>
+            {curbaActiva ? (
+              <>
+                <label className="camp-retea">
+                  <span>{t('editare.text.curba.pozitie')}</span>
+                  <select value={form.pozitie} data-text="pozitie" onChange={(e) => { scrie({ ...form, pozitie: POZITII_PE_CURBA.find((x) => x === e.target.value) ?? 'baza' }); }}>
+                    {POZITII_PE_CURBA.map((x) => <option key={x} value={x}>{t(`editare.text.curba.pozitie.${x}`)}</option>)}
+                  </select>
+                </label>
+                <label className="camp-retea">
+                  <span>{t('editare.text.curba.distanta')}</span>
+                  <input value={form.distanta} inputMode="decimal" data-text="distanta" onChange={(e) => { scrie({ ...form, distanta: e.target.value }); }} />
+                </label>
+                {(['invers', 'verticala', 'intinsa'] as const).map((c) => (
+                  <label key={c} className="bifa-retea">
+                    <input type="checkbox" checked={form[c]} data-text={c} onChange={(e) => { scrie({ ...form, [c]: e.target.checked }); }} />
+                    {t(`editare.text.curba.${c}`)}
+                  </label>
+                ))}
+              </>
+            ) : null}
+            <button type="button" data-text={curbaActiva ? 'drept' : 'pe-curba'} onClick={() => { setDrept(!drept); setMotiv(null); }}>
+              {t(curbaActiva ? 'editare.text.curba.buton-drept' : 'editare.text.curba.buton-curba')}
+            </button>
+          </fieldset>
+        ) : null}
         {(['inaltime', 'spatiere', 'interlinie'] as const).map((c) => (
           <label key={c} className="camp-retea">
             <span>{t(`editare.text.${c}`)}</span>
@@ -315,7 +355,7 @@ export function PanouText({ ancora, editat, ruleaza, onInchide, doarCitire, stil
       {/* Fereastra stă pe `body`, peste panou și peste bare, ca celelalte ferestre ale aplicației. */}
       {dialog && modul !== null && modul !== 'eroare' ? createPortal(
         <Suspense fallback={null}>
-          <DialogFonturi modul={modul} ales={form.font} onSchimbat={schimbat} onFoloseste={(id) => { scrie({ ...form, font: id }); }}
+          <DialogFonturi modul={modul} ales={form.font} textProba={form.continut.split('\n').find((r) => r.trim() !== '')?.slice(0, 60) ?? ''} onSchimbat={schimbat} onFoloseste={(id) => { scrie({ ...form, font: id }); }}
             onInchide={() => { setDialog(false); }} />
         </Suspense>,
         document.body,
