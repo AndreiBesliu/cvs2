@@ -3715,3 +3715,16 @@ Oracolul: așezarea scrisă din nou în Python (fontTools pentru glife și lungi
 **Prompturi pe parcurs:** „cum fac sa adaug fonturi” (cu o captură a panoului Text) și „vreau sa se poata face preview la un
 font, de oriunde este el, mai ales din google fonts, inainte sa descarci fontul” (intrate în aceeași felie).
 **Completed:** 29.10, 21:15. ADR 0108. Textul pe curbă: `parcurgere` și `pozitiePeCurba` în `src/model/curba.ts` (dincolo de capete, reluată sau pe tangentă; ancora din zeroul derivatei distanței, sub 1e-9 mm), `src/text/peCurba.ts` (literele întregi, rotite sau verticale; deasupra, pe linia de bază, centrat, dedesubt, cu distanța; sensul: o curbă închisă parcursă în sensul acelor, partea cealaltă; întins pe toată curba, cu golurile egale), curba în blocul textului (`SchemaCurbaText`, scalată cu el); clicul lângă un contur în `Editare.tsx`, secțiunea **Pe curbă** în panou (care se derulează acum în zona liberă). Proba fonturilor în fereastra **Adaugă fonturi…** (butonul redenumit, cu chenar): **Textul de probă**, contururile aplicației pentru fonturile mele și ale sistemului (`aduceFont`, fără să le țină; lista sistemului cu căutarea și **Folosește**), fețele de afișare Google înainte de descărcare (`src/app/previzualizareFont.ts`, CSS API v2 din browser; CSP-ul primește `fonts.googleapis.com` și `fonts.gstatic.com`). Oracolul Python: 16 cazuri pe curbă, aplicația sub 2e-11 mm; a prins alinierea textului întins pe o curbă închisă (număra golul de după ultima literă). Proba țintită a prins precizia ancorei (~5e-7 mm din minimul singur), e2e-ul panoul care trecea sub bara de jos, proba Google un `unicode-range` stricat primit cu tot intervalul. Mutațiile: 47 / 47 (37 pe probele unitare, 10 pe e2e, controlul verde înainte și după); una a trecut întâi: segmentele fără lungime nesărite (doar la capetele unei curbe deschise): probă nouă. Pornirea 97,4 neschimbată (cu ușa 100,9 / 110 kB); totalul 370,5 → 374,4 / 400.
+
+**Publicat pe test (29.10, 21:49)**, din workflow (run 40939484104, `17cc058`; apoi run 40942837161, `320529d`, a doua
+trecere), cu CI-ul rapid verde (run 40938278284 și 40941298454: 6 felii + oracolul exportului 2D). Porțile locale:
+compilatorul (aplicația și funcțiile), importurile, licențele, traducerile, suita unitară (7 769 de teste, 0 picate; 8
+sărite: logourile owner-ului, lipsă local), build-ul determinist (209 fișiere), e2e-ul (271, înainte și după a doua
+trecere), emulatoarele (36 + 13). Verificat în browser la 1440 px, în română, pe `320529d74a9d`: un cerc R50 desenat, apoi,
+cu unealta Text, un clic sus pe el: „Pe curbă (314,16 mm)”; „CNC VECTOR STUDIO” în Lobster, 12 mm, centrat, adăugat:
+arcuit deasupra cercului, pe dinafară, citit de la stânga la dreapta (piesa cu 15 forme, profilul pe exterior). Fereastra
+**Adaugă fonturi…**: Google Fonts, catalogul în 2,8 s, fiecare familie scrisă cu ea însăși înainte de descărcare (Pacifico;
+Roboto Slab, Regular → Bold, cu fețele lui); textul de probă cu diacritice („Ușă de stejar țâșnită”) aduce și alfabetul
+latin-ext, chirilicele nu; Fonturile mele (Droid Serif, Lobster) desenate din contururi. Prima publicare avea
+previzualizarea din panoul textului strânsă la o dungă: a doua trecere a reparat-o (64 px, fără bară laterală, panoul se
+derulează). 0 erori în jurnal și în consolă.
