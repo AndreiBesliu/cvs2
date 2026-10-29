@@ -3753,3 +3753,27 @@ trece de 400 kB, mă opresc și spun, fără să ridic plafonul.
   - plafonul 450 kB, cu un ADR nou (recomandat);
   - sau cavalier doar în worker, ~380 kB, cu o felie mai mare;
   - sau amânarea.
+
+**Reluată:** 29.10, 22:10, la „1” al owner-ului: plafonul total 400 → 450 kB, cu un ADR nou (0109), iar felia merge cum e
+scrisă.
+**Pauză:** 29.10, 22:51, la „facem pauza”. Totul e pe `wip/4.A-cam-workere`, ca WIP; arborele nu se compilează încă.
+- **Scrise:**
+  - codecul IR, `src/jobs/impachetare.ts`: programul în tablouri tipizate, transferate;
+  - rezumatul jobului și timpii traseului, mutați neschimbați în `src/jobs/rezumat.ts`;
+  - protocolul, calculul, workerul și bazinul CAM: `src/jobs/protocolCam.ts`, `calculCam.ts`, `lucratorCam.ts`,
+    `bazinCam.ts`. În Node, calculul rulează în proces, prin `structuredClone`;
+  - `src/ui/actiuniExportCalcul.ts`, legat de bazin;
+  - `define` `__CNCVS2_CONSTRUIT__` în `vite.config.ts`.
+- **Rămân:**
+  - `actiuniExportTipuri.ts`: `ParametriExport` și `RezumatJob` vin din `src/jobs/` (doar tipuri);
+  - `actiuniExport.ts`: semnalul de anulare;
+  - `App.tsx`: traseul și cipul timpului prin bazin, anularea la un document schimbat;
+  - `Vedere3D.tsx`: `programSimulare` devine asincron;
+  - `actiuniAnimatie.ts`: `secundePeMiscare` vine din `src/jobs/rezumat.ts`;
+  - importurile testelor;
+  - regula `bazinul-doar-simularea`, extinsă (`.dependency-cruiser.cjs`, `scripts/verifica-importuri.ts`);
+  - poarta: plafonul 450, workerul `lucratorCam` în reguli, CAM-ul doar în worker; apoi proba că ramura din proces dispare
+    la build;
+  - probele: unit și e2e pe 4193, octet cu octet;
+  - timpii în Edge;
+  - ADR 0109, CLAUDE.md, jurnalul, traducerile.
