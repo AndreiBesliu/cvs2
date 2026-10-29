@@ -3631,3 +3631,14 @@ rămân), straturile numite, raportul cu 17 coduri și refuzurile noi în ambele
 sfaturile barei de sus stăteau sub ea de la ADR 0053; acum bara urcă peste extensie cât coboară un sfat sau un panou al
 ei, iar sfatul unui buton cu panoul deschis nu se mai arată. Manualul: „Importul SVG, DXF, PDF și AI”, ecranul, exportul
 vectorilor. Mutațiile: 28 / 28 (17 pe probele unitare, 11 pe e2e, controlul verde înainte și după); una a trecut întâi: decupajul pictat (`W … S`) nenumărat, fiindcă probele aveau doar `W n`: probă nouă. Pornirea 97,1 → 97,2 (cu ușa 100,7 / 110 kB); totalul 341,0 → 349,7 / 400.
+
+**Publicat pe test (29.10, 10:44)**, din workflow (run 40843947972, `40d2cb0`), cu CI-ul rapid verde (run 40843153660, 6
+felii + oracolul exportului 2D). Porțile locale: compilatorul (aplicația și funcțiile), importurile, licențele, suita unitară
+(7 687 de teste, 0 picate; 8 sărite: logourile owner-ului, lipsă local), build-ul determinist, e2e-ul (265; un `EBUSY` al lui
+Drive pe o descărcare, reluat singur: verde), emulatoarele (36 + 13). Verificat în browser la 1440 px, în română: pagina e pe
+`40d2cb042ea8`; bara de sus are la capăt importul („Importă SVG / DXF / PDF / AI…”), „Exportă vectori…” și „Exportă G-code”,
+fără să atingă marca sau insula din dreapta. Un PDF de două pagini lăsat pe pânză: coperta refuzată („Pagina n-are nicio cale
+de importat…”, cu blocul de text numărat) și lista **Pagina (din 2)**; pagina 2: „Desenul: 70.00 × 60.00 mm”, conturul pe
+exterior, linia deschisă, „1 strat, păstrat ca numele formelor: DECUPARE”, forma de pe stratul oprit sărită, focusul rămas pe
+listă; „Importă” a pus piesa „Planse” cu cele două profiluri. Panoul vectorilor s-a deschis sub buton, peste extensie și peste
+proprietăți (cele patru colțuri ale lui sunt ale lui, la lovire).
