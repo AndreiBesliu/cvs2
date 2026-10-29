@@ -122,6 +122,8 @@ pe linie. Pen-ul rămâne ales pentru calea următoare.
 Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea aleasă:
 - un **clic pe foaie** pune ancora (o cruce): acolo începe linia de bază a primului rând (aliniat la stânga), îi stă
   mijlocul (centrat) sau capătul (la dreapta);
+- un **clic lângă conturul unei forme** (un cerc, un arc, o curbă, un dreptunghi) pune ancora pe contur, în punctul cel mai
+  apropiat, iar textul **urmează curba** (mai jos);
 - un **clic pe un text** îl alege, ca să-l editezi.
 
 În panoul uneltei scrii textul (Enter: rând nou) și alegi:
@@ -138,7 +140,26 @@ exterior pe contururile de afară, pe interior pe goluri; le schimbi în fereast
 noi (profilul pe exterior pe contururile de afară, cel pe interior pe goluri, restul pe toate). În paletă, comanda e
 **Scrie textul**.
 
-**Fonturi…**, sub font, deschide fereastra fonturilor:
+Pe o curbă, panoul arată secțiunea **Pe curbă** (cu lungimea curbei), cu:
+- **Poziția față de curbă**: **Deasupra** (literele stau peste curbă, cu coborârile pe ea), **Pe linia de bază**, **Centrat
+  pe curbă** (mijlocul majusculelor pe curbă) sau **Dedesubt** (vârful majusculelor pe curbă);
+- **Distanța de curbă** (mm), în plus, în sus (negativă: spre curbă și dincolo de ea);
+- **Pe partea cealaltă**: textul trece de partea cealaltă a curbei (pe un cerc, înăuntru);
+- **Literele verticale**: literele stau drepte, nu se rotesc după curbă;
+- **Întins pe toată curba**: spațiul dintre litere crește cât textul să acopere curba (una deschisă de la un capăt la
+  altul, una închisă tot ocolul, cu același spațiu și între ultima literă și prima).
+
+Pe un cerc sau pe altă formă închisă, textul stă pe dinafară și se citește de la stânga la dreapta; ancora rămâne unde ai
+dat clic, iar textul se aliniază față de ea (la stânga, centrat sau la dreapta). Mai lung decât o curbă deschisă, textul
+continuă drept după capete; pe una închisă se reia. Literele se mută întregi, nu se îndoaie, deci contururile rămân exacte.
+**Pe linie dreaptă** scrie textul drept, din ancoră (curba rămâne aleasă: **Pe curbă** îl pune înapoi). Curba se ține în
+text: dacă schimbi sau ștergi forma, textul rămâne cum era; ca să urmeze forma nouă, dai din nou clic lângă ea.
+
+**Adaugă fonturi…**, sub font, deschide fereastra fonturilor. Sus, **Textul de probă** (primul rând din panou sau, gol, o
+probă cu diacriticele) se vede scris cu fiecare font din listă: în Fonturile mele și în cele ale sistemului, desenat din
+contururile fontului, cum se va tăia (literele care lipsesc din font sunt numite); în Google Fonts, cu fiecare familie, în
+stilul ales, **înainte de descărcare** (browserul aduce de la Google doar alfabetele textului de probă, iar ce se taie vine
+din fișierul descărcat). Filele:
 - **Fonturile mele**: **Încarcă fonturi…** primește TTF, OTF (și cele cu contururi CFF, ca fonturile Adobe), TTC (toate
   fețele) și WOFF; fonturile rămân în browserul ăsta, merg și fără rețea și nu pleacă nicăieri. **Folosește** alege fontul
   în panou, **Șterge** îl scoate (un text făcut cu el rămâne, doar nu se mai editează aici până nu-l încarci din nou);
@@ -146,7 +167,8 @@ noi (profilul pe exterior pe contururile de afară, cel pe interior pe goluri, r
   **Descarcă**: fontul vine o dată și intră în Fonturile mele. Pe alt calculator, un text cu un font Google îl cere din
   nou dintr-un clic (**Descarcă din nou**);
 - **Ale sistemului**: **Permite accesul la fonturile sistemului** (Chrome și Edge, pe calculator) pune fonturile
-  instalate în lista din panou. Nu se copiază nicăieri: textul se editează doar unde fontul e instalat.
+  instalate în lista din panou și în fereastră, cu căutarea, proba fiecăruia și **Folosește**. Nu se copiază nicăieri:
+  textul se editează doar unde fontul e instalat.
 
 Înălțimea în mm se măsoară pe litera **H** a fontului (vârful ei e la „20 mm”); un font fără H folosește înălțimea
 majusculelor scrisă în el. Un font variabil (ca Bahnschrift) se citește deocamdată doar în stilul lui implicit, iar un

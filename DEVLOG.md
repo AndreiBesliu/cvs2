@@ -3702,3 +3702,16 @@ Regular”, ales în panou; „Lemn de stejar” de 25 mm cu el: piesa cu 20 de 
 Serif”, `f:58a99f6327be17b5`, lista cu sursa și mărimea. Fonturile sistemului: în browserul aplicației permisiunea
 `local-fonts` e refuzată din oficiu, iar fila spune cum se permite; butonul „Permite accesul” rămâne de încercat în Chrome / Edge.
 0 erori în jurnal și în consolă.
+
+## 2026-10-29 — Etapa 7: textul pe curbă (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua tu ce aveai la rand” (după raportul feliei 7.2↑, care recomanda textul pe curbă).
+**Started:** 29.10, 19:56. Felia **7.3↑**, fără mașină și fără agenți: textul pe curbă (criteriul din cercetare: întins pe
+un cerc R50, textul ocupă 314,16 mm de arc, ±1 %). Cu unealta Text, un clic pe un contur (care nu e text) pune ancora pe el,
+în punctul cel mai apropiat; literele urmează curba (deschisă sau închisă; peste capetele unei curbe deschise, pe tangentă),
+câte una, rotită după tangentă sau verticală; poziția față de curbă (deasupra, pe linia de bază, centrat, dedesubt, la o
+distanță), partea cealaltă, întins pe toată curba, mai multe rânduri. Curba intră în blocul textului (editabil după salvare).
+Oracolul: așezarea scrisă din nou în Python (fontTools pentru glife și lungimile cubicelor).
+**Prompturi pe parcurs:** „cum fac sa adaug fonturi” (cu o captură a panoului Text) și „vreau sa se poata face preview la un
+font, de oriunde este el, mai ales din google fonts, inainte sa descarci fontul” (intrate în aceeași felie).
+**Completed:** 29.10, 21:15. ADR 0108. Textul pe curbă: `parcurgere` și `pozitiePeCurba` în `src/model/curba.ts` (dincolo de capete, reluată sau pe tangentă; ancora din zeroul derivatei distanței, sub 1e-9 mm), `src/text/peCurba.ts` (literele întregi, rotite sau verticale; deasupra, pe linia de bază, centrat, dedesubt, cu distanța; sensul: o curbă închisă parcursă în sensul acelor, partea cealaltă; întins pe toată curba, cu golurile egale), curba în blocul textului (`SchemaCurbaText`, scalată cu el); clicul lângă un contur în `Editare.tsx`, secțiunea **Pe curbă** în panou (care se derulează acum în zona liberă). Proba fonturilor în fereastra **Adaugă fonturi…** (butonul redenumit, cu chenar): **Textul de probă**, contururile aplicației pentru fonturile mele și ale sistemului (`aduceFont`, fără să le țină; lista sistemului cu căutarea și **Folosește**), fețele de afișare Google înainte de descărcare (`src/app/previzualizareFont.ts`, CSS API v2 din browser; CSP-ul primește `fonts.googleapis.com` și `fonts.gstatic.com`). Oracolul Python: 16 cazuri pe curbă, aplicația sub 2e-11 mm; a prins alinierea textului întins pe o curbă închisă (număra golul de după ultima literă). Proba țintită a prins precizia ancorei (~5e-7 mm din minimul singur), e2e-ul panoul care trecea sub bara de jos, proba Google un `unicode-range` stricat primit cu tot intervalul. Mutațiile: 47 / 47 (37 pe probele unitare, 10 pe e2e, controlul verde înainte și după); una a trecut întâi: segmentele fără lungime nesărite (doar la capetele unei curbe deschise): probă nouă. Pornirea 97,4 neschimbată (cu ușa 100,9 / 110 kB); totalul 370,5 → 374,4 / 400.

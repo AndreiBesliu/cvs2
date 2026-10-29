@@ -1,11 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { conturCerc } from '../../src/geom/conturBaza.ts';
 import { blocText } from '../../src/model/blocText.ts';
 import { documentNou, type Document, type Piesa } from '../../src/model/document.ts';
 import { executa, istoricNou } from '../../src/model/jurnal.ts';
-import { aseazaText, type ParametriText } from '../../src/text/asezare.ts';
+import { aseazaText, type ParametriText, type TextAsezat } from '../../src/text/asezare.ts';
 import { citesteFont } from '../../src/text/font.ts';
+import { aseazaPeCurba } from '../../src/text/peCurba.ts';
 import { piesaText } from '../../src/text/piesaText.ts';
 import { comandaText } from '../../src/ui/actiuniDocumentCalcul.ts';
 import type { CerereText } from '../../src/ui/actiuniDocument.ts';
@@ -60,4 +62,19 @@ test('refuzurile: piesa care nu mai e text, piesa împărțită, textul fără l
   assert.deepEqual(comandaText(d0, nou({ ...PARAM, continut: '  ' })), { ok: false, motiv: 'motiv.text-gol' });
   assert.deepEqual(comandaText(d0, nou(PARAM, 2e7, 0)), { ok: false, motiv: 'motiv.prea-departe' });
   assert.deepEqual(comandaText(d1, editat('lipsa', PARAM)), { ok: false, motiv: 'motiv.nimic-ales' });
+});
+
+test('un text pe curbă (ADR 0108): piesa ține curba în bloc, documentul întreg trece schema; editat drept, curba pleacă', () => {
+  const d0 = gol();
+  const cerc = conturCerc(0, -50, 50);
+  const curba = { ...cerc, varfuri: [...cerc.varfuri], s: 25 * Math.PI, pozitie: 'baza' as const, distanta: 1, invers: false, orientare: 'rotita' as const, intinsa: true };
+  const pe = (p: ParametriText): TextAsezat => aseazaPeCurba(aseazaText(font, p), { contur: cerc, ...curba }, p.inaltime, p.aliniere)!;
+  const c = comandaText(d0, { fel: 'nou', loc: { x: 150, y: 150 }, piesa: (id, scula) => piesaText(pe(PARAM), { ...bloc(PARAM), curba }, id, scula) });
+  assert.ok(c.ok);
+  const d1 = executa({ ...istoricNou(d0) }, c.comanda).doc;
+  assert.deepEqual(blocText(d1.piese[0]!.radacina)?.curba, curba);
+  const e = comandaText(d1, editat(c.id, PARAM));
+  assert.ok(e.ok);
+  const d2 = executa({ ...istoricNou(d1) }, e.comanda).doc;
+  assert.equal(blocText(d2.piese[0]!.radacina)?.curba, undefined);
 });

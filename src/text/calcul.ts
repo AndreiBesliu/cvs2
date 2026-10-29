@@ -11,6 +11,8 @@ import { octetiSistem, stareSistem } from './sistem.ts';
 
 export { aseazaText, type ParametriText, type TextAsezat } from './asezare.ts';
 export { piesaText, type RezultatPiesaText } from './piesaText.ts';
+export { aseazaPeCurba, type TextPeCurba } from './peCurba.ts';
+export { lungimeCurba } from '../model/curba.ts';
 export type { Font } from './font.ts';
 export { adaugaFisier, adaugaGoogle, FaraStocare, listaBiblioteca, stergeFont, type FontSalvat, type RezultatAdaugare } from './biblioteca.ts';
 export { listaSistem, sistemDisponibil, stareSistem, type FontSistem, type StareSistem } from './sistem.ts';
@@ -29,7 +31,11 @@ export type RezultatIncarcare =
 const TINUTE = 12;
 const citite = new Map<string, Promise<RezultatIncarcare>>();
 
-async function aduce(id: string): Promise<RezultatIncarcare> {
+/**
+ * Fontul `id`, citit fără să fie ținut (cu aceleași refuzuri ca în panou): proba din fereastra fonturilor (ADR 0108 §5)
+ * citește zeci de fonturi ale sistemului, iar cele mari (zeci de MB) nu trebuie să rămână în memorie după probă.
+ */
+export async function aduceFont(id: string): Promise<RezultatIncarcare> {
   const s = sursaFont(id);
   if (!s) return { ok: false, cod: 'necunoscut', detaliu: id };
   try {
@@ -70,7 +76,7 @@ export function incarcaFont(id: string): Promise<RezultatIncarcare> {
     citite.set(id, gata);
     return gata;
   }
-  const p = aduce(id);
+  const p = aduceFont(id);
   // Un eșec nu rămâne ținut: o încercare următoare (rețeaua revenită, fontul încărcat, permisiunea dată) îl cere din nou.
   void p.then((r) => { if (!r.ok) citite.delete(id); });
   citite.set(id, p);

@@ -21,10 +21,20 @@ Pe hârtie, verificate aici: „LEMN” de 20 mm are fiecare literă înaltă de
 font e chiar vârful lui H; variantele au ce promit (loca lungă, componentele pe puncte, deplasarea scalată, 2 × 2, o glifă
 compusă din alta compusă, perechile `kern` neordonate, subrutinele peste 1 240 și 33 900, CID-ul).
 
+Textul pe curbă (ADR 0108), scris din nou aici (`pe_curba`): curba măsurată fără codul aplicației (liniile exact, arcele
+din bulge, cu centrul și raza deduse aici, cubicele cu lungimea lui fontTools, `calcCubicArcLengthC`, pe 512 bucăți, și
+bisecția pe parametru), locul fiecărei litere pe curbă în sistemul original al curbei (fără conturul inversat al aplicației),
+regulile poziției, ale alinierii și ale întinderii din ADR, mișcarea rigidă a literei ca înmulțire complexă. Pe hârtie: cercul
+R50 are 100π; pe linia de bază, vârful fiecărei litere de 10 mm stă la raza 60; dedesubt, pe partea cealaltă, la 48,5 cu
+distanța 1,5; întins pe cerc, 8 litere stau la 45° una de alta; întins pe linia de 100 mm, textul pleacă din 0 și ajunge în 100.
+
 Rulare: `.tmp/venv-export2d/Scripts/python.exe -X utf8 test/oracles-py/text_corpus.py` (scrie `test/fixtures/text/`).
 """
 import array
+import bisect
+import cmath
 import json
+import math
 import os
 import struct
 import sys
@@ -34,6 +44,7 @@ from fontTools.cffLib import GlobalSubrsIndex, SubrsIndex
 from fontTools.cffLib.CFFToCFF2 import convertCFFToCFF2
 from fontTools.encodings.StandardEncoding import StandardEncoding
 from fontTools.fontBuilder import FontBuilder
+from fontTools.misc.bezierTools import calcCubicArcLengthC, splitCubicAtTC
 from fontTools.misc.psCharStrings import T2CharString
 from fontTools.pens.basePen import decomposeQuadraticSegment
 from fontTools.pens.recordingPen import DecomposingRecordingPen
@@ -253,7 +264,7 @@ def aseaza(font, p):
     rand_mm = mm(hhea.ascent - hhea.descent + hhea.lineGap) * p['interlinie']
     hmtx = font['hmtx']
     cff = 'CFF ' in font
-    glife, lipsa = [], 0
+    glife, lipsa, randuri = [], 0, []
     for r, rand in enumerate(p['continut'].replace('\r', '').split('\n')):
         litere, x, ant = [], 0.0, None
         for ch in rand:
@@ -269,8 +280,9 @@ def aseaza(font, p):
             x += mm(hmtx[g][0])
             ant = g
         dx = 0 if p['aliniere'] == 'stanga' else (-x / 2 if p['aliniere'] == 'centru' else -x)
+        randuri.append({'latime': x, 'caractere': len(litere), 'dx': dx})
         baza = -r * rand_mm
-        for ch, g, x0 in litere:
+        for indice, (ch, g, x0) in enumerate(litere):
             def harta(q, x0=x0):
                 return [x0 + dx + mm(q[0]), baza + mm(q[1])]
             cs = []
@@ -293,8 +305,288 @@ def aseaza(font, p):
                         out.append(['C'] + harta(c1) + harta(c2) + harta(p2))
                 cs.append({'start': harta(start), 'segmente': out})
             if cs:
-                glife.append({'caracter': ch, 'rand': r, 'contururi': cs})
-    return {'glife': glife, 'lipsa': lipsa}
+                glife.append({'caracter': ch, 'rand': r, 'contururi': cs, '_x': x0 + dx, '_avans': mm(hmtx[g][0]), '_indice': indice})
+    return {'glife': glife, 'lipsa': lipsa, '_randuri': randuri, '_metrici': {'rand': rand_mm, 'coborare': mm(hhea.descent)}}
+
+
+def fara_interne(v):
+    """Fixtura fără cheile de lucru (`_x`, `_randuri`…): doar ce compară testul."""
+    if isinstance(v, dict):
+        return {k: fara_interne(x) for k, x in v.items() if not k.startswith('_')}
+    if isinstance(v, list):
+        return [fara_interne(x) for x in v]
+    return v
+
+
+# Textul pe curbă (ADR 0108). Bucățile unei cubice în tabelul lungimilor.
+BUCATI = 512
+TOL_FT = 1e-12
+
+
+class SegmentCurba:
+    """Un segment al curbei, măsurat aici: lungimea și locul (punctul, unghiul tangentei în radiani) la distanța d."""
+
+    def __init__(self, a, b, seg):
+        self.a, self.b = complex(a['x'], a['y']), complex(b['x'], b['y'])
+        self.tip = seg['tip']
+        if self.tip == 'A' and abs(seg['bulge']) > 1e-12:
+            # Bulge = tan(baleiaj / 4), pozitiv trigonometric; centrul, la stânga coardei cu c / (2 tan(baleiaj / 2)).
+            baleiaj = 4 * math.atan(seg['bulge'])
+            coarda = self.b - self.a
+            c = abs(coarda)
+            self.centru = (self.a + self.b) / 2 + coarda / c * 1j * (c / (2 * math.tan(baleiaj / 2)))
+            self.raza = c / (2 * abs(math.sin(baleiaj / 2)))
+            self.semn = 1 if baleiaj > 0 else -1
+            self.alfa0 = cmath.phase(self.a - self.centru)
+            self.lungime = self.raza * abs(baleiaj)
+        elif self.tip == 'C':
+            self.q = (self.a, complex(seg['c1']['x'], seg['c1']['y']), complex(seg['c2']['x'], seg['c2']['y']), self.b)
+            self.bucati = list(splitCubicAtTC(*self.q, *[k / BUCATI for k in range(1, BUCATI)]))
+            self.cumul = [0.0]
+            for b in self.bucati:
+                self.cumul.append(self.cumul[-1] + calcCubicArcLengthC(*b, tolerance=TOL_FT))
+            self.lungime = self.cumul[-1]
+        else:
+            self.tip = 'L'
+            self.lungime = abs(self.b - self.a)
+
+    def la(self, d):
+        if self.tip == 'L':
+            u = (self.b - self.a) / self.lungime
+            return self.a + u * d, cmath.phase(u)
+        if self.tip == 'A':
+            alfa = self.alfa0 + self.semn * d / self.raza
+            return self.centru + self.raza * cmath.exp(1j * alfa), alfa + self.semn * math.pi / 2
+        # Cubica: bucata din tabel, apoi bisecția pe parametrul ei, cu lungimea începutului bucății măsurată de fontTools.
+        k = max(0, min(BUCATI - 1, bisect.bisect_right(self.cumul, d) - 1))
+        lo, hi = 0.0, 1.0
+        for _ in range(60):
+            m = (lo + hi) / 2
+            inceput = next(iter(splitCubicAtTC(*self.bucati[k], m)))
+            if self.cumul[k] + calcCubicArcLengthC(*inceput, tolerance=TOL_FT) < d:
+                lo = m
+            else:
+                hi = m
+        t = (k + (lo + hi) / 2) / BUCATI
+        p0, p1, p2, p3 = self.q
+        u = 1 - t
+        punct = u ** 3 * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t ** 3 * p3
+        viteza = 3 * u * u * (p1 - p0) + 6 * u * t * (p2 - p1) + 3 * t * t * (p3 - p2)
+        return punct, cmath.phase(viteza)
+
+
+class CurbaOracol:
+    """Curba textului, în sistemul ei original (cum a fost desenată): segmentele măsurate și locul la o distanță u."""
+
+    def __init__(self, contur):
+        v = contur['varfuri']
+        self.inchis = contur['inchis']
+        n = len(v) if self.inchis else len(v) - 1
+        self.seg = [SegmentCurba(v[i]['p'], v[(i + 1) % len(v)]['p'], v[i]['s']) for i in range(n)]
+        self.cumul = [0.0]
+        for x in self.seg:
+            self.cumul.append(self.cumul[-1] + x.lungime)
+        self.L = self.cumul[-1]
+        # Segmentele fără lungime nu dau nici locul, nici tangenta.
+        self.pline = [i for i, x in enumerate(self.seg) if x.lungime > 0]
+
+    def _pe(self, j, u):
+        return self.seg[j].la(min(max(u - self.cumul[j], 0.0), self.seg[j].lungime))
+
+    def pleaca(self, u):
+        """Locul la u; într-un vârf, al segmentului care pleacă din el (mersul în sensul desenului)."""
+        return self._pe(max([i for i in self.pline if self.cumul[i] <= u] or [self.pline[0]]), u)
+
+    def ajunge(self, u):
+        """Locul la u; într-un vârf, al segmentului care ajunge în el (mersul invers îl ia ca segment care pleacă)."""
+        return self._pe(min([i for i in self.pline if self.cumul[i + 1] >= u] or [self.pline[-1]]), u)
+
+    def trigonometric(self):
+        """Închisă și desenată trigonometric: aria cu semn a poligonului eșantionat (doar semnul contează)."""
+        if not self.inchis:
+            return False
+        pts = [x.la(x.lungime * k / 64)[0] for x in self.seg if x.lungime > 0 for k in range(64)]
+        return sum((pts[i].conjugate() * pts[(i + 1) % len(pts)]).imag for i in range(len(pts))) > 0
+
+    def loc(self, u, invers):
+        """Locul la distanța u în sistemul original (dincolo de capete: închisă se reia, deschisă continuă pe tangentă);
+        `invers`: textul merge spre începutul curbei, deci tangenta se întoarce."""
+        if self.inchis:
+            u %= self.L
+            if invers and u == 0:
+                u = self.L
+            p, a = (self.ajunge if invers else self.pleaca)(u)
+        elif u < 0:
+            p, a = self.pleaca(0.0)
+            p += cmath.exp(1j * a) * u
+        elif u > self.L:
+            p, a = self.ajunge(self.L)
+            p += cmath.exp(1j * a) * (u - self.L)
+        else:
+            p, a = (self.ajunge if invers else self.pleaca)(u)
+        return p, a + math.pi if invers else a
+
+
+def pe_curba(asez, curba, inaltime, aliniere):
+    """Literele textului așezat drept, duse pe curbă (ADR 0108). Întoarce glifele mutate și, pentru probele pe hârtie, harta
+    fiecărei litere (un punct al literei → punctul lui pe foaie)."""
+    c = CurbaOracol(curba['contur'])
+    # Sensul: o curbă închisă desenată trigonometric se parcurge invers (textul în afara ei); „partea cealaltă” schimbă sensul.
+    invers = c.trigonometric() != curba['invers']
+    randuri, metrici = asez['_randuri'], asez['_metrici']
+    n = len(randuri)
+    dy = {
+        'baza': 0.0,
+        'deasupra': (n - 1) * metrici['rand'] - metrici['coborare'],
+        'centru': -(inaltime - (n - 1) * metrici['rand']) / 2,
+        'dedesubt': -inaltime,
+    }[curba['pozitie']] + curba['distanta']
+    semn = -1 if invers else 1
+    glife, harti = [], []
+    for g in asez['glife']:
+        r = randuri[g['rand']]
+        if curba['intinsa'] and r['caractere'] > 0:
+            # Întins: spațiul dintre caractere crește cât rândul să acopere curba (închisă: și după ultimul).
+            goluri = r['caractere'] if c.inchis else r['caractere'] - 1
+            extra = (c.L - r['latime']) / goluri if goluri > 0 else 0.0
+            pe_rand = g['_x'] - r['dx'] + g['_indice'] * extra + g['_avans'] / 2
+            if c.inchis:
+                # Aliniate față de ancoră: literele, de la începutul primei la sfârșitul ultimei (fără golul de după ea).
+                vizibil = c.L - extra
+                fata_de_ancora = (0 if aliniere == 'stanga' else -vizibil / 2 if aliniere == 'centru' else -vizibil) + pe_rand
+                u = curba['s'] + semn * fata_de_ancora
+            else:
+                u = c.L - pe_rand if invers else pe_rand
+        else:
+            u = curba['s'] + semn * (g['_x'] + g['_avans'] / 2)
+        p, unghi = c.loc(u, invers)
+        rot = cmath.exp(1j * unghi)
+        xc = g['_x'] + g['_avans'] / 2
+        baza = -g['rand'] * metrici['rand']
+        if curba['orientare'] == 'rotita':
+            def harta(q, p=p, rot=rot, xc=xc):
+                z = p + rot * complex(q[0] - xc, q[1] + dy)
+                return [z.real, z.imag]
+        else:
+            def harta(q, p=p, rot=rot, xc=xc, baza=baza):
+                z = p + rot * 1j * (baza + dy) + complex(q[0] - xc, q[1] - baza)
+                return [z.real, z.imag]
+        cs = []
+        for k in g['contururi']:
+            segs = []
+            for sg in k['segmente']:
+                if sg[0] == 'L':
+                    segs.append(['L'] + harta(sg[1:3]))
+                else:
+                    segs.append(['C'] + harta(sg[1:3]) + harta(sg[3:5]) + harta(sg[5:7]))
+            cs.append({'start': harta(k['start']), 'segmente': segs})
+        glife.append({'caracter': g['caracter'], 'rand': g['rand'], 'contururi': cs})
+        harti.append((g, harta))
+    return glife, harti, c
+
+
+def cerc(r):
+    """Cercul de rază r în origine, ca în aplicație: două semicercuri trigonometrice, din (r, 0)."""
+    return {'inchis': True, 'varfuri': [{'p': {'x': r, 'y': 0}, 's': {'tip': 'A', 'bulge': 1}}, {'p': {'x': -r, 'y': 0}, 's': {'tip': 'A', 'bulge': 1}}]}
+
+
+def linii(inchis, *pts):
+    return {'inchis': inchis, 'varfuri': [{'p': {'x': x, 'y': y}, 's': {'tip': 'L'}} for x, y in pts]}
+
+
+def cubice(inchis, *bucati):
+    """Vârfurile (x, y) cu cubica spre următorul: (x, y, c1x, c1y, c2x, c2y); ultimul vârf al unei deschise, (x, y)."""
+    v = []
+    for b in bucati:
+        s = {'tip': 'C', 'c1': {'x': b[2], 'y': b[3]}, 'c2': {'x': b[4], 'y': b[5]}} if len(b) == 6 else {'tip': 'L'}
+        v.append({'p': {'x': b[0], 'y': b[1]}, 's': s})
+    return {'inchis': inchis, 'varfuri': v}
+
+
+K = 0.5522847498307936 * 30
+# Pe curbă: (numele, fontul, parametrii textului, curba, poziția pe ea, toleranța în mm; pe cubice, cele două cuadraturi
+# diferite se abat cu ~5e-12 mm).
+P_LEMN = {'continut': 'LEMN', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru'}
+S_CUBICA = cubice(False, (0, 0, 30, 40, 70, -40), (100, 0))
+CAZURI_CURBA = [
+    ('cerc-baza', 'public/fonturi/roboto.ttf', P_LEMN, cerc(50), {'s': 25 * math.pi, 'pozitie': 'baza'}, 1e-9),
+    ('cerc-dedesubt-invers', 'public/fonturi/roboto.ttf', {**P_LEMN, 'aliniere': 'stanga'}, cerc(50),
+     {'s': 25 * math.pi, 'pozitie': 'dedesubt', 'distanta': 1.5, 'invers': True}, 1e-9),
+    ('cerc-intinsa', 'public/fonturi/droid-serif.ttf', {'continut': 'ABCDEFGH', 'inaltime': 8, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'},
+     cerc(50), {'s': 0, 'pozitie': 'baza', 'intinsa': True}, 1e-9),
+    ('cerc-intinsa-h', 'public/fonturi/droid-serif.ttf', {'continut': 'HHHHHHHH', 'inaltime': 8, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru'},
+     cerc(50), {'s': 25 * math.pi, 'pozitie': 'baza', 'intinsa': True}, 1e-9),
+    ('cerc-randuri-intinse', 'public/fonturi/roboto.ttf', {'continut': 'Linia 1\nA doua linie', 'inaltime': 6, 'spatiere': 0.2, 'interlinie': 1.2, 'aliniere': 'centru'},
+     cerc(40), {'s': 10, 'pozitie': 'centru', 'intinsa': True}, 1e-9),
+    ('linie-intinsa', 'public/fonturi/roboto.ttf', {**P_LEMN, 'aliniere': 'stanga'}, linii(False, (0, 0), (100, 0)), {'s': 30, 'pozitie': 'baza', 'intinsa': True}, 1e-9),
+    ('linie-colt-deasupra', 'public/fonturi/roboto.ttf', {'continut': 'Linia 1\nA doua', 'inaltime': 6, 'spatiere': 0, 'interlinie': 1.2, 'aliniere': 'stanga'},
+     linii(False, (0, 0), (40, 0), (40, 0), (70, 20)), {'s': 5, 'pozitie': 'deasupra', 'distanta': 0.8}, 1e-9),
+    ('linie-dincolo-de-capete', 'public/fonturi/roboto.ttf', {'continut': 'AVATAR To Wa', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru'},
+     linii(False, (0, 0), (30, 10)), {'s': 5, 'pozitie': 'baza'}, 1e-9),
+    ('arc-verticala', 'test/fixtures/text/inter-subset.otf', {'continut': 'HAMBURG', 'inaltime': 8, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru'},
+     {'inchis': False, 'varfuri': [{'p': {'x': -40, 'y': 0}, 's': {'tip': 'A', 'bulge': -0.5}}, {'p': {'x': 40, 'y': 0}, 's': {'tip': 'L'}}]},
+     {'s': 47, 'pozitie': 'centru', 'orientare': 'verticala'}, 1e-9),
+    ('cerc-verticala-randuri', 'public/fonturi/roboto.ttf', {'continut': 'Sus' + chr(10) + 'Jos', 'inaltime': 6, 'spatiere': 0, 'interlinie': 1.3, 'aliniere': 'centru'},
+     cerc(40), {'s': 20, 'pozitie': 'dedesubt', 'orientare': 'verticala'}, 1e-9),
+    ('dreptunghi-colturi', 'public/fonturi/droid-serif.ttf', {'continut': 'Ușă de stejar', 'inaltime': 7, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'},
+     linii(True, (0, 0), (60, 0), (60, 30), (0, 30)), {'s': 50, 'pozitie': 'baza'}, 1e-9),
+    ('cubica-baza', 'public/fonturi/roboto.ttf', {'continut': 'AVATAR To Wa', 'inaltime': 5, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'},
+     S_CUBICA, {'s': 10, 'pozitie': 'baza', 'distanta': -0.5}, 1e-9),
+    ('cubica-intinsa-invers', 'public/fonturi/roboto.ttf', {**P_LEMN, 'inaltime': 12}, S_CUBICA,
+     {'s': 0, 'pozitie': 'dedesubt', 'invers': True, 'intinsa': True}, 1e-9),
+    ('cubica-invers-deasupra', 'test/fixtures/text/inter-subset.otf', {'continut': 'hamburgefontsiv 0123', 'inaltime': 4, 'spatiere': 0.1, 'interlinie': 1, 'aliniere': 'dreapta'},
+     S_CUBICA, {'s': 60, 'pozitie': 'deasupra', 'distanta': 0.3, 'invers': True}, 1e-9),
+    ('cerc-intinsa-invers-dreapta', 'public/fonturi/roboto.ttf', {'continut': 'AVATAR To Wa', 'inaltime': 5, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'dreapta'},
+     cerc(30), {'s': 30, 'pozitie': 'centru', 'invers': True, 'intinsa': True}, 1e-9),
+    ('inchis-cubice-orar', 'test/fixtures/text/inter-subset.otf', {'continut': 'HAMBURGEFONTSIV', 'inaltime': 6, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'},
+     cubice(True, (0, 30, K, 30, 30, K), (30, 0, 30, -K, K, -30), (0, -30, -K, -30, -30, -K), (-30, 0, -30, K, -K, 30)),
+     {'s': 20, 'pozitie': 'centru'}, 1e-9),
+]
+
+
+def cazuri_pe_curba():
+    """Fixtura textului pe curbă, cu probele pe hârtie verificate aici."""
+    rez = {}
+    for nume, fisier, p, contur, poz, tol in CAZURI_CURBA:
+        font = TTFont(os.path.join(RAD, fisier))
+        asez = aseaza(font, p)
+        curba = {'contur': contur, 'distanta': 0, 'invers': False, 'orientare': 'rotita', 'intinsa': False, **poz}
+        glife, harti, c = pe_curba(asez, curba, p['inaltime'], p['aliniere'])
+        rez[nume] = {'font': fisier, 'parametri': p, 'curba': curba, 'tol': tol, 'glife': glife, '_harti': harti, '_curba': c}
+    return rez
+
+
+def probe_pe_hartie(rez):
+    aproape = lambda a, b, eps=1e-9: abs(a - b) <= eps
+    # Cercul R50: 100π; pe linia de bază, mijlocul liniei de bază a fiecărei litere pe cerc, vârful (10 mm) la raza 60,
+    # deasupra centrului (ancora sus), citite de la stânga la dreapta.
+    c = rez['cerc-baza']
+    assert aproape(c['_curba'].L, 100 * math.pi, 1e-12), c['_curba'].L
+    xs = []
+    for g, h in c['_harti']:
+        xc = g['_x'] + g['_avans'] / 2
+        jos, sus = complex(*h([xc, 0])), complex(*h([xc, 10]))
+        assert aproape(abs(jos), 50) and aproape(abs(sus), 60) and jos.imag > 0, (g['caracter'], abs(jos), abs(sus))
+        xs.append(jos.real)
+    assert xs == sorted(xs) and [g['caracter'] for g, _ in c['_harti']] == list('LEMN')
+    # Dedesubt, pe partea cealaltă (mersul trigonometric, „sus”-ul spre centru), cu distanța 1,5: vârful la 48,5, baza la 58,5.
+    for g, h in rez['cerc-dedesubt-invers']['_harti']:
+        xc = g['_x'] + g['_avans'] / 2
+        assert aproape(abs(complex(*h([xc, 10]))), 48.5) and aproape(abs(complex(*h([xc, 0]))), 58.5), g['caracter']
+    # Întins pe cerc, golurile dintre litere sunt egale (și cel de după ultima); 8 litere la fel (H) stau deci la 45° una de
+    # alta, în sensul acelor (textul se citește în afara cercului), iar textul centrat pe ancora de sus are sus golul mijlociu.
+    unghiuri = [math.degrees(cmath.phase(complex(*h([g['_x'] + g['_avans'] / 2, 0])))) for g, h in rez['cerc-intinsa-h']['_harti']]
+    assert aproape((unghiuri[3] + unghiuri[4]) / 2, 90), unghiuri
+    for a, b in zip(unghiuri, unghiuri[1:]):
+        assert aproape((a - b) % 360, 45), (a, b)
+    # Întins pe linia de 100 mm: textul pleacă din 0 și ajunge exact în 100.
+    hs = rez['linie-intinsa']['_harti']
+    g0, h0 = hs[0]
+    gn, hn = hs[-1]
+    assert aproape(h0([g0['_x'], 0])[0], 0) and aproape(hn([gn['_x'] + gn['_avans'], 0])[0], 100), (h0([g0['_x'], 0]), hn([gn['_x'] + gn['_avans'], 0]))
+    # Dincolo de capete, pe tangentă: prima literă înaintea începutului liniei, ultima după capătul ei.
+    hs = rez['linie-dincolo-de-capete']['_harti']
+    assert hs[0][1]([hs[0][0]['_x'], 0])[0] < 0 and hs[-1][1]([hs[-1][0]['_x'], 0])[0] > 30
 
 
 def cutie(glifa_asezata):
@@ -790,11 +1082,14 @@ def main():
              'postscript': TTFont(os.path.join(DEST, 'roboto-fvar.ttf'))['name'].getDebugName(i.postscriptNameID) if i.postscriptNameID != 0xFFFF else None,
              'implicita': i.coordinates['wght'] == 400.0} for i in TTFont(os.path.join(DEST, 'roboto-fvar.ttf'))['fvar'].instances],
     }
-    for nume, date in (('crenari', crenari), ('glife', brute), ('asteptat', asteptat), ('structura', structura)):
+    curba = cazuri_pe_curba()
+    probe_pe_hartie(curba)
+    asteptat = fara_interne(asteptat)
+    for nume, date in (('crenari', crenari), ('glife', brute), ('asteptat', asteptat), ('structura', structura), ('pe-curba', fara_interne(curba))):
         with open(os.path.join(DEST, f'{nume}.json'), 'w', encoding='utf-8', newline='\n') as out:
             json.dump(date, out, ensure_ascii=False, separators=(',', ':'))
             out.write('\n')
-    print(len(asteptat), 'de cazuri,', len(brute), 'glife brute')
+    print(len(asteptat), 'de cazuri,', len(curba), 'pe curbă,', len(brute), 'glife brute')
 
 
 if __name__ == '__main__':

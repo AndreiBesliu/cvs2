@@ -24,7 +24,11 @@ import { motivCopiereRetea, motivDesen } from '../ui/actiuniDocumentCalcul.ts';
 import type { FormaNoua } from '../ui/actiuniDocument.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import { copiiRetea, punctulCopiei, type Retea } from '../model/retea.ts';
-import { copiiPeCurba } from '../model/curba.ts';
+import { copiiPeCurba, parcurgere, pozitiePeCurba } from '../model/curba.ts';
+import { distantaLaContur } from '../geom/distanta.ts';
+import type { Contur } from '../geom/conturBaza.ts';
+import { conturElement } from '../model/forme.ts';
+import { elementeFoaie } from '../model/lume.ts';
 import {
   adaugaNod, arceInCubice, caleDinForma, caleDinNoduri, manereAfisate, manereNod, mutaManer, mutaNod, schimbaTipNod, stergeNod, tipNod, type FormaCale, type NodCuManere, type ParteNod,
   type TipCerut,
@@ -664,9 +668,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   }, [meniu]);
 
   // Unealta Text (ADR 0105 §5): un clic pe foaie pune ancora unui text nou; unul pe un text (cu blocul valid) îl alege, ca
-  // să se editeze în panou. Pânza nu primește clicul (nici alegerea, nici mutarea). Textul ales intră în panou.
+  // să se editeze în panou; unul lângă conturul unei forme (ADR 0108 §3) pune ancora pe el, în punctul cel mai apropiat, iar
+  // textul urmează curba. Pânza nu primește clicul (nici alegerea, nici mutarea). Textul ales intră în panou.
   const [ancoraText, setAncoraText] = useState<Punct | null>(null);
-  useEffect(() => { if (unealta !== 'text') setAncoraText(null); }, [unealta]);
+  const [curbaText, setCurbaText] = useState<{ readonly contur: Contur; readonly s: number } | null>(null);
+  useEffect(() => { if (unealta !== 'text') { setAncoraText(null); setCurbaText(null); } }, [unealta]);
   const textAles = useMemo(() => {
     if (selectie.length !== 1) return null;
     const inst = doc.foi[FOAIA]?.instante.find((i) => i.id === selectie[0]);
@@ -693,7 +699,26 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         s.ruleaza('selectie.din-lista', { alese: () => [lovita] });
         return;
       }
-      setAncoraText({ x, y });
+      // Conturul cel mai apropiat (al unei forme care nu e text), la cel mult toleranța clicului de linia lui, nu din interior.
+      const tol = TOLERANTA_CLIC_PX / v.scara;
+      const piese = new Map(s.doc.piese.map((q) => [q.id, q]));
+      let curba: { contur: Contur; d: number } | null = null;
+      for (const e of elementeFoaie(s.doc, FOAIA)) {
+        const pe = piese.get(e.piesa);
+        if (!pe || blocText(pe.radacina)) continue;
+        const c = conturElement(e);
+        const d = distantaLaContur({ x, y }, c);
+        if (d <= tol && (!curba || d < curba.d)) curba = { contur: c, d };
+      }
+      const sc = curba ? pozitiePeCurba(curba.contur, { x, y }) : null;
+      const par = curba && sc !== null ? parcurgere(curba.contur) : null;
+      if (curba && sc !== null && par) {
+        setAncoraText(par.la(sc).p);
+        setCurbaText({ contur: curba.contur, s: sc });
+      } else {
+        setAncoraText({ x, y });
+        setCurbaText(null);
+      }
       if (s.selectie.length > 0) s.ruleaza('selectie.din-lista', { alese: () => [] });
     };
     window.addEventListener('pointerdown', apasa, true);
@@ -866,8 +891,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                 + `M${vedere.tx + ancoraText.x * vedere.scara} ${vedere.ty - ancoraText.y * vedere.scara - 8} v16`} />
             </svg>
           ) : null}
-          <PanouText ancora={ancoraText} editat={textAles} doarCitire={p.doarCitire} ruleaza={(c) => ruleaza('document.text', { textNou: () => c })}
-            onInchide={() => { setUnealta('selectie'); }} stil={{ left: zona.x + GROSIME_RIGLA + 12, top: zona.y + GROSIME_RIGLA + 12 }} />
+          <PanouText ancora={ancoraText} curba={curbaText} editat={textAles} doarCitire={p.doarCitire} ruleaza={(c) => ruleaza('document.text', { textNou: () => c })}
+            onInchide={() => { setUnealta('selectie'); }} stil={{ left: zona.x + GROSIME_RIGLA + 12, top: zona.y + GROSIME_RIGLA + 12, maxHeight: Math.max(160, zona.h - GROSIME_RIGLA - 24) }} />
         </>
       ) : null}
       {(() => {

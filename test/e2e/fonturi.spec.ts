@@ -8,7 +8,9 @@ import { ecran, vedere } from './ajutor-panza.ts';
  * cu una dintre ele (id-ul cu amprenta și fața, numele în bloc), previzualizarea, fontul ținut după reîncărcare, ștergerea
  * lui (textul rămâne, panoul spune că fontul lipsește); fonturile sistemului printr-un `queryLocalFonts` de probă (cu
  * permisiunea cerută din clic, instanța unui font variabil refuzată); refuzurile (WOFF2, un fișier care nu e font) și
- * Google Fonts fără server (instanța locală).
+ * Google Fonts fără server (instanța locală). Probele din fereastră (ADR 0108 §5): textul din panou desenat cu fiecare font
+ * (contururile aplicației), schimbat din câmpul de probă; în lista sistemului, cu motivul pentru instanța necitită. Proba
+ * Google (browserul, înainte de descărcare) cere serverul: probată în `fonturiGoogle.test.ts` și pe instanța de test.
  */
 
 test.use({ locale: 'ro-RO' });
@@ -66,6 +68,15 @@ test('o colecție TTC încărcată în Fonturile mele: textul cu fața a doua, d
   await expect(dialog.getByTestId('fonturi-rezultat')).toContainText('2 fonturi adăugate în Fonturile mele: Roboto Regular, Droid Serif');
   const amprenta = createHash('sha256').update(ttc).digest('hex').slice(0, 16);
   await expect(dialog.locator('li[data-font]')).toHaveCount(2);
+  // Proba fiecărei fețe, cu textul din panou: contururile citite de aplicație, diferite de la un font la altul.
+  await expect(dialog.locator('[data-camp="text-proba"]')).toHaveValue('LEMN');
+  await expect(dialog.locator('li[data-font] [data-proba="gata"] [data-testid="proba-font"]')).toHaveCount(2);
+  const proba = (id: string): Promise<string | null> => dialog.locator(`li[data-font="${id}"] [data-testid="proba-font"] path`).getAttribute('d');
+  const roboto = await proba(`f:${amprenta}`);
+  expect(roboto).not.toEqual(await proba(`f:${amprenta}.1`));
+  await dialog.locator('[data-camp="text-proba"]').fill('Ușă 7');
+  await expect.poll(() => proba(`f:${amprenta}`)).not.toEqual(roboto);
+  await expect(dialog.locator('[data-testid="proba-lipsa"]')).toHaveCount(0);
   // Prima față adăugată e aleasă în panou; „Folosește” alege a doua.
   await expect(page.locator('select[data-text="font"]')).toHaveValue(`f:${amprenta}`);
   await dialog.locator(`li[data-font="f:${amprenta}.1"] [data-buton="foloseste-font"]`).click();
@@ -102,7 +113,7 @@ test('o colecție TTC încărcată în Fonturile mele: textul cu fața a doua, d
   await page.getByTestId('dialog-fonturi').locator(`li[data-font="f:${amprenta}.1"] [data-buton="sterge-font"]`).click();
   await expect(page.getByTestId('dialog-fonturi').locator('li[data-font]')).toHaveCount(1);
   await page.click('[data-buton="inchide-fonturi"]');
-  await expect(page.getByTestId('text-motiv')).toHaveText('Fontul „Droid Serif” nu e pe calculatorul ăsta: încarcă-l (Fonturi…) ca să editezi textul; contururile lui rămân.');
+  await expect(page.getByTestId('text-motiv')).toHaveText('Fontul „Droid Serif” nu e pe calculatorul ăsta: încarcă-l (Adaugă fonturi…) ca să editezi textul; contururile lui rămân.');
   await expect(page.locator('select[data-text="font"]')).toHaveValue(`f:${amprenta}.1`);
   await expect(page.locator('select[data-text="font"] option:checked')).toHaveText('Droid Serif (lipsește aici)');
   await expect(page.locator('[data-text="aplica"]')).toBeDisabled();
@@ -136,6 +147,16 @@ test('fonturile sistemului (un queryLocalFonts de probă): permisiunea din clic,
   await dialog.locator('[data-fila-fonturi="sistem"]').click();
   await dialog.locator('[data-buton="permite-sistem"]').click();
   await expect(dialog.getByTestId('sistem-stare')).toHaveText('3 fonturi ale sistemului sunt în lista din panou.');
+  // Lista sistemului, cu proba fiecăruia: instanța Bold a fontului variabil spune de ce nu se poate folosi.
+  await expect(dialog.locator('[data-camp="text-proba"]')).toHaveValue('Ușă');
+  await expect(dialog.locator('li[data-font="s:DroidSerif"] [data-proba="gata"] [data-testid="proba-font"]')).toBeVisible();
+  await expect(dialog.locator('li[data-font="s:Roboto-Regular"] [data-proba="gata"] [data-testid="proba-font"]')).toBeVisible();
+  await expect(dialog.locator('li[data-font="s:Roboto-Bold"] [data-testid="proba-motiv"]'))
+    .toHaveText('„Bold” e o instanță a unui font variabil: deocamdată se citește doar instanța lui implicită. Alege alt stil.');
+  await dialog.locator('[data-camp="cauta-sistem"]').fill('droid');
+  await expect(dialog.locator('li[data-font]')).toHaveCount(1);
+  await dialog.locator('li[data-font="s:DroidSerif"] [data-buton="foloseste-font"]').click();
+  await expect(page.locator('select[data-text="font"]')).toHaveValue('s:DroidSerif');
   await page.click('[data-buton="inchide-fonturi"]');
   await expect(page.locator('select[data-text="font"] optgroup[label="Ale sistemului"] option')).toHaveText(['Droid Serif', 'Roboto Bold', 'Roboto Regular']);
   // Instanța Bold a fontului variabil: refuzată (contururile ar fi ale lui Regular).

@@ -35,8 +35,14 @@ export type ParametriText = {
   readonly aliniere: AliniereText;
 };
 
-/** O glifă așezată: caracterul, rândul (de la 0) și contururile ei, în mm, normalizate. */
-export type GlifaAsezata = { readonly caracter: string; readonly rand: number; readonly cai: readonly CaleCitita[] };
+/**
+ * O glifă așezată: caracterul, rândul (de la 0) și contururile ei, în mm, normalizate; plus locul ei pe rând (ADR 0108, textul
+ * pe curbă): originea `x` (după aliniere), avansul și indicele printre caracterele așezate ale rândului (și spațiile).
+ */
+export type GlifaAsezata = {
+  readonly caracter: string; readonly rand: number; readonly cai: readonly CaleCitita[];
+  readonly x: number; readonly avans: number; readonly indice: number;
+};
 
 export type RaportText = NumaratoareNormalizare & {
   /** Caracterele pe care fontul nu le are (nedesenate). */
@@ -46,7 +52,15 @@ export type RaportText = NumaratoareNormalizare & {
   'prea-mari': number;
 };
 
-export type TextAsezat = { readonly glife: readonly GlifaAsezata[]; readonly raport: RaportText; readonly caractereLipsa: readonly string[] };
+/** Un rând așezat: lățimea lui (de la începutul primului caracter la capătul ultimului), câte caractere are, mutarea alinierii. */
+export type RandAsezat = { readonly latime: number; readonly caractere: number; readonly dx: number };
+
+export type TextAsezat = {
+  readonly glife: readonly GlifaAsezata[]; readonly raport: RaportText; readonly caractereLipsa: readonly string[];
+  readonly linii: readonly RandAsezat[];
+  /** În mm: înălțimea rândului (cu distanța dintre rânduri) și coborârea fontului (negativă). */
+  readonly metrici: { readonly rand: number; readonly coborare: number };
+};
 
 type P = { readonly x: number; readonly y: number };
 
@@ -131,10 +145,11 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
   const inaltimeRand = inMm(font.urcare - font.coborare + font.spatiuRanduri) * p.interlinie;
   const randuri = p.continut.replace(/\r/g, '').split('\n');
   const glife: GlifaAsezata[] = [];
+  const linii: RandAsezat[] = [];
   const buget: BugetImport = { ramas: PLAFON_IMPORT.normalizare };
   randuri.forEach((rand, r) => {
     // Glifele rândului și locul fiecăreia (în unitățile fontului, plus spațierea în mm), apoi lățimea rândului.
-    const litere: { caracter: string; glifa: number; x: number }[] = [];
+    const litere: { caracter: string; glifa: number; x: number; avans: number }[] = [];
     let x = 0;
     let anterioara = -1;
     for (const caracter of rand) {
@@ -147,20 +162,22 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
         continue;
       }
       if (anterioara >= 0) x += inMm(font.crenare(anterioara, glifa)) + p.spatiere;
-      litere.push({ caracter, glifa, x });
-      x += inMm(font.avans(glifa));
+      const avans = inMm(font.avans(glifa));
+      litere.push({ caracter, glifa, x, avans });
+      x += avans;
       anterioara = glifa;
     }
     const latime = x;
     const dx = p.aliniere === 'stanga' ? 0 : p.aliniere === 'centru' ? -latime / 2 : -latime;
+    linii.push({ latime, caractere: litere.length, dx });
     const baza = -r * inaltimeRand;
-    for (const l of litere) {
+    litere.forEach((l, indice) => {
       const x0 = l.x + dx;
       const harta = (q: P): Punct => ({ x: x0 + inMm(q.x), y: baza + inMm(q.y) });
       const contururi = font.contururi(l.glifa);
       if (contururi === null) {
         raport['glife-stricate']++;
-        continue;
+        return;
       }
       const cai: CaleCitita[] = [];
       for (const c of contururi) {
@@ -178,9 +195,9 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
         else cai.push(inchisa.cale);
       }
       // Spațiul și celelalte glife fără contur nu lasă nimic de tăiat.
-      if (cai.length === 0) continue;
-      glife.push({ caracter: l.caracter, rand: r, cai: normalizeazaForma(cai, true, buget, raport) });
-    }
+      if (cai.length === 0) return;
+      glife.push({ caracter: l.caracter, rand: r, cai: normalizeazaForma(cai, true, buget, raport), x: x0, avans: l.avans, indice });
+    });
   });
-  return { glife, raport, caractereLipsa };
+  return { glife, raport, caractereLipsa, linii, metrici: { rand: inaltimeRand, coborare: inMm(font.coborare) } };
 }
