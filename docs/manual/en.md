@@ -369,7 +369,7 @@ bottom, a hint says what can be done or why the chosen shape cannot be edited.
 
 ## Alignment
 %% capitol: aliniere
-%% acopera: editare.aliniere, document.muta-instantele, aliniaza.stanga, aliniaza.centru-x, aliniaza.dreapta, aliniaza.sus, aliniaza.centru-y, aliniaza.jos, aliniaza.distribuie-x, aliniaza.distribuie-y
+%% acopera: editare.aliniere, document.muta-instantele, aliniaza.stanga, aliniaza.centru-x, aliniaza.dreapta, aliniaza.sus, aliniaza.centru-y, aliniaza.jos, aliniaza.centru-foaie, aliniaza.distribuie-x, aliniaza.distribuie-y
 
 The **Align** section of the bar extension is always there; its button folds it to the left and opens it again. The
 buttons **align** the boxes of the chosen shapes:
@@ -380,10 +380,12 @@ buttons **align** the boxes of the chosen shapes:
 | Align centres horizontally | the centres, on one vertical |
 | Align top / Align bottom | the top / bottom edges, on one line |
 | Align centres vertically | the centres, on one horizontal |
+| Centre on the sheet | the chosen shapes' centre in the sheet's centre, on both axes, in one click; several shapes move together, as a block |
 | Distribute horizontally / Distribute vertically | equal gaps between shapes (at least three) |
 
 With a single shape chosen, alignment places it against the sheet (for example, “Align left” takes it to the sheet's left
-edge). Several shapes are picked with the selection rectangle or with Shift + click (see [Selecting and editing](#selectie)).
+edge). **Centre on the sheet** always works against the sheet: it moves all the chosen shapes by the same amount, so their
+arrangement stays and their common box ends up in the middle of the sheet. Several shapes are picked with the selection rectangle or with Shift + click (see [Selecting and editing](#selectie)).
 Each alignment can be undone with `Ctrl+Z`.
 
 ## Importing SVG, DXF, PDF and AI

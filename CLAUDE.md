@@ -225,6 +225,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   aplicației pentru fonturile omului și ale sistemului, fețele de afișare Google înainte de descărcare (CSS API v2 din
   browser, `fonts.googleapis.com` / `fonts.gstatic.com` în CSP). Urmează în etapa 7: instanțele fonturilor variabile,
   fonturile cu o singură linie. **Pornirea 97,4 (cu ușa 100,9 / 110 kB), totalul 374,4 / 400.**
+  **Centrarea pe foaie (ADR 0110, felia 6.S↑)** gata pe 30.10, din notița 2 a owner-ului din 28.10: „Centrează pe foaie” în
+  secțiunea Aliniere (`centru-foaie` în `src/geom/aliniere.ts`): centrul cutiei comune a selecției în centrul foii, pe ambele
+  axe, toate formele cu aceeași deplasare (un bloc). Notițele 1 și 3 rămân la owner (istoricul cu excepții, alinierea ca bloc
+  pentru celelalte feluri, gruparea).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

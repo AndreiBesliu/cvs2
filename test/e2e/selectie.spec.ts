@@ -121,3 +121,22 @@ test('selecția multiplă se mută trăgând de una dintre forme; alinierea și 
   await expect(alese(page)).toHaveCount(3);
   await expect(page.locator('[data-aliniaza="distribuie-x"]')).toBeEnabled();
 });
+
+test('centrarea pe foaie (ADR 0110): mai multe forme se mută împreună, ca un bloc, cu cutia lor comună în centrul foii', async ({ page }) => {
+  await foaie(page);
+  // B (150–190 × 20–50) și C (230–270 × 20–50), prin fereastră: cutia comună 150–270 × 20–50, centrul (210, 35); foaia
+  // 300 × 200 are centrul (150, 100), deci amândouă se mută cu (−60, +65): B la (90, 85), C la (170, 85); A rămâne.
+  await trage(page, { x: 140, y: 10 }, { x: 280, y: 60 });
+  await expect(alese(page)).toHaveCount(2);
+  await page.locator('[data-aliniaza="centru-foaie"]').click();
+  expect(await xDupaClic(page, { x: 110, y: 100 })).toBe(90);
+  await expect(page.locator('[data-camp="pozitie-y"]')).toHaveValue('85');
+  expect(await xDupaClic(page, { x: 190, y: 100 })).toBe(170);
+  await expect(page.locator('[data-camp="pozitie-y"]')).toHaveValue('85');
+  expect(await xDupaClic(page, { x: 70, y: 50 })).toBe(20);
+  // Un singur pas de anulare: Ctrl+Z le pune pe amândouă la loc.
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+z');
+  expect(await xDupaClic(page, { x: 170, y: 35 })).toBe(150);
+  expect(await xDupaClic(page, { x: 250, y: 35 })).toBe(230);
+});

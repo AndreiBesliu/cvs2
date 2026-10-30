@@ -1,13 +1,14 @@
 /**
  * Alinierea și distribuirea (ADR 0050 §3), pure, pe cutiile lucrurilor alese: deplasarea fiecăruia (doar cele care se
  * mișcă). Referința alinierii e cutia lor comună, sau foaia când e unul singur; distribuirea egalizează golurile dintre
- * ele, de la trei în sus, cu primul și ultimul pe loc.
+ * ele, de la trei în sus, cu primul și ultimul pe loc. Centrarea pe foaie (ADR 0110) le mută pe toate cu aceeași
+ * deplasare, ca un bloc, cât centrul cutiei lor comune să ajungă în centrul foii, pe ambele axe.
  */
 import type { Cutie } from './cutie.ts';
 
-export type FelAliniere = 'stanga' | 'centru-x' | 'dreapta' | 'jos' | 'centru-y' | 'sus' | 'distribuie-x' | 'distribuie-y';
+export type FelAliniere = 'stanga' | 'centru-x' | 'dreapta' | 'jos' | 'centru-y' | 'sus' | 'centru-foaie' | 'distribuie-x' | 'distribuie-y';
 
-export const FELURI_ALINIERE: readonly FelAliniere[] = ['stanga', 'centru-x', 'dreapta', 'sus', 'centru-y', 'jos', 'distribuie-x', 'distribuie-y'];
+export const FELURI_ALINIERE: readonly FelAliniere[] = ['stanga', 'centru-x', 'dreapta', 'sus', 'centru-y', 'jos', 'centru-foaie', 'distribuie-x', 'distribuie-y'];
 
 export interface Ales {
   readonly id: string;
@@ -59,7 +60,13 @@ export function aliniaza(alese: readonly Ales[], fel: FelAliniere, foaie: Cutie)
   if (alese.length < minimAliniere(fel)) return [];
   let rez: Deplasare[];
   if (fel === 'distribuie-x' || fel === 'distribuie-y') rez = distribuie(alese, fel === 'distribuie-x' ? 'x' : 'y');
-  else {
+  else if (fel === 'centru-foaie') {
+    // Un bloc: aceeași deplasare pentru toate, deci așezarea dintre ele rămâne (alinierea fiecăreia le-ar suprapune).
+    const u = uniune(alese);
+    const dx = (foaie.minX + foaie.maxX) / 2 - (u.minX + u.maxX) / 2;
+    const dy = (foaie.minY + foaie.maxY) / 2 - (u.minY + u.maxY) / 2;
+    rez = alese.map(({ id }) => ({ id, dx, dy }));
+  } else {
     const r = alese.length === 1 ? foaie : uniune(alese);
     rez = alese.map(({ id, cutie: c }) => {
       switch (fel) {

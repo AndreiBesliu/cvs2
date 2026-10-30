@@ -935,7 +935,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             </button>
             {stransa ? null : FELURI_ALINIERE.map((fel) => {
               const destule = selectie.length >= minimAliniere(fel) && !p.doarCitire;
-              const titlu = `${t(`editare.aliniaza.${fel}`)}${selectie.length === 1 && !fel.startsWith('distribuie') ? ` ${t('editare.aliniaza.fata-de-foaie')}` : ''}`;
+              const titlu = `${t(`editare.aliniaza.${fel}`)}${selectie.length === 1 && !fel.startsWith('distribuie') && fel !== 'centru-foaie' ? ` ${t('editare.aliniaza.fata-de-foaie')}` : ''}`;
               return (
                 <button key={fel} type="button" className="aliniaza" disabled={!destule} title={titlu} aria-label={titlu} data-aliniaza={fel}
                   onClick={() => { aliniere(fel); }}>
@@ -1227,6 +1227,8 @@ function Icona({ fel }: { readonly fel: FelAliniere }): ReactElement {
     sus: <><line x1="1" y1="2" x2="15" y2="2" /><rect x="3" y="3" width="3" height="10" /><rect x="10" y="3" width="3" height="6" /></>,
     'centru-y': <><line x1="1" y1="8" x2="15" y2="8" /><rect x="3" y="2" width="3" height="12" /><rect x="10" y="5" width="3" height="6" /></>,
     jos: <><line x1="1" y1="14" x2="15" y2="14" /><rect x="3" y="3" width="3" height="10" /><rect x="10" y="7" width="3" height="6" /></>,
+    // Foaia (conturul) cu blocul în mijlocul ei.
+    'centru-foaie': <><rect className="contur" x="1.5" y="2.5" width="13" height="11" /><rect x="5" y="6" width="6" height="4" /></>,
     'distribuie-x': <><rect x="1" y="4" width="3" height="8" /><rect x="6.5" y="4" width="3" height="8" /><rect x="12" y="4" width="3" height="8" /></>,
     'distribuie-y': <><rect x="4" y="1" width="8" height="3" /><rect x="4" y="6.5" width="8" height="3" /><rect x="4" y="12" width="8" height="3" /></>,
   };

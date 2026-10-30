@@ -13,6 +13,7 @@ export const enEditare = {
   'editare.aliniaza.sus': 'Align top',
   'editare.aliniaza.centru-y': 'Align centres vertically',
   'editare.aliniaza.jos': 'Align bottom',
+  'editare.aliniaza.centru-foaie': 'Centre on the sheet (both axes; several shapes move together, as a block)',
   'editare.aliniaza.distribuie-x': 'Distribute horizontally (equal gaps)',
   'editare.aliniaza.distribuie-y': 'Distribute vertically (equal gaps)',
   'editare.aliniaza.fata-de-foaie': '(one shape: against the sheet)',
