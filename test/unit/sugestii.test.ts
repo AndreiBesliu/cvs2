@@ -89,7 +89,8 @@ test('poza (ADR 0110): tipul după semnătură, nu după nume; base64 strict; pl
   assert.equal(tipPoza(new Uint8Array([0xff, 0xd8, 0xff, 0xdb])), 'image/jpeg');
   assert.equal(tipPoza(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])), 'image/png');
   assert.equal(tipPoza(t8('RIFF\u0000\u0000\u0000\u0000WEBPVP8 ')), 'image/webp');
-  const rele = [new Uint8Array(), new Uint8Array([0xff, 0xd8]), new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a]), t8('GIF89a'), t8('RIFF\u0000\u0000\u0000\u0000WAVE')];
+  // FF D8 fără al treilea FF nu e JPEG (marcajul SOI e urmat de alt marcaj, care începe cu FF).
+  const rele = [new Uint8Array(), new Uint8Array([0xff, 0xd8]), new Uint8Array([0xff, 0xd8, 0x00, 0x10]), new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a]), t8('GIF89a'), t8('RIFF\u0000\u0000\u0000\u0000WAVE')];
   for (const o of rele) assert.equal(tipPoza(o), null, String(o));
   for (const s of ['', 'QQ==', 'QUI=', 'QUJD', 'QUJDRA==']) assert.ok(RE_BASE64.test(s), s);
   for (const s of ['Q', 'QQ', 'QQ=', 'Q===', 'QU JD', 'QUJD\n', 'QU-_', 'data:image/png;base64,QUJD', 'QQ==QQ==']) assert.ok(!RE_BASE64.test(s), s);
