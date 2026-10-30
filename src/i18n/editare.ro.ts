@@ -14,6 +14,7 @@ export const roEditare = {
   'editare.aliniaza.sus': 'Aliniază sus',
   'editare.aliniaza.centru-y': 'Aliniază centrele pe verticală',
   'editare.aliniaza.jos': 'Aliniază jos',
+  'editare.aliniaza.centru-foaie': 'Centrează pe foaie (pe ambele axe; mai multe forme se mută împreună, ca un bloc)',
   'editare.aliniaza.distribuie-x': 'Distribuie pe orizontală (goluri egale)',
   'editare.aliniaza.distribuie-y': 'Distribuie pe verticală (goluri egale)',
   'editare.aliniaza.fata-de-foaie': '(o singură formă: față de foaie)',

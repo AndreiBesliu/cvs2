@@ -129,15 +129,21 @@ test('lipirea mutării de un ghidaj (Alt o oprește), alinierea față de foaie,
   // Alinierea unei singure forme, față de foaie (300 × 200): centrul pe orizontală, apoi sus. Butoanele stau în extensia
   // barei de sus, la vedere (ADR 0053); secțiunea se strânge spre stânga și se deschide la loc, iar extensia rămâne.
   const ext = page.getByTestId('extensie-aliniere');
-  await expect(ext.locator('[data-aliniaza]')).toHaveCount(8);
+  await expect(ext.locator('[data-aliniaza]')).toHaveCount(9);
   await page.locator('[data-editare="aliniere"]').click();
   await expect(ext).toHaveAttribute('data-stransa', 'true');
   await expect(ext.locator('[data-aliniaza]')).toHaveCount(0);
   await expect(page.locator('#loc-extensie')).toBeVisible();
   await page.locator('[data-editare="aliniere"]').click();
-  await expect(ext.locator('[data-aliniaza]')).toHaveCount(8);
+  await expect(ext.locator('[data-aliniaza]')).toHaveCount(9);
   await page.locator('[data-aliniaza="centru-x"]').click();
   await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 20.00']);
+  await page.locator('[data-aliniaza="sus"]').click();
+  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 140.00']);
+  // Centrarea pe foaie (ADR 0110), într-un clic, pe ambele axe: 100 × 60 pe 300 × 200 → colțul în (100, 70); apoi iar sus.
+  await expect(page.locator('[data-aliniaza="centru-foaie"]')).toHaveAttribute('title', 'Centrează pe foaie (pe ambele axe; mai multe forme se mută împreună, ca un bloc)');
+  await page.locator('[data-aliniaza="centru-foaie"]').click();
+  await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 70.00']);
   await page.locator('[data-aliniaza="sus"]').click();
   await expect(randuri(page)).toHaveText(['dreptunghi 100.00 × 60.00 la X 100.00, Y 140.00']);
   await expect(page.locator('[data-aliniaza="distribuie-x"]')).toBeDisabled();

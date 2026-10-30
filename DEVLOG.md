@@ -3778,3 +3778,17 @@ de teste, 0 picate; 8 sărite), build-ul determinist (211 fișiere; pornirea 97,
 actualizate. Verificat: `sugestii` răspunde fără App Check cu 401 JSON („Unauthenticated”), ca `fonturiGoogle` (publică la
 gazdă, refuzul e al ei); `/admin` pe `7d0ea4033da8`, fără erori în consolă. Fila Sugestii însăși n-am văzut-o pe test: cere
 logarea owner-ului, pe care asistentul n-o face; e probată pe emulatoare (e2e-ul `/admin`).
+
+## 2026-10-30 — Centrarea pe foaie (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (după pauză; felia aleasă din notițele owner-ului din 28.10, notița 2: „Buton de centrare un plansa, nu
+doar centrare orizontala si apoi verticala.”; `node scripts/sugestii.ts`: nicio sugestie pe test).
+**Started:** 30.10, 07:14. Felia **6.S↑**, fără mașină și fără agenți: „Centrează pe foaie” în secțiunea Aliniere, centrul
+cutiei comune a selecției în centrul foii, pe ambele axe, într-un clic; mai multe forme ca un bloc (aceeași deplasare).
+**Completed:** 30.10, 08:05. ADR 0110. `centru-foaie` în `src/geom/aliniere.ts` (blocul: aceeași deplasare pentru toate,
+referința mereu foaia), butonul în secțiunea Aliniere a extensiei, cu iconița lui (foaia cu blocul în mijloc), eticheta în
+ro / en, capitolul din manual. Probele întâi: valorile pe hârtie (o formă, două ca un bloc, blocul deja centrat, o axă, ieșită
+din foaie, o foaie care nu pleacă din origine), e2e-ul (o formă într-un clic; două ca un bloc, cu Ctrl+Z). Mutațiile: 7 / 7.
+Porțile: compilatorul, importurile, licențele, traducerile (469, 0 lipsă), suita unitară (7 780, 0 picate; 8 sărite), build-ul
+determinist (212 fișiere), e2e-ul (272; unul reluat singur după un `EBUSY` al Drive-ului pe artefactele Playwright),
+emulatoarele (46 + 15). Pornirea 97,4 neschimbată (cu ușa 100,9 / 110 kB); totalul 374,4 → 374,5 / 400.

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { aliniaza, minimAliniere, type Ales } from '../../src/geom/aliniere.ts';
 import { lipeste, tinteCutie, tinteDin, tintePunct, type TintaLipire } from '../../src/geom/lipire.ts';
 
-/** Lipirea și alinierea (ADR 0050 §2–§3), pure, cu valori pe hârtie. */
+/** Lipirea și alinierea (ADR 0050 §2–§3), cu centrarea pe foaie (ADR 0110), pure, cu valori pe hârtie. */
 
 const C = (minX: number, minY: number, maxX: number, maxY: number) => ({ minX, minY, maxX, maxY });
 const FOAIE = C(0, 0, 300, 200);
@@ -94,6 +94,23 @@ test('un singur lucru se aliniază față de foaie; prea puține pentru distribu
   assert.deepEqual(aliniaza([a('p', 0, 0, 1, 1), a('q', 5, 0, 6, 1)], 'distribuie-x', FOAIE), []);
   assert.equal(minimAliniere('distribuie-y'), 3);
   assert.equal(minimAliniere('stanga'), 1);
+});
+
+test('centrarea pe foaie (ADR 0110): o formă, pe ambele axe dintr-o dată; mai multe, ca un bloc (aceeași deplasare)', () => {
+  // Foaia 300 × 200, centrul (150, 100). O formă 20 × 10 din (10, 10): centrul (20, 15) → (150, 100).
+  assert.deepEqual(aliniaza([a('p', 10, 10, 30, 20)], 'centru-foaie', FOAIE), [{ id: 'p', dx: 130, dy: 85 }]);
+  // Două forme: cutia comună (0, 0)–(60, 40), centrul (30, 20) → amândouă cu (120, 80); așezarea dintre ele rămâne.
+  assert.deepEqual(aliniaza([a('p', 0, 0, 10, 10), a('q', 40, 20, 60, 40)], 'centru-foaie', FOAIE),
+    [{ id: 'p', dx: 120, dy: 80 }, { id: 'q', dx: 120, dy: 80 }]);
+  // Un bloc deja centrat nu se mișcă, deși formele lui nu sunt fiecare în centru.
+  assert.deepEqual(aliniaza([a('p', 100, 80, 120, 90), a('q', 180, 110, 200, 120)], 'centru-foaie', FOAIE), []);
+  // Pe o singură axă deja centrat: doar cealaltă se schimbă; ieșit din foaie: tot în centru.
+  assert.deepEqual(aliniaza([a('p', 140, 0, 160, 10)], 'centru-foaie', FOAIE), [{ id: 'p', dx: 0, dy: 95 }]);
+  assert.deepEqual(aliniaza([a('p', -500, 300, -400, 400)], 'centru-foaie', FOAIE), [{ id: 'p', dx: 600, dy: -250 }]);
+  // Pe o foaie care nu pleacă din origine, centrul ei.
+  assert.deepEqual(aliniaza([a('p', 0, 0, 10, 10)], 'centru-foaie', C(100, 50, 200, 150)), [{ id: 'p', dx: 145, dy: 95 }]);
+  assert.equal(minimAliniere('centru-foaie'), 1);
+  assert.deepEqual(aliniaza([], 'centru-foaie', FOAIE), []);
 });
 
 test('distribuirea: golurile egale, primul și ultimul pe loc, după poziție (nu după ordinea alegerii)', () => {
