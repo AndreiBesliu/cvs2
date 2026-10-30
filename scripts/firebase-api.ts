@@ -15,15 +15,28 @@ export interface Raspuns {
 
 /** Cât folosim din `apiv2.Client` al firebase-tools: un status ≥ 400 aruncă, afară de `resolveOnHTTPError: true`. */
 export interface ClientApi {
-  get(url: string, optiuni?: { resolveOnHTTPError?: boolean }): Promise<Raspuns>;
+  get(url: string, optiuni?: { queryParams?: URLSearchParams; resolveOnHTTPError?: boolean }): Promise<Raspuns>;
   patch(url: string, corp: unknown, optiuni?: { queryParams?: URLSearchParams; resolveOnHTTPError?: boolean }): Promise<Raspuns>;
 }
 
 type Cont = { user: unknown; tokens: unknown } | undefined;
 
+/**
+ * Pachetele globale: `npm root -g`; pe Windows fără npm în instalarea Node (mașina owner-ului, unde `npm` cade la pornire),
+ * dosarul implicit al lui npm, `%APPDATA%\npm\node_modules`, acolo unde stă și `firebase` din PATH.
+ */
+function radacinaGlobala(): string {
+  try {
+    return execFileSync('npm', ['root', '-g'], { encoding: 'utf8', shell: process.platform === 'win32', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  } catch (e) {
+    const appData = process.env['APPDATA'];
+    if (process.platform !== 'win32' || !appData) throw e;
+    return join(appData, 'npm', 'node_modules');
+  }
+}
+
 export async function clientFirebaseTools(urlPrefix: string): Promise<ClientApi> {
-  const radacina = execFileSync('npm', ['root', '-g'], { encoding: 'utf8', shell: process.platform === 'win32' }).trim();
-  const lib = join(radacina, 'firebase-tools', 'lib');
+  const lib = join(radacinaGlobala(), 'firebase-tools', 'lib');
   const require = createRequire(join(lib, 'index.js'));
   const { requireAuth } = require(join(lib, 'requireAuth')) as { requireAuth: (o: unknown) => Promise<unknown> };
   const { getGlobalDefaultAccount } = require(join(lib, 'auth')) as { getGlobalDefaultAccount: () => Cont };

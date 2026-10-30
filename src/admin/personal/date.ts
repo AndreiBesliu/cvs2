@@ -65,12 +65,16 @@ export function numeRol(rol: string | null, roluri: readonly RolCustom[]): strin
   return roluri.find((r) => r.id === rol)?.nume ?? null;
 }
 
-/** Ce filă cere ce: Erori, Diagnoza, documentația (Roadmap și Documentație), Personal (doar owner-ul), Cont (oricine). */
-const CERE: Readonly<Record<Fila, Permisiune | 'owner' | null>> = {
-  erori: 'erori.citeste',
-  diagnoza: 'diagnoza.citeste',
-  roadmap: 'documentatie.citeste',
-  documentatie: 'documentatie.citeste',
+/**
+ * Ce filă cere ce (oricare din permisiunile listate): Erori, Diagnoza, documentația (Roadmap și Documentație), Sugestii
+ * (scrierea sau citirea tuturor, ADR 0107), Personal (doar owner-ul), Cont (oricine).
+ */
+const CERE: Readonly<Record<Fila, readonly Permisiune[] | 'owner' | null>> = {
+  erori: ['erori.citeste'],
+  diagnoza: ['diagnoza.citeste'],
+  roadmap: ['documentatie.citeste'],
+  documentatie: ['documentatie.citeste'],
+  sugestii: ['sugestii.scrie', 'sugestii.citeste'],
   personal: 'owner',
   cont: null,
 };
@@ -79,6 +83,6 @@ const CERE: Readonly<Record<Fila, Permisiune | 'owner' | null>> = {
 export function fileVizibile(owner: boolean, permisiuni: ReadonlySet<Permisiune>): Fila[] {
   return FILE.filter((f) => {
     const c = CERE[f];
-    return c === null || (c === 'owner' ? owner : owner || permisiuni.has(c));
+    return c === null || (c === 'owner' ? owner : owner || c.some((p) => permisiuni.has(p)));
   });
 }

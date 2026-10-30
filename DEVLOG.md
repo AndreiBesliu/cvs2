@@ -3703,6 +3703,38 @@ Serif”, `f:58a99f6327be17b5`, lista cu sursa și mărimea. Fonturile sistemulu
 `local-fonts` e refuzată din oficiu, iar fila spune cum se permite; butonul „Permite accesul” rămâne de încercat în Chrome / Edge.
 0 erori în jurnal și în consolă.
 
+## 2026-10-29 — Sugestiile personalului în /admin (Model: Claude Opus 5.5)
+
+**Prompt:** „Vreau sa cream si sistemul de account pentru useri, inclusiv admini, scopul acum imediat este pentru admini, si, sa
+avem un sistem de feedback unde ei pot nota sugestii, iar eu sa pot decide ce sa implementam” (28.10, în timpul feliei 6.R↑;
+planul, în raportul ei; ordinea, „Întâi PDF-ul”), apoi, pe 29.10, „acum poti sa deschizi subtask/session?”: sesiunea principală
+a pornit o sesiune paralelă cu brief-ul feliei (fila Sugestii, o permisiune nouă din catalog, decizia owner-ului cu o notă,
+regulile probate pe emulator, auditul ca la personal, ro + en, ADR 0107; doar pe ramura ei, fără publicare).
+**Started:** 29.10, 19:35. Felia **14.B↑**, fără mașină și fără agenți, într-un worktree în afara Drive-ului
+(`C:\Users\besli\cncvs2-lucru\sugestii`, ramura `wip/14.B-sugestii`, din `bddd84c`), cât sesiunea principală publica 7.2↑. Planul
+din 6.R↑ („toți văd lista”; stările acceptată, amânată, respinsă, în lucru, făcută; tipul) și brief-ul („își vede sugestiile”;
+„de făcut / mai târziu / respinsă”; zona) nu lăsau o întrebare care să oprească lucrul: vizibilitatea o aleg bifele owner-ului pe
+fiecare rol (două permisiuni), stările sunt cele din plan, iar tipul și zona intră amândouă.
+**Completed:** 29.10, 21:35. ADR 0107. Catalogul: `sugestii.scrie` și `sugestii.citeste`; decizia, doar a owner-ului. Callable-ul
+`sugestii` (`functions/src/sugestii/actiuni.ts`): scrie, editeaza, decide, cu drepturile și auditul în tranzacție, pe versiunea
+văzută, cel mult 20 pe om pe zi UTC (`limiteSugestii/{uid}`); câmpurile curățate de aceleași funcții ca în pagină
+(`shared/sugestii.ts`). Regulile: doar citirea (toate, sau doar ale autorului), fără index compus (lista autorului se ordonează în
+pagină). Fila Sugestii (`src/admin/sugestii/`): formularul (tipul ales de om, fără implicit), filtrele pe stare cu numărul lor,
+„Doar ale mele”, decizia cu nota; „Editează” și „Decide” deschid formularul pe versiunea de atunci. Scriptul asistentului:
+`node scripts/sugestii.ts` (REST, cu identitatea `firebase login`); `clientFirebaseTools` ia `firebase-tools` din dosarul global
+al lui npm (`%APPDATA%`) când npm lipsește din instalarea Node, ca pe mașina asta. Citit pe test, doar citire: „0 în total”
+(colecția vine cu publicarea). Găsit pe drum: e2e-ul a prins formularul deciziei rămas deschis pe versiunea veche după
+„Reîncarcă”; acum se închide, iar eroarea veche nu mai trece în formularul nou. Mutațiile: **39 / 39** (21 pe emulatoare, pe
+reguli și pe server; 15 pe probele unitare; 3 pe e2e, tot pe emulatoare), cu restaurarea verificată și arborele identic cu HEAD
+la final; una a trecut întâi: editarea care schimbă doar zona (probă nouă: fiecare câmp schimbat singur e o schimbare). Porțile
+locale: compilatorul (aplicația și funcțiile), importurile, licențele, traducerile (0 lipsă), suita unitară (7 752 de teste, 0
+picate, 8 sărite: logourile owner-ului), build-ul determinist, e2e-ul în Edge (270; `rest.spec.ts` a picat întâi cu `EBUSY` la
+citirea unei descărcări și a trecut la reluare), emulatoarele (funcțiile și regulile 46, e2e-ul `/admin` 15). Cât portul 4173 l-a
+ținut altă sesiune, e2e-ul a rulat pe 4183 (unde pică doar probele raportorului, care cer `http://localhost:4173/`); rularea
+finală e pe 4173. Emulatoarele, împărțite cu sesiunea textului pe curbă: rulările s-au anunțat una alteia, pe rând. Pornirea
+neschimbată (97,4; cu ușa 100,9 / 110 kB), totalul 370,5 / 400; `/admin` 190,2 → 194,2 / 200 kB (strâmt: ~5,8 kB).
+Nepublicată: fuziunea în `main` și publicarea le decide owner-ul.
+
 ## 2026-10-29 — Etapa 7: textul pe curbă (Model: Claude Opus 5.5)
 
 **Prompt:** „Continua tu ce aveai la rand” (după raportul feliei 7.2↑, care recomanda textul pe curbă).
@@ -3728,6 +3760,24 @@ Roboto Slab, Regular → Bold, cu fețele lui); textul de probă cu diacritice (
 latin-ext, chirilicele nu; Fonturile mele (Droid Serif, Lobster) desenate din contururi. Prima publicare avea
 previzualizarea din panoul textului strânsă la o dungă: a doua trecere a reparat-o (64 px, fără bară laterală, panoul se
 derulează). 0 erori în jurnal și în consolă.
+
+## 2026-10-29 — Unirea sugestiilor în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (la întrebarea: unesc ramura `wip/14.B-sugestii` în `main`, cu cele 3 conflicte de documente
+rezolvate păstrând ambele rânduri, cu porțile și publicarea pe test?).
+**Started:** 29.10, 21:53. **Completed:** 29.10, 22:27. Commit-ul de unire `7d0ea40`: ramura 14.B↑ (80be4b0, f4f3a14,
+ebfa9e6), lucrată de sesiunea paralelă în worktree-ul ei (`C:\Users\besli\cncvs2-lucru\sugestii`), fără să atingă `main`.
+Conflictele, doar în documente (DEVLOG, indexul ADR, jurnalul fișei etapei 3), rezolvate cu ambele părți, în ordinea
+pornirii (14.B↑ la 19:35, 7.3↑ la 19:56). Citite înainte: regulile noi (o sugestie se citește cu `sugestii.citeste` sau, cu
+`sugestii.scrie`, doar de autorul ei; nicio scriere din client), callable-ul `sugestii` (App Check, drepturile și auditul în
+tranzacție), scripturile pentru asistent (doar citire); în diff nicio cheie reală (doar cele false ale emulatorului). Porțile
+pe rezultat: compilatorul (aplicația și funcțiile), importurile, licențele, traducerile (467, 0 lipsă), suita unitară (7 779
+de teste, 0 picate; 8 sărite), build-ul determinist (211 fișiere; pornirea 97,4 / 110 kB, totalul 374,4 / 400, `/admin` 194,2
+/ 200), e2e-ul (271), emulatoarele (funcțiile 46, `/admin` 15). CI-ul rapid verde (run 40947228894).
+**Publicat pe test (29.10, 22:25)**, din workflow (run 40948486818, `7d0ea40`): regulile, funcția `sugestii` creată, celelalte
+actualizate. Verificat: `sugestii` răspunde fără App Check cu 401 JSON („Unauthenticated”), ca `fonturiGoogle` (publică la
+gazdă, refuzul e al ei); `/admin` pe `7d0ea4033da8`, fără erori în consolă. Fila Sugestii însăși n-am văzut-o pe test: cere
+logarea owner-ului, pe care asistentul n-o face; e probată pe emulatoare (e2e-ul `/admin`).
 
 ## 2026-10-29 — Etapa 4: calculul CAM în bazinul de workere (Model: Claude Opus 5.5)
 

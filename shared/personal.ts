@@ -7,9 +7,12 @@
 
 /**
  * Catalogul: fiecare permisiune o verifică regulile sau serverul, deci una nouă e o schimbare de cod, cu proba ei.
- * Administrarea personalului (oamenii, rolurile, invitațiile, conturile) nu e în catalog: e doar a owner-ului.
+ * Administrarea personalului (oamenii, rolurile, invitațiile, conturile) nu e în catalog: e doar a owner-ului; la fel
+ * decizia pe sugestii (ADR 0107): `sugestii.scrie` dă scrierea și sugestiile proprii, `sugestii.citeste` pe toate.
  */
-export const PERMISIUNI = ['erori.citeste', 'erori.rezolva', 'diagnoza.citeste', 'audit.citeste', 'documentatie.citeste'] as const;
+export const PERMISIUNI = [
+  'erori.citeste', 'erori.rezolva', 'diagnoza.citeste', 'audit.citeste', 'documentatie.citeste', 'sugestii.scrie', 'sugestii.citeste',
+] as const;
 export type Permisiune = (typeof PERMISIUNI)[number];
 
 /** Rolul fix: are tot, administrează personalul; personalul nu rămâne niciodată fără el. */
