@@ -357,4 +357,13 @@ export const roAdmin = {
   'admin.sug.nota': 'Nota (o vede autorul)',
   'admin.sug.salveaza-decizia': 'Salvează decizia',
   'admin.sug.decisa': '„{titlu}”: {stare}.',
+  'admin.sug.poza-din-editor': 'Poza planșei, din editor ({ora})',
+  'admin.sug.poza-alt-noua': 'Poza planșei care pleacă odată cu sugestia',
+  'admin.sug.poza-scoate': 'Scoate poza',
+  'admin.sug.poza-arata': 'Poza planșei',
+  'admin.sug.poza-ascunde': 'Ascunde poza',
+  'admin.sug.poza-se-incarca': 'Se încarcă poza…',
+  'admin.sug.poza-citire': 'Poza nu s-a putut citi: {motiv}',
+  'admin.sug.poza-lipsa': 'documentul pozei n-are imaginea',
+  'admin.sug.poza-alt': 'Poza planșei pentru „{titlu}”',
 } as const satisfies DictionarRoPentru<typeof enAdmin>;

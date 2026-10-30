@@ -699,7 +699,7 @@ rămasă cum ai rotit-o. `Esc`, butonul 3D sau o unealtă de desen întorc la p�
 
 ## Testul pas cu pas
 %% capitol: test
-%% acopera: editare.test
+%% acopera: editare.test, editare.sugestie
 
 Pe instanța de test, butonul **Test** din extensia barei, lângă „?” (titlul lui: „Testul pas cu pas”), deschide testul
 uneltelor de desen într-un panou plutitor, pe care îl muți trăgând de titlu și îl strângi cu ▾. Fiecare pas spune ce faci și
@@ -707,6 +707,11 @@ ce trebuie să vezi; marchezi **Bine**, **Nu** sau **Sărit** și poți scrie o 
 (desenul, riglele, ghidajele, mânerele, traseul) în browser: nimic nu pleacă pe server. **Descarcă raportul** scrie un singur
 fișier HTML, cu rezultatele, notele și pozele, de trimis mai departe. Lista de sus duce la orice pas. Rezultatele rămân și
 după reîncărcare; **Începe din nou** le șterge, după o confirmare.
+
+Tot acolo, butonul **Sugestie** (titlul lui: „Sugestie pentru owner, cu poza planșei”) face poza planșei, o ține în browser
+și deschide pagina `/admin` pe fila **Sugestii**, într-o filă nouă. Intri cu contul tău de personal și scrii sugestia, iar
+poza pleacă odată cu ea; înainte s-o trimiți, o poți scoate. Dacă browserul nu deschide fila, un mesaj îți dă legătura spre
+ea.
 
 ## Scurtăturile
 %% capitol: scurtaturi

@@ -64,6 +64,30 @@ export function curataText(x: unknown, max: number): string | null {
 /** Ziua UTC a unui moment (`2026-10-29`): cheia contorului zilnic. */
 export const ziUtc = (d: Date): string => d.toISOString().slice(0, 10);
 
+/**
+ * Poza planșei atașată unei sugestii (ADR 0110): adusă din editor, trimisă la scriere, ținută în documentul ei
+ * (`sugestii/{id}/poze/plansa`), lângă sugestie. Tipul se citește din primii octeți, nu din ce spune cererea.
+ */
+export const COLECTIE_POZE = 'poze';
+export const ID_POZA = 'plansa';
+export const POZA_MAX_OCTETI = 400 * 1024;
+/** Cât are o poză la plafon, în base64 (4 caractere pe 3 octeți). */
+export const POZA_MAX_BASE64 = Math.ceil(POZA_MAX_OCTETI / 3) * 4;
+export type TipPoza = 'image/jpeg' | 'image/png' | 'image/webp';
+
+/** Base64 strict: alfabetul standard, umplutura doar la capăt, lungimea multiplu de 4. */
+export const RE_BASE64 = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+
+const text4 = (o: Uint8Array, de: number): string => String.fromCharCode(...o.subarray(de, de + 4));
+
+/** Pură: tipul unei imagini după semnătura ei (JPEG, PNG, WebP); altceva = null. */
+export function tipPoza(o: Uint8Array): TipPoza | null {
+  if (o.length >= 3 && o[0] === 0xff && o[1] === 0xd8 && o[2] === 0xff) return 'image/jpeg';
+  if (o.length >= 8 && [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every((b, i) => o[i] === b)) return 'image/png';
+  if (o.length >= 12 && text4(o, 0) === 'RIFF' && text4(o, 8) === 'WEBP') return 'image/webp';
+  return null;
+}
+
 /** Conținutul unei sugestii, așa cum îl scrie autorul. */
 export interface ContinutSugestie {
   readonly titlu: string;
@@ -72,9 +96,9 @@ export interface ContinutSugestie {
   readonly zona: ZonaSugestie | null;
 }
 
-/** Cererile callable-ului `sugestii` (ADR 0107). */
+/** Cererile callable-ului `sugestii` (ADR 0107; poza, opțională, doar la scriere: ADR 0110, în base64). */
 export type CerereSugestie =
-  | ({ readonly actiune: 'scrie' } & ContinutSugestie)
+  | ({ readonly actiune: 'scrie'; readonly poza?: string } & ContinutSugestie)
   | ({ readonly actiune: 'editeaza'; readonly id: string; readonly versiune: number } & ContinutSugestie)
   | { readonly actiune: 'decide'; readonly id: string; readonly versiune: number; readonly stare: StareSugestie; readonly nota: string };
 

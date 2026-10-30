@@ -2,8 +2,9 @@ import { Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { COLECTII_PERSONAL, normalizeazaEmail } from '../../../shared/personal.ts';
 import {
-  COLECTIE_LIMITE_SUGESTII, COLECTIE_SUGESTII, curataText, curataTitlu, DESCRIERE_MAX, esteIdSugestie, esteStare, esteTip,
-  esteVersiune, esteZona, NOTA_MAX, SUGESTII_PE_ZI, TITLU_MAX, ziUtc, type ContinutSugestie, type RaspunsSugestie,
+  COLECTIE_LIMITE_SUGESTII, COLECTIE_POZE, COLECTIE_SUGESTII, curataText, curataTitlu, DESCRIERE_MAX, esteIdSugestie, esteStare,
+  esteTip, esteVersiune, esteZona, ID_POZA, NOTA_MAX, POZA_MAX_BASE64, POZA_MAX_OCTETI, RE_BASE64, SUGESTII_PE_ZI, TITLU_MAX, tipPoza,
+  ziUtc, type ContinutSugestie, type RaspunsSugestie, type TipPoza,
 } from '../../../shared/sugestii.ts';
 import { scrieAudit } from '../audit.ts';
 import { logServerError } from '../erori/jurnal.ts';
@@ -40,6 +41,20 @@ function continutDin(d: Record<string, unknown>): ContinutSugestie {
   return { titlu, descriere, tip, zona };
 }
 
+/**
+ * Poza planșei din cerere (ADR 0110), opțională: base64 strict, cel mult 400 kB, o imagine JPEG, PNG sau WebP după
+ * semnătura ei. Lipsa ei (sau null) = fără poză.
+ */
+function pozaDin(p: unknown): { readonly octeti: Buffer; readonly tip: TipPoza } | null {
+  if (p === undefined || p === null) return null;
+  if (typeof p !== 'string' || p.length > POZA_MAX_BASE64 || !RE_BASE64.test(p)) throw argument('poza: base64, cel mult 400 kB');
+  const octeti = Buffer.from(p, 'base64');
+  if (octeti.length === 0 || octeti.length > POZA_MAX_OCTETI) throw argument('poza: cel mult 400 kB');
+  const tip = tipPoza(octeti);
+  if (tip === null) throw argument('poza: o imagine JPEG, PNG sau WebP');
+  return { octeti, tip };
+}
+
 /** Id-ul și versiunea văzută, cerute de editare și de decizie. */
 function tinta(d: Record<string, unknown>): { readonly id: string; readonly versiune: number } {
   const id = d['id'];
@@ -51,6 +66,7 @@ function tinta(d: Record<string, unknown>): { readonly id: string; readonly vers
 
 async function scrie(db: Firestore, uid: string, token: TokenSugestie | null, d: Record<string, unknown>, acum: Date): Promise<RaspunsSugestie> {
   const c = continutDin(d);
+  const poza = pozaDin(d['poza']);
   return db.runTransaction(async (tx) => {
     const drepturi = await drepturiIn(tx, db, uid);
     if (!drepturi.permisiuni.has('sugestii.scrie')) throw new HttpsError('permission-denied', FARA_SCRIERE);
@@ -65,12 +81,18 @@ async function scrie(db: Firestore, uid: string, token: TokenSugestie | null, d:
     // Adresa din personal (o arată lista celorlalți); primul owner, pus din consolă, poate n-o are: atunci cea din token.
     const dinStaff: unknown = staff.get('email');
     const autorEmail = typeof dinStaff === 'string' && dinStaff !== '' ? dinStaff : normalizeazaEmail(token?.email);
+    // Poza stă în documentul ei (o listă de sugestii nu aduce octeții); sugestia ține doar tipul și mărimea.
+    const meta = poza ? { tip: poza.tip, marime: poza.octeti.length } : null;
     tx.set(limita, { zi, numar: azi + 1 });
     tx.create(ref, {
       schema: 1, ...c, autor: uid, autorEmail, creataLa: cand, modificataLa: cand, stare: 'noua', nota: '', decisaDe: null,
-      decisaLa: null, versiune: 1,
+      decisaLa: null, versiune: 1, poza: meta,
     });
-    scrieAudit(tx, db, { cand, cine: uid, rol: drepturi.rol, actiune: 'sugestii.scrie', tinta: `${COLECTIE_SUGESTII}/${ref.id}`, inainte: null, dupa: { ...c } });
+    if (poza && meta) tx.create(ref.collection(COLECTIE_POZE).doc(ID_POZA), { schema: 1, ...meta, octeti: poza.octeti, creataLa: cand });
+    scrieAudit(tx, db, {
+      cand, cine: uid, rol: drepturi.rol, actiune: 'sugestii.scrie', tinta: `${COLECTIE_SUGESTII}/${ref.id}`, inainte: null,
+      dupa: meta ? { ...c, poza: meta } : { ...c },
+    });
     return { ok: true, id: ref.id, schimbat: true, versiune: 1 };
   });
 }

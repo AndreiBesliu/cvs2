@@ -358,4 +358,13 @@ export const enAdmin = {
   'admin.sug.nota': 'Note (the author sees it)',
   'admin.sug.salveaza-decizia': 'Save the decision',
   'admin.sug.decisa': '“{titlu}”: {stare}.',
+  'admin.sug.poza-din-editor': 'Picture of the sheet, from the editor ({ora})',
+  'admin.sug.poza-alt-noua': 'The picture of the sheet that goes with the suggestion',
+  'admin.sug.poza-scoate': 'Remove the picture',
+  'admin.sug.poza-arata': 'Picture of the sheet',
+  'admin.sug.poza-ascunde': 'Hide the picture',
+  'admin.sug.poza-se-incarca': 'Loading the picture…',
+  'admin.sug.poza-citire': 'The picture could not be read: {motiv}',
+  'admin.sug.poza-lipsa': 'the picture document has no image',
+  'admin.sug.poza-alt': 'Picture of the sheet for “{titlu}”',
 } as const satisfies Readonly<Record<string, Mesaj>>;

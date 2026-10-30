@@ -509,6 +509,10 @@
       "ro": "Verificarea orară a versiunii noi",
       "en": "Hourly check for a new version"
     },
+    "4022794d5f162083": {
+      "ro": "Sugestia din editor",
+      "en": "The suggestion from the editor"
+    },
     "4156b068e6443d05": {
       "ro": "Stratul WebGL2 și panoul de proprietăți editabil",
       "en": "The WebGL2 layer and the editable properties panel"

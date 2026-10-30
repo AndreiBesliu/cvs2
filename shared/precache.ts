@@ -26,13 +26,18 @@
  * Testul pas cu pas al owner-ului (ADR 0072: bucata `TestPasCuPas`, cu stilul ei, și pașii din `tutorial/`) rămâne afară,
  * ca `/admin`: există doar pe instanța de test, deci n-are ce căuta pe discul fiecărui om. La fel mașina simulată (ADR 0081:
  * bucata `MasinaSimulata`, emulatorul GRBL al panoului mașinii); panoul și senderul intră (merg și fără rețea, în atelier).
+ * La fel sugestia din editor (ADR 0110: bucata `SugestieDinEditor`, plus cele două împărțite, `pozaPlansei` cu testul și
+ * `pozaSugestiei` cu `/admin`): butonul ei e doar în afara instanței live, iar sugestia cere oricum `/admin`, deci rețea.
  *
  * Orice alt fișier e „necunoscut”: poarta pică pe el, ca un fel nou de fișier (un font, o imagine în `assets/`) să fie
  * decis aici, nu lăsat tăcut în afara precache-ului.
  */
 
-/** Modulele doar online, după numele bucății lor (`assets/<nume>-<amprentă de 8>.js|css`): `/admin`, testul pas cu pas, mașina simulată. */
-export const DOAR_ONLINE = ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata'] as const;
+/**
+ * Modulele doar online, după numele bucății lor (`assets/<nume>-<amprentă de 8>.js|css`): `/admin`, testul pas cu pas, mașina
+ * simulată, sugestia din editor (cu bucățile ei împărțite).
+ */
+export const DOAR_ONLINE = ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata', 'SugestieDinEditor', 'pozaPlansei', 'pozaSugestiei'] as const;
 
 export type MotivPrecache = 'precache' | 'doar-online' | 'configuratie' | 'worker' | 'banc' | 'documentatie' | 'necunoscut';
 

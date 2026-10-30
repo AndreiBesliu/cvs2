@@ -5,7 +5,8 @@ cream si sistemul de account pentru useri, inclusiv admini, scopul acum imediat 
 feedback unde ei pot nota sugestii, iar eu sa pot decide ce sa implementam”. Planul a fost dat în raportul feliei 6.R↑ (fila
 Sugestii, tipul, stările, citirea asistentului), iar ordinea a venit din răspunsul „Întâi PDF-ul”. Conturile clienților vin cu
 partea comercială (`CLAUDE.md`, „Decizii luate”, 28.10). **Continuă:** ADR 0049 (catalogul de permisiuni, auditul în
-tranzacție), ADR 0040 (pagina `/admin`, App Check pe callable-uri), ADR 0071 (owner-ul fix).
+tranzacție), ADR 0040 (pagina `/admin`, App Check pe callable-uri), ADR 0071 (owner-ul fix). **Completat de:** ADR 0111 (pasul 2:
+butonul „Sugestie” din editor, cu poza planșei).
 
 **Problema.** Conturile personalului există (ADR 0049), dar owner-ul n-are unde să primească ideile lor și unde să decidă ce
 intră în aplicație. Nici asistentul n-are o listă cu ce a acceptat owner-ul.

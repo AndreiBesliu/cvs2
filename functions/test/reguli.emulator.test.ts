@@ -51,6 +51,7 @@ before(async () => {
     await setDoc(doc(db, 'sugestii/s2'), { autor: 'scr2', titlu: 'b', stare: 'acceptata' });
     await setDoc(doc(db, 'sugestii/s3'), { titlu: 'fără autor', stare: 'noua' });
     await setDoc(doc(db, 'sugestii/s4'), { autor: 'gol', titlu: 'a unui rol gol', stare: 'noua' });
+    for (const s of ['s1', 's2', 's3', 's4']) await setDoc(doc(db, `sugestii/${s}/poze/plansa`), { tip: 'image/jpeg', marime: 3 });
     await setDoc(doc(db, 'limiteSugestii/scr'), { zi: '2026-10-29', numar: 1 });
     // Treptele vechi (ADR 0040) nu mai dau nimic.
     await setDoc(doc(db, 'staff/vechi'), { rol: 'admin' });
@@ -180,6 +181,21 @@ test('sugestiile: o permisiune scoasă din rol nu mai deschide nici sugestiile p
   await assertFails(getDocs(query(collection(ca('scr'), 'sugestii'), where('autor', '==', 'scr'))));
   await env?.withSecurityRulesDisabled(async (ctx) => { await setDoc(doc(ctx.firestore(), `roluri/${SCRIE}`), { nume: 'Scrie', permisiuni: ['sugestii.scrie'] }); });
   await assertSucceeds(getDoc(doc(ca('scr'), 'sugestii/s1')));
+});
+
+test('poza unei sugestii (ADR 0110): o citește, câte una, cine poate citi sugestia; nu se listează; nu o scrie nimeni din client', async () => {
+  for (const uid of ['cit', 'own']) await assertSucceeds(getDoc(doc(ca(uid), 'sugestii/s2/poze/plansa')));
+  await assertSucceeds(getDoc(doc(ca('scr'), 'sugestii/s1/poze/plansa')));
+  // Autorul altei sugestii, o sugestie fără autor, un rol fără drept (chiar autorul ei): nu.
+  await assertFails(getDoc(doc(ca('scr'), 'sugestii/s2/poze/plansa')));
+  await assertFails(getDoc(doc(ca('scr'), 'sugestii/s3/poze/plansa')));
+  for (const uid of [...FARA_NIMIC, 'sup', 'aud']) await assertFails(getDoc(doc(ca(uid), 'sugestii/s4/poze/plansa')));
+  for (const uid of ['cit', 'own', 'scr']) await assertFails(getDocs(collection(ca(uid), 'sugestii/s1/poze')));
+  for (const uid of [null, 'scr', 'cit', 'own']) {
+    await assertFails(setDoc(doc(ca(uid), 'sugestii/s1/poze/plansa'), { tip: 'image/png', marime: 1 }));
+    await assertFails(setDoc(doc(ca(uid), 'sugestii/s1/poze/alta'), { tip: 'image/png', marime: 1 }));
+    await assertFails(deleteDoc(doc(ca(uid), 'sugestii/s1/poze/plansa')));
+  }
 });
 
 test('sugestiile și contoarele lor zilnice: nimeni nu le scrie din client, nici autorul, nici owner-ul; contoarele nu se citesc', async () => {
