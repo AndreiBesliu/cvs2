@@ -5,7 +5,7 @@
  * - V-carve-ul cu fundul plat, găurirea, gravarea pe linie;
  * - profilul cu urechi, rampă, intrări și degajări, căile deschise;
  * - mai multe freze, cu toate posturile, unitățile și strategiile schimbării;
- * - ieșirea din foaie (cu confirmare) și un refuz.
+ * - ieșirea din foaie (cu confirmare), o tăietură sub foaie (refuzată fără supracursă) și un refuz.
  * Fiecare trece prin ușa documentului (`incarca`), ca un proiect salvat. Îl folosesc testele unitare (calculul direct față
  * de bazin) și e2e-ul (workerul construit, în Edge, prin `test/e2e/cam-node.ts`).
  */
@@ -185,6 +185,12 @@ export const CORPUS_CAM: readonly CazCam[] = [
     id: 'iesire-din-foaie',
     doc: document(FOAIE, [piesa('a', [DR('a', 60, 40, 1, 20)], [op('o', ['a'])])]),
     parametri: [IMPLICIT],
+  },
+  {
+    // O tăietură sub fața de jos a foii (18,5 pe 18): fără supracursă, implicitul aplicației, lucrarea o refuză; cu 1 mm, o taie.
+    id: 'sub-foaie',
+    doc: document(FOAIE, [piesa('a', [DR('a', 60, 40, 20, 20)], [op('o', ['a'], { adancime: 18.5, pas: 6 })])]),
+    parametri: [IMPLICIT, { ...IMPLICIT, supracursa: 1 }],
   },
   {
     // Două buzunare de aceeași adâncime care se intersectează: lucrarea le refuză, cu motivul.

@@ -138,7 +138,7 @@ const SINTETIC: Program = {
     { tip: 'eticheta', text: 'cu operație', operatie: 'p/o' },
     { tip: 'eticheta', text: 'cu amândouă', element: 'i/a', operatie: 'p/o' },
     { tip: 'ax-pornit', turatie: 18000 },
-    { tip: 'pauza', secunde: 3 },
+    { tip: 'pauza', secunde: 2.001 },
     { tip: 'rapida', la: { Z: 5 } },
     { tip: 'rapida', la: { X: -0, Y: 0.1 + 0.2 } },
     { tip: 'taiere', la: { Z: -1e-300 }, avans: 300 },
