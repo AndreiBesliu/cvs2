@@ -573,6 +573,10 @@ When you change the drawing, the old toolpath dims, with a note at the bottom; `
 up-to-date toolpath, hides it. If the program cannot be computed, the note says why. The toolpath needs WebGL2 in the
 browser.
 
+The computing (the toolpath, the time, the export, the 3D view) runs apart from the drawing: on a large project, the canvas
+does not stop while it computes. If you change the drawing before the toolpath is ready, its computing stops; `T` starts it
+again, on the drawing as it is now.
+
 **Animate**, next to the job time, opens the toolpath animation: the bit moves along the toolpath in machine time (the same
 estimate as the job time), and the path covered is coloured on the canvas. In the panel: **Play** / **Pause**, **Previous
 step** and **Next step** (one program move at a time), **Speed** (1× is real time; by default the whole animation lasts about

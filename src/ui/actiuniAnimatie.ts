@@ -8,7 +8,8 @@
 import { cronologie, inainte, inapoi, stareLa, type Cronologie, type StareAnimatie } from '../sim/animatie.ts';
 import type { Program } from '../ir/ir.ts';
 import type { Montaj } from '../ir/montaj.ts';
-import { secundePeMiscare } from './actiuniExportCalcul.ts';
+// Timpii pe mișcare, pe firul principal (la deschiderea panoului): același post și aceeași estimare ca timpul din cip.
+import { secundePeMiscare } from '../jobs/rezumat.ts';
 
 // Panoul și stratul frezei le citesc prin player: interfața ajunge la simulare doar prin modulele `actiuni*`.
 export { parcursIntre, type Cronologie, type LinieParcursa, type StareAnimatie } from '../sim/animatie.ts';

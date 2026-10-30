@@ -89,6 +89,6 @@ test('exportul nu așteaptă simularea: rezultatul vine cu funcția ei; anulată
 test('un program pe care simularea nu-l poate face (axa A) dă un refuz cu motiv, nu o eroare', async () => {
   const { simuleazaExport } = await import('../../src/ui/actiuniExportCalcul.ts');
   const p = programPlaca01();
-  const s = await simuleazaExport({ ...p, axe: ['X', 'Y', 'Z', 'A'] }, { latime: 300, inaltime: 200, grosime: 18 });
+  const s = await simuleazaExport(pregatesteProgram({ ...p, axe: ['X', 'Y', 'Z', 'A'] }, 0), { latime: 300, inaltime: 200, grosime: 18 });
   assert.ok(!s.ok && !s.eroare && /axa A/.test(s.motiv), JSON.stringify(s));
 });

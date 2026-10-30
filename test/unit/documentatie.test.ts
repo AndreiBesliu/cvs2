@@ -155,7 +155,12 @@ test('feliile aduse înainte (↑) stau la etapa lor (4), cu punctul din §5.3 �
   assert.equal(sim.jurnal, 'docs/etape/etapa-03.md');
   assert.deepEqual(sim.adr, ['0047']);
   assert.equal(sim.titlu, 'Simularea, nucleul CPU, felia 1 din 2');
-  assert.deepEqual(patru.felii.map((x) => x.id), ['4.7↑', '4.5↑', '4.5↑b', '4.2↑', '4.7↑b', '4.3↑']);
+  assert.deepEqual(patru.felii.map((x) => x.id), ['4.7↑', '4.5↑', '4.5↑b', '4.2↑', '4.7↑b', '4.3↑', '4.A↑']);
+  // Calculul CAM în workere (ADR 0109): un rând de prag al etapei („Calcul pe mai multe fire”), fără punct numerotat în §5.3.
+  const cam = felie(patru, '4.A↑');
+  assert.deepEqual([cam.adusa, cam.stare, cam.jurnal, cam.adr], [true, 'gata', 'docs/etape/etapa-03.md', ['0109']]);
+  assert.equal(cam.titlu, 'Calculul CAM în bazinul de workere, adus din etapa 4');
+  assert.ok(!patru.puncte.some((p) => p.felii.includes('4.A↑')));
   assert.equal(patru.puncte.length, 9);
   assert.deepEqual(patru.puncte[1]?.felii, ['4.2↑']);
   // Felia 2 a simulării (vederea 3D) e punctul 3 din §5.3, cu ADR-ul ei.

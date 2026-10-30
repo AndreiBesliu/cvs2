@@ -1,11 +1,9 @@
 import type { IesireFoaie } from '../cam/iesire.ts';
 import { RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA } from '../cam/intrariMinima.ts';
 import { RAMPA_MINIMA } from '../cam/rampaMinima.ts';
-import type { Program } from '../ir/ir.ts';
-import type { ColtOrigine, Montaj } from '../ir/montaj.ts';
 import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAXIM, RETRAGERE_COMPLETA_MAXIMA, UNGHI_V_MAXIM, UNGHI_V_MINIM } from '../model/document.ts';
 export type { Coborare } from '../model/document.ts';
-import type { StrategieScula, Unitati } from '../post/contract.ts';
+import type { StrategieScula } from '../post/contract.ts';
 import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../post/contracte/index.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';
 export type { IdContract } from '../post/contracte/index.ts';
@@ -68,70 +66,13 @@ export function laturiOferite(deschise: number, noduri: number, curenta: LaturaE
 }
 
 /**
- * Exportul G-code, ca acțiune a registrului (capabilitatea „export-gcode”): documentul → tăieturile (operațiile pieselor,
- * ADR 0025) → profilele → IR → postul GRBL → octeții cu SHA-256. Parametrii tăierii și scula sunt în document; aici
- * rămân doar montajul (colțul de origine, Z0) și confirmarea. Interfața primește doar rezultatul, ca date.
+ * Parametrii exportului și rezumatul jobului: definiți lângă calculul lor, în workerul CAM (ADR 0109,
+ * `src/jobs/protocolCam.ts`, `src/jobs/rezumat.ts`); interfața le citește de aici, ca tipuri.
  */
-export type ParametriExport = {
-  readonly origine: ColtOrigine;
-  readonly z0: 'sus' | 'jos';
-  /** Postul (ADR 0083): implicit GRBL 1.1. */
-  readonly post?: IdContract;
-  /** Unitățile programului: implicit mm. */
-  readonly unitati?: Unitati;
-  /** Cum se schimbă scula (ADR 0084); implicit, cea a postului. */
-  readonly strategieScula?: StrategieScula;
-  /**
-   * Ieșirea din foaie pe care omul a văzut-o și a confirmat-o, așa cum a primit-o de la export. Trece doar dacă e exact cea
-   * calculată acum, pe același traseu (amprenta): altă freză, alt profil sau o formă mutată cer o confirmare nouă, chiar
-   * cu aceleași numere.
-   */
-  readonly confirmareIesire?: IesireFoaie;
-  /**
-   * Cât are voie o tăietură sub fața de jos a foii, în mm (ADR 0028 §2): implicit 0. Dialogul nu-l trimite încă (vine cu
-   * profilul mașinii).
-   */
-  readonly supracursa?: number;
-  /**
-   * Răspunsul mașinii la `$$`, lipit de om (ADR 0046): estimarea timpului îl pune peste implicitele GRBL 1.1h. Lipsă sau
-   * gol: implicitele. Nu schimbă programul, doar rezumatul.
-   */
-  readonly setariMasina?: string;
-};
-
-/** Timpul și distanțele unei bucăți a jobului (ADR 0046): secunde și milimetri. */
-export type TimpPortiune = { readonly secunde: number; readonly pauze: number; readonly taiere: number; readonly rapide: number };
-
-/**
- * Rezumatul jobului (ADR 0046): estimarea timpului pe octeții exportați, cu modelul planificatorului GRBL, pe tot jobul,
- * pe operație și pe sculă. `ok: false` nu oprește exportul (programul e scris oricum), doar spune de ce lipsește timpul.
- */
-export type RezumatJob =
-  | {
-    readonly ok: true;
-    readonly total: TimpPortiune;
-    /** Pe operație, cu cheia rândurilor dialogului (`<piesă>/<operație>`), în ordinea în care începe tăierea lor. */
-    readonly peOperatie: ReadonlyArray<TimpPortiune & { readonly operatie: string }>;
-    /** Ce nu ține de nicio operație: pornirea (Z sigur, axul, pauza lui) și finalul (retragerea, oprirea axului). */
-    readonly restul: TimpPortiune;
-    readonly peScula: ReadonlyArray<TimpPortiune & { readonly numar: number; readonly nume: string; readonly diametru: number }>;
-    /** Opririle pentru schimbarea sculei (ADR 0084): timpul lor (al omului) nu e în estimare. */
-    readonly opriri: number;
-    /** Mașina pe care s-a estimat, cu vitezele maxime (mm/min) și accelerațiile (mm/s²) pe X, Y, Z. */
-    readonly masina: {
-      readonly nume: string; readonly sursa: 'implicit' | 'setari';
-      readonly vitezaMaxima: readonly [number, number, number]; readonly acceleratie: readonly [number, number, number];
-    };
-    /** Câte blocuri de tăiere cer un avans peste viteza maximă a mașinii pe direcția lor (controlerul îl taie). */
-    readonly liniiLimitate: number;
-    /** Doar la timpul de lângă traseu (`timpProgram`): programul și mașina lui, pentru animația traseului (ADR 0099). */
-    readonly traseu?: { readonly program: Program; readonly foaie: Montaj['foaie']; readonly setari: string | undefined };
-  }
-  /**
-   * `sursa`: ce n-a putut citi estimarea, setările lipite sau programul; `linie`: linia din textul lor (de la 1), sau 0.
-   * `motiv` e al domeniului (în română, ca motivele exportului); interfața îl pune în fraza ei, tradusă.
-   */
-  | { readonly ok: false; readonly sursa: 'setari' | 'program'; readonly linie: number; readonly motiv: string };
+import type { ParametriExport } from '../jobs/protocolCam.ts';
+import type { RezumatJob } from '../jobs/rezumat.ts';
+export type { ParametriExport } from '../jobs/protocolCam.ts';
+export type { RezumatJob, TimpPortiune } from '../jobs/rezumat.ts';
 
 /**
  * Simularea programului exportat (ADR 0047 §5): nucleul pe CPU, în bazinul de workere, pe toată foaia. Interfața primește
@@ -204,5 +145,7 @@ export type RezultatExport =
 export type ContextExport = {
   readonly document: () => Document;
   readonly parametri: () => ParametriExport;
+  /** Anularea calculului (ADR 0109): workerul CAM se oprește din mijlocul lui. */
+  readonly semnal?: () => AbortSignal;
   readonly rezultat: (r: RezultatExport) => void;
 };
