@@ -18,7 +18,8 @@ def o(id, fis, vechi, nou, set, ce):
 TIM = 'src/sim/timp.ts'
 MAS = 'src/ir/masina.ts'
 POS = 'src/post/post.ts'
-REZ = 'src/ui/actiuniExportCalcul.ts'
+# Rezumatul jobului stă din 30.10 în `src/jobs/rezumat.ts` (ADR 0109: îl calculează workerul CAM), mutat neschimbat.
+REZ = 'src/jobs/rezumat.ts'
 JOB = 'src/cam/job.ts'
 
 # Timpul lângă traseu (ADR 0046 §8, 19.10): spec-urile e2e ale setului „e2e” (build înainte de fiecare otravă).

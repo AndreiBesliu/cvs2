@@ -296,7 +296,10 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
     odihneste();
   };
 
-  /** Simularea documentului de acum: CAM-ul (pe firul principal, după ce starea a apucat să se vadă), apoi bazinul. */
+  /**
+   * Simularea documentului de acum: CAM-ul în workerul lui (ADR 0109), apoi bazinul. O simulare nouă, un document schimbat
+   * sau vederea închisă le anulează pe amândouă (`ctl`).
+   */
   const simuleaza = (): void => {
     job.current?.abort();
     jobFin.current?.ctl.abort();
@@ -309,47 +312,49 @@ export function Vedere3D({ doc, marime, zona, onInchide }: Props): ReactElement 
     setFin({ fel: 'nimic' });
     import('../ui/actiuniExportCalcul.ts').then((calc) => {
       if (ctl.signal.aborted) return;
-      requestAnimationFrame(() => {
-        setTimeout(() => {
+      const cuProgram = (p: ProgramSimulare): void => {
+        if (ctl.signal.aborted) return;
+        if (!p.ok) {
+          setStare({ fel: 'refuz', motiv: p.motiv });
+          return;
+        }
+        const fereastra = calc.fereastraFoii(p.foaie);
+        setStare({ fel: 'simulare', celula: fereastra.celula });
+        void calc.simuleazaRelief(p, fereastra, ctl.signal).then((r) => {
           if (ctl.signal.aborted) return;
-          let p: ProgramSimulare;
-          try {
-            p = calc.programSimulare(d);
-          } catch (e) {
-            p = { ok: false, motiv: e instanceof Error ? e.message : String(e) };
-          }
-          if (!p.ok) {
-            setStare({ fel: 'refuz', motiv: p.motiv });
+          if (!r.ok) {
+            if (r.anulata) return;
+            if (r.eroare) reportError(new Error(`vederea 3D: ${r.motiv}`));
+            setStare(r.eroare ? { fel: 'eroare', motiv: r.motiv } : { fel: 'refuz', motiv: r.motiv });
             return;
           }
-          const fereastra = calc.fereastraFoii(p.foaie);
-          setStare({ fel: 'simulare', celula: fereastra.celula });
-          void calc.simuleazaRelief(p, fereastra, ctl.signal).then((r) => {
-            if (ctl.signal.aborted) return;
-            if (!r.ok) {
-              if (r.anulata) return;
-              if (r.eroare) reportError(new Error(`vederea 3D: ${r.motiv}`));
-              setStare(r.eroare ? { fel: 'eroare', motiv: r.motiv } : { fel: 'refuz', motiv: r.motiv });
-              return;
-            }
-            const g = gpu.current;
-            if (g && (r.latime > g.maxim || r.inaltime > g.maxim)) {
-              setStareGpu('prea-mare');
-              return;
-            }
-            Object.assign(s, { calc, program: p, placa: r, fin: null });
-            if (g) {
-              for (const tx of [g.placa, g.fin]) if (tx) g.gl.deleteTexture(tx);
-              g.placa = textura(g, r);
-              g.fin = null;
-            }
-            // Camera rămâne cum a lăsat-o omul la o simulare din nou; prima oară, încadrează placa.
-            if (!cam.current) cam.current = incadreaza(p.foaie, aspect(), zonaNdc());
-            setStare({ fel: 'gata' });
-            cere();
-            odihneste();
-          });
-        }, 0);
+          const g = gpu.current;
+          if (g && (r.latime > g.maxim || r.inaltime > g.maxim)) {
+            setStareGpu('prea-mare');
+            return;
+          }
+          Object.assign(s, { calc, program: p, placa: r, fin: null });
+          if (g) {
+            for (const tx of [g.placa, g.fin]) if (tx) g.gl.deleteTexture(tx);
+            g.placa = textura(g, r);
+            g.fin = null;
+          }
+          // Camera rămâne cum a lăsat-o omul la o simulare din nou; prima oară, încadrează placa.
+          if (!cam.current) cam.current = incadreaza(p.foaie, aspect(), zonaNdc());
+          setStare({ fel: 'gata' });
+          cere();
+          odihneste();
+        });
+      };
+      calc.programSimulare(d, ctl.signal).then(cuProgram, (e: unknown) => {
+        if (ctl.signal.aborted || e instanceof calc.CalculAnulat) return;
+        // Un worker căzut e o defecțiune (jurnalul, ca la simulare); o excepție a CAM-ului rămâne motivul, ca până acum.
+        if (e instanceof calc.LucratorCazut) {
+          reportError(new Error(`vederea 3D: ${e.message}`));
+          setStare({ fel: 'eroare', motiv: e.message });
+          return;
+        }
+        cuProgram({ ok: false, motiv: e instanceof Error ? e.message : String(e) });
       });
     }, (e: unknown) => {
       if (!ctl.signal.aborted) setStare({ fel: 'eroare', motiv: e instanceof Error ? e.message : String(e) });

@@ -4,7 +4,8 @@ import type { Miscare, Program } from '../../src/ir/ir.ts';
 import { GRBL_11 } from '../../src/post/contracte/grbl11.ts';
 import { exporta } from '../../src/post/export.ts';
 import { posteaza } from '../../src/post/post.ts';
-import { calculeazaExport, rezumatJob, timpProgram } from '../../src/ui/actiuniExportCalcul.ts';
+import { rezumatJob, timpProgram } from '../../src/jobs/rezumat.ts';
+import { calculeazaExport } from '../../src/ui/actiuniExportCalcul.ts';
 import { documentPlaca02, programPlaca02, SCULA } from '../placi/placa-02/genereaza.ts';
 
 /** Rezumatul jobului (ADR 0046): secțiunile postului, împărțirea pe operații, profilul mașinii din `$$`. */

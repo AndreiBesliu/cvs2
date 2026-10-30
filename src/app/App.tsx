@@ -235,6 +235,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [cheieStrat, setCheieStrat] = useState(0);
   const [traseuPregatit, setTraseuPregatit] = useState<{ readonly bucati: readonly Bucata[]; readonly rarit: boolean } | null>(null);
   const cerereTraseu = useRef(0);
+  /** Calculul traseului în curs, în workerul CAM (ADR 0109), cu revizia documentului lui: altă revizie îl anulează. */
+  const traseuInCurs = useRef<{ readonly ac: AbortController; readonly rev: number } | null>(null);
   // Pentru rezultatul exportului, care vine mai târziu, dintr-un context făcut la apăsarea butonului.
   const traseuArat = useRef(false);
   traseuArat.current = traseu?.arata === true;
@@ -276,6 +278,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     simulareInCurs.current = null;
   };
   /**
+   * Calculul exportului în curs, în workerul CAM (ADR 0109): un export nou, un parametru schimbat, un document venit din
+   * bază sau dialogul închis îl anulează, iar workerul lui se oprește din mijlocul calculului.
+   */
+  const exportCalcul = useRef<AbortController | null>(null);
+  const opresteExportul = (): void => {
+    exportCalcul.current?.abort();
+    exportCalcul.current = null;
+  };
+  /**
    * Câte documente au venit din bază de la pornire. Dialogul de export ia de aici valorile operațiilor din nou: o versiune
    * nouă (de la fila care scrie, sau la preluarea scrierii) le înlocuiește pe cele vechi. Propria scriere a dialogului nu
    * trece pe aici.
@@ -290,6 +301,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     dinBaza.current = d;
     cerereExport.current++;
     opresteSimularea();
+    opresteExportul();
     setStareExport(exportInCurs.current ? { ok: false, motiv: t('export.proiect-schimbat') } : null);
     exportInCurs.current = false;
     setBazaNoua((n) => n + 1);
@@ -338,12 +350,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       alegeTema(noua);
     },
   };
-  const contextExport = (p?: ParametriExport, cerere = cerereExport.current): ContextExport => ({
+  const contextExport = (p?: ParametriExport, cerere = cerereExport.current, semnal?: AbortSignal): ContextExport => ({
     document: () => curenta.current.istoric.doc,
     parametri: () => p ?? { origine: 'stanga-jos', z0: 'sus' },
+    ...(semnal ? { semnal: () => semnal } : {}),
     rezultat: (r: RezultatExport) => {
       if (cerere !== cerereExport.current) return;
       exportInCurs.current = false;
+      exportCalcul.current = null;
       if (r.ok) {
         // Un fișier, sau câte unul pe freză (ADR 0084): numele poartă atunci ordinea și numărul frezei (aceeași freză poate
         // reveni: interioarele, apoi exterioarele).
@@ -483,8 +497,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   };
   /**
    * „Arată traseul” (ADR 0038 §2): cu traseul arătat și la zi, îl ascunde; altfel calculează programul documentului de
-   * acum, pe firul principal (CAM-ul vine la cerere), după ce cipul „se calculează” a apucat să se vadă. Un calcul pornit
-   * după el îl face pe cel vechi să nu mai conteze.
+   * acum, în workerul CAM (ADR 0109), cu cipul „se calculează” cât durează. Un calcul pornit după el îl anulează pe cel vechi.
    */
   const comutaTraseu = (): void => {
     const d = curenta.current.istoric.doc;
@@ -499,6 +512,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const calculeazaTraseu = (): void => {
     const d = curenta.current.istoric.doc;
     const cerere = ++cerereTraseu.current;
+    traseuInCurs.current?.ac.abort();
+    const ac = new AbortController();
+    traseuInCurs.current = { ac, rev: d.rev };
     // Un strat care nu e „ok” (context pierdut, WebGL indisponibil) se montează din nou, cu un canvas și un context noi;
     // un „ok” pus peste canvasul vechi, cu contextul tot pierdut, lăsa traseul nedesenat și fără cip (recenzia 2.8e, F4).
     if (stareStrat !== 'ok') {
@@ -508,26 +524,35 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     const refuz = (motiv: string): void => {
       if (cerere === cerereTraseu.current) setTraseu({ arata: true, stare: 'refuz', rev: d.rev, miscari: null, motiv });
     };
-    // Mesajele cipului vin înaintea lui (ale traseului, ca date, ADR 0086), apoi CAM-ul.
-    Promise.all([import('../cam/job.ts'), import('../i18n/traseu.ts').then((m) => m.gata)]).then(([{ programDinDocument }]) => {
+    // Mesajele cipului vin înaintea lui (ale traseului, ca date, ADR 0086), apoi CAM-ul, în worker.
+    Promise.all([import('../ui/actiuniExportCalcul.ts'), import('../i18n/traseu.ts').then((m) => m.gata)]).then(([calc]) => {
       if (cerere !== cerereTraseu.current) return;
-      setTraseu((v) => ({ arata: true, stare: 'calcul', rev: d.rev, miscari: v?.miscari ?? null, motiv: null }));
-      // Cu modulele deja aduse, un `setTimeout(0)` simplu pornea CAM-ul înaintea desenării cipului (recenzia 2.8e, F5):
-      // cadrul următor, apoi o sarcină, deci după ce browserul a pictat.
-      const dupaCadru = (f: () => void): void => { requestAnimationFrame(() => { setTimeout(f, 0); }); };
-      dupaCadru(() => {
+      // Traseul de dinainte rămâne sub cipul „se calculează”, ca pânza să nu clipească (și, dacă documentul se schimbă
+      // între timp, rămâne el, stins).
+      setTraseu((v) => ({ arata: true, stare: 'calcul', rev: d.rev, miscari: v?.miscari ?? null, ...(v?.program ? { program: v.program } : {}), motiv: null }));
+      calc.programTraseu(d, ac.signal).then((r) => {
         if (cerere !== cerereTraseu.current) return;
-        try {
-          const r = programDinDocument(d);
-          if (cerere !== cerereTraseu.current) return;
-          if (r.ok) setTraseu({ arata: true, stare: 'gata', rev: d.rev, miscari: r.program.miscari, program: r.program, motiv: null });
-          else refuz(r.motiv);
-        } catch (e) {
-          refuz(e instanceof Error ? e.message : String(e));
-        }
+        traseuInCurs.current = null;
+        if (r.ok) setTraseu({ arata: true, stare: 'gata', rev: d.rev, miscari: r.program.miscari, program: r.program, motiv: null });
+        else refuz(r.motiv);
+      }, (e: unknown) => {
+        if (e instanceof calc.CalculAnulat) return;
+        // Un worker căzut (nu un refuz al CAM-ului) e o defecțiune: și în jurnal.
+        if (e instanceof calc.LucratorCazut) jurnal.adauga('promisiune', e);
+        refuz(e instanceof Error ? e.message : String(e));
       });
     }, (e: unknown) => { refuz(e instanceof Error ? e.message : String(e)); });
   };
+  // Un document schimbat anulează calculul traseului pornit pe altă revizie (ADR 0109): workerul lui se oprește, iar
+  // traseul de dinainte rămâne, stins (ADR 0038 §2); fără unul, nu se mai arată nimic.
+  useEffect(() => {
+    const c = traseuInCurs.current;
+    if (!c || c.rev === doc.rev) return;
+    c.ac.abort();
+    traseuInCurs.current = null;
+    cerereTraseu.current++;
+    setTraseu((v) => (v?.stare !== 'calcul' ? v : v.miscari ? { ...v, stare: 'gata' } : null));
+  }, [doc.rev]);
   // Bucățile stratului: din program, la treapta de zoom și sub buget (modulul vine la cerere, cu stratul).
   const miscariTraseu = traseu?.arata ? traseu.miscari : null;
   useEffect(() => {
@@ -544,15 +569,20 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     return () => { viu = false; };
   }, [miscariTraseu, treapta, bugetTraseu]);
   // Timpul jobului de lângă traseu (ADR 0046 §8): același calcul ca rezumatul exportului (postul pe montajul stânga-jos, Z0
-  // sus, apoi estimarea), adus la cerere cu calculul exportului; se reface și când se schimbă `$$`, fără CAM.
+  // sus, apoi estimarea), în workerul CAM (ADR 0109), după ce traseul s-a desenat; se reface și când se schimbă `$$`, fără
+  // CAM. O schimbare îl anulează pe cel vechi.
   const programTraseu = traseu?.arata && traseu.stare === 'gata' ? traseu.program : undefined;
   useEffect(() => {
     if (!programTraseu || !foaieStoc) return;
-    let viu = true;
-    import('../ui/actiuniExportCalcul.ts').then(({ timpProgram }) => {
-      if (viu) setTimpTraseu({ program: programTraseu, setari: setariMasina, r: timpProgram(programTraseu, foaieStoc, setariMasina) });
-    }, () => { if (viu) setTimpTraseu(null); });
-    return () => { viu = false; };
+    const ac = new AbortController();
+    import('../ui/actiuniExportCalcul.ts').then((calc) => calc.timpTraseu(programTraseu, foaieStoc, setariMasina, ac.signal).then((r) => {
+      if (!ac.signal.aborted) setTimpTraseu({ program: programTraseu, setari: setariMasina, r });
+    }, (e: unknown) => {
+      if (ac.signal.aborted || e instanceof calc.CalculAnulat) return;
+      jurnal.adauga('promisiune', e);
+      setTimpTraseu(null);
+    }), () => { if (!ac.signal.aborted) setTimpTraseu(null); });
+    return () => { ac.abort(); };
   }, [programTraseu, foaieStoc, setariMasina]);
   // Stins: programul unui document de dinainte (și un refuz pentru el nu mai e motivul de acum, recenzia 2.8e, F3), sau
   // programul vechi ținut sub cipul „se calculează” (F5).
@@ -654,14 +684,18 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     const { origine, z0, post, unitati, strategieScula } = c;
     exportInCurs.current = true;
     opresteSimularea();
+    opresteExportul();
+    const ac = new AbortController();
+    exportCalcul.current = ac;
     const r = ruleaza(registruExport, 'export.gcode', contextExport({
       origine, z0, ...(post ? { post } : {}), ...(unitati ? { unitati } : {}), ...(strategieScula ? { strategieScula } : {}),
       ...(c.confirmareIesire ? { confirmareIesire: c.confirmareIesire } : {}),
       ...(setariMasina.trim() !== '' ? { setariMasina } : {}),
-    }, ++cerereExport.current));
+    }, ++cerereExport.current, ac.signal));
     // Un export refuzat înainte de calcul (nimic de exportat, nicio operație) spune de ce, nu lasă rezultatul vechi.
     if (!r.ok) {
       exportInCurs.current = false;
+      exportCalcul.current = null;
       setStareExport({ ok: false, motiv: t(r.motiv) });
     }
   };
@@ -1005,8 +1039,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           doarCitire={doarCiteste(mod)}
           stare={stareExport}
           onExporta={(noi, c) => { exporta(noi, c); }}
-          onInchide={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); setDialogExport(false); }}
-          onReseteaza={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); setStareExport(null); }}
+          onInchide={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setDialogExport(false); }}
+          onReseteaza={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setStareExport(null); }}
           setariMasina={setariMasina}
           onSetariMasina={setSetariMasina}
         />

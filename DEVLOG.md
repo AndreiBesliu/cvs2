@@ -3779,6 +3779,92 @@ actualizate. Verificat: `sugestii` răspunde fără App Check cu 401 JSON („Un
 gazdă, refuzul e al ei); `/admin` pe `7d0ea4033da8`, fără erori în consolă. Fila Sugestii însăși n-am văzut-o pe test: cere
 logarea owner-ului, pe care asistentul n-o face; e probată pe emulatoare (e2e-ul `/admin`).
 
+## 2026-10-29 — Etapa 4: calculul CAM în bazinul de workere (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau o subsesiune care sa lucreze la inca ceva la care poate sa lucreze fara sa afecteze celelalte sesiuni”.
+Sesiunea părinte a ales calculul CAM în workere: rândul de prag „Calcul pe mai multe fire”, primul pas al deciziei din 28.10
+(rolurile de tăiere în panou, cu traseul la zi).
+**Started:** 29.10, 21:40. Felia **4.A↑**, fără mașină, în worktree-ul `wip/4.A-cam-workere`. Programul CAM al exportului, al
+traseului și al vederii 3D se calculează în bazinul `src/jobs/`, cu anulare și cu rezultatul transferat. G-code-ul rămâne
+același, octet cu octet.
+**Oprită:** 29.10, 22:05, înainte de cod, la poarta mărimii. Regula din brief: dacă workerul dublează codul CAM și totalul
+trece de 400 kB, mă opresc și spun, fără să ridic plafonul.
+- **Măsurat cu `node scripts/build-determinist.ts`, pe experimente refăcute după măsurare:**
+  - workerul CAM construit are 70,2 kB gzip;
+  - cu CAM-ul doar în worker, totalul e 410,8 / 400 kB;
+  - pragul de jos, cu postul, estimarea și pregătirea simulării scoase și ele din firul principal, e 401,9 / 400 kB;
+  - pornirea, 97,2 / 110.
+- **Cauza:** Vite construiește workerul separat, iar harta importurilor (ADR 0098) nu se aplică în workere. Workerul își ia
+  deci propria copie din cavalier (25,5 kB, folosit pe firul principal și de offsetul din desen, de boolean și de import) și
+  din geometria din bucata de pornire.
+- **Timpii de azi, pe firul principal** (Node 26): pe 2 304 forme (78 336 de mișcări), CAM-ul ia 0,47–0,50 s, iar exportul
+  întreg 1,53 s.
+- **Decizia e a owner-ului:**
+  - plafonul 450 kB, cu un ADR nou (recomandat);
+  - sau cavalier doar în worker, ~380 kB, cu o felie mai mare;
+  - sau amânarea.
+
+**Reluată:** 29.10, 22:10, la „1” al owner-ului: plafonul total 400 → 450 kB, cu un ADR nou (0109), iar felia merge cum e
+scrisă.
+**Pauză:** 29.10, 22:51, la „facem pauza”. Totul e pe `wip/4.A-cam-workere`, ca WIP; arborele nu se compilează încă.
+- **Scrise:**
+  - codecul IR, `src/jobs/impachetare.ts`: programul în tablouri tipizate, transferate;
+  - rezumatul jobului și timpii traseului, mutați neschimbați în `src/jobs/rezumat.ts`;
+  - protocolul, calculul, workerul și bazinul CAM: `src/jobs/protocolCam.ts`, `calculCam.ts`, `lucratorCam.ts`,
+    `bazinCam.ts`. În Node, calculul rulează în proces, prin `structuredClone`;
+  - `src/ui/actiuniExportCalcul.ts`, legat de bazin;
+  - `define` `__CNCVS2_CONSTRUIT__` în `vite.config.ts`.
+- **Rămân:**
+  - `actiuniExportTipuri.ts`: `ParametriExport` și `RezumatJob` vin din `src/jobs/` (doar tipuri);
+  - `actiuniExport.ts`: semnalul de anulare;
+  - `App.tsx`: traseul și cipul timpului prin bazin, anularea la un document schimbat;
+  - `Vedere3D.tsx`: `programSimulare` devine asincron;
+  - `actiuniAnimatie.ts`: `secundePeMiscare` vine din `src/jobs/rezumat.ts`;
+  - importurile testelor;
+  - regula `bazinul-doar-simularea`, extinsă (`.dependency-cruiser.cjs`, `scripts/verifica-importuri.ts`);
+  - poarta: plafonul 450, workerul `lucratorCam` în reguli, CAM-ul doar în worker; apoi proba că ramura din proces dispare
+    la build;
+  - probele: unit și e2e pe 4193, octet cu octet;
+  - timpii în Edge;
+  - ADR 0109, CLAUDE.md, jurnalul, traducerile.
+
+**Reluată:** 30.10, 07:14, la „continua”. Raționamentul refăcut de la capăt și `main` adus pe ramură (fuziunea sugestiilor).
+O schimbare față de pauză: traseul nu mai așteaptă timpul din cip. Workerul trimite întâi programul, iar timpul e o cerere
+separată.
+
+**Completed:** 30.10, 08:54. ADR 0109; commit-urile `2d0af31` (codul și probele), `e970c85` (probele noi după otrăvuri) și
+documentele.
+- **Workerul CAM** (`src/jobs/lucratorCam.ts`; bazinul `src/jobs/bazinCam.ts`; protocolul `protocolCam.ts`):
+  - calculul e cel de dinainte, mutat neschimbat în `calculCam.ts` și `rezumat.ts`;
+  - codecul IR e `impachetare.ts`;
+  - în worker rulează exportul, traseul, timpul și vederea 3D.
+- **Legăturile:** `actiuniExportCalcul.ts` cheamă bazinul. `App.tsx` aduce traseul și cipul timpului prin bazin și anulează
+  calculul la un document schimbat. `Vedere3D.tsx` primește programul asincron, iar `actiuniExport.ts` primește semnalul.
+- **Regula de import** `bazinul-fara-interfata`.
+- **Poarta:** plafonul 450 kB și CAM-ul doar în worker, după marcaje; `lucratorCam` e obligatoriu în precache.
+- **Probele:**
+  - `test/unit/cam.bazin.test.ts`, cu corpusul `ajutor-corpus-cam.ts` (14 documente);
+  - `test/e2e/cam-bazin.spec.ts`, cu partea de Node `cam-node.ts`.
+- **Otrăvurile:** `test/otravuri/4.A.py`, 27 / 27; cele mutate din `timp.py` și `simulare.py` au fost îndreptate.
+- **Porțile, pe ramură:**
+  - compilatorul;
+  - importurile: 17 reguli, 17 capcane;
+  - suita unitară: 7 789 de teste. Ultima rulare a dat 7 780 trecute și 8 sărite (logourile owner-ului, lipsă local), plus
+    1 picat: proba roadmap-ului (`documentatie.test.ts`) ținea lista feliilor etapei 4 fără 4.A↑. Lista a fost întinsă, iar
+    testul trece acum;
+  - build-ul determinist: 206 fișiere; pornirea 97,3 (cu ușa 100,8 / 110), totalul 411,8 / 450;
+  - e2e-ul, pe portul 4193: 275 de teste, 273 trecute. Cele două picate nu țin de felie:
+    - `raportor.spec.ts:101` cere adresa de pe 4173;
+    - `tutorial.spec.ts` e instabil și pe `main` (3 din 5 rulări pe bază, 4 din 5 pe ramură);
+  - traducerile: 0 lipsă.
+- **Timpii** (Edge 156, 2 304 de forme):
+  - la T, golul cel mai lung al pânzei: 633–683 ms → ≤ 233 ms;
+  - la export, calculul: ~1,2 s de pânză oprită → 1,07 s în worker, fără goluri.
+  - Rezultatele vin cu 0,25–0,5 s mai târziu (cifrele, în ADR).
+- **Găsit:** Edge 156 și Node 26 diferă pe ultimul bit al funcțiilor matematice. Dublele CAM-ului diferă cu cel mult
+  4,65e-7 mm, iar G-code-ul rămâne identic.
+- **Nepublicat:** owner-ul decide unirea.
+
 ## 2026-10-30 — Centrarea pe foaie (Model: Claude Opus 5.5)
 
 **Prompt:** „continua” (după pauză; felia aleasă din notițele owner-ului din 28.10, notița 2: „Buton de centrare un plansa, nu

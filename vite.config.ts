@@ -157,6 +157,9 @@ function pwa(): Plugin[] {
 
 export default defineConfig({
   plugins: [react(), versiuneInPagina(), cspInBuild(), documentatie(), pwa()],
+  // Codul servit de Vite rulează calculul CAM doar în worker (ADR 0109): ramura din proces a bazinului, a testelor din
+  // Node, dispare la build, cu importul ei (altfel CAM-ul ar sta și în bucățile firului principal).
+  define: { __CNCVS2_CONSTRUIT__: 'true' },
   build: {
     target: 'es2023',
     sourcemap: false,

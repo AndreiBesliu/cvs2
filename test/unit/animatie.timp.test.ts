@@ -9,7 +9,7 @@ import type { Miscare, Program, Scula } from '../../src/ir/ir.ts';
 import type { Montaj } from '../../src/ir/montaj.ts';
 import { GRBL_11 } from '../../src/post/contracte/grbl11.ts';
 import { posteaza } from '../../src/post/post.ts';
-import { secundePeMiscare, timpProgram } from '../../src/ui/actiuniExportCalcul.ts';
+import { secundePeMiscare, timpProgram } from '../../src/jobs/rezumat.ts';
 
 const T1: Scula = { numar: 1, nume: 'Freza 6', diametru: 6 };
 const T2: Scula = { numar: 2, nume: 'Freza 3', diametru: 3 };

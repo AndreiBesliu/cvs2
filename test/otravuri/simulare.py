@@ -151,7 +151,9 @@ o('E01', EXP, '  const camp = campPentruFoaie(foaie), d = dimensiuni(camp.celula
   '  const camp = campPentruFoaie(foaie, 0.5), d = dimensiuni(camp.celula, camp.latime, camp.inaltime);', 'sim', 'exportul simulează la 0,5 mm')
 o('E02', EXP, 'scula: p.scula, mutari: p.mutari, fund: -foaie.grosime }', 'scula: p.scula, mutari: p.mutari, fund: foaie.grosime }', 'sim',
   'fața de jos a foii cu semnul greșit')
-o('E03', EXP, '    simulare: (semnal) => simuleazaExport(job.program, foaie.stoc, semnal),', "    simulare: async () => ({ ok: false, motiv: 'oprită', eroare: false }),", 'sim',
+# E03, D05: rândurile lor s-au schimbat cu workerul CAM (ADR 0109, 30.10): mutările vin gata din worker, iar dialogul închis
+# oprește și calculul exportului.
+o('E03', EXP, '  return { ...rest, simulare: (s) => simuleazaExport(simulare, foaie, s) };', "  return { ...rest, simulare: async () => ({ ok: false, motiv: 'oprită', eroare: false }) };", 'sim',
   'exportul fără simulare')
 o('E04', EXP, '    return e instanceof SimulareAnulata ? { ok: false, motiv, eroare: false, anulata: true } : { ok: false, motiv, eroare: true };',
   '    return { ok: false, motiv, eroare: false };', 'e2e', 'un worker căzut nu mai e o eroare (nu intră în jurnal)')
@@ -160,7 +162,7 @@ o('D02', APP, "          setStareExport((v) => (v?.ok && v.simulare === 'calcul'
   'rezultatul simulării nu ajunge în dialog (rămâne „se simulează”)')
 o('D04', APP, "          if (!s.ok && s.eroare) jurnal.adauga('promisiune', new Error(`simularea: ${s.motiv}`));\n", '', 'e2e',
   'eșecul simulării nu intră în jurnal')
-o('D05', APP, '          onInchide={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); setDialogExport(false); }}',
+o('D05', APP, '          onInchide={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setDialogExport(false); }}',
   '          onInchide={() => { exportInCurs.current = false; setDialogExport(false); }}', 'e2e',
   'dialogul închis nu oprește simularea (workerele ei lucrează degeaba)')
 o('D03', PRE, '  if (-z >= grosime) return 0;', '  if (-z > grosime * 2) return 0;', 'e2e', 'tăietura prin foaie nu mai e neagră pe hartă')

@@ -107,11 +107,12 @@ module.exports = {
       to: { path: '^src/', pathNot: '^src/(sim|ir)/' },
     },
     {
-      name: 'bazinul-doar-simularea',
+      name: 'bazinul-fara-interfata',
       severity: 'error',
-      comment: 'Bazinul de workere (src/jobs) transportă joburile simulării: importă doar nucleul (ADR 0047).',
+      comment: 'Bazinul de workere (src/jobs) transportă joburile grele: simularea (ADR 0047) și calculul CAM (ADR 0109: CAM-ul, '
+        + 'postul, estimarea). Importă domeniul de sub el, nu interfața, pânza, adminul, mașina, ușile sau norul.',
       from: { path: modul('jobs') },
-      to: { path: '^src/', pathNot: '^src/(jobs|sim)/' },
+      to: { path: '^src/', pathNot: '^src/(jobs|sim|cam|post|ir|model)/' },
     },
     {
       name: 'masina-fara-post-si-document',
