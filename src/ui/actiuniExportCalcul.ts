@@ -96,30 +96,21 @@ export async function simuleazaRelief(
 }
 
 /**
- * Traseul documentului (ADR 0038 §2), în workerul CAM (ADR 0109): programul, despachetat pe firul principal pentru stratul
- * traseului și animație, cu timpul jobului de lângă el (ADR 0046 §8) pe setările `$$` date. `semnal` anulează calculul
- * (un document schimbat, un „Arată traseul” nou): promisiunea e respinsă cu `CalculAnulat`.
+ * Programul documentului pentru traseu (ADR 0038 §2), în workerul CAM (ADR 0109), despachetat pe firul principal pentru
+ * stratul traseului și animație. `semnal` anulează calculul (un document schimbat, un „Arată traseul” nou): promisiunea e
+ * respinsă cu `CalculAnulat`.
  */
-export async function traseuDocument(
-  doc: Document, setari: string | undefined, semnal?: AbortSignal,
-): Promise<{ readonly ok: true; readonly program: Program; readonly rezumat: RezumatJob } | { readonly ok: false; readonly motiv: string }> {
-  const r = await traseuInBazin(doc, setari, semnal ? { semnal } : {});
-  if (!r.ok) return r;
-  const foaie = doc.foi[0]?.stoc;
-  if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
-  const program = despacheteaza(r.program);
-  return { ok: true, program, rezumat: cuTraseu(r.rezumat, program, foaie, setari) };
+export async function programTraseu(doc: Document, semnal?: AbortSignal): Promise<{ readonly ok: true; readonly program: Program } | { readonly ok: false; readonly motiv: string }> {
+  const r = await traseuInBazin(doc, semnal ? { semnal } : {});
+  return r.ok ? { ok: true, program: despacheteaza(r.program) } : r;
 }
 
 /**
- * Timpul jobului de lângă traseu pentru un program deja calculat (alt `$$`, altă foaie), în workerul CAM, fără CAM: același
- * post și aceeași estimare ca la traseu.
+ * Timpul jobului de lângă traseu (ADR 0046 §8), în workerul CAM: programul traseului prin același post și același contract
+ * ca exportul, cu montajul stânga-jos și Z0 sus, apoi rezumatul (`timpProgram` din `src/jobs/rezumat.ts`). Programul și
+ * mașina lui vin cu rezumatul: animația traseului (ADR 0099) pornește din cipul timpului.
  */
 export async function timpTraseu(program: Program, foaie: Montaj['foaie'], setari: string | undefined, semnal?: AbortSignal): Promise<RezumatJob> {
-  return cuTraseu(await timpInBazin(impacheteaza(program), foaie, setari, semnal ? { semnal } : {}), program, foaie, setari);
-}
-
-/** Animația traseului (ADR 0099) pornește din cipul timpului: programul și mașina lui vin cu rezumatul. */
-function cuTraseu(r: RezumatJob, program: Program, foaie: Montaj['foaie'], setari: string | undefined): RezumatJob {
+  const r = await timpInBazin(impacheteaza(program), foaie, setari, semnal ? { semnal } : {});
   return r.ok ? { ...r, traseu: { program, foaie, setari } } : r;
 }

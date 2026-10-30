@@ -22,9 +22,10 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  *   valibot + aplicația; calculul exportului se încarcă la cerere); din 17.10, plus dicționarul limbii active, cerut
  *   înaintea primei randări la fiecare pornire (99,1 kB înainte de „loc în pachetul de pornire”); 100 kB până pe 28.10, 110 kB
  *   din 28.10 (ADR 0100: decizia owner-ului; fiecare bucată nouă la cerere își pune numele în lista de preîncărcare din pornire);
- * - totalul, cu bucățile încărcate la cerere (exportul: cavalier + CAM + post, ~23 kB) și workerul; 330 kB din 25.10 (ADR 0075:
- *   totul rămâne în precache, ca aplicația să meargă întreagă offline), 400 kB din 28.10 (ADR 0096: decizia owner-ului; se
- *   descarcă în fundal, cu progresul în bara de jos, ADR 0097);
+ * - totalul, cu bucățile încărcate la cerere și workerele; 330 kB din 25.10 (ADR 0075: totul rămâne în precache, ca
+ *   aplicația să meargă întreagă offline), 400 kB din 28.10 (ADR 0096: decizia owner-ului; se descarcă în fundal, cu
+ *   progresul în bara de jos, ADR 0097), 450 kB din 30.10 (ADR 0109: decizia owner-ului, „1”; workerul CAM are copia lui de
+ *   cavalier și de geometrie, ~73 kB, pe care firul principal le ține pentru desen și import);
  * - pagina `/admin` (ADR 0040, decizia din 16.10): bucata ei (`PaginaAdmin-*`, cu Firebase: contul, Firestore, funcțiile,
  *   App Check; 170 kB la felia 3.3) are plafonul ei și nu intră în totalul aplicației, fiindcă aplicația n-o descarcă
  *   niciodată. Firebase-ul pe care îl aduce raportorul de erori (3.2, ADR 0043) intră în total: îl descarcă oricine are o
@@ -32,7 +33,7 @@ import { cspPentru, hashuriInline } from './cspHtml.ts';
  *   și de raportor: adminul se măsoară cu tot ce aduce (închiderea lui), raportorul la fel, cu plafonul lui.
  */
 const PLAFON_PORNIRE_KB = 110;
-const PLAFON_TOTAL_KB = 400;
+const PLAFON_TOTAL_KB = 450;
 const PLAFON_ADMIN_KB = 200;
 /**
  * Ușa de încărcare a proiectului vine înaintea primei randări pentru oricine are un proiect salvat (proiectLocal): are
@@ -291,15 +292,24 @@ for (const [marcaj, ce] of LA_CERERE) {
  */
 /**
  * Nucleul simulării și bazinul lui (ADR 0047) stau DOAR în bucata calculului exportului și în workerul simulării; vederea
- * 3D (ADR 0057) le cere tot prin bucata calculului exportului. Plasa caută în TOATE bucățile (recenzia 19.10: un import
- * static din `PanouProprietati`, adus la pornire, scăpa unei căutări doar în bucata de pornire).
+ * 3D (ADR 0057) le cere tot prin bucata calculului exportului. Pregătirea programului (`program.ts`) stă și în workerul CAM,
+ * care trimite mutările gata (ADR 0109). Plasa caută în TOATE bucățile (recenzia 19.10: un import static din
+ * `PanouProprietati`, adus la pornire, scăpa unei căutări doar în bucata de pornire).
+ *
+ * CAM-ul (ADR 0109) stă DOAR în workerul lui: firul principal primește programul gata. Plasa vede și ramura din proces a
+ * bazinului CAM (a testelor din Node), care trebuie să dispară la build cu importul ei (`__CNCVS2_CONSTRUIT__`): altfel
+ * calculul CAM ar ieși într-o bucată a firului principal, încă ~45 kB în total.
  */
-const CU_SIMULARE = /^assets\/(?:actiuniExportCalcul|lucratorSimulare)-[A-Za-z0-9_-]{8}\.js$/;
-const MARCAJE_SIMULARE: ReadonlyArray<readonly [string, string, RegExp]> = [
-  ['nu se simulează încă', 'nucleul simulării (src/sim/nucleu.ts și program.ts)', CU_SIMULARE],
-  ['workerul simulării a căzut', 'bazinul simulării (src/jobs/bazin.ts)', /^assets\/actiuniExportCalcul-[A-Za-z0-9_-]{8}\.js$/],
+const bucataNumitaRe = (nume: string): RegExp => new RegExp(`^assets\\/${nume}-[A-Za-z0-9_-]{8}\\.js$`);
+const CU_SIMULARE = /^assets\/(?:actiuniExportCalcul|lucratorSimulare|lucratorCam)-[A-Za-z0-9_-]{8}\.js$/;
+const MARCAJE_SIMULARE: ReadonlyArray<readonly [string, string, RegExp, string]> = [
+  ['nu se simulează încă', 'nucleul simulării (src/sim/nucleu.ts și program.ts)', CU_SIMULARE, 'simularea are voie doar în bucata calculului exportului și în workerele ei'],
+  ['workerul simulării a căzut', 'bazinul simulării (src/jobs/bazin.ts)', bucataNumitaRe('actiuniExportCalcul'), 'bazinul simulării are voie doar în bucata calculului exportului'],
+  ['nicio formă n-are o operație de tăiere', 'CAM-ul (src/cam/job.ts)', bucataNumitaRe('lucratorCam'), 'CAM-ul are voie doar în workerul lui (ADR 0109)'],
+  ['exportul cere confirmarea ta', 'calculul exportului (src/jobs/calculCam.ts)', bucataNumitaRe('lucratorCam'), 'calculul CAM are voie doar în workerul lui (ADR 0109)'],
+  ['workerul CAM a căzut', 'bazinul CAM (src/jobs/bazinCam.ts)', bucataNumitaRe('actiuniExportCalcul'), 'bazinul CAM are voie doar în bucata calculului exportului'],
 ];
-for (const [marcaj, ce, permise] of MARCAJE_SIMULARE) {
+for (const [marcaj, ce, permise, regula] of MARCAJE_SIMULARE) {
   const cu = [...bucati.keys()].filter((r) => cod(r).includes(marcaj));
   if (cu.length === 0) {
     console.error(`Niciun fișier al build-ului nu conține „${marcaj}”: plasa pentru ${ce} nu mai vede nimic (marcajul s-a schimbat?).`);
@@ -307,7 +317,7 @@ for (const [marcaj, ce, permise] of MARCAJE_SIMULARE) {
   }
   const straine = cu.filter((r) => !permise.test(r));
   if (straine.length > 0) {
-    console.error(`„${marcaj}” (${ce}) e în ${straine.join(', ')}: simularea are voie doar în bucata calculului exportului și în workerul ei.`);
+    console.error(`„${marcaj}” (${ce}) e în ${straine.join(', ')}: ${regula}.`);
     process.exit(1);
   }
 }
@@ -481,7 +491,7 @@ if (marimiManifest.size !== manifest.size || marimiGresite.length > 0) {
 }
 // Raportorul și baza conexiunii sunt obligatorii (recenzia din 18.10): fila rămâne pe versiunea ei până la clic, deci și
 // raportorul ei trebuie să vină după o publicare, când bucata lui veche nu mai e pe hosting.
-const obligatorii = ['index.html', bucataPornirii, ...fisiereBaza, ...['ExportConectat', 'ImportConectat', 'actiuniAlegere', 'actiuniExportCalcul', 'lucrator', 'lucratorSimulare', 'raportor', 'conexiuneBaza'].map(bucataNumita)];
+const obligatorii = ['index.html', bucataPornirii, ...fisiereBaza, ...['ExportConectat', 'ImportConectat', 'actiuniAlegere', 'actiuniExportCalcul', 'lucrator', 'lucratorSimulare', 'lucratorCam', 'raportor', 'conexiuneBaza'].map(bucataNumita)];
 const lipsaObligatorii = obligatorii.filter((f) => !manifest.has(f));
 if (lipsaObligatorii.length > 0) {
   console.error(`Precache-ul nu are ${lipsaObligatorii.join(', ')}: offline, aplicația n-ar porni sau limba / ferestrele / raportorul n-ar veni (ADR 0042, ADR 0045 §2).`);

@@ -51,11 +51,11 @@ export type FoaieCam = { readonly latime: number; readonly inaltime: number; rea
 export type CerereCam =
   /** Exportul (fereastra exportului): programul, fișierele, rezumatul, mutările simulării. */
   | { readonly fel: 'export'; readonly document: Document; readonly parametri: ParametriExport }
-  /** „Arată traseul” (ADR 0038 §2): programul, împachetat, și timpul lui lângă traseu (ADR 0046 §8). */
-  | { readonly fel: 'traseu'; readonly document: Document; readonly setari: string | undefined }
+  /** „Arată traseul” (ADR 0038 §2): programul, împachetat. */
+  | { readonly fel: 'traseu'; readonly document: Document }
   /** Vederea 3D (ADR 0057 §1): mutările simulării ale programului documentului. */
   | { readonly fel: 'simulare'; readonly document: Document }
-  /** Timpul unui program deja calculat (alt `$$`, altă foaie), fără CAM. */
+  /** Timpul jobului de lângă traseu (ADR 0046 §8) pentru un program deja calculat, fără CAM. */
   | { readonly fel: 'timp'; readonly program: ProgramImpachetat; readonly foaie: Montaj['foaie']; readonly setari: string | undefined };
 
 export type RaspunsExport =
@@ -69,9 +69,7 @@ export type RaspunsExport =
   /** Freza iese din foaie și omul n-a confirmat încă exact ieșirea asta: nu se scrie nimic. */
   | { readonly ok: false; readonly motiv: string; readonly cereConfirmare: IesireFoaie };
 
-export type RaspunsTraseu =
-  | { readonly ok: true; readonly program: ProgramImpachetat; readonly rezumat: RezumatJob }
-  | { readonly ok: false; readonly motiv: string };
+export type RaspunsTraseu = { readonly ok: true; readonly program: ProgramImpachetat } | { readonly ok: false; readonly motiv: string };
 
 export type RaspunsSimulare =
   | { readonly ok: true; readonly foaie: FoaieCam; readonly simulare: Extract<ProgramSimulat, { ok: true }> }

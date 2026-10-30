@@ -60,14 +60,11 @@ export async function calculeazaExportul(doc: Document, p: ParametriExport): Pro
 
 /**
  * Programul documentului pentru traseu (ADR 0038 §2): CAM-ul cu regimul implicit și fără supracursă, împachetat pentru
- * firul principal, cu timpul jobului de lângă traseu (ADR 0046 §8) pe setările `$$` de acum.
+ * firul principal. Timpul jobului de lângă traseu (ADR 0046 §8) e o cerere separată (`timp`): traseul nu-l așteaptă.
  */
-export function calculeazaTraseul(doc: Document, setari: string | undefined): RaspunsTraseu {
-  const foaie = doc.foi[0];
-  if (!foaie) return { ok: false, motiv: 'documentul n-are foaie' };
+export function calculeazaTraseul(doc: Document): RaspunsTraseu {
   const r = programDinDocument(doc);
-  if (!r.ok) return { ok: false, motiv: r.motiv };
-  return { ok: true, program: impacheteaza(r.program), rezumat: rezumatTraseu(r.program, foaie.stoc, setari) };
+  return r.ok ? { ok: true, program: impacheteaza(r.program) } : { ok: false, motiv: r.motiv };
 }
 
 /**
@@ -94,7 +91,7 @@ export async function raspunde(c: CerereCam): Promise<RaspunsCalcul> {
       return { raspuns: r, transfer: r.ok ? deTransferat([r.program.octeti, ...r.fisiere.map((f) => f.octeti), ...vederiSimulare(r.simulare)]) : [] };
     }
     case 'traseu': {
-      const r = calculeazaTraseul(c.document, c.setari);
+      const r = calculeazaTraseul(c.document);
       return { raspuns: r, transfer: r.ok ? transferabileProgram(r.program) : [] };
     }
     case 'simulare': {

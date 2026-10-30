@@ -96,9 +96,9 @@ export function exportInBazin(document: Document, parametri: ParametriExport, o:
   return calculeaza({ fel: 'export', document, parametri }, [], o) as Promise<RaspunsExport>;
 }
 
-/** Programul traseului (împachetat) și timpul lui, pe setările `$$` date. */
-export function traseuInBazin(document: Document, setari: string | undefined, o: OptiuniCam = {}): Promise<RaspunsTraseu> {
-  return calculeaza({ fel: 'traseu', document, setari }, [], o) as Promise<RaspunsTraseu>;
+/** Programul traseului, împachetat. */
+export function traseuInBazin(document: Document, o: OptiuniCam = {}): Promise<RaspunsTraseu> {
+  return calculeaza({ fel: 'traseu', document }, [], o) as Promise<RaspunsTraseu>;
 }
 
 /** Mutările simulării programului documentului, pentru vederea 3D. */
