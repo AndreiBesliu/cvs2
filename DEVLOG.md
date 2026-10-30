@@ -3827,3 +3827,40 @@ scrisă.
   - probele: unit și e2e pe 4193, octet cu octet;
   - timpii în Edge;
   - ADR 0109, CLAUDE.md, jurnalul, traducerile.
+
+**Reluată:** 30.10, 07:14, la „continua”. Raționamentul refăcut de la capăt și `main` adus pe ramură (fuziunea sugestiilor).
+O schimbare față de pauză: traseul nu mai așteaptă timpul din cip. Workerul trimite întâi programul, iar timpul e o cerere
+separată.
+
+**Completed:** 30.10, 08:54. ADR 0109; commit-urile `2d0af31` (codul și probele), `e970c85` (probele noi după otrăvuri) și
+documentele.
+- **Workerul CAM** (`src/jobs/lucratorCam.ts`; bazinul `src/jobs/bazinCam.ts`; protocolul `protocolCam.ts`):
+  - calculul e cel de dinainte, mutat neschimbat în `calculCam.ts` și `rezumat.ts`;
+  - codecul IR e `impachetare.ts`;
+  - în worker rulează exportul, traseul, timpul și vederea 3D.
+- **Legăturile:** `actiuniExportCalcul.ts` cheamă bazinul. `App.tsx` aduce traseul și cipul timpului prin bazin și anulează
+  calculul la un document schimbat. `Vedere3D.tsx` primește programul asincron, iar `actiuniExport.ts` primește semnalul.
+- **Regula de import** `bazinul-fara-interfata`.
+- **Poarta:** plafonul 450 kB și CAM-ul doar în worker, după marcaje; `lucratorCam` e obligatoriu în precache.
+- **Probele:**
+  - `test/unit/cam.bazin.test.ts`, cu corpusul `ajutor-corpus-cam.ts` (14 documente);
+  - `test/e2e/cam-bazin.spec.ts`, cu partea de Node `cam-node.ts`.
+- **Otrăvurile:** `test/otravuri/4.A.py`, 27 / 27; cele mutate din `timp.py` și `simulare.py` au fost îndreptate.
+- **Porțile, pe ramură:**
+  - compilatorul;
+  - importurile: 17 reguli, 17 capcane;
+  - suita unitară: 7 789 de teste. Ultima rulare a dat 7 780 trecute și 8 sărite (logourile owner-ului, lipsă local), plus
+    1 picat: proba roadmap-ului (`documentatie.test.ts`) ținea lista feliilor etapei 4 fără 4.A↑. Lista a fost întinsă, iar
+    testul trece acum;
+  - build-ul determinist: 206 fișiere; pornirea 97,3 (cu ușa 100,8 / 110), totalul 411,8 / 450;
+  - e2e-ul, pe portul 4193: 275 de teste, 273 trecute. Cele două picate nu țin de felie:
+    - `raportor.spec.ts:101` cere adresa de pe 4173;
+    - `tutorial.spec.ts` e instabil și pe `main` (3 din 5 rulări pe bază, 4 din 5 pe ramură);
+  - traducerile: 0 lipsă.
+- **Timpii** (Edge 156, 2 304 de forme):
+  - la T, golul cel mai lung al pânzei: 633–683 ms → ≤ 233 ms;
+  - la export, calculul: ~1,2 s de pânză oprită → 1,07 s în worker, fără goluri.
+  - Rezultatele vin cu 0,25–0,5 s mai târziu (cifrele, în ADR).
+- **Găsit:** Edge 156 și Node 26 diferă pe ultimul bit al funcțiilor matematice. Dublele CAM-ului diferă cu cel mult
+  4,65e-7 mm, iar G-code-ul rămâne identic.
+- **Nepublicat:** owner-ul decide unirea.

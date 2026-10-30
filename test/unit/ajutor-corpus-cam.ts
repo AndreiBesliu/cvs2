@@ -68,6 +68,26 @@ export function documentMare(n: number): Document {
   return document({ latime: 2440, inaltime: 1220, grosime: 18 }, piese);
 }
 
+/**
+ * Documentul greu pentru CAM, ușor pentru interfață (poarta e2e a bazinului, ADR 0109). E o singură piesă, într-o singură
+ * instanță, cu n × n/2 rame de 34 mm (profil exterior, 18 mm în pași de 6) și câte un buzunar Ø20 de 6 mm, cu pasul lateral
+ * de 1,2 mm. CAM-ul are de lucru cât pe documentul mare, dar interfața randează un singur rând. Golurile măsurate cât
+ * calculează workerul sunt deci ale firului principal, nu ale randării.
+ */
+export function documentGreu(n: number): Document {
+  const forme: Forma[] = [];
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n / 2; j++) {
+      const x = 10 + i * 42, y = 10 + j * 42;
+      forme.push(DR(`r${i}-${j}`, 34, 34, x, y, 3), CERC(`c${i}-${j}`, 10, x + 17, y + 17));
+    }
+  }
+  const ids = (p: string): string[] => forme.filter((f) => f.id.startsWith(p)).map((f) => f.id);
+  return document({ latime: 2440, inaltime: 1220, grosime: 18 }, [piesa('p', forme, [
+    op('o', ids('r'), { adancime: 18, pas: 6 }), buzunar('b', ids('c'), { adancime: 6, pas: 3, pasLateral: 1.2 }),
+  ])]);
+}
+
 export type CazCam = {
   readonly id: string;
   readonly doc: Document;

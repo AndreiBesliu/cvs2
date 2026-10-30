@@ -3,6 +3,17 @@
 # Alese de autorul feliei (plasa autorului, nu runda independentă din `PLAN.md` §4.3).
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
+#
+# Rezultatul (30.10, worktree de la 2d0af31, apoi e970c85). Bazele verzi: cam 10, cam2 42.
+# - Prima rundă: 22 / 25 prinse.
+#   - C07 (secundele prin float32) a scăpat: programul sintetic avea doar pauze întregi; proba nouă are o pauză de 2,001 s.
+#   - K01 și K02 (supracursa la traseu și la vederea 3D) au scăpat: corpusul n-avea nicio tăietură sub foaie; caz nou,
+#     „sub-foaie”.
+#   - M03 a fost prinsă după 184 s: a picat și o probă imediată, dar workerul tăcut ținea procesul până la termen.
+# - A doua rundă, pe cele trei: prinse.
+# - E2E (M04, M05), de mână: `npx` lipsește local, deci build-ul și spec-ul au rulat cu `node` direct. Ambele prinse; controlul
+#   e2e e verde înainte și după.
+# - Total: 27 / 27.
 O = []
 
 

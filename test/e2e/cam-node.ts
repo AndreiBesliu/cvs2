@@ -12,7 +12,7 @@ import { impacheteaza } from '../../src/jobs/impachetare.ts';
 import type { CerereCam } from '../../src/jobs/protocolCam.ts';
 import { jsonCanonic } from '../../src/model/incarcare.ts';
 import { pregatesteProgram } from '../../src/sim/program.ts';
-import { CORPUS_CAM, documentMare } from '../unit/ajutor-corpus-cam.ts';
+import { CORPUS_CAM, documentGreu, documentMare } from '../unit/ajutor-corpus-cam.ts';
 
 const b64 = (v: ArrayBufferView): string => Buffer.from(v.buffer, v.byteOffset, v.byteLength).toString('base64');
 
@@ -20,6 +20,12 @@ const mare = process.argv.indexOf('--mare');
 if (mare >= 0) {
   const n = Number(process.argv[mare + 1] ?? 48);
   process.stdout.write(jsonCanonic({ ...documentMare(n), rev: 1_000_000 }));
+  process.exit(0);
+}
+// Cu `--greu N`: documentul greu pentru CAM și ușor pentru interfață (o piesă cu n × n/2 rame și buzunare), ca text salvat.
+const greu = process.argv.indexOf('--greu');
+if (greu >= 0) {
+  process.stdout.write(jsonCanonic({ ...documentGreu(Number(process.argv[greu + 1] ?? 56)), rev: 1_000_000 }));
   process.exit(0);
 }
 // Cu `--document ID`: documentul unui caz din corpus, ca text salvat de aplicație (revizia 1 000 000).

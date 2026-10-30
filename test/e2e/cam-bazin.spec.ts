@@ -12,8 +12,9 @@ import { ecran, vedere } from './ajutor-panza.ts';
  *   alte funcții matematice (`sin`, `cos`, `atan2`… diferă pe ultimul bit, măsurat pe 30.10): pe curbe, centrul unui arc
  *   aproape drept le duce până la 4,65e-7 mm (placa 2), sub rotunjirea G-code-ului la 0,001 mm;
  * - pe calea omului: placa 2, deschisă ca proiect salvat și exportată din fereastra exportului, e fișierul ei de aur;
- * - pe documentul mare (2 304 de forme), cât calculează CAM-ul traseului, pânza primește cadre (firul principal nu
- *   îngheață), iar un document schimbat în timpul calculului îl anulează: workerul se oprește, rezultatul vechi nu apare.
+ * - pe un document greu pentru CAM (3 136 de forme într-o piesă), cât calculează workerul traseul, pânza primește cadre
+ *   (firul principal nu stă), iar un document schimbat în timpul calculului îl anulează: workerul se oprește fără răspuns,
+ *   rezultatul vechi nu apare.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -200,79 +201,83 @@ test('pe calea omului: placa 2, deschisă ca proiect și exportată din fereastr
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
-/** Cadrele pânzei, cu starea cipului traseului la fiecare: așa se vede dacă firul principal a stat cât a calculat CAM-ul. */
-async function pornesteCadrele(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    const w = window as unknown as { cadre: Array<[number, string]> };
+/**
+ * Ceasurile paginii: fiecare cadru al pânzei, apoi fiecare worker CAM pornit, cu ora la care a răspuns și la care s-a oprit
+ * (după numele lui, `cam-<fel>`), și ora apăsării pe Delete. Așa se vede ce face firul principal cât lucrează workerul.
+ */
+async function ceasuri(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const w = window as unknown as {
+      cadre: number[]; workere: Array<{ nume: string; pornit: number; raspuns: number; oprit: number }>; sters: number;
+    };
     w.cadre = [];
+    w.workere = [];
+    w.sters = Number.NaN;
     const f = (t: number): void => {
-      w.cadre.push([t, document.querySelector('[data-testid="traseu-stare"]')?.getAttribute('data-stare') ?? '']);
-      if (w.cadre.length < 20_000) requestAnimationFrame(f);
+      w.cadre.push(t);
+      if (w.cadre.length < 100_000) requestAnimationFrame(f);
     };
     requestAnimationFrame(f);
+    const W = window.Worker;
+    window.Worker = class extends W {
+      readonly ceas: { nume: string; pornit: number; raspuns: number; oprit: number };
+      constructor(u: string | URL, o?: WorkerOptions) {
+        super(u, o);
+        this.ceas = { nume: o?.name ?? '', pornit: performance.now(), raspuns: Number.NaN, oprit: Number.NaN };
+        w.workere.push(this.ceas);
+        this.addEventListener('message', () => { if (Number.isNaN(this.ceas.raspuns)) this.ceas.raspuns = performance.now(); });
+      }
+      override terminate(): void {
+        if (Number.isNaN(this.ceas.oprit)) this.ceas.oprit = performance.now();
+        super.terminate();
+      }
+    };
+    window.addEventListener('keydown', (e) => { if (e.key === 'Delete') w.sters = performance.now(); }, true);
   });
 }
 
-/** Cel mai lung gol dintre două cadre cât cipul spunea „se calculează”, și câte cadre au venit atunci. */
-async function golulCalculului(page: Page): Promise<{ golMs: number; cadre: number }> {
-  return page.evaluate(() => {
-    const c = (window as unknown as { cadre: Array<[number, string]> }).cadre;
-    let gol = 0, cadre = 0;
-    for (let i = 1; i < c.length; i++) {
-      const [t0, s0] = c[i - 1] as [number, string];
-      if (s0 !== 'traseu.calcul') continue;
-      cadre++;
-      gol = Math.max(gol, (c[i] as [number, string])[0] - t0);
-    }
-    return { golMs: gol, cadre };
-  });
-}
+type Ceasuri = { readonly cadre: number[]; readonly workere: Array<{ nume: string; pornit: number; raspuns: number; oprit: number }>; readonly sters: number };
+const citesteCeasurile = (page: Page): Promise<Ceasuri> => page.evaluate(() => {
+  const w = window as unknown as Ceasuri;
+  return { cadre: w.cadre, workere: w.workere, sters: w.sters };
+});
 
-test('documentul mare: cât calculează CAM-ul traseului în worker, pânza primește cadre; apoi traseul apare', async ({ page }) => {
+test('documentul greu: cât calculează workerul CAM traseul, pânza primește cadre (firul principal nu stă); apoi traseul apare', async ({ page }) => {
   test.setTimeout(120_000);
-  await deschide(page, nod('--mare', '48'));
-  await pornesteCadrele(page);
+  await ceasuri(page);
+  await deschide(page, nod('--greu', '56'));
   await page.keyboard.press('t');
-  const cip = page.getByTestId('traseu-stare');
-  await expect(cip).toHaveAttribute('data-stare', 'traseu.calcul');
-  await expect(page.locator('[data-stare="traseu.calcul"]')).toHaveCount(0, { timeout: 60_000 });
-  const { golMs, cadre } = await golulCalculului(page);
-  console.log(`documentul mare: ${cadre} cadre cât a calculat CAM-ul, cel mai lung gol ${golMs.toFixed(0)} ms`);
-  // Pe firul principal, CAM-ul acestui document ținea pânza ~0,5 s (măsurat pe 30.10, ADR 0109); în worker, doar
-  // trimiterea documentului și primirea programului.
-  expect(cadre).toBeGreaterThanOrEqual(5);
-  expect(golMs).toBeLessThan(250);
   await expect(page.locator('[data-actiune="vedere.traseu"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('traseu-timp')).toBeVisible({ timeout: 60_000 });
+  const c = await citesteCeasurile(page);
+  const w = c.workere.find((x) => x.nume === 'cam-traseu');
+  expect(w, `workerele: ${JSON.stringify(c.workere)}`).toBeTruthy();
+  if (!w) return;
+  // Fereastra calculului: de la pornirea workerului până la răspunsul lui. Pe firul principal, CAM-ul acestui document ar
+  // ține pânza toată fereastra (~0,4–0,5 s în Node). Singurul gol lung e la început (măsurat pe 30.10: 100–183 ms, la ~20
+  // ms după pornire): copia documentului spre worker și randarea stării „se calculează”. Pragul e o parte din fereastră,
+  // nu milisecunde fixe, ca pe o mașină mai lentă (CI) să judece la fel.
+  const fereastra = w.raspuns - w.pornit;
+  const cadre = c.cadre.filter((t) => t >= w.pornit && t <= w.raspuns);
+  const repere = [w.pornit, ...cadre, w.raspuns];
+  const gol = Math.max(...repere.slice(1).map((t, k) => t - (repere[k] as number)));
+  console.log(`documentul greu: workerul a calculat ${fereastra.toFixed(0)} ms; ${cadre.length} cadre, cel mai lung gol ${gol.toFixed(0)} ms`);
+  expect(fereastra, 'fereastra calculului e destul de lungă ca proba să spună ceva').toBeGreaterThan(150);
+  expect(cadre.length).toBeGreaterThanOrEqual(5);
+  expect(gol).toBeLessThan(0.6 * fereastra);
+  expect(w.oprit - w.raspuns, 'workerul se oprește la răspuns').toBeLessThan(50);
   await expect(page.locator('[data-stare="traseu.refuz"]')).toHaveCount(0);
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
 test('un document schimbat în timpul calculului îl anulează: workerul se oprește, rezultatul vechi nu apare, T calculează din nou', async ({ page }) => {
   test.setTimeout(120_000);
-  // Workerele paginii, învelite: ora fiecărei opriri (cu numele workerului) și ora apăsării pe Delete.
-  await page.addInitScript(() => {
-    const w = window as unknown as { oprite: Array<[string, number]>; sters: number };
-    w.oprite = [];
-    w.sters = Number.NaN;
-    const W = window.Worker;
-    window.Worker = class extends W {
-      readonly nume: string;
-      constructor(u: string | URL, o?: WorkerOptions) {
-        super(u, o);
-        this.nume = o?.name ?? '';
-      }
-      override terminate(): void {
-        w.oprite.push([this.nume, performance.now()]);
-        super.terminate();
-      }
-    };
-    window.addEventListener('keydown', (e) => { if (e.key === 'Delete') w.sters = performance.now(); }, true);
-  });
-  await deschide(page, nod('--mare', '48'));
-  // Rama din colțul stânga-jos (latura ei stângă, la x = 10 mm), aleasă înainte, ca ștergerea să vină imediat după T.
+  await ceasuri(page);
+  await deschide(page, nod('--greu', '56'));
+  // Piesa (rama din colțul stânga-jos, latura ei stângă, la x = 10 mm), aleasă înainte, ca ștergerea să vină imediat după T.
   const v = await vedere(page);
   const pe = await ecran(page, v);
-  const p = pe(10, 30);
+  const p = pe(10, 25);
   await page.mouse.click(p.x, p.y);
   await page.keyboard.press('t');
   await expect(page.getByTestId('traseu-stare')).toHaveAttribute('data-stare', 'traseu.calcul');
@@ -281,19 +286,17 @@ test('un document schimbat în timpul calculului îl anulează: workerul se opre
   await expect(page.locator('[data-actiune="vedere.traseu"]')).toHaveAttribute('aria-pressed', 'false');
   await page.waitForTimeout(3000);
   await expect(page.getByTestId('traseu-stare')).toHaveCount(0);
-  // Workerul traseului s-a oprit chiar la ștergere (CAM-ul lui mai avea de lucru sute de ms), nu la capătul calculului.
-  const { oprite, sters } = await page.evaluate(() => {
-    const w = window as unknown as { oprite: Array<[string, number]>; sters: number };
-    return { oprite: w.oprite, sters: w.sters };
-  });
-  const traseu = oprite.filter(([n]) => n === 'cam-traseu');
-  expect(traseu.length, JSON.stringify(oprite)).toBe(1);
-  expect((traseu[0] as [string, number])[1] - sters).toBeLessThan(150);
   await expect(page.locator('[data-actiune="vedere.traseu"]')).toHaveAttribute('aria-pressed', 'false');
-  // Pe documentul de acum, „Arată traseul” calculează din nou și ajunge la capăt.
+  // Workerul traseului s-a oprit chiar la ștergere, fără răspuns (CAM-ul lui mai avea de lucru), nu la capătul calculului.
+  const c = await citesteCeasurile(page);
+  const traseu = c.workere.filter((x) => x.nume === 'cam-traseu');
+  expect(traseu.length, JSON.stringify(c.workere)).toBe(1);
+  const w = traseu[0] as Ceasuri['workere'][number];
+  expect(Number.isNaN(w.raspuns), 'workerul oprit n-a mai apucat să răspundă').toBe(true);
+  expect(w.oprit - c.sters, 'oprit chiar după ștergere').toBeLessThan(1000);
+  // Pe documentul de acum (gol), „Arată traseul” calculează din nou și spune de ce nu se poate.
   await page.keyboard.press('t');
   await expect(page.locator('[data-actiune="vedere.traseu"]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('[data-stare="traseu.calcul"]')).toHaveCount(0, { timeout: 60_000 });
-  await expect(page.locator('[data-stare="traseu.refuz"]')).toHaveCount(0);
+  await expect(page.locator('[data-stare="traseu.refuz"]')).toHaveCount(1, { timeout: 60_000 });
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });

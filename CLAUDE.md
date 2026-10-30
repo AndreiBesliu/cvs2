@@ -225,6 +225,21 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   aplicației pentru fonturile omului și ale sistemului, fețele de afișare Google înainte de descărcare (CSS API v2 din
   browser, `fonts.googleapis.com` / `fonts.gstatic.com` în CSP). Urmează în etapa 7: instanțele fonturilor variabile,
   fonturile cu o singură linie. **Pornirea 97,4 (cu ușa 100,9 / 110 kB), totalul 374,4 / 400.**
+  **Calculul CAM în bazinul de workere (ADR 0109, felia 4.A↑, adusă din etapa 4)** gata pe 30.10.
+  - **Ce s-a mutat în worker:** exportul (CAM-ul, postul, SHA-256, rezumatul, mutările simulării), „Arată traseul”, timpul
+    din cip și programul vederii 3D se calculează în workerul CAM (`src/jobs/lucratorCam.ts`, bazinul `src/jobs/bazinCam.ts`,
+    codul în `src/jobs/calculCam.ts` și `rezumat.ts`). Pe firul principal, pânza nu mai îngheață.
+  - **Workerul:** câte unul pe calcul, oprit la capăt. Un document schimbat anulează calculul traseului.
+  - **Programul IR** vine împachetat și transferat (`src/jobs/impachetare.ts`).
+  - **Același G-code, octet cu octet:** corpusul `test/unit/ajutor-corpus-cam.ts`, plăcile, Edge față de Node.
+  - **În Node (testele),** același calcul în proces, prin `structuredClone`. La build, ramura aceea dispare
+    (`__CNCVS2_CONSTRUIT__`), iar poarta cere CAM-ul doar în worker.
+  - **Un calcul greu nou** intră în `src/jobs/calculCam.ts`, ca cerere a protocolului (`protocolCam.ts`), nu pe firul
+    principal.
+  - **Edge și Node** diferă pe ultimul bit al funcțiilor matematice. Dublele CAM-ului diferă cu cel mult 4,65e-7 mm, sub
+    rotunjirea G-code-ului.
+  - **Plafonul total e 450 kB** (decizia owner-ului): workerul are copia lui de cavalier și de geometrie.
+  - **Pornirea 97,3 (cu ușa 100,8 / 110 kB), totalul 411,8 / 450.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -333,6 +348,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 29.10.2026: **plafonul total 450 kB** („1”, la alegerea dintre plafonul nou, cavalier mutat doar în worker și amânare):
+  workerul CAM (felia 4.A↑, ADR 0109) are copia lui de cavalier și de geometrie, pe care firul principal le ține pentru desen
+  și import; totalul ar fi trecut de 400 kB (410,8 măsurat). Plafonul trece de la 400 la 450 kB, cu ADR nou, iar felia merge
+  cum e scrisă; pornirea rămâne 110 kB.
 - 28.10.2026: **conturile, întâi ale personalului, și sugestiile** („Vreau sa cream si sistemul de account pentru useri, inclusiv
   admini, scopul acum imediat este pentru admini, si, sa avem un sistem de feedback unde ei pot nota sugestii, iar eu sa pot decide
   ce sa implementam”): acum, pentru personal (conturile din `/admin` există, ADR 0040, 0049): sugestiile scrise de personal și
