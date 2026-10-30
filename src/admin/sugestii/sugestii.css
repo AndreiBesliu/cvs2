@@ -78,7 +78,7 @@
   margin: 0;
 }
 
-/* Poza planșei (ADR 0110): în formular, mică, cu ora și „Scoate poza”; pe rând, la cerere, cât lățimea rândului. */
+/* Poza planșei (ADR 0111): în formular, mică, cu ora și „Scoate poza”; pe rând, la cerere, cât lățimea rândului. */
 .sug-poza {
   display: grid;
   justify-items: start;

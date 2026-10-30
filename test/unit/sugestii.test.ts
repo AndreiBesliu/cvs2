@@ -7,7 +7,7 @@ import {
   RE_BASE64, STARI_SUGESTIE, tipPoza, TITLU_MAX, ziUtc,
 } from '../../shared/sugestii.ts';
 
-/** Sugestiile personalului (ADR 0107, poza: ADR 0110): validările comune clientului și serverului, apoi partea pură a filei. */
+/** Sugestiile personalului (ADR 0107, poza: ADR 0111): validările comune clientului și serverului, apoi partea pură a filei. */
 
 const ts = (iso: string) => ({ toDate: () => new Date(iso) });
 const ID = 'AbCdEfGhIjKlMnOpQrSt';
@@ -84,7 +84,7 @@ test('editarea: doar autorul, doar fără decizie, cu versiunea cunoscută; deci
   assert.equal(areDecizie(s({ stare: 'gata' })), false);
 });
 
-test('poza (ADR 0110): tipul după semnătură, nu după nume; base64 strict; plafonul în base64 e cel al octeților', () => {
+test('poza (ADR 0111): tipul după semnătură, nu după nume; base64 strict; plafonul în base64 e cel al octeților', () => {
   const t8 = (s: string) => new TextEncoder().encode(s);
   assert.equal(tipPoza(new Uint8Array([0xff, 0xd8, 0xff, 0xdb])), 'image/jpeg');
   assert.equal(tipPoza(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])), 'image/png');

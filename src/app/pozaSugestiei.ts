@@ -1,5 +1,5 @@
 /**
- * Poza planșei pentru o sugestie (ADR 0110), doar în browser, între editor și pagina `/admin` (aceeași origine): editorul o
+ * Poza planșei pentru o sugestie (ADR 0111), doar în browser, între editor și pagina `/admin` (aceeași origine): editorul o
  * lasă aici și anunță pe un canal, iar fila Sugestii o ia în formularul sugestiei noi, o arată și o trimite odată cu ea.
  * Un singur loc: o poză nouă o înlocuiește pe cea veche; una neluată într-o zi nu se mai arată.
  */

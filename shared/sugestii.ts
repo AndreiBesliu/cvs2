@@ -65,7 +65,7 @@ export function curataText(x: unknown, max: number): string | null {
 export const ziUtc = (d: Date): string => d.toISOString().slice(0, 10);
 
 /**
- * Poza planșei atașată unei sugestii (ADR 0110): adusă din editor, trimisă la scriere, ținută în documentul ei
+ * Poza planșei atașată unei sugestii (ADR 0111): adusă din editor, trimisă la scriere, ținută în documentul ei
  * (`sugestii/{id}/poze/plansa`), lângă sugestie. Tipul se citește din primii octeți, nu din ce spune cererea.
  */
 export const COLECTIE_POZE = 'poze';
@@ -96,7 +96,7 @@ export interface ContinutSugestie {
   readonly zona: ZonaSugestie | null;
 }
 
-/** Cererile callable-ului `sugestii` (ADR 0107; poza, opțională, doar la scriere: ADR 0110, în base64). */
+/** Cererile callable-ului `sugestii` (ADR 0107; poza, opțională, doar la scriere: ADR 0111, în base64). */
 export type CerereSugestie =
   | ({ readonly actiune: 'scrie'; readonly poza?: string } & ContinutSugestie)
   | ({ readonly actiune: 'editeaza'; readonly id: string; readonly versiune: number } & ContinutSugestie)

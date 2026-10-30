@@ -232,7 +232,7 @@ test('decizia pe o sugestie schimbată între timp e refuzată lângă formular;
 /** Mărimea reală a unei imagini din pagină (0 = n-a venit). */
 const latimeImagine = (p: Page, sel: string): Promise<number> => p.locator(sel).evaluate((im) => (im as HTMLImageElement).naturalWidth);
 
-test('din editor (ADR 0110): „Sugestie” face poza planșei și deschide fila Sugestii cu poza atașată; trimisă, se vede pe rând; scoasă, nu revine', async ({ page }) => {
+test('din editor (ADR 0111): „Sugestie” face poza planșei și deschide fila Sugestii cu poza atașată; trimisă, se vede pe rând; scoasă, nu revine', async ({ page }) => {
   const erori: string[] = [];
   page.on('pageerror', (e) => { erori.push(e.message); });
   // Fila nouă din editor citește și ea configurația instanței (locală, cu emulatoarele).

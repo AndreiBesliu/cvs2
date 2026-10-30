@@ -52,7 +52,7 @@ service cloud.firestore {
     match /sugestii/{id} {
       allow read: if are('sugestii.citeste') || (are('sugestii.scrie') && resource.data.autor == request.auth.uid);
 
-      // Poza planșei (ADR 0110): o citește, câte una, cine poate citi sugestia; o scrie doar callable-ul, odată cu ea.
+      // Poza planșei (ADR 0111): o citește, câte una, cine poate citi sugestia; o scrie doar callable-ul, odată cu ea.
       match /poze/{poza} {
         allow get: if are('sugestii.citeste')
           || (are('sugestii.scrie') && get(/databases/$(database)/documents/sugestii/$(id)).data.autor == request.auth.uid);

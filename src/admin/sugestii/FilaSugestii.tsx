@@ -54,7 +54,7 @@ export function FilaSugestii({ con, eu, owner, permisiuni }: {
   const [deschis, setDeschis] = useState<Deschis>(null);
   // Formularul nou se golește după o trimitere reușită: cheia lui crește.
   const [trimise, setTrimise] = useState(0);
-  // Poza planșei lăsată de editor (ADR 0110) intră în formularul nou; una nouă, anunțată pe canal, o înlocuiește.
+  // Poza planșei lăsată de editor (ADR 0111) intră în formularul nou; una nouă, anunțată pe canal, o înlocuiește.
   const [pozaNoua, setPozaNoua] = useState<PozaInAsteptare | null>(null);
   const [revPoza, setRevPoza] = useState(0);
   useEffect(() => {
@@ -242,7 +242,7 @@ function Rand({ con, s, eu, owner, poateScrie, deschis, deschide, ocupat, faraAp
 
 /**
  * Scrierea unei sugestii noi sau editarea uneia fără decizie; versiunea e cea de la deschidere. Formularul nou arată poza
- * planșei adusă din editor (ADR 0110), care pleacă odată cu sugestia, dacă omul n-o scoate.
+ * planșei adusă din editor (ADR 0111), care pleacă odată cu sugestia, dacă omul n-o scoate.
  */
 function Formular({ initial, ocupat, faraAppCheck, eroare, trimite, renunta, poza, scoatePoza }: {
   readonly initial: Sugestie | null; readonly ocupat: boolean; readonly faraAppCheck: boolean; readonly eroare: string | null;

@@ -42,7 +42,7 @@ function continutDin(d: Record<string, unknown>): ContinutSugestie {
 }
 
 /**
- * Poza planșei din cerere (ADR 0110), opțională: base64 strict, cel mult 400 kB, o imagine JPEG, PNG sau WebP după
+ * Poza planșei din cerere (ADR 0111), opțională: base64 strict, cel mult 400 kB, o imagine JPEG, PNG sau WebP după
  * semnătura ei. Lipsa ei (sau null) = fără poză.
  */
 function pozaDin(p: unknown): { readonly octeti: Buffer; readonly tip: TipPoza } | null {

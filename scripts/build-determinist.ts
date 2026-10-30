@@ -54,7 +54,7 @@ const PLAFON_TEST_KB = 12;
 const BUCATA_SIMULATA = /^assets\/MasinaSimulata-[^/]+\.js$/;
 const PLAFON_SIMULATA_KB = 8;
 /**
- * Sugestia din editor (ADR 0110): bucata ei și cele două împărțite (poza planșei, cu testul pas cu pas; poza lăsată pentru
+ * Sugestia din editor (ADR 0111): bucata ei și cele două împărțite (poza planșei, cu testul pas cu pas; poza lăsată pentru
  * `/admin`, cu contractul sugestiilor), doar online, cu plafonul lor, în afara totalului (ca testul).
  */
 const BUCATI_SUGESTIE = /^assets\/(?:SugestieDinEditor|pozaPlansei|pozaSugestiei)-[^/]+\.js$/;
@@ -228,7 +228,7 @@ if (bucatiSimulata !== 1) {
 }
 if (bucatiSugestie !== 3) {
   // Altă împărțire (o bucată nouă, comună cu aplicația) ar ieși din plafonul ei și ar intra în total, tăcut.
-  console.error(`Sugestia din editor trebuie să fie exact trei bucăți (SugestieDinEditor, pozaPlansei, pozaSugestiei; ADR 0110); găsite: ${bucatiSugestie}.`);
+  console.error(`Sugestia din editor trebuie să fie exact trei bucăți (SugestieDinEditor, pozaPlansei, pozaSugestiei; ADR 0111); găsite: ${bucatiSugestie}.`);
   process.exit(1);
 }
 if (bucatiAdmin !== 1) {

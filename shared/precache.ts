@@ -26,7 +26,7 @@
  * Testul pas cu pas al owner-ului (ADR 0072: bucata `TestPasCuPas`, cu stilul ei, și pașii din `tutorial/`) rămâne afară,
  * ca `/admin`: există doar pe instanța de test, deci n-are ce căuta pe discul fiecărui om. La fel mașina simulată (ADR 0081:
  * bucata `MasinaSimulata`, emulatorul GRBL al panoului mașinii); panoul și senderul intră (merg și fără rețea, în atelier).
- * La fel sugestia din editor (ADR 0110: bucata `SugestieDinEditor`, plus cele două împărțite, `pozaPlansei` cu testul și
+ * La fel sugestia din editor (ADR 0111: bucata `SugestieDinEditor`, plus cele două împărțite, `pozaPlansei` cu testul și
  * `pozaSugestiei` cu `/admin`): butonul ei e doar în afara instanței live, iar sugestia cere oricum `/admin`, deci rețea.
  *
  * Orice alt fișier e „necunoscut”: poarta pică pe el, ca un fel nou de fișier (un font, o imagine în `assets/`) să fie

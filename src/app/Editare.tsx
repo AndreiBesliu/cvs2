@@ -128,7 +128,7 @@ const Vedere3D = lazy(() => import('./Vedere3D.tsx').then(cuMesaje).then((m) => 
   ),
 })));
 
-/** Fila Sugestii din `/admin` (ADR 0110), unde ajunge poza planșei lăsată de butonul Sugestie. */
+/** Fila Sugestii din `/admin` (ADR 0111), unde ajunge poza planșei lăsată de butonul Sugestie. */
 const ADRESA_SUGESTII = '/admin#sugestii';
 
 /**
@@ -311,7 +311,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Manualul deschis, cu ușa de la deschidere (capitolul ei); `null`: închis.
   const [manual, setManual] = useState<{ readonly usa: string | null } | null>(null);
   const [testDeschis, setTestDeschis] = useState(false);
-  // Sugestia din editor (ADR 0110): fila Sugestii din /admin se deschide chiar în clic (browserul o lasă deschisă), apoi
+  // Sugestia din editor (ADR 0111): fila Sugestii din /admin se deschide chiar în clic (browserul o lasă deschisă), apoi
   // poza planșei ajunge la ea prin browser; `blocata`: browserul n-a deschis fila (poza o așteaptă oricum acolo).
   const [sugestie, setSugestie] = useState<null | 'lucreaza' | 'blocata' | { readonly motiv: string }>(null);
   const trimiteSugestia = (): void => {

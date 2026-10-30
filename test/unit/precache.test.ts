@@ -121,7 +121,7 @@ test('lista bucăților doar online: pagina /admin, testul pas cu pas, mașina s
   assert.deepEqual([...DOAR_ONLINE], ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata', 'SugestieDinEditor', 'pozaPlansei', 'pozaSugestiei']);
 });
 
-test('sugestia din editor (ADR 0110) nu intră: bucata ei și cele două împărțite, cu testul și cu /admin', () => {
+test('sugestia din editor (ADR 0111) nu intră: bucata ei și cele două împărțite, cu testul și cu /admin', () => {
   for (const f of ['assets/SugestieDinEditor-i0-EznsX.js', 'assets/pozaPlansei-ZYgoz0c-.js', 'assets/pozaSugestiei-BHR-UcY-.js']) {
     assert.equal(motivPrecache(f), 'doar-online', f);
   }

@@ -1,5 +1,5 @@
 /**
- * Sugestia din editor (ADR 0110): poza planșei (`pozaPlansei`, ca la testul pas cu pas), micșorată sub plafonul serverului
+ * Sugestia din editor (ADR 0111): poza planșei (`pozaPlansei`, ca la testul pas cu pas), micșorată sub plafonul serverului
  * și lăsată în browser (`pozaSugestiei.ts`), de unde fila Sugestii din `/admin` (deschisă de editor chiar în clic) o ia în
  * formularul sugestiei noi. Bucata e doar online, ca testul: butonul stă doar în afara instanței live, iar sugestia cere
  * oricum rețea.

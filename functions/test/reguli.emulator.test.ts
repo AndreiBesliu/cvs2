@@ -183,7 +183,7 @@ test('sugestiile: o permisiune scoasă din rol nu mai deschide nici sugestiile p
   await assertSucceeds(getDoc(doc(ca('scr'), 'sugestii/s1')));
 });
 
-test('poza unei sugestii (ADR 0110): o citește, câte una, cine poate citi sugestia; nu se listează; nu o scrie nimeni din client', async () => {
+test('poza unei sugestii (ADR 0111): o citește, câte una, cine poate citi sugestia; nu se listează; nu o scrie nimeni din client', async () => {
   for (const uid of ['cit', 'own']) await assertSucceeds(getDoc(doc(ca(uid), 'sugestii/s2/poze/plansa')));
   await assertSucceeds(getDoc(doc(ca('scr'), 'sugestii/s1/poze/plansa')));
   // Autorul altei sugestii, o sugestie fără autor, un rol fără drept (chiar autorul ei): nu.

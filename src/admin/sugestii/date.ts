@@ -7,7 +7,7 @@ import {
 } from '../../../shared/sugestii.ts';
 import { dataDin } from '../erori/date.ts';
 
-/** Ce ține sugestia despre poza ei (ADR 0110); octeții stau în documentul pozei. */
+/** Ce ține sugestia despre poza ei (ADR 0111); octeții stau în documentul pozei. */
 export interface MetaPoza {
   readonly tip: TipPoza;
   readonly marime: number;
@@ -44,7 +44,7 @@ export interface Sugestie {
   readonly decisaLa: Date | null;
   /** Versiunea documentului, trimisă înapoi la editare și la decizie; null = necunoscută (nicio cerere nu pleacă). */
   readonly versiune: number | null;
-  /** Poza planșei (ADR 0110), dacă are una. */
+  /** Poza planșei (ADR 0111), dacă are una. */
   readonly poza: MetaPoza | null;
 }
 
