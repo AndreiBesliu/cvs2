@@ -3792,3 +3792,9 @@ din foaie, o foaie care nu pleacă din origine), e2e-ul (o formă într-un clic;
 Porțile: compilatorul, importurile, licențele, traducerile (469, 0 lipsă), suita unitară (7 780, 0 picate; 8 sărite), build-ul
 determinist (212 fișiere), e2e-ul (272; unul reluat singur după un `EBUSY` al Drive-ului pe artefactele Playwright),
 emulatoarele (46 + 15). Pornirea 97,4 neschimbată (cu ușa 100,9 / 110 kB); totalul 374,4 → 374,5 / 400.
+
+**Publicat pe test (30.10, 08:39)**, din workflow (run 41013367751, `1e4cdd0`), cu CI-ul rapid verde (run 41012604097).
+Verificat în browser la 1440 px, în română, pe `1e4cdd09e48b`: secțiunea Aliniere are 9 butoane, „Centrează pe foaie” cu
+eticheta și iconița lui (foaia cu blocul în mijloc); un dreptunghi 40,06 × 33,28 din X 109,94, Y 73,34 a ajuns, într-un clic,
+în X 129,97, Y 83,36 (centrul exact în 150, 100). Două forme deodată n-am putut alege în browserul aplicației (clicurile cu
+Shift pe pânză nu se înregistrau în panoul ascuns); blocul e probat de e2e pe același build.
