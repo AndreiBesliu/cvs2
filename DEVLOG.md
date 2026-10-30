@@ -3884,3 +3884,22 @@ Verificat în browser la 1440 px, în română, pe `1e4cdd09e48b`: secțiunea Al
 eticheta și iconița lui (foaia cu blocul în mijloc); un dreptunghi 40,06 × 33,28 din X 109,94, Y 73,34 a ajuns, într-un clic,
 în X 129,97, Y 83,36 (centrul exact în 150, 100). Două forme deodată n-am putut alege în browserul aplicației (clicurile cu
 Shift pe pânză nu se înregistrau în panoul ascuns); blocul e probat de e2e pe același build.
+
+## 2026-10-30 — Unirea calculului CAM în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (la întrebarea: unesc ramura `wip/4.A-cam-workere` în `main`, cu conflictele din documente rezolvate
+păstrând ambele părți, cu porțile, emulatoarele și publicarea pe test?); pe parcurs: „sa imi spui cand pot sa arhivez acea
+ramura de la CAM”.
+**Started:** 30.10, 09:33. **Completed:** 30.10, 10:04. Commit-ul de unire `711fa51`: ramura 4.A↑ (`bc2ead8`), lucrată de
+sesiunea paralelă în worktree-ul ei (`C:\Users\besli\cncvs2-lucru\cam-workere`). Citite înainte: porțile schimbate (plafonul
+total 400 → 450 kB, decizia owner-ului „1”, ADR 0109; regula de import a bazinului lărgită doar spre domeniu: CAM, post, IR,
+model; plasa nouă din build: CAM-ul doar în workerul lui). Conflictele, doar în documente (`CLAUDE.md`, DEVLOG, indexul ADR,
+jurnalul fișei), rezolvate cu ambele părți, în ordinea pornirii (4.A↑ la 29.10 21:40, 6.S↑ la 30.10 07:14). Porțile pe
+rezultat: compilatorul (aplicația și funcțiile), importurile, licențele, traducerile (472, 0 lipsă), suita unitară (7 790 de
+teste, 0 picate; 8 sărite), build-ul determinist (208 fișiere; pornirea 97,3 / 110 kB, totalul 411,9 / 450, `/admin` 194,1 /
+200), e2e-ul (276), emulatoarele (funcțiile 46, `/admin` 15; anunțate sesiunii sugestiilor). CI-ul rapid verde (run
+41022510087).
+**Publicat pe test (30.10, 10:00)**, din workflow (run 41023351532, `711fa51`). Verificat în browser la 1440 px, în română, pe
+`711fa51cc6c3`: fereastra „Exportă G-code” se deschide (butonul Exportă nu l-am apăsat: ar fi descărcat un fișier); „Arată
+traseul” aduce `lucratorCam` și arată „Timpul jobului: 1 min 12 s” în 0,5 s; vederea 3D, din programul workerului: „Placa
+simulată la 0,25 mm” în 0,5 s. 0 erori în jurnal și în consolă.
