@@ -4038,3 +4038,7 @@ singură, aceeași în lucrare și în rol (`inaltimeConV` în `src/model/docume
 cercul de 8 mm primește 5,196, iar lucrarea îl primește; sub con, adâncimea rămâne; cu vârful plat, conul lui (2,75 la V90 Ø6,
 vârful 0,5). Porțile: compilatorul, importurile, 7 807 teste unitare, build-ul determinist (pornirea 97,6, cu ușa 101,1 / 110
 kB; totalul 415,3 / 450), e2e 282 / 282, emulatoarele (49 + 16).
+**Publicat pe adresa principală de test:** 31.10, `publica` pe `6b84352` (rularea 41213775280), după rapid-ul verde
+(41213237840). Verificat în browserul aplicației la 1440 px: cercul nou (gaura de 8 mm), cu traseul arătat, trecut pe V-carve
+din panou, primește freza T2 V60 Ø6 și adâncimea 5,196; traseul se calculează singur, fără refuz (54,0 s); anulat la loc, fără
+erori în consolă.
