@@ -3947,3 +3947,7 @@ o ușă: 65 de uși), e2e-ul parcurge testul de la `/?test` (și după reîncăr
 că fără `?test` sau pe live bucata panoului nici nu e cerută. Porțile: 7 790 de teste unitare (0 picate), build-ul
 determinist, e2e 276 / 276 (pe un build proaspăt: `build-determinist` nu rescrie `dist/`, iar primul e2e a servit build-ul
 de dimineață, cu butonul încă în el).
+**Publicat pe adresa principală de test:** 31.10, `publica` pe `515a8af` (rularea 41196176380), după rapid-ul verde
+(41195559134). Verificat în browserul aplicației la 1440 px: ajutorul din extensie are doar „?”; `/?test` deschide panoul
+„Step-by-step test” la pasul 1 / 31, la ~0,6 s după încărcare, fără nicio interacțiune (prima încărcare după actualizare a
+durat mai mult: bucățile noi veneau din rețea).
