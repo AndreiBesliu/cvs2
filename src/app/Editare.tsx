@@ -128,6 +128,9 @@ const Vedere3D = lazy(() => import('./Vedere3D.tsx').then(cuMesaje).then((m) => 
   ),
 })));
 
+/** Fila Sugestii din `/admin` (ADR 0111), unde ajunge poza planșei lăsată de butonul Sugestie. */
+const ADRESA_SUGESTII = '/admin#sugestii';
+
 /**
  * Testul pas cu pas al owner-ului (ADR 0072): o bucată doar online, adusă la primul clic pe Test (butonul există doar pe
  * instanța de test). Dacă nu vine, se spune, ca la manual.
@@ -213,6 +216,8 @@ export type ProprietatiEditare = {
    * pentru raport.
    */
   readonly test?: { readonly versiune: string; readonly instanta: string };
+  /** Butonul Sugestie (ADR 0111), în extensia barei, lângă „?”: doar în afara instanței live (și local), fără `?test`. */
+  readonly sugestie?: boolean;
   /** Se poate reface un pas al proiectului (Ctrl+Shift+Z redeschide un desen Pen doar dacă nu, ADR 0074 §4). */
   readonly reface?: boolean;
 };
@@ -312,6 +317,18 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Manualul deschis, cu ușa de la deschidere (capitolul ei); `null`: închis.
   const [manual, setManual] = useState<{ readonly usa: string | null } | null>(null);
   const [testDeschis, setTestDeschis] = useState(p.test !== undefined);
+  // Sugestia din editor (ADR 0111): fila Sugestii din /admin se deschide chiar în clic (browserul o lasă deschisă), apoi
+  // poza planșei ajunge la ea prin browser; `blocata`: browserul n-a deschis fila (poza o așteaptă oricum acolo).
+  const [sugestie, setSugestie] = useState<null | 'lucreaza' | 'blocata' | { readonly motiv: string }>(null);
+  const trimiteSugestia = (): void => {
+    const fila = window.open(ADRESA_SUGESTII, '_blank');
+    if (fila) fila.opener = null;
+    setSugestie('lucreaza');
+    import('./SugestieDinEditor.ts').then((m) => m.lasaPozaPlansei()).then(
+      () => { setSugestie(fila ? null : 'blocata'); },
+      (e: unknown) => { setSugestie({ motiv: e instanceof Error ? e.message : String(e) }); },
+    );
+  };
   const unealtaRef = useRef<Unealta>('selectie');
   // Locul uneltelor din bara de sus (ADR 0052): îl desenează aplicația, iar modulul ăsta îl umple, printr-un portal.
   const [loc, setLoc] = useState<HTMLElement | null>(null);
@@ -787,6 +804,20 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           <TestPasCuPas versiune={p.test.versiune} instanta={p.test.instanta} onInchide={() => { setTestDeschis(false); }} />
         </Suspense>
       ) : null}
+      {sugestie !== null && sugestie !== 'lucreaza' ? (
+        // Ca la test și la manual: un cip deasupra planșei, care se închide la clic; fila blocată are și legătura ei.
+        <div className="cip cip-rosu" role="status" data-testid="sugestie-stare"
+          style={{ position: 'fixed', left: '50%', top: 96, translate: '-50% 0', zIndex: 30, pointerEvents: 'auto' }}>
+          {sugestie === 'blocata' ? (
+            <>
+              {t('editare.sugestie.blocata')}{' '}
+              <a href={ADRESA_SUGESTII} target="_blank" rel="noopener" onClick={() => { setSugestie(null); }}>{t('editare.sugestie.deschide')}</a>
+            </>
+          ) : t('editare.sugestie.esec', { motiv: sugestie.motiv })}
+          {' '}
+          <button type="button" aria-label={t('editare.sugestie.inchide')} onClick={() => { setSugestie(null); }}>×</button>
+        </div>
+      ) : null}
       {vedere3d ? (
         <Suspense fallback={null}>
           <Vedere3D doc={doc} marime={marime} zona={zona} onInchide={() => { setVedere3d(false); }} />
@@ -1032,6 +1063,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               onClick={() => { setManual({ usa: null }); }}>
               ?
             </button>
+            {p.sugestie ? (
+              <button type="button" className="aliniaza" title={t('editare.sugestie')} aria-label={t('editare.sugestie')} data-editare="sugestie"
+                disabled={sugestie === 'lucreaza'} onClick={(e) => { e.currentTarget.blur(); trimiteSugestia(); }}>
+                {t('editare.sugestie.buton')}
+              </button>
+            ) : null}
           </span>
         );
         const sectiuni = (

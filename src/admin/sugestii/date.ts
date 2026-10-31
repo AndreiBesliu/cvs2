@@ -2,8 +2,31 @@
  * Fila Sugestii (ADR 0107), partea pură: documentele citite prin reguli devin rânduri (ce lipsește e necunoscut, nu
  * inventat), ordinea, filtrele pe stare cu numărul din fiecare și ce poate face omul pe un rând.
  */
-import { esteStare, esteTip, esteZona, STARI_SUGESTIE, type StareSugestie, type TipSugestie, type ZonaSugestie } from '../../../shared/sugestii.ts';
+import {
+  esteStare, esteTip, esteZona, STARI_SUGESTIE, type StareSugestie, type TipPoza, type TipSugestie, type ZonaSugestie,
+} from '../../../shared/sugestii.ts';
 import { dataDin } from '../erori/date.ts';
+
+/** Ce ține sugestia despre poza ei (ADR 0111); octeții stau în documentul pozei. */
+export interface MetaPoza {
+  readonly tip: TipPoza;
+  readonly marime: number;
+}
+
+const TIPURI_POZA: readonly string[] = ['image/jpeg', 'image/png', 'image/webp'];
+
+function metaPozaDin(x: unknown): MetaPoza | null {
+  if (typeof x !== 'object' || x === null) return null;
+  const { tip, marime } = x as { tip?: unknown; marime?: unknown };
+  return typeof tip === 'string' && TIPURI_POZA.includes(tip) && typeof marime === 'number' && marime > 0 ? { tip: tip as TipPoza, marime } : null;
+}
+
+/** Pură: octeții în base64, pe bucăți (ca `String.fromCharCode` să nu primească prea mulți parametri odată). */
+export function baza64(o: Uint8Array): string {
+  let s = '';
+  for (let i = 0; i < o.length; i += 0x8000) s += String.fromCharCode(...o.subarray(i, i + 0x8000));
+  return btoa(s);
+}
 
 export interface Sugestie {
   readonly id: string;
@@ -21,6 +44,8 @@ export interface Sugestie {
   readonly decisaLa: Date | null;
   /** Versiunea documentului, trimisă înapoi la editare și la decizie; null = necunoscută (nicio cerere nu pleacă). */
   readonly versiune: number | null;
+  /** Poza planșei (ADR 0111), dacă are una. */
+  readonly poza: MetaPoza | null;
 }
 
 type Date_ = Readonly<Record<string, unknown>>;
@@ -35,7 +60,7 @@ export function sugestieDin(id: string, d: Date_): Sugestie {
     zona: esteZona(d['zona']) ? d['zona'] : null, autor: textSauNull(d['autor']), autorEmail: textSauNull(d['autorEmail']),
     creataLa: dataDin(d['creataLa']), modificataLa: dataDin(d['modificataLa']), stare: esteStare(d['stare']) ? d['stare'] : null,
     nota: text(d['nota']), decisaLa: dataDin(d['decisaLa']),
-    versiune: typeof v === 'number' && Number.isSafeInteger(v) && v >= 1 ? v : null,
+    versiune: typeof v === 'number' && Number.isSafeInteger(v) && v >= 1 ? v : null, poza: metaPozaDin(d['poza']),
   };
 }
 

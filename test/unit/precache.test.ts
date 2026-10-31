@@ -117,8 +117,16 @@ test('documentația generată (`documentatie/`, ADR 0048) nu intră: e doar onli
   assert.equal(motivPrecache('sub/documentatie/roadmap.json'), 'necunoscut');
 });
 
-test('lista bucăților doar online: pagina /admin, testul pas cu pas și mașina simulată (raportorul și baza conexiunii sunt în precache)', () => {
-  assert.deepEqual([...DOAR_ONLINE], ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata']);
+test('lista bucăților doar online: pagina /admin, testul pas cu pas, mașina simulată, sugestia din editor (raportorul și baza conexiunii sunt în precache)', () => {
+  assert.deepEqual([...DOAR_ONLINE], ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata', 'SugestieDinEditor', 'pozaPlansei', 'pozaSugestiei']);
+});
+
+test('sugestia din editor (ADR 0111) nu intră: bucata ei și cele două împărțite, cu testul și cu /admin', () => {
+  for (const f of ['assets/SugestieDinEditor-i0-EznsX.js', 'assets/pozaPlansei-ZYgoz0c-.js', 'assets/pozaSugestiei-BHR-UcY-.js']) {
+    assert.equal(motivPrecache(f), 'doar-online', f);
+  }
+  // Un nume care doar începe la fel e altă bucată.
+  assert.equal(motivPrecache('assets/pozaPlanseiNoi-ZYgoz0c-.js'), 'precache');
 });
 
 test('mașina simulată (ADR 0081) nu intră; panoul mașinii și senderul intră (merg și fără rețea)', () => {

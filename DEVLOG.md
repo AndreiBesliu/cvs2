@@ -3904,6 +3904,37 @@ teste, 0 picate; 8 sărite), build-ul determinist (208 fișiere; pornirea 97,3 /
 traseul” aduce `lucratorCam` și arată „Timpul jobului: 1 min 12 s” în 0,5 s; vederea 3D, din programul workerului: „Placa
 simulată la 0,25 mm” în 0,5 s. 0 erori în jurnal și în consolă.
 
+## 2026-10-30 — Sugestia din editor, cu poza planșei (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua” (30.10, 07:29, în sesiunea paralelă a sugestiilor, după raportul de reluare: felia 14.B↑ încheiată, în
+`main`, publicată pe test, nicio sugestie pe test). Pasul următor al sugestiilor, din planul feliei 6.R↑: butonul „Sugestie”
+din editor, cu poza planșei atașată. Apoi „continua” (31.10, 10:00): sesiunea se întrerupsese chiar înaintea commit-ului
+documentelor.
+**Started:** 30.10, 07:30. Felia **14.B↑b**, fără mașină și fără agenți, în același worktree
+(`C:\Users\besli\cncvs2-lucru\sugestii`), pe o ramură nouă, `wip/14.B-b-sugestie-editor`, din `e5538a0`. Fără întrebări, cu
+implicitele: butonul stă lângă Test, doar în afara live (ca Test); poza e opțională și se poate scoate din formular; o ține un
+document lângă sugestie (sub 400 kB, fără Storage); editorul nu încarcă Firebase (sugestia pleacă tot din fila `/admin`).
+**Completed:** 31.10, 10:10 (porțile, gata pe 30.10 la 10:39; apoi doar commit-ul documentelor, după reluare). ADR 0111 (0110
+a luat-o, în paralel, centrarea pe foaie). Contractul (`shared/sugestii.ts`): `poza`, opțională la scriere, base64 strict, cel
+mult 400 kB, cu tipul citit din semnătură (JPEG, PNG, WEBP). Callable-ul `sugestii`: poza în `sugestii/{id}/poze/plansa`, în
+aceeași tranzacție cu sugestia; pe sugestie și în audit, doar tipul și mărimea. Regulile: documentul pozei se citește câte unul
+(`get`), de cine poate citi sugestia; nimeni nu-l scrie din client. Editorul: butonul **Sugestie** (ușa 67 din manual) deschide
+`/admin#sugestii` întâi, în clic, apoi face poza planșei (`pozaPlansei`, ca la testul pas cu pas), o micșorează ca JPEG sub
+plafon (`src/app/SugestieDinEditor.ts`) și o lasă în IndexedDB, cu un anunț pe BroadcastChannel (`src/app/pozaSugestiei.ts`,
+valabilă 24 h); o filă blocată de browser primește un link. Fila Sugestii o ia în formularul sugestiei noi (și când e deja
+deschisă: canalul, plus revenirea în filă), o arată cu ora și cu „Scoate poza”; pe rând, „Poza planșei” o aduce la cerere.
+Bucățile din editor (`SugestieDinEditor`, `pozaPlansei`, `pozaSugestiei`) sunt doar online, cu plafonul lor (8 kB; 2,4
+măsurat), în afara totalului. Găsite pe drum, în e2e: un mesaj BroadcastChannel trimis chiar înaintea lui `window.open`, în
+aceeași sarcină, nu ajungea la nicio altă filă (fila deja deschisă rămânea cu poza veche; acum fila se deschide întâi, iar poza
+și anunțul vin după); poza scoasă revenea la o reîncărcare imediată (acum iese din formular abia după ștergere). Mutațiile:
+**19 / 19** (contractul, serverul, regulile, editorul și fila), cu restaurarea verificată față de HEAD; una a trecut întâi:
+semnătura JPEG pe doi octeți (`FF D8` fără al treilea `FF`; probă nouă). `main` unit de două ori în ramură: `c7e62a6` (6.S↑;
+conflictul doar în indexul ADR) și `1e9d568` (4.A↑, fără conflicte: plafonul total 450 kB stă lângă plafonul sugestiei). Porțile
+pe arborele unit cu 4.A↑: compilatorul (aplicația și funcțiile), importurile (17 reguli), licențele, traducerile (475, 0 lipsă),
+suita unitară (7 795 de teste, 0 picate; 8 sărite: logourile owner-ului), build-ul determinist (212 fișiere; pornirea 97,3, cu ușa 100,8 / 110 kB; totalul 412,3 / 450;
+`/admin` 195,9 / 200, strâmt), e2e-ul în Edge (276) și emulatoarele (funcțiile și regulile 49, e2e-ul `/admin` 16), toate pe 4173, după ce sesiunea principală le-a eliberat. Nepublicată: unirea în `main` și publicarea le decide owner-ul. La publicare intră
+regulile (documentul pozei) și funcția `sugestii`, actualizată.
+
 ## 2026-10-31 — Rularea de noapte roșie (Model: Claude Opus 5.5)
 
 **Prompt:** „continua” (la începutul sesiunii: rularea de noapte `complet` căzută pe 30.10 și pe 31.10, cu CI-ul rapid verde;

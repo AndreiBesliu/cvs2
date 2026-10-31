@@ -77,3 +77,37 @@
 .sug-decizia p {
   margin: 0;
 }
+
+/* Poza planșei (ADR 0111): în formular, mică, cu ora și „Scoate poza”; pe rând, la cerere, cât lățimea rândului. */
+.sug-poza {
+  display: grid;
+  justify-items: start;
+  gap: var(--sp-2);
+  margin: 0;
+}
+
+.sug-poza img,
+.sug-poza-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+}
+
+.sug-poza img {
+  max-height: 14rem;
+}
+
+.sug-poza figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.sug-poza-rand {
+  display: grid;
+  justify-items: start;
+  gap: var(--sp-2);
+}

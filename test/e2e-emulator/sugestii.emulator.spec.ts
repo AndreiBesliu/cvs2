@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
+import { adauga } from '../e2e/ajutor-panza.ts';
 
 /**
  * Sugestiile personalului (ADR 0107) cap-coadă, pe emulatoare, pe build-ul real: owner-ul face un rol cu „Sugestii: scrie”
@@ -226,4 +227,56 @@ test('decizia pe o sugestie schimbată între timp e refuzată lângă formular;
   await expect(page.locator('[data-sug="formular"]')).toHaveCount(0);
   await expect(page.locator('[data-sugestie="Exportul DXF R12 și R14"] [data-sug="stare"]')).toHaveText('Amânată: mai târziu');
   await expect(page.locator('[data-sug="decide"], [data-sug="editeaza"], [data-sug="ale-mele"]')).toHaveCount(0);
+});
+
+/** Mărimea reală a unei imagini din pagină (0 = n-a venit). */
+const latimeImagine = (p: Page, sel: string): Promise<number> => p.locator(sel).evaluate((im) => (im as HTMLImageElement).naturalWidth);
+
+test('din editor (ADR 0111): „Sugestie” face poza planșei și deschide fila Sugestii cu poza atașată; trimisă, se vede pe rând; scoasă, nu revine', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  // Fila nouă din editor citește și ea configurația instanței (locală, cu emulatoarele).
+  await page.context().route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(CONFIG) }));
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  const [admin] = await Promise.all([page.context().waitForEvent('page'), page.locator('[data-editare="sugestie"]').click()]);
+  admin.on('pageerror', (e) => { erori.push(e.message); });
+  await admin.waitForLoadState();
+  expect(new URL(admin.url()).pathname + new URL(admin.url()).hash).toBe('/admin#sugestii');
+  await expect(page.locator('[data-testid="sugestie-stare"]')).toHaveCount(0);
+
+  // Owner-ul intră în fila nouă: fila Sugestii, cu poza planșei în formular.
+  await puneRolul(admin, await intraCuGoogle(admin), 'owner');
+  await expect(admin.locator('[data-fila="sugestii"]')).toHaveAttribute('aria-selected', 'true', LENT);
+  const nou = admin.locator('[data-sug="formular"]');
+  await expect(nou.locator('[data-sug="poza-atasata"] img')).toBeVisible(LENT);
+  await expect.poll(() => latimeImagine(admin, '[data-sug="poza-atasata"] img')).toBeGreaterThan(0);
+  await nou.locator('[data-sug="titlu"]').fill('Grila se vede rău');
+  await nou.locator('[data-sug="tip"]').selectOption({ label: 'Problemă' });
+  await nou.locator('[data-sug="trimite"]').click();
+  await expect(admin.locator('[data-sug="gata"]')).toContainText('Grila se vede rău', LENT);
+  await expect(nou.locator('[data-sug="poza-atasata"]')).toHaveCount(0);
+  // Pe server: poza în documentul ei, JPEG sub plafon; pe rând, la cerere.
+  const lista = await (await fetch(`${FS}/sugestii`, { headers: { Authorization: 'Bearer owner' } })).json() as { documents: Array<{ name: string }> };
+  const id = (lista.documents[0]?.name ?? '').split('/').pop() ?? '';
+  const p = await (await fetch(`${FS}/sugestii/${id}/poze/plansa`, { headers: { Authorization: 'Bearer owner' } })).json() as { fields: { tip: { stringValue: string }; marime: { integerValue: string } } };
+  expect(p.fields.tip.stringValue).toBe('image/jpeg');
+  expect(Number(p.fields.marime.integerValue)).toBeGreaterThan(1000);
+  expect(Number(p.fields.marime.integerValue)).toBeLessThanOrEqual(400 * 1024);
+  const rand = admin.locator('[data-sugestie="Grila se vede rău"]');
+  await rand.locator('[data-sug="arata-poza"]').click();
+  await expect(rand.locator('[data-sug="poza"]')).toBeVisible(LENT);
+  await expect.poll(() => latimeImagine(admin, '[data-sugestie="Grila se vede rău"] [data-sug="poza"]')).toBeGreaterThan(0);
+
+  // O poză nouă din editor: fila deja deschisă o primește pe canal (editorul mai deschide una, închisă aici); scoasă, nu mai
+  // revine, nici după reîncărcare.
+  const [a2] = await Promise.all([page.context().waitForEvent('page'), page.locator('[data-editare="sugestie"]').click()]);
+  await a2.close();
+  await expect(nou.locator('[data-sug="poza-atasata"]')).toBeVisible(LENT);
+  await nou.locator('[data-sug="scoate-poza"]').click();
+  await expect(nou.locator('[data-sug="poza-atasata"]')).toHaveCount(0);
+  await admin.reload();
+  await expect(admin.locator('[data-sug="formular"]')).toBeVisible(LENT);
+  await expect(admin.locator('[data-sug="poza-atasata"]')).toHaveCount(0);
+  expect(erori).toEqual([]);
 });
