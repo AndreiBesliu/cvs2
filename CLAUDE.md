@@ -268,7 +268,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   DXF); textul, imaginile (cu datele lor) și umbririle se sar, numărate. **Corpusul EPS e Python**
   (`test/oracles-py/eps_import_corpus.py`): un caz nou = desenul în generator + valoarea pe hârtie; fiecare fișier trece prin
   Ghostscript (local `.tmp/eps2pdf.cjs`, în CI `gs`) și PyMuPDF; apoi `test/fixtures/eps/` regenerat și comis (CI-ul îl
-  regenerează și cere aceiași octeți). **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 425,0 / 450.**
+  regenerează și cere aceiași octeți). **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 425,5 / 450 (după unirea cu 5.8↑b–c).**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

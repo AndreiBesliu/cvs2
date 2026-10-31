@@ -4099,3 +4099,18 @@ fără agenți.
 - **Nepublicat și neunit** (decizia sesiunii principale, cu owner-ul). La unire: conflicte doar de adăugare în `DEVLOG.md`,
   `docs/adr/README.md`, `docs/etape/etapa-03.md`, `CLAUDE.md` și `docs/traduceri/roadmap.en.json` (apoi
   `node scripts/traduceri.ts --verifica`).
+
+## 2026-10-31 — Unite: oracolul buzunarului (5.1↑b) și importul EPS (9.5↑) (Model: Claude Opus 5.5)
+
+**Prompt:** „Pe ambele” (la „Le unesc pe amândouă, doar una, sau nu acum?”, după ce sesiunile paralele au terminat).
+**Started:** 31.10, 17:20. **Completed:** 31.10, 18:41. Unite în `main` cu câte un commit de unire: `26b031e` (oracolul
+independent al buzunarului, `wip/5.1b-oracol-buzunar`) și `688b47f` (importul EPS și AI ≤ 8, ADR 0115, `wip/9.5-import-eps`).
+Conflicte doar în documente: rândurile fișei și intrările DEVLOG (toate păstrate), indexul ADR (rândul 0112 cu precizările
+5.8↑b / c de la `main`, rândul 0115 de la ramură) și `CLAUDE.md` (ambele paragrafe, fără linia dublă cu mărimile vechi). Porțile
+pe arborele unit: compilatoarele, importurile, traducerile (487, 0 lipsă), 7 847 de teste unitare, build-ul determinist
+(215 fișiere; pornirea 97,6, cu ușa 101,1 / 110 kB; totalul 425,5 / 450), licențele, e2e 283 + 1 (`traseu.oracol`, căzut sub
+încărcare, trecut rulat singur: 13 / 13), emulatoarele (49 + 16). CI-ul rapid verde pe `688b47f` (41219897793).
+**Publicat pe adresa principală de test:** 31.10, `publica` pe `688b47f` (rularea 41220523003). Verificat în browserul
+aplicației la 1440 px: butonul „Import SVG / DXF / PDF / AI / EPS…”, câmpul de fișier primește `.ai`, `.eps`,
+`application/postscript`; fără erori. Citirea unui EPS n-am încercat-o în browser (nu poate încărca fișiere); o probează e2e-ul
+importului, pe fișierele de probă EPS.
