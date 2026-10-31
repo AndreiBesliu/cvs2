@@ -3982,3 +3982,32 @@ de dimineață, cu butonul încă în el).
 (41195559134). Verificat în browserul aplicației la 1440 px: ajutorul din extensie are doar „?”; `/?test` deschide panoul
 „Step-by-step test” la pasul 1 / 31, la ~0,6 s după încărcare, fără nicio interacțiune (prima încărcare după actualizare a
 durat mai mult: bucățile noi veneau din rețea).
+
+## 2026-10-31 — Unirea sugestiei din editor în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok, atunci, urmatorul pas aici este sa mergem pe main” (în sesiunea sugestiilor, după „unde ar trebui sa fie
+Sugestie?”, cu captura editorului de pe test: butonul lipsea, fiindcă ramura nu era încă în `main`).
+**Started:** 31.10, 12:55. **Completed:** 31.10, 14:45. Commit-ul de unire `116597c`: ramura 14.B↑b (`960ea07` … `0b0ae07`),
+lucrată în worktree-ul sugestiilor (`C:\Users\besli\cncvs2-lucru\sugestii`). `main` s-a mișcat de trei ori pe drum, iar
+ramura l-a adus la ea înainte de unire. Întâi `3a702c5`, rularea de noapte (`89378d2`; un singur conflict, în DEVLOG, cu
+ambele intrări, în ordinea datelor). Apoi `515a8af`, fără butonul Test în bară, la cererea owner-ului din 12:45 (`7af9d87`).
+Butonul Sugestie stătea sub condiția testului, deci după unire ar fi apărut doar cu `?test`. Acum aplicația îi dă condiția
+lui (`sugestie`, doar în afara live), iar butonul stă chiar după „?”. Proba nouă din `test/e2e/tutorial.spec.ts`
+(`9130f06`) pică pe ambele mutații ale condiției: butonul doar cu `?test` și butonul arătat și pe live. ADR 0111 are
+precizarea din 31.10; indexul, `CLAUDE.md` și rândul din fișă spun locul nou (`0b0ae07`). Al treilea pas al lui `main`,
+`51033b7`, atinge doar DEVLOG-ul și intră direct în unire. Porțile pe `0b0ae07`: compilatorul (aplicația și funcțiile),
+importurile, licențele, traducerile (475, 0 lipsă), suita unitară (7 795 de teste, 0 picate; 8 sărite), build-ul
+determinist (212 fișiere; pornirea 97,3 / 110 kB, cu ușa 100,8; totalul 412,3 / 450; `/admin` 195,9 / 200; sugestia
+2,4 / 8, doar online), emulatoarele (funcțiile și regulile 49, e2e-ul `/admin` 16) și e2e-ul (277), toate pe 4173. La prima
+rulare a emulatoarelor, cu mașina încărcată (1,7 min în loc de 45 s), testul personalului „un singur cont pe adresă” a picat
+pe `auth/network-request-failed`, la intrarea cu Google; la reluare a trecut. CI-ul rapid verde pe `0b0ae07` (run
+41198259201) și pe `116597c`, în `main` (run 41199570472).
+**Publicat pe test (31.10, 14:09)**, din workflow (run 41199608450, `116597c`): regulile (documentul pozei, doar `get`) și
+funcția `sugestii` actualizată. Verificat: amprenta (`node scripts/verifica-test.ts`) arată `116597c` publicat întreg pe
+test, din arborele curat; `sugestii` răspunde fără App Check cu 401 JSON; codul servit are butonul Sugestie, fără butonul
+Test. În browser, la 1440 px, în engleză, pe `116597c68ee6`: bara a doua se termină cu „3D | ? Suggest”, iar butonul e
+activ și apăsabil (titlul: „Suggestion for the owner, with a picture of the sheet”). Pe adresa `firebaseapp.com`, browserul
+aplicației a deschis proiectul doar-citire: îl ținea altă filă din același profil de browser, nu panoul meu, care avea o
+singură filă. Am verificat deci pe `cncvectorstudio-test.web.app`, aceeași găzduire, cu altă stocare. Fluxul cu poza (fila
+`/admin` cere logarea personalului) e probat de e2e-ul pe emulatoare. La cererea sesiunii principale, care urcă felia 5.8↑
+peste `116597c`, intrarea asta stă pe ramură, nu în `main`: o unește ea după felie.
