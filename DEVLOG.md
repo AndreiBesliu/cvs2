@@ -3982,3 +3982,18 @@ de dimineață, cu butonul încă în el).
 (41195559134). Verificat în browserul aplicației la 1440 px: ajutorul din extensie are doar „?”; `/?test` deschide panoul
 „Step-by-step test” la pasul 1 / 31, la ~0,6 s după încărcare, fără nicio interacțiune (prima încărcare după actualizare a
 durat mai mult: bucățile noi veneau din rețea).
+
+## 2026-10-31 — Rolul de tăiere din panou și traseul la zi (felia 5.8↑) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu altceva” (cât rula rularea de noapte a incidentului; felia următoare din plan, cererea owner-ului din
+28.10: „o sa vreau sa setam rolurile de taiere inainte sa intru la export g code si sa se faca update si la toolpath”).
+**Started:** 31.10, 11:40. **Completed:** 31.10, 14:08. Felia **5.8↑** (ADR 0112), fără agenți, întreruptă de arhivarea
+sesiunii CAM și de butonul Test. Panoul de proprietăți are secțiunea **Tăierea**: rolul, adâncimea și pasul, pentru oricâte
+forme alese. Rolul e al piesei întregi (`document.rol`): pe o literă cu goluri, exteriorul taie conturul pe afară și golurile pe
+dinăuntru, V-carve-ul și buzunarul într-o singură operație (din rândurile exportului rămâneau împărțite: V-carve-ul săpa
+literele fără goluri). Freza în V merge doar pe linie și în V-carve (V60 sau plată, cu același diametru, cu numărul unei freze
+identice sau cel mai mic liber). Cât e arătat, traseul se calculează din nou singur, după 300 ms fără altă schimbare. Imbricarea
+importului e acum o singură judecată, fără biblioteca indexului (`src/geom/imbricare.ts`), ca panoul să nu aducă cavalier.
+Porțile: compilatorul (și al funcțiilor), importurile, testele unitare, build-ul determinist (pornirea 97,5, cu ușa 101,0
+/ 110 kB; totalul 414,4 / 450; /admin 194,2 / 200), licențele, e2e-ul întreg, emulatoarele. Mutația: fără calculul
+pornit de întârziere, trei probe e2e cad. Cinci probe e2e vechi presupuneau traseul „vechi” până la `T`: rescrise.

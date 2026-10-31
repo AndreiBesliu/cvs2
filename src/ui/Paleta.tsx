@@ -39,6 +39,7 @@ const GESTURI: Readonly<Record<string, CheieSimpla>> = {
   'document.pozitioneaza': 'paleta.gest.panou',
   'document.roteste': 'paleta.gest.panou',
   'foaie.stoc': 'paleta.gest.panou',
+  'document.rol': 'paleta.gest.panou',
 };
 
 /** Grupurile, în ordinea paletei, după prefixul id-ului. */

@@ -7,8 +7,8 @@ import { useLimba } from './useLimba.ts';
 type Props = {
   /** Eticheta câmpului, pentru cititorul de ecran (rândul are și eticheta vizibilă). */
   readonly eticheta: string;
-  /** Valoarea din document. */
-  readonly valoare: number;
+  /** Valoarea din document; null: formele alese au valori diferite (câmpul gol, cu „—”; o valoare scrisă le face egale). */
+  readonly valoare: number | null;
   readonly unitate: string;
   /** Primește semn (o coordonată, un unghi); o dimensiune nu. */
   readonly semn?: boolean;
@@ -28,7 +28,7 @@ type Props = {
  */
 export function CampNumeric({ eticheta, valoare, unitate, semn = false, camp, dezactivat = false, titlu, onAplica }: Props): ReactNode {
   const limba = useLimba();
-  const dinDocument = textNumar(valoare, limba === 'ro');
+  const dinDocument = valoare === null ? '' : textNumar(valoare, limba === 'ro');
   const [text, setText] = useState(dinDocument);
   const [motiv, setMotiv] = useState<string | null>(null);
   // Cât omul a scris ceva neaplicat (sau a lăsat o valoare greșită), documentul nu-i suprascrie textul; altfel câmpul
@@ -94,6 +94,7 @@ export function CampNumeric({ eticheta, valoare, unitate, semn = false, camp, de
         aria-label={eticheta}
         aria-invalid={motiv !== null}
         disabled={dezactivat}
+        {...(valoare === null ? { placeholder: '—' } : {})}
         {...(titlu ? { title: titlu } : {})}
         onChange={(e) => {
           setText(e.target.value);

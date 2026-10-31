@@ -162,7 +162,8 @@ test('panourile se strâng și se deschid din colțul lor; foaia se potrivește 
   await expect(prop).toHaveAttribute('aria-expanded', 'true');
   // Și din paletă (tot registrul): „panoul listei” îl strânge din nou.
   await page.keyboard.press('Control+k');
-  await page.getByRole('combobox').fill('panoul listei');
+  // Câmpul paletei, după numele lui: panoul de proprietăți are și el o listă (rolul de tăiere, ADR 0112).
+  await page.getByRole('combobox', { name: 'Scrie ca să filtrezi comenzile' }).fill('panoul listei');
   await page.keyboard.press('Enter');
   await expect(lista).toHaveAttribute('aria-expanded', 'false');
   await expect(arbore).toHaveCount(0);

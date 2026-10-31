@@ -1,11 +1,12 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 // Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
 import '../ui/actiuniDocumentCalcul.ts';
 import '../i18n/carcasa.ts';
 import '../i18n/export.ts';
 import { t } from '../i18n/t.ts';
-import type { Document, FormaDoc, Operatie } from '../model/document.ts';
+import type { Document, FormaDoc, Operatie, Piesa } from '../model/document.ts';
 import { dinParametri, LATURI_MAX, LATURI_MIN, parametri, type Parametri } from '../model/formeParametrice.ts';
+import { ROLURI, roluriOferite, rolPiesei, type Rol } from '../model/rol.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import { CampNumeric } from '../ui/CampNumeric.tsx';
 import { valoareDerivata } from '../ui/numar.ts';
@@ -31,9 +32,25 @@ type Props = {
   /** Forma nouă a singurei instanțe alese (ADR 0053): dreptunghiul, cercul, poligonul regulat, elipsa, editate după plasare. */
   readonly onForma: (f: FormaDoc) => RezultatActiune;
   readonly onStoc: (s: { readonly latime?: number; readonly inaltime?: number; readonly grosime?: number }) => RezultatActiune;
-  /** Deschide dialogul exportului, unde se schimbă operațiile. */
+  /** Rolul de tăiere al pieselor alese (ADR 0112): le înlocuiește operațiile cu ale rolului. */
+  readonly onRol: (r: Rol) => RezultatActiune;
+  /** Operațiile noi ale pieselor (după id-ul piesei): adâncimea sau pasul, scrise pe toate operațiile lor (ADR 0112 §6). */
+  readonly onOperatii: (noi: ReadonlyMap<string, readonly Operatie[]>) => RezultatActiune;
+  /** Deschide dialogul exportului, unde se schimbă restul valorilor operațiilor. */
   readonly onEditeazaOperatii: () => void;
 };
+
+/** Piesele instanțelor alese de pe foaie, fiecare o dată, în ordinea foii. */
+function pieseAlese(doc: Document, alese: readonly string[]): Piesa[] {
+  const ale = new Set(alese);
+  const piese = new Map(doc.piese.map((p) => [p.id, p]));
+  const rez = new Map<string, Piesa>();
+  for (const i of doc.foi[0]?.instante ?? []) {
+    const p = ale.has(i.id) ? piese.get(i.piesa) : undefined;
+    if (p) rez.set(p.id, p);
+  }
+  return [...rez.values()];
+}
 
 const mm = (x: number): string => x.toFixed(2);
 /** Diametrul unei freze: cu a treia zecimală când o are (Ø3,175, 1/8″), altfel ca restul (Ø6.00). */
@@ -91,17 +108,20 @@ function operatie(o: Operatie, n: number): ReactNode {
  * Panoul de proprietăți (prototipul B; editabil din felia 2.8c, ADR 0038 §4): fără selecție, foaia (lățimea, înălțimea,
  * grosimea); cu selecție, colțul stânga-jos al cutiei ei și, la o singură formă, rotirea și forma (ADR 0053: laturile, raza,
  * razele, laturile poligonului; o formă recunoscută din geometrie, fără câmp nou în document). Fiecare câmp aplică o acțiune a
- * registrului (un pas de anulare). Operațiile se arată și se schimbă din dialogul exportului. Se încarcă la cerere.
+ * registrului (un pas de anulare). Tăierea (ADR 0112): rolul pieselor alese, adâncimea și pasul tuturor operațiilor lor; restul
+ * valorilor operațiilor se arată aici și se schimbă din dialogul exportului. Se încarcă la cerere.
  */
-export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onEditeazaOperatii }: Props): ReactNode {
+export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onRol, onOperatii, onEditeazaOperatii }: Props): ReactNode {
   useLimba();
+  // Refuzul ultimului rol ales, pentru selecția de atunci.
+  const [refuzRol, setRefuzRol] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   const foaie = doc.foi[0];
   const instanta = alese.length === 1 ? foaie?.instante.find((i) => i.id === alese[0]) : undefined;
   const piesa = instanta ? doc.piese.find((p) => p.id === instanta.piesa) : undefined;
   // Câmpurile țin minte textul scris; la altă selecție pornesc de la zero.
   const cheie = alese.join(',');
   const oprit = doarCitire ? t('motiv.doar-citire') : undefined;
-  const camp = (eticheta: string, numeCamp: string, valoare: number, unitate: string, semn: boolean, onAplica: (x: number) => RezultatActiune): ReactNode => (
+  const camp = (eticheta: string, numeCamp: string, valoare: number | null, unitate: string, semn: boolean, onAplica: (x: number) => RezultatActiune): ReactNode => (
     <CampNumeric key={`${cheie}/${numeCamp}`} eticheta={eticheta} camp={numeCamp} valoare={valoare} unitate={unitate} semn={semn}
       dezactivat={doarCitire} {...(oprit ? { titlu: oprit } : {})} onAplica={onAplica} />
   );
@@ -137,6 +157,26 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
     }
   };
 
+  // Tăierea (ADR 0112): rolul pieselor alese (doar rolurile care se potrivesc tuturor), adâncimea și pasul tuturor operațiilor
+  // lor; cu valori diferite, câmpul e gol, iar lista arată „—”.
+  const piese = pieseAlese(doc, alese);
+  const oferite = ROLURI.filter((r) => piese.length > 0 && piese.every((p) => roluriOferite(p).includes(r)));
+  const roluri = piese.map(rolPiesei);
+  const rolComun = roluri.length > 0 && roluri.every((r) => r !== null && r === roluri[0]) ? roluri[0] ?? null : null;
+  const operatiiAlese = piese.flatMap((p) => p.operatii);
+  const comun = (f: (o: Operatie) => number): number | null => {
+    const prima = operatiiAlese[0];
+    return prima && operatiiAlese.every((o) => f(o) === f(prima)) ? f(prima) : null;
+  };
+  // O piesă cu mai multe copii își schimbă rolul pentru toate (operațiile sunt ale piesei).
+  const copii = piese.reduce((n, p) => n + doc.foi.reduce((m, f) => m + f.instante.filter((i) => i.piesa === p.id).length, 0), 0) > alese.length;
+  const scrieValori = (v: { readonly adancime?: number; readonly pas?: number }): RezultatActiune =>
+    onOperatii(new Map(piese.map((p) => [p.id, p.operatii.map((o) => ({ ...o, ...v }))])));
+  const alegeRol = (r: Rol): void => {
+    const rez = onRol(r);
+    setRefuzRol(rez.ok ? null : { cheie, motiv: t(rez.motiv) });
+  };
+
   return (
     <div className="proprietati">
       <h2>{t('prop.titlu')}</h2>
@@ -170,6 +210,24 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
         <section data-testid="prop-forma" data-forma={par.tip}>
           <h3>{t(`prop.forma.${par.tip}`)}</h3>
           {impartita ? <p className="prop-nota">{t('prop.forma.impartita')}</p> : <dl>{campuriForma(par)}</dl>}
+        </section>
+      )}
+      {oferite.length > 0 && (
+        <section data-testid="prop-taierea">
+          <h3>{t('prop.taierea')}</h3>
+          <dl>
+            {rand(t('prop.rol'), (
+              <select value={rolComun ?? ''} data-camp="rol" aria-label={t('prop.rol')} disabled={doarCitire} {...(oprit ? { title: oprit } : {})}
+                onChange={(ev) => { const r = oferite.find((x) => x === ev.target.value); if (r) alegeRol(r); }}>
+                {rolComun === null && <option value="" disabled>{t('prop.rol.diferite')}</option>}
+                {oferite.map((r) => <option key={r} value={r}>{t(`export.latura.${r}`)}</option>)}
+              </select>
+            ))}
+            {operatiiAlese.length > 0 && rand(t('prop.adancime'), camp(t('prop.adancime'), 'adancime', comun((o) => o.adancime), 'mm', false, (x) => scrieValori({ adancime: x })))}
+            {operatiiAlese.length > 0 && rand(t('prop.pas'), camp(t('prop.pas'), 'pas', comun((o) => o.pas), 'mm', false, (x) => scrieValori({ pas: x })))}
+          </dl>
+          {copii && <p className="prop-nota">{t('prop.rol.copii')}</p>}
+          {refuzRol?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="rol">{refuzRol.motiv}</p>}
         </section>
       )}
       {piesa?.operatii.map((o, i) => operatie(o, i + 1))}

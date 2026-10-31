@@ -8,7 +8,8 @@ import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
 import { adancimeDeschise } from '../io/adancime.ts';
 import { cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
-import { executa, type Comanda, type Degrupata } from '../model/jurnal.ts';
+import { executa, type Comanda, type Degrupata, type Istoric } from '../model/jurnal.ts';
+import { operatiiPentruRol, type Rol } from '../model/rol.ts';
 import { partiDegrupare } from '../model/degrupare.ts';
 import { blocText } from '../model/blocText.ts';
 import { transforma } from '../model/transformare.ts';
@@ -266,6 +267,23 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       }
       const c = pas(comenzi);
       if (c) ctx.scrie(executa(h, c));
+    },
+  },
+  // Panoul (ADR 0112): rolul de tăiere al pieselor alese, cu motivul unui refuz (rolul care nu se potrivește uneia dintre ele).
+  'document.rol': {
+    activa: (ctx) => {
+      if (ctx.selectie().length === 0) return 'motiv.nicio-selectie';
+      if (!ctx.rolNou) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaRol(ctx.istoric(), ctx.selectie(), ctx.rolNou());
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      if (!ctx.rolNou) return;
+      const h = ctx.istoric();
+      const r = comandaRol(h, ctx.selectie(), ctx.rolNou());
+      if (r.ok) ctx.scrie(executa(h, r.comanda));
     },
   },
   'document.pozitioneaza': {
@@ -706,6 +724,31 @@ function comandaForma(ctx: ContextDocument): { readonly comanda: Comanda | null 
   if (jsonCanonic(nou) === jsonCanonic(vechi)) return { comanda: null };
   const comanda: Comanda = { tip: 'inlocuieste-piesa', vechi, nou };
   return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, comanda).doc))) ? { comanda } : null;
+}
+
+/**
+ * Comanda rolului de tăiere (ADR 0112): operațiile fiecărei piese a instanțelor alese, înlocuite cu ale rolului, într-un pas;
+ * o piesă care are deja exact operațiile lui nu se atinge. Motivul: rolul nu se potrivește uneia dintre piese, nimic de
+ * schimbat, sau documentul de după refuzat de schemă (plafoanele).
+ */
+function comandaRol(h: Istoric, alese: readonly string[], rol: Rol): { readonly ok: true; readonly comanda: Comanda } | { readonly ok: false; readonly motiv: CheieSimpla } {
+  const piese = new Map(h.doc.piese.map((p) => [p.id, p]));
+  const ale = new Set(alese);
+  const comenzi: Comanda[] = [];
+  const vazute = new Set<string>();
+  for (const i of foaieCurenta(h.doc).instante) {
+    const vechi = ale.has(i.id) && !vazute.has(i.piesa) ? piese.get(i.piesa) : undefined;
+    if (!vechi) continue;
+    vazute.add(vechi.id);
+    const operatii = operatiiPentruRol(h.doc, vechi, rol);
+    if (!operatii) return { ok: false, motiv: 'motiv.rol-nepotrivit' };
+    if (jsonCanonic(operatii) === jsonCanonic(vechi.operatii)) continue;
+    comenzi.push({ tip: 'inlocuieste-piesa', vechi, nou: { ...vechi, operatii } });
+  }
+  if (vazute.size === 0) return { ok: false, motiv: 'motiv.nicio-selectie' };
+  const c = pas(comenzi);
+  if (!c) return { ok: false, motiv: 'motiv.nimic-ales' };
+  return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, c).doc))) ? { ok: true, comanda: c } : { ok: false, motiv: 'motiv.plafon' };
 }
 
 /** Ghidajele unei liste trec de ușă: cel mult plafonul, id-uri bune și unice, axa x / y, poziția finită în plafon. */

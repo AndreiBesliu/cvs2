@@ -135,6 +135,8 @@ type StareTraseu = {
 /** Bugetul de vârfuri al stratului la pornire (5 M de segmente țin 60 Hz pe iGPU, s6-V); se înjumătățește la un cadru lent. */
 const BUGET_TRASEU = 2_000_000;
 const BUGET_TRASEU_MINIM = 50_000;
+/** Traseul la zi (ADR 0112 §8): cât așteaptă după ultima schimbare a documentului înainte să se calculeze din nou, în ms. */
+const INTARZIERE_TRASEU_MS = 300;
 
 /** Foaia documentului nou: bucata minimă a plăcii 1. */
 const FOAIA_IMPLICITA = { latime: 300, inaltime: 200, grosime: 18 };
@@ -433,7 +435,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     );
   }, [doc, mod, jurnal]);
 
-  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata'>> = {}): ContextDocument => ({
+  const context = (extra: Partial<Pick<ContextDocument, 'deplasare' | 'punct' | 'dinNou' | 'jurnal' | 'alese' | 'operatiiNoi' | 'rolNou' | 'importNou' | 'locImport' | 'pozitieNoua' | 'rotireNoua' | 'stocNou' | 'ghidajeNoi' | 'deplasari' | 'formaNoua' | 'transformare' | 'formaEditata'>> = {}): ContextDocument => ({
     istoric: () => curenta.current.istoric,
     scrie: (h) => { curenta.current = { ...curenta.current, istoric: h }; setIstoric(h); },
     selectie: () => curenta.current.selectie,
@@ -543,16 +545,32 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       });
     }, (e: unknown) => { refuz(e instanceof Error ? e.message : String(e)); });
   };
-  // Un document schimbat anulează calculul traseului pornit pe altă revizie (ADR 0109): workerul lui se oprește, iar
-  // traseul de dinainte rămâne, stins (ADR 0038 §2); fără unul, nu se mai arată nimic.
+  const calculeazaTraseuRef = useRef(calculeazaTraseu);
+  calculeazaTraseuRef.current = calculeazaTraseu;
+  // Un document schimbat anulează calculul traseului pornit pe altă revizie (ADR 0109): workerul lui se oprește. Cât traseul
+  // e arătat, se calculează din nou după `INTARZIERE_TRASEU_MS` fără altă schimbare (ADR 0112 §8): până atunci, traseul de
+  // dinainte rămâne, stins, sub „se calculează” (și un refuz). Ascuns, nu se calculează nimic.
+  const traseuArata = traseu?.arata === true;
+  const traseuRev = traseu?.rev;
   useEffect(() => {
     const c = traseuInCurs.current;
-    if (!c || c.rev === doc.rev) return;
-    c.ac.abort();
-    traseuInCurs.current = null;
-    cerereTraseu.current++;
-    setTraseu((v) => (v?.stare !== 'calcul' ? v : v.miscari ? { ...v, stare: 'gata' } : null));
-  }, [doc.rev]);
+    if (c && c.rev !== doc.rev) {
+      c.ac.abort();
+      traseuInCurs.current = null;
+      cerereTraseu.current++;
+    }
+    if (!traseuArata) {
+      setTraseu((v) => (v?.stare !== 'calcul' ? v : v.miscari ? { ...v, stare: 'gata' } : null));
+      return undefined;
+    }
+    if (traseuRev === doc.rev) return undefined;
+    setTraseu((v) => (v && v.stare !== 'calcul' ? { ...v, stare: 'calcul', motiv: null } : v));
+    const ceas = setTimeout(() => {
+      // Un calcul pornit între timp pe documentul de acum (T) rămâne.
+      if (traseuInCurs.current?.rev !== curenta.current.istoric.doc.rev) calculeazaTraseuRef.current();
+    }, INTARZIERE_TRASEU_MS);
+    return () => { clearTimeout(ceas); };
+  }, [doc.rev, traseuArata, traseuRev]);
   // Bucățile stratului: din program, la treapta de zoom și sub buget (modulul vine la cerere, cu stratul).
   const miscariTraseu = traseu?.arata ? traseu.miscari : null;
   useEffect(() => {
@@ -907,6 +925,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               onRotire={(r) => aplicaDinPanou('document.roteste', { rotireNoua: () => r })}
               onForma={(f) => aplicaDinPanou('document.forma', { formaEditata: () => f })}
               onStoc={(s) => aplicaDinPanou('foaie.stoc', { stocNou: () => s })}
+              onRol={(r) => aplicaDinPanou('document.rol', { rolNou: () => r })}
+              onOperatii={(noi) => aplicaDinPanou('document.aplica-operatii', { operatiiNoi: () => noi })}
               onEditeazaOperatii={() => { executa('export.gcode'); }}
             />
           </Suspense>

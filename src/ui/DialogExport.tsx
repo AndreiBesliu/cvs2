@@ -5,8 +5,9 @@ import '../i18n/traseu.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import {
-  laturiOferite, MARGINI_OPERATIE, POSTURI_EXPORT, type Coborare, type Depasire, type IdContract, type IesireFoaie, type LaturaExport,
-  type ParametriExport, type RezumatJob, type SimulareExport, type StrategieScula, type TimpPortiune, type Unitati,
+  laturiOferite, MARGINI_OPERATIE, pasLateralImplicit, POSTURI_EXPORT, UNGHI_V_IMPLICIT, type Coborare, type Depasire, type IdContract,
+  type IesireFoaie, type LaturaExport, type ParametriExport, type RezumatJob, type SimulareExport, type StrategieScula, type TimpPortiune,
+  type Unitati,
 } from './actiuniExportTipuri.ts';
 import { durata } from './durata.ts';
 import { citesteNumar, textNumar } from './numar.ts';
@@ -144,17 +145,12 @@ const CHEI_LATURA: Readonly<Record<Latura | 'buzunar', CheieSimpla>> = {
   stanga: 'export.latura.stanga', dreapta: 'export.latura.dreapta', buzunar: 'export.latura.buzunar',
 };
 
-/** Pasul lateral cu care pornește un buzunar nou: 40 % din diametrul frezei (ADR 0069 §1), la 0,1 mm. */
-export const pasLateralImplicit = (diametru: number): number => Math.round(diametru * 4) / 10;
-
 /** În (0, plafon]: marginile schemei v3, ca operațiile scrise în document să treacă de ușă la redeschidere. */
 function inMargini(s: string, plafon: number, minim = 0): boolean {
   const x = citesteNumar(s);
   return x !== null && Number.isFinite(x) && x > 0 && x >= minim && x <= plafon;
 }
 
-/** Unghiul implicit al frezei în V (ADR 0090), în grade. */
-const UNGHI_V_IMPLICIT = 60;
 /** Diametrul implicit al frezei drepte a fundului plat (ADR 0091 §4), în mm (1/8″). */
 const DIAMETRU_FUND_IMPLICIT = 3.175;
 

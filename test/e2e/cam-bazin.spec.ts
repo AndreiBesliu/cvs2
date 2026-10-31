@@ -305,7 +305,7 @@ test('documentul greu: cât calculează workerul CAM traseul, pânza primește c
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });
 
-test('un document schimbat în timpul calculului îl anulează: workerul se oprește, rezultatul vechi nu apare, T calculează din nou', async ({ page }) => {
+test('un document schimbat în timpul calculului îl anulează: workerul se oprește fără răspuns, iar traseul arătat se calculează din nou, pe documentul de acum', async ({ page }) => {
   test.setTimeout(120_000);
   await ceasuri(page);
   await deschide(page, nod('--greu', '56'));
@@ -317,21 +317,20 @@ test('un document schimbat în timpul calculului îl anulează: workerul se opre
   await page.keyboard.press('t');
   await expect(page.getByTestId('traseu-stare')).toHaveAttribute('data-stare', 'traseu.calcul');
   await page.keyboard.press('Delete');
-  // Fără un traseu de dinainte, nu se mai arată nimic: nici cipul, nici butonul apăsat; nici după cât ar fi durat calculul.
-  await expect(page.locator('[data-actiune="vedere.traseu"]')).toHaveAttribute('aria-pressed', 'false');
-  await page.waitForTimeout(3000);
-  await expect(page.getByTestId('traseu-stare')).toHaveCount(0);
-  await expect(page.locator('[data-actiune="vedere.traseu"]')).toHaveAttribute('aria-pressed', 'false');
-  // Workerul traseului s-a oprit chiar la ștergere, fără răspuns (CAM-ul lui mai avea de lucru), nu la capătul calculului.
-  const c = await citesteCeasurile(page);
-  const traseu = c.workere.filter((x) => x.nume === 'cam-traseu');
-  expect(traseu.length, JSON.stringify(c.workere)).toBe(1);
-  const w = traseu[0] as Ceasuri['workere'][number];
-  expect(Number.isNaN(w.raspuns), 'workerul oprit n-a mai apucat să răspundă').toBe(true);
-  expect(w.oprit - c.sters, 'oprit chiar după ștergere').toBeLessThan(1000);
-  // Pe documentul de acum (gol), „Arată traseul” calculează din nou și spune de ce nu se poate.
-  await page.keyboard.press('t');
+  // Traseul rămâne arătat (ADR 0112 §8): pe documentul de acum (gol), calculul nou spune de ce nu se poate.
   await expect(page.locator('[data-actiune="vedere.traseu"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('[data-stare="traseu.refuz"]')).toHaveCount(1, { timeout: 60_000 });
+  // Primul worker al traseului s-a oprit chiar la ștergere, fără răspuns (CAM-ul lui mai avea de lucru), nu la capătul
+  // calculului; al doilea, al documentului gol, a pornit după întârzierea traseului la zi (300 ms).
+  const c = await citesteCeasurile(page);
+  const traseu = c.workere.filter((x) => x.nume === 'cam-traseu');
+  expect(traseu.length, JSON.stringify(c.workere)).toBe(2);
+  const [w, nou] = traseu as [Ceasuri['workere'][number], Ceasuri['workere'][number]];
+  expect(Number.isNaN(w.raspuns), 'workerul oprit n-a mai apucat să răspundă').toBe(true);
+  expect(w.oprit - c.sters, 'oprit chiar după ștergere').toBeLessThan(1000);
+  expect(nou.pornit - c.sters, 'al doilea, după întârziere').toBeGreaterThanOrEqual(250);
+  // T, pe refuzul de acum, îl ascunde.
+  await page.keyboard.press('t');
+  await expect(page.locator('[data-actiune="vedere.traseu"]')).toHaveAttribute('aria-pressed', 'false');
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });

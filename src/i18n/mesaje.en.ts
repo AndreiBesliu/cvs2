@@ -36,6 +36,8 @@ export const en = {
   'actiune.forma': 'Change the shape',
   'actiune.copiaza-in-retea': 'Copy in an array',
   'actiune.degrupeaza': 'Ungroup',
+  'actiune.rol': 'Cutting role',
+  'motiv.rol-nepotrivit': 'The chosen role does not fit all the chosen shapes.',
   'motiv.valoare-invalida': 'The value must be a number, with a point or a comma.',
   'motiv.o-singura-selectie': 'Rotation is set on one shape: select just one.',
   'motiv.foaie-invalida': 'The sheet width and height must be between 0 and 10,000 mm, and its thickness between 0 and 1,000 mm.',

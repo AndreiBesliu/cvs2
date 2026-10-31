@@ -245,6 +245,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   secțiunea Aliniere (`centru-foaie` în `src/geom/aliniere.ts`): centrul cutiei comune a selecției în centrul foii, pe ambele
   axe, toate formele cu aceeași deplasare (un bloc). Notițele 1 și 3 rămân la owner (istoricul cu excepții, alinierea ca bloc
   pentru celelalte feluri, gruparea).
+  **Rolul de tăiere din panou și traseul la zi (ADR 0112, felia 5.8↑, adusă din etapa 5)** gata pe 31.10, din cererea owner-ului
+  din 28.10: în panoul de proprietăți, secțiunea **Tăierea** (rolul, adâncimea, pasul), pentru oricâte forme alese; rolul e al
+  piesei întregi (`document.rol`, calculul pur în `src/model/rol.ts`): pe o literă cu goluri, exteriorul taie conturul pe afară
+  și golurile pe dinăuntru, V-carve-ul și buzunarul o singură operație; lista oferă doar ce se potrivește tuturor formelor
+  alese; freza în V doar pe linie și în V-carve (V60 sau plată, cu același diametru). **Cât e arătat, traseul se calculează din
+  nou singur** după fiecare schimbare (300 ms fără altă schimbare), deci probele care schimbă documentul cu traseul arătat
+  așteaptă calculul nou, nu cipul „vechi”. Imbricarea are o singură judecată (`src/geom/imbricare.ts`, candidații de la
+  apelant). **Pornirea 97,5 (cu ușa 101,0 / 110 kB), totalul 414,4 / 450.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

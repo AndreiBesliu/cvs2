@@ -33,7 +33,7 @@ function context(sel: readonly string[], doarCitire: boolean, extra: Partial<Con
 test('registrul păstrează cele cinci acțiuni la cerere, cu id-ul și eticheta lor, în ordinea de dinainte', () => {
   assert.deepEqual(ACTIUNI_DOCUMENT.map((a) => a.id), [
     'selectie.la-punct', 'selectie.din-lista', 'document.adauga-dreptunghi', 'document.adauga-cerc', 'document.importa',
-    'document.muta-selectia', 'document.duplica-selectia', 'document.sterge-selectia', 'document.aplica-operatii',
+    'document.muta-selectia', 'document.duplica-selectia', 'document.sterge-selectia', 'document.aplica-operatii', 'document.rol',
     'document.pozitioneaza', 'document.roteste', 'foaie.stoc', 'foaie.ghidaje', 'document.muta-instantele',
     'document.deseneaza', 'document.transforma', 'document.copiaza-in-retea', 'document.forma', 'document.degrupeaza', 'document.text',
     'istoric.anuleaza',

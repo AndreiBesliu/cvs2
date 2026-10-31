@@ -120,9 +120,10 @@ test('„×” și Escape închid panoul și stratul frezei; un document schimba
   await expect(page.getByTestId('animatie')).toHaveCount(0);
   await page.getByTestId('animatie-porneste').click();
   await expect(page.getByTestId('strat-animatie')).toHaveCount(1);
-  // Documentul schimbat: traseul e vechi, cipul timpului dispare, deci și animația.
+  // Documentul schimbat: traseul se calculează din nou, singur (ADR 0112 §8); dreptunghiul nou cade peste primul, deci regiunea
+  // păstrată îl refuză. Cipul timpului dispare, deci și animația.
   await adauga(page, 'dreptunghi');
-  await expect(page.getByTestId('traseu-stare')).toHaveAttribute('data-stare', 'traseu.vechi');
+  await expect(page.getByTestId('traseu-stare')).toHaveAttribute('data-stare', 'traseu.refuz');
   await expect(page.getByTestId('animatie')).toHaveCount(0);
   await expect(page.getByTestId('strat-animatie')).toHaveCount(0);
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');

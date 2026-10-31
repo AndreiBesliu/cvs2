@@ -97,6 +97,10 @@ export type FormaSculaDoc = { tip: 'v'; unghi: number; varf?: number; [cheie: st
 export type Scula = { numar: number; nume: string; diametru: number; forma?: FormaSculaDoc; [cheie: string]: unknown };
 export const UNGHI_V_MINIM = 1;
 export const UNGHI_V_MAXIM = 179;
+/** Unghiul implicit al frezei în V (ADR 0090), în grade: în fereastra exportului și la rolul V-carve din panou (ADR 0112). */
+export const UNGHI_V_IMPLICIT = 60;
+/** Pasul lateral cu care pornește un buzunar nou: 40 % din diametrul frezei (ADR 0069 §1), la 0,1 mm. */
+export const pasLateralImplicit = (diametru: number): number => Math.round(diametru * 4) / 10;
 /**
  * Latura profilului: exterior / interior pe contururile închise, pe linie pe oricare, stânga / dreapta (partea FREZEI, în
  * sensul desenului, ADR 0037 §3) pe căile deschise. Potrivirea cu `inchis` o judecă CAM-ul, nu ușa (ADR 0037 §2).

@@ -124,13 +124,13 @@ test('timpul lângă traseu (ADR 0046 §8): după T, cipul spune timpul jobului,
   await page.getByRole('button', { name: 'Închide' }).click();
   await expect(cip).toHaveAttribute('data-sursa', 'setari');
   await expect(cip).not.toHaveText(`Timpul jobului: ${peTraseu}`);
-  // Documentul schimbat: traseul e vechi, deci și timpul lui; cipul timpului dispare până la T.
+  // Documentul schimbat: traseul se calculează din nou, singur (ADR 0112 §8); dreptunghiul nou cade peste primul, deci regiunea
+  // păstrată îl refuză, iar cipul timpului dispare.
   await adauga(page, 'dreptunghi');
-  await expect(page.getByTestId('traseu-stare')).toHaveAttribute('data-stare', 'traseu.vechi');
+  await expect(page.getByTestId('traseu-stare')).toHaveAttribute('data-stare', 'traseu.refuz');
   await expect(cip).toHaveCount(0);
-  // Dreptunghiul nou cade peste primul (regiunea păstrată îl refuză): Ctrl+Z îl scoate, iar T calculează din nou.
+  // Ctrl+Z îl scoate: traseul și timpul lui revin singure, fără T.
   await page.keyboard.press('Control+z');
-  await page.locator('[data-actiune="vedere.traseu"]').click();
   await expect(cip).toHaveText(/^Timpul jobului: /);
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });

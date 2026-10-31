@@ -3,6 +3,8 @@ import { RAZA_INTRARE_MINIMA, RAZA_INTRARE_MINIMA_RAMPA } from '../cam/intrariMi
 import { RAMPA_MINIMA } from '../cam/rampaMinima.ts';
 import { PLAFON, type Document, type Latura, COBORARE_MINIME, UNGHI_COBORARE_MAXIM, RETRAGERE_COMPLETA_MAXIMA, UNGHI_V_MAXIM, UNGHI_V_MINIM } from '../model/document.ts';
 export type { Coborare } from '../model/document.ts';
+// Implicitele frezei în V și ale pasului lateral, comune ferestrei exportului și rolului din panou (ADR 0112).
+export { pasLateralImplicit, UNGHI_V_IMPLICIT } from '../model/document.ts';
 import type { StrategieScula } from '../post/contract.ts';
 import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../post/contracte/index.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';

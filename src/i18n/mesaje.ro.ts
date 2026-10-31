@@ -40,6 +40,8 @@ export const ro = {
   'actiune.forma': 'Schimbă forma',
   'actiune.copiaza-in-retea': 'Copiază în rețea',
   'actiune.degrupeaza': 'Degrupează',
+  'actiune.rol': 'Rolul de tăiere',
+  'motiv.rol-nepotrivit': 'Rolul ales nu se potrivește tuturor formelor alese.',
   'motiv.valoare-invalida': 'Valoarea trebuie să fie un număr, cu punct sau cu virgulă.',
   'motiv.o-singura-selectie': 'Rotirea se scrie pe o singură formă: selectează doar una.',
   'motiv.foaie-invalida': 'Foaia trebuie să aibă lățimea și înălțimea între 0 și 10 000 mm, iar grosimea între 0 și 1 000 mm.',

@@ -6,6 +6,7 @@ import {
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
 import type { Retea } from '../model/retea.ts';
+import type { Rol } from '../model/rol.ts';
 import type { Transformare } from '../model/transformare.ts';
 // Doar tipul: piesa textului o face modulul textului, adus la cerere de panoul lui (ADR 0105 §5).
 import type { RezultatPiesaText } from '../text/piesaText.ts';
@@ -53,6 +54,8 @@ export type ContextDocument = {
   readonly alese?: () => readonly string[];
   /** Operațiile noi ale pieselor, după id-ul piesei, din dialogul de export (se scriu toate într-un singur pas). */
   readonly operatiiNoi?: () => ReadonlyMap<string, readonly Operatie[]>;
+  /** Panoul (ADR 0112): rolul de tăiere ales pentru piesele instanțelor alese. */
+  readonly rolNou?: () => Rol;
   /** Importul pregătit de previzualizare (ADR 0035), de adăugat ca o piesă nouă. */
   readonly importNou?: () => ImportPregatit;
   /** Punctul în care s-a lăsat fișierul pe planșă (mm ai foii), sau null: centrul desenului cade acolo (felia 2.8b). */
@@ -456,6 +459,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   // Dialogul de export scrie operațiile pieselor (ADR 0025) la Exportă: o singură comandă, deci un singur Ctrl+Z.
   // Doar piesele ale căror operații s-au schimbat; numărul operațiilor nu se schimbă, deci plafoanele rămân.
   laCerere('document.aplica-operatii', 'actiune.aplica-operatii', (ctx) => (ctx.operatiiNoi ? true : 'motiv.nimic-ales')),
+  // Panoul (ADR 0112): rolul de tăiere al pieselor alese înlocuiește operațiile lor cu ale rolului, într-un pas.
+  laCerere('document.rol', 'actiune.rol', (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie' : ctx.rolNou ? true : 'motiv.nimic-ales')),
   // Panoul de proprietăți (ADR 0038 §4): colțul stânga-jos al cutiei selecției, la una sau la mai multe instanțe.
   laCerere('document.pozitioneaza', 'actiune.pozitioneaza', (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie'
     : ctx.pozitieNoua ? true : 'motiv.nicio-deplasare')),

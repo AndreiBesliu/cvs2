@@ -117,15 +117,11 @@ async function documentMare(page: Page): Promise<void> {
   await expect(page.locator('[data-buton="importa"]')).toHaveCount(0);
 }
 
-test('C4 traseul: recalculat pe un document mare, cipul „Se calculează” nu apare, iar traseul vechi trebuie să rămână stins cât se calculează (ADR 0038 §2)', async ({ page }) => {
+test('C4 traseul: recalculat pe un document mare, traseul vechi rămâne stins sub „Se calculează” cât se calculează (ADR 0038 §2, ADR 0112 §8)', async ({ page }) => {
   await page.goto('/');
   await documentMare(page);
   await butonTraseu(page).click();
   await expect(strat(page)).toHaveAttribute('data-varfuri', /^[1-9]/, { timeout: 20_000 });
-  // Documentul se schimbă (tot importul, 30 mm la dreapta): traseul e vechi, stins.
-  await camp(page, 'pozitie-x').fill('30');
-  await camp(page, 'pozitie-x').press('Enter');
-  await expect(strat(page)).toHaveAttribute('data-stins', 'true');
   await page.evaluate(() => {
     const w = window as unknown as { jurnal28: string[] };
     w.jurnal28 = [];
@@ -136,7 +132,10 @@ test('C4 traseul: recalculat pe un document mare, cipul „Se calculează” nu 
     };
     new MutationObserver(noteaza).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-stins', 'data-stare'] });
   });
-  await butonTraseu(page).click();
+  // Documentul se schimbă (tot importul, 30 mm la dreapta): traseul arătat se calculează din nou, singur, fără T.
+  await camp(page, 'pozitie-x').fill('30');
+  await camp(page, 'pozitie-x').press('Enter');
+  await expect(strat(page)).toHaveAttribute('data-stins', 'true');
   await expect(strat(page)).toHaveAttribute('data-stins', 'false', { timeout: 20_000 });
   const jurnal = await page.evaluate(() => (window as unknown as { jurnal28: string[] }).jurnal28);
   // Cât CAM-ul ține firul principal, pe ecran trebuie să fie cipul „se calculează”, cu programul VECHI stins sub el.

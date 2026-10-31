@@ -426,12 +426,21 @@ Un **PDF** se citește așa (un **AI** salvat de Illustrator 9 sau mai nou e tot
 
 ## Operațiile de tăiere
 %% capitol: operatii
-%% acopera: document.aplica-operatii
+%% acopera: document.aplica-operatii, document.rol
 
 Fiecare formă are o operație: un **profil** (freza merge de-a lungul conturului, în treceri, până la adâncime), un
 **buzunar** (freza scoate tot materialul dinăuntrul unui contur închis, până la adâncime), pe cercuri o **găurire**
 (gaura cât cercul, vezi mai jos) sau un **V-carve** (freza în V sapă forma pe mijlocul ei, vezi mai jos). Operațiile se schimbă din
 fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **aplică operațiile** în proiect.
+
+**Rolul de tăiere** se alege și din panoul de proprietăți, în secțiunea **Tăierea**, pentru oricâte forme alese: **exterior**,
+**interior**, **pe linie**, **stânga** sau **dreapta** (pe o cale deschisă), **buzunar**, **găurire** (doar cercuri) sau
+**V-carve**. Lista arată doar rolurile care se potrivesc tuturor formelor alese; „—”, când au roluri diferite. Rolul e al formei
+întregi: pe o literă cu goluri, exteriorul taie conturul pe afară și golurile pe dinăuntru, iar buzunarul și V-carve-ul sapă
+litera cu golurile ei, dintr-o dată. La schimbarea rolului rămân freza, sensul, adâncimea și pasul; restul revine la
+implicit. Freza în V merge doar pe linie și în V-carve: la V-carve, o freză plată devine una V60 cu același diametru, iar la
+alt rol, o freză în V devine plată. Sub rol, **Adâncimea** și **Pasul** se scriu pe toate operațiile formelor alese (cu valori
+diferite, câmpul e gol). O piesă cu mai multe copii își schimbă rolul pentru toate. Traseul arătat se reface singur.
 
 | Câmpul | Ce înseamnă |
 |---|---|
@@ -553,12 +562,12 @@ interioarele se taie primele.
 tăierile cu verde, mișcările rapide cu gri. Lângă el apare **timpul jobului**, estimat pentru setările mașinii (cele din
 fabrică ale GRBL 1.1h, sau setările `$$` lipite în fereastra exportului).
 
-Când schimbi desenul, traseul vechi se stinge, cu un semn jos; `T` îl calculează din nou. Încă un `T`, pe traseul la zi, îl
-ascunde. Dacă programul nu se poate calcula, semnul spune de ce. Traseul cere WebGL2 în browser.
+Cât e arătat, traseul se reface singur după fiecare schimbare (desenul, rolul de tăiere, adâncimea, o anulare): traseul vechi
+se stinge sub „se calculează”, apoi apare cel nou. `T`, pe traseul arătat, îl ascunde. Dacă programul nu se poate calcula,
+semnul de jos spune de ce. Traseul cere WebGL2 în browser.
 
 Calculul (traseul, timpul, exportul, vederea 3D) rulează separat de desen: pe un proiect mare, pânza nu se oprește cât se
-calculează. Dacă schimbi desenul înainte să fie gata traseul, calculul lui se oprește; `T` îl pornește din nou, pe desenul de
-acum.
+calculează. Dacă schimbi desenul înainte să fie gata traseul, calculul lui se oprește și pornește din nou, pe desenul de acum.
 
 **Animează**, lângă timpul jobului, deschide animația traseului: freza merge pe traseu în timpul mașinii (aceeași estimare
 ca timpul jobului), iar drumul parcurs se colorează pe pânză. În panou: **Rulează** / **Pauză**, **Pasul anterior** și

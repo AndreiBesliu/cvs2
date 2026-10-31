@@ -439,12 +439,22 @@ A **PDF** is read like this (an **AI** saved by Illustrator 9 or newer is a PDF 
 
 ## The cutting operations
 %% capitol: operatii
-%% acopera: document.aplica-operatii
+%% acopera: document.aplica-operatii, document.rol
 
 Each shape has an operation: a **profile** (the cutter runs along the outline, in passes, down to the depth), a **pocket**
 (the cutter clears all the material inside a closed outline, down to the depth), on circles a **drilling** (a hole the
 size of the circle, see below) or a **V-carve** (the V bit carves the shape along its middle, see below). Operations are changed in the **Export
 G-code** window, one row per shape; on export, the window does **Apply the operations**: it writes them into the project.
+
+The **Cutting role** can also be chosen in the properties panel, in the **Cutting** section, for any number of chosen shapes:
+**outside**, **inside**, **on the line**, **left** or **right** (on an open path), **pocket**, **drilling** (circles only) or
+**V-carve**. The list shows only the roles that fit all the chosen shapes; “—” when they have different roles. The role is the
+whole shape's: on a letter with holes, outside cuts the outline on the outside and the holes on the inside, while the pocket
+and the V-carve carve the letter with its holes in one go. When the role changes, the cutter, the direction, the depth and the
+step stay; the rest goes back to the defaults. A V bit only works on the line and in a V-carve: for a V-carve, a flat cutter
+becomes a V60 of the same diameter, and for another role a V bit becomes flat. Under the role, **Depth** and **Step down** are
+written on all the operations of the chosen shapes (with different values, the field is empty). A part with several copies
+changes its role for all of them. A shown toolpath updates by itself.
 
 | Field | What it means |
 |---|---|
@@ -569,12 +579,12 @@ Each row has its own cutter (see [Exporting G-code](#export)). The feeds and spe
 canvas: cuts in green, rapid moves in grey. Next to it the **job time** appears, estimated for the machine's settings (GRBL
 1.1h's factory settings, or the `$$` settings pasted in the export window).
 
-When you change the drawing, the old toolpath dims, with a note at the bottom; `T` computes it again. Another `T`, on an
-up-to-date toolpath, hides it. If the program cannot be computed, the note says why. The toolpath needs WebGL2 in the
-browser.
+While it is shown, the toolpath updates by itself after every change (the drawing, the cutting role, the depth, an undo): the
+old toolpath dims under “computing”, then the new one appears. `T`, on a shown toolpath, hides it. If the program cannot be
+computed, the note at the bottom says why. The toolpath needs WebGL2 in the browser.
 
 The computing (the toolpath, the time, the export, the 3D view) runs apart from the drawing: on a large project, the canvas
-does not stop while it computes. If you change the drawing before the toolpath is ready, its computing stops; `T` starts it
+does not stop while it computes. If you change the drawing before the toolpath is ready, its computing stops and starts
 again, on the drawing as it is now.
 
 **Animate**, next to the job time, opens the toolpath animation: the bit moves along the toolpath in machine time (the same
