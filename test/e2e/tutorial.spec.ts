@@ -127,3 +127,13 @@ test('fără `?test`, testul nu se deschide, iar bara n-are buton Test; pe live,
   expect(cereri.filter(bucataTestului)).toEqual([]);
   await expect(panou(page)).toHaveCount(0);
 });
+
+test('butonul Sugestie (ADR 0111) stă lângă „?” și fără `?test`, în afara live; pe live lipsește', async ({ page }) => {
+  await page.goto('/');
+  // Chiar după „?”: butonul Test a ieșit din bară (31.10), iar Sugestie a rămas, cu condiția lui.
+  await expect(page.locator('[data-editare="manual"] + [data-editare="sugestie"]')).toBeVisible();
+  await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ instanta: 'live' }) }));
+  await page.goto('/');
+  await expect(page.locator('[data-editare="manual"]')).toBeVisible();
+  await expect(page.locator('[data-editare="sugestie"]')).toHaveCount(0);
+});
