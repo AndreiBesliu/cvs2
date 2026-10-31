@@ -28,11 +28,22 @@ regulile poziției, ale alinierii și ale întinderii din ADR, mișcarea rigidă
 R50 are 100π; pe linia de bază, vârful fiecărei litere de 10 mm stă la raza 60; dedesubt, pe partea cealaltă, la 48,5 cu
 distanța 1,5; întins pe cerc, 8 litere stau la 45° una de alta; întins pe linia de 100 mm, textul pleacă din 0 și ajunge în 100.
 
+Instanțele fonturilor variabile (ADR 0113, `variabile`): Roboto Flex (OFL, din fonturile Android Studio de pe mașina asta,
+subsetat aici) și trei variante, la fiecare instanță numită și la locurile din `LOCURI_FLEX`, cu instancer-ul lui fontTools
+(`instantiateVariableFont`, toate axele fixate, fontul ținut în memorie: coordonatele rămân nerotunjite): contururile,
+crenarea (deltele dispozitivelor adunate de el), metricile, coordonatele normalizate; avansul din HVAR cu `VarStoreInstancer`
+(fără HVAR, al instancer-ului, din punctele fantomă). Pe hârtie: la implicit, fontul neschimbat; `avar` pe opsz 30; Bold =
+wght 0,5; regiunea intermediară dincolo de vârf; H mai lat cu grosimea; AV anulat la Thin; componentele puse pe puncte și cele
+2 × 2 cu deplasarea scalată; punctul fantomă din stânga; HVAR față de punctele fantomă (cel mult 1 unitate). Variantele au ce
+promit, citite din octeții lui `gvar` (`ce_are_gvar`): vârfurile comune, regiunile intermediare, punctele comune și proprii,
+toate sau unele, deltele pe octet, pe cuvânt și zero, offseturile lungi.
+
 Rulare: `.tmp/venv-export2d/Scripts/python.exe -X utf8 test/oracles-py/text_corpus.py` (scrie `test/fixtures/text/`).
 """
 import array
 import bisect
 import cmath
+import collections
 import json
 import math
 import os
@@ -46,14 +57,18 @@ from fontTools.encodings.StandardEncoding import StandardEncoding
 from fontTools.fontBuilder import FontBuilder
 from fontTools.misc.bezierTools import calcCubicArcLengthC, splitCubicAtTC
 from fontTools.misc.psCharStrings import T2CharString
+from fontTools.misc.roundTools import otRound
 from fontTools.pens.basePen import decomposeQuadraticSegment
 from fontTools.pens.recordingPen import DecomposingRecordingPen
 from fontTools.ttLib import TTCollection, TTFont, newTable
-from fontTools.ttLib.tables import _l_o_c_a, otTables
+from fontTools.ttLib.tables import _g_v_a_r, _l_o_c_a, otTables
+from fontTools.ttLib.tables.TupleVariation import TupleVariation
 from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
 from fontTools.ttLib.tables._g_l_y_f import GlyphComponent
 from fontTools.ttLib.tables._k_e_r_n import KernTable_format_0
+from fontTools.varLib.instancer import AxisLimits, instantiateVariableFont
+from fontTools.varLib.varStore import VarStoreInstancer
 
 RAD = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..'))
 FONTURI = os.path.join(RAD, 'public', 'fonturi')
@@ -981,6 +996,334 @@ def cff_sintetic(cale):
     assert majuscula(g) == 700
 
 
+# 7.4↑ (ADR 0113): instanțele fonturilor variabile. Fontul liber al corpusului e Roboto Flex (OFL 1.1, fără nume rezervat:
+# subsetul își păstrează numele), din fonturile cu care Android Studio previzualizează machetele: 13 axe, 20 de instanțe
+# numite (fără nume PostScript), `avar` (opsz nu e liniară), `gvar` (regiuni intermediare, puncte rare), `HVAR`, `MVAR` și
+# crenarea variabilă (dispozitivele din GPOS, magazinul din GDEF). Subsetul e comis: generatorul merge și fără sursă.
+ROBOTO_FLEX = 'C:/Program Files/Android/Android Studio/plugins/design-tools/resources/layoutlib/data/fonts/RobotoFlex-Regular.ttf'
+TEXT_FLEX = 'HAMBURGEFONTSIVLW aeostvw ĂÂÎȘȚăâîșț 0.,'
+FLEX = os.path.join(DEST, 'roboto-flex-subset.ttf')
+FLEX_FANTOMA = os.path.join(DEST, 'roboto-flex-fantoma.ttf')
+FLEX_COMPUSE = os.path.join(DEST, 'roboto-flex-compuse.ttf')
+
+
+def subset_pe_loc(f, text):
+    """Subsetul unui font deschis, pe loc: glifele textului (și componentele lor), toate numele, variațiile păstrate, fără
+    GSUB (aplicația nu-l citește; la Roboto Flex are și variațiile caracteristicilor)."""
+    opt = subset.Options()
+    opt.name_IDs = ['*']
+    opt.notdef_outline = True
+    opt.drop_tables += ['GSUB']
+    s = subset.Subsetter(options=opt)
+    s.populate(text=text)
+    s.subset(f)
+    return f
+
+
+def ce_are_gvar(cale):
+    """Ce folosește `gvar` din fișier, citit aici din octeți (nu de fontTools): offseturile lungi, vârfurile comune și cele din
+    antetul tuplului, regiunile intermediare, punctele comune ale glifei și cele proprii tuplului, toate punctele sau doar
+    unele (IUP), deltele pe octet, pe cuvânt și șirurile de zero. Fiecare tuplu se citește până la capătul lui exact."""
+    date = open(cale, 'rb').read()
+    f = TTFont(cale)
+    gl = f['glyf']
+    p0 = f.reader.tables['gvar'].offset
+    u16 = lambda p: struct.unpack('>H', date[p:p + 2])[0]
+    u32 = lambda p: struct.unpack('>I', date[p:p + 4])[0]
+    axe, comune, nglife, steag, inceput = u16(p0 + 4), u16(p0 + 6), u16(p0 + 12), u16(p0 + 14), u32(p0 + 16)
+    lung = steag & 1
+    loc = lambda g: p0 + inceput + (u32(p0 + 20 + 4 * g) if lung else 2 * u16(p0 + 20 + 2 * g))
+    n = collections.Counter({'lungi': lung, 'tupluri-comune': comune})
+
+    def puncte(p):
+        c = date[p]
+        p += 1
+        if c & 0x80:
+            c = ((c & 0x7F) << 8) | date[p]
+            p += 1
+        if c == 0:
+            n['toate-punctele'] += 1
+            return p, None
+        n['puncte-rare'] += 1
+        citite = 0
+        while citite < c:
+            h = date[p]
+            p += 1
+            k = (h & 0x7F) + 1
+            n['puncte-pe-cuvant' if h & 0x80 else 'puncte-pe-octet'] += 1
+            p += k * (2 if h & 0x80 else 1)
+            citite += k
+        return p, c
+
+    for g, nume in enumerate(f.getGlyphOrder()):
+        a, b = loc(g), loc(g + 1)
+        if a == b:
+            continue
+        glifa_ = gl[nume]
+        total = (len(glifa_.components) if glifa_.isComposite() else len(glifa_.coordinates) if glifa_.numberOfContours > 0 else 0) + 4
+        cnt, doff = u16(a), u16(a + 2)
+        h, tupluri = a + 4, []
+        for _ in range(cnt & 0x0FFF):
+            marime, idx = u16(h), u16(h + 2)
+            h += 4
+            n['varf-in-antet' if idx & 0x8000 else 'varf-comun'] += 1
+            h += 2 * axe if idx & 0x8000 else 0
+            if idx & 0x4000:
+                n['intermediar'] += 1
+                h += 4 * axe
+            tupluri.append((marime, idx))
+        d, comun = a + doff, None
+        if cnt & 0x8000:
+            n['puncte-comune'] += 1
+            d, comun = puncte(d)
+        for marime, idx in tupluri:
+            q, pc = d, comun
+            if idx & 0x2000:
+                n['puncte-proprii'] += 1
+                q, pc = puncte(q)
+            k = total if pc is None else pc
+            for _ in range(2):
+                citite = 0
+                while citite < k:
+                    hh = date[q]
+                    q += 1
+                    r = (hh & 0x3F) + 1
+                    fel = {0x80: 'delte-zero', 0x40: 'delte-cuvant', 0xC0: 'delte-lungi', 0: 'delte-octet'}[hh & 0xC0]
+                    n[fel] += 1
+                    q += r * {'delte-zero': 0, 'delte-cuvant': 2, 'delte-lungi': 4, 'delte-octet': 1}[fel]
+                    citite += r
+            assert q == d + marime, (nume, q, d + marime)
+            d += marime
+        assert d <= b, (nume, d, b)
+    return n
+
+
+def variante_74():
+    """Fontul variabil al corpusului și variantele lui, fiecare cu ce promite numele ei."""
+    if os.path.exists(ROBOTO_FLEX):
+        subset_pe_loc(deschide(ROBOTO_FLEX), TEXT_FLEX).save(FLEX)
+    assert os.path.exists(FLEX), FLEX
+    f = TTFont(FLEX)
+    assert len(f['fvar'].axes) == 13 and len(f['fvar'].instances) == 20
+    assert all(i.postscriptNameID == 0xFFFF for i in f['fvar'].instances)
+    # avar schimbă opsz (pe wght e identitatea): prima pereche netrivială, folosită și de proba de pe hârtie.
+    assert f['avar'].segments['opsz'][0.16925048828125] == 0.49200439453125, f['avar'].segments['opsz']
+    assert f['HVAR'].table.AdvWidthMap is not None and 'MVAR' in f
+    kern = [st for i in cautari_kern_indici(f) for st in f['GPOS'].table.LookupList.Lookup[i].SubTable]
+    assert kern and all(st.ValueFormat1 & 0x40 for st in kern), 'crenarea are dispozitivele variațiilor'
+    # Componentele lui Roboto Flex sunt deplasate (x, y), iar deltele lor mută accentele de la o instanță la alta.
+    gl, gv = f['glyf'], f['gvar']
+    assert any(tv.coordinates[k] not in (None, (0, 0)) for nume in f.getGlyphOrder() if gl[nume].isComposite()
+               for tv in gv.variations.get(nume, []) for k in range(len(gl[nume].components)))
+    are = ce_are_gvar(FLEX)
+    for cheie in ('tupluri-comune', 'varf-comun', 'intermediar', 'puncte-comune', 'puncte-proprii', 'toate-punctele',
+                  'puncte-rare', 'delte-zero', 'delte-cuvant', 'delte-octet'):
+        assert are[cheie] > 0, (cheie, are)
+    assert are['lungi'] == 0
+
+    # Fără HVAR (avansul din punctele fantomă) și fără H în `cmap` (majuscula din sCapHeight, variat de `cpht` din MVAR). Și A
+    # cu punctul fantomă din stânga mutat (+25 la wght maxim, fără cel din dreapta): avansul lui scade cu delta lui.
+    f = subset_pe_loc(deschide(FLEX), 'HAVTo')
+    del f['HVAR']
+    for t in f['cmap'].tables:
+        t.cmap.pop(ord('H'), None)
+    n_a = glifa(f, ord('A'))
+    f['gvar'].variations[n_a].append(TupleVariation({'wght': (0.0, 1.0, 1.0)}, [None] * len(f['glyf'][n_a].coordinates) + [(25, 0), None, None, None]))
+    f.save(FLEX_FANTOMA)
+    g = TTFont(FLEX_FANTOMA)
+    assert 'HVAR' not in g and glifa(g, ord('H')) is None and 'cpht' in [r.ValueTag for r in g['MVAR'].table.ValueRecord]
+    # Pe hârtie, la Bold (factorul tuplului nou, 0,5): punctul din stânga vine cu 12,5 spre dreapta, deci avansul lui A scade
+    # cu 12,5 (12 sau 13, după rotunjirea celor două avansuri) față de același font fără tuplu.
+    b, _ = instanta(FLEX_FANTOMA, {'wght': 700})
+    fara = TTFont(FLEX_FANTOMA)
+    fara['gvar'].variations[n_a].pop()
+    fara = instantiateVariableFont(fara, {a.axisTag: 700 if a.axisTag == 'wght' else a.defaultValue for a in fara['fvar'].axes})
+    assert fara['hmtx'][n_a][0] - b['hmtx'][n_a][0] in (12, 13), (fara['hmtx'][n_a][0], b['hmtx'][n_a][0])
+
+    # Componentele, la instanțe, altfel decât în Roboto Flex: căciula lui Ă pusă pe puncte (punctul ei cel mai de jos peste
+    # vârful lui A), cu delte mari scrise pe ea, care nu contează (o componentă pusă pe puncte urmează punctele variate); a lui
+    # Â prin 2 × 2, cu deplasarea scalată (felul Apple) și delte noi pe deplasare: (+25, −15) la wght maxim, (+12, +34) într-o
+    # regiune intermediară a lui opsz (deltele ei vechi devin zero, ca proba de pe hârtie să le vadă doar pe cele noi). Și
+    # `gvar` cu offseturile lungi.
+    f = subset_pe_loc(deschide(FLEX), 'AĂÂ')
+    gl, gv = f['glyf'], f['gvar']
+    n_a, n_abreve, n_acirc = glifa(f, ord('A')), glifa(f, 0x102), glifa(f, 0xC2)
+    c, c2 = gl[n_abreve].components[1], gl[n_acirc].components[1]
+    assert gl[n_abreve].components[0].glyphName == gl[n_acirc].components[0].glyphName == n_a and hasattr(c, 'x') and hasattr(c2, 'x')
+    n_breve, n_circ = c.glyphName, c2.glyphName
+    a = gl[n_a].getCoordinates(gl)[0]
+    breve = gl[n_breve].getCoordinates(gl)[0]
+    varf = max(range(len(a)), key=lambda k: (a[k][1], -k))
+    jos = min(range(len(breve)), key=lambda k: (breve[k][1], k))
+    del c.x, c.y
+    c.firstPt, c.secondPt = varf, jos
+    gv.variations[n_abreve].append(TupleVariation({'wght': (0.0, 1.0, 1.0)}, [None, (400, 600), None, None, None, None]))
+    c2.transform = [[0.9, 0.15], [0.0, 0.85]]
+    c2.flags |= SCALED_COMPONENT_OFFSET
+    deplasare = (c2.x, c2.y)
+    for tv in gv.variations[n_acirc]:
+        if tv.coordinates[1] is not None:
+            tv.coordinates[1] = (0, 0)
+    gv.variations[n_acirc] += [TupleVariation({'wght': (0.0, 1.0, 1.0)}, [None, (25, -15), None, None, None, None]),
+                               TupleVariation({'opsz': (0.0, 0.5, 1.0)}, [None, (12, 34), None, None, None, None])]
+    original = _g_v_a_r.table__g_v_a_r.compileOffsets_
+
+    def offseturi_lungi(offsets):
+        v = array.array('I', offsets)
+        if sys.byteorder != 'big':
+            v.byteswap()
+        return v.tobytes(), 1
+    _g_v_a_r.table__g_v_a_r.compileOffsets_ = staticmethod(offseturi_lungi)
+    try:
+        f.save(FLEX_COMPUSE)
+    finally:
+        _g_v_a_r.table__g_v_a_r.compileOffsets_ = original
+    assert ce_are_gvar(FLEX_COMPUSE)['lungi'] == 1
+    # Pe hârtie, la Bold (wght 700 = 0,5 normalizat): căciula lui Ă stă cu punctul ei de jos exact pe vârful lui A (ambele
+    # variate), deltele ei nu contează; a lui Â s-a mutat cu (12,5; −7,5) înaintea transformării (opsz e implicit: regiunea
+    # intermediară nu contează).
+    b, norm = instanta(FLEX_COMPUSE, {'wght': 700})
+    assert norm['wght'] == 0.5
+    # Numele glifelor fără nume (`post` 3) se fac din nou la citire: componentele se iau din fontul citit.
+    gb = b['glyf']
+    n_abreve, n_acirc = glifa(b, 0x102), glifa(b, 0xC2)
+    n_a, n_breve, n_circ = glifa(b, ord('A')), gb[n_abreve].components[1].glyphName, gb[n_acirc].components[1].glyphName
+    ab, brb = gb[n_a].getCoordinates(gb)[0], gb[n_breve].getCoordinates(gb)[0]
+    tot = gb[n_abreve].getCoordinates(gb)[0]
+    mx, my = ab[varf][0] - brb[jos][0], ab[varf][1] - brb[jos][1]
+    assert (mx, my) != (0, 0) and all(tot[len(ab) + k] == (x + mx, y + my) for k, (x, y) in enumerate(brb))
+    tot = gb[n_acirc].getCoordinates(gb)[0]
+    circ = gb[n_circ].getCoordinates(gb)[0]
+    # Transformarea e scrisă în fișier ca F2Dot14 (0,9 devine 14 746 / 16 384).
+    q = lambda v: otRound(v * 16384) / 16384
+    for k, (x, y) in enumerate(circ):
+        px, py = x + deplasare[0] + 12.5, y + deplasare[1] - 7.5
+        px, py = px * q(0.9) + py * q(0.0), px * q(0.15) + py * q(0.85)
+        assert abs(tot[len(ab) + k][0] - px) < 1e-9 and abs(tot[len(ab) + k][1] - py) < 1e-9, (k, tot[len(ab) + k], (px, py))
+
+
+def cautari_kern_indici(font):
+    t = font['GPOS'].table
+    return sorted({i for fr in t.FeatureList.FeatureRecord if fr.FeatureTag == 'kern' for i in fr.Feature.LookupListIndex})
+
+
+def instanta(cale, coordonate):
+    """Instanța fontului la coordonatele date (în unitățile axelor; o axă lipsă: valoarea implicită), făcută de instancer-ul
+    lui fontTools, cu toate axele fixate: un font static, ținut în memorie (nesalvat: coordonatele rămân în virgulă mobilă,
+    fără rotunjirea scrierii), plus coordonatele normalizate (cu `avar`, apoi la F2Dot14)."""
+    f = TTFont(cale)
+    axe = {a.axisTag: coordonate.get(a.axisTag, a.defaultValue) for a in f['fvar'].axes}
+    norm = AxisLimits(axe).limitAxesAndPopulateDefaults(f).normalize(f)
+    return instantiateVariableFont(f, axe), {k: tuple(v)[1] for k, v in norm.items()}
+
+
+def avans_hvar(f, nume, norm):
+    """Avansul din HVAR (cum îl ia aplicația, când fontul îl are): cel implicit plus delta magazinului, rotunjit ca fontTools."""
+    hvar = f['HVAR'].table
+    idx = hvar.AdvWidthMap.mapping[nume] if hvar.AdvWidthMap else f.getGlyphID(nume)
+    return otRound(f['hmtx'][nume][0] + VarStoreInstancer(hvar.VarStore, f['fvar'].axes, norm)[idx])
+
+
+def unice(text):
+    return ''.join(dict.fromkeys(ch for ch in text if ch != ' '))
+
+
+def date_instanta(inst, avans, text, glife, perechi):
+    """Ce se compară la o instanță: metricile, avansul fiecărui caracter (`avans`, după numele glifei), crenarea perechilor
+    nenule dintr-un set (și setul) și contururile brute."""
+    caractere = [ch for ch in unice(text) if glifa(inst, ord(ch)) is not None]
+    set_crenare = ''.join(ch for ch in unice(perechi) if glifa(inst, ord(ch)) is not None)
+    hhea = inst['hhea']
+    return {
+        'metrici': {'urcare': hhea.ascent, 'coborare': hhea.descent, 'spatiuRanduri': hhea.lineGap, 'majuscula': majuscula(inst)},
+        'avansuri': {ch: avans(glifa(inst, ord(ch))) for ch in caractere},
+        'setCrenare': set_crenare,
+        'crenari': {a + b: v for a in set_crenare for b in set_crenare if (v := crenare(inst, glifa(inst, ord(a)), glifa(inst, ord(b))))},
+        'glife': {ch: [[[x, y, 1 if pe else 0] for x, y, pe in c] for c in contururi(inst, glifa(inst, ord(ch)))] for ch in unice(glife)
+                  if glifa(inst, ord(ch)) is not None},
+    }
+
+
+# Locurile probate pe Roboto Flex, pe lângă instanțele numite: colțurile axelor (fiecare singură, apoi toate odată), `avar`
+# (opsz între punctele hărții), un amestec cu regiunile intermediare pornite; lipsă = valoarea implicită.
+LOCURI_FLEX = [
+    ('implicit', {}),
+    ('wght-min', {'wght': 100}), ('wght-max', {'wght': 1000}),
+    ('wdth-min', {'wdth': 25}), ('wdth-max', {'wdth': 151}),
+    ('opsz-min', {'opsz': 8}), ('opsz-max', {'opsz': 144}),
+    ('colt-min', 'min'), ('colt-max', 'max'),
+    ('avar-opsz', {'opsz': 30}), ('avar-opsz-wght', {'opsz': 36, 'wght': 650}),
+    ('amestec', {'wght': 650, 'wdth': 80, 'opsz': 30, 'GRAD': -50, 'XTRA': 400, 'YTUC': 600, 'YOPQ': 100, 'slnt': -4}),
+    # Regiunile intermediare ale subsetului, opsz (0, 1, 1) × wght (0; 0,5; 1), dincolo de vârful lor pe wght (850 = 0,75).
+    ('intermediar', {'opsz': 72, 'wght': 850}),
+]
+# Locurile cu toate contururile (celelalte: H, Ă, ș), și crenarea pe tot setul (celelalte: perechile mici).
+LOCURI_TOATE = ('colt-min', 'colt-max', 'avar-opsz-wght', 'amestec', 'intermediar')
+CRENARE_MICA = 'AVTWLoa.,'
+
+
+def variabile():
+    """Fixtura instanțelor (ADR 0113): pentru fiecare font variabil al corpusului, axele și instanțele numite (din `fvar`), apoi
+    fiecare loc probat (o instanță numită, după indicele ei, sau coordonatele), cu ce dă instancer-ul lui fontTools: contururile,
+    crenarea, metricile. Avansul: din HVAR, cu `VarStoreInstancer`, când fontul îl are (ca aplicația, HarfBuzz și FreeType); fără
+    el, al instancer-ului, din punctele fantomă. Probele pe hârtie: la implicit, fontul neschimbat; `avar` pe opsz; wght 700 =
+    0,5; avansul din HVAR față de cel din punctele fantomă: cel mult 1 unitate (rotunjirile fontului), numărate."""
+    rez = {}
+    diferente = collections.Counter()
+    for cale, locuri, toate in ((FLEX, None, LOCURI_TOATE), (FLEX_FANTOMA, ('Bold', 'colt-max', 'amestec'), ('Bold', 'colt-max', 'amestec')),
+                                (FLEX_COMPUSE, ('Bold', 'wdth-min', 'amestec'), ('Bold', 'wdth-min', 'amestec'))):
+        f = TTFont(cale)
+        fv, nm = f['fvar'], f['name']
+        implicite = {a.axisTag: a.defaultValue for a in fv.axes}
+        intrare = {
+            'axe': [{'tag': a.axisTag, 'min': a.minValue, 'implicit': a.defaultValue, 'max': a.maxValue} for a in fv.axes],
+            'instante': [{'stil': nm.getDebugName(i.subfamilyNameID), 'postscript': None if i.postscriptNameID == 0xFFFF else nm.getDebugName(i.postscriptNameID),
+                          'implicita': dict(i.coordinates) == implicite, 'coordonate': dict(i.coordinates)} for i in fv.instances],
+            'locuri': [],
+        }
+        lista = [(nm.getDebugName(i.subfamilyNameID), k, dict(i.coordinates)) for k, i in enumerate(fv.instances)]
+        lista += [(nume, None, {a.axisTag: (a.minValue if c == 'min' else a.maxValue) for a in fv.axes} if isinstance(c, str) else c)
+                  for nume, c in LOCURI_FLEX]
+        for nume, k, coord in lista:
+            if locuri is not None and nume not in locuri:
+                continue
+            inst, norm = instanta(cale, coord)
+            tot = nume in toate
+            hvar = 'HVAR' in f
+            # Numele glifelor sunt aceleași în instanță (același `post`, aceeași ordine).
+            avans = (lambda g, norm=norm: avans_hvar(f, g, norm)) if hvar else (lambda g, inst=inst: inst['hmtx'][g][0])
+            loc = {'nume': nume, 'instanta': k, 'coordonate': None if k is not None else coord,
+                   'normalizate': [norm[a.axisTag] for a in fv.axes],
+                   **date_instanta(inst, avans, TEXT_FLEX, TEXT_FLEX if tot else 'HĂș', TEXT_FLEX if tot else CRENARE_MICA)}
+            if hvar:
+                for g in f.getGlyphOrder():
+                    d = avans_hvar(f, g, norm) - inst['hmtx'][g][0]
+                    assert abs(d) <= 1, (cale, nume, g, d)
+                    diferente[d] += 1
+            if nume == 'implicit':
+                for g in f.getGlyphOrder():
+                    assert contururi(inst, g) == contururi(f, g) and inst['hmtx'][g] == f['hmtx'][g], g
+            intrare['locuri'].append(loc)
+        rez[os.path.relpath(cale, RAD).replace(os.sep, '/')] = intrare
+    # Pe hârtie: avar duce opsz 30 (normalizat liniar 16/130) pe segmentul (0, 0)–(0,16925; 0,49200), apoi la F2Dot14; fără
+    # avar ar fi fost altă valoare. Bold: wght 700 e la jumătatea dintre 400 și 1000. Grosimea crește avansul lui H.
+    locuri = {x['nume']: x for x in rez['test/fixtures/text/roboto-flex-subset.ttf']['locuri']}
+    axe = [a['tag'] for a in rez['test/fixtures/text/roboto-flex-subset.ttf']['axe']]
+    v = 16 / 130
+    pe_harta = otRound(0.49200439453125 * v / 0.16925048828125 * 16384) / 16384
+    assert locuri['avar-opsz']['normalizate'][axe.index('opsz')] == pe_harta != otRound(v * 16384) / 16384
+    assert locuri['Bold']['normalizate'][axe.index('wght')] == 0.5
+    # Dincolo de vârful regiunii intermediare: wght 850 = 0,75 (factorul ei pe wght, 0,5), opsz peste implicit.
+    assert locuri['intermediar']['normalizate'][axe.index('wght')] == 0.75 and locuri['intermediar']['normalizate'][axe.index('opsz')] > 0
+    h = [locuri[n]['avansuri']['H'] for n in ('Thin', 'Regular', 'Bold', 'ExtraBlack')]
+    assert h == sorted(h) and len(set(h)) == 4, h
+    # Crenarea variază: „AV” are −87 la Regular, iar la Thin delta lui (+87) o anulează, deci perechea dispare; „To” se strânge.
+    assert locuri['Regular']['crenari']['AV'] == -87 and 'AV' not in locuri['Thin']['crenari']
+    assert locuri['Thin']['crenari']['To'] != locuri['Regular']['crenari']['To']
+    print('avansul din HVAR minus cel din punctele fantomă (glife × locuri):', dict(sorted(diferente.items())))
+    return rez
+
+
 CAZURI = [
     ('LEMN', 'roboto.ttf', {'continut': 'LEMN', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
     ('diacritice', 'roboto.ttf', {'continut': 'ȘȚĂÂÎ șțăâî', 'inaltime': 12, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
@@ -1020,6 +1363,7 @@ def main():
     os.makedirs(DEST, exist_ok=True)
     variante()
     variante_72()
+    variante_74()
     asteptat = {}
     for nume, fisier, p in CAZURI:
         cale = cale_fixtura(fisier)
@@ -1080,12 +1424,13 @@ def main():
         'test/fixtures/text/roboto-fvar.ttf': [
             {'stil': TTFont(os.path.join(DEST, 'roboto-fvar.ttf'))['name'].getDebugName(i.subfamilyNameID),
              'postscript': TTFont(os.path.join(DEST, 'roboto-fvar.ttf'))['name'].getDebugName(i.postscriptNameID) if i.postscriptNameID != 0xFFFF else None,
-             'implicita': i.coordinates['wght'] == 400.0} for i in TTFont(os.path.join(DEST, 'roboto-fvar.ttf'))['fvar'].instances],
+             'implicita': i.coordinates['wght'] == 400.0, 'coordonate': dict(i.coordinates)} for i in TTFont(os.path.join(DEST, 'roboto-fvar.ttf'))['fvar'].instances],
     }
     curba = cazuri_pe_curba()
     probe_pe_hartie(curba)
     asteptat = fara_interne(asteptat)
-    for nume, date in (('crenari', crenari), ('glife', brute), ('asteptat', asteptat), ('structura', structura), ('pe-curba', fara_interne(curba))):
+    for nume, date in (('crenari', crenari), ('glife', brute), ('asteptat', asteptat), ('structura', structura), ('pe-curba', fara_interne(curba)),
+                       ('variabile', variabile())):
         with open(os.path.join(DEST, f'{nume}.json'), 'w', encoding='utf-8', newline='\n') as out:
             json.dump(date, out, ensure_ascii=False, separators=(',', ':'))
             out.write('\n')

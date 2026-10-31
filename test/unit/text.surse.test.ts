@@ -2,14 +2,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { citesteFont, type Font, type RezultatFont } from '../../src/text/font.ts';
-import { amprentaFisier, fataDupaNume, feteDinFisier, instantaNecitita, plafonDepasit } from '../../src/text/fonturiOmului.ts';
+import { amprentaFisier, fataDupaNume, feteDinFisier, instantaCeruta, plafonDepasit } from '../../src/text/fonturiOmului.ts';
 import { idFont, numeVarianta, sursaFont } from '../../src/text/iduriFont.ts';
 import { desfaWoff } from '../../src/text/woff.ts';
 
 /**
- * Fonturile omului, partea fără browser (ADR 0106 §2): id-urile din bloc (dus-întors), WOFF despachetat la fel ca TTF-ul
- * din care s-a făcut, fețele unui fișier (colecția, un font refuzat), fața după nume, instanța cerută dintr-un font
- * variabil, amprenta fișierului.
+ * Fonturile omului, partea fără browser (ADR 0106 §2, ADR 0113): id-urile din bloc (dus-întors, și cu instanța numită),
+ * WOFF despachetat la fel ca TTF-ul din care s-a făcut, fețele unui fișier (colecția, un font refuzat, instanțele numite ale
+ * unuia variabil), fața după nume, instanța cerută de un nume al sistemului, amprenta fișierului, plafoanele.
  */
 
 const RAD = new URL('../../', import.meta.url);
@@ -19,18 +19,27 @@ const ok = (r: RezultatFont): Font => {
   return r.font;
 };
 
-test('id-urile fonturilor: inclus, încărcat (cu fața), Google, al sistemului; dus și întors; cele străine sunt null', () => {
+test('id-urile fonturilor: inclus, încărcat (cu fața și instanța), Google, al sistemului; dus și întors; cele străine sunt null', () => {
   const surse = [
     { fel: 'inclus', id: 'roboto' },
     { fel: 'incarcat', amprenta: '0123456789abcdef', fata: 0 },
     { fel: 'incarcat', amprenta: '0123456789abcdef', fata: 2 },
+    { fel: 'incarcat', amprenta: '0123456789abcdef', fata: 0, instanta: 0 },
+    { fel: 'incarcat', amprenta: '0123456789abcdef', fata: 3, instanta: 19 },
     { fel: 'google', familie: 'Open Sans', varianta: '700i' },
     { fel: 'google', familie: 'M PLUS 1p', varianta: '400' },
     { fel: 'sistem', postscript: 'Arial-BoldMT' },
   ] as const;
   for (const s of surse) assert.deepEqual(sursaFont(idFont(s)), s, idFont(s));
-  assert.deepEqual(surse.map(idFont), ['roboto', 'f:0123456789abcdef', 'f:0123456789abcdef.2', 'g:Open Sans:700i', 'g:M PLUS 1p:400', 's:Arial-BoldMT']);
-  for (const strain of ['', 'arial', 'f:0123', 'f:0123456789ABCDEF', 'f:0123456789abcdef.x', 'f:0123456789abcdef.1024', 'g:Roboto', 'g::400', 'g: Roboto:400', 'g:Roboto:450', 's:', `s:${'x'.repeat(128)}`]) {
+  assert.deepEqual(surse.map(idFont), [
+    'roboto', 'f:0123456789abcdef', 'f:0123456789abcdef.2', 'f:0123456789abcdef@0', 'f:0123456789abcdef.3@19', 'g:Open Sans:700i', 'g:M PLUS 1p:400',
+    's:Arial-BoldMT',
+  ]);
+  for (const strain of [
+    '', 'arial', 'f:0123', 'f:0123456789ABCDEF', 'f:0123456789abcdef.x', 'f:0123456789abcdef.1024', 'f:0123456789abcdef.1.2', 'f:0123456789abcdef@',
+    'f:0123456789abcdef@x', 'f:0123456789abcdef@12345', 'f:0123456789abcdef@1.2', 'g:Roboto', 'g::400', 'g: Roboto:400', 'g:Roboto:450', 's:',
+    `s:${'x'.repeat(128)}`,
+  ]) {
     assert.equal(sursaFont(strain), null, strain);
   }
   assert.deepEqual(['400', '400i', '700', '700i', '300i', '950', 'abc'].map(numeVarianta), ['Regular', 'Italic', 'Bold', 'Bold Italic', 'Light Italic', '950', 'abc']);
@@ -75,7 +84,7 @@ test('WOFF despachetat: aceleași tabele ca TTF-ul (contururile, avansurile, cre
 test('fețele unui fișier: o colecție dă două, un CFF2 e refuzat cu codul lui, altceva nu e font; fața după nume', () => {
   const ttc = octeti('test/fixtures/text/roboto-droid.ttc');
   const fete = feteDinFisier(ttc);
-  assert.deepEqual(fete?.bune.map((f) => [f.fata, f.nume.familie]), [[0, 'Roboto'], [1, 'Droid Serif']]);
+  assert.deepEqual(fete?.bune.map((f) => [f.fata, f.nume.familie, f.instante.length]), [[0, 'Roboto', 0], [1, 'Droid Serif', 0]]);
   assert.deepEqual(fete?.refuzate, []);
   const cff2 = feteDinFisier(octeti('test/fixtures/text/inter-cff2.otf'));
   assert.deepEqual([cff2?.bune.length, cff2?.refuzate.map((r) => r.cod)], [0, ['cff2']]);
@@ -87,17 +96,35 @@ test('fețele unui fișier: o colecție dă două, un CFF2 e refuzat cu codul lu
   assert.equal(fataDupaNume(ttc, 'necunoscut', 'necunoscut'), 0);
 });
 
-test('instanța cerută dintr-un font variabil: alta decât cea implicită se refuză (după PostScript sau numele complet)', () => {
+test('instanța cerută de un nume al sistemului dintr-un font variabil: indicele ei (după PostScript sau numele complet)', () => {
+  // roboto-fvar: Regular (implicită), Bold (Roboto-Bold), Thin (fără nume PostScript), Book (la coordonatele implicite).
   const v = ok(citesteFont(octeti('test/fixtures/text/roboto-fvar.ttf')));
-  assert.equal(instantaNecitita(v, 'Roboto-Bold', 'Roboto Bold'), 'Bold');
-  assert.equal(instantaNecitita(v, 'Roboto-Thin', 'Roboto Thin'), 'Thin');
-  assert.equal(instantaNecitita(v, 'Roboto-Regular', 'Roboto Regular'), null);
-  // „Book” e la aceleași coordonate ca instanța implicită: se citește (alt nume, aceleași contururi).
-  assert.equal(instantaNecitita(v, 'Roboto-Book', 'Roboto Book'), null);
-  assert.equal(instantaNecitita(v, 'necunoscut', 'Roboto Regular'), null);
-  assert.equal(instantaNecitita(v, 'necunoscut', 'necunoscut'), null);
+  assert.equal(instantaCeruta(v, 'Roboto-Bold', 'Roboto Bold'), 1);
+  assert.equal(instantaCeruta(v, 'Roboto-Thin', 'Roboto Thin'), 2);
+  assert.equal(instantaCeruta(v, 'Roboto-Regular', 'Roboto Regular'), null);
+  // „Book” e la aceleași coordonate ca instanța implicită: fontul însuși (alt nume, aceleași contururi).
+  assert.equal(instantaCeruta(v, 'Roboto-Book', 'Roboto Book'), null);
+  assert.equal(instantaCeruta(v, 'necunoscut', 'Roboto Regular'), null);
+  assert.equal(instantaCeruta(v, 'necunoscut', 'necunoscut'), null);
   const r = ok(citesteFont(octeti('public/fonturi/roboto.ttf')));
-  assert.equal(instantaNecitita(r, 'Roboto-Bold', 'Roboto Bold'), null);
+  assert.equal(instantaCeruta(r, 'Roboto-Bold', 'Roboto Bold'), null);
+  // Roboto Flex n-are nume PostScript în instanțe: după numele complet (cum îl dă sistemul).
+  const flex = ok(citesteFont(octeti('test/fixtures/text/roboto-flex-subset.ttf')));
+  assert.equal(instantaCeruta(flex, 'RobotoFlex-Bold', 'Roboto Flex Bold'), 6);
+  assert.equal(instantaCeruta(flex, 'RobotoFlex-Regular', 'Roboto Flex Regular'), null);
+});
+
+test('instanțele numite ale unui font variabil, ca fețe: afară de cea implicită, cu indicele din fvar și numele lor', () => {
+  const flex = feteDinFisier(octeti('test/fixtures/text/roboto-flex-subset.ttf'))!;
+  assert.equal(flex.bune.length, 1);
+  const i = flex.bune[0]!.instante;
+  // 20 de instanțe, fără Regular (indicele 3, la coordonatele implicite: e fața însăși).
+  assert.deepEqual(i.map((x) => x.indice), [0, 1, 2, ...Array.from({ length: 16 }, (_, k) => k + 4)]);
+  assert.deepEqual(i[0]!.nume, { familie: 'Roboto Flex', stil: 'Thin', complet: 'Roboto Flex Thin', postscript: 'RobotoFlex-Thin' });
+  assert.deepEqual(i.find((x) => x.indice === 16)!.nume, { familie: 'Roboto Flex', stil: 'Bold Italic', complet: 'Roboto Flex Bold Italic', postscript: 'RobotoFlex-BoldItalic' });
+  // roboto-fvar: Bold (cu numele PostScript din font) și Thin; Regular și Book sunt la coordonatele implicite.
+  const fvar = feteDinFisier(octeti('test/fixtures/text/roboto-fvar.ttf'))!;
+  assert.deepEqual(fvar.bune[0]!.instante.map((x) => [x.indice, x.nume.complet, x.nume.postscript]), [[1, 'Roboto Bold', 'Roboto-Bold'], [2, 'Roboto Thin', 'Roboto-Thin']]);
 });
 
 test('amprenta fișierului: 16 cifre hex din SHA-256, aceeași pentru aceiași octeți', async () => {
@@ -119,4 +146,8 @@ test('plafoanele Fonturilor mele: 100 de fețe, 300 MB, un fișier deja ținut n
   assert.equal(plafonDepasit([f('a', 260 * MB), f('a', 260 * MB)], 1, 'b', 40 * MB), false);
   assert.equal(plafonDepasit([f('a', 260 * MB)], 1, 'b', 41 * MB), true);
   assert.equal(plafonDepasit([f('a', 300 * MB)], 1, 'a', 300 * MB), false);
+  // Instanțele numite (ADR 0113) nu sunt fețe: 99 de fețe și 500 de instanțe mai primesc o față.
+  const instante = Array.from({ length: 500 }, (_, k) => ({ amprenta: `i${k % 5}`, marime: 1, instanta: k }));
+  assert.equal(plafonDepasit([...Array.from({ length: 99 }, (_, k) => f(`a${k}`, 1)), ...instante], 1, 'nou', 1), false);
+  assert.equal(plafonDepasit([...Array.from({ length: 100 }, (_, k) => f(`a${k}`, 1)), ...instante], 1, 'nou', 1), true);
 });

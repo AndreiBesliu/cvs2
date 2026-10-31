@@ -17,6 +17,8 @@ export type FontSalvat = {
   /** Cheia fișierului (amprenta lui) în depozitul fișierelor. */
   readonly amprenta: string;
   readonly fata: number;
+  /** Instanța numită a unei fețe variabile (ADR 0113), după indicele ei din `fvar`; lipsă: fața însăși. */
+  readonly instanta?: number;
   readonly nume: NumeFont;
   readonly sursa: 'incarcat' | 'google';
   /** Octeții fișierului (ai fontului despachetat, pentru un WOFF). */
@@ -79,11 +81,16 @@ function gata(t: IDBTransaction): Promise<void> {
   });
 }
 
-/** Fonturile din bibliotecă, ordonate după familie și stil. */
+/**
+ * Fonturile din bibliotecă, ordonate după familie și stil; instanțele numite ale unei fețe variabile (ADR 0113) stau după
+ * ea, în ordinea din font (de la subțire la gros).
+ */
 export async function listaBiblioteca(): Promise<FontSalvat[]> {
   const db = await deschide();
   const toate = await cere(db.transaction(FONTURI).objectStore(FONTURI).getAll() as IDBRequest<FontSalvat[]>);
-  return toate.sort((a, b) => (a.nume.familie === b.nume.familie ? (a.nume.stil < b.nume.stil ? -1 : 1) : a.nume.familie < b.nume.familie ? -1 : 1));
+  return toate.sort((a, b) => (a.nume.familie !== b.nume.familie ? (a.nume.familie < b.nume.familie ? -1 : 1)
+    : a.amprenta === b.amprenta && a.fata === b.fata ? (a.instanta ?? -1) - (b.instanta ?? -1)
+      : a.nume.stil < b.nume.stil ? -1 : 1));
 }
 
 /** Octeții fontului `id` și fața lui; null: nu e în bibliotecă. */
@@ -112,9 +119,12 @@ export async function stergeFont(id: string): Promise<void> {
 
 /**
  * Fețele bune ale unui fișier sfnt (`doarPrima`: doar fața 0), puse în bibliotecă într-o tranzacție, cu plafoanele
- * verificate pe ce e deja acolo.
+ * verificate pe ce e deja acolo. `id` dă și id-ul unei instanțe numite (ADR 0113), sau null: sursa nu le ține (Google dă
+ * fiecare variantă ca font fix).
  */
-async function pune(sfnt: Uint8Array, numeFisier: string, sursa: FontSalvat['sursa'], id: (fata: number, amprenta: string) => string, doarPrima = false): Promise<RezultatAdaugare> {
+async function pune(
+  sfnt: Uint8Array, numeFisier: string, sursa: FontSalvat['sursa'], id: (fata: number, amprenta: string, instanta?: number) => string | null, doarPrima = false,
+): Promise<RezultatAdaugare> {
   const toateFetele = feteDinFisier(sfnt);
   if (!toateFetele) return { adaugate: [], existente: [], refuzate: [{ nume: numeFisier, cod: 'nu-e-font' }] };
   const fete = doarPrima ? { bune: toateFetele.bune.filter((f) => f.fata === 0), refuzate: toateFetele.refuzate.filter((f) => f.fata === 0) } : toateFetele;
@@ -126,10 +136,17 @@ async function pune(sfnt: Uint8Array, numeFisier: string, sursa: FontSalvat['sur
   const fonturi = t.objectStore(FONTURI);
   const toate = await cere(fonturi.getAll() as IDBRequest<FontSalvat[]>);
   const adaugat = Date.now();
-  const noi = fete.bune.map((f): FontSalvat => ({ id: id(f.fata, amprenta), amprenta, fata: f.fata, nume: f.nume, sursa, marime: sfnt.byteLength, adaugat }));
+  // Fiecare față, apoi instanțele ei numite (ADR 0113), ca fețe separate în liste.
+  const noi = fete.bune.flatMap((f): FontSalvat[] => {
+    const fata: FontSalvat = { id: id(f.fata, amprenta)!, amprenta, fata: f.fata, nume: f.nume, sursa, marime: sfnt.byteLength, adaugat };
+    return [fata, ...f.instante.flatMap((i) => {
+      const idInstanta = id(f.fata, amprenta, i.indice);
+      return idInstanta ? [{ ...fata, id: idInstanta, instanta: i.indice, nume: i.nume }] : [];
+    })];
+  });
   const existente = noi.filter((n) => toate.some((x) => x.id === n.id)).map((n) => toate.find((x) => x.id === n.id)!);
   const adaugate = noi.filter((n) => !toate.some((x) => x.id === n.id));
-  if (plafonDepasit(toate, adaugate.length, amprenta, sfnt.byteLength)) {
+  if (plafonDepasit(toate, adaugate.filter((x) => x.instanta === undefined).length, amprenta, sfnt.byteLength)) {
     t.abort();
     return { adaugate: [], existente, refuzate: [...refuzate, { nume: numeFisier, cod: 'biblioteca-plina' }] };
   }
@@ -160,7 +177,7 @@ async function sfntDin(numeFisier: string, octeti: Uint8Array): Promise<Uint8Arr
 export async function adaugaFisier(numeFisier: string, octeti: Uint8Array): Promise<RezultatAdaugare> {
   const sfnt = await sfntDin(numeFisier, octeti);
   if (!(sfnt instanceof Uint8Array)) return { adaugate: [], existente: [], refuzate: [sfnt] };
-  return pune(sfnt, numeFisier, 'incarcat', (fata, amprenta) => idFont({ fel: 'incarcat', amprenta, fata }));
+  return pune(sfnt, numeFisier, 'incarcat', (fata, amprenta, instanta) => idFont({ fel: 'incarcat', amprenta, fata, ...(instanta !== undefined ? { instanta } : {}) }));
 }
 
 /** O variantă descărcată din Google Fonts, sub `g:<familia>:<varianta>` (prima față a fișierului). */
@@ -168,5 +185,5 @@ export async function adaugaGoogle(familie: string, varianta: string, octeti: Ui
   const nume = `${familie} ${varianta}`;
   const sfnt = await sfntDin(nume, octeti);
   if (!(sfnt instanceof Uint8Array)) return { adaugate: [], existente: [], refuzate: [sfnt] };
-  return pune(sfnt, nume, 'google', () => idFont({ fel: 'google', familie, varianta }), true);
+  return pune(sfnt, nume, 'google', (_fata, _amprenta, instanta) => (instanta === undefined ? idFont({ fel: 'google', familie, varianta }) : null), true);
 }

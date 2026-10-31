@@ -104,7 +104,7 @@ test('refuzurile: CFF2, WOFF și WOFF2 (de despachetat întâi), alt fișier, fa
 
 const STRUCTURA = JSON.parse(readFileSync(new URL('test/fixtures/text/structura.json', RAD), 'utf8')) as {
   readonly 'test/fixtures/text/roboto-droid.ttc': ReadonlyArray<{ familie: string; complet: string; postscript: string; majuscula: number }>;
-  readonly 'test/fixtures/text/roboto-fvar.ttf': ReadonlyArray<{ stil: string; postscript: string | null; implicita: boolean }>;
+  readonly 'test/fixtures/text/roboto-fvar.ttf': ReadonlyArray<{ stil: string; postscript: string | null; implicita: boolean; coordonate: Record<string, number> }>;
 };
 
 test('colecția TTC: fețele cu numele lor, fiecare citită singură (familia, majuscula, contururile ca în fontul ei)', () => {
@@ -132,11 +132,17 @@ test('`cmap`: 3/10 (formatul 12) câștigă peste un 3/1 care minte; formatul 6,
   assert.deepEqual([s.glifa(0x48), s.glifa(0xf048), s.glifa(0xe9), s.glifa(0x1f), s.glifa(0x100), s.majuscula], [r.glifa(0x48), r.glifa(0x48), r.glifa(0xe9), 0, 0, 1456]);
 });
 
-test('fontul variabil: instanțele numite din fvar (stilul, numele PostScript, cea implicită); contururile, ale instanței implicite', () => {
-  const f = ok(citesteFont(octeti('test/fixtures/text/roboto-fvar.ttf')));
+test('fontul variabil: instanțele numite din fvar (stilul, numele PostScript, cea implicită, coordonatele); contururile, ale instanței cerute', () => {
+  const b = octeti('test/fixtures/text/roboto-fvar.ttf');
+  const f = ok(citesteFont(b));
   assert.deepEqual(f.instante, STRUCTURA['test/fixtures/text/roboto-fvar.ttf']);
+  assert.deepEqual(f.axe, [{ tag: 'wght', min: 100, implicit: 400, max: 900 }]);
   const r = ok(citesteFont(octeti('public/fonturi/roboto.ttf')));
   assert.deepEqual(f.contururi(f.glifa(0x41)), r.contururi(r.glifa(0x41)));
+  // Fără `gvar` (doar `fvar`), instanța Bold n-are variații: contururile și avansurile implicite (ADR 0113, ca specificația).
+  const bold = ok(citesteFont(b, 0, 1));
+  assert.deepEqual(bold.contururi(bold.glifa(0x41)), r.contururi(r.glifa(0x41)));
+  assert.equal(bold.avans(bold.glifa(0x41)), r.avans(r.glifa(0x41)));
 });
 
 test('o glifă compusă care se conține pe sine e sărită și numărată; celelalte litere rămân', () => {

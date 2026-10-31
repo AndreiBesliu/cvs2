@@ -186,7 +186,6 @@ export const roEditare = {
   'editare.text.previzualizare': 'Previzualizarea textului',
   'editare.text.font.lipseste': 'Fontul „{nume}” nu e pe calculatorul ăsta: încarcă-l (Adaugă fonturi…) ca să editezi textul; contururile lui rămân.',
   'editare.text.font.permisiune': 'Fontul „{nume}” e al sistemului: deschide Adaugă fonturi…, fila „Ale sistemului”, și permite accesul.',
-  'editare.text.font.instanta': '„{stil}” e o instanță a unui font variabil: deocamdată se citește doar instanța lui implicită. Alege alt stil.',
   'editare.text.font.fara-stocare': 'Browserul nu ține fonturi aici (o fereastră privată sau datele site-ului blocate).',
   'editare.text.font.retea': 'Fontul nu s-a putut aduce ({detaliu}).',
   'editare.text.font.necunoscut': 'Textul folosește un font pe care versiunea asta a aplicației nu-l cunoaște.',
@@ -195,6 +194,7 @@ export const roEditare = {
   'editare.text.refuz.woff': 'Un WOFF se încarcă din Fonturi…, unde se despachetează.',
   'editare.text.refuz.woff2': 'WOFF2 nu se citește încă: încarcă fontul ca TTF sau OTF.',
   'editare.text.refuz.cff2': 'Fonturile variabile OpenType cu contururi CFF2 nu se citesc încă.',
+  'editare.text.refuz.variatii': 'Stilurile acestui font variabil nu se calculează încă ({detaliu}): se poate folosi doar stilul lui implicit.',
   'editare.text.refuz.majuscula': 'Fontul n-are litera H și nici înălțimea majusculelor: mărimea în mm n-are după ce se măsura.',
   'editare.text.refuz.fara-unicode': 'Fontul n-are harta Unicode a caracterelor (e o codare veche, ca Shift-JIS).',
   'editare.text.refuz.fata-lipsa': 'Fața cerută nu e în fișier.',
@@ -230,6 +230,7 @@ export const roEditare = {
   'editare.fonturi.sursa.incarcat': 'încărcat',
   'editare.fonturi.sursa.google': 'Google Fonts',
   'editare.fonturi.marime': '{mb} MB',
+  'editare.fonturi.instanta': 'stil al fontului variabil',
   'editare.fonturi.foloseste': 'Folosește',
   'editare.fonturi.sterge': 'Șterge',
   'editare.fonturi.adaugate': {

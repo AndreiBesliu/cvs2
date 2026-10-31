@@ -3997,3 +3997,14 @@ importului e acum o singură judecată, fără biblioteca indexului (`src/geom/i
 Porțile: compilatorul (și al funcțiilor), importurile, testele unitare, build-ul determinist (pornirea 97,5, cu ușa 101,0
 / 110 kB; totalul 414,4 / 450; /admin 194,2 / 200), licențele, e2e-ul întreg, emulatoarele. Mutația: fără calculul
 pornit de întârziere, trei probe e2e cad. Cinci probe e2e vechi presupuneau traseul „vechi” până la `T`: rescrise.
+
+## 2026-10-31 — Instanțele fonturilor variabile (felia 7.4↑) (Model: Claude Opus 5.5)
+
+**Prompt:** „Felia **7.4↑ — instanțele fonturilor variabile**, în CNC Vector Studio 2 (`cncvs2`). Owner-ul a cerut o
+subsesiune pentru etape care se pot lucra în siguranță, în paralel cu sesiunea principală.” (sarcina dată de sesiunea
+principală: cititorul aplică instanțele, `fvar`, `avar`, `gvar` cu IUP, avansul din `HVAR` sau din punctele fantomă; CFF2 doar
+dacă iese curat; instanțele numite ca fețe separate, în id-ul fontului; oracolul fontTools întâi; ADR 0113.)
+**Started:** 31.10, 14:55. Felia **7.4↑**, fără agenți, în worktree-ul `C:\Users\besli\cncvs2-lucru\fonturi-variabile`, pe
+ramura `wip/7.4-fonturi-variabile`, din `4307ea0`. Fontul liber al oracolului: Roboto Flex (OFL 1.1, 13 axe, 20 de instanțe
+numite, cu `avar`, `gvar`, `HVAR`, `MVAR` și crenarea variabilă), din fonturile Android Studio de pe mașina asta. Estimarea:
+~7 ore (oracolul 1,5; cititorul 2,5; id-urile și interfața 1,5; e2e, documentele și porțile 1,5); parcarea la 1,5 ×.
