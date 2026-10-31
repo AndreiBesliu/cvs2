@@ -276,7 +276,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   fvar>` în Fonturile mele (o intrare pe instanță), iar fața sistemului se citește la instanța ei. **Corpusul instanțelor e
   Python** (`variabile` în `test/oracles-py/text_corpus.py`, cu instancer-ul lui fontTools pe Roboto Flex și Noto Sans CJK,
   OFL, din fonturile Android Studio, plus variantele lor): un loc nou = rândul în `LOCURI_FLEX` (sau al fontului), apoi
-  `test/fixtures/text/variabile.json` regenerat și comis. **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 418,5 / 450** (pe
+  `test/fixtures/text/variabile.json` regenerat și comis. **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 429,3 / 450 după unirea cu 5.8↑b–c, 5.1↑b și 9.5↑; 418,5** (pe
   `main`, baza era 97,6 / 101,1 / 414,8, cu 14.B↑b unit).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),

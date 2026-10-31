@@ -4144,3 +4144,17 @@ pe portul 4174 (4173 e al sesiunii principale): 282 / 283, iar singura picată c
 (`raportor.spec.ts:101`), deci trece la unire, pe 4173. Pe ramura
 `wip/7.4-fonturi-variabile`, împinsă; neunită și nepublicată (unirea și publicarea le face sesiunea principală, cu acordul
 owner-ului).
+
+## 2026-10-31 — Unite: instanțele fonturilor variabile (7.4↑) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, da si vreau sa facem roluri de taiere customizabile” (unirea ramurii fonturilor; arhivarea sesiunilor
+oracolului și importului EPS; rolurile personalizabile, cu întrebările de design puse grupat).
+**Started:** 31.10, 18:50. **Completed:** 31.10, 19:45. Sesiunile oracolului și importului EPS, arhivate. Unită în `main`:
+`f75fb90` (instanțele fonturilor variabile, ADR 0113, `wip/7.4-fonturi-variabile`). Conflicte doar în documente: fișa și
+DEVLOG (toate păstrate), indexul ADR (0112 cu precizările de la `main`, 0113 de la ramură, 0115 de la `main`, în ordine) și
+`CLAUDE.md` (toate paragrafele, fără linia veche cu mărimile de pe `4307ea0`). Porțile pe arborele unit: compilatoarele,
+importurile, traducerile (490, 0 lipsă), 7 916 teste unitare, build-ul determinist (216 fișiere; pornirea 97,6, cu ușa
+101,1 / 110 kB; totalul 429,3 / 450), licențele, e2e 285 / 285, emulatoarele (49 + 16). CI-ul rapid verde (41225011616).
+**Publicat pe adresa principală de test:** 31.10, `publica` pe `f75fb90` (rularea 41225617708). Verificat în browserul
+aplicației la 1440 px: unealta Text și fereastra „Fonts” se deschid, fără erori. Instanțele variabile nu le-am încercat în
+browser (cer un font variabil încărcat sau permisiunea fonturilor sistemului); le probează e2e-ul fonturilor.
