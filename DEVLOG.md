@@ -3923,3 +3923,15 @@ incidentul numărul unu, înaintea oricărei felii).
 - **Testul pas cu pas** (`tutorial.spec.ts`, 30.10): reîncărcarea venea imediat după „Nu”, înaintea scrierii asincrone în
   IndexedDB; acum se așteaptă scrierea.
 Porțile locale: compilatorul, build-ul determinist (208 fișiere, mărimile neschimbate), e2e-ul (276).
+**Publicat pe adresa principală de test:** 31.10, `publica` pe `6c2a7c3` (rularea 41185505358), după rapid-ul verde
+(41184915214); verificat în browserul aplicației la 1440 și 1280 px, cu grila: la 1280 px și litere lățite cu 5 px, bara se
+mută spre stânga și rămân 12 px până la unelte.
+**Corecție:** rularea de noapte pornită de mână pe `6c2a7c3` (41185040683) a trecut bara de sus și testul pas cu pas, dar a
+căzut din nou pe cele două teste CAM, chiar la așteptarea nouă. Cauza de dimineață era greșită: proiectul se deschide înaintea
+primei randări, deci lista nu apare înaintea lui (încetinirea procesorului arătase alt fenomen). Diagnosticul pus în test
+(`8323875`, rularea 41189647578) a arătat în bază 146 176 de caractere din 449 186: `test/e2e/cam-node.ts` scria documentul
+pe stdout și ieșea imediat (`process.exit(0)`); pe Linux, scrierea într-un pipe e asincronă, iar ieșirea o taie (în WSL:
+65 536 din 449 000; fără ieșirea imediată, 449 000; pe Windows, 449 000 în ambele cazuri). Aplicația refuza corect textul
+(„nu e JSON”) și pornea un proiect gol, pe care T calcula refuzul. Reparat: ramurile lasă procesul să se termine singur;
+`deschide` cere întâi textul JSON întreg (plasa probată cu textul tăiat la 146 176: cade pe loc, cu mărimea lui); diagnosticul
+rămâne.

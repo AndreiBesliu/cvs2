@@ -170,6 +170,8 @@ test('workerul CAM construit, pe tot corpusul: bit cu bit ca același cod pe fir
 
 /** Scrie direct în baza aplicației o versiune a proiectului (ca o salvare), apoi reîncarcă: aplicația o deschide. */
 async function deschide(page: Page, text: string): Promise<void> {
+  // Textul vine din alt proces (`cam-node.ts`): unul tăiat cade aici, pe loc, nu peste un minut, în aplicație.
+  expect(() => JSON.parse(text), `documentul de deschis (${text.length} caractere) nu e JSON întreg`).not.toThrow();
   await page.goto('/');
   // Întâi aplicația își creează baza (cu tabelele ei); o deschidere din test înaintea ei ar crea-o goală.
   await expect(page.getByTestId('lista-vectori')).toBeVisible();
@@ -188,10 +190,9 @@ async function deschide(page: Page, text: string): Promise<void> {
     db.close();
   }, text);
   await page.reload();
-  // Proiectul e deschis înaintea primei randări, deci primul rând al listei vine odată cu ea. Pe CI (rularea de noapte, 31.10,
-  // de două ori), documentul greu (439 kB) nu ajungea deloc în listă, iar placa 2 (6 kB) da: traseul se calcula pe documentul
-  // gol („nicio formă n-are o operație de tăiere”). Dacă rândul nu vine, eroarea spune ce a zis aplicația la deschidere (bara
-  // de jos, jurnalul local) și ce e în bază.
+  // Proiectul e deschis înaintea primei randări, deci primul rând al listei vine odată cu ea. Dacă nu vine (aplicația a refuzat
+  // proiectul și a pornit unul nou), eroarea spune ce a zis aplicația la deschidere (bara de jos, jurnalul local) și ce e în
+  // bază: așa s-a văzut, pe CI (31.10), documentul greu tăiat de `cam-node.ts` la 146 176 de caractere din 449 000.
   await page.getByTestId('lista-vectori').locator('button[data-instanta]').first().waitFor({ timeout: 60_000 }).catch(async (e: unknown) => {
     const stare = await page.evaluate(async () => {
       const db = await new Promise<IDBDatabase>((ok, eroare) => {
