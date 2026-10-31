@@ -219,6 +219,15 @@ test('AI: un document plasat (%%BeginDocument) se sare, numărat; textul unui st
   assert.deepEqual([t.cai.length, t.avertismente['sarit-text'], t.avertismente.ascunse], [1, 0, 1]);
 });
 
+test('AI 3: prologul fără %%BeginProlog (de la %%EndComments la %%EndProlog), cu cod în afara blocurilor de proceduri, se sare', () => {
+  const r = citit(B([
+    '%!PS-Adobe-2.0 EPSF-1.2', '%%Creator:Adobe Illustrator(TM) 3.2', '%%EndComments',
+    'userdict /Adobe_Illustrator_1.1 known not { /x 1 def } if', '%%BeginProcSet: Adobe_Illustrator_1.1 0 0', '/m { moveto } def',
+    '%%EndProcSet', '%%EndProlog', '%%BeginSetup', 'n', '%%EndSetup', '0 0 m', '100 0 L', 'S', '%%Trailer', '',
+  ].join('\n')));
+  assert.deepEqual([r.illustrator, r.cai.length], [true, 1]);
+});
+
 test('AI: un fișier cu capetele de rând Mac (CR), ca pe Macintosh-urile vechi, se citește la fel (secțiunile, straturile, raportul)', () => {
   const lf = new Uint8Array(readFileSync(new URL('../fixtures/eps/ai8.ai', import.meta.url)));
   const a = citit(lf), b = citit(lf.map((x) => (x === 10 ? 13 : x)));
