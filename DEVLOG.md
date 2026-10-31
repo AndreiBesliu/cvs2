@@ -4007,3 +4007,23 @@ mașină: `firebase-tools` global, prin node, cu JBR 25).
 „outside”, adâncimea 3, pasul 3); cu traseul arătat, rolul „inside” a mutat traseul singur, fără `T` (stins sub „se
 calculează”, apoi la zi în ~0,3 s; timpul jobului 52,6 → 50,1 s; în pixelii stratului, rama la 3 mm înăuntru, iar cea de
 afară dispărută); anulat la loc, fără erori în consolă.
+
+## 2026-10-31 — Oracolul independent al buzunarului (felia 5.1↑b) (Model: Claude Opus 5.5)
+
+**Prompt:** brief-ul sesiunii principale, pentru o sesiune paralelă: „Felia **5.1↑b — oracolul independent al buzunarului**, în
+CNC Vector Studio 2 (`cncvs2`). `CLAUDE.md` notează o datorie: „Oracolul documentului v11 e scris de sesiunea aplicației, nu
+independent: de reluat”. Tu o închizi: ești o sesiune nouă, deci independentă prin construcție.” (urmat de regulile
+independenței, proprietățile de judecat, cazurile, ce înseamnă „gata”, porțile și regulile lucrului în paralel).
+**Started:** 31.10, 15:05. **Completed:** 31.10, 16:20. Felia **5.1↑b**, fără agenți și fără ADR (nicio decizie schimbată), în
+worktree-ul `C:\Users\besli\cncvs2-lucru\oracol-buzunar`, pe `wip/5.1b-oracol-buzunar`. Oracolul `test/oracles/buzunar.ts`,
+scris doar din ADR-urile buzunarului, din tipurile documentului și din G-code-ul exportat (fără `src/cam/` și fără probele
+vechi), judecă fiecare bucată: pasul pe trecere (un câmp de înălțimi tăiat de tot programul), peretele și insulele (garanția
+exactă, prin bisecția pe distanța 1-Lipschitz), acoperirea deschiderii și pasul lateral (inelele la R + k·s, liniile la unghi și
+la s), sensul, coborârea, frezele de rest. Proba `test/unit/buzunar.oracol.test.ts`: corpusul CAM (16 bucăți), 13 cazuri pe
+hârtie (`test/oracles/buzunar.cazuri.ts`), 4 refuzuri prezise și refuzate de aplicație, 4 sabotaje pe o copie a ieșirii și 14
+perechi (fiecare verificare pică pe perechea ei). **Niciun defect al aplicației**; o greșeală a hârtiei mele (δ maxim al L-ului
+e la îmbinare, 32(2 − √2), nu 16). Porțile: compilatorul, importurile (17 / 17 capcane, 0 încălcări), 7 810 teste unitare (0
+picate, 8 sărite, ca pe `main`), build-ul determinist (214 fișiere identice în două build-uri; totalul 414,9 / 450 față de
+414,8 pe `main`, dar bucățile JavaScript sunt identice octet cu octet cu ale lui `main`, construit alături, după ce le scot
+numele cu hash: diferă doar numele, deci compresia lor). Fără e2e (nimic din interfață). Nepublicat și neunit: unirea e a
+sesiunii principale. Rămâne de reluat partea de ușă a documentului v11–v18 (`test/oracles/document.ts`).

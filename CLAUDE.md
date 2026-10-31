@@ -96,7 +96,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   v11 (`tip: 'buzunar'`, `pasLateral` ≤ D / 2); inelele paralele cu conturul, dinăuntru în afară (`src/cam/buzunar.ts`); o
   singură freză. **Insulele (ADR 0073)** gata pe 25.10: buzunarele de aceeași adâncime de pe foaie sunt unul singur, citit
   par-impar, peste piese (`offsetRegiune` în fațada offsetului); cu altă adâncime, treaptă.
-  **Oracolul documentului v11 e scris de sesiunea aplicației, nu independent**: de reluat. Ușa unui proiect salvat e
+  **Oracolul independent al buzunarului (felia 5.1↑b)** gata pe 31.10: `test/oracles/buzunar.ts`, scris de o sesiune nouă doar
+  din ADR-uri, judecă G-code-ul exportat (pasul pe trecere, peretele și insulele, acoperirea și pasul lateral, sensul,
+  coborârea, frezele de rest, liniile paralele), pe corpusul CAM și pe cazurile pe hârtie din `test/oracles/buzunar.cazuri.ts`
+  (un caz nou = documentul și valorile lui pe hârtie, acolo). Partea de ușă a documentului v11–v18 (`test/oracles/document.ts`)
+  e tot a sesiunii aplicației: de reluat. Ușa unui proiect salvat e
   despărțită (ADR 0070): la pornire doar `usaCurenta.ts`, migrările (`migrari.ts`) doar pentru un document vechi; pornirea cu
   ușa 98,6 / 100 kB (~1,4 kB liberi).
   **Testul pas cu pas, în aplicație (ADR 0072)** gata pe 25.10: butonul Test din extensie (în afara instanței live; din 31.10,
