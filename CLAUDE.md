@@ -253,7 +253,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   nou singur** după fiecare schimbare (300 ms fără altă schimbare), deci probele care schimbă documentul cu traseul arătat
   așteaptă calculul nou, nu cipul „vechi”. Imbricarea are o singură judecată (`src/geom/imbricare.ts`, candidații de la
   apelant). Din 5.8↑b, V-carve-urile unei piese cu aceleași valori sunt o singură regiune, oricâte
-  operații (schimbă ADR 0090). **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 414,8 / 450 (după unirea cu sugestia din editor).**
+  operații (schimbă ADR 0090). Din 5.8↑c, rolul V-carve pune adâncimea cel mult cât conul frezei (`inaltimeConV`). **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 414,8 / 450 (după unirea cu sugestia din editor).**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

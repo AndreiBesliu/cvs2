@@ -25,6 +25,7 @@ import type { Contur, Punct } from '../geom/conturBaza.ts';
 import { arieCuSemn, inverseaza } from '../geom/contur.ts';
 import { inRegiune } from '../geom/distanta.ts';
 import type { Miscare } from '../ir/ir.ts';
+import { inaltimeConV } from '../model/document.ts';
 import { axaMediala, indexContururi, type IndexContur } from './axaMediala.ts';
 import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
 import { avansCoborare, lungimeBucla, parcurge } from './parcurgere.ts';
@@ -368,7 +369,8 @@ export function traseuVcarve(p: ParametriVcarve): RezultatVcarve {
   }
   if (!(razaMax > a)) return { ok: false, motiv: `regiunea nu e nicăieri mai lată decât vârful frezei (${varf} mm): freza n-are unde coborî` };
   const adancimeMax = Math.min(D, (razaMax - a) * cot);
-  const con = ((p.diametruScula - varf) / 2) * cot;
+  // Aceeași înălțime ca rolul V-carve din panou, care nu cere mai mult (ADR 0112).
+  const con = inaltimeConV(p.diametruScula, p.unghi, varf);
   if (adancimeMax > con + 1e-9) {
     return { ok: false, motiv: `regiunea cere ${adancimeMax.toFixed(3)} mm, iar conul frezei în V (Ø${p.diametruScula}, ${p.unghi}°) are ${con.toFixed(3)} mm: micșorează adâncimea maximă sau alege o freză mai lată` };
   }

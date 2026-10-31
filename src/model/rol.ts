@@ -3,8 +3,8 @@ import { cutieContur, type Cutie } from '../geom/cutie.ts';
 import { adancimiImbricare } from '../geom/imbricare.ts';
 import { IDENTITATE } from '../geom/matrice.ts';
 import {
-  operatieImplicita, pasLateralImplicit, PLAFON, UNGHI_V_IMPLICIT, type Document, type FormaSculaDoc, type Latura, type Operatie, type Piesa,
-  type Scula, type TipOperatie,
+  inaltimeConV, operatieImplicita, pasLateralImplicit, PLAFON, UNGHI_V_IMPLICIT, type Document, type FormaSculaDoc, type Latura, type Operatie,
+  type Piesa, type Scula, type TipOperatie,
 } from './document.ts';
 import { conturElement } from './forme.ts';
 import { elementeInstanta } from './lume.ts';
@@ -192,12 +192,16 @@ export function operatiiPentruRol(doc: Document, p: Piesa, rol: Rol): Operatie[]
   if (!g || g.length === 0) return null;
   const prima = p.operatii[0] ?? operatieImplicita(g[0]!.id, { tip: 'cerc', raza: 1 });
   const {
-    id: _id, tip: tipVechi, noduri: _noduri, latura: _latura, scula: sculaVeche, sens, adancime, pas, urechi, rampa, intrari, colturi,
+    id: _id, tip: tipVechi, noduri: _noduri, latura: _latura, scula: sculaVeche, sens, adancime: adancimeVeche, pas, urechi, rampa, intrari, colturi,
     despartire: _d, pasLateral: pasVechi, coborare: _c, retragereCompleta: _r, fundPlat: _f, directie: _dir, rest: _rest, strategie: _s,
     ...necunoscute
   } = prima;
   void _id; void _noduri; void _latura; void _d; void _c; void _r; void _f; void _dir; void _rest; void _s;
   const scula = frezaPentruRol(doc, sculaVeche, rol);
+  // La V-carve, adâncimea e cel mult conul frezei, rotunjit în jos la 0,001 mm (ADR 0112, precizarea 5.8↑c): altfel lucrarea
+  // l-ar refuza („regiunea cere … iar conul frezei are …”), de pildă la gaura de 8 mm a unui cerc nou, cu V60 Ø6.
+  const con = rol === 'vcarve' && scula.forma?.tip === 'v' ? inaltimeConV(scula.diametru, scula.forma.unghi, scula.forma.varf ?? 0) : Infinity;
+  const adancime = Math.min(adancimeVeche, Math.floor(con * 1000) / 1000);
   const vechi = rolPiesei(p);
   const profil = (r: Rol | null): boolean => r === 'exterior' || r === 'interior';
   const extra = profil(vechi) && profil(rol) ? { urechi, rampa, intrari, colturi } : { urechi: null, rampa: null, intrari: null, colturi: null };

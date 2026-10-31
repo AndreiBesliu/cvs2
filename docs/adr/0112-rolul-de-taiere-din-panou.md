@@ -96,6 +96,15 @@ rezumatul pe operație poartă regiunea la prima operație a ei.
 - Rolul din panou rămâne „V-carve” doar pentru o singură operație (§3): un V-carve împărțit arată „—”, iar alegerea lui îl
   regrupează, fără să schimbe G-code-ul.
 
+## Precizarea din 31.10.2026 (felia 5.8↑c): adâncimea V-carve-ului, cel mult conul frezei
+
+Găsit la verificarea pe test a feliei 5.8↑b: un cerc nou (o gaură de 8 mm) trecut pe V-carve primea freza V60 Ø6 și își
+păstra adâncimea (§4), iar lucrarea îl refuza: „regiunea cere 8.000 mm, iar conul frezei în V (Ø6, 60°) are 5.196 mm”. **Schimbă
+§4:** la V-carve, adâncimea e cel mult înălțimea conului frezei, ((Ø − vârful) / 2) · cot(θ / 2), rotunjită în jos la 0,001 mm
+(5,196 la V60 Ø6, 2,75 la V90 Ø6 cu vârful de 0,5). Sub con rămâne cum era. Formula e una singură (`inaltimeConV` în
+`src/model/document.ts`), aceeași pentru lucrare și pentru rol. Proba (`test/unit/rol.test.ts`): cercul de 8 mm primește
+5,196, iar lucrarea îl primește; sub con, adâncimea rămâne; cu vârful plat, conul lui. Înainte de schimbare, proba cădea.
+
 ## Se redeschide dacă
 
 - owner-ul vrea roluri pe piesele amestecate, sau „fără tăiere”;

@@ -45,6 +45,10 @@
       "ro": "Roadmap-ul în engleză",
       "en": "The roadmap in English"
     },
+    "05df1e465495cd74": {
+      "ro": "Adâncimea V-carve-ului din panou, cel mult conul frezei",
+      "en": "The panel's V-carve depth, at most the bit's cone"
+    },
     "05fad3a74f8b47cf": {
       "ro": "Raportorul din client",
       "en": "The client reporter"
@@ -944,6 +948,10 @@
     "7c50450482c286a4": {
       "ro": "Normalizarea `nonzero` la ușă (ADR 0036: aranjamentul exact în double, fără PathKit; înlocuiește fațada PathKit + R3 din plan), încărcată doar la import",
       "en": "`nonzero` normalisation at the door (ADR 0036: the exact arrangement in doubles, without PathKit; replaces the plan's PathKit + R3 facade), loaded only on import"
+    },
+    "7c5fb59a0569089b": {
+      "ro": "**Adâncimea V-carve-ului din panou, cel mult conul frezei** (fără mașină; precizarea din ADR 0112; „Limitarea”, la întrebarea de după verificarea feliei 5.8↑b). Un cerc nou (gaura de 8 mm) trecut pe V-carve primea freza V60 Ø6 și își păstra adâncimea, iar lucrarea îl refuza (conul are 5,196 mm). Acum rolul V-carve pune adâncimea cel mult cât conul, rotunjită în jos la 0,001 mm; formula e una singură, pentru lucrare și pentru rol (`inaltimeConV`). **Treceri:** (1) proba întâi (căzută înainte), apoi limita în rol.",
+      "en": "**The panel's V-carve depth, at most the bit's cone** (no machine; the precision in ADR 0112; “Limitarea”, in answer to the question after checking slice 5.8↑b). A new circle (an 8 mm hole) set to V-carve got the V60 Ø6 cutter and kept its depth, and the job refused it (the cone is 5.196 mm). Now the V-carve role sets the depth to at most the cone, rounded down to 0.001 mm; the formula is a single one, for the job and for the role (`inaltimeConV`). **Passes:** (1) the probe first (it failed before), then the limit in the role."
     },
     "7c84f73568bf938e": {
       "ro": "Fundul plat al V-carve-ului, adus din etapa 8",

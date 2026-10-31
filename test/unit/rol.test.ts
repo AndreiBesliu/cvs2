@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import {
   operatieImplicita, PLAFON, VERSIUNE_SCHEMA, type Document, type ElementNod, type FormaDoc, type Operatie, type Piesa,
 } from '../../src/model/document.ts';
+import { programDinDocument } from '../../src/cam/job.ts';
 import { frezaPentruRol, numarFreza, operatiiPentruRol, rolPiesei, roluriOferite } from '../../src/model/rol.ts';
 import { operatieInMargini } from '../../src/model/schemaDocument.ts';
 
@@ -100,6 +101,21 @@ test('buzunarul își păstrează pasul lateral dacă încape în freză; găuri
   const c = simpla('c', CERC(3));
   const [g] = operatiiPentruRol(doc(c), c, 'gaurire')!;
   assert.deepEqual([g!.tip, g!.latura, g!.pasLateral, g!.scula.numar], ['gaurire', 'interior', undefined, 1]);
+});
+
+test('V-carve-ul nu cere mai mult decât conul frezei: adâncimea, cel mult cât el (rotunjită în jos la 0,001 mm), iar lucrarea îl primește', () => {
+  // Cercul nou e o gaură de 8 mm; V60 Ø6 are conul 3·cot(30°) = 5,196 152… mm.
+  const c = simpla('c', CERC(15));
+  const d = doc(c);
+  const [v] = operatiiPentruRol(d, c, 'vcarve')!;
+  assert.deepEqual([v!.scula.forma, v!.adancime, v!.pas], [{ tip: 'v', unghi: 60 }, 5.196, 4]);
+  const r = programDinDocument({ ...d, piese: [{ ...c, operatii: [v!] }] });
+  assert.ok(r.ok, r.ok ? '' : r.motiv);
+  // Sub con, adâncimea rămâne; cu vârful plat (V90 Ø6, vârful 0,5), conul e (6 − 0,5) / 2 · cot(45°) = 2,75 mm.
+  const mica: Piesa = { ...c, operatii: [{ ...c.operatii[0]!, adancime: 3 }] };
+  assert.equal(operatiiPentruRol(doc(mica), mica, 'vcarve')![0]!.adancime, 3);
+  const cuVarf: Piesa = { ...c, operatii: [{ ...c.operatii[0]!, scula: { numar: 3, nume: 'V90', diametru: 6, forma: { tip: 'v', unghi: 90, varf: 0.5 } } }] };
+  assert.equal(operatiiPentruRol(doc(cuVarf), cuVarf, 'vcarve')![0]!.adancime, 2.75);
 });
 
 test('pe o literă cu gol: exteriorul taie conturul pe afară și golul pe dinăuntru; V-carve-ul și buzunarul, o singură operație', () => {

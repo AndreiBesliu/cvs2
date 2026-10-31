@@ -452,7 +452,8 @@ The **Cutting role** can also be chosen in the properties panel, in the **Cuttin
 whole shape's: on a letter with holes, outside cuts the outline on the outside and the holes on the inside, while the pocket
 and the V-carve carve the letter with its holes in one go. When the role changes, the cutter, the direction, the depth and the
 step stay; the rest goes back to the defaults. A V bit only works on the line and in a V-carve: for a V-carve, a flat cutter
-becomes a V60 of the same diameter, and for another role a V bit becomes flat. Under the role, **Depth** and **Step down** are
+becomes a V60 of the same diameter, and for another role a V bit becomes flat. For a V-carve, the depth is at most the bit's
+cone (5.196 mm for a V60 Ø6). Under the role, **Depth** and **Step down** are
 written on all the operations of the chosen shapes (with different values, the field is empty). A part with several copies
 changes its role for all of them. A shown toolpath updates by itself.
 

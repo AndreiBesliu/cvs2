@@ -439,7 +439,7 @@ fereastra **Exportă G-code**, câte un rând pe formă; la export, fereastra **
 întregi: pe o literă cu goluri, exteriorul taie conturul pe afară și golurile pe dinăuntru, iar buzunarul și V-carve-ul sapă
 litera cu golurile ei, dintr-o dată. La schimbarea rolului rămân freza, sensul, adâncimea și pasul; restul revine la
 implicit. Freza în V merge doar pe linie și în V-carve: la V-carve, o freză plată devine una V60 cu același diametru, iar la
-alt rol, o freză în V devine plată. Sub rol, **Adâncimea** și **Pasul** se scriu pe toate operațiile formelor alese (cu valori
+alt rol, o freză în V devine plată. La V-carve, adâncimea e cel mult cât conul frezei (la V60 Ø6, 5,196 mm). Sub rol, **Adâncimea** și **Pasul** se scriu pe toate operațiile formelor alese (cu valori
 diferite, câmpul e gol). O piesă cu mai multe copii își schimbă rolul pentru toate. Traseul arătat se reface singur.
 
 | Câmpul | Ce înseamnă |

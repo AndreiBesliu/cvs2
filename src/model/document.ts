@@ -99,6 +99,13 @@ export const UNGHI_V_MINIM = 1;
 export const UNGHI_V_MAXIM = 179;
 /** Unghiul implicit al frezei în V (ADR 0090), în grade: în fereastra exportului și la rolul V-carve din panou (ADR 0112). */
 export const UNGHI_V_IMPLICIT = 60;
+/**
+ * Înălțimea conului unei freze în V (ADR 0090, ADR 0092): cât poate coborî partea ei tăietoare, ((diametrul − vârful) / 2) ·
+ * cot(unghi / 2), în mm. Lucrarea V-carve-ului refuză o regiune care cere mai mult; rolul din panou nu cere mai mult (ADR 0112).
+ */
+export function inaltimeConV(diametru: number, unghi: number, varf = 0): number {
+  return ((diametru - varf) / 2) * (1 / Math.tan((unghi * Math.PI) / 360));
+}
 /** Pasul lateral cu care pornește un buzunar nou: 40 % din diametrul frezei (ADR 0069 §1), la 0,1 mm. */
 export const pasLateralImplicit = (diametru: number): number => Math.round(diametru * 4) / 10;
 /**

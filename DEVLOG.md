@@ -4027,3 +4027,14 @@ primește freza T2 V60 Ø6, iar traseul calculat singur spune de ce nu se poate 
 (Ø6, 60°) are 5.196 mm”); cu adâncimea 5 din panou, traseul V-carve vine singur (51 de vârfuri, 54,0 s), fără erori. **Găsit
 la verificare:** adâncimea păstrată la schimbarea rolului (ADR 0112 §4) poate trece de conul frezei V60 puse automat; refuzul
 e corect și spune ce e de făcut, dar rolul ar putea limita singur adâncimea la con: decizia, la owner.
+
+## 2026-10-31 — Adâncimea V-carve-ului din panou, cel mult conul frezei (felia 5.8↑c) (Model: Claude Opus 5.5)
+
+**Prompt:** „Limitarea” (la întrebarea „Cu ce încep: limitarea adâncimii la V-carve sau reordonarea de mână a operațiilor?”).
+**Started:** 31.10, 16:40. **Completed:** 31.10, 17:06. Găsit la verificarea pe test a feliei 5.8↑b: un cerc nou (gaura de 8 mm)
+trecut pe V-carve primea freza V60 Ø6, își păstra adâncimea, iar lucrarea îl refuza (conul are 5,196 mm). Acum rolul V-carve
+pune adâncimea cel mult cât conul frezei, rotunjită în jos la 0,001 mm (precizarea din ADR 0112, schimbă §4); formula e una
+singură, aceeași în lucrare și în rol (`inaltimeConV` în `src/model/document.ts`). Proba a venit întâi și a căzut înainte:
+cercul de 8 mm primește 5,196, iar lucrarea îl primește; sub con, adâncimea rămâne; cu vârful plat, conul lui (2,75 la V90 Ø6,
+vârful 0,5). Porțile: compilatorul, importurile, 7 807 teste unitare, build-ul determinist (pornirea 97,6, cu ușa 101,1 / 110
+kB; totalul 415,3 / 450), e2e 282 / 282, emulatoarele (49 + 16).
