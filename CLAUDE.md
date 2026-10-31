@@ -256,7 +256,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   „Sugestii: scrie” (omul scrie o sugestie, își vede sugestiile și decizia, le editează cât n-au decizie) și „Sugestii: citește
   toate”; decizia e doar a owner-ului (acceptată, amânată, respinsă, în lucru, făcută, cu o notă), prin callable-ul `sugestii`
   (auditul în tranzacție, pe versiunea văzută, cel mult 20 pe om pe zi); regulile dau doar citirea, fără index compus.
-  **Sugestia din editor (ADR 0111, felia 14.B↑b)** gata pe 30.10: butonul **Sugestie**, lângă Test (doar în afara live),
+  **Sugestia din editor (ADR 0111, felia 14.B↑b)** gata pe 30.10: butonul **Sugestie**, lângă „?” (doar în afara live, fără `?test`),
   deschide fila Sugestii (`/admin#sugestii`) întâi, în clic, apoi lasă în browser poza planșei, micșorată ca JPEG sub 400 kB
   (`src/app/SugestieDinEditor.ts`, `src/app/pozaSugestiei.ts`: IndexedDB și un canal BroadcastChannel; editorul nu încarcă
   Firebase); fila o atașează sugestiei noi, iar serverul o ține în `sugestii/{id}/poze/plansa` (doar `get`, de cine poate

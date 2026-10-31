@@ -53,8 +53,16 @@ pe planșă.
 - `test/e2e-emulator/sugestii.emulator.spec.ts`: din editor, fila deschisă cu poza atașată, trimisă și văzută pe rând; o poză
   nouă ajunge în fila deja deschisă; scoasă, nu revine la reîncărcare.
 - Manualul (capitolul testului) numește butonul, în ambele limbi (`test/unit/manual.test.ts`).
+- `test/e2e/tutorial.spec.ts` (31.10): butonul chiar după „?”, la adresa fără `?test`, în afara live; pe live lipsește.
 
 ## Se redeschide dacă
 
 - personalul vrea mai multe poze pe sugestie, poze adăugate după scriere sau adnotări pe poză;
 - butonul intră pe live, pentru clienți, cu conturile lor (etapa 14).
+
+## Precizarea din 31.10.2026: lângă „?”, fără `?test`
+
+Butonul **Test** a ieșit din extensia barei, la cererea owner-ului (ADR 0072, precizarea din 31.10): testul se deschide la
+adresa cu `?test`. **Sugestie** rămâne în bară, chiar după „?”, tot doar în afara instanței live, dar fără `?test`: stătea
+sub condiția testului, așa că aplicația îi dă acum condiția lui (`sugestie`). Proba din `test/e2e/tutorial.spec.ts` pică și
+pe butonul legat de `?test`, și pe cel arătat pe live.
