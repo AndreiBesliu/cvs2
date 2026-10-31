@@ -4007,3 +4007,17 @@ mașină: `firebase-tools` global, prin node, cu JBR 25).
 „outside”, adâncimea 3, pasul 3); cu traseul arătat, rolul „inside” a mutat traseul singur, fără `T` (stins sub „se
 calculează”, apoi la zi în ~0,3 s; timpul jobului 52,6 → 50,1 s; în pixelii stratului, rama la 3 mm înăuntru, iar cea de
 afară dispărută); anulat la loc, fără erori în consolă.
+
+## 2026-10-31 — V-carve-ul unei piese, o singură regiune (felia 5.8↑b) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu altceva” (după „Nu acum” la unirea notei din DEVLOG a sesiunii sugestiilor; patru subsesiuni în
+lucru: sugestiile, fonturile variabile, oracolul buzunarului, importul EPS).
+**Started:** 31.10, 15:10. **Completed:** 31.10, 15:33. Limita scrisă în ADR 0112 dădea un rezultat greșit: un text cu
+operațiile importului (exteriorul, golurile), trecute pe V-carve rând cu rând în fereastra exportului, se săpa în două regiuni
+(„O” ca un disc plin). Acum, în lucrare (`src/cam/job.ts`), regiunea V-carve-ului e a contururilor unei piese dintr-o instanță
+cu aceleași valori (freza, adâncimea, pasul, sensul, fundul plat), ca buzunarele de aceeași adâncime (ADR 0073); cu valori
+diferite, regiunile rămân ale lor (precizarea din ADR 0112, schimbă ADR 0090). Proba a venit întâi și a căzut înainte: inelul
+R10 / R6 pe două operații dă exact mișcările unei singure operații. Porțile: compilatorul, importurile, 7 806 teste unitare
+(corpusul CAM neschimbat: n-avea V-carve-uri împărțite), build-ul determinist (pornirea 97,6, cu ușa 101,1 / 110 kB; totalul
+414,8 → 415,0 / 450), e2e 280 + 2 (două căderi sub încărcarea celor patru sesiuni, trecute rulate singure: 24 / 24),
+emulatoarele (49 + 16).

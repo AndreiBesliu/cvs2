@@ -232,6 +232,23 @@ test('lucrarea: contururile operației = o singură regiune par-impar (inelul di
   assert.ok(reg.ok && reg.regiune.inele.length === 0, 'V-carve-ul nu e inel');
 });
 
+test('două operații V-carve ale aceleiași piese, cu aceleași valori, sunt o singură regiune: inelul, ca dintr-o operație', () => {
+  // Ca un text cu operațiile importului (exteriorul, golurile), trecute pe V-carve rând cu rând în fereastra exportului.
+  const forme = [{ id: 'a', forma: { tip: 'cerc', raza: 10 }, e: 20, f: 20 }, { id: 'b', forma: { tip: 'cerc', raza: 6 }, e: 20, f: 20 }];
+  const miscari = (d: unknown): Miscare[] => {
+    const r = programDinDocument(deschis(d));
+    if (!r.ok) assert.fail(r.motiv);
+    return r.program.miscari.filter((m) => m.tip !== 'eticheta');
+  };
+  const una = miscari(doc(forme, [vcarve(['a', 'b'])], 10, 10));
+  const doua = miscari(doc(forme, [vcarve(['a'], { id: 'v1' }), vcarve(['b'], { id: 'v2' })], 10, 10));
+  assert.deepEqual(doua, una);
+  // Inelul: 2 mm, nu 10 (discul R10 fără gol) și nici al doilea disc, R6.
+  assert.ok(Math.abs(zMin(doua) + 2) < 1e-4, String(zMin(doua)));
+  // Cu adâncimi diferite, regiunile rămân ale lor (limita, spusă): discul R10 se sapă întreg, până la 10 mm.
+  assert.ok(Math.abs(zMin(miscari(doc(forme, [vcarve(['a'], { id: 'v1' }), vcarve(['b'], { id: 'v2', adancime: 8, pas: 8 })], 10, 10))) + 10) < 1e-4);
+});
+
 test('lucrarea refuză, cu motiv: freza plată, calea deschisă, ce e al profilului (urechi, latura exterior, despărțirea), conul prea scurt', () => {
   const dr = [{ id: 'a', forma: DR, e: 20, f: 20 }];
   assert.match(motivJob(doc(dr, [vcarve(['a'], { scula: { numar: 2, nume: 'freza plata', diametru: 6 } })])), /V-carve-ul cere o freză în V \(T2 e plată\)/);

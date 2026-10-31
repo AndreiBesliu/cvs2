@@ -1,4 +1,5 @@
 import { esteCaleDeschisa, type Document, type FrezaRest } from '../model/document.ts';
+import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { oglindeste } from '../model/parte.ts';
 import { conturDeTaiat } from './contur.ts';
 import { judecaDeschisa, NEATINS_PESTE_D, refuzDeschise } from './deschise.ts';
@@ -340,7 +341,14 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     miscari.push({ tip: 'schimba-scula', scula: curenta, turatie: regim.turatie });
   };
   const montata = (t: Taietura): void => { monteaza(t.scula); };
-  // V-carve-urile făcute (ADR 0090): toate contururile unei operații dintr-o instanță se taie odată, la prima lor tăietură.
+  // V-carve-urile făcute (ADR 0090): contururile unei regiuni se taie odată, la prima lor tăietură. O regiune = contururile
+  // V-carve ale unei piese dintr-o instanță cu aceleași valori (freza, adâncimea, pasul, sensul, fundul plat), oricâte
+  // operații ar fi (ADR 0112, precizarea): un text cu operațiile importului (exteriorul, golurile), trecute pe V-carve rând cu
+  // rând în fereastra exportului, se sapă cu golurile lui, ca dintr-o singură operație.
+  const cheieVcarve = (u: Taietura): string => `${u.instanta}/${u.piesa}/${jsonCanonic({
+    scula: { numar: u.scula.numar, diametru: u.scula.diametru, forma: u.scula.forma ?? null }, adancime: u.adancime, pas: u.pas, sens: u.sens,
+    fundPlat: operatieDe(u)?.fundPlat ?? null,
+  })}`;
   const vcarveFacute = new Set<string>();
   for (const [it, t] of taieturi.entries()) {
     const latura = t.latura;
@@ -359,12 +367,12 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     // lor), săpată cu freza în V pe axa ei medială. Ca buzunarul, nu e inel al regiunii păstrate și stă în regiune prin
     // construcție (raza exactă în fiecare punct).
     if (t.tip === 'vcarve') {
-      const cheie = `${t.instanta}/${t.piesa}/${t.operatie}`;
+      const cheie = cheieVcarve(t);
       if (vcarveFacute.has(cheie)) continue;
       vcarveFacute.add(cheie);
       const forma = t.scula.forma;
       if (forma?.tip !== 'v') return { ok: false, motiv: `${t.idLume}: V-carve-ul cere o freză în V (T${t.scula.numar} e plată)` };
-      const ale = taieturi.filter((u) => u.tip === 'vcarve' && `${u.instanta}/${u.piesa}/${u.operatie}` === cheie);
+      const ale = taieturi.filter((u) => u.tip === 'vcarve' && cheieVcarve(u) === cheie);
       const fp = operatieDe(t)?.fundPlat;
       const v = traseuVcarve({
         contururi: ale.map(conturDe), unghi: forma.unghi, varf: forma.varf ?? 0, diametruScula: D, adancime: t.adancime, pas: t.pas,

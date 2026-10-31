@@ -517,7 +517,9 @@ rândului, scrisă doar cu mișcări simple (G0, G1, G2, G3), fără ciclurile d
 coboară în fiecare punct cât încape între pereți: adâncimea e distanța până la cel mai apropiat perete împărțită la
 tan(θ/2), unde θ e unghiul frezei (la 90°, cât distanța; la 60°, de 1,73 ori mai mult). Pereții ies înclinați, exact pe
 contur, iar colțurile ascuțite rămân ascuțite: literele, ornamentele, conturul unui logo.
-- Contururile rândului se citesc împreună, par-impar: un „O” e inelul dintre cele două contururi, nu două forme.
+- Contururile rândului se citesc împreună, par-impar: un „O” e inelul dintre cele două contururi, nu două forme. La fel
+  rândurile V-carve ale aceleiași forme cu aceleași valori (freza, adâncimea, pasul, fundul plat): un text pus pe V-carve rând
+  cu rând se sapă cu golurile lui. Cu valori diferite, fiecare rând e o regiune separată.
 - **Adâncimea** e cea maximă. Unde forma e mai lată decât freza la acea adâncime, freza merge la ea pe mijloc și pe un contur
   paralel cu peretele, iar între ele rămâne un **fund plat**.
 - **Fundul plat cu freza dreaptă**: bifa de sub rândul V-carve-ului, cu freza dreaptă (numărul ei, alt T decât V-ul; implicit

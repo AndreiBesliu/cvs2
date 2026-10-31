@@ -79,8 +79,22 @@ dată.
 
 ## Limite
 
-- Din fereastra exportului, tăietura rămâne pe operație: pe un text, un V-carve ales pe ambele rânduri rămâne împărțit, ca
-  până acum; rolul din panou îl face întreg.
+- Din fereastra exportului, tăietura rămâne pe operație. Un V-carve ales pe ambele rânduri ale unui text se sapă totuși
+  întreg (precizarea de mai jos); cu valori diferite pe rânduri, regiunile rămân ale lor.
+
+## Precizarea din 31.10.2026 (felia 5.8↑b): V-carve-ul unei piese e o singură regiune
+
+Limita de mai sus dădea un rezultat greșit: un text cu operațiile importului, trecute pe V-carve rând cu rând în fereastra
+exportului, avea două regiuni (contururile de afară fără goluri, apoi golurile încă o dată), deci „O” se săpa ca un disc
+plin. **Schimbă ADR 0090 (regiunea unui V-carve e a unei operații):** în lucrare, regiunea e a contururilor V-carve ale unei
+piese dintr-o instanță cu aceleași valori (freza: numărul, diametrul, forma; adâncimea, pasul, sensul, fundul plat), oricâte
+operații ar fi, ca buzunarele de aceeași adâncime (ADR 0073). Cu valori diferite, regiunile rămân ale lor. Eticheta și
+rezumatul pe operație poartă regiunea la prima operație a ei.
+- **Proba** (`test/unit/vcarve.test.ts`): inelul R10 / R6 pe două operații cu aceleași valori dă exact mișcările unei
+  singure operații (2 mm, nu 10); cu adâncimi diferite, discul R10 se sapă întreg (limita, spusă). Înainte de schimbare,
+  proba cădea.
+- Rolul din panou rămâne „V-carve” doar pentru o singură operație (§3): un V-carve împărțit arată „—”, iar alegerea lui îl
+  regrupează, fără să schimbe G-code-ul.
 
 ## Se redeschide dacă
 

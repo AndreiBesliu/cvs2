@@ -534,7 +534,9 @@ does not have.
 and goes down at each point as far as fits between the walls: the depth is the distance to the nearest wall divided by
 tan(θ/2), where θ is the bit's angle (at 90°, the distance itself; at 60°, 1.73 times more). The walls come out sloped, right
 on the outline, and sharp corners stay sharp: lettering, ornaments, the outline of a logo.
-- The row's outlines are read together, even-odd: an "O" is the ring between its two outlines, not two shapes.
+- The row's outlines are read together, even-odd: an "O" is the ring between its two outlines, not two shapes. So are the
+  V-carve rows of the same shape with the same values (the cutter, the depth, the step, the flat bottom): a text set to
+  V-carve row by row is carved with its holes. With different values, each row is a separate region.
 - **Depth** is the maximum. Where the shape is wider than the bit at that depth, the bit runs at it along the middle and along
   an outline parallel to the wall, and a **flat floor** remains between them.
 - **Flat floor with a straight bit**: the box under the V-carve row, with the straight bit (its own number, a different T from

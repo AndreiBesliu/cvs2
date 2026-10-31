@@ -797,6 +797,10 @@
       "ro": "Rampa (ADR 0029, documentul v6): bucla tăiată continuu, intrarea rotită, compusă cu urechile (portată, `docs/PORTARE.md` §3.2)",
       "en": "Ramp (ADR 0029, document v6): the loop cut continuously, the rotated entry, combined with tabs (ported, `docs/PORTARE.md` §3.2)"
     },
+    "63760521aca66be1": {
+      "ro": "V-carve-ul unei piese, o singură regiune",
+      "en": "A part's V-carve, a single region"
+    },
     "6518f88023cee9a7": {
       "ro": "Pânza v0: stratul de vectori în worker, pe pânză software; pan, zoom, selecție și mutare prin acțiuni; oracolul pânzei (marginea cercului)",
       "en": "Canvas v0: the vector layer in a worker, on a software canvas; pan, zoom, selection and moving through actions; the canvas oracle (the circle's edge)"
@@ -920,6 +924,10 @@
     "7a561c49522909ee": {
       "ro": "**Simularea și verificarea;** calibrarea; celelalte contracte",
       "en": "**Simulation and verification;** calibration; the other contracts"
+    },
+    "7adba96b4237b0b0": {
+      "ro": "**V-carve-ul unei piese, o singură regiune** (fără mașină; precizarea din ADR 0112; „continua cu altceva”, din limita scrisă în ADR 0112). Un text cu operațiile importului, trecute pe V-carve rând cu rând în fereastra exportului, se săpa în două regiuni („O” ca un disc plin). Acum regiunea V-carve-ului e a contururilor unei piese dintr-o instanță cu aceleași valori (freza, adâncimea, pasul, sensul, fundul plat), ca buzunarele de aceeași adâncime (ADR 0073); cu valori diferite, regiunile rămân ale lor. **Treceri:** (1) proba întâi (inelul R10 / R6 pe două operații dă mișcările unei singure operații; căzută înainte), apoi cheia regiunii în lucrare (`src/cam/job.ts`).",
+      "en": "**A part's V-carve, a single region** (no machine; the precision in ADR 0112; “continua cu altceva”, from the limit written in ADR 0112). A text with the import's operations, set to V-carve row by row in the export window, was carved in two regions (an “O” as a full disc). Now a V-carve region is made of the outlines of one part in one instance with the same values (the cutter, the depth, the step, the direction, the flat bottom), like the pockets of the same depth (ADR 0073); with different values, the regions stay separate. **Passes:** (1) the probe first (the R10 / R6 ring on two operations gives the moves of a single operation; it failed before), then the region key in the job (`src/cam/job.ts`)."
     },
     "7b422aab61b170d4": {
       "ro": "Sheets + Multi-Plate; §10 Listă de tăiere",
