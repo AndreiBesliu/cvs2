@@ -1,5 +1,6 @@
 import type { ImportPregatit } from '../io/piesa.ts';
 import type { AvertismenteDxf, CodRefuzDxf, UnitateDxf } from '../io/dxfCoduri.ts';
+import type { AvertismenteEps, CodRefuzEps } from '../io/epsCoduri.ts';
 import type { FormatImport } from '../io/formatImport.ts';
 import type { AvertismentePdf, CodRefuzPdf } from '../io/pdfCoduri.ts';
 import type { Avertismente, CodRefuz } from '../io/svgCoduri.ts';
@@ -8,17 +9,18 @@ export type { ImportPregatit } from '../io/piesa.ts';
 export {
   CODURI_AVERTISMENT, CODURI_ENTITATI, PLAFON_IMPORT, type Avertismente, type CodAvertisment, type CodEntitati, type CodRefuz,
 } from '../io/svgCoduri.ts';
-// Doar tipurile: listele DXF și PDF și `formatImport` le iau direct modulele la cerere (dialogul, ușile), ca să nu ajungă
+// Doar tipurile: listele DXF, PDF și EPS și `formatImport` le iau direct modulele la cerere (dialogul, ușile), ca să nu ajungă
 // în pachetul de pornire prin modulul ăsta (ADR 0100).
 export type { AvertismenteDxf, CodAvertismentDxf, CodRefuzDxf, UnitateDxf } from '../io/dxfCoduri.ts';
 export type { AvertismentePdf, CodAvertismentPdf, CodRefuzPdf } from '../io/pdfCoduri.ts';
+export type { AvertismenteEps, CodAvertismentEps, CodRefuzEps } from '../io/epsCoduri.ts';
 export type { FormatImport } from '../io/formatImport.ts';
 
 /** Fișierul ales: numele și octeții (citiți doar sub plafon, ADR 0035 §1). */
 export type FisierImport = { readonly nume: string; readonly octeti: Uint8Array };
 
-/** Refuzurile celor trei uși. */
-export type CodRefuzImport = CodRefuz | CodRefuzDxf | CodRefuzPdf;
+/** Refuzurile celor patru uși. */
+export type CodRefuzImport = CodRefuz | CodRefuzDxf | CodRefuzPdf | CodRefuzEps;
 
 /** Unitățile unui DXF (ADR 0101 §2): declarate de fișier, sau alese de om (implicit mm). */
 export type UnitatiImport = { readonly mmPeUnitate: number; readonly declarate: boolean; readonly unitate: UnitateDxf | null };
@@ -35,7 +37,7 @@ type Comune = {
 };
 
 /**
- * Previzualizarea unui import (ADR 0035 §9, ADR 0101 §8, ADR 0104 §7): ce ar adăuga „Importă”, cu mărimea desenului în mm,
+ * Previzualizarea unui import (ADR 0035 §9, ADR 0101 §8, ADR 0104 §7, ADR 0115 §7): ce ar adăuga „Importă”, cu mărimea desenului în mm,
  * căile pe laturi și raportul ușii lui. Interfața o primește ca date; piesa o face acțiunea `document.importa`, din
  * `pregatit`. Un PDF cu mai multe pagini își spune numărul paginilor și în refuz (pagina citită poate fi goală: omul alege
  * alta).
@@ -58,9 +60,17 @@ export type PrevizualizareImport =
     readonly straturi: readonly string[];
     readonly avertismente: AvertismentePdf;
   })
+  | (Comune & {
+    readonly format: 'eps';
+    /** Straturile AI ale căilor importate, în ordinea în care apar: devin numele elementelor. */
+    readonly straturi: readonly string[];
+    /** Citit ca fișier Illustrator ≤ 8 (operatorii AI după nume). */
+    readonly illustrator: boolean;
+    readonly avertismente: AvertismenteEps;
+  })
   | {
     readonly ok: false; readonly cod: CodRefuzImport; readonly detaliu?: string;
-    readonly format?: FormatImport; readonly avertismente?: Avertismente | AvertismenteDxf | AvertismentePdf;
+    readonly format?: FormatImport; readonly avertismente?: Avertismente | AvertismenteDxf | AvertismentePdf | AvertismenteEps;
     /** Un PDF citit până la lista paginilor: câte are (dialogul oferă alegerea alteia). */
     readonly pagini?: number;
   };

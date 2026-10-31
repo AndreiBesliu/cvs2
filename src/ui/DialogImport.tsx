@@ -2,11 +2,13 @@ import { useEffect, useRef } from 'react';
 import '../i18n/import.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import { CODURI_AVERTISMENT_DXF, UNITATI_DXF } from '../io/dxfCoduri.ts';
+import { CODURI_AVERTISMENT_EPS } from '../io/epsCoduri.ts';
 import { formatImport } from '../io/formatImport.ts';
 import { CODURI_AVERTISMENT_PDF } from '../io/pdfCoduri.ts';
 import {
-  CODURI_AVERTISMENT, CODURI_ENTITATI, type Avertismente, type AvertismenteDxf, type AvertismentePdf, type CodAvertisment, type CodAvertismentDxf,
-  type CodAvertismentPdf, type CodEntitati, type CodRefuzImport, type FormatImport, type PrevizualizareImport, type UnitateDxf,
+  CODURI_AVERTISMENT, CODURI_ENTITATI, type Avertismente, type AvertismenteDxf, type AvertismenteEps, type AvertismentePdf, type CodAvertisment,
+  type CodAvertismentDxf, type CodAvertismentEps, type CodAvertismentPdf, type CodEntitati, type CodRefuzImport, type FormatImport,
+  type PrevizualizareImport, type UnitateDxf,
 } from './actiuniImport.ts';
 import { useLimba } from './useLimba.ts';
 
@@ -14,8 +16,9 @@ const REFUZ: Readonly<Record<CodRefuzImport, CheieSimpla>> = {
   octeti: 'import.refuz.octeti', svgz: 'import.refuz.svgz', entitati: 'import.refuz.entitati', parsare: 'import.refuz.parsare',
   radacina: 'import.refuz.radacina', gol: 'import.refuz.gol', departe: 'import.refuz.departe', plafon: 'import.refuz.plafon',
   neincarcat: 'dialog.neincarcat', tip: 'import.refuz.tip', binar: 'import.refuz.binar', dxf: 'import.refuz.dxf',
-  'nu-e-pdf': 'import.pdf.nu-e-pdf', 'ai-vechi': 'import.pdf.ai-vechi', criptat: 'import.pdf.criptat', pdf: 'import.pdf.pdf',
-  pagina: 'import.pdf.pagina-lipsa',
+  'nu-e-pdf': 'import.pdf.nu-e-pdf', criptat: 'import.pdf.criptat', pdf: 'import.pdf.pdf', pagina: 'import.pdf.pagina-lipsa',
+  'nu-e-ps': 'import.eps.nu-e-ps', 'ai-nou': 'import.eps.ai-nou', control: 'import.eps.control', operator: 'import.eps.operator',
+  imagine: 'import.eps.imagine', ps: 'import.eps.ps',
 };
 
 /** Motivul refuzului entităților, tradus din codul ușii: niciun text din fișier nu ajunge în interfață. */
@@ -63,6 +66,19 @@ const AVERTISMENT_PDF = {
   'forme-adanci': 'import.pdf.forme-adanci', 'fluxuri-stricate': 'import.pdf.fluxuri-stricate', 'xref-reconstruit': 'import.pdf.xref-reconstruit',
 } as const satisfies Readonly<Record<CodAvertismentPdf, string>>;
 
+/**
+ * Raportul ușii EPS (ADR 0115 §6), cod cu cod: aceleași înțelesuri și aceleași texte ca la PDF, plus documentele incluse
+ * într-un AI.
+ */
+const AVERTISMENT_EPS = {
+  deschise: 'import.pdf.deschise', degenerate: 'import.pdf.degenerate', 'prea-mari': 'import.pdf.prea-mari',
+  'sub-rezolutie': 'import.pdf.sub-rezolutie', 'sarit-text': 'import.pdf.sarit-text', 'sarit-imagine': 'import.pdf.sarit-imagine',
+  'sarit-umbrire': 'import.pdf.sarit-umbrire', 'sarit-incluse': 'import.eps.sarit-incluse', decupaje: 'import.pdf.decupaje',
+  nepictate: 'import.pdf.nepictate', ascunse: 'import.pdf.ascunse', 'inchise-de-umplere': 'import.pdf.inchise-de-umplere',
+  'inchise-la-usa': 'import.pdf.inchise-la-usa', 'nonzero-normalizate': 'import.pdf.nonzero-normalizate',
+  'nonzero-refuzate': 'import.pdf.nonzero-refuzate',
+} as const satisfies Readonly<Record<CodAvertismentEps, string>>;
+
 /** Câte straturi numește dialogul (un PDF poate avea sute): restul, „…”; un nume lung (scris de fișier) se taie. */
 const STRATURI_ARATATE = 8;
 const NUME_STRAT_ARATAT = 60;
@@ -75,13 +91,15 @@ const UNITATE = {
 
 /** Raportul ușii care a citit fișierul, în ordinea codurilor ei. */
 function ListaAvertismente({ a, format }: {
-  readonly a: Avertismente | AvertismenteDxf | AvertismentePdf | undefined; readonly format: FormatImport | undefined;
+  readonly a: Avertismente | AvertismenteDxf | AvertismentePdf | AvertismenteEps | undefined; readonly format: FormatImport | undefined;
 }) {
   const randuri: ReadonlyArray<{ readonly cod: string; readonly text: string }> = !a ? [] : format === 'dxf'
     ? CODURI_AVERTISMENT_DXF.filter((c) => ((a as AvertismenteDxf)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT_DXF[c], { n: (a as AvertismenteDxf)[c] }) }))
     : format === 'pdf'
       ? CODURI_AVERTISMENT_PDF.filter((c) => ((a as AvertismentePdf)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT_PDF[c], { n: (a as AvertismentePdf)[c] }) }))
-      : CODURI_AVERTISMENT.filter((c) => ((a as Avertismente)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT[c], { n: (a as Avertismente)[c] }) }));
+      : format === 'eps'
+        ? CODURI_AVERTISMENT_EPS.filter((c) => ((a as AvertismenteEps)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT_EPS[c], { n: (a as AvertismenteEps)[c] }) }))
+        : CODURI_AVERTISMENT.filter((c) => ((a as Avertismente)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT[c], { n: (a as Avertismente)[c] }) }));
   if (randuri.length === 0) return null;
   return (
     <>
@@ -94,13 +112,17 @@ function ListaAvertismente({ a, format }: {
 }
 
 /**
- * Textul unui refuz: codul ușii, cu detaliul lui tradus (entitățile, plafonul includerilor, mărimea fișierului). `nume`:
- * fișierul (o eroare de citire a unui DXF sau PDF nu spune „nu e un SVG”; un AI fără conținut PDF își primește sfatul).
+ * Textul unui refuz: codul ușii, cu detaliul lui tradus (entitățile, plafonul includerilor, mărimea fișierului, operatorul
+ * PostScript). `nume`: fișierul (o eroare de citire a unui DXF, PDF sau EPS nu spune „nu e un SVG”; un AI fără conținut PDF
+ * își primește sfatul).
  */
 function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: string, format: FormatImport | undefined): string {
   if (cod === 'parsare' && formatImport(nume, '') !== 'svg' && format !== 'svg') return t('import.refuz.citire');
   if (cod === 'gol' && format === 'pdf') return t(/\.ai$/i.test(nume) ? 'import.pdf.gol-ai' : 'import.pdf.gol');
+  if (cod === 'gol' && format === 'eps') return t('import.eps.gol');
   if (cod === 'plafon' && detaliu === 'decodare') return t('import.pdf.decodare');
+  if (cod === 'plafon' && detaliu === 'operatii') return t('import.eps.operatii');
+  if (cod === 'control' || cod === 'operator' || cod === 'imagine') return t(REFUZ[cod], { operator: detaliu ?? '?' });
   if (cod === 'entitati') {
     const motiv = (CODURI_ENTITATI as readonly string[]).includes(detaliu ?? '') ? ENTITATI[detaliu as CodEntitati] : 'import.entitati.valoare';
     return t('import.refuz.entitati', { motiv: t(motiv) });
@@ -138,10 +160,11 @@ type Props = {
 };
 
 /**
- * Dialogul importului SVG (ADR 0035 §9, ADR 0037 §12), DXF (ADR 0101 §8) și PDF / AI (ADR 0104 §7): ce ar adăuga
+ * Dialogul importului SVG (ADR 0035 §9, ADR 0037 §12), DXF (ADR 0101 §8), PDF / AI (ADR 0104 §7) și EPS / AI ≤ 8 (ADR 0115
+ * §7): ce ar adăuga
  * „Importă”, înainte de a schimba documentul. Mărimea desenului, contururile închise pe laturi, căile deschise (tăiate pe
  * linie) cu nota grosimii liniei, alegerea px-ului (SVG), a unităților (un DXF care nu și le declară) sau a paginii (un PDF
- * cu mai multe; și după un refuz, fiindcă o pagină poate fi goală) când contează, straturile unui PDF și raportul.
+ * cu mai multe; și după un refuz, fiindcă o pagină poate fi goală) când contează, straturile unui PDF sau AI și raportul.
  */
 export function DialogImport({
   nume, stare, pxPeTol, pxAutomat, unitate, pagina, seRecitesc, motiv, onPx, onUnitate, onPagina, onImporta, onInchide, coada, onSari,
@@ -213,7 +236,7 @@ export function DialogImport({
                 <p data-testid="import-unitati">{t('import.unitati.nedeclarate')}</p>
               </div>
             ))}
-            {ok.format === 'pdf' && ok.straturi.length > 0 && (
+            {(ok.format === 'pdf' || ok.format === 'eps') && ok.straturi.length > 0 && (
               <p data-testid="import-straturi">
                 {t('import.pdf.straturi', {
                   n: ok.straturi.length,

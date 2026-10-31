@@ -1,7 +1,7 @@
 import type { Mesaj } from './tipuri.ts';
 
 /**
- * Mesajele dialogului de import SVG (ADR 0035), DXF (ADR 0101) și PDF / AI (ADR 0104), în engleză. Se încarcă odată cu
+ * Mesajele dialogului de import SVG (ADR 0035), DXF (ADR 0101), PDF / AI (ADR 0104) și EPS / AI ≤ 8 (ADR 0115), în engleză. Se încarcă odată cu
  * dialogul (`import.ts`), nu la pornire: pachetul de pornire are un plafon (`PLAN.md` §4.4).
  */
 export const enImport = {
@@ -24,7 +24,7 @@ export const enImport = {
   'import.renunta-toate': 'Cancel all',
   'import.sari': 'Skip',
   'import.coada': '({k} of {n})',
-  'import.refuz.tip': 'Only SVG, DXF, PDF and AI files can be imported for now (the other formats come later).',
+  'import.refuz.tip': 'Only SVG, DXF, PDF, AI and EPS files can be imported for now (the other formats come later).',
   'import.refuz.octeti': 'The file has {mb} MB: the import limit is 16 MB.',
   'import.refuz.svgz': 'The file is compressed (.svgz): unpack it first.',
   'import.refuz.entitati': 'The file declares unsafe XML entities ({motiv}): refused.',
@@ -113,7 +113,6 @@ export const enImport = {
   'import.pdf.pagina': 'Page (of {n})',
   'import.pdf.straturi': { one: '{n} layer, kept as the shapes’ name: {straturi}', other: '{n} layers, kept as the shapes’ names: {straturi}' },
   'import.pdf.nu-e-pdf': 'The file is not a PDF (it does not start with %PDF-).',
-  'import.pdf.ai-vechi': 'The file is PostScript (an AI from before Illustrator 9, or an EPS), not PDF: save it as PDF, or as AI with “Create PDF Compatible File” ticked.',
   'import.pdf.criptat': 'The file is protected (by a password or by editing restrictions): save a copy without protection.',
   'import.pdf.pdf': 'The file is not a valid PDF (its structure cannot be read, not even rebuilt from its objects).',
   'import.pdf.pagina-lipsa': 'The requested page is not in the file.',
@@ -137,4 +136,13 @@ export const enImport = {
   'import.pdf.forme-adanci': { one: '{n} embedded drawing (Form XObject) nested deeper than 16 levels, or calling itself, skipped', other: '{n} embedded drawings (Form XObjects) nested deeper than 16 levels, or calling themselves, skipped' },
   'import.pdf.fluxuri-stricate': { one: '{n} content stream could not be decoded (or only up to an error): the drawing may be incomplete', other: '{n} content streams could not be decoded (or only up to an error): the drawing may be incomplete' },
   'import.pdf.xref-reconstruit': { one: 'The object table (xref) was broken and was rebuilt from the file’s objects: check the drawing', other: 'The object table (xref) was broken and was rebuilt from the file’s objects: check the drawing' },
+  'import.eps.nu-e-ps': 'The file is not PostScript (it does not start with %!PS, nor with the header of a binary EPS).',
+  'import.eps.ai-nou': 'The file is an EPS saved by Illustrator 9 or newer: its drawing goes through Adobe’s procedures, which the EPS reader does not run. Save it as AI (PDF compatible), PDF or SVG.',
+  'import.eps.control': 'The file uses “{operator}”, a loop or a condition: the EPS reader only reads drawings written out step by step. Save it as PDF or SVG in your program.',
+  'import.eps.operator': 'The file uses the PostScript operator “{operator}”, which the EPS reader does not have. Save it as PDF or SVG in your program.',
+  'import.eps.imagine': 'An image in the file keeps its data in a form the reader cannot skip (binary, compressed): remove the image, or save the file as PDF.',
+  'import.eps.ps': 'The PostScript file is broken (its syntax, stack or types do not match): it cannot be read.',
+  'import.eps.gol': 'The file has no path to import (text and images are skipped).',
+  'import.eps.operatii': 'The file needs too many operations to read (over 20 million): refused.',
+  'import.eps.sarit-incluse': { one: '{n} embedded document (an EPS placed in the Illustrator file) skipped', other: '{n} embedded documents (EPS files placed in the Illustrator file) skipped' },
 } as const satisfies Readonly<Record<string, Mesaj>>;

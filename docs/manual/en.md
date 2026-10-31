@@ -388,11 +388,11 @@ edge). **Centre on the sheet** always works against the sheet: it moves all the 
 arrangement stays and their common box ends up in the middle of the sheet. Several shapes are picked with the selection rectangle or with Shift + click (see [Selecting and editing](#selectie)).
 Each alignment can be undone with `Ctrl+Z`.
 
-## Importing SVG, DXF, PDF and AI
+## Importing SVG, DXF, PDF, AI and EPS
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-The **Import SVG / DXF / PDF / AI** button in the top bar (the first of the files, next to “Export vectors” and “Export
+The **Import SVG / DXF / PDF / AI / EPS** button in the top bar (the first of the files, next to “Export vectors” and “Export
 G-code”) opens the file window (you can pick several). Or drag the files straight onto the canvas: each one lands centred
 where you drop it.
 
@@ -408,7 +408,7 @@ For each file a window opens that shows the drawing's size and how it will be cu
 - what is not imported or is read differently, with their count (for an SVG: texts, `<use>` clones, images, hidden shapes).
 
 **Import** puts the drawing on the sheet as a single shape, selected; **Skip** moves on to the next file; **Cancel** and
-**Cancel all** close the window. SVG, DXF, PDF and AI files are imported, up to 16 MB, not compressed (no `.svgz`). Text has to be
+**Cancel all** close the window. SVG, DXF, PDF, AI and EPS files are imported, up to 16 MB, not compressed (no `.svgz`). Text has to be
 converted to outlines in the drawing program before export.
 
 A **DXF** is read like this:
@@ -433,9 +433,20 @@ A **PDF** is read like this (an **AI** saved by Illustrator 9 or newer is a PDF 
 - every shape keeps the name of its layer (OCG), if the file has layers; shapes on layers that are off are skipped;
 - skipped, and counted: texts, images and shadings (gradients); clipping paths are not applied (what they clip is imported
   whole);
-- a protected file (with a password or editing restrictions) is refused: save a copy without protection. An AI from before
-  Illustrator 9, or an EPS, is PostScript, not PDF: save it as PDF, or as AI with “Create PDF Compatible File” ticked (an AI
-  saved without that option shows only a text notice, and the window tells you to tick it).
+- a protected file (with a password or editing restrictions) is refused: save a copy without protection. An AI saved
+  without “Create PDF Compatible File” shows only a text notice, and the window tells you to tick it.
+
+An **EPS** (and an **AI** from before Illustrator 9, which is PostScript, not PDF) is read like this; whether it is AI or EPS is
+decided by the start of the file, not by the extension:
+- the drawing lands on the sheet where it is in the file: the PostScript origin is the sheet's corner, at 1:1 scale (a binary
+  EPS, with its preview, is read the same way);
+- lines and curves come in exactly, with their transformations (move, scale, rotate, skew); a shape filled by the nonzero
+  rule is redrawn as for SVG;
+- for an AI, every shape keeps the name of its layer; shapes on hidden layers are skipped;
+- skipped, and counted: texts, images and shadings; clipping paths are not applied;
+- the reader is limited: it reads drawings written out step by step, with their simple procedures. A file that uses loops or
+  conditions (an EPS from CorelDRAW, for example), an operator the reader does not have (`arc`, for example) or an EPS saved
+  by Illustrator 9 or newer is refused, and the window says why: save it as PDF, SVG or PDF-compatible AI.
 
 ## The cutting operations
 %% capitol: operatii

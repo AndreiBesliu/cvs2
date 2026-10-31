@@ -1,0 +1,912 @@
+{
+ "forme.eps": {
+  "linii_frante": [
+   {
+    "ce": "re",
+    "puncte": [
+     [
+      10,
+      10
+     ],
+     [
+      60,
+      10
+     ],
+     [
+      60,
+      40
+     ],
+     [
+      10,
+      40
+     ]
+    ],
+    "inchis": true
+   },
+   {
+    "ce": "polilinia",
+    "puncte": [
+     [
+      80,
+      10
+     ],
+     [
+      100,
+      30
+     ],
+     [
+      120,
+      10
+     ]
+    ],
+    "inchis": false
+   },
+   {
+    "ce": "triunghiul cu closepath",
+    "puncte": [
+     [
+      140,
+      10
+     ],
+     [
+      180,
+      10
+     ],
+     [
+      160,
+      40
+     ]
+    ],
+    "inchis": true
+   },
+   {
+    "ce": "rmoveto și rlineto",
+    "puncte": [
+     [
+      100,
+      60
+     ],
+     [
+      120,
+      90
+     ],
+     [
+      140,
+      60
+     ]
+    ],
+    "inchis": false
+   },
+   {
+    "ce": "linia sub decupaj",
+    "puncte": [
+     [
+      190,
+      120
+     ],
+     [
+      250,
+      120
+     ]
+    ],
+    "inchis": false
+   },
+   {
+    "ce": "translația",
+    "puncte": [
+     [
+      250,
+      150
+     ],
+     [
+      270,
+      150
+     ]
+    ],
+    "inchis": false
+   },
+   {
+    "ce": "rotirea și scara",
+    "puncte": [
+     [
+      280,
+      10
+     ],
+     [
+      280,
+      30
+     ]
+    ],
+    "inchis": false
+   },
+   {
+    "ce": "înclinarea prin cm",
+    "puncte": [
+     [
+      200,
+      175
+     ],
+     [
+      220,
+      175
+     ],
+     [
+      225,
+      185
+     ]
+    ],
+    "inchis": false
+   },
+   {
+    "ce": "umplut și tras, o dată",
+    "puncte": [
+     [
+      270,
+      60
+     ],
+     [
+      290,
+      60
+     ],
+     [
+      290,
+      80
+     ],
+     [
+      270,
+      80
+     ]
+    ],
+    "inchis": true
+   },
+   {
+    "ce": "rectstroke",
+    "puncte": [
+     [
+      240,
+      60
+     ],
+     [
+      260,
+      60
+     ],
+     [
+      260,
+      80
+     ],
+     [
+      240,
+      80
+     ]
+    ],
+    "inchis": true
+   },
+   {
+    "ce": "scara în mm",
+    "puncte": [
+     [
+      210,
+      130
+     ],
+     [
+      240,
+      130
+     ],
+     [
+      225,
+      150
+     ]
+    ],
+    "inchis": true
+   }
+  ],
+  "bezier": [
+   {
+    "ce": "curveto",
+    "puncte": [
+     [
+      10,
+      60
+     ],
+     [
+      30,
+      90
+     ],
+     [
+      60,
+      30
+     ],
+     [
+      80,
+      60
+     ]
+    ]
+   },
+   {
+    "ce": "rcurveto",
+    "puncte": [
+     [
+      160,
+      60
+     ],
+     [
+      180,
+      90
+     ],
+     [
+      200,
+      90
+     ],
+     [
+      200,
+      60
+     ]
+    ]
+   }
+  ],
+  "arii": [
+   {
+    "ce": "umplut fără closepath",
+    "arie": 600,
+    "cutie": [
+     220,
+     10,
+     260,
+     40
+    ]
+   },
+   {
+    "ce": "reuniunea nonzero",
+    "arie": 2800,
+    "cutie": [
+     10,
+     110,
+     70,
+     170
+    ]
+   },
+   {
+    "ce": "par-impar, exteriorul",
+    "arie": 3600,
+    "cutie": [
+     100,
+     110,
+     160,
+     170
+    ]
+   },
+   {
+    "ce": "par-impar, golul",
+    "arie": 900,
+    "cutie": [
+     115,
+     125,
+     145,
+     155
+    ]
+   }
+  ],
+  "numar_cai": {
+   "inchise": 9,
+   "deschise": 8
+  },
+  "raport": {
+   "sarit-text": 1,
+   "sarit-imagine": 1,
+   "decupaje": 1,
+   "nepictate": 1,
+   "inchise-de-umplere": 1,
+   "nonzero-normalizate": 1
+  },
+  "illustrator": false
+ },
+ "cairo.eps": {
+  "linii_frante": [
+   {
+    "ce": "re cu Y în jos",
+    "puncte": [
+     [
+      80,
+      40
+     ],
+     [
+      110,
+      40
+     ],
+     [
+      110,
+      10
+     ],
+     [
+      80,
+      10
+     ]
+    ],
+    "inchis": true
+   },
+   {
+    "ce": "polilinia",
+    "puncte": [
+     [
+      120,
+      10
+     ],
+     [
+      140,
+      40
+     ],
+     [
+      160,
+      10
+     ]
+    ],
+    "inchis": false
+   }
+  ],
+  "bezier": [
+   {
+    "ce": "cubica conturului",
+    "puncte": [
+     [
+      50,
+      10
+     ],
+     [
+      60,
+      10
+     ],
+     [
+      60,
+      40
+     ],
+     [
+      50,
+      40
+     ]
+    ]
+   }
+  ],
+  "arii": [
+   {
+    "ce": "par-impar, exteriorul",
+    "arie": 1200,
+    "cutie": [
+     140,
+     10,
+     180,
+     40
+    ]
+   },
+   {
+    "ce": "par-impar, golul",
+    "arie": 200,
+    "cutie": [
+     150,
+     20,
+     170,
+     30
+    ]
+   }
+  ],
+  "numar_cai": {
+   "inchise": 4,
+   "deschise": 1
+  },
+  "raport": {
+   "decupaje": 1
+  },
+  "illustrator": false
+ },
+ "binar.eps": {
+  "linii_frante": [
+   {
+    "ce": "dreptunghiul, în mm prin scale",
+    "puncte": [
+     [
+      10,
+      10
+     ],
+     [
+      90,
+      10
+     ],
+     [
+      90,
+      60
+     ],
+     [
+      10,
+      60
+     ]
+    ],
+    "inchis": true
+   }
+  ],
+  "bezier": [
+   {
+    "ce": "cubica",
+    "puncte": [
+     [
+      20,
+      70
+     ],
+     [
+      30,
+      70
+     ],
+     [
+      40,
+      90
+     ],
+     [
+      50,
+      90
+     ]
+    ]
+   }
+  ],
+  "numar_cai": {
+   "inchise": 1,
+   "deschise": 1
+  },
+  "raport": {},
+  "illustrator": false
+ },
+ "ai8.ai": {
+  "straturi": [
+   "TAIERE",
+   "GRAVARE"
+  ],
+  "linii_frante": [
+   {
+    "ce": "pătratul cu L și f",
+    "puncte": [
+     [
+      20,
+      20
+     ],
+     [
+      60,
+      20
+     ],
+     [
+      60,
+      60
+     ],
+     [
+      20,
+      60
+     ]
+    ],
+    "inchis": true,
+    "strat": "TAIERE"
+   },
+   {
+    "ce": "calea compusă, exteriorul",
+    "puncte": [
+     [
+      100,
+      20
+     ],
+     [
+      160,
+      20
+     ],
+     [
+      160,
+      80
+     ],
+     [
+      100,
+      80
+     ]
+    ],
+    "inchis": true,
+    "strat": "TAIERE"
+   },
+   {
+    "ce": "calea compusă, golul",
+    "puncte": [
+     [
+      115,
+      35
+     ],
+     [
+      115,
+      65
+     ],
+     [
+      145,
+      65
+     ],
+     [
+      145,
+      35
+     ]
+    ],
+    "inchis": true,
+    "strat": "TAIERE"
+   },
+   {
+    "ce": "F, închis de umplere",
+    "puncte": [
+     [
+      170,
+      20
+     ],
+     [
+      195,
+      20
+     ],
+     [
+      182.5,
+      45
+     ]
+    ],
+    "inchis": true,
+    "strat": "TAIERE"
+   },
+   {
+    "ce": "b",
+    "puncte": [
+     [
+      170,
+      60
+     ],
+     [
+      195,
+      60
+     ],
+     [
+      195,
+      80
+     ],
+     [
+      170,
+      80
+     ]
+    ],
+    "inchis": true,
+    "strat": "TAIERE"
+   },
+   {
+    "ce": "B, închis de umplere",
+    "puncte": [
+     [
+      10,
+      130
+     ],
+     [
+      40,
+      130
+     ],
+     [
+      25,
+      150
+     ]
+    ],
+    "inchis": true,
+    "strat": "TAIERE"
+   },
+   {
+    "ce": "polilinia S",
+    "puncte": [
+     [
+      110,
+      135
+     ],
+     [
+      130,
+      155
+     ],
+     [
+      150,
+      135
+     ]
+    ],
+    "inchis": false,
+    "strat": "GRAVARE"
+   },
+   {
+    "ce": "s",
+    "puncte": [
+     [
+      160,
+      130
+     ],
+     [
+      190,
+      130
+     ],
+     [
+      175,
+      160
+     ]
+    ],
+    "inchis": true,
+    "strat": "GRAVARE"
+   },
+   {
+    "ce": "h, apoi S",
+    "puncte": [
+     [
+      110,
+      170
+     ],
+     [
+      130,
+      170
+     ],
+     [
+      120,
+      185
+     ]
+    ],
+    "inchis": true,
+    "strat": "GRAVARE"
+   },
+   {
+    "ce": "H, apoi S",
+    "puncte": [
+     [
+      140,
+      170
+     ],
+     [
+      160,
+      170
+     ],
+     [
+      150,
+      185
+     ]
+    ],
+    "inchis": true,
+    "strat": "GRAVARE"
+   },
+   {
+    "ce": "linia sub decupaj",
+    "puncte": [
+     [
+      5,
+      194
+     ],
+     [
+      60,
+      194
+     ]
+    ],
+    "inchis": false,
+    "strat": "GRAVARE"
+   }
+  ],
+  "bezier": [
+   {
+    "ce": "c",
+    "puncte": [
+     [
+      10,
+      100
+     ],
+     [
+      20,
+      120
+     ],
+     [
+      40,
+      120
+     ],
+     [
+      50,
+      100
+     ]
+    ]
+   },
+   {
+    "ce": "C",
+    "puncte": [
+     [
+      50,
+      100
+     ],
+     [
+      60,
+      80
+     ],
+     [
+      70,
+      80
+     ],
+     [
+      80,
+      100
+     ]
+    ]
+   },
+   {
+    "ce": "v",
+    "puncte": [
+     [
+      80,
+      100
+     ],
+     [
+      80,
+      100
+     ],
+     [
+      90,
+      120
+     ],
+     [
+      100,
+      100
+     ]
+    ]
+   },
+   {
+    "ce": "V",
+    "puncte": [
+     [
+      100,
+      100
+     ],
+     [
+      100,
+      100
+     ],
+     [
+      110,
+      80
+     ],
+     [
+      120,
+      100
+     ]
+    ]
+   },
+   {
+    "ce": "y",
+    "puncte": [
+     [
+      120,
+      100
+     ],
+     [
+      130,
+      120
+     ],
+     [
+      140,
+      100
+     ],
+     [
+      140,
+      100
+     ]
+    ]
+   },
+   {
+    "ce": "Y",
+    "puncte": [
+     [
+      140,
+      100
+     ],
+     [
+      150,
+      80
+     ],
+     [
+      160,
+      100
+     ],
+     [
+      160,
+      100
+     ]
+    ]
+   }
+  ],
+  "arii": [
+   {
+    "ce": "par-impar, exteriorul",
+    "arie": 1600,
+    "cutie": [
+     60,
+     130,
+     100,
+     170
+    ]
+   },
+   {
+    "ce": "par-impar, golul",
+    "arie": 400,
+    "cutie": [
+     70,
+     140,
+     90,
+     160
+    ]
+   }
+  ],
+  "numar_cai": {
+   "inchise": 11,
+   "deschise": 3
+  },
+  "raport": {
+   "sarit-text": 1,
+   "sarit-imagine": 1,
+   "decupaje": 1,
+   "nepictate": 2,
+   "ascunse": 1,
+   "inchise-de-umplere": 2
+  },
+  "illustrator": true
+ },
+ "ai3.ai": {
+  "linii_frante": [
+   {
+    "ce": "pătratul cu f",
+    "puncte": [
+     [
+      10,
+      10
+     ],
+     [
+      90,
+      10
+     ],
+     [
+      90,
+      90
+     ],
+     [
+      10,
+      90
+     ]
+    ],
+    "inchis": true
+   }
+  ],
+  "bezier": [
+   {
+    "ce": "C",
+    "puncte": [
+     [
+      30,
+      30
+     ],
+     [
+      50,
+      70
+     ],
+     [
+      70,
+      70
+     ],
+     [
+      70,
+      30
+     ]
+    ]
+   }
+  ],
+  "numar_cai": {
+   "inchise": 1,
+   "deschise": 1
+  },
+  "raport": {},
+  "illustrator": true
+ },
+ "bucla.eps": {
+  "refuz": "control",
+  "detaliu": "for"
+ },
+ "text.eps": {
+  "refuz": "gol",
+  "raport": {
+   "sarit-text": 1
+  }
+ }
+}

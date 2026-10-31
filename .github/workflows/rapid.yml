@@ -89,3 +89,9 @@ jobs:
           node scripts/export2d-corpus.ts .tmp/export2d
           gs -q -dSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pdfwrite -dCompressPages=false -sOutputFile=.tmp/export2d/corpus-eps.pdf .tmp/export2d/corpus.eps
           python test/oracles-py/export2d.py .tmp/export2d
+      # Importul EPS și AI ≤ 8 (ADR 0115), pe aceleași unelte: generatorul trece fiecare fișier al corpusului prin Ghostscript
+      # și îl recitește cu PyMuPDF față de hârtie; fișierele regenerate trebuie să fie chiar cele comise (`test/fixtures/eps`).
+      - name: Corpusul importului EPS, prin Ghostscript, egal cu cel comis
+        run: |
+          python test/oracles-py/eps_import_corpus.py .tmp/eps-corpus
+          diff -r .tmp/eps-corpus test/fixtures/eps

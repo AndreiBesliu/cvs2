@@ -376,11 +376,11 @@ foii). **Centrează pe foaie** lucrează mereu față de foaie: mută toate form
 dintre ele rămâne, iar cutia lor comună ajunge în mijlocul foii. Mai multe forme se aleg cu dreptunghiul de selecție sau cu Shift + clic (vezi [Selecția și editarea](#selectie)).
 Fiecare aliniere se poate anula cu `Ctrl+Z`.
 
-## Importul SVG, DXF, PDF și AI
+## Importul SVG, DXF, PDF, AI și EPS
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-Butonul **Importă SVG / DXF / PDF / AI** din bara de sus (primul dintre fișiere, lângă „Exportă vectori” și „Exportă
+Butonul **Importă SVG / DXF / PDF / AI / EPS** din bara de sus (primul dintre fișiere, lângă „Exportă vectori” și „Exportă
 G-code”) deschide fereastra de fișiere (poți alege mai multe). Sau tragi fișierele direct pe pânză: fiecare cade cu centrul
 unde îl lași.
 
@@ -396,7 +396,7 @@ Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului �
 - ce nu se importă sau se citește altfel, cu numărul lor (la un SVG: textele, clonele `<use>`, imaginile, formele ascunse).
 
 **Importă** pune desenul pe foaie ca o singură formă, selectată; **Sari peste** trece la fișierul următor, **Renunță** și
-**Renunță la toate** închid fereastra. Se importă fișiere SVG, DXF, PDF și AI, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul
+**Renunță la toate** închid fereastra. Se importă fișiere SVG, DXF, PDF, AI și EPS, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul
 trebuie transformat în contururi în programul de desen înainte de export.
 
 Un **DXF** se citește așa:
@@ -420,9 +420,20 @@ Un **PDF** se citește așa (un **AI** salvat de Illustrator 9 sau mai nou e tot
 - fiecare formă își păstrează numele stratului (OCG), dacă fișierul are straturi; formele de pe straturile oprite se sar;
 - se sar, numărate: textele, imaginile și umbririle (gradientele); măștile de tăiere nu se aplică (ce decupează se importă
   întreg);
-- un fișier protejat (cu parolă sau cu restricții de editare) e refuzat: salvează o copie fără protecție. Un AI de dinainte
-  de Illustrator 9 sau un EPS e PostScript, nu PDF: salvează-l ca PDF, sau ca AI cu „Create PDF Compatible File” bifat (un AI
-  salvat fără opțiunea asta arată doar o notă de text, iar fereastra îți spune s-o bifezi).
+- un fișier protejat (cu parolă sau cu restricții de editare) e refuzat: salvează o copie fără protecție. Un AI salvat fără
+  „Create PDF Compatible File” arată doar o notă de text, iar fereastra îți spune s-o bifezi.
+
+Un **EPS** (și un **AI** de dinainte de Illustrator 9, care e PostScript, nu PDF) se citește așa; dacă e AI sau EPS, decide
+începutul fișierului, nu extensia:
+- desenul ajunge pe foaie unde e în fișier: originea PostScript e colțul foii, la scara 1:1 (un EPS binar, cu
+  previzualizarea lui, se citește la fel);
+- liniile și curbele intră exact, cu transformările lor (mutare, scară, rotire, înclinare); o formă umplută după regula
+  nonzero se redesenează ca la SVG;
+- la un AI, fiecare formă își păstrează numele stratului; formele de pe straturile ascunse se sar;
+- se sar, numărate: textele, imaginile și umbririle; măștile de tăiere nu se aplică;
+- cititorul e limitat: citește desenele scrise pas cu pas, cu procedurile lor simple. Un fișier care folosește bucle sau
+  condiții (de exemplu un EPS din CorelDRAW), un operator pe care cititorul nu-l are (de exemplu `arc`) sau un EPS salvat de
+  Illustrator 9 ori mai nou e refuzat, iar fereastra spune de ce: salvează-l ca PDF, SVG sau AI compatibil PDF.
 
 ## Operațiile de tăiere
 %% capitol: operatii

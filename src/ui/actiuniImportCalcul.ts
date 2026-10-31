@@ -1,11 +1,12 @@
 import { citesteDxf } from '../io/dxf.ts';
+import { citesteEps } from '../io/eps.ts';
 import { citestePdf } from '../io/pdf.ts';
 import { laturiDinImbricare } from '../io/imbricare.ts';
 import { PLAFON_IMPORT } from '../io/svgCoduri.ts';
 import { caleInchisa, cutieCai, numeDinFisier, pregateste, type CaleImport } from '../io/piesa.ts';
 import { citesteSvg } from '../io/svg.ts';
 import { PLAFON } from '../model/document.ts';
-import { formatImport } from '../io/formatImport.ts';
+import { formatDupaAntet, formatImport } from '../io/formatImport.ts';
 import type { FisierImport, PrevizualizareImport, UnitateDxf } from './actiuniImportTipuri.ts';
 
 /** Ce cer ușile: px-ul (SVG), limba (`switch` din SVG), unitatea aleasă (DXF fără unități), pagina (PDF, de la 1). */
@@ -70,10 +71,26 @@ export async function previzualizarePdf(f: FisierImport, pagina?: number): Promi
   return { ...c, format: 'pdf', pagini: r.pagini, pagina: r.pagina, straturi: r.straturi, avertismente: r.avertismente };
 }
 
-/** Ușa după formatul fișierului (numele): SVG, DXF sau PDF (și AI); altul, refuzat (`tip`). */
+/**
+ * Previzualizarea EPS și AI ≤ 8 (ADR 0115 §7): ușa EPS, apoi aceeași imbricare și aceeași piesă ca la SVG. Căile sunt în
+ * mm față de originea PostScript, deci desenul stă unde e în fișier (ca la DXF); stratul AI devine numele elementului.
+ */
+export function previzualizareEps(f: FisierImport): PrevizualizareImport {
+  const r = citesteEps(f.octeti);
+  if (!r.ok) return { ...r, format: 'eps' };
+  const cai = r.cai.map((c) => ({ varfuri: c.varfuri, inchis: c.inchis, ...(c.strat ? { nume: c.strat.slice(0, PLAFON.numeLungime) } : {}) }));
+  const c = comune(f, cai, null, 'fisier');
+  if (!c) return { ok: false, cod: 'plafon', detaliu: 'includeri', format: 'eps', avertismente: r.avertismente };
+  return { ...c, format: 'eps', straturi: r.straturi, illustrator: r.illustrator, avertismente: r.avertismente };
+}
+
+/**
+ * Ușa după formatul fișierului: SVG sau DXF după nume; PDF, AI și EPS după antet (ADR 0115 §1: un AI e PDF de la
+ * Illustrator 9 și PostScript înainte), la fel un fișier fără extensie cunoscută; altul, refuzat (`tip`).
+ */
 export async function previzualizare(f: FisierImport, o: OptiuniPrevizualizare): Promise<PrevizualizareImport> {
-  const format = formatImport(f.nume, '');
-  if (format === 'pdf') return previzualizarePdf(f, o.pagina);
+  const format = formatImport(f.nume, '') ?? formatDupaAntet(f.octeti);
+  if (format === 'pdf' || format === 'eps') return (formatDupaAntet(f.octeti) ?? format) === 'eps' ? previzualizareEps(f) : previzualizarePdf(f, o.pagina);
   if (format === 'dxf') return previzualizareDxf(f, o.unitate);
   if (format === 'svg') return previzualizareSvg(f, o.pxPeTol, o.limba);
   return { ok: false, cod: 'tip' };

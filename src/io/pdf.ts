@@ -57,14 +57,13 @@ const MM_PE_PT = 25.4 / 72;
 
 /* ── Antetul ───────────────────────────────────────────────────────────────────────────────────────────────────────── */
 
-/** Versiunea din `%PDF-x.y` (în primii 1024 de octeți, ca la cititoarele obișnuite), sau codul refuzului. */
-function antet(b: Uint8Array): string | 'nu-e-pdf' | 'ai-vechi' {
-  const inceput = latin1(b.subarray(0, 1024));
-  const m = /%PDF-(\d+\.\d+)/.exec(inceput);
-  if (m) return m[1] as string;
-  // PostScript (un Illustrator de dinainte de 9, un EPS), și EPS-ul binar (antetul DOS, C5 D0 D3 C6).
-  if (inceput.startsWith('%!PS') || (b[0] === 0xc5 && b[1] === 0xd0 && b[2] === 0xd3 && b[3] === 0xc6)) return 'ai-vechi';
-  return 'nu-e-pdf';
+/**
+ * Versiunea din `%PDF-x.y` (în primii 1024 de octeți, ca la cititoarele obișnuite), sau refuzul. PostScript-ul (un EPS, un
+ * AI de dinainte de Illustrator 9) nu ajunge aici din dialog: îl citește ușa EPS, aleasă după antet (ADR 0115 §1).
+ */
+function antet(b: Uint8Array): string | 'nu-e-pdf' {
+  const m = /%PDF-(\d+\.\d+)/.exec(latin1(b.subarray(0, 1024)));
+  return m ? (m[1] as string) : 'nu-e-pdf';
 }
 
 /* ── Paginile ──────────────────────────────────────────────────────────────────────────────────────────────────────── */
@@ -521,7 +520,7 @@ async function continutPagina(doc: DocumentPdf, p: Pagina, n: Numaratoare): Prom
 export async function citestePdf(octeti: Uint8Array, optiuni: OptiuniPdf = {}): Promise<RezultatPdf> {
   if (octeti.length > PLAFON_IMPORT.octeti) return { ok: false, cod: 'octeti', detaliu: String(octeti.length) };
   const versiune = antet(octeti);
-  if (versiune === 'nu-e-pdf' || versiune === 'ai-vechi') return { ok: false, cod: versiune };
+  if (versiune === 'nu-e-pdf') return { ok: false, cod: versiune };
   const n = numaratoareGoala();
   let doc: DocumentPdf;
   try {

@@ -4062,3 +4062,40 @@ picate, 8 sărite, ca pe `main`), build-ul determinist (214 fișiere identice î
 414,8 pe `main`, dar bucățile JavaScript sunt identice octet cu octet cu ale lui `main`, construit alături, după ce le scot
 numele cu hash: diferă doar numele, deci compresia lor). Fără e2e (nimic din interfață). Nepublicat și neunit: unirea e a
 sesiunii principale. Rămâne de reluat partea de ușă a documentului v11–v18 (`test/oracles/document.ts`).
+
+## 2026-10-31 — Importul EPS și AI ≤ 8, cu cititor propriu (felia 9.5↑) (Model: Claude Opus 5.5)
+
+**Prompt:** de la sesiunea principală, într-o subsesiune: „Felia **9.5↑ — importul EPS și AI vechi (≤ 8), cu cititor propriu**,
+în CNC Vector Studio 2 (`cncvs2`). Decizia owner-ului din 07.10 (`CLAUDE.md`, „Decizii luate”): „EPS și AI ≤ 8 prin cititor
+propriu, limitat”.” Brief-ul: cititorul limitat în `src/io/` (căile, starea grafică, pictarea, operatorii și straturile AI;
+buclele și procedurile complicate refuzate cu motiv; textul și imaginile sărite), proba înaintea funcției (corpusul Python,
+verificat cu Ghostscript și PyMuPDF), ADR 0115, porțile prin `node`, e2e-ul pe portul 4175, în worktree, fără `main`, fără npm,
+fără agenți.
+**Started:** 31.10, 15:15. **Completed:** 31.10, 17:27. Felia **9.5↑** (ADR 0115), fără mașină, în worktree-ul
+`C:\Users\besli\cncvs2-lucru\import-eps`, ramura `wip/9.5-import-eps`.
+- **Ce face:** „Importă SVG / DXF / PDF / AI / EPS…” citește EPS-ul (și cel binar DOS) și AI-ul de dinainte de Illustrator 9.
+  Ușa o alege antetul (`formatDupaAntet`): un `.ai` de la Illustrator 9 rămâne la ușa PDF. Cititorul (`src/io/eps.ts`, lexicul
+  în `src/io/psLexic.ts`) execută PostScript scris pas cu pas; buclele și condițiile, operatorii lipsă și EPS-urile de la
+  Illustrator 9 se refuză cu motivul în fereastră. Un AI ≤ 8 se citește după nume (prologul sărit, operatorii AI, calea
+  compusă, straturile ca nume). Desenul stă unde e în fișier, ca la DXF. Refuzul „e PostScript” al ușii PDF a dispărut.
+- **Proba întâi:** `test/oracles-py/eps_import_corpus.py` scrie 7 fișiere, le trece prin Ghostscript (local, wasm) și cere ca
+  PDF-ul citit cu PyMuPDF să aibă exact subcăile de pe hârtie. CI-ul (jobul `oracol-export2d`) îl rulează din nou, cu `gs` din
+  `apt`, și cere fișierele comise, octet cu octet.
+- **Găsite de probele țintite** (reparate): `push(...)` cu sute de mii de elemente depășea stiva JavaScript; o sursă de imagine
+  necunoscută trecea drept „fără date” (`?? 'nu'` pe `null`); `CS6` cădea în regula „Illustrator 88 e vechi”.
+- **Porțile** (prin `node`, fără npm):
+  - compilatoarele (`tsconfig.json` și `functions/tsconfig.verificare.json`, cu joncțiunea `functions/node_modules`);
+  - `verifica-importuri` (17 reguli, 0 încălcări);
+  - testele unitare: 7 840, din care 7 832 trecute, 0 picate, 8 sărite (cu `--test-concurrency=8`; fără el, oracolele grele cad pe memorie, pe mașina asta);
+  - build-ul determinist: 215 fișiere identice; pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 425,0 / 450, /admin 196,0 / 200;
+  - licențele;
+  - un `vite build` proaspăt și tot e2e-ul pe portul 4175: 283 / 284. Singura căzută e `raportor.spec.ts:101`, care cere
+    adresa `http://localhost:4173/` (doar portul).
+  - CI-ul ramurii pe `466b288` (rularea 41213957798): verde, cu pasul nou al corpusului EPS pe Ghostscript-ul din `apt`.
+- **Mutațiile** (`test/otravuri/9.5.py`): 62 / 62, adică 59 pe probele unitare și 3 prin e2e, pe portul 4175 (straturile AI
+  în dialog, operatorul din refuz, `.eps` în fereastra de fișiere). Una a trecut întâi: prologul AI executat (I01),
+  echivalentă pe corpus, fiindcă `%%BeginProlog` și `%%BeginProcSet` erau deja secțiuni sărite; proba nouă e un AI 3 cu cod
+  în prolog, în afara blocurilor de proceduri. Șapte probe au fost scrise înaintea rundei, din listă.
+- **Nepublicat și neunit** (decizia sesiunii principale, cu owner-ul). La unire: conflicte doar de adăugare în `DEVLOG.md`,
+  `docs/adr/README.md`, `docs/etape/etapa-03.md`, `CLAUDE.md` și `docs/traduceri/roadmap.en.json` (apoi
+  `node scripts/traduceri.ts --verifica`).

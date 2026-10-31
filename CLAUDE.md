@@ -258,6 +258,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   așteaptă calculul nou, nu cipul „vechi”. Imbricarea are o singură judecată (`src/geom/imbricare.ts`, candidații de la
   apelant). Din 5.8↑b, V-carve-urile unei piese cu aceleași valori sunt o singură regiune, oricâte
   operații (schimbă ADR 0090). Din 5.8↑c, rolul V-carve pune adâncimea cel mult cât conul frezei (`inaltimeConV`). **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 414,8 / 450 (după unirea cu sugestia din editor).**
+  **Importul EPS și AI ≤ 8 (ADR 0115, felia 9.5↑, adusă din etapa 9)** gata pe 31.10, după decizia din 07.10 („cititor propriu,
+  limitat”): „Importă SVG / DXF / PDF / AI / EPS…” citește EPS-ul (și binarul DOS) și AI-ul de dinainte de Illustrator 9; ușa
+  se alege după antet (`formatDupaAntet`: PostScript față de `%PDF-`; un `.ai` de la Illustrator 9 e PDF). Cititorul
+  (`src/io/eps.ts`, lexicul în `src/io/psLexic.ts`) execută un program PostScript în linie dreaptă (procedurile definite, cu
+  `bind`; matricele, `gsave`, căile, pictarea); **buclele și condițiile se refuză cu operatorul** (`control`), la fel
+  operatorii lipsă (`operator`, de exemplu `arc`) și EPS-urile de la Illustrator 9 (`ai-nou`). Un AI ≤ 8 se citește după
+  nume: prologul și setup-ul sărite, operatorii AI, calea compusă, straturile ca nume. Desenul stă unde e în fișier (ca la
+  DXF); textul, imaginile (cu datele lor) și umbririle se sar, numărate. **Corpusul EPS e Python**
+  (`test/oracles-py/eps_import_corpus.py`): un caz nou = desenul în generator + valoarea pe hârtie; fiecare fișier trece prin
+  Ghostscript (local `.tmp/eps2pdf.cjs`, în CI `gs`) și PyMuPDF; apoi `test/fixtures/eps/` regenerat și comis (CI-ul îl
+  regenerează și cere aceiași octeți). **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 425,0 / 450.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

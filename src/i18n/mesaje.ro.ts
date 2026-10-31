@@ -107,7 +107,7 @@ export const ro = {
   'actualizare.offline': 'Pregătesc lucrul offline: {procent} %',
   'admin.cere-retea': 'Pagina de administrare cere rețea: reîncarcă pagina când ai rețea.',
   'dialog.neincarcat': 'Fereastra nu s-a putut încărca (aplicația s-a actualizat între timp sau rețeaua lipsește). Proiectul e salvat: reîncarcă pagina.',
-  'actiune.importa-svg': 'Importă SVG / DXF / PDF / AI…',
+  'actiune.importa-svg': 'Importă SVG / DXF / PDF / AI / EPS…',
   'import.lasa-aici': 'Lasă fișierele SVG aici: fiecare cade cu centrul unde îl lași',
   'actiune.importa': 'Importă',
   'motiv.import-refuzat': 'Desenul importat n-ar trece de verificarea proiectului: proiectul n-ar mai putea fi deschis.',

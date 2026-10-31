@@ -5,6 +5,7 @@
 # Fisierele de schimb si de masina se pastreaza octet cu octet (hash, fixturi de aur, pachetele de proba).
 *.dxf -text
 *.eps -text
+*.ai -text
 *.nc -text
 *.gcode -text
 *.tap -text
