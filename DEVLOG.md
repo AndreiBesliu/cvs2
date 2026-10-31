@@ -4021,3 +4021,9 @@ R10 / R6 pe două operații dă exact mișcările unei singure operații. Porți
 (corpusul CAM neschimbat: n-avea V-carve-uri împărțite), build-ul determinist (pornirea 97,6, cu ușa 101,1 / 110 kB; totalul
 414,8 → 415,0 / 450), e2e 280 + 2 (două căderi sub încărcarea celor patru sesiuni, trecute rulate singure: 24 / 24),
 emulatoarele (49 + 16).
+**Publicat pe adresa principală de test:** 31.10, `publica` pe `774afc0` (rularea 41206670061), după rapid-ul verde
+(41206099548). Verificat în browserul aplicației la 1440 px: un cerc nou (gaura de 8 mm) trecut pe V-carve din panou
+primește freza T2 V60 Ø6, iar traseul calculat singur spune de ce nu se poate („regiunea cere 8.000 mm, iar conul frezei în V
+(Ø6, 60°) are 5.196 mm”); cu adâncimea 5 din panou, traseul V-carve vine singur (51 de vârfuri, 54,0 s), fără erori. **Găsit
+la verificare:** adâncimea păstrată la schimbarea rolului (ADR 0112 §4) poate trece de conul frezei V60 puse automat; refuzul
+e corect și spune ce e de făcut, dar rolul ar putea limita singur adâncimea la con: decizia, la owner.
