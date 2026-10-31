@@ -170,6 +170,8 @@ test('workerul CAM construit, pe tot corpusul: bit cu bit ca același cod pe fir
 
 /** Scrie direct în baza aplicației o versiune a proiectului (ca o salvare), apoi reîncarcă: aplicația o deschide. */
 async function deschide(page: Page, text: string): Promise<void> {
+  // Textul vine din alt proces (`cam-node.ts`): unul tăiat cade aici, pe loc, nu peste un minut, în aplicație.
+  expect(() => JSON.parse(text), `documentul de deschis (${text.length} caractere) nu e JSON întreg`).not.toThrow();
   await page.goto('/');
   // Întâi aplicația își creează baza (cu tabelele ei); o deschidere din test înaintea ei ar crea-o goală.
   await expect(page.getByTestId('lista-vectori')).toBeVisible();
@@ -188,7 +190,40 @@ async function deschide(page: Page, text: string): Promise<void> {
     db.close();
   }, text);
   await page.reload();
-  await expect(page.getByTestId('lista-vectori')).toBeVisible();
+  // Proiectul e deschis înaintea primei randări, deci primul rând al listei vine odată cu ea. Dacă nu vine (aplicația a refuzat
+  // proiectul și a pornit unul nou), eroarea spune ce a zis aplicația la deschidere (bara de jos, jurnalul local) și ce e în
+  // bază: așa s-a văzut, pe CI (31.10), documentul greu tăiat de `cam-node.ts` la 146 176 de caractere din 449 000.
+  await page.getByTestId('lista-vectori').locator('button[data-instanta]').first().waitFor({ timeout: 60_000 }).catch(async (e: unknown) => {
+    const stare = await page.evaluate(async () => {
+      const db = await new Promise<IDBDatabase>((ok, eroare) => {
+        const r = indexedDB.open('cncvs2-proiecte', 1);
+        r.onsuccess = () => { ok(r.result); };
+        r.onerror = () => { eroare(r.error); };
+      });
+      const t0 = performance.now();
+      const versiuni = await new Promise<string[]>((ok, eroare) => {
+        const r = db.transaction('versiuni', 'readonly').objectStore('versiuni').openCursor();
+        const lista: string[] = [];
+        r.onsuccess = () => {
+          const c = r.result;
+          if (!c) { ok(lista); return; }
+          lista.push(`${JSON.stringify(c.key)}: ${typeof c.value === 'string' ? `${c.value.length} caractere` : typeof c.value}`);
+          c.continue();
+        };
+        r.onerror = () => { eroare(r.error); };
+      }).catch((x: unknown) => [`citirea a căzut: ${x instanceof Error ? `${x.name}: ${x.message}` : String(x)}`]);
+      const citireMs = Math.round(performance.now() - t0);
+      db.close();
+      return {
+        proiect: document.querySelector('[data-testid="proiect"]')?.textContent ?? null,
+        jurnal: localStorage.getItem('cncvs2.jurnalErori.v1'),
+        versiuni,
+        citireMs,
+        browserul: navigator.userAgent,
+      };
+    });
+    throw new Error(`proiectul n-a ajuns în listă: ${JSON.stringify(stare)}`, { cause: e });
+  });
 }
 
 test('pe calea omului: placa 2, deschisă ca proiect și exportată din fereastră, e fișierul de aur, octet cu octet', async ({ page }) => {

@@ -3934,3 +3934,35 @@ pe arborele unit cu 4.A↑: compilatorul (aplicația și funcțiile), importuril
 suita unitară (7 795 de teste, 0 picate; 8 sărite: logourile owner-ului), build-ul determinist (212 fișiere; pornirea 97,3, cu ușa 100,8 / 110 kB; totalul 412,3 / 450;
 `/admin` 195,9 / 200, strâmt), e2e-ul în Edge (276) și emulatoarele (funcțiile și regulile 49, e2e-ul `/admin` 16), toate pe 4173, după ce sesiunea principală le-a eliberat. Nepublicată: unirea în `main` și publicarea le decide owner-ul. La publicare intră
 regulile (documentul pozei) și funcția `sugestii`, actualizată.
+
+## 2026-10-31 — Rularea de noapte roșie (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (la începutul sesiunii: rularea de noapte `complet` căzută pe 30.10 și pe 31.10, cu CI-ul rapid verde;
+incidentul numărul unu, înaintea oricărei felii).
+**Started:** 31.10, 10:02. **Completed:** 31.10, 10:30. Trei cauze, toate în e2e-ul de pe Linux:
+- **Bara de sus la 1280 px** (`editare.spec.ts`, ambele nopți): bara a crescut pe 29.10 (unealta Text, grupul fișierelor
+  mutat în bară), iar la 1280 px, cu grila pornită, coloanele laterale ajunseseră exact cât uneltele (local rămânea doar
+  intervalul de 12 px); cu fontul mai lat de pe Linux, bara intra 4,8 px peste unelte. Reparația, în `src/app/stil.css`:
+  coloana uneltelor nu scade sub ele (`minmax(max-content, 1fr)`); când locul e strâmt, se strânge marca (cu „…”), iar bara se
+  mută spre stânga. Proba primește o trecere cu literele lățite cu 5 px, care cade și local pe grila veche (1 104,7 față de
+  1 091,5). Primul diagnostic (extensia care ar umfla coloana barei, cu butonul centrării) era greșit: sondele alternau grila
+  pornită și oprită, iar diferența de 50 px era câmpul pasului grilei.
+- **Testele bazinului CAM** (`cam-bazin.spec.ts`, 31.10): deschiderea proiectului aștepta doar lista, vizibilă și goală, iar
+  tasta T apuca documentul gol („nicio formă n-are o operație de tăiere”, sau nimic). Acum se așteaptă primul rând al listei.
+  Reprodus local cu procesorul încetinit de 8 ori: cu așteptarea veche, T fără efect în 60 s; cu cea nouă, „traseu.calcul” în
+  3,7 s.
+- **Testul pas cu pas** (`tutorial.spec.ts`, 30.10): reîncărcarea venea imediat după „Nu”, înaintea scrierii asincrone în
+  IndexedDB; acum se așteaptă scrierea.
+Porțile locale: compilatorul, build-ul determinist (208 fișiere, mărimile neschimbate), e2e-ul (276).
+**Publicat pe adresa principală de test:** 31.10, `publica` pe `6c2a7c3` (rularea 41185505358), după rapid-ul verde
+(41184915214); verificat în browserul aplicației la 1440 și 1280 px, cu grila: la 1280 px și litere lățite cu 5 px, bara se
+mută spre stânga și rămân 12 px până la unelte.
+**Corecție:** rularea de noapte pornită de mână pe `6c2a7c3` (41185040683) a trecut bara de sus și testul pas cu pas, dar a
+căzut din nou pe cele două teste CAM, chiar la așteptarea nouă. Cauza de dimineață era greșită: proiectul se deschide înaintea
+primei randări, deci lista nu apare înaintea lui (încetinirea procesorului arătase alt fenomen). Diagnosticul pus în test
+(`8323875`, rularea 41189647578) a arătat în bază 146 176 de caractere din 449 186: `test/e2e/cam-node.ts` scria documentul
+pe stdout și ieșea imediat (`process.exit(0)`); pe Linux, scrierea într-un pipe e asincronă, iar ieșirea o taie (în WSL:
+65 536 din 449 000; fără ieșirea imediată, 449 000; pe Windows, 449 000 în ambele cazuri). Aplicația refuza corect textul
+(„nu e JSON”) și pornea un proiect gol, pe care T calcula refuzul. Reparat: ramurile lasă procesul să se termine singur;
+`deschide` cere întâi textul JSON întreg (plasa probată cu textul tăiat la 146 176: cade pe loc, cu mărimea lui); diagnosticul
+rămâne.
