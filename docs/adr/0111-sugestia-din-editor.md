@@ -28,9 +28,10 @@ pe planșă.
    poza.
 5. **Regulile.** Documentul pozei se citește câte unul (`get`, nu listă), de cine poate citi sugestia: cu `sugestii.citeste`,
    sau autorul ei, cu `sugestii.scrie` (citit printr-un `get` pe sugestie). Nimeni nu-l scrie din client.
-6. **Bugetul.** Bucățile sugestiei din editor sunt doar online, cu plafonul lor (8 kB; 2,5 măsurat), în afara totalului:
+6. **Bugetul.** Bucățile sugestiei din editor sunt doar online, cu plafonul lor (8 kB; 2,4 măsurat), în afara totalului:
    `SugestieDinEditor`, plus cele împărțite, `pozaPlansei` (cu testul) și `pozaSugestiei` (cu `/admin`). Totalul crește doar cu
-   butonul: 374,4 → 374,8 / 400 kB. `/admin` crește la 195,9 / 200 kB.
+   butonul: 374,4 → 374,8 / 400 kB; după calculul CAM în workere (ADR 0109, plafonul 450 kB), 412,3 / 450 kB. `/admin` crește la
+   195,9 / 200 kB.
 7. **Măsurat în e2e, în Edge:** un mesaj BroadcastChannel trimis chiar înaintea unui `window.open`, în aceeași sarcină, nu
    ajungea la nicio altă filă; trimis din altă sarcină, da. De aceea fila se deschide întâi, iar poza și anunțul vin după. Tot
    așa, o filă blocată de browser se știe imediat.
