@@ -705,10 +705,9 @@ rămasă cum ai rotit-o. `Esc`, butonul 3D sau o unealtă de desen întorc la p�
 
 ## Testul pas cu pas
 %% capitol: test
-%% acopera: editare.test
 
-Pe instanța de test, butonul **Test** din extensia barei, lângă „?” (titlul lui: „Testul pas cu pas”), deschide testul
-uneltelor de desen într-un panou plutitor, pe care îl muți trăgând de titlu și îl strângi cu ▾. Fiecare pas spune ce faci și
+Pe instanța de test, adresa aplicației cu `?test` la capăt deschide testul uneltelor de desen într-un panou plutitor, pe care
+îl muți trăgând de titlu și îl strângi cu ▾. Fiecare pas spune ce faci și
 ce trebuie să vezi; marchezi **Bine**, **Nu** sau **Sărit** și poți scrie o notă. **Poză** salvează imaginea planșei
 (desenul, riglele, ghidajele, mânerele, traseul) în browser: nimic nu pleacă pe server. **Descarcă raportul** scrie un singur
 fișier HTML, cu rezultatele, notele și pozele, de trimis mai departe. Lista de sus duce la orice pas. Rezultatele rămân și

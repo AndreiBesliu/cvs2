@@ -207,7 +207,11 @@ export type ProprietatiEditare = {
   readonly onLipeste: (f: Lipeste | null) => void;
   /** Gestul uneltei de desen, dat pânzei (null: selecția, sau modulul plecat). */
   readonly onDesen: (f: GestDesen | null) => void;
-  /** Testul pas cu pas (ADR 0072): doar pe instanța de test (și local), cu versiunea și instanța pentru raport. */
+  /**
+   * Testul pas cu pas (ADR 0072), deschis la pornire: doar pe instanța de test (și local), la adresa cu `?test` (din 31.10,
+   * fără buton în bară, la cererea owner-ului; codul rămâne, pentru tutorialul de mai târziu), cu versiunea și instanța
+   * pentru raport.
+   */
   readonly test?: { readonly versiune: string; readonly instanta: string };
   /** Se poate reface un pas al proiectului (Ctrl+Shift+Z redeschide un desen Pen doar dacă nu, ADR 0074 §4). */
   readonly reface?: boolean;
@@ -307,7 +311,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   }, [panouOffset, modOffset, formOffset, doc, selectie]);
   // Manualul deschis, cu ușa de la deschidere (capitolul ei); `null`: închis.
   const [manual, setManual] = useState<{ readonly usa: string | null } | null>(null);
-  const [testDeschis, setTestDeschis] = useState(false);
+  const [testDeschis, setTestDeschis] = useState(p.test !== undefined);
   const unealtaRef = useRef<Unealta>('selectie');
   // Locul uneltelor din bara de sus (ADR 0052): îl desenează aplicația, iar modulul ăsta îl umple, printr-un portal.
   const [loc, setLoc] = useState<HTMLElement | null>(null);
@@ -1028,12 +1032,6 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               onClick={() => { setManual({ usa: null }); }}>
               ?
             </button>
-            {p.test ? (
-              <button type="button" className="aliniaza" aria-pressed={testDeschis} title={t('editare.test')} aria-label={t('editare.test')} data-editare="test"
-                onClick={(e) => { setTestDeschis(!testDeschis); e.currentTarget.blur(); }}>
-                Test
-              </button>
-            ) : null}
           </span>
         );
         const sectiuni = (

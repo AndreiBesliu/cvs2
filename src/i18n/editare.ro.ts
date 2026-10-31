@@ -306,7 +306,6 @@ export const roEditare = {
   'editare.retea.motiv.curba-scurta': 'Curba aleasă nu are lungime.',
   'editare.retea.motiv.fara-forme': 'Alege și formele de copiat, nu doar curba (curba e ultima aleasă).',
   'editare.manual': 'Manualul (F1)',
-  'editare.test': 'Testul pas cu pas',
   'editare.manual.sectiune': 'Ajutor',
   'editare.manual.titlu': 'Manualul',
   'editare.manual.cauta': 'Caută în manual',
