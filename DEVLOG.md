@@ -3966,3 +3966,15 @@ pe stdout și ieșea imediat (`process.exit(0)`); pe Linux, scrierea într-un pi
 („nu e JSON”) și pornea un proiect gol, pe care T calcula refuzul. Reparat: ramurile lasă procesul să se termine singur;
 `deschide` cere întâi textul JSON întreg (plasa probată cu textul tăiat la 146 176: cade pe loc, cu mărimea lui); diagnosticul
 rămâne.
+**Confirmat pe Linux:** rularea de noapte pornită de mână pe `3a702c5` (41193300599) e verde (e2e-ul și emulatoarele).
+
+## 2026-10-31 — Fără butonul Test în bară (Model: Claude Opus 5.5)
+
+**Prompt:** „putem elimina si butonul de test din meniu” (în timpul feliei 5.8↑, după arhivarea sesiunii CAM).
+**Started:** 31.10, 12:45. **Completed:** 31.10, 13:07. Butonul **Test** iese din extensia barei; codul testului pas cu pas
+rămâne întreg (decizia owner-ului din 25.10: devine tutorialul utilizatorilor pe live). Testul se deschide la pornire, la
+adresa cu `?test`, tot doar în afara instanței live (precizarea din ADR 0072). Manualul spune adresa (capitolul nu mai acoperă
+o ușă: 65 de uși), e2e-ul parcurge testul de la `/?test` (și după reîncărcare), iar proba negativă verifică, cu martorul ei,
+că fără `?test` sau pe live bucata panoului nici nu e cerută. Porțile: 7 790 de teste unitare (0 picate), build-ul
+determinist, e2e 276 / 276 (pe un build proaspăt: `build-determinist` nu rescrie `dist/`, iar primul e2e a servit build-ul
+de dimineață, cu butonul încă în el).

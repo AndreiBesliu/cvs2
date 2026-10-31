@@ -99,7 +99,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Oracolul documentului v11 e scris de sesiunea aplicației, nu independent**: de reluat. Ușa unui proiect salvat e
   despărțită (ADR 0070): la pornire doar `usaCurenta.ts`, migrările (`migrari.ts`) doar pentru un document vechi; pornirea cu
   ușa 98,6 / 100 kB (~1,4 kB liberi).
-  **Testul pas cu pas, în aplicație (ADR 0072)** gata pe 25.10: butonul Test din extensie (în afara instanței live), pașii în
+  **Testul pas cu pas, în aplicație (ADR 0072)** gata pe 25.10: butonul Test din extensie (în afara instanței live; din 31.10,
+  la cererea owner-ului, fără buton: se deschide la adresa cu `?test`), pașii în
   `docs/tutorial/unelte-desen.md` (generați în `dist/tutorial/`), poza planșei compusă local, raportul HTML descărcat; totul în
   browser (IndexedDB `cncvs2-test`); bucata `TestPasCuPas` e doar online, cu plafonul ei (12 kB), în afara totalului (330 kB din 25.10, ADR 0075).
   **Tasta fiecărei unelte pe butonul ei** gata pe 25.10 (cererea owner-ului): litera în colțul dreapta-jos (`TASTA_UNELTEI`, din

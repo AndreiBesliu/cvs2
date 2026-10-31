@@ -59,6 +59,13 @@ turorial. Ceva care sa ajute userii sa lucreze cu aplicatia. Asa ca, nu trebuie 
 Codul de aici (panoul, pașii ca document cu generatorul lor, poza planșei, raportul) rămâne și nu se șterge; tutorialul pentru
 utilizatori pe live îl refolosește, într-o felie a lui.
 
+## Precizarea din 31.10.2026: fără buton în bară
+
+La cererea owner-ului („putem elimina si butonul de test din meniu”), după testul lui din 25.10, butonul **Test** iese din
+extensia barei. Testul se deschide la pornire, la adresa cu `?test` (tot doar în afara instanței live): așa rămâne la un link
+distanță pentru un test nou, iar e2e-ul îl parcurge mai departe (fără `?test`, bucata panoului nu e nici cerută). Codul
+rămâne întreg, după decizia de mai sus; intrarea tutorialului pe live se hotărăște în felia lui.
+
 ## Se redeschide dacă
 
 - e nevoie de dialoguri în poze (atunci, captura filei, cu permisiunea ei, la cerere);

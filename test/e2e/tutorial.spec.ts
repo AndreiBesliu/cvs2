@@ -5,19 +5,25 @@ import { adauga } from './ajutor-panza.ts';
 test.use({ locale: 'ro-RO' });
 
 /**
- * Testul pas cu pas (ADR 0072), cap-coadă pe build-ul real: butonul Test (nu pe live), panoul cu pașii din
- * `tutorial/unelte-desen.json`, Bine / Nu și nota, poza planșei, rezultatele după reîncărcare, raportul descărcat (cu poza
- * încorporată pe pasul ei și datele citibile), „Începe din nou”. După un clic pe panou, tastele uneltelor merg imediat.
+ * Testul pas cu pas (ADR 0072), cap-coadă pe build-ul real: adresa cu `?test` (nu pe live; din 31.10 fără buton în bară),
+ * panoul cu pașii din `tutorial/unelte-desen.json`, Bine / Nu și nota, poza planșei, rezultatele după reîncărcare, raportul
+ * descărcat (cu poza încorporată pe pasul ei și datele citibile), „Începe din nou”. După un clic pe panou, tastele uneltelor
+ * merg imediat.
  */
 const panou = (page: Page) => page.locator('aside.test-pas');
+/** Bucata panoului (adusă la cerere): cerută doar cu `?test`, în afara instanței live. */
+const bucataTestului = (url: string): boolean => /\/assets\/TestPasCuPas-[\w-]+\.js$/.test(url);
 
 test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea, raportul și „Începe din nou”', async ({ page }) => {
   const erori: string[] = [];
   page.on('pageerror', (e) => { erori.push(e.message); });
-  await page.goto('/');
+  const cereri: string[] = [];
+  page.on('request', (r) => { cereri.push(r.url()); });
+  await page.goto('/?test');
   await adauga(page, 'dreptunghi');
-  await page.locator('[data-editare="test"]').click();
   await expect(panou(page)).toHaveAttribute('data-test-pas', 'p-deschide');
+  // Martorul probei de mai jos: cu `?test`, bucata panoului e cerută.
+  expect(cereri.some(bucataTestului)).toBe(true);
   await expect(panou(page)).toContainText('Fereastra și versiunea');
   await expect(panou(page).locator('[data-test="progres"]')).toHaveText('0 bine · 0 nu · 0 sărite · 31 rămase');
 
@@ -55,8 +61,8 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
     db.close();
     return JSON.stringify(stari).includes('"stare":"nu"');
   })).toBe(true);
+  // Adresa păstrează `?test`: după reîncărcare, panoul se deschide singur.
   await page.reload();
-  await page.locator('[data-editare="test"]').click();
   await expect(panou(page)).toHaveAttribute('data-test-pas', 'p-curata');
   await expect(panou(page).locator('[data-test="progres"]')).toHaveText('1 bine · 1 nu · 0 sărite · 29 rămase');
   await panou(page).locator('[data-test="pas"]').selectOption('0');
@@ -107,9 +113,17 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
   expect(erori).toEqual([]);
 });
 
-test('pe live, butonul Test nu există', async ({ page }) => {
-  await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ instanta: 'live' }) }));
+test('fără `?test`, testul nu se deschide, iar bara n-are buton Test; pe live, nici cu `?test`', async ({ page }) => {
+  const cereri: string[] = [];
+  page.on('request', (r) => { cereri.push(r.url()); });
   await page.goto('/');
   await expect(page.locator('[data-editare="manual"]')).toBeVisible();
   await expect(page.locator('[data-editare="test"]')).toHaveCount(0);
+  await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ instanta: 'live' }) }));
+  await page.goto('/?test');
+  await expect(page.locator('[data-editare="manual"]')).toBeVisible();
+  // Bucata panoului nu e cerută deloc (cu `?test`, pe test, e cerută: martorul din proba de mai sus), deci nici panoul nu vine.
+  await page.waitForTimeout(1000);
+  expect(cereri.filter(bucataTestului)).toEqual([]);
+  await expect(panou(page)).toHaveCount(0);
 });

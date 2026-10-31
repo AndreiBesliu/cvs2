@@ -210,8 +210,14 @@ export type ProprietatiEditare = {
   readonly onLipeste: (f: Lipeste | null) => void;
   /** Gestul uneltei de desen, dat pânzei (null: selecția, sau modulul plecat). */
   readonly onDesen: (f: GestDesen | null) => void;
-  /** Testul pas cu pas (ADR 0072): doar pe instanța de test (și local), cu versiunea și instanța pentru raport. */
+  /**
+   * Testul pas cu pas (ADR 0072), deschis la pornire: doar pe instanța de test (și local), la adresa cu `?test` (din 31.10,
+   * fără buton în bară, la cererea owner-ului; codul rămâne, pentru tutorialul de mai târziu), cu versiunea și instanța
+   * pentru raport.
+   */
   readonly test?: { readonly versiune: string; readonly instanta: string };
+  /** Butonul Sugestie (ADR 0111), în extensia barei, lângă „?”: doar în afara instanței live (și local), fără `?test`. */
+  readonly sugestie?: boolean;
   /** Se poate reface un pas al proiectului (Ctrl+Shift+Z redeschide un desen Pen doar dacă nu, ADR 0074 §4). */
   readonly reface?: boolean;
 };
@@ -310,7 +316,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   }, [panouOffset, modOffset, formOffset, doc, selectie]);
   // Manualul deschis, cu ușa de la deschidere (capitolul ei); `null`: închis.
   const [manual, setManual] = useState<{ readonly usa: string | null } | null>(null);
-  const [testDeschis, setTestDeschis] = useState(false);
+  const [testDeschis, setTestDeschis] = useState(p.test !== undefined);
   // Sugestia din editor (ADR 0111): fila Sugestii din /admin se deschide chiar în clic (browserul o lasă deschisă), apoi
   // poza planșei ajunge la ea prin browser; `blocata`: browserul n-a deschis fila (poza o așteaptă oricum acolo).
   const [sugestie, setSugestie] = useState<null | 'lucreaza' | 'blocata' | { readonly motiv: string }>(null);
@@ -1057,13 +1063,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               onClick={() => { setManual({ usa: null }); }}>
               ?
             </button>
-            {p.test ? (
-              <button type="button" className="aliniaza" aria-pressed={testDeschis} title={t('editare.test')} aria-label={t('editare.test')} data-editare="test"
-                onClick={(e) => { setTestDeschis(!testDeschis); e.currentTarget.blur(); }}>
-                Test
-              </button>
-            ) : null}
-            {p.test ? (
+            {p.sugestie ? (
               <button type="button" className="aliniaza" title={t('editare.sugestie')} aria-label={t('editare.sugestie')} data-editare="sugestie"
                 disabled={sugestie === 'lucreaza'} onClick={(e) => { e.currentTarget.blur(); trimiteSugestia(); }}>
                 {t('editare.sugestie.buton')}
