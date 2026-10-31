@@ -170,9 +170,10 @@ test('decupajul pictat (W … S): calea lui intră ca orice cale trasă, iar dec
   assert.equal(r.avertismente.nepictate, 0);
 });
 
-test('refuzurile: PostScript (AI vechi, EPS, și EPS-ul binar), alt fișier, pagina lipsă (cu numărul paginilor), doar text', async () => {
-  assert.deepEqual(await citestePdf(B('%!PS-Adobe-3.0\n%%Creator: Adobe Illustrator(TM) 8.0\n')), { ok: false, cod: 'ai-vechi' });
-  assert.deepEqual(await citestePdf(Uint8Array.from([0xc5, 0xd0, 0xd3, 0xc6, 0, 0])), { ok: false, cod: 'ai-vechi' });
+test('refuzurile: PostScript (nu e PDF: îl citește ușa EPS), alt fișier, pagina lipsă (cu numărul paginilor), doar text', async () => {
+  // PostScript-ul (un AI vechi, un EPS binar) nu e PDF: în dialog îl citește ușa EPS (ADR 0115); ușa PDF îl refuză.
+  assert.deepEqual(await citestePdf(B('%!PS-Adobe-3.0\n%%Creator: Adobe Illustrator(TM) 8.0\n')), { ok: false, cod: 'nu-e-pdf' });
+  assert.deepEqual(await citestePdf(Uint8Array.from([0xc5, 0xd0, 0xd3, 0xc6, 0, 0])), { ok: false, cod: 'nu-e-pdf' });
   assert.deepEqual(await citestePdf(B('<svg/>')), { ok: false, cod: 'nu-e-pdf' });
   const unu = pagina('0 0 m 72 0 l S');
   assert.deepEqual(await citestePdf(unu, { pagina: 2 }), { ok: false, cod: 'pagina', pagini: 1 });

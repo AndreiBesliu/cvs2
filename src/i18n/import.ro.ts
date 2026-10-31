@@ -1,7 +1,7 @@
 import type { enImport } from './import.en.ts';
 import type { DictionarRoPentru } from './tipuri.ts';
 
-/** Mesajele dialogului de import SVG, DXF și PDF / AI, în română: exact cheile din engleză (`import.en.ts`). */
+/** Mesajele dialogului de import SVG, DXF, PDF / AI și EPS / AI ≤ 8, în română: exact cheile din engleză (`import.en.ts`). */
 export const roImport = {
   'import.titlu': 'Importă: {nume}',
   'import.citeste': 'Se citește fișierul…',
@@ -27,7 +27,7 @@ export const roImport = {
   'import.renunta-toate': 'Renunță la toate',
   'import.sari': 'Sari peste',
   'import.coada': '({k} din {n})',
-  'import.refuz.tip': 'Doar fișierele SVG, DXF, PDF și AI se importă deocamdată (celelalte formate vin mai târziu).',
+  'import.refuz.tip': 'Doar fișierele SVG, DXF, PDF, AI și EPS se importă deocamdată (celelalte formate vin mai târziu).',
   'import.refuz.octeti': 'Fișierul are {mb} MB: plafonul importului e 16 MB.',
   'import.refuz.svgz': 'Fișierul e arhivat (.svgz): dezarhivează-l întâi.',
   'import.refuz.entitati': 'Fișierul declară entități XML periculoase ({motiv}): refuzat.',
@@ -120,7 +120,6 @@ export const roImport = {
     other: '{n} de straturi, păstrate ca numele formelor: {straturi}',
   },
   'import.pdf.nu-e-pdf': 'Fișierul nu e un PDF (nu începe cu %PDF-).',
-  'import.pdf.ai-vechi': 'Fișierul e PostScript (un AI de dinainte de Illustrator 9, sau un EPS), nu PDF: salvează-l ca PDF, sau ca AI cu „Create PDF Compatible File” bifat.',
   'import.pdf.criptat': 'Fișierul e protejat (cu parolă sau cu restricții de editare): salvează o copie fără protecție.',
   'import.pdf.pdf': 'Fișierul nu e un PDF valid (structura lui nu se poate citi, nici refăcută din obiectele lui).',
   'import.pdf.pagina-lipsa': 'Pagina cerută nu e în fișier.',
@@ -144,4 +143,13 @@ export const roImport = {
   'import.pdf.forme-adanci': { one: '{n} desen inclus (Form XObject) mai adânc de 16 niveluri, sau care se include pe sine, sărit', few: '{n} desene incluse (Form XObject) mai adânci de 16 niveluri, sau care se includ pe sine, sărite', other: '{n} de desene incluse (Form XObject) mai adânci de 16 niveluri, sau care se includ pe sine, sărite' },
   'import.pdf.fluxuri-stricate': { one: '{n} flux de conținut nu s-a putut decoda (sau doar până la o eroare): desenul poate fi incomplet', few: '{n} fluxuri de conținut nu s-au putut decoda (sau doar până la o eroare): desenul poate fi incomplet', other: '{n} de fluxuri de conținut nu s-au putut decoda (sau doar până la o eroare): desenul poate fi incomplet' },
   'import.pdf.xref-reconstruit': { one: 'Tabelul obiectelor (xref) era stricat și l-am refăcut din obiectele fișierului: verifică desenul', few: 'Tabelul obiectelor (xref) era stricat și l-am refăcut din obiectele fișierului: verifică desenul', other: 'Tabelul obiectelor (xref) era stricat și l-am refăcut din obiectele fișierului: verifică desenul' },
+  'import.eps.nu-e-ps': 'Fișierul nu e PostScript (nu începe cu %!PS, nici cu antetul unui EPS binar).',
+  'import.eps.ai-nou': 'Fișierul e un EPS salvat de Illustrator 9 sau mai nou: desenul lui trece prin procedurile Adobe, pe care cititorul EPS nu le execută. Salvează-l ca AI (compatibil PDF), PDF sau SVG.',
+  'import.eps.control': 'Fișierul folosește „{operator}”, o buclă sau o condiție: cititorul EPS citește doar desenele scrise pas cu pas. Salvează-l ca PDF sau SVG în programul tău.',
+  'import.eps.operator': 'Fișierul folosește operatorul PostScript „{operator}”, pe care cititorul EPS nu-l are. Salvează-l ca PDF sau SVG în programul tău.',
+  'import.eps.imagine': 'O imagine din fișier își ține datele într-o formă pe care cititorul n-o poate sări (binare, comprimate): scoate imaginea sau salvează fișierul ca PDF.',
+  'import.eps.ps': 'Fișierul PostScript e greșit (sintaxa, stiva sau tipurile nu se potrivesc): nu se poate citi.',
+  'import.eps.gol': 'Fișierul n-are nicio cale de importat (textul și imaginile se sar).',
+  'import.eps.operatii': 'Fișierul cere prea multe operații ca să-l citesc (peste 20 de milioane): refuzat.',
+  'import.eps.sarit-incluse': { one: '{n} document inclus (un EPS plasat în fișierul Illustrator) sărit', few: '{n} documente incluse (EPS-uri plasate în fișierul Illustrator) sărite', other: '{n} de documente incluse (EPS-uri plasate în fișierul Illustrator) sărite' },
 } as const satisfies DictionarRoPentru<typeof enImport>;

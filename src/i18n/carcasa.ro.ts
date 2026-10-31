@@ -15,7 +15,7 @@ export const roCarcasa = {
   'paleta.gest.selectie.la-punct': 'Clic pe o formă, pe pânză.',
   'paleta.gest.selectie.din-lista': 'Clic pe un rând din listă.',
   'paleta.gest.document.muta-selectia': 'Trage selecția pe pânză.',
-  'paleta.gest.document.importa': 'Din fereastra Importă SVG / DXF / PDF / AI.',
+  'paleta.gest.document.importa': 'Din fereastra Importă SVG / DXF / PDF / AI / EPS.',
   'paleta.gest.document.aplica-operatii': 'La Exportă, din fereastra lui.',
   'paleta.gest.panou': 'Din panoul de proprietăți.',
   'prop.titlu': 'Proprietăți',

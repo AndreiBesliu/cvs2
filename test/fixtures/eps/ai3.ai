@@ -1,0 +1,56 @@
+%!PS-Adobe-2.0 EPSF-1.2
+%%Creator:Adobe Illustrator(TM) 3.2
+%%For: (corpus) (cncvs2)
+%%Title: (ai3.ai)
+%%DocumentProcSets: Proba_AI 3.2 0
+%%BoundingBox:0 0 284 284
+%%TemplateBox:142 142 142 142
+%%EndComments
+%%BeginProcSet: Proba_AI 3.2 0
+/Proba_AI 80 dict def
+Proba_AI begin
+/_vis true def /_eo false def /_comp false def /_fel 0 def
+/_umple { _eo { eofill } { fill } ifelse } def
+/_picteaza { _vis not { pop newpath } {
+  dup 1 eq { pop _umple } { dup 2 eq { pop stroke } { 3 eq { gsave _umple grestore stroke } { newpath } ifelse } ifelse } ifelse
+  } ifelse } def
+/_op { { closepath } if _comp { /_fel exch def } { _picteaza } ifelse } def
+/m { moveto } def /l { lineto } def /L { lineto } def /c { curveto } def /C { curveto } def
+/v { currentpoint 6 2 roll curveto } def /V { currentpoint 6 2 roll curveto } def
+/y { 2 copy curveto } def /Y { 2 copy curveto } def
+/h { closepath } def /H { closepath } def
+/f { 1 true _op } def /F { 1 false _op } def /s { 2 true _op } def /S { 2 false _op } def
+/b { 3 true _op } def /B { 3 false _op } def /n { 0 false _op } def /N { 0 true _op } def
+/*u { /_comp true def /_fel 0 def } def /*U { /_comp false def _fel _picteaza } def
+/u { } def /U { } def /q { gsave } def /Q { grestore } def /W { clip } def
+/Lb { 11 { pop } repeat 1 eq /_vis exch def } def /Ln { pop } def /LB { /_vis true def } def
+/A { pop } def /O { pop } def /R { pop } def /D { pop } def /XR { 1 eq /_eo exch def } def
+/k { setcmykcolor } def /K { 4 { pop } repeat } def /g { setgray } def /G { pop } def
+/Xa { setrgbcolor } def /XA { 3 { pop } repeat } def
+/w { setlinewidth } def /j { setlinejoin } def /J { setlinecap } def /M { setmiterlimit } def /d { setdash } def
+/i { setflat } def /Ar { pop } def
+/To { pop } def /TO { } def /Tp { 7 { pop } repeat } def /TP { } def /Tr { pop } def /Tf { pop pop } def
+/Tx { pop } def /TX { pop } def /XI { 13 { pop } repeat } def
+/annotatepage { } def
+end
+%%EndProcSet
+%%EndProlog
+%%BeginSetup
+Proba_AI begin
+n
+%%EndSetup
+u
+0 g 0 G 1 w 0 J 0 j 4 M []0 d
+28.346456692913 28.346456692913 m
+255.118110236221 28.346456692913 L
+255.118110236221 255.118110236221 L
+28.346456692913 255.118110236221 L
+28.346456692913 28.346456692913 L
+f
+85.03937007874 85.03937007874 m
+141.732283464567 198.425196850394 198.425196850394 198.425196850394 198.425196850394 85.03937007874 C
+S
+U
+%%Trailer
+end
+%%EOF

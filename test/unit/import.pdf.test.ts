@@ -22,8 +22,8 @@ test('formatul: .pdf și .ai (Illustrator scrie PDF de la versiunea 9), apoi tip
   assert.equal(formatImport('Panou.PDF', ''), 'pdf');
   assert.equal(formatImport('logo.ai', 'application/postscript'), 'pdf');
   for (const t of ['application/pdf', 'application/illustrator', 'application/vnd.adobe.illustrator']) assert.equal(formatImport('x', t), 'pdf');
-  // PostScript fără extensie (un EPS): nu e al ușii PDF.
-  assert.equal(formatImport('x', 'application/postscript'), null);
+  // PostScript fără extensie (un EPS): nu e al ușii PDF, ci al ușii EPS (ADR 0115).
+  assert.equal(formatImport('x', 'application/postscript'), 'eps');
   assert.equal(numeDinFisier('Panou ornamental.pdf'), 'Panou ornamental');
   assert.equal(numeDinFisier('logo.AI'), 'logo');
 });
@@ -65,9 +65,9 @@ test('previzualizarea PDF, paginile 2 și 3: triunghiul din Form XObject (fără
 
 test('refuzurile PDF poartă formatul; o pagină goală, și numărul paginilor (dialogul oferă alta)', async () => {
   assert.deepEqual(await previzualizare({ nume: 'criptat.pdf', octeti: fixtura('criptat.pdf') }, O), { ok: false, cod: 'criptat', format: 'pdf' });
-  assert.deepEqual(await previzualizare({ nume: 'vechi.ai', octeti: B('%!PS-Adobe-3.0\n%%Creator: Adobe Illustrator(TM) 8.0\n') }, O), {
-    ok: false, cod: 'ai-vechi', format: 'pdf',
-  });
+  // Un AI de dinainte de Illustrator 9 e PostScript: îl citește ușa EPS (ADR 0115), aleasă după antet; fără nicio cale, golul.
+  const vechi = await previzualizare({ nume: 'vechi.ai', octeti: B('%!PS-Adobe-3.0\n%%Creator: Adobe Illustrator(TM) 8.0\n') }, O);
+  assert.ok(!vechi.ok && vechi.cod === 'gol' && vechi.format === 'eps');
   // Coperta are doar un titlu (text, sărit); desenul e pe pagina a doua.
   const f = { nume: 'Planșe.pdf', octeti: pagini(['BT /F1 12 Tf (Titlu) Tj ET', '0 0 m 72 0 l S']) };
   const coperta = await previzualizare(f, O);

@@ -2,11 +2,11 @@
  * Codurile ușii PDF (ADR 0104), fără nicio dependență: interfața le citește fără să încarce ușa, care vine la cerere, la
  * primul import.
  *
- * Refuzurile: `nu-e-pdf` (fișierul nu începe cu `%PDF-`), `ai-vechi` (un Illustrator de dinainte de versiunea 9, sau un
- * EPS: PostScript, nu PDF), `criptat` (protejat cu parolă sau doar cu restricțiile proprietarului: conținutul e criptat),
+ * Refuzurile: `nu-e-pdf` (fișierul nu începe cu `%PDF-`; PostScript-ul, un EPS sau un AI de dinainte de Illustrator 9, îl
+ * citește ușa EPS, ADR 0115), `criptat` (protejat cu parolă sau doar cu restricțiile proprietarului: conținutul e criptat),
  * `pdf` (structura nu se poate citi: nici după reconstruirea tabelului xref), `pagina` (pagina cerută nu există).
  */
-export type CodRefuzPdf = 'nu-e-pdf' | 'ai-vechi' | 'criptat' | 'pdf' | 'pagina';
+export type CodRefuzPdf = 'nu-e-pdf' | 'criptat' | 'pdf' | 'pagina';
 
 /**
  * Raportul (ADR 0104 §6), în ordinea în care îl arată dialogul. `deschise` numără căile deschise IMPORTATE (tăiate pe
