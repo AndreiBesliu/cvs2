@@ -188,9 +188,41 @@ async function deschide(page: Page, text: string): Promise<void> {
     db.close();
   }, text);
   await page.reload();
-  // Lista se vede și goală: proiectul e încărcat abia când apare primul lui rând. Pe CI (rularea de noapte, 31.10), documentul
-  // greu sosea după tasta T, iar traseul se calcula pe documentul gol („nicio formă n-are o operație de tăiere”).
-  await expect(page.getByTestId('lista-vectori').locator('button[data-instanta]').first()).toBeVisible({ timeout: 60_000 });
+  // Proiectul e deschis înaintea primei randări, deci primul rând al listei vine odată cu ea. Pe CI (rularea de noapte, 31.10,
+  // de două ori), documentul greu (439 kB) nu ajungea deloc în listă, iar placa 2 (6 kB) da: traseul se calcula pe documentul
+  // gol („nicio formă n-are o operație de tăiere”). Dacă rândul nu vine, eroarea spune ce a zis aplicația la deschidere (bara
+  // de jos, jurnalul local) și ce e în bază.
+  await page.getByTestId('lista-vectori').locator('button[data-instanta]').first().waitFor({ timeout: 60_000 }).catch(async (e: unknown) => {
+    const stare = await page.evaluate(async () => {
+      const db = await new Promise<IDBDatabase>((ok, eroare) => {
+        const r = indexedDB.open('cncvs2-proiecte', 1);
+        r.onsuccess = () => { ok(r.result); };
+        r.onerror = () => { eroare(r.error); };
+      });
+      const t0 = performance.now();
+      const versiuni = await new Promise<string[]>((ok, eroare) => {
+        const r = db.transaction('versiuni', 'readonly').objectStore('versiuni').openCursor();
+        const lista: string[] = [];
+        r.onsuccess = () => {
+          const c = r.result;
+          if (!c) { ok(lista); return; }
+          lista.push(`${JSON.stringify(c.key)}: ${typeof c.value === 'string' ? `${c.value.length} caractere` : typeof c.value}`);
+          c.continue();
+        };
+        r.onerror = () => { eroare(r.error); };
+      }).catch((x: unknown) => [`citirea a căzut: ${x instanceof Error ? `${x.name}: ${x.message}` : String(x)}`]);
+      const citireMs = Math.round(performance.now() - t0);
+      db.close();
+      return {
+        proiect: document.querySelector('[data-testid="proiect"]')?.textContent ?? null,
+        jurnal: localStorage.getItem('cncvs2.jurnalErori.v1'),
+        versiuni,
+        citireMs,
+        browserul: navigator.userAgent,
+      };
+    });
+    throw new Error(`proiectul n-a ajuns în listă: ${JSON.stringify(stare)}`, { cause: e });
+  });
 }
 
 test('pe calea omului: placa 2, deschisă ca proiect și exportată din fereastră, e fișierul de aur, octet cu octet', async ({ page }) => {
