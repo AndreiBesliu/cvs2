@@ -7,16 +7,34 @@ import { ecran, vedere } from './ajutor-panza.ts';
  * Fonturile omului (ADR 0106), în Edge: încărcarea unei colecții TTC prin fereastra fonturilor (două fețe), textul scris
  * cu una dintre ele (id-ul cu amprenta și fața, numele în bloc), previzualizarea, fontul ținut după reîncărcare, ștergerea
  * lui (textul rămâne, panoul spune că fontul lipsește); fonturile sistemului printr-un `queryLocalFonts` de probă (cu
- * permisiunea cerută din clic, instanța unui font variabil refuzată); refuzurile (WOFF2, un fișier care nu e font) și
- * Google Fonts fără server (instanța locală). Probele din fereastră (ADR 0108 §5): textul din panou desenat cu fiecare font
- * (contururile aplicației), schimbat din câmpul de probă; în lista sistemului, cu motivul pentru instanța necitită. Proba
- * Google (browserul, înainte de descărcare) cere serverul: probată în `fonturiGoogle.test.ts` și pe instanța de test.
+ * permisiunea cerută din clic); refuzurile (WOFF2, un fișier care nu e font) și Google Fonts fără server (instanța locală).
+ * Probele din fereastră (ADR 0108 §5): textul din panou desenat cu fiecare font (contururile aplicației), schimbat din câmpul
+ * de probă. Proba Google (browserul, înainte de descărcare) cere serverul: probată în `fonturiGoogle.test.ts` și pe instanța
+ * de test.
+ *
+ * Fonturile variabile (ADR 0113): Roboto Flex încărcat dă fiecare instanță numită ca față separată (id-ul cu `@` și
+ * indicele ei), iar textul scris cu „Roboto Flex Bold” are litera H cât o dă instancer-ul lui fontTools la Bold (fixtura
+ * `variabile.json`), și după reîncărcare, editat; instanța Bold dată de sistem ca față separată se citește la fel.
  */
 
 test.use({ locale: 'ro-RO' });
 
 const RAD = new URL('../../', import.meta.url);
 const fisier = (cale: string): Buffer => readFileSync(new URL(cale, RAD));
+
+type LocVariabil = { readonly nume: string; readonly metrici: { readonly majuscula: number }; readonly glife: Readonly<Record<string, number[][][]>> };
+const FLEX = JSON.parse(fisier('test/fixtures/text/variabile.json').toString('utf8'))['test/fixtures/text/roboto-flex-subset.ttf'] as { readonly locuri: readonly LocVariabil[] };
+
+/** Lățimea lui H (mm) la instanța numită `stil` a lui Roboto Flex, cu majusculele de `inaltime` mm, din instancer-ul lui fontTools. */
+function latimeH(stil: string, inaltime: number): number {
+  const loc = FLEX.locuri.find((l) => l.nume === stil)!;
+  const xs = loc.glife['H']!.flat().map((p) => p[0]!);
+  return ((Math.max(...xs) - Math.min(...xs)) * inaltime) / loc.metrici.majuscula;
+}
+
+/** Stilurile instanțelor numite ale lui Roboto Flex, în ordinea din font; Regular (implicită) e fața însăși, prima. */
+const STILURI_FLEX = ['Regular', 'Thin', 'ExtraLight', 'Light', 'Medium', 'SemiBold', 'Bold', 'ExtraBold', 'Black', 'ExtraBlack',
+  ...['Thin', 'ExtraLight', 'Light'].map((s) => `${s} Italic`), 'Italic', ...['Medium', 'SemiBold', 'Bold', 'ExtraBold', 'Black', 'ExtraBlack'].map((s) => `${s} Italic`)];
 
 async function documentSalvat(page: Page, rev: number): Promise<unknown> {
   let text: string | null = null;
@@ -43,6 +61,12 @@ async function documentSalvat(page: Page, rev: number): Promise<unknown> {
 type P = { x: number; y: number };
 type Nod = { tip: 'element' | 'grup'; id: string; nume?: string; copii?: Nod[]; text?: Record<string, unknown>; forma?: { varfuri: Array<{ p: P }> } };
 type Doc = { rev: number; piese: Array<{ id: string; nume: string; radacina: Nod }>; foi: Array<{ instante: Array<{ id: string; piesa: string; x: number; y: number }> }> };
+
+/** Lățimea literei `k` a primului text din document, în mm, din vârfurile contururilor ei (H n-are curbe). */
+function latimeLitera(d: Doc, k: number): number {
+  const xs = (d.piese[0]!.radacina.copii![k]!.copii ?? []).flatMap((e) => (e.forma?.varfuri ?? []).map((v) => v.p.x));
+  return Math.max(...xs) - Math.min(...xs);
+}
 
 /** Unealta Text, ancora la (x, y) mm pe foaie și textul scris. */
 async function textNou(page: Page, continut: string, x = 180, y = 60): Promise<void> {
@@ -119,16 +143,17 @@ test('o colecție TTC încărcată în Fonturile mele: textul cu fața a doua, d
   await expect(page.locator('[data-text="aplica"]')).toBeDisabled();
 });
 
-test('fonturile sistemului (un queryLocalFonts de probă): permisiunea din clic, lista în panou, instanța variabilă refuzată', async ({ page }) => {
+test('fonturile sistemului (un queryLocalFonts de probă): permisiunea din clic, lista în panou, instanța Bold a unui font variabil', async ({ page }) => {
   const droid = fisier('public/fonturi/droid-serif.ttf').toString('base64');
-  const variabil = fisier('test/fixtures/text/roboto-fvar.ttf').toString('base64');
+  const variabil = fisier('test/fixtures/text/roboto-flex-subset.ttf').toString('base64');
   await page.addInitScript(([droid, variabil]) => {
     const blob = (b64: string): Blob => new Blob([Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))]);
     let permis = false;
+    // Sistemul dă instanțele numite ale unui font variabil ca fețe separate, fiecare cu fișierul întreg (ca Bahnschrift).
     const fonturi = [
       { postscriptName: 'DroidSerif', fullName: 'Droid Serif', family: 'Droid Serif', style: 'Regular', blob: async () => blob(droid) },
-      { postscriptName: 'Roboto-Regular', fullName: 'Roboto Regular', family: 'Roboto', style: 'Regular', blob: async () => blob(variabil) },
-      { postscriptName: 'Roboto-Bold', fullName: 'Roboto Bold', family: 'Roboto', style: 'Bold', blob: async () => blob(variabil) },
+      { postscriptName: 'RobotoFlex-Regular', fullName: 'Roboto Flex Regular', family: 'Roboto Flex', style: 'Regular', blob: async () => blob(variabil) },
+      { postscriptName: 'RobotoFlex-Bold', fullName: 'Roboto Flex Bold', family: 'Roboto Flex', style: 'Bold', blob: async () => blob(variabil) },
     ];
     (window as unknown as { queryLocalFonts: unknown }).queryLocalFonts = async (o?: { postscriptNames?: string[] }) => {
       permis = true;
@@ -140,36 +165,85 @@ test('fonturile sistemului (un queryLocalFonts de probă): permisiunea din clic,
       : cere(d))) as typeof navigator.permissions.query;
   }, [droid, variabil] as const);
   await page.goto('/');
-  await textNou(page, 'Ușă', 200, 40);
+  await textNou(page, 'Hașă', 200, 40);
   await expect(page.locator('select[data-text="font"] optgroup[label="Ale sistemului"]')).toHaveCount(0);
   await page.click('[data-text="fonturi"]');
   const dialog = page.getByTestId('dialog-fonturi');
   await dialog.locator('[data-fila-fonturi="sistem"]').click();
   await dialog.locator('[data-buton="permite-sistem"]').click();
   await expect(dialog.getByTestId('sistem-stare')).toHaveText('3 fonturi ale sistemului sunt în lista din panou.');
-  // Lista sistemului, cu proba fiecăruia: instanța Bold a fontului variabil spune de ce nu se poate folosi.
-  await expect(dialog.locator('[data-camp="text-proba"]')).toHaveValue('Ușă');
-  await expect(dialog.locator('li[data-font="s:DroidSerif"] [data-proba="gata"] [data-testid="proba-font"]')).toBeVisible();
-  await expect(dialog.locator('li[data-font="s:Roboto-Regular"] [data-proba="gata"] [data-testid="proba-font"]')).toBeVisible();
-  await expect(dialog.locator('li[data-font="s:Roboto-Bold"] [data-testid="proba-motiv"]'))
-    .toHaveText('„Bold” e o instanță a unui font variabil: deocamdată se citește doar instanța lui implicită. Alege alt stil.');
+  // Lista sistemului, cu proba fiecăruia: instanța Bold a fontului variabil se desenează cu contururile ei, nu cu ale lui Regular.
+  await expect(dialog.locator('[data-camp="text-proba"]')).toHaveValue('Hașă');
+  const proba = (id: string): Promise<string | null> => dialog.locator(`li[data-font="${id}"] [data-proba="gata"] [data-testid="proba-font"] path`).getAttribute('d');
+  for (const id of ['s:DroidSerif', 's:RobotoFlex-Regular', 's:RobotoFlex-Bold']) {
+    await expect(dialog.locator(`li[data-font="${id}"] [data-proba="gata"] [data-testid="proba-font"]`)).toBeVisible();
+  }
+  expect(await proba('s:RobotoFlex-Bold')).not.toEqual(await proba('s:RobotoFlex-Regular'));
+  await expect(dialog.locator('[data-testid="proba-motiv"]')).toHaveCount(0);
   await dialog.locator('[data-camp="cauta-sistem"]').fill('droid');
   await expect(dialog.locator('li[data-font]')).toHaveCount(1);
   await dialog.locator('li[data-font="s:DroidSerif"] [data-buton="foloseste-font"]').click();
   await expect(page.locator('select[data-text="font"]')).toHaveValue('s:DroidSerif');
   await page.click('[data-buton="inchide-fonturi"]');
-  await expect(page.locator('select[data-text="font"] optgroup[label="Ale sistemului"] option')).toHaveText(['Droid Serif', 'Roboto Bold', 'Roboto Regular']);
-  // Instanța Bold a fontului variabil: refuzată (contururile ar fi ale lui Regular).
-  await page.locator('select[data-text="font"]').selectOption('s:Roboto-Bold');
-  await expect(page.getByTestId('text-motiv')).toHaveText('„Bold” e o instanță a unui font variabil: deocamdată se citește doar instanța lui implicită. Alege alt stil.');
-  await expect(page.locator('[data-text="adauga"]')).toBeDisabled();
-  await page.locator('select[data-text="font"]').selectOption('s:Roboto-Regular');
-  await expect(page.getByTestId('text-motiv')).toHaveCount(0);
-  await page.locator('select[data-text="font"]').selectOption('s:DroidSerif');
+  await expect(page.locator('select[data-text="font"] optgroup[label="Ale sistemului"] option')).toHaveText(['Droid Serif', 'Roboto Flex Bold', 'Roboto Flex Regular']);
+  // Instanța Bold a fontului variabil: citită la instanța ei, cu H cât îl dă fontTools la Bold (mai lat decât la Regular).
+  await page.locator('select[data-text="font"]').selectOption('s:RobotoFlex-Bold');
   await expect(page.getByTestId('text-previzualizare')).toBeVisible();
+  await expect(page.getByTestId('text-motiv')).toHaveCount(0);
   await page.click('[data-text="adauga"]');
   const d = await documentSalvat(page, 1) as Doc;
-  expect(d.piese[0]!.radacina.text).toMatchObject({ continut: 'Ușă', font: 's:DroidSerif', numeFont: 'Droid Serif' });
+  expect(d.piese[0]!.radacina.text).toMatchObject({ continut: 'Hașă', font: 's:RobotoFlex-Bold', numeFont: 'Roboto Flex Bold', inaltime: 20 });
+  expect(latimeLitera(d, 0)).toBeCloseTo(latimeH('Bold', 20), 6);
+  expect(latimeH('Bold', 20)).toBeGreaterThan(latimeH('Regular', 20) + 0.5);
+});
+
+test('un font variabil încărcat în Fonturile mele: instanțele numite ca fețe separate; textul cu una dintre ele, editabil după reîncărcare', async ({ page }) => {
+  await page.goto('/');
+  await textNou(page, 'HAMBURG');
+  await page.click('[data-text="fonturi"]');
+  const dialog = page.getByTestId('dialog-fonturi');
+  const flex = fisier('test/fixtures/text/roboto-flex-subset.ttf');
+  await dialog.locator('[data-camp="fisiere-fonturi"]').setInputFiles({ name: 'roboto-flex.ttf', mimeType: 'font/ttf', buffer: flex });
+  await expect(dialog.getByTestId('fonturi-rezultat')).toContainText('20 de fonturi adăugate în Fonturile mele: Roboto Flex Regular, Roboto Flex Thin, ');
+  const amprenta = createHash('sha256').update(flex).digest('hex').slice(0, 16);
+  // Fața (instanța implicită, Regular) și cele 19 instanțe numite, în ordinea din font, fiecare cu id-ul ei.
+  await expect(dialog.locator('li[data-font] .nume-font')).toHaveText(STILURI_FLEX.map((s) => `Roboto Flex ${s}`));
+  await expect(dialog.locator('li[data-font]').first()).toHaveAttribute('data-font', `f:${amprenta}`);
+  const bold = dialog.locator(`li[data-font="f:${amprenta}@6"]`);
+  await expect(bold.locator('.nume-font')).toHaveText('Roboto Flex Bold');
+  await expect(bold.locator('.detalii-font')).toHaveText('încărcat · stil al fontului variabil');
+  // Proba lui Bold: contururile instanței, altele decât ale feței.
+  await bold.scrollIntoViewIfNeeded();
+  const proba = (id: string): Promise<string | null> => dialog.locator(`li[data-font="${id}"] [data-proba="gata"] [data-testid="proba-font"] path`).getAttribute('d');
+  await expect(bold.locator('[data-proba="gata"] [data-testid="proba-font"]')).toBeVisible();
+  await dialog.locator(`li[data-font="f:${amprenta}"]`).scrollIntoViewIfNeeded();
+  await expect(dialog.locator(`li[data-font="f:${amprenta}"] [data-proba="gata"] [data-testid="proba-font"]`)).toBeVisible();
+  expect(await proba(`f:${amprenta}@6`)).not.toEqual(await proba(`f:${amprenta}`));
+  await bold.locator('[data-buton="foloseste-font"]').click();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.locator('select[data-text="font"]')).toHaveValue(`f:${amprenta}@6`);
+  await expect(page.locator('select[data-text="font"] optgroup[label="Fonturile mele"] option')).toHaveText(STILURI_FLEX.map((s) => `Roboto Flex ${s}`));
+  await page.click('[data-text="adauga"]');
+  const d1 = await documentSalvat(page, 1) as Doc;
+  expect(d1.piese[0]!.radacina.text).toMatchObject({ continut: 'HAMBURG', font: `f:${amprenta}@6`, numeFont: 'Roboto Flex Bold', inaltime: 20 });
+  expect(latimeLitera(d1, 0)).toBeCloseTo(latimeH('Bold', 20), 6);
+
+  // După reîncărcare, textul se alege și se aplică tot cu Bold: H crește cu înălțimea.
+  await page.reload();
+  await page.locator('[data-unealta="text"]').click();
+  const la = await ecran(page, await vedere(page));
+  const inst = d1.foi[0]!.instante[0]!;
+  const varfH = d1.piese[0]!.radacina.copii![0]!.copii![0]!.forma!.varfuri[0]!.p;
+  const pe = la(inst.x + varfH.x, inst.y + varfH.y);
+  await page.mouse.click(pe.x, pe.y);
+  await expect(page.getByTestId('text-stare')).toContainText('Editezi textul ales');
+  await expect(page.locator('select[data-text="font"]')).toHaveValue(`f:${amprenta}@6`);
+  await page.locator('[data-text="inaltime"]').fill('25');
+  await page.click('[data-text="aplica"]');
+  const d2 = await documentSalvat(page, 2) as Doc;
+  expect(d2.piese[0]!.radacina.text).toMatchObject({ font: `f:${amprenta}@6`, numeFont: 'Roboto Flex Bold', inaltime: 25 });
+  expect(latimeLitera(d2, 0)).toBeCloseTo(latimeH('Bold', 25), 6);
 });
 
 test('refuzurile din Fonturile mele (WOFF2, un fișier care nu e font) și Google Fonts fără server, pe instanța locală', async ({ page }) => {

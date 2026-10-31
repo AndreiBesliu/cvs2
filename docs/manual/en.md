@@ -165,7 +165,8 @@ font's outlines, as it will be cut (the letters missing from the font are named)
 chosen style, **before downloading** (the browser fetches from Google only the alphabets of the sample text, and what is cut
 comes from the downloaded file). The tabs:
 - **My fonts**: **Load fonts…** takes TTF, OTF (CFF outlines too, like Adobe fonts), TTC (all the faces) and WOFF; the
-  fonts stay in this browser, work offline and go nowhere. **Use** chooses the font in the panel, **Delete** removes it (a
+  fonts stay in this browser, work offline and go nowhere. A variable font (like Roboto Flex) gives one row for each of its
+  named styles (Thin, Bold, Bold Italic…), as separate faces. **Use** chooses the font in the panel, **Delete** removes it (a
   text made with it stays, it just cannot be edited here until you load the font again);
 - **Google Fonts**: you search a family (by name, by category, only with the Romanian diacritics), choose the style and
   **Download**: the font comes once and goes into My fonts. On another computer, a text in a Google font asks for it again
@@ -175,8 +176,8 @@ comes from the downloaded file). The tabs:
   edited only where the font is installed.
 
 The height in mm is measured on the font's letter **H** (its top is at “20 mm”); a font without an H uses the capital height
-written in it. A variable font (like Bahnschrift) is read only in its default style for now, and a WOFF2 is loaded after
-converting it to TTF or OTF.
+written in it. A variable font (like Bahnschrift) is cut in the chosen style (SemiBold, Condensed…), with its outlines,
+widths and kerning; the text keeps the style and reopens with it. A WOFF2 is loaded after converting it to TTF or OTF.
 
 The text stays editable after saving too, as long as its outlines are not changed some other way: moving, rotating,
 mirroring and uniform scaling keep it (scaling also grows the height in the panel); a non-uniform scaling, a skew or a node

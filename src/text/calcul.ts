@@ -1,12 +1,13 @@
 /**
  * Modulul la cerere al textului (ADR 0105 §5, ADR 0106): cititorul de fonturi, așezarea și piesa, plus fonturile omului
  * (biblioteca din browser, fonturile sistemului), aduse de panoul textului la prima deschidere, nu în pachetul de pornire.
- * Un font se aduce o dată și se ține citit (ultimele câteva: unul al sistemului poate avea zeci de MB).
+ * Un font se aduce o dată și se ține citit (ultimele câteva: unul al sistemului poate avea zeci de MB), la instanța din id
+ * dacă e una numită a unui font variabil (ADR 0113).
  */
 import { FaraStocare, octetiFont } from './biblioteca.ts';
 import { citesteFont, type RezultatFont } from './font.ts';
 import { FONTURI_INCLUSE } from './fonturi.ts';
-import { instantaNecitita, sursaFont } from './fonturiOmului.ts';
+import { instantaCeruta, sursaFont } from './fonturiOmului.ts';
 import { octetiSistem, stareSistem } from './sistem.ts';
 
 export { aseazaText, type ParametriText, type TextAsezat } from './asezare.ts';
@@ -20,12 +21,11 @@ export { idFont, numeVarianta, PLAFON_FONTURI, sursaFont } from './fonturiOmului
 
 /**
  * Ce iese din aducerea unui font: citit, refuzat de cititor, sau negăsit (`lipseste`: nu e în bibliotecă ori pe calculatorul
- * ăsta; `permisiune`: fonturile sistemului cer întâi un clic; `instanta-variabila`: o instanță a unui font variabil, alta
- * decât cea implicită; `retea`; `necunoscut`: un id pe care versiunea asta nu-l știe).
+ * ăsta; `permisiune`: fonturile sistemului cer întâi un clic; `retea`; `necunoscut`: un id pe care versiunea asta nu-l știe).
  */
 export type RezultatIncarcare =
   | RezultatFont
-  | { readonly ok: false; readonly cod: 'lipseste' | 'permisiune' | 'instanta-variabila' | 'retea' | 'necunoscut' | 'fara-stocare'; readonly detaliu?: string };
+  | { readonly ok: false; readonly cod: 'lipseste' | 'permisiune' | 'retea' | 'necunoscut' | 'fara-stocare'; readonly detaliu?: string };
 
 /** Câte fonturi citite se țin (cel mai vechi pleacă primul). */
 const TINUTE = 12;
@@ -49,7 +49,7 @@ export async function aduceFont(id: string): Promise<RezultatIncarcare> {
       case 'incarcat':
       case 'google': {
         const b = await octetiFont(id);
-        return b ? citesteFont(b.octeti, b.fata) : { ok: false, cod: 'lipseste' };
+        return b ? citesteFont(b.octeti, b.fata, s.fel === 'incarcat' ? s.instanta : undefined) : { ok: false, cod: 'lipseste' };
       }
       case 'sistem': {
         const stare = await stareSistem();
@@ -58,8 +58,9 @@ export async function aduceFont(id: string): Promise<RezultatIncarcare> {
         if (!b) return { ok: false, cod: 'lipseste' };
         const r = citesteFont(b.octeti, b.fata);
         if (!r.ok) return r;
-        const stil = instantaNecitita(r.font, s.postscript, b.complet);
-        return stil ? { ok: false, cod: 'instanta-variabila', detaliu: stil } : r;
+        // O instanță numită a unui font variabil (sistemul o dă ca față separată, cu fișierul întreg): citită la instanța ei.
+        const k = instantaCeruta(r.font, s.postscript, b.complet);
+        return k === null ? r : citesteFont(b.octeti, b.fata, k);
       }
     }
   } catch (e) {

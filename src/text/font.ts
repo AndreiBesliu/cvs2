@@ -5,32 +5,43 @@
  * - `head`, `maxp`, `hhea`, `hmtx`; `cmap` (formatele 4, 6 și 12, din subtabelul Unicode cel mai bun; un font simbol,
  *   Windows (3, 0), caută și în zona U+F000, ca Windows);
  * - contururile: TrueType (`loca` scurt și lung, `glyf`: glifele simple și compuse, cu transformarea și locul fiecărei
- *   componente, ca fontTools) sau CFF (`cff.ts`: OpenType `.otf`, și cele CID);
+ *   componente, ca fontTools) sau CFF (`cff.ts`: OpenType `.otf`, și cele CID; și CFF2, al fonturilor variabile);
  * - `OS/2` (înălțimea majusculei) și crenarea: din `GPOS`, perechile caracteristicii `kern` (formatele 1 și 2, și prin
  *   căutările Extension); fără ea, din tabelul `kern` vechi (subtabelele orizontale de formatul 0, Microsoft și Apple);
- * - `fvar`: instanțele numite ale unui font variabil, ca fonturile sistemului să nu dea instanța implicită în locul alteia.
+ * - un font variabil (ADR 0113): axele și instanțele numite din `fvar`, iar la o instanță cerută (o instanță numită sau
+ *   coordonatele axelor) variațiile din `variatii.ts`: contururile din `gvar` (sau din `blend`-urile lui CFF2), avansurile din
+ *   `HVAR` (fără el, din punctele fantomă), crenarea din dispozitivele GPOS, majuscula din `MVAR` când fontul n-are H.
  * Literele se pun una după alta, fără `GSUB` (ADR 0019: „GSUB are rezervă literă cu literă”).
  *
  * Înălțimea majusculei (ADR 0019, ADR 0106 §1): vârful conturului literei H, adică litera tăiată („20 mm” = H de 20 mm);
  * fără H, `OS/2.sCapHeight`; fără niciuna, fontul e refuzat (`majuscula`). `sCapHeight` diferă de H în fonturi reale
  * (Candara: 1308 / 1302 unități; Gabriola, HarmonyOS), deci nu mai e o verificare.
  *
- * Coordonatele rămân în unitățile fontului, cu Y în sus; așezarea (`asezare.ts`) le duce în mm. Un font variabil se citește
- * în instanța lui implicită (contururile din `glyf`, avansurile din `hmtx`); CFF2 e refuzat.
+ * Coordonatele rămân în unitățile fontului, cu Y în sus; așezarea (`asezare.ts`) le duce în mm. Fără instanță cerută, un font
+ * variabil se citește în instanța lui implicită.
  */
-import { citesteCff } from './cff.ts';
+import { citesteCff, citesteCff2 } from './cff.ts';
 import {
   COLECTIE, FontStricat, inceputuriFete, numeDupaId, numeFont, Octeti, SFNT_APPLE, SFNT_CFF, SFNT_TRUETYPE, tabele, WOFF, WOFF2,
   type ConturFont, type NumeFont, type PunctFont, type Tabele,
 } from './sfnt.ts';
+import { axeFvar, rotunjeste, variatii, type AxaFont, type Variatii } from './variatii.ts';
 
-export { Octeti, type ConturFont, type NumeFont, type PunctFont };
+export { Octeti, type AxaFont, type ConturFont, type NumeFont, type PunctFont };
 
 export type CodRefuzFont =
-  | 'nu-e-font' | 'woff' | 'woff2' | 'cff2' | 'tabel-lipsa' | 'stricat' | 'majuscula' | 'fara-unicode' | 'fata-lipsa';
+  | 'nu-e-font' | 'woff' | 'woff2' | 'tabel-lipsa' | 'stricat' | 'majuscula' | 'fara-unicode' | 'fata-lipsa' | 'variatii';
 
-/** O instanță numită a unui font variabil: numele stilului, cel PostScript (dacă îl are) și dacă e chiar cea implicită. */
-export type InstantaFont = { readonly stil: string; readonly postscript: string | null; readonly implicita: boolean };
+/**
+ * O instanță numită a unui font variabil: numele stilului, cel PostScript (dacă îl are), dacă e chiar cea implicită și
+ * coordonatele ei (în unitățile axelor, pe fiecare axă).
+ */
+export type InstantaFont = {
+  readonly stil: string; readonly postscript: string | null; readonly implicita: boolean; readonly coordonate: Readonly<Record<string, number>>;
+};
+
+/** Instanța cerută la citire (ADR 0113): indicele unei instanțe numite din `fvar`, sau coordonatele axelor (lipsă: implicit). */
+export type CerereInstanta = number | Readonly<Record<string, number>>;
 
 export type Font = {
   readonly familie: string;
@@ -45,7 +56,9 @@ export type Font = {
   readonly numarGlife: number;
   /** Contururi cubice (CFF: punctele de control câte două), nu pătratice (TrueType). */
   readonly cubice: boolean;
-  /** Instanțele numite, dacă fontul e variabil (`fvar`); contururile sunt ale instanței implicite. */
+  /** Axele, dacă fontul e variabil (`fvar`). */
+  readonly axe: readonly AxaFont[] | null;
+  /** Instanțele numite, dacă fontul e variabil; contururile sunt ale instanței cerute la citire (implicit: cea implicită). */
   readonly instante: readonly InstantaFont[] | null;
   /** Glifa unui caracter (codul Unicode), sau 0 (`.notdef`) dacă fontul n-o are. */
   glifa(cod: number): number;
@@ -197,10 +210,18 @@ function marimeValoare(format: number): number {
   return 2 * n;
 }
 
-/** XAdvance dintr-o înregistrare de valori (bitul 0x0004), dacă există; altfel 0. */
-function avansDinValoare(o: Octeti, pos: number, format: number): number {
-  if (!(format & 0x0004)) return 0;
-  return o.i16(pos + 2 * (format & 0x0001) + 2 * ((format & 0x0002) >> 1));
+/**
+ * XAdvance dintr-o înregistrare de valori (bitul 0x0004), dacă există, altfel 0; la o instanță (ADR 0113), plus delta
+ * dispozitivului lui (bitul 0x0040), al cărui offset e de la începutul tabelului care o ține (`parinte`: setul perechii, la
+ * formatul 1; subtabelul, la formatul 2).
+ */
+function avansDinValoare(o: Octeti, pos: number, format: number, parinte: number, v: Variatii | null): number {
+  let x = format & 0x0004 ? o.i16(pos + 2 * (format & 0x0001) + 2 * ((format & 0x0002) >> 1)) : 0;
+  if (v && format & 0x0040) {
+    const dispozitiv = o.u16(pos + marimeValoare(format & 0x003f));
+    if (dispozitiv) x += v.dispozitiv(parinte + dispozitiv);
+  }
+  return x;
 }
 
 type Crenare = (a: number, b: number) => number;
@@ -209,9 +230,9 @@ type Crenare = (a: number, b: number) => number;
  * Crenarea din `GPOS` (ADR 0105 §1, ADR 0106 §1): căutările de perechi (tipul 2, sau tipul 9, Extension, care trimite la
  * unul de tipul 2) ale caracteristicii `kern`, în ordinea lor; în fiecare căutare, primul subtabel care potrivește perechea
  * o hotărăște. Formatul 1: perechi anume (glifa a doua căutată binar); formatul 2: clasele celor două glife. Valoarea e
- * XAdvance al primei glife. Null: `GPOS` n-are crenare.
+ * XAdvance al primei glife (la o instanță, cu delta dispozitivului). Null: `GPOS` n-are crenare.
  */
-function crenareGpos(o: Octeti, t: Tabele): Crenare | null {
+function crenareGpos(o: Octeti, t: Tabele, v: Variatii | null): Crenare | null {
   const g = t.get('GPOS');
   if (!g) return null;
   const caracteristici = g.pos + o.u16(g.pos + 6), cautari = g.pos + o.u16(g.pos + 8);
@@ -252,7 +273,8 @@ function crenareGpos(o: Octeti, t: Tabele): Crenare | null {
       let s = 0, d = n - 1;
       while (s <= d) {
         const m = (s + d) >> 1, r = set + 2 + pas * m, g2 = o.u16(r);
-        if (g2 === b) return avansDinValoare(o, r + 2, f1);
+        // Dispozitivele unei perechi anume sunt de la începutul setului ei (PairSet), nu al subtabelului.
+        if (g2 === b) return avansDinValoare(o, r + 2, f1, set, v);
         if (g2 < b) s = m + 1;
         else d = m - 1;
       }
@@ -263,7 +285,7 @@ function crenareGpos(o: Octeti, t: Tabele): Crenare | null {
       const n1 = o.u16(st + 12), n2 = o.u16(st + 14);
       if (c1 >= n1 || c2 >= n2) return null;
       const pas = marimeValoare(f1) + marimeValoare(f2);
-      return avansDinValoare(o, st + 16 + pas * (c1 * n2 + c2), f1);
+      return avansDinValoare(o, st + 16 + pas * (c1 * n2 + c2), f1, st, v);
     }
     throw new FontStricat(`perechi de formatul ${format}`);
   };
@@ -343,25 +365,27 @@ function crenareKern(o: Octeti, t: Tabele): Crenare | null {
   };
 }
 
-/** Instanțele numite din `fvar` (null: fontul nu e variabil). */
-function instante(o: Octeti, t: Tabele, familie: string): InstantaFont[] | null {
-  const f = t.get('fvar');
-  if (!f) return null;
-  const axe = f.pos + o.u16(f.pos + 4), nAxe = o.u16(f.pos + 8), marimeAxa = o.u16(f.pos + 10);
+/** Instanțele numite din `fvar` (al cărui axe sunt `axe`), cu coordonatele lor. */
+function instante(o: Octeti, t: Tabele, axe: readonly AxaFont[], familie: string): InstantaFont[] {
+  const f = t.get('fvar')!;
+  const prima = f.pos + o.u16(f.pos + 4) + axe.length * o.u16(f.pos + 10);
   const n = o.u16(f.pos + 12), marime = o.u16(f.pos + 14);
-  const implicite: number[] = [];
-  for (let k = 0; k < nAxe; k++) implicite.push(o.fixed(axe + k * marimeAxa + 8));
   const rez: InstantaFont[] = [];
-  const prima = axe + nAxe * marimeAxa;
   for (let k = 0; k < n; k++) {
     const r = prima + k * marime;
+    const coordonate: Record<string, number> = {};
     let implicita = true;
-    for (let a = 0; a < nAxe; a++) if (o.fixed(r + 4 + 4 * a) !== implicite[a]) implicita = false;
-    const idPs = marime >= 6 + 4 * nAxe ? o.u16(r + 4 + 4 * nAxe) : 0xffff;
+    axe.forEach((a, i) => {
+      const v = o.fixed(r + 4 + 4 * i);
+      coordonate[a.tag] = v;
+      if (v !== a.implicit) implicita = false;
+    });
+    const idPs = marime >= 6 + 4 * axe.length ? o.u16(r + 4 + 4 * axe.length) : 0xffff;
     rez.push({
       stil: numeDupaId(o, t, o.u16(r)) ?? `${familie} ${k + 1}`,
       postscript: idPs !== 0xffff ? numeDupaId(o, t, idPs) : null,
       implicita,
+      coordonate,
     });
   }
   return rez;
@@ -372,19 +396,21 @@ const CUVINTE = 0x0001, XY = 0x0002, SCARA = 0x0008, MAI_MULTE = 0x0020, SCARA_X
 const DEPLASARE_SCALATA = 0x0800;
 
 /**
- * Citește fața `fata` (0 pentru un font singur) a unui font TrueType sau OpenType (ADR 0105 §1, ADR 0106 §1). Nu aruncă: un
- * fișier greșit e un refuz cu cod. Glifele se citesc la cerere, cu memorie (o glifă compusă își refolosește componentele).
+ * Citește fața `fata` (0 pentru un font singur) a unui font TrueType sau OpenType (ADR 0105 §1, ADR 0106 §1), la `instanta`
+ * dacă fontul e variabil (ADR 0113; o instanță numită care nu există: `fata-lipsa`; una pe care cititorul n-o poate calcula:
+ * `variatii`). Nu aruncă: un fișier greșit e un refuz cu cod. Glifele se citesc la cerere, cu memorie (o glifă compusă își
+ * refolosește componentele).
  */
-export function citesteFont(octeti: Uint8Array, fata = 0): RezultatFont {
+export function citesteFont(octeti: Uint8Array, fata = 0, instanta?: CerereInstanta): RezultatFont {
   try {
-    return citeste(new Octeti(octeti), fata);
+    return citeste(new Octeti(octeti), fata, instanta);
   } catch (e) {
     if (e instanceof FontStricat) return { ok: false, cod: 'stricat', detaliu: e.message };
     throw e;
   }
 }
 
-function citeste(o: Octeti, fata: number): RezultatFont {
+function citeste(o: Octeti, fata: number, instanta: CerereInstanta | undefined): RezultatFont {
   if (o.lungime < 12) return { ok: false, cod: 'nu-e-font' };
   const fel = felFisier(new Uint8Array(o.v.buffer, o.v.byteOffset, 4));
   if (fel === 'woff') return { ok: false, cod: 'woff' };
@@ -396,9 +422,8 @@ function citeste(o: Octeti, fata: number): RezultatFont {
   const versiune = o.u32(start);
   if (versiune !== SFNT_TRUETYPE && versiune !== SFNT_CFF && versiune !== SFNT_APPLE) return { ok: false, cod: 'nu-e-font' };
   const t = tabele(o, start);
-  const cff = t.get('CFF ');
-  if (!cff && t.has('CFF2')) return { ok: false, cod: 'cff2' };
-  for (const nume of ['head', 'maxp', 'hhea', 'hmtx', ...(cff ? [] : ['loca', 'glyf'])]) {
+  const cff = t.get('CFF '), cff2 = cff ? undefined : t.get('CFF2');
+  for (const nume of ['head', 'maxp', 'hhea', 'hmtx', ...(cff || cff2 ? [] : ['loca', 'glyf'])]) {
     if (!t.has(nume)) return { ok: false, cod: 'tabel-lipsa', detaliu: nume };
   }
   const head = t.get('head')!.pos, maxp = t.get('maxp')!.pos, hhea = t.get('hhea')!.pos, hmtx = t.get('hmtx')!.pos;
@@ -417,9 +442,26 @@ function citeste(o: Octeti, fata: number): RezultatFont {
     return g === 0 && cmap.simbol && cod >= 0x20 && cod <= 0xff ? glifaCmap(o, cmap.sub, 0xf000 + cod) : g;
   };
 
+  // Instanța cerută (ADR 0113): variațiile ei, sau nimic la cea implicită și la un font fix.
+  const nume = numeFont(o, t);
+  const axe = axeFvar(o, t);
+  const listaInstante = axe ? instante(o, t, axe, nume.familie) : null;
+  let v: Variatii | null = null;
+  if (instanta !== undefined) {
+    const coordonate = typeof instanta === 'number' ? listaInstante?.[instanta]?.coordonate : instanta;
+    if (!coordonate) return { ok: false, cod: 'fata-lipsa', detaliu: `instanța ${instanta} din ${listaInstante?.length ?? 0}` };
+    if (axe) {
+      const r = variatii(o, t, axe, coordonate, numarGlife);
+      if (typeof r === 'string') return { ok: false, cod: 'variatii', detaliu: r };
+      v = r;
+    }
+  }
+
   let contururiGlifa: (g: number) => readonly ConturFont[];
-  if (cff) {
-    const c = citesteCff(o, cff.pos, numarGlife, unitsPerEm);
+  let avansFantoma: ((g: number, avans: number, lsb: number) => number) | null = null;
+  if (cff || cff2) {
+    // CFF2 la instanță: `blend`-urile cu coordonatele ei; la cea implicită, valorile lor.
+    const c = cff ? citesteCff(o, cff.pos, numarGlife, unitsPerEm) : citesteCff2(o, cff2!.pos, numarGlife, unitsPerEm, v?.normalizate ?? null);
     const memorie = new Map<number, readonly ConturFont[]>();
     contururiGlifa = (g) => {
       const gata = memorie.get(g);
@@ -429,12 +471,35 @@ function citeste(o: Octeti, fata: number): RezultatFont {
       return r;
     };
   } else {
-    contururiGlifa = contururiTrueType(o, t, numarGlife, o.i16(head + 50) === 1);
+    const tt = contururiTrueType(o, t, numarGlife, o.i16(head + 50) === 1, v);
+    contururiGlifa = tt.contururi;
+    avansFantoma = tt.avansFantoma;
   }
 
+  const avansImplicit = (g: number): number => o.u16(hmtx + 4 * Math.min(g, metrici - 1));
+  /** Distanța de la originea glifei la marginea ei din stânga (`hmtx`; un tabel prea scurt: 0). */
+  const lsb = (g: number): number => {
+    const p = g < metrici ? 4 * g + 2 : 4 * metrici + 2 * (g - metrici);
+    return p + 2 <= t.get('hmtx')!.lungime ? o.i16(hmtx + p) : 0;
+  };
+  // La o instanță, avansul din HVAR, altfel din punctele fantomă (doar TrueType), ținut pe glifă; o glifă cu variațiile
+  // stricate își păstrează avansul implicit (contururile ei se sar, numărate, la așezare).
+  const variat = v?.avansHvar ?? (v && avansFantoma ? (g: number, a: number) => avansFantoma(g, a, lsb(g)) : null);
+  const avansuri = new Map<number, number>();
   const avans = (g: number): number => {
     if (g < 0 || g >= numarGlife) return 0;
-    return o.u16(hmtx + 4 * Math.min(g, metrici - 1));
+    if (!variat) return avansImplicit(g);
+    let a = avansuri.get(g);
+    if (a === undefined) {
+      try {
+        a = variat(g, avansImplicit(g));
+      } catch (e) {
+        if (!(e instanceof FontStricat)) throw e;
+        a = avansImplicit(g);
+      }
+      avansuri.set(g, a);
+    }
+    return a;
   };
 
   // Înălțimea majusculei (ADR 0019, ADR 0106 §1): vârful conturului lui H, adică ce se taie; fără H, `OS/2.sCapHeight`.
@@ -443,14 +508,14 @@ function citeste(o: Octeti, fata: number): RezultatFont {
   let majuscula: number;
   if (varfH !== null && Number.isFinite(varfH) && varfH > 0) majuscula = varfH;
   else {
+    // La o instanță, `cpht` din MVAR schimbă și sCapHeight.
     const os2 = t.get('OS/2');
-    const capOs2 = os2 && o.u16(os2.pos) >= 2 && os2.lungime >= 90 ? o.i16(os2.pos + 88) : 0;
+    const capOs2 = os2 && o.u16(os2.pos) >= 2 && os2.lungime >= 90 ? o.i16(os2.pos + 88) + (v?.cpht ?? 0) : 0;
     if (capOs2 <= 0) return { ok: false, cod: 'majuscula', detaliu: 'fără H și fără sCapHeight' };
     majuscula = capOs2;
   }
 
-  const crenare = crenareGpos(o, t) ?? crenareKern(o, t);
-  const nume = numeFont(o, t);
+  const crenare = crenareGpos(o, t, v) ?? crenareKern(o, t);
   const font: Font = {
     familie: nume.familie,
     nume,
@@ -460,8 +525,9 @@ function citeste(o: Octeti, fata: number): RezultatFont {
     coborare: o.i16(hhea + 6),
     spatiuRanduri: o.i16(hhea + 8),
     numarGlife,
-    cubice: !!cff,
-    instante: instante(o, t, nume.familie),
+    cubice: !!(cff || cff2),
+    axe,
+    instante: listaInstante,
     glifa: (cod) => {
       try {
         return glifaCod(cod);
@@ -492,8 +558,20 @@ function citeste(o: Octeti, fata: number): RezultatFont {
   return { ok: true, font };
 }
 
-/** Contururile TrueType (`loca` + `glyf`), cu memorie; aruncă `FontStricat` pentru o glifă stricată. */
-function contururiTrueType(o: Octeti, t: Tabele, numarGlife: number, locaLunga: boolean): (g: number) => readonly ConturFont[] {
+/** O componentă a unei glife compuse, citită: steagul, glifa, cele două argumente și transformarea (dacă are). */
+type Componenta = {
+  readonly steag: number; readonly glifa: number; readonly arg1: number; readonly arg2: number;
+  readonly m: { readonly a: number; readonly b: number; readonly c: number; readonly d: number } | null;
+};
+
+/**
+ * Contururile TrueType (`loca` + `glyf`), cu memorie, la instanța `v` (null: cea implicită); aruncă `FontStricat` pentru o
+ * glifă stricată. Și avansul din punctele fantomă (ADR 0113), pentru instanțele fonturilor fără `HVAR`.
+ */
+function contururiTrueType(o: Octeti, t: Tabele, numarGlife: number, locaLunga: boolean, v: Variatii | null): {
+  readonly contururi: (g: number) => readonly ConturFont[];
+  readonly avansFantoma: (g: number, avans: number, lsb: number) => number;
+} {
   const loca = t.get('loca')!, glyf = t.get('glyf')!;
   // Locurile glifelor se citesc la cerere: lungimea lui `loca` se verifică aici, o dată.
   if (loca.lungime < (numarGlife + 1) * (locaLunga ? 4 : 2)) throw new FontStricat('loca e prea scurt');
@@ -514,13 +592,16 @@ function contururiTrueType(o: Octeti, t: Tabele, numarGlife: number, locaLunga: 
     if (gata) return gata;
     if (drum.includes(g) || drum.length >= ADANCIME_COMPUSE) throw new FontStricat(`glifa compusă ${g} se conține pe sine sau e prea adâncă`);
     const [a, b] = locul(g);
-    const r = a === b ? [] : o.i16(a) >= 0 ? simpla(a) : compusa(a, [...drum, g]);
+    const r = a === b ? [] : o.i16(a) >= 0 ? simpla(a, g) : compusa(a, g, [...drum, g]);
     memorie.set(g, r);
     return r;
   };
 
-  /** O glifă simplă: capetele contururilor, instrucțiunile (sărite), steagurile (cu repetare), apoi X și Y, ca diferențe. */
-  const simpla = (a: number): ConturFont[] => {
+  /**
+   * O glifă simplă: capetele contururilor, instrucțiunile (sărite), steagurile (cu repetare), apoi X și Y, ca diferențe; la o
+   * instanță, plus deltele punctelor (cele fără deltă, interpolate pe conturul lor).
+   */
+  const simpla = (a: number, g: number): ConturFont[] => {
     const n = o.i16(a);
     const capete: number[] = [];
     for (let k = 0; k < n; k++) capete.push(o.u16(a + 10 + 2 * k));
@@ -548,6 +629,13 @@ function contururiTrueType(o: Octeti, t: Tabele, numarGlife: number, locaLunga: 
       return v;
     };
     const xs = coordonate(0x02, 0x10), ys = coordonate(0x04, 0x20);
+    const d = v?.delte(g, puncte + 4, xs, ys, capete);
+    if (d) {
+      for (let k = 0; k < puncte; k++) {
+        xs[k] = xs[k]! + d[2 * k]!;
+        ys[k] = ys[k]! + d[2 * k + 1]!;
+      }
+    }
     const rez: ConturFont[] = [];
     let start = 0;
     for (const capat of capete) {
@@ -559,16 +647,12 @@ function contururiTrueType(o: Octeti, t: Tabele, numarGlife: number, locaLunga: 
     return rez;
   };
 
-  /**
-   * O glifă compusă: fiecare componentă, cu transformarea ei (scara, scara pe X și Y, sau 2 × 2) și locul ei: deplasarea
-   * (aplicată după transformare, ca în fontTools și la Microsoft; înainte, cu steagul SCALED_COMPONENT_OFFSET), sau un punct
-   * al componentei pus peste un punct al celor de dinainte.
-   */
-  const compusa = (a: number, drum: readonly number[]): ConturFont[] => {
-    const rez: ConturFont[] = [];
+  /** Componentele unei glife compuse, în ordine: steagul, glifa, argumentele (deplasarea sau punctele) și transformarea. */
+  const componente = (a: number): Componenta[] => {
+    const rez: Componenta[] = [];
     let p = a + 10;
     for (;;) {
-      const steag = o.u16(p), g = o.u16(p + 2);
+      const steag = o.u16(p), glifa = o.u16(p + 2);
       p += 4;
       let arg1: number, arg2: number;
       if (steag & CUVINTE) {
@@ -580,32 +664,46 @@ function contururiTrueType(o: Octeti, t: Tabele, numarGlife: number, locaLunga: 
         arg2 = steag & XY ? o.i8(p + 1) : o.u8(p + 1);
         p += 2;
       }
-      let m = { a: 1, b: 0, c: 0, d: 1 };
-      let transformat = false;
+      let m: Componenta['m'] = null;
       if (steag & SCARA) {
         const s = o.f2dot14(p);
         m = { a: s, b: 0, c: 0, d: s };
         p += 2;
-        transformat = true;
       } else if (steag & SCARA_XY) {
         m = { a: o.f2dot14(p), b: 0, c: 0, d: o.f2dot14(p + 2) };
         p += 4;
-        transformat = true;
       } else if (steag & DOI_PE_DOI) {
         m = { a: o.f2dot14(p), b: o.f2dot14(p + 2), c: o.f2dot14(p + 4), d: o.f2dot14(p + 6) };
         p += 8;
-        transformat = true;
       }
+      rez.push({ steag, glifa, arg1, arg2, m });
+      if (!(steag & MAI_MULTE)) return rez;
+    }
+  };
+
+  /**
+   * O glifă compusă: fiecare componentă, cu transformarea ei (scara, scara pe X și Y, sau 2 × 2) și locul ei: deplasarea
+   * (aplicată după transformare, ca în fontTools și la Microsoft; înainte, cu steagul SCALED_COMPONENT_OFFSET), sau un punct
+   * al componentei pus peste un punct al celor de dinainte. La o instanță, deplasările primesc deltele lor (o componentă pusă
+   * pe puncte urmează punctele variate, iar deltele ei nu contează).
+   */
+  const compusa = (a: number, g: number, drum: readonly number[]): ConturFont[] => {
+    const lista = componente(a);
+    const d = v?.delte(g, lista.length + 4, null, null, null);
+    const rez: ConturFont[] = [];
+    lista.forEach(({ steag, glifa, arg1, arg2, m: transformare }, k) => {
+      const m = transformare ?? { a: 1, b: 0, c: 0, d: 1 };
       const aplica = (q: PunctFont, dx: number, dy: number): PunctFont => ({ x: m.a * q.x + m.c * q.y + dx, y: m.b * q.x + m.d * q.y + dy, peCurba: q.peCurba });
-      const comp = contururi(g, drum);
+      const comp = contururi(glifa, drum);
       let dx = 0, dy = 0;
       if (steag & XY) {
-        if (transformat && steag & DEPLASARE_SCALATA) {
-          dx = m.a * arg1 + m.c * arg2;
-          dy = m.b * arg1 + m.d * arg2;
+        const x = d ? arg1 + d[2 * k]! : arg1, y = d ? arg2 + d[2 * k + 1]! : arg2;
+        if (transformare && steag & DEPLASARE_SCALATA) {
+          dx = m.a * x + m.c * y;
+          dy = m.b * x + m.d * y;
         } else {
-          dx = arg1;
-          dy = arg2;
+          dx = x;
+          dy = y;
         }
       } else {
         // Punctul `arg2` al componentei (transformată) se pune peste punctul `arg1` al celor de dinainte.
@@ -617,10 +715,27 @@ function contururiTrueType(o: Octeti, t: Tabele, numarGlife: number, locaLunga: 
         dy = tinta.y - t2.y;
       }
       for (const c of comp) rez.push(c.map((q) => aplica(q, dx, dy)));
-      if (!(steag & MAI_MULTE)) break;
-    }
+    });
     return rez;
   };
 
-  return (g) => contururi(g, []);
+  /**
+   * Avansul glifei `g` la instanță, din punctele fantomă (ca instancer-ul lui fontTools): cel din stânga stă la xMin − lsb,
+   * cel din dreapta cu avansul mai încolo; fiecare primește delta lui, iar avansul nou e distanța dintre ele, rotunjită.
+   */
+  const avansFantoma = (g: number, avans: number, lsb: number): number => {
+    const [a, b] = locul(g);
+    let n = 0, xMin = 0;
+    if (a !== b) {
+      const nc = o.i16(a);
+      xMin = o.i16(a + 2);
+      n = nc >= 0 ? (nc === 0 ? 0 : o.u16(a + 10 + 2 * (nc - 1)) + 1) : componente(a).length;
+    }
+    const d = v?.delte(g, n + 4, null, null, null);
+    if (!d) return avans;
+    const x0 = xMin - lsb;
+    return Math.max(0, rotunjeste(x0 + avans + d[2 * n + 2]! - (x0 + d[2 * n]!)));
+  };
+
+  return { contururi: (g) => contururi(g, []), avansFantoma };
 }

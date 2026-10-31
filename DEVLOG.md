@@ -4114,3 +4114,33 @@ pe arborele unit: compilatoarele, importurile, traducerile (487, 0 lipsă), 7 84
 aplicației la 1440 px: butonul „Import SVG / DXF / PDF / AI / EPS…”, câmpul de fișier primește `.ai`, `.eps`,
 `application/postscript`; fără erori. Citirea unui EPS n-am încercat-o în browser (nu poate încărca fișiere); o probează e2e-ul
 importului, pe fișierele de probă EPS.
+
+
+## 2026-10-31 — Instanțele fonturilor variabile (felia 7.4↑) (Model: Claude Opus 5.5)
+
+**Prompt:** „Felia **7.4↑ — instanțele fonturilor variabile**, în CNC Vector Studio 2 (`cncvs2`). Owner-ul a cerut o
+subsesiune pentru etape care se pot lucra în siguranță, în paralel cu sesiunea principală.” (sarcina dată de sesiunea
+principală: cititorul aplică instanțele, `fvar`, `avar`, `gvar` cu IUP, avansul din `HVAR` sau din punctele fantomă; CFF2 doar
+dacă iese curat; instanțele numite ca fețe separate, în id-ul fontului; oracolul fontTools întâi; ADR 0113.)
+**Started:** 31.10, 14:55. Felia **7.4↑**, fără agenți, în worktree-ul `C:\Users\besli\cncvs2-lucru\fonturi-variabile`, pe
+ramura `wip/7.4-fonturi-variabile`, din `4307ea0`. Fontul liber al oracolului: Roboto Flex (OFL 1.1, 13 axe, 20 de instanțe
+numite, cu `avar`, `gvar`, `HVAR`, `MVAR` și crenarea variabilă), din fonturile Android Studio de pe mașina asta. Estimarea:
+~7 ore (oracolul 1,5; cititorul 2,5; id-urile și interfața 1,5; e2e, documentele și porțile 1,5); parcarea la 1,5 ×.
+**Completed:** 31.10, 18:50 (~4 h, sub estimarea de 7). Felia **7.4↑** (ADR 0113), în două treceri, fără agenți. (1) Cititorul
+aplică instanța cerută a unui font variabil (`src/text/variatii.ts`): coordonatele normalizate ca fontTools (marginile, `avar`,
+F2Dot14 după hartă), contururile din `gvar` (tuplurile, regiunile intermediare, punctele comune și proprii, IUP; deplasările
+componentelor), avansul din `HVAR` sau din punctele fantomă, crenarea din dispozitivele GPOS (magazinul din GDEF), majuscula
+din `cpht` fără H; `avar` 2 refuzat cu motiv. Instanțele numite sunt fețe separate: `f:<amprenta>[.<fața>]@<indicele din
+fvar>` în Fonturile mele (o intrare pe instanță, nenumărată printre fețe), iar fața sistemului se citește la instanța ei (nu
+mai e refuzată). (2) CFF2 se citește (`blend`, `vsindex`, FDSelect 4), cu interpretorul Type 2 comun. Oracolul: instancer-ul
+lui fontTools pe Roboto Flex (OFL, 13 axe) și trei variante, pen-ul lui pe Noto Sans CJK JP (CFF2, OFL) și pe un CFF2 scris de
+mână; 50 de locuri, contururile sub 1e-9 unități, avansurile, crenarea și metricile exact. Găsite pe drum: offsetul
+dispozitivului unei perechi anume e de la setul ei (crenarea nu varia); `HVAR` și punctele fantomă diferă cu 1 unitate la 4
+din 1 672 de perechi glifă × loc; instancer-ul lui fontTools cade pe `vsindex` din Private (pen-ul nu). Mutațiile: 46 / 50
+prinse (12 trecute întâi: opt au cerut locuri și fonturi noi, una era cod mort, scos, trei sunt echivalente). Porțile:
+compilatorul (și al funcțiilor), importurile, licențele, build-ul determinist (215 fișiere; pornirea 97,6, cu ușa 101,1 / 110;
+totalul 414,8 → 418,5 / 450; /admin 196,0 / 200), testele unitare (7 874, 0 picate) și e2e-ul întreg, pe un build proaspăt,
+pe portul 4174 (4173 e al sesiunii principale): 282 / 283, iar singura picată cere adresa `http://localhost:4173/`
+(`raportor.spec.ts:101`), deci trece la unire, pe 4173. Pe ramura
+`wip/7.4-fonturi-variabile`, împinsă; neunită și nepublicată (unirea și publicarea le face sesiunea principală, cu acordul
+owner-ului).

@@ -120,6 +120,8 @@ function Rezultat({ r }: { readonly r: RezultatAdaugare }): ReactElement {
 /**
  * Fereastra fonturilor (ADR 0106 §5): „Fonturile mele” (încărcarea fișierelor, lista, ștergerea), Google Fonts (căutarea în
  * catalog, stilul, descărcarea) și fonturile sistemului (permisiunea, cerută la clic). Un font adăugat se alege în panou.
+ * Instanțele numite ale unui font variabil (ADR 0113) sunt fețe separate: în Fonturile mele, câte o intrare a bibliotecii;
+ * ale sistemului, cum le dă sistemul.
  */
 export function DialogFonturi({ modul, ales, textProba, onSchimbat, onFoloseste, onInchide }: {
   readonly modul: ModulText;
@@ -234,7 +236,10 @@ function FilaMele({ modul, ales, proba, onSchimbat, onFoloseste }: {
           {lista.map((f) => (
             <li key={f.id} data-font={f.id} aria-current={f.id === ales ? 'true' : undefined}>
               <span className="nume-font">{f.nume.complet}</span>
-              <span className="detalii-font">{t(`editare.fonturi.sursa.${f.sursa}`)} · {t('editare.fonturi.marime', { mb: mb(f.marime) })}</span>
+              {/* O instanță numită (ADR 0113) e o față separată, dar fișierul e al fontului variabil: mărimea stă la fața lui. */}
+              <span className="detalii-font">
+                {t(`editare.fonturi.sursa.${f.sursa}`)} · {f.instanta === undefined ? t('editare.fonturi.marime', { mb: mb(f.marime) }) : t('editare.fonturi.instanta')}
+              </span>
               <button type="button" data-buton="foloseste-font" onClick={() => { onFoloseste(f.id); }}>{t('editare.fonturi.foloseste')}</button>
               <button type="button" data-buton="sterge-font" onClick={() => {
                 void modul.stergeFont(f.id).then(() => { citeste(); onSchimbat(f.id); }, () => { setEroare(t('editare.text.font.fara-stocare')); });

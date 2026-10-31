@@ -7,7 +7,7 @@ import { acoperire, citesteFont, clasa, feteFont, felFisier, Octeti, type Font, 
 /**
  * Cititorul de fonturi pe bucăți (ADR 0105 §1, ADR 0106 §1): glifele brute față de fontTools (componentele TrueType puse
  * pe puncte, deplasarea scalată ca la Apple, 2 × 2, scara pe X și Y, o glifă compusă din alta compusă; CFF: Inter, Source
- * Han CID, cel scris de mână cu `seac`, flex, sugestii și subrutinele cu toate decalajele), refuzurile (CFF2, WOFF, WOFF2,
+ * Han CID, cel scris de mână cu `seac`, flex, sugestii și subrutinele cu toate decalajele; CFF2 fix), refuzurile (WOFF, WOFF2,
  * fața lipsă, tabelele lipsă, fișierul tăiat, fără H și fără `sCapHeight`), majuscula din H, colecțiile, `cmap` 12, 6 și
  * simbol, instanțele unui font variabil, crenarea fiecărei perechi (GPOS, Extension, `kern` Microsoft și Apple). Așezarea
  * întreagă e în `text.corpus.test.ts`.
@@ -77,8 +77,12 @@ test('majuscula (ADR 0106 §1): vârful lui H, chiar când sCapHeight minte; fă
   assert.deepEqual(citesteFont(faraTabel(faraH, 'OS/2')), { ok: false, cod: 'majuscula', detaliu: 'fără H și fără sCapHeight' });
 });
 
-test('refuzurile: CFF2, WOFF și WOFF2 (de despachetat întâi), alt fișier, fața lipsă, tabelele lipsă, fișierul tăiat', () => {
-  assert.deepEqual(citesteFont(octeti('test/fixtures/text/inter-cff2.otf')), { ok: false, cod: 'cff2' });
+test('refuzurile: WOFF și WOFF2 (de despachetat întâi), alt fișier, fața lipsă, tabelele lipsă, fișierul tăiat; CFF2 se citește', () => {
+  // CFF2 (ADR 0113): citit, cu contururile cubice ale lui Inter (glifele brute, mai sus); unul tăiat e stricat.
+  const cff2 = octeti('test/fixtures/text/inter-cff2.otf');
+  assert.deepEqual([ok(citesteFont(cff2)).cubice, ok(citesteFont(cff2)).familie], [true, 'Inter']);
+  const taiatCff2 = citesteFont(cff2.slice(0, 3000));
+  assert.ok(!taiatCff2.ok && taiatCff2.cod === 'stricat', JSON.stringify(taiatCff2));
   assert.deepEqual(citesteFont(octeti('test/fixtures/text/roboto.woff')), { ok: false, cod: 'woff' });
   const woff2 = new Uint8Array(64);
   woff2.set([0x77, 0x4f, 0x46, 0x32]);
@@ -104,7 +108,7 @@ test('refuzurile: CFF2, WOFF și WOFF2 (de despachetat întâi), alt fișier, fa
 
 const STRUCTURA = JSON.parse(readFileSync(new URL('test/fixtures/text/structura.json', RAD), 'utf8')) as {
   readonly 'test/fixtures/text/roboto-droid.ttc': ReadonlyArray<{ familie: string; complet: string; postscript: string; majuscula: number }>;
-  readonly 'test/fixtures/text/roboto-fvar.ttf': ReadonlyArray<{ stil: string; postscript: string | null; implicita: boolean }>;
+  readonly 'test/fixtures/text/roboto-fvar.ttf': ReadonlyArray<{ stil: string; postscript: string | null; implicita: boolean; coordonate: Record<string, number> }>;
 };
 
 test('colecția TTC: fețele cu numele lor, fiecare citită singură (familia, majuscula, contururile ca în fontul ei)', () => {
@@ -132,11 +136,17 @@ test('`cmap`: 3/10 (formatul 12) câștigă peste un 3/1 care minte; formatul 6,
   assert.deepEqual([s.glifa(0x48), s.glifa(0xf048), s.glifa(0xe9), s.glifa(0x1f), s.glifa(0x100), s.majuscula], [r.glifa(0x48), r.glifa(0x48), r.glifa(0xe9), 0, 0, 1456]);
 });
 
-test('fontul variabil: instanțele numite din fvar (stilul, numele PostScript, cea implicită); contururile, ale instanței implicite', () => {
-  const f = ok(citesteFont(octeti('test/fixtures/text/roboto-fvar.ttf')));
+test('fontul variabil: instanțele numite din fvar (stilul, numele PostScript, cea implicită, coordonatele); contururile, ale instanței cerute', () => {
+  const b = octeti('test/fixtures/text/roboto-fvar.ttf');
+  const f = ok(citesteFont(b));
   assert.deepEqual(f.instante, STRUCTURA['test/fixtures/text/roboto-fvar.ttf']);
+  assert.deepEqual(f.axe, [{ tag: 'wght', min: 100, implicit: 400, max: 900 }]);
   const r = ok(citesteFont(octeti('public/fonturi/roboto.ttf')));
   assert.deepEqual(f.contururi(f.glifa(0x41)), r.contururi(r.glifa(0x41)));
+  // Fără `gvar` (doar `fvar`), instanța Bold n-are variații: contururile și avansurile implicite (ADR 0113, ca specificația).
+  const bold = ok(citesteFont(b, 0, 1));
+  assert.deepEqual(bold.contururi(bold.glifa(0x41)), r.contururi(r.glifa(0x41)));
+  assert.equal(bold.avans(bold.glifa(0x41)), r.avans(r.glifa(0x41)));
 });
 
 test('o glifă compusă care se conține pe sine e sărită și numărată; celelalte litere rămân', () => {

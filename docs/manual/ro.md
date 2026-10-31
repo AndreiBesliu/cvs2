@@ -161,7 +161,8 @@ contururile fontului, cum se va tăia (literele care lipsesc din font sunt numit
 stilul ales, **înainte de descărcare** (browserul aduce de la Google doar alfabetele textului de probă, iar ce se taie vine
 din fișierul descărcat). Filele:
 - **Fonturile mele**: **Încarcă fonturi…** primește TTF, OTF (și cele cu contururi CFF, ca fonturile Adobe), TTC (toate
-  fețele) și WOFF; fonturile rămân în browserul ăsta, merg și fără rețea și nu pleacă nicăieri. **Folosește** alege fontul
+  fețele) și WOFF; fonturile rămân în browserul ăsta, merg și fără rețea și nu pleacă nicăieri. Un font variabil (ca Roboto
+  Flex) dă câte un rând pe fiecare stil numit al lui (Thin, Bold, Bold Italic…), ca fețe separate. **Folosește** alege fontul
   în panou, **Șterge** îl scoate (un text făcut cu el rămâne, doar nu se mai editează aici până nu-l încarci din nou);
 - **Google Fonts**: cauți o familie (după nume, după categorie, doar cu diacriticele românești), alegi stilul și
   **Descarcă**: fontul vine o dată și intră în Fonturile mele. Pe alt calculator, un text cu un font Google îl cere din
@@ -171,8 +172,8 @@ din fișierul descărcat). Filele:
   textul se editează doar unde fontul e instalat.
 
 Înălțimea în mm se măsoară pe litera **H** a fontului (vârful ei e la „20 mm”); un font fără H folosește înălțimea
-majusculelor scrisă în el. Un font variabil (ca Bahnschrift) se citește deocamdată doar în stilul lui implicit, iar un
-WOFF2 se încarcă întâi convertit în TTF sau OTF.
+majusculelor scrisă în el. Un font variabil (ca Bahnschrift) se taie în stilul ales (SemiBold, Condensed…), cu contururile,
+lățimile și crenarea lui; textul ține stilul și se redeschide cu el. Un WOFF2 se încarcă întâi convertit în TTF sau OTF.
 
 Textul rămâne editabil și după salvare, cât timp contururile lui nu se schimbă pe altă cale: mutarea, rotirea, oglindirea și
 scalarea uniformă îl păstrează (scalarea crește și înălțimea din panou); o scalare neuniformă, o înclinare sau o editare de

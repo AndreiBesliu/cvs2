@@ -11,10 +11,17 @@
  * codurile StandardEncoding, ca fontTools). Ca fontTools, fiecare `moveto` începe un contur (și unul de un singur punct),
  * conturul se închide singur, iar aritmetica (scoasă din spec.) face glifa stricată.
  *
+ * CFF2 (ADR 0113, tabelul `CFF2` al fonturilor variabile OpenType cu contururi PostScript): antetul și Top DICT fără
+ * indexurile numelor și ale șirurilor, indexurile cu numărul pe 32 de biți, FDArray mereu (FDSelect lipsă: totul în primul;
+ * formatele 0, 3 și 4), magazinul de variații (`vstore`); charstring-urile fără lățime, fără `endchar` și fără `return`, cu
+ * `vsindex` și `blend`: la o instanță, fiecare valoare amestecată primește deltele ei înmulțite cu factorii regiunilor
+ * (ca `blend`-ul lui fontTools), la cea implicită rămâne valoarea ei.
+ *
  * Matricea fontului: scara 1/unitsPerEm (scrisă rotunjit, deci cu o miime toleranță) sau altă scară curată, aplicată
  * coordonatelor; înclinată, refuzată.
  */
 import { FontStricat, type ConturFont, type Octeti, type PunctFont } from './sfnt.ts';
+import { factoriMagazin } from './variatii.ts';
 
 /** Imbricarea subrutinelor (spec: 10; fontTools nu are limită, deci mai larg) și mărimea stivei (spec: 48). */
 const ADANCIME_SUBRUTINE = 64;
@@ -32,17 +39,22 @@ function sidStandard(cod: number): number {
 
 type Index = { readonly n: number; readonly element: (i: number) => readonly [number, number]; readonly sfarsit: number };
 
-/** Un INDEX CFF: numărul, mărimea offseturilor, offseturile (de la 1) și datele; elementul i = [început, sfârșit). */
-function index(o: Octeti, p: number): Index {
-  const n = o.u16(p);
-  if (n === 0) return { n: 0, element: () => { throw new FontStricat('index gol'); }, sfarsit: p + 2 };
-  const marime = o.u8(p + 2);
+/**
+ * Un INDEX CFF: numărul (pe 16 biți; în CFF2, pe 32), mărimea offseturilor, offseturile (de la 1) și datele; elementul i =
+ * [început, sfârșit).
+ */
+function index(o: Octeti, p: number, cff2 = false): Index {
+  const h = cff2 ? 4 : 2;
+  const n = cff2 ? o.u32(p) : o.u16(p);
+  if (n === 0) return { n: 0, element: () => { throw new FontStricat('index gol'); }, sfarsit: p + h };
+  if (n > 0xffff) throw new FontStricat(`index cu ${n} elemente`);
+  const marime = o.u8(p + h);
   if (marime < 1 || marime > 4) throw new FontStricat(`index cu offseturi de ${marime} octeți`);
   const off = (i: number): number => {
-    const q = p + 3 + i * marime;
+    const q = p + h + 1 + i * marime;
     return marime === 1 ? o.u8(q) : marime === 2 ? o.u16(q) : marime === 3 ? o.u24(q) : o.u32(q);
   };
-  const baza = p + 3 + (n + 1) * marime - 1;
+  const baza = p + h + 1 + (n + 1) * marime - 1;
   const sfarsit = baza + off(n);
   if (sfarsit > o.lungime) throw new FontStricat('index în afara fișierului');
   return {
@@ -57,14 +69,21 @@ function index(o: Octeti, p: number): Index {
   };
 }
 
-/** Un DICT CFF: operatorul (12 xx devine 1200 + xx) → operanzii lui. */
-function dict(o: Octeti, a: number, b: number): Map<number, number[]> {
+/**
+ * Un DICT CFF: operatorul (12 xx devine 1200 + xx) → operanzii lui. În CFF2 mai sunt `vsindex` (22), `vstore` (24) și
+ * `blend` (23), după care rămân valorile implicite (aplicația nu citește valori amestecate dintr-un DICT: doar sugestii).
+ */
+function dict(o: Octeti, a: number, b: number, cff2 = false): Map<number, number[]> {
   const d = new Map<number, number[]>();
   let operanzi: number[] = [];
   let p = a;
   while (p < b) {
     const b0 = o.u8(p);
-    if (b0 <= 21) {
+    if (cff2 && b0 === 23) {
+      const n = operanzi.pop() ?? 0;
+      operanzi = operanzi.slice(0, n);
+      p++;
+    } else if (b0 <= 21 || (cff2 && (b0 === 22 || b0 === 24))) {
       const op = b0 === 12 ? 1200 + o.u8(p + 1) : b0;
       p += b0 === 12 ? 2 : 1;
       d.set(op, operanzi);
@@ -98,25 +117,89 @@ const decalaj = (n: number): number => (n < 1240 ? 107 : n < 33900 ? 1131 : 3276
 
 type Subrutine = { readonly idx: Index | null; readonly decalaj: number };
 
-function subrutine(o: Octeti, p: number | null): Subrutine {
+function subrutine(o: Octeti, p: number | null, cff2 = false): Subrutine {
   if (p === null) return { idx: null, decalaj: 0 };
-  const idx = index(o, p);
+  const idx = index(o, p, cff2);
   return { idx, decalaj: decalaj(idx.n) };
 }
 
-/** Subrutinele locale ale unui Private DICT [mărime, offset] (offsetul lor e de la începutul lui Private). */
-function private_(o: Octeti, cff: number, operanzi: number[] | undefined): Subrutine {
-  if (!operanzi || operanzi.length < 2) return { idx: null, decalaj: 0 };
+/** Ce dă un Private DICT: subrutinele locale și (CFF2) setul de date implicit al magazinului pentru `blend`. */
+type Privat = Subrutine & { readonly vsindex: number };
+
+/** Private DICT [mărime, offset]: subrutinele locale (offsetul lor e de la începutul lui Private) și `vsindex`. */
+function private_(o: Octeti, cff: number, operanzi: number[] | undefined, cff2 = false): Privat {
+  if (!operanzi || operanzi.length < 2) return { idx: null, decalaj: 0, vsindex: 0 };
   const [marime, off] = operanzi as [number, number];
   const p = cff + off;
-  const d = dict(o, p, p + marime);
+  const d = dict(o, p, p + marime, cff2);
   const subrs = d.get(19);
-  return subrutine(o, subrs ? p + subrs[0]! : null);
+  return { ...subrutine(o, subrs ? p + subrs[0]! : null, cff2), vsindex: d.get(22)?.[0] ?? 0 };
 }
 
 export type CitireCff = {
   /** Contururile glifei, în unitățile fontului (punctele de control câte două, ale cubicelor); aruncă `FontStricat`. */
   readonly contururi: (glifa: number) => ConturFont[];
+};
+
+/** Scara din matricea fontului (Top DICT, 12 7): 1/unitsPerEm sau altă scară curată; înclinată, refuzată. */
+function scaraMatrice(matrice: number[] | undefined, unitsPerEm: number): number {
+  if (!matrice) return 1;
+  const [a = 0, b = 0, c = 0, d = 0] = matrice;
+  if (b !== 0 || c !== 0 || Math.abs(a - d) > 1e-12 || !(a > 0)) throw new FontStricat('matrice CFF înclinată');
+  const scara = a * unitsPerEm;
+  // Matricea e scrisă cu 8 cifre (Inter: 0.00035511 pentru 1/2816): o abatere sub o miime e scara 1, ca la fontTools.
+  return Math.abs(scara - 1) < 1e-3 ? 1 : scara;
+}
+
+/** FDSelect de la `s`: glifa → indicele dicționarului ei; formatele 0 și 3, iar în CFF2 și 4 (pe 32 de biți). */
+function fdSelect(o: Octeti, s: number, cff2: boolean): (g: number) => number {
+  const format = o.u8(s);
+  if (format === 0) return (g) => o.u8(s + 1 + g);
+  if (format === 3 || (cff2 && format === 4)) {
+    const lung = format === 4;
+    const n = lung ? o.u32(s + 1) : o.u16(s + 1);
+    const prim = s + (lung ? 5 : 3), pas = lung ? 6 : 3;
+    const inceput = (k: number): number => (lung ? o.u32(prim + pas * k) : o.u16(prim + pas * k));
+    return (g) => {
+      // Intervalele [first, first următorului), ordonate; santinela închide ultimul.
+      let st = 0, dr = n - 1;
+      while (st < dr) {
+        const m = (st + dr + 1) >> 1;
+        if (inceput(m) <= g) st = m;
+        else dr = m - 1;
+      }
+      if (inceput(0) > g || inceput(n) <= g) throw new FontStricat(`glifa ${g} în afara FDSelect`);
+      return lung ? o.u16(prim + pas * st + 4) : o.u8(prim + pas * st + 2);
+    };
+  }
+  throw new FontStricat(`FDSelect de formatul ${format}`);
+}
+
+/** Dicționarele FDArray (fiecare cu Private-ul lui), alese pe glifă de `alege`. */
+function dictionare(o: Octeti, cff: number, fd: Index, alege: (g: number) => number, cff2: boolean): (g: number) => Privat {
+  const lista: Privat[] = [];
+  for (let k = 0; k < fd.n; k++) {
+    const [a, b] = fd.element(k);
+    lista.push(private_(o, cff, dict(o, a, b, cff2).get(18), cff2));
+  }
+  return (g) => {
+    const k = alege(g);
+    const d = lista[k];
+    if (!d) throw new FontStricat(`FD ${k} din ${lista.length}`);
+    return d;
+  };
+}
+
+/** Ce citește interpretorul: charstring-urile, subrutinele, scara și ce cer `seac` (CFF) sau `blend` (CFF2). */
+type Program = {
+  readonly charstrings: Index;
+  readonly globale: Subrutine;
+  readonly privat: (g: number) => Privat;
+  readonly scara: number;
+  /** Glifa unui SID, pentru `seac` (doar CFF). */
+  readonly dupaSid: ((sid: number) => number) | null;
+  /** CFF2: factorii regiunilor setului de date `vsindex` (toți 0 la instanța implicită); null: CFF. */
+  readonly factori: ((vsindex: number) => readonly number[]) | null;
 };
 
 /**
@@ -133,58 +216,21 @@ export function citesteCff(o: Octeti, pos: number, numarGlife: number, unitsPerE
   const [ta, tb] = top.element(0);
   const t = dict(o, ta, tb);
   if ((t.get(1206)?.[0] ?? 2) !== 2) throw new FontStricat('charstring-uri de alt tip decât 2');
-  const matrice = t.get(1207);
-  let scara = 1;
-  if (matrice) {
-    const [a = 0, b = 0, c = 0, d = 0] = matrice;
-    if (b !== 0 || c !== 0 || Math.abs(a - d) > 1e-12 || !(a > 0)) throw new FontStricat('matrice CFF înclinată');
-    scara = a * unitsPerEm;
-    // Matricea e scrisă cu 8 cifre (Inter: 0.00035511 pentru 1/2816): o abatere sub o miime e scara 1, ca la fontTools.
-    if (Math.abs(scara - 1) < 1e-3) scara = 1;
-  }
+  const scara = scaraMatrice(t.get(1207), unitsPerEm);
   const cs = t.get(17);
   if (!cs) throw new FontStricat('CFF fără CharStrings');
   const charstrings = index(o, pos + cs[0]!);
   if (charstrings.n !== numarGlife) throw new FontStricat(`CFF are ${charstrings.n} glife, maxp ${numarGlife}`);
 
   // Subrutinele locale: ale fontului, sau (CID) ale dicționarului fiecărei glife, din FDSelect.
-  let localePe: (g: number) => Subrutine;
+  let privat: (g: number) => Privat;
   if (t.has(1230)) {
-    const fdArray = t.get(1236), fdSelect = t.get(1237);
-    if (!fdArray || !fdSelect) throw new FontStricat('CFF CID fără FDArray / FDSelect');
-    const fd = index(o, pos + fdArray[0]!);
-    const dictionare: Subrutine[] = [];
-    for (let k = 0; k < fd.n; k++) {
-      const [a, b] = fd.element(k);
-      dictionare.push(private_(o, pos, dict(o, a, b).get(18)));
-    }
-    const s = pos + fdSelect[0]!;
-    const format = o.u8(s);
-    let alege: (g: number) => number;
-    if (format === 0) alege = (g) => o.u8(s + 1 + g);
-    else if (format === 3) {
-      const n = o.u16(s + 1);
-      alege = (g) => {
-        // Intervalele [first, first următorului), ordonate; santinela închide ultimul.
-        let st = 0, dr = n - 1;
-        while (st < dr) {
-          const m = (st + dr + 1) >> 1;
-          if (o.u16(s + 3 + 3 * m) <= g) st = m;
-          else dr = m - 1;
-        }
-        if (o.u16(s + 3) > g || o.u16(s + 3 + 3 * n) <= g) throw new FontStricat(`glifa ${g} în afara FDSelect`);
-        return o.u8(s + 3 + 3 * st + 2);
-      };
-    } else throw new FontStricat(`FDSelect de formatul ${format}`);
-    localePe = (g) => {
-      const k = alege(g);
-      const d = dictionare[k];
-      if (!d) throw new FontStricat(`FD ${k} din ${dictionare.length}`);
-      return d;
-    };
+    const fdArray = t.get(1236), sel = t.get(1237);
+    if (!fdArray || !sel) throw new FontStricat('CFF CID fără FDArray / FDSelect');
+    privat = dictionare(o, pos, index(o, pos + fdArray[0]!), fdSelect(o, pos + sel[0]!, false), false);
   } else {
     const locale = private_(o, pos, t.get(18));
-    localePe = () => locale;
+    privat = () => locale;
   }
 
   // Setul de caractere, doar pentru `seac` (SID → glifa): formatele 0, 1, 2 și ISOAdobe (SID = glifa).
@@ -212,15 +258,45 @@ export function citesteCff(o: Octeti, pos: number, numarGlife: number, unitsPerE
     return g;
   };
 
+  return interpreteaza(o, { charstrings, globale, privat, scara, dupaSid, factori: null }, numarGlife);
+}
+
+/**
+ * Citește tabelul CFF2 de la `pos` (ADR 0113), la coordonatele normalizate `c` (null: instanța implicită): antetul (Top DICT
+ * după el, apoi subrutinele globale), FDArray (FDSelect lipsă: totul în primul dicționar) și magazinul de variații.
+ */
+export function citesteCff2(o: Octeti, pos: number, numarGlife: number, unitsPerEm: number, c: readonly number[] | null): CitireCff {
+  if (o.u8(pos) !== 2) throw new FontStricat(`CFF2 versiunea ${o.u8(pos)}`);
+  const top = pos + o.u8(pos + 2), lungime = o.u16(pos + 3);
+  const t = dict(o, top, top + lungime, true);
+  const globale = subrutine(o, top + lungime, true);
+  const scara = scaraMatrice(t.get(1207), unitsPerEm);
+  const cs = t.get(17), fdArray = t.get(1236);
+  if (!cs || !fdArray) throw new FontStricat('CFF2 fără CharStrings sau FDArray');
+  const charstrings = index(o, pos + cs[0]!, true);
+  if (charstrings.n !== numarGlife) throw new FontStricat(`CFF2 are ${charstrings.n} glife, maxp ${numarGlife}`);
+  const sel = t.get(1237);
+  const privat = dictionare(o, pos, index(o, pos + fdArray[0]!, true), sel ? fdSelect(o, pos + sel[0]!, true) : () => 0, true);
+  // Magazinul de variații: lungimea lui (16 biți), apoi magazinul. Fără el, un `blend` n-are delte.
+  const vstore = t.get(24);
+  const factori = vstore ? factoriMagazin(o, pos + vstore[0]! + 2, c) : () => [];
+  return interpreteaza(o, { charstrings, globale, privat, scara, dupaSid: null, factori }, numarGlife);
+}
+
+/** Interpretorul Type 2, comun lui CFF și CFF2 (ale căror deosebiri le spune programul). */
+function interpreteaza(o: Octeti, program: Program, numarGlife: number): CitireCff {
+  const { charstrings, globale, privat, scara, dupaSid, factori } = program;
   const contururi = (glifa: number, accent: boolean): ConturFont[] => {
     if (glifa < 0 || glifa >= numarGlife) throw new FontStricat(`glifa ${glifa} nu există`);
-    const locale = localePe(glifa);
+    const pr = privat(glifa);
     const rez: PunctFont[][] = [];
     let curent: PunctFont[] | null = null;
     let x = 0, y = 0;
     let stiva: number[] = [];
     let tulpini = 0;
-    let latime = false;
+    // CFF2 n-are lățime în charstring-uri.
+    let latime = factori !== null;
+    let vsindex = pr.vsindex;
     let operatii = 0;
     const pune = (px: number, py: number, pe: boolean): void => {
       x = px;
@@ -359,7 +435,7 @@ export function citesteCff(o: Octeti, pos: number, numarGlife: number, unitsPerE
             break;
           }
           case 10: case 29: { // callsubr, callgsubr
-            const sub = b0 === 10 ? locale : globale;
+            const sub = b0 === 10 ? pr : globale;
             const i = (stiva.pop() ?? 0) + sub.decalaj;
             if (!sub.idx) throw new FontStricat('subrutină fără index');
             const [sa, sb] = sub.idx.element(i);
@@ -374,7 +450,7 @@ export function citesteCff(o: Octeti, pos: number, numarGlife: number, unitsPerE
             const r = stiva;
             curent = null;
             if (r.length >= 4) {
-              if (accent) throw new FontStricat('seac în accentul unui seac');
+              if (accent || !dupaSid) throw new FontStricat('seac în accentul unui seac sau în CFF2');
               const [adx, ady, baza, acc] = r as [number, number, number, number];
               for (const c of contururi(dupaSid(sidStandard(baza)), true)) rez.push([...c]);
               for (const c of contururi(dupaSid(sidStandard(acc)), true)) rez.push(c.map((q) => ({ x: q.x + adx * scara, y: q.y + ady * scara, peCurba: q.peCurba })));
@@ -382,6 +458,25 @@ export function citesteCff(o: Octeti, pos: number, numarGlife: number, unitsPerE
             stiva = [];
             gata = true;
             return;
+          }
+          case 15: // vsindex (CFF2): setul de date al magazinului pentru `blend`-urile următoare
+            if (!factori) throw new FontStricat(`operator charstring rezervat ${b0}`);
+            vsindex = stiva.pop() ?? 0;
+            stiva = [];
+            break;
+          case 16: { // blend (CFF2): n valori, apoi câte k delte ale fiecăreia (k regiuni ale setului vsindex), apoi n
+            if (!factori) throw new FontStricat(`operator charstring rezervat ${b0}`);
+            const f = factori(vsindex);
+            const n = stiva.pop() ?? 0, k = f.length;
+            const inceput = stiva.length - n * (k + 1);
+            if (!Number.isInteger(n) || n < 0 || inceput < 0) throw new FontStricat(`blend cu ${n} valori și ${stiva.length} operanzi`);
+            for (let i = 0; i < n; i++) {
+              let d = 0;
+              for (let j = 0; j < k; j++) if (f[j] !== 0) d += stiva[inceput + n + i * k + j]! * f[j]!;
+              stiva[inceput + i] = stiva[inceput + i]! + d;
+            }
+            stiva.length = inceput + n;
+            break;
           }
           case 12: {
             const op = o.u8(p++);

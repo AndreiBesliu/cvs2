@@ -228,8 +228,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`pe_curba` în `test/oracles-py/text_corpus.py`, `test/fixtures/text/pe-curba.json`): un caz nou = rândul în
   `CAZURI_CURBA`, apoi fixtura regenerată și comisă. Fereastra fonturilor („Adaugă fonturi…”) are textul de probă: contururile
   aplicației pentru fonturile omului și ale sistemului, fețele de afișare Google înainte de descărcare (CSS API v2 din
-  browser, `fonts.googleapis.com` / `fonts.gstatic.com` în CSP). Urmează în etapa 7: instanțele fonturilor variabile,
-  fonturile cu o singură linie. **Pornirea 97,4 (cu ușa 100,9 / 110 kB), totalul 374,4 / 400.**
+  browser, `fonts.googleapis.com` / `fonts.gstatic.com` în CSP). Urmează în etapa 7: fonturile cu o singură linie (instanțele
+  fonturilor variabile, gata în 7.4↑). **Pornirea 97,4 (cu ușa 100,9 / 110 kB), totalul 374,4 / 400.**
   **Calculul CAM în bazinul de workere (ADR 0109, felia 4.A↑, adusă din etapa 4)** gata pe 30.10.
   - **Ce s-a mutat în worker:** exportul (CAM-ul, postul, SHA-256, rezumatul, mutările simulării), „Arată traseul”, timpul
     din cip și programul vederii 3D se calculează în workerul CAM (`src/jobs/lucratorCam.ts`, bazinul `src/jobs/bazinCam.ts`,
@@ -269,6 +269,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`test/oracles-py/eps_import_corpus.py`): un caz nou = desenul în generator + valoarea pe hârtie; fiecare fișier trece prin
   Ghostscript (local `.tmp/eps2pdf.cjs`, în CI `gs`) și PyMuPDF; apoi `test/fixtures/eps/` regenerat și comis (CI-ul îl
   regenerează și cere aceiași octeți). **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 425,5 / 450 (după unirea cu 5.8↑b–c).**
+  **Instanțele fonturilor variabile (ADR 0113, felia 7.4↑, adusă din etapa 7)** gata pe 31.10, într-o subsesiune (worktree-ul
+  `wip/7.4-fonturi-variabile`): cititorul aplică instanța cerută (`src/text/variatii.ts`: coordonatele normalizate ca fontTools,
+  `gvar` cu IUP, avansul din `HVAR` sau din punctele fantomă, crenarea din dispozitivele GPOS, `cpht`), iar CFF2 se citește
+  (`blend`, `vsindex`; refuzat doar `avar` 2). Instanțele numite sunt fețe separate: `f:<amprenta>[.<fața>]@<indicele din
+  fvar>` în Fonturile mele (o intrare pe instanță), iar fața sistemului se citește la instanța ei. **Corpusul instanțelor e
+  Python** (`variabile` în `test/oracles-py/text_corpus.py`, cu instancer-ul lui fontTools pe Roboto Flex și Noto Sans CJK,
+  OFL, din fonturile Android Studio, plus variantele lor): un loc nou = rândul în `LOCURI_FLEX` (sau al fontului), apoi
+  `test/fixtures/text/variabile.json` regenerat și comis. **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 418,5 / 450** (pe
+  `main`, baza era 97,6 / 101,1 / 414,8, cu 14.B↑b unit).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
