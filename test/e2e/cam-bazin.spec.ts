@@ -188,7 +188,9 @@ async function deschide(page: Page, text: string): Promise<void> {
     db.close();
   }, text);
   await page.reload();
-  await expect(page.getByTestId('lista-vectori')).toBeVisible();
+  // Lista se vede și goală: proiectul e încărcat abia când apare primul lui rând. Pe CI (rularea de noapte, 31.10), documentul
+  // greu sosea după tasta T, iar traseul se calcula pe documentul gol („nicio formă n-are o operație de tăiere”).
+  await expect(page.getByTestId('lista-vectori').locator('button[data-instanta]').first()).toBeVisible({ timeout: 60_000 });
 }
 
 test('pe calea omului: placa 2, deschisă ca proiect și exportată din fereastră, e fișierul de aur, octet cu octet', async ({ page }) => {

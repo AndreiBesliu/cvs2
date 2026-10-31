@@ -334,11 +334,16 @@ button[data-icona]:disabled > .eticheta {
  * Rândul de sus: marca, bara de acțiuni (centrată pe fereastră), uneltele; dedesubt, extensia barei, întinsă pe toate
  * coloanele: mai lată decât bara (26.10: 991 px față de 718), în coloana barei o lărgea, iar marca se strângea până la zero
  * la 1280 px.
+ *
+ * Coloana uneltelor nu scade sub ele (`max-content`): cu bara crescută pe 29.10 (unealta Text, grupul fișierelor), la 1280 px
+ * coloanele laterale ajunseseră exact cât uneltele, iar pe Linux, cu fontul mai lat, bara intra 4,8 px peste ele (rularea de
+ * noapte, 30.10). Acum, când locul e strâmt, se strânge doar marca (care se taie cu „…”), iar bara se mută puțin spre stânga;
+ * cu loc destul, coloanele laterale sunt egale și bara rămâne centrată.
  */
 .sus {
   grid-area: sus;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr);
   grid-template-areas: 'marca bara unelte' 'extensie extensie extensie';
   align-items: start;
   gap: var(--sp-3);

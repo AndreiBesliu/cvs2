@@ -39,7 +39,22 @@ test('testul pas cu pas: pașii, Bine / Nu, nota, poza planșei, reîncărcarea,
   await panou(page).locator('[data-test-stare="nu"]').click();
   await expect(panou(page).locator('[data-test="progres"]')).toHaveText('1 bine · 1 nu · 0 sărite · 29 rămase');
 
-  // Reîncărcarea: rezultatele, pasul și poza rămân (în browser).
+  // Reîncărcarea: rezultatele, pasul și poza rămân (în browser). Scrierea în bază e asincronă: reîncărcarea vine după ce „Nu”
+  // a ajuns acolo (pe CI, 30.10, o reîncărcare imediată l-a pierdut).
+  await expect.poll(() => page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((ok, eroare) => {
+      const r = indexedDB.open('cncvs2-test', 1);
+      r.onsuccess = () => { ok(r.result); };
+      r.onerror = () => { eroare(r.error); };
+    });
+    const stari = await new Promise<unknown[]>((ok, eroare) => {
+      const r = db.transaction('stari').objectStore('stari').getAll();
+      r.onsuccess = () => { ok(r.result); };
+      r.onerror = () => { eroare(r.error); };
+    });
+    db.close();
+    return JSON.stringify(stari).includes('"stare":"nu"');
+  })).toBe(true);
   await page.reload();
   await page.locator('[data-editare="test"]').click();
   await expect(panou(page)).toHaveAttribute('data-test-pas', 'p-curata');

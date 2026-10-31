@@ -435,13 +435,14 @@ test('o scalare peste plafoanele documentului se refuză cu motivul ei, nu în t
 });
 
 test('bara de sus (ADR 0052): uneltele încap între marcă și căutare la 1280, 1366 și 1440 px, și cu câmpul grilei deschis', async ({ page }) => {
-  // A doua trecere lățește literele antetului: pe Linux (CI), fontul mai lat a dus marca peste bară (24.10), iar local nu.
-  for (const [latime, lat] of [[1280, false], [1366, false], [1440, false], [1280, true]] as const) {
+  // Trecerile cu literele antetului lățite (2 și 5 px): pe Linux (CI), fontul mai lat a dus marca peste bară (24.10) și bara
+  // peste unelte (30.10), iar local nu; cu 5 px, proba cade și local pe grila de dinainte (coloanele laterale egale).
+  for (const [latime, lat] of [[1280, 0], [1366, 0], [1440, 0], [1280, 2], [1280, 5]] as const) {
     await page.setViewportSize({ width: latime, height: 760 });
     await page.goto('/');
     await expect(page.getByTestId('bara-editare')).toBeVisible();
     // Prin CSSOM (CSP-ul aplicației refuză un <style> injectat, dar nu stilul pus din script).
-    if (lat) await page.evaluate(() => { for (const e of document.querySelectorAll<HTMLElement>('.sus h1, .sus .instanta, .sus .cu-eticheta')) e.style.letterSpacing = '2px'; });
+    if (lat) await page.evaluate((lat) => { for (const e of document.querySelectorAll<HTMLElement>('.sus h1, .sus .instanta, .sus .cu-eticheta')) e.style.letterSpacing = `${lat}px`; }, lat);
     for (const grila of [false, true]) {
       if (grila) await page.locator('[data-editare="grila"]').click();
       const [marca, bara, unelte] = await Promise.all(['.sus > .marca', '.sus > .bara', '.sus > .unelte'].map(async (s) => {
@@ -449,7 +450,7 @@ test('bara de sus (ADR 0052): uneltele încap între marcă și căutare la 1280
         if (!b) throw new Error(`${s} n-are cutie`);
         return b;
       }));
-      const unde = `${latime} px${grila ? ', cu grila' : ''}${lat ? ', litere lățite' : ''}`;
+      const unde = `${latime} px${grila ? ', cu grila' : ''}${lat ? `, litere lățite cu ${lat} px` : ''}`;
       expect(marca!.x + marca!.width, unde).toBeLessThanOrEqual(bara!.x);
       expect(bara!.x + bara!.width, unde).toBeLessThanOrEqual(unelte!.x);
       // „Exportă” se vede întreg: punctul din mijlocul lui e chiar butonul, nu altceva peste el.

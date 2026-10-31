@@ -3903,3 +3903,23 @@ teste, 0 picate; 8 sărite), build-ul determinist (208 fișiere; pornirea 97,3 /
 `711fa51cc6c3`: fereastra „Exportă G-code” se deschide (butonul Exportă nu l-am apăsat: ar fi descărcat un fișier); „Arată
 traseul” aduce `lucratorCam` și arată „Timpul jobului: 1 min 12 s” în 0,5 s; vederea 3D, din programul workerului: „Placa
 simulată la 0,25 mm” în 0,5 s. 0 erori în jurnal și în consolă.
+
+## 2026-10-31 — Rularea de noapte roșie (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (la începutul sesiunii: rularea de noapte `complet` căzută pe 30.10 și pe 31.10, cu CI-ul rapid verde;
+incidentul numărul unu, înaintea oricărei felii).
+**Started:** 31.10, 10:02. **Completed:** 31.10, 10:30. Trei cauze, toate în e2e-ul de pe Linux:
+- **Bara de sus la 1280 px** (`editare.spec.ts`, ambele nopți): bara a crescut pe 29.10 (unealta Text, grupul fișierelor
+  mutat în bară), iar la 1280 px, cu grila pornită, coloanele laterale ajunseseră exact cât uneltele (local rămânea doar
+  intervalul de 12 px); cu fontul mai lat de pe Linux, bara intra 4,8 px peste unelte. Reparația, în `src/app/stil.css`:
+  coloana uneltelor nu scade sub ele (`minmax(max-content, 1fr)`); când locul e strâmt, se strânge marca (cu „…”), iar bara se
+  mută spre stânga. Proba primește o trecere cu literele lățite cu 5 px, care cade și local pe grila veche (1 104,7 față de
+  1 091,5). Primul diagnostic (extensia care ar umfla coloana barei, cu butonul centrării) era greșit: sondele alternau grila
+  pornită și oprită, iar diferența de 50 px era câmpul pasului grilei.
+- **Testele bazinului CAM** (`cam-bazin.spec.ts`, 31.10): deschiderea proiectului aștepta doar lista, vizibilă și goală, iar
+  tasta T apuca documentul gol („nicio formă n-are o operație de tăiere”, sau nimic). Acum se așteaptă primul rând al listei.
+  Reprodus local cu procesorul încetinit de 8 ori: cu așteptarea veche, T fără efect în 60 s; cu cea nouă, „traseu.calcul” în
+  3,7 s.
+- **Testul pas cu pas** (`tutorial.spec.ts`, 30.10): reîncărcarea venea imediat după „Nu”, înaintea scrierii asincrone în
+  IndexedDB; acum se așteaptă scrierea.
+Porțile locale: compilatorul, build-ul determinist (208 fișiere, mărimile neschimbate), e2e-ul (276).
