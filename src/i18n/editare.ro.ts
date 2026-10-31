@@ -193,7 +193,6 @@ export const roEditare = {
   'editare.text.refuz.nu-e-font': 'Fișierul nu e un font (TTF, OTF, TTC sau WOFF).',
   'editare.text.refuz.woff': 'Un WOFF se încarcă din Fonturi…, unde se despachetează.',
   'editare.text.refuz.woff2': 'WOFF2 nu se citește încă: încarcă fontul ca TTF sau OTF.',
-  'editare.text.refuz.cff2': 'Fonturile variabile OpenType cu contururi CFF2 nu se citesc încă.',
   'editare.text.refuz.variatii': 'Stilurile acestui font variabil nu se calculează încă ({detaliu}): se poate folosi doar stilul lui implicit.',
   'editare.text.refuz.majuscula': 'Fontul n-are litera H și nici înălțimea majusculelor: mărimea în mm n-are după ce se măsura.',
   'editare.text.refuz.fara-unicode': 'Fontul n-are harta Unicode a caracterelor (e o codare veche, ca Shift-JIS).',

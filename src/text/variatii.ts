@@ -179,13 +179,13 @@ export function iup(x0: ArrayLike<number>, y0: ArrayLike<number>, d: Float64Arra
 /** Un magazin de variații: delta elementului (exterior, interior) la coordonatele lui, nerotunjită; 0 în afara lui. */
 export type Magazin = (exterior: number, interior: number) => number;
 
-/** Magazinul de variații (`ItemVariationStore`) de la `pos`, evaluat la coordonatele `c` (factorii regiunilor, ținuți). */
-export function magazinVariatii(o: Octeti, pos: number, c: readonly number[]): Magazin {
+/** Factorul fiecărei regiuni a magazinului de la `pos` (formatul verificat), la coordonatele `c`, ținut. */
+function factoriRegiuni(o: Octeti, pos: number, c: readonly number[]): (r: number) => number {
   if (o.u16(pos) !== 1) throw new FontStricat(`magazinul variațiilor are formatul ${o.u16(pos)}`);
-  const regiuni = pos + o.u32(pos + 2), nDate = o.u16(pos + 6);
+  const regiuni = pos + o.u32(pos + 2);
   const nAxe = o.u16(regiuni), nRegiuni = o.u16(regiuni + 2);
   const factori = new Map<number, number>();
-  const factor = (r: number): number => {
+  return (r) => {
     const gata = factori.get(r);
     if (gata !== undefined) return gata;
     if (r >= nRegiuni) throw new FontStricat(`regiunea ${r} din ${nRegiuni}`);
@@ -200,6 +200,33 @@ export function magazinVariatii(o: Octeti, pos: number, c: readonly number[]): M
     factori.set(r, f);
     return f;
   };
+}
+
+/**
+ * Factorii regiunilor setului de date `exterior` din magazinul de la `pos`, în ordinea indicilor lui (`blend` din CFF2, ADR
+ * 0113); la instanța implicită (`c` null), toți 0: valorile amestecate rămân cele implicite.
+ */
+export function factoriMagazin(o: Octeti, pos: number, c: readonly number[] | null): (exterior: number) => readonly number[] {
+  const factor = c ? factoriRegiuni(o, pos, c) : null;
+  if (o.u16(pos) !== 1) throw new FontStricat(`magazinul variațiilor are formatul ${o.u16(pos)}`);
+  const nDate = o.u16(pos + 6);
+  const tinute = new Map<number, readonly number[]>();
+  return (exterior) => {
+    const gata = tinute.get(exterior);
+    if (gata) return gata;
+    if (exterior >= nDate) throw new FontStricat(`setul de date ${exterior} din ${nDate}`);
+    const d = pos + o.u32(pos + 8 + 4 * exterior);
+    const f: number[] = [];
+    for (let k = 0; k < o.u16(d + 4); k++) f.push(factor ? factor(o.u16(d + 6 + 2 * k)) : 0);
+    tinute.set(exterior, f);
+    return f;
+  };
+}
+
+/** Magazinul de variații (`ItemVariationStore`) de la `pos`, evaluat la coordonatele `c` (factorii regiunilor, ținuți). */
+export function magazinVariatii(o: Octeti, pos: number, c: readonly number[]): Magazin {
+  const factor = factoriRegiuni(o, pos, c);
+  const nDate = o.u16(pos + 6);
   return (exterior, interior) => {
     if (exterior >= nDate) return 0;
     const d = pos + o.u32(pos + 8 + 4 * exterior);

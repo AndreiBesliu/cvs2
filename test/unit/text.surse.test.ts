@@ -81,13 +81,15 @@ test('WOFF despachetat: aceleași tabele ca TTF-ul (contururile, avansurile, cre
   await assert.rejects(desfaWoff(stricat));
 });
 
-test('fețele unui fișier: o colecție dă două, un CFF2 e refuzat cu codul lui, altceva nu e font; fața după nume', () => {
+test('fețele unui fișier: o colecție dă două, un CFF2 variabil una (cu instanțele lui), altceva nu e font; fața după nume', () => {
   const ttc = octeti('test/fixtures/text/roboto-droid.ttc');
   const fete = feteDinFisier(ttc);
   assert.deepEqual(fete?.bune.map((f) => [f.fata, f.nume.familie, f.instante.length]), [[0, 'Roboto', 0], [1, 'Droid Serif', 0]]);
   assert.deepEqual(fete?.refuzate, []);
-  const cff2 = feteDinFisier(octeti('test/fixtures/text/inter-cff2.otf'));
-  assert.deepEqual([cff2?.bune.length, cff2?.refuzate.map((r) => r.cod)], [0, ['cff2']]);
+  // CFF2 (ADR 0113): Noto Sans CJK JP, cu cele 5 instanțe numite afară de Regular (implicită).
+  const cff2 = feteDinFisier(octeti('test/fixtures/text/noto-cjk-cff2.otf'));
+  assert.deepEqual([cff2?.bune.map((f) => [f.nume.complet, f.instante.map((i) => i.nume.stil)]), cff2?.refuzate],
+    [[['Noto Sans CJK JP Regular', ['Medium', 'SemiBold', 'Bold', 'ExtraBold', 'Black']]], []]);
   assert.equal(feteDinFisier(new TextEncoder().encode('nu e font')), null);
   assert.equal(feteDinFisier(octeti('test/fixtures/text/roboto.woff')), null);
   assert.equal(fataDupaNume(ttc, 'DroidSerif', ''), 1);

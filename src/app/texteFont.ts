@@ -8,7 +8,7 @@ type RezultatIncarcare = import('../text/calcul.ts').RezultatIncarcare;
  */
 export function textRefuzFont(cod: string, detaliu?: string): string {
   switch (cod) {
-    case 'nu-e-font': case 'woff': case 'woff2': case 'cff2': case 'majuscula': case 'fara-unicode': case 'fata-lipsa': case 'prea-mare':
+    case 'nu-e-font': case 'woff': case 'woff2': case 'majuscula': case 'fara-unicode': case 'fata-lipsa': case 'prea-mare':
     case 'biblioteca-plina':
       return t(`editare.text.refuz.${cod}`);
     case 'fara-stocare':

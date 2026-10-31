@@ -36,7 +36,9 @@ crenarea (deltele dispozitivelor adunate de el), metricile, coordonatele normali
 wght 0,5; regiunea intermediară dincolo de vârf; H mai lat cu grosimea; AV anulat la Thin; componentele puse pe puncte și cele
 2 × 2 cu deplasarea scalată; punctul fantomă din stânga; HVAR față de punctele fantomă (cel mult 1 unitate). Variantele au ce
 promit, citite din octeții lui `gvar` (`ce_are_gvar`): vârfurile comune, regiunile intermediare, punctele comune și proprii,
-toate sau unele, deltele pe octet, pe cuvânt și zero, offseturile lungi.
+toate sau unele, deltele pe octet, pe cuvânt și zero, offseturile lungi. CFF2: Noto Sans CJK JP (OFL, subsetat aici) și un CFF2
+scris de mână (`cff2_sintetic`: blend pe două regiuni, vsindex, două FD-uri, FDSelect 4), cu contururile din pen-ul lui
+fontTools la coordonatele normalizate (`blend`-urile evaluate de el); pe hârtie, punctele amestecate ale celui de mână.
 
 Rulare: `.tmp/venv-export2d/Scripts/python.exe -X utf8 test/oracles-py/text_corpus.py` (scrie `test/fixtures/text/`).
 """
@@ -109,8 +111,9 @@ def glifa(font, cod):
     return g
 
 
-def contururi(font, nume):
-    """Punctele fiecărui contur (x, y, pe curbă): TrueType din `getCoordinates`, CFF din pen (2 puncte de control pe cubică)."""
+def contururi(font, nume, normalizate=None):
+    """Punctele fiecărui contur (x, y, pe curbă): TrueType din `getCoordinates`, CFF din pen (2 puncte de control pe cubică).
+    `normalizate`: coordonatele unei instanțe (ADR 0113), la care pen-ul desenează un CFF2 (cu `blend`-urile evaluate)."""
     if 'glyf' in font:
         glyf = font['glyf']
         coord, capete, steaguri = glyf[nume].getCoordinates(glyf)
@@ -119,7 +122,7 @@ def contururi(font, nume):
             rez.append([(coord[i][0], coord[i][1], bool(steaguri[i] & 1)) for i in range(start, capat + 1)])
             start = capat + 1
         return rez
-    gs = font.getGlyphSet()
+    gs = font.getGlyphSet(location=normalizate, normalized=True) if normalizate and any(normalizate.values()) else font.getGlyphSet()
     pen = DecomposingRecordingPen(gs)
     gs[nume].draw(pen)
     rez, cur = [], None
@@ -261,11 +264,12 @@ def crenare(font, a, b):
     return total
 
 
-def majuscula(font):
-    """Vârful lui H (ce se taie); fără H, `sCapHeight` (OS/2 de la versiunea 2)."""
+def majuscula(font, contur=None):
+    """Vârful lui H (ce se taie); fără H, `sCapHeight` (OS/2 de la versiunea 2). `contur`: contururile unei glife, altfel
+    decât din font (un CFF2 la o instanță, ADR 0113)."""
     h = glifa(font, ord('H'))
     if h is not None:
-        pts = [p for c in contururi(font, h) for p in c]
+        pts = [p for c in (contur or (lambda n: contururi(font, n)))(h) for p in c]
         if pts and max(p[1] for p in pts) > 0:
             return max(p[1] for p in pts)
     return font['OS/2'].sCapHeight
@@ -895,7 +899,7 @@ def variante_72():
     assert 'Source' not in g['CFF '].cff.fontNames[0]
     td = TTFont(os.path.join(DEST, 'inter-subset.otf'))['CFF '].cff.topDictIndex[0]
     assert len(td.Private.Subrs) > 0, 'Inter trebuie să-și păstreze subrutinele locale'
-    # CFF2 (OpenType variabil cu contururi PostScript): refuzat.
+    # CFF2 fix (contururile lui Inter convertite, fără variații): din 7.4↑ (ADR 0113) se citește, cu glifele lui Inter.
     f = deschide(os.path.join(DEST, 'inter-subset.otf'))
     convertCFFToCFF2(f)
     f.save(os.path.join(DEST, 'inter-cff2.otf'))
@@ -996,6 +1000,66 @@ def cff_sintetic(cale):
     assert majuscula(g) == 700
 
 
+def cff2_sintetic(cale):
+    """Un CFF2 variabil scris de mână (ADR 0113), cu ce n-are Noto Sans CJK: `blend` cu două valori pe două regiuni (wght în
+    sus și în jos), un al doilea set de date (o regiune), ales cu `vsindex` în Private (FD 1) și în charstring (B), subrutine
+    locale diferite în cele două FD-uri (H și B o linie în sus, A una la dreapta) și FDSelect în formatul 4."""
+    from fontTools.cffLib import FDSelect, SubrsIndex, VarStoreData
+    from fontTools.varLib.builder import buildVarData, buildVarRegionList, buildVarStore
+    ordine = ['.notdef', 'H', 'A', 'B']
+    fb = FontBuilder(1000, isTTF=False)
+    fb.setupGlyphOrder(ordine)
+    fb.setupCharacterMap({0x48: 'H', 0x41: 'A', 0x42: 'B'})
+    fb.setupNameTable({'familyName': 'CNCVS Sintetic CFF2', 'styleName': 'Regular'})
+    fb.setupFvar(axes=[('wght', 100, 400, 900, 'Weight')], instances=[{'location': {'wght': 700}, 'stylename': 'Bold'}])
+    programe = {
+        '.notdef': [],
+        # Două valori pe două regiuni (setul 0): (100 + 10 s0 − 5 s1, 200 + 20 s0 − 10 s1); subrutina FD 0; o linie amestecată.
+        'H': [100, 200, 10, -5, 20, -10, 2, 'blend', 'rmoveto', 300, 0, 'rlineto', -107, 'callsubr', -300, 15, 3, 1, 'blend', 0, 'rlineto'],
+        # FD 1 (vsindex 1 în Private: o regiune): (50 + 5 s0, 60 + 6 s0); subrutina FD 1; dy = 150 + 30 s0.
+        'A': [50, 60, 5, 6, 2, 'blend', 'rmoveto', 200, 0, 'rlineto', -107, 'callsubr', 0, 150, 30, 1, 'blend', 'rlineto'],
+        # FD 0, cu setul 1 ales în charstring: (70 + 7 s0, 80 + 8 s0).
+        'B': [1, 'vsindex', 70, 80, 7, 8, 2, 'blend', 'rmoveto', 100, 100, 'rlineto', -107, 'callsubr'],
+    }
+    fb.setupCFF2({n: T2CharString(program=p) for n, p in programe.items()}, fdArrayList=[{}, {}])
+    regiuni = buildVarRegionList([{'wght': (0, 1.0, 1.0)}, {'wght': (-1.0, -1.0, 0)}], ['wght'])
+    vstore = VarStoreData(otVarStore=buildVarStore(regiuni, [buildVarData([0, 1], None, optimize=False), buildVarData([0], None, optimize=False)]))
+    td = fb.font['CFF2'].cff.topDictIndex[0]
+    td.VarStore = vstore
+    for k, linie in enumerate(([0, 100, 'rlineto'], [100, 0, 'rlineto'])):
+        priv = td.FDArray[k].Private
+        priv.vstore = vstore
+        priv.Subrs = SubrsIndex(private=priv, globalSubrs=td.CharStrings.globalSubrs)
+        priv.Subrs.append(T2CharString(program=linie, private=priv, globalSubrs=td.CharStrings.globalSubrs))
+        if k == 1:
+            priv.vsindex = 1
+    sel = FDSelect()
+    sel.format = 4
+    sel.gidArray = [0, 0, 1, 0]
+    td.FDSelect = sel
+    td.CharStrings.fdSelect = sel
+    for nume in ordine:
+        cs = td.CharStrings[nume]
+        cs.private = td.FDArray[sel.gidArray[ordine.index(nume)]].Private
+    fb.setupHorizontalMetrics({n: (600, 0) for n in ordine})
+    fb.setupHorizontalHeader(ascent=800, descent=-200)
+    fb.setupOS2(sCapHeight=700, sTypoAscender=800, sTypoDescender=-200, usWinAscent=800, usWinDescent=200)
+    fb.setupPost()
+    fb.font.recalcTimestamp = False
+    fb.font['head'].created = fb.font['head'].modified = 3_700_000_000
+    fb.save(cale)
+    g = TTFont(cale)
+    td = g['CFF2'].cff.topDictIndex[0]
+    assert td.FDSelect.format == 4 and len(td.FDArray) == 2 and len(td.VarStore.otVarStore.VarData) == 2
+    assert not any(t in g for t in ('HVAR', 'MVAR', 'GPOS', 'GDEF')), 'metricile instanțelor sunt cele ale fontului'
+    # Pe hârtie, la Bold (wght 700 = 0,6: s0 = 0,6, s1 = 0) și la wght 100 (−1: s0 = 0, s1 = 1).
+    bold = {'wght': 0.6}
+    assert contururi(g, 'H', bold)[0][0] == (106.0, 212.0, True), contururi(g, 'H', bold)
+    assert contururi(g, 'H', {'wght': -1.0})[0][:4] == [(95.0, 190.0, True), (395.0, 190.0, True), (395.0, 290.0, True), (98.0, 290.0, True)]
+    assert contururi(g, 'A', bold)[0][:4] == [(53.0, 63.6, True), (253.0, 63.6, True), (353.0, 63.6, True), (353.0, 231.6, True)]
+    assert contururi(g, 'B', bold)[0][0] == (74.2, 84.8, True)
+
+
 # 7.4↑ (ADR 0113): instanțele fonturilor variabile. Fontul liber al corpusului e Roboto Flex (OFL 1.1, fără nume rezervat:
 # subsetul își păstrează numele), din fonturile cu care Android Studio previzualizează machetele: 13 axe, 20 de instanțe
 # numite (fără nume PostScript), `avar` (opsz nu e liniară), `gvar` (regiuni intermediare, puncte rare), `HVAR`, `MVAR` și
@@ -1005,6 +1069,12 @@ TEXT_FLEX = 'HAMBURGEFONTSIVLW aeostvw ĂÂÎȘȚăâîșț 0.,'
 FLEX = os.path.join(DEST, 'roboto-flex-subset.ttf')
 FLEX_FANTOMA = os.path.join(DEST, 'roboto-flex-fantoma.ttf')
 FLEX_COMPUSE = os.path.join(DEST, 'roboto-flex-compuse.ttf')
+# CFF2: Noto Sans CJK JP (OFL 1.1; numele rezervat „Source” nu apare în numele subsetului), din aceleași fonturi Android
+# Studio: variabil pe wght, cu `avar`, mai multe dicționare FD și `blend` în charstring-uri.
+NOTO_CJK = 'C:/Program Files/Android/Android Studio/plugins/design-tools/resources/layoutlib/data/fonts/NotoSansCJK-Regular.ttc'
+TEXT_CJK = 'HAVTo あ日本'
+CFF2_VAR = os.path.join(DEST, 'noto-cjk-cff2.otf')
+CFF2_SINTETIC = os.path.join(DEST, 'cff2-sintetic.otf')
 
 
 def subset_pe_loc(f, text):
@@ -1201,20 +1271,42 @@ def variante_74():
         px, py = px * q(0.9) + py * q(0.0), px * q(0.15) + py * q(0.85)
         assert abs(tot[len(ab) + k][0] - px) < 1e-9 and abs(tot[len(ab) + k][1] - py) < 1e-9, (k, tot[len(ab) + k], (px, py))
 
+    # CFF2 variabil: subsetul lui Noto Sans CJK JP (fața 0 a colecției), fără tabelele verticale și fără GSUB.
+    if os.path.exists(NOTO_CJK):
+        f = TTFont(NOTO_CJK, fontNumber=0, recalcTimestamp=False)
+        opt = subset.Options()
+        opt.name_IDs = ['*']
+        opt.notdef_outline = True
+        opt.drop_tables += ['GSUB', 'VORG', 'vhea', 'vmtx', 'VVAR']
+        s = subset.Subsetter(options=opt)
+        s.populate(text=TEXT_CJK)
+        s.subset(f)
+        f.save(CFF2_VAR)
+    assert os.path.exists(CFF2_VAR), CFF2_VAR
+    g = TTFont(CFF2_VAR)
+    td = g['CFF2'].cff.topDictIndex[0]
+    assert td.VarStore is not None and len(td.FDArray) > 1 and hasattr(td, 'FDSelect') and 'HVAR' in g and 'avar' in g
+    assert all('Source' not in r.toUnicode() for r in g['name'].names if r.nameID not in (0, 7, 13, 14)), 'numele rezervat'
+    h = td.CharStrings[glifa(g, ord('H'))]
+    h.decompile()
+    assert 'blend' in h.program, 'H trebuie să amestece'
+    cff2_sintetic(CFF2_SINTETIC)
+
 
 def cautari_kern_indici(font):
     t = font['GPOS'].table
     return sorted({i for fr in t.FeatureList.FeatureRecord if fr.FeatureTag == 'kern' for i in fr.Feature.LookupListIndex})
 
 
-def instanta(cale, coordonate):
+def instanta(cale, coordonate, instantiaza=True):
     """Instanța fontului la coordonatele date (în unitățile axelor; o axă lipsă: valoarea implicită), făcută de instancer-ul
     lui fontTools, cu toate axele fixate: un font static, ținut în memorie (nesalvat: coordonatele rămân în virgulă mobilă,
-    fără rotunjirea scrierii), plus coordonatele normalizate (cu `avar`, apoi la F2Dot14)."""
+    fără rotunjirea scrierii), plus coordonatele normalizate (cu `avar`, apoi la F2Dot14). `instantiaza` fals: fontul
+    neschimbat (unul fără HVAR, MVAR și GPOS, ale cărui contururi vin din pen)."""
     f = TTFont(cale)
     axe = {a.axisTag: coordonate.get(a.axisTag, a.defaultValue) for a in f['fvar'].axes}
     norm = AxisLimits(axe).limitAxesAndPopulateDefaults(f).normalize(f)
-    return instantiateVariableFont(f, axe), {k: tuple(v)[1] for k, v in norm.items()}
+    return instantiateVariableFont(f, axe) if instantiaza else f, {k: tuple(v)[1] for k, v in norm.items()}
 
 
 def avans_hvar(f, nume, norm):
@@ -1228,18 +1320,19 @@ def unice(text):
     return ''.join(dict.fromkeys(ch for ch in text if ch != ' '))
 
 
-def date_instanta(inst, avans, text, glife, perechi):
+def date_instanta(inst, avans, text, glife, perechi, contur=None):
     """Ce se compară la o instanță: metricile, avansul fiecărui caracter (`avans`, după numele glifei), crenarea perechilor
-    nenule dintr-un set (și setul) și contururile brute."""
+    nenule dintr-un set (și setul) și contururile brute (`contur`, după numele glifei; implicit, ale instanței)."""
+    contur = contur or (lambda n: contururi(inst, n))
     caractere = [ch for ch in unice(text) if glifa(inst, ord(ch)) is not None]
     set_crenare = ''.join(ch for ch in unice(perechi) if glifa(inst, ord(ch)) is not None)
     hhea = inst['hhea']
     return {
-        'metrici': {'urcare': hhea.ascent, 'coborare': hhea.descent, 'spatiuRanduri': hhea.lineGap, 'majuscula': majuscula(inst)},
+        'metrici': {'urcare': hhea.ascent, 'coborare': hhea.descent, 'spatiuRanduri': hhea.lineGap, 'majuscula': majuscula(inst, contur)},
         'avansuri': {ch: avans(glifa(inst, ord(ch))) for ch in caractere},
         'setCrenare': set_crenare,
         'crenari': {a + b: v for a in set_crenare for b in set_crenare if (v := crenare(inst, glifa(inst, ord(a)), glifa(inst, ord(b))))},
-        'glife': {ch: [[[x, y, 1 if pe else 0] for x, y, pe in c] for c in contururi(inst, glifa(inst, ord(ch)))] for ch in unice(glife)
+        'glife': {ch: [[[x, y, 1 if pe else 0] for x, y, pe in c] for c in contur(glifa(inst, ord(ch)))] for ch in unice(glife)
                   if glifa(inst, ord(ch)) is not None},
     }
 
@@ -1270,8 +1363,15 @@ def variabile():
     0,5; avansul din HVAR față de cel din punctele fantomă: cel mult 1 unitate (rotunjirile fontului), numărate."""
     rez = {}
     diferente = collections.Counter()
-    for cale, locuri, toate in ((FLEX, None, LOCURI_TOATE), (FLEX_FANTOMA, ('Bold', 'colt-max', 'amestec'), ('Bold', 'colt-max', 'amestec')),
-                                (FLEX_COMPUSE, ('Bold', 'wdth-min', 'amestec'), ('Bold', 'wdth-min', 'amestec'))):
+    # Fontul, locurile (null: toate), cele cu toate contururile și crenarea (null: toate), locurile în afara instanțelor, textul.
+    # CFF2-ul (Noto Sans CJK) are contururile din pen-ul lui fontTools la coordonatele normalizate (`blend`-urile evaluate,
+    # nerotunjite), restul din instancer.
+    for cale, locuri, toate, extra, text, mica in (
+            (FLEX, None, LOCURI_TOATE, LOCURI_FLEX, TEXT_FLEX, CRENARE_MICA),
+            (FLEX_FANTOMA, ('Bold', 'colt-max', 'amestec'), ('Bold', 'colt-max', 'amestec'), LOCURI_FLEX, TEXT_FLEX, CRENARE_MICA),
+            (FLEX_COMPUSE, ('Bold', 'wdth-min', 'amestec'), ('Bold', 'wdth-min', 'amestec'), LOCURI_FLEX, TEXT_FLEX, CRENARE_MICA),
+            (CFF2_VAR, None, None, [('wght-650', {'wght': 650})], TEXT_CJK, TEXT_CJK),
+            (CFF2_SINTETIC, None, None, [('wght-min', {'wght': 100}), ('wght-250', {'wght': 250}), ('wght-max', {'wght': 900})], 'HAB', 'HAB')):
         f = TTFont(cale)
         fv, nm = f['fvar'], f['name']
         implicite = {a.axisTag: a.defaultValue for a in fv.axes}
@@ -1283,18 +1383,21 @@ def variabile():
         }
         lista = [(nm.getDebugName(i.subfamilyNameID), k, dict(i.coordinates)) for k, i in enumerate(fv.instances)]
         lista += [(nume, None, {a.axisTag: (a.minValue if c == 'min' else a.maxValue) for a in fv.axes} if isinstance(c, str) else c)
-                  for nume, c in LOCURI_FLEX]
+                  for nume, c in extra]
         for nume, k, coord in lista:
             if locuri is not None and nume not in locuri:
                 continue
-            inst, norm = instanta(cale, coord)
-            tot = nume in toate
+            # Instancer-ul lui fontTools cade pe A din CFF2-ul sintetic (setul de date ales cu `vsindex` în Private-ul FD 1;
+            # pen-ul îl desenează corect): fontul n-are HVAR, MVAR și GPOS, deci metricile lui sunt cele neinstanțiate.
+            inst, norm = instanta(cale, coord, cale != CFF2_SINTETIC)
+            tot = toate is None or nume in toate
             hvar = 'HVAR' in f
             # Numele glifelor sunt aceleași în instanță (același `post`, aceeași ordine).
             avans = (lambda g, norm=norm: avans_hvar(f, g, norm)) if hvar else (lambda g, inst=inst: inst['hmtx'][g][0])
+            contur = (lambda n, norm=norm: contururi(f, n, norm)) if 'CFF2' in f else None
             loc = {'nume': nume, 'instanta': k, 'coordonate': None if k is not None else coord,
                    'normalizate': [norm[a.axisTag] for a in fv.axes],
-                   **date_instanta(inst, avans, TEXT_FLEX, TEXT_FLEX if tot else 'HĂș', TEXT_FLEX if tot else CRENARE_MICA)}
+                   **date_instanta(inst, avans, text, text if tot else 'HĂș', text if tot else mica, contur)}
             if hvar:
                 for g in f.getGlyphOrder():
                     d = avans_hvar(f, g, norm) - inst['hmtx'][g][0]
@@ -1320,6 +1423,12 @@ def variabile():
     # Crenarea variază: „AV” are −87 la Regular, iar la Thin delta lui (+87) o anulează, deci perechea dispare; „To” se strânge.
     assert locuri['Regular']['crenari']['AV'] == -87 and 'AV' not in locuri['Thin']['crenari']
     assert locuri['Thin']['crenari']['To'] != locuri['Regular']['crenari']['To']
+    # CFF2: Medium (wght 500 = 0,2 liniar) cade sub prima pereche a hărții avar (0,20001 → 0,27869), deci pe segmentul de la 0;
+    # Black e marginea (1). Grosimea lărgește H și mută punctele lui (blend-urile chiar lucrează).
+    cjk = {x['nume']: x for x in rez['test/fixtures/text/noto-cjk-cff2.otf']['locuri']}
+    assert cjk['Medium']['normalizate'] == [otRound(0.2786865234375 * 0.2 / 0.20001220703125 * 16384) / 16384]
+    assert cjk['Black']['normalizate'] == [1.0] and cjk['Regular']['normalizate'] == [0.0]
+    assert cjk['Black']['avansuri']['H'] > cjk['Regular']['avansuri']['H'] and cjk['Black']['glife']['H'] != cjk['Regular']['glife']['H']
     print('avansul din HVAR minus cel din punctele fantomă (glife × locuri):', dict(sorted(diferente.items())))
     return rez
 
@@ -1356,6 +1465,8 @@ BRUTE = [
     ('test/fixtures/text/inter-subset.otf', 'HAMBURGEFONTSIVhamburgefontsivĂÂÎȘȚăâîșț0123456789'),
     ('test/fixtures/text/source-han-subset.otf', 'Hあ日本語AVa'),
     ('test/fixtures/text/cff-sintetic.otf', 'AHÁCFSRP\u00b4'),
+    # 7.4↑ (ADR 0113): CFF2 fix (Inter convertit), citit acum.
+    ('test/fixtures/text/inter-cff2.otf', 'HAMBURGEFONTSIVhamburgefontsivĂÂÎȘȚăâîșț0123456789'),
 ]
 
 
@@ -1395,6 +1506,9 @@ def main():
             brute[f'{fisier}:{ch}'] = [[[x, y, 1 if pe else 0] for x, y, pe in c] for c in contururi(font, glifa(font, ord(ch)))]
     # Variantele chiar au ce promit: Ă e pusă pe puncte, iar Å e compusă din Ă (deci tot din puncte).
     assert brute['test/fixtures/text/roboto-compuse.ttf:Å'] != brute['public/fonturi/roboto.ttf:Ă']
+    # CFF2-ul convertit din Inter desenează aceleași glife ca Inter (conversia nu schimbă contururile).
+    for ch in 'HAMBURGEFONTSIVhamburgefontsivĂÂÎȘȚăâîșț0123456789':
+        assert brute[f'test/fixtures/text/inter-cff2.otf:{ch}'] == brute[f'test/fixtures/text/inter-subset.otf:{ch}'], ch
     # Crenarea fiecărei perechi dintr-un set larg (literele, cifrele, semnele, diacriticele), nenulă, în fiecare font:
     # trece prin perechile anume (formatul 1, cu acoperirea pe liste sau pe intervale), prin clase (formatul 2), prin
     # Extension și prin tabelul `kern` vechi (Microsoft, neordonat, cu override; Apple).

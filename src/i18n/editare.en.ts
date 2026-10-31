@@ -188,7 +188,6 @@ export const enEditare = {
   'editare.text.refuz.nu-e-font': 'The file is not a font (TTF, OTF, TTC or WOFF).',
   'editare.text.refuz.woff': 'A WOFF is loaded from Fonts…, where it is unpacked.',
   'editare.text.refuz.woff2': 'WOFF2 cannot be read yet: load the font as TTF or OTF.',
-  'editare.text.refuz.cff2': 'Variable OpenType fonts with CFF2 outlines cannot be read yet.',
   'editare.text.refuz.variatii': 'The styles of this variable font cannot be computed yet ({detaliu}): only its default style can be used.',
   'editare.text.refuz.majuscula': 'The font has no letter H and no capital height: the size in mm has nothing to be measured on.',
   'editare.text.refuz.fara-unicode': 'The font has no Unicode character map (it is an old encoding, such as Shift-JIS).',

@@ -10,6 +10,9 @@ Din fonturi SIL Open Font License 1.1 (textul: LICENTA-OFL-1.1.txt, alături):
   Studio. Modificări, făcute cu fontTools: subsetul literelor probelor, fără GSUB; în variante, HVAR scos, H scos din cmap
   și o deltă nouă pe punctul fantomă din stânga al lui A (fantoma), componentele lui Ă și Â schimbate, cu delte noi, și
   gvar cu offseturi lungi (compuse).
+- noto-cjk-cff2.otf: subset al lui Noto Sans CJK JP (© 2014-2021 Adobe, with Reserved Font Name 'Source'), fontul variabil
+  CFF2 din fonturile de previzualizare ale lui Android Studio (fața 0 a colecției). Modificări: subsetul a opt caractere,
+  fără GSUB și fără tabelele verticale; numele lui nu folosește numele rezervat.
 - inter-subset.otf, inter-cff2.otf: subseturi ale lui Inter Regular (Copyright © 2020 The Inter Project Authors), din
   JetBrains Runtime-ul lui Android Studio; inter-cff2.otf are contururile convertite în CFF2. Modificări: subsetul
   literelor probelor, făcut cu fontTools.
@@ -17,10 +20,11 @@ Din fonturi SIL Open Font License 1.1 (textul: LICENTA-OFL-1.1.txt, alături):
   din fonturile Windows. Modificări: subsetul a opt caractere, FDSelect în formatul 3; numele familiei schimbat în
   „CNCVS Proba CID”, fiindcă o versiune modificată nu poate folosi numele rezervat.
 
-Scris aici: cff-sintetic.otf (programe Type 2 de mână, peste un font gol).
+Scrise aici: cff-sintetic.otf (programe Type 2 de mână, peste un font gol) și cff2-sintetic.otf (un CFF2 variabil de mână:
+blend, vsindex, două FD-uri, FDSelect 4).
 
 Font fixtures of the text tests, written by test/oracles-py/text_corpus.py: variants of the Apache 2.0 fonts in
-public/fonturi/; subsets of Inter, Source Han Sans JP and the variable Roboto Flex under the SIL Open Font License 1.1 (full
-text in LICENTA-OFL-1.1.txt; the Source Han subset is renamed “CNCVS Proba CID”, as the licence asks of a modified version
-that would otherwise use the Reserved Font Name “Source”; Roboto Flex declares no Reserved Font Name); cff-sintetic.otf,
-written by hand.
+public/fonturi/; subsets of Inter, Source Han Sans JP, the variable Roboto Flex and the variable (CFF2) Noto Sans CJK JP under
+the SIL Open Font License 1.1 (full text in LICENTA-OFL-1.1.txt; the Source Han subset is renamed “CNCVS Proba CID”, as the
+licence asks of a modified version that would otherwise use the Reserved Font Name “Source”; Roboto Flex declares no
+Reserved Font Name; the Noto subset’s names do not use “Source”); cff-sintetic.otf and cff2-sintetic.otf, written by hand.

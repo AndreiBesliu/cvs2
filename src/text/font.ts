@@ -5,12 +5,12 @@
  * - `head`, `maxp`, `hhea`, `hmtx`; `cmap` (formatele 4, 6 și 12, din subtabelul Unicode cel mai bun; un font simbol,
  *   Windows (3, 0), caută și în zona U+F000, ca Windows);
  * - contururile: TrueType (`loca` scurt și lung, `glyf`: glifele simple și compuse, cu transformarea și locul fiecărei
- *   componente, ca fontTools) sau CFF (`cff.ts`: OpenType `.otf`, și cele CID);
+ *   componente, ca fontTools) sau CFF (`cff.ts`: OpenType `.otf`, și cele CID; și CFF2, al fonturilor variabile);
  * - `OS/2` (înălțimea majusculei) și crenarea: din `GPOS`, perechile caracteristicii `kern` (formatele 1 și 2, și prin
  *   căutările Extension); fără ea, din tabelul `kern` vechi (subtabelele orizontale de formatul 0, Microsoft și Apple);
  * - un font variabil (ADR 0113): axele și instanțele numite din `fvar`, iar la o instanță cerută (o instanță numită sau
- *   coordonatele axelor) variațiile din `variatii.ts`: contururile din `gvar`, avansurile din `HVAR` (fără el, din punctele
- *   fantomă), crenarea din dispozitivele GPOS, majuscula din `MVAR` când fontul n-are H.
+ *   coordonatele axelor) variațiile din `variatii.ts`: contururile din `gvar` (sau din `blend`-urile lui CFF2), avansurile din
+ *   `HVAR` (fără el, din punctele fantomă), crenarea din dispozitivele GPOS, majuscula din `MVAR` când fontul n-are H.
  * Literele se pun una după alta, fără `GSUB` (ADR 0019: „GSUB are rezervă literă cu literă”).
  *
  * Înălțimea majusculei (ADR 0019, ADR 0106 §1): vârful conturului literei H, adică litera tăiată („20 mm” = H de 20 mm);
@@ -18,9 +18,9 @@
  * (Candara: 1308 / 1302 unități; Gabriola, HarmonyOS), deci nu mai e o verificare.
  *
  * Coordonatele rămân în unitățile fontului, cu Y în sus; așezarea (`asezare.ts`) le duce în mm. Fără instanță cerută, un font
- * variabil se citește în instanța lui implicită; CFF2 e refuzat.
+ * variabil se citește în instanța lui implicită.
  */
-import { citesteCff } from './cff.ts';
+import { citesteCff, citesteCff2 } from './cff.ts';
 import {
   COLECTIE, FontStricat, inceputuriFete, numeDupaId, numeFont, Octeti, SFNT_APPLE, SFNT_CFF, SFNT_TRUETYPE, tabele, WOFF, WOFF2,
   type ConturFont, type NumeFont, type PunctFont, type Tabele,
@@ -30,7 +30,7 @@ import { axeFvar, rotunjeste, variatii, type AxaFont, type Variatii } from './va
 export { Octeti, type AxaFont, type ConturFont, type NumeFont, type PunctFont };
 
 export type CodRefuzFont =
-  | 'nu-e-font' | 'woff' | 'woff2' | 'cff2' | 'tabel-lipsa' | 'stricat' | 'majuscula' | 'fara-unicode' | 'fata-lipsa' | 'variatii';
+  | 'nu-e-font' | 'woff' | 'woff2' | 'tabel-lipsa' | 'stricat' | 'majuscula' | 'fara-unicode' | 'fata-lipsa' | 'variatii';
 
 /**
  * O instanță numită a unui font variabil: numele stilului, cel PostScript (dacă îl are), dacă e chiar cea implicită și
@@ -422,9 +422,8 @@ function citeste(o: Octeti, fata: number, instanta: CerereInstanta | undefined):
   const versiune = o.u32(start);
   if (versiune !== SFNT_TRUETYPE && versiune !== SFNT_CFF && versiune !== SFNT_APPLE) return { ok: false, cod: 'nu-e-font' };
   const t = tabele(o, start);
-  const cff = t.get('CFF ');
-  if (!cff && t.has('CFF2')) return { ok: false, cod: 'cff2' };
-  for (const nume of ['head', 'maxp', 'hhea', 'hmtx', ...(cff ? [] : ['loca', 'glyf'])]) {
+  const cff = t.get('CFF '), cff2 = cff ? undefined : t.get('CFF2');
+  for (const nume of ['head', 'maxp', 'hhea', 'hmtx', ...(cff || cff2 ? [] : ['loca', 'glyf'])]) {
     if (!t.has(nume)) return { ok: false, cod: 'tabel-lipsa', detaliu: nume };
   }
   const head = t.get('head')!.pos, maxp = t.get('maxp')!.pos, hhea = t.get('hhea')!.pos, hmtx = t.get('hmtx')!.pos;
@@ -460,8 +459,9 @@ function citeste(o: Octeti, fata: number, instanta: CerereInstanta | undefined):
 
   let contururiGlifa: (g: number) => readonly ConturFont[];
   let avansFantoma: ((g: number, avans: number, lsb: number) => number) | null = null;
-  if (cff) {
-    const c = citesteCff(o, cff.pos, numarGlife, unitsPerEm);
+  if (cff || cff2) {
+    // CFF2 la instanță: `blend`-urile cu coordonatele ei; la cea implicită, valorile lor.
+    const c = cff ? citesteCff(o, cff.pos, numarGlife, unitsPerEm) : citesteCff2(o, cff2!.pos, numarGlife, unitsPerEm, v?.normalizate ?? null);
     const memorie = new Map<number, readonly ConturFont[]>();
     contururiGlifa = (g) => {
       const gata = memorie.get(g);
@@ -525,7 +525,7 @@ function citeste(o: Octeti, fata: number, instanta: CerereInstanta | undefined):
     coborare: o.i16(hhea + 6),
     spatiuRanduri: o.i16(hhea + 8),
     numarGlife,
-    cubice: !!cff,
+    cubice: !!(cff || cff2),
     axe,
     instante: listaInstante,
     glifa: (cod) => {
