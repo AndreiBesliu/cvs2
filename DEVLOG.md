@@ -3997,3 +3997,13 @@ importului e acum o singură judecată, fără biblioteca indexului (`src/geom/i
 Porțile: compilatorul (și al funcțiilor), importurile, testele unitare, build-ul determinist (pornirea 97,5, cu ușa 101,0
 / 110 kB; totalul 414,4 / 450; /admin 194,2 / 200), licențele, e2e-ul întreg, emulatoarele. Mutația: fără calculul
 pornit de întârziere, trei probe e2e cad. Cinci probe e2e vechi presupuneau traseul „vechi” până la `T`: rescrise.
+**Unită peste sugestia din editor** (`116597c`, adusă în `main` de sesiunea sugestiilor cât lucram): conflicte doar în
+indexul ADR și în fișă (ambele rânduri păstrate) și numărul ușilor din manual (67, nu 66: ambele părți adăugaseră câte una).
+Porțile din nou, pe arborele unit: 7 805 teste unitare, build-ul determinist (pornirea 97,6, cu ușa 101,1 / 110 kB; totalul
+414,8 / 450; /admin 196,0 / 200), e2e 282 / 282, emulatoarele (funcțiile și regulile 49, `/admin` 16; fără npm, stricat pe
+mașină: `firebase-tools` global, prin node, cu JBR 25).
+**Publicat pe adresa principală de test:** 31.10, `publica` pe `4307ea0` (rularea 41203932024), după rapid-ul verde
+(41203259410). Verificat în browserul aplicației la 1440 px: un dreptunghi nou are în panou secțiunea **Cutting** (rolul
+„outside”, adâncimea 3, pasul 3); cu traseul arătat, rolul „inside” a mutat traseul singur, fără `T` (stins sub „se
+calculează”, apoi la zi în ~0,3 s; timpul jobului 52,6 → 50,1 s; în pixelii stratului, rama la 3 mm înăuntru, iar cea de
+afară dispărută); anulat la loc, fără erori în consolă.
