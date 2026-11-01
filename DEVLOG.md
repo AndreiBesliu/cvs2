@@ -4218,3 +4218,24 @@ adresa principală), după „Reload”: versiunea `04461916a059`; butonul **Acc
 conectează la Firebase și arată formularul de logare (Google, e-mail, parolă, crearea contului, parola uitată) și nota de
 confidențialitate, cu locurile operatorului marcate; Escape îl închide. Fără erori în consolă și în jurnalul local. Contul nu
 l-am creat pe instanța găzduită: crearea, confirmarea și proba le probează e2e-ul cap-coadă pe emulatoare.
+
+## 2026-11-01 — Felia 5.1↑c: oracolul independent al ușii documentului v11–v18 (Model: Claude Opus 5.5)
+
+**Prompt:** „suntem pe aplicatie, haide sa pornim worktrees” (la propunerea sesiunii principale: „1. oracolul independent al
+ușii documentului v11–v18; 2. importul WMF”); lucrată de o sesiune paralelă, în worktree-ul
+`C:\Users\besli\cncvs2-lucru\oracol-document`, pe `wip/5.1c-oracol-document`.
+**Started:** 01.11, 16:20. **Completed:** 01.11, 17:30. Partea v11–v18 a oracolului documentului, rescrisă doar din ADR 0024, 0025,
+0070, 0069, 0076, 0087 și 0090–0094, fără să văd ușa aplicației și partea veche: secțiunea „Documentul v11–v18” de la finalul lui
+`test/oracles/document.ts` (peste partea v1–v10, neschimbată; partea veche, împletită în validatorul comun, scoasă, cu aceleași
+nume exportate), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts` (36 de documente v18 valide, 10 migrări, 9
+câmpuri în afara locului lor, 267 de valori de frontieră pe 32 de câmpuri, 63 de refuzuri, 5 ambiguități), proba
+`test/unit/document.v18.oracol.test.ts` (ușa aplicației pe cazuri, pe 2 370 de documente ale corpusului existent și ușa curentă).
+**Divergența** (de hotărât, nereparată): `incarcaCurent` cere migrările pentru o versiune neîntreagă din (1, 18), ADR 0070 §2; în
+probă, `todo`. **Ambiguitățile:** plafonul razei elicei (ADR 0076 §1: oracolul 10 000 mm, aplicația 100), parametrii altui fel în
+coborâre (amândouă: câmpuri necunoscute). Porțile: compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări),
+traducerile (501, 0 lipsă), 7 959 de teste unitare (7 950 trec, 0 cad, 1 `todo`, 8 sărite), build-ul determinist (220 de fișiere;
+pornirea 98,4, cu ușa 101,9 / 110 kB; totalul 433,1 / 450; /admin 196,9 / 200) și pachetul identic cu al lui `79f4ddc`, construit
+alături și comparat cu numele normalizate (diferă doar documentația, ordinea hărții de import și revizia lui `index.html` din
+precache), licențele. 19 mutații țintite ale ușii aplicației, toate prinse de aserțiunile probei (plus un control în zona ambiguă,
+care scapă, cum trebuie); fișierele mutate, identice cu HEAD la final. Nepublicat: unirea în `main` și publicarea pe test sunt ale
+sesiunii principale.
