@@ -4184,3 +4184,12 @@ un dreptunghi nou, „Save as role…” propune „outside, Ø6, 3 mm”; numel
 lista Rolului arată rolul în grupul „My roles”, lista „My roles (1)” are „Rename” și „Delete”, rolul e în `localStorage`;
 ștergerea cere confirmarea, apoi dreptunghiul arată rolul de bază. Fără erori în consolă și în jurnalul local. Rolul și
 dreptunghiul de probă, scoase la loc (ștergerea, anularea).
+
+## 2026-11-01 — Conturile clienților și raportările lor: ADR 0116, propus (Model: Claude Opus 5.5)
+
+**Prompt:** „Conturi” (la „Ce felie pornesc acum?”, între conturile clienților cu feedback-ul lor și calculul în lot).
+**Started:** 01.11, 10:40. **Completed:** 01.11, 11:19. Fără cod: ADR 0116, propus, cu deciziile owner-ului puse în față,
+fiecare cu implicitul ei, scris din `BRIEF.md` (§4, §7, §16.1), din `PLAN.md` (etapele 14–15; §8.2, deciziile 7, 12, 13, 15
+și 22) și din raportul de admin al Fazei 2 (tranșele P2 și P2+). Întrebările, grupate, în raportul de azi; rândul lor, în
+„Ce îi trebuie owner-ului” din fișa etapei 3. Felia 14.C↑ pornește după răspuns (contul e un punct de oprire: datele
+clienților). Numărul 0116 e al acestui ADR; sesiunile propuse azi (importul WMF, repararea vectorilor) iau 0117 și 0118.

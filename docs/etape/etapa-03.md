@@ -66,6 +66,7 @@ implicit n-are dreptul de export, eșecul apare în fila Erori și în Diagnoză
 | Copia locală a aplicației vechi, verificată pe calculatorul de la mașină (decizia 8) | lucrul de zi cu zi după primul live | înainte de 3.9 |
 | Arhivarea repo-ului vechi pe GitHub | 3.9 | la comutare |
 | Bifează „Sugestii: scrie” pe rolurile adminilor care scriu sugestii (și „Sugestii: citește toate”, dacă vrei să vadă și sugestiile celorlalți), în fila Personal din `/admin` | 14.B↑: fila Sugestii | după publicarea pe test |
+| Deciziile conturilor clienților și ale raportărilor (ADR 0116, propus): cele 8 întrebări din raportul din 01.11, fiecare cu implicitul ei, plus operatorul datelor și adresa de contact pentru nota de confidențialitate (fără implicit) | 14.C↑ (conturile), 15.B↑ (raportările); nota, pentru proba închisă | înainte de 14.C↑; nota, înainte de proba închisă |
 
 ## Inventarul proiectului live (19.10, doar citiri)
 
