@@ -169,6 +169,10 @@
       "ro": "Inlay în V și cu pereți drepți",
       "en": "V inlay and straight-wall inlay"
     },
+    "11d93fc98318f02a": {
+      "ro": "când vrei; până atunci, 1/96 țol",
+      "en": "whenever you like; until then, 1/96 inch"
+    },
     "121f4d45d3b8daf4": {
       "ro": "**Editarea nodurilor, adusă din etapa 6** (fără mașină; ADR 0062; „ok, continua”: următorul pas al rândului „Vectori, noduri…”). Unealta Noduri (N) arată nodurile formei alese: tragerea mută un nod (cu lipirea; punctele de control ale curbelor vecine se mută cu el), dublu clic pe o latură adaugă un nod fără să schimbe forma (linia, arcul și curba se împart exact), Delete scoate nodul ales dintre două linii, Esc îl lasă. Dreptunghiul și cercul devin căi cu același contur la prima schimbare; fiecare schimbare e un pas de anulare (prin `document.forma`). Sfatul de jos spune ce se poate face sau de ce forma aleasă nu se poate edita. Pornirea neschimbată (cu ușa 99,8 / 100); manualul are capitolul „Nodurile”. **Treceri:** (1) modulul pur, unealta, sfatul, probele; (2) cercul are doar două noduri, deci refuzul „prea puține” vine înaintea celui „lângă arce”: proba e2e adaugă întâi două noduri; nodul ales se pierdea după fiecare schimbare (efectul depindea de formă): legat doar de selecție.",
       "en": "**Node editing, brought forward from stage 6** (no machine; ADR 0062; „ok, continua”: the next step of the row „Vectors, nodes…”). The Nodes tool (N) shows the nodes of the chosen shape: dragging moves a node (with snapping; the control points of the neighbouring curves move with it), a double-click on a side adds a node without changing the shape (the line, the arc and the curve are split exactly), Delete removes the chosen node between two lines, Esc lets it go. The rectangle and the circle become paths with the same outline at the first change; each change is one undo step (through `document.forma`). The hint at the bottom says what can be done or why the chosen shape cannot be edited. Startup unchanged (99.8 / 100 with the door); the manual has the chapter „Nodes”. **Passes:** (1) the pure module, the tool, the hint, the tests; (2) the circle has only two nodes, so the „too few” refusal comes before the „next to arcs” one: the e2e test adds two nodes first; the chosen node was lost after every change (the effect depended on the shape): tied to the selection only."
@@ -424,6 +428,10 @@
     "2e7ec09be96e6d83": {
       "ro": "Personalul",
       "en": "Staff"
+    },
+    "2eea11e651d99c3a": {
+      "ro": "Importul WMF, adus din etapa 26",
+      "en": "WMF import, brought forward from stage 26"
     },
     "2f2818f9ad494728": {
       "ro": "proba închisă: aplicația arătată cuiva din afara echipei",
@@ -957,6 +965,10 @@
       "ro": "Traseul pe pânză și panoul de proprietăți (ADR 0038): 2.8c, panoul editabil, și 2.8d, traseul pe WebGL2 (16.10); 2.8e, probele independente (17.10 11:10–14:45: oracolul stratului, recenzia, otrăvurile). Detaliile: blocul „2.8” din „Feliile”. Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`. Orele de pe 16.10 nu sunt scrise acolo.",
       "en": "The toolpath on the canvas and the properties panel (ADR 0038): 2.8c, the editable panel, and 2.8d, the toolpath on WebGL2 (16.10); 2.8e, the independent checks (17.10 11:10–14:45: the layer oracle, the review, the poisons). Details: the “2.8” block in “Slices”. Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`. The times on 16.10 are not written there."
     },
+    "75d3a595b6142e98": {
+      "ro": "26.A↑: importul WMF",
+      "en": "26.A↑: the WMF import"
+    },
     "75d90f121b6ff1c8": {
       "ro": "Degruparea vectorilor",
       "en": "Ungrouping vectors"
@@ -1241,6 +1253,10 @@
       "ro": "Fără izolare cross-origin",
       "en": "No cross-origin isolation"
     },
+    "97782b935c8ff9d0": {
+      "ro": "Importul WMF, cu cititor propriu",
+      "en": "WMF import, with our own reader"
+    },
     "98068c1cdee265fa": {
       "ro": "Două interfețe; §10 Ghid la prima pornire; admin **P4**",
       "en": "Two interfaces; §10 First-run guide; admin **P4**"
@@ -1404,6 +1420,10 @@
     "aa58b21b01d6b8a9": {
       "ro": "da",
       "en": "yes"
+    },
+    "aa8b2a040d1d8ef3": {
+      "ro": "Unitatea implicită a unui WMF fără antet placeable (ADR 0117, întrebarea 1: implicit 1/96 țol, ca LibreOffice; sau mm, ca la un DXF fără unități) și un WMF real din programele tale (CorelDRAW, ArtCAM, AutoCAD), de încercat pe instanța de test",
+      "en": "The default unit of a WMF without a placeable header (ADR 0117, question 1: 1/96 inch by default, as in LibreOffice; or mm, as for a DXF without units) and a real WMF from your programs (CorelDRAW, ArtCAM, AutoCAD), to try on the test instance"
     },
     "aaefda24719e9446": {
       "ro": "Coliziunea cu mandrina; Zonele inaccesibile; Model înalt din felii; Extrudare; Two Rail / Spin / Turn",
@@ -1812,6 +1832,10 @@
     "e1f70cb6ba59f161": {
       "ro": "Senderul",
       "en": "The sender"
+    },
+    "e24c29e67b38945a": {
+      "ro": "**Importul WMF, adus din etapa 26** (fără mașină; ADR 0117; decizia owner-ului din 07.10: „WMF propriu”; subsesiune, în worktree-ul `wip/26.A-import-wmf`, pornită la „suntem pe aplicatie, haide sa pornim worktrees”). „Importă SVG / DXF / PDF / AI / EPS / WMF…” citește metafișierul Windows: polilinia, poligonul, PolyPolygon, dreptunghiul și cel rotunjit, elipsa, arcul, chord-ul, pie-ul și lanțul de LineTo, cu transformarea GDI (fereastra, vizorul, mutările, scările, modurile de mapare, ISOTROPIC, SaveDC / RestoreDC). Antetul placeable e o pagină: desenul stă pe foaie unde e în cadru, la 25,4 / inch mm pe unitate. Fără antet, unitatea se alege în fereastră (implicit 1/96 țol, ca LibreOffice) și desenul vine în colțul foii. Cercul iese din arce exacte, elipsa în cubice. O formă nevăzută (penița și pensula nule) se sare; textul, imaginile, operațiile raster, regiunile, decupajele și înregistrările necunoscute se sar, numărate; EMF-ul e refuzat cu motiv. Totul la cerere: pornirea neschimbată, 98,4 (cu ușa 101,9 / 110); totalul 433,1 → 437,6 / 450 kB. **Treceri:** (1) ADR-ul, cititorul, corpusul Python (11 fișiere, fiecare redat de GDI pe „Microsoft Print to PDF” și recitit cu PyMuPDF; CI-ul îl regenerează fără GDI și cere aceiași octeți), dialogul, manualul, e2e-ul. Găsite de oracolul GDI: arcul e orar când maparea oglindește doar axa X (cu ambele axe întoarse, tot trigonometric); capătul unui arc pus pe o axă e un artefact al GDI-ului; fundalul opac al textului e un dreptunghi plin; modurile metrice ale imprimantei vin din mm întregi (desfăcute în oracol). Găsit de probe: un RoundRect cu un colț nul pornea din colțul rotunjit. Prima măsurătoare a pornirii a dat 98,5 (+50 de octeți: eticheta, `accept`, unitatea aleasă), adusă la 98,4 (+27). Mutațiile: **59 / 59**: 56 pe probele unitare (5 au scăpat întâi și au primit probe: formele nevăzute cu numărul punctelor greșit, ISOTROPIC fără extinderi, cadrul decalat fără fereastra fișierului, o înregistrare fără parametri de 2 cuvinte) și 3 prin e2e, pe portul 4177. Sonda locală pe 128 de cliparturi Office (nu intră în repo): toate citite; ce desenează GDI peste 0,1 mm stă pe căile ușii, la cel mult 0,081 mm, și invers.",
+      "en": "**WMF import, brought forward from stage 26** (no machine; ADR 0117; the owner's decision of 07.10: “our own WMF”; a sub-session, in the `wip/26.A-import-wmf` worktree, started at “we are on the app, let's start worktrees”). “Import SVG / DXF / PDF / AI / EPS / WMF…” reads the Windows metafile: the polyline, the polygon, PolyPolygon, the rectangle and the rounded one, the ellipse, the arc, the chord, the pie and the chain of LineTo, with the GDI transformation (the window, the viewport, their offsets and scales, the mapping modes, ISOTROPIC, SaveDC / RestoreDC). The placeable header is a page: the drawing lands on the sheet where it is in the frame, at 25.4 / inch mm per unit. Without the header, the unit is chosen in the window (1/96 inch by default, as in LibreOffice) and the drawing lands in the sheet's corner. A circle comes out of exact arcs, an ellipse as cubics. An invisible shape (null pen and null brush) is skipped; text, images, raster operations, regions, clipping and unknown records are skipped and counted; an EMF is refused with its reason. All on demand: startup unchanged, 98.4 (with the door 101.9 / 110); the total 433.1 → 437.6 / 450 kB. **Passes:** (1) the ADR, the reader, the Python corpus (11 files, each rendered by GDI on “Microsoft Print to PDF” and read back with PyMuPDF; CI regenerates it without GDI and asks for the same bytes), the window, the manual, the e2e. Found by the GDI oracle: the arc is clockwise when the mapping mirrors only the X axis (with both axes flipped, still counterclockwise); an arc end placed on an axis is a GDI artifact; the opaque text background is a filled rectangle; the printer's metric modes come from whole mm (undone in the oracle). Found by the tests: a RoundRect with a zero corner started from the rounded corner. The first startup measurement gave 98.5 (+50 bytes: the label, `accept`, the chosen unit), brought back to 98.4 (+27). Mutations: **59 / 59**: 56 on the unit tests (5 escaped at first and got tests: invisible shapes with a wrong point count, ISOTROPIC without extents, the offset frame without the file's window, a parameterless record of 2 words) and 3 through e2e, on port 4177. The local probe on 128 Office clipart files (not in the repo): all read; what GDI draws above 0.1 mm lies on the door's paths, within 0.081 mm, and the other way round."
     },
     "e2a199e5f1f08a88": {
       "ro": "Importul SVG",

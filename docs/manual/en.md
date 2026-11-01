@@ -389,13 +389,13 @@ edge). **Centre on the sheet** always works against the sheet: it moves all the 
 arrangement stays and their common box ends up in the middle of the sheet. Several shapes are picked with the selection rectangle or with Shift + click (see [Selecting and editing](#selectie)).
 Each alignment can be undone with `Ctrl+Z`.
 
-## Importing SVG, DXF, PDF, AI and EPS
+## Importing SVG, DXF, PDF, AI, EPS and WMF
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-The **Import SVG / DXF / PDF / AI / EPS** button in the top bar (the first of the files, next to “Export vectors” and “Export
-G-code”) opens the file window (you can pick several). Or drag the files straight onto the canvas: each one lands centred
-where you drop it.
+The **Import SVG / DXF / PDF / AI / EPS / WMF** button in the top bar (the first of the files, next to “Export vectors” and
+“Export G-code”) opens the file window (you can pick several). Or drag the files straight onto the canvas: each one lands
+centred where you drop it.
 
 For each file a window opens that shows the drawing's size and how it will be cut:
 - **closed outlines**: the outer ones on the outside, the holes in them on the inside (from nesting);
@@ -405,12 +405,14 @@ For each file a window opens that shows the drawing's size and how it will be cu
   Illustrator is recognised;
 - for a DXF, **the units**: the ones the file declares are used as they are; a file that declares none (an R12, for example)
   is read in mm, and the window lets you choose mm, cm, m, inch or foot (the drawing's size changes at once);
+- for a WMF without a placeable header, **the unit**: 1/96 inch (px, as in LibreOffice), 1/1440 inch (twip), 0.01 mm, 0.1 mm
+  or mm (see below);
 - for a PDF with several pages, **the page** to import (see below);
 - what is not imported or is read differently, with their count (for an SVG: texts, `<use>` clones, images, hidden shapes).
 
 **Import** puts the drawing on the sheet as a single shape, selected; **Skip** moves on to the next file; **Cancel** and
-**Cancel all** close the window. SVG, DXF, PDF, AI and EPS files are imported, up to 16 MB, not compressed (no `.svgz`). Text has to be
-converted to outlines in the drawing program before export.
+**Cancel all** close the window. SVG, DXF, PDF, AI, EPS and WMF files are imported, up to 16 MB, not compressed (no `.svgz`).
+Text has to be converted to outlines in the drawing program before export.
 
 A **DXF** is read like this:
 - the text (ASCII) DXF, from R12 to the new ones; a binary one is refused (save it as ASCII);
@@ -448,6 +450,20 @@ decided by the start of the file, not by the extension:
 - the reader is limited: it reads drawings written out step by step, with their simple procedures. A file that uses loops or
   conditions (an EPS from CorelDRAW, for example), an operator the reader does not have (`arc`, for example) or an EPS saved
   by Illustrator 9 or newer is refused, and the window says why: save it as PDF, SVG or PDF-compatible AI.
+
+A **WMF** (the Windows metafile: old clipart, exports from CorelDRAW, Office or AutoCAD) is read like this:
+- with the placeable header (almost every WMF on disk), the drawing lands on the sheet where it is in its frame: the frame's
+  lower left corner is the sheet's corner, and the size comes from the header (the units per inch, shown in the window);
+- without the header, the file does not state its size: the window lets you choose the unit (1/96 inch by default, as
+  LibreOffice shows it), and the drawing lands in the sheet's corner; a file drawn in a metric mode (in 0.01 mm, for example)
+  states its units by itself;
+- polylines, polygons (also those with several outlines), rectangles, rounded rectangles, ellipses, arcs (also those closed
+  by a chord or by two radii) and lines drawn from point to point come in as Windows draws them, with the file's window,
+  viewport and mapping mode: a circle stays a circle, ellipses become Bézier curves;
+- a shape filled by the “winding” rule is redrawn as for SVG; an invisible one (no outline and no fill) is skipped;
+- skipped, and counted: texts, images and raster operations, painted regions, unknown records; clipping is not applied;
+- a WMF has no Bézier curves: a circle a program drew freehand becomes a polygon, and is imported as one;
+- an EMF (the 32-bit metafile) is refused: save it as WMF, SVG or PDF.
 
 ## The cutting operations
 %% capitol: operatii

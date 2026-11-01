@@ -315,7 +315,7 @@ test('lăsarea pe planșă (2.8b): „Sari peste” trece la următorul, un fiș
     { nume: 'doi.svg', text: PATRAT, tip: 'image/svg+xml' },
   ], 0.4, 0.6);
   await expect(page.getByTestId('import-coada')).toHaveText('(1 din 3)');
-  await expect(page.getByTestId('import-refuz')).toContainText('Doar fișierele SVG, DXF, PDF, AI și EPS se importă deocamdată');
+  await expect(page.getByTestId('import-refuz')).toContainText('Doar fișierele SVG, DXF, PDF, AI, EPS și WMF se importă deocamdată');
   await page.click('[data-buton="sari"]');
   await expect(page.getByTestId('import-coada')).toHaveText('(2 din 3)');
   await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 20.00 × 20.00 mm');
@@ -638,7 +638,7 @@ test('fișierele stau împreună în bara de sus (cererea din 28.10): import, ex
   expect(ordine).toEqual(['import.svg', 'vectori', 'export.gcode']);
   // Extensia barei nu-l mai are; bara întreagă încape lângă marcă și lângă uneltele din dreapta.
   await expect(page.locator('#loc-extensie [data-editare="vectori"]')).toHaveCount(0);
-  await expect(page.locator('[data-camp="fisier-svg"]')).toHaveAttribute('accept', /\.dxf,image\/vnd\.dxf,application\/dxf,\.pdf,application\/pdf,\.ai,\.eps,application\/postscript$/);
+  await expect(page.locator('[data-camp="fisier-svg"]')).toHaveAttribute('accept', /\.dxf,image\/vnd\.dxf,application\/dxf,\.pdf,application\/pdf,\.ai,\.eps,application\/postscript,\.wmf$/);
   const cutie = async (s: string) => {
     const b = await page.locator(s).boundingBox();
     if (!b) throw new Error(`${s} n-are cutie`);
@@ -739,4 +739,69 @@ test('AI 8 (PostScript): straturile ca nume, stratul ascuns sărit; refuzurile E
   expect(doc.piese.map((p) => p.nume)).toEqual(['Sigla']);
   const nume = doc.piese[0]?.radacina.copii.map((c) => c.nume) ?? [];
   expect([nume.filter((x) => x === 'TAIERE').length, nume.filter((x) => x === 'GRAVARE').length, nume.length]).toEqual([9, 5, 14]);
+});
+
+/* ── WMF (ADR 0117) ───────────────────────────────────────────────────────────────────────────────────────────────── */
+
+test('WMF cu antet: mărimea, laturile, unitățile din antet, raportul; piesa stă pe foaie unde e desenul în cadru', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles('test/fixtures/wmf/forme.wmf');
+  await expect(page.locator('#import-titlu')).toHaveText('Importă: forme.wmf');
+  // Valorile corpusului redat de GDI: cutia desenului de la (12,7, 6,35) la (196,85, 139,7) mm.
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 184.15 × 133.35 mm');
+  await expect(page.getByTestId('import-cai')).toHaveText('11 contururi închise: 10 tăiate pe exterior, 1 pe interior (din imbricare)');
+  await expect(page.getByTestId('import-deschise')).toContainText('3 căi deschise, tăiate pe linie');
+  await expect(page.getByTestId('import-unitati')).toHaveText('Unitățile fișierului: 1.440 pe țol (antetul placeable).');
+  await expect(page.locator('[data-avertisment]')).toHaveText([
+    '3 căi deschise (trase, neînchise) importate ca linii, de tăiat pe linie',
+    '1 bloc de text sărit: transformă textul în contururi în programul tău',
+    '1 imagine sau operație raster (bitmap, PatBlt) sărită',
+    '1 decupaj (mască de tăiere) neaplicat: ce decupează se importă întreg',
+    '1 cale nici trasă, nici umplută, sărită',
+    '1 formă umplută după regula nonzero (suprapuneri, imbricări în același sens) redesenată ca marginea zonei ei pline, pe curbele originale',
+    '5 arce eliptice scrise ca curbe cubice',
+  ]);
+  await expect(page.locator('[data-camp="unitate-wmf"], [data-camp="unitate"], [data-camp="px"], [data-camp="pagina"]')).toHaveCount(0);
+  await page.click('[data-buton="importa"]');
+  await expect(page.locator('.dialog')).toHaveCount(0);
+  const doc = await documentSalvat(page, 1) as { foi: Array<{ instante: Array<{ x: number; y: number }> }>; piese: Array<{ nume: string }> };
+  // Cadrul e pagina: colțul desenului, (12,7, 6,35) mm, e unde stă instanța.
+  const inst = doc.foi[0]?.instante ?? [];
+  expect(inst).toHaveLength(1);
+  expect(inst[0]?.x).toBeCloseTo(12.7, 6);
+  expect(inst[0]?.y).toBeCloseTo(6.35, 6);
+  expect(doc.piese[0]?.nume).toBe('forme');
+});
+
+test('WMF fără antet: unitatea se alege (implicit 1/96 țol) și mărimea se schimbă; EMF-ul și un WMF rupt își spun motivul', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles([
+    { name: 'fara-antet.wmf', mimeType: 'image/wmf', buffer: readFileSync('test/fixtures/wmf/fara-antet.wmf') },
+    { name: 'desen.emf', mimeType: 'image/emf', buffer: readFileSync('test/fixtures/wmf/desen.emf') },
+    { name: 'rupt.wmf', mimeType: 'image/wmf', buffer: readFileSync('test/fixtures/wmf/rupt.wmf') },
+  ]);
+  await expect(page.getByTestId('import-coada')).toHaveText('(1 din 3)');
+  // 720 × 520 de unități: la 1/96 țol, 190,5 × 137,58 mm.
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 190.50 × 137.58 mm');
+  await expect(page.getByTestId('import-unitati')).toHaveText('Fișierul nu-și declară unitățile: alege-le, iar mărimea desenului de mai sus se schimbă.');
+  await expect(page.locator('[data-avertisment="unitati-nedeclarate"]')).toHaveText(
+    'Fișierul n-are antet placeable și nu-și spune mărimea: alegi unitatea mai sus (până atunci, 1/96 țol)',
+  );
+  await expect(page.locator('[data-camp="unitate-wmf"] option')).toHaveText(['1/96 țol (px, 0,2646 mm)', '1/1440 țol (twip, 0,0176 mm)', '0,01 mm', '0,1 mm', 'un milimetru (mm)']);
+  await page.locator('[data-camp="unitate-wmf"]').selectOption('mm');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 720.00 × 520.00 mm');
+  await page.click('[data-buton="importa"]');
+  await expect(page.getByTestId('import-coada')).toHaveText('(2 din 3)');
+  await expect(page.getByTestId('import-refuz')).toHaveText(
+    'Fișierul e un EMF (metafișierul Windows pe 32 de biți), pe care importul nu-l citește: salvează-l ca WMF, SVG sau PDF în programul tău.',
+  );
+  await page.click('[data-buton="sari"]');
+  await expect(page.getByTestId('import-refuz')).toHaveText('Fișierul WMF e greșit (de la octetul 40): nu se poate citi.');
+  await page.click('[data-buton="renunta"]');
+  await expect(page.locator('.dialog')).toHaveCount(0);
+  const doc = await documentSalvat(page, 1) as { foi: Array<{ instante: Array<{ x: number; y: number }> }>; piese: Array<{ nume: string }> };
+  // Fără cadru, desenul vine în colțul foii.
+  expect(doc.piese.map((p) => p.nume)).toEqual(['fara-antet']);
+  expect(doc.foi[0]?.instante[0]?.x).toBe(0);
+  expect(doc.foi[0]?.instante[0]?.y).toBe(0);
 });

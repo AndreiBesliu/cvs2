@@ -95,3 +95,9 @@ jobs:
         run: |
           python test/oracles-py/eps_import_corpus.py .tmp/eps-corpus
           diff -r .tmp/eps-corpus test/fixtures/eps
+      # Importul WMF (ADR 0117): oracolul lui e GDI („Microsoft Print to PDF”), deci rulează doar local, pe Windows. Aici,
+      # fără GDI, generatorul trebuie să dea chiar fișierele comise (`test/fixtures/wmf`), octet cu octet.
+      - name: Corpusul importului WMF, regenerat fără GDI, egal cu cel comis
+        run: |
+          python test/oracles-py/wmf_import_corpus.py .tmp/wmf-corpus --fara-gdi
+          diff -r .tmp/wmf-corpus test/fixtures/wmf
