@@ -4263,3 +4263,6 @@ peste același flux, adresa doar IP privat sau `.local`, WiFi-ul căzut ca un ca
 spatele unui WebSocket local și imprimantele în felii viitoare, fără slicer în aplicație; feliile 3.6d și 3.6e în fișă;
 patru întrebări în coada owner-ului (controlerul cu WiFi, programele lungi, tableta, imprimantele). Doar documente: probele
 documentației (34), traducerile (508, 0 lipsă).
+**Publicat pe adresa principală de test:** 01.11, 18:45, `publica` pe `870d896` (rularea 41327626924), după CI-ul rapid
+verde (41326940034): ADR 0119 se servește în documentația din `/admin` (`documentatie/doc/docs/adr/0119-senderul-prin-wifi.md`,
+200), versiunea `870d896e0633`.
