@@ -4239,3 +4239,15 @@ alături și comparat cu numele normalizate (diferă doar documentația, ordinea
 precache), licențele. 19 mutații țintite ale ușii aplicației, toate prinse de aserțiunile probei (plus un control în zona ambiguă,
 care scapă, cum trebuie); fișierele mutate, identice cu HEAD la final. Nepublicat: unirea în `main` și publicarea pe test sunt ale
 sesiunii principale.
+
+## 2026-11-01 — Felia 5.1↑c, a doua trecere: ușa curentă refuză singură o versiune neîntreagă (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, repar-o aici” (la întrebarea „Repar ușa curentă (versiunea neîntreagă) pe ramura asta?”, după raportul feliei).
+**Started:** 01.11, 18:25. **Completed:** 01.11, 18:40. Divergența găsită de oracol (ADR 0070 §2), reparată: `incarcaCurent` cere
+migrările doar pentru o versiune întreagă din [1, 18) (`Number.isInteger` în condiție), deci o versiune neîntreagă (1,5, 17,5) se
+refuză acum în ușa curentă, cu motivul ușii întregi, fără bucata migrărilor. Proba (u) din `document.v18.oracol.test.ts` nu mai e
+`todo`, iar `usaCurenta.test.ts` are 1,5 și 17,5 printre refuzurile care nu cer migrări; amândouă cad cu reparația scoasă (mutația
+M21). Codul: `15be766`. Porțile: compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), traducerile (501,
+0 lipsă), 7 959 de teste unitare (7 951 trec, 0 cad, 8 sărite), build-ul determinist (220 de fișiere; pornirea 98,4, cu ușa
+101,9 / 110 kB; totalul 433,1 / 450; /admin 196,9 / 200: neschimbate la 0,1 kB), licențele; 20 / 20 de mutații ale ușii prinse
+(plus controlul din zona ambiguă, care scapă). Nepublicat: unirea în `main` și publicarea pe test sunt ale sesiunii principale.

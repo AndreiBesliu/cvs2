@@ -103,8 +103,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   01.11, rescrisă de o sesiune independentă doar din ADR-uri: secțiunea „Documentul v11–v18” de la finalul lui
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v18.oracol.test.ts`. **Un câmp nou al documentului (v19) intră acolo:** rândul lui
-  în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie. Ușa curentă care cere
-  migrările pentru o versiune neîntreagă (ADR 0070 §2) așteaptă decizia (proba e `todo`). Ușa unui proiect salvat e
+  în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie. Ușa curentă refuză
+  singură o versiune neîntreagă (ADR 0070 §2; divergența găsită de oracol, reparată în aceeași felie). Ușa unui proiect salvat e
   despărțită (ADR 0070): la pornire doar `usaCurenta.ts`, migrările (`migrari.ts`) doar pentru un document vechi; pornirea cu
   ușa 98,6 / 100 kB (~1,4 kB liberi).
   **Testul pas cu pas, în aplicație (ADR 0072)** gata pe 25.10: butonul Test din extensie (în afara instanței live; din 31.10,
