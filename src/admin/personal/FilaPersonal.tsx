@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactElement } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore/lite';
 import { COLECTII_PERSONAL, NUME_ROL_MAX, OWNER, PERMISIUNI, type CererePersonal, type Permisiune, type RaspunsPersonal } from '../../../shared/personal.ts';
 import { administreazaPersonalul, type Conexiune } from '../../cloud/conexiune.ts';
 import { t } from '../../i18n/t.ts';

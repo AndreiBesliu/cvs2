@@ -1,5 +1,5 @@
 import { useEffect, useId, useState, type FormEvent, type ReactElement } from 'react';
-import { Bytes, collection, doc, getDoc, getDocs, limit, orderBy, query, where } from 'firebase/firestore';
+import { Bytes, collection, doc, getDoc, getDocs, limit, orderBy, query, where } from 'firebase/firestore/lite';
 import type { Permisiune } from '../../../shared/personal.ts';
 import {
   COLECTIE_POZE, COLECTIE_SUGESTII, curataTitlu, DESCRIERE_MAX, esteStare, esteTip, esteZona, ID_POZA, NOTA_MAX, PLAFON_LISTA_SUGESTII,

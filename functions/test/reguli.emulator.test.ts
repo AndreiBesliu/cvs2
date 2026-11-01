@@ -20,6 +20,9 @@ const STRICAT = 'RStricat000000000000';
 const LIPSA = 'RLipsa00000000000000';
 const SCRIE = 'RScrie00000000000000';
 const CITESTE = 'RCiteste000000000000';
+// Conturile clienților (ADR 0116 §19): lista, și lista cu planul.
+const CONT_CIT = 'RContCit000000000000';
+const CONT_ADM = 'RContAdm000000000000';
 
 before(async () => {
   const e = await initializeTestEnvironment({
@@ -67,6 +70,15 @@ before(async () => {
     await setDoc(doc(db, 'conturi/om'), { email: 'om@exemplu.ro', plan: 'proba' });
     await setDoc(doc(db, 'conturi/sup'), { email: 'sup@exemplu.ro', plan: 'gratuit' });
     await setDoc(doc(db, 'setari/conturi'), { zileOffline: 7 });
+    await setDoc(doc(db, `roluri/${CONT_CIT}`), { nume: 'Conturi: citește', permisiuni: ['conturi.citeste'] });
+    await setDoc(doc(db, `roluri/${CONT_ADM}`), { nume: 'Conturi: administrează', permisiuni: ['conturi.administreaza'] });
+    await setDoc(doc(db, 'staff/ccit'), { rol: CONT_CIT });
+    await setDoc(doc(db, 'staff/cadm'), { rol: CONT_ADM });
+    // Tot catalogul, fără să fie owner: setările rămân ale owner-ului.
+    await setDoc(doc(db, 'roluri/RTot0000000000000000'), {
+      nume: 'Tot', permisiuni: ['erori.citeste', 'erori.rezolva', 'diagnoza.citeste', 'audit.citeste', 'documentatie.citeste', 'sugestii.scrie', 'sugestii.citeste', 'conturi.citeste', 'conturi.administreaza'],
+    });
+    await setDoc(doc(db, 'staff/tot'), { rol: 'RTot0000000000000000' });
     // Colecțiile aplicației vechi, pe care regulile vechi le dădeau omului lor.
     await setDoc(doc(db, 'users/om'), { nume: 'om' });
     await setDoc(doc(db, 'customers/om'), { stripeId: 'cus_x' });
@@ -246,22 +258,52 @@ test('amprenta publicării (meta/deployment) o citesc cei cu diagnoza.citeste; n
   await assertFails(getDocs(collection(ca('own'), 'meta')));
 });
 
-test('conturile clienților (ADR 0116): fiecare își citește documentul lui, nu și pe al altuia; nu se listează; setările nu se citesc', async () => {
+test('conturile clienților (ADR 0116): fiecare își citește documentul lui; fila Utilizatori (conturi.citeste, conturi.administreaza, owner-ul) le citește și le listează pe toate', async () => {
   await assertSucceeds(getDoc(doc(ca('om'), 'conturi/om')));
   await assertSucceeds(getDoc(doc(ca('sup'), 'conturi/sup')));
-  for (const uid of [null, 'sup', 'own', 'aud']) await assertFails(getDoc(doc(ca(uid), 'conturi/om')));
-  await assertFails(getDocs(collection(ca('own'), 'conturi')));
+  for (const uid of ['ccit', 'cadm', 'own', 'tot']) {
+    await assertSucceeds(getDoc(doc(ca(uid), 'conturi/om')));
+    await assertSucceeds(getDocs(collection(ca(uid), 'conturi')));
+  }
+  // Un rol fără permisiunile conturilor (erori, audit, sugestii) nu vede conturile altora și nu le listează.
+  for (const uid of [...FARA_NIMIC.filter((u) => u !== 'om'), 'sup', 'aud', 'scr', 'cit']) {
+    await assertFails(getDoc(doc(ca(uid), 'conturi/om')));
+    await assertFails(getDocs(collection(ca(uid), 'conturi')));
+  }
+  // Nici omul contului nu listează, nici măcar cu filtrul pe adresa lui.
   await assertFails(getDocs(query(collection(ca('om'), 'conturi'), where('email', '==', 'om@exemplu.ro'))));
-  for (const uid of [null, 'om', 'own']) await assertFails(getDoc(doc(ca(uid), 'setari/conturi')));
 });
 
-test('conturile și setările nu le scrie nimeni din client, nici omul contului, nici owner-ul: doar callable-ul `cont`', async () => {
+test('o permisiune de conturi scoasă din rol nu mai deschide lista, de la cererea următoare', async () => {
+  await assertSucceeds(getDocs(collection(ca('ccit'), 'conturi')));
+  await env?.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), `roluri/${CONT_CIT}`), { nume: 'Conturi: citește', permisiuni: [] });
+  });
+  await assertFails(getDocs(collection(ca('ccit'), 'conturi')));
+  await assertFails(getDoc(doc(ca('ccit'), 'conturi/om')));
+  await env?.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), `roluri/${CONT_CIT}`), { nume: 'Conturi: citește', permisiuni: ['conturi.citeste'] });
+  });
+});
+
+test('setările conturilor (ADR 0116 §20) le citește doar owner-ul, și doar documentul `conturi`; restul colecției `setari` e refuzat', async () => {
+  await assertSucceeds(getDoc(doc(ca('own'), 'setari/conturi')));
+  for (const uid of [null, 'om', 'sup', 'ccit', 'cadm', 'tot']) await assertFails(getDoc(doc(ca(uid), 'setari/conturi')));
+  await assertFails(getDoc(doc(ca('own'), 'setari/altceva')));
+  await assertFails(getDocs(collection(ca('own'), 'setari')));
+});
+
+test('conturile și setările nu le scrie nimeni din client, nici omul contului, nici fila Utilizatori, nici owner-ul: doar callable-urile', async () => {
   await assertFails(setDoc(doc(ca('om'), 'conturi/om'), { email: 'om@exemplu.ro', plan: 'gratuit' }));
   await assertFails(updateDoc(doc(ca('om'), 'conturi/om'), { plan: 'gratuit' }));
   await assertFails(setDoc(doc(ca('nou'), 'conturi/nou'), { email: 'nou@exemplu.ro', plan: 'proba' }));
   await assertFails(deleteDoc(doc(ca('om'), 'conturi/om')));
-  await assertFails(updateDoc(doc(ca('own'), 'conturi/om'), { plan: 'gratuit' }));
+  for (const uid of ['cadm', 'tot', 'own']) {
+    await assertFails(updateDoc(doc(ca(uid), 'conturi/om'), { plan: 'gratuit' }));
+    await assertFails(deleteDoc(doc(ca(uid), 'conturi/om')));
+  }
   await assertFails(setDoc(doc(ca('own'), 'setari/conturi'), { zileOffline: 60 }));
+  await assertFails(updateDoc(doc(ca('own'), 'setari/conturi'), { zileOffline: 60 }));
 });
 
 test('colecțiile aplicației vechi sunt refuzate, chiar și omului lor', async () => {

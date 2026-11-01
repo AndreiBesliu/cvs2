@@ -7,11 +7,14 @@
 
 /**
  * Catalogul: fiecare permisiune o verifică regulile sau serverul, deci una nouă e o schimbare de cod, cu proba ei.
- * Administrarea personalului (oamenii, rolurile, invitațiile, conturile) nu e în catalog: e doar a owner-ului; la fel
- * decizia pe sugestii (ADR 0107): `sugestii.scrie` dă scrierea și sugestiile proprii, `sugestii.citeste` pe toate.
+ * Administrarea personalului (oamenii, rolurile, invitațiile, conturile lor) nu e în catalog: e doar a owner-ului; la fel
+ * decizia pe sugestii (ADR 0107): `sugestii.scrie` dă scrierea și sugestiile proprii, `sugestii.citeste` pe toate; la fel
+ * setările conturilor (ADR 0116 §20). Conturile clienților (ADR 0116 §19): `conturi.citeste` dă lista, `conturi.administreaza`
+ * dă și planul (gratuit, proba, dezactivarea), deci și lista.
  */
 export const PERMISIUNI = [
   'erori.citeste', 'erori.rezolva', 'diagnoza.citeste', 'audit.citeste', 'documentatie.citeste', 'sugestii.scrie', 'sugestii.citeste',
+  'conturi.citeste', 'conturi.administreaza',
 ] as const;
 export type Permisiune = (typeof PERMISIUNI)[number];
 
@@ -35,6 +38,11 @@ export function estePermisiune(x: unknown): x is Permisiune {
 
 export function esteIdRol(x: unknown): x is string {
   return typeof x === 'string' && RE_ID_ROL.test(x);
+}
+
+/** Un uid de Firebase Auth, cum îl primesc callable-urile într-o cerere: fără `/`, cel mult 128 de caractere. */
+export function esteUid(x: unknown): x is string {
+  return typeof x === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(x);
 }
 
 /** Valoarea din `staff/{uid}.rol` are forma unui rol (owner sau un id de rol custom); existența rolului e altă întrebare. */

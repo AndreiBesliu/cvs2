@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { Timestamp, type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 import {
-  COLECTII_PERSONAL, curataNumeRol, curataPermisiuni, esteIdRol, esteRolValid, normalizeazaEmail, OWNER, ZILE_INVITATIE,
+  COLECTII_PERSONAL, curataNumeRol, curataPermisiuni, esteIdRol, esteRolValid, esteUid, normalizeazaEmail, OWNER, ZILE_INVITATIE,
   type RaspunsInvitatie, type RaspunsPersonal,
 } from '../../../shared/personal.ts';
 import { scrieAudit } from '../audit.ts';
@@ -28,8 +28,6 @@ export interface AuthPersonal {
 export const idInvitatie = (email: string): string => createHash('sha256').update(email).digest('hex');
 
 const RE_ID_INVITATIE = /^[0-9a-f]{64}$/;
-/** Un uid de Firebase Auth: fără `/`, cel mult 128 de caractere. */
-const RE_UID = /^[A-Za-z0-9_-]{1,128}$/;
 const ZI_MS = 86_400_000;
 
 const obiect = (x: unknown): Record<string, unknown> => (typeof x === 'object' && x !== null && !Array.isArray(x) ? x as Record<string, unknown> : {});
@@ -196,7 +194,7 @@ async function creeazaCont(db: Firestore, auth: AuthPersonal, uid: string, d: Re
 
 async function linkParola(db: Firestore, auth: AuthPersonal, uid: string, d: Record<string, unknown>, acum: Date): Promise<RaspunsPersonal> {
   const tinta = d['uid'];
-  if (typeof tinta !== 'string' || !RE_UID.test(tinta)) throw argument('uid-ul');
+  if (!esteUid(tinta)) throw argument('uid-ul');
   const email = await db.runTransaction(async (tx) => {
     await cereOwner(tx, db, uid);
     const s = await tx.get(colectie(db, 'staff').doc(tinta));
@@ -224,7 +222,7 @@ async function linkParola(db: Firestore, auth: AuthPersonal, uid: string, d: Rec
 async function schimbaRolul(db: Firestore, uid: string, d: Record<string, unknown>, acum: Date): Promise<RaspunsPersonal> {
   const tinta = d['uid'];
   const rol = d['rol'];
-  if (typeof tinta !== 'string' || !RE_UID.test(tinta)) throw argument('uid-ul');
+  if (!esteUid(tinta)) throw argument('uid-ul');
   if (!esteRolValid(rol)) throw argument('rolul');
   return db.runTransaction(async (tx) => {
     await cereOwner(tx, db, uid);
@@ -244,7 +242,7 @@ async function schimbaRolul(db: Firestore, uid: string, d: Record<string, unknow
 
 async function scoate(db: Firestore, uid: string, d: Record<string, unknown>, acum: Date): Promise<RaspunsPersonal> {
   const tinta = d['uid'];
-  if (typeof tinta !== 'string' || !RE_UID.test(tinta)) throw argument('uid-ul');
+  if (!esteUid(tinta)) throw argument('uid-ul');
   return db.runTransaction(async (tx) => {
     await cereOwner(tx, db, uid);
     const ref = colectie(db, 'staff').doc(tinta);

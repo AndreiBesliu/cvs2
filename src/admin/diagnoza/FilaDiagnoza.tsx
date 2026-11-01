@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
-import { collection, doc, getCountFromServer, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getCount, getDoc, getDocs, query, where } from 'firebase/firestore/lite';
 import type { Conexiune } from '../../cloud/conexiune.ts';
 import { t, traduce } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
@@ -14,7 +14,7 @@ export function FilaDiagnoza({ con, instanta, build, rol }: {
   const [rezultat, setRezultat] = useState<readonly Verificare[] | null>(null);
 
   const ruleaza = useCallback(async (): Promise<readonly Verificare[]> => {
-    const nerezolvate: Masura<number> = await getCountFromServer(query(collection(con.db, 'errorLogs'), where('rezolvat', '==', false))).then(
+    const nerezolvate: Masura<number> = await getCount(query(collection(con.db, 'errorLogs'), where('rezolvat', '==', false))).then(
       (s) => ({ ok: true as const, valoare: s.data().count }),
       (e: unknown) => ({ ok: false as const, motiv: motivDin(e) }),
     );

@@ -7,9 +7,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CAPABILITATI } from '../../shared/capabilitati.ts';
 import {
-  capabilitatiPlan, curataNume, dreptBun, dreptDin, dreptLaZi, NUME_MAX, permite, planEfectiv, SETARI_IMPLICITE, setariDin, ZI_MS,
-  zileRamase, type Drept,
+  capabilitatiPlan, curataNume, dreptBun, dreptDin, dreptLaZi, NUME_MAX, permite, ZI_MS, zileRamase, type Drept,
 } from '../../shared/conturi.ts';
+import { planEfectiv, SETARI_IMPLICITE, setariDin } from '../../shared/conturiPlan.ts';
 
 const T0 = Date.UTC(2026, 10, 1, 10, 0);
 const FARA_OPRITE = CAPABILITATI.filter((c) => c !== 'export-gcode' && c !== 'masina');

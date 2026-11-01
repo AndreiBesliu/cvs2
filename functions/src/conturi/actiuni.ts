@@ -1,9 +1,7 @@
 import { Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
-import {
-  CALE_SETARI, COLECTIE_CONTURI, curataNume, dreptDin, NUME_MAX, planEfectiv, setariDin, ZI_MS, ZILE_PROBA, type RaspunsDeschide,
-  type RaspunsNume,
-} from '../../../shared/conturi.ts';
+import { curataNume, dreptDin, NUME_MAX, ZI_MS, ZILE_PROBA, type RaspunsDeschide, type RaspunsNume } from '../../../shared/conturi.ts';
+import { CALE_SETARI, COLECTIE_CONTURI, planEfectiv, setariDin } from '../../../shared/conturiPlan.ts';
 import { normalizeazaEmail } from '../../../shared/personal.ts';
 import { scrieAudit } from '../audit.ts';
 import { logServerError } from '../erori/jurnal.ts';

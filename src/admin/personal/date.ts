@@ -67,7 +67,8 @@ export function numeRol(rol: string | null, roluri: readonly RolCustom[]): strin
 
 /**
  * Ce filă cere ce (oricare din permisiunile listate): Erori, Diagnoza, documentația (Roadmap și Documentație), Sugestii
- * (scrierea sau citirea tuturor, ADR 0107), Personal (doar owner-ul), Cont (oricine).
+ * (scrierea sau citirea tuturor, ADR 0107), Utilizatori (citirea sau administrarea conturilor, ADR 0116), Personal și
+ * Setări (doar owner-ul), Cont (oricine).
  */
 const CERE: Readonly<Record<Fila, readonly Permisiune[] | 'owner' | null>> = {
   erori: ['erori.citeste'],
@@ -75,7 +76,9 @@ const CERE: Readonly<Record<Fila, readonly Permisiune[] | 'owner' | null>> = {
   roadmap: ['documentatie.citeste'],
   documentatie: ['documentatie.citeste'],
   sugestii: ['sugestii.scrie', 'sugestii.citeste'],
+  utilizatori: ['conturi.citeste', 'conturi.administreaza'],
   personal: 'owner',
+  setari: 'owner',
   cont: null,
 };
 

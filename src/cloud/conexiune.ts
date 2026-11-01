@@ -1,6 +1,7 @@
 import type { Auth } from 'firebase/auth';
-import { connectFirestoreEmulator, getFirestore, type Firestore } from 'firebase/firestore';
+import { connectFirestoreEmulator, getFirestore, type Firestore } from 'firebase/firestore/lite';
 import { httpsCallable } from 'firebase/functions';
+import type { CerereConturi, RaspunsPlan, RaspunsSetari } from '../../shared/conturiPlan.ts';
 import type { CererePersonal, RaspunsInvitatie, RaspunsPersonal } from '../../shared/personal.ts';
 import type { CerereSugestie, RaspunsSugestie } from '../../shared/sugestii.ts';
 import { conecteazaBaza, hostPort, type ConexiuneBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
@@ -59,6 +60,16 @@ export async function acceptaInvitatia(c: Conexiune): Promise<RaspunsInvitatie> 
 /** Sugestiile personalului (ADR 0107): scrierea, editarea autorului, decizia owner-ului; refuzurile vin cu motivul serverului. */
 export async function sugestii(c: Conexiune, cerere: CerereSugestie): Promise<RaspunsSugestie> {
   return (await httpsCallable<CerereSugestie, RaspunsSugestie>(c.functii, 'sugestii')(cerere)).data;
+}
+
+/** Planul unui cont din fila Utilizatori (ADR 0116 §19): cu `conturi.administreaza`, pe planul văzut; refuzurile vin cu motivul. */
+export async function planulContului(c: Conexiune, cerere: Extract<CerereConturi, { actiune: 'plan' }>): Promise<RaspunsPlan> {
+  return (await httpsCallable<CerereConturi, RaspunsPlan>(c.functii, 'administreazaConturile')(cerere)).data;
+}
+
+/** Setările conturilor din fila Setări (ADR 0116 §20): doar owner-ul; refuzurile vin cu motivul serverului. */
+export async function setarileConturilor(c: Conexiune, cerere: Extract<CerereConturi, { actiune: 'setari' }>): Promise<RaspunsSetari> {
+  return (await httpsCallable<CerereConturi, RaspunsSetari>(c.functii, 'administreazaConturile')(cerere)).data;
 }
 
 export async function marcheazaEroarea(c: Conexiune, amprenta: string, rezolvat: boolean): Promise<{ ok: true; schimbat: boolean }> {

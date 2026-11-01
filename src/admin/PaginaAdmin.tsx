@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactElement, type ReactNode } from 'react';
 import type { User } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore/lite';
 import { COLECTII_PERSONAL, esteIdRol, OWNER, permisiuniDin, type Permisiune } from '../../shared/personal.ts';
 import {
   acceptaInvitatia, ascultaContul, conecteaza, iesi, intraCuGoogle, intraCuParola, trimiteResetarea, type ConfigCloud, type Conexiune,
@@ -20,13 +20,16 @@ import { motivCont } from './cont/motive.ts';
 import { fileVizibile } from './personal/date.ts';
 import { FilaPersonal } from './personal/FilaPersonal.tsx';
 import { FilaRoadmap } from './roadmap/FilaRoadmap.tsx';
+import { FilaSetari } from './setari/FilaSetari.tsx';
 import { FilaSugestii } from './sugestii/FilaSugestii.tsx';
+import { FilaUtilizatori } from './utilizatori/FilaUtilizatori.tsx';
 import './admin.css';
 
 /**
  * Pagina `/admin` (ADR 0040): contul (Google sau parola, ADR 0049), rolul din `staff/{uid}` și permisiunile lui din
  * `roluri/{rol}`, apoi filele pe care le dau: Erori, Diagnoză, Roadmap și Documentație (ADR 0048; fila și documentul
- * deschis stau în `#`, `adresa.ts`), Sugestii (ADR 0107), Personal (owner-ul), Cont (oricine). Un om fără document de
+ * deschis stau în `#`, `adresa.ts`), Sugestii (ADR 0107), Utilizatori (conturile clienților, ADR 0116), Personal și Setări
+ * (owner-ul), Cont (oricine). Un om fără document de
  * personal, cu o invitație pe adresa lui verificată, intră singur în personal. Se încarcă la cerere, din pornire, înaintea
  * deschiderii proiectului: nu ia blocarea lui și nu aduce Firebase în pachetul de pornire.
  */
@@ -251,7 +254,9 @@ function Cont({ con, instanta, build }: { readonly con: Conexiune; readonly inst
         {aratata === 'roadmap' ? <FilaRoadmap aducator={aducator} deschide={deschide} /> : null}
         {aratata === 'documentatie' ? <FilaDocumentatie aducator={aducator} cale={adresa.document} ancora={adresa.ancora} deschide={deschide} /> : null}
         {aratata === 'sugestii' ? <FilaSugestii con={con} eu={stare.user.uid} owner={stare.owner} permisiuni={stare.permisiuni} /> : null}
+        {aratata === 'utilizatori' ? <FilaUtilizatori con={con} poateAdministra={stare.permisiuni.has('conturi.administreaza')} /> : null}
         {aratata === 'personal' ? <FilaPersonal con={con} eu={stare.user.uid} emailEu={stare.user.email ?? null} /> : null}
+        {aratata === 'setari' ? <FilaSetari con={con} /> : null}
         {aratata === 'cont' ? <FilaCont con={con} user={stare.user} /> : null}
       </section>
     </Cadru>

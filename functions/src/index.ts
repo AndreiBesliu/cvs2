@@ -17,6 +17,7 @@ import { marcheazaEroarea as marcheaza } from './erori/marcheaza.ts';
 import { acceptaInvitatia as accepta, administreazaPersonalul as administreaza } from './personal/actiuni.ts';
 import { trateazaSugestia } from './sugestii/actiuni.ts';
 import { trateazaContul } from './conturi/actiuni.ts';
+import { administreazaConturile as administreazaConturi } from './conturi/admin.ts';
 import { memorieNoua, trateazaFonturiGoogle } from './fonturi/google.ts';
 import { REGIUNI } from './regiuni.ts';
 
@@ -76,6 +77,15 @@ export const sugestii = onCall(
 export const cont = onCall(
   { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 5, memory: '256MiB', timeoutSeconds: 20 },
   async (cerere) => trateazaContul(getFirestore(), cerere.auth?.uid ?? null, cerere.auth?.token ?? null, cerere.data),
+);
+
+/**
+ * Fila Utilizatori și fila Setări (ADR 0116 §19, §20): planul unui cont (cu `conturi.administreaza`), pe planul văzut, și
+ * setările conturilor (doar owner-ul), cu auditul în tranzacția fiecărei acțiuni.
+ */
+export const administreazaConturile = onCall(
+  { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 2, memory: '256MiB', timeoutSeconds: 20 },
+  async (cerere) => administreazaConturi(getFirestore(), cerere.auth?.uid ?? null, cerere.data),
 );
 
 const memorieGoogle = memorieNoua();

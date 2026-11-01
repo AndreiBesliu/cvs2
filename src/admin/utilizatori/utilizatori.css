@@ -1,0 +1,52 @@
+/* Filele Utilizatori și Setări (ADR 0116): secțiunile și listele filei Personal (`personal.css`), plus planul contului. */
+.util input[type='number'] {
+  font: inherit;
+  font-size: var(--fs-3);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 12rem;
+  min-height: var(--tinta);
+  padding: 0 var(--sp-3);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+}
+
+/* Planul: textul și conturul în culoarea lui, pe fondul panoului (contrastul tokenurilor de text, în ambele teme). */
+.util-plan {
+  padding: 0 var(--sp-2);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--t-slab);
+}
+
+.util-plan[data-plan='proba'] {
+  color: var(--a);
+}
+
+.util-plan[data-plan='gratuit'] {
+  color: var(--traseu-taiere);
+}
+
+.util-plan[data-plan='expirat'],
+.util-plan[data-plan='dezactivat'] {
+  color: var(--rosu);
+}
+
+.util-meta {
+  margin: 0;
+}
+
+.util-setari {
+  display: grid;
+  gap: var(--sp-3);
+  max-width: 34rem;
+}
+
+.util-setari label {
+  display: grid;
+  gap: var(--sp-1);
+}
