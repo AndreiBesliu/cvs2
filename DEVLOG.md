@@ -4177,3 +4177,10 @@ Rolului; lista cu redenumirea și ștergerea. Codul: `9b0938f`. Porțile: compil
 7 932 teste unitare, build-ul determinist (217 fișiere; pornirea 97,6, cu ușa 101,1 / 110 kB; totalul 432,1 / 450), licențele,
 e2e 287 / 287, emulatoarele (49 + 16). 4 mutații țintite, toate prinse (recunoașterea cu numerele frezelor, numărul salvat păstrat
 mereu, scrierea fără recitirea listei, despărțirea păstrată în model). Nightly-ul din noaptea asta (41285584952), verde.
+**Publicat pe adresa principală de test:** 01.11, 10:47, `publica` pe `6acafb6` (rularea 41289895460), după CI-ul
+rapid verde (41289438395: cele 6 felii și oracolul exportului 2D). Verificat în browserul aplicației la 1440 px, pe
+`cncvectorstudio-test.web.app` (același site, altă stocare decât adresa principală), după „Reload”: versiunea `6acafb691302`;
+un dreptunghi nou, „Save as role…” propune „outside, Ø6, 3 mm”; numele tastat cu tastele (unealta rămâne Selecția), Enter:
+lista Rolului arată rolul în grupul „My roles”, lista „My roles (1)” are „Rename” și „Delete”, rolul e în `localStorage`;
+ștergerea cere confirmarea, apoi dreptunghiul arată rolul de bază. Fără erori în consolă și în jurnalul local. Rolul și
+dreptunghiul de probă, scoase la loc (ștergerea, anularea).
