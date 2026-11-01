@@ -4391,3 +4391,8 @@ Codul: `c7ea4fc`, `8086ad5`. **Porțile:**
 
 Mutațiile țintite, toate prinse: mesajele de control lăsate să treacă, IP-urile publice primite, `error`-ul de dinaintea
 deschiderii ignorat. Proba cap-coadă a căzut și fără `ws:` în CSP.
+**Publicat pe adresa principală de test:** 01.11, 21:59, `publica` pe `bbfa5c8` (rularea 41344030488), după CI-ul rapid verde
+(41343256735). Antetul servit are în `connect-src` schema `ws:`, iar pagina e pe `bbfa5c8469a8`. În browserul aplicației,
+fereastra era minimizată: pagina nu s-a desenat, deci modulul editării (cu butonul Cont) nu s-a încărcat acolo. Locul butonului
+l-am verificat pe build-ul final, local, cu o aserțiune nouă în `test/e2e/cont.spec.ts`: butonul e în locul `cont`, imediat la
+dreapta butonului temei, pe același rând, nu în extensie. Captura colțului din dreapta-sus i-am trimis-o owner-ului.
