@@ -12,8 +12,12 @@
  * Codurile controlerului (ADR 0085, felia 3.6c): ultimul `error:N` / `ALARM:N` se explică într-un card sub stare (`PanouCod`),
  * din tabelul familiei controlerului; lista erorilor și jurnalul își arată titlul. Deblocarea după o alarmă care pierde
  * poziția cere confirmarea, și de pe butonul lucrării.
+ *
+ * Legătura prin WiFi (ADR 0119, felia 3.6d): „Conectează (WiFi)” cere controlerul, adresa (un IP local sau un nume `.local`,
+ * judecată înainte de conectare) și portul, ținute în browser; prima pornire a unui program prin WiFi, în pagina asta, spune
+ * întâi ce se întâmplă dacă legătura cade.
  */
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from 'react';
 import type { ActiuneCod } from '../../shared/coduri.ts';
 import '../i18n/masina.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
@@ -22,6 +26,7 @@ import { incarcaProgram, montajDeclarat, sculaLaOprire, type RezultatIncarcare }
 import { pozitieDeLucru } from '../machine/raspunsuri.ts';
 import { deschideSerial, serialDisponibil } from '../machine/serial.ts';
 import { SesiuneMasina, type Ceas, type LinieJurnal, type Procedura, type StareSesiune } from '../machine/sesiune.ts';
+import { adresaRetea, deschideRetea, esteProfilRetea, PROFIL_RETEA, PROFILURI_RETEA, type ProfilRetea } from '../machine/websocket.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { contulPermite, useContTinut } from './dreptCont.ts';
 import { CardCod, ConfirmareDeblocare, cuTitlu, deblocareCuConfirmare, titluCod, useDictionarCoduri, type StareDictionar } from './PanouCod.tsx';
@@ -46,6 +51,34 @@ function sesiunea(): SesiuneMasina {
   comuna ??= new SesiuneMasina(CEAS);
   return comuna;
 }
+/** Adresa controlerului legat prin WiFi (gazda:portul), pentru starea conexiunii; ca sesiunea, rămâne peste panoul strâns. */
+let adresaConectata: string | null = null;
+/** Avertismentul căderii WiFi-ului s-a arătat (și s-a trecut) în pagina asta. */
+let avertizatWifi = false;
+
+/** Alegerile legăturii prin WiFi, ținute în browser (`v: 1`): controlerul, adresa scrisă, portul. */
+const CHEIE_RETEA = 'cncvs2.masina.retea';
+type AlegeriRetea = { readonly profil: ProfilRetea; readonly adresa: string; readonly port: string };
+function alegeriTinute(): AlegeriRetea {
+  try {
+    const x: unknown = JSON.parse(localStorage.getItem(CHEIE_RETEA) ?? 'null');
+    const d = typeof x === 'object' && x !== null ? (x as Record<string, unknown>) : {};
+    const profil = d['profil'];
+    const adresa = d['adresa'];
+    const port = d['port'];
+    if (d['v'] === 1 && esteProfilRetea(profil) && typeof adresa === 'string' && typeof port === 'number') return { profil, adresa, port: String(port) };
+  } catch {
+    // Stocarea lipsă sau stricată: implicitele.
+  }
+  return { profil: 'fluidnc', adresa: '', port: String(PROFIL_RETEA.fluidnc.port) };
+}
+function tineAlegeri(profil: ProfilRetea, adresa: string, port: number): void {
+  try {
+    localStorage.setItem(CHEIE_RETEA, JSON.stringify({ v: 1, profil, adresa, port }));
+  } catch {
+    // Fără stocare, alegerile nu se țin: legătura merge.
+  }
+}
 
 const AXE = ['X', 'Y', 'Z', 'A', 'B', 'C'];
 const VITEZE = [1, 10, 100] as const;
@@ -59,12 +92,22 @@ const DIRECTII: readonly ({ readonly id: string; readonly simbol: string; readon
 ];
 
 type Refuz = Extract<RezultatIncarcare, { ok: false }>;
+/** Motivele legăturii prin WiFi (`websocket.ts`), fără parametri. */
+const MOTIVE_RETEA: ReadonlySet<string> = new Set(['retea-nedeschis', 'retea-timp', 'retea-permisiune', 'retea-cazuta']);
 /** Motivul portului închis: gol (închis de dispozitiv) sau un cod al nostru se traduc; altfel, textul browserului. */
-const textMotiv = (m: string): string => (m === '' ? t('masina.motiv.inchis') : m === 'fara-web-serial' || m === 'port-fara-scriere' ? t(`masina.motiv.${m}`) : m);
+const textMotiv = (m: string): string => {
+  if (m === '') return t('masina.motiv.inchis');
+  if (m === 'fara-web-serial' || m === 'port-fara-scriere') return t(`masina.motiv.${m}`);
+  if (MOTIVE_RETEA.has(m)) return t(`masina.motiv.${m}` as CheieSimpla);
+  const inchisa = /^retea-inchisa(?::(\d+))?$/.exec(m);
+  return inchisa ? t('masina.motiv.retea-inchisa', { cod: inchisa[1] ?? '—' }) : m;
+};
+/** Portul (USB) sau legătura (WiFi) închisă, cu motivul ei. */
+const textEroare = (m: string): string => t(m.startsWith('retea-') ? 'masina.eroare.retea' : 'masina.eroare', { motiv: textMotiv(m) });
 /** O linie a jurnalului: ce spune sesiunea (un cod) în limba omului; restul, cum l-a trimis controlerul (un cod, cu titlul lui). */
 const textJurnal = (l: LinieJurnal, d: StareDictionar, st: StareSesiune): string => {
   if (l.cod === undefined) return l.fel === 'trimis' ? `> ${l.text}` : cuTitlu(l.text, d, st);
-  if (l.cod === 'port-inchis') return t('masina.eroare', { motiv: textMotiv(l.motiv ?? '') });
+  if (l.cod === 'port-inchis') return textEroare(l.motiv ?? '');
   if (l.cod === 'miscare') return t('masina.jurnal.miscare', { motiv: t(`masina.miscare.${l.motiv ?? 'ocupata'}` as CheieSimpla) });
   return t(`masina.jurnal.${l.cod}` as CheieSimpla);
 };
@@ -118,6 +161,8 @@ export function PanouMasina({ ultimulExport, simulare }: {
   // Cardul codului ascuns cu „Am înțeles” (numărul lui): următorul cod îl arată din nou.
   const [ascuns, setAscuns] = useState<number | null>(null);
   const [confirmDeblocare, setConfirmDeblocare] = useState(false);
+  const [wifi, setWifi] = useState(false);
+  const [avertismentWifi, setAvertismentWifi] = useState(false);
   const nrAlarma = st.alarma?.nr ?? null;
   useEffect(() => { setConfirmDeblocare(false); }, [nrAlarma]);
 
@@ -142,6 +187,25 @@ export function PanouMasina({ ultimulExport, simulare }: {
       // Omul a închis fereastra de alegere: nimic de spus.
       if (!(e instanceof DOMException && e.name === 'NotFoundError')) setRefuz(textMotiv(e instanceof Error ? e.message : String(e)));
     }
+  };
+  /** Legătura prin WiFi: adresa se judecă întâi; întoarce motivul refuzului, în limba omului, sau null. */
+  const conecteazaRetea = async (profil: ProfilRetea, text: string, port: number): Promise<string | null> => {
+    const a = adresaRetea(text, port);
+    if (!a.ok) return t(`masina.wifi.refuz.${a.motiv}`);
+    try {
+      await s.conecteaza(await deschideRetea(a.adresa, profil));
+    } catch (e) {
+      return textMotiv(e instanceof Error ? e.message : String(e));
+    }
+    adresaConectata = `${a.adresa.gazda}:${a.adresa.port}`;
+    tineAlegeri(profil, text.trim(), a.adresa.port);
+    setWifi(false);
+    return null;
+  };
+  /** Pornirea: prima dată prin WiFi, în pagina asta, întâi avertismentul căderii legăturii. */
+  const porneste = (): void => {
+    if (st.transport === 'retea' && !avertizatWifi) { setAvertismentWifi(true); return; }
+    s.eveniment({ tip: 'start' });
   };
   const conecteazaSimulata = async (): Promise<void> => {
     const m = await import('../machine/MasinaSimulata.ts');
@@ -190,18 +254,26 @@ export function PanouMasina({ ultimulExport, simulare }: {
 
       <section aria-label={t('masina.conexiune')}>
         <p className="masina-cap" data-testid="masina-conexiune">
-          {conectat ? t(st.transport === 'simulat' ? 'masina.conectat.simulat' : 'masina.conectat.serial') : t('masina.deconectat')}
+          {!conectat ? t('masina.deconectat')
+            : st.transport === 'retea' ? t('masina.conectat.retea', { adresa: adresaConectata ?? '—' })
+              : t(st.transport === 'simulat' ? 'masina.conectat.simulat' : 'masina.conectat.serial')}
         </p>
-        {st.eroare !== null && <p className="masina-nota" role="status">{t('masina.eroare', { motiv: textMotiv(st.eroare) })}</p>}
+        {st.eroare !== null && <p className="masina-nota" role="status">{textEroare(st.eroare)}</p>}
         <div className="masina-butoane">
           {!conectat && (serialDisponibil()
             ? <button type="button" data-masina="conecteaza" title={t('masina.conecteaza.titlu')} onClick={() => { void conecteazaSerial(); }}>{t('masina.conecteaza')}</button>
             : <p className="masina-nota">{t('masina.fara-serial')}</p>)}
+          {!conectat && (
+            <button type="button" data-masina="conecteaza-wifi" title={t('masina.conecteaza-wifi.titlu')} aria-expanded={wifi} onClick={() => { setWifi((x) => !x); }}>
+              {t('masina.conecteaza-wifi')}
+            </button>
+          )}
           {!conectat && simulare && (
             <button type="button" data-masina="simulata" title={t('masina.simulata.titlu')} onClick={() => { void conecteazaSimulata(); }}>{t('masina.simulata')}</button>
           )}
           {conectat && <button type="button" data-masina="deconecteaza" onClick={() => { void s.deconecteaza(); }}>{t('masina.deconecteaza')}</button>}
         </div>
+        {wifi && !conectat && <FormularWifi conecteaza={conecteazaRetea} renunta={() => { setWifi(false); }} />}
         {simulare && (
           <label className="masina-camp">
             <span>{t('masina.viteza')}</span>
@@ -280,7 +352,7 @@ export function PanouMasina({ ultimulExport, simulare }: {
         <div className="masina-butoane">
           <button type="button" className="principal" data-masina="start" {...(faraSender ? { title: t('motiv.fara-capabilitate') } : {})}
             disabled={faraSender || !conectat || !f.program || !['pregatit', 'terminat', 'pierdut'].includes(f.faza) || f.inZbor.length > 0}
-            onClick={() => { s.eveniment({ tip: 'start' }); }}>{t('masina.start')}</button>
+            onClick={porneste}>{t('masina.start')}</button>
           {f.faza === 'suspendat' && <button type="button" className="principal" data-masina="reia" onClick={() => { s.eveniment({ tip: 'reia' }); }}>{t('masina.reia')}</button>}
           {f.faza === 'bariera' && <button type="button" className="principal" data-masina="continua" onClick={() => { s.eveniment({ tip: 'continua' }); }}>{t('masina.continua')}</button>}
           {conectat && f.faza !== 'suspendat' && (inHold
@@ -291,6 +363,16 @@ export function PanouMasina({ ultimulExport, simulare }: {
             <button type="button" data-masina="deblocheaza" onClick={cereDeblocare}>{t('masina.deblocheaza')}</button>
           )}
         </div>
+        {avertismentWifi && conectat && st.transport === 'retea' && (
+          <div className="masina-nota masina-avertisment" role="alertdialog" aria-label={t('masina.start')} data-testid="masina-avertisment-wifi">
+            <p>{t('masina.wifi.avertisment')}</p>
+            <div className="masina-butoane">
+              <button type="button" className="principal" data-masina="start-wifi"
+                onClick={() => { avertizatWifi = true; setAvertismentWifi(false); s.eveniment({ tip: 'start' }); }}>{t('masina.wifi.porneste-oricum')}</button>
+              <button type="button" data-masina="start-wifi-renunta" onClick={() => { setAvertismentWifi(false); }}>{t('masina.wifi.renunta')}</button>
+            </div>
+          </div>
+        )}
         {!cod && confirmare}
       </section>
 
@@ -305,6 +387,57 @@ export function PanouMasina({ ultimulExport, simulare }: {
         </ol>
       </section>
     </div>
+  );
+}
+
+/**
+ * Legătura prin WiFi (ADR 0119): controlerul (cu portul lui implicit), adresa și portul, din alegerile ținute; refuzul (adresa
+ * sau legătura) se spune sub formular.
+ */
+function FormularWifi({ conecteaza, renunta }: {
+  readonly conecteaza: (profil: ProfilRetea, adresa: string, port: number) => Promise<string | null>;
+  readonly renunta: () => void;
+}): ReactNode {
+  const [initial] = useState(alegeriTinute);
+  const [profil, setProfil] = useState<ProfilRetea>(initial.profil);
+  const [adresa, setAdresa] = useState(initial.adresa);
+  const [port, setPort] = useState(initial.port);
+  const [ocupat, setOcupat] = useState(false);
+  const [refuz, setRefuz] = useState<string | null>(null);
+  const trimite = (e: FormEvent): void => {
+    e.preventDefault();
+    setOcupat(true);
+    setRefuz(null);
+    void conecteaza(profil, adresa, numar(port)).then((r) => { setOcupat(false); setRefuz(r); });
+  };
+  return (
+    <form className="masina-wifi" onSubmit={trimite} data-testid="masina-wifi">
+      <label className="masina-camp">
+        <span>{t('masina.wifi.profil')}</span>
+        <select value={profil} data-masina="wifi-profil"
+          onChange={(e) => { const v = e.target.value; if (esteProfilRetea(v)) { setProfil(v); setPort(String(PROFIL_RETEA[v].port)); } }}>
+          {PROFILURI_RETEA.map((p) => <option key={p} value={p}>{t(`masina.wifi.profil.${p}`)}</option>)}
+        </select>
+      </label>
+      <label className="masina-camp">
+        <span>{t('masina.wifi.adresa')}</span>
+        <input value={adresa} data-masina="wifi-adresa" placeholder="192.168.1.50" autoComplete="off" spellCheck={false}
+          onChange={(e) => { setAdresa(e.target.value); }} />
+      </label>
+      <label className="masina-camp">
+        <span>{t('masina.wifi.port')}</span>
+        <input type="number" inputMode="numeric" min={1} max={65535} step={1} value={port} data-masina="wifi-port" className="masina-numar"
+          onChange={(e) => { setPort(e.target.value); }} />
+      </label>
+      <p className="masina-nota">{t('masina.wifi.adresa.ajutor')}</p>
+      <div className="masina-butoane">
+        <button type="submit" className="principal" data-masina="wifi-conecteaza" disabled={ocupat}>
+          {t(ocupat ? 'masina.wifi.se-conecteaza' : 'masina.wifi.conecteaza')}
+        </button>
+        <button type="button" data-masina="wifi-renunta" onClick={renunta}>{t('masina.wifi.renunta')}</button>
+      </div>
+      {refuz && <p className="masina-nota" role="alert" data-testid="masina-wifi-refuz">{refuz}</p>}
+    </form>
   );
 }
 

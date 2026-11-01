@@ -669,11 +669,20 @@ legate cap la cap (o polilinie, apoi o curbă).
 %% capitol: masina
 %% acopera: vedere.masina
 
-Panoul **Mașina** (în dreapta, sub proprietăți) trimite programul la mașină, prin cablul USB, și îi arată starea.
+Panoul **Mașina** (în dreapta, sub proprietăți) trimite programul la mașină, prin cablul USB sau prin WiFi, și îi arată starea.
 
 - **Conectează (USB)** te lasă să alegi portul mașinii (GRBL, 115 200 baud). Merge doar în Chrome sau Edge pe un calculator
   (Web Serial); altfel, panoul spune asta. Pe instanța de test mai e și **Mașină simulată**: un controler GRBL simulat, ca să
   încerci panoul fără CNC, cu **Viteza** 1×, 10× sau 100×. **Deconectează** închide portul.
+- **Conectează (WiFi)** leagă panoul de un controler din rețeaua locală, printr-un WebSocket. Alegi **Controlerul** (FluidNC,
+  grblHAL sau un pod ESP3D pe un GRBL clasic, care-și aduce portul implicit), scrii **Adresa** (un IP local, de exemplu
+  `192.168.1.50`, sau un nume care se termină în `.local`) și **Portul**, apoi **Conectează**; **Renunță** închide formularul.
+  Alegerile rămân în browser pentru data viitoare. Merge în Chrome și Edge, de la versiunea 147: prima dată, browserul cere voie
+  pentru dispozitivele din rețeaua locală, iar un refuz se schimbă din setările site-ului. O adresă pe care browserul n-ar lăsa-o
+  (un nume obișnuit, un IP din afara rețelei locale) se refuză înainte de conectare, cu motivul.
+- **Prin WiFi, legătura poate cădea.** Atunci mașina termină ce are în memorie și se oprește, iar panoul nu mai poate trimite
+  Pauză sau Oprește, ca la un cablu scos. De aceea, la prima pornire a unui program prin WiFi, panoul spune asta întâi:
+  **Pornește oricum** sau **Renunță**. Oprirea de urgență a mașinii rămâne cea fizică.
 - **Starea** vine din rapoartele mașinii (de 5 ori pe secundă): Idle, Run, Hold:0 (oprită), Hold:1 (încă frânează), Alarm, și
   poziția (de lucru, când se știe; altfel a mașinii).
 - **Programul**: **Ultimul export** încarcă exact fișierul ultimului Exportă G-code (amprenta SHA-256 e aceeași cu cea din

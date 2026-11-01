@@ -1,6 +1,6 @@
 /**
- * Sesiunea mașinii (ADR 0081): un transport (portul Web Serial sau mașina simulată), fluxul senderului (ADR 0080) și ceasul de
- * rapoarte. Octeții primiți se taie în linii (`\n`, cu `\r`-ul scos) și intră în flux ca evenimente `primit`; acțiunile `scrie`
+ * Sesiunea mașinii (ADR 0081): un transport (portul Web Serial, WebSocket-ul din rețeaua locală, ADR 0119, sau mașina simulată),
+ * fluxul senderului (ADR 0080) și ceasul de rapoarte. Octeții primiți se taie în linii (`\n`, cu `\r`-ul scos) și intră în flux ca evenimente `primit`; acțiunile `scrie`
  * pleacă la transport în ordine, printr-o coadă de promisiuni; ce vede omul (conexiunea, faza, raportul, jurnalul) se publică
  * abonaților, cel mult o dată la `PERIOADA_PUBLICARE_MS` (un program de 100 000 de linii nu redesenează panoul la fiecare `ok`).
  * Timpul vine din afară (`Ceas`), ca sesiunea să se probeze în Node, cu un ceas fals.
@@ -21,7 +21,7 @@ import {
 import { citesteRaspuns, familieDinLinie, type FamilieControler, type Raspuns } from './raspunsuri.ts';
 
 export interface Transport {
-  readonly fel: 'serial' | 'simulat';
+  readonly fel: 'serial' | 'retea' | 'simulat';
   scrie(octeti: Uint8Array): Promise<void>;
   /** Pornește citirea: `primit` la fiecare bucată de octeți, `inchis` o singură dată (null: închis de noi). */
   porneste(primit: (octeti: Uint8Array) => void, inchis: (motiv: string | null) => void): void;
@@ -36,7 +36,7 @@ export type Ceas = {
 
 export type FelJurnal = 'trimis' | 'primit' | 'raspuns' | 'alarma' | 'refuz' | 'mesaj' | 'sesiune';
 /** Ce spune sesiunea însăși (nu controlerul), ca un cod: textul îl dă panoul, în limba omului. */
-export type CodJurnal = 'conectat-serial' | 'conectat-simulat' | 'deconectat' | 'port-inchis' | 'neconectat' | 'miscare' | CodRefuzFlux;
+export type CodJurnal = 'conectat-serial' | 'conectat-retea' | 'conectat-simulat' | 'deconectat' | 'port-inchis' | 'neconectat' | 'miscare' | CodRefuzFlux;
 /**
  * O linie a jurnalului: textul controlerului (sau comanda trimisă), ori codul sesiunii (cu evenimentul refuzat în `text`); la
  * `port-inchis`, `motiv` e motivul portului, la `miscare`, codul `MotivMiscare`.
@@ -138,7 +138,7 @@ export class SesiuneMasina {
     // Familia, alarma și repornirea le-a șters închiderea portului de dinainte (`inchis`); codul rămâne până aici, cu explicația lui.
     this.s = { ...this.s, conexiune: 'conectat', transport: t.fel, eroare: null, wcsActiv: null, cod: null };
     this.citesteWcs = true;
-    this.jurnalizeaza('sesiune', '', { cod: t.fel === 'serial' ? 'conectat-serial' : 'conectat-simulat' });
+    this.jurnalizeaza('sesiune', '', { cod: `conectat-${t.fel}` });
     t.porneste((o) => { if (this.transport === t) this.primit(o); }, (motiv) => { if (this.transport === t) this.inchis(motiv); });
     this.ticker = this.ceas.setInterval(() => { this.eveniment({ tip: 'tic' }); }, PERIOADA_RAPORT_MS);
     this.publica(true);

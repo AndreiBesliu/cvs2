@@ -692,12 +692,21 @@ in pieces joined end to end (a polyline, then a curve).
 %% capitol: masina
 %% acopera: vedere.masina
 
-The **Machine** panel (on the right, under the properties) sends the program to the machine over the USB cable and shows its
-state.
+The **Machine** panel (on the right, under the properties) sends the program to the machine over the USB cable or over WiFi
+and shows its state.
 
 - **Connect (USB)** lets you choose the machine’s port (GRBL, 115,200 baud). It works only in Chrome or Edge on a computer
   (Web Serial); otherwise, the panel says so. On the test instance there is also **Simulated machine**: a simulated GRBL
   controller, to try the panel without a CNC, with **Speed** 1×, 10× or 100×. **Disconnect** closes the port.
+- **Connect (WiFi)** links the panel to a controller on the local network, through a WebSocket. You choose the **Controller**
+  (FluidNC, grblHAL or an ESP3D bridge on a classic GRBL, which brings its default port), write the **Address** (a local IP,
+  for example `192.168.1.50`, or a name ending in `.local`) and the **Port**, then **Connect**; **Cancel** closes the form. The
+  choices stay in the browser for next time. It works in Chrome and Edge, from version 147: the first time, the browser asks to
+  allow devices on your local network, and a refusal is changed in the site settings. An address the browser would not allow
+  (an ordinary name, an IP outside the local network) is refused before connecting, with the reason.
+- **Over WiFi, the connection can drop.** Then the machine finishes what it has in memory and stops, and the panel can no longer
+  send Pause or Stop, as with an unplugged cable. So, at the first start of a program over WiFi, the panel says this first:
+  **Start anyway** or **Cancel**. The machine’s emergency stop stays the physical one.
 - **State** comes from the machine’s reports (5 times a second): Idle, Run, Hold:0 (stopped), Hold:1 (still braking), Alarm,
   and the position (the work position when known; otherwise the machine’s).
 - **Program**: **Last export** loads exactly the file of the last Export G-code (the SHA-256 fingerprint matches the one in

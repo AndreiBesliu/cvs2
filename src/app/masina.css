@@ -216,3 +216,25 @@
 .masina-confirmare p {
   margin: 0 0 var(--sp-1);
 }
+
+/* Legătura prin WiFi (ADR 0119): formularul sub butoanele conexiunii; adresa ia rândul întreg. */
+.masina-wifi {
+  display: grid;
+  gap: var(--sp-1);
+  margin: var(--sp-1) 0 var(--sp-2);
+}
+
+.masina-wifi input:not([type='number']) {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Avertismentul căderii WiFi-ului, înaintea primei porniri: chenarul plin, ca alarma. */
+.masina-avertisment {
+  border-style: solid;
+  border-color: var(--rosu);
+}
+
+.masina-avertisment p {
+  margin: 0 0 var(--sp-1);
+}

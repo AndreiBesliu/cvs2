@@ -135,6 +135,10 @@ const CONTROALE_MASINA: Readonly<Record<string, string | null>> = {
   'cod-repornire': 'masina.opreste', 'cod-deblocare': 'masina.deblocheaza', 'cod-eliberare': 'masina.eliberare', 'cod-jog': 'masina.cod.la-jog',
   'cod-palpare': 'masina.cod.la-palpare', 'cod-ascunde': 'masina.cod.ascunde', 'deblocheaza-oricum': 'masina.deblocare.oricum',
   'deblocare-renunta': 'masina.deblocare.renunta',
+  // Legătura prin WiFi (ADR 0119): formularul și avertismentul de dinaintea primei porniri.
+  'conecteaza-wifi': 'masina.conecteaza-wifi', 'wifi-profil': 'masina.wifi.profil', 'wifi-adresa': 'masina.wifi.adresa',
+  'wifi-port': 'masina.wifi.port', 'wifi-conecteaza': 'masina.wifi.conecteaza', 'wifi-renunta': 'masina.wifi.renunta',
+  'start-wifi': 'masina.wifi.porneste-oricum', 'start-wifi-renunta': 'masina.wifi.renunta',
 };
 
 test('fiecare control al panoului mașinii (data-masina) e numit în capitolul „masina”, în ambele limbi', () => {
