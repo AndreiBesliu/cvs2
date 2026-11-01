@@ -272,6 +272,79 @@
    "sursa": "antet"
   }
  },
+ "cadru.wmf": {
+  "cadru": [
+   101.6,
+   50.8
+  ],
+  "cai": [
+   {
+    "ce": "Polygon față de colțul cadrului",
+    "inchis": true,
+    "piese": [
+     {
+      "L": [
+       63.5,
+       38.1
+      ]
+     },
+     {
+      "L": [
+       38.1,
+       12.7
+      ]
+     },
+     {
+      "L": [
+       12.7,
+       38.1
+      ]
+     }
+    ],
+    "start": [
+     12.7,
+     38.1
+    ]
+   },
+   {
+    "ce": "Ellipse rotundă față de colțul cadrului",
+    "inchis": true,
+    "piese": [
+     {
+      "A": [
+       71.12,
+       33.02
+      ],
+      "c": [
+       83.82,
+       33.02
+      ],
+      "dt": 180
+     },
+     {
+      "A": [
+       96.52,
+       33.02
+      ],
+      "c": [
+       83.82,
+       33.02
+      ],
+      "dt": 180
+     }
+    ],
+    "start": [
+     96.52,
+     33.02
+    ]
+   }
+  ],
+  "raport": {},
+  "unitati": {
+   "inch": 1000,
+   "sursa": "antet"
+  }
+ },
  "desen.emf": {
   "refuz": "emf"
  },

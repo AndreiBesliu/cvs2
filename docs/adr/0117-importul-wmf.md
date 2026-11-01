@@ -95,7 +95,16 @@ Elipsa, arcul, chord-ul, pie-ul și dreptunghiul rotunjit sunt însă înregistr
 | | Înainte (14.C↑) | După (26.A↑) |
 |---|---|---|
 | Pornirea (cu ușa) | 98,4 (101,9) / 110 kB | 98,4 (101,9) / 110 kB |
-| Totalul JavaScript | 433,1 / 450 kB | de măsurat / 450 kB |
+| Totalul JavaScript | 433,1 / 450 kB | 437,6 / 450 kB |
+
+WMF-ul cere 4,4 kB, aproape tot la cerere:
+- cititorul, în bucata calculului importului: +3,9 kB;
+- dialogul: +0,3 kB;
+- codurile: +0,2 kB;
+- pornirea: +27 de octeți (eticheta butonului, `.wmf` în fereastra de fișiere, unitatea aleasă în contextul importului).
+
+Prima măsurătoare a dat pornirea 98,5 (+50 de octeți). Fereastra de fișiere cere acum doar `.wmf`, fără tipurile MIME, pe
+care tragerea pe pânză le recunoaște oricum. Unitatea WMF trece fără spread condițional.
 
 ## Probele
 
@@ -120,10 +129,20 @@ Elipsa, arcul, chord-ul, pie-ul și dreptunghiul rotunjit sunt însă înregistr
   - Ușa citește corpusul sub 1e-6 mm. Fiecare cale citită urmează bucată cu bucată una de pe hârtie (linii; arce de cerc cu
     centrul și baleiajul lor; cubice pe elipsă, cu unghiul monoton), și invers, cu raportul exact
     (`test/unit/wmf.corpus.test.ts`).
-- **Sonda locală pe clipartul Office:** 1 280 de WMF-uri reale de pe mașină, toate placeable, citite de ușă și redate de
-  GDI. Nu intră în repo: sunt ale Microsoft.
-- **Probele țintite** (`test/unit/wmf.test.ts`), **fluxul** (`test/unit/import.wmf.test.ts`), **e2e** (`test/e2e/import.spec.ts`)
-  și **mutațiile** (`test/otravuri/26.A.py`).
+- **Sonda locală pe clipartul Office:** 1 280 de WMF-uri reale de pe mașină, toate placeable. Nu intră în repo: sunt ale
+  Microsoft. Pe 128 dintre ele (unul din zece):
+  - ușa le citește pe toate, cu 5 636 de căi;
+  - redate de GDI cu același player, fiecare subcale GDI de peste 0,1 mm stă pe o cale a ușii, la cel mult 0,081 mm;
+  - fiecare cale a ușii de peste 0,1 mm e desenată de GDI;
+  - 8 căi de 0,03–0,08 mm, din 4 fișiere, sunt sub pragul sondei (la GDI, pixeli).
+- **Probele țintite** (`test/unit/wmf.test.ts`, 15), **fluxul** (`test/unit/import.wmf.test.ts`, 6) și **e2e**
+  (`test/e2e/import.spec.ts`, 2 noi: fișierul cu antet și cel fără, cu unitatea aleasă, EMF-ul și fișierul rupt).
+- **Mutațiile** (`test/otravuri/26.A.py`): 59 / 59.
+  - 56 pe probele unitare: unitățile, axa Y, numărarea punctelor din PolyPolygon, maparea, sensul arcelor, tabelul
+    obiectelor, ce se sare, ușa după antet.
+  - 5 au scăpat întâi și au primit probe: formele nevăzute cu numărul punctelor greșit (două), ISOTROPIC fără extinderi,
+    cadrul decalat fără fereastra fișierului (și în corpus, cu GDI), o înregistrare fără parametri de 2 cuvinte.
+  - 3 de interfață, prin e2e pe portul 4177: unitatea aleasă în dialog, rândul unităților, `.wmf` în fereastra de fișiere.
 
 ## Ce am respins
 

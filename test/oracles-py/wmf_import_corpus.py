@@ -736,6 +736,26 @@ def obiecte():
     caz('obiecte.wmf', date, cai, raport, {'sursa': 'antet', 'inch': inch}, (W * s, H * s), player, pix)
 
 
+# ── cadru.wmf: un cadru care nu pornește din origine, fără fereastra fișierului: playerul o pune pe cadru ─────────────────
+
+
+def cadru():
+    inch, l, t, r, b = 1000, 1000, 2000, 5000, 4000  # 4 × 2 țoli, din (1000, 2000)
+    s = 25.4 / inch
+
+    def mm(x, y):
+        return ((x - l) * s, (b - y) * s)
+
+    recs = [Polygon((1500, 2500), (3500, 2500), (2500, 3500)), Ellipse(3800, 2200, 4800, 3200)]
+    date = wmf(recs, (l, t, r, b), inch)
+    cai = [
+        frante('Polygon față de colțul cadrului', [mm(1500, 2500), mm(3500, 2500), mm(2500, 3500)], True),
+        cerc('Ellipse rotundă față de colțul cadrului', mm(4300, 2700), 500 * s),
+    ]
+    player, pix = placeable(inch, l, t, r, b)
+    caz('cadru.wmf', date, cai, {}, {'sursa': 'antet', 'inch': inch}, ((r - l) * s, (b - t) * s), player, pix)
+
+
 # ── Refuzurile: doar text (golul), un EMF, o înregistrare ruptă ─────────────────────────────────────────────────────────
 
 
@@ -762,6 +782,7 @@ fin()
 fara_antet()
 himetric()
 obiecte()
+cadru()
 refuzuri()
 
 with open(os.path.join(IESIRE, 'asteptat.json'), 'w', encoding='utf-8', newline='\n') as g:

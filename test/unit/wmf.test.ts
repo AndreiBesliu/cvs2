@@ -129,6 +129,15 @@ test('înregistrările rupte se refuză cu octetul lor: mărimea, sfârșitul fi
   // Un fișier fără EOF, terminat la granița unei înregistrări, se citește.
   const fara = placeable(Rectangle(0, 0, 10, 10));
   assert.ok(citesteWmf(fara.subarray(0, fara.length - 6)).ok);
+  // O înregistrare fără parametri (SaveDC) de 2 cuvinte: refuzată chiar la octetul ei, nu citită strâmb mai departe.
+  const strambă = cu(rec(0x001e), Rectangle(0, 0, 10, 10));
+  strambă[Number(off)] = 2;
+  assert.deepEqual(refuz(strambă), ['wmf', off]);
+  // O formă nevăzută (penița și pensula nule) cu numărul punctelor greșit e tot un fișier greșit, nu una sărită.
+  const nule = [CreatePen(5), CreateBrush(1), SelectObject(0), SelectObject(1)];
+  const offNule = String(Number(off) + nule.reduce((s, r) => s + 2 * r.length, 0));
+  assert.deepEqual(refuz(cu(...nule, rec(0x0324, 3, 0, 0, 10, 0))), ['wmf', offNule]);
+  assert.deepEqual(refuz(cu(...nule, rec(0x0538, 2, 3, 3, 0, 0, 10, 0, 10, 10, 0, 0, 10, 0))), ['wmf', offNule]);
 });
 
 /* ── Unitățile și Y ────────────────────────────────────────────────────────────────────────────────────────────────── */
@@ -174,6 +183,19 @@ test('vizorul fișierului și ISOTROPIC: vizorul se strânge pe axa cu scara mai
   // ISOTROPIC doar cu fereastra: pornește din LOMETRIC (Y în sus) pe dispozitivul cadrului, deci fereastra intră în cadru.
   const doarFereastra = citit(placeable(SetMapMode(7), SetWindowExt(100, 100), Polyline([0, 0], [100, -100])));
   assert.deepEqual(varfuri(doarFereastra.cai[0] as CaleWmf), [rotunjit(mm(0, 0)), rotunjit(mm(1000, 1000))]);
+  // ISOTROPIC fără nicio extindere pusă: chiar extinderile LOMETRIC (0,1 mm pe unitate, cu Y în sus).
+  const lometric = citit(placeable(SetMapMode(7), Polyline([0, 0], [100, -100])));
+  assert.deepEqual(varfuri(lometric.cai[0] as CaleWmf), [rotunjit(mm(0, 0)), rotunjit([10, 25.4 - 10])]);
+});
+
+test('playerul unui fișier cu antet: fereastra pornește din colțul cadrului, și când fișierul nu și-o pune', () => {
+  // Cadrul (1000, 2000)–(2000, 2500) la 1000 pe țol, fără SetWindowOrg / SetWindowExt în fișier.
+  const r = citit(wmf([Polyline([1000, 2000], [1500, 2250])], [1000, 2000, 2000, 2500, 1000]));
+  assert.ok(r.cadru && aproape(r.cadru.latime, 25.4) && aproape(r.cadru.inaltime, 12.7));
+  assert.deepEqual(varfuri(r.cai[0] as CaleWmf), [[0, 12.7], rotunjit([12.7, 6.35])]);
+  // Cadrul cu colțurile inversate se ordonează.
+  const invers = citit(wmf([Polyline([1000, 2000], [1500, 2250])], [2000, 2500, 1000, 2000, 1000]));
+  assert.deepEqual(varfuri(invers.cai[0] as CaleWmf), varfuri(r.cai[0] as CaleWmf));
 });
 
 test('SaveDC / RestoreDC: maparea și poziția curentă; relativ, absolut, și o stare care nu există (nimic)', () => {

@@ -4218,3 +4218,45 @@ adresa principală), după „Reload”: versiunea `04461916a059`; butonul **Acc
 conectează la Firebase și arată formularul de logare (Google, e-mail, parolă, crearea contului, parola uitată) și nota de
 confidențialitate, cu locurile operatorului marcate; Escape îl închide. Fără erori în consolă și în jurnalul local. Contul nu
 l-am creat pe instanța găzduită: crearea, confirmarea și proba le probează e2e-ul cap-coadă pe emulatoare.
+
+## 2026-11-01 — Importul WMF, cu cititor propriu (felia 26.A↑) (Model: Claude Opus 5.5)
+
+**Prompt:** de la sesiunea principală, într-o subsesiune, la cererea owner-ului „suntem pe aplicatie, haide sa pornim
+worktrees” (după propunerea: „1. oracolul independent al ușii documentului v11–v18; 2. importul WMF”), cu decizia lui din
+07.10 (`CLAUDE.md`, „Decizii luate”): „EPS și AI ≤ 8 prin cititor propriu, limitat; WMF propriu”. Brief-ul: felia 26.A↑, adusă
+din etapa 26, fără mașină; ADR 0117 întâi (înregistrările, transformarea, antetul placeable cu `inch` → mm exact, fără el
+unitățile alese în dialog ca la DXF, axa Y întoarsă, ce se sare numărat, EMF-ul refuzat cu motiv), cititorul la cerere cu
+ușa după antet, textele în ambele limbi, capitolul din manual, corpusul Python (`struct`) cu un cititor independent local
+dacă există, mutațiile (cel puțin unitățile, axa Y, punctele din PolyPolygon), porțile prin `node`, e2e-ul pe portul 4177,
+în worktree, fără `main`, fără emulatoare; peste 8 kB gzip, oprire și întrebare.
+**Started:** 01.11, 16:20. **Completed:** 01.11, 18:55. Felia **26.A↑** (ADR 0117), fără mașină, în worktree-ul
+`C:\Users\besli\cncvs2-lucru\import-wmf`, ramura `wip/26.A-import-wmf`.
+- **Ce face:** „Importă SVG / DXF / PDF / AI / EPS / WMF…” citește WMF-ul cu un cititor propriu (`src/io/wmf.ts`, codurile în
+  `src/io/wmfCoduri.ts`), la cerere: polilinia, poligonul, PolyPolygon, dreptunghiul și cel rotunjit, elipsa, Arc / Chord /
+  Pie, lanțul de LineTo, prin transformarea GDI (fereastra, vizorul, mutările, scările, modurile de mapare, ISOTROPIC, SaveDC
+  / RestoreDC cu poziția curentă). Antetul placeable e o pagină (desenul unde e în cadru); fără el, unitatea se alege în
+  fereastră (implicit 1/96 țol, ca LibreOffice), iar un desen metric își spune unitatea. Formele nevăzute se sar; textul,
+  imaginile, operațiile raster, regiunile, decupajele și înregistrările necunoscute se sar, numărate; EMF-ul e refuzat.
+- **Cititorul independent:** LibreOffice și Inkscape lipsesc, dar Windows are GDI-ul, implementarea de referință: fiecare
+  fișier al corpusului e redat cu `PlayMetaFile` pe imprimanta „Microsoft Print to PDF” și recitit cu PyMuPDF (din
+  `.tmp/venv-export2d` al checkout-ului principal, folosit doar la citire). Nimic instalat. GDI-ul a găsit: arcul e orar când
+  maparea oglindește doar axa X (cu ambele axe întoarse, tot trigonometric; măsurat pe toate cele patru combinații), un
+  artefact al lui la capetele de arc puse pe axe, fundalul opac al textului, scările modurilor metrice ale imprimantei din mm
+  întregi (216 × 279), strângerea cu un pixel a primitivelor cu cadru. În CI (Linux, fără GDI), doar regenerarea, egală cu
+  fișierele comise.
+- **Porțile:** compilatoarele (aplicația, funcțiile), importurile (17 reguli, 0 încălcări), traducerile (505, 0 lipsă),
+  7 973 de teste unitare (o singură cădere, traducerea titlului ADR, completată), build-ul determinist (221 de fișiere;
+  pornirea 98,4, cu ușa 101,9 / 110 kB; totalul 437,6 / 450; /admin 196,9 / 200), licențele, e2e 291 / 292 (cade doar
+  `raportor.spec.ts:101`, care cere portul 4173, ținut de sesiunea principală).
+- **Pachetul:** WMF-ul cere 4,4 kB gzip (cititorul +3,9 în bucata calculului importului, dialogul +0,3, codurile +0,2).
+  Prima măsurătoare a pornirii a dat 98,5 (+50 de octeți față de `main`, măsurați pe un build al lui 79f4ddc într-un worktree
+  temporar, șters după): fereastra de fișiere cere acum doar `.wmf` (fără tipurile MIME), iar unitatea aleasă trece fără
+  spread condițional; pornirea e +27 de octeți (98,4).
+- **Mutațiile** (`test/otravuri/26.A.py`): 59 / 59. 56 unitare: 51 prinse din prima, 5 scăpate și prinse de probe noi
+  (formele nevăzute cu numărul punctelor greșit, ISOTROPIC fără extinderi, cadrul decalat fără fereastra fișierului, și în
+  corpus, cu GDI; o înregistrare fără parametri de 2 cuvinte). 3 prin e2e, rulate cu un script din scratchpad (npx lipsește).
+  La final, fișierele atinse identice cu HEAD.
+- **Sonda locală pe clipartul Office** (1 280 de WMF-uri ale Microsoft, nu intră în repo): pe 128, toate citite (5 636 de
+  căi); ce desenează GDI peste 0,1 mm stă pe căile ușii, la cel mult 0,081 mm, și invers.
+- **Întrebările pentru owner** (ADR 0117, cu implicitul în față): unitatea unui WMF fără antet (1/96 țol, ca LibreOffice; sau
+  mm) și un WMF real din programele lui, de încercat pe test. Rândul lor, în „Ce îi trebuie owner-ului” din fișa etapei 3.

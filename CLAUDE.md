@@ -295,6 +295,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   iar un `import()` direct pe el scoate runtime-ul din pornire (reconfirmarea trece prin modulul panoului). Contul are
   categoria lui în poartă (doar online, plafon 32 kB). **Pornirea 98,4 (cu ușa 101,9 / 110 kB), totalul 433,1 / 450,
   /admin 196,9 / 200.**
+  **Importul WMF (ADR 0117, felia 26.A↑, adusă din etapa 26)** gata pe 01.11, într-o subsesiune (worktree-ul
+  `wip/26.A-import-wmf`), după decizia din 07.10 („WMF propriu”): „Importă SVG / DXF / PDF / AI / EPS / WMF…” citește
+  metafișierul Windows cu un cititor propriu (`src/io/wmf.ts`, codurile în `src/io/wmfCoduri.ts`), la cerere. Ușa se alege
+  după nume (`.wmf`, `.apm`) și după antet; EMF-ul ajunge tot acolo și e refuzat cu motiv. Transformarea e a GDI-ului
+  (fereastra, vizorul, modurile de mapare, SaveDC / RestoreDC), cu un player: antetul placeable e o pagină (25,4 / inch mm
+  pe unitate, desenul unde e în cadru); fără antet, unitatea se alege în dialog (implicit 1/96 țol, ca LibreOffice) și
+  desenul vine în colțul foii. **Arcul e trigonometric pe dispozitiv, afară de axa X oglindită singură (orar)**: măsurat
+  în GDI, nu dedus. **Corpusul WMF e Python** (`test/oracles-py/wmf_import_corpus.py`, `struct`): fiecare fișier e redat
+  de GDI pe „Microsoft Print to PDF” (doar pe Windows) și recitit cu PyMuPDF față de hârtie; un caz nou = înregistrările în
+  generator + valorile pe hârtie, apoi `test/fixtures/wmf/` regenerat și comis (CI-ul îl regenerează fără GDI, `--fara-gdi`,
+  și cere aceiași octeți). **Pornirea 98,4 (cu ușa 101,9 / 110 kB), totalul 437,6 / 450.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

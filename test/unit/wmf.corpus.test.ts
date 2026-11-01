@@ -154,7 +154,7 @@ for (const [fisier, a] of Object.entries(ASTEPTAT)) {
   });
 }
 
-test('corpusul WMF are toate fișierele generatorului (cele 10), fiecare cu un fișier pe disc', () => {
-  assert.equal(Object.keys(ASTEPTAT).length, 10);
+test('corpusul WMF are toate fișierele generatorului (cele 11), fiecare cu un fișier pe disc', () => {
+  assert.equal(Object.keys(ASTEPTAT).length, 11);
   for (const f of Object.keys(ASTEPTAT)) assert.ok(readFileSync(new URL(f, DIR)).length > 0, f);
 });
