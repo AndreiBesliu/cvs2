@@ -16,6 +16,11 @@
  * Google Fonts (ADR 0106 §4, ADR 0108 §5): fișierele TTF se descarcă din `fonts.gstatic.com` (catalogul și adresele vin prin
  * funcția `fonturiGoogle`, deja permisă); previzualizarea înainte de descărcare cere CSS API (`fonts.googleapis.com`, în
  * `connect-src`: citit cu fetch, nu ca foaie de stil) și fețele lui de afișare (WOFF2 din `fonts.gstatic.com`, în `font-src`).
+ *
+ * Senderul prin WiFi (ADR 0119, felia 3.6d; acordul owner-ului din 01.11): controlerul din rețeaua locală n-are o adresă știută
+ * dinainte, deci `connect-src` primește schema `ws:`. Spre o gazdă publică, browserul blochează oricum un `ws://` dintr-o pagină
+ * HTTPS (conținut mixt: trec doar un IP local sau un nume `.local`, cu permisiunea rețelei locale). Fără `wss:`: niciun
+ * controler n-are TLS, iar `wss:` ar deschide orice gazdă publică.
  */
 const PROIECTE = ['cncvectorstudio-test', 'cncvectorstudio'] as const;
 export const DOMENII_AUTH = PROIECTE.map((p) => `https://${p}.firebaseapp.com`);
@@ -30,7 +35,7 @@ export const CSP = [
   [
     "connect-src 'self'", 'https://identitytoolkit.googleapis.com', 'https://securetoken.googleapis.com',
     'https://firestore.googleapis.com', 'https://content-firebaseappcheck.googleapis.com', 'https://www.google.com/recaptcha/',
-    ...ORIGINI_FUNCTII, 'https://fonts.gstatic.com', 'https://fonts.googleapis.com',
+    ...ORIGINI_FUNCTII, 'https://fonts.gstatic.com', 'https://fonts.googleapis.com', 'ws:',
   ].join(' '),
   ['frame-src', ...DOMENII_AUTH, 'https://www.google.com/recaptcha/', 'https://recaptcha.google.com/recaptcha/'].join(' '),
   "worker-src 'self' blob:",

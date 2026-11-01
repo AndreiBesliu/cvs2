@@ -367,10 +367,13 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [locVectori, setLocVectori] = useState<HTMLElement | null>(null);
   // Locul tipurilor nodului ales (ADR 0063), în bara de sus, cât unealta Noduri e aleasă.
   const [locNoduri, setLocNoduri] = useState<HTMLElement | null>(null);
+  // Locul butonului Cont (ADR 0116), lângă temă; fără el, în extensie, lângă „?”.
+  const [locCont, setLocCont] = useState<HTMLElement | null>(null);
   useLayoutEffect(() => {
     setLoc(document.getElementById('loc-unelte'));
     setLocExtensie(document.getElementById('loc-extensie'));
     setLocVectori(document.getElementById('loc-vectori'));
+    setLocCont(document.getElementById('loc-cont'));
   });
   const [liniiDesen, setLiniiDesen] = useState<readonly LinieGhid[]>([]);
   // Liniile de aliniere ale mânerului lipit (ADR 0055), cât se trage.
@@ -1094,6 +1097,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             </button>
           </span>
         );
+        const butonCont = (
+          <button type="button" className={locCont ? 'cont-buton' : 'aliniaza'} title={t('editare.cont')} aria-label={t('editare.cont')} data-editare="cont"
+            aria-pressed={contDeschis} onClick={(e) => { e.currentTarget.blur(); setContDeschis(!contDeschis); }}>
+            {t('editare.cont.buton')}
+          </button>
+        );
         const ajutorSectiune = (
           <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.manual.sectiune')} data-testid="extensie-ajutor">
             <button type="button" className="aliniaza manual-buton" title={t('editare.manual')} aria-label={t('editare.manual')} data-editare="manual"
@@ -1106,10 +1115,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                 {t('editare.sugestie.buton')}
               </button>
             ) : null}
-            <button type="button" className="aliniaza" title={t('editare.cont')} aria-label={t('editare.cont')} data-editare="cont"
-              aria-pressed={contDeschis} onClick={(e) => { e.currentTarget.blur(); setContDeschis(!contDeschis); }}>
-              {t('editare.cont.buton')}
-            </button>
+            {locCont ? null : butonCont}
           </span>
         );
         const sectiuni = (
@@ -1196,6 +1202,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {loc ? createPortal(bara, loc) : bara}
             {locExtensie ? createPortal(sectiuni, locExtensie) : null}
             {locVectori ? createPortal(vectoriSectiune, locVectori) : null}
+            {locCont ? createPortal(butonCont, locCont) : null}
           </>
         );
       })()}

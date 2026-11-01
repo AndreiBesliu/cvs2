@@ -45,7 +45,7 @@ export const en = {
   'motiv.operatie-invalida': 'Operation values must be positive numbers, with a point or a comma: depth and step up to 1000 mm, the cutter up to Ø100 mm.',
   'export.proiect-schimbat': 'The project changed in another tab during the export: export again.',
   'motiv.actiune-necunoscuta': 'This action does not exist.',
-  'motiv.fara-capabilitate': 'Your account plan does not include this function (see Account, in the bar).',
+  'motiv.fara-capabilitate': 'Your account plan does not include this function (see Account, top right).',
   'motiv.nicio-selectie': 'Select something first.',
   'motiv.nicio-deplasare': 'No move was given.',
   'motiv.nimic-de-anulat': 'Nothing to undo.',

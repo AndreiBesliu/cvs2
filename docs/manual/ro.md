@@ -783,7 +783,7 @@ ea.
 %% capitol: cont
 %% acopera: editare.cont
 
-Butonul **Cont** din extensia barei, de lângă „?” (titlul lui: „Contul: logarea, planul și proba”), deschide panoul contului.
+Butonul **Cont** din colțul din dreapta-sus, lângă butonul temei (titlul lui: „Contul: logarea, planul și proba”), deschide panoul contului.
 Contul cere internet: fără rețea, panoul nu se deschide, dar aplicația merge mai departe cu ultimul drept primit.
 
 - **Logarea:** **Intră cu Google**, sau adresa de e-mail și parola, cu **Intră**. **Creează cont** face un cont nou cu parolă

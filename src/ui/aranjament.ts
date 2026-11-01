@@ -26,7 +26,8 @@ export type IdCip = (typeof CIPURI)[number];
 /** Controalele care nu sunt acțiuni ale registrului: limba (butoanele RO / EN, apăsat = limba de acum). */
 /** `unelte`: locul uneltelor de desen, al lipirii și al alinierii (ADR 0052), umplut de modulul editării, la cerere. */
 /** `vectori`: locul exportului vectorilor (ADR 0088), lângă import și G-code (ADR 0104 §8), umplut tot de modulul editării. */
-export const CONTROALE = ['limba', 'unelte', 'vectori'] as const;
+/** `cont`: locul butonului Cont (ADR 0116), lângă temă (cererea owner-ului din 01.11), umplut tot de modulul editării. */
+export const CONTROALE = ['limba', 'unelte', 'vectori', 'cont'] as const;
 export type IdControl = (typeof CONTROALE)[number];
 
 /**
@@ -70,7 +71,7 @@ export const ZONE_CU_DATA_ACTIUNE: readonly IdZona[] = ['sus', 'unelte', 'jos'];
 
 /**
  * Șablonul modern (prototipul B, „pânza întâi”, ales de owner pe 13.10): pânza ține tot ecranul, iar zonele plutesc
- * deasupra ei. Sus: formele, selecția, istoricul, fișierele; în dreapta, căutarea comenzilor, limba și tema. Stânga:
+ * deasupra ei. Sus: formele, selecția, istoricul, fișierele; în dreapta, căutarea comenzilor, limba, tema și contul. Stânga:
  * arborele proiectului; dreapta: proprietățile. Jos: starea, cursorul, zoomul, jurnalul și „arată toată foaia”.
  */
 export const ARANJAMENT_MODERN: Aranjament = {
@@ -87,7 +88,9 @@ export const ARANJAMENT_MODERN: Aranjament = {
       { id: 'fisier', intrari: [{ actiune: 'import.svg' }, { control: 'vectori' }, { actiune: 'export.gcode', aspect: 'principal' }] },
     ],
     unelte: [
-      { id: 'vedere', intrari: [{ actiune: 'vedere.paleta', aspect: 'cauta' }, { control: 'limba' }, { actiune: 'vedere.tema' }] },
+      // Contul lângă temă, nu în extensia barei (cererea owner-ului din 01.11: „account ar trebui sa sta in alta parte, langa
+      // theme button”).
+      { id: 'vedere', intrari: [{ actiune: 'vedere.paleta', aspect: 'cauta' }, { control: 'limba' }, { actiune: 'vedere.tema' }, { control: 'cont' }] },
     ],
     selectie: [
       {

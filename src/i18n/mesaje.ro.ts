@@ -49,7 +49,7 @@ export const ro = {
   'motiv.operatie-invalida': 'Valorile operațiilor trebuie să fie numere pozitive, cu punct sau cu virgulă: adâncimea și pasul până la 1000 mm, freza până la Ø100 mm.',
   'export.proiect-schimbat': 'Proiectul s-a schimbat în altă filă în timpul exportului: exportă din nou.',
   'motiv.actiune-necunoscuta': 'Acțiunea nu există.',
-  'motiv.fara-capabilitate': 'Planul contului tău nu include funcția asta (vezi Cont, în bară).',
+  'motiv.fara-capabilitate': 'Planul contului tău nu include funcția asta (vezi Cont, sus în dreapta).',
   'motiv.nicio-selectie': 'Selectează întâi ceva.',
   'motiv.nicio-deplasare': 'Nu s-a dat nicio deplasare.',
   'motiv.nimic-de-anulat': 'Nimic de anulat.',

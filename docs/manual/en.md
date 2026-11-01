@@ -809,7 +809,7 @@ browser doesn't open the tab, a message gives you the link to it.
 %% capitol: cont
 %% acopera: editare.cont
 
-The **Account** button in the bar's extension, next to “?” (its title: “Account: sign in, the plan and the trial”), opens the
+The **Account** button in the top-right corner, next to the theme button (its title: “Account: sign in, the plan and the trial”), opens the
 account panel. The account needs internet: without a network the panel does not open, but the app goes on with the last
 rights it received.
 

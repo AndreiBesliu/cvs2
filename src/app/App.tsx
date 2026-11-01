@@ -809,8 +809,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   };
 
   /**
-   * Un control care nu e acțiune: limba, ca butoane apăsate / neapăsate; locul uneltelor (ADR 0052) și al exportului
-   * vectorilor (ADR 0104 §8), umplute de `Editare`.
+   * Un control care nu e acțiune: limba, ca butoane apăsate / neapăsate; locul uneltelor (ADR 0052), al exportului
+   * vectorilor (ADR 0104 §8) și al butonului Cont (ADR 0116, lângă temă), umplute de `Editare`.
    */
   const control = (c: IdControl): ReactNode => {
     switch (c) {
@@ -818,6 +818,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         return <div className="loc-unelte" id="loc-unelte" />;
       case 'vectori':
         return <div className="loc-vectori" id="loc-vectori" />;
+      case 'cont':
+        return <div className="loc-cont" id="loc-cont" />;
       case 'limba':
         return (
           <nav aria-label={t('app.limba')}>

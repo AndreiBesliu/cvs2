@@ -45,7 +45,7 @@ test('un drept expirat ținut în browser oprește exportul G-code, cu motivul',
   await adauga(page, 'dreptunghi');
   const exporta = page.locator('[data-actiune="export.gcode"]');
   await expect(exporta).toBeDisabled();
-  await expect(exporta).toHaveAttribute('title', 'Planul contului tău nu include funcția asta (vezi Cont, în bară).');
+  await expect(exporta).toHaveAttribute('title', 'Planul contului tău nu include funcția asta (vezi Cont, sus în dreapta).');
 });
 
 test('cu proba în curs exportul G-code merge, ca fără cont', async ({ page }) => {
