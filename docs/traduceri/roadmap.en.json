@@ -545,6 +545,10 @@
       "ro": "CAM 3D doar pe câmpul conservativ",
       "en": "3D CAM only on the conservative field"
     },
+    "3e46274cb0ba0363": {
+      "ro": "Senderul prin WiFi (ADR 0119): transportul WebSocket lângă Web Serial, peste același flux; profilurile controlerelor (FluidNC, grblHAL, podul ESP3D); adresa (un IP privat sau un nume `.local`), cu permisiunea rețelei locale din Chrome și Edge 147; „Conectează” cu USB sau WiFi și avertismentul la cădere; proba pe emulator, în spatele unui WebSocket local",
+      "en": "The sender over WiFi (ADR 0119): the WebSocket transport next to Web Serial, over the same stream; the controller profiles (FluidNC, grblHAL, the ESP3D bridge); the address (a private IP or a `.local` name), with the local network permission of Chrome and Edge 147; “Connect” with USB or WiFi and the warning about a drop; the probe on the emulator, behind a local WebSocket"
+    },
     "3f19b83fdc63d738": {
       "ro": "Regula `nonzero` la ușă",
       "en": "The `nonzero` rule at the door"
@@ -552,6 +556,10 @@
     "3f19c47def4b4234": {
       "ro": "Verificarea orară a versiunii noi",
       "en": "Hourly check for a new version"
+    },
+    "3f269936662af1b3": {
+      "ro": "Senderul prin WiFi pe mașina owner-ului, prin controlerul ales; transcrierea, rejucată pe emulator",
+      "en": "The sender over WiFi on the owner’s machine, through the chosen controller; the transcript, replayed on the emulator"
     },
     "4022794d5f162083": {
       "ro": "Sugestia din editor",
@@ -600,6 +608,10 @@
     "435fc4e939965859": {
       "ro": "Biarcele (ADR 0033): cubica devine linii și arce sub 0,001 mm, cu bugetul de toleranță într-un singur loc (ținta 0,99, raza maximă a arcelor 9 900 mm, legată printr-un test de garda postului). Tăieturile: inflexiunile și vârfurile (din B′), regula liniei, extremele pe axe (bucăți monotone), înjumătățirea; abaterea în ambele sensuri, cu fiecare maxim local rafinat; refuzuri explicite. **Recenzia (o lentilă + 5 verificatori, 1,20 M, 67 min) a găsit abateri tăcute peste toleranță:** mânerul întors pe o cubică aproape dreaptă (18–414 × tol: întoarcerea cădea între eșantioane), vârfurile ratate din rotunjire (2,63 ×), vârful abaterii între eșantioane (1,13 ×), razele de până la 1e12 mm pe care postul le-ar fi aproximat a doua oară (2,05 ×). Toate reparate, cu cazurile în teste. Oracolul (sesiune independentă, 0,48 M, două treceri): 150 de cubice la 4 toleranțe, 229 de teste, 35 de sabotaje prinse. Otrăvuri: 13 din 26 la prima trecere; 4 au primit teste, 3 erau cod mort (scos), 5 sunt echivalente (căutare adversarială: 0,99000 × tol). Nimic vizibil pentru owner (cubicele intră cu 2.7b). **Treceri:** (1) contractul și fitter-ul; (2) oracolul și prima lui constatare; (3) recenzia și reparațiile; (4) oracolul pe contractul precizat; (5) otrăvurile.",
       "en": "Biarcs (ADR 0033): the cubic becomes lines and arcs within 0.001 mm, with the tolerance budget in a single place (target 0.99, maximum arc radius 9,900 mm, tied by a test to the post's guard). The cuts: inflections and cusps (from B′), the line rule, the extremes on the axes (monotonic pieces), halving; the deviation in both directions, with every local maximum refined; explicit refusals. **The review (one lens + 5 verifiers, 1.20 M, 67 min) found silent deviations beyond tolerance:** a reversed handle on a nearly straight cubic (18–414 × tol: the reversal fell between samples), cusps missed through rounding (2.63 ×), the deviation peak between samples (1.13 ×), radii up to 1e12 mm that the post would have approximated a second time (2.05 ×). All fixed, with the cases in tests. The oracle (independent session, 0.48 M, two passes): 150 cubics at 4 tolerances, 229 tests, 35 sabotages caught. Poisons: 13 of 26 on the first pass; 4 got tests, 3 were dead code (removed), 5 are equivalent (adversarial search: 0.99000 × tol). Nothing visible for the owner (cubics come in with 2.7b). **Passes:** (1) the contract and the fitter; (2) the oracle and its first finding; (3) the review and the fixes; (4) the oracle on the clarified contract; (5) the poisons."
+    },
+    "43f3a67efe6402d3": {
+      "ro": "înainte de 3.6d",
+      "en": "before 3.6d"
     },
     "43f41328d983f919": {
       "ro": "**Animația traseului, adusă din etapa 5** (fără mașină; ADR 0099; „continua”: etapa 3 nu mai are felii fără mașină, iar rândul de prag e din cea mai devreme etapă care mai avea ceva fără mașină). „Animează”, lângă timpul jobului, deschide un panou: rulează / pauză, pasul anterior și următor, viteza (1× … 500×; implicit, toată animația cam într-un minut), glisorul și citirile (timpul, pasul, mișcarea cu avansul și lucrarea, X Y Z, freza); pe pânză, freza (cât diametrul ei, plină în material) și drumul parcurs. Timpul fiecărei mișcări vine din estimarea planificatorului GRBL, împărțită la liniile postului (`liniiMiscari`): suma e exact timpul jobului din cip. Totul la cerere: pornirea crește doar cu un nume în lista de preîncărcare (96,3 → 96,4; cu ușa 99,9 / 100: strâmt); totalul 326,1 → 330,3 / 400 kB. **Treceri:** (1) modelul, playerul, panoul, stratul; găsit pe drum: „Pasul următor” arăta începutul pasului de după (capătul unui pas e acum al lui) și, cu un final fără timp, ultima mișcare în locul finalului; ramura cu timpi simpli, fără estimare, era de neatins din interfață (scoasă). Mutațiile: **28 / 28** (24 pe probele unitare, 4 în fereastră, pe e2e); una („drumul parcurs nedesenat”) a trecut întâi de e2e, fiindcă proba număra pixelii cu tot cu cercul frezei: acum compară începutul cu finalul.",
@@ -1012,6 +1024,10 @@
     "7caf74088569d4c9": {
       "ro": "— (pornește profilul)",
       "en": "— (starts the profile)"
+    },
+    "7d9041812b7c3a94": {
+      "ro": "Răspunsurile la ADR 0119: controlerul cu WiFi al mașinii (podul ESP3D pe GRBL-ul de azi, recomandat, sau un controler nou, FluidNC ori grblHAL), programele lungi (pe flux, recomandat, sau urcate pe card), tableta (într-o felie separată, recomandat) și imprimantele 3D, cu firmware-ul lor (Marlin pe USB întâi, recomandat)",
+      "en": "The answers to ADR 0119: the WiFi controller of the machine (the ESP3D bridge on today’s GRBL, recommended, or a new controller, FluidNC or grblHAL), long programs (streamed, recommended, or uploaded to the card), the tablet (in a separate slice, recommended) and the 3D printers, with their firmware (Marlin over USB first, recommended)"
     },
     "7daf8c65de415c22": {
       "ro": "**Offsetul formelor în desen, adus din etapa 6** (fără mașină; ADR 0064; „neata, continua”; decizia 16 din `PLAN.md`: din arce, același motor ca CAM-ul). Secțiunea Offset din extensia barei (lângă Copiere) deschide un panou: spre exterior / spre interior, distanța (0,01–1000 mm), contururile noi punctate pe pânză, Aplică. Fiecare contur închis ales se decalează după interiorul lui, exact (linii și arce; colțurile ocolite rotunjite cu raza egală cu distanța); formele noi sunt căi independente, alese, într-un singur pas de anulare; originalele rămân. Formele deschise se sar (numărate); prea adânc spre interior = motivul, nimic pe jumătate. Prin `document.deseneaza`, care primește acum și o listă de forme: pornirea neschimbată; motorul (~85 kB) se aduce la prima deschidere a panoului. Manualul (capitolul transformărilor) e la zi. **Treceri:** (1) acțiunea cu lista, calculul pur, panoul și previzualizarea, probele pe valori de hârtie (110 × 70 cu arce de rază 5 și aria exactă, 90 × 50, cercul R20, forma în L), e2e verzi din prima, cu o mutație în panou prinsă; fraza din manual despre colțuri, corectată (spre interior se rotunjesc colțurile intrânde) și probată; (2) verificarea pe test, la fereastra îngustă a panoului browserului (711 px): panoul Offset ieșea cu 180 px din fereastră (și cel al rețelei, la fel): acum ambele se mută spre stânga cât ies, cu proba la 720 px (cade fără reparație).",
@@ -1725,6 +1741,10 @@
       "ro": "Rampa",
       "en": "Ramp"
     },
+    "da51d0cc82c39b88": {
+      "ro": "Senderul prin WiFi pe mașina owner-ului",
+      "en": "The sender over WiFi on the owner’s machine"
+    },
     "da7250a9da464353": {
       "ro": "Importul DXF",
       "en": "DXF import"
@@ -1893,6 +1913,10 @@
       "ro": "Nucleul de simulare CPU (2 felii)",
       "en": "The CPU simulation core (2 slices)"
     },
+    "ef869c858c876842": {
+      "ro": "Senderul prin WiFi",
+      "en": "The sender over WiFi"
+    },
     "efbfea901afba00d": {
       "ro": "**da (primul)**",
       "en": "**yes (the first)**"
@@ -1900,6 +1924,10 @@
     "f20ea85a30832b0a": {
       "ro": "Normalizarea `nonzero` la ușă",
       "en": "`nonzero` normalisation at the door"
+    },
+    "f20ee5556a751846": {
+      "ro": "3.6d (senderul prin WiFi) și feliile imprimantelor",
+      "en": "3.6d (the sender over WiFi) and the printer slices"
     },
     "f254e58163cfe205": {
       "ro": "Lipirea mânerelor de scalare",

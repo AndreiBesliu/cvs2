@@ -428,6 +428,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - Transportul se desparte de fluxul senderului, ca imprimantele 3D (Marlin pe serial, Klipper sau OctoPrint prin API web)
     să intre pe același drum.
   - Controlerul mașinii owner-ului e o întrebare pentru pornirea feliei.
+  - **ADR 0119, propus pe 01.11** („Da, WiFi”), cu cercetarea (Chrome și Edge 147 scutesc de blocare un `ws://` spre un IP privat sau un nume `.local`, după permisiunea rețelei locale), feliile 3.6d (fără mașină) și 3.6e (pe mașină) și patru întrebări: controlerul cu WiFi, programele lungi, tableta, imprimantele.
 - 01.11.2026: **conturile clienților** (răspunsurile la ADR 0116: „1,b. 2, conturile din editia intai sunt ale noastre, nu
   aveam clienti, deci doar al meu este relevant. 3, b sa fie default, dar, vreau sa pot seta asta din admin. 4, a. 5, a. 6,
   configurabil din admin. 7, a.”): înregistrarea liberă (proba de 14 zile, fără card; atelierele probei închise primesc

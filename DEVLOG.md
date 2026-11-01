@@ -4247,3 +4247,19 @@ callable-ul și permisiunea nouă, pe Firestore Lite (cereri REST `runQuery`, f�
 „Reload”, e pe `cff5d1ecd2b9`, iar panoul **Account** se deschide cu formularul de logare. Fără erori în consolă. Filele cu
 date nu le-am deschis: `/admin` de pe `web.app` nu e logat, iar contul Google al owner-ului nu-l folosesc eu; le probează
 e2e-ul cap-coadă pe emulatoare, iar owner-ul le vede după logare.
+
+## 2026-11-01 — ADR 0119 propus: senderul prin WiFi, pregătit și pentru imprimantele 3D (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, WiFi” (la întrebarea „Pornesc senderul prin WiFi, întâi cercetarea și ADR-ul?”, după cererea din aceeași zi:
+„O sa vreau imediat dupa felia asta sa facem senderul sa se poata conecta pri wifi la masina. Si am de gand sa folosim asta si
+pentru imprimante 3D”).
+**Started:** 01.11, 17:45. **Completed:** 01.11, 18:33. Cercetarea: browserul nu deschide TCP; din Chrome și Edge 147
+(aprilie 2026), un `ws://` spre un IP privat sau un nume `.local` trece de blocarea conținutului mixt după permisiunea
+rețelei locale (verificarea e pe adresă, înainte de DNS); FluidNC (WebSocket pe 81, ieșirea în cadre binare, controlul în
+text), grblHAL (`$307`, un singur flux în control), podul ESP3D pentru GRBL-ul clasic (WebSocket-ul de date); imprimantele:
+Marlin (`ok`, numerele de linie, `Resend`), Klipper (Moonraker, JSON-RPC pe WebSocket, `cors_domains`), OctoPrint (REST,
+`X-Api-Key`, CORS), Bambu Lab (MQTT peste TLS, din afara browserului). ADR 0119 propune transportul `retea` lângă Web Serial,
+peste același flux, adresa doar IP privat sau `.local`, WiFi-ul căzut ca un cablu scos (cu avertismentul), proba pe emulator în
+spatele unui WebSocket local și imprimantele în felii viitoare, fără slicer în aplicație; feliile 3.6d și 3.6e în fișă;
+patru întrebări în coada owner-ului (controlerul cu WiFi, programele lungi, tableta, imprimantele). Doar documente: probele
+documentației (34), traducerile (508, 0 lipsă).
