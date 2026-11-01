@@ -144,8 +144,55 @@ Utilizatori și fila Tichete. Owner-ul vrea și un canal prin care clienții rap
     pe server ajuns în aplicație la pornire, ieșirea);
   - trei mutații țintite, toate prinse: expiratul cu exportul păstrat, dreptul care nu expiră offline, registrul exportului
     fără contul ținut.
-- **Până la 14.C↑b** (fila Utilizatori minimă și fila Setări), planul gratuit, zilele de probă și setările se pun din consola
-  Firebase, pe `conturi/{uid}` și `setari/conturi`.
+- **Până la 14.C↑b** (fila Utilizatori minimă și fila Setări), planul gratuit, zilele de probă și setările se puneau din
+  consola Firebase, pe `conturi/{uid}` și `setari/conturi`.
+
+## Felia 14.C↑b (01.11.2026): fila Utilizatori minimă și fila Setări
+
+- **Ce s-a construit:**
+  - callable-ul `administreazaConturile` (`functions/src/conturi/admin.ts`), cu auditul în tranzacție (`conturi.gratuit`,
+    `conturi.proba`, `conturi.dezactiveaza`, `conturi.reactiveaza`, `setari.conturi`). Face două lucruri:
+    - schimbă planul unui cont, cu `conturi.administreaza`: gratuit, o probă de 1–365 de zile de azi, dezactivarea,
+      reactivarea;
+    - schimbă setările conturilor, doar owner-ul;
+  - fila **Utilizatori** (`src/admin/utilizatori/`): cele mai noi 100 de conturi, cu planul de acum, numele, crearea, ultima
+    logare și „Schimbă planul”;
+  - fila **Setări** (`src/admin/setari/`): zilele offline și păstrarea tichetelor rezolvate, cu marginile și implicitele
+    lor.
+- **Permisiunile:** două, noi în catalog:
+  - `conturi.citeste` dă lista;
+  - `conturi.administreaza` dă planul și, odată cu el, lista (planul se schimbă pe ce se vede).
+
+  Setările nu sunt în catalog: le schimbă doar owner-ul, ca decizia pe sugestii.
+- **Regulile:**
+  - `conturi/{uid}` se citește și se listează cu oricare din cele două permisiuni;
+  - `setari/conturi` o citește doar owner-ul;
+  - nimic nu se scrie din client.
+- **Planul văzut:** cererea trimite planul ținut și sfârșitul probei, cum le-a văzut fila. Serverul refuză o schimbare făcută
+  pe un plan schimbat între timp (de alt om din personal). Dreptul se calculează din nou, ca la deschidere, și se scrie odată
+  cu planul; aplicația îl primește la reconfirmarea următoare.
+- **Dezactivarea și reactivarea:**
+  - dezactivarea ține planul de dinainte (`planInainte`), iar reactivarea îl pune la loc; o probă trecută rămâne expirată;
+  - gratuitul și o probă nouă scot și ele contul din dezactivare;
+  - personalul rămâne personal, oricare ar fi planul ținut.
+- **`/admin` pe Firestore Lite:** adminul face doar citiri o dată (`getDoc`, `getDocs`, numărătoarea): fără ascultători,
+  fără scrieri, fără cache offline. Așa că trece pe `firebase/firestore/lite`, care merge prin REST, cu App Check.
+  - `/admin` scade de la 200,5 kB (cu filele noi; plafonul e 200) la 102,8 kB.
+  - Numărătoarea nerezolvatelor din Diagnoză devine `getCount`.
+  - Un ascultător în timp real (de exemplu pentru tichete) ar cere înapoi Firestore-ul întreg: se cântărește atunci.
+- **Pornirea neschimbată:** `shared/conturi.ts` e în pachetul de pornire, așa că tot ce importă adminul din el ajungea acolo,
+  ca export pentru bucata adminului: +0,3 kB la prima măsurătoare. De aceea, partea serverului și a adminului (documentele,
+  setările, planul ținut și cel efectiv, schimbările) stă acum în `shared/conturiPlan.ts`.
+  - Pornirea rămâne 98,4 kB (cu ușa 101,9 / 110), totalul 433,1 / 450.
+- **Probele:**
+  - pe hârtie: `test/unit/conturiPlan.test.ts` (setările cerute, schimbarea cerută, planul după fiecare schimbare, planul
+    văzut), `test/unit/admin.utilizatori.test.ts` (rândurile, planul arătat), filele vizibile și catalogul din reguli;
+  - pe emulator: `functions/test/conturiAdmin.emulator.test.ts` (8 probe ale callable-ului) și patru probe ale regulilor
+    (lista, permisiunea scoasă, setările, nicio scriere din client);
+  - e2e pe emulatoare: `test/e2e-emulator/utilizatori.emulator.spec.ts` (owner-ul cu planurile și planul văzut vechi,
+    setările, rolul care doar citește);
+  - mutații țintite, toate prinse (raportul feliei, în `DEVLOG.md`).
+- **Rămân pentru 14.D↑:** căutarea pe server după e-mail, dosarul contului, exportul și ștergerea datelor.
 
 ## Ce am respins
 

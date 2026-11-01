@@ -295,6 +295,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   iar un `import()` direct pe el scoate runtime-ul din pornire (reconfirmarea trece prin modulul panoului). Contul are
   categoria lui în poartă (doar online, plafon 32 kB). **Pornirea 98,4 (cu ușa 101,9 / 110 kB), totalul 433,1 / 450,
   /admin 196,9 / 200.**
+  **Fila Utilizatori minimă și fila Setări (ADR 0116, felia 14.C↑b)** gata pe 01.11:
+  - callable-ul `administreazaConturile` (planul unui cont: gratuit, o probă de N zile, dezactivarea, reactivarea, pe planul
+    văzut; setările, doar owner-ul; auditul în tranzacție);
+  - permisiunile `conturi.citeste` și `conturi.administreaza`;
+  - regula care dă lista conturilor și `setari/conturi` doar owner-ului.
+
+  **`/admin` e pe Firestore Lite** (`firebase/firestore/lite`: doar citiri o dată, fără ascultători): 102,8 / 200 kB. Un
+  ascultător în timp real ar cere înapoi Firestore-ul întreg. **Ce folosesc doar serverul și `/admin` din conturi stă în
+  `shared/conturiPlan.ts`**, nu în `shared/conturi.ts`: acela e în pachetul de pornire, iar ce importă adminul din el ar
+  ajunge în pornire. **Pornirea 98,4 (cu ușa 101,9 / 110 kB), totalul 433,1 / 450.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -408,6 +418,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 01.11.2026: **senderul prin WiFi, imediat după felia 14.C↑b, și imprimantele 3D mai târziu** („O sa vreau imediat dupa
+  felia asta sa facem senderul sa se poata conecta pri wifi la masina. Si am de gand sa folosim asta si pentru imprimante
+  3D”).
+  - Felia vine înaintea raportărilor (15.B↑), cu un ADR nou.
+  - Constrângerile cunoscute: din browser se ajunge la mașină doar prin WebSocket (FluidNC, grblHAL pe ESP32, ESP3D), nu
+    prin Telnet. Aplicația e pe HTTPS, iar un `ws://` din rețeaua locală e conținut mixt, blocat de browser: calea (accesul
+    la rețeaua locală din Chrome, un ajutor local sau altceva) o cercetează felia.
+  - Transportul se desparte de fluxul senderului, ca imprimantele 3D (Marlin pe serial, Klipper sau OctoPrint prin API web)
+    să intre pe același drum.
+  - Controlerul mașinii owner-ului e o întrebare pentru pornirea feliei.
 - 01.11.2026: **conturile clienților** (răspunsurile la ADR 0116: „1,b. 2, conturile din editia intai sunt ale noastre, nu
   aveam clienti, deci doar al meu este relevant. 3, b sa fie default, dar, vreau sa pot seta asta din admin. 4, a. 5, a. 6,
   configurabil din admin. 7, a.”): înregistrarea liberă (proba de 14 zile, fără card; atelierele probei închise primesc

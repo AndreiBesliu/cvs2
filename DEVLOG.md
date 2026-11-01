@@ -4218,3 +4218,24 @@ adresa principală), după „Reload”: versiunea `04461916a059`; butonul **Acc
 conectează la Firebase și arată formularul de logare (Google, e-mail, parolă, crearea contului, parola uitată) și nota de
 confidențialitate, cu locurile operatorului marcate; Escape îl închide. Fără erori în consolă și în jurnalul local. Contul nu
 l-am creat pe instanța găzduită: crearea, confirmarea și proba le probează e2e-ul cap-coadă pe emulatoare.
+
+## 2026-11-01 — Felia 14.C↑b: fila Utilizatori minimă și fila Setări (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 14.C↑b” (la întrebarea „Pornesc felia 14.C↑b, cu filele Utilizatori și Setări?”). Pe drum, owner-ul: „zi ce
+worktrees putem deschide pentru lucru in paralel?”, apoi „suntem pe aplicatie, haide sa pornim worktrees” (două sesiuni
+noi, fiecare în worktree-ul ei: oracolul ușii documentului v11–v18, 5.1↑c, și importul WMF, 26.A↑, ADR 0117) și „O sa vreau
+imediat dupa felia asta sa facem senderul sa se poata conecta pri wifi la masina. Si am de gand sa folosim asta si pentru
+imprimante 3D” (scris în `CLAUDE.md`, „Decizii luate”).
+**Started:** 01.11, 16:09. **Completed:** 01.11, 17:21. **Felia:** callable-ul `administreazaConturile` (planul unui cont:
+gratuit, o probă de 1–365 de zile de azi, dezactivarea cu planul de dinainte ținut, reactivarea; pe planul văzut, cu
+dreptul calculat din nou; setările conturilor, doar owner-ul; auditul în tranzacție), permisiunile `conturi.citeste` și
+`conturi.administreaza`, regula care dă lista conturilor și setările doar owner-ului, fila Utilizatori (cele mai noi 100 de
+conturi, cu planul de acum) și fila Setări (zilele offline, păstrarea tichetelor). Pe drum, poarta build-ului a prins
+`/admin` la 200,5 / 200 kB: adminul a trecut pe Firestore Lite (doar citiri o dată), 102,8 kB; iar pornirea crescuse cu
+0,3 kB, fiindcă ce importa adminul din `shared/conturi.ts` (în pornire) ajungea acolo: partea serverului și a adminului stă
+acum în `shared/conturiPlan.ts`. Emulatoarele unei alte sesiuni (OurDays) țineau portul 4400: ale noastre au rulat cu o copie
+netrecută în git a configurației, pe alte porturi (hub 4410, jurnalul 4510, websocket-ul Firestore 9160). Codul: `fe8600c`.
+Porțile: compilatoarele, importurile, traducerile (501, 0 lipsă), 7 951 teste unitare, build-ul determinist (220
+fișiere; pornirea 98,4, cu ușa 101,9 / 110 kB; totalul 433,1 / 450; /admin 102,8 / 200), licențele, e2e 290: 289, plus 1 rulată din nou după un EBUSY pe fișierul descărcat, în Drive, emulatoarele
+(69 de probe ale funcțiilor și regulilor, 20 e2e). Mutații țintite, toate prinse: planul arătat care uită de personal, dezactivarea fără planul de dinainte, lista
+conturilor deschisă oricui e logat, schimbarea fără verificarea planului văzut.

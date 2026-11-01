@@ -525,6 +525,10 @@
       "ro": "Sugestiile personalului în /admin",
       "en": "Staff suggestions in /admin"
     },
+    "3c1b57d7f2238ec1": {
+      "ro": "**Fila Utilizatori minimă și fila Setări, aduse din etapa 14** (fără mașină; ADR 0116, secțiunea feliei; „Da, 14.C↑b”, la întrebarea de după 14.C↑). În `/admin`, fila **Utilizatori** arată cele mai noi 100 de conturi de client, cu planul de acum, și schimbă planul unui cont: gratuit, o probă de 1–365 de zile de azi, dezactivarea (cu planul de dinainte ținut) și reactivarea; cererea numește planul văzut, iar unul schimbat între timp e refuzat. Fila **Setări**, doar a owner-ului: zilele offline (1–60) și păstrarea tichetelor rezolvate (30–3 650 de zile). Callable-ul `administreazaConturile`, cu auditul în tranzacție; permisiunile noi `conturi.citeste` și `conturi.administreaza`; regula dă lista conturilor cu oricare din ele și setările doar owner-ului. **`/admin` pe Firestore Lite** (doar citiri o dată): 200,5 → 102,8 / 200 kB, cu filele noi. Ce folosesc doar serverul și adminul din conturi stă în `shared/conturiPlan.ts`, ca pornirea să rămână 98,4 (cu ușa 101,9 / 110 kB); totalul 433,1 / 450. **Probele:** pe hârtie, ale callable-ului și ale regulilor pe emulator, cap-coadă pe emulatoare; mutații țintite, toate prinse.",
+      "en": "**The minimal Users tab and the Settings tab, brought from stage 14** (no machine; ADR 0116, the slice section; “Da, 14.C↑b”, to the question after 14.C↑). In `/admin`, the **Users** tab shows the newest 100 customer accounts, with the current plan, and changes the plan of an account: free, a trial of 1–365 days from today, deactivation (with the plan from before kept) and reactivation; the request names the plan seen, and one changed in the meantime is refused. The **Settings** tab, the owner’s only: the days offline (1–60) and how long resolved tickets are kept (30–3,650 days). The `administreazaConturile` callable, with the audit in the transaction; the new permissions `conturi.citeste` and `conturi.administreaza`; the rule gives the account list with either of them and the settings only to the owner. **`/admin` on Firestore Lite** (one-time reads only): 200.5 → 102.8 / 200 kB, with the new tabs. What only the server and the admin use from the accounts lives in `shared/conturiPlan.ts`, so the startup stays at 98.4 (with the door 101.9 / 110 kB); the total 433.1 / 450. **The probes:** on paper, of the callable and of the rules on the emulator, end to end on the emulators; targeted mutations, all caught."
+    },
     "3cac31c2ed72eaa1": {
       "ro": "**Profilul complet pe geometrie exactă** + importul SVG",
       "en": "**The full profile on exact geometry** + SVG import"
@@ -832,6 +836,10 @@
     "5fd7dd989b9b86db": {
       "ro": "Rampa (ADR 0029, documentul v6): bucla tăiată continuu, intrarea rotită, compusă cu urechile (portată, `docs/PORTARE.md` §3.2)",
       "en": "Ramp (ADR 0029, document v6): the loop cut continuously, the rotated entry, combined with tabs (ported, `docs/PORTARE.md` §3.2)"
+    },
+    "612f682f4c69fc17": {
+      "ro": "Fila Utilizatori minimă și fila Setări, aduse din etapa 14",
+      "en": "The minimal Users tab and the Settings tab, brought from stage 14"
     },
     "63760521aca66be1": {
       "ro": "V-carve-ul unei piese, o singură regiune",
