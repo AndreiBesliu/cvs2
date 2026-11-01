@@ -29,6 +29,14 @@ test('butonul Cont deschide panoul: pe instanța locală, contul nu e disponibil
   const buton = page.locator('[data-editare="cont"]');
   await expect(buton).toHaveText('Cont');
   await expect(buton).toHaveAttribute('title', 'Contul: logarea, planul și proba');
+  // Lângă butonul temei, sus în dreapta (cererea owner-ului din 01.11), nu în extensia barei: imediat la dreapta lui, pe
+  // același rând.
+  await expect(page.locator('#loc-cont [data-editare="cont"]')).toHaveCount(1);
+  await expect(page.locator('#loc-extensie [data-editare="cont"]')).toHaveCount(0);
+  const tema = await page.locator('[data-actiune="vedere.tema"]').boundingBox();
+  const cont = await buton.boundingBox();
+  expect(tema && cont && cont.x >= tema.x + tema.width && cont.x - (tema.x + tema.width) < 24 && Math.abs(cont.y + cont.height / 2 - (tema.y + tema.height / 2)) < 4)
+    .toBe(true);
   await buton.click();
   const dialog = page.getByTestId('dialog-cont');
   await expect(dialog.locator('[data-cont="indisponibil"]')).toHaveText('Contul nu e disponibil pe instanța asta (fără configurația Firebase).');
