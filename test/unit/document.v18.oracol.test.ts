@@ -375,15 +375,12 @@ test('(u) ușa documentului curent: null pe o versiune întreagă 1 … 17 (migr
 });
 
 /**
- * DIVERGENȚA găsită de felia 5.1↑c (de hotărât de owner, nereparată aici): ADR 0070 §2 cere migrările doar pentru „un document
- * mai vechi (o versiune întreagă între 1 și cea curentă, exclusiv)”, iar un document „fără versiune sau stricat se refuză în ușa
- * curentă (refuzul nu cere migrări)”. Aplicația cere migrările și pentru o versiune neîntreagă din (1, 18): ușa întreagă o
- * refuză apoi („n-are o versiune de schemă validă”), deci verdictul e același, dar pornirea aduce degeaba bucata migrărilor.
+ * Divergența găsită de felia 5.1↑c și reparată la cererea owner-ului („Da, repar-o aici”): ADR 0070 §2 cere migrările doar
+ * pentru „un document mai vechi (o versiune întreagă între 1 și cea curentă, exclusiv)”, iar un document „fără versiune sau
+ * stricat se refuză în ușa curentă (refuzul nu cere migrări)”. Aplicația cerea migrările și pentru o versiune neîntreagă din
+ * (1, 18): ușa întreagă o refuza apoi, cu același verdict, dar pornirea aducea degeaba bucata migrărilor.
  */
-test('(u) ușa documentului curent refuză singură o versiune neîntreagă între 1 și 18, fără migrări (ADR 0070 §2)', {
-  skip: DOAR_V18,
-  todo: 'divergență de la ADR 0070 §2, întrebarea e la owner (felia 5.1↑c)',
-}, () => {
+test('(u) ușa documentului curent refuză singură o versiune neîntreagă între 1 și 18, fără migrări (ADR 0070 §2)', { skip: DOAR_V18 }, () => {
   for (const schema of [1.5, 10.5, 17.5, 17.000001]) {
     const doc = { schema, rev: 0, piese: [], foi: [{ id: 'f1', stoc: { latime: 300, inaltime: 200, grosime: 18 }, instante: [] }] };
     assert.equal(usaCurentaO(doc), 'usa', String(schema));
