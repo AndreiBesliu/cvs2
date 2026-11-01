@@ -7,7 +7,8 @@ din „Da, WiFi”. Răspunsurile owner-ului:
   felie separată (3a);
 - „si da, la ultima intrebare”, la „Adaug în CSP schema `ws:`?”.
 
-Întrebările 1 (controlerul) și 4 (imprimantele) rămân deschise: țin de 3.6e și de feliile imprimantelor. **Completează:** ADR 0020 (T20, sesiunea Web Serial),
+Tot pe 01.11, la întrebarea 1, owner-ul a ales „Pod ESP3D”: podul ESP3D pe GRBL 1.1h-ul de azi (secțiunea „Podul ESP3D”).
+Întrebarea 4 (imprimantele) rămâne deschisă: ține de feliile imprimantelor. **Completează:** ADR 0020 (T20, sesiunea Web Serial),
 ADR 0079 (emulatorul GRBL), ADR 0080 (fluxul) și ADR 0081 (panoul mașinii, transportul). **Schimbă, în feliile imprimantelor:**
 `BRIEF.md` §12 („Senderul lucrează doar cu familia GRBL”).
 
@@ -148,9 +149,34 @@ GRBL 1.1h, cu care senderul ediției întâi a tăiat o piesă pe 09.08.2026. Un
     - alegerile ținute.
 - **Rămâne pentru 3.6e:** proba pe mașina owner-ului, prin controlerul ales (întrebarea 1).
 
+## Podul ESP3D (răspunsul 1, 01.11.2026)
+
+Mașina owner-ului (COSTEL, GRBL 1.1h pe Arduino) primește un ESP32 cu **ESP3D 3.0**, legat la portul ei serial. Varianta mai
+nouă, pe ESP-IDF (ESP3D-X), are alt WebSocket de date (`/wsdata`, subprotocolul `esp3d-v1`) și nu e încă un profil al
+aplicației.
+
+- **Ce spune sursa ESP3D 3.0** (ramura 3.0, `websocket_server.cpp`, `esp3d_settings.cpp`):
+  - WebSocket-ul de date are subprotocolul `arduino` și portul `DEFAULT_WEBSOCKET_PORT` „8282”; serialul e la „115200”;
+  - cadrele primite, text sau binare, se strâng până la capătul de linie și pleacă la firmware, iar o comandă de timp real
+    pleacă imediat (`isRealTimeCommand`);
+  - ieșirea serială vine în cadre binare (`broadcastBIN`), iar textul e controlul și jurnalul podului (`pushMSG`).
+- **De aceea, profilul `esp3d` aruncă toate cadrele text** (`textDoarControl`), nu doar mesajele de control știute: un text
+  picat în mijlocul unei linii GRBL ar strica-o (proba: un „ok” rupt de un mesaj al podului rămâne „ok”).
+- **Pașii owner-ului, pentru 3.6e:**
+  1. un ESP32 cu ESP3D 3.0, compilat cu `WS_DATA_FEATURE` pornit (în `configuration.h` e comentat implicit), firmware-ul țintă
+     GRBL, protocolul `RAW_SERIAL`, 115 200 baud;
+  2. firele:
+     - TX-ul ESP32 la RX-ul Arduino (D0);
+     - TX-ul Arduino (D1) la RX-ul ESP32, printr-un divizor de tensiune: Arduino dă 5 V, iar ESP32 suportă 3,3 V;
+     - masa comună;
+     - cablul USB al Arduino-ului scos cât lucrează podul: D0 și D1 sunt aceleași linii ca USB-ul;
+  3. podul legat la rețeaua atelierului (modul STA, din pagina lui), cu IP-ul aflat;
+  4. în aplicație: „Conectează (WiFi)”, „Pod ESP3D (GRBL)”, IP-ul, portul 8282; prima dată, browserul cere voie pentru rețeaua
+     locală.
+
 ## Întrebările (owner)
 
-1. **Controlerul cu WiFi al mașinii:**
+1. **Controlerul cu WiFi al mașinii** (răspuns: podul ESP3D, 01.11):
    - a) podul ESP3D pe GRBL 1.1h-ul de azi, un ESP32 legat la TX / RX (recomandat cât rămâne placa);
    - b) un controler nou, FluidNC sau grblHAL pe ESP32, cu axa A din `BRIEF.md` §12;
    - c) altul (placa și firmware-ul).

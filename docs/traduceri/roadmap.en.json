@@ -305,10 +305,6 @@
       "ro": "Buzunar cu mai multe freze; Găurire; Ordinea + un fișier pe sculă; Animația traseului; §10 Găurire în pași",
       "en": "Pocket with several bits; Drilling; Ordering + one file per tool; Toolpath animation; §10 Peck drilling"
     },
-    "214beedb9e8ad9ab": {
-      "ro": "Răspunsurile rămase la ADR 0119: controlerul cu WiFi al mașinii (podul ESP3D pe GRBL-ul de azi, recomandat, sau un controler nou, FluidNC ori grblHAL) și imprimantele 3D, cu firmware-ul lor (Marlin pe USB întâi, recomandat); programele pe flux, tableta într-o felie separată și schema `ws:` în CSP sunt hotărâte (01.11)",
-      "en": "The remaining answers to ADR 0119: the WiFi controller of the machine (the ESP3D bridge on today’s GRBL, recommended, or a new controller, FluidNC or grblHAL) and the 3D printers, with their firmware (Marlin over USB first, recommended); streamed programs, the tablet in a separate slice and the `ws:` scheme in the CSP are decided (01.11)"
-    },
     "22e8ac6ac6980b13": {
       "ro": "**Editorul de vectori**",
       "en": "**The vector editor**"
@@ -496,10 +492,6 @@
     "35c407c4f8470b69": {
       "ro": "Jog, zero XY / Z, palparea Z cu placa de contact, G54–G59, pe mașina simulată (ADR 0082): procedurile pure, WCS-ul citit, starea modală pusă la loc, refuzurile cu motiv; e2e pe emulator",
       "en": "Jog, XY / Z zero, Z probing with the touch plate, G54–G59, on the simulated machine (ADR 0082): the pure procedures, the work coordinate system read back, the modal state restored, refusals with a reason; e2e on the emulator"
-    },
-    "35e1f1f6f80dd050": {
-      "ro": "3.6e (senderul prin WiFi pe mașină) și feliile imprimantelor",
-      "en": "3.6e (the sender over WiFi on the machine) and the printer slices"
     },
     "3660b7114be7ec7c": {
       "ro": "Joburile cu mai multe scule din document: freza pe operație în fereastra exportului, ordinea, jobul CAM cu diametrul fiecărei tăieturi, simularea și estimarea peste schimbări, strategia aleasă, fișierele separate descărcate și încărcate în sender",
@@ -893,6 +885,10 @@
       "ro": "CI rapid",
       "en": "Rapid CI"
     },
+    "67ff5cb20bcf9309": {
+      "ro": "feliile imprimantelor",
+      "en": "the printer slices"
+    },
     "681462eed9b23fdd": {
       "ro": "Bancul vizual v1, cu martorii lui (gata pe 16.10: `npm run banc`, pagina `/banc/` pe instanța de test; unealta de otrăvuri comisă, `docs/otravuri.md`)",
       "en": "Visual bench v1, with its controls (done on 16.10: `npm run banc`, the `/banc/` page on the test instance; the poison tool committed, `docs/otravuri.md`)"
@@ -1173,9 +1169,17 @@
       "ro": "Booleanul, adus din etapa 6",
       "en": "The boolean, brought forward from stage 6"
     },
+    "8c4268df5dfaa05f": {
+      "ro": "Imprimantele 3D: ce imprimante și ce firmware (ADR 0119, întrebarea 4; recomandat: Marlin pe USB întâi)",
+      "en": "3D printers: which printers and which firmware (ADR 0119, question 4; recommended: Marlin over USB first)"
+    },
     "8ebeb40e6301189a": {
       "ro": "Fișierele lăsate pe planșă",
       "en": "Files dropped on the board"
+    },
+    "8ec9fbaed2594ca3": {
+      "ro": "3.6e (senderul prin WiFi pe mașină)",
+      "en": "3.6e (the sender over WiFi on the machine)"
     },
     "8f70e8f713e43d92": {
       "ro": "Gărzile offsetului",
@@ -1825,6 +1829,10 @@
       "ro": "Intrările cu rampă",
       "en": "Ramped lead-ins"
     },
+    "e0a776831728cfac": {
+      "ro": "când vin imprimantele",
+      "en": "when the printers come"
+    },
     "e0b5b9a288063b7e": {
       "ro": "Selecția cu dreptunghi, ca în CAD",
       "en": "Rectangle selection, as in CAD"
@@ -1848,6 +1856,10 @@
     "e2a199e5f1f08a88": {
       "ro": "Importul SVG",
       "en": "SVG import"
+    },
+    "e3ad5d74715a9d16": {
+      "ro": "Podul ESP3D pe mașină (ADR 0119, secțiunea „Podul ESP3D”): un ESP32 cu ESP3D 3.0 compilat cu `WS_DATA_FEATURE`, legat la D0 / D1 ale Arduino-ului (cu divizorul de tensiune pe RX-ul ESP32: 5 V față de 3,3 V), pus în rețeaua atelierului, cu IP-ul aflat",
+      "en": "The ESP3D bridge on the machine (ADR 0119, the “Podul ESP3D” section): an ESP32 with ESP3D 3.0 built with `WS_DATA_FEATURE`, wired to the Arduino’s D0 / D1 (with the voltage divider on the ESP32’s RX: 5 V versus 3.3 V), joined to the workshop network, with its IP found"
     },
     "e4053df5f106173a": {
       "ro": "Ușa documentului curent",

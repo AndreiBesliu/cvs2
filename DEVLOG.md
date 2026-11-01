@@ -4396,3 +4396,18 @@ deschiderii ignorat. Proba cap-coadă a căzut și fără `ws:` în CSP.
 fereastra era minimizată: pagina nu s-a desenat, deci modulul editării (cu butonul Cont) nu s-a încărcat acolo. Locul butonului
 l-am verificat pe build-ul final, local, cu o aserțiune nouă în `test/e2e/cont.spec.ts`: butonul e în locul `cont`, imediat la
 dreapta butonului temei, pe același rând, nu în extensie. Captura colțului din dreapta-sus i-am trimis-o owner-ului.
+
+## 2026-11-01 — Controlerul cu WiFi: podul ESP3D (ADR 0119, răspunsul 1); profilul ESP3D întărit (Model: Claude Opus 5.5)
+
+**Prompt:** „Pod ESP3D” (la „Ce controler cu WiFi pui pe mașină?”).
+**Started:** 01.11, 22:05. **Completed:** 01.11, 22:54. **Ce a ieșit din documentația și sursa ESP3D:**
+- pagina API a ESP3D descrie varianta nouă (ESP3D-X, ESP-IDF: `/wsdata`, subprotocolul `esp3d-v1`, portul 80 / 82);
+- sursa ESP3D 3.0 (ramura 3.0) confirmă profilul aplicației: subprotocolul `arduino`, `DEFAULT_WEBSOCKET_PORT "8282"`, serialul la
+  115 200, timpul real trimis imediat, ieșirea serială în cadre binare;
+- textul pe socket-ul de date e controlul și jurnalul podului.
+
+De aceea, profilul `esp3d` aruncă acum toate cadrele text (`textDoarControl`): un text picat în mijlocul unei linii ar fi
+stricat un „ok” (proba: a căzut înainte de schimbare). ADR 0119 are secțiunea „Podul ESP3D”, cu pașii montajului (ESP3D 3.0 cu
+`WS_DATA_FEATURE`, firele la D0 / D1 cu divizorul de tensiune, rețeaua, IP-ul), trecuți și în coada owner-ului. Codul: `9f96128`.
+**Porțile:** compilatoarele, importurile, traducerile (520, 0 lipsă), 8 010 teste unitare, build-ul determinist, licențele,
+e2e 293 / 293, emulatoarele (69 de probe ale funcțiilor și regulilor, 20 e2e).

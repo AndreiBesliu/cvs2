@@ -69,7 +69,8 @@ implicit n-are dreptul de export, eșecul apare în fila Erori și în Diagnoză
 | Arhivarea repo-ului vechi pe GitHub | 3.9 | la comutare |
 | Bifează „Sugestii: scrie” pe rolurile adminilor care scriu sugestii (și „Sugestii: citește toate”, dacă vrei să vadă și sugestiile celorlalți), în fila Personal din `/admin` | 14.B↑: fila Sugestii | după publicarea pe test |
 | Operatorul datelor și adresa de contact pentru nota de confidențialitate a contului (ADR 0116 §18; fără implicit); până atunci, locurile lor rămân marcate în panoul contului | proba închisă: aplicația arătată cuiva din afara echipei | înainte de proba închisă |
-| Răspunsurile rămase la ADR 0119: controlerul cu WiFi al mașinii (podul ESP3D pe GRBL-ul de azi, recomandat, sau un controler nou, FluidNC ori grblHAL) și imprimantele 3D, cu firmware-ul lor (Marlin pe USB întâi, recomandat); programele pe flux, tableta într-o felie separată și schema `ws:` în CSP sunt hotărâte (01.11) | 3.6e (senderul prin WiFi pe mașină) și feliile imprimantelor | înainte de 3.6e |
+| Podul ESP3D pe mașină (ADR 0119, secțiunea „Podul ESP3D”): un ESP32 cu ESP3D 3.0 compilat cu `WS_DATA_FEATURE`, legat la D0 / D1 ale Arduino-ului (cu divizorul de tensiune pe RX-ul ESP32: 5 V față de 3,3 V), pus în rețeaua atelierului, cu IP-ul aflat | 3.6e (senderul prin WiFi pe mașină) | înainte de 3.6e |
+| Imprimantele 3D: ce imprimante și ce firmware (ADR 0119, întrebarea 4; recomandat: Marlin pe USB întâi) | feliile imprimantelor | când vin imprimantele |
 | Unitatea implicită a unui WMF fără antet placeable (ADR 0117, întrebarea 1: implicit 1/96 țol, ca LibreOffice; sau mm, ca la un DXF fără unități) și un WMF real din programele tale (CorelDRAW, ArtCAM, AutoCAD), de încercat pe instanța de test | 26.A↑: importul WMF | când vrei; până atunci, 1/96 țol |
 
 ## Inventarul proiectului live (19.10, doar citiri)

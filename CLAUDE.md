@@ -456,7 +456,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
     să intre pe același drum.
   - Controlerul mașinii owner-ului e o întrebare pentru pornirea feliei.
   - **Felia 3.6d gata pe 01.11**, cu implicitele („Da”: programele pe flux, tableta într-o felie separată) și cu schema `ws:`
-    în CSP („si da, la ultima intrebare”). Rămân controlerul (pentru 3.6e) și imprimantele.
+    în CSP („si da, la ultima intrebare”). **Controlerul: „Pod ESP3D”** (01.11): ESP3D 3.0 pe un ESP32, legat la GRBL 1.1h-ul
+    de azi; pașii montajului sunt în ADR 0119 („Podul ESP3D”) și în coada owner-ului. Rămân imprimantele.
   - **ADR 0119, propus pe 01.11** („Da, WiFi”), cu cercetarea (Chrome și Edge 147 scutesc de blocare un `ws://` spre un IP privat sau un nume `.local`, după permisiunea rețelei locale), feliile 3.6d (fără mașină) și 3.6e (pe mașină) și patru întrebări: controlerul cu WiFi, programele lungi, tableta, imprimantele.
 - 01.11.2026: **conturile clienților** (răspunsurile la ADR 0116: „1,b. 2, conturile din editia intai sunt ale noastre, nu
   aveam clienti, deci doar al meu este relevant. 3, b sa fie default, dar, vreau sa pot seta asta din admin. 4, a. 5, a. 6,
