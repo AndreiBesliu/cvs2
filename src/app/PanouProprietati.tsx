@@ -7,7 +7,10 @@ import { t } from '../i18n/t.ts';
 import type { Document, FormaDoc, Operatie, Piesa } from '../model/document.ts';
 import { dinParametri, LATURI_MAX, LATURI_MIN, parametri, type Parametri } from '../model/formeParametrice.ts';
 import { ROLURI, roluriOferite, rolPiesei, type Rol } from '../model/rol.ts';
+import { rolPersonalPiesei, type RolPersonal } from '../model/rolPersonal.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
+import { PanouRoluri } from './PanouRoluri.tsx';
+import { useRoluriMele } from './roluriMele.ts';
 import { CampNumeric } from '../ui/CampNumeric.tsx';
 import { valoareDerivata } from '../ui/numar.ts';
 import { useLimba } from '../ui/useLimba.ts';
@@ -32,8 +35,8 @@ type Props = {
   /** Forma nouă a singurei instanțe alese (ADR 0053): dreptunghiul, cercul, poligonul regulat, elipsa, editate după plasare. */
   readonly onForma: (f: FormaDoc) => RezultatActiune;
   readonly onStoc: (s: { readonly latime?: number; readonly inaltime?: number; readonly grosime?: number }) => RezultatActiune;
-  /** Rolul de tăiere al pieselor alese (ADR 0112): le înlocuiește operațiile cu ale rolului. */
-  readonly onRol: (r: Rol) => RezultatActiune;
+  /** Rolul de tăiere al pieselor alese (ADR 0112), de bază sau personalizat (ADR 0114): le înlocuiește operațiile cu ale rolului. */
+  readonly onRol: (r: Rol | RolPersonal) => RezultatActiune;
   /** Operațiile noi ale pieselor (după id-ul piesei): adâncimea sau pasul, scrise pe toate operațiile lor (ADR 0112 §6). */
   readonly onOperatii: (noi: ReadonlyMap<string, readonly Operatie[]>) => RezultatActiune;
   /** Deschide dialogul exportului, unde se schimbă restul valorilor operațiilor. */
@@ -113,6 +116,7 @@ function operatie(o: Operatie, n: number): ReactNode {
  */
 export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPozitie, onRotire, onForma, onStoc, onRol, onOperatii, onEditeazaOperatii }: Props): ReactNode {
   useLimba();
+  const roluriMele = useRoluriMele().roluri;
   // Refuzul ultimului rol ales, pentru selecția de atunci.
   const [refuzRol, setRefuzRol] = useState<{ readonly cheie: string; readonly motiv: string } | null>(null);
   const foaie = doc.foi[0];
@@ -158,11 +162,16 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
   };
 
   // Tăierea (ADR 0112): rolul pieselor alese (doar rolurile care se potrivesc tuturor), adâncimea și pasul tuturor operațiilor
-  // lor; cu valori diferite, câmpul e gol, iar lista arată „—”.
+  // lor; cu valori diferite, câmpul e gol, iar lista arată „—”. Sub rolurile de bază, rolurile omului (ADR 0114 §4) al căror
+  // rol de bază se potrivește; arătat e rolul personalizat al tuturor pieselor, dacă au unul (§6), altfel cel de bază.
   const piese = pieseAlese(doc, alese);
   const oferite = ROLURI.filter((r) => piese.length > 0 && piese.every((p) => roluriOferite(p).includes(r)));
   const roluri = piese.map(rolPiesei);
   const rolComun = roluri.length > 0 && roluri.every((r) => r !== null && r === roluri[0]) ? roluri[0] ?? null : null;
+  const oferitePersonale = roluriMele.filter((r) => oferite.includes(r.baza));
+  const personale = rolComun === null ? [] : piese.map((p) => rolPersonalPiesei(p, oferitePersonale));
+  const personalComun = personale.length > 0 && personale.every((r) => r !== null && r.id === personale[0]?.id) ? personale[0] ?? null : null;
+  const valoareRol = personalComun ? `p:${personalComun.id}` : rolComun ?? '';
   const operatiiAlese = piese.flatMap((p) => p.operatii);
   const comun = (f: (o: Operatie) => number): number | null => {
     const prima = operatiiAlese[0];
@@ -172,7 +181,7 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
   const copii = piese.reduce((n, p) => n + doc.foi.reduce((m, f) => m + f.instante.filter((i) => i.piesa === p.id).length, 0), 0) > alese.length;
   const scrieValori = (v: { readonly adancime?: number; readonly pas?: number }): RezultatActiune =>
     onOperatii(new Map(piese.map((p) => [p.id, p.operatii.map((o) => ({ ...o, ...v }))])));
-  const alegeRol = (r: Rol): void => {
+  const alegeRol = (r: Rol | RolPersonal): void => {
     const rez = onRol(r);
     setRefuzRol(rez.ok ? null : { cheie, motiv: t(rez.motiv) });
   };
@@ -217,10 +226,19 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
           <h3>{t('prop.taierea')}</h3>
           <dl>
             {rand(t('prop.rol'), (
-              <select value={rolComun ?? ''} data-camp="rol" aria-label={t('prop.rol')} disabled={doarCitire} {...(oprit ? { title: oprit } : {})}
-                onChange={(ev) => { const r = oferite.find((x) => x === ev.target.value); if (r) alegeRol(r); }}>
+              <select value={valoareRol} data-camp="rol" aria-label={t('prop.rol')} disabled={doarCitire} {...(oprit ? { title: oprit } : {})}
+                onChange={(ev) => {
+                  const v = ev.target.value;
+                  const r = oferite.find((x) => x === v) ?? oferitePersonale.find((x) => `p:${x.id}` === v);
+                  if (r) alegeRol(r);
+                }}>
                 {rolComun === null && <option value="" disabled>{t('prop.rol.diferite')}</option>}
                 {oferite.map((r) => <option key={r} value={r}>{t(`export.latura.${r}`)}</option>)}
+                {oferitePersonale.length > 0 && (
+                  <optgroup label={t('prop.rol.mele')}>
+                    {oferitePersonale.map((r) => <option key={r.id} value={`p:${r.id}`}>{r.nume}</option>)}
+                  </optgroup>
+                )}
               </select>
             ))}
             {operatiiAlese.length > 0 && rand(t('prop.adancime'), camp(t('prop.adancime'), 'adancime', comun((o) => o.adancime), 'mm', false, (x) => scrieValori({ adancime: x })))}
@@ -228,6 +246,7 @@ export function PanouProprietati({ doc, alese, elemente, cutie, doarCitire, onPo
           </dl>
           {copii && <p className="prop-nota">{t('prop.rol.copii')}</p>}
           {refuzRol?.cheie === cheie && <p className="camp-motiv" role="alert" data-motiv="rol">{refuzRol.motiv}</p>}
+          <PanouRoluri piese={piese} cheie={cheie} />
         </section>
       )}
       {piesa?.operatii.map((o, i) => operatie(o, i + 1))}

@@ -10,6 +10,7 @@ import { cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { executa, type Comanda, type Degrupata, type Istoric } from '../model/jurnal.ts';
 import { operatiiPentruRol, type Rol } from '../model/rol.ts';
+import { operatiiPentruRolPersonal, rolNumerotat, type RolPersonal } from '../model/rolPersonal.ts';
 import { partiDegrupare } from '../model/degrupare.ts';
 import { blocText } from '../model/blocText.ts';
 import { transforma } from '../model/transformare.ts';
@@ -728,24 +729,27 @@ function comandaForma(ctx: ContextDocument): { readonly comanda: Comanda | null 
 
 /**
  * Comanda rolului de tăiere (ADR 0112): operațiile fiecărei piese a instanțelor alese, înlocuite cu ale rolului, într-un pas;
- * o piesă care are deja exact operațiile lui nu se atinge. Motivul: rolul nu se potrivește uneia dintre piese, nimic de
- * schimbat, sau documentul de după refuzat de schemă (plafoanele).
+ * o piesă care are deja exact operațiile lui nu se atinge. Un rol personalizat (ADR 0114 §4, §5) își numerotează frezele o
+ * dată, față de restul proiectului, ca toate piesele să primească aceleași numere. Motivul: rolul nu se potrivește uneia
+ * dintre piese, nimic de schimbat, sau documentul de după refuzat de schemă (plafoanele).
  */
-function comandaRol(h: Istoric, alese: readonly string[], rol: Rol): { readonly ok: true; readonly comanda: Comanda } | { readonly ok: false; readonly motiv: CheieSimpla } {
+function comandaRol(h: Istoric, alese: readonly string[], rol: Rol | RolPersonal): { readonly ok: true; readonly comanda: Comanda } | { readonly ok: false; readonly motiv: CheieSimpla } {
   const piese = new Map(h.doc.piese.map((p) => [p.id, p]));
   const ale = new Set(alese);
-  const comenzi: Comanda[] = [];
-  const vazute = new Set<string>();
+  const lista: Piesa[] = [];
   for (const i of foaieCurenta(h.doc).instante) {
-    const vechi = ale.has(i.id) && !vazute.has(i.piesa) ? piese.get(i.piesa) : undefined;
-    if (!vechi) continue;
-    vazute.add(vechi.id);
-    const operatii = operatiiPentruRol(h.doc, vechi, rol);
+    const p = ale.has(i.id) ? piese.get(i.piesa) : undefined;
+    if (p && !lista.includes(p)) lista.push(p);
+  }
+  const personal = typeof rol === 'string' ? null : rolNumerotat(h.doc, rol, new Set(lista.map((p) => p.id)));
+  const comenzi: Comanda[] = [];
+  for (const vechi of lista) {
+    const operatii = personal ? operatiiPentruRolPersonal(vechi, personal) : operatiiPentruRol(h.doc, vechi, rol as Rol);
     if (!operatii) return { ok: false, motiv: 'motiv.rol-nepotrivit' };
     if (jsonCanonic(operatii) === jsonCanonic(vechi.operatii)) continue;
     comenzi.push({ tip: 'inlocuieste-piesa', vechi, nou: { ...vechi, operatii } });
   }
-  if (vazute.size === 0) return { ok: false, motiv: 'motiv.nicio-selectie' };
+  if (lista.length === 0) return { ok: false, motiv: 'motiv.nicio-selectie' };
   const c = pas(comenzi);
   if (!c) return { ok: false, motiv: 'motiv.nimic-ales' };
   return is(SchemaDocument, JSON.parse(JSON.stringify(executa(h, c).doc))) ? { ok: true, comanda: c } : { ok: false, motiv: 'motiv.plafon' };

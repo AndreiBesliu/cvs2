@@ -1598,6 +1598,76 @@ main h1 {
   margin-top: var(--sp-3);
 }
 
+/* Rolurile personalizate (ADR 0114): salvarea, numele scris și lista „Rolurile mele”, în secțiunea Tăierea. */
+.prop-roluri {
+  margin-top: var(--sp-2);
+}
+
+.prop-rol-formular {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.prop-rol-formular input {
+  flex: 1 1 9rem;
+  min-width: 0;
+  font: inherit;
+}
+
+.prop-roluri .camp-motiv {
+  max-width: none;
+  margin: var(--sp-1) 0 0;
+}
+
+.prop-roluri-mele {
+  margin-top: var(--sp-2);
+}
+
+.prop-roluri-mele summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.prop-roluri-mele ul {
+  list-style: none;
+  margin: var(--sp-1) 0 0;
+  padding: 0;
+}
+
+.prop-roluri-mele li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.prop-roluri-mele li > form {
+  flex: 1 1 100%;
+}
+
+.prop-rol-nume {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.prop-rol-baza {
+  color: var(--t-slab);
+  font-size: var(--fs-1);
+}
+
+.prop-rol-butoane,
+.prop-rol-intrebare {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-left: auto;
+}
+
 /* Stratul traseului (ADR 0038 §3): deasupra vectorilor, fără evenimente (gesturile ajung la pânză). */
 .strat-traseu {
   position: absolute;

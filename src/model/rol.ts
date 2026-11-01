@@ -74,7 +74,7 @@ export function roluriOferite(p: Piesa): Rol[] {
 }
 
 /** O operație a rolului, fără valori: felul, latura și formele ei (id-ul e al grupei). */
-type Grupa = { readonly id: string; readonly tip: TipOperatie; readonly latura: Latura; readonly noduri: readonly string[] };
+export type Grupa = { readonly id: string; readonly tip: TipOperatie; readonly latura: Latura; readonly noduri: readonly string[] };
 
 /** Câte o grupă la fiecare `PLAFON.noduriOperatie` noduri, ca la import: `id`, `id-2`, `id-3`…; nimic pentru o listă goală. */
 function bucati(id: string, tip: TipOperatie, latura: Latura, noduri: readonly string[]): Grupa[] {
@@ -86,7 +86,7 @@ function bucati(id: string, tip: TipOperatie, latura: Latura, noduri: readonly s
 }
 
 /** Grupele rolului pe piesă, sau null dacă rolul nu i se potrivește. */
-function grupe(p: Piesa, rol: Rol): Grupa[] | null {
+export function grupeRol(p: Piesa, rol: Rol): Grupa[] | null {
   if (!roluriOferite(p).includes(rol)) return null;
   const { forme, adancimi } = analiza(p);
   const toate = forme.map((f) => f.id);
@@ -126,7 +126,7 @@ export function rolPiesei(p: Piesa): Rol | null {
   if (p.operatii.length === 0) return null;
   const are = impartire(p.operatii);
   for (const r of roluriOferite(p)) {
-    const g = impartire(grupe(p, r) ?? []);
+    const g = impartire(grupeRol(p, r) ?? []);
     if (g.length === are.length && g.every((x, i) => x === are[i])) return r;
   }
   return null;
@@ -138,16 +138,25 @@ function aceeasiForma(a: FormaSculaDoc | undefined, b: FormaSculaDoc | undefined
   return a.tip === b.tip && a.unghi === b.unghi && (a.varf ?? 0) === (b.varf ?? 0);
 }
 
-/** Toate frezele proiectului: ale operațiilor, ale fundului plat și frezele de rest. */
-function sculeProiect(doc: Document): Scula[] {
+/** Toate frezele proiectului: ale operațiilor, ale fundului plat și frezele de rest; fără piesele din `fara`. */
+function sculeProiect(doc: Document, fara: ReadonlySet<string> = new Set()): Scula[] {
   const rez: Scula[] = [];
   for (const p of doc.piese) {
+    if (fara.has(p.id)) continue;
     for (const o of p.operatii) {
       rez.push(o.scula, ...(o.rest ?? []).map((r) => r.scula));
       if (o.fundPlat) rez.push(o.fundPlat.scula, ...(o.fundPlat.rest ?? []).map((r) => r.scula));
     }
   }
   return rez;
+}
+
+/** Cel mai mic număr pe care nu-l are nicio freză din listă. */
+function primulLiber(scule: readonly Scula[]): number {
+  const folosite = new Set(scule.map((s) => s.numar));
+  let n = 1;
+  while (folosite.has(n)) n++;
+  return n;
 }
 
 /**
@@ -158,10 +167,22 @@ export function numarFreza(doc: Document, diametru: number, forma: FormaSculaDoc
   const scule = sculeProiect(doc);
   const identica = scule.find((s) => s.diametru === diametru && aceeasiForma(s.forma, forma));
   if (identica) return identica.numar;
-  const folosite = new Set(scule.map((s) => s.numar));
-  let n = 1;
-  while (folosite.has(n)) n++;
-  return n;
+  return primulLiber(scule);
+}
+
+/**
+ * Numerele frezelor unui rol personalizat (ADR 0114 §5), în ordinea dată: fiecare își păstrează numărul cât nicio altă freză
+ * din proiect (alt diametru sau altă formă) nu-l are; altfel ia numărul unei freze identice, altfel cel mai mic liber. Frezele
+ * pieselor din `inlocuite` nu se numără (își pierd operațiile), iar cele numerotate deja intră în socoteala următoarelor.
+ */
+export function numereFreze(doc: Document, scule: readonly Scula[], inlocuite: ReadonlySet<string>): number[] {
+  const luate = sculeProiect(doc, inlocuite);
+  return scule.map((s) => {
+    const aceeasi = (x: Scula): boolean => x.diametru === s.diametru && aceeasiForma(x.forma, s.forma);
+    const n = luate.every((x) => x.numar !== s.numar || aceeasi(x)) ? s.numar : luate.find(aceeasi)?.numar ?? primulLiber(luate);
+    luate.push({ ...s, numar: n });
+    return n;
+  });
 }
 
 /**
@@ -188,7 +209,7 @@ export function frezaPentruRol(doc: Document, s: Scula, rol: Rol): Scula {
  * tot una își păstrează id-ul.
  */
 export function operatiiPentruRol(doc: Document, p: Piesa, rol: Rol): Operatie[] | null {
-  const g = grupe(p, rol);
+  const g = grupeRol(p, rol);
   if (!g || g.length === 0) return null;
   const prima = p.operatii[0] ?? operatieImplicita(g[0]!.id, { tip: 'cerc', raza: 1 });
   const {

@@ -7,6 +7,7 @@ import {
 import type { ImportPregatit } from '../io/piesa.ts';
 import type { Retea } from '../model/retea.ts';
 import type { Rol } from '../model/rol.ts';
+import type { RolPersonal } from '../model/rolPersonal.ts';
 import type { Transformare } from '../model/transformare.ts';
 // Doar tipul: piesa textului o face modulul textului, adus la cerere de panoul lui (ADR 0105 §5).
 import type { RezultatPiesaText } from '../text/piesaText.ts';
@@ -54,8 +55,8 @@ export type ContextDocument = {
   readonly alese?: () => readonly string[];
   /** Operațiile noi ale pieselor, după id-ul piesei, din dialogul de export (se scriu toate într-un singur pas). */
   readonly operatiiNoi?: () => ReadonlyMap<string, readonly Operatie[]>;
-  /** Panoul (ADR 0112): rolul de tăiere ales pentru piesele instanțelor alese. */
-  readonly rolNou?: () => Rol;
+  /** Panoul (ADR 0112): rolul de tăiere ales pentru piesele instanțelor alese, de bază sau personalizat (ADR 0114). */
+  readonly rolNou?: () => Rol | RolPersonal;
   /** Importul pregătit de previzualizare (ADR 0035), de adăugat ca o piesă nouă. */
   readonly importNou?: () => ImportPregatit;
   /** Punctul în care s-a lăsat fișierul pe planșă (mm ai foii), sau null: centrul desenului cade acolo (felia 2.8b). */
