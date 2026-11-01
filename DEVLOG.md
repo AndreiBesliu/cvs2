@@ -4239,3 +4239,11 @@ Porțile: compilatoarele, importurile, traducerile (501, 0 lipsă), 7 951 teste 
 fișiere; pornirea 98,4, cu ușa 101,9 / 110 kB; totalul 433,1 / 450; /admin 102,8 / 200), licențele, e2e 290: 289, plus 1 rulată din nou după un EBUSY pe fișierul descărcat, în Drive, emulatoarele
 (69 de probe ale funcțiilor și regulilor, 20 e2e). Mutații țintite, toate prinse: planul arătat care uită de personal, dezactivarea fără planul de dinainte, lista
 conturilor deschisă oricui e logat, schimbarea fără verificarea planului văzut.
+**Publicat pe adresa principală de test:** 01.11, 17:35, `publica` pe `cff5d1e` (rularea 41321521639: hosting-ul,
+funcțiile cu callable-ul nou `administreazaConturile`, regulile), după CI-ul rapid verde. Callable-ul răspunde 401 fără App
+Check (ca martorul `cont`). Verificat în browserul aplicației la 1440 px, pe `cncvectorstudio-test.web.app` (altă stocare
+decât adresa principală): `/admin` servește versiunea `cff5d1ecd2b9`, iar bucata lui are filele noi (Utilizatori, Setări),
+callable-ul și permisiunea nouă, pe Firestore Lite (cereri REST `runQuery`, fără canalul în timp real); editorul, după
+„Reload”, e pe `cff5d1ecd2b9`, iar panoul **Account** se deschide cu formularul de logare. Fără erori în consolă. Filele cu
+date nu le-am deschis: `/admin` de pe `web.app` nu e logat, iar contul Google al owner-ului nu-l folosesc eu; le probează
+e2e-ul cap-coadă pe emulatoare, iar owner-ul le vede după logare.
