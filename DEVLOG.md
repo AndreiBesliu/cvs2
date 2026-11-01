@@ -4411,3 +4411,6 @@ stricat un „ok” (proba: a căzut înainte de schimbare). ADR 0119 are secți
 `WS_DATA_FEATURE`, firele la D0 / D1 cu divizorul de tensiune, rețeaua, IP-ul), trecuți și în coada owner-ului. Codul: `9f96128`.
 **Porțile:** compilatoarele, importurile, traducerile (520, 0 lipsă), 8 010 teste unitare, build-ul determinist, licențele,
 e2e 293 / 293, emulatoarele (69 de probe ale funcțiilor și regulilor, 20 e2e).
+**Publicat pe adresa principală de test:** 01.11, 23:07, `publica` pe `056cbfd` (rularea 41350028552), după CI-ul rapid verde;
+`web.app` servește versiunea `056cbfd2f47d`. Profilul podului ESP3D nu se poate încerca fără pod: proba lui e pe hârtie (un
+„ok” rupt de un mesaj text al podului rămâne „ok”), iar proba pe mașină vine cu 3.6e, după montaj.
