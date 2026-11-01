@@ -7,14 +7,20 @@
  */
 import type { Transport } from './sesiune.ts';
 
-/** Profilurile controlerelor (ADR 0119 §3): portul implicit și subprotocolul WebSocket-ului. */
+/**
+ * Profilurile controlerelor (ADR 0119 §3): portul implicit, subprotocolul WebSocket-ului și dacă cadrele text sunt doar
+ * controlul controlerului (ieșirea GRBL venind binar), deci se aruncă toate.
+ */
 export const PROFILURI_RETEA = ['fluidnc', 'grblhal', 'esp3d'] as const;
 export type ProfilRetea = (typeof PROFILURI_RETEA)[number];
-export const PROFIL_RETEA: Readonly<Record<ProfilRetea, { readonly port: number; readonly subprotocol: string | null }>> = {
-  // FluidNC: portul web + 1; grblHAL: `$307`, implicit 81; podul ESP3D: WebSocket-ul de date, din setările lui.
-  fluidnc: { port: 81, subprotocol: null },
-  grblhal: { port: 81, subprotocol: null },
-  esp3d: { port: 8282, subprotocol: 'arduino' },
+export const PROFIL_RETEA: Readonly<Record<ProfilRetea, { readonly port: number; readonly subprotocol: string | null; readonly textDoarControl: boolean }>> = {
+  // FluidNC: portul web + 1; grblHAL: `$307`, implicit 81; textul lor necunoscut rămâne date (după filtrul controlului).
+  fluidnc: { port: 81, subprotocol: null, textDoarControl: false },
+  grblhal: { port: 81, subprotocol: null, textDoarControl: false },
+  // Podul ESP3D 3.0 (sursa lui, ramura 3.0: `DEFAULT_WEBSOCKET_PORT "8282"`, `websocket_data_server("arduino", …)`): ieșirea
+  // serială pleacă binar (`broadcastBIN`), iar textul e controlul și jurnalul lui (`pushMSG`), care ar putea cădea în mijlocul
+  // unei linii GRBL.
+  esp3d: { port: 8282, subprotocol: 'arduino', textDoarControl: true },
 };
 
 export function esteProfilRetea(x: unknown): x is ProfilRetea {
@@ -128,7 +134,8 @@ export function deschideRetea(adresa: AdresaRetea, profil: ProfilRetea, opt: {
   readonly timpMs?: number;
   readonly permisiune?: () => Promise<string | null>;
 } = {}): Promise<Transport> {
-  const ws = (opt.creeaza ?? creeazaImplicit)(adresa.url, PROFIL_RETEA[profil].subprotocol);
+  const { subprotocol, textDoarControl } = PROFIL_RETEA[profil];
+  const ws = (opt.creeaza ?? creeazaImplicit)(adresa.url, subprotocol);
   ws.binaryType = 'arraybuffer';
   const codare = new TextEncoder();
   return new Promise((rezolva, respinge) => {
@@ -171,7 +178,7 @@ export function deschideRetea(adresa: AdresaRetea, profil: ProfilRetea, opt: {
           ws.onmessage = (e) => {
             const d = e.data;
             if (typeof d === 'string') {
-              if (!esteControl(d)) primit(codare.encode(d));
+              if (!textDoarControl && !esteControl(d)) primit(codare.encode(d));
             } else if (d instanceof ArrayBuffer) {
               primit(new Uint8Array(d));
             }

@@ -24,10 +24,31 @@ const motiv = (text: string, port = 81): string => {
   return r.motiv;
 };
 
-test('profilurile (ADR 0119 §3): FluidNC și grblHAL pe 81, podul ESP3D pe WebSocket-ul de date (8282, subprotocolul arduino)', () => {
-  assert.deepEqual(PROFIL_RETEA.fluidnc, { port: 81, subprotocol: null });
-  assert.deepEqual(PROFIL_RETEA.grblhal, { port: 81, subprotocol: null });
-  assert.deepEqual(PROFIL_RETEA.esp3d, { port: 8282, subprotocol: 'arduino' });
+test('profilurile (ADR 0119 §3): FluidNC și grblHAL pe 81, podul ESP3D 3.0 pe WebSocket-ul de date (8282, subprotocolul arduino, textul doar control)', () => {
+  assert.deepEqual(PROFIL_RETEA.fluidnc, { port: 81, subprotocol: null, textDoarControl: false });
+  assert.deepEqual(PROFIL_RETEA.grblhal, { port: 81, subprotocol: null, textDoarControl: false });
+  assert.deepEqual(PROFIL_RETEA.esp3d, { port: 8282, subprotocol: 'arduino', textDoarControl: true });
+});
+
+test('podul ESP3D: ieșirea GRBL vine binar, iar cadrele text (controlul și jurnalul lui) nu ajung la sesiune, nici în mijlocul unei linii', async () => {
+  const p = deschideRetea(adresa('192.168.4.1', 8282), 'esp3d', { creeaza });
+  WsFals.ultimul?.deschide();
+  const t = await p;
+  const primite: string[] = [];
+  t.porneste((o) => { primite.push(text(o)); }, () => undefined);
+  const binar = (s: string): ArrayBuffer => Uint8Array.from(s, (c) => c.charCodeAt(0)).buffer;
+  WsFals.ultimul?.onmessage?.({ data: binar('o') });
+  WsFals.ultimul?.onmessage?.({ data: '[ESP3D] client conectat\n' });
+  WsFals.ultimul?.onmessage?.({ data: binar('k\r\n') });
+  assert.equal(primite.join(''), 'ok\r\n');
+  // La FluidNC, un cadru text care nu e control rămâne date (ieșirea lui e binară, dar un text necunoscut nu se aruncă).
+  const p2 = deschideRetea(adresa('192.168.4.2'), 'fluidnc', { creeaza });
+  WsFals.ultimul?.deschide();
+  const t2 = await p2;
+  const primite2: string[] = [];
+  t2.porneste((o) => { primite2.push(text(o)); }, () => undefined);
+  WsFals.ultimul?.onmessage?.({ data: 'ok\r\n' });
+  assert.deepEqual(primite2, ['ok\r\n']);
 });
 
 test('adresa primită: IP-urile locale (privat, link-local, loopback, IPv6 local) și numele .local pe ws://, portul din câmp sau din adresă', () => {
@@ -120,7 +141,7 @@ test('transportul: se deschide pe URL-ul adresei, cu subprotocolul profilului, c
   const inchideri: (string | null)[] = [];
   t.porneste((o) => { primite.push(text(o)); }, (m) => { inchideri.push(m); });
   ws.onmessage?.({ data: 'CURRENT_ID:0' });
-  ws.onmessage?.({ data: "Grbl 1.1h ['$' for help]\r\n" });
+  ws.onmessage?.({ data: Uint8Array.from("Grbl 1.1h ['$' for help]\r\n", (c) => c.charCodeAt(0)).buffer });
   ws.onmessage?.({ data: Uint8Array.from('ok\r\n', (c) => c.charCodeAt(0)).buffer });
   ws.onmessage?.({ data: 'PING:60000:60000' });
   assert.deepEqual(primite, ["Grbl 1.1h ['$' for help]\r\n", 'ok\r\n']);
