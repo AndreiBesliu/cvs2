@@ -4354,3 +4354,8 @@ totalul 437,5 / 450; /admin 102,8 / 200), licențele, e2e 292 / 292, emulatoarel
 20 e2e). Pe drum, două probe ale feliei 14.C↑b au căzut la a doua rulare, fără vină în cod: două rânduri de audit cu aceeași
 oră și lista filelor citită înaintea rolului; reparate în `1a9212a`. „Mm” nu l-am luat drept răspuns la unitatea implicită a
 unui WMF fără antet: rămâne 1/96 țol până confirmă owner-ul.
+**Publicat pe adresa principală de test:** 01.11, 20:21, `publica` pe `6a6d7ae` (rularea 41335721062), după CI-ul rapid verde
+(41335179423). Verificat în browserul aplicației la 1440 px, pe `cncvectorstudio-test.web.app`, după „Reload”: versiunea
+`6a6d7ae68a33`; butonul „Import SVG / DXF / PDF / AI / EPS / WMF…”, fereastra de fișiere cu `.wmf`; `forme.wmf` din corpus,
+dat ferestrei, aduce bucata cititorului de pe Hosting și deschide dialogul: 184,15 × 133,35 mm, 11 contururi închise, unitatea
+din antetul placeable (1 440 pe țol), ce s-a sărit, numărat; închis fără import. Fără erori în consolă.
