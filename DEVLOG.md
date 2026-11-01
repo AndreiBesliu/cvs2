@@ -4211,3 +4211,10 @@ poartă (doar online, 26,0 / 32 kB). Codul: `c6c22a8`. Porțile: compilatoarele,
 unitare, build-ul determinist (220 fișiere; pornirea 98,4, cu ușa 101,9 / 110 kB; totalul 433,1 / 450; /admin 196,9 / 200),
 licențele, e2e 290 / 290, emulatoarele (59 + 17). 3 mutații țintite, toate prinse (expiratul cu exportul păstrat, dreptul care nu expiră
 offline, registrul exportului fără contul ținut).
+**Publicat pe adresa principală de test:** 01.11, 14:55, `publica` pe `0446191` (rularea 41308289265: hosting-ul,
+funcțiile cu callable-ul nou `cont`, regulile), după CI-ul rapid verde (41307720416). Callable-ul răspunde 401 fără App Check
+(ca martorul `sugestii`). Verificat în browserul aplicației la 1440 px, pe `cncvectorstudio-test.web.app` (altă stocare decât
+adresa principală), după „Reload”: versiunea `04461916a059`; butonul **Account** din extensia barei, cu titlul lui; panoul se
+conectează la Firebase și arată formularul de logare (Google, e-mail, parolă, crearea contului, parola uitată) și nota de
+confidențialitate, cu locurile operatorului marcate; Escape îl închide. Fără erori în consolă și în jurnalul local. Contul nu
+l-am creat pe instanța găzduită: crearea, confirmarea și proba le probează e2e-ul cap-coadă pe emulatoare.
