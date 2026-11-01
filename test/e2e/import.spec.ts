@@ -638,7 +638,7 @@ test('fișierele stau împreună în bara de sus (cererea din 28.10): import, ex
   expect(ordine).toEqual(['import.svg', 'vectori', 'export.gcode']);
   // Extensia barei nu-l mai are; bara întreagă încape lângă marcă și lângă uneltele din dreapta.
   await expect(page.locator('#loc-extensie [data-editare="vectori"]')).toHaveCount(0);
-  await expect(page.locator('[data-camp="fisier-svg"]')).toHaveAttribute('accept', /\.dxf,image\/vnd\.dxf,application\/dxf,\.pdf,application\/pdf,\.ai,\.eps,application\/postscript,\.wmf,image\/wmf,image\/x-wmf,application\/x-msmetafile$/);
+  await expect(page.locator('[data-camp="fisier-svg"]')).toHaveAttribute('accept', /\.dxf,image\/vnd\.dxf,application\/dxf,\.pdf,application\/pdf,\.ai,\.eps,application\/postscript,\.wmf$/);
   const cutie = async (s: string) => {
     const b = await page.locator(s).boundingBox();
     if (!b) throw new Error(`${s} n-are cutie`);

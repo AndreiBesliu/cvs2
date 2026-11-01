@@ -12,10 +12,10 @@ import type { FisierImport, PrevizualizareImport, UnitateDxf, UnitateWmf } from 
 
 /**
  * Ce cer ușile: px-ul (SVG), limba (`switch` din SVG), unitatea aleasă (un DXF fără unități, un WMF fără antet), pagina (PDF,
- * de la 1).
+ * de la 1). Unitatea WMF vine din context așa cum e, și nedefinită: fiecare octet al acțiunii stă în pachetul de pornire.
  */
 export type OptiuniPrevizualizare = {
-  readonly pxPeTol: 96 | 72; readonly limba: string; readonly unitate?: UnitateDxf; readonly unitateWmf?: UnitateWmf; readonly pagina?: number;
+  readonly pxPeTol: 96 | 72; readonly limba: string; readonly unitate?: UnitateDxf; readonly unitateWmf?: UnitateWmf | undefined; readonly pagina?: number;
 };
 
 /** Imbricarea, mărimea desenului și numărătorile, comune ușilor; null dacă imbricarea trece de plafonul ei. */
