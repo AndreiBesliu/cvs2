@@ -278,6 +278,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   OFL, din fonturile Android Studio, plus variantele lor): un loc nou = rândul în `LOCURI_FLEX` (sau al fontului), apoi
   `test/fixtures/text/variabile.json` regenerat și comis. **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 429,3 / 450 după unirea cu 5.8↑b–c, 5.1↑b și 9.5↑; pe ramură, 418,5** (pe
   `main`, baza era 97,6 / 101,1 / 414,8, cu 14.B↑b unit).
+  **Rolurile personalizate (ADR 0114, felia 15.A↑, adusă din etapa 15)** gata pe 01.11, din cererea owner-ului din 31.10,
+  cu alegerile recomandate: „Salvează ca rol…” în secțiunea Tăierea păstrează rolul de bază și toate valorile operației
+  (operația-model, prin `operatieInMargini`), în browser, pentru toate proiectele (`localStorage`, `cncvs2.roluri`, `v: 1`;
+  stocarea în `src/app/roluriMele.ts`, calculul pur în `src/model/rolPersonal.ts`); în lista Rolului, grupul „Rolurile
+  mele”, aplicat prin `document.rol` (contextul `rolNou` primește și un rol personalizat), cu numărul T păstrat cât e liber
+  (`numereFreze` în `src/model/rol.ts`); recunoașterea ignoră numerele frezelor. **Un câmp nou al operației intră singur în
+  rol; unul care ține de o formă anume (ca `despartire`) se scoate în `model()` și în aplicare** (`src/model/rolPersonal.ts`).
+  **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 432,1 / 450.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

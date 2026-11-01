@@ -454,6 +454,17 @@ implicit. Freza în V merge doar pe linie și în V-carve: la V-carve, o freză 
 alt rol, o freză în V devine plată. La V-carve, adâncimea e cel mult cât conul frezei (la V60 Ø6, 5,196 mm). Sub rol, **Adâncimea** și **Pasul** se scriu pe toate operațiile formelor alese (cu valori
 diferite, câmpul e gol). O piesă cu mai multe copii își schimbă rolul pentru toate. Traseul arătat se reface singur.
 
+**Rolurile mele.** Un rol cu toate valorile lui (freza, sensul, adâncimea, pasul, urechile, rampa, intrările, degajările,
+coborârea, traseul buzunarului, frezele de rest, fundul plat) se păstrează cu **Salvează ca rol…**, sub câmpurile Tăierii:
+scrii numele (cel mult 40 de caractere; e propus din rol, freză și adâncime) și apeși Enter. Merge când formele alese au
+același rol și aceleași valori. Rolurile salvate apar în lista Rolului, sub cele de bază, în grupul **Rolurile mele**: doar
+cele care se potrivesc formelor alese. Alegerea unuia dă formelor exact valorile lui, într-un pas de anulare; la exterior și
+interior, golurile primesc valorile lor, dacă erau altele la salvare. Freza își păstrează numărul (T) cât nicio altă freză din
+proiect nu-l are; altfel ia numărul unei freze identice, sau cel mai mic liber. Lista **Rolurile mele (N)** le arată pe toate,
+cu **Redenumește** și **Șterge**. Formele își păstrează operațiile (valorile se copiază), iar după o valoare schimbată de mână,
+lista Rolului arată rolul de bază. Rolurile stau în browserul acesta, pentru toate proiectele: alt calculator, alt browser sau
+adresa de test față de cea live au lista lor.
+
 | Câmpul | Ce înseamnă |
 |---|---|
 | Tăietura | **exterior** (piesa rămâne înăuntru), **interior** (o gaură), **pe linie** (freza pe contur), **buzunar** (golește conturul, vezi mai jos), **găurire** (doar pe un rând numai cu cercuri), **V-carve** (sapă forma cu freza în V, vezi mai jos); pe o cale deschisă: pe linie, **stânga** sau **dreapta** (partea pe care merge freza, privind în sensul săgeții de pe planșă) |

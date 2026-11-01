@@ -133,6 +133,10 @@
       "ro": "Fluxul senderului ca mașini de stare pure",
       "en": "The sender flow as pure state machines"
     },
+    "0e87b3e3e07abcb1": {
+      "ro": "Rolurile personalizate, aduse din etapa 15",
+      "en": "Custom roles, brought forward from stage 15"
+    },
     "0ebe1a8fed00b751": {
       "ro": "Regiunea păstrată și invarianta 2",
       "en": "The kept region and invariant 2"
@@ -176,6 +180,10 @@
     "12d05b475aabee8c": {
       "ro": "admin **P2**",
       "en": "admin **P2**"
+    },
+    "131057ec8af87589": {
+      "ro": "**Rolurile personalizate, aduse din etapa 15** (fără mașină; ADR 0114; cererea owner-ului din 31.10: „vreau sa facem roluri de taiere customizabile”, cu alegerile recomandate, „Rolurile, pe implicite”; prima parte a rândului de prag „Șabloane de operații (aceleași setări pe alt desen) și calcul în lot”). În panou, sub câmpurile Tăierii, **Salvează ca rol…** păstrează rolul de bază al formelor alese și toate valorile operației (operația-model, care trece de schema documentului; la exterior și interior, golurile cu valorile lor), cu numele scris. Rolurile stau în browser, pentru toate proiectele (`localStorage`, `cncvs2.roluri`), și apar în lista Rolului sub cele de bază, în grupul „Rolurile mele”, doar unde se potrivesc. Alegerea unuia dă formelor valorile lui într-un pas de anulare (`document.rol`), cu numărul T păstrat cât e liber; rolul se recunoaște înapoi fără numerele frezelor. Lista „Rolurile mele (N)” le redenumește și le șterge (cu întrebare); piesele nu țin legătura cu rolul. Calculul pur în `src/model/rolPersonal.ts`, stocarea în `src/app/roluriMele.ts`, panoul în `src/app/PanouRoluri.tsx`. **Probele:** 9 pe hârtie (`test/unit/rolPersonal.test.ts`), 6 ale stocării (`test/unit/roluriMele.test.ts`), una a acțiunii, 2 e2e (`test/e2e/rolPersonal.spec.ts`); 4 mutații țintite (recunoașterea cu numerele frezelor, numărul salvat păstrat mereu, scrierea fără recitirea listei, despărțirea păstrată în model), fiecare prinsă. Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 429,3 → 432,1 / 450 kB. Lucrată în două bucăți, 31.10 23:40–23:55 și din 01.11 09:40: între, fila a stat peste noapte.",
+      "en": "**Custom roles, brought forward from stage 15** (no machine; ADR 0114; the owner’s request of 31.10: “I want us to make customizable cutting roles”, with the recommended choices, “The roles, with the defaults”; the first part of the threshold row “Operation templates (the same settings on another drawing) and batch calculation”). In the panel, under the Cutting fields, **Save as role…** keeps the base role of the chosen shapes and all the values of the operation (the model operation, which passes the document schema; for outside and inside, the holes with their own values), under the typed name. The roles live in the browser, for all projects (`localStorage`, `cncvs2.roluri`), and show in the Role list under the base ones, in the “My roles” group, only where they fit. Choosing one gives the shapes its values in one undo step (`document.rol`), with the T number kept while it is free; the role is recognized back without the cutter numbers. The “My roles (N)” list renames and deletes them (with a question); the parts keep no link to the role. The pure calculation in `src/model/rolPersonal.ts`, the storage in `src/app/roluriMele.ts`, the panel in `src/app/PanouRoluri.tsx`. **Tests:** 9 on paper (`test/unit/rolPersonal.test.ts`), 6 for the storage (`test/unit/roluriMele.test.ts`), one for the action, 2 e2e (`test/e2e/rolPersonal.spec.ts`); 4 targeted mutations (the recognition with the cutter numbers, the saved number always kept, writing without re-reading the list, the split kept in the model), each one caught. Startup 97.6 (with the door 101.1 / 110 kB), total 429.3 → 432.1 / 450 kB. Worked in two pieces, 31.10 23:40–23:55 and from 01.11 09:40: in between, the tab sat overnight."
     },
     "13106ad2691b6613": {
       "ro": "Rolul de tăiere din panoul de proprietăți și traseul la zi",
@@ -1440,6 +1448,10 @@
     "b52896d7055ba085": {
       "ro": "Simularea",
       "en": "Simulation"
+    },
+    "b67cc49ca7f5cc7d": {
+      "ro": "Rolurile personalizate",
+      "en": "Custom roles"
     },
     "b6987a4aa69113ee": {
       "ro": "**Panoul mașinii, cu mașina simulată** (ADR 0081; „Da, pornește 3.6b: portul Web Serial și panoul mașinii, cu o mașină simulată (emulatorul) pe instanța de test, ca să-l pot încerca fără CNC.”). Panoul **Mașina** (în dreapta, sub proprietăți): conectarea la mașină prin USB (Web Serial, în Chrome sau Edge) și, pe instanța de test, **Mașină simulată** (un GRBL simulat, cu viteza 1×, 10× sau 100×); starea și poziția din rapoarte; programul, din ultimul export (exact octeții lui, aceeași amprentă SHA-256) sau dintr-un fișier verificat; Pornește, Pauză / Reia, Reia după eroare, Continuă la o schimbare de sculă, Oprește, Deblochează; comenzile manuale și jurnalul. Mașina simulată e doar online, pe test; panoul și senderul merg și fără internet. Manualul are capitolul „Mașina”. **Treceri:** (1) sesiunea cu un ceas fals (portul căzut, scrierea căzută, linia ruptă între bucăți), apoi panoul și legarea în carcasă; emulatorul mutat din teste în aplicație, cu răspunsul „nu e modelat” în loc de aruncare; e2e-ul (mașina simulată, un fișier refuzat, un port Web Serial fals, fără Web Serial) a trecut din prima; mutațiile: 12 / 13, apoi 13 / 13 (ceasul rămas după deconectare, prins de proba reconectării).",

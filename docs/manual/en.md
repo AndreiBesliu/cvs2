@@ -469,6 +469,17 @@ cone (5.196 mm for a V60 Ø6). Under the role, **Depth** and **Step down** are
 written on all the operations of the chosen shapes (with different values, the field is empty). A part with several copies
 changes its role for all of them. A shown toolpath updates by itself.
 
+**My roles.** A role with all its values (the cutter, the direction, the depth, the step down, the tabs, the ramp, the leads,
+the corners, the descent, the pocket toolpath, the rest cutters, the flat bottom) is kept with **Save as role…**, under
+the Cutting fields: type the name (at most 40 characters; it is suggested from the role, the cutter and the depth) and press
+Enter. It works when the chosen shapes have the same role and the same values. Saved roles show in the Role list, under the
+base ones, in the **My roles** group: only those that fit the chosen shapes. Choosing one gives the shapes exactly its values,
+in one undo step; for outside and inside, the holes get their own values, if they were different when saved. The cutter keeps
+its number (T) as long as no other cutter in the project has it; otherwise it takes the number of an identical cutter, or the
+lowest free one. The **My roles (N)** list shows them all, with **Rename** and **Delete**. The shapes keep their operations
+(the values are copied), and after a value changed by hand, the Role list shows the base role. Roles live in this browser, for
+all projects: another computer, another browser, or the test address versus the live one each have their own list.
+
 | Field | What it means |
 |---|---|
 | Cut | **outside** (the part stays inside), **inside** (a hole), **on the line** (the cutter on the outline), **pocket** (clears the outline, see below), **drilling** (only on a row with nothing but circles), **V-carve** (carves the shape with the V bit, see below); on an open path: on the line, **left** or **right** (the side the cutter runs on, looking along the arrow on the drawing) |

@@ -4158,3 +4158,22 @@ importurile, traducerile (490, 0 lipsă), 7 916 teste unitare, build-ul determin
 **Publicat pe adresa principală de test:** 31.10, `publica` pe `f75fb90` (rularea 41225617708). Verificat în browserul
 aplicației la 1440 px: unealta Text și fereastra „Fonts” se deschid, fără erori. Instanțele variabile nu le-am încercat în
 browser (cer un font variabil încărcat sau permisiunea fonturilor sistemului); le probează e2e-ul fonturilor.
+
+## 2026-11-01 — Felia 15.A↑: rolurile personalizate (Model: Claude Opus 5.5)
+
+**Prompt:** „Da si rolurile” (la „Ce pornesc acum?”, cu „Rolurile, pe implicite” prima; „Da”: arhivarea sesiunilor fonturilor
+și sugestiilor și ștergerea ramurilor unite, cu worktree-urile lor). În timpul feliei: „Ce sub task-uri mai putem deschide?”
+(răspunsul: oracolul independent al ușii documentului v11–v18, importul WMF, verificarea și repararea vectorilor; sub Remote
+Control sesiunile nu pornesc, deci le pornește owner-ul de la desktop).
+**Started:** 31.10, 23:40. **Completed:** 01.11, 10:33 (lucrată 23:40–23:55 și din 09:40; între, fila a stat peste noapte).
+**Curățenia:** sesiunile fonturilor și sugestiilor, arhivate; worktree-urile `fonturi-variabile`, `import-eps` și
+`oracol-buzunar`, scoase (întâi joncțiunile `node_modules`, ca ștergerea să nu intre în `node_modules` din repo: 305 și 199
+de dosare, neatinse), ramurile lor locale șterse cu `-d`; șase resturi vechi din `.git/worktrees`, pe care Drive-ul nu le lăsa
+șterse, scoase cu forța, iar `git worktree prune` rulează acum curat. Ramura sugestiilor (`wip/14.B-b-sugestie-editor`, cu
+`403bc27` neunit) și worktree-ul ei rămân; ramurile de pe `origin`, neatinse.
+**Felia:** ADR 0114 (numărul 0114, nefolosit până acum, închide golul din index). „Salvează ca rol…” în secțiunea Tăierea
+păstrează rolul de bază și toate valorile operației, în browser, pentru toate proiectele; grupul „Rolurile mele” în lista
+Rolului; lista cu redenumirea și ștergerea. Codul: `9b0938f`. Porțile: compilatoarele, importurile, traducerile (493, 0 lipsă),
+7 932 teste unitare, build-ul determinist (217 fișiere; pornirea 97,6, cu ușa 101,1 / 110 kB; totalul 432,1 / 450), licențele,
+e2e 287 / 287, emulatoarele (49 + 16). 4 mutații țintite, toate prinse (recunoașterea cu numerele frezelor, numărul salvat păstrat
+mereu, scrierea fără recitirea listei, despărțirea păstrată în model). Nightly-ul din noaptea asta (41285584952), verde.
