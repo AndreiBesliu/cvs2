@@ -1,8 +1,13 @@
 # ADR 0119: Senderul prin WiFi (WebSocket), pregătit și pentru imprimantele 3D
 
-**Starea:** propus pe 01.11.2026, din cererea owner-ului din aceeași zi („O sa vreau imediat dupa felia asta sa facem senderul
-sa se poata conecta pri wifi la masina. Si am de gand sa folosim asta si pentru imprimante 3D”) și din „Da, WiFi”. Alegerile
-marcate **(owner)** au implicitul recomandat și așteaptă răspunsul lui. **Completează:** ADR 0020 (T20, sesiunea Web Serial),
+**Starea:** acceptat pe 01.11.2026 pentru felia 3.6d. A pornit din cererea owner-ului din aceeași zi („O sa vreau imediat dupa
+felia asta sa facem senderul sa se poata conecta pri wifi la masina. Si am de gand sa folosim asta si pentru imprimante 3D”) și
+din „Da, WiFi”. Răspunsurile owner-ului:
+- „Da”, la „Pornesc senderul prin WiFi (felia 3.6d) cu implicitele recomandate?”: programele pe flux (2a) și tableta într-o
+  felie separată (3a);
+- „si da, la ultima intrebare”, la „Adaug în CSP schema `ws:`?”.
+
+Întrebările 1 (controlerul) și 4 (imprimantele) rămân deschise: țin de 3.6e și de feliile imprimantelor. **Completează:** ADR 0020 (T20, sesiunea Web Serial),
 ADR 0079 (emulatorul GRBL), ADR 0080 (fluxul) și ADR 0081 (panoul mașinii, transportul). **Schimbă, în feliile imprimantelor:**
 `BRIEF.md` §12 („Senderul lucrează doar cu familia GRBL”).
 
@@ -37,7 +42,7 @@ GRBL 1.1h, cu care senderul ediției întâi a tăiat o piesă pe 09.08.2026. Un
   - OctoPrint: REST pe HTTP, cu cheia API în `X-Api-Key` și CORS pornit (`allowCrossOrigin`, oprit din fabrică).
   - Bambu Lab vorbește MQTT peste TLS, la care un browser nu ajunge.
 
-## Decizia (propusă)
+## Decizia
 
 ### A. Transportul
 
@@ -101,6 +106,47 @@ GRBL 1.1h, cu care senderul ediției întâi a tăiat o piesă pe 09.08.2026. Un
 - **3.6e:** proba pe mașina owner-ului, prin controlerul ales.
 - **Mai târziu, fiecare cu ADR-ul ei:** programul urcat pe cardul controlerului, tableta, protocolul Marlin, imprimantele prin
   rețea.
+
+## Felia 3.6d (01.11.2026): transportul și panoul
+
+- **Ce s-a construit:**
+  - transportul, în `src/machine/websocket.ts`, lângă `serial.ts` (nu `retea.ts`, ca în propunere: numele era deja al copierii
+    în rețea, ADR 0061);
+  - profilurile;
+  - adresa judecată înainte de conectare (`adresaRetea`);
+  - mesajele de control scoase (`esteControl`);
+  - butonul **Conectează (WiFi)** din panoul mașinii, cu controlerul, adresa și portul ținute în browser (`cncvs2.masina.retea`,
+    `v: 1`);
+  - starea „Conectat prin WiFi (gazda:portul)”;
+  - avertismentul de dinaintea primei porniri prin WiFi, o dată pe pagină;
+  - capitolul mașinii din manual (ro, en).
+- **CSP-ul** (`shared/csp.ts`, cu acordul owner-ului) primește în `connect-src` schema `ws:`. Fără ea, browserul bloca orice
+  WebSocket („violates the following Content Security Policy directive: connect-src”, prins în diagnoza din probă).
+  - Spre o gazdă publică, un `ws://` rămâne blocat ca conținut mixt.
+  - Schimbare față de §5: `wss:` nu intră în CSP (ar deschide orice gazdă publică), deci și adresa `wss://` se refuză, cu
+    motivul. Un controler cu TLS va cere un ADR, cu gazdele lui.
+- **Deschiderea refuzată** are motivul ei:
+  - fără răspuns la adresa aceea (`retea-nedeschis`);
+  - permisiunea rețelei locale refuzată (`retea-permisiune`, din starea permisiunii `local-network`);
+  - timpul trecut: 10 s (`retea-timp`).
+
+  O conexiune oprită de browser dă doar `error`, fără `close`: și ea e un eșec pe loc, nu după cele 10 s.
+- **Închiderea de după deschidere:** `retea-cazuta` (1006, WiFi-ul) și `retea-inchisa:<cod>` (controlerul). Panoul spune
+  „Legătura s-a închis: …”, iar lucrarea pierdută spune „legătura cu mașina s-a închis” (text neutru, bun și pentru USB).
+- **Probele:**
+  - pe hârtie: `test/unit/websocket.test.ts` (adresele primite și refuzate, mesajele de control, transportul pe un WebSocket
+    fals, sesiunea prin rețea cu legătura căzută în timpul programului);
+  - cap-coadă: `test/e2e/masina-wifi.spec.ts`, cu emulatorul GRBL în spatele unui server WebSocket minimal
+    (`test/e2e/controlerWebSocket.ts`, RFC 6455, fără dependențe; ca FluidNC, un mesaj de control în cadru text și ieșirea în
+    cadre binare). Verifică:
+    - adresele refuzate;
+    - profilul care își aduce portul;
+    - jurnalul fără mesajul de control;
+    - programul ajuns la controler cu amprenta exportului, după avertisment;
+    - a doua pornire, fără avertisment;
+    - legătura tăiată în timpul programului;
+    - alegerile ținute.
+- **Rămâne pentru 3.6e:** proba pe mașina owner-ului, prin controlerul ales (întrebarea 1).
 
 ## Întrebările (owner)
 

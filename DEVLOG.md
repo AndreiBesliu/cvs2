@@ -4359,3 +4359,35 @@ unui WMF fără antet: rămâne 1/96 țol până confirmă owner-ul.
 `6a6d7ae68a33`; butonul „Import SVG / DXF / PDF / AI / EPS / WMF…”, fereastra de fișiere cu `.wmf`; `forme.wmf` din corpus,
 dat ferestrei, aduce bucata cititorului de pe Hosting și deschide dialogul: 184,15 × 133,35 mm, 11 contururi închise, unitatea
 din antetul placeable (1 440 pe țol), ce s-a sărit, numărat; închis fără import. Fără erori în consolă.
+
+## 2026-11-01 — Felia 3.6d: senderul prin WiFi; butonul Cont lângă temă (Model: Claude Opus 5.5)
+
+**Prompt:** „1. de ce sa nu pot alege intre mm si tol? 2. Da” (la „„Mm” însemna milimetri pentru un WMF fără antet?” și „Pornesc
+senderul prin WiFi (felia 3.6d), cu programele trimise pe flux și tableta mai târziu?”). Pe drum: „account ar trebui sa sta in
+alta parte, langa theme button” (cu captura barei) și „si da, la ultima intrebare” (la „Adaug în CSP schema `ws:`?”).
+**Started:** 01.11, 20:42. **Completed:** 01.11, 21:44. La WMF, alegerea există deja: fereastra importului are lista unităților
+pentru un fișier fără antet; implicitul rămâne 1/96 țol. **Felia:**
+- transportul WebSocket (`src/machine/websocket.ts`, `retea`): adresa judecată înainte de conectare, mesajele de control scoase,
+  câte un cadru pe scriere, închiderea cu motivul ei;
+- „Conectează (WiFi)” în panoul mașinii, cu controlerul, adresa și portul ținute în browser;
+- avertismentul de dinaintea primei porniri prin WiFi;
+- manualul;
+- schema `ws:` în CSP, cu acordul owner-ului;
+- butonul Cont lângă butonul temei (controlul `cont` al aranjamentului).
+
+**Pe drum:**
+- am suprascris din greșeală `test/unit/retea.test.ts` (proba copierii în rețea, ADR 0061); l-am pus la loc din git pe loc, iar
+  probele noi stau în `test/unit/websocket.test.ts`;
+- prima schimbare a CSP-ului a oprit-o clasificatorul permisiunilor, până la acordul owner-ului; între timp, lucrul a stat pe
+  `wip/3.6d-wifi` (`c7ea4fc`), adus în `main` prin fast-forward;
+- diagnoza din probă: o conexiune oprită de CSP dă doar `error`, fără `close` (reparat: eșec pe loc, nu după 10 s); `URL` scoate
+  portul 80 (reparat: portul scris se citește din text).
+
+Codul: `c7ea4fc`, `8086ad5`. **Porțile:**
+- compilatoarele; importurile (811 module, 0 încălcări); traducerile (517, 0 lipsă); 8 009 teste unitare (0 căderi);
+- build-ul determinist (222 de fișiere; pornirea 98,5, cu ușa 102,0 / 110 kB; totalul 439,5 / 450; /admin 102,8 / 200);
+- licențele; e2e 293 (292, plus 1 rulată din nou după un EBUSY pe fișierul descărcat, în Drive);
+- emulatoarele (69 de probe ale funcțiilor și regulilor, 20 e2e).
+
+Mutațiile țintite, toate prinse: mesajele de control lăsate să treacă, IP-urile publice primite, `error`-ul de dinaintea
+deschiderii ignorat. Proba cap-coadă a căzut și fără `ws:` în CSP.

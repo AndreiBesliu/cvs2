@@ -291,7 +291,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   rol; unul care ține de o formă anume (ca `despartire`) se scoate în `model()` și în aplicare** (`src/model/rolPersonal.ts`).
   **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 432,1 / 450.**
   **Conturile clienților: contul în aplicație (ADR 0116, felia 14.C↑, adusă din etapa 14)** gata pe 01.11, din sugestia
-  owner-ului acceptată pe 31.10 și răspunsurile lui: butonul **Cont** din extensia barei, panoul contului (doar online,
+  owner-ului acceptată pe 31.10 și răspunsurile lui: butonul **Cont** (din 01.11 lângă butonul temei, sus în dreapta: controlul
+  `cont` al aranjamentului), panoul contului (doar online,
   `src/app/PanouCont.tsx`), callable-ul `cont` (`conturi/{uid}`, proba de 14 zile la prima logare cu adresa confirmată,
   dreptul calculat pe server), contul ținut de aplicație (`src/app/dreptCont.ts`, 7 zile offline din `setari/conturi`),
   registrele cu capabilitățile din el (exportul G-code și pornirea senderului se opresc fără drept). **`firebase/auth` doar
@@ -321,6 +322,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   generator + valorile pe hârtie, apoi `test/fixtures/wmf/` regenerat și comis (CI-ul îl regenerează fără GDI, `--fara-gdi`,
   și cere aceiași octeți). **Pornirea 98,4 (cu ușa 102,0 / 110 kB), totalul 437,5 / 450, /admin 102,8 / 200, după unirea cu
   14.C↑b și 5.1↑c.**
+  **Senderul prin WiFi (ADR 0119, felia 3.6d)** gata pe 01.11:
+  - **Conectează (WiFi)** din panoul mașinii: un WebSocket spre controlerul din rețeaua locală (FluidNC, grblHAL, podul ESP3D),
+    peste același flux (`src/machine/websocket.ts`, transportul `retea`);
+  - adresa, doar un IP local sau un nume `.local`, se judecă înainte de conectare: browserul (Chrome și Edge 147, cu
+    permisiunea rețelei locale) ar bloca restul;
+  - avertismentul căderii legăturii, înaintea primei porniri.
+
+  **CSP-ul are schema `ws:` în `connect-src`** (acordul owner-ului), fără `wss:`. **Proba cap-coadă are emulatorul GRBL în
+  spatele unui server WebSocket minimal** (`test/e2e/controlerWebSocket.ts`, fără dependențe: npm lipsește). Butonul
+  **Cont** stă de pe 01.11 lângă butonul temei (controlul `cont` al aranjamentului).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -444,6 +455,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - Transportul se desparte de fluxul senderului, ca imprimantele 3D (Marlin pe serial, Klipper sau OctoPrint prin API web)
     să intre pe același drum.
   - Controlerul mașinii owner-ului e o întrebare pentru pornirea feliei.
+  - **Felia 3.6d gata pe 01.11**, cu implicitele („Da”: programele pe flux, tableta într-o felie separată) și cu schema `ws:`
+    în CSP („si da, la ultima intrebare”). Rămân controlerul (pentru 3.6e) și imprimantele.
   - **ADR 0119, propus pe 01.11** („Da, WiFi”), cu cercetarea (Chrome și Edge 147 scutesc de blocare un `ws://` spre un IP privat sau un nume `.local`, după permisiunea rețelei locale), feliile 3.6d (fără mașină) și 3.6e (pe mașină) și patru întrebări: controlerul cu WiFi, programele lungi, tableta, imprimantele.
 - 01.11.2026: **conturile clienților** (răspunsurile la ADR 0116: „1,b. 2, conturile din editia intai sunt ale noastre, nu
   aveam clienti, deci doar al meu este relevant. 3, b sa fie default, dar, vreau sa pot seta asta din admin. 4, a. 5, a. 6,
