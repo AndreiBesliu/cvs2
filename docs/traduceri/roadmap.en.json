@@ -197,6 +197,10 @@
       "ro": "Înclinarea formelor cu arce",
       "en": "Skewing shapes with arcs"
     },
+    "147973612cc55fc8": {
+      "ro": "Conturile clienților: contul în aplicație, adus din etapa 14",
+      "en": "Customer accounts: the account in the app, brought forward from stage 14"
+    },
     "14daa1cd690b3dce": {
       "ro": "Degajările colțurilor (ADR 0032, documentul v8 cu migrarea v7 → v8 și `colturi: null`): pe fiecare colț concav pentru materialul păstrat, între două linii, traseul face drumul minim Q → E → Q, cu cercul frezei prin colțul piesei (dog-bone pe bisectoare, T-bone în peretele mai lung, ca la Vectric), la fiecare sosire în Q, și cu urechi, rampă și intrări. Ediția întâi punea un cerc separat cu centrul la r dincolo de colț: pe hârtie lăsa o așchie de ~0,29·r pe bisectoare. Condițiile: departe de buclele vecine (D + 1), de urechile buclei (D) și de marginea foii (1 mm); altfel, avertisment. Coloana Colțuri în dialog. **Recenzia (o lentilă CAM + 2 verificatori, 0,66 M, 38 min) a prins o gaură a contractului:** două găuri cu T-bone și un perete de 4–6 mm: fiecare crestătură trecea singură de condiție, dar se întâlneau și tăiau peretele, iar o bucată din piesă se desprindea fără avertisment. Acum candidatele se judecă și între ele (amândouă omise). Tot de la recenzie: marginea foii, conturul curățat ca la offset, avertismentul arcelor sub raza frezei, filtrul pe cutii (1600 de găuri: 1,3 s în loc de 13 s). Oracolul (sesiune independentă, 0,81 M, 96 min): documentul v8, invariantele 2, 9–12 amendate, 13 nouă, degajările pe hârtie, 15 martori, 37 de sabotaje (35 prinse, 2 echivalente). Otrăvuri: 35 din 36 prinse; cea scăpată e echivalentă (candidatele pe linie: o tăietură pe linie cu degajări e refuzată oricum de lucrare). **CI:** nivelul rapid în 4 felii. **Treceri:** (1) contractul; (2) aplicația și documentul v8; (3) recenzia și reparațiile; (4) oracolul; (5) CI-ul; (6) otrăvurile.",
       "en": "Corner reliefs (ADR 0032, document v8 with the v7 → v8 migration and `colturi: null`): on each concave corner of the kept material, between two lines, the toolpath makes the minimal Q → E → Q trip, with the bit circle through the part's corner (dog-bone on the bisector, T-bone into the longer wall, as in Vectric), at every arrival at Q, and with tabs, ramp and lead-ins. The first edition put a separate circle centred r beyond the corner: on paper it left a sliver of ~0.29·r on the bisector. The conditions: away from neighbouring loops (D + 1), from the loop's tabs (D) and from the sheet edge (1 mm); otherwise, a warning. A Corners column in the dialog. **The review (one CAM lens + 2 verifiers, 0.66 M, 38 min) caught a hole in the contract:** two holes with T-bones and a 4–6 mm wall: each notch passed the condition on its own, but they met and cut the wall, and a piece of the part came loose without a warning. Now candidates are also judged against each other (both skipped). Also from the review: the sheet edge, the contour cleaned as for the offset, the warning for arcs under the bit radius, the box filter (1600 holes: 1.3 s instead of 13 s). The oracle (independent session, 0.81 M, 96 min): document v8, invariants 2, 9–12 amended, a new 13, the reliefs on paper, 15 controls, 37 sabotages (35 caught, 2 equivalent). Poisons: 35 of 36 caught; the one that escaped is equivalent (on-line candidates: an on-line cut with reliefs is refused by the job anyway). **CI:** the rapid level in 4 slices. **Passes:** (1) the contract; (2) the app and document v8; (3) the review and the fixes; (4) the oracle; (5) the CI; (6) the poisons."
@@ -313,10 +317,6 @@
       "ro": "Contur L / A / C cu bulge; aria exactă pe toate trei primitivele (cercul = πr² exact, cubica prin Gauss pe 3 noduri); matricea cu rotiri exacte la 90°; offsetul peste cavalier, cu eșecul spus. Cavalier adus din `v0.1.1`: 118 `!` doar pentru tipuri, probat linie cu linie și cu martorul npm (100 de cazuri, bit cu bit). Profilul exterior / interior / pe linie, cu treceri egale. 50 de teste, valori pe hârtie. Treceri: `!` pus greșit în partea stângă de reparatorul automat; două importuri de efect cu `.js`; ciclurile interne cavalier → regula fațadei.",
       "en": "L / A / C contour with bulge; exact area on all three primitives (circle = πr² exactly, cubic via 3-point Gauss); matrix with exact 90° rotations; offset over cavalier, with failures reported. Cavalier vendored from `v0.1.1`: 118 `!` for types only, checked line by line and against the npm control (100 cases, bit for bit). Outside / inside / on-line profile, with equal passes. 50 tests, values on paper. Passes: a `!` misplaced on the left-hand side by the auto-fixer; two side-effect imports with `.js`; cavalier's internal cycles → the facade rule."
     },
-    "253c7756c94c8886": {
-      "ro": "înainte de 14.C↑; nota, înainte de proba închisă",
-      "en": "before 14.C↑; the notice, before the closed trial"
-    },
     "266e79f8cd60b40f": {
       "ro": "Trasarea din imagine; EPS și AI vechi, cu cititor propriu",
       "en": "Tracing from an image; old EPS and AI, with our own reader"
@@ -356,6 +356,10 @@
     "2a0fbb5a2734e8a3": {
       "ro": "Verificarea și repararea vectorilor; Cote; Tăierea și conversia; Transformarea traseelor",
       "en": "Checking and repairing vectors; Dimensions; Cutting and conversion; Transforming toolpaths"
+    },
+    "2aa7e2177859f0e1": {
+      "ro": "înainte de proba închisă",
+      "en": "before the closed trial"
     },
     "2acd0e2d7acfcead": {
       "ro": "Documentul v0",
@@ -416,6 +420,10 @@
     "2e7ec09be96e6d83": {
       "ro": "Personalul",
       "en": "Staff"
+    },
+    "2f2818f9ad494728": {
+      "ro": "proba închisă: aplicația arătată cuiva din afara echipei",
+      "en": "the closed trial: the app shown to anyone outside the team"
     },
     "2fcd385ec36adccb": {
       "ro": "Regula `nonzero` la ușă (ADR 0036): **designul** (3 prototipuri + judecător, 1,71 M) a scos PathKit de la ușă (pierdea tăcut detalii de µm la scara foii și refuza textul real); aranjamentul exact în double, cu toleranța relativă la întindere, calea rapidă exactă, geometria ieșirii a sursei. **Recenzia (1,77 M)**: 8 constatări, între ele încrucișările la unghi mic ratate (lentila de înfășurare 2 ieșea gaură, tăcut) și clasele CSS Illustrator ignorate; toate reparate. **Oracolul (0,87 M)**: K1 (calea cu un vârf), K7 (forma sub τ). Logoul AS Roma de pe test: 2 refuzuri din mânerul retras rămas la 1 ulp după închidere, reparat la ușă. Otrăvuri: 45 din 54, plus 4 cu teste noi (2 goluri reale, tăcute: bucla cubicei pe calea rapidă, incluziunea pe bucăți monotone pe x), 5 echivalente. **Treceri:** (1) designul; (2) portarea; (3) recenzia și reparațiile; (4) oracolul, K1 și K7; (5) logoul AS Roma; (6) otrăvurile.",
@@ -544,6 +552,10 @@
     "4022794d5f162083": {
       "ro": "Sugestia din editor",
       "en": "The suggestion from the editor"
+    },
+    "407552d9f32fc6c8": {
+      "ro": "**Conturile clienților: contul în aplicație, adus din etapa 14** (fără mașină; ADR 0116; sugestia owner-ului acceptată pe 31.10, „Ne trebuie sistem de feedback sau raportare erori de catre userii clienti. Si trebuie sa facem si partea de accounts.”, și răspunsurile lui din 01.11: înregistrarea liberă, conturile ediției întâi rămân ale echipei, 7 zile offline setabile din admin, ordinea conturi → raportări → fila Utilizatori). Butonul **Cont** din extensia barei deschide panoul contului (doar online): intrarea cu Google sau cu e-mail și parolă, contul nou cu confirmarea adresei, parola uitată, numele, planul cu zilele rămase, ieșirea și nota de confidențialitate (cu locurile operatorului marcate). Callable-ul `cont` creează la prima logare cu adresa confirmată `conturi/{uid}`, cu proba de 14 zile, și calculează dreptul la fiecare deschidere: personalul are tot; proba trecută și contul dezactivat opresc exportul G-code și pornirea senderului. Aplicația ține dreptul 7 zile offline (`setari/conturi`) și îl reconfirmă la deschiderea editorului. Firebase Auth stă într-un singur modul, împărțit cu `/admin`; contul are categoria lui în poartă, doar online (26,0 / 32 kB). **Probele:** 10 pe hârtie, 8 ale callable-ului și 2 ale regulilor pe emulator, 3 e2e și unul cap-coadă pe emulatoare; 3 mutații țintite, toate prinse. Pornirea 97,6 → 98,4 (cu ușa 101,9 / 110 kB), totalul 432,1 → 433,1 / 450, /admin 196,0 → 196,9 / 200.",
+      "en": "**Customer accounts: the account in the app, brought forward from stage 14** (no machine; ADR 0116; the owner’s suggestion accepted on 31.10, “We need a feedback or error reporting system for the client users. And we also have to do the accounts part.”, and his answers of 01.11: open registration, the first edition’s accounts stay the team’s, 7 offline days settable from admin, the order accounts → reports → the Users tab). The **Account** button in the bar’s extension opens the account panel (online only): signing in with Google or with email and password, the new account with the address confirmation, the forgotten password, the name, the plan with the days left, signing out and the privacy notice (with the controller’s places marked). The `cont` callable creates `conturi/{uid}` at the first sign-in with a confirmed address, with the 14-day trial, and computes the rights at every opening: staff have everything; an ended trial and a deactivated account stop G-code export and starting the sender. The app keeps the rights 7 days offline (`setari/conturi`) and confirms them again when the editor opens. Firebase Auth sits in a single module, shared with `/admin`; the account has its own category in the gate, online only (26.0 / 32 kB). **Tests:** 10 on paper, 8 for the callable and 2 for the rules on the emulator, 3 e2e and one end to end on the emulators; 3 targeted mutations, all caught. Startup 97.6 → 98.4 (with the door 101.9 / 110 kB), total 432.1 → 433.1 / 450, /admin 196.0 → 196.9 / 200."
     },
     "4156b068e6443d05": {
       "ro": "Stratul WebGL2 și panoul de proprietăți editabil",
@@ -872,6 +884,10 @@
     "6dff3c8d475a776d": {
       "ro": "Caneluri / bevel / Raised Round; Freze de profil desenate; Biblioteca de freze (completă)",
       "en": "Flutes / bevel / Raised Round; Drawn profile bits; The bit library (complete)"
+    },
+    "6f2292b4e32823b8": {
+      "ro": "Operatorul datelor și adresa de contact pentru nota de confidențialitate a contului (ADR 0116 §18; fără implicit); până atunci, locurile lor rămân marcate în panoul contului",
+      "en": "The data controller and the contact address for the account’s privacy notice (ADR 0116 §18; no default); until then, their places stay marked in the account panel"
     },
     "6f850eabd7c57b4a": {
       "ro": "**Roadmap-ul în engleză** (ADR 0056; „O sa vrea roadmap si in engleza”, apoi „Fa oricum roadmapul in eng”). Fișele rămân singurul adevăr, în română; traducerea stă în `docs/traduceri/roadmap.en.json`, cu cheia pe amprenta textului român și româna lângă engleză; build-ul scrie și `roadmap.en.json`, cu textele netraduse numărate; fila alege fișierul după limbă, iar antetul `/admin` are acum RO / EN. Traduse: 325 de texte (~63 600 de caractere: țintele etapelor, feliile cu notele lor, cererile către owner, titlurile ADR-urilor). `npm run traduceri` pune dicționarul la zi, iar o probă din nivelul rapid cere zero lipsuri, deci traducerea vine în același commit cu fișa. Fila Documentație rămâne în română. **Treceri:** (1) generatorul, contractul, fila, comutatorul, probele; (2) traducerea textelor și controlul negativ al porții (cu o traducere golită, proba cade cu mesajul ei).",
@@ -1601,10 +1617,6 @@
       "ro": "**Importul DXF, adus din etapa 9, cu plafonul pornirii 110 kB** (fără mașină; ADR 0100, 0101; „Ridică plafonul”: întâi plafonul pornirii 100 → 110 kB, cu pornirea măsurată în Edge (din worker 42 / 102 ms cu procesorul ×1 / ×4, prima vizită pe 750 kbit/s 1,8 s), apoi felia următoare: rândul de prag „Import 2D” avea doar SVG-ul). „Importă SVG / DXF…” citește și DXF-ul ASCII (R12 … R2018): unitățile din $INSUNITS (lipsă: mm, cu alegerea omului în dialog), liniile, arcele, cercurile, elipsele, poliliniile cu arce, spline-urile (Bézier exact, și cele periodice), blocurile cu scara, rotirea și matricea lor, OCS-ul oglindit; bucățile deschise de pe același strat care se ating se leagă (4 linii fac un dreptunghi închis; în T nu); straturile ascunse, spațiul hârtiei, textul, hașurile, cotele și 3D-ul se sar, numărate. Desenul stă pe foaie unde e în fișier, cu stratul ca nume pe fiecare formă. Totul la cerere: pornirea 96,4 → 96,5 (cu ușa 100,0 / 110); totalul 330,3 → 338,3 / 400 kB. **Treceri:** (1) corpusul ezdxf, cu valorile pe hârtie verificate în generator față de ezdxf (adăugat după o formulă greșită a blocului imbricat, găsită la recitire), cititorul, dialogul; găsit pe drum: R12-ul sondei își scrie numerele cu 9 zecimale (proba ia precizia fișierului), iar elipsa lui din 112 arce are două perechi pe același cerc (unite: 110); `formatImport` și listele DXF intraseră în bucata de pornire (+0,6 kB), mutate în module la cerere. Mutațiile: **55 / 55** (51 pe probele unitare, 4 în fereastră, pe e2e); 6 au trecut întâi: un nod în plus la spline (verificarea domeniului îl ascundea), arcul NURBS de 120° și sensul lui (pe sferturi, sin 45° = cos 45°), dus-întorsul pe același cerc, R2007 cu UTF-8 și perechile fără secțiune: probe noi.",
       "en": "**DXF import, brought forward from stage 9, with the 110 kB startup cap** (no machine; ADR 0100, 0101; “Ridică plafonul”: first the startup cap 100 → 110 kB, with the startup measured in Edge (from the worker 42 / 102 ms with the CPU ×1 / ×4, the first visit on 750 kbit/s 1.8 s), then the next slice: the threshold row “Import 2D” had only SVG). “Import SVG / DXF…” now also reads ASCII DXF (R12 … R2018): the units from $INSUNITS (missing: mm, with the person’s choice in the dialog), lines, arcs, circles, ellipses, polylines with arcs, splines (exact Bézier, periodic ones too), blocks with their scale, rotation and array, the mirrored OCS; open pieces on the same layer that touch are joined (4 lines make a closed rectangle; at a T, not); hidden layers, paper space, text, hatches, dimensions and 3D are skipped, and counted. The drawing lands on the sheet where it is in the file, with the layer as the name of each shape. All on demand: the startup 96.4 → 96.5 (with the door 100.0 / 110); the total 330.3 → 338.3 / 400 kB. **Passes:** (1) the ezdxf corpus, with the paper values checked against ezdxf in the generator (added after a wrong nested-block formula, found on rereading), the reader, the dialog; found along the way: the probe’s R12 writes its numbers with 9 decimals (the test takes the file’s precision), and its ellipse of 112 arcs has two pairs on the same circle (joined: 110); `formatImport` and the DXF lists had landed in the startup chunk (+0.6 kB), moved into on-demand modules. Mutations: **55 / 55** (51 on the unit tests, 4 in the window, on e2e); 6 got through at first: an extra knot in a spline (the domain check hid it), the 120° NURBS arc and its direction (on quarter arcs, sin 45° = cos 45°), there-and-back on the same circle, R2007 with UTF-8 and pairs without a section: new tests."
     },
-    "c7bc59bc24f20401": {
-      "ro": "Deciziile conturilor clienților și ale raportărilor (ADR 0116, propus): cele 7 întrebări din raportul din 01.11, fiecare cu implicitul ei, plus operatorul datelor și adresa de contact pentru nota de confidențialitate (fără implicit)",
-      "en": "The decisions on customer accounts and their reports (ADR 0116, proposed): the 7 questions in the report of 01.11, each with its default, plus the data controller and the contact address for the privacy notice (no default)"
-    },
     "c91bf52003a8439c": {
       "ro": "V-carve",
       "en": "V-carve"
@@ -1788,10 +1800,6 @@
     "e4ab8079b06fd0fe": {
       "ro": "Afișarea simulării în WebGL2",
       "en": "Simulation display in WebGL2"
-    },
-    "e5eaebe5121ab47e": {
-      "ro": "14.C↑ (conturile), 15.B↑ (raportările); nota, pentru proba închisă",
-      "en": "14.C↑ (the accounts), 15.B↑ (the reports); the notice, for the closed trial"
     },
     "e6935746ddf63115": {
       "ro": "Orice nod își schimbă tipul",

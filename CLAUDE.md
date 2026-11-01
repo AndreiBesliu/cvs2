@@ -286,6 +286,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (`numereFreze` în `src/model/rol.ts`); recunoașterea ignoră numerele frezelor. **Un câmp nou al operației intră singur în
   rol; unul care ține de o formă anume (ca `despartire`) se scoate în `model()` și în aplicare** (`src/model/rolPersonal.ts`).
   **Pornirea 97,6 (cu ușa 101,1 / 110 kB), totalul 432,1 / 450.**
+  **Conturile clienților: contul în aplicație (ADR 0116, felia 14.C↑, adusă din etapa 14)** gata pe 01.11, din sugestia
+  owner-ului acceptată pe 31.10 și răspunsurile lui: butonul **Cont** din extensia barei, panoul contului (doar online,
+  `src/app/PanouCont.tsx`), callable-ul `cont` (`conturi/{uid}`, proba de 14 zile la prima logare cu adresa confirmată,
+  dreptul calculat pe server), contul ținut de aplicație (`src/app/dreptCont.ts`, 7 zile offline din `setari/conturi`),
+  registrele cu capabilitățile din el (exportul G-code și pornirea senderului se opresc fără drept). **`firebase/auth` doar
+  în `src/cloud/contEditor.ts`** (și `/admin` îl ia de acolo): altfel bundlerul face o bucată comună cu numele pachetului,
+  iar un `import()` direct pe el scoate runtime-ul din pornire (reconfirmarea trece prin modulul panoului). Contul are
+  categoria lui în poartă (doar online, plafon 32 kB). **Pornirea 98,4 (cu ușa 101,9 / 110 kB), totalul 433,1 / 450,
+  /admin 196,9 / 200.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -399,6 +408,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 01.11.2026: **conturile clienților** (răspunsurile la ADR 0116: „1,b. 2, conturile din editia intai sunt ale noastre, nu
+  aveam clienti, deci doar al meu este relevant. 3, b sa fie default, dar, vreau sa pot seta asta din admin. 4, a. 5, a. 6,
+  configurabil din admin. 7, a.”): înregistrarea liberă (proba de 14 zile, fără card; atelierele probei închise primesc
+  planul gratuit din admin); conturile ediției întâi sunt ale echipei (contează doar al owner-ului); 7 zile offline,
+  setabile din admin; proiectul la o raportare doar cu bifa; răspunsul în aplicație; păstrarea tichetelor rezolvate,
+  setabilă din admin; ordinea: conturile, raportările, fila Utilizatori completă. Rămân la owner operatorul datelor și
+  adresa de contact pentru nota de confidențialitate: fără ele, aplicația nu se arată nimănui din afara echipei.
 - 29.10.2026: **plafonul total 450 kB** („1”, la alegerea dintre plafonul nou, cavalier mutat doar în worker și amânare):
   workerul CAM (felia 4.A↑, ADR 0109) are copia lui de cavalier și de geometrie, pe care firul principal le ține pentru desen
   și import; totalul ar fi trecut de 400 kB (410,8 măsurat). Plafonul trece de la 400 la 450 kB, cu ADR nou, iar felia merge

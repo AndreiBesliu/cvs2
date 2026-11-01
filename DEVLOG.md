@@ -4193,3 +4193,21 @@ fiecare cu implicitul ei, scris din `BRIEF.md` (§4, §7, §16.1), din `PLAN.md`
 și 22) și din raportul de admin al Fazei 2 (tranșele P2 și P2+). Întrebările, grupate, în raportul de azi; rândul lor, în
 „Ce îi trebuie owner-ului” din fișa etapei 3. Felia 14.C↑ pornește după răspuns (contul e un punct de oprire: datele
 clienților). Numărul 0116 e al acestui ADR; sesiunile propuse azi (importul WMF, repararea vectorilor) iau 0117 și 0118.
+
+## 2026-11-01 — Felia 14.C↑: conturile clienților, contul în aplicație (Model: Claude Opus 5.5)
+
+**Prompt:** „1,b. 2, conturile din editia intai sunt ale noastre, nu aveam clienti, deci doar al meu este relevant. 3, b sa fie
+default, dar, vreau sa pot seta asta din admin. 4, a. 5, a. 6, configurabil din admin. 7, a.” (răspunsurile la întrebările din
+ADR 0116, propus).
+**Started:** 01.11, 11:25. **Completed:** 01.11, 14:41. ADR 0116 acceptat, cu răspunsurile: înregistrarea liberă (proba de 14 zile;
+atelierele primesc planul gratuit din admin, deci fără invitații pentru clienți), conturile ediției întâi rămân ale echipei, 7 zile
+offline și păstrarea tichetelor setabile din admin (fila Setări vine în 14.C↑b), ordinea conturi → raportări → fila Utilizatori.
+**Felia:** callable-ul `cont` (contul nou cu proba la prima logare cu adresa confirmată, dreptul calculat la fiecare deschidere,
+numele, auditul), regula `conturi/{uid}`, contul ținut de aplicație (7 zile offline), butonul **Cont** și panoul contului (doar
+online), exportul G-code și pornirea senderului oprite fără drept. Pe drum, poarta build-ului a prins pe rând Firebase în bucăți
+nenumite, o bucată comună `index.esm` și runtime-ul bundlerului scos din pornire; rezolvate cu `firebase/auth` într-un singur
+modul (`src/cloud/contEditor.ts`, împărțit cu `/admin`), cu reconfirmarea prin modulul panoului și cu o categorie a contului în
+poartă (doar online, 26,0 / 32 kB). Codul: `c6c22a8`. Porțile: compilatoarele, importurile, traducerile (499, 0 lipsă), 7 942 teste
+unitare, build-ul determinist (220 fișiere; pornirea 98,4, cu ușa 101,9 / 110 kB; totalul 433,1 / 450; /admin 196,9 / 200),
+licențele, e2e 290 / 290, emulatoarele (59 + 17). 3 mutații țintite, toate prinse (expiratul cu exportul păstrat, dreptul care nu expiră
+offline, registrul exportului fără contul ținut).
