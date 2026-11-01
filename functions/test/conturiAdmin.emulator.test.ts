@@ -188,7 +188,8 @@ test('setările: doar owner-ul, întregi în margini, cu auditul; aceleași valo
     { zileOffline: 0, zilePastrareTichete: 90 }, { zileOffline: 61, zilePastrareTichete: 90 }, { zileOffline: 3, zilePastrareTichete: 29 },
     { zileOffline: 3, zilePastrareTichete: 3651 }, { zileOffline: 3.5, zilePastrareTichete: 90 }, { zileOffline: 3 }, null,
   ]) assert.equal(await cod(setari('own', x)), 'invalid-argument', JSON.stringify(x));
-  await setari('own', { zileOffline: 7, zilePastrareTichete: 365 });
+  // O secundă mai târziu: auditul se citește în ordinea lui `cand`, iar două rânduri cu aceeași oră n-au o ordine sigură.
+  await setari('own', { zileOffline: 7, zilePastrareTichete: 365 }, new Date(T0.getTime() + 1000));
   const ultimul = (await audit()).filter((x) => x['actiune'] === 'setari.conturi').at(-1);
   assert.deepEqual([ultimul?.['inainte'], ultimul?.['dupa']], [{ zileOffline: 3, zilePastrareTichete: 90 }, { zileOffline: 7, zilePastrareTichete: 365 }]);
 });

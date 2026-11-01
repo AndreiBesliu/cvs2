@@ -106,6 +106,8 @@ test('owner-ul vede conturile, dă o probă, planul gratuit, dezactivează și r
   await puneCont('bob', new Date(acum - ZI), new Date(acum - 3_600_000));
   await deschide(page);
   await puneRolul(page, await intraCuGoogle(page), 'owner');
+  // Filele apar după citirea rolului (asincronă): întâi una vizibilă, apoi lista lor.
+  await expect(page.locator('[data-fila="setari"]')).toBeVisible(LENT);
   expect(await file(page)).toEqual(['erori', 'diagnoza', 'roadmap', 'documentatie', 'sugestii', 'utilizatori', 'personal', 'setari', 'cont']);
   await page.locator('[data-fila="utilizatori"]').click();
 
