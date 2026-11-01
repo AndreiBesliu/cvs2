@@ -1,13 +1,10 @@
-import {
-  connectAuthEmulator, EmailAuthProvider, getAuth, GoogleAuthProvider, linkWithCredential, linkWithPopup, onAuthStateChanged,
-  reauthenticateWithCredential, reauthenticateWithPopup, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup,
-  signOut, updatePassword, type Auth, type User,
-} from 'firebase/auth';
+import type { Auth } from 'firebase/auth';
 import { connectFirestoreEmulator, getFirestore, type Firestore } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import type { CererePersonal, RaspunsInvitatie, RaspunsPersonal } from '../../shared/personal.ts';
 import type { CerereSugestie, RaspunsSugestie } from '../../shared/sugestii.ts';
 import { conecteazaBaza, hostPort, type ConexiuneBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
+import { contAplicatiei } from './contEditor.ts';
 
 /**
  * Conexiunea paginii `/admin` (ADR 0040 §2, §9): baza (aplicația, App Check, funcțiile; `conexiuneBaza.ts`, împărțită cu
@@ -16,6 +13,10 @@ import { conecteazaBaza, hostPort, type ConexiuneBaza, type ConfigCloud, type Mo
  */
 
 export { gazdaLocala, REGIUNE_FUNCTII, type ConfigCloud, type StareAppCheck } from './conexiuneBaza.ts';
+// Contul Firebase stă în `contEditor.ts` (ADR 0116), împărțit cu panoul contului din editor; numele de aici rămân.
+export {
+  adaugaParola, ascultaContul, iesi, intraCuGoogle, intraCuParola, leagaGoogle, metodeCont, schimbaParola, trimiteResetarea,
+} from './contEditor.ts';
 
 export interface Conexiune extends ConexiuneBaza {
   readonly auth: Auth;
@@ -33,96 +34,14 @@ export function conecteaza(c: ConfigCloud, gazda: string = location.hostname): R
   if (curenta) return { ok: true, conexiune: curenta };
   const baza = conecteazaBaza(c, gazda);
   if (!baza.ok) return baza;
-  const auth = getAuth(baza.conexiune.app);
+  const auth = contAplicatiei(baza.conexiune.app, c.emulatoare?.auth);
   const db = getFirestore(baza.conexiune.app);
   if (c.emulatoare) {
-    connectAuthEmulator(auth, c.emulatoare.auth, { disableWarnings: true });
     const f = hostPort(c.emulatoare.firestore);
     connectFirestoreEmulator(db, f.host, f.port);
   }
   curenta = { ...baza.conexiune, auth, db };
   return { ok: true, conexiune: curenta };
-}
-
-/* ── Contul ─────────────────────────────────────────────────────────────────────────────────────────────────────── */
-
-export function intraCuGoogle(c: Conexiune): Promise<unknown> {
-  return signInWithPopup(c.auth, new GoogleAuthProvider());
-}
-
-export function intraCuParola(c: Conexiune, email: string, parola: string): Promise<unknown> {
-  return signInWithEmailAndPassword(c.auth, email, parola);
-}
-
-/** „Am uitat parola”: e-mailul de resetare, trimis de Firebase (fără să spună dacă adresa are cont). */
-export function trimiteResetarea(c: Conexiune, email: string): Promise<void> {
-  return sendPasswordResetEmail(c.auth, email);
-}
-
-/** Metodele de intrare ale contului (`google.com`, `password`), legate la același cont (ADR 0049 §6). */
-export function metodeCont(u: User): readonly string[] {
-  return u.providerData.map((p) => p.providerId);
-}
-
-const codFirebase = (e: unknown): string => {
-  const c = (e as { code?: unknown } | null)?.code;
-  return typeof c === 'string' ? c : '';
-};
-
-function contCurent(c: Conexiune): User & { readonly email: string } {
-  const u = c.auth.currentUser;
-  if (!u?.email) throw Object.assign(new Error('niciun cont cu e-mail deschis'), { code: 'cont/fara-email' });
-  return u as User & { readonly email: string };
-}
-
-/**
- * Adaugă o parolă contului deschis (cine a intrat cu Google): aceeași adresă, același cont, nu un al doilea. Dacă intrarea
- * e prea veche, Firebase cere întâi reintrarea cu Google, apoi legătura se reia. La final, contul trebuie să aibă metoda
- * parolei, altfel e o eroare (nu un „gata” fals).
- */
-export async function adaugaParola(c: Conexiune, parola: string): Promise<void> {
-  const u = contCurent(c);
-  const leaga = async (): Promise<void> => {
-    try {
-      await linkWithCredential(u, EmailAuthProvider.credential(u.email, parola));
-    } catch (e) {
-      // Cu „un cont pe adresă”, adresa „folosită” e chiar a contului deschis: emulatorul de Auth refuză așa legarea pe
-      // aceeași adresă (măsurat pe 20.10). Parola se pune atunci direct pe contul deschis, tot fără al doilea cont.
-      if (codFirebase(e) !== 'auth/email-already-in-use') throw e;
-      await updatePassword(u, parola);
-    }
-  };
-  try {
-    await leaga();
-  } catch (e) {
-    if (codFirebase(e) !== 'auth/requires-recent-login') throw e;
-    await reauthenticateWithPopup(u, new GoogleAuthProvider());
-    await leaga();
-  }
-  await u.reload();
-  if (!metodeCont(u).includes('password')) throw Object.assign(new Error('parola nu s-a legat de cont'), { code: 'cont/parola-nelegata' });
-}
-
-/** Leagă contul Google al aceleiași adrese de contul deschis (cine are parolă). */
-export async function leagaGoogle(c: Conexiune): Promise<void> {
-  const u = contCurent(c);
-  await linkWithPopup(u, new GoogleAuthProvider());
-  await u.reload();
-}
-
-/** Schimbă parola, cu cea veche (reintrarea pe care o cere Firebase). */
-export async function schimbaParola(c: Conexiune, veche: string, noua: string): Promise<void> {
-  const u = contCurent(c);
-  await reauthenticateWithCredential(u, EmailAuthProvider.credential(u.email, veche));
-  await updatePassword(u, noua);
-}
-
-export function iesi(c: Conexiune): Promise<void> {
-  return signOut(c.auth);
-}
-
-export function ascultaContul(c: Conexiune, a: (u: User | null) => void): () => void {
-  return onAuthStateChanged(c.auth, a);
 }
 
 /* ── Funcțiile ─────────────────────────────────────────────────────────────────────────────────────────────────── */

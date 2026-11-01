@@ -59,6 +59,12 @@ service cloud.firestore {
       }
     }
 
+    // Conturile clienților (ADR 0116), scrise doar de callable-ul `cont`: fiecare își citește documentul lui. Setările
+    // conturilor (`setari/conturi`) n-au regulă: le citește doar serverul.
+    match /conturi/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+    }
+
     match /errorLogs/{amprenta} {
       allow read: if are('erori.citeste');
 

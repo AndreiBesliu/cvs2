@@ -1598,6 +1598,67 @@ main h1 {
   margin-top: var(--sp-3);
 }
 
+/* Panoul contului (ADR 0116): logarea, confirmarea adresei, planul și nota de confidențialitate. */
+.dialog-cont .dialog-cutie {
+  max-width: 26rem;
+}
+
+.dialog-cont input[type='email'],
+.dialog-cont input[type='password'],
+.dialog-cont input[type='text'] {
+  font: inherit;
+  font-size: var(--fs-3);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+}
+
+.cont-formular {
+  display: grid;
+  gap: var(--sp-2);
+  margin: var(--sp-2) 0;
+}
+
+.cont-formular label {
+  display: grid;
+  gap: 4px;
+}
+
+.cont-butoane {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin: var(--sp-2) 0;
+}
+
+.cont-email {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.cont-plan {
+  margin: var(--sp-2) 0;
+  padding: 6px var(--sp-2);
+  border-radius: var(--r-1);
+  background: var(--s-atentie);
+}
+
+.cont-nota {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+.cont-nota summary {
+  cursor: pointer;
+}
+
 /* Rolurile personalizate (ADR 0114): salvarea, numele scris și lista „Rolurile mele”, în secțiunea Tăierea. */
 .prop-roluri {
   margin-top: var(--sp-2);

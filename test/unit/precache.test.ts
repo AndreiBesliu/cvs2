@@ -118,7 +118,7 @@ test('documentația generată (`documentatie/`, ADR 0048) nu intră: e doar onli
 });
 
 test('lista bucăților doar online: pagina /admin, testul pas cu pas, mașina simulată, sugestia din editor (raportorul și baza conexiunii sunt în precache)', () => {
-  assert.deepEqual([...DOAR_ONLINE], ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata', 'SugestieDinEditor', 'pozaPlansei', 'pozaSugestiei']);
+  assert.deepEqual([...DOAR_ONLINE], ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata', 'SugestieDinEditor', 'pozaPlansei', 'pozaSugestiei', 'PanouCont', 'contEditor']);
 });
 
 test('sugestia din editor (ADR 0111) nu intră: bucata ei și cele două împărțite, cu testul și cu /admin', () => {

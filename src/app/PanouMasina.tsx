@@ -23,6 +23,7 @@ import { pozitieDeLucru } from '../machine/raspunsuri.ts';
 import { deschideSerial, serialDisponibil } from '../machine/serial.ts';
 import { SesiuneMasina, type Ceas, type LinieJurnal, type Procedura, type StareSesiune } from '../machine/sesiune.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import { contulPermite, useContTinut } from './dreptCont.ts';
 import { CardCod, ConfirmareDeblocare, cuTitlu, deblocareCuConfirmare, titluCod, useDictionarCoduri, type StareDictionar } from './PanouCod.tsx';
 import './masina.css';
 import { mesajeGata } from '../i18n/laCerere.ts';
@@ -96,6 +97,10 @@ export function PanouMasina({ ultimulExport, simulare }: {
   readonly simulare: boolean;
 }): ReactNode {
   useLimba();
+  // Pornirea programului cere capabilitatea senderului (ADR 0116 §9), judecată din contul ținut; jog-ul, zero-ul și oprirea
+  // rămân, ca omul să poată muta mașina din drum.
+  useContTinut();
+  const faraSender = !contulPermite('masina');
   const s = sesiunea();
   const st = useSyncExternalStore((f) => s.aboneaza(f), () => s.stare());
   const [nume, setNume] = useState<string | null>(null);
@@ -273,8 +278,8 @@ export function PanouMasina({ ultimulExport, simulare }: {
           </ul>
         )}
         <div className="masina-butoane">
-          <button type="button" className="principal" data-masina="start"
-            disabled={!conectat || !f.program || !['pregatit', 'terminat', 'pierdut'].includes(f.faza) || f.inZbor.length > 0}
+          <button type="button" className="principal" data-masina="start" {...(faraSender ? { title: t('motiv.fara-capabilitate') } : {})}
+            disabled={faraSender || !conectat || !f.program || !['pregatit', 'terminat', 'pierdut'].includes(f.faza) || f.inZbor.length > 0}
             onClick={() => { s.eveniment({ tip: 'start' }); }}>{t('masina.start')}</button>
           {f.faza === 'suspendat' && <button type="button" className="principal" data-masina="reia" onClick={() => { s.eveniment({ tip: 'reia' }); }}>{t('masina.reia')}</button>}
           {f.faza === 'bariera' && <button type="button" className="principal" data-masina="continua" onClick={() => { s.eveniment({ tip: 'continua' }); }}>{t('masina.continua')}</button>}

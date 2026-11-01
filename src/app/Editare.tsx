@@ -39,6 +39,8 @@ import { aplica, IDENTITATE } from '../geom/matrice.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { tastaActiunii } from '../ui/scurtaturi.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import type { Config } from './config.ts';
+import { contTinut } from './dreptCont.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -158,6 +160,19 @@ const Manual = lazy(() => import('./Manual.tsx').then(cuMesaje).then((m) => ({ d
 })));
 
 /**
+ * Panoul contului (ADR 0116 §A3): o bucată doar online, cu contul Firebase, adusă la clicul pe Cont. Fără rețea nu vine:
+ * atunci se spune, ca la manual.
+ */
+const PanouCont = lazy(() => import('./PanouCont.tsx').then(cuMesaje).then((m) => ({ default: m.PanouCont }), () => ({
+  default: ({ onInchide }: { readonly config: Config | null; readonly onInchide: () => void }) => (
+    <button type="button" className="cip cip-rosu" role="status" data-testid="cont-neincarcat" onClick={onInchide}
+      style={{ position: 'fixed', left: '50%', top: 96, translate: '-50% 0', zIndex: 30, pointerEvents: 'auto' }}>
+      {t('editare.cont.neincarcat')}
+    </button>
+  ),
+})));
+
+/**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
  * paleta), apoi vederea 3D, altfel unealta aleasă. Id-urile sunt cele din `%% acopera:` ale manualului.
  */
@@ -218,6 +233,8 @@ export type ProprietatiEditare = {
   readonly test?: { readonly versiune: string; readonly instanta: string };
   /** Butonul Sugestie (ADR 0111), în extensia barei, lângă „?”: doar în afara instanței live (și local), fără `?test`. */
   readonly sugestie?: boolean;
+  /** Configurația instanței, pentru panoul contului (ADR 0116 §A3); null: config.json n-a venit. */
+  readonly config?: Config | null;
   /** Se poate reface un pas al proiectului (Ctrl+Shift+Z redeschide un desen Pen doar dacă nu, ADR 0074 §4). */
   readonly reface?: boolean;
 };
@@ -320,6 +337,19 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Sugestia din editor (ADR 0111): fila Sugestii din /admin se deschide chiar în clic (browserul o lasă deschisă), apoi
   // poza planșei ajunge la ea prin browser; `blocata`: browserul n-a deschis fila (poza o așteaptă oricum acolo).
   const [sugestie, setSugestie] = useState<null | 'lucreaza' | 'blocata' | { readonly motiv: string }>(null);
+  const [contDeschis, setContDeschis] = useState(false);
+  // Reconfirmarea contului ținut (ADR 0116 §8), odată cu editorul, prin modulul panoului contului (adus doar cu import()):
+  // contul Firebase vine la cerere, doar dacă aplicația ține un cont; fără rețea, dreptul ținut rămâne (cât îl lasă zilele
+  // offline). Nu `import()` direct pe `contEditor.ts`: o bucată adusă și dinamic, și static (de panou și de `/admin`) scotea
+  // runtime-ul bundlerului din pornire, într-un al doilea script.
+  useEffect(() => {
+    const c = p.config;
+    if (!c?.firebase || !contTinut()) return;
+    const id = setTimeout(() => {
+      import('./PanouCont.tsx').then((m) => m.reconfirmaContul(c)).catch(() => undefined);
+    }, 1500);
+    return () => { clearTimeout(id); };
+  }, [p.config]);
   const trimiteSugestia = (): void => {
     const fila = window.open(ADRESA_SUGESTII, '_blank');
     if (fila) fila.opener = null;
@@ -799,6 +829,13 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           <Manual usa={manual.usa} onInchide={() => { setManual(null); }} />
         </Suspense>
       ) : null}
+      {/* Fereastra contului stă pe `body`, peste panouri și peste bare, ca fereastra fonturilor. */}
+      {contDeschis ? createPortal(
+        <Suspense fallback={null}>
+          <PanouCont config={p.config ?? null} onInchide={() => { setContDeschis(false); }} />
+        </Suspense>,
+        document.body,
+      ) : null}
       {testDeschis && p.test ? (
         <Suspense fallback={null}>
           <TestPasCuPas versiune={p.test.versiune} instanta={p.test.instanta} onInchide={() => { setTestDeschis(false); }} />
@@ -1069,6 +1106,10 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
                 {t('editare.sugestie.buton')}
               </button>
             ) : null}
+            <button type="button" className="aliniaza" title={t('editare.cont')} aria-label={t('editare.cont')} data-editare="cont"
+              aria-pressed={contDeschis} onClick={(e) => { e.currentTarget.blur(); setContDeschis(!contDeschis); }}>
+              {t('editare.cont.buton')}
+            </button>
           </span>
         );
         const sectiuni = (

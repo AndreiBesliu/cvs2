@@ -28,6 +28,9 @@
  * bucata `MasinaSimulata`, emulatorul GRBL al panoului mașinii); panoul și senderul intră (merg și fără rețea, în atelier).
  * La fel sugestia din editor (ADR 0111: bucata `SugestieDinEditor`, plus cele două împărțite, `pozaPlansei` cu testul și
  * `pozaSugestiei` cu `/admin`): butonul ei e doar în afara instanței live, iar sugestia cere oricum `/admin`, deci rețea.
+ * La fel panoul contului (ADR 0116: bucata `PanouCont`, cu `contEditor`, contul Firebase al editorului, adus și de
+ * reconfirmarea de la pornire, și de pagina `/admin`): logarea cere oricum rețea, iar dreptul primit se ține în aplicație
+ * pentru zilele offline.
  *
  * Orice alt fișier e „necunoscut”: poarta pică pe el, ca un fel nou de fișier (un font, o imagine în `assets/`) să fie
  * decis aici, nu lăsat tăcut în afara precache-ului.
@@ -35,9 +38,9 @@
 
 /**
  * Modulele doar online, după numele bucății lor (`assets/<nume>-<amprentă de 8>.js|css`): `/admin`, testul pas cu pas, mașina
- * simulată, sugestia din editor (cu bucățile ei împărțite).
+ * simulată, sugestia din editor (cu bucățile ei împărțite), panoul contului (cu contul Firebase al editorului).
  */
-export const DOAR_ONLINE = ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata', 'SugestieDinEditor', 'pozaPlansei', 'pozaSugestiei'] as const;
+export const DOAR_ONLINE = ['PaginaAdmin', 'TestPasCuPas', 'MasinaSimulata', 'SugestieDinEditor', 'pozaPlansei', 'pozaSugestiei', 'PanouCont', 'contEditor'] as const;
 
 export type MotivPrecache = 'precache' | 'doar-online' | 'configuratie' | 'worker' | 'banc' | 'documentatie' | 'necunoscut';
 

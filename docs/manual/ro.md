@@ -754,6 +754,26 @@ fila **Sugestii**, într-o filă nouă. Intri cu contul tău de personal și scr
 poza pleacă odată cu ea; înainte s-o trimiți, o poți scoate. Dacă browserul nu deschide fila, un mesaj îți dă legătura spre
 ea.
 
+## Contul
+%% capitol: cont
+%% acopera: editare.cont
+
+Butonul **Cont** din extensia barei, de lângă „?” (titlul lui: „Contul: logarea, planul și proba”), deschide panoul contului.
+Contul cere internet: fără rețea, panoul nu se deschide, dar aplicația merge mai departe cu ultimul drept primit.
+
+- **Logarea:** **Intră cu Google**, sau adresa de e-mail și parola, cu **Intră**. **Creează cont** face un cont nou cu parolă
+  și trimite un e-mail de confirmare; după ce deschizi linkul din el, apeși **Am confirmat**. **Am uitat parola** trimite un
+  e-mail de resetare.
+- **Proba:** un cont nou are 14 zile de probă, fără card, cu toate funcțiile. Pornește la prima logare cu adresa confirmată
+  (cu Google, adresa e deja confirmată). Panoul arată câte zile au rămas.
+- **După probă:** exportul G-code și pornirea programului din panoul mașinii se opresc; desenul, operațiile, traseul și
+  exportul vectorial rămân. Echipa poate da un plan gratuit. Comenzile manuale ale mașinii (jog, zero, oprirea) rămân mereu.
+- **Fără internet:** aplicația ține dreptul primit 7 zile (cât setează echipa) de la ultima confirmare, apoi cere o conexiune
+  ca să-l reconfirme. La fiecare pornire cu rețea, dreptul se reconfirmă singur.
+- **Numele** afișat se schimbă din panou, iar **Ieși** închide contul în browserul acesta.
+
+Fără cont, aplicația merge ca până acum. Dedesubt, **Ce date ținem** spune ce păstrăm despre cont și de ce.
+
 ## Scurtăturile
 %% capitol: scurtaturi
 

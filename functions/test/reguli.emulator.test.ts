@@ -5,7 +5,7 @@ import { assertFails, assertSucceeds, initializeTestEnvironment, type RulesTestE
 import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 
 /**
- * Regulile Firestore (`firestore.rules`, ADR 0039 §7, ADR 0049, ADR 0107) pe emulator: cine citește ce, după permisiunile
+ * Regulile Firestore (`firestore.rules`, ADR 0039 §7, ADR 0049, ADR 0107, ADR 0116) pe emulator: cine citește ce, după permisiunile
  * rolului lui (rolurile custom din `roluri/{id}`, owner-ul fix), nimeni nu scrie din client, colecțiile aplicației vechi
  * sunt refuzate. Tokenurile emulatorului nu sunt semnate: se probează regulile, nu autenticitatea tokenurilor.
  */
@@ -63,6 +63,10 @@ before(async () => {
     await setDoc(doc(db, 'marcaje/backupZilnic'), { job: 'backupZilnic', esecuriLaRand: 0 });
     await setDoc(doc(db, 'meta/deployment'), { schema: 1, app: 'cncvs2', projectId: 'demo-cncvs2', tinte: {} });
     await setDoc(doc(db, 'meta/altceva'), { x: 1 });
+    // Conturile clienților (ADR 0116) și setările lor.
+    await setDoc(doc(db, 'conturi/om'), { email: 'om@exemplu.ro', plan: 'proba' });
+    await setDoc(doc(db, 'conturi/sup'), { email: 'sup@exemplu.ro', plan: 'gratuit' });
+    await setDoc(doc(db, 'setari/conturi'), { zileOffline: 7 });
     // Colecțiile aplicației vechi, pe care regulile vechi le dădeau omului lor.
     await setDoc(doc(db, 'users/om'), { nume: 'om' });
     await setDoc(doc(db, 'customers/om'), { stripeId: 'cus_x' });
@@ -240,6 +244,24 @@ test('amprenta publicării (meta/deployment) o citesc cei cu diagnoza.citeste; n
   await assertFails(deleteDoc(doc(ca('own'), 'meta/deployment')));
   await assertFails(getDoc(doc(ca('own'), 'meta/altceva')));
   await assertFails(getDocs(collection(ca('own'), 'meta')));
+});
+
+test('conturile clienților (ADR 0116): fiecare își citește documentul lui, nu și pe al altuia; nu se listează; setările nu se citesc', async () => {
+  await assertSucceeds(getDoc(doc(ca('om'), 'conturi/om')));
+  await assertSucceeds(getDoc(doc(ca('sup'), 'conturi/sup')));
+  for (const uid of [null, 'sup', 'own', 'aud']) await assertFails(getDoc(doc(ca(uid), 'conturi/om')));
+  await assertFails(getDocs(collection(ca('own'), 'conturi')));
+  await assertFails(getDocs(query(collection(ca('om'), 'conturi'), where('email', '==', 'om@exemplu.ro'))));
+  for (const uid of [null, 'om', 'own']) await assertFails(getDoc(doc(ca(uid), 'setari/conturi')));
+});
+
+test('conturile și setările nu le scrie nimeni din client, nici omul contului, nici owner-ul: doar callable-ul `cont`', async () => {
+  await assertFails(setDoc(doc(ca('om'), 'conturi/om'), { email: 'om@exemplu.ro', plan: 'gratuit' }));
+  await assertFails(updateDoc(doc(ca('om'), 'conturi/om'), { plan: 'gratuit' }));
+  await assertFails(setDoc(doc(ca('nou'), 'conturi/nou'), { email: 'nou@exemplu.ro', plan: 'proba' }));
+  await assertFails(deleteDoc(doc(ca('om'), 'conturi/om')));
+  await assertFails(updateDoc(doc(ca('own'), 'conturi/om'), { plan: 'gratuit' }));
+  await assertFails(setDoc(doc(ca('own'), 'setari/conturi'), { zileOffline: 60 }));
 });
 
 test('colecțiile aplicației vechi sunt refuzate, chiar și omului lor', async () => {

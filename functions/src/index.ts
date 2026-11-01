@@ -16,6 +16,7 @@ import { trateazaRaportClient } from './erori/client.ts';
 import { marcheazaEroarea as marcheaza } from './erori/marcheaza.ts';
 import { acceptaInvitatia as accepta, administreazaPersonalul as administreaza } from './personal/actiuni.ts';
 import { trateazaSugestia } from './sugestii/actiuni.ts';
+import { trateazaContul } from './conturi/actiuni.ts';
 import { memorieNoua, trateazaFonturiGoogle } from './fonturi/google.ts';
 import { REGIUNI } from './regiuni.ts';
 
@@ -66,6 +67,15 @@ export const acceptaInvitatia = onCall(
 export const sugestii = onCall(
   { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 2, memory: '256MiB', timeoutSeconds: 20 },
   async (cerere) => trateazaSugestia(getFirestore(), cerere.auth?.uid ?? null, cerere.auth?.token ?? null, cerere.data),
+);
+
+/**
+ * Contul clientului (ADR 0116): deschiderea (contul nou, cu proba de 14 zile, la prima logare cu adresa verificată; dreptul
+ * de acces calculat aici, la fiecare deschidere) și numele afișat, cu auditul în tranzacție.
+ */
+export const cont = onCall(
+  { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 5, memory: '256MiB', timeoutSeconds: 20 },
+  async (cerere) => trateazaContul(getFirestore(), cerere.auth?.uid ?? null, cerere.auth?.token ?? null, cerere.data),
 );
 
 const memorieGoogle = memorieNoua();

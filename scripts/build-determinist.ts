@@ -61,6 +61,12 @@ const PLAFON_SIMULATA_KB = 8;
 const BUCATI_SUGESTIE = /^assets\/(?:SugestieDinEditor|pozaPlansei|pozaSugestiei)-[^/]+\.js$/;
 const PLAFON_SUGESTIE_KB = 8;
 /**
+ * Contul clientului (ADR 0116): panoul contului și contul Firebase (`contEditor`, singurul loc cu `firebase/auth`, împărțit cu
+ * `/admin`, care îl numără și el, în închiderea lui), doar online, cu plafonul lor, în afara totalului (ca testul).
+ */
+const BUCATI_CONT = /^assets\/(?:PanouCont|contEditor)-[^/]+\.js$/;
+const PLAFON_CONT_KB = 32;
+/**
  * Raportorul de erori (ADR 0043): bucata la cerere cu Firebase-ul ei (17,5 kB după recenzia 3.2), descărcată la prima
  * eroare. Nu numără `enterprise.js` (reCAPTCHA, terț), adus în plus pe o instanță cu App Check.
  */
@@ -173,6 +179,8 @@ let simulata = 0;
 let bucatiSimulata = 0;
 let sugestie = 0;
 let bucatiSugestie = 0;
+let cont = 0;
+let bucatiCont = 0;
 /** Fiecare bucată JavaScript (calea din `dist/`, ca în `index.html`), cu mărimea ei gzip. */
 const bucati = new Map<string, number>();
 for (const p of fisiere('.tmp/build-1')) {
@@ -216,6 +224,15 @@ for (const p of fisiere('.tmp/build-1')) {
     }
     continue;
   }
+  if (BUCATI_CONT.test(rel)) {
+    cont += kb;
+    bucatiCont++;
+    if (laPornire.has(rel)) {
+      console.error(`${rel}: contul a ajuns în pachetul de pornire.`);
+      process.exit(1);
+    }
+    continue;
+  }
   total += kb;
   if (laPornire.has(rel)) pornire += kb;
 }
@@ -230,6 +247,11 @@ if (bucatiSimulata !== 1) {
 if (bucatiSugestie !== 3) {
   // Altă împărțire (o bucată nouă, comună cu aplicația) ar ieși din plafonul ei și ar intra în total, tăcut.
   console.error(`Sugestia din editor trebuie să fie exact trei bucăți (SugestieDinEditor, pozaPlansei, pozaSugestiei; ADR 0111); găsite: ${bucatiSugestie}.`);
+  process.exit(1);
+}
+if (bucatiCont !== 2) {
+  // Altă împărțire (o bucată nouă, comună cu aplicația) ar ieși din plafonul contului și ar intra în total, tăcut.
+  console.error(`Contul trebuie să fie exact două bucăți (PanouCont, contEditor; ADR 0116); găsite: ${bucatiCont}.`);
   process.exit(1);
 }
 if (bucatiAdmin !== 1) {
@@ -362,7 +384,9 @@ if (straine3d.length > 0) {
 }
 
 // Google Fonts (ADR 0106 §4): clientul funcției `fonturiGoogle` vine tot la cerere, prin import() din fereastra fonturilor.
-const CU_FIREBASE = /^assets\/(?:raportor|conexiuneBaza|PaginaAdmin|apelFonturiGoogle)-[A-Za-z0-9_-]{8}\.js$/;
+// Contul clientului (ADR 0116): panoul contului și contul Firebase al editorului, doar online, prin import() din bara
+// editării și din reconfirmarea de la pornire.
+const CU_FIREBASE = /^assets\/(?:raportor|conexiuneBaza|PaginaAdmin|apelFonturiGoogle|PanouCont|contEditor)-[A-Za-z0-9_-]{8}\.js$/;
 const MARCAJE_FIREBASE: ReadonlyArray<readonly [string, string]> = [
   ['@firebase/app', 'aplicația Firebase (src/cloud/conexiuneBaza.ts)'],
   ['content-firebaseappcheck.googleapis.com', 'App Check'],
@@ -377,7 +401,7 @@ for (const [marcaj, ce] of MARCAJE_FIREBASE) {
   }
   const straine = cu.filter((r) => !CU_FIREBASE.test(r));
   if (straine.length > 0) {
-    console.error(`„${marcaj}” (${ce}) e în ${straine.join(', ')}: Firebase are voie doar în raportor-*, conexiuneBaza-*, PaginaAdmin-* și apelFonturiGoogle-* (vine la cerere, cu raportorul de erori, cu /admin și cu Google Fonts).`);
+    console.error(`„${marcaj}” (${ce}) e în ${straine.join(', ')}: Firebase are voie doar în raportor-*, conexiuneBaza-*, PaginaAdmin-*, apelFonturiGoogle-*, PanouCont-* și contEditor-* (vine la cerere, cu raportorul de erori, cu /admin, cu Google Fonts și cu contul).`);
     process.exit(1);
   }
 }
@@ -668,7 +692,7 @@ if (!cod(inregistrare).includes('/sw.js')) {
 const kbRaportorPornire = await kbModul(RAPORTOR_PORNIRE);
 console.log(`Build determinist: ${a.size} fișiere, identice în două build-uri.`);
 console.log(`O versiune nouă schimbă doar ${schimbateDeVersiune.join(' și ')} (harta importurilor, ADR 0098): ${traduceri.length} bucăți pomenite după nume stabile.`);
-console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (date, ${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}); testul pas cu pas: ${testPasCuPas.toFixed(1)} kB (plafon ${PLAFON_TEST_KB}, doar online); mașina simulată: ${simulata.toFixed(1)} kB (plafon ${PLAFON_SIMULATA_KB}, doar online); sugestia din editor: ${sugestie.toFixed(1)} kB (plafon ${PLAFON_SUGESTIE_KB}, doar online).`);
+console.log(`JavaScript gzip la pornire: ${pornire.toFixed(1)} kB, cu dicționarul limbii active (date, ${kbLimba.toFixed(1)} kB) (plafon ${PLAFON_PORNIRE_KB}); total: ${total.toFixed(1)} kB (plafon ${PLAFON_TOTAL_KB}); /admin: ${admin.toFixed(1)} kB (plafon ${PLAFON_ADMIN_KB}); testul pas cu pas: ${testPasCuPas.toFixed(1)} kB (plafon ${PLAFON_TEST_KB}, doar online); mașina simulată: ${simulata.toFixed(1)} kB (plafon ${PLAFON_SIMULATA_KB}, doar online); sugestia din editor: ${sugestie.toFixed(1)} kB (plafon ${PLAFON_SUGESTIE_KB}, doar online); contul: ${cont.toFixed(1)} kB (plafon ${PLAFON_CONT_KB}, doar online).`);
 console.log(`Raportorul de erori: în pornire ${kbRaportorPornire.toFixed(2)} kB (plafon ${PLAFON_RAPORTOR_PORNIRE_KB}); la cerere, la prima eroare: ${kbRaportor.toFixed(1)} kB (plafon ${PLAFON_RAPORTOR_KB}) (${inchidere(raportor).map((r) => r.replace('assets/', '')).join(', ')}).`);
 console.log(`Workerul PWA: sw.js ${gz('.tmp/build-1/sw.js').toFixed(1)} kB; precache ${manifest.size} fișiere, ${kbPrecache.toFixed(1)} kB gzip (fără ${[...a.keys()].filter((f) => !inPrecache(f) && !f.startsWith(`${DIR_DOCUMENTATIE}/`)).join(', ')} și ${DIR_DOCUMENTATIE}/, ${fisiereDoc.length} fișiere).`);
 console.log(`Documentația admin (doar online, la cerere): ${fisiereDoc.length} fișiere, ${kbDocBrut.toFixed(0)} kB (${kbDocGz.toFixed(0)} kB gzip); roadmap ${gz(join('.tmp/build-1', FISIER_ROADMAP)).toFixed(1)} kB gzip (în engleză ${gz(join('.tmp/build-1', FISIER_ROADMAP_EN)).toFixed(1)} kB, ${roadmapEnCitit.netraduse} texte netraduse), ${roadmapCitit.etape.length} rânduri de etape, ${catalogCitit.documente.length} documente.`);
@@ -687,7 +711,7 @@ if (kbRaportorPornire > PLAFON_RAPORTOR_PORNIRE_KB || kbRaportor > PLAFON_RAPORT
   process.exit(1);
 }
 if (pornire > PLAFON_PORNIRE_KB || total > PLAFON_TOTAL_KB || admin > PLAFON_ADMIN_KB || testPasCuPas > PLAFON_TEST_KB || simulata > PLAFON_SIMULATA_KB
-  || sugestie > PLAFON_SUGESTIE_KB) {
+  || sugestie > PLAFON_SUGESTIE_KB || cont > PLAFON_CONT_KB) {
   console.error('Mărimea pachetului trece de plafon.');
   process.exit(1);
 }

@@ -32,6 +32,7 @@ import type { RezultatConfig } from './config.ts';
 import type { ProgresActualizare } from '../pwa/inregistrare.ts';
 import { versiuneDin } from '../../shared/versiune.ts';
 import { listaDesen } from './desen.ts';
+import { contulPermite, useContTinut } from './dreptCont.ts';
 import type { Jurnal } from './jurnalErori.ts';
 import { ConflictDeScriere, type DepozitProiect, type ProiectDeschis } from './proiectLocal.ts';
 
@@ -333,10 +334,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     });
     // `dinBazaNou` lucrează doar cu referințe și setteri, deci prima lui versiune e și ultima.
   }, [proiect]);
-  const registru = useMemo(() => creeazaRegistru(ACTIUNI_DOCUMENT, () => true), []);
-  const registruExport = useMemo(() => creeazaRegistru(ACTIUNI_EXPORT, () => true), []);
-  const registruImport = useMemo(() => creeazaRegistru(ACTIUNI_IMPORT, () => true), []);
-  const registruVedere = useMemo(() => creeazaRegistru(ACTIUNI_VEDERE, () => true), []);
+  // Capabilitățile vin din contul ținut (ADR 0116 §9): fără cont, toate; un cont fără drept oprește exportul G-code. Aplicația
+  // se desenează din nou la fiecare schimbare a contului, deci starea acțiunilor urmează dreptul.
+  useContTinut();
+  const registru = useMemo(() => creeazaRegistru(ACTIUNI_DOCUMENT, contulPermite), []);
+  const registruExport = useMemo(() => creeazaRegistru(ACTIUNI_EXPORT, contulPermite), []);
+  const registruImport = useMemo(() => creeazaRegistru(ACTIUNI_IMPORT, contulPermite), []);
+  const registruVedere = useMemo(() => creeazaRegistru(ACTIUNI_VEDERE, contulPermite), []);
   /** Unde era focusul când s-a deschis paleta: acolo se întoarce la închidere. */
   const focusPaleta = useRef<Element | null>(null);
   const contextVedere: ContextVedere = {
@@ -1007,7 +1011,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               <Suspense fallback={null}>
                 <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil} reface={stareActiune('istoric.reface').ok}
-                  sugestie={config.ok && config.config.instanta !== 'live'}
+                  sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />
               </Suspense>

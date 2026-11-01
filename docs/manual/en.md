@@ -780,6 +780,27 @@ and opens the `/admin` page on the **Suggestions** tab, in a new tab. You sign i
 your staff account and write the suggestion, and the picture goes with it; before sending, you can remove it. If the
 browser doesn't open the tab, a message gives you the link to it.
 
+## The account
+%% capitol: cont
+%% acopera: editare.cont
+
+The **Account** button in the bar's extension, next to “?” (its title: “Account: sign in, the plan and the trial”), opens the
+account panel. The account needs internet: without a network the panel does not open, but the app goes on with the last
+rights it received.
+
+- **Signing in:** **Sign in with Google**, or the email address and the password, with **Sign in**. **Create account** makes a
+  new account with a password and sends a confirmation email; after you open the link in it, press **I have confirmed**.
+  **Forgot password** sends a reset email.
+- **The trial:** a new account has a 14-day trial, no card, with all functions. It starts at the first sign-in with a confirmed
+  address (with Google, the address is already confirmed). The panel shows how many days are left.
+- **After the trial:** G-code export and starting the program from the machine panel stop; drawing, operations, the toolpath
+  and vector export stay. The team can give a free plan. The machine's manual commands (jog, zero, stop) always stay.
+- **Without internet:** the app keeps the rights it received for 7 days (as the team sets it) from the last confirmation, then
+  asks for a connection to confirm them again. At every start with a network, the rights are confirmed again by themselves.
+- The display **Name** is changed from the panel, and **Sign out** closes the account in this browser.
+
+Without an account, the app works as before. Below, **What data we keep** says what we keep about the account and why.
+
 ## Keyboard shortcuts
 %% capitol: scurtaturi
 
