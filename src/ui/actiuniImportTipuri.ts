@@ -4,23 +4,25 @@ import type { AvertismenteEps, CodRefuzEps } from '../io/epsCoduri.ts';
 import type { FormatImport } from '../io/formatImport.ts';
 import type { AvertismentePdf, CodRefuzPdf } from '../io/pdfCoduri.ts';
 import type { Avertismente, CodRefuz } from '../io/svgCoduri.ts';
+import type { AvertismenteWmf, CodRefuzWmf, UnitateWmf, UnitatiWmf } from '../io/wmfCoduri.ts';
 
 export type { ImportPregatit } from '../io/piesa.ts';
 export {
   CODURI_AVERTISMENT, CODURI_ENTITATI, PLAFON_IMPORT, type Avertismente, type CodAvertisment, type CodEntitati, type CodRefuz,
 } from '../io/svgCoduri.ts';
-// Doar tipurile: listele DXF, PDF și EPS și `formatImport` le iau direct modulele la cerere (dialogul, ușile), ca să nu ajungă
-// în pachetul de pornire prin modulul ăsta (ADR 0100).
+// Doar tipurile: listele DXF, PDF, EPS și WMF și `formatImport` le iau direct modulele la cerere (dialogul, ușile), ca să nu
+// ajungă în pachetul de pornire prin modulul ăsta (ADR 0100).
 export type { AvertismenteDxf, CodAvertismentDxf, CodRefuzDxf, UnitateDxf } from '../io/dxfCoduri.ts';
 export type { AvertismentePdf, CodAvertismentPdf, CodRefuzPdf } from '../io/pdfCoduri.ts';
 export type { AvertismenteEps, CodAvertismentEps, CodRefuzEps } from '../io/epsCoduri.ts';
+export type { AvertismenteWmf, CodAvertismentWmf, CodRefuzWmf, UnitateWmf, UnitatiWmf } from '../io/wmfCoduri.ts';
 export type { FormatImport } from '../io/formatImport.ts';
 
 /** Fișierul ales: numele și octeții (citiți doar sub plafon, ADR 0035 §1). */
 export type FisierImport = { readonly nume: string; readonly octeti: Uint8Array };
 
-/** Refuzurile celor patru uși. */
-export type CodRefuzImport = CodRefuz | CodRefuzDxf | CodRefuzPdf | CodRefuzEps;
+/** Refuzurile celor cinci uși. */
+export type CodRefuzImport = CodRefuz | CodRefuzDxf | CodRefuzPdf | CodRefuzEps | CodRefuzWmf;
 
 /** Unitățile unui DXF (ADR 0101 §2): declarate de fișier, sau alese de om (implicit mm). */
 export type UnitatiImport = { readonly mmPeUnitate: number; readonly declarate: boolean; readonly unitate: UnitateDxf | null };
@@ -37,8 +39,8 @@ type Comune = {
 };
 
 /**
- * Previzualizarea unui import (ADR 0035 §9, ADR 0101 §8, ADR 0104 §7, ADR 0115 §7): ce ar adăuga „Importă”, cu mărimea desenului în mm,
- * căile pe laturi și raportul ușii lui. Interfața o primește ca date; piesa o face acțiunea `document.importa`, din
+ * Previzualizarea unui import (ADR 0035 §9, ADR 0101 §8, ADR 0104 §7, ADR 0115 §7, ADR 0117 §9): ce ar adăuga „Importă”, cu
+ * mărimea desenului în mm, căile pe laturi și raportul ușii lui. Interfața o primește ca date; piesa o face acțiunea `document.importa`, din
  * `pregatit`. Un PDF cu mai multe pagini își spune numărul paginilor și în refuz (pagina citită poate fi goală: omul alege
  * alta).
  */
@@ -68,21 +70,33 @@ export type PrevizualizareImport =
     readonly illustrator: boolean;
     readonly avertismente: AvertismenteEps;
   })
+  | (Comune & {
+    readonly format: 'wmf';
+    /** Unitățile: din antetul placeable, din modul metric al desenului, sau alese în dialog (ADR 0117 §5). */
+    readonly unitati: UnitatiWmf;
+    readonly avertismente: AvertismenteWmf;
+  })
   | {
     readonly ok: false; readonly cod: CodRefuzImport; readonly detaliu?: string;
-    readonly format?: FormatImport; readonly avertismente?: Avertismente | AvertismenteDxf | AvertismentePdf | AvertismenteEps;
+    readonly format?: FormatImport;
+    readonly avertismente?: Avertismente | AvertismenteDxf | AvertismentePdf | AvertismenteEps | AvertismenteWmf;
     /** Un PDF citit până la lista paginilor: câte are (dialogul oferă alegerea alteia). */
     readonly pagini?: number;
   };
 
-/** Alegerile din dialog pentru fișierul citit: px-ul (SVG), unitatea (un DXF fără unități), pagina (un PDF, de la 1). */
-export type AlegeriImport = { readonly pxPeTol: 96 | 72; readonly unitate: UnitateDxf; readonly pagina: number };
+/**
+ * Alegerile din dialog pentru fișierul citit: px-ul (SVG), unitatea (un DXF fără unități; un WMF fără antet), pagina (un
+ * PDF, de la 1).
+ */
+export type AlegeriImport = { readonly pxPeTol: 96 | 72; readonly unitate: UnitateDxf; readonly unitateWmf: UnitateWmf; readonly pagina: number };
 
 export type ContextImport = {
   readonly fisier: () => FisierImport | null;
   readonly pxPeTol: () => 96 | 72;
   /** Unitatea aleasă pentru un DXF care nu și-o declară (ADR 0101 §2); lipsă: mm. */
   readonly unitate?: () => UnitateDxf;
+  /** Unitatea aleasă pentru un WMF fără antet placeable (ADR 0117 §5); lipsă: 1/96 țol. */
+  readonly unitateWmf?: () => UnitateWmf;
   /** Pagina de citit dintr-un PDF (de la 1, ADR 0104 §7); lipsă: prima. */
   readonly pagina?: () => number;
   /** Limba aplicației, pentru `systemLanguage` din `switch`. */

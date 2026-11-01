@@ -36,8 +36,11 @@ export const ACTIUNI_IMPORT: readonly Actiune<ContextImport>[] = [
       const f = ctx.fisier();
       if (!f) return;
       const unitate = ctx.unitate?.();
+      const unitateWmf = ctx.unitateWmf?.();
       const pagina = ctx.pagina?.();
-      const o = { pxPeTol: ctx.pxPeTol(), limba: ctx.limba(), ...(unitate ? { unitate } : {}), ...(pagina ? { pagina } : {}) };
+      const o = {
+        pxPeTol: ctx.pxPeTol(), limba: ctx.limba(), ...(unitate ? { unitate } : {}), ...(unitateWmf ? { unitateWmf } : {}), ...(pagina ? { pagina } : {}),
+      };
       void previzualizeaza(f, o).then(ctx.rezultat, (e: unknown) => {
         ctx.jurnal?.(e);
         ctx.rezultat({ ok: false, cod: 'parsare', detaliu: e instanceof Error ? e.message : String(e) });

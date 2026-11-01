@@ -5,13 +5,17 @@ import { laturiDinImbricare } from '../io/imbricare.ts';
 import { PLAFON_IMPORT } from '../io/svgCoduri.ts';
 import { caleInchisa, cutieCai, numeDinFisier, pregateste, type CaleImport } from '../io/piesa.ts';
 import { citesteSvg } from '../io/svg.ts';
+import { citesteWmf } from '../io/wmf.ts';
 import { PLAFON } from '../model/document.ts';
 import { formatDupaAntet, formatImport } from '../io/formatImport.ts';
-import type { FisierImport, PrevizualizareImport, UnitateDxf } from './actiuniImportTipuri.ts';
+import type { FisierImport, PrevizualizareImport, UnitateDxf, UnitateWmf } from './actiuniImportTipuri.ts';
 
-/** Ce cer ușile: px-ul (SVG), limba (`switch` din SVG), unitatea aleasă (DXF fără unități), pagina (PDF, de la 1). */
+/**
+ * Ce cer ușile: px-ul (SVG), limba (`switch` din SVG), unitatea aleasă (un DXF fără unități, un WMF fără antet), pagina (PDF,
+ * de la 1).
+ */
 export type OptiuniPrevizualizare = {
-  readonly pxPeTol: 96 | 72; readonly limba: string; readonly unitate?: UnitateDxf; readonly pagina?: number;
+  readonly pxPeTol: 96 | 72; readonly limba: string; readonly unitate?: UnitateDxf; readonly unitateWmf?: UnitateWmf; readonly pagina?: number;
 };
 
 /** Imbricarea, mărimea desenului și numărătorile, comune ușilor; null dacă imbricarea trece de plafonul ei. */
@@ -85,12 +89,27 @@ export function previzualizareEps(f: FisierImport): PrevizualizareImport {
 }
 
 /**
- * Ușa după formatul fișierului: SVG sau DXF după nume; PDF, AI și EPS după antet (ADR 0115 §1: un AI e PDF de la
- * Illustrator 9 și PostScript înainte), la fel un fișier fără extensie cunoscută; altul, refuzat (`tip`).
+ * Previzualizarea WMF (ADR 0117 §9): ușa WMF, apoi aceeași imbricare și aceeași piesă ca la SVG. Cu antetul placeable, cadrul
+ * lui e pagina (desenul stă pe foaie unde e în cadru, ca la PDF); fără el, desenul vine în colțul foii, ca un SVG fără
+ * mărime, iar unitatea e cea aleasă în dialog.
+ */
+export function previzualizareWmf(f: FisierImport, unitate?: UnitateWmf): PrevizualizareImport {
+  const r = citesteWmf(f.octeti, unitate ? { unitate } : {});
+  if (!r.ok) return { ...r, format: 'wmf' };
+  const c = comune(f, r.cai, r.cadru);
+  if (!c) return { ok: false, cod: 'plafon', detaliu: 'includeri', format: 'wmf', avertismente: r.avertismente };
+  return { ...c, format: 'wmf', unitati: r.unitati, avertismente: r.avertismente };
+}
+
+/**
+ * Ușa după formatul fișierului: SVG, DXF și WMF (cu EMF-ul, refuzat de ea) după nume; PDF, AI și EPS după antet (ADR 0115
+ * §1: un AI e PDF de la Illustrator 9 și PostScript înainte); un fișier fără extensie cunoscută, după antet; altul,
+ * refuzat (`tip`).
  */
 export async function previzualizare(f: FisierImport, o: OptiuniPrevizualizare): Promise<PrevizualizareImport> {
   const format = formatImport(f.nume, '') ?? formatDupaAntet(f.octeti);
   if (format === 'pdf' || format === 'eps') return (formatDupaAntet(f.octeti) ?? format) === 'eps' ? previzualizareEps(f) : previzualizarePdf(f, o.pagina);
+  if (format === 'wmf') return previzualizareWmf(f, o.unitateWmf);
   if (format === 'dxf') return previzualizareDxf(f, o.unitate);
   if (format === 'svg') return previzualizareSvg(f, o.pxPeTol, o.limba);
   return { ok: false, cod: 'tip' };

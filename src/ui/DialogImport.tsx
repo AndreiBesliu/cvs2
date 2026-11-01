@@ -5,10 +5,11 @@ import { CODURI_AVERTISMENT_DXF, UNITATI_DXF } from '../io/dxfCoduri.ts';
 import { CODURI_AVERTISMENT_EPS } from '../io/epsCoduri.ts';
 import { formatImport } from '../io/formatImport.ts';
 import { CODURI_AVERTISMENT_PDF } from '../io/pdfCoduri.ts';
+import { CODURI_AVERTISMENT_WMF, UNITATI_WMF } from '../io/wmfCoduri.ts';
 import {
-  CODURI_AVERTISMENT, CODURI_ENTITATI, type Avertismente, type AvertismenteDxf, type AvertismenteEps, type AvertismentePdf, type CodAvertisment,
-  type CodAvertismentDxf, type CodAvertismentEps, type CodAvertismentPdf, type CodEntitati, type CodRefuzImport, type FormatImport,
-  type PrevizualizareImport, type UnitateDxf,
+  CODURI_AVERTISMENT, CODURI_ENTITATI, type Avertismente, type AvertismenteDxf, type AvertismenteEps, type AvertismentePdf, type AvertismenteWmf,
+  type CodAvertisment, type CodAvertismentDxf, type CodAvertismentEps, type CodAvertismentPdf, type CodAvertismentWmf, type CodEntitati,
+  type CodRefuzImport, type FormatImport, type PrevizualizareImport, type UnitateDxf, type UnitateWmf,
 } from './actiuniImport.ts';
 import { useLimba } from './useLimba.ts';
 
@@ -18,7 +19,7 @@ const REFUZ: Readonly<Record<CodRefuzImport, CheieSimpla>> = {
   neincarcat: 'dialog.neincarcat', tip: 'import.refuz.tip', binar: 'import.refuz.binar', dxf: 'import.refuz.dxf',
   'nu-e-pdf': 'import.pdf.nu-e-pdf', criptat: 'import.pdf.criptat', pdf: 'import.pdf.pdf', pagina: 'import.pdf.pagina-lipsa',
   'nu-e-ps': 'import.eps.nu-e-ps', 'ai-nou': 'import.eps.ai-nou', control: 'import.eps.control', operator: 'import.eps.operator',
-  imagine: 'import.eps.imagine', ps: 'import.eps.ps',
+  imagine: 'import.eps.imagine', ps: 'import.eps.ps', 'nu-e-wmf': 'import.wmf.nu-e-wmf', emf: 'import.wmf.emf', wmf: 'import.wmf.wmf',
 };
 
 /** Motivul refuzului entităților, tradus din codul ușii: niciun text din fișier nu ajunge în interfață. */
@@ -79,6 +80,19 @@ const AVERTISMENT_EPS = {
   'nonzero-refuzate': 'import.pdf.nonzero-refuzate',
 } as const satisfies Readonly<Record<CodAvertismentEps, string>>;
 
+/**
+ * Raportul ușii WMF (ADR 0117 §9), cod cu cod: aceleași texte ca la PDF (și ca la SVG, pentru arce) unde înseamnă același
+ * lucru, plus unitățile alese, imaginile și operațiile raster, desenele fără contur și înregistrările necunoscute.
+ */
+const AVERTISMENT_WMF = {
+  'unitati-nedeclarate': 'import.wmf.unitati-nedeclarate', deschise: 'import.pdf.deschise', degenerate: 'import.pdf.degenerate',
+  'prea-mari': 'import.pdf.prea-mari', 'sub-rezolutie': 'import.pdf.sub-rezolutie', 'sarit-text': 'import.pdf.sarit-text',
+  'sarit-imagine': 'import.wmf.sarit-imagine', 'sarit-altele': 'import.wmf.sarit-altele', decupaje: 'import.pdf.decupaje',
+  nepictate: 'import.pdf.nepictate', necunoscute: 'import.wmf.necunoscute', 'inchise-la-usa': 'import.pdf.inchise-la-usa',
+  'nonzero-normalizate': 'import.pdf.nonzero-normalizate', 'nonzero-refuzate': 'import.pdf.nonzero-refuzate',
+  'arce-eliptice': 'import.av.arce-eliptice', 'arce-plate': 'import.av.arce-plate',
+} as const satisfies Readonly<Record<CodAvertismentWmf, string>>;
+
 /** Câte straturi numește dialogul (un PDF poate avea sute): restul, „…”; un nume lung (scris de fișier) se taie. */
 const STRATURI_ARATATE = 8;
 const NUME_STRAT_ARATAT = 60;
@@ -89,9 +103,15 @@ const UNITATE = {
   mm: 'import.unitati.mm', cm: 'import.unitati.cm', m: 'import.unitati.m', inch: 'import.unitati.inch', ft: 'import.unitati.ft',
 } as const satisfies Readonly<Record<UnitateDxf, CheieSimpla>>;
 
+/** Unitățile de ales pentru un WMF fără antet placeable (ADR 0117 §5), cu numele lor. */
+const UNITATE_WMF = {
+  px: 'import.wmf.unitate.px', twip: 'import.wmf.unitate.twip', mm100: 'import.wmf.unitate.mm100', mm10: 'import.wmf.unitate.mm10',
+  mm: 'import.unitati.mm',
+} as const satisfies Readonly<Record<UnitateWmf, CheieSimpla>>;
+
 /** Raportul ușii care a citit fișierul, în ordinea codurilor ei. */
 function ListaAvertismente({ a, format }: {
-  readonly a: Avertismente | AvertismenteDxf | AvertismentePdf | AvertismenteEps | undefined; readonly format: FormatImport | undefined;
+  readonly a: Avertismente | AvertismenteDxf | AvertismentePdf | AvertismenteEps | AvertismenteWmf | undefined; readonly format: FormatImport | undefined;
 }) {
   const randuri: ReadonlyArray<{ readonly cod: string; readonly text: string }> = !a ? [] : format === 'dxf'
     ? CODURI_AVERTISMENT_DXF.filter((c) => ((a as AvertismenteDxf)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT_DXF[c], { n: (a as AvertismenteDxf)[c] }) }))
@@ -99,7 +119,9 @@ function ListaAvertismente({ a, format }: {
       ? CODURI_AVERTISMENT_PDF.filter((c) => ((a as AvertismentePdf)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT_PDF[c], { n: (a as AvertismentePdf)[c] }) }))
       : format === 'eps'
         ? CODURI_AVERTISMENT_EPS.filter((c) => ((a as AvertismenteEps)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT_EPS[c], { n: (a as AvertismenteEps)[c] }) }))
-        : CODURI_AVERTISMENT.filter((c) => ((a as Avertismente)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT[c], { n: (a as Avertismente)[c] }) }));
+        : format === 'wmf'
+          ? CODURI_AVERTISMENT_WMF.filter((c) => ((a as AvertismenteWmf)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT_WMF[c], { n: (a as AvertismenteWmf)[c] }) }))
+          : CODURI_AVERTISMENT.filter((c) => ((a as Avertismente)[c] ?? 0) > 0).map((c) => ({ cod: c, text: t(AVERTISMENT[c], { n: (a as Avertismente)[c] }) }));
   if (randuri.length === 0) return null;
   return (
     <>
@@ -120,6 +142,8 @@ function textRefuz(cod: CodRefuzImport, detaliu: string | undefined, nume: strin
   if (cod === 'parsare' && formatImport(nume, '') !== 'svg' && format !== 'svg') return t('import.refuz.citire');
   if (cod === 'gol' && format === 'pdf') return t(/\.ai$/i.test(nume) ? 'import.pdf.gol-ai' : 'import.pdf.gol');
   if (cod === 'gol' && format === 'eps') return t('import.eps.gol');
+  if (cod === 'gol' && format === 'wmf') return t('import.wmf.gol');
+  if (cod === 'wmf') return t('import.wmf.wmf', { octet: detaliu ?? '?' });
   if (cod === 'plafon' && detaliu === 'decodare') return t('import.pdf.decodare');
   if (cod === 'plafon' && detaliu === 'operatii') return t('import.eps.operatii');
   if (cod === 'control' || cod === 'operator' || cod === 'imagine') return t(REFUZ[cod], { operator: detaliu ?? '?' });
@@ -142,6 +166,8 @@ type Props = {
   readonly pxAutomat: boolean;
   /** Unitatea aleasă pentru un DXF care nu și le declară (ADR 0101 §2). */
   readonly unitate: UnitateDxf;
+  /** Unitatea aleasă pentru un WMF fără antet placeable (ADR 0117 §5). */
+  readonly unitateWmf: UnitateWmf;
   /** Pagina citită dintr-un PDF (de la 1, ADR 0104 §7). */
   readonly pagina: number;
   /** Se recitește cu altă alegere: previzualizarea de pe ecran e cea veche, deci „Importă” așteaptă. */
@@ -150,6 +176,7 @@ type Props = {
   readonly motiv: CheieSimpla | null;
   readonly onPx: (px: 96 | 72) => void;
   readonly onUnitate: (u: UnitateDxf) => void;
+  readonly onUnitateWmf: (u: UnitateWmf) => void;
   readonly onPagina: (pagina: number) => void;
   readonly onImporta: () => void;
   readonly onInchide: () => void;
@@ -160,14 +187,15 @@ type Props = {
 };
 
 /**
- * Dialogul importului SVG (ADR 0035 §9, ADR 0037 §12), DXF (ADR 0101 §8), PDF / AI (ADR 0104 §7) și EPS / AI ≤ 8 (ADR 0115
- * §7): ce ar adăuga
- * „Importă”, înainte de a schimba documentul. Mărimea desenului, contururile închise pe laturi, căile deschise (tăiate pe
- * linie) cu nota grosimii liniei, alegerea px-ului (SVG), a unităților (un DXF care nu și le declară) sau a paginii (un PDF
- * cu mai multe; și după un refuz, fiindcă o pagină poate fi goală) când contează, straturile unui PDF sau AI și raportul.
+ * Dialogul importului SVG (ADR 0035 §9, ADR 0037 §12), DXF (ADR 0101 §8), PDF / AI (ADR 0104 §7), EPS / AI ≤ 8 (ADR 0115
+ * §7) și WMF (ADR 0117 §9): ce ar adăuga „Importă”, înainte de a schimba documentul. Mărimea desenului, contururile închise
+ * pe laturi, căile deschise (tăiate pe linie) cu nota grosimii liniei, alegerea px-ului (SVG), a unităților (un DXF care nu
+ * și le declară, un WMF fără antet) sau a paginii (un PDF cu mai multe; și după un refuz, fiindcă o pagină poate fi goală)
+ * când contează, unitățile spuse de fișier, straturile unui PDF sau AI și raportul.
  */
 export function DialogImport({
-  nume, stare, pxPeTol, pxAutomat, unitate, pagina, seRecitesc, motiv, onPx, onUnitate, onPagina, onImporta, onInchide, coada, onSari,
+  nume, stare, pxPeTol, pxAutomat, unitate, unitateWmf, pagina, seRecitesc, motiv, onPx, onUnitate, onUnitateWmf, onPagina, onImporta,
+  onInchide, coada, onSari,
 }: Props) {
   const limba = useLimba();
   const mm = new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumSignificantDigits: 12 });
@@ -235,6 +263,23 @@ export function DialogImport({
                 </label>
                 <p data-testid="import-unitati">{t('import.unitati.nedeclarate')}</p>
               </div>
+            ))}
+            {ok.format === 'wmf' && (ok.unitati.sursa === 'aleasa' ? (
+              <div className="campuri">
+                <label>
+                  {t('import.unitati')}
+                  <select value={unitateWmf} data-camp="unitate-wmf" onChange={(e) => { onUnitateWmf(UNITATI_WMF.find((u) => u === e.target.value) ?? 'px'); }}>
+                    {UNITATI_WMF.map((u) => <option key={u} value={u}>{t(UNITATE_WMF[u])}</option>)}
+                  </select>
+                </label>
+                <p data-testid="import-unitati">{t('import.unitati.nedeclarate')}</p>
+              </div>
+            ) : (
+              <p data-testid="import-unitati">
+                {ok.unitati.sursa === 'antet'
+                  ? t('import.wmf.unitati-antet', { inch: mm.format(ok.unitati.inch ?? 0) })
+                  : t('import.wmf.unitati-mapare', { mm: mm.format(ok.unitati.mmPeUnitateMapare ?? 0) })}
+              </p>
             ))}
             {(ok.format === 'pdf' || ok.format === 'eps') && ok.straturi.length > 0 && (
               <p data-testid="import-straturi">

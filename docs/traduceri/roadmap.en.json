@@ -1213,6 +1213,10 @@
       "ro": "Fără izolare cross-origin",
       "en": "No cross-origin isolation"
     },
+    "97782b935c8ff9d0": {
+      "ro": "Importul WMF, cu cititor propriu",
+      "en": "WMF import, with our own reader"
+    },
     "98068c1cdee265fa": {
       "ro": "Două interfețe; §10 Ghid la prima pornire; admin **P4**",
       "en": "Two interfaces; §10 First-run guide; admin **P4**"

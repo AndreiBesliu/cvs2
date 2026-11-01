@@ -377,13 +377,13 @@ foii). **Centrează pe foaie** lucrează mereu față de foaie: mută toate form
 dintre ele rămâne, iar cutia lor comună ajunge în mijlocul foii. Mai multe forme se aleg cu dreptunghiul de selecție sau cu Shift + clic (vezi [Selecția și editarea](#selectie)).
 Fiecare aliniere se poate anula cu `Ctrl+Z`.
 
-## Importul SVG, DXF, PDF, AI și EPS
+## Importul SVG, DXF, PDF, AI, EPS și WMF
 %% capitol: import
 %% acopera: import.svg, document.importa
 
-Butonul **Importă SVG / DXF / PDF / AI / EPS** din bara de sus (primul dintre fișiere, lângă „Exportă vectori” și „Exportă
-G-code”) deschide fereastra de fișiere (poți alege mai multe). Sau tragi fișierele direct pe pânză: fiecare cade cu centrul
-unde îl lași.
+Butonul **Importă SVG / DXF / PDF / AI / EPS / WMF** din bara de sus (primul dintre fișiere, lângă „Exportă vectori” și
+„Exportă G-code”) deschide fereastra de fișiere (poți alege mai multe). Sau tragi fișierele direct pe pânză: fiecare cade cu
+centrul unde îl lași.
 
 Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului și cum se va tăia:
 - **contururile închise**: cele din afară pe exterior, găurile din ele pe interior (după imbricare);
@@ -393,12 +393,14 @@ Pentru fiecare fișier se deschide o fereastră care arată mărimea desenului �
   Illustrator e recunoscut;
 - la un DXF, **unitățile**: cele declarate de fișier se folosesc ca atare; unul care nu le declară (de exemplu un R12) se
   citește în mm, iar fereastra te lasă să alegi mm, cm, m, țol sau picior (mărimea desenului se schimbă pe loc);
+- la un WMF fără antet placeable, **unitatea**: 1/96 țol (px, ca LibreOffice), 1/1440 țol (twip), 0,01 mm, 0,1 mm sau mm
+  (vezi mai jos);
 - la un PDF cu mai multe pagini, **pagina** de importat (vezi mai jos);
 - ce nu se importă sau se citește altfel, cu numărul lor (la un SVG: textele, clonele `<use>`, imaginile, formele ascunse).
 
 **Importă** pune desenul pe foaie ca o singură formă, selectată; **Sari peste** trece la fișierul următor, **Renunță** și
-**Renunță la toate** închid fereastra. Se importă fișiere SVG, DXF, PDF, AI și EPS, de cel mult 16 MB, nearhivate (nu `.svgz`). Textul
-trebuie transformat în contururi în programul de desen înainte de export.
+**Renunță la toate** închid fereastra. Se importă fișiere SVG, DXF, PDF, AI, EPS și WMF, de cel mult 16 MB, nearhivate (nu
+`.svgz`). Textul trebuie transformat în contururi în programul de desen înainte de export.
 
 Un **DXF** se citește așa:
 - DXF-ul text (ASCII), de la R12 la cele noi; unul binar e refuzat (salvează-l ca ASCII);
@@ -435,6 +437,20 @@ Un **EPS** (și un **AI** de dinainte de Illustrator 9, care e PostScript, nu PD
 - cititorul e limitat: citește desenele scrise pas cu pas, cu procedurile lor simple. Un fișier care folosește bucle sau
   condiții (de exemplu un EPS din CorelDRAW), un operator pe care cititorul nu-l are (de exemplu `arc`) sau un EPS salvat de
   Illustrator 9 ori mai nou e refuzat, iar fereastra spune de ce: salvează-l ca PDF, SVG sau AI compatibil PDF.
+
+Un **WMF** (metafișierul Windows: clipartul vechi, exporturile din CorelDRAW, Office sau AutoCAD) se citește așa:
+- cu antetul placeable (aproape orice WMF de pe disc), desenul ajunge pe foaie unde e în cadrul lui: colțul stânga-jos al
+  cadrului e colțul foii, iar mărimea vine din antet (unitățile pe țol, arătate în fereastră);
+- fără antet, fișierul nu-și spune mărimea: fereastra te lasă să alegi unitatea (implicit 1/96 țol, cum îl arată LibreOffice),
+  iar desenul vine în colțul foii; un fișier desenat într-un mod metric (de exemplu în 0,01 mm) își spune singur unitățile;
+- poliliniile, poligoanele (și cele cu mai multe contururi), dreptunghiurile, dreptunghiurile rotunjite, elipsele, arcele
+  (și cele închise cu o coardă sau cu două raze) și liniile trase din punct în punct intră cum le desenează Windows, cu
+  fereastra, vizorul și modul de mapare ale fișierului: cercul rămâne cerc, elipsele devin curbe Bézier;
+- o formă umplută după regula „winding” se redesenează ca la SVG; una nevăzută (fără contur și fără umplere) se sare;
+- se sar, numărate: textele, imaginile și operațiile raster, regiunile pictate, înregistrările necunoscute; decupajele nu
+  se aplică;
+- un WMF nu are curbe Bézier: un cerc desenat liber de un program ajunge un poligon, și așa se importă;
+- un EMF (metafișierul pe 32 de biți) e refuzat: salvează-l ca WMF, SVG sau PDF.
 
 ## Operațiile de tăiere
 %% capitol: operatii

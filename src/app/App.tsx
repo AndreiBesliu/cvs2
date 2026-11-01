@@ -618,7 +618,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   };
 
   /** Contextul importului înainte de alegerea fișierului: doar starea butonului (fila care doar citește îl oprește). */
-  const importFaraFisier = (): ContextImport => contextImport(null, { pxPeTol: 96, unitate: 'mm', pagina: 1 }, () => undefined);
+  const importFaraFisier = (): ContextImport => contextImport(null, { pxPeTol: 96, unitate: 'mm', unitateWmf: 'px', pagina: 1 }, () => undefined);
   /** Starea oricărei acțiuni din bare și din paletă, citită din registrul ei. */
   const stareActiune = (id: string): RezultatActiune => (
     id === 'import.svg' ? stare(registruImport, id, importFaraFisier())
@@ -723,13 +723,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   };
 
   /**
-   * Contextul ușilor pentru un fișier și alegerile lui (px-ul unui SVG, unitatea unui DXF, pagina unui PDF); citirea lui o
-   * face dialogul (`ImportConectat`).
+   * Contextul ușilor pentru un fișier și alegerile lui (px-ul unui SVG, unitatea unui DXF sau a unui WMF fără antet, pagina
+   * unui PDF); citirea lui o face dialogul (`ImportConectat`).
    */
   const contextImport = (f: FisierImport | null, a: AlegeriImport, rezultat: (r: PrevizualizareImport) => void): ContextImport => ({
     fisier: () => f,
     pxPeTol: () => a.pxPeTol,
     unitate: () => a.unitate,
+    unitateWmf: () => a.unitateWmf,
     pagina: () => a.pagina,
     limba: () => limbaActiva,
     doarCitire: () => doarCiteste(mod),
@@ -974,7 +975,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           {aranjament.zone.unelte.length > 0 && <div className="insula unelte">{grupuri('unelte')}</div>}
         </header>
         {/* Fereastra de fișiere a importului: în afara barelor, ca importul să meargă din orice aranjament (și din paletă). */}
-        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml,.dxf,image/vnd.dxf,application/dxf,.pdf,application/pdf,.ai,.eps,application/postscript" multiple hidden data-camp="fisier-svg"
+        <input ref={fisierImport} type="file" accept=".svg,image/svg+xml,.dxf,image/vnd.dxf,application/dxf,.pdf,application/pdf,.ai,.eps,application/postscript,.wmf,image/wmf,image/x-wmf,application/x-msmetafile" multiple hidden data-camp="fisier-svg"
           onChange={(e) => { alesFisier(e.target.files); e.target.value = ''; }} />
         <div className="lucru">
           <Panza

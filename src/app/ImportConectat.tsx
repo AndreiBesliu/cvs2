@@ -17,9 +17,10 @@ mesaje.catch(() => undefined);
 type Loc = { readonly x: number; readonly y: number } | null;
 
 /**
- * Importul SVG (ADR 0035 §9), DXF (ADR 0101 §8), PDF / AI (ADR 0104 §7) și EPS (ADR 0115 §7): fișierul ales, alegerile
- * (px-ul unui SVG, unitatea unui DXF care nu și-o declară, pagina unui PDF) și previzualizarea. Cât e deschis, documentul nu
- * se schimbă pe altă cale (aplicația e inertă sub dialog): „Importă” adaugă exact ce arată dialogul.
+ * Importul SVG (ADR 0035 §9), DXF (ADR 0101 §8), PDF / AI (ADR 0104 §7), EPS (ADR 0115 §7) și WMF (ADR 0117 §9): fișierul
+ * ales, alegerile (px-ul unui SVG, unitatea unui DXF care nu și-o declară sau a unui WMF fără antet, pagina unui PDF) și
+ * previzualizarea. Cât e deschis, documentul nu se schimbă pe altă cale (aplicația e inertă sub dialog): „Importă” adaugă
+ * exact ce arată dialogul.
  */
 type StareDialog = AlegeriImport & {
   readonly fisier: FisierImport | null; readonly nume: string;
@@ -33,8 +34,8 @@ type StareDialog = AlegeriImport & {
   readonly seRecitesc?: boolean;
 };
 
-/** Alegerile cu care se citește întâi orice fișier: 1/96 țol, mm, prima pagină. */
-const ALEGERI: AlegeriImport = { pxPeTol: 96, unitate: 'mm', pagina: 1 };
+/** Alegerile cu care se citește întâi orice fișier: 1/96 țol, mm (DXF), 1/96 țol (WMF), prima pagină. */
+const ALEGERI: AlegeriImport = { pxPeTol: 96, unitate: 'mm', unitateWmf: 'px', pagina: 1 };
 
 type Props = {
   /** Coada fișierelor alese sau lăsate pe planșă (felia 2.8b), cel puțin unul: dialogul le trece pe rând. */
@@ -50,8 +51,8 @@ type Props = {
 };
 
 /**
- * Starea de la care pornește dialogul pentru un fișier al cozii: SVG, DXF, PDF / AI sau EPS (după nume sau tip); celelalte
- * formate vin mai târziu. Peste plafon, fișierul nu se citește deloc (ADR 0035 §1).
+ * Starea de la care pornește dialogul pentru un fișier al cozii: SVG, DXF, PDF / AI, EPS sau WMF (după nume sau tip);
+ * celelalte formate vin mai târziu. Peste plafon, fișierul nu se citește deloc (ADR 0035 §1).
  */
 function stareInitiala(f: File): StareDialog {
   const baza = { fisier: null, nume: f.name, ...ALEGERI, pxAutomat: false } as const;
@@ -129,7 +130,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
   /** Recitirea cu o alegere schimbată: ce e pe ecran (previzualizarea sau refuzul) rămâne acolo până sosește noul rezultat. */
   const recitesteCu = (schimbare: Partial<AlegeriImport>): void => {
     if (!dialog.fisier) return;
-    const a = { pxPeTol: dialog.pxPeTol, unitate: dialog.unitate, pagina: dialog.pagina, ...schimbare };
+    const a = { pxPeTol: dialog.pxPeTol, unitate: dialog.unitate, unitateWmf: dialog.unitateWmf, pagina: dialog.pagina, ...schimbare };
     citeste(dialog.fisier, a, dialog.pxAutomat, dialog.stare === 'citire' ? undefined : dialog.stare);
   };
   return (
@@ -139,11 +140,13 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
       pxPeTol={dialog.pxPeTol}
       pxAutomat={dialog.pxAutomat}
       unitate={dialog.unitate}
+      unitateWmf={dialog.unitateWmf}
       pagina={dialog.pagina}
       seRecitesc={dialog.seRecitesc === true}
       motiv={stareOk && !stareOk.ok ? stareOk.motiv : null}
       onPx={(px) => { recitesteCu({ pxPeTol: px }); }}
       onUnitate={(u) => { recitesteCu({ unitate: u }); }}
+      onUnitateWmf={(u) => { recitesteCu({ unitateWmf: u }); }}
       onPagina={(pagina) => { recitesteCu({ pagina }); }}
       onImporta={() => {
         // Un dublu-clic nu importă de două ori: clicul e un eveniment discret, deci React închide dialogul înaintea

@@ -9,6 +9,8 @@
 *.nc -text
 *.gcode -text
 *.tap -text
+*.wmf binary
+*.emf binary
 *.stl binary
 *.ttf binary
 *.otf binary
