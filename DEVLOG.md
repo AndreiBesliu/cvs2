@@ -4266,3 +4266,36 @@ documentației (34), traducerile (508, 0 lipsă).
 **Publicat pe adresa principală de test:** 01.11, 18:45, `publica` pe `870d896` (rularea 41327626924), după CI-ul rapid
 verde (41326940034): ADR 0119 se servește în documentația din `/admin` (`documentatie/doc/docs/adr/0119-senderul-prin-wifi.md`,
 200), versiunea `870d896e0633`.
+
+## 2026-11-01 — Felia 5.1↑c: oracolul independent al ușii documentului v11–v18 (Model: Claude Opus 5.5)
+
+**Prompt:** „suntem pe aplicatie, haide sa pornim worktrees” (la propunerea sesiunii principale: „1. oracolul independent al
+ușii documentului v11–v18; 2. importul WMF”); lucrată de o sesiune paralelă, în worktree-ul
+`C:\Users\besli\cncvs2-lucru\oracol-document`, pe `wip/5.1c-oracol-document`.
+**Started:** 01.11, 16:20. **Completed:** 01.11, 17:30. Partea v11–v18 a oracolului documentului, rescrisă doar din ADR 0024, 0025,
+0070, 0069, 0076, 0087 și 0090–0094, fără să văd ușa aplicației și partea veche: secțiunea „Documentul v11–v18” de la finalul lui
+`test/oracles/document.ts` (peste partea v1–v10, neschimbată; partea veche, împletită în validatorul comun, scoasă, cu aceleași
+nume exportate), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts` (36 de documente v18 valide, 10 migrări, 9
+câmpuri în afara locului lor, 267 de valori de frontieră pe 32 de câmpuri, 63 de refuzuri, 5 ambiguități), proba
+`test/unit/document.v18.oracol.test.ts` (ușa aplicației pe cazuri, pe 2 370 de documente ale corpusului existent și ușa curentă).
+**Divergența** (de hotărât, nereparată): `incarcaCurent` cere migrările pentru o versiune neîntreagă din (1, 18), ADR 0070 §2; în
+probă, `todo`. **Ambiguitățile:** plafonul razei elicei (ADR 0076 §1: oracolul 10 000 mm, aplicația 100), parametrii altui fel în
+coborâre (amândouă: câmpuri necunoscute). Porțile: compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări),
+traducerile (501, 0 lipsă), 7 959 de teste unitare (7 950 trec, 0 cad, 1 `todo`, 8 sărite), build-ul determinist (220 de fișiere;
+pornirea 98,4, cu ușa 101,9 / 110 kB; totalul 433,1 / 450; /admin 196,9 / 200) și pachetul identic cu al lui `79f4ddc`, construit
+alături și comparat cu numele normalizate (diferă doar documentația, ordinea hărții de import și revizia lui `index.html` din
+precache), licențele. 19 mutații țintite ale ușii aplicației, toate prinse de aserțiunile probei (plus un control în zona ambiguă,
+care scapă, cum trebuie); fișierele mutate, identice cu HEAD la final. Nepublicat: unirea în `main` și publicarea pe test sunt ale
+sesiunii principale.
+
+## 2026-11-01 — Felia 5.1↑c, a doua trecere: ușa curentă refuză singură o versiune neîntreagă (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, repar-o aici” (la întrebarea „Repar ușa curentă (versiunea neîntreagă) pe ramura asta?”, după raportul feliei).
+**Started:** 01.11, 18:25. **Completed:** 01.11, 18:40. Divergența găsită de oracol (ADR 0070 §2), reparată: `incarcaCurent` cere
+migrările doar pentru o versiune întreagă din [1, 18) (`Number.isInteger` în condiție), deci o versiune neîntreagă (1,5, 17,5) se
+refuză acum în ușa curentă, cu motivul ușii întregi, fără bucata migrărilor. Proba (u) din `document.v18.oracol.test.ts` nu mai e
+`todo`, iar `usaCurenta.test.ts` are 1,5 și 17,5 printre refuzurile care nu cer migrări; amândouă cad cu reparația scoasă (mutația
+M21). Codul: `15be766`. Porțile: compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), traducerile (501,
+0 lipsă), 7 959 de teste unitare (7 951 trec, 0 cad, 8 sărite), build-ul determinist (220 de fișiere; pornirea 98,4, cu ușa
+101,9 / 110 kB; totalul 433,1 / 450; /admin 196,9 / 200: neschimbate la 0,1 kB), licențele; 20 / 20 de mutații ale ușii prinse
+(plus controlul din zona ambiguă, care scapă). Nepublicat: unirea în `main` și publicarea pe test sunt ale sesiunii principale.

@@ -32,7 +32,11 @@ test('un document mai vechi cere migrările (null); ușa întreagă îl migreaz�
 });
 
 test('refuzurile care nu cer migrări vin din ușa curentă, cu același motiv ca ușa întreagă', () => {
-  const lista: unknown[] = [null, [], 'text', { rev: 0 }, { schema: 0 }, { schema: '10' }, { schema: VERSIUNE_SCHEMA + 1, rev: 0 }];
+  // Felia 5.1↑c: și o versiune neîntreagă dintre cele vechi (ADR 0070 §2: doar o versiune întreagă e „mai veche”).
+  const lista: unknown[] = [
+    null, [], 'text', { rev: 0 }, { schema: 0 }, { schema: '10' }, { schema: VERSIUNE_SCHEMA + 1, rev: 0 },
+    { schema: 1.5, rev: 0 }, { schema: VERSIUNE_SCHEMA - 0.5, rev: 0 },
+  ];
   for (const brut of lista) {
     const r = incarcaCurent(brut);
     assert.ok(r && !r.ok, JSON.stringify(brut));

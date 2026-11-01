@@ -99,10 +99,11 @@ export function incarcaCu(brut: unknown, migrari: Readonly<Record<number, Migrar
 
 
 /**
- * Ușa unui document al versiunii curente (sau al uneia mai noi, ori fără versiune: refuzul nu cere migrări); null =
- * documentul e mai vechi, deci îi trebuie migrările (`incarca` din `incarcare.ts`).
+ * Ușa unui document al versiunii curente (sau al uneia mai noi, ori fără versiune întreagă: refuzul nu cere migrări);
+ * null = documentul e mai vechi (o versiune întreagă între 1 și cea curentă, ADR 0070 §2), deci îi trebuie migrările
+ * (`incarca` din `incarcare.ts`).
  */
 export function incarcaCurent(brut: unknown): RezultatIncarcare | null {
   const s = typeof brut === 'object' && brut !== null ? (brut as Brut)['schema'] : undefined;
-  return typeof s === 'number' && s >= 1 && s < VERSIUNE_SCHEMA ? null : incarcaCu(brut, {});
+  return typeof s === 'number' && Number.isInteger(s) && s >= 1 && s < VERSIUNE_SCHEMA ? null : incarcaCu(brut, {});
 }

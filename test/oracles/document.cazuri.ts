@@ -4008,3 +4008,624 @@ export const VALIDE_DIFICILE_V8: readonly CazValidV8[] = [
     )))), (k) => cl(k === 0 ? 'dog-bone' : 't-bone')) as DocV8O,
   },
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documentul v11–v18 (felia 5.1↑c).
+
+/**
+ * CAZURILE documentului v11–v18 (felia 5.1↑c, sesiune independentă, scrise doar din textul ADR-urilor 0069, 0076, 0087,
+ * 0090–0094, 0024, 0025 și 0070), pentru partea v11–v18 a oracolului (secțiunea de la finalul lui `document.ts`) și
+ * pentru `test/unit/document.v18.oracol.test.ts`. Fiecare verdict e scris aici, pe hârtie, nu cerut oracolului:
+ * - `VALIDE_V18`: documente v18 pe care ușa le primește NESCHIMBATE (ADR 0024, precizarea 10), inclusiv ce nu judecă ușa
+ *   (potrivirea felului cu forma, cu latura, cu freza: refuzurile lucrării);
+ * - `MIGRARI_V18_HARTIE`: documente vechi (v1, v3, v10 … v17) și documentul v18 care iese din ușă, scris întreg (v1, v3,
+ *   v10) sau ca „același, cu `schema: 18`” (v11 … v17: migrările schimbă doar numărul);
+ * - `NECIOCNIRI_V18`: un câmp nou în afara locului lui (pe sculă, pe piesă, pe operație în locul sculei): un câmp
+ *   necunoscut oarecare, deci primit, cu el păstrat;
+ * - `FRONTIERE_V18`: fiecare câmp nou, cu valori de o parte și de alta a marginilor din ADR (și lipsa lui), fiecare cu
+ *   verdictul de pe hârtie;
+ * - `REFUZATE_V18`: documente stricate, fiecare cu un singur defect: câmpul (calea, ca în motivul ușii), categoria
+ *   oracolului, motivul (cu paragraful ADR-ului) și, unde ADR-ul citează textul refuzului, textul;
+ * - `VECHI_NOI`: câte un document valid din fiecare versiune v10 … v17, pentru ușile v11 … v17;
+ * - `AMBIGUE_V18` (și `ambigue` din frontiere): ce nu hotărăște textul, cu ALEGEREA oracolului; aplicația doar se raportează.
+ *
+ * Un caz nou = documentul și verdictul lui pe hârtie, aici; un câmp nou al documentului (v19) își aduce frontierele.
+ */
+
+/** Marcajul „câmpul lipsește” în tabelele de frontieră. */
+export const LIPSA = Symbol('lipsă');
+
+const dreptunghi = (latime = 100, inaltime = 60): Liber => ({ tip: 'dreptunghi', latime, inaltime, razaColt: 0 });
+/** O linie deschisă (v10, ADR 0037): două vârfuri, ultimul segment L. */
+const linie = (): Liber => ({ tip: 'cale', inchis: false, varfuri: [{ p: { x: 0, y: 0 }, s: { tip: 'L' } }, { p: { x: 80, y: 0 }, s: { tip: 'L' } }] });
+
+/** Freza plată T`numar` Ø`diametru`. */
+const plata = (numar: number, diametru: number): Liber => ({ numar, nume: 'freza plata', diametru });
+/** Freza în V T`numar` Ø`diametru`, cu unghiul (și vârful, de la v16). */
+const inV = (numar: number, diametru: number, unghi: number, varf?: number): Liber => ({
+  numar, nume: `freza V${unghi}`, diametru, forma: varf === undefined ? { tip: 'v', unghi } : { tip: 'v', unghi, varf },
+});
+
+/** O operație completă, cu câmpurile v10 (profil interior, T1 Ø6, 6 / 3, urcare, nimic din profil); `v` o schimbă. */
+export const opV18 = (v: Liber = {}): Liber => ({
+  id: 'o1', tip: 'profil', noduri: ['e'], scula: plata(1, 6), latura: 'interior', adancime: 6, pas: 3,
+  sens: 'urcare', urechi: null, rampa: null, intrari: null, colturi: null, ...v,
+});
+/** Un buzunar 100 × 60 cu Ø6 și pasul 2,4 (exemplul ADR 0069). */
+const buzunar = (v: Liber = {}): Liber => opV18({ id: 'b1', tip: 'buzunar', pasLateral: 2.4, ...v });
+/** O găurire cu Ø6 pe un cerc de Ø6, 10 mm cu pasul 3 (exemplul ADR 0087). */
+const gaurire = (v: Liber = {}): Liber => opV18({ id: 'g1', tip: 'gaurire', adancime: 10, pas: 3, ...v });
+/** Un V-carve cu V90 Ø6, 3 mm cu pasul 1,2 (exemplul ADR 0090). */
+const vcarve = (v: Liber = {}): Liber => opV18({ id: 'v1', tip: 'vcarve', scula: inV(2, 6, 90), adancime: 3, pas: 1.2, ...v });
+/** Fundul plat cu freza dreaptă Ø3,175 și pasul 1,2 (implicitele ADR 0091 §4: T-ul V-ului + 1). */
+const fund = (v: Liber = {}): Liber => ({ scula: plata(3, 3.175), pasLateral: 1.2, ...v });
+/** O freză de rest. */
+const rest1 = (numar: number, diametru: number, pasLateral: number): Liber => ({ scula: plata(numar, diametru), pasLateral });
+
+/** Un document cu o piesă `p` (elementul `e`, forma dată), operațiile date, pus o dată pe foaie. */
+export function docV18(forma: Liber, operatii: readonly Liber[], schema = 18): Liber {
+  return {
+    schema, rev: 0,
+    piese: [{ id: 'p', radacina: { tip: 'element', id: 'e', forma, matrice: I() }, operatii: [...operatii] }],
+    foi: [{ id: 'f1', stoc: { latime: 400, inaltime: 300, grosime: 18 }, instante: [{ id: 'i0', piesa: 'p', x: 50, y: 50, rotire: 0 }] }],
+  };
+}
+
+/** Același document, cu alt număr (migrările v10 → … → v18 schimbă doar numărul). */
+export const cuSchema = (d: Liber, schema: number): Liber => ({ ...structuredClone(d), schema });
+
+/** `{ a: { a: … 1 } }` cu `n` obiecte unul în altul. */
+const imbricat = (n: number): unknown => {
+  let v: unknown = 1;
+  for (let k = 0; k < n; k++) v = { a: v };
+  return v;
+};
+const capcane = (): Liber => JSON.parse('{"__proto__": {"x": 1}, "constructor": "c", "prototype": 2}') as Liber;
+
+export type CazV18 = { readonly nume: string; readonly doc: Liber };
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documente v18 valide: ușa le primește neschimbate.
+
+export const VALIDE_V18: readonly CazV18[] = [
+  { nume: 'A01 buzunarul 100 × 60, Ø6, pasul 2,4 (ADR 0069 §1)', doc: docV18(dreptunghi(), [buzunar()]) },
+  { nume: 'A02 buzunarul cu pasul exact 50 (marginea de sus)', doc: docV18(dreptunghi(), [buzunar({ pasLateral: 50 })]) },
+  { nume: 'A03 buzunarul fără pas (potrivirea e a lucrării: „n-are pasul lateral”)', doc: docV18(dreptunghi(), [opV18({ id: 'b1', tip: 'buzunar' })]) },
+  {
+    nume: 'A04 buzunarul pe exterior, cu urechi, rampă, intrări și degajări (nimic din profil e al lucrării)',
+    doc: docV18(dreptunghi(), [buzunar({
+      latura: 'exterior', urechi: { numar: 4, latime: 8, grosime: 2 }, rampa: { lungime: 10 }, intrari: { raza: 3 }, colturi: { tip: 'dog-bone' },
+    })]),
+  },
+  { nume: 'A05 buzunarul pe o cale deschisă (refuzul e al lucrării, ADR 0069 §6)', doc: docV18(linie(), [buzunar({ latura: 'pe-linie' })]) },
+  { nume: 'A06 profilul cu pasul lateral (ADR 0069 §1: „nu schimbă nimic”)', doc: docV18(dreptunghi(), [opV18({ pasLateral: 2 })]) },
+  { nume: 'A07 coborârea plonjare, scrisă (ADR 0076 §1)', doc: docV18(dreptunghi(), [buzunar({ coborare: { fel: 'plonjare' } })]) },
+  { nume: 'A08 rampa pe inel, cu 45° (marginea de sus)', doc: docV18(dreptunghi(), [buzunar({ coborare: { fel: 'rampa', unghi: 45 } })]) },
+  { nume: 'A09 zigzagul de 20 mm, cu 3°', doc: docV18(dreptunghi(), [buzunar({ coborare: { fel: 'zigzag', unghi: 3, lungime: 20 } })]) },
+  { nume: 'A10 elicea de rază 3, cu 3°', doc: docV18(dreptunghi(), [buzunar({ coborare: { fel: 'elice', unghi: 3, raza: 3 } })]) },
+  {
+    nume: 'A11 sub pragurile lucrării (0,3°, zigzagul de 0,5 mm, raza 0,2): ușa le lasă, lucrarea le refuză (ADR 0076 §1)',
+    doc: docV18(dreptunghi(), [
+      buzunar({ coborare: { fel: 'zigzag', unghi: 0.3, lungime: 0.5 } }),
+      buzunar({ id: 'b2', coborare: { fel: 'elice', unghi: 3, raza: 0.2 } }),
+    ]),
+  },
+  {
+    nume: 'A12 coborârea cu câmpuri necunoscute și capcane de prototip (obiecte deschise, ADR 0076 §7)',
+    doc: docV18(dreptunghi(), [buzunar({ coborare: { fel: 'elice', unghi: 3, raza: 3, nota: 'x', ...capcane() } })]),
+  },
+  { nume: 'A13 zigzagul la 10 000 mm (plafonul ales: PLAFON.latura) și elicea de rază 100', doc: docV18(dreptunghi(), [buzunar({ coborare: { fel: 'zigzag', unghi: 1, lungime: 10_000 } }), buzunar({ id: 'b2', coborare: { fel: 'elice', unghi: 1, raza: 100 } })]) },
+  { nume: 'A14 găurirea cu Ø6 pe un cerc de Ø6, ieșirea implicită (lipsă = 1, ADR 0087 §1)', doc: docV18(cerc(3), [gaurire()]) },
+  { nume: 'A15 găurirea cu ieșirea la 1 și la 100 (marginile)', doc: docV18(cerc(3), [gaurire({ retragereCompleta: 1 }), gaurire({ id: 'g2', retragereCompleta: 100 })]) },
+  { nume: 'A16 găurirea pe un dreptunghi (refuzul e al lucrării, ADR 0087 §4)', doc: docV18(dreptunghi(), [gaurire({ retragereCompleta: 2 })]) },
+  { nume: 'A17 V-carve-ul cu V90 Ø6 (ADR 0090)', doc: docV18(dreptunghi(), [vcarve()]) },
+  { nume: 'A18 freza în V la 1° și la 179° (marginile), cu câmpuri necunoscute în formă', doc: docV18(dreptunghi(), [vcarve({ scula: { ...inV(2, 6, 1), forma: { tip: 'v', unghi: 1, producator: 'x' } } }), vcarve({ id: 'v2', scula: inV(3, 6, 179) })]) },
+  { nume: 'A19 V-carve-ul cu freza plată și freza în V pe exterior (refuzuri ale lucrării, ADR 0090 §4, ADR 0092 §3)', doc: docV18(dreptunghi(), [vcarve({ scula: plata(2, 6) }), opV18({ id: 'o2', latura: 'exterior', scula: inV(3, 6, 90) })]) },
+  { nume: 'A20 fundul plat cu Ø3,175 și pasul 1,2 (ADR 0091 §1)', doc: docV18(dreptunghi(), [vcarve({ fundPlat: fund() })]) },
+  {
+    nume: 'A21 fundul plat cu pasul 50, cu o formă pe freza lui și câmpuri necunoscute (potrivirea e a lucrării)',
+    doc: docV18(dreptunghi(), [vcarve({ fundPlat: { ...fund({ pasLateral: 50 }), scula: { ...inV(3, 3.175, 90, 0.5), nota: 1 }, nota: 2 } })]),
+  },
+  { nume: 'A22 fundul plat pe un buzunar și pe un profil (ADR 0091 §1: lucrarea îl refuză)', doc: docV18(dreptunghi(), [buzunar({ fundPlat: fund() }), opV18({ id: 'o2', fundPlat: fund() })]) },
+  { nume: 'A23 freza de gravare: V30 cu vârful 0,25 (ADR 0092 §1), pe linie, cu direcția invers', doc: docV18(linie(), [opV18({ latura: 'pe-linie', adancime: 1, pas: 1, scula: inV(2, 3.175, 30, 0.25), directie: 'invers' })]) },
+  { nume: 'A24 vârful 100 (marginea de sus), mai mare decât diametrul (potrivirea e a lucrării)', doc: docV18(dreptunghi(), [vcarve({ scula: inV(2, 6, 90, 100) })]) },
+  { nume: 'A25 direcția „scurt” pe linie și „invers” pe exterior (lucrarea o refuză pe exterior)', doc: docV18(linie(), [opV18({ latura: 'pe-linie', directie: 'scurt' }), opV18({ id: 'o2', latura: 'exterior', directie: 'invers' })]) },
+  {
+    nume: 'A26 gravarea inteligentă: fundul plat cu V30 vârful 0,25 și freza dreaptă Ø2 (ADR 0092 §2)',
+    doc: docV18(dreptunghi(20, 20), [vcarve({ adancime: 2, pas: 1, scula: inV(2, 3.175, 30, 0.25), fundPlat: { scula: plata(3, 2), pasLateral: 0.8 } })]),
+  },
+  { nume: 'A27 frezele de rest: Ø12, apoi Ø3 (ADR 0093)', doc: docV18(dreptunghi(80, 40), [buzunar({ scula: plata(1, 12), adancime: 10, pas: 5, pasLateral: 4.8, rest: [rest1(2, 3, 1.2)] })]) },
+  {
+    nume: 'A28 opt freze de rest (marginea), cu câmpuri necunoscute',
+    doc: docV18(dreptunghi(), [buzunar({ scula: plata(1, 12), rest: [8, 7, 6, 5, 4, 3, 2, 1].map((d, k) => ({ ...rest1(k + 2, d, d / 4), nota: k })) })]),
+  },
+  { nume: 'A29 fundul plat cu o freză de rest (ADR 0093 §1: `fundPlat.rest`)', doc: docV18(dreptunghi(), [vcarve({ fundPlat: fund({ scula: plata(3, 6), pasLateral: 2.4, rest: [rest1(4, 2, 0.8)] }) })]) },
+  {
+    nume: 'A30 frezele de rest care nu scad, în V, pe un profil (refuzuri ale lucrării, ADR 0093 §1)',
+    doc: docV18(dreptunghi(), [buzunar({ rest: [rest1(2, 6, 2.4), { scula: inV(3, 6, 90), pasLateral: 1 }] }), opV18({ id: 'o2', rest: [rest1(4, 3, 1)] })]),
+  },
+  { nume: 'A31 strategia paralelă la 0° și la 30° (ADR 0094)', doc: docV18(dreptunghi(80, 40), [buzunar({ strategie: { fel: 'paralel', unghi: 0 } }), buzunar({ id: 'b2', strategie: { fel: 'paralel', unghi: 30 } })]) },
+  { nume: 'A32 strategia la 179,999° (sub margine) și la −0 (= 0)', doc: docV18(dreptunghi(), [buzunar({ strategie: { fel: 'paralel', unghi: 179.999 } }), buzunar({ id: 'b2', strategie: { fel: 'paralel', unghi: -0 } })]) },
+  {
+    nume: 'A33 strategia pe un profil și cu coborârea în rampă, cu câmpuri necunoscute (refuzuri ale lucrării, ADR 0094 §1)',
+    doc: docV18(dreptunghi(), [opV18({ strategie: { fel: 'paralel', unghi: 45, nota: 'x' } }), buzunar({ id: 'b2', coborare: { fel: 'rampa', unghi: 3 }, strategie: { fel: 'paralel', unghi: 90 } })]),
+  },
+  {
+    nume: 'A34 coborârea, ieșirea și direcția pe alte feluri (ușa judecă schema, ALEGERE din antetul oracolului)',
+    doc: docV18(dreptunghi(), [opV18({ coborare: { fel: 'elice', unghi: 3, raza: 3 }, retragereCompleta: 4, directie: 'invers' })]),
+  },
+  {
+    nume: 'A35 imbricarea la 200 de niveluri, într-un câmp necunoscut al coborârii (ADR 0024, precizarea 5)',
+    // documentul 1, piese 2, piesa 3, operatii 4, operația 5, coborarea 6, `x` 7 … 200: 194 de obiecte.
+    doc: docV18(dreptunghi(), [buzunar({ coborare: { fel: 'plonjare', x: imbricat(194) } })]),
+  },
+  {
+    nume: 'A36 toate felurile într-un document, pe două piese și două instanțe',
+    doc: {
+      schema: 18, rev: 12, autor: 'atelier',
+      piese: [
+        {
+          id: 'cutie', nume: 'Cutie',
+          radacina: { tip: 'grup', id: 'g', matrice: I(), copii: [
+            { tip: 'element', id: 'fund', forma: dreptunghi(200, 120), matrice: I() },
+            { tip: 'element', id: 'gaura', forma: cerc(3), matrice: { a: 1, b: 0, c: 0, d: 1, e: 20, f: 20 } },
+            { tip: 'element', id: 'logo', forma: dreptunghi(40, 20), matrice: { a: 1, b: 0, c: 0, d: 1, e: 80, f: 50 } },
+          ] },
+          operatii: [
+            buzunar({ id: 'b', noduri: ['fund'], adancime: 5, coborare: { fel: 'elice', unghi: 2, raza: 4 }, rest: [rest1(2, 3, 1.2)], strategie: { fel: 'paralel', unghi: 15 } }),
+            gaurire({ id: 'gaura', noduri: ['gaura'], retragereCompleta: 2 }),
+            vcarve({ id: 'v', noduri: ['logo'], scula: inV(4, 6, 60, 0.2), fundPlat: fund({ scula: plata(5, 3.175), rest: [rest1(6, 1, 0.4)] }) }),
+            opV18({ id: 'contur', noduri: ['fund'], latura: 'exterior', scula: plata(7, 6), urechi: { numar: 4, latime: 8, grosime: 2 } }),
+          ],
+        },
+        { id: 'semn', radacina: { tip: 'element', id: 's', forma: linie(), matrice: I() }, operatii: [opV18({ id: 'l', noduri: ['s'], latura: 'pe-linie', adancime: 1, pas: 1, scula: inV(8, 6, 90), directie: 'scurt' })] },
+      ],
+      foi: [{ id: 'f1', stoc: { latime: 600, inaltime: 400, grosime: 18 }, instante: [{ id: 'c1', piesa: 'cutie', x: 20, y: 20, rotire: 0 }, { id: 's1', piesa: 'semn', x: 300, y: 300, rotire: 90 }] }],
+    },
+  },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documente vechi și ce iese din ușă (v18).
+
+/** Operația pe care o pune migrarea v2 → v3 (ADR 0025), cu câmpurile v4 … v8 (ADR 0027–0032): sens, apoi patru `null`. */
+const opMigrata = (id: string, latura: 'interior' | 'exterior', adancime: number, pas: number): Liber => ({
+  id, tip: 'profil', noduri: [id], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura, adancime, pas,
+  sens: 'urcare', urechi: null, rampa: null, intrari: null, colturi: null,
+});
+
+const V10_PROFIL = docV18(dreptunghi(), [opV18({ latura: 'exterior', despartire: false })], 10);
+const V11_BUZUNAR = docV18(dreptunghi(), [buzunar()], 11);
+const V12_ELICE = docV18(dreptunghi(), [buzunar({ coborare: { fel: 'elice', unghi: 3, raza: 3 } })], 12);
+const V13_GAURA = docV18(cerc(3), [gaurire({ retragereCompleta: 3 })], 13);
+const V14_VCARVE = docV18(dreptunghi(12, 6), [vcarve()], 14);
+const V15_FUND = docV18(dreptunghi(40, 20), [vcarve({ fundPlat: fund({ scula: plata(3, 3), pasLateral: 1.2 }) })], 15);
+const V16_GRAVARE = docV18(linie(), [opV18({ latura: 'pe-linie', adancime: 1, pas: 1, scula: inV(2, 3.175, 30, 0.25), directie: 'invers' })], 16);
+const V17_REST = docV18(dreptunghi(80, 40), [buzunar({ scula: plata(1, 12), adancime: 10, pas: 5, pasLateral: 4.8, rest: [rest1(2, 3, 1.2)] })], 17);
+
+export const MIGRARI_V18_HARTIE: ReadonlyArray<{ readonly nume: string; readonly vechi: Liber; readonly v18: Liber }> = [
+  {
+    nume: 'M01 un v1 (un cerc și un dreptunghi cu nume) urcă la v18: piese, instanțe, operațiile implicite, apoi doar numărul',
+    vechi: {
+      schema: 1, rev: 4, foaie: { latime: 500, inaltime: 300, grosime: 18 },
+      elemente: [
+        { id: 'g', forma: cerc(10), matrice: { a: 1, b: 0, c: 0, d: 1, e: 100, f: 50 } },
+        { id: 'r', nume: 'Raft', forma: dreptunghi(80, 40), matrice: { a: 1, b: 0, c: 0, d: 1, e: 200, f: 100 } },
+      ],
+    },
+    v18: {
+      schema: 18, rev: 4,
+      piese: [
+        { id: 'g', radacina: { tip: 'element', id: 'g', forma: { tip: 'cerc', raza: 10 }, matrice: I() }, operatii: [opMigrata('g', 'interior', 8, 4)] },
+        {
+          id: 'r', nume: 'Raft',
+          radacina: { tip: 'element', id: 'r', forma: { tip: 'dreptunghi', latime: 80, inaltime: 40, razaColt: 0 }, matrice: I() },
+          operatii: [opMigrata('r', 'exterior', 3, 3)],
+        },
+      ],
+      foi: [{
+        id: 'f1', stoc: { latime: 500, inaltime: 300, grosime: 18 },
+        instante: [{ id: 'g', piesa: 'g', x: 100, y: 50, rotire: 0 }, { id: 'r', piesa: 'r', x: 200, y: 100, rotire: 0 }],
+      }],
+    },
+  },
+  {
+    nume: 'M02 un v3 cu o operație proprie (T2 Ø3, 5 / 2,5) urcă la v18: sens urcare, urechi, rampă, intrări, colțuri null',
+    vechi: {
+      schema: 3, rev: 1,
+      piese: [{ id: 'p', radacina: { tip: 'element', id: 'e', forma: cerc(20), matrice: I() }, operatii: [
+        { id: 'o', tip: 'profil', noduri: ['e'], scula: { numar: 2, nume: 'freza 3', diametru: 3 }, latura: 'interior', adancime: 5, pas: 2.5, nota: 'x' },
+      ] }],
+      foi: [{ id: 'f1', stoc: { latime: 400, inaltime: 300, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 50, y: 50, rotire: 0 }] }],
+    },
+    v18: {
+      schema: 18, rev: 1,
+      piese: [{ id: 'p', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 20 }, matrice: I() }, operatii: [{
+        id: 'o', tip: 'profil', noduri: ['e'], scula: { numar: 2, nume: 'freza 3', diametru: 3 }, latura: 'interior', adancime: 5, pas: 2.5, nota: 'x',
+        sens: 'urcare', urechi: null, rampa: null, intrari: null, colturi: null,
+      }] }],
+      foi: [{ id: 'f1', stoc: { latime: 400, inaltime: 300, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 50, y: 50, rotire: 0 }] }],
+    },
+  },
+  {
+    nume: 'M03 un v10 (profil exterior, despartire false) urcă la v18 cu doar numărul (ADR 0069 §2)',
+    vechi: V10_PROFIL,
+    v18: {
+      schema: 18, rev: 0,
+      piese: [{ id: 'p', radacina: { tip: 'element', id: 'e', forma: { tip: 'dreptunghi', latime: 100, inaltime: 60, razaColt: 0 }, matrice: I() }, operatii: [{
+        id: 'o1', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: 'freza plata', diametru: 6 }, latura: 'exterior', adancime: 6, pas: 3,
+        sens: 'urcare', urechi: null, rampa: null, intrari: null, colturi: null, despartire: false,
+      }] }],
+      foi: [{ id: 'f1', stoc: { latime: 400, inaltime: 300, grosime: 18 }, instante: [{ id: 'i0', piesa: 'p', x: 50, y: 50, rotire: 0 }] }],
+    },
+  },
+  { nume: 'M04 un v11 cu un buzunar: doar numărul (ADR 0076 §7)', vechi: V11_BUZUNAR, v18: cuSchema(V11_BUZUNAR, 18) },
+  { nume: 'M05 un v12 cu elicea: doar numărul (ADR 0087 §6)', vechi: V12_ELICE, v18: cuSchema(V12_ELICE, 18) },
+  { nume: 'M06 un v13 cu o găurire ieșind la al treilea pas: doar numărul (ADR 0090 §5)', vechi: V13_GAURA, v18: cuSchema(V13_GAURA, 18) },
+  { nume: 'M07 un v14 cu V-carve-ul V90: doar numărul (ADR 0091 §1)', vechi: V14_VCARVE, v18: cuSchema(V14_VCARVE, 18) },
+  { nume: 'M08 un v15 cu fundul plat: doar numărul (ADR 0092 §1)', vechi: V15_FUND, v18: cuSchema(V15_FUND, 18) },
+  { nume: 'M09 un v16 cu freza de gravare și direcția: doar numărul (ADR 0093 §1)', vechi: V16_GRAVARE, v18: cuSchema(V16_GRAVARE, 18) },
+  { nume: 'M10 un v17 cu frezele de rest: doar numărul (ADR 0094 §1)', vechi: V17_REST, v18: cuSchema(V17_REST, 18) },
+];
+
+/** Un document marcat N, valid pentru vN, și ce iese din ușă: fiecare versiune cu ce avea deja (pentru ușile v11 … v17). */
+export const VECHI_NOI: ReadonlyArray<{ readonly versiune: number; readonly doc: Liber }> = [
+  { versiune: 10, doc: V10_PROFIL }, { versiune: 11, doc: V11_BUZUNAR }, { versiune: 12, doc: V12_ELICE }, { versiune: 13, doc: V13_GAURA },
+  { versiune: 14, doc: V14_VCARVE }, { versiune: 15, doc: V15_FUND }, { versiune: 16, doc: V16_GRAVARE }, { versiune: 17, doc: V17_REST },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Câmpurile noi în afara locului lor: câmpuri necunoscute, primite (și păstrate).
+
+/** Documentul dat, cu câmpul `camp: valoare` pus pe piesa lui (nu pe operație). */
+const cuPePiesa = (d: Liber, camp: string, valoare: unknown): Liber => {
+  const c = structuredClone(d);
+  ((c['piese'] as Liber[])[0] as Liber)[camp] = valoare;
+  return c;
+};
+const N01 = docV18(dreptunghi(), [opV18({ scula: { ...plata(1, 6), pasLateral: 2 } })], 10);
+const N02 = cuPePiesa(docV18(dreptunghi(), [buzunar()], 11), 'coborare', { fel: 'rampa', unghi: 3 });
+const N03 = docV18(cerc(3), [buzunar({ scula: { ...plata(1, 6), retragereCompleta: 2 } })], 12);
+const N04 = docV18(dreptunghi(), [opV18({ forma: { tip: 'v', unghi: 90 } })], 13);
+const N05 = docV18(dreptunghi(), [vcarve({ scula: { ...inV(2, 6, 90), fundPlat: fund() } })], 14);
+const N06 = docV18(dreptunghi(), [vcarve({ scula: { ...inV(2, 6, 90), varf: 0.5 }, fundPlat: fund({ directie: 'invers' }) })], 15);
+const N07 = docV18(dreptunghi(), [buzunar({ scula: { ...plata(1, 6), rest: [rest1(2, 3, 1)] } })], 16);
+const N08 = docV18(dreptunghi(), [vcarve({ scula: { ...inV(2, 6, 90), strategie: 1 }, fundPlat: fund({ strategie: { fel: 'paralel', unghi: 0 } }) })], 17);
+const foaieV3 = (): Liber => ({ id: 'f1', stoc: { latime: 400, inaltime: 300, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 50, y: 50, rotire: 0 }] });
+
+export const NECIOCNIRI_V18: ReadonlyArray<CazV18 & { readonly v18: Liber }> = [
+  { nume: 'N01 un v10 cu `pasLateral` pe sculă (ciocnirea e doar pe operație)', doc: N01, v18: cuSchema(N01, 18) },
+  { nume: 'N02 un v11 cu `coborare` pe piesă', doc: N02, v18: cuSchema(N02, 18) },
+  { nume: 'N03 un v12 cu `retragereCompleta` pe sculă', doc: N03, v18: cuSchema(N03, 18) },
+  { nume: 'N04 un v13 cu `forma` pe operație (nu pe sculă)', doc: N04, v18: cuSchema(N04, 18) },
+  { nume: 'N05 un v14 cu `fundPlat` pe sculă', doc: N05, v18: cuSchema(N05, 18) },
+  { nume: 'N06 un v15 cu `varf` pe sculă, în afara formei, și `directie` pe fundul plat', doc: N06, v18: cuSchema(N06, 18) },
+  { nume: 'N07 un v16 cu `rest` pe sculă', doc: N07, v18: cuSchema(N07, 18) },
+  { nume: 'N08 un v17 cu `strategie` pe fundul plat și pe sculă', doc: N08, v18: cuSchema(N08, 18) },
+  {
+    nume: 'N09 un v3 cu `pasLateral` pe nod (urcă la v18 cu el pe nod)',
+    doc: {
+      schema: 3, rev: 0,
+      piese: [{ id: 'p', radacina: { tip: 'element', id: 'e', forma: cerc(20), matrice: I(), pasLateral: 3 }, operatii: [
+        { id: 'o', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: 'f', diametru: 6 }, latura: 'interior', adancime: 5, pas: 5 },
+      ] }],
+      foi: [foaieV3()],
+    },
+    v18: {
+      schema: 18, rev: 0,
+      piese: [{ id: 'p', radacina: { tip: 'element', id: 'e', forma: { tip: 'cerc', raza: 20 }, matrice: I(), pasLateral: 3 }, operatii: [{
+        id: 'o', tip: 'profil', noduri: ['e'], scula: { numar: 1, nume: 'f', diametru: 6 }, latura: 'interior', adancime: 5, pas: 5,
+        sens: 'urcare', urechi: null, rampa: null, intrari: null, colturi: null,
+      }] }],
+      foi: [foaieV3()],
+    },
+  },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Frontierele: fiecare câmp nou, pe operația unui document v18 altfel valid; `cale` e relativă la operație.
+
+export type FrontieraV18 = {
+  /** Calea câmpului pe operație, cu `.` (indicii listelor ca numere). */
+  readonly cale: string;
+  /** Operația pe care se pune valoarea (documentul: `docV18(forma, [operatie])`). */
+  readonly operatie: Liber;
+  readonly forma: Liber;
+  /** Categoria oracolului când valoarea e refuzată. */
+  readonly categorie: string;
+  readonly adr: string;
+  /** Valoarea (sau `LIPSA`) și verdictul de pe hârtie: `true` = primit. */
+  readonly valori: ReadonlyArray<readonly [unknown, boolean]>;
+  /** Valori pe care ADR-ul nu le hotărăște (AMBIGUU): verdictul ALEGERII oracolului și de ce; aplicația doar se raportează. */
+  readonly ambigue?: ReadonlyArray<readonly [unknown, boolean, string]>;
+};
+
+const NUMERE_RELE: ReadonlyArray<readonly [unknown, boolean]> = [[Number.POSITIVE_INFINITY, false], [Number.NaN, false], [null, false], [true, false]];
+const D = dreptunghi();
+
+export const FRONTIERE_V18: readonly FrontieraV18[] = [
+  {
+    cale: 'tip', operatie: opV18(), forma: D, categorie: 'operatie', adr: 'ADR 0069 §1, ADR 0087 §6, ADR 0090 §5: profil, buzunar, gaurire, vcarve',
+    valori: [['profil', true], ['buzunar', true], ['gaurire', true], ['vcarve', true], ['Buzunar', false], ['pocket', false], ['gaurire ', false], ['', false], [LIPSA, false], [null, false], [11, false]],
+  },
+  {
+    cale: 'pasLateral', operatie: buzunar(), forma: D, categorie: 'pas-lateral', adr: 'ADR 0069 §1: în (0, 50]; lipsa e a lucrării',
+    valori: [[0, false], [-0, false], [-1, false], [1e-9, true], [2.4, true], [50, true], [50.000001, false], ['2.4', false], [LIPSA, true], ...NUMERE_RELE],
+  },
+  {
+    cale: 'coborare', operatie: buzunar(), forma: D, categorie: 'coborare', adr: 'ADR 0076 §1: un obiect cu felul; lipsa = plonjarea',
+    valori: [[LIPSA, true], [{ fel: 'plonjare' }, true], [null, false], [[], false], ['rampa', false], [3, false], [{}, false]],
+  },
+  {
+    cale: 'coborare.fel', operatie: buzunar({ coborare: { fel: 'elice', unghi: 3, lungime: 20, raza: 3 } }), forma: D, categorie: 'coborare',
+    adr: 'ADR 0076 §1: plonjare, rampa, zigzag, elice (parametrii tuturor sunt în obiect)',
+    valori: [['plonjare', true], ['rampa', true], ['zigzag', true], ['elice', true], ['Rampa', false], ['rampa ', false], ['spirala', false], ['', false], [LIPSA, false], [null, false]],
+  },
+  {
+    cale: 'coborare.unghi', operatie: buzunar({ coborare: { fel: 'rampa', unghi: 3 } }), forma: D, categorie: 'coborare',
+    adr: 'ADR 0076 §1: unghiul în (0, 45], obligatoriu pe rampă',
+    valori: [[0, false], [1e-6, true], [0.3, true], [3, true], [45, true], [45.000001, false], [90, false], [-3, false], ['3', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'coborare.unghi', operatie: buzunar({ coborare: { fel: 'elice', unghi: 3, raza: 3 } }), forma: D, categorie: 'coborare',
+    adr: 'ADR 0076 §1: unghiul în (0, 45], obligatoriu pe elice',
+    valori: [[45, true], [45.5, false], [0, false], [LIPSA, false]],
+  },
+  {
+    cale: 'coborare.lungime', operatie: buzunar({ coborare: { fel: 'zigzag', unghi: 3, lungime: 20 } }), forma: D, categorie: 'coborare',
+    adr: 'ADR 0076 §1: lungimea pozitivă, sub plafon (ALEGERE: 10 000 mm), obligatorie pe zigzag',
+    valori: [[0, false], [-20, false], [0.5, true], [20, true], [10_000, true], [10_000.001, false], ['20', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'coborare.raza', operatie: buzunar({ coborare: { fel: 'elice', unghi: 3, raza: 3 } }), forma: D, categorie: 'coborare',
+    adr: 'ADR 0076 §1: raza pozitivă, sub plafon (ALEGERE: 10 000 mm), obligatorie pe elice',
+    valori: [[0, false], [-3, false], [0.2, true], [3, true], [100, true], [10_000.5, false], ['3', false], [LIPSA, false], ...NUMERE_RELE],
+    ambigue: [
+      [101, true, 'ADR 0076 §1 nu numește plafonul razei; ALEGERE: PLAFON.latura (10 000 mm), ca razele din ADR 0024'],
+      [10_000, true, 'ADR 0076 §1 nu numește plafonul razei; ALEGERE: PLAFON.latura (10 000 mm), ca razele din ADR 0024'],
+    ],
+  },
+  {
+    cale: 'retragereCompleta', operatie: gaurire(), forma: cerc(3), categorie: 'retragere', adr: 'ADR 0087 §1, §6: un întreg 1–100; lipsa = 1',
+    valori: [[LIPSA, true], [1, true], [3, true], [100, true], [0, false], [101, false], [2.5, false], [-1, false], ['3', false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'scula.forma', operatie: vcarve(), forma: D, categorie: 'scula', adr: 'ADR 0090 §1: { tip: \'v\', unghi }; lipsa = plată',
+    valori: [[LIPSA, true], [{ tip: 'v', unghi: 60 }, true], [null, false], ['v', false], [[], false], [{}, false], [{ tip: 'plata' }, false]],
+  },
+  {
+    cale: 'scula.forma.tip', operatie: vcarve(), forma: D, categorie: 'scula', adr: 'ADR 0090 §5: `tip: \'v\'`',
+    valori: [['v', true], ['V', false], ['plata', false], ['', false], [LIPSA, false], [null, false]],
+  },
+  {
+    cale: 'scula.forma.unghi', operatie: vcarve(), forma: D, categorie: 'scula', adr: 'ADR 0090 §1, §5: unghiul finit în [1, 179]',
+    valori: [[1, true], [0.999, false], [60, true], [179, true], [179.001, false], [180, false], [0, false], ['60', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'scula.forma.varf', operatie: vcarve(), forma: D, categorie: 'scula', adr: 'ADR 0092 §1: în (0, 100]; lipsa = ascuțit',
+    valori: [[LIPSA, true], [0.25, true], [100, true], [0, false], [-0.1, false], [100.001, false], ['0.25', false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'fundPlat', operatie: vcarve(), forma: D, categorie: 'fund-plat', adr: 'ADR 0091 §1: { scula, pasLateral }; lipsa = ca v14',
+    valori: [[LIPSA, true], [fund(), true], [null, false], [[], false], [{}, false], ['da', false], [{ pasLateral: 1.2 }, false]],
+  },
+  {
+    cale: 'fundPlat.pasLateral', operatie: vcarve({ fundPlat: fund() }), forma: D, categorie: 'fund-plat', adr: 'ADR 0091 §1: pozitiv, cel mult 50',
+    valori: [[1.2, true], [50, true], [0, false], [50.001, false], [-1, false], ['1.2', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'fundPlat.scula.numar', operatie: vcarve({ fundPlat: fund() }), forma: D, categorie: 'fund-plat', adr: 'ADR 0091 §1 (ADR 0025): întreg 1–999',
+    valori: [[1, true], [999, true], [0, false], [1000, false], [2.5, false], ['3', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'fundPlat.scula.nume', operatie: vcarve({ fundPlat: fund() }), forma: D, categorie: 'fund-plat', adr: 'ADR 0025: text de cel mult 200 de caractere',
+    valori: [['', true], ['x'.repeat(200), true], ['x'.repeat(201), false], [7, false], [null, false], [LIPSA, false]],
+  },
+  {
+    cale: 'fundPlat.scula.diametru', operatie: vcarve({ fundPlat: fund() }), forma: D, categorie: 'fund-plat', adr: 'ADR 0091 §1 (ADR 0025): în (0, 100]',
+    valori: [[3.175, true], [100, true], [0, false], [100.001, false], [-3, false], ['3', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'fundPlat.scula', operatie: vcarve({ fundPlat: fund() }), forma: D, categorie: 'fund-plat', adr: 'ADR 0091 §1: scula e obligatorie',
+    valori: [[plata(3, 2), true], [LIPSA, false], [null, false], ['T3', false], [[], false]],
+  },
+  {
+    cale: 'fundPlat.scula.forma.unghi', operatie: vcarve({ fundPlat: fund({ scula: inV(3, 3.175, 90) }) }), forma: D, categorie: 'fund-plat',
+    adr: 'ADR 0091 §1, ADR 0092 §1: forma frezei fundului, judecată ca a operației (lucrarea o refuză)',
+    valori: [[90, true], [1, true], [0, false], [180, false], [LIPSA, false]],
+  },
+  {
+    cale: 'fundPlat.scula.forma.varf', operatie: vcarve({ fundPlat: fund({ scula: inV(3, 3.175, 90) }) }), forma: D, categorie: 'fund-plat',
+    adr: 'ADR 0092 §1: vârful și pe scula fundului plat, în (0, 100]',
+    valori: [[LIPSA, true], [0.5, true], [0, false], [101, false]],
+  },
+  {
+    cale: 'directie', operatie: opV18({ latura: 'pe-linie' }), forma: linie(), categorie: 'directie', adr: 'ADR 0092 §1: invers sau scurt; lipsa = ca desenul',
+    valori: [[LIPSA, true], ['invers', true], ['scurt', true], ['Invers', false], ['desen', false], ['', false], [null, false], [1, false]],
+  },
+  {
+    cale: 'rest', operatie: buzunar({ scula: plata(1, 12) }), forma: D, categorie: 'rest', adr: 'ADR 0093 §1: 1–8 freze',
+    valori: [
+      [LIPSA, true], [[rest1(2, 3, 1.2)], true], [[1, 2, 3, 4, 5, 6, 7, 8].map((k) => rest1(k + 1, 9 - k, 1)), true],
+      [[], false], [[1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => rest1(k + 1, 10 - k, 1)), false], [null, false], [{}, false], [rest1(2, 3, 1.2), false],
+    ],
+  },
+  {
+    cale: 'rest.0', operatie: buzunar({ scula: plata(1, 12), rest: [rest1(2, 3, 1.2)] }), forma: D, categorie: 'rest', adr: 'ADR 0093 §1: fiecare freză e { scula, pasLateral }',
+    valori: [[rest1(2, 6, 2), true], [null, false], ['T2', false], [[], false], [{ pasLateral: 1.2 }, false]],
+  },
+  {
+    cale: 'rest.0.pasLateral', operatie: buzunar({ scula: plata(1, 12), rest: [rest1(2, 3, 1.2)] }), forma: D, categorie: 'rest', adr: 'ADR 0093 §1: în (0, 50]',
+    valori: [[1.2, true], [50, true], [0, false], [50.5, false], ['1.2', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+  {
+    cale: 'rest.0.scula.diametru', operatie: buzunar({ scula: plata(1, 12), rest: [rest1(2, 3, 1.2)] }), forma: D, categorie: 'rest', adr: 'ADR 0093 §1 (ADR 0025): în (0, 100]',
+    valori: [[3, true], [100, true], [0, false], [100.5, false], [LIPSA, false]],
+  },
+  {
+    cale: 'rest.0.scula.numar', operatie: buzunar({ scula: plata(1, 12), rest: [rest1(2, 3, 1.2)] }), forma: D, categorie: 'rest', adr: 'ADR 0093 §1 (ADR 0025): întreg 1–999',
+    valori: [[2, true], [0, false], [1.5, false], [LIPSA, false]],
+  },
+  {
+    cale: 'rest.0.scula.forma.unghi', operatie: buzunar({ scula: plata(1, 12), rest: [{ scula: inV(2, 3, 90), pasLateral: 1 }] }), forma: D, categorie: 'rest',
+    adr: 'ADR 0093 §1: scula ca a operației, deci și forma ei (lucrarea o refuză)',
+    valori: [[90, true], [0, false]],
+  },
+  {
+    cale: 'fundPlat.rest', operatie: vcarve({ fundPlat: fund({ scula: plata(3, 6) }) }), forma: D, categorie: 'fund-plat', adr: 'ADR 0093 §1: `fundPlat.rest`, 1–8 freze',
+    valori: [[LIPSA, true], [[rest1(4, 2, 0.8)], true], [[], false], [null, false], [[{ scula: plata(4, 2) }], false], [[{ ...rest1(4, 2, 0.8), pasLateral: 0 }], false]],
+  },
+  {
+    cale: 'strategie', operatie: buzunar(), forma: D, categorie: 'strategie', adr: 'ADR 0094 §1: { fel: \'paralel\', unghi }; lipsa = inelele',
+    valori: [[LIPSA, true], [{ fel: 'paralel', unghi: 30 }, true], [null, false], [[], false], ['paralel', false], [{}, false]],
+  },
+  {
+    cale: 'strategie.fel', operatie: buzunar({ strategie: { fel: 'paralel', unghi: 30 } }), forma: D, categorie: 'strategie', adr: 'ADR 0094 §1: `paralel`',
+    valori: [['paralel', true], ['inele', false], ['Paralel', false], ['', false], [LIPSA, false], [null, false]],
+  },
+  {
+    cale: 'strategie.unghi', operatie: buzunar({ strategie: { fel: 'paralel', unghi: 30 } }), forma: D, categorie: 'strategie', adr: 'ADR 0094 §1: în [0, 180)',
+    valori: [[0, true], [-0, true], [30, true], [179.999, true], [180, false], [-1e-9, false], [-1, false], [360, false], ['30', false], [LIPSA, false], ...NUMERE_RELE],
+  },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Ce nu hotărăște textul (AMBIGUU): verdictul ALEGERII oracolului; aplicația doar se raportează, fără judecată.
+
+export const AMBIGUE_V18: ReadonlyArray<CazV18 & { readonly alegere: boolean; readonly adr: string }> = [
+  {
+    nume: 'Z01 elicea de rază 10 000 mm', doc: docV18(dreptunghi(), [buzunar({ coborare: { fel: 'elice', unghi: 3, raza: 10_000 } })]), alegere: true,
+    adr: 'ADR 0076 §1: „lungimea și raza pozitive, sub plafoanele lor”, fără plafon numit; ALEGERE: PLAFON.latura (razele ≤ 10 000, ADR 0024)',
+  },
+  {
+    nume: 'Z02 elicea de rază 101 mm', doc: docV18(dreptunghi(), [buzunar({ coborare: { fel: 'elice', unghi: 3, raza: 101 } })]), alegere: true,
+    adr: 'ADR 0076 §1: plafonul razei nenumit (ca Z01)',
+  },
+  {
+    nume: 'Z03 o rampă cu `raza: -1` (parametrul altui fel)', doc: docV18(dreptunghi(), [buzunar({ coborare: { fel: 'rampa', unghi: 3, raza: -1 } })]), alegere: true,
+    adr: 'ADR 0076 §1, §5: fiecare fel are parametrii lui, iar „valorile tuturor felurilor rămân scrise”; ALEGERE: ai altui fel sunt câmpuri necunoscute',
+  },
+  {
+    nume: 'Z04 un zigzag cu `raza: 0`', doc: docV18(dreptunghi(), [buzunar({ coborare: { fel: 'zigzag', unghi: 3, lungime: 20, raza: 0 } })]), alegere: true,
+    adr: 'ADR 0076 §1, §5: ca Z03',
+  },
+  {
+    nume: 'Z05 o plonjare cu `unghi: 90`', doc: docV18(dreptunghi(), [buzunar({ coborare: { fel: 'plonjare', unghi: 90 } })]), alegere: true,
+    adr: 'ADR 0076 §1: plonjarea n-are parametri; ALEGERE: unghiul de pe ea e un câmp necunoscut',
+  },
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documente stricate: un singur defect fiecare.
+
+export type RefuzV18 = {
+  readonly nume: string;
+  readonly doc: unknown;
+  /** Categoria oracolului. */
+  readonly categorie: string;
+  /** Calea câmpului, ca în motivul ușii (`piese.0.operatii.0.pasLateral`); `''` = documentul întreg. */
+  readonly camp: string;
+  /** De ce, cu paragraful ADR-ului. */
+  readonly motiv: string;
+  /** Textul refuzului, unde ADR-ul îl citează. */
+  readonly text?: string;
+};
+
+const opC = 'piese.0.operatii.0';
+const docV = (schema: number, op: Liber, forma: Liber = dreptunghi()): Liber => docV18(forma, [op], schema);
+/** Un v4 (sens, fără urechi) cu operația dată. */
+const docV4 = (v: Liber): Liber => {
+  const o = opV18(v);
+  for (const c of ['urechi', 'rampa', 'intrari', 'colturi']) delete o[c];
+  return docV18(dreptunghi(), [o], 4);
+};
+const faraSchema = (d: Liber): Liber => {
+  const c = structuredClone(d);
+  delete c['schema'];
+  return c;
+};
+/** Un v7 (fără colțuri) cu operația dată. */
+const docV7 = (v: Liber): Liber => {
+  const o = opV18(v);
+  delete o['colturi'];
+  return docV18(dreptunghi(), [o], 7);
+};
+
+export const REFUZATE_V18: readonly RefuzV18[] = [
+  // Versiunea.
+  { nume: 'R01 scris de o versiune mai nouă (v19)', doc: docV(19, buzunar()), categorie: 'schema', camp: 'schema', motiv: 'ADR 0069 §2, ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  { nume: 'R02 versiunea 18.5', doc: docV(18.5, buzunar()), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune întreagă' },
+  { nume: 'R03 versiunea „18” (text)', doc: { ...docV(18, buzunar()), schema: '18' }, categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune întreagă' },
+  { nume: 'R04 versiunea 0', doc: docV(0, buzunar()), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: versiunile încep de la 1' },
+  { nume: 'R05 fără versiune', doc: faraSchema(docV(18, buzunar())), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: fără versiune' },
+  { nume: 'R06 documentul e o listă', doc: [docV(18, buzunar())], categorie: 'schema', camp: '', motiv: 'ADR 0070 §2: stricat' },
+  // Câmpurile v18, câte unul.
+  { nume: 'R10 buzunarul cu pasul 0', doc: docV(18, buzunar({ pasLateral: 0 })), categorie: 'pas-lateral', camp: `${opC}.pasLateral`, motiv: 'ADR 0069 §1: în (0, 50]' },
+  { nume: 'R11 buzunarul cu pasul 60', doc: docV(18, buzunar({ pasLateral: 60 })), categorie: 'pas-lateral', camp: `${opC}.pasLateral`, motiv: 'ADR 0069 §1: în (0, 50]' },
+  { nume: 'R12 felul „pocket”', doc: docV(18, opV18({ tip: 'pocket' })), categorie: 'operatie', camp: `${opC}.tip`, motiv: 'ADR 0069 §1, 0087 §6, 0090 §5: patru feluri' },
+  { nume: 'R13 coborârea null', doc: docV(18, buzunar({ coborare: null })), categorie: 'coborare', camp: `${opC}.coborare`, motiv: 'ADR 0076 §1: un obiect; lipsa e plonjarea' },
+  { nume: 'R14 rampa fără unghi', doc: docV(18, buzunar({ coborare: { fel: 'rampa' } })), categorie: 'coborare', camp: `${opC}.coborare`, motiv: 'ADR 0076 §1: rampa are unghiul' },
+  { nume: 'R15 rampa cu 60°', doc: docV(18, buzunar({ coborare: { fel: 'rampa', unghi: 60 } })), categorie: 'coborare', camp: `${opC}.coborare`, motiv: 'ADR 0076 §1: unghiul în (0, 45]' },
+  { nume: 'R16 zigzagul fără lungime', doc: docV(18, buzunar({ coborare: { fel: 'zigzag', unghi: 3 } })), categorie: 'coborare', camp: `${opC}.coborare`, motiv: 'ADR 0076 §1: zigzagul are lungimea' },
+  { nume: 'R17 elicea cu raza 0', doc: docV(18, buzunar({ coborare: { fel: 'elice', unghi: 3, raza: 0 } })), categorie: 'coborare', camp: `${opC}.coborare`, motiv: 'ADR 0076 §1: raza pozitivă' },
+  { nume: 'R18 coborârea de felul „spirala”', doc: docV(18, buzunar({ coborare: { fel: 'spirala', unghi: 3 } })), categorie: 'coborare', camp: `${opC}.coborare`, motiv: 'ADR 0076 §1: patru feluri' },
+  { nume: 'R19 găurirea cu ieșirea la 0', doc: docV(18, gaurire({ retragereCompleta: 0 }), cerc(3)), categorie: 'retragere', camp: `${opC}.retragereCompleta`, motiv: 'ADR 0087 §6: un întreg 1–100' },
+  { nume: 'R20 găurirea cu ieșirea la 2,5', doc: docV(18, gaurire({ retragereCompleta: 2.5 }), cerc(3)), categorie: 'retragere', camp: `${opC}.retragereCompleta`, motiv: 'ADR 0087 §6: un întreg' },
+  { nume: 'R21 freza în V cu 180°', doc: docV(18, vcarve({ scula: inV(2, 6, 180) })), categorie: 'scula', camp: `${opC}.scula.forma`, motiv: 'ADR 0090 §5: unghiul în [1, 179]' },
+  { nume: 'R22 forma frezei „plata”', doc: docV(18, vcarve({ scula: { ...plata(2, 6), forma: { tip: 'plata' } } })), categorie: 'scula', camp: `${opC}.scula.forma`, motiv: 'ADR 0090 §5: `tip: \'v\'`' },
+  { nume: 'R23 forma frezei null', doc: docV(18, vcarve({ scula: { ...plata(2, 6), forma: null } })), categorie: 'scula', camp: `${opC}.scula.forma`, motiv: 'ADR 0090 §1: lipsa = plată; null nu e o formă (ALEGERE)' },
+  { nume: 'R24 vârful 0', doc: docV(18, vcarve({ scula: inV(2, 6, 90, 0) })), categorie: 'scula', camp: `${opC}.scula.forma`, motiv: 'ADR 0092 §1: în (0, 100]' },
+  { nume: 'R25 fundul plat fără scula', doc: docV(18, vcarve({ fundPlat: { pasLateral: 1.2 } })), categorie: 'fund-plat', camp: `${opC}.fundPlat`, motiv: 'ADR 0091 §1: { scula, pasLateral }' },
+  { nume: 'R26 fundul plat cu pasul 51', doc: docV(18, vcarve({ fundPlat: fund({ pasLateral: 51 }) })), categorie: 'fund-plat', camp: `${opC}.fundPlat`, motiv: 'ADR 0091 §1: cel mult 50' },
+  { nume: 'R27 freza fundului cu T0', doc: docV(18, vcarve({ fundPlat: fund({ scula: plata(0, 3) }) })), categorie: 'fund-plat', camp: `${opC}.fundPlat`, motiv: 'ADR 0091 §1: numărul întreg 1–999' },
+  { nume: 'R28 freza fundului cu numele de 201 caractere', doc: docV(18, vcarve({ fundPlat: fund({ scula: { numar: 3, nume: 'x'.repeat(201), diametru: 3 } }) })), categorie: 'fund-plat', camp: `${opC}.fundPlat`, motiv: 'ADR 0025: numele, cel mult 200' },
+  { nume: 'R29 freza fundului cu Ø120', doc: docV(18, vcarve({ fundPlat: fund({ scula: plata(3, 120) }) })), categorie: 'fund-plat', camp: `${opC}.fundPlat`, motiv: 'ADR 0091 §1: diametrul în (0, 100]' },
+  { nume: 'R30 vârful 0 pe freza fundului', doc: docV(18, vcarve({ fundPlat: fund({ scula: inV(3, 3, 90, 0) }) })), categorie: 'fund-plat', camp: `${opC}.fundPlat`, motiv: 'ADR 0092 §1: în (0, 100]' },
+  { nume: 'R31 direcția „Invers”', doc: docV(18, opV18({ latura: 'pe-linie', directie: 'Invers' }), linie()), categorie: 'directie', camp: `${opC}.directie`, motiv: 'ADR 0092 §1: invers sau scurt' },
+  { nume: 'R32 o listă de rest goală', doc: docV(18, buzunar({ rest: [] })), categorie: 'rest', camp: `${opC}.rest`, motiv: 'ADR 0093 §1: 1–8 freze' },
+  { nume: 'R33 nouă freze de rest', doc: docV(18, buzunar({ scula: plata(1, 20), rest: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => rest1(k + 1, 10 - k, 1)) })), categorie: 'rest', camp: `${opC}.rest`, motiv: 'ADR 0093 §1: cel mult 8' },
+  { nume: 'R34 o freză de rest fără pas', doc: docV(18, buzunar({ rest: [{ scula: plata(2, 3) }] })), categorie: 'rest', camp: `${opC}.rest`, motiv: 'ADR 0093 §1: { scula, pasLateral }' },
+  { nume: 'R35 o freză de rest cu Ø0', doc: docV(18, buzunar({ rest: [rest1(2, 0, 1)] })), categorie: 'rest', camp: `${opC}.rest`, motiv: 'ADR 0093 §1: scula ca a operației' },
+  { nume: 'R36 fundul plat cu o listă de rest goală', doc: docV(18, vcarve({ fundPlat: fund({ rest: [] }) })), categorie: 'fund-plat', camp: `${opC}.fundPlat`, motiv: 'ADR 0093 §1: `fundPlat.rest`, 1–8 freze' },
+  { nume: 'R37 strategia „inele”', doc: docV(18, buzunar({ strategie: { fel: 'inele', unghi: 0 } })), categorie: 'strategie', camp: `${opC}.strategie`, motiv: 'ADR 0094 §1: `fel: \'paralel\'`' },
+  { nume: 'R38 strategia la 180°', doc: docV(18, buzunar({ strategie: { fel: 'paralel', unghi: 180 } })), categorie: 'strategie', camp: `${opC}.strategie`, motiv: 'ADR 0094 §1: în [0, 180)' },
+  { nume: 'R39 strategia fără unghi', doc: docV(18, buzunar({ strategie: { fel: 'paralel' } })), categorie: 'strategie', camp: `${opC}.strategie`, motiv: 'ADR 0094 §1: { fel, unghi }' },
+  {
+    nume: 'R40 imbricarea la 201 niveluri, într-un câmp necunoscut al coborârii',
+    doc: docV(18, buzunar({ coborare: { fel: 'plonjare', x: imbricat(195) } })), categorie: 'adancime', camp: '', motiv: 'ADR 0024, precizarea 5: cel mult 200 de niveluri (al documentului întreg)',
+  },
+  // Migrările: un document marcat vN cu un câmp al lui vN+1 (ciocnirea) sau cu un fel nou (schema vN).
+  { nume: 'R50 un v10 cu un buzunar (fără pas: doar felul)', doc: docV(10, opV18({ id: 'b1', tip: 'buzunar' })), categorie: 'operatie', camp: `${opC}.tip`, motiv: 'ADR 0069 §2: schema v10 n-are buzunarul', text: 'nu e un document v10 valid' },
+  { nume: 'R51 un v10 cu `pasLateral` pe un profil', doc: docV(10, opV18({ pasLateral: 2 })), categorie: 'ciocnire', camp: `${opC}.pasLateral`, motiv: 'ADR 0069 §2', text: 'nu e un document v10 valid' },
+  { nume: 'R52 un v7 cu un buzunar, fără pas (tot lanțul, ADR 0070)', doc: docV7({ id: 'b1', tip: 'buzunar' }), categorie: 'operatie', camp: `${opC}.tip`, motiv: 'ADR 0070, „Respinse”: verificarea apără tot lanțul' },
+  { nume: 'R53 un v4 cu `pasLateral` pe o operație (ciocnirea la v10 → v11)', doc: docV4({ pasLateral: 2 }), categorie: 'ciocnire', camp: `${opC}.pasLateral`, motiv: 'ADR 0069 §2, ADR 0070: tot lanțul' },
+  { nume: 'R54 un v11 cu coborârea', doc: docV(11, buzunar({ coborare: { fel: 'rampa', unghi: 3 } })), categorie: 'ciocnire', camp: `${opC}.coborare`, motiv: 'ADR 0076 §7', text: 'nu e un document v11 valid' },
+  { nume: 'R55 un v10 cu coborârea (ciocnirea la v11 → v12)', doc: docV(10, opV18({ coborare: { fel: 'plonjare' } })), categorie: 'ciocnire', camp: `${opC}.coborare`, motiv: 'ADR 0076 §7, ADR 0070: tot lanțul' },
+  { nume: 'R56 un v12 cu o găurire', doc: docV(12, gaurire(), cerc(3)), categorie: 'operatie', camp: `${opC}.tip`, motiv: 'ADR 0087 §6: schema v12 n-are găurirea', text: 'nu e un document v12 valid' },
+  { nume: 'R57 un v12 cu ieșirea la al doilea pas', doc: docV(12, buzunar({ retragereCompleta: 2 })), categorie: 'ciocnire', camp: `${opC}.retragereCompleta`, motiv: 'ADR 0087 §6', text: 'nu e un document v12 valid' },
+  { nume: 'R58 un v13 cu un V-carve', doc: docV(13, vcarve({ scula: plata(2, 6) })), categorie: 'operatie', camp: `${opC}.tip`, motiv: 'ADR 0090 §5: schema v13 n-are V-carve-ul', text: 'nu e un document v13 valid' },
+  { nume: 'R59 un v13 cu forma frezei', doc: docV(13, opV18({ latura: 'pe-linie', scula: inV(2, 6, 90) }), linie()), categorie: 'ciocnire', camp: `${opC}.scula.forma`, motiv: 'ADR 0090 §5', text: 'nu e un document v13 valid' },
+  { nume: 'R60 un v3 cu forma frezei (ciocnirea la v13 → v14)', doc: {
+    schema: 3, rev: 0,
+    piese: [{ id: 'p', radacina: { tip: 'element', id: 'e', forma: cerc(20), matrice: I() }, operatii: [
+      { id: 'o', tip: 'profil', noduri: ['e'], scula: { ...plata(1, 6), forma: { tip: 'v', unghi: 90 } }, latura: 'interior', adancime: 5, pas: 5 },
+    ] }],
+    foi: [{ id: 'f1', stoc: { latime: 400, inaltime: 300, grosime: 18 }, instante: [{ id: 'i', piesa: 'p', x: 50, y: 50, rotire: 0 }] }],
+  }, categorie: 'ciocnire', camp: `${opC}.scula.forma`, motiv: 'ADR 0090 §5, ADR 0070: tot lanțul' },
+  { nume: 'R61 un v14 cu fundul plat', doc: docV(14, vcarve({ fundPlat: fund() })), categorie: 'ciocnire', camp: `${opC}.fundPlat`, motiv: 'ADR 0091 §1', text: 'nu e un document v14 valid' },
+  { nume: 'R62 un v15 cu direcția', doc: docV(15, opV18({ latura: 'pe-linie', directie: 'invers' }), linie()), categorie: 'ciocnire', camp: `${opC}.directie`, motiv: 'ADR 0092 §1', text: 'nu e un document v15 valid' },
+  { nume: 'R63 un v15 cu vârful frezei', doc: docV(15, vcarve({ scula: inV(2, 6, 90, 0.5) })), categorie: 'ciocnire', camp: `${opC}.scula.forma.varf`, motiv: 'ADR 0092 §1', text: 'nu e un document v15 valid' },
+  { nume: 'R64 un v15 cu vârful frezei fundului plat', doc: docV(15, vcarve({ fundPlat: fund({ scula: inV(3, 3, 90, 0.5) }) })), categorie: 'ciocnire', camp: `${opC}.fundPlat.scula.forma.varf`, motiv: 'ADR 0092 §1', text: 'nu e un document v15 valid' },
+  { nume: 'R65 un v16 cu frezele de rest', doc: docV(16, buzunar({ rest: [rest1(2, 3, 1)] })), categorie: 'ciocnire', camp: `${opC}.rest`, motiv: 'ADR 0093 §1' },
+  { nume: 'R66 un v16 cu frezele de rest pe fundul plat', doc: docV(16, vcarve({ fundPlat: fund({ rest: [rest1(4, 2, 0.8)] }) })), categorie: 'ciocnire', camp: `${opC}.fundPlat.rest`, motiv: 'ADR 0093 §1' },
+  { nume: 'R67 un v17 cu strategia', doc: docV(17, buzunar({ strategie: { fel: 'paralel', unghi: 0 } })), categorie: 'ciocnire', camp: `${opC}.strategie`, motiv: 'ADR 0094 §1' },
+  { nume: 'R68 un v16 cu `rest: []` (orice valoare se ciocnește)', doc: docV(16, buzunar({ rest: [] })), categorie: 'ciocnire', camp: `${opC}.rest`, motiv: 'ADR 0093 §1: câmpul propriu, oricare ar fi valoarea' },
+  // Câmpurile unei versiuni mai noi, judecate în versiunea lor (un v14 cu fundPlat greșit e oricum o ciocnire; aici, vN cu câmpul lui vN greșit).
+  { nume: 'R70 un v11 cu pasul 0', doc: docV(11, buzunar({ pasLateral: 0 })), categorie: 'pas-lateral', camp: `${opC}.pasLateral`, motiv: 'ADR 0069 §1' },
+  { nume: 'R71 un v12 cu rampa de 50°', doc: docV(12, buzunar({ coborare: { fel: 'rampa', unghi: 50 } })), categorie: 'coborare', camp: `${opC}.coborare`, motiv: 'ADR 0076 §1' },
+  { nume: 'R72 un v13 cu ieșirea la 101', doc: docV(13, gaurire({ retragereCompleta: 101 }), cerc(3)), categorie: 'retragere', camp: `${opC}.retragereCompleta`, motiv: 'ADR 0087 §6' },
+  { nume: 'R73 un v14 cu freza în V la 0,5°', doc: docV(14, vcarve({ scula: inV(2, 6, 0.5) })), categorie: 'scula', camp: `${opC}.scula.forma`, motiv: 'ADR 0090 §5' },
+  { nume: 'R74 un v15 cu fundul plat fără pas', doc: docV(15, vcarve({ fundPlat: { scula: plata(3, 3) } })), categorie: 'fund-plat', camp: `${opC}.fundPlat`, motiv: 'ADR 0091 §1' },
+  { nume: 'R75 un v16 cu direcția „desen”', doc: docV(16, opV18({ latura: 'pe-linie', directie: 'desen' }), linie()), categorie: 'directie', camp: `${opC}.directie`, motiv: 'ADR 0092 §1' },
+  { nume: 'R76 un v17 cu nouă freze de rest', doc: docV(17, buzunar({ scula: plata(1, 20), rest: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => rest1(k + 1, 10 - k, 1)) })), categorie: 'rest', camp: `${opC}.rest`, motiv: 'ADR 0093 §1' },
+];
