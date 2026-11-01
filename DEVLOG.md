@@ -4341,3 +4341,16 @@ dacă există, mutațiile (cel puțin unitățile, axa Y, punctele din PolyPolyg
   căi); ce desenează GDI peste 0,1 mm stă pe căile ușii, la cel mult 0,081 mm, și invers.
 - **Întrebările pentru owner** (ADR 0117, cu implicitul în față): unitatea unui WMF fără antet (1/96 țol, ca LibreOffice; sau
   mm) și un WMF real din programele lui, de încercat pe test. Rândul lor, în „Ce îi trebuie owner-ului” din fișa etapei 3.
+
+## 2026-11-01 — Unirea ramurilor 5.1↑c (oracolul ușii documentului) și 26.A↑ (importul WMF) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, uneste-le. Mm nu inteleg intrebarea de la controler” (la „Unesc ambele ramuri (oracolul și WMF-ul) în `main`
+și le public pe test?”).
+**Started:** 01.11, 19:40. **Completed:** 01.11, 20:09. Două fuziuni (`0dd47d1`, oracolul; `31b8c2b`, WMF-ul), cu conflictele
+doar de adăugare (DEVLOG, jurnalul feliilor, coada owner-ului, indexul ADR, cu 0117 înaintea lui 0119, CLAUDE.md), rezolvate
+păstrând ambele părți; traducerile: 516, 0 lipsă. Porțile pe arborele unit: compilatoarele, importurile (807 module, 0
+încălcări), 8 001 teste unitare (0 căderi), build-ul determinist (222 de fișiere; pornirea 98,4, cu ușa 102,0 / 110 kB;
+totalul 437,5 / 450; /admin 102,8 / 200), licențele, e2e 292 / 292, emulatoarele (69 de probe ale funcțiilor și regulilor,
+20 e2e). Pe drum, două probe ale feliei 14.C↑b au căzut la a doua rulare, fără vină în cod: două rânduri de audit cu aceeași
+oră și lista filelor citită înaintea rolului; reparate în `1a9212a`. „Mm” nu l-am luat drept răspuns la unitatea implicită a
+unui WMF fără antet: rămâne 1/96 țol până confirmă owner-ul.

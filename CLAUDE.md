@@ -319,7 +319,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   în GDI, nu dedus. **Corpusul WMF e Python** (`test/oracles-py/wmf_import_corpus.py`, `struct`): fiecare fișier e redat
   de GDI pe „Microsoft Print to PDF” (doar pe Windows) și recitit cu PyMuPDF față de hârtie; un caz nou = înregistrările în
   generator + valorile pe hârtie, apoi `test/fixtures/wmf/` regenerat și comis (CI-ul îl regenerează fără GDI, `--fara-gdi`,
-  și cere aceiași octeți). **Pornirea 98,4 (cu ușa 101,9 / 110 kB), totalul 437,6 / 450.**
+  și cere aceiași octeți). **Pornirea 98,4 (cu ușa 102,0 / 110 kB), totalul 437,5 / 450, /admin 102,8 / 200, după unirea cu
+  14.C↑b și 5.1↑c.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
