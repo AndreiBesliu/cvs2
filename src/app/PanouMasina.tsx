@@ -30,6 +30,7 @@ import { adresaRetea, deschideRetea, esteProfilRetea, PROFIL_RETEA, PROFILURI_RE
 import { useLimba } from '../ui/useLimba.ts';
 import { contulPermite, useContTinut } from './dreptCont.ts';
 import { CardCod, ConfirmareDeblocare, cuTitlu, deblocareCuConfirmare, titluCod, useDictionarCoduri, type StareDictionar } from './PanouCod.tsx';
+import type { LucrarePrimita } from './primireLucrare.ts';
 import './masina.css';
 import { mesajeGata } from '../i18n/laCerere.ts';
 
@@ -128,14 +129,16 @@ function textProcedura(p: Procedura): string {
   return t(`masina.palpare.pas.${s.pas}` as CheieSimpla);
 }
 const numar = (text: string): number => (text.trim() === '' ? Number.NaN : Number(text.replace(',', '.')));
-const textRefuz = (r: Refuz): string => {
+const textRefuz = (r: Pick<Refuz, 'cod' | 'linie'>): string => {
   const cod = r.cod === 'fara-wcs' && r.linie !== null ? 'fara-wcs-linie' : r.cod;
   return t(`masina.refuz.${cod}` as CheieSimpla, { linie: (r.linie ?? 0) + 1 });
 };
 
-export function PanouMasina({ ultimulExport, simulare }: {
+export function PanouMasina({ ultimulExport, lucrarePrimita, simulare }: {
   /** Fișierele ultimului export: unul, sau câte unul pe freză (ADR 0084). */
   readonly ultimulExport: readonly ExportPentruMasina[] | null;
+  /** Lucrarea primită de la altă aplicație (ADR 0126): fișierele verificate, încărcate ca unele străine. */
+  readonly lucrarePrimita: LucrarePrimita | null;
   /** Mașina simulată se oferă (în afara instanței live). */
   readonly simulare: boolean;
 }): ReactNode {
@@ -155,6 +158,10 @@ export function PanouMasina({ ultimulExport, simulare }: {
   // Fișierul ales din ultimul export, când are câte unul pe freză (ADR 0084).
   const [fisierAles, setFisierAles] = useState(0);
   const exportAles = ultimulExport?.[fisierAles] ?? ultimulExport?.[0] ?? null;
+  // Fișierul ales din lucrarea primită; o lucrare nouă pornește de la primul (ordinea de tăiere).
+  const [primitAles, setPrimitAles] = useState(0);
+  const idPrimita = lucrarePrimita?.id ?? null;
+  useEffect(() => { setPrimitAles(0); }, [idPrimita]);
   const fisier = useRef<HTMLInputElement | null>(null);
   const idComanda = useRef(0);
   const dict = useDictionarCoduri();
@@ -324,6 +331,31 @@ export function PanouMasina({ ultimulExport, simulare }: {
               if (fis) void fis.arrayBuffer().then((b) => incarca(new Uint8Array(b), 'fisier', fis.name));
             }} />
         </div>
+        {lucrarePrimita && (
+          <div data-testid="masina-primita">
+            <p className="masina-nota">{t('masina.primit.titlu', { titlu: lucrarePrimita.titlu || '—', aplicatie: lucrarePrimita.de_la.aplicatie })}</p>
+            {lucrarePrimita.acceptate.length > 0 && (
+              <div className="masina-butoane">
+                <select value={primitAles} data-masina="primit-fisier" aria-label={t('masina.primit.fisier')}
+                  onChange={(e) => { setPrimitAles(Number(e.target.value)); }}>
+                  {lucrarePrimita.acceptate.map((x, k) => <option key={x.nume} value={k}>{x.nume}</option>)}
+                </select>
+                <button type="button" data-masina="primit" disabled={IN_FLUX.has(f.faza)} title={t('masina.primit.incarca.titlu')}
+                  onClick={() => { const x = lucrarePrimita.acceptate[primitAles]; if (x) void incarca(x.octeti, 'fisier', x.nume, x.sha256); }}>
+                  {t('masina.primit.incarca')}
+                </button>
+              </div>
+            )}
+            {lucrarePrimita.refuzate.length > 0 && <>
+              <p className="masina-nota">{t('masina.primit.refuzate', { n: lucrarePrimita.refuzate.length })}</p>
+              <ul className="masina-erori" data-testid="masina-primit-refuzate">
+                {lucrarePrimita.refuzate.map((x) => (
+                  <li key={x.nume} data-cod={x.cod}><strong>{x.nume}</strong>: {x.cod === 'hash' ? t('masina.refuz.hash-primit') : textRefuz(x)}</li>
+                ))}
+              </ul>
+            </>}
+          </div>
+        )}
         {refuz && <p className="masina-nota" role="alert" data-testid="masina-refuz">{refuz}</p>}
         <p className="masina-program" data-testid="masina-program">
           {f.program ? <>

@@ -366,6 +366,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/unit/post.contracte.ateliere.test.ts`:** programul lui pe hârtie, codurile documentate ale controlerului (pe hârtie,
   cu sursa), iar cititorul dialectelor (`test/unit/ajutor-dialecte.ts`) îl compară pe corpusul CAM cu GRBL 1.1. Urmează 4.6↑b
   (pachetul de atelier, T0–T7). **Pornirea 98,4 (cu ușa 101,9 / 110 kB), totalul 448,9 / 500.**
+  **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
+  `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
+  protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
+  și dialogul (`src/app/primireLucrare.ts`, `src/app/DialogLucrare.tsx`) vin la cerere. Doar fereastra care a deschis fila,
+  confirmarea omului într-un dialog modal, fiecare fișier verificat ca unul adus cu „Fișier…” (`M6` refuzat, amprenta
+  trimisă); lista „Lucrarea primită” din panoul mașinii e separată de `ultimulExport` și stă doar în memorie. **Hosting-ul
+  rămâne fără COOP** (ar tăia `window.opener`). Pe live, primirea pornește după o placă trimisă așa pe test.
+  **Pornirea 98,7 (cu ușa 102,2 / 110 kB), totalul 451,9 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -480,6 +488,27 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 02.11.2026: **Trenuleț în cvs2: extensiile se instalează, rulează izolate și folosesc senderul prin `HostApi`** (sesiunea
+  dedicată, worktree-ul `wip/trenulet`; întrebările din handoff-urile din `Apps/Trenulet/cvs2/`):
+  - „nu vreau sa fie prezent in softul vanilla, vreau sa fie instalat din link. sau dintr-un zip. pentru asta avem nevoie de
+    un sistem de plugin-uri. interfata lui cvs2 va ramane tot timpul cea vanilla si pentru utilizarea plugin-ului, trebuie
+    accesat plugin-ul printr-un buton discret sau dintr-un meniu de plugin-uri pus aici” (lângă marcă): planificatorul nu
+    intră în aplicație. Codul lui stă în repo (`extensii/trenulet/`), dar se construiește separat, ca un `.zip`, în afara
+    pachetului și a plafonului de 500 kB. Meniul Extensii stă mereu lângă marcă, discret, iar spațiul unei extensii ia locul
+    pânzei (schița, „la fel”);
+  - „cum recomanzi tu”: instalarea de la orice adresă HTTPS a unui `.zip`, descărcată direct (`connect-src https:`), plus
+    linkul `<adresa cvs2>#instaleaza=<adresa pachetului>`;
+  - „eu vreau ca softul plug-inului sa poata folosi senderul din cvs2”, apoi „Da, ca recomandat”: extensia rulează într-un
+    cadru izolat (iframe cu sandbox, fără originea aplicației: nu vede proiectele, contul sau portul) și vorbește cu cvs2
+    doar prin `HostApi`. CSP-ul primește `blob:` și amprenta scriptului cadrului în `script-src`; cadrul are un CSP propriu,
+    fără rețea. Senderul prin `HostApi`: citește starea, încarcă programe (verificările lui „Fișier…”), pornește și reia doar
+    după confirmarea omului într-o fereastră a lui cvs2, pune pauză și oprește direct; conectarea, jog-ul, zero-ul,
+    palparea, deblocarea, comenzile manuale și setările controlerului rămân în panoul mașinii;
+  - la restul, recomandările (fără obiecție): întâi primirea (3.S, ADR 0126), apoi gazda extensiilor (3.Xa) și senderul în
+    `HostApi` (3.Xb); dialogul primirii modal, la sosire; pe live după o placă trimisă așa pe test; panoul mașinii se
+    deschide singur după „Primește”; lucrarea primită stă doar în memorie; ieșirea CNC a planificatorului prin planșe cvs2;
+    contractele atelierelor luate din cvs2; Manifold (cu `'wasm-unsafe-eval'`, cerut atunci); pagina de pe claude.ai
+    rămâne, construită din repo. Repo-ul e public: sursele planificatorului se reconfirmă înaintea primului push care le aduce.
 - 02.11.2026: **plafonul total 500 kB** („Da, 500 kB”, la „Ridic plafonul total al pachetului la 500 kB?”), după propunerea
   a două worktree-uri paralele lângă etapa 4: restul textului (etapa 7) și verificarea și repararea vectorilor (etapa 10). La
   441,2 / 450 kB, cele trei linii nu încăpeau în 8,8 kB. ADR 0122, felia 3.R; pornirea rămâne 110 kB. Worktree-urile pornesc

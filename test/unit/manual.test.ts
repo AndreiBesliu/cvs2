@@ -140,11 +140,15 @@ const CONTROALE_MASINA: Readonly<Record<string, string | null>> = {
   'conecteaza-wifi': 'masina.conecteaza-wifi', 'wifi-profil': 'masina.wifi.profil', 'wifi-adresa': 'masina.wifi.adresa',
   'wifi-port': 'masina.wifi.port', 'wifi-conecteaza': 'masina.wifi.conecteaza', 'wifi-renunta': 'masina.wifi.renunta',
   'start-wifi': 'masina.wifi.porneste-oricum', 'start-wifi-renunta': 'masina.wifi.renunta',
+  // Primirea unei lucrări (ADR 0126): dialogul (`DialogLucrare.tsx`) și rândul lucrării primite.
+  'lucrare-primeste': 'masina.lucrare.primeste', 'lucrare-renunta': 'masina.lucrare.renunta', 'primit-fisier': 'masina.primit.fisier',
+  primit: 'masina.primit.incarca',
 };
 
 test('fiecare control al panoului mașinii (data-masina) e numit în capitolul „masina”, în ambele limbi', () => {
   const sursa = `${citeste('src/app/PanouMasina.tsx')}
-${citeste('src/app/PanouCod.tsx')}`;
+${citeste('src/app/PanouCod.tsx')}
+${citeste('src/app/DialogLucrare.tsx')}`;
   // Un `data-masina` calculat (`={…}`) ar ocoli proba: fiecare control își scrie numele.
   assert.doesNotMatch(sursa, /data-masina=\{/);
   const controale = [...new Set([...sursa.matchAll(/data-masina="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();

@@ -34,6 +34,8 @@ import { versiuneDin } from '../../shared/versiune.ts';
 import { listaDesen } from './desen.ts';
 import { contulPermite, useContTinut } from './dreptCont.ts';
 import type { Jurnal } from './jurnalErori.ts';
+import type { CerereLucrare } from './DialogLucrare.tsx';
+import type { LucrarePrimita } from './primireLucrare.ts';
 import { ConflictDeScriere, type DepozitProiect, type ProiectDeschis } from './proiectLocal.ts';
 
 type Props = {
@@ -103,6 +105,9 @@ const DialogExport = lazy(() => incarcaDialogExport().then((m) => ({ default: m.
 // Cipul timpului de lângă traseu (ADR 0046 §8): la cerere, ca durata și textele lui să nu stea în pornire (ADR 0042).
 const CipTimpTraseu = lazy(() => import('../ui/CipTimpTraseu.tsx').then(cuMesaje).then((m) => ({ default: m.CipTimpTraseu })));
 const DialogImport = lazy(() => incarcaDialogImport().then((m) => ({ default: m.ImportConectat }), () => ({ default: DialogNeincarcat })));
+// Primirea unei lucrări (ADR 0126): ascultarea și dialogul vin doar când fila a fost deschisă de aplicația care trimite.
+const incarcaPrimirea = () => import('./DialogLucrare.tsx').then(cuMesaje);
+const DialogLucrare = lazy(() => incarcaPrimirea().then((m) => ({ default: m.DialogLucrare }), () => ({ default: DialogNeincarcat })));
 /** Paleta de comenzi și panoul de proprietăți vin tot la cerere (prototipul B): nu intră în pachetul de pornire. */
 const incarcaPaleta = () => import('../ui/Paleta.tsx').then(cuMesaje);
 const incarcaProprietati = () => import('./PanouProprietati.tsx').then(cuMesaje);
@@ -221,6 +226,23 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // Fișierele ultimului export (unul, sau câte unul pe freză, ADR 0084), pentru panoul mașinii.
   const [ultimulExport, setUltimulExport] = useState<readonly { readonly octeti: Uint8Array; readonly sha256: string; readonly nume: string }[] | null>(null);
   const comutaPanou = (p: IdPanou): void => { setPanouri((s) => ({ ...s, [p]: !s[p] })); };
+  // Lucrarea primită de la altă aplicație și cererea care așteaptă omul (ADR 0126): doar în memorie, separate de ultimul export.
+  const [lucrarePrimita, setLucrarePrimita] = useState<LucrarePrimita | null>(null);
+  const [cerereLucrare, setCerereLucrare] = useState<CerereLucrare | null>(null);
+  // În pornire stă doar verificarea ancorei și a ferestrei care a deschis fila; pe live, primirea e oprită (ADR 0126 §D).
+  const primireActiva = config.ok && config.config.instanta !== 'live';
+  useEffect(() => {
+    if (!primireActiva) return;
+    let oprire: (() => void) | null = null, terminat = false;
+    const asculta = (): void => {
+      if (oprire || location.hash !== '#primeste-lucrare' || !window.opener) return;
+      oprire = () => {};
+      void incarcaPrimirea().then((m) => { if (!terminat) oprire = m.ascultaPrimirea(window, setCerereLucrare); }, () => { oprire = null; });
+    };
+    asculta();
+    addEventListener('hashchange', asculta);
+    return () => { terminat = true; removeEventListener('hashchange', asculta); oprire?.(); };
+  }, [primireActiva]);
   /** Cursorul pe foaie și scara vederii, pentru cipurile de jos: se schimbă des, deci doar cipul lor se redesenează. */
   const [cursor] = useState(() => semnal<PunctFoaie | null>(null));
   const [scara] = useState(() => semnal<number | null>(null));
@@ -474,7 +496,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * a desenului pe care omul îl vede.
    */
   const dialogDeschis = useRef(false);
-  dialogDeschis.current = dialogExport || coadaImport !== null;
+  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null;
   /** Un dialog sau paleta: aplicația de sub ele e inertă. */
   const modal = dialogDeschis.current || paleta;
   const modalRef = useRef(modal);
@@ -939,7 +961,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       case 'masina':
         return (
           <Suspense fallback={null}>
-            <PanouMasina ultimulExport={ultimulExport} simulare={config.ok && config.config.instanta !== 'live'} />
+            <PanouMasina ultimulExport={ultimulExport} lucrarePrimita={lucrarePrimita} simulare={config.ok && config.config.instanta !== 'live'} />
           </Suspense>
         );
     }
@@ -1081,6 +1103,14 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           stareImporta={(p, loc) => stare(registru, 'document.importa', contextImportNou(p, loc))}
           importa={(p, loc) => ruleaza(registru, 'document.importa', contextImportNou(p, loc))}
           onInchide={() => { setCoadaImport(null); }}
+        />
+      )}
+      {cerereLucrare && (
+        <DialogLucrare
+          key={cerereLucrare.lucrare.id}
+          cerere={cerereLucrare}
+          onPrimita={(l) => { setCerereLucrare(null); setLucrarePrimita(l); setPanouri((s) => ({ ...s, masina: true })); }}
+          onInchide={() => { setCerereLucrare(null); }}
         />
       )}
       </Suspense>

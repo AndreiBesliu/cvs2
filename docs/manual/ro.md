@@ -712,6 +712,13 @@ Panoul **Mașina** (în dreapta, sub proprietăți) trimite programul la mașin�
   caractere în afara ASCII (la GRBL, „ș” și „ț” ar schimba turația axului), capete de linie Windows (`\r`), linii de peste 70 de
   octeți, nu alege un sistem de coordonate (`G54`–`G59`) înaintea primei mișcări, schimbă scula (`M6`) fără să fie exportat de
   aici sau n-are capăt de linie la sfârșit. Cu câte un fișier pe freză, **Fișierul ultimului export** alege care se încarcă.
+- **Lucrarea primită**: o aplicație care trimite lucrări (de exemplu Planificatorul Trenuleț, cu „Trimite la cvs2”) deschide
+  cvs2 într-o filă nouă. Dialogul **Lucrare primită** spune cine trimite, de unde (o adresă, sau o pagină deschisă din fișier,
+  de pe calculatorul tău) și ce fișiere, cu placa, freza și timpul. **Primește** verifică fiecare fișier la fel ca unul adus
+  cu **Fișier…** și deschide panoul; **Nu** îi răspunde aplicației că n-ai vrut lucrarea. Fișierele bune stau sub butoane, în
+  ordinea de tăiere: alegi unul din **Fișierul lucrării primite** și apeși **Încarcă lucrarea**; cele refuzate stau dedesubt,
+  fiecare cu motivul. Nimic nu pornește singur, iar lucrarea se pierde la reîncărcarea paginii (aplicația o poate trimite din
+  nou). Pe instanța live, primirea e oprită deocamdată.
 - **Pornește** trimite programul linie cu linie, cât încape în memoria mașinii. Lucrarea arată faza și linia. **Pauză** oprește
   mișcarea (Hold), **Reia** o continuă. O eroare a mașinii pe o linie oprește lucrarea în pauză și o arată în listă; **Reia după
   eroare** continuă de la prima linie netrimisă. La o schimbare de sculă (`M6`) sau o pauză din program (`M0`), lucrarea se

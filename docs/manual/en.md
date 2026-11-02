@@ -737,6 +737,13 @@ and shows its state.
   has characters outside ASCII (on GRBL, “ș” and “ț” would change the spindle speed), Windows line endings (`\r`), lines over
   70 bytes, sets no work coordinate system (`G54`–`G59`) before its first move, changes the tool (`M6`) without being exported
   from here, or has no line end at the end. With one file per bit, **File of the last export** picks which one loads.
+- **Received job**: an app that sends jobs (for example the Trenuleț planner, with “Send to cvs2”) opens cvs2 in a new tab.
+  The **Incoming job** dialog says who sends it, from where (an address, or a page opened from a file on your computer) and
+  which files, with the board, the bit and the time. **Accept** checks each file like one loaded with **File…** and opens the
+  panel; **No** tells the app you declined the job. The good files sit under the buttons, in cutting order: pick one in
+  **File of the received job** and press **Load received file**; the refused ones sit below, each with its reason. Nothing
+  starts by itself, and the job is lost when the page reloads (the app can send it again). On the live instance, receiving
+  is off for now.
 - **Start** sends the program line by line, as much as fits in the machine’s memory. The job shows its phase and line.
   **Pause** stops the motion (Hold), **Resume** continues it. A machine error on a line stops the job on hold and lists it;
   **Resume after the error** continues from the first line not yet sent. At a tool change (`M6`) or a pause in the program
