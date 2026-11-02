@@ -6,6 +6,7 @@ import {
 } from 'firebase/auth';
 import { httpsCallable, type Functions } from 'firebase/functions';
 import type { CerereCont, RaspunsDeschide, RaspunsNume } from '../../shared/conturi.ts';
+import type { CerereTichet, RaspunsRaportarileMele, RaspunsTichet } from '../../shared/tichete.ts';
 import { conecteazaBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
 
 /**
@@ -15,6 +16,13 @@ import { conecteazaBaza, type ConfigCloud, type MotivFaraConexiune } from './con
  * online: nu într-una împărțită de ele, cu numele fișierului din pachet, și nici în calea raportorului de erori. Sesiunea
  * contului e a originii, deci e aceeași în editor și în `/admin`.
  */
+
+/**
+ * Ce ia editorul din contractul tichetelor (raportările, ADR 0116 §C) trece pe aici, lângă apelurile lui: contractul e și el
+ * împărțit cu `/admin`, deci stă în aceeași bucată, iar importul de aici îl pune înaintea modulului ăstuia. Bucata își ia
+ * numele de la ultimul ei modul: fără importul ăsta s-ar fi numit după contract, nu `contEditor` (poarta build-ului o cere).
+ */
+export { FELURI_TICHET, TEXT_MAX, TICHETE_PE_ZI } from '../../shared/tichete.ts';
 
 /** O legătură cu contul Firebase: a editorului (`ContEditor`) sau a paginii `/admin` (`Conexiune`). */
 export interface CuCont {
@@ -167,6 +175,21 @@ export async function deschideContul(ce: ContEditor): Promise<RaspunsDeschide> {
 
 export async function schimbaNumele(ce: ContEditor, nume: string): Promise<RaspunsNume> {
   return (await httpsCallable<CerereCont, RaspunsNume>(ce.functii, 'cont')({ actiune: 'nume', nume })).data;
+}
+
+/** O raportare din editor (ADR 0116 §11), prin callable-ul `tichete`; refuzurile vin cu motivul. */
+export async function trimiteRaportarea(ce: ContEditor, cerere: Extract<CerereTichet, { actiune: 'raporteaza' }>): Promise<RaspunsTichet> {
+  return (await httpsCallable<CerereTichet, RaspunsTichet>(ce.functii, 'tichete')(cerere)).data;
+}
+
+/** Raportările omului, cu răspunsurile echipei (ADR 0116 §14). */
+export async function raportarileMele(ce: ContEditor): Promise<RaspunsRaportarileMele> {
+  return (await httpsCallable<CerereTichet, RaspunsRaportarileMele>(ce.functii, 'tichete')({ actiune: 'mele' })).data;
+}
+
+/** Răspunsurile unei raportări, citite de autor: semnul din meniul contului se stinge. */
+export async function marcheazaCitita(ce: ContEditor, id: string): Promise<RaspunsTichet> {
+  return (await httpsCallable<CerereTichet, RaspunsTichet>(ce.functii, 'tichete')({ actiune: 'citit', id })).data;
 }
 
 /**

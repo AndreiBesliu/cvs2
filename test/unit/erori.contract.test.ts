@@ -1,9 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  cheieAmprenta, descrieAruncat, faraInterogare, ipApelant, normalizeazaMesaj, oraFerestrei, PLAFON_MESAJ,
-  PLAFON_NORMALIZAT, taie, TIPURI_EROARE, valideazaRaport,
-} from '../../shared/erori.ts';
+import { cheieAmprenta, normalizeazaMesaj, PLAFON_NORMALIZAT } from '../../shared/amprenta.ts';
+import { descrieAruncat, faraInterogare, ipApelant, oraFerestrei, PLAFON_MESAJ, taie, TIPURI_EROARE, valideazaRaport } from '../../shared/erori.ts';
 
 /** Contractul jurnalului de erori (ADR 0039), comun clientului și serverului: valorile sunt scrise de mână. */
 

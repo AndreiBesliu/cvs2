@@ -1,0 +1,23 @@
+/* Fila Tichete (ADR 0116 §13): stările cu culorile filei Sugestii, vârsta roșie a unui tichet fără răspuns, datele lungi rupte. */
+.tic-stare[data-stare='deschis'] {
+  color: var(--a);
+}
+
+.tic-stare[data-stare='rezolvat'] {
+  color: var(--traseu-taiere);
+}
+
+.tic-rosu {
+  color: var(--rosu);
+  font-weight: 600;
+}
+
+.tic-aplicatia,
+.tic-amprente {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.tic-raspuns {
+  margin-top: var(--sp-2);
+}

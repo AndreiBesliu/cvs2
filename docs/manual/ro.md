@@ -780,20 +780,30 @@ Tot pe instanța de test, o sugestie pentru owner, cu poza planșei, se trimite 
 %% capitol: cont
 %% acopera: editare.cont, editare.sugestie
 
-Butonul **Cont** din colțul din dreapta-sus, lângă butonul temei (titlul lui: „Contul: logarea, planul și manualul”), deschide
-meniul contului. Logat, butonul arată inițialele și primul nume. Sus în meniu stau numele și planul de azi, cu zilele de probă
-rămase; fără cont, „Nu ești logat”. Rândurile:
+Butonul **Cont** din colțul din dreapta-sus, lângă butonul temei (titlul lui: „Contul: logarea, planul, raportările și
+manualul”), deschide meniul contului. Logat, butonul arată inițialele și primul nume. Sus în meniu stau numele și planul de
+azi, cu zilele de probă rămase; fără cont, „Nu ești logat”. Rândurile:
 
 - **Contul meu…** (logat) sau **Intră sau creează cont…** (fără cont) deschide panoul contului, de mai jos;
+- **Raportările mele** (cu contul deschis) arată raportările tale, cele mai noi întâi, cu starea lor (trimisă, în lucru,
+  rezolvată) și răspunsurile echipei, mai jos;
 - **Manualul** (`F1`) deschide manualul acesta;
+- **Raportează o problemă…** (cu contul deschis) trimite echipei o problemă, o idee sau o întrebare, mai jos;
 - **Trimite o sugestie…**, doar pe instanța de test (titlul lui: „Trimite o sugestie: pentru owner, cu poza planșei”), face
   poza planșei, o ține în browser și deschide pagina `/admin` pe fila **Sugestii**, într-o filă nouă. Intri cu contul tău de
   personal și scrii sugestia, iar poza pleacă odată cu ea; înainte s-o trimiți, o poți scoate. Dacă browserul nu deschide
   fila, un mesaj îți dă legătura spre ea;
 - **Ieși din cont** (logat) închide contul în browserul acesta.
 
-Meniul merge și din tastatură: săgețile trec între rânduri, Enter alege, Escape îl închide. Panoul contului cere internet:
-fără rețea nu se deschide, dar aplicația merge mai departe cu ultimul drept primit.
+Meniul merge și din tastatură: săgețile trec între rânduri, Enter alege, Escape îl închide. Panoul contului și raportările cer
+internet: fără rețea nu se deschid, dar aplicația merge mai departe cu ultimul drept primit.
+
+- **Raportează o problemă…:** alegi ce trimiți (o problemă, o idee sau o întrebare), scrii ce s-a întâmplat și, dacă vrei,
+  bifezi **Atașează poza planșei**. Sub text, **Ce mai pleacă odată cu raportarea** arată tot ce pleacă în plus: versiunea
+  aplicației, limba, planul, browserul și amprentele erorilor din sesiunea asta (doar amprentele, fără conținutul erorilor,
+  ca echipa să le găsească în jurnalul ei). **Trimite** o trimite; un cont trimite cel mult 10 raportări pe zi.
+- **Raportările mele:** un răspuns nou al echipei pune un punct pe butonul **Cont** și numărul raportărilor cu răspuns nou pe
+  rândul **Raportările mele**. Când deschizi lista, răspunsurile noi sunt marcate, iar semnul se stinge.
 
 - **Logarea:** **Intră cu Google**, sau adresa de e-mail și parola, cu **Intră**. **Creează cont** face un cont nou cu parolă
   și trimite un e-mail de confirmare; după ce deschizi linkul din el, apeși **Am confirmat**. **Am uitat parola** trimite un
@@ -806,7 +816,8 @@ fără rețea nu se deschide, dar aplicația merge mai departe cu ultimul drept 
   ca să-l reconfirme. La fiecare pornire cu rețea, dreptul se reconfirmă singur.
 - **Numele** afișat se schimbă din panou, iar **Ieși** închide contul în browserul acesta.
 
-Fără cont, aplicația merge ca până acum. Dedesubt, **Ce date ținem** spune ce păstrăm despre cont și de ce.
+Fără cont, aplicația merge ca până acum. Dedesubt, **Ce date ținem** spune ce păstrăm despre cont (și despre raportări) și
+de ce.
 
 ## Scurtăturile
 %% capitol: scurtaturi

@@ -4,6 +4,7 @@ import { httpsCallable } from 'firebase/functions';
 import type { CerereConturi, RaspunsPlan, RaspunsSetari } from '../../shared/conturiPlan.ts';
 import type { CererePersonal, RaspunsInvitatie, RaspunsPersonal } from '../../shared/personal.ts';
 import type { CerereSugestie, RaspunsSugestie } from '../../shared/sugestii.ts';
+import type { CerereTichet, RaspunsTichet } from '../../shared/tichete.ts';
 import { conecteazaBaza, hostPort, type ConexiuneBaza, type ConfigCloud, type MotivFaraConexiune } from './conexiuneBaza.ts';
 import { contAplicatiei } from './contEditor.ts';
 
@@ -60,6 +61,11 @@ export async function acceptaInvitatia(c: Conexiune): Promise<RaspunsInvitatie> 
 /** Sugestiile personalului (ADR 0107): scrierea, editarea autorului, decizia owner-ului; refuzurile vin cu motivul serverului. */
 export async function sugestii(c: Conexiune, cerere: CerereSugestie): Promise<RaspunsSugestie> {
   return (await httpsCallable<CerereSugestie, RaspunsSugestie>(c.functii, 'sugestii')(cerere)).data;
+}
+
+/** Răspunsul și starea unui tichet din fila Tichete (ADR 0116 §13): cu `tichete.raspunde`, pe versiunea văzută. */
+export async function tichete(c: Conexiune, cerere: Extract<CerereTichet, { actiune: 'raspunde' | 'stare' }>): Promise<RaspunsTichet> {
+  return (await httpsCallable<CerereTichet, RaspunsTichet>(c.functii, 'tichete')(cerere)).data;
 }
 
 /** Planul unui cont din fila Utilizatori (ADR 0116 §19): cu `conturi.administreaza`, pe planul văzut; refuzurile vin cu motivul. */

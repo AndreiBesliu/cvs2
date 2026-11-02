@@ -1,10 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { areDecizie, baza64, filtreaza, numarePeStare, ordoneaza, poateEdita, sugestieDin } from '../../src/admin/sugestii/date.ts';
+import { areDecizie, filtreaza, numarePeStare, ordoneaza, poateEdita, sugestieDin } from '../../src/admin/sugestii/date.ts';
 import { estePozaValida, VALABILA_MS } from '../../src/app/pozaSugestiei.ts';
+import { baza64, POZA_MAX_BASE64, POZA_MAX_OCTETI, RE_BASE64, tipPoza } from '../../shared/poza.ts';
 import {
-  curataText, curataTitlu, DESCRIERE_MAX, esteIdSugestie, esteStare, esteTip, esteVersiune, esteZona, POZA_MAX_BASE64, POZA_MAX_OCTETI,
-  RE_BASE64, STARI_SUGESTIE, tipPoza, TITLU_MAX, ziUtc,
+  curataText, curataTitlu, DESCRIERE_MAX, esteIdSugestie, esteStare, esteTip, esteVersiune, esteZona, STARI_SUGESTIE,
+  TITLU_MAX, ziUtc,
 } from '../../shared/sugestii.ts';
 
 /** Sugestiile personalului (ADR 0107, poza: ADR 0111): validările comune clientului și serverului, apoi partea pură a filei. */

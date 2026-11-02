@@ -41,7 +41,9 @@ import { tastaActiunii } from '../ui/scurtaturi.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import type { Config } from './config.ts';
 import { contTinut, puneCont, useContTinut, type ContTinut } from './dreptCont.ts';
+import type { Jurnal } from './jurnalErori.ts';
 import { capMeniuCont, initiale, numeButon, randuriMeniuCont, type IdMeniuCont } from './meniuCont.ts';
+import { useRaportariNecitite } from './raportariNecitite.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -160,18 +162,23 @@ const Manual = lazy(() => import('./Manual.tsx').then(cuMesaje).then((m) => ({ d
   ),
 })));
 
-/**
- * Panoul contului (ADR 0116 §A3): o bucată doar online, cu contul Firebase, adusă din meniul contului (ADR 0120). Fără
- * rețea nu vine: atunci se spune, ca la manual.
- */
-const PanouCont = lazy(() => import('./PanouCont.tsx').then(cuMesaje).then((m) => ({ default: m.PanouCont }), () => ({
-  default: ({ onInchide }: { readonly config: Config | null; readonly onInchide: () => void }) => (
+/** În locul unei ferestre a contului care nu vine (fără rețea): se spune, sus pe ecran, până la clic. */
+function ContNeincarcat({ onInchide }: { readonly onInchide: () => void }): ReactElement {
+  return (
     <button type="button" className="cip cip-rosu" role="status" data-testid="cont-neincarcat" onClick={onInchide}
       style={{ position: 'fixed', left: '50%', top: 96, translate: '-50% 0', zIndex: 30, pointerEvents: 'auto' }}>
       {t('editare.cont.neincarcat')}
     </button>
-  ),
-})));
+  );
+}
+
+/**
+ * Panoul contului (ADR 0116 §A3) și raportările (§C): o bucată doar online, cu contul Firebase, adusă din meniul contului
+ * (ADR 0120). Fără rețea nu vine: atunci se spune, ca la manual.
+ */
+const PanouCont = lazy(() => import('./PanouCont.tsx').then(cuMesaje).then((m) => ({ default: m.PanouCont }), () => ({ default: ContNeincarcat })));
+const RaportareNoua = lazy(() => import('./PanouCont.tsx').then(cuMesaje).then((m) => ({ default: m.RaportareNoua }), () => ({ default: ContNeincarcat })));
+const RaportarileMele = lazy(() => import('./PanouCont.tsx').then(cuMesaje).then((m) => ({ default: m.RaportarileMele }), () => ({ default: ContNeincarcat })));
 
 /**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
@@ -236,6 +243,8 @@ export type ProprietatiEditare = {
   readonly sugestie?: boolean;
   /** Configurația instanței, pentru panoul contului (ADR 0116 §A3); null: config.json n-a venit. */
   readonly config?: Config | null;
+  /** Jurnalul local de erori: o raportare duce amprentele erorilor din sesiune (ADR 0116 §11). */
+  readonly jurnal?: Pick<Jurnal, 'citeste'>;
   /** Se poate reface un pas al proiectului (Ctrl+Shift+Z redeschide un desen Pen doar dacă nu, ADR 0074 §4). */
   readonly reface?: boolean;
 };
@@ -339,12 +348,18 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // poza planșei ajunge la ea prin browser; `blocata`: browserul n-a deschis fila (poza o așteaptă oricum acolo).
   const [sugestie, setSugestie] = useState<null | 'lucreaza' | 'blocata' | { readonly motiv: string }>(null);
   const [contDeschis, setContDeschis] = useState(false);
+  // Raportările (ADR 0116 §C): fereastra unei raportări noi și „Raportările mele”, din meniul contului.
+  const [raportare, setRaportare] = useState(false);
+  const [raportari, setRaportari] = useState(false);
   // Meniul contului (ADR 0120), sub butonul Cont: deschis cu focusul pe primul rând sau, cu săgeata în sus, pe ultimul.
   const [meniuCont, setMeniuCont] = useState<'primul' | 'ultimul' | null>(null);
   const meniuContDeschis = meniuCont !== null;
   const refButonCont = useRef<HTMLButtonElement | null>(null);
   const refMeniuCont = useRef<HTMLDivElement | null>(null);
   const contul = useContTinut();
+  // Câte raportări au un răspuns necitit: semnul de pe butonul Cont și de pe rândul „Raportările mele”, doar cu contul deschis.
+  const necitite = useRaportariNecitite();
+  const semn = contul?.drept ? necitite : 0;
   // Reconfirmarea contului ținut (ADR 0116 §8), odată cu editorul, prin modulul panoului contului (adus doar cu import()):
   // contul Firebase vine la cerere, doar dacă aplicația ține un cont; fără rețea, dreptul ținut rămâne (cât îl lasă zilele
   // offline). Nu `import()` direct pe `contEditor.ts`: o bucată adusă și dinamic, și static (de panou și de `/admin`) scotea
@@ -384,6 +399,10 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       setContDeschis(true);
     } else if (id === 'manual') {
       setManual({ usa: null });
+    } else if (id === 'raporteaza') {
+      setRaportare(true);
+    } else if (id === 'raportari') {
+      setRaportari(true);
     } else {
       refButonCont.current?.focus();
       if (id === 'sugestie') trimiteSugestia();
@@ -902,9 +921,21 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
         </Suspense>,
         document.body,
       ) : null}
+      {raportare ? createPortal(
+        <Suspense fallback={null}>
+          <RaportareNoua config={p.config ?? null} intrari={() => p.jurnal?.citeste() ?? []} onInchide={() => { setRaportare(false); }} />
+        </Suspense>,
+        document.body,
+      ) : null}
+      {raportari ? createPortal(
+        <Suspense fallback={null}>
+          <RaportarileMele config={p.config ?? null} onInchide={() => { setRaportari(false); }} />
+        </Suspense>,
+        document.body,
+      ) : null}
       {meniuCont !== null ? createPortal(
         <MeniuCont refMeniu={refMeniuCont} buton={refButonCont} focus={meniuCont} cont={contul} sugestie={p.sugestie === true}
-          sugestieLucreaza={sugestie === 'lucreaza'} onAlege={alegeDinMeniuCont} />,
+          sugestieLucreaza={sugestie === 'lucreaza'} necitite={semn} onAlege={alegeDinMeniuCont} />,
         document.body,
       ) : null}
       {testDeschis && p.test ? (
@@ -1166,10 +1197,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           </span>
         );
         // Butonul Cont (ADR 0120) deschide meniul contului: logat, cu inițialele și numele; altfel „Cont”. Săgețile îl
-        // deschid cu focusul pe primul rând (jos) sau pe ultimul (sus), ca la un meniu obișnuit.
+        // deschid cu focusul pe primul rând (jos) sau pe ultimul (sus), ca la un meniu obișnuit. Un răspuns nou la o
+        // raportare (ADR 0116 §14) pune un semn pe cercul inițialelor și îl spune în titlu.
+        const titluCont = semn > 0 ? `${t('editare.cont')}. ${t('editare.cont.raspunsuri-noi', { n: semn })}` : t('editare.cont');
         const butonCont = (
-          <button type="button" ref={refButonCont} className={locCont ? 'cont-buton' : 'aliniaza cont-buton'} title={t('editare.cont')}
-            aria-label={t('editare.cont')} data-editare="cont" aria-haspopup="menu" aria-expanded={meniuContDeschis}
+          <button type="button" ref={refButonCont} className={locCont ? 'cont-buton' : 'aliniaza cont-buton'} title={titluCont}
+            aria-label={titluCont} data-editare="cont" aria-haspopup="menu" aria-expanded={meniuContDeschis}
             aria-controls={meniuContDeschis ? 'meniu-cont' : undefined}
             onClick={() => { setMeniuCont(meniuContDeschis ? null : 'primul'); }}
             onKeyDown={(e) => {
@@ -1178,6 +1211,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               setMeniuCont(e.key === 'ArrowDown' ? 'primul' : 'ultimul');
             }}>
             {contul ? <span className="cont-initiale" aria-hidden="true">{initiale(contul.nume)}</span> : null}
+            {semn > 0 ? <span className="cont-semn" data-testid="cont-semn" aria-hidden="true" /> : null}
             <span className="cont-nume">{contul ? numeButon(contul.nume) : t('editare.cont.buton')}</span>
             <svg className="cont-sageata" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 L5 6.5 L8 3.5" /></svg>
           </button>
@@ -1351,9 +1385,10 @@ function MeniuContext({ refMeniu, la, zona, articole, motiv }: {
  * ținut, fără server; sau nimeni), apoi panoul contului ori logarea, manualul, sugestia și ieșirea. Se poartă ca meniul de
  * clic dreapta (`tastaInMeniu`); la deschidere, focusul stă pe primul rând sau, cu săgeata în sus pe buton, pe ultimul.
  */
-function MeniuCont({ refMeniu, buton, focus, cont, sugestie, sugestieLucreaza, onAlege }: {
+function MeniuCont({ refMeniu, buton, focus, cont, sugestie, sugestieLucreaza, necitite, onAlege }: {
   readonly refMeniu: RefObject<HTMLDivElement | null>; readonly buton: RefObject<HTMLButtonElement | null>; readonly focus: 'primul' | 'ultimul';
-  readonly cont: ContTinut | null; readonly sugestie: boolean; readonly sugestieLucreaza: boolean; readonly onAlege: (id: IdMeniuCont) => void;
+  readonly cont: ContTinut | null; readonly sugestie: boolean; readonly sugestieLucreaza: boolean; readonly necitite: number;
+  readonly onAlege: (id: IdMeniuCont) => void;
 }): ReactElement {
   const [loc, setLoc] = useState<{ readonly top: number; readonly right: number } | null>(null);
   useLayoutEffect(() => {
@@ -1372,8 +1407,12 @@ function MeniuCont({ refMeniu, buton, focus, cont, sugestie, sugestieLucreaza, o
         return t('editare.cont.al-meu');
       case 'intra':
         return t('editare.cont.intra');
+      case 'raportari':
+        return t('editare.cont.raportari');
       case 'manual':
         return numeScurt(t('editare.manual'));
+      case 'raporteaza':
+        return t('editare.cont.raporteaza');
       case 'sugestie':
         return `${numeScurt(t('editare.sugestie'))}…`;
       case 'iesi':
@@ -1393,6 +1432,9 @@ function MeniuCont({ refMeniu, buton, focus, cont, sugestie, sugestieLucreaza, o
             onClick={() => { onAlege(id); }}>
             <span>{eticheta(id)}</span>
             {id === 'manual' ? <kbd>F1</kbd> : null}
+            {id === 'raportari' && necitite > 0 ? (
+              <span className="meniu-numar" data-testid="meniu-cont-necitite" title={t('editare.cont.raspunsuri-noi', { n: necitite })}>{necitite}</span>
+            ) : null}
           </button>
         )))}
       </div>

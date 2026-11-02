@@ -806,20 +806,31 @@ Also on the test instance, a suggestion for the owner, with a picture of the she
 %% capitol: cont
 %% acopera: editare.cont, editare.sugestie
 
-The **Account** button in the top-right corner, next to the theme button (its title: “Account: sign in, the plan and the
-manual”), opens the account menu. Signed in, the button shows the initials and the first name. At the top of the menu are the
-name and today's plan, with the trial days left; without an account, “Not signed in”. The rows:
+The **Account** button in the top-right corner, next to the theme button (its title: “Account: sign in, the plan, reports and
+the manual”), opens the account menu. Signed in, the button shows the initials and the first name. At the top of the menu are
+the name and today's plan, with the trial days left; without an account, “Not signed in”. The rows:
 
 - **Your account…** (signed in) or **Sign in or create an account…** (no account) opens the account panel, below;
+- **My reports** (with an open account) shows your reports, newest first, with their state (sent, in progress, resolved) and
+  the team's replies, below;
 - **Manual** (`F1`) opens this manual;
+- **Report a problem…** (with an open account) sends the team a problem, an idea or a question, below;
 - **Send a suggestion…**, only on the test instance (its title: “Send a suggestion: for the owner, with a picture of the
   sheet”), takes a picture of the sheet, keeps it in the browser and opens the `/admin` page on the **Suggestions** tab, in a
   new tab. You sign in with your staff account and write the suggestion, and the picture goes with it; before sending, you
   can remove it. If the browser doesn't open the tab, a message gives you the link to it;
 - **Sign out** (signed in) closes the account in this browser.
 
-The menu works from the keyboard too: the arrow keys move between rows, Enter picks, Escape closes it. The account panel needs
-internet: without a network it does not open, but the app goes on with the last rights it received.
+The menu works from the keyboard too: the arrow keys move between rows, Enter picks, Escape closes it. The account panel and
+the reports need internet: without a network they do not open, but the app goes on with the last rights it received.
+
+- **Report a problem…:** you choose what you are sending (a problem, an idea or a question), write what happened and, if you
+  want, tick **Attach a picture of the sheet**. Below the text, **What else goes with the report** shows everything else that
+  goes: the app version, the language, the plan, the browser and the fingerprints of the errors in this session (only the
+  fingerprints, without the errors' content, so the team can find them in its log). **Send** sends it; an account sends at
+  most 10 reports a day.
+- **My reports:** a new reply from the team puts a dot on the **Account** button and the number of reports with a new reply on
+  the **My reports** row. When you open the list, the new replies are marked, and the sign goes out.
 
 - **Signing in:** **Sign in with Google**, or the email address and the password, with **Sign in**. **Create account** makes a
   new account with a password and sends a confirmation email; after you open the link in it, press **I have confirmed**.
@@ -832,7 +843,8 @@ internet: without a network it does not open, but the app goes on with the last 
   asks for a connection to confirm them again. At every start with a network, the rights are confirmed again by themselves.
 - The display **Name** is changed from the panel, and **Sign out** closes the account in this browser.
 
-Without an account, the app works as before. Below, **What data we keep** says what we keep about the account and why.
+Without an account, the app works as before. Below, **What data we keep** says what we keep about the account (and about the
+reports) and why.
 
 ## Keyboard shortcuts
 %% capitol: scurtaturi

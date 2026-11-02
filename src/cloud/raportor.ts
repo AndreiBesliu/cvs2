@@ -1,5 +1,6 @@
 import { getToken } from 'firebase/app-check';
 import { httpsCallable } from 'firebase/functions';
+import { cheieAmprenta } from '../../shared/amprenta.ts';
 import { faraInterogare, PLAFON_ADRESA, PLAFON_MESAJ, PLAFON_SCURT, PLAFON_STIVA, taie, type RaportClient, type TipEroare } from '../../shared/erori.ts';
 import { conecteazaBaza, type ConfigCloud } from './conexiuneBaza.ts';
 
@@ -70,18 +71,32 @@ export function curataText(s: string): string {
     .replace(/(?<![\w.+-])[\w.+-]{1,64}(?:@|%40)[\w-]{1,63}(?:\.[\w-]{1,63}){1,8}/gi, '<email>');
 }
 
+/** Mesajul trimis al unei intrări: curățat, cu rezerva pentru unul gol, tăiat la plafon. */
+export function mesajRaportat(mesaj: string): string {
+  const m = curataText(mesaj);
+  return taie(m.trim() ? m : MESAJ_GOL, PLAFON_MESAJ);
+}
+
 /** Raportul (`RaportClient`, ADR 0039 §5): doar câmpurile contractului, curățate și tăiate la plafoanele lui. */
 export function raportDin(i: IntrareRaport, build: string, browser: string, limba: string): RaportClient {
-  const mesaj = curataText(i.mesaj);
   return {
     tip: i.tip,
-    mesaj: taie(mesaj.trim() ? mesaj : MESAJ_GOL, PLAFON_MESAJ),
+    mesaj: mesajRaportat(i.mesaj),
     stiva: taie(curataText(i.stiva), PLAFON_STIVA),
     adresa: taie(faraInterogare(i.adresa), PLAFON_ADRESA),
     build: taie(build, PLAFON_SCURT),
     browser: taie(browser, PLAFON_SCURT),
     limba: taie(limba, PLAFON_SCURT),
   };
+}
+
+/**
+ * Amprenta unei intrări (ADR 0116 §11): cea pe care o face serverul din raportul ei (ADR 0039 §3), adică id-ul grupului din
+ * `errorLogs`. O raportare duce amprentele erorilor din sesiune, fără conținutul lor; serverul le găsește grupurile.
+ */
+export async function amprentaRaportului(i: Pick<IntrareRaport, 'tip' | 'mesaj'>, subtle: SubtleCrypto = crypto.subtle): Promise<string> {
+  const h = await subtle.digest('SHA-256', new TextEncoder().encode(cheieAmprenta('client', i.tip, mesajRaportat(i.mesaj))));
+  return [...new Uint8Array(h)].map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
 }
 
 /** Termenul unui apel, de la cerere (cu tot cu token) la răspuns: acoperă pornirea la rece a funcției. */

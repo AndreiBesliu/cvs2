@@ -94,6 +94,10 @@ export type CerereCont = { readonly actiune: 'deschide' } | { readonly actiune: 
 /** Răspunsul deschiderii: adresa neconfirmată (fără cont încă), sau contul, cu dreptul lui. */
 export type RaspunsDeschide =
   | { readonly ok: true; readonly verificat: false; readonly email: string }
-  | { readonly ok: true; readonly verificat: true; readonly email: string; readonly nume: string; readonly drept: Drept };
+  | {
+    readonly ok: true; readonly verificat: true; readonly email: string; readonly nume: string; readonly drept: Drept;
+    /** Câte raportări ale omului au un răspuns necitit (ADR 0116 §14); lipsește dacă numărarea n-a reușit. */
+    readonly raportariNecitite?: number;
+  };
 
 export type RaspunsNume = { readonly ok: true; readonly schimbat: boolean; readonly nume: string };

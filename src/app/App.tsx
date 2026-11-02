@@ -1014,7 +1014,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
               <Suspense fallback={null}>
                 <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil} reface={stareActiune('istoric.reface').ok}
-                  sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null}
+                  sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />
               </Suspense>

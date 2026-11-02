@@ -332,6 +332,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **CSP-ul are schema `ws:` în `connect-src`** (acordul owner-ului), fără `wss:`. **Proba cap-coadă are emulatorul GRBL în
   spatele unui server WebSocket minimal** (`test/e2e/controlerWebSocket.ts`, fără dependențe: npm lipsește). Butonul
   **Cont** stă de pe 01.11 lângă butonul temei (controlul `cont` al aranjamentului).
+  **Raportările clienților (ADR 0116 §C, felia 15.B↑a, adusă din etapa 15)** gata pe 02.11:
+  - în meniul contului, cu contul deschis: **Raportează o problemă…** (felul, textul, poza planșei la bifă, datele aplicației
+    și amprentele erorilor din sesiune) și **Raportările mele** (răspunsurile echipei; un răspuns nou pune un punct pe butonul
+    Cont);
+  - callable-ul `tichete` (cel mult 10 raportări pe cont pe zi, auditul în tranzacție) și fila **Tichete** din `/admin`
+    (`tichete.citeste`, `tichete.raspunde`).
+
+  **Editorul nu citește Firestore:** raportările trec prin callable. **Contractul pozei stă în `shared/poza.ts`, iar al
+  tichetelor intră în editor prin `contEditor.ts`:** altfel bundlerul scoate o bucată nouă (contractul sugestiilor), iar
+  bucata contului își pierde numele (o ia de la ultimul ei modul). **Cheia amprentei unei erori stă în `shared/amprenta.ts`**
+  (contractul erorilor e în pornire). Urmează 15.B↑b: proiectul atașat și jobul de păstrare. **Pornirea 98,5 (cu ușa 102,0 /
+  110 kB), totalul 441,2 / 450, /admin 105,4 / 200, contul 28,8 / 32.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

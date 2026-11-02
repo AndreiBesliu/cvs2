@@ -56,9 +56,10 @@ const verificat = (r: RaspunsDeschide): Extract<RaspunsDeschide, { verificat: tr
 test('prima deschidere cu adresa verificată: contul cu proba de 14 zile, numele din token, dreptul complet și auditul', async () => {
   const r = verificat(await deschide('ana'));
   const pana = T0.getTime() + ZILE_PROBA * ZI_MS;
+  // Lângă drept, semnul din meniul contului (ADR 0116 §14): câte raportări au un răspuns necitit (aici, niciuna).
   assert.deepEqual(r, {
     ok: true, verificat: true, email: 'ana@exemplu.ro', nume: 'Ana Popescu',
-    drept: { plan: 'proba', capabilitati: [...CAPABILITATI], pana, calculatLa: T0.getTime(), zileOffline: 7 },
+    drept: { plan: 'proba', capabilitati: [...CAPABILITATI], pana, calculatLa: T0.getTime(), zileOffline: 7 }, raportariNecitite: 0,
   });
   const c = await cont('ana');
   assert.equal(c?.['plan'], 'proba');

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore, type Timestamp } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
-import { DESCRIERE_MAX, NOTA_MAX, POZA_MAX_OCTETI, SUGESTII_PE_ZI, TITLU_MAX } from '../../shared/sugestii.ts';
+import { POZA_MAX_OCTETI } from '../../shared/poza.ts';
+import { DESCRIERE_MAX, NOTA_MAX, SUGESTII_PE_ZI, TITLU_MAX } from '../../shared/sugestii.ts';
 import { COLECTIE_AUDIT } from '../src/audit.ts';
 import { trateazaSugestia, type TokenSugestie } from '../src/sugestii/actiuni.ts';
 

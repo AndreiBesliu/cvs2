@@ -1,17 +1,18 @@
 import { useEffect, useId, useState, type FormEvent, type ReactElement } from 'react';
 import { Bytes, collection, doc, getDoc, getDocs, limit, orderBy, query, where } from 'firebase/firestore/lite';
 import type { Permisiune } from '../../../shared/personal.ts';
+import { baza64, COLECTIE_POZE, ID_POZA } from '../../../shared/poza.ts';
 import {
-  COLECTIE_POZE, COLECTIE_SUGESTII, curataTitlu, DESCRIERE_MAX, esteStare, esteTip, esteZona, ID_POZA, NOTA_MAX, PLAFON_LISTA_SUGESTII,
-  STARI_SUGESTIE, TIPURI_SUGESTIE, TITLU_MAX, ZONE_SUGESTIE, type CerereSugestie, type ContinutSugestie, type RaspunsSugestie,
-  type StareSugestie, type TipSugestie, type ZonaSugestie,
+  COLECTIE_SUGESTII, curataTitlu, DESCRIERE_MAX, esteStare, esteTip, esteZona, NOTA_MAX, PLAFON_LISTA_SUGESTII,
+  STARI_SUGESTIE, TIPURI_SUGESTIE, TITLU_MAX, ZONE_SUGESTIE, type CerereSugestie, type ContinutSugestie,
+  type RaspunsSugestie, type StareSugestie, type TipSugestie, type ZonaSugestie,
 } from '../../../shared/sugestii.ts';
 import { CANAL_POZA, iaPoza, stergePoza, type PozaInAsteptare } from '../../app/pozaSugestiei.ts';
 import { sugestii, type Conexiune } from '../../cloud/conexiune.ts';
 import { t } from '../../i18n/t.ts';
 import { useLimba } from '../../ui/useLimba.ts';
 import { dataScurta, motivDin, type Masura } from '../erori/date.ts';
-import { areDecizie, baza64, filtreaza, numarePeStare, ordoneaza, poateEdita, sugestieDin, type Filtru, type Sugestie } from './date.ts';
+import { areDecizie, filtreaza, numarePeStare, ordoneaza, poateEdita, sugestieDin, type Filtru, type Sugestie } from './date.ts';
 import '../personal/personal.css';
 import './sugestii.css';
 
@@ -301,7 +302,7 @@ function Formular({ initial, ocupat, faraAppCheck, eroare, trimite, renunta, poz
 }
 
 /** Adresa locală a unei imagini din browser, cât trăiește componenta (eliberată la schimbare și la ieșire). */
-function useAdresaImaginii(imagine: Blob | null): string | null {
+export function useAdresaImaginii(imagine: Blob | null): string | null {
   const [adresa, setAdresa] = useState<string | null>(null);
   useEffect(() => {
     if (!imagine) {

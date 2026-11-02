@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { Timestamp, type Firestore } from 'firebase-admin/firestore';
-import { cheieAmprenta, oraFerestrei, PLAFON_OAMENI, RETENTIE_ZILE, type Sursa } from '../../../shared/erori.ts';
+import { cheieAmprenta } from '../../../shared/amprenta.ts';
+import { oraFerestrei, PLAFON_OAMENI, RETENTIE_ZILE, type Sursa } from '../../../shared/erori.ts';
 
 /** Colecția jurnalului (ADR 0039 §2): un document pe grup, cu aparițiile în `aparitii`. */
 export const COLECTIE = 'errorLogs';

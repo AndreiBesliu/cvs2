@@ -16,6 +16,7 @@ import { trateazaRaportClient } from './erori/client.ts';
 import { marcheazaEroarea as marcheaza } from './erori/marcheaza.ts';
 import { acceptaInvitatia as accepta, administreazaPersonalul as administreaza } from './personal/actiuni.ts';
 import { trateazaSugestia } from './sugestii/actiuni.ts';
+import { trateazaTichetul } from './tichete/actiuni.ts';
 import { trateazaContul } from './conturi/actiuni.ts';
 import { administreazaConturile as administreazaConturi } from './conturi/admin.ts';
 import { memorieNoua, trateazaFonturiGoogle } from './fonturi/google.ts';
@@ -68,6 +69,15 @@ export const acceptaInvitatia = onCall(
 export const sugestii = onCall(
   { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 2, memory: '256MiB', timeoutSeconds: 20 },
   async (cerere) => trateazaSugestia(getFirestore(), cerere.auth?.uid ?? null, cerere.auth?.token ?? null, cerere.data),
+);
+
+/**
+ * Raportările clienților (tichetele, ADR 0116 §C): raportarea din editor (contul deschis sau personalul, cel mult 10 pe zi),
+ * raportările omului și citirea răspunsurilor, răspunsul și starea (personalul cu `tichete.raspunde`), cu auditul în tranzacție.
+ */
+export const tichete = onCall(
+  { region: REGIUNI.callable, enforceAppCheck: true, maxInstances: 2, memory: '256MiB', timeoutSeconds: 20 },
+  async (cerere) => trateazaTichetul(getFirestore(), cerere.auth?.uid ?? null, cerere.auth?.token ?? null, cerere.data),
 );
 
 /**

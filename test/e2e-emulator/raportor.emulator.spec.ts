@@ -95,7 +95,9 @@ test('pe /admin, după login, raportul poartă uid-ul omului', async ({ page }) 
   await fereastra.locator('#add-account-button').click();
   await fereastra.locator('#autogen-button').click();
   await fereastra.locator('#sign-in').click();
-  await expect(page.locator('[data-admin="fara-rol"]')).toBeVisible();
+  // Fără document de personal, pagina cere întâi invitația (callable-ul `acceptaInvitatia`): prima chemare pornește lucrătorul
+  // lui în emulator, câteva secunde, când proba rulează înaintea altora care l-au chemat.
+  await expect(page.locator('[data-admin="fara-rol"]')).toBeVisible({ timeout: TERMEN });
   const uid = (await page.locator('[data-admin="uid"]').textContent()) ?? '';
   expect(uid).toMatch(/^\w{20,}$/);
 

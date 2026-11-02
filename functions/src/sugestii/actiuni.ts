@@ -1,14 +1,15 @@
 import { Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { COLECTII_PERSONAL, normalizeazaEmail } from '../../../shared/personal.ts';
+import { COLECTIE_POZE, ID_POZA } from '../../../shared/poza.ts';
 import {
-  COLECTIE_LIMITE_SUGESTII, COLECTIE_POZE, COLECTIE_SUGESTII, curataText, curataTitlu, DESCRIERE_MAX, esteIdSugestie, esteStare,
-  esteTip, esteVersiune, esteZona, ID_POZA, NOTA_MAX, POZA_MAX_BASE64, POZA_MAX_OCTETI, RE_BASE64, SUGESTII_PE_ZI, TITLU_MAX, tipPoza,
-  ziUtc, type ContinutSugestie, type RaspunsSugestie, type TipPoza,
+  COLECTIE_LIMITE_SUGESTII, COLECTIE_SUGESTII, curataText, curataTitlu, DESCRIERE_MAX, esteIdSugestie, esteStare, esteTip,
+  esteVersiune, esteZona, NOTA_MAX, SUGESTII_PE_ZI, TITLU_MAX, ziUtc, type ContinutSugestie, type RaspunsSugestie,
 } from '../../../shared/sugestii.ts';
 import { scrieAudit } from '../audit.ts';
 import { logServerError } from '../erori/jurnal.ts';
 import { drepturiIn } from '../personal/drepturi.ts';
+import { pozaDin } from '../poza.ts';
 
 /**
  * Sugestiile personalului (ADR 0107): cine are `sugestii.scrie` scrie o sugestie și și-o editează cât n-are decizie;
@@ -39,20 +40,6 @@ function continutDin(d: Record<string, unknown>): ContinutSugestie {
   if (!esteTip(tip)) throw argument('tipul: idee, problemă sau îmbunătățire');
   if (zona !== null && !esteZona(zona)) throw argument('zona aplicației');
   return { titlu, descriere, tip, zona };
-}
-
-/**
- * Poza planșei din cerere (ADR 0111), opțională: base64 strict, cel mult 400 kB, o imagine JPEG, PNG sau WebP după
- * semnătura ei. Lipsa ei (sau null) = fără poză.
- */
-function pozaDin(p: unknown): { readonly octeti: Buffer; readonly tip: TipPoza } | null {
-  if (p === undefined || p === null) return null;
-  if (typeof p !== 'string' || p.length > POZA_MAX_BASE64 || !RE_BASE64.test(p)) throw argument('poza: base64, cel mult 400 kB');
-  const octeti = Buffer.from(p, 'base64');
-  if (octeti.length === 0 || octeti.length > POZA_MAX_OCTETI) throw argument('poza: cel mult 400 kB');
-  const tip = tipPoza(octeti);
-  if (tip === null) throw argument('poza: o imagine JPEG, PNG sau WebP');
-  return { octeti, tip };
 }
 
 /** Id-ul și versiunea văzută, cerute de editare și de decizie. */

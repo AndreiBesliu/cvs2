@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
-import { dreptLaZi, NUME_MAX, ZILE_PROBA, zileRamase, type Drept } from '../../shared/conturi.ts';
+import { dreptLaZi, NUME_MAX, ZILE_PROBA, zileRamase, type Drept, type RaspunsDeschide } from '../../shared/conturi.ts';
 import {
-  codEroare, conecteazaContul, creeazaCont, deschideContul, iesi, intraCuGoogle, intraCuParola, primaStare, reconfirma, retrimiteConfirmarea,
+  conecteazaContul, creeazaCont, deschideContul, iesi, intraCuGoogle, intraCuParola, primaStare, reconfirma, retrimiteConfirmarea,
   schimbaNumele, trimiteResetarea, type ContEditor,
 } from '../cloud/contEditor.ts';
 import '../i18n/carcasa.ts';
@@ -10,12 +10,29 @@ import { limba, t } from '../i18n/t.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import type { Config } from './config.ts';
 import { contDinRaspuns, contTinut, puneCont, useContTinut } from './dreptCont.ts';
+import { textEroareCont, useFereastraCont } from './ferestreCont.ts';
+import { puneRaportariNecitite } from './raportariNecitite.ts';
+
+/** Raportările (ADR 0116 §C) stau în bucata panoului: aceeași legătură cu contul, tot doar online. */
+export { RaportareNoua, RaportarileMele } from './Raportari.tsx';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
 export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
 
 type Stare = 'indisponibil' | 'incarca' | 'iesit' | 'neconfirmat' | 'intrat';
+
+/** Contul deschis pe server, ținut de aplicație, cu semnul raportărilor lui (câte au un răspuns necitit, ADR 0116 §14). */
+function tine(uid: string, r: RaspunsDeschide): void {
+  puneCont(contDinRaspuns(uid, r));
+  puneRaportariNecitite(r.verificat ? r.raportariNecitite ?? 0 : 0);
+}
+
+/** Nimeni logat: contul ținut pleacă, cu semnul raportărilor. */
+function uita(): void {
+  puneCont(null);
+  puneRaportariNecitite(0);
+}
 
 /**
  * Reconfirmarea de la pornire (ADR 0116 §8), cerută de editor odată cu el, doar când aplicația ține un cont: sesiunea din
@@ -24,48 +41,15 @@ type Stare = 'indisponibil' | 'incarca' | 'iesit' | 'neconfirmat' | 'intrat';
 export async function reconfirmaContul(c: Config): Promise<void> {
   const x = await reconfirma(c);
   if (x === 'indisponibil') return;
-  puneCont(x === null ? null : contDinRaspuns(x.uid, x.raspuns));
+  if (x === null) uita();
+  else tine(x.uid, x.raspuns);
 }
 
 /** Ieșirea din meniul contului (ADR 0120): contul Firebase se închide în browserul acesta, apoi pleacă și contul ținut. */
 export async function iesiDinCont(c: Config): Promise<void> {
   const r = conecteazaContul(c);
   if (r.ok) await iesi(r.cont);
-  puneCont(null);
-}
-
-/** Textul unei erori a contului, după codul Firebase (logarea, crearea, callable-ul). */
-function textEroare(e: unknown): string {
-  const cod = codEroare(e);
-  switch (cod) {
-    case 'auth/invalid-credential':
-    case 'auth/invalid-login-credentials':
-    case 'auth/wrong-password':
-    case 'auth/user-not-found':
-      return t('cont.eroare.credentiale');
-    case 'auth/email-already-in-use':
-      return t('cont.eroare.folosita');
-    case 'auth/weak-password':
-      return t('cont.eroare.parola-slaba');
-    case 'auth/invalid-email':
-    case 'auth/missing-email':
-      return t('cont.eroare.email');
-    case 'auth/popup-closed-by-user':
-    case 'auth/cancelled-popup-request':
-    case 'auth/popup-blocked':
-      return t('cont.eroare.popup');
-    case 'auth/network-request-failed':
-    case 'functions/unavailable':
-    case 'functions/deadline-exceeded':
-      return t('cont.eroare.retea');
-    case 'auth/too-many-requests':
-    case 'functions/resource-exhausted':
-      return t('cont.eroare.prea-multe');
-    default: {
-      const mesaj = e instanceof Error ? e.message : String(e);
-      return t('cont.eroare.alta', { cod: cod ? `${cod}: ${mesaj}` : mesaj });
-    }
-  }
+  uita();
 }
 
 /** Planul de acum, în cuvinte: dreptul ținut, judecat azi (după zilele offline, proba poate fi trecută). */
@@ -94,21 +78,7 @@ export function PanouCont({ config, onInchide }: { readonly config: Config | nul
   const [email, setEmail] = useState('');
   const [parola, setParola] = useState('');
   const [nume, setNume] = useState(cont?.nume ?? '');
-  const cutie = useRef<HTMLDivElement>(null);
-
-  // Escape închide fereastra oriunde ar fi focusul, ca la fereastra fonturilor.
-  const inchide = useRef(onInchide);
-  inchide.current = onInchide;
-  useEffect(() => {
-    cutie.current?.focus();
-    const tasta = (e: KeyboardEvent): void => {
-      if (e.key !== 'Escape') return;
-      e.stopPropagation();
-      inchide.current();
-    };
-    document.addEventListener('keydown', tasta, true);
-    return () => { document.removeEventListener('keydown', tasta, true); };
-  }, []);
+  const cutie = useFereastraCont(onInchide);
 
   /** Deschiderea pe server: contul nou cu proba, sau dreptul de azi; ce vine se ține în aplicație. */
   const deschide = async (): Promise<boolean | null> => {
@@ -119,7 +89,7 @@ export function PanouCont({ config, onInchide }: { readonly config: Config | nul
       return null;
     }
     const r = await deschideContul(c);
-    puneCont(contDinRaspuns(u.uid, r));
+    tine(u.uid, r);
     setNume(r.verificat ? r.nume : '');
     setStare(r.verificat ? 'intrat' : 'neconfirmat');
     return r.verificat;
@@ -130,7 +100,7 @@ export function PanouCont({ config, onInchide }: { readonly config: Config | nul
     setLucreaza(true);
     setEroare(null);
     setInfo(null);
-    f().catch((e: unknown) => { setEroare(textEroare(e)); }).finally(() => { setLucreaza(false); });
+    f().catch((e: unknown) => { setEroare(textEroareCont(e)); }).finally(() => { setLucreaza(false); });
   };
 
   useEffect(() => {
@@ -145,7 +115,7 @@ export function PanouCont({ config, onInchide }: { readonly config: Config | nul
     primaStare(r.cont).then(async (u) => {
       if (!viu) return;
       if (!u) {
-        puneCont(null);
+        uita();
         setStare('iesit');
         return;
       }
@@ -154,7 +124,7 @@ export function PanouCont({ config, onInchide }: { readonly config: Config | nul
       // Fără server: un cont ținut rămâne cum era (dreptul lui ține zilele offline); altfel, formularul de logare.
       if (!viu) return;
       setStare(contTinut()?.drept ? 'intrat' : 'iesit');
-      setEroare(textEroare(e));
+      setEroare(textEroareCont(e));
     });
     return () => { viu = false; };
   }, []);
@@ -206,7 +176,7 @@ export function PanouCont({ config, onInchide }: { readonly config: Config | nul
           <button type="button" data-buton="cont-retrimite" disabled={lucreaza}
             onClick={() => { fa(async () => { await retrimiteConfirmarea(conectat()); setInfo(t('cont.retrimis')); }); }}>{t('cont.retrimite')}</button>
           <button type="button" data-buton="cont-iesi" disabled={lucreaza}
-            onClick={() => { fa(async () => { await iesi(conectat()); puneCont(null); setStare('iesit'); }); }}>{t('cont.iesi')}</button>
+            onClick={() => { fa(async () => { await iesi(conectat()); uita(); setStare('iesit'); }); }}>{t('cont.iesi')}</button>
         </div>
       </div>
     );
@@ -233,7 +203,7 @@ export function PanouCont({ config, onInchide }: { readonly config: Config | nul
         {drept && <p className="nota">{t('cont.offline', { n: drept.zileOffline })}</p>}
         <div className="cont-butoane">
           <button type="button" data-buton="cont-iesi" disabled={lucreaza}
-            onClick={() => { fa(async () => { await iesi(conectat()); puneCont(null); setStare('iesit'); }); }}>{t('cont.iesi')}</button>
+            onClick={() => { fa(async () => { await iesi(conectat()); uita(); setStare('iesit'); }); }}>{t('cont.iesi')}</button>
         </div>
       </div>
     );

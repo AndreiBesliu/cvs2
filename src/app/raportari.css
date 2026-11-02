@@ -1,0 +1,121 @@
+/* Raportările din editor (ADR 0116 §C): fereastra unei raportări noi și „Raportările mele”, cu răspunsurile echipei. */
+.dialog-raport .dialog-cutie {
+  max-width: 32rem;
+}
+
+.dialog-raport textarea {
+  font: inherit;
+  font-size: var(--fs-3);
+  color: var(--t);
+  background: var(--s-camp);
+  border: 1px solid var(--l-camp);
+  border-radius: var(--r-1);
+  padding: var(--sp-1) var(--sp-2);
+  box-sizing: border-box;
+  width: 100%;
+  resize: vertical;
+}
+
+.raport-fel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.raport-fel legend {
+  padding: 0;
+  margin-bottom: 4px;
+}
+
+.cont-formular .raport-fel label,
+.cont-formular .raport-bifa {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.raport-date {
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+.raport-date summary {
+  cursor: pointer;
+}
+
+.raport-date ul {
+  margin: var(--sp-1) 0 0;
+  padding-left: var(--sp-3);
+}
+
+.raport-browser {
+  overflow-wrap: anywhere;
+}
+
+.raportari-lista {
+  display: grid;
+  gap: var(--sp-2);
+  max-height: 60vh;
+  overflow: auto;
+  margin: var(--sp-2) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.raportari-lista > li {
+  padding: var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+}
+
+.raportari-lista > li[data-noua] {
+  box-shadow: inset 3px 0 0 var(--a);
+}
+
+.raportare-cap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px var(--sp-2);
+}
+
+.raportare-cap time,
+.raportare-de {
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+.raportare-stare[data-stare='deschis'] {
+  color: var(--a);
+}
+
+.raportare-stare[data-stare='rezolvat'] {
+  color: var(--traseu-taiere);
+}
+
+.raportare-noua {
+  font-size: var(--fs-1);
+  font-weight: 600;
+  color: var(--a);
+}
+
+.raportare-text,
+.raportare-raspunsuri p {
+  margin: var(--sp-1) 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.raportare-raspunsuri {
+  margin: var(--sp-2) 0 0;
+  padding: 0 0 0 var(--sp-2);
+  list-style: none;
+  border-left: 2px solid var(--l-margine);
+}
+
+.raportare-raspunsuri li + li {
+  margin-top: var(--sp-2);
+}

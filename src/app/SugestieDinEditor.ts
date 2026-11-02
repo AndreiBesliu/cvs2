@@ -2,9 +2,9 @@
  * Sugestia din editor (ADR 0111): poza planșei (`pozaPlansei`, ca la testul pas cu pas), micșorată sub plafonul serverului
  * și lăsată în browser (`pozaSugestiei.ts`), de unde fila Sugestii din `/admin` (deschisă de editor chiar în clic) o ia în
  * formularul sugestiei noi. Bucata e doar online, ca testul: butonul stă doar în afara instanței live, iar sugestia cere
- * oricum rețea.
+ * oricum rețea. Aceeași poză micșorată pleacă și cu o raportare (ADR 0116 §11), în base64.
  */
-import { POZA_MAX_OCTETI } from '../../shared/sugestii.ts';
+import { baza64, POZA_MAX_OCTETI } from '../../shared/poza.ts';
 import { pozaPlansei } from './pozaPlansei.ts';
 import { lasaPoza } from './pozaSugestiei.ts';
 
@@ -33,6 +33,12 @@ export async function micsoreaza(png: Blob, plafon: number = POZA_MAX_OCTETI): P
     im.close();
   }
   throw new Error('poza planșei iese prea mare, chiar micșorată');
+}
+
+/** Poza planșei, micșorată, în base64: cum o primește callable-ul `tichete` la o raportare. */
+export async function pozaPentruRaportare(): Promise<string> {
+  const b = await micsoreaza(await pozaPlansei());
+  return baza64(new Uint8Array(await b.arrayBuffer()));
 }
 
 /** Poza planșei, micșorată și lăsată pentru fila Sugestii (care o primește și dacă e deja deschisă). */

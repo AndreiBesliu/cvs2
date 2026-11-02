@@ -538,10 +538,25 @@ nav button[aria-pressed='true'] {
   box-shadow: var(--umbra-1);
 }
 
-/* Butonul Cont (ADR 0120) deschide meniul contului: logat, cu inițialele într-un cerc și primul nume, apoi săgeata. */
+/*
+ * Butonul Cont (ADR 0120) deschide meniul contului: logat, cu inițialele într-un cerc și primul nume, apoi săgeata. Un
+ * răspuns nou la o raportare (ADR 0116 §14) pune un punct pe colțul cercului.
+ */
 .cont-buton {
+  position: relative;
   gap: 6px;
   max-width: 12rem;
+}
+
+.cont-semn {
+  position: absolute;
+  top: 2px;
+  left: 22px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--a);
+  box-shadow: 0 0 0 2px var(--s-panou);
 }
 
 .cont-buton[aria-expanded='true'] {

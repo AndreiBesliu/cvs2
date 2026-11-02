@@ -744,6 +744,19 @@
   cursor: default;
 }
 
+/* Câte raportări au un răspuns nou, pe rândul „Raportările mele” (ADR 0116 §14). */
+.meniu-numar {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: var(--fs-1);
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  color: var(--t-pe-a);
+  background: var(--a);
+}
+
 .meniu-separator {
   height: 1px;
   margin: var(--sp-1) 0;

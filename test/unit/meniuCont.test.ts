@@ -1,5 +1,6 @@
 /**
- * Meniul contului (ADR 0120), pe hârtie: rândurile după cine e logat și unde stă sugestia; capul (nimeni logat, adresa
+ * Meniul contului (ADR 0120), pe hârtie: rândurile după cine e logat (raportările doar cu contul deschis, ADR 0116 §C) și
+ * unde stă sugestia; capul (nimeni logat, adresa
  * neconfirmată, proba cu zilele ei, proba trecută la data ei sau după zilele offline, celelalte planuri), în ambele limbi;
  * numele și inițialele de pe butonul Cont.
  */
@@ -23,13 +24,17 @@ function drept(plan: Plan, pana: number | null, calculatLa = ACUM, zileOffline =
 }
 const cu = (d: Drept | null, nume = 'Andrei Besliu'): ContTinut => ({ uid: 'u1', email: 'andrei@exemplu.ro', nume, drept: d });
 
-test('rândurile: logarea sau panoul contului, manualul, sugestia doar unde e voie, ieșirea doar cu un cont ținut', () => {
+test('rândurile: logarea sau panoul contului, raportările cu contul deschis, manualul, sugestia doar unde e voie, ieșirea doar cu un cont ținut', () => {
   const ana = cu(drept('proba', ACUM + 5 * ZI_MS));
   assert.deepEqual(randuriMeniuCont(null, false), ['intra', 'manual']);
   assert.deepEqual(randuriMeniuCont(null, true), ['intra', 'manual', 'sugestie']);
-  assert.deepEqual(randuriMeniuCont(ana, false), ['cont', 'manual', null, 'iesi']);
-  assert.deepEqual(randuriMeniuCont(ana, true), ['cont', 'manual', 'sugestie', null, 'iesi']);
-  // Și cu adresa neconfirmată (încă fără drept) contul e ținut, deci se poate ieși din el.
+  assert.deepEqual(randuriMeniuCont(ana, false), ['cont', 'raportari', 'manual', 'raporteaza', null, 'iesi']);
+  assert.deepEqual(randuriMeniuCont(ana, true), ['cont', 'raportari', 'manual', 'raporteaza', 'sugestie', null, 'iesi']);
+  // Și cu proba încheiată sau contul dezactivat, raportarea rămâne: serverul o cere doar contul deschis.
+  for (const d of [drept('proba', ACUM - 1), drept('dezactivat', null)]) {
+    assert.deepEqual(randuriMeniuCont(cu(d), false), ['cont', 'raportari', 'manual', 'raporteaza', null, 'iesi']);
+  }
+  // Cu adresa neconfirmată (încă fără drept) contul e ținut, deci se poate ieși din el, dar nu se raportează.
   assert.deepEqual(randuriMeniuCont(cu(null, 'andrei@exemplu.ro'), false), ['cont', 'manual', null, 'iesi']);
 });
 

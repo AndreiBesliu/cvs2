@@ -182,20 +182,24 @@ test('fiecare control cu data-editare din bara editării are ușa lui (un contro
 
 /**
  * Rândurile meniului contului (ADR 0120), cu ușa care le acoperă și cheia textului de pe rând: manualul și sugestia au
- * ușile lor de dinainte, iar logarea, panoul și ieșirea stau în capitolul contului. Un rând nou, lipsă de aici, face proba
- * să cadă.
+ * ușile lor de dinainte, iar logarea, panoul, raportările (ADR 0116 §C) și ieșirea stau în capitolul contului. Un rând nou,
+ * lipsă de aici, face proba să cadă.
  */
 const RANDURI_MENIU_CONT: Readonly<Record<IdMeniuCont, { readonly usa: string; readonly cheie: string }>> = {
   cont: { usa: 'editare.cont', cheie: 'editare.cont.al-meu' },
   intra: { usa: 'editare.cont', cheie: 'editare.cont.intra' },
+  raportari: { usa: 'editare.cont', cheie: 'editare.cont.raportari' },
   manual: { usa: 'editare.manual', cheie: 'editare.manual' },
+  raporteaza: { usa: 'editare.cont', cheie: 'editare.cont.raporteaza' },
   sugestie: { usa: 'editare.sugestie', cheie: 'editare.sugestie' },
   iesi: { usa: 'editare.cont', cheie: 'editare.cont.iesi' },
 };
 
 test('fiecare rând al meniului contului are ușa lui, iar capitolul ușii îi spune numele', () => {
-  const cont = { uid: 'u1', email: 'ana@exemplu.ro', nume: 'Ana', drept: null };
-  const randuri = new Set([...randuriMeniuCont(null, true), ...randuriMeniuCont(cont, true)].filter((r) => r !== null));
+  // Fără cont, cu adresa neconfirmată și cu contul deschis (raportările cer un drept primit).
+  const neconfirmat = { uid: 'u1', email: 'ana@exemplu.ro', nume: 'Ana', drept: null };
+  const deschis = { ...neconfirmat, drept: { plan: 'gratuit', capabilitati: [], pana: null, calculatLa: 0, zileOffline: 7 } as const };
+  const randuri = new Set([null, neconfirmat, deschis].flatMap((c) => randuriMeniuCont(c, true)).filter((r) => r !== null));
   assert.deepEqual([...randuri].sort(), Object.keys(RANDURI_MENIU_CONT).sort());
   for (const id of randuri) {
     const r = RANDURI_MENIU_CONT[id];

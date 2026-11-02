@@ -23,6 +23,8 @@ const CITESTE = 'RCiteste000000000000';
 // Conturile clienților (ADR 0116 §19): lista, și lista cu planul.
 const CONT_CIT = 'RContCit000000000000';
 const CONT_ADM = 'RContAdm000000000000';
+const TIC_CIT = 'RTicCit0000000000000';
+const TIC_RASP = 'RTicRasp000000000000';
 
 before(async () => {
   const e = await initializeTestEnvironment({
@@ -74,9 +76,19 @@ before(async () => {
     await setDoc(doc(db, `roluri/${CONT_ADM}`), { nume: 'Conturi: administrează', permisiuni: ['conturi.administreaza'] });
     await setDoc(doc(db, 'staff/ccit'), { rol: CONT_CIT });
     await setDoc(doc(db, 'staff/cadm'), { rol: CONT_ADM });
+    // Raportările clienților (ADR 0116 §C): un cititor, unul care răspunde; tichetul unui client, al altuia, unul fără autor.
+    await setDoc(doc(db, `roluri/${TIC_CIT}`), { nume: 'Tichete: citește', permisiuni: ['tichete.citeste'] });
+    await setDoc(doc(db, `roluri/${TIC_RASP}`), { nume: 'Tichete: răspunde', permisiuni: ['tichete.raspunde'] });
+    await setDoc(doc(db, 'staff/tcit'), { rol: TIC_CIT });
+    await setDoc(doc(db, 'staff/trasp'), { rol: TIC_RASP });
+    await setDoc(doc(db, 'tichete/t1'), { autor: 'om', fel: 'problema', stare: 'nou' });
+    await setDoc(doc(db, 'tichete/t2'), { autor: 'om2', fel: 'idee', stare: 'deschis' });
+    await setDoc(doc(db, 'tichete/t3'), { fel: 'intrebare', stare: 'nou' });
+    for (const x of ['t1', 't2', 't3']) await setDoc(doc(db, `tichete/${x}/poze/plansa`), { tip: 'image/jpeg', marime: 3 });
+    await setDoc(doc(db, 'limiteTichete/om'), { zi: '2026-11-02', numar: 1 });
     // Tot catalogul, fără să fie owner: setările rămân ale owner-ului.
     await setDoc(doc(db, 'roluri/RTot0000000000000000'), {
-      nume: 'Tot', permisiuni: ['erori.citeste', 'erori.rezolva', 'diagnoza.citeste', 'audit.citeste', 'documentatie.citeste', 'sugestii.scrie', 'sugestii.citeste', 'conturi.citeste', 'conturi.administreaza'],
+      nume: 'Tot', permisiuni: ['erori.citeste', 'erori.rezolva', 'diagnoza.citeste', 'audit.citeste', 'documentatie.citeste', 'sugestii.scrie', 'sugestii.citeste', 'conturi.citeste', 'conturi.administreaza', 'tichete.citeste', 'tichete.raspunde'],
     });
     await setDoc(doc(db, 'staff/tot'), { rol: 'RTot0000000000000000' });
     // Colecțiile aplicației vechi, pe care regulile vechi le dădeau omului lor.
@@ -223,6 +235,52 @@ test('sugestiile și contoarele lor zilnice: nimeni nu le scrie din client, nici
     await assertFails(deleteDoc(doc(db, 'sugestii/s1')));
     await assertFails(getDoc(doc(db, 'limiteSugestii/scr')));
     await assertFails(setDoc(doc(db, 'limiteSugestii/scr'), { zi: '2026-10-29', numar: 0 }));
+  }
+});
+
+test('tichetele: cei cu tichete.citeste sau tichete.raspunde și owner-ul le citesc și le listează pe toate; autorul, doar pe ale lui', async () => {
+  for (const uid of ['tcit', 'trasp', 'own', 'tot']) {
+    await assertSucceeds(getDoc(doc(ca(uid), 'tichete/t1')));
+    await assertSucceeds(getDoc(doc(ca(uid), 'tichete/t3')));
+    assert.equal((await assertSucceeds(getDocs(collection(ca(uid), 'tichete')))).size, 3, uid);
+  }
+  // Clientul (fără document de personal) își citește tichetul și lista filtrată pe el; nimic altceva.
+  await assertSucceeds(getDoc(doc(ca('om'), 'tichete/t1')));
+  assert.equal((await assertSucceeds(getDocs(query(collection(ca('om'), 'tichete'), where('autor', '==', 'om'))))).size, 1);
+  await assertFails(getDoc(doc(ca('om'), 'tichete/t2')));
+  await assertFails(getDoc(doc(ca('om'), 'tichete/t3')));
+  await assertFails(getDocs(collection(ca('om'), 'tichete')));
+  await assertFails(getDocs(query(collection(ca('om'), 'tichete'), where('autor', '==', 'om2'))));
+  await assertFails(getDocs(query(collection(ca('om'), 'tichete'), where('stare', '==', 'nou'))));
+  // Fără cont, personalul fără drept pe tichete (chiar cu drept pe sugestii sau pe conturi), rolurile goale sau stricate: nu.
+  for (const uid of [...FARA_NIMIC.filter((u) => u !== 'om'), 'sup', 'aud', 'scr', 'cit', 'ccit', 'cadm']) {
+    await assertFails(getDoc(doc(ca(uid), 'tichete/t2')));
+    await assertFails(getDocs(collection(ca(uid), 'tichete')));
+  }
+});
+
+test('poza unui tichet: o citește, câte una, cine poate citi tichetul; nu se listează; nu o scrie nimeni din client', async () => {
+  for (const uid of ['tcit', 'trasp', 'own']) await assertSucceeds(getDoc(doc(ca(uid), 'tichete/t2/poze/plansa')));
+  await assertSucceeds(getDoc(doc(ca('om'), 'tichete/t1/poze/plansa')));
+  await assertFails(getDoc(doc(ca('om'), 'tichete/t2/poze/plansa')));
+  await assertFails(getDoc(doc(ca('om'), 'tichete/t3/poze/plansa')));
+  for (const uid of [...FARA_NIMIC.filter((u) => u !== 'om'), 'sup', 'scr', 'cit']) await assertFails(getDoc(doc(ca(uid), 'tichete/t2/poze/plansa')));
+  for (const uid of ['tcit', 'own', 'om']) await assertFails(getDocs(collection(ca(uid), 'tichete/t1/poze')));
+  for (const uid of [null, 'om', 'trasp', 'own']) {
+    await assertFails(setDoc(doc(ca(uid), 'tichete/t1/poze/plansa'), { tip: 'image/png', marime: 1 }));
+    await assertFails(deleteDoc(doc(ca(uid), 'tichete/t1/poze/plansa')));
+  }
+});
+
+test('tichetele și contoarele lor zilnice: nimeni nu le scrie din client, nici autorul, nici owner-ul; contoarele nu se citesc', async () => {
+  for (const uid of [null, 'om', 'tcit', 'trasp', 'own']) {
+    const db = ca(uid);
+    await assertFails(setDoc(doc(db, 'tichete/nou'), { autor: uid ?? 'x', fel: 'problema', stare: 'nou' }));
+    await assertFails(updateDoc(doc(db, 'tichete/t1'), { stare: 'rezolvat' }));
+    await assertFails(updateDoc(doc(db, 'tichete/t1'), { necititeAutor: 0 }));
+    await assertFails(deleteDoc(doc(db, 'tichete/t1')));
+    await assertFails(getDoc(doc(db, 'limiteTichete/om')));
+    await assertFails(setDoc(doc(db, 'limiteTichete/om'), { zi: '2026-11-02', numar: 0 }));
   }
 });
 

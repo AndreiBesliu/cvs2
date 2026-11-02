@@ -11,8 +11,8 @@ const ID = 'AbCdEfGhIjKlMnOpQrSt';
 const p = (...x: Permisiune[]): ReadonlySet<Permisiune> => new Set(x);
 
 test('filele: owner-ul le vede pe toate; un rol, doar pe ale permisiunilor lui; Cont mereu; Personal și Setări doar owner-ul', () => {
-  assert.deepEqual(fileVizibile(true, p()), ['erori', 'diagnoza', 'roadmap', 'documentatie', 'sugestii', 'utilizatori', 'personal', 'setari', 'cont']);
-  assert.deepEqual(fileVizibile(false, new Set(PERMISIUNI)), ['erori', 'diagnoza', 'roadmap', 'documentatie', 'sugestii', 'utilizatori', 'cont'], 'tot catalogul tot nu dă Personal și Setări');
+  assert.deepEqual(fileVizibile(true, p()), ['erori', 'diagnoza', 'roadmap', 'documentatie', 'sugestii', 'tichete', 'utilizatori', 'personal', 'setari', 'cont']);
+  assert.deepEqual(fileVizibile(false, new Set(PERMISIUNI)), ['erori', 'diagnoza', 'roadmap', 'documentatie', 'sugestii', 'tichete', 'utilizatori', 'cont'], 'tot catalogul tot nu dă Personal și Setări');
   assert.deepEqual(fileVizibile(false, p('erori.citeste')), ['erori', 'cont']);
   assert.deepEqual(fileVizibile(false, p('erori.rezolva')), ['cont'], 'a rezolva fără a citi nu deschide fila');
   assert.deepEqual(fileVizibile(false, p('documentatie.citeste', 'diagnoza.citeste')), ['diagnoza', 'roadmap', 'documentatie', 'cont']);
@@ -24,6 +24,9 @@ test('filele: owner-ul le vede pe toate; un rol, doar pe ale permisiunilor lui; 
   // Conturile clienților (ADR 0116 §19): citirea sau administrarea deschide fila Utilizatori; Setările rămân ale owner-ului.
   assert.deepEqual(fileVizibile(false, p('conturi.citeste')), ['utilizatori', 'cont']);
   assert.deepEqual(fileVizibile(false, p('conturi.administreaza')), ['utilizatori', 'cont']);
+  // Raportările clienților (ADR 0116 §13): citirea sau răspunsul deschide fila Tichete, fiecare singură.
+  assert.deepEqual(fileVizibile(false, p('tichete.citeste')), ['tichete', 'cont']);
+  assert.deepEqual(fileVizibile(false, p('tichete.raspunde')), ['tichete', 'cont']);
 });
 
 test('omul: sursa lipsă = pus în consolă; ce lipsește e necunoscut (null), nu inventat', () => {

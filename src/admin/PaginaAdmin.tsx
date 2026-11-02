@@ -22,6 +22,7 @@ import { FilaPersonal } from './personal/FilaPersonal.tsx';
 import { FilaRoadmap } from './roadmap/FilaRoadmap.tsx';
 import { FilaSetari } from './setari/FilaSetari.tsx';
 import { FilaSugestii } from './sugestii/FilaSugestii.tsx';
+import { FilaTichete } from './tichete/FilaTichete.tsx';
 import { FilaUtilizatori } from './utilizatori/FilaUtilizatori.tsx';
 import './admin.css';
 
@@ -254,6 +255,7 @@ function Cont({ con, instanta, build }: { readonly con: Conexiune; readonly inst
         {aratata === 'roadmap' ? <FilaRoadmap aducator={aducator} deschide={deschide} /> : null}
         {aratata === 'documentatie' ? <FilaDocumentatie aducator={aducator} cale={adresa.document} ancora={adresa.ancora} deschide={deschide} /> : null}
         {aratata === 'sugestii' ? <FilaSugestii con={con} eu={stare.user.uid} owner={stare.owner} permisiuni={stare.permisiuni} /> : null}
+        {aratata === 'tichete' ? <FilaTichete con={con} owner={stare.owner} permisiuni={stare.permisiuni} /> : null}
         {aratata === 'utilizatori' ? <FilaUtilizatori con={con} poateAdministra={stare.permisiuni.has('conturi.administreaza')} /> : null}
         {aratata === 'personal' ? <FilaPersonal con={con} eu={stare.user.uid} emailEu={stare.user.email ?? null} /> : null}
         {aratata === 'setari' ? <FilaSetari con={con} /> : null}

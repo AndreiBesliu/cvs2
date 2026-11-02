@@ -4,6 +4,7 @@ import { curataNume, dreptDin, NUME_MAX, ZI_MS, ZILE_PROBA, type RaspunsDeschide
 import { CALE_SETARI, COLECTIE_CONTURI, planEfectiv, setariDin } from '../../../shared/conturiPlan.ts';
 import { normalizeazaEmail } from '../../../shared/personal.ts';
 import { scrieAudit } from '../audit.ts';
+import { raportariNecitite } from '../tichete/actiuni.ts';
 import { logServerError } from '../erori/jurnal.ts';
 import { drepturiIn } from '../personal/drepturi.ts';
 
@@ -29,7 +30,7 @@ async function deschide(db: Firestore, uid: string, token: TokenCont | null, acu
   if (!email) throw new HttpsError('failed-precondition', 'contul n-are o adresă de e-mail');
   // Proba pornește doar cu adresa confirmată (Google o dă confirmată); până atunci, contul nu există încă la noi.
   if (token?.email_verified !== true) return { ok: true, verificat: false, email };
-  return db.runTransaction(async (tx) => {
+  const r = await db.runTransaction(async (tx) => {
     const drepturi = await drepturiIn(tx, db, uid);
     const ref = db.collection(COLECTIE_CONTURI).doc(uid);
     const c = await tx.get(ref);
@@ -58,8 +59,14 @@ async function deschide(db: Firestore, uid: string, token: TokenCont | null, acu
       // Adresa poate fi schimbată în Auth (ADR 0049 §6); documentul o urmează, ca fila Utilizatori să caute după cea de azi.
       tx.update(ref, { email, ultimaLogare: cand, drept, ...(nume === null ? { nume: 'cont' } : {}) });
     }
-    return { ok: true, verificat: true, email, nume: nume ?? 'cont', drept };
+    return { ok: true, verificat: true, email, nume: nume ?? 'cont', drept } as const;
   });
+  // Semnul răspunsurilor noi din meniul contului (ADR 0116 §14), odată cu deschiderea: un eșec al lui nu oprește contul.
+  const necitite = await raportariNecitite(db, uid).catch(async (e: unknown) => {
+    await logServerError('callable:cont/raportari', e, { uid }, db, acum);
+    return null;
+  });
+  return necitite === null ? r : { ...r, raportariNecitite: necitite };
 }
 
 async function schimbaNumele(db: Firestore, uid: string, d: Record<string, unknown>, acum: Date): Promise<RaspunsNume> {

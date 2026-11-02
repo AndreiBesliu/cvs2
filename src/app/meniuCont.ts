@@ -8,17 +8,24 @@ import { limba, traduce } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import type { ContTinut } from './dreptCont.ts';
 
-/** Un rând al meniului: panoul contului (logat) sau logarea (nelogat), manualul, sugestia, ieșirea. */
-export type IdMeniuCont = 'cont' | 'intra' | 'manual' | 'sugestie' | 'iesi';
+/**
+ * Un rând al meniului: panoul contului (logat) sau logarea (nelogat), raportările omului, manualul, o raportare nouă, sugestia,
+ * ieșirea.
+ */
+export type IdMeniuCont = 'cont' | 'intra' | 'raportari' | 'manual' | 'raporteaza' | 'sugestie' | 'iesi';
 
 /**
- * Rândurile, de sus în jos; `null` e linia dinaintea ieșirii. Sugestia stă doar unde stătea și butonul ei (ADR 0111: în
- * afara instanței live, fără `?test`), iar ieșirea doar cu un cont ținut.
+ * Rândurile, de sus în jos; `null` e linia dinaintea ieșirii. Raportările (ADR 0116 §C) cer contul deschis, cu adresa
+ * confirmată (un drept primit), ca serverul. Sugestia stă doar unde stătea și butonul ei (ADR 0111: în afara instanței live,
+ * fără `?test`), iar ieșirea doar cu un cont ținut.
  */
 export function randuriMeniuCont(cont: ContTinut | null, sugestie: boolean): readonly (IdMeniuCont | null)[] {
+  const deschis = cont !== null && cont.drept !== null;
   return [
     cont ? 'cont' : 'intra',
+    ...(deschis ? (['raportari'] as const) : []),
     'manual',
+    ...(deschis ? (['raporteaza'] as const) : []),
     ...(sugestie ? (['sugestie'] as const) : []),
     ...(cont ? ([null, 'iesi'] as const) : []),
   ];

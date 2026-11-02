@@ -195,6 +195,66 @@ Utilizatori și fila Tichete. Owner-ul vrea și un canal prin care clienții rap
   - mutații țintite, toate prinse (raportul feliei, în `DEVLOG.md`).
 - **Rămân pentru 14.D↑:** căutarea pe server după e-mail, dosarul contului, exportul și ștergerea datelor.
 
+## Felia 15.B↑a (02.11.2026): raportările din editor și fila Tichete
+
+- **Ce s-a construit:**
+  - callable-ul `tichete` (`functions/src/tichete/actiuni.ts`), cu auditul în tranzacție. Acțiunile lui:
+    - `raporteaza` cere contul deschis (`conturi/{uid}`, făcut la prima logare cu adresa confirmată) sau un document de
+      personal; cel mult 10 raportări pe cont pe zi (UTC, contorul în `limiteTichete/{uid}`). Tichetul nou e `nou`, cu felul,
+      textul, datele aplicației, amprentele și, la bifă, poza (în `tichete/{id}/poze/plansa`). Auditul ține felul, lungimea
+      textului, câte amprente și poza, nu textul;
+    - `mele` dă raportările autorului, cele mai noi 50, cu răspunsurile echipei (fără cine le-a scris) și câte au un răspuns
+      necitit; `citit` le notează citite, doar pentru autor;
+    - `raspunde` și `stare` cer `tichete.raspunde` și versiunea văzută. Un răspuns (cel mult 50 pe tichet) trece tichetul nou
+      în `deschis` și adaugă unul la răspunsurile necitite ale autorului; starea trece între `deschis` și `rezolvat`;
+  - `cont` / `deschide` întoarce și `raportariNecitite`, semnul din meniu. Dacă numărătoarea cade, deschiderea merge mai
+    departe, iar eroarea intră în jurnal;
+  - în editor (`src/app/Raportari.tsx`, în bucata panoului contului), cu contul deschis, două rânduri noi în meniul contului
+    (ADR 0120; „?”, lângă care stătea raportarea în §11, e și el acolo):
+    - **Raportează o problemă…**: felul, textul, poza planșei la bifă și, la vedere, ce mai pleacă: versiunea, instanța,
+      limba, browserul, planul de azi și amprentele;
+    - **Raportările mele**: starea și răspunsurile. Un răspuns nou e marcat, apoi notat citit pe server;
+    - semnul: un punct pe butonul Cont și numărul raportărilor cu răspuns nou pe rând;
+  - fila **Tichete** din `/admin` (`src/admin/tichete/`): cele mai noi 300 de tichete, cu filtrul pe stare și numărul din
+    fiecare. Pe rând stau felul, autorul, vârsta (roșie după 48 h fără răspuns), textul, datele aplicației, amprentele, poza
+    (la cerere) și răspunsurile; cu `tichete.raspunde` (și owner-ul) se scrie răspunsul și se schimbă starea.
+- **Editorul nu aduce Firestore:** raportarea, lista și notarea trec prin callable, ca deschiderea contului. Bucata contului
+  are 28,8 / 32 kB.
+- **Amprentele** sunt id-urile grupurilor din `errorLogs`, făcute în browser ca pe server:
+  - din mesajul pe care l-a trimis raportorul (`mesajRaportat`), cu cheia amprentei (`cheieAmprenta`). Cheia s-a mutat în
+    `shared/amprenta.ts`: contractul erorilor e în pachetul de pornire;
+  - în bucata raportorului, adusă doar când sesiunea are erori;
+  - doar erorile sesiunii, fără cele „doar locale”, câte o dată, ultimele 20: normalizarea e scumpă pe un mesaj lung (ADR
+    0043 §4).
+- **Bucățile:**
+  - contractul pozei (plafonul, base64-ul, tipul după semnătură) stă acum în `shared/poza.ts`. Altfel, bucata contului ar fi
+    adus, prin contractul tichetelor, și contractul sugestiilor: acela ar fi ieșit într-o bucată nouă, comună cu sugestia din
+    editor;
+  - contractul tichetelor intră în editor prin `contEditor.ts`. E împărțit cu `/admin`, deci stă în bucata comună a contului,
+    iar importul de acolo o lasă numită `contEditor`: bundlerul numește bucata după ultimul ei modul.
+- **Regulile:**
+  - `tichete/{id}` îl citesc cei cu `tichete.citeste` sau `tichete.raspunde` (și owner-ul); autorul, doar tichetele lui (o
+    listă trebuie să filtreze `autor` pe uid-ul lui);
+  - poza se citește câte una (`get`), de aceiași;
+  - `limiteTichete` n-are regulă, iar din client nu se scrie nimic.
+- **Nota de confidențialitate:** raportările (textul, poza, datele aplicației, amprentele) intră în ce ținem.
+- **Probele:**
+  - pe hârtie: `test/unit/raportare.test.ts` (datele aplicației, primite de server; erorile sesiunii; amprentele, o dată și
+    ultimele 20; amprenta din browser, egală cu id-ul serverului pentru raportul aceleiași erori; semnul),
+    `test/unit/meniuCont.test.ts` (rândurile, doar cu contul deschis), `test/unit/tichete.test.ts` (validările contractului; rândul,
+    ordinea, filtrele și vârsta roșie din fila Tichete), catalogul permisiunilor și al filelor, poarta manualului (fiecare rând
+    nou are capitolul lui) și contractul erorilor, cu cheia mutată;
+  - pe emulator: `functions/test/tichete.emulator.test.ts` (9 probe ale callable-ului), trei probe noi ale regulilor (citirea,
+    poza, nicio scriere din client) și semnul din deschiderea contului;
+  - e2e: `test/e2e/cont.spec.ts` (rândurile cu un cont ținut, ferestrele fără Firebase) și
+    `test/e2e-emulator/tichete.emulator.spec.ts` (raportarea cu poza și amprenta unei erori adevărate din sesiune, egală cu id-ul
+    grupului ei; răspunsul din fila Tichete; semnul la pornire, stins după citire);
+  - otrăvurile țintite din `test/otravuri/15.B-a.py` (raportul feliei, în `DEVLOG.md`).
+- **Rămân pentru 15.B↑b:**
+  - proiectul atașat, cu bifa „Atașează proiectul” (Storage, cel mult 10 MB);
+  - jobul zilnic care șterge tichetele rezolvate după `zilePastrareTichete`, cu atașamentele lor și marcajul de rulare;
+  - fraza păstrării, în notă.
+
 ## Ce am respins
 
 - **Invitațiile pentru clienți:** owner-ul a ales înregistrarea liberă, iar planul se dă din admin.

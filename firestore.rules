@@ -59,6 +59,20 @@ service cloud.firestore {
       }
     }
 
+    // Raportările clienților (ADR 0116 §C), scrise doar de callable-ul `tichete`: cei cu `tichete.citeste` sau
+    // `tichete.raspunde` (și owner-ul) le citesc pe toate; autorul, doar pe ale lui (o listă trebuie să filtreze ea `autor`
+    // pe uid-ul omului). Contoarele zilnice (`limiteTichete`) n-au regulă: le citește și le scrie doar serverul.
+    match /tichete/{id} {
+      allow read: if are('tichete.citeste') || are('tichete.raspunde')
+        || (request.auth != null && resource.data.autor == request.auth.uid);
+
+      // Poza planșei: o citește, câte una, cine poate citi tichetul; o scrie doar callable-ul, odată cu el.
+      match /poze/{poza} {
+        allow get: if are('tichete.citeste') || are('tichete.raspunde')
+          || (request.auth != null && get(/databases/$(database)/documents/tichete/$(id)).data.autor == request.auth.uid);
+      }
+    }
+
     // Conturile clienților (ADR 0116), scrise doar de callable-urile `cont` și `administreazaConturile`: fiecare își citește
     // documentul lui; fila Utilizatori (§19) le citește și le listează pe toate, cu `conturi.citeste` sau cu
     // `conturi.administreaza` (planul se schimbă pe ce se vede).

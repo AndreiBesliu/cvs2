@@ -76,6 +76,7 @@ const CERE: Readonly<Record<Fila, readonly Permisiune[] | 'owner' | null>> = {
   roadmap: ['documentatie.citeste'],
   documentatie: ['documentatie.citeste'],
   sugestii: ['sugestii.scrie', 'sugestii.citeste'],
+  tichete: ['tichete.citeste', 'tichete.raspunde'],
   utilizatori: ['conturi.citeste', 'conturi.administreaza'],
   personal: 'owner',
   setari: 'owner',
