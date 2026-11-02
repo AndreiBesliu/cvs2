@@ -4578,3 +4578,7 @@ build-ul determinist (230 de fișiere identice; pornirea 98,7 / 110 kB, cu ușa 
 bucata comună a programului 1,0 kB). E2e-ul întreg, pe portul 4176: 295 trec, 4 pică. Trei pică doar sub încărcarea suitei
 (riglele, paleta de două ori) și trec rulate singure; al patrulea cere adresa `http://localhost:4173/` (raportorul), deci
 pică pe orice alt port. Otrăvurile `test/otravuri/3.S.py`: 28 / 28 prinse (P01–P20 unitare, E01–E08 prin e2e).
+**Publicat pe canalul `trenulet`** pe 02.11, la 22:05 (`node scripts/publica-canal.ts trenulet`, din `7a95fae`):
+<https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>, valabil până pe 02.12. Hosting-ul trimite CSP-ul neschimbat și
+niciun antet COOP. Proba e2e a primirii, rulată chiar pe canal (fără server local): 3 / 3. Adresa principală de test nu s-a
+atins; ramura nu e împinsă.
