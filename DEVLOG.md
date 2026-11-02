@@ -4711,3 +4711,29 @@ consolă, doar avertismentul report-only al cadrului google.com (reCAPTCHA-ul Ap
 **Rămâne:** refuzul tăcut pe tastă (Ctrl+G, ca și Ctrl+Shift+G la degrupare), găsit de sesiunea grupării, stă în tastatura
 din `App.tsx`: întrebarea, la owner. Worktree-ul grupării rămâne: sesiunea continuă cu alinierea selecției ca bloc și
 avertismentul la contururile care se ating („3, ok”).
+
+## 2026-11-02 — Refuzul de pe Ctrl+G, spus lângă butoane; schița ordinii operațiilor (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește” (la „Repar întâi tăcerea de pe Ctrl+G, apoi pornesc reordonarea de mână?”). Pe drum: „o sa facem
+pauza cat de curand”.
+**Started:** 02.11, 23:19. **Completed:** 02.11, 23:49.
+
+**Tăcerea de pe Ctrl+G**, găsită de sesiunea grupării: tastele și paleta trec prin ușa aplicației (`executa` din `App.tsx`),
+care oprea în tăcere o acțiune refuzată, iar butonul și meniul trec prin modulul editării, care spune motivul lângă butoane.
+Acum ușa îi dă motivul modulului (`onRefuz`, ca `onLipeste` și `onDesen`): Ctrl+G și Ctrl+Shift+G își spun refuzul lângă
+butoane, până la altă selecție (ADR 0130 §7, precizat; manualul, în ambele limbi). Proba întâi: cazul cu o singură formă
+aleasă, adăugat în e2e-ul grupării, a picat pe build-ul de dinainte și trece după. Codul: `0e458a9`.
+**Porțile:** traducerile (541, 0 lipsă), compilatoarele, importurile, 8 088 de teste unitare (0 căderi, 8 sărite), build-ul
+determinist (pornirea 99,2 / 110 kB, totalul 450,8 / 500), licențele, e2e 297 / 297. Publicarea pe test e pornită în fundal,
+după CI-ul rapid; verificarea ei, după pauză.
+
+**Reordonarea de mână a operațiilor** (etapa 5, ultima parte a rândului „Ordinea operațiilor” din prag): întâi schița, după
+regula owner-ului pentru o interfață nouă. Trei planșe, <https://claude.ai/artifact/Xadco685LSV84PKFCFkrWQ>: ordinea
+automată arătată (rândurile ferestrei exportului în ordinea în care se taie, cu numărul lor); „A mea”, cu rândurile mutate
+din mâner sau din săgeți și confirmarea cerută când exteriorul unei piese se taie înaintea unui interior al ei; regiunile
+care se sapă împreună (buzunarele de aceeași adâncime, V-carve-urile cu aceleași valori), la locul primului lor rând.
+Ordinea ar sta în document (v19); nicio ramură paralelă nu schimbă schema. Fără cod: ADR-ul (0133) și felia, după răspunsul
+owner-ului.
+**Sesiunile paralele:** senderul pe tot ecranul (13.A↑) transmite că owner-ul a cerut unirea („Merge, unește”, în sesiunea
+lui; cinci conflicte în fișierele comune); Trenuleț are 3.Xa gata pe ramura lui și întreabă de 3.Xb; textul așteaptă un
+răspuns. Nimic din ele nu e unit înaintea pauzei.
