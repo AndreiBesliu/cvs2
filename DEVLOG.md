@@ -4414,3 +4414,23 @@ e2e 293 / 293, emulatoarele (69 de probe ale funcțiilor și regulilor, 20 e2e).
 **Publicat pe adresa principală de test:** 01.11, 23:07, `publica` pe `056cbfd` (rularea 41350028552), după CI-ul rapid verde;
 `web.app` servește versiunea `056cbfd2f47d`. Profilul podului ESP3D nu se poate încerca fără pod: proba lui e pe hârtie (un
 „ok” rupt de un mesaj text al podului rămâne „ok”), iar proba pe mașină vine cu 3.6e, după montaj.
+
+## 2026-11-02 — Felia 3.Q: imaginea podului ESP3D, compilată și verificată pe GitHub; ghidul montajului (ADR 0119) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pregătește” (la „Îți pregătesc configurarea ESP3D (fișierul și pașii de compilare)?”).
+**Started:** 02.11, 07:33. **Completed:** 02.11, 10:02. **Ce a ieșit din sursa ESP3D:**
+- linia stabilă e acum 3.1 (din 05.2026), dar socket-ul ei de date e altul (subprotocolul `esp3d-v1`, cadrele binare sunt
+  transfer de fișiere), deci podul rămâne pe 3.0.2 (tag-ul v3.0.2, commit `83baa7d`);
+- în 3.0.2, timpul real (`?`, `!`, `~`, Ctrl-X) pleacă imediat doar cu ținta GRBL: ținta implicită devine GRBL;
+- GRBL trece pe Serial2 (GPIO16 / GPIO17): Serial0 e al cipului USB și al mesajelor ROM-ului la pornire;
+- cârligele de la IP și de la oră (`[ESP212]`) nu ajung la GRBL: `[ESP212]` nu e compilat fără ecranul imprimantei.
+
+Workflow-ul `pod-esp3d` (pornit de mână) compilează imaginea cu `scripts/pod-esp3d.ts`: faptele verificate în sursă, trei
+rânduri schimbate exact o dată, o unitate de probă compilată cu sursa. Apoi asamblează imaginea de la 0x0 și o verifică
+bucată cu bucată; esptool o validează și el. Prima rulare s-a oprit, cu motivul, la adresa aplicației, care lipsea din
+metadatele PlatformIO (acum vine din partiția `ota_0`). A doua e verde: rularea 41404105524, imaginea de 1 397 200 de
+octeți, SHA-256 `0a0208fb…8800`. Ghidul owner-ului e `docs/masina/pod-esp3d.md`; la zi și ADR 0119 („Podul ESP3D”),
+fișa (3.Q, coada owner-ului), CLAUDE.md, traducerile (522, 0 lipsă). Codul: `918e070`, `a59b869`.
+**Porțile:** compilatoarele, importurile, traducerile, 8 012 teste unitare, build-ul determinist, licențele, e2e 293 / 293
+(o cădere EBUSY a Drive-ului pe o descărcare, trecută la rularea singură), emulatoarele (69 de probe ale funcțiilor și
+regulilor, 20 e2e); rapid verde pe ambele commit-uri de cod. Nedovedit până la 3.6e: pornirea pe placă.
