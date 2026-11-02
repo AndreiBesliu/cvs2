@@ -4610,3 +4610,26 @@ proba compara pauza cu constanta generatorului. Acum pauza, adâncimea de la T4 
 hârtie; reluate, plus două otrăvuri noi: 17 / 17 prinse.
 **Publicat pe test** pe 02.11, la 21:29, prin workflow-ul `publica` (`d25a15e`): documentația publicată are ADR 0131 și
 feliile 4.6↑a și 4.6↑b, în ambele limbi. Pachetele se iau din repo: `test/ateliere/<controler>.zip`.
+
+## 2026-11-02 — Felia 4.9↑: fișa plăcii 4 și placa de regresie (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește” (la „Pornesc punctul 9 al etapei 4, fișa plăcii 4 și placa de regresie?”).
+**Started:** 02.11, 21:44. **Completed:** 02.11, 22:01.
+
+Punctul 9 al etapei 4, ultimul fără mașină. **Placa 4** (`docs/etape/placa-04.md`): șanțurile de calibrare din sonda s4,
+câte un fișier pe freză (`test/placi/placa-04/`), scrise de postul aplicației din IR, fiindcă bila nu e încă o formă de
+freză a documentului: plată Ø6 (șanțul la 3 mm, canalul cercului R25 în G3, plonjarea la 5 mm), bila Ø6, V90 și V60 (vârful
+la 2 mm). Fișa are valorile pe hârtie și toleranțele din plan, timpii estimați (T1: 1 min 23 s pe GRBL 1.1h din fabrică) și
+ce devin măsurătorile (diametrul efectiv, raza bilei, vârful teșit al V-ului, ca date ale sculelor). **Placa de regresie** e
+definită în aceeași fișă (generatorul documentației primește în `docs/etape/` doar fișe numerotate): fișierele de aur ale
+plăcilor 1, 2 și 4 și setul GRBL 1.1 al plăcii 3, pe o bucată de 600 × 400, cu zero-ul fiecărei zone; prima tăiere în
+tamponul T1. Codul: `ec428c9`.
+**Porțile:** compilatorul, 8 074 de teste unitare (0 căzute, 8 sărite), traducerile (539, 0 lipsă), proba documentației
+(fișele plăcilor: 3); CI-ul rapid, verde în toate cele 6 felii și în oracolul exportului 2D. Fiecare cotă a plăcii 4 e
+prezisă de oracolul independent al simulării, în toleranța planului (`placa04.test.ts`, 2 s).
+**Otrăvurile** (`test/otravuri/4.9.py`), într-o clonă din afara Drive-ului, pe cotele oracolului singure (proba de aur stă
+în `placa04.aur.test.ts`): 7 / 7 prinse, martorul scăpat. Sensul arcului (G3) l-ar fi ratat oracolul, care vede doar
+canalul: proba îl citește acum din text, iar otrava lui e prinsă.
+**Publicat pe test** pe 02.11, la 22:11, prin workflow-ul `publica` (`ec428c9`): documentația publicată are fișa plăcii 4,
+cu placa de regresie, și felia 4.9↑. Etapa 4 n-are puncte fără mașină rămase: 8 (laptopul de atelier) și plăcile cer
+owner-ul.
