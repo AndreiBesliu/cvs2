@@ -1,7 +1,9 @@
-import { createHash } from 'node:crypto';
 import { Timestamp, type Firestore } from 'firebase-admin/firestore';
-import { cheieAmprenta } from '../../../shared/amprenta.ts';
 import { oraFerestrei, PLAFON_OAMENI, RETENTIE_ZILE, type Sursa } from '../../../shared/erori.ts';
+import { amprenta } from './amprenta.ts';
+
+// Hash-urile stau în modulul lor, fără Firestore (le iau și probele din rădăcină); aici rămân la îndemâna celor de până acum.
+export { amprenta, hashScurt } from './amprenta.ts';
 
 /** Colecția jurnalului (ADR 0039 §2): un document pe grup, cu aparițiile în `aparitii`. */
 export const COLECTIE = 'errorLogs';
@@ -32,18 +34,6 @@ export interface Plafon {
 export type RezultatScriere =
   | { readonly ok: true; readonly amprenta: string; readonly nou: boolean }
   | { readonly ok: false; readonly motiv: 'plafon' };
-
-const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8').digest('hex');
-
-/** Id-ul grupului: primii 32 de caractere hex din SHA-256 peste cheia amprentei (ADR 0039 §3). */
-export function amprenta(sursa: Sursa, tip: string, mesaj: string): string {
-  return sha256(cheieAmprenta(sursa, tip, mesaj)).slice(0, 32);
-}
-
-/** Un hash scurt, pentru chei care n-au voie să păstreze valoarea în clar (IP-ul). */
-export function hashScurt(text: string): string {
-  return sha256(text).slice(0, 16);
-}
 
 const numar = (x: unknown): number => (typeof x === 'number' && Number.isFinite(x) ? x : 0);
 

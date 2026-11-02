@@ -10,7 +10,8 @@ import { CAPABILITATI } from '../../shared/capabilitati.ts';
 import { capabilitatiPlan, ZI_MS, type Drept, type Plan } from '../../shared/conturi.ts';
 import { PLAFON_MESAJ } from '../../shared/erori.ts';
 import { AMPRENTE_MAX, BROWSER_MAX, curataAmprentele, curataAplicatia, RE_AMPRENTA } from '../../shared/tichete.ts';
-import { amprenta } from '../../functions/src/erori/scrie.ts';
+// Amprenta serverului, din modulul ei fără Firestore: în CI, `firebase-admin` e instalat doar în prima felie a nivelului rapid.
+import { amprenta } from '../../functions/src/erori/amprenta.ts';
 import type { IntrareEroare } from '../../src/app/jurnalErori.ts';
 import { amprenteleSesiunii, aplicatiaTichet, intrariSesiunii } from '../../src/app/raportare.ts';
 import { puneRaportariNecitite, raportariNecitite } from '../../src/app/raportariNecitite.ts';
