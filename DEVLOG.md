@@ -4692,3 +4692,22 @@ schimba și pasul, deci cheia diferea oricum; proba schimbă acum doar adâncime
 **Republicat pe canalul `grupare`** la 22:19 (versiunea `17dbad4ce480`). Verificat acolo: dreptunghiul și cercul din el, cu
 același V-carve (3 mm, T2): Ctrl+G nu grupează, iar butonul Grupează spune motivul. Pe tastă, refuzul e tăcut, ca la
 degrupare.
+
+## 2026-11-02 — Unirea grupării (felia 6.T↑, ADR 0130) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „poti uni worktree asta deocamdata” (cu captura sesiunii „Gruparea, lângă degrupare”; acolo, owner-ul răspunsese
+„Da, unește” la întrebarea sesiunii despre unirea în main și publicarea pe test).
+**Started:** 02.11, 22:29. **Completed:** 02.11, 23:04. O fuziune (`9486a61`) a ramurii `wip/6.T-grupare` (6 commit-uri, din
+`77a1be6`), cu conflictele doar de adăugare (DEVLOG, jurnalul feliilor, indexul ADR, cu 0130 înaintea lui 0131, CLAUDE.md),
+rezolvate păstrând ambele părți; traducerile: 541, 0 lipsă. Porțile pe arborele unit: compilatoarele, importurile (852 de
+module, 0 încălcări), 8 088 de teste unitare (0 căderi, 8 sărite), build-ul determinist (230 de fișiere; pornirea 99,1, cu
+ușa 102,6 / 110 kB; totalul 450,7 / 500), licențele, e2e 297 / 297, cu `raportor.spec.ts:73`, care pe ramură cerea portul
+4173. Emulatoarele n-au rulat: nici ramura, nici main-ul de după ea nu ating funcțiile sau regulile.
+**Publicat pe adresa principală de test:** 02.11, 22:52, `publica` pe `9486a61` (rularea 41522682384), după CI-ul rapid
+verde (41521633861). Verificat în browserul aplicației la 1440 px, pe `cncvectorstudio-test.web.app`, după „Reload”:
+versiunea `9486a61164d4`; butonul Grupează stă lângă Degrupează; un dreptunghi și un cerc, alese cu fereastra, devin la
+Grupează un singur rând („Part: 2 shapes”, cu ambele operații), iar Ctrl+Z le desface; foaia a rămas goală după probă. În
+consolă, doar avertismentul report-only al cadrului google.com (reCAPTCHA-ul App Check), nu al aplicației.
+**Rămâne:** refuzul tăcut pe tastă (Ctrl+G, ca și Ctrl+Shift+G la degrupare), găsit de sesiunea grupării, stă în tastatura
+din `App.tsx`: întrebarea, la owner. Worktree-ul grupării rămâne: sesiunea continuă cu alinierea selecției ca bloc și
+avertismentul la contururile care se ating („3, ok”).
