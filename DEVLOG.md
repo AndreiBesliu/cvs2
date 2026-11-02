@@ -4503,3 +4503,39 @@ Fără cont, meniul are rândurile de dinainte. Cu un cont ținut pus de mână 
 reports” și „Report a problem…”, iar ambele ferestre vin de pe test, cu stilul lor (`PanouCont-*.css`), și spun că
 raportarea cere contul deschis: fila n-are o sesiune Firebase. Jurnalul a rămas la 0 erori. Calea cu cont logat pe test n-am
 încercat-o (nu mă loghez pe instanțele găzduite): o probează e2e-ul pe emulatoare.
+
+## 2026-11-02 — Felia 4.1↑: corpusul de aur al documentului (ADR 0121); roadmap-ul, reluat cu etapa 4 (Model: Claude Opus 5.5)
+
+**Prompt:** „noteaza-le pentru mai tarziu, acum vreau sa luam roadmap-ul de unde a ramas” (la întrebarea despre 15.B↑b, după
+felia 15.B↑a).
+**Started:** 02.11, 16:24. **Completed:** 02.11, 17:02. **Notat pentru mai târziu:** 15.B↑b (proiectul atașat, jobul de
+păstrare, fraza din nota de confidențialitate) și, după ea, 14.D↑, în CLAUDE.md („Decizii luate”) și în ADR 0116 §F. **Unde
+a rămas roadmap-ul:** etapa 3 mai are doar felii cu mașina sau cu o placă (3.5b, 3.6e, 3.7b, 3.9), deci lucrul continuă cu
+etapa 4 („următoarea”), pe punctele ei rămase din `PLAN.md` §5.3: 1 (felia asta), 6 (contractele celorlalte controlere și
+pachetul de atelier), 9 (fișa plăcii 4); punctul 8 cere laptopul de atelier al owner-ului.
+
+Corpusul de aur al documentului (punctul 1: „Migrările pure vN → vN+1, cu corpus de aur”): același proiect de probă al unui
+atelier, salvat de aplicația fiecărei versiuni a schemei, v1 → v18, din commit-ul ei. Fiecare versiune deschide salvarea
+celei dinainte cu ușa ei (deci cu migrarea ei), adaugă ce a adus ea (de la grupul și a doua instanță din v2 la strategia
+paralelă din v18) și salvează, după ce ușa ei l-a redeschis neschimbat; plus documentul gol al lui v1. Toate cele 18
+versiuni l-au primit din prima. Rețeta păstrează și documentul deschis atunci de fiecare versiune din salvarea celei
+dinainte: migrările de azi le dau pe toate 17 octet cu octet, deci nicio migrare scrisă nu s-a schimbat de atunci. Intrările
+și documentele de atunci stau înghețate (sha256 în `corpus.json`, `-text` în `.gitattributes`), ieșirile ușii de azi pe
+rânduri. `node scripts/corpus-documente.ts --istorie` scoate sursele fiecărei versiuni cu un `git cat-file --batch` (`tar`
+din Git Bash nu primește căile cu `C:`, iar worktree-urile se blochează în Drive), lângă `node_modules` legat cu o
+joncțiune, și le scrie din nou cu aceiași octeți (probat de două ori). La zi: ADR 0121 (nou), indexul, fișa (4.1↑),
+CLAUDE.md, traducerile (529, 0 lipsă). Codul: `08c98b6`.
+**Porțile:** compilatoarele, importurile, traducerile, 8 046 de teste unitare, build-ul determinist (neschimbat: pornirea
+98,5 / 110 kB, totalul 441,2 / 450), licențele, e2e 295 / 295, corpusul (`--verifica`); emulatoarele n-au rulat, fiindcă
+felia nu atinge funcțiile sau regulile. Otrăvurile din `test/otravuri/4.1.py`: 8 / 8 prinse de proba corpusului singură
+(cinci în migrări, una în JSON-ul canonic, una în ușa documentului curent, una care face o migrare impură), într-un worktree
+din afara Drive-ului; fiecare probă a corpusului prinde ceva ce celelalte nu prind (impuritatea, doar proba purității; ușa
+curentă, doar proba punctului fix).
+**CI-ul rapid** a căzut pe `08c98b6`, în felia 2 din 6: `test/unit/raportare.test.ts` (din 15.B↑a) lua amprenta serverului
+din `functions/src/erori/scrie.ts`, care aduce `firebase-admin`, instalat în CI doar în felia 1. Pe `423f4b9` trecuse din
+împărțirea fișierelor; fișierele noi l-au mutat. Hash-urile stau acum în `functions/src/erori/amprenta.ts`, fără Firestore
+(reexportate din `scrie.ts`): testul trece cu `functions/node_modules` ascuns, iar erorile pe emulator, 17 / 17 (`306b3c8`).
+**Publicat pe adresa principală de test:** 02.11, 17:27, `publica` pe `306b3c8` (rularea 41471136084), după CI-ul rapid
+verde (41469719858); `08c98b6` n-a ajuns pe test, fiindcă CI-ul lui a căzut (mai sus). `web.app` servește versiunea
+`306b3c86d354`, iar fila veche a trecut pe ea cu „Reload”, la 1440 px, cu jurnalul la 0 erori. Felia nu schimbă aplicația:
+roadmap-ul publicat (`/documentatie/roadmap.json`) arată felia 4.1↑ la punctul 1 al etapei 4.
