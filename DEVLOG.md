@@ -4565,4 +4565,16 @@ dintr-un mesaj scris în aplicația desktop.
 **Prompt:** „Da, ca recomandat” (la „Aprobi cadrul izolat, cu senderul prin HostApi?”), în sesiunea dedicată liniei Trenuleț
 (worktree-ul `wip/trenulet`), după „La întrebările vechi (1–5 și 8–12), dacă nu spui altfel, merg pe recomandări. Asta
 înseamnă întâi primirea, apoi sistemul de extensii.”
-**Started:** 02.11, 21:22.
+**Started:** 02.11, 21:22. **Completed:** 02.11, 22:02.
+
+Înaintea feliei, owner-ul a hotărât forma liniei Trenuleț (în `CLAUDE.md`, „Decizii luate”): planificatorul nu intră în
+aplicație, ci se instalează ca extensie, dintr-un `.zip` sau de la o adresă, din meniul Extensii de lângă marcă; extensia
+rulează într-un cadru izolat și folosește senderul doar prin `HostApi`. Felia de acum e primirea din protocolul „cvs2-lucrare”
+v1, pentru pagina de sine stătătoare. Codul și proba propuse de sesiunea Trenuleț (`Apps/Trenulet/cvs2/`) au intrat re-probate,
+cu limitele parametrizabile și titlul tăiat, nu aruncat. ADR 0126; codul: `2f3d6c9`.
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), traducerile (540, 0 lipsă),
+licențele; 8 064 de teste unitare, înaintea traducerilor completate: 8 055 trec, singurul eșec fiind proba traducerilor;
+build-ul determinist (230 de fișiere identice; pornirea 98,7 / 110 kB, cu ușa 102,2; totalul 451,9 / 500; dialogul 2,2 kB,
+bucata comună a programului 1,0 kB). E2e-ul întreg, pe portul 4176: 295 trec, 4 pică. Trei pică doar sub încărcarea suitei
+(riglele, paleta de două ori) și trec rulate singure; al patrulea cere adresa `http://localhost:4173/` (raportorul), deci
+pică pe orice alt port. Otrăvurile `test/otravuri/3.S.py`: 28 / 28 prinse (P01–P20 unitare, E01–E08 prin e2e).
