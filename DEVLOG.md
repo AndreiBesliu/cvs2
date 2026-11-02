@@ -4591,3 +4591,30 @@ fără adâncime).
 **Publicat pe canalul `grupare`** pe 02.11, la 21:32: <https://cncvectorstudio-test--grupare-lkwk3rmp.web.app> (versiunea
 `791be6b6bb13`, până pe 02.12). Verificat acolo: două forme alese, Ctrl+G, un singur rând („Part: 2 shapes”, cu ambele
 operații), Degrupează activ; Ctrl+Z le desface la loc.
+
+## 2026-11-02 — Felia 6.T↑, trecerea 2: răspunsurile owner-ului (ADR 0130) (Model: Claude Opus 5.5)
+
+**Prompt:** „1 e ok. 2, in principiu vreau flexibilitate si optiuni, dar cu quality of life ridicat. inteleg ca nu totul
+trebuie implementat acum, pentru ca nu indeplinim toate toate situatiile. 3, ok 4, v-carve oricum nu s-a aplica intre litere
+si doar in interiorul unei singure litere” (owner-ul, direct în sesiunea grupării, la cele patru întrebări din raport).
+**Started:** 02.11, 21:40. **Completed:** 02.11, 22:19.
+
+Răspunsurile 1–3 confirmă implicitele: grupurile în grupuri rămân permise; piesa cu mai multe instanțe rămâne refuzată acum,
+iar când nivelul doi devine vizibil, gruparea ei vine cu opțiuni; alinierea ca bloc, fără grupare, vine într-o felie
+următoare, după unirea grupării. Le-am scris în ADR 0130 și în CLAUDE.md („Decizii luate”). Răspunsul 4 schimbă felia:
+V-carve-urile cu aceleași valori din forme diferite se grupează. În grup, lucrarea le sapă ca o singură regiune par-impar (axa
+medială calculată o dată pentru toate), deci G-code-ul diferă, dar suprafața săpată rămâne în marginile V-carve-ului față de
+suprafața ideală, pe oracolul independent al simulării: înainte și după grupare, niciodată mai adânc cu peste 0,0014 mm, cel
+mult 0,0095 mm de material lăsat. Față de săparea de dinainte: 0 la formele alăturate, 0,0047 mm la un cerc în golul unui
+inel, 0,0077 mm la două texte. Refuzul a rămas doar unde regiunile se ating sau se suprapun, fiindcă acolo suprapunerea ar
+rămâne nesăpată: atingerea se caută pe puncte la cel mult 0,05 mm pe contur, apoi incluziunea, cu un vârf al fiecărui contur.
+Motivul refuzului trimite acum la panoul de proprietăți (adâncimea, pasul), unde se schimbă cel mai ușor. Codul: `5b99cf6`,
+`a86e6f3`, `17dbad4`.
+**Porțile:** compilatorul, importurile (17 reguli, 0 încălcări), traducerile (536, 0 lipsă), 8 072 de teste unitare (0
+eșuate, 8 sărite), build-ul determinist (228 de fișiere; pornirea 99,1 / 110 kB, cu ușa 102,6; totalul 450,2 → 450,7 / 500),
+e2e-ul importului și al manualului, 28 / 28. Otrăvurile: **34 / 34** (29 unitare, dintre care 7 noi pe gardă; cele 5 e2e,
+din trecerea întâi, pe interfața neschimbată). L01 (cheia V-carve-ului fără adâncime) a scăpat întâi: cazul „altă adâncime”
+schimba și pasul, deci cheia diferea oricum; proba schimbă acum doar adâncimea.
+**Republicat pe canalul `grupare`** la 22:19 (versiunea `17dbad4ce480`). Verificat acolo: dreptunghiul și cercul din el, cu
+același V-carve (3 mm, T2): Ctrl+G nu grupează, iar butonul Grupează spune motivul. Pe tastă, refuzul e tăcut, ca la
+degrupare.
