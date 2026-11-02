@@ -4582,3 +4582,9 @@ pică pe orice alt port. Otrăvurile `test/otravuri/3.S.py`: 28 / 28 prinse (P01
 <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>, valabil până pe 02.12. Hosting-ul trimite CSP-ul neschimbat și
 niciun antet COOP. Proba e2e a primirii, rulată chiar pe canal (fără server local): 3 / 3. Adresa principală de test nu s-a
 atins; ramura nu e împinsă.
+
+## 2026-11-02 — Felia 3.Xa: gazda extensiilor (ADR 0127) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da” (la „Pornesc felia următoare, 3.Xa, gazda extensiilor? Ea aduce meniul de lângă marcă, instalarea din
+`.zip` și de la o adresă, cadrul izolat și o extensie de probă, „salut”.”), în sesiunea dedicată liniei Trenuleț.
+**Started:** 02.11, 22:10.

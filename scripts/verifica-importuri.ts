@@ -32,6 +32,8 @@ const ASTEPTATE: ReadonlyArray<readonly [string, string]> = [
   ['masina-fara-post-si-document', 'test/capcane/machine/importa-geom.ts'],
   ['cavalier-doar-prin-fatada', 'test/capcane/geom/importa-cavalier.ts'],
   ['interfata-prin-actiuni', 'test/capcane/ui/importa-model.ts'],
+  ['cvs2-fara-extensii', 'test/capcane/gazda/importa-extensie.ts'],
+  ['extensia-doar-api', 'test/capcane/extensie/importa-src.ts'],
 ];
 
 /** Regulile care încă n-au capcană, fiecare cu motivul. Lista trebuie să se golească. */
@@ -48,7 +50,7 @@ type Raport = {
 const bin = fileURLToPath(new URL('../node_modules/dependency-cruiser/bin/dependency-cruiser.mjs', import.meta.url));
 let iesire: string;
 try {
-  iesire = execFileSync(process.execPath, [bin, 'src', 'test', 'shared', 'scripts', 'functions/src', 'functions/test', '--config', '.dependency-cruiser.cjs', '--output-type', 'json'], {
+  iesire = execFileSync(process.execPath, [bin, 'src', 'test', 'shared', 'scripts', 'extensii', 'functions/src', 'functions/test', '--config', '.dependency-cruiser.cjs', '--output-type', 'json'], {
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
   });

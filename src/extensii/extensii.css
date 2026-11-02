@@ -1,0 +1,201 @@
+/*
+ * Extensiile (ADR 0127 §C): butonul discret de lângă marcă, meniul de sub buton (stă pe `body`, ca meniul contului, cu
+ * aceleași rânduri) și spațiul extensiei, în zona din mijloc, în locul pânzei, cu numele ei și întoarcerea deasupra.
+ */
+.loc-extensii,
+.extensii {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.loc-extensii {
+  /* Coloana mărcii e îngustă (titlul se strânge primul): butonul stă mai aproape de numele instanței. */
+  margin-left: calc(var(--sp-1) - var(--sp-3));
+}
+
+.extensii-buton {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: var(--t-slab);
+  background: none;
+  border: 0;
+  border-radius: var(--r-1);
+  cursor: pointer;
+}
+
+.extensii-buton:hover,
+.extensii-buton:focus-visible,
+.extensii-buton[aria-expanded='true'] {
+  color: var(--t);
+  background: var(--s-ales);
+}
+
+.meniu-extensii {
+  position: fixed;
+  z-index: 15;
+  min-width: 15rem;
+  max-width: 22rem;
+  padding: var(--sp-1);
+  font-size: var(--fs-2);
+  color: var(--t);
+  background: var(--s-panou);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+  box-shadow: var(--umbra-1);
+}
+
+.meniu-extensii-cap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-1) var(--sp-2) var(--sp-2);
+  margin-bottom: var(--sp-1);
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.meniu-extensii-cap span,
+.meniu-extensii small {
+  color: var(--t-slab);
+}
+
+.meniu-extensii [role='menuitem'] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 30px;
+  padding: 4px var(--sp-2);
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: var(--r-1);
+  cursor: pointer;
+}
+
+.meniu-extensii [role='menuitem']:hover,
+.meniu-extensii [role='menuitem']:focus-visible {
+  background: var(--s-ales);
+  outline: none;
+  box-shadow: inset 2px 0 0 var(--a);
+}
+
+.meniu-extensii [role='separator'] {
+  height: 1px;
+  margin: var(--sp-1) 0;
+  background: var(--l-margine);
+}
+
+/* Spațiul: zona din mijloc (aceeași cu `.zona-libera`); pânza de dedesubt se ascunde cât e deschis. */
+.spatiu-extensie {
+  grid-area: centru;
+  position: relative;
+  z-index: 1;
+  /* Aplicația lasă clicurile să treacă spre pânză (`pointer-events: none`); spațiul le primește. */
+  pointer-events: auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.spatiu-extensie[hidden] {
+  display: none;
+}
+
+.aplicatie[data-extensie] .lucru {
+  visibility: hidden;
+}
+
+.spatiu-cadru {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  background: var(--fond);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+}
+
+.spatiu-cap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 2px 2px 2px var(--sp-3);
+  font-size: var(--fs-1);
+  background: var(--s-panou);
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.spatiu-cap button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 28px;
+  padding: 0 var(--sp-2);
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: var(--r-1);
+  cursor: pointer;
+}
+
+.spatiu-cap button:hover,
+.spatiu-cap button:focus-visible {
+  background: var(--s-ales);
+}
+
+.spatiu-gazda {
+  position: relative;
+  min-height: 0;
+}
+
+.cadru-extensie {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.spatiu-nota {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  margin: 0;
+  padding: var(--sp-3);
+  text-align: center;
+}
+
+.extensii-camp {
+  display: grid;
+  gap: var(--sp-1);
+  margin: var(--sp-2) 0;
+}
+
+.extensii-camp input {
+  min-width: min(28rem, 70vw);
+  font: inherit;
+}
+
+.extensii-lista {
+  margin: var(--sp-2) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.extensii-lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-1) 0;
+  border-bottom: 1px solid var(--l-margine);
+}

@@ -116,6 +116,8 @@ const Paleta = lazy(() => incarcaPaleta().then((m) => ({ default: m.Paleta }), (
 const PanouProprietati = lazy(() => incarcaProprietati().then((m) => ({ default: m.PanouProprietati }), () => ({ default: () => null })));
 /** Panoul mașinii (ADR 0081): senderul și conexiunea vin la prima deschidere, nu în pornire. */
 const PanouMasina = lazy(() => import('./PanouMasina.tsx').then(cuMesaje).then((m) => ({ default: m.PanouMasina }), () => ({ default: () => null })));
+// Extensiile (ADR 0127): butonul de lângă marcă, meniul și spațiul vin după prima randare, nu în pachetul de pornire.
+const Extensii = lazy(() => import('../extensii/Extensii.tsx').then(cuMesaje).then((m) => ({ default: m.Extensii }), () => ({ default: () => null })));
 /** Stratul traseului (ADR 0038 §3) vine la primul „Arată traseul”: WebGL2 nu intră în pachetul de pornire. */
 const StratTraseu = lazy(() => import('../canvas/StratTraseu.tsx').then((m) => ({ default: m.StratTraseu }), () => ({ default: () => null })));
 /**
@@ -229,6 +231,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // Lucrarea primită de la altă aplicație și cererea care așteaptă omul (ADR 0126): doar în memorie, separate de ultimul export.
   const [lucrarePrimita, setLucrarePrimita] = useState<LucrarePrimita | null>(null);
   const [cerereLucrare, setCerereLucrare] = useState<CerereLucrare | null>(null);
+  // Spațiul unei extensii deschis (id-ul ei) și o fereastră a extensiilor deschisă (ADR 0127 §C): cât e deschis spațiul,
+  // pânza e ascunsă și acțiunile documentului nu rulează; fereastra face aplicația inertă, ca dialogurile ei.
+  const [spatiuExtensie, setSpatiuExtensie] = useState<string | null>(null);
+  const [modalExtensii, setModalExtensii] = useState(false);
+  const spatiuDeschis = useRef(false);
+  spatiuDeschis.current = spatiuExtensie !== null;
   // În pornire stă doar verificarea ancorei și a ferestrei care a deschis fila; pe live, primirea e oprită (ADR 0126 §D).
   const primireActiva = config.ok && config.config.instanta !== 'live';
   useEffect(() => {
@@ -496,7 +504,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * a desenului pe care omul îl vede.
    */
   const dialogDeschis = useRef(false);
-  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null;
+  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii;
   /** Un dialog sau paleta: aplicația de sub ele e inertă. */
   const modal = dialogDeschis.current || paleta;
   const modalRef = useRef(modal);
@@ -518,7 +526,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     };
   }, []);
   const ruleazaDocument = (id: string, ctx: ContextDocument): RezultatActiune => {
-    if (dialogDeschis.current) return { ok: false, motiv: 'motiv.nimic-ales' };
+    if (dialogDeschis.current || spatiuDeschis.current) return { ok: false, motiv: 'motiv.nimic-ales' };
     return ruleaza(registru, id, ctx);
   };
   /**
@@ -633,7 +641,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
 
   /** Un câmp al panoului de proprietăți (ADR 0038 §4): acțiunea lui, cu rezultatul (motivul unui refuz rămâne în câmp). */
   const aplicaDinPanou = (id: string, extra: Parameters<typeof context>[0]): RezultatActiune => {
-    if (dialogDeschis.current) return { ok: false, motiv: 'motiv.nimic-ales' };
+    if (dialogDeschis.current || spatiuDeschis.current) return { ok: false, motiv: 'motiv.nimic-ales' };
     return ruleaza(registru, id, context(extra));
   };
 
@@ -653,6 +661,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    */
   const executa = (id: string): void => {
     if (dialogDeschis.current || !stareActiune(id).ok) return;
+    // Cât e deschis spațiul unei extensii (ADR 0127 §C), acțiunile documentului nu rulează (importul, exportul și restul, prin
+    // `ruleazaDocument`); vederea rămâne: panourile (mașina), tema, paleta.
+    if (spatiuDeschis.current && !registruVedere.actiuni.has(id)) return;
     if (id === 'import.svg') fisierImport.current?.click();
     else if (id === 'export.gcode') { setStareExport(null); setDialogExport(true); }
     else if (registruVedere.actiuni.has(id)) ruleaza(registruVedere, id, contextVedere);
@@ -983,11 +994,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         tot ecranul; barele, panourile și cipurile plutesc deasupra ei, într-o grilă care lasă clicul să treacă prin golurile
         ei (`pointer-events`). Zona liberă din mijloc e locul în care se potrivește foaia.
       */}
-      <div className="aplicatie" inert={modal} data-aranjament={aranjament.id} data-stanga={deschise('stanga')} data-dreapta={deschise('dreapta')}>
+      <div className="aplicatie" inert={modal} data-aranjament={aranjament.id} data-stanga={deschise('stanga')} data-dreapta={deschise('dreapta')}
+        data-extensie={spatiuExtensie ?? undefined}>
         <header className="sus">
           <div className="insula marca">
             <h1>{t('app.titlu')}</h1>
             <span data-testid="instanta" className="instanta">{t('app.instanta', { nume: instanta })}</span>
+            <span id="loc-extensii" className="loc-extensii" />
           </div>
           <div className="insula bara" role="toolbar" aria-label={t('bara.actiuni')}>
             {grupuri('sus')}
@@ -1055,6 +1068,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         </div>
         <div className="doc doc-stanga">{aranjament.docuri.stanga.map(panou)}</div>
         <div className="zona-libera" ref={zona} aria-hidden="true" />
+        <div className="spatiu-extensie" id="loc-spatiu-extensie" hidden={spatiuExtensie === null} />
         <div className="doc doc-dreapta">{aranjament.docuri.dreapta.map(panou)}</div>
         <footer className="jos">{grupuri('jos')}</footer>
       </div>
@@ -1113,6 +1127,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           onInchide={() => { setCerereLucrare(null); }}
         />
       )}
+      </Suspense>
+      <Suspense fallback={null}>
+        <Extensii jurnal={jurnal} onSpatiu={setSpatiuExtensie} onModal={setModalExtensii} />
       </Suspense>
     </>
   );

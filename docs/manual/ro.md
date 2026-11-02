@@ -847,6 +847,28 @@ internet: fără rețea nu se deschid, dar aplicația merge mai departe cu ultim
 Fără cont, aplicația merge ca până acum. Dedesubt, **Ce date ținem** spune ce păstrăm despre cont (și despre raportări) și
 de ce.
 
+## Extensiile
+%% capitol: extensii
+
+O extensie adaugă aplicației un spațiu de lucru al ei, de exemplu Planificatorul Trenuleț. Nu face parte din aplicație: o
+instalezi tu, iar interfața aplicației rămâne aceeași.
+
+- Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, apoi
+  **Instalează din fișier (.zip)…**, **Instalează din adresă…** și **Gestionează extensiile…**.
+- **Instalează din fișier** primește un pachet `.zip`. **Instalează din adresă** cere **Adresa pachetului** (HTTPS), apoi
+  **Descarcă**; gazda trebuie să permită descărcarea din alte pagini, altfel descarci tu fișierul și îl instalezi din
+  fișier. Un link de forma `…/#instaleaza=<adresa>` deschide aceeași fereastră, cu adresa completată; nimic nu se descarcă
+  fără clicul tău.
+- Înainte de instalare, fereastra arată numele, versiunea, de unde vine pachetul, fișierele și mărimea lor și, dacă e cazul,
+  versiunea pe care o înlocuiește. **Instalează** o pune în browserul acesta (merge și offline); **Renunță** nu schimbă
+  nimic. Un pachet stricat sau greșit se refuză, cu motivul.
+- Un clic pe o extensie din meniu îi deschide spațiul în locul planșei. Barele și panourile rămân, deci panoul mașinii poate
+  sta alături; cât e deschis spațiul, desenul nu se schimbă. **Înapoi la planșă**, deasupra spațiului, închide extensia.
+- Extensia rulează izolată: nu vede proiectele, contul sau mașina și nu iese pe internet; vorbește cu aplicația doar prin
+  ce îi dă aceasta.
+- **Gestionează extensiile** le arată pe cele instalate, cu sursa și data lor; **Scoate** șterge una, **Închide** închide
+  fereastra.
+
 ## Scurtăturile
 %% capitol: scurtaturi
 

@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import { TASTE_UNELTE, UNELTE } from '../../src/app/desenCalcul.ts';
 import { numeScurt } from '../../src/app/editareCalcul.ts';
 import { FELURI_ALINIERE } from '../../src/geom/aliniere.ts';
+import { enCarcasa } from '../../src/i18n/carcasa.en.ts';
+import { roCarcasa } from '../../src/i18n/carcasa.ro.ts';
 import { enEditare } from '../../src/i18n/editare.en.ts';
 import { roEditare } from '../../src/i18n/editare.ro.ts';
 import { enMasina } from '../../src/i18n/masina.en.ts';
@@ -30,7 +32,10 @@ import { randuriMeniuCont, type IdMeniuCont } from '../../src/app/meniuCont.ts';
 
 type Usa = { readonly id: string; readonly eticheta: Readonly<Record<LimbaManual, string>> };
 
-const dictionar = { ro: { ...ro, ...roEditare, ...roMasina } as Record<string, unknown>, en: { ...en, ...enEditare, ...enMasina } as Record<string, unknown> };
+const dictionar = {
+  ro: { ...ro, ...roEditare, ...roMasina, ...roCarcasa } as Record<string, unknown>,
+  en: { ...en, ...enEditare, ...enMasina, ...enCarcasa } as Record<string, unknown>,
+};
 const eticheta = (cheie: string): Record<LimbaManual, string> => {
   const r = dictionar.ro[cheie], e = dictionar.en[cheie];
   if (typeof r !== 'string' || typeof e !== 'string') throw new Error(`cheia „${cheie}” nu e un text simplu în ambele dicționare`);
@@ -164,6 +169,36 @@ ${citeste('src/app/DialogLucrare.tsx')}`;
       // Numele fără parametri („Zero XY ({wcs})” → „Zero XY”, „Treci pe {wcs}” → „Treci pe”).
       const nume = numeScurt(eticheta(cheie)[m.limba].replace(/\s*\{[a-z]+\}/g, '')).toLocaleLowerCase(m.limba);
       assert.ok(text.includes(nume), `${m.limba}: „${nume}” (data-masina="${c}") nu e în capitolul „masina”`);
+    }
+  }
+});
+
+/**
+ * Controalele extensiilor (`data-extensii` în `src/extensii/`, ADR 0127) și eticheta fiecăruia, numită în capitolul
+ * „extensii” (null: un control fără etichetă proprie: fișierul ales, rândul unei extensii, cu numele ei).
+ */
+const CONTROALE_EXTENSII: Readonly<Record<string, string | null>> = {
+  buton: 'extensii.buton', 'fisier-ales': null, deschide: null, 'din-fisier': 'extensii.din-fisier', 'din-adresa': 'extensii.din-adresa',
+  gestioneaza: 'extensii.gestioneaza', 'inchide-spatiul': 'extensii.inchide-spatiul', adresa: 'extensii.adresa.camp',
+  descarca: 'extensii.adresa.descarca', renunta: 'extensii.instalare.renunta', instaleaza: 'extensii.instalare.instaleaza',
+  scoate: 'extensii.gestionare.scoate', inchide: 'extensii.gestionare.inchide',
+};
+
+test('fiecare control al extensiilor (data-extensii) e numit în capitolul „extensii”, în ambele limbi', () => {
+  const sursa = `${citeste('src/extensii/Extensii.tsx')}
+${citeste('src/extensii/Instalare.tsx')}`;
+  assert.doesNotMatch(sursa, /data-extensii=\{/);
+  const controale = [...new Set([...sursa.matchAll(/data-extensii="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();
+  assert.deepEqual(controale, Object.keys(CONTROALE_EXTENSII).sort());
+  for (const m of manuale()) {
+    const cap = m.capitole.find((c) => c.id === 'extensii');
+    assert.ok(cap, `${m.limba}: capitolul „extensii”`);
+    const text = `${cap.titlu}\n${cap.text}`.toLocaleLowerCase(m.limba).replace(/\s+/g, ' ');
+    for (const c of controale) {
+      const cheie = CONTROALE_EXTENSII[c];
+      if (!cheie) continue;
+      const nume = numeScurt(eticheta(cheie)[m.limba]).toLocaleLowerCase(m.limba);
+      assert.ok(text.includes(nume), `${m.limba}: „${nume}” (data-extensii="${c}") nu e în capitolul „extensii”`);
     }
   }
 });

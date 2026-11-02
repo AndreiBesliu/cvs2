@@ -875,6 +875,29 @@ the reports need internet: without a network they do not open, but the app goes 
 Without an account, the app works as before. Below, **What data we keep** says what we keep about the account (and about the
 reports) and why.
 
+## Extensions
+%% capitol: extensii
+
+An extension adds a workspace of its own to the app, for example the Trenuleț planner. It isn’t part of the app: you
+install it, and the app’s interface stays the same.
+
+- The **Extensions** button (the puzzle piece next to the instance name) opens the menu: the installed extensions, then
+  **Install from file (.zip)…**, **Install from address…** and **Manage extensions…**.
+- **Install from file** takes a `.zip` package. **Install from address** asks for the **Package address** (HTTPS), then
+  **Download**; the host must allow downloads from other pages, otherwise you download the file yourself and install it
+  from the file. A link like `…/#instaleaza=<address>` opens the same window with the address filled in; nothing downloads
+  without your click.
+- Before installing, the window shows the name, the version, where the package comes from, its files and their size and,
+  if there is one, the version it replaces. **Install** keeps it in this browser (it works offline too); **Cancel** changes
+  nothing. A damaged or wrong package is refused, with the reason.
+- A click on an extension in the menu opens its workspace in place of the sheet. The bars and panels stay, so the machine
+  panel can sit next to it; while the workspace is open, the drawing doesn’t change. **Back to the sheet**, above the
+  workspace, closes the extension.
+- The extension runs isolated: it can’t see your projects, your account or the machine, and it can’t reach the internet;
+  it talks to the app only through what the app gives it.
+- **Manage extensions** shows the installed ones, with their source and date; **Remove** deletes one, **Close** closes the
+  window.
+
 ## Keyboard shortcuts
 %% capitol: scurtaturi
 

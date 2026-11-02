@@ -21,21 +21,29 @@
  * dinainte, deci `connect-src` primește schema `ws:`. Spre o gazdă publică, browserul blochează oricum un `ws://` dintr-o pagină
  * HTTPS (conținut mixt: trec doar un IP local sau un nume `.local`, cu permisiunea rețelei locale). Fără `wss:`: niciun
  * controler n-are TLS, iar `wss:` ar deschide orice gazdă publică.
+ *
+ * Extensiile (ADR 0127 §D, felia 3.Xa; acordul owner-ului din 02.11, „Da, ca recomandat”): codul unei extensii instalate stă
+ * în browser și rulează în cadrul ei izolat dintr-o adresă `blob:`, pornit de încărcător, care rulează doar prin amprenta lui;
+ * deci `script-src` primește `blob:` și amprenta încărcătorului. Cadrul moștenește CSP-ul și adaugă unul mai strict (fără
+ * rețea). Instalarea de la o adresă („cum recomanzi tu”) descarcă un `.zip` de pe orice gazdă HTTPS: `connect-src` primește
+ * schema `https:`. O adresă `blob:` o poate face doar cod care rulează deja în pagină; restul rămâne refuzat.
  */
+import { AMPRENTA_INCARCATOR } from './cadruExtensie.ts';
+
 const PROIECTE = ['cncvectorstudio-test', 'cncvectorstudio'] as const;
 export const DOMENII_AUTH = PROIECTE.map((p) => `https://${p}.firebaseapp.com`);
 export const ORIGINI_FUNCTII = PROIECTE.map((p) => `https://europe-central2-${p}.cloudfunctions.net`);
 
 export const CSP = [
   "default-src 'self'",
-  "script-src 'self' https://apis.google.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/",
+  `script-src 'self' blob: ${AMPRENTA_INCARCATOR} https://apis.google.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/`,
   "style-src 'self'",
   "img-src 'self' data: blob:",
   "font-src 'self' https://fonts.gstatic.com",
   [
     "connect-src 'self'", 'https://identitytoolkit.googleapis.com', 'https://securetoken.googleapis.com',
     'https://firestore.googleapis.com', 'https://content-firebaseappcheck.googleapis.com', 'https://www.google.com/recaptcha/',
-    ...ORIGINI_FUNCTII, 'https://fonts.gstatic.com', 'https://fonts.googleapis.com', 'ws:',
+    ...ORIGINI_FUNCTII, 'https://fonts.gstatic.com', 'https://fonts.googleapis.com', 'ws:', 'https:',
   ].join(' '),
   ['frame-src', ...DOMENII_AUTH, 'https://www.google.com/recaptcha/', 'https://recaptcha.google.com/recaptcha/'].join(' '),
   "worker-src 'self' blob:",

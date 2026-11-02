@@ -1,0 +1,11 @@
+{
+  "format": "cvs2-extensie",
+  "api": 1,
+  "id": "salut",
+  "nume": "Salut",
+  "versiune": "1.0.0",
+  "intrare": "index.ts",
+  "stiluri": ["salut.css"],
+  "permisiuni": [],
+  "altele": ["salut.txt"]
+}
