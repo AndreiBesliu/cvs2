@@ -125,6 +125,8 @@ test('refuzurile, cu codurile cititorului: fără <font>, fără caractere, făr
   const desen = text('<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h10"/></svg>');
   assert.equal(felFisier(desen), 'necunoscut');
   assert.equal(cod(desen), 'nu-e-font');
+  // Nici unul care își declară un font extern (`<font-face>`, fără `<font>`).
+  assert.equal(felFisier(text('<svg xmlns="http://www.w3.org/2000/svg"><defs><font-face font-family="Arial"/></defs><text>x</text></svg>')), 'necunoscut');
   assert.equal(cod(font('<glyph glyph-name="x" d="M0 0h10"/>')), 'fara-unicode');
   assert.equal(cod(font('<glyph unicode="I" d="M0 0V700"/>', '<font-face units-per-em="1000"/>')), 'majuscula');
   // Fără H, cu cap-height: majuscula e cea scrisă.

@@ -10,8 +10,8 @@
  *   altfel `cap-height`, altfel refuzul `majuscula`.
  * - **Glifele:** cele cu un singur caracter în `unicode` (prima câștigă; ligaturile se sar); căile citite cu
  *   `citesteDateCale` (comenzile absolute, pătraticele ridicate exact la cubice), ca puncte în convenția CFF: o subcale cu Z
- *   își are ultimul punct în start (o buclă, ADR 0140 §2), una fără Z se oprește în capătul ei; o comandă de după Z pornește
- *   din start. O glifă cu un arc nu se poate da (null, ca o glifă stricată).
+ *   își are ultimul punct în start (o buclă, ADR 0140 §2), una fără Z se oprește în capătul ei; un desen de după Z pornește
+ *   din start (parserul pune acolo un M). O glifă cu un arc nu se poate da (null, ca o glifă stricată).
  * - **Crenarea:** `hkern`, cu `u1` / `u2` (caractere sau intervale U+…, cu `?`) și `g1` / `g2` (nume); prima pereche găsită
  *   câștigă; `k` micșorează spațiul, deci crenarea e −k.
  *
@@ -24,9 +24,9 @@ import { cuOLinie } from './linie.ts';
 import type { ConturFont, NumeFont, PunctFont } from './sfnt.ts';
 import type { Font, RezultatFont } from './tipFont.ts';
 
-/** Un fișier care e un font SVG: text XML (după BOM și spații, „<”) cu un element `<font>` în primii 64 kB. */
+/** Un fișier care e un font SVG: text XML (după spații, „<”; `TextDecoder` sare BOM-ul) cu un element `<font>` în primii 64 kB. */
 export function esteFontSvg(octeti: Uint8Array): boolean {
-  const t = new TextDecoder('utf-8').decode(octeti.subarray(0, 65_536)).replace(/^﻿/, '').trimStart();
+  const t = new TextDecoder('utf-8').decode(octeti.subarray(0, 65_536)).trimStart();
   return t.startsWith('<') && /<(?:[A-Za-z_][\w.-]*:)?font[\s>/]/.test(t);
 }
 
@@ -40,35 +40,21 @@ const numar = (el: Element | null, nume: string): number | null => {
 /** Primul element cu numele dat, sub `el`, sau null. */
 const primul = (el: Document | Element, nume: string): Element | null => el.getElementsByTagName(nume).item(0);
 
-/** Contururile unei căi a unei glife, în convenția CFF (punctele de control câte două); null: are un arc. */
+/**
+ * Contururile unei căi a unei glife, în convenția CFF (punctele de control câte două); null: are un arc. Un desen de după Z
+ * fără M îl pornește parserul, cu un M în startul subcăii închise (SVG 1.1, 8.3.3).
+ */
 function contururiCale(d: string): ConturFont[] | null {
   const rez: PunctFont[][] = [];
   let cur: PunctFont[] | null = null;
-  let start: PunctFont | null = null;
-  let dupaZ = false;
   for (const c of citesteDateCale(d).comenzi) {
     if (c.tip === 'A') return null;
-    if (c.tip === 'M') {
-      start = { x: c.p.x, y: c.p.y, peCurba: true };
-      cur = [start];
-      rez.push(cur);
-      dupaZ = false;
-      continue;
-    }
-    if (c.tip === 'Z') {
-      const u = cur?.[cur.length - 1];
-      if (cur && start && u && (u.x !== start.x || u.y !== start.y)) cur.push({ ...start });
-      dupaZ = true;
-      continue;
-    }
-    if (!start) continue;
-    // După Z, subcalea următoare pornește din startul celei închise (SVG 1.1, 8.3.3).
-    if (dupaZ || !cur) {
-      cur = [{ ...start }];
-      rez.push(cur);
-      dupaZ = false;
-    }
-    if (c.tip === 'L') cur.push({ x: c.p.x, y: c.p.y, peCurba: true });
+    if (c.tip === 'M') rez.push((cur = [{ x: c.p.x, y: c.p.y, peCurba: true }]));
+    else if (!cur) continue;
+    else if (c.tip === 'Z') {
+      const start = cur[0]!, u = cur[cur.length - 1]!;
+      if (u.x !== start.x || u.y !== start.y) cur.push({ ...start });
+    } else if (c.tip === 'L') cur.push({ x: c.p.x, y: c.p.y, peCurba: true });
     else cur.push({ x: c.c1.x, y: c.c1.y, peCurba: false }, { x: c.c2.x, y: c.c2.y, peCurba: false }, { x: c.p.x, y: c.p.y, peCurba: true });
   }
   return rez;

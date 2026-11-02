@@ -32,9 +32,10 @@ o('R01', SVG, "if (entitati) return { ok: false, cod: 'stricat', detaliu: `entit
 o('R02', SVG, "if (doc.getElementsByTagName('parsererror').length > 0) return { ok: false, cod: 'stricat', detaliu: 'XML' };", '',
   'svg', 'documentul parțial al browserului (cu <parsererror>) citit ca font')
 o('R03', SVG, 'if (!(unitsPerEm >= 16 && unitsPerEm <= 16384))', 'if (false)', 'svg', 'units-per-em fără plafon')
-o('R04', SVG, 'if (cur && start && u && (u.x !== start.x || u.y !== start.y)) cur.push({ ...start });', '', 'svg',
+o('R04', SVG, 'if (u.x !== start.x || u.y !== start.y) cur.push({ ...start });', '', 'svg',
   'Z nu mai pune startul la capăt: bucla își pierde latura de închidere')
-o('R05', SVG, 'if (dupaZ || !cur) {', 'if (!cur) {', 'svg', 'comanda de după Z continuă bucla, nu pornește din start')
+# R05 (comanda de după Z continuă bucla) a scăpat: echivalentă, fiindcă parserul pune singur M-ul după Z; ramura, moartă,
+# a fost scoasă din cititor (și nu e alta în loc: parserul nu dă niciun desen înaintea unui M).
 o('R06', SVG, "if (c.tip === 'A') return null;", "if (c.tip === 'A') continue;", 'svg', 'glifa cu arc nu mai e sărită')
 o('R07', SVG, "else cur.push({ x: c.c1.x, y: c.c1.y, peCurba: false }, { x: c.c2.x, y: c.c2.y, peCurba: false },",
   "else cur.push({ x: c.c2.x, y: c.c2.y, peCurba: false }, { x: c.c1.x, y: c.c1.y, peCurba: false },", 'svg', 'punctele de control ale cubicei, inversate')
