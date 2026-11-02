@@ -4591,6 +4591,11 @@ crescut și strâns, golul închis, unirea a două pătrate, insula peste gol, r
 panoului. **Otrăvurile** (`test/otravuri/7.5.py`): 38 / 38 prinse din prima, 32 pe probele unitare (unealta, în
 worktree) și 6 de interfață prin e2e pe 4174 (un harnaș local: unealta cere `npm`).
 **Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), licențele, traducerile (534, 0
-lipsă), testele unitare (rulajul întreg, apoi cele noi), build-ul determinist (228 de fișiere identice; pornirea 98,6 / 110
+lipsă), 8 069 de teste unitare (0 eșuate, 8 sărite), build-ul determinist (228 de fișiere identice; pornirea 98,6 / 110
 kB, cu ușa 102,2; totalul 444,6 / 500), e2e-ul întreg în Edge pe 4174: 295 / 296 (picată doar `raportor.spec.ts:101`, care
 cere adresa de pe 4173).
+**Publicat pe canalul `text`** al instanței de test (02.11, 21:18, `8fbb2a2`, expiră pe 02.12):
+<https://cncvectorstudio-test--text-1k3nsykk.web.app>. Verificat în browserul aplicației (Edge): unealta Text, „HOTEL Ușă”
+cu Aldin (propus 0,6 mm) și Cursiv (propus 12°), previzualizarea din linii și arce, piesa pusă cu blocul `aldin: 0.6`,
+`cursiv: 12`, H de 0 … 20,000000000000004 mm, consola fără erori. Adresa principală de test a rămas a sesiunii principale
+(`77a1be6`).
