@@ -122,7 +122,7 @@ on the line. The Pen stays chosen for the next path.
 
 ## Text
 %% capitol: text
-%% acopera: unealta.text, document.text, editare.text.fonturi
+%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv
 
 The **Text** tool (`X`; `T` is “Show toolpath”) writes text to cut. With it chosen:
 - a **click on the sheet** puts the anchor (a cross): there the baseline of the first line starts (left aligned), has its
@@ -137,7 +137,17 @@ In the tool's panel you type the text (Enter: new line) and choose:
 - the **capital height**, in mm: at “20 mm”, H, N or E are exactly 20 mm tall (round letters, like O or C, go slightly over
   the line, as in any font);
 - the **space between letters** (in mm; negative, tighter), the **distance between lines** (a multiple of the font's line)
-  and the **alignment** to the anchor.
+  and the **alignment** to the anchor;
+- **Bold** and **Italic**, for any font, even without its own bold or slanted faces (below).
+
+**Bold** thickens the letters: ticked, it asks for the **Thickening on each side** (mm; it suggests 3 % of the height, for
+example 0.6 at 20 mm; at most a fifth of the height). Each stroke grows by twice that, small holes shrink (they may close)
+and close parts of a letter (the comma of ș, the dot of i) may join. The height stays the one you asked for: a 20 mm H is
+still 20 mm, with its outer corners rounded by the thickening, and the space between letters stays the same. Bold letters
+are cut from lines and arcs, within 0.001 mm of the exact shape. **Italic** slants the letters: ticked, it asks for the
+**Slant** (°; it suggests 12°; negative, to the left; at most 45°), each letter about its own baseline, exactly. With both,
+the letters are slanted first and thickened after, so the strokes thicken the same in every direction. The text keeps its
+bold and italic: it reopens with them, and uniform scaling grows the thickening too.
 
 **Add** puts the text on the sheet as a part: each letter is a group, with its holes, cut like an import (the outside
 profile on the outer outlines, the inside one on the holes; you change them in the export window, to a V-carve for example).

@@ -115,6 +115,69 @@ test('unealta Text: „LEMN Șțăâî” de 20 mm din ancoră, N de exact 20 mm
   await expect(page.getByTestId('text-stare')).toContainText('Text nou');
 });
 
+test('aldinul și cursivul (ADR 0123): H de 20 mm îngroșat cu 0,6 are tot 20 mm, din linii și arce; după reîncărcare, panoul le are; oprite, Aplică', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-unealta="text"]').click();
+  await page.locator('[data-text="continut"]').fill('HI');
+  // Bifat, aldinul propune 3 % din înălțime (0,6 mm la 20 mm), cursivul 12°.
+  await expect(page.locator('[data-text="grosime"]')).toHaveCount(0);
+  await page.locator('[data-text="aldin"]').check();
+  await expect(page.locator('[data-text="grosime"]')).toHaveValue('0.6');
+  await page.locator('[data-text="cursiv"]').check();
+  await expect(page.locator('[data-text="unghi"]')).toHaveValue('12');
+  // Peste o cincime din înălțime, refuzat cu motiv; la fel o înclinare peste 45°.
+  await page.locator('[data-text="grosime"]').fill('4,5');
+  await expect(page.getByTestId('text-motiv')).toHaveText('Îngroșarea e un număr de la 0,01 mm până la o cincime din înălțimea majusculelor.');
+  await page.locator('[data-text="grosime"]').fill('0,6');
+  await page.locator('[data-text="unghi"]').fill('50');
+  await expect(page.getByTestId('text-motiv')).toHaveText('Înclinarea e un număr între −45° și 45°.');
+  await page.locator('[data-text="unghi"]').fill('12');
+  const v = await vedere(page);
+  const la = await ecran(page, v);
+  const a = la(180, 60);
+  await page.mouse.click(a.x, a.y);
+  await expect(page.locator('[data-text="adauga"]')).toBeEnabled();
+  await page.click('[data-text="adauga"]');
+  const d1 = await documentSalvat(page, 1) as Doc;
+  const piesa = d1.piese[0]!;
+  expect(piesa.radacina.text).toMatchObject({ continut: 'HI', font: 'roboto', inaltime: 20, aldin: 0.6, cursiv: 12 });
+  const h = piesa.radacina.copii![0]!;
+  expect(h.nume).toBe('H');
+  const n = ordonate(h);
+  expect(Math.min(...n)).toBeCloseTo(0, 9);
+  expect(Math.max(...n)).toBeCloseTo(20, 9);
+  // Literele îngroșate sunt linii și arce (colțurile de afară, rotunjite), fără cubice.
+  expect(new Set(h.copii!.flatMap((e) => e.forma!.varfuri.map((q) => q.s.tip)))).toEqual(new Set(['L', 'A']));
+
+  // După reîncărcare, textul ales își aduce aldinul și cursivul în panou.
+  await page.reload();
+  await page.locator('[data-unealta="text"]').click();
+  const v2 = await vedere(page);
+  const la2 = await ecran(page, v2);
+  const inst = d1.foi[0]!.instante[0]!;
+  const varf = h.copii![0]!.forma!.varfuri[0]!.p;
+  const pe = la2(inst.x + varf.x, inst.y + varf.y);
+  await page.mouse.click(pe.x, pe.y);
+  await expect(page.getByTestId('text-stare')).toContainText('Editezi textul ales');
+  await expect(page.locator('[data-text="aldin"]')).toBeChecked();
+  await expect(page.locator('[data-text="grosime"]')).toHaveValue('0.6');
+  await expect(page.locator('[data-text="cursiv"]')).toBeChecked();
+  await expect(page.locator('[data-text="unghi"]')).toHaveValue('12');
+
+  // Oprite amândouă, Aplică: blocul fără ele, H drept, din linii, tot de 20 mm.
+  await page.locator('[data-text="aldin"]').uncheck();
+  await page.locator('[data-text="cursiv"]').uncheck();
+  await page.click('[data-text="aplica"]');
+  const d2 = await documentSalvat(page, 2) as Doc;
+  const text = d2.piese[0]!.radacina.text!;
+  expect(text).toMatchObject({ continut: 'HI', inaltime: 20 });
+  expect('aldin' in text || 'cursiv' in text).toBe(false);
+  const h2 = d2.piese[0]!.radacina.copii![0]!;
+  expect(new Set(h2.copii!.flatMap((e) => e.forma!.varfuri.map((q) => q.s.tip)))).toEqual(new Set(['L']));
+  const n2 = ordonate(h2);
+  expect(Math.max(...n2) - Math.min(...n2)).toBeCloseTo(20, 9);
+});
+
 test('panoul textului spune ce lipsește: caracterele pe care fontul nu le are, înălțimea greșită; fără litere, Adaugă e oprit', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-unealta="text"]').click();

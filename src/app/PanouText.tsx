@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type CSSProp
 import { createPortal } from 'react-dom';
 import { cuMesaje, t } from '../i18n/t.ts';
 import type { Contur } from '../geom/conturBaza.ts';
-import { LIMITE_TEXT, POZITII_PE_CURBA, type BlocText, type CurbaText } from '../model/blocText.ts';
+import { aldinMaxim, LIMITE_TEXT, POZITII_PE_CURBA, type BlocText, type CurbaText } from '../model/blocText.ts';
 import { FONT_IMPLICIT, FONTURI_INCLUSE } from '../text/fonturi.ts';
 import { numeVarianta, sursaFont } from '../text/iduriFont.ts';
 import type { AliniereText } from '../text/asezare.ts';
@@ -40,6 +40,8 @@ type Formular = {
   readonly aliniere: AliniereText;
   /** Textul pe curbă (ADR 0108): poziția față de curbă, distanța, partea cealaltă, literele verticale, întins pe toată curba. */
   readonly pozitie: PozitiePeCurba; readonly distanta: string; readonly invers: boolean; readonly verticala: boolean; readonly intinsa: boolean;
+  /** Aldinul și cursivul sintetic (ADR 0123): pornite sau nu, cu îngroșarea (mm, pe fiecare parte) și înclinarea (grade). */
+  readonly aldin: boolean; readonly grosime: string; readonly cursiv: boolean; readonly unghi: string;
 };
 
 /** Curba la care stă textul: conturul în sistemul piesei (originea în ancoră) și distanța ancorei pe el. */
@@ -48,11 +50,18 @@ type CurbaAleasa = { readonly contur: Contur; readonly s: number };
 const CHEIE = 'cncvs2.text';
 const ALINIERI: readonly AliniereText[] = ['stanga', 'centru', 'dreapta'];
 
+/** Îngroșarea propusă când se pornește aldinul (ADR 0123): 3 % din înălțimea majusculei, la sutimea de mm. */
+function grosimeImplicita(inaltime: string): string {
+  const h = citesteNumar(inaltime);
+  return textNumar(h === null ? 0.6 : Math.max(LIMITE_TEXT.aldinMinim, Math.round(h * 3) / 100));
+}
+
 /** Alegerile de data trecută (fontul, mărimile, alinierea), fără text: ținute în browser, ca la celelalte panouri. */
 function formularSalvat(): Formular {
   const baza: Formular = {
     continut: '', font: FONT_IMPLICIT, inaltime: '20', spatiere: '0', interlinie: '1', aliniere: 'stanga',
     pozitie: 'baza', distanta: '0', invers: false, verticala: false, intinsa: false,
+    aldin: false, grosime: '', cursiv: false, unghi: '12',
   };
   try {
     const s = JSON.parse(localStorage.getItem(CHEIE) ?? 'null') as Partial<Record<keyof Formular, unknown>> | null;
@@ -65,6 +74,7 @@ function formularSalvat(): Formular {
       aliniere: ALINIERI.find((a) => a === s.aliniere) ?? baza.aliniere,
       pozitie: POZITII_PE_CURBA.find((x) => x === s.pozitie) ?? baza.pozitie, distanta: sir(s.distanta, baza.distanta),
       invers: s.invers === true, verticala: s.verticala === true, intinsa: s.intinsa === true,
+      aldin: s.aldin === true, grosime: sir(s.grosime, baza.grosime), cursiv: s.cursiv === true, unghi: sir(s.unghi, baza.unghi),
     };
   } catch {
     return baza;
@@ -76,6 +86,7 @@ function salveaza(f: Formular): void {
     localStorage.setItem(CHEIE, JSON.stringify({
       font: f.font, inaltime: f.inaltime, spatiere: f.spatiere, interlinie: f.interlinie, aliniere: f.aliniere,
       pozitie: f.pozitie, distanta: f.distanta, invers: f.invers, verticala: f.verticala, intinsa: f.intinsa,
+      aldin: f.aldin, grosime: f.grosime, cursiv: f.cursiv, unghi: f.unghi,
     }));
   } catch {
     // Fără stocare (fereastră privată): alegerile țin cât pagina.
@@ -86,7 +97,9 @@ function salveaza(f: Formular): void {
  * Parametrii citiți din formular, în marginile blocului (ADR 0105 §3), cu curba textului dacă stă pe una (ADR 0108), sau
  * cheia câmpului greșit.
  */
-function parametri(f: Formular, numeFont: string | null, curba: CurbaAleasa | null): Omit<BlocText, 'amprenta'> | 'continut' | 'inaltime' | 'spatiere' | 'interlinie' | 'distanta' {
+function parametri(
+  f: Formular, numeFont: string | null, curba: CurbaAleasa | null,
+): Omit<BlocText, 'amprenta'> | 'continut' | 'inaltime' | 'spatiere' | 'interlinie' | 'distanta' | 'aldin' | 'cursiv' {
   if (f.continut.trim() === '' || f.continut.length > LIMITE_TEXT.caractere) return 'continut';
   const inaltime = citesteNumar(f.inaltime);
   if (inaltime === null || inaltime < LIMITE_TEXT.inaltimeMinima || inaltime > LIMITE_TEXT.inaltimeMaxima) return 'inaltime';
@@ -94,6 +107,11 @@ function parametri(f: Formular, numeFont: string | null, curba: CurbaAleasa | nu
   if (spatiere === null || Math.abs(spatiere) > LIMITE_TEXT.spatiere) return 'spatiere';
   const interlinie = citesteNumar(f.interlinie);
   if (interlinie === null || interlinie < LIMITE_TEXT.interlinieMinima || interlinie > LIMITE_TEXT.interlinieMaxima) return 'interlinie';
+  // Aldinul și cursivul (ADR 0123), doar pornite; un cursiv de 0° e un text drept.
+  const aldin = f.aldin ? citesteNumar(f.grosime) : 0;
+  if (aldin === null || (f.aldin && (aldin < LIMITE_TEXT.aldinMinim || aldin > aldinMaxim(inaltime)))) return 'aldin';
+  const cursiv = f.cursiv ? citesteNumar(f.unghi, true) : 0;
+  if (cursiv === null || Math.abs(cursiv) > LIMITE_TEXT.cursiv) return 'cursiv';
   let pe: CurbaText | null = null;
   if (curba) {
     const distanta = citesteNumar(f.distanta, true);
@@ -105,7 +123,10 @@ function parametri(f: Formular, numeFont: string | null, curba: CurbaAleasa | nu
     };
   }
   const bloc = { continut: f.continut, font: f.font, inaltime, spatiere, interlinie, aliniere: f.aliniere };
-  return { ...bloc, ...(numeFont ? { numeFont: numeFont.slice(0, LIMITE_TEXT.numeFont) } : {}), ...(pe ? { curba: pe } : {}) };
+  return {
+    ...bloc, ...(numeFont ? { numeFont: numeFont.slice(0, LIMITE_TEXT.numeFont) } : {}), ...(pe ? { curba: pe } : {}),
+    ...(aldin > 0 ? { aldin } : {}), ...(cursiv !== 0 ? { cursiv } : {}),
+  };
 }
 
 /** Curba unui bloc salvat, ca un contur în sistemul piesei. */
@@ -166,6 +187,9 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
         pozitie: b.curba.pozitie, distanta: textNumar(b.curba.distanta), invers: b.curba.invers, verticala: b.curba.orientare === 'verticala',
         intinsa: b.curba.intinsa,
       } : {}),
+      // Aldinul și cursivul ale textului ales (ADR 0123); unul fără ele le oprește, cu valorile scrise păstrate.
+      aldin: !!b.aldin, ...(b.aldin ? { grosime: textNumar(b.aldin) } : {}),
+      cursiv: !!b.cursiv, ...(b.cursiv ? { unghi: textNumar(b.cursiv) } : {}),
     }));
     setMotiv(null);
     setDrept(false);
@@ -226,11 +250,13 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
     if (modul === 'eroare') return t('editare.text.neincarcat');
     if (rezFont && !rezFont.ok) return textIncarcare(rezFont, numeFont(form.font));
     if (typeof p === 'string' && !(p === 'continut' && form.continut === '')) return t(`editare.text.gresit.${p}`);
+    if (asezat && asezat.raport['aldin-esuat'] > 0) return t('editare.text.aldin-esuat', { n: asezat.raport['aldin-esuat'] });
     if (asezat && asezat.caractereLipsa.length > 0) return t('editare.text.lipsa', { n: asezat.raport.lipsa, caractere: asezat.caractereLipsa.join(' ') });
     if (!editat && !ancora) return t('editare.text.ancora');
     return null;
   })();
-  const gata = !!asezat && asezat.glife.length > 0 && typeof p !== 'string' && !doarCitire;
+  // O literă pe care aldinul n-a putut-o îngroșa lipsește din text: un asemenea text nu se pune pe foaie (ADR 0123).
+  const gata = !!asezat && asezat.glife.length > 0 && asezat.raport['aldin-esuat'] === 0 && typeof p !== 'string' && !doarCitire;
   const trimite = (cerere: CerereText): void => {
     const r = ruleaza(cerere);
     setMotiv(r.ok ? null : t(r.motiv));
@@ -302,6 +328,31 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
             <button type="button" data-text="descarca-din-nou" disabled={descarc} onClick={descarcaDinNou}>{t('editare.text.font.descarca-din-nou')}</button>
           ) : null}
         </div>
+        {/* Aldinul și cursivul sintetic (ADR 0123): pornite, își arată câmpul; la pornire, aldinul propune 3 % din înălțime. */}
+        <label className="bifa-retea">
+          <input type="checkbox" checked={form.aldin} data-text="aldin" onChange={(e) => {
+            scrie({ ...form, aldin: e.target.checked, grosime: e.target.checked && form.grosime.trim() === '' ? grosimeImplicita(form.inaltime) : form.grosime });
+          }} />
+          {t('editare.text.aldin')}
+        </label>
+        {form.aldin ? (
+          <label className="camp-retea">
+            <span>{t('editare.text.aldin.grosime')}</span>
+            <input value={form.grosime} inputMode="decimal" data-text="grosime" onChange={(e) => { scrie({ ...form, grosime: e.target.value }); }} />
+          </label>
+        ) : null}
+        <label className="bifa-retea">
+          <input type="checkbox" checked={form.cursiv} data-text="cursiv" onChange={(e) => {
+            scrie({ ...form, cursiv: e.target.checked, unghi: e.target.checked && form.unghi.trim() === '' ? '12' : form.unghi });
+          }} />
+          {t('editare.text.cursiv')}
+        </label>
+        {form.cursiv ? (
+          <label className="camp-retea">
+            <span>{t('editare.text.cursiv.unghi')}</span>
+            <input value={form.unghi} inputMode="decimal" data-text="unghi" onChange={(e) => { scrie({ ...form, unghi: e.target.value }); }} />
+          </label>
+        ) : null}
         {curbaPosibila ? (
           <fieldset className="curba-text" data-testid="text-curba">
             <legend>{curbaActiva ? t('editare.text.curba.sectiune', { lungime: textNumar(Math.round(lungimeCurba * 100) / 100, true) }) : t('editare.text.curba.drept')}</legend>

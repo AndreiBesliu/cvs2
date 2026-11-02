@@ -14,9 +14,22 @@
  *   (ADR 0036, T3), o dată, aici.
  *
  * Un caracter pe care fontul nu-l are nu se desenează (o cutie `.notdef` s-ar tăia): se numără în `lipsa`.
+ *
+ * **Cursivul și aldinul sintetic** (ADR 0123):
+ * - **cursivul** înclină fiecare literă față de linia de bază a rândului ei, x' = x + tan(unghi) · y: o transformare afină,
+ *   deci liniile și cubicele rămân exacte; avansurile, crenarea și alinierea nu se schimbă;
+ * - **aldinul** `d` (mm pe fiecare parte) așază literele la înălțimea miezului, h − 2d (contururile, avansurile, crenarea),
+ *   fiecare avans crește cu 2d, apoi fiecare literă (înclinată, normalizată) se îngroașă: cubicele devin biarce sub toleranța
+ *   proiectului (ADR 0033), figura crește cu d prin fațada offsetului (`offsetFigura`) și se mută cu (d, d). Așa, H are tot
+ *   h (de la 0 la h), marginile din stânga și din dreapta ale literei stau unde stăteau în miez, colțurile de afară se
+ *   rotunjesc cu raza d, iar rândurile rămân la distanța lui h. Contururile unei litere îngroșate sunt linii și arce;
+ * - întâi înclinarea, apoi îngroșarea: trăsăturile se îngroașă la fel în toate direcțiile.
  */
-import { LINIE, type Punct, type Varf } from '../geom/contur.ts';
+import { conturFaraCubice } from '../geom/biarce.ts';
+import { LINIE, type Contur, type Punct, type Varf } from '../geom/contur.ts';
 import type { BugetImport } from '../geom/nonzero.ts';
+import { offsetFigura } from '../geom/offset.ts';
+import { TOLERANTA_PROIECT } from '../geom/toleranta.ts';
 import { incheieSubcalea, normalizeazaForma, type CaleCitita, type NumaratoareNormalizare } from '../io/caleImport.ts';
 import { PLAFON_IMPORT } from '../io/svgCoduri.ts';
 import type { ConturFont, Font } from './font.ts';
@@ -33,6 +46,10 @@ export type ParametriText = {
   /** Distanța dintre rânduri, ca multiplu al înălțimii rândului fontului. */
   readonly interlinie: number;
   readonly aliniere: AliniereText;
+  /** Aldinul sintetic (ADR 0123): cât se îngroașă literele pe fiecare parte, în mm; lipsă sau 0: litere normale. */
+  readonly aldin?: number | undefined;
+  /** Cursivul sintetic (ADR 0123): înclinarea literelor, în grade, spre dreapta (negativ: spre stânga); lipsă sau 0: drepte. */
+  readonly cursiv?: number | undefined;
 };
 
 /**
@@ -50,6 +67,8 @@ export type RaportText = NumaratoareNormalizare & {
   /** Glifele pe care fontul nu le poate da (date stricate, o glifă compusă care se conține pe sine): sărite. */
   'glife-stricate': number;
   'prea-mari': number;
+  /** Literele pe care aldinul nu le-a putut îngroșa (offsetul refuzat): sărite, deci textul nu e bun de tăiat (ADR 0123). */
+  'aldin-esuat': number;
 };
 
 /** Un rând așezat: lățimea lui (de la începutul primului caracter la capătul ultimului), câte caractere are, mutarea alinierii. */
@@ -137,12 +156,54 @@ function varfuriDinCubice(c: ConturFont, harta: (q: P) => Punct): { varfuri: Var
   return { varfuri, start: harta(start) };
 }
 
-/** Așază textul (ADR 0105 §2): pură, determinată de font și de parametri. */
+/** Câte litere îngroșate se țin (cea folosită cel mai demult pleacă prima). */
+const INGROSATE = 512;
+/**
+ * Literele îngroșate deja, după îngroșare și contururile miezului în sistemul literei (cheia e chiar textul lor, deci exactă):
+ * offsetul e partea scumpă (câteva ms pe literă), iar panoul așază textul din nou la fiecare tastă. Ce se ține e exact ce
+ * ar ieși din calculul din nou (o funcție a cheii), deci așezarea rămâne pură.
+ */
+const ingrosate = new Map<string, readonly Contur[] | null>();
+
+/**
+ * Litera îngroșată (ADR 0123), în sistemul ei: contururile miezului (normalizate, linii și cubice), cu cubicele aproximate
+ * prin biarce sub toleranța proiectului, crescute cu `d` prin fațada offsetului. Null: offsetul a refuzat litera.
+ */
+function ingroasa(cai: readonly CaleCitita[], d: number): readonly Contur[] | null {
+  const cheie = `${d}|${JSON.stringify(cai)}`;
+  const gata = ingrosate.get(cheie);
+  if (gata !== undefined) {
+    ingrosate.delete(cheie);
+    ingrosate.set(cheie, gata);
+    return gata;
+  }
+  let rez: readonly Contur[] | null = null;
+  const contururi: Contur[] = [];
+  for (const c of cai) {
+    const r = conturFaraCubice({ inchis: true, varfuri: c.varfuri }, TOLERANTA_PROIECT);
+    if (r.ok) contururi.push(r.contur);
+  }
+  if (contururi.length === cai.length) {
+    const r = offsetFigura(contururi, d);
+    if (r.ok) rez = r.regiuni.flatMap((g) => [g.exterior, ...g.gauri]);
+  }
+  ingrosate.set(cheie, rez);
+  while (ingrosate.size > INGROSATE) ingrosate.delete(ingrosate.keys().next().value!);
+  return rez;
+}
+
+/** Așază textul (ADR 0105 §2, ADR 0123): pură, determinată de font și de parametri. */
 export function aseazaText(font: Font, p: ParametriText): TextAsezat {
-  const raport: RaportText = { lipsa: 0, 'glife-stricate': 0, 'prea-mari': 0, 'nonzero-normalizate': 0, 'nonzero-refuzate': 0, 'sub-rezolutie': 0, degenerate: 0 };
+  const raport: RaportText = {
+    lipsa: 0, 'glife-stricate': 0, 'prea-mari': 0, 'aldin-esuat': 0, 'nonzero-normalizate': 0, 'nonzero-refuzate': 0, 'sub-rezolutie': 0, degenerate: 0,
+  };
   const caractereLipsa: string[] = [];
-  const inMm = (u: number): number => (u * p.inaltime) / font.majuscula;
-  const inaltimeRand = inMm(font.urcare - font.coborare + font.spatiuRanduri) * p.interlinie;
+  const d = p.aldin ?? 0;
+  const panta = Math.tan((p.cursiv ?? 0) * (Math.PI / 180));
+  // Literele se desenează la înălțimea miezului (fără aldin, chiar înălțimea cerută); rândurile, după înălțimea cerută.
+  const miez = p.inaltime - 2 * d;
+  const inMm = (u: number): number => (u * miez) / font.majuscula;
+  const inaltimeRand = ((font.urcare - font.coborare + font.spatiuRanduri) * p.inaltime) / font.majuscula * p.interlinie;
   const randuri = p.continut.replace(/\r/g, '').split('\n');
   const glife: GlifaAsezata[] = [];
   const linii: RandAsezat[] = [];
@@ -162,7 +223,7 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
         continue;
       }
       if (anterioara >= 0) x += inMm(font.crenare(anterioara, glifa)) + p.spatiere;
-      const avans = inMm(font.avans(glifa));
+      const avans = inMm(font.avans(glifa)) + 2 * d;
       litere.push({ caracter, glifa, x, avans });
       x += avans;
       anterioara = glifa;
@@ -173,7 +234,11 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
     const baza = -r * inaltimeRand;
     litere.forEach((l, indice) => {
       const x0 = l.x + dx;
-      const harta = (q: P): Punct => ({ x: x0 + inMm(q.x), y: baza + inMm(q.y) });
+      // Cu aldin, litera se desenează în sistemul ei (originea pe linia de bază), se îngroașă acolo și abia apoi se mută.
+      const ox = d > 0 ? 0 : x0, oy = d > 0 ? 0 : baza;
+      const harta = panta === 0
+        ? (q: P): Punct => ({ x: ox + inMm(q.x), y: oy + inMm(q.y) })
+        : (q: P): Punct => ({ x: ox + inMm(q.x) + panta * inMm(q.y), y: oy + inMm(q.y) });
       const contururi = font.contururi(l.glifa);
       if (contururi === null) {
         raport['glife-stricate']++;
@@ -196,7 +261,20 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
       }
       // Spațiul și celelalte glife fără contur nu lasă nimic de tăiat.
       if (cai.length === 0) return;
-      glife.push({ caracter: l.caracter, rand: r, cai: normalizeazaForma(cai, true, buget, raport), x: x0, avans: l.avans, indice });
+      const normalizate = normalizeazaForma(cai, true, buget, raport);
+      if (d === 0) {
+        glife.push({ caracter: l.caracter, rand: r, cai: normalizate, x: x0, avans: l.avans, indice });
+        return;
+      }
+      const groase = ingroasa(normalizate, d);
+      if (groase === null) {
+        raport['aldin-esuat']++;
+        return;
+      }
+      // Litera îngroșată se mută cu (d, d) față de miez: marginea ei din stânga și baza rămân ale miezului.
+      const mx = x0 + d, my = baza + d;
+      const mutate = groase.map((c): CaleCitita => ({ inchis: true, varfuri: c.varfuri.map((v): Varf => ({ p: { x: v.p.x + mx, y: v.p.y + my }, s: v.s })) }));
+      glife.push({ caracter: l.caracter, rand: r, cai: mutate, x: x0, avans: l.avans, indice });
     });
   });
   return { glife, raport, caractereLipsa, linii, metrici: { rand: inaltimeRand, coborare: inMm(font.coborare) } };

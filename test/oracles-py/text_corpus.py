@@ -57,7 +57,7 @@ from fontTools.cffLib import GlobalSubrsIndex, SubrsIndex
 from fontTools.cffLib.CFFToCFF2 import convertCFFToCFF2
 from fontTools.encodings.StandardEncoding import StandardEncoding
 from fontTools.fontBuilder import FontBuilder
-from fontTools.misc.bezierTools import calcCubicArcLengthC, splitCubicAtTC
+from fontTools.misc.bezierTools import calcCubicArcLengthC, calcCubicBounds, splitCubicAtTC
 from fontTools.misc.psCharStrings import T2CharString
 from fontTools.misc.roundTools import otRound
 from fontTools.pens.basePen import decomposeQuadraticSegment
@@ -276,11 +276,18 @@ def majuscula(font, contur=None):
 
 
 def aseaza(font, p):
+    """Așezarea (ADR 0105 §2) și, din 7.5↑ (ADR 0123), cursivul și miezul aldinului. Cursivul: fiecare literă înclinată față
+    de linia de bază a rândului ei, x' = x + tan(unghi) · y (o transformare afină: liniile și cubicele rămân exacte). Aldinul
+    `d`: literele se așază la înălțimea miezului, h − 2d (contururile, avansurile, crenarea), fiecare avans crește cu 2d, iar
+    rândurile rămân la distanța lui h. Contururile întoarse sunt ale miezului; figura îngroșată o judecă `figura_aldin`."""
     cap = majuscula(font)
     h = p['inaltime']
-    mm = lambda u: (u * h) / cap
+    d = p.get('aldin', 0)
+    panta = math.tan(math.radians(p.get('cursiv', 0)))
+    miez = h - 2 * d
+    mm = lambda u: (u * miez) / cap
     hhea = font['hhea']
-    rand_mm = mm(hhea.ascent - hhea.descent + hhea.lineGap) * p['interlinie']
+    rand_mm = ((hhea.ascent - hhea.descent + hhea.lineGap) * h) / cap * p['interlinie']
     hmtx = font['hmtx']
     cff = 'CFF ' in font
     glife, lipsa, randuri = [], 0, []
@@ -296,14 +303,14 @@ def aseaza(font, p):
             if ant is not None:
                 x += mm(crenare(font, ant, g)) + p['spatiere']
             litere.append((ch, g, x))
-            x += mm(hmtx[g][0])
+            x += mm(hmtx[g][0]) + 2 * d
             ant = g
         dx = 0 if p['aliniere'] == 'stanga' else (-x / 2 if p['aliniere'] == 'centru' else -x)
         randuri.append({'latime': x, 'caractere': len(litere), 'dx': dx})
         baza = -r * rand_mm
         for indice, (ch, g, x0) in enumerate(litere):
             def harta(q, x0=x0):
-                return [x0 + dx + mm(q[0]), baza + mm(q[1])]
+                return [x0 + dx + mm(q[0]) + panta * mm(q[1]), baza + mm(q[1])]
             cs = []
             for c in contururi(font, g):
                 if len(c) < 2:
@@ -324,7 +331,7 @@ def aseaza(font, p):
                         out.append(['C'] + harta(c1) + harta(c2) + harta(p2))
                 cs.append({'start': harta(start), 'segmente': out})
             if cs:
-                glife.append({'caracter': ch, 'rand': r, 'contururi': cs, '_x': x0 + dx, '_avans': mm(hmtx[g][0]), '_indice': indice})
+                glife.append({'caracter': ch, 'rand': r, 'contururi': cs, '_x': x0 + dx, '_avans': mm(hmtx[g][0]) + 2 * d, '_indice': indice})
     return {'glife': glife, 'lipsa': lipsa, '_randuri': randuri, '_metrici': {'rand': rand_mm, 'coborare': mm(hhea.descent)}}
 
 
@@ -335,6 +342,159 @@ def fara_interne(v):
     if isinstance(v, list):
         return [fara_interne(x) for x in v]
     return v
+
+
+# Aldinul (ADR 0123). Figura unei litere îngroșate cu d e figura miezului ei (litera așezată la h − 2d, înclinată dacă e
+# cursivă; plină după regula `nonzero` a fontului) crescută cu d, adică toate punctele aflate la cel mult d de ea, apoi mutată
+# cu (d, d). Oracolul n-o construiește: clasifică puncte. Un punct e în figură dacă e în miez (numărul de înfășurare al
+# contururilor fontului, nenul) sau la cel mult d de conturul lui (distanța la poligonul curbelor, care stă la cel mult
+# PLAT de ele). Punctele aflate la mai puțin de MARGINE_ALDIN de marginea figurii nu se judecă: aplicația aproximează
+# cubicele cu biarce sub 0,001 mm (ADR 0033) înainte de offset.
+PLAT = 1e-4
+MARGINE_ALDIN = 3e-3
+
+
+def poligon_contur(c):
+    """Conturul (start și segmente L / C, în mm) ca poligon închis: fiecare cubică împărțită în două până când punctele ei de
+    control stau la cel mult PLAT de coardă (curba stă în învelitoarea lor, deci la cel mult PLAT de poligon)."""
+    def abatere(a, b, cc, dd):
+        lx, ly = dd[0] - a[0], dd[1] - a[1]
+        l = math.hypot(lx, ly)
+        if l < 1e-12:
+            return max(math.hypot(b[0] - a[0], b[1] - a[1]), math.hypot(cc[0] - a[0], cc[1] - a[1]))
+        return max(abs((b[0] - a[0]) * ly - (b[1] - a[1]) * lx), abs((cc[0] - a[0]) * ly - (cc[1] - a[1]) * lx)) / l
+
+    def jumatati(a, b, cc, dd):
+        m = lambda u, v: ((u[0] + v[0]) / 2, (u[1] + v[1]) / 2)
+        ab, bc, cd = m(a, b), m(b, cc), m(cc, dd)
+        abc, bcd = m(ab, bc), m(bc, cd)
+        mij = m(abc, bcd)
+        return (a, ab, abc, mij), (mij, bcd, cd, dd)
+
+    pts = [tuple(c['start'])]
+    for s in c['segmente']:
+        if s[0] == 'L':
+            pts.append((s[1], s[2]))
+            continue
+        stiva = [(pts[-1], (s[1], s[2]), (s[3], s[4]), (s[5], s[6]))]
+        while stiva:
+            q = stiva.pop()
+            if abatere(*q) <= PLAT:
+                pts.append(q[3])
+            else:
+                st, dr = jumatati(*q)
+                stiva += [dr, st]
+    if pts[-1] != pts[0]:
+        pts.append(pts[0])
+    return pts
+
+
+def clasifica_aldin(puncte, glifa_miez, d):
+    """Pentru fiecare punct (în coordonatele miezului): '1' în figura îngroșată, '0' afară, '?' la margine (nejudecat)."""
+    import numpy as np
+    P = np.array(puncte, dtype=float)
+    A, B = [], []
+    for c in glifa_miez['contururi']:
+        pg = poligon_contur(c)
+        A += pg[:-1]
+        B += pg[1:]
+    A, B = np.array(A), np.array(B)
+    infasurare = np.zeros(len(P), dtype=np.int64)
+    dist = np.full(len(P), np.inf)
+    px, py = P[:, 0:1], P[:, 1:2]
+    for k in range(0, len(A), 1500):
+        ax, ay = A[k:k + 1500, 0][None, :], A[k:k + 1500, 1][None, :]
+        bx, by = B[k:k + 1500, 0][None, :], B[k:k + 1500, 1][None, :]
+        ex, ey = bx - ax, by - ay
+        cruce = ex * (py - ay) - ey * (px - ax)
+        sus = (ay <= py) & (by > py) & (cruce > 0)
+        jos = (by <= py) & (ay > py) & (cruce < 0)
+        infasurare += sus.sum(axis=1) - jos.sum(axis=1)
+        l2 = ex * ex + ey * ey
+        t = np.clip(((px - ax) * ex + (py - ay) * ey) / np.where(l2 > 0, l2, 1), 0, 1)
+        dist = np.minimum(dist, np.hypot(ax + t * ex - px, ay + t * ey - py).min(axis=1))
+    return ''.join('?' if abs(r - d) < MARGINE_ALDIN else ('1' if (w != 0 or r < d) else '0') for w, r in zip(infasurare, dist))
+
+
+def cutie_miez(glifa_miez):
+    """Cutia exactă a contururilor miezului: capetele liniilor și extremele cubicelor (`calcCubicBounds` din fontTools)."""
+    x0 = y0 = math.inf
+    x1 = y1 = -math.inf
+    for c in glifa_miez['contururi']:
+        cur = tuple(c['start'])
+        for s in c['segmente']:
+            if s[0] == 'L':
+                bx0, by0, bx1, by1 = min(cur[0], s[1]), min(cur[1], s[2]), max(cur[0], s[1]), max(cur[1], s[2])
+            else:
+                bx0, by0, bx1, by1 = calcCubicBounds(cur, (s[1], s[2]), (s[3], s[4]), (s[5], s[6]))
+            x0, y0, x1, y1 = min(x0, bx0), min(y0, by0), max(x1, bx1), max(y1, by1)
+            cur = (s[-2], s[-1])
+    return x0, y0, x1, y1
+
+
+def figura_aldin(glifa_miez, d, pas):
+    """Ce trebuie să iasă pentru o literă îngroșată cu d: cutia ei (a miezului lărgită cu d pe fiecare parte: cutia unei
+    figuri crescute cu d, oricare ar fi ea, apoi mutată cu (d, d)) și clasa punctelor unei grile cu pasul `pas` (mm), pe
+    rânduri de jos în sus, în jurul cutiei."""
+    x0, y0, x1, y1 = cutie_miez(glifa_miez)
+    cutie = [x0, y0, x1 + 2 * d, y1 + 2 * d]
+    gx, gy = cutie[0] - 0.3, cutie[1] - 0.3
+    nx = int((cutie[2] + 0.3 - gx) / pas) + 1
+    ny = int((cutie[3] + 0.3 - gy) / pas) + 1
+    puncte = [(gx + i * pas - d, gy + j * pas - d) for j in range(ny) for i in range(nx)]
+    return {'caracter': glifa_miez['caracter'], 'rand': glifa_miez['rand'], 'cutie': cutie,
+            'grila': {'x': gx, 'y': gy, 'pas': pas, 'nx': nx, 'ny': ny, 'clase': clasifica_aldin(puncte, glifa_miez, d)},
+            '_miez': glifa_miez, '_d': d}
+
+
+def aldin(font, p, pas):
+    """Literele unui text îngroșat: cutia și grila fiecăreia (`figura_aldin`), în ordinea așezării."""
+    asez = aseaza(font, p)
+    return {'lipsa': asez['lipsa'], 'glife': [figura_aldin(g, p['aldin'], pas) for g in asez['glife']]}
+
+
+def clasa_in(fig, x, y):
+    """Clasa punctului (x, y) al figurii îngroșate (`figura_aldin`), judecat din nou de oracol: proba pe hârtie."""
+    return clasifica_aldin([(x - fig['_d'], y - fig['_d'])], fig['_miez'], fig['_d'])
+
+
+def probe_aldin_pe_hartie(aldine):
+    """H din Roboto (majuscula 1456; picioarele 169–361 și 1095–1288, bara 673–830, avansul 1460) de 20 mm, cu aldinul 0,6:
+    miezul are 18,8 mm, deci s = 18,8 / 1456 mm pe unitate. Figura e miezul crescut cu 0,6 și mutat cu (0,6, 0,6):
+    - marginea din stânga rămâne la 169 s = 2,1821428571, iar baza la 0; vârful ajunge la 18,8 + 1,2 = 20 (înălțimea cerută);
+    - piciorul din stânga se termină la 361 s + 1,2 = 5,8612637363 (grosimea 192 s + 1,2 = 3,6791208791);
+    - bara, între 673 s = 8,6898351648 și 830 s + 1,2 = 11,9170329670;
+    - colțurile de afară se rotunjesc cu raza 0,6 (cel de sus din stânga are centrul în (2,7821428571, 19,4)), cele dinăuntru
+      rămân ascuțite (colțul dintre picior și bară, în (5,8612637363, 8,6898351648));
+    - avansul crește cu 1,2: O începe la 1460 s + 1,2 = 20,0516483516 (H–O n-are crenare)."""
+    s = 18.8 / 1456
+    H = aldine['aldin-HOTEL']['glife'][0]
+    assert H['caracter'] == 'H'
+    st, dr = 2.1821428571428573, 17.8307692307692310
+    assert all(abs(a - b) < 1e-9 for a, b in zip(H['cutie'], (st, 0, dr, 20))), H['cutie']
+    assert abs(st - 169 * s) < 1e-12 and abs(dr - (1288 * s + 1.2)) < 1e-12
+    picior, jos, sus = 5.8612637362637363, 8.6898351648351648, 11.917032967032967
+    assert abs(picior - (361 * s + 1.2)) < 1e-12 and abs(jos - 673 * s) < 1e-12 and abs(sus - (830 * s + 1.2)) < 1e-12
+    for (x, y), clasa in [
+        ((4, 5), '1'), ((picior + 0.01, 5), '0'), ((picior - 0.01, 5), '1'),
+        ((10, sus + 0.01), '0'), ((10, sus - 0.01), '1'), ((10, jos - 0.01), '0'), ((10, jos + 0.01), '1'),
+        ((st + 0.05, 19.95), '0'), ((st + 0.6 - 0.4, 19.4 + 0.4), '1'), ((st - 0.01, 10), '0'), ((st + 0.01, 10), '1'),
+        ((picior + 0.01, jos - 0.01), '0'), ((picior - 0.01, jos - 0.01), '1'), ((picior + 0.01, jos + 0.01), '1'),
+    ]:
+        assert clasa_in(H, x, y) == clasa, (x, y, clasa)
+    f = TTFont(os.path.join(FONTURI, 'roboto.ttf'))
+    assert crenare(f, 'H', 'O') == 0
+    O = aldine['aldin-HOTEL']['glife'][1]
+    assert abs(O['_miez']['_x'] - (1460 * s + 1.2)) < 1e-12, O['_miez']['_x']
+    # Golul lui O (cutia 118–1289 × −20–1476, grosimea ~190) rămâne: centrul lui, (703,5 s, 728 s) în miez, mutat cu
+    # (0,6, 0,6), e afară; peretele din stânga, la 118 s + 0,05 de începutul literei, e în figură.
+    xo = O['_miez']['_x']
+    assert clasa_in(O, xo + 703.5 * s + 0.6, 728 * s + 0.6) == '0'
+    assert clasa_in(O, xo + 118 * s + 0.05, 728 * s + 0.6) == '1'
+    # Fiecare caz judecă și puncte în figură, și afară, și marginea lăsată nejudecată.
+    for nume, caz in aldine.items():
+        clase = ''.join(g['grila']['clase'] for g in caz['glife'])
+        assert '0' in clase and '1' in clase and '?' in clase and caz['lipsa'] == 0, nume
 
 
 # Textul pe curbă (ADR 0108). Bucățile unei cubice în tabelul lungimilor.
@@ -1455,6 +1615,24 @@ CAZURI = [
     ('cmap12', 'roboto-cmap12.ttf', {'continut': 'ABBA', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
     ('cmap6', 'roboto-cmap6.ttf', {'continut': 'Ana ă', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
     ('simbol', 'roboto-simbol.ttf', {'continut': 'HAMBURG', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
+    # 7.5↑ (ADR 0123): cursivul, exact (fiecare literă înclinată față de linia de bază a rândului ei); spre stânga, negativ.
+    ('cursiv-H', 'roboto.ttf', {'continut': 'HAMBURG', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'cursiv': 12}),
+    ('cursiv-randuri', 'droid-serif.ttf', {'continut': 'Ușă\nde stejar', 'inaltime': 10, 'spatiere': 0.5, 'interlinie': 1.3, 'aliniere': 'dreapta', 'cursiv': -20}),
+    ('cursiv-cff', 'inter-subset.otf', {'continut': 'ĂÂÎȘȚ ăâîșț', 'inaltime': 8, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru', 'cursiv': 30}),
+]
+
+# Aldinul (ADR 0123): textul, parametrii (cu `aldin`, mm pe fiecare parte) și pasul grilei de puncte (mm).
+CAZURI_ALDIN = [
+    # Pe hârtie (în `main`): H de 20 mm cu aldinul 0,6.
+    ('aldin-HOTEL', 'roboto.ttf', {'continut': 'HOTEL', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.6}, 0.25),
+    # Bucățile care se unesc (virgula lui ș și ț, căciula lui â, punctul lui i), pe două rânduri centrate.
+    ('aldin-diacritice', 'roboto.ttf', {'continut': 'ȘȚĂÂÎ\nșțăâîi', 'inaltime': 12, 'spatiere': 0, 'interlinie': 1.2, 'aliniere': 'centru', 'aldin': 0.5}, 0.15),
+    # Golurile care se strâng sau dispar, insulele din goluri, la dreapta, cu spațiere.
+    ('aldin-gauri', 'roboto.ttf', {'continut': 'B8e@%&', 'inaltime': 10, 'spatiere': 0.3, 'interlinie': 1, 'aliniere': 'dreapta', 'aldin': 0.45}, 0.12),
+    # Aldinul peste cursiv, pe curbele serif-ului.
+    ('aldin-cursiv-serif', 'droid-serif.ttf', {'continut': 'Ușă de stejar', 'inaltime': 15, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.4, 'cursiv': 12}, 0.2),
+    # CFF (cubice), cu crenarea, spațierea negativă și cursivul spre stânga.
+    ('aldin-cff', 'inter-subset.otf', {'continut': 'AVATAR To', 'inaltime': 12, 'spatiere': -0.2, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.3, 'cursiv': -8}, 0.15),
 ]
 
 # Glifele, brute: punctele fiecărui contur (x, y, pe curbă), în unitățile fontului, cum le dă fontTools. Variantele își
@@ -1542,9 +1720,20 @@ def main():
     }
     curba = cazuri_pe_curba()
     probe_pe_hartie(curba)
+    # Pe hârtie (ADR 0123), cursivul: colțul de sus din stânga al lui H (169, 1456) de 20 mm, înclinat cu 12°, ajunge în
+    # x = 169 · 20 / 1456 + 20 · tan 12° = 2,3214285714 + 4,2511312334 = 6,5725598048, y = 20; baza rămâne la 0.
+    h = asteptat['cursiv-H']['glife'][0]
+    varfuri = [tuple(c['start']) for c in h['contururi']] + [(s[-2], s[-1]) for c in h['contururi'] for s in c['segmente']]
+    assert any(abs(x - 6.5725598048290140) < 1e-9 and abs(y - 20) < 1e-12 for x, y in varfuri), 'colțul lui H înclinat'
+    assert cutie(h)[1] == 0 and abs(cutie(h)[3] - 20) < 1e-12, cutie(h)
+    aldine = {}
+    for nume, fisier, p, pas in CAZURI_ALDIN:
+        cale = cale_fixtura(fisier)
+        aldine[nume] = {'font': os.path.relpath(cale, RAD).replace('\\', '/'), 'parametri': p, **aldin(TTFont(cale), p, pas)}
+    probe_aldin_pe_hartie(aldine)
     asteptat = fara_interne(asteptat)
     for nume, date in (('crenari', crenari), ('glife', brute), ('asteptat', asteptat), ('structura', structura), ('pe-curba', fara_interne(curba)),
-                       ('variabile', variabile())):
+                       ('variabile', variabile()), ('aldin', fara_interne(aldine))):
         with open(os.path.join(DEST, f'{nume}.json'), 'w', encoding='utf-8', newline='\n') as out:
             json.dump(date, out, ensure_ascii=False, separators=(',', ':'))
             out.write('\n')

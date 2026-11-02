@@ -118,7 +118,7 @@ pe linie. Pen-ul rămâne ales pentru calea următoare.
 
 ## Textul
 %% capitol: text
-%% acopera: unealta.text, document.text, editare.text.fonturi
+%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv
 
 Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea aleasă:
 - un **clic pe foaie** pune ancora (o cruce): acolo începe linia de bază a primului rând (aliniat la stânga), îi stă
@@ -133,7 +133,17 @@ Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea a
 - **înălțimea majusculelor**, în mm: la „20 mm”, H, N sau E au exact 20 mm (literele rotunde, ca O sau C, trec puțin peste
   linie, ca în orice font);
 - **spațiul dintre litere** (în mm; negativ, mai strâns), **distanța dintre rânduri** (ca multiplu al rândului fontului) și
-  **alinierea** față de ancoră.
+  **alinierea** față de ancoră;
+- **Aldin** și **Cursiv**, pentru orice font, chiar fără fețele lui îngroșate sau înclinate (mai jos).
+
+**Aldin** îngroașă literele: bifat, cere **Îngroșarea pe fiecare parte** (mm; propune 3 % din înălțime, de exemplu 0,6 la
+20 mm; cel mult o cincime din înălțime). Fiecare trăsătură crește cu dublul ei, golurile mici se strâng (pot dispărea), iar
+bucățile apropiate ale unei litere (virgula lui ș, punctul lui i) se pot uni. Înălțimea rămâne cea cerută: H de 20 mm are tot
+20 mm, cu colțurile de afară rotunjite cu raza îngroșării, și spațiul dintre litere rămâne același. Literele îngroșate se
+taie din linii și arce, la cel mult 0,001 mm de forma exactă. **Cursiv** înclină literele: bifat, cere **Înclinarea** (°;
+propune 12°; negativă, spre stânga; cel mult 45°), fiecare literă față de linia ei de bază, exact. Cu amândouă, literele se
+înclină întâi și se îngroașă apoi, deci trăsăturile se îngroașă la fel în toate direcțiile. Textul își ține aldinul și
+cursivul: se redeschide cu ele, iar scalarea uniformă crește și îngroșarea.
 
 **Adaugă** pune textul pe foaie ca o piesă: fiecare literă e un grup, cu golurile ei, tăiată ca un import (profilul pe
 exterior pe contururile de afară, pe interior pe goluri; le schimbi în fereastra exportului, de exemplu în V-carve).
