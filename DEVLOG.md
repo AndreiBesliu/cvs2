@@ -4587,4 +4587,29 @@ atins; ramura nu e împinsă.
 
 **Prompt:** „Da” (la „Pornesc felia următoare, 3.Xa, gazda extensiilor? Ea aduce meniul de lângă marcă, instalarea din
 `.zip` și de la o adresă, cadrul izolat și o extensie de probă, „salut”.”), în sesiunea dedicată liniei Trenuleț.
-**Started:** 02.11, 22:10.
+**Started:** 02.11, 22:10. **Completed:** 02.11, 23:00.
+
+Gazda extensiilor, după deciziile owner-ului din aceeași zi (instalate, nu în aplicație; cadrul izolat; CSP-ul care îl face
+posibil): ADR 0127; codul `5b74344`, reparațiile `27a3aa3` și `44d9275`.
+- Ce merge: pachetul, instalarea din fișier, de la adresă și prin link, meniul, spațiul izolat și extensia de probă „salut”.
+- Descoperite pe drum:
+  - TypeScript 7 n-are API de transpilare, iar `@swc/core` nu-și încarcă binarul aici. Împachetatorul șterge tipurile cu
+    `stripTypeScriptTypes` din Node.
+  - Cadrul primește stilurile ca foi construite (`adoptedStyleSheets`), pe care CSP-ul moștenit nu le oprește. Măsurat în
+    Edge, cu `padding`-ul din `salut.css`.
+  - `.aplicatie` lasă clicurile spre pânză (`pointer-events: none`), deci spațiul și le ia înapoi.
+  - La 1280 px, coloana mărcii are 157 px, iar titlul e deja strâns la zero. De aceea numele extensiei și „Înapoi la planșă”
+    stau deasupra spațiului, nu lângă marcă, cum era în schiță.
+  - `route.fulfill` din Playwright ocolește CORS-ul. Cazul „fără CORS” e probat ca descărcare căzută.
+- **Porțile:**
+  - compilatorul; importurile: 19 reguli, cu 2 noi și capcanele lor;
+  - testele unitare: 8 067 trec, singurul eșec fiind traducerile, completate apoi (543, 0 lipsă);
+  - build-ul determinist: 235 de fișiere identice; pornirea 98,9 / 110 kB, cu ușa 102,4; totalul 460,6 / 500; extensiile
+    aduc 8,5 kB la cerere.
+- **E2e-ul întreg, pe portul 4176:** 298 trec, 4 pică.
+  - Două căderi erau ale feliei, reparate în `27a3aa3`:
+    - martorul refuzat al probei CSP era o origine HTTPS, permisă acum; a devenit o origine `http:`;
+    - cu IndexedDB blocat, lista extensiilor scria o eroare care pornea raportorul.
+  - Celelalte două: aserțiunea care cere portul 4173 și un `EBUSY` al fișierelor Playwright pe Windows.
+- **Otrăvurile `test/otravuri/3.Xa.py`:** 32 / 32. E03 (paza din `ruleazaDocument`) scăpase, fiindcă proba trecea doar
+  prin paletă; proba alegerii din lista vectorilor cu spațiul deschis o prinde.

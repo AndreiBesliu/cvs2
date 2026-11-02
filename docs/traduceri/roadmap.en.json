@@ -621,6 +621,10 @@
       "ro": "Profil cu urechi, intrări, sens; dog-bone / T-bone",
       "en": "Profile with tabs, lead-ins, direction; dog-bone / T-bone"
     },
+    "42519929dcaf879a": {
+      "ro": "**Gazda extensiilor** (fără mașină; ADR 0127; a doua felie a liniei Trenuleț, în worktree-ul `wip/trenulet`; „Da”, la „Pornesc felia următoare, 3.Xa, gazda extensiilor?”). Extensiile se instalează, nu fac parte din aplicație: un pachet `.zip` cu `extensie.json` (id, versiunea, `api` 1, intrarea, stilurile, permisiunile din catalog, SHA-256 pe fișier), din fișier, de la o adresă HTTPS sau prin linkul `#instaleaza=`, cu confirmarea omului, în IndexedDB. Butonul Extensii stă lângă marcă; spațiul extensiei ia locul pânzei, cu numele ei și „Înapoi la planșă” deasupra (lângă marcă nu e loc la 1280 px), iar acțiunile documentului nu rulează cât e deschis. Extensia rulează într-un cadru izolat (iframe cu sandbox și `srcdoc`, încărcătorul cu amprenta în CSP, un CSP propriu fără rețea), cu `HostApi` v1 prin `MessagePort`; CSP-ul aplicației primește `blob:`, amprenta și `https:`. Extensia de probă `extensii/salut`, împachetatorul, două reguli de import cu capcanele lor, capitolul din manual. Probele: 12 teste unitare noi, 3 e2e în Edge (instalarea, izolarea încercată din cadru, linkul), 32 / 32 de otrăvuri prinse (una, după o probă nouă).",
+      "en": "**The extension host** (no machine; ADR 0127; the second slice of the Trenuleț line, in the `wip/trenulet` worktree; “Da”, to “Shall I start the next slice, 3.Xa, the extension host?”). Extensions are installed, not part of the app: a `.zip` package with `extensie.json` (id, version, `api` 1, entry, styles, permissions from the catalog, SHA-256 per file), from a file, from an HTTPS address or through the `#instaleaza=` link, with the person’s confirmation, in IndexedDB. The Extensions button sits next to the brand; the extension’s workspace takes the canvas’s place, with its name and “Back to the sheet” above it (there’s no room next to the brand at 1280 px), and document actions don’t run while it’s open. The extension runs in an isolated frame (a sandboxed iframe with `srcdoc`, the loader with its hash in the CSP, a CSP of its own without network), with `HostApi` v1 through a `MessagePort`; the app’s CSP gets `blob:`, the hash and `https:`. The probe extension `extensii/salut`, the packer, two import rules with their traps, the manual chapter. The proofs: 12 new unit tests, 3 e2e in Edge (installing, the isolation tried from inside the frame, the link), 32 / 32 poisons caught (one after a new test)."
+    },
     "42a72c90fedebdf5": {
       "ro": "Relieful 3: îmbinări, straturi bitmap, sculptura, anvelopa",
       "en": "Relief 3: blends, bitmap layers, sculpting, the envelope"
@@ -1184,6 +1188,10 @@
     "89ee77330a573300": {
       "ro": "Jurnalul de erori pe server (ADR 0039): funcțiile `cncvs2` pe test, fără să le atingă pe cele vechi; `errorLogs` grupat pe amprentă, cu aparițiile; `logServerError` care nu aruncă; `logClientError` cu App Check și plafon. Regulile noi probate pe emulator, nepublicate (3.3). 12 teste pe emulator, 12 sabotaje prinse (după ce martorul a arătat un eșec fals al instrumentului). **Pe test:** 401 fără App Check și cu un token nesemnat. Publicarea a cerut două reparații: excluderile ancorate (`/src`) și recrearea callable-ului (invocarea publică se pune doar la creare).",
       "en": "Server-side error log (ADR 0039): the `cncvs2` functions on test, without touching the old ones; `errorLogs` grouped by fingerprint, with the occurrences; a `logServerError` that does not throw; `logClientError` with App Check and a cap. The new rules checked on the emulator, not published (3.3). 12 tests on the emulator, 12 sabotages caught (after the control showed a false failure of the tool). **On test:** 401 without App Check and with an unsigned token. Publishing needed two fixes: anchored exclusions (`/src`) and recreating the callable (public invocation is set only at creation)."
+    },
+    "89fae6f0a6fc5aea": {
+      "ro": "Extensiile",
+      "en": "Extensions"
     },
     "8a9708f14f83de88": {
       "ro": "Testul pas cu pas, în aplicație",
@@ -2044,6 +2052,10 @@
     "efbfea901afba00d": {
       "ro": "**da (primul)**",
       "en": "**yes (the first)**"
+    },
+    "f062430b2298842e": {
+      "ro": "Gazda extensiilor",
+      "en": "The extension host"
     },
     "f20ea85a30832b0a": {
       "ro": "Normalizarea `nonzero` la ușă",
