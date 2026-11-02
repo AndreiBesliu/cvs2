@@ -366,6 +366,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/unit/post.contracte.ateliere.test.ts`:** programul lui pe hârtie, codurile documentate ale controlerului (pe hârtie,
   cu sursa), iar cititorul dialectelor (`test/unit/ajutor-dialecte.ts`) îl compară pe corpusul CAM cu GRBL 1.1. Urmează 4.6↑b
   (pachetul de atelier, T0–T7). **Pornirea 98,4 (cu ușa 101,9 / 110 kB), totalul 448,9 / 500.**
+  **Pachetul de atelier (ADR 0131, felia 4.6↑b)** gata pe 02.11: fișierele de probă T0–T7 ale celor opt controlere (setul
+  din s8, Anexa B), scrise de postul aplicației, cu fișa fiecăruia (setările, ce se măsoară, valorile pe hârtie, amprentele
+  SHA-256) și o arhivă, în `test/ateliere/` (`node test/ateliere/genereaza.ts`; `--verifica`). Pentru GRBL 1.1, e setul
+  plăcii 3. **Un pachet trimis rămâne exact cel din repo:** o schimbare a postului care atinge un fișier de probă cade în
+  `test/unit/ateliere.aur.test.ts` și cere un pachet nou, cu amprente noi (iar o probă din atelier făcută pe pachetul vechi
+  rămâne a lui). Aplicația nu s-a schimbat.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

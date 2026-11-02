@@ -18,3 +18,4 @@ test/fixtures/documente/** -text
 *.otf binary
 *.zip binary
 *.wasm binary
+test/ateliere/** -text

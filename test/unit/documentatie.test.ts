@@ -155,7 +155,7 @@ test('feliile aduse înainte (↑) stau la etapa lor (4), cu punctul din §5.3 �
   assert.equal(sim.jurnal, 'docs/etape/etapa-03.md');
   assert.deepEqual(sim.adr, ['0047']);
   assert.equal(sim.titlu, 'Simularea, nucleul CPU, felia 1 din 2');
-  assert.deepEqual(patru.felii.map((x) => x.id), ['4.7↑', '4.5↑', '4.5↑b', '4.2↑', '4.7↑b', '4.3↑', '4.A↑', '4.1↑', '4.6↑a']);
+  assert.deepEqual(patru.felii.map((x) => x.id), ['4.7↑', '4.5↑', '4.5↑b', '4.2↑', '4.7↑b', '4.3↑', '4.A↑', '4.1↑', '4.6↑a', '4.6↑b']);
   // Calculul CAM în workere (ADR 0109): un rând de prag al etapei („Calcul pe mai multe fire”), fără punct numerotat în §5.3.
   const cam = felie(patru, '4.A↑');
   assert.deepEqual([cam.adusa, cam.stare, cam.jurnal, cam.adr], [true, 'gata', 'docs/etape/etapa-03.md', ['0109']]);
@@ -172,9 +172,10 @@ test('feliile aduse înainte (↑) stau la etapa lor (4), cu punctul din §5.3 �
   // Corpusul de aur (ADR 0121) e punctul 1 din §5.3.
   assert.deepEqual(patru.puncte[0]?.felii, ['4.1↑']);
   assert.deepEqual(felie(patru, '4.1↑').adr, ['0121']);
-  // Contractele atelierelor (ADR 0125): punctul 6, prima parte (4.6↑b aduce pachetul de atelier).
-  assert.deepEqual(patru.puncte[5]?.felii, ['4.6↑a']);
+  // Punctul 6: contractele atelierelor (ADR 0125), apoi pachetul de atelier (ADR 0131).
+  assert.deepEqual(patru.puncte[5]?.felii, ['4.6↑a', '4.6↑b']);
   assert.deepEqual(felie(patru, '4.6↑a').adr, ['0125']);
+  assert.deepEqual(felie(patru, '4.6↑b').adr, ['0131']);
   // Etapele cu fișă nu-și repetă punctele din plan: fișa le înlocuiește.
   assert.deepEqual(etapa('3').puncte, []);
   // Etapa 6, fără puncte în §5.3: feliile aduse, în ordinea în care s-au început (jurnalul le ține altfel).
