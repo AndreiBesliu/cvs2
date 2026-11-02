@@ -4590,4 +4590,8 @@ vecinilor, cu proba lui.
 **Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), licențele, 8 075 de teste unitare
 (0 eșuate, 8 sărite), build-ul determinist (230 de fișiere identice; pornirea 98,5 / 110 kB, cu ușa 102,0; totalul
 448,9 → 454,7 / 500), e2e-ul în Edge, pe portul 4175: 297 din 298 (`raportor.spec.ts:73` cere adresa de pe 4173; pe
-portul principal trece); `manual.spec.ts` numără acum 25 de capitole.
+portul principal trece); `manual.spec.ts` numără acum 25 de capitole. Codul: `7eec5d0`.
+**Publicat pe canalul `vectori`** pe 02.11, la 22:05 (versiunea `7eec5d040fe1`, refăcută după commit, ca ștampila să fie
+a lui): <https://cncvectorstudio-test--vectori-kx0je98o.web.app>, până pe 02.12. Verificat acolo, în browserul aplicației:
+butonul, panoul și workerul (pe foaia goală, „No problems”, în 0,4 s), apoi două dreptunghiuri în același loc: „Problems: 1
+(shapes checked: 2)”, rândul duplicatului și un marcaj; foaia canalului a rămas goală. Ramura e pe GitHub, nu în `main`.
