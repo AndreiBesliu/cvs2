@@ -4613,3 +4613,9 @@ posibil): ADR 0127; codul `5b74344`, reparațiile `27a3aa3` și `44d9275`.
   - Celelalte două: aserțiunea care cere portul 4173 și un `EBUSY` al fișierelor Playwright pe Windows.
 - **Otrăvurile `test/otravuri/3.Xa.py`:** 32 / 32. E03 (paza din `ruleazaDocument`) scăpase, fiindcă proba trecea doar
   prin paletă; proba alegerii din lista vectorilor cu spațiul deschis o prinde.
+**Publicat pe canalul `trenulet`** pe 02.11, la 23:24, din `7cd108a`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>.
+- Antetul CSP de pe Hosting are `blob:`, amprenta încărcătorului și `https:`.
+- Probele extensiilor și ale primirii, rulate chiar pe canal: 6 / 6.
+- Captura spațiului a arătat un fundal gri, cu text închis. `--fond` e voalul translucid de sub ferestre, nu un fundal; spațiul
+  și extensia de probă iau acum `--s-panou`, iar extensiile primesc 13 jetoane ale temei (`7cd108a`).
+- Adresa principală de test nu s-a atins; ramura nu e împinsă.
