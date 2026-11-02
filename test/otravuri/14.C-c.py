@@ -41,10 +41,10 @@ o('B02', MC, "  return (s.includes('@') ? s.slice(0, s.indexOf('@')) : s.split(/
   "  return s.split(/\\s+/)[0] || s;", 'meniu', 'adresa întreagă pe buton')
 o('B03', MC, '  return cuvinte.slice(0, 2).map((c) => [...c][0] ??', '  return cuvinte.slice(0, 1).map((c) => [...c][0] ??',
   'meniu', 'o singură inițială')
-o('B04', MC, "''].join('').toLocaleUpperCase() || '?';", "''].join('') || '?';", 'meniu', 'inițialele mici')
+o('B04', MC, ".join('').toLocaleUpperCase() || '?';", ".join('') || '?';", 'meniu', 'inițialele mici')
 o('B05', MC, '  return cuvinte.slice(0, 2).map((c) => [...c][0] ??', '  return cuvinte.slice(0, 2).map((c) => c[0] ??',
   'meniu', 'o literă din afara planului de bază tăiată în două')
-o('B06', MC, "''].join('').toLocaleUpperCase() || '?';", "''].join('').toLocaleUpperCase() || '';", 'meniu', 'fără nume, cercul gol')
+o('B06', MC, ".join('').toLocaleUpperCase() || '?';", ".join('').toLocaleUpperCase() || '';", 'meniu', 'fără nume, cercul gol')
 
 # ---- Interfața (e2e) ----
 o('E01', ED, """        inchide();

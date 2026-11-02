@@ -4437,3 +4437,25 @@ regulilor, 20 e2e); rapid verde pe ambele commit-uri de cod. Nedovedit până la
 **Publicat pe adresa principală de test:** 02.11, 10:15, `publica` pe `cfae679` (rularea 41411331167), după CI-ul rapid verde;
 `web.app` servește versiunea `cfae6791287a`, iar documentația publicată are felia 3.Q. Imaginea podului nu se încearcă pe
 instanța de test: proba ei e compilarea verificată, iar pornirea pe placă vine cu 3.6e.
+
+## 2026-11-02 — Felia 14.C↑c: meniul contului (ADR 0120); manualul și sugestia, din meniu (Model: Claude Opus 5.5)
+
+**Prompt:** „de ce apare chestia asta? ar trebui sa fie un meniu mai conventional pentru account area.” (cu captura ferestrei
+contului rămase pe „Opening the account…”) și „si trebuie sa pui acolo si manualul si sugestiile”, apoi „Da, fă-l” (la schița
+meniului).
+**Started:** 02.11, 10:52. **Completed:** 02.11, 12:57. **De ce apărea fereastra:** butonul Cont deschidea direct panoul, care
+reconfirma contul pe server: două cereri la Firebase Auth, tokenul App Check și callable-ul `cont`, rece pe test. Fără cont,
+fereastra trecea în 0,4 s; logat, aștepta serverul.
+
+Butonul Cont deschide acum un meniu, sub el. Logat, butonul arată inițialele și primul nume, iar capul meniului numele și
+planul de azi, din contul ținut, fără server. Rândurile: „Contul meu…” sau „Intră sau creează cont…” (panoul), „Manualul” (F1),
+„Trimite o sugestie…” (în afara live) și „Ieși din cont” (prin modulul panoului; fără Firebase, pleacă doar contul ținut).
+Tastele sunt ale meniului de clic dreapta, scoase într-o funcție comună (`tastaInMeniu`). Escape întoarce focusul la buton;
+meniul se mai închide la un clic afară, la Tab, la mărimea schimbată a ferestrei și la pierderea focului. „?” și Sugestie au
+ieșit din extensia barei; F1 a rămas. La zi: manualul (ro, en), ADR 0120 (nou) și 0058, 0111, 0116 (amendate), fișa
+(14.C↑c), CLAUDE.md, traducerile (524, 0 lipsă). Codul: `de0b65e`.
+**Porțile:** compilatoarele, importurile, traducerile, 8 019 teste unitare (meniul și manualul, rulate din nou după ultima
+simplificare), build-ul determinist (pornirea 98,5 / 110 kB), licențele, e2e 293 / 294 în suita întreagă (`rol.spec.ts`, o
+selecție prin tragere, a căzut o dată sub patru lucrători; singur, 25 / 25 sub încărcare), emulatoarele (69 de probe ale
+funcțiilor și regulilor, 20 e2e), rapid verde. Otrăvurile din `test/otravuri/14.C-c.py`: 21 / 21 prinse, într-un worktree din
+afara Drive-ului (14 pe logica meniului, cu unealta; 7 de interfață, prin build și e2e rulate cu `node`, cât npm e stricat).
