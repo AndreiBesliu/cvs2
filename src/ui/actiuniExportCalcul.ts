@@ -1,9 +1,10 @@
-import { exportInBazin, simulareInBazin, timpInBazin, traseuInBazin } from '../jobs/bazinCam.ts';
+import { exportInBazin, simulareInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
 import { fireImplicite, simuleazaInBazin, SimulareAnulata } from '../jobs/bazin.ts';
 import { despacheteaza, impacheteaza } from '../jobs/impachetare.ts';
 import type { Program } from '../ir/ir.ts';
 import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
+import type { OptiuniVerificare, RezultatVerificare } from '../model/verificare.ts';
 import { reliefPentru } from '../sim/banda.ts';
 import { campPentruFoaie, dimensiuni, type ParametriCamp } from '../sim/camp.ts';
 import type { DateScula, GrupSimulare } from '../sim/nucleu.ts';
@@ -46,6 +47,14 @@ export async function simuleazaExport(
     const motiv = e instanceof Error ? e.message : String(e);
     return e instanceof SimulareAnulata ? { ok: false, motiv, eroare: false, anulata: true } : { ok: false, motiv, eroare: true };
   }
+}
+
+/**
+ * Verificarea vectorilor (ADR 0124): problemele contururilor foii (sau ale formelor alese), în workerul CAM (ADR 0109).
+ * `semnal` anulează calculul (un document schimbat, panoul închis): promisiunea e respinsă cu `CalculAnulat`.
+ */
+export function verificaVectorii(doc: Document, optiuni: OptiuniVerificare, semnal?: AbortSignal): Promise<RezultatVerificare> {
+  return verificareInBazin(doc, optiuni, semnal ? { semnal } : {});
 }
 
 /** Ce ține `ProgramSimulare.date`: scula și mutările nucleului (IR-ul, în coordonatele documentului), cu grupurile de după schimbări. */

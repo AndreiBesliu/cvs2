@@ -4559,3 +4559,35 @@ linia principală continuă de la 0125), traducerile (531, 0 lipsă). Codul: `dd
 are ADR 0122 și felia 3.R, în ambele limbi; editorul trece pe versiunea nouă după „Reload”. Sesiunea dedicată liniei
 Trenuleț (cerută: „poate il punem intr-un worktree dedicat”) n-a pornit: sub Remote Control, o sesiune nouă pornește doar
 dintr-un mesaj scris în aplicația desktop.
+
+## 2026-11-02 — Felia 10.1↑: verificarea vectorilor, detectarea și panoul (ADR 0124) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem worktrees pentru urmatoarele etape”, apoi „porneste worktrees” (owner-ul, în sesiunea
+principală). Sarcina de la sesiunea principală: sesiunea dedicată etapei 10, în worktree-ul ei, cu felia 10.1↑ (detectarea
+și panoul cu lista), ADR 0124, probele, publicarea pe canal și raportul, cu întrebările grupate.
+**Started:** 02.11, 20:41. **Completed:** 02.11, 22:05.
+
+În worktree-ul `C:\Users\besli\cncvs2-lucru\vectori` (ramura `wip/10.1-vectori`, din `main` `77a1be6`, cu joncțiunile
+`node_modules`; e2e-ul pe portul 4175). **Verifică vectorii**, un buton nou în extensia barei (după boolean și degrupare),
+deschide un panou adus la cerere: toleranța (implicit 0,01 mm), pragul buclei mici (1 %), „Doar formele alese”, lista
+problemelor pe feluri și, pe pânză, un cerc de mărime fixă în locul fiecăreia (roșu în aceeași formă, verde între forme).
+Felurile: duplicatele (aceleași noduri în toleranță, cu orice start și sens, și între piese; copiile ies din rest),
+intersecțiile dintre forme (prin cavalier, la 1e-6 mm, cu suprapunerile unite), autointersecțiile (cu bucla mai mică și
+procentul ei din formă), nodurile prea apropiate (în formă și între forme; lângă o atingere rămâne atingerea, la capetele a
+două căi rămân nodurile) și căile deschise (cu golul). Calculul pur e `src/model/verificare.ts`, în workerul CAM (cererea
+`verificare`, prin `actiuniExportCalcul.ts`, ca vederea 3D); în fațada offsetului, `autointersectii` și `intersectiiIntre`,
+iar `seAtingeSingur` folosește aceeași funcție (`atingeriReale`). La zi: ADR 0124 (nou, cu patru întrebări pentru 10.2↑),
+indexul, fișa (10.1↑), pragul (rândul trece în lucru), manualul (capitolul „Verificarea vectorilor”, ro și en), CLAUDE.md,
+traducerile (537, 0 lipsă).
+**Probele:** 17 probe pe hârtie (`test/unit/verificare.test.ts`), cu corpusul plantat al pragului (10 duplicate, 8 perechi
+de noduri la 0,005 mm, 6 intersecții, 5 bucle: toate, fără alarme false, cu culoarea lor) și același corpus citit din DXF;
+3 probe e2e (`test/e2e/verificare.spec.ts`: un DXF importat, lista care urmează documentul, panoul la 1024 px). Mutațiile:
+15 / 15 pe modul (primele rulări au scăpat patru,
+cu probele lor adăugate; o regulă fără nimic de prins a ieșit din cod, cavalier nu dă punctul de la capătul unei suprapuneri)
+și 3 / 3 pe panou, prin build și e2e, cu controlul verde înainte și după. O captură a panoului a arătat că ieșea din
+fereastră pe dreapta (se lărgea după ce venea conținutul, iar așezarea se făcuse la deschidere): are acum lățimea
+vecinilor, cu proba lui.
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), licențele, 8 075 de teste unitare
+(0 eșuate, 8 sărite), build-ul determinist (230 de fișiere identice; pornirea 98,5 / 110 kB, cu ușa 102,0; totalul
+448,9 → 454,7 / 500), e2e-ul în Edge, pe portul 4175: 297 din 298 (`raportor.spec.ts:73` cere adresa de pe 4173; pe
+portul principal trece); `manual.spec.ts` numără acum 25 de capitole.

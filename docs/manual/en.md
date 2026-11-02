@@ -466,6 +466,30 @@ A **WMF** (the Windows metafile: old clipart, exports from CorelDRAW, Office or 
 - a WMF has no Bézier curves: a circle a program drew freehand becomes a polygon, and is imported as one;
 - an EMF (the 32-bit metafile) is refused: save it as WMF, SVG or PDF.
 
+## Checking vectors
+%% capitol: verificare
+%% acopera: editare.verificare
+
+**Check vectors** (the button with the circled node, after boolean and ungrouping, in the bar extension) looks for what
+can spoil a cut, without changing anything in the project:
+- **duplicates**: the same shape placed more than once in the same spot (also across parts): the first one stays, the
+  others are copies; the cutter would cut them all, and the export refuses contours that touch;
+- **intersections**: two shapes that cross, touch or share a stretch (a common side is an overlap);
+- **self-intersections and loops**: a shape that crosses itself, with the area of the smaller loop and its share of the
+  shape; below the “Small loop” threshold (1 % by default), the loop is “small”, like the knots left by an import;
+- **nodes too close**: a segment shorter than the tolerance, or the nodes of two shapes closer than that (for example the
+  ends of two paths that should be one);
+- **open shapes**: every open path, with the distance between its ends.
+
+The **tolerance** (0.01 mm by default) is the distance below which two nodes are the same spot and two shapes are the same
+shape. With shapes selected and **Only the selected shapes** ticked, the check looks only at them, among themselves;
+otherwise at the whole sheet. While the panel is open, the list redoes itself after every change. It works the same on
+drawn and on imported vectors.
+
+On the canvas, every problem has a circle, the same size at any zoom: **red** in the same shape, **green** between shapes;
+an overlap is a thick line, and the gap of an open path a dotted line. A click on a row selects its shapes and enlarges its
+circle. For now the check only shows; the repairs come in a later version.
+
 ## The cutting operations
 %% capitol: operatii
 %% acopera: document.aplica-operatii, document.rol

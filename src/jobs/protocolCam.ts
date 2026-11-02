@@ -6,6 +6,7 @@
 import type { IesireFoaie } from '../cam/iesire.ts';
 import type { ColtOrigine, Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
+import type { OptiuniVerificare } from '../model/verificare.ts';
 import type { StrategieScula, Unitati } from '../post/contract.ts';
 import type { IdContract } from '../post/contracte/index.ts';
 import type { FisierExportat, ProgramExportat } from '../post/export.ts';
@@ -56,7 +57,9 @@ export type CerereCam =
   /** Vederea 3D (ADR 0057 §1): mutările simulării ale programului documentului. */
   | { readonly fel: 'simulare'; readonly document: Document }
   /** Timpul jobului de lângă traseu (ADR 0046 §8) pentru un program deja calculat, fără CAM. */
-  | { readonly fel: 'timp'; readonly program: ProgramImpachetat; readonly foaie: Montaj['foaie']; readonly setari: string | undefined };
+  | { readonly fel: 'timp'; readonly program: ProgramImpachetat; readonly foaie: Montaj['foaie']; readonly setari: string | undefined }
+  /** Verificarea vectorilor (ADR 0124): problemele contururilor foii, fără să schimbe documentul. */
+  | { readonly fel: 'verificare'; readonly document: Document; readonly optiuni: OptiuniVerificare };
 
 export type RaspunsExport =
   | {
