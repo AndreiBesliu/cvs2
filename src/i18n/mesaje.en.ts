@@ -60,7 +60,7 @@ export const en = {
   'motiv.degrupare-vcarve': 'A V-carve cuts its contours together (letters with their holes): ungrouped, the holes would be cut too. Change the operation first, in the export window.',
   'motiv.degrupare-impartita': 'The piece is also used by other instances: ungrouping would take theirs apart too.',
   'motiv.grupare-doua': 'Choose at least two shapes: grouping makes them a single piece.',
-  'motiv.grupare-vcarve': 'Two chosen shapes each have a V-carve with the same values (tool, depth, step) and they touch or overlap: grouped, they would be carved as a single region, and the overlap would be left uncut. Move them apart, or change one of the operations first, in the export window.',
+  'motiv.grupare-vcarve': 'Two chosen shapes each have a V-carve with the same values (tool, depth, step) and they touch or overlap: grouped, they would be carved as a single region, and the overlap would be left uncut. Move them apart, or give one of them another depth or step (properties panel, Cutting).',
   'motiv.grupare-impartita': 'A chosen piece is also used by other instances: grouping would take it from them too.',
   'actiune.text': 'Write the text',
   'motiv.text-gol': 'The text has no letter to cut: only spaces, or letters the font does not have.',
