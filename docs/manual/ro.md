@@ -307,8 +307,9 @@ tăierii păstrează clasele (întâi interioarele, apoi liniile, la urmă exter
 contururi (degroșare și finisare) le taie, după degrupare, contur cu contur. După degrupare, alese sunt toate părțile, iar un
 singur `Ctrl+Z` le adună la loc.
 
-Degruparea se refuză, cu motivul spus lângă butoane, dacă un **V-carve** își sapă contururile împreună (literele cu golurile
-lor: despărțite, golurile s-ar săpa și ele), dacă piesa e folosită și de alte instanțe sau dacă nicio formă aleasă nu e un grup.
+Degruparea se refuză, cu motivul spus lângă butoane (și la `Ctrl+Shift+G`), dacă un **V-carve** își sapă contururile împreună
+(literele cu golurile lor: despărțite, golurile s-ar săpa și ele), dacă piesa e folosită și de alte instanțe sau dacă nicio
+formă aleasă nu e un grup.
 
 ## Gruparea
 %% capitol: grupare
@@ -325,9 +326,9 @@ locul primei forme alese în ordinea tăierii; dacă între formele alese erau a
 desface gruparea, cu fiecare formă la locul ei.
 
 Două texte (sau forme) cu câte un **V-carve** cu aceleași valori se grupează: freza le sapă într-un singur drum, iar fiecare
-literă iese la fel. Gruparea se refuză, cu motivul spus lângă butoane, dacă e aleasă o singură formă, dacă două forme cu
-același V-carve se ating sau se suprapun (grupate, s-ar săpa ca o singură regiune, iar suprapunerea ar rămâne nesăpată) sau
-dacă o piesă aleasă e folosită și de alte instanțe.
+literă iese la fel. Gruparea se refuză, cu motivul spus lângă butoane (și la `Ctrl+G`), dacă e aleasă o singură formă, dacă două
+forme cu același V-carve se ating sau se suprapun (grupate, s-ar săpa ca o singură regiune, iar suprapunerea ar rămâne nesăpată)
+sau dacă o piesă aleasă e folosită și de alte instanțe.
 
 ## Meniul de clic dreapta
 %% capitol: meniu

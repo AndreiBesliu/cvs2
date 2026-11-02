@@ -524,7 +524,7 @@ test('degruparea (ADR 0103): piesa unui DXF se desface pe contururi, din clic dr
   expect(erori).toEqual([]);
 });
 
-test('gruparea (ADR 0130): părțile unui DXF degrupat devin o piesă, din clic dreapta, din butonul de lângă Degrupează și cu Ctrl+G; Ctrl+Z le desface; grupul rămâne după reîncărcare', async ({ page }) => {
+test('gruparea (ADR 0130): părțile unui DXF degrupat devin o piesă, din clic dreapta, din butonul de lângă Degrupează și cu Ctrl+G; Ctrl+Z le desface; grupul rămâne după reîncărcare; un refuz de la tastatură își spune motivul lângă butoane', async ({ page }) => {
   const erori: string[] = [];
   page.on('pageerror', (e) => { erori.push(e.message); });
   await page.goto('/');
@@ -613,6 +613,20 @@ test('gruparea (ADR 0130): părțile unui DXF degrupat devin o piesă, din clic 
   await expect(page.locator('[data-editare="grupeaza"]')).toBeDisabled();
   await page.keyboard.press('Escape');
   await expect(meniu).toHaveCount(0);
+
+  // Tot cu o singură formă: Ctrl+G și Ctrl+Shift+G nu schimbă nimic, dar își spun motivul lângă butoane, ca un clic (pe
+  // tastă, refuzul era tăcut). O altă selecție le șterge.
+  await expect(alese).toHaveCount(1);
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+g');
+  await expect(page.getByTestId('motiv-grupare')).toHaveText('Alege cel puțin două forme: gruparea le face o singură piesă.');
+  await page.keyboard.press('Control+Shift+G');
+  await expect(page.getByTestId('motiv-degrupare')).toHaveText('Nicio formă aleasă nu e un grup: fiecare piesă are o singură formă.');
+  await expect(randuri).toHaveCount(3);
+  await page.mouse.click(gol.x, gol.y);
+  await expect(alese).toHaveCount(0);
+  await expect(page.getByTestId('motiv-grupare')).toHaveCount(0);
+  await expect(page.getByTestId('motiv-degrupare')).toHaveCount(0);
   expect(erori).toEqual([]);
 });
 

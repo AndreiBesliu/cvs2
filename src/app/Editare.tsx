@@ -234,6 +234,11 @@ export type ProprietatiEditare = {
   /** Gestul uneltei de desen, dat pânzei (null: selecția, sau modulul plecat). */
   readonly onDesen: (f: GestDesen | null) => void;
   /**
+   * Ascultătorul refuzurilor venite de la tastatură sau din paletă, dat aplicației (null: modulul plecat): Ctrl+G și
+   * Ctrl+Shift+G trec prin ușa ei, iar motivul se spune lângă butoane, ca la clic.
+   */
+  readonly onRefuz: (f: ((id: string, motiv: CheieSimpla) => void) | null) => void;
+  /**
    * Testul pas cu pas (ADR 0072), deschis la pornire: doar pe instanța de test (și local), la adresa cu `?test` (din 31.10,
    * fără buton în bară, la cererea owner-ului; codul rămâne, pentru tutorialul de mai târziu), cu versiunea și instanța
    * pentru raport.
@@ -251,7 +256,7 @@ export type ProprietatiEditare = {
 
 export function Editare(p: ProprietatiEditare): ReactElement | null {
   useLimba();
-  const { doc, selectie, cutie, vedere, marime, ruleaza, onLipeste, onDesen } = p;
+  const { doc, selectie, cutie, vedere, marime, ruleaza, onLipeste, onDesen, onRefuz } = p;
   // Ultimul desen al Pen-ului (ADR 0074 §4): pașii lui și proiectul de dinainte / de după, ca Ctrl+Shift+Z să-l redeschidă.
   const ultimulPen = useRef<{ readonly desen: DesenPen; readonly inainte: Document; dupa: Document | null } | null>(null);
   useEffect(() => {
@@ -591,6 +596,15 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     setMotivGrupare(motiv);
     return motiv;
   };
+  // Aceleași două acțiuni pornite de la tastatură (Ctrl+G, Ctrl+Shift+G) sau din paletă rulează prin ușa aplicației, care
+  // îi dă aici motivul unui refuz: se spune tot lângă butoane, până la altă selecție.
+  useEffect(() => {
+    onRefuz((id, motiv) => {
+      if (id === 'document.grupeaza') setMotivGrupare(t(motiv));
+      else if (id === 'document.degrupeaza') setMotivDegrupare(t(motiv));
+    });
+    return () => { onRefuz(null); };
+  }, [onRefuz]);
   const oglindeste = (directie: 'orizontal' | 'vertical'): void => {
     if (!cutie || selectie.length === 0 || p.doarCitire) return;
     const tr: Transformare = { fel: 'oglindire', directie, centru: { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 } };

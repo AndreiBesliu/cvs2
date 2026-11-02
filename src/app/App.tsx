@@ -235,6 +235,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [setLipesteStabil] = useState(() => (f: Lipeste | null) => { setLipeste(() => f); });
   const [desen, setDesen] = useState<GestDesen | null>(null);
   const [setDesenStabil] = useState(() => (f: GestDesen | null) => { setDesen(() => f); });
+  // Refuzul unei acțiuni pornite de la tastatură sau din paletă, dat modulului editării: el îl spune lângă butoanele
+  // acțiunii, ca la clic (Ctrl+G, Ctrl+Shift+G). Fără modul, refuzul rămâne tăcut.
+  const refuzEditare = useRef<((id: string, motiv: CheieSimpla) => void) | null>(null);
+  const [setRefuzEditare] = useState(() => (f: ((id: string, motiv: CheieSimpla) => void) | null) => { refuzEditare.current = f; });
   const [cheieStrat, setCheieStrat] = useState(0);
   const [traseuPregatit, setTraseuPregatit] = useState<{ readonly bucati: readonly Bucata[]; readonly rarit: boolean } | null>(null);
   const cerereTraseu = useRef(0);
@@ -627,14 +631,22 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   /**
    * O acțiune aleasă din bară, din bara selecției, din paletă sau de la tastatură. Importul cere întâi fișierul, iar
    * exportul își deschide dialogul (ca butoanele de până acum); restul rulează prin registrul lor. Cât e deschis un
-   * dialog, nimic nu rulează.
+   * dialog, nimic nu rulează. Motivul unui refuz merge la modulul editării (`refuzEditare`).
    */
   const executa = (id: string): void => {
-    if (dialogDeschis.current || !stareActiune(id).ok) return;
+    if (dialogDeschis.current) return;
+    const s = stareActiune(id);
+    if (!s.ok) {
+      refuzEditare.current?.(id, s.motiv);
+      return;
+    }
     if (id === 'import.svg') fisierImport.current?.click();
     else if (id === 'export.gcode') { setStareExport(null); setDialogExport(true); }
     else if (registruVedere.actiuni.has(id)) ruleaza(registruVedere, id, contextVedere);
-    else ruleazaDocument(id, context());
+    else {
+      const r = ruleazaDocument(id, context());
+      if (!r.ok) refuzEditare.current?.(id, r.motiv);
+    }
   };
 
   useEffect(() => {
@@ -1011,7 +1023,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             suprapunere={(v, m, l) => (
               <Suspense fallback={null}>
                 <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)}
-                  ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil} reface={stareActiune('istoric.reface').ok}
+                  ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
+                  onRefuz={setRefuzEditare} reface={stareActiune('istoric.reface').ok}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />

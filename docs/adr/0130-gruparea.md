@@ -64,7 +64,9 @@ aliniază împreună. Degruparea există de pe 28.10, iar drumul înapoi era doa
    - Acțiunea `document.grupeaza`, în registru (deci și în paletă, Ctrl+K), cu tasta **Ctrl+G**. Tasta era liberă în
      aplicație; browserul o folosește („caută următorul”), dar aplicația o oprește, ca pe Ctrl+D.
    - Butonul **Grupează**, în secțiunea Boolean a extensiei barei, chiar înaintea lui Degrupează, activ cu cel puțin două
-     forme alese. Motivul unui refuz stă lângă butoane, până la altă selecție.
+     forme alese. Motivul unui refuz stă lângă butoane, până la altă selecție, și când acțiunea vine de la tastatură sau
+     din paletă: ușa aplicației i-l dă modulului editării (`onRefuz`), la Ctrl+G ca și la Ctrl+Shift+G (tăcut până la
+     unirea în `main`, reparat atunci).
    - **Meniul de clic dreapta**: Grupează, apoi Degrupează, apoi restul (ADR 0103 §6).
    - Calculul vine la cerere, cu modulul acțiunilor (ca la degrupare, ADR 0103 §7); până atunci, „Editarea se încarcă încă”.
 8. **Alinierea.** Un grup e o singură instanță, deci alinierea, distribuirea și centrarea pe foaie (ADR 0050 §3, ADR 0110) îl
@@ -93,7 +95,7 @@ aliniază împreună. Degruparea există de pe 28.10, iar drumul înapoi era doa
 - **Unitar** (`actiuni.calcul.test.ts`): fără calcul, gruparea spune că editarea se încarcă; cu o formă, cere două.
 - **E2e** (`import.spec.ts`): un DXF cu trei contururi, degrupat, apoi grupat din meniul de clic dreapta, din butonul de lângă
   boolean și cu Ctrl+G, cu Ctrl+Z între ele; după reîncărcarea paginii, grupul e tot acolo; cu o singură formă aleasă,
-  Grupează e inactiv în meniu și în bară.
+  Grupează e inactiv în meniu și în bară, iar Ctrl+G și Ctrl+Shift+G își spun motivul lângă butoane, până la altă selecție.
 - **Manualul:** capitolul „Gruparea” (ro + en), rândul din meniul de clic dreapta, tasta în capitolul scurtăturilor; ușa nouă
   în poarta manualului (69), capitolul nou în proba e2e a manualului (25).
 - **Mutațiile: 27 / 27** (`test/otravuri/6.T.py`: 22 pe probele unitare, 5 pe e2e). Lista a arătat întâi cinci goluri în

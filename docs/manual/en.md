@@ -318,9 +318,9 @@ The cutting order keeps its classes (insides first, then lines, outsides last); 
 outlines (roughing and finishing) cuts them, after ungrouping, outline by outline. After ungrouping, all the parts are chosen,
 and a single `Ctrl+Z` puts them back together.
 
-Ungrouping is refused, with the reason shown next to the buttons, if a **V-carve** cuts its outlines together (letters with
-their holes: apart, the holes would be cut too), if the part is also used by other instances, or if none of the chosen shapes is
-a group.
+Ungrouping is refused, with the reason shown next to the buttons (also on `Ctrl+Shift+G`), if a **V-carve** cuts its outlines
+together (letters with their holes: apart, the holes would be cut too), if the part is also used by other instances, or if none
+of the chosen shapes is a group.
 
 ## Grouping
 %% capitol: grupare
@@ -338,9 +338,9 @@ edited again. After grouping, the group is chosen, and a single `Ctrl+Z` undoes 
 place.
 
 Two texts (or shapes) each with a **V-carve** with the same values can be grouped: the cutter carves them in one go, and each
-letter comes out the same. Grouping is refused, with the reason shown next to the buttons, if a single shape is chosen, if two
-shapes with the same V-carve touch or overlap (grouped, they would be carved as a single region, and the overlap would be left
-uncut) or if a chosen part is also used by other instances.
+letter comes out the same. Grouping is refused, with the reason shown next to the buttons (also on `Ctrl+G`), if a single shape
+is chosen, if two shapes with the same V-carve touch or overlap (grouped, they would be carved as a single region, and the
+overlap would be left uncut) or if a chosen part is also used by other instances.
 
 ## The right-click menu
 %% capitol: meniu
