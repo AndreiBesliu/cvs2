@@ -373,8 +373,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   linie la adâncimea liniilor importate. **Relief SingleLine** (OFL 1.1, din `isdat-type/Relief-SingleLine`, subset) e
   inclus. **Corpusul liniilor simple e Python** (`linie` în `test/oracles-py/text_corpus.py`, `test/fixtures/text/linie.json`,
   cu variantele lui Relief: dus-întors, cu bucle, CFF): un caz nou = rândul în `CAZURI_LINIE`, apoi fixtura regenerată și
-  comisă. Fonturile SVG cu o singură linie (Hershey / EMS) vin în 7.6↑b. **Pornirea 98,6 (cu ușa 102,2 / 110 kB), totalul
-  445,6 / 500.**
+  comisă. **Fonturile SVG (ADR 0140 §7, felia 7.6↑b)** gata pe 02.11: `src/text/fontSvg.ts` le citește prin aceeași ușă
+  (`felFisier` dă `'svg'`, o singură față), cu garda entităților din `src/io/entitatiXml.ts` (comună cu importul SVG; luată
+  din `svg.ts`, ar trage în bucata textului toată ușa SVG) și parserul căilor importului; tipurile fontului stau în
+  `src/text/tipFont.ts` (fără ciclu între cele două cititoare). Corpusul lor e tot Python (`fonturi_svg`, `svg.json`; fontul
+  SVG al lui Relief și două fonturi de probă scrise în generator: `SVG_TRASATURI`, `SVG_PLIN`). **Pornirea 98,6 (cu ușa
+  102,2 / 110 kB), totalul 447,2 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

@@ -4636,3 +4636,43 @@ Verificat în browserul aplicației, după „Reload” (precache-ul ținea vers
 fonturilor incluse, Aldin oprit cu motivul, previzualizarea din trăsături (fără umplere), „Atelier Ștefan 2026” pus pe
 foaie ca 28 de trăsături deschise, cu o singură gravură pe linie de 1 mm; consola fără erori. Adresa principală de test a
 rămas a sesiunii principale (`ec428c9`).
+
+## 2026-11-02 — Felia 7.6↑b: fonturile SVG cu o singură linie (ADR 0140 §7) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, continuă” (la „Continui cu fonturile SVG cu o singură linie (felia 7.6↑b) sau trec întâi la textul
+vertical?”).
+**Started:** 02.11, 22:29. **Completed:** 02.11, 23:40.
+
+Fonturile de gravură în formatul SVG (Hershey, EMS, fontul SVG al lui Relief) se încarcă în Fonturile mele. `felFisier` le
+recunoaște după conținut (un element `<font>` într-un XML; un desen SVG rămâne „nu e un font”), iar `citesteFont` le dă
+același `Font` ca unui TTF, cu o singură față (`src/text/fontSvg.ts`): garda entităților importului SVG, apoi `DOMParser`;
+mărimile după SVG 1.1 (majuscula, vârful lui H; altfel `cap-height`); glifele cu un singur caracter, căile citite cu parserul
+importului (`citesteDateCale`) și scrise în convenția CFF (o subcale fără Z e o trăsătură deschisă, una cu Z o buclă, o
+comandă de după Z pornește din start); crenarea `hkern` (caractere, intervale `U+…` cu „?”, nume); o glifă cu un arc se sare,
+numărată. Recunoașterea cu o singură linie e cea din 7.6↑, deci un font SVG plin e un font obișnuit. Regula buclei își
+păstrează acum punctul final: fără el, cubica de închidere a unui O SVG (sau CFF) rămânea fără capăt.
+Găsite pe drum: (1) un ciclu de importuri între `font.ts` și `fontSvg.ts` (tipurile fontului, mutate în `tipFont.ts` și
+reexportate); (2) garda entităților luată din `svg.ts` trăgea toată ușa SVG în bucata comună a textului (+17 kB): mutată,
+neschimbată, în `src/io/entitatiXml.ts`, reexportată din `svg.ts`; acum doar parserul căilor (`svgDate.ts`, 1,8 kB) e comun,
+fiindcă îl folosesc amândouă; (3) T-ul fontului plin de probă avea două dreptunghiuri lipite, pe care normalizarea le unea:
+scris dintr-un contur.
+Fereastra fonturilor primește `.svg`; textele refuzului și nota ferestrei, manualul (ro, en) și `CITESTE.txt` al fixturilor
+sunt la zi.
+**Probele:** oracolul (`fonturi_svg` în `text_corpus.py`: `xml.etree` și `parse_path` din fontTools; 5 cazuri: fontul SVG
+original al lui Relief, unul de probă cu toate comenzile, unul plin); pe hârtie (majusculele; H-ul lui Relief SVG e H-ul
+TTF-ului; pozițiile și crenarea fontului de probă; trăsătura de după Z); refuzurile, parserul ca în browser (documentul
+parțial cu `<parsererror>`), garda înaintea parserului, mărimile implicite, dublurile; e2e-ul (Relief SVG încărcat în
+Fonturile mele, recunoscut cu o linie, gravat pe linie, editat după reîncărcare). Fixturile vechi ale oracolului au ieșit
+identice.
+**Otrăvurile** (`test/otravuri/7.6b.py`): 27; 25 prinse din prima (24 pe probele unitare, F01 prin harnașul e2e pe 4174),
+două scăpate: U05 (un desen cu `<font-face>` fără `<font>` luat drept font: proba lipsea, adăugată) și R05 (comanda de după Z
+continuă bucla: echivalentă, fiindcă `citesteDateCale` pune singur un M în start; ramura cititorului era moartă și s-a scos,
+cu mutația ei). Pe codul final: 25 / 25 unitare și F01. Codul: `ffd1699`, plus `c06ef34` (ramura scoasă, proba nouă).
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări, 863 de module), licențele,
+traducerile (539, 0 lipsă), 8 094 de teste unitare pe `ffd1699` (0 eșuate, 8 sărite; pe `c06ef34`, suita întreagă din nou, mai jos), build-ul determinist (231 de fișiere identice; pornirea 98,6 / 110 kB, cu ușa
+102,2; totalul 447,2 / 500; precache 82 de fișiere, 628,1 kB), e2e-ul întreg în Edge pe 4174, pe `ffd1699`: 297 / 298 (picată
+doar `raportor.spec.ts:101`, care cere adresa de pe 4173); după `c06ef34` (doar cititorul SVG), `fonturi.spec.ts`.
+**Observație nelămurită:** proba e2e nouă a picat de 4 ori la rând într-o fereastră de ~10 minute („Aplică” oprit după
+reîncărcare, fără motiv în panou și fără mesajul filei), apoi a trecut de 34 de ori la rând, și sub încărcare, ca și proba
+TTC, care are același drum. Nu s-a reprodus; dacă reapare, `error-context.md` arată pagina (bănuiala: fila deschisă
+doar-citire după reîncărcare).
