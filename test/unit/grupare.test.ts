@@ -255,9 +255,9 @@ test('salvarea și redeschiderea: ușa documentului deschide grupul la fel', () 
 });
 
 const V90: Operatie['scula'] = { numar: 2, nume: 'V90', diametru: 20, forma: { tip: 'v', unghi: 90 } };
-/** Operațiile formei, trecute pe V-carve cu V90, la `adancime` mm într-o trecere (ca în `vcarve.test.ts`). */
-const cuV = (x: Pusa, adancime = 10): Pusa => ({
-  ...x, piesa: { ...x.piesa, operatii: x.piesa.operatii.map((o) => ({ ...o, tip: 'vcarve' as const, latura: 'interior' as const, scula: V90, adancime, pas: adancime })) },
+/** Operațiile formei, trecute pe V-carve cu V90, la `adancime` mm, în pași de `pas` (implicit: o trecere, ca în `vcarve.test.ts`). */
+const cuV = (x: Pusa, adancime = 10, pas = adancime): Pusa => ({
+  ...x, piesa: { ...x.piesa, operatii: x.piesa.operatii.map((o) => ({ ...o, tip: 'vcarve' as const, latura: 'interior' as const, scula: V90, adancime, pas })) },
 });
 /** Suprafața săpată de G-code-ul exportat, după oracolul independent al simulării (ADR 0047), pe grila dată. */
 const sapat = (d: Document, grila: GrilaOracol): Float64Array => judeca(postat(d), grila, { tip: 'v', diametru: 20, unghi: 90 }).z;
@@ -332,9 +332,10 @@ test('V-carve-urile cu aceleași valori care se ating sau se suprapun nu se grup
   assert.deepEqual(caz(cuV(forma('e2', cerc(20), 26, 23))), refuz);
   assert.deepEqual(caz(cuV(forma('e2', dreptunghi(4, 20), 24, 10))), refuz);
   assert.deepEqual(caz(cuV(forma('e2', dreptunghi(5, 6), 32, 20))), refuz);
-  // La 0,1 mm, alăturate: se grupează. Cu altă adâncime, sunt regiuni diferite: se grupează și suprapuse.
+  // La 0,1 mm, alăturate: se grupează. Cu altă adâncime (doar ea; pasul e același), sunt regiuni diferite: se grupează și
+  // suprapuse.
   assert.equal(caz(cuV(forma('e2', dreptunghi(5, 6), 32.1, 20))).ok, true);
-  assert.equal(caz(cuV(forma('e2', cerc(5), 30, 23), 8)).ok, true);
+  assert.equal(caz(cuV(forma('e2', cerc(5), 30, 23), 8, 10)).ok, true);
 });
 
 test('două texte cu același V-carve (decizia owner-ului: V-carve-ul sapă doar înăuntrul fiecărei litere) se grupează, cu suprafața săpată în marginile V-carve-ului', (t) => {
