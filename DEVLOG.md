@@ -4559,3 +4559,38 @@ linia principală continuă de la 0125), traducerile (531, 0 lipsă). Codul: `dd
 are ADR 0122 și felia 3.R, în ambele limbi; editorul trece pe versiunea nouă după „Reload”. Sesiunea dedicată liniei
 Trenuleț (cerută: „poate il punem intr-un worktree dedicat”) n-a pornit: sub Remote Control, o sesiune nouă pornește doar
 dintr-un mesaj scris în aplicația desktop.
+
+## 2026-11-02 — Felia 7.5↑: aldinul și cursivul sintetic (ADR 0123) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem worktrees pentru urmatoarele etape”, apoi „porneste worktrees” (owner-ul, în sesiunea
+principală); sesiunea etapei 7 a primit de acolo brief-ul ei („Ești sesiunea dedicată etapei 7 (textul) a lui cvs2, în
+worktree-ul tău. […] Gata, pentru prima tură: întrebarea despre fonturile cu o singură linie pusă owner-ului, cu
+recomandarea; prima felie (de exemplu aldinul și cursivul sintetic), cu ADR 0123, probele, publicarea pe canal și raportul.”).
+**Started:** 02.11, 20:29 (worktree-ul `C:\Users\besli\cncvs2-lucru\text`, ramura `wip/7.5-text` din `042db20`, portul e2e
+4174). **Completed:** 02.11, 21:16.
+
+Întrebarea despre fonturile cu o singură linie e pusă owner-ului, cu recomandarea (cititorul pentru fonturile „stick” ale
+omului, TTF / OTF dus-întors și SVG, plus un font liber inclus, descărcat doar cu acordul lui: Relief SingleLine sau
+EMS / Hershey). Fără răspuns încă, nimic descărcat.
+În panoul textului, bifele **Aldin** și **Cursiv**, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
+bază, exact (x' = x + tan(unghi) · y, pe liniile și cubicele fontului). Aldinul așază literele la înălțimea miezului, h −
+2d, le îngroașă cu d (cubicele ca biarce sub 0,001 mm, apoi `offsetFigura`, nouă în fațada offsetului: o figură par-impar,
+în ambele sensuri, prin `Shape` din cavalier, cu ieșirea verificată și fără bucăți pierdute) și le mută cu (d, d): H de 20
+mm rămâne de 20 mm, avansul crește cu 2d, colțurile de afară se rotunjesc. Întâi înclinarea, apoi îngroșarea. Literele
+îngroșate se țin în memorie (cheia exactă: îngroșarea și contururile miezului), fiindcă offsetul costa 0,4–0,5 s pe 70 de
+litere la fiecare tastă. O literă refuzată de offset se numără (`aldin-esuat`) și oprește Adaugă / Aplică. Blocul ține
+`aldin` și `cursiv` (câmpuri păstrate, nu schemă nouă); scalarea uniformă crește îngroșarea, iar sub 0,01 mm lasă doar
+vectorii. `caleText` (previzualizarea, cu arcele acum) s-a mutat în `src/app/caleText.ts`, ca să aibă probă unitară.
+La zi: ADR 0123 (nou), indexul, fișa (7.5↑), pragul, CLAUDE.md, manualul (ro, en; ușile Aldin și Cursiv), traducerile
+(534, 0 lipsă), `docs/otravuri.md`. Codul: `68a1e92`.
+**Probele:** oracolul fontTools (`aldin` în `text_corpus.py`: 5 cazuri, 41 de litere, ~218 000 de puncte clasificate
+independent, în miez sau la cel mult d de el, plus cutiile exacte; 3 cazuri de cursiv în `asteptat.json`, contur cu
+contur); pe hârtie (H de 20 mm cu aldinul 0,6: marginile, colțul dinăuntru ascuțit în (361 s + 1,2, 673 s), cel de afară
+rotunjit, avansul + 1,2; cursivul de 12°: 20 · tan 12° = 4,2511 mm); fațada (`geom.offset.figura.test.ts`: pătratul cu gol
+crescut și strâns, golul închis, unirea a două pătrate, insula peste gol, refuzurile); blocul; previzualizarea; e2e-ul
+panoului. **Otrăvurile** (`test/otravuri/7.5.py`): 38 / 38 prinse din prima, 32 pe probele unitare (unealta, în
+worktree) și 6 de interfață prin e2e pe 4174 (un harnaș local: unealta cere `npm`).
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), licențele, traducerile (534, 0
+lipsă), testele unitare (rulajul întreg, apoi cele noi), build-ul determinist (228 de fișiere identice; pornirea 98,6 / 110
+kB, cu ușa 102,2; totalul 444,6 / 500), e2e-ul întreg în Edge pe 4174: 295 / 296 (picată doar `raportor.spec.ts:101`, care
+cere adresa de pe 4173).

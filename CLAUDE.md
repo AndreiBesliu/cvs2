@@ -358,6 +358,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Plafonul total 500 kB (ADR 0122, felia 3.R, decizia owner-ului)** gata pe 02.11: la 441,2 / 450 kB, cele trei linii de
   lucru care urmau (contractele controlerelor și pachetul de atelier, restul textului, verificarea vectorilor) nu încăpeau în
   cei 8,8 kB rămași. Celelalte plafoane rămân. **Pornirea 98,5 (cu ușa 102,0 / 110 kB), totalul 441,2 / 500.**
+  **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
+  bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
+  bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
+  (`offsetFigura`: o figură par-impar, în ambele sensuri, prin `Shape` din cavalier) și le mută cu (d, d), deci H rămâne de
+  h. Literele îngroșate sunt linii și arce (cubicele ca biarce sub 0,001 mm), ținute în memorie după cheia lor exactă.
+  **Corpusul aldinului e Python** (`aldin` în `test/oracles-py/text_corpus.py`, `test/fixtures/text/aldin.json`): oracolul
+  nu construiește litera, ci clasifică punctele unei grile în jurul ei (în miez sau la cel mult d de el); un caz nou = rândul
+  în `CAZURI_ALDIN`, apoi fixtura regenerată și comisă. **Pornirea 98,6 (cu ușa 102,2 / 110 kB), totalul 444,6 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
