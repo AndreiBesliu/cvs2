@@ -4633,3 +4633,62 @@ canalul: proba îl citește acum din text, iar otrava lui e prinsă.
 **Publicat pe test** pe 02.11, la 22:11, prin workflow-ul `publica` (`ec428c9`): documentația publicată are fișa plăcii 4,
 cu placa de regresie, și felia 4.9↑. Etapa 4 n-are puncte fără mașină rămase: 8 (laptopul de atelier) și plăcile cer
 owner-ul.
+
+## 2026-11-02 — Felia 6.T↑: gruparea vectorilor (ADR 0130) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem un worktree care sa faca si functia de group care sa stea langa ungroup” (owner-ul, pe 02.11,
+în sesiunea principală, care a pornit sesiunea paralelă a grupării cu brief-ul ei).
+**Started:** 02.11, 20:35. **Completed:** 02.11, 21:33.
+
+Într-o sesiune paralelă, în worktree-ul `C:\Users\besli\cncvs2-lucru\grupare` (ramura `wip/6.T-grupare`, din `main`
+`77a1be6`), pe portul e2e 4177. **Grupează** (butonul de lângă Degrupează, primul rând din meniul de clic dreapta, Ctrl+G,
+paleta) face din cel puțin două forme alese o singură piesă: un grup nou pe rădăcină, cu câte un copil pe formă, în ordinea
+foii, într-un pas de anulare. Lumea rămâne la bit (locul comun al formelor, ca la părțile unei degrupări, sau originea, cu
+locul fiecăreia compus în rădăcina ei), iar operațiile se înșiră parte după parte, deci G-code-ul, fără comentarii, e același
+cât formele stau una după alta în ordinea foii. Id-urile care s-ar repeta primesc `_<n>`, iar blocul unui text primește
+amprenta contururilor redenumite: după degrupare, textul se editează din nou. Refuzate, cu motiv: o singură formă, două
+V-carve-uri cu aceleași valori în forme diferite (s-ar săpa ca o regiune; valorile stau acum o singură dată, în
+`valoriVcarve`, citite și de lucrare), piesa împărțită, nivelurile. Comanda e `regrupeaza` a degrupării, cu `locuri`
+(indicii părților): inversa pune fiecare formă exact unde era. Implicitele alese de mine, scrise în ADR, cu întrebările în
+raport: grupurile în grupuri permise (un nivel pe grupare), piesa cu mai multe instanțe refuzată, alinierea selecției ca bloc
+(fără grupare) într-o felie următoare. La zi: ADR 0130, indexul, manualul (ro, en: capitolul Gruparea, meniul, scurtăturile),
+fișa (6.T↑), CLAUDE.md, ACOPERIRE (rândul vectorilor), traducerile (536, 0 lipsă). Codul: `791be6b`.
+**Porțile:** compilatorul, importurile (17 reguli, 0 încălcări), traducerile (0 lipsă), 8 045 de teste unitare (8 035 trec, 2
+picau pe ADR-ul încă netradus, verzi după traducere; 8 sărite), build-ul determinist (228 de fișiere identice; pornirea 98,4 →
+99,1 / 110 kB, cu ușa 102,6; totalul 448,9 → 450,2 / 500), e2e pe 4177: 296 de probe, toate verzi în afară de
+`raportor.spec.ts:73`, care cere adresa `http://localhost:4173/` (cunoscută, de mediu: portul e al sesiunii principale), iar
+proba manualului a cerut 25 de capitole (capitolul nou). Emulatoarele n-au rulat: felia nu atinge funcțiile sau regulile.
+Otrăvurile din `test/otravuri/6.T.py`: **27 / 27** prinse (22 unitare, 5 pe e2e, cele din urmă cu build-ul și Playwright prin
+`node`, npm fiind stricat în Git Bash). Lista a arătat întâi cinci goluri în probe, închise înainte de rulare (aceeași poziție
+cu altă rotire, numele comun, o formă împărțită aleasă singură, ordinea compunerii cu o rădăcină oglindită, cheia V-carve-ului
+fără adâncime).
+**Publicat pe canalul `grupare`** pe 02.11, la 21:32: <https://cncvectorstudio-test--grupare-lkwk3rmp.web.app> (versiunea
+`791be6b6bb13`, până pe 02.12). Verificat acolo: două forme alese, Ctrl+G, un singur rând („Part: 2 shapes”, cu ambele
+operații), Degrupează activ; Ctrl+Z le desface la loc.
+
+## 2026-11-02 — Felia 6.T↑, trecerea 2: răspunsurile owner-ului (ADR 0130) (Model: Claude Opus 5.5)
+
+**Prompt:** „1 e ok. 2, in principiu vreau flexibilitate si optiuni, dar cu quality of life ridicat. inteleg ca nu totul
+trebuie implementat acum, pentru ca nu indeplinim toate toate situatiile. 3, ok 4, v-carve oricum nu s-a aplica intre litere
+si doar in interiorul unei singure litere” (owner-ul, direct în sesiunea grupării, la cele patru întrebări din raport).
+**Started:** 02.11, 21:40. **Completed:** 02.11, 22:19.
+
+Răspunsurile 1–3 confirmă implicitele: grupurile în grupuri rămân permise; piesa cu mai multe instanțe rămâne refuzată acum,
+iar când nivelul doi devine vizibil, gruparea ei vine cu opțiuni; alinierea ca bloc, fără grupare, vine într-o felie
+următoare, după unirea grupării. Le-am scris în ADR 0130 și în CLAUDE.md („Decizii luate”). Răspunsul 4 schimbă felia:
+V-carve-urile cu aceleași valori din forme diferite se grupează. În grup, lucrarea le sapă ca o singură regiune par-impar (axa
+medială calculată o dată pentru toate), deci G-code-ul diferă, dar suprafața săpată rămâne în marginile V-carve-ului față de
+suprafața ideală, pe oracolul independent al simulării: înainte și după grupare, niciodată mai adânc cu peste 0,0014 mm, cel
+mult 0,0095 mm de material lăsat. Față de săparea de dinainte: 0 la formele alăturate, 0,0047 mm la un cerc în golul unui
+inel, 0,0077 mm la două texte. Refuzul a rămas doar unde regiunile se ating sau se suprapun, fiindcă acolo suprapunerea ar
+rămâne nesăpată: atingerea se caută pe puncte la cel mult 0,05 mm pe contur, apoi incluziunea, cu un vârf al fiecărui contur.
+Motivul refuzului trimite acum la panoul de proprietăți (adâncimea, pasul), unde se schimbă cel mai ușor. Codul: `5b99cf6`,
+`a86e6f3`, `17dbad4`.
+**Porțile:** compilatorul, importurile (17 reguli, 0 încălcări), traducerile (536, 0 lipsă), 8 072 de teste unitare (0
+eșuate, 8 sărite), build-ul determinist (228 de fișiere; pornirea 99,1 / 110 kB, cu ușa 102,6; totalul 450,2 → 450,7 / 500),
+e2e-ul importului și al manualului, 28 / 28. Otrăvurile: **34 / 34** (29 unitare, dintre care 7 noi pe gardă; cele 5 e2e,
+din trecerea întâi, pe interfața neschimbată). L01 (cheia V-carve-ului fără adâncime) a scăpat întâi: cazul „altă adâncime”
+schimba și pasul, deci cheia diferea oricum; proba schimbă acum doar adâncimea.
+**Republicat pe canalul `grupare`** la 22:19 (versiunea `17dbad4ce480`). Verificat acolo: dreptunghiul și cercul din el, cu
+același V-carve (3 mm, T2): Ctrl+G nu grupează, iar butonul Grupează spune motivul. Pe tastă, refuzul e tăcut, ca la
+degrupare.

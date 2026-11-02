@@ -310,14 +310,33 @@ singur `Ctrl+Z` le adună la loc.
 Degruparea se refuză, cu motivul spus lângă butoane, dacă un **V-carve** își sapă contururile împreună (literele cu golurile
 lor: despărțite, golurile s-ar săpa și ele), dacă piesa e folosită și de alte instanțe sau dacă nicio formă aleasă nu e un grup.
 
+## Gruparea
+%% capitol: grupare
+%% acopera: document.grupeaza
+
+**Grupează** (butonul de lângă Degrupează, meniul de clic dreapta, `Ctrl+G`) face din formele alese, cel puțin două, o singură
+piesă: se alege, se mută, se rotește și se aliniază ca un bloc, deci formele ei nu se mai suprapun la aliniere. O piesă care era
+deja un grup (un import, un text, o formă cu găuri) intră întreagă, ca un nivel al grupului nou; **Degrupează** desface doar
+acel nivel.
+
+Fiecare formă stă exact unde era și își păstrează operația (latura, adâncimea, freza): **ce se taie rămâne același**. Grupul ia
+locul primei forme alese în ordinea tăierii; dacă între formele alese erau altele, ele se taie, în aceeași clasă, după grup.
+Într-un grup, un text e doar vectori; după degrupare, se editează din nou. După grupare, ales e grupul, iar un singur `Ctrl+Z`
+desface gruparea, cu fiecare formă la locul ei.
+
+Două texte (sau forme) cu câte un **V-carve** cu aceleași valori se grupează: freza le sapă într-un singur drum, iar fiecare
+literă iese la fel. Gruparea se refuză, cu motivul spus lângă butoane, dacă e aleasă o singură formă, dacă două forme cu
+același V-carve se ating sau se suprapun (grupate, s-ar săpa ca o singură regiune, iar suprapunerea ar rămâne nesăpată) sau
+dacă o piesă aleasă e folosită și de alte instanțe.
+
 ## Meniul de clic dreapta
 %% capitol: meniu
 %% acopera: editare.meniu
 
-Clicul dreapta pe pânză deschide **meniul de clic dreapta**, cu ce se poate face pe selecție: **Degrupează**, apoi **Unește**,
+Clicul dreapta pe pânză deschide **meniul de clic dreapta**, cu ce se poate face pe selecție: **Grupează** și **Degrupează**, apoi **Unește**,
 **Scade** și **Intersectează** (booleanul), apoi **Duplică** și **Șterge selecția**, fiecare cu tasta lui. Pe o formă care nu e
 aleasă, clicul dreapta o alege întâi; pe gol, selecția rămâne. Un rând e activ doar când se poate (booleanul, cu două forme;
-degruparea, cu un grup ales); un refuz își spune motivul în meniu.
+gruparea, cu cel puțin două; degruparea, cu un grup ales); un refuz își spune motivul în meniu.
 
 Săgețile trec între rânduri, `Enter` rulează rândul, `Esc` închide meniul; se închide și la un clic în afara lui, la rotiță sau
 după o comandă făcută. În vederea 3D, clicul dreapta nu deschide meniul.
@@ -848,6 +867,7 @@ de ce.
 | `Ctrl+Z` | Anulează |
 | `Ctrl+Y`, `Ctrl+Shift+Z`, `Ctrl+Shift+Y` | Reface |
 | `Ctrl+D` | Duplică |
+| `Ctrl+G` | Grupează |
 | `Ctrl+Shift+G` | Degrupează |
 | `Delete` | Șterge selecția |
 | `Ctrl+K` | Caută o comandă |

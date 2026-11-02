@@ -524,6 +524,98 @@ test('degruparea (ADR 0103): piesa unui DXF se desface pe contururi, din clic dr
   expect(erori).toEqual([]);
 });
 
+test('gruparea (ADR 0130): părțile unui DXF degrupat devin o piesă, din clic dreapta, din butonul de lângă Degrupează și cu Ctrl+G; Ctrl+Z le desface; grupul rămâne după reîncărcare', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.goto('/');
+  // Ca la degrupare: dreptunghiul 60 × 40 din (20, 20), cu o gaură R5 în mijloc, și un cerc R3 alături.
+  const lw = grupuri([0, 'LWPOLYLINE'], [8, 'TAIERE'], [90, 4], [70, 1], [10, 20], [20, 20], [10, 80], [20, 20], [10, 80], [20, 60], [10, 20], [20, 60]);
+  const entitati = lw + cerc(50, 40, 5, { strat: 'TAIERE' }) + cerc(100, 40, 3, { strat: 'TAIERE' });
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles(fisierDxf('raft.dxf', dxf({ antet: [['$INSUNITS', 70, 4]], entitati })));
+  await page.click('[data-buton="importa"]');
+  await expect(page.locator('.dialog')).toHaveCount(0);
+  const randuri = page.getByTestId('lista-vectori').locator('button[data-instanta]');
+  const alese = page.getByTestId('lista-vectori').locator('button[data-instanta][aria-pressed="true"]');
+  await expect(page.getByTestId('bara-editare')).toBeVisible();
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+Shift+G');
+  await expect(randuri).toHaveCount(3);
+  await expect(alese).toHaveCount(3);
+  let la = await ecran(page, await vedere(page));
+  /** Toate trei, cu cadrul tras spre dreapta (fereastra, ADR 0059), de pe gol. */
+  const alegeToate = async (): Promise<void> => {
+    const [a, b] = [la(5, 75), la(115, 5)];
+    await page.mouse.move(a.x, a.y);
+    await page.mouse.down();
+    await page.mouse.move((a.x + b.x) / 2, (a.y + b.y) / 2, { steps: 4 });
+    await page.mouse.move(b.x, b.y, { steps: 4 });
+    await page.mouse.up();
+    await expect(alese).toHaveCount(3);
+  };
+
+  // Clic dreapta pe dreptunghi (ales deja): meniul începe cu Grupează, activ, cu tasta lui; Degrupează e inactiv (nicio piesă
+  // aleasă nu e un grup). Selecția rămâne cea de trei.
+  const jos = la(50, 20);
+  await page.mouse.click(jos.x, jos.y, { button: 'right' });
+  const meniu = page.getByTestId('meniu-context');
+  await expect(meniu).toBeVisible();
+  await expect(alese).toHaveCount(3);
+  await expect(meniu.locator('[role="menuitem"]').first()).toHaveAttribute('data-meniu', 'grupeaza');
+  await expect(meniu.locator('[data-meniu="grupeaza"]')).toBeEnabled();
+  await expect(meniu.locator('[data-meniu="grupeaza"] kbd')).toHaveText('Ctrl+G');
+  await expect(meniu.locator('[data-meniu="degrupeaza"]')).toBeDisabled();
+  await expect(meniu.locator('[data-meniu="grupeaza"]')).toBeFocused();
+  await meniu.locator('[data-meniu="grupeaza"]').click();
+  await expect(meniu).toHaveCount(0);
+  await expect(randuri).toHaveCount(1);
+  await expect(alese).toHaveCount(1);
+
+  // Ctrl+Z le desface; butonul de lângă Degrupează le adună din nou.
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+z');
+  await expect(randuri).toHaveCount(3);
+  await alegeToate();
+  await expect(page.locator('[data-editare="degrupeaza"]')).toBeDisabled();
+  await page.locator('[data-editare="grupeaza"]').click();
+  await expect(randuri).toHaveCount(1);
+  await expect(page.locator('[data-editare="degrupeaza"]')).toBeEnabled();
+  // Și cu Ctrl+G, după încă un Ctrl+Z.
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+z');
+  await expect(randuri).toHaveCount(3);
+  await alegeToate();
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+g');
+  await expect(randuri).toHaveCount(1);
+
+  // Salvat (importul, degruparea, trei grupări și două anulări: revizia 7) și redeschis: tot o piesă, cu cele trei forme.
+  const salvat = await documentSalvat(page, 7) as { foi: Array<{ instante: unknown[] }>; piese: Array<{ radacina: { copii?: unknown[] } }> };
+  expect(salvat.foi[0]?.instante).toHaveLength(1);
+  expect(salvat.piese).toHaveLength(1);
+  expect(salvat.piese[0]?.radacina.copii).toHaveLength(3);
+  await page.reload();
+  await expect(randuri).toHaveCount(1);
+  la = await ecran(page, await vedere(page));
+
+  // O singură formă aleasă: Grupează e inactiv, în meniu și în bară.
+  await randuri.nth(0).click();
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+Shift+G');
+  await expect(randuri).toHaveCount(3);
+  const gol = la(150, 150);
+  await page.mouse.click(gol.x, gol.y);
+  await expect(alese).toHaveCount(0);
+  const mic = la(103, 40);
+  await page.mouse.click(mic.x, mic.y, { button: 'right' });
+  await expect(meniu).toBeVisible();
+  await expect(alese).toHaveCount(1);
+  await expect(meniu.locator('[data-meniu="grupeaza"]')).toBeDisabled();
+  await expect(page.locator('[data-editare="grupeaza"]')).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(meniu).toHaveCount(0);
+  expect(erori).toEqual([]);
+});
+
 /* ── PDF și AI (ADR 0104) și fișierele din bara de sus ────────────────────────────────────────────────────────────── */
 
 const fisierPdf = (nume: string, octeti: Buffer) => ({ name: nume, mimeType: 'application/pdf', buffer: octeti });

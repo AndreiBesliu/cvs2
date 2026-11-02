@@ -322,14 +322,34 @@ Ungrouping is refused, with the reason shown next to the buttons, if a **V-carve
 their holes: apart, the holes would be cut too), if the part is also used by other instances, or if none of the chosen shapes is
 a group.
 
+## Grouping
+%% capitol: grupare
+%% acopera: document.grupeaza
+
+**Group** (the button next to Ungroup, the right-click menu, `Ctrl+G`) makes the chosen shapes, at least two, a single part: it
+is chosen, moved, rotated and aligned as one block, so its shapes no longer pile up when aligned. A part that was already a
+group (an import, a text, a shape with holes) goes in whole, as one level of the new group; **Ungroup** takes apart only that
+level.
+
+Each shape stays exactly where it was and keeps its operation (the side, the depth, the cutter): **what is cut stays the
+same**. The group takes the place of the first chosen shape in the cutting order; if other shapes stood between the chosen
+ones, they are cut, in the same class, after the group. Inside a group, a text is only vectors; after ungrouping, it can be
+edited again. After grouping, the group is chosen, and a single `Ctrl+Z` undoes the grouping, with each shape back in its
+place.
+
+Two texts (or shapes) each with a **V-carve** with the same values can be grouped: the cutter carves them in one go, and each
+letter comes out the same. Grouping is refused, with the reason shown next to the buttons, if a single shape is chosen, if two
+shapes with the same V-carve touch or overlap (grouped, they would be carved as a single region, and the overlap would be left
+uncut) or if a chosen part is also used by other instances.
+
 ## The right-click menu
 %% capitol: meniu
 %% acopera: editare.meniu
 
-A right click on the canvas opens the **right-click menu**, with what can be done to the selection: **Ungroup**, then **Unite**,
+A right click on the canvas opens the **right-click menu**, with what can be done to the selection: **Group** and **Ungroup**, then **Unite**,
 **Subtract** and **Intersect** (the boolean), then **Duplicate** and **Delete selection**, each with its key. On a shape that is
 not chosen, the right click chooses it first; on empty space, the selection stays. A row is active only when it can run (the
-boolean with two shapes, ungrouping with a group chosen); a refusal shows its reason in the menu.
+boolean with two shapes, grouping with at least two, ungrouping with a group chosen); a refusal shows its reason in the menu.
 
 The arrow keys move between rows, `Enter` runs the row, `Esc` closes the menu; it also closes on a click outside it, on the
 wheel or after a command has run. In the 3D view, a right click does not open the menu.
@@ -876,6 +896,7 @@ reports) and why.
 | `Ctrl+Z` | Undo |
 | `Ctrl+Y`, `Ctrl+Shift+Z`, `Ctrl+Shift+Y` | Redo |
 | `Ctrl+D` | Duplicate |
+| `Ctrl+G` | Group |
 | `Ctrl+Shift+G` | Ungroup |
 | `Delete` | Delete selection |
 | `Ctrl+K` | Search commands |

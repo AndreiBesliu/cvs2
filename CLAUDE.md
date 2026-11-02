@@ -377,6 +377,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/placi/placa-04/`; fiecare cotă e prezisă de oracolul simulării (`test/unit/placa04.test.ts`). Placa de regresie e
   definită în aceeași fișă, din fișierele de aur ale plăcilor 1–4. Cu ea, etapa 4 n-are puncte fără mașină rămase: 8
   (laptopul de atelier) și plăcile cer owner-ul.
+  **Gruparea (ADR 0130, felia 6.T↑, adusă din etapa 6)** gata pe 02.11, într-o sesiune paralelă (worktree-ul
+  `wip/6.T-grupare`), la cererea owner-ului („vreau sa deschidem un worktree care sa faca si functia de group care sa stea
+  langa ungroup”): **Grupează** (lângă Degrupează, meniul de clic dreapta, Ctrl+G) face din cel puțin două forme o piesă, cu un
+  grup nou pe rădăcină, la bit în lume, cu operațiile înșirate (G-code-ul același cât formele stau una după alta). Gruparea e
+  comanda `regrupeaza` a degrupării, cu `locuri` (indicii părților): inversa le pune exact unde erau. **Valorile care unesc
+  V-carve-urile unei piese stau o singură dată, în `valoriVcarve` (`src/model/lume.ts`)**: lucrarea și gruparea le citesc de
+  acolo. Două texte cu același V-carve se grupează (decizia owner-ului): grupul le sapă ca o singură regiune, deci se refuză
+  doar când regiunile lor se ating sau se suprapun. **Pornirea 99,1 (cu ușa 102,6 / 110 kB), totalul 450,7 / 500, /admin 105,4 / 200, după unirea cu 4.6↑b și 4.9↑.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -491,6 +499,17 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 02.11.2026: **gruparea, răspunsurile owner-ului** la cele patru întrebări din raportul feliei 6.T↑ (ADR 0130):
+  1. „1 e ok.”: grupurile în grupuri rămân permise (un nivel pe grupare, Degrupează desface doar acel nivel);
+  2. „2, in principiu vreau flexibilitate si optiuni, dar cu quality of life ridicat. inteleg ca nu totul trebuie implementat
+     acum, pentru ca nu indeplinim toate toate situatiile.”: piesa cu mai multe instanțe rămâne refuzată acum; când nivelul
+     doi devine vizibil (etapa 11), gruparea ei vine cu opțiuni, fără pași în plus în cazul obișnuit. Principiul se aplică și
+     altor alegeri de felul ăsta;
+  3. „3, ok”: alinierea unei selecții ca bloc, fără grupare, și avertismentul la contururile care se ating, într-o felie
+     următoare, după unirea grupării;
+  4. „4, v-carve oricum nu s-a aplica intre litere si doar in interiorul unei singure litere”: V-carve-urile cu aceleași
+     valori din forme diferite se grupează (o singură regiune par-impar, suprafața săpată în marginile V-carve-ului, probată
+     pe oracolul simulării); refuzul rămâne doar când regiunile lor se ating sau se suprapun.
 - 02.11.2026: **plafonul total 500 kB** („Da, 500 kB”, la „Ridic plafonul total al pachetului la 500 kB?”), după propunerea
   a două worktree-uri paralele lângă etapa 4: restul textului (etapa 7) și verificarea și repararea vectorilor (etapa 10). La
   441,2 / 450 kB, cele trei linii nu încăpeau în 8,8 kB. ADR 0122, felia 3.R; pornirea rămâne 110 kB. Worktree-urile pornesc
