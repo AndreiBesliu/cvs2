@@ -137,6 +137,25 @@ test('pe hârtie (ADR 0140): H de 20 mm din Relief, trei linii deschise; O-ul, d
   assert.ok(Math.abs(x0 - 706 * s) <= 1e-12);
 });
 
+test('o buclă care trece de două ori pe același loc rămâne cum e desenată: trăsăturile nu se normalizează ca figuri', () => {
+  // Un font de probă cu o singură literă: pătratul (0, 0) → (400, 0) → (400, 400) → (0, 400), ocolit de două ori și
+  // întors în (0, 0), cu majuscula 680. Ca figură `nonzero` (înfășurarea 2), normalizarea l-ar face un singur pătrat, iar
+  // freza ar trece o dată în loc de două ori.
+  const ocol = [P(0, 0), P(400, 0), P(400, 400), P(0, 400)];
+  const contur: PunctFont[] = [...ocol, ...ocol, P(0, 0)];
+  const dublu: Font = {
+    ...relief(), linie: true, glifa: (cod) => (cod === 0x38 ? 1 : 0), avans: () => 500, crenare: () => 0, contururi: () => [contur],
+  };
+  const r = aseazaText(dublu, { continut: '8', inaltime: 20, spatiere: 0, interlinie: 1, aliniere: 'stanga' });
+  assert.equal(r.raport['nonzero-normalizate'], 0);
+  const c = r.glife[0]!.cai;
+  assert.equal(c.length, 1);
+  assert.equal(c[0]!.inchis, true);
+  const s = 20 / 680;
+  const pe = c[0]!.varfuri.map((v) => [v.p.x / s, v.p.y / s].map((u) => Math.round(u * 1e6) / 1e6));
+  assert.deepEqual(pe, [[0, 0], [400, 0], [400, 400], [0, 400], [0, 0], [400, 0], [400, 400], [0, 400]]);
+});
+
 test('un font cu o singură linie nu se îngroașă: aldinul e ignorat (n-are figură), cursivul se aplică', () => {
   const p: ParametriText = { continut: 'Ușă', inaltime: 15, spatiere: 0, interlinie: 1, aliniere: 'stanga' };
   assert.deepEqual(aseazaText(relief(), { ...p, aldin: 0.5 }), aseazaText(relief(), p));

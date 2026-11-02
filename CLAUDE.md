@@ -366,6 +366,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Corpusul aldinului e Python** (`aldin` în `test/oracles-py/text_corpus.py`, `test/fixtures/text/aldin.json`): oracolul
   nu construiește litera, ci clasifică punctele unei grile în jurul ei (în miez sau la cel mult d de el); un caz nou = rândul
   în `CAZURI_ALDIN`, apoi fixtura regenerată și comisă. **Pornirea 98,6 (cu ușa 102,2 / 110 kB), totalul 444,6 / 500.**
+  **Fonturile cu o singură linie (ADR 0140, felia 7.6↑, adusă din etapa 7)** gata pe 02.11, în același worktree: cititorul
+  recunoaște singur un font de gravură (`Font.linie`: contururile fără arie ale literelor drepte, `src/text/linie.ts`) și îi
+  citește trăsăturile după convenția fontului (dus-întors, păstrată deschisă sau buclă; TrueType și CFF); trăsăturile se
+  așază ca linii deschise (capetele cu regulile ușilor importului), fără normalizare și fără aldin, iar piesa e gravată pe
+  linie la adâncimea liniilor importate. **Relief SingleLine** (OFL 1.1, din `isdat-type/Relief-SingleLine`, subset) e
+  inclus. **Corpusul liniilor simple e Python** (`linie` în `test/oracles-py/text_corpus.py`, `test/fixtures/text/linie.json`,
+  cu variantele lui Relief: dus-întors, cu bucle, CFF): un caz nou = rândul în `CAZURI_LINIE`, apoi fixtura regenerată și
+  comisă. Fonturile SVG cu o singură linie (Hershey / EMS) vin în 7.6↑b. **Pornirea 98,6 (cu ușa 102,2 / 110 kB), totalul
+  445,6 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -480,6 +489,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 02.11.2026: **fonturile cu o singură linie: cititorul pentru fonturile „stick” ale omului și Relief SingleLine inclus**
+  („Da, 1 + 2 cu Relief”, la recomandarea din sesiunea etapei 7: „1. cititorul pentru fonturile tale stick (TTF / OTF
+  dus-întors și fonturile SVG), fără descărcări; 2. un font liber inclus, descărcat o singură dată, cu licența lângă el”).
+  Relief SingleLine CAD (OFL 1.1) e descărcat din `isdat-type/Relief-SingleLine` și inclus; fonturile SVG vin în 7.6↑b.
+  Tot atunci, **ADR-urile 0140–0142 sunt ale liniei textului** („0140–0142”, la „ce numere folosesc?”; 0124–0132 erau deja
+  împărțite între linii): 0140 fonturile cu o singură linie (ADR 0140, felia 7.6↑), 0141 textul vertical, 0142 caseta.
 - 02.11.2026: **plafonul total 500 kB** („Da, 500 kB”, la „Ridic plafonul total al pachetului la 500 kB?”), după propunerea
   a două worktree-uri paralele lângă etapa 4: restul textului (etapa 7) și verificarea și repararea vectorilor (etapa 10). La
   441,2 / 450 kB, cele trei linii nu încăpeau în 8,8 kB. ADR 0122, felia 3.R; pornirea rămâne 110 kB. Worktree-urile pornesc

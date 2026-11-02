@@ -4599,3 +4599,30 @@ cere adresa de pe 4173).
 cu Aldin (propus 0,6 mm) și Cursiv (propus 12°), previzualizarea din linii și arce, piesa pusă cu blocul `aldin: 0.6`,
 `cursiv: 12`, H de 0 … 20,000000000000004 mm, consola fără erori. Adresa principală de test a rămas a sesiunii principale
 (`77a1be6`).
+
+## 2026-11-02 — Felia 7.6↑: fonturile cu o singură linie (ADR 0140) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1 + 2 cu Relief” (la întrebarea „Fonturile cu o singură linie: cititorul și Relief SingleLine inclus?”, cu
+recomandarea „1. cititorul pentru fonturile tale stick, fără descărcări; 2. un font liber inclus, descărcat o singură dată,
+cu licența lângă el”), apoi „0140–0142 (Recommended)” (la „ce numere de ADR folosesc?”).
+**Started:** 02.11, 21:30. **Completed:** 02.11, ORA_GATA.
+
+Relief SingleLine e verificat (SIL OFL 1.1, „Copyright 2022 The Relief SingleLine Project Authors”, fără nume rezervat) și
+descărcat din `isdat-type/Relief-SingleLine` (commit `01dfc57`, fixat; sha256 notate), într-un dosar gol: licența, README-ul,
+fontul SVG (pentru 7.6↑b) și TTF-ul pentru CAD. Din TTF, un subset cu fontTools (același set de caractere ca Roboto, 26,9
+kB) în `public/fonturi/relief-singleline.ttf`, cu `LICENTA-OFL-1.1.txt` și `CITESTE.txt` la zi. TTF-ul pentru CAD nu-și
+scrie trăsăturile dus-întors, ci deschise, ca un program de CAD: H are trei contururi de câte 2 puncte. De aici, cele două
+convenții ale cititorului.
+Cititorul recunoaște fontul (`Font.linie`, `src/text/linie.ts`: contururile fără arie ale literelor drepte) și îi citește
+trăsăturile: dus-întors (palindromul ciclic: jumătatea), păstrată deschisă (fără segmentul de închidere) sau buclă; TrueType
+și CFF. Așezarea le dă ca linii deschise (capetele cu regulile ușilor importului), fără normalizare și fără aldin; piesa le
+gravează pe linie la adâncimea liniilor importate, cu grosimea foii primită de la acțiune (`CerereText`). Panoul oprește
+Aldin pentru un asemenea font, cu motivul; previzualizarea desenează liniile. Relief nu-și închide buclele (O-ul se termină
+cu 2 unități după start) și are la I o trăsătură de 2 unități în vârf: păstrate cum sunt desenate.
+La zi: ADR 0140 (nou), indexul, fișa (7.6↑), pragul, CLAUDE.md (starea și „Decizii luate”: Relief și ADR-urile 0140–0142),
+manualul (ro, en), traducerile (537, 0 lipsă), `docs/otravuri.md`. Codul: `25bb22b`, plus proba buclei duble.
+**Probele:** oracolul fontTools (`linie` în `text_corpus.py`: recunoașterea pe toate fonturile corpusului; 7 cazuri cu Relief
+și variantele lui, dus-întors, cu bucle, CFF); pe hârtie (H de 20 mm din trei linii; O-ul cu golul de 2 unități); trăsătura
+pe contururi scrise de mână; bucla dublă; piesa și editarea; previzualizarea; e2e-ul panoului, pe o foaie de 1,2 mm.
+**Otrăvurile** (`test/otravuri/7.6.py`): 23; 22 prinse din prima (18 pe probele unitare, 4 de interfață prin harnaș), una
+scăpată, normalizarea trăsăturilor (corpusul n-avea o buclă dublă), prinsă de proba nouă.
