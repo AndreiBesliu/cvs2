@@ -40,7 +40,8 @@ import { citesteNumar, textNumar } from '../ui/numar.ts';
 import { tastaActiunii } from '../ui/scurtaturi.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import type { Config } from './config.ts';
-import { contTinut } from './dreptCont.ts';
+import { contTinut, puneCont, useContTinut, type ContTinut } from './dreptCont.ts';
+import { capMeniuCont, initiale, numeButon, randuriMeniuCont, type IdMeniuCont } from './meniuCont.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -160,8 +161,8 @@ const Manual = lazy(() => import('./Manual.tsx').then(cuMesaje).then((m) => ({ d
 })));
 
 /**
- * Panoul contului (ADR 0116 §A3): o bucată doar online, cu contul Firebase, adusă la clicul pe Cont. Fără rețea nu vine:
- * atunci se spune, ca la manual.
+ * Panoul contului (ADR 0116 §A3): o bucată doar online, cu contul Firebase, adusă din meniul contului (ADR 0120). Fără
+ * rețea nu vine: atunci se spune, ca la manual.
  */
 const PanouCont = lazy(() => import('./PanouCont.tsx').then(cuMesaje).then((m) => ({ default: m.PanouCont }), () => ({
   default: ({ onInchide }: { readonly config: Config | null; readonly onInchide: () => void }) => (
@@ -338,6 +339,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // poza planșei ajunge la ea prin browser; `blocata`: browserul n-a deschis fila (poza o așteaptă oricum acolo).
   const [sugestie, setSugestie] = useState<null | 'lucreaza' | 'blocata' | { readonly motiv: string }>(null);
   const [contDeschis, setContDeschis] = useState(false);
+  // Meniul contului (ADR 0120), sub butonul Cont: deschis cu focusul pe primul rând sau, cu săgeata în sus, pe ultimul.
+  const [meniuCont, setMeniuCont] = useState<'primul' | 'ultimul' | null>(null);
+  const meniuContDeschis = meniuCont !== null;
+  const refButonCont = useRef<HTMLButtonElement | null>(null);
+  const refMeniuCont = useRef<HTMLDivElement | null>(null);
+  const contul = useContTinut();
   // Reconfirmarea contului ținut (ADR 0116 §8), odată cu editorul, prin modulul panoului contului (adus doar cu import()):
   // contul Firebase vine la cerere, doar dacă aplicația ține un cont; fără rețea, dreptul ținut rămâne (cât îl lasă zilele
   // offline). Nu `import()` direct pe `contEditor.ts`: o bucată adusă și dinamic, și static (de panou și de `/admin`) scotea
@@ -359,6 +366,61 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       (e: unknown) => { setSugestie({ motiv: e instanceof Error ? e.message : String(e) }); },
     );
   };
+  // Ieșirea din cont (ADR 0120), prin modulul panoului, ca reconfirmarea: contul Firebase vine la cerere. Fără Firebase
+  // (instanța locală) pleacă doar contul ținut. Dacă modulul nu vine, se deschide panoul, care spune de ce.
+  const iesiDinCont = (): void => {
+    const c = p.config;
+    if (!c?.firebase) {
+      puneCont(null);
+      return;
+    }
+    import('./PanouCont.tsx').then((m) => m.iesiDinCont(c)).catch(() => { setContDeschis(true); });
+  };
+  // Un rând al meniului contului: meniul se închide întâi. Sugestia își deschide fila chiar în clic (altfel browserul o
+  // blochează); după rândurile care nu deschid o fereastră, focusul se întoarce la butonul Cont.
+  const alegeDinMeniuCont = (id: IdMeniuCont): void => {
+    setMeniuCont(null);
+    if (id === 'cont' || id === 'intra') {
+      setContDeschis(true);
+    } else if (id === 'manual') {
+      setManual({ usa: null });
+    } else {
+      refButonCont.current?.focus();
+      if (id === 'sugestie') trimiteSugestia();
+      else iesiDinCont();
+    }
+  };
+  // Meniul contului se închide cu Escape (focusul înapoi pe buton), cu un clic în afara lui și a butonului (clicul pe buton
+  // îl închide chiar butonul), cu Tab (după ce focusul își face drumul), când fereastra își schimbă mărimea sau pierde focul.
+  useEffect(() => {
+    if (!meniuContDeschis) return undefined;
+    const inchide = (): void => { setMeniuCont(null); };
+    const apasa = (e: PointerEvent): void => {
+      const tinta = e.target instanceof Node ? e.target : null;
+      if (tinta && (refMeniuCont.current?.contains(tinta) || refButonCont.current?.contains(tinta))) return;
+      inchide();
+    };
+    const tasta = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        inchide();
+        refButonCont.current?.focus();
+      } else if (e.key === 'Tab') {
+        setTimeout(inchide, 0);
+      }
+    };
+    window.addEventListener('pointerdown', apasa, true);
+    window.addEventListener('keydown', tasta, true);
+    window.addEventListener('resize', inchide);
+    window.addEventListener('blur', inchide);
+    return () => {
+      window.removeEventListener('pointerdown', apasa, true);
+      window.removeEventListener('keydown', tasta, true);
+      window.removeEventListener('resize', inchide);
+      window.removeEventListener('blur', inchide);
+    };
+  }, [meniuContDeschis]);
   const unealtaRef = useRef<Unealta>('selectie');
   // Locul uneltelor din bara de sus (ADR 0052): îl desenează aplicația, iar modulul ăsta îl umple, printr-un portal.
   const [loc, setLoc] = useState<HTMLElement | null>(null);
@@ -519,6 +581,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       // deschide propriul ajutor.
       if (e.key === 'F1') {
         e.preventDefault();
+        setMeniuCont(null);
         setManual({ usa: usaDeAcum(unealtaRef.current, vedere3dRef.current) });
         return;
       }
@@ -832,11 +895,16 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           <Manual usa={manual.usa} onInchide={() => { setManual(null); }} />
         </Suspense>
       ) : null}
-      {/* Fereastra contului stă pe `body`, peste panouri și peste bare, ca fereastra fonturilor. */}
+      {/* Fereastra contului stă pe `body`, peste panouri și peste bare, ca fereastra fonturilor; la fel meniul contului. */}
       {contDeschis ? createPortal(
         <Suspense fallback={null}>
           <PanouCont config={p.config ?? null} onInchide={() => { setContDeschis(false); }} />
         </Suspense>,
+        document.body,
+      ) : null}
+      {meniuCont !== null ? createPortal(
+        <MeniuCont refMeniu={refMeniuCont} buton={refButonCont} focus={meniuCont} cont={contul} sugestie={p.sugestie === true}
+          sugestieLucreaza={sugestie === 'lucreaza'} onAlege={alegeDinMeniuCont} />,
         document.body,
       ) : null}
       {testDeschis && p.test ? (
@@ -1097,25 +1165,28 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             </button>
           </span>
         );
+        // Butonul Cont (ADR 0120) deschide meniul contului: logat, cu inițialele și numele; altfel „Cont”. Săgețile îl
+        // deschid cu focusul pe primul rând (jos) sau pe ultimul (sus), ca la un meniu obișnuit.
         const butonCont = (
-          <button type="button" className={locCont ? 'cont-buton' : 'aliniaza'} title={t('editare.cont')} aria-label={t('editare.cont')} data-editare="cont"
-            aria-pressed={contDeschis} onClick={(e) => { e.currentTarget.blur(); setContDeschis(!contDeschis); }}>
-            {t('editare.cont.buton')}
+          <button type="button" ref={refButonCont} className={locCont ? 'cont-buton' : 'aliniaza cont-buton'} title={t('editare.cont')}
+            aria-label={t('editare.cont')} data-editare="cont" aria-haspopup="menu" aria-expanded={meniuContDeschis}
+            aria-controls={meniuContDeschis ? 'meniu-cont' : undefined}
+            onClick={() => { setMeniuCont(meniuContDeschis ? null : 'primul'); }}
+            onKeyDown={(e) => {
+              if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+              e.preventDefault();
+              setMeniuCont(e.key === 'ArrowDown' ? 'primul' : 'ultimul');
+            }}>
+            {contul ? <span className="cont-initiale" aria-hidden="true">{initiale(contul.nume)}</span> : null}
+            <span className="cont-nume">{contul ? numeButon(contul.nume) : t('editare.cont.buton')}</span>
+            <svg className="cont-sageata" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 L5 6.5 L8 3.5" /></svg>
           </button>
         );
-        const ajutorSectiune = (
-          <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.manual.sectiune')} data-testid="extensie-ajutor">
-            <button type="button" className="aliniaza manual-buton" title={t('editare.manual')} aria-label={t('editare.manual')} data-editare="manual"
-              onClick={() => { setManual({ usa: null }); }}>
-              ?
-            </button>
-            {p.sugestie ? (
-              <button type="button" className="aliniaza" title={t('editare.sugestie')} aria-label={t('editare.sugestie')} data-editare="sugestie"
-                disabled={sugestie === 'lucreaza'} onClick={(e) => { e.currentTarget.blur(); trimiteSugestia(); }}>
-                {t('editare.sugestie.buton')}
-              </button>
-            ) : null}
-            {locCont ? null : butonCont}
+        // Fără locul lui lângă temă (un aranjament fără controlul `cont`), butonul stă la capătul extensiei barei. Manualul și
+        // sugestia stau în meniul lui (ADR 0120), nu în bară; F1 deschide manualul de oriunde.
+        const contSectiune = locCont ? null : (
+          <span className="sectiune-extensie" role="toolbar" aria-label={t('editare.cont.buton')} data-testid="extensie-cont">
+            {butonCont}
           </span>
         );
         const sectiuni = (
@@ -1136,8 +1207,12 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               </>
             )}
             {vedereSectiune}
-            <span className="separator" aria-hidden="true" />
-            {ajutorSectiune}
+            {contSectiune ? (
+              <>
+                <span className="separator" aria-hidden="true" />
+                {contSectiune}
+              </>
+            ) : null}
           </>
         );
         const bara = (
@@ -1220,6 +1295,25 @@ type ArticolMeniu = {
 const TASTE_MENIU: ReadonlySet<string> = new Set(['ArrowUp', 'ArrowDown', 'Home', 'End', 'Enter', ' ', 'Tab', 'Shift', 'Control', 'Alt', 'Meta']);
 
 /**
+ * Tastele dintr-un meniu (clic dreapta, ADR 0103; contul, ADR 0120): săgețile, Home și End trec în cerc între rândurile
+ * active, iar Enter și spațiul rămân ale rândului (nu ajung la tastele editării).
+ */
+function tastaInMeniu(e: TastaReact<HTMLElement>): void {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.stopPropagation();
+    return;
+  }
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+  e.preventDefault();
+  e.stopPropagation();
+  const randuri = [...e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')];
+  const k = randuri.findIndex((b) => b === document.activeElement);
+  const n = randuri.length;
+  const urm = e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : e.key === 'ArrowDown' ? (k + 1) % n : (k - 1 + n) % n;
+  randuri[urm]?.focus();
+}
+
+/**
  * Meniul de clic dreapta (ADR 0103), la punctul clicului, mutat cât să încapă în zona liberă a pânzei (pânza trece și pe sub
  * panouri, la verificarea pe instanța de test meniul intra sub panoul din dreapta). Primul rând activ primește focusul;
  * săgețile, Home și End trec între rânduri, Enter rulează; motivul unui refuz stă sub rânduri.
@@ -1238,23 +1332,9 @@ function MeniuContext({ refMeniu, la, zona, articole, motiv }: {
     });
     el.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus();
   }, [la, zona, refMeniu]);
-  const tasta = (e: TastaReact<HTMLDivElement>): void => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.stopPropagation();
-      return;
-    }
-    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
-    e.preventDefault();
-    e.stopPropagation();
-    const randuri = [...e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')];
-    const k = randuri.findIndex((b) => b === document.activeElement);
-    const n = randuri.length;
-    const urm = e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : e.key === 'ArrowDown' ? (k + 1) % n : (k - 1 + n) % n;
-    randuri[urm]?.focus();
-  };
   return (
     <div ref={refMeniu} className="meniu-context" role="menu" aria-label={t('editare.meniu')} data-testid="meniu-context"
-      style={{ left: loc.x, top: loc.y }} onKeyDown={tasta} onContextMenu={(e) => { e.preventDefault(); }}>
+      style={{ left: loc.x, top: loc.y }} onKeyDown={tastaInMeniu} onContextMenu={(e) => { e.preventDefault(); }}>
       {articole.map((a, k) => (a === 'separator' ? <div key={`s${k}`} className="meniu-separator" role="separator" /> : (
         <button key={a.id} type="button" role="menuitem" disabled={!a.activ} data-meniu={a.id} onClick={a.ruleaza}>
           <span>{a.eticheta}</span>
@@ -1262,6 +1342,60 @@ function MeniuContext({ refMeniu, la, zona, articole, motiv }: {
         </button>
       )))}
       {motiv ? <p className="meniu-motiv" role="status" data-testid="meniu-motiv">{motiv}</p> : null}
+    </div>
+  );
+}
+
+/**
+ * Meniul contului (ADR 0120), sub butonul Cont, aliniat la dreapta lui: capul (cine e logat și planul de azi, din contul
+ * ținut, fără server; sau nimeni), apoi panoul contului ori logarea, manualul, sugestia și ieșirea. Se poartă ca meniul de
+ * clic dreapta (`tastaInMeniu`); la deschidere, focusul stă pe primul rând sau, cu săgeata în sus pe buton, pe ultimul.
+ */
+function MeniuCont({ refMeniu, buton, focus, cont, sugestie, sugestieLucreaza, onAlege }: {
+  readonly refMeniu: RefObject<HTMLDivElement | null>; readonly buton: RefObject<HTMLButtonElement | null>; readonly focus: 'primul' | 'ultimul';
+  readonly cont: ContTinut | null; readonly sugestie: boolean; readonly sugestieLucreaza: boolean; readonly onAlege: (id: IdMeniuCont) => void;
+}): ReactElement {
+  const [loc, setLoc] = useState<{ readonly top: number; readonly right: number } | null>(null);
+  useLayoutEffect(() => {
+    const r = buton.current?.getBoundingClientRect();
+    setLoc(r ? { top: Math.round(r.bottom + 4), right: Math.max(4, Math.round(window.innerWidth - r.right)) } : { top: 48, right: 8 });
+  }, [buton]);
+  useLayoutEffect(() => {
+    if (!loc) return;
+    const randuri = refMeniu.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not(:disabled)');
+    if (randuri && randuri.length > 0) randuri[focus === 'ultimul' ? randuri.length - 1 : 0]?.focus();
+  }, [loc, focus, refMeniu]);
+  const cap = capMeniuCont(cont, Date.now());
+  const eticheta = (id: IdMeniuCont): string => {
+    switch (id) {
+      case 'cont':
+        return t('editare.cont.al-meu');
+      case 'intra':
+        return t('editare.cont.intra');
+      case 'manual':
+        return numeScurt(t('editare.manual'));
+      case 'sugestie':
+        return `${numeScurt(t('editare.sugestie'))}…`;
+      case 'iesi':
+        return t('editare.cont.iesi');
+    }
+  };
+  return (
+    <div ref={refMeniu} className="meniu-cont" data-testid="meniu-cont" style={loc ? { top: loc.top, right: loc.right } : { visibility: 'hidden' }}>
+      <div className="meniu-cont-cap" data-testid="meniu-cont-cap">
+        <strong>{cap.titlu}</strong>
+        <span>{cap.rand}</span>
+      </div>
+      <div role="menu" id="meniu-cont" aria-label={t('editare.cont.meniu')} onKeyDown={tastaInMeniu}>
+        {randuriMeniuCont(cont, sugestie).map((id, k) => (id === null ? <div key={`s${k}`} className="meniu-separator" role="separator" /> : (
+          <button key={id} type="button" role="menuitem" data-meniu-cont={id} data-editare={id === 'manual' || id === 'sugestie' ? id : undefined}
+            title={id === 'sugestie' ? t('editare.sugestie') : undefined} disabled={id === 'sugestie' && sugestieLucreaza}
+            onClick={() => { onAlege(id); }}>
+            <span>{eticheta(id)}</span>
+            {id === 'manual' ? <kbd>F1</kbd> : null}
+          </button>
+        )))}
+      </div>
     </div>
   );
 }

@@ -538,6 +538,43 @@ nav button[aria-pressed='true'] {
   box-shadow: var(--umbra-1);
 }
 
+/* Butonul Cont (ADR 0120) deschide meniul contului: logat, cu inițialele într-un cerc și primul nume, apoi săgeata. */
+.cont-buton {
+  gap: 6px;
+  max-width: 12rem;
+}
+
+.cont-buton[aria-expanded='true'] {
+  background: var(--s-ales);
+}
+
+.cont-initiale {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: var(--fs-1);
+  font-weight: 600;
+  color: var(--t);
+  background: var(--s-ales);
+  box-shadow: inset 0 0 0 1px var(--a);
+}
+
+.cont-nume {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cont-sageata {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+
 /* ── Panourile laterale: plutesc, se strâng la un singur buton ───────────────────────────────────────────────── */
 
 /*

@@ -3,7 +3,8 @@
 **Starea:** acceptat pe 30.10.2026, la felia 14.B↑b. Felia e pasul 2 din planul sugestiilor, dat în raportul feliei 6.R↑:
 „butonul «Sugestie» direct în editor, cu contul de admin și, opțional, o poză a planșei”. A pornit la „Continua” al
 owner-ului, după încheierea lui 14.B↑. **Continuă:** ADR 0107 (sugestiile personalului), ADR 0072 (poza planșei, testul pas
-cu pas, doar online). **Schimbă:** ADR 0107 §2 (sugestia primește câmpul `poza`) și §3 (scrierea primește poza).
+cu pas, doar online). **Schimbă:** ADR 0107 §2 (sugestia primește câmpul `poza`) și §3 (scrierea primește poza). §1 schimbat
+de ADR 0120: sugestia e rândul „Trimite o sugestie…” din meniul contului, cu aceeași condiție, nu un buton în extensia barei.
 
 **Problema.** O sugestie despre desen se explică greu în cuvinte. Cine lucrează în editor vrea s-o scrie de acolo, cu ce vede
 pe planșă.

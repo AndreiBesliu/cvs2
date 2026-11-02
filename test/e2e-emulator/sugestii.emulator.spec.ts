@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
-import { adauga } from '../e2e/ajutor-panza.ts';
+import { adauga, deschideMeniulContului } from '../e2e/ajutor-panza.ts';
 
 /**
  * Sugestiile personalului (ADR 0107) cap-coadă, pe emulatoare, pe build-ul real: owner-ul face un rol cu „Sugestii: scrie”
@@ -239,7 +239,9 @@ test('din editor (ADR 0111): „Sugestie” face poza planșei și deschide fila
   await page.context().route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify(CONFIG) }));
   await page.goto('/');
   await adauga(page, 'dreptunghi');
-  const [admin] = await Promise.all([page.context().waitForEvent('page'), page.locator('[data-editare="sugestie"]').click()]);
+  // Sugestia, din meniul contului (ADR 0120): fila se deschide chiar în clicul pe rând.
+  const meniu = await deschideMeniulContului(page);
+  const [admin] = await Promise.all([page.context().waitForEvent('page'), meniu.locator('[data-meniu-cont="sugestie"]').click()]);
   admin.on('pageerror', (e) => { erori.push(e.message); });
   await admin.waitForLoadState();
   expect(new URL(admin.url()).pathname + new URL(admin.url()).hash).toBe('/admin#sugestii');
@@ -270,7 +272,8 @@ test('din editor (ADR 0111): „Sugestie” face poza planșei și deschide fila
 
   // O poză nouă din editor: fila deja deschisă o primește pe canal (editorul mai deschide una, închisă aici); scoasă, nu mai
   // revine, nici după reîncărcare.
-  const [a2] = await Promise.all([page.context().waitForEvent('page'), page.locator('[data-editare="sugestie"]').click()]);
+  const meniu2 = await deschideMeniulContului(page);
+  const [a2] = await Promise.all([page.context().waitForEvent('page'), meniu2.locator('[data-meniu-cont="sugestie"]').click()]);
   await a2.close();
   await expect(nou.locator('[data-sug="poza-atasata"]')).toBeVisible(LENT);
   await nou.locator('[data-sug="scoate-poza"]').click();

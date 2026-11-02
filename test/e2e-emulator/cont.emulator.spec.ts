@@ -1,10 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
+import { deschideMeniulContului } from '../e2e/ajutor-panza.ts';
 
 /**
  * Contul clientului din editor (ADR 0116), cap-coadă, pe emulatoarele Auth, Firestore și Functions: contul nou cu parolă,
  * e-mailul de confirmare (linkul luat din emulatorul de cont), „Am confirmat” fără confirmare spune că adresa nu e
  * confirmată, apoi deschide contul pe server (proba de 14 zile, documentul `conturi/{uid}`, contul ținut în browser);
- * numele; planul schimbat pe server ajunge în contul ținut la pornirea următoare; ieșirea golește contul ținut.
+ * numele; planul schimbat pe server ajunge în contul ținut la pornirea următoare, iar meniul contului (ADR 0120) îl arată fără
+ * server; ieșirea din panou golește contul ținut, iar cea din meniu închide și contul Firebase.
  */
 
 const PROIECT = 'demo-cncvs2';
@@ -41,7 +43,7 @@ const tinut = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getIte
 
 test('contul nou cu parolă: confirmarea, proba de 14 zile pe server, numele, reconfirmarea la pornire și ieșirea', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-editare="cont"]').click();
+  await (await deschideMeniulContului(page)).locator('[data-meniu-cont="intra"]').click();
   const d = page.getByTestId('dialog-cont');
   await expect(d.locator('[data-cont="iesit"]')).toBeVisible();
   await d.locator('[data-camp="cont-email"]').fill('ana@exemplu.ro');
@@ -74,11 +76,26 @@ test('contul nou cu parolă: confirmarea, proba de 14 zile pe server, numele, re
   expect(r.status).toBe(200);
   await page.reload();
   await expect.poll(async () => (await tinut(page))?.drept?.plan, { timeout: 20_000 }).toBe('gratuit');
+  // Meniul contului arată, fără server, numele și planul din contul ținut; „Contul meu…” deschide panoul.
+  const meniu = await deschideMeniulContului(page);
+  await expect(meniu.locator('[data-testid="meniu-cont-cap"] strong')).toHaveText('Ana Popescu');
+  await expect(meniu.locator('[data-testid="meniu-cont-cap"] span')).toHaveText('Plan gratuit');
+  await meniu.locator('[data-meniu-cont="cont"]').click();
   // Ieșirea, din panou: contul ținut pleacă.
-  await page.locator('[data-editare="cont"]').click();
   await expect(d.locator('.cont-plan')).toHaveAttribute('data-plan', 'gratuit', SERVER);
   await d.locator('[data-buton="cont-iesi"]').click();
   await expect(d.locator('[data-cont="iesit"]')).toBeVisible(SERVER);
   expect(await tinut(page)).toBeNull();
+  // Din nou înăuntru, cu parola; apoi ieșirea din meniu: pleacă și contul ținut, și contul Firebase (panoul cere logarea).
+  await d.locator('[data-camp="cont-email"]').fill('ana@exemplu.ro');
+  await d.locator('[data-camp="cont-parola"]').fill('parola-buna-1');
+  await d.locator('[data-buton="cont-intra"]').click();
+  await expect(d.locator('[data-cont="intrat"]')).toBeVisible(SERVER);
+  await d.locator('[data-buton="inchide-cont"]').click();
+  await (await deschideMeniulContului(page)).locator('[data-meniu-cont="iesi"]').click();
+  await expect.poll(async () => tinut(page), SERVER).toBeNull();
+  await expect(page.locator('[data-editare="cont"]')).toHaveText('Cont');
+  await (await deschideMeniulContului(page)).locator('[data-meniu-cont="intra"]').click();
+  await expect(d.locator('[data-cont="iesit"]')).toBeVisible(SERVER);
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
 });

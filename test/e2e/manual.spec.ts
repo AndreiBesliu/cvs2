@@ -1,8 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
-import { adauga } from './ajutor-panza.ts';
+import { adauga, deschideMeniulContului } from './ajutor-panza.ts';
 
 /**
- * Manualul (documentația live, felia 3.F, ADR 0058), în Edge: butonul „?” și F1 îl deschid (F1 la capitolul de acum:
+ * Manualul (documentația live, felia 3.F, ADR 0058), în Edge: rândul Manualul din meniul contului (ADR 0120) și F1 îl deschid
+ * (F1 la capitolul de acum:
  * unealta, vederea 3D, fereastra exportului); cuprinsul, linkurile dintre capitole, căutarea fără diacritice, limba;
  * tastele din manual nu ajung la scurtăturile aplicației; fereastra și fișierul vin abia la prima deschidere.
  */
@@ -12,15 +13,16 @@ const manual = (page: Page) => page.getByTestId('manual');
 const capitol = (page: Page) => page.getByTestId('manual-capitol');
 
 async function deschide(page: Page): Promise<void> {
-  await page.locator('[data-editare="manual"]').click();
+  await (await deschideMeniulContului(page)).locator('[data-meniu-cont="manual"]').click();
+  await expect(page.getByTestId('meniu-cont')).toHaveCount(0);
   await expect(manual(page)).toHaveAttribute('data-stare', 'gata');
 }
 
-test('„?” deschide manualul la primul capitol: cuprinsul cu 24 de capitole, linkurile duc între capitole, Esc închide', async ({ page }) => {
+test('Manualul din meniul contului îl deschide la primul capitol: cuprinsul cu 24 de capitole, linkurile duc între capitole, Esc închide', async ({ page }) => {
   const cereri: string[] = [];
   page.on('request', (r) => { cereri.push(new URL(r.url()).pathname); });
   await page.goto('/');
-  await expect(page.locator('[data-editare="manual"]')).toBeVisible();
+  await expect(page.locator('[data-editare="cont"]')).toBeVisible();
   expect(cereri.filter((c) => c.startsWith('/manual/') || /\/assets\/Manual-/.test(c)), 'nimic din manual înaintea clicului').toEqual([]);
   await deschide(page);
   expect(cereri.filter((c) => c === '/manual/ro.json')).toHaveLength(1);

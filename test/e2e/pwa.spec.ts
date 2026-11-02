@@ -4,6 +4,7 @@
  * `no-store` pe tot) și un context nou, deci nicio înregistrare nu trece dintr-o probă în alta sau dintr-o rulare în alta.
  */
 import { test, expect, type Browser, type Page } from '@playwright/test';
+import { deschideMeniulContului } from './ajutor-panza.ts';
 import { copieDist, PAGINA_HANDLER, pornesteServer, publicareSimulata, type Redenumire, type ServerPwa } from './server-pwa.ts';
 
 test.use({ locale: 'ro-RO' });
@@ -74,7 +75,7 @@ test('offline, de la a doua încărcare: pornește, schimbă limba, deschide imp
     await page.getByRole('button', { name: 'Închide' }).click();
     for (const [limba, titlu] of [['RO', 'Manualul CNC Vector Studio'], ['EN', 'CNC Vector Studio manual']] as const) {
       await page.getByRole('button', { name: limba, exact: true }).click();
-      await page.locator('[data-editare="manual"]').click();
+      await (await deschideMeniulContului(page)).locator('[data-meniu-cont="manual"]').click();
       await expect(page.getByTestId('manual')).toHaveAttribute('data-stare', 'gata');
       await expect(page.locator('#manual-titlu')).toHaveText(titlu);
       await page.keyboard.press('Escape');

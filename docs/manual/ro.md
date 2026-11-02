@@ -22,7 +22,8 @@ Fiecare panou se strânge și se deschide din butonul din colțul lui („Panoul
 **Caută o comandă** (`Ctrl+K`): paleta de comenzi. Scrii câteva litere, alegi cu săgețile și apeși Enter; Esc o închide.
 Paleta arată toate comenzile, cu tasta fiecăreia; la cele care se fac cu mausul spune cum.
 
-**Manualul** se deschide cu butonul „?” din extensia barei sau cu `F1`. Cu F1 se deschide la capitolul a ce faci acum
+**Manualul** se deschide din meniul **Cont**, din colțul din dreapta-sus (rândul **Manualul**), sau cu `F1`. Cu F1 se
+deschide la capitolul a ce faci acum
 (unealta aleasă, vederea 3D, fereastra deschisă). În manual poți căuta după cuvinte, cu sau fără diacritice.
 
 **Unde se salvează.** Proiectul se salvează singur, în browserul ăsta, la fiecare schimbare. Vezi [Proiectul și
@@ -764,7 +765,6 @@ rămasă cum ai rotit-o. `Esc`, butonul 3D sau o unealtă de desen întorc la p�
 
 ## Testul pas cu pas
 %% capitol: test
-%% acopera: editare.sugestie
 
 Pe instanța de test, adresa aplicației cu `?test` la capăt deschide testul uneltelor de desen într-un panou plutitor, pe care
 îl muți trăgând de titlu și îl strângi cu ▾. Fiecare pas spune ce faci și
@@ -773,18 +773,27 @@ ce trebuie să vezi; marchezi **Bine**, **Nu** sau **Sărit** și poți scrie o 
 fișier HTML, cu rezultatele, notele și pozele, de trimis mai departe. Lista de sus duce la orice pas. Rezultatele rămân și
 după reîncărcare; **Începe din nou** le șterge, după o confirmare.
 
-Tot pe instanța de test, butonul **Sugestie** din extensia barei, de lângă „?”
-(titlul lui: „Sugestie pentru owner, cu poza planșei”), face poza planșei, o ține în browser și deschide pagina `/admin` pe
-fila **Sugestii**, într-o filă nouă. Intri cu contul tău de personal și scrii sugestia, iar
-poza pleacă odată cu ea; înainte s-o trimiți, o poți scoate. Dacă browserul nu deschide fila, un mesaj îți dă legătura spre
-ea.
+Tot pe instanța de test, o sugestie pentru owner, cu poza planșei, se trimite din meniul **Cont** (vezi
+[Contul](#cont)).
 
 ## Contul
 %% capitol: cont
-%% acopera: editare.cont
+%% acopera: editare.cont, editare.sugestie
 
-Butonul **Cont** din colțul din dreapta-sus, lângă butonul temei (titlul lui: „Contul: logarea, planul și proba”), deschide panoul contului.
-Contul cere internet: fără rețea, panoul nu se deschide, dar aplicația merge mai departe cu ultimul drept primit.
+Butonul **Cont** din colțul din dreapta-sus, lângă butonul temei (titlul lui: „Contul: logarea, planul și manualul”), deschide
+meniul contului. Logat, butonul arată inițialele și primul nume. Sus în meniu stau numele și planul de azi, cu zilele de probă
+rămase; fără cont, „Nu ești logat”. Rândurile:
+
+- **Contul meu…** (logat) sau **Intră sau creează cont…** (fără cont) deschide panoul contului, de mai jos;
+- **Manualul** (`F1`) deschide manualul acesta;
+- **Trimite o sugestie…**, doar pe instanța de test (titlul lui: „Trimite o sugestie: pentru owner, cu poza planșei”), face
+  poza planșei, o ține în browser și deschide pagina `/admin` pe fila **Sugestii**, într-o filă nouă. Intri cu contul tău de
+  personal și scrii sugestia, iar poza pleacă odată cu ea; înainte s-o trimiți, o poți scoate. Dacă browserul nu deschide
+  fila, un mesaj îți dă legătura spre ea;
+- **Ieși din cont** (logat) închide contul în browserul acesta.
+
+Meniul merge și din tastatură: săgețile trec între rânduri, Enter alege, Escape îl închide. Panoul contului cere internet:
+fără rețea nu se deschide, dar aplicația merge mai departe cu ultimul drept primit.
 
 - **Logarea:** **Intră cu Google**, sau adresa de e-mail și parola, cu **Intră**. **Creează cont** face un cont nou cu parolă
   și trimite un e-mail de confirmare; după ce deschizi linkul din el, apeși **Am confirmat**. **Am uitat parola** trimite un

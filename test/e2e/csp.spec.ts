@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
+import { deschideMeniulContului } from './ajutor-panza.ts';
 
 /** CSP-ul exact din `dist/index.html`, adică din artefactul servit, nu din sursă. */
 function cspDinBuild(): string {
@@ -107,8 +108,8 @@ test('aplicația merge sub CSP-ul ei, fără nicio încălcare raportată, cu bu
   page.on('console', (m) => { if (/Content Security Policy|Refused to/i.test(m.text())) incalcari.push(m.text()); });
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  // O bucată la cerere (manualul), adusă prin hartă.
-  await page.locator('[data-editare="manual"]').click();
+  // O bucată la cerere (manualul, din meniul contului), adusă prin hartă.
+  await (await deschideMeniulContului(page)).locator('[data-meniu-cont="manual"]').click();
   await expect(page.getByTestId('manual')).toHaveAttribute('data-stare', 'gata');
   expect(incalcari).toEqual([]);
 });

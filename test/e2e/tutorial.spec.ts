@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { adauga } from './ajutor-panza.ts';
+import { adauga, deschideMeniulContului } from './ajutor-panza.ts';
 
 test.use({ locale: 'ro-RO' });
 
@@ -117,23 +117,26 @@ test('fără `?test`, testul nu se deschide, iar bara n-are buton Test; pe live,
   const cereri: string[] = [];
   page.on('request', (r) => { cereri.push(r.url()); });
   await page.goto('/');
-  await expect(page.locator('[data-editare="manual"]')).toBeVisible();
+  await expect(page.locator('[data-editare="cont"]')).toBeVisible();
   await expect(page.locator('[data-editare="test"]')).toHaveCount(0);
   await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ instanta: 'live' }) }));
   await page.goto('/?test');
-  await expect(page.locator('[data-editare="manual"]')).toBeVisible();
+  await expect(page.locator('[data-editare="cont"]')).toBeVisible();
   // Bucata panoului nu e cerută deloc (cu `?test`, pe test, e cerută: martorul din proba de mai sus), deci nici panoul nu vine.
   await page.waitForTimeout(1000);
   expect(cereri.filter(bucataTestului)).toEqual([]);
   await expect(panou(page)).toHaveCount(0);
 });
 
-test('butonul Sugestie (ADR 0111) stă lângă „?” și fără `?test`, în afara live; pe live lipsește', async ({ page }) => {
+test('sugestia (ADR 0111) stă în meniul contului, după manual, și fără `?test`, în afara live; pe live lipsește', async ({ page }) => {
   await page.goto('/');
-  // Chiar după „?”: butonul Test a ieșit din bară (31.10), iar Sugestie a rămas, cu condiția lui.
-  await expect(page.locator('[data-editare="manual"] + [data-editare="sugestie"]')).toBeVisible();
+  // Din 02.11 (ADR 0120), manualul și sugestia stau în meniul contului, nu în extensia barei; sugestia își păstrează condiția.
+  await expect(page.locator('#loc-extensie [data-editare="manual"], #loc-extensie [data-editare="sugestie"]')).toHaveCount(0);
+  const meniu = await deschideMeniulContului(page);
+  await expect(meniu.locator('[data-meniu-cont="manual"] + [data-meniu-cont="sugestie"]')).toBeVisible();
   await page.route('**/config.json', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ instanta: 'live' }) }));
   await page.goto('/');
-  await expect(page.locator('[data-editare="manual"]')).toBeVisible();
-  await expect(page.locator('[data-editare="sugestie"]')).toHaveCount(0);
+  const live = await deschideMeniulContului(page);
+  await expect(live.locator('[data-meniu-cont="manual"]')).toBeVisible();
+  await expect(live.locator('[data-meniu-cont="sugestie"]')).toHaveCount(0);
 });

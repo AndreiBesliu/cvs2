@@ -70,7 +70,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   „3D” din extensia barei; `src/app/Vedere3D.tsx`, la cerere), relieful din benzi (`reliefPentru`, blocul 1–16), simularea prin
   bucata calculului exportului (`programSimulare`, `simuleazaRelief`), fereastra de 0,1 mm la apropiere.
   **Manualul utilizatorului (ADR 0058)** gata pe 24.10: `docs/manual/ro.md` și `en.md`, generate în `manual/*.json` (în
-  precache), deschise cu „?” sau F1 (după context). **Un buton, o acțiune sau o etichetă nouă cere capitolul ei în ambele
+  precache), deschise din meniul contului (rândul „Manualul”, ADR 0120) sau cu F1 (după context). **Un buton, o acțiune sau o etichetă nouă cere capitolul ei în ambele
   limbi** (`%% acopera:`), altfel `test/unit/manual.test.ts` cade; o tastă nouă intră în capitolul scurtăturilor.
   **Selecția cu dreptunghi (ADR 0059)** gata pe 24.10: spre dreapta fereastra, spre stânga intersecția (conturul atins),
   Shift adaugă; gestul în modulul editării (`Editare.tsx`, captură înaintea pânzei), geometria în `src/geom/cadru.ts`.
@@ -343,7 +343,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   „Sugestii: scrie” (omul scrie o sugestie, își vede sugestiile și decizia, le editează cât n-au decizie) și „Sugestii: citește
   toate”; decizia e doar a owner-ului (acceptată, amânată, respinsă, în lucru, făcută, cu o notă), prin callable-ul `sugestii`
   (auditul în tranzacție, pe versiunea văzută, cel mult 20 pe om pe zi); regulile dau doar citirea, fără index compus.
-  **Sugestia din editor (ADR 0111, felia 14.B↑b)** gata pe 30.10: butonul **Sugestie**, lângă „?” (doar în afara live, fără `?test`),
+  **Sugestia din editor (ADR 0111, felia 14.B↑b)** gata pe 30.10: din 02.11, rândul „Trimite o sugestie…” din meniul contului
+  (ADR 0120; doar în afara live, fără `?test`),
   deschide fila Sugestii (`/admin#sugestii`) întâi, în clic, apoi lasă în browser poza planșei, micșorată ca JPEG sub 400 kB
   (`src/app/SugestieDinEditor.ts`, `src/app/pozaSugestiei.ts`: IndexedDB și un canal BroadcastChannel; editorul nu încarcă
   Firebase); fila o atașează sugestiei noi, iar serverul o ține în `sugestii/{id}/poze/plansa` (doar `get`, de cine poate
@@ -445,6 +446,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 02.11.2026: **meniul contului** (ADR 0120, felia 14.C↑c). La captura ferestrei contului rămase pe „Opening the account…”,
+  owner-ul a cerut „ar trebui sa fie un meniu mai conventional pentru account area.” și „si trebuie sa pui acolo si manualul si
+  sugestiile”; la schiță, „Da, fă-l”. Butonul Cont deschide un meniu (contul, manualul, sugestia, ieșirea), cu capul din contul
+  ținut, fără server; „?” și Sugestie au ieșit din extensia barei, iar F1 a rămas.
 - 01.11.2026: **senderul prin WiFi, imediat după felia 14.C↑b, și imprimantele 3D mai târziu** („O sa vreau imediat dupa
   felia asta sa facem senderul sa se poata conecta pri wifi la masina. Si am de gand sa folosim asta si pentru imprimante
   3D”).

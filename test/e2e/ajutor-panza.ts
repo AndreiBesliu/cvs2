@@ -66,3 +66,14 @@ export async function adauga(page: Page, forma: 'dreptunghi' | 'cerc'): Promise<
   // imediat (Ctrl+D) ar ajunge la cel vechi, care încă vede paleta deschisă.
   await page.evaluate(() => new Promise<void>((ok) => { requestAnimationFrame(() => { requestAnimationFrame(() => { ok(); }); }); }));
 }
+
+/**
+ * Meniul contului (ADR 0120), deschis din butonul Cont, din dreapta-sus: manualul, sugestia, logarea, panoul și ieșirea stau
+ * în el. Întoarce meniul, după ce s-a deschis.
+ */
+export async function deschideMeniulContului(page: Page): Promise<ReturnType<Page['getByTestId']>> {
+  await page.locator('[data-editare="cont"]').click();
+  const meniu = page.getByTestId('meniu-cont');
+  await expect(meniu).toBeVisible();
+  return meniu;
+}

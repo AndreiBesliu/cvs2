@@ -27,6 +27,13 @@ export async function reconfirmaContul(c: Config): Promise<void> {
   puneCont(x === null ? null : contDinRaspuns(x.uid, x.raspuns));
 }
 
+/** Ieșirea din meniul contului (ADR 0120): contul Firebase se închide în browserul acesta, apoi pleacă și contul ținut. */
+export async function iesiDinCont(c: Config): Promise<void> {
+  const r = conecteazaContul(c);
+  if (r.ok) await iesi(r.cont);
+  puneCont(null);
+}
+
 /** Textul unei erori a contului, după codul Firebase (logarea, crearea, callable-ul). */
 function textEroare(e: unknown): string {
   const cod = codEroare(e);

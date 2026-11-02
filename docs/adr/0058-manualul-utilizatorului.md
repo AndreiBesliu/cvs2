@@ -3,7 +3,8 @@
 **Starea:** acceptat pe 24.10.2026. Cererea owner-ului (19.10): „vreau sa mentinem ideea de documentatie, una live si una
 admin, pe care o aveam la vechiul cncvs”; documentația admin a venit în ADR 0048, care a lăsat manualul „felia următoare”.
 Pornită pe 24.10 („Trecem mai departe”). **Intră în:** etapa 3, lângă documentația admin, fără mașină. **Continuă:** ADR 0048
-(cititorul de markdown comun, generarea la build), ADR 0045 (precache-ul), ADR 0042 (pornirea nu crește).
+(cititorul de markdown comun, generarea la build), ADR 0045 (precache-ul), ADR 0042 (pornirea nu crește). §3 și §4 schimbate
+de ADR 0120: manualul se deschide din meniul contului (rândul „Manualul”), nu din butonul „?” al extensiei barei; F1 rămâne.
 
 **Problema.** Aplicația n-avea niciun ajutor în afara sfaturilor de pe butoane. Ediția întâi avea un manual (`DocsView`),
 dar el rămânea în urma interfeței: nimic nu cerea ca un buton nou să fie descris. Iar pornirea nu mai are loc (99,8 / 100 kB

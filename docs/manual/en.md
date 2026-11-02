@@ -23,7 +23,8 @@ through light, dark and as the system.
 **Search commands** (`Ctrl+K`): the command palette. Type a few letters, pick with the arrow keys and press Enter; Esc closes
 it. The palette lists every command, with its key; for the ones done with the mouse it says how.
 
-The **Manual** opens from the “?” button in the bar extension or with `F1`. With F1 it opens at the chapter for what you are
+The **Manual** opens from the **Account** menu in the top-right corner (the **Manual** row) or with `F1`. With F1 it opens
+at the chapter for what you are
 doing now (the chosen tool, the 3D view, the open window). You can search the manual by words, with or without diacritics.
 
 **Where it is saved.** The project saves itself, in this browser, on every change. See [The project and
@@ -790,7 +791,6 @@ sheet left as you rotated it. `Esc`, the 3D button or a drawing tool go back to 
 
 ## The step-by-step test
 %% capitol: test
-%% acopera: editare.sugestie
 
 On the test instance, the app's address with `?test` at the end opens the drawing tools test in a floating panel that you
 move by dragging its title and collapse with ▾. Each step says what you do
@@ -799,19 +799,27 @@ board (the drawing, the rulers, the guides, the handles, the toolpath) in the br
 the report** writes a single HTML file with the results, the notes and the snapshots, to send on. The list at the top goes
 to any step. The results stay after a reload too; **Start over** deletes them, after a confirmation.
 
-Also on the test instance, the **Suggest** button in the bar extension, next to “?”
-(its title: “Suggestion for the owner, with a picture of the sheet”), takes a picture of the sheet, keeps it in the browser
-and opens the `/admin` page on the **Suggestions** tab, in a new tab. You sign in with
-your staff account and write the suggestion, and the picture goes with it; before sending, you can remove it. If the
-browser doesn't open the tab, a message gives you the link to it.
+Also on the test instance, a suggestion for the owner, with a picture of the sheet, is sent from the **Account** menu (see
+[The account](#cont)).
 
 ## The account
 %% capitol: cont
-%% acopera: editare.cont
+%% acopera: editare.cont, editare.sugestie
 
-The **Account** button in the top-right corner, next to the theme button (its title: “Account: sign in, the plan and the trial”), opens the
-account panel. The account needs internet: without a network the panel does not open, but the app goes on with the last
-rights it received.
+The **Account** button in the top-right corner, next to the theme button (its title: “Account: sign in, the plan and the
+manual”), opens the account menu. Signed in, the button shows the initials and the first name. At the top of the menu are the
+name and today's plan, with the trial days left; without an account, “Not signed in”. The rows:
+
+- **Your account…** (signed in) or **Sign in or create an account…** (no account) opens the account panel, below;
+- **Manual** (`F1`) opens this manual;
+- **Send a suggestion…**, only on the test instance (its title: “Send a suggestion: for the owner, with a picture of the
+  sheet”), takes a picture of the sheet, keeps it in the browser and opens the `/admin` page on the **Suggestions** tab, in a
+  new tab. You sign in with your staff account and write the suggestion, and the picture goes with it; before sending, you
+  can remove it. If the browser doesn't open the tab, a message gives you the link to it;
+- **Sign out** (signed in) closes the account in this browser.
+
+The menu works from the keyboard too: the arrow keys move between rows, Enter picks, Escape closes it. The account panel needs
+internet: without a network it does not open, but the app goes on with the last rights it received.
 
 - **Signing in:** **Sign in with Google**, or the email address and the password, with **Sign in**. **Create account** makes a
   new account with a password and sends a confirmation email; after you open the link in it, press **I have confirmed**.

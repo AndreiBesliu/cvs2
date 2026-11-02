@@ -18,6 +18,7 @@ import { TASTE } from '../../src/ui/scurtaturi.ts';
 import { normalizeazaCautare } from '../../src/docs/cautare.ts';
 import { citesteManual, EroareManual, genereazaManualul, sursaManual, verificaLegaturi, verificaLimbile } from '../../scripts/manual.ts';
 import { capitolPentru, esteManual, LIMBI_MANUAL, type LimbaManual, type Manual } from '../../shared/manual.ts';
+import { randuriMeniuCont, type IdMeniuCont } from '../../src/app/meniuCont.ts';
 
 /**
  * Poarta de acoperire a manualului (documentația live, ADR 0058): fiecare ușă a interfeței (acțiunile registrului,
@@ -176,6 +177,35 @@ test('fiecare control cu data-editare din bara editării are ușa lui (un contro
   for (const id of ['export.gcode', 'import.svg', 'vedere.paleta', 'editare.3d', ...UNELTE.map((u) => `unealta.${u}`)]) {
     assert.match(sursa, id.startsWith('unealta.') ? /`unealta\.\$\{unealta\}`/ : new RegExp(`'${id.replace('.', '\\.')}'`));
     for (const m of manuale()) assert.ok(capitolPentru(m, id), `${m.limba}: F1 pe „${id}” n-are capitol`);
+  }
+});
+
+/**
+ * Rândurile meniului contului (ADR 0120), cu ușa care le acoperă și cheia textului de pe rând: manualul și sugestia au
+ * ușile lor de dinainte, iar logarea, panoul și ieșirea stau în capitolul contului. Un rând nou, lipsă de aici, face proba
+ * să cadă.
+ */
+const RANDURI_MENIU_CONT: Readonly<Record<IdMeniuCont, { readonly usa: string; readonly cheie: string }>> = {
+  cont: { usa: 'editare.cont', cheie: 'editare.cont.al-meu' },
+  intra: { usa: 'editare.cont', cheie: 'editare.cont.intra' },
+  manual: { usa: 'editare.manual', cheie: 'editare.manual' },
+  sugestie: { usa: 'editare.sugestie', cheie: 'editare.sugestie' },
+  iesi: { usa: 'editare.cont', cheie: 'editare.cont.iesi' },
+};
+
+test('fiecare rând al meniului contului are ușa lui, iar capitolul ușii îi spune numele', () => {
+  const cont = { uid: 'u1', email: 'ana@exemplu.ro', nume: 'Ana', drept: null };
+  const randuri = new Set([...randuriMeniuCont(null, true), ...randuriMeniuCont(cont, true)].filter((r) => r !== null));
+  assert.deepEqual([...randuri].sort(), Object.keys(RANDURI_MENIU_CONT).sort());
+  for (const id of randuri) {
+    const r = RANDURI_MENIU_CONT[id];
+    assert.ok(USI.some((u) => u.id === r.usa), `${id} → ${r.usa}`);
+    for (const m of manuale()) {
+      const c = capitolPentru(m, r.usa);
+      assert.ok(c, `${m.limba}: ușa „${r.usa}” n-are capitol`);
+      const nume = numeScurt(eticheta(r.cheie)[m.limba]).toLocaleLowerCase(m.limba);
+      assert.ok(`${c.titlu}\n${c.text}`.toLocaleLowerCase(m.limba).includes(nume), `${m.limba}: „${nume}” (rândul ${id}) nu e în capitolul „${c.id}”`);
+    }
   }
 });
 

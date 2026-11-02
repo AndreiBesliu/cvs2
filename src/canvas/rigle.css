@@ -667,8 +667,12 @@
   width: 3.5rem;
 }
 
-/* Meniul de clic dreapta pe pânză (ADR 0103): rândurile cu tasta lor, liniile între grupuri, motivul unui refuz. */
-.meniu-context {
+/*
+ * Meniurile, cu aceleași rânduri (tasta lor, liniile între grupuri, motivul unui refuz): clic dreapta pe pânză (ADR 0103)
+ * și contul (ADR 0120), care stă pe `body`, sub butonul Cont, cu capul lui deasupra rândurilor.
+ */
+.meniu-context,
+.meniu-cont {
   position: absolute;
   z-index: 15;
   min-width: 12rem;
@@ -683,7 +687,32 @@
   box-shadow: var(--umbra-1);
 }
 
-.meniu-context button {
+.meniu-cont {
+  position: fixed;
+  min-width: 15rem;
+}
+
+.meniu-cont-cap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-1) var(--sp-2) var(--sp-2);
+  margin-bottom: var(--sp-1);
+  border-bottom: 1px solid var(--l-margine);
+}
+
+.meniu-cont-cap strong {
+  font-size: var(--fs-3);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.meniu-cont-cap span {
+  color: var(--t-slab);
+}
+
+.meniu-context button,
+.meniu-cont button {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -701,13 +730,16 @@
 }
 
 .meniu-context button:hover:not(:disabled),
-.meniu-context button:focus-visible {
+.meniu-context button:focus-visible,
+.meniu-cont button:hover:not(:disabled),
+.meniu-cont button:focus-visible {
   background: var(--s-ales);
   outline: none;
   box-shadow: inset 2px 0 0 var(--a);
 }
 
-.meniu-context button:disabled {
+.meniu-context button:disabled,
+.meniu-cont button:disabled {
   color: var(--t-slab);
   cursor: default;
 }

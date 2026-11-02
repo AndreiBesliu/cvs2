@@ -7,7 +7,8 @@ sa fie default, dar, vreau sa pot seta asta din admin. 4, a. 5, a. 6, configurab
 `PLAN.md` (§5.4, etapele 14–15; §8.2, deciziile 7, 12, 13, 15 și 22), din `BRIEF.md` (§4, §7, §16.1) și din raportul de admin
 al Fazei 2 (`docs/faza2/admin/RAPORT.md`, tranșele P2 și P2+). **Schimbă:** `BRIEF.md` §4, „Proba închisă” (conturile nu mai
 sunt doar invitate: înregistrarea e liberă, iar atelierele primesc planul din admin). **Completează:** ADR 0040 și 0049
-(conturile personalului), ADR 0043 (raportorul de erori), ADR 0107 și 0111 (sugestiile personalului).
+(conturile personalului), ADR 0043 (raportorul de erori), ADR 0107 și 0111 (sugestiile personalului). §A3 schimbat de ADR
+0120: butonul Cont deschide meniul contului, iar panoul se deschide din el („Contul meu…”, „Intră sau creează cont…”).
 
 **Problema.** Azi, doar personalul are cont (în `/admin`), iar editorul merge fără cont. Proba închisă din `BRIEF.md` §4
 (1–2 ateliere prietene, doar 2D, fără plată) cere conturi de client. Adminul „ca și acum” (`BRIEF.md` §16.1) are fila
