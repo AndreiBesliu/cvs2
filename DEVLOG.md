@@ -4594,4 +4594,44 @@ modului automat). La WMF, worktree-ul s-a șters înaintea joncțiunilor (o cale
 **Prompt:** „vreau inca un worktree care sa faca panoul sender-ului mai mare, el trebuie sa fie fullscreen, sub meniu. Atentie,
 meniul global, el va fi diferit de cel cu uneltele de desen. ca la cvs1 acest meniu va aparea doar in fereastra de
 desing/desen/project”, apoi „Da, cu recomandările” (la schița meniului global și a ferestrei Mașina, cu nouă întrebări).
-**Started:** 02.11, 21:30.
+**Started:** 02.11, 21:30. **Completed:** 02.11, 22:54.
+
+Sus, în toate ferestrele, **meniul global** (zona `meniu` a aranjamentului): marca, filele **Proiectare** și **Mașina** (o
+listă, `aranjament.ferestre`, ca o extensie să-și adauge fila), indicatorul lucrării, apoi căutarea, limba, tema și contul.
+Bara de desen și extensia ei stau doar în Proiectare, pe tot rândul lor; panoul mașinii a ieșit din docul din dreapta.
+**Mașina** e o fereastră pe tot ecranul, sub meniu: trei coloane de la 80 rem (mașina, lucrarea, consola), două până la
+48 rem, una pe telefon, în ordinea urgenței, cu poziția în cifre mari; se montează la prima deschidere și rămâne montată.
+Proiectarea nu se demontează: e acoperită și inertă, iar tastele desenului nu ating desenul ascuns (carcasa, prin `ORIUNDE`;
+modulul editării, prin `activ`; nodurile nu stau montate); o comandă a desenului din paletă întoarce întâi la Proiectare; F1
+în Mașina deschide capitolul ei. Fereastra se ține în browser (`cncvs2.fereastra`).
+**Indicatorul** (`src/machine/indicator.ts`, pur): conectată, rulează N % (cu Pauză), pauză (cu Reia), oprită la M6 / la
+linia N / pe o eroare, alarmă, întreruptă (și cu legătura căzută), gata; procentul, cel mult 99 până la „gata” (pe mașina
+simulată, cu tot programul trimis, arăta „100 %” cât freza încă tăia); un clic deschide Mașina; titlul filei poartă procentul.
+Pe telefon, punctul, procentul și iconițele încap lângă file. **Lucrarea pornită** (fazele cu punct de reluare ale fluxului,
+`cuPunctDeReluare`, exportat din `flux.ts`, deci aceeași definiție): `beforeunload`, iar „Reîncarcă” devine „Reîncarcă după
+lucrare”, dezactivat (semnalul `lucrarePornita`, în pornire). **„Deschide în Mașina”**, în fereastra exportului, doar după un
+export pentru sender: încarcă primul fișier, fără pornire; cu o lucrare pornită, refuză, cu motivul. Escape în Mașina închide
+formularul WiFi și confirmările.
+Găsit pe drum: eticheta mânerelor își căuta locul sub `header.sus` (acum `div`): căutarea, după clasă; o probă a textului
+dădea clic în colțul pânzei, acum sub meniu; o probă a panourilor cerea o foaie mai mare la 1280 × 720, unde meniul face
+foaia limitată de înălțime (proba, la 900 px).
+La zi: manualul (ro, en: primii pași, Mașina, exportul), ADR 0132 (nou) și 0081 (schimbat), indexul ADR, fișa, CLAUDE.md,
+traducerile.
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 / 17), traducerile (537, 0 lipsă), 8 068 de teste unitare
+(8 059 trec, 8 sărite; una, a traducerilor, refăcută după completare, verde), build-ul determinist (228 de fișiere identice;
+pornirea 99,1, cu ușa 102,6 / 110 kB; totalul 450,8 / 500), licențele, e2e 299 / 303 în suita întreagă pe portul 4178:
+`raportor.spec.ts` cere portul 4173 (ca la celelalte worktree-uri), iar `animatie` (timp, sub încărcare), `export` (`EBUSY` pe
+un artefact Playwright) și `text` (un clic în colțul pânzei, rămas sub meniu, reparat în probă) au trecut reluate singure; CI-ul
+rapid, verde pe ramură (rularea 41519119497). Verificat în browserul aplicației: meniul pe un rând la 1440 px (45 px), două
+coloane la 800 px, telefonul (meniul pe două rânduri, indicatorul compact), „Reîncarcă după lucrare” dezactivat cât rulează
+lucrarea, ambele teme.
+**Otrăvurile** (`test/otravuri/13.A.py`, în worktree-ul din afara Drive-ului, după commit): 26 / 27 prinse. Cele 16 pe logică
+(indicatorul, fereastra ținută, aranjamentul), cu unealta; cele 11 de interfață, prin build și e2e cu `node`. E02 (garda
+tastelor din modulul editării) a scăpat întâi: proba apăsa tastele cu focusul pe fila Mașina, unde modulul editării nu ascultă;
+proba dă acum clic pe un loc fără focus din fereastră (focusul pe pagină) și o prinde. E11 e echivalentă: aplicația dă
+dialogului funcția „Deschide în Mașina” doar cu `stareExport.ok`, iar dialogul primește aceeași stare, deci condiția lui
+`stare?.ok` e dublată. Nedovedit prin e2e: nodurile nemontate în Mașina (garda lor e montarea, nu o tastă).
+**Publicat** pe canalul `sender-ecran` al instanței de test, la 22:24:
+https://cncvectorstudio-test--sender-ecran-u16smtls.web.app (versiunea `2856b1749215`, expiră 02.12); adresa principală de test
+a rămas pe `ec428c9ad9f7` (a liniei principale). Pe canal: Mașina se deschide, mașina simulată se conectează, consola fără
+erori.

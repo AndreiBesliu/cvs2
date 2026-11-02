@@ -78,6 +78,10 @@ test('în Mașina, tastele desenului nu ating desenul acoperit; Ctrl+K merge, ia
 
   await fila(page, 'masina').click();
   await expect(page.getByTestId('masina-conexiune')).toBeVisible();
+  // Focusul pe pagină, nu pe filă (un clic pe un loc fără focus din fereastră): așa ascultă tastele și modulul editării, nu
+  // doar carcasa (otrava E02 scăpa cu focusul pe filă).
+  await page.locator('.masina-stare h3').click();
+  expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true);
   // Delete, Ctrl+Z, o săgeată (mută selecția), R (unealta Dreptunghi), Shift+H (oglindirea): nimic nu atinge desenul.
   for (const tasta of ['Delete', 'Control+z', 'ArrowLeft', 'r', 'Shift+H']) await page.keyboard.press(tasta);
   await fila(page, 'proiectare').click();
