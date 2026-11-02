@@ -250,7 +250,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
     principal.
   - **Edge și Node** diferă pe ultimul bit al funcțiilor matematice. Dublele CAM-ului diferă cu cel mult 4,65e-7 mm, sub
     rotunjirea G-code-ului.
-  - **Plafonul total e 450 kB** (decizia owner-ului): workerul are copia lui de cavalier și de geometrie.
+  - **Plafonul total e 450 kB** (decizia owner-ului; 500 kB din 02.11, ADR 0122): workerul are copia lui de cavalier și
+    de geometrie.
   - **Pornirea 97,3 (cu ușa 100,8 / 110 kB), totalul 411,8 / 450.**
   **Centrarea pe foaie (ADR 0110, felia 6.S↑)** gata pe 30.10, din notița 2 a owner-ului din 28.10: „Centrează pe foaie” în
   secțiunea Aliniere (`centru-foaie` în `src/geom/aliniere.ts`): centrul cutiei comune a selecției în centrul foii, pe ambele
@@ -354,6 +355,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   documentele deschise atunci de fiecare versiune din salvarea celei dinainte în `istorie/`: migrările de azi le dau pe toate
   17 octet cu octet (nicio migrare scrisă nu s-a schimbat). Proba e `test/unit/documente.aur.test.ts`. Rețeta: `scripts/corpus-documente-reteta.ts`. Unealta: `scripts/corpus-documente.ts`
   (`--istorie` scoate sursele fiecărei versiuni cu `git cat-file --batch`, fără worktree și fără `tar`).
+  **Plafonul total 500 kB (ADR 0122, felia 3.R, decizia owner-ului)** gata pe 02.11: la 441,2 / 450 kB, cele trei linii de
+  lucru care urmau (contractele controlerelor și pachetul de atelier, restul textului, verificarea vectorilor) nu încăpeau în
+  cei 8,8 kB rămași. Celelalte plafoane rămân. **Pornirea 98,5 (cu ușa 102,0 / 110 kB), totalul 441,2 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -468,6 +472,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 02.11.2026: **plafonul total 500 kB** („Da, 500 kB”, la „Ridic plafonul total al pachetului la 500 kB?”), după propunerea
+  a două worktree-uri paralele lângă etapa 4: restul textului (etapa 7) și verificarea și repararea vectorilor (etapa 10). La
+  441,2 / 450 kB, cele trei linii nu încăpeau în 8,8 kB. ADR 0122, felia 3.R; pornirea rămâne 110 kB. Worktree-urile pornesc
+  doar dintr-un mesaj scris în aplicația desktop (sub Remote Control, pornirea e refuzată); dacă pornesc, primesc ADR-urile
+  0123 și 0124, iar linia principală continuă de la 0125.
 - 02.11.2026: **restul raportărilor, notat pentru mai târziu; roadmap-ul, reluat de unde a rămas** („noteaza-le pentru mai
   tarziu, acum vreau sa luam roadmap-ul de unde a ramas”, la întrebarea despre 15.B↑b, după felia 15.B↑a):
   - **așteaptă:** 15.B↑b (proiectul atașat la raportare, în Storage, cel mult 10 MB, cu bifa; jobul zilnic care șterge
