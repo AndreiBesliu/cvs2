@@ -4605,7 +4605,7 @@ cu Aldin (propus 0,6 mm) și Cursiv (propus 12°), previzualizarea din linii și
 **Prompt:** „Da, 1 + 2 cu Relief” (la întrebarea „Fonturile cu o singură linie: cititorul și Relief SingleLine inclus?”, cu
 recomandarea „1. cititorul pentru fonturile tale stick, fără descărcări; 2. un font liber inclus, descărcat o singură dată,
 cu licența lângă el”), apoi „0140–0142 (Recommended)” (la „ce numere de ADR folosesc?”).
-**Started:** 02.11, 21:30. **Completed:** 02.11, ORA_GATA.
+**Started:** 02.11, 21:30. **Completed:** 02.11, 22:17.
 
 Relief SingleLine e verificat (SIL OFL 1.1, „Copyright 2022 The Relief SingleLine Project Authors”, fără nume rezervat) și
 descărcat din `isdat-type/Relief-SingleLine` (commit `01dfc57`, fixat; sha256 notate), într-un dosar gol: licența, README-ul,
@@ -4626,3 +4626,13 @@ manualul (ro, en), traducerile (537, 0 lipsă), `docs/otravuri.md`. Codul: `25bb
 pe contururi scrise de mână; bucla dublă; piesa și editarea; previzualizarea; e2e-ul panoului, pe o foaie de 1,2 mm.
 **Otrăvurile** (`test/otravuri/7.6.py`): 23; 22 prinse din prima (18 pe probele unitare, 4 de interfață prin harnaș), una
 scăpată, normalizarea trăsăturilor (corpusul n-avea o buclă dublă), prinsă de proba nouă.
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), licențele, traducerile (537, 0
+lipsă), 8 084 de teste unitare (0 eșuate, 8 sărite), build-ul determinist (231 de fișiere identice; pornirea 98,6 / 110
+kB, cu ușa 102,2; totalul 445,6 / 500), e2e-ul întreg în Edge pe 4174: 295 / 297 (picate doar `raportor.spec.ts:101`, care
+cere adresa de pe 4173, și `animatie.spec.ts:49`, o probă de timp rulată cât mergea și suita unitară, verde singură, 5 / 5).
+Fixturile oracolului ies acum identice la fiecare generare (`86839a3`: variantele lui Relief fără marca de timp).
+**Publicat pe canalul `text`** (02.11, 22:15, `86839a3`, până pe 02.12): <https://cncvectorstudio-test--text-1k3nsykk.web.app>.
+Verificat în browserul aplicației, după „Reload” (precache-ul ținea versiunea 7.5↑): Relief SingleLine în lista
+fonturilor incluse, Aldin oprit cu motivul, previzualizarea din trăsături (fără umplere), „Atelier Ștefan 2026” pus pe
+foaie ca 28 de trăsături deschise, cu o singură gravură pe linie de 1 mm; consola fără erori. Adresa principală de test a
+rămas a sesiunii principale (`ec428c9`).
