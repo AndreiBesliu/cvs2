@@ -4496,3 +4496,10 @@ emulator: pică de două ori din trei când rulează înaintea altor probe care 
 fișiere de emulator în același `node --test`) a ieșit roșie: fișierele rulau în paralel și își goleau documentele unul
 altuia. S14 s-a reluat pe fișierul tichetelor singur (prinsă), iar setul a plecat din listă. E01 și E02 au căzut în 6–7 s;
 reluate cu ieșirea întreagă, cad exact la amprente și la poză, verificate pe server imediat după trimitere.
+**Publicat pe adresa principală de test:** 02.11, 15:57, `publica` pe `423f4b9` (rularea 41456935713), după CI-ul rapid
+verde (41455514119); apoi, cu fișa la zi, pe `ac20bf7` (rularea 41459595807, 16:14). `web.app` servește versiunea
+`ac20bf7d5f75`, iar fila veche a trecut pe ea cu „Reload”, la 1440 px. Callable-ul `tichete` răspunde la OPTIONS cu 204.
+Fără cont, meniul are rândurile de dinainte. Cu un cont ținut pus de mână în fila de probă (scos după), meniul are „My
+reports” și „Report a problem…”, iar ambele ferestre vin de pe test, cu stilul lor (`PanouCont-*.css`), și spun că
+raportarea cere contul deschis: fila n-are o sesiune Firebase. Jurnalul a rămas la 0 erori. Calea cu cont logat pe test n-am
+încercat-o (nu mă loghez pe instanțele găzduite): o probează e2e-ul pe emulatoare.
