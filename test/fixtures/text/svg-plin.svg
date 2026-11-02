@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Un font SVG de probă, plin (ADR 0140 §7): glife închise cu Z, deci nu un font cu o singură linie. -->
+<svg xmlns="http://www.w3.org/2000/svg"><defs>
+<font id="ProbaPlin" horiz-adv-x="800">
+<font-face font-family="Proba Plin" units-per-em="1000" ascent="800" descent="-200"/>
+<glyph glyph-name="H" unicode="H" d="M100 0h120v320h360v-320h120v700h-120v-280h-360v280h-120z"/>
+<glyph glyph-name="I" unicode="I" horiz-adv-x="400" d="M100 0h200v700h-200z"/>
+<glyph glyph-name="O" unicode="O" d="M400 -10C600 -10 720 140 720 350S600 710 400 710S80 560 80 350S200 -10 400 -10ZM400 100C280 100 210 200 210 350S280 600 400 600S590 500 590 350S520 100 400 100Z"/>
+<glyph glyph-name="l" unicode="l" horiz-adv-x="300" d="M100 0h100v720h-100z"/>
+<glyph glyph-name="T" unicode="T" d="M300 0h120v580h260v120h-640v-120h260z"/>
+<glyph glyph-name="L" unicode="L" d="M100 0h500v120h-380v580h-120z"/>
+</font>
+</defs></svg>

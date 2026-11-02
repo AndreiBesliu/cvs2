@@ -147,8 +147,9 @@ propune 12°; negativă, spre stânga; cel mult 45°), fiecare literă față de
 cursivul: se redeschide cu ele, iar scalarea uniformă crește și îngroșarea.
 
 **Fonturile cu o singură linie** (de gravură, „stick”) n-au litere pline, ci trăsături: freza merge o dată pe fiecare linie.
-Relief SingleLine e inclus; unul încărcat de tine în Fonturile mele (TTF sau OTF) se recunoaște singur, fie că își scrie
-trăsăturile dus-întors, fie deschise, ca fonturile pentru CAD. Cu un asemenea font, previzualizarea arată liniile, **Aldin**
+Relief SingleLine e inclus; unul încărcat de tine în Fonturile mele (TTF, OTF sau un font SVG, formatul fonturilor de
+gravură Hershey și EMS) se recunoaște singur, fie că își scrie trăsăturile dus-întors, fie deschise, ca fonturile pentru CAD
+și cele SVG. Cu un asemenea font, previzualizarea arată liniile, **Aldin**
 e oprit (o trăsătură n-are ce îngroșa; **Cursiv** merge), iar textul pus pe foaie e făcut din linii deschise (o buclă
 închisă rămâne buclă), gravate pe linie la adâncimea liniilor importate (1 mm, cel mult jumătate din grosimea foii, într-o
 trecere). Freza și adâncimea le schimbi în fereastra exportului, de exemplu cu freza în V.
@@ -180,7 +181,7 @@ contururile fontului, cum se va tăia (literele care lipsesc din font sunt numit
 stilul ales, **înainte de descărcare** (browserul aduce de la Google doar alfabetele textului de probă, iar ce se taie vine
 din fișierul descărcat). Filele:
 - **Fonturile mele**: **Încarcă fonturi…** primește TTF, OTF (și cele cu contururi CFF, ca fonturile Adobe), TTC (toate
-  fețele) și WOFF; fonturile rămân în browserul ăsta, merg și fără rețea și nu pleacă nicăieri. Un font variabil (ca Roboto
+  fețele), WOFF și fonturile SVG (cele de gravură, Hershey sau EMS); fonturile rămân în browserul ăsta, merg și fără rețea și nu pleacă nicăieri. Un font variabil (ca Roboto
   Flex) dă câte un rând pe fiecare stil numit al lui (Thin, Bold, Bold Italic…), ca fețe separate. **Folosește** alege fontul
   în panou, **Șterge** îl scoate (un text făcut cu el rămâne, doar nu se mai editează aici până nu-l încarci din nou);
 - **Google Fonts**: cauți o familie (după nume, după categorie, doar cu diacriticele românești), alegi stilul și

@@ -110,8 +110,9 @@ test('trăsătura, pe contururi scrise de mână: dus-întors, păstrată deschi
   assert.deepEqual(traseu([C, c2, B, c1, A, c1, B, c2]), { puncte: [C, c2, B, c1, A], inchis: false });
   // Păstrată deschisă: din primul până în ultimul, fără segmentul de închidere.
   assert.deepEqual(traseu([A, B, C]), { puncte: [A, B, C], inchis: false });
-  // Ultimul chiar primul: o buclă, fără punctul repetat.
-  assert.deepEqual(traseu([A, B, C, P(0, 0)]), { puncte: [A, B, C], inchis: true });
+  // Ultimul chiar primul: o buclă, cu punctul repetat păstrat (o cubică CFF / SVG care se termină în start are nevoie de el;
+  // segmentul de lungime zero de după el se sare la așezare).
+  assert.deepEqual(traseu([A, B, C, P(0, 0)]), { puncte: [A, B, C, P(0, 0)], inchis: true });
   // Ultimul punct în afara curbei: segmentul de închidere e o curbă a desenului.
   const d = [A, B, P(10, 10, false)];
   assert.deepEqual(traseu(d), { puncte: d, inchis: true });

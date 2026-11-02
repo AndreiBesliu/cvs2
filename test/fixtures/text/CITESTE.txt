@@ -23,13 +23,19 @@ Din fonturi SIL Open Font License 1.1 (textul: LICENTA-OFL-1.1.txt, alături):
   2021–2022 The Relief SingleLine Project Authors; fără nume rezervat). Modificări, făcute cu fontTools: fiecare trăsătură
   deschisă scrisă dus-întors (relief-dus-intors.ttf); O cu ultimul punct mutat în primul și o cu ultimul punct scos
   (relief-bucle.ttf).
+- relief-singleline.svg (ADR 0140 §7): fontul SVG al lui Relief SingleLine (Relief SingleLine SVG Regular, fișierul
+  ReliefSingleLineSVG-Regular.svg din https://github.com/isdat-type/Relief-SingleLine, commit 01dfc57; Copyright 2021 The
+  Relief SingleLine Project Authors; fără nume rezervat), neschimbat.
 
-Scrise aici: cff-sintetic.otf (programe Type 2 de mână, peste un font gol) și cff2-sintetic.otf (un CFF2 variabil de mână:
-blend, vsindex, două FD-uri, FDSelect 4).
+Scrise aici: cff-sintetic.otf (programe Type 2 de mână, peste un font gol), cff2-sintetic.otf (un CFF2 variabil de mână:
+blend, vsindex, două FD-uri, FDSelect 4), svg-trasaturi.svg și svg-plin.svg (fonturi SVG de probă, de mână: unul cu
+trăsături, unul plin).
 
 Font fixtures of the text tests, written by test/oracles-py/text_corpus.py: variants of the Apache 2.0 fonts in
-public/fonturi/; variants of Relief SingleLine CAD (strokes written there and back; two true loops); subsets of Inter, Source
+public/fonturi/; variants of Relief SingleLine CAD (strokes written there and back; two true loops); the SVG font of Relief
+SingleLine, unchanged; subsets of Inter, Source
 Han Sans JP, the variable Roboto Flex and the variable (CFF2) Noto Sans CJK JP under
 the SIL Open Font License 1.1 (full text in LICENTA-OFL-1.1.txt; the Source Han subset is renamed “CNCVS Proba CID”, as the
 licence asks of a modified version that would otherwise use the Reserved Font Name “Source”; Roboto Flex declares no
-Reserved Font Name; the Noto subset’s names do not use “Source”); cff-sintetic.otf and cff2-sintetic.otf, written by hand.
+Reserved Font Name; the Noto subset’s names do not use “Source”); cff-sintetic.otf, cff2-sintetic.otf, svg-trasaturi.svg and
+svg-plin.svg, written by hand.

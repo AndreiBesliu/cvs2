@@ -56,7 +56,9 @@ export function traseu(c: ConturFont): { readonly puncte: ConturFont; readonly i
   }
   const prim = c[0], ultim = c[n - 1];
   if (prim?.peCurba && ultim?.peCurba) {
-    if (n > 2 && prim.x === ultim.x && prim.y === ultim.y) return { puncte: c.slice(0, -1), inchis: true };
+    // O buclă își păstrează punctul final, chiar dacă e primul: o cubică (CFF, SVG) care se termină în start are nevoie de
+    // el; segmentul de lungime zero de după el se sare la așezare.
+    if (n > 2 && prim.x === ultim.x && prim.y === ultim.y) return { puncte: c, inchis: true };
     return { puncte: c, inchis: false };
   }
   return { puncte: c, inchis: true };

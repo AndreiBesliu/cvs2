@@ -158,7 +158,7 @@ async function pune(
   return { adaugate, existente, refuzate };
 }
 
-/** Despachetarea unui fișier încărcat: sfnt sau TTC ca atare, WOFF despachetat; WOFF2 și restul, refuzate cu motiv. */
+/** Despachetarea unui fișier încărcat: sfnt, TTC sau font SVG ca atare, WOFF despachetat; WOFF2 și restul, refuzate cu motiv. */
 async function sfntDin(numeFisier: string, octeti: Uint8Array): Promise<Uint8Array | { readonly nume: string; readonly cod: CodRefuzAdaugare }> {
   if (octeti.byteLength > PLAFON_FONTURI.octetiFisier) return { nume: numeFisier, cod: 'prea-mare' };
   const fel = felFisier(octeti);

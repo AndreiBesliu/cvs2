@@ -151,8 +151,9 @@ the letters are slanted first and thickened after, so the strokes thicken the sa
 bold and italic: it reopens with them, and uniform scaling grows the thickening too.
 
 **Single-line fonts** (engraving, “stick” fonts) have no filled letters, only strokes: the cutter goes once along each line.
-Relief SingleLine is included; one you load into My fonts (TTF or OTF) is recognised on its own, whether it writes its strokes
-there and back or open, like the fonts made for CAD. With such a font, the preview shows the lines, **Bold** is off (a stroke
+Relief SingleLine is included; one you load into My fonts (TTF, OTF or an SVG font, the format of the Hershey and EMS
+engraving fonts) is recognised on its own, whether it writes its strokes there and back or open, like the fonts made for CAD
+and the SVG ones. With such a font, the preview shows the lines, **Bold** is off (a stroke
 has nothing to thicken; **Italic** works), and the text put on the sheet is made of open lines (a closed loop stays a loop),
 engraved on the line at the depth of imported lines (1 mm, at most half the sheet thickness, in one pass). You change the
 cutter and the depth in the export window, with a V cutter for example.
@@ -183,8 +184,8 @@ empty, a default sample) is shown written with every font in the list: in My fon
 font's outlines, as it will be cut (the letters missing from the font are named); in Google Fonts, with each family, in the
 chosen style, **before downloading** (the browser fetches from Google only the alphabets of the sample text, and what is cut
 comes from the downloaded file). The tabs:
-- **My fonts**: **Load fonts…** takes TTF, OTF (CFF outlines too, like Adobe fonts), TTC (all the faces) and WOFF; the
-  fonts stay in this browser, work offline and go nowhere. A variable font (like Roboto Flex) gives one row for each of its
+- **My fonts**: **Load fonts…** takes TTF, OTF (CFF outlines too, like Adobe fonts), TTC (all the faces), WOFF and SVG
+  fonts (the engraving ones, Hershey or EMS); the fonts stay in this browser, work offline and go nowhere. A variable font (like Roboto Flex) gives one row for each of its
   named styles (Thin, Bold, Bold Italic…), as separate faces. **Use** chooses the font in the panel, **Delete** removes it (a
   text made with it stays, it just cannot be edited here until you load the font again);
 - **Google Fonts**: you search a family (by name, by category, only with the Romanian diacritics), choose the style and
