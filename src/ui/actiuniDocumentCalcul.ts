@@ -207,7 +207,7 @@ function judecaTextul(doc: Document, c: CerereText): ComandaText {
   if (c.fel === 'nou') {
     if (instantaPreaDeparte(c.loc.x, c.loc.y)) return { ok: false, motiv: 'motiv.prea-departe' };
     id = idNou(doc);
-    const r = c.piesa(id, sculaFoii(doc));
+    const r = c.piesa(id, sculaFoii(doc), foaie.stoc.grosime);
     if (!r.ok) return { ok: false, motiv: MOTIV_TEXT[r.motiv] };
     comanda = {
       tip: 'adauga', foaie: foaie.id, instanta: { id, piesa: id, x: c.loc.x, y: c.loc.y, rotire: 0 }, pozitie: foaie.instante.length,
@@ -220,7 +220,7 @@ function judecaTextul(doc: Document, c: CerereText): ComandaText {
     if (!blocText(vechi.radacina)) return { ok: false, motiv: 'motiv.text-vectori' };
     const folosiri = doc.foi.reduce((n, f) => n + f.instante.filter((i) => i.piesa === vechi.id).length, 0);
     if (folosiri > 1) return { ok: false, motiv: 'motiv.text-impartit' };
-    const r = c.piesa(vechi);
+    const r = c.piesa(vechi, foaie.stoc.grosime);
     if (!r.ok) return { ok: false, motiv: MOTIV_TEXT[r.motiv] };
     id = inst.id;
     comanda = { tip: 'inlocuieste-piesa', vechi, nou: r.piesa };

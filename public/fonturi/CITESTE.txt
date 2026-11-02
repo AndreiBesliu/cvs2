@@ -1,6 +1,6 @@
-Fonturile textului din CNC Vector Studio (ADR 0105)
+Fonturile textului din CNC Vector Studio (ADR 0105, ADR 0140)
 
-Ambele fonturi sunt licențiate sub Apache License, Version 2.0 (textul întreg: LICENTA-Apache-2.0.txt, alături).
+roboto.ttf și droid-serif.ttf sunt licențiate sub Apache License, Version 2.0 (textul întreg: LICENTA-Apache-2.0.txt, alături).
 
 roboto.ttf
   Roboto Regular, Version 2.001047; 2015.
@@ -16,6 +16,18 @@ latine (U+0020-007E, U+00A0-017F), Ș ș Ț ț (U+0218-021B) și câteva semne d
 U+2020-2022, U+2026, U+2030, U+2039-203A, U+20AC, U+2122); fără instrucțiunile de hinting; din GPOS rămâne doar
 crenarea (caracteristica kern). Contururile literelor păstrate sunt neschimbate.
 
-Text fonts of CNC Vector Studio (ADR 0105). Both fonts are licensed under the Apache License, Version 2.0 (full text in
+relief-singleline.ttf (ADR 0140: un font cu o singură linie, de gravură)
+  Relief SingleLine CAD Regular, din https://github.com/isdat-type/Relief-SingleLine (commit 01dfc57, fonts/open_ttf/).
+  Copyright 2021–2022 The Relief SingleLine Project Authors (https://github.com/isdat-type/Relief-SingleLine).
+  Licențiat sub SIL Open Font License, Version 1.1 (textul întreg: LICENTA-OFL-1.1.txt, alături); fără nume rezervat.
+  Autorii: François Chastanet (inițiatorul proiectului, isdaT Toulouse), Élisa Garzelli și Noëlie Dayma (desenul);
+  contribuții: Tanguy Vanlaeys (cercetarea pentru CNC, exportul TTF), Frederik Berlaen.
+  Modificări: subset făcut cu fontTools (pyftsubset), cu același set de caractere ca mai sus, fără hinting, din GPOS doar
+  crenarea; trăsăturile literelor păstrate sunt neschimbate.
+
+Text fonts of CNC Vector Studio. roboto.ttf and droid-serif.ttf are licensed under the Apache License, Version 2.0 (full text in
 LICENTA-Apache-2.0.txt, next to this file). Modifications: subsets made with fontTools (pyftsubset), as listed above,
 without hinting instructions, keeping only the kern feature of GPOS; the outlines of the kept letters are unchanged.
+relief-singleline.ttf is Relief SingleLine CAD Regular (Copyright 2021–2022 The Relief SingleLine Project Authors), licensed
+under the SIL Open Font License, Version 1.1 (full text in LICENTA-OFL-1.1.txt), with no Reserved Font Name; modified as a
+fontTools subset with the same character set, without hinting, keeping only kerning; the strokes are unchanged.

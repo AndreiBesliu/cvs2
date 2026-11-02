@@ -212,6 +212,7 @@ export const enEditare = {
   'editare.text.curba.buton-curba': 'On the curve',
   'editare.text.aldin': 'Bold (thicker letters)',
   'editare.text.aldin.grosime': 'Thickening on each side (mm)',
+  'editare.text.aldin.linie': 'Single-line font: the letters are strokes, engraved on the line, so they are not thickened.',
   'editare.text.cursiv': 'Italic (slanted letters)',
   'editare.text.cursiv.unghi': 'Slant (°; negative: to the left)',
   'editare.text.gresit.aldin': 'The thickening is a number from 0.01 mm up to a fifth of the capital height.',

@@ -550,6 +550,15 @@
   fill: var(--panza-linie);
 }
 
+/* Trăsăturile unui font cu o singură linie (ADR 0140): linia frezei, fără umplere. */
+.previzualizare-text path.trasaturi {
+  fill: none;
+  stroke: var(--panza-linie);
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* Fereastra fonturilor: filele, listele (cu căutarea în Google Fonts) derulate în fereastră. */
 .dialog-fonturi .dialog-cutie {
   width: min(40rem, calc(100vw - 2rem));

@@ -33,6 +33,7 @@ import { TOLERANTA_PROIECT } from '../geom/toleranta.ts';
 import { incheieSubcalea, normalizeazaForma, type CaleCitita, type NumaratoareNormalizare } from '../io/caleImport.ts';
 import { PLAFON_IMPORT } from '../io/svgCoduri.ts';
 import type { ConturFont, Font } from './font.ts';
+import { traseu } from './linie.ts';
 
 export type AliniereText = 'stanga' | 'centru' | 'dreapta';
 
@@ -79,6 +80,8 @@ export type TextAsezat = {
   readonly linii: readonly RandAsezat[];
   /** În mm: înălțimea rândului (cu distanța dintre rânduri) și coborârea fontului (negativă). */
   readonly metrici: { readonly rand: number; readonly coborare: number };
+  /** Un font cu o singură linie (ADR 0140): căile sunt trăsături de gravat (deschise sau bucle), nu figuri. */
+  readonly linie: boolean;
 };
 
 type P = { readonly x: number; readonly y: number };
@@ -156,6 +159,64 @@ function varfuriDinCubice(c: ConturFont, harta: (q: P) => Punct): { varfuri: Var
   return { varfuri, start: harta(start) };
 }
 
+/**
+ * Vârfurile unei trăsături deschise a unui font cu o singură linie (ADR 0140), în mm: din primul punct (pe curbă) până în
+ * ultimul (pe curbă), fără segmentul de închidere; TrueType cu punctele de pe curbă subînțelese și pătraticele ridicate la
+ * cubice, CFF cu cubicele cum sunt. Fiecare vârf poartă segmentul spre următorul; capătul vine separat. Segmentele de lungime
+ * zero se sar.
+ */
+function varfuriDeschise(c: ConturFont, harta: (q: P) => Punct, cubice: boolean): { varfuri: Varf[]; start: Punct; capat: Punct } | null {
+  const n = c.length;
+  const start = c[0];
+  if (n < 2 || !start?.peCurba || !c[n - 1]!.peCurba) return null;
+  const varfuri: Varf[] = [];
+  let cur: P = start;
+  if (cubice) {
+    for (let k = 1; k < n;) {
+      const q = c[k]!;
+      if (q.peCurba) {
+        if (q.x !== cur.x || q.y !== cur.y) varfuri.push({ p: harta(cur), s: LINIE });
+        cur = q;
+        k += 1;
+        continue;
+      }
+      const c2 = c[k + 1], capat = c[k + 2];
+      if (!c2 || c2.peCurba || !capat?.peCurba) return null;
+      if (!(q.x === cur.x && q.y === cur.y && c2.x === cur.x && c2.y === cur.y && capat.x === cur.x && capat.y === cur.y)) {
+        varfuri.push({ p: harta(cur), s: { tip: 'C', c1: harta(q), c2: harta(c2) } });
+      }
+      cur = capat;
+      k += 3;
+    }
+    return { varfuri, start: harta(start), capat: harta(cur) };
+  }
+  // Punctele de pe curbă subînțelese, între două puncte de control consecutive (fără a trece de capăt).
+  const extinse: { x: number; y: number; peCurba: boolean }[] = [];
+  for (let k = 0; k < n; k++) {
+    const a = c[k]!, b = c[k + 1];
+    extinse.push(a);
+    if (b && !a.peCurba && !b.peCurba) extinse.push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, peCurba: true });
+  }
+  for (let k = 1; k < extinse.length;) {
+    const q = extinse[k]!;
+    if (q.peCurba) {
+      if (q.x !== cur.x || q.y !== cur.y) varfuri.push({ p: harta(cur), s: LINIE });
+      cur = q;
+      k += 1;
+      continue;
+    }
+    const capat = extinse[k + 1]!;
+    const c1 = { x: cur.x + (2 * (q.x - cur.x)) / 3, y: cur.y + (2 * (q.y - cur.y)) / 3 };
+    const c2 = { x: capat.x + (2 * (q.x - capat.x)) / 3, y: capat.y + (2 * (q.y - capat.y)) / 3 };
+    if (!(cur.x === capat.x && cur.y === capat.y && q.x === cur.x && q.y === cur.y)) {
+      varfuri.push({ p: harta(cur), s: { tip: 'C', c1: harta(c1), c2: harta(c2) } });
+    }
+    cur = capat;
+    k += 2;
+  }
+  return { varfuri, start: harta(start), capat: harta(cur) };
+}
+
 /** Câte litere îngroșate se țin (cea folosită cel mai demult pleacă prima). */
 const INGROSATE = 512;
 /**
@@ -198,7 +259,8 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
     lipsa: 0, 'glife-stricate': 0, 'prea-mari': 0, 'aldin-esuat': 0, 'nonzero-normalizate': 0, 'nonzero-refuzate': 0, 'sub-rezolutie': 0, degenerate: 0,
   };
   const caractereLipsa: string[] = [];
-  const d = p.aldin ?? 0;
+  // Un font cu o singură linie n-are figură de îngroșat (ADR 0140): aldinul nu i se aplică.
+  const d = font.linie ? 0 : p.aldin ?? 0;
   const panta = Math.tan((p.cursiv ?? 0) * (Math.PI / 180));
   // Literele se desenează la înălțimea miezului (fără aldin, chiar înălțimea cerută); rândurile, după înălțimea cerută.
   const miez = p.inaltime - 2 * d;
@@ -246,7 +308,23 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
       }
       const cai: CaleCitita[] = [];
       for (const c of contururi) {
-        const v = font.cubice ? varfuriDinCubice(c, harta) : varfuriDinContur(c, harta);
+        // Un font cu o singură linie dă trăsături (ADR 0140): cele deschise, cu regulile ușilor importului pentru capete (un
+        // capăt la cel mult 0,01 mm de start închide trăsătura, ADR 0037 §11); buclele, ca orice contur.
+        const t = font.linie ? traseu(c) : { puncte: c, inchis: true };
+        if (!t.inchis) {
+          const v = varfuriDeschise(t.puncte, harta, font.cubice);
+          if (!v || v.varfuri.length === 0) {
+            raport.degenerate++;
+            continue;
+          }
+          const r = incheieSubcalea(v.varfuri, v.capat, v.start, false, false);
+          if (r === 'prea-mare') raport['prea-mari']++;
+          else if (r === 'degenerata') raport.degenerate++;
+          else if (r === 'praf') raport['sub-rezolutie']++;
+          else cai.push(r.cale);
+          continue;
+        }
+        const v = font.cubice ? varfuriDinCubice(t.puncte, harta) : varfuriDinContur(t.puncte, harta);
         if (!v || v.varfuri.length === 0) {
           raport.degenerate++;
           continue;
@@ -255,13 +333,14 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
         if (inchisa === 'prea-mare') raport['prea-mari']++;
         else if (inchisa === 'degenerata') raport.degenerate++;
         else if (inchisa === 'praf') raport['sub-rezolutie']++;
-        // Un contur care, închis, n-are arie (pe o dreaptă) iese deschis: o literă n-are linii de tăiat.
-        else if (!inchisa.cale.inchis) raport.degenerate++;
+        // Un contur care, închis, n-are arie (pe o dreaptă) iese deschis: o literă n-are linii de tăiat; o trăsătură, da.
+        else if (!inchisa.cale.inchis && !font.linie) raport.degenerate++;
         else cai.push(inchisa.cale);
       }
       // Spațiul și celelalte glife fără contur nu lasă nimic de tăiat.
       if (cai.length === 0) return;
-      const normalizate = normalizeazaForma(cai, true, buget, raport);
+      // Trăsăturile nu se normalizează: n-au interior (ADR 0140).
+      const normalizate = font.linie ? cai : normalizeazaForma(cai, true, buget, raport);
       if (d === 0) {
         glife.push({ caracter: l.caracter, rand: r, cai: normalizate, x: x0, avans: l.avans, indice });
         return;
@@ -277,5 +356,5 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
       glife.push({ caracter: l.caracter, rand: r, cai: mutate, x: x0, avans: l.avans, indice });
     });
   });
-  return { glife, raport, caractereLipsa, linii, metrici: { rand: inaltimeRand, coborare: inMm(font.coborare) } };
+  return { glife, raport, caractereLipsa, linii, metrici: { rand: inaltimeRand, coborare: inMm(font.coborare) }, linie: font.linie };
 }

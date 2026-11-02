@@ -21,6 +21,7 @@
  * variabil se citește în instanța lui implicită.
  */
 import { citesteCff, citesteCff2 } from './cff.ts';
+import { cuOLinie } from './linie.ts';
 import {
   COLECTIE, FontStricat, inceputuriFete, numeDupaId, numeFont, Octeti, SFNT_APPLE, SFNT_CFF, SFNT_TRUETYPE, tabele, WOFF, WOFF2,
   type ConturFont, type NumeFont, type PunctFont, type Tabele,
@@ -56,6 +57,8 @@ export type Font = {
   readonly numarGlife: number;
   /** Contururi cubice (CFF: punctele de control câte două), nu pătratice (TrueType). */
   readonly cubice: boolean;
+  /** Un font cu o singură linie (ADR 0140, `linie.ts`): contururile lui sunt trăsături de gravat, nu figuri de umplut. */
+  readonly linie: boolean;
   /** Axele, dacă fontul e variabil (`fvar`). */
   readonly axe: readonly AxaFont[] | null;
   /** Instanțele numite, dacă fontul e variabil; contururile sunt ale instanței cerute la citire (implicit: cea implicită). */
@@ -516,7 +519,7 @@ function citeste(o: Octeti, fata: number, instanta: CerereInstanta | undefined):
   }
 
   const crenare = crenareGpos(o, t, v) ?? crenareKern(o, t);
-  const font: Font = {
+  const font: Omit<Font, 'linie'> = {
     familie: nume.familie,
     nume,
     unitsPerEm,
@@ -555,7 +558,7 @@ function citeste(o: Octeti, fata: number, instanta: CerereInstanta | undefined):
       }
     },
   };
-  return { ok: true, font };
+  return { ok: true, font: { ...font, linie: cuOLinie(font) } };
 }
 
 /** O componentă a unei glife compuse, citită: steagul, glifa, cele două argumente și transformarea (dacă are). */

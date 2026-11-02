@@ -217,6 +217,7 @@ export const roEditare = {
   'editare.text.curba.buton-curba': 'Pe curbă',
   'editare.text.aldin': 'Aldin (litere îngroșate)',
   'editare.text.aldin.grosime': 'Îngroșarea pe fiecare parte (mm)',
+  'editare.text.aldin.linie': 'Font cu o singură linie: literele sunt trăsături, gravate pe linie, deci nu se îngroașă.',
   'editare.text.cursiv': 'Cursiv (litere înclinate)',
   'editare.text.cursiv.unghi': 'Înclinarea (°; negativă: spre stânga)',
   'editare.text.gresit.aldin': 'Îngroșarea e un număr de la 0,01 mm până la o cincime din înălțimea majusculelor.',

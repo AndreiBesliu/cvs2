@@ -132,8 +132,9 @@ The **Text** tool (`X`; `T` is “Show toolpath”) writes text to cut. With it 
 - a **click on a text** chooses it, to edit it.
 
 In the tool's panel you type the text (Enter: new line) and choose:
-- the **font**: the **included** ones (Roboto, Droid Serif), **My fonts** (loaded by you or downloaded from Google Fonts)
-  and, once you allow access, the **system fonts**; below the fields you see the text as it will be cut;
+- the **font**: the **included** ones (Roboto, Droid Serif and Relief SingleLine, a single-line engraving font), **My
+  fonts** (loaded by you or downloaded from Google Fonts) and, once you allow access, the **system fonts**; below the fields
+  you see the text as it will be cut;
 - the **capital height**, in mm: at “20 mm”, H, N or E are exactly 20 mm tall (round letters, like O or C, go slightly over
   the line, as in any font);
 - the **space between letters** (in mm; negative, tighter), the **distance between lines** (a multiple of the font's line)
@@ -148,6 +149,13 @@ are cut from lines and arcs, within 0.001 mm of the exact shape. **Italic** slan
 **Slant** (°; it suggests 12°; negative, to the left; at most 45°), each letter about its own baseline, exactly. With both,
 the letters are slanted first and thickened after, so the strokes thicken the same in every direction. The text keeps its
 bold and italic: it reopens with them, and uniform scaling grows the thickening too.
+
+**Single-line fonts** (engraving, “stick” fonts) have no filled letters, only strokes: the cutter goes once along each line.
+Relief SingleLine is included; one you load into My fonts (TTF or OTF) is recognised on its own, whether it writes its strokes
+there and back or open, like the fonts made for CAD. With such a font, the preview shows the lines, **Bold** is off (a stroke
+has nothing to thicken; **Italic** works), and the text put on the sheet is made of open lines (a closed loop stays a loop),
+engraved on the line at the depth of imported lines (1 mm, at most half the sheet thickness, in one pass). You change the
+cutter and the depth in the export window, with a V cutter for example.
 
 **Add** puts the text on the sheet as a part: each letter is a group, with its holes, cut like an import (the outside
 profile on the outer outlines, the inside one on the holes; you change them in the export window, to a V-carve for example).

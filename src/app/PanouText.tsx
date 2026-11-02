@@ -98,7 +98,7 @@ function salveaza(f: Formular): void {
  * cheia câmpului greșit.
  */
 function parametri(
-  f: Formular, numeFont: string | null, curba: CurbaAleasa | null,
+  f: Formular, numeFont: string | null, curba: CurbaAleasa | null, linie: boolean,
 ): Omit<BlocText, 'amprenta'> | 'continut' | 'inaltime' | 'spatiere' | 'interlinie' | 'distanta' | 'aldin' | 'cursiv' {
   if (f.continut.trim() === '' || f.continut.length > LIMITE_TEXT.caractere) return 'continut';
   const inaltime = citesteNumar(f.inaltime);
@@ -107,9 +107,11 @@ function parametri(
   if (spatiere === null || Math.abs(spatiere) > LIMITE_TEXT.spatiere) return 'spatiere';
   const interlinie = citesteNumar(f.interlinie);
   if (interlinie === null || interlinie < LIMITE_TEXT.interlinieMinima || interlinie > LIMITE_TEXT.interlinieMaxima) return 'interlinie';
-  // Aldinul și cursivul (ADR 0123), doar pornite; un cursiv de 0° e un text drept.
-  const aldin = f.aldin ? citesteNumar(f.grosime) : 0;
-  if (aldin === null || (f.aldin && (aldin < LIMITE_TEXT.aldinMinim || aldin > aldinMaxim(inaltime)))) return 'aldin';
+  // Aldinul și cursivul (ADR 0123), doar pornite; un cursiv de 0° e un text drept. Un font cu o singură linie nu se
+  // îngroașă (ADR 0140): bifa lui e oprită, iar blocul nu-l primește.
+  const gros = f.aldin && !linie;
+  const aldin = gros ? citesteNumar(f.grosime) : 0;
+  if (aldin === null || (gros && (aldin < LIMITE_TEXT.aldinMinim || aldin > aldinMaxim(inaltime)))) return 'aldin';
   const cursiv = f.cursiv ? citesteNumar(f.unghi, true) : 0;
   if (cursiv === null || Math.abs(cursiv) > LIMITE_TEXT.cursiv) return 'cursiv';
   let pe: CurbaText | null = null;
@@ -234,7 +236,9 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
     if (sursa?.fel === 'sistem') return sursa.postscript;
     return id;
   };
-  const p = parametri(form, FONTURI_INCLUSE.some((f) => f.id === form.font) ? null : numeFont(form.font), curbaActiva);
+  // Un font cu o singură linie (ADR 0140): trăsături de gravat, fără aldin.
+  const linieFont = rezFont?.ok === true && rezFont.font.linie;
+  const p = parametri(form, FONTURI_INCLUSE.some((f) => f.id === form.font) ? null : numeFont(form.font), curbaActiva, linieFont);
   const asezat = useMemo(() => {
     if (modul === null || modul === 'eroare' || !rezFont?.ok || typeof p === 'string') return null;
     const dreptul = modul.aseazaText(rezFont.font, p);
@@ -263,11 +267,11 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
   };
   const adauga = (): void => {
     if (!gata || !ancora || modul === null || modul === 'eroare' || typeof p === 'string' || !asezat) return;
-    trimite({ fel: 'nou', loc: ancora, piesa: (id, scula) => modul.piesaText(asezat, p, id, scula) });
+    trimite({ fel: 'nou', loc: ancora, piesa: (id, scula, grosime) => modul.piesaText(asezat, p, id, scula, undefined, grosime) });
   };
   const aplica = (): void => {
     if (!gata || !editat || modul === null || modul === 'eroare' || typeof p === 'string' || !asezat) return;
-    trimite({ fel: 'editat', instanta: editat.instanta, piesa: (vechi) => modul.piesaText(asezat, p, vechi.id, undefined, vechi) });
+    trimite({ fel: 'editat', instanta: editat.instanta, piesa: (vechi, grosime) => modul.piesaText(asezat, p, vechi.id, undefined, vechi, grosime) });
   };
   /** Fontul ales s-a schimbat în bibliotecă (încărcat, descărcat, șters): listele se recitesc, fontul se caută din nou. */
   const schimbat = (id?: string): void => {
@@ -328,14 +332,16 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
             <button type="button" data-text="descarca-din-nou" disabled={descarc} onClick={descarcaDinNou}>{t('editare.text.font.descarca-din-nou')}</button>
           ) : null}
         </div>
-        {/* Aldinul și cursivul sintetic (ADR 0123): pornite, își arată câmpul; la pornire, aldinul propune 3 % din înălțime. */}
-        <label className="bifa-retea">
-          <input type="checkbox" checked={form.aldin} data-text="aldin" onChange={(e) => {
+        {/* Aldinul și cursivul sintetic (ADR 0123): pornite, își arată câmpul; la pornire, aldinul propune 3 % din înălțime. Un
+            font cu o singură linie (ADR 0140) nu se îngroașă: bifa e oprită, cu motivul. */}
+        <label className="bifa-retea" title={linieFont ? t('editare.text.aldin.linie') : undefined}>
+          <input type="checkbox" checked={form.aldin && !linieFont} disabled={linieFont} data-text="aldin" onChange={(e) => {
             scrie({ ...form, aldin: e.target.checked, grosime: e.target.checked && form.grosime.trim() === '' ? grosimeImplicita(form.inaltime) : form.grosime });
           }} />
           {t('editare.text.aldin')}
         </label>
-        {form.aldin ? (
+        {linieFont ? <p className="nota-retea" data-testid="text-linie">{t('editare.text.aldin.linie')}</p> : null}
+        {form.aldin && !linieFont ? (
           <label className="camp-retea">
             <span>{t('editare.text.aldin.grosime')}</span>
             <input value={form.grosime} inputMode="decimal" data-text="grosime" onChange={(e) => { scrie({ ...form, grosime: e.target.value }); }} />

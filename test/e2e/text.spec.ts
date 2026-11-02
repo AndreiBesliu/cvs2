@@ -178,6 +178,39 @@ test('aldinul și cursivul (ADR 0123): H de 20 mm îngroșat cu 0,6 are tot 20 m
   expect(Math.max(...n2) - Math.min(...n2)).toBeCloseTo(20, 9);
 });
 
+test('fontul cu o singură linie (ADR 0140): Relief SingleLine, Aldin oprit cu motivul, trăsăturile deschise, gravate pe linie', async ({ page }) => {
+  await page.goto('/');
+  // O foaie de 1,2 mm: gravura trăsăturilor are jumătate din grosime (0,6 mm), ca liniile deschise importate.
+  const grosime = page.locator('[data-camp="foaie-grosime"]');
+  await grosime.fill('1.2');
+  await grosime.press('Enter');
+  await documentSalvat(page, 1);
+  await page.locator('[data-unealta="text"]').click();
+  await page.locator('[data-text="continut"]').fill('HI');
+  await page.locator('[data-text="aldin"]').check();
+  await page.locator('select[data-text="font"]').selectOption('relief-singleline');
+  // Fontul se recunoaște singur: Aldin se oprește, cu motivul; previzualizarea desenează trăsăturile cu linia.
+  await expect(page.getByTestId('text-linie')).toHaveText('Font cu o singură linie: literele sunt trăsături, gravate pe linie, deci nu se îngroașă.');
+  await expect(page.locator('[data-text="aldin"]')).toBeDisabled();
+  await expect(page.locator('[data-text="aldin"]')).not.toBeChecked();
+  await expect(page.locator('[data-testid="text-previzualizare"] path.trasaturi')).toHaveCount(1);
+  const v = await vedere(page);
+  const la = await ecran(page, v);
+  const a = la(180, 60);
+  await page.mouse.click(a.x, a.y);
+  await page.click('[data-text="adauga"]');
+  const d1 = await documentSalvat(page, 2) as Doc & { piese: Array<{ operatii: Array<{ latura: string; adancime: number; noduri: string[] }> }> };
+  const piesa = d1.piese[0]!;
+  expect(piesa.radacina.text).toMatchObject({ continut: 'HI', font: 'relief-singleline', inaltime: 20 });
+  expect('aldin' in piesa.radacina.text!).toBe(false);
+  // H: trei linii deschise, de la 0 la 20 mm; I: linia lui și trăsătura de 2 unități din vârf.
+  const h = piesa.radacina.copii![0]!;
+  expect(h.copii!.map((e) => (e.forma as { inchis?: boolean }).inchis)).toEqual([false, false, false]);
+  expect(Math.min(...ordonate(h))).toBeCloseTo(0, 9);
+  expect(Math.max(...ordonate(h))).toBeCloseTo(20, 9);
+  expect(piesa.operatii.map((o) => [o.latura, o.adancime, o.noduri.length])).toEqual([['pe-linie', 0.6, 5]]);
+});
+
 test('panoul textului spune ce lipsește: caracterele pe care fontul nu le are, înălțimea greșită; fără litere, Adaugă e oprit', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-unealta="text"]').click();

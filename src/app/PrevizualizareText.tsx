@@ -4,7 +4,10 @@ import { caleText } from './caleText.ts';
 
 type TextAsezat = import('../text/asezare.ts').TextAsezat;
 
-/** Previzualizarea unui text așezat (ADR 0106, ADR 0108): contururile lui, cum se vor tăia, potrivite în cutia lor. */
+/**
+ * Previzualizarea unui text așezat (ADR 0106, ADR 0108): contururile lui, cum se vor tăia, potrivite în cutia lor; trăsăturile
+ * unui font cu o singură linie (ADR 0140), desenate cu linia, fără umplere.
+ */
 export function Previzualizare({ asezat, clasa = 'previzualizare-text', testid = 'text-previzualizare', laStanga = false }: {
   readonly asezat: TextAsezat;
   readonly clasa?: string;
@@ -19,7 +22,8 @@ export function Previzualizare({ asezat, clasa = 'previzualizare-text', testid =
   return (
     <svg className={clasa} viewBox={`${x0 - m} ${y0 - m} ${x1 - x0 + 2 * m} ${y1 - y0 + 2 * m}`} preserveAspectRatio={laStanga ? 'xMinYMid meet' : 'xMidYMid meet'}
       role="img" aria-label={t('editare.text.previzualizare')} data-testid={testid}>
-      <path d={c.d} fillRule="evenodd" />
+      {c.d ? <path d={c.d} fillRule="evenodd" /> : null}
+      {c.linii ? <path className="trasaturi" d={c.linii} vectorEffect="non-scaling-stroke" /> : null}
     </svg>
   );
 }

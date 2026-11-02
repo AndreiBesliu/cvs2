@@ -30,8 +30,12 @@ export type FormaNoua = { readonly forma: FormaDoc; readonly x: number; readonly
  * ai foii) sau unul editat (instanța aleasă și constructorul piesei noi din cea veche, al cărei id rămâne).
  */
 export type CerereText =
-  | { readonly fel: 'nou'; readonly loc: { readonly x: number; readonly y: number }; readonly piesa: (id: string, scula?: Operatie['scula']) => RezultatPiesaText }
-  | { readonly fel: 'editat'; readonly instanta: string; readonly piesa: (vechi: Piesa) => RezultatPiesaText };
+  | {
+    readonly fel: 'nou'; readonly loc: { readonly x: number; readonly y: number };
+    /** `grosime`: a foii curente, pentru adâncimea gravurii unui text cu o singură linie (ADR 0140). */
+    readonly piesa: (id: string, scula?: Operatie['scula'], grosime?: number) => RezultatPiesaText;
+  }
+  | { readonly fel: 'editat'; readonly instanta: string; readonly piesa: (vechi: Piesa, grosime?: number) => RezultatPiesaText };
 
 export type ContextDocument = {
   readonly istoric: () => Istoric;
