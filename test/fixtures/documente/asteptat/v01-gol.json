@@ -1,0 +1,16 @@
+{
+  "foi": [
+    {
+      "id": "f1",
+      "instante": [],
+      "stoc": {
+        "grosime": 18,
+        "inaltime": 400,
+        "latime": 600
+      }
+    }
+  ],
+  "piese": [],
+  "rev": 0,
+  "schema": 18
+}

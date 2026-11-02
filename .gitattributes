@@ -9,6 +9,8 @@
 *.nc -text
 *.gcode -text
 *.tap -text
+# Corpusul de aur al documentului (ADR 0121): intrările au sha256-ul lor în corpus.json.
+test/fixtures/documente/** -text
 *.wmf binary
 *.emf binary
 *.stl binary

@@ -1,0 +1,240 @@
+{
+  "schema": 1,
+  "intrari": [
+    {
+      "nume": "v01-gol.json",
+      "versiune": 1,
+      "commit": "a50469e",
+      "sha256": "3dbd0703b55ab058035240d7eccd05b6a36c4e48c2f4ba911d93c4928db1308c"
+    },
+    {
+      "nume": "v01-proiect.json",
+      "versiune": 1,
+      "commit": "a50469e",
+      "sha256": "30e405bef3c8ff07db1d396e6fde661650dc1ce9adc2cfdf5630e79e28c1c8f0"
+    },
+    {
+      "nume": "v02-proiect.json",
+      "versiune": 2,
+      "commit": "d9a0931",
+      "sha256": "9705c836aacb2b58c7a9861e0cb55acec5416594ad0c276fc12c4e1092ebdd42"
+    },
+    {
+      "nume": "v03-proiect.json",
+      "versiune": 3,
+      "commit": "463ed60",
+      "sha256": "b4e3d546ef3691d36f959ce7bd7dd70cd574aa0d994b4e7f39a2754f6fac5b50"
+    },
+    {
+      "nume": "v04-proiect.json",
+      "versiune": 4,
+      "commit": "f258f48",
+      "sha256": "f12085cc1579ae22d8f6c0192d2d5791b06cbc43f0d49ca4e9432cd2d33314d7"
+    },
+    {
+      "nume": "v05-proiect.json",
+      "versiune": 5,
+      "commit": "b427907",
+      "sha256": "dfadd509a719da999add5caa576e538a80781382e4822d88c1575b5e624047e9"
+    },
+    {
+      "nume": "v06-proiect.json",
+      "versiune": 6,
+      "commit": "8014801",
+      "sha256": "a33417d4c6d73fc91e8739b9640b402e0174ddba165873eca2e12a999b0ab4f9"
+    },
+    {
+      "nume": "v07-proiect.json",
+      "versiune": 7,
+      "commit": "60a02c6",
+      "sha256": "74e706dcf100c16d309a00e5e57788f93aac23350843de7951621b797f1c5e16"
+    },
+    {
+      "nume": "v08-proiect.json",
+      "versiune": 8,
+      "commit": "417570d",
+      "sha256": "ec97018046d617f5cdaaebc52b7a650d96636d83e9a052334cdcaf7293d68943"
+    },
+    {
+      "nume": "v09-proiect.json",
+      "versiune": 9,
+      "commit": "812996a",
+      "sha256": "ec4b5b7602fe5991a9c1939bc57b65ebe85a8eea1dbd05628232b2713c1ff904"
+    },
+    {
+      "nume": "v10-proiect.json",
+      "versiune": 10,
+      "commit": "f973fa4",
+      "sha256": "3063d1ea309cac6e77a717a01ff795a898084cea05b2227357cd7ba88e711abc"
+    },
+    {
+      "nume": "v11-proiect.json",
+      "versiune": 11,
+      "commit": "b85f533",
+      "sha256": "aa34d9f100fab7c62510c3117f1e6813b28ef6c34e3f17bf3abf0660705bb4f9"
+    },
+    {
+      "nume": "v12-proiect.json",
+      "versiune": 12,
+      "commit": "40092e2",
+      "sha256": "4c4e15e0b5e740af8701c7a1a02ce45089e109686d62f26d5f9fdb2957e27bf6"
+    },
+    {
+      "nume": "v13-proiect.json",
+      "versiune": 13,
+      "commit": "48a4108",
+      "sha256": "43e78df93c0b50d8662624aec99ac2608cc66e807265822b66c42f5388190c45"
+    },
+    {
+      "nume": "v14-proiect.json",
+      "versiune": 14,
+      "commit": "7d8c883",
+      "sha256": "c19d8e5085e1558a9f51e44b5dc0ad17063512555bc8511a0cee31cf1244f236"
+    },
+    {
+      "nume": "v15-proiect.json",
+      "versiune": 15,
+      "commit": "7b36f42",
+      "sha256": "81348421687bcab93f7b3f4705570632cf68b96694aa21808c1f7a894ebff601"
+    },
+    {
+      "nume": "v16-proiect.json",
+      "versiune": 16,
+      "commit": "5d65334",
+      "sha256": "2e6a635a4d39b178b019bee86cb7da4468fabb35fb769b975b449eac2a9347b5"
+    },
+    {
+      "nume": "v17-proiect.json",
+      "versiune": 17,
+      "commit": "3676445",
+      "sha256": "eaa6e4a6133ba08a83b01883d1508d8adcacb8f86b4621c76bce72853cc718d1"
+    },
+    {
+      "nume": "v18-proiect.json",
+      "versiune": 18,
+      "commit": "3e027e0",
+      "sha256": "a5a636ec9ebf6289560512988e920ff32bfdb7cd3c767695ba0cf13a760ca10d"
+    }
+  ],
+  "deschise": [
+    {
+      "nume": "v02-deschis.json",
+      "versiune": 2,
+      "din": "v01-proiect.json",
+      "commit": "d9a0931",
+      "sha256": "0a77b0bba23cef5868c10f3be099abd15b91c254cebd1a908651e1f24d916e2c"
+    },
+    {
+      "nume": "v03-deschis.json",
+      "versiune": 3,
+      "din": "v02-proiect.json",
+      "commit": "463ed60",
+      "sha256": "ed3b3454d245f8ef9f620472e77fb6829d05ae6d5201d18f8988cadca336a6f6"
+    },
+    {
+      "nume": "v04-deschis.json",
+      "versiune": 4,
+      "din": "v03-proiect.json",
+      "commit": "f258f48",
+      "sha256": "564c5b586d88e68ae9f17e9709d309ce82d5148b89d1984fa19121fe5ea40d70"
+    },
+    {
+      "nume": "v05-deschis.json",
+      "versiune": 5,
+      "din": "v04-proiect.json",
+      "commit": "b427907",
+      "sha256": "0d654658288dbc002aa7a1b80313048c4fe741995f84919de3586b5298d80750"
+    },
+    {
+      "nume": "v06-deschis.json",
+      "versiune": 6,
+      "din": "v05-proiect.json",
+      "commit": "8014801",
+      "sha256": "64bd7f5226a081c100cfed9e08d06867495353902b6126757005bdc307d84bf3"
+    },
+    {
+      "nume": "v07-deschis.json",
+      "versiune": 7,
+      "din": "v06-proiect.json",
+      "commit": "60a02c6",
+      "sha256": "a5b91f4434d6876e44b19e236b4cd98e06e233e9b1e9ed16963a6d84733f71c0"
+    },
+    {
+      "nume": "v08-deschis.json",
+      "versiune": 8,
+      "din": "v07-proiect.json",
+      "commit": "417570d",
+      "sha256": "1132985354f02fcd3bc8a2d9f0e92e38e2c1d429484a899eb438447b1afd3c90"
+    },
+    {
+      "nume": "v09-deschis.json",
+      "versiune": 9,
+      "din": "v08-proiect.json",
+      "commit": "812996a",
+      "sha256": "265de1e686a9d821f5b3a43840c58adaf3987473c4124d3914264d5d4f36089b"
+    },
+    {
+      "nume": "v10-deschis.json",
+      "versiune": 10,
+      "din": "v09-proiect.json",
+      "commit": "f973fa4",
+      "sha256": "95f4ad1f10eba0168d11a07f2165fbab4c6c8adec44da1388952ef519b9b8c08"
+    },
+    {
+      "nume": "v11-deschis.json",
+      "versiune": 11,
+      "din": "v10-proiect.json",
+      "commit": "b85f533",
+      "sha256": "52fe8d366dbbebb9f6b0bdd5ce5bd7bb8c2df61daff169d8d74cd32341d99024"
+    },
+    {
+      "nume": "v12-deschis.json",
+      "versiune": 12,
+      "din": "v11-proiect.json",
+      "commit": "40092e2",
+      "sha256": "e2820bb2efa128cd4e6ad5270df421ac4be9be7076f97d63099a62e01287d1db"
+    },
+    {
+      "nume": "v13-deschis.json",
+      "versiune": 13,
+      "din": "v12-proiect.json",
+      "commit": "48a4108",
+      "sha256": "0c0baf51e488156c942dbaa8e82fb7c3805e36ab64dce01b85a2606dd0ce5307"
+    },
+    {
+      "nume": "v14-deschis.json",
+      "versiune": 14,
+      "din": "v13-proiect.json",
+      "commit": "7d8c883",
+      "sha256": "70242f6b46c70aae8f96b68cdb5861bb259bb56ece6cce32685a3472bdd83a51"
+    },
+    {
+      "nume": "v15-deschis.json",
+      "versiune": 15,
+      "din": "v14-proiect.json",
+      "commit": "7b36f42",
+      "sha256": "ab7184c42bd97179fed17272f3b0c5d1f9671ae24035bba3c7bdf7544b2298d5"
+    },
+    {
+      "nume": "v16-deschis.json",
+      "versiune": 16,
+      "din": "v15-proiect.json",
+      "commit": "5d65334",
+      "sha256": "0ef767eb6e61cce513d55cd06bd966bf4eadd1f8e3bd6017499b238169caee09"
+    },
+    {
+      "nume": "v17-deschis.json",
+      "versiune": 17,
+      "din": "v16-proiect.json",
+      "commit": "3676445",
+      "sha256": "937fa1daf253f8b8cddb96d9c1c839a886be7e2f0b801a6d3f5d27e32e960813"
+    },
+    {
+      "nume": "v18-deschis.json",
+      "versiune": 18,
+      "din": "v17-proiect.json",
+      "commit": "3e027e0",
+      "sha256": "88a6a5a0b8700a55486c94d27759118a0cf40eef37f02d5dc9620ee86777b47b"
+    }
+  ]
+}

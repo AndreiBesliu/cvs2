@@ -103,7 +103,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   01.11, rescrisă de o sesiune independentă doar din ADR-uri: secțiunea „Documentul v11–v18” de la finalul lui
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
   cu ușa aplicației în `test/unit/document.v18.oracol.test.ts`. **Un câmp nou al documentului (v19) intră acolo:** rândul lui
-  în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie. Ușa curentă refuză
+  în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie. **Și în corpusul de aur
+  (ADR 0121):** adăugirea versiunii în `scripts/corpus-documente-reteta.ts` (`ADAUGIRI`), rândul ei în `ISTORIE`
+  (`scripts/corpus-documente.ts`, iar versiunea dinainte primește ultimul ei commit), apoi `node scripts/corpus-documente.ts
+  --istorie` și `node scripts/corpus-documente.ts` (ieșirile așteptate), cu diferența lor citită în commit. Ușa curentă refuză
   singură o versiune neîntreagă (ADR 0070 §2; divergența găsită de oracol, reparată în aceeași felie). Ușa unui proiect salvat e
   despărțită (ADR 0070): la pornire doar `usaCurenta.ts`, migrările (`migrari.ts`) doar pentru un document vechi; pornirea cu
   ușa 98,6 / 100 kB (~1,4 kB liberi).
@@ -342,8 +345,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Editorul nu citește Firestore:** raportările trec prin callable. **Contractul pozei stă în `shared/poza.ts`, iar al
   tichetelor intră în editor prin `contEditor.ts`:** altfel bundlerul scoate o bucată nouă (contractul sugestiilor), iar
   bucata contului își pierde numele (o ia de la ultimul ei modul). **Cheia amprentei unei erori stă în `shared/amprenta.ts`**
-  (contractul erorilor e în pornire). Urmează 15.B↑b: proiectul atașat și jobul de păstrare. **Pornirea 98,5 (cu ușa 102,0 /
-  110 kB), totalul 441,2 / 450, /admin 105,4 / 200, contul 28,8 / 32.**
+  (contractul erorilor e în pornire). 15.B↑b (proiectul atașat și jobul de păstrare) e notată pentru mai târziu (decizia
+  owner-ului din 02.11). **Pornirea 98,5 (cu ușa 102,0 / 110 kB), totalul 441,2 / 450, /admin 105,4 / 200, contul 28,8 / 32.**
+  **Corpusul de aur al documentului (ADR 0121, felia 4.1↑, punctul 1 al etapei 4)** gata pe 02.11: același proiect de probă,
+  salvat de aplicația fiecărei versiuni a schemei, v1 → v18 (commit-ul ei, în `ISTORIE`). Fiecare versiune deschide salvarea
+  celei dinainte, cu migrarea ei, și adaugă ce a adus ea, de la grupul din v2 la strategia paralelă din v18. Intrările stau
+  înghețate în `test/fixtures/documente/intrari/` (sha256 în `corpus.json`), ieșirile ușii de azi în `asteptat/`, iar
+  documentele deschise atunci de fiecare versiune din salvarea celei dinainte în `istorie/`: migrările de azi le dau pe toate
+  17 octet cu octet (nicio migrare scrisă nu s-a schimbat). Proba e `test/unit/documente.aur.test.ts`. Rețeta: `scripts/corpus-documente-reteta.ts`. Unealta: `scripts/corpus-documente.ts`
+  (`--istorie` scoate sursele fiecărei versiuni cu `git cat-file --batch`, fără worktree și fără `tar`).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -458,6 +468,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 02.11.2026: **restul raportărilor, notat pentru mai târziu; roadmap-ul, reluat de unde a rămas** („noteaza-le pentru mai
+  tarziu, acum vreau sa luam roadmap-ul de unde a ramas”, la întrebarea despre 15.B↑b, după felia 15.B↑a):
+  - **așteaptă:** 15.B↑b (proiectul atașat la raportare, în Storage, cel mult 10 MB, cu bifa; jobul zilnic care șterge
+    tichetele rezolvate după `zilePastrareTichete`, cu atașamentele și marcajul de rulare; fraza păstrării în nota de
+    confidențialitate), apoi 14.D↑ (fila Utilizatori completă, exportul și ștergerea datelor, registrul probei), în ordinea
+    din ADR 0116 §F. Testul raportărilor pe instanța de test rămâne și el pentru atunci;
+  - **roadmap-ul:** etapa 3 mai are doar felii cu mașina sau cu o placă tăiată (3.5b, 3.6e, 3.7b, 3.9), deci lucrul continuă
+    cu etapa 4, „următoarea” din roadmap, pe punctele ei rămase, în ordinea din `PLAN.md` §5.3: 1 (migrările pure, cu corpus
+    de aur), 6 (contractele NcStudio, RichAuto, Syntec, Mach3 / Mach4 și pachetul de atelier), 9 (fișa plăcii 4 și placa de
+    regresie). Punctul 8 (măsurarea pe un laptop de atelier) cere laptopul owner-ului.
 - 02.11.2026: **meniul contului** (ADR 0120, felia 14.C↑c). La captura ferestrei contului rămase pe „Opening the account…”,
   owner-ul a cerut „ar trebui sa fie un meniu mai conventional pentru account area.” și „si trebuie sa pui acolo si manualul si
   sugestiile”; la schiță, „Da, fă-l”. Butonul Cont deschide un meniu (contul, manualul, sugestia, ieșirea), cu capul din contul

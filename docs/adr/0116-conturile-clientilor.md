@@ -115,6 +115,10 @@ Utilizatori și fila Tichete. Owner-ul vrea și un canal prin care clienții rap
 - **14.D↑:** fila Utilizatori completă (căutarea, dosarul), exportul și ștergerea datelor, cu proba lor, și registrul probei.
 - **Mai târziu:** anunțul pe e-mail, după DNS; plăcile de conturi din Puls; facturarea, în etapa 27.
 
+**Pe 02.11, după 15.B↑a**, owner-ul a notat restul pentru mai târziu („noteaza-le pentru mai tarziu, acum vreau sa luam
+roadmap-ul de unde a ramas”): 15.B↑b (proiectul atașat și jobul zilnic de păstrare) și 14.D↑ așteaptă, în ordinea de mai sus,
+cât lucrul continuă cu etapa 4.
+
 ## Felia 14.C↑ (01.11.2026): contul în aplicație
 
 - **Ce s-a construit:** callable-ul `cont` (`functions/src/conturi/actiuni.ts`: deschiderea, cu contul nou și proba lui,
