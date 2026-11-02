@@ -372,6 +372,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   plăcii 3. **Un pachet trimis rămâne exact cel din repo:** o schimbare a postului care atinge un fișier de probă cade în
   `test/unit/ateliere.aur.test.ts` și cere un pachet nou, cu amprente noi (iar o probă din atelier făcută pe pachetul vechi
   rămâne a lui). Aplicația nu s-a schimbat.
+  **Fișa plăcii 4 și placa de regresie (felia 4.9↑, punctul 9 al etapei 4)** gata pe 02.11: `docs/etape/placa-04.md`, cu
+  șanțurile de calibrare din s4 (plată, bilă, V90, V60, arcul, plonjarea), câte un fișier pe freză în
+  `test/placi/placa-04/`; fiecare cotă e prezisă de oracolul simulării (`test/unit/placa04.test.ts`). Placa de regresie e
+  definită în aceeași fișă, din fișierele de aur ale plăcilor 1–4. Cu ea, etapa 4 n-are puncte fără mașină rămase: 8
+  (laptopul de atelier) și plăcile cer owner-ul.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

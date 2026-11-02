@@ -1,0 +1,27 @@
+(CNC Vector Studio)
+(post GRBL 1.1)
+(origine stanga-jos, Z0 sus, foaia 200.000 x 120.000 x 18.000 mm)
+(scula T1 freza plata D6.000)
+G90 G17 G21 G94
+G40 G49 G80
+G54
+G0 Z5.000
+M3 S18000
+G4 P3.000
+(santul plat D6 la Z-3)
+G0 X20.000 Y100.000
+G1 Z-3.000 F300.0
+G1 X80.000 F1000.0
+G0 Z5.000
+(canalul cercului R25 in G3)
+G0 X165.000 Y70.000
+G1 Z-1.000 F300.0
+G3 X115.000 Y70.000 I-25.000 J0.000 F1000.0
+G3 X165.000 Y70.000 I25.000 J0.000
+G0 Z5.000
+(plonjarea D6 la 5 mm)
+G0 X20.000 Y15.000
+G1 Z-5.000 F300.0
+G0 Z5.000
+M5
+M30
