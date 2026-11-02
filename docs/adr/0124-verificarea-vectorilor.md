@@ -136,15 +136,24 @@ deschise. Ele sunt referință funcțională: nimic din codul, interfața sau te
 
 ## Întrebările pentru owner (felia 10.2↑), cu recomandarea întâi
 
-1. **Intersecțiile dintre forme:** (recomandat) **a)** se arată și se repară de mână, iar pentru două forme închise care se
-   taie, rândul oferă „Unește” (booleanul de azi, ADR 0067); b) tăierea ambelor contururi în punctele de intersecție (rândul
-   „Tăierea și conversia”, tot din etapa 10); c) doar arătate.
-2. **Închiderea căilor deschise:** (recomandat) **a)** „Închide” pe rândul fiecărei căi deschise cu golul de cel mult 1 mm:
-   sub `t` capetele se unesc, peste se adaugă linia de închidere; b) doar sub `t`; c) pe orice cale deschisă.
-3. **Bucla mică:** (recomandat) **a)** ca pragul din cercetare: sub prag, bucla se scoate (drumul trece prin punctul de
-   încrucișare); peste prag, devine o formă separată; b) doar scoaterea, la cerere, pe rând.
-4. **Copiile și nodurile:** (recomandat) **a)** „Scoate copiile” și „Unește nodurile” pe rând și o dată pentru toată lista,
-   fiecare un singur pas în istoric; b) doar pe rând.
+Formularul lor, cu desenul înainte / după și ce se strică la o alegere greșită, e pagina „Decizii pentru repararea
+vectorilor” (privată, a owner-ului; lăsată pe 02.11). Pe scurt, cu varianta recomandată (a) întâi:
+
+1. **Copiile:** a) „Scoate copiile” pe rând și „Scoate toate copiile”; rămâne prima formă, cu operația ei, un pas de
+   anulare; o copie cu altă operație decât prima nu se scoate (rândul spune de ce). b) doar pe rând; c) doar „toate”.
+2. **Căile deschise:** a) „Închide” pe căile cu golul de cel mult pragul de închidere: sub toleranță capătul se lipește de
+   start, peste se adaugă linia de închidere; operația rămâne. b) doar lipirea sub toleranță; c) pe orice cale deschisă.
+3. **Pragul de închidere:** a) 1 mm; b) 0,1 mm; c) 5 mm.
+4. **Buclele:** a) sub pragul buclei mici bucla se scoate (drumul trece prin punctul de încrucișare), peste prag devine o
+   formă separată (un „8” devine două forme); b) doar scoaterea buclelor mici; c) nimic automat.
+5. **Pragul buclei mici:** a) 1 %; b) 2 %; c) 5 %.
+6. **Nodurile prea apropiate:** a) „Unește nodurile” pe rând și pentru toate: în aceeași formă segmentul scurt dispare;
+   capetele a două căi se unesc într-o cale (închisă, dacă i se întâlnesc capetele); nodurile a două forme închise doar se
+   arată; două căi cu operații diferite nu se unesc. b) doar în aceeași formă; c) doar arătate.
+7. **Intersecțiile dintre forme:** a) arătate și reparate de mână, cu „Unește” (booleanul, ADR 0067) pentru două forme
+   închise care se taie; b) „Taie la intersecții” (rândul „Tăierea și conversia”); c) doar arătate.
+8. **O piesă pusă de mai multe ori:** a) reparația se refuză, cu motivul, ca la degrupare (ADR 0103); b) se repară piesa,
+   cu toate instanțele ei.
 
 ## Se redeschide dacă
 
