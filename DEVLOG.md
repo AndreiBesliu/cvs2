@@ -4588,3 +4588,25 @@ fără test căzut = NEVALIDĂ), probată pe A03.
 modului automat). La WMF, worktree-ul s-a șters înaintea joncțiunilor (o cale greșită în comandă); git nu le urmează, iar
 `node_modules` principal a rămas întreg (306 / 200 de intrări, numărate).
 **Publicat pe test** pe 02.11, la 20:46, prin workflow-ul `publica` (`77a1be6`).
+
+## 2026-11-02 — Felia 4.6↑b: pachetul de atelier T0–T7 (ADR 0131) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește” (la „Pornesc 4.6↑b, pachetul de atelier T0–T7?”).
+**Started:** 02.11, 20:57. **Completed:** 02.11, 21:17.
+
+Etapa 4, punctul 6, partea a doua. Generatorul `test/ateliere/pachet.ts` (cu `genereaza.ts`) scrie, pentru fiecare dintre
+cele opt controlere, setul din sonda s8 (Anexa B) cu postul aplicației: T0 citirea (cu stilurile de comentariu, unde nu sunt
+sigure), T1 arcele, T2 avansul, pauza și punctul zecimal (Syntec), T3 elicea, T4 schimbarea sculei, T5 G54 / G55, T6 limita
+liniei și T7 găurirea (pe GRBL 1.1: setul plăcii 3). Unde contractul e prudent, fișierul probează controlerul (arcul R1200
+ca arc, elicea pe RichAuto). Fiecare pachet are fișa lui (versiunea, setările, materialul, prima rulare în aer, ce se
+măsoară cu valoarea pe hârtie, amprentele SHA-256) și o arhivă ZIP cu aceiași octeți la fiecare generare, în
+`test/ateliere/`, comise. Aplicația nu s-a schimbat. Codul: `d25a15e`.
+**Porțile:** compilatorul, importurile, 8 067 de teste unitare (0 căzute, 8 sărite), build-ul determinist (228 de fișiere
+identice; pornirea 98,4, totalul 448,9 / 500, neschimbate), traducerile (537, 0 lipsă); arhivele, și prin cititorul zip al
+lui Python (CRC, conținut); CI-ul rapid, verde în toate cele 6 felii și în oracolul exportului 2D.
+**Otrăvurile** (`test/otravuri/4.6b.py`), într-o clonă din afara Drive-ului, pe probele pe hârtie singure (proba de aur stă
+în fișierul ei, `ateliere.aur.test.ts`, ca să nu prindă ea totul): martorul a scăpat, cum trebuia; pauza de 3 s a scăpat:
+proba compara pauza cu constanta generatorului. Acum pauza, adâncimea de la T4 și raza de 1 200 se compară cu valorile de pe
+hârtie; reluate, plus două otrăvuri noi: 17 / 17 prinse.
+**Publicat pe test** pe 02.11, la 21:29, prin workflow-ul `publica` (`d25a15e`): documentația publicată are ADR 0131 și
+feliile 4.6↑a și 4.6↑b, în ambele limbi. Pachetele se iau din repo: `test/ateliere/<controler>.zip`.

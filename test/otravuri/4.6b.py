@@ -51,6 +51,13 @@ o('G15', PA, "    ...fisiere.map((f) => `| ${f.nume} | \\`${sha256(f.text)}\\` |
   'pachet', 'amprenta din fișă, a altui text')
 o('G16', PA, '    ...k.setari,\n', '', 'pachet', 'setările contractului lipsă din fișă')
 
+o('G17', PA, "export const T4_PATRATE = { latura: 20, adancime: 2, a: { x: 20, y: 20 }, b: { x: 60, y: 20 } } as const;",
+  "export const T4_PATRATE = { latura: 20, adancime: 3, a: { x: 20, y: 20 }, b: { x: 60, y: 20 } } as const;", 'pachet',
+  'pătratele T4 la 3 mm (fișa spune 2)')
+o('G18', PA, "export const T1_ARC_MARE = { raza: 1200, start: { x: 150, y: 20 }, capat: { x: 230, y: 20 } } as const;",
+  "export const T1_ARC_MARE = { raza: 1300, start: { x: 150, y: 20 }, capat: { x: 230, y: 20 } } as const;", 'pachet',
+  'arcul mare cu raza 1 300 (fișa spune R1200)')
+
 
 # ---- Seturile ----
 SETURI = {

@@ -9,7 +9,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { CONTRACTE, ID_CONTRACTE, type IdContract } from '../../src/post/contracte/index.ts';
-import { ASTEPTARE, T1, T1_ARC_MARE, T1_CERC, T3_ELICE, T4_PATRATE, T7_GAURI, fisiereAtelier, pachet } from '../ateliere/pachet.ts';
+import { T1, T1_CERC, T3_ELICE, T7_GAURI, fisiereAtelier, pachet } from '../ateliere/pachet.ts';
 import { citesteProgram, type DialectCitit, type Eveniment } from './ajutor-dialecte.ts';
 
 const dialect = (id: IdContract): DialectCitit => {
@@ -83,7 +83,7 @@ test('T1, pe toate: cercul A în 2 × 180°, cercul B în 4 × 90° (raza 25, ce
     assert.deepEqual(pe(a, raza).map((x) => Math.round(Math.abs(x.baleiaj) * 180 / Math.PI)), [180, 180], `${id}: cercul A`);
     assert.deepEqual(pe(b, raza).map((x) => Math.round(Math.abs(x.baleiaj) * 180 / Math.PI)), [90, 90, 90, 90], `${id}: cercul B`);
     assert.equal(ar.filter((x) => aproape(x.r, 5)).length, 4, `${id}: colțurile R5`);
-    const mare = ar.filter((x) => aproape(x.r, T1_ARC_MARE.raza, 0.003));
+    const mare = ar.filter((x) => aproape(x.r, 1200, 0.003));
     assert.equal(mare.length, 1, `${id}: arcul R1200`);
     assert.ok(Math.abs(mare[0]?.baleiaj ?? 1) < 0.07, `${id}: arcul R1200 e scurt (coarda 80), nu un cerc`);
     // Niciun arc cu raza de 1 000 (arcul mic, coarda 0,05): iese G1 până la X230.05.
@@ -100,7 +100,8 @@ test('T2: 200 mm la F1000 (12,0 s) și înapoi la F2000 (6,0 s); pauza de 2 s du
     const timpi = linii.slice(1).map((e, k) => (Math.abs((e.x ?? 0) - (linii[k]?.x ?? 0)) / (e.f ?? 1)) * 60);
     assert.deepEqual(timpi, [12, 6], id);
     const pauze = ev.filter((e) => e.tip === 'pauza');
-    assert.deepEqual(pauze, CONTRACTE[id].pauza === null ? [] : [{ tip: 'pauza', secunde: ASTEPTARE }], id);
+    // Pe hârtie, 2 s (s8 Anexa B, placa 3): nu constanta generatorului, care s-ar schimba odată cu fișierul.
+    assert.deepEqual(pauze, CONTRACTE[id].pauza === null ? [] : [{ tip: 'pauza', secunde: 2 }], id);
   }
   const s = text('syntec', 'T2AVANS').split('\n');
   const k = s.indexOf('G1 X10 F1000.');
@@ -123,7 +124,7 @@ test('T3: elicea pe raza 7 (gaura Ø20 cu freza Ø6), 3 spire de 1 mm până la 
 });
 
 test('T4: pătratele la Z −2 cu T1 (Ø6) și T2 (Ø3,175); schimbarea după strategia probată: bariera, M6 la controler sau un fișier pe freză', () => {
-  const z = -T4_PATRATE.adancime;
+  const z = -2;
   for (const id of ID_CONTRACTE) {
     const k = CONTRACTE[id];
     const ext = k.extensie.toUpperCase();

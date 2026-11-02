@@ -66,7 +66,11 @@ fișierul trimis.
   - fișa: fiecare fișier, cu amprenta lui și cu setările contractului.
 - **De aur** (`test/unit/ateliere.aur.test.ts`): pachetele comise sunt exact cele generate (fișierele, fișa, arhiva), fără
   nimic în plus. Arhivele trec și prin cititorul zip al lui Python (CRC-urile, conținutul).
-- **Otrăvurile:** lista `test/otravuri/4.6b.py`, cu o otravă-martor care trebuie să scape.
+- **Otrăvurile** (`test/otravuri/4.6b.py`): 17 din 17 prinse de probele pe hârtie singure. Martorul (o constantă nefolosită)
+  a scăpat, cum trebuia.
+  - La prima rulare a scăpat pauza de 3 s, fiindcă proba compara pauza cu constanta generatorului.
+  - Acum o compară cu valoarea de pe hârtie, la fel ca adâncimea de la T4 și raza de 1 200. Cele două otrăvuri noi, pentru ele,
+    sunt prinse.
 
 ## Limitele
 
