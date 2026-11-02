@@ -14,8 +14,14 @@ export type EvenimentCadru =
   | { readonly tip: 'esuat'; readonly mesaj: string }
   | { readonly tip: 'eroare'; readonly mesaj: string; readonly stiva: string };
 
-/** Variabilele temei lui cvs2 pe care le primește o extensie (`src/app/stil.css`, rădăcina). */
-export const JETOANE_TEMA = ['--fond', '--s-panou', '--t', '--a', '--a-plin', '--t-pe-a', '--rosu', '--l-focus', '--l-camp'] as const;
+/**
+ * Variabilele temei lui cvs2 pe care le primește o extensie (`src/app/stil.css`, rădăcina): suprafețele (`--s-panou` e
+ * fundalul unui panou; `--fond` e voalul translucid de sub ferestre, nu un fundal), textul, accentul, marginile.
+ */
+export const JETOANE_TEMA = [
+  '--s-panou', '--s-peste', '--s-ales', '--t', '--t-slab', '--a', '--a-plin', '--t-pe-a', '--rosu', '--l-margine', '--l-focus',
+  '--l-camp', '--fond',
+] as const;
 
 /** Tema de acum, cum o vede cadrul: valorile calculate ale variabilelor de pe rădăcină. */
 export function temaDeAcum(): Record<string, string> {
