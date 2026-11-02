@@ -1744,6 +1744,9 @@ def varianta_cff():
                 usWinAscent=tt['OS/2'].usWinAscent, usWinDescent=tt['OS/2'].usWinDescent)
     fb.setupPost()
     fb.font['GPOS'] = tt['GPOS']
+    # Fără marca de timp: același font la fiecare generare.
+    fb.font.recalcTimestamp = False
+    fb.font['head'].created = fb.font['head'].modified = 3_700_000_000
     fb.save(os.path.join(DEST, 'relief-cff.otf'))
 
 
@@ -1752,7 +1755,7 @@ def varianta_bucle():
     ultimul punct (297, 555) scos, iar cel dinaintea lui trecut în afara curbei (segmentul de închidere e o curbă a
     desenului). Restul fontului, neschimbat."""
     from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
-    f = TTFont(os.path.join(FONTURI, 'relief-singleline.ttf'))
+    f = deschide(os.path.join(FONTURI, 'relief-singleline.ttf'))
     glyf, cm = f['glyf'], f.getBestCmap()
     for ch in 'Oo':
         g = glyf[cm[ord(ch)]]
@@ -1775,7 +1778,7 @@ def varianta_dus_intors():
     """Relief SingleLine cu fiecare trăsătură deschisă scrisă dus-întors: punctele ei, apoi aceleași înapoi, fără capete
     repetate (conturul devine un palindrom ciclic). Buclele rămân cum sunt."""
     from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
-    f = TTFont(os.path.join(FONTURI, 'relief-singleline.ttf'))
+    f = deschide(os.path.join(FONTURI, 'relief-singleline.ttf'))
     glyf = f['glyf']
     intoarse = 0
     for nume in f.getGlyphOrder():
