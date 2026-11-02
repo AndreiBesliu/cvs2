@@ -88,14 +88,20 @@ def ruleaza_unitare(fisiere, termen):
 
 
 def ruleaza_e2e(specuri, termen):
-    rcb, outb, dtb, _ = sh('npm run build', 600)
+    # Build-ul și Playwright pornesc direct cu node: npm e stricat pe mașina asta (Git Bash), iar cu el build-ul cădea la
+    # încărcare, raportat „PRINSĂ” (4.6↑a, 02.11). Un build căzut sau un port ocupat nu prind nimic: otrava e NEVALIDĂ.
+    rcb, outb, dtb, _ = sh(['node', 'node_modules/vite/bin/vite.js', 'build'], 600)
     if rcb != 0:
-        return dict(rc=rcb, rez='build eșuat', dt=dtb, expirat=False, rosii=[outb[-300:].replace('\n', ' ')])
-    rc, out, dt, expirat = sh('npx playwright test --workers=1 ' + ' '.join(specuri), termen)
+        return dict(rc=rcb, rez='build eșuat', dt=dtb, expirat=False, nevalida=True, rosii=[outb[-300:].replace('\n', ' ')])
+    # Configul local (`.tmp/pw.config.ts`) servește `dist/` cu node; cel din repo cheamă `npm run preview`.
+    config = ['--config=.tmp/pw.config.ts'] if os.path.exists(os.path.join(RAD, '.tmp', 'pw.config.ts')) else []
+    rc, out, dt, expirat = sh(['node', 'node_modules/@playwright/test/cli.js', 'test', *config, '--workers=1', *specuri], termen)
     m_p, m_f = re.search(r'(\d+) passed', out), re.search(r'(\d+) failed', out)
     # Playwright pe Windows marchează eșecul cu „x”, nu cu „✘”.
     rosii = [s.strip()[:200] for s in out.splitlines() if re.match(r'^\s*(x|✘)\s+\d+', s)]
-    return dict(rc=rc, rez='passed=%s failed=%s' % (m_p.group(1) if m_p else None, m_f.group(1) if m_f else None), dt=dtb + dt, expirat=expirat, rosii=rosii)
+    nevalida = 'is already used' in out or (rc != 0 and m_f is None)
+    return dict(rc=rc, rez='passed=%s failed=%s' % (m_p.group(1) if m_p else None, m_f.group(1) if m_f else None), dt=dtb + dt, expirat=expirat,
+                nevalida=nevalida, rosii=rosii if rosii else [out[-300:].replace('\n', ' ')] if nevalida else [])
 
 
 def cu_otrava(x, ruleaza, eticheta):
@@ -119,7 +125,7 @@ def cu_otrava(x, ruleaza, eticheta):
         else:
             jurnal('!!! RESTAURAREA A EȘUAT: %s (%s)' % (x['id'], x['fis']))
             sys.exit(2)
-    verdict = 'PRINSĂ(termen)' if r['expirat'] else ('PRINSĂ' if r['rc'] != 0 else 'SCĂPATĂ')
+    verdict = 'NEVALIDĂ' if r.get('nevalida') else 'PRINSĂ(termen)' if r['expirat'] else ('PRINSĂ' if r['rc'] != 0 else 'SCĂPATĂ')
     jurnal('%s\t%s\t%s\t%s\t%s %.0fs\trestaurat sha ok\t%s\t%s' % (
         eticheta, x['id'], x['fis'], verdict, r['rez'], r['dt'], x['ce'], ' | '.join(r['rosii'][:3])))
 

@@ -84,7 +84,13 @@ unitatea pauzei și schimbarea sculei. Contractul de până acum le presupunea p
   - NcStudio: notele, antetul cu apostrof și setările, `G4 P3000`, fără G94;
   - RichAuto: fără inch, `CNCVS2.NC`, fără comentarii;
   - panoul mașinii: butonul exportului e oprit după un export NcStudio și pornit după unul GRBL 1.1.
-- **Otrăvurile:** lista `test/otravuri/4.6a.py`, 18 mutații.
+- **Otrăvurile** (`test/otravuri/4.6a.py`): 18 din 18 prinse.
+  - Cele 15 din post și din contracte le prinde proba nouă singură.
+  - Cele 3 din aplicație le prinde e2e-ul: exportul NcStudio ajuns în panoul mașinii, workerul care spune „sender” pe orice
+    post, inch oferit pe RichAuto.
+  - Unealta de otrăvuri pornea build-ul cu npm, stricat pe mașina asta, iar un build căzut îl număra drept prindere. Acum
+    build-ul și Playwright pornesc cu node, iar un build căzut, un port ocupat sau un cod ≠ 0 fără niciun test căzut înseamnă
+    o otravă NEVALIDĂ.
 
 ## Limitele
 

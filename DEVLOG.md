@@ -4559,3 +4559,32 @@ linia principală continuă de la 0125), traducerile (531, 0 lipsă). Codul: `dd
 are ADR 0122 și felia 3.R, în ambele limbi; editorul trece pe versiunea nouă după „Reload”. Sesiunea dedicată liniei
 Trenuleț (cerută: „poate il punem intr-un worktree dedicat”) n-a pornit: sub Remote Control, o sesiune nouă pornește doar
 dintr-un mesaj scris în aplicația desktop.
+
+## 2026-11-02 — Felia 4.6↑a: contractele atelierelor (NcStudio, RichAuto, Syntec, Mach3, Mach4; ADR 0125) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da” (la „Pornesc felia următoare de pe linia principală, contractele controlerelor?”).
+**Started:** 02.11, 18:45. **Completed:** 02.11, 20:33.
+
+Etapa 4, punctul 6, partea întâi (4.6↑b aduce pachetul de atelier). Cinci contracte noi, ca date, după sonda s8: NcStudio
+(comentariul cu apostrof, `G4 P` în ms, fără G94, câte un fișier pe freză), RichAuto (fără comentarii, unități, WCS și G4;
+doar mm; nume scurte), Syntec (`%` și `O0001`, G71 / G70, `T… M6` urmat de `G43 H…`, și la pornire), Mach3 și Mach4
+(`G91.1`, T pe linia dinaintea lui M6; Mach4 cu `%` la capăt). Contractul a primit câmpurile pentru ce lipsește sau diferă
+(null, `inceput`, șabloanele sculei, `rapidaSeparata`, `setari`, `senderAplicatie`, `numeScurt`); familia GRBL scrie aceiași
+octeți. Exportul atelierelor doar se descarcă: în panoul mașinii ajunge doar familia GRBL. La zi: manualul (ro, en), ADR
+0125, indexul, fișa, CLAUDE.md, traducerile (534, 0 lipsă). Codul: `77a1be6`.
+**Porțile:** compilatoarele, importurile, 8 058 de teste unitare (0 căzute, 8 sărite), build-ul determinist (227 de fișiere
+identice; pornirea 98,4 / 110 kB, cu ușa 101,9; totalul 448,9 / 500, cu 7,7 kB mai mult: datele celor cinci contracte, în
+fereastra exportului și în worker), licențele, e2e 296 / 296. În rularea țintită de dinainte, „urechile” a căzut o dată cu
+`EBUSY` pe un artefact Playwright (Drive-ul); reluată singură, a trecut. CI-ul rapid, verde în toate cele 6 felii și în
+oracolul exportului 2D; pe test, `77a1be6ee151`: fereastra exportului arată notele NcStudio (doar descărcat, documentat,
+N4063 / N4034 / N4035) și, pe RichAuto, doar mm.
+**Otrăvurile** (`test/otravuri/4.6a.py`): 18 / 18 prinse, într-o clonă din afara Drive-ului. Cele 15 din post și contracte
+le prinde proba nouă singură; cele 3 din aplicație, e2e-ul. Unealta le raportase pe cele 3 „prinse” cu build-ul căzut (npm e
+stricat aici): reluate cu node, apoi unealta reparată (build și Playwright cu node; build căzut, port ocupat sau cod ≠ 0
+fără test căzut = NEVALIDĂ), probată pe A03.
+**Între timp, la cererea owner-ului:** worktree-ul etapei 7 (textul) a pornit în `C:\Users\besli\cncvs2-lucru\text`; etapa
+10 și Trenuleț așteaptă un mesaj din desktop (sub Remote Control, pornirea e refuzată). WMF-ul și oracolul ușii, unite de pe
+01.11: worktree-urile și ramurile locale șterse, sesiunea oracolului arhivată (pe a WMF-ului a oprit-o clasificatorul
+modului automat). La WMF, worktree-ul s-a șters înaintea joncțiunilor (o cale greșită în comandă); git nu le urmează, iar
+`node_modules` principal a rămas întreg (306 / 200 de intrări, numărate).
+**Publicat pe test** pe 02.11, la 20:46, prin workflow-ul `publica` (`77a1be6`).
