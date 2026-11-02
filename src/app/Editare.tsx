@@ -580,6 +580,17 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     setMotivDegrupare(motiv);
     return motiv;
   };
+  // Gruparea (ADR 0130): cel puțin două forme alese devin o piesă, tot prin registru (și din meniul de clic dreapta, din
+  // paletă, cu Ctrl+G). Refuzul se spune lângă butoane, până la altă selecție.
+  const [motivGrupare, setMotivGrupare] = useState<string | null>(null);
+  useEffect(() => { setMotivGrupare(null); }, [selectie]);
+  const grupeaza = (): string | null => {
+    if (selectie.length < 2 || p.doarCitire) return null;
+    const r = ruleaza('document.grupeaza', {});
+    const motiv = r.ok ? null : t(r.motiv);
+    setMotivGrupare(motiv);
+    return motiv;
+  };
   const oglindeste = (directie: 'orizontal' | 'vertical'): void => {
     if (!cutie || selectie.length === 0 || p.doarCitire) return;
     const tr: Transformare = { fel: 'oglindire', directie, centru: { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 } };
@@ -872,6 +883,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     const poate = !p.doarCitire;
     const doua = selectie.length === 2 && poate;
     return [
+      { id: 'grupeaza', eticheta: t('actiune.grupeaza'), tasta: tastaActiunii('document.grupeaza'), activ: selectie.length >= 2 && poate, ruleaza: () => { facut(grupeaza()); } },
       { id: 'degrupeaza', eticheta: t('actiune.degrupeaza'), tasta: tastaActiunii('document.degrupeaza'), activ: grupAles && poate, ruleaza: () => { facut(degrupeaza()); } },
       'separator',
       { id: 'uneste', eticheta: numeScurt(t('editare.boolean.uneste')), activ: doua, ruleaza: () => { void booleanul('reuniune').then(facut); } },
@@ -1161,11 +1173,16 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               data-editare="boolean-intersecteaza" onClick={() => { void booleanul('intersectie'); }}>
               <IconaBoolean fel="intersecteaza" />
             </button>
+            <button type="button" className="aliniaza" disabled={selectie.length < 2 || p.doarCitire} title={t('editare.grupeaza')} aria-label={t('editare.grupeaza')}
+              data-editare="grupeaza" onClick={() => { grupeaza(); }}>
+              <IconaGrupare />
+            </button>
             <button type="button" className="aliniaza" disabled={!grupAles || p.doarCitire} title={t('editare.degrupeaza')} aria-label={t('editare.degrupeaza')}
               data-editare="degrupeaza" onClick={() => { degrupeaza(); }}>
               <IconaDegrupare />
             </button>
             {motivBoolean ? <span className="motiv-extensie" role="status" data-testid="motiv-boolean">{motivBoolean}</span> : null}
+            {motivGrupare ? <span className="motiv-extensie" role="status" data-testid="motiv-grupare">{motivGrupare}</span> : null}
             {motivDegrupare ? <span className="motiv-extensie" role="status" data-testid="motiv-degrupare">{motivDegrupare}</span> : null}
           </span>
         );
@@ -2302,6 +2319,17 @@ function IconaBoolean({ fel }: { readonly fel: 'uneste' | 'scade' | 'intersectea
       <path d={plin[fel]} />
       <rect x="2" y="2" width="8" height="8" className="contur" />
       <rect x="6" y="6" width="8" height="8" className="contur" />
+    </svg>
+  );
+}
+
+/** Gruparea (ADR 0130): cadrul plin al grupului, cu cele două forme strânse înăuntru. */
+function IconaGrupare(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="13" height="13" className="contur" />
+      <rect x="4" y="4" width="5" height="5" />
+      <rect x="7.5" y="7.5" width="4.5" height="4.5" />
     </svg>
   );
 }

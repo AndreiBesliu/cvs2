@@ -1,5 +1,6 @@
 import { compune, rotatie, type Matrice } from '../geom/matrice.ts';
-import type { Document, FormaDoc, Instanta, Nod, Operatie } from './document.ts';
+import type { Document, FormaDoc, FundPlat, Instanta, Nod, Operatie } from './document.ts';
+import { jsonCanonic } from './jsonCanonic.ts';
 
 /**
  * Elementele în lume ale unei foi (ADR 0024): singurul loc care desface piesele și instanțele în forme așezate pe foaie.
@@ -80,6 +81,20 @@ export type Taietura = ElementLume & {
   /** Despărțirea foii, marcată de om (ADR 0037 §8): doar când e marcată; lipsa ei înseamnă nemarcată. */
   readonly despartire?: true;
 };
+
+/**
+ * Valorile care fac din V-carve-urile unei piese, într-o instanță, o singură regiune (ADR 0090, ADR 0112, precizarea din
+ * 5.8↑b): freza, adâncimea, pasul, sensul, fundul plat. Lucrarea le citește pe tăieturi, iar gruparea (ADR 0130) pe
+ * operații: două părți cu aceleași valori s-ar săpa împreună.
+ */
+export function valoriVcarve(o: {
+  readonly scula: Operatie['scula']; readonly adancime: number; readonly pas: number; readonly sens: Operatie['sens']; readonly fundPlat?: FundPlat | undefined;
+}): string {
+  return jsonCanonic({
+    scula: { numar: o.scula.numar, diametru: o.scula.diametru, forma: o.scula.forma ?? null }, adancime: o.adancime, pas: o.pas, sens: o.sens,
+    fundPlat: o.fundPlat ?? null,
+  });
+}
 
 /** Clasele ordinii (ADR 0025, amendat de ADR 0037 §8); despărțirile marcate formează clasa 3, la urmă. */
 const ORDINE_LATURA: Readonly<Record<Operatie['latura'], number>> = { interior: 0, 'pe-linie': 1, stanga: 1, dreapta: 1, exterior: 2 };

@@ -113,6 +113,7 @@ export const enEditare = {
   'editare.boolean.scade': 'Subtract: the last shape chosen (with Shift + click) is taken out of the first',
   'editare.boolean.intersecteaza': 'Intersect: only the part the two shapes share remains',
   'editare.degrupeaza': 'Ungroup: each shape of the chosen piece becomes a piece of its own (Ctrl+Shift+G)',
+  'editare.grupeaza': 'Group: the chosen shapes become a single piece, moved and aligned as one block (Ctrl+G)',
   'editare.meniu': 'Right-click menu',
   'editare.boolean.neincarcat': 'The boolean calculation did not load (the network or a new version); try again.',
   'editare.boolean.motiv.doua': 'The boolean works on exactly two closed shapes: choose them (the second with Shift + click).',

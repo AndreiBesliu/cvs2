@@ -114,6 +114,7 @@ export const roEditare = {
   'editare.boolean.scade': 'Scade: din prima formă aleasă se scoate ultima (aleasă cu Shift + clic)',
   'editare.boolean.intersecteaza': 'Intersectează: rămâne doar partea comună a celor două forme',
   'editare.degrupeaza': 'Degrupează: fiecare formă a piesei alese devine o piesă a ei (Ctrl+Shift+G)',
+  'editare.grupeaza': 'Grupează: formele alese devin o singură piesă, care se mută și se aliniază ca un bloc (Ctrl+G)',
   'editare.meniu': 'Meniul de clic dreapta',
   'editare.boolean.neincarcat': 'Calculul booleanului nu s-a încărcat (rețeaua sau o versiune nouă); încearcă din nou.',
   'editare.boolean.motiv.doua': 'Booleanul se face pe exact două forme închise: alege-le (a doua, cu Shift + clic).',
