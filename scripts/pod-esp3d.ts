@@ -177,10 +177,11 @@ function adresa(v: unknown, unde: string): number {
 
 /**
  * Bucățile imaginii, din metadatele PlatformIO (`pio project metadata --json-output`): imaginile din
- * `extra.flash_images` (bootloader-ul, tabela de partiții, `boot_app0`) și aplicația, la `extra.application_offset`,
- * lângă `prog_path`. În ordinea adreselor.
+ * `extra.flash_images` (bootloader-ul, tabela de partiții, `boot_app0`) și aplicația, lângă `prog_path`. Adresa
+ * aplicației e cea a partiției `ota_0` din tabela compilată, ca la platformă (`_parse_partitions` din pioarduino):
+ * metadatele n-o au, iar dacă o au (`extra.application_offset`), trebuie să fie aceeași. În ordinea adreselor.
  */
-export function bucatileImaginii(metadate: unknown, mediu = 'esp32dev'): Bucata[] {
+export function bucatileImaginii(metadate: unknown, citeste: (cale: string) => Buffer, mediu = 'esp32dev'): Bucata[] {
   const m = esteObiect(metadate) ? metadate[mediu] : undefined;
   if (!esteObiect(m) || !esteObiect(m.extra) || !Array.isArray(m.extra.flash_images) || typeof m.prog_path !== 'string') {
     throw new EroarePod(`metadatele n-au mediul ${mediu}, cu extra.flash_images și prog_path`);
@@ -190,7 +191,16 @@ export function bucatileImaginii(metadate: unknown, mediu = 'esp32dev'): Bucata[
     return { adresa: adresa(x.offset, `flash_images[${i}]`), cale: x.path };
   });
   if (!m.prog_path.endsWith('.elf')) throw new EroarePod(`prog_path (${m.prog_path}) nu e un .elf`);
-  bucati.push({ adresa: adresa(m.extra.application_offset, 'application_offset'), cale: m.prog_path.replace(/\.elf$/, '.bin') });
+  const tabele = bucati.filter((b) => basename(b.cale) === 'partitions.bin');
+  const [tabela] = tabele;
+  if (tabele.length !== 1 || !tabela) throw new EroarePod(`flash_images are ${tabele.length} tabele de partiții (partitions.bin), nu una`);
+  const ota0 = citestePartitiile(citeste(tabela.cale)).find((p) => p.tip === 0 && p.subtip === 0x10);
+  if (!ota0) throw new EroarePod('tabela de partiții n-are partiția ota_0, de unde pornește aplicația');
+  if (ota0.adresa % 0x10000 !== 0) throw new EroarePod(`ota_0 e la ${hex(ota0.adresa)}: o aplicație începe la un multiplu de 0x10000`);
+  if (m.extra.application_offset !== undefined && adresa(m.extra.application_offset, 'application_offset') !== ota0.adresa) {
+    throw new EroarePod(`application_offset (${String(m.extra.application_offset)}) nu e adresa partiției ota_0 (${hex(ota0.adresa)})`);
+  }
+  bucati.push({ adresa: ota0.adresa, cale: m.prog_path.replace(/\.elf$/, '.bin') });
   bucati.sort((a, b) => a.adresa - b.adresa);
   bucati.forEach((b, i) => {
     if (i > 0 && b.adresa === bucati[i - 1]?.adresa) throw new EroarePod(`două bucăți la ${hex(b.adresa)}`);
@@ -347,9 +357,10 @@ if (import.meta.main) {
     if (comanda === 'configureaza' && a !== undefined && b === undefined) {
       for (const l of configureaza(a)) console.log(l);
     } else if (comanda === 'harta' && a !== undefined && b === undefined) {
-      for (const x of bucatileImaginii(json(a))) console.log(`${hex(x.adresa)} ${x.cale}`);
+      for (const x of bucatileImaginii(json(a), (c) => readFileSync(c))) console.log(`${hex(x.adresa)} ${x.cale}`);
     } else if (comanda === 'verifica' && a !== undefined && b !== undefined && rest.length === 0) {
-      for (const l of verificaImaginea(bucatileImaginii(json(a)), (c) => readFileSync(c), readFileSync(b))) console.log(l);
+      const bucati = bucatileImaginii(json(a), (c) => readFileSync(c));
+      for (const l of verificaImaginea(bucati, (c) => readFileSync(c), readFileSync(b))) console.log(l);
     } else {
       console.error('folosire: configureaza <sursa> | harta <metadate.json> | verifica <metadate.json> <imagine>');
       process.exit(2);

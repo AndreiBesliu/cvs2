@@ -190,14 +190,21 @@ test('tabela de partiții: intrările până la cea MD5', () => {
   assert.throws(() => citestePartitiile(Buffer.alloc(64, 0xff)), eroare(/nicio intrare/));
 });
 
-/** Metadatele PlatformIO ale mediului `esp32dev`, cu ce contează aici. */
+/** Metadatele PlatformIO ale mediului `esp32dev`, cu ce contează aici; ca în rularea reală, fără adresa aplicației. */
 function meta(
   imagini: readonly (readonly [string, string])[] = [['0x1000', '/b/bootloader.bin'], ['0x8000', '/b/partitions.bin'], ['0xe000', '/f/boot_app0.bin']],
-  aplicatie = '0x10000',
   prog = '/b/firmware.elf',
+  aplicatie?: string,
 ): unknown {
-  return { esp32dev: { prog_path: prog, extra: { application_offset: aplicatie, flash_images: imagini.map(([offset, path]) => ({ offset, path })) } } };
+  const flash_images = imagini.map(([offset, path]) => ({ offset, path }));
+  return { esp32dev: { prog_path: prog, extra: aplicatie === undefined ? { flash_images } : { flash_images, application_offset: aplicatie } } };
 }
+
+/** Cititorul pentru `bucatileImaginii`: doar tabela de partiții contează pentru adresa aplicației. */
+const cuTabela = (partitii: readonly Partitie[] = PARTITII) => (cale: string): Buffer => {
+  if (cale !== '/b/partitions.bin') throw new Error(`citit pe nedrept: ${cale}`);
+  return tabela(partitii);
+};
 const BUCATI: readonly Bucata[] = [
   { adresa: 0x1000, cale: '/b/bootloader.bin' },
   { adresa: 0x8000, cale: '/b/partitions.bin' },
@@ -205,13 +212,20 @@ const BUCATI: readonly Bucata[] = [
   { adresa: 0x10000, cale: '/b/firmware.bin' },
 ];
 
-test('bucățile imaginii, din metadatele PlatformIO: imaginile suplimentare și aplicația, în ordinea adreselor', () => {
-  assert.deepEqual(bucatileImaginii(meta()), BUCATI);
-  assert.throws(() => bucatileImaginii({ altul: {} }), eroare(/n-au mediul esp32dev/));
-  assert.throws(() => bucatileImaginii(meta([['0x1000', '/b/bootloader.bin'], ['0x8001', '/b/partitions.bin']])), eroare(/începutul unui sector/));
-  assert.throws(() => bucatileImaginii(meta(undefined, '65536')), eroare(/nu e hex/));
-  assert.throws(() => bucatileImaginii(meta([['0x8000', '/b/partitions.bin'], ['0x8000', '/f/boot_app0.bin']])), eroare(/două bucăți la 0x8000/));
-  assert.throws(() => bucatileImaginii(meta(undefined, undefined, '/b/firmware.bin')), eroare(/nu e un \.elf/));
+test('bucățile imaginii, din metadatele PlatformIO: imaginile suplimentare și aplicația la ota_0, în ordinea adreselor', () => {
+  assert.deepEqual(bucatileImaginii(meta(), cuTabela()), BUCATI);
+  // Dacă metadatele au totuși adresa aplicației, ea e cea a partiției ota_0.
+  assert.deepEqual(bucatileImaginii(meta(undefined, undefined, '0x10000'), cuTabela()), BUCATI);
+  assert.throws(() => bucatileImaginii(meta(undefined, undefined, '0x20000'), cuTabela()), eroare(/nu e adresa partiției ota_0 \(0x10000\)/));
+  assert.throws(() => bucatileImaginii({ altul: {} }, cuTabela()), eroare(/n-au mediul esp32dev/));
+  assert.throws(() => bucatileImaginii(meta([['0x1000', '/b/bootloader.bin'], ['0x8001', '/b/partitions.bin']]), cuTabela()), eroare(/începutul unui sector/));
+  assert.throws(() => bucatileImaginii(meta([['8000', '/b/partitions.bin']]), cuTabela()), eroare(/nu e hex/));
+  assert.throws(() => bucatileImaginii(meta([['0x8000', '/b/partitions.bin'], ['0x8000', '/f/boot_app0.bin']]), cuTabela()), eroare(/două bucăți la 0x8000/));
+  assert.throws(() => bucatileImaginii(meta(undefined, '/b/firmware.bin'), cuTabela()), eroare(/nu e un \.elf/));
+  assert.throws(() => bucatileImaginii(meta([['0x1000', '/b/bootloader.bin']]), cuTabela()), eroare(/0 tabele de partiții/));
+  assert.throws(() => bucatileImaginii(meta(), cuTabela(PARTITII.filter((p) => p.tip !== 0))), eroare(/n-are partiția ota_0/));
+  const nealiniata = PARTITII.map((p) => (p.tip === 0 ? { ...p, adresa: 0x18000 } : p));
+  assert.throws(() => bucatileImaginii(meta(), cuTabela(nealiniata)), eroare(/multiplu de 0x10000/));
 });
 
 /** Fișierele bucăților: bootloader-ul cu antetul lui de la compilare, tabela, `boot_app0`, aplicația. */
