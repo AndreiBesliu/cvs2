@@ -2,7 +2,8 @@
  * Alinierea și distribuirea (ADR 0050 §3), pure, pe cutiile lucrurilor alese: deplasarea fiecăruia (doar cele care se
  * mișcă). Referința alinierii e cutia lor comună, sau foaia când e unul singur; distribuirea egalizează golurile dintre
  * ele, de la trei în sus, cu primul și ultimul pe loc. Centrarea pe foaie (ADR 0110) le mută pe toate cu aceeași
- * deplasare, ca un bloc, cât centrul cutiei lor comune să ajungă în centrul foii, pe ambele axe.
+ * deplasare, ca un bloc, cât centrul cutiei lor comune să ajungă în centrul foii, pe ambele axe. Alinierea ca bloc (ADR 0150)
+ * face la fel cu celelalte șase feluri: cutia comună se aliniază față de foaie, iar așezarea dintre ele rămâne.
  */
 import type { Cutie } from './cutie.ts';
 
@@ -53,10 +54,11 @@ function distribuie(alese: readonly Ales[], axa: 'x' | 'y'): Deplasare[] {
 }
 
 /**
- * Pură: deplasările care aliniază sau distribuie `alese`; `foaie` e referința unui singur lucru aliniat. Lucrurile deja la
- * locul lor (sub 1e-9 mm) nu apar. Prea puține pentru fel = nicio deplasare.
+ * Pură: deplasările care aliniază sau distribuie `alese`; `foaie` e referința unui singur lucru aliniat. Cu `bloc` (ADR 0150),
+ * cutia lor comună e lucrul aliniat față de foaie, cu aceeași deplasare pentru toate (distribuirea și centrarea pe foaie nu
+ * se schimbă). Lucrurile deja la locul lor (sub 1e-9 mm) nu apar. Prea puține pentru fel = nicio deplasare.
  */
-export function aliniaza(alese: readonly Ales[], fel: FelAliniere, foaie: Cutie): Deplasare[] {
+export function aliniaza(alese: readonly Ales[], fel: FelAliniere, foaie: Cutie, bloc = false): Deplasare[] {
   if (alese.length < minimAliniere(fel)) return [];
   let rez: Deplasare[];
   if (fel === 'distribuie-x' || fel === 'distribuie-y') rez = distribuie(alese, fel === 'distribuie-x' ? 'x' : 'y');
@@ -66,6 +68,10 @@ export function aliniaza(alese: readonly Ales[], fel: FelAliniere, foaie: Cutie)
     const dx = (foaie.minX + foaie.maxX) / 2 - (u.minX + u.maxX) / 2;
     const dy = (foaie.minY + foaie.maxY) / 2 - (u.minY + u.maxY) / 2;
     rez = alese.map(({ id }) => ({ id, dx, dy }));
+  } else if (bloc) {
+    // Cutia comună, aliniată ca un singur lucru față de foaie: aceeași deplasare pentru toate.
+    const [d] = aliniaza([{ id: '', cutie: uniune(alese) }], fel, foaie);
+    rez = alese.map(({ id }) => ({ id, dx: d?.dx ?? 0, dy: d?.dy ?? 0 }));
   } else {
     const r = alese.length === 1 ? foaie : uniune(alese);
     rez = alese.map(({ id, cutie: c }) => {

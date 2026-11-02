@@ -44,6 +44,7 @@ const USI: readonly Usa[] = [
   { id: 'editare.lipire', eticheta: eticheta('editare.lipire') },
   { id: 'editare.grila', eticheta: eticheta('editare.grila') },
   { id: 'editare.aliniere', eticheta: eticheta('editare.aliniere') },
+  { id: 'editare.aliniere-bloc', eticheta: eticheta('editare.aliniere-bloc') },
   ...FELURI_ALINIERE.map((f) => ({ id: `aliniaza.${f}`, eticheta: eticheta(`editare.aliniaza.${f}`) })),
   ...(['orizontal', 'vertical'] as const).map((d) => ({ id: `oglindeste.${d}`, eticheta: eticheta(`editare.oglindeste.${d}`) })),
   { id: 'editare.3d', eticheta: eticheta('editare.3d.arata') },
@@ -64,7 +65,7 @@ const USI: readonly Usa[] = [
  */
 const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   lipire: 'editare.lipire', grila: 'editare.grila', 'pas-grila': 'editare.grila', laturi: 'unealta.poligon', raza: 'unealta.cerc',
-  aliniere: 'editare.aliniere', 'vedere-3d': 'editare.3d', manual: 'editare.manual', sugestie: 'editare.sugestie', cont: 'editare.cont',
+  aliniere: 'editare.aliniere', 'aliniere-bloc': 'editare.aliniere-bloc', 'vedere-3d': 'editare.3d', manual: 'editare.manual', sugestie: 'editare.sugestie', cont: 'editare.cont',
   retea: 'document.copiaza-in-retea',
   offset: 'editare.offset', inclinare: 'editare.inclinare', vectori: 'editare.vectori',
   'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', grupeaza: 'document.grupeaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri',
@@ -96,13 +97,13 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 69)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 70)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
   assert.equal(numeScurt('Importă SVG…'), 'Importă SVG');
   assert.equal(numeScurt('Oglindește orizontal: stânga ↔ dreapta (Shift+H)'), 'Oglindește orizontal');
-  assert.equal(USI.length, 69);
+  assert.equal(USI.length, 70);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

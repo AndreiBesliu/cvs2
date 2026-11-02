@@ -65,6 +65,7 @@ const PAS_GRILA_IMPLICIT = 10;
 const CHEIE_LATURI = 'cncvs2.laturi';
 const CHEIE_RAZA = 'cncvs2.raza';
 const CHEIE_ALINIERE = 'cncvs2.aliniere-stransa';
+const CHEIE_ALINIERE_BLOC = 'cncvs2.aliniere-bloc';
 const CHEIE_RETEA = 'cncvs2.retea';
 const CHEIE_OFFSET = 'cncvs2.offset';
 const CHEIE_INCLINARE = 'cncvs2.inclinare';
@@ -294,6 +295,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [textRaza, setTextRaza] = useState(() => textNumar(raza));
   // Secțiunea Aliniere a extensiei barei (ADR 0053): mereu acolo, strânsă spre stânga la cerere; starea, în browser.
   const [stransa, setStransa] = useState(() => citeste(CHEIE_ALINIERE) === '1');
+  // Alinierea ca bloc (ADR 0150): cutia comună a formelor alese, față de foaie; ținută în browser, ca Lipirea.
+  const [bloc, setBloc] = useState(() => citeste(CHEIE_ALINIERE_BLOC) === '1');
   // Vederea 3D (ADR 0057): în locul pânzei 2D, cât e pornită; nu se ține minte (ar porni o simulare la fiecare pornire).
   const [vedere3d, setVedere3d] = useState(false);
   const vedere3dRef = useRef(vedere3d);
@@ -910,7 +913,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const cutieForme = useMemo(() => cutieFormelor(doc), [doc]);
   const aliniere = (fel: FelAliniere): void => {
     if (!foaie) return;
-    const d = aliniaza(cutiiInstante, fel, { minX: 0, minY: 0, maxX: foaie.stoc.latime, maxY: foaie.stoc.inaltime });
+    const d = aliniaza(cutiiInstante, fel, { minX: 0, minY: 0, maxX: foaie.stoc.latime, maxY: foaie.stoc.inaltime }, bloc);
     if (d.length > 0) ruleaza('document.muta-instantele', { deplasari: () => d });
   };
 
@@ -1090,9 +1093,17 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               onClick={() => { setStransa(!stransa); scrieLocal(CHEIE_ALINIERE, stransa ? '0' : '1'); }}>
               <Icona fel="stanga" /><span aria-hidden="true">{stransa ? '▸' : '◂'}</span>
             </button>
+            {stransa ? null : (
+              <button type="button" className="aliniaza" aria-pressed={bloc} title={t('editare.aliniere-bloc')} aria-label={t('editare.aliniere-bloc')}
+                data-editare="aliniere-bloc" onClick={() => { setBloc(!bloc); scrieLocal(CHEIE_ALINIERE_BLOC, bloc ? '0' : '1'); }}>
+                <IconaBloc />
+              </button>
+            )}
             {stransa ? null : FELURI_ALINIERE.map((fel) => {
               const destule = selectie.length >= minimAliniere(fel) && !p.doarCitire;
-              const titlu = `${t(`editare.aliniaza.${fel}`)}${selectie.length === 1 && !fel.startsWith('distribuie') && fel !== 'centru-foaie' ? ` ${t('editare.aliniaza.fata-de-foaie')}` : ''}`;
+              const fataDeFoaie = !fel.startsWith('distribuie') && fel !== 'centru-foaie';
+              const sufix = !fataDeFoaie ? '' : bloc && selectie.length > 1 ? ` ${t('editare.aliniaza.ca-bloc')}` : selectie.length === 1 ? ` ${t('editare.aliniaza.fata-de-foaie')}` : '';
+              const titlu = `${t(`editare.aliniaza.${fel}`)}${sufix}`;
               return (
                 <button key={fel} type="button" className="aliniaza" disabled={!destule} title={titlu} aria-label={titlu} data-aliniaza={fel}
                   onClick={() => { aliniere(fel); }}>
@@ -2319,6 +2330,18 @@ function IconaBoolean({ fel }: { readonly fel: 'uneste' | 'scade' | 'intersectea
       <path d={plin[fel]} />
       <rect x="2" y="2" width="8" height="8" className="contur" />
       <rect x="6" y="6" width="8" height="8" className="contur" />
+    </svg>
+  );
+}
+
+/** Alinierea ca bloc (ADR 0150): marginea foii și cadrul punctat al formelor alese, lipit de ea, cu formele înăuntru. */
+function IconaBloc(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <line x1="1.5" y1="1" x2="1.5" y2="15" className="contur" />
+      <rect x="3" y="3" width="11" height="10" className="contur" strokeDasharray="1.6 1.4" />
+      <rect x="4.5" y="4.5" width="4" height="4" />
+      <rect x="9.5" y="8" width="3" height="3.5" />
     </svg>
   );
 }

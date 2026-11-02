@@ -18,6 +18,8 @@ export const roEditare = {
   'editare.aliniaza.distribuie-x': 'Distribuie pe orizontală (goluri egale)',
   'editare.aliniaza.distribuie-y': 'Distribuie pe verticală (goluri egale)',
   'editare.aliniaza.fata-de-foaie': '(o singură formă: față de foaie)',
+  'editare.aliniaza.ca-bloc': '(ca bloc, față de foaie)',
+  'editare.aliniere-bloc': 'Ca bloc: alinierea mută formele alese împreună, față de foaie (așezarea dintre ele rămâne)',
   'editare.rigla-sus': 'Rigla orizontală, mm: trage în jos pentru un ghidaj orizontal',
   'editare.rigla-stanga': 'Rigla verticală, mm: trage spre dreapta pentru un ghidaj vertical',
   'editare.ghidaj': 'Ghidaj la {poz} mm: trage-l ca să-l muți, lasă-l pe riglă ca să-l ștergi, dublu clic pentru poziția exactă',

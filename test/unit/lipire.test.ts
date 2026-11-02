@@ -96,6 +96,25 @@ test('un singur lucru se aliniază față de foaie; prea puține pentru distribu
   assert.equal(minimAliniere('stanga'), 1);
 });
 
+test('alinierea ca bloc (ADR 0150): cutia comună față de foaie, aceeași deplasare pentru toate; o formă, distribuirea și centrarea, ca până acum', () => {
+  // p 10–30 × 10–20 și q 50–60 × 40–80: cutia comună 10–60 × 10–80, centrul (35, 45); foaia 300 × 200, centrul (150, 100).
+  const alese = [a('p', 10, 10, 30, 20), a('q', 50, 40, 60, 80)];
+  const toate = (dx: number, dy: number) => [{ id: 'p', dx, dy }, { id: 'q', dx, dy }];
+  assert.deepEqual(aliniaza(alese, 'stanga', FOAIE, true), toate(-10, 0));
+  assert.deepEqual(aliniaza(alese, 'dreapta', FOAIE, true), toate(240, 0));
+  assert.deepEqual(aliniaza(alese, 'centru-x', FOAIE, true), toate(115, 0));
+  assert.deepEqual(aliniaza(alese, 'jos', FOAIE, true), toate(0, -10));
+  assert.deepEqual(aliniaza(alese, 'sus', FOAIE, true), toate(0, 120));
+  assert.deepEqual(aliniaza(alese, 'centru-y', FOAIE, true), toate(0, 55));
+  // Deja la marginea foii: nimic. O singură formă: față de foaie, ca fără bloc.
+  assert.deepEqual(aliniaza([a('p', 0, 10, 30, 20), a('q', 50, 40, 60, 80)], 'stanga', FOAIE, true), []);
+  assert.deepEqual(aliniaza([a('p', 10, 10, 30, 20)], 'centru-x', FOAIE, true), aliniaza([a('p', 10, 10, 30, 20)], 'centru-x', FOAIE));
+  // Distribuirea (goluri egale între forme) și centrarea pe foaie (deja un bloc) nu se schimbă.
+  const trei = [a('p', 0, 0, 10, 10), a('q', 15, 0, 25, 10), a('r', 60, 0, 70, 10)];
+  assert.deepEqual(aliniaza(trei, 'distribuie-x', FOAIE, true), aliniaza(trei, 'distribuie-x', FOAIE));
+  assert.deepEqual(aliniaza(alese, 'centru-foaie', FOAIE, true), aliniaza(alese, 'centru-foaie', FOAIE));
+});
+
 test('centrarea pe foaie (ADR 0110): o formă, pe ambele axe dintr-o dată; mai multe, ca un bloc (aceeași deplasare)', () => {
   // Foaia 300 × 200, centrul (150, 100). O formă 20 × 10 din (10, 10): centrul (20, 15) → (150, 100).
   assert.deepEqual(aliniaza([a('p', 10, 10, 30, 20)], 'centru-foaie', FOAIE), [{ id: 'p', dx: 130, dy: 85 }]);

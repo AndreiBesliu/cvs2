@@ -17,6 +17,8 @@ export const enEditare = {
   'editare.aliniaza.distribuie-x': 'Distribute horizontally (equal gaps)',
   'editare.aliniaza.distribuie-y': 'Distribute vertically (equal gaps)',
   'editare.aliniaza.fata-de-foaie': '(one shape: against the sheet)',
+  'editare.aliniaza.ca-bloc': '(as a block, against the sheet)',
+  'editare.aliniere-bloc': 'As a block: alignment moves the chosen shapes together, against the sheet (their layout stays)',
   'editare.rigla-sus': 'Horizontal ruler, mm: drag down for a horizontal guide',
   'editare.rigla-stanga': 'Vertical ruler, mm: drag right for a vertical guide',
   'editare.ghidaj': 'Guide at {poz} mm: drag to move, drop on the ruler to delete, double-click for the exact position',

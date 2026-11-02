@@ -378,7 +378,7 @@ Jos, un sfat spune ce se poate face sau de ce forma aleasă nu se poate edita.
 
 ## Alinierea
 %% capitol: aliniere
-%% acopera: editare.aliniere, document.muta-instantele, aliniaza.stanga, aliniaza.centru-x, aliniaza.dreapta, aliniaza.sus, aliniaza.centru-y, aliniaza.jos, aliniaza.centru-foaie, aliniaza.distribuie-x, aliniaza.distribuie-y
+%% acopera: editare.aliniere, editare.aliniere-bloc, document.muta-instantele, aliniaza.stanga, aliniaza.centru-x, aliniaza.dreapta, aliniaza.sus, aliniaza.centru-y, aliniaza.jos, aliniaza.centru-foaie, aliniaza.distribuie-x, aliniaza.distribuie-y
 
 Secțiunea **Aliniere** din extensia barei e mereu acolo; butonul ei o strânge spre stânga și o deschide la loc. Butoanele
 **aliniază** cutiile formelor alese:
@@ -395,6 +395,12 @@ Secțiunea **Aliniere** din extensia barei e mereu acolo; butonul ei o strânge 
 Cu o singură formă aleasă, alinierea o pune față de foaie (de exemplu, „Aliniază la stânga” o duce la marginea din stânga a
 foii). **Centrează pe foaie** lucrează mereu față de foaie: mută toate formele alese cu aceeași deplasare, deci așezarea
 dintre ele rămâne, iar cutia lor comună ajunge în mijlocul foii. Mai multe forme se aleg cu dreptunghiul de selecție sau cu Shift + clic (vezi [Selecția și editarea](#selectie)).
+
+Comutatorul **Ca bloc** (primul buton după cel care strânge secțiunea) mută formele alese împreună, față de foaie: cutia lor
+comună se aliniază la marginea sau la mijlocul foii, iar așezarea dintre ele rămâne, deci nu ajung una peste alta. Fără el,
+fiecare formă se aliniază la cutia comună și se pot suprapune. Comutatorul se ține în browser, ca Lipirea; distribuirea și
+centrarea pe foaie lucrează la fel cu el sau fără. Ca niște forme să se miște mereu împreună, grupează-le (vezi
+[Gruparea](#grupare)).
 Fiecare aliniere se poate anula cu `Ctrl+Z`.
 
 ## Importul SVG, DXF, PDF, AI, EPS și WMF

@@ -889,6 +889,10 @@
       "ro": "Rampa (ADR 0029, documentul v6): bucla tăiată continuu, intrarea rotită, compusă cu urechile (portată, `docs/PORTARE.md` §3.2)",
       "en": "Ramp (ADR 0029, document v6): the loop cut continuously, the rotated entry, combined with tabs (ported, `docs/PORTARE.md` §3.2)"
     },
+    "5fe5a4a2184ea2db": {
+      "ro": "Alinierea ca bloc",
+      "en": "Aligning as a block"
+    },
     "612f682f4c69fc17": {
       "ro": "Fila Utilizatori minimă și fila Setări, aduse din etapa 14",
       "en": "The minimal Users tab and the Settings tab, brought from stage 14"
