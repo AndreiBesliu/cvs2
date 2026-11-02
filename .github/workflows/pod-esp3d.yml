@@ -1,0 +1,89 @@
+# Podul ESP3D (ADR 0119, „Podul ESP3D”; ghidul e docs/masina/pod-esp3d.md): imaginea pentru ESP32-ul de pe mașină. Pornit
+# de mână. Compilează ESP3D 3.0.2 (commit fix) cu configurarea din `scripts/pod-esp3d.ts`, asamblează imaginea unică (se
+# scrie de la adresa 0x0) și o verifică. Imaginea rămâne artefactul rulării, lângă diff-ul sursei și amprente: ESP3D e
+# GPL-3.0, iar sursa imaginii e commit-ul de mai jos plus diff-ul. Nu publică nimic și n-are secrete: rețeaua atelierului
+# se pune la prima pornire, din pagina podului.
+name: pod-esp3d
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  imaginea:
+    name: Imaginea podului
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      ESP3D_COMMIT: 83baa7ddeea4cbd59a9e8c7ff25347042573a8a5 # tag-ul v3.0.2
+      PLATFORMIO: 6.2.0
+      ESPTOOL: 4.10.0
+      IMAGINE: pod/pod-esp3d-3.0.2.bin
+    steps:
+      - uses: actions/checkout@v5
+      - name: Sursa ESP3D 3.0.2
+        uses: actions/checkout@v5
+        with:
+          repository: luc-github/ESP3D
+          ref: ${{ env.ESP3D_COMMIT }}
+          path: esp3d-sursa
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+      - name: Configurarea sursei (faptele, schimbările, unitatea de probă)
+        run: node scripts/pod-esp3d.ts configureaza esp3d-sursa
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: PlatformIO și esptool, versiuni fixe
+        run: pip install "platformio==$PLATFORMIO" "esptool==$ESPTOOL"
+      - name: Compilarea (esp32dev)
+        working-directory: esp3d-sursa
+        run: pio run -e esp32dev
+      - name: Metadatele compilării (adresele imaginilor)
+        working-directory: esp3d-sursa
+        run: |
+          pio project metadata -e esp32dev --json-output --json-output-path ../metadate.json
+          node ../scripts/pod-esp3d.ts harta ../metadate.json
+      # DIO, 40 MHz, 4 MB: placa esp32dev. `merge_bin` scrie parametrii în antetul bootloader-ului și îi reface amprenta.
+      - name: Imaginea unică, de la 0x0
+        run: |
+          mkdir pod
+          node scripts/pod-esp3d.ts harta metadate.json > harta.txt
+          mapfile -t harta < harta.txt
+          bucati=()
+          for l in "${harta[@]}"; do bucati+=("${l%% *}" "${l#* }"); done
+          esptool.py --chip esp32 merge_bin -o "$IMAGINE" --flash_mode dio --flash_freq 40m --flash_size 4MB "${bucati[@]}"
+      - name: Proba imaginii
+        run: |
+          node scripts/pod-esp3d.ts verifica metadate.json "$IMAGINE"
+          # A doua plasă, independentă: esptool validează singur bootloader-ul și aplicația compilate.
+          for f in bootloader firmware; do
+            esptool.py --chip esp32 image_info --version 2 "esp3d-sursa/.pioenvs/esp32dev/$f.bin" | tee "$f.txt"
+            grep -qi '^checksum: .*(valid)' "$f.txt" || { echo "::error::$f.bin: suma de control nu e validă"; exit 1; }
+            grep -qi '^validation hash: .*(valid)' "$f.txt" || { echo "::error::$f.bin: amprenta nu e validă"; exit 1; }
+          done
+      - name: Diff-ul sursei, citește-mă, amprentele
+        run: |
+          git -C esp3d-sursa add --intent-to-add esp3d/pod_verificare.cpp
+          git -C esp3d-sursa diff > pod/configurare.diff
+          {
+            echo "Podul ESP3D pentru mașina cu GRBL 1.1h (cncvs2, ADR 0119)."
+            echo
+            echo "pod-esp3d-3.0.2.bin: imaginea unică pentru un ESP32 (clasic, cu 4 MB de flash), scrisă de la adresa 0x0."
+            echo "Ghidul (scrierea, rețeaua, firele): https://github.com/$GITHUB_REPOSITORY/blob/$GITHUB_SHA/docs/masina/pod-esp3d.md"
+            echo
+            echo "Sursa: ESP3D v3.0.2 (GPL-3.0), https://github.com/luc-github/ESP3D/tree/$ESP3D_COMMIT,"
+            echo "plus configurare.diff, scris de scripts/pod-esp3d.ts (commit $GITHUB_SHA)."
+            echo "Compilată de https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID."
+          } > pod/CITESTE.txt
+          (cd pod && sha256sum pod-esp3d-3.0.2.bin configurare.diff CITESTE.txt > SHA256SUMS && cat SHA256SUMS)
+      - uses: actions/upload-artifact@v6
+        with:
+          name: pod-esp3d-3.0.2
+          path: pod/
+          if-no-files-found: error
+          retention-days: 90
