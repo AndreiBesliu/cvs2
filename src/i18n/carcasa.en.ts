@@ -216,6 +216,7 @@ export const enCarcasa = {
   'extensii.instalare.izolare': 'The extension runs isolated: it can’t see your projects, your account or the machine.',
   'extensii.instalare.verific': 'Checking the package…',
   'extensii.instalare.refuz': 'The package can’t be installed: {motiv}',
+  'extensii.instalare.fara-stocare': 'This browser doesn’t keep data (a private window, or blocked site data): the extension can’t be installed.',
   'extensii.instalare.instaleaza': 'Install',
   'extensii.instalare.renunta': 'Cancel',
   'extensii.gestionare.titlu': 'Your extensions',

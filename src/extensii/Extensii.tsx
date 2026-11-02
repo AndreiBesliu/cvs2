@@ -14,7 +14,7 @@ import '../i18n/carcasa.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { cuMesaje, t } from '../i18n/t.ts';
 import { useLimba } from '../ui/useLimba.ts';
-import { listaExtensii, type ExtensieInstalata } from './depozit.ts';
+import { FaraStocare, listaExtensii, type ExtensieInstalata } from './depozit.ts';
 import type { CerereInstalare } from './tipuri.ts';
 import './extensii.css';
 
@@ -63,7 +63,12 @@ export function Extensii({ jurnal, onSpatiu, onModal }: {
   const limbaRef = useRef(limba);
   limbaRef.current = limba;
 
-  const reincarca = (): void => { void listaExtensii().then(setLista, (e: unknown) => { jurnal.adauga('fereastra', e); }); };
+  const reincarca = (): void => {
+    void listaExtensii().then(setLista, (e: unknown) => {
+      // Fără stocare (fereastră privată, IndexedDB blocat): nicio extensie. Condiția mediului e deja în jurnal, doar local.
+      if (!(e instanceof FaraStocare)) jurnal.adauga('fereastra', e);
+    });
+  };
   useEffect(reincarca, []);
   // Linkul de instalare: la pornire și când ancora se schimbă în fila deschisă (un link lipit în aceeași filă).
   useEffect(() => {
@@ -130,10 +135,14 @@ export function Extensii({ jurnal, onSpatiu, onModal }: {
     // Doar la altă extensie: limba și tema noi trec prin `trimiteContext`, fără repornire.
   }, [deschisa]);
   useEffect(() => { trimiteContext.current?.(); }, [limba]);
+  // Tema: aleasă în aplicație (`data-tema`) sau, la „auto”, schimbată de sistem.
   useEffect(() => {
-    const o = new MutationObserver(() => { trimiteContext.current?.(); });
+    const trimite = (): void => { trimiteContext.current?.(); };
+    const o = new MutationObserver(trimite);
     o.observe(document.documentElement, { attributes: true, attributeFilter: ['data-tema'] });
-    return () => { o.disconnect(); };
+    const sistem = matchMedia('(prefers-color-scheme: dark)');
+    sistem.addEventListener('change', trimite);
+    return () => { o.disconnect(); sistem.removeEventListener('change', trimite); };
   }, []);
 
   const butonul = (

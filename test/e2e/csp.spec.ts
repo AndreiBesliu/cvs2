@@ -81,7 +81,9 @@ test('sub CSP-ul din build, calea App Check / reCAPTCHA / funcții e permisă, i
           recaptcha: await cere('https://www.google.com/recaptcha/enterprise/clr?k=cheie-proba'),
           functiiTest: await cere('https://europe-central2-cncvectorstudio-test.cloudfunctions.net/logClientError'),
           functiiLive: await cere('https://europe-central2-cncvectorstudio.cloudfunctions.net/logClientError'),
-          strain: await cere('https://example.com/colecteaza'),
+          // Din ADR 0127, connect-src primește schema https: (pachetele extensiilor de la orice adresă HTTPS); martorul
+          // refuzat e o origine străină fără TLS.
+          strain: await cere('http://example.com/colecteaza'),
         };
         await cadru('https://www.google.com/recaptcha/enterprise/anchor?k=cheie-proba');
         await cadru('https://recaptcha.google.com/recaptcha/enterprise/anchor?k=cheie-proba');
@@ -97,7 +99,7 @@ test('sub CSP-ul din build, calea App Check / reCAPTCHA / funcții e permisă, i
     enterprise: 'ok', gstatic: 'ok', appcheck: 'ok', recaptcha: 'ok', functiiTest: 'ok', functiiLive: 'ok', strain: 'refuzat',
   });
   // Singura încălcare e martorul; cadrele reCAPTCHA au trecut de `frame-src`.
-  expect(incalcari).toEqual(['connect-src https://example.com/colecteaza']);
+  expect(incalcari).toEqual(['connect-src http://example.com/colecteaza']);
   expect(externe).not.toContain('https://example.com');
 });
 

@@ -9,7 +9,7 @@ import { mesajeGata } from '../i18n/laCerere.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import { useLimba } from '../ui/useLimba.ts';
-import { scoateExtensia, scrieExtensia, type ExtensieInstalata, type SursaExtensie } from './depozit.ts';
+import { FaraStocare, scoateExtensia, scrieExtensia, type ExtensieInstalata, type SursaExtensie } from './depozit.ts';
 import type { CerereInstalare } from './tipuri.ts';
 import { citestePachet, LIMITE_PACHET, type MotivPachet, type Pachet } from './pachet.ts';
 
@@ -22,7 +22,8 @@ type Pas =
   | { readonly fel: 'descarc' }
   | { readonly fel: 'verific' }
   | { readonly fel: 'gata'; readonly pachet: Pachet; readonly sursa: SursaExtensie }
-  | { readonly fel: 'refuz'; readonly motiv: MotivPachet; readonly detaliu?: string };
+  | { readonly fel: 'refuz'; readonly motiv: MotivPachet; readonly detaliu?: string }
+  | { readonly fel: 'eroare'; readonly mesaj: string };
 
 const kb = (n: number, limba: Limba): string =>
   new Intl.NumberFormat(limba === 'ro' ? 'ro-RO' : 'en-GB', { maximumFractionDigits: 1 }).format(n / 1024);
@@ -134,9 +135,15 @@ function InstalarePachet({ cerere, instalate, limba, onGata }: {
   };
   const instaleaza = async (p: Pachet, sursa: SursaExtensie): Promise<void> => {
     setScriu(true);
-    await scrieExtensia({
-      id: p.manifest.id, manifest: p.manifest, fisiere: Object.fromEntries(p.fisiere), octeti: p.octeti, sursa, instalat: new Date().toISOString(),
-    });
+    try {
+      await scrieExtensia({
+        id: p.manifest.id, manifest: p.manifest, fisiere: Object.fromEntries(p.fisiere), octeti: p.octeti, sursa, instalat: new Date().toISOString(),
+      });
+    } catch (e) {
+      setScriu(false);
+      setPas({ fel: 'eroare', mesaj: e instanceof FaraStocare ? t('extensii.instalare.fara-stocare') : String(e) });
+      return;
+    }
     onGata(p.manifest.id);
   };
 
@@ -163,6 +170,16 @@ function InstalarePachet({ cerere, instalate, limba, onGata }: {
     return (
       <Fereastra titlu={t('extensii.instalare.titlu')} test="extensii-instalare" onEscape={renunta}>
         <p>{t('extensii.instalare.verific')}</p>
+      </Fereastra>
+    );
+  }
+  if (pas.fel === 'eroare') {
+    return (
+      <Fereastra titlu={t('extensii.instalare.titlu')} test="extensii-instalare" onEscape={renunta}>
+        <p className="avertisment" role="alert" data-testid="extensii-eroare">{pas.mesaj}</p>
+        <div className="butoane">
+          <button type="button" data-extensii="renunta" autoFocus onClick={renunta}>{t('extensii.instalare.renunta')}</button>
+        </div>
       </Fereastra>
     );
   }

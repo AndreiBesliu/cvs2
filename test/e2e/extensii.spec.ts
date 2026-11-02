@@ -76,9 +76,16 @@ test('din fișier: confirmarea, meniul, spațiul izolat cu acțiunile documentul
   const sandbox = await page.locator('iframe.cadru-extensie').getAttribute('sandbox');
   expect(sandbox).toBe('allow-scripts');
 
-  // Cât e deschis spațiul, acțiunile documentului nu rulează (dreptunghiul din paletă nu se adaugă).
+  // Cât e deschis spațiul, acțiunile documentului nu rulează (dreptunghiul din paletă nu se adaugă, exportul nu se deschide);
+  // vederea rămâne: tema nouă ajunge și în cadru.
   await adauga(page, 'dreptunghi');
   await expect(forme(page)).toHaveCount(1);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.locator('[data-buton="exporta"]')).toHaveCount(0);
+  const temaInainte = await c.locator('[data-salut="tema"]').textContent();
+  await page.locator('[data-actiune="vedere.tema"]').click();
+  await page.locator('[data-actiune="vedere.tema"]').click();
+  await expect(c.locator('[data-salut="tema"]')).not.toHaveText(temaInainte ?? '');
 
   // Eroarea extensiei ajunge în jurnalul local, cu id-ul ei.
   await c.locator('[data-salut="eroare"]').click();

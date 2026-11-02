@@ -235,6 +235,7 @@ export const roCarcasa = {
   'extensii.instalare.izolare': 'Extensia rulează izolată: nu vede proiectele, contul sau mașina.',
   'extensii.instalare.verific': 'Verific pachetul…',
   'extensii.instalare.refuz': 'Pachetul nu se poate instala: {motiv}',
+  'extensii.instalare.fara-stocare': 'Browserul acesta nu ține date (o fereastră privată sau datele blocate): extensia nu se poate instala.',
   'extensii.instalare.instaleaza': 'Instalează',
   'extensii.instalare.renunta': 'Renunță',
   'extensii.gestionare.titlu': 'Extensiile tale',

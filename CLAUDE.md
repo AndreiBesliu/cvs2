@@ -374,6 +374,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   trimisă); lista „Lucrarea primită” din panoul mașinii e separată de `ultimulExport` și stă doar în memorie. **Hosting-ul
   rămâne fără COOP** (ar tăia `window.opener`). Pe live, primirea pornește după o placă trimisă așa pe test.
   **Pornirea 98,7 (cu ușa 102,2 / 110 kB), totalul 451,9 / 500.**
+  **Gazda extensiilor (ADR 0127, felia 3.Xa, linia Trenuleț)** gata pe 02.11, în worktree-ul `wip/trenulet`: extensiile se
+  instalează (din `.zip`, de la o adresă HTTPS, prin linkul `#instaleaza=`), nu fac parte din aplicație. **Codul unei
+  extensii rulează doar în cadrul ei izolat** (iframe cu `sandbox="allow-scripts"` și `srcdoc`, fără originea aplicației),
+  cu `HostApi` v1 prin `MessagePort`. **CSP-ul are `blob:` și amprenta încărcătorului (`shared/cadruExtensie.ts`) în
+  `script-src` și `https:` în `connect-src`** (acordul owner-ului): o schimbare a textului încărcătorului cere amprenta nouă
+  (`test/unit/csp.extensii.test.ts`). Butonul Extensii stă lângă marcă; spațiul extensiei ia locul pânzei, iar acțiunile
+  documentului nu rulează cât e deschis. **cvs2 nu importă din `extensii/` decât `extensii/api.ts`** (regula
+  `cvs2-fara-extensii`), iar o extensie nu importă din cvs2 (`extensia-doar-api`). O extensie se împachetează cu `node
+  scripts/impacheteaza-extensie.ts <dosar>` (tipurile se șterg cu `stripTypeScriptTypes` din Node: TypeScript 7 n-are API de
+  transpilare). **Pornirea 98,9 (cu ușa 102,4 / 110 kB), totalul 460,6 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
