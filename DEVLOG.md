@@ -4676,3 +4676,9 @@ doar `raportor.spec.ts:101`, care cere adresa de pe 4173); după `c06ef34` (doar
 reîncărcare, fără motiv în panou și fără mesajul filei), apoi a trecut de 34 de ori la rând, și sub încărcare, ca și proba
 TTC, care are același drum. Nu s-a reprodus; dacă reapare, `error-context.md` arată pagina (bănuiala: fila deschisă
 doar-citire după reîncărcare).
+**Pe `c06ef34`, suita unitară întreagă:** 8 094 de teste (0 eșuate, 8 sărite).
+**Publicat pe canalul `text`** (02.11, 23:41, `8fe4013`, până pe 02.12): <https://cncvectorstudio-test--text-1k3nsykk.web.app>.
+Verificat în browserul aplicației, după „Reload” (precache-ul ținea versiunea 7.6↑): fereastra fonturilor primește `.svg`,
+cu nota nouă; un font SVG de probă, scris de mână (H, I, L, T și un O închis cu Z), intră în Fonturile mele ca „Proba Canal
+Regular”, e recunoscut cu o singură linie (Aldin oprit, cu motivul), previzualizarea e din trăsături, iar E-ul lipsă e spus;
+consola fără erori. Adresa principală de test a rămas a sesiunii principale.
