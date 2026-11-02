@@ -4539,3 +4539,23 @@ din `functions/src/erori/scrie.ts`, care aduce `firebase-admin`, instalat în CI
 verde (41469719858); `08c98b6` n-a ajuns pe test, fiindcă CI-ul lui a căzut (mai sus). `web.app` servește versiunea
 `306b3c86d354`, iar fila veche a trecut pe ea cu „Reload”, la 1440 px, cu jurnalul la 0 erori. Felia nu schimbă aplicația:
 roadmap-ul publicat (`/documentatie/roadmap.json`) arată felia 4.1↑ la punctul 1 al etapei 4.
+
+## 2026-11-02 — Felia 3.R: plafonul total 500 kB (ADR 0122) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 500 kB” (la întrebarea „Ridic plafonul total al pachetului la 500 kB?”, după propunerea a două worktree-uri
+paralele lângă etapa 4).
+**Started:** 02.11, 17:45. **Completed:** 02.11, 18:03.
+
+După 15.B↑a, totalul era 441,2 / 450 kB. Cele trei linii de lucru propuse, contractele controlerelor și pachetul de atelier
+pe linia principală (etapa 4, punctul 6), restul textului (etapa 7) și verificarea și repararea vectorilor (etapa 10) în
+worktree-uri paralele, nu încăpeau în cei 8,8 kB rămași. `PLAFON_TOTAL_KB` trece de la 450 la 500 în
+`scripts/build-determinist.ts`; celelalte plafoane rămân, iar build-ul aplicației iese neschimbat. La zi: ADR 0122 (nou),
+indexul, fișa (3.R), CLAUDE.md (starea și „Decizii luate”: dacă pornesc, worktree-urile primesc ADR-urile 0123 și 0124, iar
+linia principală continuă de la 0125), traducerile (531, 0 lipsă). Codul: `dda555c`.
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), traducerile (531, 0 lipsă), 8
+046 de teste unitare (0 eșuate, 8 sărite), build-ul determinist (226 de fișiere identice; pornirea 98,5 / 110 kB, cu ușa
+102,0; totalul 441,2 / 500), licențele; CI-ul rapid, verde în toate cele 6 felii și în oracolul exportului 2D.
+**Publicat pe test** pe 02.11, la 18:33, prin workflow-ul `publica` (`dda555c`): documentația publicată (`documentatie/`)
+are ADR 0122 și felia 3.R, în ambele limbi; editorul trece pe versiunea nouă după „Reload”. Sesiunea dedicată liniei
+Trenuleț (cerută: „poate il punem intr-un worktree dedicat”) n-a pornit: sub Remote Control, o sesiune nouă pornește doar
+dintr-un mesaj scris în aplicația desktop.
