@@ -4434,3 +4434,6 @@ fișa (3.Q, coada owner-ului), CLAUDE.md, traducerile (522, 0 lipsă). Codul: `9
 **Porțile:** compilatoarele, importurile, traducerile, 8 012 teste unitare, build-ul determinist, licențele, e2e 293 / 293
 (o cădere EBUSY a Drive-ului pe o descărcare, trecută la rularea singură), emulatoarele (69 de probe ale funcțiilor și
 regulilor, 20 e2e); rapid verde pe ambele commit-uri de cod. Nedovedit până la 3.6e: pornirea pe placă.
+**Publicat pe adresa principală de test:** 02.11, 10:15, `publica` pe `cfae679` (rularea 41411331167), după CI-ul rapid verde;
+`web.app` servește versiunea `cfae6791287a`, iar documentația publicată are felia 3.Q. Imaginea podului nu se încearcă pe
+instanța de test: proba ei e compilarea verificată, iar pornirea pe placă vine cu 3.6e.
