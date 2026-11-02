@@ -102,6 +102,14 @@ const CITIRE = /^\$(#|G|\$|I|N)$/;
 const IN_FLUX: ReadonlySet<Faza> = new Set(['trimite', 'golire', 'terminare']);
 const CU_PUNCT: ReadonlySet<Faza> = new Set(['trimite', 'suspendat', 'golire', 'bariera', 'terminare']);
 
+/** Programul pleacă la controler în faza asta (rulează, sau stă în Hold). */
+export const inFlux = (f: Faza): boolean => IN_FLUX.has(f);
+/**
+ * Lucrarea e pornită și neterminată în faza asta: are un punct de reluare, pe care o pierdere a bufferului (alarma, Ctrl-X,
+ * portul închis) îl strică (regula 4). Tot de aici știe pagina că o închidere ar opri jobul la mijloc (ADR 0132 §6).
+ */
+export const cuPunctDeReluare = (f: Faza): boolean => CU_PUNCT.has(f);
+
 export function fluxNou(capacitate = 128): StareFlux {
   return {
     capacitate, program: null, faza: 'liber', urm: 0, inZbor: [], suma: 0, raport: null, proaspat: false, wco: null, erori: [],

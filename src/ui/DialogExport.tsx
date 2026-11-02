@@ -120,6 +120,11 @@ type Props = {
    */
   readonly setariMasina: string;
   readonly onSetariMasina: (text: string) => void;
+  /**
+   * „Deschide în Mașina” (ADR 0132 §7), după un export reușit pe care senderul îl vorbește (familia GRBL): închide dialogul și
+   * încarcă programul în fereastra Mașina, fără să-l pornească. Fără ea (alt controler, niciun export), butonul nu apare.
+   */
+  readonly onDeschideInMasina?: () => void;
 };
 
 const LATURI_FOAIE: ReadonlyArray<readonly [keyof Depasire, CheieSimpla]> = [
@@ -305,7 +310,7 @@ const CHEI_SENS: Readonly<Record<Sens, CheieSimpla>> = { urcare: 'export.sens.ur
  */
 export function DialogExport(
   {
-    operatii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina, onSetariMasina,
+    operatii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina, onSetariMasina, onDeschideInMasina,
   }: Props,
 ) {
   const limba = useLimba();
@@ -1005,6 +1010,11 @@ export function DialogExport(
             </ul>
           )
           : <p role="status" data-testid="export-stare">{t('export.gata', { n: stare.linii, sha: stare.sha256 })}</p>)}
+        {stare?.ok && onDeschideInMasina && (
+          <div className="butoane">
+            <button type="button" data-buton="in-masina" title={t('export.in-masina.titlu')} onClick={onDeschideInMasina}>{t('export.in-masina')}</button>
+          </div>
+        )}
         {stare?.ok && stare.avertismente.length > 0 && (
           <ul className="avertisment" data-testid="export-avertismente">
             {stare.avertismente.map((a) => <li key={a}>{t('export.avertisment', { text: a })}</li>)}

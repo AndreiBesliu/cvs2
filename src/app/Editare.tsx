@@ -182,12 +182,14 @@ const RaportarileMele = lazy(() => import('./PanouCont.tsx').then(cuMesaje).then
 
 /**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
- * paleta), apoi vederea 3D, altfel unealta aleasă. Id-urile sunt cele din `%% acopera:` ale manualului.
+ * paleta), apoi fereastra Mașina (ADR 0132 §8), apoi vederea 3D, altfel unealta aleasă. Id-urile sunt cele din `%% acopera:`
+ * ale manualului.
  */
-function usaDeAcum(unealta: Unealta, vedere3d: boolean): string {
+function usaDeAcum(unealta: Unealta, vedere3d: boolean, activ: boolean): string {
   if (document.querySelector('[aria-labelledby="export-titlu"]')) return 'export.gcode';
   if (document.querySelector('[aria-labelledby="import-titlu"]')) return 'import.svg';
   if (document.querySelector('.paleta[role="dialog"]')) return 'vedere.paleta';
+  if (!activ) return 'vedere.masina';
   if (vedere3d) return 'editare.3d';
   return `unealta.${unealta}`;
 }
@@ -247,6 +249,12 @@ export type ProprietatiEditare = {
   readonly jurnal?: Pick<Jurnal, 'citeste'>;
   /** Se poate reface un pas al proiectului (Ctrl+Shift+Z redeschide un desen Pen doar dacă nu, ADR 0074 §4). */
   readonly reface?: boolean;
+  /**
+   * Fereastra Proiectare e cea de acum (ADR 0132 §3; implicit, da). Acoperită de Mașina, tastele desenului (uneltele, săgețile,
+   * Escape, oglindirea, nodurile) nu ating desenul pe care omul nu-l vede; F1 deschide capitolul mașinii, iar meniul contului
+   * merge ca oriunde.
+   */
+  readonly activ?: boolean;
 };
 
 export function Editare(p: ProprietatiEditare): ReactElement | null {
@@ -298,6 +306,10 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [vedere3d, setVedere3d] = useState(false);
   const vedere3dRef = useRef(vedere3d);
   vedere3dRef.current = vedere3d;
+  // Fereastra Proiectare e cea de acum (ADR 0132): ascultătorii tastaturii o citesc de aici, fără să se reînregistreze.
+  const activ = p.activ !== false;
+  const activRef = useRef(activ);
+  activRef.current = activ;
   // Copierea în rețea (ADR 0061): panoul din extensia barei, formularul lui (ținut în browser) și rețeaua citită din el.
   // Panoul deschis din extensia barei, unul singur: rețeaua (ADR 0061), offsetul (ADR 0064), înclinarea (ADR 0065), exportul
   // vectorilor (ADR 0088).
@@ -601,9 +613,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       if (e.key === 'F1') {
         e.preventDefault();
         setMeniuCont(null);
-        setManual({ usa: usaDeAcum(unealtaRef.current, vedere3dRef.current) });
+        setManual({ usa: usaDeAcum(unealtaRef.current, vedere3dRef.current, activRef.current) });
         return;
       }
+      // Acoperit de fereastra Mașina (ADR 0132 §3), desenul nu primește nicio tastă: nu se vede ce ar face.
+      if (!activRef.current) return;
       const tinta = e.target;
       const peCorp = tinta === document.body || tinta === document.documentElement;
       // Pe pânză sau în bara uneltelor (după un clic pe „Aliniază”, săgețile continuă), dar nu într-un câmp.
@@ -1023,7 +1037,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             width={Math.abs(cadru.b.x - cadru.a.x)} height={Math.abs(cadru.b.y - cadru.a.y)} />
         </svg>
       ) : null}
-      {unealta === 'noduri' && !vedere3d ? (
+      {/* Nodurile își ascultă singure tastele (Delete, săgețile): sub fereastra Mașina nu stau montate (ADR 0132 §3). */}
+      {unealta === 'noduri' && !vedere3d && activ ? (
         <Noduri doc={doc} selectie={selectie} vedere={vedere} marime={marime} zona={zona} doarCitire={p.doarCitire}
           lipire={(alt) => (lipire !== alt
             ? (q) => lipeste(tinte, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
@@ -2588,7 +2603,8 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii }:
     if (!arataEticheta) return;
     const r = radacina.current?.getBoundingClientRect();
     if (!r) return;
-    const sus = document.querySelector('header.sus')?.getBoundingClientRect().bottom ?? r.top;
+    // Sub rândul barei de desen (sub meniul global din ADR 0132, deci după clasă, nu după element).
+    const sus = document.querySelector('.sus')?.getBoundingClientRect().bottom ?? r.top;
     const jos = Math.min(
       document.querySelector('footer.jos')?.getBoundingClientRect().top ?? r.bottom,
       document.querySelector('.bara-selectie .insula')?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY,

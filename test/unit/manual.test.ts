@@ -96,13 +96,14 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 68)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 69)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
   assert.equal(numeScurt('Importă SVG…'), 'Importă SVG');
   assert.equal(numeScurt('Oglindește orizontal: stânga ↔ dreapta (Shift+H)'), 'Oglindește orizontal');
-  assert.equal(USI.length, 68);
+  // Fila Proiectare (ADR 0132) a adus a 69-a ușă.
+  assert.equal(USI.length, 69);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
@@ -140,11 +141,14 @@ const CONTROALE_MASINA: Readonly<Record<string, string | null>> = {
   'conecteaza-wifi': 'masina.conecteaza-wifi', 'wifi-profil': 'masina.wifi.profil', 'wifi-adresa': 'masina.wifi.adresa',
   'wifi-port': 'masina.wifi.port', 'wifi-conecteaza': 'masina.wifi.conecteaza', 'wifi-renunta': 'masina.wifi.renunta',
   'start-wifi': 'masina.wifi.porneste-oricum', 'start-wifi-renunta': 'masina.wifi.renunta',
+  // Indicatorul lucrării din meniul global (ADR 0132, `IndicatorLucrare.tsx`): pastila și butonul de lângă ea.
+  indicator: 'masina.indicator.titlu', 'indicator-pauza': 'masina.pauza', 'indicator-reia': 'masina.eliberare',
 };
 
 test('fiecare control al panoului mașinii (data-masina) e numit în capitolul „masina”, în ambele limbi', () => {
   const sursa = `${citeste('src/app/PanouMasina.tsx')}
-${citeste('src/app/PanouCod.tsx')}`;
+${citeste('src/app/PanouCod.tsx')}
+${citeste('src/app/IndicatorLucrare.tsx')}`;
   // Un `data-masina` calculat (`={…}`) ar ocoli proba: fiecare control își scrie numele.
   assert.doesNotMatch(sursa, /data-masina=\{/);
   const controale = [...new Set([...sursa.matchAll(/data-masina="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();
@@ -174,7 +178,7 @@ test('fiecare control cu data-editare din bara editării are ușa lui (un contro
     assert.ok(USI.some((u) => u.id === usa), `${c} → ${usa}`);
   }
   // Și ușile ajutorului după context (F1, `usaDeAcum` din Editare) sunt acoperite.
-  for (const id of ['export.gcode', 'import.svg', 'vedere.paleta', 'editare.3d', ...UNELTE.map((u) => `unealta.${u}`)]) {
+  for (const id of ['export.gcode', 'import.svg', 'vedere.paleta', 'vedere.masina', 'editare.3d', ...UNELTE.map((u) => `unealta.${u}`)]) {
     assert.match(sursa, id.startsWith('unealta.') ? /`unealta\.\$\{unealta\}`/ : new RegExp(`'${id.replace('.', '\\.')}'`));
     for (const m of manuale()) assert.ok(capitolPentru(m, id), `${m.limba}: F1 pe „${id}” n-are capitol`);
   }

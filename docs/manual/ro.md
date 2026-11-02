@@ -2,16 +2,19 @@
 
 ## Primii pași
 %% capitol: pornire
-%% acopera: vedere.paleta, vedere.lista, vedere.proprietati, vedere.tema, editare.manual
+%% acopera: vedere.paleta, vedere.lista, vedere.proprietati, vedere.proiectare, vedere.tema, editare.manual
 
 CNC Vector Studio desenează piese pentru o freză CNC și scrie programul (G-code) pe care îl taie mașina. Lucrezi pe o
 **foaie** (placa de material), pui pe ea forme, fiecare cu **operația** ei de tăiere, apoi exporți G-code-ul.
 
-**Ecranul.** Pânza ține tot ecranul; deasupra ei plutesc:
+**Ecranul.** Sus de tot stă **meniul aplicației**, în toate ferestrele: marca, filele ferestrelor (**Proiectare** și
+**Mașina**), indicatorul lucrării (cu mașina conectată, vezi [Mașina](#masina)), apoi „Caută o comandă”, limba (RO / EN),
+tema și butonul **Cont**. Fila apăsată e fereastra de acum; aplicația se redeschide în ea la pornirea următoare.
+
+În fereastra **Proiectare**, pânza ține tot ecranul; deasupra ei plutesc:
 - **bara de sus**: uneltele de desen, Lipire și Grilă, Anulează și Reface și, la capăt, fișierele: importul, „Exportă
   vectori” și „Exportă G-code”;
-- **extensia barei**, dedesubt: alinierea, oglindirea, vederea 3D și manualul;
-- în dreapta sus: „Caută o comandă”, limba (RO / EN) și tema;
+- **extensia barei**, dedesubt: alinierea, oglindirea, copierea, offsetul, booleanul și vederea 3D;
 - în stânga, panoul **Pe foaie**: formele foii, cu piesa și operațiile fiecăreia; în dreapta, panoul **Proprietăți**;
 - jos: ce e selectat, cursorul pe foaie (în mm, din colțul stânga-jos al foii), zoomul, jurnalul de erori, „Arată
   traseul” și „Arată toată foaia”.
@@ -24,7 +27,7 @@ Paleta arată toate comenzile, cu tasta fiecăreia; la cele care se fac cu mausu
 
 **Manualul** se deschide din meniul **Cont**, din colțul din dreapta-sus (rândul **Manualul**), sau cu `F1`. Cu F1 se
 deschide la capitolul a ce faci acum
-(unealta aleasă, vederea 3D, fereastra deschisă). În manual poți căuta după cuvinte, cu sau fără diacritice.
+(unealta aleasă, vederea 3D, fereastra deschisă, Mașina). În manual poți căuta după cuvinte, cu sau fără diacritice.
 
 **Unde se salvează.** Proiectul se salvează singur, în browserul ăsta, la fiecare schimbare. Vezi [Proiectul și
 salvarea](#proiect).
@@ -660,7 +663,9 @@ schimbările să fie cât mai puține. Același număr cu două diametre sau dou
 
 Butonul **Exportă** descarcă fișierul și arată câte linii are și amprenta lui SHA-256 (cu ea verifici că pe mașină ajunge
 exact fișierul ăsta). Dacă freza ar ieși din foaie, fereastra spune cu cât și unde, iar exportul cere confirmarea ta că acolo
-nu e nimic în cale (cleme, șuruburi); confirmarea se scrie în antetul programului.
+nu e nimic în cale (cleme, șuruburi); confirmarea se scrie în antetul programului. După un export pe care îl trimite
+senderul aplicației (familia GRBL), **Deschide în Mașina** închide fereastra și încarcă programul în [Mașina](#masina), fără
+să-l pornească.
 
 **Rezumatul jobului** arată timpul estimat, pe operații și pe scule. Pentru timpii mașinii tale, lipește la „Setările
 mașinii” răspunsul controlerului la `$$` (din consola senderului); programul nu se schimbă.
@@ -691,7 +696,22 @@ legate cap la cap (o polilinie, apoi o curbă).
 %% capitol: masina
 %% acopera: vedere.masina
 
-Panoul **Mașina** (în dreapta, sub proprietăți) trimite programul la mașină, prin cablul USB sau prin WiFi, și îi arată starea.
+Fila **Mașina** din meniul aplicației deschide fereastra mașinii, pe tot ecranul, sub meniu: ea trimite programul la mașină,
+prin cablul USB sau prin WiFi, și îi arată starea. Pe un ecran lat stă pe trei coloane: mașina (conexiunea, starea și poziția,
+cu cifre mari, poziționarea), lucrarea (faza cu butoanele ei și programul) și consola (comanda și jurnalul). Pe un laptop,
+consola coboară dedesubt; pe telefon, totul stă pe o coloană, în ordinea urgenței.
+
+- **Desenul rămâne la un clic.** Fila **Proiectare** te întoarce la desen oricând, iar lucrarea continuă. Cât ești în Mașina,
+  tastele desenului (Delete, Ctrl+Z, săgețile, uneltele) nu ating desenul acoperit; `Ctrl+K` merge, iar o comandă a desenului
+  aleasă din paletă te duce întâi în Proiectare. `F1` deschide capitolul ăsta. **Escape** închide doar ce e deschis
+  (formularul WiFi, o confirmare): nu schimbă fereastra și nu trimite nimic la mașină.
+- **Indicatorul lucrării** stă în meniul aplicației, după prima deschidere a Mașinii, și se vede din orice fereastră: „Mașina
+  conectată”, „Rulează 42 %” (verde, cu **Pauză** alături), „Pauză 42 %” (portocaliu, cu **Reia**), „Oprită la M6”, „Oprită la
+  linia …” sau „Oprită pe o eroare” (portocaliu), „Alarmă” sau „Lucrare întreruptă” (roșu), „Lucrare gata”. Un clic pe el
+  deschide Mașina. **Oprește** rămâne doar în fereastră: o repornire apăsată din greșeală pierde poziția. Cât rulează
+  lucrarea, titlul filei browserului începe cu procentul.
+- **Cu o lucrare pornită**, închiderea sau reîncărcarea paginii cere întâi confirmarea browserului: legătura s-ar tăia, iar
+  lucrarea s-ar opri la mijloc. Tot atunci, „Versiune nouă gata” arată **Reîncarcă după lucrare**, dezactivat, până se termină.
 
 - **Conectează (USB)** te lasă să alegi portul mașinii (GRBL, 115 200 baud). Merge doar în Chrome sau Edge pe un calculator
   (Web Serial); altfel, panoul spune asta. Pe instanța de test mai e și **Mașină simulată**: un controler GRBL simulat, ca să
@@ -711,7 +731,8 @@ Panoul **Mașina** (în dreapta, sub proprietăți) trimite programul la mașin�
   fereastra exportului); **Fișier…** încarcă un G-code din alt program, verificat întâi. Un program se refuză, cu linia, dacă are
   caractere în afara ASCII (la GRBL, „ș” și „ț” ar schimba turația axului), capete de linie Windows (`\r`), linii de peste 70 de
   octeți, nu alege un sistem de coordonate (`G54`–`G59`) înaintea primei mișcări, schimbă scula (`M6`) fără să fie exportat de
-  aici sau n-are capăt de linie la sfârșit. Cu câte un fișier pe freză, **Fișierul ultimului export** alege care se încarcă.
+  aici sau n-are capăt de linie la sfârșit. Cu câte un fișier pe freză, **Fișierul ultimului export** alege care se încarcă. Din fereastra exportului, după un
+  export reușit, **Deschide în Mașina** aduce aici primul fișier al exportului, încărcat, fără să-l pornească.
 - **Pornește** trimite programul linie cu linie, cât încape în memoria mașinii. Lucrarea arată faza și linia. **Pauză** oprește
   mișcarea (Hold), **Reia** o continuă. O eroare a mașinii pe o linie oprește lucrarea în pauză și o arată în listă; **Reia după
   eroare** continuă de la prima linie netrimisă. La o schimbare de sculă (`M6`) sau o pauză din program (`M0`), lucrarea se

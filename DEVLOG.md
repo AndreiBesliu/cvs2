@@ -4588,3 +4588,10 @@ fără test căzut = NEVALIDĂ), probată pe A03.
 modului automat). La WMF, worktree-ul s-a șters înaintea joncțiunilor (o cale greșită în comandă); git nu le urmează, iar
 `node_modules` principal a rămas întreg (306 / 200 de intrări, numărate).
 **Publicat pe test** pe 02.11, la 20:46, prin workflow-ul `publica` (`77a1be6`).
+
+## 2026-11-02 — Felia 13.A↑: meniul global și fereastra Mașina pe tot ecranul (ADR 0132) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau inca un worktree care sa faca panoul sender-ului mai mare, el trebuie sa fie fullscreen, sub meniu. Atentie,
+meniul global, el va fi diferit de cel cu uneltele de desen. ca la cvs1 acest meniu va aparea doar in fereastra de
+desing/desen/project”, apoi „Da, cu recomandările” (la schița meniului global și a ferestrei Mașina, cu nouă întrebări).
+**Started:** 02.11, 21:30.

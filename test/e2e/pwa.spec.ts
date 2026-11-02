@@ -388,6 +388,38 @@ test('actualizarea: oferită în bara de jos, nicio reîncărcare până la clic
   }
 });
 
+test('actualizarea așteaptă lucrarea de pe mașină (ADR 0132 §6): „Reîncarcă după lucrare”, dezactivat, cât e pornită', async ({ browser }) => {
+  const { page, server, inchide } = await deschide(browser);
+  try {
+    await page.goto('/');
+    await workerActiv(page);
+    await page.reload();
+    expect(await controlata(page)).toBe(true);
+    server.sw(`${(await (await page.request.get('/sw.js')).text())}${V2}`);
+    await page.reload();
+    const anunt = page.getByTestId('actualizare');
+    await expect(anunt).toBeVisible({ timeout: 20_000 });
+    // O lucrare pornită pe mașina simulată, la 1×: 200 mm la 60 mm/min, deci câteva minute.
+    await page.locator('[data-actiune="vedere.masina"]').click();
+    await page.locator('[data-masina="viteza"]').selectOption('1');
+    await page.locator('[data-masina="simulata"]').click();
+    await page.locator('[data-masina="fisier-ales"]').setInputFiles({ name: 'lent.nc', mimeType: 'text/plain', buffer: Buffer.from('G21\nG90\nG54\nG1 X200 F60\n', 'ascii') });
+    await page.locator('[data-masina="start"]').click();
+    // Patru linii pleacă toate odată: lucrarea e în terminare cât mașina încă se mișcă.
+    await expect(page.getByTestId('masina-faza')).toHaveAttribute('data-faza', /^(trimite|terminare)$/);
+    // Oferta rămâne în bara de jos și în Mașina, dar reîncărcarea ar tăia legătura: așteaptă.
+    const buton = anunt.getByRole('button');
+    await expect(buton).toHaveText('Reîncarcă după lucrare');
+    await expect(buton).toBeDisabled();
+    // Oprită, lucrarea nu mai e pornită: oferta se poate lua.
+    await page.locator('[data-masina="opreste"]').click();
+    await expect(buton).toHaveText('Reîncarcă');
+    await expect(buton).toBeEnabled();
+  } finally {
+    await inchide();
+  }
+});
+
 /**
  * Progresul instalării (ADR 0097), pe bucata workerului simulării: pagina n-o cere la pornire, deci întârzierea ei ține doar
  * instalarea workerului, nu și pagina. Workbox aduce precache-ul câte un fișier, deci instalarea stă pe ea cât e întârziată.

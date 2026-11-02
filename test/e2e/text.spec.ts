@@ -82,9 +82,10 @@ test('unealta Text: „LEMN Șțăâî” de 20 mm din ancoră, N de exact 20 mm
   const n2 = ordonate(d2.piese[0]!.radacina.copii![3]!);
   expect(Math.max(...n2) - Math.min(...n2)).toBeCloseTo(30, 9);
 
-  // Ctrl+Z, cu focusul pe pânză: textul de dinainte, iar panoul îl arată.
+  // Ctrl+Z, cu focusul pe pânză: textul de dinainte, iar panoul îl arată. Clicul, pe marginea liberă din stânga (colțul de sus
+  // e sub meniul global, ADR 0132).
   await page.locator('[data-unealta="selectie"]').click();
-  await page.getByTestId('panza').click({ position: { x: 5, y: 5 } });
+  await page.getByTestId('panza').click({ position: { x: 5, y: 300 } });
   await page.keyboard.press('Control+z');
   const d3 = await documentSalvat(page, 3) as Doc;
   expect(d3.piese[0]!.radacina.text).toMatchObject({ font: 'roboto', inaltime: 20 });

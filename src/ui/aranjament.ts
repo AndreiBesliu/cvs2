@@ -15,19 +15,40 @@
  * id-ul lor, din listele de mai jos (singurele pe care carcasa știe să le randeze).
  */
 
-/** Panourile carcasei. */
-export const PANOURI = ['lista', 'proprietati', 'masina'] as const;
+/** Panourile carcasei. Mașina nu mai e unul (ADR 0132): e o fereastră. */
+export const PANOURI = ['lista', 'proprietati'] as const;
 export type IdPanou = (typeof PANOURI)[number];
 
 /** Cipurile de stare: ce știe carcasa să arate ca stare (de obicei jos). */
 export const CIPURI = ['selectie', 'avertisment', 'proiect', 'config', 'actualizare', 'cursor', 'zoom', 'jurnal', 'traseu'] as const;
 export type IdCip = (typeof CIPURI)[number];
 
+/**
+ * Cipurile aplicației întregi, nu ale desenului (ADR 0132 §3): ele rămân în bara de jos și în fereastra Mașina. Selecția,
+ * ieșirea din foaie, traseul, cursorul și zoomul vorbesc despre pânză, deci se văd doar în Proiectare.
+ */
+export const CIPURI_GLOBALE: ReadonlySet<IdCip> = new Set<IdCip>(['proiect', 'config', 'actualizare', 'jurnal']);
+
+/**
+ * Ferestrele aplicației (ADR 0132): filele meniului global, sub care stă câte o fereastră pe tot ecranul. Proiectarea ține
+ * desenul (bara de desen, pânza, docurile); Mașina ține senderul. O extensie (gazda din Trenuleț) se adaugă aici.
+ */
+export const FERESTRE = ['proiectare', 'masina'] as const;
+export type IdFereastra = (typeof FERESTRE)[number];
+
+/** Acțiunea vederii care deschide fiecare fereastră (fila ei din meniu, paleta). Mașina păstrează id-ul panoului de dinainte. */
+export const DESCHIDE_FEREASTRA: { readonly [F in IdFereastra]: string } = {
+  proiectare: 'vedere.proiectare',
+  masina: 'vedere.masina',
+};
+
 /** Controalele care nu sunt acțiuni ale registrului: limba (butoanele RO / EN, apăsat = limba de acum). */
 /** `unelte`: locul uneltelor de desen, al lipirii și al alinierii (ADR 0052), umplut de modulul editării, la cerere. */
 /** `vectori`: locul exportului vectorilor (ADR 0088), lângă import și G-code (ADR 0104 §8), umplut tot de modulul editării. */
 /** `cont`: locul butonului Cont (ADR 0116), lângă temă (cererea owner-ului din 01.11), umplut tot de modulul editării. */
-export const CONTROALE = ['limba', 'unelte', 'vectori', 'cont'] as const;
+/** `ferestre`: filele ferestrelor aranjamentului (ADR 0132), în ordinea lor; fila ferestrei de acum e apăsată. */
+/** `lucrare`: locul indicatorului lucrării (ADR 0132 §5), umplut de fereastra Mașina, după prima ei deschidere. */
+export const CONTROALE = ['limba', 'unelte', 'vectori', 'cont', 'ferestre', 'lucrare'] as const;
 export type IdControl = (typeof CONTROALE)[number];
 
 /**
@@ -43,10 +64,11 @@ export type Intrare = Unealta | { readonly control: IdControl } | { readonly cip
 export type Grup = { readonly id: string; readonly intrari: readonly Intrare[] };
 
 /**
- * Zonele cu bare: sus (bara de acțiuni), unelte (sus în dreapta), selecția (lângă selecție, pe pânză), jos (starea).
- * Bara selecției își poartă uneltele cu `data-context`, celelalte cu `data-actiune`.
+ * Zonele cu bare: meniul global (sus de tot, în toate ferestrele, ADR 0132), sus (bara de acțiuni a Proiectării), unelte (sus
+ * în dreapta), selecția (lângă selecție, pe pânză), jos (starea). Bara selecției își poartă uneltele cu `data-context`,
+ * celelalte cu `data-actiune`.
  */
-export const ZONE = ['sus', 'unelte', 'selectie', 'jos'] as const;
+export const ZONE = ['meniu', 'sus', 'unelte', 'selectie', 'jos'] as const;
 export type IdZona = (typeof ZONE)[number];
 
 /** Docurile panourilor: stânga și dreapta pânzei, de sus în jos. */
@@ -57,26 +79,35 @@ export type Aranjament = {
   readonly id: string;
   readonly zone: { readonly [Z in IdZona]: readonly Grup[] };
   readonly docuri: { readonly [D in IdDoc]: readonly IdPanou[] };
+  /** Ferestrele, în ordinea filelor lor; prima se deschide când browserul nu ține alta (ADR 0132 §2). */
+  readonly ferestre: readonly IdFereastra[];
 };
 
 /** Acțiunea vederii care strânge și deschide fiecare panou (butonul din colțul lui). */
 export const COMUTA_PANOU: { readonly [P in IdPanou]: string } = {
   lista: 'vedere.lista',
   proprietati: 'vedere.proprietati',
-  masina: 'vedere.masina',
 };
 
 /** Zonele care își poartă uneltele cu `data-actiune` (localizatorii e2e le cer unice pe pagină). */
-export const ZONE_CU_DATA_ACTIUNE: readonly IdZona[] = ['sus', 'unelte', 'jos'];
+export const ZONE_CU_DATA_ACTIUNE: readonly IdZona[] = ['meniu', 'sus', 'unelte', 'jos'];
 
 /**
  * Șablonul modern (prototipul B, „pânza întâi”, ales de owner pe 13.10): pânza ține tot ecranul, iar zonele plutesc
- * deasupra ei. Sus: formele, selecția, istoricul, fișierele; în dreapta, căutarea comenzilor, limba, tema și contul. Stânga:
- * arborele proiectului; dreapta: proprietățile. Jos: starea, cursorul, zoomul, jurnalul și „arată toată foaia”.
+ * deasupra ei. Deasupra tuturor, meniul global (ADR 0132): filele ferestrelor, indicatorul lucrării, căutarea comenzilor,
+ * limba, tema și contul. Sus: formele, selecția, istoricul, fișierele. Stânga: arborele proiectului; dreapta: proprietățile.
+ * Jos: starea, cursorul, zoomul, jurnalul și „arată toată foaia”.
  */
 export const ARANJAMENT_MODERN: Aranjament = {
   id: 'modern',
   zone: {
+    meniu: [
+      { id: 'ferestre', intrari: [{ control: 'ferestre' }] },
+      { id: 'lucrare', intrari: [{ control: 'lucrare' }] },
+      // Căutarea, limba, tema și contul sunt ale aplicației întregi, deci în meniu, nu în colțul barei de desen (ADR 0132).
+      // Contul stă lângă temă (cererea owner-ului din 01.11: „account ar trebui sa sta in alta parte, langa theme button”).
+      { id: 'vedere', intrari: [{ actiune: 'vedere.paleta', aspect: 'cauta' }, { control: 'limba' }, { actiune: 'vedere.tema' }, { control: 'cont' }] },
+    ],
     sus: [
       // Uneltele de desen, Lipire, Grilă și Aliniere (ADR 0052); „Adaugă dreptunghi / cerc” rămân în paleta de comenzi.
       { id: 'forme', intrari: [{ control: 'unelte' }] },
@@ -87,11 +118,7 @@ export const ARANJAMENT_MODERN: Aranjament = {
       // intrat în bară (ADR 0052) și altfel „Exportă G-code” ieșea din ecran la 1280 px.
       { id: 'fisier', intrari: [{ actiune: 'import.svg' }, { control: 'vectori' }, { actiune: 'export.gcode', aspect: 'principal' }] },
     ],
-    unelte: [
-      // Contul lângă temă, nu în extensia barei (cererea owner-ului din 01.11: „account ar trebui sa sta in alta parte, langa
-      // theme button”).
-      { id: 'vedere', intrari: [{ actiune: 'vedere.paleta', aspect: 'cauta' }, { control: 'limba' }, { actiune: 'vedere.tema' }, { control: 'cont' }] },
-    ],
+    unelte: [],
     selectie: [
       {
         id: 'selectie',
@@ -106,7 +133,8 @@ export const ARANJAMENT_MODERN: Aranjament = {
       { id: 'vedere', intrari: [{ cip: 'traseu' }, { cip: 'cursor' }, { cip: 'zoom' }, { cip: 'jurnal' }, { actiune: 'vedere.traseu' }, { actiune: 'vedere.potriveste' }] },
     ],
   },
-  docuri: { stanga: ['lista'], dreapta: ['proprietati', 'masina'] },
+  docuri: { stanga: ['lista'], dreapta: ['proprietati'] },
+  ferestre: ['proiectare', 'masina'],
 };
 
 /** Cheia unei intrări într-o zonă: o acțiune, un control sau un cip apar cel mult o dată pe zonă (și ca cheie React). */
@@ -116,8 +144,10 @@ export function cheieIntrare(x: Intrare): string {
 
 /**
  * Problemele unui aranjament, în cuvinte (lista goală = bun): o acțiune care nu e în registru, un control, un cip, un
- * aspect sau un panou necunoscut, o intrare de două ori în aceeași zonă, un grup cu id dublat, un panou pus de două ori.
- * Aceeași acțiune poate sta în zone diferite (un om poate vrea Anulează și sus, și jos).
+ * aspect sau un panou necunoscut, o intrare de două ori în aceeași zonă, un grup cu id dublat, un panou pus de două ori;
+ * la ferestre (ADR 0132): una necunoscută sau pusă de două ori, lipsa Proiectării (acolo e desenul), mai multe ferestre fără
+ * filele lor în vreo zonă, o filă fără acțiunea ei în registru. Aceeași acțiune poate sta în zone diferite (un om poate vrea
+ * Anulează și sus, și jos).
  */
 export function verificaAranjament(a: Aranjament, actiuni: ReadonlySet<string>): readonly string[] {
   const probleme: string[] = [];
@@ -155,5 +185,18 @@ export function verificaAranjament(a: Aranjament, actiuni: ReadonlySet<string>):
       if (!actiuni.has(COMUTA_PANOU[p])) probleme.push(`panoul „${p}”: acțiunea „${COMUTA_PANOU[p]}” nu e în registru`);
     }
   }
+  const ferestre = new Set<string>();
+  for (const f of a.ferestre) {
+    if (!cunoscut(FERESTRE, f)) {
+      probleme.push(`fereastra „${f}” nu există`);
+      continue;
+    }
+    if (ferestre.has(f)) probleme.push(`fereastra „${f}” e pusă de două ori`);
+    ferestre.add(f);
+    if (!actiuni.has(DESCHIDE_FEREASTRA[f])) probleme.push(`fereastra „${f}”: acțiunea „${DESCHIDE_FEREASTRA[f]}” nu e în registru`);
+  }
+  if (!ferestre.has('proiectare')) probleme.push('fără fereastra „proiectare”: desenul n-ar avea unde sta');
+  const cuFile = ZONE.some((z) => a.zone[z].some((g) => g.intrari.some((x) => 'control' in x && x.control === 'ferestre')));
+  if (ferestre.size > 1 && !cuFile) probleme.push('ferestrele n-au file: controlul „ferestre” nu e în nicio zonă');
   return probleme;
 }
