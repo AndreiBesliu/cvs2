@@ -337,9 +337,10 @@ ones, they are cut, in the same class, after the group. Inside a group, a text i
 edited again. After grouping, the group is chosen, and a single `Ctrl+Z` undoes the grouping, with each shape back in its
 place.
 
-Grouping is refused, with the reason shown next to the buttons, if a single shape is chosen, if two shapes each have a
-**V-carve** with the same values (grouped, they would be carved together, as a single region) or if a chosen part is also used
-by other instances.
+Two texts (or shapes) each with a **V-carve** with the same values can be grouped: the cutter carves them in one go, and each
+letter comes out the same. Grouping is refused, with the reason shown next to the buttons, if a single shape is chosen, if two
+shapes with the same V-carve touch or overlap (grouped, they would be carved as a single region, and the overlap would be left
+uncut) or if a chosen part is also used by other instances.
 
 ## The right-click menu
 %% capitol: meniu

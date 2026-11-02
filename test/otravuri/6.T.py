@@ -22,8 +22,22 @@ ED = 'src/app/Editare.tsx'
 SC = 'src/ui/scurtaturi.ts'
 
 # ---- Modelul ----
-o('G01', GR, "      if (alta !== undefined && alta !== k) return 'vcarve';", "      if (alta !== undefined && alta === k) return 'vcarve';", 'grupare',
-  'V-carve-urile cu aceleași valori din părți diferite nu mai sunt refuzate')
+o('G01', GR, "  if (vcarveSeAmesteca(parti)) return 'vcarve';", "  if (false) return 'vcarve';", 'grupare',
+  'V-carve-urile care se ating sau se suprapun nu mai sunt refuzate')
+# Garda V-carve-ului (decizia owner-ului din 02.11: grupate doar cât regiunile nu se ating).
+o('V01', GR, 'if (aproape.some((c) => distantaLaContur(x, c) <= PRAG_ATINGERE)) return true;', 'if (false) return true;', 'grupare',
+  'atingerea nu se mai caută (doar incluziunea)')
+o('V02', GR, '  return B.some((c) => inCealalta(c, A)) || A.some((c) => inCealalta(c, B));', '  return false;', 'grupare',
+  'incluziunea fără atingere nu se mai caută')
+o('V03', GR, '  return B.some((c) => inCealalta(c, A)) || A.some((c) => inCealalta(c, B));', '  return B.some((c) => inCealalta(c, A));', 'grupare',
+  'incluziunea doar într-o direcție')
+o('V04', GR, 'a.minX <= b.maxX && b.minX <= a.maxX && a.minY <= b.maxY && b.minY <= a.maxY;', 'a.minX > b.maxX;', 'grupare',
+  'cutiile despart greșit contururile apropiate')
+o('V05', GR, '      const v = valoriVcarve(o);\n      const l = aici.get(v) ?? [];', "      const v = '';\n      const l = aici.get(v) ?? [];", 'grupare',
+  'V-carve-urile cu valori diferite judecate ca aceeași regiune')
+o('V06', GR, '      for (let b = a + 1; b < grupe.length; b++)', '      for (let b = a + 2; b < grupe.length; b++)', 'grupare',
+  'părțile vecine nu se mai compară')
+o('V07', GR, 'const PRAG_ATINGERE = 0.05;', 'const PRAG_ATINGERE = 0.2;', 'grupare', 'pragul atingerii prea larg (refuză alăturatele la 0,1 mm)')
 o('G02', GR, 'i.x === p0.x && i.y === p0.y && i.rotire === p0.rotire);', 'i.x === p0.x && i.y === p0.y);', 'grupare',
   'locul comun ignoră rotirea')
 o('G03', GR, '  const acelasiLoc = parti.every(', '  const acelasiLoc = false && parti.every(', 'grupare',

@@ -1,7 +1,8 @@
 # ADR 0130: Gruparea vectorilor
 
 **Starea:** acceptat pe 02.11.2026, la felia 6.T↑ (adusă din etapa 6), într-o sesiune paralelă (worktree-ul
-`wip/6.T-grupare`). **Completează:** degruparea (ADR 0103), al cărei invers este; modelul D (ADR 0024: piese și instanțe,
+`wip/6.T-grupare`); răspunsurile owner-ului la cele patru întrebări ale feliei, tot pe 02.11, sunt în §5, §8, „Ce am
+respins” și „Se redeschide dacă”. **Completează:** degruparea (ADR 0103), al cărei invers este; modelul D (ADR 0024: piese și instanțe,
 arborele piesei); textul (ADR 0105 §4: blocul pe rădăcina piesei). **Schimbă:** jurnalul comenzilor (ADR 0016, ADR 0103 §5:
 `regrupeaza` / `degrupeaza` primesc locurile părților), secțiunea Boolean și meniul de clic dreapta (ADR 0103 §6: un buton
 și un rând nou).
@@ -36,12 +37,20 @@ aliniază împreună. Degruparea există de pe 28.10, iar drumul înapoi era doa
    Cu alte instanțe între ele, tăieturile sunt aceleași, dar grupul se taie, în fiecare clasă, unde se tăia prima lui parte,
    iar celelalte după el. Regiunea păstrată (ADR 0026) și buzunarele (ADR 0073) se socotesc pe toată foaia, deci nu se
    schimbă. Comentariile programului poartă id-urile piesei și ale instanței, care se schimbă.
+   **Excepția: V-carve-urile cu aceleași valori din părți diferite** (două texte, un text în golul unei litere) se sapă, în
+   grup, ca o singură regiune par-impar (ADR 0112, precizarea din 5.8↑b), deci axa medială se calculează o dată pentru toate:
+   drumul frezei e altul (G-code-ul diferă), iar suprafața săpată rămâne în marginile V-carve-ului față de suprafața ideală
+   (pe oracolul simulării: niciodată mai adânc cu peste 0,002 mm, cel mult 0,015 mm de material lăsat). Măsurat, față de
+   săparea de dinainte: 0 la formele alăturate, cel mult 0,0077 mm la două texte.
 5. **Refuzurile, cu motiv:**
    - **mai puțin de două forme alese** pe foaia de lucru;
-   - **V-carve-uri cu aceleași valori în părți diferite.** O piesă își sapă V-carve-urile cu aceleași valori (freza,
-     adâncimea, pasul, sensul, fundul plat) ca o singură regiune, par-impar (ADR 0112, precizarea din 5.8↑b): grupate, două
-     texte s-ar săpa împreună, alt traseu. Valorile sunt scrise o singură dată, în `valoriVcarve` (`src/model/lume.ts`),
-     citite și de lucrare (`src/cam/job.ts`);
+   - **V-carve-uri cu aceleași valori în părți diferite, ale căror regiuni se ating sau se suprapun.** O piesă își sapă
+     V-carve-urile cu aceleași valori (freza, adâncimea, pasul, sensul, fundul plat) ca o singură regiune par-impar: grupate,
+     suprapunerea ar rămâne nesăpată. Cât regiunile nu se ating, se grupează (decizia owner-ului, 02.11: „v-carve oricum nu
+     s-a aplica intre litere si doar in interiorul unei singure litere”). Atingerea: punctele fiecărui contur, la cel mult
+     0,05 mm unul de altul, față de contururile celeilalte părți (cutiile le despart pe cele departe); fără atingere, un vârf
+     al fiecărui contur spune dacă stă în regiunea celeilalte. Valorile sunt scrise o singură dată, în `valoriVcarve`
+     (`src/model/lume.ts`), citite și de lucrare (`src/cam/job.ts`);
    - **piesa împărțită**: folosită și de o altă instanță, de pe orice foaie, sau aleasă de două ori. Gruparea ar lua piesa și
      celorlalte;
    - **plafoanele documentului** (nivelurile arborelui, nodurile), judecate de schema documentului pe documentul de după.
@@ -60,7 +69,8 @@ aliniază împreună. Degruparea există de pe 28.10, iar drumul înapoi era doa
    - Calculul vine la cerere, cu modulul acțiunilor (ca la degrupare, ADR 0103 §7); până atunci, „Editarea se încarcă încă”.
 8. **Alinierea.** Un grup e o singură instanță, deci alinierea, distribuirea și centrarea pe foaie (ADR 0050 §3, ADR 0110) îl
    mută ca un bloc: formele lui nu se mai suprapun (notița 3). Alinierea unei selecții de mai multe forme ca un bloc, fără
-   grupare, și avertismentul la contururile care ajung să se atingă rămân pentru o felie următoare, la alegerea owner-ului.
+   grupare, și avertismentul la contururile care ajung să se atingă rămân pentru o felie următoare, după unirea grupării
+   (owner-ul, 02.11: „3, ok”).
 
 ## Probele
 
@@ -74,7 +84,11 @@ aliniază împreună. Degruparea există de pe 28.10, iar drumul înapoi era doa
   - id-urile repetate (două forme cu găuri, două texte): redenumite, operațiile pe nodurile lor, textele editabile din nou
     după degrupare;
   - anularea și refacerea la bit, și cu o instanță între cele grupate; salvarea și redeschiderea prin ușa documentului;
-  - refuzurile: o formă, V-carve-urile, piesa împărțită, nivelurile;
+  - V-carve-urile cu aceleași valori, grupate (forme alăturate, un cerc în golul unui inel, două texte): suprafața săpată,
+    pe oracolul independent al simulării, în marginile probei V-carve-ului față de suprafața ideală, ca înainte de grupare;
+    refuzate când se ating sau se suprapun (peste latură, înăuntru, cuprinse, în cruce, lipite), primite la 0,1 mm sau cu
+    altă adâncime;
+  - refuzurile: o formă, piesa împărțită, nivelurile;
   - comanda din jurnal: partea mutată, locul în afara listei, locul repetat, `locuri` doar la unele aruncă.
 - **Unitar** (`actiuni.calcul.test.ts`): fără calcul, gruparea spune că editarea se încarcă; cu o formă, cere două.
 - **E2e** (`import.spec.ts`): un DXF cu trei contururi, degrupat, apoi grupat din meniul de clic dreapta, din butonul de lângă
@@ -90,11 +104,14 @@ aliniază împreună. Degruparea există de pe 28.10, iar drumul înapoi era doa
 
 - **Refuzul grupurilor în grupuri** (implicitul prudent, propus la pornirea feliei). Ar opri gruparea unui text sau a unui
   import cu orice altceva, iar modelul și degruparea au deja grupuri pe mai multe niveluri. Un nivel pe grupare, ca în
-  programele de desen. Rămâne întrebare pentru owner.
+  programele de desen. Owner-ul, pe 02.11: „1 e ok.”
 - **Unirea operațiilor cu același id** (o operație împărțită de degrupare, adunată la loc). Ar schimba ordinea tăierii la
   piesele cu mai multe operații pe aceleași contururi (ADR 0103 §3), deci G-code-ul.
 - **Grupul în locul primei părți, ceilalți copii cu inversa locului ei.** Inversa nu e exactă: lumea s-ar mișca cu câțiva ulp.
 - **Câte o comandă `sterge` / `adauga` pe parte.** Pătratică (ADR 0103 §5).
+- **Refuzul oricăror V-carve-uri cu aceleași valori în părți diferite** (prima formă a feliei, pe teama că două texte
+  s-ar săpa „împreună”). Owner-ul, pe 02.11: „v-carve oricum nu s-a aplica intre litere si doar in interiorul unei singure
+  litere”. Refuzul a rămas doar unde regiunile se ating sau se suprapun, singurul caz în care săparea s-ar schimba.
 - **Gruparea ghicită din suprapuneri** (notița 3). Doar ca propunere vizibilă, într-o felie a ei, dacă owner-ul o vrea.
 
 ## Limite și neprobat
@@ -108,6 +125,10 @@ aliniază împreună. Degruparea există de pe 28.10, iar drumul înapoi era doa
 
 ## Se redeschide dacă
 
-- owner-ul vrea grupurile în grupuri refuzate, sau o piesă cu mai multe instanțe grupată (azi refuzată);
-- alinierea trebuie să mute o selecție de mai multe forme ca un bloc, fără grupare;
+- o piesă cu mai multe instanțe trebuie grupată (azi refuzată). Owner-ul, pe 02.11: „in principiu vreau flexibilitate si
+  optiuni, dar cu quality of life ridicat. inteleg ca nu totul trebuie implementat acum, pentru ca nu indeplinim toate toate
+  situatiile.” Când nivelul doi devine vizibil (etapa 11), gruparea ei vine cu opțiuni (de exemplu, o copie independentă a
+  piesei, sau toate instanțele ei), fără pași în plus în cazul obișnuit;
+- alinierea trebuie să mute o selecție de mai multe forme ca un bloc, fără grupare (owner-ul, 02.11: „3, ok”, ca felie
+  următoare, după unirea grupării);
 - formele dintr-un grup trebuie alese și editate fără degrupare.

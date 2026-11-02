@@ -64,7 +64,7 @@ export const ro = {
   'motiv.degrupare-vcarve': 'Un V-carve își sapă contururile împreună (literele cu golurile lor): degrupate, golurile s-ar săpa și ele. Schimbă întâi operația, în fereastra exportului.',
   'motiv.degrupare-impartita': 'Piesa e folosită și de alte instanțe: degruparea ar desface-o și pe a lor.',
   'motiv.grupare-doua': 'Alege cel puțin două forme: gruparea le face o singură piesă.',
-  'motiv.grupare-vcarve': 'Două forme alese au câte un V-carve cu aceleași valori (freza, adâncimea, pasul): grupate, s-ar săpa împreună, ca o singură regiune. Schimbă întâi una dintre operații, în fereastra exportului.',
+  'motiv.grupare-vcarve': 'Două forme alese au câte un V-carve cu aceleași valori (freza, adâncimea, pasul) și se ating sau se suprapun: grupate, s-ar săpa ca o singură regiune, iar suprapunerea ar rămâne nesăpată. Depărtează-le, sau schimbă întâi una dintre operații în fereastra exportului.',
   'motiv.grupare-impartita': 'O piesă aleasă e folosită și de alte instanțe: gruparea ar lua-o și de la ele.',
   'actiune.text': 'Scrie textul',
   'motiv.text-gol': 'Textul n-are nicio literă de tăiat: doar spații, sau litere pe care fontul nu le are.',

@@ -16,6 +16,9 @@ import { aseazaText } from '../../src/text/asezare.ts';
 import { citesteFont } from '../../src/text/font.ts';
 import { piesaText } from '../../src/text/piesaText.ts';
 import { comandaDegrupare, comandaGrupare } from '../../src/ui/actiuniDocumentCalcul.ts';
+import { dimensiuni, judeca, type GrilaOracol } from '../oracles/simulare.ts';
+import { distantaLaContur, inRegiune } from '../../src/geom/distanta.ts';
+import { conturElement } from '../../src/model/forme.ts';
 
 /**
  * Gruparea (ADR 0130), inversul degrupării: formele alese devin o piesă, cu un grup nou pe rădăcină, într-un singur pas al
@@ -56,14 +59,16 @@ function doc(...x: readonly Pusa[]): Document {
   return { ...d, piese: x.map((p) => p.piesa), foi: [{ ...d.foi[0]!, instante: x.map((p) => p.instanta) }] };
 }
 
-/** G-code-ul GRBL al foii, fără comentarii (ele poartă id-urile, care se schimbă): ce se taie. */
-function taiat(d: Document): string {
+/** G-code-ul GRBL al foii, întreg. */
+function postat(d: Document): string {
   const j = programDinDocument(d);
   if (!j.ok) throw new Error(j.motiv);
   const r = posteaza(j.program, { foaie: STOC, origine: 'stanga-jos', z0: 'sus' }, GRBL_11, { asteptareAx: 3 });
   if (!r.ok) throw new Error('postul a refuzat programul');
-  return r.text.split('\n').filter((l) => !l.startsWith('(')).join('\n');
+  return r.text;
 }
+/** G-code-ul fără comentarii (ele poartă id-urile, care se schimbă): ce se taie. */
+const taiat = (d: Document): string => postat(d).split('\n').filter((l) => !l.startsWith('(')).join('\n');
 const miscariDeTaiere = (g: string): number => g.split('\n').filter((l) => /^G[123] /.test(l)).length;
 /** Fiecare element în lume, ca (formă, matrice), în ordinea foii. */
 const lume = (d: Document) => elementeFoaie(d).map((e) => ({ forma: e.forma, matrice: e.matrice }));
@@ -249,20 +254,115 @@ test('salvarea și redeschiderea: ușa documentului deschide grupul la fel', () 
   assert.deepEqual(lume(u.doc), lume(dupa));
 });
 
-test('refuzurile, cu motiv: o singură formă, V-carve-urile cu aceleași valori în părți diferite, piesa împărțită, nivelurile', () => {
+const V90: Operatie['scula'] = { numar: 2, nume: 'V90', diametru: 20, forma: { tip: 'v', unghi: 90 } };
+/** Operațiile formei, trecute pe V-carve cu V90, la `adancime` mm într-o trecere (ca în `vcarve.test.ts`). */
+const cuV = (x: Pusa, adancime = 10): Pusa => ({
+  ...x, piesa: { ...x.piesa, operatii: x.piesa.operatii.map((o) => ({ ...o, tip: 'vcarve' as const, latura: 'interior' as const, scula: V90, adancime, pas: adancime })) },
+});
+/** Suprafața săpată de G-code-ul exportat, după oracolul independent al simulării (ADR 0047), pe grila dată. */
+const sapat = (d: Document, grila: GrilaOracol): Float64Array => judeca(postat(d), grila, { tip: 'v', diametru: 20, unghi: 90 }).z;
+const abatere = (a: Float64Array, b: Float64Array): number => a.reduce((m, z, i) => Math.max(m, Math.abs(z - (b[i] ?? Number.NaN))), 0);
+/**
+ * Suprafața săpată față de cea ideală a V-carve-ului (ADR 0090), −min(10, d·cot 45°) în regiunea par-impar a tuturor
+ * contururilor foii (d = distanța la cel mai apropiat), 0 în afară: cât e mai adânc (`peste`), cât material rămâne (`sub`),
+ * cât e săpat în afară. Regiunile părților nu se ating, deci regiunea lor comună e chiar reuniunea lor.
+ */
+function fataDeIdeala(d: Document, grila: GrilaOracol, z: Float64Array): { readonly peste: number; readonly sub: number; readonly afara: number } {
+  const contururi = elementeFoaie(d).map((e) => conturElement(e));
+  const { nx } = dimensiuni(grila);
+  let peste = 0, sub = 0, afara = 0;
+  z.forEach((zi, k) => {
+    const p = { x: grila.x0 + ((k % nx) + 0.5) * grila.celula, y: grila.y0 + (Math.floor(k / nx) + 0.5) * grila.celula };
+    if (!inRegiune(p, contururi)) {
+      afara = Math.max(afara, -zi);
+      return;
+    }
+    const ideal = -Math.min(10, Math.min(...contururi.map((c) => distantaLaContur(p, c))));
+    peste = Math.max(peste, ideal - zi);
+    sub = Math.max(sub, zi - ideal);
+  });
+  return { peste, sub, afara };
+}
+
+// Marginile probei V-carve-ului (`vcarve.test.ts`), pe oracol: niciodată mai adânc decât suprafața ideală cu peste 0,002 mm
+// (rotunjirea G-code-ului), cel mult 0,015 mm de material lăsat, nimic săpat în afară. Pe un text, cubicele devin biarce la
+// toleranța proiectului (0,001 mm, ADR 0033), deci „mai adânc” și „în afară” primesc încă 0,001 mm.
+const MARGINI = { peste: 0.002, sub: 0.015, afara: 1e-6 } as const;
+const MARGINI_TEXT = { peste: 0.003, sub: 0.015, afara: 0.003 } as const;
+const inMargini = (b: { readonly peste: number; readonly sub: number; readonly afara: number }, m: typeof MARGINI | typeof MARGINI_TEXT): boolean =>
+  b.peste <= m.peste && b.sub <= m.sub && b.afara <= m.afara;
+
+test('V-carve-urile cu aceleași valori din forme diferite se grupează cât nu se ating: suprafața săpată rămâne în marginile V-carve-ului (oracolul simulării), și cu o formă în golul alteia', (t) => {
+  // Dreptunghiul 12 × 6 din (20, 20) și cercul R5 din (40, 23), alăturate; inelul R10 / R6 din (70, 30), cu cercul R2 în golul lui.
+  const A = cuV(forma('e1', dreptunghi(12, 6), 20, 20));
+  const B = cuV(forma('e2', cerc(5), 40, 23));
+  const inel: Pusa = cuV({
+    piesa: {
+      id: 'e3',
+      radacina: { tip: 'grup', id: 'g', matrice: ID, copii: [{ tip: 'element', id: 'c1', forma: cerc(10), matrice: ID }, { tip: 'element', id: 'c2', forma: cerc(6), matrice: ID }] },
+      operatii: [{ ...operatieImplicita('c1', cerc(10)), noduri: ['c1', 'c2'] }],
+    },
+    instanta: { id: 'e3', piesa: 'e3', x: 70, y: 30, rotire: 0 },
+  });
+  const C = cuV(forma('e4', cerc(2), 70, 30));
+  const d = doc(A, B, inel, C);
+  const grila: GrilaOracol = { x0: 18, y0: 16, latime: 64, inaltime: 26, celula: 0.1 };
+  const inainte = sapat(d, grila);
+  assert.ok(inainte.some((z) => z < -1), 'grila nu prinde nimic săpat');
+  const b0 = fataDeIdeala(d, grila, inainte);
+  t.diagnostic(`înainte, față de ideală: ${JSON.stringify(b0)}`);
+  assert.ok(inMargini(b0, MARGINI), `înainte: ${JSON.stringify(b0)}`);
+  for (const alese of [['e1', 'e2'], ['e3', 'e4'], ['e1', 'e2', 'e3', 'e4']]) {
+    const { dupa } = grupeaza(d, alese);
+    const z = sapat(dupa, grila);
+    const b = fataDeIdeala(d, grila, z);
+    t.diagnostic(`${alese.join(' + ')}: față de ideală ${JSON.stringify(b)}; față de cea dinainte ${abatere(z, inainte)} mm; G-code-ul fără comentarii ${taiat(dupa) === taiat(d) ? 'același' : 'altul'}`);
+    assert.ok(inMargini(b, MARGINI), `${alese.join(' + ')}: ${JSON.stringify(b)}`);
+  }
+});
+
+test('V-carve-urile cu aceleași valori care se ating sau se suprapun nu se grupează (par-impar, suprapunerea ar rămâne nesăpată); cu altă adâncime, da', () => {
+  const D = cuV(forma('e1', dreptunghi(12, 6), 20, 20));
+  const caz = (x: Pusa) => comandaGrupare(doc(D, x), ['e1', x.instanta.id]);
+  const refuz = { ok: false, motiv: 'motiv.grupare-vcarve' };
+  // Cercul peste latura dreptunghiului; un cerc mic înăuntrul lui și unul mare care îl cuprinde, fără atingere; crucea (niciun
+  // vârf în cealaltă formă); lipite.
+  assert.deepEqual(caz(cuV(forma('e2', cerc(5), 30, 23))), refuz);
+  assert.deepEqual(caz(cuV(forma('e2', cerc(1), 24, 23))), refuz);
+  assert.deepEqual(caz(cuV(forma('e2', cerc(20), 26, 23))), refuz);
+  assert.deepEqual(caz(cuV(forma('e2', dreptunghi(4, 20), 24, 10))), refuz);
+  assert.deepEqual(caz(cuV(forma('e2', dreptunghi(5, 6), 32, 20))), refuz);
+  // La 0,1 mm, alăturate: se grupează. Cu altă adâncime, sunt regiuni diferite: se grupează și suprapuse.
+  assert.equal(caz(cuV(forma('e2', dreptunghi(5, 6), 32.1, 20))).ok, true);
+  assert.equal(caz(cuV(forma('e2', cerc(5), 30, 23), 8)).ok, true);
+});
+
+test('două texte cu același V-carve (decizia owner-ului: V-carve-ul sapă doar înăuntrul fiecărei litere) se grupează, cu suprafața săpată în marginile V-carve-ului', (t) => {
+  const r = citesteFont(new Uint8Array(readFileSync(new URL('../../public/fonturi/roboto.ttf', import.meta.url))));
+  if (!r.ok) throw new Error(r.cod);
+  const text = (id: string, continut: string, x: number): Pusa => {
+    const p = { continut, inaltime: 20, spatiere: 0, interlinie: 1, aliniere: 'stanga' as const };
+    const q = piesaText(aseazaText(r.font, p), { ...p, font: 'roboto' }, id);
+    if (!q.ok) throw new Error(q.motiv);
+    return cuV({ piesa: q.piesa, instanta: { id, piesa: id, x, y: 100, rotire: 0 } });
+  };
+  const d = doc(text('p1', 'O', 20), text('p2', 'D', 45));
+  const grila: GrilaOracol = { x0: 18, y0: 98, latime: 46, inaltime: 25, celula: 0.1 };
+  const inainte = sapat(d, grila);
+  const { dupa } = grupeaza(d, ['p1', 'p2']);
+  const z = sapat(dupa, grila);
+  assert.ok(inainte.some((x) => x < -0.5), 'grila nu prinde nimic săpat');
+  const b0 = fataDeIdeala(d, grila, inainte), b = fataDeIdeala(d, grila, z);
+  t.diagnostic(`față de ideală, înainte: ${JSON.stringify(b0)}; după: ${JSON.stringify(b)}; față de cea dinainte ${abatere(z, inainte)} mm; G-code-ul fără comentarii ${taiat(dupa) === taiat(d) ? 'același' : 'altul'}`);
+  assert.ok(inMargini(b0, MARGINI_TEXT), `înainte: ${JSON.stringify(b0)}`);
+  assert.ok(inMargini(b, MARGINI_TEXT), `după: ${JSON.stringify(b)}`);
+});
+
+test('refuzurile, cu motiv: o singură formă, piesa împărțită, nivelurile', () => {
   const A = forma('e1', dreptunghi(60, 40), 20, 20);
   const B = forma('e2', cerc(6), 140, 50);
   const d = doc(A, B);
   for (const alese of [['e1'], [], ['e1', 'nu-e']]) assert.deepEqual(comandaGrupare(d, alese), { ok: false, motiv: 'motiv.grupare-doua' });
-  // V-carve-urile cu aceleași valori (freza, adâncimea, pasul, sensul) s-ar săpa ca o singură regiune; cu altă adâncime (doar
-  // ea), rămân două.
-  const V60: Operatie['scula'] = { numar: 2, nume: 'V60', diametru: 12, forma: { tip: 'v', unghi: 60 } };
-  const cuV = (x: Pusa, adancime: number): Pusa => ({
-    ...x, piesa: { ...x.piesa, operatii: x.piesa.operatii.map((o) => ({ ...o, tip: 'vcarve', latura: 'interior', scula: V60, adancime, pas: 1 })) },
-  });
-  assert.deepEqual(comandaGrupare(doc(cuV(A, 3), cuV(B, 3)), ['e1', 'e2']), { ok: false, motiv: 'motiv.grupare-vcarve' });
-  assert.equal(comandaGrupare(doc(cuV(A, 3), cuV(B, 2)), ['e1', 'e2']).ok, true);
-  assert.equal(comandaGrupare(doc(cuV(A, 3), B), ['e1', 'e2']).ok, true);
   // Piesa lui e1 are și instanța i2: gruparea ar lua-o și pe a ei; la fel, alese amândouă.
   const imp: Document = { ...d, foi: d.foi.map((f) => ({ ...f, instante: [...f.instante, { ...A.instanta, id: 'i2', x: 200 }] })) };
   assert.deepEqual(comandaGrupare(imp, ['e1', 'e2']), { ok: false, motiv: 'motiv.grupare-impartita' });

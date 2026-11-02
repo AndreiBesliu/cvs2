@@ -324,8 +324,10 @@ locul primei forme alese în ordinea tăierii; dacă între formele alese erau a
 Într-un grup, un text e doar vectori; după degrupare, se editează din nou. După grupare, ales e grupul, iar un singur `Ctrl+Z`
 desface gruparea, cu fiecare formă la locul ei.
 
-Gruparea se refuză, cu motivul spus lângă butoane, dacă e aleasă o singură formă, dacă două forme au câte un **V-carve** cu
-aceleași valori (grupate, s-ar săpa împreună, ca o singură regiune) sau dacă o piesă aleasă e folosită și de alte instanțe.
+Două texte (sau forme) cu câte un **V-carve** cu aceleași valori se grupează: freza le sapă într-un singur drum, iar fiecare
+literă iese la fel. Gruparea se refuză, cu motivul spus lângă butoane, dacă e aleasă o singură formă, dacă două forme cu
+același V-carve se ating sau se suprapun (grupate, s-ar săpa ca o singură regiune, iar suprapunerea ar rămâne nesăpată) sau
+dacă o piesă aleasă e folosită și de alte instanțe.
 
 ## Meniul de clic dreapta
 %% capitol: meniu
