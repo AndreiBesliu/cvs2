@@ -366,6 +366,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/unit/post.contracte.ateliere.test.ts`:** programul lui pe hârtie, codurile documentate ale controlerului (pe hârtie,
   cu sursa), iar cititorul dialectelor (`test/unit/ajutor-dialecte.ts`) îl compară pe corpusul CAM cu GRBL 1.1. Urmează 4.6↑b
   (pachetul de atelier, T0–T7). **Pornirea 98,4 (cu ușa 101,9 / 110 kB), totalul 448,9 / 500.**
+  **Gruparea (ADR 0130, felia 6.T↑, adusă din etapa 6)** gata pe 02.11, într-o sesiune paralelă (worktree-ul
+  `wip/6.T-grupare`), la cererea owner-ului („vreau sa deschidem un worktree care sa faca si functia de group care sa stea
+  langa ungroup”): **Grupează** (lângă Degrupează, meniul de clic dreapta, Ctrl+G) face din cel puțin două forme o piesă, cu un
+  grup nou pe rădăcină, la bit în lume, cu operațiile înșirate (G-code-ul același cât formele stau una după alta). Gruparea e
+  comanda `regrupeaza` a degrupării, cu `locuri` (indicii părților): inversa le pune exact unde erau. **Valorile care unesc
+  V-carve-urile unei piese stau o singură dată, în `valoriVcarve` (`src/model/lume.ts`)**: lucrarea și gruparea le citesc de
+  acolo. **Pe ramură, pornirea 99,1 (cu ușa 102,6 / 110 kB), totalul 450,2 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

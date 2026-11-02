@@ -4559,3 +4559,35 @@ linia principală continuă de la 0125), traducerile (531, 0 lipsă). Codul: `dd
 are ADR 0122 și felia 3.R, în ambele limbi; editorul trece pe versiunea nouă după „Reload”. Sesiunea dedicată liniei
 Trenuleț (cerută: „poate il punem intr-un worktree dedicat”) n-a pornit: sub Remote Control, o sesiune nouă pornește doar
 dintr-un mesaj scris în aplicația desktop.
+
+## 2026-11-02 — Felia 6.T↑: gruparea vectorilor (ADR 0130) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem un worktree care sa faca si functia de group care sa stea langa ungroup” (owner-ul, pe 02.11,
+în sesiunea principală, care a pornit sesiunea paralelă a grupării cu brief-ul ei).
+**Started:** 02.11, 20:35. **Completed:** 02.11, 21:33.
+
+Într-o sesiune paralelă, în worktree-ul `C:\Users\besli\cncvs2-lucru\grupare` (ramura `wip/6.T-grupare`, din `main`
+`77a1be6`), pe portul e2e 4177. **Grupează** (butonul de lângă Degrupează, primul rând din meniul de clic dreapta, Ctrl+G,
+paleta) face din cel puțin două forme alese o singură piesă: un grup nou pe rădăcină, cu câte un copil pe formă, în ordinea
+foii, într-un pas de anulare. Lumea rămâne la bit (locul comun al formelor, ca la părțile unei degrupări, sau originea, cu
+locul fiecăreia compus în rădăcina ei), iar operațiile se înșiră parte după parte, deci G-code-ul, fără comentarii, e același
+cât formele stau una după alta în ordinea foii. Id-urile care s-ar repeta primesc `_<n>`, iar blocul unui text primește
+amprenta contururilor redenumite: după degrupare, textul se editează din nou. Refuzate, cu motiv: o singură formă, două
+V-carve-uri cu aceleași valori în forme diferite (s-ar săpa ca o regiune; valorile stau acum o singură dată, în
+`valoriVcarve`, citite și de lucrare), piesa împărțită, nivelurile. Comanda e `regrupeaza` a degrupării, cu `locuri`
+(indicii părților): inversa pune fiecare formă exact unde era. Implicitele alese de mine, scrise în ADR, cu întrebările în
+raport: grupurile în grupuri permise (un nivel pe grupare), piesa cu mai multe instanțe refuzată, alinierea selecției ca bloc
+(fără grupare) într-o felie următoare. La zi: ADR 0130, indexul, manualul (ro, en: capitolul Gruparea, meniul, scurtăturile),
+fișa (6.T↑), CLAUDE.md, ACOPERIRE (rândul vectorilor), traducerile (536, 0 lipsă). Codul: `791be6b`.
+**Porțile:** compilatorul, importurile (17 reguli, 0 încălcări), traducerile (0 lipsă), 8 045 de teste unitare (8 035 trec, 2
+picau pe ADR-ul încă netradus, verzi după traducere; 8 sărite), build-ul determinist (228 de fișiere identice; pornirea 98,4 →
+99,1 / 110 kB, cu ușa 102,6; totalul 448,9 → 450,2 / 500), e2e pe 4177: 296 de probe, toate verzi în afară de
+`raportor.spec.ts:73`, care cere adresa `http://localhost:4173/` (cunoscută, de mediu: portul e al sesiunii principale), iar
+proba manualului a cerut 25 de capitole (capitolul nou). Emulatoarele n-au rulat: felia nu atinge funcțiile sau regulile.
+Otrăvurile din `test/otravuri/6.T.py`: **27 / 27** prinse (22 unitare, 5 pe e2e, cele din urmă cu build-ul și Playwright prin
+`node`, npm fiind stricat în Git Bash). Lista a arătat întâi cinci goluri în probe, închise înainte de rulare (aceeași poziție
+cu altă rotire, numele comun, o formă împărțită aleasă singură, ordinea compunerii cu o rădăcină oglindită, cheia V-carve-ului
+fără adâncime).
+**Publicat pe canalul `grupare`** pe 02.11, la 21:32: <https://cncvectorstudio-test--grupare-lkwk3rmp.web.app> (versiunea
+`791be6b6bb13`, până pe 02.12). Verificat acolo: două forme alese, Ctrl+G, un singur rând („Part: 2 shapes”, cu ambele
+operații), Degrupează activ; Ctrl+Z le desface la loc.

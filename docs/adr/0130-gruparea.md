@@ -81,7 +81,10 @@ aliniază împreună. Degruparea există de pe 28.10, iar drumul înapoi era doa
   boolean și cu Ctrl+G, cu Ctrl+Z între ele; după reîncărcarea paginii, grupul e tot acolo; cu o singură formă aleasă,
   Grupează e inactiv în meniu și în bară.
 - **Manualul:** capitolul „Gruparea” (ro + en), rândul din meniul de clic dreapta, tasta în capitolul scurtăturilor; ușa nouă
-  în poarta manualului (69).
+  în poarta manualului (69), capitolul nou în proba e2e a manualului (25).
+- **Mutațiile: 27 / 27** (`test/otravuri/6.T.py`: 22 pe probele unitare, 5 pe e2e). Lista a arătat întâi cinci goluri în
+  probe, închise înainte de rulare: aceeași poziție cu altă rotire, numele comun, o formă împărțită aleasă singură, ordinea
+  compunerii (nevăzută fără o rădăcină oglindită), cheia V-carve-ului fără adâncime (nevăzută cu pasul diferit).
 
 ## Ce am respins
 
