@@ -19,8 +19,25 @@ export type ProgramExportat = {
   readonly sectiuni: readonly Sectiune[];
 };
 
-/** Un fișier al exportului: cu strategia „fișiere separate” (ADR 0084), scula lui; altfel null (programul întreg). */
-export type FisierExportat = ProgramExportat & { readonly scula: Scula | null };
+/**
+ * Un fișier al exportului: cu strategia „fișiere separate” (ADR 0084), scula lui; altfel null (programul întreg). `nume`:
+ * numele descărcării (`numeFisier`).
+ */
+export type FisierExportat = ProgramExportat & { readonly scula: Scula | null; readonly nume: string };
+
+/**
+ * Numele unui fișier exportat: `cncvs2-<origine>.<ext>`, sau, pe sculă, `cncvs2-<origine>-<ordinea>-T<n>.<ext>` (aceeași
+ * freză poate reveni: interioarele, apoi exterioarele). Pe un controler care citește de pe un stick FAT (`numeScurt`,
+ * RichAuto), cel mult 8 caractere ASCII cu majuscule: `CNCVS2.NC`, `CV<ordinea>T<n>.NC` (s8 Anexa B).
+ */
+export function numeFisier(contract: Contract, origine: string, index: number, scula: Scula | null): string {
+  if (contract.numeScurt) {
+    const ext = contract.extensie.toUpperCase();
+    return scula ? `CV${index + 1}T${scula.numar}.${ext}` : `CNCVS2.${ext}`;
+  }
+  const baza = `cncvs2-${origine}`;
+  return scula ? `${baza}-${index + 1}-T${scula.numar}.${contract.extensie}` : `${baza}.${contract.extensie}`;
+}
 
 export async function sha256Hex(octeti: Uint8Array<ArrayBuffer>): Promise<string> {
   const rezumat = await crypto.subtle.digest('SHA-256', octeti);
@@ -54,7 +71,7 @@ export async function exporta(
     for (const f of r.fisiere) {
       const c = await codifica(f, contract.extensie);
       if (!c) return ascii;
-      fisiere.push({ ...c, scula: f.scula });
+      fisiere.push({ ...c, scula: f.scula, nume: numeFisier(contract, montaj.origine, fisiere.length, f.scula) });
     }
     const prim = fisiere[0];
     if (!prim) return { ok: false, motiv: 'programul n-are nicio tăiere' };
@@ -64,5 +81,5 @@ export async function exporta(
   if (!r.ok) return r;
   const c = await codifica(r, contract.extensie);
   if (!c) return ascii;
-  return { ok: true, exportat: c, fisiere: [{ ...c, scula: null }] };
+  return { ok: true, exportat: c, fisiere: [{ ...c, scula: null, nume: numeFisier(contract, montaj.origine, 0, null) }] };
 }

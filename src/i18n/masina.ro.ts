@@ -23,7 +23,7 @@ export const roMasina = {
   'masina.program': 'Programul',
   'masina.program.export': 'Ultimul export',
   'masina.program.export.titlu': 'Programul ultimului Exportă G-code, exact octeții lui (SHA-256-ul e același).',
-  'masina.program.export.lipsa': 'Exportă întâi un program (Exportă G-code).',
+  'masina.program.export.lipsa': 'Exportă întâi un program pentru familia GRBL (Exportă G-code); celelalte posturi se rulează de pe controlerul lor.',
   'masina.program.fisier': 'Fișier…',
   'masina.program.fisier.titlu': 'Un fișier G-code din alt program: se verifică înainte de trimitere.',
   'masina.program.niciunul': 'Niciun program încărcat.',

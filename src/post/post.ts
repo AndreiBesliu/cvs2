@@ -126,6 +126,7 @@ function scrie(
   const schimbari = program.miscari.some((m) => m.tip === 'schimba-scula');
   if (schimbari && strategie === 'fisiere-separate') throw new EroarePost('cu fișiere separate pe sculă, programul se scrie cu posteazaPeScule');
   const inch = optiuni.unitati === 'inch';
+  if (inch && k.unitati.inch === null) throw new EroarePost(`${k.nume} citește programe doar în mm`);
   /** Din mm în unitatea programului. */
   const u = (mm: number): number => (inch ? mm / MM_PE_INCH : mm);
   const zec = inch ? k.zecimaleInch : k.zecimaleMm;
@@ -133,7 +134,9 @@ function scrie(
   const t = transformareMontaj(montaj);
   const oglindit = oglindeste(t);
   const n = (v: number): string => numar(v, zec);
-  const antet = k.antet.map((l) => l.replace('{unitati}', k.unitati[inch ? 'inch' : 'mm']));
+  const antet = k.antet.map((l) => l.replace('{unitati}', (inch ? k.unitati.inch : k.unitati.mm) ?? ''));
+  /** Liniile sculei din contract (`{n}` = numărul ei): schimbarea, pornirea, compensarea lungimii. */
+  const cuScula = (sabloane: readonly string[], n: number): string[] => sabloane.map((l) => l.replaceAll('{n}', String(n)));
   const linii: string[] = [];
 
   const adauga = (linie: string): void => {
@@ -144,6 +147,8 @@ function scrie(
     linii.push(linie);
   };
   const comentariu = (text: string): void => {
+    // Un controler fără comentarii documentate (RichAuto) nu primește niciunul: ar putea opri citirea (s8 A.5).
+    if (k.comentariu === null) return;
     const { deschidere, inchidere } = k.comentariu;
     const loc = k.liniaMaxima - deschidere.length - inchidere.length;
     adauga(`${deschidere}${textAscii(text, deschidere + inchidere).slice(0, loc)}${inchidere}`);
@@ -270,18 +275,23 @@ function scrie(
   };
 
   const zSigur = program.zSigur;
-  const pauza = (secunde: number): string => `${k.pauza.cuvant}${k.pauza.unitate === 's' ? numar(secunde, 3) : String(Math.round(secunde * 1000))}`;
+  /** Pauza în unitatea controlerului; null pe un controler care așteaptă axul singur, după setarea lui. */
+  const pauza = (secunde: number): string | null => (k.pauza === null ? null
+    : `${k.pauza.cuvant}${k.pauza.unitate === 's' ? numar(secunde, 3) : String(Math.round(secunde * 1000))}`);
   const pornesteAx = (turatie: number): void => {
     if (!(turatie > 0) || !Number.isInteger(turatie)) throw new EroarePost(`turație nevalidă: ${turatie}`);
     adauga(`M3 S${turatie}`);
-    adauga(pauza(optiuni.asteptareAx));
+    const p = pauza(optiuni.asteptareAx);
+    if (p !== null) adauga(p);
   };
   const descrieScula = (s: Scula): string => `scula T${s.numar} ${s.nume} D${numar(s.diametru, 3)}`;
 
   // ── Antetul: cine a scris programul, pentru ce montaj și cu ce sculă; apoi tot ce e modal, explicit. ──
   const { foaie } = montaj;
+  for (const l of k.inceput) adauga(l);
   comentariu('CNC Vector Studio');
   comentariu(`post ${k.nume}`);
+  for (const s of k.setari) comentariu(`controler: ${s}`);
   comentariu(`origine ${montaj.origine}, Z0 ${montaj.z0}, foaia ${numar(foaie.latime, 3)} x ${numar(foaie.inaltime, 3)} x ${numar(foaie.grosime, 3)} mm`);
   comentariu(descrieScula(program.scula));
   if (schimbari && strategie !== 'fisiere-separate') comentariu(DESCRIERE_STRATEGIE[strategie]);
@@ -290,13 +300,17 @@ function scrie(
     for (const v of [stanga, dreapta, jos, sus]) {
       if (!(v >= 0)) throw new EroarePost(`ieșirea din foaie nu poate fi ${v} mm`);
     }
+    // Confirmarea stă în program, ca s-o vadă și cel de la mașină (decizia din 07.10): fără comentarii, nu se poate scrie.
+    if (k.comentariu === null) throw new EroarePost(`${k.nume} n-are comentarii: ieșirea din foaie confirmată nu se poate scrie în program`);
     const { deschidere, inchidere } = k.comentariu;
     // Prin `adauga`, nu prin `comentariu`: linia contractului nu se taie niciodată în tăcere; prea lungă, exportul cade.
     adauga(`${deschidere}CONFIRMAT: freza iese din foaie${inchidere}`);
     adauga(`${deschidere}iesire mm: st ${numar(stanga, 3)} dr ${numar(dreapta, 3)} jos ${numar(jos, 3)} sus ${numar(sus, 3)}${inchidere}`);
   }
   for (const l of antet) adauga(l);
-  adauga(k.wcs);
+  for (const l of cuScula(k.scula.pornire, program.scula.numar)) adauga(l);
+  if (k.wcs !== null) adauga(k.wcs);
+  for (const l of cuScula(k.scula.compensare, program.scula.numar)) adauga(l);
 
   adauga(`G0${cuvinte({ Z: zSigur })}`);
   pornesteAx(program.turatie);
@@ -307,6 +321,18 @@ function scrie(
     switch (mv.tip) {
       case 'rapida': {
         if (pePozitie(mv.la)) break;
+        const { X, Y, Z } = mv.la;
+        if (k.rapidaSeparata && Z !== undefined && (X !== undefined || Y !== undefined)) {
+          // Pe un G0 care poate merge în „L”: la urcare întâi Z, la coborâre întâi XY, ca freza să nu treacă prin piesă.
+          const z: Pozitie = { Z };
+          const xy: Pozitie = { ...(X !== undefined ? { X } : {}), ...(Y !== undefined ? { Y } : {}) };
+          for (const parte of doc.z === undefined || Z >= doc.z ? [z, xy] : [xy, z]) {
+            if (pePozitie(parte)) continue;
+            const w = cuvinte(parte);
+            if (w) adauga(`G0${w}`);
+          }
+          break;
+        }
         const w = cuvinte(mv.la);
         if (w) adauga(`G0${w}`);
         break;
@@ -325,9 +351,12 @@ function scrie(
       case 'ax-oprit':
         adauga('M5');
         break;
-      case 'pauza':
-        adauga(pauza(mv.secunde));
+      case 'pauza': {
+        const p = pauza(mv.secunde);
+        if (p === null) throw new EroarePost(`${k.nume} n-are o pauză documentată (G4): programul nu poate aștepta ${mv.secunde} s`);
+        adauga(p);
         break;
+      }
       case 'eticheta':
         if (mv.element !== undefined || mv.operatie !== undefined) {
           sectiuni.push({
@@ -348,15 +377,16 @@ function scrie(
           adauga('M0');
         } else {
           comentariu(descrieScula(s));
-          adauga(`T${s.numar} M6`);
+          for (const l of cuScula(k.scula.schimbare, s.numar)) adauga(l);
         }
         // Ce urmează e al noii scule (rezumatul pe scule): blocul de după, apoi operațiile ei.
         sectiuni.push({ linie: linii.length, scula: s.numar });
         // Blocul de după (PORTARE §3.4): starea modală întâi (palparea sau o comandă a omului pot lăsa G91 / G20), WCS-ul,
-        // Z sigur, axul cu turația noii scule și pauza; F se scrie din nou la prima tăiere. XY nu se mai știe: următoarea
-        // deplasare se scrie întreagă.
+        // compensarea lungimii noii scule (după G49 din antet), Z sigur, axul cu turația ei și pauza; F se scrie din nou la
+        // prima tăiere. XY nu se mai știe: următoarea deplasare se scrie întreagă.
         for (const l of antet) adauga(l);
-        adauga(k.wcs);
+        if (k.wcs !== null) adauga(k.wcs);
+        for (const l of cuScula(k.scula.compensare, s.numar)) adauga(l);
         scris.x = undefined; scris.y = undefined; scris.z = undefined;
         doc.x = undefined; doc.y = undefined;
         avansCurent = undefined;

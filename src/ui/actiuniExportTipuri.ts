@@ -33,18 +33,25 @@ export const MARGINI_OPERATIE = {
 } as const;
 
 /**
- * Posturile din fereastra exportului (ADR 0083): id-ul, numele și dacă e probat pe o mașină (toate câmpurile contractului
- * „probate”); unul doar documentat poartă o notă.
+ * Posturile din fereastra exportului (ADR 0083, 0125): id-ul, numele și dacă e probat pe o mașină (toate câmpurile
+ * contractului „probate”); unul doar documentat poartă o notă.
  */
 export const POSTURI_EXPORT: readonly {
   readonly id: IdContract; readonly nume: string; readonly probat: boolean;
   /** Strategiile schimbării sculei pe care le acceptă controlerul (ADR 0083), cu cea implicită întâi. */
   readonly strategii: readonly StrategieScula[];
+  /** Controlerul citește și inch (RichAuto: doar mm). */
+  readonly inch: boolean;
+  /** Senderul aplicației îi vorbește (familia GRBL); altfel, fișierul doar se descarcă. */
+  readonly sender: boolean;
+  /** Setările controlerului de verificat înainte de pornire (s8 §5.10), cu numele lor de pe controler. */
+  readonly setari: readonly string[];
 }[] = ID_CONTRACTE.map((id) => {
   const k = CONTRACTE[id];
   return {
     id, nume: k.nume, probat: Object.values(k.surse).every((s) => s.stare === 'probat'),
     strategii: [k.scula.implicita, ...k.scula.acceptate.filter((x) => x !== k.scula.implicita)],
+    inch: k.unitati.inch !== null, sender: k.senderAplicatie, setari: k.setari,
   };
 });
 
@@ -134,6 +141,8 @@ export type RezultatExport =
     readonly ok: true; readonly program: ProgramExportat; readonly avertismente: readonly string[]; readonly rezumat: RezumatJob;
     /** Fișierele de descărcat: unul, sau câte unul pe sculă (ADR 0084); `program` e primul. */
     readonly fisiere: readonly FisierExportat[];
+    /** Postul e al senderului aplicației (familia GRBL): fișierele ajung și în panoul mașinii (ADR 0125). */
+    readonly sender: boolean;
     /**
      * Simularea, pornită de aplicație DUPĂ descărcare (recenzia 19.10: descărcarea aștepta simularea, până la 10 s pe o
      * foaie mare și un fir); semnalul o anulează (un export nou, un parametru schimbat, dialogul închis).

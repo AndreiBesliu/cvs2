@@ -12,7 +12,7 @@ import { TABELE } from '../../src/machine/coduri/tabel.ts';
 import { textCoduriEn } from '../../src/machine/coduri/texte.en.ts';
 import { textCoduriRo } from '../../src/machine/coduri/texte.ro.ts';
 import { citesteRaspuns, familieDinLinie } from '../../src/machine/raspunsuri.ts';
-import { ID_CONTRACTE } from '../../src/post/contracte/index.ts';
+import { CONTRACTE, ID_CONTRACTE } from '../../src/post/contracte/index.ts';
 
 const de = (a: number, b: number): number[] => Array.from({ length: b - a + 1 }, (_, k) => a + k);
 const chei = (t: Readonly<Record<number, unknown>>): number[] => Object.keys(t).map(Number).sort((a, b) => a - b);
@@ -29,8 +29,8 @@ const SURSE: Readonly<Record<FamilieCoduri, { readonly erori: readonly number[];
 /** Alarmele critice („Reset to continue”): GRBL `protocol.c`, grblHAL `alarm_is_critical`, FluidNC `protocol_do_alarm`. */
 const CRITICE: Readonly<Record<FamilieCoduri, readonly number[]>> = { 'grbl-11': [1, 2], grblhal: [1, 2, 10, 17, 20], fluidnc: [1, 2, 13] };
 
-test('familiile dicționarului sunt contractele postului', () => {
-  assert.deepEqual([...FAMILII_CODURI].sort(), [...ID_CONTRACTE].sort());
+test('familiile dicționarului sunt contractele senderului (familia GRBL; celelalte se rulează de pe controlerul lor, ADR 0125)', () => {
+  assert.deepEqual([...FAMILII_CODURI].sort(), ID_CONTRACTE.filter((id) => CONTRACTE[id].senderAplicatie).sort());
 });
 
 for (const f of FAMILII_CODURI) {

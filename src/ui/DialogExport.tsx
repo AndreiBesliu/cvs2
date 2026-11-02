@@ -314,8 +314,10 @@ export function DialogExport(
   const [origine, setOrigine] = useState<(typeof COLTURI)[number]>('stanga-jos');
   const [z0, setZ0] = useState<'sus' | 'jos'>('sus');
   const [post, setPost] = useState<IdContract>('grbl-11');
-  const [unitati, setUnitati] = useState<Unitati>('mm');
+  const [unitatiCerute, setUnitati] = useState<Unitati>('mm');
   const postAles = POSTURI_EXPORT.find((x) => x.id === post);
+  // Un controler care citește doar mm (RichAuto) nu primește inch; alegerea omului rămâne pentru celelalte posturi.
+  const unitati: Unitati = postAles?.inch === false ? 'mm' : unitatiCerute;
   // Strategia schimbării sculei (ADR 0084): aleasă de om, dacă postul ales o acceptă; altfel, implicita postului.
   const [strategieCeruta, setStrategie] = useState<StrategieScula | null>(null);
   const strategie: StrategieScula | undefined = strategieCeruta !== null && postAles?.strategii.includes(strategieCeruta) ? strategieCeruta : postAles?.strategii[0];
@@ -663,7 +665,7 @@ export function DialogExport(
             {t('export.unitati')}
             <select value={unitati} data-camp="unitati" onChange={(e) => { schimbat(); setUnitati(e.target.value === 'inch' ? 'inch' : 'mm'); }}>
               <option value="mm">{t('export.unitati.mm')}</option>
-              <option value="inch">{t('export.unitati.inch')}</option>
+              {postAles?.inch !== false && <option value="inch">{t('export.unitati.inch')}</option>}
             </select>
           </label>
           {scule.size > 1 && (
@@ -680,6 +682,12 @@ export function DialogExport(
         </div>
         {postAles && !postAles.probat && (
           <p className="nota" data-testid="post-documentat">{t('export.post.documentat', { nume: postAles.nume })}</p>
+        )}
+        {postAles && !postAles.sender && (
+          <p className="nota" data-testid="post-descarcat">{t('export.post.descarcat', { nume: postAles.nume })}</p>
+        )}
+        {postAles && postAles.setari.length > 0 && (
+          <p className="nota" data-testid="post-setari">{t('export.post.setari', { setari: postAles.setari.join('; ') })}</p>
         )}
         <table>
           <thead>

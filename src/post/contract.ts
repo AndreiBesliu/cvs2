@@ -21,17 +21,26 @@ export type Unitati = 'mm' | 'inch';
 export type Contract = {
   readonly nume: string;
   readonly extensie: string;
+  /**
+   * Numele fișierelor scurte, ASCII, cu majuscule (`CNCVS2.NC`, `CV2T3.NC`): controlerele care citesc de pe un stick FAT
+   * (RichAuto, s8 Anexa B). Altfel, numele lungi ale aplicației.
+   */
+  readonly numeScurt: boolean;
+  /** Senderul aplicației vorbește controlerului (familia GRBL): exportul ajunge în panoul mașinii (ADR 0125). */
+  readonly senderAplicatie: boolean;
   /** Axele pe care le acceptă controlerul, cu cuvântul lor din G-code (T22). */
   readonly axe: readonly Axa[];
   /** Câte zecimale, cu punctul zecimal scris mereu: 3 în mm, 5 în inch (T9, s8 §4.2). */
   readonly zecimaleMm: number;
   readonly zecimaleInch: number;
-  /** Cuvântul unităților, pus în antet în locul lui `{unitati}`. */
-  readonly unitati: { readonly mm: string; readonly inch: string };
-  readonly comentariu: { readonly deschidere: string; readonly inchidere: string };
+  /** Cuvântul unităților, pus în antet în locul lui `{unitati}`; `inch: null` = controlerul citește doar mm (RichAuto). */
+  readonly unitati: { readonly mm: string; readonly inch: string | null };
+  /** Null: controlerul n-are comentarii documentate (RichAuto); programul nu scrie niciunul. */
+  readonly comentariu: { readonly deschidere: string; readonly inchidere: string } | null;
   /** Plafonul liniei, în octeți, pentru TOATE contractele: 70 (`PLAN.md` T9). */
   readonly liniaMaxima: number;
-  readonly pauza: { readonly cuvant: string; readonly unitate: 's' | 'ms' };
+  /** Null: pauza nu se scrie; controlerul așteaptă axul singur, după setarea lui (RichAuto: întârzierea în ms). */
+  readonly pauza: { readonly cuvant: string; readonly unitate: 's' | 'ms' } | null;
   readonly arc: {
     /** Coarda minimă, în rezoluții (10⁻ᶻᵉᶜⁱᵐᵃˡᵉ în unitatea programului); sub ea arcul iese G1. */
     readonly coardaMinimaRezolutii: number;
@@ -44,12 +53,34 @@ export type Contract = {
   };
   /** Elicea (G2 / G3 cu Z): unde controlerul n-o declară, arcul cu Z iese în segmente G1 (s8 §5.3). */
   readonly elice: boolean;
+  /** Liniile dinaintea oricărui comentariu (Syntec: `%` și numărul de program `O0001`). */
+  readonly inceput: readonly string[];
   /** Liniile modale de la început: tot ce folosește programul se setează explicit (T9); `{unitati}` = G21 / G20. */
   readonly antet: readonly string[];
-  readonly wcs: string;
+  /** Null: programul nu scrie WCS-ul; lucrează în cel activ pe controler (RichAuto: „G5x doar dacă e ales”, s8 A.5). */
+  readonly wcs: string | null;
   readonly final: readonly string[];
-  /** Strategiile de schimbare a sculei pe care le acceptă controlerul, și cea implicită. */
-  readonly scula: { readonly implicita: StrategieScula; readonly acceptate: readonly StrategieScula[] };
+  /**
+   * Schimbarea sculei: strategiile acceptate și cea implicită, plus liniile ei, cu `{n}` = numărul sculei:
+   * - `schimbare`: oprirea cu M6 (`T{n} M6`; Mach3 / Mach4: `T{n}`, apoi `M6` singur, s8 §5.4);
+   * - `pornire`: după antet, la începutul programului, pentru prima sculă (Syntec: `T{n} M6`, ca scula montată să fie ea);
+   * - `compensare`: după WCS, la început și după fiecare schimbare, înaintea primei mișcări în Z (Syntec: `G43 H{n}`; după
+   *   antet, al cărui G49 ar anula-o).
+   */
+  readonly scula: {
+    readonly implicita: StrategieScula; readonly acceptate: readonly StrategieScula[];
+    readonly schimbare: readonly string[]; readonly pornire: readonly string[]; readonly compensare: readonly string[];
+  };
+  /**
+   * O deplasare rapidă cu XY și Z se scrie în două linii: la urcare întâi Z, la coborâre întâi XY. Pe controlerele unde G0
+   * poate merge fiecare axă cu viteza ei, în „L” (Syntec, parametrul #411, s8 A.6), sau unde n-o știm.
+   */
+  readonly rapidaSeparata: boolean;
+  /**
+   * Setările controlerului de care depinde înțelesul fișierului (s8 §5.10), cu numele lor de pe controler: în antet, ca
+   * comentarii, și în fereastra exportului, ca operatorul să le verifice înainte de pornire.
+   */
+  readonly setari: readonly string[];
   /** Codurile pe care controlerul le acceptă; oracolul din etapa 1.6 refuză orice altceva. */
   readonly coduriG: readonly string[];
   readonly coduriM: readonly string[];

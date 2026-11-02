@@ -12,6 +12,8 @@ const CITIT = '07.10.2026';
 export const FLUIDNC: Contract = {
   nume: 'FluidNC',
   extensie: 'nc',
+  numeScurt: false,
+  senderAplicatie: true,
   axe: ['X', 'Y', 'Z', 'A'],
   zecimaleMm: 3,
   zecimaleInch: 5,
@@ -21,10 +23,16 @@ export const FLUIDNC: Contract = {
   pauza: { cuvant: 'G4 P', unitate: 's' },
   arc: { coardaMinimaRezolutii: 10, unghiMinim: 1e-4, razaMaxima: 1e4, baleiajMaxim: Math.PI },
   elice: true,
+  inceput: [],
   antet: ['G90 G17 {unitati} G94', 'G40 G49 G80'],
   wcs: 'G54',
   final: ['M30'],
-  scula: { implicita: 'bariera-sender', acceptate: ['bariera-sender', 'm6-controler', 'fisiere-separate', 'm0-comentariu'] },
+  rapidaSeparata: false,
+  setari: [],
+  scula: {
+    implicita: 'bariera-sender', acceptate: ['bariera-sender', 'm6-controler', 'fisiere-separate', 'm0-comentariu'],
+    schimbare: ['T{n} M6'], pornire: [], compensare: [],
+  },
   coduriG: ['G0', 'G1', 'G2', 'G3', 'G4', 'G17', 'G20', 'G21', 'G40', 'G49', 'G54', 'G55', 'G56', 'G57', 'G58', 'G59', 'G80', 'G90', 'G94'],
   coduriM: ['M0', 'M3', 'M5', 'M6', 'M30'],
   surse: {
@@ -39,6 +47,11 @@ export const FLUIDNC: Contract = {
     wcs: { stare: 'documentat', sursa: `${S8} §5.7: WCS-ul se scrie mereu`, citit: CITIT },
     scula: { stare: 'documentat', sursa: `${S8} A.3: M6 fără ATC și fără m6_macro schimbă doar numărul și continuă fără pauză`, citit: CITIT },
     coduri: { stare: 'documentat', sursa: `${S8} A.3: G 0–4, 10, 17–21, 28, 30, 38.x, 40, 43, 49, 53–59, 61, 80, 90–94; M 0–9, 30, 56, 61–68`, citit: CITIT },
+    inceput: { stare: 'documentat', sursa: `${S8} A.1: programul începe direct cu codul, fără % și fără număr de program (dedus)`, citit: CITIT },
+    final: { stare: 'documentat', sursa: `${S8} A.1: M2 / M30 încheie programul și resetează G1, G17, G90, G94, G54, M5, M9`, citit: CITIT },
+    rapida: { stare: 'documentat', sursa: 'G0 merge în linie dreaptă, toate axele împreună (planificatorul GRBL, ADR 0046): o deplasare XYZ rămâne pe linie', citit: CITIT },
+    fisier: { stare: 'documentat', sursa: `${S8} A.1: extensia oricare, .nc implicit (dedus); numele lungi ale aplicației`, citit: CITIT },
+    setari: { stare: 'documentat', sursa: `${S8} §5.10: ATC sau m6_macro contează doar cu M6 la controler, iar strategia o spune în antet`, citit: CITIT },
     axe: { stare: 'documentat', sursa: '`PLAN.md` T22: contractul poartă cuvântul axei A; v1 taie doar XYZ', citit: CITIT },
   },
 };

@@ -41,14 +41,15 @@ export async function calculeazaExportul(doc: Document, p: ParametriExport): Pro
       return { ok: false, motiv: 'freza iese din foaie: exportul cere confirmarea ta', cereConfirmare: iesire };
     }
   }
-  const e = await exporta(job.program, { foaie: foaie.stoc, origine: p.origine, z0: p.z0 }, CONTRACTE[p.post ?? 'grbl-11'], {
+  const contract = CONTRACTE[p.post ?? 'grbl-11'];
+  const e = await exporta(job.program, { foaie: foaie.stoc, origine: p.origine, z0: p.z0 }, contract, {
     asteptareAx: ASTEPTARE_AX, unitati: p.unitati ?? 'mm', ...(p.strategieScula ? { strategieScula: p.strategieScula } : {}),
     ...(iesire ? { iesireConfirmata: iesire.depasire } : {}),
   });
   if (!e.ok) return e;
   const { latime, inaltime, grosime } = foaie.stoc;
   return {
-    ok: true, program: e.exportat, fisiere: e.fisiere, avertismente: job.avertismente,
+    ok: true, program: e.exportat, fisiere: e.fisiere, avertismente: job.avertismente, sender: contract.senderAplicatie,
     // Cu fișiere separate, fiecare are scula lui; altfel, sculele programului, în ordinea în care se montează.
     rezumat: e.fisiere.length > 1
       ? unesteRezumate(e.fisiere.map((f) => rezumatJob(f, f.scula ? [f.scula] : sculeProgram(job.program), p.setariMasina)))

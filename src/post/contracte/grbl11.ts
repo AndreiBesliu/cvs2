@@ -10,6 +10,8 @@ const CITIT = '07.10.2026';
 export const GRBL_11: Contract = {
   nume: 'GRBL 1.1',
   extensie: 'nc',
+  numeScurt: false,
+  senderAplicatie: true,
   axe: ['X', 'Y', 'Z'],
   zecimaleMm: 3,
   zecimaleInch: 5,
@@ -19,11 +21,17 @@ export const GRBL_11: Contract = {
   pauza: { cuvant: 'G4 P', unitate: 's' },
   arc: { coardaMinimaRezolutii: 10, unghiMinim: 1e-4, razaMaxima: 1e4, baleiajMaxim: Math.PI },
   elice: true,
+  inceput: [],
   antet: ['G90 G17 {unitati} G94', 'G40 G49 G80'],
   wcs: 'G54',
   final: ['M30'],
+  rapidaSeparata: false,
+  setari: [],
   // M6 dă error:20: îl oprește senderul aplicației (implicit); cu alt sender, fișiere separate sau M0 (ADR 0083 §3).
-  scula: { implicita: 'bariera-sender', acceptate: ['bariera-sender', 'fisiere-separate', 'm0-comentariu'] },
+  scula: {
+    implicita: 'bariera-sender', acceptate: ['bariera-sender', 'fisiere-separate', 'm0-comentariu'],
+    schimbare: ['T{n} M6'], pornire: [], compensare: [],
+  },
   coduriG: ['G0', 'G1', 'G2', 'G3', 'G4', 'G17', 'G20', 'G21', 'G40', 'G49', 'G54', 'G55', 'G56', 'G57', 'G58', 'G59', 'G80', 'G90', 'G94'],
   coduriM: ['M0', 'M3', 'M5', 'M30'],
   surse: {
@@ -38,5 +46,10 @@ export const GRBL_11: Contract = {
     wcs: { stare: 'documentat', sursa: `${S8} §5.7: M2 / M30 resetează la G54, deci WCS-ul se scrie mereu`, citit: CITIT },
     scula: { stare: 'documentat', sursa: `${S8} A.1 și §5.4: M6 dă error:20, T fără efect; M0 = Hold (jog doar în Idle / Jog); cu sender străin, fișiere separate`, citit: CITIT },
     coduri: { stare: 'documentat', sursa: `${S8} A.1: codurile acceptate`, citit: CITIT },
+    inceput: { stare: 'documentat', sursa: `${S8} A.1: programul începe direct cu codul, fără % și fără număr de program (dedus)`, citit: CITIT },
+    final: { stare: 'documentat', sursa: `${S8} A.1: M2 / M30 încheie programul și resetează G1, G17, G90, G94, G54, M5, M9`, citit: CITIT },
+    rapida: { stare: 'documentat', sursa: 'G0 merge în linie dreaptă, toate axele împreună (planificatorul GRBL, ADR 0046): o deplasare XYZ rămâne pe linie', citit: CITIT },
+    fisier: { stare: 'documentat', sursa: `${S8} A.1: extensia oricare, .nc implicit (dedus); numele lungi ale aplicației`, citit: CITIT },
+    setari: { stare: 'documentat', sursa: `${S8} §5.10: nicio setare nu schimbă înțelesul fișierului; M6 îl oprește senderul aplicației`, citit: CITIT },
   },
 };

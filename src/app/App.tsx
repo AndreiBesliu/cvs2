@@ -365,14 +365,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       exportInCurs.current = false;
       exportCalcul.current = null;
       if (r.ok) {
-        // Un fișier, sau câte unul pe freză (ADR 0084): numele poartă atunci ordinea și numărul frezei (aceeași freză poate
-        // reveni: interioarele, apoi exterioarele).
-        const baza = `cncvs2-${p?.origine ?? 'stanga-jos'}`;
-        const fisiere = r.fisiere.map((f, k) => ({
-          octeti: f.octeti, sha256: f.sha256, linii: f.linii, nume: f.scula ? `${baza}-${k + 1}-T${f.scula.numar}.${f.extensie}` : `${baza}.${f.extensie}`,
-        }));
+        // Un fișier, sau câte unul pe freză (ADR 0084), cu numele dat de export (`numeFisier`).
+        const fisiere = r.fisiere.map((f) => ({ octeti: f.octeti, sha256: f.sha256, linii: f.linii, nume: f.nume }));
         for (const f of fisiere) descarca(f.octeti, f.nume);
-        setUltimulExport(fisiere.map(({ octeti, sha256, nume }) => ({ octeti, sha256, nume })));
+        // În panoul mașinii ajunge doar un program pe care senderul îl vorbește (familia GRBL); restul se rulează de pe
+        // controlerul lui (ADR 0125): un G4 P în ms ar deveni acolo o pauză de ore.
+        setUltimulExport(r.sender ? fisiere.map(({ octeti, sha256, nume }) => ({ octeti, sha256, nume })) : null);
         // Exportul tocmai a scris operațiile: traseul arătat se reface pe documentul exportat.
         if (traseuArat.current) calculeazaTraseu();
         setStareExport({

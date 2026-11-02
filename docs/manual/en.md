@@ -645,12 +645,34 @@ drawing, it closes by itself.
 **Export G-code** opens the export window. Besides the [operations](#operatii), you choose:
 - the sheet's **origin corner** (bottom left, bottom right, top right, top left): where X/Y zero is on the machine;
 - **Z0**: the top of the material or the bottom of the material (the spoilboard);
-- the **Post**: the machine's controller, from the GRBL family (GRBL 1.1, grblHAL, FluidNC). A post written only from the
-  controller's documentation, not yet tested on a machine, carries a note: watch the first program run in the air;
-- the **Units**: mm (the default) or inch (G20, with 5 decimals and the feed in inch/min); the header stays in mm;
-- the **Tool change**, only when the rows have different bits: **stop in this app's sender** (the default: the job stops at
-  `T… M6`, you take the bit out, put in the next one, probe Z and **Continue**), **M6 at the controller** (grblHAL, FluidNC,
-  with the change set up there), **M0, with the bit in a comment** or **one file per bit** (all of them are downloaded).
+- the **Post**: the machine's controller. The GRBL family (GRBL 1.1, grblHAL, FluidNC) talks to this app's sender;
+  **NcStudio, RichAuto, Syntec, Mach3** and **Mach4** get a file that you run from their own controller (it doesn't reach the
+  machine panel). A post written only from the controller's documentation, not yet tested on a machine, carries a note: watch
+  the first program run in the air;
+- the **Units**: mm (the default) or inch (with 5 decimals and the feed in inch/min); the header stays in mm. RichAuto reads mm
+  only;
+- the **Tool change**, only when the rows have different bits: **stop in this app's sender** (the default for the GRBL family:
+  the job stops at `T… M6`, you take the bit out, put in the next one, probe Z and **Continue**), **M6 at the controller**
+  (grblHAL, FluidNC, with the change set up there; the default for Syntec, Mach3 and Mach4), **M0, with the bit in a comment**
+  or **one file per bit** (all of them are downloaded; the default for NcStudio and RichAuto, which have no M06).
+
+The workshop posts write what the controller's documentation asks for. The settings the file depends on appear in the window
+and in the program's header: check them on the controller before you start.
+- **NcStudio**: comments start with an apostrophe, the `G4 P` dwell is in milliseconds, no `G94`. Settings: **N4063 = 1**
+  (arcs with I/J from the start point), **N4034 = 0** and **N4035 = 0** (the feed and speed from the file);
+- **RichAuto**: no comments, no units word and no WCS (it works in the controller's active system), no `G4` (the controller
+  waits after the spindle starts), helices as segments, short names for the FAT stick (`CNCVS2.NC`, `CV2T3.NC`). A confirmed
+  run past the sheet can't be written into the program, so the export refuses it. Settings: **F Read = Read**, **AbsCntr =
+  Off** and a spindle start delay of at least 3 s;
+- **Syntec**: the program starts with `%` and `O0001`, the units are `G71` (mm) or `G70` (inch), the dwell is in
+  milliseconds. At the start and at each change, `T… M6`, then `G43 H…`: the bit's length from the tool table (0, if you set Z
+  for each bit);
+- **Mach3**: `G91.1` (arcs with I/J from the start point), `T…` on the line before `M6`, the dwell in seconds. Profile
+  settings: **G04 Dwell param in Milliseconds** unticked and **Tool Change = Stop Spindle. Wait for Cycle Start**;
+- **Mach4**: like Mach3, with `%` after `M30`; the `G4 P3.000` dwell means 3 s in both editions of the Mach4 manual.
+
+On these five posts, a rapid move that changes both XY and Z is written as two lines (going up first, going down last):
+there, `G0` may move each axis at its own speed.
 
 Each row has its own **bit**: the tool number (T), the diameter (mm) and the shape: **flat** or **V**, with the included angle
 of the tip (from 1° to 179°, 60° by default; for a V bit, the diameter is that of the cutting part). Rows with different bits

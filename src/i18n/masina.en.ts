@@ -20,7 +20,7 @@ export const enMasina = {
   'masina.program': 'Program',
   'masina.program.export': 'Last export',
   'masina.program.export.titlu': 'The program from the last Export G-code, exactly its bytes (the SHA-256 matches).',
-  'masina.program.export.lipsa': 'Export a program first (Export G-code).',
+  'masina.program.export.lipsa': 'Export a program for the GRBL family first (Export G-code); the other posts run from their own controller.',
   'masina.program.fisier': 'File…',
   'masina.program.fisier.titlu': 'A G-code file from another program: it is checked before sending.',
   'masina.program.niciunul': 'No program loaded.',

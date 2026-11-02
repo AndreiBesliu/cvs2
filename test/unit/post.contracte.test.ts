@@ -46,10 +46,13 @@ function text(p: Program, k: Contract = GRBL_11, opt: Parameters<typeof posteaza
 
 // ——— Contractele ca date ———
 
+/** Familia GRBL: contractele pe care le vorbește senderul aplicației (celelalte cinci: `post.contracte.ateliere.test.ts`). */
+const FAMILIA = ['grbl-11', 'grblhal', 'fluidnc'] as const;
+
 test('contractele familiei GRBL: plafonul 70, 3 / 5 zecimale, unitățile în antet, implicita acceptată, codurile scrise de post, sursele', () => {
-  assert.deepEqual(ID_CONTRACTE, ['grbl-11', 'grblhal', 'fluidnc']);
-  assert.ok(esteIdContract('grblhal') && !esteIdContract('mach3') && !esteIdContract('toString'));
-  for (const id of ID_CONTRACTE) {
+  assert.deepEqual(ID_CONTRACTE.filter((id) => CONTRACTE[id].senderAplicatie), [...FAMILIA]);
+  assert.ok(esteIdContract('grblhal') && esteIdContract('mach3') && !esteIdContract('mach5') && !esteIdContract('toString'));
+  for (const id of FAMILIA) {
     const k: Contract = CONTRACTE[id];
     assert.equal(k.liniaMaxima, 70, id);
     assert.deepEqual([k.zecimaleMm, k.zecimaleInch, k.unitati.mm, k.unitati.inch], [3, 5, 'G21', 'G20'], id);
@@ -73,7 +76,7 @@ test('contractele familiei GRBL: plafonul 70, 3 / 5 zecimale, unitățile în an
 
 test('același program pe cele trei contracte: în v1, doar comentariul postului diferă (dialectul familiei e același)', () => {
   const p = program(traseu(conturCerc(150, 100, 20), 'interior', 6, 3));
-  const [a, b, c] = ID_CONTRACTE.map((id) => text(p, CONTRACTE[id]).split('\n'));
+  const [a, b, c] = FAMILIA.map((id) => text(p, CONTRACTE[id]).split('\n'));
   assert.ok(a && b && c);
   assert.equal(a[1], '(post GRBL 1.1)');
   assert.equal(b[1], '(post grblHAL)');
@@ -262,7 +265,7 @@ test('fișiere separate: câte un program întreg pe sculă, fiecare cu turația
   const laInceput = posteazaPeScule(program(DOUA_SCULE.slice(4)), MONTAJ, GRBL_11, OPT);
   assert.ok(laInceput.ok && laInceput.fisiere.length === 1 && laInceput.fisiere[0]?.scula.numar === 2);
   assert.deepEqual(posteazaPeScule(program([{ tip: 'rapida', la: { X: 1, Y: 1 } }]), MONTAJ, GRBL_11, OPT), { ok: false, motiv: 'programul n-are nicio tăiere' });
-  assert.deepEqual(posteazaPeScule(program(DOUA_SCULE), MONTAJ, { ...GRBL_11, scula: { implicita: 'bariera-sender', acceptate: ['bariera-sender'] } }, OPT),
+  assert.deepEqual(posteazaPeScule(program(DOUA_SCULE), MONTAJ, { ...GRBL_11, scula: { ...GRBL_11.scula, implicita: 'bariera-sender', acceptate: ['bariera-sender'] } }, OPT),
     { ok: false, motiv: 'GRBL 1.1 nu acceptă fișiere separate pe sculă' });
   const gresit = posteazaPeScule(program(DOUA_SCULE.map((m) => (m.tip === 'schimba-scula' ? { ...m, turatie: 0 } : m))), MONTAJ, GRBL_11, OPT);
   assert.deepEqual(gresit, { ok: false, motiv: 'T2: turație nevalidă: 0' });

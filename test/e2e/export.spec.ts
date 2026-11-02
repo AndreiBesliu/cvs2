@@ -574,3 +574,53 @@ test('postul grblHAL și unitățile inch (ADR 0083): antetul, 5 zecimale, acele
     }
   }
 });
+
+test('posturile atelierelor (ADR 0125): NcStudio cu apostrof și setările lui; RichAuto doar în mm, cu nume scurt; în panoul mașinii ajunge doar familia GRBL', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  // Familia GRBL nu poartă notele celorlalte posturi.
+  await expect(page.getByTestId('post-descarcat')).toHaveCount(0);
+  await expect(page.getByTestId('post-setari')).toHaveCount(0);
+  await page.locator('[data-camp="post"]').selectOption('ncstudio');
+  await page.locator('[data-camp="unitati"]').selectOption('inch');
+  await expect(page.getByTestId('post-descarcat')).toHaveText('Programul pentru NcStudio doar se descarcă: îl rulezi de pe controlerul lui (senderul aplicației vorbește familia GRBL).');
+  await expect(page.getByTestId('post-setari')).toHaveText('Verifică pe controler, înainte de pornire: N4063 = 1; N4034 = 0; N4035 = 0.');
+  // RichAuto citește doar mm: inch dispare din listă, iar exportul iese în mm, fără comentarii, cu nume scurt.
+  await page.locator('[data-camp="post"]').selectOption('richauto');
+  await expect(page.locator('[data-camp="unitati"] option[value="inch"]')).toHaveCount(0);
+  await expect(page.locator('[data-camp="unitati"]')).toHaveValue('mm');
+  await expect(page.getByTestId('post-setari')).toContainText('AbsCntr = Off');
+  const d = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const richauto = await d;
+  expect(richauto.suggestedFilename()).toBe('CNCVS2.NC');
+  const r = readFileSync(await richauto.path(), 'ascii');
+  expect(r.split('\n')[0]).toBe('G90');
+  expect(r).not.toMatch(/[(';]|G4|G54|G2[01]/);
+  expect(r.trimEnd().split('\n').at(-1)).toBe('M30');
+  await page.getByRole('button', { name: 'Închide' }).click();
+  // NcStudio, din nou, în mm: comentariul cu apostrof, setările în antet, G4 P în ms, fără G94.
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await page.locator('[data-camp="post"]').selectOption('ncstudio');
+  const d2 = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  const ncstudio = await d2;
+  expect(ncstudio.suggestedFilename()).toBe('cncvs2-stanga-jos.nc');
+  const linii = readFileSync(await ncstudio.path(), 'ascii').split('\n');
+  expect(linii.slice(0, 5)).toEqual(["'CNC Vector Studio", "'post NcStudio", "'controler: N4063 = 1", "'controler: N4034 = 0", "'controler: N4035 = 0"]);
+  for (const l of ['G90 G17 G21', 'G40 G49 G80', 'G54', 'G4 P3000']) expect(linii).toContain(l);
+  expect(linii.some((l) => l.includes('G94'))).toBe(false);
+  await page.getByRole('button', { name: 'Închide' }).click();
+  // Panoul mașinii: programul NcStudio nu ajunge la sender (un G4 P3000 ar fi acolo 50 de minute)…
+  await page.locator('[data-actiune="vedere.masina"]').click();
+  await expect(page.locator('[data-masina="export"]')).toBeDisabled();
+  await expect(page.locator('[data-masina="export"]')).toHaveAttribute('title', /familia GRBL/);
+  // …iar unul GRBL 1.1, da.
+  await page.locator('[data-actiune="export.gcode"]').click();
+  const d3 = page.waitForEvent('download');
+  await page.locator('[data-buton="exporta"]').click();
+  await d3;
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await expect(page.locator('[data-masina="export"]')).toBeEnabled();
+});

@@ -58,7 +58,7 @@ test('exportul prin bazin = calculul direct, octet cu octet, pe tot corpusul (cu
       }
       assert.ok(bazin.ok, `${unde}: ${bazin.ok ? '' : bazin.motiv}`);
       if (!bazin.ok) continue;
-      acelasiFisier({ ...bazin.program, scula: null }, { ...direct.program, scula: null }, unde);
+      acelasiFisier({ ...bazin.program, scula: null, nume: '' }, { ...direct.program, scula: null, nume: '' }, unde);
       assert.equal(bazin.fisiere.length, direct.fisiere.length, `${unde}: câte fișiere`);
       direct.fisiere.forEach((f, k) => { acelasiFisier(bazin.fisiere[k] as FisierExportat, f, `${unde}, fișierul ${k + 1}`); });
       fisiere += direct.fisiere.length;

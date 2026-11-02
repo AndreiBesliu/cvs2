@@ -11,6 +11,8 @@ const CITIT = '07.10.2026';
 export const GRBLHAL: Contract = {
   nume: 'grblHAL',
   extensie: 'nc',
+  numeScurt: false,
+  senderAplicatie: true,
   axe: ['X', 'Y', 'Z', 'A'],
   zecimaleMm: 3,
   zecimaleInch: 5,
@@ -20,11 +22,17 @@ export const GRBLHAL: Contract = {
   pauza: { cuvant: 'G4 P', unitate: 's' },
   arc: { coardaMinimaRezolutii: 10, unghiMinim: 1e-4, razaMaxima: 1e4, baleiajMaxim: Math.PI },
   elice: true,
+  inceput: [],
   antet: ['G90 G17 {unitati} G94', 'G40 G49 G80'],
   wcs: 'G54',
   final: ['M30'],
+  rapidaSeparata: false,
+  setari: [],
   // M6 la controler doar cu `$341` între 0 și 3 (cu 4, ignorat tăcut; fără un flux care se poate suspenda, error:20).
-  scula: { implicita: 'bariera-sender', acceptate: ['bariera-sender', 'm6-controler', 'fisiere-separate', 'm0-comentariu'] },
+  scula: {
+    implicita: 'bariera-sender', acceptate: ['bariera-sender', 'm6-controler', 'fisiere-separate', 'm0-comentariu'],
+    schimbare: ['T{n} M6'], pornire: [], compensare: [],
+  },
   coduriG: ['G0', 'G1', 'G2', 'G3', 'G4', 'G17', 'G20', 'G21', 'G40', 'G49', 'G54', 'G55', 'G56', 'G57', 'G58', 'G59', 'G80', 'G90', 'G94'],
   coduriM: ['M0', 'M3', 'M5', 'M6', 'M30'],
   surse: {
@@ -39,6 +47,11 @@ export const GRBLHAL: Contract = {
     wcs: { stare: 'documentat', sursa: `${S8} §5.7: WCS-ul se scrie mereu`, citit: CITIT },
     scula: { stare: 'documentat', sursa: `${S8} A.2: M6 după $341 (0 manual, 1 atingere manuală, 2–3 la G59.3, 4 ignorat); fără ATC, error:20`, citit: CITIT },
     coduri: { stare: 'documentat', sursa: `${S8} A.2: codurile GRBL 1.1, plus G5, G73, G81–G83, M6, M61 (după driver)`, citit: CITIT },
+    inceput: { stare: 'documentat', sursa: `${S8} A.1: programul începe direct cu codul, fără % și fără număr de program (dedus)`, citit: CITIT },
+    final: { stare: 'documentat', sursa: `${S8} A.1: M2 / M30 încheie programul și resetează G1, G17, G90, G94, G54, M5, M9`, citit: CITIT },
+    rapida: { stare: 'documentat', sursa: 'G0 merge în linie dreaptă, toate axele împreună (planificatorul GRBL, ADR 0046): o deplasare XYZ rămâne pe linie', citit: CITIT },
+    fisier: { stare: 'documentat', sursa: `${S8} A.1: extensia oricare, .nc implicit (dedus); numele lungi ale aplicației`, citit: CITIT },
+    setari: { stare: 'documentat', sursa: `${S8} §5.10: $341 contează doar cu M6 la controler, iar strategia o spune în antet`, citit: CITIT },
     axe: { stare: 'documentat', sursa: '`PLAN.md` T22: contractul poartă cuvântul axei A; v1 taie doar XYZ', citit: CITIT },
   },
 };

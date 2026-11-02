@@ -62,6 +62,8 @@ export type RaspunsExport =
   | {
     readonly ok: true; readonly program: ProgramExportat; readonly fisiere: readonly FisierExportat[];
     readonly avertismente: readonly string[]; readonly rezumat: RezumatJob;
+    /** Senderul aplicației vorbește controlerului postului (familia GRBL): exportul ajunge și în panoul mașinii (ADR 0125). */
+    readonly sender: boolean;
     /** Mutările nucleului simulării (ADR 0047 §3) pentru programul exportat, sau de ce nu se poate simula. */
     readonly simulare: ProgramSimulat; readonly foaie: FoaieCam;
   }

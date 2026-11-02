@@ -625,12 +625,33 @@ plin cât e în material. `Esc` sau **×** închid animația; dacă schimbi dese
 **Exportă G-code** deschide fereastra exportului. Pe lângă [operații](#operatii), alegi:
 - **colțul de origine** al foii (stânga-jos, dreapta-jos, dreapta-sus, stânga-sus): unde e zero-ul X/Y pe mașină;
 - **Z0**: fața de sus a materialului sau fața de jos (masa de sacrificiu);
-- **Postul**: controlerul mașinii, din familia GRBL (GRBL 1.1, grblHAL, FluidNC). Un post scris doar după documentația
-  controlerului, încă neprobat pe o mașină, poartă o notă: urmărește primul program în aer;
-- **Unitățile**: mm (implicit) sau inch (G20, cu 5 zecimale și avansul în inch/min); antetul rămâne în mm;
-- **Schimbarea frezei**, doar când rândurile au freze diferite: **oprire în senderul aplicației** (implicit: lucrarea se
-  oprește la `T… M6`, scoți freza, o pui pe următoarea, palpezi Z și **Continui**), **M6 la controler** (grblHAL, FluidNC, cu
-  schimbarea configurată acolo), **M0, cu freza în comentariu** sau **câte un fișier pe freză** (se descarcă toate).
+- **Postul**: controlerul mașinii. Familia GRBL (GRBL 1.1, grblHAL, FluidNC) vorbește cu senderul aplicației; **NcStudio,
+  RichAuto, Syntec, Mach3** și **Mach4** primesc un fișier pe care îl rulezi de pe controlerul lor (în panoul mașinii nu
+  ajunge). Un post scris doar după documentația controlerului, încă neprobat pe o mașină, poartă o notă: urmărește primul
+  program în aer;
+- **Unitățile**: mm (implicit) sau inch (cu 5 zecimale și avansul în inch/min); antetul rămâne în mm. RichAuto citește doar mm;
+- **Schimbarea frezei**, doar când rândurile au freze diferite: **oprire în senderul aplicației** (implicit pe familia GRBL:
+  lucrarea se oprește la `T… M6`, scoți freza, o pui pe următoarea, palpezi Z și **Continui**), **M6 la controler** (grblHAL,
+  FluidNC, cu schimbarea configurată acolo; implicit pe Syntec, Mach3 și Mach4), **M0, cu freza în comentariu** sau **câte un
+  fișier pe freză** (se descarcă toate; implicit pe NcStudio și RichAuto, care n-au M06).
+
+Posturile atelierelor scriu ce cere documentația controlerului. Setările de care depinde fișierul apar în fereastră și în
+antetul programului: verifică-le pe controler înainte de pornire.
+- **NcStudio**: comentariul începe cu apostrof, pauza `G4 P` e în milisecunde, fără `G94`. Setările: **N4063 = 1** (arcele
+  cu I/J față de start), **N4034 = 0** și **N4035 = 0** (avansul și turația din fișier);
+- **RichAuto**: fără comentarii, fără unități și fără WCS (lucrează în sistemul activ pe controler), fără `G4` (după
+  pornirea axului așteaptă controlerul), elicea în segmente, nume scurte pentru stick-ul FAT (`CNCVS2.NC`, `CV2T3.NC`). O
+  ieșire din foaie confirmată nu se poate scrie în program, deci exportul o refuză. Setările: **F Read = Read**, **AbsCntr =
+  Off** și întârzierea axului la pornire de cel puțin 3 s;
+- **Syntec**: programul începe cu `%` și `O0001`, unitățile sunt `G71` (mm) sau `G70` (inch), pauza e în milisecunde. La
+  început și la fiecare schimbare, `T… M6`, apoi `G43 H…`: lungimea frezei din tabela de scule (0, dacă faci Z pe fiecare
+  freză);
+- **Mach3**: `G91.1` (arcele cu I/J față de start), `T…` pe linia dinaintea lui `M6`, pauza în secunde. Setările profilului:
+  **G04 Dwell param in Milliseconds** nebifat și **Tool Change = Stop Spindle. Wait for Cycle Start**;
+- **Mach4**: ca Mach3, cu `%` după `M30`; pauza `G4 P3.000` înseamnă 3 s în ambele ediții ale manualului Mach4.
+
+Pe aceste cinci posturi, o deplasare rapidă care schimbă și XY, și Z se scrie în două linii (urcarea întâi, coborârea la
+urmă): acolo, `G0` poate merge pe fiecare axă cu viteza ei.
 
 Fiecare rând are **freza** lui: numărul sculei (T), diametrul (mm) și forma: **plată** sau **în V**, cu unghiul inclus al
 vârfului (între 1° și 179°, implicit 60°; la V, diametrul e cel al părții tăietoare). Rândurile cu freze diferite se taie cu o

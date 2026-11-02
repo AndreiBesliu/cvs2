@@ -358,6 +358,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Plafonul total 500 kB (ADR 0122, felia 3.R, decizia owner-ului)** gata pe 02.11: la 441,2 / 450 kB, cele trei linii de
   lucru care urmau (contractele controlerelor și pachetul de atelier, restul textului, verificarea vectorilor) nu încăpeau în
   cei 8,8 kB rămași. Celelalte plafoane rămân. **Pornirea 98,5 (cu ușa 102,0 / 110 kB), totalul 441,2 / 500.**
+  **Contractele atelierelor (ADR 0125, felia 4.6↑a, punctul 6 al etapei 4)** gata pe 02.11: NcStudio, RichAuto, Syntec, Mach3
+  și Mach4, ca date (`src/post/contracte/`), după sonda s8, toate „documentate”. Contractul are câmpuri pentru ce lipsește sau
+  diferă: comentariul, pauza, WCS-ul și inch pot fi `null`; `inceput`; șabloanele `scula.schimbare` / `pornire` / `compensare`;
+  `rapidaSeparata`; `setari` (scrise în antet, arătate în fereastră); `senderAplicatie`; `numeScurt`. **Exportul atelierelor
+  doar se descarcă:** în panoul mașinii ajunge doar familia GRBL. **Un contract nou intră în
+  `test/unit/post.contracte.ateliere.test.ts`:** programul lui pe hârtie, codurile documentate ale controlerului (pe hârtie,
+  cu sursa), iar cititorul dialectelor (`test/unit/ajutor-dialecte.ts`) îl compară pe corpusul CAM cu GRBL 1.1. Urmează 4.6↑b
+  (pachetul de atelier, T0–T7). **Pornirea 98,4 (cu ușa 101,9 / 110 kB), totalul 448,9 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -476,7 +484,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   a două worktree-uri paralele lângă etapa 4: restul textului (etapa 7) și verificarea și repararea vectorilor (etapa 10). La
   441,2 / 450 kB, cele trei linii nu încăpeau în 8,8 kB. ADR 0122, felia 3.R; pornirea rămâne 110 kB. Worktree-urile pornesc
   doar dintr-un mesaj scris în aplicația desktop (sub Remote Control, pornirea e refuzată); dacă pornesc, primesc ADR-urile
-  0123 și 0124, iar linia principală continuă de la 0125.
+  0123 și 0124, iar linia principală continuă de la 0125. Apoi „vreau sa deschidem worktrees pentru urmatoarele etape” și
+  „porneste worktrees”: etapa 7 (textul) a pornit în `C:\Users\besli\cncvs2-lucru\text` (`wip/7.5-text`, portul e2e 4174);
+  etapa 10 (verificarea vectorilor, 4175, ADR 0124) și Trenuleț (4176, ADR 0126–0129) așteaptă un mesaj din desktop.
 - 02.11.2026: **restul raportărilor, notat pentru mai târziu; roadmap-ul, reluat de unde a rămas** („noteaza-le pentru mai
   tarziu, acum vreau sa luam roadmap-ul de unde a ramas”, la întrebarea despre 15.B↑b, după felia 15.B↑a):
   - **așteaptă:** 15.B↑b (proiectul atașat la raportare, în Storage, cel mult 10 MB, cu bifa; jobul zilnic care șterge
