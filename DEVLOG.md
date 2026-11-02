@@ -4459,3 +4459,8 @@ simplificare), build-ul determinist (pornirea 98,5 / 110 kB), licențele, e2e 29
 selecție prin tragere, a căzut o dată sub patru lucrători; singur, 25 / 25 sub încărcare), emulatoarele (69 de probe ale
 funcțiilor și regulilor, 20 e2e), rapid verde. Otrăvurile din `test/otravuri/14.C-c.py`: 21 / 21 prinse, într-un worktree din
 afara Drive-ului (14 pe logica meniului, cu unealta; 7 de interfață, prin build și e2e rulate cu `node`, cât npm e stricat).
+**Publicat pe adresa principală de test:** 02.11, 13:10, `publica` pe `ed4c30c` (rularea 41434246325), după CI-ul rapid verde;
+`web.app` servește versiunea `ed4c30c777de`, iar fila veche a trecut pe ea cu „Reload”. Pe test, meniul se deschide sub buton
+(„Not signed in”, cu proba de 14 zile; „Sign in or create an account…”, „Manual”, „Send a suggestion…”), logarea deschide
+panoul, cu Firebase-ul instanței, în 0,4 s, iar „Manual” deschide manualul. Calea cu cont logat pe test n-am încercat-o (nu mă
+loghez pe instanțele găzduite): o probează e2e-ul și emulatoarele.
