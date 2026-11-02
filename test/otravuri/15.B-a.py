@@ -63,7 +63,7 @@ o('S12', AC, '  const toate = q.docs.map(raportareaDin).sort((a, b) => b.creatLa
   '  const toate = q.docs.map(raportareaDin).sort((a, b) => a.creatLa - b.creatLa);', 'server', 'raportările mele, cele vechi întâi')
 o('S13', AC, "      dupa: { fel, caractere: [...text].length, amprente: amprente.length, poza: meta },",
   "      dupa: { fel, text, amprente: amprente.length, poza: meta },", 'server', 'textul raportării în audit')
-o('S14', AC, "  return q.docs.filter((s) => numar(s.get('necititeAutor')) > 0).length;", '  return q.docs.length;', 'server2',
+o('S14', AC, "  return q.docs.filter((s) => numar(s.get('necititeAutor')) > 0).length;", '  return q.docs.length;', 'server',
   'semnul numără toate raportările, nu doar pe cele cu răspuns nou')
 
 # ---- Regulile ----
@@ -123,8 +123,9 @@ def u(*nume):
 
 
 SETURI = {
+    # Câte un singur fișier de emulator pe set: două fișiere în același `node --test` rulează în paralel pe același emulator și
+    # își golesc unul altuia documentele (baza iese roșie, iar verdictele ei nu contează).
     'server': ['functions/test/tichete.emulator.test.ts'],
-    'server2': ['functions/test/tichete.emulator.test.ts', 'functions/test/conturi.emulator.test.ts'],
     'reguli': ['functions/test/reguli.emulator.test.ts'],
     'client': u('raportare', 'meniuCont', 'manual', 'tichete'),
     'client2': u('raportare', 'meniuCont', 'manual', 'tichete', 'raportor', 'erori.contract'),

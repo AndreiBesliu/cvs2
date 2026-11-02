@@ -4464,3 +4464,35 @@ afara Drive-ului (14 pe logica meniului, cu unealta; 7 de interfață, prin buil
 („Not signed in”, cu proba de 14 zile; „Sign in or create an account…”, „Manual”, „Send a suggestion…”), logarea deschide
 panoul, cu Firebase-ul instanței, în 0,4 s, iar „Manual” deschide manualul. Calea cu cont logat pe test n-am încercat-o (nu mă
 loghez pe instanțele găzduite): o probează e2e-ul și emulatoarele.
+
+## 2026-11-02 — Felia 15.B↑a: raportările clienților, partea întâi (ADR 0116 §C) (Model: Claude Opus 5.5)
+
+**Prompt:** „continua cu poti acum” (după „E bun așa”, la meniul contului).
+**Started:** 02.11, 13:20. **Completed:** 02.11, 15:43. **Felia:** următoarea din ordinea owner-ului din 01.11 („7, a”:
+conturile, raportările, fila Utilizatori completă), fără mașină. 15.B↑ s-a despărțit în 15.B↑a (acum: raportarea din editor,
+fila Tichete, răspunsul în aplicație) și 15.B↑b (proiectul atașat în Storage, jobul zilnic de păstrare).
+
+În meniul contului, cu contul deschis, două rânduri noi. **Raportează o problemă…** trimite felul (problemă, idee,
+întrebare), textul, poza planșei la bifă, datele aplicației (versiunea, instanța, limba, browserul, planul de azi) și
+amprentele erorilor din sesiune, fără conținutul lor; fereastra arată tot ce pleacă. **Raportările mele** arată starea și
+răspunsurile echipei. Un răspuns nou pune un punct pe butonul Cont și numărul pe rând; la deschiderea listei se notează
+citit, iar semnul se stinge. Serverul: callable-ul `tichete` (raportarea, cel mult 10 pe cont pe zi; lista și citirea
+autorului; răspunsul și starea, cu `tichete.raspunde`, pe versiunea văzută; auditul în tranzacție, fără textul raportării),
+semnul din deschiderea contului, regulile (autorul doar pe ale lui) și fila **Tichete** din `/admin`. Editorul nu citește
+Firestore: totul prin callable. **Amprentele** sunt chiar id-urile grupurilor din `errorLogs`: editorul le face din mesajul
+trimis de raportor, cu cheia serverului (mutată în `shared/amprenta.ts`, ca să nu intre în pornire). **Bucățile:** prima
+construcție a scos o bucată nouă (`sugestii`, contractul sugestiilor, cerut de cel al tichetelor) și a redenumit-o pe a
+contului (`tichete`, după ultimul ei modul); contractul pozei s-a mutat în `shared/poza.ts`, iar cel al tichetelor intră în
+editor prin `contEditor.ts`, deci împărțirea a rămas cea dinainte, plus stilul `PanouCont`. La zi: manualul (ro, en), nota
+de confidențialitate, ADR 0116, fișa (15.B↑a), CLAUDE.md, traducerile (526, 0 lipsă). Codul: `423f4b9`.
+**Porțile:** compilatoarele, importurile, traducerile, 8 041 de teste unitare, build-ul determinist (pornirea 98,5 / 110 kB,
+totalul 441,2 / 450, `/admin` 105,4 / 200, contul 28,8 / 32), licențele, e2e 295 / 295 (o cădere EBUSY a Drive-ului pe o
+descărcare, trecută la rularea singură), emulatoarele (81 de probe ale funcțiilor și regulilor, 21 e2e), rapid verde pe
+`423f4b9`. Două liste scrise de mână au primit fila și permisiunile noi (catalogul din reguli, filele vizibile), iar proba
+`/admin` a raportorului așteaptă acum invitația cât celelalte callable-uri (prima chemare pornește lucrătorul ei în
+emulator: pică de două ori din trei când rulează înaintea altor probe care l-au chemat). Otrăvurile din
+`test/otravuri/15.B-a.py`: 35 / 35 prinse, într-un worktree din afara Drive-ului: 14 pe hârtie, 16 pe emulatorul Firestore
+(callable-ul și regulile), 5 de interfață (build și e2e pe emulatoare, rulate cu `node`). Baza setului `server2` (două
+fișiere de emulator în același `node --test`) a ieșit roșie: fișierele rulau în paralel și își goleau documentele unul
+altuia. S14 s-a reluat pe fișierul tichetelor singur (prinsă), iar setul a plecat din listă. E01 și E02 au căzut în 6–7 s;
+reluate cu ieșirea întreagă, cad exact la amprente și la poză, verificate pe server imediat după trimitere.
