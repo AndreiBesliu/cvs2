@@ -53,7 +53,11 @@ test('din fișier: confirmarea, meniul, spațiul izolat cu acțiunile documentul
   await expect(dialog).toHaveCount(0);
 
   await adauga(page, 'dreptunghi');
-  await expect(forme(page)).toHaveCount(1);
+  await adauga(page, 'dreptunghi');
+  await expect(forme(page)).toHaveCount(2);
+  // Un rând nealeas din lista vectorilor: alegerea din listă merge direct la acțiunile documentului (fără bara sau paletă).
+  const nealeasa = await page.getByTestId('lista-vectori').locator('button[data-instanta][aria-pressed="false"]').first().getAttribute('data-instanta');
+  const randul = page.getByTestId('lista-vectori').locator(`button[data-instanta="${nealeasa ?? ''}"]`);
   await (await meniul(page)).locator('[data-extensii="deschide"][data-id="salut"]').click();
   await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
   await expect(page.getByTestId('extensie-deschisa')).toContainText('Salut');
@@ -79,7 +83,9 @@ test('din fișier: confirmarea, meniul, spațiul izolat cu acțiunile documentul
   // Cât e deschis spațiul, acțiunile documentului nu rulează (dreptunghiul din paletă nu se adaugă, exportul nu se deschide);
   // vederea rămâne: tema nouă ajunge și în cadru.
   await adauga(page, 'dreptunghi');
-  await expect(forme(page)).toHaveCount(1);
+  await expect(forme(page)).toHaveCount(2);
+  await randul.click();
+  await expect(randul).toHaveAttribute('aria-pressed', 'false');
   await page.locator('[data-actiune="export.gcode"]').click();
   await expect(page.locator('[data-buton="exporta"]')).toHaveCount(0);
   const temaInainte = await c.locator('[data-salut="tema"]').textContent();
@@ -96,8 +102,10 @@ test('din fișier: confirmarea, meniul, spațiul izolat cu acțiunile documentul
   await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
   await expect(page.locator('.aplicatie')).not.toHaveAttribute('data-extensie');
   await expect(page.locator('.lucru')).toHaveCSS('visibility', 'visible');
+  await randul.click();
+  await expect(randul).toHaveAttribute('aria-pressed', 'true');
   await adauga(page, 'dreptunghi');
-  await expect(forme(page)).toHaveCount(2);
+  await expect(forme(page)).toHaveCount(3);
 
   // Din extensie: host.inchide().
   await (await meniul(page)).locator('[data-extensii="deschide"][data-id="salut"]').click();
