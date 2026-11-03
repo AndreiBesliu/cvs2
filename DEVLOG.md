@@ -4997,3 +4997,27 @@ stau pe canal: owner-ul le primește ca fișiere. Adresa principală de test nu 
 0199 (fișierul, indexul, referințele, fișa, traducerea). **Canalul, republicat din `d9ff422`** la 20:43 (până pe 03.12):
 prima rulare a probelor, la câteva secunde după publicare, a avut două roșii (jurnalul local cu o eroare); a doua, 13 / 13.
 Artefactele primei rulări s-au șters la a doua, deci eroarea a rămas neexplicată.
+
+## 2026-11-03 — Felia 3.Tb: Planificatorul Trenuleț adaptat pentru cvs2 (ADR 0161) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește 3.Tb” (la „Pornesc felia următoare, 3.Tb?”, după raportul lui 3.Xc), în sesiunea dedicată liniei
+Trenuleț. 3.Tb: sursele planificatorului adaptate pentru cvs2, adică textul despre sincronizare, stilurile și butoanele mașinii.
+**Started:** 03.11, 20:48. **Completed:** 03.11, 21:28.
+
+- **Ce merge:**
+  - intrarea pune `window.cvs2`, iar sursele rămân aceleași pentru claude.ai, copia de pe calculator și extensie (pagina fără
+    cvs2 e probată și ea: textele de până acum, fără secțiunea mașinii);
+  - în cvs2, textul circuitelor spune că stau doar în browserul acesta; „Trimite la cvs2” vorbește de fereastra Mașina;
+    three.js nu se mai cere de pe cdnjs, iar vederea 3D spune de ce lipsește;
+  - marcajul și șabloanele n-au atribute `style`: clasele țin locul lor, culorile din date se pun prin CSSOM. Cadrul nu mai
+    are niciun refuz CSP, iar adaptorul care copia atributele a plecat;
+  - în exportul CNC, „Pe mașină, prin cvs2”: starea la fiecare schimbare, fișierul ales din export, „Încarcă pe mașină”,
+    „Pornește” și „Reia” cu confirmarea lui cvs2, „Pauză”, „Oprește”, refuzurile în limba omului.
+- **Instrumentul refuzurilor:** un colector pe consola paginii vedea 0 refuzuri și cu atributele încă în surse. Probele
+  ascultă acum `securitypolicyviolation` chiar în cadru, printr-un script pus la încărcare. Martorul, pe sursele vechi, a
+  văzut zeci de `style-src-attr`.
+- **Porțile:** compilatorul; importurile, 19 / 19; traducerile, 565, 0 lipsă; 8 164 de teste unitare, 0 eșuate (cu referințele motoarelor: 622, 0 diferite); build-ul determinist: 245 de fișiere identice, pornirea 100,6 / 110 kB (cu ușa 104,1), totalul 471,6 / 500, neschimbate (planificatorul stă doar în pachet).
+- **E2e:** e2e-ul întreg, pe portul 4176: 321 trec, 1 pică (aserțiunea care cere portul 4173, raportorul).
+- **Otrăvurile `test/otravuri/3.Tb.py`:** 26 / 26 prinse, fiecare de proba ei: R01 și R02 (o zecimală în plus în G-code, alt număr de laturi la cercurile LEGO) de `referinte.js --compara`, din poartă.
+- **Ce nu merge încă:** previzualizarea 3D (three.js, cu acordul descărcării), fonturile paginii, tema și engleza lui cvs2;
+  sursele sunt tot JavaScript (TypeScript într-o felie a lui).

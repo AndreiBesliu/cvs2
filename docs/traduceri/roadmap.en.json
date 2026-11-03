@@ -1353,6 +1353,10 @@
       "ro": "crestele pe hârtie, fundul plat",
       "en": "the crests on paper, the flat bottom"
     },
+    "939d19db6e9069d7": {
+      "ro": "**Planificatorul Trenuleț adaptat pentru cvs2** (fără mașină; ADR 0161; a doua felie a pasului E2 din linia Trenuleț, în worktree-ul `wip/trenulet`; „Da, pornește 3.Tb”). Intrarea extensiei pune `window.cvs2`, iar sursele rămân aceleași pentru claude.ai, copia de pe calculator și extensie. În cvs2, textul circuitelor spune că stau doar în browserul acesta, „Trimite la cvs2” vorbește de fereastra Mașina, iar three.js nu se mai cere de pe cdnjs. Marcajul și șabloanele n-au atribute `style`: clasele țin locul lor, culorile din date se pun prin CSSOM, deci cadrul nu mai are niciun refuz CSP. În exportul CNC, „Pe mașină, prin cvs2”: starea, încărcarea, pornirea și reluarea cu confirmarea lui cvs2, pauza, oprirea. `referinte.js --compara` (622 de ieșiri, 0 diferențe) intră în poarta unitară. Probele: 3 teste unitare noi, 2 e2e noi în Edge, 26 / 26 de otrăvuri prinse.",
+      "en": "**The Trenuleț planner adapted for cvs2** (no machine; ADR 0161; the second slice of step E2 of the Trenuleț line, in the `wip/trenulet` worktree; “Da, pornește 3.Tb”). The extension’s entry sets `window.cvs2`, and the sources stay the same for claude.ai, the desktop copy and the extension. In cvs2, the circuits text says they are kept only in this browser, “Send to cvs2” talks about the Machine window, and three.js is no longer requested from cdnjs. The markup and the templates have no `style` attributes: classes take their place, the colours from data are set through CSSOM, so the frame has no CSP refusal any more. In the CNC export, “On the machine, through cvs2”: the state, loading, starting and resuming with cvs2’s confirmation, pause, stop. `referinte.js --compara` (622 outputs, 0 differences) joins the unit gate. Tests: 3 new unit tests, 2 new e2e in Edge, 26 / 26 poisons caught."
+    },
     "9461ca760824bf61": {
       "ro": "Jog-ul, zero-ul, WCS-ul și palparea Z",
       "en": "Jog, zero, the work coordinate system and Z probing"

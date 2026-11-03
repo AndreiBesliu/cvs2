@@ -441,6 +441,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `refuzStart` din flux, ca evenimentul `start`. Încărcătorul are `host.masina` și `host.descarcari`, deci amprenta nouă în
   CSP. „Trimite la cvs2” merge din planificator, printr-o fereastră imitată în `intrare.ts` (pachetul 18.1.0).
   **Pornirea 100,6 (cu ușa 104,1 / 110 kB), totalul 471,6 / 500.**
+  **Planificatorul adaptat pentru cvs2 (ADR 0161, felia 3.Tb)** gata pe 03.11: intrarea pune `window.cvs2` (cu senderul doar
+  când e deschis extensiei), iar sursele rămân aceleași pentru claude.ai, copia de pe calculator și extensie. **Sursele
+  planificatorului n-au atribute `style`** (o probă le oprește): clasele din `head.html` țin locul lor, culorile din date
+  (`data-fundal`) se pun prin CSSOM, iar adaptorul care copia atributele a plecat. În exportul CNC, „Pe mașină, prin cvs2”
+  folosește `host.masina`. **`referinte.js --compara` e în poarta unitară** (`trenulet.referinte.test.ts`, ~30 s): o
+  schimbare a motoarelor (G-code, LEGO, CNC) cere referințe noi, explicate. Pagina de sine stătătoare nu mai e v18 octet cu
+  octet (dovada aceea rămâne pe `754319b`). Pachetul 18.2.0. Cifrele aplicației nu se schimbă (sursele sunt doar în pachet).
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
