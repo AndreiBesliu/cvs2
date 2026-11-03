@@ -393,7 +393,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `src/machine/indicator.ts`; lucrarea pornită e `cuPunctDeReluare` din flux (`beforeunload`, „Reîncarcă după lucrare”, prin
   semnalul `lucrarePornita` din pornire). **Pe ramură, pornirea 99,1 (cu ușa 102,6 / 110 kB), totalul 450,8 / 500.**
   Din 13.A↑b (03.11), bucata ferestrei Mașina vine în fundal după pornire, ca dialogurile (lista de preîncărcare, ADR
-  0100): o bucată nouă la cerere fără locul ei în listă lasă prima deschidere goală.
+  0100): o bucată nouă la cerere fără locul ei în listă lasă prima deschidere goală. Și adusă, o componentă `lazy` suspendă
+  la prima randare, iar React ține mesajul de încărcare ~300 ms: fereastra venită se montează direct (`FereastraMasina` din
+  `App.tsx`). **Pornirea 100,0 (cu ușa 103,5 / 110 kB), totalul 453,2 / 500.**
   **Alinierea ca bloc (ADR 0150, felia 6.U↑, adusă din etapa 6)** gata pe 02.11, în aceeași sesiune paralelă (ramura
   `wip/6.U-aliniere`), după „3, ok” al owner-ului: comutatorul **Ca bloc** din secțiunea Aliniere face ca cele șase alinieri
   să mute cutia comună a formelor alese față de foaie, cu aceeași deplasare (așezarea dintre ele rămâne, nu se suprapun);

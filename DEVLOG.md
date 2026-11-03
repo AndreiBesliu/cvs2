@@ -4834,3 +4834,22 @@ block” în rândul alinierii; fără erori în consolă. La prima deschidere, 
 **Prompt:** „Da, repară” (la „Repar aici golul de la prima deschidere a Mașinii?”, după observația sesiunii principale de la
 unirea lui 13.A↑: la prima deschidere, fereastra Mașina stă goală câteva clipe, cât vine modulul ei).
 **Started:** 03.11, 10:42.
+
+În worktree-ul `C:\Users\besli\cncvs2-lucru\sender-ecran`, pe ramura nouă `wip/13.A-b-masina-in-fundal`, din `main` `feb6920`
+(cu 13.A↑ unită). Cauza golului: bucata ferestrei Mașina era singura bucată la cerere fără locul ei în lista de preîncărcare
+de după pornire (ADR 0100), deci o cerea abia primul clic. **Trecerea 1** (`4b77679`): bucata și mesajele ei vin la o secundă
+după pornire, ca dialogurile; cât încă vine (un clic dat înaintea preîncărcării, o rețea lentă), fereastra spune „Se încarcă
+fereastra Mașina…”; dacă nu vine (o publicare nouă, rețeaua căzută), spune de ce și oferă Reîncarcă, ca dialogurile. Publicată
+pe canal și verificată acolo: bucata venea singură la ~1,1–1,4 s după pornire, dar la 60 ms după clic mesajul de încărcare era
+tot pe ecran. **Trecerea 2:** o componentă `lazy` suspendă la prima randare chiar cu bucata adusă (fabrica ei se cheamă abia
+atunci, iar promisiunea nouă nu e rezolvată pe loc), iar React ține rezerva lui Suspense ~300 ms, ca să nu clipească. Acum
+`incarcaMasina` ține componenta venită (`masinaGata`), iar `FereastraMasina` o montează direct, fără Suspense; altfel, calea la
+cerere de până acum. Alegerea se face o dată, la montare: schimbată după, ar remonta fereastra și i-ar pierde starea. Proba
+preîncărcării caută acum mesajul la fiecare schimbare a paginii (un `MutationObserver`): căzută pe codul trecerii 1 („Expected
+false, Received true”), verde după.
+La zi: ADR 0132 (§9 și probele), rândul din jurnal (două treceri), CLAUDE.md, traducerile. Niciun capitol nou în manual:
+mesajul de eșec e cel al dialogurilor, cu același Reîncarcă.
+**Porțile** (a doua trecere): compilatorul, importurile (17 / 17), traducerile (548, 0 lipsă), 8 099 de teste unitare (8 091
+trec, 8 sărite), build-ul determinist (232 de fișiere identice; pornirea 100,0, cu ușa 103,5 / 110 kB, +0,1 față de `main`;
+totalul 453,2 / 500; /admin 105,4 / 200), licențele (96 + 247), e2e 305 / 307 în suita întreagă pe portul 4178:
+`raportor.spec.ts` cere portul 4173, iar `animatie` (timpul, sub încărcare) a trecut reluată singură (5 / 5).

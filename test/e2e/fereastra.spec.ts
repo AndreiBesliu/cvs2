@@ -233,9 +233,19 @@ test('Mașina e adusă în fundal după pornire (13.A↑b): se deschide plină, 
   // Acum fișierele „dispar” de pe server, ca după o publicare nouă: primul clic nu mai are ce cere.
   await page.route(BUCATA_MASINII, (r) => r.abort());
   await page.route(MESAJELE_MASINII, (r) => r.abort());
+  // Mesajul de încărcare nu apare nici o clipă: cu bucata adusă, fereastra se montează direct. (Prin Suspense, React ține
+  // mesajul pe ecran ~300 ms chiar cu bucata gata, ca să nu clipească; verificarea pe canal l-a prins așa.)
+  await page.evaluate(() => {
+    const w = window as unknown as { __incarcaAparut?: boolean };
+    w.__incarcaAparut = false;
+    new MutationObserver(() => {
+      if (document.querySelector('[data-testid="masina-incarca"]')) w.__incarcaAparut = true;
+    }).observe(document.body, { childList: true, subtree: true });
+  });
   await fila(page, 'masina').click();
   await expect(page.getByTestId('masina-conexiune')).toHaveText('Neconectat');
   await expect(page.getByTestId('masina-incarca')).toHaveCount(0);
+  expect(await page.evaluate(() => (window as unknown as { __incarcaAparut?: boolean }).__incarcaAparut)).toBe(false);
 });
 
 test('cât bucata Mașinii e pe drum, fereastra spune că se încarcă; dacă nu vine, spune de ce și oferă Reîncarcă (13.A↑b)', async ({ page }) => {

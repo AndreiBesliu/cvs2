@@ -16,6 +16,8 @@ o('P02', APP, "<Suspense fallback={<p className=\"fereastra-mesaj\" role=\"statu
   '<Suspense fallback={null}>', 'e2e', 'fereastra stă goală cât vine bucata')
 o('P03', APP, '() => ({ default: MasinaNeincarcata })));', '() => ({ default: () => null })));', 'e2e',
   'bucata care nu vine lasă fereastra goală, fără motiv și fără Reîncarcă')
+o('P04', APP, '.then((m) => { masinaGata = m.PanouMasina; return m; });', '.then((m) => m);', 'e2e',
+  'bucata adusă trece tot prin Suspense: mesajul de încărcare clipește ~300 ms la primul clic')
 
 SETURI = {}
 E2E = ['test/e2e/fereastra.spec.ts']

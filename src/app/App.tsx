@@ -1,4 +1,4 @@
-import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ComponentProps, type ReactNode } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
 import { treaptaZoom, type Bucata, type GestDesen, type Lipeste, type Vedere } from '../canvas/protocol.ts';
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
@@ -36,6 +36,8 @@ import { contulPermite, useContTinut } from './dreptCont.ts';
 import { fereastraTinuta, tineFereastra } from './fereastra.ts';
 import type { Jurnal } from './jurnalErori.ts';
 import { lucrarePornita } from './lucrare.ts';
+// Doar tipul ferestrei Mașina: bucata ei rămâne la cerere (un import de valoare ar trage-o în pornire).
+import type { PanouMasina as TipPanouMasina } from './PanouMasina.tsx';
 import { ConflictDeScriere, type DepozitProiect, type ProiectDeschis } from './proiectLocal.ts';
 
 type Props = {
@@ -125,10 +127,26 @@ function MasinaNeincarcata() {
 }
 /**
  * Fereastra Mașina (ADR 0081, 0132): senderul și conexiunea nu intră în pornire, dar se aduc în fundal după ea, ca dialogurile
- * (13.A↑b): primul clic pe Mașina o găsește gata, nu goală cât vine bucata.
+ * (13.A↑b): primul clic pe Mașina o găsește gata, nu goală cât vine bucata. Componenta venită se ține aici (`masinaGata`).
  */
-const incarcaMasina = () => import('./PanouMasina.tsx').then(cuMesaje);
+let masinaGata: typeof TipPanouMasina | null = null;
+const incarcaMasina = () => import('./PanouMasina.tsx').then(cuMesaje).then((m) => { masinaGata = m.PanouMasina; return m; });
 const PanouMasina = lazy(() => incarcaMasina().then((m) => ({ default: m.PanouMasina }), () => ({ default: MasinaNeincarcata })));
+
+/**
+ * Fereastra Mașina, aleasă o dată, la montare: cu bucata deja venită (preîncărcarea de după pornire), componenta ei direct,
+ * fără Suspense; altfel, cea la cerere, cu mesajul de încărcare. Prin Suspense, React ține mesajul pe ecran ~300 ms chiar când
+ * bucata e gata, ca să nu clipească. Alegerea nu se schimbă după montare: ar remonta fereastra și i-ar pierde starea.
+ */
+function FereastraMasina(p: ComponentProps<typeof TipPanouMasina>) {
+  const [Gata] = useState(() => masinaGata);
+  if (Gata) return <Gata {...p} />;
+  return (
+    <Suspense fallback={<p className="fereastra-mesaj" role="status" data-testid="masina-incarca">{t('fereastra.masina.incarca')}</p>}>
+      <PanouMasina {...p} />
+    </Suspense>
+  );
+}
 /** Stratul traseului (ADR 0038 §3) vine la primul „Arată traseul”: WebGL2 nu intră în pachetul de pornire. */
 const StratTraseu = lazy(() => import('../canvas/StratTraseu.tsx').then((m) => ({ default: m.StratTraseu }), () => ({ default: () => null })));
 /**
@@ -1126,10 +1144,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         {masinaMontata && (
           <section className="fereastra-masina" aria-label={t('vedere.masina')} hidden={fereastra !== 'masina'}>
             {/* Cât bucata încă vine (un clic dat înaintea preîncărcării, o rețea lentă), fereastra spune asta, nu stă goală. */}
-            <Suspense fallback={<p className="fereastra-mesaj" role="status" data-testid="masina-incarca">{t('fereastra.masina.incarca')}</p>}>
-              <PanouMasina ultimulExport={ultimulExport} simulare={config.ok && config.config.instanta !== 'live'} cerere={cerereMasina}
-                onDeschide={() => { deschideFereastra('masina'); }} />
-            </Suspense>
+            <FereastraMasina ultimulExport={ultimulExport} simulare={config.ok && config.config.instanta !== 'live'} cerere={cerereMasina}
+              onDeschide={() => { deschideFereastra('masina'); }} />
           </section>
         )}
         <footer className="jos">{grupuri('jos')}</footer>

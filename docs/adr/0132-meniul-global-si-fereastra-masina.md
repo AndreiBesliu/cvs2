@@ -73,7 +73,9 @@ primește doar meniul, filele și semnalul lucrării. Din 13.A↑b (03.11, după
 fereastra stătea goală cât venea bucata), bucata vine și în fundal, la o secundă după pornire, ca dialogurile (lista de
 preîncărcare, ADR 0100): primul clic pe Mașina o găsește gata. Cât încă vine (un clic dat înaintea preîncărcării, o rețea
 lentă), fereastra spune „Se încarcă fereastra Mașina…”; dacă nu vine (o publicare nouă, rețeaua căzută), spune de ce și oferă
-Reîncarcă, ca dialogurile.
+Reîncarcă, ca dialogurile. Cu bucata deja venită, fereastra se montează direct, fără Suspense: o componentă `lazy` suspendă la
+prima randare chiar cu bucata adusă, iar React ține mesajul de încărcare pe ecran ~300 ms, ca să nu clipească (verificarea pe
+canal l-a prins așa). Alegerea se face o dată, la montare: schimbată după, ar remonta fereastra și i-ar pierde starea.
 
 ## Probele
 
@@ -84,7 +86,8 @@ Reîncarcă, ca dialogurile.
   și Reia din el, clicul spre Mașina, titlul filei), confirmarea la închiderea paginii, „Deschide în Mașina”, Escape și ecranul
   îngust;
 - 13.A↑b, tot e2e: bucata ferestrei și mesajele ei vin fără clic, iar primul clic o deschide plină chiar cu fișierele scoase
-  de pe server între timp; mesajul de încărcare (răspunsul întârziat) și cel de eșec (cererea refuzată), cu Reîncarcă;
+  de pe server între timp, fără ca mesajul de încărcare să apară nici o clipă (un observator al paginii îl caută la fiecare
+  schimbare); mesajul de încărcare (răspunsul întârziat) și cel de eșec (cererea refuzată), cu Reîncarcă;
 - otrăvurile țintite (`test/otravuri/13.A.py`, `test/otravuri/13.A-b.py`).
 
 ## Limitele
