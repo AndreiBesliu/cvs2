@@ -1,4 +1,4 @@
-import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ComponentProps, type ReactNode } from 'react';
 import { Panza } from '../canvas/Panza.tsx';
 import { treaptaZoom, type Bucata, type GestDesen, type Lipeste, type Vedere } from '../canvas/protocol.ts';
 import type { StareStrat } from '../canvas/StratTraseu.tsx';
@@ -36,6 +36,8 @@ import { contulPermite, useContTinut } from './dreptCont.ts';
 import { fereastraTinuta, tineFereastra } from './fereastra.ts';
 import type { Jurnal } from './jurnalErori.ts';
 import { lucrarePornita } from './lucrare.ts';
+// Doar tipul ferestrei Mașina: bucata ei rămâne la cerere (un import de valoare ar trage-o în pornire).
+import type { PanouMasina as TipPanouMasina } from './PanouMasina.tsx';
 import { ConflictDeScriere, type DepozitProiect, type ProiectDeschis } from './proiectLocal.ts';
 
 type Props = {
@@ -111,8 +113,40 @@ const incarcaProprietati = () => import('./PanouProprietati.tsx').then(cuMesaje)
 const Paleta = lazy(() => incarcaPaleta().then((m) => ({ default: m.Paleta }), () => ({ default: DialogNeincarcat })));
 // Panoul care nu se poate aduce rămâne gol: e doar de citit, iar selecția se vede și în listă și în bara de jos.
 const PanouProprietati = lazy(() => incarcaProprietati().then((m) => ({ default: m.PanouProprietati }), () => ({ default: () => null })));
-/** Fereastra Mașina (ADR 0081, 0132): senderul și conexiunea vin la prima deschidere, nu în pornire. */
-const PanouMasina = lazy(() => import('./PanouMasina.tsx').then(cuMesaje).then((m) => ({ default: m.PanouMasina }), () => ({ default: () => null })));
+/**
+ * Fereastra Mașina care nu s-a putut încărca (ca dialogurile: o publicare nouă, rețeaua căzută): motivul și Reîncarcă, nu o
+ * fereastră goală. Lucrare n-are cum să existe: sesiunea stă în bucata care n-a venit.
+ */
+function MasinaNeincarcata() {
+  return (
+    <div className="fereastra-mesaj" role="alert" data-testid="masina-neincarcata">
+      <p className="avertisment">{t('dialog.neincarcat')}</p>
+      <button type="button" onClick={() => { window.location.reload(); }}>{t('eroare.reincarca')}</button>
+    </div>
+  );
+}
+/**
+ * Fereastra Mașina (ADR 0081, 0132): senderul și conexiunea nu intră în pornire, dar se aduc în fundal după ea, ca dialogurile
+ * (13.A↑b): primul clic pe Mașina o găsește gata, nu goală cât vine bucata. Componenta venită se ține aici (`masinaGata`).
+ */
+let masinaGata: typeof TipPanouMasina | null = null;
+const incarcaMasina = () => import('./PanouMasina.tsx').then(cuMesaje).then((m) => { masinaGata = m.PanouMasina; return m; });
+const PanouMasina = lazy(() => incarcaMasina().then((m) => ({ default: m.PanouMasina }), () => ({ default: MasinaNeincarcata })));
+
+/**
+ * Fereastra Mașina, aleasă o dată, la montare: cu bucata deja venită (preîncărcarea de după pornire), componenta ei direct,
+ * fără Suspense; altfel, cea la cerere, cu mesajul de încărcare. Prin Suspense, React ține mesajul pe ecran ~300 ms chiar când
+ * bucata e gata, ca să nu clipească. Alegerea nu se schimbă după montare: ar remonta fereastra și i-ar pierde starea.
+ */
+function FereastraMasina(p: ComponentProps<typeof TipPanouMasina>) {
+  const [Gata] = useState(() => masinaGata);
+  if (Gata) return <Gata {...p} />;
+  return (
+    <Suspense fallback={<p className="fereastra-mesaj" role="status" data-testid="masina-incarca">{t('fereastra.masina.incarca')}</p>}>
+      <PanouMasina {...p} />
+    </Suspense>
+  );
+}
 /** Stratul traseului (ADR 0038 §3) vine la primul „Arată traseul”: WebGL2 nu intră în pachetul de pornire. */
 const StratTraseu = lazy(() => import('../canvas/StratTraseu.tsx').then((m) => ({ default: m.StratTraseu }), () => ({ default: () => null })));
 /**
@@ -485,8 +519,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // Alegerea cu clicul (distanța la contur, `actiuniAlegere.ts`) vine la cerere, imediat după montare: doar un clic dat în
   // primele clipe o așteaptă (și se aplică la sosirea ei).
   useEffect(() => { incarcaAlegerea().catch(() => undefined); }, []);
-  // Dialogurile, aduse în fundal după pornire (vezi `DialogNeincarcat`); și dicționarele ambelor limbi (pornirea a adus
-  // doar limba activă): schimbarea limbii nu mai așteaptă rețeaua.
+  // Dialogurile și fereastra Mașina, aduse în fundal după pornire (vezi `DialogNeincarcat`); și dicționarele ambelor limbi
+  // (pornirea a adus doar limba activă): schimbarea limbii nu mai așteaptă rețeaua.
   useEffect(() => {
     const id = setTimeout(() => {
       for (const l of LIMBI) void incarcaLimba(l).catch(() => undefined);
@@ -495,6 +529,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       void incarcaPaleta().catch(() => undefined);
       void incarcaProprietati().catch(() => undefined);
       void incarcaNivelPiesa().catch(() => undefined);
+      void incarcaMasina().catch(() => undefined);
       preincarcaImport();
     }, 1_000);
     return () => { clearTimeout(id); };
@@ -1108,10 +1143,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         */}
         {masinaMontata && (
           <section className="fereastra-masina" aria-label={t('vedere.masina')} hidden={fereastra !== 'masina'}>
-            <Suspense fallback={null}>
-              <PanouMasina ultimulExport={ultimulExport} simulare={config.ok && config.config.instanta !== 'live'} cerere={cerereMasina}
-                onDeschide={() => { deschideFereastra('masina'); }} />
-            </Suspense>
+            {/* Cât bucata încă vine (un clic dat înaintea preîncărcării, o rețea lentă), fereastra spune asta, nu stă goală. */}
+            <FereastraMasina ultimulExport={ultimulExport} simulare={config.ok && config.config.instanta !== 'live'} cerere={cerereMasina}
+              onDeschide={() => { deschideFereastra('masina'); }} />
           </section>
         )}
         <footer className="jos">{grupuri('jos')}</footer>

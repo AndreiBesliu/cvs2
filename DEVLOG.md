@@ -4829,6 +4829,41 @@ browserul aplicației la 1440 px: versiunea `d6910511d758`; meniul global (Desig
 fereastra Mașina pe tot ecranul, pe trei coloane (conexiunea și starea, lucrarea și programul, consola); comutatorul „As a
 block” în rândul alinierii; fără erori în consolă. La prima deschidere, Mașina stă goală câteva clipe, cât vine modulul ei.
 
+## 2026-11-03 — Felia 13.A↑b: fereastra Mașina adusă în fundal după pornire (ADR 0132 §9) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, repară” (la „Repar aici golul de la prima deschidere a Mașinii?”, după observația sesiunii principale de la
+unirea lui 13.A↑: la prima deschidere, fereastra Mașina stă goală câteva clipe, cât vine modulul ei).
+**Started:** 03.11, 10:42. **Completed:** 03.11, 11:52.
+
+În worktree-ul `C:\Users\besli\cncvs2-lucru\sender-ecran`, pe ramura nouă `wip/13.A-b-masina-in-fundal`, din `main` `feb6920`
+(cu 13.A↑ unită). Cauza golului: bucata ferestrei Mașina era singura bucată la cerere fără locul ei în lista de preîncărcare
+de după pornire (ADR 0100), deci o cerea abia primul clic. **Trecerea 1** (`4b77679`): bucata și mesajele ei vin la o secundă
+după pornire, ca dialogurile; cât încă vine (un clic dat înaintea preîncărcării, o rețea lentă), fereastra spune „Se încarcă
+fereastra Mașina…”; dacă nu vine (o publicare nouă, rețeaua căzută), spune de ce și oferă Reîncarcă, ca dialogurile. Publicată
+pe canal și verificată acolo: bucata venea singură la ~1,1–1,4 s după pornire, dar la 60 ms după clic mesajul de încărcare era
+tot pe ecran. **Trecerea 2:** o componentă `lazy` suspendă la prima randare chiar cu bucata adusă (fabrica ei se cheamă abia
+atunci, iar promisiunea nouă nu e rezolvată pe loc), iar React ține rezerva lui Suspense ~300 ms, ca să nu clipească. Acum
+`incarcaMasina` ține componenta venită (`masinaGata`), iar `FereastraMasina` o montează direct, fără Suspense; altfel, calea la
+cerere de până acum. Alegerea se face o dată, la montare: schimbată după, ar remonta fereastra și i-ar pierde starea. Proba
+preîncărcării caută acum mesajul la fiecare schimbare a paginii (un `MutationObserver`): căzută pe codul trecerii 1 („Expected
+false, Received true”), verde după.
+La zi: ADR 0132 (§9 și probele), rândul din jurnal (două treceri), CLAUDE.md, traducerile. Niciun capitol nou în manual:
+mesajul de eșec e cel al dialogurilor, cu același Reîncarcă.
+**Porțile** (a doua trecere): compilatorul, importurile (17 / 17), traducerile (548, 0 lipsă), 8 099 de teste unitare (8 091
+trec, 8 sărite), build-ul determinist (232 de fișiere identice; pornirea 100,0, cu ușa 103,5 / 110 kB, +0,1 față de `main`;
+totalul 453,2 / 500; /admin 105,4 / 200), licențele (96 + 247), e2e 305 / 307 în suita întreagă pe portul 4178:
+`raportor.spec.ts` cere portul 4173, iar `animatie` (timpul, sub încărcare) a trecut reluată singură (5 / 5).
+**Otrăvurile** (`test/otravuri/13.A-b.py`, în worktree-ul din afara Drive-ului, după commit-ul `0ae2890`, prin build și e2e cu
+`node`): 4 / 4 prinse, fiecare de proba ei: P01 (fără preîncărcare) și P04 (componenta venită, neținută: trece tot prin
+Suspense) de proba preîncărcării; P02 (fără mesajul de încărcare) și P03 (eșecul, gol) de proba răspunsului întârziat și
+refuzat. Arborele, identic cu HEAD după ele.
+**Publicat** pe canalul `sender-ecran` al instanței de test, la 11:49, din build-ul curat al lui `0ae2890`:
+https://cncvectorstudio-test--sender-ecran-u16smtls.web.app (versiunea `0ae2890a9624`, expiră 03.12); adresa principală de
+test a rămas pe `d6910511d758` (a liniei principale). Verificat pe canal, în browserul aplicației, cu fereastra ținută pe
+Proiectare: cu service worker-ul și fără el (prima vizită), bucata și mesajele ei vin singure la ~1,1–1,3 s după pornire, iar
+primul clic pe Mașina o deschide plină („Not connected”), fără ca mesajul de încărcare să apară nici o clipă (un observator al
+paginii, ca în probă); consola fără erori.
+
 ## 2026-11-03 — Ordinea de mână a operațiilor (felia 5.9↑, ADR 0133) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, pornește” (la „Repar întâi tăcerea de pe Ctrl+G, apoi pornesc reordonarea de mână?”), apoi „continua” (la

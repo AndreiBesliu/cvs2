@@ -369,6 +369,25 @@ button[data-icona]:disabled > .eticheta {
   display: none;
 }
 
+/* Ce spune fereastra Mașina cât bucata ei încă vine, sau dacă n-a venit (13.A↑b): un card, sus, la mijloc. */
+.fereastra-mesaj {
+  display: grid;
+  justify-items: start;
+  gap: var(--sp-3);
+  max-width: 36rem;
+  margin: var(--sp-4) auto 0;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+  background: var(--s-panou);
+  color: var(--t);
+  box-shadow: var(--umbra-1);
+}
+
+.fereastra-mesaj > p {
+  margin: 0;
+}
+
 /* Pânza acoperită de Mașina nu se mai vede nici prin golurile barei de jos. */
 .aplicatie[data-fereastra='masina'] > .lucru {
   visibility: hidden;
