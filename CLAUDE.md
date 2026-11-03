@@ -102,8 +102,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   (un caz nou = documentul și valorile lui pe hârtie, acolo). **Partea de ușă a documentului v11–v18 (felia 5.1↑c)** gata pe
   01.11, rescrisă de o sesiune independentă doar din ADR-uri: secțiunea „Documentul v11–v18” de la finalul lui
   `test/oracles/document.ts` (peste partea v1–v10), cazurile pe hârtie la finalul lui `test/oracles/document.cazuri.ts`, proba
-  cu ușa aplicației în `test/unit/document.v18.oracol.test.ts`. **Un câmp nou al documentului (v19) intră acolo:** rândul lui
-  în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`, frontierele pe hârtie. **Și în corpusul de aur
+  cu ușa aplicației în `test/unit/document.v19.oracol.test.ts` (din 03.11, cu rangul din v19). **Un câmp nou al documentului
+  (v20) intră acolo, ca rangul:** rândul lui în `CAMPURI_NOI_O` (ciocnirea migrării), judecata în `problemeOperatieO`,
+  frontierele pe hârtie, iar probele care țin versiunea curentă se mută pe ea (`schema: 19` și porțile `<= 19` din
+  oracolele CAM). **Și în corpusul de aur
   (ADR 0121):** adăugirea versiunii în `scripts/corpus-documente-reteta.ts` (`ADAUGIRI`), rândul ei în `ISTORIE`
   (`scripts/corpus-documente.ts`, iar versiunea dinainte primește ultimul ei commit), apoi `node scripts/corpus-documente.ts
   --istorie` și `node scripts/corpus-documente.ts` (ieșirile așteptate), cu diferența lor citită în commit. Ușa curentă refuză
@@ -399,6 +401,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   vectorilor (etapa 10, ADR 0124). **Pe ramură, pornirea 99,1 (cu ușa 102,6 / 110 kB), totalul 450,9 / 500; după
   unirea cu 13.A↑ și cu refuzul spus de pe Ctrl+G, pornirea 99,9 (cu ușa 103,4 / 110 kB), totalul 453,1 / 500, /admin
   105,5 / 200.**
+  **Ordinea de mână a operațiilor (ADR 0133, felia 5.9↑, adusă din etapa 5)** gata pe 03.11, după „continua” la schița cu
+  patru recomandări: documentul v19 (`rang` pe operație, un întreg în [0, 100 000]; fără rang, ordinea automată de azi,
+  octet cu octet). Ordinea programului e `ordineTaieturi` (`src/model/lume.ts`): cea automată, sortată stabil după rang. În
+  fereastra exportului, **Ordinea tăierii** (Automată / A mea): rândurile în ordinea tăierii, mânerul și săgețile, „cu N” la
+  V-carve-urile legate, iar exteriorul tăiat înaintea unei operații de pe piesă sau din interiorul ei cere bifa; Exportă
+  scrie rangurile 0 … n−1 (în Automată, le scoate). **O comandă care înlocuiește operațiile unei piese le dă locul prin
+  `cuRangulPiesei` (`src/model/ordine.ts`); rolul personalizat nu ține rangul.** Rândurile ferestrei nu mai stau în ordinea
+  documentului: o probă le caută după cheie (`tr[data-operatie="e2/e2"]`), nu după loc. **Pornirea 100,0 (cu ușa 103,5 /
+  110 kB), totalul 455,3 / 500, /admin 105,4 / 200.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

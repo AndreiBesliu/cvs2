@@ -446,11 +446,11 @@ test('pragul unui punct din „Închide”: numele care începe cu el, altfel si
   assert.deepEqual(pragEtapei('Găurire; admin **P0**; —; x', citesteAcoperirea(ACOPERIRE_MIC)), { facut: 0, inLucru: 1, deFacut: 0, fara: 2 });
 });
 
-test('pragul pe arborele real: editorul de vectori (etapa 6) are ambele rânduri făcute; în etapa 5, buzunarul și animația sunt făcute (5.6↑, 5.7↑), găurirea și ordinea în lucru', () => {
+test('pragul pe arborele real: editorul de vectori (etapa 6) are ambele rânduri făcute; în etapa 5, buzunarul, animația și ordinea sunt făcute (5.6↑, 5.7↑, 5.9↑), găurirea în lucru', () => {
   assert.deepEqual(etapa('6').prag, { facut: 2, inLucru: 0, deFacut: 0, fara: 0 });
   const cinci = etapa('5').prag;
-  assert.equal(cinci.facut, 2, 'buzunarul cu mai multe freze (5.5↑, 5.6↑) și animația traseului (5.7↑)');
-  assert.equal(cinci.inLucru, 2, 'găurirea (5.4↑); ordinea, cu fișierele pe sculă din post (3.8a)');
+  assert.equal(cinci.facut, 3, 'buzunarul cu mai multe freze (5.5↑, 5.6↑), animația traseului (5.7↑), ordinea de mână (5.9↑)');
+  assert.equal(cinci.inLucru, 1, 'găurirea (5.4↑)');
   assert.equal(cinci.facut + cinci.inLucru + cinci.deFacut, 4, 'buzunarul, găurirea, ordinea, animația');
   assert.equal(cinci.fara, 1, '§10 Găurire în pași');
 });
