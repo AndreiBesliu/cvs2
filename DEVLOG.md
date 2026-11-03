@@ -4711,3 +4711,8 @@ textului ales (nu din alegerea salvată).
 traducerile (542, 0 lipsă), 8 107 teste unitare (0 eșuate, 8 sărite), build-ul determinist (232 de fișiere identice;
 pornirea 98,6 / 110 kB, cu ușa 102,2; totalul 447,8 / 500; precache 82 de fișiere, 629,4 kB), e2e-ul întreg în Edge pe
 4174: 299 / 300 (picată doar `raportor.spec.ts:101`, care cere adresa de pe 4173).
+**Publicat pe canalul `text`** (03.11, 09:46, `54d37de`, până pe 03.12): <https://cncvectorstudio-test--text-1k3nsykk.web.app>.
+Verificat în browserul aplicației (în engleză): bifa „Vertical”, alinierea Top / Middle / Bottom și „Distance between
+columns”; „PIAȚĂ” și „BAR” puse pe foaie, în două coloane, literele centrate pe axe, virgula lui Ț despărțită de căciula lui Ă
+(o piesă cu 17 forme, profilele pe exterior și pe interior); consola fără erori. Adresa principală de test a rămas a
+sesiunii principale.
