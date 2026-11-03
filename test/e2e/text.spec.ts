@@ -290,12 +290,76 @@ test('textul vertical stă drept (ADR 0141): pe conturul unui cerc, panoul spune
   await page.locator('[data-text="vertical"]').uncheck();
   await expect(page.getByTestId('text-curba')).toBeVisible();
   await expect(page.getByTestId('text-vertical-curba')).toHaveCount(0);
+  // Un text în casetă (ADR 0142) stă și el drept.
+  await page.locator('select[data-text="caseta"]').selectOption('scala');
+  await expect(page.getByTestId('text-caseta-curba')).toHaveText('Textul în casetă stă drept: nu urmează curba.');
+  await expect(page.getByTestId('text-curba')).toHaveCount(0);
+  await page.locator('select[data-text="caseta"]').selectOption('fara');
+  await expect(page.getByTestId('text-curba')).toBeVisible();
   await page.locator('[data-text="vertical"]').check();
   await page.click('[data-text="adauga"]');
   const d2 = await documentSalvat(page, 2) as Doc;
   const text = d2.piese[1]!.radacina.text!;
   expect(text).toMatchObject({ continut: 'BAR', vertical: true });
   expect('curba' in text).toBe(false);
+});
+
+test('caseta (ADR 0142): „HHH” scalat la caseta de 100 × 50 are exact 100 mm (majuscula 100 · 1456 / 4039); limitat, cu 50 cerut, la fel; după reîncărcare, caseta revine', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-unealta="text"]').click();
+  await page.locator('[data-text="continut"]').fill('HHH');
+  await page.locator('select[data-text="caseta"]').selectOption('scala');
+  await page.locator('[data-text="caseta-latime"]').fill('100');
+  await page.locator('[data-text="caseta-inaltime"]').fill('50');
+  // „HHH” are 2 · 1460 + 1288 − 169 = 4039 de unități în lățime: lățimea leagă. Înălțimea o dă caseta: câmpul e oprit.
+  const h = (100 * 1456) / 4039;
+  await expect(page.locator('[data-text="inaltime"]')).toBeDisabled();
+  await expect(page.locator('[data-text="inaltime"]')).toHaveValue('36.05');
+  await expect(page.getByTestId('text-caseta')).toHaveText('În casetă: majuscula de 36,05 mm, textul de 100 × 36,05 mm.');
+  // Cu 100 mm între litere, textul nu încape nici la cea mai mică înălțime: panoul o spune, iar Adaugă se oprește.
+  await page.locator('[data-text="spatiere"]').fill('100');
+  await expect(page.getByTestId('text-motiv')).toHaveText('Textul nu încape în casetă nici la cea mai mică înălțime: spațierea sau aldinul trec de ea.');
+  await expect(page.locator('[data-text="adauga"]')).toBeDisabled();
+  await page.locator('[data-text="spatiere"]').fill('0');
+  let la = await ecran(page, await vedere(page));
+  const a = la(150, 150);
+  await page.mouse.click(a.x, a.y);
+  await page.click('[data-text="adauga"]');
+  const d1 = await documentSalvat(page, 1) as Doc;
+  const t1 = d1.piese[0]!.radacina;
+  expect(t1.text).toMatchObject({ continut: 'HHH', caseta: { fel: 'scala', latime: 100, inaltime: 50 } });
+  expect(t1.text!['inaltime'] as number).toBeCloseTo(h, 9);
+  const xs = (t1.copii ?? []).flatMap((g) => abscise(g));
+  expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(100, 9);
+
+  // Limitat de casetă, cu 50 cerut: micșorat cât să încapă, și panoul o spune.
+  await page.locator('select[data-text="caseta"]').selectOption('limita');
+  await expect(page.locator('[data-text="inaltime"]')).toBeEnabled();
+  await page.locator('[data-text="inaltime"]').fill('50');
+  await expect(page.getByTestId('text-caseta')).toHaveText('Micșorat ca să încapă în casetă: majuscula de 36,05 mm, textul de 100 × 36,05 mm.');
+  la = await ecran(page, await vedere(page));
+  const b = la(150, 80);
+  await page.mouse.click(b.x, b.y);
+  await page.click('[data-text="adauga"]');
+  const d2 = await documentSalvat(page, 2) as Doc;
+  const t2 = d2.piese[1]!;
+  expect(t2.radacina.text).toMatchObject({ continut: 'HHH', caseta: { fel: 'limita', latime: 100, inaltime: 50, ceruta: 50 } });
+  expect(t2.radacina.text!['inaltime'] as number).toBeCloseTo(h, 9);
+
+  // După reîncărcare, textul ales își aduce caseta: limitat, cu înălțimea cerută (50) în câmp.
+  await page.reload();
+  await page.locator('[data-unealta="text"]').click();
+  await page.locator('select[data-text="caseta"]').selectOption('fara');
+  la = await ecran(page, await vedere(page));
+  const inst = d2.foi[0]!.instante[1]!;
+  const varf = t2.radacina.copii![0]!.copii![0]!.forma!.varfuri[0]!.p;
+  const pe = la(inst.x + varf.x, inst.y + varf.y);
+  await page.mouse.click(pe.x, pe.y);
+  await expect(page.getByTestId('text-stare')).toContainText('Editezi textul ales');
+  await expect(page.locator('select[data-text="caseta"]')).toHaveValue('limita');
+  await expect(page.locator('[data-text="inaltime"]')).toHaveValue('50');
+  await expect(page.locator('[data-text="caseta-latime"]')).toHaveValue('100');
+  await expect(page.locator('[data-text="caseta-inaltime"]')).toHaveValue('50');
 });
 
 test('panoul textului spune ce lipsește: caracterele pe care fontul nu le are, înălțimea greșită; fără litere, Adaugă e oprit', async ({ page }) => {

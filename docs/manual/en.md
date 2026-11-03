@@ -122,7 +122,7 @@ on the line. The Pen stays chosen for the next path.
 
 ## Text
 %% capitol: text
-%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical
+%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical, editare.text.caseta
 
 The **Text** tool (`X`; `T` is “Show toolpath”) writes text to cut. With it chosen:
 - a **click on the sheet** puts the anchor (a cross): there the baseline of the first line starts (left aligned), has its
@@ -139,8 +139,8 @@ In the tool's panel you type the text (Enter: new line) and choose:
   the line, as in any font);
 - the **space between letters** (in mm; negative, tighter), the **distance between lines** (a multiple of the font's line)
   and the **alignment** to the anchor;
-- **Bold** and **Italic**, for any font, even without its own bold or slanted faces, and **Vertical**, letters one under
-  another (below).
+- **Bold** and **Italic**, for any font, even without its own bold or slanted faces, **Vertical**, letters one under
+  another, and **Box**, the text fitted into a width and a height (below).
 
 **Bold** thickens the letters: ticked, it asks for the **Thickening on each side** (mm; it suggests 3 % of the height, for
 example 0.6 at 20 mm; at most a fifth of the height). Each stroke grows by twice that, small holes shrink (they may close)
@@ -158,6 +158,14 @@ exactly one em), plus the **space between letters**. The breve of Ă or the comm
 touch; a space takes the place of a capital. The **alignment** becomes **Top** (the column starts at the anchor and goes
 down), **Middle** or **Bottom** (the column ends at the anchor). Vertical text stays straight: put on a curve, it does not
 follow it. Bold, italic and single-line fonts work the same, and the text reopens vertical.
+
+**Box** fits the text: **Limited by the box** keeps the capital height you wrote and shrinks it only as much as needed to
+fit; **Scaled to the box** makes the text as large as fits, and the box gives the height (its field is off). What fits is
+the cut letters (not the space around them), in the **Box width** and **Box height** (mm); the space between letters and
+the bold stay as you wrote them, in mm. Under the fields, the panel says the height that fitted and the size of the text; if
+the text does not fit even at the smallest height (for example, with too large a space between letters), it says so and
+does not put it on the sheet. The box does not move the text: it still starts at the anchor. Text in a box stays straight
+(it does not follow a curve), it can be vertical, and uniform scaling grows the box too.
 
 **Single-line fonts** (engraving, “stick” fonts) have no filled letters, only strokes: the cutter goes once along each line.
 Relief SingleLine is included; one you load into My fonts (TTF, OTF or an SVG font, the format of the Hershey and EMS

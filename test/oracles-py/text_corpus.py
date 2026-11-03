@@ -642,6 +642,53 @@ def aseaza(font, p, linie=False):
     return {'glife': glife, 'lipsa': lipsa, '_stricate': stricate, '_randuri': randuri, '_metrici': {'rand': rand_mm, 'coborare': mm(desc)}}
 
 
+def cutie_text(asez, d):
+    """Cutia textului tăiat: reuniunea cutiilor literelor (a celei aldine: a miezului cu 2d în plus în sus și la dreapta)."""
+    x0 = y0 = math.inf
+    x1 = y1 = -math.inf
+    for g in asez['glife']:
+        a, b, c, e = cutie_miez(g)
+        x0, y0, x1, y1 = min(x0, a), min(y0, b), max(x1, c + 2 * d), max(y1, e + 2 * d)
+    return x0, y0, x1, y1
+
+
+def inaltime_in_caseta(font, p, linie=False):
+    """Încadrarea în casetă (ADR 0142), scrisă din nou: cea mai mare înălțime a majusculei la care cutia textului tăiat
+    (`cutie_text`) încape în lățime × înălțime, căutată prin înjumătățire pe așezări întregi (aplicația folosește marginile
+    afine din două așezări). Între 0,1 mm (și de cinci ori aldinul) și 1000 mm; limitat de casetă: cel mult cea cerută.
+    None: nu încape nici la cea mai mică. Fără litere de tăiat: înălțimea cerută (limitat) sau cea din parametri."""
+    c = p['caseta']
+    d = 0 if linie else p.get('aldin', 0)
+
+    def asezat(h):
+        q = {k: v for k, v in p.items() if k != 'caseta'}
+        q['inaltime'] = h
+        return aseaza(font, q, linie)
+
+    if not asezat(p['inaltime'])['glife']:
+        return c['ceruta'] if c['fel'] == 'limita' else p['inaltime']
+
+    def incape(h):
+        x0, y0, x1, y1 = cutie_text(asezat(h), d)
+        return x1 - x0 <= c['latime'] and y1 - y0 <= c['inaltime']
+
+    jos = max(0.1, d / 0.2)
+    sus = min(c['ceruta'], 1000.0) if c['fel'] == 'limita' else 1000.0
+    if sus < jos or not incape(jos):
+        return None
+    if incape(sus):
+        return sus
+    while sus - jos > 1e-13 * sus:
+        m = (jos + sus) / 2
+        if m in (jos, sus):
+            break
+        if incape(m):
+            jos = m
+        else:
+            sus = m
+    return jos
+
+
 def muta_contur(c, tx, ty):
     """Conturul (start și segmente L / C, în mm) mutat cu (tx, ty), cu punctele de control."""
     m = dict(c)
@@ -763,7 +810,12 @@ def figura_aldin(glifa_miez, d, pas):
 
 
 def aldin(font, p, pas):
-    """Literele unui text îngroșat: cutia și grila fiecăreia (`figura_aldin`), în ordinea așezării."""
+    """Literele unui text îngroșat: cutia și grila fiecăreia (`figura_aldin`), în ordinea așezării. Cu o casetă (ADR 0142),
+    la înălțimea care încape."""
+    if 'caseta' in p:
+        h = inaltime_in_caseta(font, p)
+        assert h is not None, p
+        p = {**{k: v for k, v in p.items() if k != 'caseta'}, 'inaltime': h}
     asez = aseaza(font, p)
     return {'lipsa': asez['lipsa'], 'glife': [figura_aldin(g, p['aldin'], pas) for g in asez['glife']]}
 
@@ -1967,6 +2019,82 @@ CAZURI_VERTICAL_LINIE = [
 ]
 
 
+# Încadrarea în casetă (ADR 0142): scalat la casetă (lățimea sau înălțimea leagă), limitat de ea (încape sau se micșorează),
+# spațierea în mm, rândurile, textul vertical, cursivul, un font CFF, unul cu o singură linie, unul serif centrat.
+CAZURI_CASETA = [
+    ('caseta-HHH', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                  'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}),
+    ('caseta-spatiere', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 20, 'spatiere': 2, 'interlinie': 1, 'aliniere': 'stanga',
+                                       'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}),
+    ('caseta-randuri', 'roboto.ttf', {'continut': 'H\nH', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                      'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}),
+    ('caseta-limita-incape', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                            'caseta': {'fel': 'limita', 'latime': 100, 'inaltime': 50, 'ceruta': 20}}),
+    ('caseta-limita-micsorat', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 50, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                              'caseta': {'fel': 'limita', 'latime': 100, 'inaltime': 50, 'ceruta': 50}}),
+    ('caseta-vertical', 'roboto.ttf', {'continut': 'HI', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'vertical': True,
+                                       'caseta': {'fel': 'scala', 'latime': 30, 'inaltime': 100}}),
+    ('caseta-serif-centru', 'droid-serif.ttf', {'continut': 'Ușă de\nstejar', 'inaltime': 15, 'spatiere': 0.4, 'interlinie': 1.2, 'aliniere': 'centru',
+                                                'cursiv': 12, 'caseta': {'fel': 'scala', 'latime': 120, 'inaltime': 60}}),
+    ('caseta-cff', 'inter-subset.otf', {'continut': 'AVATAR', 'inaltime': 10, 'spatiere': -0.5, 'interlinie': 1, 'aliniere': 'dreapta',
+                                        'caseta': {'fel': 'scala', 'latime': 60, 'inaltime': 15}}),
+]
+CAZURI_CASETA_LINIE = [
+    ('caseta-linie', 'relief-singleline.ttf', {'continut': 'HOTEL\nOK', 'inaltime': 30, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru',
+                                               'caseta': {'fel': 'limita', 'latime': 80, 'inaltime': 40, 'ceruta': 30}}),
+]
+
+
+def probe_caseta_pe_hartie(cz):
+    """Încadrarea, pe hârtie, cu Roboto: H are avansul 1460 și picioarele de la 169 la 1288 de unități, majuscula 1456, rândul
+    2701. „HHH” are cutia de 2 · 1460 + 1288 − 169 = 4039 de unități în lățime și o majusculă în înălțime:
+    - într-o casetă de 100 × 50, lățimea leagă: h = 100 · 1456 / 4039 = 36,0485…;
+    - cu spațierea 2 mm (două goluri): 4039 h / 1456 + 4 = 100, h = 96 · 1456 / 4039;
+    - limitat, cu 20 cerut, încape (55,5 mm): rămâne 20; cu 50 cerut, se micșorează la 36,0485…;
+    - „H↵H”: înălțimea leagă, rândul plus o majusculă, (2701 + 1456) h / 1456 = 50;
+    - „HI” vertical, 30 × 100: lățimea lui H leagă, 1119 h / 1456 = 30 (înălțimea, 2h + golul, 93,9 mm, încape);
+    - cu aldinul 0,6 (miezul h − 1,2): 4039 (h − 1,2) / 1456 + 6 · 0,6 = 100."""
+    def h(n):
+        return cz[n]['inaltime']
+    assert abs(h('caseta-HHH') - 100 * 1456 / 4039) < 1e-9, h('caseta-HHH')
+    assert abs(h('caseta-spatiere') - 96 * 1456 / 4039) < 1e-9, h('caseta-spatiere')
+    assert h('caseta-limita-incape') == 20
+    assert abs(h('caseta-limita-micsorat') - 100 * 1456 / 4039) < 1e-9
+    assert abs(h('caseta-randuri') - 50 * 1456 / 4157) < 1e-9, h('caseta-randuri')
+    assert abs(h('caseta-vertical') - 30 * 1456 / 1119) < 1e-9, h('caseta-vertical')
+    # Textul scalat umple caseta pe latura care leagă și încape pe cealaltă.
+    for n in ('caseta-HHH', 'caseta-serif-centru', 'caseta-cff', 'caseta-vertical'):
+        x0, y0, x1, y1 = cutie_text(cz[n], 0)
+        c = cz[n]['parametri']['caseta']
+        assert x1 - x0 <= c['latime'] + 1e-9 and y1 - y0 <= c['inaltime'] + 1e-9, (n, x1 - x0, y1 - y0)
+        assert abs(x1 - x0 - c['latime']) < 1e-9 or abs(y1 - y0 - c['inaltime']) < 1e-9, (n, x1 - x0, y1 - y0)
+
+
+def fonturi_caseta():
+    """Cazurile încadrării în casetă (ADR 0142): înălțimea care încape și literele așezate la ea, cu probele pe hârtie."""
+    cz = {}
+    for lista, linie in ((CAZURI_CASETA, False), (CAZURI_CASETA_LINIE, True)):
+        for nume, fisier, p in lista:
+            cale = cale_fixtura(fisier)
+            font = TTFont(cale)
+            h = inaltime_in_caseta(font, p, linie)
+            assert h is not None, nume
+            q = {k: v for k, v in p.items() if k != 'caseta'}
+            q['inaltime'] = h
+            rez = aseaza(font, q, linie)
+            cz[nume] = {'font': os.path.relpath(cale, RAD).replace('\\', '/'), 'parametri': p, 'majuscula': majuscula(font), 'linie': linie,
+                        'inaltime': h, 'stricate': rez['_stricate'], **rez}
+    probe_caseta_pe_hartie(cz)
+    # Pe hârtie, aldinul: miezul h − 1,2 umple lățimea (4039 de unități și 6d).
+    font = TTFont(cale_fixtura('roboto.ttf'))
+    ha = inaltime_in_caseta(font, next(p for n, f, p, _ in CAZURI_ALDIN if n == 'aldin-caseta'))
+    assert abs(ha - (1456 * (100 - 3.6) / 4039 + 1.2)) < 1e-9, ha
+    # Prea mică: zece H cu 20 mm între ele nu încap în 100 de mm nici la 0,1 mm.
+    assert inaltime_in_caseta(font, {'continut': 'HHHHHHHHHH', 'inaltime': 20, 'spatiere': 20, 'interlinie': 1, 'aliniere': 'stanga',
+                                     'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}) is None
+    return {'cazuri': fara_interne(cz)}
+
+
 def probe_vertical_pe_hartie(v):
     """Textul vertical, pe hârtie. Roboto: majuscula 1456, em-ul 2048, rândul (`hhea`) 2146 + 555 = 2701 de unități; la
     20 mm, s = 20 / 1456 mm pe unitate, em-ul 2048 s = 28,1318681318…, golul dintre majuscule 28,13… − 20 = 8,1318…, rândul
@@ -2214,6 +2342,9 @@ def fonturi_svg(linii):
 CAZURI_ALDIN = [
     # Pe verticală (ADR 0141): cutia literei îngroșate (a miezului cu 2d în plus) o stivuiește și o centrează.
     ('aldin-vertical', 'roboto.ttf', {'continut': 'HOT\nȘĂ', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru', 'aldin': 0.6, 'vertical': True}, 0.25),
+    # În casetă (ADR 0142): înălțimea care încape, cu aldinul în mm.
+    ('aldin-caseta', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.6,
+                                    'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}, 0.25),
     # Pe hârtie (în `main`): H de 20 mm cu aldinul 0,6.
     ('aldin-HOTEL', 'roboto.ttf', {'continut': 'HOTEL', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.6}, 0.25),
     # Bucățile care se unesc (virgula lui ș și ț, căciula lui â, punctul lui i), pe două rânduri centrate.
@@ -2340,10 +2471,11 @@ def main():
     probe_linie_pe_hartie(linii)
     svg = fonturi_svg(linii)
     verticale = fonturi_verticale()
+    casete = fonturi_caseta()
     asteptat = fara_interne(asteptat)
     for nume, date in (('crenari', crenari), ('glife', brute), ('asteptat', asteptat), ('structura', structura), ('pe-curba', fara_interne(curba)),
                        ('variabile', variabile()), ('aldin', fara_interne(aldine)), ('linie', {'recunoastere': recunoastere, 'cazuri': fara_interne(linii)}),
-                       ('svg', svg), ('vertical', verticale)):
+                       ('svg', svg), ('vertical', verticale), ('caseta', casete)):
         with open(os.path.join(DEST, f'{nume}.json'), 'w', encoding='utf-8', newline='\n') as out:
             json.dump(date, out, ensure_ascii=False, separators=(',', ':'))
             out.write('\n')

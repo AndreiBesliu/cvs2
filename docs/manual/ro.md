@@ -118,7 +118,7 @@ pe linie. Pen-ul rămâne ales pentru calea următoare.
 
 ## Textul
 %% capitol: text
-%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical
+%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical, editare.text.caseta
 
 Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea aleasă:
 - un **clic pe foaie** pune ancora (o cruce): acolo începe linia de bază a primului rând (aliniat la stânga), îi stă
@@ -135,8 +135,8 @@ Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea a
   linie, ca în orice font);
 - **spațiul dintre litere** (în mm; negativ, mai strâns), **distanța dintre rânduri** (ca multiplu al rândului fontului) și
   **alinierea** față de ancoră;
-- **Aldin** și **Cursiv**, pentru orice font, chiar fără fețele lui îngroșate sau înclinate, și **Vertical**, literele una
-  sub alta (mai jos).
+- **Aldin** și **Cursiv**, pentru orice font, chiar fără fețele lui îngroșate sau înclinate, **Vertical**, literele una
+  sub alta, și **Caseta**, textul încadrat într-o lățime și o înălțime (mai jos).
 
 **Aldin** îngroașă literele: bifat, cere **Îngroșarea pe fiecare parte** (mm; propune 3 % din înălțime, de exemplu 0,6 la
 20 mm; cel mult o cincime din înălțime). Fiecare trăsătură crește cu dublul ei, golurile mici se strâng (pot dispărea), iar
@@ -154,6 +154,14 @@ litere vecine rămâne același gol: cât lasă em-ul fontului sub o majusculă 
 unei majuscule. **Alinierea** devine **Sus** (coloana pornește din ancoră în jos), **Mijloc** sau **Jos** (coloana se termină
 în ancoră). Textul vertical stă drept: pus pe o curbă, nu o urmează. Aldinul, cursivul și fonturile cu o singură linie merg
 la fel, iar textul se redeschide vertical.
+
+**Caseta** încadrează textul: **Limitat de casetă** păstrează înălțimea majusculelor scrisă și o micșorează doar cât să
+încapă; **Scalat la casetă** face textul cât mai mare încât să încapă, iar înălțimea o dă caseta (câmpul ei se oprește). Se
+încadrează literele tăiate (nu spațiul din jurul lor), în **Lățimea casetei** și **Înălțimea casetei** (mm); spațiul dintre
+litere și aldinul rămân cum le-ai scris, în mm. Sub câmpuri, panoul spune înălțimea care a încăput și mărimea textului; dacă
+textul nu încape nici la cea mai mică înălțime (de pildă, cu un spațiu dintre litere prea mare), o spune și nu-l pune pe
+foaie. Caseta nu mută textul: el pornește tot din ancoră. Textul în casetă stă drept (nu urmează o curbă), poate fi vertical,
+iar scalarea uniformă crește și caseta.
 
 **Fonturile cu o singură linie** (de gravură, „stick”) n-au litere pline, ci trăsături: freza merge o dată pe fiecare linie.
 Relief SingleLine e inclus; unul încărcat de tine în Fonturile mele (TTF, OTF sau un font SVG, formatul fonturilor de

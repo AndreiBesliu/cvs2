@@ -31,6 +31,8 @@ export const LIMITE_TEXT = {
    * înălțimea majusculei (miezul are atunci 3/5 din ea); înclinarea, în grade, în ambele sensuri.
    */
   aldinMinim: 0.01, aldinRaport: 0.2, cursiv: 45,
+  /** Caseta textului (ADR 0142): lățimea și înălțimea ei, în mm. */
+  casetaMinima: 0.1, casetaMaxima: 10_000,
 } as const;
 
 const numar = (min: number, max: number) => v.pipe(v.number(), v.finite(), v.minValue(min), v.maxValue(max));
@@ -68,6 +70,16 @@ export const SchemaCurbaText = v.object({
 
 export type CurbaText = v.InferOutput<typeof SchemaCurbaText>;
 
+/**
+ * Caseta textului (ADR 0142): limitat de ea (cu înălțimea cerută, micșorată doar cât să încapă) sau scalat la ea (cea mai
+ * mare care încape); lățimea și înălțimea ei, în mm.
+ */
+const marimeCaseta = numar(LIMITE_TEXT.casetaMinima, LIMITE_TEXT.casetaMaxima);
+export const SchemaCasetaText = v.variant('fel', [
+  v.object({ fel: v.literal('limita'), latime: marimeCaseta, inaltime: marimeCaseta, ceruta: numar(LIMITE_TEXT.inaltimeMinima, LIMITE_TEXT.inaltimeMaxima) }),
+  v.object({ fel: v.literal('scala'), latime: marimeCaseta, inaltime: marimeCaseta }),
+]);
+
 export const SchemaBlocText = v.pipe(
   v.object({
     continut: v.pipe(v.string(), v.minLength(1), v.maxLength(LIMITE_TEXT.caractere)),
@@ -86,11 +98,15 @@ export const SchemaBlocText = v.pipe(
     cursiv: v.optional(numar(-LIMITE_TEXT.cursiv, LIMITE_TEXT.cursiv)),
     /** Textul vertical (ADR 0141): literele una sub alta, rândurile în coloane; lipsă: textul e orizontal. */
     vertical: v.optional(v.literal(true)),
+    /** Încadrarea în casetă (ADR 0142); `inaltime` e atunci cea care a încăput. Lipsă: înălțimea cerută. */
+    caseta: v.optional(SchemaCasetaText),
     amprenta: v.pipe(v.string(), v.maxLength(64)),
   }),
   v.check((b) => b.aldin === undefined || b.aldin <= aldinMaxim(b.inaltime), 'aldinul trece de o cincime din înălțime'),
   // Un text vertical stă drept: literele una sub alta nu urmează o curbă (ADR 0141).
   v.check((b) => !(b.vertical && b.curba), 'textul vertical nu stă pe o curbă'),
+  // Un text în casetă stă drept: caseta e a unui text care nu urmează o curbă (ADR 0142).
+  v.check((b) => !(b.caseta && b.curba), 'textul în casetă nu stă pe o curbă'),
 );
 
 export type BlocText = v.InferOutput<typeof SchemaBlocText>;
@@ -139,8 +155,16 @@ export function blocScalat(inainte: Nod, dupa: Nod, lx: number, ly: number, unif
     distanta: b.curba.distanta * s,
   };
   if (curba && Math.abs(curba.distanta) > LIMITE_TEXT.distantaCurba) return fara;
+  // Caseta crește cu textul (ADR 0142): același text încape la fel în caseta scalată.
+  const caseta = b.caseta && (b.caseta.fel === 'limita'
+    ? { ...b.caseta, latime: b.caseta.latime * s, inaltime: b.caseta.inaltime * s, ceruta: b.caseta.ceruta * s }
+    : { ...b.caseta, latime: b.caseta.latime * s, inaltime: b.caseta.inaltime * s });
+  if (caseta && !v.safeParse(SchemaCasetaText, caseta).success) return fara;
   return {
     ...dupa,
-    text: { ...b, inaltime, spatiere: b.spatiere * s, ...(aldin !== undefined ? { aldin } : {}), ...(curba ? { curba } : {}), amprenta: amprentaContururi(dupa.copii) },
+    text: {
+      ...b, inaltime, spatiere: b.spatiere * s, ...(aldin !== undefined ? { aldin } : {}), ...(curba ? { curba } : {}), ...(caseta ? { caseta } : {}),
+      amprenta: amprentaContururi(dupa.copii),
+    },
   };
 }

@@ -5,7 +5,7 @@ import type { Contur } from '../geom/conturBaza.ts';
 import { aldinMaxim, LIMITE_TEXT, POZITII_PE_CURBA, type BlocText, type CurbaText } from '../model/blocText.ts';
 import { FONT_IMPLICIT, FONTURI_INCLUSE } from '../text/fonturi.ts';
 import { numeVarianta, sursaFont } from '../text/iduriFont.ts';
-import type { AliniereText } from '../text/asezare.ts';
+import type { AliniereText, CasetaText } from '../text/asezare.ts';
 import type { RezultatActiune } from '../ui/actiuni.ts';
 import type { CerereText } from '../ui/actiuniDocument.ts';
 import { citesteNumar, textNumar } from '../ui/numar.ts';
@@ -44,7 +44,12 @@ type Formular = {
   readonly aldin: boolean; readonly grosime: string; readonly cursiv: boolean; readonly unghi: string;
   /** Textul vertical (ADR 0141): literele una sub alta, rândurile în coloane. */
   readonly textVertical: boolean;
+  /** Încadrarea în casetă (ADR 0142): fără, limitat de casetă sau scalat la ea, cu lățimea și înălțimea (mm). */
+  readonly caseta: FelCaseta; readonly casetaLatime: string; readonly casetaInaltime: string;
 };
+
+type FelCaseta = 'fara' | CasetaText['fel'];
+const FELURI_CASETA: readonly FelCaseta[] = ['fara', 'limita', 'scala'];
 
 /** Curba la care stă textul: conturul în sistemul piesei (originea în ancoră) și distanța ancorei pe el. */
 type CurbaAleasa = { readonly contur: Contur; readonly s: number };
@@ -65,7 +70,7 @@ function formularSalvat(): Formular {
   const baza: Formular = {
     continut: '', font: FONT_IMPLICIT, inaltime: '20', spatiere: '0', interlinie: '1', aliniere: 'stanga',
     pozitie: 'baza', distanta: '0', invers: false, verticala: false, intinsa: false,
-    aldin: false, grosime: '', cursiv: false, unghi: '12', textVertical: false,
+    aldin: false, grosime: '', cursiv: false, unghi: '12', textVertical: false, caseta: 'fara', casetaLatime: '100', casetaInaltime: '50',
   };
   try {
     const s = JSON.parse(localStorage.getItem(CHEIE) ?? 'null') as Partial<Record<keyof Formular, unknown>> | null;
@@ -80,6 +85,8 @@ function formularSalvat(): Formular {
       invers: s.invers === true, verticala: s.verticala === true, intinsa: s.intinsa === true,
       aldin: s.aldin === true, grosime: sir(s.grosime, baza.grosime), cursiv: s.cursiv === true, unghi: sir(s.unghi, baza.unghi),
       textVertical: s.textVertical === true,
+      caseta: FELURI_CASETA.find((x) => x === s.caseta) ?? baza.caseta,
+      casetaLatime: sir(s.casetaLatime, baza.casetaLatime), casetaInaltime: sir(s.casetaInaltime, baza.casetaInaltime),
     };
   } catch {
     return baza;
@@ -92,6 +99,7 @@ function salveaza(f: Formular): void {
       font: f.font, inaltime: f.inaltime, spatiere: f.spatiere, interlinie: f.interlinie, aliniere: f.aliniere,
       pozitie: f.pozitie, distanta: f.distanta, invers: f.invers, verticala: f.verticala, intinsa: f.intinsa,
       aldin: f.aldin, grosime: f.grosime, cursiv: f.cursiv, unghi: f.unghi, textVertical: f.textVertical,
+      caseta: f.caseta, casetaLatime: f.casetaLatime, casetaInaltime: f.casetaInaltime,
     }));
   } catch {
     // Fără stocare (fereastră privată): alegerile țin cât pagina.
@@ -104,10 +112,14 @@ function salveaza(f: Formular): void {
  */
 function parametri(
   f: Formular, numeFont: string | null, curba: CurbaAleasa | null, linie: boolean,
-): Omit<BlocText, 'amprenta'> | 'continut' | 'inaltime' | 'spatiere' | 'interlinie' | 'distanta' | 'aldin' | 'cursiv' {
+): Omit<BlocText, 'amprenta'> | 'continut' | 'inaltime' | 'spatiere' | 'interlinie' | 'distanta' | 'aldin' | 'cursiv' | 'caseta' {
   if (f.continut.trim() === '' || f.continut.length > LIMITE_TEXT.caractere) return 'continut';
-  const inaltime = citesteNumar(f.inaltime);
-  if (inaltime === null || inaltime < LIMITE_TEXT.inaltimeMinima || inaltime > LIMITE_TEXT.inaltimeMaxima) return 'inaltime';
+  // Scalat la casetă (ADR 0142), înălțimea o dă caseta: câmpul e oprit, iar valoarea lui doar ține locul.
+  const scala = f.caseta === 'scala';
+  const scrisa = citesteNumar(f.inaltime);
+  const buna = scrisa !== null && scrisa >= LIMITE_TEXT.inaltimeMinima && scrisa <= LIMITE_TEXT.inaltimeMaxima;
+  if (!buna && !scala) return 'inaltime';
+  const inaltime = buna ? scrisa : 20;
   const spatiere = citesteNumar(f.spatiere, true);
   if (spatiere === null || Math.abs(spatiere) > LIMITE_TEXT.spatiere) return 'spatiere';
   const interlinie = citesteNumar(f.interlinie);
@@ -116,7 +128,8 @@ function parametri(
   // îngroașă (ADR 0140): bifa lui e oprită, iar blocul nu-l primește.
   const gros = f.aldin && !linie;
   const aldin = gros ? citesteNumar(f.grosime) : 0;
-  if (aldin === null || (gros && (aldin < LIMITE_TEXT.aldinMinim || aldin > aldinMaxim(inaltime)))) return 'aldin';
+  // Scalat la casetă, înălțimea care încape e de cel puțin cinci ori aldinul (așezarea o caută așa).
+  if (aldin === null || (gros && (aldin < LIMITE_TEXT.aldinMinim || (!scala && aldin > aldinMaxim(inaltime))))) return 'aldin';
   const cursiv = f.cursiv ? citesteNumar(f.unghi, true) : 0;
   if (cursiv === null || Math.abs(cursiv) > LIMITE_TEXT.cursiv) return 'cursiv';
   let pe: CurbaText | null = null;
@@ -129,10 +142,20 @@ function parametri(
       s: curba.s, pozitie: f.pozitie, distanta, invers: f.invers, orientare: f.verticala ? 'verticala' : 'rotita', intinsa: f.intinsa,
     };
   }
+  let caseta: CasetaText | null = null;
+  if (f.caseta !== 'fara') {
+    const latime = citesteNumar(f.casetaLatime), inaltimeCaseta = citesteNumar(f.casetaInaltime);
+    const bun = (x: number | null): x is number => x !== null && x >= LIMITE_TEXT.casetaMinima && x <= LIMITE_TEXT.casetaMaxima;
+    if (!bun(latime) || !bun(inaltimeCaseta)) return 'caseta';
+    caseta = f.caseta === 'limita'
+      ? { fel: 'limita', latime, inaltime: inaltimeCaseta, ceruta: inaltime }
+      : { fel: 'scala', latime, inaltime: inaltimeCaseta };
+  }
   const bloc = { continut: f.continut, font: f.font, inaltime, spatiere, interlinie, aliniere: f.aliniere };
   return {
     ...bloc, ...(numeFont ? { numeFont: numeFont.slice(0, LIMITE_TEXT.numeFont) } : {}), ...(pe ? { curba: pe } : {}),
     ...(aldin > 0 ? { aldin } : {}), ...(cursiv !== 0 ? { cursiv } : {}), ...(f.textVertical ? { vertical: true as const } : {}),
+    ...(caseta ? { caseta } : {}),
   };
 }
 
@@ -199,6 +222,10 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
       cursiv: !!b.cursiv, ...(b.cursiv ? { unghi: textNumar(b.cursiv) } : {}),
       // Textul vertical (ADR 0141): un text orizontal oprește bifa.
       textVertical: b.vertical === true,
+      // Caseta (ADR 0142): limitat de ea, câmpul înălțimii ține înălțimea cerută; fără casetă, ea se oprește.
+      caseta: b.caseta?.fel ?? 'fara',
+      ...(b.caseta ? { casetaLatime: textNumar(b.caseta.latime), casetaInaltime: textNumar(b.caseta.inaltime) } : {}),
+      ...(b.caseta?.fel === 'limita' ? { inaltime: textNumar(b.caseta.ceruta) } : {}),
     }));
     setMotiv(null);
     setDrept(false);
@@ -219,8 +246,8 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
       s: curba.s,
     };
   }, [editat, curba, ancora]);
-  // Un text vertical stă drept (ADR 0141): nu urmează curba, chiar dacă ancora e pe una.
-  const curbaActiva = drept || form.textVertical ? null : curbaPosibila;
+  // Un text vertical (ADR 0141) sau în casetă (ADR 0142) stă drept: nu urmează curba, chiar dacă ancora e pe una.
+  const curbaActiva = drept || form.textVertical || form.caseta !== 'fara' ? null : curbaPosibila;
   const rezFont = fonturi.get(form.font);
   useEffect(() => {
     if (modul === null || modul === 'eroare' || fonturi.has(form.font)) return;
@@ -263,23 +290,36 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
     if (rezFont && !rezFont.ok) return textIncarcare(rezFont, numeFont(form.font));
     if (typeof p === 'string' && !(p === 'continut' && form.continut === '')) return t(`editare.text.gresit.${p}`);
     if (asezat && asezat.raport['aldin-esuat'] > 0) return t('editare.text.aldin-esuat', { n: asezat.raport['aldin-esuat'] });
+    if (asezat && asezat.raport['caseta-prea-mica'] > 0) return t('editare.text.caseta.prea-mica');
     if (asezat && asezat.caractereLipsa.length > 0) return t('editare.text.lipsa', { n: asezat.raport.lipsa, caractere: asezat.caractereLipsa.join(' ') });
     if (!editat && !ancora) return t('editare.text.ancora');
     return null;
   })();
   // O literă pe care aldinul n-a putut-o îngroșa lipsește din text: un asemenea text nu se pune pe foaie (ADR 0123).
-  const gata = !!asezat && asezat.glife.length > 0 && asezat.raport['aldin-esuat'] === 0 && typeof p !== 'string' && !doarCitire;
+  // Un text care nu încape în casetă (ADR 0142) nu se pune pe foaie.
+  const gata = !!asezat && asezat.glife.length > 0 && asezat.raport['aldin-esuat'] === 0 && asezat.raport['caseta-prea-mica'] === 0
+    && typeof p !== 'string' && !doarCitire;
+  // Blocul ține înălțimea desenată: cu o casetă, cea care a încăput.
+  const bloc = (q: Omit<BlocText, 'amprenta'>, a: TextAsezat): Omit<BlocText, 'amprenta'> => (q.caseta ? { ...q, inaltime: a.inaltime } : q);
+  // Ce spune caseta: înălțimea care a încăput și mărimea textului (cutia literelor tăiate).
+  const stareCaseta = ((): string | null => {
+    if (!asezat || typeof p === 'string' || !p.caseta || asezat.glife.length === 0 || asezat.raport['caseta-prea-mica'] > 0) return null;
+    const c = asezat.glife.map((g) => g.cutie).reduce((x, y) => ({ minX: Math.min(x.minX, y.minX), minY: Math.min(x.minY, y.minY), maxX: Math.max(x.maxX, y.maxX), maxY: Math.max(x.maxY, y.maxY) }));
+    const doua = (x: number): string => textNumar(Math.round(x * 100) / 100, true);
+    const date = { majuscula: doua(asezat.inaltime), latime: doua(c.maxX - c.minX), inaltime: doua(c.maxY - c.minY) };
+    return t(p.caseta.fel === 'limita' && asezat.inaltime < p.caseta.ceruta ? 'editare.text.caseta.micsorat' : 'editare.text.caseta.stare', date);
+  })();
   const trimite = (cerere: CerereText): void => {
     const r = ruleaza(cerere);
     setMotiv(r.ok ? null : t(r.motiv));
   };
   const adauga = (): void => {
     if (!gata || !ancora || modul === null || modul === 'eroare' || typeof p === 'string' || !asezat) return;
-    trimite({ fel: 'nou', loc: ancora, piesa: (id, scula, grosime) => modul.piesaText(asezat, p, id, scula, undefined, grosime) });
+    trimite({ fel: 'nou', loc: ancora, piesa: (id, scula, grosime) => modul.piesaText(asezat, bloc(p, asezat), id, scula, undefined, grosime) });
   };
   const aplica = (): void => {
     if (!gata || !editat || modul === null || modul === 'eroare' || typeof p === 'string' || !asezat) return;
-    trimite({ fel: 'editat', instanta: editat.instanta, piesa: (vechi, grosime) => modul.piesaText(asezat, p, vechi.id, undefined, vechi, grosime) });
+    trimite({ fel: 'editat', instanta: editat.instanta, piesa: (vechi, grosime) => modul.piesaText(asezat, bloc(p, asezat), vechi.id, undefined, vechi, grosime) });
   };
   /** Fontul ales s-a schimbat în bibliotecă (încărcat, descărcat, șters): listele se recitesc, fontul se caută din nou. */
   const schimbat = (id?: string): void => {
@@ -371,8 +411,25 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
           <input type="checkbox" checked={form.textVertical} data-text="vertical" onChange={(e) => { scrie({ ...form, textVertical: e.target.checked }); }} />
           {t('editare.text.vertical')}
         </label>
+        <label className="camp-retea">
+          <span>{t('editare.text.caseta')}</span>
+          <select value={form.caseta} data-text="caseta" onChange={(e) => { scrie({ ...form, caseta: FELURI_CASETA.find((x) => x === e.target.value) ?? 'fara' }); }}>
+            {FELURI_CASETA.map((x) => <option key={x} value={x}>{t(`editare.text.caseta.${x}`)}</option>)}
+          </select>
+        </label>
+        {form.caseta !== 'fara' ? (['casetaLatime', 'casetaInaltime'] as const).map((c) => (
+          <label key={c} className="camp-retea">
+            <span>{t(c === 'casetaLatime' ? 'editare.text.caseta.latime' : 'editare.text.caseta.inaltime')}</span>
+            <input value={form[c]} inputMode="decimal" data-text={c === 'casetaLatime' ? 'caseta-latime' : 'caseta-inaltime'}
+              onChange={(e) => { scrie({ ...form, [c]: e.target.value }); }} />
+          </label>
+        )) : null}
+        {stareCaseta ? <p className="nota-retea" data-testid="text-caseta">{stareCaseta}</p> : null}
         {curbaPosibila && form.textVertical ? <p className="nota-retea" data-testid="text-vertical-curba">{t('editare.text.vertical.curba')}</p> : null}
-        {curbaPosibila && !form.textVertical ? (
+        {curbaPosibila && !form.textVertical && form.caseta !== 'fara' ? (
+          <p className="nota-retea" data-testid="text-caseta-curba">{t('editare.text.caseta.curba')}</p>
+        ) : null}
+        {curbaPosibila && !form.textVertical && form.caseta === 'fara' ? (
           <fieldset className="curba-text" data-testid="text-curba">
             <legend>{curbaActiva ? t('editare.text.curba.sectiune', { lungime: textNumar(Math.round(lungimeCurba * 100) / 100, true) }) : t('editare.text.curba.drept')}</legend>
             {curbaActiva ? (
@@ -402,8 +459,11 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
         ) : null}
         {(['inaltime', 'spatiere', 'interlinie'] as const).map((c) => (
           <label key={c} className="camp-retea">
-            <span>{t(c === 'interlinie' && form.textVertical ? 'editare.text.interlinie.coloane' : `editare.text.${c}`)}</span>
-            <input value={form[c]} inputMode="decimal" data-text={c} onChange={(e) => { scrie({ ...form, [c]: e.target.value }); }} />
+            <span>{t(c === 'interlinie' && form.textVertical ? 'editare.text.interlinie.coloane'
+              : c === 'inaltime' && form.caseta === 'scala' ? 'editare.text.inaltime.caseta' : `editare.text.${c}`)}</span>
+            {c === 'inaltime' && form.caseta === 'scala'
+              ? <input value={asezat && asezat.raport['caseta-prea-mica'] === 0 ? textNumar(Math.round(asezat.inaltime * 100) / 100) : ''} disabled data-text={c} />
+              : <input value={form[c]} inputMode="decimal" data-text={c} onChange={(e) => { scrie({ ...form, [c]: e.target.value }); }} />}
           </label>
         ))}
         <div className="fel-retea" role="radiogroup" aria-label={t('editare.text.aliniere')}>

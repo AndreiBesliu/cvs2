@@ -33,6 +33,7 @@ import { offsetFigura } from '../geom/offset.ts';
 import { TOLERANTA_PROIECT } from '../geom/toleranta.ts';
 import { incheieSubcalea, normalizeazaForma, type CaleCitita, type NumaratoareNormalizare } from '../io/caleImport.ts';
 import { PLAFON_IMPORT } from '../io/svgCoduri.ts';
+import { LIMITE_TEXT } from '../model/blocText.ts';
 import type { ConturFont, Font } from './font.ts';
 import { traseu } from './linie.ts';
 
@@ -54,7 +55,17 @@ export type ParametriText = {
   readonly cursiv?: number | undefined;
   /** Textul vertical (ADR 0141): literele una sub alta, rândurile în coloane; lipsă: textul e orizontal. */
   readonly vertical?: true | undefined;
+  /** Încadrarea în casetă (ADR 0142); lipsă: textul are înălțimea cerută. */
+  readonly caseta?: CasetaText | undefined;
 };
+
+/**
+ * Caseta textului (ADR 0142), în mm: cutia literelor tăiate (cerneala, nu avansurile) încape în lățime × înălțime. Limitat
+ * de casetă: înălțimea cerută (`ceruta`), micșorată doar cât să încapă; scalat la casetă: cea mai mare care încape.
+ */
+export type CasetaText =
+  | { readonly fel: 'limita'; readonly latime: number; readonly inaltime: number; readonly ceruta: number }
+  | { readonly fel: 'scala'; readonly latime: number; readonly inaltime: number };
 
 /**
  * O glifă așezată: caracterul, rândul (de la 0) și contururile ei, în mm, normalizate; plus locul ei pe rând (ADR 0108, textul
@@ -63,6 +74,8 @@ export type ParametriText = {
 export type GlifaAsezata = {
   readonly caracter: string; readonly rand: number; readonly cai: readonly CaleCitita[];
   readonly x: number; readonly avans: number; readonly indice: number;
+  /** Cutia exactă a literei tăiate (ADR 0142): a celei îngroșate e a miezului cu 2d în plus în sus și la dreapta (ADR 0123). */
+  readonly cutie: Cutie;
 };
 
 export type RaportText = NumaratoareNormalizare & {
@@ -73,6 +86,8 @@ export type RaportText = NumaratoareNormalizare & {
   'prea-mari': number;
   /** Literele pe care aldinul nu le-a putut îngroșa (offsetul refuzat): sărite, deci textul nu e bun de tăiat (ADR 0123). */
   'aldin-esuat': number;
+  /** Textul nu încape în casetă nici la cea mai mică înălțime (ADR 0142): așezat la înălțimea cerută, nu e bun de tăiat. */
+  'caseta-prea-mica': number;
 };
 
 /**
@@ -88,6 +103,8 @@ export type TextAsezat = {
   readonly metrici: { readonly rand: number; readonly coborare: number };
   /** Un font cu o singură linie (ADR 0140): căile sunt trăsături de gravat (deschise sau bucle), nu figuri. */
   readonly linie: boolean;
+  /** Înălțimea majusculei folosită, în mm: cea cerută sau, cu o casetă (ADR 0142), cea care încape. */
+  readonly inaltime: number;
 };
 
 type P = { readonly x: number; readonly y: number };
@@ -315,10 +332,64 @@ const mutata = (tx: number, ty: number) => (c: CaleCitita): CaleCitita => ({
   })),
 });
 
-/** Așază textul (ADR 0105 §2, ADR 0123, ADR 0141): pură, determinată de font și de parametri. */
+/**
+ * Așază textul (ADR 0105 §2, ADR 0123, ADR 0141, ADR 0142): pură, determinată de font și de parametri. Cu o casetă, întâi
+ * înălțimea care încape (`inaltimeInCaseta`); dacă nu încape nici la cea mai mică, la înălțimea cerută, cu raportul.
+ */
 export function aseazaText(font: Font, p: ParametriText): TextAsezat {
+  if (!p.caseta) return aseaza(font, p, false);
+  const h = inaltimeInCaseta(font, p, p.caseta);
+  if (h !== null) return aseaza(font, { ...p, inaltime: h }, false);
+  const r = aseaza(font, p, false);
+  return { ...r, raport: { ...r.raport, 'caseta-prea-mica': 1 } };
+}
+
+/**
+ * Înălțimea majusculei cu care textul încape în casetă (ADR 0142), sau null: nici la cea mai mică (0,1 mm, și cel puțin de
+ * cinci ori aldinul) nu încape. Marginile cutiei fiecărei litere sunt afine în înălțime (contururile, avansurile, crenarea,
+ * rândurile și golurile verticale cresc cu ea; spațierea și aldinul, în mm, rămân), deci două așezări de măsurare (la două
+ * înălțimi fixe, fără offsetul aldinului) le dau la orice înălțime; cea mai mare care încape se caută prin înjumătățire pe ele.
+ * Limitat de casetă: cel mult înălțimea cerută.
+ */
+function inaltimeInCaseta(font: Font, p: ParametriText, caseta: CasetaText): number | null {
+  const d = font.linie ? 0 : p.aldin ?? 0;
+  const h1 = 10 + 10 * d, h2 = 2 * h1;
+  const a = aseaza(font, { ...p, inaltime: h1 }, true).glife, b = aseaza(font, { ...p, inaltime: h2 }, true).glife;
+  if (a.length !== b.length) return null;
+  const sus0 = caseta.fel === 'limita' ? Math.min(caseta.ceruta, LIMITE_TEXT.inaltimeMaxima) : LIMITE_TEXT.inaltimeMaxima;
+  // Fără nimic de tăiat (doar spații), caseta n-are ce încadra.
+  if (a.length === 0) return caseta.fel === 'limita' ? caseta.ceruta : p.inaltime;
+  const incape = (h: number): boolean => {
+    const u = (h - h1) / (h2 - h1);
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    a.forEach((g, k) => {
+      const c = g.cutie, e = b[k]!.cutie;
+      x0 = Math.min(x0, c.minX + (e.minX - c.minX) * u);
+      y0 = Math.min(y0, c.minY + (e.minY - c.minY) * u);
+      x1 = Math.max(x1, c.maxX + (e.maxX - c.maxX) * u);
+      y1 = Math.max(y1, c.maxY + (e.maxY - c.maxY) * u);
+    });
+    return x1 - x0 <= caseta.latime && y1 - y0 <= caseta.inaltime;
+  };
+  let jos = Math.max(LIMITE_TEXT.inaltimeMinima, d / LIMITE_TEXT.aldinRaport), sus = sus0;
+  if (sus < jos || !incape(jos)) return null;
+  if (incape(sus)) return sus;
+  for (let k = 0; k < 100; k++) {
+    const m = (jos + sus) / 2;
+    if (incape(m)) jos = m;
+    else sus = m;
+  }
+  return jos;
+}
+
+/**
+ * Așezarea la înălțimea `p.inaltime` (fără casetă). `masurare`: fără offsetul aldinului (literele aldine rămân miezul, în
+ * sistemul lor), doar pentru cutii.
+ */
+function aseaza(font: Font, p: ParametriText, masurare: boolean): TextAsezat {
   const raport: RaportText = {
-    lipsa: 0, 'glife-stricate': 0, 'prea-mari': 0, 'aldin-esuat': 0, 'nonzero-normalizate': 0, 'nonzero-refuzate': 0, 'sub-rezolutie': 0, degenerate: 0,
+    lipsa: 0, 'glife-stricate': 0, 'prea-mari': 0, 'aldin-esuat': 0, 'caseta-prea-mica': 0, 'nonzero-normalizate': 0, 'nonzero-refuzate': 0,
+    'sub-rezolutie': 0, degenerate: 0,
   };
   const caractereLipsa: string[] = [];
   // Un font cu o singură linie n-are figură de îngroșat (ADR 0140): aldinul nu i se aplică.
@@ -376,7 +447,7 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
         // (figura crește cu d pe fiecare parte și se mută cu (d, d)): exactă, fără să depindă de biarce.
         const miezLitera = contururiLitera(font, glifa, harta(0, 0), raport, buget);
         const c = miezLitera && miezLitera.length > 0 ? miezLitera.map(cutieContur).reduce(uneste) : null;
-        const cai = c && miezLitera ? (d === 0 ? miezLitera : ingrosata(miezLitera, 0, 0)) : null;
+        const cai = c && miezLitera ? (d === 0 || masurare ? miezLitera : ingrosata(miezLitera, 0, 0)) : null;
         celule.push(c && cai
           ? { caracter, avans, cai, cutie: d === 0 ? c : { minX: c.minX, minY: c.minY, maxX: c.maxX + 2 * d, maxY: c.maxY + 2 * d } }
           : { caracter, avans, cai: [], cutie: null });
@@ -397,7 +468,8 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
         if (!c.cutie || c.cai.length === 0) return;
         // Litera, centrată pe axa coloanei după cutia ei.
         const tx = axa - (c.cutie.minX + c.cutie.maxX) / 2, ty = baze[indice]! + dy;
-        glife.push({ caracter: c.caracter, rand: r, cai: c.cai.map(mutata(tx, ty)), x: tx, avans: c.avans, indice });
+        const cutie = { minX: c.cutie.minX + tx, minY: c.cutie.minY + ty, maxX: c.cutie.maxX + tx, maxY: c.cutie.maxY + ty };
+        glife.push({ caracter: c.caracter, rand: r, cai: c.cai.map(mutata(tx, ty)), x: tx, avans: c.avans, indice, cutie });
       });
     });
   } else {
@@ -425,10 +497,13 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
         const cai = contururiLitera(font, l.glifa, d > 0 ? harta(0, 0) : harta(x0, baza), raport, buget);
         // Spațiul și celelalte glife fără contur nu lasă nimic de tăiat.
         if (cai === null || cai.length === 0) return;
-        const desenate = d === 0 ? cai : ingrosata(cai, x0, baza);
-        if (desenate) glife.push({ caracter: l.caracter, rand: r, cai: desenate, x: x0, avans: l.avans, indice });
+        // Cutia literei tăiate: a celei îngroșate e a miezului (desenat în sistemul literei) cu 2d în plus, mutată în (x0, baza).
+        const c = cai.map(cutieContur).reduce(uneste);
+        const cutie = d === 0 ? c : { minX: c.minX + x0, minY: c.minY + baza, maxX: c.maxX + 2 * d + x0, maxY: c.maxY + 2 * d + baza };
+        const desenate = d === 0 || masurare ? cai : ingrosata(cai, x0, baza);
+        if (desenate) glife.push({ caracter: l.caracter, rand: r, cai: desenate, x: x0, avans: l.avans, indice, cutie });
       });
     });
   }
-  return { glife, raport, caractereLipsa, linii, metrici: { rand: inaltimeRand, coborare: inMm(font.coborare) }, linie: font.linie };
+  return { glife, raport, caractereLipsa, linii, metrici: { rand: inaltimeRand, coborare: inMm(font.coborare) }, linie: font.linie, inaltime: p.inaltime };
 }
