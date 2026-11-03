@@ -2,7 +2,7 @@
  * Adaptoarele Planificatorului Trenuleț în cadrul extensiei (ADR 0129 §C), fără browser, peste o gazdă în memorie:
  * - `window.claude.use('db')`: documentele peste `host.stocare`, cu cheile `db:<colecție>/<id>` (scrierea ca JSON, citirea,
  *   ștergerea, id-urile noi), lista ordonată și reanunțată la scriere și la ștergere, doar cea mai nouă citire, nimic după
- *   dezabonare; stocarea plină, cu codul `quota_exceeded` al paginii;
+ *   dezabonare (nici citirea pornită înainte de ea); stocarea plină, cu codul `quota_exceeded` al paginii;
  * - `use('downloads')`: `save` cere `descarcari.salveaza`, cu numele și datele așa cum vin; o capabilitate necunoscută;
  * - `localStorage`: doar cheile `ls:`, citite la pornire; scrise și șterse pe loc; o scriere refuzată, raportată.
  */
@@ -100,6 +100,12 @@ test('db: lista ordonată, reanunțată la scriere și la ștergere, doar cea ma
   const opresteCresc = db.collection('circuite').orderBy('actualizat').onSnapshot((s) => { cresc.push(s.docs.map((d) => d.id)); });
   await pauza(20);
   assert.deepEqual(cresc, [['a', 'c']]);
+  // O citire pornită înainte de dezabonare nu mai ajunge la pagină după ea.
+  const tarzii: string[][] = [];
+  g.intarzieriChei.push(30);
+  db.collection('circuite').orderBy('actualizat').onSnapshot((s) => { tarzii.push(s.docs.map((d) => d.id)); })();
+  await pauza(50);
+  assert.deepEqual(tarzii, []);
   opreste();
   opresteCresc();
   await db.doc('circuite/d').set({ actualizat: '2026-11-05' });
@@ -122,7 +128,7 @@ test('downloads: save cere descarcari.salveaza cu numele și datele; refuzul, cu
 });
 
 test('localStorage: doar cheile ls:, citite la pornire; scrise și șterse pe loc; o scriere refuzată, raportată', async () => {
-  const { g, host } = gazda({ 'ls:trenulet.mod': '3d', 'db:setari/cnc': { a: 1 }, 'ls:numar': 5 });
+  const { g, host } = gazda({ 'ls:trenulet.mod': '3d', 'db:setari/cnc': { a: 1 }, 'db:note/a': 'un document text', 'ls:numar': 5 });
   await localStoragePeste(host);
   const ls = (globalThis as unknown as { localStorage: Storage }).localStorage;
   assert.deepEqual([ls.length, ls.key(0), ls.key(1), ls.getItem('trenulet.mod'), ls.getItem('lipsa')], [1, 'trenulet.mod', null, '3d', null]);
