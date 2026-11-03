@@ -80,6 +80,8 @@ export type Taietura = ElementLume & {
   readonly colturi: Operatie['colturi'];
   /** Despărțirea foii, marcată de om (ADR 0037 §8): doar când e marcată; lipsa ei înseamnă nemarcată. */
   readonly despartire?: true;
+  /** Locul operației în ordinea de mână (ADR 0133): doar când operația îl are. */
+  readonly rang?: number;
 };
 
 /**
@@ -129,6 +131,7 @@ export function taieturiFoaie(doc: Document, indexFoaie = 0): Taietura[] {
         rez.push({
           ...e, operatie: o.id, tip: o.tip, latura: o.latura, sens: o.sens, adancime: o.adancime, pas: o.pas, scula: o.scula, urechi: o.urechi,
           rampa: o.rampa, intrari: o.intrari, colturi: o.colturi, ...(o.despartire === true ? { despartire: true } : {}),
+          ...(o.rang !== undefined ? { rang: o.rang } : {}),
         });
       }
     }
@@ -159,4 +162,16 @@ export function grupeazaPeScula(taieturi: readonly Taietura[]): Taietura[] {
     i = j;
   }
   return ordonate;
+}
+
+/**
+ * Ordinea programului (ADR 0133 §2): cea automată (`grupeazaPeScula` peste `taieturiFoaie`), sau, când o operație a foii are
+ * rang, aceeași listă sortată stabil după rang. O operație fără rang vine după toate cele cu rang; pe ranguri egale și între
+ * cele fără rang rămâne ordinea automată.
+ */
+export function ordineTaieturi(doc: Document, indexFoaie = 0): Taietura[] {
+  const automata = grupeazaPeScula(taieturiFoaie(doc, indexFoaie));
+  if (!automata.some((t) => t.rang !== undefined)) return automata;
+  const loc = (t: Taietura): number => t.rang ?? Number.POSITIVE_INFINITY;
+  return automata.map((t, i) => ({ t, i })).sort((a, b) => (loc(a.t) === loc(b.t) ? a.i - b.i : loc(a.t) < loc(b.t) ? -1 : 1)).map((x) => x.t);
 }

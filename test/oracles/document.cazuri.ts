@@ -4629,3 +4629,67 @@ export const REFUZATE_V18: readonly RefuzV18[] = [
   { nume: 'R75 un v16 cu direcția „desen”', doc: docV(16, opV18({ latura: 'pe-linie', directie: 'desen' }), linie()), categorie: 'directie', camp: `${opC}.directie`, motiv: 'ADR 0092 §1' },
   { nume: 'R76 un v17 cu nouă freze de rest', doc: docV(17, buzunar({ scula: plata(1, 20), rest: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => rest1(k + 1, 10 - k, 1)) })), categorie: 'rest', camp: `${opC}.rest`, motiv: 'ADR 0093 §1' },
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// Documentul v19 (felia 5.9↑, ADR 0133 §1): rangul operației, pe hârtie. Cazurile v18 de mai sus rămân ale contractului
+// v18; la ușa v19, un v18 valid urcă schimbând doar numărul, iar frontierele se judecă pe un document al versiunii curente.
+
+/** Un document al cazurilor v18, adus la v19: doar numărul (ADR 0133 §1). */
+const laV19 = (d: Liber): Liber => cuSchema(d, 19);
+
+/** Documente v19 valide: ușa le primește neschimbate (v18-urile valide, renumerotate, și rangurile la frontieră). */
+export const VALIDE_V19: readonly CazV18[] = [
+  ...VALIDE_V18.map((c) => ({ nume: `${c.nume} (v19)`, doc: laV19(c.doc) })),
+  { nume: 'B01 fără rang: ordinea automată (ADR 0133 §1)', doc: docV18(D, [opV18()], 19) },
+  { nume: 'B02 rangul 0', doc: docV18(D, [opV18({ rang: 0 })], 19) },
+  { nume: 'B03 rangul 100 000, plafonul operațiilor', doc: docV18(D, [opV18({ rang: 100_000 })], 19) },
+  { nume: 'B04 două operații cu același rang (ordinea dintre ele e a lucrării)', doc: docV18(D, [opV18({ id: 'o1', rang: 2 }), opV18({ id: 'o2', rang: 2 })], 19) },
+  { nume: 'B05 rangul pe un buzunar și pe un V-carve (pe orice fel)', doc: docV18(D, [buzunar({ rang: 4 }), vcarve({ rang: 1 })], 19) },
+  { nume: 'B06 rangul pe o operație și lipsă pe alta (cea fără vine la capăt, în lucrare)', doc: docV18(D, [opV18({ id: 'o1', rang: 7 }), opV18({ id: 'o2' })], 19) },
+];
+
+/** Documentele vechi urcă la v19: ce dădea hârtia la v18, cu numărul 19; un v18 curat urcă doar cu numărul. */
+export const MIGRARI_V19_HARTIE: ReadonlyArray<{ readonly nume: string; readonly vechi: Liber; readonly v19: Liber }> = [
+  ...MIGRARI_V18_HARTIE.map((c) => ({ nume: c.nume, vechi: c.vechi, v19: laV19(c.v18) })),
+  {
+    nume: 'M19 un v18 cu strategia paralelă urcă la v19 doar cu numărul',
+    vechi: docV18(D, [buzunar({ strategie: { fel: 'paralel', unghi: 30 } })]),
+    v19: docV18(D, [buzunar({ strategie: { fel: 'paralel', unghi: 30 } })], 19),
+  },
+];
+
+/** `rang` în afara operației e un câmp necunoscut oarecare: primit și păstrat (ALEGEREA părții v11–v18, ciocnirea doar pe operație). */
+export const NECIOCNIRI_V19: ReadonlyArray<CazV18 & { readonly v19: Liber }> = [
+  ...NECIOCNIRI_V18.map((c) => ({ nume: c.nume, doc: c.doc, v19: laV19(c.v18) })),
+  (() => {
+    const d = docV18(D, [opV18({ scula: { ...plata(1, 6), rang: 3 } })]);
+    return { nume: 'N19a un v18 cu `rang` pe sculă', doc: d, v19: laV19(d) };
+  })(),
+  (() => {
+    const d = docV18(D, [opV18()]);
+    ((d['piese'] as Liber[])[0] as Liber)['rang'] = 1;
+    return { nume: 'N19b un v18 cu `rang` pe piesă', doc: d, v19: laV19(d) };
+  })(),
+];
+
+/** Frontierele v19: cele v18, plus rangul (ADR 0133 §1: un întreg în [0, 100 000]; lipsa = ordinea automată). */
+export const FRONTIERE_V19: readonly FrontieraV18[] = [
+  ...FRONTIERE_V18,
+  {
+    cale: 'rang', operatie: opV18(), forma: D, categorie: 'rang', adr: 'ADR 0133 §1: un întreg în [0, 100 000]; lipsa = ordinea automată',
+    valori: [[LIPSA, true], [0, true], [-0, true], [1, true], [99_999, true], [100_000, true], [-1, false], [100_001, false], [1.5, false],
+      [100_000.5, false], ['1', false], [[1], false], [{}, false], ...NUMERE_RELE],
+  },
+];
+
+/** Refuzurile v19: cele v18 (versiunea mai nouă e acum v20), plus rangul greșit și ciocnirea lui. */
+export const REFUZATE_V19: readonly RefuzV18[] = [
+  ...REFUZATE_V18.filter((r) => !r.nume.startsWith('R01 ')),
+  { nume: 'R01 scris de o versiune mai nouă (v20)', doc: docV(20, buzunar()), categorie: 'schema', camp: 'schema', motiv: 'ADR 0070 §2: o versiune mai veche refuză una mai nouă', text: 'versiune mai nouă' },
+  { nume: 'R80 un v18 cu rangul', doc: docV(18, opV18({ rang: 0 })), categorie: 'ciocnire', camp: `${opC}.rang`, motiv: 'ADR 0133 §1', text: 'nu e un document v18 valid' },
+  { nume: 'R81 un v18 cu `rang: null` (orice valoare se ciocnește)', doc: docV(18, opV18({ rang: null })), categorie: 'ciocnire', camp: `${opC}.rang`, motiv: 'ADR 0133 §1: câmpul propriu, oricare ar fi valoarea' },
+  { nume: 'R82 un v17 cu rangul (trece de v17 → v18, se ciocnește la v18 → v19)', doc: docV(17, opV18({ rang: 1 })), categorie: 'ciocnire', camp: `${opC}.rang`, motiv: 'ADR 0133 §1, ADR 0070: tot lanțul', text: 'nu e un document v18 valid' },
+  { nume: 'R83 un v19 cu rangul −1', doc: docV(19, opV18({ rang: -1 })), categorie: 'rang', camp: `${opC}.rang`, motiv: 'ADR 0133 §1' },
+  { nume: 'R84 un v19 cu rangul 2,5', doc: docV(19, opV18({ rang: 2.5 })), categorie: 'rang', camp: `${opC}.rang`, motiv: 'ADR 0133 §1' },
+  { nume: 'R85 un v19 cu rangul peste plafon', doc: docV(19, opV18({ rang: 100_001 })), categorie: 'rang', camp: `${opC}.rang`, motiv: 'ADR 0133 §1' },
+];

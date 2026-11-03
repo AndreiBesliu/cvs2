@@ -9,6 +9,7 @@ import { adancimeDeschise } from '../io/adancime.ts';
 import { cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { executa, type Comanda, type Degrupata, type Istoric } from '../model/jurnal.ts';
+import { cuRangulPiesei } from '../model/ordine.ts';
 import { operatiiPentruRol, type Rol } from '../model/rol.ts';
 import { operatiiPentruRolPersonal, rolNumerotat, type RolPersonal } from '../model/rolPersonal.ts';
 import { partiDegrupare } from '../model/degrupare.ts';
@@ -803,8 +804,10 @@ function comandaRol(h: Istoric, alese: readonly string[], rol: Rol | RolPersonal
   const personal = typeof rol === 'string' ? null : rolNumerotat(h.doc, rol, new Set(lista.map((p) => p.id)));
   const comenzi: Comanda[] = [];
   for (const vechi of lista) {
-    const operatii = personal ? operatiiPentruRolPersonal(vechi, personal) : operatiiPentruRol(h.doc, vechi, rol as Rol);
-    if (!operatii) return { ok: false, motiv: 'motiv.rol-nepotrivit' };
+    const ale = personal ? operatiiPentruRolPersonal(vechi, personal) : operatiiPentruRol(h.doc, vechi, rol as Rol);
+    if (!ale) return { ok: false, motiv: 'motiv.rol-nepotrivit' };
+    // Piesa își păstrează locul în ordinea de mână (ADR 0133 §4).
+    const operatii = cuRangulPiesei(vechi.operatii, ale);
     if (jsonCanonic(operatii) === jsonCanonic(vechi.operatii)) continue;
     comenzi.push({ tip: 'inlocuieste-piesa', vechi, nou: { ...vechi, operatii } });
   }

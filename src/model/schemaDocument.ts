@@ -153,6 +153,8 @@ const SchemaOperatie = v.looseObject({
   rest: v.optional(SchemaRest),
   // ADR 0094: strategia buzunarului (v18): liniile paralele la unghiul dat, în [0, 180); pe alt fel o refuză lucrarea.
   strategie: v.optional(v.looseObject({ fel: v.literal('paralel'), unghi: v.pipe(v.number(), v.finite(), v.minValue(0), v.ltValue(180)) })),
+  // ADR 0133: locul în ordinea de mână (v19); rangurile egale sau lipsă le ordonează lucrarea (ordinea automată între ele).
+  rang: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(PLAFON.operatii))),
 });
 const SchemaPiesa = v.looseObject({ id: Id, nume: Nume, radacina: SchemaNod, operatii: v.array(SchemaOperatie) });
 const SchemaInstanta = v.looseObject({

@@ -1,15 +1,17 @@
 /**
- * Documentul v11–v18 (ADR 0069, 0076, 0087, 0090–0094; ușa: ADR 0024, 0025, 0070) judecat de oracolul lui independent
- * (felia 5.1↑c: secțiunea „Documentul v11–v18” de la finalul lui `test/oracles/document.ts`, cu cazurile la finalul lui
- * `test/oracles/document.cazuri.ts`, scrise doar din ADR-uri, fără ușa aplicației și fără partea v11–v18 de dinainte):
- * - „(o) …”: oracolul singur, pe hârtie: documentele v18 valide trec neschimbate, documentele vechi urcă exact ca pe hârtie,
+ * Documentul v11–v19 (ADR 0069, 0076, 0087, 0090–0094, 0133; ușa: ADR 0024, 0025, 0070) judecat de oracolul lui independent
+ * (felia 5.1↑c: secțiunea „Documentul v11–v19” de la finalul lui `test/oracles/document.ts`, cu cazurile la finalul lui
+ * `test/oracles/document.cazuri.ts`, scrise doar din ADR-uri, fără ușa aplicației și fără partea v11–v18 de dinainte; v19,
+ * rangul operației, adăugată în felia 5.9↑ tot din textul ADR-ului):
+ * - „(o) …”: oracolul singur, pe hârtie: documentele v19 valide trec neschimbate, iar cele v18 valide urcă doar cu numărul;
+ *   documentele vechi urcă exact ca pe hârtie,
  *   câmpurile noi în afara locului lor sunt câmpuri necunoscute, frontierele fiecărui câmp, refuzurile (categoria și
- *   câmpul), ușile v11 … v17 (fiecare primește versiunea ei și o refuză pe cea de după), migrarea pură;
+ *   câmpul), ușile v11 … v18 (fiecare primește versiunea ei și o refuză pe cea de după), migrarea pură;
  * - „(a) …”: ușa aplicației (`incarca`) pe aceleași cazuri: primește exact ce e pe hârtie (o copie), refuză ce e pe hârtie,
- *   cu motivul (câmpul în motiv pe un v18, textul citat de ADR la o ciocnire);
+ *   cu motivul (câmpul în motiv pe un document al versiunii curente, textul citat de ADR la o ciocnire);
  * - „(c) …”: ușa aplicației față de oracol pe corpusul existent (toate documentele din cazurile oracolului documentului și
  *   documentele corpusului CAM, cu buzunare, coborâri, strategii și freze de rest);
- * - „(u) …”: ușa documentului curent (ADR 0070 §2, `incarcaCurent`): `null` pe o versiune întreagă 1 … 17, altfel exact ușa
+ * - „(u) …”: ușa documentului curent (ADR 0070 §2, `incarcaCurent`): `null` pe o versiune întreagă 1 … 18, altfel exact ușa
  *   întreagă.
  */
 import { test } from 'node:test';
@@ -23,7 +25,8 @@ import {
 } from '../oracles/document.ts';
 import * as cazuri from '../oracles/document.cazuri.ts';
 import {
-  AMBIGUE_V18, cuSchema, docV18, FRONTIERE_V18, LIPSA, MIGRARI_V18_HARTIE, NECIOCNIRI_V18, REFUZATE_V18, VALIDE_V18, VECHI_NOI,
+  AMBIGUE_V18, cuSchema, docV18, FRONTIERE_V19, LIPSA, MIGRARI_V19_HARTIE, NECIOCNIRI_V19, REFUZATE_V19, VALIDE_V18, VALIDE_V19,
+  VECHI_NOI,
 } from '../oracles/document.cazuri.ts';
 import * as cazuriV9 from '../oracles/document.v9.cazuri.ts';
 import * as cazuriV10 from '../oracles/document.v10.cazuri.ts';
@@ -110,40 +113,51 @@ const SCHEMA_APP = VERSIUNE_SCHEMA as number;
 
 // ── Oracolul singur ──────────────────────────────────────────────────────────────────────────────────────────────────
 
-test('(o) documentele v18 valide: contractul v18 și ușa le primesc, iar ușa le dă neschimbate; ușa v17 le refuză', () => {
+test('(o) documentele v18 valide: contractul v18 și ușa le primesc, iar ușa v19 le urcă doar cu numărul; ușa v17 le refuză', () => {
   for (const { nume, doc } of VALIDE_V18) {
     assert.deepEqual(verificaVnO(doc, 18), [], nume);
     assert.deepEqual(verificaO(doc), [], nume);
-    assert.equal(diferenta(ridicaO(doc), doc), undefined, nume);
+    assert.equal(diferenta(ridicaO(doc), cuSchema(doc, SCHEMA_CURENTA_O)), undefined, nume);
     assert.deepEqual(categoriiO(verificaPanaLaO(doc, 17)), ['schema'], `${nume}: ușa v17`);
   }
   assert.ok(VALIDE_V18.length >= 36);
 });
 
-test('(o) documentele vechi urcă la v18 exact ca pe hârtie; ușa nu-și schimbă intrarea', () => {
-  for (const { nume, vechi, v18 } of MIGRARI_V18_HARTIE) {
+test('(o) documentele v19 valide: contractul v19 și ușa le primesc, iar ușa le dă neschimbate; ușa v18 le refuză', () => {
+  for (const { nume, doc } of VALIDE_V19) {
+    assert.deepEqual(verificaVnO(doc, 19), [], nume);
+    assert.deepEqual(verificaO(doc), [], nume);
+    assert.equal(diferenta(ridicaO(doc), doc), undefined, nume);
+    assert.deepEqual(categoriiO(verificaPanaLaO(doc, 18)), ['schema'], `${nume}: ușa v18`);
+  }
+  assert.ok(VALIDE_V19.length >= VALIDE_V18.length + 6);
+});
+
+test('(o) documentele vechi urcă la v19 exact ca pe hârtie; ușa nu-și schimbă intrarea', () => {
+  for (const { nume, vechi, v19 } of MIGRARI_V19_HARTIE) {
     const inainte = JSON.stringify(vechi);
     assert.deepEqual(verificaO(vechi), [], nume);
-    assert.equal(diferenta(ridicaO(vechi), v18), undefined, nume);
+    assert.equal(diferenta(ridicaO(vechi), v19), undefined, nume);
     assert.equal(JSON.stringify(vechi), inainte, `${nume}: intrarea s-a schimbat`);
-    assert.deepEqual(verificaVnO(v18, 18), [], `${nume}: rezultatul e un v18 valid`);
+    assert.deepEqual(verificaVnO(v19, 19), [], `${nume}: rezultatul e un v19 valid`);
   }
 });
 
 test('(o) un câmp nou în afara locului lui e un câmp necunoscut oarecare: primit și păstrat', () => {
-  for (const { nume, doc, v18 } of NECIOCNIRI_V18) {
+  for (const { nume, doc, v19 } of NECIOCNIRI_V19) {
     assert.deepEqual(verificaO(doc), [], nume);
-    assert.equal(diferenta(ridicaO(doc), v18), undefined, nume);
+    assert.equal(diferenta(ridicaO(doc), v19), undefined, nume);
   }
 });
 
 test('(o) frontierele: fiecare valoare are verdictul de pe hârtie, iar un refuz e al câmpului, cu categoria lui', () => {
   const rele: string[] = [];
   let n = 0;
-  for (const f of FRONTIERE_V18) {
+  for (const f of FRONTIERE_V19) {
     // Valorile ambigue au verdictul ALEGERII (oracolul trebuie să-l țină; aplicația doar se raportează, mai jos).
     for (const [valoare, primit] of [...f.valori, ...(f.ambigue ?? []).map(([v, p]) => [v, p] as const)]) {
-      const doc = docV18(f.forma, [cuValoare(f.operatie, f.cale, valoare)]);
+      // Pe un document al versiunii curente: altfel un câmp nou (rangul, pe un v18) s-ar ciocni în migrare, nu s-ar judeca.
+      const doc = docV18(f.forma, [cuValoare(f.operatie, f.cale, valoare)], SCHEMA_CURENTA_O);
       const p = verificaO(doc);
       const eticheta = `${f.cale} = ${valoare === LIPSA ? '(lipsă)' : String(JSON.stringify(valoare) ?? valoare)}`;
       n++;
@@ -157,12 +171,12 @@ test('(o) frontierele: fiecare valoare are verdictul de pe hârtie, iar un refuz
     }
   }
   assert.deepEqual(rele, []);
-  assert.ok(n > 250, `${n} valori`);
+  assert.ok(n > 265, `${n} valori`);
 });
 
 test('(o) refuzurile: fiecare document stricat are exact categoria lui, iar motivul numește câmpul', () => {
   const rele: string[] = [];
-  for (const r of REFUZATE_V18) {
+  for (const r of REFUZATE_V19) {
     const p = verificaO(r.doc);
     if (JSON.stringify(categoriiO(p)) !== JSON.stringify([r.categorie])) {
       rele.push(`${r.nume}: ${p.length === 0 ? 'primit' : `categoriile ${categoriiO(p).join(', ')} (${p.join('; ')})`}, nu ${r.categorie}`);
@@ -179,9 +193,9 @@ test('(o) ce nu hotărăște textul: oracolul ține ALEGEREA scrisă lângă fie
   for (const { nume, doc, alegere } of AMBIGUE_V18) assert.equal(verificaO(doc).length === 0, alegere, nume);
 });
 
-test('(o) ușile v11 … v17: fiecare primește documentul versiunii ei și pe cele dinainte, refuză versiunea de după', () => {
+test('(o) ușile v11 … v18: fiecare primește documentul versiunii ei și pe cele dinainte, refuză versiunea de după', () => {
   for (const { versiune, doc } of VECHI_NOI) {
-    for (let usaV = Math.max(versiune, 11); usaV <= 18; usaV++) {
+    for (let usaV = Math.max(versiune, 11); usaV <= SCHEMA_CURENTA_O; usaV++) {
       assert.deepEqual(verificaPanaLaO(doc, usaV), [], `un v${versiune} la ușa v${usaV}`);
       assert.equal(diferenta(ridicaPanaLaO(doc, usaV), cuSchema(doc, usaV)), undefined, `un v${versiune} adus la v${usaV}: doar numărul`);
     }
@@ -190,13 +204,13 @@ test('(o) ușile v11 … v17: fiecare primește documentul versiunii ei și pe c
 });
 
 test('(o) ciocnirile: fiecare câmp nou, pe un document al versiunii dinainte, se ciocnește exact la pasul lui', () => {
-  // ADR 0069 §2, 0076 §7, 0087 §6, 0090 §5, 0091 §1, 0092 §1, 0093 §1, 0094 §1: ce aduce fiecare versiune pe operație.
+  // ADR 0069 §2, 0076 §7, 0087 §6, 0090 §5, 0091 §1, 0092 §1, 0093 §1, 0094 §1, 0133 §1: ce aduce fiecare versiune pe operație.
   assert.deepEqual({ ...CAMPURI_NOI_O }, {
     11: ['pasLateral'], 12: ['coborare'], 13: ['retragereCompleta'], 14: ['scula.forma'], 15: ['fundPlat'],
-    16: ['directie', 'scula.forma.varf', 'fundPlat.scula.forma.varf'], 17: ['rest', 'fundPlat.rest'], 18: ['strategie'],
+    16: ['directie', 'scula.forma.varf', 'fundPlat.scula.forma.varf'], 17: ['rest', 'fundPlat.rest'], 18: ['strategie'], 19: ['rang'],
   });
-  const op = docV18({ tip: 'dreptunghi', latime: 10, inaltime: 10, razaColt: 0 }, [{ id: 'o', scula: { forma: { varf: 1 } }, fundPlat: { scula: { forma: { varf: 1 } }, rest: [] }, pasLateral: 1, coborare: 1, retragereCompleta: 1, directie: 1, rest: 1, strategie: 1 }]);
-  for (let de = 10; de < 18; de++) {
+  const op = docV18({ tip: 'dreptunghi', latime: 10, inaltime: 10, razaColt: 0 }, [{ id: 'o', scula: { forma: { varf: 1 } }, fundPlat: { scula: { forma: { varf: 1 } }, rest: [] }, pasLateral: 1, coborare: 1, retragereCompleta: 1, directie: 1, rest: 1, strategie: 1, rang: 1 }]);
+  for (let de = 10; de < SCHEMA_CURENTA_O; de++) {
     const c = ciocniriO(op, de);
     assert.equal(c.length, (CAMPURI_NOI_O[de + 1] ?? []).length, `v${de} → v${de + 1}: ${c.join('; ')}`);
     assert.ok(c.every((m) => m.startsWith('[ciocnire]') && m.includes(`nu e un document v${de} valid`)), c.join('; '));
@@ -204,7 +218,7 @@ test('(o) ciocnirile: fiecare câmp nou, pe un document al versiunii dinainte, s
 });
 
 test('(o) ușa întoarce o copie: nimic din rezultat nu e un obiect al intrării', () => {
-  for (const { nume, doc } of VALIDE_V18.slice(0, 5)) {
+  for (const { nume, doc } of VALIDE_V19.slice(0, 5)) {
     const r = ridicaO(doc);
     const intrare = new Set<unknown>();
     const strange = (x: unknown): void => {
@@ -220,11 +234,11 @@ test('(o) ușa întoarce o copie: nimic din rezultat nu e un obiect al intrării
 
 // ── Ușa aplicației, pe cazurile de pe hârtie ─────────────────────────────────────────────────────────────────────────
 
-const DOAR_V18 = SCHEMA_APP === SCHEMA_CURENTA_O ? false : `aplicația e pe schema ${SCHEMA_APP}; cazurile sunt ale ușii v18`;
+const DOAR_CURENTA = SCHEMA_APP === SCHEMA_CURENTA_O ? false : `aplicația e pe schema ${SCHEMA_APP}; cazurile sunt ale ușii v${SCHEMA_CURENTA_O}`;
 
-test('(a) ușa aplicației primește documentele v18 valide neschimbate, ca o copie', { skip: DOAR_V18 }, () => {
+test('(a) ușa aplicației primește documentele v19 valide neschimbate, ca o copie', { skip: DOAR_CURENTA }, () => {
   const rele: string[] = [];
-  for (const { nume, doc } of VALIDE_V18) {
+  for (const { nume, doc } of VALIDE_V19) {
     const brut = structuredClone(doc);
     const r = incarca(brut);
     if (!r.ok) {
@@ -238,29 +252,29 @@ test('(a) ușa aplicației primește documentele v18 valide neschimbate, ca o co
   assert.deepEqual(rele, []);
 });
 
-test('(a) ușa aplicației urcă documentele vechi exact ca pe hârtie și păstrează câmpurile noi din afara locului lor', { skip: DOAR_V18 }, () => {
+test('(a) ușa aplicației urcă documentele vechi exact ca pe hârtie și păstrează câmpurile noi din afara locului lor', { skip: DOAR_CURENTA }, () => {
   const rele: string[] = [];
-  for (const { nume, vechi: doc, v18 } of [...MIGRARI_V18_HARTIE, ...NECIOCNIRI_V18.map((c) => ({ nume: c.nume, vechi: c.doc, v18: c.v18 }))]) {
+  for (const { nume, vechi: doc, v19 } of [...MIGRARI_V19_HARTIE, ...NECIOCNIRI_V19.map((c) => ({ nume: c.nume, vechi: c.doc, v19: c.v19 }))]) {
     const r = usa(doc);
     if (!r.ok) {
       rele.push(`${nume}: refuzat (${r.motiv})`);
       continue;
     }
-    const d = diferenta(r.doc, v18);
+    const d = diferenta(r.doc, v19);
     if (d !== undefined) rele.push(`${nume}: ${d}`);
   }
   assert.deepEqual(rele, []);
 });
 
-test('(a) ușa aplicației pe frontiere: fiecare valoare are verdictul de pe hârtie; un refuz numește operația și câmpul', { skip: DOAR_V18 }, (t) => {
+test('(a) ușa aplicației pe frontiere: fiecare valoare are verdictul de pe hârtie; un refuz numește operația și câmpul', { skip: DOAR_CURENTA }, (t) => {
   const rele: string[] = [];
-  for (const f of FRONTIERE_V18) {
+  for (const f of FRONTIERE_V19) {
     for (const [valoare, alegere, de] of f.ambigue ?? []) {
-      const r = usa(docV18(f.forma, [cuValoare(f.operatie, f.cale, valoare)]));
+      const r = usa(docV18(f.forma, [cuValoare(f.operatie, f.cale, valoare)], SCHEMA_CURENTA_O));
       t.diagnostic(`AMBIGUU ${f.cale} = ${String(valoare)}: aplicația ${r.ok ? 'primește' : `refuză („${r.motiv}”)`}, ALEGEREA oracolului ${alegere ? 'primește' : 'refuză'} (${de})`);
     }
     for (const [valoare, primit] of f.valori) {
-      const doc = docV18(f.forma, [cuValoare(f.operatie, f.cale, valoare)]);
+      const doc = docV18(f.forma, [cuValoare(f.operatie, f.cale, valoare)], SCHEMA_CURENTA_O);
       const r = usa(doc);
       const eticheta = `${f.cale} = ${valoare === LIPSA ? '(lipsă)' : String(JSON.stringify(valoare) ?? valoare)}`;
       if (r.ok !== primit) {
@@ -278,9 +292,9 @@ test('(a) ușa aplicației pe frontiere: fiecare valoare are verdictul de pe hâ
   assert.deepEqual(rele, []);
 });
 
-test('(a) ușa aplicației refuză fiecare document stricat, cu motiv: câmpul pe un v18, textul citat de ADR la o ciocnire', { skip: DOAR_V18 }, () => {
+test('(a) ușa aplicației refuză fiecare document stricat, cu motiv: câmpul pe un document curent, textul citat de ADR la o ciocnire', { skip: DOAR_CURENTA }, () => {
   const rele: string[] = [];
-  for (const c of REFUZATE_V18) {
+  for (const c of REFUZATE_V19) {
     const r = usa(c.doc);
     if (r.ok) {
       rele.push(`${c.nume}: primit (${c.motiv})`);
@@ -289,7 +303,7 @@ test('(a) ușa aplicației refuză fiecare document stricat, cu motiv: câmpul p
     if (r.motiv.trim() === '') rele.push(`${c.nume}: refuzat fără motiv`);
     if (c.text !== undefined) {
       if (!r.motiv.includes(c.text)) rele.push(`${c.nume}: motivul „${r.motiv}” nu spune „${c.text}”`);
-    } else if (typeof c.doc === 'object' && c.doc !== null && (c.doc as Liber)['schema'] === 18 && c.camp.startsWith('piese.')) {
+    } else if (typeof c.doc === 'object' && c.doc !== null && (c.doc as Liber)['schema'] === SCHEMA_CURENTA_O && c.camp.startsWith('piese.')) {
       const prefix = c.camp.split('.').slice(0, 5).join('.');
       if (!r.motiv.includes(prefix)) rele.push(`${c.nume}: motivul „${r.motiv}” nu numește ${prefix}`);
     }
@@ -297,7 +311,7 @@ test('(a) ușa aplicației refuză fiecare document stricat, cu motiv: câmpul p
   assert.deepEqual(rele, []);
 });
 
-test('(a) ce nu hotărăște textul: ce face aplicația, doar raportat (lista ambiguităților din raportul feliei)', { skip: DOAR_V18 }, (t) => {
+test('(a) ce nu hotărăște textul: ce face aplicația, doar raportat (lista ambiguităților din raportul feliei)', { skip: DOAR_CURENTA }, (t) => {
   for (const { nume, doc, alegere, adr } of AMBIGUE_V18) {
     const r = usa(doc);
     t.diagnostic(`AMBIGUU ${nume}: aplicația ${r.ok ? 'primește' : `refuză („${r.motiv}”)`}, ALEGEREA oracolului ${alegere ? 'primește' : 'refuză'} (${adr})`);
@@ -324,7 +338,7 @@ async function corpus(): Promise<{ readonly tot: number; readonly mici: unknown[
   return corpusul;
 }
 
-test('(c) pe corpusul oracolului documentului, ușa aplicației dă verdictul oracolului, iar ce primește e exact v18-ul oracolului', { skip: DOAR_V18 }, async (t) => {
+test('(c) pe corpusul oracolului documentului, ușa aplicației dă verdictul oracolului, iar ce primește e exact v19-ul oracolului', { skip: DOAR_CURENTA }, async (t) => {
   const { tot, mici: CORPUS } = await corpus();
   const rele: string[] = [];
   let primite = 0;
@@ -354,9 +368,9 @@ test('(c) pe corpusul oracolului documentului, ușa aplicației dă verdictul or
 
 // ── Ușa documentului curent (ADR 0070) ───────────────────────────────────────────────────────────────────────────────
 
-test('(u) ușa documentului curent: null pe o versiune întreagă 1 … 17 (migrările), altfel exact ce dă ușa întreagă', { skip: DOAR_V18 }, async () => {
+test('(u) ușa documentului curent: null pe o versiune întreagă 1 … 18 (migrările), altfel exact ce dă ușa întreagă', { skip: DOAR_CURENTA }, async () => {
   const rele: string[] = [];
-  const toate: unknown[] = [...(await corpus()).mici, null, [], 'text', 7, { schema: 19, rev: 0 }, { schema: 0.5 }, { schema: 18.5 }, { schema: '17' }, { schema: -1 }, { rev: 0 }];
+  const toate: unknown[] = [...(await corpus()).mici, null, [], 'text', 7, { schema: 19, rev: 0 }, { schema: 20, rev: 0 }, { schema: 0.5 }, { schema: 18.5 }, { schema: '18' }, { schema: -1 }, { rev: 0 }];
   for (const [k, doc] of toate.entries()) {
     const curent = incarcaCurent(copie(doc));
     const eticheta = `documentul ${k} (schema ${typeof doc === 'object' && doc !== null ? String((doc as Liber)['schema']) : JSON.stringify(doc)})`;
@@ -378,10 +392,10 @@ test('(u) ușa documentului curent: null pe o versiune întreagă 1 … 17 (migr
  * Divergența găsită de felia 5.1↑c și reparată la cererea owner-ului („Da, repar-o aici”): ADR 0070 §2 cere migrările doar
  * pentru „un document mai vechi (o versiune întreagă între 1 și cea curentă, exclusiv)”, iar un document „fără versiune sau
  * stricat se refuză în ușa curentă (refuzul nu cere migrări)”. Aplicația cerea migrările și pentru o versiune neîntreagă din
- * (1, 18): ușa întreagă o refuza apoi, cu același verdict, dar pornirea aducea degeaba bucata migrărilor.
+ * (1, 18), azi (1, 19): ușa întreagă o refuza apoi, cu același verdict, dar pornirea aducea degeaba bucata migrărilor.
  */
-test('(u) ușa documentului curent refuză singură o versiune neîntreagă între 1 și 18, fără migrări (ADR 0070 §2)', { skip: DOAR_V18 }, () => {
-  for (const schema of [1.5, 10.5, 17.5, 17.000001]) {
+test('(u) ușa documentului curent refuză singură o versiune neîntreagă între 1 și versiunea curentă, fără migrări (ADR 0070 §2)', { skip: DOAR_CURENTA }, () => {
+  for (const schema of [1.5, 10.5, 17.5, 17.000001, 18.5]) {
     const doc = { schema, rev: 0, piese: [], foi: [{ id: 'f1', stoc: { latime: 300, inaltime: 200, grosime: 18 }, instante: [] }] };
     assert.equal(usaCurentaO(doc), 'usa', String(schema));
     const curent = incarcaCurent(structuredClone(doc));

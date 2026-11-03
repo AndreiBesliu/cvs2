@@ -57,10 +57,13 @@ const laturaGolurilor = (baza: 'exterior' | 'interior'): Latura => (baza === 'ex
 /** Id-ul și forma operației-model: nu sunt ale vreunei piese, dar o țin validă pentru schemă. */
 const ID_MODEL = 'model';
 
-/** Operația ca model (ADR 0114 §1): fără id-ul, formele și despărțirea ei, cu felul și latura grupei. */
+/**
+ * Operația ca model (ADR 0114 §1): fără id-ul, formele, despărțirea și rangul ei (locul în ordinea de mână e al piesei, ADR
+ * 0133 §4), cu felul și latura grupei.
+ */
 function model(o: Operatie, tip: TipOperatie, latura: Latura): Operatie {
-  const { despartire: _d, ...v } = o;
-  void _d;
+  const { despartire: _d, rang: _r, ...v } = o;
+  void _d; void _r;
   return { ...structuredClone(v), id: ID_MODEL, noduri: [ID_MODEL], tip, latura };
 }
 
@@ -93,10 +96,13 @@ function faraNumar(s: Scula): Scula {
   return rest as Scula;
 }
 
-/** Valorile operației ca text (ADR 0114 §1): fără id, fel, forme, latură, despărțire; la cerere, fără numerele frezelor (§6). */
+/**
+ * Valorile operației ca text (ADR 0114 §1): fără id, fel, forme, latură, despărțire și rang (ADR 0133 §4); la cerere, fără
+ * numerele frezelor (§6).
+ */
 function cheie(o: Operatie, faraNumere: boolean): string {
-  const { id: _i, tip: _t, noduri: _n, latura: _l, despartire: _d, ...v } = faraNumere ? cuScule(o, faraNumar) : o;
-  void _i; void _t; void _n; void _l; void _d;
+  const { id: _i, tip: _t, noduri: _n, latura: _l, despartire: _d, rang: _r, ...v } = faraNumere ? cuScule(o, faraNumar) : o;
+  void _i; void _t; void _n; void _l; void _d; void _r;
   return jsonCanonic(v);
 }
 
