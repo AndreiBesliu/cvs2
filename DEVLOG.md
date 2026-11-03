@@ -4898,3 +4898,20 @@ before row 2, on the same piece or inside it…”) și Exportă oprit până la
 export, formele anulate. Fișa și pragul: `c77b218`, publicat la 14:10 (rularea 41633102775).
 **Numerele ADR:** Trenuleț primește 0160–0169 (0126–0129, epuizate); linia principală are 0134–0139, apoi 0151–0159; textul,
 0143–0149.
+
+## 2026-11-03 — Unirea feliei 13.A↑b (fereastra Mașina adusă în fundal) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, unește” (la „Unesc acum 13.A↑b (senderul în fundal) în main?”).
+**Started:** 03.11, 14:15. **Completed:** 03.11, 14:41.
+
+Fuziunea `e35753b` a ramurii `wip/13.A-b-masina-in-fundal` (trei commit-uri, `4b77679` … `20aa2d3`, pornite din `feb6920`)
+în `main` (`0660ee5`, cu 5.9↑). Singurul conflict: DEVLOG, unde ambele ramuri adăugaseră o intrare la capăt; le-am păstrat pe
+amândouă, în ordinea în care s-au încheiat. Fișa, CLAUDE.md, traducerile (550, 0 lipsă), `stil.css` și `App.tsx` s-au unit
+singure. Sesiunea senderului știe de unire și își scoate worktree-ul (întâi joncțiunile); ramura rămâne pe origin.
+**Porțile** pe main-ul unit: traducerile, compilatoarele, importurile (17 reguli, 0 încălcări), 8 105 teste unitare (0 căderi,
+8 sărite), licențele, build-ul determinist (pornirea 100,2, cu ușa 103,7 / 110 kB; totalul 455,4 / 500; /admin 105,4 / 200),
+e2e 309 / 309.
+**Publicat pe test:** 03.11, 14:39, `publica` pe `e35753b` (rularea 41637152053), după CI-ul rapid verde (41636001575).
+Verificat în browserul aplicației la 1440 px: versiunea `e35753b90afb`; bucata ferestrei Mașina vine singură, la ~1,1 s
+după pornire, fără niciun clic; primul clic pe Mașina o deschide plină („Not connected”), fără ca mesajul de încărcare să apară
+(un observator al paginii); fără erori în consolă.
