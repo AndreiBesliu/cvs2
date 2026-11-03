@@ -9,7 +9,7 @@ import { mesajeGata } from '../i18n/laCerere.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import type { Limba } from '../i18n/tipuri.ts';
 import { useLimba } from '../ui/useLimba.ts';
-import { FaraStocare, scoateExtensia, scrieExtensia, type ExtensieInstalata, type SursaExtensie } from './depozit.ts';
+import { FaraStocare, octetiDate, scoateExtensia, scrieExtensia, type ExtensieInstalata, type SursaExtensie } from './depozit.ts';
 import type { CerereInstalare } from './tipuri.ts';
 import { citestePachet, LIMITE_PACHET, type MotivPachet, type Pachet } from './pachet.ts';
 
@@ -202,6 +202,11 @@ function InstalarePachet({ cerere, instalate, limba, onGata }: {
       <p data-testid="extensii-despre">{t('extensii.instalare.despre', { nume: p.manifest.nume, versiune: p.manifest.versiune, sursa: textSursa(sursa) })}</p>
       <p>{t('extensii.instalare.fisiere', { n: p.fisiere.size, kb: kb(p.octeti, limba) })}</p>
       {veche && <p data-testid="extensii-inlocuieste">{t('extensii.instalare.inlocuieste', { versiune: veche.manifest.versiune })}</p>}
+      <p data-testid="extensii-permisiuni">
+        {p.manifest.permisiuni.length === 0 ? t('extensii.instalare.fara-permisiuni') : t('extensii.instalare.permisiuni', {
+          lista: p.manifest.permisiuni.map((x) => t(`extensii.permisiune.${x}` as CheieSimpla)).join('; '),
+        })}
+      </p>
       <p>{t('extensii.instalare.izolare')}</p>
       <div className="butoane">
         <button type="button" data-extensii="instaleaza" autoFocus disabled={scriu} onClick={() => { void instaleaza(p, sursa); }}>
@@ -220,6 +225,14 @@ function Gestionare({ instalate, limba, onGata, onScoasa }: {
   readonly onScoasa: (id: string) => void;
 }): ReactNode {
   const [lista, setLista] = useState(instalate);
+  // Cât ocupă datele fiecărei extensii (ADR 0128 §B); scoaterea le șterge odată cu extensia.
+  const [date, setDate] = useState<Readonly<Record<string, number>>>({});
+  useEffect(() => {
+    let viu = true;
+    void Promise.all(instalate.map(async (x) => [x.id, await octetiDate(x.id).catch(() => 0)] as const))
+      .then((r) => { if (viu) setDate(Object.fromEntries(r)); });
+    return () => { viu = false; };
+  }, [instalate]);
   const scoate = async (id: string): Promise<void> => {
     await scoateExtensia(id);
     setLista((l) => l.filter((x) => x.id !== id));
@@ -233,7 +246,9 @@ function Gestionare({ instalate, limba, onGata, onScoasa }: {
           {lista.map((x) => (
             <li key={x.id} data-id={x.id}>
               <span><strong>{x.manifest.nume}</strong> {x.manifest.versiune}<br />
-                <small>{t('extensii.gestionare.sursa', { sursa: textSursa(x.sursa), data: data(x.instalat) })}</small></span>
+                <small>{t('extensii.gestionare.sursa', { sursa: textSursa(x.sursa), data: data(x.instalat) })}</small>
+                {date[x.id] !== undefined && <><br /><small data-testid="extensii-date">{t('extensii.gestionare.date', { kb: kb(date[x.id] ?? 0, limba) })}</small></>}
+              </span>
               <button type="button" data-extensii="scoate" onClick={() => { void scoate(x.id); }}>{t('extensii.gestionare.scoate')}</button>
             </li>
           ))}

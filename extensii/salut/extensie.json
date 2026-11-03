@@ -6,6 +6,6 @@
   "versiune": "1.0.0",
   "intrare": "index.ts",
   "stiluri": ["salut.css"],
-  "permisiuni": [],
+  "permisiuni": ["stocare"],
   "altele": ["salut.txt"]
 }

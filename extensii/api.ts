@@ -19,8 +19,18 @@ export interface HostApi {
   raporteaza(eroare: unknown): void;
   /** Cere închiderea spațiului extensiei. */
   inchide(): void;
-  /** Un serviciu cu permisiune (3.Xb: senderul, stocarea); în v1, fiecare cerere se refuză. */
+  /** Un serviciu cu permisiune: `stocare.*` (ADR 0128); senderul vine în 3.Xc. Un refuz respinge promisiunea, cu codul lui. */
   cere(serviciu: string, ...argumente: unknown[]): Promise<unknown>;
+  /**
+   * Datele extensiei (ADR 0128), cu permisiunea `stocare`: JSON sau octeți, cel mult 4 MB o valoare, 16 MB și 1 000 de chei
+   * toate. O cheie lipsă se citește `null`. Refuzurile: `stocare:permisiune`, `:cheie`, `:valoare`, `:plin`, `:indisponibila`.
+   */
+  readonly stocare: {
+    citeste(cheie: string): Promise<unknown>;
+    scrie(cheie: string, valoare: unknown): Promise<null>;
+    sterge(cheie: string): Promise<null>;
+    chei(): Promise<string[]>;
+  };
 }
 
 /** Spațiul extensiei: desenează în containerul primit (corpul cadrului). */

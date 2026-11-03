@@ -1,7 +1,8 @@
 /**
- * Extensia de probă „Salut” (ADR 0127): arată ce primește de la cvs2 (limba, tema, un fișier al pachetului) și, la cerere,
- * încearcă ce nu are voie din cadrul ei izolat: pagina lui cvs2, stocarea, rețeaua, portul serial. Rezultatele stau pe
- * pagină, pentru probele e2e și pentru om. Scrisă fără framework: DOM-ul cadrului, cu stilurile din `salut.css`.
+ * Extensia de probă „Salut” (ADR 0127, 0128): arată ce primește de la cvs2 (limba, tema, un fișier al pachetului), își
+ * numără deschiderile în stocarea ei (`host.stocare`) și, la cerere, încearcă ce nu are voie din cadrul ei izolat: pagina lui
+ * cvs2, stocarea browserului, rețeaua, portul serial, o valoare peste plafon. Rezultatele stau pe pagină, pentru probele e2e
+ * și pentru om. Scrisă fără framework: DOM-ul cadrului, cu stilurile din `salut.css`.
  */
 import type { ContextHost, HostApi, Spatiu } from '../api.ts';
 
@@ -9,12 +10,12 @@ const TEXTE = {
   ro: {
     titlu: 'Salut din extensie', limba: 'Limba: română', tema: 'Variabilele temei primite', fisier: 'Fișierul pachetului',
     izolare: 'Încearcă izolarea', serviciu: 'Cere senderul', eroare: 'Aruncă o eroare', inchide: 'Închide',
-    refuzat: 'refuzat', permis: 'PERMIS',
+    refuzat: 'refuzat', permis: 'PERMIS', deschideri: 'Deschideri', preaMult: 'Scrie prea mult',
   },
   en: {
     titlu: 'Hello from the extension', limba: 'Language: English', tema: 'Theme variables received', fisier: 'The package file',
     izolare: 'Try the isolation', serviciu: 'Ask for the sender', eroare: 'Throw an error', inchide: 'Close',
-    refuzat: 'refused', permis: 'ALLOWED',
+    refuzat: 'refused', permis: 'ALLOWED', deschideri: 'Openings', preaMult: 'Write too much',
   },
 } as const;
 
@@ -41,6 +42,8 @@ export function activeaza(host: HostApi): Spatiu {
       const limba = el('p', '', { 'data-salut': 'limba' });
       const tema = el('p', '', { 'data-salut': 'tema' });
       const fisier = el('p', '', { 'data-salut': 'fisier' });
+      const deschideri = el('p', '', { 'data-salut': 'deschideri' });
+      let numar: number | string = '…';
       const rezultate = el('ul', '', { 'data-salut': 'rezultate' });
       const butoane = el('div');
       const b = (id: string, f: () => void): HTMLButtonElement => {
@@ -68,6 +71,12 @@ export function activeaza(host: HostApi): Spatiu {
         void host.cere('masina').then(() => { rand('serviciu', 'masina: PERMIS'); }, (e: unknown) => { rand('serviciu', `masina: ${String((e as Error).message)}`); });
       });
       const eroare = b('eroare', () => { setTimeout(() => { throw new Error('eroare de probă din extensie'); }); });
+      const preaMult = b('prea-mult', () => {
+        void host.stocare.scrie('mare', 'x'.repeat(4 * 1024 * 1024)).then(
+          () => { rand('stocare', 'stocare: PERMIS'); },
+          (e: unknown) => { rand('stocare', `stocare: ${String((e as Error).message)}`); },
+        );
+      });
       const inchide = b('inchide', () => { host.inchide(); });
       const arata = (c: ContextHost): void => {
         const t = TEXTE[c.limba];
@@ -78,11 +87,18 @@ export function activeaza(host: HostApi): Spatiu {
         serviciu.textContent = t.serviciu;
         eroare.textContent = t.eroare;
         inchide.textContent = t.inchide;
+        preaMult.textContent = t.preaMult;
+        deschideri.textContent = `${t.deschideri}: ${numar}`;
         void host.fisier('salut.txt')?.text().then((x) => { fisier.textContent = `${t.fisier}: ${x.trim()}`; });
       };
       arata({ limba: host.limba, tema: host.tema });
       host.laSchimbare(arata);
-      container.append(titlu, limba, tema, fisier, butoane, rezultate);
+      // Deschiderile, numărate în stocarea extensiei: rămân peste închideri și reîncărcări; se duc odată cu extensia.
+      void host.stocare.citeste('deschideri')
+        .then((v) => { const n = (typeof v === 'number' ? v : 0) + 1; return host.stocare.scrie('deschideri', n).then(() => n); })
+        .then((n) => { numar = n; }, (e: unknown) => { numar = String((e as Error).message); })
+        .then(() => { arata({ limba: host.limba, tema: host.tema }); });
+      container.append(titlu, limba, tema, fisier, deschideri, butoane, rezultate);
     },
   };
 }

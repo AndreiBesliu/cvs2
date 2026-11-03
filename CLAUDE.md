@@ -384,6 +384,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `cvs2-fara-extensii`), iar o extensie nu importă din cvs2 (`extensia-doar-api`). O extensie se împachetează cu `node
   scripts/impacheteaza-extensie.ts <dosar>` (tipurile se șterg cu `stripTypeScriptTypes` din Node: TypeScript 7 n-are API de
   transpilare). **Pornirea 98,9 (cu ușa 102,4 / 110 kB), totalul 460,6 / 500.**
+  **Stocarea extensiilor și permisiunile (ADR 0128, felia 3.Xb)** gata pe 03.11: permisiunea `stocare` (catalogul din
+  `src/extensii/pachet.ts`, arătat la instalare), `host.stocare` peste `host.cere`, în IndexedDB (`cncvs2-extensii` v2,
+  `date` și `marimi`): doar JSON sau octeți, 4 MB o valoare, 16 MB și 1 000 de chei pe extensie; scoaterea șterge datele.
+  **Senderul în `HostApi` vine după unirea lui 13.A↑ în `main`** („Întâi 13.A în main”), ca felia 3.Xc: extensia devine o
+  fereastră a aranjamentului (ADR 0132), iar „Lucrarea primită” trece în fereastra Mașina.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

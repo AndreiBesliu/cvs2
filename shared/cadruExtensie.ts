@@ -3,7 +3,8 @@
  * aplicației, pe care îl și moștenește) și un singur script scris în ea, încărcătorul. Încărcătorul primește de la cvs2, o
  * singură dată, fișierele pachetului, contextul (limba, tema) și un `MessagePort`; pune tema pe rădăcină și stilurile ca foi
  * construite, face o adresă `blob:` din modulul de intrare, îl importă, cheamă `activeaza(host)` și `deschide(document.body)`.
- * Tot ce urmează trece prin port: cererile lui `host.cere`, erorile, „inchide”; de la cvs2, contextul nou.
+ * Tot ce urmează trece prin port: cererile lui `host.cere` (și ale lui `host.stocare`, ADR 0128, învelișuri peste ea),
+ * erorile, „inchide”; de la cvs2, contextul nou și răspunsurile.
  *
  * Textul încărcătorului e fix: amprenta lui SHA-256 stă în CSP-ul aplicației (`shared/csp.ts`), iar proba
  * `test/unit/csp.extensii.test.ts` o recalculează. O schimbare a textului cere amprenta nouă.
@@ -50,6 +51,8 @@ export const INCARCATOR = `(() => {
         s.replaceSync(new TextDecoder().decode(fisiere[cale]));
         document.adoptedStyleSheets = [...document.adoptedStyleSheets, s];
       }
+      const cere = (serviciu, ...argumente) =>
+        new Promise((rez, resp) => { const id = ++nr; cereri.set(id, [rez, resp]); trimite({ tip: 'cerere', id, serviciu, argumente }); });
       const host = Object.freeze({
         api: 1,
         get limba() { return context.limba; },
@@ -58,9 +61,13 @@ export const INCARCATOR = `(() => {
         fisier(cale) { return Object.prototype.hasOwnProperty.call(fisiere, cale) ? new Blob([fisiere[cale]]) : null; },
         raporteaza,
         inchide() { trimite({ tip: 'inchide' }); },
-        cere(serviciu, ...argumente) {
-          return new Promise((rez, resp) => { const id = ++nr; cereri.set(id, [rez, resp]); trimite({ tip: 'cerere', id, serviciu, argumente }); });
-        },
+        cere,
+        stocare: Object.freeze({
+          citeste: (cheie) => cere('stocare.citeste', cheie),
+          scrie: (cheie, valoare) => cere('stocare.scrie', cheie, valoare),
+          sterge: (cheie) => cere('stocare.sterge', cheie),
+          chei: () => cere('stocare.chei'),
+        }),
       });
       const url = URL.createObjectURL(new Blob([fisiere[d.intrare]], { type: 'text/javascript' }));
       const modul = await import(url);
@@ -75,7 +82,7 @@ export const INCARCATOR = `(() => {
 })();`;
 
 /** Amprenta încărcătorului, în forma din CSP: base64(sha256(INCARCATOR)), verificată de `test/unit/csp.extensii.test.ts`. */
-export const AMPRENTA_INCARCATOR = "'sha256-1YX0fkVBJ4QwasSwHqTYeEMMjC8Cq+mupI/QtjWQ16s='";
+export const AMPRENTA_INCARCATOR = "'sha256-4UMxYm1EsuRFXqd3FzD9Gb4F1HM/CBg6d14Y0YzfYDg='";
 
 /**
  * CSP-ul propriu al cadrului, peste cel moștenit de la aplicație: fără rețea (nici `fetch`, nici `ws:` spre mașină), scripturi

@@ -48,6 +48,7 @@ test('din fișier: confirmarea, meniul, spațiul izolat cu acțiunile documentul
   const dialog = page.getByTestId('extensii-instalare');
   await expect(page.getByTestId('extensii-despre')).toHaveText('„Salut” 1.0.0, de la salut-1.0.0.zip');
   await expect(dialog).toContainText('3 fișiere');
+  await expect(page.getByTestId('extensii-permisiuni')).toHaveText('Cere: să-și țină datele în browserul acesta (cel mult 16 MB).');
   await expect(page.locator('.aplicatie')).toHaveAttribute('inert', '');
   await page.locator('[data-extensii="instaleaza"]').click();
   await expect(dialog).toHaveCount(0);
@@ -71,6 +72,10 @@ test('din fișier: confirmarea, meniul, spațiul izolat cu acțiunile documentul
   await expect(c.locator('[data-salut="tema"]')).toContainText('Variabilele temei primite: 13');
   // Stilurile pachetului (salut.css), puse ca foi construite: CSP-ul moștenit nu le oprește.
   await expect(c.locator('body')).toHaveCSS('padding-top', '24px');
+  // Stocarea extensiei (ADR 0128): deschiderile numărate; peste plafon, refuzul.
+  await expect(c.locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 1');
+  await c.locator('[data-salut="prea-mult"]').click();
+  await expect(c.locator('[data-proba="stocare"]')).toHaveText('stocare: stocare:plin');
 
   // Izolarea, din cadru: nimic din cvs2 și nicio rețea.
   await c.locator('[data-salut="izolare"]').click();
@@ -107,22 +112,45 @@ test('din fișier: confirmarea, meniul, spațiul izolat cu acțiunile documentul
   await adauga(page, 'dreptunghi');
   await expect(forme(page)).toHaveCount(3);
 
-  // Din extensie: host.inchide().
+  // Din extensie: host.inchide(); deschiderea a doua e numărată.
   await (await meniul(page)).locator('[data-extensii="deschide"][data-id="salut"]').click();
+  await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 2');
   await cadru(page).locator('[data-salut="inchide"]').click();
   await expect(page.getByTestId('spatiu-extensie')).toHaveCount(0);
 
-  // După reîncărcare, extensia e tot acolo; din gestionare se scoate.
+  // După reîncărcare, extensia și datele ei sunt tot acolo; din gestionare se scoate, cu datele ei.
   await page.reload();
   await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveText(['Salut1.0.0 · deschide spațiul']);
-  await page.getByTestId('meniu-extensii').locator('[data-extensii="gestioneaza"]').click();
+  await page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"]').click();
+  await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 3');
+  await page.locator('[data-extensii="inchide-spatiul"]').click();
+  await (await meniul(page)).locator('[data-extensii="gestioneaza"]').click();
   const gest = page.getByTestId('extensii-gestionare');
   await expect(gest.locator('li')).toHaveCount(1);
   await expect(gest.locator('li')).toContainText('de la salut-1.0.0.zip');
+  await expect(gest.getByTestId('extensii-date')).toHaveText('datele ei: 0 kB');
   await gest.locator('[data-extensii="scoate"]').click();
   await expect(gest).toContainText('Nicio extensie instalată încă');
   await gest.locator('[data-extensii="inchide"]').click();
   await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveCount(0);
+
+  // Instalată din nou, numără de la 1: scoaterea i-a șters datele.
+  await page.keyboard.press('Escape');
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'salut-1.0.0.zip', mimeType: 'application/zip', buffer: Buffer.from(SALUT) });
+  await page.locator('[data-extensii="instaleaza"]').click();
+  await (await meniul(page)).locator('[data-extensii="deschide"][data-id="salut"]').click();
+  await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 1');
+});
+
+test('fără permisiunea stocării, extensia nu-și poate ține datele; fereastra instalării spune că nu cere nimic', async ({ page }) => {
+  const fara = await varianta((m) => { m.permisiuni = []; });
+  await page.goto('/');
+  await expect(page.locator('[data-extensii="buton"]')).toBeVisible();
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'salut-fara.zip', mimeType: 'application/zip', buffer: fara });
+  await expect(page.getByTestId('extensii-permisiuni')).toHaveText('Nu cere nimic în plus: doar spațiul ei.');
+  await page.locator('[data-extensii="instaleaza"]').click();
+  await (await meniul(page)).locator('[data-extensii="deschide"][data-id="salut"]').click();
+  await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: stocare:permisiune');
 });
 
 test('de la adresă și prin link: descărcarea căzută spusă, pachet stricat refuzat cu motivul, versiunea nouă o înlocuiește pe cea veche', async ({ page }) => {

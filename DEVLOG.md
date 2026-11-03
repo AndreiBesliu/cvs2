@@ -4619,3 +4619,10 @@ posibil): ADR 0127; codul `5b74344`, reparațiile `27a3aa3` și `44d9275`.
 - Captura spațiului a arătat un fundal gri, cu text închis. `--fond` e voalul translucid de sub ferestre, nu un fundal; spațiul
   și extensia de probă iau acum `--s-panou`, iar extensiile primesc 13 jetoane ale temei (`7cd108a`).
 - Adresa principală de test nu s-a atins; ramura nu e împinsă.
+
+## 2026-11-03 — Felia 3.Xb: stocarea extensiilor și permisiunile (ADR 0128) (Model: Claude Opus 5.5)
+
+**Prompt:** „Întâi 13.A în main” (la întrebarea „Cum continui 3.Xb, față de ramura 13.A↑?”, după „Da, pornește 3.Xb”), în
+sesiunea dedicată liniei Trenuleț. Senderul în `HostApi` atinge aceleași fișiere ca 13.A↑ (fereastra Mașina, ADR 0132), deci
+vine după unirea ei, ca felia 3.Xc; acum, partea care nu le atinge.
+**Started:** 03.11, 07:26.

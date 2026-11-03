@@ -887,16 +887,19 @@ install it, and the app’s interface stays the same.
   **Download**; the host must allow downloads from other pages, otherwise you download the file yourself and install it
   from the file. A link like `…/#instaleaza=<address>` opens the same window with the address filled in; nothing downloads
   without your click.
-- Before installing, the window shows the name, the version, where the package comes from, its files and their size and,
-  if there is one, the version it replaces. **Install** keeps it in this browser (it works offline too); **Cancel** changes
-  nothing. A damaged or wrong package is refused, with the reason.
+- Before installing, the window shows the name, the version, where the package comes from, its files and their size, what
+  the extension asks for (for example, to keep its data in this browser) and, if there is one, the version it replaces.
+  **Install** keeps it in this browser (it works offline too); **Cancel** changes nothing. A damaged or wrong package is
+  refused, with the reason.
+- An extension that asked for it keeps its data (for example, its circuits) in this browser, at most 16 MB. A new version of
+  it keeps them.
 - A click on an extension in the menu opens its workspace in place of the sheet. The bars and panels stay, so the machine
   panel can sit next to it; while the workspace is open, the drawing doesn’t change. **Back to the sheet**, above the
   workspace, closes the extension.
 - The extension runs isolated: it can’t see your projects, your account or the machine, and it can’t reach the internet;
   it talks to the app only through what the app gives it.
-- **Manage extensions** shows the installed ones, with their source and date; **Remove** deletes one, **Close** closes the
-  window.
+- **Manage extensions** shows the installed ones, with their source, date and how much their data takes; **Remove** deletes
+  one, together with its data, **Close** closes the window.
 
 ## Keyboard shortcuts
 %% capitol: scurtaturi

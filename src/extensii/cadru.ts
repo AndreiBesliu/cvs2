@@ -1,12 +1,13 @@
 /**
  * Cadrul izolat al unei extensii (ADR 0127 §D), partea lui cvs2: iframe-ul cu sandbox (`allow-scripts`, fără origine, nimic
  * delegat), pagina lui din `shared/cadruExtensie.ts` și portul prin care trec toate mesajele. La încărcarea cadrului, cvs2
- * îi trimite o singură dată fișierele pachetului, contextul (limba, tema) și portul; apoi doar prin port. În v1, orice
- * serviciu cerut cu `host.cere` se refuză (3.Xb aduce senderul și stocarea).
+ * îi trimite o singură dată fișierele pachetului, contextul (limba, tema) și portul; apoi doar prin port. Serviciile cerute
+ * cu `host.cere`: `stocare.*` (ADR 0128, cu permisiunea `stocare`); restul se refuză (senderul vine în 3.Xc).
  */
 import type { ContextHost } from '../../extensii/api.ts';
 import { paginaCadru } from '../../shared/cadruExtensie.ts';
-import type { ExtensieInstalata } from './depozit.ts';
+import { depozitDate, type ExtensieInstalata } from './depozit.ts';
+import { servesteStocarea, type RaspunsServiciu } from './stocare.ts';
 
 export type EvenimentCadru =
   | { readonly tip: 'pornit' }
@@ -48,9 +49,18 @@ export function pornesteCadru(container: HTMLElement, ext: ExtensieInstalata, co
     const m = e.data as Record<string, unknown> | null;
     if (!m || typeof m !== 'object') return;
     switch (m.tip) {
-      case 'cerere':
-        port.postMessage({ tip: 'raspuns', id: m.id, ok: false, eroare: `serviciu-necunoscut:${text(m.serviciu, 40)}` });
+      case 'cerere': {
+        const id = m.id;
+        const [serviciu = '', metoda = ''] = text(m.serviciu, 60).split('.');
+        const argumente = Array.isArray(m.argumente) ? m.argumente as unknown[] : [];
+        const raspuns: Promise<RaspunsServiciu> = serviciu === 'stocare'
+          ? servesteStocarea(ext.id, ext.manifest.permisiuni, metoda, argumente, depozitDate).catch(() => ({ ok: false, eroare: 'stocare:indisponibila' }))
+          : Promise.resolve({ ok: false, eroare: `serviciu-necunoscut:${text(m.serviciu, 40)}` });
+        void raspuns.then((r) => {
+          port.postMessage(r.ok ? { tip: 'raspuns', id, ok: true, rezultat: r.rezultat } : { tip: 'raspuns', id, ok: false, eroare: r.eroare });
+        });
         return;
+      }
       case 'pornit':
       case 'inchide':
         laEveniment({ tip: m.tip });
