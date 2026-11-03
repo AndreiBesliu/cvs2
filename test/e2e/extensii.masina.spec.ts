@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { impacheteaza } from '../../scripts/impacheteaza-extensie.ts';
 
 /**
- * Fereastra extensiei și senderul prin `HostApi` (ADR 0199, felia 3.Xc), în Edge, cu extensia de probă `extensii/proba-masina`:
+ * Fereastra extensiei și senderul prin `HostApi` (ADR 0160, felia 3.Xc), în Edge, cu extensia de probă `extensii/proba-masina`:
  * - fereastra: fila cu numele, după Proiectare și Mașina, apăsată; altă fereastră o ascunde, iar cadrul își păstrează
  *   pagina; nu se ține după reîncărcare; F1 deschide capitolul extensiilor; × o închide;
  * - starea, la fiecare schimbare (și fără fereastra Mașina: neconectată); încărcarea verificată ca „Fișier…”: numele, programul

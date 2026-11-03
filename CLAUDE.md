@@ -431,7 +431,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Permisiunea nouă `descarcari` (`descarcari.salveaza`): cvs2 descarcă din pagina lui, doar tipurile din lista albă, cel
   mult 64 MB. Încărcătorul și CSP-ul nu s-au schimbat. „Trimite la cvs2” și previzualizarea 3D nu merg încă din extensie.
   **Pornirea 98,9 (cu ușa 102,4 / 110 kB), totalul 462,6 / 500.**
-  **Fereastra extensiei și senderul prin `HostApi` (ADR 0199, număr provizoriu, felia 3.Xc)** gata pe 03.11, după `main` (cu
+  **Fereastra extensiei și senderul prin `HostApi` (ADR 0160, felia 3.Xc)** gata pe 03.11, după `main` (cu
   13.A↑) adus în ramură: o extensie deschisă are fereastra ei, cu fila după cele ale aranjamentului (`#loc-fila-extensie`,
   pusă de gazdă, nu în `aranjament.ferestre`) și ×; Proiectarea acoperită urmează ADR 0132 §3. **Permisiunea `masina`,
   oprită pe live:** `host.masina` dă starea la fiecare schimbare, `incarca` (verificările lui „Fișier…”), `porneste` și `reia`

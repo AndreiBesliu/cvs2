@@ -1,4 +1,4 @@
-# ADR 0199: Fereastra extensiei și senderul prin `HostApi`
+# ADR 0160: Fereastra extensiei și senderul prin `HostApi`
 
 **Starea:** acceptat pe 03.11.2026 pentru felia 3.Xc, a liniei Trenuleț (worktree-ul `wip/trenulet`), după unirea lui 13.A↑
 în ramură. Împlinește ADR 0128 §C. Continuă ADR 0127 (cadrul izolat, `HostApi`), 0132 (ferestrele aplicației, „o extensie își

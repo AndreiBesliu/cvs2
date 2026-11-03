@@ -1,4 +1,4 @@
-# Sabotajele feliei 3.Xc, fereastra extensiei și senderul prin `HostApi` (ADR 0199), 03.11.2026: fiecare apărare a
+# Sabotajele feliei 3.Xc, fereastra extensiei și senderul prin `HostApi` (ADR 0160), 03.11.2026: fiecare apărare a
 # serviciului `masina.*` (permisiunea, live, metoda, argumentele, plafonul, așteptarea ferestrei Mașina), a părții pure din
 # fereastra Mașina (starea pentru extensie, pornirea, reluarea, pauza, învelișul cu confirmarea legată de programul și de
 # starea arătate), a ferestrei imitate din planificator, a catalogului și a legării în pagină (fereastra extensiei, fila,

@@ -6,7 +6,7 @@
  * - `localStorage`, peste `host.stocare` (setările mici: modul, mașinile, frezarea), citit întreg la pornire, scris pe loc;
  * - atributele `style` din marcaj: CSP-ul moștenit le refuză ca atribute, deci se pun prin CSSOM, care nu e oprit;
  * - scripturile, în ordinea paginii, ca scripturi clasice din adrese `blob:` (aceeași semantică globală ca în pagină).
- * Cu senderul deschis extensiei (permisiunea `masina`, ADR 0199 §D), „Trimite la cvs2” trimite lucrarea prin `HostApi`, la
+ * Cu senderul deschis extensiei (permisiunea `masina`, ADR 0160 §D), „Trimite la cvs2” trimite lucrarea prin `HostApi`, la
  * „Lucrarea primită” din fereastra Mașina, în locul filei noi pe care cadrul n-o poate deschide.
  */
 import type { HostApi, Spatiu } from '../api.ts';

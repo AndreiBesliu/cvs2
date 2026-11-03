@@ -160,7 +160,7 @@ const TEME = ['auto', 'luminoasa', 'intunecata'] as const;
  */
 const ORIUNDE: ReadonlySet<string> = new Set(['vedere.paleta', 'vedere.tema', ...Object.values(DESCHIDE_FEREASTRA)]);
 /**
- * Fereastra extensiei deschise (ADR 0199 §A). Nu e în `aranjament.ferestre` (lista ferestrelor aplicației, verificată la
+ * Fereastra extensiei deschise (ADR 0160 §A). Nu e în `aranjament.ferestre` (lista ferestrelor aplicației, verificată la
  * încărcare): există doar cât e deschisă o extensie, iar fila ei o pune gazda extensiilor, după ale aranjamentului.
  */
 const FEREASTRA_EXTENSIE = 'extensie';
@@ -245,8 +245,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // Lucrarea primită de la altă aplicație și cererea care așteaptă omul (ADR 0126): doar în memorie, separate de ultimul export.
   const [lucrarePrimita, setLucrarePrimita] = useState<LucrarePrimita | null>(null);
   const [cerereLucrare, setCerereLucrare] = useState<CerereLucrare | null>(null);
-  // Extensia deschisă, cu fereastra ei (ADR 0199 §A), și o fereastră a extensiilor deschisă (instalarea, gestionarea, ADR 0127
-  // §C), care face aplicația inertă, ca dialogurile ei; tot așa confirmarea cerută de o extensie (ADR 0199 §B).
+  // Extensia deschisă, cu fereastra ei (ADR 0160 §A), și o fereastră a extensiilor deschisă (instalarea, gestionarea, ADR 0127
+  // §C), care face aplicația inertă, ca dialogurile ei; tot așa confirmarea cerută de o extensie (ADR 0160 §B).
   const [extensie, setExtensie] = useState<{ readonly id: string; readonly nume: string } | null>(null);
   const [modalExtensii, setModalExtensii] = useState(false);
   const [modalMasina, setModalMasina] = useState(false);
@@ -264,12 +264,12 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     addEventListener('hashchange', asculta);
     return () => { terminat = true; removeEventListener('hashchange', asculta); oprire?.(); };
   }, [primireActiva]);
-  /** Lucrarea trimisă de o extensie (`masina.trimite`, ADR 0199 §B): același dialog și aceeași listă ca prin protocol. */
+  /** Lucrarea trimisă de o extensie (`masina.trimite`, ADR 0160 §B): același dialog și aceeași listă ca prin protocol. */
   const [trimiteLucrare] = useState(() => (x: unknown, ext: { readonly nume: string }): Promise<unknown> =>
     incarcaPrimirea().then((m) => m.cereDeLaExtensie(x, ext.nume, setCerereLucrare)));
   /**
    * Fereastra de acum (ADR 0132): Proiectarea (desenul) sau Mașina, ținută în browser și redeschisă la pornire, ori a extensiei
-   * deschise (ADR 0199 §A), care nu se ține. Mașina se montează la prima deschidere și rămâne montată (sesiunea, numele
+   * deschise (ADR 0160 §A), care nu se ține. Mașina se montează la prima deschidere și rămâne montată (sesiunea, numele
    * programului, formularele); Proiectarea nu se demontează niciodată (pânza, editarea, butonul Cont), doar se acoperă.
    */
   const [fereastra, setFereastra] = useState<Fereastra>(() => fereastraTinuta(aranjament.ferestre));
@@ -919,7 +919,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             {aranjament.ferestre.map((f) => buton(DESCHIDE_FEREASTRA[f], 'data-actiune', {
               className: 'cu-eticheta fila', ...(f === fereastra ? { 'aria-current': 'page' } : {}),
             }))}
-            {/* Fila extensiei deschise (ADR 0199 §A), pusă de modulul extensiilor: nu e o fereastră a aranjamentului. */}
+            {/* Fila extensiei deschise (ADR 0160 §A), pusă de modulul extensiilor: nu e o fereastră a aranjamentului. */}
             <span id="loc-fila-extensie" className="loc-fila-extensie" />
           </nav>
         );
@@ -1163,7 +1163,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             </Suspense>
           </section>
         )}
-        {/* Fereastra extensiei deschise (ADR 0199 §A), ca Mașina: sub meniu, peste Proiectare; cadrul îl pune modulul extensiilor. */}
+        {/* Fereastra extensiei deschise (ADR 0160 §A), ca Mașina: sub meniu, peste Proiectare; cadrul îl pune modulul extensiilor. */}
         <section className="fereastra-extensie" id="loc-spatiu-extensie" aria-label={extensie?.nume}
           hidden={fereastra !== FEREASTRA_EXTENSIE || extensie === null} />
         <footer className="jos">{grupuri('jos')}</footer>

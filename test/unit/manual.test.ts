@@ -47,7 +47,7 @@ const USI: readonly Usa[] = [
   ...[...ACTIUNI_DOCUMENT, ...ACTIUNI_VEDERE, ...ACTIUNI_IMPORT, ...ACTIUNI_EXPORT].map((a) => ({ id: a.id, eticheta: eticheta(a.eticheta) })),
   ...UNELTE.map((u) => ({ id: `unealta.${u}`, eticheta: eticheta(`editare.unealta.${u}`) })),
   { id: 'editare.lipire', eticheta: eticheta('editare.lipire') },
-  // Butonul Extensii (ADR 0127): F1 în fereastra unei extensii deschide capitolul lor (ADR 0199 §A).
+  // Butonul Extensii (ADR 0127): F1 în fereastra unei extensii deschide capitolul lor (ADR 0160 §A).
   { id: 'extensii.buton', eticheta: eticheta('extensii.buton') },
   { id: 'editare.grila', eticheta: eticheta('editare.grila') },
   { id: 'editare.aliniere', eticheta: eticheta('editare.aliniere') },
@@ -111,7 +111,7 @@ test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sun
   assert.equal(numeScurt('Importă SVG…'), 'Importă SVG');
   assert.equal(numeScurt('Oglindește orizontal: stânga ↔ dreapta (Shift+H)'), 'Oglindește orizontal');
   // Gruparea (ADR 0130) a adus a 69-a ușă, fila Proiectare (ADR 0132) a 70-a, comutatorul Ca bloc (ADR 0150) a 71-a, iar
-  // butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0199 §A), a 72-a.
+  // butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0160 §A), a 72-a.
   assert.equal(USI.length, 72);
 });
 
@@ -155,7 +155,7 @@ const CONTROALE_MASINA: Readonly<Record<string, string | null>> = {
   primit: 'masina.primit.incarca',
   // Indicatorul lucrării din meniul global (ADR 0132, `IndicatorLucrare.tsx`): pastila și butonul de lângă ea.
   indicator: 'masina.indicator.titlu', 'indicator-pauza': 'masina.pauza', 'indicator-reia': 'masina.eliberare',
-  // Confirmarea unei porniri sau reluări cerute de o extensie (ADR 0199 §B, `ConfirmareMasina.tsx`).
+  // Confirmarea unei porniri sau reluări cerute de o extensie (ADR 0160 §B, `ConfirmareMasina.tsx`).
   confirma: 'masina.start', 'confirma-renunta': 'masina.confirmare.nu',
 };
 

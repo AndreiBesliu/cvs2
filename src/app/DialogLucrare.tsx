@@ -1,6 +1,6 @@
 /**
  * Dialogul primirii unei lucrări (ADR 0126 §C). Se aduce la cerere, când fila a fost deschisă de o aplicație care trimite
- * (ancora `#primeste-lucrare` și `window.opener`) sau când o extensie trimite o lucrare (`masina.trimite`, ADR 0199 §B), cu
+ * (ancora `#primeste-lucrare` și `window.opener`) sau când o extensie trimite o lucrare (`masina.trimite`, ADR 0160 §B), cu
  * mesajele panoului mașinii (ADR 0086).
  *
  * Ascultarea ține cererea care așteaptă omul. O lucrare nouă o înlocuiește, iar celei vechi i se răspunde „renuntat”: omul
@@ -42,7 +42,7 @@ export function ascultaPrimirea(w: Window, laCerere: (c: CerereLucrare) => void)
 }
 
 /**
- * O lucrare trimisă de extensia `nume` (ADR 0199 §B): aceeași formă și aceleași limite ca prin protocol, aceeași înlocuire.
+ * O lucrare trimisă de extensia `nume` (ADR 0160 §B): aceeași formă și aceleași limite ca prin protocol, aceeași înlocuire.
  * Promisiunea dă mesajul `primit` (și „renuntat”); o lucrare fără forma protocolului dă null, fără dialog.
  */
 export function cereDeLaExtensie(x: unknown, nume: string, laCerere: (c: CerereLucrare) => void): Promise<unknown> {

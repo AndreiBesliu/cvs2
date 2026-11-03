@@ -1,5 +1,5 @@
 /**
- * Extensia de probă a senderului (ADR 0199): cere prin `host.masina` tot ce poate cere o extensie (starea, încărcarea,
+ * Extensia de probă a senderului (ADR 0160): cere prin `host.masina` tot ce poate cere o extensie (starea, încărcarea,
  * pornirea și reluarea, cu confirmarea omului, pauza, oprirea, o lucrare trimisă spre „Lucrarea primită”) și arată pe pagină
  * starea primită la fiecare schimbare și fiecare răspuns, pentru probele e2e. Scrisă fără framework, ca „Salut”.
  */

@@ -5,7 +5,7 @@
  *   dezabonare (nici citirea pornită înainte de ea); stocarea plină, cu codul `quota_exceeded` al paginii;
  * - `use('downloads')`: `save` cere `descarcari.salveaza`, cu numele și datele așa cum vin; o capabilitate necunoscută;
  * - `localStorage`: doar cheile `ls:`, citite la pornire; scrise și șterse pe loc; o scriere refuzată, raportată;
- * - „Trimite la cvs2” (ADR 0199 §D): `window.open` la `#primeste-lucrare` dă o fereastră imitată, care răspunde „gata” la
+ * - „Trimite la cvs2” (ADR 0160 §D): `window.open` la `#primeste-lucrare` dă o fereastră imitată, care răspunde „gata” la
  *   „cauta”, trimite lucrarea prin `masina.trimite` și dă înapoi „primit”, ca mesaj de la ea, de la originea cerută.
  */
 import { test } from 'node:test';

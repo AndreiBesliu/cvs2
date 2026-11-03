@@ -4,7 +4,7 @@
  * singură dată, fișierele pachetului, contextul (limba, tema) și un `MessagePort`; pune tema pe rădăcină și stilurile ca foi
  * construite, face o adresă `blob:` din modulul de intrare, îl importă, cheamă `activeaza(host)` și `deschide(document.body)`.
  * Tot ce urmează trece prin port: cererile lui `host.cere` (și ale învelișurilor peste ea: `host.stocare`, ADR 0128,
- * `host.descarcari`, ADR 0129, `host.masina`, ADR 0199), erorile, „inchide”; de la cvs2, contextul nou, răspunsurile și starea
+ * `host.descarcari`, ADR 0129, `host.masina`, ADR 0160), erorile, „inchide”; de la cvs2, contextul nou, răspunsurile și starea
  * mașinii, la fiecare schimbare.
  *
  * Textul încărcătorului e fix: amprenta lui SHA-256 stă în CSP-ul aplicației (`shared/csp.ts`), iar proba

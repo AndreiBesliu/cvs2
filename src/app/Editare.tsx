@@ -183,7 +183,7 @@ const RaportarileMele = lazy(() => import('./PanouCont.tsx').then(cuMesaje).then
 
 /**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
- * paleta), apoi fereastra care acoperă Proiectarea (Mașina, ADR 0132 §8, sau a unei extensii, ADR 0199 §A), apoi vederea 3D,
+ * paleta), apoi fereastra care acoperă Proiectarea (Mașina, ADR 0132 §8, sau a unei extensii, ADR 0160 §A), apoi vederea 3D,
  * altfel unealta aleasă. Id-urile sunt cele din `%% acopera:` ale manualului.
  */
 function usaDeAcum(unealta: Unealta, vedere3d: boolean, activ: boolean, acoperita: string): string {
@@ -261,7 +261,7 @@ export type ProprietatiEditare = {
    * merge ca oriunde.
    */
   readonly activ?: boolean;
-  /** Ușa ferestrei care acoperă Proiectarea, pentru F1 (implicit, Mașina; fereastra unei extensii, ADR 0199 §A). */
+  /** Ușa ferestrei care acoperă Proiectarea, pentru F1 (implicit, Mașina; fereastra unei extensii, ADR 0160 §A). */
   readonly usaAcoperita?: string;
 };
 

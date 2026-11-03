@@ -8,7 +8,7 @@ export type Tema = Readonly<Record<string, string>>;
 export type ContextHost = { readonly limba: Limba; readonly tema: Tema };
 
 /**
- * Starea mașinii, cum o vede o extensie (ADR 0199 §B): legătura, faza senderului (`liber`, `pregatit`, `trimite`, `golire`,
+ * Starea mașinii, cum o vede o extensie (ADR 0160 §B): legătura, faza senderului (`liber`, `pregatit`, `trimite`, `golire`,
  * `terminare`, `suspendat`, `bariera`, `terminat`, `pierdut`), indicatorul lucrării (`fel`: `conectata`, `ruleaza`, `pauza`,
  * `oprita-m6`, `oprita`, `suspendata`, `alarma`, `intrerupta`, `gata`; procentul; linia unei opriri; codul alarmei) și programul
  * încărcat. Nimic din poziție, jurnal sau setările controlerului.
@@ -34,7 +34,7 @@ export interface HostApi {
   inchide(): void;
   /**
    * Un serviciu cu permisiune; un refuz respinge promisiunea, cu codul lui. `stocare.*` (ADR 0128), `descarcari.*` (ADR 0129)
-   * și `masina.*` (ADR 0199), și prin învelișurile de mai jos.
+   * și `masina.*` (ADR 0160), și prin învelișurile de mai jos.
    */
   cere(serviciu: string, ...argumente: unknown[]): Promise<unknown>;
   /**
@@ -56,7 +56,7 @@ export interface HostApi {
     salveaza(nume: string, date: string | ArrayBuffer | Uint8Array | Blob): Promise<string>;
   };
   /**
-   * Senderul lui cvs2 (ADR 0199), cu permisiunea `masina`, oprit pe instanța live. Conectarea, jog-ul, zero-ul, palparea,
+   * Senderul lui cvs2 (ADR 0160), cu permisiunea `masina`, oprit pe instanța live. Conectarea, jog-ul, zero-ul, palparea,
    * deblocarea, comenzile manuale și continuarea după o barieră rămân în fereastra Mașina.
    * - `stare()` și `laStare(f)`: starea, la cerere și la fiecare schimbare;
    * - `incarca(nume, date)`: un program G-code (`.nc`, `.gcode`, `.ngc`, `.tap`, `.txt`; text sau octeți, cel mult 32 MB),

@@ -4951,7 +4951,7 @@ ADR 0129; codul: `754319b`, plus proba care a prins două otrăvuri scăpate: `1
 planificatorului nu se publică înainte să le reconfirme (repo-ul e public). Adresa principală de test nu s-a atins; ramura
 nu e împinsă.
 
-## 2026-11-03 — Felia 3.Xc: fereastra extensiei și senderul prin `HostApi` (ADR 0199) (Model: Claude Opus 5.5)
+## 2026-11-03 — Felia 3.Xc: fereastra extensiei și senderul prin `HostApi` (ADR 0160) (Model: Claude Opus 5.5)
 
 **Prompt:** „Main + 3.Xc (senderul)” (la „Care felie urmează?”, după raportul lui 3.Ta), în sesiunea dedicată liniei
 Trenuleț.
@@ -4959,8 +4959,8 @@ Trenuleț.
 
 Întâi `main` (`75e9b47`: 13.A↑, 6.U↑, 5.9↑ pașii 1–3) a venit în ramură: `7681cd8`. Conflictele s-au rezolvat păstrând ambele
 părți, iar „Lucrarea primită” a trecut în fereastra Mașina. Unirea pe `9c0ca26` lăsase două probe unitare pe documentul v18;
-le reparase `75e9b47`, deci am refăcut-o pe vârful nou. Apoi felia: `2517e29`. **ADR 0199 e un număr provizoriu:** intervalul
-liniei (0126–0129) s-a terminat, iar sesiunea principală n-a răspuns încă la cererea de numere.
+le reparase `75e9b47`, deci am refăcut-o pe vârful nou. Apoi felia: `2517e29`. ADR-ul feliei e 0160, din blocul
+0160–0169 dat liniei de sesiunea principală; până la răspunsul ei, numărul provizoriu 0199, înlocuit după publicare.
 - **Ce merge:**
   - fereastra extensiei: fila cu numele, după Proiectare și Mașina, apăsată, cu ×; altă fereastră o ascunde, iar cadrul
     rămâne; nu se ține după reîncărcare; F1 deschide capitolul extensiilor;

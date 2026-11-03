@@ -163,7 +163,7 @@ export function PanouMasina({ ultimulExport, lucrarePrimita, simulare, cerere = 
   readonly cerere?: number;
   /** Deschide fereastra Mașina (clicul pe indicatorul lucrării, din orice fereastră). */
   readonly onDeschide?: () => void;
-  /** Confirmarea cerută de o extensie e deschisă (ADR 0199 §B): aplicația de sub ea e inertă, ca sub un dialog. */
+  /** Confirmarea cerută de o extensie e deschisă (ADR 0160 §B): aplicația de sub ea e inertă, ca sub un dialog. */
   readonly onModal?: (deschisa: boolean) => void;
 }): ReactNode {
   useLimba();
@@ -195,7 +195,7 @@ export function PanouMasina({ ultimulExport, lucrarePrimita, simulare, cerere = 
   const [wifi, setWifi] = useState(false);
   const butonWifi = useRef<HTMLButtonElement | null>(null);
   const [avertismentWifi, setAvertismentWifi] = useState(false);
-  // Extensiile (ADR 0199 §B): cine a încărcat programul de acum, și pornirea sau reluarea care așteaptă omul.
+  // Extensiile (ADR 0160 §B): cine a încărcat programul de acum, și pornirea sau reluarea care așteaptă omul.
   const [deLa, setDeLa] = useState<string | null>(null);
   const [cerereExtensie, setCerereExtensie] = useState<CerereConfirmare | null>(null);
   const numeRef = useRef(nume);
@@ -280,7 +280,7 @@ export function PanouMasina({ ultimulExport, lucrarePrimita, simulare, cerere = 
     setFisierAles(0);
     void incarca(x.octeti, 'export', x.nume, x.sha256);
   }, [cerere]);
-  // Învelișul pentru extensii (ADR 0199 §B, §E): senderul paginii, cu verificările lui „Fișier…” și confirmarea omului la
+  // Învelișul pentru extensii (ADR 0160 §B, §E): senderul paginii, cu verificările lui „Fișier…” și confirmarea omului la
   // pornire și la reluare (`masinaExtensii.ts`). Stă pus cât e montată fereastra; numele și contul se citesc la fiecare cerere.
   useEffect(() => {
     const m = invelisMasina(s, {

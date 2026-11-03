@@ -111,7 +111,7 @@ export const inFlux = (f: Faza): boolean => IN_FLUX.has(f);
 export const cuPunctDeReluare = (f: Faza): boolean => CU_PUNCT.has(f);
 /**
  * De ce nu pornește programul acum (null: pornește): judecata evenimentului `start`, citită și de senderul extensiilor
- * înainte să întrebe omul (ADR 0199 §B).
+ * înainte să întrebe omul (ADR 0160 §B).
  */
 export function refuzStart(s: StareFlux): 'fara-program' | 'faza' | null {
   if (!s.program) return 'fara-program';

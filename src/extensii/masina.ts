@@ -1,5 +1,5 @@
 /**
- * Senderul extensiilor (ADR 0199 §B), partea gazdei: serviciul `masina.*` al lui `HostApi`, cu permisiunea `masina`, oprit pe
+ * Senderul extensiilor (ADR 0160 §B), partea gazdei: serviciul `masina.*` al lui `HostApi`, cu permisiunea `masina`, oprit pe
  * instanța live. Argumentele se judecă aici (numele unui program, datele, plafonul); restul îl face fereastra Mașina, prin
  * învelișul ei (`MasinaPentruExtensii`): verificările lui „Fișier…”, confirmarea omului la pornire și la reluare, pauza,
  * oprirea. Lucrarea trimisă (`masina.trimite`) trece prin dialogul primirii (ADR 0126), spre „Lucrarea primită”.
@@ -17,7 +17,7 @@ export const FARA_MASINA: StareMasinaExtensie = { conectata: false, faza: 'liber
 
 export type ExtensieMasina = { readonly id: string; readonly nume: string; readonly permisiuni: readonly string[] };
 export type ServiciiMasina = {
-  /** Senderul e deschis extensiilor: în afara instanței live (ADR 0199 §B, ca primirea, ADR 0126 §D). */
+  /** Senderul e deschis extensiilor: în afara instanței live (ADR 0160 §B, ca primirea, ADR 0126 §D). */
   readonly activ: boolean;
   /** Învelișul ferestrei Mașina, dacă e montată. */
   readonly masina: () => MasinaPentruExtensii | null;

@@ -1,6 +1,6 @@
 /**
  * Extensiile (ADR 0127 §B, §C): butonul discret de lângă marcă (piesa de puzzle), meniul lui (extensiile instalate,
- * instalarea din fișier și din adresă, gestionarea) și fereastra extensiei deschise (ADR 0199 §A): o filă în meniul global,
+ * instalarea din fișier și din adresă, gestionarea) și fereastra extensiei deschise (ADR 0160 §A): o filă în meniul global,
  * după ale aranjamentului, cu numele ei și ×, și dedesubt cadrul, pe tot ecranul, ca fereastra Mașina. Trecerea la altă
  * fereastră o ascunde, iar cadrul rulează mai departe; × o închide. Modulul vine după prima randare (nu în pachetul de
  * pornire); ferestrele instalării (`Instalare.tsx`) și cadrul (`cadru.ts`) vin la cerere.
@@ -52,7 +52,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   readonly onDeschisa: (x: { readonly id: string; readonly nume: string } | null) => void;
   /** O fereastră a extensiilor (instalarea, gestionarea) e deschisă: aplicația de sub ea e inertă. */
   readonly onModal: (deschisa: boolean) => void;
-  /** Ce dă carcasa senderului extensiilor (ADR 0199 §B). */
+  /** Ce dă carcasa senderului extensiilor (ADR 0160 §B). */
   readonly masina: GazdaMasina;
 }): ReactNode {
   const limba = useLimba();

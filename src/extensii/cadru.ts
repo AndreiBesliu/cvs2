@@ -3,7 +3,7 @@
  * delegat), pagina lui din `shared/cadruExtensie.ts` și portul prin care trec toate mesajele. La încărcarea cadrului, cvs2
  * îi trimite o singură dată fișierele pachetului, contextul (limba, tema) și portul; apoi doar prin port. Serviciile cerute
  * cu `host.cere`: `stocare.*` (ADR 0128, cu permisiunea `stocare`), `descarcari.salveaza` (ADR 0129, cu `descarcari`),
- * `masina.*` (ADR 0199, cu `masina`); restul se refuză. Cu `masina`, cadrul primește și starea mașinii, la fiecare schimbare.
+ * `masina.*` (ADR 0160, cu `masina`); restul se refuză. Cu `masina`, cadrul primește și starea mașinii, la fiecare schimbare.
  */
 import type { ContextHost } from '../../extensii/api.ts';
 import { paginaCadru } from '../../shared/cadruExtensie.ts';
@@ -36,7 +36,7 @@ export function temaDeAcum(): Record<string, string> {
 
 const text = (x: unknown, max: number): string => String(x).slice(0, max);
 
-/** Ce dă carcasa senderului extensiilor (ADR 0199 §B, §E). */
+/** Ce dă carcasa senderului extensiilor (ADR 0160 §B, §E). */
 export type GazdaMasina = {
   /** Senderul e deschis extensiilor (în afara instanței live). */
   readonly activ: boolean;

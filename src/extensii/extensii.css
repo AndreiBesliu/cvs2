@@ -92,7 +92,7 @@
 }
 
 /*
- * Fereastra extensiei (ADR 0199 §A), ca fereastra Mașina (ADR 0132 §4): sub meniu, peste Proiectare, până la bara de jos, cu
+ * Fereastra extensiei (ADR 0160 §A), ca fereastra Mașina (ADR 0132 §4): sub meniu, peste Proiectare, până la bara de jos, cu
  * fundalul paginii. Cadrul o umple; pânza de dedesubt nu se vede nici prin golurile barei de jos.
  */
 .fereastra-extensie {

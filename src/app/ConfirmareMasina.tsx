@@ -1,5 +1,5 @@
 /**
- * Confirmarea omului la o pornire sau o reluare cerută de o extensie (ADR 0199 §B): o fereastră a lui cvs2, peste toată
+ * Confirmarea omului la o pornire sau o reluare cerută de o extensie (ADR 0160 §B): o fereastră a lui cvs2, peste toată
  * pagina, pe care extensia, din cadrul ei izolat, n-o poate atinge. Spune cine cere, ce program (numele, liniile, începutul
  * amprentei), ce se reia și, prin WiFi, ce se întâmplă dacă legătura cade. „Pornește” sau „Reia” se poate apăsa abia după o
  * secundă (un clic pornit spre extensie nu cade pe el), focusul stă pe „Nu”, iar Escape e „Nu”.

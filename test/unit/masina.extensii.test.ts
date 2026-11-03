@@ -1,5 +1,5 @@
 /**
- * Senderul pentru extensii (ADR 0199 §B), partea pură din fereastra Mașina, pe stări de sesiune scrise de mână:
+ * Senderul pentru extensii (ADR 0160 §B), partea pură din fereastra Mașina, pe stări de sesiune scrise de mână:
  * - starea pe care o vede o extensie: legătura, faza, indicatorul (fără culoare și buton), programul cu numele lui; nimic din
  *   poziție, jurnal sau setări;
  * - pornirea: contul, legătura, programul, faza (aceeași judecată ca evenimentul `start` din flux);

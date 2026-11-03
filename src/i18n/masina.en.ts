@@ -216,7 +216,7 @@ export const enMasina = {
   'masina.indicator.gata': 'Job done',
   'masina.titlu.stare': '{stare} · {titlu}',
   'masina.program.in-lucru': 'A job is running: the new program loads from “Last export” after it ends.',
-  // The extensions' sender (ADR 0199 §B): who loaded the program, the start and resume confirmation, the job sent.
+  // The extensions' sender (ADR 0160 §B): who loaded the program, the start and resume confirmation, the job sent.
   'masina.program.de-la': 'from {extensie}',
   'masina.confirmare.porneste.titlu': 'Start the program?',
   'masina.confirmare.reia.titlu': 'Resume the job?',

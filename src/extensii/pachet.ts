@@ -11,7 +11,7 @@ export const MANIFEST = 'extensie.json';
 export const LIMITE_PACHET = { fisiere: 256, octetiFisier: 8 * 1024 * 1024, octetiTotal: 16 * 1024 * 1024 } as const;
 /**
  * Serviciile pe care o extensie le poate cere (ADR 0127 §E): stocarea (ADR 0128), descărcările (ADR 0129), senderul
- * (`masina`, ADR 0199).
+ * (`masina`, ADR 0160).
  */
 export const CATALOG_PERMISIUNI: readonly string[] = ['stocare', 'descarcari', 'masina'];
 

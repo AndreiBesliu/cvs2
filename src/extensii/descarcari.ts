@@ -26,7 +26,7 @@ export function numeDescarcare(x: unknown): string | null {
 
 /**
  * Datele primite, ca `Blob`: textul (UTF-8), octeții (`ArrayBuffer`, `Uint8Array`, copiați) sau un `Blob`; altceva, null. Le
- * citește și senderul extensiilor (`masina.incarca`, ADR 0199 §B).
+ * citește și senderul extensiilor (`masina.incarca`, ADR 0160 §B).
  */
 export function caBlob(x: unknown): Blob | null {
   if (x instanceof Blob) return x;

@@ -1,5 +1,5 @@
 /**
- * Senderul pentru extensii (ADR 0199 §B, §E), partea ferestrei Mașina, fără React: starea pe care o vede o extensie și ce se
+ * Senderul pentru extensii (ADR 0160 §B, §E), partea ferestrei Mașina, fără React: starea pe care o vede o extensie și ce se
  * poate face acum, din aceeași stare a sesiunii ca indicatorul lucrării (ADR 0132 §5), apoi învelișul pe care fereastra
  * (`PanouMasina.tsx`) îl dă gazdei extensiilor: verificările lui „Fișier…”, confirmarea omului la pornire și la reluare,
  * legată de programul și de starea arătate, pauza și oprirea.

@@ -5,7 +5,7 @@ import { adauga } from './ajutor-panza.ts';
 
 /**
  * Extensiile (ADR 0127, felia 3.Xa), în Edge, cu extensia de probă `extensii/salut`, împachetată aici:
- * - instalarea din fișier, cu confirmarea; meniul de lângă marcă; fereastra extensiei (ADR 0199 §A), cu Proiectarea acoperită
+ * - instalarea din fișier, cu confirmarea; meniul de lângă marcă; fereastra extensiei (ADR 0160 §A), cu Proiectarea acoperită
  *   (o comandă a desenului din paletă întoarce la ea); ce primește extensia (limba, tema, fișierul pachetului, stilurile ca
  *   foi construite);
  * - izolarea, încercată din cadru (pagina lui cvs2, stocarea, rețeaua, portul) și din afara lui; serviciul cerut, refuzat;
@@ -82,7 +82,7 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
   await c.locator('[data-salut="izolare"]').click();
   await expect(c.locator('[data-proba]')).toHaveText(['pagina: refuzat', 'localStorage: refuzat', 'indexedDB: refuzat', 'retea: refuzat', 'serial: refuzat']);
   await c.locator('[data-salut="serviciu"]').click();
-  // Senderul există (ADR 0199), dar „Salut” nu i-a cerut permisiunea.
+  // Senderul există (ADR 0160), dar „Salut” nu i-a cerut permisiunea.
   await expect(c.locator('[data-proba="serviciu"]')).toHaveText('masina: masina:permisiune');
   await c.locator('[data-salut="descarca"]').click();
   await expect(c.locator('[data-proba="descarcari"]')).toHaveText('descarcari: descarcari:permisiune');

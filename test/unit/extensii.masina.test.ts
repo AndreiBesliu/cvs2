@@ -1,5 +1,5 @@
 /**
- * Serviciul `masina` al extensiilor (ADR 0199 §B), în gazdă, peste un înveliș al ferestrei Mașina imitat:
+ * Serviciul `masina` al extensiilor (ADR 0160 §B), în gazdă, peste un înveliș al ferestrei Mașina imitat:
  * - permisiunea `masina`, instanța live (oprit), o metodă necunoscută: refuzate, fără să atingă senderul;
  * - starea, și fără fereastra Mașina (nicio sesiune încă);
  * - încărcarea: numele curățat, doar tipurile G-code, datele ca text, octeți sau `Blob` (copiate), plafonul, fereastra Mașina
