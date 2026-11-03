@@ -100,6 +100,8 @@ for (const [nume, caz] of Object.entries(FIX.cazuri)) {
 
 /** Cutia textului tăiat: reuniunea cutiilor literelor. */
 const cutieText = (a: TextAsezat): Cutie => a.glife.map((g) => g.cutie).reduce(uneste);
+/** Cutia contururilor desenate (măsurată din nou, nu din cutiile literelor). */
+const cutieDesenata = (a: TextAsezat): Cutie => a.glife.flatMap((g) => g.cai.map(cutieContur)).reduce(uneste);
 const baza: ParametriText = { continut: 'HHH', inaltime: 20, spatiere: 0, interlinie: 1, aliniere: 'stanga' };
 
 test('limitat de casetă: înălțimea cerută când încape; altfel, micșorată exact cât scalarea la casetă', () => {
@@ -121,7 +123,8 @@ test('scalat la casetă: cutia textului tăiat încape și umple latura care lea
   ];
   for (const [cale, extra, W, H] of cazuri) {
     const r = aseazaText(font(cale), { ...baza, ...extra, caseta: { fel: 'scala', latime: W, inaltime: H } });
-    const c = cutieText(r);
+    // Fără aldin, din contururile desenate; cu aldin, din cutiile literelor (figura exactă, nu biarcele).
+    const c = extra.aldin ? cutieText(r) : cutieDesenata(r);
     const l = c.maxX - c.minX, i = c.maxY - c.minY;
     assert.equal(r.raport['caseta-prea-mica'], 0);
     assert.ok(l <= W + 1e-9 && i <= H + 1e-9, `${cale} ${JSON.stringify(extra)}: ${l} × ${i}`);
@@ -133,6 +136,12 @@ test('cutia unei litere e a ce se taie: a contururilor ei; la aldin, a figurii e
   const f = font(ROBOTO);
   const drepte = aseazaText(f, { ...baza, continut: 'Ușă Bg', cursiv: 12 });
   for (const g of drepte.glife) assert.deepEqual(g.cutie, g.cai.map(cutieContur).reduce(uneste));
+  // Și pe verticală: cutia literei mutate în coloana ei.
+  const verticale = aseazaText(f, { ...baza, continut: 'Ușă\nBg', vertical: true, aliniere: 'centru' });
+  for (const g of verticale.glife) {
+    const d = g.cai.map(cutieContur).reduce(uneste);
+    for (const k of ['minX', 'minY', 'maxX', 'maxY'] as const) assert.ok(Math.abs(g.cutie[k] - d[k]) <= 1e-9, `${g.caracter} ${k}`);
+  }
   const aldine = aseazaText(f, { ...baza, continut: 'Ușă Bg', aldin: 0.6 });
   for (const g of aldine.glife) {
     const d = g.cai.map(cutieContur).reduce(uneste);

@@ -24,7 +24,8 @@ o('C02', ASE, 'y0 = Math.min(y0, c.minY + (e.minY - c.minY) * u);', 'y0 = Math.m
   'marginea de jos luată de la prima măsurare (rândurile nu cresc)')
 o('C03', ASE, 'let jos = Math.max(LIMITE_TEXT.inaltimeMinima, d / LIMITE_TEXT.aldinRaport), sus = sus0;',
   'let jos = LIMITE_TEXT.inaltimeMinima, sus = sus0;', 'cas', 'aldinul nu ridică marginea de jos a căutării')
-o('C04', ASE, 'if (incape(sus)) return sus;', '', 'cas', 'înălțimea cerută care încape, căutată (iese puțin sub ea)')
+# C04 (fără scurtătura „cea cerută încape: ea”) a scăpat: echivalentă în practică, fiindcă înjumătățirea, cu toate mijloacele
+# încăpând, ajunge chiar la înălțimea cerută; scurtătura rămâne (o sută de așezări mai puțin), fără mutație.
 o('C05', ASE, "const sus0 = caseta.fel === 'limita' ? Math.min(caseta.ceruta, LIMITE_TEXT.inaltimeMaxima) : LIMITE_TEXT.inaltimeMaxima;",
   'const sus0 = LIMITE_TEXT.inaltimeMaxima;', 'cas', 'limitat de casetă crește ca scalat')
 o('C06', ASE, 'if (h !== null) return aseaza(font, { ...p, inaltime: h }, false);', 'if (h !== null) return aseaza(font, p, false);', 'cas',
