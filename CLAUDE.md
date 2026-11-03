@@ -529,6 +529,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 03.11.2026: **imprimanta 3D a owner-ului e o Creality K1C, folosită din cvs2 prin WiFi** („Am o imprimanta 3d pe care vreau
+  sa o folosim din cvs2 prin wifi. Las imaginea asta pentru mai tarziu.”), cu o captură din aplicația Creality: imprimanta
+  „K1C-8578”, în timpul unei imprimări. E răspunsul la întrebarea 4 din ADR 0119: firmware-ul Creality, pe Klipper. Ce expune
+  în rețea (Moonraker sau doar protocolul aplicației Creality) se cercetează la pornirea feliei; „mai târziu”, deci nicio felie
+  acum. Captura stă doar local, în `docs/faza0/imprimanta-3d/` (ignorat de git).
 - 02.11.2026: **gruparea, răspunsurile owner-ului** la cele patru întrebări din raportul feliei 6.T↑ (ADR 0130):
   1. „1 e ok.”: grupurile în grupuri rămân permise (un nivel pe grupare, Degrupează desface doar acel nivel);
   2. „2, in principiu vreau flexibilitate si optiuni, dar cu quality of life ridicat. inteleg ca nu totul trebuie implementat

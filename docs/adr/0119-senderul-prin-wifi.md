@@ -10,9 +10,10 @@ din „Da, WiFi”. Răspunsurile owner-ului:
 Tot pe 01.11, la întrebarea 1, owner-ul a ales „Pod ESP3D”: podul ESP3D pe GRBL 1.1h-ul de azi (secțiunea „Podul ESP3D”).
 Pe 02.11, la „Îți pregătesc configurarea ESP3D (fișierul și pașii de compilare)?”, a răspuns „Da, pregătește”: imaginea
 podului și ghidul montajului (aceeași secțiune).
-Întrebarea 4 (imprimantele) rămâne deschisă: ține de feliile imprimantelor. **Completează:** ADR 0020 (T20, sesiunea Web Serial),
-ADR 0079 (emulatorul GRBL), ADR 0080 (fluxul) și ADR 0081 (panoul mașinii, transportul). **Schimbă, în feliile imprimantelor:**
-`BRIEF.md` §12 („Senderul lucrează doar cu familia GRBL”).
+Pe 03.11, la întrebarea 4, owner-ul a răspuns „Am o imprimanta 3d pe care vreau sa o folosim din cvs2 prin wifi”, cu o captură
+din aplicația Creality: imprimanta e o **Creality K1C**, cu firmware-ul Creality pe Klipper (secțiunea E, §14).
+**Completează:** ADR 0020 (T20, sesiunea Web Serial), ADR 0079 (emulatorul GRBL), ADR 0080 (fluxul) și ADR 0081 (panoul
+mașinii, transportul). **Schimbă, în feliile imprimantelor:** `BRIEF.md` §12 („Senderul lucrează doar cu familia GRBL”).
 
 **Problema.** Azi, senderul vorbește cu mașina doar prin cablul USB (Web Serial, ADR 0081), deci calculatorul stă lângă mașină.
 Owner-ul vrea legătura prin WiFi și, mai târziu, aceeași cale pentru imprimante 3D. Mașina lui (COSTEL, 800 × 1200 × 200) are
@@ -102,6 +103,10 @@ GRBL 1.1h, cu care senderul ediției întâi a tăiat o piesă pe 09.08.2026. Un
       cu configurarea lor (originea aplicației, cheia API) scrisă în pașii omului.
 14. **(owner) Ce imprimante:** recomandarea e Marlin pe USB întâi (cele mai multe imprimante), apoi Klipper. Bambu Lab nu se
     poate din browser.
+    - **Răspunsul (03.11):** imprimanta owner-ului, o Creality K1C (Klipper, cu firmware-ul Creality), prin WiFi.
+      Recomandarea devine: prima felie a imprimantelor e a ei, prin rețea; Marlin pe USB, după.
+    - Ce expune în rețea firmware-ul de fabrică (Moonraker sau doar protocolul aplicației Creality) și dacă cere accesul root
+      se cercetează la pornirea feliei, ca la 3.6d.
 
 ### F. Ordinea feliilor
 
@@ -203,7 +208,8 @@ variante au alt WebSocket de date și nu sunt profiluri ale aplicației:
    - c) altul (placa și firmware-ul).
 2. **Programele lungi (§9):** a) pe flux, ca pe USB (recomandat); b) urcate întâi pe cardul controlerului.
 3. **Tableta (§6):** a) într-o felie separată, după desktop (recomandat); b) odată cu 3.6d; c) nu.
-4. **Imprimantele (§14):** ce imprimante și ce firmware? Recomandat: Marlin pe USB întâi, apoi Klipper.
+4. **Imprimantele (§14)** (răspuns: o Creality K1C, prin WiFi, 03.11): ce imprimante și ce firmware? Recomandat: Marlin pe
+   USB întâi, apoi Klipper.
 
 ## Ce am respins
 

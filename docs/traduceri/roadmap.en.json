@@ -609,6 +609,10 @@
       "ro": "Senderul prin WiFi (ADR 0119): transportul WebSocket lângă Web Serial, peste același flux; profilurile controlerelor (FluidNC, grblHAL, podul ESP3D); adresa (un IP privat sau un nume `.local`), cu permisiunea rețelei locale din Chrome și Edge 147; „Conectează” cu USB sau WiFi și avertismentul la cădere; proba pe emulator, în spatele unui WebSocket local",
       "en": "The sender over WiFi (ADR 0119): the WebSocket transport next to Web Serial, over the same stream; the controller profiles (FluidNC, grblHAL, the ESP3D bridge); the address (a private IP or a `.local` name), with the local network permission of Chrome and Edge 147; “Connect” with USB or WiFi and the warning about a drop; the probe on the emulator, behind a local WebSocket"
     },
+    "3e9cd247d407387f": {
+      "ro": "Imprimanta 3D (Creality K1C, prin WiFi; răspunsul din 03.11 la ADR 0119, întrebarea 4): adresa ei în rețea și o imprimare de probă; ce mai cere firmware-ul se află la felie",
+      "en": "The 3D printer (Creality K1C, over WiFi; the 03.11 answer to ADR 0119, question 4): its network address and a test print; whatever else the firmware needs is found out in the slice"
+    },
     "3f19b83fdc63d738": {
       "ro": "Regula `nonzero` la ușă",
       "en": "The `nonzero` rule at the door"
@@ -1252,10 +1256,6 @@
     "8c3c194433fcbf6c": {
       "ro": "Booleanul, adus din etapa 6",
       "en": "The boolean, brought forward from stage 6"
-    },
-    "8c4268df5dfaa05f": {
-      "ro": "Imprimantele 3D: ce imprimante și ce firmware (ADR 0119, întrebarea 4; recomandat: Marlin pe USB întâi)",
-      "en": "3D printers: which printers and which firmware (ADR 0119, question 4; recommended: Marlin over USB first)"
     },
     "8dec85c098b039ce": {
       "ro": "**Pachetul de atelier, adus din etapa 4** (fără mașină; ADR 0131; punctul 6 din `PLAN.md` §5.3, partea a doua; „Da, pornește”). Fișierele de probă T0–T7 ale celor opt controlere, după setul din sonda s8 (Anexa B), scrise de postul aplicației cu contractul fiecăruia: T0 citirea antetului și a comentariilor (cu stilurile alternative, unde nu sunt sigure), T1 arcele (cercurile Ø50 în 2 × 180° și 4 × 90°, colțurile R5, arcul R1200 și arcul mic), T2 avansul, pauza și, pe Syntec, punctul zecimal, T3 elicea, T4 schimbarea sculei (bariera, M6 la controler sau un fișier pe freză), T5 G54 și G55, T6 limita liniei și T7 găurirea în pași (pe GRBL 1.1, setul plăcii 3). Unde contractul e prudent, fișierul probează chiar controlerul (arcul R1200 ca arc, elicea pe RichAuto). Fiecare pachet are fișa lui (versiunea, setările, materialul, prima rulare în aer, ce se măsoară cu valoarea pe hârtie, amprentele SHA-256) și o arhivă ZIP cu aceiași octeți la fiecare generare, în `test/ateliere/`. **Probele:** valorile pe hârtie citite din fișiere cu cititorul dialectelor (cercurile, timpii, pauza, elicea, adâncimile, WCS-ul, liniile lungi), fișa cu amprentele; pachetele comise, octet cu octet; arhivele, și prin cititorul zip al lui Python.",

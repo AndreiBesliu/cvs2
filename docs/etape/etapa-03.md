@@ -70,7 +70,7 @@ implicit n-are dreptul de export, eșecul apare în fila Erori și în Diagnoză
 | Bifează „Sugestii: scrie” pe rolurile adminilor care scriu sugestii (și „Sugestii: citește toate”, dacă vrei să vadă și sugestiile celorlalți), în fila Personal din `/admin` | 14.B↑: fila Sugestii | după publicarea pe test |
 | Operatorul datelor și adresa de contact pentru nota de confidențialitate a contului (ADR 0116 §18; fără implicit); până atunci, locurile lor rămân marcate în panoul contului | proba închisă: aplicația arătată cuiva din afara echipei | înainte de proba închisă |
 | Podul ESP3D pe mașină, după [ghidul montajului](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/pod-esp3d.md) (ADR 0119): imaginea gata compilată, din artefactul workflow-ului `pod-esp3d`, scrisă din browser pe un ESP32 (WROOM-32); rețeaua atelierului, pusă din pagina podului; firele la D0 / D1 ale Arduino-ului, cu divizorul de tensiune (5 V față de 3,3 V); adresa podului, aflată din router | 3.6e (senderul prin WiFi pe mașină) | înainte de 3.6e |
-| Imprimantele 3D: ce imprimante și ce firmware (ADR 0119, întrebarea 4; recomandat: Marlin pe USB întâi) | feliile imprimantelor | când vin imprimantele |
+| Imprimanta 3D (Creality K1C, prin WiFi; răspunsul din 03.11 la ADR 0119, întrebarea 4): adresa ei în rețea și o imprimare de probă; ce mai cere firmware-ul se află la felie | feliile imprimantelor | când vin imprimantele |
 | Unitatea implicită a unui WMF fără antet placeable (ADR 0117, întrebarea 1: implicit 1/96 țol, ca LibreOffice; sau mm, ca la un DXF fără unități) și un WMF real din programele tale (CorelDRAW, ArtCAM, AutoCAD), de încercat pe instanța de test | 26.A↑: importul WMF | când vrei; până atunci, 1/96 țol |
 
 ## Inventarul proiectului live (19.10, doar citiri)
