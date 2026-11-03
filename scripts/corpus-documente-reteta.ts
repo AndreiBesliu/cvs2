@@ -4,7 +4,7 @@
  * folosește doar ce are orice versiune: `documentNou`, `operatieImplicita` (din v3), ușa `incarca` și `jsonCanonic`.
  *
  * Proiectul trăiește prin versiuni, ca al unui om: versiunea N deschide salvarea versiunii N − 1 cu ușa ei (deci cu
- * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v18 strategia paralelă), apoi
+ * migrarea ei), adaugă ce a adus versiunea N (v2 grupul și a doua instanță, v3 operațiile … v19 ordinea de mână), apoi
  * salvează, după ce ușa ei a primit documentul neschimbat. v1 îl desenează de la zero. `gol` e documentul nou al lui v1.
  *
  *   node scripts/corpus-documente-reteta.ts <salvarea N − 1 | -> <ieșirea> proiect|gol [<deschis>]
@@ -12,7 +12,7 @@
  * Cu `<deschis>`, rețeta scrie și documentul deschis de ușa versiunii N din salvarea N − 1, înaintea adăugirii: ce a făcut
  * atunci migrarea N − 1 → N. Proba corpusului îl compară cu migrarea de azi.
  *
- * O versiune nouă (v19) își scrie aici adăugirea, la `ADAUGIRI[19]`, cu câmpul ei.
+ * O versiune nouă (v20) își scrie aici adăugirea, la `ADAUGIRI[20]`, cu câmpul ei.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import * as D from '../src/model/document.ts';
@@ -149,6 +149,12 @@ const ADAUGIRI: Readonly<Record<number, (d: Obj) => void>> = {
   17: (d) => { op(d, 'buzunar')['rest'] = [{ scula: { numar: 6, nume: 'freza plata', diametru: 2 }, pasLateral: 0.8 }]; d['rev'] += 1; },
   // v18 (ADR 0094): buzunarul în linii paralele, la 45°.
   18: (d) => { op(d, 'buzunar')['strategie'] = { fel: 'paralel', unghi: 45 }; d['rev'] += 1; },
+  // v19 (ADR 0133): ordinea de mână: fiecare operație primește rangul ei, în ordinea inversă a pieselor din listă.
+  19: (d) => {
+    const ops: Obj[] = d['piese'].flatMap((p: Obj) => p['operatii'] as Obj[]);
+    ops.reverse().forEach((o, k) => { o['rang'] = k; });
+    d['rev'] += 1;
+  },
 };
 
 let doc: Obj;

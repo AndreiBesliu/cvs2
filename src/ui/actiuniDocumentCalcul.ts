@@ -9,9 +9,11 @@ import { adancimeDeschise } from '../io/adancime.ts';
 import { cutieElement } from '../model/forme.ts';
 import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { executa, type Comanda, type Degrupata, type Istoric } from '../model/jurnal.ts';
+import { cuRangulPiesei } from '../model/ordine.ts';
 import { operatiiPentruRol, type Rol } from '../model/rol.ts';
 import { operatiiPentruRolPersonal, rolNumerotat, type RolPersonal } from '../model/rolPersonal.ts';
 import { partiDegrupare } from '../model/degrupare.ts';
+import { grupDin, type ParteGrupata } from '../model/grupare.ts';
 import { blocText } from '../model/blocText.ts';
 import { transforma } from '../model/transformare.ts';
 import { elementeFoaie, elementeInstanta } from '../model/lume.ts';
@@ -480,6 +482,22 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       ctx.selecteaza(r.ids);
     },
   },
+  // Gruparea (ADR 0130): instanțele alese devin o piesă, cu un grup pe rădăcină, într-un pas; aleasă rămâne instanța grupului.
+  'document.grupeaza': {
+    activa: (ctx) => {
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaGrupare(ctx.istoric().doc, ctx.selectie());
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      const h = ctx.istoric();
+      const r = comandaGrupare(h.doc, ctx.selectie());
+      if (!r.ok) return;
+      ctx.scrie(executa(h, r.comanda));
+      ctx.selecteaza([r.id]);
+    },
+  },
   // Uneltele de desen (ADR 0051): forma trasă, ca piesă nouă cu instanța ei, aleasă după desen.
   'document.deseneaza': {
     activa: (ctx) => {
@@ -658,6 +676,48 @@ function judecaDegruparea(doc: Document, selectie: readonly string[]): ComandaDe
 }
 
 /**
+ * Comanda grupării (ADR 0130): pe foaia de lucru, instanțele alese, în ordinea foii, devin o instanță cu o piesă nouă
+ * (`grupDin`), în locul primei. E comanda `regrupeaza` a degrupării, cu locurile părților în cele două liste, ca anularea
+ * să le pună exact unde erau. Refuzată, cu motiv: mai puțin de două forme alese, o piesă folosită și de alte instanțe (sau
+ * aleasă de două ori), V-carve-uri cu aceleași valori în părți diferite, documentul de după peste schemele documentului
+ * (plafoanele, nivelurile arborelui). Ținută pe (document, selecție), ca degruparea.
+ */
+type ComandaGrupare = { readonly ok: true; readonly comanda: Comanda; readonly id: string } | { readonly ok: false; readonly motiv: CheieSimpla };
+let ultimaGrupare: { readonly doc: Document; readonly selectie: readonly string[]; readonly rez: ComandaGrupare } | null = null;
+export function comandaGrupare(doc: Document, selectie: readonly string[]): ComandaGrupare {
+  if (ultimaGrupare && ultimaGrupare.doc === doc && ultimaGrupare.selectie === selectie) return ultimaGrupare.rez;
+  const rez = judecaGruparea(doc, selectie);
+  ultimaGrupare = { doc, selectie, rez };
+  return rez;
+}
+
+function judecaGruparea(doc: Document, selectie: readonly string[]): ComandaGrupare {
+  const foaie = foaieCurenta(doc);
+  const alese = new Set(selectie);
+  const piese = new Map(doc.piese.map((p, k) => [p.id, { p, k }]));
+  const parti: ParteGrupata[] = [];
+  const locuri = { instante: [] as number[], piese: [] as number[] };
+  for (const [k, i] of foaie.instante.entries()) {
+    const x = alese.has(i.id) ? piese.get(i.piesa) : undefined;
+    if (!x) continue;
+    parti.push({ instanta: i, piesa: x.p });
+    locuri.instante.push(k);
+    locuri.piese.push(x.k);
+  }
+  if (parti.length < 2) return { ok: false, motiv: 'motiv.grupare-doua' };
+  const folosiri = new Map<string, number>();
+  for (const f of doc.foi) for (const i of f.instante) folosiri.set(i.piesa, (folosiri.get(i.piesa) ?? 0) + 1);
+  if (parti.some((x) => (folosiri.get(x.piesa.id) ?? 0) > 1)) return { ok: false, motiv: 'motiv.grupare-impartita' };
+  const id = idNou(doc);
+  const g = grupDin(parti, id);
+  if (g === 'vcarve') return { ok: false, motiv: 'motiv.grupare-vcarve' };
+  if (g === 'doua') return { ok: false, motiv: 'motiv.grupare-doua' };
+  const comanda: Comanda = { tip: 'regrupeaza', foaie: foaie.id, degrupate: [{ ...g, parti, locuri }] };
+  const dupa = executa(istoricDin(doc), comanda).doc;
+  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, id } : { ok: false, motiv: 'motiv.plafon' };
+}
+
+/**
  * Pură: de ce formele noi nu s-ar putea adăuga acum (același verdict ca acțiunea `document.deseneaza`: doar citire, nimic,
  * plafonul documentului, schema), sau null. Panoul offsetului (ADR 0064) îl arată înainte de Aplică; booleanul (ADR 0067),
  * cu instanțele pe care le înlocuiește.
@@ -744,8 +804,10 @@ function comandaRol(h: Istoric, alese: readonly string[], rol: Rol | RolPersonal
   const personal = typeof rol === 'string' ? null : rolNumerotat(h.doc, rol, new Set(lista.map((p) => p.id)));
   const comenzi: Comanda[] = [];
   for (const vechi of lista) {
-    const operatii = personal ? operatiiPentruRolPersonal(vechi, personal) : operatiiPentruRol(h.doc, vechi, rol as Rol);
-    if (!operatii) return { ok: false, motiv: 'motiv.rol-nepotrivit' };
+    const ale = personal ? operatiiPentruRolPersonal(vechi, personal) : operatiiPentruRol(h.doc, vechi, rol as Rol);
+    if (!ale) return { ok: false, motiv: 'motiv.rol-nepotrivit' };
+    // Piesa își păstrează locul în ordinea de mână (ADR 0133 §4).
+    const operatii = cuRangulPiesei(vechi.operatii, ale);
     if (jsonCanonic(operatii) === jsonCanonic(vechi.operatii)) continue;
     comenzi.push({ tip: 'inlocuieste-piesa', vechi, nou: { ...vechi, operatii } });
   }

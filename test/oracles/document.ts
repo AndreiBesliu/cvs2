@@ -168,7 +168,8 @@
  * Partea v11–v18 (ADR 0069, 0076, 0087, 0090–0094: buzunarul, coborârea, găurirea, V-carve-ul, fundul plat, vârful și
  * direcția, frezele de rest, strategia paralelă) e rescrisă de o sesiune independentă în felia 5.1↑c, doar din textul
  * ADR-urilor: secțiunea „Documentul v11–v18” de la finalul fișierului, cu contractul și alegerile ei în antet. Ea stă
- * peste partea de aici, care rămâne contractul v1–v10 (`verificaV10`, `verificaPanaLaV10O`, `ridicaV10O`).
+ * peste partea de aici, care rămâne contractul v1–v10 (`verificaV10`, `verificaPanaLaV10O`, `ridicaV10O`). Din felia 5.9↑,
+ * aceeași secțiune ține și v19 (ADR 0133: rangul operației).
  */
 
 export type MatriceO = {
@@ -314,7 +315,7 @@ export const COLTURI_IMPLICITE_O = null;
 /** ADR 0032 §1: tipurile degajărilor, exact. */
 export const TIPURI_COLTURI_O: readonly TipColturiO[] = ['dog-bone', 't-bone'];
 /** Versiunea curentă a contractului documentului, după oracol. */
-export const SCHEMA_CURENTA_O = 18;
+export const SCHEMA_CURENTA_O = 19;
 
 export const PLAFOANE_O = {
   latura: 10_000,
@@ -1967,14 +1968,14 @@ export function diferenta(a: unknown, b: unknown, cale = '$'): string | undefine
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// Documentul v11–v18 (felia 5.1↑c).
+// Documentul v11–v19 (felia 5.1↑c; v19 din felia 5.9↑).
 
 /**
  * Partea v11–v18 a oracolului (felia 5.1↑c, sesiune independentă: scrisă doar din textul ADR-urilor, fără să citesc ușa
  * aplicației sau partea v11–v18 de dinainte, pe care o înlocuiește). Stă peste contractul v10 de mai sus (`verificaV10`,
- * `verificaPanaLaV10O`, `ridicaV10O`); fiecare versiune nouă adaugă câmpuri pe operație, iar ușa curentă e v18
- * (`verificaO`, `ridicaO`). Cazurile ei pe hârtie sunt la finalul lui `document.cazuri.ts`; proba, cu ușa aplicației, în
- * `test/unit/document.v18.oracol.test.ts`.
+ * `verificaPanaLaV10O`, `ridicaV10O`); fiecare versiune nouă adaugă câmpuri pe operație, iar ușa curentă e v19
+ * (`verificaO`, `ridicaO`; v19 adăugată în felia 5.9↑, tot din textul ADR-ului). Cazurile ei pe hârtie sunt la finalul lui
+ * `document.cazuri.ts`; proba, cu ușa aplicației, în `test/unit/document.v19.oracol.test.ts`.
  *
  * Ce spun ADR-urile (le urmez literal; alegerile mele, unde textul tace, sunt marcate „ALEGERE”, iar ce se poate citi în
  * două feluri, „AMBIGUU”):
@@ -2006,20 +2007,23 @@ export function diferenta(a: unknown, b: unknown, cale = '$'): string | undefine
  *   e a lucrării); fiecare scula a lor e judecată ca a operației, cu forma ei.
  * - v18 (ADR 0094 §1): `strategie` opțional, `{ fel: 'paralel', unghi }`, unghiul finit în [0, 180). ALEGERE: obiect
  *   deschis, pe orice fel (refuzurile lui, pe alt fel sau cu o coborâre, sunt ale lucrării).
- * - Migrările v10 → … → v18 schimbă doar numărul. Un document marcat vN cu un câmp al lui vN+1 e refuzat („nu e un
+ * - v19 (ADR 0133 §1): `rang` opțional, un întreg în [0, 100 000] (plafonul operațiilor). ALEGERE: pe orice fel; întreg
+ *   după `Number.isInteger`, ca `retragereCompleta`; rangurile egale sunt valide (ordinea dintre ele e a lucrării).
+ * - Migrările v10 → … → v19 schimbă doar numărul. Un document marcat vN cu un câmp al lui vN+1 e refuzat („nu e un
  *   document vN valid”), cu câmpul PROPRIU: v10 cu `pasLateral` pe o operație (un buzunar e refuzat deja de schema v10);
  *   v11 cu `coborare`; v12 cu `retragereCompleta` (găurirea e refuzată de schema v12); v13 cu `forma` pe scula operației
  *   (V-carve-ul, de schema v13); v14 cu `fundPlat`; v15 cu `directie`, sau cu `varf` în forma frezei operației ori a
- *   fundului ei plat; v16 cu `rest` pe operație sau pe fundul ei plat; v17 cu `strategie`. Verificarea apără tot lanțul
+ *   fundului ei plat; v16 cu `rest` pe operație sau pe fundul ei plat; v17 cu `strategie`; v18 cu `rang`. Verificarea apără tot lanțul
  *   (ADR 0070, „Respinse”): un v4 cu `pasLateral` trece de v4 … v10 (câmp necunoscut) și se ciocnește la v10 → v11.
  *   ALEGERE: ciocnirea e doar unde o pune textul (pe operație, pe scula sau forma ei, pe fundul plat); același nume în
  *   altă parte (pe sculă, în afara formei, pe nod, pe piesă, sus) rămâne un câmp necunoscut oarecare.
- * - Ușa (ADR 0024, precizările 9–10; ADR 0070 §2): un v18 valid trece neschimbat (o copie, cu cheile `__proto__`);
- *   un document vechi urcă la v18; unul mai nou, fără versiune întreagă sau care nu e obiect se refuză. Ușa curentă (fără
- *   migrări) întoarce `null` pentru o versiune întreagă 1 … 17 (cere migrările), altfel exact verdictul ușii întregi.
+ * - Ușa (ADR 0024, precizările 9–10; ADR 0070 §2): un v19 valid trece neschimbat (o copie, cu cheile `__proto__`);
+ *   un document vechi urcă la v19; unul mai nou, fără versiune întreagă sau care nu e obiect se refuză. Ușa curentă (fără
+ *   migrări) întoarce `null` pentru o versiune întreagă 1 … 18 (cere migrările), altfel exact verdictul ușii întregi.
  * - Imbricarea: tot JSON-ul, cu obiectele noi, are cel mult 200 de niveluri (ADR 0024, precizarea 5).
  *
- * Categoriile noi: `[pas-lateral]`, `[coborare]`, `[retragere]`, `[fund-plat]`, `[directie]`, `[rest]`, `[strategie]`.
+ * Categoriile noi: `[pas-lateral]`, `[coborare]`, `[retragere]`, `[fund-plat]`, `[directie]`, `[rest]`, `[strategie]`,
+ * `[rang]`.
  * Felul operației rămâne `[operatie]`, forma frezei operației `[scula]`, ciocnirile `[ciocnire]`, imbricarea `[adancime]`,
  * iar versiunea `[schema]`.
  */
@@ -2058,6 +2062,9 @@ export const PLAFOANE_V18_O = {
   unghiStrategie: 180,
 } as const;
 
+/** ADR 0133 §1: rangul operației, un întreg în [0, 100 000] (plafonul operațiilor). */
+export const RANG_MAXIM_O = 100_000;
+
 /** Felurile operației, pe versiune (ADR 0069 §1, ADR 0087 §6, ADR 0090 §5). */
 export function felurileO(versiune: number): readonly string[] {
   if (versiune >= 14) return ['profil', 'buzunar', 'gaurire', 'vcarve'];
@@ -2089,6 +2096,7 @@ export const CAMPURI_NOI_O: Readonly<Record<number, readonly string[]>> = {
   16: ['directie', 'scula.forma.varf', 'fundPlat.scula.forma.varf'],
   17: ['rest', 'fundPlat.rest'],
   18: ['strategie'],
+  19: ['rang'],
 };
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -2126,6 +2134,7 @@ export type OperatieV15O = OperatieV14O & { fundPlat?: FundPlatO };
 export type OperatieV16O = OperatieV15O & { directie?: (typeof DIRECTII_O)[number] };
 export type OperatieV17O = OperatieV16O & { rest?: FrezaRestO[] };
 export type OperatieV18O = OperatieV17O & { strategie?: StrategieO };
+export type OperatieV19O = OperatieV18O & { rang?: number };
 
 export type PiesaV11O = PiesaO & { operatii: OperatieV11O[] };
 export type PiesaV12O = PiesaO & { operatii: OperatieV12O[] };
@@ -2135,6 +2144,7 @@ export type PiesaV15O = PiesaO & { operatii: OperatieV15O[] };
 export type PiesaV16O = PiesaO & { operatii: OperatieV16O[] };
 export type PiesaV17O = PiesaO & { operatii: OperatieV17O[] };
 export type PiesaV18O = PiesaO & { operatii: OperatieV18O[] };
+export type PiesaV19O = PiesaO & { operatii: OperatieV19O[] };
 
 export type DocV11O = Liber & { schema: 11; rev: number; piese: PiesaV11O[]; foi: FoaieO[] };
 export type DocV12O = Liber & { schema: 12; rev: number; piese: PiesaV12O[]; foi: FoaieO[] };
@@ -2144,9 +2154,10 @@ export type DocV15O = Liber & { schema: 15; rev: number; piese: PiesaV15O[]; foi
 export type DocV16O = Liber & { schema: 16; rev: number; piese: PiesaV16O[]; foi: FoaieO[] };
 export type DocV17O = Liber & { schema: 17; rev: number; piese: PiesaV17O[]; foi: FoaieO[] };
 export type DocV18O = Liber & { schema: 18; rev: number; piese: PiesaV18O[]; foi: FoaieO[] };
+export type DocV19O = Liber & { schema: 19; rev: number; piese: PiesaV19O[]; foi: FoaieO[] };
 
-/** Un document v11 … v18, după numărul lui. */
-export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O;
+/** Un document v11 … v19, după numărul lui. */
+export type DocNouO = DocV11O | DocV12O | DocV13O | DocV14O | DocV15O | DocV16O | DocV17O | DocV18O | DocV19O;
 
 // ---------------------------------------------------------------------------------------------------------------
 // Ajutoarele.
@@ -2300,6 +2311,9 @@ export function problemeOperatieO(op: Liber, versiune: number, unde: string): st
   }
   if (versiune >= 17 && are(op, 'rest')) cu('rest', 'rest', problemeRestO(op['rest'], versiune));
   if (versiune >= 18 && are(op, 'strategie')) cu('strategie', 'strategie', problemeStrategieO(op['strategie']));
+  if (versiune >= 19 && are(op, 'rang') && !intreg(op['rang'], 0, RANG_MAXIM_O)) {
+    cu('rang', 'rang', [` = ${arata(op['rang'])} nu e un întreg 0–${RANG_MAXIM_O}`]);
+  }
   return rez;
 }
 
@@ -2329,7 +2343,7 @@ function laV10(doc: Liber, versiune: number): Liber {
 }
 
 /**
- * Încălcările contractului vN (11 ≤ N ≤ 18) pe un document marcat N; goală = valid. Restul contractului (arborele,
+ * Încălcările contractului vN (11 ≤ N ≤ 19) pe un document marcat N; goală = valid. Restul contractului (arborele,
  * foile, operația v10) îl judecă partea v1–v10, pe documentul adus la v10 (`laV10`).
  */
 export function verificaVnO(doc: unknown, versiune: number): string[] {
@@ -2343,7 +2357,7 @@ export function verificaVnO(doc: unknown, versiune: number): string[] {
 }
 
 /**
- * Ciocnirile migrării vN → vN+1 (10 ≤ N ≤ 17) pe un document vN VALID: câmpurile pe care vN+1 le aduce și pe care un
+ * Ciocnirile migrării vN → vN+1 (10 ≤ N ≤ 18) pe un document vN VALID: câmpurile pe care vN+1 le aduce și pe care un
  * document vN nu le poate avea fără să fie tăiat altfel („nu e un document vN valid”).
  */
 export function ciocniriO(doc: Liber, de: number): string[] {
@@ -2369,7 +2383,7 @@ export function ciocniriO(doc: Liber, de: number): string[] {
 }
 
 /**
- * Ușa versiunii `pana` (11 ≤ pana ≤ 18): un document v1 … v`pana` valid, care urcă fără ciocniri, e primit (goală);
+ * Ușa versiunii `pana` (11 ≤ pana ≤ 19): un document v1 … v`pana` valid, care urcă fără ciocniri, e primit (goală);
  * altfel, motivele. Un document mai nou e `[schema]` („scris de o versiune mai nouă”).
  */
 export function verificaPanaLaO(doc: unknown, pana: number): string[] {
@@ -2401,18 +2415,18 @@ export function ridicaPanaLaO(doc: unknown, la: number): Liber {
   return { ...structuredClone(baza), schema: la };
 }
 
-/** Ușa curentă (v18): motivele; goală = primit. */
+/** Ușa curentă (v19): motivele; goală = primit. */
 export function verificaO(doc: unknown): string[] {
   return verificaPanaLaO(doc, SCHEMA_CURENTA_O);
 }
 
-/** Un document primit de ușa curentă, cum iese din ea: v18 (o copie; un v18 valid rămâne neschimbat). */
-export function ridicaO(doc: unknown): DocV18O {
-  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV18O;
+/** Un document primit de ușa curentă, cum iese din ea: v19 (o copie; un v19 valid rămâne neschimbat). */
+export function ridicaO(doc: unknown): DocV19O {
+  return ridicaPanaLaO(doc, SCHEMA_CURENTA_O) as DocV19O;
 }
 
 /**
- * ADR 0070 §2: ușa documentului curent, fără migrări. `'migrari'` = un document mai vechi (o versiune întreagă 1 … 17),
+ * ADR 0070 §2: ușa documentului curent, fără migrări. `'migrari'` = un document mai vechi (o versiune întreagă 1 … 18),
  * pentru care pornirea aduce migrările (`incarcaCurent` întoarce `null`); `'usa'` = același verdict ca ușa întreagă.
  */
 export function usaCurentaO(doc: unknown): 'migrari' | 'usa' {
@@ -2430,6 +2444,7 @@ export function verificaV15(doc: unknown): string[] { return verificaVnO(doc, 15
 export function verificaV16(doc: unknown): string[] { return verificaVnO(doc, 16); }
 export function verificaV17(doc: unknown): string[] { return verificaVnO(doc, 17); }
 export function verificaV18(doc: unknown): string[] { return verificaVnO(doc, 18); }
+export function verificaV19(doc: unknown): string[] { return verificaVnO(doc, 19); }
 export function verificaPanaLaV11O(doc: unknown): string[] { return verificaPanaLaO(doc, 11); }
 export function verificaPanaLaV12O(doc: unknown): string[] { return verificaPanaLaO(doc, 12); }
 export function verificaPanaLaV13O(doc: unknown): string[] { return verificaPanaLaO(doc, 13); }
@@ -2437,6 +2452,7 @@ export function verificaPanaLaV14O(doc: unknown): string[] { return verificaPana
 export function verificaPanaLaV15O(doc: unknown): string[] { return verificaPanaLaO(doc, 15); }
 export function verificaPanaLaV16O(doc: unknown): string[] { return verificaPanaLaO(doc, 16); }
 export function verificaPanaLaV17O(doc: unknown): string[] { return verificaPanaLaO(doc, 17); }
+export function verificaPanaLaV18O(doc: unknown): string[] { return verificaPanaLaO(doc, 18); }
 export function ridicaV11O(doc: unknown): DocV11O { return ridicaPanaLaO(doc, 11) as DocV11O; }
 export function ridicaV12O(doc: unknown): DocV12O { return ridicaPanaLaO(doc, 12) as DocV12O; }
 export function ridicaV13O(doc: unknown): DocV13O { return ridicaPanaLaO(doc, 13) as DocV13O; }
@@ -2444,6 +2460,7 @@ export function ridicaV14O(doc: unknown): DocV14O { return ridicaPanaLaO(doc, 14
 export function ridicaV15O(doc: unknown): DocV15O { return ridicaPanaLaO(doc, 15) as DocV15O; }
 export function ridicaV16O(doc: unknown): DocV16O { return ridicaPanaLaO(doc, 16) as DocV16O; }
 export function ridicaV17O(doc: unknown): DocV17O { return ridicaPanaLaO(doc, 17) as DocV17O; }
+export function ridicaV18O(doc: unknown): DocV18O { return ridicaPanaLaO(doc, 18) as DocV18O; }
 export function migreazaV1V11O(v1: DocV1O): DocV11O { return ridicaPanaLaO(v1, 11) as DocV11O; }
 export function migreazaV4V11O(v4: DocV4O): DocV11O { return ridicaPanaLaO(v4, 11) as DocV11O; }
 export function migreazaV5V11O(v5: DocV5O): DocV11O { return ridicaPanaLaO(v5, 11) as DocV11O; }
@@ -2536,3 +2553,5 @@ export function migreazaV14V18O(v14: DocV14O): DocV18O { return ridicaPanaLaO(v1
 export function migreazaV15V18O(v15: DocV15O): DocV18O { return ridicaPanaLaO(v15, 18) as DocV18O; }
 export function migreazaV16V18O(v16: DocV16O): DocV18O { return ridicaPanaLaO(v16, 18) as DocV18O; }
 export function migreazaV17V18O(v17: DocV17O): DocV18O { return ridicaPanaLaO(v17, 18) as DocV18O; }
+export function migreazaV1V19O(v1: DocV1O): DocV19O { return ridicaPanaLaO(v1, 19) as DocV19O; }
+export function migreazaV18V19O(v18: DocV18O): DocV19O { return ridicaPanaLaO(v18, 19) as DocV19O; }

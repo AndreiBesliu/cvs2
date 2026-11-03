@@ -14,7 +14,7 @@
  * mai veche. Un câmp nou CU SENS (fața de jos, montajele, sculele) intră doar cu o schemă nouă și o migrare: o versiune
  * veche n-are voie să taie fără să înțeleagă un câmp.
  */
-export const VERSIUNE_SCHEMA = 18;
+export const VERSIUNE_SCHEMA = 19;
 
 /** Plafoanele stau pe artefact (T23): un document care le trece e refuzat la ușă, nu tăiat. */
 export const PLAFON = {
@@ -161,6 +161,11 @@ export type Operatie = {
    * trecerea de profil pe margine. Lipsă = inelele paralele cu conturul (ca în v17).
    */
   strategie?: StrategieBuzunar;
+  /**
+   * Locul operației în ordinea de mână a foii (ADR 0133, documentul v19), un întreg în [0, `PLAFON.operatii`]. Lipsă pe toate
+   * operațiile pieselor foii = ordinea automată (ca în v18); o operație fără rang, într-o foaie cu ranguri, vine la capăt.
+   */
+  rang?: number;
   [cheie: string]: unknown;
 };
 export type StrategieBuzunar = { fel: 'paralel'; unghi: number; [cheie: string]: unknown };
@@ -215,7 +220,7 @@ export type Instanta = {
  */
 export type Ghidaj = { id: string; axa: 'x' | 'y'; poz: number; [cheie: string]: unknown };
 export type Foaie = { id: string; nume?: string; stoc: Stoc; instante: Instanta[]; ghidaje?: Ghidaj[]; [cheie: string]: unknown };
-export type Document = { schema: 18; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
+export type Document = { schema: 19; rev: number; piese: Piesa[]; foi: Foaie[]; [cheie: string]: unknown };
 
 /** Nodurile unei piese, în preordine, cu adâncimea lor (rădăcina are 1). Iterativ: arborele poate fi adânc. */
 export function noduriPiesa(radacina: Nod): Array<{ readonly nod: Nod; readonly adancime: number }> {

@@ -434,25 +434,35 @@ test('o scalare peste plafoanele documentului se refuză cu motivul ei, nu în t
   expect(erori).toEqual([]);
 });
 
-test('bara de sus (ADR 0052): uneltele încap între marcă și căutare la 1280, 1366 și 1440 px, și cu câmpul grilei deschis', async ({ page }) => {
+test('meniul global și bara de sus (ADR 0052, 0132): la 1280, 1366 și 1440 px, meniul pe un rând și bara întreagă, și cu grila', async ({ page }) => {
   // Trecerile cu literele antetului lățite (2 și 5 px): pe Linux (CI), fontul mai lat a dus marca peste bară (24.10) și bara
-  // peste unelte (30.10), iar local nu; cu 5 px, proba cade și local pe grila de dinainte (coloanele laterale egale).
+  // peste unelte (30.10), iar local nu. Din ADR 0132, marca și grupul aplicației stau în meniul global, iar bara de desen are
+  // tot rândul ei: meniul nu trebuie să treacă pe două rânduri (ar mânca din pânză), iar bara nu iese din fereastră.
   for (const [latime, lat] of [[1280, 0], [1366, 0], [1440, 0], [1280, 2], [1280, 5]] as const) {
     await page.setViewportSize({ width: latime, height: 760 });
     await page.goto('/');
     await expect(page.getByTestId('bara-editare')).toBeVisible();
     // Prin CSSOM (CSP-ul aplicației refuză un <style> injectat, dar nu stilul pus din script).
-    if (lat) await page.evaluate((lat) => { for (const e of document.querySelectorAll<HTMLElement>('.sus h1, .sus .instanta, .sus .cu-eticheta')) e.style.letterSpacing = `${lat}px`; }, lat);
+    if (lat) await page.evaluate((lat) => { for (const e of document.querySelectorAll<HTMLElement>('.meniu-global h1, .meniu-global .instanta, .cu-eticheta')) e.style.letterSpacing = `${lat}px`; }, lat);
     for (const grila of [false, true]) {
       if (grila) await page.locator('[data-editare="grila"]').click();
-      const [marca, bara, unelte] = await Promise.all(['.sus > .marca', '.sus > .bara', '.sus > .unelte'].map(async (s) => {
+      const [marca, file, aplicatia, bara, meniu] = await Promise.all([
+        '.meniu-global > .marca', '.meniu-global .ferestre', '.meniu-global > [data-grup="vedere"]', '.sus > .bara', '.meniu-global',
+      ].map(async (s) => {
         const b = await page.locator(s).boundingBox();
         if (!b) throw new Error(`${s} n-are cutie`);
         return b;
       }));
       const unde = `${latime} px${grila ? ', cu grila' : ''}${lat ? `, litere lățite cu ${lat} px` : ''}`;
-      expect(marca!.x + marca!.width, unde).toBeLessThanOrEqual(bara!.x);
-      expect(bara!.x + bara!.width, unde).toBeLessThanOrEqual(unelte!.x);
+      // Un rând: marca, filele și grupul aplicației unul după altul, la aceeași înălțime, fără să se atingă.
+      expect(marca!.x + marca!.width, unde).toBeLessThanOrEqual(file!.x);
+      expect(file!.x + file!.width, unde).toBeLessThanOrEqual(aplicatia!.x);
+      expect(Math.abs(aplicatia!.y - marca!.y), unde).toBeLessThan(marca!.height);
+      expect(meniu!.height, unde).toBeLessThan(56);
+      // Bara de desen, sub meniu și întreagă în fereastră.
+      expect(meniu!.y + meniu!.height, unde).toBeLessThanOrEqual(bara!.y);
+      expect(bara!.x, unde).toBeGreaterThanOrEqual(0);
+      expect(bara!.x + bara!.width, unde).toBeLessThanOrEqual(latime);
       // „Exportă” se vede întreg: punctul din mijlocul lui e chiar butonul, nu altceva peste el.
       const e = await page.locator('[data-actiune="export.gcode"]').boundingBox();
       const sus = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('[data-actiune]')?.getAttribute('data-actiune'), { x: e!.x + e!.width - 4, y: e!.y + e!.height / 2 });

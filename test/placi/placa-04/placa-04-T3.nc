@@ -1,0 +1,17 @@
+(CNC Vector Studio)
+(post GRBL 1.1)
+(origine stanga-jos, Z0 sus, foaia 200.000 x 120.000 x 18.000 mm)
+(scula T3 freza V90 D6.000)
+G90 G17 G21 G94
+G40 G49 G80
+G54
+G0 Z5.000
+M3 S18000
+G4 P3.000
+(santul V90 la Z-2)
+G0 X20.000 Y60.000
+G1 Z-2.000 F300.0
+G1 X80.000 F1000.0
+G0 Z5.000
+M5
+M30

@@ -122,6 +122,39 @@ test('selecția multiplă se mută trăgând de una dintre forme; alinierea și 
   await expect(page.locator('[data-aliniaza="distribuie-x"]')).toBeEnabled();
 });
 
+test('alinierea ca bloc (ADR 0150): fără bloc, B sare peste C; ca bloc, B și C se mută împreună față de foaie; comutatorul rămâne după reîncărcare', async ({ page }) => {
+  await foaie(page);
+  // B (150–190 × 20–50) și C (230–270 × 20–50), prin fereastră.
+  await trage(page, { x: 140, y: 10 }, { x: 280, y: 60 });
+  await expect(alese(page)).toHaveCount(2);
+  // Fără bloc, „Aliniază la dreapta” duce marginea lui B la a lui C: B ajunge peste C (notița 3 a owner-ului).
+  const bloc = page.locator('[data-editare="aliniere-bloc"]');
+  await expect(bloc).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('[data-aliniaza="dreapta"]')).toHaveAttribute('title', 'Aliniază la dreapta');
+  await page.locator('[data-aliniaza="dreapta"]').click();
+  expect(await xDupaClic(page, { x: 250, y: 35 })).toBe(230);
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+z');
+  // Ca bloc: cutia comună 150–270 la marginea din dreapta a foii (300), deci amândouă cu +30: B la 180, C la 260; A rămâne.
+  await trage(page, { x: 140, y: 10 }, { x: 280, y: 60 });
+  await expect(alese(page)).toHaveCount(2);
+  await bloc.click();
+  await expect(bloc).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-aliniaza="dreapta"]')).toHaveAttribute('title', 'Aliniază la dreapta (ca bloc, față de foaie)');
+  await page.locator('[data-aliniaza="dreapta"]').click();
+  expect(await xDupaClic(page, { x: 200, y: 35 })).toBe(180);
+  await expect(page.locator('[data-camp="pozitie-y"]')).toHaveValue('20');
+  expect(await xDupaClic(page, { x: 280, y: 35 })).toBe(260);
+  expect(await xDupaClic(page, { x: 70, y: 50 })).toBe(20);
+  // Un singur pas de anulare; comutatorul se ține în browser, ca Lipirea și Grila.
+  await page.locator('body').focus();
+  await page.keyboard.press('Control+z');
+  expect(await xDupaClic(page, { x: 170, y: 35 })).toBe(150);
+  await page.waitForTimeout(300);
+  await page.reload();
+  await expect(page.locator('[data-editare="aliniere-bloc"]')).toHaveAttribute('aria-pressed', 'true');
+});
+
 test('centrarea pe foaie (ADR 0110): mai multe forme se mută împreună, ca un bloc, cu cutia lor comună în centrul foii', async ({ page }) => {
   await foaie(page);
   // B (150–190 × 20–50) și C (230–270 × 20–50), prin fereastră: cutia comună 150–270 × 20–50, centrul (210, 35); foaia

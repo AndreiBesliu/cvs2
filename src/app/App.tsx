@@ -14,8 +14,8 @@ import { elementeFoaie, type ElementLume } from '../model/lume.ts';
 import { creeazaRegistru, ruleaza, stare, toate, type RezultatActiune } from '../ui/actiuni.ts';
 import { ACTIUNI_DOCUMENT, incarcaAlegerea, type ContextDocument } from '../ui/actiuniDocument.ts';
 import {
-  ARANJAMENT_MODERN, cheieIntrare, COMUTA_PANOU, PANOURI,
-  type Aranjament, type IdCip, type IdControl, type IdPanou, type IdZona, type Intrare, type Unealta,
+  ARANJAMENT_MODERN, cheieIntrare, CIPURI_GLOBALE, COMUTA_PANOU, DESCHIDE_FEREASTRA, PANOURI,
+  type Aranjament, type IdCip, type IdControl, type IdFereastra, type IdPanou, type IdZona, type Intrare, type Unealta,
 } from '../ui/aranjament.ts';
 import { CipCursor, CipZoom, semnal, type PunctFoaie, type Semnal } from '../ui/CipuriVedere.tsx';
 import { ACTIUNI_VEDERE, type ContextVedere } from '../ui/actiuniVedere.ts';
@@ -33,9 +33,11 @@ import type { ProgresActualizare } from '../pwa/inregistrare.ts';
 import { versiuneDin } from '../../shared/versiune.ts';
 import { listaDesen } from './desen.ts';
 import { contulPermite, useContTinut } from './dreptCont.ts';
+import { fereastraTinuta, tineFereastra } from './fereastra.ts';
 import type { Jurnal } from './jurnalErori.ts';
 import type { CerereLucrare } from './DialogLucrare.tsx';
 import type { LucrarePrimita } from './primireLucrare.ts';
+import { lucrarePornita } from './lucrare.ts';
 import { ConflictDeScriere, type DepozitProiect, type ProiectDeschis } from './proiectLocal.ts';
 
 type Props = {
@@ -114,7 +116,7 @@ const incarcaProprietati = () => import('./PanouProprietati.tsx').then(cuMesaje)
 const Paleta = lazy(() => incarcaPaleta().then((m) => ({ default: m.Paleta }), () => ({ default: DialogNeincarcat })));
 // Panoul care nu se poate aduce rămâne gol: e doar de citit, iar selecția se vede și în listă și în bara de jos.
 const PanouProprietati = lazy(() => incarcaProprietati().then((m) => ({ default: m.PanouProprietati }), () => ({ default: () => null })));
-/** Panoul mașinii (ADR 0081): senderul și conexiunea vin la prima deschidere, nu în pornire. */
+/** Fereastra Mașina (ADR 0081, 0132): senderul și conexiunea vin la prima deschidere, nu în pornire. */
 const PanouMasina = lazy(() => import('./PanouMasina.tsx').then(cuMesaje).then((m) => ({ default: m.PanouMasina }), () => ({ default: () => null })));
 // Extensiile (ADR 0127): butonul de lângă marcă, meniul și spațiul vin după prima randare, nu în pachetul de pornire.
 const Extensii = lazy(() => import('../extensii/Extensii.tsx').then(cuMesaje).then((m) => ({ default: m.Extensii }), () => ({ default: () => null })));
@@ -151,6 +153,12 @@ const FOAIA_IMPLICITA = { latime: 300, inaltime: 200, grosime: 18 };
 
 /** Temele, în ordinea în care le trece butonul: după sistem, luminoasă, întunecată. */
 const TEME = ['auto', 'luminoasa', 'intunecata'] as const;
+
+/**
+ * Acțiunile care rulează din orice fereastră (ADR 0132 §3): paleta, tema și filele ferestrelor. Celelalte sunt ale desenului:
+ * din Mașina, tastele lor nu fac nimic, iar alese din paletă întorc întâi la Proiectare.
+ */
+const ORIUNDE: ReadonlySet<string> = new Set(['vedere.paleta', 'vedere.tema', ...Object.values(DESCHIDE_FEREASTRA)]);
 
 const doua = (x: number): string => x.toFixed(2);
 
@@ -222,10 +230,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * nevoie de loc. Nu se țin minte după reîncărcare (aranjamentul salvat vine mai târziu, `aranjament.ts`).
    */
   const [panouri, setPanouri] = useState<Readonly<Record<IdPanou, boolean>>>(() => ({
-    lista: true, proprietati: matchMedia('(min-width: 64rem)').matches, masina: false,
+    lista: true, proprietati: matchMedia('(min-width: 64rem)').matches,
   }));
-  /** Programul ultimului export (octeții exacți, amprenta), pentru panoul mașinii (ADR 0081): doar cât e deschisă pagina. */
-  // Fișierele ultimului export (unul, sau câte unul pe freză, ADR 0084), pentru panoul mașinii.
+  /** Programul ultimului export (octeții exacți, amprenta), pentru fereastra Mașina (ADR 0081): doar cât e deschisă pagina. */
+  // Fișierele ultimului export (unul, sau câte unul pe freză, ADR 0084), pentru fereastra Mașina.
   const [ultimulExport, setUltimulExport] = useState<readonly { readonly octeti: Uint8Array; readonly sha256: string; readonly nume: string }[] | null>(null);
   const comutaPanou = (p: IdPanou): void => { setPanouri((s) => ({ ...s, [p]: !s[p] })); };
   // Lucrarea primită de la altă aplicație și cererea care așteaptă omul (ADR 0126): doar în memorie, separate de ultimul export.
@@ -251,6 +259,25 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     addEventListener('hashchange', asculta);
     return () => { terminat = true; removeEventListener('hashchange', asculta); oprire?.(); };
   }, [primireActiva]);
+  /**
+   * Fereastra de acum (ADR 0132): Proiectarea (desenul) sau Mașina, ținută în browser și redeschisă la pornire. Mașina se
+   * montează la prima deschidere și rămâne montată (sesiunea, numele programului, formularele); Proiectarea nu se demontează
+   * niciodată (pânza, editarea, butonul Cont), doar se acoperă.
+   */
+  const [fereastra, setFereastra] = useState<IdFereastra>(() => fereastraTinuta(aranjament.ferestre));
+  const [masinaMontata, setMasinaMontata] = useState(fereastra === 'masina');
+  const fereastraRef = useRef(fereastra);
+  fereastraRef.current = fereastra;
+  const deschideFereastra = (f: IdFereastra): void => {
+    fereastraRef.current = f;
+    setFereastra(f);
+    if (f === 'masina') setMasinaMontata(true);
+    tineFereastra(f);
+  };
+  /** „Deschide în Mașina” din fereastra exportului (ADR 0132 §7): fiecare cerere are numărul ei, iar Mașina încarcă exportul. */
+  const [cerereMasina, setCerereMasina] = useState(0);
+  /** O lucrare pornită pe mașină (ADR 0132 §6): „Reîncarcă” așteaptă sfârșitul ei. */
+  const lucrare = useSyncExternalStore(lucrarePornita.asculta, lucrarePornita.citeste);
   /** Cursorul pe foaie și scara vederii, pentru cipurile de jos: se schimbă des, deci doar cipul lor se redesenează. */
   const [cursor] = useState(() => semnal<PunctFoaie | null>(null));
   const [scara] = useState(() => semnal<number | null>(null));
@@ -265,6 +292,10 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [setLipesteStabil] = useState(() => (f: Lipeste | null) => { setLipeste(() => f); });
   const [desen, setDesen] = useState<GestDesen | null>(null);
   const [setDesenStabil] = useState(() => (f: GestDesen | null) => { setDesen(() => f); });
+  // Refuzul unei acțiuni pornite de la tastatură sau din paletă, dat modulului editării: el îl spune lângă butoanele
+  // acțiunii, ca la clic (Ctrl+G, Ctrl+Shift+G). Fără modul, refuzul rămâne tăcut.
+  const refuzEditare = useRef<((id: string, motiv: CheieSimpla) => void) | null>(null);
+  const [setRefuzEditare] = useState(() => (f: ((id: string, motiv: CheieSimpla) => void) | null) => { refuzEditare.current = f; });
   const [cheieStrat, setCheieStrat] = useState(0);
   const [traseuPregatit, setTraseuPregatit] = useState<{ readonly bucati: readonly Bucata[]; readonly rarit: boolean } | null>(null);
   const cerereTraseu = useRef(0);
@@ -377,7 +408,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     paleta: () => { focusPaleta.current = document.activeElement; setPaleta(true); },
     lista: () => { comutaPanou('lista'); },
     proprietati: () => { comutaPanou('proprietati'); },
-    masina: () => { comutaPanou('masina'); },
+    proiectare: () => { deschideFereastra('proiectare'); },
+    masina: () => { deschideFereastra('masina'); },
     potriveste: () => { setPotrivire((n) => n + 1); },
     traseu: () => { comutaTraseu(); },
     tema: () => {
@@ -516,7 +548,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       // Pânza le-a primit deja (cu locul lor): aici doar cele lăsate în afara ei.
       if (!cuFisiere(e) || e.defaultPrevented) return;
       e.preventDefault();
-      if (!modalRef.current) pornesteImportRef.current([...(e.dataTransfer?.files ?? [])], null);
+      // Lăsate peste Mașina, nu pornesc un import în desenul acoperit (ADR 0132 §3); browserul nici nu le deschide.
+      if (!modalRef.current && fereastraRef.current === 'proiectare') pornesteImportRef.current([...(e.dataTransfer?.files ?? [])], null);
     };
     window.addEventListener('dragover', peste);
     window.addEventListener('drop', lasa);
@@ -657,17 +690,27 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   /**
    * O acțiune aleasă din bară, din bara selecției, din paletă sau de la tastatură. Importul cere întâi fișierul, iar
    * exportul își deschide dialogul (ca butoanele de până acum); restul rulează prin registrul lor. Cât e deschis un
-   * dialog, nimic nu rulează.
+   * dialog, nimic nu rulează. O comandă a desenului aleasă din Mașina (din paletă) întoarce întâi la Proiectare (ADR 0132 §3):
+   * omul vede ce face; motivul unui refuz merge la modulul editării (`refuzEditare`), care îl spune lângă butoane.
    */
   const executa = (id: string): void => {
-    if (dialogDeschis.current || !stareActiune(id).ok) return;
+    if (dialogDeschis.current) return;
     // Cât e deschis spațiul unei extensii (ADR 0127 §C), acțiunile documentului nu rulează (importul, exportul și restul, prin
-    // `ruleazaDocument`); vederea rămâne: panourile (mașina), tema, paleta.
+    // `ruleazaDocument`); vederea rămâne: panourile, tema, paleta.
     if (spatiuDeschis.current && !registruVedere.actiuni.has(id)) return;
+    if (fereastraRef.current !== 'proiectare' && !ORIUNDE.has(id)) deschideFereastra('proiectare');
+    const s = stareActiune(id);
+    if (!s.ok) {
+      refuzEditare.current?.(id, s.motiv);
+      return;
+    }
     if (id === 'import.svg') fisierImport.current?.click();
     else if (id === 'export.gcode') { setStareExport(null); setDialogExport(true); }
     else if (registruVedere.actiuni.has(id)) ruleaza(registruVedere, id, contextVedere);
-    else ruleazaDocument(id, context());
+    else {
+      const r = ruleazaDocument(id, context());
+      if (!r.ok) refuzEditare.current?.(id, r.motiv);
+    }
   };
 
   useEffect(() => {
@@ -675,6 +718,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
       const id = actiuneaTastei(tastaApasata(e));
       if (!id) return;
+      // În Mașina, tastele desenului (Delete, Ctrl+Z, săgețile modulului editării) nu ating desenul acoperit (ADR 0132 §3):
+      // merge doar paleta; restul tastelor rămân ale browserului.
+      if (fereastraRef.current !== 'proiectare' && !ORIUNDE.has(id)) return;
       // Ctrl+D ar pune altfel pagina la favorite, iar Ctrl+K ar căuta în bara browserului.
       e.preventDefault();
       if (!paleta) executa(id);
@@ -841,7 +887,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
 
   /**
    * Un control care nu e acțiune: limba, ca butoane apăsate / neapăsate; locul uneltelor (ADR 0052), al exportului
-   * vectorilor (ADR 0104 §8) și al butonului Cont (ADR 0116, lângă temă), umplute de `Editare`.
+   * vectorilor (ADR 0104 §8) și al butonului Cont (ADR 0116, lângă temă), umplute de `Editare`; filele ferestrelor și locul
+   * indicatorului lucrării, umplut de fereastra Mașina (ADR 0132).
    */
   const control = (c: IdControl): ReactNode => {
     switch (c) {
@@ -851,6 +898,17 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         return <div className="loc-vectori" id="loc-vectori" />;
       case 'cont':
         return <div className="loc-cont" id="loc-cont" />;
+      case 'lucrare':
+        return <div className="loc-lucrare" id="loc-lucrare" />;
+      case 'ferestre':
+        // Fila ferestrei de acum poartă `aria-current`; fiecare filă e acțiunea ei, deci și în paletă și în manual.
+        return (
+          <nav className="ferestre" aria-label={t('meniu.ferestre')}>
+            {aranjament.ferestre.map((f) => buton(DESCHIDE_FEREASTRA[f], 'data-actiune', {
+              className: 'cu-eticheta fila', ...(f === fereastra ? { 'aria-current': 'page' } : {}),
+            }))}
+          </nav>
+        );
       case 'limba':
         return (
           <nav aria-label={t('app.limba')}>
@@ -901,10 +959,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             </span>
           );
         }
+        // Cu o lucrare pornită pe mașină, reîncărcarea ar tăia legătura la mijlocul ei (ADR 0132 §6): așteaptă sfârșitul.
         return (
           <span className="cip cip-atentie cip-actualizare" data-testid="actualizare" role="status">
             {t('actualizare.gata')}
-            <button type="button" onClick={aplicaActualizare}>{t('eroare.reincarca')}</button>
+            {lucrare
+              ? <button type="button" disabled title={t('actualizare.dupa-lucrare.titlu')}>{t('actualizare.dupa-lucrare')}</button>
+              : <button type="button" onClick={aplicaActualizare}>{t('eroare.reincarca')}</button>}
           </span>
         );
       case 'cursor':
@@ -936,12 +997,18 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
 
   const intrare = (x: Intrare, zona: IdZona): ReactNode => ('actiune' in x ? unealta(x, zona) : 'control' in x ? control(x.control) : cip(x.cip));
 
-  /** Grupurile unei zone, în ordinea aranjamentului. */
-  const grupuri = (zona: IdZona): ReactNode => aranjament.zone[zona].map((g) => (
-    <div key={g.id} className="grup" data-grup={g.id}>
-      {g.intrari.map((x) => <Fragment key={cheieIntrare(x)}>{intrare(x, zona)}</Fragment>)}
-    </div>
-  ));
+  /**
+   * Grupurile unei zone, în ordinea aranjamentului. În Mașina, bara de jos păstrează doar cipurile aplicației (ADR 0132 §3):
+   * cursorul, zoomul, selecția și butoanele vederii sunt ale pânzei acoperite.
+   */
+  const grupuri = (zona: IdZona): ReactNode => aranjament.zone[zona].map((g) => {
+    const intrari = zona === 'jos' && fereastra !== 'proiectare' ? g.intrari.filter((x) => 'cip' in x && CIPURI_GLOBALE.has(x.cip)) : g.intrari;
+    return intrari.length === 0 ? null : (
+      <div key={g.id} className="grup" data-grup={g.id}>
+        {intrari.map((x) => <Fragment key={cheieIntrare(x)}>{intrare(x, zona)}</Fragment>)}
+      </div>
+    );
+  });
 
   /** Ce arată un panou deschis. */
   const continutPanou = (p: IdPanou): ReactNode => {
@@ -969,12 +1036,6 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             />
           </Suspense>
         );
-      case 'masina':
-        return (
-          <Suspense fallback={null}>
-            <PanouMasina ultimulExport={ultimulExport} lucrarePrimita={lucrarePrimita} simulare={config.ok && config.config.instanta !== 'live'} />
-          </Suspense>
-        );
     }
   };
 
@@ -986,33 +1047,39 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     </section>
   );
   const deschise = (d: 'stanga' | 'dreapta'): boolean => aranjament.docuri[d].some((p) => panouri[p]);
+  /** Proiectarea e acoperită de altă fereastră: rămâne montată, dar inertă (nici Tab, nici clicul nu ajung la ea). */
+  const acoperita = fereastra !== 'proiectare';
 
   return (
     <>
       {/*
         Sub dialog (și sub paletă), aplicația e inertă: nici Tab, nici clicul nu mai ajung la bare sau la pânză. Pânza ține
         tot ecranul; barele, panourile și cipurile plutesc deasupra ei, într-o grilă care lasă clicul să treacă prin golurile
-        ei (`pointer-events`). Zona liberă din mijloc e locul în care se potrivește foaia.
+        ei (`pointer-events`). Zona liberă din mijloc e locul în care se potrivește foaia. Deasupra tuturor, meniul global
+        (ADR 0132), cu filele ferestrelor; fereastra Mașina acoperă Proiectarea, sub meniu.
       */}
-      <div className="aplicatie" inert={modal} data-aranjament={aranjament.id} data-stanga={deschise('stanga')} data-dreapta={deschise('dreapta')}
+      <div className="aplicatie" inert={modal} data-aranjament={aranjament.id} data-fereastra={fereastra} data-stanga={deschise('stanga')} data-dreapta={deschise('dreapta')}
         data-extensie={spatiuExtensie ?? undefined}>
-        <header className="sus">
-          <div className="insula marca">
+        <header className="meniu-global" aria-label={t('meniu.global')}>
+          <div className="marca">
             <h1>{t('app.titlu')}</h1>
             <span data-testid="instanta" className="instanta">{t('app.instanta', { nume: instanta })}</span>
             <span id="loc-extensii" className="loc-extensii" />
           </div>
+          {grupuri('meniu')}
+        </header>
+        <div className="sus" inert={acoperita}>
           <div className="insula bara" role="toolbar" aria-label={t('bara.actiuni')}>
             {grupuri('sus')}
           </div>
           {/* Extensia barei (ADR 0053): un rând lipit dedesubt, cu secțiunile modulului editării (alinierea întâi). */}
           <div className="insula extensie" id="loc-extensie" />
           {aranjament.zone.unelte.length > 0 && <div className="insula unelte">{grupuri('unelte')}</div>}
-        </header>
+        </div>
         {/* Fereastra de fișiere a importului: în afara barelor, ca importul să meargă din orice aranjament (și din paletă). */}
         <input ref={fisierImport} type="file" accept=".svg,image/svg+xml,.dxf,image/vnd.dxf,application/dxf,.pdf,application/pdf,.ai,.eps,application/postscript,.wmf" multiple hidden data-camp="fisier-svg"
           onChange={(e) => { alesFisier(e.target.files); e.target.value = ''; }} />
-        <div className="lucru">
+        <div className="lucru" inert={acoperita}>
           <Panza
             forme={forme}
             foaie={stoc}
@@ -1045,8 +1112,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             {...(desen ? { desen } : {})}
             suprapunere={(v, m, l) => (
               <Suspense fallback={null}>
-                <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)}
-                  ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil} reface={stareActiune('istoric.reface').ok}
+                <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita}
+                  ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
+                  onRefuz={setRefuzEditare} reface={stareActiune('istoric.reface').ok}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
                   {...(config.ok && config.config.instanta !== 'live' && new URLSearchParams(location.search).has('test')
                     ? { test: { versiune: versiuneDin(document), instanta: config.config.instanta } } : {})} />
@@ -1066,10 +1134,22 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             )}
           </Panza>
         </div>
-        <div className="doc doc-stanga">{aranjament.docuri.stanga.map(panou)}</div>
+        <div className="doc doc-stanga" inert={acoperita}>{aranjament.docuri.stanga.map(panou)}</div>
         <div className="zona-libera" ref={zona} aria-hidden="true" />
-        <div className="spatiu-extensie" id="loc-spatiu-extensie" hidden={spatiuExtensie === null} />
-        <div className="doc doc-dreapta">{aranjament.docuri.dreapta.map(panou)}</div>
+        <div className="spatiu-extensie" id="loc-spatiu-extensie" hidden={spatiuExtensie === null} inert={acoperita} />
+        <div className="doc doc-dreapta" inert={acoperita}>{aranjament.docuri.dreapta.map(panou)}</div>
+        {/*
+          Fereastra Mașina (ADR 0132 §4), sub meniu, peste Proiectare: montată la prima deschidere și ținută montată după
+          aceea (ascunsă cât lucrezi în Proiectare), ca sesiunea, numele programului și formularele să rămână.
+        */}
+        {masinaMontata && (
+          <section className="fereastra-masina" aria-label={t('vedere.masina')} hidden={fereastra !== 'masina'}>
+            <Suspense fallback={null}>
+              <PanouMasina ultimulExport={ultimulExport} lucrarePrimita={lucrarePrimita} simulare={config.ok && config.config.instanta !== 'live'} cerere={cerereMasina}
+                onDeschide={() => { deschideFereastra('masina'); }} />
+            </Suspense>
+          </section>
+        )}
         <footer className="jos">{grupuri('jos')}</footer>
       </div>
       {paleta && (
@@ -1106,6 +1186,15 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           onReseteaza={() => { cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setStareExport(null); }}
           setariMasina={setariMasina}
           onSetariMasina={setSetariMasina}
+          // „Deschide în Mașina” (ADR 0132 §7): doar după un export pe care senderul îl vorbește; închide dialogul, deschide
+          // Mașina și îi cere să încarce exportul, fără să-l pornească.
+          {...(stareExport?.ok && ultimulExport ? {
+            onDeschideInMasina: () => {
+              cerereExport.current++; exportInCurs.current = false; opresteSimularea(); opresteExportul(); setDialogExport(false);
+              setCerereMasina((n) => n + 1);
+              deschideFereastra('masina');
+            },
+          } : {})}
         />
       )}
       {coadaImport && (
@@ -1123,7 +1212,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         <DialogLucrare
           key={cerereLucrare.lucrare.id}
           cerere={cerereLucrare}
-          onPrimita={(l) => { setCerereLucrare(null); setLucrarePrimita(l); setPanouri((s) => ({ ...s, masina: true })); }}
+          onPrimita={(l) => { setCerereLucrare(null); setLucrarePrimita(l); deschideFereastra('masina'); }}
           onInchide={() => { setCerereLucrare(null); }}
         />
       )}

@@ -126,6 +126,9 @@ test.describe('tema', () => {
 });
 
 test('panourile se strâng și se deschid din colțul lor; foaia se potrivește în locul eliberat; bara selecției deschide proprietățile', async ({ page }) => {
+  // Cu meniul global deasupra barei de desen (ADR 0132), la 1280 × 720 foaia e limitată de înălțime: o zonă mai lată n-o mai
+  // mărește. La 900 px înălțime decide lățimea, cum cere proba.
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/');
   await adauga(page, 'cerc');
   const lista = page.locator('[data-actiune="vedere.lista"]');

@@ -49,6 +49,7 @@ const USI: readonly Usa[] = [
   { id: 'editare.lipire', eticheta: eticheta('editare.lipire') },
   { id: 'editare.grila', eticheta: eticheta('editare.grila') },
   { id: 'editare.aliniere', eticheta: eticheta('editare.aliniere') },
+  { id: 'editare.aliniere-bloc', eticheta: eticheta('editare.aliniere-bloc') },
   ...FELURI_ALINIERE.map((f) => ({ id: `aliniaza.${f}`, eticheta: eticheta(`editare.aliniaza.${f}`) })),
   ...(['orizontal', 'vertical'] as const).map((d) => ({ id: `oglindeste.${d}`, eticheta: eticheta(`editare.oglindeste.${d}`) })),
   { id: 'editare.3d', eticheta: eticheta('editare.3d.arata') },
@@ -69,10 +70,10 @@ const USI: readonly Usa[] = [
  */
 const CONTROALE_EDITARE: Readonly<Record<string, string>> = {
   lipire: 'editare.lipire', grila: 'editare.grila', 'pas-grila': 'editare.grila', laturi: 'unealta.poligon', raza: 'unealta.cerc',
-  aliniere: 'editare.aliniere', 'vedere-3d': 'editare.3d', manual: 'editare.manual', sugestie: 'editare.sugestie', cont: 'editare.cont',
+  aliniere: 'editare.aliniere', 'aliniere-bloc': 'editare.aliniere-bloc', 'vedere-3d': 'editare.3d', manual: 'editare.manual', sugestie: 'editare.sugestie', cont: 'editare.cont',
   retea: 'document.copiaza-in-retea',
   offset: 'editare.offset', inclinare: 'editare.inclinare', vectori: 'editare.vectori',
-  'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri',
+  'boolean-uneste': 'boolean.uneste', 'boolean-scade': 'boolean.scade', 'boolean-intersecteaza': 'boolean.intersecteaza', grupeaza: 'document.grupeaza', degrupeaza: 'document.degrupeaza', 'nod-colt': 'unealta.noduri', 'nod-ambele': 'unealta.noduri', 'nod-o-parte': 'unealta.noduri',
 };
 
 // Numele scurt al unei etichete (înaintea parantezei sau a celor două puncte, fără „…”) e cel din `editareCalcul.ts`: același
@@ -101,13 +102,14 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 68)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 71)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
   assert.equal(numeScurt('Importă SVG…'), 'Importă SVG');
   assert.equal(numeScurt('Oglindește orizontal: stânga ↔ dreapta (Shift+H)'), 'Oglindește orizontal');
-  assert.equal(USI.length, 68);
+  // Gruparea (ADR 0130) a adus a 69-a ușă, fila Proiectare (ADR 0132) a 70-a, iar comutatorul Ca bloc (ADR 0150) a 71-a.
+  assert.equal(USI.length, 71);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
@@ -148,12 +150,15 @@ const CONTROALE_MASINA: Readonly<Record<string, string | null>> = {
   // Primirea unei lucrări (ADR 0126): dialogul (`DialogLucrare.tsx`) și rândul lucrării primite.
   'lucrare-primeste': 'masina.lucrare.primeste', 'lucrare-renunta': 'masina.lucrare.renunta', 'primit-fisier': 'masina.primit.fisier',
   primit: 'masina.primit.incarca',
+  // Indicatorul lucrării din meniul global (ADR 0132, `IndicatorLucrare.tsx`): pastila și butonul de lângă ea.
+  indicator: 'masina.indicator.titlu', 'indicator-pauza': 'masina.pauza', 'indicator-reia': 'masina.eliberare',
 };
 
 test('fiecare control al panoului mașinii (data-masina) e numit în capitolul „masina”, în ambele limbi', () => {
   const sursa = `${citeste('src/app/PanouMasina.tsx')}
 ${citeste('src/app/PanouCod.tsx')}
-${citeste('src/app/DialogLucrare.tsx')}`;
+${citeste('src/app/DialogLucrare.tsx')}
+${citeste('src/app/IndicatorLucrare.tsx')}`;
   // Un `data-masina` calculat (`={…}`) ar ocoli proba: fiecare control își scrie numele.
   assert.doesNotMatch(sursa, /data-masina=\{/);
   const controale = [...new Set([...sursa.matchAll(/data-masina="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();
@@ -213,7 +218,7 @@ test('fiecare control cu data-editare din bara editării are ușa lui (un contro
     assert.ok(USI.some((u) => u.id === usa), `${c} → ${usa}`);
   }
   // Și ușile ajutorului după context (F1, `usaDeAcum` din Editare) sunt acoperite.
-  for (const id of ['export.gcode', 'import.svg', 'vedere.paleta', 'editare.3d', ...UNELTE.map((u) => `unealta.${u}`)]) {
+  for (const id of ['export.gcode', 'import.svg', 'vedere.paleta', 'vedere.masina', 'editare.3d', ...UNELTE.map((u) => `unealta.${u}`)]) {
     assert.match(sursa, id.startsWith('unealta.') ? /`unealta\.\$\{unealta\}`/ : new RegExp(`'${id.replace('.', '\\.')}'`));
     for (const m of manuale()) assert.ok(capitolPentru(m, id), `${m.limba}: F1 pe „${id}” n-are capitol`);
   }

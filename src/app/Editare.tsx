@@ -65,6 +65,7 @@ const PAS_GRILA_IMPLICIT = 10;
 const CHEIE_LATURI = 'cncvs2.laturi';
 const CHEIE_RAZA = 'cncvs2.raza';
 const CHEIE_ALINIERE = 'cncvs2.aliniere-stransa';
+const CHEIE_ALINIERE_BLOC = 'cncvs2.aliniere-bloc';
 const CHEIE_RETEA = 'cncvs2.retea';
 const CHEIE_OFFSET = 'cncvs2.offset';
 const CHEIE_INCLINARE = 'cncvs2.inclinare';
@@ -182,12 +183,14 @@ const RaportarileMele = lazy(() => import('./PanouCont.tsx').then(cuMesaje).then
 
 /**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
- * paleta), apoi vederea 3D, altfel unealta aleasă. Id-urile sunt cele din `%% acopera:` ale manualului.
+ * paleta), apoi fereastra Mașina (ADR 0132 §8), apoi vederea 3D, altfel unealta aleasă. Id-urile sunt cele din `%% acopera:`
+ * ale manualului.
  */
-function usaDeAcum(unealta: Unealta, vedere3d: boolean): string {
+function usaDeAcum(unealta: Unealta, vedere3d: boolean, activ: boolean): string {
   if (document.querySelector('[aria-labelledby="export-titlu"]')) return 'export.gcode';
   if (document.querySelector('[aria-labelledby="import-titlu"]')) return 'import.svg';
   if (document.querySelector('.paleta[role="dialog"]')) return 'vedere.paleta';
+  if (!activ) return 'vedere.masina';
   if (vedere3d) return 'editare.3d';
   return `unealta.${unealta}`;
 }
@@ -234,6 +237,11 @@ export type ProprietatiEditare = {
   /** Gestul uneltei de desen, dat pânzei (null: selecția, sau modulul plecat). */
   readonly onDesen: (f: GestDesen | null) => void;
   /**
+   * Ascultătorul refuzurilor venite de la tastatură sau din paletă, dat aplicației (null: modulul plecat): Ctrl+G și
+   * Ctrl+Shift+G trec prin ușa ei, iar motivul se spune lângă butoane, ca la clic.
+   */
+  readonly onRefuz: (f: ((id: string, motiv: CheieSimpla) => void) | null) => void;
+  /**
    * Testul pas cu pas (ADR 0072), deschis la pornire: doar pe instanța de test (și local), la adresa cu `?test` (din 31.10,
    * fără buton în bară, la cererea owner-ului; codul rămâne, pentru tutorialul de mai târziu), cu versiunea și instanța
    * pentru raport.
@@ -247,11 +255,17 @@ export type ProprietatiEditare = {
   readonly jurnal?: Pick<Jurnal, 'citeste'>;
   /** Se poate reface un pas al proiectului (Ctrl+Shift+Z redeschide un desen Pen doar dacă nu, ADR 0074 §4). */
   readonly reface?: boolean;
+  /**
+   * Fereastra Proiectare e cea de acum (ADR 0132 §3; implicit, da). Acoperită de Mașina, tastele desenului (uneltele, săgețile,
+   * Escape, oglindirea, nodurile) nu ating desenul pe care omul nu-l vede; F1 deschide capitolul mașinii, iar meniul contului
+   * merge ca oriunde.
+   */
+  readonly activ?: boolean;
 };
 
 export function Editare(p: ProprietatiEditare): ReactElement | null {
   useLimba();
-  const { doc, selectie, cutie, vedere, marime, ruleaza, onLipeste, onDesen } = p;
+  const { doc, selectie, cutie, vedere, marime, ruleaza, onLipeste, onDesen, onRefuz } = p;
   // Ultimul desen al Pen-ului (ADR 0074 §4): pașii lui și proiectul de dinainte / de după, ca Ctrl+Shift+Z să-l redeschidă.
   const ultimulPen = useRef<{ readonly desen: DesenPen; readonly inainte: Document; dupa: Document | null } | null>(null);
   useEffect(() => {
@@ -294,10 +308,16 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const [textRaza, setTextRaza] = useState(() => textNumar(raza));
   // Secțiunea Aliniere a extensiei barei (ADR 0053): mereu acolo, strânsă spre stânga la cerere; starea, în browser.
   const [stransa, setStransa] = useState(() => citeste(CHEIE_ALINIERE) === '1');
+  // Alinierea ca bloc (ADR 0150): cutia comună a formelor alese, față de foaie; ținută în browser, ca Lipirea.
+  const [bloc, setBloc] = useState(() => citeste(CHEIE_ALINIERE_BLOC) === '1');
   // Vederea 3D (ADR 0057): în locul pânzei 2D, cât e pornită; nu se ține minte (ar porni o simulare la fiecare pornire).
   const [vedere3d, setVedere3d] = useState(false);
   const vedere3dRef = useRef(vedere3d);
   vedere3dRef.current = vedere3d;
+  // Fereastra Proiectare e cea de acum (ADR 0132): ascultătorii tastaturii o citesc de aici, fără să se reînregistreze.
+  const activ = p.activ !== false;
+  const activRef = useRef(activ);
+  activRef.current = activ;
   // Copierea în rețea (ADR 0061): panoul din extensia barei, formularul lui (ținut în browser) și rețeaua citită din el.
   // Panoul deschis din extensia barei, unul singur: rețeaua (ADR 0061), offsetul (ADR 0064), înclinarea (ADR 0065), exportul
   // vectorilor (ADR 0088).
@@ -580,6 +600,26 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     setMotivDegrupare(motiv);
     return motiv;
   };
+  // Gruparea (ADR 0130): cel puțin două forme alese devin o piesă, tot prin registru (și din meniul de clic dreapta, din
+  // paletă, cu Ctrl+G). Refuzul se spune lângă butoane, până la altă selecție.
+  const [motivGrupare, setMotivGrupare] = useState<string | null>(null);
+  useEffect(() => { setMotivGrupare(null); }, [selectie]);
+  const grupeaza = (): string | null => {
+    if (selectie.length < 2 || p.doarCitire) return null;
+    const r = ruleaza('document.grupeaza', {});
+    const motiv = r.ok ? null : t(r.motiv);
+    setMotivGrupare(motiv);
+    return motiv;
+  };
+  // Aceleași două acțiuni pornite de la tastatură (Ctrl+G, Ctrl+Shift+G) sau din paletă rulează prin ușa aplicației, care
+  // îi dă aici motivul unui refuz: se spune tot lângă butoane, până la altă selecție.
+  useEffect(() => {
+    onRefuz((id, motiv) => {
+      if (id === 'document.grupeaza') setMotivGrupare(t(motiv));
+      else if (id === 'document.degrupeaza') setMotivDegrupare(t(motiv));
+    });
+    return () => { onRefuz(null); };
+  }, [onRefuz]);
   const oglindeste = (directie: 'orizontal' | 'vertical'): void => {
     if (!cutie || selectie.length === 0 || p.doarCitire) return;
     const tr: Transformare = { fel: 'oglindire', directie, centru: { x: (cutie.minX + cutie.maxX) / 2, y: (cutie.minY + cutie.maxY) / 2 } };
@@ -601,9 +641,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
       if (e.key === 'F1') {
         e.preventDefault();
         setMeniuCont(null);
-        setManual({ usa: usaDeAcum(unealtaRef.current, vedere3dRef.current) });
+        setManual({ usa: usaDeAcum(unealtaRef.current, vedere3dRef.current, activRef.current) });
         return;
       }
+      // Acoperit de fereastra Mașina (ADR 0132 §3), desenul nu primește nicio tastă: nu se vede ce ar face.
+      if (!activRef.current) return;
       const tinta = e.target;
       const peCorp = tinta === document.body || tinta === document.documentElement;
       // Pe pânză sau în bara uneltelor (după un clic pe „Aliniază”, săgețile continuă), dar nu într-un câmp.
@@ -872,6 +914,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
     const poate = !p.doarCitire;
     const doua = selectie.length === 2 && poate;
     return [
+      { id: 'grupeaza', eticheta: t('actiune.grupeaza'), tasta: tastaActiunii('document.grupeaza'), activ: selectie.length >= 2 && poate, ruleaza: () => { facut(grupeaza()); } },
       { id: 'degrupeaza', eticheta: t('actiune.degrupeaza'), tasta: tastaActiunii('document.degrupeaza'), activ: grupAles && poate, ruleaza: () => { facut(degrupeaza()); } },
       'separator',
       { id: 'uneste', eticheta: numeScurt(t('editare.boolean.uneste')), activ: doua, ruleaza: () => { void booleanul('reuniune').then(facut); } },
@@ -898,7 +941,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const cutieForme = useMemo(() => cutieFormelor(doc), [doc]);
   const aliniere = (fel: FelAliniere): void => {
     if (!foaie) return;
-    const d = aliniaza(cutiiInstante, fel, { minX: 0, minY: 0, maxX: foaie.stoc.latime, maxY: foaie.stoc.inaltime });
+    const d = aliniaza(cutiiInstante, fel, { minX: 0, minY: 0, maxX: foaie.stoc.latime, maxY: foaie.stoc.inaltime }, bloc);
     if (d.length > 0) ruleaza('document.muta-instantele', { deplasari: () => d });
   };
 
@@ -1023,7 +1066,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             width={Math.abs(cadru.b.x - cadru.a.x)} height={Math.abs(cadru.b.y - cadru.a.y)} />
         </svg>
       ) : null}
-      {unealta === 'noduri' && !vedere3d ? (
+      {/* Nodurile își ascultă singure tastele (Delete, săgețile): sub fereastra Mașina nu stau montate (ADR 0132 §3). */}
+      {unealta === 'noduri' && !vedere3d && activ ? (
         <Noduri doc={doc} selectie={selectie} vedere={vedere} marime={marime} zona={zona} doarCitire={p.doarCitire}
           lipire={(alt) => (lipire !== alt
             ? (q) => lipeste(tinte, { minX: q.x, minY: q.y, maxX: q.x, maxY: q.y }, 0, 0, { toleranta: TOLERANTA_LIPIRE_PX / vedere.scara, grila: pasGrila })
@@ -1078,9 +1122,17 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               onClick={() => { setStransa(!stransa); scrieLocal(CHEIE_ALINIERE, stransa ? '0' : '1'); }}>
               <Icona fel="stanga" /><span aria-hidden="true">{stransa ? '▸' : '◂'}</span>
             </button>
+            {stransa ? null : (
+              <button type="button" className="aliniaza" aria-pressed={bloc} title={t('editare.aliniere-bloc')} aria-label={t('editare.aliniere-bloc')}
+                data-editare="aliniere-bloc" onClick={() => { setBloc(!bloc); scrieLocal(CHEIE_ALINIERE_BLOC, bloc ? '0' : '1'); }}>
+                <IconaBloc />
+              </button>
+            )}
             {stransa ? null : FELURI_ALINIERE.map((fel) => {
               const destule = selectie.length >= minimAliniere(fel) && !p.doarCitire;
-              const titlu = `${t(`editare.aliniaza.${fel}`)}${selectie.length === 1 && !fel.startsWith('distribuie') && fel !== 'centru-foaie' ? ` ${t('editare.aliniaza.fata-de-foaie')}` : ''}`;
+              const fataDeFoaie = !fel.startsWith('distribuie') && fel !== 'centru-foaie';
+              const sufix = !fataDeFoaie ? '' : bloc && selectie.length > 1 ? ` ${t('editare.aliniaza.ca-bloc')}` : selectie.length === 1 ? ` ${t('editare.aliniaza.fata-de-foaie')}` : '';
+              const titlu = `${t(`editare.aliniaza.${fel}`)}${sufix}`;
               return (
                 <button key={fel} type="button" className="aliniaza" disabled={!destule} title={titlu} aria-label={titlu} data-aliniaza={fel}
                   onClick={() => { aliniere(fel); }}>
@@ -1161,11 +1213,16 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               data-editare="boolean-intersecteaza" onClick={() => { void booleanul('intersectie'); }}>
               <IconaBoolean fel="intersecteaza" />
             </button>
+            <button type="button" className="aliniaza" disabled={selectie.length < 2 || p.doarCitire} title={t('editare.grupeaza')} aria-label={t('editare.grupeaza')}
+              data-editare="grupeaza" onClick={() => { grupeaza(); }}>
+              <IconaGrupare />
+            </button>
             <button type="button" className="aliniaza" disabled={!grupAles || p.doarCitire} title={t('editare.degrupeaza')} aria-label={t('editare.degrupeaza')}
               data-editare="degrupeaza" onClick={() => { degrupeaza(); }}>
               <IconaDegrupare />
             </button>
             {motivBoolean ? <span className="motiv-extensie" role="status" data-testid="motiv-boolean">{motivBoolean}</span> : null}
+            {motivGrupare ? <span className="motiv-extensie" role="status" data-testid="motiv-grupare">{motivGrupare}</span> : null}
             {motivDegrupare ? <span className="motiv-extensie" role="status" data-testid="motiv-degrupare">{motivDegrupare}</span> : null}
           </span>
         );
@@ -2306,6 +2363,29 @@ function IconaBoolean({ fel }: { readonly fel: 'uneste' | 'scade' | 'intersectea
   );
 }
 
+/** Alinierea ca bloc (ADR 0150): marginea foii și cadrul punctat al formelor alese, lipit de ea, cu formele înăuntru. */
+function IconaBloc(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <line x1="1.5" y1="1" x2="1.5" y2="15" className="contur" />
+      <rect x="3" y="3" width="11" height="10" className="contur" strokeDasharray="1.6 1.4" />
+      <rect x="4.5" y="4.5" width="4" height="4" />
+      <rect x="9.5" y="8" width="3" height="3.5" />
+    </svg>
+  );
+}
+
+/** Gruparea (ADR 0130): cadrul plin al grupului, cu cele două forme strânse înăuntru. */
+function IconaGrupare(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="13" height="13" className="contur" />
+      <rect x="4" y="4" width="5" height="5" />
+      <rect x="7.5" y="7.5" width="4.5" height="4.5" />
+    </svg>
+  );
+}
+
 /** Degruparea (ADR 0103): cadrul punctat al grupului și cele două forme din el, despărțite. */
 function IconaDegrupare(): ReactElement {
   return (
@@ -2588,7 +2668,8 @@ function Manere({ cutie: c, vedere: v, doc, selectie, aplica, lipire, onLinii }:
     if (!arataEticheta) return;
     const r = radacina.current?.getBoundingClientRect();
     if (!r) return;
-    const sus = document.querySelector('header.sus')?.getBoundingClientRect().bottom ?? r.top;
+    // Sub rândul barei de desen (sub meniul global din ADR 0132, deci după clasă, nu după element).
+    const sus = document.querySelector('.sus')?.getBoundingClientRect().bottom ?? r.top;
     const jos = Math.min(
       document.querySelector('footer.jos')?.getBoundingClientRect().top ?? r.bottom,
       document.querySelector('.bara-selectie .insula')?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY,

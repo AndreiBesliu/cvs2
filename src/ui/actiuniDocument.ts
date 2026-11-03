@@ -484,6 +484,9 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
   // fereastră: calculul vine cu modulul editării, iar până atunci acțiunea spune că se încarcă (nu aruncă).
   laCerere('document.degrupeaza', 'actiune.degrupeaza', (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie'
     : calcul === null ? 'motiv.editare-se-incarca' : true)),
+  // Gruparea (ADR 0130), la fel, cu Ctrl+G: cere cel puțin două forme alese.
+  laCerere('document.grupeaza', 'actiune.grupeaza', (ctx) => (ctx.selectie().length === 0 ? 'motiv.nicio-selectie'
+    : ctx.selectie().length < 2 ? 'motiv.grupare-doua' : calcul === null ? 'motiv.editare-se-incarca' : true)),
   // Textul (ADR 0105): din panoul uneltei Text, un text nou sau unul editat, ca o piesă.
   laCerere('document.text', 'actiune.text', (ctx) => (ctx.textNou ? true : 'motiv.nimic-ales')),
   {

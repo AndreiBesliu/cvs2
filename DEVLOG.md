@@ -4560,6 +4560,275 @@ are ADR 0122 și felia 3.R, în ambele limbi; editorul trece pe versiunea nouă 
 Trenuleț (cerută: „poate il punem intr-un worktree dedicat”) n-a pornit: sub Remote Control, o sesiune nouă pornește doar
 dintr-un mesaj scris în aplicația desktop.
 
+## 2026-11-02 — Felia 4.6↑a: contractele atelierelor (NcStudio, RichAuto, Syntec, Mach3, Mach4; ADR 0125) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da” (la „Pornesc felia următoare de pe linia principală, contractele controlerelor?”).
+**Started:** 02.11, 18:45. **Completed:** 02.11, 20:33.
+
+Etapa 4, punctul 6, partea întâi (4.6↑b aduce pachetul de atelier). Cinci contracte noi, ca date, după sonda s8: NcStudio
+(comentariul cu apostrof, `G4 P` în ms, fără G94, câte un fișier pe freză), RichAuto (fără comentarii, unități, WCS și G4;
+doar mm; nume scurte), Syntec (`%` și `O0001`, G71 / G70, `T… M6` urmat de `G43 H…`, și la pornire), Mach3 și Mach4
+(`G91.1`, T pe linia dinaintea lui M6; Mach4 cu `%` la capăt). Contractul a primit câmpurile pentru ce lipsește sau diferă
+(null, `inceput`, șabloanele sculei, `rapidaSeparata`, `setari`, `senderAplicatie`, `numeScurt`); familia GRBL scrie aceiași
+octeți. Exportul atelierelor doar se descarcă: în panoul mașinii ajunge doar familia GRBL. La zi: manualul (ro, en), ADR
+0125, indexul, fișa, CLAUDE.md, traducerile (534, 0 lipsă). Codul: `77a1be6`.
+**Porțile:** compilatoarele, importurile, 8 058 de teste unitare (0 căzute, 8 sărite), build-ul determinist (227 de fișiere
+identice; pornirea 98,4 / 110 kB, cu ușa 101,9; totalul 448,9 / 500, cu 7,7 kB mai mult: datele celor cinci contracte, în
+fereastra exportului și în worker), licențele, e2e 296 / 296. În rularea țintită de dinainte, „urechile” a căzut o dată cu
+`EBUSY` pe un artefact Playwright (Drive-ul); reluată singură, a trecut. CI-ul rapid, verde în toate cele 6 felii și în
+oracolul exportului 2D; pe test, `77a1be6ee151`: fereastra exportului arată notele NcStudio (doar descărcat, documentat,
+N4063 / N4034 / N4035) și, pe RichAuto, doar mm.
+**Otrăvurile** (`test/otravuri/4.6a.py`): 18 / 18 prinse, într-o clonă din afara Drive-ului. Cele 15 din post și contracte
+le prinde proba nouă singură; cele 3 din aplicație, e2e-ul. Unealta le raportase pe cele 3 „prinse” cu build-ul căzut (npm e
+stricat aici): reluate cu node, apoi unealta reparată (build și Playwright cu node; build căzut, port ocupat sau cod ≠ 0
+fără test căzut = NEVALIDĂ), probată pe A03.
+**Între timp, la cererea owner-ului:** worktree-ul etapei 7 (textul) a pornit în `C:\Users\besli\cncvs2-lucru\text`; etapa
+10 și Trenuleț așteaptă un mesaj din desktop (sub Remote Control, pornirea e refuzată). WMF-ul și oracolul ușii, unite de pe
+01.11: worktree-urile și ramurile locale șterse, sesiunea oracolului arhivată (pe a WMF-ului a oprit-o clasificatorul
+modului automat). La WMF, worktree-ul s-a șters înaintea joncțiunilor (o cale greșită în comandă); git nu le urmează, iar
+`node_modules` principal a rămas întreg (306 / 200 de intrări, numărate).
+**Publicat pe test** pe 02.11, la 20:46, prin workflow-ul `publica` (`77a1be6`).
+
+## 2026-11-02 — Felia 4.6↑b: pachetul de atelier T0–T7 (ADR 0131) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește” (la „Pornesc 4.6↑b, pachetul de atelier T0–T7?”).
+**Started:** 02.11, 20:57. **Completed:** 02.11, 21:17.
+
+Etapa 4, punctul 6, partea a doua. Generatorul `test/ateliere/pachet.ts` (cu `genereaza.ts`) scrie, pentru fiecare dintre
+cele opt controlere, setul din sonda s8 (Anexa B) cu postul aplicației: T0 citirea (cu stilurile de comentariu, unde nu sunt
+sigure), T1 arcele, T2 avansul, pauza și punctul zecimal (Syntec), T3 elicea, T4 schimbarea sculei, T5 G54 / G55, T6 limita
+liniei și T7 găurirea (pe GRBL 1.1: setul plăcii 3). Unde contractul e prudent, fișierul probează controlerul (arcul R1200
+ca arc, elicea pe RichAuto). Fiecare pachet are fișa lui (versiunea, setările, materialul, prima rulare în aer, ce se
+măsoară cu valoarea pe hârtie, amprentele SHA-256) și o arhivă ZIP cu aceiași octeți la fiecare generare, în
+`test/ateliere/`, comise. Aplicația nu s-a schimbat. Codul: `d25a15e`.
+**Porțile:** compilatorul, importurile, 8 067 de teste unitare (0 căzute, 8 sărite), build-ul determinist (228 de fișiere
+identice; pornirea 98,4, totalul 448,9 / 500, neschimbate), traducerile (537, 0 lipsă); arhivele, și prin cititorul zip al
+lui Python (CRC, conținut); CI-ul rapid, verde în toate cele 6 felii și în oracolul exportului 2D.
+**Otrăvurile** (`test/otravuri/4.6b.py`), într-o clonă din afara Drive-ului, pe probele pe hârtie singure (proba de aur stă
+în fișierul ei, `ateliere.aur.test.ts`, ca să nu prindă ea totul): martorul a scăpat, cum trebuia; pauza de 3 s a scăpat:
+proba compara pauza cu constanta generatorului. Acum pauza, adâncimea de la T4 și raza de 1 200 se compară cu valorile de pe
+hârtie; reluate, plus două otrăvuri noi: 17 / 17 prinse.
+**Publicat pe test** pe 02.11, la 21:29, prin workflow-ul `publica` (`d25a15e`): documentația publicată are ADR 0131 și
+feliile 4.6↑a și 4.6↑b, în ambele limbi. Pachetele se iau din repo: `test/ateliere/<controler>.zip`.
+
+## 2026-11-02 — Felia 4.9↑: fișa plăcii 4 și placa de regresie (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește” (la „Pornesc punctul 9 al etapei 4, fișa plăcii 4 și placa de regresie?”).
+**Started:** 02.11, 21:44. **Completed:** 02.11, 22:01.
+
+Punctul 9 al etapei 4, ultimul fără mașină. **Placa 4** (`docs/etape/placa-04.md`): șanțurile de calibrare din sonda s4,
+câte un fișier pe freză (`test/placi/placa-04/`), scrise de postul aplicației din IR, fiindcă bila nu e încă o formă de
+freză a documentului: plată Ø6 (șanțul la 3 mm, canalul cercului R25 în G3, plonjarea la 5 mm), bila Ø6, V90 și V60 (vârful
+la 2 mm). Fișa are valorile pe hârtie și toleranțele din plan, timpii estimați (T1: 1 min 23 s pe GRBL 1.1h din fabrică) și
+ce devin măsurătorile (diametrul efectiv, raza bilei, vârful teșit al V-ului, ca date ale sculelor). **Placa de regresie** e
+definită în aceeași fișă (generatorul documentației primește în `docs/etape/` doar fișe numerotate): fișierele de aur ale
+plăcilor 1, 2 și 4 și setul GRBL 1.1 al plăcii 3, pe o bucată de 600 × 400, cu zero-ul fiecărei zone; prima tăiere în
+tamponul T1. Codul: `ec428c9`.
+**Porțile:** compilatorul, 8 074 de teste unitare (0 căzute, 8 sărite), traducerile (539, 0 lipsă), proba documentației
+(fișele plăcilor: 3); CI-ul rapid, verde în toate cele 6 felii și în oracolul exportului 2D. Fiecare cotă a plăcii 4 e
+prezisă de oracolul independent al simulării, în toleranța planului (`placa04.test.ts`, 2 s).
+**Otrăvurile** (`test/otravuri/4.9.py`), într-o clonă din afara Drive-ului, pe cotele oracolului singure (proba de aur stă
+în `placa04.aur.test.ts`): 7 / 7 prinse, martorul scăpat. Sensul arcului (G3) l-ar fi ratat oracolul, care vede doar
+canalul: proba îl citește acum din text, iar otrava lui e prinsă.
+**Publicat pe test** pe 02.11, la 22:11, prin workflow-ul `publica` (`ec428c9`): documentația publicată are fișa plăcii 4,
+cu placa de regresie, și felia 4.9↑. Etapa 4 n-are puncte fără mașină rămase: 8 (laptopul de atelier) și plăcile cer
+owner-ul.
+
+## 2026-11-02 — Felia 6.T↑: gruparea vectorilor (ADR 0130) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem un worktree care sa faca si functia de group care sa stea langa ungroup” (owner-ul, pe 02.11,
+în sesiunea principală, care a pornit sesiunea paralelă a grupării cu brief-ul ei).
+**Started:** 02.11, 20:35. **Completed:** 02.11, 21:33.
+
+Într-o sesiune paralelă, în worktree-ul `C:\Users\besli\cncvs2-lucru\grupare` (ramura `wip/6.T-grupare`, din `main`
+`77a1be6`), pe portul e2e 4177. **Grupează** (butonul de lângă Degrupează, primul rând din meniul de clic dreapta, Ctrl+G,
+paleta) face din cel puțin două forme alese o singură piesă: un grup nou pe rădăcină, cu câte un copil pe formă, în ordinea
+foii, într-un pas de anulare. Lumea rămâne la bit (locul comun al formelor, ca la părțile unei degrupări, sau originea, cu
+locul fiecăreia compus în rădăcina ei), iar operațiile se înșiră parte după parte, deci G-code-ul, fără comentarii, e același
+cât formele stau una după alta în ordinea foii. Id-urile care s-ar repeta primesc `_<n>`, iar blocul unui text primește
+amprenta contururilor redenumite: după degrupare, textul se editează din nou. Refuzate, cu motiv: o singură formă, două
+V-carve-uri cu aceleași valori în forme diferite (s-ar săpa ca o regiune; valorile stau acum o singură dată, în
+`valoriVcarve`, citite și de lucrare), piesa împărțită, nivelurile. Comanda e `regrupeaza` a degrupării, cu `locuri`
+(indicii părților): inversa pune fiecare formă exact unde era. Implicitele alese de mine, scrise în ADR, cu întrebările în
+raport: grupurile în grupuri permise (un nivel pe grupare), piesa cu mai multe instanțe refuzată, alinierea selecției ca bloc
+(fără grupare) într-o felie următoare. La zi: ADR 0130, indexul, manualul (ro, en: capitolul Gruparea, meniul, scurtăturile),
+fișa (6.T↑), CLAUDE.md, ACOPERIRE (rândul vectorilor), traducerile (536, 0 lipsă). Codul: `791be6b`.
+**Porțile:** compilatorul, importurile (17 reguli, 0 încălcări), traducerile (0 lipsă), 8 045 de teste unitare (8 035 trec, 2
+picau pe ADR-ul încă netradus, verzi după traducere; 8 sărite), build-ul determinist (228 de fișiere identice; pornirea 98,4 →
+99,1 / 110 kB, cu ușa 102,6; totalul 448,9 → 450,2 / 500), e2e pe 4177: 296 de probe, toate verzi în afară de
+`raportor.spec.ts:73`, care cere adresa `http://localhost:4173/` (cunoscută, de mediu: portul e al sesiunii principale), iar
+proba manualului a cerut 25 de capitole (capitolul nou). Emulatoarele n-au rulat: felia nu atinge funcțiile sau regulile.
+Otrăvurile din `test/otravuri/6.T.py`: **27 / 27** prinse (22 unitare, 5 pe e2e, cele din urmă cu build-ul și Playwright prin
+`node`, npm fiind stricat în Git Bash). Lista a arătat întâi cinci goluri în probe, închise înainte de rulare (aceeași poziție
+cu altă rotire, numele comun, o formă împărțită aleasă singură, ordinea compunerii cu o rădăcină oglindită, cheia V-carve-ului
+fără adâncime).
+**Publicat pe canalul `grupare`** pe 02.11, la 21:32: <https://cncvectorstudio-test--grupare-lkwk3rmp.web.app> (versiunea
+`791be6b6bb13`, până pe 02.12). Verificat acolo: două forme alese, Ctrl+G, un singur rând („Part: 2 shapes”, cu ambele
+operații), Degrupează activ; Ctrl+Z le desface la loc.
+
+## 2026-11-02 — Felia 6.T↑, trecerea 2: răspunsurile owner-ului (ADR 0130) (Model: Claude Opus 5.5)
+
+**Prompt:** „1 e ok. 2, in principiu vreau flexibilitate si optiuni, dar cu quality of life ridicat. inteleg ca nu totul
+trebuie implementat acum, pentru ca nu indeplinim toate toate situatiile. 3, ok 4, v-carve oricum nu s-a aplica intre litere
+si doar in interiorul unei singure litere” (owner-ul, direct în sesiunea grupării, la cele patru întrebări din raport).
+**Started:** 02.11, 21:40. **Completed:** 02.11, 22:19.
+
+Răspunsurile 1–3 confirmă implicitele: grupurile în grupuri rămân permise; piesa cu mai multe instanțe rămâne refuzată acum,
+iar când nivelul doi devine vizibil, gruparea ei vine cu opțiuni; alinierea ca bloc, fără grupare, vine într-o felie
+următoare, după unirea grupării. Le-am scris în ADR 0130 și în CLAUDE.md („Decizii luate”). Răspunsul 4 schimbă felia:
+V-carve-urile cu aceleași valori din forme diferite se grupează. În grup, lucrarea le sapă ca o singură regiune par-impar (axa
+medială calculată o dată pentru toate), deci G-code-ul diferă, dar suprafața săpată rămâne în marginile V-carve-ului față de
+suprafața ideală, pe oracolul independent al simulării: înainte și după grupare, niciodată mai adânc cu peste 0,0014 mm, cel
+mult 0,0095 mm de material lăsat. Față de săparea de dinainte: 0 la formele alăturate, 0,0047 mm la un cerc în golul unui
+inel, 0,0077 mm la două texte. Refuzul a rămas doar unde regiunile se ating sau se suprapun, fiindcă acolo suprapunerea ar
+rămâne nesăpată: atingerea se caută pe puncte la cel mult 0,05 mm pe contur, apoi incluziunea, cu un vârf al fiecărui contur.
+Motivul refuzului trimite acum la panoul de proprietăți (adâncimea, pasul), unde se schimbă cel mai ușor. Codul: `5b99cf6`,
+`a86e6f3`, `17dbad4`.
+**Porțile:** compilatorul, importurile (17 reguli, 0 încălcări), traducerile (536, 0 lipsă), 8 072 de teste unitare (0
+eșuate, 8 sărite), build-ul determinist (228 de fișiere; pornirea 99,1 / 110 kB, cu ușa 102,6; totalul 450,2 → 450,7 / 500),
+e2e-ul importului și al manualului, 28 / 28. Otrăvurile: **34 / 34** (29 unitare, dintre care 7 noi pe gardă; cele 5 e2e,
+din trecerea întâi, pe interfața neschimbată). L01 (cheia V-carve-ului fără adâncime) a scăpat întâi: cazul „altă adâncime”
+schimba și pasul, deci cheia diferea oricum; proba schimbă acum doar adâncimea.
+**Republicat pe canalul `grupare`** la 22:19 (versiunea `17dbad4ce480`). Verificat acolo: dreptunghiul și cercul din el, cu
+același V-carve (3 mm, T2): Ctrl+G nu grupează, iar butonul Grupează spune motivul. Pe tastă, refuzul e tăcut, ca la
+degrupare.
+
+## 2026-11-02 — Unirea grupării (felia 6.T↑, ADR 0130) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „poti uni worktree asta deocamdata” (cu captura sesiunii „Gruparea, lângă degrupare”; acolo, owner-ul răspunsese
+„Da, unește” la întrebarea sesiunii despre unirea în main și publicarea pe test).
+**Started:** 02.11, 22:29. **Completed:** 02.11, 23:04. O fuziune (`9486a61`) a ramurii `wip/6.T-grupare` (6 commit-uri, din
+`77a1be6`), cu conflictele doar de adăugare (DEVLOG, jurnalul feliilor, indexul ADR, cu 0130 înaintea lui 0131, CLAUDE.md),
+rezolvate păstrând ambele părți; traducerile: 541, 0 lipsă. Porțile pe arborele unit: compilatoarele, importurile (852 de
+module, 0 încălcări), 8 088 de teste unitare (0 căderi, 8 sărite), build-ul determinist (230 de fișiere; pornirea 99,1, cu
+ușa 102,6 / 110 kB; totalul 450,7 / 500), licențele, e2e 297 / 297, cu `raportor.spec.ts:73`, care pe ramură cerea portul
+4173. Emulatoarele n-au rulat: nici ramura, nici main-ul de după ea nu ating funcțiile sau regulile.
+**Publicat pe adresa principală de test:** 02.11, 22:52, `publica` pe `9486a61` (rularea 41522682384), după CI-ul rapid
+verde (41521633861). Verificat în browserul aplicației la 1440 px, pe `cncvectorstudio-test.web.app`, după „Reload”:
+versiunea `9486a61164d4`; butonul Grupează stă lângă Degrupează; un dreptunghi și un cerc, alese cu fereastra, devin la
+Grupează un singur rând („Part: 2 shapes”, cu ambele operații), iar Ctrl+Z le desface; foaia a rămas goală după probă. În
+consolă, doar avertismentul report-only al cadrului google.com (reCAPTCHA-ul App Check), nu al aplicației.
+**Rămâne:** refuzul tăcut pe tastă (Ctrl+G, ca și Ctrl+Shift+G la degrupare), găsit de sesiunea grupării, stă în tastatura
+din `App.tsx`: întrebarea, la owner. Worktree-ul grupării rămâne: sesiunea continuă cu alinierea selecției ca bloc și
+avertismentul la contururile care se ating („3, ok”).
+
+## 2026-11-02 — Refuzul de pe Ctrl+G, spus lângă butoane; schița ordinii operațiilor (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește” (la „Repar întâi tăcerea de pe Ctrl+G, apoi pornesc reordonarea de mână?”). Pe drum: „o sa facem
+pauza cat de curand”.
+**Started:** 02.11, 23:19. **Completed:** 02.11, 23:49.
+
+**Tăcerea de pe Ctrl+G**, găsită de sesiunea grupării: tastele și paleta trec prin ușa aplicației (`executa` din `App.tsx`),
+care oprea în tăcere o acțiune refuzată, iar butonul și meniul trec prin modulul editării, care spune motivul lângă butoane.
+Acum ușa îi dă motivul modulului (`onRefuz`, ca `onLipeste` și `onDesen`): Ctrl+G și Ctrl+Shift+G își spun refuzul lângă
+butoane, până la altă selecție (ADR 0130 §7, precizat; manualul, în ambele limbi). Proba întâi: cazul cu o singură formă
+aleasă, adăugat în e2e-ul grupării, a picat pe build-ul de dinainte și trece după. Codul: `0e458a9`.
+**Porțile:** traducerile (541, 0 lipsă), compilatoarele, importurile, 8 088 de teste unitare (0 căderi, 8 sărite), build-ul
+determinist (pornirea 99,2 / 110 kB, totalul 450,8 / 500), licențele, e2e 297 / 297. Publicarea pe test e pornită în fundal,
+după CI-ul rapid; verificarea ei, după pauză.
+
+**Reordonarea de mână a operațiilor** (etapa 5, ultima parte a rândului „Ordinea operațiilor” din prag): întâi schița, după
+regula owner-ului pentru o interfață nouă. Trei planșe, <https://claude.ai/artifact/Xadco685LSV84PKFCFkrWQ>: ordinea
+automată arătată (rândurile ferestrei exportului în ordinea în care se taie, cu numărul lor); „A mea”, cu rândurile mutate
+din mâner sau din săgeți și confirmarea cerută când exteriorul unei piese se taie înaintea unui interior al ei; regiunile
+care se sapă împreună (buzunarele de aceeași adâncime, V-carve-urile cu aceleași valori), la locul primului lor rând.
+Ordinea ar sta în document (v19); nicio ramură paralelă nu schimbă schema. Fără cod: ADR-ul (0133) și felia, după răspunsul
+owner-ului.
+**Sesiunile paralele:** senderul pe tot ecranul (13.A↑) transmite că owner-ul a cerut unirea („Merge, unește”, în sesiunea
+lui; cinci conflicte în fișierele comune); Trenuleț are 3.Xa gata pe ramura lui și întreabă de 3.Xb; textul așteaptă un
+răspuns. Nimic din ele nu e unit înaintea pauzei.
+
+## 2026-11-02 — Felia 13.A↑: meniul global și fereastra Mașina pe tot ecranul (ADR 0132) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau inca un worktree care sa faca panoul sender-ului mai mare, el trebuie sa fie fullscreen, sub meniu. Atentie,
+meniul global, el va fi diferit de cel cu uneltele de desen. ca la cvs1 acest meniu va aparea doar in fereastra de
+desing/desen/project”, apoi „Da, cu recomandările” (la schița meniului global și a ferestrei Mașina, cu nouă întrebări).
+**Started:** 02.11, 21:30. **Completed:** 02.11, 22:54.
+
+Sus, în toate ferestrele, **meniul global** (zona `meniu` a aranjamentului): marca, filele **Proiectare** și **Mașina** (o
+listă, `aranjament.ferestre`, ca o extensie să-și adauge fila), indicatorul lucrării, apoi căutarea, limba, tema și contul.
+Bara de desen și extensia ei stau doar în Proiectare, pe tot rândul lor; panoul mașinii a ieșit din docul din dreapta.
+**Mașina** e o fereastră pe tot ecranul, sub meniu: trei coloane de la 80 rem (mașina, lucrarea, consola), două până la
+48 rem, una pe telefon, în ordinea urgenței, cu poziția în cifre mari; se montează la prima deschidere și rămâne montată.
+Proiectarea nu se demontează: e acoperită și inertă, iar tastele desenului nu ating desenul ascuns (carcasa, prin `ORIUNDE`;
+modulul editării, prin `activ`; nodurile nu stau montate); o comandă a desenului din paletă întoarce întâi la Proiectare; F1
+în Mașina deschide capitolul ei. Fereastra se ține în browser (`cncvs2.fereastra`).
+**Indicatorul** (`src/machine/indicator.ts`, pur): conectată, rulează N % (cu Pauză), pauză (cu Reia), oprită la M6 / la
+linia N / pe o eroare, alarmă, întreruptă (și cu legătura căzută), gata; procentul, cel mult 99 până la „gata” (pe mașina
+simulată, cu tot programul trimis, arăta „100 %” cât freza încă tăia); un clic deschide Mașina; titlul filei poartă procentul.
+Pe telefon, punctul, procentul și iconițele încap lângă file. **Lucrarea pornită** (fazele cu punct de reluare ale fluxului,
+`cuPunctDeReluare`, exportat din `flux.ts`, deci aceeași definiție): `beforeunload`, iar „Reîncarcă” devine „Reîncarcă după
+lucrare”, dezactivat (semnalul `lucrarePornita`, în pornire). **„Deschide în Mașina”**, în fereastra exportului, doar după un
+export pentru sender: încarcă primul fișier, fără pornire; cu o lucrare pornită, refuză, cu motivul. Escape în Mașina închide
+formularul WiFi și confirmările.
+Găsit pe drum: eticheta mânerelor își căuta locul sub `header.sus` (acum `div`): căutarea, după clasă; o probă a textului
+dădea clic în colțul pânzei, acum sub meniu; o probă a panourilor cerea o foaie mai mare la 1280 × 720, unde meniul face
+foaia limitată de înălțime (proba, la 900 px).
+La zi: manualul (ro, en: primii pași, Mașina, exportul), ADR 0132 (nou) și 0081 (schimbat), indexul ADR, fișa, CLAUDE.md,
+traducerile.
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 / 17), traducerile (537, 0 lipsă), 8 068 de teste unitare
+(8 059 trec, 8 sărite; una, a traducerilor, refăcută după completare, verde), build-ul determinist (228 de fișiere identice;
+pornirea 99,1, cu ușa 102,6 / 110 kB; totalul 450,8 / 500), licențele, e2e 299 / 303 în suita întreagă pe portul 4178:
+`raportor.spec.ts` cere portul 4173 (ca la celelalte worktree-uri), iar `animatie` (timp, sub încărcare), `export` (`EBUSY` pe
+un artefact Playwright) și `text` (un clic în colțul pânzei, rămas sub meniu, reparat în probă) au trecut reluate singure; CI-ul
+rapid, verde pe ramură (rularea 41519119497). Verificat în browserul aplicației: meniul pe un rând la 1440 px (45 px), două
+coloane la 800 px, telefonul (meniul pe două rânduri, indicatorul compact), „Reîncarcă după lucrare” dezactivat cât rulează
+lucrarea, ambele teme.
+**Otrăvurile** (`test/otravuri/13.A.py`, în worktree-ul din afara Drive-ului, după commit): 26 / 27 prinse. Cele 16 pe logică
+(indicatorul, fereastra ținută, aranjamentul), cu unealta; cele 11 de interfață, prin build și e2e cu `node`. E02 (garda
+tastelor din modulul editării) a scăpat întâi: proba apăsa tastele cu focusul pe fila Mașina, unde modulul editării nu ascultă;
+proba dă acum clic pe un loc fără focus din fereastră (focusul pe pagină) și o prinde. E11 e echivalentă: aplicația dă
+dialogului funcția „Deschide în Mașina” doar cu `stareExport.ok`, iar dialogul primește aceeași stare, deci condiția lui
+`stare?.ok` e dublată. Nedovedit prin e2e: nodurile nemontate în Mașina (garda lor e montarea, nu o tastă).
+**Publicat** pe canalul `sender-ecran` al instanței de test, la 22:24:
+https://cncvectorstudio-test--sender-ecran-u16smtls.web.app (versiunea `2856b1749215`, expiră 02.12); adresa principală de test
+a rămas pe `ec428c9ad9f7` (a liniei principale). Pe canal: Mașina se deschide, mașina simulată se conectează, consola fără
+erori.
+
+## 2026-11-02 — Felia 6.U↑: alinierea ca bloc (ADR 0150) (Model: Claude Opus 5.5)
+
+**Prompt:** „3, ok” (owner-ul, la întrebarea din raportul grupării: „Alinierea mai multor forme ca un bloc, fără grupare, plus
+un avertisment când contururile ajung să se atingă: recomand o felie următoare, după unirea asta.”), pornită după mesajul
+sesiunii principale că gruparea e unită și publicată („pornește o ramură nouă din main-ul de acum”).
+**Started:** 02.11, 23:15. **Completed:** 02.11, 23:37.
+
+În aceeași sesiune paralelă, în worktree-ul `C:\Users\besli\cncvs2-lucru\grupare`, pe ramura nouă `wip/6.U-aliniere`, din
+`main` `c5b8e69` (owner-ul, în sesiunea principală: „poti uni worktree asta deocamdata”). În secțiunea Aliniere, comutatorul
+**Ca bloc** face ca cele șase alinieri să mute cutia comună a formelor alese față de foaie, cu aceeași deplasare pentru toate:
+așezarea dintre ele rămâne, deci nu ajung una peste alta (notița 3). Oprit implicit, ținut în browser
+(`cncvs2.aliniere-bloc`); distribuirea, centrarea pe foaie și alinierea unei singure forme nu se schimbă; sfatul butoanelor
+spune „(ca bloc, față de foaie)”. Avertismentul la contururile care se ating l-am lăsat verificării vectorilor din etapa 10
+(ADR 0124, încă pe ramura ei), care găsește deja intersecțiile și atingerile: un al doilea detector ar fi o a doua părere.
+ADR-ul are numărul 0150, ca să ocolească numerele celorlalte ramuri (0123–0132, 0140–0142) și pe cele următoare ale liniei
+principale (de la 0133). La zi: ADR 0150, indexul, manualul (ro, en), fișa, CLAUDE.md, ACOPERIRE, traducerile (543, 0
+lipsă). Codul: `0d6d568`.
+**Porțile:** compilatorul, importurile (17 reguli, 0 încălcări), traducerile, 8 089 de teste unitare (0 eșuate, 8 sărite),
+build-ul determinist (231 de fișiere identice; pornirea 99,1 / 110 kB, cu ușa 102,6; totalul 450,9 / 500), e2e-ul selecției,
+al editării și al manualului, 20 / 20, pe portul 4177. Otrăvurile din `test/otravuri/6.U.py`: **6 / 6** prinse (2 unitare; 4
+pe e2e, prin învelișul cu `node`).
+**Publicat pe canalul `grupare`** la 23:36 (versiunea `0d6d568dee7f`). Verificat acolo: comutatorul e în secțiunea Aliniere,
+cu sfatul lui, oprit.
+
+## 2026-11-03 — Unirea senderului pe tot ecranul (13.A↑) și a alinierii ca bloc (6.U↑) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (după pauză), apoi „si unește 13.A↑” și „si pe” (cu captura sesiunii „Gruparea, lângă degrupare”).
+**Started:** 03.11, 07:02. **Completed:** 03.11, 10:00.
+
+Reluarea după pauză: `main` la `35327cf`, curat, CI-ul de noapte verde (02.11). Pe test, versiunea `0e458a925538`: cu o
+singură formă aleasă, Ctrl+G și Ctrl+Shift+G își spun motivul lângă butoane. Publicarea ei reușise la 00:00; ajutorul meu
+raportase eșec fiindcă o căuta după commit, iar rularea pornită de mână poartă vârful ramurii (îndreptat: o caută după oră).
+Două fuziuni: `12b6709` (13.A↑) și `d691051` (6.U↑). Conflictele: cele de adăugare (DEVLOG, jurnalul feliilor, indexul ADR,
+CLAUDE.md), plus `App.tsx` la 13.A↑. Acolo, `executa` comută întâi la Proiectare o comandă a desenului aleasă din Mașina,
+iar refuzul ei ajunge apoi la modulul editării; `Editare` primește și `activ`, și `onRefuz`. Ușile manualului sunt 71:
+ambele ramuri urcaseră numărul de la 69 la 70, iar git unise schimbarea identică fără conflict.
+**Porțile:** traducerile (546, 0 lipsă), compilatoarele, importurile, 8 099 de teste unitare (0 căderi, 8 sărite), build-ul
+determinist (232 de fișiere; pornirea 99,9, cu ușa 103,4 / 110 kB; totalul 453,1 / 500; /admin 105,5 / 200), licențele, e2e
+305 / 305.
+**Publicat pe test:** 03.11, 09:56, `publica` pe `d691051` (rularea 41599353572), după CI-ul rapid verde. Verificat în
+browserul aplicației la 1440 px: versiunea `d6910511d758`; meniul global (Design / Machine, căutarea, limba, tema, contul);
+fereastra Mașina pe tot ecranul, pe trei coloane (conexiunea și starea, lucrarea și programul, consola); comutatorul „As a
+block” în rândul alinierii; fără erori în consolă. La prima deschidere, Mașina stă goală câteva clipe, cât vine modulul ei.
+
 ## 2026-11-02 — Felia 3.S: primirea lucrărilor de la Planificatorul Trenuleț (ADR 0126) (Model: Claude Opus 5.5)
 
 **Prompt:** „Da, ca recomandat” (la „Aprobi cadrul izolat, cu senderul prin HostApi?”), în sesiunea dedicată liniei Trenuleț

@@ -1,10 +1,9 @@
 import { esteCaleDeschisa, type Document, type FrezaRest } from '../model/document.ts';
-import { jsonCanonic } from '../model/jsonCanonic.ts';
 import { oglindeste } from '../model/parte.ts';
 import { conturDeTaiat } from './contur.ts';
 import { judecaDeschisa, NEATINS_PESTE_D, refuzDeschise } from './deschise.ts';
 import { conturElement } from '../model/forme.ts';
-import { grupeazaPeScula, taieturiFoaie, type Taietura } from '../model/lume.ts';
+import { ordineTaieturi, valoriVcarve, type Taietura } from '../model/lume.ts';
 import { AXE_XYZ, type Miscare, type Program, type Scula } from '../ir/ir.ts';
 import { ineleBuzunar, ordineInele, traseuBuzunar } from './buzunar.ts';
 import { traseuParalel } from './paralel.ts';
@@ -168,8 +167,8 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
     return { ok: false, motiv: `supracursa trebuie să fie între 0 și ${SUPRACURSA_MAXIMA} mm (${supracursa})` };
   }
   const grosime = foaie.stoc.grosime;
-  // Ordinea contractului, grupată pe sculă în fiecare clasă (ADR 0084).
-  const taieturi = grupeazaPeScula(taieturiFoaie(doc, 0));
+  // Ordinea contractului, grupată pe sculă în fiecare clasă (ADR 0084), sau ordinea de mână a omului (ADR 0133).
+  const taieturi = ordineTaieturi(doc, 0);
   if (taieturi.length === 0) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
   const prima = taieturi[0];
   if (!prima) return { ok: false, motiv: 'nicio formă n-are o operație de tăiere' };
@@ -345,10 +344,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   // V-carve ale unei piese dintr-o instanță cu aceleași valori (freza, adâncimea, pasul, sensul, fundul plat), oricâte
   // operații ar fi (ADR 0112, precizarea): un text cu operațiile importului (exteriorul, golurile), trecute pe V-carve rând cu
   // rând în fereastra exportului, se sapă cu golurile lui, ca dintr-o singură operație.
-  const cheieVcarve = (u: Taietura): string => `${u.instanta}/${u.piesa}/${jsonCanonic({
-    scula: { numar: u.scula.numar, diametru: u.scula.diametru, forma: u.scula.forma ?? null }, adancime: u.adancime, pas: u.pas, sens: u.sens,
-    fundPlat: operatieDe(u)?.fundPlat ?? null,
-  })}`;
+  const cheieVcarve = (u: Taietura): string => `${u.instanta}/${u.piesa}/${valoriVcarve({ ...u, fundPlat: operatieDe(u)?.fundPlat })}`;
   const vcarveFacute = new Set<string>();
   for (const [it, t] of taieturi.entries()) {
     const latura = t.latura;

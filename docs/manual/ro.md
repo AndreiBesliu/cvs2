@@ -2,16 +2,19 @@
 
 ## Primii pași
 %% capitol: pornire
-%% acopera: vedere.paleta, vedere.lista, vedere.proprietati, vedere.tema, editare.manual
+%% acopera: vedere.paleta, vedere.lista, vedere.proprietati, vedere.proiectare, vedere.tema, editare.manual
 
 CNC Vector Studio desenează piese pentru o freză CNC și scrie programul (G-code) pe care îl taie mașina. Lucrezi pe o
 **foaie** (placa de material), pui pe ea forme, fiecare cu **operația** ei de tăiere, apoi exporți G-code-ul.
 
-**Ecranul.** Pânza ține tot ecranul; deasupra ei plutesc:
+**Ecranul.** Sus de tot stă **meniul aplicației**, în toate ferestrele: marca, filele ferestrelor (**Proiectare** și
+**Mașina**), indicatorul lucrării (cu mașina conectată, vezi [Mașina](#masina)), apoi „Caută o comandă”, limba (RO / EN),
+tema și butonul **Cont**. Fila apăsată e fereastra de acum; aplicația se redeschide în ea la pornirea următoare.
+
+În fereastra **Proiectare**, pânza ține tot ecranul; deasupra ei plutesc:
 - **bara de sus**: uneltele de desen, Lipire și Grilă, Anulează și Reface și, la capăt, fișierele: importul, „Exportă
   vectori” și „Exportă G-code”;
-- **extensia barei**, dedesubt: alinierea, oglindirea, vederea 3D și manualul;
-- în dreapta sus: „Caută o comandă”, limba (RO / EN) și tema;
+- **extensia barei**, dedesubt: alinierea, oglindirea, copierea, offsetul, booleanul și vederea 3D;
 - în stânga, panoul **Pe foaie**: formele foii, cu piesa și operațiile fiecăreia; în dreapta, panoul **Proprietăți**;
 - jos: ce e selectat, cursorul pe foaie (în mm, din colțul stânga-jos al foii), zoomul, jurnalul de erori, „Arată
   traseul” și „Arată toată foaia”.
@@ -24,7 +27,7 @@ Paleta arată toate comenzile, cu tasta fiecăreia; la cele care se fac cu mausu
 
 **Manualul** se deschide din meniul **Cont**, din colțul din dreapta-sus (rândul **Manualul**), sau cu `F1`. Cu F1 se
 deschide la capitolul a ce faci acum
-(unealta aleasă, vederea 3D, fereastra deschisă). În manual poți căuta după cuvinte, cu sau fără diacritice.
+(unealta aleasă, vederea 3D, fereastra deschisă, Mașina). În manual poți căuta după cuvinte, cu sau fără diacritice.
 
 **Unde se salvează.** Proiectul se salvează singur, în browserul ăsta, la fiecare schimbare. Vezi [Proiectul și
 salvarea](#proiect).
@@ -307,17 +310,37 @@ tăierii păstrează clasele (întâi interioarele, apoi liniile, la urmă exter
 contururi (degroșare și finisare) le taie, după degrupare, contur cu contur. După degrupare, alese sunt toate părțile, iar un
 singur `Ctrl+Z` le adună la loc.
 
-Degruparea se refuză, cu motivul spus lângă butoane, dacă un **V-carve** își sapă contururile împreună (literele cu golurile
-lor: despărțite, golurile s-ar săpa și ele), dacă piesa e folosită și de alte instanțe sau dacă nicio formă aleasă nu e un grup.
+Degruparea se refuză, cu motivul spus lângă butoane (și la `Ctrl+Shift+G`), dacă un **V-carve** își sapă contururile împreună
+(literele cu golurile lor: despărțite, golurile s-ar săpa și ele), dacă piesa e folosită și de alte instanțe sau dacă nicio
+formă aleasă nu e un grup.
+
+## Gruparea
+%% capitol: grupare
+%% acopera: document.grupeaza
+
+**Grupează** (butonul de lângă Degrupează, meniul de clic dreapta, `Ctrl+G`) face din formele alese, cel puțin două, o singură
+piesă: se alege, se mută, se rotește și se aliniază ca un bloc, deci formele ei nu se mai suprapun la aliniere. O piesă care era
+deja un grup (un import, un text, o formă cu găuri) intră întreagă, ca un nivel al grupului nou; **Degrupează** desface doar
+acel nivel.
+
+Fiecare formă stă exact unde era și își păstrează operația (latura, adâncimea, freza): **ce se taie rămâne același**. Grupul ia
+locul primei forme alese în ordinea tăierii; dacă între formele alese erau altele, ele se taie, în aceeași clasă, după grup.
+Într-un grup, un text e doar vectori; după degrupare, se editează din nou. După grupare, ales e grupul, iar un singur `Ctrl+Z`
+desface gruparea, cu fiecare formă la locul ei.
+
+Două texte (sau forme) cu câte un **V-carve** cu aceleași valori se grupează: freza le sapă într-un singur drum, iar fiecare
+literă iese la fel. Gruparea se refuză, cu motivul spus lângă butoane (și la `Ctrl+G`), dacă e aleasă o singură formă, dacă două
+forme cu același V-carve se ating sau se suprapun (grupate, s-ar săpa ca o singură regiune, iar suprapunerea ar rămâne nesăpată)
+sau dacă o piesă aleasă e folosită și de alte instanțe.
 
 ## Meniul de clic dreapta
 %% capitol: meniu
 %% acopera: editare.meniu
 
-Clicul dreapta pe pânză deschide **meniul de clic dreapta**, cu ce se poate face pe selecție: **Degrupează**, apoi **Unește**,
+Clicul dreapta pe pânză deschide **meniul de clic dreapta**, cu ce se poate face pe selecție: **Grupează** și **Degrupează**, apoi **Unește**,
 **Scade** și **Intersectează** (booleanul), apoi **Duplică** și **Șterge selecția**, fiecare cu tasta lui. Pe o formă care nu e
 aleasă, clicul dreapta o alege întâi; pe gol, selecția rămâne. Un rând e activ doar când se poate (booleanul, cu două forme;
-degruparea, cu un grup ales); un refuz își spune motivul în meniu.
+gruparea, cu cel puțin două; degruparea, cu un grup ales); un refuz își spune motivul în meniu.
 
 Săgețile trec între rânduri, `Enter` rulează rândul, `Esc` închide meniul; se închide și la un clic în afara lui, la rotiță sau
 după o comandă făcută. În vederea 3D, clicul dreapta nu deschide meniul.
@@ -359,7 +382,7 @@ Jos, un sfat spune ce se poate face sau de ce forma aleasă nu se poate edita.
 
 ## Alinierea
 %% capitol: aliniere
-%% acopera: editare.aliniere, document.muta-instantele, aliniaza.stanga, aliniaza.centru-x, aliniaza.dreapta, aliniaza.sus, aliniaza.centru-y, aliniaza.jos, aliniaza.centru-foaie, aliniaza.distribuie-x, aliniaza.distribuie-y
+%% acopera: editare.aliniere, editare.aliniere-bloc, document.muta-instantele, aliniaza.stanga, aliniaza.centru-x, aliniaza.dreapta, aliniaza.sus, aliniaza.centru-y, aliniaza.jos, aliniaza.centru-foaie, aliniaza.distribuie-x, aliniaza.distribuie-y
 
 Secțiunea **Aliniere** din extensia barei e mereu acolo; butonul ei o strânge spre stânga și o deschide la loc. Butoanele
 **aliniază** cutiile formelor alese:
@@ -376,6 +399,12 @@ Secțiunea **Aliniere** din extensia barei e mereu acolo; butonul ei o strânge 
 Cu o singură formă aleasă, alinierea o pune față de foaie (de exemplu, „Aliniază la stânga” o duce la marginea din stânga a
 foii). **Centrează pe foaie** lucrează mereu față de foaie: mută toate formele alese cu aceeași deplasare, deci așezarea
 dintre ele rămâne, iar cutia lor comună ajunge în mijlocul foii. Mai multe forme se aleg cu dreptunghiul de selecție sau cu Shift + clic (vezi [Selecția și editarea](#selectie)).
+
+Comutatorul **Ca bloc** (primul buton după cel care strânge secțiunea) mută formele alese împreună, față de foaie: cutia lor
+comună se aliniază la marginea sau la mijlocul foii, iar așezarea dintre ele rămâne, deci nu ajung una peste alta. Fără el,
+fiecare formă se aliniază la cutia comună și se pot suprapune. Comutatorul se ține în browser, ca Lipirea; distribuirea și
+centrarea pe foaie lucrează la fel cu el sau fără. Ca niște forme să se miște mereu împreună, grupează-le (vezi
+[Gruparea](#grupare)).
 Fiecare aliniere se poate anula cu `Ctrl+Z`.
 
 ## Importul SVG, DXF, PDF, AI, EPS și WMF
@@ -655,12 +684,29 @@ urmă): acolo, `G0` poate merge pe fiecare axă cu viteza ei.
 
 Fiecare rând are **freza** lui: numărul sculei (T), diametrul (mm) și forma: **plată** sau **în V**, cu unghiul inclus al
 vârfului (între 1° și 179°, implicit 60°; la V, diametrul e cel al părții tăietoare). Rândurile cu freze diferite se taie cu o
-schimbare între ele: în fiecare clasă (interioarele, apoi pe linie, apoi exterioarele), întâi freza deja montată, ca
-schimbările să fie cât mai puține. Același număr cu două diametre sau două forme e refuzat: fiecare freză cere numărul ei.
+schimbare între ele: în ordinea automată, în fiecare clasă (interioarele, apoi pe linie, apoi exterioarele), întâi freza deja
+montată, ca schimbările să fie cât mai puține. Același număr cu două diametre sau două forme e refuzat: fiecare freză cere
+numărul ei.
+
+**Ordinea tăierii** stă deasupra tabelului. Rândurile apar în ordinea în care se taie, cu locul lor în coloana **#**:
+- **Automată** (implicit): interioarele întâi, apoi liniile, la urmă exterioarele și despărțirile foii; în fiecare, grupate pe
+  freză. O latură sau o freză schimbată în fereastră reface ordinea la export;
+- **A mea**: se taie de sus în jos. Muți un rând trăgând de mânerul lui (cele șase puncte) sau cu săgețile **↑** / **↓**. Lista
+  pornește din ordinea automată, iar **Înapoi la ordinea automată** o readuce. Ordinea se scrie în proiect la **Exportă**:
+  fereastra redeschisă o arată, iar traseul, timpul, animația și vederea 3D o urmează. O operație nouă (o formă desenată, un
+  import, un text) vine la capăt. Schimbările de freză urmează ordinea ta, deci pot fi mai multe decât în cea automată.
+
+V-carve-urile aceleiași piese, cu aceleași valori (freza, adâncimea, pasul, sensul, fundul plat), se sapă ca o singură
+regiune: rândul de după primul arată **cu N**, adică se sapă odată cu rândul N. Buzunarele nu se unesc: fiecare se taie la
+locul lui. Dacă în ordinea ta exteriorul unei piese vine înaintea altei operații a ei sau a unei forme din interiorul ei (un
+cerc desenat în dreptunghi), sau o despărțire a foii înaintea altei operații, piesa se poate desprinde înainte să fie gata:
+fereastra numește rândurile, iar **Exportă** cere bifa **Taie în ordinea mea** (orice mutare o șterge).
 
 Butonul **Exportă** descarcă fișierul și arată câte linii are și amprenta lui SHA-256 (cu ea verifici că pe mașină ajunge
 exact fișierul ăsta). Dacă freza ar ieși din foaie, fereastra spune cu cât și unde, iar exportul cere confirmarea ta că acolo
-nu e nimic în cale (cleme, șuruburi); confirmarea se scrie în antetul programului.
+nu e nimic în cale (cleme, șuruburi); confirmarea se scrie în antetul programului. După un export pe care îl trimite
+senderul aplicației (familia GRBL), **Deschide în Mașina** închide fereastra și încarcă programul în [Mașina](#masina), fără
+să-l pornească.
 
 **Rezumatul jobului** arată timpul estimat, pe operații și pe scule. Pentru timpii mașinii tale, lipește la „Setările
 mașinii” răspunsul controlerului la `$$` (din consola senderului); programul nu se schimbă.
@@ -691,7 +737,22 @@ legate cap la cap (o polilinie, apoi o curbă).
 %% capitol: masina
 %% acopera: vedere.masina
 
-Panoul **Mașina** (în dreapta, sub proprietăți) trimite programul la mașină, prin cablul USB sau prin WiFi, și îi arată starea.
+Fila **Mașina** din meniul aplicației deschide fereastra mașinii, pe tot ecranul, sub meniu: ea trimite programul la mașină,
+prin cablul USB sau prin WiFi, și îi arată starea. Pe un ecran lat stă pe trei coloane: mașina (conexiunea, starea și poziția,
+cu cifre mari, poziționarea), lucrarea (faza cu butoanele ei și programul) și consola (comanda și jurnalul). Pe un laptop,
+consola coboară dedesubt; pe telefon, totul stă pe o coloană, în ordinea urgenței.
+
+- **Desenul rămâne la un clic.** Fila **Proiectare** te întoarce la desen oricând, iar lucrarea continuă. Cât ești în Mașina,
+  tastele desenului (Delete, Ctrl+Z, săgețile, uneltele) nu ating desenul acoperit; `Ctrl+K` merge, iar o comandă a desenului
+  aleasă din paletă te duce întâi în Proiectare. `F1` deschide capitolul ăsta. **Escape** închide doar ce e deschis
+  (formularul WiFi, o confirmare): nu schimbă fereastra și nu trimite nimic la mașină.
+- **Indicatorul lucrării** stă în meniul aplicației, după prima deschidere a Mașinii, și se vede din orice fereastră: „Mașina
+  conectată”, „Rulează 42 %” (verde, cu **Pauză** alături), „Pauză 42 %” (portocaliu, cu **Reia**), „Oprită la M6”, „Oprită la
+  linia …” sau „Oprită pe o eroare” (portocaliu), „Alarmă” sau „Lucrare întreruptă” (roșu), „Lucrare gata”. Un clic pe el
+  deschide Mașina. **Oprește** rămâne doar în fereastră: o repornire apăsată din greșeală pierde poziția. Cât rulează
+  lucrarea, titlul filei browserului începe cu procentul.
+- **Cu o lucrare pornită**, închiderea sau reîncărcarea paginii cere întâi confirmarea browserului: legătura s-ar tăia, iar
+  lucrarea s-ar opri la mijloc. Tot atunci, „Versiune nouă gata” arată **Reîncarcă după lucrare**, dezactivat, până se termină.
 
 - **Conectează (USB)** te lasă să alegi portul mașinii (GRBL, 115 200 baud). Merge doar în Chrome sau Edge pe un calculator
   (Web Serial); altfel, panoul spune asta. Pe instanța de test mai e și **Mașină simulată**: un controler GRBL simulat, ca să
@@ -711,11 +772,12 @@ Panoul **Mașina** (în dreapta, sub proprietăți) trimite programul la mașin�
   fereastra exportului); **Fișier…** încarcă un G-code din alt program, verificat întâi. Un program se refuză, cu linia, dacă are
   caractere în afara ASCII (la GRBL, „ș” și „ț” ar schimba turația axului), capete de linie Windows (`\r`), linii de peste 70 de
   octeți, nu alege un sistem de coordonate (`G54`–`G59`) înaintea primei mișcări, schimbă scula (`M6`) fără să fie exportat de
-  aici sau n-are capăt de linie la sfârșit. Cu câte un fișier pe freză, **Fișierul ultimului export** alege care se încarcă.
+  aici sau n-are capăt de linie la sfârșit. Cu câte un fișier pe freză, **Fișierul ultimului export** alege care se încarcă. Din fereastra exportului, după un
+  export reușit, **Deschide în Mașina** aduce aici primul fișier al exportului, încărcat, fără să-l pornească.
 - **Lucrarea primită**: o aplicație care trimite lucrări (de exemplu Planificatorul Trenuleț, cu „Trimite la cvs2”) deschide
   cvs2 într-o filă nouă. Dialogul **Lucrare primită** spune cine trimite, de unde (o adresă, sau o pagină deschisă din fișier,
   de pe calculatorul tău) și ce fișiere, cu placa, freza și timpul. **Primește** verifică fiecare fișier la fel ca unul adus
-  cu **Fișier…** și deschide panoul; **Nu** îi răspunde aplicației că n-ai vrut lucrarea. Fișierele bune stau sub butoane, în
+  cu **Fișier…** și deschide fereastra Mașina; **Nu** îi răspunde aplicației că n-ai vrut lucrarea. Fișierele bune stau sub butoane, în
   ordinea de tăiere: alegi unul din **Fișierul lucrării primite** și apeși **Încarcă lucrarea**; cele refuzate stau dedesubt,
   fiecare cu motivul. Nimic nu pornește singur, iar lucrarea se pierde la reîncărcarea paginii (aplicația o poate trimite din
   nou). Pe instanța live, primirea e oprită deocamdată.
@@ -883,6 +945,7 @@ instalezi tu, iar interfața aplicației rămâne aceeași.
 | `Ctrl+Z` | Anulează |
 | `Ctrl+Y`, `Ctrl+Shift+Z`, `Ctrl+Shift+Y` | Reface |
 | `Ctrl+D` | Duplică |
+| `Ctrl+G` | Grupează |
 | `Ctrl+Shift+G` | Degrupează |
 | `Delete` | Șterge selecția |
 | `Ctrl+K` | Caută o comandă |

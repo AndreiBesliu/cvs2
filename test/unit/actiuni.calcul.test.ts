@@ -35,7 +35,8 @@ test('registrul păstrează cele cinci acțiuni la cerere, cu id-ul și eticheta
     'selectie.la-punct', 'selectie.din-lista', 'document.adauga-dreptunghi', 'document.adauga-cerc', 'document.importa',
     'document.muta-selectia', 'document.duplica-selectia', 'document.sterge-selectia', 'document.aplica-operatii', 'document.rol',
     'document.pozitioneaza', 'document.roteste', 'foaie.stoc', 'foaie.ghidaje', 'document.muta-instantele',
-    'document.deseneaza', 'document.transforma', 'document.copiaza-in-retea', 'document.forma', 'document.degrupeaza', 'document.text',
+    'document.deseneaza', 'document.transforma', 'document.copiaza-in-retea', 'document.forma', 'document.degrupeaza', 'document.grupeaza',
+    'document.text',
     'istoric.anuleaza',
     'istoric.reface',
   ]);
@@ -74,6 +75,18 @@ test('degruparea (ADR 0103) n-are date de fereastră: fără calcul, spune că e
     assert.deepEqual(stare(R, 'document.degrupeaza', ales), { ok: false, motiv: 'motiv.editare-se-incarca' });
     assert.deepEqual(ruleaza(R, 'document.degrupeaza', ales), { ok: false, motiv: 'motiv.editare-se-incarca' });
     assert.equal(ales.h(), inainte, 'documentul nu se schimbă');
+  }
+});
+
+test('gruparea (ADR 0130), la fel: fără selecție o cere, cu o formă cere două, cu două spune că editarea se încarcă (nu aruncă)', () => {
+  for (const doarCitire of [false, true]) {
+    assert.deepEqual(stare(R, 'document.grupeaza', context([], doarCitire)), { ok: false, motiv: 'motiv.nicio-selectie' });
+    assert.deepEqual(stare(R, 'document.grupeaza', context(['e1'], doarCitire)), { ok: false, motiv: 'motiv.grupare-doua' });
+    const doua = context(['e1', 'e2'], doarCitire);
+    const inainte = doua.h();
+    assert.deepEqual(stare(R, 'document.grupeaza', doua), { ok: false, motiv: 'motiv.editare-se-incarca' });
+    assert.deepEqual(ruleaza(R, 'document.grupeaza', doua), { ok: false, motiv: 'motiv.editare-se-incarca' });
+    assert.equal(doua.h(), inainte, 'documentul nu se schimbă');
   }
 });
 

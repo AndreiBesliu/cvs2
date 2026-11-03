@@ -10,8 +10,8 @@ import { ACTIUNI_EXPORT } from '../../src/ui/actiuniExport.ts';
 import { ACTIUNI_IMPORT } from '../../src/ui/actiuniImport.ts';
 import { ACTIUNI_VEDERE } from '../../src/ui/actiuniVedere.ts';
 import {
-  ARANJAMENT_MODERN, COMUTA_PANOU, DOCURI, PANOURI, verificaAranjament, ZONE, ZONE_CU_DATA_ACTIUNE,
-  type Aranjament, type Grup, type IdZona,
+  ARANJAMENT_MODERN, CIPURI, CIPURI_GLOBALE, COMUTA_PANOU, DESCHIDE_FEREASTRA, DOCURI, FERESTRE, PANOURI, verificaAranjament, ZONE,
+  ZONE_CU_DATA_ACTIUNE, type Aranjament, type Grup, type IdFereastra, type IdZona,
 } from '../../src/ui/aranjament.ts';
 
 /** Toate id-urile registrului: cele patru registre ale aplicației, ca în paletă. */
@@ -31,10 +31,12 @@ test('aranjamentul implicit: fiecare acțiune din el există în registru și ap
     for (const id of ids) assert.ok(REGISTRU.has(id), `zona ${z}: „${id}” nu e în registru`);
     assert.equal(new Set(ids).size, ids.length, `zona ${z} are o acțiune de două ori: ${ids.join(', ')}`);
   }
-  // Plasa nu e vidă: bara de sus, uneltele, bara selecției și cea de jos au, împreună, acțiunile prototipului B, plus
-  // „Arată traseul” în bara de jos (2.8d), fără „Adaugă dreptunghi / cerc” (ADR 0052: locul uneltelor de desen).
-  assert.equal(numarate, 4 + 2 + 3 + 2);
+  // Plasa nu e vidă: meniul global, bara de sus, bara selecției și cea de jos au, împreună, acțiunile prototipului B, plus
+  // „Arată traseul” în bara de jos (2.8d), fără „Adaugă dreptunghi / cerc” (ADR 0052: locul uneltelor de desen). Căutarea și
+  // tema au trecut din colțul barei în meniul global (ADR 0132).
+  assert.equal(numarate, 2 + 4 + 0 + 3 + 2);
   for (const p of PANOURI) assert.ok(REGISTRU.has(COMUTA_PANOU[p]), `panoul ${p}: comutatorul lipsește din registru`);
+  for (const f of FERESTRE) assert.ok(REGISTRU.has(DESCHIDE_FEREASTRA[f]), `fereastra ${f}: fila ei lipsește din registru`);
   assert.deepEqual(verificaAranjament(ARANJAMENT_MODERN, REGISTRU), []);
 });
 
@@ -45,10 +47,26 @@ test('aranjamentul implicit e cel al prototipului B: bara de sus în aceeași or
     'istoric.anuleaza', 'istoric.reface', 'import.svg', 'export.gcode',
   ]);
   assert.deepEqual(actiuniZona(ARANJAMENT_MODERN, 'selectie'), ['document.duplica-selectia', 'document.sterge-selectia', 'vedere.proprietati']);
-  // Panoul mașinii (ADR 0081) stă sub proprietăți.
-  assert.deepEqual(ARANJAMENT_MODERN.docuri, { stanga: ['lista'], dreapta: ['proprietati', 'masina'] });
+  // Mașina e o fereastră (ADR 0132), nu un panou: docul din dreapta are doar proprietățile.
+  assert.deepEqual(ARANJAMENT_MODERN.docuri, { stanga: ['lista'], dreapta: ['proprietati'] });
   // Fiecare panou stă undeva: altfel nu s-ar mai putea deschide.
   assert.deepEqual(DOCURI.flatMap((d) => ARANJAMENT_MODERN.docuri[d]).sort(), [...PANOURI].sort());
+});
+
+test('meniul global (ADR 0132): filele ferestrelor, locul lucrării, apoi căutarea, limba, tema și contul; ferestrele în ordine', () => {
+  assert.deepEqual(ARANJAMENT_MODERN.zone.meniu, [
+    { id: 'ferestre', intrari: [{ control: 'ferestre' }] },
+    { id: 'lucrare', intrari: [{ control: 'lucrare' }] },
+    { id: 'vedere', intrari: [{ actiune: 'vedere.paleta', aspect: 'cauta' }, { control: 'limba' }, { actiune: 'vedere.tema' }, { control: 'cont' }] },
+  ]);
+  // Colțul din dreapta al barei de desen a rămas gol: tot ce era acolo e al aplicației întregi, deci în meniu.
+  assert.deepEqual(ARANJAMENT_MODERN.zone.unelte, []);
+  assert.deepEqual(ARANJAMENT_MODERN.ferestre, ['proiectare', 'masina']);
+  assert.deepEqual(DESCHIDE_FEREASTRA, { proiectare: 'vedere.proiectare', masina: 'vedere.masina' });
+  // Cipurile care rămân și în Mașina sunt ale aplicației; cele ale desenului (selecția, ieșirea din foaie, traseul, cursorul,
+  // zoomul) se văd doar în Proiectare.
+  assert.deepEqual([...CIPURI_GLOBALE].sort(), ['actualizare', 'config', 'jurnal', 'proiect']);
+  assert.deepEqual(CIPURI.filter((c) => !CIPURI_GLOBALE.has(c)), ['selectie', 'avertisment', 'cursor', 'zoom', 'traseu']);
 });
 
 test('localizatorii e2e `[data-actiune=…]` rămân unici: o acțiune stă cel mult o dată în zonele care o poartă așa', () => {
@@ -56,6 +74,8 @@ test('localizatorii e2e `[data-actiune=…]` rămân unici: o acțiune stă cel 
     ...ZONE_CU_DATA_ACTIUNE.flatMap((z) => actiuniZona(ARANJAMENT_MODERN, z)),
     // Comutatorul fiecărui panou pus într-un doc stă în colțul panoului, tot cu `data-actiune`.
     ...DOCURI.flatMap((d) => ARANJAMENT_MODERN.docuri[d].map((p) => COMUTA_PANOU[p])),
+    // Filele ferestrelor, în meniul global, tot cu `data-actiune`.
+    ...ARANJAMENT_MODERN.ferestre.map((f) => DESCHIDE_FEREASTRA[f]),
   ];
   assert.equal(new Set(ids).size, ids.length, ids.join(', '));
   // Bara selecției (`data-context`) e singura care repetă acțiuni din bara de sus.
@@ -89,6 +109,22 @@ test('verificarea prinde ce ar strica un aranjament salvat sau un șablon nou (c
   // Un registru fără comutatorul unui panou pus într-un doc: panoul n-ar mai avea buton.
   const faraLista = new Set([...REGISTRU].filter((id) => id !== 'vedere.lista'));
   assert.match(verificaAranjament(ARANJAMENT_MODERN, faraLista).join('\n'), /panoul „lista”: acțiunea „vedere\.lista” nu e în registru/);
+});
+
+test('verificarea ferestrelor (ADR 0132): necunoscută, de două ori, fără Proiectare, fără file, fără acțiunea filei', () => {
+  const cu = (ferestre: readonly string[]): Aranjament => ({ ...ARANJAMENT_MODERN, ferestre: ferestre as readonly IdFereastra[] });
+  assert.match(verificaAranjament(cu(['proiectare', 'nu-exista']), REGISTRU).join('\n'), /fereastra „nu-exista” nu există/);
+  assert.match(verificaAranjament(cu(['proiectare', 'masina', 'masina']), REGISTRU).join('\n'), /fereastra „masina” e pusă de două ori/);
+  // Desenul stă în Proiectare: fără ea, nu s-ar mai putea desena nimic.
+  assert.match(verificaAranjament(cu(['masina']), REGISTRU).join('\n'), /fără fereastra „proiectare”/);
+  // Mai multe ferestre, dar fără filele lor în vreo zonă: omul n-ar mai putea trece dintr-una în alta.
+  const faraFile = { ...ARANJAMENT_MODERN, zone: { ...ARANJAMENT_MODERN.zone, meniu: ARANJAMENT_MODERN.zone.meniu.filter((g) => g.id !== 'ferestre') } };
+  assert.match(verificaAranjament(faraFile, REGISTRU).join('\n'), /ferestrele n-au file/);
+  // Cu o singură fereastră, filele nu-s necesare.
+  assert.deepEqual(verificaAranjament({ ...faraFile, ferestre: ['proiectare'] }, REGISTRU), []);
+  // Un registru fără acțiunea unei ferestre puse: fila ei n-ar face nimic.
+  const faraMasina = new Set([...REGISTRU].filter((id) => id !== 'vedere.masina'));
+  assert.match(verificaAranjament(ARANJAMENT_MODERN, faraMasina).join('\n'), /fereastra „masina”: acțiunea „vedere\.masina” nu e în registru/);
 });
 
 test('aceeași acțiune în zone diferite e permisă (Anulează și sus, și jos), doar nu de două ori în aceeași zonă', () => {

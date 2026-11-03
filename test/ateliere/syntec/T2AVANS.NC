@@ -1,0 +1,29 @@
+%
+O0001
+(CNC Vector Studio)
+(post Syntec)
+(origine stanga-jos, Z0 sus, foaia 250.000 x 150.000 x 18.000 mm)
+(scula T1 freza plata D6.000)
+G90 G17 G71 G94
+G40 G49 G80
+T1 M6
+G54
+G43 H1
+G0 Z5.000
+M3 S18000
+G4 P2000
+G0 X10.000 Y40.000
+G1 Z-1.000 F300.0
+G1 X210.000 F1000.0
+G1 X10.000 F2000.0
+G0 Z5.000
+(PUNCTUL ZECIMAL: X10 = 0.010 mm, X10. = 10 mm)
+G0 X0. Y60.
+G1 Z-1. F300.
+G1 X10 F1000.
+M0
+G1 X10.
+G0 Z5.
+M5
+M30
+%

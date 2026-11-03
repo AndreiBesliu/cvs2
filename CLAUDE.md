@@ -366,6 +366,39 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/unit/post.contracte.ateliere.test.ts`:** programul lui pe hârtie, codurile documentate ale controlerului (pe hârtie,
   cu sursa), iar cititorul dialectelor (`test/unit/ajutor-dialecte.ts`) îl compară pe corpusul CAM cu GRBL 1.1. Urmează 4.6↑b
   (pachetul de atelier, T0–T7). **Pornirea 98,4 (cu ușa 101,9 / 110 kB), totalul 448,9 / 500.**
+  **Pachetul de atelier (ADR 0131, felia 4.6↑b)** gata pe 02.11: fișierele de probă T0–T7 ale celor opt controlere (setul
+  din s8, Anexa B), scrise de postul aplicației, cu fișa fiecăruia (setările, ce se măsoară, valorile pe hârtie, amprentele
+  SHA-256) și o arhivă, în `test/ateliere/` (`node test/ateliere/genereaza.ts`; `--verifica`). Pentru GRBL 1.1, e setul
+  plăcii 3. **Un pachet trimis rămâne exact cel din repo:** o schimbare a postului care atinge un fișier de probă cade în
+  `test/unit/ateliere.aur.test.ts` și cere un pachet nou, cu amprente noi (iar o probă din atelier făcută pe pachetul vechi
+  rămâne a lui). Aplicația nu s-a schimbat.
+  **Fișa plăcii 4 și placa de regresie (felia 4.9↑, punctul 9 al etapei 4)** gata pe 02.11: `docs/etape/placa-04.md`, cu
+  șanțurile de calibrare din s4 (plată, bilă, V90, V60, arcul, plonjarea), câte un fișier pe freză în
+  `test/placi/placa-04/`; fiecare cotă e prezisă de oracolul simulării (`test/unit/placa04.test.ts`). Placa de regresie e
+  definită în aceeași fișă, din fișierele de aur ale plăcilor 1–4. Cu ea, etapa 4 n-are puncte fără mașină rămase: 8
+  (laptopul de atelier) și plăcile cer owner-ul.
+  **Gruparea (ADR 0130, felia 6.T↑, adusă din etapa 6)** gata pe 02.11, într-o sesiune paralelă (worktree-ul
+  `wip/6.T-grupare`), la cererea owner-ului („vreau sa deschidem un worktree care sa faca si functia de group care sa stea
+  langa ungroup”): **Grupează** (lângă Degrupează, meniul de clic dreapta, Ctrl+G) face din cel puțin două forme o piesă, cu un
+  grup nou pe rădăcină, la bit în lume, cu operațiile înșirate (G-code-ul același cât formele stau una după alta). Gruparea e
+  comanda `regrupeaza` a degrupării, cu `locuri` (indicii părților): inversa le pune exact unde erau. **Valorile care unesc
+  V-carve-urile unei piese stau o singură dată, în `valoriVcarve` (`src/model/lume.ts`)**: lucrarea și gruparea le citesc de
+  acolo. Două texte cu același V-carve se grupează (decizia owner-ului): grupul le sapă ca o singură regiune, deci se refuză
+  doar când regiunile lor se ating sau se suprapun. **Pornirea 99,1 (cu ușa 102,6 / 110 kB), totalul 450,7 / 500, /admin 105,4 / 200, după unirea cu 4.6↑b și 4.9↑.**
+  **Meniul global și fereastra Mașina (ADR 0132, felia 13.A↑, adusă din etapa 13)** gata pe 02.11, în worktree-ul
+  `sender-ecran`: un rând sus, în toate ferestrele (zona `meniu`: marca, filele din `aranjament.ferestre`, locul indicatorului
+  lucrării, căutarea, limba, tema, contul); bara de desen doar în Proiectare; Mașina pe tot ecranul, pe coloane, montată la
+  prima deschidere și ținută montată. **Proiectarea acoperită rămâne montată și inertă:** o tastă nouă a desenului trece prin
+  `ORIUNDE` (carcasa) și prin `activ` (modulul editării), altfel atinge desenul pe care omul nu-l vede. Indicatorul, pur, e
+  `src/machine/indicator.ts`; lucrarea pornită e `cuPunctDeReluare` din flux (`beforeunload`, „Reîncarcă după lucrare”, prin
+  semnalul `lucrarePornita` din pornire). **Pe ramură, pornirea 99,1 (cu ușa 102,6 / 110 kB), totalul 450,8 / 500.**
+  **Alinierea ca bloc (ADR 0150, felia 6.U↑, adusă din etapa 6)** gata pe 02.11, în aceeași sesiune paralelă (ramura
+  `wip/6.U-aliniere`), după „3, ok” al owner-ului: comutatorul **Ca bloc** din secțiunea Aliniere face ca cele șase alinieri
+  să mute cutia comună a formelor alese față de foaie, cu aceeași deplasare (așezarea dintre ele rămâne, nu se suprapun);
+  oprit implicit, ținut în browser (`cncvs2.aliniere-bloc`). Avertismentul la contururile care se ating rămâne verificării
+  vectorilor (etapa 10, ADR 0124). **Pe ramură, pornirea 99,1 (cu ușa 102,6 / 110 kB), totalul 450,9 / 500; după
+  unirea cu 13.A↑ și cu refuzul spus de pe Ctrl+G, pornirea 99,9 (cu ușa 103,4 / 110 kB), totalul 453,1 / 500, /admin
+  105,5 / 200.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -533,6 +566,34 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
     deschide singur după „Primește”; lucrarea primită stă doar în memorie; ieșirea CNC a planificatorului prin planșe cvs2;
     contractele atelierelor luate din cvs2; Manifold (cu `'wasm-unsafe-eval'`, cerut atunci); pagina de pe claude.ai
     rămâne, construită din repo. Repo-ul e public: sursele planificatorului se reconfirmă înaintea primului push care le aduce.
+- 02.11.2026: **gruparea, răspunsurile owner-ului** la cele patru întrebări din raportul feliei 6.T↑ (ADR 0130):
+  1. „1 e ok.”: grupurile în grupuri rămân permise (un nivel pe grupare, Degrupează desface doar acel nivel);
+  2. „2, in principiu vreau flexibilitate si optiuni, dar cu quality of life ridicat. inteleg ca nu totul trebuie implementat
+     acum, pentru ca nu indeplinim toate toate situatiile.”: piesa cu mai multe instanțe rămâne refuzată acum; când nivelul
+     doi devine vizibil (etapa 11), gruparea ei vine cu opțiuni, fără pași în plus în cazul obișnuit. Principiul se aplică și
+     altor alegeri de felul ăsta;
+  3. „3, ok”: alinierea unei selecții ca bloc, fără grupare, și avertismentul la contururile care se ating, într-o felie
+     următoare, după unirea grupării;
+  4. „4, v-carve oricum nu s-a aplica intre litere si doar in interiorul unei singure litere”: V-carve-urile cu aceleași
+     valori din forme diferite se grupează (o singură regiune par-impar, suprafața săpată în marginile V-carve-ului, probată
+     pe oracolul simulării); refuzul rămâne doar când regiunile lor se ating sau se suprapun.
+- 02.11.2026: **meniul global și fereastra Mașina pe tot ecranul** (ADR 0132, felia 13.A↑, în worktree-ul `sender-ecran`).
+  Cererea: „vreau inca un worktree care sa faca panoul sender-ului mai mare, el trebuie sa fie fullscreen, sub meniu. Atentie,
+  meniul global, el va fi diferit de cel cu uneltele de desen. ca la cvs1 acest meniu va aparea doar in fereastra de
+  desing/desen/project”; la schița cu nouă întrebări, „Da, cu recomandările”:
+  - un rând sus, în toate ferestrele: marca, filele ferestrelor (o listă în aranjament, ca o extensie, de exemplu gazda din
+    Trenuleț, să-și adauge fila), indicatorul lucrării, căutarea, limba, tema și contul; fără meniuri Fișier / Editare acum
+    (vin cu șablonul clasic, decizia din 13.10);
+  - ferestrele se numesc „Proiectare” și „Mașina” (en: Design, Machine), ca în CVS1; aplicația se redeschide în fereastra în
+    care a rămas;
+  - bara de desen, cu extensia ei, rămâne neschimbată, doar în Proiectare; importul și exportul rămân în ea; panoul Mașina iese
+    din docul din dreapta; în plus, „Deschide în Mașina” în fereastra exportului (încarcă, nu pornește);
+  - jobul continuă cât desenezi; indicatorul (verde rulează, portocaliu pauză sau oprit la M6, roșu alarmă) se vede de oriunde,
+    cu Pauză / Reia alături; un clic pe el deschide Mașina; Oprește rămâne doar în fereastră; procentul, în titlul filei;
+  - cu o lucrare pornită: confirmarea browserului la închiderea paginii și „Reîncarcă după lucrare”;
+  - Escape închide doar ce e deschis; nu schimbă fereastra și nu atinge mașina;
+  - Mașina pe trei coloane de la 80 rem, două până la 48 rem, una pe telefon, în ordinea urgenței;
+  - mai târziu, în etapa 13: previzualizarea traseului cu freza în timp real și override-urile, în coloana lucrării.
 - 02.11.2026: **plafonul total 500 kB** („Da, 500 kB”, la „Ridic plafonul total al pachetului la 500 kB?”), după propunerea
   a două worktree-uri paralele lângă etapa 4: restul textului (etapa 7) și verificarea și repararea vectorilor (etapa 10). La
   441,2 / 450 kB, cele trei linii nu încăpeau în 8,8 kB. ADR 0122, felia 3.R; pornirea rămâne 110 kB. Worktree-urile pornesc

@@ -2,16 +2,20 @@
 
 ## Getting started
 %% capitol: pornire
-%% acopera: vedere.paleta, vedere.lista, vedere.proprietati, vedere.tema, editare.manual
+%% acopera: vedere.paleta, vedere.lista, vedere.proprietati, vedere.proiectare, vedere.tema, editare.manual
 
 CNC Vector Studio draws parts for a CNC router and writes the program (G-code) the machine cuts. You work on a **sheet** (the
 board of material), put shapes on it, each with its own cutting **operation**, then export the G-code.
 
-**The screen.** The canvas fills the screen; floating above it are:
+**The screen.** At the very top sits the **application menu**, in every window: the brand, the window tabs (**Design** and
+**Machine**), the job indicator (with the machine connected, see [The machine](#masina)), then “Search commands”, the
+language (RO / EN), the theme and the **Account** button. The pressed tab is the current window; the app reopens in it the
+next time it starts.
+
+In the **Design** window, the canvas fills the screen; floating above it are:
 - the **top bar**: the drawing tools, Snap and Grid, Undo and Redo and, at its end, the files: import, “Export vectors”
   and “Export G-code”;
-- the **bar extension** just below: alignment, mirroring, the 3D view and the manual;
-- top right: “Search commands”, the language (RO / EN) and the theme;
+- the **bar extension** just below: alignment, mirroring, copying, offset, the boolean and the 3D view;
 - on the left, the **On the sheet** panel: the sheet's shapes, with the part and operations of each; on the right, the
   **Properties** panel;
 - at the bottom: what is selected, the cursor on the sheet (in mm, from the sheet's bottom-left corner), the zoom, the error
@@ -25,7 +29,7 @@ it. The palette lists every command, with its key; for the ones done with the mo
 
 The **Manual** opens from the **Account** menu in the top-right corner (the **Manual** row) or with `F1`. With F1 it opens
 at the chapter for what you are
-doing now (the chosen tool, the 3D view, the open window). You can search the manual by words, with or without diacritics.
+doing now (the chosen tool, the 3D view, the open window, the Machine). You can search the manual by words, with or without diacritics.
 
 **Where it is saved.** The project saves itself, in this browser, on every change. See [The project and
 saving](#proiect).
@@ -318,18 +322,38 @@ The cutting order keeps its classes (insides first, then lines, outsides last); 
 outlines (roughing and finishing) cuts them, after ungrouping, outline by outline. After ungrouping, all the parts are chosen,
 and a single `Ctrl+Z` puts them back together.
 
-Ungrouping is refused, with the reason shown next to the buttons, if a **V-carve** cuts its outlines together (letters with
-their holes: apart, the holes would be cut too), if the part is also used by other instances, or if none of the chosen shapes is
-a group.
+Ungrouping is refused, with the reason shown next to the buttons (also on `Ctrl+Shift+G`), if a **V-carve** cuts its outlines
+together (letters with their holes: apart, the holes would be cut too), if the part is also used by other instances, or if none
+of the chosen shapes is a group.
+
+## Grouping
+%% capitol: grupare
+%% acopera: document.grupeaza
+
+**Group** (the button next to Ungroup, the right-click menu, `Ctrl+G`) makes the chosen shapes, at least two, a single part: it
+is chosen, moved, rotated and aligned as one block, so its shapes no longer pile up when aligned. A part that was already a
+group (an import, a text, a shape with holes) goes in whole, as one level of the new group; **Ungroup** takes apart only that
+level.
+
+Each shape stays exactly where it was and keeps its operation (the side, the depth, the cutter): **what is cut stays the
+same**. The group takes the place of the first chosen shape in the cutting order; if other shapes stood between the chosen
+ones, they are cut, in the same class, after the group. Inside a group, a text is only vectors; after ungrouping, it can be
+edited again. After grouping, the group is chosen, and a single `Ctrl+Z` undoes the grouping, with each shape back in its
+place.
+
+Two texts (or shapes) each with a **V-carve** with the same values can be grouped: the cutter carves them in one go, and each
+letter comes out the same. Grouping is refused, with the reason shown next to the buttons (also on `Ctrl+G`), if a single shape
+is chosen, if two shapes with the same V-carve touch or overlap (grouped, they would be carved as a single region, and the
+overlap would be left uncut) or if a chosen part is also used by other instances.
 
 ## The right-click menu
 %% capitol: meniu
 %% acopera: editare.meniu
 
-A right click on the canvas opens the **right-click menu**, with what can be done to the selection: **Ungroup**, then **Unite**,
+A right click on the canvas opens the **right-click menu**, with what can be done to the selection: **Group** and **Ungroup**, then **Unite**,
 **Subtract** and **Intersect** (the boolean), then **Duplicate** and **Delete selection**, each with its key. On a shape that is
 not chosen, the right click chooses it first; on empty space, the selection stays. A row is active only when it can run (the
-boolean with two shapes, ungrouping with a group chosen); a refusal shows its reason in the menu.
+boolean with two shapes, grouping with at least two, ungrouping with a group chosen); a refusal shows its reason in the menu.
 
 The arrow keys move between rows, `Enter` runs the row, `Esc` closes the menu; it also closes on a click outside it, on the
 wheel or after a command has run. In the 3D view, a right click does not open the menu.
@@ -371,7 +395,7 @@ bottom, a hint says what can be done or why the chosen shape cannot be edited.
 
 ## Alignment
 %% capitol: aliniere
-%% acopera: editare.aliniere, document.muta-instantele, aliniaza.stanga, aliniaza.centru-x, aliniaza.dreapta, aliniaza.sus, aliniaza.centru-y, aliniaza.jos, aliniaza.centru-foaie, aliniaza.distribuie-x, aliniaza.distribuie-y
+%% acopera: editare.aliniere, editare.aliniere-bloc, document.muta-instantele, aliniaza.stanga, aliniaza.centru-x, aliniaza.dreapta, aliniaza.sus, aliniaza.centru-y, aliniaza.jos, aliniaza.centru-foaie, aliniaza.distribuie-x, aliniaza.distribuie-y
 
 The **Align** section of the bar extension is always there; its button folds it to the left and opens it again. The
 buttons **align** the boxes of the chosen shapes:
@@ -388,6 +412,12 @@ buttons **align** the boxes of the chosen shapes:
 With a single shape chosen, alignment places it against the sheet (for example, “Align left” takes it to the sheet's left
 edge). **Centre on the sheet** always works against the sheet: it moves all the chosen shapes by the same amount, so their
 arrangement stays and their common box ends up in the middle of the sheet. Several shapes are picked with the selection rectangle or with Shift + click (see [Selecting and editing](#selectie)).
+
+The **As a block** toggle (the first button after the one that folds the section) moves the chosen shapes together, against
+the sheet: their common box is aligned to the sheet's edge or middle, and their arrangement stays, so they don't end up on
+top of each other. Without it, each shape is aligned to the common box, and they may overlap. The toggle is kept in the
+browser, like Snap; distributing and centring on the sheet work the same with it or without. To have some shapes always
+move together, group them (see [Grouping](#grupare)).
 Each alignment can be undone with `Ctrl+Z`.
 
 ## Importing SVG, DXF, PDF, AI, EPS and WMF
@@ -676,14 +706,31 @@ there, `G0` may move each axis at its own speed.
 
 Each row has its own **bit**: the tool number (T), the diameter (mm) and the shape: **flat** or **V**, with the included angle
 of the tip (from 1° to 179°, 60° by default; for a V bit, the diameter is that of the cutting part). Rows with different bits
-are cut with a change between them: in each class (insides, then on the line, then outsides), the bit already mounted first,
-so there are as few changes as possible. The same number with two diameters or two shapes is refused: each bit needs its own
-number.
+are cut with a change between them: in the automatic order, in each class (insides, then on the line, then outsides), the bit
+already mounted first, so there are as few changes as possible. The same number with two diameters or two shapes is refused:
+each bit needs its own number.
+
+The **Cutting order** sits above the table. The rows appear in the order they are cut, with their place in the **#** column:
+- **Automatic** (the default): insides first, then lines, outsides and sheet separations last; in each, grouped by bit. A side
+  or a bit changed in the window redoes the order on export;
+- **Mine**: cut from top to bottom. You move a row by dragging its handle (the six dots) or with the **↑** / **↓** arrows. The
+  list starts from the automatic order, and **Back to the automatic order** brings it back. The order is written in the project
+  on **Export**: the window shows it when reopened, and the toolpath, the time, the animation and the 3D view follow it. A new
+  operation (a drawn shape, an import, a text) comes at the end. The bit changes follow your order, so there may be more than in
+  the automatic one.
+
+The V-carves of the same piece, with the same values (the bit, the depth, the step, the direction, the flat bottom), are
+carved as a single region: the rows after the first show **with N**, meaning they are carved together with row N. Pockets are
+not merged: each one is cut at its own place. If in your order the outside of a piece comes before another operation of the
+same piece or of a shape inside it (a circle drawn in a rectangle), or a sheet separation before another operation, the piece
+may come loose before it is done: the window names the rows, and **Export** asks for the **Cut in my order** tick (any move
+clears it).
 
 The **Export** button downloads the file and shows how many lines it has and its SHA-256 fingerprint (with it you check that
 exactly this file reaches the machine). If the cutter would leave the sheet, the window says by how much and where, and the
 export asks you to confirm that nothing is in the way there (clamps, screws); the confirmation is written in the program's
-header.
+header. After an export this app's sender sends (the GRBL family), **Open in Machine** closes the window and loads the program
+in [the Machine](#masina), without starting it.
 
 The **job summary** shows the estimated time, per operation and per tool. For your machine's times, paste the controller's
 answer to `$$` (from the sender's console) under “Machine settings”; the program does not change.
@@ -715,8 +762,24 @@ in pieces joined end to end (a polyline, then a curve).
 %% capitol: masina
 %% acopera: vedere.masina
 
-The **Machine** panel (on the right, under the properties) sends the program to the machine over the USB cable or over WiFi
-and shows its state.
+The **Machine** tab in the application menu opens the machine window, full screen, under the menu: it sends the program to
+the machine over the USB cable or over WiFi and shows its state. On a wide screen it has three columns: the machine (the
+connection, the state and the position in large digits, positioning), the job (its phase with its buttons, and the program)
+and the console (the command and the log). On a laptop, the console moves underneath; on a phone, everything is in one
+column, most urgent first.
+
+- **The drawing stays one click away.** The **Design** tab takes you back to the drawing at any time, and the job carries on.
+  While you are in the Machine window, the drawing's keys (Delete, Ctrl+Z, the arrows, the tools) do not touch the hidden
+  drawing; `Ctrl+K` works, and a drawing command picked from the palette takes you to Design first. `F1` opens this chapter.
+  **Escape** closes only what is open (the WiFi form, a confirmation): it does not change the window and sends nothing to the
+  machine.
+- **The job indicator** sits in the application menu once the Machine window has been opened, and shows from any window:
+  “Machine connected”, “Running 42%” (green, with **Pause** next to it), “Paused 42%” (orange, with **Resume**), “Stopped at
+  M6”, “Stopped at line …” or “Stopped on an error” (orange), “Alarm” or “Job interrupted” (red), “Job done”. Clicking it opens
+  the Machine window. **Stop** stays only in the window: a reset pressed by mistake loses the position. While the job runs, the
+  browser tab's title starts with the percentage.
+- **With a job running**, closing or reloading the page first asks for the browser's confirmation: the connection would be cut
+  and the job would stop halfway. Meanwhile “New version ready” shows **Reload after the job**, disabled, until it ends.
 
 - **Connect (USB)** lets you choose the machine’s port (GRBL, 115,200 baud). It works only in Chrome or Edge on a computer
   (Web Serial); otherwise, the panel says so. On the test instance there is also **Simulated machine**: a simulated GRBL
@@ -736,11 +799,12 @@ and shows its state.
   the export window); **File…** loads G-code from another program, checked first. A program is refused, with the line, if it
   has characters outside ASCII (on GRBL, “ș” and “ț” would change the spindle speed), Windows line endings (`\r`), lines over
   70 bytes, sets no work coordinate system (`G54`–`G59`) before its first move, changes the tool (`M6`) without being exported
-  from here, or has no line end at the end. With one file per bit, **File of the last export** picks which one loads.
+  from here, or has no line end at the end. With one file per bit, **File of the last export** picks which one loads. From the export window, after a successful
+  export, **Open in Machine** brings the export's first file here, loaded, without starting it.
 - **Received job**: an app that sends jobs (for example the Trenuleț planner, with “Send to cvs2”) opens cvs2 in a new tab.
   The **Incoming job** dialog says who sends it, from where (an address, or a page opened from a file on your computer) and
   which files, with the board, the bit and the time. **Accept** checks each file like one loaded with **File…** and opens the
-  panel; **No** tells the app you declined the job. The good files sit under the buttons, in cutting order: pick one in
+  Machine window; **No** tells the app you declined the job. The good files sit under the buttons, in cutting order: pick one in
   **File of the received job** and press **Load received file**; the refused ones sit below, each with its reason. Nothing
   starts by itself, and the job is lost when the page reloads (the app can send it again). On the live instance, receiving
   is off for now.
@@ -912,6 +976,7 @@ install it, and the app’s interface stays the same.
 | `Ctrl+Z` | Undo |
 | `Ctrl+Y`, `Ctrl+Shift+Z`, `Ctrl+Shift+Y` | Redo |
 | `Ctrl+D` | Duplicate |
+| `Ctrl+G` | Group |
 | `Ctrl+Shift+G` | Ungroup |
 | `Delete` | Delete selection |
 | `Ctrl+K` | Search commands |

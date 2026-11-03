@@ -66,7 +66,7 @@ test('„Primește”: răspunsul primit, panoul mașinii, fișierele bune în o
   await expect(cvs2.getByTestId('lucrare-fisiere').locator('li')).toHaveText([
     'placa_1_T1.nc · placa 1 · T1 freza dreapta D6.000 · ~7 min', 'placa_2_T1.nc · placa 2', 'placa_3_T2.nc', 'placa_4_T1.nc',
   ]);
-  await expect(cvs2.locator('[data-panou="masina"]')).toHaveAttribute('data-deschis', 'false');
+  await expect(cvs2.locator('.aplicatie')).toHaveAttribute('data-fereastra', 'proiectare');
   await cvs2.locator('[data-masina="lucrare-primeste"]').click();
   await expect(dialog).toHaveCount(0);
   await expect(cvs2.locator('.aplicatie')).not.toHaveAttribute('inert');
@@ -75,7 +75,9 @@ test('„Primește”: răspunsul primit, panoul mașinii, fișierele bune în o
     protocol: 'cvs2-lucrare', versiune: 1, tip: 'primit', id: 'l1', acceptate: ['placa_1_T1.nc', 'placa_2_T1.nc'],
     refuzate: [{ nume: 'placa_3_T2.nc', cod: 'm6-strain', linie: 3 }, { nume: 'placa_4_T1.nc', cod: 'hash', linie: null }],
   }]);
-  await expect(cvs2.locator('[data-panou="masina"]')).toHaveAttribute('data-deschis', 'true');
+  // Lucrarea primită deschide fereastra Mașina (ADR 0132): rândul ei stă în secțiunea programului.
+  await expect(cvs2.locator('.aplicatie')).toHaveAttribute('data-fereastra', 'masina');
+  await expect(cvs2.locator('.fereastra-masina')).toBeVisible();
   const randul = cvs2.getByTestId('masina-primita');
   await expect(randul).toContainText('Lucrarea primită: „Ovalul din sufragerie”, de la Planificator Trenuleț');
   await expect(cvs2.locator('[data-masina="primit-fisier"] option')).toHaveText(['placa_1_T1.nc', 'placa_2_T1.nc']);
@@ -123,7 +125,7 @@ test('„Nu” și Escape răspund „renuntat”; o lucrare nouă o înlocuieș
   await trimite(page, lucrare('c', 'A treia', [fisier('c.nc', prog(3))]));
   await cvs2.waitForTimeout(300);
   await expect(dialog).toHaveCount(0);
-  await expect(cvs2.locator('[data-panou="masina"]')).toHaveAttribute('data-deschis', 'false');
+  await expect(cvs2.locator('.aplicatie')).toHaveAttribute('data-fereastra', 'proiectare');
   await expect(cvs2.getByTestId('masina-primita')).toHaveCount(0);
 });
 

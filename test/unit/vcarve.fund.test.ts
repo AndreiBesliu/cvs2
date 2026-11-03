@@ -298,7 +298,7 @@ test('lucrarea refuză, cu motiv: fundul pe alt fel, freza fundului în V, pasul
 
 // ── Ușa v15 ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-test('ușa v15: `fundPlat` = { scula ca a operației, pasLateral în (0, 50] } (câmpurile necunoscute rămân); în v14 nu e valid; un v14 curat urcă (prin v15–v17) la v18', () => {
+test('ușa v15: `fundPlat` = { scula ca a operației, pasLateral în (0, 50] } (câmpurile necunoscute rămân); în v14 nu e valid; un v14 curat urcă (prin v15–v18) la v19', () => {
   const cuCamp = deschis(doc(DR40, [vcarve(['a'], { fundPlat: { scula: { ...DREAPTA, cod: 'X' }, pasLateral: 1.2, nota: 'n' } })]));
   const fp = cuCamp.piese[0]!.operatii[0]!.fundPlat as Record<string, unknown>;
   assert.equal(fp['nota'], 'n');
@@ -315,7 +315,7 @@ test('ușa v15: `fundPlat` = { scula ca a operației, pasLateral în (0, 50] } (
   const curat = doc(DR40, [faraFund], 14);
   const c = incarca(curat);
   assert.ok(c.ok);
-  if (c.ok) assert.deepEqual(c.doc, { ...(curat as Record<string, unknown>), schema: 18 }, 'doar numărul');
+  if (c.ok) assert.deepEqual(c.doc, { ...(curat as Record<string, unknown>), schema: 19 }, 'doar numărul');
 });
 
 // ── Ce scrie Exportă ─────────────────────────────────────────────────────────────────────────────────────────────────
