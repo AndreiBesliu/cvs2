@@ -302,6 +302,17 @@ test('textul vertical stă drept (ADR 0141): pe conturul unui cerc, panoul spune
   const text = d2.piese[1]!.radacina.text!;
   expect(text).toMatchObject({ continut: 'BAR', vertical: true });
   expect('curba' in text).toBe(false);
+  // Din nou pe cerc, orizontal și în casetă: tot drept, iar blocul are caseta, fără curbă.
+  await page.locator('[data-text="vertical"]').uncheck();
+  la = await ecran(page, await vedere(page));
+  await page.mouse.click(sus.x, sus.y);
+  await page.locator('select[data-text="caseta"]').selectOption('scala');
+  await expect(page.getByTestId('text-caseta-curba')).toBeVisible();
+  await page.click('[data-text="adauga"]');
+  const d3 = await documentSalvat(page, 3) as Doc;
+  const text3 = d3.piese[2]!.radacina.text!;
+  expect(text3).toMatchObject({ continut: 'BAR', caseta: { fel: 'scala', latime: 100, inaltime: 50 } });
+  expect('curba' in text3 || 'vertical' in text3).toBe(false);
 });
 
 test('caseta (ADR 0142): „HHH” scalat la caseta de 100 × 50 are exact 100 mm (majuscula 100 · 1456 / 4039); limitat, cu 50 cerut, la fel; după reîncărcare, caseta revine', async ({ page }) => {
@@ -316,14 +327,16 @@ test('caseta (ADR 0142): „HHH” scalat la caseta de 100 × 50 are exact 100 m
   await expect(page.locator('[data-text="inaltime"]')).toBeDisabled();
   await expect(page.locator('[data-text="inaltime"]')).toHaveValue('36.05');
   await expect(page.getByTestId('text-caseta')).toHaveText('În casetă: majuscula de 36,05 mm, textul de 100 × 36,05 mm.');
+  let la = await ecran(page, await vedere(page));
+  const a = la(150, 150);
+  await page.mouse.click(a.x, a.y);
+  await expect(page.locator('[data-text="adauga"]')).toBeEnabled();
   // Cu 100 mm între litere, textul nu încape nici la cea mai mică înălțime: panoul o spune, iar Adaugă se oprește.
   await page.locator('[data-text="spatiere"]').fill('100');
   await expect(page.getByTestId('text-motiv')).toHaveText('Textul nu încape în casetă nici la cea mai mică înălțime: spațierea sau aldinul trec de ea.');
   await expect(page.locator('[data-text="adauga"]')).toBeDisabled();
   await page.locator('[data-text="spatiere"]').fill('0');
-  let la = await ecran(page, await vedere(page));
-  const a = la(150, 150);
-  await page.mouse.click(a.x, a.y);
+  await expect(page.locator('[data-text="adauga"]')).toBeEnabled();
   await page.click('[data-text="adauga"]');
   const d1 = await documentSalvat(page, 1) as Doc;
   const t1 = d1.piese[0]!.radacina;
