@@ -4676,3 +4676,8 @@ ADR 0129; codul: `754319b`, plus proba care a prins două otrăvuri scăpate: `1
 - **Ce nu merge încă:** „Trimite la cvs2” (cadrul nu deschide file), previzualizarea 3D (three.js nu vine din rețea),
   fonturile paginii, tema și engleza lui cvs2; textul despre circuitele văzute „pe telefon, tabletă sau calculator” e fals
   în cvs2 (datele stau doar în browserul acesta).
+**Publicat pe canalul `trenulet`** pe 03.11, la 10:47, din `e9a0de6`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 03.12). Probele planificatorului, ale extensiilor și ale primirii, rulate chiar pe canal: 8 / 8. Pachetul
+(`trenulet-18.0.0.zip`, 207 146 de octeți) nu stă pe canal: owner-ul îl primește ca fișier, fiindcă sursele
+planificatorului nu se publică înainte să le reconfirme (repo-ul e public). Adresa principală de test nu s-a atins; ramura
+nu e împinsă.
