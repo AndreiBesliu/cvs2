@@ -4750,3 +4750,8 @@ traducerile (544, 0 lipsă), 8 124 de teste unitare (0 eșuate, 8 sărite), buil
 pornirea 98,6 / 110 kB, cu ușa 102,2; totalul 449,0 / 500; precache 82 de fișiere, 631,6 kB), e2e-ul întreg în Edge pe
 4174: 299 / 301 (picate `raportor.spec.ts:101`, care cere adresa de pe 4173, și `vectori.spec.ts:39`, cu `EBUSY` la citirea
 fișierului descărcat, de mediu: singură, verde 3 / 3).
+**Publicat pe canalul `text`** (03.11, 11:44, `e3554f1`, până pe 03.12): <https://cncvectorstudio-test--text-1k3nsykk.web.app>.
+Verificat în browserul aplicației (în engleză), după „Reload”: „HHH” scalat la caseta de 100 × 50: câmpul înălțimii oprit, cu
+36.05, nota „In the box: capitals of 36,05 mm, text of 100 × 36,05 mm.”; pus pe foaie, piesa are cutia de 100.00 × 36.05 mm;
+consola fără erori. Notat: numerele din mesajele panoului au virgula zecimală și în engleză (regula proiectului,
+`textNumar(…, true)`, ca la legenda textului pe curbă). Adresa principală de test a rămas a sesiunii principale.
