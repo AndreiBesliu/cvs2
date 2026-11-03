@@ -4828,3 +4828,38 @@ determinist (232 de fișiere; pornirea 99,9, cu ușa 103,4 / 110 kB; totalul 453
 browserul aplicației la 1440 px: versiunea `d6910511d758`; meniul global (Design / Machine, căutarea, limba, tema, contul);
 fereastra Mașina pe tot ecranul, pe trei coloane (conexiunea și starea, lucrarea și programul, consola); comutatorul „As a
 block” în rândul alinierii; fără erori în consolă. La prima deschidere, Mașina stă goală câteva clipe, cât vine modulul ei.
+
+## 2026-11-03 — Ordinea de mână a operațiilor (felia 5.9↑, ADR 0133) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește” (la „Repar întâi tăcerea de pe Ctrl+G, apoi pornesc reordonarea de mână?”), apoi „continua” (la
+„Aprobi schița ordinii operațiilor, cu cele patru recomandări?”).
+**Started:** 03.11, 10:00. **Completed:** 03.11, 14:12.
+
+Documentul v19: `rang` pe operație, un întreg în [0, 100 000]; fără rang, ordinea automată de azi, octet cu octet (corpusul
+CAM și plăcile). Ordinea programului e `ordineTaieturi`: cea automată, sortată stabil după rang. În fereastra exportului,
+**Ordinea tăierii** (Automată / A mea): rândurile în ordinea tăierii, cu locul lor (#), mânerul și săgețile, „cu N” la
+V-carve-urile legate; la Exportă, rangurile 0 … n−1 intră în proiect, iar în Automată pleacă. Față de schiță: buzunarele de
+aceeași adâncime **nu** se taie împreună (fiecare la locul lui; insula n-are traseu), doar V-carve-urile aceleiași piese, cu
+aceleași valori. Riscul e mai larg decât în schiță: pe aceeași piesă, dreptunghiul și cercul desenat în el (piese separate)
+nu avertizau. Acum „din interior” înseamnă primul punct al operației într-un contur închis al exteriorului (`cuprinse`, în
+`src/model/ordine.ts`: regula `interfata-prin-actiuni` nu lasă interfața să importe geometria). Glifele ↑ ↓ veneau colorate
+din alt font, deci săgețile sunt desenate. Tragerea: `dragTo` din Playwright nu pornește tragerea HTML5 în aplicație (pe o
+pagină goală, da); mausul în pași, da. Rândurile nu mai stau în ordinea documentului: proba V-carve a conflictului de freze
+caută cercul după cheie; alte două probe țineau versiunea în 18 (`document.v10`, `ghidaje`). Commit-urile: `3ab94ed`,
+`6456b84`, `9c0ca26` (documentul, corpusul, probele), `75e9b47` (fereastra), `c77b218` (fișa, pragul făcut, CLAUDE.md).
+**Porțile:** traducerile (548, 0 lipsă), compilatoarele, importurile (17 reguli, 0 încălcări), 8 105 teste unitare (0 căderi,
+8 sărite), licențele, build-ul determinist (pornirea 100,0, cu ușa 103,5 / 110 kB; totalul 455,3 / 500; /admin 105,4 / 200),
+e2e 307 / 307.
+**Otrăvurile** din `test/otravuri/5.9.py`, în clona din afara Drive-ului: **37 / 37** prinse (25 unitare, 12 pe e2e), fără
+VOID, arborele curat la final. În rularea lungă, E01 și E07 au mai doborât câte o probă străină de ele (ieșirea din foaie,
+urechile, apoi degajările), de fiecare dată alta, repede (1–2,5 s). Repetate, nu s-au mai întâmplat: spec-ul curat 57 / 57
+(de trei ori), E07 de două ori doar pe proba ordinii, pe `toBeDisabled`. Le pun pe seama sarcinii mașinii (rulau cât verificam
+în browser); dacă reapar în CI, le caut cauza.
+**Publicat pe test:** 03.11, 13:44, `publica` pe `75e9b47` (rularea 41629585480), după CI-ul rapid verde (41628552006; prima
+urmărire, `gh run watch`, ieșise devreme, cu CI-ul încă în lucru). Verificat în browserul aplicației la 1440 px: versiunea
+`75e9b47e6c5e`, după „Reload”; cu un dreptunghi și un cerc, Automată arată gaura (1), apoi dreptunghiul (2); A mea, săgeata
+în jos (28 × 24 px, lovită de `elementFromPoint`) duce gaura după dreptunghi; avertismentul („The outside in row 1 is cut
+before row 2, on the same piece or inside it…”) și Exportă oprit până la bifă; fără erori în consolă. Fereastra închisă fără
+export, formele anulate. Fișa și pragul: `c77b218`, publicat la 14:10 (rularea 41633102775).
+**Numerele ADR:** Trenuleț primește 0160–0169 (0126–0129, epuizate); linia principală are 0134–0139, apoi 0151–0159; textul,
+0143–0149.
