@@ -108,6 +108,7 @@ export const en = {
   'vedere.masina': 'Machine',
   'meniu.global': 'Application menu',
   'meniu.ferestre': 'Windows',
+  'fereastra.masina.incarca': 'Loading the Machine window…',
   'vedere.potriveste': 'Show the whole sheet',
   'vedere.traseu': 'Show toolpath',
   'vedere.tema': 'Theme',

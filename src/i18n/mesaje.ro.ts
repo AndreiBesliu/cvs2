@@ -124,6 +124,7 @@ export const ro = {
   'vedere.masina': 'Mașina',
   'meniu.global': 'Meniul aplicației',
   'meniu.ferestre': 'Ferestrele',
+  'fereastra.masina.incarca': 'Se încarcă fereastra Mașina…',
   'vedere.potriveste': 'Arată toată foaia',
   'vedere.traseu': 'Arată traseul',
   'vedere.tema': 'Tema',

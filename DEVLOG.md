@@ -4828,3 +4828,9 @@ determinist (232 de fișiere; pornirea 99,9, cu ușa 103,4 / 110 kB; totalul 453
 browserul aplicației la 1440 px: versiunea `d6910511d758`; meniul global (Design / Machine, căutarea, limba, tema, contul);
 fereastra Mașina pe tot ecranul, pe trei coloane (conexiunea și starea, lucrarea și programul, consola); comutatorul „As a
 block” în rândul alinierii; fără erori în consolă. La prima deschidere, Mașina stă goală câteva clipe, cât vine modulul ei.
+
+## 2026-11-03 — Felia 13.A↑b: fereastra Mașina adusă în fundal după pornire (ADR 0132 §9) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, repară” (la „Repar aici golul de la prima deschidere a Mașinii?”, după observația sesiunii principale de la
+unirea lui 13.A↑: la prima deschidere, fereastra Mașina stă goală câteva clipe, cât vine modulul ei).
+**Started:** 03.11, 10:42.

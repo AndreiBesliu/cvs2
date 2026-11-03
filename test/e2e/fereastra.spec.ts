@@ -218,3 +218,46 @@ test('ecranul lat: trei coloane (mașina, lucrarea, consola); telefonul: meniul 
   await page.locator('[data-masina="opreste"]').click();
   expect(await page.locator('.fereastra-masina').evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
 });
+
+/** Bucata ferestrei Mașina și mesajele ei (ADR 0086), cum le cere pagina. */
+const BUCATA_MASINII = /\/assets\/PanouMasina-[^/]*\.js$/;
+const MESAJELE_MASINII = /\/mesaje\/masina\.json$/;
+
+test('Mașina e adusă în fundal după pornire (13.A↑b): se deschide plină, chiar dacă bucata ei a dispărut între timp de pe server', async ({ page }) => {
+  const adusa = page.waitForResponse(BUCATA_MASINII);
+  const mesaje = page.waitForResponse(MESAJELE_MASINII);
+  await page.goto('/');
+  // Fără niciun clic pe Mașina: bucata și mesajele ei vin singure, după pornire.
+  await adusa;
+  await mesaje;
+  // Acum fișierele „dispar” de pe server, ca după o publicare nouă: primul clic nu mai are ce cere.
+  await page.route(BUCATA_MASINII, (r) => r.abort());
+  await page.route(MESAJELE_MASINII, (r) => r.abort());
+  await fila(page, 'masina').click();
+  await expect(page.getByTestId('masina-conexiune')).toHaveText('Neconectat');
+  await expect(page.getByTestId('masina-incarca')).toHaveCount(0);
+});
+
+test('cât bucata Mașinii e pe drum, fereastra spune că se încarcă; dacă nu vine, spune de ce și oferă Reîncarcă (13.A↑b)', async ({ page }) => {
+  // Pe drum: răspunsul întârziat, iar clicul vine imediat după pornire, înaintea preîncărcării.
+  await page.route(BUCATA_MASINII, async (r) => {
+    await new Promise((gata) => { setTimeout(gata, 2500); });
+    await r.continue();
+  });
+  await page.goto('/');
+  await fila(page, 'masina').click();
+  await expect(page.getByTestId('masina-incarca')).toHaveText('Se încarcă fereastra Mașina…');
+  await expect(page.getByTestId('masina-conexiune')).toHaveText('Neconectat', { timeout: 10_000 });
+  await expect(page.getByTestId('masina-incarca')).toHaveCount(0);
+
+  // Nu vine deloc (o publicare nouă i-a schimbat numele, rețeaua a căzut): motivul și Reîncarcă, nu o fereastră goală.
+  await page.unroute(BUCATA_MASINII);
+  const alta = await page.context().newPage();
+  await alta.route(BUCATA_MASINII, (r) => r.abort());
+  await alta.goto('/');
+  await fila(alta, 'masina').click();
+  const neincarcata = alta.getByTestId('masina-neincarcata');
+  await expect(neincarcata).toContainText('Fereastra nu s-a putut încărca');
+  await expect(neincarcata.getByRole('button', { name: 'Reîncarcă' })).toBeVisible();
+  await expect(alta.getByTestId('masina-conexiune')).toHaveCount(0);
+});
