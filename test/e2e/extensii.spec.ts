@@ -5,10 +5,11 @@ import { adauga } from './ajutor-panza.ts';
 
 /**
  * Extensiile (ADR 0127, felia 3.Xa), în Edge, cu extensia de probă `extensii/salut`, împachetată aici:
- * - instalarea din fișier, cu confirmarea; meniul de lângă marcă; spațiul în locul pânzei, cu acțiunile documentului
- *   oprite; ce primește extensia (limba, tema, fișierul pachetului, stilurile ca foi construite);
+ * - instalarea din fișier, cu confirmarea; meniul de lângă marcă; fereastra extensiei (ADR 0199 §A), cu Proiectarea acoperită
+ *   (o comandă a desenului din paletă întoarce la ea); ce primește extensia (limba, tema, fișierul pachetului, stilurile ca
+ *   foi construite);
  * - izolarea, încercată din cadru (pagina lui cvs2, stocarea, rețeaua, portul) și din afara lui; serviciul cerut, refuzat;
- *   eroarea extensiei în jurnalul local; închiderea cu × și din extensie; păstrarea după reîncărcare; scoaterea;
+ *   eroarea extensiei în jurnalul local; închiderea cu × (pe filă) și din extensie; păstrarea după reîncărcare; scoaterea;
  * - instalarea de la o adresă (o gazdă servită de Playwright), descărcarea căzută spusă omului, un pachet stricat refuzat cu
  *   motivul lui, linkul de instalare (`#instaleaza=`) cu versiunea nouă, care o înlocuiește pe cea veche.
  */
@@ -37,7 +38,7 @@ const meniul = async (page: Page) => {
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 const forme = (page: Page) => page.getByTestId('lista-vectori').locator('button[data-instanta]');
 
-test('din fișier: confirmarea, meniul, spațiul izolat cu acțiunile documentului oprite, ×, reîncărcarea, scoaterea', async ({ page }) => {
+test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×, reîncărcarea, scoaterea', async ({ page }) => {
   await page.goto('/');
   await expect((await meniul(page)).locator('.meniu-extensii-cap')).toContainText('Nicio extensie instalată încă');
   await page.getByTestId('meniu-extensii').locator('[data-extensii="din-fisier"]').focus();
@@ -61,8 +62,8 @@ test('din fișier: confirmarea, meniul, spațiul izolat cu acțiunile documentul
   const randul = page.getByTestId('lista-vectori').locator(`button[data-instanta="${nealeasa ?? ''}"]`);
   await (await meniul(page)).locator('[data-extensii="deschide"][data-id="salut"]').click();
   await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
-  await expect(page.getByTestId('extensie-deschisa')).toContainText('Salut');
-  await expect(page.locator('.aplicatie')).toHaveAttribute('data-extensie', 'salut');
+  await expect(page.getByTestId('extensie-deschisa')).toHaveText('Salut');
+  await expect(page.locator('.aplicatie')).toHaveAttribute('data-fereastra', 'extensie');
   await expect(page.locator('.lucru')).toHaveCSS('visibility', 'hidden');
 
   const c = cadru(page);
@@ -81,36 +82,42 @@ test('din fișier: confirmarea, meniul, spațiul izolat cu acțiunile documentul
   await c.locator('[data-salut="izolare"]').click();
   await expect(c.locator('[data-proba]')).toHaveText(['pagina: refuzat', 'localStorage: refuzat', 'indexedDB: refuzat', 'retea: refuzat', 'serial: refuzat']);
   await c.locator('[data-salut="serviciu"]').click();
-  await expect(c.locator('[data-proba="serviciu"]')).toHaveText('masina: serviciu-necunoscut:masina');
+  // Senderul există (ADR 0199), dar „Salut” nu i-a cerut permisiunea.
+  await expect(c.locator('[data-proba="serviciu"]')).toHaveText('masina: masina:permisiune');
+  await c.locator('[data-salut="descarca"]').click();
+  await expect(c.locator('[data-proba="descarcari"]')).toHaveText('descarcari: descarcari:permisiune');
   const sandbox = await page.locator('iframe.cadru-extensie').getAttribute('sandbox');
   expect(sandbox).toBe('allow-scripts');
 
-  // Cât e deschis spațiul, acțiunile documentului nu rulează (dreptunghiul din paletă nu se adaugă, exportul nu se deschide);
-  // vederea rămâne: tema nouă ajunge și în cadru.
-  await adauga(page, 'dreptunghi');
-  await expect(forme(page)).toHaveCount(2);
-  await randul.click();
-  await expect(randul).toHaveAttribute('aria-pressed', 'false');
-  await page.locator('[data-actiune="export.gcode"]').click();
-  await expect(page.locator('[data-buton="exporta"]')).toHaveCount(0);
+  // Fereastra extensiei acoperă Proiectarea, ca Mașina (ADR 0132 §3): docurile sunt inerte; tema nouă ajunge și în cadru; o
+  // comandă a desenului din paletă întoarce întâi la Proiectare, unde se face, iar cadrul rămâne pornit.
+  await expect(page.locator('.doc-stanga')).toHaveAttribute('inert', '');
   const temaInainte = await c.locator('[data-salut="tema"]').textContent();
   await page.locator('[data-actiune="vedere.tema"]').click();
   await page.locator('[data-actiune="vedere.tema"]').click();
   await expect(c.locator('[data-salut="tema"]')).not.toHaveText(temaInainte ?? '');
+  await page.locator('[data-actiune="vedere.paleta"]').click();
+  await page.locator('[id="paleta-document.adauga-dreptunghi"]').click();
+  await expect(page.locator('.aplicatie')).toHaveAttribute('data-fereastra', 'proiectare');
+  await expect(forme(page)).toHaveCount(3);
+  await expect(page.locator('iframe.cadru-extensie')).toHaveCount(1);
+  await page.locator('[data-extensii="fila"]').click();
+  await expect(page.locator('.aplicatie')).toHaveAttribute('data-fereastra', 'extensie');
 
   // Eroarea extensiei ajunge în jurnalul local, cu id-ul ei.
   await c.locator('[data-salut="eroare"]').click();
   await expect(page.getByTestId('jurnal')).toHaveText('1 eroare în jurnalul local');
 
-  await page.locator('[data-extensii="inchide-spatiul"]').click();
+  await page.locator('[data-extensii="inchide-fereastra"]').click();
   await expect(page.getByTestId('spatiu-extensie')).toHaveCount(0);
   await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
-  await expect(page.locator('.aplicatie')).not.toHaveAttribute('data-extensie');
+  await expect(page.locator('[data-extensii="fila"]')).toHaveCount(0);
+  await expect(page.locator('.aplicatie')).toHaveAttribute('data-fereastra', 'proiectare');
   await expect(page.locator('.lucru')).toHaveCSS('visibility', 'visible');
   await randul.click();
   await expect(randul).toHaveAttribute('aria-pressed', 'true');
   await adauga(page, 'dreptunghi');
-  await expect(forme(page)).toHaveCount(3);
+  await expect(forme(page)).toHaveCount(4);
 
   // Din extensie: host.inchide(); deschiderea a doua e numărată.
   await (await meniul(page)).locator('[data-extensii="deschide"][data-id="salut"]').click();
@@ -120,10 +127,10 @@ test('din fișier: confirmarea, meniul, spațiul izolat cu acțiunile documentul
 
   // După reîncărcare, extensia și datele ei sunt tot acolo; din gestionare se scoate, cu datele ei.
   await page.reload();
-  await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveText(['Salut1.0.0 · deschide spațiul']);
+  await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveText(['Salut1.0.0 · deschide fereastra']);
   await page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"]').click();
   await expect(cadru(page).locator('[data-salut="deschideri"]')).toHaveText('Deschideri: 3');
-  await page.locator('[data-extensii="inchide-spatiul"]').click();
+  await page.locator('[data-extensii="inchide-fereastra"]').click();
   await (await meniul(page)).locator('[data-extensii="gestioneaza"]').click();
   const gest = page.getByTestId('extensii-gestionare');
   await expect(gest.locator('li')).toHaveCount(1);
@@ -204,7 +211,7 @@ test('de la adresă și prin link: descărcarea căzută spusă, pachet stricat 
   await page.locator('[data-extensii="descarca"]').click();
   await expect(page.getByTestId('extensii-inlocuieste')).toHaveText('Înlocuiește versiunea 1.0.0, instalată acum.');
   await page.locator('[data-extensii="instaleaza"]').click();
-  await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveText(['Salut1.1.0 · deschide spațiul']);
+  await expect((await meniul(page)).locator('[data-extensii="deschide"]')).toHaveText(['Salut1.1.0 · deschide fereastra']);
 });
 
 test('un fișier care nu e pachet se refuză cu motivul lui, fără nicio scriere', async ({ page }) => {

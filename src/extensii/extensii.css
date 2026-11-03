@@ -91,22 +91,28 @@
   background: var(--l-margine);
 }
 
-/* Spațiul: zona din mijloc (aceeași cu `.zona-libera`); pânza de dedesubt se ascunde cât e deschis. */
-.spatiu-extensie {
-  grid-area: centru;
+/*
+ * Fereastra extensiei (ADR 0199 §A), ca fereastra Mașina (ADR 0132 §4): sub meniu, peste Proiectare, până la bara de jos, cu
+ * fundalul paginii. Cadrul o umple; pânza de dedesubt nu se vede nici prin golurile barei de jos.
+ */
+.fereastra-extensie {
+  grid-row: 2 / -2;
+  grid-column: 1 / -1;
   position: relative;
-  z-index: 1;
-  /* Aplicația lasă clicurile să treacă spre pânză (`pointer-events: none`); spațiul le primește. */
-  pointer-events: auto;
+  z-index: 4;
+  margin: calc(-1 * var(--sp-3)) calc(-1 * var(--sp-3)) 0;
   min-width: 0;
   min-height: 0;
+  background: var(--panza-fundal);
+  /* Aplicația lasă clicurile să treacă spre pânză (`pointer-events: none`); fereastra le primește. */
+  pointer-events: auto;
 }
 
-.spatiu-extensie[hidden] {
+.fereastra-extensie[hidden] {
   display: none;
 }
 
-.aplicatie[data-extensie] .lucru {
+.aplicatie[data-fereastra='extensie'] > .lucru {
   visibility: hidden;
 }
 
@@ -114,41 +120,32 @@
   position: absolute;
   inset: 0;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
   background: var(--s-panou);
-  border: 1px solid var(--l-margine);
-  border-radius: var(--r-1);
 }
 
-.spatiu-cap {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  padding: 2px 2px 2px var(--sp-3);
-  font-size: var(--fs-1);
-  background: var(--s-panou);
-  border-bottom: 1px solid var(--l-margine);
+/* Fila extensiei, după filele aranjamentului: numele (piesa de puzzle a meniului) și × lipit de ea. */
+.loc-fila-extensie:empty {
+  display: none;
 }
 
-.spatiu-cap button {
+.fila-extensie {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-2);
-  min-height: 28px;
-  padding: 0 var(--sp-2);
-  font: inherit;
-  color: inherit;
-  background: none;
-  border: 0;
-  border-radius: var(--r-1);
-  cursor: pointer;
+  gap: 0;
 }
 
-.spatiu-cap button:hover,
-.spatiu-cap button:focus-visible {
-  background: var(--s-ales);
+[data-icona='extensii.fila'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='round'%3E%3Cpath d='M10 3a2 2 0 0 1 4 0v2h4a1 1 0 0 1 1 1v4h-2a2 2 0 0 0 0 4h2v4a1 1 0 0 1-1 1h-4v-2a2 2 0 0 0-4 0v2H6a1 1 0 0 1-1-1v-4h2a2 2 0 0 0 0-4H5V6a1 1 0 0 1 1-1h4z'/%3E%3C/svg%3E");
+}
+
+.fila-inchide {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0 4px;
+  font-size: var(--fs-1);
+  line-height: 1;
 }
 
 .spatiu-gazda {

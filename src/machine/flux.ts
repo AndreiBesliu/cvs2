@@ -109,6 +109,15 @@ export const inFlux = (f: Faza): boolean => IN_FLUX.has(f);
  * portul închis) îl strică (regula 4). Tot de aici știe pagina că o închidere ar opri jobul la mijloc (ADR 0132 §6).
  */
 export const cuPunctDeReluare = (f: Faza): boolean => CU_PUNCT.has(f);
+/**
+ * De ce nu pornește programul acum (null: pornește): judecata evenimentului `start`, citită și de senderul extensiilor
+ * înainte să întrebe omul (ADR 0199 §B).
+ */
+export function refuzStart(s: StareFlux): 'fara-program' | 'faza' | null {
+  if (!s.program) return 'fara-program';
+  if (!['pregatit', 'terminat', 'pierdut'].includes(s.faza) || s.inZbor.length > 0 || s.coada.length > 0) return 'faza';
+  return null;
+}
 
 export function fluxNou(capacitate = 128): StareFlux {
   return {
@@ -193,12 +202,13 @@ export function pas(s0: StareFlux, e: Eveniment): { readonly stare: StareFlux; r
       if (!['liber', 'pregatit', 'terminat', 'pierdut'].includes(s.faza)) { refuza('faza'); break; }
       Object.assign(s, { program: e.program, faza: 'pregatit', urm: 0, erori: [], bariera: null, motiv: null });
       break;
-    case 'start':
-      if (!s.program) { refuza('fara-program'); break; }
-      if (!['pregatit', 'terminat', 'pierdut'].includes(s.faza) || s.inZbor.length > 0 || s.coada.length > 0) { refuza('faza'); break; }
+    case 'start': {
+      const r = refuzStart(s);
+      if (r) { refuza(r); break; }
       Object.assign(s, { faza: 'trimite', urm: 0, erori: [], bariera: null, motiv: null });
       umple();
       break;
+    }
     case 'reia':
       if (s.faza === 'pierdut') { refuza('punct-pierdut'); break; }
       if (s.faza !== 'suspendat') { refuza('faza'); break; }

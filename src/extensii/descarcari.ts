@@ -24,8 +24,11 @@ export function numeDescarcare(x: unknown): string | null {
   return tip !== undefined && TIPURI_DESCARCARE.includes(tip) ? n : null;
 }
 
-/** Datele primite, ca `Blob`: textul (UTF-8), octeții (`ArrayBuffer`, `Uint8Array`) sau un `Blob`; altceva, null. */
-function caBlob(x: unknown): Blob | null {
+/**
+ * Datele primite, ca `Blob`: textul (UTF-8), octeții (`ArrayBuffer`, `Uint8Array`, copiați) sau un `Blob`; altceva, null. Le
+ * citește și senderul extensiilor (`masina.incarca`, ADR 0199 §B).
+ */
+export function caBlob(x: unknown): Blob | null {
   if (x instanceof Blob) return x;
   if (typeof x === 'string' || x instanceof ArrayBuffer) return new Blob([x]);
   if (x instanceof Uint8Array) return new Blob([new Uint8Array(x)]);

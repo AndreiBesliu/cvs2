@@ -10,7 +10,9 @@ import { pachetTrenulet } from '../../scripts/construieste-trenulet.ts';
  * - păstrate după reîncărcare: circuitul numit (în `db`, redeschis), modul 3D (doar în `localStorage`), culoarea din atelier;
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
- * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori.
+ * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
+ * - „Trimite la cvs2” (ADR 0199 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
+ *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -38,10 +40,11 @@ const stocat = (page: Page, cheie: string) => page.evaluate((k) => new Promise<u
 test('instalat din fișier: pagina v18 în cadru; circuitul, modul și culoarea păstrate; descărcarea prin cvs2; ștergerea', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
-  await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.0.0.zip', mimeType: 'application/zip', buffer: PACHET });
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.0.0, de la trenulet-18.0.0.zip');
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.1.0.zip', mimeType: 'application/zip', buffer: PACHET });
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.1.0, de la trenulet-18.1.0.zip');
   await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
-    'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe).',
+    'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe); '
+    + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea.',
   );
   await page.locator('[data-extensii="instaleaza"]').click();
   await deschide(page);
@@ -96,5 +99,29 @@ test('instalat din fișier: pagina v18 în cadru; circuitul, modul și culoarea 
   await deschide(page);
   await cadru(page).locator('#btn-circuite').click();
   await expect(cadru(page).locator('#circ-lista')).toHaveText('Încă nu ai circuite salvate. Orice schimbare pe plan se salvează singură.');
+  await expect(page.getByTestId('jurnal')).not.toHaveClass(/cip-rosu/);
+});
+
+test('„Trimite la cvs2” din extensie: lucrarea ovalului, în dialogul primirii, apoi în „Lucrarea primită” din fereastra Mașina', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.1.0.zip', mimeType: 'application/zip', buffer: PACHET });
+  await page.locator('[data-extensii="instaleaza"]').click();
+  await deschide(page);
+  const c = cadru(page);
+  await c.locator('#btn-export').click();
+  const trimite = c.locator('#e-cvs2');
+  await expect(trimite).toBeEnabled({ timeout: 30_000 });
+  await trimite.click();
+  await expect(page.getByTestId('dialog-lucrare')).toBeVisible();
+  await expect(page.getByTestId('lucrare-de-la')).toHaveText('Planificator Trenuleț 11 trimite „Ovalul (exemplu)”, din extensia instalată „Planificator Trenuleț”.');
+  await expect(c.locator('#cvs2-stare')).toContainText('Confirmă în cvs2 că le primești');
+  await page.locator('[data-masina="lucrare-primeste"]').click();
+  await expect(page.locator('.aplicatie')).toHaveAttribute('data-fereastra', 'masina');
+  await expect(page.getByTestId('masina-primita')).toContainText('Lucrarea primită: „Ovalul (exemplu)”, de la Planificator Trenuleț');
+  // Toate fișierele trec verificările lui „Fișier…”: niciun refuz.
+  await expect(page.getByTestId('masina-primit-refuzate')).toHaveCount(0);
+  await expect(page.locator('[data-masina="primit-fisier"] option').first()).toHaveText(/^placa_1/);
+  await page.locator('[data-extensii="fila"]').click();
+  await expect(c.locator('#cvs2-stare')).toContainText('cvs2 a primit');
   await expect(page.getByTestId('jurnal')).not.toHaveClass(/cip-rosu/);
 });

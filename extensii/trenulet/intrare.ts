@@ -6,12 +6,15 @@
  * - `localStorage`, peste `host.stocare` (setările mici: modul, mașinile, frezarea), citit întreg la pornire, scris pe loc;
  * - atributele `style` din marcaj: CSP-ul moștenit le refuză ca atribute, deci se pun prin CSSOM, care nu e oprit;
  * - scripturile, în ordinea paginii, ca scripturi clasice din adrese `blob:` (aceeași semantică globală ca în pagină).
+ * Cu senderul deschis extensiei (permisiunea `masina`, ADR 0199 §D), „Trimite la cvs2” trimite lucrarea prin `HostApi`, la
+ * „Lucrarea primită” din fereastra Mașina, în locul filei noi pe care cadrul n-o poate deschide.
  */
 import type { HostApi, Spatiu } from '../api.ts';
 
 const SCRIPTURI = ['cavalier.js', 'cnc.js', 'gcode.js', 'earcut.js', 'lego.js', 'profiluri.js', 'atelier.js', 'app.js'];
 const DB = 'db:';
 const LS = 'ls:';
+const PROTOCOL = 'cvs2-lucrare';
 
 type Doc = { readonly id: string; data(): unknown };
 type Instantaneu = { readonly docs: Doc[]; readonly size: number; readonly empty: boolean };
@@ -111,6 +114,45 @@ export async function localStoragePeste(host: HostApi): Promise<void> {
   Object.defineProperty(window, 'localStorage', { value: ls, configurable: true });
 }
 
+/**
+ * „Trimite la cvs2” (protocolul „cvs2-lucrare” v1, ADR 0126): pagina deschide cvs2 la `#primeste-lucrare` și vorbește cu fila
+ * deschisă. Aici `window.open` întoarce o fereastră imitată: un `MessagePort` (singura sursă pe care o primește un
+ * `MessageEvent` făcut în pagină), cu `postMessage` și `closed` proprii. La „cauta” răspunde „gata”; lucrarea pleacă prin
+ * `masina.trimite`, iar „primit” vine înapoi ca mesaj de la fereastra imitată, de la originea adresei. Un refuz o „închide”
+ * (pagina spune că fila s-a închis) și ajunge în jurnal. Altă adresă: null, ca o filă refuzată de browser.
+ */
+export function deschiderePeste(host: HostApi, w: Window = window): void {
+  const deschide = (url?: string | URL): Window | null => {
+    const adresa = String(url ?? '');
+    if (!adresa.endsWith('#primeste-lucrare')) return null;
+    let origine = 'null';
+    try {
+      origine = new URL(adresa).origin;
+    } catch {
+      // O adresă stricată: pagina n-ar fi ajuns aici (o judecă înainte), iar originea rămâne „null”.
+    }
+    const imitata = new MessageChannel().port1;
+    let inchisa = false;
+    const raspunde = (data: unknown): void => { w.dispatchEvent(new MessageEvent('message', { data, origin: origine, source: imitata })); };
+    Object.defineProperty(imitata, 'closed', { get: () => inchisa });
+    Object.defineProperty(imitata, 'postMessage', {
+      value: (m: unknown): void => {
+        const d = m as { readonly protocol?: unknown; readonly tip?: unknown } | null;
+        if (inchisa || !d || typeof d !== 'object' || d.protocol !== PROTOCOL) return;
+        if (d.tip === 'cauta') setTimeout(() => { raspunde({ protocol: PROTOCOL, versiune: 1, tip: 'gata', aplicatie: 'CNC Vector Studio 2' }); }, 0);
+        else if (d.tip === 'lucrare') {
+          host.cere('masina.trimite', m).then(raspunde, (e: unknown) => {
+            inchisa = true;
+            host.raporteaza(new Error(`Trimite la cvs2: ${e instanceof Error ? e.message : String(e)}`));
+          });
+        }
+      },
+    });
+    return imitata as unknown as Window;
+  };
+  Object.defineProperty(w, 'open', { value: deschide, configurable: true, writable: true });
+}
+
 /** Atributele `style` puse în document (din marcaj sau din scripturi) se aplică prin CSSOM, cu același text. */
 function stiluriDinAtribute(): void {
   const aplica = (el: Element): void => {
@@ -144,6 +186,8 @@ function scriptClasic(b: Blob, nume: string): Promise<void> {
 export async function activeaza(host: HostApi): Promise<Spatiu> {
   claudePeste(host);
   await localStoragePeste(host);
+  // Fără sender (permisiunea lipsă, instanța live), pagina spune, ca până acum, că fila nouă n-a putut fi deschisă.
+  if (await host.cere('masina.stare').then(() => true, () => false)) deschiderePeste(host);
   stiluriDinAtribute();
   return {
     deschide(container: HTMLElement): void {

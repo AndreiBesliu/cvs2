@@ -1,6 +1,7 @@
 /**
- * Dialogul primirii unei lucrări (ADR 0126 §C). Se aduce la cerere, doar când fila a fost deschisă de o aplicație care
- * trimite (ancora `#primeste-lucrare` și `window.opener`), cu mesajele panoului mașinii (ADR 0086).
+ * Dialogul primirii unei lucrări (ADR 0126 §C). Se aduce la cerere, când fila a fost deschisă de o aplicație care trimite
+ * (ancora `#primeste-lucrare` și `window.opener`) sau când o extensie trimite o lucrare (`masina.trimite`, ADR 0199 §B), cu
+ * mesajele panoului mașinii (ADR 0086).
  *
  * Ascultarea ține cererea care așteaptă omul. O lucrare nouă o înlocuiește, iar celei vechi i se răspunde „renuntat”: omul
  * care apasă din nou „Trimite” vrea ultima variantă. Nimic nu pornește singur: după „Primește”, fișierele verificate stau
@@ -11,24 +12,50 @@ import '../i18n/masina.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { t } from '../i18n/t.ts';
 import { useLimba } from '../ui/useLimba.ts';
-import { ascultaLucrari, primit, verificaLucrare, type FisierLucrare, type Lucrare, type LucrarePrimita, type VerificareLucrare } from './primireLucrare.ts';
+import { ascultaLucrari, citesteLucrare, primit, verificaLucrare, type FisierLucrare, type Lucrare, type LucrarePrimita, type VerificareLucrare } from './primireLucrare.ts';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`). */
 export const mesaje = mesajeGata();
 mesaje.catch(() => undefined);
 
-/** O lucrare care așteaptă răspunsul omului. */
+/**
+ * O lucrare care așteaptă răspunsul omului. `origine`: adresa paginii care a trimis, „null” pentru o pagină deschisă din
+ * fișier, sau `extensie:<numele ei>` pentru o extensie instalată.
+ */
 export type CerereLucrare = { readonly lucrare: Lucrare; readonly origine: string; readonly raspunde: (m: unknown) => void };
+
+/** Originea unei lucrări trimise de o extensie, cu numele ei din manifest. */
+export const ORIGINE_EXTENSIE = 'extensie:';
 
 let curenta: CerereLucrare | null = null;
 
+/** Cererea nouă o înlocuiește pe cea care așteaptă, iar celei vechi i se răspunde „renuntat”. */
+function inlocuieste(c: CerereLucrare, laCerere: (c: CerereLucrare) => void): void {
+  if (curenta) curenta.raspunde(primit(curenta.lucrare.id, null));
+  curenta = c;
+  laCerere(c);
+}
+
 /** Ascultarea lucrărilor, cu înlocuirea: `laCerere` primește fiecare lucrare nouă. Întoarce oprirea. */
 export function ascultaPrimirea(w: Window, laCerere: (c: CerereLucrare) => void): () => void {
-  return ascultaLucrari(w, (lucrare, origine, raspunde) => {
-    if (curenta) curenta.raspunde(primit(curenta.lucrare.id, null));
-    curenta = { lucrare, origine, raspunde };
-    laCerere(curenta);
-  });
+  return ascultaLucrari(w, (lucrare, origine, raspunde) => { inlocuieste({ lucrare, origine, raspunde }, laCerere); });
+}
+
+/**
+ * O lucrare trimisă de extensia `nume` (ADR 0199 §B): aceeași formă și aceleași limite ca prin protocol, aceeași înlocuire.
+ * Promisiunea dă mesajul `primit` (și „renuntat”); o lucrare fără forma protocolului dă null, fără dialog.
+ */
+export function cereDeLaExtensie(x: unknown, nume: string, laCerere: (c: CerereLucrare) => void): Promise<unknown> {
+  const r = citesteLucrare(x);
+  if (!r.ok) return Promise.resolve(null);
+  return new Promise((raspunde) => { inlocuieste({ lucrare: r.lucrare, origine: ORIGINE_EXTENSIE + nume, raspunde }, laCerere); });
+}
+
+/** De unde vine lucrarea, în limba omului. */
+function deUnde(origine: string): string {
+  if (origine === 'null') return t('masina.lucrare.origine-fisier');
+  if (origine.startsWith(ORIGINE_EXTENSIE)) return t('masina.lucrare.origine-extensie', { nume: origine.slice(ORIGINE_EXTENSIE.length) });
+  return origine;
 }
 
 /** Răspunde cererii `c`, dacă e încă cea care așteaptă: una înlocuită și-a primit deja „renuntat”. */
@@ -76,7 +103,7 @@ export function DialogLucrare({ cerere, onPrimita, onInchide }: {
       <div className="dialog-cutie">
         <h2 id="lucrare-titlu">{t('masina.lucrare.titlu')}</h2>
         <p data-testid="lucrare-de-la">
-          {t('masina.lucrare.de-la', { aplicatie, titlu: l.titlu || '—', origine: origine === 'null' ? t('masina.lucrare.origine-fisier') : origine })}
+          {t('masina.lucrare.de-la', { aplicatie, titlu: l.titlu || '—', origine: deUnde(origine) })}
         </p>
         <p>{t('masina.lucrare.fisiere', { n: l.fisiere.length })}</p>
         <ul className="masina-erori" data-testid="lucrare-fisiere">

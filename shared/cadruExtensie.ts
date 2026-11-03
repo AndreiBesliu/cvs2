@@ -3,8 +3,9 @@
  * aplicației, pe care îl și moștenește) și un singur script scris în ea, încărcătorul. Încărcătorul primește de la cvs2, o
  * singură dată, fișierele pachetului, contextul (limba, tema) și un `MessagePort`; pune tema pe rădăcină și stilurile ca foi
  * construite, face o adresă `blob:` din modulul de intrare, îl importă, cheamă `activeaza(host)` și `deschide(document.body)`.
- * Tot ce urmează trece prin port: cererile lui `host.cere` (și ale lui `host.stocare`, ADR 0128, învelișuri peste ea),
- * erorile, „inchide”; de la cvs2, contextul nou și răspunsurile.
+ * Tot ce urmează trece prin port: cererile lui `host.cere` (și ale învelișurilor peste ea: `host.stocare`, ADR 0128,
+ * `host.descarcari`, ADR 0129, `host.masina`, ADR 0199), erorile, „inchide”; de la cvs2, contextul nou, răspunsurile și starea
+ * mașinii, la fiecare schimbare.
  *
  * Textul încărcătorului e fix: amprenta lui SHA-256 stă în CSP-ul aplicației (`shared/csp.ts`), iar proba
  * `test/unit/csp.extensii.test.ts` o recalculează. O schimbare a textului cere amprenta nouă.
@@ -19,8 +20,8 @@ export const INCARCATOR = `(() => {
     void porneste(d, ev.ports[0]);
   });
   async function porneste(d, port) {
-    const cereri = new Map(), ascultatori = new Set();
-    let nr = 0, context = d.context;
+    const cereri = new Map(), ascultatori = new Set(), laMasina = new Set();
+    let nr = 0, context = d.context, masina = null;
     const trimite = (m) => { port.postMessage(m); };
     const raporteaza = (x) => { trimite({ tip: 'eroare', mesaj: String((x && x.message) || x), stiva: String((x && x.stack) || '') }); };
     const aplicaTema = () => {
@@ -39,6 +40,9 @@ export const INCARCATOR = `(() => {
         context = m.context;
         aplicaTema();
         for (const f of [...ascultatori]) { try { f(context); } catch (x) { raporteaza(x); } }
+      } else if (m && m.tip === 'masina') {
+        masina = m.stare;
+        for (const f of [...laMasina]) { try { f(masina); } catch (x) { raporteaza(x); } }
       }
     };
     addEventListener('error', (e) => { raporteaza(e.error || e.message); });
@@ -68,6 +72,22 @@ export const INCARCATOR = `(() => {
           sterge: (cheie) => cere('stocare.sterge', cheie),
           chei: () => cere('stocare.chei'),
         }),
+        descarcari: Object.freeze({ salveaza: (nume, date) => cere('descarcari.salveaza', nume, date) }),
+        masina: Object.freeze({
+          stare: () => cere('masina.stare'),
+          laStare(f) {
+            laMasina.add(f);
+            const s = masina;
+            if (s) void Promise.resolve().then(() => { if (laMasina.has(f) && masina === s) f(s); });
+            return () => { laMasina.delete(f); };
+          },
+          incarca: (nume, date) => cere('masina.incarca', nume, date),
+          porneste: () => cere('masina.porneste'),
+          reia: () => cere('masina.reia'),
+          pauza: () => cere('masina.pauza'),
+          opreste: () => cere('masina.opreste'),
+          trimite: (lucrare) => cere('masina.trimite', lucrare),
+        }),
       });
       const url = URL.createObjectURL(new Blob([fisiere[d.intrare]], { type: 'text/javascript' }));
       const modul = await import(url);
@@ -82,7 +102,7 @@ export const INCARCATOR = `(() => {
 })();`;
 
 /** Amprenta încărcătorului, în forma din CSP: base64(sha256(INCARCATOR)), verificată de `test/unit/csp.extensii.test.ts`. */
-export const AMPRENTA_INCARCATOR = "'sha256-4UMxYm1EsuRFXqd3FzD9Gb4F1HM/CBg6d14Y0YzfYDg='";
+export const AMPRENTA_INCARCATOR = "'sha256-xe1jcNTJ6lK0ykRsEu59QpbzdcgIFRApXL8CcrXYt4A='";
 
 /**
  * CSP-ul propriu al cadrului, peste cel moștenit de la aplicație: fără rețea (nici `fetch`, nici `ws:` spre mașină), scripturi

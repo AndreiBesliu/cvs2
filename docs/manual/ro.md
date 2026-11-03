@@ -781,6 +781,9 @@ consola coboară dedesubt; pe telefon, totul stă pe o coloană, în ordinea urg
   ordinea de tăiere: alegi unul din **Fișierul lucrării primite** și apeși **Încarcă lucrarea**; cele refuzate stau dedesubt,
   fiecare cu motivul. Nimic nu pornește singur, iar lucrarea se pierde la reîncărcarea paginii (aplicația o poate trimite din
   nou). Pe instanța live, primirea e oprită deocamdată.
+- **De la o extensie** (capitolul Extensiile): un program încărcat de o extensie are lângă nume „de la” ea. O pornire sau o
+  reluare cerută de o extensie te întreabă întâi, într-o fereastră a aplicației: **Pornește** (sau **Reia**) se poate apăsa
+  după o secundă, iar **Nu** și Escape nu trimit nimic.
 - **Pornește** trimite programul linie cu linie, cât încape în memoria mașinii. Lucrarea arată faza și linia. **Pauză** oprește
   mișcarea (Hold), **Reia** o continuă. O eroare a mașinii pe o linie oprește lucrarea în pauză și o arată în listă; **Reia după
   eroare** continuă de la prima linie netrimisă. La o schimbare de sculă (`M6`) sau o pauză din program (`M0`), lucrarea se
@@ -911,9 +914,10 @@ de ce.
 
 ## Extensiile
 %% capitol: extensii
+%% acopera: extensii.buton
 
-O extensie adaugă aplicației un spațiu de lucru al ei, de exemplu Planificatorul Trenuleț. Nu face parte din aplicație: o
-instalezi tu, iar interfața aplicației rămâne aceeași.
+O extensie adaugă aplicației o fereastră a ei, de exemplu Planificatorul Trenuleț. Nu face parte din aplicație: o instalezi
+tu, iar interfața aplicației rămâne aceeași.
 
 - Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, apoi
   **Instalează din fișier (.zip)…**, **Instalează din adresă…** și **Gestionează extensiile…**.
@@ -930,10 +934,21 @@ instalezi tu, iar interfața aplicației rămâne aceeași.
 - O extensie care a cerut asta poate salva fișiere (de exemplu, G-code-ul sau piesele de printat) ca descărcări obișnuite
   ale browserului: doar date și desene (`.zip`, `.json`, `.gcode`, `.stl` și altele asemenea), cel mult 64 MB unul, nu
   programe sau pagini.
-- Un clic pe o extensie din meniu îi deschide spațiul în locul planșei. Barele și panourile rămân, deci panoul mașinii poate
-  sta alături; cât e deschis spațiul, desenul nu se schimbă. **Înapoi la planșă**, deasupra spațiului, închide extensia.
-- Extensia rulează izolată: nu vede proiectele, contul sau mașina și nu iese pe internet; vorbește cu aplicația doar prin
-  ce îi dă aceasta.
+- Un clic pe o extensie din meniu îi deschide fereastra: lângă **Proiectare** și **Mașina** apare o filă cu numele ei, iar
+  dedesubt, pe tot ecranul, stă extensia. Treci oricând la altă fereastră: extensia rămâne deschisă, cu ce ai lucrat în ea, iar
+  o comandă a desenului aleasă din **Caută o comandă** te duce întâi la Proiectare. **×**, lângă numele ei, închide
+  extensia; după o reîncărcare a paginii, aplicația pornește fără ea. F1 deschide capitolul acesta.
+- O extensie care a cerut asta poate folosi mașina, prin fereastra **Mașina**: vede starea ei (legătura, lucrarea cu
+  procentul, programul încărcat), încarcă un program G-code, verificat la fel ca unul adus cu **Fișier…** (fereastra Mașina
+  scrie lângă el de la cine e), pune pauză și oprește lucrarea. Ca să pornească sau să reia lucrarea, te întreabă întâi,
+  într-o fereastră a aplicației: ce extensie cere, ce program (numele, liniile, începutul amprentei) și ce se reia. Butonul
+  care mișcă mașina se poate apăsa abia după o secundă, iar **Nu** sau Escape nu trimit nimic. Conectarea, jog-ul, zero-ul,
+  palparea, deblocarea, comenzile manuale și continuarea după o oprire din program rămân în fereastra Mașina. Pe instanța
+  live, deocamdată, extensiile nu folosesc mașina.
+- O astfel de extensie poate trimite și o lucrare întreagă (de exemplu, „Trimite la cvs2” din Planificatorul Trenuleț): vine
+  în dialogul **Lucrare primită**, ca de la o aplicație deschisă alături, cu extensia drept origine.
+- Extensia rulează izolată: nu vede proiectele, contul sau portul mașinii și nu iese pe internet; vorbește cu aplicația doar
+  prin ce îi dă aceasta.
 - **Gestionează extensiile** le arată pe cele instalate, cu sursa, data și cât ocupă datele lor; **Scoate** șterge una,
   împreună cu datele ei, **Închide** închide fereastra.
 

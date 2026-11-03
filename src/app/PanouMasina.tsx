@@ -33,9 +33,11 @@ import { deschideSerial, serialDisponibil } from '../machine/serial.ts';
 import { SesiuneMasina, type Ceas, type LinieJurnal, type Procedura, type StareSesiune } from '../machine/sesiune.ts';
 import { adresaRetea, deschideRetea, esteProfilRetea, PROFIL_RETEA, PROFILURI_RETEA, type ProfilRetea } from '../machine/websocket.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import { ConfirmareMasina, type CerereConfirmare } from './ConfirmareMasina.tsx';
 import { contulPermite, useContTinut } from './dreptCont.ts';
 import { IndicatorLucrare } from './IndicatorLucrare.tsx';
-import { lucrarePornita } from './lucrare.ts';
+import { lucrarePornita, masinaPentruExtensii } from './lucrare.ts';
+import { invelisMasina } from './masinaExtensii.ts';
 import { CardCod, ConfirmareDeblocare, cuTitlu, deblocareCuConfirmare, titluCod, useDictionarCoduri, type StareDictionar } from './PanouCod.tsx';
 import type { LucrarePrimita } from './primireLucrare.ts';
 import './masina.css';
@@ -150,7 +152,7 @@ const textRefuz = (r: Pick<Refuz, 'cod' | 'linie'>): string => {
   return t(`masina.refuz.${cod}` as CheieSimpla, { linie: (r.linie ?? 0) + 1 });
 };
 
-export function PanouMasina({ ultimulExport, lucrarePrimita, simulare, cerere = 0, onDeschide = () => undefined }: {
+export function PanouMasina({ ultimulExport, lucrarePrimita, simulare, cerere = 0, onDeschide = () => undefined, onModal = () => undefined }: {
   /** Fișierele ultimului export: unul, sau câte unul pe freză (ADR 0084). */
   readonly ultimulExport: readonly ExportPentruMasina[] | null;
   /** Lucrarea primită de la altă aplicație (ADR 0126): fișierele verificate, încărcate ca unele străine. */
@@ -161,6 +163,8 @@ export function PanouMasina({ ultimulExport, lucrarePrimita, simulare, cerere = 
   readonly cerere?: number;
   /** Deschide fereastra Mașina (clicul pe indicatorul lucrării, din orice fereastră). */
   readonly onDeschide?: () => void;
+  /** Confirmarea cerută de o extensie e deschisă (ADR 0199 §B): aplicația de sub ea e inertă, ca sub un dialog. */
+  readonly onModal?: (deschisa: boolean) => void;
 }): ReactNode {
   useLimba();
   // Pornirea programului cere capabilitatea senderului (ADR 0116 §9), judecată din contul ținut; jog-ul, zero-ul și oprirea
@@ -191,6 +195,11 @@ export function PanouMasina({ ultimulExport, lucrarePrimita, simulare, cerere = 
   const [wifi, setWifi] = useState(false);
   const butonWifi = useRef<HTMLButtonElement | null>(null);
   const [avertismentWifi, setAvertismentWifi] = useState(false);
+  // Extensiile (ADR 0199 §B): cine a încărcat programul de acum, și pornirea sau reluarea care așteaptă omul.
+  const [deLa, setDeLa] = useState<string | null>(null);
+  const [cerereExtensie, setCerereExtensie] = useState<CerereConfirmare | null>(null);
+  const numeRef = useRef(nume);
+  numeRef.current = nume;
   const nrAlarma = st.alarma?.nr ?? null;
   useEffect(() => { setConfirmDeblocare(false); }, [nrAlarma]);
 
@@ -206,6 +215,7 @@ export function PanouMasina({ ultimulExport, lucrarePrimita, simulare, cerere = 
     if (!rez.ok) { setRefuz(textRefuz(rez)); return; }
     setRefuz(null);
     setNume(numeNou);
+    setDeLa(null);
     s.eveniment({ tip: 'incarca', program: rez.program });
   };
   const conecteazaSerial = async (): Promise<void> => {
@@ -270,6 +280,28 @@ export function PanouMasina({ ultimulExport, lucrarePrimita, simulare, cerere = 
     setFisierAles(0);
     void incarca(x.octeti, 'export', x.nume, x.sha256);
   }, [cerere]);
+  // Învelișul pentru extensii (ADR 0199 §B, §E): senderul paginii, cu verificările lui „Fișier…” și confirmarea omului la
+  // pornire și la reluare (`masinaExtensii.ts`). Stă pus cât e montată fereastra; numele și contul se citesc la fiecare cerere.
+  useEffect(() => {
+    const m = invelisMasina(s, {
+      nume: () => numeRef.current,
+      permis: () => contulPermite('masina'),
+      confirmare: setCerereExtensie,
+      incarcat: (numeNou, extensie) => {
+        numeRef.current = numeNou;
+        setRefuz(null);
+        setNume(numeNou);
+        setDeLa(extensie);
+      },
+      avertizat: () => { avertizatWifi = true; },
+    });
+    masinaPentruExtensii.scrie(m);
+    return () => {
+      masinaPentruExtensii.scrie(null);
+      m.anuleaza();
+    };
+  }, []);
+  useEffect(() => { onModal(cerereExtensie !== null); }, [cerereExtensie]);
   /** Escape închide doar ce e deschis în fereastră (ADR 0132 §8): formularul WiFi, o confirmare. Nu trimite nimic la mașină. */
   const tasta = (e: KeyboardEvent<HTMLDivElement>): void => {
     if (e.key !== 'Escape') return;
@@ -477,7 +509,8 @@ export function PanouMasina({ ultimulExport, lucrarePrimita, simulare, cerere = 
           {refuz && <p className="masina-nota" role="alert" data-testid="masina-refuz">{refuz}</p>}
           <p className="masina-program" data-testid="masina-program">
             {f.program ? <>
-              <strong>{nume ?? '—'}</strong>{' · '}{t('masina.program.linii', { n })}<br />
+              <strong>{nume ?? '—'}</strong>{' · '}{t('masina.program.linii', { n })}
+              {deLa !== null && <>{' · '}<span data-testid="masina-program-de-la">{t('masina.program.de-la', { extensie: deLa })}</span></>}<br />
               <span className="masina-sha" title={f.program.sha256} data-sha={f.program.sha256}>SHA-256 {f.program.sha256.slice(0, 16)}…</span>
             </> : t('masina.program.niciunul')}
           </p>
@@ -498,6 +531,7 @@ export function PanouMasina({ ultimulExport, lucrarePrimita, simulare, cerere = 
           </ol>
         </section>
       </div>
+      {cerereExtensie && <ConfirmareMasina key={cerereExtensie.nr} cerere={cerereExtensie} />}
     </div>
   );
 }

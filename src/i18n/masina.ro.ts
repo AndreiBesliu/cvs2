@@ -219,4 +219,15 @@ export const roMasina = {
   'masina.indicator.gata': 'Lucrare gata',
   'masina.titlu.stare': '{stare} · {titlu}',
   'masina.program.in-lucru': 'O lucrare e pornită: programul nou se încarcă din „Ultimul export”, după ea.',
+  // Senderul extensiilor (ADR 0199 §B): cine a încărcat programul, confirmarea pornirii și a reluării, lucrarea trimisă.
+  'masina.program.de-la': 'de la {extensie}',
+  'masina.confirmare.porneste.titlu': 'Pornești programul?',
+  'masina.confirmare.reia.titlu': 'Reiei lucrarea?',
+  'masina.confirmare.porneste.cere': '„{extensie}” cere să pornească pe mașină programul de mai jos.',
+  'masina.confirmare.reia.cere': '„{extensie}” cere să reia lucrarea de pe mașină.',
+  'masina.confirmare.reia.pauza': 'Lucrarea stă în pauză: mașina continuă mișcarea de unde s-a oprit.',
+  'masina.confirmare.reia.eroare': 'Lucrarea s-a oprit pe o eroare: programul continuă de la linia {linie}.',
+  'masina.confirmare.atentie': 'Mașina se mișcă imediat ce confirmi. Verifică zero-ul, freza și placa.',
+  'masina.confirmare.nu': 'Nu',
+  'masina.lucrare.origine-extensie': 'extensia instalată „{nume}”',
 } as const satisfies DictionarRoPentru<typeof enMasina>;

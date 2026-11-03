@@ -1,8 +1,9 @@
 /**
  * Extensiile (ADR 0127 §B, §C): butonul discret de lângă marcă (piesa de puzzle), meniul lui (extensiile instalate,
- * instalarea din fișier și din adresă, gestionarea) și spațiul extensiei deschise, în locul pânzei, cu numele ei și
- * întoarcerea la planșă pe rândul de deasupra. Modulul vine după prima
- * randare (nu în pachetul de pornire); ferestrele instalării (`Instalare.tsx`) și cadrul (`cadru.ts`) vin la cerere.
+ * instalarea din fișier și din adresă, gestionarea) și fereastra extensiei deschise (ADR 0199 §A): o filă în meniul global,
+ * după ale aranjamentului, cu numele ei și ×, și dedesubt cadrul, pe tot ecranul, ca fereastra Mașina. Trecerea la altă
+ * fereastră o ascunde, iar cadrul rulează mai departe; × o închide. Modulul vine după prima randare (nu în pachetul de
+ * pornire); ferestrele instalării (`Instalare.tsx`) și cadrul (`cadru.ts`) vin la cerere.
  *
  * Linkul de instalare (`#instaleaza=<adresa>`) deschide fereastra adresei, completată; nimic nu se descarcă fără clic, iar
  * ancora se șterge din adresă.
@@ -14,6 +15,7 @@ import '../i18n/carcasa.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { cuMesaje, t } from '../i18n/t.ts';
 import { useLimba } from '../ui/useLimba.ts';
+import type { GazdaMasina } from './cadru.ts';
 import { FaraStocare, listaExtensii, type ExtensieInstalata } from './depozit.ts';
 import type { CerereInstalare } from './tipuri.ts';
 import './extensii.css';
@@ -40,15 +42,22 @@ function tastaInMeniu(e: KeyboardEvent<HTMLDivElement>, inchide: () => void): vo
   }
 }
 
-export function Extensii({ jurnal, onSpatiu, onModal }: {
+export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, masina }: {
   readonly jurnal: Jurnal;
-  /** Extensia al cărei spațiu e deschis (id-ul), sau null: carcasa oprește acțiunile documentului și ascunde pânza. */
-  readonly onSpatiu: (id: string | null) => void;
-  /** O fereastră a extensiilor e deschisă: aplicația de sub ea e inertă. */
+  /** Fereastra extensiei e cea de acum: fila ei e apăsată. */
+  readonly fereastra: boolean;
+  /** Fila extensiei: deschide fereastra ei. */
+  readonly onFereastra: () => void;
+  /** Extensia deschisă (id-ul și numele), sau null: carcasa îi arată fereastra, sau revine din ea la Proiectare. */
+  readonly onDeschisa: (x: { readonly id: string; readonly nume: string } | null) => void;
+  /** O fereastră a extensiilor (instalarea, gestionarea) e deschisă: aplicația de sub ea e inertă. */
   readonly onModal: (deschisa: boolean) => void;
+  /** Ce dă carcasa senderului extensiilor (ADR 0199 §B). */
+  readonly masina: GazdaMasina;
 }): ReactNode {
   const limba = useLimba();
   const [loc] = useState(() => document.getElementById('loc-extensii'));
+  const [locFila] = useState(() => document.getElementById('loc-fila-extensie'));
   const [locSpatiu] = useState(() => document.getElementById('loc-spatiu-extensie'));
   const [lista, setLista] = useState<readonly ExtensieInstalata[]>([]);
   const [meniu, setMeniu] = useState<{ readonly top: number; readonly left: number } | null>(null);
@@ -62,6 +71,9 @@ export function Extensii({ jurnal, onSpatiu, onModal }: {
   const trimiteContext = useRef<((tema?: Record<string, string>) => void) | null>(null);
   const limbaRef = useRef(limba);
   limbaRef.current = limba;
+  // Gazda senderului, cea de acum: cadrul pornește o dată pe extensie, dar cere de fiecare dată prin ea.
+  const masinaRef = useRef(masina);
+  masinaRef.current = masina;
 
   const reincarca = (): void => {
     void listaExtensii().then(setLista, (e: unknown) => {
@@ -88,7 +100,7 @@ export function Extensii({ jurnal, onSpatiu, onModal }: {
     return () => { window.removeEventListener('hashchange', dinAncora); };
   }, []);
   useEffect(() => { onModal(cerere !== null); }, [cerere, onModal]);
-  useEffect(() => { onSpatiu(deschisa?.id ?? null); }, [deschisa, onSpatiu]);
+  useEffect(() => { onDeschisa(deschisa ? { id: deschisa.id, nume: deschisa.manifest.nume } : null); }, [deschisa, onDeschisa]);
 
   // Meniul: sub buton, cu focusul pe primul rând; un clic în afara lui îl închide.
   const deschideMeniul = (): void => {
@@ -108,7 +120,7 @@ export function Extensii({ jurnal, onSpatiu, onModal }: {
   }, [meniu]);
   const alege = (f: () => void): void => { setMeniu(null); f(); };
 
-  // Spațiul: cadrul pornește la deschidere și se oprește la închidere (× sau `host.inchide()`).
+  // Fereastra: cadrul pornește la deschidere și se oprește la închidere (× sau `host.inchide()`).
   useEffect(() => {
     const container = cadru.current;
     if (!deschisa || !container) return;
@@ -127,6 +139,10 @@ export function Extensii({ jurnal, onSpatiu, onModal }: {
         else if (e.tip === 'inchide') setDeschisa(null);
         else if (e.tip === 'esuat') { setStare({ fel: 'esuat', mesaj: e.mesaj }); raporteaza(e.mesaj); }
         else raporteaza(e.mesaj, e.stiva);
+      }, {
+        activ: masinaRef.current.activ,
+        monteaza: () => { masinaRef.current.monteaza(); },
+        trimite: (l, ext) => masinaRef.current.trimite(l, ext),
       });
       oprire = h.opreste;
       trimiteContext.current = (tema) => { h.context({ limba: limbaRef.current, tema: tema ?? c.temaDeAcum() }); };
@@ -186,15 +202,21 @@ export function Extensii({ jurnal, onSpatiu, onModal }: {
       </div>
     </div>
   );
+  // Fila, după ale aranjamentului: numele extensiei (apăsată cât e fereastra de acum) și × care o închide.
+  const fila = deschisa && (
+    <span className="fila-extensie" data-testid="fila-extensie">
+      <button type="button" className="cu-eticheta fila" data-icona="extensii.fila" data-extensii="fila"
+        {...(fereastra ? { 'aria-current': 'page' as const } : {})} onClick={onFereastra}>
+        <span className="eticheta" data-testid="extensie-deschisa">{deschisa.manifest.nume}</span>
+      </button>
+      <button type="button" className="fila-inchide" data-extensii="inchide-fereastra" aria-label={t('extensii.inchide-fereastra', { nume: deschisa.manifest.nume })}
+        title={t('extensii.inchide-fereastra', { nume: deschisa.manifest.nume })} onClick={() => { setDeschisa(null); }}>
+        <span aria-hidden="true">×</span>
+      </button>
+    </span>
+  );
   const spatiul = deschisa && (
     <div className="spatiu-cadru" data-testid="spatiu-extensie" data-stare={stare.fel}>
-      {/* Numele și întoarcerea stau deasupra spațiului: lângă marcă nu e loc (la 1280 px, coloana ei are ~157 px). */}
-      <div className="spatiu-cap">
-        <strong className="extensie-deschisa" data-testid="extensie-deschisa">{deschisa.manifest.nume}</strong>
-        <button type="button" data-extensii="inchide-spatiul" title={t('extensii.inchide-spatiul')} onClick={() => { setDeschisa(null); }}>
-          <span>{t('extensii.inchide-spatiul')}</span><span aria-hidden="true">×</span>
-        </button>
-      </div>
       {stare.fel === 'porneste' && <p className="spatiu-nota">{t('extensii.spatiu.porneste')}</p>}
       {stare.fel === 'esuat' && <p className="spatiu-nota" role="alert">{t('extensii.spatiu.esuat', { mesaj: stare.mesaj })}</p>}
       {/* Cadrul se pune aici din cod (`cadru.ts`), în afara arborelui React. */}
@@ -204,6 +226,7 @@ export function Extensii({ jurnal, onSpatiu, onModal }: {
   return (
     <>
       {loc ? createPortal(butonul, loc) : null}
+      {locFila && fila ? createPortal(fila, locFila) : null}
       {meniul ? createPortal(meniul, document.body) : null}
       {locSpatiu && spatiul ? createPortal(spatiul, locSpatiu) : null}
       <Suspense fallback={null}>

@@ -43,7 +43,7 @@ test('manifestul greșit e refuzat cu motivul lui', () => {
     [{ format: 'alt' }, 'manifest'], [{ api: 2 }, 'api'], [{ api: '1' }, 'api'], [{ id: 'Proba' }, 'id'], [{ id: '' }, 'id'],
     [{ id: 'a'.repeat(41) }, 'id'], [{ nume: '' }, 'manifest'], [{ versiune: 'x'.repeat(21) }, 'manifest'],
     [{ intrare: 'altul.js' }, 'intrare'], [{ intrare: 'stil.css' }, 'intrare'], [{ stiluri: ['index.js'] }, 'stil'],
-    [{ stiluri: ['lipsa.css'] }, 'stil'], [{ permisiuni: ['masina'] }, 'permisiune'], [{ stiluri: 'stil.css' }, 'manifest'],
+    [{ stiluri: ['lipsa.css'] }, 'stil'], [{ permisiuni: ['retea'] }, 'permisiune'], [{ stiluri: 'stil.css' }, 'manifest'],
     [{ fisiere: { '../index.js': sha(JS) } }, 'cale'], [{ fisiere: { 'extensie.json': sha(JS), 'index.js': sha(JS) } }, 'cale'],
     [{ fisiere: { 'index.js': sha(JS).toUpperCase() } }, 'manifest'], [{ fisiere: [] }, 'manifest'],
   ];

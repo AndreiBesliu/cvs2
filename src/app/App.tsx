@@ -159,6 +159,12 @@ const TEME = ['auto', 'luminoasa', 'intunecata'] as const;
  * din Mașina, tastele lor nu fac nimic, iar alese din paletă întorc întâi la Proiectare.
  */
 const ORIUNDE: ReadonlySet<string> = new Set(['vedere.paleta', 'vedere.tema', ...Object.values(DESCHIDE_FEREASTRA)]);
+/**
+ * Fereastra extensiei deschise (ADR 0199 §A). Nu e în `aranjament.ferestre` (lista ferestrelor aplicației, verificată la
+ * încărcare): există doar cât e deschisă o extensie, iar fila ei o pune gazda extensiilor, după ale aranjamentului.
+ */
+const FEREASTRA_EXTENSIE = 'extensie';
+type Fereastra = IdFereastra | typeof FEREASTRA_EXTENSIE;
 
 const doua = (x: number): string => x.toFixed(2);
 
@@ -239,12 +245,11 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   // Lucrarea primită de la altă aplicație și cererea care așteaptă omul (ADR 0126): doar în memorie, separate de ultimul export.
   const [lucrarePrimita, setLucrarePrimita] = useState<LucrarePrimita | null>(null);
   const [cerereLucrare, setCerereLucrare] = useState<CerereLucrare | null>(null);
-  // Spațiul unei extensii deschis (id-ul ei) și o fereastră a extensiilor deschisă (ADR 0127 §C): cât e deschis spațiul,
-  // pânza e ascunsă și acțiunile documentului nu rulează; fereastra face aplicația inertă, ca dialogurile ei.
-  const [spatiuExtensie, setSpatiuExtensie] = useState<string | null>(null);
+  // Extensia deschisă, cu fereastra ei (ADR 0199 §A), și o fereastră a extensiilor deschisă (instalarea, gestionarea, ADR 0127
+  // §C), care face aplicația inertă, ca dialogurile ei; tot așa confirmarea cerută de o extensie (ADR 0199 §B).
+  const [extensie, setExtensie] = useState<{ readonly id: string; readonly nume: string } | null>(null);
   const [modalExtensii, setModalExtensii] = useState(false);
-  const spatiuDeschis = useRef(false);
-  spatiuDeschis.current = spatiuExtensie !== null;
+  const [modalMasina, setModalMasina] = useState(false);
   // În pornire stă doar verificarea ancorei și a ferestrei care a deschis fila; pe live, primirea e oprită (ADR 0126 §D).
   const primireActiva = config.ok && config.config.instanta !== 'live';
   useEffect(() => {
@@ -259,21 +264,31 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     addEventListener('hashchange', asculta);
     return () => { terminat = true; removeEventListener('hashchange', asculta); oprire?.(); };
   }, [primireActiva]);
+  /** Lucrarea trimisă de o extensie (`masina.trimite`, ADR 0199 §B): același dialog și aceeași listă ca prin protocol. */
+  const [trimiteLucrare] = useState(() => (x: unknown, ext: { readonly nume: string }): Promise<unknown> =>
+    incarcaPrimirea().then((m) => m.cereDeLaExtensie(x, ext.nume, setCerereLucrare)));
   /**
-   * Fereastra de acum (ADR 0132): Proiectarea (desenul) sau Mașina, ținută în browser și redeschisă la pornire. Mașina se
-   * montează la prima deschidere și rămâne montată (sesiunea, numele programului, formularele); Proiectarea nu se demontează
-   * niciodată (pânza, editarea, butonul Cont), doar se acoperă.
+   * Fereastra de acum (ADR 0132): Proiectarea (desenul) sau Mașina, ținută în browser și redeschisă la pornire, ori a extensiei
+   * deschise (ADR 0199 §A), care nu se ține. Mașina se montează la prima deschidere și rămâne montată (sesiunea, numele
+   * programului, formularele); Proiectarea nu se demontează niciodată (pânza, editarea, butonul Cont), doar se acoperă.
    */
-  const [fereastra, setFereastra] = useState<IdFereastra>(() => fereastraTinuta(aranjament.ferestre));
+  const [fereastra, setFereastra] = useState<Fereastra>(() => fereastraTinuta(aranjament.ferestre));
   const [masinaMontata, setMasinaMontata] = useState(fereastra === 'masina');
   const fereastraRef = useRef(fereastra);
   fereastraRef.current = fereastra;
-  const deschideFereastra = (f: IdFereastra): void => {
+  const deschideFereastra = (f: Fereastra): void => {
     fereastraRef.current = f;
     setFereastra(f);
     if (f === 'masina') setMasinaMontata(true);
-    tineFereastra(f);
+    // La pornire, nicio extensie nu e deschisă: fereastra ei nu se ține.
+    if (f !== FEREASTRA_EXTENSIE) tineFereastra(f);
   };
+  /** O extensie deschisă din meniul ei vine în fereastra ei; închisă (×, `host.inchide()`), fereastra pleacă la Proiectare. */
+  const [laExtensie] = useState(() => (x: { readonly id: string; readonly nume: string } | null): void => {
+    setExtensie(x);
+    if (x !== null) deschideFereastra(FEREASTRA_EXTENSIE);
+    else if (fereastraRef.current === FEREASTRA_EXTENSIE) deschideFereastra('proiectare');
+  });
   /** „Deschide în Mașina” din fereastra exportului (ADR 0132 §7): fiecare cerere are numărul ei, iar Mașina încarcă exportul. */
   const [cerereMasina, setCerereMasina] = useState(0);
   /** O lucrare pornită pe mașină (ADR 0132 §6): „Reîncarcă” așteaptă sfârșitul ei. */
@@ -536,7 +551,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    * a desenului pe care omul îl vede.
    */
   const dialogDeschis = useRef(false);
-  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii;
+  dialogDeschis.current = dialogExport || coadaImport !== null || cerereLucrare !== null || modalExtensii || modalMasina;
   /** Un dialog sau paleta: aplicația de sub ele e inertă. */
   const modal = dialogDeschis.current || paleta;
   const modalRef = useRef(modal);
@@ -559,7 +574,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     };
   }, []);
   const ruleazaDocument = (id: string, ctx: ContextDocument): RezultatActiune => {
-    if (dialogDeschis.current || spatiuDeschis.current) return { ok: false, motiv: 'motiv.nimic-ales' };
+    if (dialogDeschis.current) return { ok: false, motiv: 'motiv.nimic-ales' };
     return ruleaza(registru, id, ctx);
   };
   /**
@@ -674,7 +689,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
 
   /** Un câmp al panoului de proprietăți (ADR 0038 §4): acțiunea lui, cu rezultatul (motivul unui refuz rămâne în câmp). */
   const aplicaDinPanou = (id: string, extra: Parameters<typeof context>[0]): RezultatActiune => {
-    if (dialogDeschis.current || spatiuDeschis.current) return { ok: false, motiv: 'motiv.nimic-ales' };
+    if (dialogDeschis.current) return { ok: false, motiv: 'motiv.nimic-ales' };
     return ruleaza(registru, id, context(extra));
   };
 
@@ -695,9 +710,6 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    */
   const executa = (id: string): void => {
     if (dialogDeschis.current) return;
-    // Cât e deschis spațiul unei extensii (ADR 0127 §C), acțiunile documentului nu rulează (importul, exportul și restul, prin
-    // `ruleazaDocument`); vederea rămâne: panourile, tema, paleta.
-    if (spatiuDeschis.current && !registruVedere.actiuni.has(id)) return;
     if (fereastraRef.current !== 'proiectare' && !ORIUNDE.has(id)) deschideFereastra('proiectare');
     const s = stareActiune(id);
     if (!s.ok) {
@@ -907,6 +919,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             {aranjament.ferestre.map((f) => buton(DESCHIDE_FEREASTRA[f], 'data-actiune', {
               className: 'cu-eticheta fila', ...(f === fereastra ? { 'aria-current': 'page' } : {}),
             }))}
+            {/* Fila extensiei deschise (ADR 0199 §A), pusă de modulul extensiilor: nu e o fereastră a aranjamentului. */}
+            <span id="loc-fila-extensie" className="loc-fila-extensie" />
           </nav>
         );
       case 'limba':
@@ -1058,8 +1072,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         ei (`pointer-events`). Zona liberă din mijloc e locul în care se potrivește foaia. Deasupra tuturor, meniul global
         (ADR 0132), cu filele ferestrelor; fereastra Mașina acoperă Proiectarea, sub meniu.
       */}
-      <div className="aplicatie" inert={modal} data-aranjament={aranjament.id} data-fereastra={fereastra} data-stanga={deschise('stanga')} data-dreapta={deschise('dreapta')}
-        data-extensie={spatiuExtensie ?? undefined}>
+      <div className="aplicatie" inert={modal} data-aranjament={aranjament.id} data-fereastra={fereastra} data-stanga={deschise('stanga')} data-dreapta={deschise('dreapta')}>
         <header className="meniu-global" aria-label={t('meniu.global')}>
           <div className="marca">
             <h1>{t('app.titlu')}</h1>
@@ -1113,6 +1126,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             suprapunere={(v, m, l) => (
               <Suspense fallback={null}>
                 <Editare doc={doc} selectie={selectieValida} cutie={cutieSelectie} vedere={v} marime={m} linii={l} zona={zona} doarCitire={doarCiteste(mod)} activ={!acoperita}
+                  usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : 'vedere.masina'}
                   ruleaza={(id, extra) => ruleazaDocument(id, context(extra))} onLipeste={setLipesteStabil} onDesen={setDesenStabil}
                   onRefuz={setRefuzEditare} reface={stareActiune('istoric.reface').ok}
                   sugestie={config.ok && config.config.instanta !== 'live'} config={config.ok ? config.config : null} jurnal={jurnal}
@@ -1136,7 +1150,6 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         </div>
         <div className="doc doc-stanga" inert={acoperita}>{aranjament.docuri.stanga.map(panou)}</div>
         <div className="zona-libera" ref={zona} aria-hidden="true" />
-        <div className="spatiu-extensie" id="loc-spatiu-extensie" hidden={spatiuExtensie === null} inert={acoperita} />
         <div className="doc doc-dreapta" inert={acoperita}>{aranjament.docuri.dreapta.map(panou)}</div>
         {/*
           Fereastra Mașina (ADR 0132 §4), sub meniu, peste Proiectare: montată la prima deschidere și ținută montată după
@@ -1146,10 +1159,13 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
           <section className="fereastra-masina" aria-label={t('vedere.masina')} hidden={fereastra !== 'masina'}>
             <Suspense fallback={null}>
               <PanouMasina ultimulExport={ultimulExport} lucrarePrimita={lucrarePrimita} simulare={config.ok && config.config.instanta !== 'live'} cerere={cerereMasina}
-                onDeschide={() => { deschideFereastra('masina'); }} />
+                onDeschide={() => { deschideFereastra('masina'); }} onModal={setModalMasina} />
             </Suspense>
           </section>
         )}
+        {/* Fereastra extensiei deschise (ADR 0199 §A), ca Mașina: sub meniu, peste Proiectare; cadrul îl pune modulul extensiilor. */}
+        <section className="fereastra-extensie" id="loc-spatiu-extensie" aria-label={extensie?.nume}
+          hidden={fereastra !== FEREASTRA_EXTENSIE || extensie === null} />
         <footer className="jos">{grupuri('jos')}</footer>
       </div>
       {paleta && (
@@ -1218,7 +1234,9 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       )}
       </Suspense>
       <Suspense fallback={null}>
-        <Extensii jurnal={jurnal} onSpatiu={setSpatiuExtensie} onModal={setModalExtensii} />
+        <Extensii jurnal={jurnal} fereastra={fereastra === FEREASTRA_EXTENSIE} onFereastra={() => { deschideFereastra(FEREASTRA_EXTENSIE); }}
+          onDeschisa={laExtensie} onModal={setModalExtensii}
+          masina={{ activ: primireActiva, monteaza: () => { setMasinaMontata(true); }, trimite: trimiteLucrare }} />
       </Suspense>
     </>
   );

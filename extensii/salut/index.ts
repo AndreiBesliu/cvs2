@@ -78,6 +78,13 @@ export function activeaza(host: HostApi): Spatiu {
         );
       });
       const inchide = b('inchide', () => { host.inchide(); });
+      // Învelișul descărcărilor (ADR 0129, în încărcător din 3.Xc): cererea ajunge la cvs2, care o refuză fără permisiune.
+      b('descarca', () => {
+        void host.descarcari.salveaza('salut.txt', 'Salut').then(
+          () => { rand('descarcari', 'descarcari: PERMIS'); },
+          (e: unknown) => { rand('descarcari', `descarcari: ${String((e as Error).message)}`); },
+        );
+      }).textContent = 'descarcari';
       const arata = (c: ContextHost): void => {
         const t = TEXTE[c.limba];
         titlu.textContent = t.titlu;

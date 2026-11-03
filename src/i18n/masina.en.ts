@@ -216,4 +216,15 @@ export const enMasina = {
   'masina.indicator.gata': 'Job done',
   'masina.titlu.stare': '{stare} · {titlu}',
   'masina.program.in-lucru': 'A job is running: the new program loads from “Last export” after it ends.',
+  // The extensions' sender (ADR 0199 §B): who loaded the program, the start and resume confirmation, the job sent.
+  'masina.program.de-la': 'from {extensie}',
+  'masina.confirmare.porneste.titlu': 'Start the program?',
+  'masina.confirmare.reia.titlu': 'Resume the job?',
+  'masina.confirmare.porneste.cere': '“{extensie}” asks to start the program below on the machine.',
+  'masina.confirmare.reia.cere': '“{extensie}” asks to resume the job on the machine.',
+  'masina.confirmare.reia.pauza': 'The job is paused: the machine continues the motion where it stopped.',
+  'masina.confirmare.reia.eroare': 'The job stopped on an error: the program continues from line {linie}.',
+  'masina.confirmare.atentie': 'The machine moves as soon as you confirm. Check the zero, the bit and the board.',
+  'masina.confirmare.nu': 'No',
+  'masina.lucrare.origine-extensie': 'the installed extension “{nume}”',
 } as const;

@@ -47,6 +47,8 @@ const USI: readonly Usa[] = [
   ...[...ACTIUNI_DOCUMENT, ...ACTIUNI_VEDERE, ...ACTIUNI_IMPORT, ...ACTIUNI_EXPORT].map((a) => ({ id: a.id, eticheta: eticheta(a.eticheta) })),
   ...UNELTE.map((u) => ({ id: `unealta.${u}`, eticheta: eticheta(`editare.unealta.${u}`) })),
   { id: 'editare.lipire', eticheta: eticheta('editare.lipire') },
+  // Butonul Extensii (ADR 0127): F1 în fereastra unei extensii deschide capitolul lor (ADR 0199 §A).
+  { id: 'extensii.buton', eticheta: eticheta('extensii.buton') },
   { id: 'editare.grila', eticheta: eticheta('editare.grila') },
   { id: 'editare.aliniere', eticheta: eticheta('editare.aliniere') },
   { id: 'editare.aliniere-bloc', eticheta: eticheta('editare.aliniere-bloc') },
@@ -102,14 +104,15 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 71)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 72)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
   assert.equal(numeScurt('Importă SVG…'), 'Importă SVG');
   assert.equal(numeScurt('Oglindește orizontal: stânga ↔ dreapta (Shift+H)'), 'Oglindește orizontal');
-  // Gruparea (ADR 0130) a adus a 69-a ușă, fila Proiectare (ADR 0132) a 70-a, iar comutatorul Ca bloc (ADR 0150) a 71-a.
-  assert.equal(USI.length, 71);
+  // Gruparea (ADR 0130) a adus a 69-a ușă, fila Proiectare (ADR 0132) a 70-a, comutatorul Ca bloc (ADR 0150) a 71-a, iar
+  // butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0199 §A), a 72-a.
+  assert.equal(USI.length, 72);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {
@@ -152,13 +155,16 @@ const CONTROALE_MASINA: Readonly<Record<string, string | null>> = {
   primit: 'masina.primit.incarca',
   // Indicatorul lucrării din meniul global (ADR 0132, `IndicatorLucrare.tsx`): pastila și butonul de lângă ea.
   indicator: 'masina.indicator.titlu', 'indicator-pauza': 'masina.pauza', 'indicator-reia': 'masina.eliberare',
+  // Confirmarea unei porniri sau reluări cerute de o extensie (ADR 0199 §B, `ConfirmareMasina.tsx`).
+  confirma: 'masina.start', 'confirma-renunta': 'masina.confirmare.nu',
 };
 
 test('fiecare control al panoului mașinii (data-masina) e numit în capitolul „masina”, în ambele limbi', () => {
   const sursa = `${citeste('src/app/PanouMasina.tsx')}
 ${citeste('src/app/PanouCod.tsx')}
 ${citeste('src/app/DialogLucrare.tsx')}
-${citeste('src/app/IndicatorLucrare.tsx')}`;
+${citeste('src/app/IndicatorLucrare.tsx')}
+${citeste('src/app/ConfirmareMasina.tsx')}`;
   // Un `data-masina` calculat (`={…}`) ar ocoli proba: fiecare control își scrie numele.
   assert.doesNotMatch(sursa, /data-masina=\{/);
   const controale = [...new Set([...sursa.matchAll(/data-masina="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();
@@ -180,11 +186,11 @@ ${citeste('src/app/IndicatorLucrare.tsx')}`;
 
 /**
  * Controalele extensiilor (`data-extensii` în `src/extensii/`, ADR 0127) și eticheta fiecăruia, numită în capitolul
- * „extensii” (null: un control fără etichetă proprie: fișierul ales, rândul unei extensii, cu numele ei).
+ * „extensii” (null: un control fără etichetă proprie: fișierul ales, rândul unei extensii și fila ei, cu numele ei, ×).
  */
 const CONTROALE_EXTENSII: Readonly<Record<string, string | null>> = {
   buton: 'extensii.buton', 'fisier-ales': null, deschide: null, 'din-fisier': 'extensii.din-fisier', 'din-adresa': 'extensii.din-adresa',
-  gestioneaza: 'extensii.gestioneaza', 'inchide-spatiul': 'extensii.inchide-spatiul', adresa: 'extensii.adresa.camp',
+  gestioneaza: 'extensii.gestioneaza', fila: null, 'inchide-fereastra': null, adresa: 'extensii.adresa.camp',
   descarca: 'extensii.adresa.descarca', renunta: 'extensii.instalare.renunta', instaleaza: 'extensii.instalare.instaleaza',
   scoate: 'extensii.gestionare.scoate', inchide: 'extensii.gestionare.inchide',
 };

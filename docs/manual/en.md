@@ -808,6 +808,9 @@ column, most urgent first.
   **File of the received job** and press **Load received file**; the refused ones sit below, each with its reason. Nothing
   starts by itself, and the job is lost when the page reloads (the app can send it again). On the live instance, receiving
   is off for now.
+- **From an extension** (the Extensions chapter): a program loaded by an extension shows “from” it next to its name. A start
+  or a resume asked by an extension asks you first, in a window of the app: **Start** (or **Resume**) can be pressed after a
+  second, and **No** and Escape send nothing.
 - **Start** sends the program line by line, as much as fits in the machine’s memory. The job shows its phase and line.
   **Pause** stops the motion (Hold), **Resume** continues it. A machine error on a line stops the job on hold and lists it;
   **Resume after the error** continues from the first line not yet sent. At a tool change (`M6`) or a pause in the program
@@ -941,9 +944,10 @@ reports) and why.
 
 ## Extensions
 %% capitol: extensii
+%% acopera: extensii.buton
 
-An extension adds a workspace of its own to the app, for example the Trenuleț planner. It isn’t part of the app: you
-install it, and the app’s interface stays the same.
+An extension adds a window of its own to the app, for example the Trenuleț planner. It isn’t part of the app: you install
+it, and the app’s interface stays the same.
 
 - The **Extensions** button (the puzzle piece next to the instance name) opens the menu: the installed extensions, then
   **Install from file (.zip)…**, **Install from address…** and **Manage extensions…**.
@@ -960,11 +964,21 @@ install it, and the app’s interface stays the same.
 - An extension that asked for it can save files (for example, the G-code or the parts to print) as ordinary browser
   downloads: only data and drawings (`.zip`, `.json`, `.gcode`, `.stl` and the like), at most 64 MB each, never programs
   or pages.
-- A click on an extension in the menu opens its workspace in place of the sheet. The bars and panels stay, so the machine
-  panel can sit next to it; while the workspace is open, the drawing doesn’t change. **Back to the sheet**, above the
-  workspace, closes the extension.
-- The extension runs isolated: it can’t see your projects, your account or the machine, and it can’t reach the internet;
-  it talks to the app only through what the app gives it.
+- A click on an extension in the menu opens its window: a tab with its name appears next to **Design** and **Machine**, and
+  below it, on the whole screen, sits the extension. Switch to another window any time: the extension stays open, with what
+  you did in it, and a drawing command picked from **Search commands** takes you to Design first. **×**, next to its name,
+  closes the extension; after the page reloads, the app starts without it. F1 opens this chapter.
+- An extension that asked for it can use the machine, through the **Machine** window: it sees its state (the connection, the
+  job with its percentage, the loaded program), loads a G-code program, checked like one loaded with **File…** (the Machine
+  window writes next to it where it came from), pauses and stops the job. To start or resume the job, it asks you first, in
+  a window of the app: which extension asks, which program (the name, the lines, the start of the fingerprint) and what
+  resumes. The button that moves the machine can be pressed only after a second, and **No** or Escape send nothing. The
+  connection, jogging, zeroing, probing, unlocking, manual commands and continuing after a stop in the program stay in the
+  Machine window. On the live instance, extensions don’t use the machine for now.
+- Such an extension can also send a whole job (for example, “Send to cvs2” in the Trenuleț planner): it comes in the
+  **Incoming job** dialog, like one from an app opened next to it, with the extension as its origin.
+- The extension runs isolated: it can’t see your projects, your account or the machine’s port, and it can’t reach the
+  internet; it talks to the app only through what the app gives it.
 - **Manage extensions** shows the installed ones, with their source, date and how much their data takes; **Remove** deletes
   one, together with its data, **Close** closes the window.
 
