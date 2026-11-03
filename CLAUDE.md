@@ -431,6 +431,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   Permisiunea nouă `descarcari` (`descarcari.salveaza`): cvs2 descarcă din pagina lui, doar tipurile din lista albă, cel
   mult 64 MB. Încărcătorul și CSP-ul nu s-au schimbat. „Trimite la cvs2” și previzualizarea 3D nu merg încă din extensie.
   **Pornirea 98,9 (cu ușa 102,4 / 110 kB), totalul 462,6 / 500.**
+  **Fereastra extensiei și senderul prin `HostApi` (ADR 0199, număr provizoriu, felia 3.Xc)** gata pe 03.11, după `main` (cu
+  13.A↑) adus în ramură: o extensie deschisă are fereastra ei, cu fila după cele ale aranjamentului (`#loc-fila-extensie`,
+  pusă de gazdă, nu în `aranjament.ferestre`) și ×; Proiectarea acoperită urmează ADR 0132 §3. **Permisiunea `masina`,
+  oprită pe live:** `host.masina` dă starea la fiecare schimbare, `incarca` (verificările lui „Fișier…”), `porneste` și `reia`
+  după confirmarea omului (`ConfirmareMasina`, butonul activ după o secundă), `pauza` și `opreste` direct, `trimite` prin
+  dialogul primirii. **Logica senderului pentru extensii stă în `src/app/masinaExtensii.ts` (`invelisMasina`), fără React;**
+  fereastra Mașina doar o leagă și o pune în semnalul `masinaPentruExtensii` (`src/app/lucrare.ts`). Pornirea judecă
+  `refuzStart` din flux, ca evenimentul `start`. Încărcătorul are `host.masina` și `host.descarcari`, deci amprenta nouă în
+  CSP. „Trimite la cvs2” merge din planificator, printr-o fereastră imitată în `intrare.ts` (pachetul 18.1.0).
+  **Pornirea 100,6 (cu ușa 104,1 / 110 kB), totalul 471,6 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

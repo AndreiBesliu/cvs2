@@ -4950,3 +4950,41 @@ ADR 0129; codul: `754319b`, plus proba care a prins două otrăvuri scăpate: `1
 (`trenulet-18.0.0.zip`, 207 146 de octeți) nu stă pe canal: owner-ul îl primește ca fișier, fiindcă sursele
 planificatorului nu se publică înainte să le reconfirme (repo-ul e public). Adresa principală de test nu s-a atins; ramura
 nu e împinsă.
+
+## 2026-11-03 — Felia 3.Xc: fereastra extensiei și senderul prin `HostApi` (ADR 0199) (Model: Claude Opus 5.5)
+
+**Prompt:** „Main + 3.Xc (senderul)” (la „Care felie urmează?”, după raportul lui 3.Ta), în sesiunea dedicată liniei
+Trenuleț.
+**Started:** 03.11, 12:03. **Completed:** 03.11, 19:56.
+
+Întâi `main` (`75e9b47`: 13.A↑, 6.U↑, 5.9↑ pașii 1–3) a venit în ramură: `7681cd8`. Conflictele s-au rezolvat păstrând ambele
+părți, iar „Lucrarea primită” a trecut în fereastra Mașina. Unirea pe `9c0ca26` lăsase două probe unitare pe documentul v18;
+le reparase `75e9b47`, deci am refăcut-o pe vârful nou. Apoi felia: `2517e29`. **ADR 0199 e un număr provizoriu:** intervalul
+liniei (0126–0129) s-a terminat, iar sesiunea principală n-a răspuns încă la cererea de numere.
+- **Ce merge:**
+  - fereastra extensiei: fila cu numele, după Proiectare și Mașina, apăsată, cu ×; altă fereastră o ascunde, iar cadrul
+    rămâne; nu se ține după reîncărcare; F1 deschide capitolul extensiilor;
+  - permisiunea `masina`, oprită pe live:
+    - starea, la fiecare schimbare;
+    - încărcarea ca „Fișier…” (fereastra Mașina montată la nevoie, „de la” extensie lângă program);
+    - pornirea și reluarea, după confirmarea omului într-o fereastră a lui cvs2: butonul activ după o secundă, focusul pe
+      „Nu”, Escape = „Nu”, legată de programul și de reluarea arătate;
+    - pauza și oprirea, direct;
+    - o lucrare trimisă, prin dialogul primirii;
+  - „Trimite la cvs2” din planificator: lucrarea ovalului de exemplu ajunge în „Lucrarea primită” și toate fișierele ei trec
+    verificările lui „Fișier…”.
+- **Încărcătorul** are `host.masina` și `host.descarcari`. Amprenta lui s-a schimbat în CSP și în `firebase.json`, pe
+  mecanismul aprobat. Politica CSP nu s-a schimbat.
+- **Porțile:**
+  - compilatorul; importurile, 19 / 19; traducerile, 0 lipsă;
+  - 8 161 de teste unitare, 0 eșuate (8 sărite);
+  - build-ul determinist: 244 de fișiere identice; pornirea 100,6 / 110 kB (cu ușa 104,1), totalul 471,6 / 500.
+- **E2e-ul întreg, pe portul 4176:** 319 trec, 1 pică: aserțiunea care cere portul 4173 (raportorul). O eroare în jurnalul
+  local a apărut de două ori în proba senderului, la prima rulare după o schimbare, și n-am putut s-o repet (peste zece
+  rulări verzi după aceea). Proba arată acum și intrările jurnalului, când pică.
+- **Otrăvurile `test/otravuri/3.Xc.py`:** 59 / 59 prinse. P04 și P10 lăsau o promisiune fără răspuns, deci proba pica doar la termenul ei (300 s); acum pică într-o secundă (`peLoc`). E05 stricase sintaxa (build căzut, deci nu era o prindere): rescrisă, prinsă de e2e.
+- **Ce nu merge încă:**
+  - planificatorul n-are butoane pentru pornire, pauză sau oprire (vin în 3.Tb, cu sursele schimbate): „Trimite la cvs2” duce
+    lucrarea în „Lucrarea primită”, iar pornirea rămâne în fereastra Mașina;
+  - pe live, extensiile nu folosesc mașina, până la o placă tăiată așa pe test;
+  - continuarea după o barieră (M0, M1, M6) rămâne în fereastra Mașina.

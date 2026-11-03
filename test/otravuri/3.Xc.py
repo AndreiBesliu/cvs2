@@ -98,7 +98,7 @@ o('E01', INT, "  if (await host.cere('masina.stare').then(() => true, () => fals
 o('E02', GAZ, "          : serviciu === 'masina'\n", "          : serviciu === 'mașina'\n", 'e2e', 'cererile senderului nu ajung la serviciu')
 o('E03', GAZ, "  if (gazda.activ && ext.manifest.permisiuni.includes('masina')) {", '  if (false) {', 'e2e', 'starea nu se trimite cadrului')
 o('E04', GAZ, '      masinaPentruExtensii.citeste()?.anuleaza(ext.manifest.nume);\n', '', 'e2e', 'confirmarea unei extensii oprite rămâne deschisă')
-o('E05', APP, "    if (x !== null) deschideFereastra(FEREASTRA_EXTENSIE);\n", '', 'e2e', 'extensia deschisă nu-și arată fereastra')
+o('E05', APP, "    if (x !== null) deschideFereastra(FEREASTRA_EXTENSIE);\n", "    if (x !== null) void 0;\n", 'e2e', 'extensia deschisă nu-și arată fereastra')
 o('E06', APP, "    else if (fereastraRef.current === FEREASTRA_EXTENSIE) deschideFereastra('proiectare');\n", '', 'e2e', 'după ×, fereastra rămâne goală')
 o('E07', APP, ' || modalExtensii || modalMasina;', ' || modalExtensii;', 'e2e', 'aplicația nu e inertă sub confirmare')
 o('E08', APP, "usaAcoperita={fereastra === FEREASTRA_EXTENSIE ? 'extensii.buton' : 'vedere.masina'}", "usaAcoperita={'vedere.masina'}", 'e2e', 'F1 în fereastra extensiei deschide capitolul mașinii')

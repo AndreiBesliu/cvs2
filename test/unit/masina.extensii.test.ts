@@ -106,6 +106,8 @@ function fereastraFalsa() {
   return { f, fi };
 }
 const octeti = (t: string): Uint8Array => new TextEncoder().encode(t);
+/** Un răspuns care trebuie să vină pe loc: o întrebare arătată greșit (fără răspuns încă) pică proba într-o secundă. */
+const peLoc = <T>(p: Promise<T>): Promise<T> => Promise.race([p, new Promise<never>((_, nu) => { setTimeout(() => { nu(new Error('fără răspuns: o întrebare așteaptă omul')); }, 1000); })]);
 const ultima = (f: { readonly confirmari: readonly (CerereConfirmare | null)[] }): CerereConfirmare => {
   const c = f.confirmari.at(-1);
   assert.ok(c, 'o confirmare arătată');
@@ -140,14 +142,14 @@ test('învelișul: pornirea întreabă omul; „Nu”, „Da”, alt program în
   const m = invelisMasina(s, fi);
   // Judecățile butonului vin întâi: fără legătură, nicio întrebare.
   pune({ conexiune: 'deconectat' });
-  assert.deepEqual(await m.porneste('Proba'), { ok: false, cod: 'neconectat' });
+  assert.deepEqual(await peLoc(m.porneste('Proba')), { ok: false, cod: 'neconectat' });
   assert.deepEqual(f.confirmari, []);
   pune({ conexiune: 'conectat' });
 
   const nu = m.porneste('Proba');
   const c = ultima(f);
   assert.deepEqual([c.fel, c.extensie, c.nume, c.eveniment, c.program === s.stare().flux.program, c.wifi], ['porneste', 'Proba', 'a.nc', 'start', true, false]);
-  assert.deepEqual(await m.porneste('Proba'), { ok: false, cod: 'ocupat' });
+  assert.deepEqual(await peLoc(m.porneste('Proba')), { ok: false, cod: 'ocupat' });
   c.raspunde(false);
   // Un al doilea răspuns la aceeași întrebare nu mai face nimic.
   c.raspunde(true);
@@ -200,7 +202,7 @@ test('învelișul: reluarea întreabă și ea; o stare schimbată între timp, r
 
   pune({ flux: { ...s.stare().flux, faza: 'bariera', bariera: { linie: 5, m6: false, ultima: 5, ax: 'oprit' }, raport: raport('Idle') } });
   const n = f.confirmari.length;
-  assert.deepEqual(await m.reia('Proba'), { ok: false, cod: 'bariera' });
+  assert.deepEqual(await peLoc(m.reia('Proba')), { ok: false, cod: 'bariera' });
   assert.equal(f.confirmari.length, n);
 
   // Anularea: doar a extensiei care a cerut; fără nume, oricare (fereastra Mașina se demontează).
