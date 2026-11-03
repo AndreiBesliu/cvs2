@@ -236,6 +236,7 @@ export const roCarcasa = {
   'extensii.instalare.permisiuni': 'Cere: {lista}.',
   'extensii.instalare.fara-permisiuni': 'Nu cere nimic în plus: doar spațiul ei.',
   'extensii.permisiune.stocare': 'să-și țină datele în browserul acesta (cel mult 16 MB)',
+  'extensii.permisiune.descarcari': 'să salveze fișiere ca descărcări (date și desene, nu programe)',
   'extensii.gestionare.date': 'datele ei: {kb} kB',
   'extensii.instalare.verific': 'Verific pachetul…',
   'extensii.instalare.refuz': 'Pachetul nu se poate instala: {motiv}',

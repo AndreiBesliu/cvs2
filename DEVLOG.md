@@ -4647,3 +4647,9 @@ Decizia owner-ului s-a trimis sesiunii principale, cu cuvintele lui (ea face uni
 **Publicat pe canalul `trenulet`** pe 03.11, la 09:27, din `301bbf6`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
 (până pe 03.12). Probele extensiilor și ale primirii, rulate chiar pe canal: 7 / 7. Adresa principală de test nu s-a atins;
 ramura nu e împinsă.
+
+## 2026-11-03 — Felia 3.Ta: Planificatorul Trenuleț ca extensie, din sursele neschimbate (ADR 0129) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește E2” (după raportul lui 3.Xb), în sesiunea dedicată liniei Trenuleț. E2 e pasul în care sursele
+planificatorului intră în repo, ca extensie; 3.Ta e prima lui felie: pagina v18 neschimbată, în cadrul izolat.
+**Started:** 03.11, 09:28. **Completed:** —

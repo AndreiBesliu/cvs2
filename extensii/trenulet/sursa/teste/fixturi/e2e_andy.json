@@ -1,0 +1,39 @@
+{
+ "format": "trenulet-circuit",
+ "versiune": 2,
+ "nume": "Circuit nou",
+ "piese": {
+  "adaptor_tata_tata": 1,
+  "dreapta_144": 19,
+  "curba_mare_stanga": 4,
+  "dreapta_54": 2,
+  "curba_mica_stanga": 4,
+  "dreapta_108": 1,
+  "lc_1met47o": 1
+ },
+ "la_comanda": [
+  {
+   "id": "lc_1met47o",
+   "titlu": "Piesă la comandă în S · 146,2 mm · mamă–mamă",
+   "capete": [
+    "M",
+    "M"
+   ],
+   "bucati": 1,
+   "segmente": [
+    {
+     "t": "A",
+     "r": 241.13,
+     "a": 17.3732,
+     "s": -1
+    },
+    {
+     "t": "A",
+     "r": 241.13,
+     "a": 17.3732,
+     "s": 1
+    }
+   ]
+  }
+ ]
+}

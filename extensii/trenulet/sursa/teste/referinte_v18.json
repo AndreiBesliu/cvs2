@@ -1,0 +1,4995 @@
+{
+ "versiune": "v18",
+ "motoare": {
+  "lego": {
+   "{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "8149e12c1e85f2e2367cb0cd0fb340d5e7fbd1c36f41cf2d53a0befbe009ac5e",
+    "tri": 116,
+    "vol": 75.556,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "b53563fcc3f376f45a866bf45d4c46c95e859e929b6cc88068e8e7b4d713ed7e",
+    "tri": 116,
+    "vol": 263.2483,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":1,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "40156f5269c315874eb7f4e04c063465b99637d0c061ff1779a0a0c3fdc75d9c",
+    "tri": 968,
+    "vol": 188.7981,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":1,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "7b6d2317637339730f59ed98313816cf9fccf317b750cbd94a94eb15b7868ff9",
+    "tri": 968,
+    "vol": 578.1741,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "16112a31f808f5a606bc3b4bd058c19d7dc196817c913b363757eea2e0034030",
+    "tri": 1236,
+    "vol": 350.8628,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "ba86c55c823419b50441b0b52ac0211d11e6d090da1dd71356759562869c4a26",
+    "tri": 1236,
+    "vol": 1137.4605,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":0,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "4d3a3612d1c99dce628f5622c540150392eab33f7ee042601a1cc888d4e9c5a6",
+    "tri": 2216,
+    "vol": 548.8718,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":0,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "00d9d942b110c6f47dba3bdacdae22ad26295b8f5d35061a11f70dbf9b625596",
+    "tri": 2216,
+    "vol": 1744.4123,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":1,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "70c033497bc6d1cb90ebadd22399b331d71530c5541622b828279bfa0ee849ee",
+    "tri": 2216,
+    "vol": 548.8718,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":1,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "1153ffe67110764efc01d2f75ff19f686fd6ae80e0340728c9fb2354de3b37e1",
+    "tri": 2216,
+    "vol": 1744.4123,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":1,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "7d25fa81024e788a9722fbb9361144c67b398866fb0c0f1690a80eeffbc7e338",
+    "tri": 3092,
+    "vol": 664.0695,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":1,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "15f1f6b64640f4e0e860e5b5b87eb7529cf8d65c9f090dd712853b7d466cfd74",
+    "tri": 3092,
+    "vol": 2063.9905,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":2,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "023bb1098d0c7a26e615aac6b4cd5a5f1ff0186e3e1ed4fcd0642140ffdb71bc",
+    "tri": 3936,
+    "vol": 777.3811,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":2,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "3c3efaa133f1b449c604ff4828408c1589d2a653609b8c7db44a830b767e2244",
+    "tri": 3936,
+    "vol": 2379.1245,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":2,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "023bb1098d0c7a26e615aac6b4cd5a5f1ff0186e3e1ed4fcd0642140ffdb71bc",
+    "tri": 3936,
+    "vol": 777.3811,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":2,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "3c3efaa133f1b449c604ff4828408c1589d2a653609b8c7db44a830b767e2244",
+    "tri": 3936,
+    "vol": 2379.1245,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "d8e47bda8b1c3f5a9e72b7c02b38567fb4efacd7ca007ea6f0f154d488371e35",
+    "tri": 2460,
+    "vol": 709.059,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 14,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "309fcf75cd98f6c8d63e9edff56370f2c74dcb4a903772eb30f750e6d6e1e49c",
+    "tri": 2460,
+    "vol": 2299.2802,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 14,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":0,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "726ab7f32fd19c66c284149f79071430dc8aa28b3485d3f3003383b36d5d1ab4",
+    "tri": 4216,
+    "vol": 940.0073,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 17,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":0,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "9667328b5a4a6bc99a0c0a7f3a92e4f030c113a36f096e0f780dc1626dd4a0ce",
+    "tri": 4216,
+    "vol": 2940.6063,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 17,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":1,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "ce90cb8e4c520e08bdf6cedaaf64bd92f5af06618e714f61f37534d212780660",
+    "tri": 5196,
+    "vol": 1138.6149,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 20,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":1,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "379130ad67d76ef07806c77d502ebee2773006ddb727ef678218b5d32a39bc8d",
+    "tri": 5196,
+    "vol": 3548.0926,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 20,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":1,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "4238a7310d326d458e0bbe20d8ded32fff4bb2b56a3f247537661f48c53f1a16",
+    "tri": 5284,
+    "vol": 1221.1467,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 20,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":1,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "3c5358b3fc014a6d2c852927bd1ab8ddd92e7ec300e358d543d341cabdf89138",
+    "tri": 5284,
+    "vol": 3835.7358,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 20,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":2,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "9369562659b548560c9854eefdb887a97426a35db9ffead49d638d497dfe0627",
+    "tri": 7872,
+    "vol": 1565.9343,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 24,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":2,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "087455215e23c05bc35aa01fe8a60e24168a8ab72fa428317fc724a7dcf4ab43",
+    "tri": 7872,
+    "vol": 4791.6956,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 24,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":2,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "9369562659b548560c9854eefdb887a97426a35db9ffead49d638d497dfe0627",
+    "tri": 7872,
+    "vol": 1565.9343,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 24,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":2,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "087455215e23c05bc35aa01fe8a60e24168a8ab72fa428317fc724a7dcf4ab43",
+    "tri": 7872,
+    "vol": 4791.6956,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 24,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "8845a704ed727f853a37e17df554efe51b1b37e744b4fc5bbcca8de1879a7a8e",
+    "tri": 6636,
+    "vol": 1663.3712,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 30,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "aadd39a559b209fd95579946e63100b93ecf5863ff88d5881b286e0dc881fda9",
+    "tri": 6636,
+    "vol": 5283.3997,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 30,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":0,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "12164a32e487c7b4079a50576d2177e905db1f372c9d65fb7d7e7babcdb01131",
+    "tri": 9068,
+    "vol": 1977.4497,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 34,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":0,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "d159eb7f7065f7963dd81122db94a09364d0f4ad13ddb9b3d17f95d03c752194",
+    "tri": 9068,
+    "vol": 6213.7574,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 34,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "0eb0a5d2e14aadadea31992db0a9556e4c7ccb147a988575c3fa1e127f86c0c7",
+    "tri": 9536,
+    "vol": 2259.1703,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 37,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "b5d5b2ef9db3ede3984e8f6feeddb770430742026e2f7349dcaa2848310a23c1",
+    "tri": 9536,
+    "vol": 7110.2874,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 37,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "640c651fc63e789aadd9f8d2744204891974dedb34809f113163cd6e9b0a707d",
+    "tri": 11304,
+    "vol": 2492.1623,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 42,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "f3a001d362b1144a14a9f2a90991f78431f15a6bc756c05196a02701a3421174",
+    "tri": 11304,
+    "vol": 7754.103,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 42,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":3,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "07020786104088c4755fe347e3b78e600ee4ca0bb8072c16dff74ee4e58cdf4c",
+    "tri": 17648,
+    "vol": 3548.6447,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":3,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "fa13b6cd3c81ae678c479c64fcbfc91faa20158dd36ee7c9765abd2f33da70d5",
+    "tri": 17648,
+    "vol": 10857.0351,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":3,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "07020786104088c4755fe347e3b78e600ee4ca0bb8072c16dff74ee4e58cdf4c",
+    "tri": 17648,
+    "vol": 3548.6447,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":3,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "fa13b6cd3c81ae678c479c64fcbfc91faa20158dd36ee7c9765abd2f33da70d5",
+    "tri": 17648,
+    "vol": 10857.0351,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "a20151f9824ae6da3b1fad95c2f8f3edf3f380d29bcca35c0862b148351631cf",
+    "tri": 30780,
+    "vol": 6925.9495,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 114,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "c79ca7f60c7e1314dd3f9ee09a1b0527d9d3cdb8ad1e31eeedc51350fe2a4095",
+    "tri": 30780,
+    "vol": 21575.2069,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 114,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":0,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "cab2d30e131cfe51485094eb1d5236ff4cbc77d632f02d4c50ec58b79aaf5fbf",
+    "tri": 35216,
+    "vol": 7588.3787,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 125,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":0,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "a9fe0fb418fbaa1a8636a4f9ada49aca7caa75409147ba45fcf2bcad1f4b5b42",
+    "tri": 35216,
+    "vol": 23471.4625,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 125,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":1,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "e7f61b20079ac3ee59ab0a715d735e63a6c20e08d5ef4aab3c533154cc705e54",
+    "tri": 37952,
+    "vol": 8154.5015,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 133,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":1,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "4ca214c864f1597876a44f75c29c2dd1244cb5dec910cdd30a3f2714478fce0f",
+    "tri": 37952,
+    "vol": 25269.9769,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 133,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":1,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "4f580ffa0563ffbdf5d61ac33d44818268d9e1baefc3bc612a10acb6021a1cbb",
+    "tri": 40760,
+    "vol": 8669.681,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 140,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":1,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "69120cc742c4267d2120dc7bb373ac7fc57c6df3a8d19776c08507309febd20e",
+    "tri": 40760,
+    "vol": 26813.3343,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 140,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":6,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "98e1c866a897b58da283eeecf7ef6be186fd26cbcd0c8221ce5eba67e3d157ed",
+    "tri": 70208,
+    "vol": 14296.0598,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 216,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":6,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "f69a8abd706792d4bd811b85eb888630d298b6002d70a9bda2d6951d3b9720e5",
+    "tri": 70208,
+    "vol": 43731.951,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 216,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":6,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "98e1c866a897b58da283eeecf7ef6be186fd26cbcd0c8221ce5eba67e3d157ed",
+    "tri": 70208,
+    "vol": 14296.0598,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 216,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":6,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "f69a8abd706792d4bd811b85eb888630d298b6002d70a9bda2d6951d3b9720e5",
+    "tri": 70208,
+    "vol": 43731.951,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 216,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "11aa52388ead49818734788776062f1a1c2a539f22ce9e7fedd56aabf7de39a2",
+    "tri": 6120,
+    "vol": 1383.2197,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 25,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "97e3a9dce2838ffbab1a00f27cd4e785642eb8d169f72ab61447ace1c5fb06f9",
+    "tri": 6120,
+    "vol": 4395.9013,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 25,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":0,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "49fa6d49e79151bc2f202231c51349a55b58613ef62b56032aee36f8f306da2d",
+    "tri": 8356,
+    "vol": 1897.9252,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 33,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":0,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "28bdb368cb1d1aefc3578c8bf09e0503a925360393754748ae08154cf247058b",
+    "tri": 8356,
+    "vol": 5936.2255,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 33,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":1,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "27a57c0a5f509aaaa07ce5ea4f1b1dba0228feab56874b3f81cdf47efd8d5932",
+    "tri": 7364,
+    "vol": 1698.4956,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 29,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":1,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "86f4ee8be063f990d27396a66c630653e592b5434091d3a019dde87f3ff9f684",
+    "tri": 7364,
+    "vol": 5327.2102,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 29,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":1,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "d6347f5efba151a237951bf469d312264aea7ddb8fc6fcb4ddf733cec203bb5f",
+    "tri": 9340,
+    "vol": 2097.4177,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 35,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":1,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "54489f00ca2f516e7d079746f5f484cc34bea4d893e4d9172f82b54bde881551",
+    "tri": 9340,
+    "vol": 6546.3991,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 35,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":5,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "534d116dc2137c4fd0fcb90dd0f45edc5c4e1b7ae208f4eb73364bc8f849bd49",
+    "tri": 14712,
+    "vol": 2954.398,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 45,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":5,\"inceput\":0,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "4d2dc49fe4cf0ec9520065cb58c57d2647f16393130e24eb323a11c9f48fd2fd",
+    "tri": 14712,
+    "vol": 9039.1288,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 45,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":5,\"inceput\":1,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "534d116dc2137c4fd0fcb90dd0f45edc5c4e1b7ae208f4eb73364bc8f849bd49",
+    "tri": 14712,
+    "vol": 2954.398,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 45,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":5,\"inceput\":1,\"parte\":\"stanga\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "4d2dc49fe4cf0ec9520065cb58c57d2647f16393130e24eb323a11c9f48fd2fd",
+    "tri": 14712,
+    "vol": 9039.1288,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 45,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":0,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "f30d5e0b2348925a07b901ffb20cf2e149ae6e8ec945075bacdadc51eedfb206",
+    "tri": 116,
+    "vol": 75.556,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":0,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "4a2f7e3c1adfc929cb0ef1f801f699b960535e00782d948062d7ead2c0a4b840",
+    "tri": 116,
+    "vol": 263.2483,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":1,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "40156f5269c315874eb7f4e04c063465b99637d0c061ff1779a0a0c3fdc75d9c",
+    "tri": 968,
+    "vol": 188.7981,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":1,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "7b6d2317637339730f59ed98313816cf9fccf317b750cbd94a94eb15b7868ff9",
+    "tri": 968,
+    "vol": 578.1741,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":0,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "3dc6638cc77975cb32750249d8e687d845a2d179af6121324824f07f8876f399",
+    "tri": 1236,
+    "vol": 350.8628,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":0,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "d27378418d8174e4fd8b3a947688889701985b71d79e1abec9966899b0521659",
+    "tri": 1236,
+    "vol": 1137.4605,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":0,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "27c6d8e63ac4386922e2acb1b491c811baff1d43984ca3cf1fbb035ad8d645ae",
+    "tri": 2216,
+    "vol": 548.8718,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":0,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "c8902fac3aac1427e1fbdabebe88b967c12b67cb801fe875f0a13f332201c9ba",
+    "tri": 2216,
+    "vol": 1744.4123,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":1,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "77fccf180bdec120fdb9d7f7f475d230be3b8104a2bef79ffcbe3376ef0a0aaa",
+    "tri": 2216,
+    "vol": 548.8718,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":1,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "52c77bf42c75043439fd1947a08fdd6436b9e7b9bab9b5833d19524ffa4755cb",
+    "tri": 2216,
+    "vol": 1744.4123,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":1,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "58ad845f4fc09ba24b30ba92a9ec153d4039aa9b9a25333fa91769d3c286b9a0",
+    "tri": 3092,
+    "vol": 664.0695,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":1,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "95be271ab77e78334b1a47cb6286095ceb70758b8e5565142f463571702a95eb",
+    "tri": 3092,
+    "vol": 2063.9905,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":2,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "023bb1098d0c7a26e615aac6b4cd5a5f1ff0186e3e1ed4fcd0642140ffdb71bc",
+    "tri": 3936,
+    "vol": 777.3811,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":2,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "3c3efaa133f1b449c604ff4828408c1589d2a653609b8c7db44a830b767e2244",
+    "tri": 3936,
+    "vol": 2379.1245,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":2,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "023bb1098d0c7a26e615aac6b4cd5a5f1ff0186e3e1ed4fcd0642140ffdb71bc",
+    "tri": 3936,
+    "vol": 777.3811,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":2,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "3c3efaa133f1b449c604ff4828408c1589d2a653609b8c7db44a830b767e2244",
+    "tri": 3936,
+    "vol": 2379.1245,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":0,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "34ed82ba53174c2c195bc2c880090ebe75cb12e253cbcb4eff4fb00d44e76888",
+    "tri": 2460,
+    "vol": 709.059,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 14,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":0,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "f0bbca815dad4cf16b324fe5deba2bfbe415fad654ef53f0b28e5fec8f7ebe9d",
+    "tri": 2460,
+    "vol": 2299.2802,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 14,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":0,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "edd0c4845b707655b65a5836e34ec934b61dfd7127d232222deae16e19d05ea1",
+    "tri": 4216,
+    "vol": 940.0073,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 17,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":0,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "843618ad157077db2e04831f898ba1b37042b530df257eb6916c04738b577c38",
+    "tri": 4216,
+    "vol": 2940.6063,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 17,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":1,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "207158586d40769aa390c3a099f2cefe3c07f4114c805571f27d1b06e1ddad5b",
+    "tri": 5196,
+    "vol": 1138.6149,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 20,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":1,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "dbb04ef88842e71696057beeab0449d046b8366aaa0abfbde0c82175ced65d96",
+    "tri": 5196,
+    "vol": 3548.0926,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 20,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":1,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "26888f56e03658d150f3fc56ee9765c36c2677696c705d3a3b8059e5fb100973",
+    "tri": 5284,
+    "vol": 1221.1467,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 20,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":1,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "e5995fe7eaa6329f3c52448c2bc621ed180ca103734d556612fd8ac52ed55dc9",
+    "tri": 5284,
+    "vol": 3835.7358,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 20,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":2,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "9369562659b548560c9854eefdb887a97426a35db9ffead49d638d497dfe0627",
+    "tri": 7872,
+    "vol": 1565.9343,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 24,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":2,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "087455215e23c05bc35aa01fe8a60e24168a8ab72fa428317fc724a7dcf4ab43",
+    "tri": 7872,
+    "vol": 4791.6956,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 24,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":2,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "9369562659b548560c9854eefdb887a97426a35db9ffead49d638d497dfe0627",
+    "tri": 7872,
+    "vol": 1565.9343,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 24,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":2,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "087455215e23c05bc35aa01fe8a60e24168a8ab72fa428317fc724a7dcf4ab43",
+    "tri": 7872,
+    "vol": 4791.6956,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 24,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":0,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "1c19aa5e0fbcaac5b7b228d375a2d3739f40717febfd7447d4720c444f651255",
+    "tri": 6636,
+    "vol": 1663.3712,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 30,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":0,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "bcc4ea29ba7dafc2f98e8839be2889dc75348e26e2ab8b7b8a52b54bb841ca15",
+    "tri": 6636,
+    "vol": 5283.3997,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 30,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":0,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "12f855a85724a150bd6487e0e00d11716208b58365dabadd539e4caea04b9dc7",
+    "tri": 9068,
+    "vol": 1977.4497,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 34,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":0,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "a3689ba3751b6f555766b3b900f7471b17940874b17d3386e2d3e9b8f5c3d3ec",
+    "tri": 9068,
+    "vol": 6213.7574,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 34,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "5080f0e610f514e1cd661d8a4f3b2b7a387e29d46edc37121ab2450b782fa644",
+    "tri": 9536,
+    "vol": 2259.1703,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 37,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "972c96b96f44a1f38c59d94adc7463a3b420ccff94bc7dde498479359930d8a9",
+    "tri": 9536,
+    "vol": 7110.2874,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 37,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "3972ffa276225d4c8e6327d0916758ca08b17eedf5def2c15f0f334a683e19ce",
+    "tri": 11304,
+    "vol": 2492.1623,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 42,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "cdeaa3fd94ebf3eb78e85479ee61e42ee358a4894de6b710133e37171fa10865",
+    "tri": 11304,
+    "vol": 7754.103,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 42,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":3,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "07020786104088c4755fe347e3b78e600ee4ca0bb8072c16dff74ee4e58cdf4c",
+    "tri": 17648,
+    "vol": 3548.6447,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":3,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "fa13b6cd3c81ae678c479c64fcbfc91faa20158dd36ee7c9765abd2f33da70d5",
+    "tri": 17648,
+    "vol": 10857.0351,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":3,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "07020786104088c4755fe347e3b78e600ee4ca0bb8072c16dff74ee4e58cdf4c",
+    "tri": 17648,
+    "vol": 3548.6447,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":3,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "fa13b6cd3c81ae678c479c64fcbfc91faa20158dd36ee7c9765abd2f33da70d5",
+    "tri": 17648,
+    "vol": 10857.0351,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":0,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "56eb7e86bb7282536c65290e3d8d521af83ab01bed18b53a44c454d9158227eb",
+    "tri": 30780,
+    "vol": 6925.9495,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 114,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":0,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "7fd08d250341f181c012bb489cc70828910be37288dcea1266ac998accd7077a",
+    "tri": 30780,
+    "vol": 21575.2069,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 114,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":0,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "73d8429d68bd70248acee1bb054cdfd08c5ff8e553dac0d480ddc602efbfcf02",
+    "tri": 35216,
+    "vol": 7588.3787,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 125,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":0,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "5ef5e60bc97c79e4a7087b162e7354f7690ccdc718cc35b7b0ceebfaea8e3e07",
+    "tri": 35216,
+    "vol": 23471.4625,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 125,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":1,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "56b569857f73f231c1e397d8f3cf76d63f6e45ed2829ca94946d233391715fc0",
+    "tri": 37952,
+    "vol": 8154.5015,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 133,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":1,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "49293d3a04486f93feed7591aacaa0397d4d38d3ffb926c1ae7aeb055a0c18c5",
+    "tri": 37952,
+    "vol": 25269.9769,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 133,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":1,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "b65d77a0a1af206da1759d29daea7fbb435262feb9b7caf74552c8d54ce40f91",
+    "tri": 40760,
+    "vol": 8669.681,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 140,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":1,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "a9ac3ddff4385b125221cb7a3f39a0bf05dc5cd625494af0773030574bedb269",
+    "tri": 40760,
+    "vol": 26813.3343,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 140,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":6,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "98e1c866a897b58da283eeecf7ef6be186fd26cbcd0c8221ce5eba67e3d157ed",
+    "tri": 70208,
+    "vol": 14296.0598,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 216,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":6,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "f69a8abd706792d4bd811b85eb888630d298b6002d70a9bda2d6951d3b9720e5",
+    "tri": 70208,
+    "vol": 43731.951,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 216,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":6,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "98e1c866a897b58da283eeecf7ef6be186fd26cbcd0c8221ce5eba67e3d157ed",
+    "tri": 70208,
+    "vol": 14296.0598,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 216,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":6,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "f69a8abd706792d4bd811b85eb888630d298b6002d70a9bda2d6951d3b9720e5",
+    "tri": 70208,
+    "vol": 43731.951,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 216,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":0,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "44e8b01ee86efbd610a9cb0cb45b07dd4cdd58508c4126b5ac51e5f4bde087ee",
+    "tri": 6120,
+    "vol": 1383.2197,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 25,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":0,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "a8b782304fe1781717fa123d83c9900b96804ad088340cffb496d644a56c7684",
+    "tri": 6120,
+    "vol": 4395.9013,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 25,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":0,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "2237b43fd9fec969f95f1eb732a2d6506a4a685003c3182b18291fb31c40e225",
+    "tri": 8356,
+    "vol": 1897.9252,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 33,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":0,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "717b5c55d8f6b46868f0db292a1233dde8b7f268f9661df9b09d1f336e3c1f90",
+    "tri": 8356,
+    "vol": 5936.2255,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 33,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":1,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "e78f389169be3e089fa7cf5ae51b8dd245d44de2cea5bd9bdbabbd25185b00d1",
+    "tri": 7364,
+    "vol": 1698.4956,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 29,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":1,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "26249dbd15514881991e1cda6e3461369b1ffd4bc56668b65fd0aaf9534675c4",
+    "tri": 7364,
+    "vol": 5327.2102,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 29,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":1,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "52696b56ceda5337734d7c990ad04e27e9e0a2e0f9bedd6ea2baded8a17bf839",
+    "tri": 9340,
+    "vol": 2097.4177,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 35,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":1,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "a2e6a19f263f45a48102eb0e9c244c31d4b65a14e6be341a2f21433a6c0fcd92",
+    "tri": 9340,
+    "vol": 6546.3991,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 35,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":5,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "534d116dc2137c4fd0fcb90dd0f45edc5c4e1b7ae208f4eb73364bc8f849bd49",
+    "tri": 14712,
+    "vol": 2954.398,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 45,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":5,\"inceput\":0,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "4d2dc49fe4cf0ec9520065cb58c57d2647f16393130e24eb323a11c9f48fd2fd",
+    "tri": 14712,
+    "vol": 9039.1288,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 45,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":5,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "534d116dc2137c4fd0fcb90dd0f45edc5c4e1b7ae208f4eb73364bc8f849bd49",
+    "tri": 14712,
+    "vol": 2954.398,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 45,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":5,\"inceput\":1,\"parte\":\"dreapta\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "4d2dc49fe4cf0ec9520065cb58c57d2647f16393130e24eb323a11c9f48fd2fd",
+    "tri": 14712,
+    "vol": 9039.1288,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 45,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":0,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "945b763f77f36c14090b0e51b41d7eff2d20b83734776099e99ddb72f426b31e",
+    "tri": 116,
+    "vol": 63.6306,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":0,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "14a1dc61c9a5d93f81809c3d6201c7be30a368015dbd40380cd5172eb6dda3ee",
+    "tri": 116,
+    "vol": 252.1971,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":1,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "40156f5269c315874eb7f4e04c063465b99637d0c061ff1779a0a0c3fdc75d9c",
+    "tri": 968,
+    "vol": 188.7981,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":1,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "7b6d2317637339730f59ed98313816cf9fccf317b750cbd94a94eb15b7868ff9",
+    "tri": 968,
+    "vol": 578.1741,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":0,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "889b46943af86038317d49f8a7b9fed94532a6ae28f76f51de080d0990e67741",
+    "tri": 488,
+    "vol": 320.3943,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":0,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "fe6a0fd73074978bf205b4041f63b71c56bad011adb46af319bfac7fc478bb85",
+    "tri": 488,
+    "vol": 1109.7953,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":0,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "f9574db586bec0fcd827e97b3ea2a6a05b9b40d63b55141bb7bec2a3c1c7aed4",
+    "tri": 2240,
+    "vol": 550.7658,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":0,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "819df5ba2bb0c630682e07db01e34f0b7d13f2e12f26f208fc458e30df420eac",
+    "tri": 2240,
+    "vol": 1748.8801,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":1,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "d568ca02bf33b4e281a48e0830f0115b313de5f608d91d0f6b7a85c155f4539e",
+    "tri": 2280,
+    "vol": 530.7539,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":1,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "c2b13903dbeb12d57b6b90e7d274dff81114919cc292a99e64090bd437d503a7",
+    "tri": 2280,
+    "vol": 1726.8821,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":1,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "14d3dd69becff3b5892e944007cd2fc677c46e5d61a1c4f53c4bde3af4f7118d",
+    "tri": 2336,
+    "vol": 619.5029,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":1,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "839d5e16e76024cd02595ad7079fbbe09ec1d5cbb944724ca19c03bcb39b854d",
+    "tri": 2336,
+    "vol": 2020.3359,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":2,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "023bb1098d0c7a26e615aac6b4cd5a5f1ff0186e3e1ed4fcd0642140ffdb71bc",
+    "tri": 3936,
+    "vol": 777.3811,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":2,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "3c3efaa133f1b449c604ff4828408c1589d2a653609b8c7db44a830b767e2244",
+    "tri": 3936,
+    "vol": 2379.1245,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":2,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "023bb1098d0c7a26e615aac6b4cd5a5f1ff0186e3e1ed4fcd0642140ffdb71bc",
+    "tri": 3936,
+    "vol": 777.3811,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":2,\"lat\":2,\"varf\":2,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "3c3efaa133f1b449c604ff4828408c1589d2a653609b8c7db44a830b767e2244",
+    "tri": 3936,
+    "vol": 2379.1245,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":0,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "430520f5bc163b930014f79ba4427c272c9bfdb0615f388c8c97f6f53c48bddc",
+    "tri": 2504,
+    "vol": 711.3925,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 15,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":0,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "24a88372cd4db6b3723fc0739e7b359bb23cee320e7467b86566f1aa84a64609",
+    "tri": 2504,
+    "vol": 2304.7802,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 15,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":0,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "859c496b462eb56a460693cac2d498c521b71b73eee780b994361479171c9975",
+    "tri": 2680,
+    "vol": 876.422,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 15,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":0,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "25cdb0284a8748a1e5a2a79e58adf7149e269e669dc3eaeb23239b72c0f86d2d",
+    "tri": 2680,
+    "vol": 2879.9645,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 15,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":1,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "983b83b1d550ad434d2fb7cfd128ef8eca57cbb62c901774115f565e1171a5a4",
+    "tri": 2984,
+    "vol": 1005.4027,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 18,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":1,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "5d07ce28270076234b94400b51d4b328ee7b7e73ba7955ca4812cd9bbad250f9",
+    "tri": 2984,
+    "vol": 3415.2306,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 18,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":1,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "445b31f9098c119aa9c5b71ddc0bd859c56f6969158b2a5beda7af3bd757b4c7",
+    "tri": 4616,
+    "vol": 1162.7265,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 16,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":1,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "d6b54e3e3aeeaf2ae52dd48f8ac57831edf84d671ef46365d6675dfae1f93225",
+    "tri": 4616,
+    "vol": 3777.75,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 16,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":2,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "9369562659b548560c9854eefdb887a97426a35db9ffead49d638d497dfe0627",
+    "tri": 7872,
+    "vol": 1565.9343,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 24,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":2,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "087455215e23c05bc35aa01fe8a60e24168a8ab72fa428317fc724a7dcf4ab43",
+    "tri": 7872,
+    "vol": 4791.6956,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 24,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":2,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "9369562659b548560c9854eefdb887a97426a35db9ffead49d638d497dfe0627",
+    "tri": 7872,
+    "vol": 1565.9343,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 24,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":4,\"lat\":2,\"varf\":2,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "087455215e23c05bc35aa01fe8a60e24168a8ab72fa428317fc724a7dcf4ab43",
+    "tri": 7872,
+    "vol": 4791.6956,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 24,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":0,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "647a154a1c96ce2dddd8baca34cd7aa1205a5c8c02cacb4ba3cc0aa86f90fdf8",
+    "tri": 7492,
+    "vol": 1680.2322,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 34,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":0,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "220d0d7dcf9aabca37d1c9aebebf428fc70fbe42fc438547704f8eecb85fb2be",
+    "tri": 7492,
+    "vol": 5303.9855,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 34,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":0,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "db060b4cab78511299fb0f7ee286bc42a1acb30c4f9c4138bf30e6cdf0c731ab",
+    "tri": 8976,
+    "vol": 1933.7976,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 38,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":0,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "8f093ac290992523b8ea23b2e2167aeaca91ddc142ba4a21fa00ab5358a0bfe6",
+    "tri": 8976,
+    "vol": 6173.7662,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 38,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "211c81816b31d167d4f8ea57aa523e7b659f39adc07a04e529af384de03e056d",
+    "tri": 8848,
+    "vol": 2232.6179,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 42,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "53bb849f0af7ce64850906809e7c47a2f0f0305c73600c0d0ac0ba9dcd11a4fd",
+    "tri": 8848,
+    "vol": 7087.5525,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 42,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "c9412cb2d2385e62e2d8769df3cca4dba38ca7854f26768eeafdf3084ec717e2",
+    "tri": 10600,
+    "vol": 2463.4482,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 40,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "c91ffbbf3b582d0bc77cad8b5cc17100a2ea8883da1b68ea65cca6edd3c238a0",
+    "tri": 10600,
+    "vol": 7728.8507,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 40,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":3,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "07020786104088c4755fe347e3b78e600ee4ca0bb8072c16dff74ee4e58cdf4c",
+    "tri": 17648,
+    "vol": 3548.6447,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":3,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "fa13b6cd3c81ae678c479c64fcbfc91faa20158dd36ee7c9765abd2f33da70d5",
+    "tri": 17648,
+    "vol": 10857.0351,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":3,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "07020786104088c4755fe347e3b78e600ee4ca0bb8072c16dff74ee4e58cdf4c",
+    "tri": 17648,
+    "vol": 3548.6447,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":3,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "fa13b6cd3c81ae678c479c64fcbfc91faa20158dd36ee7c9765abd2f33da70d5",
+    "tri": 17648,
+    "vol": 10857.0351,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":0,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "0ac84d82c51f79fea263371a431dacedf3dfb289c37af6e1b063ab0fe28ee5f4",
+    "tri": 30840,
+    "vol": 6932.9479,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 119,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":0,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "311de2bda804a22072b58e6b59ee936633f9214aaf255bbc7ada5597946d11d4",
+    "tri": 30840,
+    "vol": 21591.7007,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 119,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":0,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "1eb2335062c7e49da116f7990cecba2e07b73916b11e4720c55703c641cbca10",
+    "tri": 32992,
+    "vol": 7499.9319,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 129,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":0,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "a7fb27d6f307b0baf5e87877b3430156f261849c9052949a63fce1def9240aa8",
+    "tri": 32992,
+    "vol": 23392.2619,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 129,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":1,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "7a6792bdb9c4c82d4e4229e71cfce376886a16b596f6d82e027b3324c23669a9",
+    "tri": 34832,
+    "vol": 7977.9921,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 136,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":1,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "4fc4bc433f7923db47d24ac4c68f9c3985c51b73ee2a39a97ada6faca845b3e3",
+    "tri": 34832,
+    "vol": 25100.7777,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 136,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":1,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "4e0556d423b74d869be176774a82687f32fba3e4575ce8513171ef361faa5f7c",
+    "tri": 38392,
+    "vol": 8527.4325,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 144,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":1,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "66947f2c70390020927833e2f3e5777cb926126d853d93e28a489f66f1927962",
+    "tri": 38392,
+    "vol": 26678.1894,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 144,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":6,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "98e1c866a897b58da283eeecf7ef6be186fd26cbcd0c8221ce5eba67e3d157ed",
+    "tri": 70208,
+    "vol": 14296.0598,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 216,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":6,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "f69a8abd706792d4bd811b85eb888630d298b6002d70a9bda2d6951d3b9720e5",
+    "tri": 70208,
+    "vol": 43731.951,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 216,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":6,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "98e1c866a897b58da283eeecf7ef6be186fd26cbcd0c8221ce5eba67e3d157ed",
+    "tri": 70208,
+    "vol": 14296.0598,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 216,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":6,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "f69a8abd706792d4bd811b85eb888630d298b6002d70a9bda2d6951d3b9720e5",
+    "tri": 70208,
+    "vol": 43731.951,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 216,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":0,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "8ec40f8a09115a52e7368053c877f93922e131df5a490a06d545605673808dbc",
+    "tri": 4776,
+    "vol": 1335.5493,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 27,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":0,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "052b9f9e9b82d8b550af8ef057248eaba99819dbe5787ad363ff52ec91021bca",
+    "tri": 4776,
+    "vol": 4354.6212,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 27,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":0,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "dd65154b5d4a9ba8bcbd346e6f249cbc80c24ac3d55815e29719f637bb4c6f2b",
+    "tri": 9204,
+    "vol": 1940.6389,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 35,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":0,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "da48e60bd3d8cce100a061bcdf78744f5693769bf39cf3207dfded054309dca5",
+    "tri": 9204,
+    "vol": 5984.7635,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 35,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":1,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "f9d20defffb57096c56d6fd9da0f5b59745ebfa9e0a0b3c5ffd10ae15bfe0546",
+    "tri": 7400,
+    "vol": 1702.4591,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 31,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":1,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "136e488f5db0f59a953f9c4adf087445b1339504a590d10c6540cb54b2017881",
+    "tri": 7400,
+    "vol": 5336.6963,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 31,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":1,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "e5c290e81975b3ee249e694d2288ba4db6f35c40c93efe2c5cf1721d582eeafb",
+    "tri": 9360,
+    "vol": 2101.2224,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 35,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":1,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "cd3d8a595c6033fd1c0122ebe4c75ba43a908648e812537cf7c5f30988cd05b4",
+    "tri": 9360,
+    "vol": 6555.3847,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 35,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":5,\"inceput\":0,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "534d116dc2137c4fd0fcb90dd0f45edc5c4e1b7ae208f4eb73364bc8f849bd49",
+    "tri": 14712,
+    "vol": 2954.398,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 45,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":5,\"inceput\":0,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "4d2dc49fe4cf0ec9520065cb58c57d2647f16393130e24eb323a11c9f48fd2fd",
+    "tri": 14712,
+    "vol": 9039.1288,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 45,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":5,\"inceput\":1,\"parte\":\"ambele\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "534d116dc2137c4fd0fcb90dd0f45edc5c4e1b7ae208f4eb73364bc8f849bd49",
+    "tri": 14712,
+    "vol": 2954.398,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 45,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":3,\"lat\":5,\"varf\":5,\"inceput\":1,\"parte\":\"ambele\",\"placi\":3,\"stifturi\":true}": {
+    "sha": "4d2dc49fe4cf0ec9520065cb58c57d2647f16393130e24eb323a11c9f48fd2fd",
+    "tri": 14712,
+    "vol": 9039.1288,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 45,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"toate\"}": {
+    "sha": "e25e94963c77dc6f22931c38f08e64389b584b848764cbf8e5fdfdca340eac0a",
+    "tri": 1208,
+    "vol": 146.6408,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"unul\"}": {
+    "sha": "e25e94963c77dc6f22931c38f08e64389b584b848764cbf8e5fdfdca340eac0a",
+    "tri": 1208,
+    "vol": 146.6408,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"niciunul\"}": {
+    "sha": "e3a837f5f2c2929b1e91169c6eef46efc52d89bbbace55d74e52d84c8be2c3a8",
+    "tri": 1020,
+    "vol": 113.9813,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"toate\"}": {
+    "sha": "e25e94963c77dc6f22931c38f08e64389b584b848764cbf8e5fdfdca340eac0a",
+    "tri": 1208,
+    "vol": 146.6408,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"unul\"}": {
+    "sha": "e25e94963c77dc6f22931c38f08e64389b584b848764cbf8e5fdfdca340eac0a",
+    "tri": 1208,
+    "vol": 146.6408,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"niciunul\"}": {
+    "sha": "e3a837f5f2c2929b1e91169c6eef46efc52d89bbbace55d74e52d84c8be2c3a8",
+    "tri": 1020,
+    "vol": 113.9813,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"toate\"}": {
+    "sha": "e25e94963c77dc6f22931c38f08e64389b584b848764cbf8e5fdfdca340eac0a",
+    "tri": 1208,
+    "vol": 146.6408,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"unul\"}": {
+    "sha": "e25e94963c77dc6f22931c38f08e64389b584b848764cbf8e5fdfdca340eac0a",
+    "tri": 1208,
+    "vol": 146.6408,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"niciunul\"}": {
+    "sha": "e3a837f5f2c2929b1e91169c6eef46efc52d89bbbace55d74e52d84c8be2c3a8",
+    "tri": 1020,
+    "vol": 113.9813,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"toate\"}": {
+    "sha": "066541925b3b4b7982a66c3308e68e03af9dd5b036daf33209ac565509ab3ce1",
+    "tri": 1272,
+    "vol": 97.0693,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"unul\"}": {
+    "sha": "066541925b3b4b7982a66c3308e68e03af9dd5b036daf33209ac565509ab3ce1",
+    "tri": 1272,
+    "vol": 97.0693,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"niciunul\"}": {
+    "sha": "066541925b3b4b7982a66c3308e68e03af9dd5b036daf33209ac565509ab3ce1",
+    "tri": 1272,
+    "vol": 97.0693,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"toate\"}": {
+    "sha": "0bc0fd92225c4cdf365ca89c5cc0f024971eff6be53440dc171ccd726dee99d3",
+    "tri": 1460,
+    "vol": 139.2138,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"unul\"}": {
+    "sha": "0bc0fd92225c4cdf365ca89c5cc0f024971eff6be53440dc171ccd726dee99d3",
+    "tri": 1460,
+    "vol": 139.2138,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"niciunul\"}": {
+    "sha": "f4bb78b826b703e2d41ba3d2341d2ad3ab8ae41028602ff22196c56425e37e15",
+    "tri": 1272,
+    "vol": 106.5543,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"toate\"}": {
+    "sha": "da16f33af398dc1ef6d602a880560178db009e8fb1069282040e2886cc53529d",
+    "tri": 1460,
+    "vol": 147.1179,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"unul\"}": {
+    "sha": "da16f33af398dc1ef6d602a880560178db009e8fb1069282040e2886cc53529d",
+    "tri": 1460,
+    "vol": 147.1179,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"niciunul\"}": {
+    "sha": "2d9f2a9c26c023186b103eba748091cc10ad934c991ea85758dbeb830fd04068",
+    "tri": 1272,
+    "vol": 114.4584,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"toate\"}": {
+    "sha": "2b198bc9ee9c3c10d22ffc23d26acc09d5a0ab7142b0e5b6ec43f7959a91d9a1",
+    "tri": 1208,
+    "vol": 451.965,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"unul\"}": {
+    "sha": "2b198bc9ee9c3c10d22ffc23d26acc09d5a0ab7142b0e5b6ec43f7959a91d9a1",
+    "tri": 1208,
+    "vol": 451.965,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"niciunul\"}": {
+    "sha": "46d9cfbf166395eaf301b5c90ccc2eb716716cd4fcf1a9075df5021cfdc15234",
+    "tri": 1020,
+    "vol": 419.3055,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"toate\"}": {
+    "sha": "2b198bc9ee9c3c10d22ffc23d26acc09d5a0ab7142b0e5b6ec43f7959a91d9a1",
+    "tri": 1208,
+    "vol": 451.965,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"unul\"}": {
+    "sha": "2b198bc9ee9c3c10d22ffc23d26acc09d5a0ab7142b0e5b6ec43f7959a91d9a1",
+    "tri": 1208,
+    "vol": 451.965,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"niciunul\"}": {
+    "sha": "46d9cfbf166395eaf301b5c90ccc2eb716716cd4fcf1a9075df5021cfdc15234",
+    "tri": 1020,
+    "vol": 419.3055,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"toate\"}": {
+    "sha": "2b198bc9ee9c3c10d22ffc23d26acc09d5a0ab7142b0e5b6ec43f7959a91d9a1",
+    "tri": 1208,
+    "vol": 451.965,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"unul\"}": {
+    "sha": "2b198bc9ee9c3c10d22ffc23d26acc09d5a0ab7142b0e5b6ec43f7959a91d9a1",
+    "tri": 1208,
+    "vol": 451.965,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"niciunul\"}": {
+    "sha": "46d9cfbf166395eaf301b5c90ccc2eb716716cd4fcf1a9075df5021cfdc15234",
+    "tri": 1020,
+    "vol": 419.3055,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"toate\"}": {
+    "sha": "4e9ce5d22347845232aeb5742db17780735a17ec335fe06b21e54080c77d9a6e",
+    "tri": 1272,
+    "vol": 228.5033,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"unul\"}": {
+    "sha": "4e9ce5d22347845232aeb5742db17780735a17ec335fe06b21e54080c77d9a6e",
+    "tri": 1272,
+    "vol": 228.5033,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"niciunul\"}": {
+    "sha": "4e9ce5d22347845232aeb5742db17780735a17ec335fe06b21e54080c77d9a6e",
+    "tri": 1272,
+    "vol": 228.5033,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"toate\"}": {
+    "sha": "92cd343308263beb9a15e0d1b495c56b8caee7da7d41abb5ef8761edd6c9990e",
+    "tri": 1460,
+    "vol": 365.497,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"unul\"}": {
+    "sha": "92cd343308263beb9a15e0d1b495c56b8caee7da7d41abb5ef8761edd6c9990e",
+    "tri": 1460,
+    "vol": 365.497,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"niciunul\"}": {
+    "sha": "9e86b0b712f181dd8d169d8f320a7b5af8fbc2124a064213a7647f67c25d6b76",
+    "tri": 1272,
+    "vol": 332.8374,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"toate\"}": {
+    "sha": "31322181eaf8cec3a919fc4057d917048840cabdc5ef328966d4880b2cfdc24a",
+    "tri": 1460,
+    "vol": 452.4421,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"unul\"}": {
+    "sha": "31322181eaf8cec3a919fc4057d917048840cabdc5ef328966d4880b2cfdc24a",
+    "tri": 1460,
+    "vol": 452.4421,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"niciunul\"}": {
+    "sha": "0cd0958c5ed1cafbc2bca0889a8962d8080807af68acc52cc8220508d6fb8399",
+    "tri": 1272,
+    "vol": 419.7825,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"toate\"}": {
+    "sha": "5fc83875cd1aff5d65c7850007d305ca32f73620d3b2b4278db56355ee60909e",
+    "tri": 1208,
+    "vol": 909.9513,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"unul\"}": {
+    "sha": "5fc83875cd1aff5d65c7850007d305ca32f73620d3b2b4278db56355ee60909e",
+    "tri": 1208,
+    "vol": 909.9513,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"niciunul\"}": {
+    "sha": "ddcc01743006dab091a6de522de9fd0633e73e3e57de3e9b3839f474902c0134",
+    "tri": 1020,
+    "vol": 877.2917,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"toate\"}": {
+    "sha": "5fc83875cd1aff5d65c7850007d305ca32f73620d3b2b4278db56355ee60909e",
+    "tri": 1208,
+    "vol": 909.9513,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"unul\"}": {
+    "sha": "5fc83875cd1aff5d65c7850007d305ca32f73620d3b2b4278db56355ee60909e",
+    "tri": 1208,
+    "vol": 909.9513,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"niciunul\"}": {
+    "sha": "ddcc01743006dab091a6de522de9fd0633e73e3e57de3e9b3839f474902c0134",
+    "tri": 1020,
+    "vol": 877.2917,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"toate\"}": {
+    "sha": "5fc83875cd1aff5d65c7850007d305ca32f73620d3b2b4278db56355ee60909e",
+    "tri": 1208,
+    "vol": 909.9513,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"unul\"}": {
+    "sha": "5fc83875cd1aff5d65c7850007d305ca32f73620d3b2b4278db56355ee60909e",
+    "tri": 1208,
+    "vol": 909.9513,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"niciunul\"}": {
+    "sha": "ddcc01743006dab091a6de522de9fd0633e73e3e57de3e9b3839f474902c0134",
+    "tri": 1020,
+    "vol": 877.2917,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"toate\"}": {
+    "sha": "dc1de4b4d0f7f298d651c9cab1faaeb564e1e638042a975458e1daec026618c3",
+    "tri": 1272,
+    "vol": 408.2651,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"unul\"}": {
+    "sha": "dc1de4b4d0f7f298d651c9cab1faaeb564e1e638042a975458e1daec026618c3",
+    "tri": 1272,
+    "vol": 408.2651,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"niciunul\"}": {
+    "sha": "dc1de4b4d0f7f298d651c9cab1faaeb564e1e638042a975458e1daec026618c3",
+    "tri": 1272,
+    "vol": 408.2651,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"toate\"}": {
+    "sha": "e4fc60fbf88e651f7fe62b27214cd6b903bc302aefefa42adb5aa3ec54b2a019",
+    "tri": 1460,
+    "vol": 697.0176,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"unul\"}": {
+    "sha": "e4fc60fbf88e651f7fe62b27214cd6b903bc302aefefa42adb5aa3ec54b2a019",
+    "tri": 1460,
+    "vol": 697.0176,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"niciunul\"}": {
+    "sha": "16dadc28990125e53a8e2c8885be92da8d6416ff0b31dee3257d546461e56d59",
+    "tri": 1272,
+    "vol": 664.358,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"toate\"}": {
+    "sha": "ce646c7805e913deb10393d814e859d6ef9837f71c7d9e9d81e4076c6245f5ec",
+    "tri": 1460,
+    "vol": 910.4283,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"unul\"}": {
+    "sha": "ce646c7805e913deb10393d814e859d6ef9837f71c7d9e9d81e4076c6245f5ec",
+    "tri": 1460,
+    "vol": 910.4283,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":6,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"niciunul\"}": {
+    "sha": "0bc1c137c6dc985ddcb46a3c37578b890523930771296108b4c807ccdc190b0a",
+    "tri": 1272,
+    "vol": 877.7688,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"toate\"}": {
+    "sha": "5caed40a45fcc1c035a7a2f9fdb88dd5fbc085e9fc413506c72aa886f3e810aa",
+    "tri": 2108,
+    "vol": 447.7837,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"unul\"}": {
+    "sha": "843772010f01bf25a3eb89d3bc8760fc0097199e2dd65052484e29f8d419bba0",
+    "tri": 1544,
+    "vol": 349.8051,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"niciunul\"}": {
+    "sha": "9f95c758b296a3702b6ee2ae27703ff025e3869c3650a158ef647a933df4c334",
+    "tri": 1356,
+    "vol": 317.1455,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"toate\"}": {
+    "sha": "5caed40a45fcc1c035a7a2f9fdb88dd5fbc085e9fc413506c72aa886f3e810aa",
+    "tri": 2108,
+    "vol": 447.7837,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"unul\"}": {
+    "sha": "843772010f01bf25a3eb89d3bc8760fc0097199e2dd65052484e29f8d419bba0",
+    "tri": 1544,
+    "vol": 349.8051,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"niciunul\"}": {
+    "sha": "9f95c758b296a3702b6ee2ae27703ff025e3869c3650a158ef647a933df4c334",
+    "tri": 1356,
+    "vol": 317.1455,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"toate\"}": {
+    "sha": "5caed40a45fcc1c035a7a2f9fdb88dd5fbc085e9fc413506c72aa886f3e810aa",
+    "tri": 2108,
+    "vol": 447.7837,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"unul\"}": {
+    "sha": "843772010f01bf25a3eb89d3bc8760fc0097199e2dd65052484e29f8d419bba0",
+    "tri": 1544,
+    "vol": 349.8051,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"niciunul\"}": {
+    "sha": "9f95c758b296a3702b6ee2ae27703ff025e3869c3650a158ef647a933df4c334",
+    "tri": 1356,
+    "vol": 317.1455,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"toate\"}": {
+    "sha": "4fc70be0e187999904731df02ada350e6819922e4eb2b07f425791a1f480a03b",
+    "tri": 1608,
+    "vol": 244.0015,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"unul\"}": {
+    "sha": "4fc70be0e187999904731df02ada350e6819922e4eb2b07f425791a1f480a03b",
+    "tri": 1608,
+    "vol": 244.0015,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"niciunul\"}": {
+    "sha": "4fc70be0e187999904731df02ada350e6819922e4eb2b07f425791a1f480a03b",
+    "tri": 1608,
+    "vol": 244.0015,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"toate\"}": {
+    "sha": "1ff3fccd6213e114c33f894288408a63f9e50262e557a6318e47e982cf733668",
+    "tri": 1796,
+    "vol": 291.4154,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"unul\"}": {
+    "sha": "1ff3fccd6213e114c33f894288408a63f9e50262e557a6318e47e982cf733668",
+    "tri": 1796,
+    "vol": 291.4154,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"niciunul\"}": {
+    "sha": "b4acb58323c2f3454f3038e74d89528aefe71d6ef944d03b04e7dae303165633",
+    "tri": 1608,
+    "vol": 258.7559,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"toate\"}": {
+    "sha": "7cda6fc15901ecaf324d89460f3d2d1f34f991afe35bdeaaed0dae93def2cd39",
+    "tri": 2360,
+    "vol": 449.7412,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"unul\"}": {
+    "sha": "7fbb2eac66e369da7a8333ef849cf9314a62535c58e517b4c1406cdf2d6f3846",
+    "tri": 1796,
+    "vol": 351.7626,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":1,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"niciunul\"}": {
+    "sha": "bfb795580cec105fc38cbc441dea9f9e7db3e2d8217c58668c14c0baaad76041",
+    "tri": 1608,
+    "vol": 319.1031,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"toate\"}": {
+    "sha": "577b27c9d65c01d2f8003de921a76330fa41bfd529eb4ee7178fad479145b0b3",
+    "tri": 2108,
+    "vol": 1700.5964,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"unul\"}": {
+    "sha": "64b230dd354a2d7d4caeb8068c1db31065123e2869c4ff5b37c67c3416255ae4",
+    "tri": 1544,
+    "vol": 1602.6178,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"niciunul\"}": {
+    "sha": "4212e22ca9dbf2fb18f5dadab49d88c3ad9648c6f8924e40ec6f703ec8cf46cd",
+    "tri": 1356,
+    "vol": 1569.9583,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"toate\"}": {
+    "sha": "577b27c9d65c01d2f8003de921a76330fa41bfd529eb4ee7178fad479145b0b3",
+    "tri": 2108,
+    "vol": 1700.5964,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"unul\"}": {
+    "sha": "64b230dd354a2d7d4caeb8068c1db31065123e2869c4ff5b37c67c3416255ae4",
+    "tri": 1544,
+    "vol": 1602.6178,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"niciunul\"}": {
+    "sha": "4212e22ca9dbf2fb18f5dadab49d88c3ad9648c6f8924e40ec6f703ec8cf46cd",
+    "tri": 1356,
+    "vol": 1569.9583,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"toate\"}": {
+    "sha": "577b27c9d65c01d2f8003de921a76330fa41bfd529eb4ee7178fad479145b0b3",
+    "tri": 2108,
+    "vol": 1700.5964,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"unul\"}": {
+    "sha": "64b230dd354a2d7d4caeb8068c1db31065123e2869c4ff5b37c67c3416255ae4",
+    "tri": 1544,
+    "vol": 1602.6178,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"niciunul\"}": {
+    "sha": "4212e22ca9dbf2fb18f5dadab49d88c3ad9648c6f8924e40ec6f703ec8cf46cd",
+    "tri": 1356,
+    "vol": 1569.9583,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"toate\"}": {
+    "sha": "2d74c01142d83208072587d016ce3370eb72dd5f0145c7613438b28f77977a25",
+    "tri": 1608,
+    "vol": 745.7991,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"unul\"}": {
+    "sha": "2d74c01142d83208072587d016ce3370eb72dd5f0145c7613438b28f77977a25",
+    "tri": 1608,
+    "vol": 745.7991,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"niciunul\"}": {
+    "sha": "2d74c01142d83208072587d016ce3370eb72dd5f0145c7613438b28f77977a25",
+    "tri": 1608,
+    "vol": 745.7991,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"toate\"}": {
+    "sha": "2538d1781eb2e1636c0df42a8c7e8f810cf02b9e23e391ebdbcbee0cb2e3e5d8",
+    "tri": 1796,
+    "vol": 940.7562,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"unul\"}": {
+    "sha": "2538d1781eb2e1636c0df42a8c7e8f810cf02b9e23e391ebdbcbee0cb2e3e5d8",
+    "tri": 1796,
+    "vol": 940.7562,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"niciunul\"}": {
+    "sha": "862cba8c9f836f9ad6b9bb4562a171cc7b39a8d16fde943490c1ea8eeb4720ce",
+    "tri": 1608,
+    "vol": 908.0967,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"toate\"}": {
+    "sha": "afc76a5c23eee2155987386178bc6626b436a19905979833c3e790be5ec806fb",
+    "tri": 2360,
+    "vol": 1702.5539,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"unul\"}": {
+    "sha": "60be61ee0fd1727c7d73804bef46d15735d05dc388e6765d1a38ac6cd515ee60",
+    "tri": 1796,
+    "vol": 1604.5753,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"niciunul\"}": {
+    "sha": "3d52b8df89c60013c414c763dd960b7b64101ca56868add27146c2cb17bfe997",
+    "tri": 1608,
+    "vol": 1571.9158,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"toate\"}": {
+    "sha": "e2c92f27fc95ba9c795fb02b5d3962d2907278adb07b7d0a7aae0a5aecd18a08",
+    "tri": 2108,
+    "vol": 3579.8155,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"unul\"}": {
+    "sha": "46f1f07ad58facbb5e9a4cd12b52c32c32790863ddfc9ad8fd79b3a4b5eb21b4",
+    "tri": 1544,
+    "vol": 3481.8369,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":1.2,\"stifturi\":\"niciunul\"}": {
+    "sha": "dc54c84509ea152841380186012a22fa34fdecf2569ce4556d7c4e7d30457cfe",
+    "tri": 1356,
+    "vol": 3449.1774,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"toate\"}": {
+    "sha": "e2c92f27fc95ba9c795fb02b5d3962d2907278adb07b7d0a7aae0a5aecd18a08",
+    "tri": 2108,
+    "vol": 3579.8155,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"unul\"}": {
+    "sha": "46f1f07ad58facbb5e9a4cd12b52c32c32790863ddfc9ad8fd79b3a4b5eb21b4",
+    "tri": 1544,
+    "vol": 3481.8369,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":5.4,\"stifturi\":\"niciunul\"}": {
+    "sha": "dc54c84509ea152841380186012a22fa34fdecf2569ce4556d7c4e7d30457cfe",
+    "tri": 1356,
+    "vol": 3449.1774,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"toate\"}": {
+    "sha": "e2c92f27fc95ba9c795fb02b5d3962d2907278adb07b7d0a7aae0a5aecd18a08",
+    "tri": 2108,
+    "vol": 3579.8155,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"unul\"}": {
+    "sha": "46f1f07ad58facbb5e9a4cd12b52c32c32790863ddfc9ad8fd79b3a4b5eb21b4",
+    "tri": 1544,
+    "vol": 3481.8369,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"cilindru\",\"varf_d\":15.8,\"stifturi\":\"niciunul\"}": {
+    "sha": "dc54c84509ea152841380186012a22fa34fdecf2569ce4556d7c4e7d30457cfe",
+    "tri": 1356,
+    "vol": 3449.1774,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"toate\"}": {
+    "sha": "9ec9d13908de1d409f0b56d27aa54e0dbca07e4ec219b37873ebfb04845f4c6c",
+    "tri": 1608,
+    "vol": 1423.394,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"unul\"}": {
+    "sha": "9ec9d13908de1d409f0b56d27aa54e0dbca07e4ec219b37873ebfb04845f4c6c",
+    "tri": 1608,
+    "vol": 1423.394,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"con\",\"varf_d\":1.2,\"stifturi\":\"niciunul\"}": {
+    "sha": "9ec9d13908de1d409f0b56d27aa54e0dbca07e4ec219b37873ebfb04845f4c6c",
+    "tri": 1608,
+    "vol": 1423.394,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"toate\"}": {
+    "sha": "a4f3a6fa47a16d2c9d1620c81e491dc0cf0237d42ac2f3ec3ff12e21b4ca8993",
+    "tri": 1796,
+    "vol": 1854.4202,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"unul\"}": {
+    "sha": "a4f3a6fa47a16d2c9d1620c81e491dc0cf0237d42ac2f3ec3ff12e21b4ca8993",
+    "tri": 1796,
+    "vol": 1854.4202,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"con\",\"varf_d\":5.4,\"stifturi\":\"niciunul\"}": {
+    "sha": "694d70963452e2cdad2fe773a4cee69d666a437697415af3656c3c44ac0fac92",
+    "tri": 1608,
+    "vol": 1821.7607,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"toate\"}": {
+    "sha": "f21103324870b9ebfda7ad0991c3d2e4f99ee3b2e0f2dae051b219e5d3148591",
+    "tri": 2360,
+    "vol": 3581.7731,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"unul\"}": {
+    "sha": "becbf7e551e04a39d3900299601e1fee8f314665b6a6967434030b50fc1b5a85",
+    "tri": 1796,
+    "vol": 3483.7945,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"con\",\"varf_d\":15.8,\"stifturi\":\"niciunul\"}": {
+    "sha": "b6b43bbcf9800d65da3618d3151de7a44087a174743aa7a82e79b87975c86c3a",
+    "tri": 1608,
+    "vol": 3451.1349,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0]],\"placi\":1,\"stifturi\":true,\"fund\":\"tuburi\"}": {
+    "sha": "b74c70f28be43e334c52c20019ba67625846ac3755eebb9b8157f1d8c96baaee",
+    "tri": 232,
+    "vol": 172.7059,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0]],\"placi\":3,\"stifturi\":true,\"fund\":\"tuburi\"}": {
+    "sha": "7452b3fe8e1d429e888f33fee714d143ffdf7712f65c563b1e1c17899b37725f",
+    "tri": 232,
+    "vol": 402.0819,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0]],\"placi\":1,\"stifturi\":true,\"fund\":\"locasuri\"}": {
+    "sha": "e464a49d58f30310a7d3fcf1a669b1288e7dcadbad177eea637de2a2779cc7d3",
+    "tri": 968,
+    "vol": 188.7981,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0]],\"placi\":3,\"stifturi\":true,\"fund\":\"locasuri\"}": {
+    "sha": "f9674e941c4429d42c9698e85b921892875affb15ad1e81e8ee26f4930a2ac06",
+    "tri": 968,
+    "vol": 578.1741,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0]],\"placi\":1,\"stifturi\":false,\"fund\":\"tuburi\"}": {
+    "sha": "9b5b32ab5540793a25f74733254780f7e2858e67e20c59b056bd5c37190b7327",
+    "tri": 44,
+    "vol": 140.0464,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0]],\"placi\":3,\"stifturi\":false,\"fund\":\"tuburi\"}": {
+    "sha": "bf7a4a0c61c1e8f6e92166a94c9757e37c9be844425c2e2f5a19caedb3effb58",
+    "tri": 44,
+    "vol": 369.4224,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0]],\"placi\":1,\"stifturi\":false,\"fund\":\"locasuri\"}": {
+    "sha": "a93d73b76096f6035c058e75f3bf7d425745e1e1713eacc8aa71cc2bac71035b",
+    "tri": 780,
+    "vol": 156.1385,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0]],\"placi\":3,\"stifturi\":false,\"fund\":\"locasuri\"}": {
+    "sha": "933121b17e12986a193a70523358c04d6a7095d0bccb08af93d6bbae58164653",
+    "tri": 780,
+    "vol": 545.5145,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0]],\"placi\":1,\"stifturi\":\"mijloc\",\"fund\":\"tuburi\"}": {
+    "sha": "b74c70f28be43e334c52c20019ba67625846ac3755eebb9b8157f1d8c96baaee",
+    "tri": 232,
+    "vol": 172.7059,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0]],\"placi\":3,\"stifturi\":\"mijloc\",\"fund\":\"tuburi\"}": {
+    "sha": "7452b3fe8e1d429e888f33fee714d143ffdf7712f65c563b1e1c17899b37725f",
+    "tri": 232,
+    "vol": 402.0819,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0]],\"placi\":1,\"stifturi\":\"mijloc\",\"fund\":\"locasuri\"}": {
+    "sha": "e464a49d58f30310a7d3fcf1a669b1288e7dcadbad177eea637de2a2779cc7d3",
+    "tri": 968,
+    "vol": 188.7981,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0]],\"placi\":3,\"stifturi\":\"mijloc\",\"fund\":\"locasuri\"}": {
+    "sha": "f9674e941c4429d42c9698e85b921892875affb15ad1e81e8ee26f4930a2ac06",
+    "tri": 968,
+    "vol": 578.1741,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0]],\"placi\":1,\"stifturi\":true,\"fund\":\"tuburi\"}": {
+    "sha": "4789332a42e949f3d4ab0c41f41bd2bb9e620f3bd0d5f395e53d76c539fbdcf8",
+    "tri": 620,
+    "vol": 333.0025,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0]],\"placi\":3,\"stifturi\":true,\"fund\":\"tuburi\"}": {
+    "sha": "28886aa20387f177e30fa21b1ccdbecea93ebdedc912bfd5e2b93641270690dd",
+    "tri": 620,
+    "vol": 750.8483,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0]],\"placi\":1,\"stifturi\":true,\"fund\":\"locasuri\"}": {
+    "sha": "e73e3b9c5dea8bd2c2f58dd10e15de81125325dab58f1b0a67351efb0b95e2b7",
+    "tri": 1968,
+    "vol": 383.1045,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0]],\"placi\":3,\"stifturi\":true,\"fund\":\"locasuri\"}": {
+    "sha": "eed7a10c3bbe1988e49e9ede59af7d67d22dae8704fd3254e3d2d60c25f789bc",
+    "tri": 1968,
+    "vol": 1172.8389,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0]],\"placi\":1,\"stifturi\":false,\"fund\":\"tuburi\"}": {
+    "sha": "2eca5b6dce14d065ea1a2ec1a7fbca042045607083e046ed1d61401172453697",
+    "tri": 244,
+    "vol": 267.6834,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0]],\"placi\":3,\"stifturi\":false,\"fund\":\"tuburi\"}": {
+    "sha": "e9859ea462de3919d05c703b42d4b5cee49c8f4af479de992c53e422f182ea37",
+    "tri": 244,
+    "vol": 685.5292,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0]],\"placi\":1,\"stifturi\":false,\"fund\":\"locasuri\"}": {
+    "sha": "f2696b3237beeebd97e77ce9f7510ae799ded55181a447fd5222f79162f98b55",
+    "tri": 1592,
+    "vol": 317.7854,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0]],\"placi\":3,\"stifturi\":false,\"fund\":\"locasuri\"}": {
+    "sha": "07a846d9b335c172d9960dd9443587be5ff5d0da7386fdba894ef68cb169f447",
+    "tri": 1592,
+    "vol": 1107.5198,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0]],\"placi\":1,\"stifturi\":\"mijloc\",\"fund\":\"tuburi\"}": {
+    "sha": "74341d8033d4750067b2bd5cbc968627af297f319a8f5b6ecdf53033794b324b",
+    "tri": 432,
+    "vol": 300.3429,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0]],\"placi\":3,\"stifturi\":\"mijloc\",\"fund\":\"tuburi\"}": {
+    "sha": "7842d29aa2904ed316ac3cd4c6222f3824ebca6ee3775928d061cb720e611f2c",
+    "tri": 432,
+    "vol": 718.1888,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0]],\"placi\":1,\"stifturi\":\"mijloc\",\"fund\":\"locasuri\"}": {
+    "sha": "0d63a3e636e8c18c73564aece89748044d965f44fd85b9dc2d672d636d3d436a",
+    "tri": 1780,
+    "vol": 350.445,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0]],\"placi\":3,\"stifturi\":\"mijloc\",\"fund\":\"locasuri\"}": {
+    "sha": "1e07aea4bbf6be71a01dded67714242fbc54179d2d50b0849a061780630f2b13",
+    "tri": 1780,
+    "vol": 1140.1794,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[0,1],[1,1]],\"placi\":1,\"stifturi\":true,\"fund\":\"tuburi\"}": {
+    "sha": "b66c6b345c97b738fcc2870d25bed8ca4f6f52c786574e5df794c587ed59bf11",
+    "tri": 1600,
+    "vol": 589.6625,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[0,1],[1,1]],\"placi\":3,\"stifturi\":true,\"fund\":\"tuburi\"}": {
+    "sha": "f245779149cd21ae358d69391f1ccae3728cba7fa6f1a184df50f3ca0b7edcf1",
+    "tri": 1600,
+    "vol": 1194.1932,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[0,1],[1,1]],\"placi\":1,\"stifturi\":true,\"fund\":\"locasuri\"}": {
+    "sha": "1b9615be2f728f941d5e435e53dcbda475b3ae85552fb7da5a1b5ea4ed6c8070",
+    "tri": 3936,
+    "vol": 777.3811,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[0,1],[1,1]],\"placi\":3,\"stifturi\":true,\"fund\":\"locasuri\"}": {
+    "sha": "06e681bce1b52abbfd17ecebee851a7f5f88707ee12d71730b039d4042464906",
+    "tri": 3936,
+    "vol": 2379.1245,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[0,1],[1,1]],\"placi\":1,\"stifturi\":false,\"fund\":\"tuburi\"}": {
+    "sha": "e8a9c933042934f2d3e1150d3f77186f48055fe3815a02f3bfa61e6fe41647a5",
+    "tri": 848,
+    "vol": 459.0244,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[0,1],[1,1]],\"placi\":3,\"stifturi\":false,\"fund\":\"tuburi\"}": {
+    "sha": "c64e55099e4d0b922b33d81fb2d80e0ac27381192f039496ea8b2048c88f1de8",
+    "tri": 848,
+    "vol": 1063.5551,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[0,1],[1,1]],\"placi\":1,\"stifturi\":false,\"fund\":\"locasuri\"}": {
+    "sha": "3a052d910c91352ed3f12f7f5fdbe64a0cba0672d121aa6fae03fcc78a8dad94",
+    "tri": 3184,
+    "vol": 646.743,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[0,1],[1,1]],\"placi\":3,\"stifturi\":false,\"fund\":\"locasuri\"}": {
+    "sha": "3d9c9dc53031baa69f3d241672fd4f8f339b987937531c7016927a0c47ea0944",
+    "tri": 3184,
+    "vol": 2248.4863,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[0,1],[1,1]],\"placi\":1,\"stifturi\":\"mijloc\",\"fund\":\"tuburi\"}": {
+    "sha": "1b34d3d77e58a00cc2226a9f66364c6d7c8c7cebde2b52d6dc8c90098126aab3",
+    "tri": 1036,
+    "vol": 491.6839,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[0,1],[1,1]],\"placi\":3,\"stifturi\":\"mijloc\",\"fund\":\"tuburi\"}": {
+    "sha": "4416815a073ec62587c50b9157f6a7f29dfe7329c6aee9a85e84092518feebda",
+    "tri": 1036,
+    "vol": 1096.2146,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[0,1],[1,1]],\"placi\":1,\"stifturi\":\"mijloc\",\"fund\":\"locasuri\"}": {
+    "sha": "58480ce5cf3bec2240535757544dd4845dc15364c1bdeea1aff9d0319e22074b",
+    "tri": 3372,
+    "vol": 679.4025,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 9,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[0,1],[1,1]],\"placi\":3,\"stifturi\":\"mijloc\",\"fund\":\"locasuri\"}": {
+    "sha": "518806bc517dbe1bfe925cfb9d2cfeb2d273a577b2217730b80f0ddba3151e3c",
+    "tri": 3372,
+    "vol": 2281.1459,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 9,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[0,1],[0,2]],\"placi\":1,\"stifturi\":true,\"fund\":\"tuburi\"}": {
+    "sha": "9bb579e13693fd5608f6b00a37135f4b607dfa2fa93ce51dc559c5fc9d104a43",
+    "tri": 1800,
+    "vol": 813.9041,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 15,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[0,1],[0,2]],\"placi\":3,\"stifturi\":true,\"fund\":\"tuburi\"}": {
+    "sha": "1f6a25c56f642c3c5981fac4694aa3818abc4163e4f0e618889ebe244ce7c658",
+    "tri": 1800,
+    "vol": 1797.1596,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 15,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[0,1],[0,2]],\"placi\":1,\"stifturi\":true,\"fund\":\"locasuri\"}": {
+    "sha": "0e999c141710e89c01fdca54c8c9bc8dbe87d7da66a6abac2927b2a3f9ca5a76",
+    "tri": 4952,
+    "vol": 966.0627,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 15,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[0,1],[0,2]],\"placi\":3,\"stifturi\":true,\"fund\":\"locasuri\"}": {
+    "sha": "e237feb2c2881d8c3959c8f1902e27100d96b521191169e0346661a28e220df9",
+    "tri": 4952,
+    "vol": 2956.9497,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 15,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[0,1],[0,2]],\"placi\":1,\"stifturi\":false,\"fund\":\"tuburi\"}": {
+    "sha": "606a100c9ce4651d695ecea8fc91687817bfcff3fe4e5b570e4fc9c8f7f741b6",
+    "tri": 860,
+    "vol": 650.6065,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[0,1],[0,2]],\"placi\":3,\"stifturi\":false,\"fund\":\"tuburi\"}": {
+    "sha": "766ea9ba94f7b142528ddf3af2a995b6bd1f8f84a69d4d248f65ad7adceff353",
+    "tri": 860,
+    "vol": 1633.8619,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[0,1],[0,2]],\"placi\":1,\"stifturi\":false,\"fund\":\"locasuri\"}": {
+    "sha": "8c676323be362b85f69bcef4b8eb46c48a690b5e14ca5ebdb95dd543ca35d5b3",
+    "tri": 4012,
+    "vol": 802.765,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[0,1],[0,2]],\"placi\":3,\"stifturi\":false,\"fund\":\"locasuri\"}": {
+    "sha": "dd534c963a2185b47d0f371272c046fd7883304864c524fb1690e53c6175bb65",
+    "tri": 4012,
+    "vol": 2793.652,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[0,1],[0,2]],\"placi\":1,\"stifturi\":\"mijloc\",\"fund\":\"tuburi\"}": {
+    "sha": "a52d57aef9cbbf74ec6c2017f9da7f1c1fe24afbf4254f0d116a54ec46ec7647",
+    "tri": 1048,
+    "vol": 683.266,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[0,1],[0,2]],\"placi\":3,\"stifturi\":\"mijloc\",\"fund\":\"tuburi\"}": {
+    "sha": "e80c0b43025f35c21083957db41604dfe478c15e98359a95f83e30c6195daa24",
+    "tri": 1048,
+    "vol": 1666.5214,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[0,1],[0,2]],\"placi\":1,\"stifturi\":\"mijloc\",\"fund\":\"locasuri\"}": {
+    "sha": "401c34da02dd5809af51fe38a38568067d6b87e8512dd47bed8c690a291a6a46",
+    "tri": 4200,
+    "vol": 835.4245,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[0,1],[0,2]],\"placi\":3,\"stifturi\":\"mijloc\",\"fund\":\"locasuri\"}": {
+    "sha": "727a6c4bb6e0ffdab1010c3ec83255bb87e183662191d78af84e4b807a7c4c63",
+    "tri": 4200,
+    "vol": 2826.3116,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,1]],\"placi\":1,\"stifturi\":true,\"fund\":\"tuburi\"}": {
+    "sha": "6b8468b64b9fa55d059e0217ed06009fb32eff154334391e5168cfa9a9c66fe2",
+    "tri": 464,
+    "vol": 345.4119,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,1]],\"placi\":3,\"stifturi\":true,\"fund\":\"tuburi\"}": {
+    "sha": "ab78a0a5ac62b82cdc3ce5a3ad3b36ae9019c79c03e569eb3ac61850844645ee",
+    "tri": 464,
+    "vol": 804.1639,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,1]],\"placi\":1,\"stifturi\":true,\"fund\":\"locasuri\"}": {
+    "sha": "b8a7444f340427b9468a80ffd9878459bfa0daa862534d61f8baa44e0d54df45",
+    "tri": 1936,
+    "vol": 377.5962,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,1]],\"placi\":3,\"stifturi\":true,\"fund\":\"locasuri\"}": {
+    "sha": "07474fb6c448b5973d28f89d79f26c4f6668ec32e6e801470b84382e4fda424d",
+    "tri": 1936,
+    "vol": 1156.3482,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,1]],\"placi\":1,\"stifturi\":false,\"fund\":\"tuburi\"}": {
+    "sha": "e41d48c7ebc1e5442c881c6625a9b54a91ff9f3391cae929e725476a8709efeb",
+    "tri": 88,
+    "vol": 280.0928,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,1]],\"placi\":3,\"stifturi\":false,\"fund\":\"tuburi\"}": {
+    "sha": "169fea52ab23c82e38f07803898364604c1a67251b1c358874946dd86fe949dd",
+    "tri": 88,
+    "vol": 738.8448,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,1]],\"placi\":1,\"stifturi\":false,\"fund\":\"locasuri\"}": {
+    "sha": "ea684a2bcd54731256a05bd6906ba028dc134f0c228123c4b8a6eba3e8b76f81",
+    "tri": 1560,
+    "vol": 312.2771,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,1]],\"placi\":3,\"stifturi\":false,\"fund\":\"locasuri\"}": {
+    "sha": "f1014d185fe41902618ec7abccafa05a88ba33a5d0d428d5c283c810acada0ea",
+    "tri": 1560,
+    "vol": 1091.0291,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,1]],\"placi\":1,\"stifturi\":\"mijloc\",\"fund\":\"tuburi\"}": {
+    "sha": "31c8a4f8bc986c6369e66cc3962a7a80a69bcf56983ec4799505c1e062ee6c7b",
+    "tri": 276,
+    "vol": 312.7523,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,1]],\"placi\":3,\"stifturi\":\"mijloc\",\"fund\":\"tuburi\"}": {
+    "sha": "6cd7958f8e97eb063953ab7fc5fda747aeaede9ab497d98561c64825e1167240",
+    "tri": 276,
+    "vol": 771.5043,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,1]],\"placi\":1,\"stifturi\":\"mijloc\",\"fund\":\"locasuri\"}": {
+    "sha": "d6b3b640cc5a5d5e0d3c3824dfdd4a21a19a91b0d16edbaed51228837cedb25f",
+    "tri": 1748,
+    "vol": 344.9366,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,1]],\"placi\":3,\"stifturi\":\"mijloc\",\"fund\":\"locasuri\"}": {
+    "sha": "56207b708de36a970543686694cc1cdfdf95927ec9af79d60f9ea7f051c44239",
+    "tri": 1748,
+    "vol": 1123.6886,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramidaTechnic\",\"lung\":1}": {
+    "sha": "730604b05094e087c7b0ed7d4eff46da651b2adf776be227b106a136b947d257",
+    "tri": 3368,
+    "vol": 406.7842,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramidaTechnic\",\"lung\":2}": {
+    "sha": "2015ffd83935a23b03e413f02770a7f0ffdc24a73a5eead71faf68da37b2ba86",
+    "tri": 4392,
+    "vol": 1003.2134,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramidaTechnic\",\"lung\":3}": {
+    "sha": "64f2cc5846efe9c0f6601f355b7dabfd4a8e0b42e879f6539d7517caa3ee9574",
+    "tri": 7792,
+    "vol": 1426.5367,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 17,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramidaTechnic\",\"lung\":6}": {
+    "sha": "76eda73ebeb27e0376ccebaa622f4f5faeac714a971f6096111ef4769b734434",
+    "tri": 17992,
+    "vol": 2696.5066,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 35,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramidaTechnic\",\"lung\":20}": {
+    "sha": "1cfd17754ae09fb9ba6cba6a05c856ada12e2dba667be4d8734948965326f5e3",
+    "tri": 65592,
+    "vol": 8623.033,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 119,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"grinda\",\"gauri\":[\"r\",\"x\",\"r\",\"p\"],\"groasa\":true}": {
+    "sha": "ea9a30861e41a0e40e33ed09dfa8c09708a5a73809207f260c60963628030327",
+    "tri": 5464,
+    "vol": 1199.0072,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"grinda\",\"gauri\":[\"r\",\"r\"],\"groasa\":false}": {
+    "sha": "237df62f2ffb86aaefe35c03ac8e3cf51c5c215fc84100d379b80220a6db56ca",
+    "tri": 1568,
+    "vol": 224.903,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"stiftTechnic\",\"fanta\":true}": {
+    "sha": "feb8fe9fc2b07cc0d7544141fd606652159b7b18cd80ac080adf5ac17c6996f5",
+    "tri": 840,
+    "vol": 275.9762,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"stiftTechnic\",\"fanta\":false}": {
+    "sha": "ad36b38c6cd2ed6916368a4ed902fff0cafdc59c2d023281afa75ac663ce4e58",
+    "tri": 408,
+    "vol": 311.0698,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"ax\",\"lung\":4}": {
+    "sha": "4ccc8169057dc97e19a68936c0b6cd23f4a9363786a4511fcf04ec805b2d846f",
+    "tri": 44,
+    "vol": 431.2875,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"panta\",\"lung\":2,\"adanc\":3,\"sus\":1,\"placi\":3,\"buza\":1.6,\"profil\":\"drept\"}": {
+    "sha": "2a45c145e66cb6e45a9bf1f2ddf0f5f7f44976b064f94718198067c1c8423ee7",
+    "tri": 5192,
+    "vol": 2458.4351,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 16,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"panta\",\"lung\":1,\"adanc\":2,\"sus\":0,\"placi\":2,\"buza\":1,\"profil\":\"drept\"}": {
+    "sha": "2336e1f86f44d96fcbaab95d6472c2783a78693dd026441b3de63bae14a143c1",
+    "tri": 808,
+    "vol": 418.0243,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"panta\",\"lung\":3,\"adanc\":8,\"sus\":0,\"placi\":6,\"buza\":6,\"profil\":\"drept\"}": {
+    "sha": "aebd64eda820a6ab7a3633c4a5fc72b87f8bcbdc73e01366188246df66fa4185",
+    "tri": 19008,
+    "vol": 18282.0077,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 48,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"panta\",\"lung\":2,\"adanc\":3,\"sus\":1,\"placi\":3,\"buza\":1.6,\"profil\":\"curb\"}": {
+    "sha": "13920928786f2bdd62552eb45f1f2975b8a235b6b0b127db641fb544682690eb",
+    "tri": 5648,
+    "vol": 2737.5013,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 54,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"panta\",\"lung\":1,\"adanc\":2,\"sus\":0,\"placi\":2,\"buza\":1,\"profil\":\"curb\"}": {
+    "sha": "b24ccde363d85fe33c2db589111e69a3be488410bb2ddb6da248d81ede9f59de",
+    "tri": 1836,
+    "vol": 491.2825,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 23,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"panta\",\"lung\":3,\"adanc\":8,\"sus\":0,\"placi\":6,\"buza\":6,\"profil\":\"curb\"}": {
+    "sha": "aa91f037293cca73767c3d351dffbc64d02acd1780658269fae6bfb210cf308b",
+    "tri": 21816,
+    "vol": 21262.7274,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 282,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pantaInversa\",\"lung\":2,\"adanc\":2,\"sus\":1,\"placi\":3}": {
+    "sha": "66ef117aaf8deeb612009a992621f6aa656530846aca00b3f3cb34081eb3328e",
+    "tri": 2368,
+    "vol": 1955.644,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pantaInversa\",\"lung\":2,\"adanc\":3,\"sus\":1,\"placi\":3}": {
+    "sha": "eb884dacea895d6344fc9d0976702c755bedb96bac78e0f2c693d96fb9ab5bfd",
+    "tri": 2768,
+    "vol": 2731.777,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 14,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"lateral\",\"lung\":2,\"fete\":\"doua\"}": {
+    "sha": "3c27d160824a0f65525385d7bf3e2136a3b68e9d983b35caf12b3d54f9e51512",
+    "tri": 2720,
+    "vol": 1303.477,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"lateral\",\"lung\":1,\"fete\":\"una\"}": {
+    "sha": "053e8e668a0b2c058742fdc82162a03d45bb1833fea7d5a78847f68419f8c5c3",
+    "tri": 1156,
+    "vol": 610.8336,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[3,0],[3,1],[4,0],[4,1],[5,0],[5,1]],\"placi\":1,\"gauri\":[[1,1,\"r\"],[2,1,\"x\"],[3,1,\"r\"],[4,1,\"x\"],[5,1,\"r\"]]}": {
+    "sha": "d75f8c675101534156ee00572c59ca9dd702fa6b668a5f9da1e3035bbab64de5",
+    "tri": 6960,
+    "vol": 1577.0888,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 19,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[3,0],[3,1]],\"placi\":3,\"gauri\":[[1,1,\"r\"],[2,1,\"x\"],[3,1,\"r\"]]}": {
+    "sha": "b9bb0215e80af7d993826d0adbfe74b885888ff9a973d65d684c56573eb29e8b",
+    "tri": 4360,
+    "vol": 2120.0733,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 13,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[0,1],[1,0],[1,1]],\"placi\":1,\"goale\":true}": {
+    "sha": "68efc4f39f7152fe946607e703f0910d9d503925904a605a38fe9641a6146934",
+    "tri": 4668,
+    "vol": 487.2695,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]],\"placi\":1,\"goale\":true,\"gauri\":[[1,1,\"r\"],[2,2,\"x\"],[1,2,\"r\"],[2,1,\"x\"]]}": {
+    "sha": "4dd9f1231c52b4890e4b8acdf3ac769bc40b2ff761dbb92437b429d1b6489b94",
+    "tri": 12416,
+    "vol": 956.1933,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 15,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[0,1],[1,0],[1,1],[2,0],[2,1]],\"placi\":3,\"fund\":\"locasuri\",\"gauri\":[[1,1,\"r\"],[2,1,\"x\"]],\"goale\":true}": {
+    "sha": "ae30209bce3ef92da5eca11d4681bb316aa00ca3c10b9d12d87503ac669b8c96",
+    "tri": 7480,
+    "vol": 2721.1281,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[0,1],[1,0],[1,1]],\"placi\":1,\"stifturi\":\"mijloc\",\"gauri\":[[1,1,\"r\"]]}": {
+    "sha": "b6022fb310985b6fefac803811ce0ba34e82ff4bd8684efbfbe3b830f29d97fe",
+    "tri": 1036,
+    "vol": 491.6839,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0]],\"placi\":3,\"laterale\":[\"r\",\"x\",\"p\",\"r\",\"x\"]}": {
+    "sha": "73b5365e9fa75ac53a484006a804a3f4d8869f2f1f9a2e45836dc6ad3606b648",
+    "tri": 12020,
+    "vol": 2962.8079,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 29,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[2,0],[2,1],[2,2]],\"placi\":3,\"laterale\":[\"x\",\"r\"],\"goale\":true}": {
+    "sha": "5586cf45adf402757c9754874e4ae6b0dd736912c16dc250a2a839eb03115ac6",
+    "tri": 7740,
+    "vol": 1424.5444,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 15,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[3,0]],\"placi\":3,\"stifturi\":\"mijloc\",\"laterale\":[\"r\",\"r\",\"r\"]}": {
+    "sha": "59a983b03fe9fb849d8d94d5ace5b726688a7bc9cacfde1e2e8aa940eb77bba9",
+    "tri": 10628,
+    "vol": 1751.8814,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 20,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramidaTechnic\",\"lung\":1,\"gauri\":[\"x\"]}": {
+    "sha": "c38df6b4627021601a9a03336e053934b4c1f9e321aaaa993dd99dc2ab39507e",
+    "tri": 1576,
+    "vol": 453.9825,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"caramidaTechnic\",\"lung\":6,\"gauri\":[\"r\",\"x\",\"r\",\"p\",\"r\"],\"goale\":true}": {
+    "sha": "a43ac8bafca4002a6925ef3da8e9a50b948fd55853418ba1338e6ca9931a03f8",
+    "tri": 17292,
+    "vol": 2817.322,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 31,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"gaura\":\"bara\"}": {
+    "sha": "9ec555f9dd8f373e93d31ce09ed58e384b3a6fc9848750dcb7e91e040b95b31f",
+    "tri": 2304,
+    "vol": 119.2999,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"con\",\"varf_d\":5.4,\"gaura\":\"bara\"}": {
+    "sha": "a059d18eaf056e0891f04525f5e1fc9148b022e43460b1ea6d78632b43f33689",
+    "tri": 3072,
+    "vol": 280.1244,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"gaura\":\"ax\"}": {
+    "sha": "dd40b24ee094786835def60e156ce5bf03ae72bfd50c81fc932053becfb9675c",
+    "tri": 2496,
+    "vol": 1581.8124,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"con\",\"varf_d\":7.8,\"gaura\":\"stift\"}": {
+    "sha": "b749266e916dc811f5f4548cecb8ce6938782beef97d83effa88843175ff41c5",
+    "tri": 2640,
+    "vol": 1775.1398,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"con\",\"varf_d\":2,\"gaura\":\"ax\"}": {
+    "sha": "108ec89098b73b6c5a0cee96f10af6aa5036bc563d513058ecde8c3e299eb38d",
+    "tri": 1996,
+    "vol": 758.6767,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":6,\"lat\":3,\"varf\":1,\"parte\":\"stanga\",\"placi\":1,\"gauri\":[[1,1,\"r\"],[2,1,\"x\"],[1,2,\"r\"]]}": {
+    "sha": "72edba8815b733f9b05c07c044fb44d2212d9765eb0b3729bec113e75e0f9aa2",
+    "tri": 7128,
+    "vol": 2080.1249,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 29,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"pana\",\"lung\":12,\"lat\":6,\"varf\":2,\"parte\":\"ambele\",\"placi\":1,\"gauri\":[[2,3,\"r\"],[4,3,\"x\"],[6,3,\"r\"],[8,3,\"r\"],[10,3,\"x\"],[3,1,\"r\"]]}": {
+    "sha": "43f7e92225ad0d14cba82db29750b9c098387fe6760aae00b1b72a3347bf9e74",
+    "tri": 30688,
+    "vol": 8906.291,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 140,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"grinda\",\"celule\":[[0,0,\"r\"],[1,0,\"r\"],[2,0,\"x\"],[0,1,\"r\"],[0,2,\"r\"]],\"groasa\":true}": {
+    "sha": "68db5cb4654da0f46ff92af00495f7cac5db321e75c531349b12a607fc0c03dd",
+    "tri": 10144,
+    "vol": 1284.028,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 13,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"grinda\",\"celule\":[[0,0,\"r\"],[1,0,\"x\"],[2,0,\"r\"],[1,1,\"p\"],[1,2,\"r\"]],\"groasa\":false}": {
+    "sha": "8345c3bc86ddf34650d5dd8f17a20a64f392b86d5b47f47d9f97bbc8a5b377bf",
+    "tri": 2988,
+    "vol": 726.9161,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"grinda\",\"celule\":[[0,0,\"r\"],[1,0,\"r\"],[0,1,\"r\"],[1,1,\"r\"]],\"groasa\":true}": {
+    "sha": "876ae56617a43622ed3e3df6a19e2a34e6c5cbf980f5f30fa0a85f5c17dc15dd",
+    "tri": 9612,
+    "vol": 1034.1002,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 13,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"grinda\",\"indoita\":{\"brate\":[6,4],\"unghiuri\":[53.13]},\"gauri\":[\"x\",\"r\",\"r\",\"r\",\"r\",\"r\",\"r\",\"r\",\"x\"],\"groasa\":true}": {
+    "sha": "056a593f21185fc1d5282c47148d07e55bc7417af38dc4f6c4745042bad48f91",
+    "tri": 5148,
+    "vol": 2455.2251,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"grinda\",\"indoita\":{\"brate\":[3,4,3],\"unghiuri\":[53.13,-53.13]},\"gauri\":[],\"groasa\":false}": {
+    "sha": "0d3d301d07169d73259ce93816d1f5cc89b41f5cc0c2b8c913a2e7fa4fa9fd51",
+    "tri": 1844,
+    "vol": 1087.554,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"stiftTechnic\",\"lung\":3,\"fanta\":true}": {
+    "sha": "bc7c7ee0c733b6643871a273e431cb63e192379629644a1e91492fe4caec1415",
+    "tri": 840,
+    "vol": 412.8471,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"stiftTechnic\",\"lung\":2,\"capat\":\"ax\"}": {
+    "sha": "7d5b64eb877b95866722be2b9407934a465f6dcefc0d96203730e8075491072f",
+    "tri": 668,
+    "vol": 284.5439,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"stiftTechnic\",\"lung\":3,\"capat\":\"ax\",\"fanta\":false}": {
+    "sha": "949beb662cd5355e498e000ef563bc771085b63d09dee089052f735a33ffb05b",
+    "tri": 452,
+    "vol": 438.9617,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bucsa\",\"lung\":0.5,\"gaura\":\"x\"}": {
+    "sha": "b1117ce33820ab574bec53579fbc72594baef1ed86f4061649ea5707f741c1ce",
+    "tri": 576,
+    "vol": 93.6687,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bucsa\",\"lung\":0.5,\"gaura\":\"r\"}": {
+    "sha": "746ac1c3c26860e9216c5ca1d2a317ae7cd2fdc6864e7ab57ec4a27f7b100d90",
+    "tri": 768,
+    "vol": 80.0688,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bucsa\",\"lung\":0.5,\"gaura\":\"xr\"}": {
+    "sha": "b1117ce33820ab574bec53579fbc72594baef1ed86f4061649ea5707f741c1ce",
+    "tri": 576,
+    "vol": 93.6687,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bucsa\",\"lung\":1,\"gaura\":\"x\"}": {
+    "sha": "4d22957bf64df161693596607768b972c8cf7660c71c89edf594e481a0174841",
+    "tri": 576,
+    "vol": 192.2674,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bucsa\",\"lung\":1,\"gaura\":\"r\"}": {
+    "sha": "4288073bc697defd5b83c6d0f60190d600d7b681f91b67b5f946ff09a76959ff",
+    "tri": 768,
+    "vol": 164.3518,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bucsa\",\"lung\":1,\"gaura\":\"xr\"}": {
+    "sha": "6b49f3a99584c0b7e702719132d312e28640530b2acfcd548312acd1388369ad",
+    "tri": 1344,
+    "vol": 178.5561,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bucsa\",\"lung\":2,\"gaura\":\"x\"}": {
+    "sha": "268bbc5842f5f0015ecc056c8ec8772f7a5b763caddb1c21368cd2e55b1eb73d",
+    "tri": 576,
+    "vol": 389.4648,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bucsa\",\"lung\":2,\"gaura\":\"r\"}": {
+    "sha": "21d69b3647d2a6492bc13b9cb77ad56d74dd9cc8a3238ba7ed50232715ad7229",
+    "tri": 768,
+    "vol": 332.9177,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bucsa\",\"lung\":2,\"gaura\":\"xr\"}": {
+    "sha": "1fb366ca065274f8f8d52edd70a311379f8711b192a455fc29386e32c8e63281",
+    "tri": 1344,
+    "vol": 361.4377,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bucsa\",\"lung\":3,\"gaura\":\"x\"}": {
+    "sha": "c49616b9181bce95090e42a4ad2e436733fd128b8930a410ab8c84a9d07f03bf",
+    "tri": 576,
+    "vol": 586.6621,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bucsa\",\"lung\":3,\"gaura\":\"r\"}": {
+    "sha": "19c1c7ecffdda7801139b5a6f13318beceb6fa6a1200fc744e2ff1c790a6a27a",
+    "tri": 768,
+    "vol": 501.4836,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bucsa\",\"lung\":3,\"gaura\":\"xr\"}": {
+    "sha": "791c50a219dd632aa45c2267a65f52b498c8086ee639ebf237bea587ff5a842a",
+    "tri": 1344,
+    "vol": 544.3194,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"suport\",\"lung\":2,\"adanc\":1,\"inalt\":1}": {
+    "sha": "03d9ccf71e5e1abbd976b8bde78b7ecf864f9021721a3302e6dd039aae3d8d96",
+    "tri": 1008,
+    "vol": 798.9937,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 9,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"suport\",\"lung\":2,\"adanc\":2,\"inalt\":2}": {
+    "sha": "af5f826837dae3048567f2246be2ffa6611e5d0aed5378f76714382569f7a145",
+    "tri": 2364,
+    "vol": 1526.7169,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 15,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"suport\",\"lung\":2,\"adanc\":1,\"inalt\":1,\"invers\":true}": {
+    "sha": "43e6fc7e14b3c94f0402780816d7399a0a8da65f15d88e22d8553198fcdfafcd",
+    "tri": 2356,
+    "vol": 849.0958,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 9,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"clema\",\"lung\":1,\"axa\":\"verticala\"}": {
+    "sha": "32c09fad1d4b3dfa1e255871e8be4caaef45adc2ddea2d2ec7e0ada418aa6283",
+    "tri": 568,
+    "vol": 233.3942,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"clema\",\"lung\":2,\"axa\":\"orizontala\"}": {
+    "sha": "fa4c87c7bff76a99e89516422a4f0c7d7a66d57ed78d064ad4bf21d95c0c2d5d",
+    "tri": 956,
+    "vol": 394.2568,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"clema\",\"lung\":1,\"axa\":\"verticala\",\"goale\":true}": {
+    "sha": "f6cd13aeac4d421a130b03e22c091197c3a8917939ffbcef1fe0cb45fddc68ec",
+    "tri": 1344,
+    "vol": 207.9545,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"maner\",\"lung\":2,\"axa\":\"orizontala\"}": {
+    "sha": "4f6e8a61dd583cb5d75fc91d93129b0a66255f80c2d0e9824bf5965a0ef4b4b8",
+    "tri": 832,
+    "vol": 502.3062,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"maner\",\"lung\":3,\"axa\":\"orizontala\"}": {
+    "sha": "dd381d03d306b4633bf5cc37a6be2a49b9cf73ba466db4e08c41676dc2dc6e05",
+    "tri": 1232,
+    "vol": 748.0566,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"maner\",\"lung\":1,\"axa\":\"verticala\"}": {
+    "sha": "10ba9c9137b8a1f9bb53176cc44383e229b2d4176e878be6afb57e01899a0f90",
+    "tri": 444,
+    "vol": 238.4637,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bara\",\"lung\":4}": {
+    "sha": "abc6434f68ad90e6e79bcfafbff352993103cbb410664c4407aa1be6a9e13117",
+    "tri": 160,
+    "vol": 245.8944,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bila\",\"baza\":1}": {
+    "sha": "77b633f63a86f12d92e7b5aac489fe01c9808341e99614ddaee172ce60d9e356",
+    "tri": 2488,
+    "vol": 294.5589,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"bila\",\"baza\":2}": {
+    "sha": "593efbfd90fb24d191a049a0c18369d87afc4ec467c10880702166719030b1bb",
+    "tri": 3308,
+    "vol": 728.0829,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "{\"tip\":\"cupa\",\"baza\":1}": {
+    "sha": "54cebfc00dc2a333837302ea3f8c954c30f72de3703b00933e2d66a0e9ec5ced",
+    "tri": 5576,
+    "vol": 284.0396,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_stift_1": {
+    "sha": "a63c7301d37f98b709b8fbc3608b7038583624184c2e019aa1d41329a8bda476",
+    "tri": 2780,
+    "vol": 876.5262,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 16,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_stift_2": {
+    "sha": "f0366637e3a60af482f8352e94fa48950b21f57097353d2cc5e647ab7b0f50b2",
+    "tri": 2792,
+    "vol": 870.3502,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 17,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_stift_3": {
+    "sha": "7686e46c5b46a7d6599a5aa1af580c41d6abf4a305a503fd50204e7d9cef09c5",
+    "tri": 2804,
+    "vol": 867.0836,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 18,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_stift_4": {
+    "sha": "3011b31808f118a3d9793d534cb520808486a3347f962451d0e2ac978787fa68",
+    "tri": 2816,
+    "vol": 864.2715,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 19,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_stift_5": {
+    "sha": "adcdefef74116509366bc1fc7a50147863331344f76ed80d8b73f43658a76a71",
+    "tri": 2828,
+    "vol": 861.4577,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 20,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_gauri": {
+    "sha": "0ade92fdf813a5a60b14df432642207df3ac4f282d816827ac2e8bba588fdee8",
+    "tri": 11916,
+    "vol": 1269.1734,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 16,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_ax": {
+    "sha": "8dc9430e318ca4dd9052d674c17e3be904402e05f43de0d970489108c428a2a8",
+    "tri": 3276,
+    "vol": 1505.104,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_bara_1": {
+    "sha": "08929535d82869bb7768d8ff1f8bfe7ce9e5bcb3aa5716ecc097841903e0f0e8",
+    "tri": 1356,
+    "vol": 209.3376,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 6,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_bara_2": {
+    "sha": "d01f1a5bf2ba38cc956319be483c09b0dd07efe3417a69cda2df45a42b72deeb",
+    "tri": 1368,
+    "vol": 211.2626,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_bara_3": {
+    "sha": "22d6746965934a684167ac8b7085526c72b5e85fee26e09e371a9a053277580d",
+    "tri": 1380,
+    "vol": 213.1385,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_bara_4": {
+    "sha": "9df507cffc56ec9b62417edb4a8989f1d87767c66538f46889491e91a48bc0d1",
+    "tri": 1392,
+    "vol": 214.966,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 9,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_bara_5": {
+    "sha": "befbdf9519ebf8a6cd43a4edc6aca14d5bc42cfb4f34d2fa2e5e07f0c33a0009",
+    "tri": 1404,
+    "vol": 216.7463,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_cupa_1": {
+    "sha": "ed519827eeca98d24b139cb770eb64c16d867fc0507f3eaa70137f1c02d94c98",
+    "tri": 5588,
+    "vol": 276.8492,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 9,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_cupa_2": {
+    "sha": "395ea1d7e9329320a7b94ec940bdea70e55d088d3d3eafee431ace42222c87f2",
+    "tri": 5600,
+    "vol": 282.994,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_cupa_3": {
+    "sha": "9f88dc2143fd9e8144c8b3d56b84caee53fa604fae4a40098e9708950e672caa",
+    "tri": 5612,
+    "vol": 289.2236,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 11,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_cupa_4": {
+    "sha": "850a12af780c1a209480983beba7ede2bfc456013276d0d347675655a5b730b3",
+    "tri": 5624,
+    "vol": 289.9717,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 12,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_cupa_5": {
+    "sha": "ea53b97f365f415fd030316a70f3f8e966ead1952c160521eaf81aa30e11aae7",
+    "tri": 5636,
+    "vol": 290.5552,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 13,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_bara_proba": {
+    "sha": "abc6434f68ad90e6e79bcfafbff352993103cbb410664c4407aa1be6a9e13117",
+    "tri": 160,
+    "vol": 245.8944,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 1,
+     "negative": 0
+    }
+   },
+   "calibrare:calibrare_bila": {
+    "sha": "77b633f63a86f12d92e7b5aac489fe01c9808341e99614ddaee172ce60d9e356",
+    "tri": 2488,
+    "vol": 294.5589,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"pana\",\"lung\":1,\"lat\":1,\"varf\":0,\"inceput\":0,\"parte\":\"stanga\",\"placi\":1,\"stifturi\":true}": {
+    "sha": "14814232b763698e677f7f523da4ae9f36c41c7de1a460725b4d047b7c04fb72",
+    "tri": 116,
+    "vol": 76.3114,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 2,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"caramida\",\"celule\":[[0,0],[1,0],[2,0],[3,0]],\"placi\":3,\"stifturi\":\"mijloc\",\"laterale\":[\"r\",\"r\",\"r\"]}": {
+    "sha": "5727f38ecfd1bb61237ccbc816941df2def0864886579ed6c15046ab2f0508a7",
+    "tri": 10628,
+    "vol": 1719.1822,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 20,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"caramidaTechnic\",\"lung\":1,\"gauri\":[\"x\"]}": {
+    "sha": "621ba2dd9143a7ff231ba0d4515577d047e5e9df05f24b2816f5d5b800fe1d03",
+    "tri": 1576,
+    "vol": 471.5051,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"caramidaTechnic\",\"lung\":6,\"gauri\":[\"r\",\"x\",\"r\",\"p\",\"r\"],\"goale\":true}": {
+    "sha": "9f652627152ff9da727b123783056c1bb65447548ce09a404ab7ab5cf2558263",
+    "tri": 17292,
+    "vol": 2800.5633,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 31,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"rotund\",\"diam\":1,\"placi\":1,\"gaura\":\"bara\"}": {
+    "sha": "e701053d9575961d00ed5884f489f2161e4eeb781dd7ca3428f9e3b30debfae8",
+    "tri": 2304,
+    "vol": 119.9025,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 3,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"rotund\",\"diam\":1,\"placi\":3,\"forma\":\"con\",\"varf_d\":5.4,\"gaura\":\"bara\"}": {
+    "sha": "eac9a9b429de18f9071c6ef7284b3cd4f57c8b6a174fbea5d2a1eb5f053c2d7a",
+    "tri": 3072,
+    "vol": 277.2632,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 4,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"gaura\":\"ax\"}": {
+    "sha": "8fb46bcb580cacec6be9fb5fac75334e1460af4395fbb9bb3df26ce0da6b1b16",
+    "tri": 2496,
+    "vol": 1606.6547,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 10,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"rotund\",\"diam\":2,\"placi\":6,\"forma\":\"con\",\"varf_d\":7.8,\"gaura\":\"stift\"}": {
+    "sha": "4651503d6aed99491f55e64f0a2931d7096c04e8341518ee39334568bdf4e779",
+    "tri": 2640,
+    "vol": 1747.704,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"rotund\",\"diam\":2,\"placi\":3,\"forma\":\"con\",\"varf_d\":2,\"gaura\":\"ax\"}": {
+    "sha": "da604c8e9149288c0da4ed2b22f11d30864fe610380e70ac9f48a32fdd719401",
+    "tri": 1996,
+    "vol": 767.8667,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 7,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"clema\",\"lung\":1,\"axa\":\"verticala\"}": {
+    "sha": "b320db3fa02d77d726264fb5e228fbe28553d2090729300d27b09c1a0605688c",
+    "tri": 568,
+    "vol": 237.8842,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"clema\",\"lung\":2,\"axa\":\"orizontala\"}": {
+    "sha": "fb325a18bc37057fce5c767526afaf7734c15d3728774445ecd41ea7f986b362",
+    "tri": 956,
+    "vol": 401.9167,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"clema\",\"lung\":1,\"axa\":\"verticala\",\"goale\":true}": {
+    "sha": "57174397e90d34646448f5f6355c322fce7abe2905249bf62ea7ab2da7769565",
+    "tri": 1344,
+    "vol": 210.9259,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 5,
+     "negative": 0
+    }
+   },
+   "variante:{\"tip\":\"cupa\",\"baza\":1}": {
+    "sha": "53c843a2e435a10605d8515e3b64aa419bedb3295b71f872067e243499a6d6d8",
+    "tri": 5576,
+    "vol": 281.0887,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 8,
+     "negative": 0
+    }
+   },
+   "pat220:1": {
+    "sha": "d1c195755d2324dc674d9e65ed022e15e539936d1b40476f83f1afcb3d19fddd",
+    "tri": 29356,
+    "vol": 9946.6554,
+    "plasa": {
+     "deschise": 0,
+     "corpuri": 109,
+     "negative": 0
+    }
+   }
+  },
+  "cnc": {
+   "andy": {
+    "placi": 1,
+    "bucati": {
+     "adaptor_tata_tata": 1,
+     "dreapta_144": 19,
+     "curba_mare_stanga": 4,
+     "dreapta_54": 2,
+     "curba_mica_stanga": 4,
+     "dreapta_108": 1,
+     "lc_1met47o": 1
+    },
+    "fisiere": {
+     "placi/placa_1.dxf": "8f124a621c31e1984a1df6c0b093679d6a96e6ba1e48b45465c9c83b22e09090",
+     "placi/placa_1.svg": "b19caa73e2a90c886b44877efbda4dbc64a9c15c85e54b6d14bb377887cbe770",
+     "piese/adaptor_tata_tata.dxf": "56b1b00fca680a53ee8ff16f0682dd48b56c3231dd153704c227ff30808a1203",
+     "piese/dreapta_144.dxf": "21ee11f29e08fa6ba07f067ba421f10144ee915a71f8acb74c42a3b000b9721a",
+     "piese/curba_mare_stanga.dxf": "9cc5d4252944feb38db904c7ddf17d164e77103ae6ac325d550a536e0bbb020e",
+     "piese/dreapta_54.dxf": "88bd69f38608e323a2e5b42eb1ba5cb1f8a158ed5994c7d163e08e143c196e1e",
+     "piese/curba_mica_stanga.dxf": "3a019c080dcc87d182e8d384cff06694a051eae292351c0ed71208930f7dcf17",
+     "piese/dreapta_108.dxf": "b4332e7a161a5f76b9775680b988739a622c0fd9f8a77baac266e56c72226ea4",
+     "piese/lc_1met47o.dxf": "3b1be0b1e570e4ad3c0e9cd655d619c0836eed1cee463ca272c0229a26b62e8a",
+     "calibrare/placa_calibrare.dxf": "116d7d6b11375d1d2a15d1ab0a6ea7156813db499dbaaf58ec3be5fe6faec017",
+     "gcode/placa_1_T1.nc": "92ecea898048fbf6d164c5db60a0ab5acab4c657a49a1544a2075d9b7556e00e",
+     "gcode/calibrare_T1.nc": "c9d699790c4d06cbbc2802b29ffc706af43b406f658e0f34c1a2c223830c6dd4"
+    },
+    "avertismente": []
+   },
+   "andy_doua_fete_v": {
+    "placi": 1,
+    "bucati": {
+     "adaptor_tata_tata": 1,
+     "dreapta_144": 19,
+     "curba_mare_stanga": 4,
+     "dreapta_54": 2,
+     "curba_mica_stanga": 4,
+     "dreapta_108": 1,
+     "lc_1met47o": 1
+    },
+    "fisiere": {
+     "placi/placa_1_fata1.dxf": "c4a4e41d5424d6da01971bb9ede528c8fb6363cac5901add43b07b70a3102d44",
+     "placi/placa_1_fata2.dxf": "c6907a7f8208eac09e926d3484039201a99fa7398e5f579cc0d246a0ce4174a7",
+     "placi/placa_1.svg": "af46393d0d0a98dc72e5e75360107e5539a8b6b4796c8659010eefbaf7828e28",
+     "piese/adaptor_tata_tata.dxf": "8490db6755a3582f0c3a187ebb9a49604e32b0e9d7ce89f533fa7fbe07de1945",
+     "piese/dreapta_144.dxf": "bc0d8fdbdf1afda720165af81863ddd124fbe139212491cc07d0b56fbd7c0cd6",
+     "piese/curba_mare_stanga.dxf": "15829dcb8ded7ec7b379280e88d70af73f511fceca02abcf1f8bf10d9a4dedea",
+     "piese/dreapta_54.dxf": "0e4a25a61726cd6e1ca87c256c47fd39a3b7bc3f063b027e762552b3ae132ab4",
+     "piese/curba_mica_stanga.dxf": "2d7483132366469235b40ee6a0a675c60706dbc5a4ea22303247cb61c284affd",
+     "piese/dreapta_108.dxf": "63ff9ff08e3a8b54e1cb33facec93120722f4fcc4168e85a00d3294fa0443f0f",
+     "piese/lc_1met47o.dxf": "d838be1ddec46b9acccc9da88e0eeaab82053447044f8c8ac889bb6c303f9531",
+     "calibrare/placa_calibrare.dxf": "dabcc21e3dddd4ea2a1ea65e9a1a9b0172386f09cc578ecd78ce0f3337899fd4",
+     "gcode/placa_1_fata1.nc": "1f60d2950ffed701d6bec4b2cae2a03066153b5781e1d68b2f597e2d6590ae29",
+     "gcode/placa_1_fata2.nc": "e19b7b387f513ae90426340532f06b1f29d2152bf9edd883c47cc6444f9ac998",
+     "gcode/calibrare.nc": "a7b5a87cd29c8d2b24bbe0dbcf575bebb1d826a2022ebf88522f51f3405223fd"
+    },
+    "avertismente": []
+   },
+   "andy_la_comanda": {
+    "placi": 1,
+    "bucati": {
+     "adaptor_tata_tata": 1,
+     "dreapta_144": 19,
+     "curba_mare_stanga": 4,
+     "dreapta_54": 2,
+     "curba_mica_stanga": 4,
+     "dreapta_108": 1,
+     "lc_1met47o": 1
+    },
+    "fisiere": {
+     "placi/placa_1.dxf": "66f7ad804f050f6d8d61eb6e12a3a208c4bf80423b3327efc3cf8cf7b029be7f",
+     "placi/placa_1.svg": "331114bc53715532a4c782fd645b76c74bd272decc263e6283b50c9fcf343fe0",
+     "piese/adaptor_tata_tata.dxf": "d2944ac8439ba2c28489716477aa49345e2488644ba752bac7454b3be875ca80",
+     "piese/dreapta_144.dxf": "1a0ea6545b982cbd40fd0fafd6b0983637749e9e521f23c216fb247d2ccf1d62",
+     "piese/curba_mare_stanga.dxf": "de7dee08d8c70984112dde74d6039bb9933db527d808b1fc451de365eeafa0e6",
+     "piese/dreapta_54.dxf": "d584df356f37d8737ac69c10954e0aebba2219b32323f4610d809fbb1ca32f76",
+     "piese/curba_mica_stanga.dxf": "0b0a76dba6be01aab877ec2b641e5322cc2b607a99d2606a289f1ddcf8325c0c",
+     "piese/dreapta_108.dxf": "1a8dd3ee7bcefd1300312f6122f11f7d07479b84aa6da89666621b950eee0026",
+     "piese/lc_1met47o.dxf": "46b15dcc361819b8dcc7c52ba1cf78a2e484f1c8d0a9ed9d9b5bfe5648c4cab4",
+     "calibrare/placa_calibrare.dxf": "fe99d5db892c93bf2bee7aae33ac5501f64db1171574a4b75b0c76f6ef00d562",
+     "gcode/placa_1_T1.nc": "5901b9a02e1bdbeaef1442caf40e8b5c6f5fd737fec6b54241e39d5f38319197",
+     "gcode/calibrare_T1.nc": "4105301b6b17b738927cf33d790ee4f89454c09d0dadc6e4ac503b170faa6415"
+    },
+    "avertismente": []
+   },
+   "pod": {
+    "placi": 2,
+    "bucati": {
+     "dreapta_144": 14,
+     "dreapta_54": 1,
+     "curba_mare_dreapta": 5,
+     "curba_mica_stanga": 6,
+     "curba_mica_dreapta": 8,
+     "dreapta_108": 1,
+     "incrucisare_45": 1,
+     "incrucisare_90": 1,
+     "trecere_nivel": 1,
+     "macaz_stanga": 2,
+     "macaz_dreapta": 1,
+     "macaz_curb_stanga": 1,
+     "macaz_curb_dreapta": 1,
+     "ramificatie_y": 1,
+     "dreapta_dubla_216": 1,
+     "rampa_urcare_strat_1": 1,
+     "rampa_strat_2": 1,
+     "rampa_strat_3": 1,
+     "rampa_strat_4": 1,
+     "rampa_strat_5": 1,
+     "rampa_urcare_strat_6": 1,
+     "lc_7yqt5l": 1,
+     "stalp_strat": 15,
+     "stalp_obraz": 6
+    },
+    "fisiere": {
+     "placi/placa_1.dxf": "887c9e8c1a12fb52d974ae37ca6f9d77bcab05b2e9c9d6e89504cda5277cc31b",
+     "placi/placa_1.svg": "a3e8209c91643bd0f11672b576086f717b8d7e3de88b8016851f01de00422648",
+     "placi/placa_2.dxf": "7cedd34c95aa264e85a066d7e274e74eedf978503a2a23a432cdd205505f318e",
+     "placi/placa_2.svg": "1559d5fcfc94dadbe418cac9693c1ec2253adf56a63a4e9f8c592b06cb0ff752",
+     "piese/dreapta_144.dxf": "35971233a81e9cf870653dd02da4f4cffead6f286ce2efde91822780ab983126",
+     "piese/dreapta_54.dxf": "323da0c29d6fdb9c4bbc1ec69b7169a955ef840ddb4fd902be8b45372b4ded3d",
+     "piese/curba_mare_dreapta.dxf": "51ad7ac87d1ffddfd0c33bce1329bfbfd5b1ae078eb441de450656fd388515cd",
+     "piese/curba_mica_stanga.dxf": "af031d7545017f4611ff09b1f3971524d1ffc7ae58a6664aceba0e84d7bcd95c",
+     "piese/curba_mica_dreapta.dxf": "84df2aef5fbd166e12165344a10556cbe9b9488ffffe1eefec4c6484762d7a2d",
+     "piese/dreapta_108.dxf": "81ac6ed859335a380f58aeaa2a36015d280cc7e70e78d229309aba719f6aa41a",
+     "piese/incrucisare_45.dxf": "996b281e99774dd24b5303e63e48e73b347f001ca065244e3876f03bb048bec9",
+     "piese/incrucisare_90.dxf": "911712d051ed312af612c535b6b16976402429f1986f69c2dcda29a1ecdd1d85",
+     "piese/trecere_nivel.dxf": "a8d74dd5ff61ba9f4b0fe87ff2175f352018cccd8ac5a299c788aea7a2fe11ec",
+     "piese/macaz_stanga.dxf": "88a10be136fdad2f899478fdd02f5711973e733ac54d0ea2cdc5c58998f78996",
+     "piese/macaz_dreapta.dxf": "9f066654fffb0bce15871442e16c093a8fd189ffa1dbdf6c16849e80900bf414",
+     "piese/macaz_curb_stanga.dxf": "337f7f0f7dd6a87d9928e3cb0b523d7df633c4ebc4ee745aff08524042f78098",
+     "piese/macaz_curb_dreapta.dxf": "77e5b2f1a99db6f074f6782d898abefd0e7c20c002188dc9456b2034e1e2f8a3",
+     "piese/ramificatie_y.dxf": "787608daec56cfe89407c2134e3d6a2c0ae884ffda9c4fb1dcf564b0b25519c5",
+     "piese/dreapta_dubla_216.dxf": "df672e494c00431bd51db572624dfacbb97b4d9cd19c2e79413ab8082855b0ba",
+     "piese/rampa_urcare_strat_1.dxf": "14166123ebbb08d8d709dde7d5b07703843e5a2a09936421199e8908d5e9516a",
+     "piese/rampa_strat_2.dxf": "eb4cbff302775607a053ba69b4cf884954fcbc471a66588fa1cadd93f4fc9f35",
+     "piese/rampa_strat_3.dxf": "7ca4ce6578951d1149bd29730fb56f894bdbe3bcfdb54f491adad0f8a601a2a5",
+     "piese/rampa_strat_4.dxf": "07cf4152967b3392fafd77e1a5f5f9802e55cb1a6f4d3e513b0afbe520fbe102",
+     "piese/rampa_strat_5.dxf": "bd4bcfe3ab006b2d26742b967cbca922da2f359cfb6af0c72d7d32d3ea04c4f5",
+     "piese/rampa_urcare_strat_6.dxf": "3e4611587094374e6995e715a8852098ca0f5fc408fc1afe679d12426831a8db",
+     "piese/lc_7yqt5l.dxf": "6b1b4709ef52968af9b0a8735352e66e0ed79adb5bc795dfa4233e8bbfbabdc2",
+     "piese/stalp_strat.dxf": "26bc379d2fb099e3a99b08840336f0373029dc52bd5648fe510c147d6312516b",
+     "piese/stalp_obraz.dxf": "5aef8b94f697a4d18dcbb1992581ee3ff6a467ffc76edd9f99dd777b4938b274",
+     "piese/rampa_urcare_santuri.dxf": "c6dff0aa442ad2af94b2b00317af5534be2db48289dc3304a2adc0fd74f06168",
+     "piese/rampa_urcare_relief.stl": "075bfb0e4291a8ecdea2c312954379e36d42c11862f95b545daf445d9584aea4",
+     "piese/rampa_urcare_finisata.stl": "5255e33046b35bd2f27a8bb658b019c144ebab8f283fcf592da07224cc7e7760",
+     "calibrare/placa_calibrare.dxf": "a58e67f0db16cf09f37465c06d94170a7044194e0500576e0c0609cf094eaaba",
+     "gcode/placa_1_T1.tap": "7298edbf4efe0b5426d0c465e3c58629d84849aaa204ece02e9fe92fa095a79c",
+     "gcode/placa_1_T2.tap": "ba4fd1fd5098ef45695a24a743e8f6a1dbb8c3f790b522b97592812b0dc03f1d",
+     "gcode/placa_2_T1.tap": "0187a83c03cd75b2b89e82a6b0e8f20dcfd16302422b941f25f314263e4d1ce1",
+     "gcode/placa_2_T2.tap": "48262d9d137f77b8926a7c1f9758f7dcafe76d1889e87b4af666e72406d8e81e",
+     "gcode/calibrare_T1.tap": "c3757f82e18ccabc4925332a506f5a65e7873783bb885b335ea7e60ebf953f28",
+     "gcode/calibrare_T2.tap": "f8e6d51eb5fca2e1be8f29510847ef85e7634b05ba2bda9ec7a317c8ef0bfbfd",
+     "gcode/rampa_urcare_T1.tap": "5e18f5a2b584c33733d2fea84c1547d68f86c66ace71809e152218b109d29e67"
+    },
+    "avertismente": []
+   },
+   "macaz": {
+    "placi": 1,
+    "bucati": {
+     "macaz_stanga": 2,
+     "macaz_dreapta": 1,
+     "ramificatie_y": 1,
+     "macaz_curb_stanga": 1,
+     "macaz_curb_dreapta": 1,
+     "dreapta_144": 2,
+     "curba_mare_stanga": 2
+    },
+    "fisiere": {
+     "placi/placa_1.dxf": "8de6c20b7a857cb5bd5e4d80178118a184b19bd927a4e4eedd8c5c1504bd7c5e",
+     "placi/placa_1.svg": "6a76a962ac2e2f462c5a1e089e9d161c6f2518fd2ff086273cf3a60b6fedd4a4",
+     "piese/macaz_stanga.dxf": "4a042aa62c1618a371c90ca33a37f5e530e1e2cf12469a5518f4f5fb01b8d9f4",
+     "piese/macaz_dreapta.dxf": "5b27792908e51e832f3588dcaa4a052805b2a14a50796f4232d5c4e6ca1f834e",
+     "piese/ramificatie_y.dxf": "f73398c57a21a79f77570d841a85824f6d90ef01d170e6730004540739590de6",
+     "piese/macaz_curb_stanga.dxf": "8d23a9b8826d9afec90c0ad234a54bda8e56978a77651fecb563f70cda417c12",
+     "piese/macaz_curb_dreapta.dxf": "7c77efea910db1bcf097f3f75c61ebffae44e0bc441d4e9373adc37ea5fca84c",
+     "piese/dreapta_144.dxf": "21ee11f29e08fa6ba07f067ba421f10144ee915a71f8acb74c42a3b000b9721a",
+     "piese/curba_mare_stanga.dxf": "9cc5d4252944feb38db904c7ddf17d164e77103ae6ac325d550a536e0bbb020e",
+     "limbi/limba_macaz_stanga.stl": "5f69a29df0adb8b215f888ef81840e77f48dd250414e3263aecb34307a068014",
+     "limbi/limba_macaz_stanga.dxf": "0ccea01aa2742483cdec50f230b58c3152768df123242de92111c66d1f01384b",
+     "limbi/limba_macaz_dreapta.stl": "968e8d014ad0f576e22e85a434c457844004bb97e08688737d1b18248184c191",
+     "limbi/limba_macaz_dreapta.dxf": "f15a450dac08c9b92863c965814925475a48724d5088f7c3e1c50857a0786c05",
+     "limbi/limba_ramificatie_y.stl": "75b40b088b50cc35fa47f6aad00aeafa43991f9f3cdf074f3805c813ad8d6513",
+     "limbi/limba_ramificatie_y.dxf": "b1d64eb0b2d064a25e3703640f1ccfcc0cd7ded9a3e3154c268004141295d1fa",
+     "limbi/limba_macaz_curb_stanga.stl": "e8fd567faaf5afb9ee9420342850cde1b88fff93d2f4c9f39f116033e7af4296",
+     "limbi/limba_macaz_curb_stanga.dxf": "6839a97cdf5566255862eeb4d51cbcf3dcd5d6878d6487ccf1aca29f797f65d6",
+     "limbi/limba_macaz_curb_dreapta.stl": "47e21d07f5bc57de3f744a304d06deb6fa476b8e9abd5d24b1cdfc59f5fce84c",
+     "limbi/limba_macaz_curb_dreapta.dxf": "4b8655150db01af8bc34dc884224d10efbec7408454c074bd96f2cd8328e5ca3",
+     "calibrare/placa_calibrare.dxf": "116d7d6b11375d1d2a15d1ab0a6ea7156813db499dbaaf58ec3be5fe6faec017",
+     "gcode/placa_1_T1.nc": "3b5e8cb758b7f04e76e929545056ed442951bbea31814ffc8382b0fda05717aa",
+     "gcode/calibrare_T1.nc": "c9d699790c4d06cbbc2802b29ffc706af43b406f658e0f34c1a2c223830c6dd4"
+    },
+    "avertismente": []
+   },
+   "macaz_doua_fete": {
+    "placi": 1,
+    "bucati": {
+     "macaz_stanga": 3,
+     "ramificatie_y": 1,
+     "macaz_curb_stanga": 2,
+     "dreapta_144": 2,
+     "curba_mare_stanga": 2
+    },
+    "fisiere": {
+     "placi/placa_1_fata1.dxf": "0f4c15ce81edbd6f3c0ed818b9a455326713f49610d409ee9c12db8814160546",
+     "placi/placa_1_fata2.dxf": "4b2140bc2547280e1c85c2b7d7d8286aeada7bc45fd047006ba180efd9383a55",
+     "placi/placa_1.svg": "67f672c2f352f557bfd0280b7add1bb386ab7752263d5b89034e448c75cc4f32",
+     "piese/macaz_stanga.dxf": "4a042aa62c1618a371c90ca33a37f5e530e1e2cf12469a5518f4f5fb01b8d9f4",
+     "piese/ramificatie_y.dxf": "f73398c57a21a79f77570d841a85824f6d90ef01d170e6730004540739590de6",
+     "piese/macaz_curb_stanga.dxf": "8d23a9b8826d9afec90c0ad234a54bda8e56978a77651fecb563f70cda417c12",
+     "piese/dreapta_144.dxf": "21ee11f29e08fa6ba07f067ba421f10144ee915a71f8acb74c42a3b000b9721a",
+     "piese/curba_mare_stanga.dxf": "9cc5d4252944feb38db904c7ddf17d164e77103ae6ac325d550a536e0bbb020e",
+     "limbi/limba_macaz_stanga.stl": "5f69a29df0adb8b215f888ef81840e77f48dd250414e3263aecb34307a068014",
+     "limbi/limba_macaz_stanga_spate.stl": "fc0a40cc52660a45d04f6fd8aa6d88335fcc473cff67c0404e70bf33af3ee0b5",
+     "limbi/limba_macaz_stanga.dxf": "0ccea01aa2742483cdec50f230b58c3152768df123242de92111c66d1f01384b",
+     "limbi/limba_ramificatie_y.stl": "75b40b088b50cc35fa47f6aad00aeafa43991f9f3cdf074f3805c813ad8d6513",
+     "limbi/limba_ramificatie_y_spate.stl": "70ca5175537f1f2652c8254ec99a352868d2b2b051ee4bbaa15c82102d4502cb",
+     "limbi/limba_ramificatie_y.dxf": "b1d64eb0b2d064a25e3703640f1ccfcc0cd7ded9a3e3154c268004141295d1fa",
+     "limbi/limba_macaz_curb_stanga.stl": "e8fd567faaf5afb9ee9420342850cde1b88fff93d2f4c9f39f116033e7af4296",
+     "limbi/limba_macaz_curb_stanga_spate.stl": "54c52c581a2929734d6089be3fdfb06d4529a428b391a8665b3cf68ceb67792f",
+     "limbi/limba_macaz_curb_stanga.dxf": "6839a97cdf5566255862eeb4d51cbcf3dcd5d6878d6487ccf1aca29f797f65d6",
+     "calibrare/placa_calibrare.dxf": "116d7d6b11375d1d2a15d1ab0a6ea7156813db499dbaaf58ec3be5fe6faec017",
+     "gcode/placa_1_fata1.nc": "8ff13ad5cf6d1b85a54005505efae48799ed3294e84616df4359f729c7630cf2",
+     "gcode/placa_1_fata2.nc": "3f00ca5caed98746740baf2575a2d14b6b4b9a72eedb320fa8da2307b05e4433",
+     "gcode/calibrare.nc": "29ea8b30badd6b7f851925c6dbd88d2e00eaaf2c4e0f1d6bdedb4ded7e82ca4d"
+    },
+    "avertismente": []
+   },
+   "rampa": {
+    "placi": 1,
+    "bucati": {
+     "rampa_urcare_strat_1": 1,
+     "rampa_strat_2": 2,
+     "rampa_strat_3": 2,
+     "rampa_strat_4": 2,
+     "rampa_strat_5": 2,
+     "rampa_urcare_strat_6": 1,
+     "rampa_coborare_strat_1": 1,
+     "rampa_coborare_strat_6": 1,
+     "dreapta_144": 1
+    },
+    "fisiere": {
+     "placi/placa_1.dxf": "7d3f8945980aa4dff136b26811f5e078cd7d37b39f17b6070d2a3878841c7420",
+     "placi/placa_1.svg": "901a603c1d712ebf06f2c58cdf7d0183b0d7a74dc35d3b5c8f3c284f99523293",
+     "piese/rampa_urcare_strat_1.dxf": "83f6a8ed41288ccfdb6792541a31e84bfcf9eaed2c5a868e6d895b9766056b25",
+     "piese/rampa_strat_2.dxf": "04f288c6aa11344d404bb2a06293dc9620c336512f4fffc807a062053fd70060",
+     "piese/rampa_strat_3.dxf": "02d31e976cdb667eca3e967c54f769031492d21b3e9e5f32d0251c6bc4ab30a0",
+     "piese/rampa_strat_4.dxf": "13a4e8d2308899c9e55288a313f8d41025810cae0df56602f142b522fd03a581",
+     "piese/rampa_strat_5.dxf": "d3ea4ed1edf3b2585c40ee247d8b5de20b716efca3a002b139acdde9bde81b51",
+     "piese/rampa_urcare_strat_6.dxf": "20ea9be56761df1cfd9d29e816241ebc7a89ee396097bc735c8ee338d8d897fa",
+     "piese/rampa_coborare_strat_1.dxf": "f967550869697be8b2a31039861b0cedbcd1a68eb3b389e0c09b500d244c5da1",
+     "piese/rampa_coborare_strat_6.dxf": "3bd6ae13bcfe34f8492b64ce36b5d12475ebacc5082d3cfe82c80735f5485855",
+     "piese/dreapta_144.dxf": "21ee11f29e08fa6ba07f067ba421f10144ee915a71f8acb74c42a3b000b9721a",
+     "piese/rampa_urcare_santuri.dxf": "c6dff0aa442ad2af94b2b00317af5534be2db48289dc3304a2adc0fd74f06168",
+     "piese/rampa_urcare_relief.stl": "075bfb0e4291a8ecdea2c312954379e36d42c11862f95b545daf445d9584aea4",
+     "piese/rampa_urcare_finisata.stl": "5255e33046b35bd2f27a8bb658b019c144ebab8f283fcf592da07224cc7e7760",
+     "piese/rampa_coborare_santuri.dxf": "b31a7679f284752d45cb1c71dd324361d0bef1f97053152a700df5c06d5aefdc",
+     "piese/rampa_coborare_relief.stl": "6c4542458f9757859e7f28fb7804881b0e05985a9859c8818ab6eacb9ae601f6",
+     "piese/rampa_coborare_finisata.stl": "583a897286cc34d6f843e0b73805e3a19dd6110cdea8337ddb5b730ddcefcb73",
+     "calibrare/placa_calibrare.dxf": "116d7d6b11375d1d2a15d1ab0a6ea7156813db499dbaaf58ec3be5fe6faec017",
+     "gcode/placa_1_T1.nc": "5f85619c03101cc0de649a375b88fe66c5cd91b73a1e8b77f5a6f791d75895b3",
+     "gcode/calibrare_T1.nc": "c9d699790c4d06cbbc2802b29ffc706af43b406f658e0f34c1a2c223830c6dd4",
+     "gcode/rampa_urcare_T1.nc": "ccf41fa7c10c60a5ca63dbd1b5e2160bf4812d94eb27d91de9ee582dc31c8e42",
+     "gcode/rampa_coborare_T1.nc": "a3d07e9f1676c69e18c7cdae3e5591f57bb0c2266d64e47628bfb97dbf9f6447"
+    },
+    "avertismente": []
+   },
+   "printate": {
+    "limba_macaz_curb_stanga": {
+     "sha": "31b07f586e722e6867ed4e2514263a0a7c4ccfeafea1d379f697febd3bd8ad86",
+     "tri": 2592,
+     "bucati": 2
+    },
+    "limba_macaz_curb_stanga_spate": {
+     "sha": "4af8e988b17e56e02957134c443c6f436d693599ad6febd4f9e1a6ec15cbf950",
+     "tri": 2592,
+     "bucati": 2
+    },
+    "limba_macaz_stanga": {
+     "sha": "7a2248601906dcfca24655ffa020abb74a0b49710cf399137ea0e68fcd85c3e9",
+     "tri": 2592,
+     "bucati": 3
+    },
+    "limba_macaz_stanga_spate": {
+     "sha": "f5b11904a7eb97a3e15220daea3c7e63a039ee7f1cc694af999533d188ec9732",
+     "tri": 2592,
+     "bucati": 3
+    },
+    "limba_ramificatie_y": {
+     "sha": "850221b1ecab4378f146c56a62dd920bedbd2b3330cfe3132c154e8f5bee39d8",
+     "tri": 2600,
+     "bucati": 1
+    },
+    "limba_ramificatie_y_spate": {
+     "sha": "4324ef0760c08bf7fb8d1a1f09e31a1f27492841051d591fbcda327d8a0928e7",
+     "tri": 2600,
+     "bucati": 1
+    },
+    "cale_adaptor_tata_tata": {
+     "sha": "65a62b28028bba1fbad2eb777b97dcd0fd2371e794ce27f1ba084587e5bb3ef1",
+     "tri": 1072,
+     "bucati": 1
+    },
+    "opritor_tampoane": {
+     "sha": "e4dbc5aec46251f215b87bfab91eb1fa0f5aed02ecdced883d7130072d3ca12a",
+     "tri": 788,
+     "bucati": 1
+    },
+    "stalp_24mm": {
+     "sha": "552046e703728661267efd2d5ebd861b5be59016ff7108ad254cb4594b8955d1",
+     "tri": 436,
+     "bucati": 2
+    },
+    "proba_cuplaj_1": {
+     "sha": "373caa902a9c57fcc7657d6a0f532ebb3e66110008b1d6f5eba4182fdbacf3b5",
+     "tri": 980,
+     "bucati": 1
+    },
+    "proba_cuplaj_2": {
+     "sha": "43d2fbbe0e9e2ca7749cd98318aca5fa7f25e5b515f8d8e9c647c3e573504553",
+     "tri": 1088,
+     "bucati": 1
+    },
+    "proba_cuplaj_3": {
+     "sha": "ce6250f16f2505402c43418421a9ee96af57086976205f16c1c1c91921a43348",
+     "tri": 1196,
+     "bucati": 1
+    },
+    "proba_cuplaj_4": {
+     "sha": "8dd2bf3b18000c7dc55e63e3442e4a9960a26dea0d7b592caf72f41a836ba5e4",
+     "tri": 1320,
+     "bucati": 1
+    },
+    "proba_cuplaj_5": {
+     "sha": "7c2c90e15a7ed234add2a94bf20230a04ab2ef0e82d08cc3f7351e7fbfb42c2e",
+     "tri": 1444,
+     "bucati": 1
+    },
+    "tunel": {
+     "sha": "6bcaea9c7425cd4ecc55b1e6f825f5cc25a33454b2b56cd0efbd316343905d9f",
+     "tri": 836,
+     "bucati": 1
+    },
+    "peron": {
+     "sha": "ac662dd99e7ab25e19a20a8fb68c677b54ecab2e0f8905057c4260256a20abd5",
+     "tri": 164,
+     "bucati": 1
+    }
+   }
+  }
+ }
+}

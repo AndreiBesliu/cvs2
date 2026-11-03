@@ -1633,6 +1633,10 @@
       "ro": "Booleanul",
       "en": "The boolean"
     },
+    "b89668c00070b90f": {
+      "ro": "Planificatorul Trenuleț ca extensie",
+      "en": "The Trenuleț planner as an extension"
+    },
     "b8ae4019a0545d9e": {
       "ro": "Oracolul independent al buzunarului",
       "en": "The independent pocket oracle"

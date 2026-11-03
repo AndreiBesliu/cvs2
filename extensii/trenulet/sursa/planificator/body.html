@@ -1,0 +1,251 @@
+<div class="app">
+  <header class="bara">
+    <div class="marca" aria-hidden="true">
+      <svg width="26" height="18" viewBox="0 0 26 18"><rect x="1" y="3" width="24" height="12" rx="2" fill="var(--fag)" stroke="var(--fag-margine)"/><path d="M1 6.5h24M1 11.5h24" stroke="var(--sant)" stroke-width="1.6"/></svg>
+    </div>
+    <div class="moduri" role="group" aria-label="Partea programului">
+      <button type="button" data-mod="2d" aria-pressed="true" title="Planul circuitului și fișierele pentru CNC">2D <span>· Tren</span></button>
+      <button type="button" data-mod="3d" aria-pressed="false" title="Piese LEGO și piesele circuitului, de printat 3D">3D <span>· Printare</span></button>
+    </div>
+    <div class="doar-2d">
+      <input id="nume" class="nume" type="text" value="" aria-label="Numele circuitului" maxlength="60">
+      <span id="stare" class="chip" role="status">—</span>
+      <button id="btn-lista" class="btn btn-lista" type="button">Lista</button>
+      <button id="btn-tren" class="btn" type="button" aria-pressed="false" title="Un trenuleț care merge pe circuit">▶ Tren</button>
+      <button id="btn-circuite" class="btn" type="button">Circuite</button>
+      <button id="btn-export" class="btn principal" type="button">Export CNC</button>
+    </div>
+    <div class="doar-3d">
+      <span class="titlu-3d">Piese de printat</span>
+      <span id="chip-3d" class="chip" role="status">—</span>
+      <button id="btn-la-lista" class="btn principal-3d" type="button">Lista de printat</button>
+    </div>
+  </header>
+
+  <main class="scena" id="scena">
+    <svg id="plan" role="img" aria-label="Planul circuitului"></svg>
+    <div class="zoom">
+      <button type="button" id="z-plus" aria-label="Mărește">+</button>
+      <button type="button" id="z-minus" aria-label="Micșorează">−</button>
+      <button type="button" id="z-tot" aria-label="Arată tot circuitul" title="Arată tot">⤢</button>
+    </div>
+    <div class="indiciu" id="indiciu"></div>
+    <div class="toast" id="toast" aria-live="polite"></div>
+  </main>
+
+  <aside class="lista" id="lista" aria-label="Lista de piese"></aside>
+
+  <footer class="jos">
+    <div class="actiuni" id="actiuni">
+      <span class="sel" id="sel-text">Atinge o piesă sau un capăt liber.</span>
+      <button class="btn principal" type="button" id="a-inchide" hidden>Închide</button>
+      <button class="btn" type="button" id="a-modifica" hidden>Modifică</button>
+      <button class="btn" type="button" id="a-roteste" disabled>Rotește</button>
+      <button class="btn" type="button" id="a-intoarce" disabled>Întoarce</button>
+      <button class="btn" type="button" id="a-panta" disabled>Pantă: plat</button>
+      <button class="btn" type="button" id="a-sterge" disabled>Șterge</button>
+      <button class="btn" type="button" id="a-anuleaza" disabled>Anulează</button>
+    </div>
+    <nav class="grupe" id="grupe" aria-label="Grupe de piese"></nav>
+    <div class="paleta" id="paleta"></div>
+  </footer>
+
+  <main class="mod-3d" id="mod-3d" hidden aria-label="Piese de printat 3D">
+    <div class="at-continut">
+      <p class="mic at-intro">Piese compatibile LEGO pentru imprimanta 3D: le desenezi aici și primești STL-ul gata așezat pe pat. În aceeași listă intră și piesele printate ale circuitului din 2D.</p>
+      <nav class="at-tipuri" id="at-tipuri" aria-label="Felul piesei">
+        <button type="button" data-tip="caramida" aria-pressed="true">Cărămidă / placă</button>
+        <button type="button" data-tip="panta" aria-pressed="false">Pantă</button>
+        <button type="button" data-tip="pantaInversa" aria-pressed="false">Pantă inversă</button>
+        <button type="button" data-tip="pana" aria-pressed="false">Pană / aripă</button>
+        <button type="button" data-tip="rotund" aria-pressed="false">Rotund / con</button>
+        <button type="button" data-tip="lateral" aria-pressed="false">Știfturi pe lateral</button>
+        <button type="button" data-tip="legaturi" aria-pressed="false">Legături</button>
+        <button type="button" data-tip="calibrare" aria-pressed="false">Calibrare</button>
+      </nav>
+      <div class="at-atelier">
+        <section class="at-panou" id="at-editor" aria-label="Piesa"></section>
+        <section class="at-panou" aria-label="Previzualizare">
+          <div class="at-rand" style="justify-content: space-between">
+            <h2 id="at-nume-piesa">Cărămidă 2×4</h2>
+            <div class="culori" id="at-culori" aria-label="Culoarea din previzualizare"></div>
+          </div>
+          <div class="at-rand">
+            <div class="segment" id="at-vedere-mod" role="group" aria-label="Ce arată vederea 3D"><button type="button" data-v="piesa" aria-pressed="true">Piesa</button><button type="button" data-v="model" aria-pressed="false">Modelul</button></div>
+            <div class="segment" id="at-unghi" role="group" aria-label="De unde o privești"><button type="button" data-u="sus" aria-pressed="true">De sus</button><button type="button" data-u="jos" aria-pressed="false">De dedesubt</button></div>
+          </div>
+          <div class="vedere" id="at-vedere" tabindex="0" aria-label="Vederea 3D">
+            <div class="lipsa" id="at-vedere-lipsa" hidden>Previzualizarea 3D are nevoie de internet (three.js). Piesa și STL-ul merg și fără ea.</div>
+            <span class="at-indiciu">trage: rotești (și pe dedesubt) · rotița sau două degete: apropii</span>
+          </div>
+          <div class="cote" id="at-cote"></div>
+          <p class="at-avert" id="at-avert" hidden></p>
+          <div class="at-rand" id="at-act-piesa">
+            <label class="mic at-rand" for="at-bucati" id="at-bucati-rand">Bucăți <input id="at-bucati" type="number" min="1" max="200" step="1" value="1" style="width: 80px"></label>
+            <button class="btn principal" type="button" id="at-adauga">Adaugă în lista de printat</button>
+            <button class="btn" type="button" id="at-stl">Descarcă STL</button>
+            <button class="btn" type="button" id="at-in-model">Pune în model</button>
+          </div>
+          <div class="at-rand" id="at-act-model" hidden>
+            <button class="btn principal" type="button" id="at-model-lista">Pune modelul în lista de printat</button>
+            <button class="btn" type="button" id="at-model-goleste">Golește modelul</button>
+            <span class="mic" id="at-model-confirma" hidden>Sigur? <button class="btn" type="button" id="at-model-goleste-da">Da, golește</button></span>
+          </div>
+        </section>
+      </div>
+
+      <section class="at-panou at-lista" id="at-sectiune-lista" aria-labelledby="at-t-lista">
+        <div class="at-rand" style="justify-content: space-between">
+          <h2 id="at-t-lista">Lista de printat</h2>
+          <p class="mic" id="at-rez-lista" role="status"></p>
+        </div>
+        <div class="tabel" id="at-tabel"><table>
+          <thead><tr><th>Piesa</th><th>Mărime (mm)</th><th>Bucăți</th><th>Filament</th><th></th></tr></thead>
+          <tbody id="at-lista"></tbody>
+          <tbody id="at-lista-tren"></tbody>
+        </table></div>
+        <div class="paturi" id="at-paturi"></div>
+        <div class="at-rand">
+          <button class="btn principal" type="button" id="at-zip" disabled>Descarcă plăcile și piesele (.zip)</button>
+          <button class="btn" type="button" id="at-goleste" disabled>Golește piesele LEGO</button>
+          <span class="mic" id="at-confirma" hidden>Sigur? <button class="btn" type="button" id="at-goleste-da">Da, golește</button></span>
+        </div>
+        <details class="setari">
+          <summary><b>Imprimanta și potrivirea pieselor</b> <span class="mic" id="at-imprimanta-rez"></span></summary>
+          <div class="profiluri" id="prof-imprimanta"></div>
+          <div class="at-campuri" id="at-reglaje"></div>
+          <p class="mic">Variantele vin de pe setul de calibrare (fila Calibrare): 3 e mijlocul; fiecare punct în plus face știftul cu 0,05 mm mai gros, locașul de dedesubt cu 0,05 mm mai larg, găurile Technic cu 0,1 mm mai mari, gaura pentru bară, clema și cupa bilei tot cu câte 0,1 mm.</p>
+        </details>
+      </section>
+    </div>
+    <div class="at-toast" id="at-toast" role="status" aria-live="polite"></div>
+  </main>
+</div>
+
+<div class="fundal" id="foaie-circuite" hidden>
+  <div class="foaie" role="dialog" aria-modal="true" aria-labelledby="t-circ">
+    <div class="foaie-cap"><h2 id="t-circ">Circuitele tale</h2><button class="btn" type="button" data-inchide>Închide</button></div>
+    <p class="mic" id="circ-unde"></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn principal" type="button" id="c-nou">Circuit nou, gol</button>
+      <button class="btn" type="button" id="c-exemplu">Exemplu: oval</button>
+      <button class="btn" type="button" id="c-pod">Exemplu: pod</button>
+    </div>
+    <div id="circ-lista" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<div class="fundal" id="foaie-export" hidden>
+  <div class="foaie lata" role="dialog" aria-modal="true" aria-labelledby="t-exp">
+    <div class="foaie-cap"><h2 id="t-exp">Vectori pentru CNC</h2><button class="btn" type="button" data-inchide>Închide</button></div>
+    <div id="exp-rezumat"></div>
+    <div class="profiluri" id="prof-masina"></div>
+    <details class="setari" id="cnc-setari">
+      <summary><b>Setări de frezare</b> <span class="mic" id="cnc-setari-rez"></span></summary>
+      <div id="sec-frezare"></div>
+      <p class="mic" id="s-fete-info" hidden>Fiecare placă vine în două fișiere: fața 1 (găuri pentru știfturi, șanțuri), apoi o întorci pe latura lungă și frezezi fața 2 (șanțurile de pe spate și decuparea). Curbele și macazurile se taie doar „stânga”: întoarsă, fiecare devine „dreapta”, ca la Brio.</p>
+      <p class="mic">Freza, ciuperca și locașul le afli de pe placa de calibrare (pașii sunt în CITESTE.txt, în arhivă). 3 e mărimea standard; fiecare punct în plus sau în minus înseamnă 0,1 mm pe fiecare parte.</p>
+      <p class="mic eroare" id="cnc-setari-avert" hidden></p>
+      <div><button class="btn" type="button" id="s-implicit">Revino la valorile inițiale</button></div>
+    </details>
+    <details class="setari">
+      <summary><b>Macazuri cu limbă mobilă</b> <span class="mic" id="rez-limbi"></span></summary>
+      <div id="sec-limbi"></div>
+      <p class="mic">Ca la Brio: în șanț, unde se despart cele două căi, stă o limbă printată 3D care se rotește pe un știft. O muți cu unghia ca să alegi ramura; un tren care vine din ramura cealaltă o împinge singur. Pe placă se frezează locașul ei (nasul dintre șanțuri, până la pivot, la adâncimea șanțului) și gaura pivotului; limbile sunt în arhivă, în dosarul <b>limbi</b>. Prima dată, încearcă un singur macaz.</p>
+    </details>
+    <details class="setari">
+      <summary><b>Piese printate 3D</b> <span class="mic" id="rez-printate"></span></summary>
+      <div id="sec-printate"></div>
+      <p class="mic">Vin în arhivă, în dosarul <b>printate</b>, gata așezate pe masa imprimantei (fără suporturi). Tunelul stă în picioare pe portal (150 mm înălțime de printare); înăuntru e lat de 66 mm și lasă 10 mm deasupra celui mai înalt tren, cel scris în lista de piese. Stâlpii printați au aceeași înălțime ca cei din straturi, cu obrajii între care stă calea. Opritorul cu tampoane se lipește pe capătul opritorului, în locul blocului de lemn. Piesele de cale printate au cuplajele lor (plasticul nu iese ca lemnul): printează întâi proba cuplajelor, încearcă-le cu piese de lemn și scrie variantele bune mai sus.</p>
+      <div id="sec-cale-printata"></div>
+      <p class="mic">Tot ele, și limbile macazurilor, apar în partea <b>3D · Printare</b>, în lista de printat, așezate pe patul imprimantei împreună cu piesele LEGO. <button class="btn" type="button" id="e-la-3d">Vezi-le pe pat, în 3D</button></p>
+    </details>
+    <details class="setari">
+      <summary><b>Deviz</b> <span class="mic" id="rez-deviz"></span></summary>
+      <div id="sec-deviz"></div>
+      <p class="mic">Filamentul e socotit pentru PLA (1,24 g/cm³), cu pereții plini și umplere de 15% (limbile, 100%). Timpul de frezare e cel estimat pentru fișierele G-code.</p>
+    </details>
+    <details class="setari">
+      <summary><b>Teșirea muchiilor</b> <span class="mic" id="rez-tesire"></span></summary>
+      <div id="sec-tesire"></div>
+      <p class="mic">Muchiile de sus ale pieselor ies teșite sau rotunjite, ca la Brio, fără margini tăioase. Cu freza în V, vârful merge pe conturul piesei; cu cea de rotunjit, la jumătatea vârfului în afară. Se face după decupare, cât piesele stau încă în punți. În DXF e stratul TESIRE.</p>
+    </details>
+    <details class="setari">
+      <summary><b>Umplerea plăcii</b> <span class="mic" id="rez-umplere"></span></summary>
+      <p class="mic">După piesele circuitului, locul liber de pe fiecare placă se umple cu piesele bifate, pe rând, cât încap. Ies piese de rezervă din lemnul care altfel s-ar arunca.</p>
+      <div id="sec-umplere"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="u-toate">Toate</button><button class="btn" type="button" id="u-niciuna">Niciuna</button></div>
+    </details>
+    <details class="setari">
+      <summary><b>G-code (fără ArtCAM)</b> <span class="mic" id="rez-gcode"></span></summary>
+      <div id="sec-gcode"></div>
+      <p class="mic eroare" id="gcode-neprobat" hidden>Postul pentru acest controler e scris după dialectul lui obișnuit, dar n-a fost încercat pe o mașină. Rulează întâi programul în aer, cu Z ridicat, și urmărește primele mișcări.</p>
+      <p class="mic">Postul, decuparea cu punți, rampa și estimarea timpului sunt cele din CNC Vector Studio 2. Ordinea pe placă: găurile pentru știfturi (la două fețe), marcajele (1 mm), șanțurile, locașurile limbilor de macaz și gaurile pivoților, decuparea cu punți; apoi teșirea, cu freza ei. Rampa în S (blocul lipit din straturi) are fișierul ei: degroșare, finisare cu treceri de-a lungul pantei și șanțurile pe suprafață.</p>
+    </details>
+    <details class="setari" id="det-cvs2">
+      <summary><b>Trimite la cvs2</b> <span class="mic" id="rez-cvs2"></span></summary>
+      <p class="mic">„Trimite la cvs2” deschide CNC Vector Studio 2 într-o filă nouă și îi dă G-code-ul acestui export, fișier cu fișier, fiecare cu amprenta lui (SHA-256): plăcile (fața 1, apoi fața 2), placa de calibrare, rampele. În cvs2 alegi fișierul în panoul mașinii, pui zero-ul cum scrie în antetul lui și pornești. cvs2 verifică fiecare fișier ca pe unul adus cu „Fișier…”; schimbarea frezei cu M6 nu trece, așa că pentru cvs2 alege „Un fișier pe freză” sau „Un fișier, cu oprire (M0)”.</p>
+      <div id="sec-cvs2"></div>
+      <p class="mic">Primirea e descrisă în <b>cvs2/PROTOCOL_CVS2.md</b> (în dosarul Trenulet), cu codul gata de pus în cvs2. Până o are, cvs2 nu răspunde: atunci descarci G-code-ul și îl încarci în panoul mașinii cu „Fișier…”. Din pagina de pe claude.ai browserul poate opri legătura dintre file; din copia de pe calculator (planificator.html) merge.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="e-gcode">Descarcă doar G-code-ul (.zip)</button></div>
+    </details>
+    <details class="setari">
+      <summary><b>Ce pun în arhivă</b></summary>
+      <div id="sec-continut"></div>
+      <p class="mic">CITESTE.txt și lista de piese (circuit.json) intră mereu.</p>
+    </details>
+    <div class="butoane">
+      <button class="btn principal mare" type="button" id="e-dxf" disabled>Descarcă arhiva (.zip)</button>
+      <button class="btn mare" type="button" id="e-cvs2" disabled title="Deschide cvs2 și îi trimite G-code-ul">Trimite la cvs2</button>
+      <p class="mic" id="cnc-stare" role="status"></p>
+      <p class="mic cvs2-stare" id="cvs2-stare" role="status" hidden></p>
+      <p class="mic deviz" id="cnc-deviz" role="status"></p>
+    </div>
+    <div class="sub-placi">
+      <p class="mic" id="cnc-timp" role="status"></p>
+      <div class="segment" id="cnc-fata" role="group" aria-label="De unde vezi plăcile"><button type="button" data-f="sus" aria-pressed="true">Plăcile de sus</button><button type="button" data-f="jos" aria-pressed="false">De dedesubt</button></div>
+      <label class="bifa"><input type="checkbox" id="arata-traseu"> Traseul frezei și punțile (clic pe o placă o mărește)</label>
+    </div>
+    <div class="placi" id="cnc-placi"></div>
+    <p class="mic">Cu G-code-ul din arhivă, trimiți direct la mașină fișierul plăcii (în dosarul <b>gcode</b>), cu zero-ul pus cum scrie la setări. În ArtCAM, cu DXF-ul, frezezi straturile în ordine: <b>MARCAJE</b> (1 mm), <b>SANTURI</b> și <b>LOCAS</b> (<i>Machine Along Vector</i>, 3 mm), <b>PIVOT</b> (găurire), <b>CONTUR</b> (<i>Profile</i> în exterior, 12,3 mm, cu punți), apoi <b>TESIRE</b>. Fibra lemnului merge de-a lungul laturii lungi a plăcii. Pașii întregi sunt în CITESTE.txt.</p>
+    <details class="setari">
+      <summary><b>Lista de piese ca fișier .json</b></summary>
+      <p class="mic">Aceeași listă, ca text: o poți păstra sau trimite generatorului vechi din Blender.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" type="button" id="e-copiaza">Copiază</button>
+        <button class="btn" type="button" id="e-salveaza">Salvează fișierul .json</button>
+      </div>
+      <pre class="json" id="exp-json"></pre>
+    </details>
+  </div>
+</div>
+
+<div class="fundal fara-fundal" id="foaie-lc" hidden>
+  <div class="foaie" role="dialog" aria-modal="true" aria-labelledby="t-lc">
+    <div class="foaie-cap"><h2 id="t-lc">Piesă la comandă</h2><button class="btn" type="button" data-inchide>Renunță</button></div>
+    <div class="comutator" role="group" aria-label="Felul piesei">
+      <button type="button" data-lc-tip="L" aria-pressed="true">Dreaptă</button>
+      <button type="button" data-lc-tip="A" aria-pressed="false">Curbă</button>
+    </div>
+    <div class="campuri" id="lc-dreapta">
+      <label>Lungime (mm)<input id="lc-l" type="number" inputmode="decimal" min="20" max="900" step="0.5" value="100"></label>
+    </div>
+    <div class="campuri" id="lc-curba" hidden>
+      <label>Rază (mm)<input id="lc-r" type="number" inputmode="decimal" min="110" max="5000" step="1" value="202"></label>
+      <label>Unghi (°)<input id="lc-a" type="number" inputmode="decimal" min="1" max="180" step="0.5" value="30"></label>
+      <div class="comutator" role="group" aria-label="Încotro cotește">
+        <button type="button" data-lc-sens="1" aria-pressed="true">Stânga</button>
+        <button type="button" data-lc-sens="-1" aria-pressed="false">Dreapta</button>
+      </div>
+    </div>
+    <p class="mic" id="lc-info"></p>
+    <button class="btn principal mare" type="button" id="lc-ok">Pune piesa</button>
+  </div>
+</div>
+
+<div class="fundal" id="foaie-lista" hidden>
+  <div class="foaie" role="dialog" aria-modal="true" aria-labelledby="t-lista">
+    <div class="foaie-cap"><h2 id="t-lista">Lista de piese</h2><button class="btn" type="button" data-inchide>Închide</button></div>
+    <div id="lista-mobil"></div>
+  </div>
+</div>

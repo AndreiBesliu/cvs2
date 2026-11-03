@@ -1,0 +1,50 @@
+{
+ "format": "trenulet-circuit",
+ "versiune": 2,
+ "nume": "Circuit nou",
+ "piese": {
+  "dreapta_144": 14,
+  "dreapta_54": 1,
+  "curba_mare_dreapta": 5,
+  "curba_mica_stanga": 6,
+  "curba_mica_dreapta": 8,
+  "dreapta_108": 1,
+  "incrucisare_45": 1,
+  "incrucisare_90": 1,
+  "trecere_nivel": 1,
+  "macaz_stanga": 2,
+  "macaz_dreapta": 1,
+  "macaz_curb_stanga": 1,
+  "macaz_curb_dreapta": 1,
+  "ramificatie_y": 1,
+  "dreapta_dubla_216": 1,
+  "rampa_urcare": 1,
+  "lc_7yqt5l": 1,
+  "stalp_5": 3
+ },
+ "la_comanda": [
+  {
+   "id": "lc_7yqt5l",
+   "titlu": "Piesă la comandă în S · 240,8 mm · tată–tată",
+   "capete": [
+    "T",
+    "T"
+   ],
+   "bucati": 1,
+   "segmente": [
+    {
+     "t": "A",
+     "r": 556.028,
+     "a": 12.9449,
+     "s": -1
+    },
+    {
+     "t": "A",
+     "r": 113.93,
+     "a": 57.9449,
+     "s": 1
+    }
+   ]
+  }
+ ]
+}

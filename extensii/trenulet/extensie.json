@@ -1,0 +1,8 @@
+{
+  "format": "cvs2-extensie",
+  "api": 1,
+  "id": "trenulet",
+  "nume": "Planificator Trenuleț",
+  "versiune": "18.0.0",
+  "permisiuni": ["stocare", "descarcari"]
+}

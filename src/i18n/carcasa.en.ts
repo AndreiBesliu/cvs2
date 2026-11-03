@@ -217,6 +217,7 @@ export const enCarcasa = {
   'extensii.instalare.permisiuni': 'It asks: {lista}.',
   'extensii.instalare.fara-permisiuni': 'It asks for nothing else: only its workspace.',
   'extensii.permisiune.stocare': 'to keep its data in this browser (at most 16 MB)',
+  'extensii.permisiune.descarcari': 'to save files as downloads (data and drawings, not programs)',
   'extensii.gestionare.date': 'its data: {kb} kB',
   'extensii.instalare.verific': 'Checking the package…',
   'extensii.instalare.refuz': 'The package can’t be installed: {motiv}',

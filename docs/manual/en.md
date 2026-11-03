@@ -893,6 +893,9 @@ install it, and the app’s interface stays the same.
   refused, with the reason.
 - An extension that asked for it keeps its data (for example, its circuits) in this browser, at most 16 MB. A new version of
   it keeps them.
+- An extension that asked for it can save files (for example, the G-code or the parts to print) as ordinary browser
+  downloads: only data and drawings (`.zip`, `.json`, `.gcode`, `.stl` and the like), at most 64 MB each, never programs
+  or pages.
 - A click on an extension in the menu opens its workspace in place of the sheet. The bars and panels stay, so the machine
   panel can sit next to it; while the workspace is open, the drawing doesn’t change. **Back to the sheet**, above the
   workspace, closes the extension.

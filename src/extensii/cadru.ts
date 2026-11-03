@@ -2,10 +2,12 @@
  * Cadrul izolat al unei extensii (ADR 0127 §D), partea lui cvs2: iframe-ul cu sandbox (`allow-scripts`, fără origine, nimic
  * delegat), pagina lui din `shared/cadruExtensie.ts` și portul prin care trec toate mesajele. La încărcarea cadrului, cvs2
  * îi trimite o singură dată fișierele pachetului, contextul (limba, tema) și portul; apoi doar prin port. Serviciile cerute
- * cu `host.cere`: `stocare.*` (ADR 0128, cu permisiunea `stocare`); restul se refuză (senderul vine în 3.Xc).
+ * cu `host.cere`: `stocare.*` (ADR 0128, cu permisiunea `stocare`), `descarcari.salveaza` (ADR 0129, cu `descarcari`); restul
+ * se refuză (senderul vine în 3.Xc).
  */
 import type { ContextHost } from '../../extensii/api.ts';
 import { paginaCadru } from '../../shared/cadruExtensie.ts';
+import { servesteDescarcarile } from './descarcari.ts';
 import { depozitDate, type ExtensieInstalata } from './depozit.ts';
 import { servesteStocarea, type RaspunsServiciu } from './stocare.ts';
 
@@ -32,6 +34,15 @@ export function temaDeAcum(): Record<string, string> {
 
 const text = (x: unknown, max: number): string => String(x).slice(0, max);
 
+/** Descărcarea din pagina lui cvs2 (cadrul n-are voie): o legătură `blob:` cu numele fișierului, nelegată de document. */
+function descarca(nume: string, date: Blob): void {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(date);
+  a.download = nume;
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); }, 30_000);
+}
+
 /** Pornește extensia în `container`; întoarce schimbarea contextului și oprirea (cadrul scos, portul închis). */
 export function pornesteCadru(container: HTMLElement, ext: ExtensieInstalata, context: ContextHost, laEveniment: (e: EvenimentCadru) => void): {
   readonly context: (c: ContextHost) => void;
@@ -55,7 +66,9 @@ export function pornesteCadru(container: HTMLElement, ext: ExtensieInstalata, co
         const argumente = Array.isArray(m.argumente) ? m.argumente as unknown[] : [];
         const raspuns: Promise<RaspunsServiciu> = serviciu === 'stocare'
           ? servesteStocarea(ext.id, ext.manifest.permisiuni, metoda, argumente, depozitDate).catch(() => ({ ok: false, eroare: 'stocare:indisponibila' }))
-          : Promise.resolve({ ok: false, eroare: `serviciu-necunoscut:${text(m.serviciu, 40)}` });
+          : Promise.resolve(serviciu === 'descarcari'
+            ? servesteDescarcarile(ext.manifest.permisiuni, metoda, argumente, descarca)
+            : { ok: false, eroare: `serviciu-necunoscut:${text(m.serviciu, 40)}` });
         void raspuns.then((r) => {
           port.postMessage(r.ok ? { tip: 'raspuns', id, ok: true, rezultat: r.rezultat } : { tip: 'raspuns', id, ok: false, eroare: r.eroare });
         });

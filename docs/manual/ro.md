@@ -865,6 +865,9 @@ instalezi tu, iar interfața aplicației rămâne aceeași.
   motivul.
 - O extensie care a cerut asta își ține datele (de exemplu, circuitele ei) în browserul acesta, cel mult 16 MB. O versiune
   nouă a ei le păstrează.
+- O extensie care a cerut asta poate salva fișiere (de exemplu, G-code-ul sau piesele de printat) ca descărcări obișnuite
+  ale browserului: doar date și desene (`.zip`, `.json`, `.gcode`, `.stl` și altele asemenea), cel mult 64 MB unul, nu
+  programe sau pagini.
 - Un clic pe o extensie din meniu îi deschide spațiul în locul planșei. Barele și panourile rămân, deci panoul mașinii poate
   sta alături; cât e deschis spațiul, desenul nu se schimbă. **Înapoi la planșă**, deasupra spațiului, închide extensia.
 - Extensia rulează izolată: nu vede proiectele, contul sau mașina și nu iese pe internet; vorbește cu aplicația doar prin

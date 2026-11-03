@@ -19,7 +19,12 @@ export interface HostApi {
   raporteaza(eroare: unknown): void;
   /** Cere închiderea spațiului extensiei. */
   inchide(): void;
-  /** Un serviciu cu permisiune: `stocare.*` (ADR 0128); senderul vine în 3.Xc. Un refuz respinge promisiunea, cu codul lui. */
+  /**
+   * Un serviciu cu permisiune; un refuz respinge promisiunea, cu codul lui. `stocare.*` (ADR 0128, și prin `stocare`, mai jos);
+   * `descarcari.salveaza(nume, date)` (ADR 0129, permisiunea `descarcari`): textul, octeții sau `Blob`-ul, cel mult 64 MB,
+   * descărcat de cvs2 cu numele curățat, doar cu un tip de date sau desen (`.zip`, `.json`, `.gcode`, `.stl`…); răspunsul e
+   * numele. Senderul vine în 3.Xc.
+   */
   cere(serviciu: string, ...argumente: unknown[]): Promise<unknown>;
   /**
    * Datele extensiei (ADR 0128), cu permisiunea `stocare`: JSON sau octeți, cel mult 4 MB o valoare, 16 MB și 1 000 de chei

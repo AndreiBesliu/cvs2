@@ -389,6 +389,15 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `date` și `marimi`): doar JSON sau octeți, 4 MB o valoare, 16 MB și 1 000 de chei pe extensie; scoaterea șterge datele.
   **Senderul în `HostApi` vine după unirea lui 13.A↑ în `main`** („Întâi 13.A în main”), ca felia 3.Xc: extensia devine o
   fereastră a aranjamentului (ADR 0132), iar „Lucrarea primită” trece în fereastra Mașina.
+  **Planificatorul Trenuleț ca extensie (ADR 0129, felia 3.Ta)** gata pe 03.11: sursele v18 stau în
+  `extensii/trenulet/sursa/`, neschimbate, cu testele lor de referință (`node extensii/trenulet/sursa/teste/referinte.js
+  --compara`, 0 diferențe). **De acum, planificatorul se schimbă în repo, nu în `Apps/Trenulet/`.** `node
+  scripts/construieste-trenulet.ts` face ce făcea `build.py`, fără Python: pagina de sine stătătoare (octet cu octet ca v18)
+  și pachetul `.tmp/extensii/trenulet-<versiune>.zip`. Intrarea (`extensii/trenulet/intrare.ts`) îi dă paginii, prin
+  `HostApi`, `window.claude` (`db`, `downloads`), `localStorage`, atributele `style` prin CSSOM și scripturile clasice.
+  Permisiunea nouă `descarcari` (`descarcari.salveaza`): cvs2 descarcă din pagina lui, doar tipurile din lista albă, cel
+  mult 64 MB. Încărcătorul și CSP-ul nu s-au schimbat. „Trimite la cvs2” și previzualizarea 3D nu merg încă din extensie.
+  **Pornirea 98,9 (cu ușa 102,4 / 110 kB), totalul 462,6 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

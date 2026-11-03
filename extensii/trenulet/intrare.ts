@@ -1,0 +1,162 @@
+/**
+ * Intrarea Planificatorului Trenuleț ca extensie a lui cvs2 (ADR 0129): pagina v18, cu sursele neschimbate, în cadrul izolat
+ * (ADR 0127). Patru adaptoare îi dau, prin `HostApi`, ce avea ca pagină:
+ * - `window.claude`, ca pe claude.ai: `use('db')`, documentele (`doc`, `collection().doc().id`, `orderBy().onSnapshot`), peste
+ *   `host.stocare`, și `use('downloads')`, `save`, peste serviciul `descarcari.salveaza`; pagina le folosește când le are;
+ * - `localStorage`, peste `host.stocare` (setările mici: modul, mașinile, frezarea), citit întreg la pornire, scris pe loc;
+ * - atributele `style` din marcaj: CSP-ul moștenit le refuză ca atribute, deci se pun prin CSSOM, care nu e oprit;
+ * - scripturile, în ordinea paginii, ca scripturi clasice din adrese `blob:` (aceeași semantică globală ca în pagină).
+ */
+import type { HostApi, Spatiu } from '../api.ts';
+
+const SCRIPTURI = ['cavalier.js', 'cnc.js', 'gcode.js', 'earcut.js', 'lego.js', 'profiluri.js', 'atelier.js', 'app.js'];
+const DB = 'db:';
+const LS = 'ls:';
+
+type Doc = { readonly id: string; data(): unknown };
+type Instantaneu = { readonly docs: Doc[]; readonly size: number; readonly empty: boolean };
+
+/** Refuzul gazdei, cu codul pe care îl citește pagina (`quota_exceeded` când stocarea e plină). */
+function cuCod(e: unknown): Error {
+  const x = e instanceof Error ? e : new Error(String(e));
+  return Object.assign(x, { code: x.message === 'stocare:plin' ? 'quota_exceeded' : x.message });
+}
+
+/** `window.claude`: `use('db')` și `use('downloads')`, ca pe claude.ai. */
+export function claudePeste(host: HostApi): void {
+  const ascultatori = new Map<string, Set<() => void>>();
+  const anunta = (col: string): void => { for (const f of ascultatori.get(col) ?? []) f(); };
+  const idNou = (): string => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+  const docRef = (cale: string) => {
+    const [col = '', id = ''] = cale.split('/');
+    return {
+      id,
+      async set(date: unknown): Promise<void> {
+        await host.stocare.scrie(DB + cale, JSON.parse(JSON.stringify(date)) as unknown).catch((e: unknown) => { throw cuCod(e); });
+        anunta(col);
+      },
+      async get(): Promise<{ readonly id: string; readonly exists: boolean; data(): unknown }> {
+        const v = await host.stocare.citeste(DB + cale).catch((e: unknown) => { throw cuCod(e); });
+        return { id, exists: v !== null, data: () => v };
+      },
+      async delete(): Promise<void> {
+        await host.stocare.sterge(DB + cale).catch((e: unknown) => { throw cuCod(e); });
+        anunta(col);
+      },
+    };
+  };
+  const db = {
+    doc: docRef,
+    collection: (col: string) => ({
+      doc: (id?: string) => docRef(`${col}/${id ?? idNou()}`),
+      orderBy: (camp: string, dir: 'asc' | 'desc' = 'asc') => ({
+        /** Lista, la abonare și după fiecare scriere în colecție; doar cea mai nouă citire ajunge la pagină. */
+        onSnapshot(cb: (s: Instantaneu) => void, eroare?: (e: unknown) => void): () => void {
+          let ultima = 0, activ = true;
+          const emite = async (): Promise<void> => {
+            const nr = ++ultima;
+            try {
+              const prefix = `${DB}${col}/`;
+              const chei = (await host.stocare.chei()).filter((k) => k.startsWith(prefix));
+              const docs: Doc[] = await Promise.all(chei.map(async (k) => {
+                const v = await host.stocare.citeste(k);
+                return { id: k.slice(prefix.length), data: () => v };
+              }));
+              const val = (d: Doc): string => String((d.data() as Record<string, unknown> | null)?.[camp] ?? '');
+              docs.sort((a, b) => (val(a) === val(b) ? 0 : (val(a) < val(b) ? -1 : 1) * (dir === 'desc' ? -1 : 1)));
+              if (activ && nr === ultima) cb({ docs, size: docs.length, empty: docs.length === 0 });
+            } catch (e) {
+              if (activ && nr === ultima) eroare?.(cuCod(e));
+            }
+          };
+          const set = ascultatori.get(col) ?? new Set<() => void>();
+          const f = (): void => { void emite(); };
+          set.add(f);
+          ascultatori.set(col, set);
+          f();
+          return () => { activ = false; set.delete(f); };
+        },
+      }),
+    }),
+  };
+  const downloads = {
+    async save({ filename, data }: { readonly filename: string; readonly data: unknown }): Promise<void> {
+      await host.cere('descarcari.salveaza', filename, data).catch((e: unknown) => { throw cuCod(e); });
+    },
+  };
+  const use = async (c: string): Promise<unknown> => {
+    if (c === 'db') return db;
+    if (c === 'downloads') return downloads;
+    throw Object.assign(new Error(`capabilitatea „${c}” nu există în cvs2`), { code: 'unavailable' });
+  };
+  Object.defineProperty(window, 'claude', { value: Object.freeze({ use }), configurable: true });
+}
+
+/** `localStorage`, cu cheile `ls:` ale stocării, citite la pornire. */
+export async function localStoragePeste(host: HostApi): Promise<void> {
+  const m = new Map<string, string>();
+  for (const k of (await host.stocare.chei()).filter((x) => x.startsWith(LS))) {
+    const v = await host.stocare.citeste(k);
+    if (typeof v === 'string') m.set(k.slice(LS.length), v);
+  }
+  const scrie = (p: Promise<unknown>): void => { void p.catch((e: unknown) => { host.raporteaza(e); }); };
+  const ls = {
+    getItem: (k: string): string | null => m.get(String(k)) ?? null,
+    setItem: (k: string, v: string): void => { m.set(String(k), String(v)); scrie(host.stocare.scrie(LS + String(k), String(v))); },
+    removeItem: (k: string): void => { m.delete(String(k)); scrie(host.stocare.sterge(LS + String(k))); },
+    clear: (): void => { for (const k of [...m.keys()]) ls.removeItem(k); },
+    key: (i: number): string | null => [...m.keys()][i] ?? null,
+    get length(): number { return m.size; },
+  };
+  Object.defineProperty(window, 'localStorage', { value: ls, configurable: true });
+}
+
+/** Atributele `style` puse în document (din marcaj sau din scripturi) se aplică prin CSSOM, cu același text. */
+function stiluriDinAtribute(): void {
+  const aplica = (el: Element): void => {
+    const a = el.getAttribute('style');
+    const s = (el as HTMLElement).style as CSSStyleDeclaration | undefined;
+    if (a !== null && s && s.cssText !== a) s.cssText = a;
+  };
+  const toate = (n: Node): void => {
+    if (!(n instanceof Element)) return;
+    aplica(n);
+    for (const e of n.querySelectorAll('[style]')) aplica(e);
+  };
+  new MutationObserver((lista) => {
+    for (const x of lista) {
+      if (x.type === 'attributes') aplica(x.target as Element);
+      else for (const n of x.addedNodes) toate(n);
+    }
+  }).observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] });
+}
+
+function scriptClasic(b: Blob, nume: string): Promise<void> {
+  return new Promise((ok, nu) => {
+    const s = document.createElement('script');
+    s.src = URL.createObjectURL(new Blob([b], { type: 'text/javascript' }));
+    s.onload = () => { URL.revokeObjectURL(s.src); ok(); };
+    s.onerror = () => { URL.revokeObjectURL(s.src); nu(new Error(`scriptul ${nume} nu s-a încărcat`)); };
+    document.head.append(s);
+  });
+}
+
+export async function activeaza(host: HostApi): Promise<Spatiu> {
+  claudePeste(host);
+  await localStoragePeste(host);
+  stiluriDinAtribute();
+  return {
+    deschide(container: HTMLElement): void {
+      void (async () => {
+        const corp = host.fisier('body.html');
+        if (!corp) throw new Error('lipsește body.html');
+        container.innerHTML = await corp.text();
+        for (const nume of SCRIPTURI) {
+          const f = host.fisier(`js/${nume}`);
+          if (!f) throw new Error(`lipsește js/${nume}`);
+          await scriptClasic(f, nume);
+        }
+      })().catch((e: unknown) => { host.raporteaza(e); });
+    },
+  };
+}
