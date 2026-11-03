@@ -4993,3 +4993,7 @@ le reparase `75e9b47`, deci am refăcut-o pe vârful nou. Apoi felia: `2517e29`.
 Pachetele (`trenulet-18.1.0.zip`, 208 173 de octeți; `proba-masina-1.0.0.zip`, extensia de probă a senderului, 2 053) nu
 stau pe canal: owner-ul le primește ca fișiere. Adresa principală de test nu s-a atins (alt `index.html`); ramura nu e
 împinsă.
+**ADR-ul 0160** (blocul 0160–0169, dat liniei de sesiunea principală după prima publicare): `d9ff422` înlocuiește numărul provizoriu
+0199 (fișierul, indexul, referințele, fișa, traducerea). **Canalul, republicat din `d9ff422`** la 20:43 (până pe 03.12):
+prima rulare a probelor, la câteva secunde după publicare, a avut două roșii (jurnalul local cu o eroare); a doua, 13 / 13.
+Artefactele primei rulări s-au șters la a doua, deci eroarea a rămas neexplicată.
