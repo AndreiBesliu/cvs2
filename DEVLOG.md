@@ -5021,3 +5021,13 @@ Trenuleț. 3.Tb: sursele planificatorului adaptate pentru cvs2, adică textul de
 - **Otrăvurile `test/otravuri/3.Tb.py`:** 26 / 26 prinse, fiecare de proba ei: R01 și R02 (o zecimală în plus în G-code, alt număr de laturi la cercurile LEGO) de `referinte.js --compara`, din poartă.
 - **Ce nu merge încă:** previzualizarea 3D (three.js, cu acordul descărcării), fonturile paginii, tema și engleza lui cvs2;
   sursele sunt tot JavaScript (TypeScript într-o felie a lui).
+**Eroarea rară din jurnal (văzută la 3.Xc), lămurită:** proiectul `edge` al probelor blochează workerul PWA
+(`serviceWorkers: 'block'`), iar Playwright pune pentru asta în fiecare cadru `if (navigator.serviceWorker) …`. În cadrul cu
+sandbox al unei extensii, citirea aruncă `SecurityError`; când scriptul rulează după ascultătorul încărcătorului, eroarea
+ajunge în jurnalul local, cu numele extensiei. Proba cu workerul blocat și apoi permis: 1 eroare, apoi 0. Utilizatorii n-au
+scriptul: probele extensiilor recunosc intrarea lui (mesajul și stiva doar din `<anonymous>`) prin
+`test/e2e/ajutor-jurnal.ts`. Aplicația nu s-a schimbat.
+**Publicat pe canalul `trenulet`** pe 03.11, la 21:49, din `d4d8b54`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 03.12). Probele planificatorului, ale extensiilor, ale senderului și ale primirii, rulate chiar pe canal: 15 / 15.
+Pachetul (`trenulet-18.2.0.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de test nu s-a atins;
+ramura nu e împinsă.

@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { impacheteaza } from '../../scripts/impacheteaza-extensie.ts';
+import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 
 /**
  * Fereastra extensiei și senderul prin `HostApi` (ADR 0160, felia 3.Xc), în Edge, cu extensia de probă `extensii/proba-masina`:
@@ -20,15 +21,6 @@ const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 const apasa = (page: Page, id: string) => cadru(page).locator(`[data-proba-masina="${id}"]`).click();
 const rezultat = (page: Page, id: string) => cadru(page).locator(`[data-rezultat="${id}"]`).last();
 const stare = (page: Page) => cadru(page).locator('[data-proba="stare"]');
-/** Jurnalul local, fără erori; dacă are, eșecul arată și intrările lui, nu doar numărul. */
-async function faraErori(page: Page): Promise<void> {
-  try {
-    await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');
-  } catch (e) {
-    const intrari = await page.evaluate(() => localStorage.getItem('cncvs2.jurnalErori.v1'));
-    throw new Error(`${(e as Error).message}\nJurnalul: ${intrari ?? '—'}`);
-  }
-}
 
 async function instaleaza(page: Page): Promise<void> {
   await page.goto('/');
@@ -85,7 +77,7 @@ test('fereastra extensiei: fila cu numele; altă fereastră o ascunde, cu pagina
   await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
   await expect(page.locator('.aplicatie')).toHaveAttribute('data-fereastra', 'proiectare');
   await expect(page.locator('.lucru')).toHaveCSS('visibility', 'visible');
-  await faraErori(page);
+  await faraEroriInJurnal(page);
 });
 
 test('senderul: încărcarea verificată; pornirea și reluarea confirmate de om; pauza și oprirea direct', async ({ page }) => {
@@ -162,7 +154,7 @@ test('senderul: încărcarea verificată; pornirea și reluarea confirmate de om
   await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
   await expect(confirmare).toHaveCount(0);
   await expect(page.getByTestId('masina-faza')).toHaveAttribute('data-faza', 'pregatit');
-  await faraErori(page);
+  await faraEroriInJurnal(page);
 });
 
 test('lucrarea trimisă: dialogul primirii, cu originea extensiei; apoi „Lucrarea primită” în fereastra Mașina', async ({ page }) => {
@@ -186,7 +178,7 @@ test('lucrarea trimisă: dialogul primirii, cu originea extensiei; apoi „Lucra
   await expect(page.getByTestId('masina-primita')).toContainText('Lucrarea primită: „Placa de probă”, de la Proba senderului');
   await expect(page.locator('[data-masina="primit-fisier"] option')).toHaveText(['proba_T1.nc']);
   await expect(page.locator('[data-extensii="fila"]')).toHaveText('Proba senderului');
-  await faraErori(page);
+  await faraEroriInJurnal(page);
 });
 
 test('pe live, senderul e refuzat extensiei și starea nu ajunge la ea', async ({ page }) => {

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { pachetTrenulet, paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
+import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 
 /**
  * Planificatorul Trenuleț ca extensie (ADR 0129, felia 3.Ta), în Edge, cu pachetul construit aici din sursele lui:
@@ -134,7 +135,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await deschide(page);
   await cadru(page).locator('#btn-circuite').click();
   await expect(cadru(page).locator('#circ-lista')).toHaveText('Încă nu ai circuite salvate. Orice schimbare pe plan se salvează singură.');
-  await expect(page.getByTestId('jurnal')).not.toHaveClass(/cip-rosu/);
+  await faraEroriInJurnal(page);
   // Cadrul de după reîncărcare: nici el.
   expect(await refuzuri(page)).toEqual([]);
 });
@@ -160,7 +161,7 @@ test('„Trimite la cvs2” din extensie: lucrarea ovalului, în dialogul primir
   await expect(page.locator('[data-masina="primit-fisier"] option').first()).toHaveText(/^placa_1/);
   await page.locator('[data-extensii="fila"]').click();
   await expect(c.locator('#cvs2-stare')).toContainText('cvs2 a primit');
-  await expect(page.getByTestId('jurnal')).not.toHaveClass(/cip-rosu/);
+  await faraEroriInJurnal(page);
 });
 
 test('pe mașină, prin cvs2: din exportul CNC, încărcarea, pornirea cu confirmarea lui cvs2, pauza, reluarea, oprirea', async ({ page }) => {
@@ -211,7 +212,7 @@ test('pe mașină, prin cvs2: din exportul CNC, încărcarea, pornirea cu confir
   await c.locator('#m-opreste').click();
   await expect(stare).toHaveText(/^Mașina: (în alarmă|lucrarea s-a întrerupt)/);
   await expect(c.locator('#m-pauza')).toBeDisabled();
-  await expect(page.getByTestId('jurnal')).not.toHaveClass(/cip-rosu/);
+  await faraEroriInJurnal(page);
 });
 
 test('pagina de sine stătătoare, din aceleași surse, fără cvs2: textele de până acum, fără secțiunea mașinii', async ({ page }) => {
