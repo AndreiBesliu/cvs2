@@ -4644,3 +4644,6 @@ Decizia owner-ului s-a trimis sesiunii principale, cu cuvintele lui (ea face uni
     build de dinaintea lui. Reparate aici.
   - Celelalte două: aserțiunea care cere portul 4173 și un `EBUSY` al fișierelor Playwright, care trece la reluare.
 - **Otrăvurile `test/otravuri/3.Xb.py`:** 18 / 18 prinse.
+**Publicat pe canalul `trenulet`** pe 03.11, la 09:27, din `301bbf6`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 03.12). Probele extensiilor și ale primirii, rulate chiar pe canal: 7 / 7. Adresa principală de test nu s-a atins;
+ramura nu e împinsă.
