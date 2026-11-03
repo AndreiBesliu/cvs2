@@ -849,6 +849,10 @@
       "ro": "**Owner-ul fix în /admin** (ADR 0071; cererea owner-ului: „in admin, contul meu nu ar trebui sa poata fi removed. nu din admin. si nici rolul nu ar trebui sa poata fi schimbat”). Serverul refuză scoaterea unui owner și schimbarea rolului lui, oricine ar cere-o, iar rolul owner se dă doar din consolă; în fila Personal, rândul owner-ului e doar de citit (fără rol de ales, fără Scoate) și arată adresa contului. Funcțiile publicate pe test; pagina vine pe adresa de test după testul owner-ului (până atunci, pe canalul buzunar). **Treceri:** (1) callable-ul, pagina, probele pe emulatoare (un al doilea owner pus din consolă nu-l poate scoate pe primul); e2e-ul invitației trecut pe un rol custom (owner nu se mai dă din /admin).",
       "en": "**The owner fixed in /admin** (ADR 0071; the owner’s request: “in admin, my account should not be removable. not from admin. and its role should not be changeable either”). The server refuses removing an owner and changing its role, whoever asks, and the owner role is given only from the console; in the Staff tab, the owner’s row is read-only (no role to choose, no Remove) and shows the account’s address. Functions published on test; the page comes to the test address after the owner’s test (until then, on the buzunar channel). **Passes:** (1) the callable, the page, the emulator tests (a second owner set from the console cannot remove the first); the invitation e2e moved to a custom role (owner is no longer given from /admin)."
     },
+    "5998192125646a92": {
+      "ro": "Stocarea extensiilor și permisiunile",
+      "en": "Extension storage and permissions"
+    },
     "59f4607a172740dc": {
       "ro": "Ușa SVG",
       "en": "The SVG door"
@@ -940,6 +944,10 @@
     "6acd2ce3f75f8abf": {
       "ro": "Intrările și ieșirile",
       "en": "Lead-ins and lead-outs"
+    },
+    "6bfcef98e90ad660": {
+      "ro": "Stocarea extensiilor și catalogul permisiunilor",
+      "en": "Extension storage and the permission catalog"
     },
     "6c4a192ce7404e43": {
       "ro": "Ieșirea din foaie, din notițele owner-ului de la prototipul planșelor. Avertismentul stă în bara de jos, pe un rând, niciodată pe pânză. Exportul cere confirmare când discul frezei trece de marginea foii cât taie. Măsurarea e exactă: arcele prin punctele de pe axe, iar rampele și elicele se taie la Z 0. Pragul e jumătate din rezoluția de 0,001 mm. Confirmarea e legată de traseul arătat (obiectul cererii + amprentă) și se scrie în antet. Oracolul l-a scris o sesiune independentă, în 2 commit-uri: 46 de sabotaje, toate prinse. **Treceri:** (1) implementarea, cu `\\`-uri pierdute de heredoc; (2) recenzia adversarială cu 10 agenți (~1,45 M tokeni) a găsit 17 probleme. Cele importante erau ocoliri ale confirmării: bifa boolean, Ctrl+Z sub dialog, un rezultat întârziat. Au fost reparate, iar oracolul a primit margini exacte și rapidele în afara foii; (3) reverificarea n-a găsit nicio ocolire, dar a scos la iveală Shift+Tab spre bară, Space dublu, o adâncime peste foaie (din 1.9c) și un pas absurd. Reparate: aplicația e inertă sub dialog, acțiunile de document trec printr-o singură ușă, adâncimea e plafonată la grosimea foii, iar trecerile la 1 000. 23 de otrăvuri pe aplicație, toate prinse. 147 de teste unitare, 17 e2e. **Durata:** fără estimare spusă dinainte; 85 de minute cu recenzia și reverificarea, față de 3–11 minute pentru celelalte felii ale etapei.",
@@ -1440,6 +1448,10 @@
     "a5303f334c1b6866": {
       "ro": "regresia completă (10 cote din 10 etape)",
       "en": "the full regression (10 dimensions from 10 stages)"
+    },
+    "a551fa2fafcf8ce1": {
+      "ro": "**Stocarea extensiilor și permisiunile** (fără mașină; ADR 0128; a treia felie a liniei Trenuleț, în worktree-ul `wip/trenulet`; „Da, pornește 3.Xb”, apoi „Întâi 13.A în main”: senderul în `HostApi` atinge fișierele pe care 13.A↑ le rescrie, deci vine după unirea ei, ca 3.Xc). Catalogul permisiunilor are `stocare`, arătată la instalare cu sensul ei; `host.stocare` (citeste, scrie, sterge, chei) peste `host.cere`, servită de cvs2 din IndexedDB (`date` și `marimi`, cheia `[id, cheie]`): doar JSON sau octeți, 4 MB o valoare, 16 MB și 1 000 de chei pe extensie; fără permisiune, refuzul. Scoaterea extensiei îi șterge datele; gestionarea arată cât ocupă. Probele: 5 teste unitare noi, un e2e nou și două lărgite în Edge, 18 / 18 otrăvuri prinse.",
+      "en": "**Extension storage and permissions** (no machine; ADR 0128; the third slice of the Trenuleț line, in the `wip/trenulet` worktree; “Da, pornește 3.Xb”, then “Întâi 13.A în main”: the sender in `HostApi` touches the files 13.A↑ rewrites, so it comes after that merge, as 3.Xc). The permission catalog has `stocare`, shown at install with what it means; `host.stocare` (citeste, scrie, sterge, chei) over `host.cere`, served by cvs2 from IndexedDB (`date` and `marimi`, key `[id, cheie]`): only JSON or bytes, 4 MB a value, 16 MB and 1,000 keys per extension; without the permission, a refusal. Removing an extension deletes its data; the manage window shows how much it takes. The proofs: 5 new unit tests, one new e2e and two widened ones in Edge, 18 / 18 poisons caught."
     },
     "a6da42f42b6cfdae": {
       "ro": "Senderul (complet); §10 Senzor de lungime, Colțul XY, Override + jurnal, Planarea",

@@ -4625,4 +4625,22 @@ posibil): ADR 0127; codul `5b74344`, reparațiile `27a3aa3` și `44d9275`.
 **Prompt:** „Întâi 13.A în main” (la întrebarea „Cum continui 3.Xb, față de ramura 13.A↑?”, după „Da, pornește 3.Xb”), în
 sesiunea dedicată liniei Trenuleț. Senderul în `HostApi` atinge aceleași fișiere ca 13.A↑ (fereastra Mașina, ADR 0132), deci
 vine după unirea ei, ca felia 3.Xc; acum, partea care nu le atinge.
-**Started:** 03.11, 07:26.
+**Started:** 03.11, 07:26. **Completed:** 03.11, 09:14.
+
+Decizia owner-ului s-a trimis sesiunii principale, cu cuvintele lui (ea face unirea). ADR 0128; codul: `271d96d`.
+- **Ce merge:**
+  - catalogul permisiunilor are `stocare`, arătată la instalare cu sensul ei;
+  - `host.stocare` peste `host.cere`, servită din IndexedDB (versiunea 2: `date` și `marimi`, cheia `[id, cheie]`); limitele
+    sunt 4 MB o valoare, 16 MB și 1 000 de chei pe extensie;
+  - scoaterea extensiei îi șterge datele, iar gestionarea arată cât ocupă;
+  - extensia de probă își numără deschiderile.
+- **Încărcătorul** are amprenta nouă, deci CSP-ul și `firebase.json` sunt regenerate.
+- **Porțile:**
+  - compilatorul; importurile, 19 / 19; traducerile, 546, 0 lipsă;
+  - 8 073 de teste unitare, 0 eșuate;
+  - build-ul determinist: 236 de fișiere identice, pornirea 98,9 / 110 kB, totalul 462,1 / 500.
+- **E2e-ul întreg, pe portul 4176:** 299 trec, 4 pică.
+  - Două căderi sunt ale manualului, rămase din 3.Xa: capitolul „Extensiile” e al 25-lea, iar suita de atunci rulase pe un
+    build de dinaintea lui. Reparate aici.
+  - Celelalte două: aserțiunea care cere portul 4173 și un `EBUSY` al fișierelor Playwright, care trece la reluare.
+- **Otrăvurile `test/otravuri/3.Xb.py`:** 18 / 18 prinse.
