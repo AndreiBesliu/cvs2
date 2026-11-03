@@ -9,7 +9,8 @@ import assert from 'node:assert/strict';
 import { programDinDocument } from '../../src/cam/job.ts';
 import type { Document, Nod, Operatie, Piesa } from '../../src/model/document.ts';
 import { grupeazaPeScula, ordineTaieturi, taieturiFoaie } from '../../src/model/lume.ts';
-import { cuRangulPiesei } from '../../src/model/ordine.ts';
+import { conturCerc, conturDreptunghi } from '../../src/geom/conturBaza.ts';
+import { cuprinse, cuRangulPiesei, type FormeRand } from '../../src/model/ordine.ts';
 import { istoricNou, type Istoric } from '../../src/model/jurnal.ts';
 import type { Rol } from '../../src/model/rol.ts';
 import { sablonDinPiese, type RolPersonal } from '../../src/model/rolPersonal.ts';
@@ -116,4 +117,24 @@ test('rolul aplicat în ordinea omului păstrează locul piesei; rolul personali
   const s = sablonDinPiese([A as Piesa]);
   assert.ok(s.ok);
   if (s.ok) assert.equal(Object.hasOwn(s.sablon.operatie, 'rang'), false);
+});
+
+test('cuprinderea (riscul din fereastra exportului): primul punct al altei piese, în oricare contur închis (și într-o gaură); aceeași piesă și ce e afară, nu', () => {
+  const forme = (cheie: string, piesa: string, ...contururi: FormeRand['contururi']): FormeRand => (
+    { cheie, piesa, contururi, punct: contururi[0]?.varfuri[0]?.p ?? null });
+  const randuri: FormeRand[] = [
+    // Placa P: 0…100 × 0…60, cu o gaură de 10 în (50, 30) în aceeași operație.
+    forme('P/ext', 'P', conturDreptunghi(0, 0, 100, 60), conturCerc(50, 30, 10)),
+    // Cercul C stă în gaura plăcii; L e pe placă; A e afară; P/linie e altă operație a plăcii; G n-are forme.
+    forme('C/gaura', 'C', conturCerc(50, 30, 4)),
+    forme('L/linie', 'L', { inchis: false, varfuri: [{ p: { x: 10, y: 10 }, s: { tip: 'L' } }, { p: { x: 20, y: 10 }, s: { tip: 'L' } }] }),
+    forme('A/ext', 'A', conturCerc(200, 30, 10)),
+    forme('P/linie', 'P', conturCerc(80, 30, 2)),
+    forme('G/gol', 'G'),
+  ];
+  const c = cuprinse(randuri);
+  assert.deepEqual([...c.keys()], ['P/ext']);
+  assert.deepEqual([...(c.get('P/ext') ?? [])].sort(), ['C/gaura', 'L/linie']);
+  // Peste buget, cuprinderile rămase nu se mai caută (riscul rămâne doar pe aceeași piesă).
+  assert.equal(cuprinse(randuri, 0).size, 0);
 });

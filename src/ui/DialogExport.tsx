@@ -11,6 +11,7 @@ import {
 } from './actiuniExportTipuri.ts';
 import { durata } from './durata.ts';
 import { citesteNumar, textNumar } from './numar.ts';
+import { legaturi, muta, ordineAutomata, ordineDinRanguri, riscuri, type RandOrdine } from './ordineExport.ts';
 import { PrevizualizareSimulare } from './PrevizualizareSimulare.tsx';
 import { useLimba } from './useLimba.ts';
 
@@ -79,10 +80,17 @@ export type OperatieExport = {
   readonly cheie: string; readonly descriere: string; readonly deschise: number; readonly noduri: number; readonly valori: ValoriOperatie;
   /** Toate nodurile operației sunt cercuri: rândul oferă și găurirea (ADR 0087). */
   readonly cercuri?: boolean;
+  /** Locul operației în ordinea de mână (ADR 0133), dacă documentul îl are. */
+  readonly rang?: number;
+  /** Rândurile altor piese din interiorul formelor ei (ADR 0133 §3, `cuprinse`): riscul unui exterior tăiat înaintea lor. */
+  readonly inauntru?: readonly string[];
 };
 
-/** Ce trimite dialogul la Exportă: montajul, postul, valorile operațiilor cu frezele lor (se scriu în document) și confirmarea. */
-export type CerereExport = ParametriExport & { readonly valori: ReadonlyMap<string, ValoriOperatie> };
+/**
+ * Ce trimite dialogul la Exportă: montajul, postul, valorile operațiilor cu frezele lor (se scriu în document), confirmarea și
+ * ordinea tăierii (ADR 0133 §3): cheile rândurilor în ordinea omului, sau null pentru ordinea automată.
+ */
+export type CerereExport = ParametriExport & { readonly valori: ReadonlyMap<string, ValoriOperatie>; readonly ordine: readonly string[] | null };
 
 /**
  * Ultimul rezultat: liniile și SHA-256 cu rezumatul jobului (ADR 0046), motivul, sau ieșirea din foaie care așteaptă
@@ -100,6 +108,8 @@ export type StareExport =
 
 type Props = {
   readonly operatii: readonly OperatieExport[];
+  /** Cheile rândurilor în ordinea automată a lucrării (ADR 0133 §3: ordinea de la deschidere), ca prima lor tăietură. */
+  readonly ordineAutomata: readonly string[];
   /**
    * Crește cu fiecare document venit din bază (o versiune a altei file, preluarea scrierii). Valorile operațiilor îl
    * urmează; montajul ales (colțul, Z0) rămâne.
@@ -310,7 +320,8 @@ const CHEI_SENS: Readonly<Record<Sens, CheieSimpla>> = { urcare: 'export.sens.ur
  */
 export function DialogExport(
   {
-    operatii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina, onSetariMasina, onDeschideInMasina,
+    operatii, ordineAutomata: automataLucrarii, baza, descrieri, doarCitire, onExporta, onInchide, onReseteaza, stare, setariMasina,
+    onSetariMasina, onDeschideInMasina,
   }: Props,
 ) {
   const limba = useLimba();
@@ -363,6 +374,15 @@ export function DialogExport(
     }];
   }));
   const [param, setParam] = useState<Record<string, Rand>>(dinDocument);
+  // Ordinea tăierii (ADR 0133 §3): null = automată; altfel cheile rândurilor, în ordinea omului, pornită din rangurile
+  // documentului. Ordinea automată arătată e cea de la deschidere (o latură sau o freză schimbată o reface la export).
+  const automata = ordineAutomata(automataLucrarii, operatii.map((o) => o.cheie));
+  const dinRanguri = (): string[] | null => ordineDinRanguri(automata, new Map(operatii.flatMap((o) => (o.rang !== undefined ? [[o.cheie, o.rang] as const] : []))));
+  const [ordineMea, setOrdineMea] = useState<string[] | null>(dinRanguri);
+  // Bifa ordinii riscante: se șterge la orice mutare (ordinea nouă e alta decât cea văzută).
+  const [riscAcceptat, setRiscAcceptat] = useState(false);
+  // Rândul tras cu mânerul, cât ține tragerea.
+  const [tras, setTras] = useState<string | null>(null);
   const cere = stare && !stare.ok ? stare.cereConfirmare : undefined;
   /**
    * Ieșirea bifată: chiar obiectul primit de la export, nu un „da” general. Orice cerere nouă (alt traseu, alți parametri,
@@ -380,6 +400,8 @@ export function DialogExport(
     setBazaVazuta(baza);
     setParam(dinDocument());
     setConfirmata(null);
+    setOrdineMea(dinRanguri());
+    setRiscAcceptat(false);
   }
   const bifat = cere !== undefined && confirmata === cere;
   const cutie = useRef<HTMLDivElement>(null);
@@ -490,6 +512,41 @@ export function DialogExport(
       const vechi = v[id];
       return vechi ? { ...v, [id]: { ...vechi, ...p } } : v;
     });
+  };
+  // Lista afișată: ordinea omului sau cea automată. Pentru rândurile legate și pentru risc, ce știe fiecare rând acum: piesa,
+  // latura, despărțirea și valorile care unesc un V-carve (freza, adâncimea, pasul, sensul, fundul plat; ADR 0133 §2).
+  const ordine = ordineMea ?? automata;
+  const dupaCheie = new Map(operatii.map((o) => [o.cheie, o]));
+  const numar = (s: string): string => String(citesteNumar(s));
+  const randuriOrdine = new Map<string, RandOrdine>(operatii.flatMap((o): Array<readonly [string, RandOrdine]> => {
+    const p = param[o.cheie];
+    if (!p) return [];
+    const vcarve = p.tip !== 'vcarve' ? null : [
+      numar(p.numarScula), numar(p.diametruScula), p.formaScula, numar(p.unghiV), numar(p.varfV), numar(p.adancime), numar(p.pas), p.sens,
+      p.fundPlat ? [numar(p.numarSculaFund), numar(p.diametruSculaFund), numar(p.pasLateralFund), ...p.restFund.map((r) => `${numar(r.numar)} ${numar(r.diametru)} ${numar(r.pas)}`)].join(' ') : '',
+    ].join('|');
+    // Buzunarul, găurirea și V-carve-ul se scriu pe interior (`operatieDinDialog`), oricare ar fi latura rămasă în rând.
+    const profil = p.tip === 'profil';
+    return [[o.cheie, {
+      piesa: o.cheie.slice(0, o.cheie.indexOf('/')), latura: profil ? p.latura : 'interior', despartire: profil && p.despartire, vcarve,
+      ...(o.inauntru ? { inauntru: o.inauntru } : {}),
+    }]];
+  }));
+  const legate = legaturi(ordine, randuriOrdine);
+  const riscuriOrdine = ordineMea === null ? [] : riscuri(ordineMea, randuriOrdine);
+  /** Ordinea omului cu rândul de pe locul `de` mutat pe `la`; rezultatul vechi și bifa riscului nu mai sunt ale ei. */
+  const mutaRand = (de: number, la: number): void => {
+    if (ordineMea === null) return;
+    schimbat();
+    setRiscAcceptat(false);
+    setOrdineMea(muta(ordineMea, de, la));
+  };
+  /** Comută ordinea: cea automată (null) sau a omului, pornită din cea automată. */
+  const alegeOrdine = (aMea: boolean): void => {
+    if (aMea === (ordineMea !== null)) return;
+    schimbat();
+    setRiscAcceptat(false);
+    setOrdineMea(aMea ? [...automata] : null);
   };
   /**
    * Frezele de rest ale unui rând (ADR 0093): câte un rând cu T, Ø și pasul, scos cu ×; „Adaugă” pune una cu T-ul următor
@@ -694,9 +751,25 @@ export function DialogExport(
         {postAles && postAles.setari.length > 0 && (
           <p className="nota" data-testid="post-setari">{t('export.post.setari', { setari: postAles.setari.join('; ') })}</p>
         )}
+        <div className="ordine-taierii" data-testid="ordine-taierii">
+          <span className="eticheta">{t('export.ordine')}</span>
+          <div role="group" aria-label={t('export.ordine')}>
+            <button type="button" aria-pressed={ordineMea === null} data-ordine="automata" disabled={doarCitire} onClick={() => { alegeOrdine(false); }}>
+              {t('export.ordine.automata')}
+            </button>
+            <button type="button" aria-pressed={ordineMea !== null} data-ordine="a-mea" disabled={doarCitire} onClick={() => { alegeOrdine(true); }}>
+              {t('export.ordine.a-mea')}
+            </button>
+          </div>
+          <span className="nota">{t(ordineMea === null ? 'export.ordine.nota.automata' : 'export.ordine.nota.a-mea')}</span>
+          {ordineMea !== null && (
+            <button type="button" data-ordine="inapoi" disabled={doarCitire} onClick={() => { alegeOrdine(false); }}>{t('export.ordine.inapoi')}</button>
+          )}
+        </div>
         <table>
           <thead>
             <tr>
+              <th title={t('export.ordine.loc.titlu')}>{t('export.ordine.loc')}</th>
               <th>{t('export.element')}</th><th title={t('export.freza.titlu')}>{t('export.freza')}</th><th>{t('export.latura')}</th><th title={t('export.sens.titlu')}>{t('export.sens')}</th>
               <th>{t('export.adancime')}</th><th>{t('export.pas')}</th>
               <th title={t('export.urechi.titlu')}>{t('export.urechi')}</th>
@@ -707,9 +780,12 @@ export function DialogExport(
             </tr>
           </thead>
           <tbody>
-            {operatii.map((o) => {
-              const p = param[o.cheie];
-              if (!p) return null;
+            {ordine.map((cheie, loc) => {
+              const o = dupaCheie.get(cheie);
+              const p = o ? param[o.cheie] : undefined;
+              if (!o || !p) return null;
+              const legat = legate.get(o.cheie);
+              const mana = ordineMea !== null && !doarCitire;
               const b = randBun(p);
               // Rândul are căi deschise (ADR 0037 §12): doar pe linie, fără urechi, rampă, intrări și degajări, cu motivul în titlu.
               const deschis = o.deschise > 0;
@@ -720,7 +796,39 @@ export function DialogExport(
                 : vc ? t('export.vcarve.nu-se-aplica') : undefined;
               return (
                 <Fragment key={o.cheie}>
-                <tr data-operatie={o.cheie}>
+                <tr data-operatie={o.cheie} className={tras === o.cheie ? 'tras' : undefined}
+                  onDragOver={mana && tras !== null ? (ev) => { ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; } : undefined}
+                  onDrop={mana && tras !== null ? (ev) => { ev.preventDefault(); mutaRand(ordine.indexOf(tras), loc); setTras(null); } : undefined}>
+                  <td className="ordine">
+                    {mana && (
+                      <button type="button" className="trage" draggable data-trage={o.cheie} aria-label={t('export.ordine.trage', { n: loc + 1 })}
+                        title={t('export.ordine.trage', { n: loc + 1 })}
+                        onDragStart={(ev) => { ev.dataTransfer.setData('text/plain', o.cheie); ev.dataTransfer.effectAllowed = 'move'; setTras(o.cheie); }}
+                        onDragEnd={() => { setTras(null); }}>
+                        <svg viewBox="0 0 10 16" width="10" height="16" aria-hidden="true">
+                          <circle cx="3" cy="3" r="1.4" /><circle cx="7" cy="3" r="1.4" /><circle cx="3" cy="8" r="1.4" />
+                          <circle cx="7" cy="8" r="1.4" /><circle cx="3" cy="13" r="1.4" /><circle cx="7" cy="13" r="1.4" />
+                        </svg>
+                      </button>
+                    )}
+                    <span className="loc" data-loc={loc + 1}>{loc + 1}</span>
+                    {legat !== undefined && (
+                      <span className="legat" data-legat={legat} title={t('export.ordine.legat.titlu', { n: legat })}>{t('export.ordine.legat', { n: legat })}</span>
+                    )}
+                    {/* Săgețile, una peste alta (coloana rămâne îngustă), desenate: glifele ↑ ↓ ar veni din alt font, colorate. */}
+                    {mana && (
+                      <span className="sageti">
+                        <button type="button" data-sus={o.cheie} disabled={loc === 0} aria-label={t('export.ordine.sus', { n: loc + 1 })}
+                          title={t('export.ordine.sus', { n: loc + 1 })} onClick={() => { mutaRand(loc, loc - 1); }}>
+                          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M6 2.5 10.5 8.5H1.5Z" /></svg>
+                        </button>
+                        <button type="button" data-jos={o.cheie} disabled={loc === ordine.length - 1} aria-label={t('export.ordine.jos', { n: loc + 1 })}
+                          title={t('export.ordine.jos', { n: loc + 1 })} onClick={() => { mutaRand(loc, loc + 1); }}>
+                          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M6 9.5 1.5 3.5H10.5Z" /></svg>
+                        </button>
+                      </span>
+                    )}
+                  </td>
                   <td>{o.descriere}</td>
                   <td className="freza">
                     <input type="text" inputMode="numeric" value={p.numarScula} data-camp="scula" disabled={doarCitire} aria-label={t('export.freza.numar')}
@@ -808,7 +916,7 @@ export function DialogExport(
                 {(nuProfil || p.urechi || p.rampa || (p.intrari && p.latura !== 'pe-linie')) && (
                   // Câmpurile urechilor și ale rampei, pe un rând al lor sub operație: tabelul rămâne îngust.
                   <tr className="detalii" data-detalii={o.cheie}>
-                    <td />
+                    <td colSpan={2} />
                     <td colSpan={9}>
                       <div className="campuri-detalii">
                       {/* V-carve-ul (ADR 0090): adâncimea e cea maximă; fundul plat vine cu freza dreaptă (ADR 0091). */}
@@ -989,14 +1097,27 @@ export function DialogExport(
             </label>
           </div>
         )}
+        {riscuriOrdine.length > 0 && (
+          <div className="confirmare-iesire" data-testid="risc-ordine">
+            <div role="alert">
+              {riscuriOrdine.map((r) => (
+                <p key={`${r.fel}-${r.a}-${r.b}`}>{t(r.fel === 'exterior' ? 'export.ordine.risc.exterior' : 'export.ordine.risc.despartire', { a: r.a, b: r.b })}</p>
+              ))}
+            </div>
+            <label>
+              <input type="checkbox" checked={riscAcceptat} data-camp="confirma-ordine" onChange={(e) => { setRiscAcceptat(e.target.checked); }} />
+              {t('export.ordine.confirma')}
+            </label>
+          </div>
+        )}
         <div className="butoane">
-          <button type="button" disabled={!valid || (cere !== undefined && !bifat)} data-buton="exporta"
+          <button type="button" disabled={!valid || (cere !== undefined && !bifat) || (riscuriOrdine.length > 0 && !riscAcceptat)} data-buton="exporta"
             title={valid ? undefined : motivInvalid}
             onClick={() => {
-              if (!valid) return;
+              if (!valid || (riscuriOrdine.length > 0 && !riscAcceptat)) return;
               onExporta({
                 origine, z0, post, unitati, valori: valori(), ...(scule.size > 1 && strategie ? { strategieScula: strategie } : {}),
-                ...(cere && bifat ? { confirmareIesire: cere } : {}),
+                ...(cere && bifat ? { confirmareIesire: cere } : {}), ordine: ordineMea,
               });
             }}>
             {t('export.exporta')}

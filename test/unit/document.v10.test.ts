@@ -39,7 +39,7 @@ function stricat(d: Document, f: (forma: Record<string, any>) => void): unknown 
 
 test('v10: o cale deschisă trece prin ușă neschimbată, cu câmpurile necunoscute, și pe segmentul ultimului vârf', () => {
   // Felia 5.1↑ (ADR 0069): aplicația e pe v11, iar căile deschise rămân cum erau.
-  assert.equal(VERSIUNE_SCHEMA, 18);
+  assert.equal(VERSIUNE_SCHEMA, 19);
   for (const forma of [LINIA, deschisa([0, 0], [50, 0], [50, 50], [0, 50], [0, 0])]) {
     const d = cu(forma);
     const r = prinUsa(d);

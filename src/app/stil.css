@@ -1441,6 +1441,97 @@ nav button[aria-pressed='true'] {
   color: var(--t);
 }
 
+/* Ordinea tăierii (ADR 0133 §3): eticheta, cele două butoane alăturate, nota și „Înapoi”, pe un rând deasupra tabelului. */
+.dialog .ordine-taierii {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  margin: var(--sp-3) 0 var(--sp-2);
+}
+
+.dialog .ordine-taierii .eticheta {
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.dialog .ordine-taierii [role='group'] {
+  display: inline-flex;
+}
+
+.dialog .ordine-taierii button {
+  border-color: var(--l-camp);
+}
+
+.dialog .ordine-taierii [role='group'] button:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.dialog .ordine-taierii [role='group'] button:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -1px;
+}
+
+/*
+ * Prima coloană: mânerul, locul în ordine, „cu N” și săgețile, una peste alta, ca s-o țină îngustă. Mânerul are 28 px,
+ * fiecare săgeată 28 × 24 (ținta minimă din WCAG 2.5.8); la atingere, mai mari.
+ */
+.dialog td.ordine {
+  white-space: nowrap;
+}
+
+.dialog td.ordine > * {
+  vertical-align: middle;
+}
+
+.dialog td.ordine .loc {
+  display: inline-block;
+  min-width: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.dialog td.ordine button {
+  min-width: max(28px, calc(var(--tinta) - 8px));
+  min-height: max(28px, calc(var(--tinta) - 8px));
+  padding: 0;
+}
+
+.dialog td.ordine svg {
+  fill: currentColor;
+}
+
+.dialog td.ordine .trage {
+  cursor: grab;
+  color: var(--t-slab);
+}
+
+.dialog td.ordine .sageti {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.dialog td.ordine .sageti button {
+  min-height: max(24px, calc(var(--tinta) - 12px));
+}
+
+.dialog td.ordine .legat {
+  display: inline-block;
+  margin: 0 var(--sp-1);
+  padding: 0 var(--sp-1);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+  font-size: var(--fs-1);
+  color: var(--t-slab);
+}
+
+/* Rândul tras: rămâne pe loc, mai stins, până la lăsare. */
+.dialog tr.tras {
+  opacity: 0.5;
+}
+
 /* ── Paleta de comenzi (Ctrl+K) ───────────────────────────────────────────────────────────────────────────────── */
 
 .paleta-fond {

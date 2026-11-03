@@ -40,10 +40,12 @@ fiecare șir cu aceeași freză e un fișier, numerotat în ordine.
     automată” o readuce.
 - **Rândurile legate:** V-carve-urile aceleiași piese, cu aceleași valori, arată „cu N”. Ele se sapă odată cu rândul N, primul
   dintre ele din ordine.
-- **Riscul**, doar în „A mea”: exteriorul unei piese poate veni înaintea unei alte operații a aceleiași piese (interior, linie,
-  buzunar, V-carve, găurire). O despărțire a foii poate veni înaintea altei operații. În aceste cazuri, piesa se poate desprinde
-  înainte să fie gata. Avertismentul numește rândurile, iar Exportă cere bifa „Taie în ordinea mea”. Bifa se șterge la orice
-  mutare.
+- **Riscul**, doar în „A mea”: exteriorul unei piese poate veni înaintea unei alte operații (interior, linie, buzunar, V-carve,
+  găurire) a aceleiași piese sau din interiorul ei. Un dreptunghi și cercul desenat în el sunt piese separate, dar cercul stă pe
+  placa pe care o decupează dreptunghiul. „Din interior” înseamnă: primul punct al operației stă într-un contur închis al
+  exteriorului, oricare, deci și într-o gaură a lui (`cuprinse`, `src/model/ordine.ts`). O despărțire a foii poate veni
+  înaintea altei operații. În aceste cazuri, piesa se poate desprinde înainte să fie gata. Avertismentul numește rândurile, câte
+  unul pe piesa exteriorului, iar Exportă cere bifa „Taie în ordinea mea”. Bifa se șterge la orice mutare.
 - **Exportă** scrie rangul pe fiecare operație a pieselor de pe foaie, 0 … n−1 în ordinea omului, sau îl scoate în „Automată”.
   Scrierea are loc odată cu celelalte valori, într-un singur pas. Fereastra redeschisă arată ordinea scrisă.
 
@@ -69,6 +71,9 @@ deci după Exportă arată ordinea omului.
 - **Ușa v19 și migrarea:** rangul 0 și 100 000 trec. −1, 100 001, 1,5, „1” și NaN sunt refuzate. Un v18 cu `rang` e refuzat.
   Oracolul independent (`test/oracles/document.ts`) are aceleași frontiere, pe hârtie. Corpusul de aur are versiunea 19.
 - **Rolul:** aplicat în ordinea omului, piesa își păstrează locul. Rolul personalizat salvat n-are rang.
+- **Fereastra, pe hârtie** (`test/unit/ordineExport.test.ts`): ordinea de la deschidere, mutarea, rândurile legate și riscurile
+  (pe aceeași piesă, din interior, despărțirea). Cuprinderea (în gaură, afară, aceeași piesă, bugetul), în
+  `test/unit/ordine.test.ts`.
 - **E2e** (Edge), în fereastra exportului:
   - comutarea, săgețile și tragerea; avertismentul, bifa și exportul;
   - programul descărcat, în ordinea omului;
@@ -82,6 +87,10 @@ deci după Exportă arată ordinea omului.
 - **Doar prima foaie** are program (ADR 0024). Pe mai multe foi, rangul e al operației, deci același pe fiecare foaie.
 - **Insula unui buzunar** nu e marcată în listă. Locul ei nu schimbă nimic, fiindcă n-are traseu.
 - **Ordinea automată arătată** e cea de la deschidere. Valorile schimbate în fereastră o refac abia la export.
+- **Cuprinderea** se judecă pe prima instanță a piesei, ca rândurile, după primul punct al operației: o formă care doar
+  intersectează exteriorul poate scăpa. Un exterior din interiorul altui exterior nu e un risc: nici ordinea automată nu le
+  ordonează. Peste buget (5 000 000 de vârfuri măsurate), cuprinderile rămase nu se mai caută și rămâne riscul pe aceeași
+  piesă.
 
 ## Respinse
 

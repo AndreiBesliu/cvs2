@@ -684,8 +684,23 @@ urmă): acolo, `G0` poate merge pe fiecare axă cu viteza ei.
 
 Fiecare rând are **freza** lui: numărul sculei (T), diametrul (mm) și forma: **plată** sau **în V**, cu unghiul inclus al
 vârfului (între 1° și 179°, implicit 60°; la V, diametrul e cel al părții tăietoare). Rândurile cu freze diferite se taie cu o
-schimbare între ele: în fiecare clasă (interioarele, apoi pe linie, apoi exterioarele), întâi freza deja montată, ca
-schimbările să fie cât mai puține. Același număr cu două diametre sau două forme e refuzat: fiecare freză cere numărul ei.
+schimbare între ele: în ordinea automată, în fiecare clasă (interioarele, apoi pe linie, apoi exterioarele), întâi freza deja
+montată, ca schimbările să fie cât mai puține. Același număr cu două diametre sau două forme e refuzat: fiecare freză cere
+numărul ei.
+
+**Ordinea tăierii** stă deasupra tabelului. Rândurile apar în ordinea în care se taie, cu locul lor în coloana **#**:
+- **Automată** (implicit): interioarele întâi, apoi liniile, la urmă exterioarele și despărțirile foii; în fiecare, grupate pe
+  freză. O latură sau o freză schimbată în fereastră reface ordinea la export;
+- **A mea**: se taie de sus în jos. Muți un rând trăgând de mânerul lui (cele șase puncte) sau cu săgețile **↑** / **↓**. Lista
+  pornește din ordinea automată, iar **Înapoi la ordinea automată** o readuce. Ordinea se scrie în proiect la **Exportă**:
+  fereastra redeschisă o arată, iar traseul, timpul, animația și vederea 3D o urmează. O operație nouă (o formă desenată, un
+  import, un text) vine la capăt. Schimbările de freză urmează ordinea ta, deci pot fi mai multe decât în cea automată.
+
+V-carve-urile aceleiași piese, cu aceleași valori (freza, adâncimea, pasul, sensul, fundul plat), se sapă ca o singură
+regiune: rândul de după primul arată **cu N**, adică se sapă odată cu rândul N. Buzunarele nu se unesc: fiecare se taie la
+locul lui. Dacă în ordinea ta exteriorul unei piese vine înaintea altei operații a ei sau a unei forme din interiorul ei (un
+cerc desenat în dreptunghi), sau o despărțire a foii înaintea altei operații, piesa se poate desprinde înainte să fie gata:
+fereastra numește rândurile, iar **Exportă** cere bifa **Taie în ordinea mea** (orice mutare o șterge).
 
 Butonul **Exportă** descarcă fișierul și arată câte linii are și amprenta lui SHA-256 (cu ea verifici că pe mașină ajunge
 exact fișierul ăsta). Dacă freza ar ieși din foaie, fereastra spune cu cât și unde, iar exportul cere confirmarea ta că acolo

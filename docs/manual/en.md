@@ -706,9 +706,25 @@ there, `G0` may move each axis at its own speed.
 
 Each row has its own **bit**: the tool number (T), the diameter (mm) and the shape: **flat** or **V**, with the included angle
 of the tip (from 1° to 179°, 60° by default; for a V bit, the diameter is that of the cutting part). Rows with different bits
-are cut with a change between them: in each class (insides, then on the line, then outsides), the bit already mounted first,
-so there are as few changes as possible. The same number with two diameters or two shapes is refused: each bit needs its own
-number.
+are cut with a change between them: in the automatic order, in each class (insides, then on the line, then outsides), the bit
+already mounted first, so there are as few changes as possible. The same number with two diameters or two shapes is refused:
+each bit needs its own number.
+
+The **Cutting order** sits above the table. The rows appear in the order they are cut, with their place in the **#** column:
+- **Automatic** (the default): insides first, then lines, outsides and sheet separations last; in each, grouped by bit. A side
+  or a bit changed in the window redoes the order on export;
+- **Mine**: cut from top to bottom. You move a row by dragging its handle (the six dots) or with the **↑** / **↓** arrows. The
+  list starts from the automatic order, and **Back to the automatic order** brings it back. The order is written in the project
+  on **Export**: the window shows it when reopened, and the toolpath, the time, the animation and the 3D view follow it. A new
+  operation (a drawn shape, an import, a text) comes at the end. The bit changes follow your order, so there may be more than in
+  the automatic one.
+
+The V-carves of the same piece, with the same values (the bit, the depth, the step, the direction, the flat bottom), are
+carved as a single region: the rows after the first show **with N**, meaning they are carved together with row N. Pockets are
+not merged: each one is cut at its own place. If in your order the outside of a piece comes before another operation of the
+same piece or of a shape inside it (a circle drawn in a rectangle), or a sheet separation before another operation, the piece
+may come loose before it is done: the window names the rows, and **Export** asks for the **Cut in my order** tick (any move
+clears it).
 
 The **Export** button downloads the file and shows how many lines it has and its SHA-256 fingerprint (with it you check that
 exactly this file reaches the machine). If the cutter would leave the sheet, the window says by how much and where, and the

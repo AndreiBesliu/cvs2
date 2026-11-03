@@ -629,3 +629,128 @@ test('posturile atelierelor (ADR 0125): NcStudio cu apostrof și setările lui; 
   await page.locator('[data-actiune="vedere.masina"]').click();
   await expect(page.locator('[data-masina="export"]')).toBeEnabled();
 });
+
+/** Cheile rândurilor din tabelul operațiilor (nu din rezumat), în ordinea afișată. */
+const randuriOrdine = (page: Page): Promise<Array<string | null>> =>
+  page.locator('tr[data-operatie]:has(td.ordine)').evaluateAll((r) => r.map((x) => x.getAttribute('data-operatie')));
+const rapide = (text: string): string[] => text.split('\n').filter((l) => /^G0 X/.test(l));
+
+/**
+ * Tragerea unui mâner (HTML5) până pe un rând, cu mausul în pași: cu `dragTo`, dintr-un singur salt, tragerea nu pornește în
+ * aplicație (pe o pagină goală, da); în pași, `dragstart` vine pe mâner, ca la om.
+ */
+async function tragePeRand(page: Page, maner: string, rand: string): Promise<void> {
+  const a = await page.locator(maner).boundingBox();
+  const b = await page.locator(rand).boundingBox();
+  if (!a || !b) throw new Error('mânerul sau rândul n-are cutie');
+  await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2 - 10, { steps: 4 });
+  await page.mouse.move(a.x + a.width / 2, b.y + b.height / 2, { steps: 8 });
+  await page.mouse.up();
+}
+
+test('ordinea de mână (ADR 0133): A mea cu săgețile și tragerea; riscul cere bifa; programul în ordinea mea, scrisă în proiect; Automată o scoate', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await page.locator('[data-camp="origine"]').selectOption('stanga-jos');
+  // Automată: gaura (interiorul) întâi, apoi dreptunghiul, cu locul în coloana #; fără mânere și săgeți.
+  await expect(page.locator('[data-ordine="automata"]')).toHaveAttribute('aria-pressed', 'true');
+  expect(await randuriOrdine(page)).toEqual(['e2/e2', 'e1/e1']);
+  await expect(page.locator('[data-loc]')).toHaveText(['1', '2']);
+  await expect(page.locator('[data-sus], [data-jos], [data-trage], [data-ordine="inapoi"]')).toHaveCount(0);
+
+  // A mea pornește din ordinea automată: săgeata în jos duce gaura după dreptunghi.
+  await page.locator('[data-ordine="a-mea"]').click();
+  await expect(page.locator('[data-ordine="a-mea"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-sus="e2/e2"]')).toBeDisabled();
+  await expect(page.locator('[data-jos="e1/e1"]')).toBeDisabled();
+  await expect(page.getByTestId('risc-ordine')).toHaveCount(0);
+  await page.locator('[data-jos="e2/e2"]').click();
+  expect(await randuriOrdine(page)).toEqual(['e1/e1', 'e2/e2']);
+  // Dreptunghiul și cercul sunt piese separate, dar cercul stă în dreptunghi: riscul numește rândurile, Exportă cere bifa.
+  const risc = page.getByTestId('risc-ordine');
+  await expect(risc).toContainText('Exteriorul din rândul 1 se taie înaintea rândului 2');
+  const exporta = page.locator('[data-buton="exporta"]');
+  const bifa = page.locator('[data-camp="confirma-ordine"]');
+  await expect(exporta).toBeDisabled();
+  await bifa.check();
+  await expect(exporta).toBeEnabled();
+  // Orice mutare șterge bifa.
+  await page.locator('[data-sus="e2/e2"]').click();
+  await expect(risc).toHaveCount(0);
+  await page.locator('[data-jos="e2/e2"]').click();
+  await expect(bifa).not.toBeChecked();
+  await bifa.check();
+  const d = page.waitForEvent('download');
+  await exporta.click();
+  const mea = readFileSync(await (await d).path(), 'ascii');
+  // Pe hârtie: dreptunghiul pornește din (20, 17), gaura din (82, 50) (placa 1 A, în ordinea inversă).
+  expect(rapide(mea)).toEqual(['G0 X20.000 Y17.000', 'G0 X82.000 Y50.000']);
+  // Ordinea e scrisă în proiect (revizia 3: rangurile), iar poarta trece și pe ea: regiunea, sensul, pașii.
+  const doc = await documentSalvat(page, 3) as { piese: Array<{ id: string; operatii: Array<{ rang?: number }> }> };
+  expect(doc.piese.map((p) => [p.id, p.operatii.map((o) => o.rang)])).toEqual([['e1', [0]], ['e2', [1]]]);
+  expect(poarta(mea, {
+    foaie: { latime: 300, inaltime: 200, grosime: 18 }, origine: 'stanga-jos', z0: 'sus', diametruScula: 6, pas: 4,
+    supracursa: 0, asteptareAx: 3, avansPlonjare: 300, regiune: regiuneDinDocument(doc as Parameters<typeof regiuneDinDocument>[0]),
+  })).toEqual([]);
+
+  // Redeschisă, fereastra arată ordinea scrisă. Tragerea: mânerul gaurii lăsat pe rândul dreptunghiului o duce înapoi întâi.
+  await page.getByRole('button', { name: 'Închide' }).click();
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.locator('[data-ordine="a-mea"]')).toHaveAttribute('aria-pressed', 'true');
+  expect(await randuriOrdine(page)).toEqual(['e1/e1', 'e2/e2']);
+  await tragePeRand(page, '[data-trage="e2/e2"]', 'tr[data-operatie="e1/e1"]:has(td.ordine)');
+  expect(await randuriOrdine(page)).toEqual(['e2/e2', 'e1/e1']);
+  await expect(page.getByTestId('risc-ordine')).toHaveCount(0);
+
+  // Înapoi la ordinea automată: la Exportă, rangurile pleacă, iar programul e exact placa 1 A.
+  await page.locator('[data-ordine="inapoi"]').click();
+  await expect(page.locator('[data-ordine="automata"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-sus], [data-jos], [data-trage]')).toHaveCount(0);
+  const d2 = page.waitForEvent('download');
+  await exporta.click();
+  const auto = readFileSync(await (await d2).path(), 'ascii');
+  expect(faraComentarii(auto)).toEqual(faraComentarii(readFileSync('test/placi/placa-01/placa-01-A.nc', 'ascii')));
+  const fara = await documentSalvat(page, 4) as { piese: Array<{ operatii: Array<{ rang?: number }> }> };
+  expect(fara.piese.flatMap((p) => p.operatii.map((o) => o.rang))).toEqual([undefined, undefined]);
+});
+
+test('ordinea de mână (ADR 0133 §2): V-carve-urile aceleiași piese, cu aceleași valori, sunt legate („cu N”); cu altă adâncime, nu', async ({ page }) => {
+  await page.goto('/');
+  await adauga(page, 'dreptunghi');
+  await adauga(page, 'cerc');
+  // Scade: o piesă cu două operații, exteriorul și gaura (ADR 0067).
+  const randuri = page.getByTestId('lista-vectori').locator('button[data-instanta]');
+  await randuri.first().click();
+  await expect(page.locator('[data-editare="lipire"]')).toBeAttached();
+  const pe = (await ecran(page, await vedere(page)))(85, 50);
+  await page.keyboard.down('Shift');
+  await page.mouse.click(pe.x, pe.y);
+  await page.keyboard.up('Shift');
+  await page.locator('[data-editare="boolean-scade"]').click();
+  await expect(randuri).toHaveCount(1);
+  await page.locator('[data-actiune="export.gcode"]').click();
+  await expect(page.locator('tr[data-operatie]:has(td.ordine)')).toHaveCount(2);
+  const chei = await randuriOrdine(page);
+  const [prima, a2] = chei as [string, string];
+  for (const k of [prima, a2]) {
+    await page.locator(`tr[data-operatie="${k}"]:has(td.ordine) [data-camp="latura"]`).selectOption('vcarve');
+    await page.locator(`tr[data-operatie="${k}"]:has(td.ordine) [data-camp="forma-scula"]`).selectOption('v');
+  }
+  // Aceleași valori: al doilea rând se sapă odată cu primul.
+  await expect(page.locator(`tr[data-operatie="${a2}"]:has(td.ordine) [data-legat]`)).toHaveText('cu 1');
+  await expect(page.locator(`tr[data-operatie="${prima}"]:has(td.ordine) [data-legat]`)).toHaveCount(0);
+  // În ordinea mea, rândul mutat întâi devine primul: celălalt arată locul lui.
+  await page.locator('[data-ordine="a-mea"]').click();
+  await page.locator(`[data-sus="${a2}"]`).click();
+  await expect(page.locator(`tr[data-operatie="${prima}"]:has(td.ordine) [data-legat]`)).toHaveText('cu 1');
+  // Rândul exteriorului, trecut pe V-carve, nu mai e un exterior: se sapă pe dinăuntru, fără risc.
+  await expect(page.getByTestId('risc-ordine')).toHaveCount(0);
+  await expect(page.locator(`tr[data-operatie="${a2}"]:has(td.ordine) [data-legat]`)).toHaveCount(0);
+  // Altă adâncime: două regiuni, fără legătură.
+  await page.locator(`tr[data-operatie="${prima}"]:has(td.ordine) [data-camp="adancime"]`).fill('2');
+  await expect(page.locator('[data-legat]')).toHaveCount(0);
+});

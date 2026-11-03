@@ -2,8 +2,10 @@ import { useMemo } from 'react';
 // Calculul acțiunilor pe care le dă fereastra asta (`actiuniDocument.ts`, `laCerere`) vine cu ea, nu în pachetul de pornire.
 import '../ui/actiuniDocumentCalcul.ts';
 import { esteCaleDeschisa, type Document, type Operatie } from '../model/document.ts';
-import type { ElementLume } from '../model/lume.ts';
+import { grupeazaPeScula, taieturiFoaie, type ElementLume } from '../model/lume.ts';
+import { conturElement } from '../model/forme.ts';
 import { DialogExport, type CerereExport, type OperatieExport, type StareExport } from '../ui/DialogExport.tsx';
+import { cuprinse } from '../model/ordine.ts';
 import { operatieDinDialog } from './valoriOperatii.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 
@@ -58,8 +60,18 @@ export function ExportConectat({
       vazute.add(p.id);
       lista.push({ piesa: p, instanta: i.id });
     }
+    // Ce stă în interiorul fiecărui rând (ADR 0133 §3), în prima instanță a piesei, ca rândurile: riscul îl judecă dialogul,
+    // după latura aleasă acolo.
+    const inauntru = cuprinse(lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.map((o) => {
+      const contururi = o.noduri.flatMap((n) => {
+        const e = dupaIdLume.get(`${inst}/${n}`);
+        return e ? [conturElement(e)] : [];
+      });
+      return { cheie: `${piesa.id}/${o.id}`, piesa: piesa.id, contururi, punct: contururi[0]?.varfuri[0]?.p ?? null };
+    })));
     const randuriOp: OperatieExport[] = lista.flatMap(({ piesa, instanta: inst }) => piesa.operatii.map((o) => {
       const e = dupaIdLume.get(`${inst}/${o.noduri[0] ?? ''}`);
+      const cuprinseOp = inauntru.get(`${piesa.id}/${o.id}`);
       const baza = e ? descriere(e) : (piesa.nume ?? piesa.id);
       return {
         cheie: `${piesa.id}/${o.id}`,
@@ -72,6 +84,9 @@ export function ExportConectat({
         noduri: o.noduri.length,
         // Găurirea (ADR 0087): doar pe un rând numai cu cercuri.
         cercuri: o.noduri.length > 0 && o.noduri.every((n) => dupaIdLume.get(`${inst}/${n}`)?.forma.tip === 'cerc'),
+        // Locul în ordinea de mână (ADR 0133), dacă documentul îl are, și rândurile din interiorul formelor ei.
+        ...(o.rang !== undefined ? { rang: o.rang } : {}),
+        ...(cuprinseOp ? { inauntru: cuprinseOp } : {}),
         valori: {
           scula: {
             numar: o.scula.numar, diametru: o.scula.diametru,
@@ -102,18 +117,28 @@ export function ExportConectat({
     return {
       piese: lista,
       randuri: randuriOp,
+      // Ordinea automată a rândurilor (ADR 0133 §3): prima tăietură a fiecărei operații în ordinea lucrării fără ranguri.
+      automata: [...new Set(grupeazaPeScula(taieturiFoaie(doc, 0)).map((x) => `${x.piesa}/${x.operatie}`))],
       descrieri: new Map(lume.map((e) => [e.idLume, descriere(e)])),
     };
     // `limba`: descrierile sunt texte traduse.
   }, [doc, dupaIdLume, lume, descriere, limba]);
 
-  /** Exportă: valorile din dialog, ca operațiile noi ale fiecărei piese de pe foaie (aplicația le scrie într-un singur pas). */
+  /**
+   * Exportă: valorile din dialog, ca operațiile noi ale fiecărei piese de pe foaie (aplicația le scrie într-un singur pas), cu
+   * rangul fiecăreia în ordinea omului, 0 … n − 1, sau fără rang în ordinea automată (ADR 0133 §3).
+   */
   const exporta = (c: CerereExport): void => {
+    const loc = c.ordine ? new Map(c.ordine.map((k, i) => [k, i])) : null;
     const noi = new Map<string, Operatie[]>();
     for (const { piesa } of exportFoaie.piese) {
       noi.set(piesa.id, piesa.operatii.map((o) => {
-        const v = c.valori.get(`${piesa.id}/${o.id}`);
-        return operatieDinDialog(o, v, v?.scula ?? o.scula);
+        const cheie = `${piesa.id}/${o.id}`;
+        const v = c.valori.get(cheie);
+        const { rang: _rang, ...faraRang } = operatieDinDialog(o, v, v?.scula ?? o.scula);
+        void _rang;
+        const r = loc?.get(cheie);
+        return r !== undefined ? { ...faraRang, rang: r } : faraRang;
       }));
     }
     onExporta(noi, c);
@@ -123,6 +148,7 @@ export function ExportConectat({
     <DialogExport
       baza={baza}
       operatii={exportFoaie.randuri}
+      ordineAutomata={exportFoaie.automata}
       descrieri={exportFoaie.descrieri}
       doarCitire={doarCitire}
       stare={stare}
