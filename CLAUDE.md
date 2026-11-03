@@ -384,6 +384,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   exactă (`cutieContur`; la aldin, cutia miezului cu 2d în plus), la golul max(0, em − majuscula) + spațierea. Corpusul lui e
   tot Python (`fonturi_verticale`, `vertical.json`; aldinul vertical în `aldin.json`): un caz nou = rândul în
   `CAZURI_VERTICAL`, apoi fixtura regenerată și comisă. **Pornirea 98,6 (cu ușa 102,2 / 110 kB), totalul 447,8 / 500.**
+  **Încadrarea în casetă (ADR 0142, felia 7.8↑)** gata pe 03.11: `caseta` în bloc (`limita`, cu `ceruta`, și `scala`;
+  `inaltime` e cea desenată), nu pe o curbă; `aseazaText` caută înălțimea pe marginile afine ale cutiilor din două așezări de
+  măsurare (`aseaza(…, masurare)`, fără offsetul aldinului), apoi așază o dată; fiecare literă are `cutie`, textul are
+  `inaltime`. Corpusul: `fonturi_caseta`, `caseta.json` (oracolul caută prin înjumătățire pe așezări întregi); aldinul în
+  casetă, în `aldin.json`. Din definiția pragului textului (`PlanNou-CNC/Plan-CNC-Studio-2.html`) mai rămân mărimea în
+  puncte sau inch, scalarea textului în lățime și în înălțime (%) și spațierea manuală între literele alese. **Pornirea 98,6 (cu ușa 102,2 / 110 kB), totalul 449,0 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

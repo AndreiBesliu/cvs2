@@ -4716,3 +4716,37 @@ Verificat în browserul aplicației (în engleză): bifa „Vertical”, alinier
 columns”; „PIAȚĂ” și „BAR” puse pe foaie, în două coloane, literele centrate pe axe, virgula lui Ț despărțită de căciula lui Ă
 (o piesă cu 17 forme, profilele pe exterior și pe interior); consola fără erori. Adresa principală de test a rămas a
 sesiunii principale.
+
+## 2026-11-03 — Felia 7.8↑: încadrarea textului în casetă (ADR 0142) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, caseta (7.8↑)” (la „Continui cu încadrarea în casetă (7.8↑)?”).
+**Started:** 03.11, 10:34. **Completed:** 03.11, 11:40.
+
+În repo, „încadrarea în casetă” avea doar numele; definiția pragului e în planul inițial (`PlanNou-CNC/Plan-CNC-Studio-2.html`):
+„încadrare în casetă (fără, «Limit by Box», «Scale to Box», cu lățime și înălțime)”, ca în ArtCAM. O prezentare a lui ArtCAM Pro
+7.0 descrie modurile: textul la mărimea cerută, micșorat doar dacă nu încape; textul cât mai mare, ca să umple caseta.
+Aplicația încadrează cutia literelor tăiate (a celei aldine: miezul cu 2d în plus), cu spațierea și aldinul în mm; marginile
+cutiei fiecărei litere sunt afine în înălțime, deci două așezări de măsurare (fără offsetul aldinului) le dau peste tot, iar
+înălțimea care încape se caută prin înjumătățire pe ele; textul se așază apoi o dată. Caseta e o margine a mărimii, nu un loc:
+textul pornește tot din ancoră. Blocul primește `caseta` (`limita` cu `ceruta`, `scala`) și înălțimea desenată; nu pe o curbă;
+scalarea uniformă crește și caseta (și o scoate peste 10 000 mm). Panoul: „Caseta”, lățimea și înălțimea ei, câmpul înălțimii
+oprit la scalat, nota cu mărimea textului (sau că a fost micșorat), refuzul unei casete prea mici. Fiecare literă așezată își
+are acum cutia exactă; textul pe curbă păstra cutia rândului drept, reparat. Manualul (ro, en): ușa nouă, 72 de uși.
+**Găsit pe drum:** definiția pragului cere, pe lângă casetă, mărimea în puncte sau inch, scalarea textului în lățime și în
+înălțime (%) și spațierea manuală între literele alese (Ctrl + tragere): rândul „Text” rămâne în lucru, cu lista corectată.
+**Probele:** oracolul (`fonturi_caseta` în `text_corpus.py`, `caseta.json`: înjumătățire pe așezări întregi, nouă cazuri;
+aldinul în casetă în `aldin.json`); pe hârtie („HHH” în 100 × 50: 100 · 1456 / 4039 = 36,0485; cu spațierea 2: 96 · 1456 / 4039;
+limitat, care încape și micșorat; „H↵H”: 50 · 1456 / 4157; „HI” vertical în 30 × 100: 30 · 1456 / 1119; cu aldinul 0,6:
+1456 · 96,4 / 4039 + 1,2; zece H cu 20 mm între ele, imposibil); probele țintite (modurile, umplerea pe latura care leagă,
+cutia literei, caseta prea mică, omogenitatea, blocul, plafonul, cutiile pe curbă); e2e-ul. Celelalte fixturi au ieșit
+identice.
+**Otrăvurile** (`test/otravuri/7.8.py`): 20; 16 prinse din prima, patru scăpate: C04 (scurtătura înălțimii cerute),
+echivalentă în practică, scoasă cu motivul; C09 (cutia literei verticale nemutată), fiindcă proba măsura textul cu cutiile
+literelor (acum și din contururile desenate); P07 (textul care nu încape, pus pe foaie), fiindcă Adaugă era oprit și din lipsa
+ancorei; P01 (textul în casetă pe curbă), fiindcă proba nu punea pe foaie un asemenea text. Pe codul final: 19 din 19. Codul:
+`15d36ca`, plus `b16c288` (probele unitare) și `6b8eed5` (e2e-ul).
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări, 865 de module), licențele,
+traducerile (544, 0 lipsă), 8 124 de teste unitare (0 eșuate, 8 sărite), build-ul determinist (233 de fișiere identice;
+pornirea 98,6 / 110 kB, cu ușa 102,2; totalul 449,0 / 500; precache 82 de fișiere, 631,6 kB), e2e-ul întreg în Edge pe
+4174: 299 / 301 (picate `raportor.spec.ts:101`, care cere adresa de pe 4173, și `vectori.spec.ts:39`, cu `EBUSY` la citirea
+fișierului descărcat, de mediu: singură, verde 3 / 3).
