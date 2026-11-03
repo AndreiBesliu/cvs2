@@ -53,6 +53,7 @@ const USI: readonly Usa[] = [
   { id: 'editare.text.fonturi', eticheta: eticheta('editare.text.fonturi') },
   { id: 'editare.text.aldin', eticheta: eticheta('editare.text.aldin') },
   { id: 'editare.text.cursiv', eticheta: eticheta('editare.text.cursiv') },
+  { id: 'editare.text.vertical', eticheta: eticheta('editare.text.vertical') },
   ...(['uneste', 'scade', 'intersecteaza'] as const).map((b) => ({ id: `boolean.${b}`, eticheta: eticheta(`editare.boolean.${b}`) })),
   { id: 'editare.manual', eticheta: eticheta('editare.manual') },
   { id: 'editare.meniu', eticheta: eticheta('editare.meniu') },
@@ -98,13 +99,13 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 70)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 71)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
   assert.equal(numeScurt('Importă SVG…'), 'Importă SVG');
   assert.equal(numeScurt('Oglindește orizontal: stânga ↔ dreapta (Shift+H)'), 'Oglindește orizontal');
-  assert.equal(USI.length, 70);
+  assert.equal(USI.length, 71);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

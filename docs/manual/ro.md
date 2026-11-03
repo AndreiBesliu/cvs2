@@ -118,7 +118,7 @@ pe linie. Pen-ul rămâne ales pentru calea următoare.
 
 ## Textul
 %% capitol: text
-%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv
+%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical
 
 Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea aleasă:
 - un **clic pe foaie** pune ancora (o cruce): acolo începe linia de bază a primului rând (aliniat la stânga), îi stă
@@ -135,7 +135,8 @@ Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea a
   linie, ca în orice font);
 - **spațiul dintre litere** (în mm; negativ, mai strâns), **distanța dintre rânduri** (ca multiplu al rândului fontului) și
   **alinierea** față de ancoră;
-- **Aldin** și **Cursiv**, pentru orice font, chiar fără fețele lui îngroșate sau înclinate (mai jos).
+- **Aldin** și **Cursiv**, pentru orice font, chiar fără fețele lui îngroșate sau înclinate, și **Vertical**, literele una
+  sub alta (mai jos).
 
 **Aldin** îngroașă literele: bifat, cere **Îngroșarea pe fiecare parte** (mm; propune 3 % din înălțime, de exemplu 0,6 la
 20 mm; cel mult o cincime din înălțime). Fiecare trăsătură crește cu dublul ei, golurile mici se strâng (pot dispărea), iar
@@ -145,6 +146,14 @@ taie din linii și arce, la cel mult 0,001 mm de forma exactă. **Cursiv** încl
 propune 12°; negativă, spre stânga; cel mult 45°), fiecare literă față de linia ei de bază, exact. Cu amândouă, literele se
 înclină întâi și se îngroașă apoi, deci trăsăturile se îngroașă la fel în toate direcțiile. Textul își ține aldinul și
 cursivul: se redeschide cu ele, iar scalarea uniformă crește și îngroșarea.
+
+**Vertical** pune literele una sub alta, drepte: fiecare rând devine o coloană, iar coloanele merg de la stânga la dreapta,
+la **distanța dintre coloane** (ca multiplu al rândului fontului). Fiecare literă stă centrată pe axa coloanei, iar între două
+litere vecine rămâne același gol: cât lasă em-ul fontului sub o majusculă (între două majuscule, pasul e chiar un em), plus
+**spațiul dintre litere**. Căciula lui Ă sau virgula lui Ș își primesc locul, deci literele nu se ating; un spațiu ține locul
+unei majuscule. **Alinierea** devine **Sus** (coloana pornește din ancoră în jos), **Mijloc** sau **Jos** (coloana se termină
+în ancoră). Textul vertical stă drept: pus pe o curbă, nu o urmează. Aldinul, cursivul și fonturile cu o singură linie merg
+la fel, iar textul se redeschide vertical.
 
 **Fonturile cu o singură linie** (de gravură, „stick”) n-au litere pline, ci trăsături: freza merge o dată pe fiecare linie.
 Relief SingleLine e inclus; unul încărcat de tine în Fonturile mele (TTF, OTF sau un font SVG, formatul fonturilor de

@@ -27,6 +27,7 @@
  */
 import { conturFaraCubice } from '../geom/biarce.ts';
 import { LINIE, type Contur, type Punct, type Varf } from '../geom/contur.ts';
+import { cutieContur, uneste, type Cutie } from '../geom/cutie.ts';
 import type { BugetImport } from '../geom/nonzero.ts';
 import { offsetFigura } from '../geom/offset.ts';
 import { TOLERANTA_PROIECT } from '../geom/toleranta.ts';
@@ -51,6 +52,8 @@ export type ParametriText = {
   readonly aldin?: number | undefined;
   /** Cursivul sintetic (ADR 0123): înclinarea literelor, în grade, spre dreapta (negativ: spre stânga); lipsă sau 0: drepte. */
   readonly cursiv?: number | undefined;
+  /** Textul vertical (ADR 0141): literele una sub alta, rândurile în coloane; lipsă: textul e orizontal. */
+  readonly vertical?: true | undefined;
 };
 
 /**
@@ -72,7 +75,10 @@ export type RaportText = NumaratoareNormalizare & {
   'aldin-esuat': number;
 };
 
-/** Un rând așezat: lățimea lui (de la începutul primului caracter la capătul ultimului), câte caractere are, mutarea alinierii. */
+/**
+ * Un rând așezat: lățimea lui (de la începutul primului caracter la capătul ultimului), câte caractere are, mutarea alinierii.
+ * Pe verticală (ADR 0141), o coloană: lungimea ei (de la vârful primei litere la baza ultimei) și mutarea alinierii pe y.
+ */
 export type RandAsezat = { readonly latime: number; readonly caractere: number; readonly dx: number };
 
 export type TextAsezat = {
@@ -253,7 +259,63 @@ function ingroasa(cai: readonly CaleCitita[], d: number): readonly Contur[] | nu
   return rez;
 }
 
-/** Așază textul (ADR 0105 §2, ADR 0123): pură, determinată de font și de parametri. */
+/**
+ * Contururile unei litere (ADR 0105 §2, ADR 0140), în mm, prin `harta`: trăsăturile unui font cu o singură linie (cele
+ * deschise, cu regulile ușilor importului pentru capete) sau figurile închise ale unuia obișnuit, normalizate o dată. Null:
+ * fontul nu poate da glifa (numărată); o listă goală: glifa n-are ce tăia (spațiul).
+ */
+function contururiLitera(font: Font, glifa: number, harta: (q: P) => Punct, raport: RaportText, buget: BugetImport): readonly CaleCitita[] | null {
+  const contururi = font.contururi(glifa);
+  if (contururi === null) {
+    raport['glife-stricate']++;
+    return null;
+  }
+  const cai: CaleCitita[] = [];
+  for (const c of contururi) {
+    // Un font cu o singură linie dă trăsături (ADR 0140): cele deschise, cu regulile ușilor importului pentru capete (un
+    // capăt la cel mult 0,01 mm de start închide trăsătura, ADR 0037 §11); buclele, ca orice contur.
+    const t = font.linie ? traseu(c) : { puncte: c, inchis: true };
+    if (!t.inchis) {
+      const v = varfuriDeschise(t.puncte, harta, font.cubice);
+      if (!v || v.varfuri.length === 0) {
+        raport.degenerate++;
+        continue;
+      }
+      const r = incheieSubcalea(v.varfuri, v.capat, v.start, false, false);
+      if (r === 'prea-mare') raport['prea-mari']++;
+      else if (r === 'degenerata') raport.degenerate++;
+      else if (r === 'praf') raport['sub-rezolutie']++;
+      else cai.push(r.cale);
+      continue;
+    }
+    const v = font.cubice ? varfuriDinCubice(t.puncte, harta) : varfuriDinContur(t.puncte, harta);
+    if (!v || v.varfuri.length === 0) {
+      raport.degenerate++;
+      continue;
+    }
+    const inchisa = incheieSubcalea(v.varfuri, v.start, v.start, true, true);
+    if (inchisa === 'prea-mare') raport['prea-mari']++;
+    else if (inchisa === 'degenerata') raport.degenerate++;
+    else if (inchisa === 'praf') raport['sub-rezolutie']++;
+    // Un contur care, închis, n-are arie (pe o dreaptă) iese deschis: o literă n-are linii de tăiat; o trăsătură, da.
+    else if (!inchisa.cale.inchis && !font.linie) raport.degenerate++;
+    else cai.push(inchisa.cale);
+  }
+  if (cai.length === 0) return cai;
+  // Trăsăturile nu se normalizează: n-au interior (ADR 0140).
+  return font.linie ? cai : normalizeazaForma(cai, true, buget, raport);
+}
+
+/** Calea mutată cu (tx, ty), cu punctele de control ale cubicelor (un arc se dă prin bulge: nu se schimbă). */
+const mutata = (tx: number, ty: number) => (c: CaleCitita): CaleCitita => ({
+  inchis: c.inchis,
+  varfuri: c.varfuri.map((v): Varf => ({
+    p: { x: v.p.x + tx, y: v.p.y + ty },
+    s: v.s.tip === 'C' ? { tip: 'C', c1: { x: v.s.c1.x + tx, y: v.s.c1.y + ty }, c2: { x: v.s.c2.x + tx, y: v.s.c2.y + ty } } : v.s,
+  })),
+});
+
+/** Așază textul (ADR 0105 §2, ADR 0123, ADR 0141): pură, determinată de font și de parametri. */
 export function aseazaText(font: Font, p: ParametriText): TextAsezat {
   const raport: RaportText = {
     lipsa: 0, 'glife-stricate': 0, 'prea-mari': 0, 'aldin-esuat': 0, 'nonzero-normalizate': 0, 'nonzero-refuzate': 0, 'sub-rezolutie': 0, degenerate: 0,
@@ -270,91 +332,103 @@ export function aseazaText(font: Font, p: ParametriText): TextAsezat {
   const glife: GlifaAsezata[] = [];
   const linii: RandAsezat[] = [];
   const buget: BugetImport = { ramas: PLAFON_IMPORT.normalizare };
-  randuri.forEach((rand, r) => {
-    // Glifele rândului și locul fiecăreia (în unitățile fontului, plus spațierea în mm), apoi lățimea rândului.
-    const litere: { caracter: string; glifa: number; x: number; avans: number }[] = [];
-    let x = 0;
-    let anterioara = -1;
-    for (const caracter of rand) {
-      const cod = caracter.codePointAt(0) ?? 0;
-      if (cod < 0x20 && caracter !== '\t') continue;
-      const glifa = font.glifa(caracter === '\t' ? 0x20 : cod);
-      if (glifa === 0) {
-        raport.lipsa++;
-        if (!caractereLipsa.includes(caracter)) caractereLipsa.push(caracter);
-        continue;
-      }
-      if (anterioara >= 0) x += inMm(font.crenare(anterioara, glifa)) + p.spatiere;
-      const avans = inMm(font.avans(glifa)) + 2 * d;
-      litere.push({ caracter, glifa, x, avans });
-      x += avans;
-      anterioara = glifa;
+  /** Glifa unui caracter (tabul, ca spațiul), sau null: un caracter de control (sărit) sau unul pe care fontul nu-l are (numărat). */
+  const glifaDe = (caracter: string): number | null => {
+    const cod = caracter.codePointAt(0) ?? 0;
+    if (cod < 0x20 && caracter !== '\t') return null;
+    const glifa = font.glifa(caracter === '\t' ? 0x20 : cod);
+    if (glifa === 0) {
+      raport.lipsa++;
+      if (!caractereLipsa.includes(caracter)) caractereLipsa.push(caracter);
+      return null;
     }
-    const latime = x;
-    const dx = p.aliniere === 'stanga' ? 0 : p.aliniere === 'centru' ? -latime / 2 : -latime;
-    linii.push({ latime, caractere: litere.length, dx });
-    const baza = -r * inaltimeRand;
-    litere.forEach((l, indice) => {
-      const x0 = l.x + dx;
-      // Cu aldin, litera se desenează în sistemul ei (originea pe linia de bază), se îngroașă acolo și abia apoi se mută.
-      const ox = d > 0 ? 0 : x0, oy = d > 0 ? 0 : baza;
-      const harta = panta === 0
-        ? (q: P): Punct => ({ x: ox + inMm(q.x), y: oy + inMm(q.y) })
-        : (q: P): Punct => ({ x: ox + inMm(q.x) + panta * inMm(q.y), y: oy + inMm(q.y) });
-      const contururi = font.contururi(l.glifa);
-      if (contururi === null) {
-        raport['glife-stricate']++;
-        return;
+    return glifa;
+  };
+  /** Harta unei litere cu originea pe linia de bază în (ox, oy), înclinată de cursiv față de linia ei de bază. */
+  const harta = (ox: number, oy: number) => (panta === 0
+    ? (q: P): Punct => ({ x: ox + inMm(q.x), y: oy + inMm(q.y) })
+    : (q: P): Punct => ({ x: ox + inMm(q.x) + panta * inMm(q.y), y: oy + inMm(q.y) }));
+  /** Litera îngroșată (ADR 0123) din miezul ei desenat în sistemul literei, cu originea mutată în (x0, baza); null: refuzată. */
+  const ingrosata = (miezLitera: readonly CaleCitita[], x0: number, baza: number): CaleCitita[] | null => {
+    const groase = ingroasa(miezLitera, d);
+    if (groase === null) {
+      raport['aldin-esuat']++;
+      return null;
+    }
+    // Litera îngroșată se mută cu (d, d) față de miez: marginea ei din stânga și baza rămân ale miezului.
+    const mx = x0 + d, my = baza + d;
+    return groase.map((c): CaleCitita => ({ inchis: true, varfuri: c.varfuri.map((v): Varf => ({ p: { x: v.p.x + mx, y: v.p.y + my }, s: v.s })) }));
+  };
+  if (p.vertical) {
+    // Textul vertical (ADR 0141): fiecare rând e o coloană, de la stânga la dreapta, la distanța rândurilor; literele stau
+    // una sub alta, drepte, fiecare cu cutia ei sub a celei de deasupra, la `gol`: cât lasă em-ul fontului sub o majusculă
+    // (între două majuscule, chiar un em), plus spațierea. O literă fără contur (spațiul) ține locul unei majuscule.
+    const em = (font.unitsPerEm * p.inaltime) / font.majuscula;
+    const gol = Math.max(0, em - p.inaltime) + p.spatiere;
+    randuri.forEach((rand, r) => {
+      const axa = r * inaltimeRand;
+      const celule: { caracter: string; avans: number; cai: readonly CaleCitita[]; cutie: Cutie | null }[] = [];
+      for (const caracter of rand) {
+        const glifa = glifaDe(caracter);
+        if (glifa === null) continue;
+        const avans = inMm(font.avans(glifa)) + 2 * d;
+        // Litera se desenează în sistemul ei; cutia unei litere îngroșate e a miezului lărgită cu 2d în sus și la dreapta
+        // (figura crește cu d pe fiecare parte și se mută cu (d, d)): exactă, fără să depindă de biarce.
+        const miezLitera = contururiLitera(font, glifa, harta(0, 0), raport, buget);
+        const c = miezLitera && miezLitera.length > 0 ? miezLitera.map(cutieContur).reduce(uneste) : null;
+        const cai = c && miezLitera ? (d === 0 ? miezLitera : ingrosata(miezLitera, 0, 0)) : null;
+        celule.push(c && cai
+          ? { caracter, avans, cai, cutie: d === 0 ? c : { minX: c.minX, minY: c.minY, maxX: c.maxX + 2 * d, maxY: c.maxY + 2 * d } }
+          : { caracter, avans, cai: [], cutie: null });
       }
-      const cai: CaleCitita[] = [];
-      for (const c of contururi) {
-        // Un font cu o singură linie dă trăsături (ADR 0140): cele deschise, cu regulile ușilor importului pentru capete (un
-        // capăt la cel mult 0,01 mm de start închide trăsătura, ADR 0037 §11); buclele, ca orice contur.
-        const t = font.linie ? traseu(c) : { puncte: c, inchis: true };
-        if (!t.inchis) {
-          const v = varfuriDeschise(t.puncte, harta, font.cubice);
-          if (!v || v.varfuri.length === 0) {
-            raport.degenerate++;
-            continue;
-          }
-          const r = incheieSubcalea(v.varfuri, v.capat, v.start, false, false);
-          if (r === 'prea-mare') raport['prea-mari']++;
-          else if (r === 'degenerata') raport.degenerate++;
-          else if (r === 'praf') raport['sub-rezolutie']++;
-          else cai.push(r.cale);
-          continue;
-        }
-        const v = font.cubice ? varfuriDinCubice(t.puncte, harta) : varfuriDinContur(t.puncte, harta);
-        if (!v || v.varfuri.length === 0) {
-          raport.degenerate++;
-          continue;
-        }
-        const inchisa = incheieSubcalea(v.varfuri, v.start, v.start, true, true);
-        if (inchisa === 'prea-mare') raport['prea-mari']++;
-        else if (inchisa === 'degenerata') raport.degenerate++;
-        else if (inchisa === 'praf') raport['sub-rezolutie']++;
-        // Un contur care, închis, n-are arie (pe o dreaptă) iese deschis: o literă n-are linii de tăiat; o trăsătură, da.
-        else if (!inchisa.cale.inchis && !font.linie) raport.degenerate++;
-        else cai.push(inchisa.cale);
-      }
-      // Spațiul și celelalte glife fără contur nu lasă nimic de tăiat.
-      if (cai.length === 0) return;
-      // Trăsăturile nu se normalizează: n-au interior (ADR 0140).
-      const normalizate = font.linie ? cai : normalizeazaForma(cai, true, buget, raport);
-      if (d === 0) {
-        glife.push({ caracter: l.caracter, rand: r, cai: normalizate, x: x0, avans: l.avans, indice });
-        return;
-      }
-      const groase = ingroasa(normalizate, d);
-      if (groase === null) {
-        raport['aldin-esuat']++;
-        return;
-      }
-      // Litera îngroșată se mută cu (d, d) față de miez: marginea ei din stânga și baza rămân ale miezului.
-      const mx = x0 + d, my = baza + d;
-      const mutate = groase.map((c): CaleCitita => ({ inchis: true, varfuri: c.varfuri.map((v): Varf => ({ p: { x: v.p.x + mx, y: v.p.y + my }, s: v.s })) }));
-      glife.push({ caracter: l.caracter, rand: r, cai: mutate, x: x0, avans: l.avans, indice });
+      // Liniile de bază: vârful primei litere în y = 0, apoi fiecare cutie sub cea de deasupra.
+      const baze: number[] = [];
+      celule.forEach((c, k) => {
+        const sus = c.cutie ? c.cutie.maxY : p.inaltime;
+        const ant = celule[k - 1];
+        baze.push(ant ? baze[k - 1]! + (ant.cutie ? ant.cutie.minY : 0) - gol - sus : -sus);
+      });
+      // Coloana se aliniază față de ancoră: sus (de la ea în jos), la mijloc sau jos (până la ea).
+      const ultima = celule.at(-1);
+      const jos = ultima ? baze.at(-1)! + (ultima.cutie ? ultima.cutie.minY : 0) : 0;
+      const dy = p.aliniere === 'stanga' ? 0 : p.aliniere === 'centru' ? -jos / 2 : -jos;
+      linii.push({ latime: -jos, caractere: celule.length, dx: dy });
+      celule.forEach((c, indice) => {
+        if (!c.cutie || c.cai.length === 0) return;
+        // Litera, centrată pe axa coloanei după cutia ei.
+        const tx = axa - (c.cutie.minX + c.cutie.maxX) / 2, ty = baze[indice]! + dy;
+        glife.push({ caracter: c.caracter, rand: r, cai: c.cai.map(mutata(tx, ty)), x: tx, avans: c.avans, indice });
+      });
     });
-  });
+  } else {
+    randuri.forEach((rand, r) => {
+      // Glifele rândului și locul fiecăreia (în unitățile fontului, plus spațierea în mm), apoi lățimea rândului.
+      const litere: { caracter: string; glifa: number; x: number; avans: number }[] = [];
+      let x = 0;
+      let anterioara = -1;
+      for (const caracter of rand) {
+        const glifa = glifaDe(caracter);
+        if (glifa === null) continue;
+        if (anterioara >= 0) x += inMm(font.crenare(anterioara, glifa)) + p.spatiere;
+        const avans = inMm(font.avans(glifa)) + 2 * d;
+        litere.push({ caracter, glifa, x, avans });
+        x += avans;
+        anterioara = glifa;
+      }
+      const latime = x;
+      const dx = p.aliniere === 'stanga' ? 0 : p.aliniere === 'centru' ? -latime / 2 : -latime;
+      linii.push({ latime, caractere: litere.length, dx });
+      const baza = -r * inaltimeRand;
+      litere.forEach((l, indice) => {
+        const x0 = l.x + dx;
+        // Cu aldin, litera se desenează în sistemul ei (originea pe linia de bază), se îngroașă acolo și abia apoi se mută.
+        const cai = contururiLitera(font, l.glifa, d > 0 ? harta(0, 0) : harta(x0, baza), raport, buget);
+        // Spațiul și celelalte glife fără contur nu lasă nimic de tăiat.
+        if (cai === null || cai.length === 0) return;
+        const desenate = d === 0 ? cai : ingrosata(cai, x0, baza);
+        if (desenate) glife.push({ caracter: l.caracter, rand: r, cai: desenate, x: x0, avans: l.avans, indice });
+      });
+    });
+  }
   return { glife, raport, caractereLipsa, linii, metrici: { rand: inaltimeRand, coborare: inMm(font.coborare) }, linie: font.linie };
 }

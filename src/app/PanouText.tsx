@@ -42,6 +42,8 @@ type Formular = {
   readonly pozitie: PozitiePeCurba; readonly distanta: string; readonly invers: boolean; readonly verticala: boolean; readonly intinsa: boolean;
   /** Aldinul și cursivul sintetic (ADR 0123): pornite sau nu, cu îngroșarea (mm, pe fiecare parte) și înclinarea (grade). */
   readonly aldin: boolean; readonly grosime: string; readonly cursiv: boolean; readonly unghi: string;
+  /** Textul vertical (ADR 0141): literele una sub alta, rândurile în coloane. */
+  readonly textVertical: boolean;
 };
 
 /** Curba la care stă textul: conturul în sistemul piesei (originea în ancoră) și distanța ancorei pe el. */
@@ -49,6 +51,8 @@ type CurbaAleasa = { readonly contur: Contur; readonly s: number };
 
 const CHEIE = 'cncvs2.text';
 const ALINIERI: readonly AliniereText[] = ['stanga', 'centru', 'dreapta'];
+/** Alinierea unui text vertical (ADR 0141), față de ancoră: coloana pornește din ea în jos, stă la mijloc sau se termină în ea. */
+const ALINIERI_VERTICALE = { stanga: 'sus', centru: 'mijloc', dreapta: 'jos' } as const;
 
 /** Îngroșarea propusă când se pornește aldinul (ADR 0123): 3 % din înălțimea majusculei, la sutimea de mm. */
 function grosimeImplicita(inaltime: string): string {
@@ -61,7 +65,7 @@ function formularSalvat(): Formular {
   const baza: Formular = {
     continut: '', font: FONT_IMPLICIT, inaltime: '20', spatiere: '0', interlinie: '1', aliniere: 'stanga',
     pozitie: 'baza', distanta: '0', invers: false, verticala: false, intinsa: false,
-    aldin: false, grosime: '', cursiv: false, unghi: '12',
+    aldin: false, grosime: '', cursiv: false, unghi: '12', textVertical: false,
   };
   try {
     const s = JSON.parse(localStorage.getItem(CHEIE) ?? 'null') as Partial<Record<keyof Formular, unknown>> | null;
@@ -75,6 +79,7 @@ function formularSalvat(): Formular {
       pozitie: POZITII_PE_CURBA.find((x) => x === s.pozitie) ?? baza.pozitie, distanta: sir(s.distanta, baza.distanta),
       invers: s.invers === true, verticala: s.verticala === true, intinsa: s.intinsa === true,
       aldin: s.aldin === true, grosime: sir(s.grosime, baza.grosime), cursiv: s.cursiv === true, unghi: sir(s.unghi, baza.unghi),
+      textVertical: s.textVertical === true,
     };
   } catch {
     return baza;
@@ -86,7 +91,7 @@ function salveaza(f: Formular): void {
     localStorage.setItem(CHEIE, JSON.stringify({
       font: f.font, inaltime: f.inaltime, spatiere: f.spatiere, interlinie: f.interlinie, aliniere: f.aliniere,
       pozitie: f.pozitie, distanta: f.distanta, invers: f.invers, verticala: f.verticala, intinsa: f.intinsa,
-      aldin: f.aldin, grosime: f.grosime, cursiv: f.cursiv, unghi: f.unghi,
+      aldin: f.aldin, grosime: f.grosime, cursiv: f.cursiv, unghi: f.unghi, textVertical: f.textVertical,
     }));
   } catch {
     // Fără stocare (fereastră privată): alegerile țin cât pagina.
@@ -127,7 +132,7 @@ function parametri(
   const bloc = { continut: f.continut, font: f.font, inaltime, spatiere, interlinie, aliniere: f.aliniere };
   return {
     ...bloc, ...(numeFont ? { numeFont: numeFont.slice(0, LIMITE_TEXT.numeFont) } : {}), ...(pe ? { curba: pe } : {}),
-    ...(aldin > 0 ? { aldin } : {}), ...(cursiv !== 0 ? { cursiv } : {}),
+    ...(aldin > 0 ? { aldin } : {}), ...(cursiv !== 0 ? { cursiv } : {}), ...(f.textVertical ? { vertical: true as const } : {}),
   };
 }
 
@@ -192,6 +197,8 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
       // Aldinul și cursivul ale textului ales (ADR 0123); unul fără ele le oprește, cu valorile scrise păstrate.
       aldin: !!b.aldin, ...(b.aldin ? { grosime: textNumar(b.aldin) } : {}),
       cursiv: !!b.cursiv, ...(b.cursiv ? { unghi: textNumar(b.cursiv) } : {}),
+      // Textul vertical (ADR 0141): un text orizontal oprește bifa.
+      textVertical: b.vertical === true,
     }));
     setMotiv(null);
     setDrept(false);
@@ -212,7 +219,8 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
       s: curba.s,
     };
   }, [editat, curba, ancora]);
-  const curbaActiva = drept ? null : curbaPosibila;
+  // Un text vertical stă drept (ADR 0141): nu urmează curba, chiar dacă ancora e pe una.
+  const curbaActiva = drept || form.textVertical ? null : curbaPosibila;
   const rezFont = fonturi.get(form.font);
   useEffect(() => {
     if (modul === null || modul === 'eroare' || fonturi.has(form.font)) return;
@@ -359,7 +367,12 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
             <input value={form.unghi} inputMode="decimal" data-text="unghi" onChange={(e) => { scrie({ ...form, unghi: e.target.value }); }} />
           </label>
         ) : null}
-        {curbaPosibila ? (
+        <label className="bifa-retea">
+          <input type="checkbox" checked={form.textVertical} data-text="vertical" onChange={(e) => { scrie({ ...form, textVertical: e.target.checked }); }} />
+          {t('editare.text.vertical')}
+        </label>
+        {curbaPosibila && form.textVertical ? <p className="nota-retea" data-testid="text-vertical-curba">{t('editare.text.vertical.curba')}</p> : null}
+        {curbaPosibila && !form.textVertical ? (
           <fieldset className="curba-text" data-testid="text-curba">
             <legend>{curbaActiva ? t('editare.text.curba.sectiune', { lungime: textNumar(Math.round(lungimeCurba * 100) / 100, true) }) : t('editare.text.curba.drept')}</legend>
             {curbaActiva ? (
@@ -389,7 +402,7 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
         ) : null}
         {(['inaltime', 'spatiere', 'interlinie'] as const).map((c) => (
           <label key={c} className="camp-retea">
-            <span>{t(`editare.text.${c}`)}</span>
+            <span>{t(c === 'interlinie' && form.textVertical ? 'editare.text.interlinie.coloane' : `editare.text.${c}`)}</span>
             <input value={form[c]} inputMode="decimal" data-text={c} onChange={(e) => { scrie({ ...form, [c]: e.target.value }); }} />
           </label>
         ))}
@@ -397,7 +410,7 @@ export function PanouText({ ancora, curba, editat, ruleaza, onInchide, doarCitir
           {ALINIERI.map((a) => (
             <button key={a} type="button" role="radio" aria-checked={form.aliniere === a} aria-pressed={form.aliniere === a} data-text-aliniere={a}
               onClick={() => { scrie({ ...form, aliniere: a }); }}>
-              {t(`editare.text.aliniere.${a}`)}
+              {t(form.textVertical ? `editare.text.aliniere.${ALINIERI_VERTICALE[a]}` : `editare.text.aliniere.${a}`)}
             </button>
           ))}
         </div>

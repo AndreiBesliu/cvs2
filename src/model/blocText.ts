@@ -84,9 +84,13 @@ export const SchemaBlocText = v.pipe(
     aldin: v.optional(v.union([v.literal(0), numar(LIMITE_TEXT.aldinMinim, LIMITE_TEXT.inaltimeMaxima * LIMITE_TEXT.aldinRaport)])),
     /** Cursivul sintetic (ADR 0123): înclinarea literelor, în grade (negativă: spre stânga); lipsă sau 0: drepte. */
     cursiv: v.optional(numar(-LIMITE_TEXT.cursiv, LIMITE_TEXT.cursiv)),
+    /** Textul vertical (ADR 0141): literele una sub alta, rândurile în coloane; lipsă: textul e orizontal. */
+    vertical: v.optional(v.literal(true)),
     amprenta: v.pipe(v.string(), v.maxLength(64)),
   }),
   v.check((b) => b.aldin === undefined || b.aldin <= aldinMaxim(b.inaltime), 'aldinul trece de o cincime din înălțime'),
+  // Un text vertical stă drept: literele una sub alta nu urmează o curbă (ADR 0141).
+  v.check((b) => !(b.vertical && b.curba), 'textul vertical nu stă pe o curbă'),
 );
 
 export type BlocText = v.InferOutput<typeof SchemaBlocText>;

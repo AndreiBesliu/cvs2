@@ -211,6 +211,93 @@ test('fontul cu o singură linie (ADR 0140): Relief SingleLine, Aldin oprit cu m
   expect(piesa.operatii.map((o) => [o.latura, o.adancime, o.noduri.length])).toEqual([['pe-linie', 0.6, 5]]);
 });
 
+/** Abscisele vârfurilor literei (fără mânere: literele drepte n-au cubice). */
+const abscise = (g: Nod): number[] => (g.copii ?? []).flatMap((e) => (e.forma?.varfuri ?? []).map((v) => v.p.x));
+
+test('textul vertical (ADR 0141): „HIT” cu literele una sub alta, pasul de un em, centrate pe axă; după reîncărcare, vertical, Jos și Aplică', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-unealta="text"]').click();
+  await page.locator('[data-text="continut"]').fill('HIT');
+  await expect(page.locator('[data-text-aliniere]')).toHaveText(['Stânga', 'Centru', 'Dreapta']);
+  await page.locator('[data-text="vertical"]').check();
+  // Pe verticală, alinierea e față de ancoră în sus și în jos, iar rândurile sunt coloane.
+  await expect(page.locator('[data-text-aliniere]')).toHaveText(['Sus', 'Mijloc', 'Jos']);
+  await expect(page.locator('label:has([data-text="interlinie"]) > span')).toHaveText('Distanța dintre coloane (× rândul fontului)');
+  const la = await ecran(page, await vedere(page));
+  const a = la(150, 150);
+  await page.mouse.click(a.x, a.y);
+  await page.click('[data-text="adauga"]');
+  const d1 = await documentSalvat(page, 1) as Doc;
+  const piesa = d1.piese[0]!;
+  expect(piesa.radacina.text).toMatchObject({ continut: 'HIT', font: 'roboto', inaltime: 20, aliniere: 'stanga', vertical: true });
+  // H, I, T una sub alta: vârful lui H în ancoră (Sus), iar între două majuscule pasul e un em (2048 / 1456 · 20 mm).
+  const em = (2048 * 20) / 1456;
+  const [h, i, t] = piesa.radacina.copii!;
+  expect([h!.nume, i!.nume, t!.nume]).toEqual(['H', 'I', 'T']);
+  expect(Math.max(...ordonate(h!))).toBeCloseTo(0, 9);
+  expect(Math.min(...ordonate(h!))).toBeCloseTo(-20, 9);
+  expect(Math.max(...ordonate(i!))).toBeCloseTo(-em, 9);
+  expect(Math.max(...ordonate(t!))).toBeCloseTo(-2 * em, 9);
+  // Fiecare literă, centrată pe axa coloanei (x = 0, ancora): H, cu picioarele de la 169 la 1288 unități, pe ±559,5.
+  expect(Math.min(...abscise(h!))).toBeCloseTo((-559.5 * 20) / 1456, 9);
+  expect(Math.max(...abscise(h!))).toBeCloseTo((559.5 * 20) / 1456, 9);
+  for (const g of [i!, t!]) expect(Math.min(...abscise(g)) + Math.max(...abscise(g))).toBeCloseTo(0, 9);
+
+  // După reîncărcare, textul ales vine vertical în panou (din blocul lui: bifa oprită înainte, pentru un text nou, se
+  // pornește); Jos îl pune cu baza lui T în ancoră.
+  await page.reload();
+  await page.locator('[data-unealta="text"]').click();
+  await page.locator('[data-text="vertical"]').uncheck();
+  await expect(page.locator('[data-text-aliniere]')).toHaveText(['Stânga', 'Centru', 'Dreapta']);
+  const la2 = await ecran(page, await vedere(page));
+  const inst = d1.foi[0]!.instante[0]!;
+  const varf = h!.copii![0]!.forma!.varfuri[0]!.p;
+  const pe = la2(inst.x + varf.x, inst.y + varf.y);
+  await page.mouse.click(pe.x, pe.y);
+  await expect(page.getByTestId('text-stare')).toContainText('Editezi textul ales');
+  await expect(page.locator('[data-text="vertical"]')).toBeChecked();
+  await expect(page.locator('[data-text-aliniere]')).toHaveText(['Sus', 'Mijloc', 'Jos']);
+  await page.locator('[data-text-aliniere="dreapta"]').click();
+  await page.click('[data-text="aplica"]');
+  const d2 = await documentSalvat(page, 2) as Doc;
+  expect(d2.piese[0]!.radacina.text).toMatchObject({ continut: 'HIT', aliniere: 'dreapta', vertical: true });
+  const [h2, , t2] = d2.piese[0]!.radacina.copii!;
+  expect(Math.min(...ordonate(t2!))).toBeCloseTo(0, 9);
+  expect(Math.max(...ordonate(h2!))).toBeCloseTo(20 + 2 * em, 9);
+});
+
+test('textul vertical stă drept (ADR 0141): pe conturul unui cerc, panoul spune că nu urmează curba; oprit, curba revine; blocul, fără curbă', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-unealta="cerc"]').click();
+  await page.locator('[data-editare="raza"]').fill('50');
+  let la = await ecran(page, await vedere(page));
+  const c = la(150, 100);
+  await page.mouse.click(c.x, c.y);
+  const d1 = await documentSalvat(page, 1) as Doc;
+  const ic = d1.foi[0]!.instante[0]!;
+  const rc = d1.piese[0]!.radacina as unknown as Cerc;
+  const el = rc.tip === 'element' ? rc : rc.copii![0]!;
+  const cx = ic.x + el.matrice.e, cy = ic.y + el.matrice.f;
+  await page.locator('[data-unealta="text"]').click();
+  await page.locator('[data-text="continut"]').fill('BAR');
+  await page.locator('[data-text="vertical"]').check();
+  la = await ecran(page, await vedere(page));
+  const sus = la(cx, cy + 50);
+  await page.mouse.click(sus.x, sus.y);
+  await expect(page.getByTestId('text-vertical-curba')).toHaveText('Textul vertical stă drept: nu urmează curba.');
+  await expect(page.getByTestId('text-curba')).toHaveCount(0);
+  // Oprit, textul orizontal urmează iar curba; pornit din nou, stă drept, iar blocul n-are curbă.
+  await page.locator('[data-text="vertical"]').uncheck();
+  await expect(page.getByTestId('text-curba')).toBeVisible();
+  await expect(page.getByTestId('text-vertical-curba')).toHaveCount(0);
+  await page.locator('[data-text="vertical"]').check();
+  await page.click('[data-text="adauga"]');
+  const d2 = await documentSalvat(page, 2) as Doc;
+  const text = d2.piese[1]!.radacina.text!;
+  expect(text).toMatchObject({ continut: 'BAR', vertical: true });
+  expect('curba' in text).toBe(false);
+});
+
 test('panoul textului spune ce lipsește: caracterele pe care fontul nu le are, înălțimea greșită; fără litere, Adaugă e oprit', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-unealta="text"]').click();

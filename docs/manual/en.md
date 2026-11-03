@@ -122,7 +122,7 @@ on the line. The Pen stays chosen for the next path.
 
 ## Text
 %% capitol: text
-%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv
+%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical
 
 The **Text** tool (`X`; `T` is “Show toolpath”) writes text to cut. With it chosen:
 - a **click on the sheet** puts the anchor (a cross): there the baseline of the first line starts (left aligned), has its
@@ -139,7 +139,8 @@ In the tool's panel you type the text (Enter: new line) and choose:
   the line, as in any font);
 - the **space between letters** (in mm; negative, tighter), the **distance between lines** (a multiple of the font's line)
   and the **alignment** to the anchor;
-- **Bold** and **Italic**, for any font, even without its own bold or slanted faces (below).
+- **Bold** and **Italic**, for any font, even without its own bold or slanted faces, and **Vertical**, letters one under
+  another (below).
 
 **Bold** thickens the letters: ticked, it asks for the **Thickening on each side** (mm; it suggests 3 % of the height, for
 example 0.6 at 20 mm; at most a fifth of the height). Each stroke grows by twice that, small holes shrink (they may close)
@@ -149,6 +150,14 @@ are cut from lines and arcs, within 0.001 mm of the exact shape. **Italic** slan
 **Slant** (°; it suggests 12°; negative, to the left; at most 45°), each letter about its own baseline, exactly. With both,
 the letters are slanted first and thickened after, so the strokes thicken the same in every direction. The text keeps its
 bold and italic: it reopens with them, and uniform scaling grows the thickening too.
+
+**Vertical** puts the letters one under another, upright: each line becomes a column, and the columns go from left to
+right, at the **distance between columns** (as a multiple of the font's line). Each letter is centred on the column's axis,
+and two neighbouring letters keep the same gap: what the font's em leaves under a capital (between two capitals, the step is
+exactly one em), plus the **space between letters**. The breve of Ă or the comma of Ș get their room, so the letters do not
+touch; a space takes the place of a capital. The **alignment** becomes **Top** (the column starts at the anchor and goes
+down), **Middle** or **Bottom** (the column ends at the anchor). Vertical text stays straight: put on a curve, it does not
+follow it. Bold, italic and single-line fonts work the same, and the text reopens vertical.
 
 **Single-line fonts** (engraving, “stick” fonts) have no filled letters, only strokes: the cutter goes once along each line.
 Relief SingleLine is included; one you load into My fonts (TTF, OTF or an SVG font, the format of the Hershey and EMS
