@@ -16,12 +16,17 @@
  * Legătura prin WiFi (ADR 0119, felia 3.6d): „Conectează (WiFi)” cere controlerul, adresa (un IP local sau un nume `.local`,
  * judecată înainte de conectare) și portul, ținute în browser; prima pornire a unui program prin WiFi, în pagina asta, spune
  * întâi ce se întâmplă dacă legătura cade.
+ *
+ * Fereastra pe tot ecranul (ADR 0132, felia 13.A↑): același conținut, sub meniul global, pe coloane (mașina, lucrarea,
+ * consola; una pe telefon, în ordinea urgenței). De aici vin și indicatorul lucrării din meniu, titlul filei, confirmarea
+ * browserului la închiderea paginii cu o lucrare pornită și „Deschide în Mașina” din fereastra exportului.
  */
-import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
 import type { ActiuneCod } from '../../shared/coduri.ts';
 import '../i18n/masina.ts';
 import { t, type CheieSimpla } from '../i18n/t.ts';
 import { PALPARE_IMPLICITA, WCS, esteWcs, type AxaJog, type FelMiscare, type Wcs } from '../machine/proceduri.ts';
+import { lucrareInceputa } from '../machine/indicator.ts';
 import { incarcaProgram, montajDeclarat, sculaLaOprire, type RezultatIncarcare } from '../machine/program.ts';
 import { pozitieDeLucru } from '../machine/raspunsuri.ts';
 import { deschideSerial, serialDisponibil } from '../machine/serial.ts';
@@ -29,6 +34,8 @@ import { SesiuneMasina, type Ceas, type LinieJurnal, type Procedura, type StareS
 import { adresaRetea, deschideRetea, esteProfilRetea, PROFIL_RETEA, PROFILURI_RETEA, type ProfilRetea } from '../machine/websocket.ts';
 import { useLimba } from '../ui/useLimba.ts';
 import { contulPermite, useContTinut } from './dreptCont.ts';
+import { IndicatorLucrare } from './IndicatorLucrare.tsx';
+import { lucrarePornita } from './lucrare.ts';
 import { CardCod, ConfirmareDeblocare, cuTitlu, deblocareCuConfirmare, titluCod, useDictionarCoduri, type StareDictionar } from './PanouCod.tsx';
 import './masina.css';
 import { mesajeGata } from '../i18n/laCerere.ts';
@@ -55,6 +62,15 @@ function sesiunea(): SesiuneMasina {
 let adresaConectata: string | null = null;
 /** Avertismentul căderii WiFi-ului s-a arătat (și s-a trecut) în pagina asta. */
 let avertizatWifi = false;
+
+/**
+ * Cu o lucrare pornită, închiderea sau reîncărcarea paginii ar tăia legătura la mijlocul ei (ADR 0132 §6): browserul întreabă
+ * întâi, cu textul lui (pagina nu-și poate scrie mesajul).
+ */
+const intreabaLaIesire = (e: BeforeUnloadEvent): void => {
+  e.preventDefault();
+  e.returnValue = '';
+};
 
 /** Alegerile legăturii prin WiFi, ținute în browser (`v: 1`): controlerul, adresa scrisă, portul. */
 const CHEIE_RETEA = 'cncvs2.masina.retea';
@@ -133,11 +149,15 @@ const textRefuz = (r: Refuz): string => {
   return t(`masina.refuz.${cod}` as CheieSimpla, { linie: (r.linie ?? 0) + 1 });
 };
 
-export function PanouMasina({ ultimulExport, simulare }: {
+export function PanouMasina({ ultimulExport, simulare, cerere = 0, onDeschide = () => undefined }: {
   /** Fișierele ultimului export: unul, sau câte unul pe freză (ADR 0084). */
   readonly ultimulExport: readonly ExportPentruMasina[] | null;
   /** Mașina simulată se oferă (în afara instanței live). */
   readonly simulare: boolean;
+  /** Numărul ultimei cereri „Deschide în Mașina” (ADR 0132 §7): una nouă încarcă primul fișier al exportului, fără pornire. */
+  readonly cerere?: number;
+  /** Deschide fereastra Mașina (clicul pe indicatorul lucrării, din orice fereastră). */
+  readonly onDeschide?: () => void;
 }): ReactNode {
   useLimba();
   // Pornirea programului cere capabilitatea senderului (ADR 0116 §9), judecată din contul ținut; jog-ul, zero-ul și oprirea
@@ -162,6 +182,7 @@ export function PanouMasina({ ultimulExport, simulare }: {
   const [ascuns, setAscuns] = useState<number | null>(null);
   const [confirmDeblocare, setConfirmDeblocare] = useState(false);
   const [wifi, setWifi] = useState(false);
+  const butonWifi = useRef<HTMLButtonElement | null>(null);
   const [avertismentWifi, setAvertismentWifi] = useState(false);
   const nrAlarma = st.alarma?.nr ?? null;
   useEffect(() => { setConfirmDeblocare(false); }, [nrAlarma]);
@@ -218,6 +239,46 @@ export function PanouMasina({ ultimulExport, simulare }: {
     setComanda('');
   };
 
+  // Lucrarea pornită (ADR 0132 §6): carcasa o citește („Reîncarcă” așteaptă), iar browserul întreabă la închiderea paginii.
+  const inceputa = lucrareInceputa(f.faza);
+  useEffect(() => {
+    lucrarePornita.scrie(inceputa);
+    if (!inceputa) return undefined;
+    window.addEventListener('beforeunload', intreabaLaIesire);
+    return () => { window.removeEventListener('beforeunload', intreabaLaIesire); };
+  }, [inceputa]);
+  // „Deschide în Mașina” (ADR 0132 §7): fiecare cerere nouă încarcă primul fișier al exportului, ca „Ultimul export”, fără
+  // pornire; cu o lucrare pornită, se refuză, cu motivul. Doar numărul cererii pornește efectul: exportul și sesiunea se
+  // citesc la cerere, cum sunt atunci.
+  const cerereTratata = useRef(0);
+  useEffect(() => {
+    if (cerere === cerereTratata.current) return;
+    cerereTratata.current = cerere;
+    const x = ultimulExport?.[0];
+    if (!x) return;
+    if (lucrareInceputa(s.stare().flux.faza)) {
+      setRefuz(t('masina.program.in-lucru'));
+      return;
+    }
+    setFisierAles(0);
+    void incarca(x.octeti, 'export', x.nume, x.sha256);
+  }, [cerere]);
+  /** Escape închide doar ce e deschis în fereastră (ADR 0132 §8): formularul WiFi, o confirmare. Nu trimite nimic la mașină. */
+  const tasta = (e: KeyboardEvent<HTMLDivElement>): void => {
+    if (e.key !== 'Escape') return;
+    if (wifi) {
+      setWifi(false);
+      butonWifi.current?.focus();
+    } else if (avertismentWifi) {
+      setAvertismentWifi(false);
+    } else if (confirmDeblocare) {
+      setConfirmDeblocare(false);
+    } else {
+      return;
+    }
+    e.preventDefault();
+  };
+
   const deblocheaza = (): void => { s.eveniment({ tip: 'manual', id: `om-${++idComanda.current}`, text: '$X' }); };
   const cereDeblocare = (): void => { if (deblocareCuConfirmare(dict, st)) setConfirmDeblocare(true); else deblocheaza(); };
   const actiune = (a: ActiuneCod): void => {
@@ -249,143 +310,162 @@ export function PanouMasina({ ultimulExport, simulare }: {
   const inHold = r?.stare === 'Hold';
 
   return (
-    <div className="masina">
-      <h2>{t('vedere.masina')}</h2>
+    // Escape închide doar ce e deschis aici (formularul WiFi, o confirmare): ascultat pe fereastră, nu pe pagină.
+    <div className="masina" onKeyDown={tasta}>
+      <h2 className="masina-ascuns">{t('vedere.masina')}</h2>
+      <IndicatorLucrare s={s} st={st} onDeschide={onDeschide} />
 
-      <section aria-label={t('masina.conexiune')}>
-        <p className="masina-cap" data-testid="masina-conexiune">
-          {!conectat ? t('masina.deconectat')
-            : st.transport === 'retea' ? t('masina.conectat.retea', { adresa: adresaConectata ?? '—' })
-              : t(st.transport === 'simulat' ? 'masina.conectat.simulat' : 'masina.conectat.serial')}
-        </p>
-        {st.eroare !== null && <p className="masina-nota" role="status">{textEroare(st.eroare)}</p>}
-        <div className="masina-butoane">
-          {!conectat && (serialDisponibil()
-            ? <button type="button" data-masina="conecteaza" title={t('masina.conecteaza.titlu')} onClick={() => { void conecteazaSerial(); }}>{t('masina.conecteaza')}</button>
-            : <p className="masina-nota">{t('masina.fara-serial')}</p>)}
-          {!conectat && (
-            <button type="button" data-masina="conecteaza-wifi" title={t('masina.conecteaza-wifi.titlu')} aria-expanded={wifi} onClick={() => { setWifi((x) => !x); }}>
-              {t('masina.conecteaza-wifi')}
-            </button>
+      {/* Coloana mașinii: conexiunea, starea cu poziția, poziționarea. */}
+      <div className="masina-coloana" data-coloana="masina">
+        <section className="masina-conexiune" aria-label={t('masina.conexiune')}>
+          <h3>{t('masina.conexiune')}</h3>
+          <p className="masina-cap" data-testid="masina-conexiune">
+            {!conectat ? t('masina.deconectat')
+              : st.transport === 'retea' ? t('masina.conectat.retea', { adresa: adresaConectata ?? '—' })
+                : t(st.transport === 'simulat' ? 'masina.conectat.simulat' : 'masina.conectat.serial')}
+          </p>
+          {st.eroare !== null && <p className="masina-nota" role="status">{textEroare(st.eroare)}</p>}
+          <div className="masina-butoane">
+            {!conectat && (serialDisponibil()
+              ? <button type="button" data-masina="conecteaza" title={t('masina.conecteaza.titlu')} onClick={() => { void conecteazaSerial(); }}>{t('masina.conecteaza')}</button>
+              : <p className="masina-nota">{t('masina.fara-serial')}</p>)}
+            {!conectat && (
+              <button type="button" ref={butonWifi} data-masina="conecteaza-wifi" title={t('masina.conecteaza-wifi.titlu')} aria-expanded={wifi} onClick={() => { setWifi((x) => !x); }}>
+                {t('masina.conecteaza-wifi')}
+              </button>
+            )}
+            {!conectat && simulare && (
+              <button type="button" data-masina="simulata" title={t('masina.simulata.titlu')} onClick={() => { void conecteazaSimulata(); }}>{t('masina.simulata')}</button>
+            )}
+            {conectat && <button type="button" data-masina="deconecteaza" onClick={() => { void s.deconecteaza(); }}>{t('masina.deconecteaza')}</button>}
+          </div>
+          {wifi && !conectat && <FormularWifi conecteaza={conecteazaRetea} renunta={() => { setWifi(false); }} />}
+          {simulare && (
+            <label className="masina-camp">
+              <span>{t('masina.viteza')}</span>
+              <select value={viteza} data-masina="viteza" onChange={(e) => { setViteza(Number(e.target.value) as (typeof VITEZE)[number]); }}>
+                {VITEZE.map((v) => <option key={v} value={v}>{`${v}×`}</option>)}
+              </select>
+            </label>
           )}
-          {!conectat && simulare && (
-            <button type="button" data-masina="simulata" title={t('masina.simulata.titlu')} onClick={() => { void conecteazaSimulata(); }}>{t('masina.simulata')}</button>
-          )}
-          {conectat && <button type="button" data-masina="deconecteaza" onClick={() => { void s.deconecteaza(); }}>{t('masina.deconecteaza')}</button>}
-        </div>
-        {wifi && !conectat && <FormularWifi conecteaza={conecteazaRetea} renunta={() => { setWifi(false); }} />}
-        {simulare && (
-          <label className="masina-camp">
-            <span>{t('masina.viteza')}</span>
-            <select value={viteza} data-masina="viteza" onChange={(e) => { setViteza(Number(e.target.value) as (typeof VITEZE)[number]); }}>
-              {VITEZE.map((v) => <option key={v} value={v}>{`${v}×`}</option>)}
-            </select>
-          </label>
-        )}
-      </section>
+        </section>
 
-      <section aria-label={t('masina.stare')}>
-        <dl>
-          <div className="masina-rand"><dt>{t('masina.stare')}</dt><dd data-testid="masina-stare">
-            {r ? `${r.stare}${r.sub !== null ? `:${r.sub}` : ''}` : t('masina.stare.necunoscuta')}
-          </dd></div>
-          {poz && (
-            <div className="masina-rand"><dt>{t(poz.cadru === 'lucru' ? 'masina.pozitie.lucru' : 'masina.pozitie.masina')}</dt><dd data-testid="masina-pozitie">
-              {poz.valori.map((v, k) => `${AXE[k] ?? `#${k}`} ${v.toFixed(3)}`).join('  ')}
+        <section className="masina-stare" aria-label={t('masina.stare')}>
+          <h3>{t('masina.stare')}</h3>
+          <dl>
+            <div className="masina-rand"><dt>{t('masina.stare')}</dt><dd data-testid="masina-stare" data-stare={r?.stare ?? ''}>
+              {r ? `${r.stare}${r.sub !== null ? `:${r.sub}` : ''}` : t('masina.stare.necunoscuta')}
             </dd></div>
-          )}
-        </dl>
-      </section>
+            {poz && (
+              <div className="masina-rand masina-rand-dro"><dt>{t(poz.cadru === 'lucru' ? 'masina.pozitie.lucru' : 'masina.pozitie.masina')}</dt>
+                {/* Cifrele mari, câte o axă pe rând; spațiile dintre ele rămân în text („X 1.000 Y 2.000”), pentru cititoare. */}
+                <dd className="masina-dro" data-testid="masina-pozitie">
+                  {poz.valori.map((v, k) => <span key={k} className="masina-axa"><span>{AXE[k] ?? `#${k}`}</span> <span>{v.toFixed(3)}</span> </span>)}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </section>
 
-      {cod && <CardCod d={dict} st={st} cod={cod} confirmare={confirmare} onActiune={actiune} onAscunde={() => { setAscuns(cod.nr); }} />}
+        {conectat && <Pozitionare s={s} st={st} />}
+      </div>
 
-      {conectat && <Pozitionare s={s} st={st} />}
+      {/* Coloana lucrării: codul controlerului, faza cu butoanele, programul. */}
+      <div className="masina-coloana" data-coloana="lucrare">
+        {cod && <CardCod d={dict} st={st} cod={cod} confirmare={confirmare} onActiune={actiune} onAscunde={() => { setAscuns(cod.nr); }} />}
 
-      <section aria-label={t('masina.program')}>
-        <div className="masina-butoane">
-          {ultimulExport && ultimulExport.length > 1 && (
-            <select value={fisierAles} data-masina="export-fisier" aria-label={t('masina.program.export.fisier')}
-              onChange={(e) => { setFisierAles(Number(e.target.value)); }}>
-              {ultimulExport.map((x, k) => <option key={x.nume} value={k}>{x.nume}</option>)}
-            </select>
-          )}
-          <button type="button" data-masina="export" disabled={!exportAles || IN_FLUX.has(f.faza)}
-            title={exportAles ? t('masina.program.export.titlu') : t('masina.program.export.lipsa')}
-            onClick={() => { if (exportAles) void incarca(exportAles.octeti, 'export', exportAles.nume, exportAles.sha256); }}>
-            {t('masina.program.export')}
-          </button>
-          <button type="button" data-masina="fisier" disabled={IN_FLUX.has(f.faza)} title={t('masina.program.fisier.titlu')} onClick={() => fisier.current?.click()}>
-            {t('masina.program.fisier')}
-          </button>
-          <input ref={fisier} type="file" accept=".nc,.gcode,.ngc,.tap,.txt" hidden data-masina="fisier-ales"
-            onChange={(e) => {
-              const fis = e.target.files?.[0];
-              e.target.value = '';
-              if (fis) void fis.arrayBuffer().then((b) => incarca(new Uint8Array(b), 'fisier', fis.name));
-            }} />
-        </div>
-        {refuz && <p className="masina-nota" role="alert" data-testid="masina-refuz">{refuz}</p>}
-        <p className="masina-program" data-testid="masina-program">
-          {f.program ? <>
-            <strong>{nume ?? '—'}</strong>{' · '}{t('masina.program.linii', { n })}<br />
-            <span className="masina-sha" title={f.program.sha256} data-sha={f.program.sha256}>SHA-256 {f.program.sha256.slice(0, 16)}…</span>
-          </> : t('masina.program.niciunul')}
-        </p>
-      </section>
-
-      <section aria-label={t('masina.faza')}>
-        <p className="masina-cap" data-testid="masina-faza" data-faza={f.faza}>{faza}</p>
-        {f.program && (
-          <div className="masina-progres">
-            <progress max={n} value={Math.min(f.urm, n)} />
-            <span data-testid="masina-progres">{t('masina.progres', { urm: Math.min(f.urm, n), n })}</span>
-          </div>
-        )}
-        {f.erori.length > 0 && (
-          <ul className="masina-erori" aria-label={t('masina.erori')} data-testid="masina-erori">
-            {f.erori.map((e, k) => {
-              const titlu = titluCod(dict, st, 'eroare', e.cod);
-              return <li key={k}>{t('masina.eroare.linie', { linie: e.linie + 1, cod: e.cod })}{titlu === null ? '' : ` — ${titlu}`}</li>;
-            })}
-          </ul>
-        )}
-        <div className="masina-butoane">
-          <button type="button" className="principal" data-masina="start" {...(faraSender ? { title: t('motiv.fara-capabilitate') } : {})}
-            disabled={faraSender || !conectat || !f.program || !['pregatit', 'terminat', 'pierdut'].includes(f.faza) || f.inZbor.length > 0}
-            onClick={porneste}>{t('masina.start')}</button>
-          {f.faza === 'suspendat' && <button type="button" className="principal" data-masina="reia" onClick={() => { s.eveniment({ tip: 'reia' }); }}>{t('masina.reia')}</button>}
-          {f.faza === 'bariera' && <button type="button" className="principal" data-masina="continua" onClick={() => { s.eveniment({ tip: 'continua' }); }}>{t('masina.continua')}</button>}
-          {conectat && f.faza !== 'suspendat' && (inHold
-            ? <button type="button" data-masina="eliberare" onClick={() => { s.eveniment({ tip: 'eliberare' }); }}>{t('masina.eliberare')}</button>
-            : <button type="button" data-masina="pauza" onClick={() => { s.eveniment({ tip: 'hold' }); }}>{t('masina.pauza')}</button>)}
-          {conectat && <button type="button" className="masina-opreste" data-masina="opreste" title={t('masina.opreste.titlu')} onClick={() => { s.eveniment({ tip: 'opreste' }); }}>{t('masina.opreste')}</button>}
-          {conectat && r?.stare === 'Alarm' && (
-            <button type="button" data-masina="deblocheaza" onClick={cereDeblocare}>{t('masina.deblocheaza')}</button>
-          )}
-        </div>
-        {avertismentWifi && conectat && st.transport === 'retea' && (
-          <div className="masina-nota masina-avertisment" role="alertdialog" aria-label={t('masina.start')} data-testid="masina-avertisment-wifi">
-            <p>{t('masina.wifi.avertisment')}</p>
-            <div className="masina-butoane">
-              <button type="button" className="principal" data-masina="start-wifi"
-                onClick={() => { avertizatWifi = true; setAvertismentWifi(false); s.eveniment({ tip: 'start' }); }}>{t('masina.wifi.porneste-oricum')}</button>
-              <button type="button" data-masina="start-wifi-renunta" onClick={() => { setAvertismentWifi(false); }}>{t('masina.wifi.renunta')}</button>
+        <section className="masina-lucrare" aria-label={t('masina.faza')}>
+          <h3>{t('masina.faza')}</h3>
+          <p className="masina-cap" data-testid="masina-faza" data-faza={f.faza}>{faza}</p>
+          {f.program && (
+            <div className="masina-progres">
+              <progress max={n} value={Math.min(f.urm, n)} />
+              <span data-testid="masina-progres">{t('masina.progres', { urm: Math.min(f.urm, n), n })}</span>
             </div>
+          )}
+          {f.erori.length > 0 && (
+            <ul className="masina-erori" aria-label={t('masina.erori')} data-testid="masina-erori">
+              {f.erori.map((e, k) => {
+                const titlu = titluCod(dict, st, 'eroare', e.cod);
+                return <li key={k}>{t('masina.eroare.linie', { linie: e.linie + 1, cod: e.cod })}{titlu === null ? '' : ` — ${titlu}`}</li>;
+              })}
+            </ul>
+          )}
+          <div className="masina-butoane masina-butoane-lucrare">
+            <button type="button" className="principal" data-masina="start" {...(faraSender ? { title: t('motiv.fara-capabilitate') } : {})}
+              disabled={faraSender || !conectat || !f.program || !['pregatit', 'terminat', 'pierdut'].includes(f.faza) || f.inZbor.length > 0}
+              onClick={porneste}>{t('masina.start')}</button>
+            {f.faza === 'suspendat' && <button type="button" className="principal" data-masina="reia" onClick={() => { s.eveniment({ tip: 'reia' }); }}>{t('masina.reia')}</button>}
+            {f.faza === 'bariera' && <button type="button" className="principal" data-masina="continua" onClick={() => { s.eveniment({ tip: 'continua' }); }}>{t('masina.continua')}</button>}
+            {conectat && f.faza !== 'suspendat' && (inHold
+              ? <button type="button" data-masina="eliberare" onClick={() => { s.eveniment({ tip: 'eliberare' }); }}>{t('masina.eliberare')}</button>
+              : <button type="button" data-masina="pauza" onClick={() => { s.eveniment({ tip: 'hold' }); }}>{t('masina.pauza')}</button>)}
+            {conectat && <button type="button" className="masina-opreste" data-masina="opreste" title={t('masina.opreste.titlu')} onClick={() => { s.eveniment({ tip: 'opreste' }); }}>{t('masina.opreste')}</button>}
+            {conectat && r?.stare === 'Alarm' && (
+              <button type="button" data-masina="deblocheaza" onClick={cereDeblocare}>{t('masina.deblocheaza')}</button>
+            )}
           </div>
-        )}
-        {!cod && confirmare}
-      </section>
+          {avertismentWifi && conectat && st.transport === 'retea' && (
+            <div className="masina-nota masina-avertisment" role="alertdialog" aria-label={t('masina.start')} data-testid="masina-avertisment-wifi">
+              <p>{t('masina.wifi.avertisment')}</p>
+              <div className="masina-butoane">
+                <button type="button" className="principal" data-masina="start-wifi"
+                  onClick={() => { avertizatWifi = true; setAvertismentWifi(false); s.eveniment({ tip: 'start' }); }}>{t('masina.wifi.porneste-oricum')}</button>
+                <button type="button" data-masina="start-wifi-renunta" onClick={() => { setAvertismentWifi(false); }}>{t('masina.wifi.renunta')}</button>
+              </div>
+            </div>
+          )}
+          {!cod && confirmare}
+        </section>
 
-      <section aria-label={t('masina.comanda')}>
-        <form className="masina-comanda" onSubmit={(e) => { e.preventDefault(); trimiteComanda(); }}>
-          <input value={comanda} data-masina="comanda" aria-label={t('masina.comanda')} placeholder="$G" disabled={!conectat}
-            onChange={(e) => { setComanda(e.target.value); }} />
-          <button type="submit" data-masina="trimite" disabled={!conectat || comanda.trim() === ''}>{t('masina.comanda.trimite')}</button>
-        </form>
-        <ol className="masina-jurnal" aria-label={t('masina.jurnal')} data-testid="masina-jurnal">
-          {st.jurnal.slice(-60).map((l, k) => <li key={k} data-fel={l.fel}>{textJurnal(l, dict, st)}</li>)}
-        </ol>
-      </section>
+        <section className="masina-programul" aria-label={t('masina.program')}>
+          <h3>{t('masina.program')}</h3>
+          <div className="masina-butoane">
+            {ultimulExport && ultimulExport.length > 1 && (
+              <select value={fisierAles} data-masina="export-fisier" aria-label={t('masina.program.export.fisier')}
+                onChange={(e) => { setFisierAles(Number(e.target.value)); }}>
+                {ultimulExport.map((x, k) => <option key={x.nume} value={k}>{x.nume}</option>)}
+              </select>
+            )}
+            <button type="button" data-masina="export" disabled={!exportAles || IN_FLUX.has(f.faza)}
+              title={exportAles ? t('masina.program.export.titlu') : t('masina.program.export.lipsa')}
+              onClick={() => { if (exportAles) void incarca(exportAles.octeti, 'export', exportAles.nume, exportAles.sha256); }}>
+              {t('masina.program.export')}
+            </button>
+            <button type="button" data-masina="fisier" disabled={IN_FLUX.has(f.faza)} title={t('masina.program.fisier.titlu')} onClick={() => fisier.current?.click()}>
+              {t('masina.program.fisier')}
+            </button>
+            <input ref={fisier} type="file" accept=".nc,.gcode,.ngc,.tap,.txt" hidden data-masina="fisier-ales"
+              onChange={(e) => {
+                const fis = e.target.files?.[0];
+                e.target.value = '';
+                if (fis) void fis.arrayBuffer().then((b) => incarca(new Uint8Array(b), 'fisier', fis.name));
+              }} />
+          </div>
+          {refuz && <p className="masina-nota" role="alert" data-testid="masina-refuz">{refuz}</p>}
+          <p className="masina-program" data-testid="masina-program">
+            {f.program ? <>
+              <strong>{nume ?? '—'}</strong>{' · '}{t('masina.program.linii', { n })}<br />
+              <span className="masina-sha" title={f.program.sha256} data-sha={f.program.sha256}>SHA-256 {f.program.sha256.slice(0, 16)}…</span>
+            </> : t('masina.program.niciunul')}
+          </p>
+        </section>
+      </div>
+
+      {/* Consola: comanda manuală și jurnalul. */}
+      <div className="masina-coloana" data-coloana="consola">
+        <section className="masina-consola" aria-label={t('masina.consola')}>
+          <h3>{t('masina.consola')}</h3>
+          <form className="masina-comanda" onSubmit={(e) => { e.preventDefault(); trimiteComanda(); }}>
+            <input value={comanda} data-masina="comanda" aria-label={t('masina.comanda')} placeholder="$G" disabled={!conectat}
+              onChange={(e) => { setComanda(e.target.value); }} />
+            <button type="submit" data-masina="trimite" disabled={!conectat || comanda.trim() === ''}>{t('masina.comanda.trimite')}</button>
+          </form>
+          <ol className="masina-jurnal" aria-label={t('masina.jurnal')} data-testid="masina-jurnal">
+            {st.jurnal.slice(-60).map((l, k) => <li key={k} data-fel={l.fel}>{textJurnal(l, dict, st)}</li>)}
+          </ol>
+        </section>
+      </div>
     </div>
   );
 }
@@ -463,6 +543,7 @@ function Pozitionare({ s, st }: { readonly s: SesiuneMasina; readonly st: StareS
 
   return (
     <section aria-label={t('masina.pozitionare')} className="masina-pozitionare">
+      <h3>{t('masina.pozitionare')}</h3>
       <label className="masina-camp">
         <span>{t('masina.wcs')}</span>
         <select value={st.wcsActiv ?? ''} data-masina="wcs" title={mWcs ?? t('masina.wcs.titlu')} disabled={mWcs !== null}
@@ -480,7 +561,7 @@ function Pozitionare({ s, st }: { readonly s: SesiuneMasina; readonly st: StareS
         </div>
       )}
 
-      <h3>{t('masina.jog')}</h3>
+      <h4>{t('masina.jog')}</h4>
       <div className="masina-jog" role="group" aria-label={t('masina.jog')}>
         {DIRECTII.map((d, k) => (d === null ? <span key={k} /> : (
           <button key={d.id} type="button" data-masina="jog" data-jog={d.id} disabled={mJog !== null || !(nr > 0)}
@@ -524,7 +605,7 @@ function Pozitionare({ s, st }: { readonly s: SesiuneMasina; readonly st: StareS
         </p>
       )}
 
-      <h3>{t('masina.palpare')}</h3>
+      <h4>{t('masina.palpare')}</h4>
       <div className="masina-palpare">
         <label className="masina-camp"><span>{t('masina.palpare.grosime')}</span>
           <input type="number" inputMode="decimal" min={0.1} max={100} step={0.1} value={grosime} data-masina="palpare-grosime" className="masina-numar"

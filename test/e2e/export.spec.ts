@@ -611,16 +611,21 @@ test('posturile atelierelor (ADR 0125): NcStudio cu apostrof și setările lui; 
   expect(linii.slice(0, 5)).toEqual(["'CNC Vector Studio", "'post NcStudio", "'controler: N4063 = 1", "'controler: N4034 = 0", "'controler: N4035 = 0"]);
   for (const l of ['G90 G17 G21', 'G40 G49 G80', 'G54', 'G4 P3000']) expect(linii).toContain(l);
   expect(linii.some((l) => l.includes('G94'))).toBe(false);
+  // Nici „Deschide în Mașina” (ADR 0132 §7): senderul nu vorbește NcStudio.
+  await expect(page.locator('[data-buton="in-masina"]')).toHaveCount(0);
   await page.getByRole('button', { name: 'Închide' }).click();
-  // Panoul mașinii: programul NcStudio nu ajunge la sender (un G4 P3000 ar fi acolo 50 de minute)…
+  // Fereastra Mașina: programul NcStudio nu ajunge la sender (un G4 P3000 ar fi acolo 50 de minute)…
   await page.locator('[data-actiune="vedere.masina"]').click();
   await expect(page.locator('[data-masina="export"]')).toBeDisabled();
   await expect(page.locator('[data-masina="export"]')).toHaveAttribute('title', /familia GRBL/);
-  // …iar unul GRBL 1.1, da.
+  // …iar unul GRBL 1.1, da, exportat din Proiectare (ADR 0132), cu „Deschide în Mașina” în fereastra exportului.
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
   await page.locator('[data-actiune="export.gcode"]').click();
   const d3 = page.waitForEvent('download');
   await page.locator('[data-buton="exporta"]').click();
   await d3;
+  await expect(page.locator('[data-buton="in-masina"]')).toBeVisible();
   await page.getByRole('button', { name: 'Închide' }).click();
+  await page.locator('[data-actiune="vedere.masina"]').click();
   await expect(page.locator('[data-masina="export"]')).toBeEnabled();
 });

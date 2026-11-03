@@ -400,7 +400,7 @@ test('DXF cu un arc aproape drept (R ≈ 4 000 mm), mărit din colț: piesa cre�
   if (!b) throw new Error('mânerul ne n-are cutie');
   const ne = { x: b.x + b.width / 2, y: b.y + b.height / 2 };
   // Colțul, tras până sub barele de sus (colțul scalează proporțional): piesa crește și umple ecranul în sus.
-  const bare = await page.locator('header.sus').boundingBox();
+  const bare = await page.locator('.sus').boundingBox();
   if (!bare) throw new Error('barele de sus n-au cutie');
   const sub = bare.y + bare.height + 12;
   await page.mouse.move(ne.x, ne.y);
@@ -742,7 +742,8 @@ test('fișierele stau împreună în bara de sus (cererea din 28.10): import, ex
   await expect(grup.locator('[data-editare="vectori"]')).toBeVisible();
   const ordine = await grup.locator('button').evaluateAll((b) => b.map((x) => x.getAttribute('data-actiune') ?? x.getAttribute('data-editare')));
   expect(ordine).toEqual(['import.svg', 'vectori', 'export.gcode']);
-  // Extensia barei nu-l mai are; bara întreagă încape lângă marcă și lângă uneltele din dreapta.
+  // Extensia barei nu-l mai are; bara întreagă încape în fereastră, sub meniul global (ADR 0132: marca și grupul din dreapta
+  // au urcat în meniu).
   await expect(page.locator('#loc-extensie [data-editare="vectori"]')).toHaveCount(0);
   await expect(page.locator('[data-camp="fisier-svg"]')).toHaveAttribute('accept', /\.dxf,image\/vnd\.dxf,application\/dxf,\.pdf,application\/pdf,\.ai,\.eps,application\/postscript,\.wmf$/);
   const cutie = async (s: string) => {
@@ -750,9 +751,10 @@ test('fișierele stau împreună în bara de sus (cererea din 28.10): import, ex
     if (!b) throw new Error(`${s} n-are cutie`);
     return b;
   };
-  const bara = await cutie('.insula.bara'), marca = await cutie('.marca'), unelte = await cutie('.insula.unelte');
-  expect(marca.x + marca.width).toBeLessThanOrEqual(bara.x);
-  expect(bara.x + bara.width).toBeLessThanOrEqual(unelte.x);
+  const bara = await cutie('.insula.bara'), meniu = await cutie('.meniu-global');
+  expect(bara.x).toBeGreaterThanOrEqual(0);
+  expect(bara.x + bara.width).toBeLessThanOrEqual(1280);
+  expect(meniu.y + meniu.height).toBeLessThanOrEqual(bara.y);
   // Sfatul unui buton al barei coboară peste extensie: bara urcă deasupra ei doar cât e nevoie.
   const zBara = () => page.locator('.insula.bara').evaluate((el) => getComputedStyle(el).zIndex);
   await page.mouse.move(640, 600);

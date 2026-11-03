@@ -124,6 +124,8 @@ export const roExport = {
     few: 'Descărcat: {n} linii, SHA-256 {sha}',
     other: 'Descărcat: {n} de linii, SHA-256 {sha}',
   },
+  'export.in-masina': 'Deschide în Mașina',
+  'export.in-masina.titlu': 'Încarcă programul în fereastra Mașina, fără să-l pornească',
   'export.gata.fisier': {
     one: 'Descărcat {nume}: {n} linie, SHA-256 {sha}',
     few: 'Descărcat {nume}: {n} linii, SHA-256 {sha}',

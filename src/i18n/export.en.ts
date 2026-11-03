@@ -124,6 +124,8 @@ export const enExport = {
   'export.regim': 'Spindle 18,000 rpm with a 3 s wait, feed 1,000 mm/min, plunge 300 mm/min, safe Z 5 mm. Inside profiles are cut first.',
   'export.exporta': 'Export',
   'export.gata': { one: 'Downloaded: {n} line, SHA-256 {sha}', other: 'Downloaded: {n} lines, SHA-256 {sha}' },
+  'export.in-masina': 'Open in Machine',
+  'export.in-masina.titlu': 'Loads the program into the Machine window without starting it',
   'export.gata.fisier': { one: 'Downloaded {nume}: {n} line, SHA-256 {sha}', other: 'Downloaded {nume}: {n} lines, SHA-256 {sha}' },
   'export.eroare': 'The export failed: {motiv}',
   'export.iesire.titlu': 'The bit goes past the sheet:',

@@ -2,16 +2,20 @@
 
 ## Getting started
 %% capitol: pornire
-%% acopera: vedere.paleta, vedere.lista, vedere.proprietati, vedere.tema, editare.manual
+%% acopera: vedere.paleta, vedere.lista, vedere.proprietati, vedere.proiectare, vedere.tema, editare.manual
 
 CNC Vector Studio draws parts for a CNC router and writes the program (G-code) the machine cuts. You work on a **sheet** (the
 board of material), put shapes on it, each with its own cutting **operation**, then export the G-code.
 
-**The screen.** The canvas fills the screen; floating above it are:
+**The screen.** At the very top sits the **application menu**, in every window: the brand, the window tabs (**Design** and
+**Machine**), the job indicator (with the machine connected, see [The machine](#masina)), then “Search commands”, the
+language (RO / EN), the theme and the **Account** button. The pressed tab is the current window; the app reopens in it the
+next time it starts.
+
+In the **Design** window, the canvas fills the screen; floating above it are:
 - the **top bar**: the drawing tools, Snap and Grid, Undo and Redo and, at its end, the files: import, “Export vectors”
   and “Export G-code”;
-- the **bar extension** just below: alignment, mirroring, the 3D view and the manual;
-- top right: “Search commands”, the language (RO / EN) and the theme;
+- the **bar extension** just below: alignment, mirroring, copying, offset, the boolean and the 3D view;
 - on the left, the **On the sheet** panel: the sheet's shapes, with the part and operations of each; on the right, the
   **Properties** panel;
 - at the bottom: what is selected, the cursor on the sheet (in mm, from the sheet's bottom-left corner), the zoom, the error
@@ -25,7 +29,7 @@ it. The palette lists every command, with its key; for the ones done with the mo
 
 The **Manual** opens from the **Account** menu in the top-right corner (the **Manual** row) or with `F1`. With F1 it opens
 at the chapter for what you are
-doing now (the chosen tool, the 3D view, the open window). You can search the manual by words, with or without diacritics.
+doing now (the chosen tool, the 3D view, the open window, the Machine). You can search the manual by words, with or without diacritics.
 
 **Where it is saved.** The project saves itself, in this browser, on every change. See [The project and
 saving](#proiect).
@@ -703,7 +707,8 @@ number.
 The **Export** button downloads the file and shows how many lines it has and its SHA-256 fingerprint (with it you check that
 exactly this file reaches the machine). If the cutter would leave the sheet, the window says by how much and where, and the
 export asks you to confirm that nothing is in the way there (clamps, screws); the confirmation is written in the program's
-header.
+header. After an export this app's sender sends (the GRBL family), **Open in Machine** closes the window and loads the program
+in [the Machine](#masina), without starting it.
 
 The **job summary** shows the estimated time, per operation and per tool. For your machine's times, paste the controller's
 answer to `$$` (from the sender's console) under “Machine settings”; the program does not change.
@@ -735,8 +740,24 @@ in pieces joined end to end (a polyline, then a curve).
 %% capitol: masina
 %% acopera: vedere.masina
 
-The **Machine** panel (on the right, under the properties) sends the program to the machine over the USB cable or over WiFi
-and shows its state.
+The **Machine** tab in the application menu opens the machine window, full screen, under the menu: it sends the program to
+the machine over the USB cable or over WiFi and shows its state. On a wide screen it has three columns: the machine (the
+connection, the state and the position in large digits, positioning), the job (its phase with its buttons, and the program)
+and the console (the command and the log). On a laptop, the console moves underneath; on a phone, everything is in one
+column, most urgent first.
+
+- **The drawing stays one click away.** The **Design** tab takes you back to the drawing at any time, and the job carries on.
+  While you are in the Machine window, the drawing's keys (Delete, Ctrl+Z, the arrows, the tools) do not touch the hidden
+  drawing; `Ctrl+K` works, and a drawing command picked from the palette takes you to Design first. `F1` opens this chapter.
+  **Escape** closes only what is open (the WiFi form, a confirmation): it does not change the window and sends nothing to the
+  machine.
+- **The job indicator** sits in the application menu once the Machine window has been opened, and shows from any window:
+  “Machine connected”, “Running 42%” (green, with **Pause** next to it), “Paused 42%” (orange, with **Resume**), “Stopped at
+  M6”, “Stopped at line …” or “Stopped on an error” (orange), “Alarm” or “Job interrupted” (red), “Job done”. Clicking it opens
+  the Machine window. **Stop** stays only in the window: a reset pressed by mistake loses the position. While the job runs, the
+  browser tab's title starts with the percentage.
+- **With a job running**, closing or reloading the page first asks for the browser's confirmation: the connection would be cut
+  and the job would stop halfway. Meanwhile “New version ready” shows **Reload after the job**, disabled, until it ends.
 
 - **Connect (USB)** lets you choose the machine’s port (GRBL, 115,200 baud). It works only in Chrome or Edge on a computer
   (Web Serial); otherwise, the panel says so. On the test instance there is also **Simulated machine**: a simulated GRBL
@@ -756,7 +777,8 @@ and shows its state.
   the export window); **File…** loads G-code from another program, checked first. A program is refused, with the line, if it
   has characters outside ASCII (on GRBL, “ș” and “ț” would change the spindle speed), Windows line endings (`\r`), lines over
   70 bytes, sets no work coordinate system (`G54`–`G59`) before its first move, changes the tool (`M6`) without being exported
-  from here, or has no line end at the end. With one file per bit, **File of the last export** picks which one loads.
+  from here, or has no line end at the end. With one file per bit, **File of the last export** picks which one loads. From the export window, after a successful
+  export, **Open in Machine** brings the export's first file here, loaded, without starting it.
 - **Start** sends the program line by line, as much as fits in the machine’s memory. The job shows its phase and line.
   **Pause** stops the motion (Hold), **Resume** continues it. A machine error on a line stops the job on hold and lists it;
   **Resume after the error** continues from the first line not yet sent. At a tool change (`M6`) or a pause in the program

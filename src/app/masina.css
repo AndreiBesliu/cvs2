@@ -1,21 +1,58 @@
-/* Panoul mașinii (ADR 0081), adus odată cu el: aceleași tokenuri ca panoul de proprietăți. */
+/*
+ * Fereastra Mașina (ADR 0081, pe tot ecranul din ADR 0132), adusă odată cu ea: aceleași tokenuri ca restul carcasei. Trei
+ * coloane de la 80 rem (mașina, lucrarea, consola), două până la 48 rem (consola dedesubt), una pe telefon, în ordinea
+ * urgenței. Fiecare secțiune e un card.
+ */
 
 .masina {
-  padding: var(--sp-1) var(--sp-3) var(--sp-3);
-  font-size: var(--fs-2);
+  display: grid;
+  grid-template-columns: minmax(19rem, 26rem) minmax(0, 1fr) minmax(18rem, 26rem);
+  align-items: start;
+  gap: var(--sp-4);
+  max-width: 112rem;
+  margin: 0 auto;
+  font-size: var(--fs-3);
 }
 
-.masina h2 {
-  padding-left: 0;
+.masina-coloana {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+/* Titlul ferestrei, pentru cititoarele de ecran: fila din meniu îl spune deja la vedere. */
+.masina-ascuns {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .masina section {
-  padding: var(--sp-2) 0;
-  border-bottom: 1px solid var(--l-margine);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-3);
+  background: var(--s-panou);
+  box-shadow: var(--umbra-1);
+  min-width: 0;
 }
 
-.masina section:last-child {
-  border-bottom: 0;
+.masina h3 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-1);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--t-slab);
+}
+
+.masina h4 {
+  margin: var(--sp-3) 0 var(--sp-1);
+  font-size: var(--fs-2);
+  font-weight: 600;
 }
 
 .masina-cap {
@@ -24,25 +61,45 @@
   overflow-wrap: anywhere;
 }
 
+.masina-lucrare .masina-cap {
+  font-size: var(--fs-4);
+}
+
 .masina-nota {
   margin: 0 0 var(--sp-2);
   padding: 6px var(--sp-2);
   border-radius: var(--r-1);
   border: 1px dashed var(--a);
   background: var(--s-atentie);
-  font-size: var(--fs-1);
+  font-size: var(--fs-2);
 }
 
 .masina-butoane {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-1);
+  gap: var(--sp-2);
   margin: var(--sp-1) 0;
+}
+
+/* Butoanele care mișcă sau scriu la mașină se văd ca butoane (cu margine), nu ca etichete. */
+.masina-butoane button,
+.masina-jog button,
+.masina-wcs-nepotrivit button,
+.masina-comanda button {
+  border-color: var(--l-camp);
+}
+
+/* Butoanele lucrării, mari: se apasă și cu mănuși, lângă mașină. */
+.masina-butoane-lucrare button {
+  min-height: calc(var(--tinta) + 12px);
+  padding: 0 var(--sp-4);
+  font-size: var(--fs-4);
 }
 
 .masina-opreste:enabled {
   color: var(--rosu);
   border-color: var(--rosu);
+  font-weight: 600;
 }
 
 .masina-camp {
@@ -74,6 +131,30 @@
   overflow-wrap: anywhere;
 }
 
+/* Poziția, cu cifrele mari: câte o axă pe rând, valorile aliniate la dreapta (ADR 0132 §4). */
+.masina-rand-dro {
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: var(--sp-2);
+}
+
+.masina-dro {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--sp-3);
+  font-family: var(--mono);
+  font-size: clamp(1.5rem, 1rem + 1.4vw, 2.25rem);
+  line-height: 1.25;
+}
+
+.masina-axa {
+  display: contents;
+}
+
+.masina-axa > span:first-child {
+  color: var(--t-slab);
+  text-align: left;
+}
+
 .masina-program {
   margin: var(--sp-1) 0 0;
   overflow-wrap: anywhere;
@@ -81,20 +162,21 @@
 
 .masina-sha {
   color: var(--t-slab);
-  font-family: ui-monospace, Consolas, monospace;
+  font-family: var(--mono);
   font-size: var(--fs-1);
 }
 
 .masina-progres {
   display: grid;
-  gap: 2px;
-  margin-bottom: var(--sp-1);
+  gap: 4px;
+  margin-bottom: var(--sp-2);
   color: var(--t-slab);
-  font-size: var(--fs-1);
+  font-size: var(--fs-2);
 }
 
 .masina-progres progress {
   width: 100%;
+  height: 12px;
   accent-color: var(--a);
 }
 
@@ -102,7 +184,7 @@
   margin: 0 0 var(--sp-1);
   padding-left: var(--sp-3);
   color: var(--rosu);
-  font-size: var(--fs-1);
+  font-size: var(--fs-2);
 }
 
 .masina-comanda {
@@ -113,19 +195,20 @@
 .masina-comanda input {
   flex: 1;
   min-width: 0;
-  font-family: ui-monospace, Consolas, monospace;
+  font-family: var(--mono);
 }
 
 .masina-jurnal {
   list-style: none;
   margin: var(--sp-2) 0 0;
-  padding: var(--sp-1);
-  max-height: 12rem;
+  padding: var(--sp-2);
+  min-height: 12rem;
+  max-height: calc(100vh - 16rem);
   overflow: auto;
   border-radius: var(--r-1);
   background: var(--s-peste);
-  font-family: ui-monospace, Consolas, monospace;
-  font-size: var(--fs-1);
+  font-family: var(--mono);
+  font-size: var(--fs-2);
   overflow-wrap: anywhere;
 }
 
@@ -139,24 +222,12 @@
 }
 
 /* Poziționarea (ADR 0082): jog-ul pe o grilă 4 × 3 (XY cu diagonalele, Z în dreapta), zero-ul, palparea. */
-.masina h3 {
-  margin: var(--sp-2) 0 var(--sp-1);
-  font-size: var(--fs-2);
-  font-weight: 600;
-}
-
 .masina-jog {
   display: grid;
-  grid-template-columns: repeat(4, var(--tinta));
+  grid-template-columns: repeat(4, calc(var(--tinta) + 10px));
+  grid-auto-rows: calc(var(--tinta) + 10px);
   gap: var(--sp-1);
   margin: var(--sp-1) 0;
-}
-
-/* Butoanele care mișcă sau scriu la mașină se văd ca butoane (cu margine), nu ca etichete. */
-.masina-jog button,
-.masina-pozitionare .masina-butoane button,
-.masina-wcs-nepotrivit button {
-  border-color: var(--l-camp);
 }
 
 .masina-jog button {
@@ -184,16 +255,13 @@
 .masina-z0 {
   margin: 0 0 var(--sp-1);
   color: var(--t-slab);
-  font-size: var(--fs-1);
+  font-size: var(--fs-2);
 }
 
 /* Codul controlerului (ADR 0085): ultimul error / ALARM, explicat; confirmarea deblocării cu poziția pierdută. */
 .masina section.masina-cod {
-  margin: var(--sp-2) 0;
-  padding: var(--sp-2);
   border: 1px solid var(--rosu);
   border-left-width: 4px;
-  border-radius: var(--r-1);
 }
 
 .masina-cod p {
@@ -202,7 +270,7 @@
 
 .masina-cod-meta {
   color: var(--t-slab);
-  font-size: var(--fs-1);
+  font-size: var(--fs-2);
 }
 
 .masina-confirmare {
@@ -237,4 +305,141 @@
 
 .masina-avertisment p {
   margin: 0 0 var(--sp-1);
+}
+
+/* Două coloane: mașina și lucrarea; consola dedesubt, pe toată lățimea. */
+@media (max-width: 80rem) {
+  .masina {
+    grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
+  }
+
+  .masina-coloana[data-coloana='consola'] {
+    grid-column: 1 / -1;
+  }
+
+  .masina-jurnal {
+    max-height: 20rem;
+  }
+}
+
+/*
+ * O coloană (telefonul, tableta îngustă): coloanele se desfac (`display: contents`), iar cardurile vin în ordinea urgenței:
+ * conexiunea, starea și poziția, codul, lucrarea cu butoanele ei, poziționarea, programul, consola.
+ */
+@media (max-width: 48rem) {
+  .masina {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-3);
+  }
+
+  .masina-coloana {
+    display: contents;
+  }
+
+  .masina-conexiune { order: 1; }
+  .masina-stare { order: 2; }
+  .masina section.masina-cod { order: 3; }
+  .masina-lucrare { order: 4; }
+  .masina-pozitionare { order: 5; }
+  .masina-programul { order: 6; }
+  .masina-consola { order: 7; }
+
+  .masina-butoane-lucrare button {
+    flex: 1 1 8rem;
+  }
+
+  .masina-jog {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: calc(var(--tinta) + 16px);
+  }
+}
+
+/*
+ * Indicatorul lucrării (ADR 0132 §5), în meniul global: o pastilă cu starea și, alături, Pauză sau Reia. Culorile se derivă
+ * din tokenurile temei (fondul, o nuanță; textul, culoarea amestecată cu textul), deci rămân lizibile în ambele teme.
+ */
+.indicator-lucrare {
+  --c: var(--t-slab);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--c) 35%, var(--s-panou));
+  background: color-mix(in oklab, var(--c) 12%, var(--s-panou));
+  color: color-mix(in oklab, var(--c) 70%, var(--t));
+}
+
+.indicator-lucrare[data-culoare='verde'] {
+  --c: var(--traseu-taiere);
+}
+
+.indicator-lucrare[data-culoare='portocaliu'] {
+  --c: var(--a);
+}
+
+.indicator-lucrare[data-culoare='rosu'] {
+  --c: var(--rosu);
+}
+
+.indicator-lucrare button {
+  min-height: calc(var(--tinta) - 6px);
+  padding: 0 var(--sp-3);
+  border-radius: 999px;
+  color: inherit;
+  font-size: var(--fs-2);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.indicator-lucrare button + button {
+  border: 1px solid color-mix(in oklab, var(--c) 45%, var(--s-panou));
+  background: var(--s-panou);
+}
+
+.indicator-punct {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c);
+}
+
+.indicator-procent {
+  font-variant-numeric: tabular-nums;
+}
+
+[data-icona='indicator.pauza'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M9 6v12M15 6v12'/%3E%3C/svg%3E");
+}
+
+[data-icona='indicator.reia'] {
+  --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M8 5.5v13l10.5-6.5z'/%3E%3C/svg%3E");
+}
+
+/*
+ * Pe telefon, indicatorul încape lângă file: punctul colorat și procentul (cuvântul stării, doar fără procent), iar Pauză și
+ * Reia ca iconițe. Numele întregi rămân în eticheta accesibilă și în sfat.
+ */
+@media (max-width: 40rem) {
+  .indicator-lucrare[data-procent='true'] .indicator-cuvant,
+  .indicator-lucrare .cu-eticheta > .eticheta {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .indicator-lucrare button {
+    padding: 0 var(--sp-2);
+  }
+
+  .indicator-lucrare button + button {
+    padding: 0;
+    min-width: calc(var(--tinta) - 6px);
+  }
 }

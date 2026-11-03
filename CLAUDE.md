@@ -385,6 +385,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   V-carve-urile unei piese stau o singură dată, în `valoriVcarve` (`src/model/lume.ts`)**: lucrarea și gruparea le citesc de
   acolo. Două texte cu același V-carve se grupează (decizia owner-ului): grupul le sapă ca o singură regiune, deci se refuză
   doar când regiunile lor se ating sau se suprapun. **Pornirea 99,1 (cu ușa 102,6 / 110 kB), totalul 450,7 / 500, /admin 105,4 / 200, după unirea cu 4.6↑b și 4.9↑.**
+  **Meniul global și fereastra Mașina (ADR 0132, felia 13.A↑, adusă din etapa 13)** gata pe 02.11, în worktree-ul
+  `sender-ecran`: un rând sus, în toate ferestrele (zona `meniu`: marca, filele din `aranjament.ferestre`, locul indicatorului
+  lucrării, căutarea, limba, tema, contul); bara de desen doar în Proiectare; Mașina pe tot ecranul, pe coloane, montată la
+  prima deschidere și ținută montată. **Proiectarea acoperită rămâne montată și inertă:** o tastă nouă a desenului trece prin
+  `ORIUNDE` (carcasa) și prin `activ` (modulul editării), altfel atinge desenul pe care omul nu-l vede. Indicatorul, pur, e
+  `src/machine/indicator.ts`; lucrarea pornită e `cuPunctDeReluare` din flux (`beforeunload`, „Reîncarcă după lucrare”, prin
+  semnalul `lucrarePornita` din pornire). **Pornirea 99,1 (cu ușa 102,6 / 110 kB), totalul 450,8 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -510,6 +517,23 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   4. „4, v-carve oricum nu s-a aplica intre litere si doar in interiorul unei singure litere”: V-carve-urile cu aceleași
      valori din forme diferite se grupează (o singură regiune par-impar, suprafața săpată în marginile V-carve-ului, probată
      pe oracolul simulării); refuzul rămâne doar când regiunile lor se ating sau se suprapun.
+- 02.11.2026: **meniul global și fereastra Mașina pe tot ecranul** (ADR 0132, felia 13.A↑, în worktree-ul `sender-ecran`).
+  Cererea: „vreau inca un worktree care sa faca panoul sender-ului mai mare, el trebuie sa fie fullscreen, sub meniu. Atentie,
+  meniul global, el va fi diferit de cel cu uneltele de desen. ca la cvs1 acest meniu va aparea doar in fereastra de
+  desing/desen/project”; la schița cu nouă întrebări, „Da, cu recomandările”:
+  - un rând sus, în toate ferestrele: marca, filele ferestrelor (o listă în aranjament, ca o extensie, de exemplu gazda din
+    Trenuleț, să-și adauge fila), indicatorul lucrării, căutarea, limba, tema și contul; fără meniuri Fișier / Editare acum
+    (vin cu șablonul clasic, decizia din 13.10);
+  - ferestrele se numesc „Proiectare” și „Mașina” (en: Design, Machine), ca în CVS1; aplicația se redeschide în fereastra în
+    care a rămas;
+  - bara de desen, cu extensia ei, rămâne neschimbată, doar în Proiectare; importul și exportul rămân în ea; panoul Mașina iese
+    din docul din dreapta; în plus, „Deschide în Mașina” în fereastra exportului (încarcă, nu pornește);
+  - jobul continuă cât desenezi; indicatorul (verde rulează, portocaliu pauză sau oprit la M6, roșu alarmă) se vede de oriunde,
+    cu Pauză / Reia alături; un clic pe el deschide Mașina; Oprește rămâne doar în fereastră; procentul, în titlul filei;
+  - cu o lucrare pornită: confirmarea browserului la închiderea paginii și „Reîncarcă după lucrare”;
+  - Escape închide doar ce e deschis; nu schimbă fereastra și nu atinge mașina;
+  - Mașina pe trei coloane de la 80 rem, două până la 48 rem, una pe telefon, în ordinea urgenței;
+  - mai târziu, în etapa 13: previzualizarea traseului cu freza în timp real și override-urile, în coloana lucrării.
 - 02.11.2026: **plafonul total 500 kB** („Da, 500 kB”, la „Ridic plafonul total al pachetului la 500 kB?”), după propunerea
   a două worktree-uri paralele lângă etapa 4: restul textului (etapa 7) și verificarea și repararea vectorilor (etapa 10). La
   441,2 / 450 kB, cele trei linii nu încăpeau în 8,8 kB. ADR 0122, felia 3.R; pornirea rămâne 110 kB. Worktree-urile pornesc

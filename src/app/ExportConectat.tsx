@@ -35,10 +35,13 @@ type Props = {
   /** Răspunsul la `$$` lipit (ADR 0046 §8): îl ține aplicația, comun cu timpul de lângă traseu. */
   readonly setariMasina: string;
   readonly onSetariMasina: (text: string) => void;
+  /** „Deschide în Mașina” (ADR 0132 §7), dat de aplicație doar după un export pe care senderul îl vorbește. */
+  readonly onDeschideInMasina?: () => void;
 };
 
 export function ExportConectat({
   doc, dupaIdLume, lume, descriere, limba, baza, doarCitire, stare, onExporta, onInchide, onReseteaza, setariMasina, onSetariMasina,
+  onDeschideInMasina,
 }: Props) {
   /**
    * Dialogul de export arată operațiile pieselor de pe foaie (ADR 0025): câte un rând pe operație, cu descrierea primului
@@ -128,6 +131,7 @@ export function ExportConectat({
       onReseteaza={onReseteaza}
       setariMasina={setariMasina}
       onSetariMasina={onSetariMasina}
+      {...(onDeschideInMasina ? { onDeschideInMasina } : {})}
     />
   );
 }
