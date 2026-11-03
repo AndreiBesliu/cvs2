@@ -4915,3 +4915,22 @@ e2e 309 / 309.
 Verificat în browserul aplicației la 1440 px: versiunea `e35753b90afb`; bucata ferestrei Mașina vine singură, la ~1,1 s
 după pornire, fără niciun clic; primul clic pe Mașina o deschide plină („Not connected”), fără ca mesajul de încărcare să apară
 (un observator al paginii); fără erori în consolă.
+
+## 2026-11-03 — Imprimanta 3D a owner-ului: Creality K1C, prin WiFi (ADR 0119, întrebarea 4) (Model: Claude Opus 5.5)
+
+**Prompt:** „Am o imprimanta 3d pe care vreau sa o folosim din cvs2 prin wifi. Las imaginea asta pentru mai tarziu.” (cu o
+captură din aplicația Creality).
+**Started:** 03.11, 20:47. **Completed:** 03.11, 21:05.
+
+Doar documente, fără felie („mai târziu”). Captura arată imprimanta „K1C-8578” în aplicația Creality, în timpul unei
+imprimări: e răspunsul la întrebarea 4 din ADR 0119 (ce imprimante și ce firmware), o Creality K1C, cu firmware-ul Creality
+pe Klipper. Trecut în ADR 0119 (§14: recomandarea devine prima felie a imprimantelor pe K1C, prin rețea, iar Marlin pe USB
+după; ce expune în rețea firmware-ul de fabrică, Moonraker sau doar protocolul aplicației Creality, și dacă cere accesul root
+se cercetează la pornirea feliei), în coada owner-ului din fișa etapei 3 (la felie: adresa imprimantei în rețea și o
+imprimare de probă) și în „Decizii luate” din `CLAUDE.md`. Captura stă doar local, în `docs/faza0/imprimanta-3d/` (ignorat
+de git). Avertismentul de pe captură (CC5000, coordonatele mișcării în afara cursei, pe `output_11031835.gcode`) nu e
+analizat: l-am notat pentru felie. Commit-ul `e176af8`.
+**Porțile:** traducerile (550, 0 lipsă), probele documentației (58 / 58).
+**Publicat pe test:** 03.11, 21:04, `publica` pe `e176af8` (rularea 41699288269), după CI-ul rapid verde (41698051907).
+Verificat: versiunea `e176af8c75c0` în browserul aplicației, la 1440 px, fără erori în consolă; rândul nou al cozii owner-ului
+în `documentatie/roadmap.json` și în `documentatie/roadmap.en.json` de pe test.
