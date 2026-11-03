@@ -4808,3 +4808,23 @@ al editării și al manualului, 20 / 20, pe portul 4177. Otrăvurile din `test/o
 pe e2e, prin învelișul cu `node`).
 **Publicat pe canalul `grupare`** la 23:36 (versiunea `0d6d568dee7f`). Verificat acolo: comutatorul e în secțiunea Aliniere,
 cu sfatul lui, oprit.
+
+## 2026-11-03 — Unirea senderului pe tot ecranul (13.A↑) și a alinierii ca bloc (6.U↑) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „continua” (după pauză), apoi „si unește 13.A↑” și „si pe” (cu captura sesiunii „Gruparea, lângă degrupare”).
+**Started:** 03.11, 07:02. **Completed:** 03.11, 10:00.
+
+Reluarea după pauză: `main` la `35327cf`, curat, CI-ul de noapte verde (02.11). Pe test, versiunea `0e458a925538`: cu o
+singură formă aleasă, Ctrl+G și Ctrl+Shift+G își spun motivul lângă butoane. Publicarea ei reușise la 00:00; ajutorul meu
+raportase eșec fiindcă o căuta după commit, iar rularea pornită de mână poartă vârful ramurii (îndreptat: o caută după oră).
+Două fuziuni: `12b6709` (13.A↑) și `d691051` (6.U↑). Conflictele: cele de adăugare (DEVLOG, jurnalul feliilor, indexul ADR,
+CLAUDE.md), plus `App.tsx` la 13.A↑. Acolo, `executa` comută întâi la Proiectare o comandă a desenului aleasă din Mașina,
+iar refuzul ei ajunge apoi la modulul editării; `Editare` primește și `activ`, și `onRefuz`. Ușile manualului sunt 71:
+ambele ramuri urcaseră numărul de la 69 la 70, iar git unise schimbarea identică fără conflict.
+**Porțile:** traducerile (546, 0 lipsă), compilatoarele, importurile, 8 099 de teste unitare (0 căderi, 8 sărite), build-ul
+determinist (232 de fișiere; pornirea 99,9, cu ușa 103,4 / 110 kB; totalul 453,1 / 500; /admin 105,5 / 200), licențele, e2e
+305 / 305.
+**Publicat pe test:** 03.11, 09:56, `publica` pe `d691051` (rularea 41599353572), după CI-ul rapid verde. Verificat în
+browserul aplicației la 1440 px: versiunea `d6910511d758`; meniul global (Design / Machine, căutarea, limba, tema, contul);
+fereastra Mașina pe tot ecranul, pe trei coloane (conexiunea și starea, lucrarea și programul, consola); comutatorul „As a
+block” în rândul alinierii; fără erori în consolă. La prima deschidere, Mașina stă goală câteva clipe, cât vine modulul ei.
