@@ -4652,4 +4652,27 @@ ramura nu e împinsă.
 
 **Prompt:** „Da, pornește E2” (după raportul lui 3.Xb), în sesiunea dedicată liniei Trenuleț. E2 e pasul în care sursele
 planificatorului intră în repo, ca extensie; 3.Ta e prima lui felie: pagina v18 neschimbată, în cadrul izolat.
-**Started:** 03.11, 09:28. **Completed:** —
+**Started:** 03.11, 09:28. **Completed:** 03.11, 10:40.
+
+ADR 0129; codul: `754319b`, plus proba care a prins două otrăvuri scăpate: `1948eb8`.
+- **Ce merge:**
+  - sursele v18 ale planificatorului stau în `extensii/trenulet/sursa/`, octet cu octet; testele lor de referință: 622
+    comparate, 0 diferite;
+  - `scripts/construieste-trenulet.ts` face ce făcea `build.py`, fără Python: pagina de sine stătătoare iese identică cu
+    v18 (amprenta lui `preview.html`), iar pachetul `.zip` are marcajul, stilurile și cele 8 scripturi ale paginii;
+  - instalat din fișier, planificatorul rulează în cadrul izolat: circuitele se salvează singure în stocarea extensiei și
+    se redeschid după reîncărcare, modul 3D și culoarea din atelier rămân, iar descărcările ies din pagina lui cvs2;
+  - permisiunea nouă `descarcari` (`descarcari.salveaza`): numele curățat, lista albă a tipurilor, cel mult 64 MB.
+- **Încărcătorul și CSP-ul** nu s-au schimbat.
+- **Porțile:**
+  - compilatorul; importurile, 19 / 19; traducerile, 549, 0 lipsă;
+  - 8 092 de teste unitare, 0 eșuate (8 sărite, ca înainte);
+  - build-ul determinist: 237 de fișiere identice, pornirea 98,9 / 110 kB (cu ușa 102,4), totalul 462,6 / 500.
+- **E2e-ul întreg, pe portul 4176:** 302 trec, 2 pică. Una e aserțiunea care cere portul 4173 (raportorul). Cealaltă,
+  colecția TTC din `fonturi.spec.ts:82`, a expirat sub încărcarea suitei (butonul „Aplică” încă dezactivat) și trece
+  singură, în 6,4 s.
+- **Otrăvurile `test/otravuri/3.Ta.py`:** 47 / 47 prinse. A05 (o citire pornită înainte de dezabonare) și A07 (filtrul
+  cheilor `ls:`) scăpaseră întâi; două probe noi le prind.
+- **Ce nu merge încă:** „Trimite la cvs2” (cadrul nu deschide file), previzualizarea 3D (three.js nu vine din rețea),
+  fonturile paginii, tema și engleza lui cvs2; textul despre circuitele văzute „pe telefon, tabletă sau calculator” e fals
+  în cvs2 (datele stau doar în browserul acesta).
