@@ -947,6 +947,8 @@ tu, iar interfața aplicației rămâne aceeași.
   live, deocamdată, extensiile nu folosesc mașina.
 - O astfel de extensie poate trimite și o lucrare întreagă (de exemplu, „Trimite la cvs2” din Planificatorul Trenuleț): vine
   în dialogul **Lucrare primită**, ca de la o aplicație deschisă alături, cu extensia drept origine.
+- Planificatorul Trenuleț folosește mașina și din exportul lui CNC, la „Pe mașină, prin cvs2”: încarcă un fișier, îl pornește
+  (cu întrebarea de mai sus), pune pauză, îl reia și îl oprește. Starea mașinii stă deasupra butoanelor.
 - Extensia rulează izolată: nu vede proiectele, contul sau portul mașinii și nu iese pe internet; vorbește cu aplicația doar
   prin ce îi dă aceasta.
 - **Gestionează extensiile** le arată pe cele instalate, cu sursa, data și cât ocupă datele lor; **Scoate** șterge una,

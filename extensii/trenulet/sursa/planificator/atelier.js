@@ -5,6 +5,8 @@
   "use strict";
   const $ = s => document.querySelector(s);
   const fmt = (v, z = 1) => String(Math.round(v * 10 ** z) / 10 ** z).replace(".", ",");
+  // culorile din date (mostrele, punctele modelului) se pun prin CSSOM, dupa desenare: in cvs2, CSP-ul refuza atributele style
+  const fundaluri = r => { for (const e of r.querySelectorAll("[data-fundal]")) e.style.background = e.dataset.fundal; };
   const CULORI = [["roșu", "#c8322b"], ["albastru", "#1f5fbf"], ["galben", "#f2c12e"], ["verde", "#2e8b4a"], ["alb", "#f1f1ee"], ["negru", "#2b2b2b"], ["gri", "#9aa3ab"]];
   const CHEIE = "atelier.caramizi.v1";
   const THREE_URL = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
@@ -218,7 +220,7 @@
           <button class="btn" type="button" data-grila="r-">− rând</button><button class="btn" type="button" data-grila="r+">+ rând</button></div>
         <div class="at-rand"><span class="mic">Înălțime:</span>
           <div class="segment" id="at-inaltime">${[[1, "Placă"], [2, "2 plăci"], [3, "Cărămidă"], [6, "Dublă"]].map(([v, x]) => `<button type="button" data-placi="${v}" aria-pressed="${p.placi === v}">${x}</button>`).join("")}</div>
-          <label class="mic at-rand" for="at-placi">plăci <input id="at-placi" type="number" min="1" max="12" step="1" value="${p.placi}" style="width: 70px"></label></div>
+          <label class="mic at-rand" for="at-placi">plăci <input id="at-placi" type="number" min="1" max="12" step="1" value="${p.placi}" class="camp-70"></label></div>
         <div class="at-rand"><span class="mic">Știfturi sus:</span>
           <div class="segment" id="at-stifturi">${[["da", "Toate"], ["mijloc", "Unul, la mijloc"], ["nu", "Fără (netedă)"]].map(([v, x]) => `<button type="button" data-st="${v}" aria-pressed="${(p.stifturi === "mijloc" ? "mijloc" : p.stifturi ? "da" : "nu") === v}">${x}</button>`).join("")}</div></div>
         <div class="at-rand"><span class="mic">Dedesubt:</span>
@@ -730,6 +732,11 @@
   let promisiuneThree = null;
   function incarcaThree() {
     if (window.THREE) return Promise.resolve(window.THREE);
+    // in cvs2 (ADR 0161), cadrul extensiei n-are retea: three.js n-ar veni de pe cdnjs (CSP-ul il refuza), deci nu se mai cere
+    if (window.cvs2) {
+      $("#at-vedere-lipsa").textContent = "În cvs2, previzualizarea 3D lipsește deocamdată: three.js nu e încă în pachetul extensiei. Piesa și STL-ul merg și fără ea.";
+      return Promise.resolve(null);
+    }
     if (!promisiuneThree) promisiuneThree = new Promise(ok => {
       const s = document.createElement("script");
       s.src = THREE_URL; s.async = true;
@@ -910,7 +917,7 @@
   const titluM = m => numeDef(m.def);
   function editorModel() {
     const e = $("#at-editor"), m = model.find(x => x.id === alesM);
-    const cul = CULORI.map(([n, c]) => `<button type="button" style="background: ${c}" data-mc="${c}" aria-label="${n}" aria-pressed="${!!m && m.culoare === c}"></button>`).join("");
+    const cul = CULORI.map(([n, c]) => `<button type="button" data-fundal="${c}" data-mc="${c}" aria-label="${n}" aria-pressed="${!!m && m.culoare === c}"></button>`).join("");
     e.innerHTML = `<h2>Modelul</h2>
       <p class="mic">Așezi piesele pe grila de știfturi, ca să vezi avionul întreg înainte să-l printezi. Alegi o piesă cu un clic în vedere sau din listă, apoi o muți: X și Y câte un știft, Z câte o placă. O piesă nouă intră deasupra celei alese. Nu verific dacă piesele se prind între ele: e doar privirea de ansamblu.</p>
       ${m ? `<div class="model-ales">
@@ -924,8 +931,9 @@
         <div class="at-rand"><span class="mic">Culoare:</span><div class="culori" id="at-m-culori">${cul}</div></div>
         <div class="at-rand"><button class="btn" type="button" id="at-m-dubla">Dublează</button><button class="btn" type="button" id="at-m-scoate">Scoate din model</button><button class="btn" type="button" id="at-m-editeaza">Schimb-o în editor</button></div>
       </div>` : model.length ? `<p class="mic">Nicio piesă aleasă.</p>` : `<p class="mic">Modelul e gol. Alege o piesă (fila de sus), apoi „Pune în model”.</p>`}
-      ${model.length ? `<ol class="model-lista" id="at-m-lista">${model.map(x => `<li><button type="button" data-mid="${x.id}" aria-pressed="${x.id === alesM}"><span class="punct" style="background: ${x.culoare}"></span>${titluM(x)} <span class="mic">${x.x}, ${x.y}, ${x.z}</span></button></li>`).join("")}</ol>` : ""}
+      ${model.length ? `<ol class="model-lista" id="at-m-lista">${model.map(x => `<li><button type="button" data-mid="${x.id}" aria-pressed="${x.id === alesM}"><span class="punct" data-fundal="${x.culoare}"></span>${titluM(x)} <span class="mic">${x.x}, ${x.y}, ${x.z}</span></button></li>`).join("")}</ol>` : ""}
       <p class="mic">Cu vederea 3D aleasă (un clic pe ea): săgețile mută, PageUp / PageDown urcă și coboară, R rotește, Delete scoate.</p>`;
+    fundaluri(e);
     if (m) {
       $("#at-m-mutari").onclick = ev => { const b = ev.target.closest("[data-m]"); if (b) mutaM(b.dataset.m); };
       $("#at-m-culori").onclick = ev => { const b = ev.target.closest("[data-mc]"); if (!b) return; m.culoare = b.dataset.mc; dupaModel(); };
@@ -1110,18 +1118,18 @@
     return { randuri, placi, toate, eroare, tren: tr, dinTren, grame: gTren + gLego };
   }
   const randTren = p => `<tr data-tren="${p.nume}"><td>${p.titlu}</td><td class="num">${fmt(p.dim[0])} × ${fmt(p.dim[1])} × ${fmt(p.dim[2])}</td>` +
-    `<td class="num" style="text-align: center">${p.bucati}</td><td class="num">${fmt(p.g * p.bucati)} g</td><td><button class="btn" type="button" data-op="vezi">Vezi</button></td></tr>`;
+    `<td class="num centru">${p.bucati}</td><td class="num">${fmt(p.g * p.bucati)} g</td><td><button class="btn" type="button" data-op="vezi">Vezi</button></td></tr>`;
   function randeazaLista() {
     calculLista = calculeazaLista();
     const { randuri, placi, toate, eroare, tren: tr, grame } = calculLista;
     $("#at-lista").innerHTML = randuri.length ? randuri.map(({ x, g, dim, nPiese }) => `<tr data-id="${x.id}"><td>${x.nume}</td>` +
       `<td class="num">${dim ? `${fmt(dim[0])} × ${fmt(dim[1])} × ${fmt(dim[2])}` : `${nPiese} piese`}</td>` +
-      `<td><span class="pas"><button class="btn" type="button" data-op="-" aria-label="O bucată mai puțin">−</button><span class="num" style="min-width: 2ch; text-align: center">${x.bucati}</span><button class="btn" type="button" data-op="+" aria-label="O bucată în plus">+</button></span></td>` +
+      `<td><span class="pas"><button class="btn" type="button" data-op="-" aria-label="O bucată mai puțin">−</button><span class="num pas-n">${x.bucati}</span><button class="btn" type="button" data-op="+" aria-label="O bucată în plus">+</button></span></td>` +
       `<td class="num">${fmt(g * x.bucati)} g</td><td><button class="btn" type="button" data-op="x">Scoate</button></td></tr>`).join("")
       : `<tr><td colspan="5" class="mic">Nicio piesă LEGO încă. Desenează una mai sus și apasă „Adaugă în lista de printat”.</td></tr>`;
     // grupul circuitului: se ia din planul 2D, cu numarul de bucati de acolo
     const titlu = tr.titlu ? `Din circuitul „${tr.titlu}”` : "Din circuitul de tren";
-    $("#at-lista-tren").innerHTML = `<tr class="grupa"><th colspan="5"><div class="at-rand" style="justify-content: space-between">` +
+    $("#at-lista-tren").innerHTML = `<tr class="grupa"><th colspan="5"><div class="at-rand intre">` +
       `<label class="bifa"><input type="checkbox" id="at-cu-tren" ${setari.cuTren ? "checked" : ""}> ${titlu}</label>` +
       `<button class="btn" type="button" id="at-la-setari">Ce se printează: setări în 2D</button></div></th></tr>` +
       (tr.eroare ? `<tr><td colspan="5" class="mic eroare">${tr.eroare}</td></tr>`
@@ -1301,7 +1309,8 @@
     editor(); construiesteCurent(); salveaza(); butonModel();
   }
   function culori() {
-    $("#at-culori").innerHTML = CULORI.map(([n, c]) => `<button type="button" style="background: ${c}" data-c="${c}" aria-label="${n}" aria-pressed="${setari.culoare === c}"></button>`).join("");
+    $("#at-culori").innerHTML = CULORI.map(([n, c]) => `<button type="button" data-fundal="${c}" data-c="${c}" aria-label="${n}" aria-pressed="${setari.culoare === c}"></button>`).join("");
+    fundaluri($("#at-culori"));
     $("#at-culori").onclick = ev => {
       const b = ev.target.closest("[data-c]"); if (!b) return;
       setari.culoare = b.dataset.c; if (v3.ok) { v3.mat.color.set(setari.culoare); randeaza(); }

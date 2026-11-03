@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
-import { pachetTrenulet } from '../../scripts/construieste-trenulet.ts';
+import { pachetTrenulet, paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
 
 /**
  * Planificatorul Trenuleț ca extensie (ADR 0129, felia 3.Ta), în Edge, cu pachetul construit aici din sursele lui:
@@ -12,17 +12,38 @@ import { pachetTrenulet } from '../../scripts/construieste-trenulet.ts';
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
- *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit.
+ *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
+ * - adaptat pentru cvs2 (ADR 0161): textul circuitelor spune unde stau ele; niciun refuz CSP în cadru (nici stilurile, nici
+ *   three.js, care nu se mai cere de pe cdnjs, cu motivul spus în vederea 3D); pagina de sine stătătoare, din aceleași
+ *   surse, fără cvs2: textele de până acum, fără secțiunea mașinii; din
+ *   exportul CNC, „Pe mașină, prin cvs2”: starea, încărcarea, pornirea cu confirmarea lui cvs2, pauza, reluarea, oprirea.
  */
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
+const ZIP = { name: 'trenulet-18.2.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 
 async function deschide(page: Page): Promise<void> {
   await page.locator('[data-extensii="buton"]').click();
   await page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"][data-id="trenulet"]').click();
   await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
+}
+
+/**
+ * Refuzurile CSP din cadrul extensiei (ADR 0161 §C): evenimentele `securitypolicyviolation`, ascultate de un script pus în
+ * fiecare cadru la încărcare. Consola nu le dă probelor (un colector pe `console` vedea 0 și cu atributele încă în surse).
+ */
+async function ascultaRefuzurile(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __refuzuri: string[] };
+    w.__refuzuri = [];
+    document.addEventListener('securitypolicyviolation', (e) => { w.__refuzuri.push(`${e.violatedDirective}: ${e.sample || e.blockedURI}`); }, true);
+  });
+}
+async function refuzuri(page: Page): Promise<readonly string[]> {
+  const f = await (await page.locator('iframe.cadru-extensie').elementHandle())?.contentFrame();
+  return f ? f.evaluate(() => (window as unknown as { __refuzuri?: string[] }).__refuzuri ?? ['fără ascultător']) : ['fără cadru'];
 }
 
 /** Ce a scris extensia în stocarea ei (IndexedDB-ul lui cvs2, magazinul `date`), la o cheie; sau cheile cu un prefix. */
@@ -37,11 +58,13 @@ const stocat = (page: Page, cheie: string) => page.evaluate((k) => new Promise<u
   };
 }), cheie);
 
-test('instalat din fișier: pagina v18 în cadru; circuitul, modul și culoarea păstrate; descărcarea prin cvs2; ștergerea', async ({ page }) => {
+test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păstrate; descărcarea prin cvs2; ștergerea', async ({ page }) => {
+  // Refuzurile CSP-ului pentru stilurile din atribute (ADR 0161 §C): pagina nu mai are niciunul.
+  await ascultaRefuzurile(page);
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
-  await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.1.0.zip', mimeType: 'application/zip', buffer: PACHET });
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.1.0, de la trenulet-18.1.0.zip');
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.2.0, de la trenulet-18.2.0.zip');
   await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
     'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe); '
     + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea.',
@@ -50,9 +73,9 @@ test('instalat din fișier: pagina v18 în cadru; circuitul, modul și culoarea 
   await deschide(page);
 
   let c = cadru(page);
-  // Scripturile au rulat (init), iar `window.claude.use('db')` a dat documentele: textul circuitelor e cel „cu bază de date”.
-  await expect(c.locator('#circ-unde')).toHaveText(/^Circuitele se salvează singure/);
-  // Un atribut `style` din marcaj, pus prin CSSOM.
+  // Scripturile au rulat (init), iar pagina știe că e în cvs2: circuitele stau în browserul acesta, nu și pe telefon.
+  await expect(c.locator('#circ-unde')).toHaveText('Circuitele se salvează singure, în browserul acesta (prin cvs2): pe alt calculator sau în alt browser nu apar.');
+  // Stilul listei, dintr-o clasă a foii (până la 3.Tb, un atribut `style`).
   await expect(c.locator('#circ-lista')).toHaveCSS('display', 'flex');
   await expect(c.locator('#circ-lista')).toHaveCSS('flex-direction', 'column');
 
@@ -61,9 +84,19 @@ test('instalat din fișier: pagina v18 în cadru; circuitul, modul și culoarea 
   await expect(c.locator('#circ-lista .circ b')).toHaveText(['Ovalul de probă']);
   await c.locator('#foaie-circuite [data-inchide]').click();
   await c.locator('[data-mod="3d"]').first().click();
+  // În cvs2, three.js nu se mai cere de pe cdnjs (CSP-ul l-ar refuza): pagina spune de ce lipsește previzualizarea.
+  await expect(c.locator('#at-vedere-lipsa')).toHaveText('În cvs2, previzualizarea 3D lipsește deocamdată: three.js nu e încă în pachetul extensiei. Piesa și STL-ul merg și fără ea.');
   await c.locator('#at-culori [data-c="#1f5fbf"]').click();
   await expect.poll(() => stocat(page, 'ls:trenulet.mod')).toMatchObject({ valoare: '3d' });
   await expect.poll(async () => JSON.stringify(await stocat(page, 'db:atelier/curent'))).toContain('"culoare":"#1f5fbf"');
+  // Clasele care țin locul atributelor: capul listei de printat, cu titlul și rezumatul la capete.
+  await expect(c.locator('#at-sectiune-lista .at-rand.intre').first()).toHaveCSS('justify-content', 'space-between');
+  // Piesa pusă în model: mostrele editorului modelului și punctul din listă, colorate din date, prin CSSOM.
+  await c.locator('#at-in-model').click();
+  await expect(c.locator('#at-m-culori [data-mc="#1f5fbf"]')).toHaveCSS('background-color', 'rgb(31, 95, 191)');
+  await expect(c.locator('#at-m-lista .punct').first()).toHaveCSS('background-color', 'rgb(31, 95, 191)');
+  // Lista circuitelor, atelierul cu mostrele, editorul modelului: niciun refuz CSP.
+  expect(await refuzuri(page)).toEqual([]);
 
   await page.reload();
   await deschide(page);
@@ -71,7 +104,7 @@ test('instalat din fișier: pagina v18 în cadru; circuitul, modul și culoarea 
   await expect(c.locator('[data-mod="3d"]').first()).toHaveAttribute('aria-pressed', 'true');
   const albastru = c.locator('#at-culori [data-c="#1f5fbf"]');
   await expect(albastru).toHaveAttribute('aria-pressed', 'true');
-  // Un atribut `style` dintr-un șablon al scripturilor (atelier.js), pus prin CSSOM.
+  // Culoarea mostrei, din datele ei (`data-fundal`), pusă prin CSSOM după desenare.
   await expect(albastru).toHaveCSS('background-color', 'rgb(31, 95, 191)');
   await expect(c.locator('#nume')).toHaveValue('Ovalul de probă');
 
@@ -91,6 +124,8 @@ test('instalat din fișier: pagina v18 în cadru; circuitul, modul și culoarea 
   const sigur = c.locator('#circ-lista [data-sterge-c]');
   await expect(sigur).toHaveText('Sigur? Șterge');
   await expect(sigur).toHaveCSS('color', 'rgb(194, 53, 43)');
+  // Confirmarea ștergerii, cu clasa ei: niciun stil refuzat nici aici.
+  expect(await refuzuri(page)).toEqual([]);
   await sigur.click();
   await expect(c.locator('#circ-lista')).toHaveText('Încă nu ai circuite salvate. Orice schimbare pe plan se salvează singură.');
   await expect.poll(() => stocat(page, 'db:circuite/')).toEqual([]);
@@ -100,11 +135,13 @@ test('instalat din fișier: pagina v18 în cadru; circuitul, modul și culoarea 
   await cadru(page).locator('#btn-circuite').click();
   await expect(cadru(page).locator('#circ-lista')).toHaveText('Încă nu ai circuite salvate. Orice schimbare pe plan se salvează singură.');
   await expect(page.getByTestId('jurnal')).not.toHaveClass(/cip-rosu/);
+  // Cadrul de după reîncărcare: nici el.
+  expect(await refuzuri(page)).toEqual([]);
 });
 
 test('„Trimite la cvs2” din extensie: lucrarea ovalului, în dialogul primirii, apoi în „Lucrarea primită” din fereastra Mașina', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.1.0.zip', mimeType: 'application/zip', buffer: PACHET });
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
   await page.locator('[data-extensii="instaleaza"]').click();
   await deschide(page);
   const c = cadru(page);
@@ -124,4 +161,70 @@ test('„Trimite la cvs2” din extensie: lucrarea ovalului, în dialogul primir
   await page.locator('[data-extensii="fila"]').click();
   await expect(c.locator('#cvs2-stare')).toContainText('cvs2 a primit');
   await expect(page.getByTestId('jurnal')).not.toHaveClass(/cip-rosu/);
+});
+
+test('pe mașină, prin cvs2: din exportul CNC, încărcarea, pornirea cu confirmarea lui cvs2, pauza, reluarea, oprirea', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
+  await page.locator('[data-extensii="instaleaza"]').click();
+  await deschide(page);
+  const c = cadru(page);
+  await c.locator('#btn-export').click();
+  const stare = c.locator('#masina-stare');
+  await expect(c.locator('#det-masina')).toBeVisible();
+  // Cu senderul, „Trimite la cvs2” duce lucrarea în fereastra Mașina: paragrafele despre fila nouă și protocol nu se arată.
+  await expect(c.locator('#cvs2-fila')).toHaveAttribute('hidden', '');
+  await expect(c.locator('#cvs2-primirea')).toHaveAttribute('hidden', '');
+  await expect(c.locator('#cvs2-in-cvs2')).not.toHaveAttribute('hidden');
+  await expect(stare).toHaveText('Mașina: neconectată. Conecteaz-o în fereastra Mașina a lui cvs2.');
+  await expect(c.locator('#m-fisier option').first()).toHaveText(/^placa_1/, { timeout: 30_000 });
+  await expect(c.locator('#m-porneste')).toBeDisabled();
+
+  // Conectarea rămâne în fereastra Mașina.
+  await page.locator('[data-actiune="vedere.masina"]').click();
+  await page.locator('[data-masina="viteza"]').selectOption('10');
+  await page.locator('[data-masina="simulata"]').click();
+  await expect(page.getByTestId('masina-stare')).toHaveText('Idle');
+  await page.locator('[data-extensii="fila"]').click();
+  await expect(stare).toHaveText('Mașina: conectată.');
+
+  await c.locator('#m-incarca').click();
+  await expect(stare).toHaveText(/^Mașina: conectată\. Program: placa_1\S* \(\d+ (de )?linii\)\.$/);
+  await expect(page.getByTestId('masina-program-de-la')).toHaveText('de la Planificator Trenuleț');
+  await c.locator('#m-porneste').click();
+  const confirmare = page.getByTestId('confirmare-masina');
+  await expect(confirmare).toBeVisible();
+  await expect(page.getByTestId('confirmare-masina-cere')).toHaveText('„Planificator Trenuleț” cere să pornească pe mașină programul de mai jos.');
+  await page.keyboard.press('Escape');
+  await expect(c.locator('#masina-raspuns')).toHaveText('Ai ales să nu pornești.');
+  await c.locator('#m-porneste').click();
+  await page.locator('[data-masina="confirma"]').click();
+  await expect(stare).toHaveText(/^Mașina: rulează \d+ %\. Program: placa_1/);
+  await expect(c.locator('#masina-raspuns')).toHaveText('');
+
+  await c.locator('#m-pauza').click();
+  await expect(stare).toHaveText(/^Mașina: în pauză \d+ %\./);
+  await c.locator('#m-reia').click();
+  await expect(confirmare).toHaveAttribute('data-fel', 'reia');
+  await page.locator('[data-masina="confirma"]').click();
+  await expect(stare).toHaveText(/^Mașina: rulează/);
+  await c.locator('#m-opreste').click();
+  await expect(stare).toHaveText(/^Mașina: (în alarmă|lucrarea s-a întrerupt)/);
+  await expect(c.locator('#m-pauza')).toBeDisabled();
+  await expect(page.getByTestId('jurnal')).not.toHaveClass(/cip-rosu/);
+});
+
+test('pagina de sine stătătoare, din aceleași surse, fără cvs2: textele de până acum, fără secțiunea mașinii', async ({ page }) => {
+  const erori: string[] = [];
+  page.on('pageerror', (e) => { erori.push(e.message); });
+  await page.setContent(paginiPlanificator().preview);
+  await page.locator('#btn-circuite').click();
+  await expect(page.locator('#circ-unde')).toHaveText('Circuitele se salvează doar pe acest dispozitiv.');
+  await page.locator('#foaie-circuite [data-inchide]').click();
+  await page.locator('#btn-export').click();
+  await expect(page.locator('#e-cvs2')).toBeEnabled({ timeout: 30_000 });
+  await expect(page.locator('#det-masina')).toBeHidden();
+  await expect(page.locator('#cvs2-fila')).not.toHaveAttribute('hidden');
+  await expect(page.locator('#cvs2-in-cvs2')).toHaveAttribute('hidden', '');
+  expect(erori).toEqual([]);
 });

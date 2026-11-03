@@ -1,8 +1,12 @@
 /**
- * Planificatorul Trenuleț ca extensie (ADR 0129), construit din `extensii/trenulet/sursa/` fără Python: `repr` din Python
- * pe numerele catalogului și JSON-ul compact al lui `build.py`; pagina de sine stătătoare, octet cu octet cea din v18 (amprenta
- * copiei de pe PC, `preview.html`); pachetul, citit de cvs2 ca la instalare: manifestul, permisiunile, intrarea fără importuri,
+ * Planificatorul Trenuleț ca extensie (ADR 0129, 0161), construit din `extensii/trenulet/sursa/` fără Python: `repr` din
+ * Python pe numerele catalogului și JSON-ul compact al lui `build.py`; pagina de sine stătătoare din sursele de acum
+ * (marcajul, foaia, scripturile în ordinea paginii), aceeași la fiecare construcție; sursele fără atribute `style` (CSP-ul
+ * moștenit în cvs2 le-ar refuza); pachetul, citit de cvs2 ca la instalare: manifestul, permisiunile, intrarea fără importuri,
  * scripturile paginii în ordinea ei, cu catalogul pus.
+ *
+ * Până la 3.Tb, pagina era octet cu octet `preview.html` din v18 (amprenta `26ca1839…`, probată pe `754319b`). De atunci
+ * sursele se schimbă în repo, iar ieșirile motoarelor le apără `trenulet.referinte.test.ts`.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,9 +14,6 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { jsonCaPython, pachetTrenulet, paginiPlanificator, reprPython, scripturi } from '../../scripts/construieste-trenulet.ts';
 import { citestePachet } from '../../src/extensii/pachet.ts';
-
-/** SHA-256 al lui `preview.html` din v18 (`Apps/Trenulet`), construit acolo de `build.py`. */
-const V18 = '26ca18394b7a135f875a582a1ffc5bac4606b3f6bc323e4aa765bd86ae316eaa';
 
 test('repr din Python: cel mai scurt text, .0 la întregi, exponentul sub 1e-4 și de la 1e16', () => {
   const cazuri: [number, string][] = [
@@ -31,10 +32,30 @@ test('JSON-ul compact ca json.dumps: numerele își păstrează felul, textul r�
   );
 });
 
-test('pagina de sine stătătoare: octet cu octet v18', () => {
+test('pagina de sine stătătoare: marcajul, foaia și scripturile surselor, în ordinea paginii; aceeași la fiecare construcție', () => {
   const { planificator, preview } = paginiPlanificator();
-  assert.equal(createHash('sha256').update(preview).digest('hex'), V18);
+  assert.equal(createHash('sha256').update(preview).digest('hex'), createHash('sha256').update(paginiPlanificator().preview).digest('hex'));
   assert.ok(preview.endsWith(`<body>${planificator}</body></html>`));
+  const sursa = (f: string): string => readFileSync(`extensii/trenulet/sursa/planificator/${f}`, 'utf8');
+  assert.ok(planificator.startsWith(`${sursa('head.html')}\n${sursa('body.html')}\n`));
+  let poz = 0;
+  for (const s of scripturi()) {
+    const k = planificator.indexOf(`<script>\n${s.text}\n</script>\n`, poz);
+    assert.ok(k >= poz, s.nume);
+    poz = k + 1;
+  }
+});
+
+test('sursele paginii n-au atribute style: în cvs2, CSP-ul moștenit le-ar refuza (ADR 0161 §C)', () => {
+  const surse = [
+    ['body.html', readFileSync('extensii/trenulet/sursa/planificator/body.html', 'utf8')],
+    ['head.html', readFileSync('extensii/trenulet/sursa/planificator/head.html', 'utf8')],
+    ...scripturi().map((s) => [s.nume, s.text]),
+  ] as const;
+  for (const [nume, text] of surse) {
+    assert.doesNotMatch(text, /\sstyle\s*=/, nume);
+    assert.doesNotMatch(text, /setAttribute\(\s*["'`]style["'`]/, nume);
+  }
 });
 
 test('pachetul: cvs2 îl citește ca la instalare; intrarea fără importuri, scripturile paginii în ordinea ei, catalogul pus', async () => {

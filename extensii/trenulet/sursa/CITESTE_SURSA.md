@@ -25,11 +25,17 @@ Fiecare fișier `.js` e o funcție închisă care pune un singur nume pe `window
 
 ## Construirea
 
+În cvs2, din rădăcina repo-ului (fără Python; face ce făcea `build.py`, ADR 0129):
+
 ```
-python3 build.py
+node scripts/construieste-trenulet.ts
 ```
 
-`iesire/preview.html` e identic, octet cu octet, cu copia v18 din `Apps\Trenulet\planificator\planificator.html`.
+Scrie `.tmp/trenulet/iesire/planificator.html`, `preview.html` și pachetul extensiei, `.tmp/extensii/trenulet-<versiune>.zip`.
+Până la felia 3.Tb, `preview.html` era identic, octet cu octet, cu copia v18 din `Apps\Trenulet\planificator\planificator.html`.
+De atunci, sursele au adaptările pentru cvs2 (ADR 0161: `window.cvs2`, stilurile ca clase, butoanele mașinii), deci pagina
+nu mai e copia v18. Ieșirile motoarelor rămân cele v18: `referinte.js --compara` e în poarta lui cvs2
+(`test/unit/trenulet.referinte.test.ts`).
 
 ## Probele
 

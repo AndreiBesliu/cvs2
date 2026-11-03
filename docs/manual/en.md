@@ -977,6 +977,9 @@ it, and the app’s interface stays the same.
   Machine window. On the live instance, extensions don’t use the machine for now.
 - Such an extension can also send a whole job (for example, “Send to cvs2” in the Trenuleț planner): it comes in the
   **Incoming job** dialog, like one from an app opened next to it, with the extension as its origin.
+- The Trenuleț planner also uses the machine from its CNC export, under “Pe mașină, prin cvs2” (“On the machine, through
+  cvs2”): it loads a file, starts it (with the question above), pauses, resumes and stops it. The machine’s state sits above
+  the buttons.
 - The extension runs isolated: it can’t see your projects, your account or the machine’s port, and it can’t reach the
   internet; it talks to the app only through what the app gives it.
 - **Manage extensions** shows the installed ones, with their source, date and how much their data takes; **Remove** deletes

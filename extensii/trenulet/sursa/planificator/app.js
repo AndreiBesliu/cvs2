@@ -1520,7 +1520,10 @@ function deschide(c) {
 }
 let deConfirmat = null;
 function randeazaCircuite() {
-  $("#circ-unde").textContent = db
+  // in cvs2 (ADR 0161), circuitele stau in stocarea extensiei, adica doar in browserul acesta
+  $("#circ-unde").textContent = window.cvs2
+    ? "Circuitele se salvează singure, în browserul acesta (prin cvs2): pe alt calculator sau în alt browser nu apar."
+    : db
     ? "Circuitele se salvează singure și le vezi pe telefon, tabletă sau calculator."
     : "Circuitele se salvează doar pe acest dispozitiv.";
   if (!listaCircuite.length) { $("#circ-lista").innerHTML = `<p class="mic">Încă nu ai circuite salvate. Orice schimbare pe plan se salvează singură.</p>`; return; }
@@ -1530,7 +1533,7 @@ function randeazaCircuite() {
     const conf = deConfirmat === c.id;
     return `<div class="circ ${c.id === stare.docId ? "activ" : ""}"><div class="info"><b></b><span class="mic">${c.nrPiese || 0} piese · ${cand}</span></div>
       <button class="btn" type="button" data-deschide="${c.id}">Deschide</button>
-      <button class="btn" type="button" data-sterge-c="${c.id}" style="${conf ? "color:var(--pericol);border-color:var(--pericol)" : ""}">${conf ? "Sigur? Șterge" : "Șterge"}</button></div>`;
+      <button class="btn${conf ? " pericol" : ""}" type="button" data-sterge-c="${c.id}">${conf ? "Sigur? Șterge" : "Șterge"}</button></div>`;
   }).join("");
   $("#circ-lista").querySelectorAll(".circ b").forEach((b, i) => { b.textContent = listaCircuite[i].nume || "Circuit fără nume"; });
 }
@@ -2315,6 +2318,7 @@ const fisaLucrarii = l => ({ ...l, tip: "fisa", fisiere: l.fisiere.map(({ text, 
 function butoaneCvs2() {
   const ok = !!(rezCNC && rezCNC.gcode);
   $("#e-cvs2").disabled = !ok; $("#e-gcode").disabled = !ok;
+  randeazaMasina();
 }
 let legaturaCvs2 = null;   // { w, origine, id, lucrare, gata, trimis, t0, cron }
 function stareCvs2(html, fel) {
@@ -2390,6 +2394,98 @@ window.addEventListener("message", ev => {
     stareCvs2(`cvs2 a primit ${bune} ${bune === 1 ? "fișier" : "fișiere"}` + (rele.length ? `; a refuzat ${rele.length}: ${rele.slice(0, 4).map(x => `${esc(x.nume)} (${esc(x.cod)}${x.linie != null ? ", linia " + (+x.linie + 1) : ""})`).join(", ")}.` : ". Alege-l pe primul în panoul mașinii, pune zero-ul și pornește."), rele.length ? "rau" : "ok");
   }
 });
+// ----------------------------------------------------------------------------- pe masina, prin cvs2
+// In cvs2 (window.cvs2.masina, ADR 0161), senderul lui cvs2, din exportul CNC: alegi fisierul (in ordinea taierii), il
+// incarci pe masina (cvs2 il verifica la fel ca unul adus cu "Fisier..."), il pornesti (cvs2 te intreaba inainte sa miste
+// masina), pui pauza, il reiei (tot cu intrebarea), il opresti. Conectarea, zero-ul, jog-ul si continuarea dupa o oprire din
+// program raman in fereastra Masina a lui cvs2. In afara lui cvs2 (claude.ai, copia de pe calculator) sectiunea nu se arata.
+const MASINA = (window.cvs2 && window.cvs2.masina) || null;
+let stareMasina = null, cerereMasinaInZbor = false;
+const FEL_MASINA = {
+  conectata: "conectată", ruleaza: "rulează", pauza: "în pauză", "oprita-m6": "oprită pentru schimbarea frezei (M6)",
+  oprita: "oprită de program", suspendata: "oprită pe o eroare", alarma: "în alarmă", intrerupta: "lucrarea s-a întrerupt",
+  gata: "lucrarea e gata",
+};
+const REFUZ_MASINA = {
+  neconectat: "Mașina nu e conectată: conecteaz-o în fereastra Mașina a lui cvs2.",
+  renuntat: "Ai ales să nu pornești.",
+  ocupat: "cvs2 așteaptă deja un răspuns de la tine.",
+  "in-lucru": "O lucrare e pornită: fișierul nou se încarcă după ea.",
+  "fara-program": "Încarcă întâi un fișier pe mașină.",
+  "fara-capabilitate": "Contul tău din cvs2 nu permite pornirea programelor.",
+  faza: "Mașina nu poate face asta acum.",
+  schimbat: "Programul sau starea mașinii s-au schimbat cât te gândeai: încearcă din nou.",
+  alarma: "Mașina e în alarmă: deblocheaz-o din fereastra Mașina.",
+  bariera: "Continuă din fereastra Mașina, după pasul de la mașină.",
+  nimic: "Nu e nimic de oprit sau de reluat acum.",
+  live: "Pe instanța live, cvs2 nu dă încă senderul extensiilor.",
+  indisponibila: "Fereastra Mașina a lui cvs2 nu s-a deschis.",
+};
+function textRefuzMasina(e) {
+  const c = String((e && e.message) || e).replace(/^masina:/, "");
+  const p = /^program:([a-z0-9-]+)(?::(\d+))?$/.exec(c);
+  if (p) return `cvs2 a refuzat fișierul (${p[1]}${p[2] ? ", linia " + p[2] : ""}).`;
+  return REFUZ_MASINA[c] || `cvs2 a refuzat cererea (${c}).`;
+}
+const textLinii = n => (n === 1 ? "o linie" : new Intl.PluralRules("ro").select(n) === "few" ? `${n} linii` : `${n} de linii`);
+// fisierele G-code ale exportului, in ordinea taierii: numele (fara "gcode/") si textul
+function fisiereMasina() {
+  const r = rezCNC;
+  if (!r || !r.gcode) return [];
+  return r.gcode.rezumat.map(x => r.fisiere.find(y => y.nume === x.nume)).filter(Boolean)
+    .map(f => ({ nume: f.nume.replace(/^gcode\//, ""), text: f.text }));
+}
+const FAZE_INCEPUTE = ["trimite", "golire", "terminare", "suspendat", "bariera"];
+function randeazaMasina() {
+  if (!MASINA) return;
+  const s = stareMasina, i = s && s.indicator, fis = fisiereMasina(), sel = $("#m-fisier");
+  const optiuni = fis.map(f => f.nume).join("\n");
+  if (sel.dataset.optiuni !== optiuni) {
+    const ales = sel.value;
+    sel.dataset.optiuni = optiuni;
+    sel.replaceChildren(...fis.map(f => { const o = document.createElement("option"); o.value = o.textContent = f.nume; return o; }));
+    if (fis.some(f => f.nume === ales)) sel.value = ales;
+  }
+  const inceputa = !!s && FAZE_INCEPUTE.includes(s.faza);
+  const procent = i && i.procent != null && (i.fel === "ruleaza" || i.fel === "pauza") ? ` ${i.procent} %` : "";
+  const cum = !s ? "încă nu știu" : !s.conectata && !(i && i.fel === "intrerupta")
+    ? "neconectată. Conecteaz-o în fereastra Mașina a lui cvs2" : (FEL_MASINA[i ? i.fel : "conectata"] || FEL_MASINA.conectata) + procent;
+  const program = s && s.program ? ` Program: ${s.program.nume || "—"} (${textLinii(s.program.linii)}).` : "";
+  $("#masina-stare").textContent = `Mașina: ${cum}.${program}`;
+  $("#rez-masina").textContent = s ? "· " + (s.conectata ? FEL_MASINA[i ? i.fel : "conectata"] || FEL_MASINA.conectata : "neconectată") : "";
+  const z = cerereMasinaInZbor;
+  $("#m-incarca").disabled = z || !fis.length || inceputa;
+  $("#m-porneste").disabled = z || !s || !s.conectata || !s.program || !["pregatit", "terminat", "pierdut"].includes(s.faza);
+  $("#m-pauza").disabled = z || !(i && i.fel === "ruleaza");
+  $("#m-reia").disabled = z || !(i && (i.fel === "pauza" || i.fel === "suspendata"));
+  $("#m-opreste").disabled = !s || !s.conectata || !inceputa;
+}
+// o cerere spre cvs2: butoanele asteapta raspunsul (pornirea si reluarea, si pe al omului); un refuz se spune sub ele
+async function cereMasina(f) {
+  cerereMasinaInZbor = true;
+  $("#masina-raspuns").textContent = "";
+  randeazaMasina();
+  try { await f(); }
+  catch (e) { $("#masina-raspuns").textContent = textRefuzMasina(e); }
+  finally { cerereMasinaInZbor = false; randeazaMasina(); }
+}
+function initMasina() {
+  if (!MASINA) return;
+  $("#det-masina").hidden = false;
+  // in cvs2, "Trimite la cvs2" pune lucrarea in fereastra Masina (fara fila noua); textele despre fila si protocol nu mai tin
+  $("#cvs2-fila").hidden = true; $("#cvs2-primirea").hidden = true; $("#cvs2-in-cvs2").hidden = false;
+  MASINA.laStare(s => { stareMasina = s; randeazaMasina(); });
+  void MASINA.stare().then(s => { if (!stareMasina) { stareMasina = s; randeazaMasina(); } }, () => {});
+  $("#m-incarca").onclick = () => {
+    const f = fisiereMasina().find(x => x.nume === $("#m-fisier").value);
+    if (f) void cereMasina(() => MASINA.incarca(f.nume, f.text));
+  };
+  $("#m-porneste").onclick = () => { void cereMasina(() => MASINA.porneste()); };
+  $("#m-pauza").onclick = () => { void cereMasina(() => MASINA.pauza()); };
+  $("#m-reia").onclick = () => { void cereMasina(() => MASINA.reia()); };
+  $("#m-opreste").onclick = () => { void cereMasina(() => MASINA.opreste()); };
+  randeazaMasina();
+}
 async function salveazaDescarcare(fisier, blob) {
   const dl = await (window.claude ? window.claude.use("downloads") : null);
   if (!dl) {   // copia locala (fara Claude): descarcare obisnuita din browser
@@ -2561,6 +2657,7 @@ function init() {
   $("#u-niciuna").onclick = () => { setariCNC = curataSetari({ ...setariCNC, umplere: [] }); arataSetariCNC(); salveazaSetariCNC(); pregatesteCNC(false); };
   $("#e-dxf").onclick = descarcaDXF;
   $("#e-cvs2").onclick = trimiteLaCvs2;
+  initMasina();
   $("#e-gcode").onclick = descarcaGcode;
   $("#cvs2-stare").addEventListener("click", e => {
     const b = e.target.closest("[data-cvs2]");

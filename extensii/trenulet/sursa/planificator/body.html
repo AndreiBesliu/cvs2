@@ -66,7 +66,7 @@
       <div class="at-atelier">
         <section class="at-panou" id="at-editor" aria-label="Piesa"></section>
         <section class="at-panou" aria-label="Previzualizare">
-          <div class="at-rand" style="justify-content: space-between">
+          <div class="at-rand intre">
             <h2 id="at-nume-piesa">Cărămidă 2×4</h2>
             <div class="culori" id="at-culori" aria-label="Culoarea din previzualizare"></div>
           </div>
@@ -81,7 +81,7 @@
           <div class="cote" id="at-cote"></div>
           <p class="at-avert" id="at-avert" hidden></p>
           <div class="at-rand" id="at-act-piesa">
-            <label class="mic at-rand" for="at-bucati" id="at-bucati-rand">Bucăți <input id="at-bucati" type="number" min="1" max="200" step="1" value="1" style="width: 80px"></label>
+            <label class="mic at-rand" for="at-bucati" id="at-bucati-rand">Bucăți <input id="at-bucati" class="camp-80" type="number" min="1" max="200" step="1" value="1"></label>
             <button class="btn principal" type="button" id="at-adauga">Adaugă în lista de printat</button>
             <button class="btn" type="button" id="at-stl">Descarcă STL</button>
             <button class="btn" type="button" id="at-in-model">Pune în model</button>
@@ -95,7 +95,7 @@
       </div>
 
       <section class="at-panou at-lista" id="at-sectiune-lista" aria-labelledby="at-t-lista">
-        <div class="at-rand" style="justify-content: space-between">
+        <div class="at-rand intre">
           <h2 id="at-t-lista">Lista de printat</h2>
           <p class="mic" id="at-rez-lista" role="status"></p>
         </div>
@@ -126,12 +126,12 @@
   <div class="foaie" role="dialog" aria-modal="true" aria-labelledby="t-circ">
     <div class="foaie-cap"><h2 id="t-circ">Circuitele tale</h2><button class="btn" type="button" data-inchide>Închide</button></div>
     <p class="mic" id="circ-unde"></p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div class="rand-butoane">
       <button class="btn principal" type="button" id="c-nou">Circuit nou, gol</button>
       <button class="btn" type="button" id="c-exemplu">Exemplu: oval</button>
       <button class="btn" type="button" id="c-pod">Exemplu: pod</button>
     </div>
-    <div id="circ-lista" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div id="circ-lista" class="coloana"></div>
   </div>
 </div>
 
@@ -174,7 +174,7 @@
       <summary><b>Umplerea plăcii</b> <span class="mic" id="rez-umplere"></span></summary>
       <p class="mic">După piesele circuitului, locul liber de pe fiecare placă se umple cu piesele bifate, pe rând, cât încap. Ies piese de rezervă din lemnul care altfel s-ar arunca.</p>
       <div id="sec-umplere"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="u-toate">Toate</button><button class="btn" type="button" id="u-niciuna">Niciuna</button></div>
+      <div class="rand-butoane"><button class="btn" type="button" id="u-toate">Toate</button><button class="btn" type="button" id="u-niciuna">Niciuna</button></div>
     </details>
     <details class="setari">
       <summary><b>G-code (fără ArtCAM)</b> <span class="mic" id="rez-gcode"></span></summary>
@@ -184,10 +184,27 @@
     </details>
     <details class="setari" id="det-cvs2">
       <summary><b>Trimite la cvs2</b> <span class="mic" id="rez-cvs2"></span></summary>
-      <p class="mic">„Trimite la cvs2” deschide CNC Vector Studio 2 într-o filă nouă și îi dă G-code-ul acestui export, fișier cu fișier, fiecare cu amprenta lui (SHA-256): plăcile (fața 1, apoi fața 2), placa de calibrare, rampele. În cvs2 alegi fișierul în panoul mașinii, pui zero-ul cum scrie în antetul lui și pornești. cvs2 verifică fiecare fișier ca pe unul adus cu „Fișier…”; schimbarea frezei cu M6 nu trece, așa că pentru cvs2 alege „Un fișier pe freză” sau „Un fișier, cu oprire (M0)”.</p>
+      <p class="mic" id="cvs2-fila">„Trimite la cvs2” deschide CNC Vector Studio 2 într-o filă nouă și îi dă G-code-ul acestui export, fișier cu fișier, fiecare cu amprenta lui (SHA-256): plăcile (fața 1, apoi fața 2), placa de calibrare, rampele. În cvs2 alegi fișierul în panoul mașinii, pui zero-ul cum scrie în antetul lui și pornești. cvs2 verifică fiecare fișier ca pe unul adus cu „Fișier…”; schimbarea frezei cu M6 nu trece, așa că pentru cvs2 alege „Un fișier pe freză” sau „Un fișier, cu oprire (M0)”.</p>
       <div id="sec-cvs2"></div>
-      <p class="mic">Primirea e descrisă în <b>cvs2/PROTOCOL_CVS2.md</b> (în dosarul Trenulet), cu codul gata de pus în cvs2. Până o are, cvs2 nu răspunde: atunci descarci G-code-ul și îl încarci în panoul mașinii cu „Fișier…”. Din pagina de pe claude.ai browserul poate opri legătura dintre file; din copia de pe calculator (planificator.html) merge.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="e-gcode">Descarcă doar G-code-ul (.zip)</button></div>
+      <p class="mic" id="cvs2-primirea">Primirea e descrisă în <b>cvs2/PROTOCOL_CVS2.md</b> (în dosarul Trenulet), cu codul gata de pus în cvs2. Până o are, cvs2 nu răspunde: atunci descarci G-code-ul și îl încarci în panoul mașinii cu „Fișier…”. Din pagina de pe claude.ai browserul poate opri legătura dintre file; din copia de pe calculator (planificator.html) merge.</p>
+      <p class="mic" id="cvs2-in-cvs2" hidden>În cvs2, „Trimite la cvs2” pune G-code-ul acestui export în „Lucrarea primită” din fereastra Mașina, după ce îl primești în dialogul lui; fiecare fișier se verifică la fel ca unul adus cu „Fișier…”. Mai jos, „Pe mașină, prin cvs2” încarcă și pornește un fișier chiar de aici.</p>
+      <div class="rand-butoane"><button class="btn" type="button" id="e-gcode">Descarcă doar G-code-ul (.zip)</button></div>
+    </details>
+    <details class="setari" id="det-masina" open hidden>
+      <summary><b>Pe mașină, prin cvs2</b> <span class="mic" id="rez-masina"></span></summary>
+      <p class="mic">Senderul lui cvs2, de aici: alegi fișierul, îl încarci pe mașină și îl pornești. cvs2 îl verifică la fel ca un fișier adus cu „Fișier…” și te întreabă înainte să miște mașina. Conectarea, zero-ul, jog-ul și continuarea după o oprire din program (M0, M6) rămân în fereastra Mașina a lui cvs2.</p>
+      <p class="mic" id="masina-stare" role="status"></p>
+      <div class="rand-butoane">
+        <select id="m-fisier" aria-label="Fișierul de pus pe mașină"></select>
+        <button class="btn" type="button" id="m-incarca">Încarcă pe mașină</button>
+      </div>
+      <div class="rand-butoane">
+        <button class="btn principal" type="button" id="m-porneste">Pornește</button>
+        <button class="btn" type="button" id="m-pauza">Pauză</button>
+        <button class="btn" type="button" id="m-reia">Reia</button>
+        <button class="btn" type="button" id="m-opreste">Oprește</button>
+      </div>
+      <p class="mic" id="masina-raspuns" role="status"></p>
     </details>
     <details class="setari">
       <summary><b>Ce pun în arhivă</b></summary>
@@ -211,7 +228,7 @@
     <details class="setari">
       <summary><b>Lista de piese ca fișier .json</b></summary>
       <p class="mic">Aceeași listă, ca text: o poți păstra sau trimite generatorului vechi din Blender.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div class="rand-butoane">
         <button class="btn" type="button" id="e-copiaza">Copiază</button>
         <button class="btn" type="button" id="e-salveaza">Salvează fișierul .json</button>
       </div>

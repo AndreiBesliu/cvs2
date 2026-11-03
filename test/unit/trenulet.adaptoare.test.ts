@@ -6,12 +6,13 @@
  * - `use('downloads')`: `save` cere `descarcari.salveaza`, cu numele și datele așa cum vin; o capabilitate necunoscută;
  * - `localStorage`: doar cheile `ls:`, citite la pornire; scrise și șterse pe loc; o scriere refuzată, raportată;
  * - „Trimite la cvs2” (ADR 0160 §D): `window.open` la `#primeste-lucrare` dă o fereastră imitată, care răspunde „gata” la
- *   „cauta”, trimite lucrarea prin `masina.trimite` și dă înapoi „primit”, ca mesaj de la ea, de la originea cerută.
+ *   „cauta”, trimite lucrarea prin `masina.trimite` și dă înapoi „primit”, ca mesaj de la ea, de la originea cerută;
+ * - gazda (ADR 0161 §A): `window.cvs2`, înghețată, cu senderul doar când e deschis extensiei.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { HostApi } from '../../extensii/api.ts';
-import { claudePeste, deschiderePeste, localStoragePeste } from '../../extensii/trenulet/intrare.ts';
+import { claudePeste, deschiderePeste, gazdaPeste, localStoragePeste } from '../../extensii/trenulet/intrare.ts';
 
 type Ref = { readonly id: string; set(d: unknown): Promise<void>; get(): Promise<{ exists: boolean; data(): unknown }>; delete(): Promise<void> };
 type Instantaneu = { readonly docs: { readonly id: string; data(): unknown }[] };
@@ -200,4 +201,15 @@ test('„Trimite la cvs2”: o fereastră imitată pentru #primeste-lucrare; „
   assert.equal(f.closed, true);
   assert.equal(mesaje.length, 2);
   assert.match(String((g.raportate[0] as Error).message), /masina:lucrare/);
+});
+
+test('gazda: window.cvs2 spune paginii că e în cvs2, înghețată; senderul doar când e deschis extensiei', () => {
+  const { host } = gazda();
+  const w = {} as Window & { cvs2?: { readonly gazda: string; readonly masina: unknown } };
+  gazdaPeste(host, true, w);
+  assert.deepEqual([w.cvs2?.gazda, w.cvs2?.masina === host.masina, Object.isFrozen(w.cvs2)], ['cvs2', true, true]);
+  assert.throws(() => { (w as unknown as { cvs2: unknown }).cvs2 = null; });
+  const fara = {} as typeof w;
+  gazdaPeste(host, false, fara);
+  assert.deepEqual([fara.cvs2?.gazda, fara.cvs2?.masina], ['cvs2', null]);
 });

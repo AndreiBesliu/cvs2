@@ -1,13 +1,15 @@
 /**
- * Intrarea Planificatorului Trenuleț ca extensie a lui cvs2 (ADR 0129): pagina v18, cu sursele neschimbate, în cadrul izolat
- * (ADR 0127). Patru adaptoare îi dau, prin `HostApi`, ce avea ca pagină:
+ * Intrarea Planificatorului Trenuleț ca extensie a lui cvs2 (ADR 0129, 0161): pagina, din sursele din repo, în cadrul izolat
+ * (ADR 0127). Adaptoarele îi dau, prin `HostApi`, ce avea ca pagină:
  * - `window.claude`, ca pe claude.ai: `use('db')`, documentele (`doc`, `collection().doc().id`, `orderBy().onSnapshot`), peste
  *   `host.stocare`, și `use('downloads')`, `save`, peste serviciul `descarcari.salveaza`; pagina le folosește când le are;
  * - `localStorage`, peste `host.stocare` (setările mici: modul, mașinile, frezarea), citit întreg la pornire, scris pe loc;
- * - atributele `style` din marcaj: CSP-ul moștenit le refuză ca atribute, deci se pun prin CSSOM, care nu e oprit;
+ * - `window.cvs2` (ADR 0161 §A): gazda, ca pagina să spună adevărul despre unde stau circuitele și să-și arate butoanele
+ *   mașinii (cu `masina` doar când senderul e deschis extensiei);
  * - scripturile, în ordinea paginii, ca scripturi clasice din adrese `blob:` (aceeași semantică globală ca în pagină).
  * Cu senderul deschis extensiei (permisiunea `masina`, ADR 0160 §D), „Trimite la cvs2” trimite lucrarea prin `HostApi`, la
- * „Lucrarea primită” din fereastra Mașina, în locul filei noi pe care cadrul n-o poate deschide.
+ * „Lucrarea primită” din fereastra Mașina, în locul filei noi pe care cadrul n-o poate deschide. Sursele n-au atribute
+ * `style` (ADR 0161 §C): CSP-ul moștenit le-ar refuza.
  */
 import type { HostApi, Spatiu } from '../api.ts';
 
@@ -153,24 +155,12 @@ export function deschiderePeste(host: HostApi, w: Window = window): void {
   Object.defineProperty(w, 'open', { value: deschide, configurable: true, writable: true });
 }
 
-/** Atributele `style` puse în document (din marcaj sau din scripturi) se aplică prin CSSOM, cu același text. */
-function stiluriDinAtribute(): void {
-  const aplica = (el: Element): void => {
-    const a = el.getAttribute('style');
-    const s = (el as HTMLElement).style as CSSStyleDeclaration | undefined;
-    if (a !== null && s && s.cssText !== a) s.cssText = a;
-  };
-  const toate = (n: Node): void => {
-    if (!(n instanceof Element)) return;
-    aplica(n);
-    for (const e of n.querySelectorAll('[style]')) aplica(e);
-  };
-  new MutationObserver((lista) => {
-    for (const x of lista) {
-      if (x.type === 'attributes') aplica(x.target as Element);
-      else for (const n of x.addedNodes) toate(n);
-    }
-  }).observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] });
+/**
+ * `window.cvs2`: pagina e în cvs2 (ADR 0161 §A). Înghețată și nescriibilă; `masina` e `host.masina` doar cu senderul deschis
+ * extensiei, altfel null (pagina nu-și arată atunci butoanele mașinii).
+ */
+export function gazdaPeste(host: HostApi, cuMasina: boolean, w: Window = window): void {
+  Object.defineProperty(w, 'cvs2', { value: Object.freeze({ gazda: 'cvs2', masina: cuMasina ? host.masina : null }), configurable: false, writable: false });
 }
 
 function scriptClasic(b: Blob, nume: string): Promise<void> {
@@ -187,8 +177,9 @@ export async function activeaza(host: HostApi): Promise<Spatiu> {
   claudePeste(host);
   await localStoragePeste(host);
   // Fără sender (permisiunea lipsă, instanța live), pagina spune, ca până acum, că fila nouă n-a putut fi deschisă.
-  if (await host.cere('masina.stare').then(() => true, () => false)) deschiderePeste(host);
-  stiluriDinAtribute();
+  const cuMasina = await host.cere('masina.stare').then(() => true, () => false);
+  gazdaPeste(host, cuMasina);
+  if (cuMasina) deschiderePeste(host);
   return {
     deschide(container: HTMLElement): void {
       void (async () => {
