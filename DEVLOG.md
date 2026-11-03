@@ -4988,3 +4988,8 @@ liniei (0126–0129) s-a terminat, iar sesiunea principală n-a răspuns încă 
     lucrarea în „Lucrarea primită”, iar pornirea rămâne în fereastra Mașina;
   - pe live, extensiile nu folosesc mașina, până la o placă tăiată așa pe test;
   - continuarea după o barieră (M0, M1, M6) rămâne în fereastra Mașina.
+**Publicat pe canalul `trenulet`** pe 03.11, la 20:33, din `14fa66e`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 03.12). Probele planificatorului, ale extensiilor, ale senderului și ale primirii, rulate chiar pe canal: 13 / 13.
+Pachetele (`trenulet-18.1.0.zip`, 208 173 de octeți; `proba-masina-1.0.0.zip`, extensia de probă a senderului, 2 053) nu
+stau pe canal: owner-ul le primește ca fișiere. Adresa principală de test nu s-a atins (alt `index.html`); ramura nu e
+împinsă.
