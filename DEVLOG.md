@@ -4682,3 +4682,32 @@ Verificat în browserul aplicației, după „Reload” (precache-ul ținea vers
 cu nota nouă; un font SVG de probă, scris de mână (H, I, L, T și un O închis cu Z), intră în Fonturile mele ca „Proba Canal
 Regular”, e recunoscut cu o singură linie (Aldin oprit, cu motivul), previzualizarea e din trăsături, iar E-ul lipsă e spus;
 consola fără erori. Adresa principală de test a rămas a sesiunii principale.
+
+## 2026-11-03 — Felia 7.7↑: textul vertical (ADR 0141) (Model: Claude Opus 5.5)
+
+**Prompt:** „Textul vertical (7.7↑)” (la „Ce fac după pauză?”, după pauza de la sfârșitul feliei 7.6↑b).
+**Started:** 03.11, 09:14. **Completed:** 03.11, 09:41.
+
+Reluat de la capăt după pauză: ramura (`98031f9`, neunită), `main` (gruparea 6.T↑ și Ctrl+G; în zona textului, doar
+adăugări în `actiuniDocument*.ts`), notele vecine. Documentele cereau doar „litere una sub alta”, iar specificația CSS a
+scrisului vertical lasă metricile sintetizate fiecărui motor, deci regulile sunt ale ADR 0141. Un calcul înainte de cod a
+respins pasul fix de un em: la Roboto, virgula lui Ț intra în căciula lui Ă.
+Literele stau una sub alta, drepte: fiecare rând e o coloană, de la stânga la dreapta, la distanța rândurilor; fiecare literă
+după cutia ei exactă (a celei îngroșate: a miezului cu 2d în plus), sub cea de deasupra la golul max(0, em − majuscula) +
+spațierea (între majuscule, un em), centrată pe axă; un spațiu ține o majusculă; fără crenare; alinierea Sus / Mijloc / Jos.
+Blocul primește `vertical: true` (nu pe o curbă: ușa blocului refuză amândouă, panoul o lasă deoparte, cu motivul).
+`aseazaText` are acum desenul unei litere într-o funcție comună (`contururiLitera`) și două ramuri; rândurile au ieșit
+neschimbate (corpusul, aldinul, liniile simple, SVG, curba, piesa). Manualul (ro, en) are ușa nouă (`editare.text.vertical`,
+71 de uși).
+**Probele:** oracolul (`fonturi_verticale` în `text_corpus.py`, `vertical.json`: Roboto, Droid Serif, Inter cu cursiv, Relief,
+un caracter lipsă; aldinul vertical în `aldin.json`); pe hârtie (vârful lui H în ancoră, pasul de un em, H pe ±7,6854 mm, axa
+coloanei a doua la 37,1016 mm; rândul lui Roboto, scris întâi din memorie 2400, e 2146 + 555 = 2701 de unități, citit din
+font); probele țintite (literele mutate întregi, golul, spațiul și caracterul lipsă, alinierea, blocul, scalarea, un font cu
+em-ul sub majusculă); e2e-ul (HIT; după reîncărcare, Jos și Aplică; pe un cerc, drept). Celelalte fixturi au ieșit identice.
+**Otrăvurile** (`test/otravuri/7.7.py`): 19, toate prinse din prima (14 pe probele unitare, 5 de interfață prin harnașul e2e
+pe 4174). Două probe au fost adăugate înainte ca mutațiile să le ceară: em-ul sub majusculă (pragul de 0) și bifa din blocul
+textului ales (nu din alegerea salvată).
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări, 864 de module), licențele,
+traducerile (542, 0 lipsă), 8 107 teste unitare (0 eșuate, 8 sărite), build-ul determinist (232 de fișiere identice;
+pornirea 98,6 / 110 kB, cu ușa 102,2; totalul 447,8 / 500; precache 82 de fișiere, 629,4 kB), e2e-ul întreg în Edge pe
+4174: 299 / 300 (picată doar `raportor.spec.ts:101`, care cere adresa de pe 4173).

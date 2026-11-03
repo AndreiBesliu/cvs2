@@ -379,6 +379,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `src/text/tipFont.ts` (fără ciclu între cele două cititoare). Corpusul lor e tot Python (`fonturi_svg`, `svg.json`; fontul
   SVG al lui Relief și două fonturi de probă scrise în generator: `SVG_TRASATURI`, `SVG_PLIN`). **Pornirea 98,6 (cu ușa
   102,2 / 110 kB), totalul 447,2 / 500.**
+  **Textul vertical (ADR 0141, felia 7.7↑)** gata pe 03.11: `vertical: true` în bloc (nu pe o curbă); `aseazaText` are două
+  ramuri (rânduri, coloane) peste desenul comun al unei litere (`contururiLitera`); coloanele stivuiesc literele după cutia
+  exactă (`cutieContur`; la aldin, cutia miezului cu 2d în plus), la golul max(0, em − majuscula) + spațierea. Corpusul lui e
+  tot Python (`fonturi_verticale`, `vertical.json`; aldinul vertical în `aldin.json`): un caz nou = rândul în
+  `CAZURI_VERTICAL`, apoi fixtura regenerată și comisă. **Pornirea 98,6 (cu ușa 102,2 / 110 kB), totalul 447,8 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
