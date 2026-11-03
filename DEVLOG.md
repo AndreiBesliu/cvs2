@@ -4784,3 +4784,27 @@ dialogului funcția „Deschide în Mașina” doar cu `stareExport.ok`, iar dia
 https://cncvectorstudio-test--sender-ecran-u16smtls.web.app (versiunea `2856b1749215`, expiră 02.12); adresa principală de test
 a rămas pe `ec428c9ad9f7` (a liniei principale). Pe canal: Mașina se deschide, mașina simulată se conectează, consola fără
 erori.
+
+## 2026-11-02 — Felia 6.U↑: alinierea ca bloc (ADR 0150) (Model: Claude Opus 5.5)
+
+**Prompt:** „3, ok” (owner-ul, la întrebarea din raportul grupării: „Alinierea mai multor forme ca un bloc, fără grupare, plus
+un avertisment când contururile ajung să se atingă: recomand o felie următoare, după unirea asta.”), pornită după mesajul
+sesiunii principale că gruparea e unită și publicată („pornește o ramură nouă din main-ul de acum”).
+**Started:** 02.11, 23:15. **Completed:** 02.11, 23:37.
+
+În aceeași sesiune paralelă, în worktree-ul `C:\Users\besli\cncvs2-lucru\grupare`, pe ramura nouă `wip/6.U-aliniere`, din
+`main` `c5b8e69` (owner-ul, în sesiunea principală: „poti uni worktree asta deocamdata”). În secțiunea Aliniere, comutatorul
+**Ca bloc** face ca cele șase alinieri să mute cutia comună a formelor alese față de foaie, cu aceeași deplasare pentru toate:
+așezarea dintre ele rămâne, deci nu ajung una peste alta (notița 3). Oprit implicit, ținut în browser
+(`cncvs2.aliniere-bloc`); distribuirea, centrarea pe foaie și alinierea unei singure forme nu se schimbă; sfatul butoanelor
+spune „(ca bloc, față de foaie)”. Avertismentul la contururile care se ating l-am lăsat verificării vectorilor din etapa 10
+(ADR 0124, încă pe ramura ei), care găsește deja intersecțiile și atingerile: un al doilea detector ar fi o a doua părere.
+ADR-ul are numărul 0150, ca să ocolească numerele celorlalte ramuri (0123–0132, 0140–0142) și pe cele următoare ale liniei
+principale (de la 0133). La zi: ADR 0150, indexul, manualul (ro, en), fișa, CLAUDE.md, ACOPERIRE, traducerile (543, 0
+lipsă). Codul: `0d6d568`.
+**Porțile:** compilatorul, importurile (17 reguli, 0 încălcări), traducerile, 8 089 de teste unitare (0 eșuate, 8 sărite),
+build-ul determinist (231 de fișiere identice; pornirea 99,1 / 110 kB, cu ușa 102,6; totalul 450,9 / 500), e2e-ul selecției,
+al editării și al manualului, 20 / 20, pe portul 4177. Otrăvurile din `test/otravuri/6.U.py`: **6 / 6** prinse (2 unitare; 4
+pe e2e, prin învelișul cu `node`).
+**Publicat pe canalul `grupare`** la 23:36 (versiunea `0d6d568dee7f`). Verificat acolo: comutatorul e în secțiunea Aliniere,
+cu sfatul lui, oprit.

@@ -21,6 +21,10 @@
       "ro": "Emulatorul GRBL 1.1h ca fixtură (ADR 0079): numără ce primește (bufferul de 128 de octeți, timpul real, pierderile), liniile, planificatorul de 15 blocuri cu timpul lui, stările (hold, alarmă, repornire), răspunsurile `$`; un flux de probă cu numărarea caracterelor; 100 000 de linii fără pierderi; rejucarea programelor plăcilor 1 și 2",
       "en": "The GRBL 1.1h emulator as a fixture (ADR 0079): it counts what it receives (the 128-byte buffer, the realtime bytes, the losses), the lines, the 15-block planner with its timing, the states (hold, alarm, restart), the `$` replies; a test stream with character counting; 100,000 lines without losses; replaying the programs of plates 1 and 2"
     },
+    "037f8da02a0b53d9": {
+      "ro": "**Alinierea ca bloc, adusă din etapa 6** (fără mașină; ADR 0150; „3, ok”, la întrebarea din raportul grupării; lucrată în aceeași sesiune paralelă, pe ramura `wip/6.U-aliniere`). În secțiunea Aliniere, comutatorul **Ca bloc** face ca cele șase alinieri să mute cutia comună a formelor alese față de foaie, cu aceeași deplasare: așezarea dintre ele rămâne, deci nu ajung una peste alta (notița 3 a owner-ului, din 28.10). Oprit implicit și ținut în browser, ca Lipirea; distribuirea, centrarea pe foaie și alinierea unei singure forme rămân cum erau. Avertismentul la contururile care se ating rămâne verificării vectorilor din etapa 10 (ADR 0124), ca să nu fie două păreri despre același lucru. **Treceri:** (1) probele întâi (valorile pe hârtie ale celor șase alinieri; e2e: fără bloc, B ajunge peste C; ca bloc, B și C se mută împreună; Ctrl+Z; comutatorul după reîncărcare), apoi funcția, comutatorul și manualul. Mutațiile: 6 / 6 (2 unitare, 4 pe e2e).",
+      "en": "**Aligning as a block, brought forward from stage 6** (no machine; ADR 0150; „3, ok”, to the question in the grouping report; worked in the same parallel session, on the `wip/6.U-aliniere` branch). In the Align section, the **As a block** toggle makes the six alignments move the chosen shapes' common box against the sheet, all by the same amount: their arrangement stays, so they don't end up on top of each other (the owner's note 3, from 28.10). Off by default and kept in the browser, like Snap; distributing, centring on the sheet and aligning a single shape stay as they were. The warning for touching contours stays with the vector check of stage 10 (ADR 0124), so there aren't two opinions about the same thing. **Passes:** (1) the tests first (the paper values of the six alignments; e2e: without the block, B ends up on top of C; as a block, B and C move together; Ctrl+Z; the toggle after a reload), then the function, the toggle and the manual. Mutations: 6 / 6 (2 unit, 4 through e2e)."
+    },
     "03de60a45fe72b0d": {
       "ro": "Riglele, ghidajele salvate pe foaie",
       "en": "Rulers, guides saved on the sheet"
@@ -892,6 +896,10 @@
     "5fd7dd989b9b86db": {
       "ro": "Rampa (ADR 0029, documentul v6): bucla tăiată continuu, intrarea rotită, compusă cu urechile (portată, `docs/PORTARE.md` §3.2)",
       "en": "Ramp (ADR 0029, document v6): the loop cut continuously, the rotated entry, combined with tabs (ported, `docs/PORTARE.md` §3.2)"
+    },
+    "5fe5a4a2184ea2db": {
+      "ro": "Alinierea ca bloc",
+      "en": "Aligning as a block"
     },
     "612f682f4c69fc17": {
       "ro": "Fila Utilizatori minimă și fila Setări, aduse din etapa 14",

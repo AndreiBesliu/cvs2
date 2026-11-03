@@ -395,7 +395,7 @@ bottom, a hint says what can be done or why the chosen shape cannot be edited.
 
 ## Alignment
 %% capitol: aliniere
-%% acopera: editare.aliniere, document.muta-instantele, aliniaza.stanga, aliniaza.centru-x, aliniaza.dreapta, aliniaza.sus, aliniaza.centru-y, aliniaza.jos, aliniaza.centru-foaie, aliniaza.distribuie-x, aliniaza.distribuie-y
+%% acopera: editare.aliniere, editare.aliniere-bloc, document.muta-instantele, aliniaza.stanga, aliniaza.centru-x, aliniaza.dreapta, aliniaza.sus, aliniaza.centru-y, aliniaza.jos, aliniaza.centru-foaie, aliniaza.distribuie-x, aliniaza.distribuie-y
 
 The **Align** section of the bar extension is always there; its button folds it to the left and opens it again. The
 buttons **align** the boxes of the chosen shapes:
@@ -412,6 +412,12 @@ buttons **align** the boxes of the chosen shapes:
 With a single shape chosen, alignment places it against the sheet (for example, “Align left” takes it to the sheet's left
 edge). **Centre on the sheet** always works against the sheet: it moves all the chosen shapes by the same amount, so their
 arrangement stays and their common box ends up in the middle of the sheet. Several shapes are picked with the selection rectangle or with Shift + click (see [Selecting and editing](#selectie)).
+
+The **As a block** toggle (the first button after the one that folds the section) moves the chosen shapes together, against
+the sheet: their common box is aligned to the sheet's edge or middle, and their arrangement stays, so they don't end up on
+top of each other. Without it, each shape is aligned to the common box, and they may overlap. The toggle is kept in the
+browser, like Snap; distributing and centring on the sheet work the same with it or without. To have some shapes always
+move together, group them (see [Grouping](#grupare)).
 Each alignment can be undone with `Ctrl+Z`.
 
 ## Importing SVG, DXF, PDF, AI, EPS and WMF

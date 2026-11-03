@@ -392,6 +392,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `ORIUNDE` (carcasa) și prin `activ` (modulul editării), altfel atinge desenul pe care omul nu-l vede. Indicatorul, pur, e
   `src/machine/indicator.ts`; lucrarea pornită e `cuPunctDeReluare` din flux (`beforeunload`, „Reîncarcă după lucrare”, prin
   semnalul `lucrarePornita` din pornire). **Pornirea 99,1 (cu ușa 102,6 / 110 kB), totalul 450,8 / 500.**
+  **Alinierea ca bloc (ADR 0150, felia 6.U↑, adusă din etapa 6)** gata pe 02.11, în aceeași sesiune paralelă (ramura
+  `wip/6.U-aliniere`), după „3, ok” al owner-ului: comutatorul **Ca bloc** din secțiunea Aliniere face ca cele șase alinieri
+  să mute cutia comună a formelor alese față de foaie, cu aceeași deplasare (așezarea dintre ele rămâne, nu se suprapun);
+  oprit implicit, ținut în browser (`cncvs2.aliniere-bloc`). Avertismentul la contururile care se ating rămâne verificării
+  vectorilor (etapa 10, ADR 0124). **Pe ramură, pornirea 99,1 (cu ușa 102,6 / 110 kB), totalul 450,9 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
