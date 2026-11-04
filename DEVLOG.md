@@ -5100,4 +5100,45 @@ pierderi)?”, după direcția nouă a owner-ului: pluginul devine un atelier de
 „comunicare perfectă între cvs2 și plugin”), în sesiunea dedicată liniei Trenuleț. 3.Xd, fără server: tema și fonturile lui
 cvs2 în planificator, schimbate pe loc; contul văzut de extensie (conectat sau nu, numele, planul), doar pentru citire, cu o
 permisiune nouă; închiderea ferestrei extensiei salvează întâi ce era de salvat și întreabă doar dacă tot rămâne ceva.
-**Started:** 04.11, 11:11.
+**Started:** 04.11, 11:11. **Completed:** 04.11, 19:06.
+
+- **Ce merge:**
+  - tema: cadrul primește și `color-scheme` (tema aleasă în cvs2, nu a sistemului) și fonturile (`--font`, `--mono`): 16
+    variabile, schimbate pe loc; planificatorul pune `data-gazda="cvs2"` și `data-theme`, iar bara, panourile, textul,
+    marginile, roșul, inelul de focus și fonturile lui sunt ale lui cvs2, pe luminos și pe întunecat; masa, lemnul,
+    cărămizile, verdele de semnal și butoanele principale rămân ale lui (capturile din raport);
+  - contul: permisiunea nouă `cont`, arătată la instalare; `host.cont` (conectat, numele, planul de la zi; fără adresă, uid
+    sau parolă; cu adresa neconfirmată, fără nume și plan), schimbat pe loc, și din altă filă; planificatorul îl arată la
+    Circuite;
+  - închiderea: `host.nesalvat`, `host.laInchidere`; × (și altă extensie deschisă, o versiune nouă instalată peste ea) îi cere
+    întâi extensiei salvările, cel mult 5 s, și întreabă doar ce rămâne nesalvat: „Închide oricum” (gestul, plin, primul) și
+    „Rămân” (focusul, și Escape; focusul se întoarce la ×); reîncărcarea întreabă prin browser; `host.inchide()` nu întreabă;
+    extensia deschisă, aleasă din meniu, doar își arată fereastra;
+  - planificatorul: salvările amânate (circuitul, setările CNC, profilul mașinii, atelierul) trec prin `window.cvs2.amana`, iar
+    scrierile adaptoarelor sunt urmărite: × imediat după o schimbare o păstrează, fără întrebare (proba e2e);
+  - încărcătorul, cu amprentă nouă în CSP (`shared/cadruExtensie.ts`, `firebase.json`), politica neschimbată; `api: 1`;
+    pachetul 18.4.0, 372 227 de octeți.
+- **Găsit pe drum:**
+  - focusul pus înapoi la × după „Rămân” nu ajungea (3 / 3 picate): aplicația era încă inertă, pentru că întrebarea o
+    anunța printr-un efect, iar randarea care scoate `inert` venea după temporizator. Acum „Rămân” scoate întrebarea și
+    inerția în aceeași randare (a clicului), apoi pune focusul: 3 / 3 trec;
+  - la otrăvuri, X21 (tura în plus după un temporizator, la închidere) a scăpat: în proba ei, o altă salvare amânată, mai
+    lungă, acoperea întâmplător scrierea întârziată. Cazul are acum proba lui, singur (`cd7f4e9`): X21 prinsă;
+  - în captură, ambele butoane ale întrebării ieșeau pline: în dialogurile lui cvs2, primul buton e gestul (plin), iar
+    „Rămân” avea în plus clasa `principal`. Scoasă (`4315392`);
+  - la scrierea otrăvurilor: trei apărări fără probă au primit-o (scrierile înlănțuite, altă extensie și o versiune nouă
+    peste una nesalvată, extensia deschisă aleasă din meniu), iar două linii fără rost au plecat.
+- **Porțile:** compilatorul (aplicația, sursele planificatorului, funcțiile); importurile; traducerile, 574, 0 lipsă; 8 184
+  de teste unitare, 0 eșuate; build-ul determinist: 247 de fișiere identice, pornirea 100,6 / 110 kB (cu ușa 104,1),
+  neschimbată, totalul 472,4 / 500; licențele.
+- **E2e:** e2e-ul întreg, pe portul 4176: 325 trec, 2 pică: aserțiunea care cere portul 4173 (raportorul, ca până acum) și
+  `export.spec.ts:653`, cu `EBUSY` la citirea descărcării (o blocare de fișier din Windows; singură, 3 / 3 trec).
+- **Otrăvurile `test/otravuri/3.Xd.py`:** 36 / 36 prinse, fiecare de proba ei: X01–X13, X26 și X28–X36 de e2e, X14–X17 de
+  contul extensiei, X18 de pachet, X19–X25 și X27 de adaptoare (X21, după proba ei nouă). Lăsate afară, cu motivul:
+  încărcătorul (amprenta îl prinde oricum), al doilea clic pe × cât se așteaptă, planul necunoscut arătat cu codul lui,
+  nuanțele derivate și culoarea inelului de focus (capturile).
+- **Ce nu merge încă:** salvarea modelelor în cont (feliile următoare, cu sesiunea principală); engleza planificatorului.
+**Publicat pe canalul `trenulet`** pe 04.11, la 19:05, din `4315392`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 04.12). Probele extensiilor (și cele noi, ale temei, contului și închiderii), ale senderului, ale primirii și ale
+planificatorului, rulate chiar pe canal: 20 / 20. Pachetul (`trenulet-18.4.0.zip`) nu stă pe canal: owner-ul îl primește ca
+fișier. Adresa principală de test nu s-a atins; ramura nu e împinsă.
