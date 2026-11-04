@@ -7,6 +7,7 @@
 import { iesireDinFoaie, type IesireFoaie } from '../cam/iesire.ts';
 import { programDinDocument, REGIM_IMPLICIT } from '../cam/job.ts';
 import { PLAFON, type Document } from '../model/document.ts';
+import { verificaVectorii, type RezultatVerificare } from '../model/verificare.ts';
 import { CONTRACTE } from '../post/contracte/index.ts';
 import { exporta } from '../post/export.ts';
 import { pregatesteProgram } from '../sim/program.ts';
@@ -83,7 +84,9 @@ export function calculeazaSimularea(doc: Document): RaspunsSimulare {
 }
 
 /** Răspunsul unei cereri, cu tablourile lui de transferat (ADR 0014). */
-export type RaspunsCalcul = { readonly raspuns: RaspunsExport | RaspunsTraseu | RaspunsSimulare | RezumatJob; readonly transfer: ArrayBuffer[] };
+export type RaspunsCalcul = {
+  readonly raspuns: RaspunsExport | RaspunsTraseu | RaspunsSimulare | RezumatJob | RezultatVerificare; readonly transfer: ArrayBuffer[];
+};
 
 export async function raspunde(c: CerereCam): Promise<RaspunsCalcul> {
   switch (c.fel) {
@@ -101,5 +104,7 @@ export async function raspunde(c: CerereCam): Promise<RaspunsCalcul> {
     }
     case 'timp':
       return { raspuns: rezumatTraseu(despacheteaza(c.program), c.foaie, c.setari), transfer: [] };
+    case 'verificare':
+      return { raspuns: verificaVectorii(c.document, c.optiuni), transfer: [] };
   }
 }

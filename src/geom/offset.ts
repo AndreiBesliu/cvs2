@@ -1,4 +1,4 @@
-import { plineClosed, plineOpen, Shape, StaticAabb2dIndexBuilder, vec2, type Polyline } from './cavalier/index.ts';
+import { plineClosed, plineOpen, Shape, StaticAabb2dIndexBuilder, vec2, type PlineIntersect, type Polyline } from './cavalier/index.ts';
 import {
   LINIE, arc, arieCuSemn, cerculArcului, inSensTrigonometric, inverseaza, numarSegmente, segment, type Contur, type Punct, type Segment, type Varf,
 } from './contur.ts';
@@ -129,9 +129,10 @@ function mijloc(a: Punct, b: Punct, s: Varf['s']): Punct {
 /**
  * Arcele de peste 180° (|bulge| > 1) se împart în două jumătăți: cavalier le cere de cel mult 180°. Forma nu se schimbă:
  * mijlocul e pe același cerc, iar fiecare jumătate are bulge-ul tan(atan(b) / 2). Pe o cale deschisă, segmentul ultimului
- * vârf nu există (ADR 0001), deci nu se împarte.
+ * vârf nu există (ADR 0001), deci nu se împarte. `orig`, dacă e dat, primește pentru fiecare vârf nou indicele vârfului
+ * din care vine (verificarea vectorilor, ADR 0124, își spune punctele pe segmentele conturului dat).
  */
-function imparteArceMari(varfuri: readonly Varf[], inchis = true): Varf[] {
+function imparteArceMari(varfuri: readonly Varf[], inchis = true, orig?: number[]): Varf[] {
   const rez: Varf[] = [];
   for (let i = 0; i < varfuri.length; i++) {
     const v = varfuri[i];
@@ -140,8 +141,10 @@ function imparteArceMari(varfuri: readonly Varf[], inchis = true): Varf[] {
     if (v.s.tip === 'A' && Math.abs(v.s.bulge) > 1 && (inchis || i < varfuri.length - 1)) {
       const jumatate = arc(Math.tan(Math.atan(v.s.bulge) / 2));
       rez.push({ p: v.p, s: jumatate }, { p: mijloc(v.p, urm.p, v.s), s: jumatate });
+      orig?.push(i, i);
     } else {
       rez.push(v);
+      orig?.push(i);
     }
   }
   return rez;
@@ -247,11 +250,16 @@ function directieLaCapat(a: Punct, b: Punct, s: Varf['s'], la: 0 | 1): Punct {
  * Distanța la |d|, partea și acoperirea se verifică separat.
  */
 function seAtingeSingur(c: Contur, iesire?: { readonly laDistanta: (p: Punct) => boolean }): boolean {
+  return atingeriReale(c, iesire, false).length > 0;
+}
+
+/** Atingerile conturului cu el însuși, fără contactele false de mai sus; cu `toate` false, doar prima. */
+function atingeriReale(c: Contur, iesire: { readonly laDistanta: (p: Punct) => boolean } | undefined, toate: boolean): PlineIntersect[] {
   const iesireDeschisa = iesire !== undefined;
   const n = c.varfuri.length;
   const dupa = (i: number): number => (c.inchis ? (i + 1) % n : i + 1);
   const articulatii = iesire ? articulatiiDusIntors(c, iesire.laDistanta) : [];
-  let gasit = false;
+  const rez: PlineIntersect[] = [];
   laCavalier(c).visitSelfIntersectsOpt((x) => {
     // Punctul de întoarcere al unui dus-întors primit: acolo se întâlnesc, de la sine, coborârea, urcarea și vecinii lor
     // (integrarea porții 2.3c-5: canelura din mijlocul unei căi era refuzată cu „se atinge singură”).
@@ -282,10 +290,10 @@ function seAtingeSingur(c: Contur, iesire?: { readonly laDistanta: (p: Punct) =>
         }
       }
     }
-    gasit = true;
-    return false;
+    rez.push(x);
+    return toate;
   }, { posEqualEps: EPS_ATINGERE });
-  return gasit;
+  return rez;
 }
 
 /** O cale deschisă care se închide pe ea însăși: atingerea e între primul și ultimul segment, în start, iar capătul e acolo. */
@@ -318,6 +326,41 @@ function articulatiiDusIntors(c: Contur, laDistanta: (p: Punct) => boolean): Pun
 export function seAutointersecteaza(c: Contur): boolean {
   // Cavalier cere arce de cel mult 180°: cele mai mari se împart întâi, fără să schimbe forma.
   return seAtingeSingur({ inchis: c.inchis, varfuri: imparteArceMari(c.varfuri, c.inchis) });
+}
+
+/**
+ * Un loc comun a două segmente (verificarea vectorilor, ADR 0124 §3): un punct, sau capetele bucății comune (suprapunerea).
+ * `i` și `j` sunt indicii segmentelor în contururile date: un arc de peste 180°, împărțit pentru cavalier, își spune indicele.
+ */
+export type Atingere = { readonly i: number; readonly j: number; readonly puncte: readonly [Punct] | readonly [Punct, Punct] };
+
+function atingere(x: PlineIntersect, o1: readonly number[], o2: readonly number[]): Atingere {
+  return {
+    i: o1[x.startIndex1] ?? x.startIndex1, j: o2[x.startIndex2] ?? x.startIndex2,
+    puncte: x.kind === 'basic' ? [{ x: x.point.x, y: x.point.y }] : [{ x: x.point1.x, y: x.point1.y }, { x: x.point2.x, y: x.point2.y }],
+  };
+}
+
+/**
+ * Toate locurile în care conturul (fără cubice) se taie sau se atinge singur: aceeași regulă ca `seAutointersecteaza` (fără
+ * contactele false dintre vecini), dar fiecare loc, nu doar primul.
+ */
+export function autointersectii(c: Contur): Atingere[] {
+  const orig: number[] = [];
+  const impartit = { inchis: c.inchis, varfuri: imparteArceMari(c.varfuri, c.inchis, orig) };
+  return atingeriReale(impartit, undefined, true).map((x) => atingere(x, orig, orig));
+}
+
+/** Locurile în care două contururi (fără cubice) se taie, se ating sau se suprapun, la `EPS_ATINGERE`. */
+export function intersectiiIntre(a: Contur, b: Contur): Atingere[] {
+  const oa: number[] = [], ob: number[] = [];
+  const pa = laCavalier({ inchis: a.inchis, varfuri: imparteArceMari(a.varfuri, a.inchis, oa) });
+  const pb = laCavalier({ inchis: b.inchis, varfuri: imparteArceMari(b.varfuri, b.inchis, ob) });
+  const r = pa.findIntersectsOpt(pb, { posEqualEps: EPS_ATINGERE });
+  return [
+    ...r.basicIntersects.map((x) => atingere({ kind: 'basic', ...x }, oa, ob)),
+    ...r.overlappingIntersects.map((x) => atingere({ kind: 'overlapping', ...x }, oa, ob)),
+  ];
 }
 
 /** Segmentele i și j sunt două linii în sensuri opuse (traseul dus-întors al canelurii cât freza)? */
@@ -385,9 +428,10 @@ const BUCLA_MAXIMA = 0.1;
 
 /**
  * Segmentul de la a la b tăiat în punctul X de pe el: partea dinainte de X (`inainte`) sau cea de după, cu bulge-ul ei
- * (arcul își păstrează cercul; baleiajul se împarte la unghiul lui X).
+ * (arcul își păstrează cercul; baleiajul se împarte la unghiul lui X). Bucla unei autointersecții (ADR 0124 §4) se
+ * măsoară cu aceleași bucăți.
  */
-function parteDin(a: Punct, b: Punct, s: Varf['s'], X: Punct, inainte: boolean): Varf['s'] {
+export function parteDin(a: Punct, b: Punct, s: Varf['s'], X: Punct, inainte: boolean): Varf['s'] {
   if (s.tip !== 'A') return LINIE;
   const { centru, start, baleiaj } = cerculArcului(a, b, s.bulge);
   const doiPi = 2 * Math.PI;

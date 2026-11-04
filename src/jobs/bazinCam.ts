@@ -10,6 +10,7 @@
  */
 import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
+import type { OptiuniVerificare, RezultatVerificare } from '../model/verificare.ts';
 import type { RaspunsCalcul } from './calculCam.ts';
 import type { ProgramImpachetat } from './impachetare.ts';
 import { transferabileProgram } from './impachetare.ts';
@@ -109,4 +110,9 @@ export function simulareInBazin(document: Document, o: OptiuniCam = {}): Promise
 /** Timpul unui program deja calculat; programul împachetat se transferă (cel dat nu mai e folosibil după apel). */
 export function timpInBazin(program: ProgramImpachetat, foaie: Montaj['foaie'], setari: string | undefined, o: OptiuniCam = {}): Promise<RezumatJob> {
   return calculeaza({ fel: 'timp', program, foaie, setari }, transferabileProgram(program), o) as Promise<RezumatJob>;
+}
+
+/** Verificarea vectorilor (ADR 0124): problemele contururilor foii (sau ale formelor alese). */
+export function verificareInBazin(document: Document, optiuni: OptiuniVerificare, o: OptiuniCam = {}): Promise<RezultatVerificare> {
+  return calculeaza({ fel: 'verificare', document, optiuni }, [], o) as Promise<RezultatVerificare>;
 }

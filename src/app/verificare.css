@@ -1,0 +1,114 @@
+/*
+ * Verificarea vectorilor (ADR 0124 §7): lista din panou și locurile de pe pânză. Doar tokenurile temei: roșu (`--rosu`) în
+ * aceeași formă, verde (`--traseu-taiere`) între forme; stratul de pe pânză nu prinde evenimente. Panoul are lățimea
+ * vecinilor (`.panou-retea`): așezat în fereastră la deschidere, înaintea conținutului adus la cerere, nu se mai lărgește.
+ */
+.panou-verificare {
+  max-height: min(70vh, 36rem);
+}
+
+.stare-verificare {
+  margin: 0;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.bifa-verificare {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-2);
+}
+
+.legenda-verificare {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin: 0;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.legenda-verificare .punct-verificare + .punct-verificare,
+.legenda-verificare .punct-verificare:not(:first-child) {
+  margin-left: var(--sp-2);
+}
+
+.punct-verificare {
+  display: inline-block;
+  flex: none;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+}
+
+.punct-verificare.in-forma {
+  color: var(--rosu);
+}
+
+.punct-verificare.intre-forme {
+  color: var(--traseu-taiere);
+}
+
+.lista-verificare {
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.lista-verificare h3 {
+  margin: 0 0 var(--sp-1);
+  font-size: inherit;
+  font-weight: 600;
+}
+
+.lista-verificare ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lista-verificare button {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  text-align: start;
+  font-size: var(--fs-2);
+  padding: 2px var(--sp-1);
+}
+
+.marcaje-verificare {
+  pointer-events: none;
+}
+
+.marcaje-verificare circle,
+.marcaje-verificare line {
+  fill: none;
+  stroke-width: 2;
+}
+
+.marcaje-verificare .in-forma {
+  stroke: var(--rosu);
+}
+
+.marcaje-verificare .intre-forme {
+  stroke: var(--traseu-taiere);
+}
+
+.marcaje-verificare .aleasa circle,
+.marcaje-verificare .aleasa line {
+  stroke-width: 3;
+}
+
+.marcaje-verificare line.bucata {
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.marcaje-verificare line.gol {
+  stroke-dasharray: 4 3;
+}

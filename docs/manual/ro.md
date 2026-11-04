@@ -518,6 +518,29 @@ Un **WMF** (metafișierul Windows: clipartul vechi, exporturile din CorelDRAW, O
 - un WMF nu are curbe Bézier: un cerc desenat liber de un program ajunge un poligon, și așa se importă;
 - un EMF (metafișierul pe 32 de biți) e refuzat: salvează-l ca WMF, SVG sau PDF.
 
+## Verificarea vectorilor
+%% capitol: verificare
+%% acopera: editare.verificare
+
+**Verifică vectorii** (butonul cu nodul încercuit, după boolean și degrupare, în extensia barei) caută ce poate strica o
+tăietură, fără să schimbe nimic în proiect:
+- **duplicate**: aceeași formă pusă de mai multe ori în același loc (și între piese): prima rămâne, celelalte sunt copii;
+  freza le-ar tăia pe toate, iar exportul refuză contururile care se ating;
+- **intersecții**: două forme care se taie, se ating sau au o bucată comună (o latură comună e o suprapunere);
+- **autointersecții și bucle**: o formă care se taie singură, cu aria buclei mai mici și cât e ea din formă; sub pragul
+  „Bucla mică” (implicit 1 %), bucla e „mică”, ca nodurile încurcate dintr-un import;
+- **noduri prea apropiate**: un segment mai scurt decât toleranța, sau nodurile a două forme mai apropiate de atât (de
+  exemplu capetele a două căi care ar trebui să fie una);
+- **forme deschise**: fiecare cale deschisă, cu distanța dintre capete.
+
+**Toleranța** (implicit 0,01 mm) e distanța sub care două noduri sunt același loc, iar două forme sunt aceeași. Cu forme
+alese și bifa **Doar formele alese**, verificarea le cercetează doar pe ele, între ele; altfel, toată foaia. Cât panoul e
+deschis, lista se reface singură după fiecare schimbare. Merge la fel pe vectorii desenați și pe cei importați.
+
+Pe pânză, fiecare problemă are un cerc, de aceeași mărime la orice apropiere: **roșu** în aceeași formă, **verde** între
+forme; o suprapunere e o linie groasă, iar golul unei căi deschise o linie punctată. Un clic pe un rând alege formele lui
+și îi mărește cercul. Deocamdată verificarea doar arată; reparațiile vin într-o versiune următoare.
+
 ## Operațiile de tăiere
 %% capitol: operatii
 %% acopera: document.aplica-operatii, document.rol

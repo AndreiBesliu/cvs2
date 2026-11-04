@@ -28,6 +28,12 @@ export function idLume(instanta: string, nod: string): string {
   return `${instanta}/${nod}`;
 }
 
+/** Instanța unui id în lume: partea dinaintea lui `/` (un id de instanță n-are `/`, `schemaDocument.ts`). */
+export function instantaDin(id: string): string {
+  const k = id.indexOf('/');
+  return k < 0 ? id : id.slice(0, k);
+}
+
 /** Elementele în lume ale unei instanțe, cu matricea ei dată (pentru o previzualizare se poate da alta). */
 export function elementeInstanta(radacina: Nod, i: Pick<Instanta, 'id' | 'piesa'>, mInstanta: Matrice): ElementLume[] {
   const rez: ElementLume[] = [];

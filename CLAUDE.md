@@ -447,6 +447,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `inaltime`. Corpusul: `fonturi_caseta`, `caseta.json` (oracolul caută prin înjumătățire pe așezări întregi); aldinul în
   casetă, în `aldin.json`. Din definiția pragului textului (`PlanNou-CNC/Plan-CNC-Studio-2.html`) mai rămân mărimea în
   puncte sau inch, scalarea textului în lățime și în înălțime (%) și spațierea manuală între literele alese. **Pornirea 98,6 (cu ușa 102,2 / 110 kB), totalul 449,0 / 500.**
+  **Verificarea vectorilor, detectarea și panoul (ADR 0124, felia 10.1↑, adusă din etapa 10)** gata pe 02.11, în worktree-ul
+  `wip/10.1-vectori`: **Verifică vectorii**, în extensia barei, găsește pe foaie (sau pe instanțele alese) duplicatele,
+  intersecțiile dintre forme, autointersecțiile (cu bucla mai mică și procentul ei), nodurile prea apropiate și căile
+  deschise, cu un cerc pe pânză în locul fiecăreia (roșu în aceeași formă, verde între forme). Calculul pur e
+  `src/model/verificare.ts`, în workerul CAM (cererea `verificare`, prin `actiuniExportCalcul.ts`); panoul vine la cerere
+  (`src/app/PanouVerificare.tsx`). **O ratare sau o alarmă falsă găsită pe un desen real intră în
+  `test/unit/verificare.test.ts`, cu valoarea ei pe hârtie.** Reparațiile (10.2↑) așteaptă răspunsurile owner-ului la
+  întrebările din ADR 0124. **Pornirea 98,5 (cu ușa 102,0 / 110 kB), totalul 454,7 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
