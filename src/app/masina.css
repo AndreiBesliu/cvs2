@@ -439,7 +439,27 @@
   }
 
   .indicator-lucrare button + button {
+    flex: none;
     padding: 0;
     min-width: calc(var(--tinta) - 6px);
+  }
+
+  /*
+   * Pe rândul filelor, indicatorul ia ce rămâne (13.A↑c): cuvântul unei stări lungi („Oprită la M6 (linia 1234)”) se taie cu
+   * „…”, iar punctul, procentul și Pauză / Reia rămân. Textul întreg e în eticheta accesibilă și în fereastra Mașina.
+   */
+  .loc-lucrare {
+    display: flex;
+    min-width: 0;
+  }
+
+  .indicator-lucrare,
+  .indicator-cuvant {
+    min-width: 0;
+  }
+
+  .indicator-cuvant {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }

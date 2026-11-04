@@ -7,13 +7,16 @@ import { defineConfig } from '@playwright/test';
  * trece prin `page.route` (bucățile oprite sau întârziate de probe ar veni din precache), iar o reîncărcare ar servi
  * build-ul din cache. Probele lui sunt în proiectul `edge-pwa`, cu workerul permis, fiecare pe serverul ei (o copie a
  * `dist/` pe un port liber, `test/e2e/server-pwa.ts`), deci nu ating `vite preview` de pe 4173.
+ *
+ * În CI, o probă căzută își lasă urma (DOM-ul, rețeaua, consola pas cu pas) și captura în `test-results/`, pe care rularea
+ * de noapte le păstrează (13.A↑c): unele cad doar pe Linux și nu se pot reproduce aici.
  */
 export default defineConfig({
   testDir: 'test/e2e',
   timeout: 30_000,
   retries: 0,
   reporter: [['list']],
-  use: { baseURL: 'http://localhost:4173' },
+  use: { baseURL: 'http://localhost:4173', ...(process.env['CI'] ? { trace: 'retain-on-failure', screenshot: 'only-on-failure' } as const : {}) },
   projects: [
     { name: 'edge', testIgnore: /pwa\.spec\.ts$/, use: { channel: 'msedge', serviceWorkers: 'block' } },
     { name: 'edge-pwa', testMatch: /pwa\.spec\.ts$/, timeout: 60_000, use: { channel: 'msedge', serviceWorkers: 'allow' } },

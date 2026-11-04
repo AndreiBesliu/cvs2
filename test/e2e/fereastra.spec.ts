@@ -207,14 +207,37 @@ test('ecranul lat: trei coloane (mașina, lucrarea, consola); telefonul: meniul 
     expect(c.x + c.width).toBeLessThanOrEqual(390);
     expect(c.width).toBeGreaterThanOrEqual(340);
   }
-  // Pe telefon, indicatorul încape pe rândul filelor (punctul, procentul, Pauză ca iconiță), nu pe un al treilea rând.
+  // Pe telefon, indicatorul încape pe rândul filelor (punctul, procentul, Pauză ca iconiță), nu pe un al treilea rând, și cu
+  // un font lat (13.A↑c): Verdana aici, DejaVu Sans pe Linux, unde `system-ui` e oricum lat și rândul se rupea în CI.
+  await page.evaluate(() => { document.documentElement.style.setProperty('--font', "Verdana, 'DejaVu Sans', sans-serif"); });
+  // Pe rândul filelor, după ele (nu peste ele) și în ecran.
+  const peRandulFilelor = async (latime = 390): Promise<void> => {
+    const ind = await cutie('[data-testid="indicator-lucrare"]');
+    const fileJos = await cutie('.meniu-global .ferestre');
+    expect(Math.abs(ind.y + ind.height / 2 - (fileJos.y + fileJos.height / 2))).toBeLessThan(fileJos.height / 2);
+    expect(ind.x).toBeGreaterThanOrEqual(fileJos.x + fileJos.width);
+    expect(ind.x + ind.width).toBeLessThanOrEqual(latime);
+  };
+  // Conectată, fără lucrare: indicatorul spune „Mașina conectată”, starea lui cea mai lată.
+  await expect(page.getByTestId('indicator-lucrare')).toHaveAttribute('data-procent', 'false');
+  await peRandulFilelor();
+  // La 360 px (telefoanele Android înguste) încape tot; la 320 px (lățimea minimă din WCAG 1.4.10), cuvântul stării se taie
+  // cu „…”, iar indicatorul rămâne lângă file, nu peste ele.
+  await page.setViewportSize({ width: 360, height: 780 });
+  await peRandulFilelor(360);
+  await page.setViewportSize({ width: 320, height: 700 });
+  await peRandulFilelor(320);
+  const cuvant = page.getByTestId('indicator-lucrare').locator('.indicator-cuvant');
+  expect(await cuvant.evaluate((e) => e.scrollWidth > e.clientWidth)).toBe(true);
+  await page.setViewportSize({ width: 390, height: 844 });
+  // Fila deschisă (Mașina) cu numele; Proiectarea doar cu iconița, cu numele păstrat pentru cititorul de ecran.
+  expect((await fila(page, 'masina').locator('.eticheta').boundingBox())!.width).toBeGreaterThan(20);
+  expect((await fila(page, 'proiectare').locator('.eticheta').boundingBox())!.width).toBeLessThanOrEqual(1);
+  await expect(fila(page, 'proiectare')).toHaveAccessibleName('Proiectare');
   await page.locator('[data-masina="fisier-ales"]').setInputFiles({ name: 'lent.nc', mimeType: 'text/plain', buffer: LENT });
   await page.locator('[data-masina="viteza"]').selectOption('1');
   await page.locator('[data-masina="start"]').click();
-  const ind = await cutie('[data-testid="indicator-lucrare"]');
-  const fileJos = await cutie('.meniu-global .ferestre');
-  expect(Math.abs(ind.y + ind.height / 2 - (fileJos.y + fileJos.height / 2))).toBeLessThan(fileJos.height / 2);
-  expect(ind.x + ind.width).toBeLessThanOrEqual(390);
+  await peRandulFilelor();
   await page.locator('[data-masina="opreste"]').click();
   expect(await page.locator('.fereastra-masina').evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
 });

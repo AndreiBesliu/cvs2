@@ -398,6 +398,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   0100): o bucată nouă la cerere fără locul ei în listă lasă prima deschidere goală. Și adusă, o componentă `lazy` suspendă
   la prima randare, iar React ține mesajul de încărcare ~300 ms: fereastra venită se montează direct (`FereastraMasina` din
   `App.tsx`). **Pornirea 100,0 (cu ușa 103,5 / 110 kB), totalul 453,2 / 500.**
+  Din 13.A↑c (04.11), pe telefon (ADR 0132 §10): rândul al doilea al meniului e mereu al filelor și al indicatorului (un
+  `::after` cât tot rândul îl începe); fila deschisă cu numele, celelalte doar cu iconița (deci **orice filă, și a unei
+  extensii, are o iconiță**); indicatorul ia restul rândului, iar cuvântul unei stări lungi se taie cu „…”. **Un aranjament
+  pe rânduri care trebuie să încapă se probează și cu un font lat** (`--font` pe Verdana; pe Linux, `system-ui` e lat), la 390,
+  360 și 320 px. În CI, o probă e2e căzută își lasă urma și captura (`trace` / `screenshot` doar cu `CI`), iar rularea de
+  noapte pune contextul paginii în jurnal și păstrează `test-results/` o săptămână: o cădere doar pe Linux se citește de acolo.
   **Alinierea ca bloc (ADR 0150, felia 6.U↑, adusă din etapa 6)** gata pe 02.11, în aceeași sesiune paralelă (ramura
   `wip/6.U-aliniere`), după „3, ok” al owner-ului: comutatorul **Ca bloc** din secțiunea Aliniere face ca cele șase alinieri
   să mute cutia comună a formelor alese față de foaie, cu aceeași deplasare (așezarea dintre ele rămâne, nu se suprapun);
@@ -570,6 +576,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 04.11.2026: **meniul pe telefon, varianta B** (13.A↑c, ADR 0132 §10). La verificarea cerută („vreau sa verifici progresul
+  actual al aplicatiei si sa te asiguri ca totul a fost facut bine”), rularea de noapte era roșie de două nopți; la reparația
+  propusă, „vreau sa vad un exemplu mai concret inainte sa aprob”, apoi, după comparația cu capturi din aplicație (acum,
+  varianta A cu numele filelor tăiate, varianta B cu iconițele), „Yes, B”: fila deschisă cu numele, celelalte doar cu
+  iconița, iar indicatorul pe rândul lor.
 - 04.11.2026: **curățenia worktree-urilor** („vreau sa verifici ce worktrees pot fi unite si sterse/arhivate”, apoi „Da”):
   linia textului (7.5↑–7.8↑) și 10.1↑ unite în main; worktree-urile `text` și `sugestii` scoase, cu ramurile lor; ramurile
   depășite (feliile lor s-au terminat în main prin alte commit-uri) șterse după o copie în `Apps\cncvs2-arhiva\` (bundle-uri

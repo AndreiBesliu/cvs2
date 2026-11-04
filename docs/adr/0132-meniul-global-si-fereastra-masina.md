@@ -6,7 +6,8 @@ diferit de cel cu uneltele de desen. ca la cvs1 acest meniu va aparea doar in fe
 nouă întrebări și recomandarea fiecăreia, owner-ul a răspuns „Da, cu recomandările”. **Schimbă:** ADR 0081 §3 (panoul Mașina nu
 mai stă în docul din dreapta: e o fereastră), aranjamentul carcasei din felia 2.8a (o zonă nouă, `meniu`, și lista ferestrelor;
 marca și grupul din dreapta-sus trec în meniu), ADR 0120 (butonul Cont stă în meniul global). **Continuă:** ADR 0082, 0085, 0119
-(conținutul ferestrei e al panoului de până acum).
+(conținutul ferestrei e al panoului de până acum). **Completat** pe 04.11 de 13.A↑c: meniul pe telefon (§10), după comparația
+cu capturi din aplicație și „Yes, B”.
 
 **Problema.** Panoul mașinii stătea în docul din dreapta, sub proprietăți, lat de 15,5 rem: jog-ul, palparea, jurnalul și starea
 lucrării se înghesuiau într-o coloană îngustă, iar în timpul unei lucrări omul nu vedea de nicăieri altundeva că mașina merge
@@ -77,6 +78,16 @@ Reîncarcă, ca dialogurile. Cu bucata deja venită, fereastra se montează dire
 prima randare chiar cu bucata adusă, iar React ține mesajul de încărcare pe ecran ~300 ms, ca să nu clipească (verificarea pe
 canal l-a prins așa). Alegerea se face o dată, la montare: schimbată după, ar remonta fereastra și i-ar pierde starea.
 
+**10. Meniul pe telefon** (sub 40 rem; 13.A↑c, 04.11), mereu pe două rânduri: sus marca și grupul aplicației, dedesubt filele
+și indicatorul, pe același rând (un element gol, cât tot rândul, începe rândul al doilea).
+- Fila deschisă își arată numele, celelalte doar iconița, ca bara de acțiuni pe telefon. Numele rămâne în sfat și pentru
+  cititorul de ecran. Deci orice filă (și a unei extensii) are o iconiță.
+- Indicatorul ia restul rândului, la dreapta. Cuvântul unei stări lungi („Oprită la M6 (linia 1234)”) se taie cu „…”, iar
+  punctul, procentul și Pauză / Reia rămân.
+- De ce: rularea completă din CI (Linux, unde `system-ui` e un font lat) a picat pe 03.11 și 04.11, fiindcă indicatorul cădea
+  pe un al treilea rând. Rândul încăpea doar cu fontul îngust al Windows-ului; un telefon îngust sau fila unei extensii îl
+  rupeau la fel. Owner-ul a ales varianta după capturi din aplicație, la 390 px („Yes, B”).
+
 ## Probele
 
 - unitare: aranjamentul (zona meniului, ferestrele, cipurile globale, verificarea cu controale negative), fereastra ținută în
@@ -88,7 +99,10 @@ canal l-a prins așa). Alegerea se face o dată, la montare: schimbată după, a
 - 13.A↑b, tot e2e: bucata ferestrei și mesajele ei vin fără clic, iar primul clic o deschide plină chiar cu fișierele scoase
   de pe server între timp, fără ca mesajul de încărcare să apară nici o clipă (un observator al paginii îl caută la fiecare
   schimbare); mesajul de încărcare (răspunsul întârziat) și cel de eșec (cererea refuzată), cu Reîncarcă;
-- otrăvurile țintite (`test/otravuri/13.A.py`, `test/otravuri/13.A-b.py`).
+- 13.A↑c, e2e: cu un font lat (Verdana aici, DejaVu Sans pe Linux), la 390, 360 și 320 px, indicatorul stă pe rândul filelor,
+  după ele și în ecran; la 320 px (lățimea minimă din WCAG 1.4.10), cuvântul stării se taie; Proiectarea, nedeschisă, arată
+  doar iconița, cu numele accesibil;
+- otrăvurile țintite (`test/otravuri/13.A.py`, `test/otravuri/13.A-b.py`, `test/otravuri/13.A-c.py`).
 
 ## Limitele
 
@@ -106,3 +120,5 @@ canal l-a prins așa). Alegerea se face o dată, la montare: schimbată după, a
 - **Mașina ca panou mare peste pânză sau ca dialog:** o lucrare durează ore, iar desenul trebuie să rămână la un clic.
 - **Proiectarea demontată în Mașina:** ar pierde butonul Cont (pus de modulul editării), starea uneltelor și vederea pânzei.
 - **O tastă pentru ferestre:** `Ctrl+1` / `Ctrl+2` sunt ale browserului; paleta (`Ctrl+K` → „Mașina”) ajunge acolo.
+- **Pe telefon, filele derulate în lățime (13.A↑c):** tăiau chiar fila deschisă („Mașin…”).
+- **Pe telefon, numele tuturor filelor tăiate cu „…” (varianta A):** cu trei file, una ajungea „P”.

@@ -45,3 +45,21 @@ jobs:
         run: npm install -g firebase-tools@15.18.0
       - name: Testele pe emulatoare
         run: npm run test:emulator
+      # O probă care cade doar aici (Linux, alt font, altă viteză) trebuie să-și spună motivul (13.A↑c): contextul paginii la
+      # cădere (`error-context.md`) intră în jurnal, iar urmele și capturile rămân o săptămână, ca artefact.
+      - name: Contextul probelor căzute, în jurnal
+        if: failure()
+        run: |
+          find test-results -name error-context.md 2>/dev/null | head -20 | while read -r f; do
+            echo "::group::$f"
+            cat "$f"
+            echo "::endgroup::"
+          done
+      - name: Urmele probelor căzute
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: probe-cazute
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

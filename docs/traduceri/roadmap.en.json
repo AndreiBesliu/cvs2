@@ -993,6 +993,10 @@
       "ro": "Intrările și ieșirile",
       "en": "Lead-ins and lead-outs"
     },
+    "6b38737ecc1fcdb0": {
+      "ro": "Meniul pe telefon, și cu un font lat",
+      "en": "The phone menu, also with a wide font"
+    },
     "6bb03c6169662fb3": {
       "ro": "Fonturile cu o singură linie",
       "en": "Single-line fonts"
@@ -1084,6 +1088,10 @@
     "75ae1fd995077bbc": {
       "ro": "Traseul pe pânză și panoul de proprietăți (ADR 0038): 2.8c, panoul editabil, și 2.8d, traseul pe WebGL2 (16.10); 2.8e, probele independente (17.10 11:10–14:45: oracolul stratului, recenzia, otrăvurile). Detaliile: blocul „2.8” din „Feliile”. Rând completat pe 19.10 din DEVLOG, pentru roadmap-ul din `/admin`. Orele de pe 16.10 nu sunt scrise acolo.",
       "en": "The toolpath on the canvas and the properties panel (ADR 0038): 2.8c, the editable panel, and 2.8d, the toolpath on WebGL2 (16.10); 2.8e, the independent checks (17.10 11:10–14:45: the layer oracle, the review, the poisons). Details: the “2.8” block in “Slices”. Row completed on 19.10 from the DEVLOG, for the roadmap in `/admin`. The times on 16.10 are not written there."
+    },
+    "75c3add900936277": {
+      "ro": "**Meniul pe telefon, și cu un font lat** (fără mașină; ADR 0132 §10; „Yes, B”, după comparația cu capturi din aplicație la 390 px). Rularea completă din CI (Linux, unde `system-ui` e un font lat) picase pe 03.11 și 04.11: pe telefon, indicatorul lucrării cădea pe un al treilea rând; rândul încăpea doar cu fontul îngust al Windows-ului (reprodus aici cu Verdana: aceeași abatere, 38 px). Acum rândul al doilea e mereu al filelor și al indicatorului; fila deschisă își arată numele, celelalte doar iconița (numele rămâne în sfat și pentru cititorul de ecran); indicatorul ia restul rândului, iar cuvântul unei stări lungi se taie cu „…” (punctul, procentul și Pauză / Reia rămân). Găsit pe drum: stările lungi („Oprită la M6 (linia N)”) nu încăpeau pe telefon nici cu fontul Windows. **CI:** o probă căzută își lasă contextul paginii în jurnalul rulării de noapte și urma (DOM-ul, rețeaua, consola) ca artefact, o săptămână; a doua cădere din noapte (F1 în Mașina, din 13.A↑b) nu se reproduce aici (șase variante), deci se lămurește din urma ei. **Probele:** `fereastra.spec.ts`, cu un font lat, la 390, 360 și 320 px: indicatorul pe rândul filelor, după ele și în ecran, cuvântul tăiat la 320 px, Proiectarea doar cu iconița și cu numele accesibil; otrăvurile din `test/otravuri/13.A-c.py`.",
+      "en": "**The phone menu, also with a wide font** (no machine; ADR 0132 §10; “Yes, B”, after the comparison with screenshots from the app at 390 px). The full CI run (Linux, where `system-ui` is a wide font) had failed on 03.11 and 04.11: on a phone, the job indicator dropped to a third row; the row only fitted with the narrow Windows font (reproduced here with Verdana: the same 38 px offset). Now the second row always belongs to the tabs and the indicator; the open tab shows its name, the others only their icon (the name stays in the tooltip and for screen readers); the indicator takes the rest of the row, and the word of a long state is cut with “…” (the dot, the percentage and Pause / Resume stay). Found along the way: long states (“Stopped at M6 (line N)”) did not fit on a phone even with the Windows font. **CI:** a failed test leaves the page context in the nightly run’s log and its trace (the DOM, the network, the console) as an artifact, for a week; the night’s second failure (F1 in the Machine window, since 13.A↑b) does not reproduce here (six variants), so it will be cleared up from its trace. **Tests:** `fereastra.spec.ts`, with a wide font, at 390, 360 and 320 px: the indicator on the tabs row, after the tabs and on screen, the word cut at 320 px, Design with only its icon and its accessible name; the poisons from `test/otravuri/13.A-c.py`."
     },
     "75d3a595b6142e98": {
       "ro": "26.A↑: importul WMF",

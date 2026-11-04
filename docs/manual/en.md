@@ -10,7 +10,8 @@ board of material), put shapes on it, each with its own cutting **operation**, t
 **The screen.** At the very top sits the **application menu**, in every window: the brand, the window tabs (**Design** and
 **Machine**), the job indicator (with the machine connected, see [The machine](#masina)), then “Search commands”, the
 language (RO / EN), the theme and the **Account** button. The pressed tab is the current window; the app reopens in it the
-next time it starts.
+next time it starts. On a phone, the menu has two rows: the brand and the other buttons on top, the tabs and the job
+indicator below; the open tab shows its name, the others only their icon.
 
 In the **Design** window, the canvas fills the screen; floating above it are:
 - the **top bar**: the drawing tools, Snap and Grid, Undo and Redo and, at its end, the files: import, “Export vectors”

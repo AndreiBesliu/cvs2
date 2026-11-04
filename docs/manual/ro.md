@@ -9,7 +9,9 @@ CNC Vector Studio desenează piese pentru o freză CNC și scrie programul (G-co
 
 **Ecranul.** Sus de tot stă **meniul aplicației**, în toate ferestrele: marca, filele ferestrelor (**Proiectare** și
 **Mașina**), indicatorul lucrării (cu mașina conectată, vezi [Mașina](#masina)), apoi „Caută o comandă”, limba (RO / EN),
-tema și butonul **Cont**. Fila apăsată e fereastra de acum; aplicația se redeschide în ea la pornirea următoare.
+tema și butonul **Cont**. Fila apăsată e fereastra de acum; aplicația se redeschide în ea la pornirea următoare. Pe telefon,
+meniul are două rânduri: sus marca și celelalte butoane, dedesubt filele și indicatorul; fila deschisă își arată numele,
+celelalte doar iconița.
 
 În fereastra **Proiectare**, pânza ține tot ecranul; deasupra ei plutesc:
 - **bara de sus**: uneltele de desen, Lipire și Grilă, Anulează și Reface și, la capăt, fișierele: importul, „Exportă

@@ -1146,8 +1146,44 @@ nav button[aria-pressed='true'] {
   }
 
   .meniu-global > .grup[data-grup='vedere'] { order: 1; }
-  .meniu-global > .grup[data-grup='ferestre'] { order: 2; }
-  .meniu-global > .grup[data-grup='lucrare'] { order: 3; }
+
+  /*
+   * Al doilea rând începe mereu după grupul aplicației (un element gol, cât tot rândul), iar filele iau ce rămâne lângă
+   * indicator (13.A↑c): cu un text mai lat (fontul de pe Linux, alt telefon, fila unei extensii), indicatorul nu mai cade pe
+   * un al treilea rând. Marginea negativă anulează golul pe care rândul gol l-ar adăuga între rânduri.
+   */
+  .meniu-global::after {
+    content: '';
+    order: 2;
+    flex: 0 0 100%;
+    height: 0;
+    margin-top: calc(-1 * var(--sp-1));
+  }
+
+  .meniu-global > .grup[data-grup='ferestre'] { order: 3; flex: none; }
+
+  /* Indicatorul ia restul rândului, la dreapta; cuvântul unei stări lungi se taie acolo (`masina.css`), nu trece peste file. */
+  .meniu-global > .grup[data-grup='lucrare'] {
+    order: 4;
+    flex: 1 1 0;
+    justify-content: flex-end;
+  }
+
+  /*
+   * Fila deschisă își arată numele, celelalte doar iconița, ca bara de acțiuni pe telefon; numele rămâne pentru cititorul de
+   * ecran și în sfat.
+   */
+  .meniu-global .ferestre .fila:not([aria-current='page']) > .eticheta {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .meniu-global .ferestre .fila:not([aria-current='page']):enabled > .sfat {
+    display: flex;
+  }
 
   .fereastra-masina {
     margin: calc(-1 * var(--sp-2)) calc(-1 * var(--sp-2)) 0;
