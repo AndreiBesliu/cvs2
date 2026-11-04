@@ -5071,4 +5071,24 @@ ramura nu e împinsă.
 **Prompt:** „Da, descarcă” (la „Descarc three.js (three.min.js r128, MIT, de pe cdnjs, ~603 kB) ca 3D-ul să meargă și în
 cvs2?”, după raportul lui 3.Tc), în sesiunea dedicată liniei Trenuleț. 3.Td: three.js intră în pachetul extensiei, iar
 atelierul îl încarcă de acolo, la prima intrare în 3D.
-**Started:** 04.11, 09:34.
+**Started:** 04.11, 09:34. **Completed:** 04.11, 10:04.
+
+- **Descărcarea:** `https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js`, 603 445 de octeți, într-un dosar gol;
+  SHA-512 egal cu amprenta SRI publicată de cdnjs (`api.cdnjs.com`), antetul de licență MIT; fără `eval`, `new Function` sau
+  workeri (CSP-ul cadrului i-ar fi refuzat). Pus în `vendor/three.min.js`, neschimbat, cu `three.LICENSE`.
+- **Ce merge:**
+  - pachetul are `js/three.js` (octet cu octet; amprenta fixată în `trenulet.test.ts`) și `licente/three.txt`; pagina de sine
+    stătătoare nu-l are (pe claude.ai îl cere tot de pe cdnjs, la cerere);
+  - `window.cvs2.three()` îl aduce din pachet, ca script clasic din `blob:`, o singură dată; atelierul îl cheamă în cvs2 la
+    prima intrare în 3D: vederea desenează piesa (captura din raport), fără niciun refuz CSP; CSP-ul nu s-a schimbat;
+  - pachetul 18.3.0, 369 614 octeți (+151 kB).
+- **Porțile:** compilatorul, ambele proiecte; traducerile, 571, 0 lipsă; 8 170 de teste unitare, 0 eșuate; build-ul
+  determinist: 247 de fișiere identice, pornirea 100,6 / 110 kB (cu ușa 104,1), totalul 471,6 / 500, neschimbate.
+- **E2e:** e2e-ul întreg, pe portul 4176: 321 trec, 1 pică (aserțiunea care cere portul 4173, raportorul).
+- **Otrăvurile `test/otravuri/3.Td.py`:** 8 / 8 prinse, fiecare de proba ei: D01–D04 de construcție, D05–D07 de intrare,
+  D08 (atelierul nu mai cere three.js de la gazdă) de e2e.
+- **Ce nu merge încă:** fonturile paginii, tema și engleza lui cvs2 în planificator.
+**Publicat pe canalul `trenulet`** pe 04.11, la 10:03, din `7d33348`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 04.12). Probele planificatorului, ale extensiilor, ale senderului și ale primirii, rulate chiar pe canal: 15 / 15.
+Pachetul (`trenulet-18.3.0.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de test nu s-a atins;
+ramura nu e împinsă.
