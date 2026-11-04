@@ -2,7 +2,7 @@ import { CUTIE_GOALA, uneste, type Cutie } from '../geom/cutie.ts';
 import { IDENTITATE, rotatie } from '../geom/matrice.ts';
 // Doar tipul: piesa importului o face modulul previzualizării, adus la cerere (`ImportPregatit.piesa`, felia 2.3c-3).
 import type { ImportPregatit } from '../io/piesa.ts';
-import { instantaPreaDeparte, operatieImplicita, PLAFON, type Document, type FormaDoc, type Ghidaj, type Instanta, type Nod, type Operatie, type Piesa, type Stoc } from '../model/document.ts';
+import { instantaPreaDeparte, numara, operatieImplicita, PLAFON, plafonDepasit, type Document, type FormaDoc, type Ghidaj, type Instanta, type Nod, type Operatie, type Piesa, type Stoc } from '../model/document.ts';
 import { is } from 'valibot';
 import { operatieInMargini, SchemaDocument } from '../model/schemaDocument.ts';
 import { adancimeDeschise } from '../io/adancime.ts';
@@ -22,7 +22,7 @@ import { copiiPeCurba } from '../model/curba.ts';
 import type { CheieSimpla } from '../i18n/t.ts';
 import {
   alesePreaDeparte, copieArbore, cresteCopia, FOAIA, foaieCurenta, idNou, incape, inregistreazaCalcul, istoricDin, pas, scrie, sculaFoii,
-  comenziStergere, type CalculDocument, type CerereText, type ContextDocument, type FormaNoua,
+  comenziStergere, type CalculDocument, type CerereText, type ContextDocument, type FormaNoua, type ReparatieCalculata,
 } from './actiuniDocument.ts';
 
 /**
@@ -498,6 +498,28 @@ export const CALCUL_DOCUMENT: CalculDocument = {
       ctx.selecteaza([r.id]);
     },
   },
+  // Verificarea vectorilor (ADR 0124 §10): reparația calculată de worker pe documentul de atunci, într-un pas; alese rămân
+  // instanțele care n-au fost șterse.
+  'document.repara': {
+    activa: (ctx) => {
+      if (!ctx.reparatie) return 'motiv.nimic-ales';
+      const s = scrie(ctx);
+      if (s !== true) return s;
+      const r = comandaReparatie(ctx.istoric(), ctx.reparatie());
+      return r.ok ? true : r.motiv;
+    },
+    ruleaza: (ctx) => {
+      if (!ctx.reparatie) return;
+      const h = ctx.istoric();
+      const rep = ctx.reparatie();
+      const r = comandaReparatie(h, rep);
+      if (!r.ok) return;
+      ctx.scrie(executa(h, r.comanda));
+      const sterse = new Set(rep.sterse);
+      const sel = ctx.selectie();
+      if (sel.some((id) => sterse.has(id))) ctx.selecteaza(sel.filter((id) => !sterse.has(id)));
+    },
+  },
   // Uneltele de desen (ADR 0051): forma trasă, ca piesă nouă cu instanța ei, aleasă după desen.
   'document.deseneaza': {
     activa: (ctx) => {
@@ -673,6 +695,40 @@ function judecaDegruparea(doc: Document, selectie: readonly string[]): ComandaDe
   const comanda: Comanda = { tip: 'degrupeaza', foaie: foaie.id, degrupate };
   const dupa = executa(istoricDin(doc), comanda).doc;
   return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda, ids } : { ok: false, motiv: 'motiv.plafon' };
+}
+
+/**
+ * Comanda unei reparații a verificării vectorilor (ADR 0124 §10): piesele înlocuite, apoi instanțele șterse (`comenziStergere`,
+ * pe documentul de după înlocuiri), într-un singur pas. Refuzată, cu motiv: documentul nu mai e cel pe care s-a calculat
+ * reparația (o schimbare între timp), nimic de schimbat, documentul de după peste plafoane sau refuzat de schemele lui.
+ * Ținută pe (document, reparație): `activa` și `ruleaza` cer aceeași judecată.
+ */
+type ComandaReparatie = { readonly ok: true; readonly comanda: Comanda } | { readonly ok: false; readonly motiv: CheieSimpla };
+let ultimaReparatie: { readonly doc: Document; readonly r: ReparatieCalculata; readonly rez: ComandaReparatie } | null = null;
+export function comandaReparatie(h: Istoric, r: ReparatieCalculata): ComandaReparatie {
+  if (ultimaReparatie && ultimaReparatie.doc === h.doc && ultimaReparatie.r === r) return ultimaReparatie.rez;
+  const rez = judecaReparatia(h, r);
+  ultimaReparatie = { doc: h.doc, r, rez };
+  return rez;
+}
+
+function judecaReparatia(h: Istoric, r: ReparatieCalculata): ComandaReparatie {
+  if (r.doc !== h.doc) return { ok: false, motiv: 'editare.verificare.motiv.veche' };
+  const comenzi: Comanda[] = [];
+  let doc = h.doc;
+  for (const nou of r.piese) {
+    const vechi = doc.piese.find((p) => p.id === nou.id);
+    if (!vechi) return { ok: false, motiv: 'editare.verificare.motiv.veche' };
+    const c: Comanda = { tip: 'inlocuieste-piesa', vechi, nou };
+    doc = executa(istoricDin(doc), c).doc;
+    comenzi.push(c);
+  }
+  comenzi.push(...comenziStergere(doc, new Set(r.sterse)).comenzi);
+  const comanda = pas(comenzi);
+  if (!comanda) return { ok: false, motiv: 'motiv.nimic-ales' };
+  const dupa = executa(h, comanda).doc;
+  if (plafonDepasit(numara(dupa))) return { ok: false, motiv: 'motiv.plafon' };
+  return is(SchemaDocument, JSON.parse(JSON.stringify(dupa))) ? { ok: true, comanda } : { ok: false, motiv: 'editare.verificare.motiv.schema' };
 }
 
 /**

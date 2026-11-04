@@ -522,7 +522,7 @@ Un **WMF** (metafișierul Windows: clipartul vechi, exporturile din CorelDRAW, O
 
 ## Verificarea vectorilor
 %% capitol: verificare
-%% acopera: editare.verificare
+%% acopera: editare.verificare, document.repara
 
 **Verifică vectorii** (butonul cu nodul încercuit, după boolean și degrupare, în extensia barei) caută ce poate strica o
 tăietură, fără să schimbe nimic în proiect:
@@ -541,7 +541,24 @@ deschis, lista se reface singură după fiecare schimbare. Merge la fel pe vecto
 
 Pe pânză, fiecare problemă are un cerc, de aceeași mărime la orice apropiere: **roșu** în aceeași formă, **verde** între
 forme; o suprapunere e o linie groasă, iar golul unei căi deschise o linie punctată. Un clic pe un rând alege formele lui
-și îi mărește cercul. Deocamdată verificarea doar arată; reparațiile vin într-o versiune următoare.
+și îi mărește cercul.
+
+Verificarea te ajută întâi să găsești greșelile; desenul rămâne al tău. Câteva se pot repara din panou
+(**Repară vectorii**), fiecare cu un singur pas de anulare (Ctrl+Z):
+- **Scoate toate copiile**, sub lista duplicatelor: rămâne prima formă din fiecare grup, cu operația ei. O copie cu o
+  operație pe care prima n-o are rămâne și ea, iar rândul spune câte au rămas;
+- **Închide**, pe o cale deschisă cu capetele la cel mult **Închide sub** (implicit 1 mm): sub toleranță capetele se
+  lipesc, peste ea se adaugă o linie dreaptă între ele. Operația rămâne aceeași; rolul îl schimbi din panoul de
+  proprietăți. O cale cu capetele mai departe (o linie de gravat) rămâne deschisă, fără buton;
+- **Scoate** sau **Desparte**, pe bucla unei forme închise: sub pragul „Bucla mică” bucla se scoate, iar conturul trece
+  drept prin încrucișare; peste prag, bucla devine o formă separată, în aceeași piesă și cu aceeași operație (un „8”
+  devine două forme, care se ating în punctul de încrucișare). **Repară toate buclele** le face pe toate deodată;
+- **Unește**, pe nodurile prea apropiate din aceeași formă: șirul de segmente scurte devine un singur nod. **Unește toate
+  nodurile** le face pe toate. Nodurile a două forme diferite doar se arată.
+
+Intersecțiile dintre forme doar se arată: pot fi voite, fiindcă freza urmează fiecare formă cu rolul ei, iar exportul
+spune ce nu se poate tăia. O formă dintr-o piesă pusă de mai multe ori nu se repară de aici, fiindcă reparația le-ar
+schimba pe toate: rândul spune de câte ori e pusă.
 
 ## Operațiile de tăiere
 %% capitol: operatii

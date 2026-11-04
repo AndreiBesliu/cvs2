@@ -63,6 +63,7 @@ export const en = {
   'motiv.grupare-vcarve': 'Two chosen shapes each have a V-carve with the same values (tool, depth, step) and they touch or overlap: grouped, they would be carved as a single region, and the overlap would be left uncut. Move them apart, or give one of them another depth or step (properties panel, Cutting).',
   'motiv.grupare-impartita': 'A chosen piece is also used by other instances: grouping would take it from them too.',
   'actiune.text': 'Write the text',
+  'actiune.repara': 'Repair vectors',
   'motiv.text-gol': 'The text has no letter to cut: only spaces, or letters the font does not have.',
   'motiv.text-includeri': 'The text has too many outlines to work out the holes of the letters.',
   'motiv.text-vectori': 'The chosen shape is no longer text: its outlines were changed other than from the text panel.',

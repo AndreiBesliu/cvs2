@@ -102,27 +102,32 @@ function punctPe(a: Punct, b: Punct, s: Segment, t: number): Punct {
 /**
  * Conturul pentru cavalier (§3): fiecare cubică devine lanțul ei de biarce sub toleranța proiectului (ADR 0033), iar un
  * vârf la mai puțin de `EPS_ATINGERE` de cel dinainte se scoate (cel dinainte îi ia segmentul): un segment nul n-are
- * direcție. Null: n-a rămas nimic de intersectat; 'esuat': o cubică nu încape în biarce.
+ * direcție. Null: n-a rămas nimic de intersectat; 'esuat': o cubică nu încape în biarce. Cu `orig`, primește pentru fiecare
+ * segment al rezultatului segmentul conturului din care vine (reparația buclelor, §11).
  */
-function pentruCavalier(c: Contur): Contur | null | 'esuat' {
+export function pentruCavalier(c: Contur, orig?: number[]): Contur | null | 'esuat' {
   const m = numarSegmente(c), n = c.varfuri.length;
   const v: Varf[] = [];
+  const o: number[] = [];
   for (let i = 0; i < n; i++) {
     const x = c.varfuri[i] as Varf;
-    if (x.s.tip !== 'C') { v.push(x); continue; }
-    if (i >= m) { v.push({ p: x.p, s: LINIE }); continue; }
+    if (x.s.tip !== 'C') { v.push(x); o.push(i); continue; }
+    if (i >= m) { v.push({ p: x.p, s: LINIE }); o.push(i); continue; }
     const r = cubicaInArce(x.p, x.s.c1, x.s.c2, (c.varfuri[(i + 1) % n] as Varf).p, TOLERANTA_PROIECT);
     if (!r.ok) return 'esuat';
-    v.push(...r.varfuri);
+    for (const y of r.varfuri) { v.push(y); o.push(i); }
   }
   const w: Varf[] = [];
-  for (const x of v) {
+  const wo: number[] = [];
+  v.forEach((x, k) => {
     const ultim = w[w.length - 1];
-    if (ultim && dist(ultim.p, x.p) < EPS_ATINGERE) w[w.length - 1] = { p: ultim.p, s: x.s };
-    else w.push(x);
-  }
-  while (c.inchis && w.length > 1 && dist((w[w.length - 1] as Varf).p, (w[0] as Varf).p) < EPS_ATINGERE) w.pop();
-  return w.length < 2 ? null : { inchis: c.inchis, varfuri: w };
+    if (ultim && dist(ultim.p, x.p) < EPS_ATINGERE) { w[w.length - 1] = { p: ultim.p, s: x.s }; wo[wo.length - 1] = o[k] as number; }
+    else { w.push(x); wo.push(o[k] as number); }
+  });
+  while (c.inchis && w.length > 1 && dist((w[w.length - 1] as Varf).p, (w[0] as Varf).p) < EPS_ATINGERE) { w.pop(); wo.pop(); }
+  if (w.length < 2) return null;
+  if (orig) for (const x of wo) orig.push(x);
+  return { inchis: c.inchis, varfuri: w };
 }
 
 /**
@@ -201,29 +206,41 @@ function duplicate(forme: readonly Forma[], tol: number, st: Stare): number[][] 
   return [...grupuri.values()].filter((g) => g.length > 1);
 }
 
-/** Segmentele de cel mult `tol` (pe curbă) ale conturului, unite pe șiruri consecutive: capetele fiecărui șir (§5). */
-function noduriInForma(c: Contur, tol: number): Array<readonly [Punct, Punct]> {
-  const m = numarSegmente(c), n = c.varfuri.length;
+/**
+ * Șirurile de segmente de cel mult `tol` (pe curbă) ale conturului (§5): fiecare de la vârful `a` la vârful `b` (segmentele
+ * a … b − 1; pe un contur închis, indicii trec de capătul listei și se citesc modulo numărul vârfurilor). 'praf': tot
+ * conturul e sub toleranță.
+ */
+export function siruriMici(c: Contur, tol: number): Array<{ readonly a: number; readonly b: number }> | 'praf' {
+  const m = numarSegmente(c);
   const mic = Array.from({ length: m }, (_, k) => { const s = segment(c, k); return lungime(s.a, s.b, s.s) <= tol; });
   if (!mic.includes(true)) return [];
+  if (!mic.includes(false)) return 'praf';
+  // Pe un contur închis, șirurile pornesc după un segment care nu e mic, ca unul să nu fie rupt de capătul listei.
+  const start = c.inchis ? mic.indexOf(false) + 1 : 0;
+  const rez: Array<{ a: number; b: number }> = [];
+  let inceput: number | null = null;
+  for (let q = start; q < start + m; q++) {
+    const k = q % m;
+    if (mic[k] && inceput === null) inceput = q;
+    if (!mic[k] && inceput !== null) { rez.push({ a: inceput, b: q }); inceput = null; }
+  }
+  if (inceput !== null) rez.push({ a: inceput, b: start + m });
+  return rez;
+}
+
+/** Segmentele de cel mult `tol` (pe curbă) ale conturului, unite pe șiruri consecutive: capetele fiecărui șir (§5). */
+function noduriInForma(c: Contur, tol: number): Array<readonly [Punct, Punct]> {
+  const n = c.varfuri.length;
   const p = (k: number): Punct => (c.varfuri[k % n] as Varf).p;
-  if (!mic.includes(false)) {
+  const siruri = siruriMici(c, tol);
+  if (siruri === 'praf') {
     // Tot conturul e sub toleranță (praf): un singur loc, de la primul vârf la cel mai depărtat de el.
     let departe = p(0);
     for (const v of c.varfuri) if (dist(v.p, p(0)) > dist(departe, p(0))) departe = v.p;
     return [[p(0), departe]];
   }
-  // Pe un contur închis, șirurile pornesc după un segment care nu e mic, ca unul să nu fie rupt de capătul listei.
-  const start = c.inchis ? mic.indexOf(false) + 1 : 0;
-  const rez: Array<readonly [Punct, Punct]> = [];
-  let inceput: number | null = null;
-  for (let q = start; q < start + m; q++) {
-    const k = q % m;
-    if (mic[k] && inceput === null) inceput = q;
-    if (!mic[k] && inceput !== null) { rez.push([p(inceput), p(q)]); inceput = null; }
-  }
-  if (inceput !== null) rez.push([p(inceput), p(start + m)]);
-  return rez;
+  return siruri.map(({ a, b }) => [p(a), p(b)] as const);
 }
 
 type PerecheNoduri = { readonly a: Punct; readonly b: Punct; readonly d: number; readonly capete: boolean };
@@ -274,14 +291,14 @@ function laCoarda(p: Punct, a: Punct, b: Punct): number {
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
 }
 
-type Loc = { readonly puncte: readonly [Punct] | readonly [Punct, Punct]; readonly at: Atingere };
+export type Loc = { readonly puncte: readonly [Punct] | readonly [Punct, Punct]; readonly at: Atingere };
 
 /**
  * Locurile distincte ale unor atingeri (§3, §4): suprapunerile, unite capăt la capăt (o latură comună tăiată de un vârf e o
  * singură suprapunere); apoi punctele care nu cad, la `tol`, lângă un punct păstrat (o tăietură printr-un vârf poate fi
  * spusă de ambele segmente ale vârfului). Un punct la capătul unei suprapuneri nu vine de la cavalier (măsurat, ADR 0124 §3).
  */
-function locuri(at: readonly Atingere[], tol: number): Loc[] {
+export function locuri(at: readonly Atingere[], tol: number): Loc[] {
   const supra: Array<{ a: Punct; b: Punct; at: Atingere }> = at.filter((x) => x.puncte.length === 2).map((x) => ({ a: x.puncte[0], b: x.puncte[1] as Punct, at: x }));
   for (let unit = true; unit;) {
     unit = false;
@@ -308,7 +325,7 @@ function locuri(at: readonly Atingere[], tol: number): Loc[] {
  * ele, înapoi în X; cealaltă buclă a unui contur închis are aria întregului minus a ei (ariile cu semn se adună). Se spune
  * cea mai mică, cu procentul ei din suma celor două.
  */
-function buclaLa(c: Contur, i: number, j: number, X: Punct): Bucla | null {
+export function buclaLa(c: Contur, i: number, j: number, X: Punct): Bucla | null {
   if (i === j) return null;
   const a = Math.min(i, j), b = Math.max(i, j);
   const sa = segment(c, a), sb = segment(c, b);

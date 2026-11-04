@@ -37,6 +37,12 @@ export type CerereText =
   }
   | { readonly fel: 'editat'; readonly instanta: string; readonly piesa: (vechi: Piesa, grosime?: number) => RezultatPiesaText };
 
+/**
+ * Reparația verificării vectorilor (ADR 0124 §10), calculată de workerul CAM pe documentul `doc`: piesele schimbate (cu
+ * aceleași id-uri) și instanțele de șters. Se aplică într-un singur pas doar dacă documentul e încă `doc`.
+ */
+export type ReparatieCalculata = { readonly doc: Document; readonly piese: readonly Piesa[]; readonly sterse: readonly string[] };
+
 export type ContextDocument = {
   readonly istoric: () => Istoric;
   readonly scrie: (h: Istoric) => void;
@@ -92,6 +98,8 @@ export type ContextDocument = {
   readonly sterge?: () => readonly string[];
   /** Textul nou sau editat, din panoul uneltei Text (ADR 0105 §5). */
   readonly textNou?: () => CerereText;
+  /** Reparația din panoul verificării vectorilor (ADR 0124 §10), calculată de worker. */
+  readonly reparatie?: () => ReparatieCalculata;
 };
 
 /**
@@ -493,6 +501,8 @@ export const ACTIUNI_DOCUMENT: readonly Actiune<ContextDocument>[] = [
     : ctx.selectie().length < 2 ? 'motiv.grupare-doua' : calcul === null ? 'motiv.editare-se-incarca' : true)),
   // Textul (ADR 0105): din panoul uneltei Text, un text nou sau unul editat, ca o piesă.
   laCerere('document.text', 'actiune.text', (ctx) => (ctx.textNou ? true : 'motiv.nimic-ales')),
+  // Verificarea vectorilor (ADR 0124 §10): o reparație din panoul ei, calculată de worker, într-un pas.
+  laCerere('document.repara', 'actiune.repara', (ctx) => (ctx.reparatie ? true : 'motiv.nimic-ales')),
   {
     id: 'istoric.anuleaza',
     eticheta: 'actiune.anuleaza',

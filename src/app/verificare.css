@@ -1,5 +1,5 @@
 /*
- * Verificarea vectorilor (ADR 0124 §7): lista din panou și locurile de pe pânză. Doar tokenurile temei: roșu (`--rosu`) în
+ * Verificarea vectorilor (ADR 0124 §7, §10): lista din panou, cu reparațiile ei, și locurile de pe pânză. Doar tokenurile temei: roșu (`--rosu`) în
  * aceeași formă, verde (`--traseu-taiere`) între forme; stratul de pe pânză nu prinde evenimente. Panoul are lățimea
  * vecinilor (`.panou-retea`): așezat în fereastră la deschidere, înaintea conținutului adus la cerere, nu se mai lărgește.
  */
@@ -79,6 +79,31 @@
   text-align: start;
   font-size: var(--fs-2);
   padding: 2px var(--sp-1);
+}
+
+/* Reparațiile (ADR 0124 §10, felia 10.2↑): butonul rândului stă lângă el, cât textul lui; cel „pentru toate”, sub titlu. */
+.lista-verificare li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.lista-verificare li > button:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Butonul unei reparații are margine: se deosebește de rândul de lângă el, care alege formele. */
+.lista-verificare button.repara-verificare {
+  flex: none;
+  width: auto;
+  justify-content: center;
+  border-color: var(--l-margine);
+}
+
+.butoane-verificare {
+  display: flex;
+  margin: 0 0 var(--sp-1);
 }
 
 .marcaje-verificare {

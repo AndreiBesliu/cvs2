@@ -10,5 +10,11 @@ export const TOLERANTA_VERIFICARE = REZOLUTIE;
 export const TOLERANTA_MINIMA = 0.001;
 /** Toleranța cea mai mare primită (mm). */
 export const TOLERANTA_MAXIMA = 1;
-/** Pragul implicit al buclei mici, în procente din aria formei (§4): sub el, bucla e „mică”. */
+/** Pragul implicit al buclei mici, în procente din aria formei (§4): sub el, bucla e „mică” (decizia 5a). */
 export const PRAG_BUCLA = 1;
+/** Pragul implicit de închidere (§12), în mm: „Închide” apare pe căile deschise cu golul cel mult atât (decizia 3a). */
+export const PRAG_INCHIDERE = 1;
+/** Pragul de închidere cel mai mic primit (mm): toleranța cea mai mică. */
+export const INCHIDERE_MINIMA = 0.001;
+/** Pragul de închidere cel mai mare primit (mm): peste, capetele unei linii de gravat. */
+export const INCHIDERE_MAXIMA = 10;

@@ -6,6 +6,7 @@
 import type { IesireFoaie } from '../cam/iesire.ts';
 import type { ColtOrigine, Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
+import type { CerereReparare, OptiuniReparare } from '../model/reparare.ts';
 import type { OptiuniVerificare } from '../model/verificare.ts';
 import type { StrategieScula, Unitati } from '../post/contract.ts';
 import type { IdContract } from '../post/contracte/index.ts';
@@ -58,8 +59,10 @@ export type CerereCam =
   | { readonly fel: 'simulare'; readonly document: Document }
   /** Timpul jobului de lângă traseu (ADR 0046 §8) pentru un program deja calculat, fără CAM. */
   | { readonly fel: 'timp'; readonly program: ProgramImpachetat; readonly foaie: Montaj['foaie']; readonly setari: string | undefined }
-  /** Verificarea vectorilor (ADR 0124): problemele contururilor foii, fără să schimbe documentul. */
-  | { readonly fel: 'verificare'; readonly document: Document; readonly optiuni: OptiuniVerificare };
+  /** Verificarea vectorilor (ADR 0124): problemele contururilor foii, cu ce se poate repara din ele, fără să schimbe documentul. */
+  | { readonly fel: 'verificare'; readonly document: Document; readonly optiuni: OptiuniVerificare }
+  /** O reparație a verificării (ADR 0124 §10): piesele schimbate și instanțele de șters, pe documentul cererii. */
+  | { readonly fel: 'reparare'; readonly document: Document; readonly cerere: CerereReparare; readonly optiuni: OptiuniReparare };
 
 export type RaspunsExport =
   | {

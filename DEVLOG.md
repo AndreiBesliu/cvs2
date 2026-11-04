@@ -5320,3 +5320,53 @@ fel. Niciun avertisment. Poarta nu-l vedea: invarianta 2 scutește drumul exact 
 **Publicat pe test:** 04.11, 22:11, `publica` pe `de51b67` (rularea 41903719359), după CI-ul rapid verde (41897174483) și
 după rularea completă de mai sus.
 Verificat: versiunea `de51b671f419` în browserul aplicației, după „Reload”, la 1440 px, în engleză: gaura 60 × 50 cu limba de 2 mm (un dreptunghi minus o fâșie 2 × 40, cu Scade), interior, T-bone; Exportă arată exact cele două avertismente, la (78, 50) și (80, 50), „prea aproape de alt perete al piesei”, cu programul de 34 de linii; nicio eroare în consolă. Descărcarea fișierului a fost oprită în pagină pe durata probei, iar forma a fost ștearsă după.
+
+## 2026-11-04 — Felia 10.2↑: reparațiile din verificarea vectorilor (ADR 0124 §10–§16) (Model: Claude Opus 5.5)
+
+**Prompt:** „Completez formularul”, apoi răspunsurile formularului „Decizii pentru repararea vectorilor”, lipite în
+conversație: „1c · Copiile (duplicatele): Doar „Scoate toate copiile”; 2a (neconfirmat) · Căile deschise: închiderea:
+„Închide” pe căile cu golul de cel mult 1 mm; 3a (neconfirmat) · Pragul de închidere: 1 mm; 4a (neconfirmat) · Buclele (o formă
+care se taie singură): Bucla mică se scoate, bucla mare devine o formă separată; 5a (neconfirmat) · Pragul buclei mici: 1 %,
+nota: vreau sa pot seta asta separat, ori global ori per proiect, cand vom avea zona de settings respective; 6b · Nodurile
+prea apropiate: Doar în aceeași formă, nota: unirea cailor va fi o discutie separata si mai ampla; 7b · Intersecțiile dintre
+forme: „Taie la intersecții”, nota: este normal ca unele cai sa se suprapuna, iar freza sa urmeze vectorul cu rolul lui de
+taiere; 8a (neconfirmat) · O piesă pusă de mai multe ori: Reparația se refuză, cu motivul; Altceva: este datoria userului sa
+isi faca corect desenul, check vectors trebuie sa il ajute sa gaseasca erori mai mult decat sa i le repare”.
+**Started:** 04.11, 21:22. **Completed:** 04.11, 22:05.
+
+**Înainte:** `main` adus din nou în ramură, prin avans rapid (`024c7d6` → `a622bad`, cu 3.U și 13.A↑c). Deciziile: 1c, 2a, 3a,
+4a, 5a, 6b, 7b, 8a. Cele cinci „neconfirmate” erau recomandarea lăsată neschimbată în formular; owner-ul le-a trimis așa,
+deci le-am luat ca acceptate. Nota lui a dat măsura feliei: reparații puține și cerute, niciuna automată.
+
+**Felia** (ADR 0124 §10–§16):
+- **Ce se poate repara** din fiecare rând vine odată cu verificarea, din workerul CAM (`verificaPentruPanou`, în
+  `src/model/reparare.ts`, nou), după reguli ieftine. **Reparația** e cererea nouă `reparare` a protocolului, calculată tot
+  acolo, pe documentul de la clic: piesele schimbate și instanțele de șters. Acțiunea nouă `document.repara` le aplică într-un
+  `lot`, doar dacă documentul e încă același și doar dacă cel de după trece de plafoane și de scheme.
+- **Scoate toate copiile** (un singur buton): rămâne prima; o copie cu o operație pe care prima n-o are rămâne; o instanță
+  întreagă de copii se șterge (și când piesa ei e pusă de mai multe ori); altfel copia pleacă din piesă și din operații.
+- **Închide**, pe rând, cu golul cel mult **Închide sub** (1 mm, câmp nou în panou): lipit sub toleranță, cu linia de
+  închidere peste ea; operația rămâne.
+- **Scoate** / **Desparte** pe bucla unei căi închise, după pragul buclei mici, și **Repară toate buclele**. Tăietura e
+  exactă: cavalier dă bucățile de biarce, `pentruCavalier` ține acum segmentul din care vine fiecare, iar parametrii celor
+  două drumuri prin încrucișare (proiecția, minimele distanței cu Newton, punctul dublu al cubicei care se taie singură, în
+  formă închisă) se aplică în coordonatele elementului cu `adaugaNod`. Restul vârfurilor rămân la bit. Partea despărțită
+  intră în aceeași piesă și în aceleași operații.
+- **Unește** și **Unește toate nodurile**, doar în aceeași formă (`siruriMici`, scos din `noduriInForma`).
+- Intersecțiile doar se arată, cu o notă; o piesă pusă de mai multe ori nu se repară de aici (rândul spune de câte ori).
+- Găsit pe drum: bucla unei singure cubice ar fi ieșit o cale cu un singur vârf, refuzată de ușă; se taie la jumătate.
+- Manualul (ro + en), capitolul „Verificarea vectorilor”, acoperă și acțiunea nouă: **ușile 76 → 77**.
+- Probele: 21 pe hârtie (`test/unit/reparare.test.ts`), e2e-ul reparațiilor în `test/e2e/verificare.spec.ts`. Mutațiile:
+  18 / 18 (15 pe modul și pe acțiune, cu controlul verde înainte și după și fișierele la loc; 3 pe panou, prin build și e2e).
+
+**Porțile:** traducerile (573, 0 lipsă), compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări),
+licențele, 8 265 de teste unitare (0 căderi, 8 sărite), build-ul determinist (244 de fișiere identice; față de build-ul
+curat al lui `a622bad`, pornirea 100,3 → 100,4, cu ușa 103,9 / 110 kB, iar totalul 469,3 → 474,9 / 500), e2e-ul în Edge, pe
+portul 4175: 317 / 319 la rularea întreagă (`raportor.spec.ts:73` cere adresa de pe 4173; oglindirea, `editare.spec.ts:569`,
+a căzut pe un fișier blocat în `test-results`, `EBUSY`, și trece la rerulare, împreună cu cele 4 probe ale verificării).
+**Publicat pe canalul `vectori`** pe 04.11, la 22:10 (versiunea `f28003d0cd1c`, refăcută după commit, ca ștampila să fie a lui):
+<https://cncvectorstudio-test--vectori-kx0je98o.web.app>, până pe 04.12. Verificat acolo, în browserul aplicației, la 1440 px,
+după „Reload”: în paletă, „Repair vectors” (inactivă: „Nothing was chosen.”); două dreptunghiuri în același loc: „Problems: 1
+(shapes checked: 2)”, „Remove all copies (1)”, apoi „Repaired: 1. Undo with Ctrl+Z.” și „No problems (shapes checked: 1)”;
+anularea aduce copia înapoi; foaia canalului a rămas goală, fără erori în consolă. La prima publicare (`d7a6ecd`), butonul
+reparației arăta ca un rând de text: a primit margine (`f28003d`). Codul: `d7a6ecd`, `f28003d`.
