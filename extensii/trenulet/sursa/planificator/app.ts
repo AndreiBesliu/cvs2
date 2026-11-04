@@ -1517,6 +1517,8 @@ function corpCircuit() {
            actualizat: new Date().toISOString(), nrPiese: stare.piese.length, versiune: 1 };
 }
 function programeazaSalvare() {
+  // in cvs2 (ADR 0164), salvarea amanata o tine gazda: stie ca e ceva nesalvat si, la inchiderea ferestrei, o porneste pe loc
+  if (window.cvs2) { window.cvs2.amana("circuit", salveaza, 1200); return; }
   clearTimeout(cronSalvare!);
   cronSalvare = setTimeout(salveaza, 1200);
 }
@@ -1559,6 +1561,17 @@ function deschide(c: { id?: string; nume?: string; piese?: unknown } & Record<st
   deseneaza(); actualizeazaUI();
   anunta3D();
 }
+// in cvs2, cu permisiunea `cont` (ADR 0164): contul lui cvs2, doar citit; circuitele raman deocamdata in browserul acesta
+const PLANURI_CVS2: Record<string, string> = { proba: "proba gratuită", gratuit: "planul gratuit", personal: "personalul aplicației",
+  expirat: "proba încheiată", dezactivat: "cont dezactivat" };
+function randeazaCont() {
+  const el = $("#circ-cont"), c = window.cvs2 ? window.cvs2.cont() : null;
+  el.hidden = !c;
+  if (!c) return;
+  el.textContent = !c.conectat ? "Nu ești conectat la cvs2."
+    : c.plan === null ? "Ești conectat la cvs2; adresa contului nu e încă confirmată."
+    : `Ești conectat la cvs2 ca ${c.nume} (${PLANURI_CVS2[c.plan] || c.plan}).`;
+}
 let deConfirmat: string | null | undefined = null;
 function randeazaCircuite() {
   // in cvs2 (ADR 0161), circuitele stau in stocarea extensiei, adica doar in browserul acesta
@@ -1567,6 +1580,7 @@ function randeazaCircuite() {
     : db
     ? "Circuitele se salvează singure și le vezi pe telefon, tabletă sau calculator."
     : "Circuitele se salvează doar pe acest dispozitiv.";
+  randeazaCont();
   if (!listaCircuite.length) { $("#circ-lista").innerHTML = `<p class="mic">Încă nu ai circuite salvate. Orice schimbare pe plan se salvează singură.</p>`; return; }
   $("#circ-lista").innerHTML = listaCircuite.map(c => {
     const d = c.actualizat ? new Date(c.actualizat as string) : null;
@@ -1754,11 +1768,13 @@ let masini = (() => { try { return Profiluri.curata(JSON.parse(localStorage.getI
 let timerMasini: ReturnType<typeof setTimeout> | null = null, uiMasini: { desen(): void } | null = null;
 function salveazaMasini() {
   try { localStorage.setItem(CHEIE_MASINI, JSON.stringify(masini)); } catch (e) { /* fara stocare */ }
-  clearTimeout(timerMasini!);
-  timerMasini = setTimeout(async () => {
+  const inDb = async () => {
     if (!db) return;
     try { await db.doc("setari/masini").set({ ...JSON.parse(JSON.stringify(masini)), actualizat: new Date().toISOString() }); } catch (e) { /* raman cele locale */ }
-  }, 900);
+  };
+  if (window.cvs2) { window.cvs2.amana("masini", inDb, 900); return; }   // ca la circuite (ADR 0164)
+  clearTimeout(timerMasini!);
+  timerMasini = setTimeout(inDb, 900);
 }
 function memoreazaMasina() { Profiluri.memoreaza(masini, valoriMasina()); salveazaMasini(); }
 function aplicaMasina(v: Record<string, unknown> | null) {
@@ -1910,11 +1926,13 @@ function schimbaSetare(e: Event) {
 }
 function salveazaSetariCNC() {
   try { localStorage.setItem(CHEIE_CNC, JSON.stringify(setariCNC)); } catch (e) { /* fara stocare */ }
-  clearTimeout(timerSalvareCNC!);
-  timerSalvareCNC = setTimeout(async () => {
+  const inDb = async () => {
     if (!db) return;
     try { await db.doc("setari/cnc").set({ ...setariCNC, actualizat: new Date().toISOString() }); } catch (e) { /* raman cele locale */ }
-  }, 900);
+  };
+  if (window.cvs2) { window.cvs2.amana("cnc", inDb, 900); return; }   // ca la circuite (ADR 0164)
+  clearTimeout(timerSalvareCNC!);
+  timerSalvareCNC = setTimeout(inDb, 900);
 }
 async function incarcaSetariCNC() {
   if (!db) return;
@@ -2737,6 +2755,7 @@ function init() {
   $("#btn-la-lista").onclick = () => $("#at-sectiune-lista").scrollIntoView({ block: "start", behavior: "smooth" });
   $("#e-la-3d").onclick = () => { alegeMod("3d"); setTimeout(() => $("#at-sectiune-lista").scrollIntoView({ block: "start" }), 60); };
   if (window.Atelier3D) Atelier3D.init();
+  if (window.cvs2) window.cvs2.laSchimbare(randeazaCont);   // intrarea sau iesirea din contul lui cvs2, pe loc (ADR 0164)
   const dinAdresa = /^#(2d|3d)$/i.exec(location.hash || "");
   let modSalvat = null;
   try { modSalvat = localStorage.getItem(CHEIE_MOD); } catch (e) { /* fara stocare */ }

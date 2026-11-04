@@ -7,12 +7,16 @@
  * - `localStorage`: doar cheile `ls:`, citite la pornire; scrise și șterse pe loc; o scriere refuzată, raportată;
  * - „Trimite la cvs2” (ADR 0160 §D): `window.open` la `#primeste-lucrare` dă o fereastră imitată, care răspunde „gata” la
  *   „cauta”, trimite lucrarea prin `masina.trimite` și dă înapoi „primit”, ca mesaj de la ea, de la originea cerută;
- * - gazda (ADR 0161 §A): `window.cvs2`, înghețată, cu senderul doar când e deschis extensiei.
+ * - gazda (ADR 0161 §A): `window.cvs2`, înghețată, cu senderul doar când e deschis extensiei;
+ * - pluginul ca parte din cvs2 (ADR 0164): tema lui cvs2 pe rădăcina paginii (`data-gazda`, `data-theme`), schimbată pe loc;
+ *   contul văzut prin `window.cvs2.cont()`, anunțat la schimbare; lucrul nesalvat: salvările amânate ale paginii și scrierile
+ *   în zbor (și cele refuzate, până reușesc) o țin „nesalvată”, iar la închidere salvările amânate pornesc pe loc și se
+ *   așteaptă, chiar înlănțuite.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { HostApi } from '../../extensii/api.ts';
-import { claudePeste, deschiderePeste, gazdaPeste, localStoragePeste } from '../../extensii/trenulet/intrare.ts';
+import type { ContCvs2, ContextHost, HostApi } from '../../extensii/api.ts';
+import { claudePeste, deschiderePeste, gazdaPeste, localStoragePeste, lucruPeste, temaPeste } from '../../extensii/trenulet/intrare.ts';
 
 type Ref = { readonly id: string; set(d: unknown): Promise<void>; get(): Promise<{ exists: boolean; data(): unknown }>; delete(): Promise<void> };
 type Instantaneu = { readonly docs: { readonly id: string; data(): unknown }[] };
@@ -25,8 +29,12 @@ type Claude = { use(c: string): Promise<unknown> };
 const pauza = (ms: number): Promise<void> => new Promise((r) => { setTimeout(r, ms); });
 const cod = (c: string) => (e: unknown): boolean => (e as { code?: unknown }).code === c;
 
-/** O gazdă în memorie: stocarea (cu plinul la cerere și întârzieri pentru `chei()`), cererile primite, erorile raportate. */
+/**
+ * O gazdă în memorie: stocarea (cu plinul la cerere și întârzieri pentru `chei()`), cererile primite, erorile raportate;
+ * contextul (tema, contul), schimbat cu `schimba`; lucrul nesalvat anunțat și închiderea, cerută cu `inchidere()` (ADR 0164).
+ */
 function gazda(initial: Record<string, unknown> = {}) {
+  const ascultatori = new Set<(c: ContextHost) => void>(), laInchidere = new Set<() => unknown>();
   const g = {
     date: new Map<string, unknown>(Object.entries(initial)),
     cereri: [] as { serviciu: string; argumente: unknown[] }[],
@@ -34,15 +42,26 @@ function gazda(initial: Record<string, unknown> = {}) {
     intarzieriChei: [] as number[],
     plin: false,
     refuz: null as string | null,
+    context: { limba: 'ro', tema: {} } as ContextHost,
+    nesalvat: [] as boolean[],
+    schimba(c: Partial<ContextHost>): void {
+      g.context = { ...g.context, ...c };
+      for (const f of [...ascultatori]) f(g.context);
+    },
+    async inchidere(): Promise<void> { await Promise.allSettled([...laInchidere].map(async (f) => f())); },
+    laInchidere,
   };
   const host: HostApi = {
     api: 1,
-    limba: 'ro',
-    tema: {},
-    laSchimbare: () => () => {},
+    get limba() { return g.context.limba; },
+    get tema() { return g.context.tema; },
+    get cont() { return g.context.cont ?? null; },
+    laSchimbare: (f) => { ascultatori.add(f); return () => { ascultatori.delete(f); }; },
     fisier: () => null,
     raporteaza: (e) => { g.raportate.push(e); },
     inchide: () => {},
+    nesalvat: (da) => { g.nesalvat.push(da); },
+    laInchidere: (f) => { laInchidere.add(f); return () => { laInchidere.delete(f); }; },
     cere: async (serviciu, ...argumente) => {
       g.cereri.push({ serviciu, argumente });
       if (g.refuz !== null) throw new Error(g.refuz);
@@ -223,4 +242,120 @@ test('gazda: window.cvs2.three() cere three.js din pachet o singură dată (ADR 
   assert.equal(typeof w.cvs2?.three, 'function');
   assert.deepEqual([await w.cvs2?.three(), await w.cvs2?.three()], [null, null]);
   assert.deepEqual(cerute, ['js/three.js']);
+});
+
+test('lucrul (ADR 0164): o salvare amânată ține pagina „nesalvată” până se termină; alta sub aceeași cheie o înlocuiește', async () => {
+  const { g, host } = gazda();
+  const l = lucruPeste(host);
+  const rulate: string[] = [];
+  l.amana('circuit', () => { rulate.push('întâi'); }, 20);
+  l.amana('circuit', async () => { await pauza(10); rulate.push('a doua'); }, 20);
+  assert.deepEqual(g.nesalvat, [true]);
+  await pauza(15);
+  assert.deepEqual([rulate, g.nesalvat], [[], [true]]);
+  await pauza(60);
+  assert.deepEqual([rulate, g.nesalvat], [['a doua'], [true, false]]);
+});
+
+test('lucrul: la închidere, salvările amânate pornesc pe loc; se așteaptă scrierile lor, și cele înlănțuite după ele', async () => {
+  const { g, host } = gazda();
+  const l = lucruPeste(host);
+  let lant: Promise<unknown> = Promise.resolve();
+  // ca salvarea circuitelor: o scriere pleacă abia după cea dinainte, într-un lanț de promisiuni
+  const salveaza = (v: number): Promise<unknown> => (lant = lant.then(() => l.urmareste('db:circuite/a', () => host.stocare.scrie('db:circuite/a', v))));
+  void salveaza(1);
+  l.amana('circuit', () => salveaza(2), 60_000);
+  l.amana('setari', async () => { await pauza(5); await l.urmareste('db:setari/cnc', () => host.stocare.scrie('db:setari/cnc', { a: 1 })); }, 60_000);
+  // o scriere pornită dintr-o salvare amânată, fără să i se întoarcă promisiunea, abia după un temporizator
+  l.amana('atelier', () => { setTimeout(() => { void l.urmareste('db:atelier/curent', () => host.stocare.scrie('db:atelier/curent', 3)); }, 0); }, 60_000);
+  assert.equal(g.laInchidere.size, 1);
+  await g.inchidere();
+  assert.deepEqual([g.date.get('db:circuite/a'), g.date.get('db:setari/cnc'), g.date.get('db:atelier/curent'), g.nesalvat.at(-1)], [2, { a: 1 }, 3, false]);
+});
+
+test('lucrul: două scrieri înlănțuite nu lasă o clipă de „salvat” între ele', async () => {
+  const { g, host } = gazda();
+  const l = lucruPeste(host);
+  await l.urmareste('db:a', () => host.stocare.scrie('db:a', 1)).then(() => l.urmareste('db:b', () => host.stocare.scrie('db:b', 2)));
+  await pauza(5);
+  assert.deepEqual([g.nesalvat, g.date.get('db:b')], [[true, false], 2]);
+});
+
+test('lucrul: o scriere refuzată ține pagina „nesalvată” până reușește una la aceeași cheie; închiderea n-o ascunde', async () => {
+  const { g, host } = gazda();
+  const l = lucruPeste(host);
+  g.plin = true;
+  await assert.rejects(l.urmareste('db:circuite/a', () => host.stocare.scrie('db:circuite/a', 1)), /stocare:plin/);
+  await pauza(5);
+  assert.equal(g.nesalvat.at(-1), true);
+  await g.inchidere();
+  assert.equal(g.nesalvat.at(-1), true);
+  g.plin = false;
+  await l.urmareste('db:circuite/b', () => host.stocare.scrie('db:circuite/b', 1));
+  await pauza(5);
+  assert.equal(g.nesalvat.at(-1), true);
+  await l.urmareste('db:circuite/a', () => host.stocare.scrie('db:circuite/a', 2));
+  await pauza(5);
+  assert.equal(g.nesalvat.at(-1), false);
+});
+
+test('lucrul: scrierile adaptoarelor, documentele (db) și localStorage, sunt urmărite', async () => {
+  const { g, host } = gazda();
+  const l = lucruPeste(host);
+  claudePeste(host, l);
+  const db = await (globalThis as unknown as { claude: Claude }).claude.use('db') as Db;
+  const p = db.doc('circuite/a').set({ nume: 'x' });
+  assert.deepEqual(g.nesalvat, [true]);
+  await p;
+  await pauza(5);
+  assert.deepEqual(g.nesalvat, [true, false]);
+  await localStoragePeste(host, l);
+  (globalThis as unknown as { localStorage: Storage }).localStorage.setItem('k', 'v');
+  assert.deepEqual(g.nesalvat, [true, false, true]);
+  await pauza(5);
+  assert.deepEqual([g.nesalvat, g.date.get('ls:k')], [[true, false, true, false], 'v']);
+});
+
+test('lucrul: o gazdă dinainte de 3.Xd, fără nesalvat și laInchidere: salvările amânate merg ca temporizatoare', async () => {
+  const { host } = gazda();
+  const vechi = { ...host, nesalvat: undefined, laInchidere: undefined } as unknown as HostApi;
+  const l = lucruPeste(vechi);
+  let rulat = 0;
+  l.amana('circuit', () => { rulat++; }, 5);
+  await pauza(30);
+  assert.equal(rulat, 1);
+});
+
+test('tema (ADR 0164): data-gazda și data-theme după tema lui cvs2, schimbate pe loc; fără color-scheme, pagina își ține tema', () => {
+  const { g, host } = gazda();
+  const rad = { dataset: {} as DOMStringMap };
+  g.schimba({ tema: { '--t': '#1d232b', 'color-scheme': 'light' } });
+  temaPeste(host, rad);
+  assert.deepEqual({ ...rad.dataset }, { gazda: 'cvs2', theme: 'light' });
+  g.schimba({ tema: { '--t': '#e8e4dc', 'color-scheme': 'dark' } });
+  assert.deepEqual({ ...rad.dataset }, { gazda: 'cvs2', theme: 'dark' });
+  const vechi = gazda();
+  const rad2 = { dataset: {} as DOMStringMap };
+  vechi.g.schimba({ tema: { '--t': '#1d232b' } });
+  temaPeste(vechi.host, rad2);
+  assert.deepEqual({ ...rad2.dataset }, {});
+});
+
+test('gazda: window.cvs2.cont() e contul de acum (null fără permisiune), anunțat la schimbare; amana e a lucrului', async () => {
+  const { g, host } = gazda();
+  type Cvs2 = { cont(): ContCvs2 | null; laSchimbare(f: () => void): () => void; amana(c: string, f: () => unknown, ms: number): void };
+  const w = {} as Window & { cvs2?: Cvs2 };
+  gazdaPeste(host, false, w, lucruPeste(host));
+  assert.equal(w.cvs2?.cont(), null);
+  let anuntat = 0;
+  const gata = w.cvs2!.laSchimbare(() => { anuntat++; });
+  g.schimba({ cont: { conectat: true, nume: 'Andrei', plan: 'personal' } });
+  assert.deepEqual([anuntat, w.cvs2?.cont()], [1, { conectat: true, nume: 'Andrei', plan: 'personal' }]);
+  gata();
+  g.schimba({ cont: { conectat: false } });
+  assert.deepEqual([anuntat, w.cvs2?.cont()], [1, { conectat: false }]);
+  w.cvs2!.amana('x', () => {}, 60_000);
+  assert.deepEqual(g.nesalvat, [true]);
+  await g.inchidere();
+  assert.deepEqual(g.nesalvat, [true, false]);
 });

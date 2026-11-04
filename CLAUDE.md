@@ -460,6 +460,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `licente/three.txt`), dar nu în pagina de sine stătătoare. `window.cvs2.three()` îl aduce din pachet la prima intrare în
   3D, ca script clasic din `blob:`: în cvs2, atelierul are vederea 3D. CSP-ul nu s-a schimbat. O versiune nouă de three.js
   cere acordul owner-ului pentru descărcare și amprenta nouă în probă. Pachetul 18.3.0.
+  **Pluginul ca parte din cvs2 (ADR 0164, felia 3.Xd)** gata pe 04.11: cadrul primește și `color-scheme` (tema aleasă în
+  cvs2) și fonturile (`JETOANE_TEMA`, 16); planificatorul pune `data-gazda="cvs2"` și `data-theme` și își leagă de ele
+  suprafețele, textul, marginile, roșul, inelul de focus și fonturile (masa, lemnul, cărămizile, verdele și butoanele
+  principale rămân ale lui). Permisiunea `cont`: `host.cont` (conectat, numele, planul de la zi; fără adresă, uid sau
+  parolă), în context, schimbat pe loc (`src/extensii/cont.ts`). `host.nesalvat` și `host.laInchidere`: × (și altă
+  extensie, o versiune nouă) cere întâi salvările extensiei, cel mult 5 s, și întreabă doar ce rămâne nesalvat;
+  reîncărcarea, prin `beforeunload`. În planificator, o salvare amânată nouă trece prin `window.cvs2.amana`. Încărcătorul
+  are amprentă nouă (politica CSP neschimbată). Pachetul 18.4.0.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

@@ -94,10 +94,14 @@ interface ClaudeDescarcari { save(f: { filename: string; data: Blob | string }):
 
 interface Window {
   readonly claude?: { use(ce: 'db'): Promise<ClaudeDb>; use(ce: 'downloads'): Promise<ClaudeDescarcari> };
-  /** Pus de intrarea extensiei în cvs2 (`extensii/trenulet/intrare.ts`): gazda, senderul (null fără permisiunea mașinii) și
-   *  three.js din pachet, adus la prima cerere (ADR 0163). */
+  /** Pus de intrarea extensiei în cvs2 (`extensii/trenulet/intrare.ts`): gazda, senderul (null fără permisiunea mașinii),
+   *  three.js din pachet, adus la prima cerere (ADR 0163); contul lui cvs2 (null fără permisiunea `cont`), anunțul unei teme,
+   *  limbi sau cont nou și salvările amânate ale paginii, pe care cvs2 le pornește pe loc la închidere (ADR 0164). */
   readonly cvs2?: { readonly gazda: 'cvs2'; readonly masina: import('../../api.ts').HostApi['masina'] | null;
-    readonly three: () => Promise<Trei.Biblioteca | null> };
+    readonly three: () => Promise<Trei.Biblioteca | null>;
+    readonly cont: () => import('../../api.ts').ContCvs2 | null;
+    readonly laSchimbare: (f: () => void) => () => void;
+    readonly amana: (cheie: string, f: () => unknown, ms: number) => void };
   readonly THREE?: Trei.Biblioteca;
 }
 

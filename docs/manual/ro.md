@@ -934,10 +934,20 @@ tu, iar interfața aplicației rămâne aceeași.
 - O extensie care a cerut asta poate salva fișiere (de exemplu, G-code-ul sau piesele de printat) ca descărcări obișnuite
   ale browserului: doar date și desene (`.zip`, `.json`, `.gcode`, `.stl` și altele asemenea), cel mult 64 MB unul, nu
   programe sau pagini.
+- O extensie care a cerut asta vede dacă ești conectat la cvs2, cu ce nume și ce plan, doar pentru citire: nu vede adresa,
+  parola sau proiectele. Planificatorul Trenuleț îl arată la **Circuite**; intrarea sau ieșirea din cont (și din altă filă)
+  ajunge în extensie pe loc.
+- Extensia ia tema aplicației: luminoasă sau întunecată (cea aleasă cu **Tema**), culorile și fonturile; o temă schimbată
+  ajunge în extensie pe loc. Planificatorul Trenuleț își păstrează doar culorile lui: masa, lemnul, cărămizile, verdele de
+  semnal.
 - Un clic pe o extensie din meniu îi deschide fereastra: lângă **Proiectare** și **Mașina** apare o filă cu numele ei, iar
   dedesubt, pe tot ecranul, stă extensia. Treci oricând la altă fereastră: extensia rămâne deschisă, cu ce ai lucrat în ea, iar
   o comandă a desenului aleasă din **Caută o comandă** te duce întâi la Proiectare. **×**, lângă numele ei, închide
-  extensia; după o reîncărcare a paginii, aplicația pornește fără ea. F1 deschide capitolul acesta.
+  extensia: întâi îi lasă câteva secunde să salveze ce avea de salvat (Planificatorul Trenuleț își salvează atunci circuitul,
+  setările și atelierul). Dacă tot rămân modificări nesalvate, te întreabă: **Rămân** (sau Escape) o lasă deschisă, **Închide
+  oricum** o închide, iar modificările se pierd. La fel, cât extensia are modificări nesalvate, reîncărcarea sau închiderea
+  filei te întreabă, prin fereastra browserului. După o reîncărcare a paginii, aplicația pornește fără extensie. F1 deschide
+  capitolul acesta.
 - O extensie care a cerut asta poate folosi mașina, prin fereastra **Mașina**: vede starea ei (legătura, lucrarea cu
   procentul, programul încărcat), încarcă un program G-code, verificat la fel ca unul adus cu **Fișier…** (fereastra Mașina
   scrie lângă el de la cine e), pune pauză și oprește lucrarea. Ca să pornească sau să reia lucrarea, te întreabă întâi,
@@ -949,8 +959,8 @@ tu, iar interfața aplicației rămâne aceeași.
   în dialogul **Lucrare primită**, ca de la o aplicație deschisă alături, cu extensia drept origine.
 - Planificatorul Trenuleț folosește mașina și din exportul lui CNC, la „Pe mașină, prin cvs2”: încarcă un fișier, îl pornește
   (cu întrebarea de mai sus), pune pauză, îl reia și îl oprește. Starea mașinii stă deasupra butoanelor.
-- Extensia rulează izolată: nu vede proiectele, contul sau portul mașinii și nu iese pe internet; vorbește cu aplicația doar
-  prin ce îi dă aceasta.
+- Extensia rulează izolată: nu vede proiectele sau portul mașinii și nu iese pe internet; din cont vede doar ce i-ai dat voie
+  (mai sus); vorbește cu aplicația doar prin ce îi dă aceasta.
 - **Gestionează extensiile** le arată pe cele instalate, cu sursa, data și cât ocupă datele lor; **Scoate** șterge una,
   împreună cu datele ei, **Închide** închide fereastra.
 

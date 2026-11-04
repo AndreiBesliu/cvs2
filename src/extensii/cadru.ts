@@ -1,9 +1,11 @@
 /**
  * Cadrul izolat al unei extensii (ADR 0127 §D), partea lui cvs2: iframe-ul cu sandbox (`allow-scripts`, fără origine, nimic
  * delegat), pagina lui din `shared/cadruExtensie.ts` și portul prin care trec toate mesajele. La încărcarea cadrului, cvs2
- * îi trimite o singură dată fișierele pachetului, contextul (limba, tema) și portul; apoi doar prin port. Serviciile cerute
- * cu `host.cere`: `stocare.*` (ADR 0128, cu permisiunea `stocare`), `descarcari.salveaza` (ADR 0129, cu `descarcari`),
- * `masina.*` (ADR 0160, cu `masina`); restul se refuză. Cu `masina`, cadrul primește și starea mașinii, la fiecare schimbare.
+ * îi trimite o singură dată fișierele pachetului, contextul (limba, tema, contul cu permisiunea `cont`) și portul; apoi doar
+ * prin port. Serviciile cerute cu `host.cere`: `stocare.*` (ADR 0128, cu permisiunea `stocare`), `descarcari.salveaza` (ADR
+ * 0129, cu `descarcari`), `masina.*` (ADR 0160, cu `masina`); restul se refuză. Cu `masina`, cadrul primește și starea
+ * mașinii, la fiecare schimbare. Lucrul nesalvat al extensiei (ADR 0164) stă aici, citit pe loc de × și de reîncărcare;
+ * închiderea cerută (`cereInchiderea`) îi lasă întâi extensiei salvările ei, cel mult cât se dă.
  */
 import type { ContextHost } from '../../extensii/api.ts';
 import { paginaCadru } from '../../shared/cadruExtensie.ts';
@@ -20,13 +22,18 @@ export type EvenimentCadru =
   | { readonly tip: 'eroare'; readonly mesaj: string; readonly stiva: string };
 
 /**
- * Variabilele temei lui cvs2 pe care le primește o extensie (`src/app/stil.css`, rădăcina): suprafețele (`--s-panou` e
- * fundalul unui panou; `--fond` e voalul translucid de sub ferestre, nu un fundal), textul, accentul, marginile.
+ * Tema lui cvs2 pe care o primește o extensie (`src/app/stil.css`, rădăcina): suprafețele (`--s-panou` e fundalul unui panou;
+ * `--fond` e voalul translucid de sub ferestre, nu un fundal), textul, accentul, marginile; din ADR 0164, fonturile (`--font`,
+ * `--mono`) și `color-scheme`, tema aleasă în cvs2 (`light` sau `dark`), pe care cadrul o pune și ca proprietate (controalele
+ * browserului din cadru o urmează).
  */
 export const JETOANE_TEMA = [
   '--s-panou', '--s-peste', '--s-ales', '--t', '--t-slab', '--a', '--a-plin', '--t-pe-a', '--rosu', '--l-margine', '--l-focus',
-  '--l-camp', '--fond',
+  '--l-camp', '--fond', '--font', '--mono', 'color-scheme',
 ] as const;
+
+/** Cât îi lasă cvs2 unei extensii salvările de la închidere (`host.laInchidere`), înainte să judece ce a rămas nesalvat. */
+export const ASTEPTARE_INCHIDERE_MS = 5000;
 
 /** Tema de acum, cum o vede cadrul: valorile calculate ale variabilelor de pe rădăcină. */
 export function temaDeAcum(): Record<string, string> {
@@ -66,12 +73,25 @@ function descarca(nume: string, date: Blob): void {
   setTimeout(() => { URL.revokeObjectURL(a.href); }, 30_000);
 }
 
-/** Pornește extensia în `container`; întoarce schimbarea contextului și oprirea (cadrul scos, portul închis). */
-export function pornesteCadru(container: HTMLElement, ext: ExtensieInstalata, context: ContextHost, laEveniment: (e: EvenimentCadru) => void,
-  gazda: GazdaMasina): {
+/** Ce întoarce `pornesteCadru`: contextul nou, lucrul nesalvat, închiderea cerută și oprirea. */
+export type CadruPornit = {
   readonly context: (c: ContextHost) => void;
+  /** Extensia are acum modificări nesalvate (ultimul ei `host.nesalvat`). */
+  readonly nesalvat: () => boolean;
+  /**
+   * Îi cere extensiei salvările de la închidere (`host.laInchidere`) și le așteaptă cel mult `ms`: true dacă a răspuns la
+   * timp. Lucrul nesalvat de după (`nesalvat()`) spune dacă omul trebuie întrebat.
+   */
+  readonly cereInchiderea: (ms?: number) => Promise<boolean>;
+  /** Cadrul scos, portul închis. */
   readonly opreste: () => void;
-} {
+};
+
+/** Pornește extensia în `container`. */
+export function pornesteCadru(container: HTMLElement, ext: ExtensieInstalata, context: ContextHost, laEveniment: (e: EvenimentCadru) => void,
+  gazda: GazdaMasina): CadruPornit {
+  let nesalvat = false, nrInchidere = 0;
+  const laInchidereGata = new Map<number, () => void>();
   const f = document.createElement('iframe');
   f.setAttribute('sandbox', 'allow-scripts');
   f.className = 'cadru-extensie';
@@ -117,6 +137,14 @@ export function pornesteCadru(container: HTMLElement, ext: ExtensieInstalata, co
       case 'eroare':
         laEveniment({ tip: 'eroare', mesaj: text(m.mesaj, 500), stiva: text(m.stiva, 4000) });
         return;
+      case 'nesalvat':
+        nesalvat = m.da === true;
+        return;
+      case 'inchidere-gata': {
+        const gata = typeof m.id === 'number' ? laInchidereGata.get(m.id) : undefined;
+        if (gata) gata();
+        return;
+      }
     }
   };
   f.addEventListener('load', () => {
@@ -151,6 +179,14 @@ export function pornesteCadru(container: HTMLElement, ext: ExtensieInstalata, co
   }
   return {
     context: (c) => { port.postMessage({ tip: 'context', context: c }); },
+    nesalvat: () => nesalvat,
+    cereInchiderea: (ms = ASTEPTARE_INCHIDERE_MS) => new Promise<boolean>((rezolva) => {
+      const id = ++nrInchidere;
+      const gata = (laTimp: boolean): void => { clearTimeout(ceas); laInchidereGata.delete(id); rezolva(laTimp); };
+      const ceas = setTimeout(() => { gata(false); }, ms);
+      laInchidereGata.set(id, () => { gata(true); });
+      port.postMessage({ tip: 'inchidere', id });
+    }),
     opreste: () => {
       opresteStarea();
       // O confirmare cerută de extensia oprită nu mai are cui răspunde: se închide, ca „Nu”.

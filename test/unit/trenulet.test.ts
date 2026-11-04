@@ -83,7 +83,7 @@ test('pachetul: cvs2 îl citește ca la instalare; intrarea fără importuri, sc
   const r = await citestePachet(pachetTrenulet().octeti);
   assert.ok(r.ok, JSON.stringify(r));
   const { manifest, fisiere } = r.pachet;
-  assert.deepEqual([manifest.id, manifest.intrare, manifest.stiluri, manifest.permisiuni], ['trenulet', 'index.js', ['trenulet.css'], ['stocare', 'descarcari', 'masina']]);
+  assert.deepEqual([manifest.id, manifest.intrare, manifest.stiluri, manifest.permisiuni], ['trenulet', 'index.js', ['trenulet.css'], ['stocare', 'descarcari', 'masina', 'cont']]);
   const surse = scripturi();
   assert.deepEqual([...fisiere.keys()].sort(), ['body.html', 'index.js', 'js/three.js', 'licente/three.txt', 'trenulet.css', ...surse.map((s) => `js/${s.nume}`)].sort());
   const text = (c: string): string => new TextDecoder().decode(fisiere.get(c));

@@ -964,10 +964,20 @@ it, and the app’s interface stays the same.
 - An extension that asked for it can save files (for example, the G-code or the parts to print) as ordinary browser
   downloads: only data and drawings (`.zip`, `.json`, `.gcode`, `.stl` and the like), at most 64 MB each, never programs
   or pages.
+- An extension that asked for it sees whether you are signed in to cvs2, with what name and plan, read-only: it can’t see
+  your email, your password or your projects. The Trenuleț planner shows it under **Circuite** (“Circuits”); signing in or
+  out (in another tab too) reaches the extension at once.
+- The extension takes the app’s theme: light or dark (the one picked with **Theme**), the colours and the fonts; a theme you
+  change reaches the extension at once. The Trenuleț planner keeps only its own colours: the table, the wood, the bricks,
+  the signal green.
 - A click on an extension in the menu opens its window: a tab with its name appears next to **Design** and **Machine**, and
   below it, on the whole screen, sits the extension. Switch to another window any time: the extension stays open, with what
   you did in it, and a drawing command picked from **Search commands** takes you to Design first. **×**, next to its name,
-  closes the extension; after the page reloads, the app starts without it. F1 opens this chapter.
+  closes the extension: first it gives it a few seconds to save what it had to save (the Trenuleț planner then saves its
+  circuit, its settings and its workshop). If unsaved changes are still left, it asks you: **Stay** (or Escape) keeps it
+  open, **Close anyway** closes it, and the changes are lost. Likewise, while the extension has unsaved changes, reloading or
+  closing the tab asks you, through the browser’s window. After the page reloads, the app starts without the extension. F1
+  opens this chapter.
 - An extension that asked for it can use the machine, through the **Machine** window: it sees its state (the connection, the
   job with its percentage, the loaded program), loads a G-code program, checked like one loaded with **File…** (the Machine
   window writes next to it where it came from), pauses and stops the job. To start or resume the job, it asks you first, in
@@ -980,8 +990,8 @@ it, and the app’s interface stays the same.
 - The Trenuleț planner also uses the machine from its CNC export, under “Pe mașină, prin cvs2” (“On the machine, through
   cvs2”): it loads a file, starts it (with the question above), pauses, resumes and stops it. The machine’s state sits above
   the buttons.
-- The extension runs isolated: it can’t see your projects, your account or the machine’s port, and it can’t reach the
-  internet; it talks to the app only through what the app gives it.
+- The extension runs isolated: it can’t see your projects or the machine’s port, and it can’t reach the internet; of your
+  account it sees only what you allowed it (above); it talks to the app only through what the app gives it.
 - **Manage extensions** shows the installed ones, with their source, date and how much their data takes; **Remove** deletes
   one, together with its data, **Close** closes the window.
 

@@ -13,19 +13,24 @@ ieșiri.
 | `planificator/cnc.ts` | motorul căii: geometria pieselor (contururi Cavalier cu arce), șanțurile, cuplajele, limbile macazurilor, așezarea pe plăci, DXF / SVG, STL-urile pieselor printate, rampa 3D, zip | 83 kB |
 | `planificator/gcode.ts` | G-code direct: postul, contractele, CAM-ul (profil cu punți, șanțuri, găurire), timpul; portat de mână din cvs2 | 57 kB |
 | `planificator/profiluri.ts` | profilurile (mașini, imprimante), cu cel implicit | 6 kB |
-| `planificator/head.html`, `body.html` | CSS-ul (variabile de temă, luminos / întunecat) și marcajul | 44 kB |
+| `planificator/head.html`, `body.html` | CSS-ul (variabile de temă, luminos / întunecat; în cvs2, sub `data-gazda="cvs2"`, suprafețele, textul, marginile, roșul, inelul de focus și fonturile lui cvs2, ADR 0164) și marcajul | 44 kB |
 | `planificator/catalog.json` | catalogul pieselor de cale (se pune în `app.js` la construcție) | |
 | `lego/lego.ts` | motorul pieselor LEGO: corpuri închise (prisme, inele, corpuri rotite, sfere; fețele cu găuri prin earcut), toate piesele, calibrarea, STL, așezarea pe pat | 79 kB |
 | `vendor/cavalier.min.js` | `cavalier-contours-js@0.1.1` (MIT / Apache-2.0), aceeași versiune cu `src/geom/cavalier` din cvs2 | |
 | `vendor/earcut.min.js` | earcut 2.2.4 (ISC, `earcut.LICENSE`) | |
 | `vendor/three.min.js` | three.js r128 (MIT, `three.LICENSE`), de pe cdnjs, octet cu octet: doar în pachetul extensiei, adus la prima intrare în 3D (ADR 0163); pagina de sine stătătoare îl cere de pe cdnjs | 603 kB |
-| `globale.d.ts` | ce găsesc sursele gata făcut: Cavalier, earcut, three.js (doar tipuri), `window.claude`, `window.cvs2` | |
+| `globale.d.ts` | ce găsesc sursele gata făcut: Cavalier, earcut, three.js (doar tipuri), `window.claude`, `window.cvs2` (cu `cont()`, `laSchimbare` și `amana`, ADR 0164) | |
 | `tsconfig.json` | proiectul de tipuri al surselor (aceleași reguli stricte ca aplicația; rădăcina lui cvs2 le exclude) | |
 
 Sursele sunt TypeScript (ADR 0162), dar scripturi clasice, nu module: fiecare motor e o funcție închisă care întoarce un
 singur nume global (`TrenCNC`, `TrenGCode`, `Lego`, `Profiluri`, `Atelier3D`); `app.ts` e script obișnuit. Tipurile se
 șterg la construcție (`stripTypeScriptTypes`), deci în pagină și în pachet ajunge JavaScript. Verificarea: `npm run
 typecheck` (și `test/unit/trenulet.tipuri.test.ts`). `build.py` nu mai e aici: nu poate construi sursele `.ts`.
+
+În cvs2 (ADR 0164), salvările amânate ale paginii (circuitul, setările CNC, profilul mașinii, atelierul) trec prin
+`window.cvs2.amana(cheie, f, ms)`: cvs2 știe atunci că e ceva nesalvat și le pornește pe loc la închiderea ferestrei. O
+salvare amânată nouă trece tot pe acolo (`if (window.cvs2) { window.cvs2.amana(...); return; }`), altfel × imediat după o
+schimbare o pierde. Pe claude.ai și în copia de pe calculator rămân temporizatoarele.
 
 ## Construirea
 

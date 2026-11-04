@@ -1,11 +1,12 @@
 /**
  * Pagina cadrului unei extensii (ADR 0127 §D): `srcdoc`-ul iframe-ului cu sandbox, cu un CSP propriu (mai strict decât al
  * aplicației, pe care îl și moștenește) și un singur script scris în ea, încărcătorul. Încărcătorul primește de la cvs2, o
- * singură dată, fișierele pachetului, contextul (limba, tema) și un `MessagePort`; pune tema pe rădăcină și stilurile ca foi
- * construite, face o adresă `blob:` din modulul de intrare, îl importă, cheamă `activeaza(host)` și `deschide(document.body)`.
- * Tot ce urmează trece prin port: cererile lui `host.cere` (și ale învelișurilor peste ea: `host.stocare`, ADR 0128,
- * `host.descarcari`, ADR 0129, `host.masina`, ADR 0160), erorile, „inchide”; de la cvs2, contextul nou, răspunsurile și starea
- * mașinii, la fiecare schimbare.
+ * singură dată, fișierele pachetului, contextul (limba, tema, contul cu permisiunea lui) și un `MessagePort`; pune tema pe
+ * rădăcină și stilurile ca foi construite, face o adresă `blob:` din modulul de intrare, îl importă, cheamă `activeaza(host)` și
+ * `deschide(document.body)`. Tot ce urmează trece prin port: cererile lui `host.cere` (și ale învelișurilor peste ea:
+ * `host.stocare`, ADR 0128, `host.descarcari`, ADR 0129, `host.masina`, ADR 0160), erorile, „inchide”, lucrul nesalvat (ADR
+ * 0164, doar când se schimbă) și „inchidere-gata”, după salvările cerute la închidere; de la cvs2, contextul nou, răspunsurile,
+ * starea mașinii, la fiecare schimbare, și „inchidere” (×), la care rulează salvările date cu `host.laInchidere`.
  *
  * Textul încărcătorului e fix: amprenta lui SHA-256 stă în CSP-ul aplicației (`shared/csp.ts`), iar proba
  * `test/unit/csp.extensii.test.ts` o recalculează. O schimbare a textului cere amprenta nouă.
@@ -20,8 +21,8 @@ export const INCARCATOR = `(() => {
     void porneste(d, ev.ports[0]);
   });
   async function porneste(d, port) {
-    const cereri = new Map(), ascultatori = new Set(), laMasina = new Set();
-    let nr = 0, context = d.context, masina = null;
+    const cereri = new Map(), ascultatori = new Set(), laMasina = new Set(), laInchidere = new Set();
+    let nr = 0, context = d.context, masina = null, nesalvat = false;
     const trimite = (m) => { port.postMessage(m); };
     const raporteaza = (x) => { trimite({ tip: 'eroare', mesaj: String((x && x.message) || x), stiva: String((x && x.stack) || '') }); };
     const aplicaTema = () => {
@@ -43,6 +44,11 @@ export const INCARCATOR = `(() => {
       } else if (m && m.tip === 'masina') {
         masina = m.stare;
         for (const f of [...laMasina]) { try { f(masina); } catch (x) { raporteaza(x); } }
+      } else if (m && m.tip === 'inchidere') {
+        void Promise.allSettled([...laInchidere].map((f) => new Promise((rez) => { rez(f()); }))).then((r) => {
+          for (const x of r) if (x.status === 'rejected') raporteaza(x.reason);
+          trimite({ tip: 'inchidere-gata', id: m.id });
+        });
       }
     };
     addEventListener('error', (e) => { raporteaza(e.error || e.message); });
@@ -61,10 +67,13 @@ export const INCARCATOR = `(() => {
         api: 1,
         get limba() { return context.limba; },
         get tema() { return context.tema; },
+        get cont() { return context.cont || null; },
         laSchimbare(f) { ascultatori.add(f); return () => { ascultatori.delete(f); }; },
         fisier(cale) { return Object.prototype.hasOwnProperty.call(fisiere, cale) ? new Blob([fisiere[cale]]) : null; },
         raporteaza,
         inchide() { trimite({ tip: 'inchide' }); },
+        nesalvat(da) { if ((da === true) !== nesalvat) { nesalvat = da === true; trimite({ tip: 'nesalvat', da: nesalvat }); } },
+        laInchidere(f) { laInchidere.add(f); return () => { laInchidere.delete(f); }; },
         cere,
         stocare: Object.freeze({
           citeste: (cheie) => cere('stocare.citeste', cheie),
@@ -102,7 +111,7 @@ export const INCARCATOR = `(() => {
 })();`;
 
 /** Amprenta încărcătorului, în forma din CSP: base64(sha256(INCARCATOR)), verificată de `test/unit/csp.extensii.test.ts`. */
-export const AMPRENTA_INCARCATOR = "'sha256-xe1jcNTJ6lK0ykRsEu59QpbzdcgIFRApXL8CcrXYt4A='";
+export const AMPRENTA_INCARCATOR = "'sha256-yIzLtvn0e4OTFtKIUsVxS7H0VRqlFJo88rAzSmO5SdM='";
 
 /**
  * CSP-ul propriu al cadrului, peste cel moștenit de la aplicație: fără rețea (nici `fetch`, nici `ws:` spre mașină), scripturi

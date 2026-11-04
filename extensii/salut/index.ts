@@ -1,23 +1,36 @@
 /**
  * Extensia de probă „Salut” (ADR 0127, 0128): arată ce primește de la cvs2 (limba, tema, un fișier al pachetului), își
  * numără deschiderile în stocarea ei (`host.stocare`) și, la cerere, încearcă ce nu are voie din cadrul ei izolat: pagina lui
- * cvs2, stocarea browserului, rețeaua, portul serial, o valoare peste plafon. Rezultatele stau pe pagină, pentru probele e2e
+ * cvs2, stocarea browserului, rețeaua, portul serial, o valoare peste plafon. Din 3.Xd (ADR 0164): contul văzut (cu
+ * permisiunea `cont`, altfel „—”), `color-scheme`-ul temei și lucrul nesalvat: „Modifică” o lasă cu modificări nesalvate,
+ * „Salvează la închidere” îi dă cvs2-ului o salvare de făcut înainte de ×. Rezultatele stau pe pagină, pentru probele e2e
  * și pentru om. Scrisă fără framework: DOM-ul cadrului, cu stilurile din `salut.css`.
  */
-import type { ContextHost, HostApi, Spatiu } from '../api.ts';
+import type { ContCvs2, ContextHost, HostApi, Spatiu } from '../api.ts';
 
 const TEXTE = {
   ro: {
     titlu: 'Salut din extensie', limba: 'Limba: română', tema: 'Variabilele temei primite', fisier: 'Fișierul pachetului',
     izolare: 'Încearcă izolarea', serviciu: 'Cere senderul', eroare: 'Aruncă o eroare', inchide: 'Închide',
     refuzat: 'refuzat', permis: 'PERMIS', deschideri: 'Deschideri', preaMult: 'Scrie prea mult',
+    cont: 'Contul', neconectat: 'neconectat', neconfirmat: 'adresa neconfirmată', modifica: 'Modifică (nesalvat)',
+    laInchidere: 'Salvează la închidere', lucru: 'Lucrul', salvat: 'salvat', nesalvat: 'nesalvat',
   },
   en: {
     titlu: 'Hello from the extension', limba: 'Language: English', tema: 'Theme variables received', fisier: 'The package file',
     izolare: 'Try the isolation', serviciu: 'Ask for the sender', eroare: 'Throw an error', inchide: 'Close',
     refuzat: 'refused', permis: 'ALLOWED', deschideri: 'Openings', preaMult: 'Write too much',
+    cont: 'The account', neconectat: 'signed out', neconfirmat: 'email not confirmed', modifica: 'Change (unsaved)',
+    laInchidere: 'Save on close', lucru: 'The work', salvat: 'saved', nesalvat: 'unsaved',
   },
 } as const;
+
+/** Contul, cum îl arată extensia: „—” fără permisiune, apoi neconectat, adresa neconfirmată sau numele cu planul. */
+function descrieCont(c: ContCvs2 | null, t: (typeof TEXTE)['ro' | 'en']): string {
+  if (!c) return '—';
+  if (!c.conectat) return t.neconectat;
+  return c.plan === null ? t.neconfirmat : `${c.nume} (${c.plan})`;
+}
 
 /** O încercare: „refuzat” dacă aruncă sau e respinsă, altfel „PERMIS” (o gaură în izolare). */
 async function incearca(f: () => unknown): Promise<boolean> {
@@ -85,27 +98,49 @@ export function activeaza(host: HostApi): Spatiu {
           (e: unknown) => { rand('descarcari', `descarcari: ${String((e as Error).message)}`); },
         );
       }).textContent = 'descarcari';
+      // Lucrul nesalvat (ADR 0164): „Modifică” îl anunță; „Salvează la închidere” îl scrie în stocare când cvs2 o cere (la ×).
+      let nesalvat = false, salvari = 0, cuSalvare = false;
+      const modifica = b('modifica', () => { nesalvat = true; host.nesalvat(true); arata(context()); });
+      const laInchidere = b('la-inchidere', () => {
+        if (cuSalvare) return;
+        cuSalvare = true;
+        host.laInchidere(async () => {
+          salvari += 1;
+          await host.stocare.scrie('lucru', salvari);
+          nesalvat = false;
+          host.nesalvat(false);
+        });
+      });
+      const context = (): ContextHost => ({ limba: host.limba, tema: host.tema });
       const arata = (c: ContextHost): void => {
         const t = TEXTE[c.limba];
         titlu.textContent = t.titlu;
         limba.textContent = t.limba;
         tema.textContent = `${t.tema}: ${Object.keys(c.tema).length} (--t ${c.tema['--t'] ?? '—'})`;
+        schema.textContent = `color-scheme: ${c.tema['color-scheme'] ?? '—'}`;
+        contul.textContent = `${t.cont}: ${descrieCont(host.cont, t)}`;
+        lucru.textContent = `${t.lucru}: ${nesalvat ? t.nesalvat : t.salvat}`;
         izolare.textContent = t.izolare;
         serviciu.textContent = t.serviciu;
         eroare.textContent = t.eroare;
         inchide.textContent = t.inchide;
         preaMult.textContent = t.preaMult;
+        modifica.textContent = t.modifica;
+        laInchidere.textContent = t.laInchidere;
         deschideri.textContent = `${t.deschideri}: ${numar}`;
         void host.fisier('salut.txt')?.text().then((x) => { fisier.textContent = `${t.fisier}: ${x.trim()}`; });
       };
-      arata({ limba: host.limba, tema: host.tema });
+      const schema = el('p', '', { 'data-salut': 'schema' });
+      const contul = el('p', '', { 'data-salut': 'cont' });
+      const lucru = el('p', '', { 'data-salut': 'lucru' });
+      arata(context());
       host.laSchimbare(arata);
       // Deschiderile, numărate în stocarea extensiei: rămân peste închideri și reîncărcări; se duc odată cu extensia.
       void host.stocare.citeste('deschideri')
         .then((v) => { const n = (typeof v === 'number' ? v : 0) + 1; return host.stocare.scrie('deschideri', n).then(() => n); })
         .then((n) => { numar = n; }, (e: unknown) => { numar = String((e as Error).message); })
-        .then(() => { arata({ limba: host.limba, tema: host.tema }); });
-      container.append(titlu, limba, tema, fisier, deschideri, butoane, rezultate);
+        .then(() => { arata(context()); });
+      container.append(titlu, limba, tema, schema, contul, fisier, deschideri, lucru, butoane, rezultate);
     },
   };
 }

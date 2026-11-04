@@ -517,6 +517,10 @@
       "ro": "regresia dintr-un cont plătit (test) și dintr-unul cu proba expirată",
       "en": "regression from a paid account (test) and from one with an expired trial"
     },
+    "347984b10885e2d6": {
+      "ro": "Pluginul ca parte din cvs2: tema, fonturile, contul văzut, închiderea fără pierderi",
+      "en": "The plugin as part of cvs2: the theme, the fonts, the account it sees, closing without losses"
+    },
     "34ffe5f429051146": {
       "ro": "**Tasta fiecărei unelte, pe butonul ei** (cererea owner-ului: „vreau ca fiecare unealta sa aiba tasta de shortcut in coltul dreapta jos al butonului, langa iconita ei, fara sa o deranjeze cumva”). O literă mică (8 px, culoarea textului slab) în colțul dreapta-jos al fiecărui buton de unealtă, sub iconiță, fără s-o atingă și fără să prindă clicul; litera vine din aceeași hartă ca scurtăturile, deci nu poate arăta altă tastă. Manualul („Scurtăturile”) o pomenește. **Treceri:** (1) prima așezare (9 px, la 3 px de margini) atingea chenarul iconiței cu 1–2 px: măsurat, apoi coborâtă și micșorată, până când nicio literă nu mai atinge iconița.",
       "en": "**Each tool’s key, on its button** (the owner’s request: “I want each tool to have its shortcut key in the bottom right corner of the button, next to its icon, without disturbing it in any way”). A small letter (8 px, in the muted text colour) in the bottom right corner of each tool button, below the icon, not touching it and not catching the click; the letter comes from the same map as the shortcuts, so it cannot show another key. The manual (“Keyboard shortcuts”) mentions it. **Passes:** (1) the first placement (9 px, 3 px from the edges) touched the icon’s box by 1–2 px: measured, then lowered and made smaller, until no letter touches the icon."
@@ -1513,6 +1517,10 @@
       "ro": "Backup-ul și marcajele (ADR 0041): `backupZilnic` și `verificaBackup` programate pe test (cu `BUCKET_BACKUP` din `functions/.env.cncvectorstudio-test`), marcajul în jurul fiecărui job (pornire, final, succes, eșecuri la rând, eroare, rând în fila Erori), judecata pură în `shared/joburi.ts` și câte o verificare pe job în Diagnoză; regula `marcaje`. 23 de teste pe emulator, 3 e2e, 7 unitare noi; 10 sabotaje prinse, cu martorii. Emulatorul a prins un import care trecea de tipuri și cădea la rulare (`{ v1 }` din pachetul CommonJS). Prima rulare reală: 17.10, 03:00 / 05:00.",
       "en": "The backup and the markers (ADR 0041): `backupZilnic` and `verificaBackup` scheduled on test (with `BUCKET_BACKUP` from `functions/.env.cncvectorstudio-test`), a marker around each job (start, end, success, failures in a row, error, a row in the Errors tab), the pure judgement in `shared/joburi.ts` and one check per job in Diagnostics; the `marcaje` rule. 23 tests on the emulator, 3 e2e, 7 new unit tests; 10 sabotages caught, with the controls. The emulator caught an import that passed the types and failed at runtime (`{ v1 }` from the CommonJS package). The first real run: 17.10, 03:00 / 05:00."
     },
+    "a4a55e384f2f5853": {
+      "ro": "pluginul ca parte din cvs2",
+      "en": "the plugin as part of cvs2"
+    },
     "a4b831b0568aece6": {
       "ro": "Regiunea păstrată (ADR 0026), cu oracolul întâi (invarianta 2 în poartă, sesiune independentă); exportul refuză tăietura care intră într-o piesă",
       "en": "The kept region (ADR 0026), oracle first (invariant 2 in the gate, independent session); the export refuses a cut that enters a part"
@@ -1760,6 +1768,10 @@
     "bcc1f02d66a99ec9": {
       "ro": "Importul PDF și AI",
       "en": "PDF and AI import"
+    },
+    "bd168fc0e094cf92": {
+      "ro": "**Pluginul ca parte din cvs2: tema, fonturile, contul văzut, închiderea fără pierderi** (fără mașină; ADR 0164; în worktree-ul `wip/trenulet`; „Da, pornește A”, după direcția nouă a owner-ului: pluginul devine un atelier de forme 3D pentru printare, iar întâi vine comunicarea cu cvs2). Cadrul primește și `color-scheme` (tema aleasă în cvs2) și fonturile; planificatorul își leagă de ele suprafețele, textul, marginile, roșul, inelul de focus și fonturile, pe loc, și își ține masa, lemnul, cărămizile și verdele de semnal. Permisiunea nouă `cont`: extensia vede dacă ești conectat, numele și planul de la zi (fără adresă, uid sau parolă), schimbate pe loc și din altă filă; planificatorul îl arată la Circuite. `host.nesalvat` și `host.laInchidere`: × (și altă extensie deschisă, o versiune nouă instalată) îi cere întâi extensiei salvările, cel mult 5 s, și întreabă („Rămân”, „Închide oricum”) doar ce rămâne nesalvat; reîncărcarea întreabă prin browser. Planificatorul: salvările amânate (circuitul, setările CNC, mașina, atelierul) trec prin gazdă și pleacă pe loc la închidere. Pachetul 18.4.0.",
+      "en": "**The plugin as part of cvs2: the theme, the fonts, the account it sees, closing without losses** (no machine; ADR 0164; in the `wip/trenulet` worktree; “Da, pornește A”, after the owner’s new direction: the plugin becomes a workshop of 3D shapes for printing, and the communication with cvs2 comes first). The frame also gets `color-scheme` (the theme chosen in cvs2) and the fonts; the planner binds its surfaces, text, borders, red, focus ring and fonts to them, live, and keeps its table, wood, bricks and signal green. The new `cont` permission: the extension sees whether you are signed in, the name and the current plan (no email, uid or password), updated live, from another tab too; the planner shows it under Circuits. `host.nesalvat` and `host.laInchidere`: × (and another extension opened, a new version installed) first asks the extension for its saves, at most 5 s, and asks (“Stay”, “Close anyway”) only about what is left unsaved; reloading asks through the browser. The planner: the delayed saves (the circuit, the CNC settings, the machine, the workshop) go through the host and leave at once on closing. Package 18.4.0."
     },
     "bd6ce3a6d08ac395": {
       "ro": "Urechile ca modificator Z(s), portate cu cele 88 de verificări pe hârtie; vârful urechii măsurat de la fundul materialului (`docs/PORTARE.md` §3.1)",

@@ -17,12 +17,15 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - adaptat pentru cvs2 (ADR 0161): textul circuitelor spune unde stau ele; niciun refuz CSP în cadru (nici stilurile, nici
  *   three.js, care nu se mai cere de pe cdnjs, cu motivul spus în vederea 3D); pagina de sine stătătoare, din aceleași
  *   surse, fără cvs2: textele de până acum, fără secțiunea mașinii; din
- *   exportul CNC, „Pe mașină, prin cvs2”: starea, încărcarea, pornirea cu confirmarea lui cvs2, pauza, reluarea, oprirea.
+ *   exportul CNC, „Pe mașină, prin cvs2”: starea, încărcarea, pornirea cu confirmarea lui cvs2, pauza, reluarea, oprirea;
+ * - parte din cvs2 (ADR 0164): suprafețele, textul, roșul și fonturile lui cvs2, schimbate pe loc cu tema (lemnul rămâne al
+ *   planificatorului); contul, la Circuite, schimbat pe loc; × imediat după schimbări (circuitul, setările CNC și mașina,
+ *   atelierul) le păstrează, fără întrebare.
  */
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.3.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.4.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 
 async function deschide(page: Page): Promise<void> {
@@ -65,10 +68,11 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.3.0, de la trenulet-18.3.0.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.4.0, de la trenulet-18.4.0.zip');
   await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
     'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe); '
-    + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea.',
+    + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea; '
+    + 'să vadă dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola).',
   );
   await page.locator('[data-extensii="instaleaza"]').click();
   await deschide(page);
@@ -127,7 +131,8 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await c.locator('#circ-lista [data-sterge-c]').click();
   const sigur = c.locator('#circ-lista [data-sterge-c]');
   await expect(sigur).toHaveText('Sigur? Șterge');
-  await expect(sigur).toHaveCSS('color', 'rgb(194, 53, 43)');
+  // roșul lui cvs2 (`--rosu`, ADR 0164), nu al planificatorului (#c2352b)
+  await expect(sigur).toHaveCSS('color', 'rgb(179, 38, 30)');
   // Confirmarea ștergerii, cu clasa ei: niciun stil refuzat nici aici.
   expect(await refuzuri(page)).toEqual([]);
   await sigur.click();
@@ -224,6 +229,9 @@ test('pagina de sine stătătoare, din aceleași surse, fără cvs2: textele de 
   await page.setContent(paginiPlanificator().preview);
   await page.locator('#btn-circuite').click();
   await expect(page.locator('#circ-unde')).toHaveText('Circuitele se salvează doar pe acest dispozitiv.');
+  // Fără cvs2 (ADR 0164): nici contul, nici tema lui; pagina își ține tema și fonturile ei.
+  await expect(page.locator('#circ-cont')).toBeHidden();
+  await expect(page.locator('html')).not.toHaveAttribute('data-gazda', /./);
   await page.locator('#foaie-circuite [data-inchide]').click();
   await page.locator('#btn-export').click();
   await expect(page.locator('#e-cvs2')).toBeEnabled({ timeout: 30_000 });
@@ -231,4 +239,80 @@ test('pagina de sine stătătoare, din aceleași surse, fără cvs2: textele de 
   await expect(page.locator('#cvs2-fila')).not.toHaveAttribute('hidden');
   await expect(page.locator('#cvs2-in-cvs2')).toHaveAttribute('hidden', '');
   expect(erori).toEqual([]);
+});
+
+test('parte din cvs2 (ADR 0164): tema și fonturile lui, pe loc; contul, la Circuite; × imediat după schimbări le păstrează', async ({ page }) => {
+  await page.addInitScript(() => {
+    const acum = Date.now();
+    localStorage.setItem('cncvs2.cont', JSON.stringify({
+      uid: 'u1', email: 'ana@exemplu.ro', nume: 'Ana',
+      drept: { plan: 'personal', capabilitati: ['desen', 'cam', 'export-gcode', 'export-vectori', 'masina'], pana: null, calculatLa: acum, zileOffline: 7 },
+    }));
+  });
+  await ascultaRefuzurile(page);
+  await page.goto('/');
+  await page.locator('[data-extensii="buton"]').click();
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
+  await page.locator('[data-extensii="instaleaza"]').click();
+  await deschide(page);
+  let c = cadru(page);
+  const fundal = (s: string) => c.locator(s).first().evaluate((e) => getComputedStyle(e).backgroundColor);
+  const cvs2 = (p: string) => page.evaluate((x) => getComputedStyle(document.documentElement).getPropertyValue(x).trim(), p);
+
+  // Tema: suprafețele, textul și fonturile lui cvs2; lemnul și verdele de semnal rămân ale planificatorului.
+  await expect(c.locator('html')).toHaveAttribute('data-gazda', 'cvs2');
+  await expect(c.locator('html')).toHaveAttribute('data-theme', 'light');
+  expect(await fundal('.bara')).toBe('rgb(255, 255, 255)');
+  expect(await c.locator('body').evaluate((e) => getComputedStyle(e).fontFamily))
+    .toBe(await page.evaluate(() => getComputedStyle(document.documentElement).fontFamily));
+  expect(await c.locator('body').evaluate((e) => getComputedStyle(e).color)).toBe('rgb(29, 35, 43)');
+  expect(await c.locator('html').evaluate((e) => getComputedStyle(e).getPropertyValue('--fag').trim())).toBe('#dcb57f');
+  await page.locator('[data-actiune="vedere.tema"]').click();
+  await page.locator('[data-actiune="vedere.tema"]').click();
+  await expect(c.locator('html')).toHaveAttribute('data-theme', 'dark');
+  expect(await cvs2('--s-panou')).toBe('#1e2329');
+  await expect.poll(() => fundal('.bara')).toBe('rgb(30, 35, 41)');
+  expect(await c.locator('html').evaluate((e) => getComputedStyle(e).getPropertyValue('--fag').trim())).toBe('#c9a06a');
+  expect(await refuzuri(page)).toEqual([]);
+
+  // Contul lui cvs2, la Circuite: doar citit.
+  await c.locator('#btn-circuite').click();
+  await expect(c.locator('#circ-cont')).toBeVisible();
+  await expect(c.locator('#circ-cont')).toHaveText('Ești conectat la cvs2 ca Ana (personalul aplicației).');
+  await page.evaluate(() => {
+    localStorage.removeItem('cncvs2.cont');
+    window.dispatchEvent(new StorageEvent('storage', { key: 'cncvs2.cont' }));
+  });
+  await expect(c.locator('#circ-cont')).toHaveText('Nu ești conectat la cvs2.');
+  await c.locator('#foaie-circuite [data-inchide]').click();
+
+  // × imediat după o schimbare: salvările amânate (circuitul, setările CNC și mașina, atelierul) pornesc pe loc, iar cvs2
+  // închide fără întrebare, după ele.
+  await c.locator('#nume').fill('Păstrat la închidere');
+  await c.locator('#btn-export').click();
+  await c.locator('[data-cale="freza"]').first().evaluate((e) => {
+    (e as HTMLInputElement).value = '4.4';
+    e.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await page.locator('[data-extensii="inchide-fereastra"]').click();
+  await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
+  await expect(page.getByTestId('extensii-inchidere')).toHaveCount(0);
+  expect(JSON.stringify(await stocat(page, 'db:setari/cnc'))).toContain('"freza":4.4');
+  expect(JSON.stringify(await stocat(page, 'db:setari/masini'))).toContain('4.4');
+  await deschide(page);
+  c = cadru(page);
+  await c.locator('#btn-circuite').click();
+  await expect(c.locator('#circ-lista .circ b')).toHaveText(['Păstrat la închidere']);
+  await c.locator('#foaie-circuite [data-inchide]').click();
+
+  // Atelierul: o culoare salvată întâi, apoi alta, cu × imediat: documentul atelierului (citit peste copia locală, la
+  // deschidere) o are pe cea nouă.
+  await c.locator('[data-mod="3d"]').first().click();
+  await c.locator('#at-culori [data-c="#1f5fbf"]').click();
+  await expect.poll(async () => JSON.stringify(await stocat(page, 'db:atelier/curent'))).toContain('"culoare":"#1f5fbf"');
+  await c.locator('#at-culori [data-c="#2e8b4a"]').click();
+  await page.locator('[data-extensii="inchide-fereastra"]').click();
+  await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
+  expect(JSON.stringify(await stocat(page, 'db:atelier/curent'))).toContain('"culoare":"#2e8b4a"');
+  await faraEroriInJurnal(page);
 });

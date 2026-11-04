@@ -32,6 +32,8 @@
   --celula: #dfe4e0; --celula-pusa: #c8322b; --stift: #e35a52;
   --font-titlu: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
   --font-text: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --inel: var(--semnal);     /* inelul de focus */
   --raza: 10px;
 }
 @media (prefers-color-scheme: dark) {
@@ -54,10 +56,19 @@
   --caramida: #e9524a; --galben: #f5cd47; --celula: #2a332f; --celula-pusa: #e9524a; --stift: #f07b74;
   color-scheme: dark;
 }
+/* In cvs2 (ADR 0164): cadrul pune pe radacina tema lui cvs2 (--s-panou, --t, --l-margine, --font ...; color-scheme), iar
+   intrarea pune data-gazda="cvs2" si data-theme dupa tema aleasa acolo. Suprafetele, textul, marginile, rosul, inelul de
+   focus si fonturile sunt ale lui cvs2; masa, lemnul, caramizile, verdele de semnal si butoanele principale (verde in 2D,
+   caramiziu in 3D) raman ale planificatorului. */
+:root[data-gazda="cvs2"] {
+  --panou: var(--s-panou); --panou-2: var(--s-peste); --text: var(--t); --text-2: var(--t-slab); --linie: var(--l-margine);
+  --pericol: var(--rosu); --pericol-moale: color-mix(in oklab, var(--rosu) 14%, var(--s-panou)); --inel: var(--l-focus);
+  --font-titlu: var(--font); --font-text: var(--font); --font-mono: var(--mono);
+}
 html, body { height: 100%; }
 body { background: var(--masa); color: var(--text); font-family: var(--font-text); font-size: 15px; overflow: hidden; }
 button { font: inherit; color: inherit; cursor: pointer; }
-button:focus-visible, input:focus-visible { outline: 2px solid var(--semnal); outline-offset: 2px; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--inel); outline-offset: 2px; }
 .app { height: 100%; display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: 1fr; }
 @media (min-width: 900px) { .app { grid-template-columns: 1fr 300px; } .lista { display: flex !important; } .btn-lista { display: none; } }
 
@@ -187,9 +198,9 @@ details.setari > p { margin-bottom: 0; }
 .sub-placi .mic { flex: 1 1 260px; margin: 0; }
 .placa figcaption .timp { color: var(--semnal); font-weight: 700; }
 label.text { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 700; color: var(--text-2); margin-top: 10px; }
-label.text textarea { font: 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text); background: var(--panou-2); border: 1px solid var(--linie); border-radius: 8px; padding: 8px 10px; resize: vertical; min-height: 70px; }
+label.text textarea { font: 13px var(--font-mono); color: var(--text); background: var(--panou-2); border: 1px solid var(--linie); border-radius: 8px; padding: 8px 10px; resize: vertical; min-height: 70px; }
 label.text .mic { font-weight: 400; }
-pre.json { background: var(--panou-2); border-radius: 8px; padding: 10px; font-size: 12px; overflow-x: auto; max-height: 140px; margin: 0; white-space: pre-wrap; word-break: break-all; }
+pre.json { background: var(--panou-2); border-radius: 8px; padding: 10px; font-family: var(--font-mono); font-size: 12px; overflow-x: auto; max-height: 140px; margin: 0; white-space: pre-wrap; word-break: break-all; }
 @media (prefers-reduced-motion: reduce) { .toast { transition: none; } .puls { animation: none !important; } }
 @keyframes puls { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
 .puls { animation: puls 1.4s ease-in-out infinite; }

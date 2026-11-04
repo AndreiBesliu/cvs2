@@ -71,7 +71,7 @@ test('din fișier: confirmarea, meniul, fereastra izolată peste Proiectare, ×,
   await expect(c.locator('[data-salut="titlu"]')).toHaveText('Salut din extensie');
   await expect(c.locator('[data-salut="limba"]')).toHaveText('Limba: română');
   await expect(c.locator('[data-salut="fisier"]')).toHaveText('Fișierul pachetului: Un fișier al pachetului, citit prin host.fisier().');
-  await expect(c.locator('[data-salut="tema"]')).toContainText('Variabilele temei primite: 13');
+  await expect(c.locator('[data-salut="tema"]')).toContainText('Variabilele temei primite: 16');
   // Stilurile pachetului (salut.css), puse ca foi construite: CSP-ul moștenit nu le oprește.
   await expect(c.locator('body')).toHaveCSS('padding-top', '24px');
   // Stocarea extensiei (ADR 0128): deschiderile numărate; peste plafon, refuzul.

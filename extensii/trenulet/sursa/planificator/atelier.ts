@@ -1300,11 +1300,14 @@ var Atelier3D = (function () {
   function salveaza() {
     const date = { setari, lista, stare, model, imprimante };
     try { localStorage.setItem(CHEIE, JSON.stringify(date)); } catch (e) { /* fara stocare locala */ }
-    clearTimeout(cronSalvare!);
-    cronSalvare = setTimeout(async () => {
+    const inDb = async () => {
       if (!db) return;
       try { await db.doc("atelier/curent").set({ setari, lista, stare: JSON.parse(JSON.stringify(stare)), model, imprimante: JSON.parse(JSON.stringify(imprimante)), actualizat: new Date().toISOString() }); } catch (e) { /* raman cele locale */ }
-    }, 700);
+    };
+    // in cvs2 (ADR 0164), salvarea amanata o tine gazda: o porneste pe loc la inchiderea ferestrei
+    if (window.cvs2) { window.cvs2.amana("atelier", inDb, 700); return; }
+    clearTimeout(cronSalvare!);
+    cronSalvare = setTimeout(inDb, 700);
   }
   /** Ce stă în stocare (de la o versiune oarecare a paginii): se citește doar ce se poate. */
   type Stocat = { setari?: Valori & { pat?: number[] }; imprimante?: Imprimante | null; lista?: InLista[]; model?: InModel[];

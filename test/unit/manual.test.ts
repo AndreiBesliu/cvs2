@@ -193,6 +193,8 @@ const CONTROALE_EXTENSII: Readonly<Record<string, string | null>> = {
   gestioneaza: 'extensii.gestioneaza', fila: null, 'inchide-fereastra': null, adresa: 'extensii.adresa.camp',
   descarca: 'extensii.adresa.descarca', renunta: 'extensii.instalare.renunta', instaleaza: 'extensii.instalare.instaleaza',
   scoate: 'extensii.gestionare.scoate', inchide: 'extensii.gestionare.inchide',
+  // întrebarea de la închidere, cu lucru nesalvat (ADR 0164 §C)
+  'inchidere-ramai': 'extensii.inchidere.ramai', 'inchidere-inchide': 'extensii.inchidere.inchide',
 };
 
 test('fiecare control al extensiilor (data-extensii) e numit în capitolul „extensii”, în ambele limbi', () => {

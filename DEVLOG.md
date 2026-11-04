@@ -5092,3 +5092,12 @@ atelierul îl încarcă de acolo, la prima intrare în 3D.
 (până pe 04.12). Probele planificatorului, ale extensiilor, ale senderului și ale primirii, rulate chiar pe canal: 15 / 15.
 Pachetul (`trenulet-18.3.0.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de test nu s-a atins;
 ramura nu e împinsă.
+
+## 2026-11-04 — Felia 3.Xd: pluginul ca parte din cvs2: tema, fonturile, contul văzut, închiderea fără pierderi (ADR 0164) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, pornește A” (la „Pornesc felia A (pluginul ca parte din cvs2: temă, fonturi, contul văzut, închiderea fără
+pierderi)?”, după direcția nouă a owner-ului: pluginul devine un atelier de forme 3D pentru printare, iar întâi vine
+„comunicare perfectă între cvs2 și plugin”), în sesiunea dedicată liniei Trenuleț. 3.Xd, fără server: tema și fonturile lui
+cvs2 în planificator, schimbate pe loc; contul văzut de extensie (conectat sau nu, numele, planul), doar pentru citire, cu o
+permisiune nouă; închiderea ferestrei extensiei salvează întâi ce era de salvat și întreabă doar dacă tot rămâne ceva.
+**Started:** 04.11, 11:11.

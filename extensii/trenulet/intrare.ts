@@ -6,7 +6,11 @@
  * - `localStorage`, peste `host.stocare` (setările mici: modul, mașinile, frezarea), citit întreg la pornire, scris pe loc;
  * - `window.cvs2` (ADR 0161 §A): gazda, ca pagina să spună adevărul despre unde stau circuitele și să-și arate butoanele
  *   mașinii (cu `masina` doar când senderul e deschis extensiei); `three()` aduce three.js din pachet, la prima intrare în 3D
- *   (ADR 0163): cadrul n-are rețea, iar pe claude.ai pagina îl ia tot la cerere, de pe cdnjs;
+ *   (ADR 0163): cadrul n-are rețea, iar pe claude.ai pagina îl ia tot la cerere, de pe cdnjs; `cont()` și `laSchimbare`, contul
+ *   lui cvs2 (ADR 0164 §B), și `amana`, salvările amânate ale paginii, văzute de cvs2 (ADR 0164 §C);
+ * - tema lui cvs2 (ADR 0164 §A): `data-gazda` și `data-theme` pe rădăcina paginii, după tema aleasă în cvs2, pe loc;
+ * - lucrul nesalvat (ADR 0164 §C): salvările amânate și scrierile adaptoarelor țin extensia „nesalvată” până se termină; la
+ *   închiderea ferestrei, cvs2 le cere pe loc și le așteaptă;
  * - scripturile, în ordinea paginii, ca scripturi clasice din adrese `blob:` (aceeași semantică globală ca în pagină).
  * Cu senderul deschis extensiei (permisiunea `masina`, ADR 0160 §D), „Trimite la cvs2” trimite lucrarea prin `HostApi`, la
  * „Lucrarea primită” din fereastra Mașina, în locul filei noi pe care cadrul n-o poate deschide. Sursele n-au atribute
@@ -28,8 +32,108 @@ function cuCod(e: unknown): Error {
   return Object.assign(x, { code: x.message === 'stocare:plin' ? 'quota_exceeded' : x.message });
 }
 
+/**
+ * Lucrul paginii, cât îl vede cvs2 (ADR 0164 §C): salvările amânate ale paginii (`amana`, din `window.cvs2.amana`) și
+ * scrierile adaptoarelor în stocare (`urmareste`). Cât e una programată, în zbor sau refuzată (până reușește alta la aceeași
+ * cheie), extensia are modificări nesalvate (`host.nesalvat`); la închidere (`host.laInchidere`, prin `goleste`), salvările
+ * amânate pornesc pe loc și se așteaptă, cu tot ce pornesc ele, și înlănțuit.
+ */
+export type Lucru = {
+  urmareste<T>(cheie: string, scriere: () => Promise<T>): Promise<T>;
+  amana(cheie: string, f: () => unknown, ms: number): void;
+  goleste(): Promise<void>;
+};
+
+export function lucruPeste(host: HostApi): Lucru {
+  const programate = new Map<string, { readonly ceas: ReturnType<typeof setTimeout>; readonly f: () => unknown }>();
+  const esuate = new Set<string>(), laGol: (() => void)[] = [];
+  let inZbor = 0, anuntat = false, verifica: ReturnType<typeof setTimeout> | null = null;
+  // O gazdă dinainte de 3.Xd nu le are: salvările amânate rămân temporizatoare, nimic nu se anunță.
+  const cuGazda = typeof host.nesalvat === 'function';
+  const acum = (): boolean => programate.size > 0 || inZbor > 0 || esuate.size > 0;
+  const anunta = (da: boolean): void => {
+    if (da === anuntat) return;
+    anuntat = da;
+    if (cuGazda) host.nesalvat(da);
+  };
+  // „Nesalvat” se spune pe loc; „salvat”, abia după un temporizator, cât timp nimic n-a mai pornit: o scriere care pleacă din
+  // alta, printr-un lanț de promisiuni, nu lasă o clipă de „salvat” între ele.
+  const schimbat = (): void => {
+    if (acum()) { anunta(true); return; }
+    if (verifica !== null) return;
+    verifica = setTimeout(() => { verifica = null; if (!acum()) anunta(false); }, 0);
+  };
+  const gata = (): void => {
+    inZbor--;
+    schimbat();
+    if (inZbor === 0) for (const r of laGol.splice(0)) r();
+  };
+  const ruleaza = (cheie: string, f: () => unknown): void => {
+    inZbor++;
+    schimbat();
+    void Promise.resolve().then(f).then(
+      () => { esuate.delete(`amanat:${cheie}`); },
+      (e: unknown) => { esuate.add(`amanat:${cheie}`); host.raporteaza(e); },
+    ).finally(gata);
+  };
+  const lucru: Lucru = {
+    async urmareste<T>(cheie: string, scriere: () => Promise<T>): Promise<T> {
+      inZbor++;
+      schimbat();
+      try {
+        const r = await scriere();
+        esuate.delete(cheie);
+        return r;
+      } catch (e) {
+        esuate.add(cheie);
+        throw e;
+      } finally {
+        gata();
+      }
+    },
+    amana(cheie, f, ms) {
+      const vechi = programate.get(cheie);
+      if (vechi) clearTimeout(vechi.ceas);
+      programate.set(cheie, { ceas: setTimeout(() => { programate.delete(cheie); ruleaza(cheie, f); }, ms), f });
+      schimbat();
+    },
+    async goleste() {
+      for (;;) {
+        for (const [cheie, p] of [...programate]) { clearTimeout(p.ceas); programate.delete(cheie); ruleaza(cheie, p.f); }
+        if (inZbor > 0) await new Promise<void>((r) => { laGol.push(r); });
+        // ce pornește din salvările de acum, într-un lanț de promisiuni, pleacă abia după: încă o tură, după un temporizator
+        await new Promise<void>((r) => { setTimeout(r, 0); });
+        if (inZbor === 0 && programate.size === 0) break;
+      }
+      if (verifica !== null) { clearTimeout(verifica); verifica = null; }
+      anunta(acum());
+    },
+  };
+  if (typeof host.laInchidere === 'function') host.laInchidere(() => lucru.goleste());
+  return lucru;
+}
+
+/** O scriere a adaptoarelor, urmărită când e cine s-o vadă (probele adaptoarelor le cheamă și fără). */
+const scriere = <T,>(lucru: Lucru | undefined, cheie: string, s: () => Promise<T>): Promise<T> => (lucru ? lucru.urmareste(cheie, s) : s());
+
+/**
+ * Tema lui cvs2 pe pagină (ADR 0164 §A): `data-gazda="cvs2"` și `data-theme` (`light` sau `dark`, tema aleasă în cvs2) pe
+ * rădăcină, schimbate pe loc; foaia paginii leagă atunci suprafețele, textul, marginile, inelul de focus și fonturile de
+ * variabilele lui cvs2, puse de cadru. O gazdă dinainte de 3.Xd (fără `color-scheme`) lasă pagina cu tema ei.
+ */
+export function temaPeste(host: HostApi, rad: { readonly dataset: DOMStringMap } = document.documentElement): void {
+  const pune = (): void => {
+    const s = host.tema['color-scheme'];
+    if (s !== 'light' && s !== 'dark') return;
+    rad.dataset['gazda'] = 'cvs2';
+    rad.dataset['theme'] = s;
+  };
+  pune();
+  host.laSchimbare(pune);
+}
+
 /** `window.claude`: `use('db')` și `use('downloads')`, ca pe claude.ai. */
-export function claudePeste(host: HostApi): void {
+export function claudePeste(host: HostApi, lucru?: Lucru): void {
   const ascultatori = new Map<string, Set<() => void>>();
   const anunta = (col: string): void => { for (const f of ascultatori.get(col) ?? []) f(); };
   const idNou = (): string => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
@@ -38,7 +142,8 @@ export function claudePeste(host: HostApi): void {
     return {
       id,
       async set(date: unknown): Promise<void> {
-        await host.stocare.scrie(DB + cale, JSON.parse(JSON.stringify(date)) as unknown).catch((e: unknown) => { throw cuCod(e); });
+        await scriere(lucru, DB + cale, () => host.stocare.scrie(DB + cale, JSON.parse(JSON.stringify(date)) as unknown))
+          .catch((e: unknown) => { throw cuCod(e); });
         anunta(col);
       },
       async get(): Promise<{ readonly id: string; readonly exists: boolean; data(): unknown }> {
@@ -46,7 +151,7 @@ export function claudePeste(host: HostApi): void {
         return { id, exists: v !== null, data: () => v };
       },
       async delete(): Promise<void> {
-        await host.stocare.sterge(DB + cale).catch((e: unknown) => { throw cuCod(e); });
+        await scriere(lucru, DB + cale, () => host.stocare.sterge(DB + cale)).catch((e: unknown) => { throw cuCod(e); });
         anunta(col);
       },
     };
@@ -99,7 +204,7 @@ export function claudePeste(host: HostApi): void {
 }
 
 /** `localStorage`, cu cheile `ls:` ale stocării, citite la pornire. */
-export async function localStoragePeste(host: HostApi): Promise<void> {
+export async function localStoragePeste(host: HostApi, lucru?: Lucru): Promise<void> {
   const m = new Map<string, string>();
   for (const k of (await host.stocare.chei()).filter((x) => x.startsWith(LS))) {
     const v = await host.stocare.citeste(k);
@@ -108,8 +213,11 @@ export async function localStoragePeste(host: HostApi): Promise<void> {
   const scrie = (p: Promise<unknown>): void => { void p.catch((e: unknown) => { host.raporteaza(e); }); };
   const ls = {
     getItem: (k: string): string | null => m.get(String(k)) ?? null,
-    setItem: (k: string, v: string): void => { m.set(String(k), String(v)); scrie(host.stocare.scrie(LS + String(k), String(v))); },
-    removeItem: (k: string): void => { m.delete(String(k)); scrie(host.stocare.sterge(LS + String(k))); },
+    setItem: (k: string, v: string): void => {
+      m.set(String(k), String(v));
+      scrie(scriere(lucru, LS + String(k), () => host.stocare.scrie(LS + String(k), String(v))));
+    },
+    removeItem: (k: string): void => { m.delete(String(k)); scrie(scriere(lucru, LS + String(k), () => host.stocare.sterge(LS + String(k)))); },
     clear: (): void => { for (const k of [...m.keys()]) ls.removeItem(k); },
     key: (i: number): string | null => [...m.keys()][i] ?? null,
     get length(): number { return m.size; },
@@ -172,10 +280,19 @@ function threePeste(host: HostApi, w: Window): () => Promise<unknown> {
 
 /**
  * `window.cvs2`: pagina e în cvs2 (ADR 0161 §A). Înghețată și nescriibilă; `masina` e `host.masina` doar cu senderul deschis
- * extensiei, altfel null (pagina nu-și arată atunci butoanele mașinii); `three` aduce three.js din pachet (ADR 0163).
+ * extensiei, altfel null (pagina nu-și arată atunci butoanele mașinii); `three` aduce three.js din pachet (ADR 0163). Din ADR
+ * 0164: `cont()`, contul lui cvs2 (null fără permisiunea `cont`), `laSchimbare(f)`, la o temă, limbă sau cont nou, și
+ * `amana(cheie, f, ms)`, salvarea amânată a paginii, pe care cvs2 o vede și o pornește pe loc la închidere.
  */
-export function gazdaPeste(host: HostApi, cuMasina: boolean, w: Window = window): void {
-  const cvs2 = { gazda: 'cvs2', masina: cuMasina ? host.masina : null, three: threePeste(host, w) };
+export function gazdaPeste(host: HostApi, cuMasina: boolean, w: Window = window, lucru: Lucru = lucruPeste(host)): void {
+  const cvs2 = {
+    gazda: 'cvs2',
+    masina: cuMasina ? host.masina : null,
+    three: threePeste(host, w),
+    cont: () => host.cont ?? null,
+    laSchimbare: (f: () => void) => host.laSchimbare(() => { f(); }),
+    amana: (cheie: string, f: () => unknown, ms: number): void => { lucru.amana(String(cheie), f, ms); },
+  };
   Object.defineProperty(w, 'cvs2', { value: Object.freeze(cvs2), configurable: false, writable: false });
 }
 
@@ -190,11 +307,13 @@ function scriptClasic(b: Blob, nume: string): Promise<void> {
 }
 
 export async function activeaza(host: HostApi): Promise<Spatiu> {
-  claudePeste(host);
-  await localStoragePeste(host);
+  const lucru = lucruPeste(host);
+  claudePeste(host, lucru);
+  await localStoragePeste(host, lucru);
   // Fără sender (permisiunea lipsă, instanța live), pagina spune, ca până acum, că fila nouă n-a putut fi deschisă.
   const cuMasina = await host.cere('masina.stare').then(() => true, () => false);
-  gazdaPeste(host, cuMasina);
+  gazdaPeste(host, cuMasina, window, lucru);
+  temaPeste(host);
   if (cuMasina) deschiderePeste(host);
   return {
     deschide(container: HTMLElement): void {
