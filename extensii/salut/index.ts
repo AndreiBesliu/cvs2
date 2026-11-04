@@ -14,14 +14,14 @@ const TEXTE = {
     izolare: 'Încearcă izolarea', serviciu: 'Cere senderul', eroare: 'Aruncă o eroare', inchide: 'Închide',
     refuzat: 'refuzat', permis: 'PERMIS', deschideri: 'Deschideri', preaMult: 'Scrie prea mult',
     cont: 'Contul', neconectat: 'neconectat', neconfirmat: 'adresa neconfirmată', modifica: 'Modifică (nesalvat)',
-    laInchidere: 'Salvează la închidere', lucru: 'Lucrul', salvat: 'salvat', nesalvat: 'nesalvat',
+    laInchidere: 'Salvează la închidere', lucru: 'Lucrul', salvat: 'salvat', nesalvat: 'nesalvat', reporneste: 'Repornește',
   },
   en: {
     titlu: 'Hello from the extension', limba: 'Language: English', tema: 'Theme variables received', fisier: 'The package file',
     izolare: 'Try the isolation', serviciu: 'Ask for the sender', eroare: 'Throw an error', inchide: 'Close',
     refuzat: 'refused', permis: 'ALLOWED', deschideri: 'Openings', preaMult: 'Write too much',
     cont: 'The account', neconectat: 'signed out', neconfirmat: 'email not confirmed', modifica: 'Change (unsaved)',
-    laInchidere: 'Save on close', lucru: 'The work', salvat: 'saved', nesalvat: 'unsaved',
+    laInchidere: 'Save on close', lucru: 'The work', salvat: 'saved', nesalvat: 'unsaved', reporneste: 'Restart',
   },
 } as const;
 
@@ -111,6 +111,8 @@ export function activeaza(host: HostApi): Spatiu {
           host.nesalvat(false);
         });
       });
+      // Repornirea cerută de extensie (ADR 0165): cvs2 îi reface cadrul; deschiderile cresc cu una.
+      const reporneste = b('reporneste', () => { host.reporneste(); });
       const context = (): ContextHost => ({ limba: host.limba, tema: host.tema });
       const arata = (c: ContextHost): void => {
         const t = TEXTE[c.limba];
@@ -127,6 +129,7 @@ export function activeaza(host: HostApi): Spatiu {
         preaMult.textContent = t.preaMult;
         modifica.textContent = t.modifica;
         laInchidere.textContent = t.laInchidere;
+        reporneste.textContent = t.reporneste;
         deschideri.textContent = `${t.deschideri}: ${numar}`;
         void host.fisier('salut.txt')?.text().then((x) => { fisier.textContent = `${t.fisier}: ${x.trim()}`; });
       };

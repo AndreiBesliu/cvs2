@@ -970,6 +970,9 @@ it, and the app’s interface stays the same.
 - The extension takes the app’s theme: light or dark (the one picked with **Theme**), the colours and the fonts; a theme you
   change reaches the extension at once. The Trenuleț planner keeps only its own colours: the table, the wood, the bricks,
   the signal green.
+- The extension also gets the app’s language. The Trenuleț planner speaks Romanian or English, following **Language** in the
+  top bar; when you change the language, it restarts by itself, after saving its work (the layout, the settings, the
+  workshop). The comments in the G-code stay in Romanian, as in the app’s own export.
 - A click on an extension in the menu opens its window: a tab with its name appears next to **Design** and **Machine**, and
   below it, on the whole screen, sits the extension. Switch to another window any time: the extension stays open, with what
   you did in it, and a drawing command picked from **Search commands** takes you to Design first. **×**, next to its name,

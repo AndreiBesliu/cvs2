@@ -4,9 +4,10 @@
  * singură dată, fișierele pachetului, contextul (limba, tema, contul cu permisiunea lui) și un `MessagePort`; pune tema pe
  * rădăcină și stilurile ca foi construite, face o adresă `blob:` din modulul de intrare, îl importă, cheamă `activeaza(host)` și
  * `deschide(document.body)`. Tot ce urmează trece prin port: cererile lui `host.cere` (și ale învelișurilor peste ea:
- * `host.stocare`, ADR 0128, `host.descarcari`, ADR 0129, `host.masina`, ADR 0160), erorile, „inchide”, lucrul nesalvat (ADR
- * 0164, doar când se schimbă) și „inchidere-gata”, după salvările cerute la închidere; de la cvs2, contextul nou, răspunsurile,
- * starea mașinii, la fiecare schimbare, și „inchidere” (×), la care rulează salvările date cu `host.laInchidere`.
+ * `host.stocare`, ADR 0128, `host.descarcari`, ADR 0129, `host.masina`, ADR 0160), erorile, „inchide”, „reporneste” (ADR
+ * 0165), lucrul nesalvat (ADR 0164, doar când se schimbă) și „inchidere-gata”, după salvările cerute la închidere; de la
+ * cvs2, contextul nou, răspunsurile, starea mașinii, la fiecare schimbare, și „inchidere” (×), la care rulează salvările date
+ * cu `host.laInchidere`.
  *
  * Textul încărcătorului e fix: amprenta lui SHA-256 stă în CSP-ul aplicației (`shared/csp.ts`), iar proba
  * `test/unit/csp.extensii.test.ts` o recalculează. O schimbare a textului cere amprenta nouă.
@@ -72,6 +73,7 @@ export const INCARCATOR = `(() => {
         fisier(cale) { return Object.prototype.hasOwnProperty.call(fisiere, cale) ? new Blob([fisiere[cale]]) : null; },
         raporteaza,
         inchide() { trimite({ tip: 'inchide' }); },
+        reporneste() { trimite({ tip: 'reporneste' }); },
         nesalvat(da) { if ((da === true) !== nesalvat) { nesalvat = da === true; trimite({ tip: 'nesalvat', da: nesalvat }); } },
         laInchidere(f) { laInchidere.add(f); return () => { laInchidere.delete(f); }; },
         cere,
@@ -111,7 +113,7 @@ export const INCARCATOR = `(() => {
 })();`;
 
 /** Amprenta încărcătorului, în forma din CSP: base64(sha256(INCARCATOR)), verificată de `test/unit/csp.extensii.test.ts`. */
-export const AMPRENTA_INCARCATOR = "'sha256-yIzLtvn0e4OTFtKIUsVxS7H0VRqlFJo88rAzSmO5SdM='";
+export const AMPRENTA_INCARCATOR = "'sha256-rD7Tm9n2vvGcZKxB67QSMcBWJirYfEzPxzDcx6cy2qE='";
 
 /**
  * CSP-ul propriu al cadrului, peste cel moștenit de la aplicație: fără rețea (nici `fetch`, nici `ws:` spre mașină), scripturi

@@ -29,7 +29,7 @@ var Atelier3D = (function () {
   type Vedere3D = { ok: boolean; T: Trei.Biblioteca; r: Trei.WebGLRenderer; scena: Trei.Object3D; cam: Trei.PerspectiveCamera; mat: Trei.Material;
     matTren: Trei.Material; mesh: Trei.Mesh | null; grila: Trei.GridHelper | null; grup?: Trei.Object3D; teta: number; fi: number; dist: number; tinta: Trei.Vector3 };
   type CorpModel = { tri: Tri[]; dim: number[]; baza: number[]; gw: number; gd: number; geom: Trei.BufferGeometry | null };
-  const fmt = (v: number, z = 1) => String(Math.round(v * 10 ** z) / 10 ** z).replace(".", ",");
+  const fmt = (v: number, z = 1) => String(Math.round(v * 10 ** z) / 10 ** z).replace(".", Limba.zecimal);
   // culorile din date (mostrele, punctele modelului) se pun prin CSSOM, dupa desenare: in cvs2, CSP-ul refuza atributele style
   const fundaluri = (r: ParentNode) => { for (const e of r.querySelectorAll<HTMLElement>("[data-fundal]")) e.style.background = e.dataset.fundal!; };
   const CULORI = [["roșu", "#c8322b"], ["albastru", "#1f5fbf"], ["galben", "#f2c12e"], ["verde", "#2e8b4a"], ["alb", "#f1f1ee"], ["negru", "#2b2b2b"], ["gri", "#9aa3ab"]];
@@ -91,52 +91,52 @@ var Atelier3D = (function () {
   }
   function numeDef(d: Def): string {
     if (d.tip === "caramida") {
-      const r = dreptunghiDin(d.celule!), fel = d.placi === 1 ? (d.stifturi ? "Placă" : "Placă netedă") : d.placi === 3 ? (d.stifturi ? "Cărămidă" : "Cărămidă netedă") : `Bloc de ${d.placi} plăci${d.stifturi ? "" : ", neted"}`;
+      const r = dreptunghiDin(d.celule!), fel = d.placi === 1 ? (d.stifturi ? tr("Placă") : tr("Placă netedă")) : d.placi === 3 ? (d.stifturi ? tr("Cărămidă") : tr("Cărămidă netedă")) : tr`Bloc de ${d.placi} plăci${d.stifturi ? "" : tr(", neted")}`;
       const lat = d.laterale && d.laterale.some((t: string) => t !== "p");
-      return (lat ? `Cărămidă Technic ${r ? `${r[0]}×${r[1]}` : ""}`.trim() : r ? `${fel} ${r[0]}×${r[1]}` : `${fel}, formă de ${d.celule!.length}`) +
-        (d.stifturi === "mijloc" ? ", un știft la mijloc" : "") + (d.gauri && d.gauri.length ? `, ${gauriText(d.gauri)}` : "") + (d.goale ? ", știfturi goale" : "");
+      return (lat ? tr`Cărămidă Technic ${r ? `${r[0]}×${r[1]}` : ""}`.trim() : r ? `${fel} ${r[0]}×${r[1]}` : tr`${fel}, formă de ${d.celule!.length}`) +
+        (d.stifturi === "mijloc" ? tr(", un știft la mijloc") : "") + (d.gauri && d.gauri.length ? `, ${gauriText(d.gauri)}` : "") + (d.goale ? tr(", știfturi goale") : "");
     }
-    if (d.tip === "panta") return d.profil === "curb" ? `Pantă curbă ${d.lung}×${d.adanc}${d.sus ? "" : ", fără știfturi"}${d.placi !== 3 ? `, ${d.placi} plăci` : ""}` : `Pantă ${Math.round(unghiPanta(d))}° ${d.lung}×${d.adanc}`;
-    if (d.tip === "pantaInversa") return `Pantă inversă ${Math.round(unghiPanta(d))}° ${d.lung}×${d.adanc}`;
+    if (d.tip === "panta") return d.profil === "curb" ? tr`Pantă curbă ${d.lung}×${d.adanc}${d.sus ? "" : tr(", fără știfturi")}${d.placi !== 3 ? tr`, ${d.placi} plăci` : ""}` : tr`Pantă ${Math.round(unghiPanta(d))}° ${d.lung}×${d.adanc}`;
+    if (d.tip === "pantaInversa") return tr`Pantă inversă ${Math.round(unghiPanta(d))}° ${d.lung}×${d.adanc}`;
     if (d.tip === "pana") {
-      const baza = d.placi === 1 ? "Placă" : d.placi === 3 ? "Cărămidă" : `Bloc de ${d.placi} plăci`;
-      const fel = d.parte === "ambele" ? "vârf" : `pană ${d.parte === "dreapta" ? "dreapta" : "stânga"}`;
-      return `${baza}-${fel} ${d.lung}×${d.lat}${d.varf ? `, vârf ${fmt(d.varf)}` : ""}${d.inceput ? `, tăiată de la ${d.inceput}` : ""}${d.stifturi === false ? ", netedă" : ""}${d.gauri && d.gauri.length ? `, ${gauriText(d.gauri)}` : ""}`;
+      const baza = d.placi === 1 ? tr("Placă") : d.placi === 3 ? tr("Cărămidă") : tr`Bloc de ${d.placi} plăci`;
+      const fel = d.parte === "ambele" ? tr("vârf") : tr`pană ${d.parte === "dreapta" ? tr("dreapta") : tr("stânga")}`;
+      return `${baza}-${fel} ${d.lung}×${d.lat}${d.varf ? tr`, vârf ${fmt(d.varf)}` : ""}${d.inceput ? tr`, tăiată de la ${d.inceput}` : ""}${d.stifturi === false ? tr(", netedă") : ""}${d.gauri && d.gauri.length ? `, ${gauriText(d.gauri)}` : ""}`;
     }
     if (d.tip === "rotund") {
-      const m = `${d.diam}×${d.diam}`, h = d.placi !== 3 ? `, ${d.placi} ${d.placi === 1 ? "placă" : "plăci"}` : "";
-      const g = d.gaura && d.gaura !== "nu" ? `, gaură de ${{ bara: "bară", stift: "știft", ax: "ax" }[d.gaura]}` : "";
-      if (d.forma === "con") return `Con ${m}${h}${d.stifturi === "niciunul" ? `, vârf Ø ${fmt(d.varf_d!)}` : ""}${g}`;
-      const fel = d.placi === 1 ? "Placă rotundă" : d.placi === 3 ? "Cărămidă rotundă" : `Rotund de ${d.placi} plăci`;
-      return `${fel} ${m}${d.stifturi === "niciunul" ? ", netedă" : d.diam === 2 && d.stifturi === "unul" ? ", un știft" : ""}${g}`;
+      const m = `${d.diam}×${d.diam}`, h = d.placi !== 3 ? `, ${d.placi} ${d.placi === 1 ? tr("placă", "LEGO") : tr("plăci", "LEGO")}` : "";
+      const g = d.gaura && d.gaura !== "nu" ? tr`, gaură de ${{ bara: tr("bară"), stift: tr("știft", "pin"), ax: tr("ax") }[d.gaura]}` : "";
+      if (d.forma === "con") return tr`Con ${m}${h}${d.stifturi === "niciunul" ? tr`, vârf Ø ${fmt(d.varf_d!)}` : ""}${g}`;
+      const fel = d.placi === 1 ? tr("Placă rotundă") : d.placi === 3 ? tr("Cărămidă rotundă") : tr`Rotund de ${d.placi} plăci`;
+      return `${fel} ${m}${d.stifturi === "niciunul" ? tr(", netedă") : d.diam === 2 && d.stifturi === "unul" ? tr(", un știft") : ""}${g}`;
     }
     if (d.tip === "grinda" && d.indoita) {
-      const sub = d.groasa ? "" : " subțire", ax = (d.gauri || []).includes("x") ? " cu găuri de ax" : "";
-      return `Grindă îndoită ${d.indoita.brate.join("–")}, ${d.indoita.unghiuri.map((u: number) => fmt(Math.abs(u), 0) + "°").join(" și ")}${sub}${ax}`;
+      const sub = d.groasa ? "" : tr(" subțire"), ax = (d.gauri || []).includes("x") ? tr(" cu găuri de ax") : "";
+      return tr`Grindă îndoită ${d.indoita.brate.join("–")}, ${d.indoita.unghiuri.map((u: number) => fmt(Math.abs(u), 0) + "°").join(tr(" și "))}${sub}${ax}`;
     }
     if (d.tip === "grinda") {
-      const tip = d.celule ? d.celule.map(c => c[2]) : d.gauri, sub = d.groasa ? "" : " subțire", ax = tip!.includes("x") ? " cu găuri de ax" : "";
-      if (!d.celule) return `Grindă ${d.gauri!.length}${sub}${ax}`;
+      const tip = d.celule ? d.celule.map(c => c[2]) : d.gauri, sub = d.groasa ? "" : tr(" subțire"), ax = tip!.includes("x") ? tr(" cu găuri de ax") : "";
+      if (!d.celule) return tr`Grindă ${d.gauri!.length}${sub}${ax}`;
       const xs = d.celule.map(c => c[0]), ys = d.celule.map(c => c[1]), w = Math.max(...xs) - Math.min(...xs) + 1, h = Math.max(...ys) - Math.min(...ys) + 1;
-      return (w === 1 || h === 1) && d.celule.length === w * h ? `Grindă ${d.celule.length}${sub}${ax}` : `Grindă ${Math.min(w, h)}×${Math.max(w, h)} (${d.celule.length} găuri)${sub}${ax}`;
+      return (w === 1 || h === 1) && d.celule.length === w * h ? tr`Grindă ${d.celule.length}${sub}${ax}` : tr`Grindă ${Math.min(w, h)}×${Math.max(w, h)} (${d.celule.length} găuri)${sub}${ax}`;
     }
-    if (d.tip === "caramidaTechnic") return `Cărămidă Technic 1×${d.lung}${d.gauri && d.gauri.includes("x") ? ", găuri de ax" : ""}${d.goale ? ", știfturi goale" : ""}`;
-    if (d.tip === "lateral") return `Cărămidă 1×${d.lung} cu știfturi pe ${d.fete === "doua" ? "două laturi" : "o latură"}`;
-    if (d.tip === "ax") return `Ax ${d.lung}`;
-    if (d.tip === "stiftTechnic") return `${d.capat === "ax" ? "Știft cu ax" : "Știft Technic"}${+d.lung! === 3 ? " 3" : ""}${d.fanta ? "" : ", fără fantă"}`;
-    if (d.tip === "bucsa") return +d.lung! === 0.5 ? "Bucșă ½" : d.gaura === "xr" ? `Conector ax–știft ${d.lung}` : `${+d.lung! === 1 ? "Bucșă" : "Conector de ax"} ${+d.lung! === 1 ? "" : d.lung}`.trim() + (d.gaura === "r" ? ", gaură rotundă" : "");
-    if (d.tip === "suport") return `Suport ${d.adanc}×${d.lung} – ${d.inalt}×${d.lung}${d.invers ? ", întors" : ""}`;
-    if (d.tip === "clema") return `Placă 1×${d.lung} cu clemă${d.axa === "orizontala" ? " culcată" : ""}`;
-    if (d.tip === "maner") return `Placă 1×${d.lung} cu mâner${d.axa === "verticala" ? " în picioare" : ""}`;
-    if (d.tip === "bara") return `Bară ${d.lung}`;
-    if (d.tip === "bila") return `Placă ${d.baza}×${d.baza} cu bilă`;
-    if (d.tip === "cupa") return "Placă 1×1 cu cupă";
-    if (d.tip === "calibrare") return "Set de calibrare";
+    if (d.tip === "caramidaTechnic") return tr`Cărămidă Technic 1×${d.lung}${d.gauri && d.gauri.includes("x") ? tr(", găuri de ax") : ""}${d.goale ? tr(", știfturi goale") : ""}`;
+    if (d.tip === "lateral") return tr`Cărămidă 1×${d.lung} cu știfturi pe ${d.fete === "doua" ? tr("două laturi") : tr("o latură")}`;
+    if (d.tip === "ax") return tr`Ax ${d.lung}`;
+    if (d.tip === "stiftTechnic") return `${d.capat === "ax" ? tr("Știft cu ax") : tr("Știft Technic")}${+d.lung! === 3 ? " 3" : ""}${d.fanta ? "" : tr(", fără fantă")}`;
+    if (d.tip === "bucsa") return +d.lung! === 0.5 ? tr("Bucșă ½") : d.gaura === "xr" ? tr`Conector ax–știft ${d.lung}` : `${+d.lung! === 1 ? tr("Bucșă") : tr("Conector de ax")} ${+d.lung! === 1 ? "" : d.lung}`.trim() + (d.gaura === "r" ? tr(", gaură rotundă") : "");
+    if (d.tip === "suport") return tr`Suport ${d.adanc}×${d.lung} – ${d.inalt}×${d.lung}${d.invers ? tr(", întors") : ""}`;
+    if (d.tip === "clema") return tr`Placă 1×${d.lung} cu clemă${d.axa === "orizontala" ? tr(" culcată") : ""}`;
+    if (d.tip === "maner") return tr`Placă 1×${d.lung} cu mâner${d.axa === "verticala" ? tr(" în picioare") : ""}`;
+    if (d.tip === "bara") return tr`Bară ${d.lung}`;
+    if (d.tip === "bila") return tr`Placă ${d.baza}×${d.baza} cu bilă`;
+    if (d.tip === "cupa") return tr("Placă 1×1 cu cupă");
+    if (d.tip === "calibrare") return tr("Set de calibrare");
     return d.tip;
   }
   const gauriText = (g: readonly (Gaura | string)[]) => {
     const r = g.filter(x => x[2] !== "x").length, x = g.length - r;
-    return [r ? `${r} ${r === 1 ? "gaură" : "găuri"}` : "", x ? `${x} ${x === 1 ? "gaură" : "găuri"} de ax` : ""].filter(Boolean).join(" și ");
+    return [r ? `${r} ${r === 1 ? tr("gaură") : tr("găuri")}` : "", x ? tr`${x} ${x === 1 ? tr("gaură") : tr("găuri")} de ax` : ""].filter(Boolean).join(tr(" și "));
   };
   function unghiPanta(d: { placi?: number; buza?: number; adanc?: number; sus?: number }): number {
     const H = d.placi! * 3.2, buza = Math.min(Math.max(0.8, d.buza!), H - 0.8);
@@ -222,7 +222,7 @@ var Atelier3D = (function () {
       // gramele, socotite ca in devizul din 2D (aceeasi coaja), ca cele doua sa spuna la fel
       const gr = (p: { tri: Tri[]; umplere: number }) => (window.TrenCNC && TrenCNC.grameFilament ? TrenCNC.grameFilament(Lego.stl(p.tri), p.umplere) : Lego.grame(p.tri, p.umplere));
       tren = { cheie: c, titlu: r.titlu, piese: r.piese.map(p => ({ ...p, dim: dimTri(p.tri), g: gr(p) })), eroare: null };
-    } catch (e) { tren = { cheie: null, titlu: "", piese: [], eroare: "Nu am putut face piesele circuitului: " + ((e as Error).message || e) }; }
+    } catch (e) { tren = { cheie: null, titlu: "", piese: [], eroare: tr`Nu am putut face piesele circuitului: ${(e as Error).message || e}` }; }
     return tren;
   }
 
@@ -278,7 +278,7 @@ var Atelier3D = (function () {
         <div class="at-campuri">
           <label for="at-p-lung">Lată (știfturi)<input id="at-p-lung" type="number" min="1" max="16" step="1" value="${p.lung}"></label>
           <label for="at-p-adanc">Adâncă (rânduri)<input id="at-p-adanc" type="number" min="2" max="8" step="1" value="${p.adanc}"></label>
-          <label for="at-p-sus">Rânduri ${inv ? "pline dedesubt" : "cu știfturi"}<input id="at-p-sus" type="number" min="${inv ? 1 : 0}" max="7" step="1" value="${p.sus}"></label>
+          <label for="at-p-sus">${tr`Rânduri ${inv ? tr("pline dedesubt") : tr("cu știfturi")}`}<input id="at-p-sus" type="number" min="${inv ? 1 : 0}" max="7" step="1" value="${p.sus}"></label>
           <label for="at-p-placi">Înălțime (plăci)<input id="at-p-placi" type="number" min="2" max="12" step="1" value="${p.placi}"></label>
           <label for="at-p-buza">Buza din față (mm)<input id="at-p-buza" type="number" min="0.8" max="6" step="0.1" value="${p.buza}"></label>
         </div>
@@ -379,11 +379,11 @@ var Atelier3D = (function () {
         <div class="at-rand"><span class="mic">Forma:</span>${seg("at-gr-fel", [["grila", "Pe grilă"], ["indoita", "Îndoită"]], "indoita")}</div>
         <div class="sabloane" id="at-gi-sabloane">${SABL.map(([nm, b, u], k) => `<button class="btn" type="button" data-gi="${k}">${nm}</button>`).join("")}</div>
         <div class="at-campuri">
-          ${p.brate.map((b, k) => `<label for="at-gi-b${k}">Brațul ${k + 1} (găuri)<input id="at-gi-b${k}" data-gib="${k}" type="number" min="2" max="15" step="1" value="${b}"></label>`).join("")}
-          ${p.unghiuri.slice(0, p.brate.length - 1).map((u, k) => `<label for="at-gi-u${k}">Cotul ${k + 1} (°)<input id="at-gi-u${k}" data-giu="${k}" type="number" min="-120" max="120" step="0.01" value="${u}"></label>`).join("")}
+          ${p.brate.map((b, k) => `<label for="at-gi-b${k}">${tr`Brațul ${k + 1} (găuri)`}<input id="at-gi-b${k}" data-gib="${k}" type="number" min="2" max="15" step="1" value="${b}"></label>`).join("")}
+          ${p.unghiuri.slice(0, p.brate.length - 1).map((u, k) => `<label for="at-gi-u${k}">${tr`Cotul ${k + 1} (°)`}<input id="at-gi-u${k}" data-giu="${k}" type="number" min="-120" max="120" step="0.01" value="${u}"></label>`).join("")}
         </div>
         <label class="bifa"><input type="checkbox" id="at-gi-trei" ${p.brate.length === 3 ? "checked" : ""}> Încă un cot (trei brațe)</label>
-        <div class="gauri" id="at-gi-gauri">${p.gauriInd.map((g, k) => `<button type="button" data-k="${k}" data-t="${g}" aria-label="Gaura ${k + 1}: ${g === "r" ? "rotundă" : g === "x" ? "în cruce" : "plină"}">${g === "r" ? "○" : g === "x" ? "+" : "■"}</button>`).join("")}</div>
+        <div class="gauri" id="at-gi-gauri">${p.gauriInd.map((g, k) => `<button type="button" data-k="${k}" data-t="${g}" aria-label="${tr`Gaura ${k + 1}: ${g === "r" ? tr("rotundă") : g === "x" ? tr("în cruce") : tr("plină")}`}">${g === "r" ? "○" : g === "x" ? "+" : "■"}</button>`).join("")}</div>
         <div class="at-rand"><span class="mic">Grosime:</span><div class="segment" id="at-grosime"><button type="button" data-g="1" aria-pressed="${p.groasa}">Groasă 7,8</button><button type="button" data-g="0" aria-pressed="${!p.groasa}">Subțire 3,8</button></div></div>
         <p class="mic">Găurile în cruce de la cot stau pe bisectoarea cotului; celelalte, de-a lungul brațului lor.</p>`;
       $("#at-gr-fel").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.fel = b.dataset.v!; editor(); schimbat(); };
@@ -424,7 +424,7 @@ var Atelier3D = (function () {
       e.innerHTML = `<h2>Cărămidă Technic</h2>
         <p class="mic">Cărămidă 1×n cu știfturi sus și găuri prin lateral, între știfturi (la 1×1, sub știft), la 5,8 mm de jos. Atinge o gaură ca s-o schimbi: rotundă cu lamaj pe ambele fețe (pentru știft), în cruce (pentru ax) sau plină. Se printează în picioare; găurile ies orizontale.</p>
         <div class="at-campuri"><label for="at-t-lung">Lungime (știfturi)<input id="at-t-lung" type="number" min="1" max="20" step="1" value="${p.lung}"></label></div>
-        <div class="gauri" id="at-t-gauri">${p.gauri.map((g, k) => `<button type="button" data-k="${k}" data-t="${g}" aria-label="Gaura ${k + 1}: ${g === "r" ? "rotundă" : g === "x" ? "în cruce" : "plină"}">${g === "r" ? "○" : g === "x" ? "+" : "■"}</button>`).join("")}</div>
+        <div class="gauri" id="at-t-gauri">${p.gauri.map((g, k) => `<button type="button" data-k="${k}" data-t="${g}" aria-label="${tr`Gaura ${k + 1}: ${g === "r" ? tr("rotundă") : g === "x" ? tr("în cruce") : tr("plină")}`}">${g === "r" ? "○" : g === "x" ? "+" : "■"}</button>`).join("")}</div>
         <label class="bifa"><input type="checkbox" id="at-t-goale" ${p.goale ? "checked" : ""}> Știfturi goale (gaură de Ø 3,4 în fiecare știft, pentru bară), ca la LEGO Technic</label>`;
       $("#at-t-lung").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 1 && v <= 20) { p.lung = v; editor(); schimbat(); } else (ev.target as CampNumeric).value = p.lung; };
       $("#at-t-gauri").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-k]"); if (!b) return; const k = +b.dataset.k!; p.gauri[k] = ({ r: "x", x: "p", p: "r" } as Record<string, string>)[p.gauri[k]!]!; editor(); schimbat(); };
@@ -476,7 +476,7 @@ var Atelier3D = (function () {
     } else if (t === "clema" || t === "maner") {
       const p = stare[t as "clema"], cl = t === "clema";
       e.innerHTML = `<h2>${cl ? "Placă cu clemă" : "Placă cu mâner"}</h2>
-        <p class="mic">${cl ? "O placă 1×n cu o clemă în față, care ține o bară de 3,2 (o bară printată, un mâner sau o bară LEGO). Bara stă fie în picioare (clema se printează ușor), fie culcată, de-a lungul plăcii (inelul clemei se printează în picioare)." : "O placă 1×n cu o bară de 3,2 în față, prinsă la capete: mânerul în care se prinde o clemă. Culcat, de-a lungul plăcii, sau în picioare."} O clemă și un mâner cu bara la fel fac o balama: ${cl ? "clema" : "mânerul"} se rotește în jurul barei.</p>
+        <p class="mic">${tr`${cl ? tr("O placă 1×n cu o clemă în față, care ține o bară de 3,2 (o bară printată, un mâner sau o bară LEGO). Bara stă fie în picioare (clema se printează ușor), fie culcată, de-a lungul plăcii (inelul clemei se printează în picioare).") : tr("O placă 1×n cu o bară de 3,2 în față, prinsă la capete: mânerul în care se prinde o clemă. Culcat, de-a lungul plăcii, sau în picioare.")} O clemă și un mâner cu bara la fel fac o balama: ${cl ? tr("clema") : tr("mânerul")} se rotește în jurul barei.`}</p>
         <div class="at-rand"><span class="mic">Lățime:</span>${seg("at-cm-lung", (cl ? [1, 2] : [1, 2, 3, 4]).map(v => [String(v), `1×${v}`]), String(p.lung))}</div>
         <div class="at-rand"><span class="mic">Bara stă:</span>${seg("at-cm-axa", [["verticala", "În picioare"], ["orizontala", "Culcată"]], p.axa)}</div>
         <div class="at-rand"><button class="btn" type="button" id="at-balama">Adaugă balamaua în listă (clema + mânerul)</button></div>`;
@@ -492,7 +492,7 @@ var Atelier3D = (function () {
     } else if (t === "bila" || t === "cupa") {
       const p = stare[t as "bila"], bi = t === "bila";
       e.innerHTML = `<h2>${bi ? "Placă cu bilă" : "Placă cu cupă"}</h2>
-        <p class="mic">${bi ? "O bilă de Ø 5,9 (cât bila LEGO) pe un gât de 3,2, în mijlocul unei plăci: împreună cu cupa face o articulație care se rotește în orice parte (un tren de aterizare, un braț, capul unui robot)." : "Cupa în care intră bila (de Ø 5,9, printată sau LEGO): o gaură sferică deschisă sus, cu patru fante, ca să se deschidă când apeși bila înăuntru."} Le probezi întâi una cu alta: dacă bila intră prea greu, spune-mi și lărgesc cupa.</p>
+        <p class="mic">${tr`${bi ? tr("O bilă de Ø 5,9 (cât bila LEGO) pe un gât de 3,2, în mijlocul unei plăci: împreună cu cupa face o articulație care se rotește în orice parte (un tren de aterizare, un braț, capul unui robot).") : tr("Cupa în care intră bila (de Ø 5,9, printată sau LEGO): o gaură sferică deschisă sus, cu patru fante, ca să se deschidă când apeși bila înăuntru.")} Le probezi întâi una cu alta: dacă bila intră prea greu, spune-mi și lărgesc cupa.`}</p>
         ${bi ? `<div class="at-rand"><span class="mic">Placa:</span>${seg("at-bc-baza", [["1", "1×1"], ["2", "2×2, cu știfturi"]], String(p.baza))}</div>` : ""}
         <div class="at-rand"><button class="btn" type="button" id="at-articulatie">Adaugă articulația în listă (bila + cupa)</button></div>`;
       if (bi) $("#at-bc-baza").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-v]"); if (!b) return; p.baza = +b.dataset.v!; editor(); schimbat(); };
@@ -541,11 +541,11 @@ var Atelier3D = (function () {
       const axa = stare[t].axa, lung = stare[t].lung;
       const cl = { tip: "clema", lung: t === "clema" ? lung : Math.min(2, lung), axa }, mn = { tip: "maner", lung: t === "maner" ? lung : lung, axa };
       pune(cl, n); pune(mn, n);
-      toast(`${n} × balamaua (${numeDef(cl)} + ${numeDef(mn)}) în listă.`);
+      toast(tr`${n} × balamaua (${numeDef(cl)} + ${numeDef(mn)}) în listă.`);
     } else {
       const bi = { tip: "bila", baza: stare.bila.baza }, cu = { tip: "cupa", baza: 1 };
       pune(bi, n); pune(cu, n);
-      toast(`${n} × articulația (bila + cupa) în listă.`);
+      toast(tr`${n} × articulația (bila + cupa) în listă.`);
     }
     salveaza(); randeazaLista();
   }
@@ -606,7 +606,7 @@ var Atelier3D = (function () {
   function deseneazaGrila() {
     const p = stare.caramida, S = new Set(p.celule.map(([i, j]) => cheie(i, j))), c = 30;
     const W = p.cols * c, H = p.rows * c;
-    let h = `<svg viewBox="-2 -2 ${W + 4} ${H + 4}" width="${W + 4}" role="grid" aria-label="Grila de ${p.cols} × ${p.rows} știfturi"><g class="celule">`;
+    let h = `<svg viewBox="-2 -2 ${W + 4} ${H + 4}" width="${W + 4}" role="grid" aria-label="${tr`Grila de ${p.cols} × ${p.rows} știfturi`}"><g class="celule">`;
     for (let j = 0; j < p.rows; j++) for (let i = 0; i < p.cols; i++) {
       const pus = S.has(cheie(i, j)), x = i * c, y = (p.rows - 1 - j) * c;
       h += `<rect x="${x + 1}" y="${y + 1}" width="${c - 2}" height="${c - 2}" rx="4" fill="${pus ? "var(--celula-pusa)" : "var(--celula)"}" data-i="${i}" data-j="${j}"/>`;
@@ -660,7 +660,7 @@ var Atelier3D = (function () {
     const n = pozitiiLaterale(p);
     lat.innerHTML = n ? `<div class="at-rand"><span class="mic">Găuri prin lateral (Technic):</span><div class="gauri" id="at-laterale">${Array.from({ length: n }, (_, k) => {
         const g = ["r", "x"].includes(p.laterale && p.laterale[k]!) ? p.laterale[k] : "p";
-        return `<button type="button" data-lk="${k}" data-t="${g}" aria-label="Gaura laterală ${k + 1}: ${g === "r" ? "rotundă" : g === "x" ? "în cruce" : "fără"}">${g === "r" ? "○" : g === "x" ? "+" : "■"}</button>`;
+        return `<button type="button" data-lk="${k}" data-t="${g}" aria-label="${tr`Gaura laterală ${k + 1}: ${g === "r" ? tr("rotundă") : g === "x" ? tr("în cruce") : tr("fără")}`}">${g === "r" ? "○" : g === "x" ? "+" : "■"}</button>`;
       }).join("")}</div></div>
       <p class="mic">Cu găuri prin lateral, cărămida devine Technic: găurile sunt între știfturi (la 1×1, sub știft), la 5,8 mm de jos; cele rotunde au lamaj pentru gulerul știftului. Atinge o gaură: rotundă → în cruce → fără.</p>` : "";
     const L = document.getElementById("at-laterale");
@@ -715,7 +715,7 @@ var Atelier3D = (function () {
   }
   function semnGaura(x: number, y: number, t: string, atr: string) {
     // semnul unei gauri in desen: cerc (stift), cruce (ax) sau, de ales, un cerc gol
-    const r = 8, cls = atr ? ` class="punct-gaura" ${atr} role="button" tabindex="0" aria-label="Gaură: ${t === "r" ? "rotundă" : t === "x" ? "pentru ax" : "fără"}"` : ` pointer-events="none"`;
+    const r = 8, cls = atr ? ` class="punct-gaura" ${atr} role="button" tabindex="0" aria-label="${tr`Gaură: ${t === "r" ? tr("rotundă") : t === "x" ? tr("pentru ax") : tr("fără")}`}"` : ` pointer-events="none"`;
     const fond = `<circle cx="${x}" cy="${y}" r="${r}" fill="${t ? "var(--text)" : "var(--panou)"}" stroke="var(--text-2)" stroke-width="1.5"/>`;
     const semn = t === "x" ? `<path d="M${x - 4.5} ${y}h9M${x} ${y - 4.5}v9" stroke="var(--panou)" stroke-width="2.4"/>` : t === "r" ? `<circle cx="${x}" cy="${y}" r="3.6" fill="var(--panou)"/>` : "";
     return `<g${cls}>${fond}${semn}<circle cx="${x}" cy="${y}" r="13" fill="transparent"/></g>`;
@@ -932,7 +932,7 @@ var Atelier3D = (function () {
     // marimea modelului, in cote
     if (vedere === "model") {
       const g = model.reduce((t, m) => { try { return t + Lego.grame(corpModel(m.def).tri); } catch (e) { return t; } }, 0);
-      $("#at-cote").innerHTML = model.length ? `<span><b>Piese</b> ${model.length}</span><span><b>Mărime</b> ${fmt(box.max.x - box.min.x)} × ${fmt(box.max.y - box.min.y)} × ${fmt(box.max.z - box.min.z)} mm</span><span><b>Filament</b> ≈ ${fmt(g, 0)} g</span>` : `<span>Modelul e gol.</span>`;
+      $("#at-cote").innerHTML = model.length ? `<span><b>Piese</b> ${model.length}</span><span><b>Mărime</b> ${tr`${fmt(box.max.x - box.min.x)} × ${fmt(box.max.y - box.min.y)} × ${fmt(box.max.z - box.min.z)} mm`}</span><span><b>Filament</b> ≈ ${fmt(g, 0)} g</span>` : `<span>Modelul e gol.</span>`;
     }
   }
   function clicInVedere(e: MouseEvent) {
@@ -951,7 +951,7 @@ var Atelier3D = (function () {
     e.innerHTML = `<h2>Modelul</h2>
       <p class="mic">Așezi piesele pe grila de știfturi, ca să vezi avionul întreg înainte să-l printezi. Alegi o piesă cu un clic în vedere sau din listă, apoi o muți: X și Y câte un știft, Z câte o placă. O piesă nouă intră deasupra celei alese. Nu verific dacă piesele se prind între ele: e doar privirea de ansamblu.</p>
       ${m ? `<div class="model-ales">
-        <div><b>${titluM(m)}</b> <span class="mic">· x ${m.x}, y ${m.y}, z ${m.z} ${m.z === 1 ? "placă" : "plăci"}${m.rot ? ` · rotită ${m.rot * 90}°` : ""}</span></div>
+        <div><b>${titluM(m)}</b> <span class="mic">· x ${m.x}, y ${m.y}, z ${m.z} ${m.z === 1 ? "placă" : "plăci"}${m.rot ? tr` · rotită ${m.rot * 90}°` : ""}</span></div>
         <div class="mutari" id="at-m-mutari">
           <button class="btn" type="button" data-m="x-" aria-label="X minus">← X</button><button class="btn" type="button" data-m="x+" aria-label="X plus">X →</button>
           <button class="btn" type="button" data-m="y-" aria-label="Y minus">↓ Y</button><button class="btn" type="button" data-m="y+" aria-label="Y plus">Y ↑</button>
@@ -1014,7 +1014,7 @@ var Atelier3D = (function () {
     const b = $<HTMLButtonElement>("#at-in-model");
     b.textContent = inlocuieste && model.some(x => x.id === inlocuieste) ? "Înlocuiește în model" : "Pune în model";
     b.disabled = !curent || curent.def.tip === "calibrare";
-    $("#at-vedere-mod [data-v=\"model\"]").textContent = model.length ? `Modelul (${model.length})` : "Modelul";
+    $("#at-vedere-mod [data-v=\"model\"]").textContent = model.length ? tr`Modelul (${model.length})` : "Modelul";
   }
   function alegeVedere(v: string) {
     vedere = v === "model" ? "model" : "piesa";
@@ -1043,7 +1043,7 @@ var Atelier3D = (function () {
     if (!model.length) return;
     for (const m of model) pune(m.def, 1);
     salveaza(); randeazaLista();
-    toast(`${model.length} ${model.length === 1 ? "piesă" : "piese"} din model în lista de printat.`);
+    toast(tr`${model.length} ${model.length === 1 ? tr("piesă") : tr("piese")} din model în lista de printat.`);
   }
 
   // --------------------------------------------------------------------------- piesa curenta
@@ -1064,7 +1064,7 @@ var Atelier3D = (function () {
   function arataPrivita() {
     const p = privita;
     $("#at-nume-piesa").textContent = p!.titlu;
-    $("#at-cote").innerHTML = `<span><b>Mărime</b> ${fmt(p!.dim[0]!)} × ${fmt(p!.dim[1]!)} × ${fmt(p!.dim[2]!)} mm</span><span><b>Filament</b> ≈ ${fmt(p!.g)} g</span><span><b>Din circuit</b> ${p!.bucati} ${p!.bucati === 1 ? "bucată" : "bucăți"}</span>`;
+    $("#at-cote").innerHTML = `<span><b>Mărime</b> ${tr`${fmt(p!.dim[0]!)} × ${fmt(p!.dim[1]!)} × ${fmt(p!.dim[2]!)} mm`}</span><span><b>Filament</b> ≈ ${fmt(p!.g)} g</span><span><b>Din circuit</b> ${p!.bucati} ${p!.bucati === 1 ? "bucată" : "bucăți"}</span>`;
     $("#at-avert").hidden = false; $("#at-avert").textContent = "E o piesă din circuitul de tren: o vezi aici, cum se așază pe pat. Se schimbă din 2D, la Export CNC.";
     $("#at-adauga").hidden = true; $("#at-bucati-rand").hidden = true; $("#at-in-model").hidden = true;
     arata3D(p!.tri, false, true);
@@ -1082,16 +1082,16 @@ var Atelier3D = (function () {
       curent = { def, piese, tri, dim };
       $("#at-nume-piesa").textContent = numeDef(def);
       const g = piese.reduce((t, p) => t + Lego.grame(p.tri), 0);
-      $("#at-cote").innerHTML = `<span><b>Mărime</b> ${fmt(dim[0]!)} × ${fmt(dim[1]!)} × ${fmt(dim[2]!)} mm</span><span><b>Filament</b> ≈ ${fmt(g)} g</span>` +
+      $("#at-cote").innerHTML = `<span><b>Mărime</b> ${tr`${fmt(dim[0]!)} × ${fmt(dim[1]!)} × ${fmt(dim[2]!)} mm`}</span><span><b>Filament</b> ≈ ${fmt(g)} g</span>` +
         (def.tip === "calibrare" ? `<span><b>Piese</b> ${piese.length}</span>` : "") + (piese[0]!.unghi ? `<span><b>Unghi</b> ${fmt(piese[0]!.unghi)}°</span>` : "");
       const av = piese.flatMap(p => p.avert || []);
       if (def.tip === "caramida" && bucatiSeparate(def.celule!) > 1) av.push("Forma are bucăți care nu se ating: ies piese separate, în același fișier.");
       $("#at-avert").hidden = !av.length; $("#at-avert").textContent = av.join(" ");
-      if ($("#at-p-unghi")) $("#at-p-unghi").textContent = def.tip === "pantaInversa" ? `Fața de dedesubt urcă la ${fmt(piese[0]!.unghi!)}° (înălțimea ${fmt(def.placi! * 3.2)} mm, buza ${fmt(def.buza!)} mm).`
-        : def.profil === "curb" ? `Curba urcă de la buză (${fmt(def.buza!)} mm) la ${fmt(def.placi! * 3.2)} mm; în medie ${fmt(piese[0]!.unghi!)}°.` : `Panta iese de ${fmt(piese[0]!.unghi!)}° (înălțimea ${fmt(def.placi! * 3.2)} mm, buza ${fmt(def.buza!)} mm).`;
-      if ($("#at-pana-info") && def.tip === "pana") $("#at-pana-info").textContent = `Tăietura e la ${fmt(piese[0]!.unghi!)}° față de latura lungă · ${piese[0]!.stifturi} ${piese[0]!.stifturi === 1 ? "știft" : "știfturi"} sus, ${piese[0]!.locasuri} ${piese[0]!.locasuri === 1 ? "locaș" : "locașuri"} dedesubt` + (piese[0]!.deschise ? `, plus ${piese[0]!.deschise} deschise lângă marginea oblică (acolo stă pe știfturi, fără să le prindă).` : ".");
+      if ($("#at-p-unghi")) $("#at-p-unghi").textContent = def.tip === "pantaInversa" ? tr`Fața de dedesubt urcă la ${fmt(piese[0]!.unghi!)}° (înălțimea ${fmt(def.placi! * 3.2)} mm, buza ${fmt(def.buza!)} mm).`
+        : def.profil === "curb" ? tr`Curba urcă de la buză (${fmt(def.buza!)} mm) la ${fmt(def.placi! * 3.2)} mm; în medie ${fmt(piese[0]!.unghi!)}°.` : tr`Panta iese de ${fmt(piese[0]!.unghi!)}° (înălțimea ${fmt(def.placi! * 3.2)} mm, buza ${fmt(def.buza!)} mm).`;
+      if ($("#at-pana-info") && def.tip === "pana") $("#at-pana-info").textContent = tr`Tăietura e la ${fmt(piese[0]!.unghi!)}° față de latura lungă · ${piese[0]!.stifturi} ${piese[0]!.stifturi === 1 ? tr("știft") : tr("știfturi")} sus, ${piese[0]!.locasuri} ${piese[0]!.locasuri === 1 ? tr("locaș") : tr("locașuri")} dedesubt` + (piese[0]!.deschise ? tr`, plus ${piese[0]!.deschise} deschise lângă marginea oblică (acolo stă pe știfturi, fără să le prindă).` : ".");
       arata3D(tri, pastreaza!);
-    } catch (e) { $("#at-avert").hidden = false; $("#at-avert").textContent = "Nu am putut face piesa: " + ((e as Error).message || e); }
+    } catch (e) { $("#at-avert").hidden = false; $("#at-avert").textContent = tr`Nu am putut face piesa: ${(e as Error).message || e}`; }
   }
 
   // --------------------------------------------------------------------------- lista de printat
@@ -1107,7 +1107,7 @@ var Atelier3D = (function () {
     const n = bucatiCerute();
     pune(curent.def, n);
     salveaza(); randeazaLista();
-    toast(`${n} × ${numeDef(curent.def)} în listă.`);
+    toast(tr`${n} × ${numeDef(curent.def)} în listă.`);
   }
   function adaugaPereche() {
     // aripile vin in perechi: aceeasi pana, taiata o data stanga si o data dreapta
@@ -1119,7 +1119,7 @@ var Atelier3D = (function () {
       pune(x, n);
     }
     salveaza(); randeazaLista();
-    toast(`${n} × perechea ${d.lung}×${d.lat} (stânga și dreapta) în listă.`);
+    toast(tr`${n} × perechea ${d.lung}×${d.lat} (stânga și dreapta) în listă.`);
   }
   let calculLista: ReturnType<typeof calculeazaLista> | null = null;
   function calculeazaLista() {
@@ -1140,40 +1140,40 @@ var Atelier3D = (function () {
       const nx = piese.length > 1 ? null : numeUnic(x);
       for (let k = 0; k < x.bucati; k++) for (const p of piese) toate.push({ ...p, nume: nx || p.nume });
     }
-    const tr = pieseTren(), dinTren = setari.cuTren ? tr.piese : [];
+    const pt = pieseTren(), dinTren = setari.cuTren ? pt.piese : [];
     for (const p of dinTren) for (let k = 0; k < p.bucati; k++) toate.push({ nume: "tren_" + p.nume, titlu: p.titlu, tri: p.tri, dim: p.dim, tren: true });
     Lego.seteaza(paramMotor());
     let placi: ReturnType<typeof Lego.aseaza> = [], eroare: string | null = null;
     try { placi = toate.length ? Lego.aseaza(toate) : []; } catch (e) { eroare = (e as Error).message; }
     const gTren = dinTren.reduce((t, p) => t + p.g * p.bucati, 0), gLego = randuri.reduce((t, r) => t + r.g * r.x.bucati, 0);
-    return { randuri, placi, toate, eroare, tren: tr, dinTren, grame: gTren + gLego };
+    return { randuri, placi, toate, eroare, tren: pt, dinTren, grame: gTren + gLego };
   }
   const randTren = (p: PiesaTren) => `<tr data-tren="${p.nume}"><td>${p.titlu}</td><td class="num">${fmt(p.dim[0]!)} × ${fmt(p.dim[1]!)} × ${fmt(p.dim[2]!)}</td>` +
     `<td class="num centru">${p.bucati}</td><td class="num">${fmt(p.g * p.bucati)} g</td><td><button class="btn" type="button" data-op="vezi">Vezi</button></td></tr>`;
   function randeazaLista() {
     calculLista = calculeazaLista();
-    const { randuri, placi, toate, eroare, tren: tr, grame } = calculLista;
+    const { randuri, placi, toate, eroare, tren: pt, grame } = calculLista;
     $("#at-lista").innerHTML = randuri.length ? randuri.map(({ x, g, dim, nPiese }) => `<tr data-id="${x.id}"><td>${x.nume}</td>` +
       `<td class="num">${dim ? `${fmt(dim[0]!)} × ${fmt(dim[1]!)} × ${fmt(dim[2]!)}` : `${nPiese} piese`}</td>` +
       `<td><span class="pas"><button class="btn" type="button" data-op="-" aria-label="O bucată mai puțin">−</button><span class="num pas-n">${x.bucati}</span><button class="btn" type="button" data-op="+" aria-label="O bucată în plus">+</button></span></td>` +
       `<td class="num">${fmt(g * x.bucati)} g</td><td><button class="btn" type="button" data-op="x">Scoate</button></td></tr>`).join("")
       : `<tr><td colspan="5" class="mic">Nicio piesă LEGO încă. Desenează una mai sus și apasă „Adaugă în lista de printat”.</td></tr>`;
     // grupul circuitului: se ia din planul 2D, cu numarul de bucati de acolo
-    const titlu = tr.titlu ? `Din circuitul „${tr.titlu}”` : "Din circuitul de tren";
+    const titlu = pt.titlu ? tr`Din circuitul „${pt.titlu}”` : "Din circuitul de tren";
     $("#at-lista-tren").innerHTML = `<tr class="grupa"><th colspan="5"><div class="at-rand intre">` +
       `<label class="bifa"><input type="checkbox" id="at-cu-tren" ${setari.cuTren ? "checked" : ""}> ${titlu}</label>` +
       `<button class="btn" type="button" id="at-la-setari">Ce se printează: setări în 2D</button></div></th></tr>` +
-      (tr.eroare ? `<tr><td colspan="5" class="mic eroare">${tr.eroare}</td></tr>`
-        : !tr.piese.length ? `<tr><td colspan="5" class="mic">Circuitul nu are piese de printat. Limbile apar pentru macazuri când e bifată limba mobilă; tunelurile, peroanele, stâlpii și opritoarele printate le alegi în 2D, la Export CNC → Piese printate 3D.</td></tr>`
-        : setari.cuTren ? tr.piese.map(randTren).join("")
-        : `<tr><td colspan="5" class="mic">${tr.piese.reduce((t, p) => t + p.bucati, 0)} piese din circuit, lăsate deoparte. Bifează ca să intre pe pat.</td></tr>`);
+      (pt.eroare ? `<tr><td colspan="5" class="mic eroare">${pt.eroare}</td></tr>`
+        : !pt.piese.length ? `<tr><td colspan="5" class="mic">Circuitul nu are piese de printat. Limbile apar pentru macazuri când e bifată limba mobilă; tunelurile, peroanele, stâlpii și opritoarele printate le alegi în 2D, la Export CNC → Piese printate 3D.</td></tr>`
+        : setari.cuTren ? pt.piese.map(randTren).join("")
+        : `<tr><td colspan="5" class="mic">${tr`${pt.piese.reduce((t, p) => t + p.bucati, 0)} piese din circuit, lăsate deoparte. Bifează ca să intre pe pat.`}</td></tr>`);
     const [W, H] = setari.pat;
-    $("#at-rez-lista").textContent = eroare ? eroare : toate.length ? `${toate.length} ${toate.length === 1 ? "piesă" : "piese"} pe ${placi.length} ${placi.length === 1 ? "placă" : "plăci"} de ${W} × ${H} mm · ≈ ${fmt(grame, 0)} g de filament` : "";
+    $("#at-rez-lista").textContent = eroare ? eroare : toate.length ? tr`${toate.length} ${toate.length === 1 ? tr("piesă") : tr("piese")} pe ${placi.length} ${placi.length === 1 ? tr("placă", "pat") : tr("plăci", "pat")} de ${W} × ${H} mm · ≈ ${fmt(grame, 0)} g de filament` : "";
     $("#at-rez-lista").classList.toggle("eroare", !!eroare);
     $<HTMLInputElement>("#at-zip").disabled = !toate.length || !!eroare; $<HTMLInputElement>("#at-goleste").disabled = !lista.length;
     $("#at-paturi").innerHTML = placi.map((pl, i: number) => {
       const r = pl.piese.map(q => `<rect x="${q.x}" y="${H! - q.y - q.d}" width="${q.w}" height="${q.d}" rx="1.5" fill="${/^tren_/.test(q.nume) ? "var(--fag)" : "var(--caramida)"}" opacity=".85"><title>${q.titlu || q.nume}</title></rect>`).join("");
-      return `<figure><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Placa ${i + 1}: ${pl.piese.length} piese"><rect width="${W}" height="${H}" rx="4" fill="var(--panou-2)" stroke="var(--linie)" stroke-width="2"/>${r}</svg><figcaption>Placa ${i + 1} · ${pl.piese.length} piese</figcaption></figure>`;
+      return `<figure><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${tr`Placa ${i + 1}: ${pl.piese.length} piese`}"><rect width="${W}" height="${H}" rx="4" fill="var(--panou-2)" stroke="var(--linie)" stroke-width="2"/>${r}</svg><figcaption>${tr`Placa ${i + 1} · ${pl.piese.length} piese`}</figcaption></figure>`;
     }).join("");
     const chip = $("#chip-3d");
     if (chip) {
@@ -1193,9 +1193,9 @@ var Atelier3D = (function () {
       $("#at-vedere").scrollIntoView({ block: "nearest", behavior: "smooth" });
       return;
     }
-    const tr = (ev.target as Element).closest<HTMLElement>("tr[data-id]");
-    if (!tr) return;
-    const x = lista.find(y => y.id === tr.dataset.id);
+    const rand = (ev.target as Element).closest<HTMLElement>("tr[data-id]");
+    if (!rand) return;
+    const x = lista.find(y => y.id === rand.dataset.id);
     if (!x) return;
     if (b.dataset.op === "+") x.bucati = Math.min(200, x.bucati + 1);
     if (b.dataset.op === "-") x.bucati = Math.max(1, x.bucati - 1);
@@ -1225,37 +1225,37 @@ var Atelier3D = (function () {
   }
   function citeste(c: ReturnType<typeof calculeazaLista>) {
     const R = "\r\n", [W, H] = setari.pat;
-    const l = ["PIESE DE PRINTAT — din atelierul 3D al Planificatorului Trenuleț", new Date().toLocaleString("ro-RO"), "",
-      "CE E ÎN ARHIVĂ",
-      `- pat_N.stl — câte o placă de ${W} × ${H} mm, cu piesele deja așezate (${c.placi.length} ${c.placi.length === 1 ? "placă" : "plăci"}). Deschide-o în feliator și pornește.`,
-      "- piese/<nume>.stl — fiecare piesă separat, dacă vrei s-o așezi tu (cele ale circuitului încep cu tren_).", "",
-      "CUM SE PRINTEAZĂ",
-      "- PLA (sau PETG), duză 0,4 mm, strat de 0,2 mm, 3 perimetre, umplere 15%, fără suporturi. Piesele sunt deja întoarse cum trebuie:",
-      "  cărămizile și plăcile cu știfturile în sus, grinzile Technic culcate, axul pe un braț, știftul Technic pe fața teșită;",
-      "  pantele (și cele inverse) și conurile în picioare, penele și aripile culcate;",
-      "  limbile macazurilor cu fața pe care merg roțile pe masă și știftul în sus, tunelul în picioare pe portal;",
-      "  grinzile de orice formă culcate, bucșele în picioare, bara pe fața teșită, clemele și mânerele cu placa pe masă.",
-      "- Suportul întors are placa de sus în aer: pune suport sub ea. Bila iese mai curat cu suport sub ea.",
-      "- Clema, cupa bilei și găurile pentru bară sunt făcute pentru PLA; probează o pereche înainte să printezi multe.",
-      "- Pantele inverse mai line de 45° au o surplombă sub pantă: pune suport doar acolo („suport doar de pe masă”).",
-      "- Fără „elephant foot”: primul strat prea strivit strâmtează locașurile de dedesubt. Dacă feliatorul are compensare pentru primul strat, pune-o.",
-      "- Limbile macazurilor sunt subțiri și ies aproape pline; dacă feliatorul te lasă, pune-le umplere 100%.",
+    const l = [tr("PIESE DE PRINTAT — din atelierul 3D al Planificatorului Trenuleț"), new Date().toLocaleString(Limba.locala), "",
+      tr("CE E ÎN ARHIVĂ"),
+      tr`- pat_N.stl — câte o placă de ${W} × ${H} mm, cu piesele deja așezate (${c.placi.length} ${c.placi.length === 1 ? tr("placă", "pat") : tr("plăci", "pat")}). Deschide-o în feliator și pornește.`,
+      tr("- piese/<nume>.stl — fiecare piesă separat, dacă vrei s-o așezi tu (cele ale circuitului încep cu tren_)."), "",
+      tr("CUM SE PRINTEAZĂ"),
+      tr("- PLA (sau PETG), duză 0,4 mm, strat de 0,2 mm, 3 perimetre, umplere 15%, fără suporturi. Piesele sunt deja întoarse cum trebuie:"),
+      tr("  cărămizile și plăcile cu știfturile în sus, grinzile Technic culcate, axul pe un braț, știftul Technic pe fața teșită;"),
+      tr("  pantele (și cele inverse) și conurile în picioare, penele și aripile culcate;"),
+      tr("  limbile macazurilor cu fața pe care merg roțile pe masă și știftul în sus, tunelul în picioare pe portal;"),
+      tr("  grinzile de orice formă culcate, bucșele în picioare, bara pe fața teșită, clemele și mânerele cu placa pe masă."),
+      tr("- Suportul întors are placa de sus în aer: pune suport sub ea. Bila iese mai curat cu suport sub ea."),
+      tr("- Clema, cupa bilei și găurile pentru bară sunt făcute pentru PLA; probează o pereche înainte să printezi multe."),
+      tr("- Pantele inverse mai line de 45° au o surplombă sub pantă: pune suport doar acolo („suport doar de pe masă”)."),
+      tr("- Fără „elephant foot”: primul strat prea strivit strâmtează locașurile de dedesubt. Dacă feliatorul are compensare pentru primul strat, pune-o."),
+      tr("- Limbile macazurilor sunt subțiri și ies aproape pline; dacă feliatorul te lasă, pune-le umplere 100%."),
       "",
-      "POTRIVIREA PIESELOR LEGO",
-      `- Imprimanta: ${(() => { const a = imprimante && imprimante.lista.find(p => p.id === imprimante!.activ); return a ? a.nume : ""; })()}, patul de ${W} × ${H} mm.`,
-      `- Variantele folosite: știft ${setari.varianta_stift}, locaș ${setari.varianta_locas}, gaură ${setari.varianta_gaura}, ax ${setari.varianta_ax}, clemă și bară ${setari.varianta_bara}, cupă ${setari.varianta_cupa} (3 = mijlocul).`,
-      "- Prima dată, printează setul de calibrare (fila Calibrare din 3D) și alege variantele care se prind bine cu piese LEGO adevărate.",
+      tr("POTRIVIREA PIESELOR LEGO"),
+      tr`- Imprimanta: ${(() => { const a = imprimante && imprimante.lista.find(p => p.id === imprimante!.activ); return a ? a.nume : ""; })()}, patul de ${W} × ${H} mm.`,
+      tr`- Variantele folosite: știft ${setari.varianta_stift}, locaș ${setari.varianta_locas}, gaură ${setari.varianta_gaura}, ax ${setari.varianta_ax}, clemă și bară ${setari.varianta_bara}, cupă ${setari.varianta_cupa} (3 = mijlocul).`,
+      tr("- Prima dată, printează setul de calibrare (fila Calibrare din 3D) și alege variantele care se prind bine cu piese LEGO adevărate."),
       "", "LISTA",
-      ...c.randuri.map(r => `- ${r.x.bucati} × ${r.x.nume}${r.dim ? ` (${fmt(r.dim[0]!)} × ${fmt(r.dim[1]!)} × ${fmt(r.dim[2]!)} mm)` : ""}, ≈ ${fmt(r.g * r.x.bucati)} g`),
-      ...(c.dinTren.length ? ["", c.tren.titlu ? `DIN CIRCUITUL „${c.tren.titlu}”` : "DIN CIRCUITUL DE TREN",
-        ...c.dinTren.map(p => `- ${p.bucati} × ${p.titlu} (${fmt(p.dim[0]!)} × ${fmt(p.dim[1]!)} × ${fmt(p.dim[2]!)} mm), ≈ ${fmt(p.g * p.bucati)} g`)] : []),
-      "", `Filament în total: ≈ ${fmt(c.grame, 0)} g.`];
+      ...c.randuri.map(r => tr`- ${r.x.bucati} × ${r.x.nume}${r.dim ? tr` (${fmt(r.dim[0]!)} × ${fmt(r.dim[1]!)} × ${fmt(r.dim[2]!)} mm)` : ""}, ≈ ${fmt(r.g * r.x.bucati)} g`),
+      ...(c.dinTren.length ? ["", c.tren.titlu ? tr`DIN CIRCUITUL „${c.tren.titlu}”` : tr("DIN CIRCUITUL DE TREN"),
+        ...c.dinTren.map(p => tr`- ${p.bucati} × ${p.titlu} (${fmt(p.dim[0]!)} × ${fmt(p.dim[1]!)} × ${fmt(p.dim[2]!)} mm), ≈ ${fmt(p.g * p.bucati)} g`)] : []),
+      "", tr`Filament în total: ≈ ${fmt(c.grame, 0)} g.`];
     return l.join(R) + R;
   }
   function descarcaZip() {
     const c = calculLista || calculeazaLista();
     if (!c.toate.length) return;
-    const fis: { nume: string; text: string | Uint8Array }[] = [{ nume: "CITESTE.txt", text: citeste(c) }];
+    const fis: { nume: string; text: string | Uint8Array }[] = [{ nume: tr("CITESTE.txt"), text: citeste(c) }];
     c.placi.forEach((pl, i: number) => fis.push({ nume: `pat_${i + 1}.stl`, text: Lego.stl(pl.tri, `printare: placa ${i + 1}`).date }));
     const facute = new Set();
     for (const p of c.toate) { if (facute.has(p.nume)) continue; facute.add(p.nume); fis.push({ nume: `piese/${p.nume}.stl`, text: Lego.stl(p.tri, "printare: " + p.nume).date }); }
@@ -1265,7 +1265,7 @@ var Atelier3D = (function () {
   // --------------------------------------------------------------------------- reglaje si salvare
   function rezumatImprimanta() {
     const el = $("#at-imprimanta-rez"), a = imprimante && imprimante.lista.find(p => p.id === imprimante!.activ);
-    if (el) el.textContent = a ? `· ${a.nume}, pat ${setari.pat[0]} × ${setari.pat[1]} mm` : "";
+    if (el) el.textContent = a ? tr`· ${a.nume}, pat ${setari.pat[0]} × ${setari.pat[1]} mm` : "";
   }
   function aplicaImprimanta(v: Valori | null) {
     puneImprimanta(v);
@@ -1316,7 +1316,7 @@ var Atelier3D = (function () {
     if (!d || typeof d !== "object") return;
     if (d.setari) setari = { ...SETARI_IMPLICIT, ...d.setari, pat: Array.isArray(d.setari.pat) ? d.setari.pat.slice(0, 2) : SETARI_IMPLICIT.pat.slice() };
     // imprimantele; pagina se deschide cu cea implicita
-    imprimante = Profiluri.curata(d.imprimante || imprimante, valoriImprimanta(), "Imprimanta mea");
+    imprimante = Profiluri.curata(d.imprimante || imprimante, valoriImprimanta(), tr("Imprimanta mea"));
     puneImprimanta(Profiluri.laDeschidere(imprimante));
     if (Array.isArray(d.lista)) lista = d.lista.filter(x => x && x.def && x.def.tip && x.bucati > 0);
     if (Array.isArray(d.model)) model = d.model.filter(x => x && x.def && x.def.tip && x.def.tip !== "calibrare" && Number.isFinite(x.x) && Number.isFinite(x.y) && Number.isFinite(x.z))

@@ -16,7 +16,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { ContCvs2, ContextHost, HostApi } from '../../extensii/api.ts';
-import { claudePeste, deschiderePeste, gazdaPeste, localStoragePeste, lucruPeste, temaPeste } from '../../extensii/trenulet/intrare.ts';
+import { claudePeste, deschiderePeste, dictionarPeste, gazdaPeste, limbaPeste, localStoragePeste, lucruPeste, temaPeste } from '../../extensii/trenulet/intrare.ts';
 
 type Ref = { readonly id: string; set(d: unknown): Promise<void>; get(): Promise<{ exists: boolean; data(): unknown }>; delete(): Promise<void> };
 type Instantaneu = { readonly docs: { readonly id: string; data(): unknown }[] };
@@ -44,6 +44,7 @@ function gazda(initial: Record<string, unknown> = {}) {
     refuz: null as string | null,
     context: { limba: 'ro', tema: {} } as ContextHost,
     nesalvat: [] as boolean[],
+    reporniri: 0,
     schimba(c: Partial<ContextHost>): void {
       g.context = { ...g.context, ...c };
       for (const f of [...ascultatori]) f(g.context);
@@ -61,6 +62,7 @@ function gazda(initial: Record<string, unknown> = {}) {
     raporteaza: (e) => { g.raportate.push(e); },
     inchide: () => {},
     nesalvat: (da) => { g.nesalvat.push(da); },
+    reporneste: () => { g.reporniri++; },
     laInchidere: (f) => { laInchidere.add(f); return () => { laInchidere.delete(f); }; },
     cere: async (serviciu, ...argumente) => {
       g.cereri.push({ serviciu, argumente });
@@ -365,4 +367,55 @@ test('gazda: window.cvs2.cont() e contul de acum (null fără permisiune), anun�
   assert.deepEqual(g.nesalvat, [true]);
   await g.inchidere();
   assert.deepEqual(g.nesalvat, [true, false]);
+});
+
+test('limba (ADR 0165): window.cvs2.limba e limba de la pornire, fixă; o limbă nouă repornește pagina, după salvări', async () => {
+  const { g, host } = gazda();
+  g.schimba({ limba: 'en' });
+  const w = {} as Window & { cvs2?: { readonly limba: string } };
+  const l = lucruPeste(host);
+  gazdaPeste(host, false, w, l);
+  limbaPeste(host, l);
+  l.amana('circuit', () => host.stocare.scrie('db:circuite/a', 1), 60_000);
+  g.schimba({ tema: { 'color-scheme': 'dark' } });
+  await pauza(5);
+  assert.deepEqual([w.cvs2?.limba, g.reporniri], ['en', 0]);
+  g.schimba({ limba: 'ro' });
+  assert.equal(w.cvs2?.limba, 'en');
+  await pauza(20);
+  // salvarea amânată a plecat înaintea repornirii, iar repornirea se cere o singură dată
+  assert.deepEqual([g.date.get('db:circuite/a'), g.reporniri], [1, 1]);
+  // după cerere, o altă schimbare (o temă nouă, cu limba tot „ro”) nu mai cere încă o repornire
+  g.schimba({ tema: { 'color-scheme': 'light' } });
+  await pauza(20);
+  assert.equal(g.reporniri, 1);
+  g.schimba({ limba: 'en' });
+  await pauza(20);
+  assert.equal(g.reporniri, 1);
+});
+
+test('limba: o gazdă fără reporneste (dinainte de 3.Te) lasă pagina în limba de la pornire', async () => {
+  const { g, host } = gazda();
+  const vechi = { ...host, reporneste: undefined } as unknown as HostApi;
+  limbaPeste(vechi, lucruPeste(vechi));
+  g.schimba({ limba: 'en' });
+  await pauza(10);
+  assert.equal(g.reporniri, 0);
+});
+
+test('dicționarul englez: adus din pachet doar în engleză, înghețat, înaintea scripturilor', async () => {
+  const { g, host } = gazda();
+  const cu = (limba: 'ro' | 'en', fisier: string | null) => {
+    g.schimba({ limba });
+    return { ...host, limba, fisier: (c: string) => (c === 'texte.en.json' && fisier !== null ? new Blob([fisier]) : null) } as HostApi;
+  };
+  const en = {} as Window & { TexteEN?: Readonly<Record<string, string>> };
+  await dictionarPeste(cu('en', '{"Circuit închis":"Closed circuit"}'), en);
+  assert.deepEqual([en.TexteEN?.['Circuit închis'], Object.isFrozen(en.TexteEN)], ['Closed circuit', true]);
+  const ro = {} as typeof en;
+  await dictionarPeste(cu('ro', '{"Circuit închis":"Closed circuit"}'), ro);
+  assert.equal(ro.TexteEN, undefined);
+  const lipsa = {} as typeof en;
+  await dictionarPeste(cu('en', null), lipsa);
+  assert.equal(lipsa.TexteEN, undefined);
 });

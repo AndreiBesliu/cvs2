@@ -18,7 +18,7 @@
  */
 import type { HostApi, Spatiu } from '../api.ts';
 
-const SCRIPTURI = ['cavalier.js', 'cnc.js', 'gcode.js', 'earcut.js', 'lego.js', 'profiluri.js', 'atelier.js', 'app.js'];
+const SCRIPTURI = ['limba.js', 'cavalier.js', 'cnc.js', 'gcode.js', 'earcut.js', 'lego.js', 'profiluri.js', 'atelier.js', 'app.js'];
 const DB = 'db:';
 const LS = 'ls:';
 const PROTOCOL = 'cvs2-lucrare';
@@ -130,6 +130,33 @@ export function temaPeste(host: HostApi, rad: { readonly dataset: DOMStringMap }
   };
   pune();
   host.laSchimbare(pune);
+}
+
+/**
+ * Dicționarul englez al paginii (ADR 0165): în engleză, `texte.en.json` din pachet, ca `window.TexteEN`, înghețat, înaintea
+ * scripturilor (`limba.js` îl citește la pornire). În română sau fără fișier, nimic: pagina rămâne românească.
+ */
+export async function dictionarPeste(host: HostApi, w: Window = window): Promise<void> {
+  if (host.limba !== 'en') return;
+  const f = host.fisier('texte.en.json');
+  if (!f) return;
+  const texte = JSON.parse(await f.text()) as Record<string, string>;
+  Object.defineProperty(w, 'TexteEN', { value: Object.freeze(texte), configurable: false, writable: false });
+}
+
+/**
+ * O limbă nouă în cvs2 (ADR 0165): pagina își are limba fixă de la pornire, deci întâi pleacă salvările ei, apoi cere
+ * repornirea, o singură dată. O gazdă fără `reporneste` lasă pagina în limba de la pornire.
+ */
+export function limbaPeste(host: HostApi, lucru: Lucru): void {
+  if (typeof host.reporneste !== 'function') return;
+  const laPornire = host.limba;
+  let ceruta = false;
+  host.laSchimbare((c) => {
+    if (ceruta || c.limba === laPornire) return;
+    ceruta = true;
+    void lucru.goleste().then(() => { host.reporneste(); });
+  });
 }
 
 /** `window.claude`: `use('db')` și `use('downloads')`, ca pe claude.ai. */
@@ -287,6 +314,8 @@ function threePeste(host: HostApi, w: Window): () => Promise<unknown> {
 export function gazdaPeste(host: HostApi, cuMasina: boolean, w: Window = window, lucru: Lucru = lucruPeste(host)): void {
   const cvs2 = {
     gazda: 'cvs2',
+    // limba de la pornire, fixă (ADR 0165): la una nouă, pagina repornește (`limbaPeste`)
+    limba: host.limba,
     masina: cuMasina ? host.masina : null,
     three: threePeste(host, w),
     cont: () => host.cont ?? null,
@@ -314,6 +343,8 @@ export async function activeaza(host: HostApi): Promise<Spatiu> {
   const cuMasina = await host.cere('masina.stare').then(() => true, () => false);
   gazdaPeste(host, cuMasina, window, lucru);
   temaPeste(host);
+  await dictionarPeste(host);
+  limbaPeste(host, lucru);
   if (cuMasina) deschiderePeste(host);
   return {
     deschide(container: HTMLElement): void {

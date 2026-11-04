@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { pachetTrenulet, paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
+import { citesteZip } from '../../src/extensii/zip.ts';
 import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 
 /**
@@ -25,7 +26,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.4.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.5.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 
 async function deschide(page: Page): Promise<void> {
@@ -68,7 +69,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.4.0, de la trenulet-18.4.0.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.5.0, de la trenulet-18.5.0.zip');
   await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
     'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe); '
     + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea; '
@@ -314,5 +315,103 @@ test('parte din cvs2 (ADR 0164): tema și fonturile lui, pe loc; contul, la Circ
   await page.locator('[data-extensii="inchide-fereastra"]').click();
   await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
   expect(JSON.stringify(await stocat(page, 'db:atelier/curent'))).toContain('"culoare":"#2e8b4a"');
+  await faraEroriInJurnal(page);
+});
+
+/**
+ * Româna rămasă în cadru (ADR 0165): nodurile de text și atributele traductibile care au litere românești (în afară de numele
+ * „Trenuleț”), sunt chiar o cheie a dicționarului cu altă traducere sau au o virgulă zecimală. Fără `pre`, `textarea` (date,
+ * G-code) și fără numele dat de om (al circuitului).
+ */
+async function romanaRamasa(page: Page, numeUtilizator = ''): Promise<readonly string[]> {
+  const f = await (await page.locator('iframe.cadru-extensie').elementHandle())?.contentFrame();
+  if (!f) return ['fără cadru'];
+  return f.evaluate((ignora) => {
+    const d = (window as unknown as { TexteEN?: Record<string, string> }).TexteEN ?? {};
+    const chei = new Set(Object.keys(d).filter((k) => d[k] !== k && !/^[\s\d·:,;.()×+−–-]*$/.test(k)));
+    const rau = (s: string): boolean => {
+      const t = s.replace(/\s+/g, ' ').trim().replace(ignora, '');
+      return !!t && (/[ăâîșțĂÂÎȘȚ]/.test(t.replace(/Trenuleț|TRENULEȚ/g, '')) || chei.has(t) || /\d,\d/.test(t));
+    };
+    const ies: string[] = [];
+    const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) {
+      if (n.nodeType === 3) {
+        const p = n.parentElement;
+        if (p && !['PRE', 'TEXTAREA', 'SCRIPT', 'STYLE'].includes(p.tagName) && rau((n as Text).data)) ies.push((n as Text).data.trim().slice(0, 90));
+      } else {
+        for (const a of ['title', 'aria-label', 'placeholder', 'alt']) {
+          const v = (n as Element).getAttribute(a);
+          if (v && rau(v)) ies.push(`@${a}: ${v.slice(0, 90)}`);
+        }
+      }
+    }
+    return [...new Set(ies)];
+  }, numeUtilizator);
+}
+
+test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o repornire fără pierderi; nicio română pe ecranele lui', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-extensii="buton"]').click();
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
+  await page.locator('[data-extensii="instaleaza"]').click();
+  await deschide(page);
+  let c = cadru(page);
+  await expect(c.locator('#btn-circuite')).toHaveText('Circuite');
+  // scripturile vin după marcaj: numele se scrie după ce planificatorul a pornit (cipul de stare e completat)
+  await expect(c.locator('#stare')).not.toHaveText('—');
+  await c.locator('#nume').fill('Păstrat la repornire');
+  // Limba nouă în cvs2: pagina își salvează lucrul, apoi cere repornirea; cadrul se reface, în engleză.
+  await page.getByRole('navigation', { name: 'Limba' }).getByRole('button', { name: 'EN', exact: true }).click();
+  c = cadru(page);
+  await expect(c.locator('#btn-circuite')).toHaveText('Layouts');
+  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
+  await expect(c.locator('html')).toHaveAttribute('data-gazda', 'cvs2');
+  await expect(c.locator('#nume')).toHaveValue('Păstrat la repornire');
+  expect(await romanaRamasa(page, 'Păstrat la repornire')).toEqual([]);
+  // Circuitele, exportul CNC, cu secțiunile lui, atelierul 3D, cu fiecare fel de piesă
+  await c.locator('#btn-circuite').click();
+  await expect(c.locator('#circ-unde')).toHaveText('The layouts save themselves, in this browser (through cvs2): they don’t show up on another computer or in another browser.');
+  expect(await romanaRamasa(page, 'Păstrat la repornire')).toEqual([]);
+  await c.locator('#foaie-circuite [data-inchide]').click();
+  await c.locator('#btn-export').click();
+  await expect(c.locator('#e-cvs2')).toBeEnabled({ timeout: 30_000 });
+  expect(await romanaRamasa(page, 'Păstrat la repornire')).toEqual([]);
+  // Arhiva CNC: README-ul ei (README.txt) e în engleză, fără litere românești în afară de numele circuitului.
+  await expect(c.locator('#e-dxf')).toBeEnabled();
+  const descarcare = page.waitForEvent('download');
+  await c.locator('#e-dxf').click();
+  const zip = await citesteZip(new Uint8Array(readFileSync(await (await descarcare).path())), { fisiere: 2000, octetiFisier: 64 << 20, octetiTotal: 256 << 20 });
+  if (!zip.ok) throw new Error('arhiva nu se citește');
+  const readme = zip.intrari.find((i) => i.nume === 'README.txt');
+  expect(zip.intrari.map((i) => i.nume)).not.toContain('CITESTE.txt');
+  const text = new TextDecoder().decode(readme!.octeti).replace('Păstrat la repornire', '');
+  expect(text).toContain('WHAT IS IN THE ARCHIVE');
+  // data, ca în engleză (en-GB: 04/11/2026, 21:30:00), nu ca în română (04.11.2026)
+  expect(text).toMatch(/ · \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2}/);
+  expect(text.match(/.*[ăâîșțĂÂÎȘȚ].*/g)?.filter((l) => !/TRENULEȚ/.test(l)) ?? []).toEqual([]);
+  // O placă prea mică: piesa care nu încape vine de la motor ca proprietate a erorii, cu numele ei în limba paginii.
+  for (const [cale, v] of [['placa.0', '200'], ['placa.1', '150']] as const) {
+    await c.locator(`[data-cale="${cale}"]`).first().evaluate((e, x) => {
+      (e as HTMLInputElement).value = x;
+      e.dispatchEvent(new Event('input', { bubbles: true }));
+    }, v);
+  }
+  await expect(c.locator('#cnc-stare')).toContainText('does not fit on the 200 × 150 mm board (with the margin). Make the board bigger in the settings.', { timeout: 30_000 });
+  await expect(c.locator('#cnc-stare')).toContainText(/^(Straight|Large curve|Small curve|Switch|Adapter|Female|Male)/);
+  await c.locator('#foaie-export [data-inchide]').click();
+  await c.locator('[data-mod="3d"]').first().click();
+  for (const fel of ['caramida', 'panta', 'pantaInversa', 'pana', 'rotund', 'lateral', 'legaturi', 'calibrare']) {
+    await c.locator(`#at-tipuri [data-tip="${fel}"]`).click();
+    await expect(c.locator(`#at-tipuri [data-tip="${fel}"]`)).toHaveAttribute('aria-pressed', 'true');
+    expect(await romanaRamasa(page, 'Păstrat la repornire'), fel).toEqual([]);
+  }
+  await c.locator('#at-tipuri [data-tip="caramida"]').click();
+  await c.locator('#at-adauga').click();
+  await expect(c.locator('#at-rez-lista')).toContainText(/ on \d+ beds? of /);
+  // Înapoi la română: pagina repornește, iar textele ei sunt iar românești.
+  await page.getByRole('navigation', { name: 'Language' }).getByRole('button', { name: 'RO', exact: true }).click();
+  c = cadru(page);
+  await expect(c.locator('#btn-circuite')).toHaveText('Circuite');
   await faraEroriInJurnal(page);
 });

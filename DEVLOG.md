@@ -5142,3 +5142,11 @@ permisiune nouă; închiderea ferestrei extensiei salvează întâi ce era de sa
 (până pe 04.12). Probele extensiilor (și cele noi, ale temei, contului și închiderii), ale senderului, ale primirii și ale
 planificatorului, rulate chiar pe canal: 20 / 20. Pachetul (`trenulet-18.4.0.zip`) nu stă pe canal: owner-ul îl primește ca
 fișier. Adresa principală de test nu s-a atins; ramura nu e împinsă.
+
+## 2026-11-04 — Felia 3.Te: planificatorul în engleză, după limba lui cvs2 (ADR 0165) (Model: Claude Opus 5.5)
+
+**Prompt:** „Engleza” (la „Care felie urmează: B, schimbul de forme între cvs2 și plugin, sau engleza pluginului?”, după
+raportul lui 3.Xd), în sesiunea dedicată liniei Trenuleț. 3.Te: în cvs2, planificatorul vorbește limba lui cvs2 (română sau
+engleză): interfața, mesajele, avertismentele motoarelor și fișierele de citit din exporturi; la o limbă schimbată în cvs2,
+pluginul repornește singur, fără pierderi. Româna rămâne în cod, neschimbată; engleza vine dintr-un dicționar.
+**Started:** 04.11, 20:06.

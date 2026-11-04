@@ -8,6 +8,8 @@ function motoare({ dataFixa = true } = {}) {
   const ctx = { console, TextEncoder, TextDecoder, Date: dataFixa ? DataFixa : Date }; vm.createContext(ctx);
   const citeste = f => fs.readFileSync(path.join(R, f), 'utf8');
   const sursa = f => stripTypeScriptTypes(citeste(f), { mode: 'strip' });
+  // limba paginii (ADR 0165): motoarele își spun mesajele prin `tr`; fără cvs2, în română, chiar textul
+  vm.runInContext(sursa('planificator/limba.ts'), ctx);
   vm.runInContext(citeste('vendor/cavalier.min.js') + ';this.Cavalier=Cavalier;', ctx);
   vm.runInContext(citeste('vendor/earcut.min.js'), ctx);
   vm.runInContext(sursa('planificator/cnc.ts'), ctx);

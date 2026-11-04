@@ -51,8 +51,8 @@ const NUME: Record<string, string | undefined> = {
 };
 const GRUPE: Record<string, string> = { "Drepte": "Drepte", "Curbe": "Curbe", "Ramificatii": "Ramificații", "Incrucisari": "Încrucișări",
   "Cale dubla": "Cale dublă", "Pod": "Pod", "Capat": "Capăt" };
-const numeStalp = (n: number) => "Stâlp " + Math.round(n * PAS) + " mm";
-const nume = (id: string) => NUME[id] || LC_TITLU[id] || (/^stalp_(\d+)$/.test(id) ? numeStalp(+id.split("_")[1]!) : id);
+const numeStalp = (n: number) => tr`Stâlp ${Math.round(n * PAS)} mm`;
+const nume = (id: string) => (NUME[id] ? tr(NUME[id]!) : LC_TITLU[id] || (/^stalp_(\d+)$/.test(id) ? numeStalp(+id.split("_")[1]!) : id));
 
 // elementele paginii, după selector (sunt în body.html: `$` nu întoarce null)
 const $ = <E extends Element = HTMLElement>(s: string): E => document.querySelector(s) as E;
@@ -61,7 +61,7 @@ const norm = (a: number) => ((a % 360) + 360) % 360;
 function rotP(x: number, y: number, r: number) { const c = Math.cos(rad(r)), s = Math.sin(rad(r)); return [x * c - y * s, x * s + y * c]; }
 function difUnghi(a: number, b: number) { const d = Math.abs(norm(a) - norm(b)); return Math.min(d, 360 - d); }
 const opus = (t: string) => (t === "M" ? "T" : "M");
-const numeTip = (t: string) => (t === "M" ? "mamă" : "tată");
+const numeTip = (t: string) => (t === "M" ? tr("mamă") : tr("tată"));
 
 // ----------------------------------------------------------------------------- stare
 let stare: { docId: string | null; nume: string; piese: PiesaPusa[]; exemplu: boolean } = { docId: null, nume: "", piese: [], exemplu: true };
@@ -132,8 +132,8 @@ function calculeaza() {
       A.legat = B; B.legat = A;
       vecini.add(A.uid + "|" + B.uid); vecini.add(B.uid + "|" + A.uid);
       grupuri.push([A, B]);
-      if (A.tip === B.tip) probleme.push({ rau: true, x: A.x, y: A.y, text: "Două capete " + numeTip(A.tip) + " față în față: pune un adaptor " + numeTip(opus(A.tip)) + "–" + numeTip(opus(A.tip)) + "." });
-      if (Math.abs(A.z - B.z) > 1) probleme.push({ rau: true, x: A.x, y: A.y, text: "Înălțimi diferite la îmbinare (" + Math.round(A.z) + " și " + Math.round(B.z) + " mm)." });
+      if (A.tip === B.tip) probleme.push({ rau: true, x: A.x, y: A.y, text: tr`Două capete ${numeTip(A.tip)} față în față: pune un adaptor ${numeTip(opus(A.tip))}–${numeTip(opus(A.tip))}.` });
+      if (Math.abs(A.z - B.z) > 1) probleme.push({ rau: true, x: A.x, y: A.y, text: tr`Înălțimi diferite la îmbinare (${Math.round(A.z)} și ${Math.round(B.z)} mm).` });
     }
   }
   const deschise = capete.filter(k => !k.legat);
@@ -146,7 +146,7 @@ function calculeaza() {
     const d = Math.hypot(A.x - B.x, A.y - B.y);
     if (d < 40 && difUnghi(A.u, B.u + 180) < 25) {
       aproape.push([A, B]);
-      probleme.push({ rau: false, x: A.x, y: A.y, text: "Aproape închis: lipsesc " + d.toFixed(0) + " mm și " + difUnghi(A.u, B.u + 180).toFixed(0) + "°. Atinge un capăt și apasă Închide: pun eu piesa care lipsește." });
+      probleme.push({ rau: false, x: A.x, y: A.y, text: tr`Aproape închis: lipsesc ${d.toFixed(0)} mm și ${difUnghi(A.u, B.u + 180).toFixed(0)}°. Atinge un capăt și apasă Închide: pun eu piesa care lipsește.` });
     }
   }
 
@@ -160,7 +160,7 @@ function calculeaza() {
     const n = Math.round(z / PAS);
     const k = g[0];
     if (n < 1 || n > CATALOG.stalpi.length || Math.abs(z - n * PAS) > 0.6) {
-      probleme.push({ rau: true, x: k!.x, y: k!.y, text: "Înălțime fără stâlp potrivit: " + Math.round(z) + " mm." });
+      probleme.push({ rau: true, x: k!.x, y: k!.y, text: tr`Înălțime fără stâlp potrivit: ${Math.round(z)} mm.` });
       continue;
     }
     const colt = patrat(k!.x, k!.y, k!.u);
@@ -172,7 +172,7 @@ function calculeaza() {
     const def = D(p), d = dupaPiesa.get(p.uid), r = poz.get(p.uid);
     const z = d!.capete[0]!.z, n = Math.round(z / PAS);
     if (!def.mijloc || d!.capete.length !== 2 || Math.abs(d!.capete[1]!.z - z) > 0.5 || n < 1 || n > CATALOG.stalpi.length || Math.abs(z - n * PAS) > 0.6) {
-      probleme.push({ rau: true, x: d!.capete[0]!.x, y: d!.capete[0]!.y, text: "Stâlpul de sub " + nume(idPiesa(p)) + " nu se potrivește: merge doar sub o piesă dreaptă (neînclinată) de pe pod." });
+      probleme.push({ rau: true, x: d!.capete[0]!.x, y: d!.capete[0]!.y, text: tr`Stâlpul de sub ${nume(idPiesa(p))} nu se potrivește: merge doar sub o piesă dreaptă (neînclinată) de pe pod.` });
       continue;
     }
     const [mx, my] = rotP(def.mijloc.x, def.mijloc.y, r!.rot);
@@ -181,7 +181,7 @@ function calculeaza() {
   }
   for (const p of stare.piese) {
     const d = dupaPiesa.get(p.uid);
-    if (d!.zmin < -0.5) probleme.push({ rau: true, x: d!.capete[0]!.x, y: d!.capete[0]!.y, text: nume(idPiesa(p)) + " coboară sub masă." });
+    if (d!.zmin < -0.5) probleme.push({ rau: true, x: d!.capete[0]!.x, y: d!.capete[0]!.y, text: tr`${nume(idPiesa(p))} coboară sub masă.` });
   }
 
   // suprapuneri si poduri: unde doua piese care nu se ating la capete se suprapun in plan, se compara inaltimile
@@ -219,18 +219,17 @@ function calculeaza() {
       if (bbIntersect(s.bb, Q!.bb) && poligoaneSeAting(s.poli, Q!.poli)) { lovite.add(uid); s.lovit = true; }
     }
   }
-  if (lovite.size) probleme.push({ rau: true, text: "Piese care se suprapun: " + lovite.size + " (marcate cu roșu)." });
+  if (lovite.size) probleme.push({ rau: true, text: tr`Piese care se suprapun: ${lovite.size} (marcate cu roșu).` });
   // trece trenul pe sub pod?
   const tren = setariCNC.inaltime_tren;
   for (const sp of subPod) sp.mic = !!tren && sp.spatiu < tren;
   const mici = subPod.filter(sp => sp.mic);
   if (mici.length) {
     const cel = mici.reduce((x, y) => (y.spatiu < x.spatiu ? y : x));
-    probleme.push({ rau: true, x: cel.x, y: cel.y, text: (mici.length === 1 ? "Un pod e prea jos" : mici.length + " poduri sunt prea jos") +
-      ": sub el rămân " + fmt(cel.spatiu) + " mm, iar trenul are " + fmt(tren!) + " mm. Pune stâlpi mai înalți sau o rampă mai sus." });
+    probleme.push({ rau: true, x: cel.x, y: cel.y, text: tr`${mici.length === 1 ? tr("Un pod e prea jos") : tr`${mici.length} poduri sunt prea jos`}: sub el rămân ${fmt(cel.spatiu)} mm, iar trenul are ${fmt(tren!)} mm. Pune stâlpi mai înalți sau o rampă mai sus.` });
   } else if (subPod.length && !tren) {
     const cel = subPod.reduce((x, y) => (y.spatiu < x.spatiu ? y : x));
-    probleme.push({ rau: false, x: cel.x, y: cel.y, text: "Sub pod rămân cel puțin " + fmt(cel.spatiu) + " mm. Măsoară cel mai înalt tren și scrie-l mai jos, ca să verific dacă trece." });
+    probleme.push({ rau: false, x: cel.x, y: cel.y, text: tr`Sub pod rămân cel puțin ${fmt(cel.spatiu)} mm. Măsoară cel mai înalt tren și scrie-l mai jos, ca să verific dacă trece.` });
   }
 
   rez = { poz, capete, deschise, dupaPiesa, probleme, stalpi, lovite, aproape, subPod };
@@ -288,8 +287,8 @@ const LAT = CATALOG.latime;        // 40 mm
 const SANT = 13;                   // de la axa la axa santului
 const PLACA_MAX = [950, 550];      // cat de mare poate fi o piesa ca sa incapa pe placa
 const LC_TITLU: Record<string, string | undefined> = {};
-const fmt = (v: number) => String(Math.round(v * 10) / 10).replace(".", ",");
-const fmtS = (v: number) => String(Math.round(v * 100) / 100).replace(".", ",");
+const fmt = (v: number) => String(Math.round(v * 10) / 10).replace(".", Limba.zecimal);
+const fmtS = (v: number) => String(Math.round(v * 100) / 100).replace(".", Limba.zecimal);
 
 function capSablon(def: DefPiesa, tip: string): number[][] {
   // conturul unui capat, in coordonatele lui: u spre exterior, v spre stanga (de la dreapta la stanga)
@@ -339,10 +338,10 @@ function formaLC(seg: readonly SegLC[]) {
 }
 function titluLC(lc: LucrareLC) {
   const f = formaLC(lc.seg), c = lc.cap.join("");
-  const capete = c === "TT" ? " · tată–tată" : c === "MM" ? " · mamă–mamă" : "";
-  if (f === "dreapta") return "Dreaptă la comandă " + fmt(lungimeSeg(lc.seg)) + capete;
-  if (f === "curba") { const s = lc.seg[0] as Extract<SegLC, { t: "A" }>; return "Curbă la comandă R" + fmt(s.r) + " · " + fmt(s.a) + "° " + (s.s > 0 ? "stânga" : "dreapta") + capete; }
-  return "Piesă la comandă" + (f === "S" ? " în S" : "") + " · " + fmt(lungimeSeg(lc.seg)) + " mm" + capete;
+  const capete = c === "TT" ? tr(" · tată–tată") : c === "MM" ? tr(" · mamă–mamă") : "";
+  if (f === "dreapta") return tr`Dreaptă la comandă ${fmt(lungimeSeg(lc.seg))}` + capete;
+  if (f === "curba") { const s = lc.seg[0] as Extract<SegLC, { t: "A" }>; return tr`Curbă la comandă R${fmt(s.r)} · ${fmt(s.a)}° ${s.s > 0 ? tr("stânga") : tr("dreapta")}` + capete; }
+  return (f === "S" ? tr`Piesă la comandă în S · ${fmt(lungimeSeg(lc.seg))} mm` : tr`Piesă la comandă · ${fmt(lungimeSeg(lc.seg))} mm`) + capete;
 }
 
 const LC_CACHE = new Map<string, DefPiesa>();
@@ -408,15 +407,15 @@ function verificaLC(lc: LucrareLC) {
   // intoarce "" daca piesa se poate freza, altfel motivul
   const def = defLC(lc);
   const rmin = Math.min(...lc.seg.filter(s => s.t === "A").map(s => s.r), Infinity);
-  if (rmin < RMIN - 0.5) return "Curba ar fi prea strânsă: rază " + fmt(rmin) + " mm (minim " + RMIN + ").";
+  if (rmin < RMIN - 0.5) return tr`Curba ar fi prea strânsă: rază ${fmt(rmin)} mm (minim ${RMIN}).`;
   if (lc.seg.some(s => s.t === "A" && s.a > 180.01)) return "Piesa s-ar întoarce prea mult (peste 180°).";
   const lm = lungimeMinima(lc.cap);
-  if (def.lungime! < lm - 0.01) return "Piesa ar avea doar " + fmt(def.lungime!) + " mm; cu cuplajele ei trebuie să aibă măcar " + lm + " mm.";
+  if (def.lungime! < lm - 0.01) return tr`Piesa ar avea doar ${fmt(def.lungime!)} mm; cu cuplajele ei trebuie să aibă măcar ${lm} mm.`;
   const [xe, ye] = [def.capete[1]!.x, def.capete[1]!.y];
   const ung = Math.atan2(ye, xe), c = Math.cos(-ung), s = Math.sin(-ung);
   const rot = def.contur.map(([x, y]) => [x! * c - y! * s, x! * s + y! * c]);
   const b = bbox(rot), w = b[2]! - b[0]!, h = b[3]! - b[1]!;
-  if (Math.max(w, h) > PLACA_MAX[0]! || Math.min(w, h) > PLACA_MAX[1]!) return "Piesa ar fi prea mare pentru placă (" + Math.round(w) + " × " + Math.round(h) + " mm).";
+  if (Math.max(w, h) > PLACA_MAX[0]! || Math.min(w, h) > PLACA_MAX[1]!) return tr`Piesa ar fi prea mare pentru placă (${Math.round(w)} × ${Math.round(h)} mm).`;
   return "";
 }
 
@@ -459,7 +458,7 @@ function segmentePintre(X: number, Y: number, phi: number): SegLC[] | null {
 }
 function conector(A: CapatPus, B: CapatPus) {
   // piesa noua porneste din A (in directia A.u) si trebuie sa intre in B
-  if (Math.abs(A.z - B.z) > 1) return { motiv: "Capetele sunt la înălțimi diferite (" + Math.round(A.z) + " și " + Math.round(B.z) + " mm)." };
+  if (Math.abs(A.z - B.z) > 1) return { motiv: tr`Capetele sunt la înălțimi diferite (${Math.round(A.z)} și ${Math.round(B.z)} mm).` };
   const h = rad(A.u), dx = B.x - A.x, dy = B.y - A.y;
   const X = dx * Math.cos(h) + dy * Math.sin(h), Y = -dx * Math.sin(h) + dy * Math.cos(h);
   let phi = norm(B.u + 180 - A.u); if (phi > 180) phi -= 360;
@@ -582,7 +581,7 @@ function deseneaza() {
       const [x, y] = ecran(st.x, st.y);
       if (vazute.some(([a, b]) => Math.hypot(a! - x, b! - y) < 44)) continue;
       vazute.push([x, y]);
-      h += `<g transform="translate(${x.toFixed(1)} ${(y - 22).toFixed(1)})" pointer-events="none"><rect x="-31" y="-10" width="62" height="18" rx="9" fill="var(--panou)" stroke="var(--stalp-margine)"/><text text-anchor="middle" y="3.5" font-size="11" font-weight="700" fill="var(--text)" font-family="var(--font-text)">stâlp ${Math.round(st.z)}</text></g>`;
+      h += `<g transform="translate(${x.toFixed(1)} ${(y - 22).toFixed(1)})" pointer-events="none"><rect x="-31" y="-10" width="62" height="18" rx="9" fill="var(--panou)" stroke="var(--stalp-margine)"/><text text-anchor="middle" y="3.5" font-size="11" font-weight="700" fill="var(--text)" font-family="var(--font-text)">${tr`stâlp ${Math.round(st.z)}`}</text></g>`;
     }
     // cat loc ramane sub fiecare pod (rosu daca trenul nu incape)
     for (const sp of rez.subPod || []) {
@@ -851,7 +850,7 @@ function adaugaPiesa(id: string) {
   if (!k || k.legat) { selCapat = null; actualizeazaUI(); toast("Capătul ales nu mai e liber."); return; }
   const cand = candidati(def!, k.tip);
   if (!cand.length) {
-    toast("Capătul e " + numeTip(k.tip) + ", iar " + nume(id) + " nu are " + numeTip(opus(k.tip)) + ". Pune întâi un adaptor.");
+    toast(tr`Capătul e ${numeTip(k.tip)}, iar ${nume(id)} nu are ${numeTip(opus(k.tip))}. Pune întâi un adaptor.`);
     return;
   }
   salveazaIstoric();
@@ -935,8 +934,8 @@ function inchide() {
   schimbat();
   asiguraVizibil(p.uid);
   selPiesa = p.uid; selCapat = null; capatAnterior = null;
-  const lov = rez.lovite.has(p.uid) ? " Atenție: atinge altă piesă (roșu)." : "";
-  if (!anuntaInchidere(inainte, p, "Am pus: " + defLC(best.lc).titlu + "." + lov + " ")) toast("Am pus: " + defLC(best.lc).titlu + "." + lov);
+  const lov = rez.lovite.has(p.uid) ? tr(" Atenție: atinge altă piesă (roșu).") : "";
+  if (!anuntaInchidere(inainte, p, tr`Am pus: ${defLC(best.lc).titlu}.` + lov + " ")) toast(tr`Am pus: ${defLC(best.lc).titlu}.` + lov);
   deseneaza(); actualizeazaUI();
 }
 function stalpMana() {
@@ -948,7 +947,7 @@ function stalpMana() {
   if (z < PAS - 0.5) { toast("Piesa e pe masă; stâlpii sunt pentru piesele de pe pod."); return; }
   if (Math.abs(d!.capete[1]!.z - z) > 0.5) { toast("Piesa e înclinată; pune stâlpul sub o piesă dreaptă de pe pod."); return; }
   salveazaIstoric(); p.stalp = true; schimbat();
-  toast("Am pus un stâlp de " + Math.round(z) + " mm sub mijlocul piesei.");
+  toast(tr`Am pus un stâlp de ${Math.round(z)} mm sub mijlocul piesei.`);
 }
 const poateIntoarce = (p: PiesaPusa) => (p.lc ? p.lc.seg.some(s => s.t === "A") : !!P[p.id]!.oglinda);
 
@@ -1023,7 +1022,7 @@ function actualizeazaUI() {
   const rele = rez.probleme.filter(p => p.rau).length;
   st.className = "chip";
   if (!n) { st.textContent = "Gol"; }
-  else if (rele) { st.className = "chip pericol"; st.textContent = rele === 1 ? "1 problemă" : rele + " probleme"; }
+  else if (rele) { st.className = "chip pericol"; st.textContent = rele === 1 ? tr("1 problemă") : tr`${rele} probleme`; }
   else if (!rez.deschise.length) { st.className = "chip ok"; st.textContent = "Circuit închis"; }
   else { st.className = "chip atentie"; st.textContent = rez.deschise.length + (rez.deschise.length === 1 ? " capăt liber" : " capete libere"); }
   if (document.activeElement !== $("#nume")) $<CampNumeric>("#nume").value = stare.nume;
@@ -1035,7 +1034,7 @@ function actualizeazaUI() {
     t.textContent = nume(idPiesa(p)) + (d && d.zmax - PAS > 0.5 ? " · sus" : "") + (p.stalp ? " · cu stâlp" : "") + (manerPiesa(p) ? " · trage de bulina verde ca s-o îndoi" : selCapat ? " · continuă cu o piesă de jos" : "");
   } else if (selCapat) {
     const k = rez.capete.find(c => c.uid === selCapat!.uid && c.j === selCapat!.j);
-    t.textContent = k ? "Capăt " + numeTip(k.tip) + (k.z > 0.5 ? " la +" + Math.round(k.z) + " mm" : "") + ": alege o piesă de jos" : "";
+    t.textContent = k ? (k.z > 0.5 ? tr`Capăt ${numeTip(k.tip)} la +${Math.round(k.z)} mm: alege o piesă de jos` : tr`Capăt ${numeTip(k.tip)}: alege o piesă de jos`) : "";
   } else t.textContent = n ? "Atinge o piesă sau un capăt liber." : "Alege prima piesă de jos.";
   $<HTMLInputElement>("#a-roteste").disabled = !p;
   $<HTMLInputElement>("#a-intoarce").disabled = !p || !poateIntoarce(p);
@@ -1043,7 +1042,7 @@ function actualizeazaUI() {
   const ks = capatSel();
   $("#a-inchide").hidden = !(ks && rez.deschise.some(k => k.uid !== ks.uid));
   $("#a-modifica").hidden = !(p && p.lc && ["dreapta", "curba"].includes(formaLC(p.lc.seg)));
-  $("#a-panta").textContent = "Pantă: " + (!p || !p.panta ? "plat" : p.panta > 0 ? "urcă 12" : "coboară 12");
+  $("#a-panta").textContent = tr`Pantă: ${!p || !p.panta ? tr("plat") : p.panta > 0 ? tr("urcă 12") : tr("coboară 12")}`;
   $<HTMLInputElement>("#a-sterge").disabled = !p;
   $<HTMLInputElement>("#a-anuleaza").disabled = !istoric.length;
   $("#indiciu").textContent = n ? "Trage dintr-un capăt liber ca să desenezi o piesă (până la alt capăt, le unește) · trage pe fundal ca să muți planul" : "";
@@ -1060,7 +1059,7 @@ function htmlLista() {
   let av = "";
   for (const pr of rez.probleme) av += `<div class="avert ${pr.rau ? "rau" : ""}">${pr.text}</div>`;
   return `<h2>Lista de piese</h2><div>${h}</div>` +
-    (total ? `<p class="mic">${total} bucăți de frezat${rez.stalpi.length ? ", cu stâlpii de sub pod" : ""}.</p>` : "") +
+    (total ? `<p class="mic">${tr`${total} bucăți de frezat${rez.stalpi.length ? tr(", cu stâlpii de sub pod") : ""}.`}</p>` : "") +
     (av ? `<div class="avertismente">${av}</div>` : "") +
     (rez.subPod && rez.subPod.length || setariCNC.inaltime_tren ? `<label class="tren">Cel mai înalt tren, de la șină în sus <span><input type="number" inputmode="decimal" min="20" max="200" step="1" data-tren value="${setariCNC.inaltime_tren || ""}" placeholder="—"> mm</span></label>` : "") +
     `<p class="mic">Cerculețele pline sunt capete tată, cele goale sunt mamă. Piesele de pod sunt mai închise la culoare; pătratele de sub ele sunt stâlpii. Stâlpii se pun singuri sub fiecare îmbinare de pe pod; din grupa Pod poți pune unul și sub mijlocul unei piese.</p>`;
@@ -1146,7 +1145,7 @@ function actualizeazaEditor() {
   info.className = "mic" + (motiv ? " eroare" : "");
   info.textContent = motiv || (editor!.tip === "L"
     ? "Lungimea pe axă, fără ciuperca de la capăt. Dreptele standard au 54, 108, 144 și 216 mm."
-    : "Rază pe axa căii. Curba mare standard: R202 · 45°; curba mică: R110 · 45°. Lungime pe axă: " + fmt(lungimeSeg(seg!)) + " mm.");
+    : tr`Rază pe axa căii. Curba mare standard: R202 · 45°; curba mică: R110 · 45°. Lungime pe axă: ${fmt(lungimeSeg(seg!))} mm.`);
   $<HTMLInputElement>("#lc-ok").disabled = !!motiv;
   // piesa apare direct pe plan, la locul ei
   let baza = { x: 0, y: 0, u: 0, z: 0 }, exclus = null;
@@ -1256,7 +1255,7 @@ function actualizeazaTragere(px: number, py: number, cap: { uid: string; j: numb
   const baza = { x: A.x, y: A.y, u: A.u, z: A.z };
   if (tinta) {
     const r = conector(A, tinta);
-    fantoma = r.lc ? { lc: r.lc, baza, ok: true, tinta, text: "Leagă capetele · " + eticheta(r.lc.seg) } : { lc: null, baza, ok: false, tinta, text: r.motiv };
+    fantoma = r.lc ? { lc: r.lc, baza, ok: true, tinta, text: tr`Leagă capetele · ${eticheta(r.lc.seg)}` } : { lc: null, baza, ok: false, tinta, text: r.motiv };
   } else {
     const [X, Y] = laLocal(baza, wx, wy);
     const seg = arcPanaLa(X, Y);
@@ -1280,7 +1279,7 @@ function finalizeazaTragere(cap: { uid: string; j: number }) {
   selPiesa = p.uid; capatAnterior = null;
   const k = capatLume(p.uid, 1);
   selCapat = k && !k.legat ? { uid: p.uid, j: 1 } : null;
-  anuntaInchidere(inainte, p, "Am pus: " + defLC(f.lc).titlu + ". Trage de bulina verde ca s-o îndoi. ");
+  anuntaInchidere(inainte, p, tr`Am pus: ${defLC(f.lc).titlu}. Trage de bulina verde ca s-o îndoi.` + " ");
   deseneaza(); actualizeazaUI();
 }
 
@@ -1350,7 +1349,7 @@ function verdictPeplan(lc: LucrareLC, baza: Baza, exclus?: string | null) {
     if (d < 2.5 && du < 4) return "Se îmbină cu capătul de lângă.";
     if (du < 30 && d < 400 && (!cel || d < cel.d)) cel = { d, du };
   }
-  return cel ? "Până la capătul liber de lângă: " + fmt(cel.d) + " mm și " + fmt(cel.du) + "°." : "";
+  return cel ? tr`Până la capătul liber de lângă: ${fmt(cel.d)} mm și ${fmt(cel.du)}°.` : "";
 }
 function conturFantoma(f: Fantoma) {
   return defLC(f.lc!).contur.map(([x, y]) => dinLocal(f.baza, x!, y!));
@@ -1489,7 +1488,7 @@ function construieste(pasi: readonly string[]) {
 function exempluOval() {
   const c = "curba_mare_stanga";
   construieste(["dreapta_216", "dreapta_144", c, c, c, c, "dreapta_216", "dreapta_144", c, c, c, c]);
-  stare.nume = "Ovalul (exemplu)"; stare.docId = null; stare.exemplu = true;
+  stare.nume = tr("Ovalul (exemplu)"); stare.docId = null; stare.exemplu = true;
 }
 function exempluPod() {
   construieste(["dreapta_144", "rampa_urcare", "dreapta_216", "dreapta_216", "rampa_coborare", "dreapta_144"]);
@@ -1502,7 +1501,7 @@ function exempluPod() {
   const d = P.dreapta_216;
   const [ax, ay] = rotP((d!.capete[0]!.x + d!.capete[1]!.x) / 2, d!.capete[0]!.y, 90);
   stare.piese.push({ uid: uidNou(), id: "dreapta_216", parinte: null, x: cx - ax!, y: cy - ay!, rot: 90, panta: 0 });
-  stare.nume = "Pod peste linie (exemplu)"; stare.docId = null; stare.exemplu = true;
+  stare.nume = tr("Pod peste linie (exemplu)"); stare.docId = null; stare.exemplu = true;
 }
 
 // ----------------------------------------------------------------------------- salvare (db sau acest dispozitiv)
@@ -1513,7 +1512,7 @@ function citesteLocal() { try { return JSON.parse(localStorage.getItem(CHEIE_LOC
 function scrieLocal(o: unknown) { try { localStorage.setItem(CHEIE_LOCALA, JSON.stringify(o)); } catch (e) { /* fara stocare */ } }
 
 function corpCircuit() {
-  return { nume: stare.nume || "Circuit fără nume", piese: stare.piese.map(p => ({ ...p })),
+  return { nume: stare.nume || tr("Circuit fără nume"), piese: stare.piese.map(p => ({ ...p })),
            actualizat: new Date().toISOString(), nrPiese: stare.piese.length, versiune: 1 };
 }
 function programeazaSalvare() {
@@ -1524,7 +1523,8 @@ function programeazaSalvare() {
 }
 async function salveaza() {
   if (!stare.piese.length && !stare.docId) return;
-  if (stare.exemplu) { stare.exemplu = false; stare.nume = stare.nume.replace(/ \(exemplu\)$/, ""); }
+  // sufixul exemplului, în limba paginii (ADR 0165): pleacă la prima schimbare
+  if (stare.exemplu) { stare.exemplu = false; const x = tr(" (exemplu)"); if (stare.nume.endsWith(x)) stare.nume = stare.nume.slice(0, -x.length); }
   const corp = corpCircuit();
   salvareInCurs = salvareInCurs.then(async () => {
     try {
@@ -1570,7 +1570,7 @@ function randeazaCont() {
   if (!c) return;
   el.textContent = !c.conectat ? "Nu ești conectat la cvs2."
     : c.plan === null ? "Ești conectat la cvs2; adresa contului nu e încă confirmată."
-    : `Ești conectat la cvs2 ca ${c.nume} (${PLANURI_CVS2[c.plan] || c.plan}).`;
+    : tr`Ești conectat la cvs2 ca ${c.nume} (${PLANURI_CVS2[c.plan] || c.plan}).`;
 }
 let deConfirmat: string | null | undefined = null;
 function randeazaCircuite() {
@@ -1586,11 +1586,11 @@ function randeazaCircuite() {
     const d = c.actualizat ? new Date(c.actualizat as string) : null;
     const cand = d ? d.toLocaleDateString("ro-RO", { day: "numeric", month: "short" }) + ", " + d.toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" }) : "";
     const conf = deConfirmat === c.id;
-    return `<div class="circ ${c.id === stare.docId ? "activ" : ""}"><div class="info"><b></b><span class="mic">${c.nrPiese || 0} piese · ${cand}</span></div>
+    return `<div class="circ ${c.id === stare.docId ? "activ" : ""}"><div class="info"><b></b><span class="mic">${tr`${c.nrPiese || 0} piese · ${cand}`}</span></div>
       <button class="btn" type="button" data-deschide="${c.id}">Deschide</button>
       <button class="btn${conf ? " pericol" : ""}" type="button" data-sterge-c="${c.id}">${conf ? "Sigur? Șterge" : "Șterge"}</button></div>`;
   }).join("");
-  $("#circ-lista").querySelectorAll<HTMLElement>(".circ b").forEach((b, i) => { b.textContent = (listaCircuite[i]!.nume as string) || "Circuit fără nume"; });
+  $("#circ-lista").querySelectorAll<HTMLElement>(".circ b").forEach((b, i) => { b.textContent = (listaCircuite[i]!.nume as string) || tr("Circuit fără nume"); });
 }
 async function stergeCircuit(id: string) {
   try {
@@ -1624,8 +1624,8 @@ function jsonExport() {
 function deschideExport() {
   const n = numara();
   const rele = rez.probleme.filter(p => p.rau).length;
-  $("#exp-rezumat").innerHTML = (rele ? `<div class="avert rau">Circuitul are ${rele} ${rele === 1 ? "problemă" : "probleme"}; uită-te în listă înainte să frezezi.</div>` : "") +
-    (Object.keys(n).length ? `<p class="mic">${Object.values(n).reduce((a, b) => a + b, 0)} bucăți: ${Object.entries(n).map(([k, v]) => v + " × " + nume(k)).join(", ")}.</p>` : `<p class="mic">Circuitul e gol.</p>`);
+  $("#exp-rezumat").innerHTML = (rele ? `<div class="avert rau">${tr`Circuitul are ${rele} ${rele === 1 ? tr("problemă") : tr("probleme")}; uită-te în listă înainte să frezezi.`}</div>` : "") +
+    (Object.keys(n).length ? `<p class="mic">${tr`${Object.values(n).reduce((a, b) => a + b, 0)} bucăți: ${Object.entries(n).map(([k, v]) => v + " × " + nume(k)).join(", ")}.`}</p>` : `<p class="mic">Circuitul e gol.</p>`);
   $("#exp-json").textContent = jsonExport();
   arataSetariCNC();
   arata("#foaie-export");
@@ -1746,8 +1746,8 @@ function curataSetari(o: unknown): SetariPlan {
   }
   s.umplere = Array.isArray(brut.umplere) ? brut.umplere.filter((id: string) => PIESE_UMPLERE.includes(id)) : [];
   s.cale_printata = Array.isArray(brut.cale_printata) ? [...new Set(brut.cale_printata.filter(x => typeof x === "string" && x.length < 200))].slice(0, 100) : [];
-  const tr = Number(brut.inaltime_tren);
-  s.inaltime_tren = brut.inaltime_tren != null && brut.inaltime_tren !== "" && Number.isFinite(tr) && tr >= 20 && tr <= 200 ? Math.round(tr) : null;
+  const inalt = Number(brut.inaltime_tren);
+  s.inaltime_tren = brut.inaltime_tren != null && brut.inaltime_tren !== "" && Number.isFinite(inalt) && inalt >= 20 && inalt <= 200 ? Math.round(inalt) : null;
   return s;
 }
 function citesteSetariLocal() { try { return curataSetari(JSON.parse(localStorage.getItem(CHEIE_CNC) || "null")); } catch (e) { return curataSetari(null); } }
@@ -1763,7 +1763,7 @@ function cuMasina(s: SetariPlan, v: Record<string, unknown> | null) {
   for (const k of CHEI_MASINA) if (v && v[k] !== undefined && v[k] !== null) pune(nou, k, JSON.parse(JSON.stringify(v[k])));
   return curataSetari(nou);
 }
-let masini = (() => { try { return Profiluri.curata(JSON.parse(localStorage.getItem(CHEIE_MASINI) || "null"), valoriMasina(), "Mașina mea"); } catch (e) { return Profiluri.curata(null, valoriMasina(), "Mașina mea"); } })();
+let masini = (() => { try { return Profiluri.curata(JSON.parse(localStorage.getItem(CHEIE_MASINI) || "null"), valoriMasina(), tr("Mașina mea")); } catch (e) { return Profiluri.curata(null, valoriMasina(), tr("Mașina mea")); } })();
 { const v = Profiluri.laDeschidere(masini); if (v) setariCNC = cuMasina(setariCNC, v); }
 let timerMasini: ReturnType<typeof setTimeout> | null = null, uiMasini: { desen(): void } | null = null;
 function salveazaMasini() {
@@ -1838,7 +1838,7 @@ function optiuniCNC() {
 function rezumatSetari() {
   const s = setariCNC, d = CNC_IMPLICIT;
   const standard = ["freza", "varianta_tata", "varianta_mama", "evazare"].every(k => (s as Record<string, unknown>)[k] === (d as Record<string, unknown>)[k]) && s.placa[0] === d.placa[0] && s.placa[1] === d.placa[1];
-  return (standard ? "· standard (nicio calibrare încă)" : `· freză ${fmtS(s.freza)} mm, tată ${s.varianta_tata}, mamă ${s.varianta_mama}, placă ${s.placa[0]} × ${s.placa[1]}`) + (s.doua_fete ? ", două fețe" : "");
+  return (standard ? "· standard (nicio calibrare încă)" : tr`· freză ${fmtS(s.freza)} mm, tată ${s.varianta_tata}, mamă ${s.varianta_mama}, placă ${s.placa[0]} × ${s.placa[1]}`) + (s.doua_fete ? ", două fețe" : "");
 }
 function htmlCamp(c: CampSetare) {
   const id = "s-" + c.k.replace(/\./g, "-");
@@ -1871,24 +1871,24 @@ function arataSetariCNC() {
   $("#s-fete-info").hidden = !s.doua_fete;
   arataCalePrintata();
   $("#cnc-setari-rez").textContent = rezumatSetari();
-  $("#rez-tesire").textContent = s.tesire.tip === "fara" ? "· fără" : s.tesire.tip === "v" ? `· V ${s.tesire.unghi}°, ${fmtS(s.tesire.latime)} mm` : `· rotunjire R${fmtS(s.tesire.raza)}`;
+  $("#rez-tesire").textContent = s.tesire.tip === "fara" ? "· fără" : s.tesire.tip === "v" ? tr`· V ${s.tesire.unghi}°, ${fmtS(s.tesire.latime)} mm` : tr`· rotunjire R${fmtS(s.tesire.raza)}`;
   $("#rez-umplere").textContent = s.umplere.length ? `· ${s.umplere.length} ${s.umplere.length === 1 ? "piesă" : "piese"}` : "· nimic în plus";
   const k = window.TrenGCode && (TrenGCode.CONTRACTE as Record<string, { nume: string; scula: string[]; probat: boolean; extensie: string } | undefined>)[s.gcode.controler];
-  $("#rez-gcode").textContent = k ? `· ${k.nume}, ${s.gcode.urechi.numar} punți` : "";
-  $("#rez-limbi").textContent = s.limbi ? `· da, joc ${fmtS(s.limba_joc)} mm` : "· nu (macazuri fixe)";
+  $("#rez-gcode").textContent = k ? tr`· ${k.nume}, ${s.gcode.urechi.numar} punți` : "";
+  $("#rez-limbi").textContent = s.limbi ? tr`· da, joc ${fmtS(s.limba_joc)} mm` : "· nu (macazuri fixe)";
   const nCale = s.cale_printata.length ? calePrintataCareIncape(parametriBaza() as unknown as Partial<SetariPlan>).filter(id => numara()[id]).length : 0;
   const pr = [s.tunel ? s.tunel + (s.tunel === 1 ? " tunel" : " tuneluri") : "", s.peron ? s.peron + (s.peron === 1 ? " peron" : " peroane") : "", s.stalpi_printati ? "stâlpii" : "", s.opritor_printat ? "opritoarele" : "",
-    nCale ? `${nCale} ${nCale === 1 ? "fel de piesă" : "feluri de piese"} de cale` : ""].filter(Boolean);
+    nCale ? tr`${nCale} ${nCale === 1 ? tr("fel de piesă") : tr("feluri de piese")} de cale` : ""].filter(Boolean);
   $("#rez-printate").textContent = pr.length ? "· " + pr.join(", ") : "· nimic în plus";
   $("#rez-cvs2").textContent = "· " + (originea(s.cvs2.adresa) || "").replace(/^https?:\/\//, "");
-  $("#rez-deviz").textContent = `· placa ${s.pret_placa ? s.pret_placa + " lei" : "fără preț"}, filament ${s.pret_filament} lei/kg`;
+  $("#rez-deviz").textContent = tr`· placa ${s.pret_placa ? s.pret_placa + " lei" : tr("fără preț")}, filament ${s.pret_filament} lei/kg`;
   // schimbarea frezei: doar felurile pe care le accepta controlerul ales
   if (k) for (const o of document.querySelectorAll<HTMLOptionElement>('[data-cale="gcode.strategieScula"] option')) o.disabled = !k.scula.includes(o.value);
   $("#gcode-neprobat").hidden = !k || k.probat;
   const mesaje = [];
-  if (s.distanta_piese < s.freza + 2) mesaje.push(`Între piese las ${fmtS(s.freza + 2)} mm: trebuie să încapă freza, cu puțină rezervă.`);
+  if (s.distanta_piese < s.freza + 2) mesaje.push(tr`Între piese las ${fmtS(s.freza + 2)} mm: trebuie să încapă freza, cu puțină rezervă.`);
   if (s.freza > 6.5) mesaje.push("Freza e mai lată decât șanțul de 6 mm: șanțurile vor ieși mai late.");
-  if (s.doua_fete && s.placa_margine < MARGINE_STIFTURI) mesaje.push(`La două fețe marginea e de cel puțin ${fmtS(MARGINE_STIFTURI)} mm, ca găurile pentru știfturi să aibă lemn în jur.`);
+  if (s.doua_fete && s.placa_margine < MARGINE_STIFTURI) mesaje.push(tr`La două fețe marginea e de cel puțin ${fmtS(MARGINE_STIFTURI)} mm, ca găurile pentru știfturi să aibă lemn în jur.`);
   const av = $("#cnc-setari-avert");
   av.hidden = !mesaje.length; av.textContent = mesaje.join(" ");
 }
@@ -1910,7 +1910,7 @@ function schimbaSetare(e: Event) {
   if (el && el.dataset.cale === "cvs2.adresa") {
     // o adresa care nu se poate citi nu inlocuieste adresa buna de pana acum (si nici nu revine pe tacute la cea de test)
     const ok = adresaCvs2(el.value), st = $("#s-cvs2-adresa-stare");
-    if (st) { st.textContent = ok ? "" : `Adresa nu se poate citi; rămâne ${setariCNC.cvs2.adresa}`; st.className = ok ? "mic" : "mic eroare"; }
+    if (st) { st.textContent = ok ? "" : tr`Adresa nu se poate citi; rămâne ${setariCNC.cvs2.adresa}`; st.className = ok ? "mic" : "mic eroare"; }
     if (!ok) return;
     nou.cvs2.adresa = ok;
   }
@@ -1942,7 +1942,7 @@ async function incarcaSetariCNC() {
     setariCNC = curataSetari(d.data());
     try {
       const dm = await db.doc("setari/masini").get();
-      if (dm.exists) masini = Profiluri.curata(dm.data(), valoriMasina(), "Mașina mea");
+      if (dm.exists) masini = Profiluri.curata(dm.data(), valoriMasina(), tr("Mașina mea"));
       const v = Profiluri.laDeschidere(masini);
       if (v) setariCNC = cuMasina(setariCNC, v);
       salveazaMasini(); if (uiMasini) uiMasini.desen();
@@ -1965,29 +1965,33 @@ function arataCalePrintata() {
   const L = pat.pat[0]! - 2 * pat.margine, A = pat.pat[1]! - 2 * pat.margine;
   const ids = Object.keys(n).filter(id => cat.piese[id] && !cat.kituri[id] && id !== "opritor_bloc").sort((a, b) => nume(a).localeCompare(nume(b), "ro"));
   if (!ids.length) { loc.innerHTML = ""; return; }
-  loc.innerHTML = `<p class="mic"><b>Piese de cale printate, în loc de frezate</b> (pe patul de ${pat.pat[0]} × ${pat.pat[1]} mm). Bifate, nu mai intră pe plăci; vin în dosarul <b>printate</b> și în lista de printat din 3D, culcate, cu șanțurile în sus. Cuplajele au variantele de printare de mai sus (le alegi după proba cuplajelor); macazurile printate n-au limbă mobilă.</p>
+  loc.innerHTML = `<p class="mic"><b>Piese de cale printate, în loc de frezate</b> ${tr`(pe patul de ${pat.pat[0]} × ${pat.pat[1]} mm). Bifate, nu mai intră pe plăci; vin în dosarul`} <b>printate</b> și în lista de printat din 3D, culcate, cu șanțurile în sus. Cuplajele au variantele de printare de mai sus (le alegi după proba cuplajelor); macazurile printate n-au limbă mobilă.</p>
     <div class="bife">${ids.map(id => {
       let g = null;
       try { g = TrenCNC.geometrie(cat.piese[id]!); } catch (e) { g = null; }
       const incape = g && ((g.w <= L && g.h <= A) || (g.h <= L && g.w <= A));
       const bif = setariCNC.cale_printata.includes(id) && incape;
-      return `<label class="bifa"${incape ? "" : ' title="nu încape pe pat"'}><input type="checkbox" data-cale-printata="${id}"${bif ? " checked" : ""}${incape ? "" : " disabled"}> ${nume(id)} <span class="mic">${n[id]} × · ${g ? `${fmt(g.w)} × ${fmt(g.h)}` : "?"}${incape ? "" : ", nu încape"}</span></label>`;
+      return `<label class="bifa"${incape ? "" : ` title="${tr("nu încape pe pat")}"`}><input type="checkbox" data-cale-printata="${id}"${bif ? " checked" : ""}${incape ? "" : " disabled"}> ${nume(id)} <span class="mic">${n[id]} × · ${g ? `${fmt(g.w)} × ${fmt(g.h)}` : "?"}${incape ? "" : tr(", nu încape")}</span></label>`;
     }).join("")}</div>`;
 }
+/** Colțul zero-ului X / Y, în fișa G-code-ului (cheile din setări). */
+const COLT: Record<string, string | undefined> = { "stanga-jos": "stânga jos", "dreapta-jos": "dreapta jos", "stanga-sus": "stânga sus", "dreapta-sus": "dreapta sus" };
 const NUME_TAIAT: Record<string, string | undefined> = { stalp_strat: "Stâlp: strat", stalp_obraz: "Stâlp: obraz", opritor_bloc: "Bloc opritor" };
 function numeTaiat(id: string) {
   // la doua fete, "stanga" se taie si pentru "dreapta" (intoarsa pe partea cealalta)
-  if (setariCNC.doua_fete && id.endsWith("_stanga") && NUME[id.slice(0, -7) + "_dreapta"]) return NUME[id] + " (și dreapta, întoarsă)";
-  if (NUME_TAIAT[id] || NUME[id] || LC_TITLU[id]) return NUME_TAIAT[id] || NUME[id] || LC_TITLU[id];
+  if (setariCNC.doua_fete && id.endsWith("_stanga") && NUME[id.slice(0, -7) + "_dreapta"]) return tr`${tr(NUME[id]!)} (și dreapta, întoarsă)`;
+  const fix = NUME_TAIAT[id] || NUME[id];
+  if (fix) return tr(fix);
+  if (LC_TITLU[id]) return LC_TITLU[id];
   const m = /^rampa_(?:(urcare|coborare)_)?strat_(\d+)$/.exec(id);
-  if (m) return "Rampă" + (m[1] ? (m[1] === "urcare" ? " urcare" : " coborâre") : "") + ": strat " + m[2];
+  if (m) return tr`Rampă${m[1] ? (m[1] === "urcare" ? tr(" urcare") : tr(" coborâre")) : ""}: strat ${m[2]}`;
   return id;
 }
 function continutPlaca(pl: NonNullable<typeof rezCNC>["placi"][number]) {
   const n: Record<string, number> = {}, p: Record<string, number> = {};
   for (const l of pl.locuri) { const o = l.inPlus ? p : n; o[l.piesa.nume] = (o[l.piesa.nume] || 0) + 1; }
   const lista = (o: Record<string, number>) => Object.entries(o).map(([k, v]): [number, string] => [v, numeTaiat(k)!]).sort((a, b) => b[0] - a[0] || a[1].localeCompare(b[1], "ro")).map(([v, t]) => v + " × " + t).join(", ");
-  return lista(n) + (Object.keys(p).length ? "; în plus: " + lista(p) : "");
+  return lista(n) + (Object.keys(p).length ? tr`; în plus: ${lista(p)}` : "");
 }
 let arataTraseu = (() => { try { return localStorage.getItem("trenulet.traseu") !== "0"; } catch (e) { return true; } })();
 let timpiCNC: Record<string, ReturnType<typeof TrenGCode.estimeazaTimp> | null> | null = null;      // { [numele fisierului]: estimarea } pentru rezCNC; null cat se calculeaza
@@ -2002,16 +2006,16 @@ function svgPlacaUI(pl: NonNullable<typeof rezCNC>["placi"][number], i: number, 
   const sant = peFata ? pl.locuri.flatMap(l => [...l.santuri, ...(l.treceriLocas || [])]).map(v => TrenCNC.caleSvg(v, false)).join(" ") : "";
   const piv = peFata ? pl.locuri.flatMap(l => l.pivoti || []).map(v => [(v[0]![0] + v[1]![0]) / 2, (v[0]![1] + v[1]![1]) / 2]) : [];
   // traseul centrului frezei la decupare si puntile (cerculete rosii)
-  const tr = vizual && vizual.length ? vizual.map(b => TrenCNC.caleSvg(b.v, true)).join(" ") : "";
+  const traseu = vizual && vizual.length ? vizual.map(b => TrenCNC.caleSvg(b.v, true)).join(" ") : "";
   const punti = vizual ? vizual.flatMap(b => b.punti) : [];
   // de sus: y in sus (oglindire fata de ecran); de dedesubt: placa intoarsa, deci fara oglindire
-  return `<svg viewBox="-4 -4 ${W + 8} ${H + 8}" role="img" aria-label="Placa ${i + 1}, ${pl.locuri.length} piese, văzută ${jos ? "de dedesubt" : "de sus"}"><g${jos ? "" : ` transform="translate(0 ${H}) scale(1 -1)"`}>` +
+  return `<svg viewBox="-4 -4 ${W + 8} ${H + 8}" role="img" aria-label="${tr`Placa ${i + 1}, ${pl.locuri.length} piese, văzută ${jos ? tr("de dedesubt") : tr("de sus")}`}"><g${jos ? "" : ` transform="translate(0 ${H}) scale(1 -1)"`}>` +
     `<rect x="0" y="0" width="${W}" height="${H}" rx="3" fill="var(--panou-2)" stroke="var(--grila-tare)" stroke-width="3"/>` +
     (margine > 0 ? `<rect x="${margine}" y="${margine}" width="${W - 2 * margine}" height="${H - 2 * margine}" fill="none" stroke="var(--grila-tare)" stroke-width="1.5" stroke-dasharray="8 6"/>` : "") +
     `<path d="${c}" fill="var(--fag)" stroke="var(--fag-margine)" stroke-width="1.6" stroke-linejoin="round"${jos ? ` fill-opacity=".8"` : ""}/>` +
     (cp ? `<path d="${cp}" fill="var(--fag)" fill-opacity=".45" stroke="var(--fag-margine)" stroke-width="1.6" stroke-dasharray="6 4" stroke-linejoin="round"/>` : "") +
     `<path d="${sant}" fill="none" stroke="var(--sant)" stroke-width="6" stroke-linecap="round" opacity=".85"/>` +
-    (tr ? `<path d="${tr}" fill="none" stroke="var(--semnal)" stroke-width="1.4" stroke-linejoin="round" opacity=".9"/>` : "") +
+    (traseu ? `<path d="${traseu}" fill="none" stroke="var(--semnal)" stroke-width="1.4" stroke-linejoin="round" opacity=".9"/>` : "") +
     piv.map(([x, y]) => `<circle cx="${x!.toFixed(1)}" cy="${y!.toFixed(1)}" r="3" fill="var(--text)" opacity=".7"/>`).join("") +
     // la doua fete, gaurile stifturilor de centrare (in margine), pe care se intoarce placa
     (douaFete && stifturi ? stifturi.x.map((x: number) => `<circle cx="${x.toFixed(1)}" cy="${(H / 2).toFixed(1)}" r="${stifturi.r.toFixed(1)}" fill="var(--panou)" stroke="var(--text-2)" stroke-width="1.5"/>`).join("") : "") +
@@ -2020,14 +2024,14 @@ function svgPlacaUI(pl: NonNullable<typeof rezCNC>["placi"][number], i: number, 
 }
 function durata(sec: number) {
   const m = Math.round(sec / 60);
-  return m < 60 ? `${Math.max(1, m)} min` : `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")} min`;
+  return m < 60 ? `${Math.max(1, m)} min` : tr`${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")} min`;
 }
 function profilMasina() {
   // profilul pentru estimarea timpului: din $$ lipit, sau cel din fabrica al GRBL 1.1h
   const t = (setariCNC.gcode.setariMasina || "").trim();
   if (!t || !window.TrenGCode) return { profil: window.TrenGCode && TrenGCode.PROFIL_GRBL_11H, din: "fabrica" };
   const r = TrenGCode.profilDinSetari(t);
-  return r.ok ? { profil: r.profil, din: "$$", citite: r.citite } : { profil: TrenGCode.PROFIL_GRBL_11H, din: "fabrica", eroare: r.motiv + (r.linie ? ` (linia ${r.linie})` : "") };
+  return r.ok ? { profil: r.profil, din: "$$", citite: r.citite } : { profil: TrenGCode.PROFIL_GRBL_11H, din: "fabrica", eroare: r.motiv + (r.linie ? tr` (linia ${r.linie})` : "") };
 }
 function randeazaPlaci() {
   const r = rezCNC;
@@ -2044,7 +2048,7 @@ function randeazaPlaci() {
     const fete = !!r.setari.doua_fete;
     return `<figure class="placa">${svgPlacaUI(pl, i, W, H, r.setari.placa_margine, arataTraseu && g ? g.vizual[i] : null, placaJos, fete,
       r.setari.stift_margine ? { x: [r.setari.stift_margine, W - r.setari.stift_margine], r: (r.setari.stift_d || 6) / 2 } : null)}` +
-      `<figcaption><b>Placa ${i + 1}</b>${placaJos ? (fete ? " · fața 2 (întoarsă pe latura lungă)" : " · de dedesubt (întoarsă pe latura lungă): doar decupajul") : ""} · ${pl.locuri.length} ${pl.locuri.length === 1 ? "bucată" : "bucăți"} · ${Math.round(pl.folosit * 100)}% din lemn` +
+      `<figcaption><b>${tr`Placa ${i + 1}`}</b>${tr`${placaJos ? (fete ? tr(" · fața 2 (întoarsă pe latura lungă)") : tr(" · de dedesubt (întoarsă pe latura lungă): doar decupajul")) : ""} · ${pl.locuri.length} ${pl.locuri.length === 1 ? tr("bucată") : tr("bucăți")} · ${Math.round(pl.folosit * 100)}% din lemn`}` +
       (timp ? `<span class="mic timp">${timp}</span>` : "") + `<span class="mic">${continutPlaca(pl)}</span></figcaption></figure>`;
   }).join("");
 }
@@ -2052,7 +2056,7 @@ function estimeazaTimpi() {
   // timpul fiecarui fisier G-code, cu modelul planificatorului GRBL 1.1h (cel din cvs2), pe rand, ca pagina sa nu inghete
   const r = rezCNC, nr = lucruCNC;
   const pm = profilMasina(), stare = $("#s-gcode-setariMasina-stare");
-  if (stare) stare.textContent = pm.eroare ? "Nu am putut citi setările: " + pm.eroare : pm.din === "$$" ? `Citite ${pm.citite} setări de mișcare.` : "Fără ele, timpul e cu setările din fabrică ale GRBL (500 mm/min, 10 mm/s²), deci mult mai lung decât în realitate.";
+  if (stare) stare.textContent = pm.eroare ? tr`Nu am putut citi setările: ${pm.eroare}` : pm.din === "$$" ? tr`Citite ${pm.citite} setări de mișcare.` : "Fără ele, timpul e cu setările din fabrică ale GRBL (500 mm/min, 10 mm/s²), deci mult mai lung decât în realitate.";
   if (!r || !r.gcode) { $("#cnc-timp").textContent = ""; return; }
   timpiCNC = null; randeazaPlaci();
   const fis = r.gcode.rezumat.slice(), timpi: Record<string, ReturnType<typeof TrenGCode.estimeazaTimp>> = {};
@@ -2074,10 +2078,10 @@ function estimeazaTimpi() {
     const lim = Object.values(timpi).reduce((a, e) => a + (e.ok ? e.liniiLimitate : 0), 0);
     const suma = (re: RegExp) => Object.entries(timpi).filter(([nume]) => re.test(nume)).reduce((a, [, e]) => a + (e.ok ? e.secunde : 0), 0);
     const cal = suma(/calibrare/), rmp = suma(/rampa_/);
-    $("#cnc-timp").innerHTML = `Timp de lucru, după modelul GRBL 1.1h${pm.din === "$$" ? " cu setările mașinii tale" : ", <b>cu setările din fabrică</b> (lipește $$ în secțiunea G-code)"}: <b>${durata(t)}</b> pentru plăci` +
-      (rmp ? `, plus ${durata(rmp)} finisarea ${r.gcode!.rezumat.filter(x => /rampa_/.test(x.baza)).length > 1 ? "rampelor" : "rampei"}` : "") +
-      (cal ? `, plus ${durata(cal)} placa de calibrare` : "") + (opriri ? ", fără opririle pentru schimbarea frezei" : "") + "." +
-      (lim ? ` Avansul cerut trece de viteza maximă a mașinii pe ${lim} ${lim === 1 ? "linie" : "linii"}: controlerul îl taie.` : "");
+    $("#cnc-timp").innerHTML = `${tr`Timp de lucru, după modelul GRBL 1.1h${pm.din === "$$" ? tr(" cu setările mașinii tale") : tr(", <b>cu setările din fabrică</b> (lipește $$ în secțiunea G-code)")}:`} <b>${durata(t)}</b>${tr(" pentru plăci")}` +
+      (rmp ? tr`, plus ${durata(rmp)} finisarea ${r.gcode!.rezumat.filter(x => /rampa_/.test(x.baza)).length > 1 ? tr("rampelor") : tr("rampei")}` : "") +
+      (cal ? tr`, plus ${durata(cal)} placa de calibrare` : "") + (opriri ? ", fără opririle pentru schimbarea frezei" : "") + "." +
+      (lim ? tr` Avansul cerut trece de viteza maximă a mașinii pe ${lim} ${lim === 1 ? tr("linie") : tr("linii")}: controlerul îl taie.` : "");
   };
   setTimeout(pas, 30);
 }
@@ -2098,7 +2102,7 @@ function pregatesteCNC(imediat: boolean) {
       const t0 = performance.now();
       const r = TrenCNC.genereaza(n, lc, par as Parameters<typeof TrenCNC.genereaza>[2], opt as Parameters<typeof TrenCNC.genereaza>[3]);
       if (nr !== lucruCNC) return;
-      for (const x of r.printate || []) if (x.nume.startsWith("cale_")) x.titlu = `${nume(x.nume.slice(5))}, printată`;
+      for (const x of r.printate || []) if (x.nume.startsWith("cale_")) x.titlu = tr`${nume(x.nume.slice(5))}, printată`;
       rezCNC = r; cheieCNC = cheie;
       const [W, H] = r.setari.placa, total = Object.values(r.bucati).reduce((a, b) => a + b, 0);
       timpiCNC = null;
@@ -2106,15 +2110,15 @@ function pregatesteCNC(imediat: boolean) {
       const rampe = ["rampa_urcare", "rampa_coborare"].filter(k => n[k]).length;
       const plus = Object.values(r.inPlus).reduce((a, b) => a + b, 0);
       const gc = r.gcode ? r.gcode.fisiere.length : 0;
-      st.innerHTML = `<b>${r.placi.length} ${r.placi.length === 1 ? "placă" : "plăci"} de ${W} × ${H} mm</b>` + (r.setari.doua_fete ? " (fiecare cu fața 1 și fața 2)" : "") +
-        `, ${total} ${total === 1 ? "bucată" : "bucăți"} de tăiat` + (plus ? ` și ${plus} în plus, din locul liber` : "") +
-        (rampe && opt.continut.rampa ? (r.gcode ? `, plus finisarea ${rampe === 1 ? "rampei" : "rampelor"} (G-code și relief 3D)` : `, plus relieful 3D pentru ${rampe === 1 ? "rampă" : "rampe"}`) : "") +
-        ((r.printate || []).length ? `; ${r.printate.reduce((t, x) => t + x.bucati, 0)} ${r.printate.reduce((t, x) => t + x.bucati, 0) === 1 ? "piesă" : "piese"} de printat` : "") +
-        (gc ? `; ${gc} ${gc === 1 ? "fișier" : "fișiere"} G-code pentru ${r.gcode!.contract.nume}` : "") +
-        (r.limbi && r.limbi.length ? `; ${nrLimbi(r)} ${nrLimbi(r) === 1 ? "limbă" : "limbi"} de macaz de printat` : "") + ` · ${fmt((performance.now() - t0) / 1000)} s` +
-        (r.faraLimba && r.faraLimba.length ? `<br><span class="eroare">Fără limbă (nu încape): ${r.faraLimba.map(numeTaiat).join(", ")}.</span>` : "") +
+      st.innerHTML = `<b>${tr`${r.placi.length} ${r.placi.length === 1 ? tr("placă") : tr("plăci")} de ${W} × ${H} mm`}</b>` + (r.setari.doua_fete ? " (fiecare cu fața 1 și fața 2)" : "") +
+        tr`, ${total} ${total === 1 ? tr("bucată") : tr("bucăți")} de tăiat` + (plus ? tr` și ${plus} în plus, din locul liber` : "") +
+        (rampe && opt.continut.rampa ? (r.gcode ? tr`, plus finisarea ${rampe === 1 ? tr("rampei") : tr("rampelor")} (G-code și relief 3D)` : tr`, plus relieful 3D pentru ${rampe === 1 ? tr("rampă") : tr("rampe")}`) : "") +
+        ((r.printate || []).length ? tr`; ${r.printate.reduce((t, x) => t + x.bucati, 0)} ${r.printate.reduce((t, x) => t + x.bucati, 0) === 1 ? tr("piesă") : tr("piese")} de printat` : "") +
+        (gc ? tr`; ${gc} ${gc === 1 ? tr("fișier") : tr("fișiere")} G-code pentru ${r.gcode!.contract.nume}` : "") +
+        (r.limbi && r.limbi.length ? tr`; ${nrLimbi(r)} ${nrLimbi(r) === 1 ? tr("limbă") : tr("limbi")} de macaz de printat` : "") + ` · ${fmt((performance.now() - t0) / 1000)} s` +
+        (r.faraLimba && r.faraLimba.length ? `<br><span class="eroare">${tr`Fără limbă (nu încape): ${r.faraLimba.map(numeTaiat).join(", ")}.`}</span>` : "") +
         (r.gcode && r.gcode.avertismente.length ? `<br><span class="eroare">${r.gcode.avertismente.slice(0, 3).join(" ")}</span>` : "") +
-        (r.necunoscute.length ? `<br><span class="eroare">Nu știu să tai: ${r.necunoscute.map(nume).join(", ")}.</span>` : "");
+        (r.necunoscute.length ? `<br><span class="eroare">${tr`Nu știu să tai: ${r.necunoscute.map(nume).join(", ")}.`}</span>` : "");
       st.className = "mic";
       btn.disabled = false;
       butoaneCvs2();
@@ -2124,9 +2128,9 @@ function pregatesteCNC(imediat: boolean) {
       if (nr !== lucruCNC) return;
       rezCNC = null; cheieCNC = null; butoaneCvs2();
       $("#cnc-placi").innerHTML = ""; $("#cnc-timp").textContent = ""; arataDeviz();
-      const m = /^Piesa (.+) nu încape pe placă$/.exec(((e && (e as Error).message) || "") as string);
-      st.textContent = m ? `${numeTaiat(m[1]!)} nu încape pe placa de ${setariCNC.placa[0]} × ${setariCNC.placa[1]} mm (cu marginea). Mărește placa din setări.`
-                         : "Nu am putut calcula fișierele: " + (e && (e as Error).message || e);
+      const piesa = e && (e as { piesa?: unknown }).piesa;
+      st.textContent = typeof piesa === "string" ? tr`${numeTaiat(piesa)} nu încape pe placa de ${setariCNC.placa[0]} × ${setariCNC.placa[1]} mm (cu marginea). Mărește placa din setări.`
+                         : tr`Nu am putut calcula fișierele: ${e && (e as Error).message || e}`;
       st.className = "mic eroare";
     }
   }, imediat ? 60 : 20);
@@ -2144,139 +2148,139 @@ function deviz(r: NonNullable<typeof rezCNC>) {
   const folosit = Math.round(r.placi.reduce((t, p) => t + p.folosit, 0) / Math.max(1, nPl) * 100);
   return { nPl, folosit, lemn, grame, gLimbi, gPrint, fil, sec, total: lemn + fil };
 }
-const lei = (v: number) => (v >= 100 ? Math.round(v) : Math.round(v * 10) / 10).toString().replace(".", ",") + " lei";
+const lei = (v: number) => (v >= 100 ? Math.round(v) : Math.round(v * 10) / 10).toString().replace(".", Limba.zecimal) + " lei";
 const grameT = (g: number) => (g >= 1000 ? fmt(g / 1000) + " kg" : Math.max(1, Math.round(g / 5) * 5) + " g");
 function arataDeviz() {
   const el = $("#cnc-deviz"), r = rezCNC;
   if (!el) return;
   if (!r) { el.innerHTML = ""; return; }
   const d = deviz(r), s = setariCNC;
-  el.innerHTML = `<b>Deviz:</b> ${d.nPl} ${d.nPl === 1 ? "placă" : "plăci"} (în medie ${d.folosit}% folosit)` + (d.lemn ? ` = ${lei(d.lemn)}` : "") +
-    (d.grame ? ` · filament ≈ ${grameT(d.grame)}` + (s.pret_filament ? ` = ${lei(d.fil)}` : "") : "") +
-    (d.sec !== null ? ` · frezare ≈ ${durata(d.sec)}` : r.gcode ? " · frezare: calculez…" : "") +
-    (d.lemn || d.fil ? ` · <b>total ≈ ${lei(d.total)}</b>` : "") + (!s.pret_placa ? ` <span class="mic">(pune prețul plăcii la Deviz)</span>` : "");
+  el.innerHTML = `<b>Deviz:</b> ${tr`${d.nPl} ${d.nPl === 1 ? tr("placă") : tr("plăci")} (în medie ${d.folosit}% folosit)`}` + (d.lemn ? ` = ${lei(d.lemn)}` : "") +
+    (d.grame ? tr` · filament ≈ ${grameT(d.grame)}` + (s.pret_filament ? ` = ${lei(d.fil)}` : "") : "") +
+    (d.sec !== null ? tr` · frezare ≈ ${durata(d.sec)}` : r.gcode ? " · frezare: calculez…" : "") +
+    (d.lemn || d.fil ? ` · <b>${tr`total ≈ ${lei(d.total)}`}</b>` : "") + (!s.pret_placa ? ` <span class="mic">(pune prețul plăcii la Deviz)</span>` : "");
 }
 function textCiteste(r: NonNullable<typeof rezCNC>) {
   const s = setariCNC, ce = s.continut, g = s.gcode, [W, H] = r.setari.placa, R = "\r\n", T = s.tesire;
   const rampe = ["rampa_urcare", "rampa_coborare"].filter(k => r.fisiere.some(f => f.nume === `piese/${k}_relief.stl`));
   const k = r.gcode && r.gcode.contract;
-  const zero = { "stanga-jos": "colțul din stânga-jos", "dreapta-jos": "colțul din dreapta-jos", "stanga-sus": "colțul din stânga-sus", "dreapta-sus": "colțul din dreapta-sus" }[g.origine];
-  const tesire = T.tip === "v" ? `freză în V de ${T.unghi}°, teșitură de ${fmtS(T.latime)} mm${T.santuri ? ` (și marginile șanțurilor, ${fmtS(T.latimeSant)} mm)` : ""}` : T.tip === "rotunjire" ? `freză de rotunjit R${fmtS(T.raza)}, vârf Ø${fmtS(T.varf)} mm` : "";
+  const zero = { "stanga-jos": tr("colțul din stânga-jos"), "dreapta-jos": tr("colțul din dreapta-jos"), "stanga-sus": tr("colțul din stânga-sus"), "dreapta-sus": tr("colțul din dreapta-sus") }[g.origine];
+  const tesire = T.tip === "v" ? tr`freză în V de ${T.unghi}°, teșitură de ${fmtS(T.latime)} mm${T.santuri ? tr` (și marginile șanțurilor, ${fmtS(T.latimeSant)} mm)` : ""}` : T.tip === "rotunjire" ? tr`freză de rotunjit R${fmtS(T.raza)}, vârf Ø${fmtS(T.varf)} mm` : "";
   const l = [
-    "TRENULEȚ — fișierele pentru CNC",
-    `Circuit: ${stare.nume || "circuit"} · ${new Date().toLocaleString("ro-RO")}`,
-    `Setări: freză ${fmtS(s.freza)} mm · ciupercă tată ${s.varianta_tata} · locaș mamă ${s.varianta_mama} · evazare ${fmtS(s.evazare)} mm · placă ${W} × ${H} mm, margine ${fmtS(r.setari.placa_margine)} mm, ${fmtS(r.setari.distanta_piese)} mm între piese${r.setari.doua_fete ? " · șanțuri pe ambele fețe" : ""}${tesire ? " · teșire: " + tesire : ""}.`,
+    tr("TRENULEȚ — fișierele pentru CNC"),
+    tr`Circuit: ${stare.nume || tr("circuit")} · ${new Date().toLocaleString(Limba.locala)}`,
+    tr`Setări: freză ${fmtS(s.freza)} mm · ciupercă tată ${s.varianta_tata} · locaș mamă ${s.varianta_mama} · evazare ${fmtS(s.evazare)} mm · placă ${W} × ${H} mm, margine ${fmtS(r.setari.placa_margine)} mm, ${fmtS(r.setari.distanta_piese)} mm între piese${r.setari.doua_fete ? tr(" · șanțuri pe ambele fețe") : ""}${tesire ? tr(" · teșire: ") + tesire : ""}.`,
     "",
-    "CE E ÎN ARHIVĂ",
-    ...(r.gcode ? [`- gcode/ — programele pentru ${k!.nume}${k!.probat ? "" : " (post NEPROBAT: rulează-l întâi în aer, cu Z ridicat)"}, gata de trimis la mașină: ` +
-      (r.gcode.strategie === "fisiere-separate" ? "câte un fișier pe freză (_T1 freza dreaptă, _T2 freza de teșit)." : r.gcode.strategie === "m6-controler" ? "câte un fișier pe placă; freza o schimbă controlerul (M6)." : "câte un fișier pe placă; la schimbarea frezei programul se oprește (M0).")] : []),
+    tr("CE E ÎN ARHIVĂ"),
+    ...(r.gcode ? [tr`- gcode/ — programele pentru ${k!.nume}${k!.probat ? "" : tr(" (post NEPROBAT: rulează-l întâi în aer, cu Z ridicat)")}, gata de trimis la mașină: ` +
+      (r.gcode.strategie === "fisiere-separate" ? tr("câte un fișier pe freză (_T1 freza dreaptă, _T2 freza de teșit).") : r.gcode.strategie === "m6-controler" ? tr("câte un fișier pe placă; freza o schimbă controlerul (M6).") : tr("câte un fișier pe placă; la schimbarea frezei programul se oprește (M0)."))] : []),
     ...(ce.dxfPlaci ? (r.setari.doua_fete
-      ? ["- placi/placa_N_fata1.dxf și placi/placa_N_fata2.dxf — vectorii pentru ArtCAM, câte două pe placă (vezi ȘANȚURI PE AMBELE FEȚE)."]
-      : ["- placi/placa_N.dxf — vectorii pentru ArtCAM: piesele așezate pe placă (originea în colțul din stânga-jos)."]) : []),
-    ...(ce.svg ? ["- placi/placa_N.svg — imaginea plăcii."] : []),
-    ...(ce.dxfPiese ? ["- piese/<nume>.dxf — fiecare piesă, separat."] : []),
-    ...(rampe.length ? ["- piese/rampa_*_santuri.dxf și piese/rampa_*_relief.stl — pentru finisarea rampei; piese/rampa_*_finisata.stl — cum trebuie să iasă."] : []),
-    ...((r.printate || []).length && ce.printate ? ["- printate/<piesa>.stl — piesele de printat: " + r.printate.map(x => `${x.bucati} × ${x.titlu}`).join(", ") + " (vezi PIESE PRINTATE)."] : []),
-    ...(r.limbi && r.limbi.length && ce.limbi ? [`- limbi/limba_<macaz>.stl — limbile macazurilor, gata de printat${r.setari.doua_fete ? " (_spate.stl: cele pentru spatele pieselor)" : ""}; limbi/limba_<macaz>.dxf — conturul lor (vezi MACAZURI CU LIMBĂ).`] : []),
-    ...(ce.calibrare ? [`- placa de calibrare (prima placă de frezat)${ce.dxfPlaci || ce.dxfPiese ? ": calibrare/placa_calibrare.dxf" : ""}${r.gcode ? (ce.dxfPlaci || ce.dxfPiese ? " și " : ": ") + "gcode/calibrare*" : ""}.`] : []),
-    "- circuit.json — lista de piese a circuitului.",
+      ? [tr("- placi/placa_N_fata1.dxf și placi/placa_N_fata2.dxf — vectorii pentru ArtCAM, câte două pe placă (vezi ȘANȚURI PE AMBELE FEȚE).")]
+      : [tr("- placi/placa_N.dxf — vectorii pentru ArtCAM: piesele așezate pe placă (originea în colțul din stânga-jos).")]) : []),
+    ...(ce.svg ? [tr("- placi/placa_N.svg — imaginea plăcii.")] : []),
+    ...(ce.dxfPiese ? [tr("- piese/<nume>.dxf — fiecare piesă, separat.")] : []),
+    ...(rampe.length ? [tr("- piese/rampa_*_santuri.dxf și piese/rampa_*_relief.stl — pentru finisarea rampei; piese/rampa_*_finisata.stl — cum trebuie să iasă.")] : []),
+    ...((r.printate || []).length && ce.printate ? [tr("- printate/<piesa>.stl — piesele de printat: ") + r.printate.map(x => `${x.bucati} × ${x.titlu}`).join(", ") + tr(" (vezi PIESE PRINTATE).")] : []),
+    ...(r.limbi && r.limbi.length && ce.limbi ? [tr`- limbi/limba_<macaz>.stl — limbile macazurilor, gata de printat${r.setari.doua_fete ? tr(" (_spate.stl: cele pentru spatele pieselor)") : ""}; limbi/limba_<macaz>.dxf — conturul lor (vezi MACAZURI CU LIMBĂ).`] : []),
+    ...(ce.calibrare ? [tr`- placa de calibrare (prima placă de frezat)${ce.dxfPlaci || ce.dxfPiese ? ": calibrare/placa_calibrare.dxf" : ""}${r.gcode ? (ce.dxfPlaci || ce.dxfPiese ? tr(" și ") : ": ") + "gcode/calibrare*" : ""}.`] : []),
+    tr("- circuit.json — lista de piese a circuitului."),
     "",
-    "STRATURI (în DXF) ȘI OPERAȚII (în G-code)",
-    "- CONTUR: forma piesei, se decupează complet (în G-code, cu punți).",
-    "- SANTURI: traseul frezei pentru șanțuri (linia de mijloc), 3 mm adâncime. Liniile scurte de la capete sunt intrările evazate.",
-    "- MARCAJE: puncte frezate la 1 mm (numerele de pe placa de calibrare și de pe straturile rampei).",
-    ...(r.limbi && r.limbi.length ? ["- LOCAS: traseul frezei prin locașul limbii de macaz (linia de mijloc a fiecărei treceri), la adâncimea șanțului, 3 mm.",
-      `- PIVOT: gaura pivotului limbii, Ø${fmtS(s.freza)} mm (o coborâre cu freza dreaptă în centrul cercului), adâncă de ${fmtS(3 + r.setari.pivot_adancime)} mm de la fața plăcii.`] : []),
-    ...(tesire ? ["- TESIRE: traseul frezei de teșit (cu V-ul, vârful pe muchie; cu freza de rotunjit, centrul la jumătatea vârfului în afară)."] : []),
-    ...(r.setari.doua_fete ? ["- GAURI: găurile pentru cele două știfturi de aliniere (doar la două fețe)."] : []),
-    "- PLACA: marginea plăcii. Doar ca reper, nu se frezează.",
+    tr("STRATURI (în DXF) ȘI OPERAȚII (în G-code)"),
+    tr("- CONTUR: forma piesei, se decupează complet (în G-code, cu punți)."),
+    tr("- SANTURI: traseul frezei pentru șanțuri (linia de mijloc), 3 mm adâncime. Liniile scurte de la capete sunt intrările evazate."),
+    tr("- MARCAJE: puncte frezate la 1 mm (numerele de pe placa de calibrare și de pe straturile rampei)."),
+    ...(r.limbi && r.limbi.length ? [tr("- LOCAS: traseul frezei prin locașul limbii de macaz (linia de mijloc a fiecărei treceri), la adâncimea șanțului, 3 mm."),
+      tr`- PIVOT: gaura pivotului limbii, Ø${fmtS(s.freza)} mm (o coborâre cu freza dreaptă în centrul cercului), adâncă de ${fmtS(3 + r.setari.pivot_adancime)} mm de la fața plăcii.`] : []),
+    ...(tesire ? [tr("- TESIRE: traseul frezei de teșit (cu V-ul, vârful pe muchie; cu freza de rotunjit, centrul la jumătatea vârfului în afară).")] : []),
+    ...(r.setari.doua_fete ? [tr("- GAURI: găurile pentru cele două știfturi de aliniere (doar la două fețe).")] : []),
+    tr("- PLACA: marginea plăcii. Doar ca reper, nu se frezează."),
   ];
   if (r.gcode) l.push("",
-    "G-CODE, DIRECT LA MAȘINĂ",
-    `1. Prinde placa de ${W} × ${H} mm cu fibra de-a lungul laturii lungi. Zero X / Y în ${zero}, zero Z ${g.z0 === "sus" ? "pe fața de sus a plăcii" : "pe masă (placa de sacrificiu)"}.`,
-    `2. Freza dreaptă de ${fmtS(s.freza)} mm (T1). Programul: ${r.setari.doua_fete ? "pe fața 1 găurile pentru știfturi, " : ""}marcajele (1 mm), șanțurile (3 mm, în pași de ${fmtS(g.pasSant)} mm)${r.limbi && r.limbi.length ? ", locașurile limbilor (tot 3 mm) și gaurile pivoților" : ""}, apoi decuparea la ${fmtS(12 + g.supracursa)} mm, în pași de cel mult ${fmtS(g.pasContur)} mm, cu ${g.urechi.numar} punți de ${fmtS(g.urechi.latime)} × ${fmtS(g.urechi.grosime)} mm pe piesă.`,
-    `   Turație ${g.turatie} rot/min, avans ${g.avans} mm/min, coborâre ${g.avansPlonjare} mm/min, Z sigur ${fmtS(g.zSigur)} mm.`,
-    ...(g.rampa ? [`   La decupare freza nu plonjează: coboară pe o rampă de ${fmtS(g.lungimeRampa)} mm de-a lungul conturului și taie toate trecerile fără să se ridice (ca în cvs2).`] : []),
-    ...(tesire ? [`3. Teșirea (T${g.tesire.numar}, ${tesire}): după decupare, cât piesele stau în punți. ${r.gcode.strategie === "fisiere-separate" ? "E fișierul _T" + g.tesire.numar + ": schimbi freza, refaci zero Z, apoi îl pornești." : r.gcode.strategie === "m6-controler" ? "Freza o schimbă controlerul (M6)." : "Programul se oprește (M0): schimbi freza, refaci zero Z, apoi pornești din nou."}`] : []),
-    `${tesire ? "4" : "3"}. Taie punțile cu o daltă sau un cuțit și șlefuiește locul lor.`,
-    "Cu CNC Vector Studio 2: în panoul mașinii, „Fișier…” și alegi fișierul (sau, când cvs2 are primirea de lucrări, butonul",
-    "„Trimite la cvs2” din planificator i le dă direct). gcode/lucrare_cvs2.json are ordinea fișierelor și amprenta SHA-256 a fiecăruia.");
+    tr("G-CODE, DIRECT LA MAȘINĂ"),
+    tr`1. Prinde placa de ${W} × ${H} mm cu fibra de-a lungul laturii lungi. Zero X / Y în ${zero}, zero Z ${g.z0 === "sus" ? tr("pe fața de sus a plăcii") : tr("pe masă (placa de sacrificiu)")}.`,
+    tr`2. Freza dreaptă de ${fmtS(s.freza)} mm (T1). Programul: ${r.setari.doua_fete ? tr("pe fața 1 găurile pentru știfturi, ") : ""}marcajele (1 mm), șanțurile (3 mm, în pași de ${fmtS(g.pasSant)} mm)${r.limbi && r.limbi.length ? tr(", locașurile limbilor (tot 3 mm) și gaurile pivoților") : ""}, apoi decuparea la ${fmtS(12 + g.supracursa)} mm, în pași de cel mult ${fmtS(g.pasContur)} mm, cu ${g.urechi.numar} punți de ${fmtS(g.urechi.latime)} × ${fmtS(g.urechi.grosime)} mm pe piesă.`,
+    tr`   Turație ${g.turatie} rot/min, avans ${g.avans} mm/min, coborâre ${g.avansPlonjare} mm/min, Z sigur ${fmtS(g.zSigur)} mm.`,
+    ...(g.rampa ? [tr`   La decupare freza nu plonjează: coboară pe o rampă de ${fmtS(g.lungimeRampa)} mm de-a lungul conturului și taie toate trecerile fără să se ridice (ca în cvs2).`] : []),
+    ...(tesire ? [tr`3. Teșirea (T${g.tesire.numar}, ${tesire}): după decupare, cât piesele stau în punți. ${r.gcode.strategie === "fisiere-separate" ? tr("E fișierul _T") + g.tesire.numar + tr(": schimbi freza, refaci zero Z, apoi îl pornești.") : r.gcode.strategie === "m6-controler" ? tr("Freza o schimbă controlerul (M6).") : tr("Programul se oprește (M0): schimbi freza, refaci zero Z, apoi pornești din nou.")}`] : []),
+    tr`${tesire ? "4" : "3"}. Taie punțile cu o daltă sau un cuțit și șlefuiește locul lor.`,
+    tr("Cu CNC Vector Studio 2: în panoul mașinii, „Fișier…” și alegi fișierul (sau, când cvs2 are primirea de lucrări, butonul"),
+    tr("„Trimite la cvs2” din planificator i le dă direct). gcode/lucrare_cvs2.json are ordinea fișierelor și amprenta SHA-256 a fiecăruia."));
   if (r.setari.doua_fete) l.push("",
-    "ȘANȚURI PE AMBELE FEȚE",
-    "Curbele și macazurile se taie doar în varianta „stânga”: întoarsă pe partea cealaltă, fiecare devine varianta „dreapta”, ca la Brio.",
-    "1. Fața 1 (placa_N_fata1): găurile pentru știfturi, prin placă și încă 5 mm în placa de sacrificiu (la 7,5 mm de capetele plăcii), apoi marcajele și șanțurile.",
-    `2. Întoarce placa pe latura lungă (cea de ${Math.max(W, H)} mm) și pune două știfturi de 6 mm prin găuri, în placa de sacrificiu.`,
-    "3. Fața 2 (placa_N_fata2): șanțurile de pe spate, apoi decuparea. Totul e deja oglindit.");
+    tr("ȘANȚURI PE AMBELE FEȚE"),
+    tr("Curbele și macazurile se taie doar în varianta „stânga”: întoarsă pe partea cealaltă, fiecare devine varianta „dreapta”, ca la Brio."),
+    tr("1. Fața 1 (placa_N_fata1): găurile pentru știfturi, prin placă și încă 5 mm în placa de sacrificiu (la 7,5 mm de capetele plăcii), apoi marcajele și șanțurile."),
+    tr`2. Întoarce placa pe latura lungă (cea de ${Math.max(W, H)} mm) și pune două știfturi de 6 mm prin găuri, în placa de sacrificiu.`,
+    tr("3. Fața 2 (placa_N_fata2): șanțurile de pe spate, apoi decuparea. Totul e deja oglindit."));
   l.push("",
-    "CALIBRAREA (o singură dată, înainte de piese)",
-    `1. Frezează placa de calibrare: ${r.gcode ? "gcode/calibrare* (pusă în colțul plăcii, la margine)" : "calibrare/placa_calibrare.dxf"}${ce.dxfPlaci && r.gcode ? " sau, în ArtCAM, DXF-ul ei" : ""}.`,
-    "2. Măsoară cu șublerul lățimea șanțului lung din mijloc și scrie-o în planificator, la Export CNC › Setări de frezare › Freza reală.",
-    "   Sub 6 mm, fiecare șanț primește două treceri alăturate, ca să iasă tot de 6 mm.",
-    "3. Locașurile mamă sunt pe marginea de jos. Încearcă în fiecare o piesă Brio cu ciupercă și alege-l pe cel în care intră ușor, fără joc mare.",
-    "   Numără punctele de lângă el (1–5) și scrie numărul la Locaș mamă.",
-    "4. Ciupercile tată sunt pe marginea de sus. Pune pe fiecare o piesă Brio cu locaș, alege-o pe cea mai bună și scrie numărul ei la Ciupercă tată.",
-    "5. Descarcă din nou arhiva: toate piesele se refac cu noile mărimi.");
+    tr("CALIBRAREA (o singură dată, înainte de piese)"),
+    tr`1. Frezează placa de calibrare: ${r.gcode ? tr("gcode/calibrare* (pusă în colțul plăcii, la margine)") : "calibrare/placa_calibrare.dxf"}${ce.dxfPlaci && r.gcode ? tr(" sau, în ArtCAM, DXF-ul ei") : ""}.`,
+    tr("2. Măsoară cu șublerul lățimea șanțului lung din mijloc și scrie-o în planificator, la Export CNC › Setări de frezare › Freza reală."),
+    tr("   Sub 6 mm, fiecare șanț primește două treceri alăturate, ca să iasă tot de 6 mm."),
+    tr("3. Locașurile mamă sunt pe marginea de jos. Încearcă în fiecare o piesă Brio cu ciupercă și alege-l pe cel în care intră ușor, fără joc mare."),
+    tr("   Numără punctele de lângă el (1–5) și scrie numărul la Locaș mamă."),
+    tr("4. Ciupercile tată sunt pe marginea de sus. Pune pe fiecare o piesă Brio cu locaș, alege-o pe cea mai bună și scrie numărul ei la Ciupercă tată."),
+    tr("5. Descarcă din nou arhiva: toate piesele se refac cu noile mărimi."));
   if (ce.dxfPlaci) l.push("",
-    "FREZARE ÎN ARTCAM (cu DXF-ul)",
-    `1. Model nou de ${W} × ${H} mm, cu originea în colțul din stânga-jos. Importă placi/placa_1.dxf (Import Vector), în milimetri.`,
-    "2. MARCAJE (dacă există): Machine Along Vector, 1 mm.",
-    "3. SANTURI: Machine Along Vector, end mill 6 mm, adâncime finală 3 mm, în pași de 1,5 mm.",
-    ...(r.limbi && r.limbi.length ? [`3b. LOCAS: Machine Along Vector, end mill 6 mm, 3 mm, ca șanțurile. PIVOT: Drilling cu freza de 6 mm în centrul cercului, ${fmtS(3 + r.setari.pivot_adancime)} mm.`] : []),
-    "4. CONTUR: Profile, Outside (în exterior), adâncime finală 12,3 mm, pași de 3 mm, cu 2–3 punți (tabs) pe piesă, înalte de 2–3 mm.",
-    ...(tesire ? ["5. TESIRE: Machine Along Vector, cu freza de teșit, la adâncimea din G-code (teșitura împărțită la tangenta jumătății de unghi)."] : []));
+    tr("FREZARE ÎN ARTCAM (cu DXF-ul)"),
+    tr`1. Model nou de ${W} × ${H} mm, cu originea în colțul din stânga-jos. Importă placi/placa_1.dxf (Import Vector), în milimetri.`,
+    tr("2. MARCAJE (dacă există): Machine Along Vector, 1 mm."),
+    tr("3. SANTURI: Machine Along Vector, end mill 6 mm, adâncime finală 3 mm, în pași de 1,5 mm."),
+    ...(r.limbi && r.limbi.length ? [tr`3b. LOCAS: Machine Along Vector, end mill 6 mm, 3 mm, ca șanțurile. PIVOT: Drilling cu freza de 6 mm în centrul cercului, ${fmtS(3 + r.setari.pivot_adancime)} mm.`] : []),
+    tr("4. CONTUR: Profile, Outside (în exterior), adâncime finală 12,3 mm, pași de 3 mm, cu 2–3 punți (tabs) pe piesă, înalte de 2–3 mm."),
+    ...(tesire ? [tr("5. TESIRE: Machine Along Vector, cu freza de teșit, la adâncimea din G-code (teșitura împărțită la tangenta jumătății de unghi).")] : []));
   if (r.limbi && r.limbi.length) {
     const fete = r.setari.doua_fete, rs = s.freza / 2 - 0.2;
     l.push("",
-      "MACAZURI CU LIMBĂ",
-      "Ca la Brio: în șanțul în care se despart cele două căi stă o limbă care se rotește pe un știft. Într-o poziție își lipește vârful de peretele unui șanț și duce roata în celălalt; în cealaltă poziție, invers.",
-      "Un tren care vine din ramura închisă împinge singur limba în partea cealaltă (e o pană lungă, cu unghi mic), deci macazul nu deraiază trenurile care se întorc.",
-      `1. Printează limbile din dosarul limbi (${r.limbi.map(x => `${x.bucati * (fete ? 2 : 1)} × ${x.nume}${fete ? " (jumătate normale, jumătate _spate)" : ""}`).join(", ")}).`,
-      "   Sunt deja întoarse: fața de sus a limbii (cea dinspre roți) stă pe masa imprimantei, știftul e în sus. Fără suporturi; PLA sau PETG, strat de 0,2 mm, 100% umplere, 3 perimetre.",
-      `   Limba e groasă de ${fmtS(3 - 0.2)} mm (cu 0,2 mm sub fața șinei), știftul are Ø${fmtS(2 * rs)} mm și e lung de ${fmtS(Math.max(0.5, r.setari.pivot_adancime - 0.3))} mm.`,
-      "2. Curăță locașul și gaura de așchii. Pune limba cu știftul în gaură: trebuie să se rotească liber, fără să se blocheze în niciuna din poziții.",
-      `   Dacă freacă, mărește „Jocul limbii” (acum ${fmtS(r.setari.limba_joc)} mm) și printează din nou doar limba; dacă joacă prea mult, micșorează-l.`,
-      "3. Încearcă întâi un singur macaz, cu un vagon împins de mână, în ambele sensuri și din ambele ramuri. Abia apoi frezează restul.",
-      ...(fete ? ["4. La două fețe, fiecare macaz are locaș pe ambele fețe: limba normală pe fața de sus, cea _spate pe fața de jos (dacă o întorci, o muți)."] : []),
-      "Limba se poate scoate din locaș și e o piesă mică: ține-o departe de copiii care încă bagă lucruri în gură.",
-      "Dacă o limbă se pierde, macazul merge și fără ea, dar trenul alege ramura după cum vine.");
+      tr("MACAZURI CU LIMBĂ"),
+      tr("Ca la Brio: în șanțul în care se despart cele două căi stă o limbă care se rotește pe un știft. Într-o poziție își lipește vârful de peretele unui șanț și duce roata în celălalt; în cealaltă poziție, invers."),
+      tr("Un tren care vine din ramura închisă împinge singur limba în partea cealaltă (e o pană lungă, cu unghi mic), deci macazul nu deraiază trenurile care se întorc."),
+      tr`1. Printează limbile din dosarul limbi (${r.limbi.map(x => `${x.bucati * (fete ? 2 : 1)} × ${x.nume}${fete ? tr(" (jumătate normale, jumătate _spate)") : ""}`).join(", ")}).`,
+      tr("   Sunt deja întoarse: fața de sus a limbii (cea dinspre roți) stă pe masa imprimantei, știftul e în sus. Fără suporturi; PLA sau PETG, strat de 0,2 mm, 100% umplere, 3 perimetre."),
+      tr`   Limba e groasă de ${fmtS(3 - 0.2)} mm (cu 0,2 mm sub fața șinei), știftul are Ø${fmtS(2 * rs)} mm și e lung de ${fmtS(Math.max(0.5, r.setari.pivot_adancime - 0.3))} mm.`,
+      tr("2. Curăță locașul și gaura de așchii. Pune limba cu știftul în gaură: trebuie să se rotească liber, fără să se blocheze în niciuna din poziții."),
+      tr`   Dacă freacă, mărește „Jocul limbii” (acum ${fmtS(r.setari.limba_joc)} mm) și printează din nou doar limba; dacă joacă prea mult, micșorează-l.`,
+      tr("3. Încearcă întâi un singur macaz, cu un vagon împins de mână, în ambele sensuri și din ambele ramuri. Abia apoi frezează restul."),
+      ...(fete ? [tr("4. La două fețe, fiecare macaz are locaș pe ambele fețe: limba normală pe fața de sus, cea _spate pe fața de jos (dacă o întorci, o muți).")] : []),
+      tr("Limba se poate scoate din locaș și e o piesă mică: ține-o departe de copiii care încă bagă lucruri în gură."),
+      tr("Dacă o limbă se pierde, macazul merge și fără ea, dar trenul alege ramura după cum vine."));
   }
   if (rampe.length) l.push("",
-    "RAMPA ÎN S",
-    "1. Straturile rampei (Rampă: strat 1…6) se taie din placă, odată cu celelalte piese. Punctele frezate pe ele arată numărul stratului.",
-    "2. Lipește-le în ordine (1 jos, 6 sus), aliniate la capătul înalt și pe laturi. Iese un bloc în trepte, înalt de 72 mm.",
+    tr("RAMPA ÎN S"),
+    tr("1. Straturile rampei (Rampă: strat 1…6) se taie din placă, odată cu celelalte piese. Punctele frezate pe ele arată numărul stratului."),
+    tr("2. Lipește-le în ordine (1 jos, 6 sus), aliniate la capătul înalt și pe laturi. Iese un bloc în trepte, înalt de 72 mm."),
     ...(r.gcode && r.gcode.rezumat.some(x => /rampa_/.test(x.baza)) ? [
-      `3. Cu G-code (gcode/rampa_urcare* / rampa_coborare*), freza dreaptă de ${fmtS(s.freza)} mm: prinde blocul pe masă, cu latura lungă paralelă cu X și capătul de jos (cel subțire) spre X mic.`,
-      `   Zero X pe fața capătului de jos (fața de lemn, nu ciuperca), zero Y pe latura lungă, ${g.z0 === "sus" ? "zero Z pe fața de sus a capătului înalt (vârful blocului, 72 mm)" : "zero Z pe masă"}.`,
-      "   Programul: degroșarea în trepte de câte " + fmtS(g.pasContur) + " mm (lasă 0,5 mm), finisarea cu treceri la 1 mm de-a lungul rampei, apoi cele două șanțuri, de 3 mm sub suprafață.",
-      "   Freza trebuie să iasă cel puțin 25 mm din pensetă: coboară până la 63 mm sub vârful blocului, iar piulița nu trebuie să atingă treptele.",
-      "   Suprafața iese cu creste sub 0,06 mm; șanțurile ies întregi, cu fundul ridicat cu cel mult 0,7 mm lângă pereți, unde rampa e cea mai abruptă.",
-      "4. Sau, în ArtCAM: importă piese/rampa_*_relief.stl ca model 3D (colțul în (0, 0), baza la Z = 0), finisează cu freza de 6 mm la pas de 0,5 mm,",
-      "   apoi piese/rampa_*_santuri.dxf cu Machine Along Vector și Project toolpath onto relief, la 3 mm."] : [
-      "3. Finisarea 3D în ArtCAM: importă piese/rampa_*_relief.stl ca model 3D, cu colțul în (0, 0) și baza la Z = 0; pune blocul lipit exact peste el;",
-      "   finisează suprafața cu freza de 6 mm, cu pas lateral mic (0,5 mm), paralel cu lungimea rampei.",
-      "4. Șanțurile: importă piese/rampa_*_santuri.dxf și frezează SANTURI cu Machine Along Vector și Project toolpath onto relief, la 3 mm."]),
-    "5. piese/rampa_*_finisata.stl arată cum trebuie să iasă la final.",
-    "Verifică întâi dacă un bloc de 72 mm încape sub portalul mașinii.");
+      tr`3. Cu G-code (gcode/rampa_urcare* / rampa_coborare*), freza dreaptă de ${fmtS(s.freza)} mm: prinde blocul pe masă, cu latura lungă paralelă cu X și capătul de jos (cel subțire) spre X mic.`,
+      tr`   Zero X pe fața capătului de jos (fața de lemn, nu ciuperca), zero Y pe latura lungă, ${g.z0 === "sus" ? tr("zero Z pe fața de sus a capătului înalt (vârful blocului, 72 mm)") : tr("zero Z pe masă")}.`,
+      tr("   Programul: degroșarea în trepte de câte ") + fmtS(g.pasContur) + tr(" mm (lasă 0,5 mm), finisarea cu treceri la 1 mm de-a lungul rampei, apoi cele două șanțuri, de 3 mm sub suprafață."),
+      tr("   Freza trebuie să iasă cel puțin 25 mm din pensetă: coboară până la 63 mm sub vârful blocului, iar piulița nu trebuie să atingă treptele."),
+      tr("   Suprafața iese cu creste sub 0,06 mm; șanțurile ies întregi, cu fundul ridicat cu cel mult 0,7 mm lângă pereți, unde rampa e cea mai abruptă."),
+      tr("4. Sau, în ArtCAM: importă piese/rampa_*_relief.stl ca model 3D (colțul în (0, 0), baza la Z = 0), finisează cu freza de 6 mm la pas de 0,5 mm,"),
+      tr("   apoi piese/rampa_*_santuri.dxf cu Machine Along Vector și Project toolpath onto relief, la 3 mm.")] : [
+      tr("3. Finisarea 3D în ArtCAM: importă piese/rampa_*_relief.stl ca model 3D, cu colțul în (0, 0) și baza la Z = 0; pune blocul lipit exact peste el;"),
+      tr("   finisează suprafața cu freza de 6 mm, cu pas lateral mic (0,5 mm), paralel cu lungimea rampei."),
+      tr("4. Șanțurile: importă piese/rampa_*_santuri.dxf și frezează SANTURI cu Machine Along Vector și Project toolpath onto relief, la 3 mm.")]),
+    tr("5. piese/rampa_*_finisata.stl arată cum trebuie să iasă la final."),
+    tr("Verifică întâi dacă un bloc de 72 mm încape sub portalul mașinii."));
   if ((r.printate || []).length) l.push("",
-    "PIESE PRINTATE",
-    ...r.printate.map(x => `- ${x.bucati} × ${x.titlu}: ${x.dim.map((v: number) => fmt(v)).join(" × ")} mm, cam ${grameT(x.grame)} bucata.`),
-    "Toate sunt deja așezate pentru printare, fără suporturi: PLA, strat de 0,2 mm, 3 perimetre, umplere 15% (opritorul 25%).",
-    ...(r.printate.some(x => x.nume === "tunel") ? [`Tunelul se printează în picioare, pe portal (150 mm înălțime de printare); înăuntru are ${fmt(Math.min(165, 12 + (s.inaltime_tren || 70) + 10))} mm de la masă${s.inaltime_tren ? "" : " (trenul nu e măsurat: am pus 70 mm; scrie-l în lista de piese)"}.`] : []),
-    ...(r.printate.some(x => x.nume.startsWith("stalp_")) ? ["Stâlpii printați înlocuiesc straturile de placă: piesele de pod stau între obraji, ca la cei din lemn."] : []),
-    ...(r.printate.some(x => x.nume === "opritor_tampoane") ? ["Opritorul cu tampoane se lipește pe ultimii 18 mm ai opritorului, cu tampoanele spre capătul șanțurilor."] : []),
-    ...(r.printate.some(x => x.nume.startsWith("cale_")) ? [`Piesele de cale printate stau culcate, cu șanțurile în sus (PLA sau PETG, 3 perimetre, umplere 15–20%). Cuplajele au variantele de printare: tată ${s.print_tata}, mamă ${s.print_mama} (3 = cele de la frezare).`] : []),
-    ...(r.printate.some(x => x.nume.startsWith("proba_cuplaj_")) ? ["Proba cuplajelor: cinci bucăți scurte; câte cuburi mici au pe mijloc, atâta e varianta. Bagă tatăl fiecăreia într-o piesă de lemn și o piesă de lemn în mama ei. Alege varianta care intră fără forță și fără joc, separat pentru tată și pentru mamă, și scrie-le la „Cuplaj tată / Locaș mamă, la piesele printate” (Export CNC → Piese printate 3D). Fiecare punct înseamnă 0,1 mm pe fiecare parte."] : []));
+    tr("PIESE PRINTATE"),
+    ...r.printate.map(x => tr`- ${x.bucati} × ${x.titlu}: ${x.dim.map((v: number) => fmt(v)).join(" × ")} mm, cam ${grameT(x.grame)} bucata.`),
+    tr("Toate sunt deja așezate pentru printare, fără suporturi: PLA, strat de 0,2 mm, 3 perimetre, umplere 15% (opritorul 25%)."),
+    ...(r.printate.some(x => x.nume === "tunel") ? [tr`Tunelul se printează în picioare, pe portal (150 mm înălțime de printare); înăuntru are ${fmt(Math.min(165, 12 + (s.inaltime_tren || 70) + 10))} mm de la masă${s.inaltime_tren ? "" : tr(" (trenul nu e măsurat: am pus 70 mm; scrie-l în lista de piese)")}.`] : []),
+    ...(r.printate.some(x => x.nume.startsWith("stalp_")) ? [tr("Stâlpii printați înlocuiesc straturile de placă: piesele de pod stau între obraji, ca la cei din lemn.")] : []),
+    ...(r.printate.some(x => x.nume === "opritor_tampoane") ? [tr("Opritorul cu tampoane se lipește pe ultimii 18 mm ai opritorului, cu tampoanele spre capătul șanțurilor.")] : []),
+    ...(r.printate.some(x => x.nume.startsWith("cale_")) ? [tr`Piesele de cale printate stau culcate, cu șanțurile în sus (PLA sau PETG, 3 perimetre, umplere 15–20%). Cuplajele au variantele de printare: tată ${s.print_tata}, mamă ${s.print_mama} (3 = cele de la frezare).`] : []),
+    ...(r.printate.some(x => x.nume.startsWith("proba_cuplaj_")) ? [tr("Proba cuplajelor: cinci bucăți scurte; câte cuburi mici au pe mijloc, atâta e varianta. Bagă tatăl fiecăreia într-o piesă de lemn și o piesă de lemn în mama ei. Alege varianta care intră fără forță și fără joc, separat pentru tată și pentru mamă, și scrie-le la „Cuplaj tată / Locaș mamă, la piesele printate” (Export CNC → Piese printate 3D). Fiecare punct înseamnă 0,1 mm pe fiecare parte.")] : []));
   { const d = deviz(r);
     l.push("", "DEVIZ",
-      `- Lemn: ${d.nPl} ${d.nPl === 1 ? "placă" : "plăci"} de ${W} × ${H} mm (în medie ${d.folosit}% folosit)${d.lemn ? ` × ${lei(s.pret_placa)} = ${lei(d.lemn)}` : ""}.`,
-      ...(d.grame ? [`- Filament: cam ${grameT(d.grame)}${d.gLimbi && d.gPrint ? ` (limbi ${grameT(d.gLimbi)}, alte piese ${grameT(d.gPrint)})` : d.gLimbi ? " (limbile macazurilor)" : ""}${s.pret_filament ? ` × ${lei(s.pret_filament)}/kg = ${lei(d.fil)}` : ""}.`] : []),
-      ...(d.sec !== null ? [`- Frezare: ${durata(d.sec)} (plăci și rampe, fără placa de calibrare și fără schimbările de freză)${profilMasina().din === "$$" ? "" : ", cu setările din fabrică ale GRBL"}.`] : []),
-      ...(d.lemn || d.fil ? [`- Total: cam ${lei(d.total)}.`] : [])); }
-  l.push("", "PLĂCILE");
+      tr`- Lemn: ${d.nPl} ${d.nPl === 1 ? tr("placă") : tr("plăci")} de ${W} × ${H} mm (în medie ${d.folosit}% folosit)${d.lemn ? ` × ${lei(s.pret_placa)} = ${lei(d.lemn)}` : ""}.`,
+      ...(d.grame ? [tr`- Filament: cam ${grameT(d.grame)}${d.gLimbi && d.gPrint ? tr` (limbi ${grameT(d.gLimbi)}, alte piese ${grameT(d.gPrint)})` : d.gLimbi ? tr(" (limbile macazurilor)") : ""}${s.pret_filament ? tr` × ${lei(s.pret_filament)}/kg = ${lei(d.fil)}` : ""}.`] : []),
+      ...(d.sec !== null ? [tr`- Frezare: ${durata(d.sec)} (plăci și rampe, fără placa de calibrare și fără schimbările de freză)${profilMasina().din === "$$" ? "" : tr(", cu setările din fabrică ale GRBL")}.`] : []),
+      ...(d.lemn || d.fil ? [tr`- Total: cam ${lei(d.total)}.`] : [])); }
+  l.push("", tr("PLĂCILE"));
   r.placi.forEach((pl, i: number) => {
     const t = r.gcode && timpiCNC ? r.gcode.rezumat.filter(x => x.baza === `placa_${i + 1}` || x.baza.startsWith(`placa_${i + 1}_`))
       .map(x => { const e = timpiCNC![x.nume]; return e && e.ok ? `${x.nume.split("/").pop()} ≈ ${durata(e.secunde)}` : ""; }).filter(Boolean).join(", ") : "";
-    l.push(`Placa ${i + 1} (${pl.locuri.length} bucăți): ${continutPlaca(pl)}.` + (t ? ` Timp estimat${profilMasina().din === "$$" ? "" : " (cu setările din fabrică ale GRBL)"}: ${t}.` : ""));
+    l.push(tr`Placa ${i + 1} (${pl.locuri.length} bucăți): ${continutPlaca(pl)}.` + (t ? tr` Timp estimat${profilMasina().din === "$$" ? "" : tr(" (cu setările din fabrică ale GRBL)")}: ${t}.` : ""));
   });
   return l.join(R) + R;
 }
@@ -2284,7 +2288,7 @@ async function descarcaDXF() {
   if (!rezCNC) return;
   const r = rezCNC;
   const numeF = (stare.nume || "circuit").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "").toLowerCase() || "circuit";
-  const fisiere = [{ nume: "CITESTE.txt", text: textCiteste(r) }, ...r.fisiere, { nume: "circuit.json", text: jsonExport() }];
+  const fisiere = [{ nume: tr("CITESTE.txt"), text: textCiteste(r) }, ...r.fisiere, { nume: "circuit.json", text: jsonExport() }];
   if (r.gcode) { try { fisiere.push({ nume: "gcode/lucrare_cvs2.json", text: JSON.stringify(fisaLucrarii(await lucrareCvs2(r)), null, 2) + "\n" }); } catch (e) { /* fara fisa */ } }
   const date = TrenCNC.zip(fisiere);
   const fisier = numeF + "_cnc.zip";
@@ -2394,7 +2398,7 @@ function trimiteLaCvs2() {
   if (!r) return;
   if (!r.gcode) { stareCvs2("cvs2 primește G-code: bifează „G-code direct” la „Ce pun în arhivă”.", "rau"); return; }
   if (!["grbl-11", "grblhal", "fluidnc"].includes(setariCNC.gcode.controler)) {
-    stareCvs2(`cvs2 trimite la mașini din familia GRBL (GRBL 1.1, grblHAL, FluidNC); fișierele sunt pentru ${r.gcode.contract.nume}. Alege controlerul la „G-code”.`, "rau");
+    stareCvs2(tr`cvs2 trimite la mașini din familia GRBL (GRBL 1.1, grblHAL, FluidNC); fișierele sunt pentru ${r.gcode.contract.nume}. Alege controlerul la „G-code”.`, "rau");
     return;
   }
   if (r.gcode.strategie === "m6-controler") {
@@ -2406,18 +2410,18 @@ function trimiteLaCvs2() {
   opresteLegatura();
   let w = null;
   try { w = window.open(adresa + "#primeste-lucrare", "cvs2"); } catch (e) { w = null; }
-  if (!w) { stareCvs2(`Browserul n-a lăsat pagina să deschidă o filă nouă. Deschide copia de pe calculator (planificator.html) sau încarcă G-code-ul în cvs2 cu „Fișier…”. ${BTN_GCODE}`, "rau"); return; }
+  if (!w) { stareCvs2(tr`Browserul n-a lăsat pagina să deschidă o filă nouă. Deschide copia de pe calculator (planificator.html) sau încarcă G-code-ul în cvs2 cu „Fișier…”. ${BTN_GCODE}`, "rau"); return; }
   const id = "l" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const L = legaturaCvs2 = { w, origine, id, lucrare: null, gata: false, trimis: false, t0: Date.now(), cron: null } as NonNullable<typeof legaturaCvs2>;
-  stareCvs2(`Am deschis cvs2 (${origine.replace(/^https?:\/\//, "")}). Aștept să răspundă…`);
+  stareCvs2(tr`Am deschis cvs2 (${origine.replace(/^https?:\/\//, "")}). Aștept să răspundă…`);
   lucrareCvs2(r, id).then(l => { if (legaturaCvs2 === L) { L.lucrare = l; trimiteLucrarea(L); } })
-    .catch(e => { if (legaturaCvs2 === L) { opresteLegatura(); stareCvs2("Nu am putut pregăti fișierele: " + (e.message || e), "rau"); } });
+    .catch(e => { if (legaturaCvs2 === L) { opresteLegatura(); stareCvs2(tr`Nu am putut pregăti fișierele: ${e.message || e}`, "rau"); } });
   L.cron = setInterval(() => {
     if (legaturaCvs2 !== L) return;
     const dt = Date.now() - L.t0;
     if (L.w!.closed) {
       opresteLegatura();
-      stareCvs2(dt < 4000 ? `Browserul a despărțit fila lui cvs2 de pagina asta (din claude.ai se întâmplă). Din copia de pe calculator (planificator.html) merge; până atunci, încarcă G-code-ul în cvs2 cu „Fișier…”. ${BTN_GCODE}`
+      stareCvs2(dt < 4000 ? tr`Browserul a despărțit fila lui cvs2 de pagina asta (din claude.ai se întâmplă). Din copia de pe calculator (planificator.html) merge; până atunci, încarcă G-code-ul în cvs2 cu „Fișier…”. ${BTN_GCODE}`
                           : "Fila lui cvs2 s-a închis înainte să primească lucrarea.", "rau");
       return;
     }
@@ -2425,7 +2429,7 @@ function trimiteLaCvs2() {
     if (!L.gata) { try { L.w!.postMessage({ protocol: PROTOCOL_CVS2, versiune: 1, tip: "cauta" }, L.origine); } catch (e) { /* inca se incarca */ } }
     if (!L.gata && dt > 20000) {
       opresteLegatura();
-      stareCvs2(`cvs2 nu a răspuns. Probabil nu are încă primirea de lucrări (cvs2/PROTOCOL_CVS2.md). Până atunci: în cvs2, panoul mașinii → „Fișier…” și alegi fișierul plăcii. ${BTN_GCODE}`, "rau");
+      stareCvs2(tr`cvs2 nu a răspuns. Probabil nu are încă primirea de lucrări (cvs2/PROTOCOL_CVS2.md). Până atunci: în cvs2, panoul mașinii → „Fișier…” și alegi fișierul plăcii. ${BTN_GCODE}`, "rau");
     } else if (L.trimis && dt > 90000) {
       opresteLegatura();
       stareCvs2("Lucrarea a plecat spre cvs2, dar n-a venit confirmarea. Uită-te în fila lui cvs2.", "rau");
@@ -2437,7 +2441,7 @@ function trimiteLucrarea(L: NonNullable<typeof legaturaCvs2>) {
   L.w!.postMessage(L.lucrare, L.origine);
   L.trimis = true;
   const n = L.lucrare.fisiere.length;
-  stareCvs2(`Am trimis ${n} ${n === 1 ? "fișier" : "fișiere"} G-code. Confirmă în cvs2 că le primești…`);
+  stareCvs2(tr`Am trimis ${n} ${n === 1 ? tr("fișier") : tr("fișiere")} G-code. Confirmă în cvs2 că le primești…`);
 }
 window.addEventListener("message", ev => {
   const L = legaturaCvs2;
@@ -2445,7 +2449,7 @@ window.addEventListener("message", ev => {
   const m = ev.data;
   if (!m || typeof m !== "object" || m.protocol !== PROTOCOL_CVS2) return;
   if (m.tip === "gata" && !L.gata) {
-    if (m.versiune !== 1) { opresteLegatura(); stareCvs2(`cvs2 vorbește altă versiune a protocolului (${String(m.versiune).slice(0, 8)}).`, "rau"); return; }
+    if (m.versiune !== 1) { opresteLegatura(); stareCvs2(tr`cvs2 vorbește altă versiune a protocolului (${String(m.versiune).slice(0, 8)}).`, "rau"); return; }
     L.gata = true;
     if (L.lucrare) trimiteLucrarea(L); else stareCvs2("cvs2 e gata. Pregătesc fișierele…");
   } else if (m.tip === "primit" && m.id === L.id) {
@@ -2453,7 +2457,7 @@ window.addEventListener("message", ev => {
     const bune = Array.isArray(m.acceptate) ? m.acceptate.length : 0, rele = Array.isArray(m.refuzate) ? m.refuzate : [];
     const esc = (t: unknown) => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" } as Record<string, string>)[c]!);
     if (m.renuntat) { stareCvs2("În cvs2 ai ales să nu primești lucrarea."); return; }
-    stareCvs2(`cvs2 a primit ${bune} ${bune === 1 ? "fișier" : "fișiere"}` + (rele.length ? `; a refuzat ${rele.length}: ${rele.slice(0, 4).map((x: { nume: string; cod: string; linie?: number }) => `${esc(x.nume)} (${esc(x.cod)}${x.linie != null ? ", linia " + (+x.linie + 1) : ""})`).join(", ")}.` : ". Alege-l pe primul în panoul mașinii, pune zero-ul și pornește."), rele.length ? "rau" : "ok");
+    stareCvs2(tr`cvs2 a primit ${bune} ${bune === 1 ? tr("fișier") : tr("fișiere")}` + (rele.length ? tr`; a refuzat ${rele.length}: ${rele.slice(0, 4).map((x: { nume: string; cod: string; linie?: number }) => `${esc(x.nume)} (${esc(x.cod)}${x.linie != null ? tr`, linia ${+x.linie + 1}` : ""})`).join(", ")}.` : tr(". Alege-l pe primul în panoul mașinii, pune zero-ul și pornește.")), rele.length ? "rau" : "ok");
   }
 });
 // ----------------------------------------------------------------------------- pe masina, prin cvs2
@@ -2486,10 +2490,10 @@ const REFUZ_MASINA: Record<string, string | undefined> = {
 function textRefuzMasina(e: unknown) {
   const c = String((e && (e as Error).message) || e).replace(/^masina:/, "");
   const p = /^program:([a-z0-9-]+)(?::(\d+))?$/.exec(c);
-  if (p) return `cvs2 a refuzat fișierul (${p[1]}${p[2] ? ", linia " + p[2] : ""}).`;
-  return REFUZ_MASINA[c] || `cvs2 a refuzat cererea (${c}).`;
+  if (p) return tr`cvs2 a refuzat fișierul (${p[1]}${p[2] ? tr`, linia ${p[2]}` : ""}).`;
+  return REFUZ_MASINA[c] || tr`cvs2 a refuzat cererea (${c}).`;
 }
-const textLinii = (n: number) => (n === 1 ? "o linie" : new Intl.PluralRules("ro").select(n) === "few" ? `${n} linii` : `${n} de linii`);
+const textLinii = (n: number) => (n === 1 ? "o linie" : new Intl.PluralRules("ro").select(n) === "few" ? `${n} linii` : tr`${n} de linii`);
 // fisierele G-code ale exportului, in ordinea taierii: numele (fara "gcode/") si textul
 function fisiereMasina() {
   const r = rezCNC;
@@ -2510,11 +2514,11 @@ function randeazaMasina() {
   }
   const inceputa = !!s && FAZE_INCEPUTE.includes(s.faza);
   const procent = i && i.procent != null && (i.fel === "ruleaza" || i.fel === "pauza") ? ` ${i.procent} %` : "";
-  const cum = !s ? "încă nu știu" : !s.conectata && !(i && i.fel === "intrerupta")
-    ? "neconectată. Conecteaz-o în fereastra Mașina a lui cvs2" : (FEL_MASINA[i ? i.fel : "conectata"] || FEL_MASINA.conectata) + procent;
-  const program = s && s.program ? ` Program: ${s.program.nume || "—"} (${textLinii(s.program.linii)}).` : "";
-  $("#masina-stare").textContent = `Mașina: ${cum}.${program}`;
-  $("#rez-masina").textContent = s ? "· " + (s.conectata ? FEL_MASINA[i ? i.fel : "conectata"] || FEL_MASINA.conectata : "neconectată") : "";
+  const cum = !s ? tr("încă nu știu") : !s.conectata && !(i && i.fel === "intrerupta")
+    ? tr("neconectată. Conecteaz-o în fereastra Mașina a lui cvs2") : tr(String(FEL_MASINA[i ? i.fel : "conectata"] || FEL_MASINA.conectata)) + procent;
+  const program = s && s.program ? tr` Program: ${s.program.nume || "—"} (${textLinii(s.program.linii)}).` : "";
+  $("#masina-stare").textContent = tr`Mașina: ${cum}.${program}`;
+  $("#rez-masina").textContent = s ? "· " + (s.conectata ? tr(String(FEL_MASINA[i ? i.fel : "conectata"] || FEL_MASINA.conectata)) : tr("neconectată")) : "";
   const z = cerereMasinaInZbor;
   $<HTMLInputElement>("#m-incarca").disabled = z || !fis.length || inceputa;
   $<HTMLInputElement>("#m-porneste").disabled = z || !s || !s.conectata || !s.program || !["pregatit", "terminat", "pierdut"].includes(s.faza);
@@ -2565,12 +2569,12 @@ async function descarcaGcode() {
   if (!r || !r.gcode) return;
   const l = await lucrareCvs2(r);
   const numeF = (stare.nume || "circuit").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "").toLowerCase() || "circuit";
-  const R = "\r\n", citeste = ["G-CODE PENTRU MAȘINĂ — " + (stare.nume || "Circuit"), new Date().toLocaleString("ro-RO"), "",
-    `Controler: ${r.gcode.contract.nume}. Zero X / Y în colțul ${setariCNC.gcode.origine.replace("-", " ").replace("stanga", "stânga")} al plăcii, Z0 ${setariCNC.gcode.z0 === "sus" ? "pe fața de sus a plăcii" : "pe masă"}.`,
-    "Ordinea de tăiere (fiecare cu amprenta SHA-256, ca s-o verifici în cvs2):",
+  const R = "\r\n", citeste = [tr("G-CODE PENTRU MAȘINĂ — ") + (stare.nume || "Circuit"), new Date().toLocaleString(Limba.locala), "",
+    tr`Controler: ${r.gcode.contract.nume}. Zero X / Y în colțul ${tr(COLT[setariCNC.gcode.origine] || setariCNC.gcode.origine)} al plăcii, Z0 ${setariCNC.gcode.z0 === "sus" ? tr("pe fața de sus a plăcii") : tr("pe masă")}.`,
+    tr("Ordinea de tăiere (fiecare cu amprenta SHA-256, ca s-o verifici în cvs2):"),
     ...l.fisiere.map((f, i) => `${i + 1}. ${f.nume}${f.scula ? " — " + f.scula : ""}${f.timp_s ? " — ≈ " + durata(f.timp_s) : ""}${R}   ${f.sha256}`),
-    "", "În cvs2: panoul mașinii → „Fișier…” → alegi fișierul. lucrare_cvs2.json e fișa lucrării (pentru primirea automată)."].join(R) + R;
-  const date = TrenCNC.zip([{ nume: "CITESTE.txt", text: citeste }, ...l.fisiere.map(f => ({ nume: "gcode/" + f.nume, text: f.text })),
+    "", tr("În cvs2: panoul mașinii → „Fișier…” → alegi fișierul. lucrare_cvs2.json e fișa lucrării (pentru primirea automată).")].join(R) + R;
+  const date = TrenCNC.zip([{ nume: tr("CITESTE.txt"), text: citeste }, ...l.fisiere.map(f => ({ nume: "gcode/" + f.nume, text: f.text })),
     { nume: "gcode/lucrare_cvs2.json", text: JSON.stringify(fisaLucrarii(l), null, 2) + "\n" }]);
   await salveazaDescarcare(numeF + "_gcode.zip", new Blob([date as Uint8Array<ArrayBuffer>], { type: "application/zip" }));
 }
@@ -2599,11 +2603,11 @@ function alegeMod(m: string) {
 function anunta3D() { if (mod === "3d" && window.Atelier3D) Atelier3D.reimprospateaza(); }
 const mic = (t: string) => t.charAt(0).toLowerCase() + t.slice(1);
 function titluPrintata(p: { nume: string; fel: string; piesa?: string; n?: number }) {
-  if (p.fel === "limba") return `Limbă pentru ${mic(nume(p.piesa!))}`;
-  if (p.fel === "limba_spate") return `Limbă pentru ${mic(nume(p.piesa!))}, pe spate`;
-  if (p.fel === "stalp") return `Stâlp printat, ${p.n} mm`;
-  if (p.fel === "cale") return `${nume(p.piesa!)}, printată`;
-  if (p.fel === "proba") return `Proba cuplajelor, varianta ${p.n}`;
+  if (p.fel === "limba") return tr`Limbă pentru ${mic(nume(p.piesa!))}`;
+  if (p.fel === "limba_spate") return tr`Limbă pentru ${mic(nume(p.piesa!))}, pe spate`;
+  if (p.fel === "stalp") return tr`Stâlp printat, ${p.n} mm`;
+  if (p.fel === "cale") return tr`${nume(p.piesa!)}, printată`;
+  if (p.fel === "proba") return tr`Proba cuplajelor, varianta ${p.n}`;
   return { opritor: "Opritor cu tampoane", tunel: "Tunel", peron: "Peron" }[p.fel] || p.nume;
 }
 var TrenPentru3D = {
@@ -2673,7 +2677,7 @@ function init() {
     if ((e.key === "Delete" || e.key === "Backspace") && selPiesa) sterge();
     if ((e.ctrlKey || e.metaKey) && e.key === "z") { e.preventDefault(); anuleaza(); }
   });
-  $("#c-nou").onclick = () => { stare = { docId: null, nume: "Circuit nou", piese: [], exemplu: false }; istoric = []; selPiesa = selCapat = null; schimbat({ incadreaza: true, faraSalvare: true }); ascunde($("#c-nou")); };
+  $("#c-nou").onclick = () => { stare = { docId: null, nume: tr("Circuit nou"), piese: [], exemplu: false }; istoric = []; selPiesa = selCapat = null; schimbat({ incadreaza: true, faraSalvare: true }); ascunde($("#c-nou")); };
   $("#c-exemplu").onclick = () => { exempluOval(); istoric = []; selPiesa = selCapat = null; schimbat({ incadreaza: true, faraSalvare: true }); ascunde($("#c-exemplu")); };
   $("#c-pod").onclick = () => { exempluPod(); istoric = []; selPiesa = selCapat = null; schimbat({ incadreaza: true, faraSalvare: true }); ascunde($("#c-pod")); };
   $("#circ-lista").addEventListener("click", e => {

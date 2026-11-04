@@ -122,14 +122,14 @@ var TrenGCode = (function (glob: typeof globalThis) {
       if (!r.ok) return { ok: false, motiv: `T${p.scula.numar}: ${r.motiv}` };
       fisiere.push({ scula: p.scula, text: r.text, linii: r.linii });
     }
-    if (!fisiere.length) return { ok: false, motiv: "programul n-are nicio tăiere" };
+    if (!fisiere.length) return { ok: false, motiv: tr("programul n-are nicio tăiere") };
     return { ok: true, fisiere };
   }
 
   function scrie(program: Program, montaj: Montaj, k: Contract, optiuni: OptiuniPost) {
     type Poz = { x: number | undefined; y: number | undefined; z: number | undefined };
     const strategie = optiuni.strategieScula || k.scula[0]!;
-    if (!k.scula.includes(strategie)) throw new EroarePost(`${k.nume} nu acceptă schimbarea sculei „${strategie}”`);
+    if (!k.scula.includes(strategie)) throw new EroarePost(tr`${k.nume} nu acceptă schimbarea sculei „${strategie}”`);
     const schimbari = program.miscari.some(m => m.tip === "schimba-scula");
     if (schimbari && strategie === "fisiere-separate") throw new EroarePost("cu fișiere separate pe sculă, programul se scrie cu posteazaPeScule");
     const zec = k.zecimaleMm, rezolutie = 10 ** -zec;
@@ -138,8 +138,8 @@ var TrenGCode = (function (glob: typeof globalThis) {
     const antet = k.antet.map((l: string) => l.replace("{unitati}", k.unitati));
     const linii: string[] = [];
     const adauga = (linie: string) => {
-      if (CODOR.encode(linie).length > k.liniaMaxima) throw new EroarePost(`linia ${linii.length + 1} are peste ${k.liniaMaxima} de octeți: ${linie.slice(0, 40)}…`);
-      if (linii.length >= PLAFON_LINII) throw new EroarePost(`programul trece de ${PLAFON_LINII} de linii`);
+      if (CODOR.encode(linie).length > k.liniaMaxima) throw new EroarePost(tr`linia ${linii.length + 1} are peste ${k.liniaMaxima} de octeți: ${linie.slice(0, 40)}…`);
+      if (linii.length >= PLAFON_LINII) throw new EroarePost(tr`programul trece de ${PLAFON_LINII} de linii`);
       linii.push(linie);
     };
     const comentariu = (text: string) => {
@@ -151,7 +151,7 @@ var TrenGCode = (function (glob: typeof globalThis) {
     let avansCurent: number | undefined;
     const masina = (x: number, y: number) => ({ x: t.a * x + t.c * y + t.e, y: t.b * x + t.d * y + t.f });
     const avans = (f: number) => {
-      if (!(f > 0) || !Number.isFinite(f)) throw new EroarePost(`avans nevalid: ${f}`);
+      if (!(f > 0) || !Number.isFinite(f)) throw new EroarePost(tr`avans nevalid: ${f}`);
       if (avansCurent === f) return "";
       avansCurent = f;
       return ` F${numar(f, 1)}`;
@@ -221,7 +221,7 @@ var TrenGCode = (function (glob: typeof globalThis) {
     const zSigur = program.zSigur;
     const pauza = (sec: number) => `${k.pauza.cuvant}${k.pauza.unitate === "s" ? numar(sec, 3) : String(Math.round(sec * 1000))}`;
     const pornesteAx = (turatie: number) => {
-      if (!(turatie > 0) || !Number.isInteger(turatie)) throw new EroarePost(`turație nevalidă: ${turatie}`);
+      if (!(turatie > 0) || !Number.isInteger(turatie)) throw new EroarePost(tr`turație nevalidă: ${turatie}`);
       adauga(`M3 S${turatie}`);
       adauga(pauza(optiuni.asteptareAx));
     };
@@ -245,7 +245,7 @@ var TrenGCode = (function (glob: typeof globalThis) {
         case "eticheta": comentariu(mv.text); break;
         case "schimba-scula": {
           const s = mv.scula;
-          if (!Number.isInteger(s.numar) || s.numar < 0 || s.numar > SCULA_MAXIMA) throw new EroarePost(`numărul sculei T${s.numar} nu e între 0 și ${SCULA_MAXIMA}`);
+          if (!Number.isInteger(s.numar) || s.numar < 0 || s.numar > SCULA_MAXIMA) throw new EroarePost(tr`numărul sculei T${s.numar} nu e între 0 și ${SCULA_MAXIMA}`);
           if (!pePozitie({ Z: zSigur })) adauga(`G0${cuvinte({ Z: zSigur })}`);
           adauga("M5");
           if (strategie === "m0-comentariu") { comentariu(`SCHIMBA SCULA: T${s.numar} ${s.nume} D${numar(s.diametru, 3)}, apoi zero Z`); adauga("M0"); }
@@ -328,16 +328,16 @@ var TrenGCode = (function (glob: typeof globalThis) {
   };
 
   function adancimiTreceri(adancime: number, pas: number) {
-    if (!(adancime > 0)) return `adâncimea trebuie să fie pozitivă (${adancime})`;
-    if (!(pas > 0)) return `pasul trebuie să fie pozitiv (${pas})`;
+    if (!(adancime > 0)) return tr`adâncimea trebuie să fie pozitivă (${adancime})`;
+    if (!(pas > 0)) return tr`pasul trebuie să fie pozitiv (${pas})`;
     const n = Math.max(1, Math.ceil(adancime / pas - 1e-9));
-    if (n > 1000) return `${n} treceri: pasul ${pas} mm e prea mic`;
+    if (n > 1000) return tr`${n} treceri: pasul ${pas} mm e prea mic`;
     return Array.from({ length: n }, (_, i) => (i + 1 === n ? adancime : ((i + 1) * adancime) / n));
   }
   // urechile (urechi.ts, ADR 0028)
   function geometrieUrechi(lungime: number, u: { numar: number; latime: number }) {
     const S = lungime / u.numar;
-    if (u.latime > 0.9 * S) return `urechile nu încap: ${u.numar} urechi de ${u.latime} mm pe o buclă de ${lungime.toFixed(2)} mm`;
+    if (u.latime > 0.9 * S) return tr`urechile nu încap: ${u.numar} urechi de ${u.latime} mm pe o buclă de ${lungime.toFixed(2)} mm`;
     const centre: number[] = [];
     for (let k = 0; k < u.numar; k++) centre.push((k + 0.5) * S);
     return { S, h: u.latime / 2, l: Math.min(u.latime / 2, 0.45 * (S - u.latime)), centre };
@@ -442,9 +442,9 @@ var TrenGCode = (function (glob: typeof globalThis) {
   function buclaCuRampa(c: Pl, adancimi: readonly number[], lungime: number, urechi: Urechi | null, avans: number, avansPlonjare: number): Rez<{ miscari: Miscare[] }> {
     const P = lungimeBucla(c);
     if (!(P > 0)) return { ok: true, miscari: [] };
-    if (!(lungime >= RAMPA_MINIMA)) return { ok: false, motiv: `rampa de ${lungime} mm e sub ${RAMPA_MINIMA} mm: ar fi o plonjare` };
+    if (!(lungime >= RAMPA_MINIMA)) return { ok: false, motiv: tr`rampa de ${lungime} mm e sub ${RAMPA_MINIMA} mm: ar fi o plonjare` };
     const Lr = Math.min(lungime, P / 2);
-    if (Lr < RAMPA_MINIMA) return { ok: false, motiv: `rampa nu încape pe bucla de ${P.toFixed(3)} mm` };
+    if (Lr < RAMPA_MINIMA) return { ok: false, motiv: tr`rampa nu încape pe bucla de ${P.toFixed(3)} mm` };
     const zone: [number, number][] = [];
     if (urechi) {
       const g = geometrieUrechi(P, urechi);
@@ -599,15 +599,15 @@ var TrenGCode = (function (glob: typeof globalThis) {
       const nr = Number(m[1]);
       if (!esteSetareProfil(nr)) continue;
       const tv = m[2] || "", v = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(tv) ? Number(tv) : NaN, zeroValid = nr === 11;
-      if (!Number.isFinite(v) || v < 0 || (v === 0 && !zeroValid)) return { ok: false, motiv: `$${nr} = „${tv}”: ${zeroValid ? "trebuie să fie un număr ≥ 0" : "trebuie să fie un număr pozitiv"}`, linie: i + 1 };
-      if (valori.has(nr)) return { ok: false, motiv: `$${nr} e scris de două ori`, linie: i + 1 };
+      if (!Number.isFinite(v) || v < 0 || (v === 0 && !zeroValid)) return { ok: false, motiv: `$${nr} = „${tv}”: ${zeroValid ? tr("trebuie să fie un număr ≥ 0") : tr("trebuie să fie un număr pozitiv")}`, linie: i + 1 };
+      if (valori.has(nr)) return { ok: false, motiv: tr`$${nr} e scris de două ori`, linie: i + 1 };
       valori.set(nr, v);
     }
-    if (!valori.size) return { ok: false, motiv: "textul nu conține nicio setare de mișcare ($11, $12, $100–$123): e răspunsul la $$?", linie: 0 };
+    if (!valori.size) return { ok: false, motiv: tr("textul nu conține nicio setare de mișcare ($11, $12, $100–$123): e răspunsul la $$?"), linie: 0 };
     const axe = { ...baza.axe };
     for (const [k, axa] of AXE_SETARI.entries()) {
       const ex = baza.axe[axa], scrise = SETARI_AXE.map(([n]) => valori.has(n + k));
-      if (!ex && scrise.some(Boolean) && !scrise.every(Boolean)) return { ok: false, motiv: `axa ${axa} e scrisă doar pe jumătate`, linie: 0 };
+      if (!ex && scrise.some(Boolean) && !scrise.every(Boolean)) return { ok: false, motiv: tr`axa ${axa} e scrisă doar pe jumătate`, linie: 0 };
       if (!ex && !scrise.some(Boolean)) continue;
       const noua = ex ? { ...ex } : { pasiPeMm: 0, vitezaMaxima: 0, acceleratie: 0 };
       for (const [n, camp] of SETARI_AXE) { const v = valori.get(n + k); if (v !== undefined) noua[camp] = v; }
@@ -626,7 +626,7 @@ var TrenGCode = (function (glob: typeof globalThis) {
   function estimeazaTimp(text: string, profil = PROFIL_GRBL_11H, cuOpriri = false): Rez<{ secunde: number; pauze: number; taiere: number; rapide: number; opriri: number; liniiLimitate: number }> {
     // -> { ok, secunde, pauze, taiere, rapide, opriri, liniiLimitate } (estimeaza din timp.ts, pe o singura portiune)
     const AXE = ["X", "Y", "Z"], axe = AXE.map(a => profil.axe[a]);
-    if (axe.some(x => !x)) return { ok: false, motiv: "profilul n-are X, Y și Z" };
+    if (axe.some(x => !x)) return { ok: false, motiv: tr("profilul n-are X, Y și Z") };
     const fw = profil.firmware, vmax = axe.map(a => a!.vitezaMaxima / 60), amax = axe.map(a => a!.acceleratie), pasi = axe.map(a => a!.pasiPeMm);
     const dj = profil.deviatieJonctiune, tol = profil.toleranteArc, vMinJ2 = (fw.vitezaMinimaJonctiune / 60) ** 2, avansMinim = fw.avansMinim / 60;
     const acum = { secunde: 0, pauze: 0, taiere: 0, rapide: 0 };
@@ -738,14 +738,14 @@ var TrenGCode = (function (glob: typeof globalThis) {
     const D = P.freza, R = D / 2;
     let urechi: Urechi | null = null;
     if (o.urechi && o.urechi.numar > 0) {
-      if (o.urechi.grosime >= P.grosime) return { ok: false, motiv: `puntile de ${o.urechi.grosime} mm nu încap în placa de ${P.grosime} mm` };
-      if (o.urechi.latime < D) return { ok: false, motiv: `puntile de ${o.urechi.latime} mm sunt mai scurte decât freza (Ø${D}): n-ar ține` };
+      if (o.urechi.grosime >= P.grosime) return { ok: false, motiv: tr`puntile de ${o.urechi.grosime} mm nu încap în placa de ${P.grosime} mm` };
+      if (o.urechi.latime < D) return { ok: false, motiv: tr`puntile de ${o.urechi.latime} mm sunt mai scurte decât freza (Ø${D}): n-ar ține` };
       urechi = { numar: o.urechi.numar, latime: o.urechi.latime, varf: P.grosime - o.urechi.grosime };
     }
     const bucle: Bucla[] = [];
     for (const l of locuri) {
       const off = CNC().decaleaza(l.contur, R);              // trigonometric, cu piesa in stanga
-      if (!off) return { ok: false, motiv: `${l.piesa.titlu || l.piesa.nume}: offsetul conturului n-a ieșit` };
+      if (!off) return { ok: false, motiv: tr`${l.piesa.titlu || l.piesa.nume}: offsetul conturului n-a ieșit` };
       // urcare: materialul pastrat (piesa) in dreapta mersului, deci bucla orara (profil.ts, ADR 0027)
       const v0 = o.sens === "urcare" ? inverseaza(off, true) : off;
       const L = lungimeBucla(v0), g = urechi ? geometrieUrechi(L, urechi) : null;
@@ -810,7 +810,7 @@ var TrenGCode = (function (glob: typeof globalThis) {
       m.push({ tip: "eticheta", text: `decupare, ${numar(adancime, 2)} mm, ${b.urechi ? b.urechi.numar + " punti" : "fara punti"}${rampa ? ", pe rampa" : ""}` });
       for (const c of ordineApropiata(b.bucle, ultima(m))) {
         const urechi = c.faraUrechi ? null : b.urechi;
-        if (c.faraUrechi && b.urechi) avertismente.push(`${c.nume}: prea mică pentru ${b.urechi.numar} punți; e decupată fără punți`);
+        if (c.faraUrechi && b.urechi) avertismente.push(tr`${c.nume}: prea mică pentru ${b.urechi.numar} punți; e decupată fără punți`);
         const e = traseuProfilExterior(m, c.v, ad, p, urechi, rampa);
         if (e) return { ok: false, motiv: `${c.nume}: ${e}` };
       }
@@ -978,7 +978,7 @@ var TrenGCode = (function (glob: typeof globalThis) {
     if (calibrare) {
       // placa de calibrare, pusa in coltul de jos al placii, la margine
       const dx = P.placa_margine, dy = P.placa_margine, t = (v: Pl): Pl => v.map(([x, y, b]) => [x + dx, y + dy, b]);
-      const loc = { piesa: { nume: "placa_calibrare", titlu: "Placa de calibrare" }, contur: t(calibrare.contur), santuri: calibrare.santuri.map(t),
+      const loc = { piesa: { nume: "placa_calibrare", titlu: tr("Placa de calibrare") }, contur: t(calibrare.contur), santuri: calibrare.santuri.map(t),
                     marcaje: calibrare.marcaje.map(t), tesire: calibrare.tesire.map(t), margini: calibrare.margini.map(t) };
       programe.push(scrieProgram("calibrare", [loc], "simpla"));
     }

@@ -940,6 +940,9 @@ tu, iar interfața aplicației rămâne aceeași.
 - Extensia ia tema aplicației: luminoasă sau întunecată (cea aleasă cu **Tema**), culorile și fonturile; o temă schimbată
   ajunge în extensie pe loc. Planificatorul Trenuleț își păstrează doar culorile lui: masa, lemnul, cărămizile, verdele de
   semnal.
+- Extensia primește și limba aplicației. Planificatorul Trenuleț vorbește română sau engleză, după **Limba** din bara de sus;
+  la o limbă schimbată, repornește singur, după ce își salvează lucrul (circuitul, setările, atelierul). Comentariile din
+  G-code rămân în română, ca în exportul aplicației.
 - Un clic pe o extensie din meniu îi deschide fereastra: lângă **Proiectare** și **Mașina** apare o filă cu numele ei, iar
   dedesubt, pe tot ecranul, stă extensia. Treci oricând la altă fereastră: extensia rămâne deschisă, cu ce ai lucrat în ea, iar
   o comandă a desenului aleasă din **Caută o comandă** te duce întâi la Proiectare. **×**, lângă numele ei, închide

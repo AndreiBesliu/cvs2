@@ -13,6 +13,8 @@ ieșiri.
 | `planificator/cnc.ts` | motorul căii: geometria pieselor (contururi Cavalier cu arce), șanțurile, cuplajele, limbile macazurilor, așezarea pe plăci, DXF / SVG, STL-urile pieselor printate, rampa 3D, zip | 83 kB |
 | `planificator/gcode.ts` | G-code direct: postul, contractele, CAM-ul (profil cu punți, șanțuri, găurire), timpul; portat de mână din cvs2 | 57 kB |
 | `planificator/profiluri.ts` | profilurile (mașini, imprimante), cu cel implicit | 6 kB |
+| `planificator/limba.ts` | limba paginii (ADR 0165): `tr` (textele cu valori și cele care nu ajung pe pagină; un context pentru cuvintele cu două sensuri) și traducerea pe pagină a textelor fixe; zecimalele și data | 4 kB |
+| `planificator/texte.en.json` | dicționarul englez: cheia e textul românesc din cod; doar în pachet, adus doar în engleză; îl ține la zi `node scripts/texte-trenulet.ts` | 109 kB |
 | `planificator/head.html`, `body.html` | CSS-ul (variabile de temă, luminos / întunecat; în cvs2, sub `data-gazda="cvs2"`, suprafețele, textul, marginile, roșul, inelul de focus și fonturile lui cvs2, ADR 0164) și marcajul | 44 kB |
 | `planificator/catalog.json` | catalogul pieselor de cale (se pune în `app.js` la construcție) | |
 | `lego/lego.ts` | motorul pieselor LEGO: corpuri închise (prisme, inele, corpuri rotite, sfere; fețele cu găuri prin earcut), toate piesele, calibrarea, STL, așezarea pe pat | 79 kB |
@@ -26,6 +28,10 @@ Sursele sunt TypeScript (ADR 0162), dar scripturi clasice, nu module: fiecare mo
 singur nume global (`TrenCNC`, `TrenGCode`, `Lego`, `Profiluri`, `Atelier3D`); `app.ts` e script obișnuit. Tipurile se
 șterg la construcție (`stripTypeScriptTypes`), deci în pagină și în pachet ajunge JavaScript. Verificarea: `npm run
 typecheck` (și `test/unit/trenulet.tipuri.test.ts`). `build.py` nu mai e aici: nu poate construi sursele `.ts`.
+
+Un text nou pentru om (ADR 0165): fix, pe pagină, nu cere nimic în cod; cu valori sau în afara paginii (README, mesaje),
+trece prin `tr` (un șablon: tr`Am pus: ${x}.`). Apoi `node scripts/texte-trenulet.ts` îi pune cheia în `texte.en.json`, iar
+traducerea se scrie acolo; proba `trenulet.engleza.test.ts` cade până atunci.
 
 În cvs2 (ADR 0164), salvările amânate ale paginii (circuitul, setările CNC, profilul mașinii, atelierul) trec prin
 `window.cvs2.amana(cheie, f, ms)`: cvs2 știe atunci că e ceva nesalvat și le pornește pe loc la închiderea ferestrei. O

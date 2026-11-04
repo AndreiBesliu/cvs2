@@ -85,6 +85,8 @@ export function scripturi(): { readonly nume: string; readonly text: string }[] 
     + ' * with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all\n'
     + ' * copies. THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE. */\n';
   const lista = [
+    // limba paginii (ADR 0165), întâi: și motoarele își spun mesajele prin `tr`
+    { nume: 'limba.js', text: faraTipuri('planificator', 'limba.ts') },
     { nume: 'cavalier.js', text: `${lic}${citeste('vendor', 'cavalier.min.js').trim()};window.Cavalier=Cavalier;` },
     { nume: 'cnc.js', text: faraTipuri('planificator', 'cnc.ts') },
     { nume: 'gcode.js', text: faraTipuri('planificator', 'gcode.ts') },
@@ -129,6 +131,8 @@ export function pachetTrenulet(): { readonly manifest: Record<string, unknown>; 
     ['js/three.js', new Uint8Array(readFileSync(join(SURSA, 'vendor', 'three.min.js')))],
     // textul licenței MIT, cerut de ea lângă copie (în `three.min.js` stă doar antetul cu numele ei)
     ['licente/three.txt', octeti(citeste('vendor', 'three.LICENSE'))],
+    // dicționarul englez (ADR 0165): intrarea îl aduce doar când cvs2 e în engleză; pagina de sine stătătoare nu-l are
+    ['texte.en.json', octeti(citeste('planificator', 'texte.en.json'))],
   ]);
   const manifest = { ...sursa, intrare: 'index.js', stiluri: ['trenulet.css'], fisiere: Object.fromEntries([...fisiere].map(([c, b]) => [c, sha(b)])) };
   return {

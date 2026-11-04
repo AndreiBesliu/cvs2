@@ -9,7 +9,8 @@
  * `cont`, contul, trimise din nou la fiecare schimbare (tema, limba, intrarea sau ieșirea din cont, și din altă filă). × (și
  * altă extensie deschisă, ori o versiune nouă instalată peste cea deschisă) îi cere întâi extensiei salvările ei, cel mult 5 s;
  * dacă tot rămâne ceva nesalvat, întreabă: „Rămân” (și Escape) sau „Închide oricum”. Reîncărcarea paginii întreabă și ea,
- * prin browser, cât extensia are modificări nesalvate.
+ * prin browser, cât extensia are modificări nesalvate. Extensia își poate cere repornirea (`host.reporneste`, ADR 0165: de
+ * exemplu, la o limbă nouă): cadrul se reface, cu contextul de acum; cel mult o dată la 2 s (una cerută mai devreme așteaptă).
  *
  * Linkul de instalare (`#instaleaza=<adresa>`) deschide fereastra adresei, completată; nimic nu se descarcă fără clic, iar
  * ancora se șterge din adresă.
@@ -35,6 +36,8 @@ mesaje.catch(() => undefined);
 const Instalare = lazy(() => import('./Instalare.tsx').then(cuMesaje).then((m) => ({ default: m.Instalare })));
 
 const ANCORA_INSTALARE = '#instaleaza=';
+/** Cel mai scurt interval între două reporniri cerute de o extensie (ADR 0165). */
+const INTERVAL_REPORNIRE_MS = 2000;
 
 /** Săgețile mută focusul între rândurile meniului; Escape și Tab îl închid (ca meniul contului). */
 function tastaInMeniu(e: KeyboardEvent<HTMLDivElement>, inchide: () => void): void {
@@ -83,6 +86,10 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   const dupaInchidere = useRef<() => void>(() => {});
   const [intrebare, setIntrebare] = useState(false);
   const butonInchide = useRef<HTMLButtonElement | null>(null);
+  // Repornirea cerută de extensie (ADR 0165): a câta pornire e (cadrul se reface la fiecare) și când a fost ultima cerere.
+  const [pornire, setPornire] = useState(0);
+  const ultimaRepornire = useRef(0);
+  const repornireAmanata = useRef<ReturnType<typeof setTimeout> | null>(null);
   const limbaRef = useRef(limba);
   limbaRef.current = limba;
   // Gazda senderului, cea de acum: cadrul pornește o dată pe extensie, dar cere de fiecare dată prin ea.
@@ -182,6 +189,15 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       const h = c.pornesteCadru(container, deschisa, contextul(), (e) => {
         if (e.tip === 'pornit') setStare({ fel: 'pornit' });
         else if (e.tip === 'inchide') setDeschisa(null);
+        else if (e.tip === 'reporneste') {
+          // Salvările le face extensia întâi. Cel mult o repornire la 2 s: una cerută mai devreme așteaptă până trec cele 2 s, iar
+          // cererile de până atunci se adună în ea (o extensie care se repornește în buclă nu încarcă aplicația).
+          if (repornireAmanata.current) return;
+          const reporneste = (): void => { repornireAmanata.current = null; ultimaRepornire.current = Date.now(); setPornire((n) => n + 1); };
+          const peste = ultimaRepornire.current + INTERVAL_REPORNIRE_MS - Date.now();
+          if (peste <= 0) reporneste();
+          else repornireAmanata.current = setTimeout(reporneste, peste);
+        }
         else if (e.tip === 'esuat') { setStare({ fel: 'esuat', mesaj: e.mesaj }); raporteaza(e.mesaj); }
         else raporteaza(e.mesaj, e.stiva);
       }, {
@@ -195,6 +211,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
     }, (e: unknown) => { setStare({ fel: 'esuat', mesaj: String(e) }); });
     return () => {
       oprit = true;
+      if (repornireAmanata.current) { clearTimeout(repornireAmanata.current); repornireAmanata.current = null; }
       trimiteContext.current = null;
       pornit.current = null;
       seInchide.current = false;
@@ -202,7 +219,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       oprire?.();
     };
     // Doar la altă extensie: limba, tema și contul noi trec prin `trimiteContext`, fără repornire.
-  }, [deschisa]);
+  }, [deschisa, pornire]);
   // Contul: intrarea, ieșirea (și din altă filă) sau alt plan ajung în cadru pe loc (ADR 0164 §B).
   useEffect(() => aboneazaCont(() => { trimiteContext.current?.(); }), []);
   // Reîncărcarea sau închiderea filei, cu lucru nesalvat în extensie: browserul întreabă (ADR 0164 §C).

@@ -28,7 +28,7 @@ test('sursele planificatorului sunt TypeScript: niciun .js scris de mână în p
 test('proiectul planificatorului le are pe toate și n-are nicio eroare de tipuri', () => {
   const lista = fisiereProiect(PROIECT);
   const surse = ['planificator', 'lego'].flatMap((d) => readdirSync(`extensii/trenulet/sursa/${d}`).filter((f) => f.endsWith('.ts')).map((f) => `${d}/${f}`));
-  assert.deepEqual(surse.sort(), ['lego/lego.ts', 'planificator/app.ts', 'planificator/atelier.ts', 'planificator/cnc.ts', 'planificator/gcode.ts', 'planificator/profiluri.ts']);
+  assert.deepEqual(surse.sort(), ['lego/lego.ts', 'planificator/app.ts', 'planificator/atelier.ts', 'planificator/cnc.ts', 'planificator/gcode.ts', 'planificator/limba.ts', 'planificator/profiluri.ts']);
   for (const s of surse) assert.ok(lista.some((f) => f.endsWith(`/extensii/trenulet/sursa/${s}`)), s);
   const r = tsc('--noEmit', '-p', PROIECT);
   assert.equal(r.cod, 0, r.text.slice(0, 4000));

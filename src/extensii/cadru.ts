@@ -18,6 +18,7 @@ import { servesteStocarea, type RaspunsServiciu } from './stocare.ts';
 export type EvenimentCadru =
   | { readonly tip: 'pornit' }
   | { readonly tip: 'inchide' }
+  | { readonly tip: 'reporneste' }
   | { readonly tip: 'esuat'; readonly mesaj: string }
   | { readonly tip: 'eroare'; readonly mesaj: string; readonly stiva: string };
 
@@ -129,6 +130,7 @@ export function pornesteCadru(container: HTMLElement, ext: ExtensieInstalata, co
       }
       case 'pornit':
       case 'inchide':
+      case 'reporneste':
         laEveniment({ tip: m.tip });
         return;
       case 'esuat':

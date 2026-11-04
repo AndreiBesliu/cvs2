@@ -37,8 +37,8 @@ var Profiluri = (function () {
           <button class="btn" type="button" data-prof="implicit"${s.activ === s.implicit ? " disabled" : ""}>${s.activ === s.implicit ? "★ Implicită" : "☆ Fă-o implicită"}</button>
           <button class="btn" type="button" data-prof="sterge"${s.lista.length < 2 ? " disabled" : ""}>Șterge</button>
         </div>
-        ${form ? `<div class="prof-rand prof-form">${form.op === "sterge" ? `<span class="mic">Ștergi ${opt.fel} „${esc(a ? a.nume : "")}”? Setările ei se pierd.</span>`
-          : `<label class="prof-alege">${form.op === "nou" ? `Numele ${opt.fel === "mașina" ? "mașinii noi" : "imprimantei noi"}` : "Numele nou"}<input data-prof="text" maxlength="40" value="${esc(form.text)}" autocomplete="off"></label>`}
+        ${form ? `<div class="prof-rand prof-form">${form.op === "sterge" ? `<span class="mic">${tr`Ștergi ${tr(opt.fel)} „${esc(a ? a.nume : "")}”? Setările ei se pierd.`}</span>`
+          : `<label class="prof-alege">${form.op === "nou" ? tr`Numele ${opt.fel === "mașina" ? tr("mașinii noi") : tr("imprimantei noi")}` : "Numele nou"}<input data-prof="text" maxlength="40" value="${esc(form.text)}" autocomplete="off"></label>`}
           <button class="btn principal" type="button" data-prof="ok">${form.op === "nou" ? "Creează" : form.op === "sterge" ? "Da, șterge" : "Salvează"}</button>
           <button class="btn" type="button" data-prof="renunta">Renunță</button></div>` : ""}
         <p class="mic">${opt.ajutor}</p>`;

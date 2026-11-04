@@ -85,7 +85,7 @@ test('pachetul: cvs2 îl citește ca la instalare; intrarea fără importuri, sc
   const { manifest, fisiere } = r.pachet;
   assert.deepEqual([manifest.id, manifest.intrare, manifest.stiluri, manifest.permisiuni], ['trenulet', 'index.js', ['trenulet.css'], ['stocare', 'descarcari', 'masina', 'cont']]);
   const surse = scripturi();
-  assert.deepEqual([...fisiere.keys()].sort(), ['body.html', 'index.js', 'js/three.js', 'licente/three.txt', 'trenulet.css', ...surse.map((s) => `js/${s.nume}`)].sort());
+  assert.deepEqual([...fisiere.keys()].sort(), ['body.html', 'index.js', 'js/three.js', 'licente/three.txt', 'texte.en.json', 'trenulet.css', ...surse.map((s) => `js/${s.nume}`)].sort());
   const text = (c: string): string => new TextDecoder().decode(fisiere.get(c));
   const intrare = text('index.js');
   assert.doesNotMatch(intrare, /^\s*import\b|\bimport\s*\(/m);
@@ -96,4 +96,14 @@ test('pachetul: cvs2 îl citește ca la instalare; intrarea fără importuri, sc
   assert.doesNotMatch(text('js/app.js'), /\/\*CATALOG\*\/null/);
   assert.match(text('trenulet.css'), /^\*,\*::before,\*::after\{box-sizing:border-box\}body\{margin:0\}\n/);
   assert.equal(text('body.html'), readFileSync('extensii/trenulet/sursa/planificator/body.html', 'utf8'));
+});
+
+test('limba (ADR 0165): limba.js e primul script al paginii; dicționarul englez stă în pachet, nu în pagina de sine stătătoare', async () => {
+  assert.equal(scripturi()[0]?.nume, 'limba.js');
+  const r = await citestePachet(pachetTrenulet().octeti);
+  assert.ok(r.ok, JSON.stringify(r));
+  const texte = r.pachet.fisiere.get('texte.en.json');
+  assert.ok(texte, 'texte.en.json lipsește din pachet');
+  assert.deepEqual(new TextDecoder().decode(texte), readFileSync('extensii/trenulet/sursa/planificator/texte.en.json', 'utf8'));
+  assert.doesNotMatch(paginiPlanificator().preview, /TexteEN\s*=/);
 });

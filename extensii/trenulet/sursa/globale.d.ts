@@ -97,12 +97,14 @@ interface Window {
   /** Pus de intrarea extensiei în cvs2 (`extensii/trenulet/intrare.ts`): gazda, senderul (null fără permisiunea mașinii),
    *  three.js din pachet, adus la prima cerere (ADR 0163); contul lui cvs2 (null fără permisiunea `cont`), anunțul unei teme,
    *  limbi sau cont nou și salvările amânate ale paginii, pe care cvs2 le pornește pe loc la închidere (ADR 0164). */
-  readonly cvs2?: { readonly gazda: 'cvs2'; readonly masina: import('../../api.ts').HostApi['masina'] | null;
+  readonly cvs2?: { readonly gazda: 'cvs2'; readonly limba: 'ro' | 'en'; readonly masina: import('../../api.ts').HostApi['masina'] | null;
     readonly three: () => Promise<Trei.Biblioteca | null>;
     readonly cont: () => import('../../api.ts').ContCvs2 | null;
     readonly laSchimbare: (f: () => void) => () => void;
     readonly amana: (cheie: string, f: () => unknown, ms: number) => void };
   readonly THREE?: Trei.Biblioteca;
+  /** Dicționarul englez al paginii (ADR 0165): pus de intrare doar în engleză, înaintea scripturilor. */
+  readonly TexteEN?: Readonly<Record<string, string>>;
 }
 
 /** Un câmp de formular în care pagina scrie și numere: DOM-ul le face text (`input.value = 3`). */

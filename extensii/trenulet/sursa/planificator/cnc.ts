@@ -509,7 +509,7 @@ var TrenCNC = (function (glob: typeof globalThis) {
         if (!o[ns]) {
           const marc: Pl[] = [];
           if (j < T) for (let k = 0; k <= j; k++) marc.push(marcaj(L_ - 40, (k - j / 2) * 7));
-          adauga(piesa(ns, [cale(x0, 0, 0, [Ls(L_ - x0)], cj, cs, { santuri: false })], { marcaje: marc, titlu: "Rampa strat " + (j + 1) }));
+          adauga(piesa(ns, [cale(x0, 0, 0, [Ls(L_ - x0)], cj, cs, { santuri: false })], { marcaje: marc, titlu: tr("Rampa strat ") + (j + 1) }));
         }
         kit[nume].push([ns, 1]);
       }
@@ -535,7 +535,7 @@ var TrenCNC = (function (glob: typeof globalThis) {
     }
     const forma = scade(reuneste(adaug), scot);
     const c = cale(0, H / 2, 0, [Ls(lung)], "M", "M");
-    return piesa("placa_calibrare", [], { forma, santuriExtra: liniiSant(c, 0), marcaje: marc, titlu: "Placa de calibrare" });
+    return piesa("placa_calibrare", [], { forma, santuriExtra: liniiSant(c, 0), marcaje: marc, titlu: tr("Placa de calibrare") });
   }
 
   // ---------------------------------------------------------------------------------------------- rampa: relief 3D
@@ -998,7 +998,8 @@ var TrenCNC = (function (glob: typeof globalThis) {
         if (!loc) {
           placa = placaNoua();
           loc = incearca(placa, p);
-          if (!loc) throw new Error("Piesa " + (p.titlu || p.nume) + " nu încape pe placă");
+          // piesa stă și ca proprietate: pagina o citește de acolo, nu din text (care e în limba paginii, ADR 0165)
+          if (!loc) throw Object.assign(new Error(tr`Piesa ${p.titlu || p.nume} nu încape pe placă`), { piesa: p.titlu || p.nume });
           placi.push(placa);
         }
         puneAici(placa!, p, loc);
@@ -1335,11 +1336,11 @@ var TrenCNC = (function (glob: typeof globalThis) {
     };
     for (const [nume, n] of Object.entries(deLaCircuit).sort()) {
       const k = /^stalp_(\d+)$/.exec(nume);
-      if (k) printata(`stalp_${+k[1]! * P.grosime}mm`, `Stâlp ${+k[1]! * P.grosime} mm`, n, stlStalp(+k[1]!));
-      else if (nume === "opritor_bloc") printata("opritor_tampoane", "Opritor cu tampoane", n, stlOpritor(), 0.25);
-      else if (nume.startsWith("cale:")) { const pc = cat.piese[nume.slice(5)]; printata(`cale_${pc!.nume}`, `${pc!.titlu || pc!.nume} (printată)`, n, stlCale(pc!)); }
+      if (k) printata(`stalp_${+k[1]! * P.grosime}mm`, tr`Stâlp ${+k[1]! * P.grosime} mm`, n, stlStalp(+k[1]!));
+      else if (nume === "opritor_bloc") printata("opritor_tampoane", tr("Opritor cu tampoane"), n, stlOpritor(), 0.25);
+      else if (nume.startsWith("cale:")) { const pc = cat.piese[nume.slice(5)]; printata(`cale_${pc!.nume}`, tr`${pc!.titlu || pc!.nume} (printată)`, n, stlCale(pc!)); }
     }
-    if (P.proba_cuplaje) for (const x of probaCuplaje()) printata(`proba_cuplaj_${x.k}`, `Proba cuplajelor, varianta ${x.k}`, 1, x, 0.2);
+    if (P.proba_cuplaje) for (const x of probaCuplaje()) printata(`proba_cuplaj_${x.k}`, tr`Proba cuplajelor, varianta ${x.k}`, 1, x, 0.2);
     printata("tunel", "Tunel", Math.max(0, Math.round(P.tunel || 0)), stlTunel());
     printata("peron", "Peron", Math.max(0, Math.round(P.peron || 0)), stlPeron());
     if (ce.rampa) {

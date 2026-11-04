@@ -359,13 +359,13 @@ var Lego = (function (glob: typeof globalThis) {
       if (are(a - 1, b - 1) && are(a, b - 1) && are(a - 1, b) && are(a, b)) out.push({ a, b, t: t === "x" ? "x" : "r", c: [P.pas * a, P.pas * b] });
       else afara++;
     }
-    if (afara) avert.push(`${afara === 1 ? "O gaură nu are" : afara + " găuri nu au"} material de jur împrejur: ${afara === 1 ? "a rămas" : "au rămas"} pe dinafară.`);
+    if (afara) avert.push(tr`${afara === 1 ? tr("O gaură nu are") : afara + tr(" găuri nu au")} material de jur împrejur: ${afara === 1 ? tr("a rămas") : tr("au rămas")} pe dinafară.`);
     return out;
   }
   function caramida({ celule, placi = 3, stifturi: cuStifturi = true, fund = "tuburi", gauri = [], goale = false, laterale = null }: {
     celule: readonly Celula[]; placi?: number; stifturi?: boolean | "mijloc"; fund?: string; gauri?: readonly GauraGrila[]; goale?: boolean;
     laterale?: readonly string[] | null }): Corp {
-    if (!celule || !celule.length) throw new Error("forma nu are nicio celulă");
+    if (!celule || !celule.length) throw new Error(tr("forma nu are nicio celulă"));
     const e = ef(), s = P.pas, H = placi * P.placa, S = new Set(celule.map(([i, j]) => cheie(i, j)));
     const are = (i: number, j: number) => S.has(cheie(i, j)), tri: Tri[] = [], avert: string[] = [];
     if (laterale && laterale.some((t: string) => t && t !== "p")) {
@@ -378,14 +378,14 @@ var Lego = (function (glob: typeof globalThis) {
         const t2 = peX || n === 1 ? r.tri : axe(r.tri, ([x, y, z]) => [y, x, z], true);
         return { tri: muta(t2, s * Math.min(...xs), s * Math.min(...ys), 0), avert: r.avert };
       }
-      avert.push("Găurile laterale merg doar la o cărămidă dreaptă 1 × n, de 3 plăci: le-am lăsat deoparte.");
+      avert.push(tr("Găurile laterale merg doar la o cărămidă dreaptă 1 × n, de 3 plăci: le-am lăsat deoparte."));
     }
     let gv = gauriIntersectii(celule, gauri, avert);
     if (cuStifturi === "mijloc") {
       // stiftul din mijloc acopera gaura de sub el (la formele pare): gaura aceea ramane pe dinafara
       const mx = celule.reduce((t, [i]) => t + i + 0.5, 0) / celule.length, my = celule.reduce((t, [, j]) => t + j + 0.5, 0) / celule.length;
       const sub = (g: GauraPusa) => Math.hypot(g.a - mx, g.b - my) * s < P.stift_d / 2 + e.gauraD / 2 + 0.3;
-      if (gv.some(sub)) { avert.push("Gaura de sub știftul din mijloc a rămas pe dinafară (știftul o acoperă)."); gv = gv.filter(g => !sub(g)); }
+      if (gv.some(sub)) { avert.push(tr("Gaura de sub știftul din mijloc a rămas pe dinafară (știftul o acoperă).")); gv = gv.filter(g => !sub(g)); }
     }
     const lg = new Map(gv.map((g): [string, GauraPusa] => [cheie(g.a, g.b), g]));
     // stifturile goale: o gaura pentru bara de 3,2 prin stift si prin capac
@@ -482,7 +482,7 @@ var Lego = (function (glob: typeof globalThis) {
       const c: P2 = [s * i + s / 2, s * j + s / 2], pat = patratCelula(S, i, j, j0), r = P.stift_d / 2 + e.joc;
       const [xa, ya] = pat[0]!, [xb, yb] = pat[2]!, inPanta = j < adanc - sus;
       let ad = Math.min(P.stift_h + 0.2, z(c[1] - r) - 0.6);
-      if (ad < 1.0) { avert.push("rândul din față e prea subțire pentru locașuri: stă direct pe știfturi"); sub(xa, xb, ya, yb, 0); continue; }
+      if (ad < 1.0) { avert.push(tr("rândul din față e prea subțire pentru locașuri: stă direct pe știfturi")); sub(xa, xb, ya, yb, 0); continue; }
       // in fata locasului, unde panta coboara sub inaltimea lui, o fasie plina pana jos (altfel buza ar iesi mai groasa
       // decat cea ceruta, iar corpul de deasupra locasului s-ar intoarce pe dos)
       const yc = inPanta && z(ya) < ad + 0.6 ? c[1] - r - 0.05 : ya;
@@ -521,7 +521,7 @@ var Lego = (function (glob: typeof globalThis) {
     }
     tri.push(...stifturi(celule.map(([i, j]) => [s * i + s / 2, s * j + s / 2]), H, e.stiftD));
     const unghi = Math.atan2(H - buza, ys - yf) * 180 / Math.PI;
-    if (unghi < 40) avert.push(`Sub pantă, fața e la ${Math.round(90 - unghi)}° de verticală: în picioare, cere suport la printare (sau o pantă mai abruptă).`);
+    if (unghi < 40) avert.push(tr`Sub pantă, fața e la ${Math.round(90 - unghi)}° de verticală: în picioare, cere suport la printare (sau o pantă mai abruptă).`);
     return { tri, avert, unghi };
   }
 
@@ -642,7 +642,7 @@ var Lego = (function (glob: typeof globalThis) {
       if (loc.has(cheie(a, b))) gv.push({ a, b, t: t === "x" ? "x" : "r", c: [s * a, s * b] });
       else afara++;
     }
-    if (afara) avert.push(`${afara === 1 ? "O gaură e" : afara + " găuri sunt"} prea aproape de margine: ${afara === 1 ? "a rămas" : "au rămas"} pe dinafară.`);
+    if (afara) avert.push(tr`${afara === 1 ? tr("O gaură e") : afara + tr(" găuri sunt")} prea aproape de margine: ${afara === 1 ? tr("a rămas") : tr("au rămas")} pe dinafară.`);
     const forma = (g: GauraPusa): Forma => (g.t === "x" ? formaPoli(gauraForma(g.c, "x")) : formaCerc(g.c, e.gauraD / 2));
     for (let i = 0; i < lung; i++) for (let j = 0; j < lat; j++) {
       const c: P2 = [s * i + s / 2, s * j + s / 2];
@@ -665,8 +665,8 @@ var Lego = (function (glob: typeof globalThis) {
       if (cuStifturi && d >= P.stift_d / 2 + 0.3) st.push(c);
     }
     if (cuStifturi) tri.push(...stifturi(st, H, e.stiftD));
-    if (!locasuri) avert.push("Dedesubt nu încape niciun locaș întreg: piesa stă pe știfturi, dar nu se prinde de ele (se lipește).");
-    if (cuStifturi && !st.length) avert.push("Sus nu încape niciun știft întreg.");
+    if (!locasuri) avert.push(tr("Dedesubt nu încape niciun locaș întreg: piesa stă pe știfturi, dar nu se prinde de ele (se lipește)."));
+    if (cuStifturi && !st.length) avert.push(tr("Sus nu încape niciun știft întreg."));
     // unghiul taieturii, fata de latura lunga (x)
     const dy = parte === "ambele" ? (lat - varf) / 2 : lat - varf, unghi = Math.atan2(dy, lung - inceput) * 180 / Math.PI;
     return { tri, avert, unghi, stifturi: st.length, locasuri, deschise, gauri: gv.length };
@@ -711,7 +711,7 @@ var Lego = (function (glob: typeof globalThis) {
       const zc = Math.min(H - 0.6, ad + 1.0);
       tri.push(...inel(cerc(cx, cy, R, N), gp, c0, z0, zc + 0.01));
       if (Rt >= rg + 0.5) tri.push(...inel(cerc(cx, cy, R, N), gp, c0, zc, H, cerc(cx, cy, Rt, N)));
-      else { prinVarf = false; tri.push(...trunchi(cx, cy, R, Rt, zc, H, N)); avert.push("Vârful e prea îngust pentru gaură: gaura se oprește sub con."); }
+      else { prinVarf = false; tri.push(...trunchi(cx, cy, R, Rt, zc, H, N)); avert.push(tr("Vârful e prea îngust pentru gaură: gaura se oprește sub con.")); }
     } else tri.push(...inel(cerc(cx, cy, R, N), gp, c0, z0, H));
     // sus: la 2 x 2 cu toate stifturile, cele patru raman pline (gaura e intre ele); stiftul din mijloc e gol pentru bara
     if (st !== "niciunul") {
@@ -719,8 +719,8 @@ var Lego = (function (glob: typeof globalThis) {
       else if (Rt >= P.stift_d / 2 + 0.3) {
         if (g === "bara" && prinVarf) tri.push(...tub(cx, cy, e.stiftD / 2, e.baraGauraD / 2, H - 0.01, H + P.stift_h));
         else if (g === "bara") tri.push(...stifturi([c0], H, e.stiftD));
-        else avert.push("Cu gaura de " + (g === "ax" ? "ax" : "știft") + " în mijloc, știftul din mijloc nu mai încape: iese fără.");
-      } else avert.push("Vârful e prea îngust pentru un știft: iese fără.");
+        else avert.push(tr("Cu gaura de ") + (g === "ax" ? tr("ax") : tr("știft", "pin")) + tr(" în mijloc, știftul din mijloc nu mai încape: iese fără."));
+      } else avert.push(tr("Vârful e prea îngust pentru un știft: iese fără."));
     }
     return { tri, avert };
   }
@@ -733,7 +733,7 @@ var Lego = (function (glob: typeof globalThis) {
     const e = ef(), s = P.pas, H = placi * P.placa, R = diam * s / 2 - P.joc_lateral, cx = diam * s / 2, cy = cx, tri: Tri[] = [], avert: string[] = [];
     const ad = Math.min(P.stift_h + 0.2, H - 0.8), N = 64, c0: P2 = [cx, cy];
     let g = ["bara", "stift", "ax"].includes(gaura) ? gaura : "nu";
-    if (diam === 1 && g !== "nu" && g !== "bara") { avert.push("La 1 × 1 încape doar gaura pentru bară."); g = "bara"; }
+    if (diam === 1 && g !== "nu" && g !== "bara") { avert.push(tr("La 1 × 1 încape doar gaura pentru bară.")); g = "bara"; }
     const gp = g === "nu" ? null : gauraForma(c0, g === "bara" ? "b" : g === "ax" ? "x" : "r");
     const rg = gp ? Math.max(...gp.map(q => Math.hypot(q[0] - cx, q[1] - cy))) : 0;
     if (gp) return rotundCuGaura({ diam, H, R, cx, cy, ad, N, g, gp, rg, forma, varf_d, st, e, avert });
@@ -754,9 +754,9 @@ var Lego = (function (glob: typeof globalThis) {
     if (st !== "niciunul") {
       if (diam === 2 && st === "toate" && Rt >= R - 1e-9) for (const [a, b] of [[1, 1], [3, 1], [1, 3], [3, 3]] as P2[]) sts.push([a * s / 2, b * s / 2]);
       else if (Rt >= P.stift_d / 2 + 0.3) { sts.push([cx, cy]); varf = diam === 2 && st === "toate"; }
-      else avert.push("Vârful e prea îngust pentru un știft: iese fără.");
+      else avert.push(tr("Vârful e prea îngust pentru un știft: iese fără."));
     }
-    if (varf) avert.push("Conul are un singur știft, în mijloc (ca la LEGO).");
+    if (varf) avert.push(tr("Conul are un singur știft, în mijloc (ca la LEGO)."));
     tri.push(...stifturi(sts, H, e.stiftD));
     return { tri, avert };
   }
@@ -826,7 +826,7 @@ var Lego = (function (glob: typeof globalThis) {
     unghiuri = unghiuri.slice(0, brate.length - 1).map(u => Math.max(-120, Math.min(120, +u || 0)));
     const C = centreIndoita(brate, unghiuri);
     // gaurile prea apropiate (cot strans), se unesc: nu se mai pot printa ca gauri separate
-    for (let i = 0; i < C.length; i++) for (let j = i + 2; j < C.length; j++) if (Math.hypot(C[i]![0] - C[j]![0], C[i]![1] - C[j]![1]) < P.grinda_lat + 0.4) { avert.push("Bratele se ating la cot: unghiul e prea mare pentru lungimile astea."); i = C.length; break; }
+    for (let i = 0; i < C.length; i++) for (let j = i + 2; j < C.length; j++) if (Math.hypot(C[i]![0] - C[j]![0], C[i]![1] - C[j]![1]) < P.grinda_lat + 0.4) { avert.push(tr("Bratele se ating la cot: unghiul e prea mare pentru lungimile astea.")); i = C.length; break; }
     const ccw = (v: Vf[]): Vf[] => (CV.plineClosed(v).area() < 0 ? v.slice().reverse().map((q, k: number, a): Vf => [q[0], q[1], -(a[(k + 1) % a.length]![2])]) : v);
     let acc: Vf[] = [[C[0]![0] + r, C[0]![1], 1], [C[0]![0] - r, C[0]![1], 1]];
     const uneste = (v: Vf[]) => {
@@ -867,7 +867,7 @@ var Lego = (function (glob: typeof globalThis) {
       // bucatile legate intre ele (pe laturi)
       const vazut = new Set([cheie(celule[0]![0], celule[0]![1])]), coada: (readonly [number, number, ...unknown[]])[] = [celule[0]!];
       while (coada.length) { const [i, j] = coada.pop()!; for (const [a, b] of [[i + 1, j], [i - 1, j], [i, j + 1], [i, j - 1]] as P2[]) if (S.has(cheie(a, b)) && !vazut.has(cheie(a, b))) { vazut.add(cheie(a, b)); coada.push([a, b]); } }
-      if (vazut.size < S.size) avert.push("Grinda are bucăți care nu se ating: ies piese separate.");
+      if (vazut.size < S.size) avert.push(tr("Grinda are bucăți care nu se ating: ies piese separate."));
       return { tri, avert };
     }
     gauri.forEach((t, k) => tri.push(...celulaGrinda(k, gauri.length, t, groasa)));
@@ -949,7 +949,7 @@ var Lego = (function (glob: typeof globalThis) {
     const gx = cruce(R, R, e.axGauraD, e.axGauraLat), gr = cerc(R, R, e.gauraD / 2), avert: string[] = [];
     let tri: Tri[];
     if (gaura === "xr" && n >= 1) tri = [...inel(ext, gx, c, 0, h / 2 + 0.01), ...inel(ext, gr, c, h / 2, h)];
-    else { if (gaura === "xr") avert.push("Bucșa de ½ are o singură gaură: am făcut-o pentru ax."); tri = inel(ext, gaura === "r" ? gr : gx, c, 0, h); }
+    else { if (gaura === "xr") avert.push(tr("Bucșa de ½ are o singură gaură: am făcut-o pentru ax.")); tri = inel(ext, gaura === "r" ? gr : gx, c, 0, h); }
     return { tri, avert };
   }
   // ---------------------------------------------------------------------------------------------- suporti, cleme, bare, bile
@@ -972,7 +972,7 @@ var Lego = (function (glob: typeof globalThis) {
     tri.push(...(invers ? muta(baza, 0, 0, Hv - P.placa) : baza));
     tri.push(...cutie(j0, j0 - t, 0, s * lung - j0, j0 + 0.01, Hv));
     tri.push(...stifturiFata(Array.from({ length: lung }, (_, i) => s * i + s / 2), Array.from({ length: inalt }, (_, k) => s * k + s / 2), j0 - t, -1));
-    if (invers) avert.push("Placa de sus stă în aer: la printare cere suport sub ea.");
+    if (invers) avert.push(tr("Placa de sus stă în aer: la printare cere suport sub ea."));
     return { tri, avert };
   }
   function sectiuneC(ri: number, ro: number, gura: number, unghi: number, cx: number, cy: number) {
@@ -1044,14 +1044,14 @@ var Lego = (function (glob: typeof globalThis) {
     baza = +baza === 2 ? 2 : 1;
     const H = P.placa, rb = P.bila_d / 2, rn = 1.6, c = baza * P.pas / 2, zc = H + 1.5 + Math.sqrt(rb * rb - rn * rn), tri = bazaArticulatie(baza);
     tri.push(...cilindru(c, c, rn, H - 0.01, zc), ...sfera(c, c, zc, rb, 40));
-    return { tri, avert: ["Sub bilă, primele straturi stau în aer: dacă iese urâtă, printeaz-o cu suport."] };
+    return { tri, avert: [tr("Sub bilă, primele straturi stau în aer: dacă iese urâtă, printeaz-o cu suport.")] };
   }
   function cupa({ baza = 1 }: { baza?: number }): Corp {
     // cupa pentru bila: gaura sferica deschisa sus, cu patru fante ca sa se deschida cand intra bila
     baza = +baza === 2 ? 2 : 1;
     const e = ef(), H = P.placa, Rc = e.cupaD / 2, Ro = Math.min(P.pas / 2 - P.joc_lateral, Rc + 0.85), rg = e.cupaGura / 2, c = baza * P.pas / 2;
     const zc = H + 0.4 + Rc, z1 = zc - Rc + 0.3, zt = zc + Math.sqrt(Rc * Rc - rg * rg), zs = zc - 1.6, tri = bazaArticulatie(baza), avert: string[] = [];
-    if (baza === 2) avert.push("Cupa e mai lată decât locul dintre știfturi: pe 2 × 2 am lăsat știfturile, dar se ating de ea.");
+    if (baza === 2) avert.push(tr("Cupa e mai lată decât locul dintre știfturi: pe 2 × 2 am lăsat știfturile, dar se ating de ea."));
     const sf = (z0: number, z1_: number) => {
       // peretele gaurii sferice, de sus in jos, intre z0 (sus) si z1_ (jos)
       const t0 = Math.asin((z0 - zc) / Rc), t1 = Math.asin((z1_ - zc) / Rc), p: Poli = [];
@@ -1082,7 +1082,7 @@ var Lego = (function (glob: typeof globalThis) {
       P = { ...salvat, varianta_stift: v, varianta_locas: v };
       const tri = caramida({ celule: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], placi: 1, fund: "tuburi" }).tri;
       tri.push(...semne(v, 2, -1.0, 0.6));
-      piese.push({ nume: `calibrare_stift_${v}`, titlu: `Calibrare: placa ${v}`, tri: laOrigine(tri) });
+      piese.push({ nume: `calibrare_stift_${v}`, titlu: tr`Calibrare: placa ${v}`, tri: laOrigine(tri) });
     }
     P = { ...salvat };
     for (const [tip, nume, cheieV] of [["r", "gauri", "varianta_gaura"], ["x", "ax", "varianta_ax"]] as [string, string, "varianta_gaura" | "varianta_ax"][]) {
@@ -1094,24 +1094,24 @@ var Lego = (function (glob: typeof globalThis) {
       }
       P = { ...salvat };
       tri.push(...cutie(-2.5, w / 2 - 1, 0, 0.4, w / 2 + 1, 2));
-      piese.push({ nume: `calibrare_${nume}`, titlu: tip === "r" ? "Calibrare: găuri rotunde" : "Calibrare: găuri pentru ax", tri: laOrigine(tri) });
+      piese.push({ nume: `calibrare_${nume}`, titlu: tip === "r" ? tr("Calibrare: găuri rotunde") : tr("Calibrare: găuri pentru ax"), tri: laOrigine(tri) });
     }
     // barele (clema si stiftul gol) si cupa bilei: cate cinci variante, cu semnul pe spate
     for (let v = 1; v <= 5; v++) {
       P = { ...salvat, varianta_bara: v };
       const tri = clema({ lung: 1, axa: "verticala", goale: true }).tri;
       tri.push(...semne(v, 0.4, 7.7, 0.6, 1.6));
-      piese.push({ nume: `calibrare_bara_${v}`, titlu: `Calibrare: clemă și știft gol ${v}`, tri: laOrigine(tri) });
+      piese.push({ nume: `calibrare_bara_${v}`, titlu: tr`Calibrare: clemă și știft gol ${v}`, tri: laOrigine(tri) });
     }
     for (let v = 1; v <= 5; v++) {
       P = { ...salvat, varianta_cupa: v };
       const tri = cupa({ baza: 1 }).tri;
       tri.push(...semne(v, 0.4, 7.7, 0.6, 1.6));
-      piese.push({ nume: `calibrare_cupa_${v}`, titlu: `Calibrare: cupă ${v}`, tri: laOrigine(tri) });
+      piese.push({ nume: `calibrare_cupa_${v}`, titlu: tr`Calibrare: cupă ${v}`, tri: laOrigine(tri) });
     }
     P = { ...salvat };
-    piese.push({ nume: "calibrare_bara_proba", titlu: "Calibrare: bară de probă", tri: laOrigine(bara({ lung: 4 }).tri) });
-    piese.push({ nume: "calibrare_bila", titlu: "Calibrare: bilă de probă", tri: laOrigine(bila({ baza: 1 }).tri) });
+    piese.push({ nume: "calibrare_bara_proba", titlu: tr("Calibrare: bară de probă"), tri: laOrigine(bara({ lung: 4 }).tri) });
+    piese.push({ nume: "calibrare_bila", titlu: tr("Calibrare: bilă de probă"), tri: laOrigine(bila({ baza: 1 }).tri) });
     return piese;
   }
 
@@ -1160,7 +1160,7 @@ var Lego = (function (glob: typeof globalThis) {
       .sort((a, b) => b.d - a.d || b.w - a.w);
     const placi: PlacaPat[] = [];
     for (const p of lista) {
-      if (p.w > L + 1e-6 || p.d > A + 1e-6) throw new Error(`${p.titlu || p.nume} nu încape pe patul de ${W} × ${H} mm`);
+      if (p.w > L + 1e-6 || p.d > A + 1e-6) throw new Error(tr`${p.titlu || p.nume} nu încape pe patul de ${W} × ${H} mm`);
       let loc: { pl: PlacaPat; r: Rand } | null = null;
       for (const pl of placi) {
         for (const r of pl.randuri) if (r.x + p.w <= L + 1e-6 && p.d <= r.d + 1e-6) { loc = { pl, r }; break; }

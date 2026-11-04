@@ -52,6 +52,12 @@ export interface HostApi {
   /** Cere închiderea ferestrei extensiei; cvs2 n-o mai întreabă de lucrul nesalvat (extensia știe ce are). */
   inchide(): void;
   /**
+   * Cere repornirea extensiei (ADR 0165): cvs2 îi oprește cadrul și îl pornește din nou, cu contextul de acum (de exemplu,
+   * într-o limbă nouă). Salvările le face extensia întâi. Cel mult o repornire la 2 s: una cerută mai devreme așteaptă până
+   * trec cele 2 s, iar cererile de până atunci se adună în ea.
+   */
+  reporneste(): void;
+  /**
    * Lucrul nesalvat (ADR 0164): `true` cât extensia are modificări pe care nu le-a salvat, `false` după ce le-a salvat. Cât
    * e `true`, × și reîncărcarea paginii întreabă omul întâi.
    */

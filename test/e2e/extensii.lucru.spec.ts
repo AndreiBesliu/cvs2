@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { impacheteaza, scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
+import { eroriJurnal } from './ajutor-jurnal.ts';
 
 /**
  * Pluginul ca parte din cvs2 (ADR 0164, felia 3.Xd), în Edge, cu extensia de probă `extensii/salut`:
@@ -211,4 +212,24 @@ test('altă extensie, sau o versiune nouă instalată, peste una nesalvată: în
   await expect(intrebare).toContainText('Închizi „Salut 2”?');
   await page.locator('[data-extensii="inchidere-inchide"]').click();
   await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
+});
+
+test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul de acum; cel mult o dată la 2 s, cererile dese adunate', async ({ page }) => {
+  await page.goto('/');
+  await instaleaza(page, Buffer.from(SALUT), STOCARE);
+  await deschide(page);
+  const deschideri = cadru(page).locator('[data-salut="deschideri"]');
+  await expect(deschideri).toHaveText('Deschideri: 1');
+  await cadru(page).locator('[data-salut="reporneste"]').click();
+  await expect(deschideri).toHaveText('Deschideri: 2');
+  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
+  // Două cereri imediat după: așteaptă până trec cele 2 s și se fac într-o singură repornire.
+  await cadru(page).locator('[data-salut="reporneste"]').click();
+  await cadru(page).locator('[data-salut="reporneste"]').click();
+  await page.waitForTimeout(300);
+  await expect(deschideri).toHaveText('Deschideri: 2');
+  await expect(deschideri).toHaveText('Deschideri: 3');
+  await page.waitForTimeout(2500);
+  await expect(deschideri).toHaveText('Deschideri: 3');
+  expect(await eroriJurnal(page)).toEqual([]);
 });
