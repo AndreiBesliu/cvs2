@@ -1,6 +1,7 @@
 # ADR 0032 — Degajările colțurilor: dog-bone și T-bone (documentul v8)
 
 **Starea:** acceptat pe 11.10.2026, în felia 2.6. **Intră în:** etapa 2. Nimic de aici nu se schimbă fără un ADR nou.
+**Precizat de:** ADR 0134 (felia 3.U, 04.11.2026): degajările aceleiași bucle se judecă față de pereții piesei și între ele (§5 d și e).
 
 **Problema.** O freză rotundă nu intră într-un colț ascuțit al materialului păstrat. Într-o gaură dreptunghiulară, freza
 Ø6 lasă în fiecare colț un rest cu raza de 3 mm, iar un cep cu colțuri drepte nu mai intră. Placa 2 cere gaura de

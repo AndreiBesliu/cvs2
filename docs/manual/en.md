@@ -596,7 +596,7 @@ all projects: another computer, another browser, or the test address versus the 
 | Tabs | bridges that hold the part in the sheet on the last passes: how many per loop, the length and the bridge thickness (from the bottom face) |
 | Ramp | the cutter goes down along the loop, not straight into the material; the ramp length (at least 1 mm) |
 | Leads | the cutter enters and leaves the outline on a quarter circle, through the waste, so the part's wall keeps no mark |
-| Corners | relief for the corners the cutter cannot reach: **dog-bone** (on the diagonal) or **T-bone** (into the longer wall) |
+| Corners | relief for the corners the cutter cannot reach: **dog-bone** (on the diagonal) or **T-bone** (into the longer wall). A corner whose relief would leave less than 1 mm of material to another wall of the part, or to the relief of another corner (at the base of a thin tongue or finger), goes without it, with a warning |
 | Split | an open path cut through the whole sheet, outside the parts: it is cut last, to split the sheet |
 | Side step | only on a pocket: the distance between the rings, at most half the cutter diameter (40% by default) |
 | Descent | only on a pocket: how the cutter enters the material on each pass: **plunge** (default), **ramp along the ring**, **zigzag** or **helix**, with their values (see below) |

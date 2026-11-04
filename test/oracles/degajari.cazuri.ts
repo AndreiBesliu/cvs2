@@ -13,7 +13,9 @@
  *   paralelograme (forfecare), rotite și oglindite, ambele sensuri, urechi (și lângă colțuri), rampă, intrări, găuri
  *   apropiate, pe-linie, freze Ø3,175 / Ø6 / Ø8, foi de 6–18 mm.
  */
-import { migreazaV4V8O, type ColturiO, type DocV8O, type IntrariO, type LaturaO, type MatriceO, type RampaO, type SensO, type UrechiO } from './document.ts';
+import {
+  migreazaV4V8O, migreazaV8V9O, type ColturiO, type DocV8O, type DocV9O, type IntrariO, type LaturaO, type MatriceO, type RampaO, type SensO, type UrechiO,
+} from './document.ts';
 import { aleator, cerc, documentRegiune, drept, ID, laMasina, type Montaj, type Stoc, type Traseu } from './regiune.cazuri.ts';
 import { segment, type FormaO, type Primitiva } from './regiune.ts';
 
@@ -319,6 +321,105 @@ export const CAZURI_DEG: readonly CazDeg[] = [
     { id: 'piesa', forma: drept(120, 80, 10), x: 20, y: 20, latura: 'exterior', adancime: 12, urechi: { numar: 4, latime: 8, grosime: 2 } },
     gaura('g', 60, 45, 40, 30, { colturi: dog(), adancime: 12 }),
   ], dogBone('g', G40), { sosiri: 3, adancime: 12, pas: 4 }),
+];
+
+// ---------------------------------------------------------------------------------------------------------------
+// ADR 0134 (felia 3.U): pereții piesei (d) și degajările aceleiași bucle (e). Cazurile stau separat de `CAZURI_DEG`,
+// ale cărui programe fără `colturi` au amprente fixate (aplicația de dinainte de ADR 0032). Documentele sunt v9 (forma
+// „cale”, ADR 0034): același v8, cu numărul ridicat.
+
+export type CazDeg0134 = Omit<CazDeg, 'doc'> & { readonly doc: DocV9O };
+
+/** O cale închisă din linii, în coordonatele elementului. */
+const poligon = (pts: ReadonlyArray<readonly [number, number]>): FormaO => ({ tip: 'cale', inchis: true, varfuri: pts.map(([x, y]) => ({ p: p(x, y), s: { tip: 'L' as const } })) });
+
+/**
+ * Gaura 60 × 50 cu limba de material păstrat lată de w și lungă de 35, din peretele de jos, pusă la (50, 35): colțurile
+ * găurii (50, 35), (110, 35), (110, 85), (50, 85) și cele de la baza limbii, (78, 35) și (78 + w, 35).
+ */
+const limba = (w: number): FormaO => poligon([[0, 0], [28, 0], [28, 35], [28 + w, 35], [28 + w, 0], [60, 0], [60, 50], [0, 50]]);
+const G60 = { st: 50, dr: 110, jos: 35, sus: 85 } as const;
+
+/**
+ * T-bone în colțurile găurii 60 × 50: jos-stânga, peretele lung e cel din stânga (50 față de 28), deci E = V + (0, R);
+ * jos-dreapta, cel din dreapta (50 față de 60 − 28 − w); sus, cel de sus (60 față de 50), deci E = V ± (R, 0).
+ */
+const TEE_G60: ColtHartie[] = [
+  { forma: 'g', V: p(50, 35), Q: p(53, 38), E: p(50, 38), inOrizontal: 0, inVertical: 3, nOrizontal: p(0, 1), nVertical: p(1, 0) },
+  { forma: 'g', V: p(110, 35), Q: p(107, 38), E: p(110, 38), inOrizontal: 0, inVertical: 3, nOrizontal: p(0, 1), nVertical: p(-1, 0) },
+  { forma: 'g', V: p(110, 85), Q: p(107, 82), E: p(107, 85), inOrizontal: 3, inVertical: 0, nOrizontal: p(0, -1), nVertical: p(-1, 0) },
+  { forma: 'g', V: p(50, 85), Q: p(53, 82), E: p(53, 85), inOrizontal: 3, inVertical: 0, nOrizontal: p(0, -1), nVertical: p(1, 0) },
+];
+
+const caz0134 = (nume: string, forme: readonly FormaDeg[], colturi: readonly ColtHartie[], o: Parameters<typeof caz>[3] = {}): CazDeg0134 => {
+  const c = caz(nume, forme, colturi, o);
+  return { ...c, doc: migreazaV8V9O(c.doc) };
+};
+const omisa = (V: P2, motiv: string): string => `g/g: degajarea omisă la colțul (${V.x.toFixed(3)}, ${V.y.toFixed(3)}): ${motiv}`;
+const PERETE = 'prea aproape de alt perete al piesei';
+const COLT_BUCLA = 'prea aproape de degajarea altui colț al buclei';
+const cuLimba = (w: number, colturi: ColturiO): FormaDeg => ({ id: 'g', forma: limba(w), x: 50, y: 35, latura: 'interior', adancime: 6, colturi });
+
+export const CAZURI_DEG_0134: readonly CazDeg0134[] = [
+  // d: E = (78, 38) și (80, 38), pe laturile limbii; discul de la E trece de latura din față (δ = 2 < R).
+  caz0134('D27 gaura 60 × 50 cu limba de 2 mm, T-bone: crestăturile de la baza limbii ar trece de latura din față (d); restul găurii rămâne', [
+    cuLimba(2, tee()),
+  ], TEE_G60, { omise: [p(78, 35), p(80, 35)], avertismente: [omisa(p(78, 35), PERETE), omisa(p(80, 35), PERETE)] }),
+  // e: E = (78, 38) și (84, 38): fiecare lasă 3 mm din limba de 6 (d trece: δ = 6 ≥ R + 1), dar |E₁E₂| = 6 < D + 1, iar
+  // mijlocul (81, 38) e în limbă.
+  caz0134('D28 gaura 60 × 50 cu limba de 6 mm, T-bone: crestăturile de la baza limbii se ating în ea (e), deci se omit amândouă', [
+    cuLimba(6, tee()),
+  ], TEE_G60, { omise: [p(78, 35), p(84, 35)], avertismente: [omisa(p(78, 35), COLT_BUCLA), omisa(p(84, 35), COLT_BUCLA)] }),
+  // |E₁E₂| = 7,5 ≥ D + 1: rămân, cu 1,5 mm de limbă între crestături.
+  caz0134('D29 gaura 60 × 50 cu limba de 7,5 mm, T-bone: între crestăturile din limbă rămân 1,5 mm, deci rămân toate șase', [
+    cuLimba(7.5, tee()),
+  ], [
+    ...TEE_G60,
+    { forma: 'g', V: p(78, 35), Q: p(75, 38), E: p(78, 38), inOrizontal: 0, inVertical: 3, nOrizontal: p(0, 1), nVertical: p(-1, 0) },
+    { forma: 'g', V: p(85.5, 35), Q: p(88.5, 38), E: p(85.5, 38), inOrizontal: 0, inVertical: 3, nOrizontal: p(0, 1), nVertical: p(1, 0) },
+  ], { intre: [[p(78, 35), p(85.5, 35), 1.5]] }),
+  // d: E = (78 − R/√2, 35 + R/√2); discul ajunge la x = 78,879, la 0,121 de latura din față (x = 79), prin limbă: mijlocul
+  // golului, (78,939, 37,121), e în limbă.
+  caz0134('D30 gaura 60 × 50 cu limba de 1 mm, dog-bone: discul de la baza limbii ajunge la 0,121 mm de latura din față, prin limbă (d)', [
+    cuLimba(1, dog()),
+  ], dogBone('g', G60), { omise: [p(78, 35), p(79, 35)], avertismente: [omisa(p(78, 35), PERETE), omisa(p(79, 35), PERETE)] }),
+  // |E₁E₂| = 3 + 2·R/√2 = 7,243 ≥ D + 1: rămân, cu 1,243 mm de limbă între discuri.
+  caz0134('D31 gaura 60 × 50 cu limba de 3 mm, dog-bone: între discurile din limbă rămân 1,243 mm, deci rămân toate șase', [
+    cuLimba(3, dog()),
+  ], [
+    ...dogBone('g', G60),
+    { forma: 'g', V: p(78, 35), Q: p(75, 38), E: p(78 - S2, 35 + S2), inOrizontal: I2, inVertical: I2, nOrizontal: p(0, 1), nVertical: p(-1, 0) },
+    { forma: 'g', V: p(81, 35), Q: p(84, 38), E: p(81 + S2, 35 + S2), inOrizontal: I2, inVertical: I2, nOrizontal: p(0, 1), nVertical: p(1, 0) },
+  ], { intre: [[p(78, 35), p(81, 35), 2 * S2 - 3]] }),
+  // e: |E₁E₂| = 2,5 + 2·R/√2 = 6,743 < D + 1, mijlocul (79,25, 37,121) e în limbă; d trece (δ = 2,5 + R/√2 = 4,621 ≥ R + 1).
+  caz0134('D32 gaura 60 × 50 cu limba de 2,5 mm, dog-bone: între discurile din limbă ar rămâne 0,743 mm (e), deci se omit amândouă', [
+    cuLimba(2.5, dog()),
+  ], dogBone('g', G60), { omise: [p(78, 35), p(80.5, 35)], avertismente: [omisa(p(78, 35), COLT_BUCLA), omisa(p(80.5, 35), COLT_BUCLA)] }),
+  // Fanta 40 × 6,5 la (60, 45): drumurile stau la 3,5 de latura din față, dar mijlocul golului e în fantă; cele două drumuri
+  // de la un capăt sunt la 0,5, cu mijlocul tot în fantă. Nimic omis.
+  caz0134('D33 fanta 40 × 6,5, dog-bone: golul dintre drumuri și latura din față e în fantă (deșeu), deci rămân toate patru', [
+    gaura('g', 60, 45, 40, 6.5, { colturi: dog() }),
+  ], dogBone('g', { st: 60, dr: 100, jos: 45, sus: 51.5 })),
+  caz0134('D34 fanta 40 × 6,5, T-bone (pereții lungi orizontali): rămân toate patru', [
+    gaura('g', 60, 45, 40, 6.5, { colturi: tee() }),
+  ], teeOrizontal('g', { st: 60, dr: 100, jos: 45, sus: 51.5 })),
+  // Mortiza 10 × 6,5: crestăturile de jos, E = (63, 45) și (67, 45), sunt la 4 < D + 1; perechea cea mai apropiată a
+  // drumurilor (paralele) e în mortiză sau pe peretele de jos, deci nu în K: rămân toate patru.
+  caz0134('D35 mortiza 10 × 6,5, T-bone: crestăturile din capetele aceluiași perete se unesc pe el, deci rămân toate patru', [
+    gaura('g', 60, 45, 10, 6.5, { colturi: tee() }),
+  ], teeOrizontal('g', { st: 60, dr: 70, jos: 45, sus: 51.5 })),
+  // Îmbinarea cu degete pe exterior, la (40, 40): degetele [40, 46], [52,5, 58,5], [65, 71], golurile de 6,5 până la
+  // y = 60. T-bone-ul intră în latura degetului (12 > 6,5). Degetul din mijloc: E = (52,5, 63) și (58,5, 63), la 6 < D + 1,
+  // cu mijlocul (55,5, 63) în deget (e). Cele din margini rămân: E = (46, 63) și (65, 63).
+  caz0134('D36 îmbinarea cu degete pe exterior, T-bone în laturile degetelor: degetul din mijloc își pierde ambele crestături (e)', [
+    {
+      id: 'g', forma: poligon([[0, 0], [31, 0], [31, 32], [25, 32], [25, 20], [18.5, 20], [18.5, 32], [12.5, 32], [12.5, 20], [6, 20], [6, 32], [0, 32]]),
+      x: 40, y: 40, latura: 'exterior', adancime: 6, colturi: tee(),
+    },
+  ], [
+    { forma: 'g', V: p(46, 60), Q: p(49, 63), E: p(46, 63), inOrizontal: 0, inVertical: 3, nOrizontal: p(0, 1), nVertical: p(1, 0) },
+    { forma: 'g', V: p(65, 60), Q: p(62, 63), E: p(65, 63), inOrizontal: 0, inVertical: 3, nOrizontal: p(0, 1), nVertical: p(-1, 0) },
+  ], { omise: [p(52.5, 60), p(58.5, 60)], avertismente: [omisa(p(52.5, 60), COLT_BUCLA), omisa(p(58.5, 60), COLT_BUCLA)] }),
 ];
 
 /** D11: sosirile cu rampă nu sunt câte una pe trecere (rampa trece prin colț și tura îl reface); se numără în test. */

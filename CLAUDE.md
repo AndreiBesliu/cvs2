@@ -462,6 +462,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `test/unit/verificare.test.ts`, cu valoarea ei pe hârtie.** Reparațiile (10.2↑) așteaptă răspunsurile owner-ului la
   întrebările din ADR 0124. **Pornirea 98,5 (cu ușa 102,0 / 110 kB), totalul 454,7 / 500.** După unirea în main
   (04.11), cu linia textului: **pornirea 100,3 (cu ușa 103,9 / 110 kB), totalul 468,9 / 500, /admin 105,3 / 200.**
+  **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
+  noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
+  1 mm de el mijlocul golului nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1, cu mijlocul perechii
+  strict în K, se omit amândoi). Până acum, o limbă de material dintr-o gaură sau degetele unei îmbinări tăiate pe
+  exterior se puteau desprinde la bază, fără avertisment. Logica e în `src/cam/degajari.ts` (`departeDePereti`,
+  `materialIntre`), legată în `job.ts`; oracolul are d și e (K al elementului, perechea căutată numeric), cu cazurile în
+  `CAZURI_DEG_0134` (separat de `CAZURI_DEG`, ale cărui amprente sunt fixate). Colțurile cu arce rămân felia următoare.
+  **Pornirea 100,3 (cu ușa 103,9 / 110 kB), totalul 469,3 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

@@ -12,12 +12,14 @@ import { traseuGaurire } from './gaurire.ts';
 import { traseuVcarve } from './vcarve.ts';
 import { adancimiTreceri, profil } from './profil.ts';
 import { perete, regiunePastrata, verificaTaietura, type Perete } from './regiune.ts';
-import { apropiereContururi, distantaCutii } from '../geom/apropiere.ts';
+import { apropiereContururi, distantaCutii, segmenteCuCutii } from '../geom/apropiere.ts';
 import { arieCuSemn, inverseaza, LINIE, type Contur } from '../geom/contur.ts';
 import { cutieContur, depasire, largita, type Cutie, type Depasire } from '../geom/cutie.ts';
 import { curataIntrare } from '../geom/offset.ts';
 import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
-import { arceSubRaza, colturiCurbe, colturiDeDegajat, cubiceSubRaza, EPS_COLT, type Degajare } from './degajari.ts';
+import {
+  arceSubRaza, colturiCurbe, colturiDeDegajat, cubiceSubRaza, departeDePereti, EPS_COLT, materialIntre, type Degajare,
+} from './degajari.ts';
 import { bucataBuclei, lungimeBucla } from './parcurgere.ts';
 import { PRAG_REZOLUTIE } from './iesire.ts';
 import {
@@ -302,24 +304,43 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   // Degajările candidate (ADR 0032 §5 a, precizarea din 11.10): colțurile fiecărei tăieturi cu degajări, pe conturul curățat
   // ca la offset, cu Q pe o buclă și cu drumul departe de traseele celorlalte bucle. Ele se judecă apoi și între ele: două
   // candidate a două bucle diferite, mai apropiate de D + 1 mm, se omit amândouă (ordinea tăieturilor nu contează).
-  type Candidat = { readonly d: Degajare; readonly j: number; readonly drum: Contur; readonly cutie: Cutie; readonly departe: boolean };
+  // `pereti`: condiția d (ADR 0134 §2), pe pereții elementului care nu se întâlnesc în V.
+  type Candidat = {
+    readonly d: Degajare; readonly j: number; readonly drum: Contur; readonly cutie: Cutie; readonly departe: boolean; readonly pereti: boolean;
+  };
+  /** Conturul curățat al fiecărei tăieturi cu degajări: pereții și K ai condițiilor d și e (ADR 0134). */
+  const conturCurat: Array<Contur | null> = taieturi.map(() => null);
   const candidati: readonly (readonly Candidat[])[] = taieturi.map((u, iu) => {
     const bs = bucleToate[iu] ?? [];
     if (!u.colturi || (u.latura !== 'exterior' && u.latura !== 'interior') || bs.length === 0) return [];
     const R = u.scula.diametru / 2, prag = pragDe(iu);
     const curat = curataIntrare(conturDe(u));
+    const element = curat.ok ? curat.contur : conturDe(u);
+    conturCurat[iu] = element;
     const rez: Candidat[] = [];
-    for (const d of colturiDeDegajat(curat.ok ? curat.contur : conturDe(u), u.latura, u.sens, R, u.colturi.tip)) {
+    let segmente: ReturnType<typeof segmenteCuCutii> | null = null;
+    for (const d of colturiDeDegajat(element, u.latura, u.sens, R, u.colturi.tip)) {
       // Decalarea a mâncat colțul (laturi prea scurte): nu există Q, deci nici degajare (§2).
       const j = bs.findIndex((c) => c.varfuri.some((x) => Math.hypot(x.p.x - d.q.x, x.p.y - d.q.y) <= EPS_COLT));
       if (j < 0) continue;
       const drum: Contur = { inchis: false, varfuri: [{ p: d.q, s: LINIE }, { p: d.e, s: LINIE }] };
       const cutie = cutieContur(drum);
       const departe = bucleToate.every((bb, ib) => bb.every((_, jb) => (ib === iu && jb === j) || departeDeBucla(drum, cutie, ib, jb, prag)));
-      rez.push({ d, j, drum, cutie, departe });
+      segmente ??= segmenteCuCutii(element);
+      rez.push({ d, j, drum, cutie, departe, pereti: departeDePereti(element, u.latura, R, d, MARJA_SCHELET, segmente) });
     }
     return rez;
   });
+  /**
+   * Condiția e (ADR 0134 §3): între drumul candidatului x și al fiecărui alt candidat al aceleiași bucle nu rămâne sub 1 mm de
+   * material păstrat. Ca la candidații altor bucle, un candidat omis pentru alt motiv tot îl oprește pe cel de lângă el.
+   */
+  const departeDeColturi = (x: Candidat, iu: number): boolean => {
+    const u = taieturi[iu], element = conturCurat[iu];
+    if (!u || !element || (u.latura !== 'exterior' && u.latura !== 'interior')) return true;
+    const prag = pragDe(iu), latura = u.latura;
+    return (candidati[iu] ?? []).every((y) => y === x || y.j !== x.j || !y.departe || !materialIntre(x.d, y.d, element, latura, prag));
+  };
   /** Drumul candidatului (iu, j) stă la cel puțin D + 1 mm de drumurile candidate ale celorlalte bucle. */
   const departeDeDegajari = (x: Candidat, iu: number): boolean => {
     const prag = pragDe(iu);
@@ -600,10 +621,13 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
         const W = foaie.stoc.latime, H = foaie.stoc.inaltime;
         const margine = [[dc.minX, bc.minX], [W - dc.maxX, W - bc.maxX], [dc.minY, bc.minY], [H - dc.maxY, H - bc.maxY]]
           .every(([gd, gb]) => (gd ?? 0) >= Math.min(MARJA_SCHELET, gb ?? 0) - 1e-9);
+        // Ordinea motivelor (ADR 0134 §1): a (traseele, candidații), b, c, apoi d (pereții piesei) și e (colțurile buclei).
         const motiv = !x.departe ? 'prea aproape de altă buclă'
           : !departeDeDegajari(x, it) ? 'prea aproape de degajarea altei bucle'
             : !departeDeUrechi(x.drum, c, 0, gu, R, D) ? 'ar tăia puntea unei urechi'
-              : !margine ? 'prea aproape de marginea foii' : null;
+              : !margine ? 'prea aproape de marginea foii'
+                : !x.pereti ? 'prea aproape de alt perete al piesei'
+                  : !departeDeColturi(x, it) ? 'prea aproape de degajarea altui colț al buclei' : null;
         if (motiv) {
           avertismente.push(`${t.idLume}: degajarea omisă la colțul (${x.d.v.x.toFixed(3)}, ${x.d.v.y.toFixed(3)}): ${motiv}`);
           continue;

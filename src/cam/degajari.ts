@@ -1,4 +1,7 @@
-import { cerculArcului, inSensTrigonometric, inverseaza, type Contur, type Punct, type Segment } from '../geom/contur.ts';
+import { apropiereSegmente, distantaCutii, segmenteCuCutii } from '../geom/apropiere.ts';
+import { cerculArcului, inSensTrigonometric, inverseaza, LINIE, type Contur, type Punct, type Segment } from '../geom/contur.ts';
+import type { Cutie } from '../geom/cutie.ts';
+import { distantaLaContur, inRegiune } from '../geom/distanta.ts';
 import type { Miscare } from '../ir/ir.ts';
 import type { Sens } from './profil.ts';
 
@@ -73,6 +76,63 @@ export function colturiDeDegajat(element: Contur, latura: 'exterior' | 'interior
     rez.push({ v: v.p, q, e });
   }
   return rez;
+}
+
+/** ADR 0134 §4: un punct la cel mult atât de contur (mm) stă pe el. */
+export const PE_CONTUR = 1e-6;
+
+/** ADR 0134 §2: discul care ajunge la sub R − atât (mm) de un perete trece de el; mai puțin e rotunjirea. */
+const EPS_PERETE = 1e-6;
+
+/** K, partea păstrată a elementului (ADR 0134 §4): înăuntrul conturului pe `exterior`, în afara lui pe `interior` (`evenodd`). */
+function inK(p: Punct, element: Contur, latura: 'exterior' | 'interior'): boolean {
+  return inRegiune(p, [element]) === (latura === 'exterior');
+}
+
+const cutieDrum = (d: Degajare): Cutie => ({
+  minX: Math.min(d.q.x, d.e.x), maxX: Math.max(d.q.x, d.e.x), minY: Math.min(d.q.y, d.e.y), maxY: Math.max(d.q.y, d.e.y),
+});
+
+/**
+ * Condiția d (ADR 0134 §2): drumul [Q, E] al colțului V față de pereții elementului care nu se întâlnesc în V. Pe fiecare
+ * segment σ, cu c pe drum și p pe σ punctele cele mai apropiate, la δ: discul de rază R nu trece de σ (δ ≥ R − 10⁻⁶), iar sub
+ * R + `marja`, mijlocul golului, la (R + δ) / 2 de c spre p, nu e în K (pe contur e K: discul atinge σ). `element` e conturul
+ * curățat dat lui `colturiDeDegajat`, deci V e chiar unul dintre vârfurile lui. `segmente`: ale lui `element`, cu cutiile lor
+ * (socotite o dată pe tăietură, nu pe fiecare colț).
+ */
+export function departeDePereti(
+  element: Contur, latura: 'exterior' | 'interior', R: number, d: Degajare, marja: number,
+  segmente: ReturnType<typeof segmenteCuCutii> = segmenteCuCutii(element),
+): boolean {
+  const n = element.varfuri.length;
+  const i = element.varfuri.findIndex((v) => v.p.x === d.v.x && v.p.y === d.v.y);
+  const drum = { a: d.q, b: d.e, s: LINIE };
+  const cd = cutieDrum(d);
+  for (const [k, x] of segmente.entries()) {
+    // Cele două segmente din V: segmentul k pleacă din vârful k.
+    if (i >= 0 && (k === i || k === (i - 1 + n) % n)) continue;
+    if (distantaCutii(cd, x.cutie) >= R + marja) continue;
+    const a = apropiereSegmente(drum, x.s);
+    if (a.distanta < R - EPS_PERETE) return false;
+    if (a.distanta >= R + marja) continue;
+    const t = (R + a.distanta) / 2 / a.distanta;
+    const m = { x: a.p.x + t * (a.q.x - a.p.x), y: a.p.y + t * (a.q.y - a.p.y) };
+    if (distantaLaContur(m, element) <= PE_CONTUR || inK(m, element, latura)) return false;
+  }
+  return true;
+}
+
+/**
+ * Condiția e (ADR 0134 §3): drumurile a doi candidați ai aceleiași bucle lasă între crestături sub 1 mm de material păstrat:
+ * sunt la sub `prag` (D + 1) unul de altul, iar mijlocul perechii celei mai apropiate e strict în K. Pe contur nu e K: acolo
+ * două T-bone-uri intră în același perete, din capetele lui, iar crestăturile lor se unesc.
+ */
+export function materialIntre(x: Degajare, y: Degajare, element: Contur, latura: 'exterior' | 'interior', prag: number): boolean {
+  if (distantaCutii(cutieDrum(x), cutieDrum(y)) >= prag) return false;
+  const a = apropiereSegmente({ a: x.q, b: x.e, s: LINIE }, { a: y.q, b: y.e, s: LINIE });
+  if (!(a.distanta < prag)) return false;
+  const m = { x: (a.p.x + a.q.x) / 2, y: (a.p.y + a.q.y) / 2 };
+  return distantaLaContur(m, element) > PE_CONTUR && inK(m, element, latura);
 }
 
 /** Conturul închis, parcurs în sensul de mers: cu K în dreapta, în afara conturului (o gaură) e trigonometric. */

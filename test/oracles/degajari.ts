@@ -81,6 +81,13 @@
  * pentru §5 (a: traseele celorlalte bucle; b: coloanele urechilor; c: cutia buclei), e cea citită din program, cu banda
  * `BANDA_PROGRAM` = 0,003 (cotele rotunjite); dreptunghiurile și cercurile rămân pe offsetul exact, ca înainte.
  *
+ * ADR 0134 (felia 3.U, scris de sesiunea aplicației, după textul ADR-ului, cu metodele de aici): la §5, după c, d (pereții
+ * elementului care nu au un capăt în V: discul drumului nu trece de ei, iar sub R + 1 mijlocul golului nu e în K) și e
+ * (candidații aceleiași tăieturi, doi câte doi: sub D + 1, mijlocul perechii strict în K). K e partea păstrată a
+ * ELEMENTULUI (`contine`), nu regiunea foii (o gaură singură n-are acolo K); perechea cea mai apropiată se caută numeric
+ * (`perecheNumerica`); la ±BANDA_CONDITII de praguri sau de contur, în bandă. La c, un disc la ≥ 1 mm de fiecare latură a
+ * foii trece și fără bucla citită (cerința e min(1, golul buclei)).
+ *
  * TOLERANȚELE (cotele rotunjite la 3 zecimale):
  * - TOL_Q = 0,005 (Q citit ±0,0007 față de cel de pe hârtie, cu marjă), TOL_E = 0,003 (E citit ±0,0007);
  * - Z-ul drumului: egal cu Z-ul sosirii, ±0,0005 (Z nu se rescrie; aceeași cotă);
@@ -89,8 +96,8 @@
 import type { ColturiO, IntrariO, LaturaO, LaturaV10O, RampaO, SensO, TipColturiO, UrechiO } from './document.ts';
 import { citeste, regulaArcGrbl, type Eveniment, type Mutare, type Punct3 } from './gcode.ts';
 import {
-  arc as arcP, celMaiMic, distantaListe, dPunctLista, lungime as lungimeP, peOParte, punct as punctP, punctLa, segment as segmentP, type Contur, type IncalcareMutare, type Primitiva,
-  type LaturaCale, type Regiune,
+  arc as arcP, capatul, capeteArc, celMaiMic, distantaExacta, distantaListe, dPunct, dPunctLista, inUnghi, lungime as lungimeP, peOParte, punct as punctP,
+  punctLa, segment as segmentP, startul, type Contur, type IncalcareMutare, type Primitiva, type LaturaCale, type Regiune,
 } from './regiune.ts';
 import { TOL_INCHIDERE, TOL_SUB, type EtichetaActiva, type P2 } from './sens.ts';
 import { buclaAnalitica, coloaneleUrechilor, desparte, desparteCuRampa, MARJA_SCHELET, mersTrigonometric } from './intrari.ts';
@@ -431,7 +438,11 @@ export function bucleleFoii(reg: Regiune, R: number, dinProgram: ReadonlyMap<str
 
 export type Verdict = 'da' | 'nu' | 'banda';
 /** §5 (precizarea din 11.10): motivele avertismentului, în ordinea verificărilor. */
-export const MOTIVE = ['prea aproape de altă buclă', 'prea aproape de degajarea altei bucle', 'ar tăia puntea unei urechi', 'prea aproape de marginea foii'] as const;
+export const MOTIVE = [
+  'prea aproape de altă buclă', 'prea aproape de degajarea altei bucle', 'ar tăia puntea unei urechi', 'prea aproape de marginea foii',
+  // ADR 0134 §5: d (pereții piesei), e (degajările aceleiași bucle).
+  'prea aproape de alt perete al piesei', 'prea aproape de degajarea altui colț al buclei',
+] as const;
 export type Motiv = (typeof MOTIVE)[number];
 /** §5 c: cât stă cel puțin discul drumului de fiecare latură a foii (mm). */
 export const MARJA_FOAIE = 1;
@@ -598,10 +609,100 @@ export function avertismenteleCaii(id: string, c: Contur, latura: 'exterior' | '
   return rez;
 }
 
+// ---------------------------------------------------------------------------------------------------------------
+// ADR 0134: pereții piesei (d) și degajările aceleiași bucle (e). Perechea cea mai apropiată se caută numeric (distanța
+// la primitivă e exactă în fiecare punct al drumului); K e partea păstrată a ELEMENTULUI, cu includerea lui `contine`.
+
+/** Punctul primitivei q cel mai apropiat de p: proiecția tăiată pe segment; pe arc, radial dacă e în unghi, altfel un capăt. */
+function celMaiApropiatPe(q: Primitiva, p: P2): P2 {
+  if (q.tip === 'punct') return q.p;
+  if (q.tip === 'segment') {
+    const d = sub(q.b, q.a), L2 = dot(d, d);
+    return L2 > 0 ? plus(q.a, d, Math.max(0, Math.min(1, dot(sub(p, q.a), d) / L2))) : q.a;
+  }
+  const v = sub(p, q.c), rho = Math.hypot(v.x, v.y);
+  if (rho > 0 && inUnghi(q, Math.atan2(v.y, v.x))) return plus(q.c, v, q.r / rho);
+  const [e0, e1] = capeteArc(q);
+  return dist(p, e0) <= dist(p, e1) ? e0 : e1;
+}
+
+const AUR = (Math.sqrt(5) - 1) / 2;
+
+/**
+ * Perechea cea mai apropiată dintre segmentul [A, B] și primitiva q: 257 de eșantioane pe [A, B], apoi secțiunea de aur în
+ * jurul celui mai bun; la egalitate rămâne primul eșantion (cel mai aproape de A).
+ */
+function perecheNumerica(A: P2, B: P2, q: Primitiva): { readonly c: P2; readonly p: P2 } {
+  const pe = (t: number): P2 => ({ x: A.x + (B.x - A.x) * t, y: A.y + (B.y - A.y) * t });
+  const f = (t: number): number => dPunct(pe(t), q);
+  let tb = 0, fb = f(0);
+  for (let k = 1; k <= 256; k++) {
+    const v = f(k / 256);
+    if (v < fb) { fb = v; tb = k / 256; }
+  }
+  let lo = Math.max(0, tb - 1 / 256), hi = Math.min(1, tb + 1 / 256);
+  for (let it = 0; it < 80; it++) {
+    const m1 = hi - AUR * (hi - lo), m2 = lo + AUR * (hi - lo);
+    if (f(m1) <= f(m2)) hi = m2; else lo = m1;
+  }
+  const tm = (lo + hi) / 2;
+  const c = pe(f(tm) < fb ? tm : tb);
+  return { c, p: celMaiApropiatPe(q, c) };
+}
+
+/** Unde e punctul față de element (ADR 0134 §4): în K, în deșeu, sau pe contur (la 1e-5 mm: în bandă). */
+function parteaElementului(ct: Contur, latura: 'exterior' | 'interior', m: P2): 'K' | 'deseu' | 'contur' {
+  if (dPunctLista(m, conturCuratat(ct)) < BANDA_CONDITII) return 'contur';
+  return (latura === 'exterior') === ct.contine(m) ? 'K' : 'deseu';
+}
+
+/** d: pereții elementului (după curățare) care nu au un capăt în V (cei doi din V sunt ai colțului). */
+function peretiDinAfaraLuiV(ct: Contur, V: P2): Primitiva[] {
+  return conturCuratat(ct).filter((q) => dist(startul(q), V) > CURATARE && dist(capatul(q), V) > CURATARE);
+}
+
+/**
+ * d (ADR 0134 §2) față de un perete s: discul drumului nu trece de s (δ ≥ R); sub R + 1, mijlocul golului dintre disc și s
+ * (la (R + δ) / 2 de punctul drumului, spre s) nu e în K. Pe contur e K; la ±1e-5 de praguri sau de contur, în bandă.
+ */
+function probaPerete(x: ColtDegajat, s: Primitiva, ct: Contur, latura: 'exterior' | 'interior', R: number): Proba {
+  const d = distantaExacta(segmentP(x.Q, x.E), s);
+  const p0 = startul(s), p1 = capatul(s);
+  const unde = `d (drumul e la ${mm(d)} mm de peretele (${mm(p0.x)}, ${mm(p0.y)}) – (${mm(p1.x)}, ${mm(p1.y)})`;
+  if (d < R - BANDA_CONDITII) return { v: 'nu', m: `${unde}, sub R = ${mm(R)}: discul trece de el)` };
+  if (d < R + BANDA_CONDITII) return { v: 'banda', m: `${unde}, la R)` };
+  if (d >= R + MARJA_SCHELET + BANDA_CONDITII) return { v: 'da', m: '' };
+  const { c, p } = perecheNumerica(x.Q, x.E, s);
+  const L = dist(c, p);
+  const m = plus(c, sub(p, c), (R + L) / 2 / L);
+  const k = parteaElementului(ct, latura, m);
+  if (k === 'deseu') return { v: 'da', m: '' };
+  const cuGol = `${unde}, sub R + 1, cu mijlocul golului (${mm(m.x)}, ${mm(m.y)}) ${k === 'K' ? 'în K' : 'pe contur'})`;
+  return { v: k === 'K' && d < R + MARJA_SCHELET - BANDA_CONDITII ? 'nu' : 'banda', m: cuGol };
+}
+
+/**
+ * e (ADR 0134 §3) între drumurile colțurilor x și y ale aceleiași tăieturi: sub D + 1, mijlocul perechii celei mai
+ * apropiate strict în K (pe contur nu e K). La ±1e-5 de prag sau de contur, în bandă.
+ */
+function probaColt(x: ColtDegajat, y: ColtDegajat, ct: Contur, latura: 'exterior' | 'interior', D: number): Proba {
+  const s = segmentP(y.Q, y.E);
+  const d = distantaExacta(segmentP(x.Q, x.E), s);
+  const prag = D + MARJA_SCHELET;
+  if (d >= prag + BANDA_CONDITII) return { v: 'da', m: '' };
+  const { c, p } = perecheNumerica(x.Q, x.E, s);
+  const m = { x: (c.x + p.x) / 2, y: (c.y + p.y) / 2 };
+  const k = parteaElementului(ct, latura, m);
+  if (k === 'deseu') return { v: 'da', m: '' };
+  const unde = `e (drumul e la ${mm(d)} mm de drumul colțului (${mm(y.V.x)}, ${mm(y.V.y)}), sub D + 1 = ${mm(prag)}, cu mijlocul (${mm(m.x)}, ${mm(m.y)}) ${k === 'K' ? 'în K' : 'pe contur'})`;
+  return { v: k === 'K' && d < prag - BANDA_CONDITII ? 'nu' : 'banda', m: unde };
+}
+
 /**
  * §5 (cu precizarea din 11.10) pe toată foaia 0: colțurile fiecărei operații `exterior` / `interior` cu `colturi`, cu
  * verificările în ordine: a (traseul altor bucle, ≥ D + 1), a (drumurile candidaților altor bucle, ≥ D + 1), b
- * (coloanele urechilor proprii, ≥ D; doar dacă pornirea buclei e dată), c (foaia, dacă e dată).
+ * (coloanele urechilor proprii, ≥ D; doar dacă pornirea buclei e dată), c (foaia, dacă e dată), apoi ADR 0134: d (pereții
+ * piesei) și e (degajările aceleiași bucle).
  */
 export function judecaFoaia(
   reg: Regiune, R: number, foaie: { readonly latime: number; readonly inaltime: number } | null, pornire: ReadonlyMap<string, P2>,
@@ -667,16 +768,34 @@ export function judecaFoaia(
     const t = reg.taieturi.get(x.id)!;
     const exact = t.contur!.drumIdeal(R, x.latura);
     const drumBucla = exact ?? dinProgram.get(x.cheie) ?? [];
-    // Fără nicio buclă cunoscută, golul ei nu se știe: verdictul e în bandă (oricare).
-    if (drumBucla.length === 0) return { v: 'banda' as const, m: 'c (bucla nu se cunoaște)' };
+    // Fără nicio buclă cunoscută, golul ei nu se știe: verdictul e în bandă (oricare). ADR 0134 §7: cerința e
+    // min(1, golul buclei) ≤ 1, deci un disc de drum la cel puțin 1 mm de fiecare latură a foii trece oricum.
+    if (drumBucla.length === 0) {
+      const gD = golurile(cutiaDrumului([x.drum]), R, foaie.latime, foaie.inaltime);
+      if (gD.every((g) => g >= MARJA_FOAIE + BANDA_CONDITII)) return { v: 'da' as const, m: '' };
+      return { v: 'banda' as const, m: 'c (bucla nu se cunoaște)' };
+    }
     const banda = exact ? BANDA_CONDITII : BANDA_PROGRAM;
     const gB = golurile(cutiaDrumului(drumBucla), R, foaie.latime, foaie.inaltime);
     const gD = golurile(cutiaDrumului([x.drum]), R, foaie.latime, foaie.inaltime);
     return ceaMaiRea(gD.map((g, k) => proba(g, Math.min(MARJA_FOAIE, gB[k]!), `c (discul drumului e la ${mm(g)} mm de latura ${LATURI_FOII[k]} a foii; bucla, la ${mm(gB[k]!)})`, banda)));
   });
+  // d (ADR 0134 §2): pereții elementului care nu trec prin V, fiecare judecat singur; K e partea păstrată a elementului.
+  const dP = toate.map((x) => {
+    const ct = reg.taieturi.get(x.id)!.contur!;
+    return ceaMaiRea(peretiDinAfaraLuiV(ct, x.c.V).map((s) => probaPerete(x.c, s, ct, x.latura, R)));
+  });
+  // e (ADR 0134 §3): candidații aceleiași tăieturi (a, traseul), doi câte doi; în bandă, ca la candidații altor bucle.
+  const eC = toate.map((x, i) => ceaMaiRea(toate.flatMap((y, j) => {
+    if (j === i || y.cheie !== x.cheie || a[j]!.v === 'nu') return [];
+    const p = probaColt(x.c, y.c, reg.taieturi.get(x.id)!.contur!, x.latura, D);
+    return [a[j]!.v === 'banda' && p.v === 'nu' ? { ...p, v: 'banda' as const } : p];
+  })));
   const colturi = new Map<string, ColtJudecat[]>();
   toate.forEach((x, i) => {
-    const probe = [[MOTIVE[0], a[i]!], [MOTIVE[1], cand[i]!], [MOTIVE[2], b[i]!], [MOTIVE[3], c[i]!]] as const;
+    const probe = [
+      [MOTIVE[0], a[i]!], [MOTIVE[1], cand[i]!], [MOTIVE[2], b[i]!], [MOTIVE[3], c[i]!], [MOTIVE[4], dP[i]!], [MOTIVE[5], eC[i]!],
+    ] as const;
     const rezultate = rezultatele(probe);
     const verdict: Verdict = rezultate.length === 1 && rezultate[0] === null ? 'da' : rezultate.includes(null) ? 'banda' : 'nu';
     const motiv = probe.find(([, p]) => p.v !== 'da')?.[1].m ?? '';
