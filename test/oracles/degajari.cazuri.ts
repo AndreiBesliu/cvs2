@@ -420,6 +420,26 @@ export const CAZURI_DEG_0134: readonly CazDeg0134[] = [
     { forma: 'g', V: p(46, 60), Q: p(49, 63), E: p(46, 63), inOrizontal: 0, inVertical: 3, nOrizontal: p(0, 1), nVertical: p(1, 0) },
     { forma: 'g', V: p(65, 60), Q: p(62, 63), E: p(65, 63), inOrizontal: 0, inVertical: 3, nOrizontal: p(0, 1), nVertical: p(-1, 0) },
   ], { omise: [p(52.5, 60), p(58.5, 60)], avertismente: [omisa(p(52.5, 60), COLT_BUCLA), omisa(p(58.5, 60), COLT_BUCLA)] }),
+  // Aripioara de 0,6 mm din desen (y ∈ [41,2, 41,8], x ∈ [50, 60]), din peretele din stânga al găurii 60 × 50 de la (50, 35):
+  // discul colțului (50, 35) stă la 0,2 sub ea, dar din Q (al traseului), deci punctul lui cel mai apropiat, (53, 41), e în
+  // deșeu: rămâne. Colțurile de la baza aripioarei: E = (50 + R/√2, 41,2 − R/√2) și (50 + R/√2, 41,8 + R/√2), cu discul până
+  // dincolo de fața cealaltă (δ = 2,721 < R): se omit (d).
+  caz0134('D37 gaura 60 × 50 cu o aripioară de 0,6 mm lângă colțul de jos, dog-bone: colțul rămâne, cele de la baza aripioarei se omit (d)', [
+    { id: 'g', forma: poligon([[0, 0], [60, 0], [60, 50], [0, 50], [0, 6.8], [10, 6.8], [10, 6.2], [0, 6.2]]), x: 50, y: 35, latura: 'interior', adancime: 6, colturi: dog() },
+  ], dogBone('g', G60), { omise: [p(50, 41.2), p(50, 41.8)], avertismente: [omisa(p(50, 41.2), PERETE), omisa(p(50, 41.8), PERETE)] }),
+  // Degetul din stânga, de 2 mm, la marginea plăcii (x ∈ [44, 46]): T-bone-ul din fundul golului (46, 60) intră 3 mm în el,
+  // deci discul trece de marginea x = 44 (δ = 2 < R), dincolo de care e deșeu.
+  caz0134('D38 îmbinarea cu degete pe exterior, degetul din stânga de 2 mm: T-bone-ul din golul lui ar trece de marginea plăcii (d)', [
+    {
+      id: 'g', forma: poligon([[4, 0], [31, 0], [31, 32], [25, 32], [25, 20], [18.5, 20], [18.5, 32], [12.5, 32], [12.5, 20], [6, 20], [6, 32], [4, 32]]),
+      x: 40, y: 40, latura: 'exterior', adancime: 6, colturi: tee(),
+    },
+  ], [
+    { forma: 'g', V: p(65, 60), Q: p(62, 63), E: p(65, 63), inOrizontal: 0, inVertical: 3, nOrizontal: p(0, 1), nVertical: p(-1, 0) },
+  ], {
+    omise: [p(46, 60), p(52.5, 60), p(58.5, 60)],
+    avertismente: [omisa(p(46, 60), PERETE), omisa(p(52.5, 60), COLT_BUCLA), omisa(p(58.5, 60), COLT_BUCLA)],
+  }),
 ];
 
 /** D11: sosirile cu rampă nu sunt câte una pe trecere (rampa trece prin colț și tura îl reface); se numără în test. */

@@ -338,8 +338,8 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
   const departeDeColturi = (x: Candidat, iu: number): boolean => {
     const u = taieturi[iu], element = conturCurat[iu];
     if (!u || !element || (u.latura !== 'exterior' && u.latura !== 'interior')) return true;
-    const prag = pragDe(iu), latura = u.latura;
-    return (candidati[iu] ?? []).every((y) => y === x || y.j !== x.j || !y.departe || !materialIntre(x.d, y.d, element, latura, prag));
+    const prag = pragDe(iu), latura = u.latura, R = u.scula.diametru / 2;
+    return (candidati[iu] ?? []).every((y) => y === x || y.j !== x.j || !y.departe || !materialIntre(x.d, y.d, element, latura, prag, R));
   };
   /** Drumul candidatului (iu, j) stă la cel puțin D + 1 mm de drumurile candidate ale celorlalte bucle. */
   const departeDeDegajari = (x: Candidat, iu: number): boolean => {

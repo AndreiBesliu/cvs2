@@ -96,9 +96,9 @@ const cutieDrum = (d: Degajare): Cutie => ({
 /**
  * Condiția d (ADR 0134 §2): drumul [Q, E] al colțului V față de pereții elementului care nu se întâlnesc în V. Pe fiecare
  * segment σ, cu c pe drum și p pe σ punctele cele mai apropiate, la δ: discul de rază R nu trece de σ (δ ≥ R − 10⁻⁶), iar sub
- * R + `marja`, mijlocul golului, la (R + δ) / 2 de c spre p, nu e în K (pe contur e K: discul atinge σ). `element` e conturul
- * curățat dat lui `colturiDeDegajat`, deci V e chiar unul dintre vârfurile lui. `segmente`: ale lui `element`, cu cutiile lor
- * (socotite o dată pe tăietură, nu pe fiecare colț).
+ * R + `marja`, punctul discului cel mai apropiat de σ, s = c + R·(p − c) / δ, nu e în K (pe contur e K: discul atinge σ).
+ * `element` e conturul curățat dat lui `colturiDeDegajat`, deci V e chiar unul dintre vârfurile lui. `segmente`: ale lui
+ * `element`, cu cutiile lor (socotite o dată pe tăietură, nu pe fiecare colț).
  */
 export function departeDePereti(
   element: Contur, latura: 'exterior' | 'interior', R: number, d: Degajare, marja: number,
@@ -115,24 +115,29 @@ export function departeDePereti(
     const a = apropiereSegmente(drum, x.s);
     if (a.distanta < R - EPS_PERETE) return false;
     if (a.distanta >= R + marja) continue;
-    const t = (R + a.distanta) / 2 / a.distanta;
-    const m = { x: a.p.x + t * (a.q.x - a.p.x), y: a.p.y + t * (a.q.y - a.p.y) };
-    if (distantaLaContur(m, element) <= PE_CONTUR || inK(m, element, latura)) return false;
+    const t = R / a.distanta;
+    const s = { x: a.p.x + t * (a.q.x - a.p.x), y: a.p.y + t * (a.q.y - a.p.y) };
+    if (distantaLaContur(s, element) <= PE_CONTUR || inK(s, element, latura)) return false;
   }
   return true;
 }
 
 /**
  * Condiția e (ADR 0134 §3): drumurile a doi candidați ai aceleiași bucle lasă între crestături sub 1 mm de material păstrat:
- * sunt la sub `prag` (D + 1) unul de altul, iar mijlocul perechii celei mai apropiate e strict în K. Pe contur nu e K: acolo
- * două T-bone-uri intră în același perete, din capetele lui, iar crestăturile lor se unesc.
+ * sunt la sub `prag` (D + 1) unul de altul, iar unul dintre discurile de rază R intră în K spre celălalt. Proba: punctele
+ * discurilor cele mai apropiate de celălalt drum, s₁ = c₁ + R·û și s₂ = c₂ − R·û (û de la c₁ la c₂), strict în K; cu
+ * drumurile atinse, punctul de atingere. Pe contur nu e K: acolo două T-bone-uri intră în același perete, din capetele lui,
+ * iar crestăturile lor se unesc.
  */
-export function materialIntre(x: Degajare, y: Degajare, element: Contur, latura: 'exterior' | 'interior', prag: number): boolean {
+export function materialIntre(x: Degajare, y: Degajare, element: Contur, latura: 'exterior' | 'interior', prag: number, R: number): boolean {
   if (distantaCutii(cutieDrum(x), cutieDrum(y)) >= prag) return false;
   const a = apropiereSegmente({ a: x.q, b: x.e, s: LINIE }, { a: y.q, b: y.e, s: LINIE });
   if (!(a.distanta < prag)) return false;
-  const m = { x: (a.p.x + a.q.x) / 2, y: (a.p.y + a.q.y) / 2 };
-  return distantaLaContur(m, element) > PE_CONTUR && inK(m, element, latura);
+  const strictInK = (p: Punct): boolean => distantaLaContur(p, element) > PE_CONTUR && inK(p, element, latura);
+  if (a.distanta === 0) return strictInK(a.p);
+  const t = R / a.distanta;
+  const dx = a.q.x - a.p.x, dy = a.q.y - a.p.y;
+  return strictInK({ x: a.p.x + t * dx, y: a.p.y + t * dy }) || strictInK({ x: a.q.x - t * dx, y: a.q.y - t * dy });
 }
 
 /** Conturul închis, parcurs în sensul de mers: cu K în dreapta, în afara conturului (o gaură) e trigonometric. */

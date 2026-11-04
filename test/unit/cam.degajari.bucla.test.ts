@@ -83,7 +83,7 @@ test('T-bone, limba de 6 mm: fiecare crestătură lasă 3 mm, dar împreună se 
   verifica(doc(limba(6), { colturi: { tip: 't-bone' } }), TEE_GAURA, [omis(P(28, 0), COLT), omis(P(34, 0), COLT)]);
 });
 
-test('T-bone, limba de 3 mm: discul de la E = (28, 3) atinge exact latura din față (δ = R), iar mijlocul golului, (31, 3), e pe contur, deci în K (d)', () => {
+test('T-bone, limba de 3 mm: discul de la E = (28, 3) atinge exact latura din față (δ = R), iar punctul lui cel mai apropiat, (31, 3), e pe contur, deci în K (d)', () => {
   verifica(doc(limba(3), { colturi: { tip: 't-bone' } }), TEE_GAURA, [omis(P(28, 0), PERETE), omis(P(31, 0), PERETE)]);
 });
 
@@ -100,18 +100,44 @@ test('e judecă doar candidații: colțul din stânga al limbii de 6 mm cade pe 
   assert.deepEqual([...r.avertismente], [omis(P(28, 0), 'prea aproape de altă buclă')]);
 });
 
-test('materialIntre (ADR 0134 §3): mijlocul perechii pe contur nu e în K, oricare ar fi peretele; strict înăuntrul limbii, e', () => {
-  // Mortiza 10 × 6,5 la origine: perechile cele mai apropiate cad pe peretele de jos, apoi pe cel de sus (mijlocul pe contur).
+test('materialIntre (ADR 0134 §3): o probă pe contur nu e în K, oricare ar fi peretele; strict înăuntrul limbii, e', () => {
+  // Mortiza 10 × 6,5 la origine: perechile cele mai apropiate cad pe peretele de jos, apoi pe cel de sus, iar probele
+  // (la R de capetele perechii, spre celălalt drum) stau pe același perete: pe contur.
   const mortiza = { inchis: true, varfuri: [P(0, 0), P(10, 0), P(10, 6.5), P(0, 6.5)].map((p) => ({ p, s: L })) };
-  const R6 = 7;
-  assert.equal(materialIntre({ v: P(0, 0), q: P(2, 3), e: P(3, 0) }, { v: P(10, 0), q: P(8, 3), e: P(7, 0) }, mortiza, 'interior', R6), false);
-  assert.equal(materialIntre({ v: P(0, 6.5), q: P(2, 3.5), e: P(3, 6.5) }, { v: P(10, 6.5), q: P(8, 3.5), e: P(7, 6.5) }, mortiza, 'interior', R6), false);
-  // Limba de 6 mm: E-urile pe laturile ei, mijlocul (31, 3) strict în ea.
+  const PRAG = 7, R = 3;
+  assert.equal(materialIntre({ v: P(0, 0), q: P(2, 3), e: P(3, 0) }, { v: P(10, 0), q: P(8, 3), e: P(7, 0) }, mortiza, 'interior', PRAG, R), false);
+  assert.equal(materialIntre({ v: P(0, 6.5), q: P(2, 3.5), e: P(3, 6.5) }, { v: P(10, 6.5), q: P(8, 3.5), e: P(7, 6.5) }, mortiza, 'interior', PRAG, R), false);
+  // Limba de 6 mm: E-urile pe laturile ei, probele în (31, 3), strict în ea.
   const g = limba(6);
   if (g.tip !== 'cale') return;
-  assert.equal(materialIntre({ v: P(28, 0), q: P(25, 3), e: P(28, 3) }, { v: P(34, 0), q: P(37, 3), e: P(34, 3) }, g, 'interior', R6), true);
-  // Pe aceeași limbă, sub prag dar cu mijlocul în deșeu (cele două colțuri de jos ale găurii, aduse una lângă alta): nu.
-  assert.equal(materialIntre({ v: P(0, 0), q: P(3, 3), e: P(0, 3) }, { v: P(0, 0), q: P(3, 4), e: P(3, 6) }, g, 'interior', R6), false);
+  assert.equal(materialIntre({ v: P(28, 0), q: P(25, 3), e: P(28, 3) }, { v: P(34, 0), q: P(37, 3), e: P(34, 3) }, g, 'interior', PRAG, R), true);
+  // Pe aceeași limbă, sub prag dar cu probele în deșeu (cele două colțuri de jos ale găurii, aduse una lângă alta): nu.
+  assert.equal(materialIntre({ v: P(0, 0), q: P(3, 3), e: P(0, 3) }, { v: P(0, 0), q: P(3, 4), e: P(3, 6) }, g, 'interior', PRAG, R), false);
+  // Drumurile care se ating: proba e punctul de atingere, aici Q, în deșeu.
+  assert.equal(materialIntre({ v: P(0, 0), q: P(3, 3), e: P(0, 3) }, { v: P(0, 0), q: P(3, 3), e: P(3, 0) }, g, 'interior', PRAG, R), false);
+});
+
+/**
+ * Aripioara: gaura 60 × 50 cu o aripioară de material păstrat de 0,6 mm (y ∈ [6,2, 6,8], x ∈ [0, 10]), din peretele din stânga.
+ * Pe sub ea trece freza (6,2 ≥ D). Colțul (0, 0), dog-bone: discul din Q = (3, 3) e chiar al traseului și stă la 0,2 mm sub
+ * aripioară, prin deșeu; probele lui d (punctul discului cel mai apropiat, (3, 6)) sunt în deșeu, deci degajarea rămâne. Colțurile
+ * de la baza aripioarei, (0, 6,2) și (0, 6,8), taie prin ea (δ = 2,721 < R până la fața din partea cealaltă): se omit (d).
+ */
+test('aripioara de 0,6 mm din desen, lângă colțul (0, 0): degajarea colțului rămâne (nu se apropie de ea mai mult decât traseul); cele de la baza aripioarei, care o taie, se omit', () => {
+  const aripioara = cale([[0, 0], [60, 0], [60, 50], [0, 50], [0, 6.8], [10, 6.8], [10, 6.2], [0, 6.2]]);
+  verifica(doc(aripioara, { colturi: { tip: 'dog-bone' } }), DOG_GAURA, [omis(P(0, 6.8), PERETE), omis(P(0, 6.2), PERETE)]);
+});
+
+/**
+ * Degetul din stânga, de 2 mm, la marginea plăcii: T-bone-ul din fundul golului intră 3 mm în el, deci discul trece de
+ * marginea din stânga (δ = 2 < R). Dincolo de margine e deșeu: doar condiția trecerii (discul care trece de un perete) îl
+ * prinde, nu și proba discului.
+ */
+test('îmbinarea cu degete pe exterior, degetul din stânga de 2 mm: T-bone-ul din golul lui ar trece de marginea plăcii (d), deci se omite', () => {
+  const degete = cale([[4, 0], [31, 0], [31, 32], [25, 32], [25, 20], [18.5, 20], [18.5, 32], [12.5, 32], [12.5, 20], [6, 20], [6, 32], [4, 32]]);
+  verifica(doc(degete, { latura: 'exterior', colturi: { tip: 't-bone' } }), [
+    [P(22, 23), P(25, 23)],
+  ], [omis(P(6, 20), PERETE), omis(P(12.5, 20), COLT), omis(P(18.5, 20), COLT)]);
 });
 
 test('T-bone, limba de 7,5 mm: între crestături rămân 1,5 mm (≥ 1), deci rămân toate șase', () => {
@@ -144,7 +170,7 @@ test('fanta 40 × 6,5: drumurile din colțuri stau la 3,5 mm de latura din faț�
   ], []);
 });
 
-test('mortiza 10 × 6,5 cu T-bone: crestăturile din capetele aceluiași perete se unesc pe el (mijlocul pe contur), deci rămân toate patru', () => {
+test('mortiza 10 × 6,5 cu T-bone: crestăturile din capetele aceluiași perete se unesc pe el (probele în deșeu sau pe contur), deci rămân toate patru', () => {
   verifica(doc(dr(10, 6.5), { colturi: { tip: 't-bone' } }), [
     [P(3, 3), P(3, 0)], [P(7, 3), P(7, 0)], [P(7, 3.5), P(7, 6.5)], [P(3, 3.5), P(3, 6.5)],
   ], []);

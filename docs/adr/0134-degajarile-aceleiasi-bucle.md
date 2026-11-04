@@ -31,25 +31,29 @@ omise) și ale cazurilor §8 (104), cu avertismentele lor, sunt cele de pe `46ab
 un colț V cu drumul [Q, E] se ia fiecare segment σ al conturului, în afară de cele două care se întâlnesc în V. Pe drum, c e
 punctul cel mai apropiat de σ, iar pe σ, p e cel mai apropiat de c, la distanța δ = |cp|.
 - **δ < R − 10⁻⁶:** discul frezei de pe drum trece de σ, deci intră în materialul păstrat de dincolo de el;
-- **R − 10⁻⁶ ≤ δ < R + 1 mm:** între disc și σ rămân δ − R < 1 mm. Contează doar dacă golul e material păstrat. Proba se
-  face în mijlocul golului, punctul m de pe segmentul c → p, la (R + δ) / 2 de c. Dacă m e în K, degajarea ar lăsa sub 1 mm
-  între crestătură și golul de dincolo de σ.
+- **R − 10⁻⁶ ≤ δ < R + 1 mm:** între disc și σ rămân δ − R < 1 mm. Contează doar dacă discul e în K spre σ, adică dacă
+  degajarea taie în materialul păstrat chiar în direcția lui. Proba se face în punctul discului cel mai apropiat de σ,
+  s = c + R·(p − c) / δ. Dacă s e în K, între crestătură și σ rămâne sub 1 mm de material păstrat.
 
-În oricare dintre cazuri, degajarea se omite. Un gol prin deșeu nu oprește nimic: într-o fantă puțin mai lată decât freza,
-drumul din colț stă la mai puțin de R + 1 mm de peretele din față, dar m e în fantă.
+În oricare dintre cazuri, degajarea se omite. Un gol prin deșeu nu oprește nimic:
+- într-o fantă puțin mai lată decât freza, drumul din colț stă la mai puțin de R + 1 mm de peretele din față, dar s e în
+  fantă;
+- o aripioară subțire din desen, la sub 1 mm de discul din Q (deci și de traseul buclei), nu oprește degajarea colțului: s e
+  în deșeu, iar degajarea nu se apropie de ea mai mult decât traseul.
 
 **3. Condiția e: degajările aceleiași bucle.** Se judecă doi candidați ai aceleiași bucle, în sensul precizării din 11.10: Q pe
-buclă și drumul departe de traseele celorlalte bucle. Fie δ distanța dintre drumurile lor și m mijlocul perechii celei mai
-apropiate de puncte, câte unul pe fiecare drum. Dacă δ < D + 1 mm și m e strict în K (la peste 10⁻⁶ mm de contur), între cele
-două crestături rămâne sub 1 mm de material păstrat, sau deloc. Atunci se omit amândouă, deci ordinea nu contează. Altfel rămân
-amândouă:
-- **m în deșeu:** cele două colțuri de la capătul unei fante;
-- **m pe contur:** două T-bone-uri intră în același perete, din capetele lui, iar crestăturile lor se unesc. Exemplul e o mortiză
-  10 × 6,5 cu Ø6. Acolo nu rămâne nimic subțire de care să se rupă ceva.
+buclă și drumul departe de traseele celorlalte bucle. Fie δ distanța dintre drumurile lor, c₁ și c₂ perechea cea mai apropiată
+de puncte, câte unul pe fiecare drum, și û direcția de la c₁ la c₂. Probele sunt punctele discurilor cele mai apropiate de
+celălalt drum, s₁ = c₁ + R·û și s₂ = c₂ − R·û; cu drumurile atinse, punctul de atingere. Dacă δ < D + 1 mm și una dintre probe
+e strict în K (la peste 10⁻⁶ mm de contur), un disc taie în materialul păstrat spre celălalt, iar între crestături rămâne sub
+1 mm, sau deloc. Atunci se omit amândouă, deci ordinea nu contează. Altfel rămân amândouă:
+- **probele în deșeu:** cele două colțuri de la capătul unei fante;
+- **o probă pe contur:** două T-bone-uri intră în același perete, din capetele lui, iar crestăturile lor se unesc. Exemplul e o
+  mortiză 10 × 6,5 cu Ø6. Acolo nu rămâne nimic subțire de care să se rupă ceva.
 
 **4. K.** K e partea păstrată a elementului: înăuntrul conturului pe `exterior`, în afara lui pe `interior`, după regula
-`evenodd`. La d, un m aflat la cel mult 10⁻⁶ mm de contur e socotit în K, ca parte sigură: discul atinge σ. La e, același m nu
-e în K, pentru crestăturile care se unesc pe același perete (§3).
+`evenodd`. La d, o probă aflată la cel mult 10⁻⁶ mm de contur e socotită în K, ca parte sigură: discul atinge σ. La e, aceeași
+probă nu e în K, pentru crestăturile care se unesc pe același perete (§3).
 
 **5. Avertismentele.** Forma e cea de la §5: `<idLume>: degajarea omisă la colțul (x, y): <motiv>`. Motivele noi sunt:
 - d: `prea aproape de alt perete al piesei`;
@@ -64,7 +68,7 @@ cutiile nu le despart deja, ca la §5 a.
 - K e partea păstrată a elementului, citită cu includerea oracolului (`contine`: `evenodd` pe poligonul lui), nu cu cea a
   aplicației. Regiunea păstrată a foii (ADR 0026) nu merge aici: o gaură singură pe foaie n-are acolo niciun K în jur;
 - perechea cea mai apropiată se caută numeric, pe drumul eșantionat și rafinat, cu distanța exactă la σ;
-- la ± 10⁻⁵ mm de un prag, și când m e la 10⁻⁵ mm de contur, oricare verdict e acceptat.
+- la ± 10⁻⁵ mm de un prag, și când o probă e la 10⁻⁵ mm de contur, oricare verdict e acceptat.
 
 La c (foaia), un drum al cărui disc stă la cel puțin 1 mm de fiecare latură a foii trece, chiar fără bucla citită, pentru că
 cerința e min(1, golul buclei). Fără asta, verdictul unei căi pe hârtie ar rămâne în bandă. Cazurile pe hârtie cu limba, fanta și
@@ -77,8 +81,11 @@ mortiza intră în `test/oracles/degajari.cazuri.ts`.
 - **Bucla parcursă din Q, cu vecinătatea colțului sărită:** o limbă scurtă și subțire rămâne toată în vecinătate, deci se taie.
 - **Regiunea tăiată în K, socotită prin boolean** (discul purtat pe drum ∩ K) și distanța ei la pereți. E exactă, dar grea pe
   fiecare colț: 1600 de găuri cu dog-bone ar plăti câte un boolean pe colț.
-- **Proba într-un singur punct pe linia c → p, la e, cu conturul socotit K:** mortiza 10 × 6,5 cu T-bone și-ar pierde toate
-  cele patru degajări.
+- **Proba în mijlocul golului dintre disc și σ (la d) sau dintre cele două drumuri (la e).** Era prima formă a deciziei.
+  Otrava care muta proba pe marginea discului a scăpat de probe, iar căutarea cazului care le desparte a arătat o alarmă
+  falsă. O aripioară subțire din desen, la sub 1 mm de discul din Q, oprea degajarea colțului, deși degajarea nu se apropie
+  de ea mai mult decât traseul buclei.
+- **La e, conturul socotit K:** mortiza 10 × 6,5 cu T-bone și-ar pierde toate cele patru degajări.
 
 **Se redeschide dacă:** o placă arată o margine subțiată sub 1 mm pe care proba de aici n-a văzut-o, sau colțurile cu arce
 (felia următoare) cer altă definiție a pereților vecini.

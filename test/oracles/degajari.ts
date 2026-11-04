@@ -82,8 +82,8 @@
  * `BANDA_PROGRAM` = 0,003 (cotele rotunjite); dreptunghiurile și cercurile rămân pe offsetul exact, ca înainte.
  *
  * ADR 0134 (felia 3.U, scris de sesiunea aplicației, după textul ADR-ului, cu metodele de aici): la §5, după c, d (pereții
- * elementului care nu au un capăt în V: discul drumului nu trece de ei, iar sub R + 1 mijlocul golului nu e în K) și e
- * (candidații aceleiași tăieturi, doi câte doi: sub D + 1, mijlocul perechii strict în K). K e partea păstrată a
+ * elementului care nu au un capăt în V: discul drumului nu trece de ei, iar sub R + 1 punctul discului cel mai apropiat de
+ * perete nu e în K) și e (candidații aceleiași tăieturi, doi câte doi: sub D + 1, un disc strict în K spre celălalt). K e partea păstrată a
  * ELEMENTULUI (`contine`), nu regiunea foii (o gaură singură n-are acolo K); perechea cea mai apropiată se caută numeric
  * (`perecheNumerica`); la ±BANDA_CONDITII de praguri sau de contur, în bandă. La c, un disc la ≥ 1 mm de fiecare latură a
  * foii trece și fără bucla citită (cerința e min(1, golul buclei)).
@@ -662,8 +662,8 @@ function peretiDinAfaraLuiV(ct: Contur, V: P2): Primitiva[] {
 }
 
 /**
- * d (ADR 0134 §2) față de un perete s: discul drumului nu trece de s (δ ≥ R); sub R + 1, mijlocul golului dintre disc și s
- * (la (R + δ) / 2 de punctul drumului, spre s) nu e în K. Pe contur e K; la ±1e-5 de praguri sau de contur, în bandă.
+ * d (ADR 0134 §2) față de un perete s: discul drumului nu trece de s (δ ≥ R); sub R + 1, punctul discului cel mai apropiat
+ * de s (la R de punctul drumului, spre s) nu e în K. Pe contur e K; la ±1e-5 de praguri sau de contur, în bandă.
  */
 function probaPerete(x: ColtDegajat, s: Primitiva, ct: Contur, latura: 'exterior' | 'interior', R: number): Proba {
   const d = distantaExacta(segmentP(x.Q, x.E), s);
@@ -674,27 +674,30 @@ function probaPerete(x: ColtDegajat, s: Primitiva, ct: Contur, latura: 'exterior
   if (d >= R + MARJA_SCHELET + BANDA_CONDITII) return { v: 'da', m: '' };
   const { c, p } = perecheNumerica(x.Q, x.E, s);
   const L = dist(c, p);
-  const m = plus(c, sub(p, c), (R + L) / 2 / L);
+  const m = plus(c, sub(p, c), R / L);
   const k = parteaElementului(ct, latura, m);
   if (k === 'deseu') return { v: 'da', m: '' };
-  const cuGol = `${unde}, sub R + 1, cu mijlocul golului (${mm(m.x)}, ${mm(m.y)}) ${k === 'K' ? 'în K' : 'pe contur'})`;
+  const cuGol = `${unde}, sub R + 1, cu punctul discului (${mm(m.x)}, ${mm(m.y)}) ${k === 'K' ? 'în K' : 'pe contur'})`;
   return { v: k === 'K' && d < R + MARJA_SCHELET - BANDA_CONDITII ? 'nu' : 'banda', m: cuGol };
 }
 
 /**
- * e (ADR 0134 §3) între drumurile colțurilor x și y ale aceleiași tăieturi: sub D + 1, mijlocul perechii celei mai
- * apropiate strict în K (pe contur nu e K). La ±1e-5 de prag sau de contur, în bandă.
+ * e (ADR 0134 §3) între drumurile colțurilor x și y ale aceleiași tăieturi: sub D + 1, unul dintre punctele discurilor cele
+ * mai apropiate de celălalt drum (la R de capetele perechii, spre celălalt; cu drumurile atinse, punctul de atingere)
+ * strict în K (pe contur nu e K). La ±1e-5 de prag sau de contur, în bandă.
  */
 function probaColt(x: ColtDegajat, y: ColtDegajat, ct: Contur, latura: 'exterior' | 'interior', D: number): Proba {
   const s = segmentP(y.Q, y.E);
   const d = distantaExacta(segmentP(x.Q, x.E), s);
-  const prag = D + MARJA_SCHELET;
+  const prag = D + MARJA_SCHELET, R = D / 2;
   if (d >= prag + BANDA_CONDITII) return { v: 'da', m: '' };
   const { c, p } = perecheNumerica(x.Q, x.E, s);
-  const m = { x: (c.x + p.x) / 2, y: (c.y + p.y) / 2 };
-  const k = parteaElementului(ct, latura, m);
+  const L = dist(c, p);
+  const probe = L < 1e-9 ? [c] : [plus(c, sub(p, c), R / L), plus(p, sub(c, p), R / L)];
+  const parti = probe.map((q) => parteaElementului(ct, latura, q));
+  const k = parti.includes('K') ? 'K' : parti.includes('contur') ? 'contur' : 'deseu';
   if (k === 'deseu') return { v: 'da', m: '' };
-  const unde = `e (drumul e la ${mm(d)} mm de drumul colțului (${mm(y.V.x)}, ${mm(y.V.y)}), sub D + 1 = ${mm(prag)}, cu mijlocul (${mm(m.x)}, ${mm(m.y)}) ${k === 'K' ? 'în K' : 'pe contur'})`;
+  const unde = `e (drumul e la ${mm(d)} mm de drumul colțului (${mm(y.V.x)}, ${mm(y.V.y)}), sub D + 1 = ${mm(prag)}, cu un disc ${k === 'K' ? 'în K' : 'pe contur'} spre celălalt)`;
   return { v: k === 'K' && d < prag - BANDA_CONDITII ? 'nu' : 'banda', m: unde };
 }
 
