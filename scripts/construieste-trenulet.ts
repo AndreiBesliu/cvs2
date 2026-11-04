@@ -74,7 +74,7 @@ const faraTipuri = (...p: string[]): string => stripTypeScriptTypes(citeste(...p
 
 /** Scripturile, în ordinea paginii, cum le scria `build.py` (cu licențele și catalogul pus în `app.js`), fără tipuri. */
 export function scripturi(): { readonly nume: string; readonly text: string }[] {
-  const app = citeste('planificator', 'app.js').replace('/*CATALOG*/null', jsonCaPython(citeste('planificator', 'catalog.json')));
+  const app = faraTipuri('planificator', 'app.ts').replace('/*CATALOG*/null', jsonCaPython(citeste('planificator', 'catalog.json')));
   const lic = '/*! cavalier-contours-js 0.1.1 (portul TypeScript al bibliotecii cavalier_contours, adus in cvs2: src/geom/cavalier).\n'
     + ' * Licenta: MIT OR Apache-2.0. Copyright (c) 2021 Jedidiah Buck McCready (cavalier_contours) si msurguy (portul JS).\n'
     + ' * Textul licentei MIT: https://opensource.org/license/mit ; Apache 2.0: https://www.apache.org/licenses/LICENSE-2.0 */\n';
@@ -89,7 +89,7 @@ export function scripturi(): { readonly nume: string; readonly text: string }[] 
     { nume: 'earcut.js', text: `${ear}${citeste('vendor', 'earcut.min.js').trim()}` },
     { nume: 'lego.js', text: faraTipuri('lego', 'lego.ts') },
     { nume: 'profiluri.js', text: faraTipuri('planificator', 'profiluri.ts') },
-    { nume: 'atelier.js', text: citeste('planificator', 'atelier.js') },
+    { nume: 'atelier.js', text: faraTipuri('planificator', 'atelier.ts') },
     { nume: 'app.js', text: app },
   ];
   for (const s of lista) if (s.text.toLowerCase().includes('</script')) throw new Error(`${s.nume} are </script`);

@@ -317,6 +317,10 @@
       "ro": "Buzunar cu mai multe freze; Găurire; Ordinea + un fișier pe sculă; Animația traseului; §10 Găurire în pași",
       "en": "Pocket with several bits; Drilling; Ordering + one file per tool; Toolpath animation; §10 Peck drilling"
     },
+    "21d664781ddf91ac": {
+      "ro": "**Sursele planificatorului Trenuleț în TypeScript** (fără mașină; ADR 0162; a treia felie a pasului E2 din linia Trenuleț, în worktree-ul `wip/trenulet`; „Sursele în TypeScript”). Cele șase surse (motorul CNC, G-code, profilurile, LEGO, atelierul, planul; ~7 900 de linii) sunt `.ts`, scripturi clasice ca înainte, cu proiectul lor de tipuri (`extensii/trenulet/sursa/tsconfig.json`, aceleași reguli stricte ca aplicația, exclus din rădăcină): `npm run typecheck` și `trenulet.tipuri.test.ts` îl verifică. Construcția și ham-ul referințelor șterg tipurile (`stripTypeScriptTypes`). Doar tipuri adăugate: fiecare sursă, fără tipuri, are arborele sintactic de dinainte (acorn), cu o singură schimbare, exportul ca `var`; 1 785 de `!` unde codul presupunea o valoare, 274 de `as`, niciun `any`. `referinte.js --compara`: 622, 0 diferite. `build.py` a plecat. **Treceri:** (1) motoarele, comise separat (`781803f`); (2) atelierul și planul. Uneltele conversiei (deducerea tipurilor simple, semnele `!`, comparația arborilor) au stat în afara repo-ului.",
+      "en": "**The Trenuleț planner sources in TypeScript** (no machine; ADR 0162; the third slice of step E2 of the Trenuleț line, in the `wip/trenulet` worktree; “Sursele în TypeScript”). The six sources (the CNC engine, G-code, profiles, LEGO, the workshop, the plan; ~7,900 lines) are `.ts`, classic scripts as before, with their own type project (`extensii/trenulet/sursa/tsconfig.json`, the same strict rules as the app, excluded from the root): `npm run typecheck` and `trenulet.tipuri.test.ts` check it. The build and the reference harness strip the types (`stripTypeScriptTypes`). Only types were added: each source, without types, has the syntax tree it had before (acorn), with a single change, the export as `var`; 1,785 `!` where the code assumed a value, 274 `as`, no `any`. `referinte.js --compara`: 622, 0 different. `build.py` is gone. **Passes:** (1) the engines, committed separately (`781803f`); (2) the workshop and the plan. The conversion tools (inferring simple types, the `!` marks, comparing the trees) stayed outside the repo."
+    },
     "22c00400d882218c": {
       "ro": "Pachetul de atelier, adus din etapa 4",
       "en": "The workshop pack, brought forward from stage 4"
@@ -708,6 +712,10 @@
     "4844950e9c7c67e5": {
       "ro": "Mesajele modulelor la cerere",
       "en": "Module texts loaded on demand"
+    },
+    "4845d1d910d3fb7f": {
+      "ro": "Sursele planificatorului Trenuleț în TypeScript",
+      "en": "The Trenuleț planner sources in TypeScript"
     },
     "487df071bff2d150": {
       "ro": "**Copierea de-a lungul unei curbe, adusă din etapa 6** (fără mașină; ADR 0066; „Da”: întâi curba, apoi booleanul, apoi testul owner-ului). Panoul „Copiază în rețea” are al treilea fel, Pe curbă: formele se aleg întâi, curba după ele, cu Shift + clic (curba e ultima aleasă); câte copii (1–1000), la distanțe egale pe lungimea curbei (deschisă: de la capăt la capăt; închisă: de jur împrejur), cu centrul cutiei formelor pe curbă, cu sau fără rotirea după tangentă; previzualizarea cutiilor. Copiile sunt piese independente, într-un singur pas; originalele și curba rămân. Prin aceeași acțiune: pornirea neschimbată. Rândul „Transformare și copiere” e acum complet. **Treceri:** (1) calculul pur (`src/model/curba.ts`), felul nou în rețea și în acțiune, panoul și previzualizarea, manualul, probele pe hârtie (linia, semicercul, dreptunghiul, cercul, cubica măsurată independent), verzi din prima, deci trei mutații (vârful, lungimea cubicei, curba aleasă în panou), toate prinse.",

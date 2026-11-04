@@ -3,6 +3,6 @@
   "api": 1,
   "id": "trenulet",
   "nume": "Planificator Trenuleț",
-  "versiune": "18.2.0",
+  "versiune": "18.2.1",
   "permisiuni": ["stocare", "descarcari", "masina"]
 }

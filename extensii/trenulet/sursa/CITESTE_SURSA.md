@@ -8,24 +8,27 @@ ieșiri.
 
 | Fișier | Ce face | Mărime |
 |---|---|---|
-| `planificator/app.js` | partea 2D: planul circuitului, catalogul Brio, piesele la comandă, verificarea podurilor, trenul animat, Export CNC (setări, mașini, plăci de sus / de dedesubt, deviz, arhiva), trimiterea la cvs2 (protocolul v1) | 170 kB |
-| `planificator/atelier.js` | partea 3D: editoarele pieselor LEGO și ale legăturilor, găurile, previzualizarea (three.js), modelul, lista de printat, paturile, imprimantele | 115 kB |
-| `planificator/cnc.js` | motorul căii: geometria pieselor (contururi Cavalier cu arce), șanțurile, cuplajele, limbile macazurilor, așezarea pe plăci, DXF / SVG, STL-urile pieselor printate, rampa 3D, zip | 83 kB |
-| `planificator/gcode.js` | G-code direct: postul, contractele, CAM-ul (profil cu punți, șanțuri, găurire), timpul; portat de mână din cvs2 | 57 kB |
-| `planificator/profiluri.js` | profilurile (mașini, imprimante), cu cel implicit | 6 kB |
+| `planificator/app.ts` | partea 2D: planul circuitului, catalogul Brio, piesele la comandă, verificarea podurilor, trenul animat, Export CNC (setări, mașini, plăci de sus / de dedesubt, deviz, arhiva), trimiterea la cvs2 (protocolul v1) | 170 kB |
+| `planificator/atelier.ts` | partea 3D: editoarele pieselor LEGO și ale legăturilor, găurile, previzualizarea (three.js), modelul, lista de printat, paturile, imprimantele | 115 kB |
+| `planificator/cnc.ts` | motorul căii: geometria pieselor (contururi Cavalier cu arce), șanțurile, cuplajele, limbile macazurilor, așezarea pe plăci, DXF / SVG, STL-urile pieselor printate, rampa 3D, zip | 83 kB |
+| `planificator/gcode.ts` | G-code direct: postul, contractele, CAM-ul (profil cu punți, șanțuri, găurire), timpul; portat de mână din cvs2 | 57 kB |
+| `planificator/profiluri.ts` | profilurile (mașini, imprimante), cu cel implicit | 6 kB |
 | `planificator/head.html`, `body.html` | CSS-ul (variabile de temă, luminos / întunecat) și marcajul | 44 kB |
-| `planificator/catalog.json` | catalogul pieselor de cale (se pune în `app.js` la build) | |
-| `lego/lego.js` | motorul pieselor LEGO: corpuri închise (prisme, inele, corpuri rotite, sfere; fețele cu găuri prin earcut), toate piesele, calibrarea, STL, așezarea pe pat | 79 kB |
+| `planificator/catalog.json` | catalogul pieselor de cale (se pune în `app.js` la construcție) | |
+| `lego/lego.ts` | motorul pieselor LEGO: corpuri închise (prisme, inele, corpuri rotite, sfere; fețele cu găuri prin earcut), toate piesele, calibrarea, STL, așezarea pe pat | 79 kB |
 | `vendor/cavalier.min.js` | `cavalier-contours-js@0.1.1` (MIT / Apache-2.0), aceeași versiune cu `src/geom/cavalier` din cvs2 | |
 | `vendor/earcut.min.js` | earcut 2.2.4 (ISC, `earcut.LICENSE`) | |
-| `build.py` | lipește totul în `iesire/planificator.html` (conținutul paginii) și `iesire/preview.html` (documentul întreg) | |
+| `globale.d.ts` | ce găsesc sursele gata făcut: Cavalier, earcut, three.js (doar tipuri), `window.claude`, `window.cvs2` | |
+| `tsconfig.json` | proiectul de tipuri al surselor (aceleași reguli stricte ca aplicația; rădăcina lui cvs2 le exclude) | |
 
-Fiecare fișier `.js` e o funcție închisă care pune un singur nume pe `window` (`TrenCNC`, `TrenGCode`, `Lego`,
-`Profiluri`, `Atelier3D`); `app.js` e script obișnuit. Nu sunt module ES și nu e TypeScript.
+Sursele sunt TypeScript (ADR 0162), dar scripturi clasice, nu module: fiecare motor e o funcție închisă care întoarce un
+singur nume global (`TrenCNC`, `TrenGCode`, `Lego`, `Profiluri`, `Atelier3D`); `app.ts` e script obișnuit. Tipurile se
+șterg la construcție (`stripTypeScriptTypes`), deci în pagină și în pachet ajunge JavaScript. Verificarea: `npm run
+typecheck` (și `test/unit/trenulet.tipuri.test.ts`). `build.py` nu mai e aici: nu poate construi sursele `.ts`.
 
 ## Construirea
 
-În cvs2, din rădăcina repo-ului (fără Python; face ce făcea `build.py`, ADR 0129):
+În cvs2, din rădăcina repo-ului (fără Python, ADR 0129; sursele fără tipuri, ADR 0162):
 
 ```
 node scripts/construieste-trenulet.ts
@@ -49,7 +52,7 @@ Din `teste/`, cu Node 20 sau mai nou:
 | `node fuzz_legaturi.js` | 1206 piese aleatoare (cărămizi cu găuri, pene, grinzi, rotunde, conectori): toate închise | ~2 min |
 | `node indoita.js [dosar]` | grinzile îndoite (8 cazuri + 120 aleatoare) | 5 s |
 
-`incarca.js` încarcă motoarele în Node exact ca în pagină (cu data fixă) și dă verificarea plasei (`plasa`).
+`incarca.js` încarcă motoarele în Node exact ca în pagină (fără tipuri, cu data fixă) și dă verificarea plasei (`plasa`).
 
 **Scenariile de interfață** (`teste/ui/`, Playwright cu Chromium, previzualizarea 3D prin swiftshader): fiecare trece
 prin pagină ca un om și se termină cu „erori: niciuna” (sau `erori []`). Au nevoie de pagina construită și de three.js r128:

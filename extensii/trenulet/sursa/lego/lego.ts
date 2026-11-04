@@ -1149,13 +1149,13 @@ var Lego = (function (glob: typeof globalThis) {
     const { volum, arie } = stl(tri), coaja = Math.min(volum, arie * 1.0);
     return 1.24e-3 * (coaja + umplere * Math.max(0, volum - coaja));
   }
-  function aseaza(piese: readonly { nume: string; titlu?: string; tri: Tri[]; dim: P3 }[]) {
+  function aseaza(piese: readonly { nume: string; titlu?: string; tri: Tri[]; dim: readonly number[] }[]) {
     type Rand = { y: number; d: number; x: number };
     type PiesaPat = { nume: string; titlu: string | undefined; x: number; y: number; w: number; d: number; tri: Tri[] };
     type PlacaPat = { randuri: Rand[]; y: number; piese: PiesaPat[] };
     // piese: [{ nume, tri, dim }] -> placile patului (cat mai putine): randuri, de la cele mai adanci; se rotesc cu 90 de grade daca ajuta
     const [W, H] = P.pat, m = P.pat_margine, g = P.pat_distanta, L = W - 2 * m, A = H - 2 * m;
-    const lista = piese.map(p => ({ ...p, w: p.dim[0], d: p.dim[1] }))
+    const lista = piese.map(p => ({ ...p, w: p.dim[0]!, d: p.dim[1]! }))
       .map((p): typeof p & { rot?: boolean } => (p.w > L && p.d <= L && p.w <= A ? { ...p, rot: true, w: p.d, d: p.w } : (p.d > p.w && p.d <= L && p.w <= A ? { ...p, rot: true, w: p.d, d: p.w } : p)))
       .sort((a, b) => b.d - a.d || b.w - a.w);
     const placi: PlacaPat[] = [];

@@ -448,6 +448,13 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   folosește `host.masina`. **`referinte.js --compara` e în poarta unitară** (`trenulet.referinte.test.ts`, ~30 s): o
   schimbare a motoarelor (G-code, LEGO, CNC) cere referințe noi, explicate. Pagina de sine stătătoare nu mai e v18 octet cu
   octet (dovada aceea rămâne pe `754319b`). Pachetul 18.2.0. Cifrele aplicației nu se schimbă (sursele sunt doar în pachet).
+  **Sursele planificatorului în TypeScript (ADR 0162, felia 3.Tc)** gata pe 04.11: cele șase surse sunt `.ts`, scripturi
+  clasice (nu module), cu proiectul lor de tipuri (`extensii/trenulet/sursa/tsconfig.json`, aceleași reguli stricte), pe care
+  rădăcina îl exclude, iar `npm run typecheck` și `trenulet.tipuri.test.ts` îl verifică. **Construcția și `teste/incarca.js`
+  șterg tipurile (`stripTypeScriptTypes`):** în pagină și în pachet ajunge JavaScript. `globale.d.ts` declară Cavalier,
+  earcut, three.js (doar tipuri), `window.claude` și `window.cvs2`. Un nume global nou al unei surse se întoarce ca `var` din
+  funcția ei închisă. Unde codul presupune o valoare, stă un `!`; o gardă adevărată schimbă codul și cere proba ei.
+  `build.py` a plecat din repo.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
