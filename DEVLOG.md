@@ -4934,3 +4934,199 @@ analizat: l-am notat pentru felie. Commit-ul `e176af8`.
 **Publicat pe test:** 03.11, 21:04, `publica` pe `e176af8` (rularea 41699288269), după CI-ul rapid verde (41698051907).
 Verificat: versiunea `e176af8c75c0` în browserul aplicației, la 1440 px, fără erori în consolă; rândul nou al cozii owner-ului
 în `documentatie/roadmap.json` și în `documentatie/roadmap.en.json` de pe test.
+
+## 2026-11-02 — Felia 7.5↑: aldinul și cursivul sintetic (ADR 0123) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem worktrees pentru urmatoarele etape”, apoi „porneste worktrees” (owner-ul, în sesiunea
+principală); sesiunea etapei 7 a primit de acolo brief-ul ei („Ești sesiunea dedicată etapei 7 (textul) a lui cvs2, în
+worktree-ul tău. […] Gata, pentru prima tură: întrebarea despre fonturile cu o singură linie pusă owner-ului, cu
+recomandarea; prima felie (de exemplu aldinul și cursivul sintetic), cu ADR 0123, probele, publicarea pe canal și raportul.”).
+**Started:** 02.11, 20:29 (worktree-ul `C:\Users\besli\cncvs2-lucru\text`, ramura `wip/7.5-text` din `042db20`, portul e2e
+4174). **Completed:** 02.11, 21:16.
+
+Întrebarea despre fonturile cu o singură linie e pusă owner-ului, cu recomandarea (cititorul pentru fonturile „stick” ale
+omului, TTF / OTF dus-întors și SVG, plus un font liber inclus, descărcat doar cu acordul lui: Relief SingleLine sau
+EMS / Hershey). Fără răspuns încă, nimic descărcat.
+În panoul textului, bifele **Aldin** și **Cursiv**, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
+bază, exact (x' = x + tan(unghi) · y, pe liniile și cubicele fontului). Aldinul așază literele la înălțimea miezului, h −
+2d, le îngroașă cu d (cubicele ca biarce sub 0,001 mm, apoi `offsetFigura`, nouă în fațada offsetului: o figură par-impar,
+în ambele sensuri, prin `Shape` din cavalier, cu ieșirea verificată și fără bucăți pierdute) și le mută cu (d, d): H de 20
+mm rămâne de 20 mm, avansul crește cu 2d, colțurile de afară se rotunjesc. Întâi înclinarea, apoi îngroșarea. Literele
+îngroșate se țin în memorie (cheia exactă: îngroșarea și contururile miezului), fiindcă offsetul costa 0,4–0,5 s pe 70 de
+litere la fiecare tastă. O literă refuzată de offset se numără (`aldin-esuat`) și oprește Adaugă / Aplică. Blocul ține
+`aldin` și `cursiv` (câmpuri păstrate, nu schemă nouă); scalarea uniformă crește îngroșarea, iar sub 0,01 mm lasă doar
+vectorii. `caleText` (previzualizarea, cu arcele acum) s-a mutat în `src/app/caleText.ts`, ca să aibă probă unitară.
+La zi: ADR 0123 (nou), indexul, fișa (7.5↑), pragul, CLAUDE.md, manualul (ro, en; ușile Aldin și Cursiv), traducerile
+(534, 0 lipsă), `docs/otravuri.md`. Codul: `68a1e92`.
+**Probele:** oracolul fontTools (`aldin` în `text_corpus.py`: 5 cazuri, 41 de litere, ~218 000 de puncte clasificate
+independent, în miez sau la cel mult d de el, plus cutiile exacte; 3 cazuri de cursiv în `asteptat.json`, contur cu
+contur); pe hârtie (H de 20 mm cu aldinul 0,6: marginile, colțul dinăuntru ascuțit în (361 s + 1,2, 673 s), cel de afară
+rotunjit, avansul + 1,2; cursivul de 12°: 20 · tan 12° = 4,2511 mm); fațada (`geom.offset.figura.test.ts`: pătratul cu gol
+crescut și strâns, golul închis, unirea a două pătrate, insula peste gol, refuzurile); blocul; previzualizarea; e2e-ul
+panoului. **Otrăvurile** (`test/otravuri/7.5.py`): 38 / 38 prinse din prima, 32 pe probele unitare (unealta, în
+worktree) și 6 de interfață prin e2e pe 4174 (un harnaș local: unealta cere `npm`).
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), licențele, traducerile (534, 0
+lipsă), 8 069 de teste unitare (0 eșuate, 8 sărite), build-ul determinist (228 de fișiere identice; pornirea 98,6 / 110
+kB, cu ușa 102,2; totalul 444,6 / 500), e2e-ul întreg în Edge pe 4174: 295 / 296 (picată doar `raportor.spec.ts:101`, care
+cere adresa de pe 4173).
+**Publicat pe canalul `text`** al instanței de test (02.11, 21:18, `8fbb2a2`, expiră pe 02.12):
+<https://cncvectorstudio-test--text-1k3nsykk.web.app>. Verificat în browserul aplicației (Edge): unealta Text, „HOTEL Ușă”
+cu Aldin (propus 0,6 mm) și Cursiv (propus 12°), previzualizarea din linii și arce, piesa pusă cu blocul `aldin: 0.6`,
+`cursiv: 12`, H de 0 … 20,000000000000004 mm, consola fără erori. Adresa principală de test a rămas a sesiunii principale
+(`77a1be6`).
+
+## 2026-11-02 — Felia 7.6↑: fonturile cu o singură linie (ADR 0140) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, 1 + 2 cu Relief” (la întrebarea „Fonturile cu o singură linie: cititorul și Relief SingleLine inclus?”, cu
+recomandarea „1. cititorul pentru fonturile tale stick, fără descărcări; 2. un font liber inclus, descărcat o singură dată,
+cu licența lângă el”), apoi „0140–0142 (Recommended)” (la „ce numere de ADR folosesc?”).
+**Started:** 02.11, 21:30. **Completed:** 02.11, 22:17.
+
+Relief SingleLine e verificat (SIL OFL 1.1, „Copyright 2022 The Relief SingleLine Project Authors”, fără nume rezervat) și
+descărcat din `isdat-type/Relief-SingleLine` (commit `01dfc57`, fixat; sha256 notate), într-un dosar gol: licența, README-ul,
+fontul SVG (pentru 7.6↑b) și TTF-ul pentru CAD. Din TTF, un subset cu fontTools (același set de caractere ca Roboto, 26,9
+kB) în `public/fonturi/relief-singleline.ttf`, cu `LICENTA-OFL-1.1.txt` și `CITESTE.txt` la zi. TTF-ul pentru CAD nu-și
+scrie trăsăturile dus-întors, ci deschise, ca un program de CAD: H are trei contururi de câte 2 puncte. De aici, cele două
+convenții ale cititorului.
+Cititorul recunoaște fontul (`Font.linie`, `src/text/linie.ts`: contururile fără arie ale literelor drepte) și îi citește
+trăsăturile: dus-întors (palindromul ciclic: jumătatea), păstrată deschisă (fără segmentul de închidere) sau buclă; TrueType
+și CFF. Așezarea le dă ca linii deschise (capetele cu regulile ușilor importului), fără normalizare și fără aldin; piesa le
+gravează pe linie la adâncimea liniilor importate, cu grosimea foii primită de la acțiune (`CerereText`). Panoul oprește
+Aldin pentru un asemenea font, cu motivul; previzualizarea desenează liniile. Relief nu-și închide buclele (O-ul se termină
+cu 2 unități după start) și are la I o trăsătură de 2 unități în vârf: păstrate cum sunt desenate.
+La zi: ADR 0140 (nou), indexul, fișa (7.6↑), pragul, CLAUDE.md (starea și „Decizii luate”: Relief și ADR-urile 0140–0142),
+manualul (ro, en), traducerile (537, 0 lipsă), `docs/otravuri.md`. Codul: `25bb22b`, plus proba buclei duble.
+**Probele:** oracolul fontTools (`linie` în `text_corpus.py`: recunoașterea pe toate fonturile corpusului; 7 cazuri cu Relief
+și variantele lui, dus-întors, cu bucle, CFF); pe hârtie (H de 20 mm din trei linii; O-ul cu golul de 2 unități); trăsătura
+pe contururi scrise de mână; bucla dublă; piesa și editarea; previzualizarea; e2e-ul panoului, pe o foaie de 1,2 mm.
+**Otrăvurile** (`test/otravuri/7.6.py`): 23; 22 prinse din prima (18 pe probele unitare, 4 de interfață prin harnaș), una
+scăpată, normalizarea trăsăturilor (corpusul n-avea o buclă dublă), prinsă de proba nouă.
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări), licențele, traducerile (537, 0
+lipsă), 8 084 de teste unitare (0 eșuate, 8 sărite), build-ul determinist (231 de fișiere identice; pornirea 98,6 / 110
+kB, cu ușa 102,2; totalul 445,6 / 500), e2e-ul întreg în Edge pe 4174: 295 / 297 (picate doar `raportor.spec.ts:101`, care
+cere adresa de pe 4173, și `animatie.spec.ts:49`, o probă de timp rulată cât mergea și suita unitară, verde singură, 5 / 5).
+Fixturile oracolului ies acum identice la fiecare generare (`86839a3`: variantele lui Relief fără marca de timp).
+**Publicat pe canalul `text`** (02.11, 22:15, `86839a3`, până pe 02.12): <https://cncvectorstudio-test--text-1k3nsykk.web.app>.
+Verificat în browserul aplicației, după „Reload” (precache-ul ținea versiunea 7.5↑): Relief SingleLine în lista
+fonturilor incluse, Aldin oprit cu motivul, previzualizarea din trăsături (fără umplere), „Atelier Ștefan 2026” pus pe
+foaie ca 28 de trăsături deschise, cu o singură gravură pe linie de 1 mm; consola fără erori. Adresa principală de test a
+rămas a sesiunii principale (`ec428c9`).
+
+## 2026-11-02 — Felia 7.6↑b: fonturile SVG cu o singură linie (ADR 0140 §7) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, continuă” (la „Continui cu fonturile SVG cu o singură linie (felia 7.6↑b) sau trec întâi la textul
+vertical?”).
+**Started:** 02.11, 22:29. **Completed:** 02.11, 23:40.
+
+Fonturile de gravură în formatul SVG (Hershey, EMS, fontul SVG al lui Relief) se încarcă în Fonturile mele. `felFisier` le
+recunoaște după conținut (un element `<font>` într-un XML; un desen SVG rămâne „nu e un font”), iar `citesteFont` le dă
+același `Font` ca unui TTF, cu o singură față (`src/text/fontSvg.ts`): garda entităților importului SVG, apoi `DOMParser`;
+mărimile după SVG 1.1 (majuscula, vârful lui H; altfel `cap-height`); glifele cu un singur caracter, căile citite cu parserul
+importului (`citesteDateCale`) și scrise în convenția CFF (o subcale fără Z e o trăsătură deschisă, una cu Z o buclă, o
+comandă de după Z pornește din start); crenarea `hkern` (caractere, intervale `U+…` cu „?”, nume); o glifă cu un arc se sare,
+numărată. Recunoașterea cu o singură linie e cea din 7.6↑, deci un font SVG plin e un font obișnuit. Regula buclei își
+păstrează acum punctul final: fără el, cubica de închidere a unui O SVG (sau CFF) rămânea fără capăt.
+Găsite pe drum: (1) un ciclu de importuri între `font.ts` și `fontSvg.ts` (tipurile fontului, mutate în `tipFont.ts` și
+reexportate); (2) garda entităților luată din `svg.ts` trăgea toată ușa SVG în bucata comună a textului (+17 kB): mutată,
+neschimbată, în `src/io/entitatiXml.ts`, reexportată din `svg.ts`; acum doar parserul căilor (`svgDate.ts`, 1,8 kB) e comun,
+fiindcă îl folosesc amândouă; (3) T-ul fontului plin de probă avea două dreptunghiuri lipite, pe care normalizarea le unea:
+scris dintr-un contur.
+Fereastra fonturilor primește `.svg`; textele refuzului și nota ferestrei, manualul (ro, en) și `CITESTE.txt` al fixturilor
+sunt la zi.
+**Probele:** oracolul (`fonturi_svg` în `text_corpus.py`: `xml.etree` și `parse_path` din fontTools; 5 cazuri: fontul SVG
+original al lui Relief, unul de probă cu toate comenzile, unul plin); pe hârtie (majusculele; H-ul lui Relief SVG e H-ul
+TTF-ului; pozițiile și crenarea fontului de probă; trăsătura de după Z); refuzurile, parserul ca în browser (documentul
+parțial cu `<parsererror>`), garda înaintea parserului, mărimile implicite, dublurile; e2e-ul (Relief SVG încărcat în
+Fonturile mele, recunoscut cu o linie, gravat pe linie, editat după reîncărcare). Fixturile vechi ale oracolului au ieșit
+identice.
+**Otrăvurile** (`test/otravuri/7.6b.py`): 27; 25 prinse din prima (24 pe probele unitare, F01 prin harnașul e2e pe 4174),
+două scăpate: U05 (un desen cu `<font-face>` fără `<font>` luat drept font: proba lipsea, adăugată) și R05 (comanda de după Z
+continuă bucla: echivalentă, fiindcă `citesteDateCale` pune singur un M în start; ramura cititorului era moartă și s-a scos,
+cu mutația ei). Pe codul final: 25 / 25 unitare și F01. Codul: `ffd1699`, plus `c06ef34` (ramura scoasă, proba nouă).
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări, 863 de module), licențele,
+traducerile (539, 0 lipsă), 8 094 de teste unitare pe `ffd1699` (0 eșuate, 8 sărite; pe `c06ef34`, suita întreagă din nou, mai jos), build-ul determinist (231 de fișiere identice; pornirea 98,6 / 110 kB, cu ușa
+102,2; totalul 447,2 / 500; precache 82 de fișiere, 628,1 kB), e2e-ul întreg în Edge pe 4174, pe `ffd1699`: 297 / 298 (picată
+doar `raportor.spec.ts:101`, care cere adresa de pe 4173); după `c06ef34` (doar cititorul SVG), `fonturi.spec.ts`.
+**Observație nelămurită:** proba e2e nouă a picat de 4 ori la rând într-o fereastră de ~10 minute („Aplică” oprit după
+reîncărcare, fără motiv în panou și fără mesajul filei), apoi a trecut de 34 de ori la rând, și sub încărcare, ca și proba
+TTC, care are același drum. Nu s-a reprodus; dacă reapare, `error-context.md` arată pagina (bănuiala: fila deschisă
+doar-citire după reîncărcare).
+**Pe `c06ef34`, suita unitară întreagă:** 8 094 de teste (0 eșuate, 8 sărite).
+**Publicat pe canalul `text`** (02.11, 23:41, `8fe4013`, până pe 02.12): <https://cncvectorstudio-test--text-1k3nsykk.web.app>.
+Verificat în browserul aplicației, după „Reload” (precache-ul ținea versiunea 7.6↑): fereastra fonturilor primește `.svg`,
+cu nota nouă; un font SVG de probă, scris de mână (H, I, L, T și un O închis cu Z), intră în Fonturile mele ca „Proba Canal
+Regular”, e recunoscut cu o singură linie (Aldin oprit, cu motivul), previzualizarea e din trăsături, iar E-ul lipsă e spus;
+consola fără erori. Adresa principală de test a rămas a sesiunii principale.
+
+## 2026-11-03 — Felia 7.7↑: textul vertical (ADR 0141) (Model: Claude Opus 5.5)
+
+**Prompt:** „Textul vertical (7.7↑)” (la „Ce fac după pauză?”, după pauza de la sfârșitul feliei 7.6↑b).
+**Started:** 03.11, 09:14. **Completed:** 03.11, 09:41.
+
+Reluat de la capăt după pauză: ramura (`98031f9`, neunită), `main` (gruparea 6.T↑ și Ctrl+G; în zona textului, doar
+adăugări în `actiuniDocument*.ts`), notele vecine. Documentele cereau doar „litere una sub alta”, iar specificația CSS a
+scrisului vertical lasă metricile sintetizate fiecărui motor, deci regulile sunt ale ADR 0141. Un calcul înainte de cod a
+respins pasul fix de un em: la Roboto, virgula lui Ț intra în căciula lui Ă.
+Literele stau una sub alta, drepte: fiecare rând e o coloană, de la stânga la dreapta, la distanța rândurilor; fiecare literă
+după cutia ei exactă (a celei îngroșate: a miezului cu 2d în plus), sub cea de deasupra la golul max(0, em − majuscula) +
+spațierea (între majuscule, un em), centrată pe axă; un spațiu ține o majusculă; fără crenare; alinierea Sus / Mijloc / Jos.
+Blocul primește `vertical: true` (nu pe o curbă: ușa blocului refuză amândouă, panoul o lasă deoparte, cu motivul).
+`aseazaText` are acum desenul unei litere într-o funcție comună (`contururiLitera`) și două ramuri; rândurile au ieșit
+neschimbate (corpusul, aldinul, liniile simple, SVG, curba, piesa). Manualul (ro, en) are ușa nouă (`editare.text.vertical`,
+71 de uși).
+**Probele:** oracolul (`fonturi_verticale` în `text_corpus.py`, `vertical.json`: Roboto, Droid Serif, Inter cu cursiv, Relief,
+un caracter lipsă; aldinul vertical în `aldin.json`); pe hârtie (vârful lui H în ancoră, pasul de un em, H pe ±7,6854 mm, axa
+coloanei a doua la 37,1016 mm; rândul lui Roboto, scris întâi din memorie 2400, e 2146 + 555 = 2701 de unități, citit din
+font); probele țintite (literele mutate întregi, golul, spațiul și caracterul lipsă, alinierea, blocul, scalarea, un font cu
+em-ul sub majusculă); e2e-ul (HIT; după reîncărcare, Jos și Aplică; pe un cerc, drept). Celelalte fixturi au ieșit identice.
+**Otrăvurile** (`test/otravuri/7.7.py`): 19, toate prinse din prima (14 pe probele unitare, 5 de interfață prin harnașul e2e
+pe 4174). Două probe au fost adăugate înainte ca mutațiile să le ceară: em-ul sub majusculă (pragul de 0) și bifa din blocul
+textului ales (nu din alegerea salvată).
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări, 864 de module), licențele,
+traducerile (542, 0 lipsă), 8 107 teste unitare (0 eșuate, 8 sărite), build-ul determinist (232 de fișiere identice;
+pornirea 98,6 / 110 kB, cu ușa 102,2; totalul 447,8 / 500; precache 82 de fișiere, 629,4 kB), e2e-ul întreg în Edge pe
+4174: 299 / 300 (picată doar `raportor.spec.ts:101`, care cere adresa de pe 4173).
+**Publicat pe canalul `text`** (03.11, 09:46, `54d37de`, până pe 03.12): <https://cncvectorstudio-test--text-1k3nsykk.web.app>.
+Verificat în browserul aplicației (în engleză): bifa „Vertical”, alinierea Top / Middle / Bottom și „Distance between
+columns”; „PIAȚĂ” și „BAR” puse pe foaie, în două coloane, literele centrate pe axe, virgula lui Ț despărțită de căciula lui Ă
+(o piesă cu 17 forme, profilele pe exterior și pe interior); consola fără erori. Adresa principală de test a rămas a
+sesiunii principale.
+
+## 2026-11-03 — Felia 7.8↑: încadrarea textului în casetă (ADR 0142) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, caseta (7.8↑)” (la „Continui cu încadrarea în casetă (7.8↑)?”).
+**Started:** 03.11, 10:34. **Completed:** 03.11, 11:40.
+
+În repo, „încadrarea în casetă” avea doar numele; definiția pragului e în planul inițial (`PlanNou-CNC/Plan-CNC-Studio-2.html`):
+„încadrare în casetă (fără, «Limit by Box», «Scale to Box», cu lățime și înălțime)”, ca în ArtCAM. O prezentare a lui ArtCAM Pro
+7.0 descrie modurile: textul la mărimea cerută, micșorat doar dacă nu încape; textul cât mai mare, ca să umple caseta.
+Aplicația încadrează cutia literelor tăiate (a celei aldine: miezul cu 2d în plus), cu spațierea și aldinul în mm; marginile
+cutiei fiecărei litere sunt afine în înălțime, deci două așezări de măsurare (fără offsetul aldinului) le dau peste tot, iar
+înălțimea care încape se caută prin înjumătățire pe ele; textul se așază apoi o dată. Caseta e o margine a mărimii, nu un loc:
+textul pornește tot din ancoră. Blocul primește `caseta` (`limita` cu `ceruta`, `scala`) și înălțimea desenată; nu pe o curbă;
+scalarea uniformă crește și caseta (și o scoate peste 10 000 mm). Panoul: „Caseta”, lățimea și înălțimea ei, câmpul înălțimii
+oprit la scalat, nota cu mărimea textului (sau că a fost micșorat), refuzul unei casete prea mici. Fiecare literă așezată își
+are acum cutia exactă; textul pe curbă păstra cutia rândului drept, reparat. Manualul (ro, en): ușa nouă, 72 de uși.
+**Găsit pe drum:** definiția pragului cere, pe lângă casetă, mărimea în puncte sau inch, scalarea textului în lățime și în
+înălțime (%) și spațierea manuală între literele alese (Ctrl + tragere): rândul „Text” rămâne în lucru, cu lista corectată.
+**Probele:** oracolul (`fonturi_caseta` în `text_corpus.py`, `caseta.json`: înjumătățire pe așezări întregi, nouă cazuri;
+aldinul în casetă în `aldin.json`); pe hârtie („HHH” în 100 × 50: 100 · 1456 / 4039 = 36,0485; cu spațierea 2: 96 · 1456 / 4039;
+limitat, care încape și micșorat; „H↵H”: 50 · 1456 / 4157; „HI” vertical în 30 × 100: 30 · 1456 / 1119; cu aldinul 0,6:
+1456 · 96,4 / 4039 + 1,2; zece H cu 20 mm între ele, imposibil); probele țintite (modurile, umplerea pe latura care leagă,
+cutia literei, caseta prea mică, omogenitatea, blocul, plafonul, cutiile pe curbă); e2e-ul. Celelalte fixturi au ieșit
+identice.
+**Otrăvurile** (`test/otravuri/7.8.py`): 20; 16 prinse din prima, patru scăpate: C04 (scurtătura înălțimii cerute),
+echivalentă în practică, scoasă cu motivul; C09 (cutia literei verticale nemutată), fiindcă proba măsura textul cu cutiile
+literelor (acum și din contururile desenate); P07 (textul care nu încape, pus pe foaie), fiindcă Adaugă era oprit și din lipsa
+ancorei; P01 (textul în casetă pe curbă), fiindcă proba nu punea pe foaie un asemenea text. Pe codul final: 19 din 19. Codul:
+`15d36ca`, plus `b16c288` (probele unitare) și `6b8eed5` (e2e-ul).
+**Porțile:** compilatoarele (aplicația și funcțiile), importurile (17 reguli, 0 încălcări, 865 de module), licențele,
+traducerile (544, 0 lipsă), 8 124 de teste unitare (0 eșuate, 8 sărite), build-ul determinist (233 de fișiere identice;
+pornirea 98,6 / 110 kB, cu ușa 102,2; totalul 449,0 / 500; precache 82 de fișiere, 631,6 kB), e2e-ul întreg în Edge pe
+4174: 299 / 301 (picate `raportor.spec.ts:101`, care cere adresa de pe 4173, și `vectori.spec.ts:39`, cu `EBUSY` la citirea
+fișierului descărcat, de mediu: singură, verde 3 / 3).
+**Publicat pe canalul `text`** (03.11, 11:44, `e3554f1`, până pe 03.12): <https://cncvectorstudio-test--text-1k3nsykk.web.app>.
+Verificat în browserul aplicației (în engleză), după „Reload”: „HHH” scalat la caseta de 100 × 50: câmpul înălțimii oprit, cu
+36.05, nota „In the box: capitals of 36,05 mm, text of 100 × 36,05 mm.”; pus pe foaie, piesa are cutia de 100.00 × 36.05 mm;
+consola fără erori. Notat: numerele din mesajele panoului au virgula zecimală și în engleză (regula proiectului,
+`textNumar(…, true)`, ca la legenda textului pe curbă). Adresa principală de test a rămas a sesiunii principale.

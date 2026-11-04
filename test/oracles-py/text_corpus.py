@@ -49,19 +49,22 @@ import collections
 import json
 import math
 import os
+import re
 import struct
 import sys
+import xml.etree.ElementTree as ET
 
 from fontTools import subset
 from fontTools.cffLib import GlobalSubrsIndex, SubrsIndex
 from fontTools.cffLib.CFFToCFF2 import convertCFFToCFF2
 from fontTools.encodings.StandardEncoding import StandardEncoding
 from fontTools.fontBuilder import FontBuilder
-from fontTools.misc.bezierTools import calcCubicArcLengthC, splitCubicAtTC
+from fontTools.misc.bezierTools import calcCubicArcLengthC, calcCubicBounds, splitCubicAtTC
 from fontTools.misc.psCharStrings import T2CharString
 from fontTools.misc.roundTools import otRound
 from fontTools.pens.basePen import decomposeQuadraticSegment
-from fontTools.pens.recordingPen import DecomposingRecordingPen
+from fontTools.pens.recordingPen import DecomposingRecordingPen, RecordingPen
+from fontTools.svgLib.path import parse_path
 from fontTools.ttLib import TTCollection, TTFont, newTable
 from fontTools.ttLib.tables import _g_v_a_r, _l_o_c_a, otTables
 from fontTools.ttLib.tables.TupleVariation import TupleVariation
@@ -194,6 +197,222 @@ def segmente_cubice(puncte):
     return start, rez
 
 
+# Fonturile cu o singură linie (ADR 0140): un font de gravură n-are contururi de umplut, ci trăsături. Recunoașterea: un font
+# obișnuit n-are contururi fără arie (toate punctele pe o dreaptă), unul cu o singură linie le are la I, i, l, H, 1, L, T, -.
+# Trăsătura unui contur, după convenția scrisă în font: dus-întors (punctele, ciclic, un palindrom în jurul unui punct de pe
+# curbă): jumătatea dintre cele două întoarceri; păstrat deschis (ultimul punct pe curbă): din primul până în ultimul, fără
+# segmentul de închidere al formatului (o buclă, dacă ultimul e chiar primul); altfel (ultimul punct în afara curbei), o buclă.
+SONDE_LINIE = 'IilH1LT-'
+
+
+def fara_arie(c):
+    """Toate punctele conturului pe o dreaptă (exact: coordonatele fontului sunt întregi)."""
+    x0, y0 = c[0][0], c[0][1]
+    dx, dy = next(((p[0] - x0, p[1] - y0) for p in c if (p[0], p[1]) != (x0, y0)), (0, 0))
+    return all((p[0] - x0) * dy - (p[1] - y0) * dx == 0 for p in c)
+
+
+def cu_o_linie(font):
+    """Un font cu o singură linie: cel puțin două dintre sonde, și cel puțin jumătate din cele pe care le are, au un contur
+    fără arie."""
+    glife = [g for g in (glifa(font, ord(ch)) for ch in SONDE_LINIE) if g is not None]
+    cu = sum(1 for g in glife if any(len(c) >= 2 and fara_arie(c) for c in contururi(font, g)))
+    return cu >= 2 and 2 * cu >= len(glife)
+
+
+def traseu(puncte):
+    """Trăsătura unui contur al unui font cu o singură linie: (punctele ei, închisă)."""
+    n = len(puncte)
+    if n >= 2 and n % 2 == 0:
+        for t in range(n):
+            if puncte[t][2] and all(puncte[(t + i) % n] == puncte[(t - i) % n] for i in range(1, n // 2 + 1)):
+                return [puncte[(t + i) % n] for i in range(n // 2 + 1)], False
+    if puncte[0][2] and puncte[-1][2]:
+        if n > 2 and puncte[0][:2] == puncte[-1][:2]:
+            return puncte, True
+        return puncte, False
+    return puncte, True
+
+
+def segmente_deschise(puncte, cff):
+    """Startul și segmentele unei trăsături deschise: din primul punct până în ultimul, fără segmentul de închidere. TrueType:
+    punctele de pe curbă subînțelese și pătraticele, ca în `segmente`; CFF: liniile și cubicele, ca în `segmente_cubice`."""
+    start = puncte[0][:2]
+    rez, cur, buf, k = [], start, [], 1
+    while k < len(puncte):
+        p = puncte[k]
+        if cff and not p[2]:
+            c1, c2, capat = puncte[k][:2], puncte[k + 1][:2], puncte[k + 2][:2]
+            rez.append(('C', cur, c1, c2, capat))
+            cur, k = capat, k + 3
+            continue
+        if p[2]:
+            if buf:
+                for q, capat in decomposeQuadraticSegment(buf + [p[:2]]):
+                    rez.append(('Q', cur, q, capat))
+                    cur = capat
+                buf = []
+            elif p[:2] != cur:
+                rez.append(('L', cur, p[:2]))
+                cur = p[:2]
+        else:
+            buf.append(p[:2])
+        k += 1
+    return start, rez
+
+
+# Fonturile SVG (ADR 0140 §7, felia 7.6↑b): fonturile de gravură Hershey / EMS și fontul SVG al lui Relief, cu trăsături ca
+# subcăi deschise. Citite aici independent de aplicație: elementele cu `xml.etree`, căile cu `parse_path` din fontTools
+# (comenzile absolute, `Z` închis cu linia înapoi în start, comanda de după `Z` pornind din start); pătraticele ridicate la
+# cubice exact, p0 + 2/3 (q − p0). Mărimile, după SVG 1.1: `units-per-em` (implicit 1000), `ascent` (implicit cât em-ul),
+# `descent` (luat sub linie, oricum ar fi scris semnul; implicit 0), `horiz-adv-x` al glifei sau al fontului, `hkern` cu
+# `u1` / `u2` (caractere sau intervale U+…, cu `?`) și `g1` / `g2` (nume), prima pereche găsită câștigând; `k` micșorează
+# spațiul, deci crenarea e −k. Majuscula e vârful lui H, altfel `cap-height`. O glifă cu un arc (`A`) nu se poate da.
+SVG = '{http://www.w3.org/2000/svg}'
+
+
+def contururi_svg(d):
+    """Contururile (x, y, pe curbă) ale unei căi SVG, sau None dacă are arce."""
+    if re.search(r'[Aa]', d):
+        return None
+    pen = RecordingPen()
+    parse_path(d, pen)
+    rez, cur = [], None
+    for op, args in pen.value:
+        if op == 'moveTo':
+            cur = [(args[0][0], args[0][1], True)]
+            rez.append(cur)
+        elif op == 'lineTo':
+            cur.append((args[0][0], args[0][1], True))
+        elif op == 'curveTo':
+            (a, b, c) = args
+            cur += [(a[0], a[1], False), (b[0], b[1], False), (c[0], c[1], True)]
+        elif op == 'qCurveTo':
+            (q, p) = args
+            p0 = cur[-1]
+            cur += [(p0[0] + (2 / 3) * (q[0] - p0[0]), p0[1] + (2 / 3) * (q[1] - p0[1]), False),
+                    (p[0] + (2 / 3) * (q[0] - p[0]), p[1] + (2 / 3) * (q[1] - p[1]), False), (p[0], p[1], True)]
+        elif op == 'closePath':
+            if cur[-1][:2] != cur[0][:2]:
+                cur.append((cur[0][0], cur[0][1], True))
+    return rez
+
+
+class FontSvg:
+    """Un font SVG citit de oracol: glifele numerotate de la 1 (0 e glifa lipsă), harta caracterelor, avansurile, crenarea."""
+
+    def __init__(self, cale):
+        rad = ET.parse(cale).getroot()
+        font = next(rad.iter(SVG + 'font'))
+        ff = font.find(SVG + 'font-face')
+        num = lambda el, nume, implicit: float(el.get(nume)) if el is not None and el.get(nume) is not None else implicit
+        self.upem = num(ff, 'units-per-em', 1000.0)
+        self.urcare = num(ff, 'ascent', self.upem)
+        self.coborare = -abs(num(ff, 'descent', 0.0))
+        avans_font = num(font, 'horiz-adv-x', 0.0)
+        self.d, self.av, self.cmap, self.nume = [None], [avans_font], {}, {}
+        for g in font.iter(SVG + 'glyph'):
+            i = len(self.d)
+            self.d.append(g.get('d') or '')
+            self.av.append(num(g, 'horiz-adv-x', avans_font))
+            u = g.get('unicode')
+            if u is not None and len(u) == 1:
+                self.cmap.setdefault(ord(u), i)
+            if g.get('glyph-name'):
+                self.nume.setdefault(g.get('glyph-name'), i)
+        self.kern = {}
+        for hk in font.iter(SVG + 'hkern'):
+            a, b = self.multime(hk, 'u1', 'g1'), self.multime(hk, 'u2', 'g2')
+            for i in a:
+                for j in b:
+                    self.kern.setdefault((i, j), num(hk, 'k', 0.0))
+        h = self.glifa(ord('H'))
+        pts = [q for c in (self.contururi(h) or []) for q in c] if h is not None else []
+        self.majuscula = max(q[1] for q in pts) if pts and max(q[1] for q in pts) > 0 else num(ff, 'cap-height', None)
+
+    def multime(self, hk, u, g):
+        """Glifele numite de `u` (caractere și intervale U+…) și de `g` (nume), din aceeași pereche `hkern`."""
+        rez = set()
+        for x in (hk.get(u) or '').split(','):
+            x = x.strip()
+            m = re.fullmatch(r'[Uu]\+([0-9A-Fa-f?]{1,6})(?:-([0-9A-Fa-f]{1,6}))?', x)
+            if m:
+                lo = int(m.group(1).replace('?', '0'), 16)
+                hi = int(m.group(2), 16) if m.group(2) else int(m.group(1).replace('?', 'F'), 16)
+                rez |= {i for cod, i in self.cmap.items() if lo <= cod <= hi}
+            elif len(x) == 1 and ord(x) in self.cmap:
+                rez.add(self.cmap[ord(x)])
+        for x in (hk.get(g) or '').split(','):
+            if x.strip() in self.nume:
+                rez.add(self.nume[x.strip()])
+        return rez
+
+    def glifa(self, cod):
+        return self.cmap.get(cod)
+
+    def avans(self, g):
+        return self.av[g]
+
+    def crenare(self, a, b):
+        return -self.kern.get((a, b), 0.0)
+
+    def contururi(self, g):
+        return contururi_svg(self.d[g])
+
+
+def cu_o_linie_svg(fs):
+    """Recunoașterea unui font cu o singură linie (ca `cu_o_linie`), pe un font SVG."""
+    glife = [g for g in (fs.glifa(ord(ch)) for ch in SONDE_LINIE) if g is not None]
+    cu = sum(1 for g in glife if any(len(c) >= 2 and fara_arie(c) for c in (fs.contururi(g) or [])))
+    return cu >= 2 and 2 * cu >= len(glife)
+
+
+SVG_TRASATURI = '''<?xml version="1.0" encoding="UTF-8"?>
+<!-- Un font SVG de probă, cu trăsături (ADR 0140 §7), scris de test/oracles-py/text_corpus.py: comenzile absolute și
+     relative, H / V, Q / T, C / S, o buclă închisă cu Z, o comandă după Z fără M, o glifă cu caracterul dat printr-o
+     entitate, una fără avans (îl ia pe al fontului), o ligatură (sărită), una cu un arc (sărită), crenarea pe caractere, pe
+     intervale și pe nume. Majuscula e vârful lui H (1400), nu cap-height (1500). -->
+<svg xmlns="http://www.w3.org/2000/svg"><defs>
+<font id="ProbaTrasaturi" horiz-adv-x="1200">
+<font-face font-family="Proba Trasaturi" units-per-em="2048" ascent="1900" descent="500" cap-height="1500"/>
+<missing-glyph horiz-adv-x="1000" d="M0 0h1000v1400h-1000z"/>
+<glyph glyph-name="space" unicode=" " horiz-adv-x="600"/>
+<glyph glyph-name="H" unicode="H" horiz-adv-x="1300" d="M200 0V1400M200 700H1100M1100 0V1400"/>
+<glyph glyph-name="I" unicode="I" horiz-adv-x="500" d="M250 0V1400"/>
+<glyph glyph-name="T" unicode="T" d="M100 1400H1100M600 1400V0"/>
+<glyph glyph-name="hyphen" unicode="-" horiz-adv-x="800" d="M150 600h500"/>
+<glyph glyph-name="L" unicode="L" d="m200 1400v-1400h700"/>
+<glyph glyph-name="A" unicode="&#x41;" d="M100 0L650 1400L1200 0M300 500H1000"/>
+<glyph glyph-name="V" unicode="V" d="M100 1400L650 0L1200 1400"/>
+<glyph glyph-name="O" unicode="O" d="M600 0C900 0 1100 300 1100 700S900 1400 600 1400S100 1100 100 700S300 0 600 0Z"/>
+<glyph glyph-name="S" unicode="S" d="M900 1200Q500 1500 300 1100T500 700T700 300T300 100"/>
+<glyph glyph-name="C" unicode="C" horiz-adv-x="1150" d="M1000 1200C800 1500 200 1500 200 700S800 -100 1000 200"/>
+<glyph glyph-name="D" unicode="D" d="M200 0V1400H600Q1100 1400 1100 700Q1100 0 600 0ZL900 300"/>
+<glyph glyph-name="W" unicode="W" d="M100 1400A500 500 0 0 0 1100 1400"/>
+<glyph glyph-name="f_i" unicode="fi" d="M100 0V1400"/>
+<hkern u1="A,V" u2="U+0056-0057" k="150"/>
+<hkern g1="H" g2="O" k="-80"/>
+<hkern u1="L" g2="O,S" k="60"/>
+</font>
+</defs></svg>
+'''
+
+SVG_PLIN = '''<?xml version="1.0" encoding="UTF-8"?>
+<!-- Un font SVG de probă, plin (ADR 0140 §7): glife închise cu Z, deci nu un font cu o singură linie. -->
+<svg xmlns="http://www.w3.org/2000/svg"><defs>
+<font id="ProbaPlin" horiz-adv-x="800">
+<font-face font-family="Proba Plin" units-per-em="1000" ascent="800" descent="-200"/>
+<glyph glyph-name="H" unicode="H" d="M100 0h120v320h360v-320h120v700h-120v-280h-360v280h-120z"/>
+<glyph glyph-name="I" unicode="I" horiz-adv-x="400" d="M100 0h200v700h-200z"/>
+<glyph glyph-name="O" unicode="O" d="M400 -10C600 -10 720 140 720 350S600 710 400 710S80 560 80 350S200 -10 400 -10ZM400 100C280 100 210 200 210 350S280 600 400 600S590 500 590 350S520 100 400 100Z"/>
+<glyph glyph-name="l" unicode="l" horiz-adv-x="300" d="M100 0h100v720h-100z"/>
+<glyph glyph-name="T" unicode="T" d="M300 0h120v580h260v120h-640v-120h260z"/>
+<glyph glyph-name="L" unicode="L" d="M100 0h500v120h-380v580h-120z"/>
+</font>
+</defs></svg>
+'''
+
+
 def cautari_kern(font):
     """Subtabelele de perechi ale căutărilor caracteristicii `kern`, cu Extension desfăcut; None dacă nu sunt."""
     if 'GPOS' not in font:
@@ -275,57 +494,207 @@ def majuscula(font, contur=None):
     return font['OS/2'].sCapHeight
 
 
-def aseaza(font, p):
-    cap = majuscula(font)
+def aseaza(font, p, linie=False):
+    """Așezarea (ADR 0105 §2) și, din 7.5↑ (ADR 0123), cursivul și miezul aldinului. Cursivul: fiecare literă înclinată față
+    de linia de bază a rândului ei, x' = x + tan(unghi) · y (o transformare afină: liniile și cubicele rămân exacte). Aldinul
+    `d`: literele se așază la înălțimea miezului, h − 2d (contururile, avansurile, crenarea), fiecare avans crește cu 2d, iar
+    rândurile rămân la distanța lui h. Contururile întoarse sunt ale miezului; figura îngroșată o judecă `figura_aldin`.
+    `linie` (ADR 0140): un font cu o singură linie dă trăsături (`traseu`), deschise sau bucle, fără aldin."""
+    # Un font SVG (`FontSvg`, ADR 0140 §7) dă aceleași mărimi prin metodele lui; un TTFont, prin tabelele lui.
+    if isinstance(font, FontSvg):
+        cap, asc, desc, gap, cff, upem = font.majuscula, font.urcare, font.coborare, 0, True, font.upem
+        gl, cren, av, cont = font.glifa, font.crenare, font.avans, font.contururi
+    else:
+        hhea, hmtx = font['hhea'], font['hmtx']
+        cap, asc, desc, gap, cff, upem = majuscula(font), hhea.ascent, hhea.descent, hhea.lineGap, 'CFF ' in font, font['head'].unitsPerEm
+        gl = lambda cod: glifa(font, cod)
+        cren = lambda a, b: crenare(font, a, b)
+        av = lambda g: hmtx[g][0]
+        cont = lambda g: contururi(font, g)
     h = p['inaltime']
-    mm = lambda u: (u * h) / cap
-    hhea = font['hhea']
-    rand_mm = mm(hhea.ascent - hhea.descent + hhea.lineGap) * p['interlinie']
-    hmtx = font['hmtx']
-    cff = 'CFF ' in font
-    glife, lipsa, randuri = [], 0, []
-    for r, rand in enumerate(p['continut'].replace('\r', '').split('\n')):
+    d = 0 if linie else p.get('aldin', 0)
+    panta = math.tan(math.radians(p.get('cursiv', 0)))
+    miez = h - 2 * d
+    mm = lambda u: (u * miez) / cap
+    rand_mm = ((asc - desc + gap) * h) / cap * p['interlinie']
+    glife, lipsa, stricate, randuri = [], 0, 0, []
+
+    def litera(g, ox, oy):
+        """Contururile glifei `g` cu originea pe linia de bază în (ox, oy), în mm, înclinate de cursiv față de linia ei de
+        bază; None: glifa nu se poate da (în SVG, una cu arce)."""
+        def harta(q):
+            return [ox + mm(q[0]) + panta * mm(q[1]), oy + mm(q[1])]
+        conturi = cont(g)
+        if conturi is None:
+            return None
+        cs = []
+        for c in conturi:
+            if len(c) < 2:
+                continue
+            inchis = True
+            if linie:
+                c, inchis = traseu(c)
+            if inchis:
+                start, segs = segmente_cubice(c) if cff else segmente(c)
+            else:
+                start, segs = segmente_deschise(c, cff)
+            if not segs:
+                continue
+            out = []
+            for s in segs:
+                if s[0] == 'L':
+                    out.append(['L'] + harta(s[2]))
+                elif s[0] == 'C':
+                    out.append(['C'] + harta(s[2]) + harta(s[3]) + harta(s[4]))
+                else:
+                    _, p0, q, p2 = s
+                    c1 = (p0[0] + 2 * (q[0] - p0[0]) / 3, p0[1] + 2 * (q[1] - p0[1]) / 3)
+                    c2 = (p2[0] + 2 * (q[0] - p2[0]) / 3, p2[1] + 2 * (q[1] - p2[1]) / 3)
+                    out.append(['C'] + harta(c1) + harta(c2) + harta(p2))
+            if not linie:
+                cs.append({'start': harta(start), 'segmente': out})
+                continue
+            # O trăsătură deschisă al cărei capăt ajunge la cel mult 0,01 mm de start se închide, ca la ușile importului
+            # (ADR 0037 §11): lipită de start sub 1e-6 mm, altfel cu linia golului.
+            st = harta(start)
+            gol = math.hypot(out[-1][-2] - st[0], out[-1][-1] - st[1])
+            if not inchis and gol <= 0.01:
+                inchis = True
+                if gol <= 1e-6:
+                    out[-1][-2:] = st
+                else:
+                    out.append(['L'] + st)
+            cs.append({'start': st, 'segmente': out, 'inchis': inchis})
+        return cs
+
+    randuri_text = p['continut'].replace('\r', '').split('\n')
+    if p.get('vertical'):
+        # Textul vertical (ADR 0141), scris din nou aici: fiecare rând e o coloană, cu axa la r × rândul (de la stânga la
+        # dreapta); fiecare caracter, o celulă: litera desenată în sistemul ei, cu cutia ei exactă (a figurii aldine: a
+        # miezului cu 2d în plus în sus și la dreapta); o literă fără contur ține locul unei majuscule, [0, h]. Celulele stau
+        # una sub alta: vârful primei în y = 0, apoi fiecare cutie sub cea de deasupra la max(0, em − h) + spațierea.
+        # Alinierea mută coloana: sus (stânga), la mijloc (centru) sau cu baza în y = 0 (dreapta). Fiecare literă se
+        # centrează pe axă după cutia ei. Fără crenare.
+        em = upem * h / cap
+        spatiu = max(0.0, em - h) + p['spatiere']
+        for r, rand in enumerate(randuri_text):
+            axa = r * rand_mm
+            celule = []
+            for ch in rand:
+                if ord(ch) < 0x20 and ch != '\t':
+                    continue
+                g = gl(0x20 if ch == '\t' else ord(ch))
+                if g is None:
+                    lipsa += 1
+                    continue
+                cs = litera(g, 0.0, 0.0)
+                if cs is None:
+                    stricate += 1
+                    cs = []
+                cut = None
+                if cs:
+                    x0b, y0b, x1b, y1b = cutie_miez({'contururi': cs})
+                    cut = (x0b, y0b, x1b + 2 * d, y1b + 2 * d)
+                celule.append((ch, g, cs, cut))
+            baze = []
+            for k, (ch, g, cs, cut) in enumerate(celule):
+                sus = cut[3] if cut else h
+                if k == 0:
+                    baze.append(-sus)
+                else:
+                    ant = celule[k - 1][3]
+                    baze.append(baze[-1] + (ant[1] if ant else 0.0) - spatiu - sus)
+            jos = baze[-1] + (celule[-1][3][1] if celule[-1][3] else 0.0) if celule else 0.0
+            dy = 0.0 if p['aliniere'] == 'stanga' else (-jos / 2 if p['aliniere'] == 'centru' else -jos)
+            randuri.append({'latime': -jos, 'caractere': len(celule), 'dx': dy})
+            for indice, (ch, g, cs, cut) in enumerate(celule):
+                if not cut:
+                    continue
+                tx, ty = axa - (cut[0] + cut[2]) / 2, baze[indice] + dy
+                glife.append({'caracter': ch, 'rand': r, 'contururi': [muta_contur(c, tx, ty) for c in cs], '_x': tx,
+                              '_avans': mm(av(g)) + 2 * d, '_indice': indice, '_baza': ty, '_cutie': cut})
+        return {'glife': glife, 'lipsa': lipsa, '_stricate': stricate, '_randuri': randuri, '_metrici': {'rand': rand_mm, 'coborare': mm(desc)}}
+    for r, rand in enumerate(randuri_text):
         litere, x, ant = [], 0.0, None
         for ch in rand:
             if ord(ch) < 0x20 and ch != '\t':
                 continue
-            g = glifa(font, 0x20 if ch == '\t' else ord(ch))
+            g = gl(0x20 if ch == '\t' else ord(ch))
             if g is None:
                 lipsa += 1
                 continue
             if ant is not None:
-                x += mm(crenare(font, ant, g)) + p['spatiere']
+                x += mm(cren(ant, g)) + p['spatiere']
             litere.append((ch, g, x))
-            x += mm(hmtx[g][0])
+            x += mm(av(g)) + 2 * d
             ant = g
         dx = 0 if p['aliniere'] == 'stanga' else (-x / 2 if p['aliniere'] == 'centru' else -x)
         randuri.append({'latime': x, 'caractere': len(litere), 'dx': dx})
         baza = -r * rand_mm
         for indice, (ch, g, x0) in enumerate(litere):
-            def harta(q, x0=x0):
-                return [x0 + dx + mm(q[0]), baza + mm(q[1])]
-            cs = []
-            for c in contururi(font, g):
-                if len(c) < 2:
-                    continue
-                start, segs = segmente_cubice(c) if cff else segmente(c)
-                if not segs:
-                    continue
-                out = []
-                for s in segs:
-                    if s[0] == 'L':
-                        out.append(['L'] + harta(s[2]))
-                    elif s[0] == 'C':
-                        out.append(['C'] + harta(s[2]) + harta(s[3]) + harta(s[4]))
-                    else:
-                        _, p0, q, p2 = s
-                        c1 = (p0[0] + 2 * (q[0] - p0[0]) / 3, p0[1] + 2 * (q[1] - p0[1]) / 3)
-                        c2 = (p2[0] + 2 * (q[0] - p2[0]) / 3, p2[1] + 2 * (q[1] - p2[1]) / 3)
-                        out.append(['C'] + harta(c1) + harta(c2) + harta(p2))
-                cs.append({'start': harta(start), 'segmente': out})
+            cs = litera(g, x0 + dx, baza)
+            # O glifă pe care cititorul n-o poate da (în SVG, una cu arce) nu se desenează, dar își păstrează avansul.
+            if cs is None:
+                stricate += 1
+                continue
             if cs:
-                glife.append({'caracter': ch, 'rand': r, 'contururi': cs, '_x': x0 + dx, '_avans': mm(hmtx[g][0]), '_indice': indice})
-    return {'glife': glife, 'lipsa': lipsa, '_randuri': randuri, '_metrici': {'rand': rand_mm, 'coborare': mm(hhea.descent)}}
+                glife.append({'caracter': ch, 'rand': r, 'contururi': cs, '_x': x0 + dx, '_avans': mm(av(g)) + 2 * d, '_indice': indice})
+    return {'glife': glife, 'lipsa': lipsa, '_stricate': stricate, '_randuri': randuri, '_metrici': {'rand': rand_mm, 'coborare': mm(desc)}}
+
+
+def cutie_text(asez, d):
+    """Cutia textului tăiat: reuniunea cutiilor literelor (a celei aldine: a miezului cu 2d în plus în sus și la dreapta)."""
+    x0 = y0 = math.inf
+    x1 = y1 = -math.inf
+    for g in asez['glife']:
+        a, b, c, e = cutie_miez(g)
+        x0, y0, x1, y1 = min(x0, a), min(y0, b), max(x1, c + 2 * d), max(y1, e + 2 * d)
+    return x0, y0, x1, y1
+
+
+def inaltime_in_caseta(font, p, linie=False):
+    """Încadrarea în casetă (ADR 0142), scrisă din nou: cea mai mare înălțime a majusculei la care cutia textului tăiat
+    (`cutie_text`) încape în lățime × înălțime, căutată prin înjumătățire pe așezări întregi (aplicația folosește marginile
+    afine din două așezări). Între 0,1 mm (și de cinci ori aldinul) și 1000 mm; limitat de casetă: cel mult cea cerută.
+    None: nu încape nici la cea mai mică. Fără litere de tăiat: înălțimea cerută (limitat) sau cea din parametri."""
+    c = p['caseta']
+    d = 0 if linie else p.get('aldin', 0)
+
+    def asezat(h):
+        q = {k: v for k, v in p.items() if k != 'caseta'}
+        q['inaltime'] = h
+        return aseaza(font, q, linie)
+
+    if not asezat(p['inaltime'])['glife']:
+        return c['ceruta'] if c['fel'] == 'limita' else p['inaltime']
+
+    def incape(h):
+        x0, y0, x1, y1 = cutie_text(asezat(h), d)
+        return x1 - x0 <= c['latime'] and y1 - y0 <= c['inaltime']
+
+    jos = max(0.1, d / 0.2)
+    sus = min(c['ceruta'], 1000.0) if c['fel'] == 'limita' else 1000.0
+    if sus < jos or not incape(jos):
+        return None
+    if incape(sus):
+        return sus
+    while sus - jos > 1e-13 * sus:
+        m = (jos + sus) / 2
+        if m in (jos, sus):
+            break
+        if incape(m):
+            jos = m
+        else:
+            sus = m
+    return jos
+
+
+def muta_contur(c, tx, ty):
+    """Conturul (start și segmente L / C, în mm) mutat cu (tx, ty), cu punctele de control."""
+    m = dict(c)
+    m['start'] = [c['start'][0] + tx, c['start'][1] + ty]
+    m['segmente'] = [[seg[0]] + [v + (tx if i % 2 == 0 else ty) for i, v in enumerate(seg[1:])] for seg in c['segmente']]
+    return m
 
 
 def fara_interne(v):
@@ -335,6 +704,164 @@ def fara_interne(v):
     if isinstance(v, list):
         return [fara_interne(x) for x in v]
     return v
+
+
+# Aldinul (ADR 0123). Figura unei litere îngroșate cu d e figura miezului ei (litera așezată la h − 2d, înclinată dacă e
+# cursivă; plină după regula `nonzero` a fontului) crescută cu d, adică toate punctele aflate la cel mult d de ea, apoi mutată
+# cu (d, d). Oracolul n-o construiește: clasifică puncte. Un punct e în figură dacă e în miez (numărul de înfășurare al
+# contururilor fontului, nenul) sau la cel mult d de conturul lui (distanța la poligonul curbelor, care stă la cel mult
+# PLAT de ele). Punctele aflate la mai puțin de MARGINE_ALDIN de marginea figurii nu se judecă: aplicația aproximează
+# cubicele cu biarce sub 0,001 mm (ADR 0033) înainte de offset.
+PLAT = 1e-4
+MARGINE_ALDIN = 3e-3
+
+
+def poligon_contur(c):
+    """Conturul (start și segmente L / C, în mm) ca poligon închis: fiecare cubică împărțită în două până când punctele ei de
+    control stau la cel mult PLAT de coardă (curba stă în învelitoarea lor, deci la cel mult PLAT de poligon)."""
+    def abatere(a, b, cc, dd):
+        lx, ly = dd[0] - a[0], dd[1] - a[1]
+        l = math.hypot(lx, ly)
+        if l < 1e-12:
+            return max(math.hypot(b[0] - a[0], b[1] - a[1]), math.hypot(cc[0] - a[0], cc[1] - a[1]))
+        return max(abs((b[0] - a[0]) * ly - (b[1] - a[1]) * lx), abs((cc[0] - a[0]) * ly - (cc[1] - a[1]) * lx)) / l
+
+    def jumatati(a, b, cc, dd):
+        m = lambda u, v: ((u[0] + v[0]) / 2, (u[1] + v[1]) / 2)
+        ab, bc, cd = m(a, b), m(b, cc), m(cc, dd)
+        abc, bcd = m(ab, bc), m(bc, cd)
+        mij = m(abc, bcd)
+        return (a, ab, abc, mij), (mij, bcd, cd, dd)
+
+    pts = [tuple(c['start'])]
+    for s in c['segmente']:
+        if s[0] == 'L':
+            pts.append((s[1], s[2]))
+            continue
+        stiva = [(pts[-1], (s[1], s[2]), (s[3], s[4]), (s[5], s[6]))]
+        while stiva:
+            q = stiva.pop()
+            if abatere(*q) <= PLAT:
+                pts.append(q[3])
+            else:
+                st, dr = jumatati(*q)
+                stiva += [dr, st]
+    if pts[-1] != pts[0]:
+        pts.append(pts[0])
+    return pts
+
+
+def clasifica_aldin(puncte, glifa_miez, d):
+    """Pentru fiecare punct (în coordonatele miezului): '1' în figura îngroșată, '0' afară, '?' la margine (nejudecat)."""
+    import numpy as np
+    P = np.array(puncte, dtype=float)
+    A, B = [], []
+    for c in glifa_miez['contururi']:
+        pg = poligon_contur(c)
+        A += pg[:-1]
+        B += pg[1:]
+    A, B = np.array(A), np.array(B)
+    infasurare = np.zeros(len(P), dtype=np.int64)
+    dist = np.full(len(P), np.inf)
+    px, py = P[:, 0:1], P[:, 1:2]
+    for k in range(0, len(A), 1500):
+        ax, ay = A[k:k + 1500, 0][None, :], A[k:k + 1500, 1][None, :]
+        bx, by = B[k:k + 1500, 0][None, :], B[k:k + 1500, 1][None, :]
+        ex, ey = bx - ax, by - ay
+        cruce = ex * (py - ay) - ey * (px - ax)
+        sus = (ay <= py) & (by > py) & (cruce > 0)
+        jos = (by <= py) & (ay > py) & (cruce < 0)
+        infasurare += sus.sum(axis=1) - jos.sum(axis=1)
+        l2 = ex * ex + ey * ey
+        t = np.clip(((px - ax) * ex + (py - ay) * ey) / np.where(l2 > 0, l2, 1), 0, 1)
+        dist = np.minimum(dist, np.hypot(ax + t * ex - px, ay + t * ey - py).min(axis=1))
+    return ''.join('?' if abs(r - d) < MARGINE_ALDIN else ('1' if (w != 0 or r < d) else '0') for w, r in zip(infasurare, dist))
+
+
+def cutie_miez(glifa_miez):
+    """Cutia exactă a contururilor miezului: capetele liniilor și extremele cubicelor (`calcCubicBounds` din fontTools)."""
+    x0 = y0 = math.inf
+    x1 = y1 = -math.inf
+    for c in glifa_miez['contururi']:
+        cur = tuple(c['start'])
+        for s in c['segmente']:
+            if s[0] == 'L':
+                bx0, by0, bx1, by1 = min(cur[0], s[1]), min(cur[1], s[2]), max(cur[0], s[1]), max(cur[1], s[2])
+            else:
+                bx0, by0, bx1, by1 = calcCubicBounds(cur, (s[1], s[2]), (s[3], s[4]), (s[5], s[6]))
+            x0, y0, x1, y1 = min(x0, bx0), min(y0, by0), max(x1, bx1), max(y1, by1)
+            cur = (s[-2], s[-1])
+    return x0, y0, x1, y1
+
+
+def figura_aldin(glifa_miez, d, pas):
+    """Ce trebuie să iasă pentru o literă îngroșată cu d: cutia ei (a miezului lărgită cu d pe fiecare parte: cutia unei
+    figuri crescute cu d, oricare ar fi ea, apoi mutată cu (d, d)) și clasa punctelor unei grile cu pasul `pas` (mm), pe
+    rânduri de jos în sus, în jurul cutiei."""
+    x0, y0, x1, y1 = cutie_miez(glifa_miez)
+    cutie = [x0, y0, x1 + 2 * d, y1 + 2 * d]
+    gx, gy = cutie[0] - 0.3, cutie[1] - 0.3
+    nx = int((cutie[2] + 0.3 - gx) / pas) + 1
+    ny = int((cutie[3] + 0.3 - gy) / pas) + 1
+    puncte = [(gx + i * pas - d, gy + j * pas - d) for j in range(ny) for i in range(nx)]
+    return {'caracter': glifa_miez['caracter'], 'rand': glifa_miez['rand'], 'cutie': cutie,
+            'grila': {'x': gx, 'y': gy, 'pas': pas, 'nx': nx, 'ny': ny, 'clase': clasifica_aldin(puncte, glifa_miez, d)},
+            '_miez': glifa_miez, '_d': d}
+
+
+def aldin(font, p, pas):
+    """Literele unui text îngroșat: cutia și grila fiecăreia (`figura_aldin`), în ordinea așezării. Cu o casetă (ADR 0142),
+    la înălțimea care încape."""
+    if 'caseta' in p:
+        h = inaltime_in_caseta(font, p)
+        assert h is not None, p
+        p = {**{k: v for k, v in p.items() if k != 'caseta'}, 'inaltime': h}
+    asez = aseaza(font, p)
+    return {'lipsa': asez['lipsa'], 'glife': [figura_aldin(g, p['aldin'], pas) for g in asez['glife']]}
+
+
+def clasa_in(fig, x, y):
+    """Clasa punctului (x, y) al figurii îngroșate (`figura_aldin`), judecat din nou de oracol: proba pe hârtie."""
+    return clasifica_aldin([(x - fig['_d'], y - fig['_d'])], fig['_miez'], fig['_d'])
+
+
+def probe_aldin_pe_hartie(aldine):
+    """H din Roboto (majuscula 1456; picioarele 169–361 și 1095–1288, bara 673–830, avansul 1460) de 20 mm, cu aldinul 0,6:
+    miezul are 18,8 mm, deci s = 18,8 / 1456 mm pe unitate. Figura e miezul crescut cu 0,6 și mutat cu (0,6, 0,6):
+    - marginea din stânga rămâne la 169 s = 2,1821428571, iar baza la 0; vârful ajunge la 18,8 + 1,2 = 20 (înălțimea cerută);
+    - piciorul din stânga se termină la 361 s + 1,2 = 5,8612637363 (grosimea 192 s + 1,2 = 3,6791208791);
+    - bara, între 673 s = 8,6898351648 și 830 s + 1,2 = 11,9170329670;
+    - colțurile de afară se rotunjesc cu raza 0,6 (cel de sus din stânga are centrul în (2,7821428571, 19,4)), cele dinăuntru
+      rămân ascuțite (colțul dintre picior și bară, în (5,8612637363, 8,6898351648));
+    - avansul crește cu 1,2: O începe la 1460 s + 1,2 = 20,0516483516 (H–O n-are crenare)."""
+    s = 18.8 / 1456
+    H = aldine['aldin-HOTEL']['glife'][0]
+    assert H['caracter'] == 'H'
+    st, dr = 2.1821428571428573, 17.8307692307692310
+    assert all(abs(a - b) < 1e-9 for a, b in zip(H['cutie'], (st, 0, dr, 20))), H['cutie']
+    assert abs(st - 169 * s) < 1e-12 and abs(dr - (1288 * s + 1.2)) < 1e-12
+    picior, jos, sus = 5.8612637362637363, 8.6898351648351648, 11.917032967032967
+    assert abs(picior - (361 * s + 1.2)) < 1e-12 and abs(jos - 673 * s) < 1e-12 and abs(sus - (830 * s + 1.2)) < 1e-12
+    for (x, y), clasa in [
+        ((4, 5), '1'), ((picior + 0.01, 5), '0'), ((picior - 0.01, 5), '1'),
+        ((10, sus + 0.01), '0'), ((10, sus - 0.01), '1'), ((10, jos - 0.01), '0'), ((10, jos + 0.01), '1'),
+        ((st + 0.05, 19.95), '0'), ((st + 0.6 - 0.4, 19.4 + 0.4), '1'), ((st - 0.01, 10), '0'), ((st + 0.01, 10), '1'),
+        ((picior + 0.01, jos - 0.01), '0'), ((picior - 0.01, jos - 0.01), '1'), ((picior + 0.01, jos + 0.01), '1'),
+    ]:
+        assert clasa_in(H, x, y) == clasa, (x, y, clasa)
+    f = TTFont(os.path.join(FONTURI, 'roboto.ttf'))
+    assert crenare(f, 'H', 'O') == 0
+    O = aldine['aldin-HOTEL']['glife'][1]
+    assert abs(O['_miez']['_x'] - (1460 * s + 1.2)) < 1e-12, O['_miez']['_x']
+    # Golul lui O (cutia 118–1289 × −20–1476, grosimea ~190) rămâne: centrul lui, (703,5 s, 728 s) în miez, mutat cu
+    # (0,6, 0,6), e afară; peretele din stânga, la 118 s + 0,05 de începutul literei, e în figură.
+    xo = O['_miez']['_x']
+    assert clasa_in(O, xo + 703.5 * s + 0.6, 728 * s + 0.6) == '0'
+    assert clasa_in(O, xo + 118 * s + 0.05, 728 * s + 0.6) == '1'
+    # Fiecare caz judecă și puncte în figură, și afară, și marginea lăsată nejudecată.
+    for nume, caz in aldine.items():
+        clase = ''.join(g['grila']['clase'] for g in caz['glife'])
+        assert '0' in clase and '1' in clase and '?' in clase and caz['lipsa'] == 0, nume
 
 
 # Textul pe curbă (ADR 0108). Bucățile unei cubice în tabelul lungimilor.
@@ -1455,6 +1982,379 @@ CAZURI = [
     ('cmap12', 'roboto-cmap12.ttf', {'continut': 'ABBA', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
     ('cmap6', 'roboto-cmap6.ttf', {'continut': 'Ana ă', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
     ('simbol', 'roboto-simbol.ttf', {'continut': 'HAMBURG', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
+    # 7.5↑ (ADR 0123): cursivul, exact (fiecare literă înclinată față de linia de bază a rândului ei); spre stânga, negativ.
+    ('cursiv-H', 'roboto.ttf', {'continut': 'HAMBURG', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'cursiv': 12}),
+    ('cursiv-randuri', 'droid-serif.ttf', {'continut': 'Ușă\nde stejar', 'inaltime': 10, 'spatiere': 0.5, 'interlinie': 1.3, 'aliniere': 'dreapta', 'cursiv': -20}),
+    ('cursiv-cff', 'inter-subset.otf', {'continut': 'ĂÂÎȘȚ ăâîșț', 'inaltime': 8, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru', 'cursiv': 30}),
+]
+
+# Fonturile cu o singură linie (ADR 0140): Relief SingleLine CAD (OFL, subsetat în `public/fonturi/`, trăsăturile păstrate
+# deschise) și varianta lui cu fiecare trăsătură deschisă scrisă dus-întors (`varianta_dus_intors`), care trebuie să dea
+# aceleași trăsături.
+CAZURI_LINIE = [
+    ('linie-HOTEL', 'relief-singleline.ttf', {'continut': 'HOTEL Ușă', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
+    ('linie-dus-intors', 'relief-dus-intors.ttf', {'continut': 'HOTEL Ușă', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
+    ('linie-randuri', 'relief-singleline.ttf', {'continut': 'Linia unu, 0123\nșțăâî ȘȚĂÂÎ', 'inaltime': 10, 'spatiere': 0.3, 'interlinie': 1.2, 'aliniere': 'centru', 'cursiv': 12}),
+    ('linie-crenare', 'relief-singleline.ttf', {'continut': 'AVATAR To Wa @&%', 'inaltime': 12, 'spatiere': -0.2, 'interlinie': 1, 'aliniere': 'dreapta'}),
+    ('linie-dus-intors-randuri', 'relief-dus-intors.ttf', {'continut': 'Linia unu, 0123\nșțăâî ȘȚĂÂÎ', 'inaltime': 10, 'spatiere': 0.3, 'interlinie': 1.2, 'aliniere': 'centru', 'cursiv': 12}),
+    # Buclele (`varianta_bucle`): O cu ultimul punct chiar în primul, o cu ultimul punct în afara curbei.
+    ('linie-bucle', 'relief-bucle.ttf', {'continut': 'Oo', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
+    # CFF (`varianta_cff`): aceleași trăsături, cu cubice; cu crenarea și cursivul spre stânga.
+    ('linie-cff', 'relief-cff.otf', {'continut': 'HOTEL Ușă\nAVATAR 0123', 'inaltime': 15, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'cursiv': -8}),
+]
+
+
+# Textul vertical (ADR 0141): fonturile corpusului (TrueType, CFF cu cursiv, serif, cu o singură linie, SVG), toate
+# alinierile, coloanele, spațierea negativă, un spațiu (o celulă goală), un caracter lipsă, diacriticele care urcă și coboară.
+CAZURI_VERTICAL = [
+    ('vertical-HIT', 'roboto.ttf', {'continut': 'HIT\nT', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'vertical': True}),
+    ('vertical-diacritice', 'roboto.ttf', {'continut': 'PIAȚĂ\nșțăâî ȘÂ', 'inaltime': 12, 'spatiere': 0.5, 'interlinie': 1.2, 'aliniere': 'centru', 'vertical': True}),
+    ('vertical-jos-serif', 'droid-serif.ttf', {'continut': 'Ușă de\nstejar', 'inaltime': 15, 'spatiere': -1, 'interlinie': 0.8, 'aliniere': 'dreapta', 'vertical': True}),
+    ('vertical-cff-cursiv', 'inter-subset.otf', {'continut': 'AVATAR\nHog', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'cursiv': 12, 'vertical': True}),
+    ('vertical-lipsa', 'roboto.ttf', {'continut': 'A\u65e5B\n\nC', 'inaltime': 8, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru', 'vertical': True}),
+]
+# Cu o singură linie (`linie=True`): Relief, trăsăturile deschise și buclele lui.
+CAZURI_VERTICAL_LINIE = [
+    ('vertical-linie', 'relief-singleline.ttf', {'continut': 'HOTEL\nOK 7', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'dreapta', 'vertical': True}),
+]
+
+
+# Încadrarea în casetă (ADR 0142): scalat la casetă (lățimea sau înălțimea leagă), limitat de ea (încape sau se micșorează),
+# spațierea în mm, rândurile, textul vertical, cursivul, un font CFF, unul cu o singură linie, unul serif centrat.
+CAZURI_CASETA = [
+    ('caseta-HHH', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                  'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}),
+    ('caseta-spatiere', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 20, 'spatiere': 2, 'interlinie': 1, 'aliniere': 'stanga',
+                                       'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}),
+    ('caseta-randuri', 'roboto.ttf', {'continut': 'H\nH', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                      'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}),
+    ('caseta-limita-incape', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                            'caseta': {'fel': 'limita', 'latime': 100, 'inaltime': 50, 'ceruta': 20}}),
+    ('caseta-limita-micsorat', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 50, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                              'caseta': {'fel': 'limita', 'latime': 100, 'inaltime': 50, 'ceruta': 50}}),
+    ('caseta-vertical', 'roboto.ttf', {'continut': 'HI', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'vertical': True,
+                                       'caseta': {'fel': 'scala', 'latime': 30, 'inaltime': 100}}),
+    ('caseta-serif-centru', 'droid-serif.ttf', {'continut': 'Ușă de\nstejar', 'inaltime': 15, 'spatiere': 0.4, 'interlinie': 1.2, 'aliniere': 'centru',
+                                                'cursiv': 12, 'caseta': {'fel': 'scala', 'latime': 120, 'inaltime': 60}}),
+    ('caseta-cff', 'inter-subset.otf', {'continut': 'AVATAR', 'inaltime': 10, 'spatiere': -0.5, 'interlinie': 1, 'aliniere': 'dreapta',
+                                        'caseta': {'fel': 'scala', 'latime': 60, 'inaltime': 15}}),
+]
+CAZURI_CASETA_LINIE = [
+    ('caseta-linie', 'relief-singleline.ttf', {'continut': 'HOTEL\nOK', 'inaltime': 30, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru',
+                                               'caseta': {'fel': 'limita', 'latime': 80, 'inaltime': 40, 'ceruta': 30}}),
+]
+
+
+def probe_caseta_pe_hartie(cz):
+    """Încadrarea, pe hârtie, cu Roboto: H are avansul 1460 și picioarele de la 169 la 1288 de unități, majuscula 1456, rândul
+    2701. „HHH” are cutia de 2 · 1460 + 1288 − 169 = 4039 de unități în lățime și o majusculă în înălțime:
+    - într-o casetă de 100 × 50, lățimea leagă: h = 100 · 1456 / 4039 = 36,0485…;
+    - cu spațierea 2 mm (două goluri): 4039 h / 1456 + 4 = 100, h = 96 · 1456 / 4039;
+    - limitat, cu 20 cerut, încape (55,5 mm): rămâne 20; cu 50 cerut, se micșorează la 36,0485…;
+    - „H↵H”: înălțimea leagă, rândul plus o majusculă, (2701 + 1456) h / 1456 = 50;
+    - „HI” vertical, 30 × 100: lățimea lui H leagă, 1119 h / 1456 = 30 (înălțimea, 2h + golul, 93,9 mm, încape);
+    - cu aldinul 0,6 (miezul h − 1,2): 4039 (h − 1,2) / 1456 + 6 · 0,6 = 100."""
+    def h(n):
+        return cz[n]['inaltime']
+    assert abs(h('caseta-HHH') - 100 * 1456 / 4039) < 1e-9, h('caseta-HHH')
+    assert abs(h('caseta-spatiere') - 96 * 1456 / 4039) < 1e-9, h('caseta-spatiere')
+    assert h('caseta-limita-incape') == 20
+    assert abs(h('caseta-limita-micsorat') - 100 * 1456 / 4039) < 1e-9
+    assert abs(h('caseta-randuri') - 50 * 1456 / 4157) < 1e-9, h('caseta-randuri')
+    assert abs(h('caseta-vertical') - 30 * 1456 / 1119) < 1e-9, h('caseta-vertical')
+    # Textul scalat umple caseta pe latura care leagă și încape pe cealaltă.
+    for n in ('caseta-HHH', 'caseta-serif-centru', 'caseta-cff', 'caseta-vertical'):
+        x0, y0, x1, y1 = cutie_text(cz[n], 0)
+        c = cz[n]['parametri']['caseta']
+        assert x1 - x0 <= c['latime'] + 1e-9 and y1 - y0 <= c['inaltime'] + 1e-9, (n, x1 - x0, y1 - y0)
+        assert abs(x1 - x0 - c['latime']) < 1e-9 or abs(y1 - y0 - c['inaltime']) < 1e-9, (n, x1 - x0, y1 - y0)
+
+
+def fonturi_caseta():
+    """Cazurile încadrării în casetă (ADR 0142): înălțimea care încape și literele așezate la ea, cu probele pe hârtie."""
+    cz = {}
+    for lista, linie in ((CAZURI_CASETA, False), (CAZURI_CASETA_LINIE, True)):
+        for nume, fisier, p in lista:
+            cale = cale_fixtura(fisier)
+            font = TTFont(cale)
+            h = inaltime_in_caseta(font, p, linie)
+            assert h is not None, nume
+            q = {k: v for k, v in p.items() if k != 'caseta'}
+            q['inaltime'] = h
+            rez = aseaza(font, q, linie)
+            cz[nume] = {'font': os.path.relpath(cale, RAD).replace('\\', '/'), 'parametri': p, 'majuscula': majuscula(font), 'linie': linie,
+                        'inaltime': h, 'stricate': rez['_stricate'], **rez}
+    probe_caseta_pe_hartie(cz)
+    # Pe hârtie, aldinul: miezul h − 1,2 umple lățimea (4039 de unități și 6d).
+    font = TTFont(cale_fixtura('roboto.ttf'))
+    ha = inaltime_in_caseta(font, next(p for n, f, p, _ in CAZURI_ALDIN if n == 'aldin-caseta'))
+    assert abs(ha - (1456 * (100 - 3.6) / 4039 + 1.2)) < 1e-9, ha
+    # Prea mică: zece H cu 20 mm între ele nu încap în 100 de mm nici la 0,1 mm.
+    assert inaltime_in_caseta(font, {'continut': 'HHHHHHHHHH', 'inaltime': 20, 'spatiere': 20, 'interlinie': 1, 'aliniere': 'stanga',
+                                     'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}) is None
+    return {'cazuri': fara_interne(cz)}
+
+
+def probe_vertical_pe_hartie(v):
+    """Textul vertical, pe hârtie. Roboto: majuscula 1456, em-ul 2048, rândul (`hhea`) 2146 + 555 = 2701 de unități; la
+    20 mm, s = 20 / 1456 mm pe unitate, em-ul 2048 s = 28,1318681318…, golul dintre majuscule 28,13… − 20 = 8,1318…, rândul
+    (axa coloanei a doua) 2701 s = 37,1016483516…. H are picioarele de la 169 la 1288: centrat, se întinde pe ±559,5 s."""
+    s = 20 / 1456
+    hit = v['vertical-HIT']['glife']
+    assert [(g['caracter'], g['rand']) for g in hit] == [('H', 0), ('I', 0), ('T', 0), ('T', 1)], hit
+    h, i, t, t2 = hit
+    # Vârful lui H în ancoră (y = 0), baza la −20; vârful lui I la −em (între două majuscule, pasul e chiar un em).
+    assert abs(h['_cutie'][3] + h['_baza']) < 1e-12 and abs(h['_baza'] + 20) < 1e-12, h['_baza']
+    assert abs(i['_baza'] + 20 - (-2048 * s)) < 1e-12, i['_baza']
+    assert abs(t['_baza'] + 20 - (-2 * 2048 * s)) < 1e-12, t['_baza']
+    # H centrat pe axa x = 0: de la −559,5 s la 559,5 s; T-ul coloanei a doua, centrat pe 2400 s.
+    xs = [q for c in h['contururi'] for q in [c['start'][0]] + [seg[1] for seg in c['segmente']]]
+    assert abs(min(xs) + 559.5 * s) < 1e-12 and abs(max(xs) - 559.5 * s) < 1e-12, (min(xs), max(xs))
+    assert abs(t2['_x'] + (t2['_cutie'][0] + t2['_cutie'][2]) / 2 - 2701 * s) < 1e-12
+    # Singura literă a coloanei a doua are și ea vârful în ancoră (alinierea sus).
+    assert abs(t2['_baza'] + 20) < 1e-12, t2['_baza']
+    # Ț și Ă: virgula lui Ț coboară sub linia de bază, căciula lui Ă urcă peste majusculă; între ele rămâne tot golul
+    # dintre litere (em − h + spațierea), nu se ating.
+    d = v['vertical-diacritice']['glife']
+    tt, aa = next(g for g in d if g['caracter'] == 'Ț'), next(g for g in d if g['caracter'] == 'Ă')
+    sd = 12 / 1456
+    gol = 2048 * sd - 12 + 0.5
+    jos_t = tt['_baza'] + tt['_cutie'][1]
+    sus_a = aa['_baza'] + aa['_cutie'][3]
+    assert tt['_cutie'][1] < -1 and aa['_cutie'][3] > 12.5, (tt['_cutie'], aa['_cutie'])
+    assert abs(jos_t - sus_a - gol) < 1e-12, (jos_t, sus_a, gol)
+    # Centrată: coloana întâi are vârful și baza la aceeași distanță de ancoră.
+    col = [g for g in d if g['rand'] == 0]
+    sus0 = col[0]['_baza'] + col[0]['_cutie'][3]
+    jos0 = col[-1]['_baza'] + col[-1]['_cutie'][1]
+    assert abs(sus0 + jos0) < 1e-12, (sus0, jos0)
+    # Jos (aliniat la dreapta): ultima literă a fiecărei coloane are baza cutiei în y = 0; spațiul ține locul unei
+    # majuscule: între „ă” și „d” sunt două goluri și 15 mm (spațierea −1).
+    j = v['vertical-jos-serif']
+    for r in (0, 1):
+        ult = [g for g in j['glife'] if g['rand'] == r][-1]
+        assert abs(ult['_baza'] + ult['_cutie'][1]) < 1e-12, ult
+    sj = 15 / j['majuscula']
+    a_, d_ = next(g for g in j['glife'] if g['caracter'] == 'ă'), next(g for g in j['glife'] if g['caracter'] == 'd')
+    gol_j = 2048 * sj - 15 - 1
+    assert abs((a_['_baza'] + a_['_cutie'][1]) - (d_['_baza'] + d_['_cutie'][3]) - (2 * gol_j + 15)) < 1e-12
+    # Un caracter lipsă nu ține loc: A și B sunt una sub alta; rândul gol e o coloană goală, deci C stă pe a treia axă.
+    l = v['vertical-lipsa']
+    assert l['lipsa'] == 1 and [g['caracter'] for g in l['glife']] == ['A', 'B', 'C'], l['glife']
+    s8 = 8 / 1456
+    c = l['glife'][2]
+    assert c['rand'] == 2 and abs(c['_x'] + (c['_cutie'][0] + c['_cutie'][2]) / 2 - 2 * 2701 * s8) < 1e-12
+    # Relief: trăsăturile rămân trăsături (H din trei linii deschise), una sub alta, centrate pe axă.
+    lin = v['vertical-linie']
+    hl = lin['glife'][0]
+    assert hl['caracter'] == 'H' and [c['inchis'] for c in hl['contururi']] == [False, False, False], hl
+    for g in lin['glife']:
+        if g['rand'] == 1 and g['caracter'] == '7':
+            assert abs(g['_baza'] + g['_cutie'][1]) < 1e-12
+
+
+def fonturi_verticale():
+    """Cazurile textului vertical (ADR 0141), cu probele pe hârtie."""
+    v = {}
+    for nume, fisier, p in CAZURI_VERTICAL:
+        cale = cale_fixtura(fisier)
+        font = TTFont(cale)
+        v[nume] = {'font': os.path.relpath(cale, RAD).replace('\\', '/'), 'parametri': p, 'majuscula': majuscula(font), 'linie': False, **aseaza(font, p)}
+    for nume, fisier, p in CAZURI_VERTICAL_LINIE:
+        cale = cale_fixtura(fisier)
+        font = TTFont(cale)
+        v[nume] = {'font': os.path.relpath(cale, RAD).replace('\\', '/'), 'parametri': p, 'majuscula': majuscula(font), 'linie': True,
+                   **aseaza(font, p, linie=True)}
+    for date in v.values():
+        date['stricate'] = date['_stricate']
+    probe_vertical_pe_hartie(v)
+    return {'cazuri': fara_interne(v)}
+
+
+def varianta_cff():
+    """Relief SingleLine scris în CFF (un OTF): fiecare glifă desenată de fontTools cu `T2CharStringPen` (pătraticele ridicate
+    la cubice, coordonatele rotunjite de el la întregi), aceleași metrici, harta caracterelor și crenarea (GPOS, aceeași ordine
+    a glifelor). Trăsăturile se citesc din fontul scris, cu pen-ul lui fontTools, nu din cel TrueType."""
+    from fontTools.pens.t2CharStringPen import T2CharStringPen
+    tt = TTFont(os.path.join(FONTURI, 'relief-singleline.ttf'))
+    ordine, gs = tt.getGlyphOrder(), tt.getGlyphSet()
+    siruri = {}
+    for nume in ordine:
+        pen = T2CharStringPen(tt['hmtx'][nume][0], gs)
+        gs[nume].draw(pen)
+        siruri[nume] = pen.getCharString()
+    fb = FontBuilder(1000, isTTF=False)
+    fb.setupGlyphOrder(ordine)
+    fb.setupCharacterMap(tt.getBestCmap())
+    fb.setupCFF('ReliefCFFProba-Regular', {'FullName': 'Relief CFF Proba'}, siruri, {})
+    fb.setupHorizontalMetrics({n: tt['hmtx'][n] for n in ordine})
+    fb.setupHorizontalHeader(ascent=tt['hhea'].ascent, descent=tt['hhea'].descent)
+    fb.setupNameTable({'familyName': 'Relief CFF Proba', 'styleName': 'Regular'})
+    fb.setupOS2(sCapHeight=tt['OS/2'].sCapHeight, sTypoAscender=tt['OS/2'].sTypoAscender, sTypoDescender=tt['OS/2'].sTypoDescender,
+                usWinAscent=tt['OS/2'].usWinAscent, usWinDescent=tt['OS/2'].usWinDescent)
+    fb.setupPost()
+    fb.font['GPOS'] = tt['GPOS']
+    # Fără marca de timp: același font la fiecare generare.
+    fb.font.recalcTimestamp = False
+    fb.font['head'].created = fb.font['head'].modified = 3_700_000_000
+    fb.save(os.path.join(DEST, 'relief-cff.otf'))
+
+
+def varianta_bucle():
+    """Relief SingleLine cu două bucle adevărate: la O, ultimul punct (359, 680) mutat chiar în primul (357, 680); la o,
+    ultimul punct (297, 555) scos, iar cel dinaintea lui trecut în afara curbei (segmentul de închidere e o curbă a
+    desenului). Restul fontului, neschimbat."""
+    from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
+    f = deschide(os.path.join(FONTURI, 'relief-singleline.ttf'))
+    glyf, cm = f['glyf'], f.getBestCmap()
+    for ch in 'Oo':
+        g = glyf[cm[ord(ch)]]
+        coord, capete, steaguri = g.getCoordinates(glyf)
+        assert len(capete) == 1, ch
+        puncte = [(coord[i][0], coord[i][1], steaguri[i] & 1) for i in range(len(coord))]
+        if ch == 'O':
+            assert puncte[0] == (357, 680, 1) and puncte[-1] == (359, 680, 1), puncte[-1]
+            puncte[-1] = puncte[0]
+        else:
+            assert puncte[-1] == (297, 555, 1), puncte[-1]
+            puncte = puncte[:-2] + [(puncte[-2][0], puncte[-2][1], 0)]
+        g.coordinates = GlyphCoordinates([(x, y) for x, y, _ in puncte])
+        g.flags = array.array('B', [pe for _, _, pe in puncte])
+        g.endPtsOfContours = [len(puncte) - 1]
+    f.save(os.path.join(DEST, 'relief-bucle.ttf'))
+
+
+def varianta_dus_intors():
+    """Relief SingleLine cu fiecare trăsătură deschisă scrisă dus-întors: punctele ei, apoi aceleași înapoi, fără capete
+    repetate (conturul devine un palindrom ciclic). Buclele rămân cum sunt."""
+    from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
+    f = deschide(os.path.join(FONTURI, 'relief-singleline.ttf'))
+    glyf = f['glyf']
+    intoarse = 0
+    for nume in f.getGlyphOrder():
+        g = glyf[nume]
+        if g.isComposite() or g.numberOfContours <= 0:
+            continue
+        coord, capete, steaguri = g.getCoordinates(glyf)
+        puncte, noi, start = [], [], 0
+        for capat in capete:
+            c = [(coord[i][0], coord[i][1], steaguri[i] & 1) for i in range(start, capat + 1)]
+            start = capat + 1
+            pts, inchis = traseu(c)
+            if not inchis and pts == c and len(c) > 2:
+                c = c + c[-2:0:-1]
+                intoarse += 1
+            puncte += c
+            noi.append(len(puncte) - 1)
+        g.coordinates = GlyphCoordinates([(x, y) for x, y, _ in puncte])
+        g.flags = array.array('B', [pe for _, _, pe in puncte])
+        g.endPtsOfContours = noi
+    f.save(os.path.join(DEST, 'relief-dus-intors.ttf'))
+    return intoarse
+
+
+def probe_linie_pe_hartie(linii):
+    """H din Relief SingleLine (majuscula 680; trăsăturile (140, 680)–(140, 0), (140, 365)–(566, 365) și (566, 0)–(566, 680);
+    avansul 706) de 20 mm, la s = 20 / 680 mm pe unitate: trei linii deschise, x = 140 s = 4,1176 și 566 s = 16,6471, bara
+    la 365 s = 10,7353, de la 0 la 20; O începe la 706 s = 20,7647 (H–O n-are crenare). O-ul lui Relief pornește din
+    (357, 680) și se termină în (359, 680): la 20 mm, golul e de 2 s = 0,0588 mm, peste 0,01, deci rămâne deschis, cum e
+    desenat. Varianta dus-întors dă aceleași trăsături; în varianta buclelor, O și o sunt închise."""
+    s = 20 / 680
+    H = linii['linie-HOTEL']['glife'][0]
+    assert H['caracter'] == 'H' and [c['inchis'] for c in H['contururi']] == [False, False, False]
+    asteptat = [((140, 680), (140, 0)), ((140, 365), (566, 365)), ((566, 0), (566, 680))]
+    for c, (a, b) in zip(H['contururi'], asteptat):
+        assert len(c['segmente']) == 1 and c['segmente'][0][0] == 'L'
+        assert abs(c['start'][0] - a[0] * s) < 1e-12 and abs(c['start'][1] - a[1] * s) < 1e-12, c
+        assert abs(c['segmente'][0][1] - b[0] * s) < 1e-12 and abs(c['segmente'][0][2] - b[1] * s) < 1e-12, c
+    assert abs(linii['linie-HOTEL']['glife'][1]['_x'] - 706 * s) < 1e-12
+    for a, b in (('linie-HOTEL', 'linie-dus-intors'), ('linie-randuri', 'linie-dus-intors-randuri')):
+        assert fara_interne(linii[a]['glife']) == fara_interne(linii[b]['glife']), (a, b)
+    O = linii['linie-HOTEL']['glife'][1]
+    xo = O['_x']
+    assert O['caracter'] == 'O' and [c['inchis'] for c in O['contururi']] == [False]
+    st, cap = O['contururi'][0]['start'], O['contururi'][0]['segmente'][-1][-2:]
+    assert abs(st[0] - (xo + 357 * s)) < 1e-12 and abs(cap[0] - (xo + 359 * s)) < 1e-12 and abs(st[1] - 20) < 1e-12 and abs(cap[1] - 20) < 1e-12
+    assert [[c['inchis'] for c in g['contururi']] for g in linii['linie-bucle']['glife']] == [[True], [True]]
+    assert all(not c['inchis'] for caz in ('linie-HOTEL', 'linie-randuri', 'linie-crenare') for g in linii[caz]['glife'] for c in g['contururi'])
+
+
+# Fonturile SVG (ADR 0140 §7): fontul SVG original al lui Relief (OFL, din același depozit, neschimbat) și cele două scrise
+# aici (`SVG_TRASATURI`, `SVG_PLIN`).
+CAZURI_SVG = [
+    ('svg-relief-HOTEL', 'relief-singleline.svg', {'continut': 'HOTEL Ușă', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
+    ('svg-relief-randuri', 'relief-singleline.svg', {'continut': 'Linia unu, 0123\nșțăâî ȘȚĂÂÎ', 'inaltime': 10, 'spatiere': 0.3, 'interlinie': 1.2, 'aliniere': 'centru', 'cursiv': 12}),
+    ('svg-relief-crenare', 'relief-singleline.svg', {'continut': 'AVATAR To Wa', 'inaltime': 12, 'spatiere': -0.2, 'interlinie': 1, 'aliniere': 'dreapta'}),
+    ('svg-trasaturi', 'svg-trasaturi.svg', {'continut': 'HALO HO VAL\nSCOD WAV fi T-I', 'inaltime': 14, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'}),
+    ('svg-plin', 'svg-plin.svg', {'continut': 'HOT IL', 'inaltime': 7, 'spatiere': 0.1, 'interlinie': 1, 'aliniere': 'centru'}),
+]
+
+
+def fonturi_svg(linii):
+    """Fonturile SVG: cele două de probă scrise aici, recunoașterea și cazurile, cu probele pe hârtie. `linii`: cazurile
+    fonturilor cu o singură linie (H din Relief TTF, pentru comparația cu fontul SVG)."""
+    for nume, text in (('svg-trasaturi.svg', SVG_TRASATURI), ('svg-plin.svg', SVG_PLIN)):
+        with open(os.path.join(DEST, nume), 'w', encoding='utf-8', newline='\n') as out:
+            out.write(text)
+    fonturi = {f: FontSvg(os.path.join(DEST, f)) for f in ('relief-singleline.svg', 'svg-trasaturi.svg', 'svg-plin.svg')}
+    recunoastere = {f'test/fixtures/text/{f}': cu_o_linie_svg(fs) for f, fs in fonturi.items()}
+    assert list(recunoastere.values()) == [True, True, False], recunoastere
+    cazuri = {}
+    for nume, fisier, p in CAZURI_SVG:
+        fs = fonturi[fisier]
+        rez = aseaza(fs, p, linie=cu_o_linie_svg(fs))
+        cazuri[nume] = {'font': f'test/fixtures/text/{fisier}', 'parametri': p, 'majuscula': fs.majuscula, 'linie': cu_o_linie_svg(fs),
+                        'stricate': rez['_stricate'], **rez}
+    # Pe hârtie: majusculele (Relief 680; cea de probă e vârful lui H, 1400, nu cap-height, 1500; cea plină, 700).
+    assert [fonturi[f].majuscula for f in fonturi] == [680, 1400, 700], [fonturi[f].majuscula for f in fonturi]
+    # H din fontul SVG al lui Relief e chiar H-ul din TTF: aceleași trei linii.
+    assert fara_interne(cazuri['svg-relief-HOTEL']['glife'][0]) == fara_interne(linii['linie-HOTEL']['glife'][0])
+    # Fontul de probă la 14 mm: s = 14 / 1400 = 0,01 mm pe unitate. H (avansul 1300) e la 0; A (fără avans: al fontului,
+    # 1200) la 13; L la 25, cu trăsătura (200, 1400) → (200, 0) → (900, 0), adică (27, 14) → (27, 0) → (34, 0); O la
+    # 25 + 12 − 0,6 = 36,4 (L–O: k = 60). În „HO”, H–O: k = −80, deci O cu 0,8 mai departe.
+    t = cazuri['svg-trasaturi']
+    gl = {(g['caracter'], g['_indice'], g['rand']): g for g in t['glife']}
+    assert [g['caracter'] for g in t['glife'] if g['rand'] == 0] == list('HALOHOVAL')
+    assert abs(gl[('A', 1, 0)]['_x'] - 13) < 1e-12 and abs(gl[('L', 2, 0)]['_x'] - 25) < 1e-12 and abs(gl[('O', 3, 0)]['_x'] - 36.4) < 1e-12
+    L = gl[('L', 2, 0)]['contururi']
+    assert len(L) == 1 and not L[0]['inchis'] and L[0]['start'] == [27, 14]
+    assert [s[1:] for s in L[0]['segmente']] == [[27, 0], [34, 0]], L
+    h2, o2 = gl[('H', 5, 0)], gl[('O', 6, 0)]
+    assert abs(o2['_x'] - (h2['_x'] + 13 + 0.8)) < 1e-12
+    # O e o buclă (Z), D are bucla și trăsătura de după Z (din (200, 0)); W (cu un arc) e sărit, dar își păstrează locul;
+    # „fi” (ligatura) nu se folosește: f și i lipsesc.
+    assert [c['inchis'] for c in gl[('O', 3, 0)]['contururi']] == [True]
+    d = next(g for g in t['glife'] if g['caracter'] == 'D')
+    assert [c['inchis'] for c in d['contururi']] == [True, False], d['contururi']
+    # D e pe al doilea rând (baza la −rând): trăsătura de după Z pleacă din startul buclei, (200, 0), și ajunge în (900, 300).
+    baza, d2 = -t['_metrici']['rand'], d['contururi'][1]
+    assert all(abs(a - b) < 1e-12 for a, b in zip(d2['start'], (d['_x'] + 2, baza))), d2
+    assert len(d2['segmente']) == 1 and d2['segmente'][0][0] == 'L', d2
+    assert all(abs(a - b) < 1e-12 for a, b in zip(d2['segmente'][0][1:], (d['_x'] + 9, baza + 3))), d2
+    assert t['stricate'] == 1 and t['lipsa'] == 2, (t['stricate'], t['lipsa'])
+    assert all(not c['inchis'] for g in cazuri['svg-relief-HOTEL']['glife'] for c in g['contururi'])
+    # Fontul plin nu e cu o singură linie: contururile lui sunt figuri (fără starea de trăsătură), ca la orice font.
+    assert cazuri['svg-plin']['linie'] is False and all('inchis' not in c for g in cazuri['svg-plin']['glife'] for c in g['contururi'])
+    return {'recunoastere': recunoastere, 'cazuri': fara_interne(cazuri)}
+
+
+# Aldinul (ADR 0123): textul, parametrii (cu `aldin`, mm pe fiecare parte) și pasul grilei de puncte (mm).
+CAZURI_ALDIN = [
+    # Pe verticală (ADR 0141): cutia literei îngroșate (a miezului cu 2d în plus) o stivuiește și o centrează.
+    ('aldin-vertical', 'roboto.ttf', {'continut': 'HOT\nȘĂ', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru', 'aldin': 0.6, 'vertical': True}, 0.25),
+    # În casetă (ADR 0142): înălțimea care încape, cu aldinul în mm.
+    ('aldin-caseta', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.6,
+                                    'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}, 0.25),
+    # Pe hârtie (în `main`): H de 20 mm cu aldinul 0,6.
+    ('aldin-HOTEL', 'roboto.ttf', {'continut': 'HOTEL', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.6}, 0.25),
+    # Bucățile care se unesc (virgula lui ș și ț, căciula lui â, punctul lui i), pe două rânduri centrate.
+    ('aldin-diacritice', 'roboto.ttf', {'continut': 'ȘȚĂÂÎ\nșțăâîi', 'inaltime': 12, 'spatiere': 0, 'interlinie': 1.2, 'aliniere': 'centru', 'aldin': 0.5}, 0.15),
+    # Golurile care se strâng sau dispar, insulele din goluri, la dreapta, cu spațiere.
+    ('aldin-gauri', 'roboto.ttf', {'continut': 'B8e@%&', 'inaltime': 10, 'spatiere': 0.3, 'interlinie': 1, 'aliniere': 'dreapta', 'aldin': 0.45}, 0.12),
+    # Aldinul peste cursiv, pe curbele serif-ului.
+    ('aldin-cursiv-serif', 'droid-serif.ttf', {'continut': 'Ușă de stejar', 'inaltime': 15, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.4, 'cursiv': 12}, 0.2),
+    # CFF (cubice), cu crenarea, spațierea negativă și cursivul spre stânga.
+    ('aldin-cff', 'inter-subset.otf', {'continut': 'AVATAR To', 'inaltime': 12, 'spatiere': -0.2, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.3, 'cursiv': -8}, 0.15),
 ]
 
 # Glifele, brute: punctele fiecărui contur (x, y, pe curbă), în unitățile fontului, cum le dă fontTools. Variantele își
@@ -1542,9 +2442,40 @@ def main():
     }
     curba = cazuri_pe_curba()
     probe_pe_hartie(curba)
+    # Pe hârtie (ADR 0123), cursivul: colțul de sus din stânga al lui H (169, 1456) de 20 mm, înclinat cu 12°, ajunge în
+    # x = 169 · 20 / 1456 + 20 · tan 12° = 2,3214285714 + 4,2511312334 = 6,5725598048, y = 20; baza rămâne la 0.
+    h = asteptat['cursiv-H']['glife'][0]
+    varfuri = [tuple(c['start']) for c in h['contururi']] + [(s[-2], s[-1]) for c in h['contururi'] for s in c['segmente']]
+    assert any(abs(x - 6.5725598048290140) < 1e-9 and abs(y - 20) < 1e-12 for x, y in varfuri), 'colțul lui H înclinat'
+    assert cutie(h)[1] == 0 and abs(cutie(h)[3] - 20) < 1e-12, cutie(h)
+    aldine = {}
+    for nume, fisier, p, pas in CAZURI_ALDIN:
+        cale = cale_fixtura(fisier)
+        aldine[nume] = {'font': os.path.relpath(cale, RAD).replace('\\', '/'), 'parametri': p, **aldin(TTFont(cale), p, pas)}
+    probe_aldin_pe_hartie(aldine)
+    # Fonturile cu o singură linie (ADR 0140): recunoașterea, pe toate fonturile corpusului, și trăsăturile.
+    intoarse = varianta_dus_intors()
+    varianta_bucle()
+    varianta_cff()
+    assert intoarse > 100, intoarse
+    recunoastere = {}
+    for fisier in ('public/fonturi/roboto.ttf', 'public/fonturi/droid-serif.ttf', 'test/fixtures/text/inter-subset.otf',
+                   'public/fonturi/relief-singleline.ttf', 'test/fixtures/text/relief-dus-intors.ttf', 'test/fixtures/text/relief-cff.otf'):
+        recunoastere[fisier] = cu_o_linie(TTFont(os.path.join(RAD, fisier)))
+    assert [v for v in recunoastere.values()] == [False, False, False, True, True, True], recunoastere
+    linii = {}
+    for nume, fisier, p in CAZURI_LINIE:
+        cale = cale_fixtura(fisier)
+        font = TTFont(cale)
+        linii[nume] = {'font': os.path.relpath(cale, RAD).replace('\\', '/'), 'parametri': p, 'majuscula': majuscula(font), **aseaza(font, p, linie=True)}
+    probe_linie_pe_hartie(linii)
+    svg = fonturi_svg(linii)
+    verticale = fonturi_verticale()
+    casete = fonturi_caseta()
     asteptat = fara_interne(asteptat)
     for nume, date in (('crenari', crenari), ('glife', brute), ('asteptat', asteptat), ('structura', structura), ('pe-curba', fara_interne(curba)),
-                       ('variabile', variabile())):
+                       ('variabile', variabile()), ('aldin', fara_interne(aldine)), ('linie', {'recunoastere': recunoastere, 'cazuri': fara_interne(linii)}),
+                       ('svg', svg), ('vertical', verticale), ('caseta', casete)):
         with open(os.path.join(DEST, f'{nume}.json'), 'w', encoding='utf-8', newline='\n') as out:
             json.dump(date, out, ensure_ascii=False, separators=(',', ':'))
             out.write('\n')

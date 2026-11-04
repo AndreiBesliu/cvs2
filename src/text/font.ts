@@ -21,70 +21,41 @@
  * variabil se citește în instanța lui implicită.
  */
 import { citesteCff, citesteCff2 } from './cff.ts';
+import { citesteFontSvg, esteFontSvg } from './fontSvg.ts';
+import { cuOLinie } from './linie.ts';
 import {
   COLECTIE, FontStricat, inceputuriFete, numeDupaId, numeFont, Octeti, SFNT_APPLE, SFNT_CFF, SFNT_TRUETYPE, tabele, WOFF, WOFF2,
   type ConturFont, type NumeFont, type PunctFont, type Tabele,
 } from './sfnt.ts';
+import type { CerereInstanta, CodRefuzFont, Font, InstantaFont, RezultatFont } from './tipFont.ts';
 import { axeFvar, rotunjeste, variatii, type AxaFont, type Variatii } from './variatii.ts';
 
 export { Octeti, type AxaFont, type ConturFont, type NumeFont, type PunctFont };
-
-export type CodRefuzFont =
-  | 'nu-e-font' | 'woff' | 'woff2' | 'tabel-lipsa' | 'stricat' | 'majuscula' | 'fara-unicode' | 'fata-lipsa' | 'variatii';
-
-/**
- * O instanță numită a unui font variabil: numele stilului, cel PostScript (dacă îl are), dacă e chiar cea implicită și
- * coordonatele ei (în unitățile axelor, pe fiecare axă).
- */
-export type InstantaFont = {
-  readonly stil: string; readonly postscript: string | null; readonly implicita: boolean; readonly coordonate: Readonly<Record<string, number>>;
-};
-
-/** Instanța cerută la citire (ADR 0113): indicele unei instanțe numite din `fvar`, sau coordonatele axelor (lipsă: implicit). */
-export type CerereInstanta = number | Readonly<Record<string, number>>;
-
-export type Font = {
-  readonly familie: string;
-  readonly nume: NumeFont;
-  readonly unitsPerEm: number;
-  /** Înălțimea majusculei, în unitățile fontului: vârful lui H (fără H, `sCapHeight`). */
-  readonly majuscula: number;
-  /** Din `hhea`: urcarea, coborârea (negativă) și spațiul dintre rânduri. */
-  readonly urcare: number;
-  readonly coborare: number;
-  readonly spatiuRanduri: number;
-  readonly numarGlife: number;
-  /** Contururi cubice (CFF: punctele de control câte două), nu pătratice (TrueType). */
-  readonly cubice: boolean;
-  /** Axele, dacă fontul e variabil (`fvar`). */
-  readonly axe: readonly AxaFont[] | null;
-  /** Instanțele numite, dacă fontul e variabil; contururile sunt ale instanței cerute la citire (implicit: cea implicită). */
-  readonly instante: readonly InstantaFont[] | null;
-  /** Glifa unui caracter (codul Unicode), sau 0 (`.notdef`) dacă fontul n-o are. */
-  glifa(cod: number): number;
-  /** Avansul glifei (lățimea ei de așezare), în unitățile fontului. */
-  avans(glifa: number): number;
-  /** Crenarea perechii (stânga, dreapta): cât se adaugă la avansul glifei din stânga (de obicei negativ). */
-  crenare(stanga: number, dreapta: number): number;
-  /** Contururile glifei, cu componentele glifelor compuse puse la locul lor; null: o glifă stricată (sărită, numărată). */
-  contururi(glifa: number): readonly ConturFont[] | null;
-};
-
-export type RezultatFont = { readonly ok: true; readonly font: Font } | { readonly ok: false; readonly cod: CodRefuzFont; readonly detaliu?: string };
+export type { CerereInstanta, CodRefuzFont, Font, InstantaFont, RezultatFont };
 
 /** Imbricarea glifelor compuse: mai adânc (sau o glifă care se conține pe sine), refuzat. */
 const ADANCIME_COMPUSE = 16;
 
-/** Ce fel de fișier e, după primii patru octeți (fără să-l citească): font, colecție, WOFF, WOFF2 sau altceva. */
-export function felFisier(octeti: Uint8Array): 'font' | 'colectie' | 'woff' | 'woff2' | 'necunoscut' {
+/**
+ * Ce fel de fișier e, după primii patru octeți (fără să-l citească): font, colecție, WOFF, WOFF2 sau altceva; un text XML
+ * cu un element `<font>` e un font SVG (ADR 0140 §7).
+ */
+export function felFisier(octeti: Uint8Array): 'font' | 'colectie' | 'woff' | 'woff2' | 'svg' | 'necunoscut' {
   if (octeti.byteLength < 4) return 'necunoscut';
   const v = new DataView(octeti.buffer, octeti.byteOffset, 4).getUint32(0);
   if (v === SFNT_TRUETYPE || v === SFNT_CFF || v === SFNT_APPLE) return 'font';
-  return v === COLECTIE ? 'colectie' : v === WOFF ? 'woff' : v === WOFF2 ? 'woff2' : 'necunoscut';
+  if (v === COLECTIE) return 'colectie';
+  if (v === WOFF) return 'woff';
+  if (v === WOFF2) return 'woff2';
+  return esteFontSvg(octeti) ? 'svg' : 'necunoscut';
 }
 
 /** Fețele unui fișier (una pentru un font singur, toate pentru o colecție), cu numele lor; null: nu e un font citibil. */
 export function feteFont(octeti: Uint8Array): readonly NumeFont[] | null {
+  if (felFisier(octeti) === 'svg') {
+    const r = citesteFontSvg(octeti);
+    return r.ok ? [r.font.nume] : null;
+  }
   try {
     const o = new Octeti(octeti);
     if (felFisier(octeti) !== 'font' && felFisier(octeti) !== 'colectie') return null;
@@ -399,9 +370,13 @@ const DEPLASARE_SCALATA = 0x0800;
  * Citește fața `fata` (0 pentru un font singur) a unui font TrueType sau OpenType (ADR 0105 §1, ADR 0106 §1), la `instanta`
  * dacă fontul e variabil (ADR 0113; o instanță numită care nu există: `fata-lipsa`; una pe care cititorul n-o poate calcula:
  * `variatii`). Nu aruncă: un fișier greșit e un refuz cu cod. Glifele se citesc la cerere, cu memorie (o glifă compusă își
- * refolosește componentele).
+ * refolosește componentele). Un font SVG (ADR 0140 §7) are o singură față și nicio instanță numită, ca un font static.
  */
 export function citesteFont(octeti: Uint8Array, fata = 0, instanta?: CerereInstanta): RezultatFont {
+  if (felFisier(octeti) === 'svg') {
+    if (fata !== 0 || typeof instanta === 'number') return { ok: false, cod: 'fata-lipsa', detaliu: `${fata} din 1` };
+    return citesteFontSvg(octeti);
+  }
   try {
     return citeste(new Octeti(octeti), fata, instanta);
   } catch (e) {
@@ -516,7 +491,7 @@ function citeste(o: Octeti, fata: number, instanta: CerereInstanta | undefined):
   }
 
   const crenare = crenareGpos(o, t, v) ?? crenareKern(o, t);
-  const font: Font = {
+  const font: Omit<Font, 'linie'> = {
     familie: nume.familie,
     nume,
     unitsPerEm,
@@ -555,7 +530,7 @@ function citeste(o: Octeti, fata: number, instanta: CerereInstanta | undefined):
       }
     },
   };
-  return { ok: true, font };
+  return { ok: true, font: { ...font, linie: cuOLinie(font) } };
 }
 
 /** O componentă a unei glife compuse, citită: steagul, glifa, cele două argumente și transformarea (dacă are). */

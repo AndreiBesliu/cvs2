@@ -55,12 +55,12 @@ export function instanteNumite(font: Font): InstantaGasita[] {
 }
 
 /**
- * Fețele unui fișier sfnt sau TTC, fiecare citită de cititor: cele bune intră în bibliotecă (cu instanțele lor numite),
- * cele refuzate se spun (cu codul cititorului). Null: nu e un font (nici sfnt, nici colecție).
+ * Fețele unui fișier sfnt, TTC sau SVG (ADR 0140 §7), fiecare citită de cititor: cele bune intră în bibliotecă (cu
+ * instanțele lor numite), cele refuzate se spun (cu codul cititorului). Null: nu e un font (nici sfnt, nici colecție, nici SVG).
  */
 export function feteDinFisier(octeti: Uint8Array): { readonly bune: readonly FataGasita[]; readonly refuzate: readonly FataRefuzata[] } | null {
   const fel = felFisier(octeti);
-  if (fel !== 'font' && fel !== 'colectie') return null;
+  if (fel !== 'font' && fel !== 'colectie' && fel !== 'svg') return null;
   const nume = feteFont(octeti);
   if (!nume) return null;
   const bune: FataGasita[] = [], refuzate: FataRefuzata[] = [];

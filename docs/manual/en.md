@@ -126,7 +126,7 @@ on the line. The Pen stays chosen for the next path.
 
 ## Text
 %% capitol: text
-%% acopera: unealta.text, document.text, editare.text.fonturi
+%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical, editare.text.caseta
 
 The **Text** tool (`X`; `T` is “Show toolpath”) writes text to cut. With it chosen:
 - a **click on the sheet** puts the anchor (a cross): there the baseline of the first line starts (left aligned), has its
@@ -136,12 +136,48 @@ The **Text** tool (`X`; `T` is “Show toolpath”) writes text to cut. With it 
 - a **click on a text** chooses it, to edit it.
 
 In the tool's panel you type the text (Enter: new line) and choose:
-- the **font**: the **included** ones (Roboto, Droid Serif), **My fonts** (loaded by you or downloaded from Google Fonts)
-  and, once you allow access, the **system fonts**; below the fields you see the text as it will be cut;
+- the **font**: the **included** ones (Roboto, Droid Serif and Relief SingleLine, a single-line engraving font), **My
+  fonts** (loaded by you or downloaded from Google Fonts) and, once you allow access, the **system fonts**; below the fields
+  you see the text as it will be cut;
 - the **capital height**, in mm: at “20 mm”, H, N or E are exactly 20 mm tall (round letters, like O or C, go slightly over
   the line, as in any font);
 - the **space between letters** (in mm; negative, tighter), the **distance between lines** (a multiple of the font's line)
-  and the **alignment** to the anchor.
+  and the **alignment** to the anchor;
+- **Bold** and **Italic**, for any font, even without its own bold or slanted faces, **Vertical**, letters one under
+  another, and **Box**, the text fitted into a width and a height (below).
+
+**Bold** thickens the letters: ticked, it asks for the **Thickening on each side** (mm; it suggests 3 % of the height, for
+example 0.6 at 20 mm; at most a fifth of the height). Each stroke grows by twice that, small holes shrink (they may close)
+and close parts of a letter (the comma of ș, the dot of i) may join. The height stays the one you asked for: a 20 mm H is
+still 20 mm, with its outer corners rounded by the thickening, and the space between letters stays the same. Bold letters
+are cut from lines and arcs, within 0.001 mm of the exact shape. **Italic** slants the letters: ticked, it asks for the
+**Slant** (°; it suggests 12°; negative, to the left; at most 45°), each letter about its own baseline, exactly. With both,
+the letters are slanted first and thickened after, so the strokes thicken the same in every direction. The text keeps its
+bold and italic: it reopens with them, and uniform scaling grows the thickening too.
+
+**Vertical** puts the letters one under another, upright: each line becomes a column, and the columns go from left to
+right, at the **distance between columns** (as a multiple of the font's line). Each letter is centred on the column's axis,
+and two neighbouring letters keep the same gap: what the font's em leaves under a capital (between two capitals, the step is
+exactly one em), plus the **space between letters**. The breve of Ă or the comma of Ș get their room, so the letters do not
+touch; a space takes the place of a capital. The **alignment** becomes **Top** (the column starts at the anchor and goes
+down), **Middle** or **Bottom** (the column ends at the anchor). Vertical text stays straight: put on a curve, it does not
+follow it. Bold, italic and single-line fonts work the same, and the text reopens vertical.
+
+**Box** fits the text: **Limited by the box** keeps the capital height you wrote and shrinks it only as much as needed to
+fit; **Scaled to the box** makes the text as large as fits, and the box gives the height (its field is off). What fits is
+the cut letters (not the space around them), in the **Box width** and **Box height** (mm); the space between letters and
+the bold stay as you wrote them, in mm. Under the fields, the panel says the height that fitted and the size of the text; if
+the text does not fit even at the smallest height (for example, with too large a space between letters), it says so and
+does not put it on the sheet. The box does not move the text: it still starts at the anchor. Text in a box stays straight
+(it does not follow a curve), it can be vertical, and uniform scaling grows the box too.
+
+**Single-line fonts** (engraving, “stick” fonts) have no filled letters, only strokes: the cutter goes once along each line.
+Relief SingleLine is included; one you load into My fonts (TTF, OTF or an SVG font, the format of the Hershey and EMS
+engraving fonts) is recognised on its own, whether it writes its strokes there and back or open, like the fonts made for CAD
+and the SVG ones. With such a font, the preview shows the lines, **Bold** is off (a stroke
+has nothing to thicken; **Italic** works), and the text put on the sheet is made of open lines (a closed loop stays a loop),
+engraved on the line at the depth of imported lines (1 mm, at most half the sheet thickness, in one pass). You change the
+cutter and the depth in the export window, with a V cutter for example.
 
 **Add** puts the text on the sheet as a part: each letter is a group, with its holes, cut like an import (the outside
 profile on the outer outlines, the inside one on the holes; you change them in the export window, to a V-carve for example).
@@ -169,8 +205,8 @@ empty, a default sample) is shown written with every font in the list: in My fon
 font's outlines, as it will be cut (the letters missing from the font are named); in Google Fonts, with each family, in the
 chosen style, **before downloading** (the browser fetches from Google only the alphabets of the sample text, and what is cut
 comes from the downloaded file). The tabs:
-- **My fonts**: **Load fonts…** takes TTF, OTF (CFF outlines too, like Adobe fonts), TTC (all the faces) and WOFF; the
-  fonts stay in this browser, work offline and go nowhere. A variable font (like Roboto Flex) gives one row for each of its
+- **My fonts**: **Load fonts…** takes TTF, OTF (CFF outlines too, like Adobe fonts), TTC (all the faces), WOFF and SVG
+  fonts (the engraving ones, Hershey or EMS); the fonts stay in this browser, work offline and go nowhere. A variable font (like Roboto Flex) gives one row for each of its
   named styles (Thin, Bold, Bold Italic…), as separate faces. **Use** chooses the font in the panel, **Delete** removes it (a
   text made with it stays, it just cannot be edited here until you load the font again);
 - **Google Fonts**: you search a family (by name, by category, only with the Romanian diacritics), choose the style and

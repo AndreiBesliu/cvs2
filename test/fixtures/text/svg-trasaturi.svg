@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Un font SVG de probă, cu trăsături (ADR 0140 §7), scris de test/oracles-py/text_corpus.py: comenzile absolute și
+     relative, H / V, Q / T, C / S, o buclă închisă cu Z, o comandă după Z fără M, o glifă cu caracterul dat printr-o
+     entitate, una fără avans (îl ia pe al fontului), o ligatură (sărită), una cu un arc (sărită), crenarea pe caractere, pe
+     intervale și pe nume. Majuscula e vârful lui H (1400), nu cap-height (1500). -->
+<svg xmlns="http://www.w3.org/2000/svg"><defs>
+<font id="ProbaTrasaturi" horiz-adv-x="1200">
+<font-face font-family="Proba Trasaturi" units-per-em="2048" ascent="1900" descent="500" cap-height="1500"/>
+<missing-glyph horiz-adv-x="1000" d="M0 0h1000v1400h-1000z"/>
+<glyph glyph-name="space" unicode=" " horiz-adv-x="600"/>
+<glyph glyph-name="H" unicode="H" horiz-adv-x="1300" d="M200 0V1400M200 700H1100M1100 0V1400"/>
+<glyph glyph-name="I" unicode="I" horiz-adv-x="500" d="M250 0V1400"/>
+<glyph glyph-name="T" unicode="T" d="M100 1400H1100M600 1400V0"/>
+<glyph glyph-name="hyphen" unicode="-" horiz-adv-x="800" d="M150 600h500"/>
+<glyph glyph-name="L" unicode="L" d="m200 1400v-1400h700"/>
+<glyph glyph-name="A" unicode="&#x41;" d="M100 0L650 1400L1200 0M300 500H1000"/>
+<glyph glyph-name="V" unicode="V" d="M100 1400L650 0L1200 1400"/>
+<glyph glyph-name="O" unicode="O" d="M600 0C900 0 1100 300 1100 700S900 1400 600 1400S100 1100 100 700S300 0 600 0Z"/>
+<glyph glyph-name="S" unicode="S" d="M900 1200Q500 1500 300 1100T500 700T700 300T300 100"/>
+<glyph glyph-name="C" unicode="C" horiz-adv-x="1150" d="M1000 1200C800 1500 200 1500 200 700S800 -100 1000 200"/>
+<glyph glyph-name="D" unicode="D" d="M200 0V1400H600Q1100 1400 1100 700Q1100 0 600 0ZL900 300"/>
+<glyph glyph-name="W" unicode="W" d="M100 1400A500 500 0 0 0 1100 1400"/>
+<glyph glyph-name="f_i" unicode="fi" d="M100 0V1400"/>
+<hkern u1="A,V" u2="U+0056-0057" k="150"/>
+<hkern g1="H" g2="O" k="-80"/>
+<hkern u1="L" g2="O,S" k="60"/>
+</font>
+</defs></svg>

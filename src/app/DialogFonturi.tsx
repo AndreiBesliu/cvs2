@@ -224,7 +224,7 @@ function FilaMele({ modul, ales, proba, onSchimbat, onFoloseste }: {
       <p>{t('editare.fonturi.incarca-nota')}</p>
       <div className="campuri">
         <button type="button" data-buton="incarca-fonturi" disabled={lucru} onClick={() => { fisier.current?.click(); }}>{t('editare.fonturi.incarca')}</button>
-        <input ref={fisier} type="file" multiple hidden accept=".ttf,.otf,.ttc,.otc,.woff,.woff2,font/ttf,font/otf,font/collection,font/woff,font/woff2"
+        <input ref={fisier} type="file" multiple hidden accept=".ttf,.otf,.ttc,.otc,.woff,.woff2,.svg,font/ttf,font/otf,font/collection,font/woff,font/woff2,image/svg+xml"
           data-camp="fisiere-fonturi" onChange={(e) => { void incarca(e.target.files); }} />
       </div>
       {lucru ? <p role="status">{t('editare.fonturi.citeste')}</p> : null}

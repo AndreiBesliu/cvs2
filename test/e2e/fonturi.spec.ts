@@ -15,6 +15,9 @@ import { ecran, vedere } from './ajutor-panza.ts';
  * Fonturile variabile (ADR 0113): Roboto Flex încărcat dă fiecare instanță numită ca față separată (id-ul cu `@` și
  * indicele ei), iar textul scris cu „Roboto Flex Bold” are litera H cât o dă instancer-ul lui fontTools la Bold (fixtura
  * `variabile.json`), și după reîncărcare, editat; instanța Bold dată de sistem ca față separată se citește la fel.
+ *
+ * Fonturile SVG (ADR 0140 §7): fontul SVG al lui Relief SingleLine, încărcat în Fonturile mele, se recunoaște cu o singură
+ * linie (Aldin oprit, previzualizarea cu trăsăturile), iar textul e gravat pe linie și se editează după reîncărcare.
  */
 
 test.use({ locale: 'ro-RO' });
@@ -143,6 +146,53 @@ test('o colecție TTC încărcată în Fonturile mele: textul cu fața a doua, d
   await expect(page.locator('[data-text="aplica"]')).toBeDisabled();
 });
 
+test('un font SVG cu o singură linie (ADR 0140 §7) încărcat în Fonturile mele: recunoscut, trăsăturile gravate pe linie, editabil după reîncărcare', async ({ page }) => {
+  await page.goto('/');
+  await textNou(page, 'HI');
+  await page.click('[data-text="fonturi"]');
+  const dialog = page.getByTestId('dialog-fonturi');
+  // Fereastra fișierelor arată și fonturile SVG (setInputFiles nu ține cont de `accept`).
+  await expect(dialog.locator('[data-camp="fisiere-fonturi"]')).toHaveAttribute('accept', /(^|,)\.svg(,|$)/);
+  const svg = fisier('test/fixtures/text/relief-singleline.svg');
+  await dialog.locator('[data-camp="fisiere-fonturi"]').setInputFiles({ name: 'relief-singleline.svg', mimeType: 'image/svg+xml', buffer: svg });
+  await expect(dialog.getByTestId('fonturi-rezultat')).toContainText('Adăugat în Fonturile mele: Relief SingleLine SVG Regular');
+  const id = `f:${createHash('sha256').update(svg).digest('hex').slice(0, 16)}`;
+  await expect(dialog.locator(`li[data-font="${id}"] [data-proba="gata"] [data-testid="proba-font"]`)).toHaveCount(1);
+  await expect(page.locator('select[data-text="font"]')).toHaveValue(id);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  // Recunoscut singur, ca un TTF cu o singură linie: Aldin oprit, cu motivul; previzualizarea desenează trăsăturile.
+  await expect(page.getByTestId('text-linie')).toBeVisible();
+  await expect(page.locator('[data-text="aldin"]')).toBeDisabled();
+  await expect(page.locator('[data-testid="text-previzualizare"] path.trasaturi')).toHaveCount(1);
+  await page.click('[data-text="adauga"]');
+  const d1 = await documentSalvat(page, 1) as Doc & { piese: Array<{ operatii: Array<{ latura: string; noduri: string[] }> }> };
+  const piesa = d1.piese[0]!;
+  expect(piesa.radacina.text).toMatchObject({ continut: 'HI', font: id, numeFont: 'Relief SingleLine SVG Regular', inaltime: 20 });
+  // H: trei linii deschise, de la 0 la 20 mm (majuscula e vârful lui H); I: linia lui și trăsătura de 2 unități din vârf.
+  const h = piesa.radacina.copii![0]!;
+  expect(h.copii!.map((e) => (e.forma as { inchis?: boolean }).inchis)).toEqual([false, false, false]);
+  const ys = (h.copii ?? []).flatMap((e) => (e.forma?.varfuri ?? []).map((v) => v.p.y));
+  expect(Math.min(...ys)).toBeCloseTo(0, 9);
+  expect(Math.max(...ys)).toBeCloseTo(20, 9);
+  expect(piesa.operatii.map((o) => [o.latura, o.noduri.length])).toEqual([['pe-linie', 5]]);
+
+  // După reîncărcare, fontul SVG e tot în bibliotecă: textul se alege și se aplică cu el.
+  await page.reload();
+  await page.locator('[data-unealta="text"]').click();
+  const la = await ecran(page, await vedere(page));
+  const inst = d1.foi[0]!.instante[0]!;
+  const varfH = h.copii![0]!.forma!.varfuri[0]!.p;
+  const pe = la(inst.x + varfH.x, inst.y + varfH.y);
+  await page.mouse.click(pe.x, pe.y);
+  await expect(page.getByTestId('text-stare')).toContainText('Editezi textul ales');
+  await expect(page.locator('select[data-text="font"]')).toHaveValue(id);
+  await page.locator('[data-text="inaltime"]').fill('25');
+  await page.click('[data-text="aplica"]');
+  const d2 = await documentSalvat(page, 2) as Doc;
+  expect(d2.piese[0]!.radacina.text).toMatchObject({ font: id, inaltime: 25 });
+});
+
 test('fonturile sistemului (un queryLocalFonts de probă): permisiunea din clic, lista în panou, instanța Bold a unui font variabil', async ({ page }) => {
   const droid = fisier('public/fonturi/droid-serif.ttf').toString('base64');
   const variabil = fisier('test/fixtures/text/roboto-flex-subset.ttf').toString('base64');
@@ -261,7 +311,7 @@ test('refuzurile din Fonturile mele (WOFF2, un fișier care nu e font) și Googl
   const rezultat = dialog.getByTestId('fonturi-rezultat');
   await expect(rezultat).toContainText('Adăugat în Fonturile mele: Roboto Regular');
   await expect(rezultat).toContainText('„web.woff2”: WOFF2 nu se citește încă: încarcă fontul ca TTF sau OTF.');
-  await expect(rezultat).toContainText('„poza.png”: Fișierul nu e un font (TTF, OTF, TTC sau WOFF).');
+  await expect(rezultat).toContainText('„poza.png”: Fișierul nu e un font (TTF, OTF, TTC, WOFF sau un font SVG).');
   // Același font încărcat din nou: e deja acolo.
   await dialog.locator('[data-camp="fisiere-fonturi"]').setInputFiles({ name: 'roboto.woff', mimeType: 'font/woff', buffer: fisier('test/fixtures/text/roboto.woff') });
   await expect(rezultat).toContainText('Erau deja în Fonturile mele: Roboto Regular');

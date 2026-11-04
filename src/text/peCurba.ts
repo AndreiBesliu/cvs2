@@ -19,6 +19,7 @@
  */
 import { arieCuSemn, inverseaza } from '../geom/contur.ts';
 import type { Contur, Punct, Varf } from '../geom/conturBaza.ts';
+import { cutieContur, uneste } from '../geom/cutie.ts';
 import { ORIENTARI_PE_CURBA, POZITII_PE_CURBA } from '../model/blocText.ts';
 import { parcurgere } from '../model/curba.ts';
 import type { AliniereText, GlifaAsezata, TextAsezat } from './asezare.ts';
@@ -97,7 +98,8 @@ export function aseazaPeCurba(a: TextAsezat, c: TextPeCurba, inaltime: number, a
         s: v.s.tip === 'C' ? { tip: 'C', c1: muta(v.s.c1), c2: muta(v.s.c2) } : v.s,
       })),
     }));
-    return { ...g, cai };
+    // Cutia literei mutate pe curbă, din contururile ei de acum.
+    return { ...g, cai, cutie: cai.map(cutieContur).reduce(uneste) };
   });
   return { ...a, glife };
 }

@@ -625,6 +625,54 @@ export function offsetRegiune(exterior: Contur, gauri: readonly Contur[], distan
   }
 }
 
+// ── Offsetul unei figuri, în ambele sensuri (ADR 0123) ─────────────────────────────────────────────────────────────────
+
+/** Figura de după offset, dacă o cuprinde pe cea de dinainte (spre exterior): altfel motivul, nu o bucată pierdută tăcut. */
+function cuprindeIntrarea(intrare: readonly Contur[], d: number, r: RezultatRegiune): RezultatRegiune {
+  if (!r.ok || d < 0) return r;
+  const iesire = r.regiuni.flatMap((g) => [g.exterior, ...g.gauri]);
+  for (const c of intrare) {
+    const p = c.varfuri[0]?.p;
+    if (p && !inRegiune(p, iesire)) return { ok: false, motiv: 'offsetul a pierdut o bucată a figurii' };
+  }
+  return r;
+}
+
+/**
+ * Offsetul unei figuri (ADR 0123, aldinul textului): contururi închise care nu se ating între ele, citite par-impar (oricâte
+ * exterioare, cu găurile lor și cu insulele din găuri), spre exterior (`distanta` > 0: figura crește, găurile se strâng sau
+ * dispar, piesele apropiate se unesc) sau spre interior, prin figura lui cavalier (`Shape`), ca `offsetRegiune`. Sensul
+ * fiecărui contur se pune după adâncimea lui (par: trigonometric, impar: orar). Aceleași gărzi, aceeași verificare a ieșirii
+ * (fiecare punct la |d| de cel mai apropiat contur, pe partea cerută; niciun contur atins; sensurile par-impar) și aceeași a
+ * doua încercare; în plus, spre exterior, figura nouă trebuie să cuprindă fiecare contur al celei vechi (o bucată pierdută
+ * nu trece). Ieșirea vine pe regiuni. Niciodată o excepție.
+ */
+export function offsetFigura(contururi: readonly Contur[], distanta: number): RezultatRegiune {
+  if (contururi.length === 0 || contururi.some((c) => !c.inchis)) return { ok: false, motiv: 'offsetul unei figuri cere contururi închise' };
+  if (!Number.isFinite(distanta)) return { ok: false, motiv: `distanța offsetului nu e un număr finit (${distanta})` };
+  if (Math.abs(distanta) < DISTANTA_MINIMA) return { ok: false, motiv: `distanța ${distanta} mm e sub rezoluția declarată (${REZOLUTIE} mm)` };
+  try {
+    const curate: Contur[] = [];
+    for (const c of contururi) {
+      const r = curataIntrare(c);
+      if (!r.ok) return r;
+      curate.push(inSensTrigonometric(r.contur));
+    }
+    // Adâncimea unui contur = în câte altele stă (nu se ating, deci un vârf ajunge).
+    const intrare = curate.map((c, i) => {
+      const p = c.varfuri[0]!.p;
+      const adancime = curate.filter((alt, j) => j !== i && inRegiune(p, [alt])).length;
+      return adancime % 2 === 0 ? c : inverseaza(c);
+    });
+    const prima = cuprindeIntrarea(intrare, distanta, incearcaRegiune(intrare, distanta));
+    if (prima.ok || prima.motiv.startsWith('scula nu încape')) return prima;
+    const aDoua = cuprindeIntrarea(intrare, distanta, incearcaRegiune(intrare, distanta + Math.sign(distanta) * PAS_REINCERCARE));
+    return aDoua.ok ? aDoua : { ok: false, motiv: `${prima.motiv} (și la a doua încercare)` };
+  } catch (e) {
+    return { ok: false, motiv: `offsetul a eșuat: ${e instanceof Error ? e.message : String(e)}` };
+  }
+}
+
 // ── Offsetul deschis (ADR 0037 §5, felia 2.3c-4) ────────────────────────────────────────────────────────────────────
 
 /** Pasul eșantioanelor ideale ale acoperirii, pe cale și pe evantaiele colțurilor (mm, ADR 0037 §5). */

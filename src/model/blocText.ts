@@ -26,9 +26,19 @@ export const LIMITE_TEXT = {
   caractere: 1_000, inaltimeMinima: 0.1, inaltimeMaxima: 1_000, spatiere: 1_000, interlinieMinima: 0.5, interlinieMaxima: 5, font: 128, numeFont: 128,
   /** Curba unui text pe curbă: vârfurile ei și distanța față de ea (mm). */
   varfuriCurba: 10_000, distantaCurba: 1_000,
+  /**
+   * Aldinul și cursivul sintetic (ADR 0123): îngroșarea pe fiecare parte, de la rezoluția modelului (mm) la o cincime din
+   * înălțimea majusculei (miezul are atunci 3/5 din ea); înclinarea, în grade, în ambele sensuri.
+   */
+  aldinMinim: 0.01, aldinRaport: 0.2, cursiv: 45,
+  /** Caseta textului (ADR 0142): lățimea și înălțimea ei, în mm. */
+  casetaMinima: 0.1, casetaMaxima: 10_000,
 } as const;
 
 const numar = (min: number, max: number) => v.pipe(v.number(), v.finite(), v.minValue(min), v.maxValue(max));
+
+/** Îngroșarea cea mai mare pentru înălțimea `inaltime` (cu loc pentru rotunjirea unei scalări care păstrează raportul). */
+export const aldinMaxim = (inaltime: number): number => inaltime * LIMITE_TEXT.aldinRaport + 1e-9;
 
 const finit = v.pipe(v.number(), v.finite());
 const SchemaPunctText = v.object({ x: finit, y: finit });
@@ -60,19 +70,44 @@ export const SchemaCurbaText = v.object({
 
 export type CurbaText = v.InferOutput<typeof SchemaCurbaText>;
 
-export const SchemaBlocText = v.object({
-  continut: v.pipe(v.string(), v.minLength(1), v.maxLength(LIMITE_TEXT.caractere)),
-  font: v.pipe(v.string(), v.minLength(1), v.maxLength(LIMITE_TEXT.font)),
-  /** Numele fontului, arătat când fontul lipsește (unul al sistemului, pe alt calculator); lipsă la fonturile incluse. */
-  numeFont: v.optional(v.pipe(v.string(), v.maxLength(LIMITE_TEXT.numeFont))),
-  /** Textul pe curbă (ADR 0108); lipsă: textul e drept, din ancoră. */
-  curba: v.optional(SchemaCurbaText),
-  inaltime: numar(LIMITE_TEXT.inaltimeMinima, LIMITE_TEXT.inaltimeMaxima),
-  spatiere: numar(-LIMITE_TEXT.spatiere, LIMITE_TEXT.spatiere),
-  interlinie: numar(LIMITE_TEXT.interlinieMinima, LIMITE_TEXT.interlinieMaxima),
-  aliniere: v.picklist(ALINIERI_TEXT),
-  amprenta: v.pipe(v.string(), v.maxLength(64)),
-});
+/**
+ * Caseta textului (ADR 0142): limitat de ea (cu înălțimea cerută, micșorată doar cât să încapă) sau scalat la ea (cea mai
+ * mare care încape); lățimea și înălțimea ei, în mm.
+ */
+const marimeCaseta = numar(LIMITE_TEXT.casetaMinima, LIMITE_TEXT.casetaMaxima);
+export const SchemaCasetaText = v.variant('fel', [
+  v.object({ fel: v.literal('limita'), latime: marimeCaseta, inaltime: marimeCaseta, ceruta: numar(LIMITE_TEXT.inaltimeMinima, LIMITE_TEXT.inaltimeMaxima) }),
+  v.object({ fel: v.literal('scala'), latime: marimeCaseta, inaltime: marimeCaseta }),
+]);
+
+export const SchemaBlocText = v.pipe(
+  v.object({
+    continut: v.pipe(v.string(), v.minLength(1), v.maxLength(LIMITE_TEXT.caractere)),
+    font: v.pipe(v.string(), v.minLength(1), v.maxLength(LIMITE_TEXT.font)),
+    /** Numele fontului, arătat când fontul lipsește (unul al sistemului, pe alt calculator); lipsă la fonturile incluse. */
+    numeFont: v.optional(v.pipe(v.string(), v.maxLength(LIMITE_TEXT.numeFont))),
+    /** Textul pe curbă (ADR 0108); lipsă: textul e drept, din ancoră. */
+    curba: v.optional(SchemaCurbaText),
+    inaltime: numar(LIMITE_TEXT.inaltimeMinima, LIMITE_TEXT.inaltimeMaxima),
+    spatiere: numar(-LIMITE_TEXT.spatiere, LIMITE_TEXT.spatiere),
+    interlinie: numar(LIMITE_TEXT.interlinieMinima, LIMITE_TEXT.interlinieMaxima),
+    aliniere: v.picklist(ALINIERI_TEXT),
+    /** Aldinul sintetic (ADR 0123): îngroșarea pe fiecare parte, în mm; lipsă sau 0: litere normale. */
+    aldin: v.optional(v.union([v.literal(0), numar(LIMITE_TEXT.aldinMinim, LIMITE_TEXT.inaltimeMaxima * LIMITE_TEXT.aldinRaport)])),
+    /** Cursivul sintetic (ADR 0123): înclinarea literelor, în grade (negativă: spre stânga); lipsă sau 0: drepte. */
+    cursiv: v.optional(numar(-LIMITE_TEXT.cursiv, LIMITE_TEXT.cursiv)),
+    /** Textul vertical (ADR 0141): literele una sub alta, rândurile în coloane; lipsă: textul e orizontal. */
+    vertical: v.optional(v.literal(true)),
+    /** Încadrarea în casetă (ADR 0142); `inaltime` e atunci cea care a încăput. Lipsă: înălțimea cerută. */
+    caseta: v.optional(SchemaCasetaText),
+    amprenta: v.pipe(v.string(), v.maxLength(64)),
+  }),
+  v.check((b) => b.aldin === undefined || b.aldin <= aldinMaxim(b.inaltime), 'aldinul trece de o cincime din înălțime'),
+  // Un text vertical stă drept: literele una sub alta nu urmează o curbă (ADR 0141).
+  v.check((b) => !(b.vertical && b.curba), 'textul vertical nu stă pe o curbă'),
+  // Un text în casetă stă drept: caseta e a unui text care nu urmează o curbă (ADR 0142).
+  v.check((b) => !(b.caseta && b.curba), 'textul în casetă nu stă pe o curbă'),
+);
 
 export type BlocText = v.InferOutput<typeof SchemaBlocText>;
 
@@ -108,6 +143,9 @@ export function blocScalat(inainte: Nod, dupa: Nod, lx: number, ly: number, unif
   const s = lx;
   const inaltime = b.inaltime * s;
   if (inaltime < LIMITE_TEXT.inaltimeMinima || inaltime > LIMITE_TEXT.inaltimeMaxima || Math.abs(b.spatiere * s) > LIMITE_TEXT.spatiere) return fara;
+  // Aldinul crește cu textul (cursivul e un unghi: rămâne); sub rezoluție, contururile rămân doar vectori.
+  const aldin = b.aldin === undefined ? undefined : b.aldin * s;
+  if (aldin !== undefined && aldin > 0 && (aldin < LIMITE_TEXT.aldinMinim || aldin > aldinMaxim(inaltime))) return fara;
   // Curba unui text pe curbă crește cu el (coordonatele piesei se înmulțesc, ancora rămâne în origine, pe curbă).
   const p = (q: { readonly x: number; readonly y: number }) => ({ x: q.x * s, y: q.y * s });
   const curba = b.curba && {
@@ -117,5 +155,16 @@ export function blocScalat(inainte: Nod, dupa: Nod, lx: number, ly: number, unif
     distanta: b.curba.distanta * s,
   };
   if (curba && Math.abs(curba.distanta) > LIMITE_TEXT.distantaCurba) return fara;
-  return { ...dupa, text: { ...b, inaltime, spatiere: b.spatiere * s, ...(curba ? { curba } : {}), amprenta: amprentaContururi(dupa.copii) } };
+  // Caseta crește cu textul (ADR 0142): același text încape la fel în caseta scalată.
+  const caseta = b.caseta && (b.caseta.fel === 'limita'
+    ? { ...b.caseta, latime: b.caseta.latime * s, inaltime: b.caseta.inaltime * s, ceruta: b.caseta.ceruta * s }
+    : { ...b.caseta, latime: b.caseta.latime * s, inaltime: b.caseta.inaltime * s });
+  if (caseta && !v.safeParse(SchemaCasetaText, caseta).success) return fara;
+  return {
+    ...dupa,
+    text: {
+      ...b, inaltime, spatiere: b.spatiere * s, ...(aldin !== undefined ? { aldin } : {}), ...(curba ? { curba } : {}), ...(caseta ? { caseta } : {}),
+      amprenta: amprentaContururi(dupa.copii),
+    },
+  };
 }

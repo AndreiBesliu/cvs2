@@ -415,6 +415,38 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   documentului: o probă le caută după cheie (`tr[data-operatie="e2/e2"]`), nu după loc. **Pornirea 100,0 (cu ușa 103,5 /
   110 kB), totalul 455,3 / 500, /admin 105,4 / 200; după unirea cu 13.A↑b, pornirea 100,2 (cu ușa 103,7 / 110 kB), totalul
   455,4 / 500.**
+  **Aldinul și cursivul sintetic (ADR 0123, felia 7.5↑, adusă din etapa 7)** gata pe 02.11, în worktree-ul `wip/7.5-text`:
+  bifele **Aldin** și **Cursiv** din panoul textului, pentru orice font. Cursivul înclină fiecare literă față de linia ei de
+  bază, exact; aldinul așază literele la înălțimea miezului (h − 2d), le îngroașă cu d prin fațada offsetului
+  (`offsetFigura`: o figură par-impar, în ambele sensuri, prin `Shape` din cavalier) și le mută cu (d, d), deci H rămâne de
+  h. Literele îngroșate sunt linii și arce (cubicele ca biarce sub 0,001 mm), ținute în memorie după cheia lor exactă.
+  **Corpusul aldinului e Python** (`aldin` în `test/oracles-py/text_corpus.py`, `test/fixtures/text/aldin.json`): oracolul
+  nu construiește litera, ci clasifică punctele unei grile în jurul ei (în miez sau la cel mult d de el); un caz nou = rândul
+  în `CAZURI_ALDIN`, apoi fixtura regenerată și comisă. **Pornirea 98,6 (cu ușa 102,2 / 110 kB), totalul 444,6 / 500.**
+  **Fonturile cu o singură linie (ADR 0140, felia 7.6↑, adusă din etapa 7)** gata pe 02.11, în același worktree: cititorul
+  recunoaște singur un font de gravură (`Font.linie`: contururile fără arie ale literelor drepte, `src/text/linie.ts`) și îi
+  citește trăsăturile după convenția fontului (dus-întors, păstrată deschisă sau buclă; TrueType și CFF); trăsăturile se
+  așază ca linii deschise (capetele cu regulile ușilor importului), fără normalizare și fără aldin, iar piesa e gravată pe
+  linie la adâncimea liniilor importate. **Relief SingleLine** (OFL 1.1, din `isdat-type/Relief-SingleLine`, subset) e
+  inclus. **Corpusul liniilor simple e Python** (`linie` în `test/oracles-py/text_corpus.py`, `test/fixtures/text/linie.json`,
+  cu variantele lui Relief: dus-întors, cu bucle, CFF): un caz nou = rândul în `CAZURI_LINIE`, apoi fixtura regenerată și
+  comisă. **Fonturile SVG (ADR 0140 §7, felia 7.6↑b)** gata pe 02.11: `src/text/fontSvg.ts` le citește prin aceeași ușă
+  (`felFisier` dă `'svg'`, o singură față), cu garda entităților din `src/io/entitatiXml.ts` (comună cu importul SVG; luată
+  din `svg.ts`, ar trage în bucata textului toată ușa SVG) și parserul căilor importului; tipurile fontului stau în
+  `src/text/tipFont.ts` (fără ciclu între cele două cititoare). Corpusul lor e tot Python (`fonturi_svg`, `svg.json`; fontul
+  SVG al lui Relief și două fonturi de probă scrise în generator: `SVG_TRASATURI`, `SVG_PLIN`). **Pornirea 98,6 (cu ușa
+  102,2 / 110 kB), totalul 447,2 / 500.**
+  **Textul vertical (ADR 0141, felia 7.7↑)** gata pe 03.11: `vertical: true` în bloc (nu pe o curbă); `aseazaText` are două
+  ramuri (rânduri, coloane) peste desenul comun al unei litere (`contururiLitera`); coloanele stivuiesc literele după cutia
+  exactă (`cutieContur`; la aldin, cutia miezului cu 2d în plus), la golul max(0, em − majuscula) + spațierea. Corpusul lui e
+  tot Python (`fonturi_verticale`, `vertical.json`; aldinul vertical în `aldin.json`): un caz nou = rândul în
+  `CAZURI_VERTICAL`, apoi fixtura regenerată și comisă. **Pornirea 98,6 (cu ușa 102,2 / 110 kB), totalul 447,8 / 500.**
+  **Încadrarea în casetă (ADR 0142, felia 7.8↑)** gata pe 03.11: `caseta` în bloc (`limita`, cu `ceruta`, și `scala`;
+  `inaltime` e cea desenată), nu pe o curbă; `aseazaText` caută înălțimea pe marginile afine ale cutiilor din două așezări de
+  măsurare (`aseaza(…, masurare)`, fără offsetul aldinului), apoi așază o dată; fiecare literă are `cutie`, textul are
+  `inaltime`. Corpusul: `fonturi_caseta`, `caseta.json` (oracolul caută prin înjumătățire pe așezări întregi); aldinul în
+  casetă, în `aldin.json`. Din definiția pragului textului (`PlanNou-CNC/Plan-CNC-Studio-2.html`) mai rămân mărimea în
+  puncte sau inch, scalarea textului în lățime și în înălțime (%) și spațierea manuală între literele alese. **Pornirea 98,6 (cu ușa 102,2 / 110 kB), totalul 449,0 / 500.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -562,6 +594,12 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   - Escape închide doar ce e deschis; nu schimbă fereastra și nu atinge mașina;
   - Mașina pe trei coloane de la 80 rem, două până la 48 rem, una pe telefon, în ordinea urgenței;
   - mai târziu, în etapa 13: previzualizarea traseului cu freza în timp real și override-urile, în coloana lucrării.
+- 02.11.2026: **fonturile cu o singură linie: cititorul pentru fonturile „stick” ale omului și Relief SingleLine inclus**
+  („Da, 1 + 2 cu Relief”, la recomandarea din sesiunea etapei 7: „1. cititorul pentru fonturile tale stick (TTF / OTF
+  dus-întors și fonturile SVG), fără descărcări; 2. un font liber inclus, descărcat o singură dată, cu licența lângă el”).
+  Relief SingleLine CAD (OFL 1.1) e descărcat din `isdat-type/Relief-SingleLine` și inclus; fonturile SVG vin în 7.6↑b.
+  Tot atunci, **ADR-urile 0140–0142 sunt ale liniei textului** („0140–0142”, la „ce numere folosesc?”; 0124–0132 erau deja
+  împărțite între linii): 0140 fonturile cu o singură linie (ADR 0140, felia 7.6↑), 0141 textul vertical, 0142 caseta.
 - 02.11.2026: **plafonul total 500 kB** („Da, 500 kB”, la „Ridic plafonul total al pachetului la 500 kB?”), după propunerea
   a două worktree-uri paralele lângă etapa 4: restul textului (etapa 7) și verificarea și repararea vectorilor (etapa 10). La
   441,2 / 450 kB, cele trei linii nu încăpeau în 8,8 kB. ADR 0122, felia 3.R; pornirea rămâne 110 kB. Worktree-urile pornesc

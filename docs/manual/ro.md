@@ -121,7 +121,7 @@ pe linie. Pen-ul rămâne ales pentru calea următoare.
 
 ## Textul
 %% capitol: text
-%% acopera: unealta.text, document.text, editare.text.fonturi
+%% acopera: unealta.text, document.text, editare.text.fonturi, editare.text.aldin, editare.text.cursiv, editare.text.vertical, editare.text.caseta
 
 Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea aleasă:
 - un **clic pe foaie** pune ancora (o cruce): acolo începe linia de bază a primului rând (aliniat la stânga), îi stă
@@ -131,12 +131,48 @@ Unealta **Text** (`X`; `T` e „Arată traseul”) scrie text de tăiat. Cu ea a
 - un **clic pe un text** îl alege, ca să-l editezi.
 
 În panoul uneltei scrii textul (Enter: rând nou) și alegi:
-- **fontul**: cele **incluse** (Roboto, Droid Serif), **Fonturile mele** (încărcate de tine sau descărcate din Google
-  Fonts) și, după ce permiți accesul, cele **ale sistemului**; sub câmpuri se vede textul, cum se va tăia;
+- **fontul**: cele **incluse** (Roboto, Droid Serif și Relief SingleLine, un font cu o singură linie, de gravură),
+  **Fonturile mele** (încărcate de tine sau descărcate din Google Fonts) și, după ce permiți accesul, cele **ale
+  sistemului**; sub câmpuri se vede textul, cum se va tăia;
 - **înălțimea majusculelor**, în mm: la „20 mm”, H, N sau E au exact 20 mm (literele rotunde, ca O sau C, trec puțin peste
   linie, ca în orice font);
 - **spațiul dintre litere** (în mm; negativ, mai strâns), **distanța dintre rânduri** (ca multiplu al rândului fontului) și
-  **alinierea** față de ancoră.
+  **alinierea** față de ancoră;
+- **Aldin** și **Cursiv**, pentru orice font, chiar fără fețele lui îngroșate sau înclinate, **Vertical**, literele una
+  sub alta, și **Caseta**, textul încadrat într-o lățime și o înălțime (mai jos).
+
+**Aldin** îngroașă literele: bifat, cere **Îngroșarea pe fiecare parte** (mm; propune 3 % din înălțime, de exemplu 0,6 la
+20 mm; cel mult o cincime din înălțime). Fiecare trăsătură crește cu dublul ei, golurile mici se strâng (pot dispărea), iar
+bucățile apropiate ale unei litere (virgula lui ș, punctul lui i) se pot uni. Înălțimea rămâne cea cerută: H de 20 mm are tot
+20 mm, cu colțurile de afară rotunjite cu raza îngroșării, și spațiul dintre litere rămâne același. Literele îngroșate se
+taie din linii și arce, la cel mult 0,001 mm de forma exactă. **Cursiv** înclină literele: bifat, cere **Înclinarea** (°;
+propune 12°; negativă, spre stânga; cel mult 45°), fiecare literă față de linia ei de bază, exact. Cu amândouă, literele se
+înclină întâi și se îngroașă apoi, deci trăsăturile se îngroașă la fel în toate direcțiile. Textul își ține aldinul și
+cursivul: se redeschide cu ele, iar scalarea uniformă crește și îngroșarea.
+
+**Vertical** pune literele una sub alta, drepte: fiecare rând devine o coloană, iar coloanele merg de la stânga la dreapta,
+la **distanța dintre coloane** (ca multiplu al rândului fontului). Fiecare literă stă centrată pe axa coloanei, iar între două
+litere vecine rămâne același gol: cât lasă em-ul fontului sub o majusculă (între două majuscule, pasul e chiar un em), plus
+**spațiul dintre litere**. Căciula lui Ă sau virgula lui Ș își primesc locul, deci literele nu se ating; un spațiu ține locul
+unei majuscule. **Alinierea** devine **Sus** (coloana pornește din ancoră în jos), **Mijloc** sau **Jos** (coloana se termină
+în ancoră). Textul vertical stă drept: pus pe o curbă, nu o urmează. Aldinul, cursivul și fonturile cu o singură linie merg
+la fel, iar textul se redeschide vertical.
+
+**Caseta** încadrează textul: **Limitat de casetă** păstrează înălțimea majusculelor scrisă și o micșorează doar cât să
+încapă; **Scalat la casetă** face textul cât mai mare încât să încapă, iar înălțimea o dă caseta (câmpul ei se oprește). Se
+încadrează literele tăiate (nu spațiul din jurul lor), în **Lățimea casetei** și **Înălțimea casetei** (mm); spațiul dintre
+litere și aldinul rămân cum le-ai scris, în mm. Sub câmpuri, panoul spune înălțimea care a încăput și mărimea textului; dacă
+textul nu încape nici la cea mai mică înălțime (de pildă, cu un spațiu dintre litere prea mare), o spune și nu-l pune pe
+foaie. Caseta nu mută textul: el pornește tot din ancoră. Textul în casetă stă drept (nu urmează o curbă), poate fi vertical,
+iar scalarea uniformă crește și caseta.
+
+**Fonturile cu o singură linie** (de gravură, „stick”) n-au litere pline, ci trăsături: freza merge o dată pe fiecare linie.
+Relief SingleLine e inclus; unul încărcat de tine în Fonturile mele (TTF, OTF sau un font SVG, formatul fonturilor de
+gravură Hershey și EMS) se recunoaște singur, fie că își scrie trăsăturile dus-întors, fie deschise, ca fonturile pentru CAD
+și cele SVG. Cu un asemenea font, previzualizarea arată liniile, **Aldin**
+e oprit (o trăsătură n-are ce îngroșa; **Cursiv** merge), iar textul pus pe foaie e făcut din linii deschise (o buclă
+închisă rămâne buclă), gravate pe linie la adâncimea liniilor importate (1 mm, cel mult jumătate din grosimea foii, într-o
+trecere). Freza și adâncimea le schimbi în fereastra exportului, de exemplu cu freza în V.
 
 **Adaugă** pune textul pe foaie ca o piesă: fiecare literă e un grup, cu golurile ei, tăiată ca un import (profilul pe
 exterior pe contururile de afară, pe interior pe goluri; le schimbi în fereastra exportului, de exemplu în V-carve).
@@ -165,7 +201,7 @@ contururile fontului, cum se va tăia (literele care lipsesc din font sunt numit
 stilul ales, **înainte de descărcare** (browserul aduce de la Google doar alfabetele textului de probă, iar ce se taie vine
 din fișierul descărcat). Filele:
 - **Fonturile mele**: **Încarcă fonturi…** primește TTF, OTF (și cele cu contururi CFF, ca fonturile Adobe), TTC (toate
-  fețele) și WOFF; fonturile rămân în browserul ăsta, merg și fără rețea și nu pleacă nicăieri. Un font variabil (ca Roboto
+  fețele), WOFF și fonturile SVG (cele de gravură, Hershey sau EMS); fonturile rămân în browserul ăsta, merg și fără rețea și nu pleacă nicăieri. Un font variabil (ca Roboto
   Flex) dă câte un rând pe fiecare stil numit al lui (Thin, Bold, Bold Italic…), ca fețe separate. **Folosește** alege fontul
   în panou, **Șterge** îl scoate (un text făcut cu el rămâne, doar nu se mai editează aici până nu-l încarci din nou);
 - **Google Fonts**: cauți o familie (după nume, după categorie, doar cu diacriticele românești), alegi stilul și
