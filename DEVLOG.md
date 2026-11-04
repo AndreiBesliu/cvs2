@@ -5271,3 +5271,52 @@ build-ul determinist (pornirea 100,3, cu ușa 103,9 / 110 kB; totalul 468,9 / 50
 **Publicat pe test:** 04.11, 16:32, `publica` pe `c0de287` (rularea 41848098549), după CI-ul rapid verde (41841525159)
 și după rularea completă de mai sus.
 Verificat: versiunea `c0de2870b37e` în browserul aplicației, după „Reload”; la 390 px, în română, cu mașina simulată conectată: Proiectarea doar cu iconița (eticheta de 1 × 1 px, numele accesibil), Mașina cu numele, „Mașina conectată” pe același rând, în dreapta; la 320 px, tot pe rând (cu fontul Windows, cuvântul încape întreg); la 1440 px, ambele file cu numele; fără erori în consolă; mașina deconectată la final, browserul lăsat în Proiectare și în engleză.
+
+## 2026-11-04 — Felia 3.U: degajările aceleiași bucle (ADR 0134) (Model: Claude Opus 5.5)
+
+**Prompt:** „Continua”.
+**Started:** 04.11, 20:15. **Completed:** 04.11, 22:18.
+
+**Alegerea.** Regula de până acum: etapa cea mai devreme cu ceva rămas fără mașină. Etapa 3 nu mai are nimic fără mașină, iar
+etapa 2 are în prag „Fileturi la colțuri interioare”, cu două lucruri lăsate deschise în ADR 0032: colțurile cu arce și
+„Degajările aceleiași bucle nu se judecă între ele … (se redeschide la 2.7)”. Al doilea s-a dovedit un defect pe `main`, deci
+a venit întâi; colțurile cu arce rămân felia următoare.
+
+**Defectul, măsurat pe `main` (`46abd2a`), cu exportul aplicației:** o gaură 60 × 50 cu o limbă de material păstrat de 2 mm,
+din peretele de jos, freza Ø6, T-bone. La baza limbii, pereții lungi sunt chiar laturile ei, deci E = (28, 3) și (30, 3): discul
+de rază 3 acoperă toată lățimea limbii, iar limba se desprinde. Cu dog-bone, limba de 1 mm: discurile se suprapun în ea. Cu
+T-bone, limba de 6 mm: se ating. Degetul din mijloc al unei îmbinări cu degete tăiate pe exterior, cu T-bone în laturile lui, la
+fel. Niciun avertisment. Poarta nu-l vedea: invarianta 2 scutește drumul exact față de inelul propriu, iar limba e chiar pe el.
+
+**Felia.**
+- **ADR 0134**, două condiții noi la §5, după cele de până acum:
+  - d, pereții piesei: discul de pe drum nu trece de un perete care nu vine din V, iar la sub 1 mm de el punctul discului
+    cel mai apropiat nu e în K;
+  - e, degajările aceleiași bucle: doi candidați la sub D + 1, dintre care unul taie în K spre celălalt, se omit amândoi.
+- **Nu se omite nimic din greșeală:** fanta 40 × 6,5 (probele sunt în deșeu), mortiza 10 × 6,5 cu T-bone (probele cad pe
+  peretele comun, unde crestăturile se unesc) și colțul de lângă o aripioară subțire din desen. Varianta în care și conturul
+  era K la e pierdea toate cele patru degajări ale mortizei: respinsă în ADR.
+- **Cod:** `departeDePereti` și `materialIntre` în `src/cam/degajari.ts`, legate în `job.ts` (motivele noi, după a, b și c).
+- **Oracolul** (`test/oracles/degajari.ts`) are d și e, cu K al elementului (`contine`; regiunea foii n-are K în jurul unei
+  găuri singure) și perechea cea mai apropiată căutată numeric. Cazurile D27–D38 (limba, fanta, mortiza, degetele, aripioara,
+  degetul de la margine) stau în `CAZURI_DEG_0134`, separat de `CAZURI_DEG`, ale cărui amprente sunt fixate.
+- **Probe:** `cam.degajari.bucla.test.ts` (14, pe hârtie) și `degajari.bucla.oracol.test.ts`:
+  - cazurile pe 4 montaje, cu toată poarta;
+  - 2 martori, cu drumurile puse înapoi la baza limbii, roșii pe 13;
+  - amprenta programelor cu degajări ale corpusului și ale cazurilor §8, identică cu `46abd2a` (110 + 104, dintre care 53
+    cu colțuri omise), socotită într-o clonă curată.
+- **Proba probei:** cu d și e oprite în aplicație, pică exact cele 5 cazuri de omis și cei 2 martori; cele 5 de păstrat
+  rămân verzi.
+- **Otrăvurile** (`test/otravuri/3.U.py`, alese de autor): 20; prima rulare (`a622bad`): 17 prinse, 3 scăpate (P03 → testul degetului de 2 mm de la marginea plăcii; P05 → proba mutată pe marginea discului, cu testul aripioarei; J04 echivalentă); pe codul final (`de51b67`): 19 / 20, plus J04 echivalentă, în clona din afara Drive-ului.
+- **Ce au schimbat otrăvurile:** prima formă proba d și e în mijlocul golului. Otrava care muta proba pe marginea discului
+  (P05) a scăpat; cazul care le desparte a arătat o alarmă falsă: o aripioară de 0,6 mm din desen, la 0,2 mm sub discul din
+  Q (adică al traseului), oprea degajarea colțului, deși degajarea nu se apropie de ea mai mult decât traseul. Proba a trecut
+  pe marginea discului (commit-ul `de51b67`), cu testul aripioarei. P03 (trecerea discului) a primit testul degetului de 2 mm
+  de la marginea plăcii, unde dincolo de perete e deșeu și doar trecerea prinde cazul. **J04, echivalentă:** fără `y === x`,
+  colțul se judecă și cu el însuși, dar perechea unui drum cu el însuși e (Q, Q), primul candidat al lui
+  `apropiereSegmente`, cu distanța 0; proba e atunci Q, vârf al buclei, la R de pereți, deci în deșeu: nu oprește nimic.
+
+**Rularea completă din CI** pe `de51b67`: verde (rularea 41897228692): nivelul rapid, e2e 318 / 318 pe Linux, emulatoarele 81 / 81 și 21 / 21; la fel prima, pe `a622bad` (41892678991).
+**Publicat pe test:** 04.11, 22:11, `publica` pe `de51b67` (rularea 41903719359), după CI-ul rapid verde (41897174483) și
+după rularea completă de mai sus.
+Verificat: versiunea `de51b671f419` în browserul aplicației, după „Reload”, la 1440 px, în engleză: gaura 60 × 50 cu limba de 2 mm (un dreptunghi minus o fâșie 2 × 40, cu Scade), interior, T-bone; Exportă arată exact cele două avertismente, la (78, 50) și (80, 50), „prea aproape de alt perete al piesei”, cu programul de 34 de linii; nicio eroare în consolă. Descărcarea fișierului a fost oprită în pagină pe durata probei, iar forma a fost ștearsă după.
