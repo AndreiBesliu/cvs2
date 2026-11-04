@@ -7,7 +7,8 @@ import { cerc, dxf, lwpolilinie } from '../unit/ajutor-dxf.ts';
  * (un „8” cu buclele de 100 mm²), două pătrate care se taie în (150, 40) și (140, 50) și o cale deschisă cu capetele la
  * 0,05 mm. Panoul din extensia barei le găsește în workerul CAM, le arată pe feluri și pe pânză (cercul fiecăreia, în
  * locul ei); un clic pe rând alege instanța și scoate problema în față; Esc închide panoul și stinge marcajele. Cât panoul e
- * deschis, o schimbare a documentului (anularea) reface lista.
+ * deschis, o schimbare a documentului (anularea) reface lista. Reparațiile (felia 10.2↑, ADR 0124 §10–§16): „Scoate toate
+ * copiile”, „Închide” pe calea deschisă, „Desparte” pe fundiță, fiecare un pas de anulare; intersecțiile doar se arată.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -117,4 +118,37 @@ test('la 1024 px, panoul stă în fereastră și după ce vine conținutul lui (
   expect(cutie).not.toBeNull();
   expect(cutie!.x).toBeGreaterThanOrEqual(0);
   expect(cutie!.x + cutie!.width).toBeLessThanOrEqual(1024);
+});
+
+test('reparațiile: copiile, închiderea și fundița despărțită, fiecare un pas; intersecțiile doar se arată; trei anulări, lista de la început', async ({ page }) => {
+  await importa(page);
+  await page.locator('[data-editare="verificare"]').click();
+  await expect(stare(page)).toHaveText('Probleme: 5 (forme verificate: 6).');
+  const reparare = page.getByTestId('verificare-reparare');
+  await expect(page.getByTestId('verificare-nota-intersectii')).toBeVisible();
+  await expect(lista(page).locator('section[data-fel="intersectie"] [data-repara]')).toHaveCount(0);
+  // Copiile: un singur buton pentru toată lista (decizia 1c), fără butoane pe rânduri.
+  await expect(lista(page).locator('section[data-fel="duplicat"] [data-repara]')).toHaveCount(1);
+  await expect(lista(page).locator('[data-repara="copii"]')).toHaveText('Scoate toate copiile (1)');
+  await lista(page).locator('[data-repara="copii"]').click();
+  await expect(reparare).toHaveText('Reparat: 1. Anulezi cu Ctrl+Z.');
+  await expect(stare(page)).toHaveText('Probleme: 4 (forme verificate: 5).');
+  // Calea deschisă, cu golul de 0,05 mm, sub „Închide sub” (1 mm): „Închide” pe rândul ei.
+  await lista(page).locator('[data-repara="inchide"]').click();
+  await expect(stare(page)).toHaveText('Probleme: 3 (forme verificate: 5).');
+  // Fundița, cu bucla de 50 %, peste pragul buclei mici: „Desparte”; cele două triunghiuri se ating în (90, 40).
+  await expect(lista(page).locator('[data-repara="desparte"]')).toHaveText('Desparte');
+  await lista(page).locator('[data-repara="desparte"]').click();
+  await expect(stare(page)).toHaveText('Probleme: 3 (forme verificate: 6).');
+  const feluri = await lista(page).locator('section[data-fel]').evaluateAll((s) => s.map((x) => x.getAttribute('data-fel')));
+  expect(feluri).toEqual(['intersectie']);
+  // Cu pragul de închidere sub gol, „Închide” dispare (după o anulare, calea e din nou deschisă).
+  await page.locator('[data-actiune="istoric.anuleaza"]').click();
+  await page.locator('[data-actiune="istoric.anuleaza"]').click();
+  await expect(stare(page)).toHaveText('Probleme: 4 (forme verificate: 5).');
+  await expect(lista(page).locator('[data-repara="inchide"]')).toHaveCount(1);
+  await page.locator('[data-verificare="inchidere"]').fill('0,01');
+  await expect(lista(page).locator('[data-repara="inchide"]')).toHaveCount(0);
+  await page.locator('[data-actiune="istoric.anuleaza"]').click();
+  await expect(stare(page)).toHaveText('Probleme: 5 (forme verificate: 6).');
 });

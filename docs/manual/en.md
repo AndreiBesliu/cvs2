@@ -535,7 +535,7 @@ A **WMF** (the Windows metafile: old clipart, exports from CorelDRAW, Office or 
 
 ## Checking vectors
 %% capitol: verificare
-%% acopera: editare.verificare
+%% acopera: editare.verificare, document.repara
 
 **Check vectors** (the button with the circled node, after boolean and ungrouping, in the bar extension) looks for what
 can spoil a cut, without changing anything in the project:
@@ -555,7 +555,24 @@ drawn and on imported vectors.
 
 On the canvas, every problem has a circle, the same size at any zoom: **red** in the same shape, **green** between shapes;
 an overlap is a thick line, and the gap of an open path a dotted line. A click on a row selects its shapes and enlarges its
-circle. For now the check only shows; the repairs come in a later version.
+circle.
+
+The check helps you find the mistakes first; the drawing stays yours. A few can be repaired from the panel
+(**Repair vectors**), each with a single undo step (Ctrl+Z):
+- **Remove all copies**, under the list of duplicates: the first shape of each group stays, with its operation. A copy
+  with an operation the first one does not have stays too, and the row says how many stayed;
+- **Close**, on an open path with its ends at most **Close below** apart (1 mm by default): below the tolerance the ends
+  are snapped, above it a straight line is added between them. The operation stays the same; you change the role in the
+  properties panel. A path with its ends farther apart (an engraving line) stays open, without a button;
+- **Remove** or **Split**, on the loop of a closed shape: below the “Small loop” threshold the loop is removed and the
+  contour goes straight through the crossing; above it, the loop becomes a separate shape, in the same part and with the
+  same operation (an “8” becomes two shapes, which touch at the crossing). **Repair all loops** does them all at once;
+- **Merge**, on the nodes too close in the same shape: the run of short segments becomes a single node. **Merge all
+  nodes** does them all. The nodes of two different shapes are only shown.
+
+Intersections between shapes are only shown: they may be intended, since the bit follows each shape with its role, and the
+export says what cannot be cut. A shape from a part placed more than once is not repaired from here, since the repair
+would change all of them: the row says how many times it is placed.
 
 ## The cutting operations
 %% capitol: operatii

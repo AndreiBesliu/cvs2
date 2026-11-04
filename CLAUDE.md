@@ -459,9 +459,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   deschise, cu un cerc pe pânză în locul fiecăreia (roșu în aceeași formă, verde între forme). Calculul pur e
   `src/model/verificare.ts`, în workerul CAM (cererea `verificare`, prin `actiuniExportCalcul.ts`); panoul vine la cerere
   (`src/app/PanouVerificare.tsx`). **O ratare sau o alarmă falsă găsită pe un desen real intră în
-  `test/unit/verificare.test.ts`, cu valoarea ei pe hârtie.** Reparațiile (10.2↑) așteaptă răspunsurile owner-ului la
-  întrebările din ADR 0124. **Pornirea 98,5 (cu ușa 102,0 / 110 kB), totalul 454,7 / 500.** După unirea în main
-  (04.11), cu linia textului: **pornirea 100,3 (cu ușa 103,9 / 110 kB), totalul 468,9 / 500, /admin 105,3 / 200.**
+  `test/unit/verificare.test.ts`, cu valoarea ei pe hârtie.** **Pornirea 98,5 (cu ușa 102,0 / 110 kB), totalul
+  454,7 / 500.** După unirea în main (04.11), cu linia textului: **pornirea 100,3 (cu ușa 103,9 / 110 kB), totalul
+  468,9 / 500, /admin 105,3 / 200.**
+  **Reparațiile verificării (ADR 0124 §10–§16, felia 10.2↑)** gata pe 04.11, în același worktree, după formularul
+  owner-ului (1c, 2a, 3a, 4a, 5a, 6b, 7b, 8a; „check vectors trebuie să-l ajute să găsească erori mai mult decât să i le
+  repare”): Scoate toate copiile (un singur buton), Închide (golul sub „Închide sub”, 1 mm), bucla scoasă sub pragul
+  buclei mici sau despărțită peste el, nodurile prea apropiate din aceeași formă unite; intersecțiile doar se arată, iar o
+  piesă pusă de mai multe ori nu se repară. Ce se poate repara și reparația însăși sunt ale workerului CAM
+  (`src/model/reparare.ts`, cererile `verificare` și `reparare`), pe documentul de la clic; acțiunea `document.repara` le
+  aplică într-un pas, doar dacă documentul e încă același. **Bucla se taie exact, în coordonatele elementului, cu
+  parametrii celor două drumuri prin încrucișare (`adaugaNod`): restul vârfurilor rămân la bit; o reparație nouă păstrează
+  regula și se probează la fel, cu documentul de după trecut prin ușă.**
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el mijlocul golului nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1, cu mijlocul perechii

@@ -224,7 +224,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -1256,7 +1256,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
               <CadruVerificare onInchide={() => { setPanou(null); }}>
                 <Suspense fallback={<p className="motiv-retea" role="status">{t('editare.verificare.incarca')}</p>}>
                   <PanouVerificare doc={doc} selectie={selectie} stare={verificare} onStare={setVerificare}
-                    onAlege={(alese) => { ruleaza('selectie.din-lista', { alese: () => alese }); }} onInchide={() => { setPanou(null); }} />
+                    onAlege={(alese) => { ruleaza('selectie.din-lista', { alese: () => alese }); }}
+                    onRepara={(r) => ruleaza('document.repara', { reparatie: () => r })} onInchide={() => { setPanou(null); }} />
                 </Suspense>
               </CadruVerificare>
             ) : null}

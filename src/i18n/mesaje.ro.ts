@@ -67,6 +67,7 @@ export const ro = {
   'motiv.grupare-vcarve': 'Două forme alese au câte un V-carve cu aceleași valori (freza, adâncimea, pasul) și se ating sau se suprapun: grupate, s-ar săpa ca o singură regiune, iar suprapunerea ar rămâne nesăpată. Depărtează-le, sau dă-i uneia altă adâncime sau alt pas (panoul de proprietăți, Tăierea).',
   'motiv.grupare-impartita': 'O piesă aleasă e folosită și de alte instanțe: gruparea ar lua-o și de la ele.',
   'actiune.text': 'Scrie textul',
+  'actiune.repara': 'Repară vectorii',
   'motiv.text-gol': 'Textul n-are nicio literă de tăiat: doar spații, sau litere pe care fontul nu le are.',
   'motiv.text-includeri': 'Textul are prea multe contururi ca să judec golurile literelor.',
   'motiv.text-vectori': 'Forma aleasă nu mai e text: contururile i-au fost schimbate altfel decât din panoul textului.',

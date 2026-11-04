@@ -1,10 +1,11 @@
-import { exportInBazin, simulareInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
+import { exportInBazin, reparareInBazin, simulareInBazin, timpInBazin, traseuInBazin, verificareInBazin } from '../jobs/bazinCam.ts';
 import { fireImplicite, simuleazaInBazin, SimulareAnulata } from '../jobs/bazin.ts';
 import { despacheteaza, impacheteaza } from '../jobs/impachetare.ts';
 import type { Program } from '../ir/ir.ts';
 import type { Montaj } from '../ir/montaj.ts';
 import type { Document } from '../model/document.ts';
-import type { OptiuniVerificare, RezultatVerificare } from '../model/verificare.ts';
+import type { CerereReparare, OptiuniReparare, RezultatReparare, VerificarePanou } from '../model/reparare.ts';
+import type { OptiuniVerificare } from '../model/verificare.ts';
 import { reliefPentru } from '../sim/banda.ts';
 import { campPentruFoaie, dimensiuni, type ParametriCamp } from '../sim/camp.ts';
 import type { DateScula, GrupSimulare } from '../sim/nucleu.ts';
@@ -53,8 +54,16 @@ export async function simuleazaExport(
  * Verificarea vectorilor (ADR 0124): problemele contururilor foii (sau ale formelor alese), în workerul CAM (ADR 0109).
  * `semnal` anulează calculul (un document schimbat, panoul închis): promisiunea e respinsă cu `CalculAnulat`.
  */
-export function verificaVectorii(doc: Document, optiuni: OptiuniVerificare, semnal?: AbortSignal): Promise<RezultatVerificare> {
+export function verificaVectorii(doc: Document, optiuni: OptiuniVerificare, semnal?: AbortSignal): Promise<VerificarePanou> {
   return verificareInBazin(doc, optiuni, semnal ? { semnal } : {});
+}
+
+/**
+ * O reparație a verificării (ADR 0124 §10), pe documentul din clipa cererii, în workerul CAM: piesele schimbate și instanțele
+ * de șters, pe care acțiunea `document.repara` le aplică într-un pas, doar dacă documentul e încă același.
+ */
+export function reparaVectorii(doc: Document, cerere: CerereReparare, optiuni: OptiuniReparare, semnal?: AbortSignal): Promise<RezultatReparare> {
+  return reparareInBazin(doc, cerere, optiuni, semnal ? { semnal } : {});
 }
 
 /** Ce ține `ProgramSimulare.date`: scula și mutările nucleului (IR-ul, în coordonatele documentului), cu grupurile de după schimbări. */

@@ -1,6 +1,7 @@
-# ADR 0124: Verificarea vectorilor: detectarea și panoul (felia 10.1↑)
+# ADR 0124: Verificarea vectorilor: detectarea, panoul și reparațiile (feliile 10.1↑ și 10.2↑)
 
-**Starea:** acceptat pe 02.11.2026, la felia 10.1↑ (adusă din etapa 10, fără mașină), în worktree-ul `wip/10.1-vectori`.
+**Starea:** acceptat pe 02.11.2026, la felia 10.1↑ (adusă din etapa 10, fără mașină), în worktree-ul `wip/10.1-vectori`;
+completat pe 04.11.2026, la felia 10.2↑ (reparațiile, §10–§16), după răspunsurile owner-ului din formularul deciziilor.
 **Completează:** ADR 0026 §2 (contururile care se ating, refuzate la export), ADR 0037 (contururile deschise), ADR 0109
 (calculul greu, în workerul CAM). **Rândul de prag:** „Verificarea și repararea vectorilor: deschiși, duplicați,
 intersecții, bucle, noduri prea apropiate” (`ACOPERIRE-ARTCAM-DESKPROTO.md`, A).
@@ -72,8 +73,68 @@ deschise. Ele sunt referință funcțională: nimic din codul, interfața sau te
    verificarea se oprește, iar panoul spune că lista e tăiată. O formă cu o cubică pe care biarcele n-o prind sub toleranța
    proiectului rămâne fără căutarea intersecțiilor, numărată și spusă.
 
-9. **Reparațiile** (închiderea, scoaterea copiilor și a buclelor mici, unirea nodurilor) vin în felia 10.2↑, prin
-   comenzile documentului de azi (un pas în istoric), după răspunsurile owner-ului (mai jos).
+9. **Reparațiile** sunt ale feliei 10.2↑ (§10–§16), după răspunsurile owner-ului (mai jos).
+
+## Reparațiile (felia 10.2↑)
+
+Deciziile owner-ului, din 04.11 (formularul): 1c, 2a, 3a, 4a, 5a, 6b, 7b, 8a, cu nota lui: „este datoria userului să își
+facă corect desenul; verificarea trebuie să-l ajute să găsească erori mai mult decât să i le repare”. Deci reparațiile
+sunt puține și cerute, niciuna automată, fiecare un singur pas de anulare.
+
+10. **Unde și cum.** Ce se poate repara din fiecare rând (`reparabile`, în `src/model/reparare.ts`) vine odată cu
+    verificarea, din workerul CAM (`verificaPentruPanou`): reguli ieftine, fără geometrie nouă. Reparația însăși e cererea
+    `reparare` a protocolului, calculată tot în worker (bucla cere cavalier) pe documentul din clipa clicului; întoarce
+    piesele schimbate (cu aceleași id-uri) și instanțele de șters. Acțiunea `document.repara` le aplică într-un `lot`
+    (piesele înlocuite, apoi instanțele șterse, ca la Șterge), doar dacă documentul e încă cel al cererii (altfel: „Desenul
+    s-a schimbat cât se calcula reparația”) și doar dacă documentul de după trece de plafoane și de schemele lui. Panoul
+    spune ce s-a reparat („Reparat: n. Anulezi cu Ctrl+Z.”) sau de ce nu, iar lista se reface singură. O reparație care
+    nu reușește își spune motivul; butonul apare după regulile ieftine, nu după o încercare (o buclă ar cere cavalier pe
+    fiecare rând).
+
+11. **Copiile (decizia 1c).** Un singur buton, **Scoate toate copiile (n)**, sub lista duplicatelor, fără butoane pe rânduri.
+    Rămâne prima formă din fiecare grup. O copie pleacă doar dacă fiecare operație a ei (fără id, noduri și rang) e și a
+    primei: altfel s-ar pierde o tăietură voită, iar rândul spune câte au rămas. O instanță cu toate formele copii se
+    șterge întreagă: piesa ei nu se schimbă, deci se poate și când piesa e pusă de mai multe ori. Altfel, copia pleacă din
+    piesă (și din operațiile ei; o operație rămasă fără noduri pleacă, la fel un grup rămas gol), doar dacă piesa e pusă o
+    singură dată (§15).
+
+12. **Închiderea (deciziile 2a, 3a).** **Închide**, pe rândul unei căi deschise cu golul (în lume) cel mult pragul de
+    închidere, **Închide sub** (implicit 1 mm, între 0,001 și 10 mm, în panou). Sub toleranță, ultimul vârf se lipește de
+    primul: pleacă, iar segmentul care venea în el vine în primul (la cubică, mânerul se mută la fel). Peste ea, segmentul
+    ultimului vârf (o linie, ADR 0037 §2) devine linia de închidere. Operația rămâne; rolul se schimbă din panoul de
+    proprietăți. Refuzată: golul peste prag, o cale fără arie după închidere (dus-întors). Fără „pentru toate” (2a).
+
+13. **Buclele (deciziile 4a, 5a).** Pe bucla unei căi închise: sub pragul buclei mici (implicit 1 %, în panou), **Scoate**:
+    bucla pleacă, iar conturul trece drept prin încrucișare. Peste el, **Desparte**: bucla devine o formă a ei, în aceeași
+    piesă, după element, cu matricea lui și în operațiile lui (se taie la fel; o rădăcină-element devine un grup).
+    Elementul rămâne partea cea mai mare (la arii egale, cea cu începutul căii). **Repară toate buclele (n)** le face pe
+    toate, una câte una (o buclă despărțită poate purta alta). Tăietura e exactă:
+    - cavalier dă încrucișarea între bucăți de biarce, iar `pentruCavalier` ține segmentul din care vine fiecare bucată;
+    - pe cele două segmente în lume, parametrul drumului prin X: la linie, proiecția; la arc și la cubică, minimele
+      distanței, rafinate cu Newton; la cubica care se taie singură, punctul ei dublu, în formă închisă (s + t și s·t din
+      coeficienții ei); apoi Newton pe P_i(s) = P_j(t);
+    - tăieturile se fac în coordonatele elementului, cu `adaugaNod` (arcul în două arce ale aceluiași cerc, cubica prin de
+      Casteljau), unde parametrii sunt aceiași: o matrice afină păstrează parametrii liniilor și ai cubicelor, iar arcele
+      trec doar prin similitudini. Restul vârfurilor rămân la bit;
+    - o parte dintr-un singur segment (bucla unei singure cubice) se taie la jumătate, ca să aibă două vârfuri.
+    Reușită doar dacă nicio parte nu se mai taie singură în X și fiecare are arie; altfel, refuzată, iar bucla rămâne
+    pentru unealta Noduri. Buclele căilor deschise (de exemplu o literă dintr-un font cu o singură linie) și atingerile
+    doar se arată.
+
+14. **Nodurile (decizia 6b).** Doar în aceeași formă: **Unește** pe rând și **Unește toate nodurile (n)**. Fiecare șir de
+    segmente de cel mult `t` devine un nod: rămâne primul vârf al șirului, care ia segmentul de după șir (la cubică,
+    mânerul se mută cât s-a mutat începutul ei); la capătul unei căi deschise rămâne capătul, iar segmentul care venea în
+    șir vine în el. Indicii unui contur închis trec de capătul listei (șirul de pe segmentul de închidere). Nodurile a două
+    forme doar se arată: unirea căilor e o discuție separată, mai amplă (nota owner-ului). Praful nu se repară.
+
+15. **Intersecțiile (decizia 7b) și piesele puse de mai multe ori (decizia 8a).** Intersecțiile dintre forme doar se
+    arată, cu nota „Pot fi voite: freza urmează fiecare formă cu rolul ei, iar exportul spune ce nu se poate tăia” (nota
+    owner-ului: e normal ca unele căi să se suprapună). „Taie la intersecții” vine cu rândul „Tăierea și conversia”
+    (etapa 10). O reparație care ar schimba o piesă pusă de mai multe ori, pe orice foaie, se refuză („Piesa e folosită și
+    de alte instanțe: reparația ar schimba-o și pe a lor”, ca la degrupare); rândul spune de câte ori e pusă.
+
+16. **Pragurile, mai târziu în setări.** Owner-ul vrea pragul buclei mici setat separat, global sau pe proiect, când va
+    exista zona de setări. Până atunci, toleranța și cele două praguri stau în panou, cât e deschis.
 
 ## Probele
 
@@ -110,6 +171,26 @@ deschise. Ele sunt referință funcțională: nimic din codul, interfața sau te
 - **Mărimile:** pornirea 98,4 → 98,5 kB (cu ușa 101,9 → 102,0 / 110: numele bucății noi în harta importurilor și
   `instantaDin`); totalul 448,9 → 454,7 / 500 kB (verificarea, doar în workerul CAM; panoul, 2,3 kB, la cerere).
 
+**Reparațiile (10.2↑):**
+- **Pe hârtie** (`test/unit/reparare.test.ts`, 21): ce se poate repara din fiecare rând (bucla, nodurile, închiderea;
+  intersecțiile și linia de două noduri, nimic); o piesă pusă de două ori (rândurile spun de câte ori, reparația se refuză);
+  copiile: două cercuri identice (a doua instanță pleacă), o copie cu altă adâncime (rămâne), una fără operații (pleacă),
+  prima fără operații (copia cu operație rămâne), copia din aceeași piesă (pleacă din grup și din operație), aceeași piesă
+  pusă de două ori cu copia în ea (refuzată), o a doua instanță în același loc (se șterge); închiderea: golul de 0,05 mm
+  (linia de închidere), cel de 0,005 mm (lipit, pătratul exact), pragul (0,5 și 2 mm față de 1 și 5), calea dus-întors
+  (fără arie), mânerul cubicei mutat cu (−0,004; −0,003); nodurile: în mijloc (pătratul exact), la capăt, la început,
+  mânerul cubicei mutat cu −0,006, șirul de pe segmentul de închidere, „toate” pe două forme, praful; buclele: fundița
+  (triunghiurile (0, 0)(10, 10)(0, 20) și (10, 10)(20, 20)(20, 0), câte 100 mm², în aceeași operație, apoi doar atingerea
+  lor), nodul de 1,5 mm² din 101,5 (scos sub 2 %, despărțit peste 1 %), „8”-ul prin același nod (în vârfurile lui), cubica
+  închisă care se taie în (0, 9/7) (parametrii (1 ∓ √(3/7)) / 2, ariile față de un poligon de 4 000 de puncte), o instanță
+  rotită cu 90° și un element scalat de 2 ori și oglindit, „toate” (fundița și nodul; bucla căii deschise rămâne); acțiunea:
+  copiile și închiderea, fiecare un pas, două anulări aduc documentul de la început; documentul schimbat între timp,
+  doar-citirea, nimic de aplicat și o piesă care ar strica schemele: refuzate. După fiecare reparație, documentul trece de
+  ușă, iar verificarea nu mai găsește problema.
+- **E2e** (`test/e2e/verificare.spec.ts`): pe DXF-ul cu probleme, Scoate toate copiile (un singur buton), Închide,
+  Desparte, fiecare cu lista refăcută; intersecțiile fără butoane, cu nota lor; „Închide sub” sub gol stinge butonul; trei
+  anulări aduc lista de la început.
+
 ## Ce am respins
 
 - **Duplicatul după distanța dintre curbe, eșantionată:** ar prinde aceeași curbă scrisă cu alte noduri, dar eșantionarea
@@ -119,6 +200,11 @@ deschise. Ele sunt referință funcțională: nimic din codul, interfața sau te
 - **Bazinul CAM chemat direct din panou:** poarta build-ului îl vrea doar în bucata calculului exportului; panoul trece pe
   acolo, ca vederea 3D.
 - **Reparațiile în aceeași felie:** detectarea are întâi nevoie de ochii owner-ului, iar felia ar fi trecut de ½ zi.
+- **„Unește” (booleanul) pe intersecții (7a) și unirea capetelor a două căi (6a):** owner-ul a ales 7b și 6b.
+- **Butoane de copiere pe rânduri (1a, 1b):** owner-ul a ales un singur buton (1c).
+- **Repararea pe firul principal:** bucla cere cavalier, iar o foaie poate avea 10⁶ noduri; ca verificarea, workerul.
+- **Butonul după o încercare a reparației:** o buclă ar cere cavalier pe fiecare rând; regulile ieftine arată butonul, iar
+  o reparație care nu reușește își spune motivul.
 - **Un oracol cu shapely:** o dependență nouă cere acordul owner-ului; valorile pe hârtie și corpusul plantat, cu locurile
   știute din construcție, ajung aici.
 
@@ -133,11 +219,18 @@ deschise. Ele sunt referință funcțională: nimic din codul, interfața sau te
 - Pe un contur cu mai multe încrucișări, procentul buclei e al ariilor nete ale celor două drumuri.
 - Doar foaia întâi, ca exportul.
 - După o schimbare, cercurile vechi rămân până vine verificarea nouă (300 ms și calculul).
+- Un „8” despărțit dă două forme care se ating în punctul de încrucișare: verificarea le arată apoi ca intersecție, iar
+  exportul refuză două inele care se ating (ADR 0026 §2); le depărtezi sau le unești.
+- Bucla scoasă duce conturul drept prin X: un colț nou acolo. O buclă de lângă un șir de noduri prea apropiate nu se spune
+  (§6), deci nici nu se repară: întâi nodurile.
+- Pragurile nu se țin între sesiuni (§16).
 
-## Întrebările pentru owner (felia 10.2↑), cu recomandarea întâi
+## Întrebările pentru owner (felia 10.2↑) și răspunsurile lui
 
 Formularul lor, cu desenul înainte / după și ce se strică la o alegere greșită, e pagina „Decizii pentru repararea
-vectorilor” (privată, a owner-ului; lăsată pe 02.11). Pe scurt, cu varianta recomandată (a) întâi:
+vectorilor” (privată, a owner-ului; lăsată pe 02.11). Pe scurt, cu varianta recomandată (a) întâi. **Răspunsurile, din
+04.11:** 1c, 2a, 3a, 4a, 5a, 6b, 7b, 8a (§10–§16); 2a, 3a, 4a, 5a și 8a au rămas cele recomandate, neschimbate în
+formular și trimise așa de owner.
 
 1. **Copiile:** a) „Scoate copiile” pe rând și „Scoate toate copiile”; rămâne prima formă, cu operația ei, un pas de
    anulare; o copie cu altă operație decât prima nu se scoate (rândul spune de ce). b) doar pe rând; c) doar „toate”.
@@ -158,5 +251,8 @@ vectorilor” (privată, a owner-ului; lăsată pe 02.11). Pe scurt, cu varianta
 ## Se redeschide dacă
 
 - owner-ul răspunde altfel la întrebări;
+- vine zona de setări: pragurile (întâi cel al buclei mici) trec acolo, global sau pe proiect (§16);
+- vine rândul „Tăierea și conversia”: intersecțiile primesc „Taie la intersecții” (§15);
+- se discută unirea căilor (capetele a două căi prea apropiate, §14);
 - se cere selecția pe elemente (atunci clicul alege chiar formele problemei);
 - un caz real scapă (o ratare sau o alarmă falsă): cazul intră în probe, cu valoarea lui pe hârtie.
