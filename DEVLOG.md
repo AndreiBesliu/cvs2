@@ -5031,3 +5031,10 @@ scriptul: probele extensiilor recunosc intrarea lui (mesajul și stiva doar din 
 (până pe 03.12). Probele planificatorului, ale extensiilor, ale senderului și ale primirii, rulate chiar pe canal: 15 / 15.
 Pachetul (`trenulet-18.2.0.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de test nu s-a atins;
 ramura nu e împinsă.
+
+## 2026-11-04 — Felia 3.Tc: sursele planificatorului în TypeScript (ADR 0162) (Model: Claude Opus 5.5)
+
+**Prompt:** „Sursele în TypeScript” (la „Care e felia următoare?”, după raportul lui 3.Tb), în sesiunea dedicată liniei
+Trenuleț. 3.Tc: sursele planificatorului (motoarele, apoi pagina) trec în TypeScript, cu tipurile verificate de poartă și
+cu același JavaScript rulat.
+**Started:** 04.11, 07:19.

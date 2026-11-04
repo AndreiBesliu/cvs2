@@ -11,7 +11,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview --port 4173 --strictPort",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p extensii/trenulet/sursa/tsconfig.json",
     "typecheck:functii": "tsc -p functions/tsconfig.verificare.json",
     "test": "node --test \"test/unit/**/*.test.ts\"",
     "test:felie": "node --test --test-shard=$FELIA \"test/unit/**/*.test.ts\"",

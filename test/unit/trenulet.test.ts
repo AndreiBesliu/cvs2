@@ -12,6 +12,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { Script } from 'node:vm';
 import { jsonCaPython, pachetTrenulet, paginiPlanificator, reprPython, scripturi } from '../../scripts/construieste-trenulet.ts';
 import { citestePachet } from '../../src/extensii/pachet.ts';
 
@@ -43,6 +44,13 @@ test('pagina de sine stătătoare: marcajul, foaia și scripturile surselor, în
     const k = planificator.indexOf(`<script>\n${s.text}\n</script>\n`, poz);
     assert.ok(k >= poz, s.nume);
     poz = k + 1;
+  }
+});
+
+test('scripturile paginii sunt JavaScript: sursele TypeScript intră fără tipuri, ca scripturi clasice (ADR 0162)', () => {
+  for (const s of scripturi()) {
+    assert.doesNotThrow(() => new Script(s.text, { filename: s.nume }), s.nume);
+    assert.ok(s.text.trim().length > 1000, s.nume);
   }
 });
 

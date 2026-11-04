@@ -1,8 +1,10 @@
 /**
  * Construiește Planificatorul Trenuleț din sursele lui (`extensii/trenulet/sursa/`, ADR 0129), cu regulile din `build.py`:
+ * - sursele sunt TypeScript (ADR 0162): fiecare script intră fără tipuri (`stripTypeScriptTypes`, care pune spații în locul
+ *   lor), ca script clasic, cu aceeași semantică globală; bibliotecile din `vendor/` rămân JavaScript;
  * - pagina de sine stătătoare (`planificator.html`, conținutul de pe claude.ai; `preview.html`, documentul întreg, copia de
- *   pe PC), octet cu octet ca v18: catalogul intră în `app.js` serializat ca de Python (`json.dumps`, compact, fără ASCII
- *   forțat), deci și numerele (`40.0` rămâne `40.0`);
+ *   pe PC): catalogul intră în `app.js` serializat ca de Python (`json.dumps`, compact, fără ASCII forțat), deci și numerele
+ *   (`40.0` rămâne `40.0`);
  * - pachetul extensiei (`extensii/trenulet/extensie.json`): intrarea (`extensii/trenulet/intrare.ts`, fără tipuri), stilurile
  *   din `head.html`, marcajul din `body.html` și scripturile, în ordinea paginii, ca fișiere separate, încărcate de intrare ca
  *   scripturi clasice (aceeași semantică globală ca în pagină).
@@ -67,8 +69,10 @@ export function jsonCaPython(text: string): string {
 }
 
 const citeste = (...p: string[]): string => readFileSync(join(SURSA, ...p), 'utf8');
+/** O sursă TypeScript a paginii, fără tipuri: spațiile țin locul lor, deci liniile și coloanele rămân ale sursei. */
+const faraTipuri = (...p: string[]): string => stripTypeScriptTypes(citeste(...p), { mode: 'strip' });
 
-/** Sursele, în ordinea paginii, cum le scrie `build.py` (cu licențele și catalogul pus în `app.js`). */
+/** Scripturile, în ordinea paginii, cum le scria `build.py` (cu licențele și catalogul pus în `app.js`), fără tipuri. */
 export function scripturi(): { readonly nume: string; readonly text: string }[] {
   const app = citeste('planificator', 'app.js').replace('/*CATALOG*/null', jsonCaPython(citeste('planificator', 'catalog.json')));
   const lic = '/*! cavalier-contours-js 0.1.1 (portul TypeScript al bibliotecii cavalier_contours, adus in cvs2: src/geom/cavalier).\n'
@@ -80,11 +84,11 @@ export function scripturi(): { readonly nume: string; readonly text: string }[] 
     + ' * copies. THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE. */\n';
   const lista = [
     { nume: 'cavalier.js', text: `${lic}${citeste('vendor', 'cavalier.min.js').trim()};window.Cavalier=Cavalier;` },
-    { nume: 'cnc.js', text: citeste('planificator', 'cnc.js') },
-    { nume: 'gcode.js', text: citeste('planificator', 'gcode.js') },
+    { nume: 'cnc.js', text: faraTipuri('planificator', 'cnc.ts') },
+    { nume: 'gcode.js', text: faraTipuri('planificator', 'gcode.ts') },
     { nume: 'earcut.js', text: `${ear}${citeste('vendor', 'earcut.min.js').trim()}` },
-    { nume: 'lego.js', text: citeste('lego', 'lego.js') },
-    { nume: 'profiluri.js', text: citeste('planificator', 'profiluri.js') },
+    { nume: 'lego.js', text: faraTipuri('lego', 'lego.ts') },
+    { nume: 'profiluri.js', text: faraTipuri('planificator', 'profiluri.ts') },
     { nume: 'atelier.js', text: citeste('planificator', 'atelier.js') },
     { nume: 'app.js', text: app },
   ];

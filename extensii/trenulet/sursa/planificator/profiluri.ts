@@ -1,24 +1,33 @@
 // Profilurile (presets): mai multe masini CNC sau mai multe imprimante 3D, fiecare cu setarile ei. Una e implicita: cu
 // ea se deschide pagina. Setarile de pe ecran sunt mereu ale profilului ales: ce schimbi acolo se scrie in el.
-(function () {
+var Profiluri = (function () {
   "use strict";
+  /** Un profil: numele lui și setările lui (ale unei mașini CNC sau ale unei imprimante 3D). */
+  type Profil<V> = { id: string; nume: string; v: V };
+  type Stare<V> = { lista: Profil<V>[]; activ: string; implicit: string };
+  /** Ce vine din stocare: orice, până la `curata`. */
+  type Brut = { readonly lista?: unknown; readonly activ?: unknown; readonly implicit?: unknown } | null | undefined;
+  type Optiuni<V> = {
+    eticheta: string; fel: string; ajutor: string;
+    stare(): Stare<V>; salveaza(s: Stare<V>): void; valori(): V; aplica(v: V): void;
+  };
   const idNou = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  const esc = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  const copie = o => JSON.parse(JSON.stringify(o));
-  function curata(o, valoriCurente, numeImplicit) {
+  const esc = (t: unknown): string => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" } as Record<string, string>)[c]!);
+  const copie = <T>(o: T): T => JSON.parse(JSON.stringify(o)) as T;
+  function curata<V>(o: Brut, valoriCurente: V, numeImplicit: string): Stare<V> {
     // { lista: [{ id, nume, v }], activ, implicit }; fara nimic salvat, un singur profil, cu setarile de acum
-    const lista = (o && Array.isArray(o.lista) ? o.lista : [])
-      .filter(p => p && typeof p.id === "string" && typeof p.nume === "string" && p.v && typeof p.v === "object" && !Array.isArray(p.v))
+    const lista = ((o && Array.isArray(o.lista) ? o.lista as ({ id?: unknown; nume?: unknown; v?: unknown } | null)[] : [])
+      .filter(p => p && typeof p.id === "string" && typeof p.nume === "string" && p.v && typeof p.v === "object" && !Array.isArray(p.v)) as Profil<V>[])
       .slice(0, 30).map(p => ({ id: p.id.slice(0, 40), nume: p.nume.trim().slice(0, 40) || numeImplicit, v: p.v }));
     if (!lista.length) lista.push({ id: idNou(), nume: numeImplicit, v: copie(valoriCurente) });
-    const are = x => lista.some(p => p.id === x);
-    const implicit = are(o && o.implicit) ? o.implicit : lista[0].id;
-    return { lista, activ: are(o && o.activ) ? o.activ : implicit, implicit };
+    const are = (x: unknown): boolean => lista.some(p => p.id === x);
+    const implicit = are(o && o.implicit) ? o!.implicit as string : lista[0]!.id;
+    return { lista, activ: are(o && o.activ) ? o!.activ as string : implicit, implicit };
   }
   // opt: { eticheta, fel ("mașina" / "imprimanta"), ajutor, stare(), salveaza(s), valori(), aplica(v) }
-  function ui(loc, opt) {
-    let form = null;
-    const activ = s => s.lista.find(p => p.id === s.activ);
+  function ui<V>(loc: HTMLElement, opt: Optiuni<V>): { desen(): void } {
+    let form: { op: "nou" | "nume" | "sterge"; text: string } | null = null;
+    const activ = (s: Stare<V>): Profil<V> | undefined => s.lista.find(p => p.id === s.activ);
     function desen() {
       const s = opt.stare(), a = activ(s);
       loc.innerHTML = `<div class="prof-rand">
@@ -33,13 +42,13 @@
           <button class="btn principal" type="button" data-prof="ok">${form.op === "nou" ? "Creează" : form.op === "sterge" ? "Da, șterge" : "Salvează"}</button>
           <button class="btn" type="button" data-prof="renunta">Renunță</button></div>` : ""}
         <p class="mic">${opt.ajutor}</p>`;
-      const t = loc.querySelector('[data-prof="text"]');
+      const t = loc.querySelector<HTMLInputElement>('[data-prof="text"]');
       if (t) { t.focus(); t.select(); }
     }
     loc.addEventListener("change", ev => {
       // schimbarile de aici nu sunt setari ale paginii
       ev.stopPropagation();
-      const el = ev.target.closest('[data-prof="alege"]');
+      const el = (ev.target as Element).closest<HTMLSelectElement>('[data-prof="alege"]');
       if (!el) return;
       const s = opt.stare(), p = s.lista.find(x => x.id === el.value);
       if (!p) return;
@@ -47,12 +56,12 @@
       opt.salveaza(s); opt.aplica(copie(p.v)); desen();
     });
     loc.addEventListener("keydown", ev => {
-      if (!ev.target.closest('[data-prof="text"]')) return;
-      if (ev.key === "Enter") { ev.preventDefault(); loc.querySelector('[data-prof="ok"]').click(); }
+      if (!(ev.target as Element).closest('[data-prof="text"]')) return;
+      if (ev.key === "Enter") { ev.preventDefault(); loc.querySelector<HTMLButtonElement>('[data-prof="ok"]')!.click(); }
       if (ev.key === "Escape") { ev.preventDefault(); ev.stopPropagation(); form = null; desen(); }
     });
     loc.addEventListener("click", ev => {
-      const b = ev.target.closest("button[data-prof]");
+      const b = (ev.target as Element).closest<HTMLButtonElement>("button[data-prof]");
       if (!b) return;
       const s = opt.stare(), a = activ(s), op = b.dataset.prof;
       if (op === "nou") { form = { op, text: `${opt.fel === "mașina" ? "Mașina" : "Imprimanta"} ${s.lista.length + 1}` }; desen(); return; }
@@ -61,7 +70,7 @@
       if (op === "renunta") { form = null; desen(); return; }
       if (op === "implicit") { s.implicit = s.activ; opt.salveaza(s); desen(); return; }
       if (op === "ok" && form) {
-        const nume = (loc.querySelector('[data-prof="text"]') || {}).value;
+        const nume = (loc.querySelector<HTMLInputElement>('[data-prof="text"]') || {} as { value?: string }).value;
         const n = String(nume || "").trim().slice(0, 40);
         if (form.op === "nou") {
           if (!n) return;
@@ -71,26 +80,26 @@
         } else if (form.op === "nume") { if (!n || !a) return; a.nume = n; }
         else if (form.op === "sterge" && a && s.lista.length > 1) {
           s.lista = s.lista.filter(p => p !== a);
-          if (s.implicit === a.id) s.implicit = s.lista[0].id;
+          if (s.implicit === a.id) s.implicit = s.lista[0]!.id;
           s.activ = s.implicit;
-          form = null; opt.salveaza(s); opt.aplica(copie(activ(s).v)); desen(); return;
+          form = null; opt.salveaza(s); opt.aplica(copie(activ(s)!.v)); desen(); return;
         }
         form = null; opt.salveaza(s); desen();
       }
     });
     return { desen };
   }
-  function memoreaza(s, valori) {
+  function memoreaza<V>(s: Stare<V> | null, valori: V): void {
     // setarile de pe ecran se scriu in profilul ales
     const a = s && s.lista.find(p => p.id === s.activ);
     if (a) a.v = copie(valori);
   }
-  function laDeschidere(s) {
+  function laDeschidere<V>(s: Stare<V> | null): V | null {
     // pagina se deschide cu profilul implicit: intoarce valorile lui, daca altul era ales
     if (!s || s.activ === s.implicit) return null;
     s.activ = s.implicit;
     const p = s.lista.find(x => x.id === s.activ);
     return p ? copie(p.v) : null;
   }
-  window.Profiluri = { curata, ui, memoreaza, laDeschidere };
+  return { curata, ui, memoreaza, laDeschidere };
 })();
