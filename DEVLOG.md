@@ -5229,3 +5229,45 @@ licențele, build-ul determinist (pornirea 100,3, cu ușa 103,9 / 110 kB; totalu
 316 / 318 (cele două căderi: numărul capitolelor din manual, reparat; apoi 5 / 5).
 **Publicat pe test:** 04.11, 10:29, `publica` pe `024c7d6` (rularea 41799503377), după CI-ul rapid verde (41798434101).
 Verificat în browserul aplicației la 1440 px: versiunea `024c7d607e37`, fără „Reload”; panoul textului cu Aldin, Cursiv, Vertical și Caseta (fără / limitat de casetă / scalat la casetă); „Check vectors” pe foaia goală: „No problems (shapes checked: 0).”; fără erori în consolă; panourile închise fără nimic adăugat.
+
+## 2026-11-04 — Felia 13.A↑c: meniul pe telefon, și cu un font lat (ADR 0132 §10) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa verifici progresul actual al aplicatiei si sa te asiguri ca totul a fost facut bine”, apoi „vreau sa vad un
+exemplu mai concret inainte sa aprob” (la propunerea reparației) și „Yes, B” (după comparația cu capturi).
+**Started:** 04.11, 11:55 (verificarea), 14:40 (felia). **Completed:** 04.11, 16:34.
+
+**Verificarea.** Etapa 3, 138 de felii gata (76 aduse din etapele 4–26), 4 rămase, toate cu mașina sau plăcile; pragul v1:
+7 din 66 făcute, 13 în lucru; 132 de ADR-uri acceptate; instanța de test sănătoasă (backup-urile de noapte reușite, zero grupuri
+de erori deschise); live, încă aplicația veche. **Rularea completă din CI era roșie de două nopți** (03.11 și 04.11), nevăzută:
+publicările așteptau doar nivelul rapid, fără e2e, deși `complet.yml` cere rularea completă înaintea fiecărei publicări.
+- **Meniul pe telefon** (`fereastra.spec.ts:181`, din 13.A↑): pe Linux, `system-ui` e un font lat, iar indicatorul lucrării
+  cădea pe un al treilea rând. Reprodus aici punând `--font` pe Verdana: abaterea, 38 px, identică cu cea din CI.
+- **F1 în Mașina** (`fereastra.spec.ts:163`, din 13.A↑b): pe CI manualul nu se deschidea; aici merge în șase variante (clicul
+  imediat, după preîncărcare, bucata întârziată, procesorul încetinit de 6 ori, fontul lat, de cinci ori la rând). Edge e același
+  (156.0.4314.58) în CI și aici. Fără urmă din CI, cauza rămâne nenumită.
+
+**Felia.** Schița: capturi din aplicația reală la 390 px (CSS-ul injectat doar în pagina probei), acum și variantele; a fost
+respinsă derularea filelor (tăia chiar fila deschisă), iar dintre numele tăiate cu „…” (A) și iconițele (B), owner-ul a ales B.
+- Rândul al doilea al meniului de pe telefon e mereu al filelor și al indicatorului (un `::after` cât tot rândul); fila
+  deschisă cu numele, celelalte doar cu iconița (numele rămâne în sfat și pentru cititorul de ecran).
+- Găsit pe drum: stările lungi („Oprită la M6 (linia N)”) nu încăpeau pe telefon nici cu fontul Windows. Indicatorul ia restul
+  rândului, iar cuvântul se taie cu „…”; punctul, procentul și Pauză / Reia rămân.
+- CI: cu `CI`, o probă e2e căzută își lasă urma și captura; rularea de noapte pune contextul paginii în jurnal și păstrează
+  `test-results/` o săptămână.
+- Proba: `fereastra.spec.ts`, cu un font lat, la 390, 360, 320 și 600 px. Otrăvurile (`test/otravuri/13.A-c.py`): 5; P01 și P03
+  scăpaseră (primul rând plin oricum la lățimile probei; cutiile la locul lor și cu textul revărsat), prinse după întărirea
+  probei; pe codul final, 5 din 5, în clona din afara Drive-ului.
+- Commit-urile: `7a4a767` (felia), `4551ec8` (probele cerute de otrăvuri), `c0de287` (proba pe emulatoare, de mai jos).
+- **Al treilea roșu ascuns:** prima rulare completă pornită de mână (41836156616, pe `7a4a767`) a avut e2e-ul verde pe Linux,
+  318 / 318, cu meniul de pe telefon și cu F1 (deci F1 pică doar uneori), apoi a căzut la emulatoare: proba roadmap-ului cerea
+  etapa 5 de dinaintea lui 5.9↑ (0,75 și „2 / 4 făcute”; acum 0,875 și „3 / 4”). Proba unitară a pragului fusese pusă la zi
+  la 5.9↑, cea pe emulatoare nu, iar pasul emulatoarelor n-a mai rulat din 03.11 (pașii de după un pas căzut nu rulează).
+  Contextul paginii a venit chiar din pasul nou al jurnalului. Local, emulatoarele cu `.tmp/emu.ts`: 81 / 81 și 21 / 21; de
+  acum sunt și în poarta locală.
+
+**Porțile:** traducerile (568, 0 lipsă), compilatoarele, importurile, 8 208 teste unitare (0 căderi, 8 sărite), licențele,
+build-ul determinist (pornirea 100,3, cu ușa 103,9 / 110 kB; totalul 468,9 / 500; /admin 105,3 / 200), e2e 318 / 318.
+**Rularea completă din CI**, a doua, pornită de mână pe `c0de287` (rularea 41841526221): verde: nivelul rapid, e2e 318 / 318 pe Linux (meniul de pe telefon și F1 incluse), emulatoarele 81 / 81 și 21 / 21; pașii urmelor, săriți (nimic căzut).
+**Publicat pe test:** 04.11, 16:32, `publica` pe `c0de287` (rularea 41848098549), după CI-ul rapid verde (41841525159)
+și după rularea completă de mai sus.
+Verificat: versiunea `c0de2870b37e` în browserul aplicației, după „Reload”; la 390 px, în română, cu mașina simulată conectată: Proiectarea doar cu iconița (eticheta de 1 × 1 px, numele accesibil), Mașina cu numele, „Mașina conectată” pe același rând, în dreapta; la 320 px, tot pe rând (cu fontul Windows, cuvântul încape întreg); la 1440 px, ambele file cu numele; fără erori în consolă; mașina deconectată la final, browserul lăsat în Proiectare și în engleză.
