@@ -93,10 +93,12 @@
   min-width: 0;
 }
 
+/* Butonul unei reparații are margine: se deosebește de rândul de lângă el, care alege formele. */
 .lista-verificare button.repara-verificare {
   flex: none;
   width: auto;
   justify-content: center;
+  border-color: var(--l-margine);
 }
 
 .butoane-verificare {
