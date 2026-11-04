@@ -4,12 +4,15 @@
  * - nicio intrare fără folos (o cheie e cerută sau e un șir din surse, ca un cuvânt fără diacritice, „Pod”);
  * - traducerea păstrează {0}, {1}…, n-are litere românești (în afară de numele „Trenuleț”), nici ghilimele drepte (ar strica
  *   un atribut) sau etichete pe care cheia nu le are;
- * - fișierul e exact cum îl scrie unealta (sortat, cu cheile cerute).
+ * - fișierul e exact cum îl scrie unealta (sortat, cu cheile cerute);
+ * - a doua plasă, fără parser: fiecare `tr("cuvânt", "context")` din surse cere și are cheia lui, „cuvânt@context” (un
+ *   context uitat de unealtă ar lăsa în engleză cuvântul fără context, cu celălalt sens).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { citesteDictionar, DICTIONAR, textePlanificator } from '../../scripts/texte-trenulet.ts';
+import { join } from 'node:path';
+import { citesteDictionar, DICTIONAR, SURSA, SURSE, textePlanificator } from '../../scripts/texte-trenulet.ts';
 
 const { cerute, permise } = textePlanificator();
 const d = citesteDictionar();
@@ -46,4 +49,11 @@ test('texte.en.json e cum îl scrie scripts/texte-trenulet.ts: sortat, cu spați
     assert.equal(v.length - v.trimEnd().length > 0, k.length - k.trimEnd().length > 0, `spațiul de la sfârșit: ${k}`);
   }
   assert.ok(readFileSync(DICTIONAR, 'utf8').endsWith('}\n'));
+});
+
+test('fiecare tr cu context, tr("placă", "pat"), cere și are cheia lui, „placă@pat” (a doua plasă, fără parser)', () => {
+  const RE = /\btr\(\s*(?:"([^"\\]*)"|'([^'\\]*)')\s*,\s*(?:"([^"\\]*)"|'([^'\\]*)')\s*\)/g;
+  const cu = SURSE.flatMap((f) => [...readFileSync(join(SURSA, f), 'utf8').matchAll(RE)].map((m) => `${m[1] ?? m[2]}@${m[3] ?? m[4]}`));
+  assert.ok(cu.length >= 5, `prea puține: ${cu.join(', ')}`);
+  assert.deepEqual(cu.filter((k) => !cerute.has(k) || !d[k]), []);
 });

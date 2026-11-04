@@ -214,7 +214,7 @@ test('altă extensie, sau o versiune nouă instalată, peste una nesalvată: în
   await expect(page.locator('iframe.cadru-extensie')).toHaveCount(0);
 });
 
-test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul de acum; cel mult o dată la 2 s, cererile dese adunate', async ({ page }) => {
+test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul de acum; cel mult o dată la 2 s, cererile dese adunate; închiderea o oprește', async ({ page }) => {
   await page.goto('/');
   await instaleaza(page, Buffer.from(SALUT), STOCARE);
   await deschide(page);
@@ -231,5 +231,15 @@ test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul 
   await expect(deschideri).toHaveText('Deschideri: 3');
   await page.waitForTimeout(2500);
   await expect(deschideri).toHaveText('Deschideri: 3');
+  // Una amânată, apoi extensia închisă și deschisă din nou: repornirea amânată nu mai are loc, nici în cea redeschisă.
+  await cadru(page).locator('[data-salut="reporneste"]').click();
+  await expect(deschideri).toHaveText('Deschideri: 4');
+  await cadru(page).locator('[data-salut="reporneste"]').click();
+  await page.locator('[data-extensii="inchide-fereastra"]').click();
+  await expect(page.getByTestId('spatiu-extensie')).toHaveCount(0);
+  await deschide(page);
+  await expect(deschideri).toHaveText('Deschideri: 5');
+  await page.waitForTimeout(2500);
+  await expect(deschideri).toHaveText('Deschideri: 5');
   expect(await eroriJurnal(page)).toEqual([]);
 });

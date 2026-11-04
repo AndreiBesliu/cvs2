@@ -10,7 +10,6 @@
 #   `nodeValue`: nimic), deci nimic nu-l pune la lucru; e plasa pentru codul de mâine;
 # - `FARA` (SCRIPT, STYLE, TEXTAREA): nicio cheie a dicționarului nu e tot conținutul unui textarea sau script, deci azi nu
 #   se traduce nimic acolo nici fără el;
-# - ștergerea repornirii amânate la închidere sau la altă extensie: nicio probă nu închide extensia în cele 2 s;
 # - sufixul exemplelor (`tr(" (exemplu)")`): nicio probă nu deschide un exemplu în engleză;
 # - cuvântul ales prin context la LEGO (`știft@pin`) și la profiluri (`tr(opt.fel)`): un cuvânt englezesc greșit nu-l vede
 #   nicio probă (proba e2e caută româna); mecanismul contextului e probat (T04, patul imprimantei);
@@ -27,6 +26,7 @@ INT = 'extensii/trenulet/intrare.ts'
 CON = 'scripts/construieste-trenulet.ts'
 CAD = 'src/extensii/cadru.ts'
 EXT = 'src/extensii/Extensii.tsx'
+REP = 'src/extensii/repornire.ts'
 CNC = 'extensii/trenulet/sursa/planificator/cnc.ts'
 APP = 'extensii/trenulet/sursa/planificator/app.ts'
 ATE = 'extensii/trenulet/sursa/planificator/atelier.ts'
@@ -40,6 +40,7 @@ SETURI = {
     'adaptoare': ['test/unit/trenulet.adaptoare.test.ts'],
     'pachet': ['test/unit/trenulet.test.ts'],
     'engleza': ['test/unit/trenulet.engleza.test.ts'],
+    'repornire': ['test/unit/extensii.repornire.test.ts'],
 }
 
 # tr, în limba.ts
@@ -90,13 +91,23 @@ o('T20', CON, "['texte.en.json', octeti(citeste('planificator', 'texte.en.json')
 # repornirea, partea lui cvs2
 o('T21', CAD, "      case 'reporneste':\n", '', 'e2e',
   'cvs2 nu mai aude cererea de repornire a extensiei')
-o('T22', EXT, '          if (repornireAmanata.current) return;\n', '', 'e2e',
-  'cererile dese de repornire nu se mai adună într-una')
-o('T23', EXT, '          if (peste <= 0) reporneste();\n          else repornireAmanata.current = setTimeout(reporneste, peste);\n',
-  '          reporneste();\n', 'e2e',
+# (T22–T24 țintesc, din a doua rulare, `repornire.ts`: în componentă, T22 scăpase, fiindcă proba e2e numără deschiderile
+# reușite, iar două reporniri în aceeași clipă se văd ca una; proba unitară numără temporizatoarele.)
+o('T22', REP, '      if (amanata) return;\n', '', 'repornire',
+  'cererile dese de repornire nu se mai adună într-una: câte un temporizator pentru fiecare')
+o('T23', REP, '      if (peste <= 0) { acum(); return; }\n      amanata = true;\n      temporizator = ceas.dupa(peste, acum);\n',
+  '      acum();\n', 'repornire',
   'repornirile nu mai așteaptă cele 2 s dintre ele')
-o('T24', EXT, ' ultimaRepornire.current = Date.now();', '', 'e2e',
+o('T24', REP, '    ultima = ceas.acum();\n', '', 'repornire',
   'cvs2 nu mai ține minte ultima repornire: nicio pauză între ele')
+o('T38', REP, '      ceas.anuleaza(temporizator);\n', '', 'repornire',
+  'oprirea nu mai anulează repornirea amânată')
+o('T39', REP, '      ceas.anuleaza(temporizator);\n      amanata = false;\n', '      ceas.anuleaza(temporizator);\n', 'repornire',
+  'după o oprire, nicio cerere nu mai repornește extensia')
+o('T40', EXT, "        else if (e.tip === 'reporneste') repornire.cere();\n", "        else if (e.tip === 'reporneste') void 0;\n", 'e2e',
+  'fereastra extensiei nu mai ascultă cererea de repornire')
+o('T41', EXT, '      repornire.opreste();\n', '', 'e2e',
+  'o repornire amânată, rămasă după închidere, repornește extensia deschisă din nou')
 o('T25', EXT, '  }, [deschisa, pornire]);\n', '  }, [deschisa]);\n', 'e2e',
   'cererea de repornire nu mai reface cadrul')
 # sursele planificatorului

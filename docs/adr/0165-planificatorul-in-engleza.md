@@ -39,16 +39,19 @@ cheile din cod și erorile „de neajuns” (pentru noi, nu pentru om), toate nu
 
 Limba paginii e fixă cât trăiește cadrul. La o limbă nouă în cvs2, intrarea pornește salvările amânate (ADR 0164), le așteaptă,
 apoi cere repornirea: `host.reporneste()`, membru nou al `HostApi` v1. cvs2 reface cadrul cu contextul de acum, cel mult o dată
-la 2 s; o cerere mai devreme așteaptă până trec cele 2 s, iar cererile de până atunci se adună în ea (o extensie care s-ar
-reporni în buclă nu încarcă aplicația). Textul încărcătorului s-a schimbat, deci și amprenta lui din CSP, pe mecanismul din
-ADR 0127; politica CSP e aceeași.
+la 2 s; o cerere mai devreme așteaptă până trec cele 2 s, iar cererile de până atunci se adună în ea, cu un singur
+temporizator (o extensie care s-ar reporni în buclă nu încarcă aplicația). Închiderea extensiei (sau alta deschisă) anulează
+repornirea amânată. Logica stă în `src/extensii/repornire.ts`, fără React, probată pe un ceas fals. Textul încărcătorului s-a
+schimbat, deci și amprenta lui din CSP, pe mecanismul din ADR 0127; politica CSP e aceeași.
 
 ### D. Uneltele și probele
 
 `scripts/texte-trenulet.ts` găsește în surse ce trebuie tradus (cheile lui `tr`, marcajul, textele fixe care ajung pe pagină)
 și pune cheile noi în dicționar; `trenulet.engleza.test.ts` cere ca fiecare să aibă traducere, fără intrări rămase fără
-folos, cu aceleași {0}, {1}…, fără litere românești. Proba e2e în engleză deschide fiecare ecran (planul, circuitele,
-exportul, fiecare fel de piesă din atelier) și caută româna rămasă; descarcă și arhiva CNC, cu README-ul ei.
+folos, cu aceleași {0}, {1}…, fără litere românești; a doua plasă, fără parser, cere pentru fiecare `tr("cuvânt",
+"context")` din surse cheia „cuvânt@context”. Proba e2e în engleză deschide fiecare ecran (planul, circuitele, exportul,
+fiecare fel de piesă din atelier) și caută româna rămasă și zecimalele cu virgulă; descarcă și arhiva CNC, cu README-ul ei
+(numele, data), și citește eroarea unei plăci prea mici.
 
 ## Ce am respins
 

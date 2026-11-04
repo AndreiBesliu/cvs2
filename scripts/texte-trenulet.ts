@@ -16,9 +16,9 @@ import { stripTypeScriptTypes } from 'node:module';
 import { join } from 'node:path';
 import { parseAst } from 'vite';
 
-const SURSA = 'extensii/trenulet/sursa';
+export const SURSA = 'extensii/trenulet/sursa';
 export const DICTIONAR = join(SURSA, 'planificator', 'texte.en.json');
-const SURSE = ['planificator/app.ts', 'planificator/atelier.ts', 'planificator/cnc.ts', 'planificator/gcode.ts', 'planificator/profiluri.ts', 'lego/lego.ts'];
+export const SURSE = ['planificator/app.ts', 'planificator/atelier.ts', 'planificator/cnc.ts', 'planificator/gcode.ts', 'planificator/profiluri.ts', 'lego/lego.ts'];
 const ATRIBUTE = ['title', 'aria-label', 'placeholder', 'alt'];
 const DIACRITICE = /[ăâîșțĂÂÎȘȚ]/;
 const MARCAJ = /<\/?[a-zA-Z][^>]*>/;
