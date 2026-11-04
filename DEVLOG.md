@@ -4008,6 +4008,36 @@ mașină: `firebase-tools` global, prin node, cu JBR 25).
 calculează”, apoi la zi în ~0,3 s; timpul jobului 52,6 → 50,1 s; în pixelii stratului, rama la 3 mm înăuntru, iar cea de
 afară dispărută); anulat la loc, fără erori în consolă.
 
+## 2026-10-31 — Unirea sugestiei din editor în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Ok, atunci, urmatorul pas aici este sa mergem pe main” (în sesiunea sugestiilor, după „unde ar trebui sa fie
+Sugestie?”, cu captura editorului de pe test: butonul lipsea, fiindcă ramura nu era încă în `main`).
+**Started:** 31.10, 12:55. **Completed:** 31.10, 14:45. Commit-ul de unire `116597c`: ramura 14.B↑b (`960ea07` … `0b0ae07`),
+lucrată în worktree-ul sugestiilor (`C:\Users\besli\cncvs2-lucru\sugestii`). `main` s-a mișcat de trei ori pe drum, iar
+ramura l-a adus la ea înainte de unire. Întâi `3a702c5`, rularea de noapte (`89378d2`; un singur conflict, în DEVLOG, cu
+ambele intrări, în ordinea datelor). Apoi `515a8af`, fără butonul Test în bară, la cererea owner-ului din 12:45 (`7af9d87`).
+Butonul Sugestie stătea sub condiția testului, deci după unire ar fi apărut doar cu `?test`. Acum aplicația îi dă condiția
+lui (`sugestie`, doar în afara live), iar butonul stă chiar după „?”. Proba nouă din `test/e2e/tutorial.spec.ts`
+(`9130f06`) pică pe ambele mutații ale condiției: butonul doar cu `?test` și butonul arătat și pe live. ADR 0111 are
+precizarea din 31.10; indexul, `CLAUDE.md` și rândul din fișă spun locul nou (`0b0ae07`). Al treilea pas al lui `main`,
+`51033b7`, atinge doar DEVLOG-ul și intră direct în unire. Porțile pe `0b0ae07`: compilatorul (aplicația și funcțiile),
+importurile, licențele, traducerile (475, 0 lipsă), suita unitară (7 795 de teste, 0 picate; 8 sărite), build-ul
+determinist (212 fișiere; pornirea 97,3 / 110 kB, cu ușa 100,8; totalul 412,3 / 450; `/admin` 195,9 / 200; sugestia
+2,4 / 8, doar online), emulatoarele (funcțiile și regulile 49, e2e-ul `/admin` 16) și e2e-ul (277), toate pe 4173. La prima
+rulare a emulatoarelor, cu mașina încărcată (1,7 min în loc de 45 s), testul personalului „un singur cont pe adresă” a picat
+pe `auth/network-request-failed`, la intrarea cu Google; la reluare a trecut. CI-ul rapid verde pe `0b0ae07` (run
+41198259201) și pe `116597c`, în `main` (run 41199570472).
+**Publicat pe test (31.10, 14:09)**, din workflow (run 41199608450, `116597c`): regulile (documentul pozei, doar `get`) și
+funcția `sugestii` actualizată. Verificat: amprenta (`node scripts/verifica-test.ts`) arată `116597c` publicat întreg pe
+test, din arborele curat; `sugestii` răspunde fără App Check cu 401 JSON; codul servit are butonul Sugestie, fără butonul
+Test. În browser, la 1440 px, în engleză, pe `116597c68ee6`: bara a doua se termină cu „3D | ? Suggest”, iar butonul e
+activ și apăsabil (titlul: „Suggestion for the owner, with a picture of the sheet”). Pe adresa `firebaseapp.com`, browserul
+aplicației a deschis proiectul doar-citire: îl ținea altă filă din același profil de browser, nu panoul meu, care avea o
+singură filă. Am verificat deci pe `cncvectorstudio-test.web.app`, aceeași găzduire, cu altă stocare. Fluxul cu poza (fila
+`/admin` cere logarea personalului) e probat de e2e-ul pe emulatoare. La cererea sesiunii principale, care urcă felia 5.8↑
+peste `116597c`, intrarea asta stă pe ramură, nu în `main`: o unește ea după felie.
+(Intrarea a rămas doar pe ramura sugestiilor, în `403bc27`; adusă în `main` pe 04.11, la curățenia worktree-urilor.)
+
 ## 2026-10-31 — V-carve-ul unei piese, o singură regiune (felia 5.8↑b) (Model: Claude Opus 5.5)
 
 **Prompt:** „continua cu altceva” (după „Nu acum” la unirea notei din DEVLOG a sesiunii sugestiilor; patru subsesiuni în
@@ -5166,3 +5196,36 @@ portul principal trece); `manual.spec.ts` numără acum 25 de capitole. Codul: `
 a lui): <https://cncvectorstudio-test--vectori-kx0je98o.web.app>, până pe 02.12. Verificat acolo, în browserul aplicației:
 butonul, panoul și workerul (pe foaia goală, „No problems”, în 0,4 s), apoi două dreptunghiuri în același loc: „Problems: 1
 (shapes checked: 2)”, rândul duplicatului și un marcaj; foaia canalului a rămas goală. Ramura e pe GitHub, nu în `main`.
+
+## 2026-11-04 — Curățenia worktree-urilor: linia textului (7.5↑–7.8↑) și 10.1↑ unite în main (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa verifici ce worktrees pot fi unite si sterse/arhivate”, apoi „Da” (la „Unesc text și vectori, apoi fac
+curățenia și arhivez cele trei sesiuni?”).
+**Started:** 04.11, 07:15. **Completed:** 04.11, 10:30.
+
+Inventarul, doar citiri: patru worktree-uri lângă main, toate fără modificări necomise; fiecare ramură, locală și de pe
+origin, judecată față de main (unită, depășită sau în lucru), cu conflictele unirii probate dinainte (`git merge-tree`).
+- **Unite:** `wip/7.5-text` (`257fc16`: aldinul și cursivul sintetic, fonturile cu o singură linie, și SVG, textul vertical,
+  caseta; ADR 0123, 0140–0142) și `wip/10.1-vectori` (`f0c1e98`: verificarea vectorilor, ADR 0124, cu cele opt decizii ale lui
+  10.2↑ la owner). Conflicte doar în documente (fișa, CLAUDE.md, DEVLOG, indexul ADR, ACOPERIRE; dicționarul roadmap-ului
+  refăcut cu `scripts/traduceri.ts`) și în numărul ușilor din `manual.test.ts` (68 + 3 din main + 4 ale textului + 1 a
+  verificării = 76). **Un conflict pe care git nu l-a văzut:** gruparea (în main) și verificarea (pe ramură) duseseră fiecare
+  cuprinsul manualului de la 24 la 25 de capitole, cu aceeași schimbare în proba e2e; împreună sunt 26 (`024c7d6`).
+- **Scoase:** worktree-urile `text` și `sugestii` (întâi joncțiunile `node_modules` și `functions/node_modules`, apoi
+  `git worktree remove`; metadatele din `.git/worktrees/`, blocate de Drive, de mână) și rămășița `grupare`; ramurile locale
+  unite (9) și cele depășite (10: feliile 3.2, 9.4↑, 14.B↑, 14.B↑b, 2.3c, 2.8a și prototipurile carcasei, terminate în main
+  prin alte commit-uri); clonele vechi din `cncvs2-lucru` (19.10, verificarea simulării, ~600 MB). Intrarea DEVLOG a unirii
+  sugestiei din editor (31.10) rămăsese doar pe ramura ei (`403bc27`); acum e la locul ei în timp.
+- **Copii înainte de ștergere,** în `Apps\cncvs2-arhiva\` (Drive, în afara repo-ului, cu `CITESTE.md`): ramurile șterse
+  neunite, într-un bundle; `wip/trenulet`, neîmpinsă (repo-ul e public), în altul.
+- **Rămân:** `trenulet` (linia activă) și `vectori` (10.2↑ așteaptă formularul owner-ului; sesiunii i-am spus că 10.1↑ e în
+  main și să-l aducă în ramură înainte de 10.2↑).
+- **Sesiunile arhivate:** gruparea, senderul pe tot ecranul, importul WMF.
+- **Nefăcut:** ștergerea celor 13 ramuri de pe origin (unite sau depășite): modul automat a refuzat `git push --delete`;
+  comanda e la owner.
+
+**Porțile** pe main-ul unit: traducerile (566, 0 lipsă), compilatoarele, importurile, 8 208 teste unitare (0 căderi, 8 sărite),
+licențele, build-ul determinist (pornirea 100,3, cu ușa 103,9 / 110 kB; totalul 468,9 / 500; /admin 105,3 / 200), e2e
+316 / 318 (cele două căderi: numărul capitolelor din manual, reparat; apoi 5 / 5).
+**Publicat pe test:** 04.11, 10:29, `publica` pe `024c7d6` (rularea 41799503377), după CI-ul rapid verde (41798434101).
+Verificat în browserul aplicației la 1440 px: versiunea `024c7d607e37`, fără „Reload”; panoul textului cu Aldin, Cursiv, Vertical și Caseta (fără / limitat de casetă / scalat la casetă); „Check vectors” pe foaia goală: „No problems (shapes checked: 0).”; fără erori în consolă; panourile închise fără nimic adăugat.

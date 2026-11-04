@@ -454,7 +454,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `src/model/verificare.ts`, în workerul CAM (cererea `verificare`, prin `actiuniExportCalcul.ts`); panoul vine la cerere
   (`src/app/PanouVerificare.tsx`). **O ratare sau o alarmă falsă găsită pe un desen real intră în
   `test/unit/verificare.test.ts`, cu valoarea ei pe hârtie.** Reparațiile (10.2↑) așteaptă răspunsurile owner-ului la
-  întrebările din ADR 0124. **Pornirea 98,5 (cu ușa 102,0 / 110 kB), totalul 454,7 / 500.**
+  întrebările din ADR 0124. **Pornirea 98,5 (cu ușa 102,0 / 110 kB), totalul 454,7 / 500.** După unirea în main
+  (04.11), cu linia textului: **pornirea 100,3 (cu ușa 103,9 / 110 kB), totalul 468,9 / 500, /admin 105,3 / 200.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -569,6 +570,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 04.11.2026: **curățenia worktree-urilor** („vreau sa verifici ce worktrees pot fi unite si sterse/arhivate”, apoi „Da”):
+  linia textului (7.5↑–7.8↑) și 10.1↑ unite în main; worktree-urile `text` și `sugestii` scoase, cu ramurile lor; ramurile
+  depășite (feliile lor s-au terminat în main prin alte commit-uri) șterse după o copie în `Apps\cncvs2-arhiva\` (bundle-uri
+  în Drive, în afara repo-ului, cu `CITESTE.md`), unde stă și copia privată a lui `wip/trenulet`. Rămân worktree-urile
+  `trenulet` (linia activă) și `vectori` (10.2↑ așteaptă formularul owner-ului).
 - 03.11.2026: **imprimanta 3D a owner-ului e o Creality K1C, folosită din cvs2 prin WiFi** („Am o imprimanta 3d pe care vreau
   sa o folosim din cvs2 prin wifi. Las imaginea asta pentru mai tarziu.”), cu o captură din aplicația Creality: imprimanta
   „K1C-8578”, în timpul unei imprimări. E răspunsul la întrebarea 4 din ADR 0119: firmware-ul Creality, pe Klipper. Ce expune
