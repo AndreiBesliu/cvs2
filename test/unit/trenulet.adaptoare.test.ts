@@ -266,11 +266,18 @@ test('lucrul: la închidere, salvările amânate pornesc pe loc; se așteaptă s
   void salveaza(1);
   l.amana('circuit', () => salveaza(2), 60_000);
   l.amana('setari', async () => { await pauza(5); await l.urmareste('db:setari/cnc', () => host.stocare.scrie('db:setari/cnc', { a: 1 })); }, 60_000);
-  // o scriere pornită dintr-o salvare amânată, fără să i se întoarcă promisiunea, abia după un temporizator
-  l.amana('atelier', () => { setTimeout(() => { void l.urmareste('db:atelier/curent', () => host.stocare.scrie('db:atelier/curent', 3)); }, 0); }, 60_000);
   assert.equal(g.laInchidere.size, 1);
   await g.inchidere();
-  assert.deepEqual([g.date.get('db:circuite/a'), g.date.get('db:setari/cnc'), g.date.get('db:atelier/curent'), g.nesalvat.at(-1)], [2, { a: 1 }, 3, false]);
+  assert.deepEqual([g.date.get('db:circuite/a'), g.date.get('db:setari/cnc'), g.nesalvat.at(-1)], [2, { a: 1 }, false]);
+});
+
+test('lucrul: la închidere se așteaptă și scrierea pe care o salvare amânată o pornește abia după un temporizator', async () => {
+  const { g, host } = gazda();
+  const l = lucruPeste(host);
+  // singură în probă: o altă salvare, mai lungă, ar acoperi-o (otrava X21 a scăpat așa, în proba de mai sus)
+  l.amana('atelier', () => { setTimeout(() => { void l.urmareste('db:atelier/curent', () => host.stocare.scrie('db:atelier/curent', 3)); }, 0); }, 60_000);
+  await g.inchidere();
+  assert.deepEqual([g.date.get('db:atelier/curent'), g.nesalvat.at(-1)], [3, false]);
 });
 
 test('lucrul: două scrieri înlănțuite nu lasă o clipă de „salvat” între ele', async () => {
