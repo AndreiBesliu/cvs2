@@ -33,8 +33,9 @@ declare var Cavalier: {
 /** earcut 2.2.4 (`vendor/earcut.min.js`): triunghiurile unui poligon cu găuri, ca indici ai vârfurilor. */
 declare var earcut: (coordonate: readonly number[], gauri?: readonly number[] | null, dimensiuni?: number) => number[];
 
-/** three.js r128 (`atelier.ts`, vederea 3D), cât folosește atelierul. Nu e în pachet: pagina de sine stătătoare îl aduce de
- *  pe cdnjs, iar în cvs2 vederea 3D lipsește până intră biblioteca în pachet. Doar tipuri: niciun nume global nu se declară. */
+/** three.js r128 (`atelier.ts`, vederea 3D), cât folosește atelierul. Pagina de sine stătătoare îl aduce de pe cdnjs, iar în
+ *  cvs2 vine din pachetul extensiei (`vendor/three.min.js`, ADR 0163); ambele, la prima intrare în 3D. Doar tipuri: niciun nume
+ *  global nu se declară (biblioteca pune `window.THREE`). */
 declare namespace Trei {
   interface Vector3 { x: number; y: number; z: number; set(x: number, y: number, z: number): this; copy(v: Vector3): this }
   interface Vector2 { x: number; y: number }
@@ -93,8 +94,10 @@ interface ClaudeDescarcari { save(f: { filename: string; data: Blob | string }):
 
 interface Window {
   readonly claude?: { use(ce: 'db'): Promise<ClaudeDb>; use(ce: 'downloads'): Promise<ClaudeDescarcari> };
-  /** Pus de intrarea extensiei în cvs2 (`extensii/trenulet/intrare.ts`): gazda și senderul (null fără permisiunea mașinii). */
-  readonly cvs2?: { readonly gazda: 'cvs2'; readonly masina: import('../../api.ts').HostApi['masina'] | null };
+  /** Pus de intrarea extensiei în cvs2 (`extensii/trenulet/intrare.ts`): gazda, senderul (null fără permisiunea mașinii) și
+   *  three.js din pachet, adus la prima cerere (ADR 0163). */
+  readonly cvs2?: { readonly gazda: 'cvs2'; readonly masina: import('../../api.ts').HostApi['masina'] | null;
+    readonly three: () => Promise<Trei.Biblioteca | null> };
   readonly THREE?: Trei.Biblioteca;
 }
 

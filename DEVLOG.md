@@ -5065,3 +5065,10 @@ cu același JavaScript rulat.
 (până pe 04.12). Probele planificatorului, ale extensiilor, ale senderului și ale primirii, rulate chiar pe canal: 15 / 15.
 Pachetul (`trenulet-18.2.1.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de test nu s-a atins;
 ramura nu e împinsă.
+
+## 2026-11-04 — Felia 3.Td: three.js în pachetul extensiei, previzualizarea 3D în cvs2 (ADR 0163) (Model: Claude Opus 5.5)
+
+**Prompt:** „Da, descarcă” (la „Descarc three.js (three.min.js r128, MIT, de pe cdnjs, ~603 kB) ca 3D-ul să meargă și în
+cvs2?”, după raportul lui 3.Tc), în sesiunea dedicată liniei Trenuleț. 3.Td: three.js intră în pachetul extensiei, iar
+atelierul îl încarcă de acolo, la prima intrare în 3D.
+**Started:** 04.11, 09:34.

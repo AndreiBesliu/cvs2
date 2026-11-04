@@ -758,10 +758,14 @@ var Atelier3D = (function () {
   let promisiuneThree: Promise<Trei.Biblioteca | null> | null = null;
   function incarcaThree() {
     if (window.THREE) return Promise.resolve(window.THREE);
-    // in cvs2 (ADR 0161), cadrul extensiei n-are retea: three.js n-ar veni de pe cdnjs (CSP-ul il refuza), deci nu se mai cere
+    // in cvs2 (ADR 0161), cadrul extensiei n-are retea (CSP-ul ar refuza cdnjs): three.js vine din pachetul extensiei, adus de
+    // intrare tot la cerere (ADR 0163)
     if (window.cvs2) {
-      $("#at-vedere-lipsa").textContent = "În cvs2, previzualizarea 3D lipsește deocamdată: three.js nu e încă în pachetul extensiei. Piesa și STL-ul merg și fără ea.";
-      return Promise.resolve(null);
+      if (!promisiuneThree) promisiuneThree = window.cvs2.three().then(T => {
+        if (!T) $("#at-vedere-lipsa").textContent = "În cvs2, previzualizarea 3D lipsește: pachetul extensiei n-are three.js. Piesa și STL-ul merg și fără ea.";
+        return T;
+      });
+      return promisiuneThree;
     }
     if (!promisiuneThree) promisiuneThree = new Promise<Trei.Biblioteca | null>(ok => {
       const s = document.createElement("script");

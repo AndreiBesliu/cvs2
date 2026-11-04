@@ -213,3 +213,14 @@ test('gazda: window.cvs2 spune paginii că e în cvs2, înghețată; senderul do
   gazdaPeste(host, false, fara);
   assert.deepEqual([fara.cvs2?.gazda, fara.cvs2?.masina], ['cvs2', null]);
 });
+
+test('gazda: window.cvs2.three() cere three.js din pachet o singură dată (ADR 0163); fără fișier, null', async () => {
+  const { host } = gazda();
+  const cerute: string[] = [];
+  const h: HostApi = { ...host, fisier: (c) => { cerute.push(c); return null; } };
+  const w = {} as Window & { cvs2?: { readonly three: () => Promise<unknown> } };
+  gazdaPeste(h, false, w);
+  assert.equal(typeof w.cvs2?.three, 'function');
+  assert.deepEqual([await w.cvs2?.three(), await w.cvs2?.three()], [null, null]);
+  assert.deepEqual(cerute, ['js/three.js']);
+});

@@ -7,7 +7,9 @@
  *   (`40.0` rămâne `40.0`);
  * - pachetul extensiei (`extensii/trenulet/extensie.json`): intrarea (`extensii/trenulet/intrare.ts`, fără tipuri), stilurile
  *   din `head.html`, marcajul din `body.html` și scripturile, în ordinea paginii, ca fișiere separate, încărcate de intrare ca
- *   scripturi clasice (aceeași semantică globală ca în pagină).
+ *   scripturi clasice (aceeași semantică globală ca în pagină); plus three.js (`vendor/three.min.js`, r128, octet cu octet de
+ *   pe cdnjs, ADR 0163), pe care intrarea îl aduce doar când atelierul intră în 3D. Pagina de sine stătătoare nu-l are: ea îl
+ *   cere de pe cdnjs, tot la cerere.
  *
  *   node scripts/construieste-trenulet.ts      # .tmp/trenulet/iesire/{planificator,preview}.html și .tmp/extensii/trenulet-<v>.zip
  */
@@ -124,6 +126,9 @@ export function pachetTrenulet(): { readonly manifest: Record<string, unknown>; 
     ['trenulet.css', octeti(stilPlanificator())],
     ['body.html', octeti(citeste('planificator', 'body.html'))],
     ...scripturi().map((x) => [`js/${x.nume}`, octeti(x.text)] as [string, Uint8Array]),
+    ['js/three.js', new Uint8Array(readFileSync(join(SURSA, 'vendor', 'three.min.js')))],
+    // textul licenței MIT, cerut de ea lângă copie (în `three.min.js` stă doar antetul cu numele ei)
+    ['licente/three.txt', octeti(citeste('vendor', 'three.LICENSE'))],
   ]);
   const manifest = { ...sursa, intrare: 'index.js', stiluri: ['trenulet.css'], fisiere: Object.fromEntries([...fisiere].map(([c, b]) => [c, sha(b)])) };
   return {

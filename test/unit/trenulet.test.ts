@@ -66,13 +66,26 @@ test('sursele paginii n-au atribute style: în cvs2, CSP-ul moștenit le-ar refu
   }
 });
 
+test('three.js (ADR 0163): în pachet, octet cu octet r128 de pe cdnjs, încărcat la cerere; pagina de sine stătătoare nu-l are', async () => {
+  const r = await citestePachet(pachetTrenulet().octeti);
+  assert.ok(r.ok, JSON.stringify(r));
+  const three = r.pachet.fisiere.get('js/three.js');
+  assert.ok(three, 'js/three.js lipsește din pachet');
+  // amprenta publicată de cdnjs pentru three.js/r128/three.min.js (SRI)
+  assert.equal(createHash('sha512').update(three).digest('base64'), 'dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ==');
+  assert.match(new TextDecoder().decode(three.subarray(0, 120)), /Copyright 2010-2021 Three\.js Authors\n \* SPDX-License-Identifier: MIT/);
+  assert.ok(!scripturi().some((s) => s.nume === 'three.js'), 'three.js nu e un script al paginii: vine la cerere');
+  assert.match(new TextDecoder().decode(r.pachet.fisiere.get('licente/three.txt')), /^The MIT License\n\nCopyright © 2010-2021 three\.js authors\n/);
+  assert.doesNotMatch(paginiPlanificator().preview, /Three\.js Authors/);
+});
+
 test('pachetul: cvs2 îl citește ca la instalare; intrarea fără importuri, scripturile paginii în ordinea ei, catalogul pus', async () => {
   const r = await citestePachet(pachetTrenulet().octeti);
   assert.ok(r.ok, JSON.stringify(r));
   const { manifest, fisiere } = r.pachet;
   assert.deepEqual([manifest.id, manifest.intrare, manifest.stiluri, manifest.permisiuni], ['trenulet', 'index.js', ['trenulet.css'], ['stocare', 'descarcari', 'masina']]);
   const surse = scripturi();
-  assert.deepEqual([...fisiere.keys()].sort(), ['body.html', 'index.js', 'trenulet.css', ...surse.map((s) => `js/${s.nume}`)].sort());
+  assert.deepEqual([...fisiere.keys()].sort(), ['body.html', 'index.js', 'js/three.js', 'licente/three.txt', 'trenulet.css', ...surse.map((s) => `js/${s.nume}`)].sort());
   const text = (c: string): string => new TextDecoder().decode(fisiere.get(c));
   const intrare = text('index.js');
   assert.doesNotMatch(intrare, /^\s*import\b|\bimport\s*\(/m);

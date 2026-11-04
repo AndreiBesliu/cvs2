@@ -5,7 +5,8 @@
  *   `host.stocare`, și `use('downloads')`, `save`, peste serviciul `descarcari.salveaza`; pagina le folosește când le are;
  * - `localStorage`, peste `host.stocare` (setările mici: modul, mașinile, frezarea), citit întreg la pornire, scris pe loc;
  * - `window.cvs2` (ADR 0161 §A): gazda, ca pagina să spună adevărul despre unde stau circuitele și să-și arate butoanele
- *   mașinii (cu `masina` doar când senderul e deschis extensiei);
+ *   mașinii (cu `masina` doar când senderul e deschis extensiei); `three()` aduce three.js din pachet, la prima intrare în 3D
+ *   (ADR 0163): cadrul n-are rețea, iar pe claude.ai pagina îl ia tot la cerere, de pe cdnjs;
  * - scripturile, în ordinea paginii, ca scripturi clasice din adrese `blob:` (aceeași semantică globală ca în pagină).
  * Cu senderul deschis extensiei (permisiunea `masina`, ADR 0160 §D), „Trimite la cvs2” trimite lucrarea prin `HostApi`, la
  * „Lucrarea primită” din fereastra Mașina, în locul filei noi pe care cadrul n-o poate deschide. Sursele n-au atribute
@@ -156,11 +157,26 @@ export function deschiderePeste(host: HostApi, w: Window = window): void {
 }
 
 /**
+ * three.js din pachet (ADR 0163), la prima cerere: un script clasic, ca scripturile paginii, o singură dată. Fără fișier sau
+ * dacă scriptul nu se încarcă, null (cu eroarea raportată): atelierul arată atunci de ce lipsește vederea 3D.
+ */
+function threePeste(host: HostApi, w: Window): () => Promise<unknown> {
+  let gata: Promise<unknown> | null = null;
+  return () => (gata ??= (async () => {
+    const f = host.fisier('js/three.js');
+    if (!f) return null;
+    await scriptClasic(f, 'three.js');
+    return (w as Window & { THREE?: unknown }).THREE ?? null;
+  })().catch((e: unknown) => { host.raporteaza(e); return null; }));
+}
+
+/**
  * `window.cvs2`: pagina e în cvs2 (ADR 0161 §A). Înghețată și nescriibilă; `masina` e `host.masina` doar cu senderul deschis
- * extensiei, altfel null (pagina nu-și arată atunci butoanele mașinii).
+ * extensiei, altfel null (pagina nu-și arată atunci butoanele mașinii); `three` aduce three.js din pachet (ADR 0163).
  */
 export function gazdaPeste(host: HostApi, cuMasina: boolean, w: Window = window): void {
-  Object.defineProperty(w, 'cvs2', { value: Object.freeze({ gazda: 'cvs2', masina: cuMasina ? host.masina : null }), configurable: false, writable: false });
+  const cvs2 = { gazda: 'cvs2', masina: cuMasina ? host.masina : null, three: threePeste(host, w) };
+  Object.defineProperty(w, 'cvs2', { value: Object.freeze(cvs2), configurable: false, writable: false });
 }
 
 function scriptClasic(b: Blob, nume: string): Promise<void> {

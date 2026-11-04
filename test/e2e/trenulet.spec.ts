@@ -22,7 +22,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.2.1.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.3.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 
 async function deschide(page: Page): Promise<void> {
@@ -65,7 +65,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.2.1, de la trenulet-18.2.1.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.3.0, de la trenulet-18.3.0.zip');
   await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
     'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe); '
     + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea.',
@@ -84,9 +84,12 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await c.locator('#btn-circuite').click();
   await expect(c.locator('#circ-lista .circ b')).toHaveText(['Ovalul de probă']);
   await c.locator('#foaie-circuite [data-inchide]').click();
+  // three.js vine din pachet (ADR 0163), abia la prima intrare în 3D: vederea are pânza ei, mesajul lipsei nu se arată.
+  expect(await c.locator('body').evaluate(() => 'THREE' in window)).toBe(false);
   await c.locator('[data-mod="3d"]').first().click();
-  // În cvs2, three.js nu se mai cere de pe cdnjs (CSP-ul l-ar refuza): pagina spune de ce lipsește previzualizarea.
-  await expect(c.locator('#at-vedere-lipsa')).toHaveText('În cvs2, previzualizarea 3D lipsește deocamdată: three.js nu e încă în pachetul extensiei. Piesa și STL-ul merg și fără ea.');
+  await expect(c.locator('#at-vedere canvas')).toBeVisible();
+  await expect(c.locator('#at-vedere-lipsa')).toBeHidden();
+  expect(await c.locator('body').evaluate(() => 'THREE' in window)).toBe(true);
   await c.locator('#at-culori [data-c="#1f5fbf"]').click();
   await expect.poll(() => stocat(page, 'ls:trenulet.mod')).toMatchObject({ valoare: '3d' });
   await expect.poll(async () => JSON.stringify(await stocat(page, 'db:atelier/curent'))).toContain('"culoare":"#1f5fbf"');

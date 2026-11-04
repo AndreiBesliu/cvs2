@@ -1309,6 +1309,10 @@
       "ro": "3.6e (senderul prin WiFi pe mașină)",
       "en": "3.6e (the sender over WiFi on the machine)"
     },
+    "8f2ab49ca7dd76e9": {
+      "ro": "three.js în pachetul extensiei",
+      "en": "three.js in the extension package"
+    },
     "8f70e8f713e43d92": {
       "ro": "Gărzile offsetului",
       "en": "Offset guards"
@@ -1933,6 +1937,10 @@
       "ro": "Bancul vizual v1",
       "en": "Visual bench v1"
     },
+    "d9a929bd7f130879": {
+      "ro": "**three.js în pachetul extensiei: previzualizarea 3D în cvs2** (fără mașină; ADR 0163; a patra felie a pasului E2 din linia Trenuleț, în worktree-ul `wip/trenulet`; „Da, descarcă”). three.js r128 descărcat de pe cdnjs (603 445 de octeți, SHA-512 egal cu amprenta SRI publicată), în `vendor/`, cu licența MIT; construcția îl pune în pachet ca `js/three.js`, neschimbat, cu textul licenței alături, dar nu în pagina de sine stătătoare. Intrarea îl aduce la cerere (`window.cvs2.three()`, script clasic din `blob:`, o singură dată), iar atelierul îl cheamă în cvs2 la prima intrare în 3D: vederea desenează piesa, fără niciun refuz CSP (CSP-ul neschimbat). Pachetul 18.3.0, ~370 kB.",
+      "en": "**three.js in the extension package: the 3D preview in cvs2** (no machine; ADR 0163; the fourth slice of step E2 of the Trenuleț line, in the `wip/trenulet` worktree; “Da, descarcă”). three.js r128 downloaded from cdnjs (603,445 bytes, SHA-512 equal to the published SRI hash), in `vendor/`, with its MIT license; the build puts it in the package as `js/three.js`, unchanged, with the license text next to it, but not in the standalone page. The entry brings it on demand (`window.cvs2.three()`, a classic script from `blob:`, once), and the workshop calls it in cvs2 the first time it enters 3D: the view draws the piece, with no CSP refusal (the CSP is unchanged). Package 18.3.0, ~370 kB."
+    },
     "d9e5d6d75bfed859": {
       "ro": "Oracolul G-code din s4 în `test/oracles/`, cu valorile pe hârtie pentru cele 4 colțuri, regula de arc GRBL și poarta invariantelor 1, 3, 5, 6, 7, 8",
       "en": "The G-code oracle from s4 in `test/oracles/`, with values on paper for the 4 corners, the GRBL arc rule and the gate of invariants 1, 3, 5, 6, 7, 8"
@@ -2036,6 +2044,10 @@
     "e2a199e5f1f08a88": {
       "ro": "Importul SVG",
       "en": "SVG import"
+    },
+    "e3683bc685424e89": {
+      "ro": "three.js în pachetul extensiei: previzualizarea 3D în cvs2",
+      "en": "three.js in the extension package: the 3D preview in cvs2"
     },
     "e4053df5f106173a": {
       "ro": "Ușa documentului curent",

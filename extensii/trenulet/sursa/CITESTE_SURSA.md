@@ -18,6 +18,7 @@ ieșiri.
 | `lego/lego.ts` | motorul pieselor LEGO: corpuri închise (prisme, inele, corpuri rotite, sfere; fețele cu găuri prin earcut), toate piesele, calibrarea, STL, așezarea pe pat | 79 kB |
 | `vendor/cavalier.min.js` | `cavalier-contours-js@0.1.1` (MIT / Apache-2.0), aceeași versiune cu `src/geom/cavalier` din cvs2 | |
 | `vendor/earcut.min.js` | earcut 2.2.4 (ISC, `earcut.LICENSE`) | |
+| `vendor/three.min.js` | three.js r128 (MIT, `three.LICENSE`), de pe cdnjs, octet cu octet: doar în pachetul extensiei, adus la prima intrare în 3D (ADR 0163); pagina de sine stătătoare îl cere de pe cdnjs | 603 kB |
 | `globale.d.ts` | ce găsesc sursele gata făcut: Cavalier, earcut, three.js (doar tipuri), `window.claude`, `window.cvs2` | |
 | `tsconfig.json` | proiectul de tipuri al surselor (aceleași reguli stricte ca aplicația; rădăcina lui cvs2 le exclude) | |
 

@@ -455,6 +455,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   earcut, three.js (doar tipuri), `window.claude` și `window.cvs2`. Un nume global nou al unei surse se întoarce ca `var` din
   funcția ei închisă. Unde codul presupune o valoare, stă un `!`; o gardă adevărată schimbă codul și cere proba ei.
   `build.py` a plecat din repo.
+  **three.js în pachetul extensiei (ADR 0163, felia 3.Td)** gata pe 04.11: `vendor/three.min.js` e r128 de pe cdnjs, octet
+  cu octet (amprenta SRI fixată în `trenulet.test.ts`), cu `three.LICENSE`; în pachet stă ca `js/three.js` (și
+  `licente/three.txt`), dar nu în pagina de sine stătătoare. `window.cvs2.three()` îl aduce din pachet la prima intrare în
+  3D, ca script clasic din `blob:`: în cvs2, atelierul are vederea 3D. CSP-ul nu s-a schimbat. O versiune nouă de three.js
+  cere acordul owner-ului pentru descărcare și amprenta nouă în probă. Pachetul 18.3.0.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
