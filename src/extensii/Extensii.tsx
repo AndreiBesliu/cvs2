@@ -289,7 +289,8 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
       <div className="spatiu-gazda" ref={cadru} />
     </div>
   );
-  // Ce a rămas nesalvat după salvările de la închidere: întrebarea, peste toată pagina (aplicația de sub ea e inertă).
+  // Ce a rămas nesalvat după salvările de la închidere: întrebarea, peste toată pagina (aplicația de sub ea e inertă). Primul
+  // buton e gestul dialogului (plin, ca în celelalte dialoguri); focusul stă pe „Rămân”, ca pe „Nu” în confirmarea mașinii.
   const intrebarea = intrebare && deschisa && (
     <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="extensii-inchidere-titlu" data-testid="extensii-inchidere"
       onKeyDown={(e) => {
@@ -305,7 +306,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
           <button type="button" data-extensii="inchidere-inchide" onClick={() => { setIntrebare(false); dupaInchidere.current(); }}>
             {t('extensii.inchidere.inchide')}
           </button>
-          <button type="button" className="principal" data-extensii="inchidere-ramai" autoFocus onClick={ramai}>{t('extensii.inchidere.ramai')}</button>
+          <button type="button" data-extensii="inchidere-ramai" autoFocus onClick={ramai}>{t('extensii.inchidere.ramai')}</button>
         </div>
       </div>
     </div>
