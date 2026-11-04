@@ -5315,3 +5315,9 @@ licențele, 8 265 de teste unitare (0 căderi, 8 sărite), build-ul determinist 
 curat al lui `a622bad`, pornirea 100,3 → 100,4, cu ușa 103,9 / 110 kB, iar totalul 469,3 → 474,9 / 500), e2e-ul în Edge, pe
 portul 4175: 317 / 319 la rularea întreagă (`raportor.spec.ts:73` cere adresa de pe 4173; oglindirea, `editare.spec.ts:569`,
 a căzut pe un fișier blocat în `test-results`, `EBUSY`, și trece la rerulare, împreună cu cele 4 probe ale verificării).
+**Publicat pe canalul `vectori`** pe 04.11, la 22:10 (versiunea `f28003d0cd1c`, refăcută după commit, ca ștampila să fie a lui):
+<https://cncvectorstudio-test--vectori-kx0je98o.web.app>, până pe 04.12. Verificat acolo, în browserul aplicației, la 1440 px,
+după „Reload”: în paletă, „Repair vectors” (inactivă: „Nothing was chosen.”); două dreptunghiuri în același loc: „Problems: 1
+(shapes checked: 2)”, „Remove all copies (1)”, apoi „Repaired: 1. Undo with Ctrl+Z.” și „No problems (shapes checked: 1)”;
+anularea aduce copia înapoi; foaia canalului a rămas goală, fără erori în consolă. La prima publicare (`d7a6ecd`), butonul
+reparației arăta ca un rând de text: a primit margine (`f28003d`). Codul: `d7a6ecd`, `f28003d`.
