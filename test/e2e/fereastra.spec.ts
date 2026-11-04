@@ -229,6 +229,14 @@ test('ecranul lat: trei coloane (mașina, lucrarea, consola); telefonul: meniul 
   await peRandulFilelor(320);
   const cuvant = page.getByTestId('indicator-lucrare').locator('.indicator-cuvant');
   expect(await cuvant.evaluate((e) => e.scrollWidth > e.clientWidth)).toBe(true);
+  // Tăiat, nu revărsat: cutiile de mai sus rămân la locul lor și când textul iese din ele.
+  await expect(cuvant).toHaveCSS('overflow-x', 'hidden');
+  await expect(cuvant).toHaveCSS('text-overflow', 'ellipsis');
+  // La 600 px (o tabletă mică, tot sub 40 rem), primul rând ar avea loc și de file: rândul al doilea rămâne totuși al lor.
+  await page.setViewportSize({ width: 600, height: 900 });
+  const marca600 = await cutie('.meniu-global > .marca');
+  expect((await cutie('.meniu-global .ferestre')).y).toBeGreaterThanOrEqual(marca600.y + marca600.height);
+  await peRandulFilelor(600);
   await page.setViewportSize({ width: 390, height: 844 });
   // Fila deschisă (Mașina) cu numele; Proiectarea doar cu iconița, cu numele păstrat pentru cititorul de ecran.
   expect((await fila(page, 'masina').locator('.eticheta').boundingBox())!.width).toBeGreaterThan(20);
