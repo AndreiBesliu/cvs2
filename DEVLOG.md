@@ -5037,4 +5037,31 @@ ramura nu e împinsă.
 **Prompt:** „Sursele în TypeScript” (la „Care e felia următoare?”, după raportul lui 3.Tb), în sesiunea dedicată liniei
 Trenuleț. 3.Tc: sursele planificatorului (motoarele, apoi pagina) trec în TypeScript, cu tipurile verificate de poartă și
 cu același JavaScript rulat.
-**Started:** 04.11, 07:19.
+**Started:** 04.11, 07:19. **Completed:** 04.11, 09:08.
+
+- **Ce merge:**
+  - cele șase surse (motorul CNC, G-code, profilurile, LEGO, atelierul, planul; ~7 900 de linii) sunt `.ts`, scripturi
+    clasice ca înainte, cu proiectul lor de tipuri (`extensii/trenulet/sursa/tsconfig.json`, aceleași reguli stricte ca
+    aplicația); rădăcina le exclude, `npm run typecheck` le verifică, iar `test/unit/trenulet.tipuri.test.ts` le verifică și
+    în suita unitară (toate în proiect, zero erori, aplicația nu le vede);
+  - construcția și ham-ul referințelor (`teste/incarca.js`) șterg tipurile cu `stripTypeScriptTypes`: în pagină și în
+    pachet ajunge JavaScript (proba îl compilează cu `vm.Script`); pachetul 18.2.1, 218 364 de octeți (+7,7 kB, spațiile din
+    locul tipurilor);
+  - `globale.d.ts`: Cavalier, earcut, three.js (doar tipuri), `window.claude`, `window.cvs2` (cu tipul senderului din
+    `extensii/api.ts`).
+- **Dovada că JavaScript-ul e același:** fiecare sursă, fără tipuri, are arborele sintactic (acorn) al sursei de la
+  `b2ad915`, în afară de export (`var X = (function (glob: typeof globalThis) { …; return { … }; })(…)`). 1 785 de `!`
+  (unde codul presupunea o valoare), 274 de `as` (DOM, JSON, câmpurile editorului), niciun `any`.
+- **Cum:** tipurile simple deduse din folosire (codefix-ul TypeScript 6, cu tot ce nu era `number` / `string` / `boolean`
+  respins), tipurile cu nume scrise de mână, semnele `!` puse și apoi curățate unde au devenit inutile; uneltele au stat în
+  afara repo-ului. Motoarele, comise întâi (`781803f`), apoi atelierul și planul.
+- **Porțile:** compilatorul, ambele proiecte; importurile, 19 / 19; traducerile, 568, 0 lipsă; 8 168 de teste unitare, 0 eșuate (unul rulase cât completam traducerile; reluat, 4 / 4; ale planificatorului și ale documentației, 61 / 61); build-ul determinist: 246 de fișiere identice, pornirea 100,6 / 110 kB (cu ușa 104,1), totalul 471,6 / 500, neschimbate (sursele stau doar în pachet); `referinte.js
+  --compara`: 622, 0 diferite.
+- **E2e:** e2e-ul întreg, pe portul 4176: 321 trec, 1 pică (aserțiunea care cere portul 4173, raportorul, ca la 3.Tb).
+- **Otrăvurile `test/otravuri/3.Tc.py`:** 10 / 10 prinse, fiecare de proba ei: T07 și T09 (o eroare de tipuri, JavaScript-ul rulat neschimbat) doar de proba tipurilor, T10 (o schimbare de cod în motorul LEGO) de referințe.
+- **Ce nu merge încă:** previzualizarea 3D (three.js, cu acordul descărcării), fonturile paginii, tema și engleza lui cvs2;
+  semnele `!` și conversiile `as` arată presupuneri, nu le verifică (fiecare poate deveni o gardă, cu proba ei).
+**Publicat pe canalul `trenulet`** pe 04.11, la 09:07, din `b64bd7c`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 04.12). Probele planificatorului, ale extensiilor, ale senderului și ale primirii, rulate chiar pe canal: 15 / 15.
+Pachetul (`trenulet-18.2.1.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de test nu s-a atins;
+ramura nu e împinsă.
