@@ -5297,3 +5297,50 @@ Trenuleț. 3.Xe: o selecție din desenul cvs2 ajunge în plugin (ca s-o ridici �
 (până pe 05.12). Probele extensiilor (și cele noi, ale formelor), ale senderului, ale primirii și ale planificatorului, rulate
 chiar pe canal: 27 / 27. Pachetul (`trenulet-18.6.0.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de
 test nu s-a atins; ramura nu e împinsă.
+
+## 2026-11-05 — Felia 3.Tf: numele pluginului, Easy 3Draw (ADR 0167) (Model: Claude Opus 5.5)
+
+**Prompt:** „o sa vreau ca plugin-ul sa se numeasca Easy 3Draw” (după raportul lui 3.Xe, în sesiunea dedicată liniei Trenuleț).
+3.Tf: pluginul se arată ca „Easy 3Draw” peste tot unde omul îi vede numele.
+**Started:** 05.11, 16:18. **Completed:** 05.11, 18:39.
+
+- **Ce merge:**
+  - numele afișat, același în română și în engleză, netradus (`PASTRATE` din `scripts/texte-trenulet.ts`). În cvs2, din
+    manifest: instalarea („„Easy 3Draw” 18.7.0, de la trenulet-18.7.0.zip”), meniul extensiilor, fila ferestrei, „Trimite la
+    Easy 3Draw”, „Propus de Easy 3Draw”, originea lucrării trimise și cererea de pornire pe mașină. În planificator: titlul
+    paginii, „EASY 3DRAW — fișierele pentru CNC” (README-ul arhivei CNC), „PIESE DE PRINTAT — din atelierul 3D din Easy
+    3Draw” (README-ul arhivei de printat), sfatul filei „Din cvs2” și `de_la.aplicatie` al lucrării trimise;
+  - id-ul rămâne `trenulet`: 18.7.0 instalat peste 18.6.0 îi ia locul (un singur rând în meniu), cu circuitele lui. Rămân și
+    numele tehnice (pachetul, dosarul, scripturile, ramura, canalul) și antetul G-code-ului (amprentele v18);
+  - manualul (ro, en) spune Easy 3Draw; pachetul 18.7.0: 417 705 octeți, 15 fișiere; dicționarul englez: 1 147 de texte, 0 fără
+    traducere.
+- **Găsit pe drum:**
+  - scutirea lui „Trenuleț” din verificarea românei rămase (dicționarul, pagina în engleză, README-ul englez) rămăsese fără
+    motiv: numele nou n-are diacritice. Am scos-o; otrava F07 (numele vechi, cu diacritice, într-o traducere) arată că plasa
+    prinde acum ce înainte trecea;
+  - proba actualizării pornește de la pachetul de atunci, cu id-ul fixat (`trenulet`): derivat din cel nou, „vechiul” ar fi
+    luat și un id schimbat, iar proba n-ar fi văzut nimic;
+  - un rând din manualul român avea numele vechi rupt pe două rânduri („Planificatorul / Trenuleț”), scăpat de înlocuirea pe
+    rânduri; l-am găsit căutând „Trenuleț” singur.
+- **Porțile:**
+  - compilatorul (aplicația, sursele planificatorului, funcțiile) și importurile;
+  - traducerile: 583, 0 lipsă; dicționarul planificatorului: 1 147, 0 lipsă;
+  - testele unitare: 8 220, 0 eșuate;
+  - build-ul determinist: 252 de fișiere identice; pornirea 101,0 / 110 kB; totalul 474,3 / 500;
+  - licențele.
+- **E2e:** e2e-ul întreg, pe portul 4176: 334 trec, 1 pică, aserțiunea care cere portul 4173 (raportorul, ca până acum).
+- **Otrăvurile `test/otravuri/3.Tf.py`:** 11 / 11 prinse, fiecare de proba ei:
+  - de e2e: F01–F05 și F11 (o versiune nouă care șterge datele celei vechi: o prinde doar proba nouă a actualizării);
+  - de `trenulet.engleza`: F06–F10.
+
+  Lăsate afară, cu motivul: manualul (numele din text n-are probă; l-am citit după înlocuire) și ce rămâne „trenulet” cu bună
+  știință (îl apără probele de dinainte: amprentele v18, conținutul pachetului).
+- **Ce nu merge încă:**
+  - semnul din bara planificatorului (o șină de lemn) e cel vechi; unul pentru Easy 3Draw cere o schiță;
+  - antetul G-code-ului spune tot „Trenulet - planificatorul de circuite”; se schimbă la cerere, cu amprente noi;
+  - salvarea modelelor în cont (C, D, cu sesiunea principală) și trimiterea la imprimanta 3D (E).
+
+**Publicat pe canalul `trenulet`** pe 05.11, la 18:37, din `c7251a3`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 05.12). Probele extensiilor, ale senderului, ale primirii și ale planificatorului (și cea nouă, a actualizării), rulate
+chiar pe canal: 28 / 28. Pachetul (`trenulet-18.7.0.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de
+test nu s-a atins; ramura nu e împinsă.
