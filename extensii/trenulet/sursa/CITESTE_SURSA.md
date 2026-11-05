@@ -14,7 +14,7 @@ ieșiri.
 | `planificator/gcode.ts` | G-code direct: postul, contractele, CAM-ul (profil cu punți, șanțuri, găurire), timpul; portat de mână din cvs2 | 57 kB |
 | `planificator/profiluri.ts` | profilurile (mașini, imprimante), cu cel implicit | 6 kB |
 | `planificator/limba.ts` | limba paginii (ADR 0165): `tr` (textele cu valori și cele care nu ajung pe pagină; un context pentru cuvintele cu două sensuri) și traducerea pe pagină a textelor fixe; zecimalele și data | 4 kB |
-| `planificator/texte.en.json` | dicționarul englez: cheia e textul românesc din cod; doar în pachet, adus doar în engleză; îl ține la zi `node scripts/texte-trenulet.ts` | 109 kB |
+| `planificator/texte.en.json` | dicționarul englez: cheia e textul românesc din cod; doar în pachet, adus doar în engleză; îl ține la zi `node scripts/texte-trenulet.ts` | 110 kB |
 | `planificator/head.html`, `body.html` | CSS-ul (variabile de temă, luminos / întunecat; în cvs2, sub `data-gazda="cvs2"`, suprafețele, textul, marginile, roșul, inelul de focus și fonturile lui cvs2, ADR 0164) și marcajul | 44 kB |
 | `planificator/catalog.json` | catalogul pieselor de cale (se pune în `app.js` la construcție) | |
 | `lego/lego.ts` | motorul pieselor LEGO: corpuri închise (prisme, inele, corpuri rotite, sfere; fețele cu găuri prin earcut), toate piesele, calibrarea, STL, așezarea pe pat | 79 kB |

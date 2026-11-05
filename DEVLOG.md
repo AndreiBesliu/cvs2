@@ -5149,4 +5149,89 @@ fișier. Adresa principală de test nu s-a atins; ramura nu e împinsă.
 raportul lui 3.Xd), în sesiunea dedicată liniei Trenuleț. 3.Te: în cvs2, planificatorul vorbește limba lui cvs2 (română sau
 engleză): interfața, mesajele, avertismentele motoarelor și fișierele de citit din exporturi; la o limbă schimbată în cvs2,
 pluginul repornește singur, fără pierderi. Româna rămâne în cod, neschimbată; engleza vine dintr-un dicționar.
-**Started:** 04.11, 20:06.
+Cu o pauză: „fa pauza” pe 04.11 seara, reluată pe 05.11 cu „Continuă”.
+**Started:** 04.11, 20:06. **Completed:** 05.11, 08:12.
+
+- **Ce merge:**
+  - limba: în cvs2, planificatorul vorbește limba lui cvs2 (română sau engleză): interfața (planul, Circuitele, exportul CNC
+    cu secțiunile lui, atelierul 3D cu fiecare fel de piesă), mesajele, avertismentele motoarelor și README-ul arhivelor
+    (`README.txt`, în engleză). Româna rămâne în cod; engleza vine din `planificator/texte.en.json` (1 127 de texte), doar
+    în pachet, adus doar în engleză, înghețat;
+  - `planificator/limba.ts`, primul script: `tr` pentru textele cu valori (șabloane; traducerea poate muta valorile) și
+    pentru cele care nu ajung pe pagină; un context pentru cuvintele cu două sensuri (placa de lemn = board, patul
+    imprimantei = bed, placa LEGO = plate; știftul Technic = pin); textele fixe se traduc pe pagină (nodurile de text
+    întregi și `title`, `aria-label`, `placeholder`, `alt`, la pornire și la fiecare schimbare). Zecimalele (punct) și data
+    (en-GB) urmează limba. Eroarea motorului „nu încape pe placă” poartă piesa ca proprietate, iar sfatul unei piese la comandă
+    care nu se poate închide se alege după felul motivului (`motivLC`): nimic nu se mai recunoaște după textul românesc;
+  - o limbă nouă în cvs2: pagina își salvează lucrul (salvările amânate din 3.Xd), apoi cere `host.reporneste()` (nou în
+    `HostApi` v1). cvs2 reface cadrul cu contextul de acum, cel mult o dată la 2 s; cererile dese se adună într-un singur
+    temporizator, iar închiderea o oprește (`src/extensii/repornire.ts`). RO → EN → RO, făcut repede, ajunge în limba bună.
+    Încărcătorul are amprentă nouă în CSP (politica e aceeași), iar extensia „Salut” are butonul;
+  - rămân în română: comentariile din G-code, numele fișierelor (în afară de README), antetele STL, erorile de neajuns, pagina
+    de sine stătătoare (claude.ai, copia de pe calculator);
+  - unealta `scripts/texte-trenulet.ts` pune în dicționar cheile noi din surse (și cuvintele singure cu majusculă: „Pod”,
+    „Grila:”) și găsește textele românești lipite de valori fără `tr` (`compuseNetraduse`). `trenulet.engleza.test.ts`
+    cere o traducere pentru fiecare cheie, fără intrări fără folos, cu aceleași {0}, {1}…, fără litere românești și fără
+    texte lipite netraduse; detectorul e probat pe un eșantion cu cazuri știute;
+  - pachetul 18.5.0: 414 536 de octeți, 15 fișiere (+42,3 kB, aproape tot dicționarul).
+- **Găsit pe drum:**
+  - traducerea pe pagină nu pornea nicăieri, deci textele fixe rămâneau românești: o pornește acum `limba.ts`, în engleză;
+  - prima formă a limitei de reporniri arunca o cerere venită la mai puțin de 2 s, iar RO → EN → RO, făcut repede, lăsa
+    extensia în engleză. Acum cererea așteaptă, iar cererile de până atunci se adună într-una (proba e2e);
+  - „placă” și „știft” au câte două-trei sensuri, de unde contextul (`tr("placă", "pat")`). Eticheta „plăci” de la înălțimea
+    pieselor LEGO ieșea „boards”; acum e `tr("plăci", "LEGO")`, adică „plates”;
+  - proba nouă a zecimalelor a găsit atelierul cu virgulă în engleză („31,8 × 15,8 × 11,4 mm”, „≈ 2,7 g”): reparat;
+  - în proba e2e, numele circuitului se scria înainte să pornească planificatorul (o cursă): proba așteaptă acum cipul de
+    stare;
+  - TypeScript 7 (nativ) nu mai are API-ul clasic: unealta citește sursele cu `parseAst` din Vite, după
+    `stripTypeScriptTypes`;
+  - la otrăvuri, două scăpaseră (`ce3a28b`):
+    - T22, garda cozii de reporniri: proba e2e numără deschiderile reușite, iar două reporniri în aceeași clipă se văd ca
+      una. Logica stă acum în `repornire.ts`, probată pe un ceas fals;
+    - T37, contextul uitat de unealtă: acum are a doua plasă, fără parser;
+  - capturile pentru raport au arătat, în engleză, cuvinte românești pe care nicio probă nu le vedea (`30e1a5b`):
+    - etichete de un cuvânt fără diacritice („Drepte”, „Curbe”, „Pod”, „Deschide”, „Grila:”, „Dedesubt:”): unealta cerea
+      doar texte cu spații sau diacritice, iar proba e2e căuta diacritice;
+    - cuvinte lipite de valori fără `tr` („1 piesă · 1 placă”, „3 capete libere”, apoi, la reluare, „2 tuneluri”, „120
+      linii” și avertismentele adăugate cu `push` și lipite cu `join`): pe pagină se potrivesc doar noduri de text întregi;
+    - sfatul de la închiderea cu o piesă la comandă se recunoștea după textul românesc (`/strânsă|doar/`), deci lipsea în
+      engleză.
+
+    Acum unealta cere și cuvintele cu majusculă, iar `compuseNetraduse` găsește lipiturile; locurile găsite trec prin
+    `tr`, iar 9 rămân românești cu bună știință, numite în unealtă. Dicționarul a crescut de la 1 070 la 1 127 de texte.
+    Proba e2e verifică acum și filele paletei, butoanele de un cuvânt și pagina după adăugarea unei piese;
+  - în capturi, cipul jurnalului arăta o dată „1 error”: era eroarea harnașului (blocarea service worker-ului de către
+    Playwright aruncă în cadrul cu sandbox; `eroriJurnal` o recunoaște și o scoate). Cu service worker-ul permis, cipul
+    arată „0 errors”.
+- **Porțile** (pe `30e1a5b`):
+  - compilatorul (aplicația, sursele planificatorului, funcțiile) și importurile;
+  - traducerile: 577, 0 lipsă;
+  - testele unitare: 8 206, 0 eșuate;
+  - build-ul determinist: 249 de fișiere identice; pornirea 100,6 / 110 kB (cu ușa 104,1), neschimbată; totalul 472,6 / 500;
+  - licențele.
+- **E2e:** e2e-ul întreg, pe portul 4176: 328 trec, 1 pică, aserțiunea care cere portul 4173 (raportorul, ca până acum).
+  Observate o dată, sub încărcare, și trecute apoi singure: `pen.spec.ts:190` (3 / 3) și proba „pe mașină” a planificatorului
+  (2 / 2, apoi spec-ul întreg 6 / 6, de două ori).
+- **Otrăvurile `test/otravuri/3.Te.py`:** 56 / 56 prinse, în trei rulări (T22 și T37 abia după probele lor noi), fiecare
+  de proba ei:
+  - de e2e: T05–T08, T17–T19, T21, T25–T32, T40, T41, T51;
+  - de `trenulet.limba`: T01–T04, T09, T10;
+  - de adaptoare: T11–T16;
+  - de pachet: T20;
+  - de `extensii.repornire`: T22–T24, T38, T39;
+  - de dicționar și detector: T33–T37, T42–T50, T52–T56.
+
+  Lăsate afară, cu motivul: încărcătorul (amprenta îl prinde oricum), `characterData` și `FARA` (nimic nu le pune azi la
+  lucru), sufixul exemplelor, cuvântul ales prin context la LEGO și la profiluri, `window.cvs2.limba` fix sau viu, sfatul
+  piesei la comandă, titlurile pieselor printate opționale.
+- **Ce nu merge încă:**
+  - engleza e a autorului feliei; owner-ul o poate corecta direct în `texte.en.json`, iar unealta păstrează traducerile;
+  - pagina de sine stătătoare rămâne în română;
+  - un text compus la rulare din valori care nu trec prin `tr`, altfel decât prin șabloane, `+`, `push` sau liste, poate
+    rămâne românesc;
+  - schimbul de forme cvs2 ↔ plugin (B) și salvarea în cont (C, D, cu sesiunea principală).
+
+**Publicat pe canalul `trenulet`** pe 05.11, la 08:07, din `30e1a5b`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 05.12). Probele extensiilor (și cele noi, ale repornirii), ale senderului, ale primirii și ale planificatorului (și
+cea în engleză), rulate chiar pe canal: 22 / 22. Pachetul (`trenulet-18.5.0.zip`) nu stă pe canal: owner-ul îl primește ca
+fișier. Adresa principală de test nu s-a atins; ramura nu e împinsă.
