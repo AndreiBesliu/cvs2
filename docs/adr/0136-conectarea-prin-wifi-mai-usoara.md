@@ -26,8 +26,10 @@ terminalul paginii lui (`[ESP106]`, `[ESP100]`, `[ESP101]`, `[ESP110]`, `[ESP444
   portul web + 1 (81), dar un raport spune 80 de la versiunea 4.0: de verificat cu o placă.
 - **grblHAL:** numele `grblhal` (`$300`), WebSocket-ul pe `$307` (81); mDNS-ul depinde de driver. Rețeaua se pune din USB
   (`$73`–`$75`, cu numere care diferă de la un driver la altul).
-- **Browserul** nu caută singur în rețea (n-are UDP, deci nici mDNS, nici SSDP), dar un nume `.local` îl rezolvă sistemul
-  (Windows 10 și 11, macOS). Permisiunea rețelei locale se cere o dată pe site. O scanare a rețelei (254 de adrese) ar merge,
+- **Browserul** nu caută singur în rețea (n-are UDP, deci nici mDNS, nici SSDP), dar un nume `.local` îl rezolvă de obicei
+  sistemul: Windows 10 și 11 au rezolvarea mDNS în ele, macOS de mult. Nu întotdeauna: un firewall care oprește UDP 5353 sau
+  unele instalări Windows 11 o pierd, de aceea ultimul IP rămâne rezerva (§2). Permisiunea rețelei locale se cere o dată pe
+  site. O scanare a rețelei (254 de adrese) ar merge,
   dar încet (fiecare adresă moartă așteaptă) și seamănă cu o scanare de porturi; nici rețeaua calculatorului nu se știe din
   pagină.
 
@@ -97,3 +99,6 @@ scanează rețeaua.
   <https://forum.lightburnsoftware.com/t/no-connections-to-fluidnc/187957/3>, <https://forum.v1e.com/t/first-time-setup-of-fluidnc/43802>
 - grblHAL, rețeaua: <https://petervanderwalt.github.io/grblhal_docs/06-Advanced-Topics/networking.html>,
   <https://github.com/grblHAL/RP2040/issues/34>
+- mDNS pe Windows (rezolvarea din sistem, firewall-ul pe UDP 5353, eșecurile pe Windows 11):
+  <https://www.espboards.dev/troubleshooting/issues/wifi/esp32-mdns-not-working/>,
+  <https://kiwix.lema.org/stackoverflow.com_en_all_2023-11/questions/76991743/windows-11-not-resolving-local-addresses-using-mdns>
