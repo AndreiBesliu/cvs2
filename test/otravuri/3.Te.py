@@ -13,7 +13,10 @@
 # - sufixul exemplelor (`tr(" (exemplu)")`): nicio probă nu deschide un exemplu în engleză;
 # - cuvântul ales prin context la LEGO (`știft@pin`) și la profiluri (`tr(opt.fel)`): un cuvânt englezesc greșit nu-l vede
 #   nicio probă (proba e2e caută româna); mecanismul contextului e probat (T04, patul imprimantei);
-# - `window.cvs2.limba` fix sau viu: `limba.ts` îl citește o dată, la pornire, și nimic altceva nu-l citește.
+# - `window.cvs2.limba` fix sau viu: `limba.ts` îl citește o dată, la pornire, și nimic altceva nu-l citește;
+# - sfatul unei piese la comandă care nu se poate închide (`motivLC`, „Scoate o dreaptă…”): nicio probă nu închide un circuit
+#   cu o curbă prea strânsă; felul motivului (`loc`) a înlocuit recunoașterea după textul românesc;
+# - titlurile pieselor printate opționale (tunel, peron) și numele implicit al unui profil nou: nicio probă nu le cere în engleză.
 O = []
 
 
@@ -139,3 +142,40 @@ o('T36', UNE, "        cere(q.map((x, i) => (i ? `{${i - 1}}` : '') + ((x['value
   'unealta nu mai cere traducerea șabloanelor tr`…`')
 o('T37', UNE, "const ctx = c && c.type === 'Literal' && typeof c['value'] === 'string' ? `@${c['value'] as string}` : '';", "const ctx = '';", 'engleza',
   'unealta uită contextul: cuvintele cu două sensuri primesc o singură traducere')
+# (T42–T51, din a treia rulare: capturile au arătat cuvinte singure fără diacritice și texte lipite de valori rămase românești)
+o('T42', UNE, '          else if ((omenesc(v) || CUVANT.test(normalizat(v))) && !pastrat(v, f, p)) cere(normalizat(v), unde(n));',
+  '          else if (omenesc(v) && !pastrat(v, f, p)) cere(normalizat(v), unde(n));', 'engleza',
+  'unealta nu mai cere cuvintele singure din cod („Drepte”, „Pod”)')
+o('T43', UNE, "(omenesc(t) || CUVANT.test(normalizat(entitati(t)))) && !pastrat(t, f, p)", 'omenesc(t) && !pastrat(t, f, p)', 'engleza',
+  'unealta nu mai cere cuvintele singure din marcaj („Deschide”, „Grila:”)')
+o('T44', UNE, 'const CUVANT = /^[A-ZĂÂÎȘȚ][a-zăâîșț]+:?$/;', 'const CUVANT = /^[A-ZĂÂÎȘȚ][a-zăâîșț]+$/;', 'engleza',
+  'etichetele cu două puncte („Grila:”, „Dedesubt:”) nu mai sunt cerute')
+o('T45', UNE, '          if (q.some(omLipit) || ex.some((e) => !tradus(e) && cuLiteralOmenesc(e))) semnaleaza(n, cheie, p);', '          void 0;', 'engleza',
+  'detectorul nu mai vede șabloanele netraduse cu text românesc')
+o('T46', UNE, '              if (lipit && (omLipit(coada) || omLipit(cap) || cuLiteralOmenesc(e))) semnaleaza(e, `${coada}{…}${cap}`, p);', '              void lipit;', 'engleza',
+  'detectorul nu mai vede nodurile de text din marcaj care amestecă textul cu valori')
+o('T47', UNE, '                if ((lipit && cuLiteralOmenesc(e)) || om(atribut[2]!) || om(dupa)) semnaleaza(e, `${atribut[2]!}{…}${dupa}`, p);',
+  '                void lipit;', 'engleza',
+  'detectorul nu mai vede atributele traduse (title, aria-label…) amestecate cu valori')
+o('T48', UNE, '        if (valori && !marcaj && !clasa) for', '        if (valori && !marcaj && !clasa && false) for', 'engleza',
+  'detectorul nu mai vede concatenările cu +')
+o('T49', UNE, "              if (!inEticheta && s[j] === '<' && /[a-zA-Z/!]/.test(s[j + 1] ?? '')) inEticheta = true;", '              if (false) inEticheta = true;', 'engleza',
+  'detectorul nu mai știe când e într-o etichetă: atributele netraduse par text')
+o('T50', ATE, 'tr("piesă") : tr("piese")} · ${placi.length} ${placi.length === 1 ? tr("placă", "pat") : tr("plăci", "pat")}',
+  '"piesă" : "piese"} · ${placi.length} ${placi.length === 1 ? "placă" : "plăci"}', 'engleza',
+  'cipul listei de printat rămâne românesc („1 piesă · 1 placă”)')
+o('T51', ATE, 'for="at-placi">${tr("plăci", "LEGO")} <input', 'for="at-placi">plăci <input', 'e2e',
+  'eticheta înălțimii spune „boards” (placa de lemn), nu „plates” (placa LEGO)')
+# (T52–T56, după pauză: la reluare, lipiturile prin push / join și cuvintele mici lipite de valori, „2 tuneluri”, „120 linii”)
+o('T52', UNE, r'  const omLipit = (s: string): boolean => om(s) || /^\s*[a-z]{3,}( [a-z]+)*\s*$/.test(s);', '  const omLipit = om;', 'engleza',
+  'detectorul nu mai vede cuvintele mici lipite de valori („{0} linii”, „ tuneluri”)')
+o('T53', UNE, '        if (valori && !marcaj && !clasa) for', '        if (valori && !marcaj) for', 'engleza',
+  'detectorul ia clasele CSS compuse drept text („ eroare”)')
+o('T54', UNE, "        for (const a of n['arguments'] as Nod[]) for (const l of literale(a)) if (om(l['value'] as string)) semnaleaza(l, l['value'] as string, n);",
+  '        void 0;', 'engleza',
+  'detectorul nu mai vede literalii adăugați cu push (avertismentele lipite cu join)')
+o('T55', UNE, "        for (const e of n['elements'] as (Nod | null)[]) if (e) for (const l of literale(e)) if (om(l['value'] as string)) semnaleaza(l, l['value'] as string, n);",
+  '        void 0;', 'engleza',
+  'detectorul nu mai vede literalii din listele simple lipite cu join')
+o('T56', APP, 'select(n) === "few" ? tr`${n} linii`', 'select(n) === "few" ? `${n} linii`', 'engleza',
+  'numărul de linii al programului rămâne românesc („120 linii”)')

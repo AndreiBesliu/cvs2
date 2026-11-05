@@ -369,9 +369,12 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await expect(c.locator('html')).toHaveAttribute('data-gazda', 'cvs2');
   await expect(c.locator('#nume')).toHaveValue('Păstrat la repornire');
   expect(await romanaRamasa(page, 'Păstrat la repornire')).toEqual([]);
+  // cuvintele singure, fără diacritice, pe care proba de română nu le poate recunoaște: filele paletei
+  await expect(c.locator('#grupe [data-grupa]')).toHaveText(['Straights', 'Curves', 'Custom', 'Junctions', 'Crossings', 'Double track', 'Bridge', 'Ends']);
   // Circuitele, exportul CNC, cu secțiunile lui, atelierul 3D, cu fiecare fel de piesă
   await c.locator('#btn-circuite').click();
   await expect(c.locator('#circ-unde')).toHaveText('The layouts save themselves, in this browser (through cvs2): they don’t show up on another computer or in another browser.');
+  await expect(c.locator('[data-deschide]').first()).toHaveText('Open');
   expect(await romanaRamasa(page, 'Păstrat la repornire')).toEqual([]);
   await c.locator('#foaie-circuite [data-inchide]').click();
   await c.locator('#btn-export').click();
@@ -407,8 +410,13 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
     expect(await romanaRamasa(page, 'Păstrat la repornire'), fel).toEqual([]);
   }
   await c.locator('#at-tipuri [data-tip="caramida"]').click();
+  await expect(c.locator('#at-mod-grila [data-mod="forma"]')).toHaveText('Shape');
+  // „plăci” la înălțime e placa LEGO (plates), nu placa de lemn (boards)
+  await expect(c.locator('label[for="at-placi"]')).toContainText('plates');
   await c.locator('#at-adauga').click();
   await expect(c.locator('#at-rez-lista')).toContainText(/ on \d+ beds? of /);
+  // după adăugare: lista de printat și cipul ei (piesele și paturile), tot în engleză
+  expect(await romanaRamasa(page, 'Păstrat la repornire')).toEqual([]);
   // Înapoi la română: pagina repornește, iar textele ei sunt iar românești.
   await page.getByRole('navigation', { name: 'Language' }).getByRole('button', { name: 'RO', exact: true }).click();
   c = cadru(page);

@@ -6,13 +6,15 @@
  *   un atribut) sau etichete pe care cheia nu le are;
  * - fișierul e exact cum îl scrie unealta (sortat, cu cheile cerute);
  * - a doua plasă, fără parser: fiecare `tr("cuvânt", "context")` din surse cere și are cheia lui, „cuvânt@context” (un
- *   context uitat de unealtă ar lăsa în engleză cuvântul fără context, cu celălalt sens).
+ *   context uitat de unealtă ar lăsa în engleză cuvântul fără context, cu celălalt sens);
+ * - niciun text românesc lipit de valori fără `tr` (`${n} ${n === 1 ? "piesă" : "piese"}`, `n + " capete libere"`): pe
+ *   pagină, traducerea potrivește doar noduri de text întregi.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { citesteDictionar, DICTIONAR, SURSA, SURSE, textePlanificator } from '../../scripts/texte-trenulet.ts';
+import { citesteDictionar, compuseNetraduse, DICTIONAR, SURSA, SURSE, textePlanificator } from '../../scripts/texte-trenulet.ts';
 
 const { cerute, permise } = textePlanificator();
 const d = citesteDictionar();
@@ -21,6 +23,45 @@ test('fiecare text cerut de surse are traducere', () => {
   const lipsa = [...cerute.keys()].filter((k) => !d[k]);
   assert.deepEqual(lipsa.map((k) => `${k} (${cerute.get(k)![0]})`), []);
   assert.ok(cerute.size > 900, `prea puține texte cerute: ${cerute.size}`);
+});
+
+test('cuvintele singure, cu majusculă, sunt cerute: etichetele din cod („Drepte”, „Pod”, „Gol”) și din marcaj („Deschide”, „Grila:”)', () => {
+  assert.deepEqual(['Drepte', 'Curbe', 'Pod', 'Gol', 'Deschide', 'Vezi', 'Grila:', 'Dedesubt:'].filter((k) => !cerute.has(k)), []);
+});
+
+test('niciun text românesc lipit de valori fără tr: în șabloane, în nodurile de text și atributele din marcaj, în concatenări', () => {
+  assert.deepEqual(compuseNetraduse(), []);
+});
+
+test('detectorul textelor compuse, pe un eșantion: prinde fiecare fel; lasă ce se traduce pe pagină, ce e tradus, G-code-ul și perechile', () => {
+  const cod = [
+    'function f(n, x, el) {',
+    '  el.textContent = `Am pus ${n} piese`;',
+    '  el.textContent = `${n} ${n === 1 ? "piesă" : "piese"}`;',
+    '  el.innerHTML = `<span>Piese: ${n}</span>`;',
+    '  el.innerHTML = `<span>${n} ${n === 1 ? "placă" : "plăci"}</span>`;',
+    '  el.innerHTML = `<button title="Mută ${x}">x</button>`;',
+    '  el.textContent = n + " capete libere";',
+    // nu: literalul umple singur nodul; valoarea stă într-un atribut netradus; textul e tradus; G-code-ul rămâne românesc
+    '  el.innerHTML = `<h2>${n ? "Pantă" : "Pantă inversă"}</h2>`;',
+    '  el.innerHTML = `<b data-x="${x}">Gata</b>`;',
+    '  el.textContent = tr`Am pus ${n} piese`;',
+    '  el.textContent = `${n} ${n === 1 ? tr("piesă") : tr("piese")}`;',
+    '  comentariu(`scula T${n} pe placă`);',
+    '  av.push("Forma are bucăți care nu se ating");',
+    '  el.textContent = ["Primul rând", "al doilea rând"].join(" ");',
+    // nu: adăugat tradus; G-code; un tabel de perechi
+    '  av.push(tr("Tradus deja"), "G1 X0");',
+    '  const b = [["toate", "Toate"], ["nu", "Fără"]];',
+    // da: un cuvânt mic lipit de o valoare; nu: o clasă CSS compusă, o listă de chei
+    '  el.textContent = `${n} linii`;',
+    '  el.className = "mic" + (n ? " eroare" : "");',
+    '  const k = ["dreapta", "curba"];',
+    '}',
+  ].join('\n');
+  const r = compuseNetraduse([['planificator/proba.ts', cod]]).map((s) => s.replace('planificator/proba.ts:', ''));
+  assert.deepEqual(r, ['2 Am pus {0} piese', '3 {0} {1}', '4 Piese: {…}', '5 {…}', '6 Mută {…}', '7 capete libere',
+    '13 Forma are bucăți care nu se ating', '14 Primul rând', '14 al doilea rând', '17 {0} linii']);
 });
 
 test('nicio intrare fără folos: cheia e cerută sau e un șir din surse', () => {

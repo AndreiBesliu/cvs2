@@ -64,7 +64,7 @@ var Profiluri = (function () {
       const b = (ev.target as Element).closest<HTMLButtonElement>("button[data-prof]");
       if (!b) return;
       const s = opt.stare(), a = activ(s), op = b.dataset.prof;
-      if (op === "nou") { form = { op, text: `${opt.fel === "mașina" ? "Mașina" : "Imprimanta"} ${s.lista.length + 1}` }; desen(); return; }
+      if (op === "nou") { form = { op, text: `${opt.fel === "mașina" ? tr("Mașina") : tr("Imprimanta")} ${s.lista.length + 1}` }; desen(); return; }
       if (op === "nume") { form = { op, text: a ? a.nume : "" }; desen(); return; }
       if (op === "sterge") { form = { op, text: "" }; desen(); return; }
       if (op === "renunta") { form = null; desen(); return; }

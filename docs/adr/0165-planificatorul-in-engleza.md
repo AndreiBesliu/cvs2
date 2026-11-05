@@ -25,10 +25,13 @@ Ce nu are intrare rămâne românesc. Două căi:
   LEGO (stud) cu cel Technic (pin).
 - **Pe pagină**, pentru textele fixe: în engleză, `Limba.urmareste` traduce, întregi, nodurile de text și atributele `title`,
   `aria-label`, `placeholder`, `alt`, la pornire și la fiecare schimbare (`MutationObserver`). Așa se traduc și etichetele
-  care sunt și valori în cod („dreapta”, „La comandă”), fără să atingă logica. În română nu se observă nimic.
+  care sunt și valori în cod („dreapta”, „La comandă”), fără să atingă logica. În română nu se observă nimic. Pe pagină se
+  potrivesc doar noduri de text întregi: un text lipit de valori (`` `${n} ${n === 1 ? "piesă" : "piese"}` ``,
+  `n + " capete libere"`) trece prin `tr`, chiar dacă bucățile lui sunt fixe.
 
 Numerele cu zecimale și data urmează limba (virgulă și `ro-RO`, punct și `en-GB`). O eroare a motorului recunoscută până acum
-după textul ei („Piesa … nu încape pe placă”) poartă piesa ca proprietate.
+după textul ei („Piesa … nu încape pe placă”) poartă piesa ca proprietate; la fel, sfatul unei piese la comandă care nu se
+poate închide („Scoate o dreaptă…”) se alege după felul motivului (`motivLC`), nu după textul lui.
 
 ### B. Ce rămâne românesc
 
@@ -46,8 +49,10 @@ schimbat, deci și amprenta lui din CSP, pe mecanismul din ADR 0127; politica CS
 
 ### D. Uneltele și probele
 
-`scripts/texte-trenulet.ts` găsește în surse ce trebuie tradus (cheile lui `tr`, marcajul, textele fixe care ajung pe pagină)
-și pune cheile noi în dicționar; `trenulet.engleza.test.ts` cere ca fiecare să aibă traducere, fără intrări rămase fără
+`scripts/texte-trenulet.ts` găsește în surse ce trebuie tradus (cheile lui `tr`, marcajul, textele fixe care ajung pe pagină,
+și cuvintele singure cu majusculă, „Deschide”, „Pod”, „Grila:”, etichete fără diacritice pe care proba de română nu le
+recunoaște) și pune cheile noi în dicționar; tot ea găsește textele românești lipite de valori fără `tr`
+(`compuseNetraduse`, probat pe un eșantion cu cazuri știute); `trenulet.engleza.test.ts` cere ca fiecare să aibă traducere, fără intrări rămase fără
 folos, cu aceleași {0}, {1}…, fără litere românești; a doua plasă, fără parser, cere pentru fiecare `tr("cuvânt",
 "context")` din surse cheia „cuvânt@context”. Proba e2e în engleză deschide fiecare ecran (planul, circuitele, exportul,
 fiecare fel de piesă din atelier) și caută româna rămasă și zecimalele cu virgulă; descarcă și arhiva CNC, cu README-ul ei

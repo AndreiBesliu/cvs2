@@ -246,7 +246,7 @@ var Atelier3D = (function () {
           <button class="btn" type="button" data-grila="r-">− rând</button><button class="btn" type="button" data-grila="r+">+ rând</button></div>
         <div class="at-rand"><span class="mic">Înălțime:</span>
           <div class="segment" id="at-inaltime">${[[1, "Placă"], [2, "2 plăci"], [3, "Cărămidă"], [6, "Dublă"]].map(([v, x]) => `<button type="button" data-placi="${v}" aria-pressed="${p.placi === v}">${x}</button>`).join("")}</div>
-          <label class="mic at-rand" for="at-placi">plăci <input id="at-placi" type="number" min="1" max="12" step="1" value="${p.placi}" class="camp-70"></label></div>
+          <label class="mic at-rand" for="at-placi">${tr("plăci", "LEGO")} <input id="at-placi" type="number" min="1" max="12" step="1" value="${p.placi}" class="camp-70"></label></div>
         <div class="at-rand"><span class="mic">Știfturi sus:</span>
           <div class="segment" id="at-stifturi">${[["da", "Toate"], ["mijloc", "Unul, la mijloc"], ["nu", "Fără (netedă)"]].map(([v, x]) => `<button type="button" data-st="${v}" aria-pressed="${(p.stifturi === "mijloc" ? "mijloc" : p.stifturi ? "da" : "nu") === v}">${x}</button>`).join("")}</div></div>
         <div class="at-rand"><span class="mic">Dedesubt:</span>
@@ -951,7 +951,7 @@ var Atelier3D = (function () {
     e.innerHTML = `<h2>Modelul</h2>
       <p class="mic">Așezi piesele pe grila de știfturi, ca să vezi avionul întreg înainte să-l printezi. Alegi o piesă cu un clic în vedere sau din listă, apoi o muți: X și Y câte un știft, Z câte o placă. O piesă nouă intră deasupra celei alese. Nu verific dacă piesele se prind între ele: e doar privirea de ansamblu.</p>
       ${m ? `<div class="model-ales">
-        <div><b>${titluM(m)}</b> <span class="mic">· x ${m.x}, y ${m.y}, z ${m.z} ${m.z === 1 ? "placă" : "plăci"}${m.rot ? tr` · rotită ${m.rot * 90}°` : ""}</span></div>
+        <div><b>${titluM(m)}</b> <span class="mic">· x ${m.x}, y ${m.y}, z ${m.z} ${m.z === 1 ? tr("placă", "LEGO") : tr("plăci", "LEGO")}${m.rot ? tr` · rotită ${m.rot * 90}°` : ""}</span></div>
         <div class="mutari" id="at-m-mutari">
           <button class="btn" type="button" data-m="x-" aria-label="X minus">← X</button><button class="btn" type="button" data-m="x+" aria-label="X plus">X →</button>
           <button class="btn" type="button" data-m="y-" aria-label="Y minus">↓ Y</button><button class="btn" type="button" data-m="y+" aria-label="Y plus">Y ↑</button>
@@ -1064,7 +1064,7 @@ var Atelier3D = (function () {
   function arataPrivita() {
     const p = privita;
     $("#at-nume-piesa").textContent = p!.titlu;
-    $("#at-cote").innerHTML = `<span><b>Mărime</b> ${tr`${fmt(p!.dim[0]!)} × ${fmt(p!.dim[1]!)} × ${fmt(p!.dim[2]!)} mm`}</span><span><b>Filament</b> ≈ ${fmt(p!.g)} g</span><span><b>Din circuit</b> ${p!.bucati} ${p!.bucati === 1 ? "bucată" : "bucăți"}</span>`;
+    $("#at-cote").innerHTML = `<span><b>Mărime</b> ${tr`${fmt(p!.dim[0]!)} × ${fmt(p!.dim[1]!)} × ${fmt(p!.dim[2]!)} mm`}</span><span><b>Filament</b> ≈ ${fmt(p!.g)} g</span><span><b>Din circuit</b> ${p!.bucati} ${p!.bucati === 1 ? tr("bucată") : tr("bucăți")}</span>`;
     $("#at-avert").hidden = false; $("#at-avert").textContent = "E o piesă din circuitul de tren: o vezi aici, cum se așază pe pat. Se schimbă din 2D, la Export CNC.";
     $("#at-adauga").hidden = true; $("#at-bucati-rand").hidden = true; $("#at-in-model").hidden = true;
     arata3D(p!.tri, false, true);
@@ -1085,7 +1085,7 @@ var Atelier3D = (function () {
       $("#at-cote").innerHTML = `<span><b>Mărime</b> ${tr`${fmt(dim[0]!)} × ${fmt(dim[1]!)} × ${fmt(dim[2]!)} mm`}</span><span><b>Filament</b> ≈ ${fmt(g)} g</span>` +
         (def.tip === "calibrare" ? `<span><b>Piese</b> ${piese.length}</span>` : "") + (piese[0]!.unghi ? `<span><b>Unghi</b> ${fmt(piese[0]!.unghi)}°</span>` : "");
       const av = piese.flatMap(p => p.avert || []);
-      if (def.tip === "caramida" && bucatiSeparate(def.celule!) > 1) av.push("Forma are bucăți care nu se ating: ies piese separate, în același fișier.");
+      if (def.tip === "caramida" && bucatiSeparate(def.celule!) > 1) av.push(tr("Forma are bucăți care nu se ating: ies piese separate, în același fișier."));
       $("#at-avert").hidden = !av.length; $("#at-avert").textContent = av.join(" ");
       if ($("#at-p-unghi")) $("#at-p-unghi").textContent = def.tip === "pantaInversa" ? tr`Fața de dedesubt urcă la ${fmt(piese[0]!.unghi!)}° (înălțimea ${fmt(def.placi! * 3.2)} mm, buza ${fmt(def.buza!)} mm).`
         : def.profil === "curb" ? tr`Curba urcă de la buză (${fmt(def.buza!)} mm) la ${fmt(def.placi! * 3.2)} mm; în medie ${fmt(piese[0]!.unghi!)}°.` : tr`Panta iese de ${fmt(piese[0]!.unghi!)}° (înălțimea ${fmt(def.placi! * 3.2)} mm, buza ${fmt(def.buza!)} mm).`;
@@ -1154,7 +1154,7 @@ var Atelier3D = (function () {
     calculLista = calculeazaLista();
     const { randuri, placi, toate, eroare, tren: pt, grame } = calculLista;
     $("#at-lista").innerHTML = randuri.length ? randuri.map(({ x, g, dim, nPiese }) => `<tr data-id="${x.id}"><td>${x.nume}</td>` +
-      `<td class="num">${dim ? `${fmt(dim[0]!)} × ${fmt(dim[1]!)} × ${fmt(dim[2]!)}` : `${nPiese} piese`}</td>` +
+      `<td class="num">${dim ? `${fmt(dim[0]!)} × ${fmt(dim[1]!)} × ${fmt(dim[2]!)}` : tr`${nPiese} piese`}</td>` +
       `<td><span class="pas"><button class="btn" type="button" data-op="-" aria-label="O bucată mai puțin">−</button><span class="num pas-n">${x.bucati}</span><button class="btn" type="button" data-op="+" aria-label="O bucată în plus">+</button></span></td>` +
       `<td class="num">${fmt(g * x.bucati)} g</td><td><button class="btn" type="button" data-op="x">Scoate</button></td></tr>`).join("")
       : `<tr><td colspan="5" class="mic">Nicio piesă LEGO încă. Desenează una mai sus și apasă „Adaugă în lista de printat”.</td></tr>`;
@@ -1177,7 +1177,7 @@ var Atelier3D = (function () {
     }).join("");
     const chip = $("#chip-3d");
     if (chip) {
-      chip.textContent = eroare ? "Nu încape pe pat" : toate.length ? `${toate.length} ${toate.length === 1 ? "piesă" : "piese"} · ${placi.length} ${placi.length === 1 ? "placă" : "plăci"}` : "Lista e goală";
+      chip.textContent = eroare ? "Nu încape pe pat" : toate.length ? `${toate.length} ${toate.length === 1 ? tr("piesă") : tr("piese")} · ${placi.length} ${placi.length === 1 ? tr("placă", "pat") : tr("plăci", "pat")}` : "Lista e goală";
       chip.className = "chip " + (eroare ? "pericol" : toate.length ? "ok" : "");
     }
   }

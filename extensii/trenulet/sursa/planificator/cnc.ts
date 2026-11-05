@@ -1341,8 +1341,8 @@ var TrenCNC = (function (glob: typeof globalThis) {
       else if (nume.startsWith("cale:")) { const pc = cat.piese[nume.slice(5)]; printata(`cale_${pc!.nume}`, tr`${pc!.titlu || pc!.nume} (printată)`, n, stlCale(pc!)); }
     }
     if (P.proba_cuplaje) for (const x of probaCuplaje()) printata(`proba_cuplaj_${x.k}`, tr`Proba cuplajelor, varianta ${x.k}`, 1, x, 0.2);
-    printata("tunel", "Tunel", Math.max(0, Math.round(P.tunel || 0)), stlTunel());
-    printata("peron", "Peron", Math.max(0, Math.round(P.peron || 0)), stlPeron());
+    printata("tunel", tr("Tunel"), Math.max(0, Math.round(P.tunel || 0)), stlTunel());
+    printata("peron", tr("Peron"), Math.max(0, Math.round(P.peron || 0)), stlPeron());
     if (ce.rampa) {
       for (const kit of ["rampa_urcare", "rampa_coborare"]) {
         if (!numarare[kit]) continue;

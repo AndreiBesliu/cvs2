@@ -30,8 +30,10 @@ singur nume global (`TrenCNC`, `TrenGCode`, `Lego`, `Profiluri`, `Atelier3D`); `
 typecheck` (și `test/unit/trenulet.tipuri.test.ts`). `build.py` nu mai e aici: nu poate construi sursele `.ts`.
 
 Un text nou pentru om (ADR 0165): fix, pe pagină, nu cere nimic în cod; cu valori sau în afara paginii (README, mesaje),
-trece prin `tr` (un șablon: tr`Am pus: ${x}.`). Apoi `node scripts/texte-trenulet.ts` îi pune cheia în `texte.en.json`, iar
-traducerea se scrie acolo; proba `trenulet.engleza.test.ts` cade până atunci.
+trece prin `tr` (un șablon: tr`Am pus: ${x}.`). Un cuvânt lipit de o valoare e tot un text cu valori (`${n} ${n === 1 ?
+tr("piesă") : tr("piese")}`, nu `"piesă"`): pe pagină se traduc doar noduri de text întregi, iar proba găsește lipiturile.
+Apoi `node scripts/texte-trenulet.ts` îi pune cheia în `texte.en.json`, iar traducerea se scrie acolo; proba
+`trenulet.engleza.test.ts` cade până atunci.
 
 În cvs2 (ADR 0164), salvările amânate ale paginii (circuitul, setările CNC, profilul mașinii, atelierul) trec prin
 `window.cvs2.amana(cheie, f, ms)`: cvs2 știe atunci că e ceva nesalvat și le pornește pe loc la închiderea ferestrei. O

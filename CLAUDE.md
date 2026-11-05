@@ -471,8 +471,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   **Planificatorul în engleză (ADR 0165, felia 3.Te)** gata pe 04.11: `planificator/limba.ts` (primul script) dă limba lui
   cvs2 și `tr`; româna rămâne în cod, engleza vine din `planificator/texte.en.json` (doar în pachet, adus doar în engleză):
   `tr` pentru textele cu valori și cele din afara paginii (README-uri, mesajele motoarelor; context pentru cuvintele cu două
-  sensuri, `tr("placă", "pat")`), iar textele fixe se traduc pe pagină (`Limba.urmareste`). Un text nou cere cheia lui:
-  `node scripts/texte-trenulet.ts`, apoi traducerea; `trenulet.engleza.test.ts` cade până atunci. La o limbă nouă, pagina își
+  sensuri, `tr("placă", "pat")`), iar textele fixe se traduc pe pagină (`Limba.urmareste`), doar ca noduri de text întregi:
+  un cuvânt lipit de o valoare trece prin `tr`. Un text nou cere cheia lui: `node scripts/texte-trenulet.ts`, apoi
+  traducerea; `trenulet.engleza.test.ts` cade până atunci (și la un text lipit de valori fără `tr`). La o limbă nouă, pagina își
   salvează lucrul și cere `host.reporneste()` (nou; cel mult o dată la 2 s, cererile dese adunate). G-code-ul, numele de
   fișiere și antetele STL rămân în română. Pachetul 18.5.0.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
