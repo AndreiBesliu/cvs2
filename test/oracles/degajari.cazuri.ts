@@ -17,7 +17,7 @@ import {
   migreazaV4V8O, migreazaV8V9O, type ColturiO, type DocV8O, type DocV9O, type IntrariO, type LaturaO, type MatriceO, type RampaO, type SensO, type UrechiO,
 } from './document.ts';
 import { aleator, cerc, documentRegiune, drept, ID, laMasina, type Montaj, type Stoc, type Traseu } from './regiune.cazuri.ts';
-import { segment, type FormaO, type Primitiva } from './regiune.ts';
+import { regiuneDinDocument, segment, type FormaO, type Primitiva } from './regiune.ts';
 
 type P2 = { readonly x: number; readonly y: number };
 const p = (x: number, y: number): P2 => ({ x, y });
@@ -76,12 +76,20 @@ export function docDeg(stoc: Stoc, forme: readonly FormaDeg[], o: { readonly dia
 const S2 = 2.1213203435596424;
 const I2 = 0.8786796564403576;
 
-/** Un colț pe hârtie: V, Q, E, cât intră în peretele orizontal (prin V) și în cel vertical; normalele lor spre deșeu. */
+/** ADR 0135: un perete-arc pe hârtie: cercul lui și partea pe care e K (înăuntrul cercului sau în afara lui). */
+export type CercHartie = { readonly c: P2; readonly r: number; readonly kInauntru: boolean };
+
+/**
+ * Un colț pe hârtie: V, Q, E, cât intră în peretele orizontal (prin V) și în cel vertical; normalele lor spre deșeu. ADR
+ * 0135: la un colț cu o latură curbă, „orizontal” și „vertical” sunt doar numele celor doi pereți; normala e a tangentei din
+ * V, iar la un perete-arc (`cercOrizontal`, `cercVertical`) „cât intră” se măsoară radial, față de cerc.
+ */
 export type ColtHartie = {
   readonly forma: string;
   readonly V: P2; readonly Q: P2; readonly E: P2;
   readonly inOrizontal: number; readonly inVertical: number;
   readonly nOrizontal: P2; readonly nVertical: P2;
+  readonly cercOrizontal?: CercHartie; readonly cercVertical?: CercHartie;
 };
 
 export type CazDeg = {
@@ -311,7 +319,7 @@ export const CAZURI_DEG: readonly CazDeg[] = [
     { id: 'r', forma: drept(40, 30, 2), x: 60, y: 45, latura: 'interior', adancime: 6, colturi: dog() },
   ], [], {
     faraDrumuri: true,
-    avertismente: Array.from({ length: 4 }, () => 'r/r: colțul rotunjit cu raza 2.000 mm (sub raza frezei, 3.000 mm) rămâne cu raza frezei; degajarea pe arce vine cu importul SVG'),
+    avertismente: Array.from({ length: 4 }, () => 'r/r: colțul rotunjit cu raza 2.000 mm (sub raza frezei, 3.000 mm) rămâne cu raza frezei; o degajare cere un colț ascuțit în desen'),
   }),
   // Arcul de 1e-7 (lungimea lui, π/2·1e-7, sub 1e-6) e scos la curățare: colțul e ascuțit, ca la D01.
   caz('D26 gaura 40 × 30 cu colțurile R1e-7 (arcul scos la curățare), dog-bone: colțurile sunt ascuțite, drumurile ca la D01, fără avertismente', [
@@ -441,6 +449,166 @@ export const CAZURI_DEG_0134: readonly CazDeg0134[] = [
     avertismente: [omisa(p(46, 60), PERETE), omisa(p(52.5, 60), COLT_BUCLA), omisa(p(58.5, 60), COLT_BUCLA)],
   }),
 ];
+
+// ---------------------------------------------------------------------------------------------------------------
+// ADR 0135 (felia 3.V): colțurile cu o latură curbă. Formele sunt căi cu arce (bulge = tan(baleiaj / 4)), puse la (50, 50).
+// La un perete-arc, „cât intră” e radial (`CercHartie`); la linie, față de dreapta ei. R = 3.
+
+/** ADR 0135: și colțurile cu o latură curbă fără Q (decalarea a mâncat colțul): nu sunt colțuri de degajat, primesc plasa. */
+export type CazDeg0135 = CazDeg0134 & { readonly faraQ?: readonly P2[] };
+
+const arcB = (bulge: number) => ({ tip: 'A' as const, bulge });
+const LIN = { tip: 'L' as const };
+/** „D”-ul: linia (0, 0) → (40, 0), apoi semicercul înapoi, cu centrul (20, 0) și raza 20, prin (20, 20). */
+const FORMA_D: FormaO = { tip: 'cale', inchis: true, varfuri: [{ p: p(0, 0), s: LIN }, { p: p(40, 0), s: arcB(1) }] };
+/**
+ * Același „D”, cu semicercul în două arce: 5° (bulge tan(5°/4)) până în (20 + 20·cos 5°, 20·sin 5°), apoi 175°. Piciorul lui Q
+ * pe cerc e la atan(3 / √280) = 10,2°, deci pe al doilea arc; arcele se continuă tangent, deci sunt un singur perete.
+ */
+const FORMA_D_DOUA_ARCE: FormaO = {
+  tip: 'cale', inchis: true,
+  varfuri: [{ p: p(0, 0), s: LIN }, { p: p(40, 0), s: arcB(Math.tan(Math.PI / 144)) }, { p: p(20 + 20 * Math.cos(Math.PI / 36), 20 * Math.sin(Math.PI / 36)), s: arcB(Math.tan((35 * Math.PI) / 144)) }],
+};
+/** Umărul: dreptunghiul 60 × 40 cu semicercul de rază 10 deasupra, din (40, 40) în (20, 40), prin (30, 50). */
+const FORMA_UMAR: FormaO = {
+  tip: 'cale', inchis: true,
+  varfuri: [{ p: p(0, 0), s: LIN }, { p: p(60, 0), s: LIN }, { p: p(60, 40), s: LIN }, { p: p(40, 40), s: arcB(1) }, { p: p(20, 40), s: LIN }, { p: p(0, 40), s: LIN }],
+};
+/**
+ * Lentila: arcul 1 din (20, 0) în (−20, 0) și arcul 2 înapoi, ambele cu bulge 0,5 (baleiajul 4·atan(0,5) = 106,26°): coarda 40,
+ * deci raza 40·(1 + 0,25) / 2 = 25, centrele la 40·(1 − 0,25) / 2 = 15 de coardă, (0, −15) și (0, 15).
+ */
+const FORMA_LENTILA: FormaO = { tip: 'cale', inchis: true, varfuri: [{ p: p(20, 0), s: arcB(0.5) }, { p: p(-20, 0), s: arcB(0.5) }] };
+/**
+ * Gaura 40 × 30 cu colțul de sus-dreapta tăiat de un arc de 30° (bulge tan 7,5°), din (40, 28) în (38, 30), bombat în afară:
+ * raza 2√2·(1 + b²) / (4b) = 5,464, centrul (35,268, 25,268), pe diagonala colțului.
+ */
+const FORMA_TESITA: FormaO = {
+  tip: 'cale', inchis: true,
+  varfuri: [{ p: p(0, 0), s: LIN }, { p: p(40, 0), s: LIN }, { p: p(40, 28), s: arcB(Math.tan(Math.PI / 24)) }, { p: p(38, 30), s: LIN }, { p: p(0, 30), s: LIN }],
+};
+
+const formaArc = (forma: FormaO, latura: LaturaO, colturi: ColturiO, extra: Partial<FormaDeg> = {}): FormaDeg => ({ id: 'g', forma, x: 50, y: 50, latura, adancime: 6, colturi, ...extra });
+
+/**
+ * „D”-ul ca gaură, în lume: V₁ = (90, 50) (din linie în arc), V₀ = (50, 50) (din arc în linie), centrul (70, 50). Q: dreapta
+ * y = 53 (linia decalată cu R spre deșeu) cu cercul de rază 20 − 3 = 17: (70 ± √280, 53). Tangenta arcului în V e
+ * verticală, deci unghiul deșeului e 90°: dog-bone E = V + R·(∓1, 1)/√2. T-bone: peretele scurt e linia (40 față de
+ * 20π), deci E = V + (0, R). Cât intră: în linie, R − (E − V)·(0, 1); în arc (K în afara cercului), |E − C| + R − 20.
+ */
+const CERC_D: CercHartie = { c: p(70, 50), r: 20, kInauntru: false };
+const DOG_D: ColtHartie[] = [
+  { forma: 'g', V: p(90, 50), Q: p(70 + Math.sqrt(280), 53), E: p(90 - S2, 50 + S2), inOrizontal: I2, inVertical: Math.hypot(20 - S2, S2) - 17, nOrizontal: p(0, 1), nVertical: p(-1, 0), cercVertical: CERC_D },
+  { forma: 'g', V: p(50, 50), Q: p(70 - Math.sqrt(280), 53), E: p(50 + S2, 50 + S2), inOrizontal: I2, inVertical: Math.hypot(20 - S2, S2) - 17, nOrizontal: p(0, 1), nVertical: p(1, 0), cercVertical: CERC_D },
+];
+const TEE_D: ColtHartie[] = [
+  { forma: 'g', V: p(90, 50), Q: p(70 + Math.sqrt(280), 53), E: p(90, 53), inOrizontal: 0, inVertical: Math.hypot(20, 3) - 17, nOrizontal: p(0, 1), nVertical: p(-1, 0), cercVertical: CERC_D },
+  { forma: 'g', V: p(50, 50), Q: p(70 - Math.sqrt(280), 53), E: p(50, 53), inOrizontal: 0, inVertical: Math.hypot(20, 3) - 17, nOrizontal: p(0, 1), nVertical: p(1, 0), cercVertical: CERC_D },
+];
+
+/**
+ * Umărul, tăiat pe exterior, în lume: V₁ = (90, 90), V₀ = (70, 90), centrul (80, 90). Q: y = 93 cu cercul de rază 10 + 3:
+ * (80 ± √160, 93). Unghiul deșeului e 90°: dog-bone E = V + R·(±1, 1)/√2. T-bone: linia de 20 față de arcul de 10π, deci
+ * E = V + (0, R). În arc (K în cerc): 13 − |E − C|; pe drum, |p − C| scade până în E, deci cel mai adânc punct e E.
+ */
+const CERC_UMAR: CercHartie = { c: p(80, 90), r: 10, kInauntru: true };
+const DOG_UMAR: ColtHartie[] = [
+  { forma: 'g', V: p(90, 90), Q: p(80 + Math.sqrt(160), 93), E: p(90 + S2, 90 + S2), inOrizontal: I2, inVertical: 13 - Math.hypot(10 + S2, S2), nOrizontal: p(0, 1), nVertical: p(1, 0), cercVertical: CERC_UMAR },
+  { forma: 'g', V: p(70, 90), Q: p(80 - Math.sqrt(160), 93), E: p(70 - S2, 90 + S2), inOrizontal: I2, inVertical: 13 - Math.hypot(10 + S2, S2), nOrizontal: p(0, 1), nVertical: p(-1, 0), cercVertical: CERC_UMAR },
+];
+const TEE_UMAR: ColtHartie[] = [
+  { forma: 'g', V: p(90, 90), Q: p(80 + Math.sqrt(160), 93), E: p(90, 93), inOrizontal: 0, inVertical: 13 - Math.hypot(10, 3), nOrizontal: p(0, 1), nVertical: p(1, 0), cercVertical: CERC_UMAR },
+  { forma: 'g', V: p(70, 90), Q: p(80 - Math.sqrt(160), 93), E: p(70, 93), inOrizontal: 0, inVertical: 13 - Math.hypot(10, 3), nOrizontal: p(0, 1), nVertical: p(-1, 0), cercVertical: CERC_UMAR },
+];
+
+/**
+ * Lentila ca gaură, în lume: V₁ = (70, 50), V₀ = (30, 50); arcul 1 (de sus) cu centrul C₁ = (50, 35), arcul 2 (de jos) cu
+ * C₂ = (50, 65), raza 25. Q: cercurile de rază 22 în jurul lui C₁ și C₂ se taie pe y = 50, la x = 50 ± √(22² − 15²) =
+ * 50 ± √259. În V₁, razele sunt (0,8, ±0,6), deci tangentele (∓0,6, 0,8) și bisectoarea spre deșeu (−1, 0): dog-bone
+ * E = (67, 50), (33, 50). T-bone: arcele au aceeași lungime, deci peretele lung e cel de după V în sensul de mers, iar
+ * crestătura merge pe normala celui de dinainte: la urcare (trigonometric) în V₁ vine arcul 2, deci E = V₁ + 3·(−0,8, 0,6) =
+ * (67,6, 51,8); la opoziție vine arcul 1, E = (67,6, 48,2). „Orizontal” = arcul 1, „vertical” = arcul 2; în ambele, K e în
+ * afara cercului: |E − C| + 3 − 25.
+ */
+const CERC_L1: CercHartie = { c: p(50, 35), r: 25, kInauntru: false };
+const CERC_L2: CercHartie = { c: p(50, 65), r: 25, kInauntru: false };
+const coltLentila = (V: P2, Q: P2, E: P2, n1: P2, n2: P2): ColtHartie => ({
+  forma: 'g', V, Q, E, inOrizontal: Math.max(0, Math.hypot(E.x - 50, E.y - 35) - 22), inVertical: Math.max(0, Math.hypot(E.x - 50, E.y - 65) - 22),
+  nOrizontal: n1, nVertical: n2, cercOrizontal: CERC_L1, cercVertical: CERC_L2,
+});
+const Q_L1 = p(50 + Math.sqrt(259), 50), Q_L0 = p(50 - Math.sqrt(259), 50);
+const N_L1: readonly [P2, P2] = [p(-0.8, -0.6), p(-0.8, 0.6)];
+const N_L0: readonly [P2, P2] = [p(0.8, -0.6), p(0.8, 0.6)];
+const DOG_LENTILA: ColtHartie[] = [coltLentila(p(70, 50), Q_L1, p(67, 50), ...N_L1), coltLentila(p(30, 50), Q_L0, p(33, 50), ...N_L0)];
+const TEE_LENTILA_URCARE: ColtHartie[] = [coltLentila(p(70, 50), Q_L1, p(67.6, 51.8), ...N_L1), coltLentila(p(30, 50), Q_L0, p(32.4, 48.2), ...N_L0)];
+const TEE_LENTILA_OPOZITIE: ColtHartie[] = [coltLentila(p(70, 50), Q_L1, p(67.6, 48.2), ...N_L1), coltLentila(p(30, 50), Q_L0, p(32.4, 51.8), ...N_L0)];
+
+const nuAjunge = (V: P2): string => omisa(V, 'freza nu ajunge în colț');
+
+const caz0135 = (nume: string, forme: readonly FormaDeg[], colturi: readonly ColtHartie[], o: Parameters<typeof caz>[3] & { readonly faraQ?: readonly P2[] } = {}): CazDeg0135 => {
+  const { faraQ, ...rest } = o;
+  return { ...caz0134(nume, forme, colturi, rest), ...(faraQ ? { faraQ } : {}) };
+};
+
+export const CAZURI_DEG_0135: readonly CazDeg0135[] = [
+  caz0135('D39 „D”-ul ca gaură, dog-bone, urcare: Q (70 ± √280, 53), E pe bisectoarea tangentelor; în (53,267, 53) freza sosește pe arc (G3)', [
+    formaArc(FORMA_D, 'interior', dog()),
+  ], DOG_D),
+  caz0135('D40 „D”-ul ca gaură, dog-bone, opoziție: aceleași Q și E; acum sosirea pe arc (G2) e în (86,733, 53)', [
+    formaArc(FORMA_D, 'interior', dog(), { sens: 'opozitie' }),
+  ], DOG_D),
+  caz0135('D41 „D”-ul ca gaură, T-bone: peretele scurt e linia (40 față de 20π), deci E = V + (0, R), cu crestătura în arc', [
+    formaArc(FORMA_D, 'interior', tee()),
+  ], TEE_D),
+  caz0135('D42 umărul (dreptunghiul 60 × 40 cu un semicerc de rază 10), pe exterior, dog-bone: Q (80 ± √160, 93)', [
+    formaArc(FORMA_UMAR, 'exterior', dog()),
+  ], DOG_UMAR),
+  caz0135('D43 umărul, pe exterior, T-bone: linia de 20 e mai scurtă decât arcul de 10π, deci E = V + (0, R)', [
+    formaArc(FORMA_UMAR, 'exterior', tee()),
+  ], TEE_UMAR),
+  caz0135('D44 lentila (două arce de rază 25) ca gaură, dog-bone: Q (50 ± √259, 50), E (67, 50) și (33, 50)', [
+    formaArc(FORMA_LENTILA, 'interior', dog()),
+  ], DOG_LENTILA),
+  caz0135('D45 lentila, T-bone, urcare: pereții sunt egali, deci crestătura pe normala celui de dinainte de V: E (67,6, 51,8), (32,4, 48,2)', [
+    formaArc(FORMA_LENTILA, 'interior', tee()),
+  ], TEE_LENTILA_URCARE),
+  caz0135('D46 lentila, T-bone, opoziție: sensul invers schimbă peretele de dinainte: E (67,6, 48,2), (32,4, 51,8)', [
+    formaArc(FORMA_LENTILA, 'interior', tee(), { sens: 'opozitie' }),
+  ], TEE_LENTILA_OPOZITIE),
+  // Colțul din (90, 78): dreapta x = 87 cu cercul de rază 5,464 − 3 dă Q = (87, 77,021), la 2,979 de latura de sus (y = 80):
+  // nu e vârf al traseului (acolo traseul are colțul (87, 77)), deci nu există Q. La fel în (88, 80), simetric. Bucla trece
+  // la 3,162 de V, sub 2R / cos 15° = 6,212: plasa.
+  caz0135('D47 gaura 40 × 30 cu colțul de sus-dreapta tăiat de un arc de 30°, dog-bone: decalarea mănâncă colțurile arcului (plasa), celelalte trei se degajează', [
+    formaArc(FORMA_TESITA, 'interior', dog()),
+  ], doarCu(dogBone('g', { st: 50, dr: 90, jos: 50, sus: 80 }), (c) => !(c.V.x === 90 && c.V.y === 80)), {
+    faraQ: [p(90, 78), p(88, 80)], avertismente: [nuAjunge(p(90, 78)), nuAjunge(p(88, 80))],
+  }),
+  caz0135('D48 „D”-ul cu semicercul în două arce (5° + 175°), dog-bone: piciorul lui Q cade pe al doilea arc; aceleași Q și E ca la D39', [
+    formaArc(FORMA_D_DOUA_ARCE, 'interior', dog()),
+  ], DOG_D),
+  caz0135('D49 „D”-ul cu semicercul în două arce, T-bone: arcele fac un singur perete (20π), deci tot linia e cea scurtă: ca la D41', [
+    formaArc(FORMA_D_DOUA_ARCE, 'interior', tee()),
+  ], TEE_D),
+];
+
+/**
+ * Martorul „cum tăia aplicația înainte de ADR 0135”: drumurile colțurilor din listă scoase (linia G1 spre E-ul colțului și
+ * întoarcerea în Q, de după ea), la fiecare trecere.
+ */
+export function martorScoate(text: string, m: Montaj, colturi: readonly ColtHartie[]): string {
+  const M = laMasina(m);
+  const inMasina = (q: P2): P2 => { const [x, y] = M(q.x, q.y, 0); return p(Number(f3(x)), Number(f3(y))); };
+  const out: string[] = [];
+  const linii = text.split('\n');
+  for (let k = 0; k < linii.length; k++) {
+    const l = linii[k]!;
+    const q = /^G1 /.test(l) ? xyDin(l) : null;
+    const c = q ? colturi.find((x) => { const e = inMasina(x.E); return Math.abs(e.x - q.x) <= 0.0015 && Math.abs(e.y - q.y) <= 0.0015; }) : undefined;
+    if (!c) { out.push(l); continue; }
+    k++; // și întoarcerea în Q
+  }
+  return out.join('\n');
+}
 
 /** D11: sosirile cu rampă nu sunt câte una pe trecere (rampa trece prin colț și tura îl reface); se numără în test. */
 export const SOSIRI_RAMPA = 'cu rampă';
@@ -726,6 +894,111 @@ export function corpusDegajari(samanta = 0x2600, n = 40): CazCorpusDeg[] {
     }
     const doc = docDeg(stoc, forme, { diametru: D, pas });
     rez.push({ nume: `C${String(k + 1).padStart(2, '0')} (sămânța ${samanta}, Ø${D}, foaia ${T}, ${familie.join(', ') || 'doar placa'})`, familie: familie[0] ?? 'placa', doc, origine: alege(ORIGINI), z0: r() < 0.5 ? 'sus' : 'jos', D });
+  }
+  return rez;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// ADR 0135 (felia 3.V): corpusul colțurilor cu o latură curbă.
+
+export type CazCorpusDegArce = Omit<CazCorpusDeg, 'doc'> & { readonly doc: DocV9O };
+
+/**
+ * Corpusul colțurilor cu o latură curbă, din sămânță (mulberry32): o cale pe foaie, cu degajări (dog-bone sau T-bone), pe
+ * interior sau pe exterior, ambele sensuri, rotită și uneori oglindită, freze Ø3,175 / Ø6 / Ø8, uneori cu intrări, rampă sau
+ * urechi. Familiile, în coordonatele elementului, în jurul originii:
+ * - `D`: coarda și un arc (bulge 0,35–1,3, deci și peste 180°);
+ * - `umar`: un dreptunghi cu un arc pe latura de sus, în afară sau înăuntru (bulge ±0,3–1);
+ * - `lentila`: două arce pe aceeași coardă (al doilea și cu bulge negativ: semiluna);
+ * - `poligon`: 4–6 vârfuri pe o elipsă, unele laturi arce (bulge 0,05–0,45 în afară, 0,05–0,3 înăuntru);
+ * - `cubica`: „D”-ul cu o cubică în locul arcului (prima biarcă poate fi mai scurtă decât drumul până la piciorul lui Q).
+ */
+export function corpusDegajariArce(samanta = 0x3500, n = 48): CazCorpusDegArce[] {
+  const r = aleator(samanta);
+  const alege = <T>(xs: readonly T[]): T => xs[Math.floor(r() * xs.length)]!;
+  const intre = (a: number, b: number): number => a + (b - a) * r();
+  const v = (x: number, y: number, s: Extract<FormaO, { tip: 'cale' }>['varfuri'][number]['s']) => ({ p: p(r3(x), r3(y)), s });
+  const rez: CazCorpusDegArce[] = [];
+  for (let k = 0; k < n; k++) {
+    const T = alege([6, 9, 12, 18]);
+    const D = alege(FREZE);
+    const stoc: Stoc = { latime: 220, inaltime: 160, grosime: T };
+    const pas = r3(alege([T / 2, T / 3, 3, 4]));
+    const fam = alege(['D', 'umar', 'lentila', 'poligon', 'cubica', 'tesit'] as const);
+    let varfuri: Array<ReturnType<typeof v>>;
+    if (fam === 'tesit') {
+      // Dreptunghiul cu 1–3 colțuri tăiate de arce scurte (coarda 1–8 mm, bulge ±0,1–0,5): la o coardă mică, decalarea mănâncă
+      // colțurile arcului (plasa); la una mai mare, se degajează, iar două crestături apropiate se pot judeca între ele (e).
+      const W = intre(30, 50), H = intre(24, 40);
+      const colturi4 = [[W / 2, -H / 2], [W / 2, H / 2], [-W / 2, H / 2], [-W / 2, -H / 2]] as const;
+      const taiate = new Set(Array.from({ length: alege([1, 2, 3]) }, () => Math.floor(r() * 4)));
+      varfuri = [];
+      colturi4.forEach(([cx, cy], i) => {
+        const prev = colturi4[(i + 3) % 4]!, next = colturi4[(i + 1) % 4]!;
+        if (!taiate.has(i)) { varfuri.push(v(cx, cy, LIN)); return; }
+        const d = intre(1, 8) / Math.SQRT2;
+        const spre = (q: readonly [number, number]): [number, number] => { const L = Math.hypot(q[0] - cx, q[1] - cy); return [cx + (d * (q[0] - cx)) / L, cy + (d * (q[1] - cy)) / L]; };
+        const [ax, ay] = spre(prev), [bx, by] = spre(next);
+        varfuri.push(v(ax, ay, arcB(r3(intre(0.1, 0.5) * (r() < 0.6 ? 1 : -1)))), v(bx, by, LIN));
+      });
+    } else if (fam === 'D') {
+      const c = intre(24, 50);
+      varfuri = [v(-c / 2, 0, LIN), v(c / 2, 0, arcB(r3(intre(0.35, 1.3))))];
+    } else if (fam === 'umar') {
+      const W = intre(40, 60), H = intre(28, 44), w = intre(10, W - 16), bx = intre(-(W - w) / 2 + 6, (W - w) / 2 - 6);
+      const b = r3(intre(0.3, 1) * (r() < 0.6 ? 1 : -1));
+      varfuri = [v(-W / 2, -H / 2, LIN), v(W / 2, -H / 2, LIN), v(W / 2, H / 2, LIN), v(bx + w / 2, H / 2, arcB(b)), v(bx - w / 2, H / 2, LIN), v(-W / 2, H / 2, LIN)];
+    } else if (fam === 'lentila') {
+      const c = intre(30, 56), b1 = r3(intre(0.3, 0.9));
+      const b2 = r3(r() < 0.7 ? intre(0.3, 0.9) : -intre(0.1, 0.5) * b1);
+      varfuri = [v(c / 2, 0, arcB(b1)), v(-c / 2, 0, arcB(b2))];
+    } else if (fam === 'poligon') {
+      const m = alege([4, 5, 6]), ax = intre(18, 28), ay = intre(14, 24), u0 = intre(0, 2 * Math.PI);
+      varfuri = Array.from({ length: m }, (_, i) => {
+        const u = u0 + (2 * Math.PI * (i + intre(-0.2, 0.2))) / m;
+        const s = r() < 0.5 ? LIN : arcB(r3(r() < 0.6 ? intre(0.05, 0.45) : -intre(0.05, 0.3)));
+        return v(ax * Math.cos(u), ay * Math.sin(u), s);
+      });
+    } else {
+      const c = intre(24, 50), h = intre(c / 3, c * 0.8);
+      varfuri = [v(-c / 2, 0, LIN), v(c / 2, 0, { tip: 'C', c1: p(r3(c / 2 + intre(-c / 4, c / 4)), r3(h)), c2: p(r3(-c / 2 + intre(-c / 4, c / 4)), r3(h)) })];
+    }
+    const latura: LaturaO = r() < 0.55 ? 'interior' : 'exterior';
+    const adancime = r3(r() < 0.5 ? T : Math.max(pas * 0.5, T * (0.3 + 0.6 * r())));
+    const oglinda = r() < 0.25;
+    const g = r();
+    const rotire = g < 0.4 ? 0 : g < 0.7 ? alege([90, 180, 270]) : r3(360 * r());
+    const urechi = latura === 'exterior' && adancime === T && r() < 0.3 ? { numar: alege([2, 3]), latime: r3(Math.max(D, 8)), grosime: r3(Math.min(2, T / 3)) } : null;
+    const forma: FormaDeg = {
+      id: 'g', forma: { tip: 'cale', inchis: true, varfuri }, x: r3(110 + intre(-15, 15)), y: r3(80 + intre(-12, 12)), rotire,
+      ...(oglinda ? { matrice: { a: -1, b: 0, c: 0, d: 1, e: 0, f: 0 } } : {}),
+      latura, adancime, sens: r() < 0.5 ? 'urcare' : 'opozitie', colturi: r() < 0.5 ? dog() : tee(), urechi,
+      rampa: r() < 0.15 ? { lungime: r3(intre(5, 25)) } : null, intrari: r() < 0.25 ? { raza: r3(intre(1, 4)) } : null,
+    };
+    // Cutia în lume, din oracolul regiunii: uneori calea stă la 0,5–4 mm de latura din stânga a foii (§5 c), alteori are o
+    // gaură vecină la 0,5–7 mm (§5 a).
+    const cutie = regiuneDinDocument(migreazaV8V9O(docDeg(stoc, [forma], { diametru: D, pas }))).taieturi.get('g/g')?.contur?.cutie;
+    let margine = false, vecin = false;
+    const forme: FormaDeg[] = [forma];
+    if (cutie && r() < 0.2) {
+      const dx = r3(intre(0.5, 4) - cutie.minX);
+      forme[0] = { ...forma, x: r3(forma.x + dx) };
+      margine = true;
+    }
+    const dx = forme[0]!.x - forma.x;
+    if (cutie && r() < 0.35) {
+      const w = r3(intre(8, 14)), h = r3(intre(8, 14)), gol = intre(0.5, 7);
+      const yv = r3((cutie.minY + cutie.maxY) / 2 - h / 2 + intre(-6, 6));
+      const xd = r3(cutie.maxX + dx + gol), xs = r3(cutie.minX + dx - gol - w);
+      const xv = xd + w <= stoc.latime - 2 ? xd : xs >= 2 ? xs : null;
+      if (xv !== null && yv >= 2 && yv + h <= stoc.inaltime - 2) {
+        forme.push({ id: 'v', forma: drept(w, h), x: xv, y: yv, latura: 'interior', adancime, sens: r() < 0.5 ? 'urcare' : 'opozitie', colturi: r() < 0.5 ? dog() : null });
+        vecin = true;
+      }
+    }
+    const doc = migreazaV8V9O(docDeg(stoc, forme, { diametru: D, pas }));
+    const fel = `${fam} ${latura}${oglinda ? ' oglindit' : ''}${rotire ? ' rotit' : ''}${margine ? ' lângă margine' : ''}${vecin ? ' cu vecin' : ''}`;
+    rez.push({ nume: `A${String(k + 1).padStart(2, '0')} (sămânța ${samanta}, Ø${D}, foaia ${T}, ${fel}, ${forma.colturi!.tip})`, familie: fam, doc, origine: alege(ORIGINI), z0: r() < 0.5 ? 'sus' : 'jos', D });
   }
   return rez;
 }

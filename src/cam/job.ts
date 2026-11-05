@@ -604,7 +604,7 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
       const desen = conturElement(t);
       const curat = curataIntrare(desen);
       for (const r of arceSubRaza(curat.ok ? curat.contur : desen, latura, t.sens, R)) {
-        avertismente.push(`${t.idLume}: colțul rotunjit cu raza ${r.toFixed(3)} mm (sub raza frezei, ${R.toFixed(3)} mm) rămâne cu raza frezei; degajarea pe arce vine cu importul SVG`);
+        avertismente.push(`${t.idLume}: colțul rotunjit cu raza ${r.toFixed(3)} mm (sub raza frezei, ${R.toFixed(3)} mm) rămâne cu raza frezei; o degajare cere un colț ascuțit în desen`);
       }
       for (const c of cubiceSubRaza(desen, latura, t.sens, R)) {
         avertismente.push(`${t.idLume}: curba de lângă (${c.p.x.toFixed(3)}, ${c.p.y.toFixed(3)}) se strânge până la raza ${c.raza.toFixed(3)} mm (sub raza frezei, ${R.toFixed(3)} mm): freza o rotunjește`);
@@ -635,14 +635,14 @@ export function programDinDocument(doc: Document, regim: Regim = REGIM_IMPLICIT,
         lista[x.j]?.push(x.d);
       }
       degajari = lista;
-      // Colțurile desenului cu o latură curbă nu primesc degajare (ADR 0032, doar între două linii): spuse, nu omise pe
-      // tăcute (recenzia 2.7b), dacă freza ajunge la ele (o buclă trece la cel mult 2·R/cos(θ/2) de colț) și dacă biarcele
-      // nu le-au dat totuși două linii, deci o degajare.
+      // Plasa (ADR 0135 §5): un colț al desenului cu o latură curbă, la care freza ajunge (o buclă trece la cel mult
+      // 2·R/cos(θ/2) de el), dar care nu e candidat (Q nu e vârf al traseului: decalarea a mâncat colțul), se spune, nu se
+      // omite pe tăcute (recenzia 2.7b). Candidații omiși la §5 își spun singuri motivul.
       const aici = (p: { x: number; y: number }, q: { x: number; y: number }): boolean => Math.hypot(p.x - q.x, p.y - q.y) <= EPS_COLT;
       for (const c of colturiCurbe(desen, latura, t.sens, R)) {
         if ((candidati[it] ?? []).some((x) => aici(x.d.v, c.v))) continue;
         if (!bucle.some((b) => distantaLaContur(c.v, b) <= (2 * R) / c.cosJumatate)) continue;
-        avertismente.push(`${t.idLume}: degajarea omisă la colțul (${c.v.x.toFixed(3)}, ${c.v.y.toFixed(3)}): o latură a colțului e curbă`);
+        avertismente.push(`${t.idLume}: degajarea omisă la colțul (${c.v.x.toFixed(3)}, ${c.v.y.toFixed(3)}): freza nu ajunge în colț`);
       }
     }
     // Direcția pe linie (ADR 0092 §4): `invers` = fiecare buclă în sens opus desenului; `scurt` = o cale deschisă pornește

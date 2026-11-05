@@ -597,7 +597,7 @@ adresa de test față de cea live au lista lor.
 | Urechi | punți care țin piesa în foaie pe ultimele treceri: câte pe buclă, lungimea și grosimea punții (de la fața de jos) |
 | Rampă | freza coboară de-a lungul buclei, nu drept în material; lungimea rampei (cel puțin 1 mm) |
 | Intrări | freza intră pe contur și iese pe câte un sfert de cerc, prin deșeu, ca peretele piesei să nu păstreze urma |
-| Colțuri | degajarea colțurilor în care freza nu intră: **dog-bone** (pe diagonală) sau **T-bone** (în peretele mai lung). Un colț a cărui degajare ar lăsa sub 1 mm de material până la alt perete al piesei, sau până la degajarea altui colț (la baza unei limbi sau a unui deget subțire), rămâne fără ea, cu un avertisment |
+| Colțuri | degajarea colțurilor în care freza nu intră: **dog-bone** (pe diagonală) sau **T-bone** (în peretele mai lung). Un colț a cărui degajare ar lăsa sub 1 mm de material până la alt perete al piesei, sau până la degajarea altui colț (la baza unei limbi sau a unui deget subțire), rămâne fără ea, cu un avertisment. Și colțurile cu o latură curbă (un „D”, un umăr rotund, o lentilă, o curbă importată) primesc degajarea; unde freza nu ajunge deloc în colț, avertismentul o spune |
 | Despărțire | o cale deschisă, tăiată prin toată foaia, în afara pieselor: se taie la urmă, ca să despartă foaia |
 | Pasul lateral | doar pe un buzunar: distanța dintre inele, cel mult jumătate din diametrul frezei (implicit 40 %) |
 | Coborârea | doar pe un buzunar: cum intră freza în material la fiecare trecere: **plonjare** (implicit), **rampă pe inel**, **zigzag** sau **elice**, cu valorile lor (vezi mai jos) |

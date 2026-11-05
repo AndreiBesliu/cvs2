@@ -30,14 +30,14 @@ const unitar = (x: number, y: number): Punct => {
 };
 
 /**
- * Colțurile de degajat ale elementului (ADR 0032 §2–§3). `element` e conturul desenului, în coordonatele foii. Pe
- * `exterior`, K e interiorul lui; pe `interior`, exteriorul. Cu M3, la urcare K e în dreapta sensului de mers (ADR 0027).
- * Conturul se parcurge în sensul de mers; un colț de degajat e un vârf între două linii în care mersul se rupe spre
- * deșeu (la stânga cu K în dreapta), cu restul de cel puțin `REST_MINIM`. Q și E se socotesc pe hârtie; potrivirea lui Q
- * cu un vârf al traseului o face apelantul.
+ * Colțurile de degajat ale elementului (ADR 0032 §2–§3, ADR 0135). `element` e conturul curățat (linii și arce), în
+ * coordonatele foii. Pe `exterior`, K e interiorul lui; pe `interior`, exteriorul. Cu M3, la urcare K e în dreapta sensului
+ * de mers (ADR 0027). Conturul se parcurge în sensul de mers; un colț de degajat e un vârf în care mersul se rupe spre deșeu
+ * (la stânga cu K în dreapta), cu restul de cel puțin `REST_MINIM`. Între două linii, regula din ADR 0032; cu o latură curbă,
+ * cea din ADR 0135 (`coltCuArc`). Q și E se socotesc pe hârtie; potrivirea lui Q cu un vârf al traseului o face apelantul.
  */
 export function colturiDeDegajat(element: Contur, latura: 'exterior' | 'interior', sens: Sens, R: number, tip: TipColturi): Degajare[] {
-  if (!element.inchis || element.varfuri.length < 3) return [];
+  if (!element.inchis || element.varfuri.length < 2) return [];
   const kDreapta = sens === 'urcare';
   const c = inSensulDeMers(element, latura, sens);
   const n = c.varfuri.length;
@@ -47,8 +47,12 @@ export function colturiDeDegajat(element: Contur, latura: 'exterior' | 'interior
     const v = c.varfuri[i];
     const next = c.varfuri[(i + 1) % n];
     if (!prev || !v || !next) continue;
-    // Ambele laturi din V sunt linii (§2): segmentul care intră e al vârfului de dinainte, cel care pleacă, al lui V.
-    if (prev.s.tip !== 'L' || v.s.tip !== 'L') continue;
+    // Segmentul care intră e al vârfului de dinainte, cel care pleacă, al lui V. Cu o latură curbă: ADR 0135.
+    if (prev.s.tip !== 'L' || v.s.tip !== 'L') {
+      const d = coltCuArc(c, i, kDreapta, R, tip);
+      if (d) rez.push(d);
+      continue;
+    }
     const Lin = Math.hypot(v.p.x - prev.p.x, v.p.y - prev.p.y);
     const Lout = Math.hypot(next.p.x - v.p.x, next.p.y - v.p.y);
     if (!(Lin > 0 && Lout > 0)) continue;
@@ -78,6 +82,171 @@ export function colturiDeDegajat(element: Contur, latura: 'exterior' | 'interior
   return rez;
 }
 
+/** ADR 0135 §3: o joncțiune e netedă (același perete) dacă tangenta nu se rupe: |sin| ≤ atât, fără întoarcere. */
+const NETED = 1e-6;
+
+const cruce2 = (u: Punct, v: Punct): number => u.x * v.y - u.y * v.x;
+const scalar = (u: Punct, v: Punct): number => u.x * v.x + u.y * v.y;
+
+/** Lungimea segmentului de la a la b: linia; arcul, pe curbă. */
+function lungimeSegment(a: Punct, b: Punct, s: Segment): number {
+  const coarda = Math.hypot(b.x - a.x, b.y - a.y);
+  if (s.tip !== 'A') return coarda;
+  const { raza, baleiaj } = cerculArcului(a, b, s.bulge);
+  return Math.abs(baleiaj) * raza;
+}
+
+/** Joncțiunea din vârful j al conturului închis c e netedă: tangenta segmentului care intră continuă cu cea a celui care pleacă. */
+function jonctiuneNeteda(c: Contur, j: number): boolean {
+  const n = c.varfuri.length;
+  const a = c.varfuri[(j - 1 + n) % n], v = c.varfuri[j], b = c.varfuri[(j + 1) % n];
+  if (!a || !v || !b) return false;
+  const tIn = directieDesen(a.p, v.p, a.s, 1), tOut = directieDesen(v.p, b.p, v.s, 0);
+  return tIn !== null && tOut !== null && Math.abs(cruce2(tIn, tOut)) <= NETED && scalar(tIn, tOut) > 0;
+}
+
+/**
+ * Indicii segmentelor peretelui (ADR 0135 §3) din vârful i al conturului închis c: înainte, segmentele i, i + 1, …; înapoi,
+ * i − 1, i − 2, …; până la prima joncțiune care nu e netedă (sau până la întoarcerea în i).
+ */
+function segmentePerete(c: Contur, i: number, inainte: boolean): number[] {
+  const n = c.varfuri.length;
+  const rez: number[] = [];
+  for (let pas = 0; pas < n; pas++) {
+    const k = inainte ? (i + pas) % n : (((i - 1 - pas) % n) + n) % n;
+    rez.push(k);
+    // Joncțiunea de la capătul depărtat al segmentului k: înainte, vârful k + 1; înapoi, vârful k.
+    const j = inainte ? (k + 1) % n : k;
+    if (j === i || !jonctiuneNeteda(c, j)) break;
+  }
+  return rez;
+}
+
+/** Lungimea peretelui (ADR 0135 §3) din vârful i: suma segmentelor lui, pe curbă. */
+function lungimePerete(c: Contur, i: number, inainte: boolean): number {
+  const n = c.varfuri.length;
+  let L = 0;
+  for (const k of segmentePerete(c, i, inainte)) {
+    const a = c.varfuri[k], b = c.varfuri[(k + 1) % n];
+    if (a && b) L += lungimeSegment(a.p, b.p, a.s);
+  }
+  return L;
+}
+
+/** Curba decalată cu R spre deșeu a unui segment (ADR 0135 §2): o dreaptă (punct și direcție) sau un cerc; null dacă dispare. */
+type Decalata = { readonly tip: 'dreapta'; readonly p: Punct; readonly d: Punct } | { readonly tip: 'cerc'; readonly c: Punct; readonly r: number };
+
+function decalata(a: Punct, b: Punct, s: Segment, R: number, laStanga: boolean): Decalata | null {
+  if (s.tip !== 'A') {
+    const d = unitar(b.x - a.x, b.y - a.y);
+    const semn = laStanga ? 1 : -1;
+    return { tip: 'dreapta', p: { x: a.x - semn * R * d.y, y: a.y + semn * R * d.x }, d };
+  }
+  const { centru, raza } = cerculArcului(a, b, s.bulge);
+  // Pe un arc trigonometric (bulge > 0), stânga e spre centru.
+  const r = (s.bulge > 0) === laStanga ? raza - R : raza + R;
+  return r > 1e-9 ? { tip: 'cerc', c: centru, r } : null;
+}
+
+/** Intersecțiile a două curbe decalate. */
+function intersectii(u: Decalata, v: Decalata): Punct[] {
+  if (u.tip === 'dreapta' && v.tip === 'dreapta') {
+    const x = cruce2(u.d, v.d);
+    if (Math.abs(x) < 1e-15) return [];
+    const t = cruce2({ x: v.p.x - u.p.x, y: v.p.y - u.p.y }, v.d) / x;
+    return [{ x: u.p.x + t * u.d.x, y: u.p.y + t * u.d.y }];
+  }
+  if (u.tip === 'cerc' && v.tip === 'cerc') {
+    const dx = v.c.x - u.c.x, dy = v.c.y - u.c.y, d = Math.hypot(dx, dy);
+    if (d === 0 || d > u.r + v.r || d < Math.abs(u.r - v.r)) return [];
+    const a = (u.r * u.r - v.r * v.r + d * d) / (2 * d), h = Math.sqrt(Math.max(0, u.r * u.r - a * a));
+    const mx = u.c.x + (a * dx) / d, my = u.c.y + (a * dy) / d;
+    return [{ x: mx - (h * dy) / d, y: my + (h * dx) / d }, { x: mx + (h * dy) / d, y: my - (h * dx) / d }];
+  }
+  const l = (u.tip === 'dreapta' ? u : v) as Extract<Decalata, { tip: 'dreapta' }>;
+  const k = (u.tip === 'cerc' ? u : v) as Extract<Decalata, { tip: 'cerc' }>;
+  const fx = l.p.x - k.c.x, fy = l.p.y - k.c.y;
+  const b = fx * l.d.x + fy * l.d.y, cc = fx * fx + fy * fy - k.r * k.r, disc = b * b - cc;
+  if (disc < 0) return [];
+  const rd = Math.sqrt(disc);
+  return [-b - rd, -b + rd].map((t) => ({ x: l.p.x + t * l.d.x, y: l.p.y + t * l.d.y }));
+}
+
+/** Direcția (nenormată) a curbei decalate în punctul ei z: a dreptei, sau perpendiculara pe rază. */
+const tangentaDecalatei = (u: Decalata, z: Punct): Punct => (u.tip === 'dreapta' ? u.d : { x: -(z.y - u.c.y), y: z.x - u.c.x });
+
+/** Curbele decalate se încrucișează în z (nu doar se ating): |sin| dintre tangentele lor peste `NETED`. */
+function seIncruciseaza(u: Decalata, v: Decalata, z: Punct): boolean {
+  const a = tangentaDecalatei(u, z), b = tangentaDecalatei(v, z);
+  const la = Math.hypot(a.x, a.y), lb = Math.hypot(b.x, b.y);
+  return la > 0 && lb > 0 && Math.abs(cruce2(a, b)) / (la * lb) > NETED;
+}
+
+/** Piciorul lui q pe segmentul de la a la b cade pe segment: pe linie, între capete; pe arc, în baleiajul lui (cu o toleranță). */
+function piciorPeSegment(q: Punct, a: Punct, b: Punct, s: Segment): boolean {
+  if (s.tip !== 'A') {
+    const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
+    const t = l2 > 0 ? ((q.x - a.x) * dx + (q.y - a.y) * dy) / l2 : -1;
+    return t >= -1e-9 && t <= 1 + 1e-9;
+  }
+  const { centru, start, baleiaj } = cerculArcului(a, b, s.bulge);
+  const u = Math.atan2(q.y - centru.y, q.x - centru.x);
+  const rel = baleiaj >= 0 ? (((u - start) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) : (((start - u) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  return rel <= Math.abs(baleiaj) + 1e-9 || rel >= 2 * Math.PI - 1e-9;
+}
+
+/**
+ * Colțul cu o latură curbă din vârful i al conturului c, parcurs în sensul de mers (ADR 0135): direcțiile sunt tangentele din
+ * V; Q e încrucișarea curbelor decalate ale celor doi pereți din V (§3) cea mai apropiată de V, cu piciorul pe câte un segment
+ * al fiecăruia; E ca la ADR 0032 §3, cu pereții de la §3 la T-bone. Null dacă nu e colț de degajat.
+ */
+function coltCuArc(c: Contur, i: number, kDreapta: boolean, R: number, tip: TipColturi): Degajare | null {
+  const n = c.varfuri.length;
+  const prev = c.varfuri[(i - 1 + n) % n], v = c.varfuri[i], next = c.varfuri[(i + 1) % n];
+  if (!prev || !v || !next) return null;
+  const dIn = directieDesen(prev.p, v.p, prev.s, 1), dOut = directieDesen(v.p, next.p, v.s, 0);
+  if (!dIn || !dOut) return null;
+  const cruce = cruce2(dIn, dOut);
+  if (!(kDreapta ? cruce > 0 : cruce < 0)) return null;
+  const cosJumatate = Math.sqrt(Math.max(0, (1 + scalar(dIn, dOut)) / 2));
+  // ADR 0135 §1: tangenta se rupe cel puțin cât lasă restul minim între două linii (ca la plasă, `colturiCurbe`); o
+  // joncțiune netedă nu e colț, chiar dacă decalatele pereților se taie mai departe.
+  if (!(cosJumatate > 0) || R / cosJumatate - R < REST_MINIM) return null;
+  // Q (ADR 0135 §2): pe fiecare perete din V, segmentul pe care cade piciorul lui (la o cubică, una dintre biarce). Deșeul e
+  // la stânga sensului de mers când K e în dreapta.
+  const peretele = (inainte: boolean): Array<{ readonly a: Punct; readonly b: Punct; readonly s: Segment; readonly dec: Decalata }> =>
+    segmentePerete(c, i, inainte).flatMap((k) => {
+      const a = c.varfuri[k], b = c.varfuri[(k + 1) % n];
+      const dec = a && b ? decalata(a.p, b.p, a.s, R, kDreapta) : null;
+      return a && b && dec ? [{ a: a.p, b: b.p, s: a.s, dec }] : [];
+    });
+  const pIn = peretele(false), pOut = peretele(true);
+  let q: Punct | null = null, cel = Infinity;
+  for (const x of pIn) {
+    for (const y of pOut) {
+      for (const z of intersectii(x.dec, y.dec)) {
+        // Doar o încrucișare: două decalate care se ating (la o joncțiune netedă, pe un contur cu un singur colț) nu fac un vârf.
+        if (!seIncruciseaza(x.dec, y.dec, z) || !piciorPeSegment(z, x.a, x.b, x.s) || !piciorPeSegment(z, y.a, y.b, y.s)) continue;
+        const d = Math.hypot(z.x - v.p.x, z.y - v.p.y);
+        if (d < cel) { cel = d; q = z; }
+      }
+    }
+  }
+  if (!q || cel - R < REST_MINIM) return null;
+  const u = unitar(dOut.x - dIn.x, dOut.y - dIn.y);
+  let e: Punct;
+  if (tip === 'dog-bone') {
+    e = { x: v.p.x + R * u.x, y: v.p.y + R * u.y };
+  } else {
+    const Lin = lungimePerete(c, i, false), Lout = lungimePerete(c, i, true);
+    const d = Lout < Lin - EPS_LATURA ? dOut : dIn;
+    let m = { x: -d.y, y: d.x };
+    if (m.x * u.x + m.y * u.y < 0) m = { x: -m.x, y: -m.y };
+    e = { x: v.p.x + R * m.x, y: v.p.y + R * m.y };
+  }
+  return { v: v.p, q, e };
+}
+
 /** ADR 0134 §4: un punct la cel mult atât de contur (mm) stă pe el. */
 export const PE_CONTUR = 1e-6;
 
@@ -104,13 +273,13 @@ export function departeDePereti(
   element: Contur, latura: 'exterior' | 'interior', R: number, d: Degajare, marja: number,
   segmente: ReturnType<typeof segmenteCuCutii> = segmenteCuCutii(element),
 ): boolean {
-  const n = element.varfuri.length;
   const i = element.varfuri.findIndex((v) => v.p.x === d.v.x && v.p.y === d.v.y);
+  // Pereții din V (ADR 0135 §4): întregi, până la prima rupere a tangentei, nu doar segmentul de lângă V.
+  const dinV = new Set(i >= 0 ? [...segmentePerete(element, i, true), ...segmentePerete(element, i, false)] : []);
   const drum = { a: d.q, b: d.e, s: LINIE };
   const cd = cutieDrum(d);
   for (const [k, x] of segmente.entries()) {
-    // Cele două segmente din V: segmentul k pleacă din vârful k.
-    if (i >= 0 && (k === i || k === (i - 1 + n) % n)) continue;
+    if (dinV.has(k)) continue;
     if (distantaCutii(cd, x.cutie) >= R + marja) continue;
     const a = apropiereSegmente(drum, x.s);
     if (a.distanta < R - EPS_PERETE) return false;
@@ -148,7 +317,7 @@ function inSensulDeMers(element: Contur, latura: 'exterior' | 'interior', sens: 
 
 /**
  * Razele arcelor concave pentru K mai mici decât raza frezei (ADR 0032, precizarea din 11.10): acolo freza lasă raza ei, iar
- * colțul nu primește degajare (degajarea pe arce vine cu importul SVG). Un arc e concav pentru K dacă se curbează spre
+ * colțul nu primește degajare: nu e ascuțit (ADR 0135 §6). Un arc e concav pentru K dacă se curbează spre
  * deșeu: la stânga cu K în dreapta.
  */
 export function arceSubRaza(element: Contur, latura: 'exterior' | 'interior', sens: Sens, R: number): number[] {

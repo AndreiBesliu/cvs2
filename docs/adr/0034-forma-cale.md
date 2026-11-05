@@ -1,6 +1,8 @@
 # ADR 0034 — Forma „cale”: un contur închis din linii, arce și cubice (documentul v9)
 
 **Starea:** acceptat pe 11.10.2026, în felia 2.7b. **Intră în:** etapa 2. Nimic de aici nu se schimbă fără un ADR nou.
+**Precizat de:** ADR 0135 (felia 3.V, 05.11.2026): colțurile curbe se degajează; avertismentul „o latură a colțului e curbă”
+devine plasa „freza nu ajunge în colț” (§6, colțurile curbe).
 
 **Problema.** Importul SVG (2.7c), textul (etapa 7) și desenul (etapa 6) aduc contururi oarecare: linii, arce și cubice.
 Documentul are doar două forme parametrice, dreptunghiul și cercul. Cubicele trebuie să stea exacte în document, pentru

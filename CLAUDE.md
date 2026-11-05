@@ -482,6 +482,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   `CAZURI_DEG_0134` (separat de `CAZURI_DEG`, ale cărui amprente sunt fixate). Colțurile cu arce rămân felia următoare.
   **Pornirea 100,3 (cu ușa 103,9 / 110 kB), totalul 469,4 / 500.** După unirea lui 10.2↑ (04.11), cu 3.U: **pornirea 100,4
   (cu ușa 103,9 / 110 kB), totalul 475,0 / 500, /admin 105,3 / 200.**
+  **Degajările pe colțurile cu arce (ADR 0135, felia 3.V, ultima rămasă din etapa 2)** gata pe 05.11: un colț cu o latură
+  curbă (un „D” tăiat ca gaură, un umăr rotund, o lentilă, un import cu arce sau cubice) se degajează ca unul dintre linii.
+  Q e încrucișarea curbelor decalate ale celor doi **pereți** din V (piciorul pe orice segment al peretelui, deci și pe o
+  biarcă mai depărtată a unei cubice), E vine din tangentele din V, iar peretele (la T-bone și la condiția d din ADR 0134)
+  merge pe contur până la prima rupere a tangentei. O joncțiune netedă nu e colț: ruptura cere restul minim și aici. Unde
+  decalarea mănâncă colțul, plasa spune „freza nu ajunge în colț”. Logica e în `src/cam/degajari.ts` (`coltCuArc`,
+  `segmentePerete`); oracolul are colțurile cu arce (Q prin Newton pe distanțele la pereți, sosirea pe arc doar de pe
+  buclă), cu cazurile pe hârtie în `CAZURI_DEG_0135` și corpusul din sămânță `corpusDegajariArce`; pe hârtie, cât intră
+  o degajare într-un perete-arc se măsoară radial (`CercHartie`). **Pornirea 100,4 (cu ușa 103,9 / 110 kB), totalul
+  476,0 / 500, /admin 105,3 / 200.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).

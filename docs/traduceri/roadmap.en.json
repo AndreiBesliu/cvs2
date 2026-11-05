@@ -621,6 +621,10 @@
       "ro": "**Nucleul de simulare CPU (2 felii):** dale mici într-un atlas, calcul exact pe celulă, benzi pe bazin; amprenta Node = browser în e2e.",
       "en": "**The CPU simulation core (2 slices):** small tiles in an atlas, exact per-cell computation, bands on the pool; the Node = browser fingerprint in e2e."
     },
+    "3cee034643fd860e": {
+      "ro": "Degajările pe colțurile cu arce",
+      "en": "Reliefs at corners with arcs"
+    },
     "3d35cb85efc5e1ae": {
       "ro": "CAM 3D doar pe câmpul conservativ",
       "en": "3D CAM only on the conservative field"
@@ -1869,6 +1873,10 @@
       "ro": "Fonturile omului, aduse din etapa 7",
       "en": "People’s fonts, brought forward from stage 7"
     },
+    "cbfe1a74c1e0a049": {
+      "ro": "**Degajările pe colțurile cu arce, ultimele rămase din etapa 2** (fără mașină; ADR 0135; „da, 3.V”). Până acum, un colț cu o latură curbă primea doar avertismentul „o latură a colțului e curbă”: un „D” tăiat ca gaură, un dreptunghi unit cu un cerc (un umăr), o lentilă, orice import cu arce sau cubice. Acum se degajează ca cele dintre linii: Q pe curbele decalate ale pereților din V (piciorul poate cădea pe orice segment al peretelui, deci și pe o biarcă mai depărtată a unei cubice), E din tangentele din V, iar peretele (la T-bone și la condiția d din ADR 0134) merge până la prima rupere a tangentei. Unde decalarea mănâncă colțul, plasa spune „freza nu ajunge în colț”. Colțurile dintre linii rămân la fel, octet cu octet (amprenta din 3.U). **Probele:** `cam.degajari.arce.test.ts` (9, pe hârtie, în programul aplicației); oracolul cu colțurile cu arce (`degajari.arce.oracol.test.ts`: D39–D49 pe 4 montaje, cu Q și E pe hârtie și cât intră în pereții-arc, radial; 5 martori: fără drumuri, cum tăia înainte, poarta cade în fiecare colț, și la sosirea pe arc); corpusul din sămânță (`degajari.arce.corpus.oracol.test.ts`: 120 de programe, 684 de drumuri, 218 sosiri pe arc). Pe drum, oracolul a prins o alarmă falsă a aplicației: cu căutarea pe pereții întregi, joncțiunile netede ale unui dreptunghi rotunjit deveniseră colțuri, deci ruptura minimă se cere și aici. **Otrăvurile** din `test/otravuri/3.V.py`: 24, rulate după commit, în clona din afara Drive-ului.",
+      "en": "**Reliefs at corners with arcs, the last ones left from stage 2** (no machine; ADR 0135; “da, 3.V”). Until now, a corner with a curved side only got the warning “one side of the corner is curved”: a “D” cut as a hole, a rectangle joined with a circle (a shoulder), a lens, any import with arcs or cubics. Now they are relieved like the corners between lines: Q on the offset curves of the walls at V (the foot may fall on any segment of the wall, so also on a farther biarc of a cubic), E from the tangents at V, and the wall (for T-bone and for condition d of ADR 0134) runs up to the first tangent break. Where the offset eats the corner, the safety net says “the cutter does not reach the corner”. Corners between lines stay the same, byte for byte (the fingerprint from 3.U). **The proofs:** `cam.degajari.arce.test.ts` (9, on paper, in the application’s program); the oracle with arc corners (`degajari.arce.oracol.test.ts`: D39–D49 on 4 setups, with Q and E on paper and how far the relief goes into arc walls, radially; 5 witnesses: without the reliefs, as it cut before, the gate fails at every corner, also where the cutter arrives on an arc); the seeded corpus (`degajari.arce.corpus.oracol.test.ts`: 120 programs, 684 reliefs, 218 arrivals on an arc). On the way, the oracle caught a false alarm of the application: with the search on whole walls, the smooth joins of a rounded rectangle had become corners, so the minimum break is required here too. **The poisons** in `test/otravuri/3.V.py`: 24, run after the commit, in the clone outside Drive."
+    },
     "ccc5383ca51038b1": {
       "ro": "Oracolul G-code în `test/oracles/` (zero importuri din `src/`): parserul propriu, codurile GRBL și regula de arc în float32, din s8 A.1. Poarta invariantelor 1, 3, 5, 6, 7, 8 pe un câmp de înălțimi (ca s4). Fiecare invariantă are otrava ei, scrisă de mână, și un program curat ca martor. Lanțul întreg trece poarta: gaura, insula, și insula pe 4 colțuri × Z0 sus / jos, cu cutia pe hârtie. A doua trecere: oracolul presupunea scula în (0, 0, 0) la pornire, deci cu Z0 jos vedea o rapidă prin material; acum startul necunoscut se judecă doar la capăt. 75 de teste.",
       "en": "G-code oracle in `test/oracles/` (zero imports from `src/`): its own parser, GRBL codes and the arc rule in float32, from s8 A.1. The gate of invariants 1, 3, 5, 6, 7, 8 on a height field (as in s4). Each invariant has its own hand-written poison and a clean program as control. The whole chain passes the gate: the hole, the island, and the island on 4 corners × Z0 top / bottom, with the box on paper. Second pass: the oracle assumed the tool at (0, 0, 0) at start, so with Z0 bottom it saw a rapid through material; an unknown start is now judged only at its end. 75 tests."
@@ -1876,6 +1884,10 @@
     "ccfd4cbed32bc5bf": {
       "ro": "Offsetul",
       "en": "The offset"
+    },
+    "cd409d4e8f7a4c4a": {
+      "ro": "Degajările pe colțurile cu arce, ultimele rămase din etapa 2",
+      "en": "Reliefs at corners with arcs, the last ones left from stage 2"
     },
     "cea9ea1933f36d03": {
       "ro": "IR-ul pe N axe (axa A refuzată explicit în v1), montajul cu 4 colțuri ca translații și Z0 sus / jos, traseul de profil în IR, postul condus de contractul GRBL 1.1 (sursa fiecărui câmp, din s8). Pe hârtie: cele 4 colțuri, Z0 sus / jos, I / J din startul rotunjit, împărțirea la 180°, garda de coardă. Exportul cu SHA-256 verificat de `node:crypto`. Defecte prinse de teste: `toFixed` scria „1e+60” (acum refuzat peste 10⁹); garda de rază punea o coardă în loc de arc (acum segmente sub 0,001 mm, declarate); G0-urile fără efect. 65 de teste.",

@@ -68,7 +68,7 @@
  *   zecimale), cu motivul primei condiții care pică, în ordine: `prea aproape de altă buclă` (a, traseul),
  *   `prea aproape de degajarea altei bucle` (a, candidații), `ar tăia puntea unei urechi` (b), `prea aproape de marginea
  *   foii` (c); arcul: `<idLume>: colțul rotunjit cu raza <r> mm (sub raza frezei, <R> mm) rămâne cu raza frezei;
- *   degajarea pe arce vine cu importul SVG`. Cu o condiție în bandă, oricare dintre rezultatele posibile e acceptat
+ *   o degajare cere un colț ascuțit în desen`. Cu o condiție în bandă, oricare dintre rezultatele posibile e acceptat
  *   (`rezultate`, `avertismenteleCerute`).
  *
  * RECENZIA 2.7b (11.10, ADR 0034 §6, precizările): pe o cale cu `colturi`, și avertismentele colțurilor cu o latură curbă
@@ -96,8 +96,8 @@
 import type { ColturiO, IntrariO, LaturaO, LaturaV10O, RampaO, SensO, TipColturiO, UrechiO } from './document.ts';
 import { citeste, regulaArcGrbl, type Eveniment, type Mutare, type Punct3 } from './gcode.ts';
 import {
-  arc as arcP, capatul, capeteArc, celMaiMic, distantaExacta, distantaListe, dPunct, dPunctLista, inUnghi, lungime as lungimeP, peOParte, punct as punctP,
-  punctLa, segment as segmentP, startul, type Contur, type IncalcareMutare, type Primitiva, type LaturaCale, type Regiune,
+  arc as arcP, capatul, capeteArc, celMaiMic, cubicaPolilinie, distantaExacta, distantaListe, dPunct, dPunctLista, inUnghi, lungime as lungimeP, peOParte,
+  punct as punctP, punctLa, SAGETA_CUBICA, segment as segmentP, startul, type Contur, type IncalcareMutare, type Primitiva, type LaturaCale, type Regiune,
 } from './regiune.ts';
 import { TOL_INCHIDERE, TOL_SUB, type EtichetaActiva, type P2 } from './sens.ts';
 import { buclaAnalitica, coloaneleUrechilor, desparte, desparteCuRampa, MARJA_SCHELET, mersTrigonometric } from './intrari.ts';
@@ -149,8 +149,18 @@ export type ColtDegajat = {
   readonly EAlt: P2 | null;
   /** Cât intră degajarea în fiecare perete, pe hârtie: R − (E − V)·n. */
   readonly intrare: readonly [number, number];
-  /** Restul lăsat de traseu în colț, fără degajare: R / sin(α/2) − R. */
+  /** Restul lăsat de traseu în colț, fără degajare: R / sin(α/2) − R (la un colț cu o latură curbă, |QV| − R). */
   readonly rest: number;
+  /**
+   * ADR 0135 (colțurile cu o latură curbă): peretele de intrare, ca primitive. Un arc G2 / G3 care se termină în Q e sosire
+   * doar dacă pornește la R de el (vine pe buclă); intrarea, un sfert de cerc prin deșeu, pornește din afara buclei.
+   */
+  readonly peretiIntrare?: readonly Primitiva[];
+  /**
+   * ADR 0135 §4: pe o cale, pereții din V întregi (șirurile de laturi fără rupere de tangentă, în ambele direcții), ca
+   * primitive; la d se sar, în loc de doar cele două primitive cu un capăt în V.
+   */
+  readonly peretiV?: readonly Primitiva[];
 };
 
 /** §2 (precizarea din 11.10): sub atât (mm) o primitivă a conturului se scoate; sub atât |sin(viraj)|, vârful nu e colț. */
@@ -259,14 +269,158 @@ function colturiPeCale(c: Contur, latura: 'exterior' | 'interior', sens: SensO, 
     if (!V) continue;
     varfuri.push({ V, P: varf((k + ls.length - 1) % ls.length) ?? ls[(k + ls.length - 1) % ls.length]!.a, N: varf((k + 1) % ls.length) ?? ls[k]!.b });
   }
-  if (varfuri.length === 0) return [];
+  // Fără vârfuri L–L, colțurile cu o latură curbă rămân (ADR 0135: „D”-ul, lentila).
   const trig = mersTrigonometric(latura, sens);
   const ordonate = (c.orientare ?? 1) > 0 === trig ? varfuri : [...varfuri].reverse().map((v) => ({ V: v.V, P: v.N, N: v.P }));
-  return colturiDinVarfuri(ordonate, latura, trig, R, tip, (Q, V, P, N, alfa) => {
+  const drepte = colturiDinVarfuri(ordonate, latura, trig, R, tip, (Q, V, P, N, alfa) => {
     const picior = R / Math.tan(alfa / 2);
     if (picior > dist(P, V) + 1e-9 || picior > dist(N, V) + 1e-9) return false;
     return dPunctLista(Q, c.primitive) >= R * (1 - 1e-12) - 1e-9;
   });
+  // ADR 0135 (felia 3.V): și colțurile cu o latură curbă, după drepte; ADR 0135 §4: pe toate, pereții din V întregi (o linie
+  // care se continuă tangent cu un arc e un singur perete).
+  const cuPereti = drepte.map((x) => ({ ...x, peretiV: peretiDinVCale(ls, x.V) }));
+  return [...cuPereti, ...colturiCurbePeCale(c, ls, latura, trig, R, tip).map((x, i) => ({ ...x, k: drepte.length + i }))];
+}
+
+/**
+ * ADR 0135 §4, pe laturile curățate ale căii (în ordinea ei; o cubică e o latură, cu tangentele ei exacte): primitivele
+ * pereților din V, înapoi și înainte, până la prima rupere a tangentei. V e începutul unei laturi (la 1e-6; la un colț L–L,
+ * V e intersecția dreptelor, deci la sub 1e-6 de capete după curățare).
+ */
+function peretiDinVCale(ls: readonly LaturaCale[], V: P2): Primitiva[] {
+  const n = ls.length;
+  const k = ls.findIndex((l) => dist(l.a, V) <= 1e-6);
+  const mers = ls.map((l) => laturaInMers(l, true));
+  if (k < 0 || mers.some((x) => x === null)) return [];
+  const m = mers as LaturaMers[];
+  const rez: Primitiva[] = [];
+  for (let j = 0; j < n; j++) {
+    const i = ((k - 1 - j) % n + n) % n;
+    rez.push(...m[i]!.prim);
+    if (((i - 1) % n + n) % n === k || !netedA(m[((i - 1) % n + n) % n]!.t1, m[i]!.t0)) break;
+  }
+  for (let j = 0; j < n; j++) {
+    const i = (k + j) % n;
+    if (rez.includes(m[i]!.prim[0]!)) break;
+    rez.push(...m[i]!.prim);
+    if ((i + 1) % n === k || !netedA(m[i]!.t1, m[(i + 1) % n]!.t0)) break;
+  }
+  return rez;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// ADR 0135 (felia 3.V): colțurile căii cu o latură curbă (arc sau cubică), scrise după textul ADR-ului, cu metodele de aici:
+// Q prin Newton pe cele două distanțe (exacte la linii și arce, pe poligonul cubicei), E din tangentele din V, pereții ca
+// șiruri de laturi fără rupere de tangentă.
+
+/** O latură a căii în sensul de mers: capetele, tangentele de capăt (nenormate), primitivele ei în lume și lungimea. */
+type LaturaMers = { readonly a: P2; readonly b: P2; readonly t0: P2; readonly t1: P2; readonly tip: 'L' | 'A' | 'C'; readonly prim: readonly Primitiva[]; readonly L: number };
+
+function laturaInMers(l: LaturaCale, inainte: boolean): LaturaMers | null {
+  if (!l.t0 || !l.t1) return null;
+  let prim: Primitiva[];
+  if (l.tip === 'L') prim = [segmentP(l.a, l.b)];
+  else if (l.tip === 'A') {
+    if (!l.arc || l.arc.tip !== 'arc') return null;
+    prim = [l.arc];
+  } else {
+    if (!l.c1 || !l.c2) return null;
+    prim = cubicaPolilinie(l.a, l.c1, l.c2, l.b);
+  }
+  const L = prim.reduce((s, q) => s + lungimeP(q), 0);
+  return inainte
+    ? { a: l.a, b: l.b, t0: l.t0, t1: l.t1, tip: l.tip, prim, L }
+    : { a: l.b, b: l.a, t0: { x: -l.t1.x, y: -l.t1.y }, t1: { x: -l.t0.x, y: -l.t0.y }, tip: l.tip, prim, L };
+}
+
+/** §3: joncțiunea dintre două laturi e netedă (același perete): |sin| ≤ 1e-6 și fără întoarcere. */
+const netedA = (t1: P2, t0: P2): boolean => Math.abs(cross(unit(t1), unit(t0))) <= 1e-6 && dot(t1, t0) > 0;
+
+/**
+ * Colțurile cu o latură curbă ale căii c (ADR 0135), cu laturile `ls` (după curățare, în ordinea căii). Q: Newton pe
+ * (d(Q, peretele de intrare) − R, d(Q, peretele de ieșire) − R), din Q₀ = V + (R / sin(α/2))·u; există dacă converge pe
+ * partea deșeului, cu restul ≥ 0,01 și cu tot conturul la cel puțin R de Q.
+ */
+function colturiCurbePeCale(c: Contur, ls: readonly LaturaCale[], latura: 'exterior' | 'interior', trig: boolean, R: number, tip: TipColturiO): ColtDegajat[] {
+  const inainte = (c.orientare ?? 1) > 0 === trig;
+  const mers = (inainte ? ls : [...ls].reverse()).map((l) => laturaInMers(l, inainte));
+  if (mers.some((x) => x === null) || mers.length < 2) return [];
+  const m = mers as LaturaMers[];
+  const n = m.length;
+  const deseuStanga = trig === (latura === 'interior');
+  const tolContur = c.cuCubice ? 2 * SAGETA_CUBICA : 1e-9;
+  const rez: ColtDegajat[] = [];
+  for (let k = 0; k < n; k++) {
+    const p = m[(k - 1 + n) % n]!, nx = m[k]!;
+    if (p.tip === 'L' && nx.tip === 'L') continue;
+    const V = nx.a;
+    const vir = Math.atan2(cross(p.t1, nx.t0), dot(p.t1, nx.t0));
+    if (!(deseuStanga ? vir > 0 : vir < 0)) continue;
+    const alfa = Math.PI - Math.abs(vir);
+    if (!(alfa > 1e-9 && alfa < Math.PI)) continue;
+    // §1: ruptura tangentei lasă între două linii restul minim, R / sin(α/2) − R ≥ 0,01 (ca la plasă); o joncțiune netedă nu e colț.
+    if (!(R / Math.sin(alfa / 2) - R >= REST_MINIM - 1e-9)) continue;
+    const e1 = unit({ x: -p.t1.x, y: -p.t1.y }), e2 = unit(nx.t0);
+    const u = unit(plus(e1, e2));
+    // Pereții (§3): înapoi și înainte din V, până la prima rupere a tangentei (cel mult o tură).
+    const pIn: Primitiva[] = [], pOut: Primitiva[] = [];
+    let Lin = 0, Lout = 0;
+    for (let j = 0; j < n; j++) {
+      const s = m[((k - 1 - j) % n + n) % n]!;
+      pIn.push(...s.prim); Lin += s.L;
+      const ant = m[((k - 2 - j) % n + n) % n]!;
+      if (((k - 1 - j) % n + n) % n === k || !netedA(ant.t1, s.t0)) break;
+    }
+    for (let j = 0; j < n; j++) {
+      const s = m[(k + j) % n]!;
+      pOut.push(...s.prim); Lout += s.L;
+      const urm = m[(k + j + 1) % n]!;
+      if ((k + j + 1) % n === k || !netedA(s.t1, urm.t0)) break;
+    }
+    const Q = qNumeric(V, u, alfa, R, pIn, pOut);
+    if (!Q || dot(sub(Q, V), u) <= 0) continue;
+    const rest = dist(Q, V) - R;
+    if (!(rest >= REST_MINIM - 1e-9)) continue;
+    if (dPunctLista(Q, c.primitive) < R * (1 - 1e-12) - tolContur) continue;
+    const normala = (e: P2): P2 => {
+      const nn = { x: -e.y, y: e.x };
+      return dot(nn, u) > 0 ? nn : { x: e.y, y: -e.x };
+    };
+    const pereti: [Perete, Perete] = [{ dir: e1, L: Lin, n: normala(e1) }, { dir: e2, L: Lout, n: normala(e2) }];
+    let E: P2, lung: 0 | 1 | null = null, EAlt: P2 | null = null;
+    if (tip === 'dog-bone') {
+      E = plus(V, u, R);
+    } else {
+      const dL = Lin - Lout;
+      lung = Math.abs(dL) < EGALITATE_LATURI ? 1 : dL > 0 ? 0 : 1;
+      E = plus(V, pereti[1 - lung]!.n, R);
+      if (Math.abs(Math.abs(dL) - EGALITATE_LATURI) <= 1e-9) EAlt = plus(V, pereti[lung]!.n, R);
+    }
+    const intra = (w: Perete): number => Math.max(0, R - dot(sub(E, V), w.n));
+    rez.push({ k, V, Q, E, alfa, u, tip, pereti, lung, EAlt, intrare: [intra(pereti[0]), intra(pereti[1])], rest, peretiIntrare: pIn, peretiV: [...pIn, ...pOut] });
+  }
+  return rez;
+}
+
+/** Q (ADR 0135 §2, pe hârtie): Newton cu jacobianul numeric, pe distanțele la cei doi pereți; null dacă nu converge. */
+function qNumeric(V: P2, u: P2, alfa: number, R: number, wIn: readonly Primitiva[], wOut: readonly Primitiva[]): P2 | null {
+  let Q = plus(V, u, R / Math.sin(alfa / 2));
+  const F = (q: P2): readonly [number, number] => [dPunctLista(q, wIn) - R, dPunctLista(q, wOut) - R];
+  for (let it = 0; it < 80; it++) {
+    const [f1, f2] = F(Q);
+    if (Math.abs(f1) < 1e-13 && Math.abs(f2) < 1e-13) break;
+    const h = 1e-7;
+    const [a1, a2] = F({ x: Q.x + h, y: Q.y }), [b1, b2] = F({ x: Q.x, y: Q.y + h });
+    const j11 = (a1 - f1) / h, j12 = (b1 - f1) / h, j21 = (a2 - f2) / h, j22 = (b2 - f2) / h;
+    const det = j11 * j22 - j12 * j21;
+    if (!(Math.abs(det) > 1e-12)) return null;
+    const dx = (f1 * j22 - f2 * j12) / det, dy = (j11 * f2 - j21 * f1) / det;
+    Q = { x: Q.x - dx, y: Q.y - dy };
+    if (Math.hypot(dx, dy) < 1e-14) break;
+  }
+  const [f1, f2] = F(Q);
+  return Math.abs(f1) < 1e-6 && Math.abs(f2) < 1e-6 ? Q : null;
 }
 
 /** Colțurile (§2–§3) din vârfurile în ordinea de mers, cu testul de existență al lui Q dat de formă. */
@@ -566,11 +720,14 @@ function razaMinimaSpre(a: P2, c1: P2, c2: P2, b: P2, peDeseu: (p: P2, T: P2, ce
 /**
  * ADR 0034 §6 (precizările recenziei), pe o cale cu `colturi` pe latura dată: colțurile desenului cu o latură curbă (A
  * sau C), concave pentru K, cu restul R / cos(θ/2) − R ≥ 0,01 (θ = cât se rupe mersul), la care bucla ajunge (la cel mult
- * 2R / cos(θ/2) de vârf; bucla citită din program), primesc „degajarea omisă la colțul (x, y): o latură a colțului e
- * curbă”; o cubică ce se strânge spre deșeu sub R primește „curba de lângă (x, y) se strânge până la raza r mm”, în
- * punctul razei minime. Pe pragurile lor (± 1e-6 la rest și la rază, ± `BANDA_PROGRAM` la distanța buclei), în bandă.
+ * 2R / cos(θ/2) de vârf; bucla citită din program), primesc „degajarea omisă la colțul (x, y): freza nu ajunge în colț”
+ * (ADR 0135 §5: plasa), dacă nu sunt colțuri de degajat (`candidati`, vârfurile V cu un Q); o cubică ce se strânge spre
+ * deșeu sub R primește „curba de lângă (x, y) se strânge până la raza r mm”, în punctul razei minime. Pe pragurile lor
+ * (± 1e-6 la rest și la rază, ± `BANDA_PROGRAM` la distanța buclei), în bandă.
  */
-export function avertismenteleCaii(id: string, c: Contur, latura: 'exterior' | 'interior', R: number, bucla: readonly Primitiva[] | undefined): AvertismentCerut[] {
+export function avertismenteleCaii(
+  id: string, c: Contur, latura: 'exterior' | 'interior', R: number, bucla: readonly Primitiva[] | undefined, candidati: readonly P2[] = [],
+): AvertismentCerut[] {
   const rez: AvertismentCerut[] = [];
   const o = c.orientare ?? 1;
   const lung = (l: LaturaCale): number => (l.tip === 'A' && l.arc && l.arc.tip === 'arc' ? Math.abs(l.arc.du) * l.arc.r : dist(l.a, l.b) + (l.c1 ? dist(l.a, l.c1) : 0));
@@ -585,12 +742,13 @@ export function avertismenteleCaii(id: string, c: Contur, latura: 'exterior' | '
     const rest = cj > 0 ? R / cj - R : Infinity;
     if (rest < REST_MINIM - 1e-6) continue;
     const V = n.a;
+    if (candidati.some((q) => dist(q, V) <= 1e-6)) continue;
     const lim = cj > 0 ? (2 * R) / cj : Infinity;
     const d = bucla && bucla.length ? dPunctLista(V, bucla) : NaN;
     if (Number.isFinite(d) && d > lim + BANDA_PROGRAM) continue;
     const banda = Math.abs(rest - REST_MINIM) <= 1e-6 || !Number.isFinite(d) || Math.abs(d - lim) <= BANDA_PROGRAM;
-    const afis = `${id}: degajarea omisă la colțul (${f3(V.x)}, ${f3(V.y)}): o latură a colțului e curbă`;
-    rez.push({ obligatoriu: !banda, texte: [potrivire(afis, new RegExp(`^${escapeRe(id)}: degajarea omisă la colțul \\(${NUM}, ${NUM}\\): o latură a colțului e curbă$`), [V.x, V.y], 0.0015)] });
+    const afis = `${id}: degajarea omisă la colțul (${f3(V.x)}, ${f3(V.y)}): freza nu ajunge în colț`;
+    rez.push({ obligatoriu: !banda, texte: [potrivire(afis, new RegExp(`^${escapeRe(id)}: degajarea omisă la colțul \\(${NUM}, ${NUM}\\): freza nu ajunge în colț$`), [V.x, V.y], 0.0015)] });
   }
   const nw = (T: P2): P2 => {
     const afara = o > 0 ? { x: T.y, y: -T.x } : { x: -T.y, y: T.x };
@@ -656,9 +814,17 @@ function parteaElementului(ct: Contur, latura: 'exterior' | 'interior', m: P2): 
   return (latura === 'exterior') === ct.contine(m) ? 'K' : 'deseu';
 }
 
-/** d: pereții elementului (după curățare) care nu au un capăt în V (cei doi din V sunt ai colțului). */
-function peretiDinAfaraLuiV(ct: Contur, V: P2): Primitiva[] {
-  return conturCuratat(ct).filter((q) => dist(startul(q), V) > CURATARE && dist(capatul(q), V) > CURATARE);
+/**
+ * d: pereții elementului (după curățare) care nu vin din V: fără cei cu un capăt în V și, pe o cale (ADR 0135 §4), fără
+ * pereții din V întregi (`peretiV`, potriviți după tip și capete, la arc și după centru).
+ */
+function peretiDinAfaraLuiV(ct: Contur, x: ColtDegajat): Primitiva[] {
+  const V = x.V;
+  const la = (p: P2, q: P2): boolean => dist(p, q) <= 1e-9;
+  const aceeasi = (q: Primitiva, w: Primitiva): boolean => q.tip === w.tip && la(startul(q), startul(w)) && la(capatul(q), capatul(w))
+    && (q.tip !== 'arc' || (w.tip === 'arc' && la(q.c, w.c)));
+  return conturCuratat(ct).filter((q) => dist(startul(q), V) > CURATARE && dist(capatul(q), V) > CURATARE
+    && !(x.peretiV ?? []).some((w) => aceeasi(q, w)));
 }
 
 /**
@@ -725,11 +891,12 @@ export function judecaFoaia(
         const col = t.colturi?.get(latura)?.[k] ?? null, sens = t.sensuri.get(latura)?.[k];
         if (!col || !sens) continue;
         const cheie = `${id}|${latura}|${k}`;
-        for (const c of colturiDeDegajat(t.contur, latura, sens, R, col.tip)) {
+        const gasite = colturiDeDegajat(t.contur, latura, sens, R, col.tip);
+        for (const c of gasite) {
           toate.push({ cheie, id, latura, k, c, sens, urechi: (t.urechi?.get(latura)?.[k] ?? null) as UrechiO | null, drum: segmentP(c.Q, c.E) });
         }
         for (const r of arceSubRaza(t.contur, latura, R)) arce.push({ id, cheie, r });
-        if (t.contur.tip === 'cale') curbe.push(...avertismenteleCaii(id, t.contur, latura, R, dinProgram.get(cheie)));
+        if (t.contur.tip === 'cale') curbe.push(...avertismenteleCaii(id, t.contur, latura, R, dinProgram.get(cheie), gasite.map((g) => g.V)));
       }
     }
   }
@@ -786,7 +953,7 @@ export function judecaFoaia(
   // d (ADR 0134 §2): pereții elementului care nu trec prin V, fiecare judecat singur; K e partea păstrată a elementului.
   const dP = toate.map((x) => {
     const ct = reg.taieturi.get(x.id)!.contur!;
-    return ceaMaiRea(peretiDinAfaraLuiV(ct, x.c.V).map((s) => probaPerete(x.c, s, ct, x.latura, R)));
+    return ceaMaiRea(peretiDinAfaraLuiV(ct, x.c).map((s) => probaPerete(x.c, s, ct, x.latura, R)));
   });
   // e (ADR 0134 §3): candidații aceleiași tăieturi (a, traseul), doi câte doi; în bandă, ca la candidații altor bucle.
   const eC = toate.map((x, i) => ceaMaiRea(toate.flatMap((y, j) => {
@@ -824,7 +991,7 @@ export function avertismenteleCerute(j: JudecataFoii, R: number): AvertismentCer
     }
   }
   for (const x of j.arce) {
-    rez.push({ obligatoriu: true, texte: [`${x.id}: colțul rotunjit cu raza ${f3(x.r)} mm (sub raza frezei, ${f3(R)} mm) rămâne cu raza frezei; degajarea pe arce vine cu importul SVG`] });
+    rez.push({ obligatoriu: true, texte: [`${x.id}: colțul rotunjit cu raza ${f3(x.r)} mm (sub raza frezei, ${f3(R)} mm) rămâne cu raza frezei; o degajare cere un colț ascuțit în desen`] });
   }
   rez.push(...j.curbe);
   return rez;
@@ -943,12 +1110,15 @@ export function analizeazaDegajarile(
     const m = (evenimente[k] as Extract<Eveniment, { tip: 'mutare' }>).m;
     while (iE + 1 < liniiEt.length && liniiEt[iE + 1]! < m.linia) iE++;
     if (inDrum.has(k)) continue;
-    if (m.cod !== 1 || !m.startCunoscut || !(laDoc(m.b)[2] < -TOL_SUB) || inPlan(m, laDoc) === 0) continue;
+    if (m.cod === 0 || !m.startCunoscut || !(laDoc(m.b)[2] < -TOL_SUB) || inPlan(m, laDoc) === 0) continue;
     const x = iE >= 0 ? leg[iE] : null;
     if (!x || 'motiv' in x || x.colturi === null || x.latura === 'pe-linie') continue;
     const b = laDoc(m.b);
     const c = ale(x).find((q) => dist(q.Q, xy(b)) <= TOL_Q);
     if (!c) continue;
+    // ADR 0135 §7: un arc (G2 / G3) e sosire doar la un colț cu o latură curbă și doar dacă pornește la R de peretele de
+    // intrare (vine pe buclă, de-a lungul lui); intrarea, un sfert de cerc prin deșeu, pornește din afara buclei.
+    if (m.cod !== 1 && !(c.peretiIntrare && Math.abs(dPunctLista(xy(laDoc(m.a)), c.peretiIntrare) - R) <= BANDA_PROGRAM)) continue;
     const urm = t + 1 < idx.length ? dupaPrima.get(idx[t + 1]!) : undefined;
     const unde = `${x.id} (${x.latura}, ${x.colturi.tip}), colțul (${mm(c.V.x)}, ${mm(c.V.y)}), sosirea la linia ${m.linia}`;
     if (!urm) {
@@ -1057,6 +1227,46 @@ function bucatiInMaterial(text: string, laDoc: (p: Punct3) => Punct3): Array<{ r
     }
   }
   return rez;
+}
+
+/**
+ * ADR 0135, pe hârtie: cât intră tăietura dincolo de un perete-arc (cercul `c`, `r`), lângă V, radial: r + R − |p − c| cu
+ * K în cerc, |p − c| + R − r cu K în afara lui, pe centrele p ale bucăților aflate la cel mult `raza` de V și în semiplanul
+ * (p − V)·u ≥ 0, cu bucata tăiată exact la cerc și la semiplan. Pe o bucată, |p − c| e convexă: minimul la piciorul
+ * perpendicularei (tăiat la capete), maximul la un capăt. 0 = deloc.
+ */
+export function intrareaInCerc(
+  text: string, laDoc: (p: Punct3) => Punct3, V: P2, cerc: { readonly c: P2; readonly r: number; readonly kInauntru: boolean }, R: number, raza: number, u: P2,
+): number {
+  let max = 0;
+  for (const { a, b } of bucatiInMaterial(text, laDoc)) {
+    const A = { x: a[0], y: a[1] }, B = { x: b[0], y: b[1] };
+    const d = sub(B, A), f = sub(A, V);
+    const qa = dot(d, d), qb = 2 * dot(f, d), qc = dot(f, f) - raza * raza;
+    let t0 = 0, t1 = 1;
+    if (qa === 0) { if (qc > 0) continue; } else {
+      const disc = qb * qb - 4 * qa * qc;
+      if (disc < 0) continue;
+      const r = Math.sqrt(disc);
+      t0 = Math.max(0, (-qb - r) / (2 * qa));
+      t1 = Math.min(1, (-qb + r) / (2 * qa));
+      if (t0 > t1) continue;
+    }
+    const su = dot(f, u), du = dot(d, u);
+    if (du === 0) { if (su < 0) continue; } else if (du > 0) t0 = Math.max(t0, -su / du); else t1 = Math.min(t1, -su / du);
+    if (t0 > t1) continue;
+    const P0 = plus(A, d, t0), P1 = plus(A, d, t1);
+    let x: number;
+    if (cerc.kInauntru) {
+      const e = sub(P1, P0), L2 = dot(e, e);
+      const t = L2 > 0 ? Math.max(0, Math.min(1, dot(sub(cerc.c, P0), e) / L2)) : 0;
+      x = cerc.r + R - dist(plus(P0, e, t), cerc.c);
+    } else {
+      x = Math.max(dist(P0, cerc.c), dist(P1, cerc.c)) + R - cerc.r;
+    }
+    if (x > max) max = x;
+  }
+  return max;
 }
 
 /**

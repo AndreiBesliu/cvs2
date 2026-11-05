@@ -92,7 +92,9 @@ const AMPRENTE_0134: Readonly<Record<'corpus' | 'cazuri', readonly [number, stri
 
 test('lipire: ADR 0134 §1: programele cu degajări ale corpusului 2.6 și ale cazurilor §8 (cu avertismentele lor, 53 de programe cu colțuri omise) sunt, octet cu octet, cele de pe 46abd2a', async () => {
   type R = Awaited<ReturnType<typeof programulAplicatiei>>;
-  const amprenta = (r: R): string => sha(r.ok ? `${r.text}\n--\n${(r.avertismente ?? []).join('\n')}` : `REFUZ: ${r.motiv}`);
+  // ADR 0135 §6 a schimbat doar textul avertismentului arcelor sub rază; amprenta îl citește în forma de pe 46abd2a.
+  const caPe46abd2a = (a: string): string => a.replace('; o degajare cere un colț ascuțit în desen', '; degajarea pe arce vine cu importul SVG');
+  const amprenta = (r: R): string => sha(r.ok ? `${r.text}\n--\n${(r.avertismente ?? []).map(caPe46abd2a).join('\n')}` : `REFUZ: ${r.motiv}`);
   const corpus: string[] = [], cazuri: string[] = [];
   for (const c of corpusDegajari(0x2600, 110)) corpus.push(amprenta(await programulAplicatiei(c.doc, { origine: c.origine, z0: c.z0 })));
   for (const c of CAZURI_DEG) for (const [k, origine] of COLTURI.entries()) cazuri.push(amprenta(await programulAplicatiei(c.doc, { origine, z0: k % 2 ? 'jos' : 'sus' })));

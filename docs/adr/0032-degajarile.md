@@ -2,6 +2,7 @@
 
 **Starea:** acceptat pe 11.10.2026, în felia 2.6. **Intră în:** etapa 2. Nimic de aici nu se schimbă fără un ADR nou.
 **Precizat de:** ADR 0134 (felia 3.U, 04.11.2026): degajările aceleiași bucle se judecă față de pereții piesei și între ele (§5 d și e).
+ADR 0135 (felia 3.V, 05.11.2026): și colțurile cu o latură curbă (arc sau cubică) se degajează, cu Q pe pereții întregi; avertismentul „o latură a colțului e curbă” devine plasa „freza nu ajunge în colț”.
 
 **Problema.** O freză rotundă nu intră într-un colț ascuțit al materialului păstrat. Într-o gaură dreptunghiulară, freza
 Ø6 lasă în fiecare colț un rest cu raza de 3 mm, iar un cep cu colțuri drepte nu mai intră. Placa 2 cere gaura de

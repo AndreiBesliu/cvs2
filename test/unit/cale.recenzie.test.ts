@@ -232,11 +232,33 @@ test('regiunea: o gaură-cale care atinge exact piesa-cale (omotetia printr-un p
   assert.match(r.ok ? '' : r.motiv, /regiunea păstrată: .* se ating sau se intersectează/);
 });
 
-test('avertismentele: colțurile curbe fără degajare se spun; o curbă strânsă se spune o dată, nu pe fiecare arc al biarcelor', () => {
-  // „D”-ul ca gaură, cu dog-bone: cele două colțuri dintre linie și semicerc sunt concave pentru piesă și nu se degajează.
+/**
+ * Capetele E ale drumurilor dus-întors ale unui program (două tăieri, a doua înapoi exact în punctul de dinaintea primei), în
+ * lume, cu 4 zecimale.
+ */
+function capeteDrumuri(m: ReturnType<typeof programDinDocument>): string[] {
+  if (!m.ok) return [];
+  const rez: string[] = [];
+  let x = 0, y = 0;
+  const ms = m.program.miscari;
+  for (let i = 0; i < ms.length; i++) {
+    const a = ms[i], b = ms[i + 1];
+    if (!a || !('la' in a)) continue;
+    if (a.tip === 'taiere' && b?.tip === 'taiere' && 'la' in b && a.la.Z === undefined && b.la.X === x && b.la.Y === y
+      && a.la.X !== undefined && a.la.Y !== undefined) rez.push(`${a.la.X.toFixed(4)},${a.la.Y.toFixed(4)}`);
+    x = a.la.X ?? x; y = a.la.Y ?? y;
+  }
+  return rez;
+}
+
+test('avertismentele: colțurile cu o latură curbă primesc degajarea (ADR 0135), fără avertisment; o curbă strânsă se spune o dată, nu pe fiecare arc al biarcelor', () => {
+  // „D”-ul ca gaură, cu dog-bone: cele două colțuri dintre linie și semicerc sunt concave pentru piesă. Din 3.V se degajează:
+  // E = V + R·u, la (600 + R/√2, 300 + R/√2) și (600 + R/√2, 340 − R/√2), cu R = 3.
   const dGaura = programDinDocument(piesa(D, { ...ID }, 600, 300, 0, { latura: 'interior', colturi: { tip: 'dog-bone' } }));
   assert.ok(dGaura.ok, dGaura.ok ? '' : dGaura.motiv);
-  if (dGaura.ok) assert.equal(dGaura.avertismente.filter((a) => /o latură a colțului e curbă/.test(a)).length, 2, dGaura.avertismente.join('\n'));
+  if (dGaura.ok) assert.deepEqual(dGaura.avertismente.filter((a) => /degajarea omisă/.test(a)), [], dGaura.avertismente.join('\n'));
+  const k = 3 / Math.SQRT2;
+  assert.deepEqual([...new Set(capeteDrumuri(dGaura))].sort(), [`${(600 + k).toFixed(4)},${(300 + k).toFixed(4)}`, `${(600 + k).toFixed(4)},${(340 - k).toFixed(4)}`].sort());
   // Elipsa 40 × 8 ca gaură: capetele ei (raza de curbură 1,6 mm) sunt sub raza frezei Ø6. Un avertisment pe capăt, nu pe arc.
   const el = programDinDocument(piesa(elipsa(0, 0, 20, 4), { ...ID }, 600, 300, 0, { latura: 'interior', colturi: { tip: 'dog-bone' } }));
   assert.ok(el.ok, el.ok ? '' : el.motiv);
@@ -280,13 +302,14 @@ test('determinantul normat: o scalare de 1e-162 sub o rotire de 45° nu mai face
   assert.doesNotThrow(() => programDinDocument(r.doc));
 });
 
-test('un vârf dublat lângă un colț curb (o linie nulă, des într-un SVG) nu ascunde avertismentul colțului (oracolul, C20)', () => {
-  // „D”-ul ca gaură, cu vârful (0, 40) dublat: o linie nulă înaintea semicercului.
+test('un vârf dublat lângă un colț curb (o linie nulă, des într-un SVG) nu-i ascunde degajarea (ADR 0135; oracolul, C20)', () => {
+  // „D”-ul ca gaură, cu vârful (0, 40) dublat: o linie nulă înaintea semicercului. Curățarea o scoate, deci colțul rămâne.
   if (D.tip !== 'cale') return;
   const dublat: FormaDoc = { tip: 'cale', inchis: true, varfuri: [{ p: P(0, 40), s: { tip: 'L' } }, ...D.varfuri] };
   const j = programDinDocument(piesa(dublat, { ...ID }, 600, 300, 0, { latura: 'interior', colturi: { tip: 'dog-bone' } }));
   assert.ok(j.ok, j.ok ? '' : j.motiv);
-  if (j.ok) assert.equal(j.avertismente.filter((a) => /o latură a colțului e curbă/.test(a)).length, 2, j.avertismente.join('\n'));
+  if (j.ok) assert.deepEqual(j.avertismente.filter((a) => /degajarea omisă/.test(a)), [], j.avertismente.join('\n'));
+  assert.equal(new Set(capeteDrumuri(j)).size, 2);
 });
 
 test('un refuz al biarcelor în CAM spune al cui e (otrava „refuzul fără id”, 2.7b): <idLume>: <motiv>', () => {

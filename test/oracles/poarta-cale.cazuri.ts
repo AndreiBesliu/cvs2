@@ -12,8 +12,8 @@
  * R04–R07 (banda atingerii: 1e-6 + 0,001 pe fiecare inel dintr-o cale cu cubice; cubicele lor sunt drepte, deci biarcele
  * nu mută distanța).
  *
- * Așteptările scrise de mână, pe fiecare caz: câte colțuri de degajat are fiecare tăietură (ADR 0032 §2 pe o cale: doar
- * L–L, pe partea deșeului) și, la perechile care se ating, elementele atingerii.
+ * Așteptările scrise de mână, pe fiecare caz: câte colțuri de degajat are fiecare tăietură (ADR 0032 §2 pe o cale: L–L; din
+ * ADR 0135, felia 3.V, și cele cu o latură curbă; pe partea deșeului) și, la perechile care se ating, elementele atingerii.
  */
 import { migreazaV4V8O, type ColturiO, type DocV9O, type IntrariO, type LaturaO, type MatriceO, type RampaO, type SensO, type UrechiO } from './document.ts';
 import { documentRegiune, ID, type Montaj, type Stoc } from './regiune.cazuri.ts';
@@ -132,7 +132,7 @@ export type CazPoartaCale = {
   readonly doc: DocV9O;
   readonly montaj: { readonly origine: Montaj['origine']; readonly z0: Montaj['z0'] };
   readonly D: number;
-  /** Colțurile de degajat ale fiecărei tăieturi (idLume), numărate de mână (ADR 0032 §2: L–L, pe partea deșeului). */
+  /** Colțurile de degajat ale fiecărei tăieturi (idLume), numărate de mână (ADR 0032 §2: L–L; ADR 0135: și cu o latură curbă). */
   readonly colturi?: Readonly<Record<string, number>>;
   /** Elementele care se ating (regiunea și exportul trebuie să refuze). */
   readonly atingere?: readonly string[];
@@ -182,10 +182,11 @@ const DE_BAZA: ReadonlyArray<Omit<CazPoartaCale, 'montaj'> & { readonly montaj?:
     D: 6,
   },
   {
-    nume: 'C06 cale amestecată interior cu intrări de 3 mm (degajare dog-bone în colțul L–L)',
+    nume: 'C06 cale amestecată interior cu intrări de 3 mm (degajare dog-bone în colțul L–L și, din ADR 0135, în cele două colțuri curbe)',
     doc: docCaleCam(STOC, [{ id: 'm', x: 110, y: 80, elemente: [{ id: 'm', forma: amestecata(), latura: 'interior', adancime: 6, intrari: { raza: 3 }, colturi: { tip: 'dog-bone' } }] }], { diametru: 6, pas: 3 }),
     D: 6,
-    colturi: { 'm/m': 1 },
+    // ADR 0135: și (60, 0), din linie în arc (mersul se rupe cu 46,4° spre gaură), și (0, 40), din cubică în linie (45°).
+    colturi: { 'm/m': 3 },
   },
   {
     nume: 'C07 cale amestecată exterior cu intrări și rampă (ADR 0031), opoziție',
@@ -205,10 +206,11 @@ const DE_BAZA: ReadonlyArray<Omit<CazPoartaCale, 'montaj'> & { readonly montaj?:
     colturi: { 'x/x': 8 },
   },
   {
-    nume: 'C10 L-ul cu latura curbă, interior, dog-bone și rampă: trei colțuri convexe L–L',
+    nume: 'C10 L-ul cu latura curbă, interior, dog-bone și rampă: trei colțuri convexe L–L și, din ADR 0135, cele două de la capetele cubicei',
     doc: docCaleCam(STOC, [{ id: 'l', x: 110, y: 80, elemente: [{ id: 'l', forma: ell(), latura: 'interior', adancime: 6, colturi: { tip: 'dog-bone' }, rampa: { lungime: 10 } }] }], { diametru: 6, pas: 3 }),
     D: 6,
-    colturi: { 'l/l': 3 },
+    // ADR 0135: și (30, 60), (0, 60), la capetele cubicei (mersul se rupe cu 26,6° spre gaură, restul 0,082).
+    colturi: { 'l/l': 5 },
   },
   {
     nume: 'C11 crucea exterior, dog-bone, cu urechi: patru colțuri concave L–L',
@@ -279,12 +281,15 @@ const DE_BAZA: ReadonlyArray<Omit<CazPoartaCale, 'montaj'> & { readonly montaj?:
     nume: 'C20 pătratul cu o umflătură semicirculară (raza 2) pe latura de sus, exterior, dog-bone: două colțuri concave cu o latură curbă (la baza umflăturii)',
     doc: docCaleCam(STOC, [{ id: 'u', x: 120, y: 80, elemente: [{ id: 'u', forma: umflatura(), latura: 'exterior', adancime: 6, colturi: { tip: 'dog-bone' } }] }], { diametru: 6, pas: 3 }),
     D: 6,
+    // ADR 0135: cele două colțuri de la baza umflăturii se degajează: Q = (20 ± 4, 43), dreapta y = 43 cu cercul de rază 2 + 3.
+    colturi: { 'u/u': 2 },
   },
   {
-    nume: 'C21 pătratul cu o cubică strânsă (raza 2,067 < R) pe latura de sus, interior, dog-bone: curba strânsă, două colțuri curbe, două degajări',
+    nume: 'C21 pătratul cu o cubică strânsă (raza 2,067 < R) pe latura de sus, interior, dog-bone: curba strânsă, două colțuri curbe, patru degajări (din ADR 0135, și în colțurile curbe)',
     doc: docCaleCam(STOC, [{ id: 't', x: 120, y: 60, elemente: [{ id: 't', forma: strans(), latura: 'interior', adancime: 6, colturi: { tip: 'dog-bone' } }] }], { diametru: 6, pas: 3 }),
     D: 6,
-    colturi: { 't/t': 2 },
+    // ADR 0135: și (40, 40), (0, 40), la capetele cubicei (mersul se rupe cu 13,4°, restul 0,021 ≥ 0,01).
+    colturi: { 't/t': 4 },
   },
   {
     nume: 'C22 pătratul cu umflătura de raza 2 (< R), interior, dog-bone: colțul rotunjit pe arcul desenului, patru degajări',

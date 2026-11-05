@@ -7,6 +7,8 @@
 # a trecut pe marginea discului (ADR 0134 §2), iar P05 e acum vechea probă, prinsă de testul aripioarei. J04 e echivalentă:
 # perechea unui drum cu el însuși e (Q, Q), iar Q e vârf al buclei, în deșeu, deci nu oprește nimic.
 # Se rulează cu `scripts/otravuri.py` (docs/otravuri.md), dintr-o clonă în afara Drive-ului, după commit.
+# Pe 05.11 (felia 3.V), P01 și P02 au fost rescrise: pereții din V sunt acum întregi (`dinV`, ADR 0135 §4), deci
+# otrăvurile scot din salt peretele care intră, respectiv pe cel care pleacă.
 # o(id, fis, vechi, nou, set, ce): `vechi` apare EXACT o dată în fișier; altfel VOID.
 O = []
 
@@ -19,10 +21,10 @@ DG = 'src/cam/degajari.ts'
 JB = 'src/cam/job.ts'
 
 # d: pereții piesei (ADR 0134 §2).
-o('P01', DG, '    if (i >= 0 && (k === i || k === (i - 1 + n) % n)) continue;', '    if (i >= 0 && k === i) continue;', 'degajari',
-  'segmentul care intră în V e judecat ca perete din față')
-o('P02', DG, '    if (i >= 0 && (k === i || k === (i - 1 + n) % n)) continue;', '    if (i >= 0 && (k === (i + 1) % n || k === (i - 1 + n) % n)) continue;', 'degajari',
-  'se sare segmentul de după, nu cel care pleacă din V')
+o('P01', DG, '  const dinV = new Set(i >= 0 ? [...segmentePerete(element, i, true), ...segmentePerete(element, i, false)] : []);',
+  '  const dinV = new Set(i >= 0 ? [...segmentePerete(element, i, true)] : []);', 'degajari', 'peretele care intră în V e judecat ca perete din față')
+o('P02', DG, '  const dinV = new Set(i >= 0 ? [...segmentePerete(element, i, true), ...segmentePerete(element, i, false)] : []);',
+  '  const dinV = new Set(i >= 0 ? [...segmentePerete(element, i, false)] : []);', 'degajari', 'peretele care pleacă din V e judecat ca perete din față')
 o('P03', DG, '    if (a.distanta < R - EPS_PERETE) return false;', '    if (a.distanta < 0) return false;', 'degajari',
   'discul care trece de peretele din față nu oprește nimic (rămâne doar proba discului)')
 o('P04', DG, '    if (a.distanta >= R + marja) continue;', '    if (a.distanta >= R) continue;', 'degajari', 'fără marja de 1 mm: discul apropiat nu se mai probează')

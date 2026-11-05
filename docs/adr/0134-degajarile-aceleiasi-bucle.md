@@ -4,7 +4,8 @@
 etapa cea mai devreme cu ceva rămas fără mașină. Asta e etapa 2, cu limita lăsată deschisă în ADR 0032: „Degajările aceleiași
 bucle nu se judecă între ele: cu formele de azi nu se pot întâlni (se redeschide la 2.7)”. **Rândul din prag:** „Fileturi la
 colțuri interioare: dog-bone și T-bone” (`ACOPERIRE-ARTCAM-DESKPROTO.md`); rămân colțurile cu arce și placa 2. **Precizează:**
-ADR 0032 §5, cu precizarea din 11.10. **Documentul:** neschimbat (v19).
+ADR 0032 §5, cu precizarea din 11.10. **Documentul:** neschimbat (v19). **Precizat de:** ADR 0135 (felia 3.V, 05.11.2026): la
+d, pereții din V sunt întregi, până la prima rupere a tangentei, nu doar segmentele lor de lângă V (§4).
 
 **Problema.** ADR 0032 judecă drumul unei degajări doar față de ce e în afara buclei ei: traseele și degajările celorlalte bucle,
 urechile, marginea foii. Nu-l judecă față de restul piesei lui și nici față de celelalte degajări ale aceleiași bucle. Pe 11.10,

@@ -9,7 +9,7 @@ import { laDocument, poarta, type ContextPoarta, type Incalcare } from '../oracl
 import type { DocV8O } from '../oracles/document.ts';
 import { citesteEticheta, regiuneDinDocument, verificaEticheta } from '../oracles/regiune.ts';
 import {
-  analizeazaDegajarile, drumuriDusIntors, faraDrumuri, intrareaInPerete, masoaraDrumurile, restulInColt, type ColtJudecat, type JudecataFoii,
+  analizeazaDegajarile, drumuriDusIntors, faraDrumuri, intrareaInCerc, intrareaInPerete, masoaraDrumurile, restulInColt, type ColtJudecat, type JudecataFoii,
 } from '../oracles/degajari.ts';
 import { campul } from '../oracles/intrari-rampa.ts';
 import type { CazDeg, ColtHartie } from '../oracles/degajari.cazuri.ts';
@@ -164,7 +164,9 @@ export function hartieDeg(c: CazDeg, text: string, m: Montaj, cuCamp = false): s
     if (!(rest <= 0.005)) rele.push(`colțul (${x.V.x}, ${x.V.y}): restul la −${c.adancime} e ${rest.toFixed(4)} mm (> 0,005)`);
     const raza = R * Math.SQRT2 + R + 0.5;
     const u = { x: (x.nOrizontal.x + x.nVertical.x) / Math.SQRT2, y: (x.nOrizontal.y + x.nVertical.y) / Math.SQRT2 };
-    const iH = intrareaInPerete(text, laDoc, x.V, x.nOrizontal, R, raza, u), iV = intrareaInPerete(text, laDoc, x.V, x.nVertical, R, raza, u);
+    // ADR 0135: lângă un perete-arc, cât intră se măsoară față de cercul lui.
+    const iH = x.cercOrizontal ? intrareaInCerc(text, laDoc, x.V, x.cercOrizontal, R, raza, u) : intrareaInPerete(text, laDoc, x.V, x.nOrizontal, R, raza, u);
+    const iV = x.cercVertical ? intrareaInCerc(text, laDoc, x.V, x.cercVertical, R, raza, u) : intrareaInPerete(text, laDoc, x.V, x.nVertical, R, raza, u);
     if (Math.abs(iH - x.inOrizontal) > 0.003) rele.push(`colțul (${x.V.x}, ${x.V.y}): intră ${iH.toFixed(4)} mm în peretele orizontal, nu ${x.inOrizontal.toFixed(4)}`);
     if (Math.abs(iV - x.inVertical) > 0.003) rele.push(`colțul (${x.V.x}, ${x.V.y}): intră ${iV.toFixed(4)} mm în peretele vertical, nu ${x.inVertical.toFixed(4)}`);
   });

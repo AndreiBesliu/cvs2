@@ -227,7 +227,7 @@ test('colțurile rotunjite: sub raza frezei, avertisment și fără degajare; un
     { latura: 'interior', adancime: 6, pas: 3, colturi: { tip: 'dog-bone' } });
   const r2 = bloc(rot(2), 'g/g');
   assert.equal(drumuri(r2.miscari).length, 0);
-  assert.deepEqual(r2.avertismente, Array.from({ length: 4 }, () => 'g/g: colțul rotunjit cu raza 2.000 mm (sub raza frezei, 3.000 mm) rămâne cu raza frezei; degajarea pe arce vine cu importul SVG'));
+  assert.deepEqual(r2.avertismente, Array.from({ length: 4 }, () => 'g/g: colțul rotunjit cu raza 2.000 mm (sub raza frezei, 3.000 mm) rămâne cu raza frezei; o degajare cere un colț ascuțit în desen'));
   // Cu raza peste a frezei, freza încape: nimic de spus.
   assert.deepEqual(bloc(rot(5), 'g/g').avertismente, []);
   // Un arc de 1e-7 mm dispare la curățare: colțurile sunt ascuțite, deci 4 degajări pe fiecare trecere.
