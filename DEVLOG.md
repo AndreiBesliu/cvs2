@@ -5370,3 +5370,32 @@ după „Reload”: în paletă, „Repair vectors” (inactivă: „Nothing was
 (shapes checked: 2)”, „Remove all copies (1)”, apoi „Repaired: 1. Undo with Ctrl+Z.” și „No problems (shapes checked: 1)”;
 anularea aduce copia înapoi; foaia canalului a rămas goală, fără erori în consolă. La prima publicare (`d7a6ecd`), butonul
 reparației arăta ca un rând de text: a primit margine (`f28003d`). Codul: `d7a6ecd`, `f28003d`.
+
+## 2026-11-04 — Unirea feliei 10.2↑ (reparațiile din verificarea vectorilor) în main (Model: Claude Opus 5.5)
+
+**Prompt:** „Yes, merge it”, la „Merge slice 10.2↑ (vector repairs) into main now?”. Sesiunea etapei 10 transmisese aprobarea
+dată acolo („Da, unește”); unirea s-a făcut abia la cuvântul owner-ului din sesiunea principală.
+**Started:** 04.11, 22:32. **Completed:** 05.11, 07:42, după „continua” (05.11).
+
+- **Ramura:** `wip/10.1-vectori` la `5e2c15a` (împinsă), trei commit-uri peste `a622bad`: `d7a6ecd` (felia), `f28003d`
+  (butoanele cu margine), `5e2c15a` (DEVLOG-ul publicării pe canal). `main` era la `b915b89`, deci unire, nu avans rapid:
+  `424ab9b`.
+- **Conflicte:** doar DEVLOG-ul (ambele părți adăugaseră la capăt); ambele intrări rămân, în ordinea pornirii (3.U la 20:15,
+  10.2↑ la 21:22). Restul s-a unit singur: CLAUDE.md, indexul ADR, fișa, ACOPERIRE (rânduri diferite), dicționarul
+  roadmap-ului (573 de texte, 0 lipsă, 0 nefolosite).
+- **Fără conflict ascuns:** ușile manualului (77, ale ramurii) și cele 26 de capitole se potrivesc cu main-ul; codul celor
+  două felii nu se atinge (3.U în `src/cam/`, 10.2↑ în model, workerul CAM și panou).
+- **Porțile pe main-ul unit:** traducerile, compilatoarele (aplicația și funcțiile), importurile, 8 271 de teste unitare
+  (0 căderi, 8 sărite), licențele, build-ul determinist (pornirea 100,4, cu ușa 103,9 / 110 kB; totalul 475,0 / 500;
+  /admin 105,3 / 200), emulatoarele 81 / 81 și 21 / 21. E2e: 318 / 319 la prima rulare. A căzut `buzunar.spec.ts:14`, al
+  treilea test pornit, la primul pas: paleta (Ctrl+K) nu s-a arătat în 5 s, cu cei 8 lucrători pornind deodată. Singur,
+  3 / 3; toată suita, din nou: 319 / 319. Urma s-a pierdut la reluare (`test-results` se golește), deci cauza rămâne pornirea
+  la rece, nedovedită.
+- **Rularea completă din CI** pe `424ab9b`: verde (rularea 41910899084, 29 min 46 s).
+- **Pasul care aștepta rularea completă și apoi publica** s-a oprit peste noapte, fără nicio ieșire (codul 4, probabil la
+  repornirea aplicației); rularea completă terminase verde. Publicarea a pornit pe 05.11, la „continua”.
+- **Publicat pe test:** 05.11, 07:36, `publica` pe `424ab9b` (rularea 41974756244), după CI-ul rapid verde (41910874483)
+  și după rularea completă de mai sus.
+- **Verificat:** versiunea `424ab9bf4c6b` în browserul aplicației; două dreptunghiuri 40 × 30 în același loc: Check vectors arată „Problems: 1 (shapes checked: 2)”, „Duplicates (1)” și „Remove all copies (1)”; după reparație, „Repaired: 1. Undo with Ctrl+Z.” și „No problems (shapes checked: 1)”; Ctrl+Z aduce copia înapoi; foaia lăsată goală, nicio eroare în consolă.
+- **Rămâne:** worktree-ul `vectori` și sesiunea etapei 10 (de scos și de arhivat doar la cuvântul owner-ului; la scoatere,
+  joncțiunile întâi).
