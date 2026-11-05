@@ -1,6 +1,10 @@
 {
   "schema": 1,
   "texte": {
+    "01d8e2b09a9f42d0": {
+      "ro": "Răspunsurile la cele patru întrebări din ADR 0136 (conectarea prin WiFi): ce intră în felie, parola rețelei atelierului la configurarea podului, numele mașinii în rețea, conectarea la deschiderea ferestrei; recomandările sunt primele variante",
+      "en": "The answers to the four questions in ADR 0136 (connecting over WiFi): what goes into the slice, the workshop network password when setting up the bridge, the machine’s name on the network, connecting when the window opens; the recommendations are the first options"
+    },
     "02292bc5bd879195": {
       "ro": "buzunar + rest, insulă, găuri în pași, elice",
       "en": "pocket + rest, island, peck holes, helix"
@@ -589,6 +593,10 @@
       "ro": "la comutare",
       "en": "at switchover"
     },
+    "38cb4260e9175692": {
+      "ro": "înainte de codul lui 3.6f",
+      "en": "before the code of 3.6f"
+    },
     "39684a7cdf5bc0b4": {
       "ro": "șablonul aplicat în lot pe 3 nume",
       "en": "the template applied in a batch to 3 names"
@@ -632,6 +640,10 @@
     "3e46274cb0ba0363": {
       "ro": "Senderul prin WiFi (ADR 0119): transportul WebSocket lângă Web Serial, peste același flux; profilurile controlerelor (FluidNC, grblHAL, podul ESP3D); adresa (un IP privat sau un nume `.local`), cu permisiunea rețelei locale din Chrome și Edge 147; „Conectează” cu USB sau WiFi și avertismentul la cădere; proba pe emulator, în spatele unui WebSocket local",
       "en": "The sender over WiFi (ADR 0119): the WebSocket transport next to Web Serial, over the same stream; the controller profiles (FluidNC, grblHAL, the ESP3D bridge); the address (a private IP or a `.local` name), with the local network permission of Chrome and Edge 147; “Connect” with USB or WiFi and the warning about a drop; the probe on the emulator, behind a local WebSocket"
+    },
+    "3e849274cb79f809": {
+      "ro": "linia plugin-ului în roadmap și pe adresa principală de test",
+      "en": "the plugin line in the roadmap and on the main test address"
     },
     "3e9cd247d407387f": {
       "ro": "Imprimanta 3D (Creality K1C, prin WiFi; răspunsul din 03.11 la ADR 0119, întrebarea 4): adresa ei în rețea și o imprimare de probă; ce mai cere firmware-ul se află la felie",
@@ -849,6 +861,10 @@
       "ro": "**Transformările, Alt inversat, uneltele în bara de sus, adusă din etapa 6** (fără mașină; ADR 0052; „Da, fă acum transformările (mânerele de scalare și rotire pe selecție), împreună cu Alt care inversează lipirea, fără agenți” și „toate uneltele astea sa fie in bara de sus, cu snap si grid, iar align/distribute options intr-o subbara”). Uneltele, Lipire și Grilă în bara de sus (portal în locul `unelte` al aranjamentului), alinierea și distribuirea într-o sub-bară; „Adaugă dreptunghi / cerc” doar în paleta de comenzi; Alt inversează lipirea; raza cercului (un clic pune un cerc cu ea, o tragere o scrie); 8 mânere de scalare (colțuri proporțional, Shift liber; laturi pe o axă; ancora opusă) și unul de rotire (Shift 15°), cu `document.transforma`: rotirea schimbă instanța, scalarea geometria piesei, exact, refuzată cu motiv (cerc, arce, colț rotunjit, rotire oblică, piesă împărțită). Sub 95rem, căutarea doar cu pictogramă (la 1280 px acoperea 62 px din „Exportă”). Pornirea neschimbată: 95,0 kB (cu ușa 99,7 / 100). **Treceri:** (1) modelul și acțiunea, mânerele, probele; (2) captura: căutarea peste „Exportă” la 1280 / 1366 / 1440 px (proba nouă, cu control: cade pe CSS-ul vechi); o captură cu selecția veche, din ajutorul `vedere()` care compara perechea cerere / afișare înaintea efectului (acum așteaptă două cadre); (3) e2e-ul complet: un clic simplu pe mâner scala forma (scara din poziția absolută a cursorului; acum din deplasare, cu prag de 3 px), iar mânerele prindeau orice apăsare, deci panoramarea cu butonul din mijloc pornită de pe un mâner nu mai mergea (oracolele traseului): mânerele sunt acum doar desen, lovitura se decide geometric, doar pentru butonul stâng; (4) pragul de 24 px pe axă, ascunderea la mutare, probele lor. Editarea după plasare (raza, laturile) e felia 6.D↑.",
       "en": "**Transforms, inverted Alt, the tools in the top bar, brought forward from stage 6** (without the machine; ADR 0052; “Yes, do the transforms now (scale and rotate handles on the selection), together with Alt inverting snapping, no agents” and “all these tools should be in the top bar, with snap and grid, and the align/distribute options in a sub-bar”). The tools, Snap and Grid in the top bar (a portal into the layout's `unelte` slot), alignment and distribution in a sub-bar; “Add rectangle / circle” only in the command palette; Alt inverts snapping; the circle radius (a click places a circle with it, a drag writes it); 8 scale handles (corners proportional, Shift free; sides on one axis; the opposite anchor) and one rotate handle (Shift 15°), with `document.transforma`: rotation changes the instance, scaling the part's geometry, exactly, refused with a reason (circle, arcs, rounded corner, oblique rotation, shared part). Below 95rem, search shows only an icon (at 1280 px it covered 62 px of “Export”). Startup unchanged: 95.0 kB (99.7 / 100 with the door). **Passes:** (1) the model and the action, the handles, the checks; (2) the screenshot: search over “Export” at 1280 / 1366 / 1440 px (a new check, with a control: it fails on the old CSS); a screenshot with the old selection, from the `vedere()` helper comparing the request / display pair before the effect (it now waits two frames); (3) the full e2e: a plain click on a handle scaled the shape (the scale from the cursor's absolute position; now from the movement, with a 3 px threshold), and the handles caught every press, so a middle-button pan started on a handle no longer worked (the toolpath oracles): the handles are now just drawing, and hits are decided geometrically, only for the left button; (4) the 24 px per-axis threshold, hiding while moving, their checks. Editing after placement (radius, sides) is slice 6.D↑."
     },
+    "537b7e46c2898a63": {
+      "ro": "când vrei",
+      "en": "whenever you like"
+    },
     "53cf879c035a4170": {
       "ro": "**Tampon**",
       "en": "**Buffer**"
@@ -860,6 +876,10 @@
     "54c4097b1742047b": {
       "ro": "Profilul pe orice contur",
       "en": "Profile on any contour"
+    },
+    "56d3836f119288bf": {
+      "ro": "Ștergerea celor 14 ramuri vechi de pe `origin` (toate unite în `main` sau salvate în `Apps\\cncvs2-arhiva\\`), cu `git push origin --delete wip/10.1-vectori wip/13.A-b-masina-in-fundal wip/13.A-sender-ecran wip/14.B-b-sugestie-editor wip/14.B-sugestii wip/26.A-import-wmf wip/3.2-raportor wip/3.6d-wifi wip/5.1b-oracol-buzunar wip/5.1c-oracol-document wip/7.4-fonturi-variabile wip/7.5-text wip/9.4-pdf wip/9.5-import-eps`: modul automat al asistentului refuză ștergerea ramurilor de pe GitHub",
+      "en": "Deleting the 14 old branches on `origin` (all merged into `main` or saved in `Apps\\cncvs2-arhiva\\`), with `git push origin --delete wip/10.1-vectori wip/13.A-b-masina-in-fundal wip/13.A-sender-ecran wip/14.B-b-sugestie-editor wip/14.B-sugestii wip/26.A-import-wmf wip/3.2-raportor wip/3.6d-wifi wip/5.1b-oracol-buzunar wip/5.1c-oracol-document wip/7.4-fonturi-variabile wip/7.5-text wip/9.4-pdf wip/9.5-import-eps`: the assistant’s automatic mode refuses to delete branches on GitHub"
     },
     "5719f26b67d851c3": {
       "ro": "dopul intră; jocul pe linia de lipire",
@@ -1125,6 +1145,10 @@
       "ro": "Sugestia din editor, cu poza planșei",
       "en": "The suggestion from the editor, with a picture of the sheet"
     },
+    "78256b8a334faf00": {
+      "ro": "un repo fără ramuri moarte",
+      "en": "a repository without dead branches"
+    },
     "78c32b33abe2c88e": {
       "ro": "piesa unui străin, făcută fără ajutor",
       "en": "a stranger's part, made without help"
@@ -1232,6 +1256,10 @@
     "8108a6373dfdea25": {
       "ro": "14.B↑: fila Sugestii",
       "en": "14.B↑: the Suggestions tab"
+    },
+    "824fb32478e4221b": {
+      "ro": "oricând",
+      "en": "any time"
     },
     "837e5ee55429ed79": {
       "ro": "Rolul de tăiere din panou și traseul la zi, adus din etapa 5",
@@ -1404,6 +1432,10 @@
     "95e512c346491c54": {
       "ro": "Urechile (ADR 0028, documentul v5 cu migrarea v4 → v5 și `urechi: null`): profilul Z(s) al ediției întâi, portat ca modificator peste trecerea din IR (liniile și arcele tăiate exact, flancul pe arc ca elice); vârful urechii de la fața de jos a foii, deci puntea are grosimea cerută și cu supracursă (parametru al exportului, implicit 0); lățimea care nu încape e refuzată, nu strânsă; coloana Urechi în dialog (implicitele plăcii 2: 4 × 8 × 2). Pe forma plăcii 2, cele 4 urechi cad pe laturile drepte. **Recenzia (1,16 M, 25 min, 6 constatări, toate reale) a prins o gaură a contractului:** pe axa tăieturii, puntea ține grosimea doar pe W − D, deci o ureche mai îngustă decât freza lăsa piesa liberă; acum e refuzată. Plus: bucățile de arc sub 1e-6 mm deveneau cercuri întregi (la W ~1e-11, 22 mm în piesă), flancul care coboară mergea pe verticală de până la 3,3 ori avansul de plonjare, un Exportă fără schimbare lăsa un pas de anulare fantomă după redeschidere; motivul și rândul urechilor din dialog. Oracolul (sesiune independentă, 0,67 M, 74 min): documentul v5, invarianta 9 amendată (Z-ul se schimbă sub fața de sus fără să rupă drumul), invarianta 10 (profilul pe fiecare buclă, refuzurile, viteza pe verticală), oracolul pe hârtie cu cele 6 cazuri vechi, gaura, placa 2 și supracursa; 36 de sabotaje prinse, 5 martori negativi. Otrăvuri: 37 din 37 prinse (una scăpase întâi; testul avansului pe flanc cere acum plafonul exact). Pauză 10.10 00:05–08:30. **Treceri:** (1) contractul; (2) aplicația; (3) recenzia și reparațiile; (4) oracolul; (5) otrăvurile. 1861 de teste unitare, 39 e2e.",
       "en": "Tabs (ADR 0028, document v5 with the v4 → v5 migration and `urechi: null`): the first edition's Z(s) profile, ported as a modifier over the IR pass (lines and arcs cut exactly, the flank on an arc as a helix); the tab top from the bottom face of the sheet, so the bridge has the requested thickness even with overtravel (an export parameter, default 0); a width that does not fit is refused, not shrunk; a Tabs column in the dialog (plate 2 defaults: 4 × 8 × 2). On the plate 2 shape, the 4 tabs fall on the straight sides. **The review (1.16 M, 25 min, 6 findings, all real) caught a hole in the contract:** on the cut's axis, the bridge holds its thickness only over W − D, so a tab narrower than the bit left the part loose; now it is refused. Plus: arc pieces under 1e-6 mm became full circles (at W ~1e-11, 22 mm into the part), a descending flank went vertical at up to 3.3 times the plunge feed, an Export with no change left a phantom undo step after reopening; the reason and the tabs row in the dialog. The oracle (independent session, 0.67 M, 74 min): document v5, invariant 9 amended (Z changes below the top face without breaking the path), invariant 10 (the profile on each loop, the refusals, the vertical speed), the oracle on paper with the 6 old cases, the hole, plate 2 and overtravel; 36 sabotages caught, 5 negative controls. Poisons: 37 of 37 caught (one had escaped at first; the flank-feed test now requires the exact cap). Break 10.10 00:05–08:30. **Passes:** (1) the contract; (2) the app; (3) the review and the fixes; (4) the oracle; (5) the poisons. 1861 unit tests, 39 e2e."
+    },
+    "96858c9b73cbd690": {
+      "ro": "Linia plugin-ului „2d- lego 3d” (Trenuleț ca extensie): feliile 3.S, 3.Xa–3.Xd și 3.Ta–3.Te sunt gata pe ramura `wip/trenulet` (doar locală, cu o copie în `Apps\\cncvs2-arhiva\\`), publicate pe canalul `trenulet`, dar nu în `main`, deci roadmap-ul nu le arată încă. Sesiunea ei e în pauză, cu lucru necomis în worktree. Decizia: unirea în `main` acum, sau după încă o felie",
+      "en": "The line of the “2d- lego 3d” plugin (Trenuleț as an extension): slices 3.S, 3.Xa–3.Xd and 3.Ta–3.Te are done on the `wip/trenulet` branch (local only, with a copy in `Apps\\cncvs2-arhiva\\`), published on the `trenulet` channel, but not in `main`, so the roadmap does not show them yet. Its session is paused, with uncommitted work in its worktree. The decision: merge into `main` now, or after one more slice"
     },
     "96b7e7ff924ad66b": {
       "ro": "Meniul global și fereastra Mașina pe tot ecranul",
@@ -1684,6 +1716,10 @@
     "b3a774f3f3c7708d": {
       "ro": "Oracolul G-code din s4 în `test/oracles/`",
       "en": "The G-code oracle from s4 in `test/oracles/`"
+    },
+    "b3e1b0bd2fb8f6d5": {
+      "ro": "**Conectarea prin WiFi, mai ușoară** (în lucru; „si defapt, vreau sa imbunatatim la senderul wifi, vreau sa fie mult mai usor sa conectezi o masina prin wifi”). Azi, adresa mașinii se scrie de mână (ghidul podului o caută în router), iar rețeaua atelierului se pune în pod prin șase comenzi din terminalul lui. Cercetarea din sursa ESP3D 3.0.2: podul răspunde la `esp3d.local` (mDNS pornit) și execută comenzile `[ESP…]` venite pe socket-ul de date, cu lista rețelelor văzute (`[ESP410]`), deci aplicația îl poate găsi și configura singură. ADR 0136, propus, cu schița și patru întrebări la owner; codul după răspunsuri.",
+      "en": "**Connecting over WiFi, made easier** (in progress; “and actually, I want us to improve the WiFi sender, I want it to be much easier to connect a machine over WiFi”). Today, the machine’s address is typed by hand (the bridge guide looks it up in the router), and the workshop network is set in the bridge with six commands in its terminal. The research in the ESP3D 3.0.2 source: the bridge answers at `esp3d.local` (mDNS on) and runs the `[ESP…]` commands that come on the data socket, with the list of networks it sees (`[ESP410]`), so the application can find it and set it up by itself. ADR 0136, proposed, with the sketch and four questions for the owner; the code after the answers."
     },
     "b4487110fe6a1b12": {
       "ro": "Oglindirea selecției",
@@ -2029,6 +2065,10 @@
       "ro": "Datele",
       "en": "The data"
     },
+    "df54385661b479e2": {
+      "ro": "Conectarea prin WiFi",
+      "en": "Connecting over WiFi"
+    },
     "dff5b7d3c0d98514": {
       "ro": "Raportorul de erori din client (ADR 0043): erorile jurnalului local pleacă spre `logClientError`, cu Firebase adus la prima eroare (pornirea 93,5 kB, partea raportorului 1,20 kB); plafoanele pe sesiune (20 / 3), stingerea (401 / 403 / plafon / import / App Check), tokenul cerut explicit cu termen, reîncercarea doar când cererea n-a ajuns; cheia App Check citită la publicare din înregistrarea ei; CSP-ul reCAPTCHA; doar mediul omului rămâne „doar local”. Workflow-uri: implementarea + 4 verificatori (25 de constatări), remedierile + reverificarea (6), integrarea; otrăvurile 31 / 31. **Pe test:** 200 cu token (grupul în `errorLogs`), 401 fără. Pauză peste noapte pe `wip/3.2-raportor`, unită prin squash.",
       "en": "The client error reporter (ADR 0043): the local log's errors go to `logClientError`, with Firebase loaded at the first error (startup 93.5 kB, the reporter's part 1.20 kB); per-session caps (20 / 3), switching off (401 / 403 / cap / import / App Check), the token requested explicitly with a deadline, retrying only when the request did not arrive; the App Check key read at publishing from its registration; the reCAPTCHA CSP; only the user's environment stays “local only”. Workflows: the implementation + 4 verifiers (25 findings), the fixes + the re-check (6), the integration; poisons 31 / 31. **On test:** 200 with a token (the group in `errorLogs`), 401 without. An overnight break on `wip/3.2-raportor`, merged by squash."
@@ -2145,6 +2185,10 @@
       "ro": "Raportările clienților, partea întâi, aduse din etapa 15",
       "en": "Customer reports, part one, brought forward from stage 15"
     },
+    "ec9fdd870b3a3f60": {
+      "ro": "3.6f",
+      "en": "3.6f"
+    },
     "eca127da7c72e5f7": {
       "ro": "Relief pe două fețe + întoarcere; Bas-relief din STL; Conturul vectorial al reliefului",
       "en": "Two-sided relief + flipping; Bas-relief from STL; The relief's vector contour"
@@ -2184,6 +2228,10 @@
     "efbfea901afba00d": {
       "ro": "**da (primul)**",
       "en": "**yes (the first)**"
+    },
+    "f0c3daf0992a3bdd": {
+      "ro": "Conectarea prin WiFi, mai ușoară (ADR 0136, cererea owner-ului din 05.11): mașinile ținute, cu un buton care o leagă pe ultima; găsirea după nume, fără adresa scrisă de mână; pașii la fiecare eșec; configurarea podului ESP3D din aplicație, în locul comenzilor din terminalul lui; proba pe emulator, în spatele unui pod fals",
+      "en": "Connecting over WiFi, made easier (ADR 0136, the owner’s request of 05.11): the remembered machines, with one button that connects the last one; finding the machine by name, without an address typed by hand; the steps after every failure; setting up the ESP3D bridge from the application, instead of the commands in its terminal; the proof on the emulator, behind a fake bridge"
     },
     "f20ea85a30832b0a": {
       "ro": "Normalizarea `nonzero` la ușă",

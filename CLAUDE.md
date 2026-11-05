@@ -606,6 +606,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 05.11.2026: **conectarea prin WiFi, mult mai ușoară, și roadmap-ul la zi** („da, continua, da, vreau sa te asiguri ca avem
+  roadmap actualizat”, apoi „si defapt, vreau sa imbunatatim la senderul wifi, vreau sa fie mult mai usor sa conectezi o masina
+  prin wifi”): felia următoare e 3.6f, cu ADR 0136 propus (cercetarea, schița, patru întrebări); codul vine după răspunsuri.
+  Roadmap-ul: feliile și stările lor se potrivesc cu istoria; coada owner-ului are acum și decizia liniei plugin-ului (gata pe
+  `wip/trenulet`, neunită, deci nevăzută în roadmap) și ștergerea celor 14 ramuri vechi de pe `origin`.
 - 05.11.2026: **worktree-ul `vectori` scos** după unirea lui 10.2↑ („Yes, clean up”): ramura locală ștearsă, sesiunea etapei
   10 arhivată; rămâne doar worktree-ul `trenulet`. Pe origin rămân ramurile vechi (ștergerea lor e la owner).
 - 04.11.2026: **meniul pe telefon, varianta B** (13.A↑c, ADR 0132 §10). La verificarea cerută („vreau sa verifici progresul
