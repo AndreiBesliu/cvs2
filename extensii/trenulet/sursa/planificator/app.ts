@@ -2198,7 +2198,7 @@ function textCiteste(r: NonNullable<typeof rezCNC>) {
   const zero = { "stanga-jos": tr("colțul din stânga-jos"), "dreapta-jos": tr("colțul din dreapta-jos"), "stanga-sus": tr("colțul din stânga-sus"), "dreapta-sus": tr("colțul din dreapta-sus") }[g.origine];
   const tesire = T.tip === "v" ? tr`freză în V de ${T.unghi}°, teșitură de ${fmtS(T.latime)} mm${T.santuri ? tr` (și marginile șanțurilor, ${fmtS(T.latimeSant)} mm)` : ""}` : T.tip === "rotunjire" ? tr`freză de rotunjit R${fmtS(T.raza)}, vârf Ø${fmtS(T.varf)} mm` : "";
   const l = [
-    tr("TRENULEȚ — fișierele pentru CNC"),
+    tr("EASY 3DRAW — fișierele pentru CNC"),
     tr`Circuit: ${stare.nume || tr("circuit")} · ${new Date().toLocaleString(Limba.locala)}`,
     tr`Setări: freză ${fmtS(s.freza)} mm · ciupercă tată ${s.varianta_tata} · locaș mamă ${s.varianta_mama} · evazare ${fmtS(s.evazare)} mm · placă ${W} × ${H} mm, margine ${fmtS(r.setari.placa_margine)} mm, ${fmtS(r.setari.distanta_piese)} mm între piese${r.setari.doua_fete ? tr(" · șanțuri pe ambele fețe") : ""}${tesire ? tr(" · teșire: ") + tesire : ""}.`,
     "",
@@ -2403,7 +2403,7 @@ async function lucrareCvs2(r: NonNullable<typeof rezCNC>, id?: string) {
   const s = r.setari, gs = setariCNC.gcode;
   return {
     protocol: PROTOCOL_CVS2, versiune: 1, tip: "lucrare", id: id || "l" + Date.now().toString(36),
-    de_la: { aplicatie: "Planificator Trenuleț", versiune: VERSIUNE }, titlu: stare.nume || "Circuit", creat: new Date().toISOString(),
+    de_la: { aplicatie: "Easy 3Draw", versiune: VERSIUNE }, titlu: stare.nume || "Circuit", creat: new Date().toISOString(),
     controler: g!.contract.nume, strategie: g!.strategie,
     montaj: { origine: gs.origine, z0: gs.z0, foaie: { latime: s.placa[0], inaltime: s.placa[1], grosime: s.grosime }, doua_fete: !!s.doua_fete },
     fisiere,

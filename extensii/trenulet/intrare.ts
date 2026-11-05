@@ -1,5 +1,5 @@
 /**
- * Intrarea Planificatorului Trenuleț ca extensie a lui cvs2 (ADR 0129, 0161): pagina, din sursele din repo, în cadrul izolat
+ * Intrarea Easy 3Draw (fostul Planificator Trenuleț, ADR 0167) ca extensie a lui cvs2 (ADR 0129, 0161): pagina, din sursele din repo, în cadrul izolat
  * (ADR 0127). Adaptoarele îi dau, prin `HostApi`, ce avea ca pagină:
  * - `window.claude`, ca pe claude.ai: `use('db')`, documentele (`doc`, `collection().doc().id`, `orderBy().onSnapshot`), peste
  *   `host.stocare`, și `use('downloads')`, `save`, peste serviciul `descarcari.salveaza`; pagina le folosește când le are;

@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { pachetTrenulet, paginiPlanificator } from '../../scripts/construieste-trenulet.ts';
+import { scrieZip } from '../../scripts/impacheteaza-extensie.ts';
 import { citesteZip } from '../../src/extensii/zip.ts';
 import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 
 /**
- * Planificatorul Trenuleț ca extensie (ADR 0129, felia 3.Ta), în Edge, cu pachetul construit aici din sursele lui:
+ * Easy 3Draw (fostul Planificator Trenuleț, ADR 0167) ca extensie (ADR 0129, felia 3.Ta), în Edge, cu pachetul construit aici din sursele lui:
  * - instalarea din fișier, cu cele două permisiuni arătate; pagina v18 în cadrul izolat: marcajul, scripturile clasice,
  *   atributele `style` puse prin CSSOM (din marcaj și din șabloanele scripturilor; CSP-ul moștenit le refuză ca atribute),
  *   circuitele „salvate singure”, adică prin `window.claude.use('db')`, peste stocarea extensiei;
@@ -13,6 +14,8 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
  * - „Salvează fișierul .json” din exportul CNC ajunge descărcare a browserului, din pagina lui cvs2, cu numele dat de
  *   planificator;
  * - ștergerea circuitului, cu confirmarea lui, rămâne și după reîncărcare; jurnalul local, fără erori;
+ * - numele (ADR 0167): „Easy 3Draw” 18.7.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul (același id), cu
+ *   circuitul lui;
  * - „Trimite la cvs2” (ADR 0160 §D): G-code-ul ovalului de exemplu ajunge în dialogul primirii, cu originea extensiei, iar după
  *   „Primește”, în „Lucrarea primită” din fereastra Mașina; planificatorul spune că cvs2 l-a primit;
  * - adaptat pentru cvs2 (ADR 0161): textul circuitelor spune unde stau ele; niciun refuz CSP în cadru (nici stilurile, nici
@@ -26,7 +29,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.7.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 
 async function deschide(page: Page): Promise<void> {
@@ -69,7 +72,7 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.6.0, de la trenulet-18.6.0.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.7.0, de la trenulet-18.7.0.zip');
   await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
     'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe); '
     + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea; '
@@ -150,6 +153,44 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   expect(await refuzuri(page)).toEqual([]);
 });
 
+/** Pachetul de dinaintea numelui nou (ADR 0167): aceleași fișiere, manifestul de atunci (id-ul, numele și versiunea). */
+async function pachetVechi(): Promise<Buffer> {
+  const z = await citesteZip(new Uint8Array(PACHET), { fisiere: 64, octetiFisier: 16 << 20, octetiTotal: 64 << 20 });
+  if (!z.ok) throw new Error('pachetul nu se citește');
+  return Buffer.from(scrieZip(z.intrari.map((i) => {
+    if (i.nume !== 'extensie.json') return i;
+    const m = { ...JSON.parse(new TextDecoder().decode(i.octeti)) as Record<string, unknown>, id: 'trenulet', nume: 'Planificator Trenuleț', versiune: '18.6.0' };
+    return { nume: i.nume, octeti: new TextEncoder().encode(JSON.stringify(m)) };
+  })));
+}
+
+test('numele nou (ADR 0167): „Easy 3Draw” 18.7.0, instalat peste „Planificator Trenuleț” 18.6.0, îi ia locul, cu circuitul lui', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-extensii="buton"]').click();
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles({ name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: await pachetVechi() });
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.6.0, de la trenulet-18.6.0.zip');
+  await page.locator('[data-extensii="instaleaza"]').click();
+  await deschide(page);
+  await expect(page.getByTestId('extensie-deschisa')).toHaveText('Planificator Trenuleț');
+  await expect(cadru(page).locator('#stare')).not.toHaveText('—');
+  await cadru(page).locator('#nume').fill('Circuitul de dinainte');
+  await expect.poll(async () => ((await stocat(page, 'db:circuite/')) as unknown[]).length).toBe(1);
+
+  await page.reload();
+  await page.locator('[data-extensii="buton"]').click();
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Easy 3Draw” 18.7.0, de la trenulet-18.7.0.zip');
+  await page.locator('[data-extensii="instaleaza"]').click();
+  // același id: un singur rând în meniu, cu numele nou; circuitul de dinainte, redeschis
+  await page.locator('[data-extensii="buton"]').click();
+  await expect(page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"] span')).toHaveText(['Easy 3Draw']);
+  await page.getByTestId('meniu-extensii').locator('[data-extensii="deschide"][data-id="trenulet"]').click();
+  await expect(page.getByTestId('spatiu-extensie')).toHaveAttribute('data-stare', 'pornit');
+  await expect(page.getByTestId('extensie-deschisa')).toHaveText('Easy 3Draw');
+  await expect(cadru(page).locator('#nume')).toHaveValue('Circuitul de dinainte');
+  await faraEroriInJurnal(page);
+});
+
 test('„Trimite la cvs2” din extensie: lucrarea ovalului, în dialogul primirii, apoi în „Lucrarea primită” din fereastra Mașina', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
@@ -161,11 +202,11 @@ test('„Trimite la cvs2” din extensie: lucrarea ovalului, în dialogul primir
   await expect(trimite).toBeEnabled({ timeout: 30_000 });
   await trimite.click();
   await expect(page.getByTestId('dialog-lucrare')).toBeVisible();
-  await expect(page.getByTestId('lucrare-de-la')).toHaveText('Planificator Trenuleț 11 trimite „Ovalul (exemplu)”, din extensia instalată „Planificator Trenuleț”.');
+  await expect(page.getByTestId('lucrare-de-la')).toHaveText('Easy 3Draw 11 trimite „Ovalul (exemplu)”, din extensia instalată „Easy 3Draw”.');
   await expect(c.locator('#cvs2-stare')).toContainText('Confirmă în cvs2 că le primești');
   await page.locator('[data-masina="lucrare-primeste"]').click();
   await expect(page.locator('.aplicatie')).toHaveAttribute('data-fereastra', 'masina');
-  await expect(page.getByTestId('masina-primita')).toContainText('Lucrarea primită: „Ovalul (exemplu)”, de la Planificator Trenuleț');
+  await expect(page.getByTestId('masina-primita')).toContainText('Lucrarea primită: „Ovalul (exemplu)”, de la Easy 3Draw');
   // Toate fișierele trec verificările lui „Fișier…”: niciun refuz.
   await expect(page.getByTestId('masina-primit-refuzate')).toHaveCount(0);
   await expect(page.locator('[data-masina="primit-fisier"] option').first()).toHaveText(/^placa_1/);
@@ -201,11 +242,11 @@ test('pe mașină, prin cvs2: din exportul CNC, încărcarea, pornirea cu confir
 
   await c.locator('#m-incarca').click();
   await expect(stare).toHaveText(/^Mașina: conectată\. Program: placa_1\S* \(\d+ (de )?linii\)\.$/);
-  await expect(page.getByTestId('masina-program-de-la')).toHaveText('de la Planificator Trenuleț');
+  await expect(page.getByTestId('masina-program-de-la')).toHaveText('de la Easy 3Draw');
   await c.locator('#m-porneste').click();
   const confirmare = page.getByTestId('confirmare-masina');
   await expect(confirmare).toBeVisible();
-  await expect(page.getByTestId('confirmare-masina-cere')).toHaveText('„Planificator Trenuleț” cere să pornească pe mașină programul de mai jos.');
+  await expect(page.getByTestId('confirmare-masina-cere')).toHaveText('„Easy 3Draw” cere să pornească pe mașină programul de mai jos.');
   await page.keyboard.press('Escape');
   await expect(c.locator('#masina-raspuns')).toHaveText('Ai ales să nu pornești.');
   await c.locator('#m-porneste').click();
@@ -229,6 +270,8 @@ test('pagina de sine stătătoare, din aceleași surse, fără cvs2: textele de 
   const erori: string[] = [];
   page.on('pageerror', (e) => { erori.push(e.message); });
   await page.setContent(paginiPlanificator().preview);
+  // numele produsului (ADR 0167), în fila browserului
+  await expect(page).toHaveTitle('Easy 3Draw');
   await page.locator('#btn-circuite').click();
   await expect(page.locator('#circ-unde')).toHaveText('Circuitele se salvează doar pe acest dispozitiv.');
   // Fără cvs2 (ADR 0164): nici contul, nici tema lui; pagina își ține tema și fonturile ei.
@@ -324,9 +367,9 @@ test('parte din cvs2 (ADR 0164): tema și fonturile lui, pe loc; contul, la Circ
 });
 
 /**
- * Româna rămasă în cadru (ADR 0165): nodurile de text și atributele traductibile care au litere românești (în afară de numele
- * „Trenuleț”), sunt chiar o cheie a dicționarului cu altă traducere sau au o virgulă zecimală. Fără `pre`, `textarea` (date,
- * G-code) și fără numele dat de om (al circuitului).
+ * Româna rămasă în cadru (ADR 0165): nodurile de text și atributele traductibile care au litere românești, sunt chiar o cheie
+ * a dicționarului cu altă traducere sau au o virgulă zecimală. Numele „Easy 3Draw” n-are diacritice: nimic nu mai e scutit
+ * (ADR 0167). Fără `pre`, `textarea` (date, G-code) și fără numele dat de om (al circuitului).
  */
 async function romanaRamasa(page: Page, numeUtilizator = ''): Promise<readonly string[]> {
   const f = await (await page.locator('iframe.cadru-extensie').elementHandle())?.contentFrame();
@@ -336,7 +379,7 @@ async function romanaRamasa(page: Page, numeUtilizator = ''): Promise<readonly s
     const chei = new Set(Object.keys(d).filter((k) => d[k] !== k && !/^[\s\d·:,;.()×+−–-]*$/.test(k)));
     const rau = (s: string): boolean => {
       const t = s.replace(/\s+/g, ' ').trim().replace(ignora, '');
-      return !!t && (/[ăâîșțĂÂÎȘȚ]/.test(t.replace(/Trenuleț|TRENULEȚ/g, '')) || chei.has(t) || /\d,\d/.test(t));
+      return !!t && (/[ăâîșțĂÂÎȘȚ]/.test(t) || chei.has(t) || /\d,\d/.test(t));
     };
     const ies: string[] = [];
     const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
@@ -397,7 +440,8 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   expect(text).toContain('WHAT IS IN THE ARCHIVE');
   // data, ca în engleză (en-GB: 04/11/2026, 21:30:00), nu ca în română (04.11.2026)
   expect(text).toMatch(/ · \d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}:\d{2}/);
-  expect(text.match(/.*[ăâîșțĂÂÎȘȚ].*/g)?.filter((l) => !/TRENULEȚ/.test(l)) ?? []).toEqual([]);
+  expect(text).toContain('EASY 3DRAW — the files for the CNC');
+  expect(text.match(/.*[ăâîșțĂÂÎȘȚ].*/g) ?? []).toEqual([]);
   // O placă prea mică: piesa care nu încape vine de la motor ca proprietate a erorii, cu numele ei în limba paginii.
   for (const [cale, v] of [['placa.0', '200'], ['placa.1', '150']] as const) {
     await c.locator(`[data-cale="${cale}"]`).first().evaluate((e, x) => {
@@ -447,7 +491,7 @@ test('formele (ADR 0166): o selecție din cvs2 ajunge în atelierul 3D, la „Di
   await page.locator('[data-buton="importa"]').click();
   await page.getByTestId('lista-vectori').locator('li').getByText('placuta').click();
   const trimite = page.locator('[data-context="extensii.trimite-selectia"]');
-  await expect(trimite).toHaveAccessibleName('Trimite la Planificator Trenuleț');
+  await expect(trimite).toHaveAccessibleName('Trimite la Easy 3Draw');
   await trimite.click();
   // planificatorul: în 3D, la „Din cvs2”, cu forma ridicată la 3,2 mm
   await expect(c.locator('#at-tipuri [data-tip="dinCvs2"]')).toHaveAttribute('aria-pressed', 'true');
@@ -457,7 +501,7 @@ test('formele (ADR 0166): o selecție din cvs2 ajunge în atelierul 3D, la „Di
   await expect(c.locator('#at-nume-piesa')).toHaveText('Formă din cvs2, 5 mm');
   await c.locator('#at-adauga').click();
   await expect(c.locator('#at-tabel')).toContainText('Formă din cvs2, 5 mm');
-  // exportul CNC: placa 1, „În desenul cvs2” → fereastra Importă a lui cvs2, „Propus de Planificator Trenuleț”
+  // exportul CNC: placa 1, „În desenul cvs2” → fereastra Importă a lui cvs2, „Propus de Easy 3Draw”
   await c.locator('[data-mod="2d"]').first().click();
   await c.locator('#btn-export').click();
   await expect(c.locator('#e-cvs2')).toBeEnabled({ timeout: 30_000 });
@@ -473,7 +517,7 @@ test('formele (ADR 0166): o selecție din cvs2 ajunge în atelierul 3D, la „Di
   await expect(c.locator('[data-in-desen="placi/placa_1.dxf"]')).toHaveText('În desenul cvs2');
   await inDesen.click();
   await expect(page.locator('#import-titlu')).toContainText('Importă: placa_2.dxf');
-  await expect(page.getByTestId('import-de')).toHaveText('Propus de Planificator Trenuleț');
+  await expect(page.getByTestId('import-de')).toHaveText('Propus de Easy 3Draw');
   const randuri = await page.getByTestId('lista-vectori').locator('li').count();
   await page.locator('[data-buton="importa"]').click();
   await expect(page.getByRole('dialog')).toHaveCount(0);

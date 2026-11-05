@@ -1,5 +1,5 @@
 /**
- * Construiește Planificatorul Trenuleț din sursele lui (`extensii/trenulet/sursa/`, ADR 0129), cu regulile din `build.py`:
+ * Construiește Easy 3Draw (fostul Planificator Trenuleț, ADR 0167) din sursele lui (`extensii/trenulet/sursa/`, ADR 0129), cu regulile din `build.py`:
  * - sursele sunt TypeScript (ADR 0162): fiecare script intră fără tipuri (`stripTypeScriptTypes`, care pune spații în locul
  *   lor), ca script clasic, cu aceeași semantică globală; bibliotecile din `vendor/` rămân JavaScript;
  * - pagina de sine stătătoare (`planificator.html`, conținutul de pe claude.ai; `preview.html`, documentul întreg, copia de

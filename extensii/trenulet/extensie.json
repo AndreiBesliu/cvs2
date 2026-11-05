@@ -2,7 +2,7 @@
   "format": "cvs2-extensie",
   "api": 1,
   "id": "trenulet",
-  "nume": "Planificator Trenuleț",
-  "versiune": "18.6.0",
+  "nume": "Easy 3Draw",
+  "versiune": "18.7.0",
   "permisiuni": ["stocare", "descarcari", "masina", "cont", "forme"]
 }

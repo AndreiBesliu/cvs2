@@ -2,8 +2,8 @@
  * Dicționarul englez al planificatorului (ADR 0165), față de surse (`scripts/texte-trenulet.ts`):
  * - fiecare text cerut (cheile lui `tr`, marcajul din `body.html`, textele fixe din surse care ajung pe pagină) are traducere;
  * - nicio intrare fără folos (o cheie e cerută sau e un șir din surse, ca un cuvânt fără diacritice, „Pod”);
- * - traducerea păstrează {0}, {1}…, n-are litere românești (în afară de numele „Trenuleț”), nici ghilimele drepte (ar strica
- *   un atribut) sau etichete pe care cheia nu le are;
+ * - traducerea păstrează {0}, {1}…, n-are litere românești (nici numele produsului: „Easy 3Draw”, ADR 0167), nici ghilimele
+ *   drepte (ar strica un atribut) sau etichete pe care cheia nu le are;
  * - fișierul e exact cum îl scrie unealta (sortat, cu cheile cerute);
  * - a doua plasă, fără parser: fiecare `tr("cuvânt", "context")` din surse cere și are cheia lui, „cuvânt@context” (un
  *   context uitat de unealtă ar lăsa în engleză cuvântul fără context, cu celălalt sens);
@@ -74,7 +74,7 @@ test('traducerile: aceleași {0}, {1}…; fără litere românești, ghilimele d
   const acolade = (s: string): string => (s.match(/\{\d+\}/g) ?? []).sort().join();
   for (const [k, v] of Object.entries(d)) {
     if (acolade(k) !== acolade(v)) rele.push(`acolade: ${k}`);
-    if (/[ăâîșțĂÂÎȘȚ]/.test(v.replace(/Trenuleț|TRENULEȚ/g, ''))) rele.push(`românește: ${v}`);
+    if (/[ăâîșțĂÂÎȘȚ]/.test(v)) rele.push(`românește: ${v}`);
     if (v.includes('"')) rele.push(`ghilimele: ${v}`);
     if (/<\/?[a-z]/i.test(v) && !/<\/?[a-z]/i.test(k)) rele.push(`etichetă: ${v}`);
   }

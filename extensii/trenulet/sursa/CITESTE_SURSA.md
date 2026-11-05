@@ -1,4 +1,4 @@
-# Sursele planificatorului Trenuleț (v18)
+# Sursele planificatorului Trenuleț (v18), afișat ca Easy 3Draw (ADR 0167)
 
 Aici sunt sursele din care se construiește `planificator\planificator.html` (pagina de pe claude.ai și copia de pe PC),
 cu probele lor. Sunt referința pentru mutarea sub cvs2 (`..\cvs2\HANDOFF_MUTARE.md`): portul trebuie să dea aceleași

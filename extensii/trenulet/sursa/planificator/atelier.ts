@@ -450,7 +450,7 @@ var Atelier3D = (function () {
         : p.refuz === "nimic" ? tr("În selecția din cvs2 nu era niciun contur închis.")
         : p.refuz === "atelier" ? tr("Forma e prea mare pentru atelier: cel mult 50 000 de puncte.") : "";
       e.innerHTML = `<h2>Formă din cvs2</h2>
-        <p class="mic">Alege forme închise în desenul cvs2 și apasă Trimite la Planificator Trenuleț: le primești aici, ridicate în 3D. Găurile rămân găuri.</p>`
+        <p class="mic">Alege forme închise în desenul cvs2 și apasă Trimite la Easy 3Draw: le primești aici, ridicate în 3D. Găurile rămân găuri.</p>`
         + (refuz ? `<p class="mic eroare" id="at-forma-refuz"></p>` : "")
         + (n ? `<p class="mic" id="at-forma-info"></p>
         <div class="at-campuri"><label for="at-f-grosime">Grosime (mm)<input id="at-f-grosime" type="number" min="0.4" max="50" step="0.1" value="${p.grosime}"></label></div>` : "");
@@ -1257,7 +1257,7 @@ var Atelier3D = (function () {
   }
   function citeste(c: ReturnType<typeof calculeazaLista>) {
     const R = "\r\n", [W, H] = setari.pat;
-    const l = [tr("PIESE DE PRINTAT — din atelierul 3D al Planificatorului Trenuleț"), new Date().toLocaleString(Limba.locala), "",
+    const l = [tr("PIESE DE PRINTAT — din atelierul 3D din Easy 3Draw"), new Date().toLocaleString(Limba.locala), "",
       tr("CE E ÎN ARHIVĂ"),
       tr`- pat_N.stl — câte o placă de ${W} × ${H} mm, cu piesele deja așezate (${c.placi.length} ${c.placi.length === 1 ? tr("placă", "pat") : tr("plăci", "pat")}). Deschide-o în feliator și pornește.`,
       tr("- piese/<nume>.stl — fiecare piesă separat, dacă vrei s-o așezi tu (cele ale circuitului încep cu tren_)."), "",

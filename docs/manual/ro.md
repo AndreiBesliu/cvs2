@@ -774,7 +774,7 @@ consola coboară dedesubt; pe telefon, totul stă pe o coloană, în ordinea urg
   octeți, nu alege un sistem de coordonate (`G54`–`G59`) înaintea primei mișcări, schimbă scula (`M6`) fără să fie exportat de
   aici sau n-are capăt de linie la sfârșit. Cu câte un fișier pe freză, **Fișierul ultimului export** alege care se încarcă. Din fereastra exportului, după un
   export reușit, **Deschide în Mașina** aduce aici primul fișier al exportului, încărcat, fără să-l pornească.
-- **Lucrarea primită**: o aplicație care trimite lucrări (de exemplu Planificatorul Trenuleț, cu „Trimite la cvs2”) deschide
+- **Lucrarea primită**: o aplicație care trimite lucrări (de exemplu Easy 3Draw, cu „Trimite la cvs2”) deschide
   cvs2 într-o filă nouă. Dialogul **Lucrare primită** spune cine trimite, de unde (o adresă, sau o pagină deschisă din fișier,
   de pe calculatorul tău) și ce fișiere, cu placa, freza și timpul. **Primește** verifică fiecare fișier la fel ca unul adus
   cu **Fișier…** și deschide fereastra Mașina; **Nu** îi răspunde aplicației că n-ai vrut lucrarea. Fișierele bune stau sub butoane, în
@@ -916,7 +916,7 @@ de ce.
 %% capitol: extensii
 %% acopera: extensii.buton, extensii.trimite-selectia
 
-O extensie adaugă aplicației o fereastră a ei, de exemplu Planificatorul Trenuleț. Nu face parte din aplicație: o instalezi
+O extensie adaugă aplicației o fereastră a ei, de exemplu Easy 3Draw. Nu face parte din aplicație: o instalezi
 tu, iar interfața aplicației rămâne aceeași.
 
 - Butonul **Extensii** (piesa de puzzle de lângă numele instanței) deschide meniul: extensiile instalate, apoi
@@ -935,18 +935,18 @@ tu, iar interfața aplicației rămâne aceeași.
   ale browserului: doar date și desene (`.zip`, `.json`, `.gcode`, `.stl` și altele asemenea), cel mult 64 MB unul, nu
   programe sau pagini.
 - O extensie care a cerut asta vede dacă ești conectat la cvs2, cu ce nume și ce plan, doar pentru citire: nu vede adresa,
-  parola sau proiectele. Planificatorul Trenuleț îl arată la **Circuite**; intrarea sau ieșirea din cont (și din altă filă)
+  parola sau proiectele. Easy 3Draw îl arată la **Circuite**; intrarea sau ieșirea din cont (și din altă filă)
   ajunge în extensie pe loc.
 - Extensia ia tema aplicației: luminoasă sau întunecată (cea aleasă cu **Tema**), culorile și fonturile; o temă schimbată
-  ajunge în extensie pe loc. Planificatorul Trenuleț își păstrează doar culorile lui: masa, lemnul, cărămizile, verdele de
+  ajunge în extensie pe loc. Easy 3Draw își păstrează doar culorile lui: masa, lemnul, cărămizile, verdele de
   semnal.
-- Extensia primește și limba aplicației. Planificatorul Trenuleț vorbește română sau engleză, după **Limba** din bara de sus;
+- Extensia primește și limba aplicației. Easy 3Draw vorbește română sau engleză, după **Limba** din bara de sus;
   la o limbă schimbată, repornește singur, după ce își salvează lucrul (circuitul, setările, atelierul). Comentariile din
   G-code rămân în română, ca în exportul aplicației.
 - Un clic pe o extensie din meniu îi deschide fereastra: lângă **Proiectare** și **Mașina** apare o filă cu numele ei, iar
   dedesubt, pe tot ecranul, stă extensia. Treci oricând la altă fereastră: extensia rămâne deschisă, cu ce ai lucrat în ea, iar
   o comandă a desenului aleasă din **Caută o comandă** te duce întâi la Proiectare. **×**, lângă numele ei, închide
-  extensia: întâi îi lasă câteva secunde să salveze ce avea de salvat (Planificatorul Trenuleț își salvează atunci circuitul,
+  extensia: întâi îi lasă câteva secunde să salveze ce avea de salvat (Easy 3Draw își salvează atunci circuitul,
   setările și atelierul). Dacă tot rămân modificări nesalvate, te întreabă: **Rămân** (sau Escape) o lasă deschisă, **Închide
   oricum** o închide, iar modificările se pierd. La fel, cât extensia are modificări nesalvate, reîncărcarea sau închiderea
   filei te întreabă, prin fereastra browserului. După o reîncărcare a paginii, aplicația pornește fără extensie. F1 deschide
@@ -958,15 +958,15 @@ tu, iar interfața aplicației rămâne aceeași.
   care mișcă mașina se poate apăsa abia după o secundă, iar **Nu** sau Escape nu trimit nimic. Conectarea, jog-ul, zero-ul,
   palparea, deblocarea, comenzile manuale și continuarea după o oprire din program rămân în fereastra Mașina. Pe instanța
   live, deocamdată, extensiile nu folosesc mașina.
-- O astfel de extensie poate trimite și o lucrare întreagă (de exemplu, „Trimite la cvs2” din Planificatorul Trenuleț): vine
+- O astfel de extensie poate trimite și o lucrare întreagă (de exemplu, „Trimite la cvs2” din Easy 3Draw): vine
   în dialogul **Lucrare primită**, ca de la o aplicație deschisă alături, cu extensia drept origine.
 - O extensie care a cerut asta primește forme din desen și îți propune forme pentru desen. Alege forme pe planșă: în bara
-  selecției apare **Trimite la extensie**, cu numele extensiei deschise (de exemplu, **Trimite la Planificator Trenuleț**;
-  și în **Caută o comandă**). Contururile alese pleacă spre extensie, în mm, iar fereastra ei se deschide; Planificatorul
-  Trenuleț le ridică în 3D, în atelier, la **Din cvs2**. Extensia nu vede desenul altfel. Invers, o extensie îți poate
-  propune un fișier SVG sau DXF (Planificatorul Trenuleț: o placă din exportul CNC, cu **În desenul cvs2**): se deschide
+  selecției apare **Trimite la extensie**, cu numele extensiei deschise (de exemplu, **Trimite la Easy 3Draw**;
+  și în **Caută o comandă**). Contururile alese pleacă spre extensie, în mm, iar fereastra ei se deschide; Easy 3Draw le
+  ridică în 3D, în atelier, la **Din cvs2**. Extensia nu vede desenul altfel. Invers, o extensie îți poate
+  propune un fișier SVG sau DXF (Easy 3Draw: o placă din exportul CNC, cu **În desenul cvs2**): se deschide
   fereastra **Importă**, cu „Propus de” și numele extensiei, iar nimic nu intră în desen până nu apeși **Importă**.
-- Planificatorul Trenuleț folosește mașina și din exportul lui CNC, la „Pe mașină, prin cvs2”: încarcă un fișier, îl pornește
+- Easy 3Draw folosește mașina și din exportul lui CNC, la „Pe mașină, prin cvs2”: încarcă un fișier, îl pornește
   (cu întrebarea de mai sus), pune pauză, îl reia și îl oprește. Starea mașinii stă deasupra butoanelor.
 - Extensia rulează izolată: nu vede proiectele sau portul mașinii și nu iese pe internet; din cont vede doar ce i-ai dat voie
   (mai sus); vorbește cu aplicația doar prin ce îi dă aceasta.

@@ -27,7 +27,7 @@ const CUVANT = /^[A-ZĂÂÎȘȚ][a-zăâîșț]+:?$/;
 
 /** Româna păstrată cu bună știință (mesaje pentru noi, nu pentru om; nume; comentarii din G-code). */
 const PASTRATE = new Set([
-  'use strict', 'Solid line', 'GRBL 1.1', 'GRBL 1.1h', 'NcStudio (Weihong)', 'RichAuto (DSP)', 'Planificator Trenuleț', 'La comanda',
+  'use strict', 'Solid line', 'GRBL 1.1', 'GRBL 1.1h', 'NcStudio (Weihong)', 'RichAuto (DSP)', 'Easy 3Draw', 'La comanda',
   'freza dreapta', 'freza de tesit', 'mașina', 'număr nefinit în DXF:', 'tip necunoscut:', 'controler necunoscut:',
   'un arc cere poziția XY de start', 'cu fișiere separate pe sculă, programul se scrie cu posteazaPeScule', 'scula: M6 la controler',
   'scula: M0, cu scula in comentariu', 'Trenulet - planificatorul de circuite', 'fara punti', ', pe rampa', 'punti', 'freza de rotunjit R',

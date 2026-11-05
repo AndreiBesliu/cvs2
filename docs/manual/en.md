@@ -801,7 +801,7 @@ column, most urgent first.
   70 bytes, sets no work coordinate system (`G54`–`G59`) before its first move, changes the tool (`M6`) without being exported
   from here, or has no line end at the end. With one file per bit, **File of the last export** picks which one loads. From the export window, after a successful
   export, **Open in Machine** brings the export's first file here, loaded, without starting it.
-- **Received job**: an app that sends jobs (for example the Trenuleț planner, with “Send to cvs2”) opens cvs2 in a new tab.
+- **Received job**: an app that sends jobs (for example Easy 3Draw, with “Send to cvs2”) opens cvs2 in a new tab.
   The **Incoming job** dialog says who sends it, from where (an address, or a page opened from a file on your computer) and
   which files, with the board, the bit and the time. **Accept** checks each file like one loaded with **File…** and opens the
   Machine window; **No** tells the app you declined the job. The good files sit under the buttons, in cutting order: pick one in
@@ -946,7 +946,7 @@ reports) and why.
 %% capitol: extensii
 %% acopera: extensii.buton, extensii.trimite-selectia
 
-An extension adds a window of its own to the app, for example the Trenuleț planner. It isn’t part of the app: you install
+An extension adds a window of its own to the app, for example Easy 3Draw. It isn’t part of the app: you install
 it, and the app’s interface stays the same.
 
 - The **Extensions** button (the puzzle piece next to the instance name) opens the menu: the installed extensions, then
@@ -965,18 +965,18 @@ it, and the app’s interface stays the same.
   downloads: only data and drawings (`.zip`, `.json`, `.gcode`, `.stl` and the like), at most 64 MB each, never programs
   or pages.
 - An extension that asked for it sees whether you are signed in to cvs2, with what name and plan, read-only: it can’t see
-  your email, your password or your projects. The Trenuleț planner shows it under **Circuite** (“Circuits”); signing in or
+  your email, your password or your projects. Easy 3Draw shows it under **Layouts**; signing in or
   out (in another tab too) reaches the extension at once.
 - The extension takes the app’s theme: light or dark (the one picked with **Theme**), the colours and the fonts; a theme you
-  change reaches the extension at once. The Trenuleț planner keeps only its own colours: the table, the wood, the bricks,
+  change reaches the extension at once. Easy 3Draw keeps only its own colours: the table, the wood, the bricks,
   the signal green.
-- The extension also gets the app’s language. The Trenuleț planner speaks Romanian or English, following **Language** in the
+- The extension also gets the app’s language. Easy 3Draw speaks Romanian or English, following **Language** in the
   top bar; when you change the language, it restarts by itself, after saving its work (the layout, the settings, the
   workshop). The comments in the G-code stay in Romanian, as in the app’s own export.
 - A click on an extension in the menu opens its window: a tab with its name appears next to **Design** and **Machine**, and
   below it, on the whole screen, sits the extension. Switch to another window any time: the extension stays open, with what
   you did in it, and a drawing command picked from **Search commands** takes you to Design first. **×**, next to its name,
-  closes the extension: first it gives it a few seconds to save what it had to save (the Trenuleț planner then saves its
+  closes the extension: first it gives it a few seconds to save what it had to save (Easy 3Draw then saves its
   circuit, its settings and its workshop). If unsaved changes are still left, it asks you: **Stay** (or Escape) keeps it
   open, **Close anyway** closes it, and the changes are lost. Likewise, while the extension has unsaved changes, reloading or
   closing the tab asks you, through the browser’s window. After the page reloads, the app starts without the extension. F1
@@ -988,18 +988,17 @@ it, and the app’s interface stays the same.
   resumes. The button that moves the machine can be pressed only after a second, and **No** or Escape send nothing. The
   connection, jogging, zeroing, probing, unlocking, manual commands and continuing after a stop in the program stay in the
   Machine window. On the live instance, extensions don’t use the machine for now.
-- Such an extension can also send a whole job (for example, “Send to cvs2” in the Trenuleț planner): it comes in the
+- Such an extension can also send a whole job (for example, “Send to cvs2” in Easy 3Draw): it comes in the
   **Incoming job** dialog, like one from an app opened next to it, with the extension as its origin.
 - An extension that asked for it receives shapes from the drawing and proposes shapes for the drawing. Choose shapes on
   the sheet: the selection bar shows **Send to extension**, with the name of the open extension (for example, **Send to
-  Planificator Trenuleț**; also in **Search commands**). The chosen outlines go to the extension, in mm, and its window
-  opens; the Trenuleț planner raises them in 3D, in its workshop, under **From cvs2**. The extension sees the drawing in no
-  other way. The other way round, an extension can propose an SVG or DXF file (the Trenuleț planner: a board from its CNC
+  Easy 3Draw**; also in **Search commands**). The chosen outlines go to the extension, in mm, and its window
+  opens; Easy 3Draw raises them in 3D, in its workshop, under **From cvs2**. The extension sees the drawing in no
+  other way. The other way round, an extension can propose an SVG or DXF file (Easy 3Draw: a board from its CNC
   export, with **Into the cvs2 drawing**): the **Import** window opens, with “Proposed by” and the extension's name, and
   nothing enters the drawing until you press **Import**.
-- The Trenuleț planner also uses the machine from its CNC export, under “Pe mașină, prin cvs2” (“On the machine, through
-  cvs2”): it loads a file, starts it (with the question above), pauses, resumes and stops it. The machine’s state sits above
-  the buttons.
+- Easy 3Draw also uses the machine from its CNC export, under **On the machine, through cvs2**: it loads a file,
+  starts it (with the question above), pauses, resumes and stops it. The machine’s state sits above the buttons.
 - The extension runs isolated: it can’t see your projects or the machine’s port, and it can’t reach the internet; of your
   account it sees only what you allowed it (above); it talks to the app only through what the app gives it.
 - **Manage extensions** shows the installed ones, with their source, date and how much their data takes; **Remove** deletes

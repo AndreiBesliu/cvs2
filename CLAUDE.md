@@ -484,6 +484,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   cu „Propus de <extensie>”; nimic fără „Importă”. În planificator: fila „Din cvs2” a atelierului (`dinCvs2` în motorul
   LEGO: găurile după cum stau contururile unele în altele) și „În desenul cvs2” la plăcile exportului. Încărcătorul, cu
   amprentă nouă. Pachetul 18.6.0.
+  **Numele pluginului: Easy 3Draw (ADR 0167, felia 3.Tf)** gata pe 05.11: numele afișat (manifestul, 18.7.0, și
+  planificatorul: titlul, antetele README-urilor, sfatul filei „Din cvs2”, `de_la.aplicatie`), același în ambele limbi, în
+  `PASTRATE`. Id-ul rămâne `trenulet` (de el țin rândul instalat și datele: 18.7.0 peste 18.6.0 îi ia locul, cu circuitele),
+  la fel numele tehnice (pachetul, dosarul, scripturile) și antetul G-code-ului (amprentele v18). Verificarea românei rămase
+  nu mai scutește „Trenuleț”.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
