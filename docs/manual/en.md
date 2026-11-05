@@ -944,7 +944,7 @@ reports) and why.
 
 ## Extensions
 %% capitol: extensii
-%% acopera: extensii.buton
+%% acopera: extensii.buton, extensii.trimite-selectia
 
 An extension adds a window of its own to the app, for example the Trenuleț planner. It isn’t part of the app: you install
 it, and the app’s interface stays the same.
@@ -990,6 +990,13 @@ it, and the app’s interface stays the same.
   Machine window. On the live instance, extensions don’t use the machine for now.
 - Such an extension can also send a whole job (for example, “Send to cvs2” in the Trenuleț planner): it comes in the
   **Incoming job** dialog, like one from an app opened next to it, with the extension as its origin.
+- An extension that asked for it receives shapes from the drawing and proposes shapes for the drawing. Choose shapes on
+  the sheet: the selection bar shows **Send to extension**, with the name of the open extension (for example, **Send to
+  Planificator Trenuleț**; also in **Search commands**). The chosen outlines go to the extension, in mm, and its window
+  opens; the Trenuleț planner raises them in 3D, in its workshop, under **From cvs2**. The extension sees the drawing in no
+  other way. The other way round, an extension can propose an SVG or DXF file (the Trenuleț planner: a board from its CNC
+  export, with **Into the cvs2 drawing**): the **Import** window opens, with “Proposed by” and the extension's name, and
+  nothing enters the drawing until you press **Import**.
 - The Trenuleț planner also uses the machine from its CNC export, under “Pe mașină, prin cvs2” (“On the machine, through
   cvs2”): it loads a file, starts it (with the question above), pauses, resumes and stops it. The machine’s state sits above
   the buttons.

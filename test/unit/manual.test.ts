@@ -16,6 +16,7 @@ import { ACTIUNI_DOCUMENT } from '../../src/ui/actiuniDocument.ts';
 import { ACTIUNI_EXPORT } from '../../src/ui/actiuniExport.ts';
 import { ACTIUNI_IMPORT } from '../../src/ui/actiuniImport.ts';
 import { ACTIUNI_VEDERE } from '../../src/ui/actiuniVedere.ts';
+import { ACTIUNI_EXTENSII } from '../../src/ui/actiuniExtensii.ts';
 import { TASTE } from '../../src/ui/scurtaturi.ts';
 import { normalizeazaCautare } from '../../src/docs/cautare.ts';
 import { citesteManual, EroareManual, genereazaManualul, sursaManual, verificaLegaturi, verificaLimbile } from '../../scripts/manual.ts';
@@ -44,7 +45,7 @@ const eticheta = (cheie: string): Record<LimbaManual, string> => {
 
 /** Ușile interfeței: registrul de acțiuni, apoi bara și extensia editării (ce nu trece prin registru). */
 const USI: readonly Usa[] = [
-  ...[...ACTIUNI_DOCUMENT, ...ACTIUNI_VEDERE, ...ACTIUNI_IMPORT, ...ACTIUNI_EXPORT].map((a) => ({ id: a.id, eticheta: eticheta(a.eticheta) })),
+  ...[...ACTIUNI_DOCUMENT, ...ACTIUNI_VEDERE, ...ACTIUNI_IMPORT, ...ACTIUNI_EXPORT, ...ACTIUNI_EXTENSII].map((a) => ({ id: a.id, eticheta: eticheta(a.eticheta) })),
   ...UNELTE.map((u) => ({ id: `unealta.${u}`, eticheta: eticheta(`editare.unealta.${u}`) })),
   { id: 'editare.lipire', eticheta: eticheta('editare.lipire') },
   // Butonul Extensii (ADR 0127): F1 în fereastra unei extensii deschide capitolul lor (ADR 0160 §A).
@@ -104,15 +105,15 @@ function lipsuri(m: Manual, usi: readonly Usa[]): string[] {
   return out;
 }
 
-test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 72)', () => {
+test('ușile: fiecare are o etichetă cu nume scurt, fără id-uri repetate (sunt 73)', () => {
   assert.equal(new Set(USI.map((u) => u.id)).size, USI.length);
   for (const u of USI) for (const l of LIMBI_MANUAL) assert.ok(numeScurt(u.eticheta[l]).length >= 2, `${u.id} (${l})`);
   assert.equal(numeScurt('Transformare (S): mânerele'), 'Transformare');
   assert.equal(numeScurt('Importă SVG…'), 'Importă SVG');
   assert.equal(numeScurt('Oglindește orizontal: stânga ↔ dreapta (Shift+H)'), 'Oglindește orizontal');
   // Gruparea (ADR 0130) a adus a 69-a ușă, fila Proiectare (ADR 0132) a 70-a, comutatorul Ca bloc (ADR 0150) a 71-a, iar
-  // butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0160 §A), a 72-a.
-  assert.equal(USI.length, 72);
+  // butonul Extensii, pentru F1 în fereastra unei extensii (ADR 0160 §A), a 72-a, iar „Trimite la extensie” (ADR 0166) a 73-a.
+  assert.equal(USI.length, 73);
 });
 
 test('fiecare ușă e acoperită, în ambele limbi, de un capitol care o numește cu eticheta din interfață', () => {

@@ -2041,6 +2041,29 @@ function profilMasina() {
   const r = TrenGCode.profilDinSetari(t);
   return r.ok ? { profil: r.profil, din: "$$", citite: r.citite } : { profil: TrenGCode.PROFIL_GRBL_11H, din: "fabrica", eroare: r.motiv + (r.linie ? tr` (linia ${r.linie})` : "") };
 }
+/**
+ * „În desenul cvs2” (ADR 0166 §D), la fiecare placă (la două fețe, la fiecare față): DXF-ul ei, propus lui cvs2, care îl
+ * deschide în fereastra Importă. Doar în cvs2, cu formele deschise extensiei, și doar cu DXF-ul plăcilor în export.
+ */
+function butoaneInDesen(r: NonNullable<typeof rezCNC>, i: number): string {
+  if (!window.cvs2 || !window.cvs2.forme) return "";
+  const dxf = (r.fisiere || []).filter(f => f.nume === `placi/placa_${i + 1}.dxf` || (f.nume.startsWith(`placi/placa_${i + 1}_fata`) && f.nume.endsWith(".dxf")));
+  return dxf.map(f => `<button type="button" class="btn mic" data-in-desen="${f.nume}">${f.nume.includes("_fata") ? tr`În desenul cvs2 (fața ${f.nume.includes("_fata1") ? 1 : 2})` : tr("În desenul cvs2")}</button>`).join("");
+}
+function inDesenulCvs2(ev: Event) {
+  const b = (ev.target as Element).closest<HTMLElement>("[data-in-desen]"), forme = window.cvs2 && window.cvs2.forme;
+  if (!b || !forme || !rezCNC) return;
+  const f = (rezCNC.fisiere || []).find(x => x.nume === b.dataset.inDesen);
+  if (!f) return;
+  const st = $("#cnc-stare");
+  forme.propune(f.nume.split("/").pop()!, f.text).catch((e: unknown) => {
+    const cod = String((e as Error).message || e);
+    st.textContent = cod === "forme:ocupat" ? tr("Nu am putut deschide placa în cvs2: acolo e deja deschisă o fereastră de import.")
+      : cod === "forme:doar-citire" ? tr("Nu am putut deschide placa în cvs2: fila lui doar citește proiectul.")
+      : tr`Nu am putut deschide placa în cvs2: ${cod}`;
+    st.className = "mic eroare";
+  });
+}
 function randeazaPlaci() {
   const r = rezCNC;
   if (!r) { $("#cnc-placi").innerHTML = ""; return; }
@@ -2057,7 +2080,7 @@ function randeazaPlaci() {
     return `<figure class="placa">${svgPlacaUI(pl, i, W, H, r.setari.placa_margine, arataTraseu && g ? g.vizual[i] : null, placaJos, fete,
       r.setari.stift_margine ? { x: [r.setari.stift_margine, W - r.setari.stift_margine], r: (r.setari.stift_d || 6) / 2 } : null)}` +
       `<figcaption><b>${tr`Placa ${i + 1}`}</b>${tr`${placaJos ? (fete ? tr(" · fața 2 (întoarsă pe latura lungă)") : tr(" · de dedesubt (întoarsă pe latura lungă): doar decupajul")) : ""} · ${pl.locuri.length} ${pl.locuri.length === 1 ? tr("bucată") : tr("bucăți")} · ${Math.round(pl.folosit * 100)}% din lemn`}` +
-      (timp ? `<span class="mic timp">${timp}</span>` : "") + `<span class="mic">${continutPlaca(pl)}</span></figcaption></figure>`;
+      (timp ? `<span class="mic timp">${timp}</span>` : "") + `<span class="mic">${continutPlaca(pl)}</span>${butoaneInDesen(r, i)}</figcaption></figure>`;
   }).join("");
 }
 function estimeazaTimpi() {
@@ -2765,6 +2788,9 @@ function init() {
 
   // partea 3D: comutatorul din bara, lista de printat, legatura din Export CNC
   document.querySelectorAll<HTMLElement>("[data-mod]").forEach(b => { b.onclick = () => alegeMod(b.dataset.mod!); });
+  // formele trimise din desenul cvs2 (ADR 0166): în atelierul 3D, la „Din cvs2”; plăcile exportului, spre desenul cvs2
+  if (window.cvs2 && window.cvs2.forme) window.cvs2.forme.laPrimire(f => { if (window.Atelier3D) Atelier3D.formeDinCvs2(f); alegeMod("3d"); });
+  $("#cnc-placi").addEventListener("click", inDesenulCvs2);
   $("#btn-la-lista").onclick = () => $("#at-sectiune-lista").scrollIntoView({ block: "start", behavior: "smooth" });
   $("#e-la-3d").onclick = () => { alegeMod("3d"); setTimeout(() => $("#at-sectiune-lista").scrollIntoView({ block: "start" }), 60); };
   if (window.Atelier3D) Atelier3D.init();

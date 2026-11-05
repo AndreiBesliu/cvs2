@@ -15,7 +15,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { ContCvs2, ContextHost, HostApi } from '../../extensii/api.ts';
+import type { ContCvs2, ContextHost, FormeCvs2, HostApi } from '../../extensii/api.ts';
 import { claudePeste, deschiderePeste, dictionarPeste, gazdaPeste, limbaPeste, localStoragePeste, lucruPeste, temaPeste } from '../../extensii/trenulet/intrare.ts';
 
 type Ref = { readonly id: string; set(d: unknown): Promise<void>; get(): Promise<{ exists: boolean; data(): unknown }>; delete(): Promise<void> };
@@ -35,6 +35,7 @@ const cod = (c: string) => (e: unknown): boolean => (e as { code?: unknown }).co
  */
 function gazda(initial: Record<string, unknown> = {}) {
   const ascultatori = new Set<(c: ContextHost) => void>(), laInchidere = new Set<() => unknown>();
+  const laForme = new Set<(f: FormeCvs2) => void>();
   const g = {
     date: new Map<string, unknown>(Object.entries(initial)),
     cereri: [] as { serviciu: string; argumente: unknown[] }[],
@@ -45,6 +46,9 @@ function gazda(initial: Record<string, unknown> = {}) {
     context: { limba: 'ro', tema: {} } as ContextHost,
     nesalvat: [] as boolean[],
     reporniri: 0,
+    propuse: [] as unknown[][],
+    trimiteForme(f: FormeCvs2): void { for (const x of [...laForme]) x(f); },
+    laForme,
     schimba(c: Partial<ContextHost>): void {
       g.context = { ...g.context, ...c };
       for (const f of [...ascultatori]) f(g.context);
@@ -80,6 +84,10 @@ function gazda(initial: Record<string, unknown> = {}) {
     masina: {
       stare: async () => { throw new Error('nefolosit'); }, laStare: () => () => {}, incarca: async () => { throw new Error('nefolosit'); },
       porneste: async () => null, reia: async () => null, pauza: async () => null, opreste: async () => null, trimite: async () => null,
+    },
+    forme: {
+      laPrimire: (f) => { laForme.add(f); return () => { laForme.delete(f); }; },
+      propune: async (nume, date) => { g.propuse.push([nume, date]); return 'deschis'; },
     },
   };
   return { g, host };
@@ -418,4 +426,26 @@ test('dicționarul englez: adus din pachet doar în engleză, înghețat, înain
   const lipsa = {} as typeof en;
   await dictionarPeste(cu('en', null), lipsa);
   assert.equal(lipsa.TexteEN, undefined);
+});
+
+test('formele (ADR 0166): window.cvs2.forme propune prin gazdă și aude ce trimite omul; o gazdă dinainte de 3.Xe nu le are', async () => {
+  const { g, host } = gazda();
+  const w = {} as Window & { cvs2?: { readonly forme: { propune(n: string, d: string): Promise<string>; laPrimire(f: (x: FormeCvs2) => void): () => void } | null } };
+  gazdaPeste(host, false, w);
+  const forme = w.cvs2?.forme;
+  assert.ok(forme);
+  if (!forme) return;
+  assert.equal(await forme.propune('placa_1.dxf', '0\nEOF\n'), 'deschis');
+  assert.deepEqual(g.propuse, [['placa_1.dxf', '0\nEOF\n']]);
+  const primite: FormeCvs2[] = [];
+  const opreste = forme.laPrimire((f) => { primite.push(f); });
+  g.trimiteForme({ versiune: 1, ok: false, motiv: 'nimic' });
+  opreste();
+  g.trimiteForme({ versiune: 1, ok: false, motiv: 'prea-mare' });
+  assert.deepEqual(primite, [{ versiune: 1, ok: false, motiv: 'nimic' }]);
+  assert.ok(Object.isFrozen(forme));
+  const vechi = { ...host, forme: undefined } as unknown as HostApi;
+  const w2 = {} as typeof w;
+  gazdaPeste(vechi, false, w2);
+  assert.equal(w2.cvs2?.forme, null);
 });

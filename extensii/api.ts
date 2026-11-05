@@ -34,6 +34,23 @@ export type StareMasina = {
   readonly program: { readonly nume: string | null; readonly sha256: string; readonly linii: number } | null;
 };
 
+/**
+ * Un contur trimis din desen (ADR 0166): în mm, în coordonatele foii (originea în colțul stânga-jos, Y în sus); un contur
+ * închis nu-și repetă la sfârșit primul punct.
+ */
+export type ConturCvs2 = { readonly inchis: boolean; readonly puncte: readonly (readonly [number, number])[] };
+/**
+ * Formele trimise de om din desen (ADR 0166), versiunea 1: contururile instanțelor alese (arcele, cercurile și cubicele
+ * aproximate prin segmente, la cel mult 0,02 mm) și cutia lor; sau refuzul: `prea-mare` (peste 10 000 de contururi sau
+ * 200 000 de puncte), `nimic` (nicio formă în selecție).
+ */
+export type FormeCvs2 =
+  | {
+    readonly versiune: 1; readonly ok: true; readonly unitate: 'mm'; readonly contururi: readonly ConturCvs2[];
+    readonly cutie: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
+  }
+  | { readonly versiune: 1; readonly ok: false; readonly motiv: 'prea-mare' | 'nimic' };
+
 export interface HostApi {
   readonly api: 1;
   readonly limba: Limba;
@@ -114,6 +131,19 @@ export interface HostApi {
     pauza(): Promise<null>;
     opreste(): Promise<null>;
     trimite(lucrare: unknown): Promise<unknown>;
+  };
+  /**
+   * Formele dintre desen și extensie (ADR 0166), cu permisiunea `forme`:
+   * - `laPrimire(f)`: formele pe care omul i le trimite din desen („Trimite la <extensie>”, în bara selecției); întoarce
+   *   dezabonarea. Extensia nu citește desenul altfel;
+   * - `propune(nume, date)`: un fișier SVG sau DXF pentru desen (text sau octeți, cât un import, cel mult 16 MB): cvs2 trece
+   *   la Proiectare și deschide fereastra Importă cu el, „Propus de <extensie>”; nimic nu intră în desen fără „Importă”.
+   *   Răspunsul e `deschis`. Refuzurile: `forme:permisiune`, `:nume`, `:date`, `:prea-mare`, `:ocupat` (alt import e deschis),
+   *   `:doar-citire` (fila doar citește), `:indisponibila`.
+   */
+  readonly forme: {
+    laPrimire(f: (forme: FormeCvs2) => void): () => void;
+    propune(nume: string, date: string | ArrayBuffer | Uint8Array | Blob): Promise<'deschis'>;
   };
 }
 

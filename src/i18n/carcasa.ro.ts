@@ -243,6 +243,7 @@ export const roCarcasa = {
   'extensii.permisiune.descarcari': 'să salveze fișiere ca descărcări (date și desene, nu programe)',
   'extensii.permisiune.masina': 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea',
   'extensii.permisiune.cont': 'să vadă dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola)',
+  'extensii.permisiune.forme': 'să primească formele pe care i le trimiți din desen și să-ți propună forme pentru desen (le adaugi tu, din Importă)',
   'extensii.gestionare.date': 'datele ei: {kb} kB',
   'extensii.instalare.verific': 'Verific pachetul…',
   'extensii.instalare.refuz': 'Pachetul nu se poate instala: {motiv}',

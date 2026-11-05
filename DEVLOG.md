@@ -5235,3 +5235,11 @@ Cu o pauză: „fa pauza” pe 04.11 seara, reluată pe 05.11 cu „Continuă”
 (până pe 05.12). Probele extensiilor (și cele noi, ale repornirii), ale senderului, ale primirii și ale planificatorului (și
 cea în engleză), rulate chiar pe canal: 22 / 22. Pachetul (`trenulet-18.5.0.zip`) nu stă pe canal: owner-ul îl primește ca
 fișier. Adresa principală de test nu s-a atins; ramura nu e împinsă.
+
+## 2026-11-05 — Felia 3.Xe: formele între cvs2 și plugin (ADR 0166) (Model: Claude Opus 5.5)
+
+**Prompt:** „B, schimbul de forme” (la „Care felie urmează?”, după raportul lui 3.Te), apoi „Da, fă-o” (la schița celor cinci locuri noi:
+bara selecției, fila „Din cvs2”, butonul „În desenul cvs2”, fereastra Importă „Propus de”, permisiunea), în sesiunea dedicată liniei
+Trenuleț. 3.Xe: o selecție din desenul cvs2 ajunge în plugin (ca s-o ridici în 3D), iar conturul unei plăci din plugin ajunge
+în desenul cvs2, prin fereastra Importă.
+**Started:** 05.11, 09:13.

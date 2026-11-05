@@ -101,7 +101,10 @@ interface Window {
     readonly three: () => Promise<Trei.Biblioteca | null>;
     readonly cont: () => import('../../api.ts').ContCvs2 | null;
     readonly laSchimbare: (f: () => void) => () => void;
-    readonly amana: (cheie: string, f: () => unknown, ms: number) => void };
+    readonly amana: (cheie: string, f: () => unknown, ms: number) => void;
+    /** Formele dintre desenul cvs2 și pagină (ADR 0166), cu permisiunea `forme`; null pe o gazdă dinainte de 3.Xe. */
+    readonly forme: { readonly propune: (nume: string, date: string | Uint8Array) => Promise<'deschis'>;
+      readonly laPrimire: (f: (forme: import('../../api.ts').FormeCvs2) => void) => () => void } | null };
   readonly THREE?: Trei.Biblioteca;
   /** Dicționarul englez al paginii (ADR 0165): pus de intrare doar în engleză, înaintea scripturilor. */
   readonly TexteEN?: Readonly<Record<string, string>>;

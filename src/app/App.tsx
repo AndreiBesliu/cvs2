@@ -19,6 +19,9 @@ import {
 } from '../ui/aranjament.ts';
 import { CipCursor, CipZoom, semnal, type PunctFoaie, type Semnal } from '../ui/CipuriVedere.tsx';
 import { ACTIUNI_VEDERE, type ContextVedere } from '../ui/actiuniVedere.ts';
+import { ACTIUNI_EXTENSII, type ContextExtensii } from '../ui/actiuniExtensii.ts';
+import type { FormeCvs2 } from '../../extensii/api.ts';
+import type { PropuneForme } from '../extensii/forme.ts';
 import { actiuneaTastei, tastaActiunii, tastaApasata } from '../ui/scurtaturi.ts';
 import { ACTIUNI_EXPORT, type ContextExport, type ParametriExport, type RezultatExport } from '../ui/actiuniExport.ts';
 import {
@@ -164,6 +167,8 @@ const ORIUNDE: ReadonlySet<string> = new Set(['vedere.paleta', 'vedere.tema', ..
  * încărcare): există doar cât e deschisă o extensie, iar fila ei o pune gazda extensiilor, după ale aranjamentului.
  */
 const FEREASTRA_EXTENSIE = 'extensie';
+/** Extensia deschisă: id-ul, numele și, cu permisiunea `forme` (ADR 0166), unde pleacă formele trimise din desen. */
+type ExtensieDeschisa = { readonly id: string; readonly nume: string; readonly forme: ((f: FormeCvs2) => void) | null };
 type Fereastra = IdFereastra | typeof FEREASTRA_EXTENSIE;
 
 const doua = (x: number): string => x.toFixed(2);
@@ -247,7 +252,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const [cerereLucrare, setCerereLucrare] = useState<CerereLucrare | null>(null);
   // Extensia deschisă, cu fereastra ei (ADR 0160 §A), și o fereastră a extensiilor deschisă (instalarea, gestionarea, ADR 0127
   // §C), care face aplicația inertă, ca dialogurile ei; tot așa confirmarea cerută de o extensie (ADR 0160 §B).
-  const [extensie, setExtensie] = useState<{ readonly id: string; readonly nume: string } | null>(null);
+  // Cu permisiunea `forme` (ADR 0166), extensia deschisă primește formele trimise din bara selecției (`forme`).
+  const [extensie, setExtensie] = useState<ExtensieDeschisa | null>(null);
   const [modalExtensii, setModalExtensii] = useState(false);
   const [modalMasina, setModalMasina] = useState(false);
   // În pornire stă doar verificarea ancorei și a ferestrei care a deschis fila; pe live, primirea e oprită (ADR 0126 §D).
@@ -284,7 +290,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     if (f !== FEREASTRA_EXTENSIE) tineFereastra(f);
   };
   /** O extensie deschisă din meniul ei vine în fereastra ei; închisă (×, `host.inchide()`), fereastra pleacă la Proiectare. */
-  const [laExtensie] = useState(() => (x: { readonly id: string; readonly nume: string } | null): void => {
+  const [laExtensie] = useState(() => (x: ExtensieDeschisa | null): void => {
     setExtensie(x);
     if (x !== null) deschideFereastra(FEREASTRA_EXTENSIE);
     else if (fereastraRef.current === FEREASTRA_EXTENSIE) deschideFereastra('proiectare');
@@ -339,6 +345,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
    */
   const [coadaImport, setCoadaImport] = useState<{
     readonly fisiere: readonly File[]; readonly punct: { readonly x: number; readonly y: number } | null;
+    /** Extensia care a propus fișierul (ADR 0166 §C), spusă în fereastră. */
+    readonly de?: string;
   } | null>(null);
   /**
    * Numărul ultimei cereri de export. Un rezultat întârziat (calculul se încarcă la cerere) e al altor parametri dacă între
@@ -417,6 +425,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const registruExport = useMemo(() => creeazaRegistru(ACTIUNI_EXPORT, contulPermite), []);
   const registruImport = useMemo(() => creeazaRegistru(ACTIUNI_IMPORT, contulPermite), []);
   const registruVedere = useMemo(() => creeazaRegistru(ACTIUNI_VEDERE, contulPermite), []);
+  const registruExtensii = useMemo(() => creeazaRegistru(ACTIUNI_EXTENSII, contulPermite), []);
   /** Unde era focusul când s-a deschis paleta: acolo se întoarce la închidere. */
   const focusPaleta = useRef<Element | null>(null);
   const contextVedere: ContextVedere = {
@@ -431,6 +440,23 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       const noua = TEME[(TEME.indexOf(tema) + 1) % TEME.length] ?? 'auto';
       setTema(noua);
       alegeTema(noua);
+    },
+  };
+  /**
+   * „Trimite la <extensie>” (ADR 0166 §B): formele instanțelor alese, calculate la cerere, spre extensia deschisă care le
+   * primește; apoi fereastra ei, ca omul să vadă ce a făcut extensia cu ele (sau refuzul, spus de ea).
+   */
+  const contextExtensii: ContextExtensii = {
+    extensieForme: () => (extensie?.forme ? { nume: extensie.nume } : null),
+    selectie: () => curenta.current.selectie,
+    trimiteSelectia: () => {
+      const trimite = extensie?.forme;
+      if (!trimite) return;
+      const { istoric: h, selectie: ales } = curenta.current;
+      void import('../extensii/formeSelectie.ts').then((m) => {
+        trimite(m.formeSelectie(h.doc, ales));
+        deschideFereastra(FEREASTRA_EXTENSIE);
+      }, (e: unknown) => { jurnal.adauga('fereastra', e); });
     },
   };
   const contextExport = (p?: ParametriExport, cerere = cerereExport.current, semnal?: AbortSignal): ContextExport => ({
@@ -699,9 +725,11 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
   const stareActiune = (id: string): RezultatActiune => (
     id === 'import.svg' ? stare(registruImport, id, importFaraFisier())
       : id === 'export.gcode' ? stare(registruExport, id, contextExport())
-        : registruVedere.actiuni.has(id) ? stare(registruVedere, id, contextVedere) : stare(registru, id, context()));
+        : registruVedere.actiuni.has(id) ? stare(registruVedere, id, contextVedere)
+          : registruExtensii.actiuni.has(id) ? stare(registruExtensii, id, contextExtensii) : stare(registru, id, context()));
   const eticheta = (id: string): CheieSimpla => (registru.actiuni.get(id) ?? registruImport.actiuni.get(id)
-    ?? registruExport.actiuni.get(id) ?? registruVedere.actiuni.get(id))?.eticheta ?? 'motiv.actiune-necunoscuta';
+    ?? registruExport.actiuni.get(id) ?? registruVedere.actiuni.get(id) ?? registruExtensii.actiuni.get(id))?.eticheta
+    ?? 'motiv.actiune-necunoscuta';
   /**
    * O acțiune aleasă din bară, din bara selecției, din paletă sau de la tastatură. Importul cere întâi fișierul, iar
    * exportul își deschide dialogul (ca butoanele de până acum); restul rulează prin registrul lor. Cât e deschis un
@@ -719,6 +747,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     if (id === 'import.svg') fisierImport.current?.click();
     else if (id === 'export.gcode') { setStareExport(null); setDialogExport(true); }
     else if (registruVedere.actiuni.has(id)) ruleaza(registruVedere, id, contextVedere);
+    else if (registruExtensii.actiuni.has(id)) ruleaza(registruExtensii, id, contextExtensii);
     else {
       const r = ruleazaDocument(id, context());
       if (!r.ok) refuzEditare.current?.(id, r.motiv);
@@ -826,12 +855,25 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     rezultat,
     jurnal: (e) => { jurnal.adauga('import', e); },
   });
-  const pornesteImport = (fisiere: readonly File[], punct: { readonly x: number; readonly y: number } | null): void => {
+  const pornesteImport = (fisiere: readonly File[], punct: { readonly x: number; readonly y: number } | null, de?: string): void => {
     // Fila care doar citește nu importă (ca butonul, oprit): o lăsare pe planșă nu mai deschide un dialog care rămâne
     // pentru totdeauna la „Se citește fișierul…” (recenzia A).
     if (!fisiere[0] || doarCiteste(mod)) return;
-    setCoadaImport({ fisiere, punct });
+    setCoadaImport({ fisiere, punct, ...(de === undefined ? {} : { de }) });
   };
+  /**
+   * Un fișier propus de o extensie (ADR 0166 §C): fereastra Importă, pe Proiectare, ca pentru unul ales de om, cu numele
+   * extensiei. Cât e deschis alt dialog, sau fila doar citește, refuzul ajunge la extensie.
+   */
+  const propuneForme = useRef<PropuneForme>(() => 'indisponibila');
+  propuneForme.current = (f, de) => {
+    if (coadaImport !== null || dialogDeschis.current) return 'ocupat';
+    if (doarCiteste(mod)) return 'doar-citire';
+    deschideFereastra('proiectare');
+    pornesteImport([f], null, de);
+    return null;
+  };
+  const [gazdaForme] = useState(() => ({ propune: ((f, de) => propuneForme.current(f, de)) as PropuneForme }));
   const alesFisier = (lista: FileList | null): void => { pornesteImport(lista ? [...lista] : [], null); };
   const pornesteImportRef = useRef(pornesteImport);
   pornesteImportRef.current = pornesteImport;
@@ -892,6 +934,8 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
     ].filter((c) => c !== '').join(' ');
     const extra = clase === '' ? {} : { className: clase };
     if (id === 'vedere.tema') return buton(id, atribut, { ...extra, 'data-icona': `tema.${tema}` }, `${t('vedere.tema')}: ${t(`tema.${tema}`)}`);
+    // „Trimite la <extensie>” (ADR 0166 §B): doar cât e deschisă o extensie care primește forme, cu numele ei.
+    if (id === 'extensii.trimite-selectia') return extensie?.forme ? buton(id, atribut, extra, t('actiune.trimite-la', { nume: extensie.nume })) : null;
     const p = panouAl(id);
     if (id === 'vedere.traseu') return buton(id, atribut, { ...extra, 'aria-pressed': traseu?.arata === true });
     return buton(id, atribut, p ? { ...extra, 'aria-pressed': panouri[p] } : extra);
@@ -1174,7 +1218,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
             tasta={tastaActiunii}
             elemente={[
               ...toate(registruImport, importFaraFisier()), ...toate(registruExport, contextExport()),
-              ...toate(registru, context()), ...toate(registruVedere, contextVedere),
+              ...toate(registru, context()), ...toate(registruVedere, contextVedere), ...toate(registruExtensii, contextExtensii),
             ]}
             onAlege={(id) => {
               setPaleta(false);
@@ -1217,6 +1261,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
         <DialogImport
           fisiere={coadaImport.fisiere}
           punct={coadaImport.punct}
+          {...(coadaImport.de === undefined ? {} : { de: coadaImport.de })}
           registruImport={registruImport}
           contextImport={contextImport}
           stareImporta={(p, loc) => stare(registru, 'document.importa', contextImportNou(p, loc))}
@@ -1235,7 +1280,7 @@ export function App({ config, jurnal, diagnostic, alegeLimba, alegeTema, proiect
       </Suspense>
       <Suspense fallback={null}>
         <Extensii jurnal={jurnal} fereastra={fereastra === FEREASTRA_EXTENSIE} onFereastra={() => { deschideFereastra(FEREASTRA_EXTENSIE); }}
-          onDeschisa={laExtensie} onModal={setModalExtensii}
+          onDeschisa={laExtensie} onModal={setModalExtensii} forme={gazdaForme}
           masina={{ activ: primireActiva, monteaza: () => { setMasinaMontata(true); }, trimite: trimiteLucrare }} />
       </Suspense>
     </>

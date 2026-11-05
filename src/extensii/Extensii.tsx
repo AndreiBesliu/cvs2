@@ -24,7 +24,8 @@ import '../i18n/carcasa.ts';
 import { mesajeGata } from '../i18n/laCerere.ts';
 import { cuMesaje, t } from '../i18n/t.ts';
 import { useLimba } from '../ui/useLimba.ts';
-import type { CadruPornit, GazdaMasina } from './cadru.ts';
+import type { FormeCvs2 } from '../../extensii/api.ts';
+import type { CadruPornit, GazdaForme, GazdaMasina } from './cadru.ts';
 import { contextPentruExtensie } from './cont.ts';
 import { FaraStocare, listaExtensii, type ExtensieInstalata } from './depozit.ts';
 import { repornireRara } from './repornire.ts';
@@ -53,18 +54,24 @@ function tastaInMeniu(e: KeyboardEvent<HTMLDivElement>, inchide: () => void): vo
   }
 }
 
-export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, masina }: {
+export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, masina, forme }: {
   readonly jurnal: Jurnal;
   /** Fereastra extensiei e cea de acum: fila ei e apăsată. */
   readonly fereastra: boolean;
   /** Fila extensiei: deschide fereastra ei. */
   readonly onFereastra: () => void;
   /** Extensia deschisă (id-ul și numele), sau null: carcasa îi arată fereastra, sau revine din ea la Proiectare. */
-  readonly onDeschisa: (x: { readonly id: string; readonly nume: string } | null) => void;
+  readonly onDeschisa: (x: {
+    readonly id: string; readonly nume: string;
+    /** Cu permisiunea `forme` (ADR 0166 §B): trimite extensiei formele alese de om în desen; altfel null. */
+    readonly forme: ((f: FormeCvs2) => void) | null;
+  } | null) => void;
   /** O fereastră a extensiilor (instalarea, gestionarea) e deschisă: aplicația de sub ea e inertă. */
   readonly onModal: (deschisa: boolean) => void;
   /** Ce dă carcasa senderului extensiilor (ADR 0160 §B). */
   readonly masina: GazdaMasina;
+  /** Ce dă carcasa formelor propuse de extensie (ADR 0166 §C): fereastra Importă. */
+  readonly forme: GazdaForme;
 }): ReactNode {
   const limba = useLimba();
   const [loc] = useState(() => document.getElementById('loc-extensii'));
@@ -94,6 +101,8 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
   // Gazda senderului, cea de acum: cadrul pornește o dată pe extensie, dar cere de fiecare dată prin ea.
   const masinaRef = useRef(masina);
   masinaRef.current = masina;
+  const formeRef = useRef(forme);
+  formeRef.current = forme;
 
   const reincarca = (): void => {
     void listaExtensii().then(setLista, (e: unknown) => {
@@ -120,7 +129,12 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
     return () => { window.removeEventListener('hashchange', dinAncora); };
   }, []);
   useEffect(() => { onModal(cerere !== null || intrebare); }, [cerere, intrebare, onModal]);
-  useEffect(() => { onDeschisa(deschisa ? { id: deschisa.id, nume: deschisa.manifest.nume } : null); }, [deschisa, onDeschisa]);
+  useEffect(() => {
+    onDeschisa(deschisa ? {
+      id: deschisa.id, nume: deschisa.manifest.nume,
+      forme: deschisa.manifest.permisiuni.includes('forme') ? (f) => { pornit.current?.trimiteForme(f); } : null,
+    } : null);
+  }, [deschisa, onDeschisa]);
 
   // Meniul: sub buton, cu focusul pe primul rând; un clic în afara lui îl închide.
   const deschideMeniul = (): void => {
@@ -196,7 +210,7 @@ export function Extensii({ jurnal, fereastra, onFereastra, onDeschisa, onModal, 
         activ: masinaRef.current.activ,
         monteaza: () => { masinaRef.current.monteaza(); },
         trimite: (l, ext) => masinaRef.current.trimite(l, ext),
-      });
+      }, { propune: (f, de) => formeRef.current.propune(f, de) });
       oprire = h.opreste;
       pornit.current = h;
       trimiteContext.current = () => { h.context(contextul()); };

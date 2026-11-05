@@ -9,13 +9,14 @@ import { ACTIUNI_DOCUMENT } from '../../src/ui/actiuniDocument.ts';
 import { ACTIUNI_EXPORT } from '../../src/ui/actiuniExport.ts';
 import { ACTIUNI_IMPORT } from '../../src/ui/actiuniImport.ts';
 import { ACTIUNI_VEDERE } from '../../src/ui/actiuniVedere.ts';
+import { ACTIUNI_EXTENSII } from '../../src/ui/actiuniExtensii.ts';
 import {
   ARANJAMENT_MODERN, CIPURI, CIPURI_GLOBALE, COMUTA_PANOU, DESCHIDE_FEREASTRA, DOCURI, FERESTRE, PANOURI, verificaAranjament, ZONE,
   ZONE_CU_DATA_ACTIUNE, type Aranjament, type Grup, type IdFereastra, type IdZona,
 } from '../../src/ui/aranjament.ts';
 
 /** Toate id-urile registrului: cele patru registre ale aplicației, ca în paletă. */
-const REGISTRU = new Set([...ACTIUNI_DOCUMENT, ...ACTIUNI_EXPORT, ...ACTIUNI_IMPORT, ...ACTIUNI_VEDERE].map((a) => a.id));
+const REGISTRU = new Set([...ACTIUNI_DOCUMENT, ...ACTIUNI_EXPORT, ...ACTIUNI_IMPORT, ...ACTIUNI_VEDERE, ...ACTIUNI_EXTENSII].map((a) => a.id));
 
 /** Acțiunile unei zone, în ordine, cu dublurile lor (scrise aici din nou, fără funcția din aplicație). */
 const actiuniZona = (a: Aranjament, z: IdZona): string[] => a.zone[z].flatMap((g) => g.intrari.flatMap((x) => ('actiune' in x ? [x.actiune] : [])));
@@ -33,8 +34,8 @@ test('aranjamentul implicit: fiecare acțiune din el există în registru și ap
   }
   // Plasa nu e vidă: meniul global, bara de sus, bara selecției și cea de jos au, împreună, acțiunile prototipului B, plus
   // „Arată traseul” în bara de jos (2.8d), fără „Adaugă dreptunghi / cerc” (ADR 0052: locul uneltelor de desen). Căutarea și
-  // tema au trecut din colțul barei în meniul global (ADR 0132).
-  assert.equal(numarate, 2 + 4 + 0 + 3 + 2);
+  // tema au trecut din colțul barei în meniul global (ADR 0132). Bara selecției are și „Trimite la <extensie>” (ADR 0166).
+  assert.equal(numarate, 2 + 4 + 0 + 4 + 2);
   for (const p of PANOURI) assert.ok(REGISTRU.has(COMUTA_PANOU[p]), `panoul ${p}: comutatorul lipsește din registru`);
   for (const f of FERESTRE) assert.ok(REGISTRU.has(DESCHIDE_FEREASTRA[f]), `fereastra ${f}: fila ei lipsește din registru`);
   assert.deepEqual(verificaAranjament(ARANJAMENT_MODERN, REGISTRU), []);
@@ -46,7 +47,7 @@ test('aranjamentul implicit e cel al prototipului B: bara de sus în aceeași or
   assert.deepEqual(actiuniZona(ARANJAMENT_MODERN, 'sus'), [
     'istoric.anuleaza', 'istoric.reface', 'import.svg', 'export.gcode',
   ]);
-  assert.deepEqual(actiuniZona(ARANJAMENT_MODERN, 'selectie'), ['document.duplica-selectia', 'document.sterge-selectia', 'vedere.proprietati']);
+  assert.deepEqual(actiuniZona(ARANJAMENT_MODERN, 'selectie'), ['document.duplica-selectia', 'document.sterge-selectia', 'vedere.proprietati', 'extensii.trimite-selectia']);
   // Mașina e o fereastră (ADR 0132), nu un panou: docul din dreapta are doar proprietățile.
   assert.deepEqual(ARANJAMENT_MODERN.docuri, { stanga: ['lista'], dreapta: ['proprietati'] });
   // Fiecare panou stă undeva: altfel nu s-ar mai putea deschide.

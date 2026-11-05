@@ -321,6 +321,11 @@ export function gazdaPeste(host: HostApi, cuMasina: boolean, w: Window = window,
     cont: () => host.cont ?? null,
     laSchimbare: (f: () => void) => host.laSchimbare(() => { f(); }),
     amana: (cheie: string, f: () => unknown, ms: number): void => { lucru.amana(String(cheie), f, ms); },
+    // formele dintre desen și pagină (ADR 0166); o gazdă dinainte de 3.Xe nu le are
+    forme: typeof host.forme === 'object' && host.forme !== null ? Object.freeze({
+      propune: (nume: string, date: string | Uint8Array) => host.forme.propune(nume, date),
+      laPrimire: (f: Parameters<HostApi['forme']['laPrimire']>[0]) => host.forme.laPrimire(f),
+    }) : null,
   };
   Object.defineProperty(w, 'cvs2', { value: Object.freeze(cvs2), configurable: false, writable: false });
 }

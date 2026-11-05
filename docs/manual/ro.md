@@ -914,7 +914,7 @@ de ce.
 
 ## Extensiile
 %% capitol: extensii
-%% acopera: extensii.buton
+%% acopera: extensii.buton, extensii.trimite-selectia
 
 O extensie adaugă aplicației o fereastră a ei, de exemplu Planificatorul Trenuleț. Nu face parte din aplicație: o instalezi
 tu, iar interfața aplicației rămâne aceeași.
@@ -960,6 +960,12 @@ tu, iar interfața aplicației rămâne aceeași.
   live, deocamdată, extensiile nu folosesc mașina.
 - O astfel de extensie poate trimite și o lucrare întreagă (de exemplu, „Trimite la cvs2” din Planificatorul Trenuleț): vine
   în dialogul **Lucrare primită**, ca de la o aplicație deschisă alături, cu extensia drept origine.
+- O extensie care a cerut asta primește forme din desen și îți propune forme pentru desen. Alege forme pe planșă: în bara
+  selecției apare **Trimite la extensie**, cu numele extensiei deschise (de exemplu, **Trimite la Planificator Trenuleț**;
+  și în **Caută o comandă**). Contururile alese pleacă spre extensie, în mm, iar fereastra ei se deschide; Planificatorul
+  Trenuleț le ridică în 3D, în atelier, la **Din cvs2**. Extensia nu vede desenul altfel. Invers, o extensie îți poate
+  propune un fișier SVG sau DXF (Planificatorul Trenuleț: o placă din exportul CNC, cu **În desenul cvs2**): se deschide
+  fereastra **Importă**, cu „Propus de” și numele extensiei, iar nimic nu intră în desen până nu apeși **Importă**.
 - Planificatorul Trenuleț folosește mașina și din exportul lui CNC, la „Pe mașină, prin cvs2”: încarcă un fișier, îl pornește
   (cu întrebarea de mai sus), pune pauză, îl reia și îl oprește. Starea mașinii stă deasupra butoanelor.
 - Extensia rulează izolată: nu vede proiectele sau portul mașinii și nu iese pe internet; din cont vede doar ce i-ai dat voie

@@ -13,7 +13,7 @@ var Atelier3D = (function () {
     fund?: string; goale?: boolean; lung?: number; lat?: number; adanc?: number; sus?: number; buza?: number; profil?: string; varf?: number; inceput?: number;
     parte?: string; diam?: number; forma?: string; varf_d?: number; gaura?: string; groasa?: boolean; indoita?: { brate: number[]; unghiuri: number[] };
     fanta?: boolean; capat?: string; fete?: string; inalt?: number; invers?: boolean; axa?: string; baza?: number; cols?: number; rows?: number; fel?: string;
-    mod?: string; unealta?: string; brate?: number[]; unghiuri?: number[]; gauriInd?: string[] };
+    mod?: string; unealta?: string; brate?: number[]; unghiuri?: number[]; gauriInd?: string[]; contururi?: [number, number][][]; grosime?: number };
   /** O gaură pe grilă: colțul de celulă și tipul. */
   type Gaura = [number, number, string];
   /** O piesă gata de printat: corpul, mărimea și ce a spus motorul despre ea. */
@@ -56,6 +56,8 @@ var Atelier3D = (function () {
     bara: { lung: 4 },
     bila: { baza: 1 },
     cupa: { baza: 1 },
+    // forma trimisă din desenul cvs2 (ADR 0166): doar contururile închise; câte erau deschise și refuzul, pentru om
+    dinCvs2: { contururi: [] as [number, number][][], grosime: 3.2, deschise: 0, refuz: "" },
   };
   // piesele de legatura stau toate sub fila „Legaturi”, cu o galerie a lor in editor
   const LEGATURI = [["grinda", "Grindă"], ["caramidaTechnic", "Cărămidă Technic"], ["placaTechnic", "Placă cu găuri"], ["stiftTechnic", "Știft"], ["ax", "Ax"], ["bucsa", "Bucșă / conector"],
@@ -90,6 +92,7 @@ var Atelier3D = (function () {
     return a * b === celule.length ? [Math.min(a, b), Math.max(a, b)] : null;
   }
   function numeDef(d: Def): string {
+    if (d.tip === "dinCvs2") return tr`Formă din cvs2, ${fmt(d.grosime ?? 3.2)} mm`;
     if (d.tip === "caramida") {
       const r = dreptunghiDin(d.celule!), fel = d.placi === 1 ? (d.stifturi ? tr("Placă") : tr("Placă netedă")) : d.placi === 3 ? (d.stifturi ? tr("Cărămidă") : tr("Cărămidă netedă")) : tr`Bloc de ${d.placi} plăci${d.stifturi ? "" : tr(", neted")}`;
       const lat = d.laterale && d.laterale.some((t: string) => t !== "p");
@@ -176,6 +179,7 @@ var Atelier3D = (function () {
     }
     if (t === "caramidaTechnic") { p.gauri = Array.from({ length: p.lung === 1 ? 1 : p.lung - 1 }, (_, k) => (["r", "x", "p"].includes(p.gauri && p.gauri[k]) ? p.gauri[k]! : "r")); if (!p.goale) delete p.goale; }
     if (t === "stiftTechnic") { if (+p.lung !== 3) delete p.lung; if (p.capat !== "ax") delete p.capat; }
+    if (t === "dinCvs2") { delete p.deschise; delete p.refuz; }
     return { tip: t, ...p };
   }
   function gauriCaramida(p: { celule: readonly (readonly [number, number, ...unknown[]])[]; gauri?: readonly Gaura[]; stifturi?: boolean | string }): Gaura[] {
@@ -437,6 +441,25 @@ var Atelier3D = (function () {
         <div class="at-rand"><span class="mic">Știfturi pe:</span><div class="segment" id="at-l-fete"><button type="button" data-fete="una" aria-pressed="${p.fete !== "doua"}">O latură</button><button type="button" data-fete="doua" aria-pressed="${p.fete === "doua"}">Două laturi</button></div></div>`;
       $("#at-l-lung").onchange = ev => { const v = Math.round(+(ev.target as HTMLInputElement).value); if (v >= 1 && v <= 8) { p.lung = v; schimbat(); } };
       $("#at-l-fete").onclick = ev => { const b = (ev.target as Element).closest<HTMLElement>("[data-fete]"); if (!b) return; p.fete = b.dataset.fete!; editor(); schimbat(); };
+    } else if (t === "dinCvs2") {
+      // forma primită din desenul cvs2 (ADR 0166 §D): mărimea, câte contururi, grosimea; sau ce s-a întâmplat la trimitere
+      const p = stare.dinCvs2, n = p.contururi.length;
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (const c of p.contururi) for (const [x, y] of c) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+      const refuz = p.refuz === "prea-mare" ? tr("Selecția din cvs2 e prea mare: cel mult 10 000 de contururi și 200 000 de puncte.")
+        : p.refuz === "nimic" ? tr("În selecția din cvs2 nu era niciun contur închis.")
+        : p.refuz === "atelier" ? tr("Forma e prea mare pentru atelier: cel mult 50 000 de puncte.") : "";
+      e.innerHTML = `<h2>Formă din cvs2</h2>
+        <p class="mic">Alege forme închise în desenul cvs2 și apasă Trimite la Planificator Trenuleț: le primești aici, ridicate în 3D. Găurile rămân găuri.</p>`
+        + (refuz ? `<p class="mic eroare" id="at-forma-refuz"></p>` : "")
+        + (n ? `<p class="mic" id="at-forma-info"></p>
+        <div class="at-campuri"><label for="at-f-grosime">Grosime (mm)<input id="at-f-grosime" type="number" min="0.4" max="50" step="0.1" value="${p.grosime}"></label></div>` : "");
+      if (refuz) $("#at-forma-refuz").textContent = refuz;
+      if (n) {
+        $("#at-forma-info").textContent = tr`${n} ${n === 1 ? tr("contur închis") : tr("contururi închise")}, ${fmt(x1 - x0)} × ${fmt(y1 - y0)} mm`
+          + (p.deschise ? tr`; ${p.deschise} ${p.deschise === 1 ? tr("deschis, lăsat afară") : tr("deschise, lăsate afară")}` : "");
+        $("#at-f-grosime").onchange = ev => { const v = +(ev.target as HTMLInputElement).value; if (v >= 0.4 && v <= 50) { p.grosime = Math.round(v * 10) / 10; schimbat(); } };
+      }
     } else if (t === "ax") {
       const p = stare.ax;
       e.innerHTML = `<h2>Ax Technic</h2>
@@ -1013,7 +1036,8 @@ var Atelier3D = (function () {
   function butonModel() {
     const b = $<HTMLButtonElement>("#at-in-model");
     b.textContent = inlocuieste && model.some(x => x.id === inlocuieste) ? "Înlocuiește în model" : "Pune în model";
-    b.disabled = !curent || curent.def.tip === "calibrare";
+    // o formă liberă, din cvs2, nu stă pe grila de știfturi a modelului
+    b.disabled = !curent || curent.def.tip === "calibrare" || curent.def.tip === "dinCvs2";
     $("#at-vedere-mod [data-v=\"model\"]").textContent = model.length ? tr`Modelul (${model.length})` : "Modelul";
   }
   function alegeVedere(v: string) {
@@ -1074,6 +1098,14 @@ var Atelier3D = (function () {
     if (vedere === "model") return;
     $("#at-adauga").hidden = false; $("#at-bucati-rand").hidden = false; $("#at-in-model").hidden = false;
     const def = defCurenta();
+    if (def.tip === "dinCvs2" && !(def.contururi && def.contururi.length)) {
+      // nicio formă primită încă: doar explicația din editor, fără piesă
+      curent = null;
+      $("#at-adauga").hidden = true; $("#at-bucati-rand").hidden = true; $("#at-in-model").hidden = true;
+      $("#at-nume-piesa").textContent = tr("Formă din cvs2"); $("#at-cote").innerHTML = ""; $("#at-avert").hidden = true;
+      if (v3.ok && v3.mesh) { v3.scena.remove(v3.mesh); v3.mesh.geometry.dispose(); v3.mesh = null; randeaza(); }
+      return;
+    }
     try {
       const piese = pieseDin(def);
       let tri: Tri[], dim: number[];
@@ -1354,9 +1386,31 @@ var Atelier3D = (function () {
       culori(); salveaza();
     };
   }
+  /**
+   * Formele trimise din desenul cvs2 (ADR 0166 §D): contururile închise intră în fila „Din cvs2” (cel mult 50 000 de puncte),
+   * cele deschise doar se numără; un refuz al lui cvs2 (prea mare, nimic) se spune acolo.
+   */
+  function formeDinCvs2(f: import("../../../api.ts").FormeCvs2) {
+    const p = stare.dinCvs2;
+    p.contururi = []; p.deschise = 0; p.refuz = "";
+    if (!f || !f.ok) p.refuz = f && !f.ok ? f.motiv : "nimic";
+    else {
+      const inchise = f.contururi.filter(c => c.inchis && c.puncte.length >= 3);
+      if (inchise.reduce((t, c) => t + c.puncte.length, 0) > 50000) p.refuz = "atelier";
+      else if (!inchise.length) p.refuz = "nimic";
+      else { p.contururi = inchise.map(c => c.puncte.map(([x, y]): [number, number] => [x, y])); p.deschise = f.contururi.length - inchise.length; }
+    }
+    inlocuieste = null;
+    if (pornit) alegeTip("dinCvs2"); else { stare.tip = "dinCvs2"; salveaza(); }
+  }
   async function init() {
     if (!window.Lego) return;
     try { incarca(JSON.parse(localStorage.getItem(CHEIE) || "null") || {}); } catch (e) { incarca({}); }
+    // fila „Din cvs2” doar în cvs2, cu formele deschise extensiei (ADR 0166)
+    const cuForme = !!(window.cvs2 && window.cvs2.forme);
+    const filaForme = document.querySelector<HTMLElement>('#at-tipuri [data-tip="dinCvs2"]');
+    if (filaForme) filaForme.hidden = !cuForme;
+    if (stare.tip === "dinCvs2" && !cuForme) stare.tip = "caramida";
     uiImprimante = Profiluri.ui<Valori>($("#prof-imprimanta"), {
       eticheta: "Imprimanta", fel: "imprimanta",
       ajutor: "Fiecare imprimantă își ține patul, variantele de la calibrare și cuplajele pieselor de cale printate (din 2D). Ce schimbi aici se scrie în imprimanta aleasă; pagina se deschide cu cea implicită (★).",
@@ -1401,7 +1455,7 @@ var Atelier3D = (function () {
     porneste3D();
     alegeTip(stare.tip);
   }
-  return { init, intra, reimprospateaza: () => { tren.cheie = null; if (pornit) randeazaLista(); }, pat: () => ({ pat: setari.pat.slice(), margine: setari.pat_margine }),
+  return { init, intra, formeDinCvs2, reimprospateaza: () => { tren.cheie = null; if (pornit) randeazaLista(); }, pat: () => ({ pat: setari.pat.slice(), margine: setari.pat_margine }),
     // cuplajele printate s-au schimbat in 2D: se scriu in imprimanta aleasa
     printSchimbat: () => { if (imprimante) { Profiluri.memoreaza(imprimante, valoriImprimanta()); salveaza(); } },
     imprimanta: () => { const a = imprimante && imprimante.lista.find(p => p.id === imprimante!.activ); return a ? a.nume : ""; } };

@@ -243,3 +243,88 @@ test('repornirea cerută de extensie (ADR 0165): cadrul se reface, cu contextul 
   await expect(deschideri).toHaveText('Deschideri: 5');
   expect(await eroriJurnal(page)).toEqual([]);
 });
+
+const FORME = 'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să primească formele pe care i le trimiți din desen și să-ți propună forme pentru desen (le adaugi tu, din Importă).';
+/** Un dreptunghi de 40 × 20 mm cu o gaură rotundă, importat și ales: forma pe care o trimite omul. */
+async function formaAleasa(page: Page): Promise<void> {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="40mm" height="20mm" viewBox="0 0 40 20">'
+    + '<path d="M0 0 H40 V20 H0 Z M15 10 A5 5 0 1 0 25 10 A5 5 0 1 0 15 10 Z" fill-rule="evenodd"/></svg>';
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles({ name: 'placuta.svg', mimeType: 'image/svg+xml', buffer: Buffer.from(svg, 'utf8') });
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByTestId('lista-vectori').locator('li').getByText('placuta').click();
+  await expect(page.getByTestId('selectie')).toHaveText('Selectat: placuta');
+}
+
+test('formele (ADR 0166): „Trimite la <extensie>” doar cu o extensie care le primește; contururile ajung în mm, apoi fereastra ei', async ({ page }) => {
+  await page.goto('/');
+  await formaAleasa(page);
+  // nicio extensie deschisă: butonul nu e în bara selecției
+  await expect(page.locator('[data-context="extensii.trimite-selectia"]')).toHaveCount(0);
+  await instaleaza(page, await varianta({ permisiuni: ['stocare', 'forme'] }), FORME);
+  await deschide(page);
+  await expect(cadru(page).locator('[data-salut="forme"]')).toHaveText('Formele primite: —');
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  const trimite = page.locator('[data-context="extensii.trimite-selectia"]');
+  await expect(trimite).toHaveAccessibleName('Trimite la Salut');
+  await trimite.click();
+  // fereastra extensiei, cu cele două contururi închise ale plăcuței: 40 × 20 mm
+  await expect(page.getByTestId('spatiu-extensie')).toBeVisible();
+  await expect(cadru(page).locator('[data-salut="forme"]')).toHaveText('Formele primite: 2 (2), 40 × 20 mm');
+  expect(await eroriJurnal(page)).toEqual([]);
+});
+
+test('formele: o extensie propune un SVG; cvs2 trece la Proiectare și deschide Importă, „Propus de”; nimic fără „Importă”', async ({ page }) => {
+  await page.goto('/');
+  await instaleaza(page, await varianta({ permisiuni: ['stocare', 'forme'] }), FORME);
+  await deschide(page);
+  await cadru(page).locator('[data-salut="propune"]').click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  // fereastra de acum e Proiectarea: acolo e desenul în care ar intra forma
+  await expect(page.locator('[data-actiune="vedere.proiectare"]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('#import-titlu')).toContainText('Importă: salut.svg');
+  await expect(page.getByTestId('import-de')).toHaveText('Propus de Salut');
+  await expect(page.getByTestId('import-marime')).toHaveText('Desenul: 30.00 × 20.00 mm');
+  // Renunță: desenul rămâne gol; a doua propunere, apoi Importă: o piesă nouă
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByTestId('lista-vectori').locator('li')).toHaveCount(0);
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await page.locator('[data-extensii="fila"]').click();
+  await cadru(page).locator('[data-salut="propune"]').click();
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByTestId('lista-vectori').locator('li')).toHaveCount(1);
+  await page.locator('[data-extensii="fila"]').click();
+  await expect(cadru(page).locator('[data-proba="forme"]').last()).toHaveText('forme: deschis');
+  expect(await eroriJurnal(page)).toEqual([]);
+});
+
+test('formele, fără permisiune: niciun buton în bara selecției, iar propunerea e refuzată de cvs2', async ({ page }) => {
+  await page.goto('/');
+  await formaAleasa(page);
+  await instaleaza(page, Buffer.from(SALUT), STOCARE);
+  await deschide(page);
+  await cadru(page).locator('[data-salut="propune"]').click();
+  await expect(cadru(page).locator('[data-proba="forme"]')).toHaveText('forme: forme:permisiune');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await expect(page.getByTestId('selectie')).toHaveText('Selectat: placuta');
+  await expect(page.locator('[data-context="extensii.trimite-selectia"]')).toHaveCount(0);
+  expect(await eroriJurnal(page)).toEqual([]);
+});
+
+test('formele: o propunere cât fereastra Importă e deja deschisă (un fișier ales de om) e refuzată, „ocupat”', async ({ page }) => {
+  await page.goto('/');
+  await instaleaza(page, await varianta({ permisiuni: ['stocare', 'forme'] }), FORME);
+  await deschide(page);
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles({ name: 'al-meu.svg', mimeType: 'image/svg+xml', buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="10mm" height="10mm" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>', 'utf8') });
+  await expect(page.locator('#import-titlu')).toContainText('Importă: al-meu.svg');
+  // extensia, ascunsă, propune între timp (din cod, ca o extensie care n-așteaptă omul)
+  await cadru(page).locator('[data-salut="propune"]').evaluate((b) => { (b as HTMLButtonElement).click(); });
+  await expect(cadru(page).locator('[data-proba="forme"]')).toHaveText('forme: forme:ocupat');
+  await expect(page.locator('#import-titlu')).toContainText('Importă: al-meu.svg');
+  await expect(page.getByTestId('import-de')).toHaveCount(0);
+  expect(await eroriJurnal(page)).toEqual([]);
+});

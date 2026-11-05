@@ -1465,6 +1465,10 @@
       "ro": "Scalarea unei piese importate cu arce plate",
       "en": "Scaling an imported piece with flat arcs"
     },
+    "9d088159afba5a1f": {
+      "ro": "formele între cvs2 și extensii",
+      "en": "shapes between cvs2 and extensions"
+    },
     "9d1316d9f73dab70": {
       "ro": "Transcrierile reale ca fixturi: sesiunea cu senderul nostru salvată la mașină și rejucată pe emulator; unde emulatorul diferă de mașină, mașina are dreptate",
       "en": "Real transcripts as fixtures: the session with our sender saved at the machine and replayed on the emulator; where the emulator differs from the machine, the machine is right"
@@ -2089,6 +2093,10 @@
       "ro": "Afișarea simulării în WebGL2",
       "en": "Simulation display in WebGL2"
     },
+    "e6087eadf6b55447": {
+      "ro": "**Formele între cvs2 și plugin** (fără mașină; ADR 0166; în worktree-ul `wip/trenulet`; „B, schimbul de forme”, apoi „Da, fă-o” la schiță). Permisiunea nouă `forme`. Din desen spre extensie, doar ce trimite omul: „Trimite la <extensie>”, în bara selecției și în paletă, cât e deschisă o extensie care primește forme; contururile instanțelor alese, în mm ai foii, cu arcele și curbele la cel mult 0,02 mm. Din extensie spre desen, prin fereastra Importă, „Propus de <extensie>”: nimic nu intră fără „Importă”. Planificatorul: fila „Din cvs2” a atelierului 3D (forma ridicată la o grosime, cu găurile ei) și „În desenul cvs2” la fiecare placă a exportului CNC. Pachetul 18.6.0.",
+      "en": "**Shapes between cvs2 and the plugin** (no machine; ADR 0166; in the `wip/trenulet` worktree; “B, schimbul de forme”, then “Da, fă-o” at the sketch). The new `forme` permission. From the drawing to the extension, only what the person sends: “Send to <extension>”, in the selection bar and in the palette, while an extension that receives shapes is open; the outlines of the chosen instances, in sheet mm, with arcs and curves within 0.02 mm. From the extension to the drawing, through the Import window, “Proposed by <extension>”: nothing goes in without “Import”. The planner: the “From cvs2” tab of the 3D workshop (the shape raised to a thickness, with its holes) and “Into the cvs2 drawing” on every board of the CNC export. Package 18.6.0."
+    },
     "e6935746ddf63115": {
       "ro": "Orice nod își schimbă tipul",
       "en": "Any node changes its type"
@@ -2228,6 +2236,10 @@
     "f44192c419fd3094": {
       "ro": "Vederea 3D a simulării",
       "en": "The 3D view of the simulation"
+    },
+    "f5a0f22b52f21ca7": {
+      "ro": "Formele între cvs2 și plugin",
+      "en": "Shapes between cvs2 and the plugin"
     },
     "f5f9377648ddce6f": {
       "ro": "3.7b",

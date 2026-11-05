@@ -26,7 +26,7 @@ import { faraEroriInJurnal } from './ajutor-jurnal.ts';
 test.use({ locale: 'ro-RO' });
 
 const PACHET = Buffer.from(pachetTrenulet().octeti);
-const ZIP = { name: 'trenulet-18.5.0.zip', mimeType: 'application/zip', buffer: PACHET };
+const ZIP = { name: 'trenulet-18.6.0.zip', mimeType: 'application/zip', buffer: PACHET };
 const cadru = (page: Page) => page.frameLocator('iframe.cadru-extensie');
 
 async function deschide(page: Page): Promise<void> {
@@ -69,11 +69,12 @@ test('instalat din fișier: pagina în cadru; circuitul, modul și culoarea păs
   await page.goto('/');
   await page.locator('[data-extensii="buton"]').click();
   await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
-  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.5.0, de la trenulet-18.5.0.zip');
+  await expect(page.getByTestId('extensii-despre')).toHaveText('„Planificator Trenuleț” 18.6.0, de la trenulet-18.6.0.zip');
   await expect(page.getByTestId('extensii-permisiuni')).toHaveText(
     'Cere: să-și țină datele în browserul acesta (cel mult 16 MB); să salveze fișiere ca descărcări (date și desene, nu programe); '
     + 'să folosească mașina: să încarce programe, să le pornească sau să le reia după confirmarea ta, să pună pauză și să oprească lucrarea; '
-    + 'să vadă dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola).',
+    + 'să vadă dacă ești conectat, cu ce nume și ce plan (nu adresa, nu parola); '
+    + 'să primească formele pe care i le trimiți din desen și să-ți propună forme pentru desen (le adaugi tu, din Importă).',
   );
   await page.locator('[data-extensii="instaleaza"]').click();
   await deschide(page);
@@ -404,7 +405,7 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await expect(c.locator('#cnc-stare')).toContainText(/^(Straight|Large curve|Small curve|Switch|Adapter|Female|Male)/);
   await c.locator('#foaie-export [data-inchide]').click();
   await c.locator('[data-mod="3d"]').first().click();
-  for (const fel of ['caramida', 'panta', 'pantaInversa', 'pana', 'rotund', 'lateral', 'legaturi', 'calibrare']) {
+  for (const fel of ['caramida', 'panta', 'pantaInversa', 'pana', 'rotund', 'lateral', 'legaturi', 'calibrare', 'dinCvs2']) {
     await c.locator(`#at-tipuri [data-tip="${fel}"]`).click();
     await expect(c.locator(`#at-tipuri [data-tip="${fel}"]`)).toHaveAttribute('aria-pressed', 'true');
     expect(await romanaRamasa(page, 'Păstrat la repornire'), fel).toEqual([]);
@@ -421,5 +422,49 @@ test('în engleză (ADR 0165): limba lui cvs2, schimbată pe loc printr-o reporn
   await page.getByRole('navigation', { name: 'Language' }).getByRole('button', { name: 'RO', exact: true }).click();
   c = cadru(page);
   await expect(c.locator('#btn-circuite')).toHaveText('Circuite');
+  await faraEroriInJurnal(page);
+});
+
+test('formele (ADR 0166): o selecție din cvs2 ajunge în atelierul 3D, la „Din cvs2”; o placă a exportului ajunge în desen, prin Importă', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-extensii="buton"]').click();
+  await page.locator('[data-extensii="fisier-ales"]').setInputFiles(ZIP);
+  await page.locator('[data-extensii="instaleaza"]').click();
+  await deschide(page);
+  const c = cadru(page);
+  await expect(c.locator('#stare')).not.toHaveText('—');
+  // în cvs2: o plăcuță 40 × 20 mm cu o gaură rotundă, importată și aleasă, trimisă la planificator
+  await page.locator('[data-actiune="vedere.proiectare"]').click();
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="40mm" height="20mm" viewBox="0 0 40 20">'
+    + '<path d="M0 0 H40 V20 H0 Z M15 10 A5 5 0 1 0 25 10 A5 5 0 1 0 15 10 Z" fill-rule="evenodd"/>'
+    // o cale deschisă (o linie): se numără și se lasă afară
+    + '<path d="M0 25 H40" fill="none" stroke="black"/></svg>';
+  await page.locator('[data-camp="fisier-svg"]').setInputFiles({ name: 'placuta.svg', mimeType: 'image/svg+xml', buffer: Buffer.from(svg, 'utf8') });
+  await page.locator('[data-buton="importa"]').click();
+  await page.getByTestId('lista-vectori').locator('li').getByText('placuta').click();
+  const trimite = page.locator('[data-context="extensii.trimite-selectia"]');
+  await expect(trimite).toHaveAccessibleName('Trimite la Planificator Trenuleț');
+  await trimite.click();
+  // planificatorul: în 3D, la „Din cvs2”, cu forma ridicată la 3,2 mm
+  await expect(c.locator('#at-tipuri [data-tip="dinCvs2"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(c.locator('#at-forma-info')).toHaveText('2 contururi închise, 40 × 20 mm; 1 deschis, lăsat afară');
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Formă din cvs2, 3,2 mm');
+  await c.locator('#at-f-grosime').evaluate((e) => { (e as HTMLInputElement).value = '5'; e.dispatchEvent(new Event('change', { bubbles: true })); });
+  await expect(c.locator('#at-nume-piesa')).toHaveText('Formă din cvs2, 5 mm');
+  await c.locator('#at-adauga').click();
+  await expect(c.locator('#at-tabel')).toContainText('Formă din cvs2, 5 mm');
+  // exportul CNC: placa 1, „În desenul cvs2” → fereastra Importă a lui cvs2, „Propus de Planificator Trenuleț”
+  await c.locator('[data-mod="2d"]').first().click();
+  await c.locator('#btn-export').click();
+  await expect(c.locator('#e-cvs2')).toBeEnabled({ timeout: 30_000 });
+  const inDesen = c.locator('[data-in-desen="placi/placa_1.dxf"]');
+  await expect(inDesen).toHaveText('În desenul cvs2');
+  await inDesen.click();
+  await expect(page.locator('#import-titlu')).toContainText('Importă: placa_1.dxf');
+  await expect(page.getByTestId('import-de')).toHaveText('Propus de Planificator Trenuleț');
+  const randuri = await page.getByTestId('lista-vectori').locator('li').count();
+  await page.locator('[data-buton="importa"]').click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByTestId('lista-vectori').locator('li')).toHaveCount(randuri + 1);
   await faraEroriInJurnal(page);
 });

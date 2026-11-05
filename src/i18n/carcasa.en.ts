@@ -224,6 +224,7 @@ export const enCarcasa = {
   'extensii.permisiune.descarcari': 'to save files as downloads (data and drawings, not programs)',
   'extensii.permisiune.masina': 'to use the machine: load programs, start or resume them after you confirm, pause and stop the job',
   'extensii.permisiune.cont': 'to see whether you are signed in, with what name and plan (not your email or password)',
+  'extensii.permisiune.forme': 'to receive the shapes you send it from the drawing and to propose shapes for the drawing (you add them, from Import)',
   'extensii.gestionare.date': 'its data: {kb} kB',
   'extensii.instalare.verific': 'Checking the package…',
   'extensii.instalare.refuz': 'The package can’t be installed: {motiv}',

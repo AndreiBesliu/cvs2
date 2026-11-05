@@ -48,6 +48,8 @@ type Props = {
   readonly stareImporta: (p: ImportPregatit, loc: Loc) => RezultatActiune;
   readonly importa: (p: ImportPregatit, loc: Loc) => RezultatActiune;
   readonly onInchide: () => void;
+  /** Extensia care a propus fișierul (ADR 0166 §C), spusă în fereastră. */
+  readonly de?: string;
 };
 
 /**
@@ -65,7 +67,7 @@ function stareInitiala(f: File): StareDialog {
  * Dialogul importului legat de coadă: citirea fișierelor, recitirea Illustrator la 72 px și locul fiecărei piese. Vine la
  * cerere, cu dialogul (`App.tsx`); aplicația ține doar coada (fișierele și punctul), garda „doar citire” și inerția.
  */
-export function ImportConectat({ fisiere, punct, registruImport, contextImport, stareImporta, importa, onInchide }: Props) {
+export function ImportConectat({ fisiere, punct, registruImport, contextImport, stareImporta, importa, onInchide, de }: Props) {
   const [k, setK] = useState(0);
   const [dialog, setDialog] = useState<StareDialog>(() => stareInitiala(fisiere[0] ?? new File([], '')));
   /** Numărul ultimei citiri: un rezultat întârziat al unei citiri vechi (alt fișier, alt px, dialog închis) se aruncă. */
@@ -156,6 +158,7 @@ export function ImportConectat({ fisiere, punct, registruImport, contextImport, 
       }}
       onInchide={inchide}
       {...(fisiere.length > 1 ? { coada: { k: k + 1, n: fisiere.length }, onSari: urmatorul } : {})}
+      {...(de === undefined ? {} : { de })}
     />
   );
 }

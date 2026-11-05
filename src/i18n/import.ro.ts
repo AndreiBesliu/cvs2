@@ -4,6 +4,7 @@ import type { DictionarRoPentru } from './tipuri.ts';
 /** Mesajele dialogului de import SVG, DXF, PDF / AI și EPS / AI ≤ 8, în română: exact cheile din engleză (`import.en.ts`). */
 export const roImport = {
   'import.titlu': 'Importă: {nume}',
+  'import.propus-de': 'Propus de {nume}',
   'import.citeste': 'Se citește fișierul…',
   'import.marime': 'Desenul: {latime} × {inaltime} mm',
   'import.cai': {

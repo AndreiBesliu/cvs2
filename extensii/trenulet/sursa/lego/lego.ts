@@ -1115,8 +1115,24 @@ var Lego = (function (glob: typeof globalThis) {
     return piese;
   }
 
+  // ---------------------------------------------------------------------------------------------- forma din cvs2
+  function dinCvs2({ contururi = [], grosime = 3.2 }: { contururi?: readonly (readonly (readonly [number, number])[])[]; grosime?: unknown }): Corp {
+    // contururile inchise primite din desenul cvs2 (ADR 0166), ridicate la grosime (0,4-50 mm): un contur cuprins de un numar
+    // impar de alte contururi e o gaura a celui care il cuprinde direct (cel mai mic), unul cuprins de un numar par e un corp
+    const g = +(grosime as number), h = Number.isFinite(g) ? Math.min(50, Math.max(0.4, g)) : 3.2;
+    const poli = contururi.map(c => curataPoli(c.map(([x, y]): P2 => [+x, +y]))).filter(q => q.length >= 3 && Math.abs(ariePoli(q)) > 1e-6);
+    if (!poli.length) throw new Error(tr("Niciun contur închis de ridicat."));
+    const arii = poli.map(q => Math.abs(ariePoli(q)));
+    const cuprinde = (a: number, b: number) => a !== b && arii[a]! > arii[b]! && inPoli(poli[a]!, poli[b]![0]!);
+    const parinte = poli.map((_, i) => poli.reduce((m: number, _q, j) => (cuprinde(j, i) && (m < 0 || arii[j]! < arii[m]!) ? j : m), -1));
+    const adanc = (i: number): number => { let d = 0; for (let k = parinte[i]!; k >= 0; k = parinte[k]!) d++; return d; };
+    const tri: Tri[] = [];
+    poli.forEach((q, i) => { if (adanc(i) % 2 === 0) tri.push(...prismaGauri(q, poli.filter((_, k) => parinte[k] === i), 0, h)); });
+    return { tri, avert: [] };
+  }
+
   // ---------------------------------------------------------------------------------------------- piesa dupa definitie
-  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa };
+  const TIPURI = { caramida, lateral, panta, pantaInversa, pana, rotund, grinda, caramidaTechnic, ax, stiftTechnic, bucsa, suport, clema, maner, bara, bila, cupa, dinCvs2 };
   function construieste(def: DefPiesa) {
     const f = TIPURI[def.tip];
     if (!f) throw new Error("tip necunoscut: " + def.tip);

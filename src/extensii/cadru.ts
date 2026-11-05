@@ -3,15 +3,17 @@
  * delegat), pagina lui din `shared/cadruExtensie.ts` și portul prin care trec toate mesajele. La încărcarea cadrului, cvs2
  * îi trimite o singură dată fișierele pachetului, contextul (limba, tema, contul cu permisiunea `cont`) și portul; apoi doar
  * prin port. Serviciile cerute cu `host.cere`: `stocare.*` (ADR 0128, cu permisiunea `stocare`), `descarcari.salveaza` (ADR
- * 0129, cu `descarcari`), `masina.*` (ADR 0160, cu `masina`); restul se refuză. Cu `masina`, cadrul primește și starea
- * mașinii, la fiecare schimbare. Lucrul nesalvat al extensiei (ADR 0164) stă aici, citit pe loc de × și de reîncărcare;
- * închiderea cerută (`cereInchiderea`) îi lasă întâi extensiei salvările ei, cel mult cât se dă.
+ * 0129, cu `descarcari`), `masina.*` (ADR 0160, cu `masina`), `forme.propune` (ADR 0166, cu `forme`); restul se refuză. Cu
+ * `masina`, cadrul primește și starea mașinii, la fiecare schimbare; cu `forme`, formele trimise de om din desen
+ * (`trimiteForme`). Lucrul nesalvat al extensiei (ADR 0164) stă aici, citit pe loc de × și de reîncărcare; închiderea
+ * cerută (`cereInchiderea`) îi lasă întâi extensiei salvările ei, cel mult cât se dă.
  */
-import type { ContextHost } from '../../extensii/api.ts';
+import type { ContextHost, FormeCvs2 } from '../../extensii/api.ts';
 import { paginaCadru } from '../../shared/cadruExtensie.ts';
 import { masinaPentruExtensii, type MasinaPentruExtensii } from '../app/lucrare.ts';
 import { servesteDescarcarile } from './descarcari.ts';
 import { depozitDate, type ExtensieInstalata } from './depozit.ts';
+import { servesteFormele, type PropuneForme } from './forme.ts';
 import { FARA_MASINA, servesteMasina, type ServiciiMasina } from './masina.ts';
 import { servesteStocarea, type RaspunsServiciu } from './stocare.ts';
 
@@ -74,9 +76,15 @@ function descarca(nume: string, date: Blob): void {
   setTimeout(() => { URL.revokeObjectURL(a.href); }, 30_000);
 }
 
-/** Ce întoarce `pornesteCadru`: contextul nou, lucrul nesalvat, închiderea cerută și oprirea. */
+/** Ce dă carcasa formelor propuse de extensii (ADR 0166 §C): fereastra Importă, cu fișierul propus. */
+export type GazdaForme = { readonly propune: PropuneForme };
+const FARA_FORME: GazdaForme = { propune: () => 'indisponibila' };
+
+/** Ce întoarce `pornesteCadru`: contextul nou, formele trimise, lucrul nesalvat, închiderea cerută și oprirea. */
 export type CadruPornit = {
   readonly context: (c: ContextHost) => void;
+  /** Formele trimise de om din desen (ADR 0166 §B), doar spre o extensie cu permisiunea `forme`. */
+  readonly trimiteForme: (f: FormeCvs2) => void;
   /** Extensia are acum modificări nesalvate (ultimul ei `host.nesalvat`). */
   readonly nesalvat: () => boolean;
   /**
@@ -90,7 +98,7 @@ export type CadruPornit = {
 
 /** Pornește extensia în `container`. */
 export function pornesteCadru(container: HTMLElement, ext: ExtensieInstalata, context: ContextHost, laEveniment: (e: EvenimentCadru) => void,
-  gazda: GazdaMasina): CadruPornit {
+  gazda: GazdaMasina, forme: GazdaForme = FARA_FORME): CadruPornit {
   let nesalvat = false, nrInchidere = 0;
   const laInchidereGata = new Map<number, () => void>();
   const f = document.createElement('iframe');
@@ -120,6 +128,8 @@ export function pornesteCadru(container: HTMLElement, ext: ExtensieInstalata, co
           ? servesteStocarea(ext.id, ext.manifest.permisiuni, metoda, argumente, depozitDate).catch(() => ({ ok: false, eroare: 'stocare:indisponibila' }))
           : serviciu === 'masina'
           ? servesteMasina(cine, metoda, argumente, servicii).catch(() => ({ ok: false, eroare: 'masina:indisponibila' }))
+          : serviciu === 'forme'
+          ? Promise.resolve(servesteFormele(ext.manifest.permisiuni, ext.manifest.nume, metoda, argumente, forme.propune))
           : Promise.resolve(serviciu === 'descarcari'
             ? servesteDescarcarile(ext.manifest.permisiuni, metoda, argumente, descarca)
             : { ok: false, eroare: `serviciu-necunoscut:${text(m.serviciu, 40)}` });
@@ -181,6 +191,7 @@ export function pornesteCadru(container: HTMLElement, ext: ExtensieInstalata, co
   }
   return {
     context: (c) => { port.postMessage({ tip: 'context', context: c }); },
+    trimiteForme: (x) => { if (ext.manifest.permisiuni.includes('forme')) port.postMessage({ tip: 'forme', forme: x }); },
     nesalvat: () => nesalvat,
     cereInchiderea: (ms = ASTEPTARE_INCHIDERE_MS) => new Promise<boolean>((rezolva) => {
       const id = ++nrInchidere;

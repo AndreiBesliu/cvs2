@@ -476,6 +476,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   traducerea; `trenulet.engleza.test.ts` cade până atunci (și la un text lipit de valori fără `tr`). La o limbă nouă, pagina își
   salvează lucrul și cere `host.reporneste()` (nou; cel mult o dată la 2 s, cererile dese adunate). G-code-ul, numele de
   fișiere și antetele STL rămân în română. Pachetul 18.5.0.
+  **Formele între cvs2 și extensii (ADR 0166, felia 3.Xe)** gata pe 05.11: permisiunea nouă `forme`. Din desen spre
+  extensie, doar ce trimite omul: acțiunea `extensii.trimite-selectia` („Trimite la <extensie>”, în bara selecției și în
+  paletă, arătată doar cât e deschisă o extensie care primește forme); contururile vin din `src/extensii/formeSelectie.ts`
+  (în mm ai foii, arcele la cel mult 0,02 mm, plafoanele 10 000 / 200 000), la `host.forme.laPrimire`. Din extensie spre
+  desen, `host.forme.propune(nume, date)` (SVG / DXF, serviciul `src/extensii/forme.ts`): fereastra Importă, pe Proiectare,
+  cu „Propus de <extensie>”; nimic fără „Importă”. În planificator: fila „Din cvs2” a atelierului (`dinCvs2` în motorul
+  LEGO: găurile după cum stau contururile unele în altele) și „În desenul cvs2” la plăcile exportului. Încărcătorul, cu
+  amprentă nouă. Pachetul 18.6.0.
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
