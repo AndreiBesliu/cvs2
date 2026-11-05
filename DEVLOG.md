@@ -5442,3 +5442,16 @@ dată acolo („Da, unește”); unirea s-a făcut abia la cuvântul owner-ului 
 - **Publicat pe test:** 05.11, 11:53, `publica` pe `ae2b43a` (rularea 42006023782), după rularea completă verde.
 - **Verificat:** versiunea `ae2b43a389e5` în browserul aplicației (după „Reload”); un dreptunghi 60 × 40 unit cu un cerc de rază 10 pe latura de sus (umărul), pe exterior, Ø6, dog-bone: programul exportat (descărcarea oprită, citit din blob) are Q = (67,351, 93) și (92,649, 93), E = (67,879, 92,121) și (92,121, 92,121), exact ca D42, cu sosirea în (92,649, 93) pe arc (G2), fără avertismente; pe pânză, la 765 %, degajarea se vede în colțul de la baza umflăturii.
 - **Rămâne:** placa 2 (rândul fileturilor din prag); etapa 3 mai are doar felii cu mașina sau cu o placă tăiată.
+
+## 2026-11-05 — Roadmap-ul la zi; felia 3.6f pornită: conectarea prin WiFi, mai ușoară (ADR 0136, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „da, continua, da, vreau sa te asiguri ca avem roadmap actualizat” (la „Start the next slice from the roadmap?”), apoi, în timpul lucrului, „si defapt, vreau sa imbunatatim la senderul wifi, vreau sa fie mult mai usor sa conectezi o masina prin wifi”.
+**Started:** 05.11, 12:53. **Completed:** 05.11, 16:10 (roadmap-ul și schița; codul lui 3.6f așteaptă răspunsurile).
+
+- **Roadmap-ul, verificat:** cele 146 de felii din roadmap-ul generat față de fișe, DEVLOG și commit-uri: stările se potrivesc (în etapa 3 rămân de făcut doar 3.5b, 3.6e, 3.7b, 3.9, toate cu mașina sau cu o placă). Diferențele găsite erau de nume (titlurile vechi din DEVLOG fără „Felia”) sau sub-felii din rândul părintelui (2.3c-4, 2.3c-5, 2.8e).
+- **Ce lipsea din roadmap:** linia plugin-ului „2d- lego 3d” (3.S, 3.Xa–3.Xd, 3.Ta–3.Te, gata pe `wip/trenulet`, 38 de commit-uri neunite; sesiunea ei e în pauză, cu lucru necomis în worktree, neatins). Unirea e decizia owner-ului, deci a intrat în coada lui, cu ștergerea celor 14 ramuri vechi de pe `origin` (cu comanda). Pe test era încă fișa lui `ae2b43a` (rândul 3.V cu otrăvurile „rulate după commit”).
+- **Felia 3.6f** („mult mai ușor”): azi, adresa se scrie de mână (ghidul o caută în router), iar rețeaua atelierului se pune în pod prin șase comenzi din terminalul lui. Cercetarea în sursa ESP3D 3.0.2: mDNS pornit (`esp3d.local`), rețeaua proprie „ESP3D” la 192.168.0.1, comenzile `[ESP…]` executate și de pe socket-ul de date, cu răspunsul în cadre binare, `[ESP410]json` cu rețelele văzute. FluidNC și grblHAL: `fluidnc.local` / `grblhal.local`, WebSocket-ul pe 81. Pe Windows, `.local` merge de obicei, nu întotdeauna (firewall-ul pe UDP 5353). ADR 0136, propus: mașinile ținute, găsirea după nume cu controlerul dedus, pașii la eșec, configurarea podului din aplicație; patru întrebări la owner. Schița: șase ecrane, ca artifact.
+- **Probele:** testul documentației cu rândul 3.6f în tabelul feliilor; traducerile 588 / 588.
+- **CI:** rapidă verde pe `fb1f80d` (42030945629); completă verde pe `fb1f80d` (42030959984, 35 min).
+- **Publicat pe test:** `fb1f80d` (42036102042), apoi `ecf2e0c`, doar cu .md peste el (42041651433; ora de pornire a lui 3.6f corectată). Verificat din `documentatie/roadmap.json` de pe test: 3.6f în lucru de la 12:53, coada owner-ului 13, ADR 0136 propus, engleza fără texte netraduse.
+- **Rămâne:** răspunsurile owner-ului la ADR 0136, apoi codul lui 3.6f.
