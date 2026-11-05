@@ -240,6 +240,10 @@ test('pagina de sine stătătoare, din aceleași surse, fără cvs2: textele de 
   await expect(page.locator('#det-masina')).toBeHidden();
   await expect(page.locator('#cvs2-fila')).not.toHaveAttribute('hidden');
   await expect(page.locator('#cvs2-in-cvs2')).toHaveAttribute('hidden', '');
+  // fără cvs2, nicio formă spre desen (ADR 0166): nici butonul plăcilor, nici fila atelierului
+  await expect(page.locator('#cnc-placi figure').first()).toBeVisible();
+  await expect(page.locator('[data-in-desen]')).toHaveCount(0);
+  await expect(page.locator('#at-tipuri [data-tip="dinCvs2"]')).toBeHidden();
   expect(erori).toEqual([]);
 });
 
@@ -438,7 +442,7 @@ test('formele (ADR 0166): o selecție din cvs2 ajunge în atelierul 3D, la „Di
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="40mm" height="20mm" viewBox="0 0 40 20">'
     + '<path d="M0 0 H40 V20 H0 Z M15 10 A5 5 0 1 0 25 10 A5 5 0 1 0 15 10 Z" fill-rule="evenodd"/>'
     // o cale deschisă (o linie): se numără și se lasă afară
-    + '<path d="M0 25 H40" fill="none" stroke="black"/></svg>';
+    + '<path d="M0 25 H40 V30" fill="none" stroke="black"/></svg>';
   await page.locator('[data-camp="fisier-svg"]').setInputFiles({ name: 'placuta.svg', mimeType: 'image/svg+xml', buffer: Buffer.from(svg, 'utf8') });
   await page.locator('[data-buton="importa"]').click();
   await page.getByTestId('lista-vectori').locator('li').getByText('placuta').click();
@@ -457,10 +461,18 @@ test('formele (ADR 0166): o selecție din cvs2 ajunge în atelierul 3D, la „Di
   await c.locator('[data-mod="2d"]').first().click();
   await c.locator('#btn-export').click();
   await expect(c.locator('#e-cvs2')).toBeEnabled({ timeout: 30_000 });
-  const inDesen = c.locator('[data-in-desen="placi/placa_1.dxf"]');
-  await expect(inDesen).toHaveText('În desenul cvs2');
+  // o placă de 400 × 300 mm: piesele ovalului încap pe mai multe plăci, iar fiecare își propune DXF-ul ei
+  for (const [cale, v] of [['placa.0', '400'], ['placa.1', '300']] as const) {
+    await c.locator(`[data-cale="${cale}"]`).first().evaluate((e, x) => {
+      (e as HTMLInputElement).value = x;
+      e.dispatchEvent(new Event('input', { bubbles: true }));
+    }, v);
+  }
+  const inDesen = c.locator('[data-in-desen="placi/placa_2.dxf"]');
+  await expect(inDesen).toHaveText('În desenul cvs2', { timeout: 30_000 });
+  await expect(c.locator('[data-in-desen="placi/placa_1.dxf"]')).toHaveText('În desenul cvs2');
   await inDesen.click();
-  await expect(page.locator('#import-titlu')).toContainText('Importă: placa_1.dxf');
+  await expect(page.locator('#import-titlu')).toContainText('Importă: placa_2.dxf');
   await expect(page.getByTestId('import-de')).toHaveText('Propus de Planificator Trenuleț');
   const randuri = await page.getByTestId('lista-vectori').locator('li').count();
   await page.locator('[data-buton="importa"]').click();
