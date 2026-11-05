@@ -5242,4 +5242,58 @@ fișier. Adresa principală de test nu s-a atins; ramura nu e împinsă.
 bara selecției, fila „Din cvs2”, butonul „În desenul cvs2”, fereastra Importă „Propus de”, permisiunea), în sesiunea dedicată liniei
 Trenuleț. 3.Xe: o selecție din desenul cvs2 ajunge în plugin (ca s-o ridici în 3D), iar conturul unei plăci din plugin ajunge
 în desenul cvs2, prin fereastra Importă.
-**Started:** 05.11, 09:13.
+**Started:** 05.11, 09:13. **Completed:** 05.11, 16:16.
+
+- **Ce merge:**
+  - permisiunea nouă `forme`, arătată la instalare: „să primească formele pe care i le trimiți din desen și să-ți propună forme
+    pentru desen (le adaugi tu, din Importă)”;
+  - din desen spre extensie, doar ce trimite omul: „Trimite la <extensie>” (acțiunea `extensii.trimite-selectia`), în bara
+    selecției și în paletă, arătată doar cât e deschisă o extensie care primește forme. Contururile instanțelor alese pleacă în
+    mm ai foii (originea în colțul stânga-jos), cu arcele, cercurile și cubicele aproximate la cel mult 0,02 mm, cel mult
+    10 000 de contururi și 200 000 de puncte (peste, sau fără nicio formă, extensia primește refuzul); apoi se arată fereastra
+    extensiei;
+  - din extensie spre desen: `host.forme.propune(nume, date)`, un SVG sau un DXF; cvs2 trece la Proiectare și deschide
+    fereastra Importă cu el, „Propus de <extensie>”. Nimic nu intră fără „Importă”, iar o propunere cât alt import e deschis
+    se refuză („ocupat”);
+  - planificatorul: fila „Din cvs2” a atelierului 3D (doar în cvs2) ridică forma primită la o grosime (0,4–50 mm, implicit
+    3,2), cu găurile ei (un contur cuprins de un număr impar de altele e o gaură), cu contururile deschise numărate și lăsate
+    afară; piesa intră în lista de printat. În exportul CNC, fiecare placă (la două fețe, fiecare față) are „În desenul cvs2”,
+    care propune DXF-ul ei;
+  - încărcătorul, cu amprentă nouă în CSP (politica aceeași); extensia de probă „Salut” primește și propune forme;
+  - pachetul 18.6.0: 417 717 octeți, 15 fișiere; dicționarul englez are 1 147 de texte.
+- **Găsit pe drum:**
+  - eticheta butonului din bara selecției se citește după numele accesibil: textul lui are și sfatul de la trecerea cu mausul;
+  - la otrăvuri, trei scăpaseră, fiecare din lipsa cazului care o desparte, nu din regulă greșită (`e34f2d3`):
+    - E21 (contururile deschise ridicate): calea deschisă din probă avea doar două puncte, pe care le scotea și filtrul de
+      puncte; acum are trei;
+    - E24 (alt DXF decât al plăcii): ovalul încăpea pe o singură placă; acum o placă de 400 × 300 îl împarte, iar butonul
+      plăcii 2 propune chiar DXF-ul ei;
+    - E27 (butoanele pe pagina de sine stătătoare): proba ei nu deschidea exportul; acum îl deschide și nu găsește niciunul.
+  - DXF-ul unei plăci are 1 000 × 600 mm: în cvs2, foaia implicită (300 × 200) trebuie mărită ca placa să încapă pe ea.
+- **Porțile:**
+  - compilatorul (aplicația, sursele planificatorului, funcțiile) și importurile;
+  - traducerile: 580, 0 lipsă;
+  - testele unitare: 8 220, 0 eșuate;
+  - build-ul determinist: 251 de fișiere identice; pornirea 101,0 / 110 kB (+0,4: butonul și legătura din aplicație);
+    totalul 474,3 / 500;
+  - licențele.
+- **E2e:** e2e-ul întreg, pe portul 4176: 333 trec, 1 pică, aserțiunea care cere portul 4173 (raportorul, ca până acum).
+- **Otrăvurile `test/otravuri/3.Xe.py`:** 27 / 27 prinse (E21, E24 și E27 abia după probele lor noi), fiecare de proba ei:
+  - de e2e: E10–E16, E21–E24, E27;
+  - de `extensii.forme`: E02–E09;
+  - de pachet: E01, E26;
+  - de aranjament: E17;
+  - de motorul LEGO: E18–E20;
+  - de adaptoare: E25.
+
+  Lăsate afară, cu motivul: încărcătorul (amprenta îl prinde oricum), a doua gardă a permisiunii în `trimiteForme`, plafonul
+  de 50 000 de puncte al atelierului, refuzul „doar-citire” (o a doua filă pe același proiect).
+- **Ce nu merge încă:**
+  - știfturile LEGO pe o formă liberă și grosimi diferite pe aceeași formă;
+  - forma exactă (arce, cubice) spre extensie, nu doar segmentele;
+  - salvarea modelelor în cont (C, D, cu sesiunea principală) și trimiterea la imprimanta 3D (E).
+
+**Publicat pe canalul `trenulet`** pe 05.11, la 16:05, din `e34f2d3`: <https://cncvectorstudio-test--trenulet-yt9jx0eo.web.app>
+(până pe 05.12). Probele extensiilor (și cele noi, ale formelor), ale senderului, ale primirii și ale planificatorului, rulate
+chiar pe canal: 27 / 27. Pachetul (`trenulet-18.6.0.zip`) nu stă pe canal: owner-ul îl primește ca fișier. Adresa principală de
+test nu s-a atins; ramura nu e împinsă.
