@@ -5,11 +5,11 @@ import { pornesteControler, type ControlerWebSocket } from './controlerWebSocket
 
 /**
  * Senderul prin WiFi (ADR 0119, felia 3.6d), în Edge, cu un controler în rețea simulat: emulatorul GRBL în spatele unui server
- * WebSocket local (`controlerWebSocket.ts`, pe 127.0.0.1; pagina e pe localhost, deci fără permisiunea rețelei locale). Adresa
- * pe care browserul n-ar lăsa-o se refuză înainte de conectare; mesajul de control al controlerului nu ajunge în jurnal;
- * programul ajunge la controler octet cu octet (aceeași amprentă ca exportul), după avertismentul căderii WiFi-ului, arătat o
- * singură dată; legătura tăiată în timpul programului lasă lucrarea pierdută, cu motivul; adresa și portul rămân pentru data
- * viitoare.
+ * WebSocket local (`controlerWebSocket.ts`, pe 127.0.0.1; pagina e pe localhost, deci fără permisiunea rețelei locale), legat
+ * prin „Altă adresă…” (ADR 0136). Adresa pe care browserul n-ar lăsa-o se refuză înainte de conectare; mesajul de control al
+ * controlerului nu ajunge în jurnal; programul ajunge la controler octet cu octet (aceeași amprentă ca exportul), după
+ * avertismentul căderii WiFi-ului, arătat o singură dată; legătura tăiată în timpul programului lasă lucrarea pierdută, cu
+ * motivul; conexiunea rămâne în listă, iar adresa și portul, în formular. Podul ESP3D și căutarea: `masina-wifi-pod.spec.ts`.
  */
 test.use({ locale: 'ro-RO' });
 
@@ -34,6 +34,8 @@ test('prin WiFi: adresa refuzată înainte de conectare; programul ajunge octet 
 
   await page.locator('[data-actiune="vedere.masina"]').click();
   await page.locator('[data-masina="conecteaza-wifi"]').click();
+  await expect(page.getByTestId('masina-wifi')).toContainText('Nicio mașină ținută încă');
+  await page.locator('[data-masina="wifi-alta"]').click();
   await expect(page.locator('[data-masina="wifi-port"]')).toHaveValue('81');
   // Un nume obișnuit și un IP public pe ws:// se refuză înainte de conectare: browserul le-ar bloca.
   await page.locator('[data-masina="wifi-adresa"]').fill('controler.atelier.ro');
@@ -52,7 +54,7 @@ test('prin WiFi: adresa refuzată înainte de conectare; programul ajunge octet 
   await page.locator('[data-masina="wifi-port"]').fill(String(c.port));
   await page.locator('[data-masina="wifi-conecteaza"]').click();
   await expect(page.getByTestId('masina-conexiune')).toHaveText(`Conectat prin WiFi (127.0.0.1:${c.port})`);
-  await expect(page.getByTestId('masina-wifi')).toHaveCount(0);
+  await expect(page.getByTestId('masina-wifi-adresa')).toHaveCount(0);
   await expect(page.getByTestId('masina-stare')).toHaveText('Idle');
   await expect(page.getByTestId('masina-jurnal')).toContainText('conectat prin WiFi');
   await expect(page.getByTestId('masina-jurnal')).toContainText("Grbl 1.1h ['$' for help]");
@@ -79,8 +81,10 @@ test('prin WiFi: adresa refuzată înainte de conectare; programul ajunge octet 
   await expect(page.getByTestId('masina-faza')).toHaveAttribute('data-faza', 'pierdut');
   await expect(page.locator('.masina-nota[role="status"]')).toHaveText('Legătura s-a închis: legătura WiFi a căzut');
 
-  // Alegerile rămân: formularul se redeschide cu adresa și portul de data trecută.
+  // Conexiunea rămâne în listă (adresa scrisă de mână), iar formularul se redeschide cu adresa și portul de data trecută.
   await page.locator('[data-masina="conecteaza-wifi"]').click();
+  await expect(page.getByTestId('masina-wifi-tinute').locator('li')).toHaveText([`Adresa scrisă de mânăFluidNC · 127.0.0.1:${c.port}ConecteazăUită`]);
+  await page.locator('[data-masina="wifi-alta"]').click();
   await expect(page.locator('[data-masina="wifi-adresa"]')).toHaveValue('127.0.0.1');
   await expect(page.locator('[data-masina="wifi-port"]')).toHaveValue(String(c.port));
   await expect(page.getByTestId('jurnal')).toHaveText('0 erori în jurnalul local');

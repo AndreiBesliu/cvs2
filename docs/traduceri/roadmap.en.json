@@ -1,10 +1,6 @@
 {
   "schema": 1,
   "texte": {
-    "01d8e2b09a9f42d0": {
-      "ro": "Răspunsurile la cele patru întrebări din ADR 0136 (conectarea prin WiFi): ce intră în felie, parola rețelei atelierului la configurarea podului, numele mașinii în rețea, conectarea la deschiderea ferestrei; recomandările sunt primele variante",
-      "en": "The answers to the four questions in ADR 0136 (connecting over WiFi): what goes into the slice, the workshop network password when setting up the bridge, the machine’s name on the network, connecting when the window opens; the recommendations are the first options"
-    },
     "02292bc5bd879195": {
       "ro": "buzunar + rest, insulă, găuri în pași, elice",
       "en": "pocket + rest, island, peck holes, helix"
@@ -593,10 +589,6 @@
       "ro": "la comutare",
       "en": "at switchover"
     },
-    "38cb4260e9175692": {
-      "ro": "înainte de codul lui 3.6f",
-      "en": "before the code of 3.6f"
-    },
     "39684a7cdf5bc0b4": {
       "ro": "șablonul aplicat în lot pe 3 nume",
       "en": "the template applied in a batch to 3 names"
@@ -797,6 +789,10 @@
       "ro": "**Degajările pe colțurile cu arce, ultimele rămase din etapa 2** (fără mașină; ADR 0135; „da, 3.V”). Până acum, un colț cu o latură curbă primea doar avertismentul „o latură a colțului e curbă”: un „D” tăiat ca gaură, un dreptunghi unit cu un cerc (un umăr), o lentilă, orice import cu arce sau cubice. Acum se degajează ca cele dintre linii: Q pe curbele decalate ale pereților din V (piciorul poate cădea pe orice segment al peretelui, deci și pe o biarcă mai depărtată a unei cubice), E din tangentele din V, iar peretele (la T-bone și la condiția d din ADR 0134) merge până la prima rupere a tangentei. Unde decalarea mănâncă colțul, plasa spune „freza nu ajunge în colț”. Colțurile dintre linii rămân la fel, octet cu octet (amprenta din 3.U). **Probele:** `cam.degajari.arce.test.ts` (9, pe hârtie, în programul aplicației); oracolul cu colțurile cu arce (`degajari.arce.oracol.test.ts`: D39–D49 pe 4 montaje, cu Q și E pe hârtie și cât intră în pereții-arc, radial; 5 martori: fără drumuri, cum tăia înainte, poarta cade în fiecare colț, și la sosirea pe arc); corpusul din sămânță (`degajari.arce.corpus.oracol.test.ts`: 120 de programe, 684 de drumuri, 218 sosiri pe arc). Pe drum, oracolul a prins o alarmă falsă a aplicației: cu căutarea pe pereții întregi, joncțiunile netede ale unui dreptunghi rotunjit deveniseră colțuri, deci ruptura minimă se cere și aici. **Otrăvurile** din `test/otravuri/3.V.py`: 24; prima rulare (`ae2b43a`): 20 prinse, 4 scăpate: C03 → umărul minuscul (D50), Q06 → proba pe `colturiDeDegajat` (în program o ascunde potrivirea lui Q cu un vârf al buclei), J03 → canalul îngust; Q04 echivalentă (o atingere a decalatelor apare doar pe un contur cu un singur colț, unde încrucișarea pereților e mai aproape de V). Pe `1799b70`: 23 / 24, plus Q04 echivalentă. În `3.U.py`, P01 și P02 rescrise pe pereții întregi: prinse.",
       "en": "**Reliefs at corners with arcs, the last ones left from stage 2** (no machine; ADR 0135; “da, 3.V”). Until now, a corner with a curved side only got the warning “one side of the corner is curved”: a “D” cut as a hole, a rectangle joined with a circle (a shoulder), a lens, any import with arcs or cubics. Now they are relieved like the corners between lines: Q on the offset curves of the walls at V (the foot may fall on any segment of the wall, so also on a farther biarc of a cubic), E from the tangents at V, and the wall (for T-bone and for condition d of ADR 0134) runs up to the first tangent break. Where the offset eats the corner, the safety net says “the cutter does not reach the corner”. Corners between lines stay the same, byte for byte (the fingerprint from 3.U). **The proofs:** `cam.degajari.arce.test.ts` (9, on paper, in the application’s program); the oracle with arc corners (`degajari.arce.oracol.test.ts`: D39–D49 on 4 setups, with Q and E on paper and how far the relief goes into arc walls, radially; 5 witnesses: without the reliefs, as it cut before, the gate fails at every corner, also where the cutter arrives on an arc); the seeded corpus (`degajari.arce.corpus.oracol.test.ts`: 120 programs, 684 reliefs, 218 arrivals on an arc). On the way, the oracle caught a false alarm of the application: with the search on whole walls, the smooth joins of a rounded rectangle had become corners, so the minimum break is required here too. **The poisons** in `test/otravuri/3.V.py`: 24; first run (`ae2b43a`): 20 caught, 4 escaped: C03 → the tiny shoulder (D50), Q06 → the test on `colturiDeDegajat` (in the program, matching Q with a vertex of the loop hides it), J03 → the narrow channel; Q04 equivalent (a touch of the offsets only occurs on a contour with a single corner, where the crossing of the walls is nearer to V). On `1799b70`: 23 / 24, plus Q04 equivalent. In `3.U.py`, P01 and P02 rewritten for whole walls: caught."
     },
+    "4d235580c0cc066d": {
+      "ro": "Conectarea prin WiFi, mai ușoară (ADR 0136, cererea owner-ului din 05.11, cu răspunsurile lui): conexiunile ținute, fiecare cu rețeaua ei, alese de om (fără conectare singură); găsirea după nume și, la clic, în toată rețeaua; pașii la fiecare eșec; configurarea podului ESP3D din aplicație, în locul comenzilor din terminalul lui; proba pe emulator, în spatele unui pod fals",
+      "en": "Connecting over WiFi, much easier (ADR 0136, the owner’s request of 05.11, with the owner’s answers): the saved connections, each with its network, chosen by the person (no connecting on its own); finding by name and, on a click, on the whole network; the steps for each failure; setting up the ESP3D bridge from the app, instead of the commands in its terminal; tested on the emulator, behind a fake bridge"
+    },
     "4e56c6f74c2be124": {
       "ro": "așezarea pe rânduri, vărsarea pe foaia 2, plăcuțele din CSV",
       "en": "row layout, spilling onto sheet 2, name plates from a CSV"
@@ -973,6 +969,10 @@
       "ro": "**Tampon:** coada de defecte, recalibrarea, placa de regresie",
       "en": "**Buffer:** the defect queue, recalibration, the regression plate"
     },
+    "5f3b314537b385f3": {
+      "ro": "Podul ESP3D pe mașină, după [ghidul montajului](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/pod-esp3d.md) (ADR 0119): imaginea gata compilată, din artefactul workflow-ului `pod-esp3d`, scrisă din browser pe un ESP32 (WROOM-32); rețeaua atelierului, pusă din aplicație (Mașina → Conectează (WiFi) → Configurează un pod nou, ADR 0136); firele la D0 / D1 ale Arduino-ului, cu divizorul de tensiune (5 V față de 3,3 V)",
+      "en": "The ESP3D bridge on the machine, following the [assembly guide](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/pod-esp3d.md) (ADR 0119): the ready-built image, from the artifact of the `pod-esp3d` workflow, written from the browser to an ESP32 (WROOM-32); the workshop network, set from the app (Machine → Connect (WiFi) → Set up a new bridge, ADR 0136); the wires to the Arduino’s D0 / D1, with the voltage divider (5 V against 3.3 V)"
+    },
     "5fd7dd989b9b86db": {
       "ro": "Rampa (ADR 0029, documentul v6): bucla tăiată continuu, intrarea rotită, compusă cu urechile (portată, `docs/PORTARE.md` §3.2)",
       "en": "Ramp (ADR 0029, document v6): the loop cut continuously, the rotated entry, combined with tabs (ported, `docs/PORTARE.md` §3.2)"
@@ -1088,10 +1088,6 @@
     "70e22497b3e60882": {
       "ro": "Importul EPS și AI ≤ 8",
       "en": "EPS and AI ≤ 8 import"
-    },
-    "71f3500f689ed115": {
-      "ro": "Podul ESP3D pe mașină, după [ghidul montajului](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/pod-esp3d.md) (ADR 0119): imaginea gata compilată, din artefactul workflow-ului `pod-esp3d`, scrisă din browser pe un ESP32 (WROOM-32); rețeaua atelierului, pusă din pagina podului; firele la D0 / D1 ale Arduino-ului, cu divizorul de tensiune (5 V față de 3,3 V); adresa podului, aflată din router",
-      "en": "The ESP3D bridge on the machine, following the [setup guide](https://github.com/AndreiBesliu/cvs2/blob/main/docs/masina/pod-esp3d.md) (ADR 0119): the ready-built image, from the artifact of the `pod-esp3d` workflow, written from the browser onto an ESP32 (WROOM-32); the workshop network, set from the bridge’s page; the wires to the Arduino’s D0 / D1, with the voltage divider (5 V versus 3.3 V); the bridge’s address, found in the router"
     },
     "722173dd11c9f709": {
       "ro": "**Loc în bugetul JavaScript** (ADR 0086; „Fă loc în bugetul JavaScript: mută la cerere ce se poate (de exemplu panoul mașinii sau textele lui), fără să ridici plafonul, și spune-mi cât s-a câștigat.”). Măsurat pe hărțile de surse: „la cerere” nu scade totalul (poarta numără toate bucățile, toate în precache), deci panoul mașinii, deja la cerere, n-avea ce câștiga; textele modulelor la cerere (editarea, exportul, mașina, importul, carcasa, traseul, simularea) erau ~24 kB, cu ambele limbi în fiecare bucată. Acum sunt date: `mesaje/<modul>.json`, ambele limbi, în precache, generate din dicționarele TypeScript; modulul își cere mesajele la evaluare, iar încărcarea lui le așteaptă (`cuMesaje`, verificat de compilator). **Totalul: 328,2 → 304,3 / 330 kB (−23,9)**; pornirea 95,9 → 96,0; precache-ul întreg +1,4 kB. Plafonul neschimbat. **Treceri:** (1) generatorul, aducerea, poarta; găsit pe drum: încărcătorul în pornire (+0,3 kB, scos: fiecare modul își exportă promisiunea), o cerere căzută uitată prea devreme (proba a prins-o: acum se reîncearcă la așteptare), un fișier pe limbă (29,4 kB, apoi unul pe modul: 25,6), booleanul (Shift + clic înainte ca editarea să se monteze: mesajele ei vin acum în paralel cu bucata, proba așteaptă bara).",
@@ -1717,10 +1713,6 @@
       "ro": "Oracolul G-code din s4 în `test/oracles/`",
       "en": "The G-code oracle from s4 in `test/oracles/`"
     },
-    "b3e1b0bd2fb8f6d5": {
-      "ro": "**Conectarea prin WiFi, mai ușoară** (în lucru; „si defapt, vreau sa imbunatatim la senderul wifi, vreau sa fie mult mai usor sa conectezi o masina prin wifi”). Azi, adresa mașinii se scrie de mână (ghidul podului o caută în router), iar rețeaua atelierului se pune în pod prin șase comenzi din terminalul lui. Cercetarea din sursa ESP3D 3.0.2: podul răspunde la `esp3d.local` (mDNS pornit) și execută comenzile `[ESP…]` venite pe socket-ul de date, cu lista rețelelor văzute (`[ESP410]`), deci aplicația îl poate găsi și configura singură. ADR 0136, propus, cu schița și patru întrebări la owner; codul după răspunsuri.",
-      "en": "**Connecting over WiFi, made easier** (in progress; “and actually, I want us to improve the WiFi sender, I want it to be much easier to connect a machine over WiFi”). Today, the machine’s address is typed by hand (the bridge guide looks it up in the router), and the workshop network is set in the bridge with six commands in its terminal. The research in the ESP3D 3.0.2 source: the bridge answers at `esp3d.local` (mDNS on) and runs the `[ESP…]` commands that come on the data socket, with the list of networks it sees (`[ESP410]`), so the application can find it and set it up by itself. ADR 0136, proposed, with the sketch and four questions for the owner; the code after the answers."
-    },
     "b4487110fe6a1b12": {
       "ro": "Oglindirea selecției",
       "en": "Mirroring the selection"
@@ -2185,10 +2177,6 @@
       "ro": "Raportările clienților, partea întâi, aduse din etapa 15",
       "en": "Customer reports, part one, brought forward from stage 15"
     },
-    "ec9fdd870b3a3f60": {
-      "ro": "3.6f",
-      "en": "3.6f"
-    },
     "eca127da7c72e5f7": {
       "ro": "Relief pe două fețe + întoarcere; Bas-relief din STL; Conturul vectorial al reliefului",
       "en": "Two-sided relief + flipping; Bas-relief from STL; The relief's vector contour"
@@ -2209,6 +2197,10 @@
       "ro": "Exportul 2D în PDF și EPS",
       "en": "2D export to PDF and EPS"
     },
+    "ede4388bc93047a6": {
+      "ro": "**Conectarea prin WiFi, mai ușoară** (fără mașină; ADR 0136; „si defapt, vreau sa imbunatatim la senderul wifi, vreau sa fie mult mai usor sa conectezi o masina prin wifi”, apoi răspunsurile „1. c”, „2. a”, „3. b”, „4. trebuie sa pot alege la care retea sa ma conectez”). Până acum, adresa mașinii se scria de mână (ghidul podului o căuta în router), iar rețeaua atelierului se punea în pod prin șase comenzi din terminalul lui. Acum, „Conectează (WiFi)” arată conexiunile ținute, fiecare cu rețeaua ei („Prin rețeaua „Atelier-COSTEL””, „Direct, prin rețeaua „ESP3D” a mașinii”), din care omul alege; „Caută mașina” încearcă deodată numele (`esp3d.local`, `fluidnc.local`, `grblhal.local`, cele ținute, apoi ultimul IP) și rețeaua proprie a podului, iar „Caută în toată rețeaua”, doar la clic, fiecare gazdă a rețelei, întâi pe portul 8282, apoi pe 81, câte 32 deodată (Chrome întârzie fiecare WebSocket nou cu 1–5 s după multe încercări fără răspuns, deci cam un minut pe rețea și port). Un eșec își spune pașii. „Configurează un pod nou”: podul verificat în rețeaua lui (`[ESP800]`), rețelele văzute de el (`[ESP410]`), parola rețelei atelierului și parola nouă a podului trimise doar lui (`[ESP106]`, `[ESP100]`, `[ESP101]`, `[ESP110]WIFI-STA`), apoi podul găsit la `esp3d.local` și ținut cu ambele drumuri. Unui controler i se trimite doar `?` (fără `ok`, deci nu încurcă alt sender). Logica: `src/machine/conexiuni.ts` (pură) și `src/machine/sonde.ts`; ecranele: `src/app/ConectareWifi.tsx`. **Probele:** `conexiuni.test.ts` (17, pe hârtie: escape-urile podului, `[ESP800]` cu o linie GRBL după fiecare bucată, planificarea căutării), `sonde.test.ts` (11, pe o rețea falsă: ce pleacă spre fiecare gazdă, octet cu octet), `masina-wifi-pod.spec.ts` (3, în Edge, cu podul fals din `controlerWebSocket.ts`: asistentul cap-coadă, cu comenzile ajunse întocmai și parolele nicăieri în pagină; căutarea după nume, cu ultimul IP; căutarea în toată rețeaua, pe 127.0.0.x).",
+      "en": "**Connecting over WiFi, much easier** (no machine; ADR 0136; “si defapt, vreau sa imbunatatim la senderul wifi, vreau sa fie mult mai usor sa conectezi o masina prin wifi”, then the answers “1. c”, “2. a”, “3. b”, “4. trebuie sa pot alege la care retea sa ma conectez”). Until now, the machine’s address was typed by hand (the bridge guide looked it up in the router), and the workshop network was put into the bridge with six commands in its terminal. Now “Connect (WiFi)” shows the saved connections, each with its network (“Through the “Atelier-COSTEL” network”, “Directly, through the machine’s own “ESP3D” network”), and the person chooses; “Find the machine” tries at once the names (`esp3d.local`, `fluidnc.local`, `grblhal.local`, the saved ones, then the last IP) and the bridge’s own network, and “Search the whole network”, only on a click, every host of the network, first on port 8282, then on 81, 32 at a time (Chrome delays each new WebSocket by 1–5 s after many attempts with no answer, so about a minute per network and port). A failure says what to check. “Set up a new bridge”: the bridge checked on its own network (`[ESP800]`), the networks it sees (`[ESP410]`), the workshop network’s password and the bridge’s new password sent only to it (`[ESP106]`, `[ESP100]`, `[ESP101]`, `[ESP110]WIFI-STA`), then the bridge found at `esp3d.local` and saved with both routes. A controller is only sent `?` (no `ok`, so it does not disturb another sender). Logic: `src/machine/conexiuni.ts` (pure) and `src/machine/sonde.ts`; screens: `src/app/ConectareWifi.tsx`. **Tests:** `conexiuni.test.ts` (17, on paper: the bridge’s escapes, `[ESP800]` with a GRBL line after each piece, the search scheduling), `sonde.test.ts` (11, on a fake network: what goes to each host, byte for byte), `masina-wifi-pod.spec.ts` (3, in Edge, with the fake bridge from `controlerWebSocket.ts`: the assistant end to end, with the commands arriving exactly and the passwords nowhere in the page; the search by name, with the last IP; the whole-network search, on 127.0.0.x)."
+    },
     "ef010b74384aa699": {
       "ro": "3.5 (transcrierile rejucate pe emulator) și prima felie a etapei",
       "en": "3.5 (the transcripts replayed on the emulator) and the stage's first slice"
@@ -2228,10 +2220,6 @@
     "efbfea901afba00d": {
       "ro": "**da (primul)**",
       "en": "**yes (the first)**"
-    },
-    "f0c3daf0992a3bdd": {
-      "ro": "Conectarea prin WiFi, mai ușoară (ADR 0136, cererea owner-ului din 05.11): mașinile ținute, cu un buton care o leagă pe ultima; găsirea după nume, fără adresa scrisă de mână; pașii la fiecare eșec; configurarea podului ESP3D din aplicație, în locul comenzilor din terminalul lui; proba pe emulator, în spatele unui pod fals",
-      "en": "Connecting over WiFi, made easier (ADR 0136, the owner’s request of 05.11): the remembered machines, with one button that connects the last one; finding the machine by name, without an address typed by hand; the steps after every failure; setting up the ESP3D bridge from the application, instead of the commands in its terminal; the proof on the emulator, behind a fake bridge"
     },
     "f20ea85a30832b0a": {
       "ro": "Normalizarea `nonzero` la ușă",

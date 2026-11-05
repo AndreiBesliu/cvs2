@@ -823,7 +823,7 @@ consola coboară dedesubt; pe telefon, totul stă pe o coloană, în ordinea urg
 - **Desenul rămâne la un clic.** Fila **Proiectare** te întoarce la desen oricând, iar lucrarea continuă. Cât ești în Mașina,
   tastele desenului (Delete, Ctrl+Z, săgețile, uneltele) nu ating desenul acoperit; `Ctrl+K` merge, iar o comandă a desenului
   aleasă din paletă te duce întâi în Proiectare. `F1` deschide capitolul ăsta. **Escape** închide doar ce e deschis
-  (formularul WiFi, o confirmare): nu schimbă fereastra și nu trimite nimic la mașină.
+  (alegerea WiFi, o confirmare): nu schimbă fereastra și nu trimite nimic la mașină.
 - **Indicatorul lucrării** stă în meniul aplicației, după prima deschidere a Mașinii, și se vede din orice fereastră: „Mașina
   conectată”, „Rulează 42 %” (verde, cu **Pauză** alături), „Pauză 42 %” (portocaliu, cu **Reia**), „Oprită la M6”, „Oprită la
   linia …” sau „Oprită pe o eroare” (portocaliu), „Alarmă” sau „Lucrare întreruptă” (roșu), „Lucrare gata”. Un clic pe el
@@ -835,12 +835,34 @@ consola coboară dedesubt; pe telefon, totul stă pe o coloană, în ordinea urg
 - **Conectează (USB)** te lasă să alegi portul mașinii (GRBL, 115 200 baud). Merge doar în Chrome sau Edge pe un calculator
   (Web Serial); altfel, panoul spune asta. Pe instanța de test mai e și **Mașină simulată**: un controler GRBL simulat, ca să
   încerci panoul fără CNC, cu **Viteza** 1×, 10× sau 100×. **Deconectează** închide portul.
-- **Conectează (WiFi)** leagă panoul de un controler din rețeaua locală, printr-un WebSocket. Alegi **Controlerul** (FluidNC,
-  grblHAL sau un pod ESP3D pe un GRBL clasic, care-și aduce portul implicit), scrii **Adresa** (un IP local, de exemplu
-  `192.168.1.50`, sau un nume care se termină în `.local`) și **Portul**, apoi **Conectează**; **Renunță** închide formularul.
-  Alegerile rămân în browser pentru data viitoare. Merge în Chrome și Edge, de la versiunea 147: prima dată, browserul cere voie
-  pentru dispozitivele din rețeaua locală, iar un refuz se schimbă din setările site-ului. O adresă pe care browserul n-ar lăsa-o
-  (un nume obișnuit, un IP din afara rețelei locale) se refuză înainte de conectare, cu motivul.
+- **Conectează (WiFi)** leagă panoul de un controler din rețeaua locală, printr-un WebSocket (Chrome și Edge, de la versiunea
+  147: prima dată, browserul cere voie pentru dispozitivele din rețeaua locală, iar un refuz se schimbă din setările site-ului).
+  Fereastra arată conexiunile ținute în browser, fiecare cu rețeaua ei: **prin rețeaua** atelierului (după nume, de exemplu
+  `esp3d.local`, cu ultimul IP ca rezervă), **direct**, prin rețeaua proprie a mașinii (podul ESP3D, la `192.168.0.1`), sau o
+  adresă scrisă de mână. Alegi tu la care te legi, cu **Conectează**: fereastra nu se conectează singură. **Uită** scoate o
+  conexiune din listă, iar **Renunță** închide alegerea. Dacă nu merge, panoul spune ce a încercat (numele, apoi ultimul IP) și
+  ce verifici: mașina pornită, calculatorul în aceeași rețea, pagina controlerului (cu un link spre ea).
+- **Caută mașina** încearcă deodată conexiunile ținute, numele obișnuite ale controlerelor (`esp3d.local`, `fluidnc.local`,
+  `grblhal.local`) și rețeaua proprie a podului; controlerul se deduce din cine răspunde, iar o mașină găsită se leagă cu
+  **Conectează**. **Caută în toată rețeaua**, doar la clic, încearcă fiecare adresă a rețelelor obișnuite (192.168.0.x,
+  192.168.1.x, sau rețeaua ultimului IP), întâi pe portul 8282 (podul ESP3D), apoi pe 81, cu bara de progres; browserul
+  încetinește încercările fără răspuns, deci durează cam un minut pe rețea și port. Se oprește la prima mașină găsită, sau cu
+  **Oprește căutarea**. Unui controler i se trimite doar `?` (o cerere de stare, fără răspuns `ok`), deci nu încurcă un alt
+  program care-i trimite deja o lucrare. **Înapoi** te întoarce la listă.
+- **Altă adresă…** e formularul de mână: **Controlerul** (FluidNC, grblHAL sau un pod ESP3D pe un GRBL clasic, care-și aduce
+  portul implicit), **Adresa** (un IP local, de exemplu `192.168.1.50`, sau un nume care se termină în `.local`) și **Portul**,
+  apoi **Conectează**. Ultima adresă rămâne în formular. O adresă pe care browserul n-ar lăsa-o (un nume obișnuit, un IP din
+  afara rețelei locale) se refuză înainte de conectare, cu motivul.
+- **Configurează un pod nou** pune podul ESP3D în rețeaua atelierului, în trei pași, fără terminalul lui:
+  1. legi calculatorul la rețeaua podului (ESP3D, cu parola din fabrică, 12345678), apoi **Verifică** (**Adresa podului** e
+     implicit `192.168.0.1:8282`): podul își spune versiunea și ținta, iar drumul direct, prin rețeaua lui, rămâne ținut;
+     **Continuă**;
+  2. din **Rețelele văzute de pod** (cu semnalul; **Caută din nou** le recitește) alegi rețeaua atelierului, sau **Altă rețea**
+     pentru una ascunsă, scrii **Parola rețelei** și o **Parolă nouă pentru rețeaua podului** (cea din fabrică e publică), apoi
+     **Trimite podului**. Parolele merg doar de la browser la pod și nu se țin nicăieri;
+  3. legi calculatorul înapoi la rețeaua atelierului, iar aplicația caută podul la `esp3d.local` până răspunde, apoi îl ține,
+     cu rețeaua lui: **Conectează** sau **Gata**. Dacă nu apare, podul s-a întors în rețeaua lui (cu parola nouă): **Reia de la
+     pasul 1**, sau caută-l în toată rețeaua.
 - **Prin WiFi, legătura poate cădea.** Atunci mașina termină ce are în memorie și se oprește, iar panoul nu mai poate trimite
   Pauză sau Oprește, ca la un cablu scos. De aceea, la prima pornire a unui program prin WiFi, panoul spune asta întâi:
   **Pornește oricum** sau **Renunță**. Oprirea de urgență a mașinii rămâne cea fizică.

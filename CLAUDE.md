@@ -492,6 +492,18 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   buclă), cu cazurile pe hârtie în `CAZURI_DEG_0135` și corpusul din sămânță `corpusDegajariArce`; pe hârtie, cât intră
   o degajare într-un perete-arc se măsoară radial (`CercHartie`). **Pornirea 100,4 (cu ușa 103,9 / 110 kB), totalul
   476,0 / 500, /admin 105,3 / 200.**
+  **Conectarea prin WiFi, mai ușoară (ADR 0136, felia 3.6f)** gata pe 05.11, cu răspunsurile owner-ului: „Conectează (WiFi)”
+  arată conexiunile ținute în browser, fiecare cu rețeaua ei (prin rețeaua atelierului, după nume, cu ultimul IP ca rezervă;
+  direct, prin rețeaua proprie a podului; o adresă scrisă de mână), din care omul alege, fără conectare singură; „Caută
+  mașina” (numele știute, deodată) și, la clic, „Caută în toată rețeaua” (/24, întâi portul 8282, apoi 81, câte 32 de gazde); pașii unui eșec;
+  asistentul podului ESP3D (rețelele văzute de pod, parolele trimise doar lui, podul găsit la `esp3d.local`). Logica pură e
+  `src/machine/conexiuni.ts`, probele `src/machine/sonde.ts`, ecranele `src/app/ConectareWifi.tsx`. **Unui controler i se
+  trimite la probă doar `?`** (timpul real n-are `ok`): orice altceva ar strica numărătoarea altui sender legat la el.
+  **Chrome întârzie fiecare WebSocket nou al paginii cu 1–5 s după multe încercări fără răspuns** (pe proces, 2–4 minute):
+  timpul unei deschideri are loc și pentru întârziere (9 s la căutare, 10 s la legare). **O
+  scriere în pod cere răspunsul „ok”**, nu doar starea: o valoare goală (sau `json`) e o citire. Proba cap-coadă are podul
+  fals în `test/e2e/controlerWebSocket.ts` (`pod`), cu `esp3d.local` rezolvat de browser la 127.0.0.1 și podul pe 8282 (spec-ul
+  merge pe rând). **Pornirea 100,4 (cu ușa 103,9 / 110 kB), totalul 483,8 / 500, /admin 105,3 / 200.**
   **Documentația admin (ADR 0048)** gata pe 20.10: în `/admin`, fila Roadmap (etapele pe săptămâni, feliile, plăcile, ce
   așteaptă de la owner, cu starea dedusă la fiecare build din fișe) și fila Documentație (planul, fișele, ADR-urile),
   generate în `dist/documentatie/`, doar online; cititorul de markdown comun e `src/docs/` (îl refolosește documentația live).
@@ -606,6 +618,11 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 05.11.2026: **conectarea prin WiFi: răspunsurile la ADR 0136** („1. c”, „2. a”, „3. b”, „4. trebuie sa pot alege la care
+  retea sa ma conectez”): în felia 3.6f intră și căutarea în toată rețeaua, doar la clic; parola rețelei atelierului se scrie
+  în aplicație, merge doar spre pod și nu se ține nicăieri (regula din ghidul podului s-a schimbat odată cu ea); numele
+  mașinii în rețea rămâne `esp3d`; în locul butonului „Conectează la COSTEL”, lista conexiunilor ținute, fiecare cu rețeaua
+  ei (prin rețeaua atelierului sau direct, prin rețeaua podului), din care omul alege, fără conectare singură.
 - 05.11.2026: **conectarea prin WiFi, mult mai ușoară, și roadmap-ul la zi** („da, continua, da, vreau sa te asiguri ca avem
   roadmap actualizat”, apoi „si defapt, vreau sa imbunatatim la senderul wifi, vreau sa fie mult mai usor sa conectezi o masina
   prin wifi”): felia următoare e 3.6f, cu ADR 0136 propus (cercetarea, schița, patru întrebări); codul vine după răspunsuri.

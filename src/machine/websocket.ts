@@ -110,7 +110,7 @@ export const TIMP_DESCHIDERE_MS = 10_000;
 const DESCHIS = 1;
 
 /** Starea permisiunii rețelei locale (Chrome 147: `local-network`; înainte, `local-network-access`); null: browserul n-o știe. */
-async function permisiuneRetea(): Promise<string | null> {
+export async function permisiuneRetea(): Promise<string | null> {
   for (const name of ['local-network', 'local-network-access']) {
     try {
       return (await navigator.permissions.query({ name } as unknown as PermissionDescriptor)).state;

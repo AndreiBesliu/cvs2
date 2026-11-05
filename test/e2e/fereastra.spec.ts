@@ -165,8 +165,11 @@ test('Escape în Mașina închide formularul WiFi și nu schimbă fereastra; F1 
   await fila(page, 'masina').click();
   await page.locator('[data-masina="conecteaza-wifi"]').click();
   await expect(page.getByTestId('masina-wifi')).toBeVisible();
+  // Și din adâncul alegerii (formularul „Altă adresă…”), Escape închide tot.
+  await page.locator('[data-masina="wifi-alta"]').click();
   await page.locator('[data-masina="wifi-adresa"]').click();
   await page.keyboard.press('Escape');
+  await expect(page.getByTestId('masina-wifi-adresa')).toHaveCount(0);
   await expect(page.getByTestId('masina-wifi')).toHaveCount(0);
   await expect(page.locator('[data-masina="conecteaza-wifi"]')).toBeFocused();
   // Nimic deschis: Escape nu face nimic, fereastra rămâne.

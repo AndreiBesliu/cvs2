@@ -51,25 +51,29 @@ ESP32-ul e legat doar la PC, prin USB (încă nu la Arduino).
 
 ## 3. Rețeaua atelierului (o dată)
 
-După pornire, podul își face rețeaua lui, **ESP3D**, cu parola `12345678`.
+După pornire, podul își face rețeaua lui, **ESP3D**, cu parola `12345678`. Din 3.6f (ADR 0136), aplicația îl pune în
+rețeaua atelierului, fără terminalul lui: fereastra **Mașina** → **Conectează (WiFi)** → **Configurează un pod nou**.
 
-1. Leagă telefonul sau laptopul la rețeaua ESP3D și deschide <http://192.168.0.1>.
-2. Dă click pe bara **Terminal**, ca să se deschidă (pornește închisă). Scrie pe rând și trimite cu **Send**:
-   1. `[ESP800]`: răspunsul are versiunea `3.0.2` și ținta (`FWTarget`) `grbl`;
-   2. `[ESP106]<o parolă a ta, de cel puțin 8 caractere>`: parola rețelei ESP3D. Podul se întoarce în ea dacă nu găsește
-      rețeaua atelierului, iar parola implicită e publică;
-   3. `[ESP100]<numele rețelei atelierului>`;
-   4. `[ESP101]<parola rețelei atelierului>`;
-   5. `[ESP110]WIFI-STA`;
-   6. `[ESP444]RESTART`.
+1. Leagă calculatorul la rețeaua ESP3D, apoi **Verifică**: aplicația cere podului versiunea (`3.0.2`) și ținta (`grbl`), iar
+   drumul direct, prin rețeaua lui (192.168.0.1), rămâne ținut în browser.
+2. Alege rețeaua atelierului din cele văzute de pod (sau una ascunsă, scrisă de mână), scrie-i parola și pune o parolă nouă
+   rețelei ESP3D (cea implicită e publică; podul se întoarce în ea dacă nu găsește rețeaua atelierului), apoi **Trimite
+   podului**. Aplicația trimite `[ESP106]`, `[ESP100]`, `[ESP101]` și `[ESP110]WIFI-STA`, cu spațiile și `\` scrise cum le
+   cere podul; după ultima, podul trece pe loc în rețeaua atelierului.
+3. Leagă calculatorul înapoi la rețeaua atelierului: aplicația caută podul la `esp3d.local` până răspunde, apoi îl ține, cu
+   rețeaua și IP-ul lui. Dacă nu apare într-un minut sau două, podul nu s-a putut lega și s-a întors în rețeaua ESP3D (acum cu
+   parola ta): reia de la pasul 1.
 
-   Un spațiu din nume sau din parolă se scrie cu `\` în față: `Atelier\ Costel`.
-3. Podul repornește în rețeaua atelierului, iar rețeaua ESP3D dispare. Dacă nu se poate lega, se întoarce în ESP3D (acum cu
-   parola ta): reia de la comanda 3 (`[ESP100]`).
-4. **Adresa podului** e în lista de clienți a routerului, cu numele `esp3d`. Pune-i în router o adresă rezervată, ca să nu
-   se schimbe. De obicei merge și numele `esp3d.local`.
+Parolele le scrii doar în asistent: aplicația le trimite podului, prin rețeaua lui, și nu le ține nicăieri (nici în browser).
+Nu în repo, nu în chat.
 
-Parolele le scrii doar în pagina podului: nu în aplicație, nu în repo, nu în chat.
+**Fără aplicație** (de exemplu de pe telefon), aceleași comenzi merg și din pagina podului: leagă-te la rețeaua ESP3D,
+deschide <http://192.168.0.1>, dă click pe bara **Terminal** (pornește închisă) și trimite pe rând, cu **Send**:
+`[ESP800]` (versiunea `3.0.2`, ținta `grbl`), `[ESP106]<parola nouă a podului>`, `[ESP100]<numele rețelei atelierului>`,
+`[ESP101]<parola ei>` și `[ESP110]WIFI-STA`. Un spațiu din nume sau din parolă se scrie cu `\` în față: `Atelier\ Costel`.
+
+Ca IP-ul să nu se schimbe, pune-i podului în router o adresă rezervată (numele lui în lista de clienți e `esp3d`). Aplicația
+ține ultimul IP văzut, ca rezervă pentru un calculator care nu rezolvă `esp3d.local`.
 
 ## 4. Firele (cu totul oprit)
 
@@ -87,8 +91,11 @@ curent.
 
 ## 5. În aplicație
 
-În panoul mașinii: **Conectează (WiFi)** → controlerul **Pod ESP3D (GRBL)** → adresa podului → portul **8282** →
-**Conectează**. Prima dată, browserul cere voie pentru rețeaua locală: **Permite**.
+În fereastra **Mașina**: **Conectează (WiFi)** arată conexiunile ținute, fiecare cu rețeaua ei („Prin rețeaua …”, după nume,
+sau „Direct, prin rețeaua … a mașinii”, la 192.168.0.1): alegi una și **Conectează**. Fără nicio conexiune ținută, **Caută
+mașina** găsește podul după nume (și în rețeaua lui), iar **Caută în toată rețeaua** încearcă, la clic, fiecare adresă a
+rețelei. Adresa scrisă de mână rămâne sub **Altă adresă…** (controlerul **Pod ESP3D (GRBL)**, portul **8282**). Prima dată,
+browserul cere voie pentru rețeaua locală: **Permite**.
 
 Panoul arată starea mașinii (Idle sau Alarm), ca pe USB. O diferență: pe WiFi, Arduino-ul nu se resetează la conectare (pe
 USB, deschiderea portului îl reseta), deci mașina rămâne în starea în care era.

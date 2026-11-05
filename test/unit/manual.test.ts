@@ -149,6 +149,15 @@ const CONTROALE_MASINA: Readonly<Record<string, string | null>> = {
   'conecteaza-wifi': 'masina.conecteaza-wifi', 'wifi-profil': 'masina.wifi.profil', 'wifi-adresa': 'masina.wifi.adresa',
   'wifi-port': 'masina.wifi.port', 'wifi-conecteaza': 'masina.wifi.conecteaza', 'wifi-renunta': 'masina.wifi.renunta',
   'start-wifi': 'masina.wifi.porneste-oricum', 'start-wifi-renunta': 'masina.wifi.renunta',
+  // Alegerea, căutarea și asistentul podului (ADR 0136, `ConectareWifi.tsx`); rândurile rețelelor văzute de pod și numele unei
+  // rețele ascunse se numesc prin „Rețelele văzute de pod” și „Altă rețea”.
+  'wifi-tinuta': 'masina.wifi.conecteaza', 'wifi-uita': 'masina.wifi.uita', 'wifi-cauta': 'masina.wifi.cauta', 'wifi-alta': 'masina.wifi.alta',
+  'wifi-pod': 'masina.wifi.pod', 'wifi-inapoi': 'masina.wifi.inapoi', 'wifi-gasita': 'masina.wifi.conecteaza',
+  'wifi-scaneaza': 'masina.wifi.scaneaza', 'wifi-scaneaza-opreste': 'masina.wifi.scaneaza.opreste',
+  'pod-adresa': 'masina.pod.adresa', 'pod-verifica': 'masina.pod.verifica', 'pod-continua': 'masina.pod.continua', 'pod-retea': 'masina.pod.retele',
+  'pod-retea-ascunsa': 'masina.pod.ascunsa', 'pod-retea-nume': null, 'pod-retele': 'masina.pod.retele.din-nou', 'pod-parola': 'masina.pod.parola',
+  'pod-parola-pod': 'masina.pod.parola-pod', 'pod-trimite': 'masina.pod.trimite', 'pod-reia': 'masina.pod.reia', 'pod-conecteaza': 'masina.wifi.conecteaza',
+  'pod-gata': 'masina.pod.gata', 'pod-cauta-iar': 'masina.pod.3.din-nou',
   // Indicatorul lucrării din meniul global (ADR 0132, `IndicatorLucrare.tsx`): pastila și butonul de lângă ea.
   indicator: 'masina.indicator.titlu', 'indicator-pauza': 'masina.pauza', 'indicator-reia': 'masina.eliberare',
 };
@@ -156,7 +165,8 @@ const CONTROALE_MASINA: Readonly<Record<string, string | null>> = {
 test('fiecare control al panoului mașinii (data-masina) e numit în capitolul „masina”, în ambele limbi', () => {
   const sursa = `${citeste('src/app/PanouMasina.tsx')}
 ${citeste('src/app/PanouCod.tsx')}
-${citeste('src/app/IndicatorLucrare.tsx')}`;
+${citeste('src/app/IndicatorLucrare.tsx')}
+${citeste('src/app/ConectareWifi.tsx')}`;
   // Un `data-masina` calculat (`={…}`) ar ocoli proba: fiecare control își scrie numele.
   assert.doesNotMatch(sursa, /data-masina=\{/);
   const controale = [...new Set([...sursa.matchAll(/data-masina="([a-z0-9-]+)"/g)].map((x) => x[1]!))].sort();

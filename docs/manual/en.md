@@ -849,7 +849,7 @@ column, most urgent first.
 - **The drawing stays one click away.** The **Design** tab takes you back to the drawing at any time, and the job carries on.
   While you are in the Machine window, the drawing's keys (Delete, Ctrl+Z, the arrows, the tools) do not touch the hidden
   drawing; `Ctrl+K` works, and a drawing command picked from the palette takes you to Design first. `F1` opens this chapter.
-  **Escape** closes only what is open (the WiFi form, a confirmation): it does not change the window and sends nothing to the
+  **Escape** closes only what is open (the WiFi choice, a confirmation): it does not change the window and sends nothing to the
   machine.
 - **The job indicator** sits in the application menu once the Machine window has been opened, and shows from any window:
   “Machine connected”, “Running 42%” (green, with **Pause** next to it), “Paused 42%” (orange, with **Resume**), “Stopped at
@@ -862,12 +862,36 @@ column, most urgent first.
 - **Connect (USB)** lets you choose the machine’s port (GRBL, 115,200 baud). It works only in Chrome or Edge on a computer
   (Web Serial); otherwise, the panel says so. On the test instance there is also **Simulated machine**: a simulated GRBL
   controller, to try the panel without a CNC, with **Speed** 1×, 10× or 100×. **Disconnect** closes the port.
-- **Connect (WiFi)** links the panel to a controller on the local network, through a WebSocket. You choose the **Controller**
-  (FluidNC, grblHAL or an ESP3D bridge on a classic GRBL, which brings its default port), write the **Address** (a local IP,
-  for example `192.168.1.50`, or a name ending in `.local`) and the **Port**, then **Connect**; **Cancel** closes the form. The
-  choices stay in the browser for next time. It works in Chrome and Edge, from version 147: the first time, the browser asks to
-  allow devices on your local network, and a refusal is changed in the site settings. An address the browser would not allow
-  (an ordinary name, an IP outside the local network) is refused before connecting, with the reason.
+- **Connect (WiFi)** links the panel to a controller on the local network, through a WebSocket (Chrome and Edge, from version
+  147: the first time, the browser asks to allow devices on your local network, and a refusal is changed in the site
+  settings). The window shows the connections saved in the browser, each with its network: **through the workshop network**
+  (by name, for example `esp3d.local`, with the last IP as a fallback), **directly**, through the machine’s own network (the
+  ESP3D bridge, at `192.168.0.1`), or an address typed by hand. You choose which one to use, with **Connect**: the window never
+  connects on its own. **Forget** removes a connection from the list, and **Cancel** closes the choice. If it fails, the panel
+  says what it tried (the name, then the last IP) and what to check: the machine switched on, the computer on the same
+  network, the controller’s page (with a link to it).
+- **Find the machine** tries at once the saved connections, the usual controller names (`esp3d.local`, `fluidnc.local`,
+  `grblhal.local`) and the bridge’s own network; the controller is deduced from what answers, and a machine found is linked
+  with **Connect**. **Search the whole network**, only on a click, tries every address of the usual networks (192.168.0.x,
+  192.168.1.x, or the last IP’s network), first on port 8282 (the ESP3D bridge), then on 81, with a progress bar; the browser
+  slows down attempts that get no answer, so it takes about a minute per network and port. It stops at the first machine found,
+  or with **Stop searching**. A controller is only sent `?` (a status request, with no `ok` reply), so it does not disturb another
+  program already sending it a job. **Back** returns to the list.
+- **Other address…** is the form by hand: the **Controller** (FluidNC, grblHAL or an ESP3D bridge on a classic GRBL, which
+  brings its default port), the **Address** (a local IP, for example `192.168.1.50`, or a name ending in `.local`) and the
+  **Port**, then **Connect**. The last address stays in the form. An address the browser would not allow (an ordinary name, an
+  IP outside the local network) is refused before connecting, with the reason.
+- **Set up a new bridge** puts the ESP3D bridge on the workshop network, in three steps, without its terminal:
+  1. join the computer to the bridge’s network (ESP3D, with the factory password, 12345678), then **Check** (the **Bridge
+     address** is `192.168.0.1:8282` by default): the bridge tells its version and target, and the direct route, through its
+     network, is saved; **Continue**;
+  2. from the **Networks the bridge sees** (with the signal; **Look again** reads them again) choose the workshop network, or
+     **Other network** for a hidden one, type the **Network password** and a **New password for the bridge’s network** (the
+     factory one is public), then **Send to the bridge**. Passwords only travel from the browser to the bridge and are kept
+     nowhere;
+  3. join the computer back to the workshop network, and the app looks for the bridge at `esp3d.local` until it answers, then
+     saves it, with its network: **Connect** or **Done**. If it does not show up, the bridge went back to its own network
+     (with the new password): **Start again from step 1**, or search the whole network for it.
 - **Over WiFi, the connection can drop.** Then the machine finishes what it has in memory and stops, and the panel can no longer
   send Pause or Stop, as with an unplugged cable. So, at the first start of a program over WiFi, the panel says this first:
   **Start anyway** or **Cancel**. The machine’s emergency stop stays the physical one.

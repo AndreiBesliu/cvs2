@@ -292,9 +292,138 @@
   margin: var(--sp-1) 0 var(--sp-2);
 }
 
-.masina-wifi input:not([type='number']) {
+.masina-wifi input:not([type='number'], [type='radio']) {
   flex: 1;
   min-width: 0;
+}
+
+/*
+ * Conectarea prin WiFi, mai ușoară (ADR 0136): conexiunile ținute și mașinile găsite pe rânduri (eticheta cu detaliul în
+ * stânga, butoanele în dreapta, sub ele pe un ecran îngust), notele slabe, pașii asistentului podului.
+ */
+.masina-wifi h4 {
+  margin-top: var(--sp-1);
+}
+
+.masina-wifi-lista {
+  display: grid;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.masina-wifi-rand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+}
+
+.masina-wifi-rand[data-stare='gasit'] {
+  border-color: var(--traseu-taiere);
+}
+
+.masina-wifi-rand .masina-butoane {
+  margin: 0;
+}
+
+.masina-wifi-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.masina-wifi-text > span {
+  color: var(--t-slab);
+  font-size: var(--fs-2);
+}
+
+.masina-nota-slaba {
+  margin: 0;
+  color: var(--t-slab);
+  font-size: var(--fs-2);
+}
+
+.masina-wifi-diagnoza p,
+.masina-wifi-diagnoza ol {
+  margin: 0 0 var(--sp-1);
+}
+
+.masina-wifi-diagnoza ol {
+  padding-left: var(--sp-4);
+}
+
+.masina-wifi-scanare {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.masina-wifi-scanare progress {
+  width: 100%;
+}
+
+.masina-pod-pas {
+  margin: 0;
+  font-size: var(--fs-1);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--t-slab);
+}
+
+.masina-pod-pasi {
+  margin: 0;
+  padding-left: var(--sp-4);
+}
+
+.masina-pod-retele {
+  display: grid;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.masina-pod-retele legend {
+  margin-bottom: var(--sp-1);
+  padding: 0;
+  color: var(--t-slab);
+  font-size: var(--fs-2);
+}
+
+.masina-pod-retea {
+  display: flex;
+  text-align: start;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--tinta);
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--l-margine);
+  border-radius: var(--r-1);
+}
+
+.masina-pod-retea > span:not(.masina-pod-ssid) {
+  color: var(--t-slab);
+  font-size: var(--fs-2);
+}
+
+.masina-pod-ssid {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.masina-camp-lung {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
 }
 
 /* Avertismentul căderii WiFi-ului, înaintea primei porniri: chenarul plin, ca alarma. */
