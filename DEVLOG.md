@@ -5414,3 +5414,31 @@ dată acolo („Da, unește”); unirea s-a făcut abia la cuvântul owner-ului 
 - **Rămân pe origin 14 ramuri vechi:** cele 13 de la curățenia din 04.11 și `wip/10.1-vectori`, toate unite sau salvate în
   `Apps\cncvs2-arhiva\`. Ștergerea lor e la owner: modul automat refuză `git push --delete`.
 - **Rămâne** worktree-ul `trenulet` (linia activă).
+
+## 2026-11-05 — Felia 3.V: degajările pe colțurile cu arce (ADR 0135) (Model: Claude Opus 5.5)
+
+**Prompt:** „da, 3.V”, la „Start the next slice, 3.V (relief at corners with an arc)?”.
+**Started:** 05.11, 09:22. **Completed:** 05.11, 12:11.
+
+- **Problema:** un colț cu o latură curbă (un „D” tăiat ca gaură, un dreptunghi unit cu un cerc, o lentilă, orice import cu
+  arce sau cubice) primea doar avertismentul „o latură a colțului e curbă”; cepul cu muchii drepte nu intra în el.
+- **Decizia (ADR 0135):** Q e încrucișarea curbelor decalate ale celor doi pereți din V, cea mai apropiată de V, cu piciorul pe
+  câte un segment al fiecăruia; E din tangentele din V; peretele merge pe contur până la prima rupere a tangentei (la T-bone și
+  la condiția d din ADR 0134); plasa „freza nu ajunge în colț” unde decalarea mănâncă colțul. Colțurile dintre linii rămân la
+  fel, octet cu octet (amprenta din 3.U).
+- **Găsite pe drum:** (1) la scrierea oracolului, Q căutat doar pe segmentele din V rata piciorul de pe o biarcă mai depărtată a
+  unei cubice, deci căutarea a trecut pe pereții întregi (cazul D48, „D”-ul cu semicercul în două arce); (2) cu pereții întregi,
+  joncțiunile netede ale unui dreptunghi rotunjit deveniseră colțuri (oracolul a prins drumurile false, D25 și corpusul), deci
+  ruptura minimă se cere și la colțurile cu arc; (3) cazurile porții pe căi C06, C10, C20, C21 cereau vechea regulă: colțurile
+  lor curbe, verificate de mână (ruptura și restul), se numără acum.
+- **Probele:** `cam.degajari.arce.test.ts` (12, pe hârtie), `degajari.arce.oracol.test.ts` (D39–D50 pe 4 montaje, cât
+  intră într-un perete-arc, radial, și 5 martori), `degajari.arce.corpus.oracol.test.ts` (120 de programe, 684 de drumuri,
+  218 sosiri pe arc, 0 în bandă).
+- **Otrăvurile** (`test/otravuri/3.V.py`, în clona din afara Drive-ului): 24, alese de autor. Prima rulare (`ae2b43a`): 20 prinse, 4 scăpate. C03 → umărul minuscul (D50), Q06 → proba pe `colturiDeDegajat` (în program o ascunde potrivirea lui Q cu un vârf al buclei), J03 → canalul îngust, toate în `1799b70`; Q04 echivalentă (o atingere a decalatelor apare doar pe un contur cu un singur colț, unde încrucișarea pereților e mai aproape de V). Pe `1799b70`: 23 / 24, plus Q04 echivalentă. În `3.U.py`, P01 și P02 rescrise pe pereții întregi (`dinV`): prinse.
+- **Porțile locale** pe `ae2b43a`: traducerile, compilatoarele, importurile, 8 301 de teste unitare (0 căderi), licențele,
+  build-ul determinist (pornirea 100,4, cu ușa 103,9 / 110 kB; totalul 476,0 / 500; /admin 105,3 / 200), e2e 319 / 319,
+  emulatoarele 81 / 81 și 21 / 21.
+- **CI:** rapidă verde pe `ae2b43a` (42000402253) și pe `1799b70` (42007477407); completă verde pe `ae2b43a` (42000421825, 40 min).
+- **Publicat pe test:** 05.11, 11:53, `publica` pe `ae2b43a` (rularea 42006023782), după rularea completă verde.
+- **Verificat:** versiunea `ae2b43a389e5` în browserul aplicației (după „Reload”); un dreptunghi 60 × 40 unit cu un cerc de rază 10 pe latura de sus (umărul), pe exterior, Ø6, dog-bone: programul exportat (descărcarea oprită, citit din blob) are Q = (67,351, 93) și (92,649, 93), E = (67,879, 92,121) și (92,121, 92,121), exact ca D42, cu sosirea în (92,649, 93) pe arc (G2), fără avertismente; pe pânză, la 765 %, degajarea se vede în colțul de la baza umflăturii.
+- **Rămâne:** placa 2 (rândul fileturilor din prag); etapa 3 mai are doar felii cu mașina sau cu o placă tăiată.
