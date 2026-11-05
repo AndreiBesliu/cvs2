@@ -5399,3 +5399,18 @@ dată acolo („Da, unește”); unirea s-a făcut abia la cuvântul owner-ului 
 - **Verificat:** versiunea `424ab9bf4c6b` în browserul aplicației; două dreptunghiuri 40 × 30 în același loc: Check vectors arată „Problems: 1 (shapes checked: 2)”, „Duplicates (1)” și „Remove all copies (1)”; după reparație, „Repaired: 1. Undo with Ctrl+Z.” și „No problems (shapes checked: 1)”; Ctrl+Z aduce copia înapoi; foaia lăsată goală, nicio eroare în consolă.
 - **Rămâne:** worktree-ul `vectori` și sesiunea etapei 10 (de scos și de arhivat doar la cuvântul owner-ului; la scoatere,
   joncțiunile întâi).
+
+## 2026-11-05 — Curățenia după unirea lui 10.2↑ (Model: Claude Opus 5.5)
+
+**Prompt:** „Yes, clean up”, la „Remove the vectori worktree and archive the Etapa 10 session?”.
+**Started:** 05.11, 09:13. **Completed:** 05.11, 09:17.
+
+- **Worktree-ul `vectori`** (`C:\Users\besli\cncvs2-lucru\vectori`): curat, fără stash, ramura unită (0 commit-uri peste
+  `main`). Întâi joncțiunile `node_modules` și `functions/node_modules` (spre checkout-ul principal, rămas întreg), apoi
+  `git worktree remove --force`; metadatele din `.git/worktrees/vectori` (blocate de Drive), scoase de mână. În `.tmp/`,
+  `dist/` și `test-results/` erau doar build-uri, jurnale și capturi ale feliei.
+- **Ramura locală** `wip/10.1-vectori` ștearsă (`git branch -d`, unită).
+- **Sesiunea etapei 10** arhivată.
+- **Rămân pe origin 14 ramuri vechi:** cele 13 de la curățenia din 04.11 și `wip/10.1-vectori`, toate unite sau salvate în
+  `Apps\cncvs2-arhiva\`. Ștergerea lor e la owner: modul automat refuză `git push --delete`.
+- **Rămâne** worktree-ul `trenulet` (linia activă).

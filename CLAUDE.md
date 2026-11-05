@@ -596,6 +596,8 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 05.11.2026: **worktree-ul `vectori` scos** după unirea lui 10.2↑ („Yes, clean up”): ramura locală ștearsă, sesiunea etapei
+  10 arhivată; rămâne doar worktree-ul `trenulet`. Pe origin rămân ramurile vechi (ștergerea lor e la owner).
 - 04.11.2026: **meniul pe telefon, varianta B** (13.A↑c, ADR 0132 §10). La verificarea cerută („vreau sa verifici progresul
   actual al aplicatiei si sa te asiguri ca totul a fost facut bine”), rularea de noapte era roșie de două nopți; la reparația
   propusă, „vreau sa vad un exemplu mai concret inainte sa aprob”, apoi, după comparația cu capturi din aplicație (acum,
