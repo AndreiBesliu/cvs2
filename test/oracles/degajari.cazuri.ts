@@ -474,6 +474,11 @@ const FORMA_UMAR: FormaO = {
   tip: 'cale', inchis: true,
   varfuri: [{ p: p(0, 0), s: LIN }, { p: p(60, 0), s: LIN }, { p: p(60, 40), s: LIN }, { p: p(40, 40), s: arcB(1) }, { p: p(20, 40), s: LIN }, { p: p(0, 40), s: LIN }],
 };
+/** Umărul cu semicercul de rază 0,002, din (30,002, 40) în (29,998, 40): mersul se rupe cu 90°, dar restul e 0,0019. */
+const FORMA_UMAR_MINUSCUL: FormaO = {
+  tip: 'cale', inchis: true,
+  varfuri: [{ p: p(0, 0), s: LIN }, { p: p(60, 0), s: LIN }, { p: p(60, 40), s: LIN }, { p: p(30.002, 40), s: arcB(1) }, { p: p(29.998, 40), s: LIN }, { p: p(0, 40), s: LIN }],
+};
 /**
  * Lentila: arcul 1 din (20, 0) în (−20, 0) și arcul 2 înapoi, ambele cu bulge 0,5 (baleiajul 4·atan(0,5) = 106,26°): coarda 40,
  * deci raza 40·(1 + 0,25) / 2 = 25, centrele la 40·(1 − 0,25) / 2 = 15 de coardă, (0, −15) și (0, 15).
@@ -589,6 +594,11 @@ export const CAZURI_DEG_0135: readonly CazDeg0135[] = [
   caz0135('D49 „D”-ul cu semicercul în două arce, T-bone: arcele fac un singur perete (20π), deci tot linia e cea scurtă: ca la D41', [
     formaArc(FORMA_D_DOUA_ARCE, 'interior', tee()),
   ], TEE_D),
+  // Umărul minuscul (semicercul de rază 0,002): cercul decalat, de rază 3,002, taie dreapta y = 93 la x = 80 ± 0,1096, deci
+  // |QV| − R = 0,0019 < 0,01: nu e colț de degajat (freza ajunge oricum la 0,0019 de el), deci plasa; niciun drum.
+  caz0135('D50 umărul minuscul (raza 0,002), pe exterior, dog-bone: restul |QV| − R = 0,0019 e sub 0,01, deci nicio degajare, doar plasa', [
+    formaArc(FORMA_UMAR_MINUSCUL, 'exterior', dog()),
+  ], [], { faraDrumuri: true, avertismente: [nuAjunge(p(80.002, 90)), nuAjunge(p(79.998, 90))] }),
 ];
 
 /**

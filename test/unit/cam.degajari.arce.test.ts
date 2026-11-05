@@ -16,6 +16,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { programDinDocument } from '../../src/cam/job.ts';
+import { colturiDeDegajat } from '../../src/cam/degajari.ts';
 import type { Miscare } from '../../src/ir/ir.ts';
 import type { Document, FormaDoc, Operatie } from '../../src/model/document.ts';
 import { cuOperatie, docDin, ID } from './ajutor-document.ts';
@@ -136,6 +137,45 @@ test('arcada cu o cubică, T-bone: peretele cubicei e toată cubica, mai lung de
 test('plasa (§5): colțul tăiat de un arc de 30°, la care decalarea mănâncă ambele colțuri ale arcului, se spune; celelalte trei se degajează', () => {
   const nu = (x: number, y: number): string => `g/g: degajarea omisă la colțul (${(x + X0).toFixed(3)}, ${(y + Y0).toFixed(3)}): freza nu ajunge în colț`;
   verifica(doc(TESITA, { colturi: { tip: 'dog-bone' } }), [[P(3, 3), P(k, k)], [P(37, 3), P(40 - k, k)], [P(3, 27), P(k, 30 - k)]], [nu(40, 28), nu(38, 30)]);
+});
+
+test('umărul minuscul (un semicerc de rază 0,002) pe exterior: Q = (30 ± 0,1096, 43) e la 3,0019 de V, deci restul (0,0019) e sub 0,01 și nu se degajează; plasa îl spune', () => {
+  // Mersul se rupe cu 90° (restul între două linii ar fi 1,243), dar cercul decalat, de rază 3,002, taie dreapta y = 43 la
+  // x = 30 ± √(3,002² − 9) = 30 ± 0,1096: freza ajunge deja la 0,0019 mm de colț.
+  const minuscul: FormaDoc = {
+    tip: 'cale', inchis: true,
+    varfuri: [{ p: P(0, 0), s: L }, { p: P(60, 0), s: L }, { p: P(60, 40), s: L }, { p: P(30.002, 40), s: A(1) }, { p: P(29.998, 40), s: L }, { p: P(0, 40), s: L }],
+  };
+  const nu = (x: number): string => `g/g: degajarea omisă la colțul (${(x + X0).toFixed(3)}, ${(40 + Y0).toFixed(3)}): freza nu ajunge în colț`;
+  verifica(doc(minuscul, { latura: 'exterior', colturi: { tip: 'dog-bone' } }), [], [nu(30.002), nu(29.998)]);
+});
+
+test('colturiDeDegajat (§2): piciorul lui Q cade pe segmentul peretelui; o umflătură la 0,5 mm de colțul dreptunghiului n-are Q acolo', () => {
+  // Umflătura de rază 5 (centrul (54,5, 40)) pornește din (59,5, 40), la 0,5 de colțul (60, 40). Dreapta y = 43 taie cercul de
+  // rază 8 la x = 54,5 ± √55 = 61,916, cu piciorul dincolo de linia de 0,5 mm (iar peretele se oprește în colțul (60, 40)): nu
+  // există Q. Colțul celălalt, (49,5, 40), are Q = (54,5 − √55, 43) și E = (49,5 − k, 40 + k).
+  const c = {
+    inchis: true,
+    varfuri: [{ p: P(0, 0), s: L }, { p: P(60, 0), s: L }, { p: P(60, 40), s: L }, { p: P(59.5, 40), s: A(1) }, { p: P(49.5, 40), s: L }, { p: P(0, 40), s: L }],
+  };
+  const d = colturiDeDegajat(c, 'exterior', 'urcare', 3, 'dog-bone');
+  assert.deepEqual(d.map((x) => `${cheie(x.v)}: ${cheie(x.q)} → ${cheie(x.e)}`), [`${cheie(P(49.5, 40))}: ${cheie(P(54.5 - Math.sqrt(55), 43))} → ${cheie(P(49.5 - k, 40 + k))}`]);
+});
+
+test('plasa doar unde freza ajunge (§5): un canal de 4 mm (sub D), cu capătul în arc, are colțuri curbe la 23 mm de buclă: nimic spus', () => {
+  // Gaura 40 × 30 cu un canal din latura dreaptă, y ∈ [13, 17], până la x = 60, închis cu un arc (bulge 0,5, raza 2,5 < R):
+  // colțurile (60, 13) și (60, 17) sunt concave pentru K, fără Q (decalata arcului dispare), iar bucla stă la x ≤ 37, deci
+  // mult peste 2R / cos(φ/2) = 6,32 de ele. Colțurile gurii canalului sunt convexe pentru K. Arcul capătului, concav pentru K și
+  // sub R, își spune raza (ADR 0135 §6), ca orice arc al desenului.
+  const rot = 'g/g: colțul rotunjit cu raza 2.500 mm (sub raza frezei, 3.000 mm) rămâne cu raza frezei; o degajare cere un colț ascuțit în desen';
+  const canal: FormaDoc = {
+    tip: 'cale', inchis: true,
+    varfuri: [
+      { p: P(0, 0), s: L }, { p: P(40, 0), s: L }, { p: P(40, 13), s: L }, { p: P(60, 13), s: A(0.5) }, { p: P(60, 17), s: L },
+      { p: P(40, 17), s: L }, { p: P(40, 30), s: L }, { p: P(0, 30), s: L },
+    ],
+  };
+  verifica(doc(canal, { colturi: { tip: 'dog-bone' } }), [[P(3, 3), P(k, k)], [P(37, 3), P(40 - k, k)], [P(37, 27), P(40 - k, 30 - k)], [P(3, 27), P(k, 30 - k)]], [rot]);
 });
 
 test('o cale cu colțurile rotunjite (arce tangente) nu are colțuri de degajat: sub R, „colțul rotunjit”; peste R, nimic', () => {
