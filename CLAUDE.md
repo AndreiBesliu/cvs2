@@ -712,6 +712,14 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 06.11.2026: **două linii paralele, în worktree-uri** („vreau sa deschidem worktrees pentru alte etape sau felii”, apoi
+  „Inlays, stage 12 (Recommended),Vector trim/convert, stage 10”): incrustațiile (felia 12.1↑, `wip/12.1-incrustatii`,
+  `C:\Users\besli\cncvs2-lucru\incrustatii`, e2e pe 4174 și pe rețeaua de loopback `127.0.1`, ADR-urile 0170–0179,
+  canalul `incrustatii`), singura linie care schimbă acum schema documentului (v20), și tăierea și conversia vectorilor
+  (felia 10.3↑, `wip/10.3-taiere-conversie`, `C:\Users\besli\cncvs2-lucru\taiere`, 4175, `127.0.2`, ADR-urile
+  0180–0189, canalul `taiere`), fără schemă nouă. Linia principală continuă de la ADR 0138. **Un worktree își scrie portul
+  e2e în trei locuri din `.tmp/pw.config.ts`** (comanda, `webServer.url`, `use.baseURL`; `playwright.config.ts` rămâne pe
+  4173) **și rulează e2e-ul cu `CNCVS2_E2E_RETEA`** (podul fals de pe 8282, pe rețeaua lui de loopback).
 - 06.11.2026: **plafonul total 550 kB** („Yes, 550 kB”, la „Raise the total bundle cap to 550 kB (new ADR), keeping startup
   at 110 kB?”): după unirea liniei pluginului, totalul era 503,1 / 500 kB; gazda extensiilor (~15 kB) trebuie să meargă și
   offline, deci rămâne în precache. ADR 0137; pornirea rămâne 110 kB.
