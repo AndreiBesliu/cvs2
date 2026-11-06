@@ -32,7 +32,7 @@ Sursa: **S** = ArtCAM · **D** = DeskProto · **S+D** = amândouă · **peste pr
 | Vectori decorativi: guilloche, umbră vectorială din relief, chenar vectorial | S | v2 | de făcut | — |
 | Bibliotecă de clipart vectorial (proprie) | S | v2 | de făcut | — |
 | Transformare și copiere: mutare, scalare, rotire, înclinare, oglindire, copiere în rețea, circulară și de-a lungul unei curbe (rând nou) | S | v1 | făcut (25.10): mutarea, scalarea și rotirea cu mânere (ADR 0052), oglindirea (ADR 0054), copierea în rețea și pe cerc (ADR 0061), înclinarea (ADR 0065; și a formelor cu arce, cu arcele făcute curbe la cerere, cercul devine elipsă, ADR 0078), copierea de-a lungul unei curbe (ADR 0066) | 67561b0, 464fad4, f0a0ca9, a5e9d87, dcfa572, arcele înclinate: 8ec91b7 |
-| Tăierea și conversia vectorilor: tăiere cu o linie, decupare la un contur, arce în loc de curbe, netezire, conversie în cercuri / dreptunghiuri (rând nou) | S | v1 (decis 06.10; era v1.x) | de făcut | — |
+| Tăierea și conversia vectorilor: tăiere cu o linie, decupare la un contur, arce în loc de curbe, netezire, conversie în cercuri / dreptunghiuri (rând nou) | S | v1 (decis 06.10; era v1.x) | în lucru (06.11: ADR 0180, propus, cu feliile 10.3↑–10.3↑d în worktree-ul `taiere`: Taie cu o linie, un ghidaj sau o formă, cu închiderea; Decupează la un contur; Taie la intersecții; arcele, netezirea, în cerc / în dreptunghi; codul după răspunsurile owner-ului) | — |
 
 ## B. Prelucrare 2D / 2.5D
 | Capabilitate | Sursă | Etapă | Stare | Commit |

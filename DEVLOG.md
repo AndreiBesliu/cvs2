@@ -5986,3 +5986,33 @@ test nu s-a atins; ramura nu e împinsă.
 - **CI:** rapidă verde pe `79fc159` (ramura WIP, 42093259095) și pe `33fd695` (42176322020); completă verde pe `33fd695` (42176335437, 41 min); suita e2e întreagă, local, 322 / 322.
 - **Publicat pe test:** `33fd695` (42181200327; prima încercare, 42180847182, a căzut la eliberarea versiunii de Hosting, cu HTTP 500 de la Firebase, și a mers la a doua, fără nicio schimbare). Verificat pe <https://cncvectorstudio-test.web.app>: versiunea `33fd695d81fb`, alegerea „Conectează (WiFi)”, pasul 1 al asistentului (în română) și capitolul „Mașina” din manual, cu butoanele noi; fără căutări în rețeaua owner-ului.
 - **Rămâne:** podul real în rețeaua atelierului, configurat din asistent (3.6e, cu placa owner-ului).
+
+## 2026-11-06 — Felia 10.3↑ pornită: tăierea și conversia vectorilor (ADR 0180, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem worktrees pentru alte etape sau felii”, apoi „Vector trim/convert, stage 10” (owner-ul, în
+sesiunea principală). Sarcina de la sesiunea principală: linia tăierii și conversiei vectorilor (etapa 10, rândul de prag
+„Tăierea și conversia vectorilor”), în worktree-ul ei, cu porțile verzi pe `main` ca bază, apoi cercetarea, ADR-ul propus
+cu întrebările grupate (recomandarea întâi) și schița interfeței, înainte de cod.
+**Started:** 06.11, 13:20. **Completed:** 06.11, 13:48 (cercetarea, ADR-ul și schița; codul lui 10.3↑ așteaptă răspunsurile).
+
+- **Locul:** worktree-ul `C:\Users\besli\cncvs2-lucru\taiere` (ramura `wip/10.3-taiere-conversie`, din `main` `61c75a1`),
+  cu joncțiunile `node_modules` și `functions\node_modules`; e2e-ul pe 4175 (`CNCVS2_E2E_RETEA=127.0.2`), canalul `taiere`,
+  ADR-urile 0180–0189.
+- **Porțile pe `main`, în worktree:** traducerile 618 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile);
+  importurile 19 / 0; licențele; unit 8 449 (8 441 trecute, 0 căderi, 8 sărite, 408 s); build-ul determinist (266 de
+  fișiere identice): pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul 503,1 / 550, /admin 105,4 / 200; e2e 350 / 350 (Edge,
+  2,9 min); emulatoarele 81 / 81 și 21 / 21.
+- **Cercetarea:** în cvs2 se refolosesc nodul nou exact (`adaugaNod`), locurile comune din cavalier rafinate cu Newton pe
+  segmentele adevărate (bucla din ADR 0124 §13) și biarcele (ADR 0033); booleanul nu, fiindcă reface geometria. ArtCAM 2018
+  (ajutorul lui, referință funcțională): Slice Vectors, Clip Vectors to Boundaries, Fit Arcs, Spline Vectors, Convert to
+  Regular Shapes. Ediția întâi n-avea tăierea, decuparea sau conversia; lecțiile ei intră în ADR (toleranța măsurată pe toată
+  forma, nu doar pe noduri; netezirea potrivită direct pe linii, cu liniile lungi și arcele păstrate, contur cu contur; o
+  bucată deschisă își păstrează partea frezei sau pierde rolul de arie).
+- **ADR 0180, propus:** butoanele Taie (Taie cu o linie verticală / orizontală, un ghidaj sau ultima formă aleasă, cu
+  „Închide bucățile”, o piesă cu găuri citită ca regiune; Decupează la o graniță închisă; Taie la intersecții) și Convertește
+  (Arce, Netezește, În cerc, În dreptunghi), calculate în workerul CAM și aplicate într-un pas; fără schemă nouă; patru felii
+  (10.3↑ tăierea, 10.3↑b decuparea, 10.3↑c conversia, 10.3↑d netezirea); proba pe hârtie (pătratul la X = 50, inelul tăiat
+  în două „U”-uri, liniile decupate în cercul Ø100, elipsa la 0,01, poligonul cu 64 de laturi, cercurile Ø8) și oracolul
+  independent; șase întrebări.
+- **Schița și formularul întrebărilor:** <https://claude.ai/artifact/U8aNobZggHbXjNCXitTGEY> (privată, a owner-ului; răspunsurile stau în baza paginii, colecția
+  `raspunsuri`: `q1`–`q6` cu `optiune`, `nota`, `la`, și `general`).
