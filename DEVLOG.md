@@ -6064,3 +6064,50 @@ test nu s-a atins; ramura nu e împinsă.
 - **Otrăvurile:** 3; toate prinse (`72def2a`): X01 (intrarea care nu-și întoarce pagina) și X02 (starea ferestrei de dinainte), fiecare singură, de proba nouă a pornirii; X03 (versiunea veche) de probele instalării.
 - **CI:** complet verde pe `72def2a` (`42255978949`, 16:49–17:24 UTC), cu proba pluginului reparată.
 - **Publicat pe test:** `72def2a` (rularea `42261313162`): <https://cncvectorstudio-test.web.app/> servește `cncvs2-versiune` `72def2ae6838`; în roadmap-ul de acolo, ADR 0138 acceptat, cu titlul întreg, ADR 0139 și coada owner-ului cu răspunsurile liniilor paralele; antetul CSP, cu amprenta nouă a încărcătorului.
+
+## 2026-11-06 — Felia 3.6g pornită: imprimanta 3D prin WiFi (ADR 0190, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „Vreau un worktree care sa lucreze in continuare la conectorul wifi. Inca nu mi se conecteaza imrpimanta”
+(owner-ul, în sesiunea principală). Sarcina de la sesiunea principală: linia imprimantei 3D prin WiFi (Creality K1C, ADR 0119
+§14 și întrebarea 4), în worktree-ul ei, cu porțile verzi pe `main` ca bază; întâi întrebările despre ce a încercat owner-ul,
+apoi cercetarea, ADR-ul propus cu întrebările grupate (recomandarea întâi) și schița interfeței, înainte de cod.
+**Started:** 06.11, 20:17. **Completed:** 06.11, 21:35 (cercetarea, ADR-ul și schița; codul lui 3.6g așteaptă răspunsurile).
+
+- **Locul:** worktree-ul `C:\Users\besli\cncvs2-lucru\imprimanta` (ramura `wip/3.6g-imprimanta`, din `main` `010da85`),
+  cu joncțiunile `node_modules` și `functions\node_modules`; e2e-ul pe 4176 (`CNCVS2_E2E_RETEA=127.0.3`), canalul
+  `imprimanta`, ADR-urile 0190–0199.
+- **Porțile pe `main`, în worktree:** traducerile 629 / 0 lipsă; compilatoarele (aplicația, planificatorul, funcțiile);
+  importurile 19 / 0 (997 de module); licențele; unit 8 473 (8 465 trecute, 0 căderi, 8 sărite, 354 s); build-ul determinist
+  (268 de fișiere identice): pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul 504,5 / 550, /admin 105,4 / 200; e2e 352 / 352
+  (Edge, 2,9 min); emulatoarele: funcțiile 81 / 81, e2e 20 / 21 (`utilizatori.emulator.spec.ts:175` a așteptat 60 s intrarea
+  cu Google din popup; reluat singur, spec-ul trece 3 / 3).
+- **De ce nu se leagă azi:** „Conectează (WiFi)” știe doar familia GRBL (porturile 8282 și 81, `[ESP800]` sau `?`), deci o K1C
+  nu se găsește și nu se leagă, oricare ar fi adresa. Ce a apăsat owner-ul și ce a văzut: întrebat (formularul schiței).
+- **Cercetarea:** două K1C: cea din 2024 (firmware 1.3.x, root din ecran, fără Moonraker din fabrică) și K1C 2025 (firmware
+  1.0 / 1.1, fără root, cu un API compatibil Moonraker pe 7125, „nexusp”). Drumul comun, din fabrică, e al lui Creality Print și
+  OrcaSlicer (sursa OrcaSlicer din 04.11.2026; integrarea Home Assistant `ha_creality_ws`, cu capturi K1C din 25.10.2026):
+  WebSocket-ul de pe 9999 (cadre text JSON; `{"ModeCode":"heart_beat"}` cere `ok`, altfel imprimanta închide; starea pe
+  bucăți: `state` 1 / 5 / 4 / 7 / 9, progresul, temperaturile, `err`; comenzile `pause`, `stop`, `opGcodeFile`; fără parolă) și
+  urcarea pe HTTP, pe 80 (`POST /upload/<nume>`, multipart). Găsirea: DNS-SD (`_Creality-<MAC>._udp.local.`), pe care browserul
+  nu-l vede, deci IP-ul sau căutarea pe 9999. Din browser: 9999 trece cu `ws:` (deja în CSP) și permisiunea rețelei locale;
+  urcarea cere `http:` în `connect-src`; Moonraker adevărat refuză WebSocket-ul altei origini fără `cors_domains` (citit în
+  `components/websockets.py`). Nemăsurat: dacă 9999 primește o pagină de pe altă origine și dacă 80 are antete CORS.
+  CC5000 nu e în nicio listă publică; familia apropiată (CX2585–CZ2587) vine din fișiere feliate pentru alt pat.
+- **ADR 0190, propus:** profilul `creality-k1` pe protocolul din fabrică, fără root; o imprimantă nu e un flux GRBL (fișierul
+  stă în ea), deci module noi, lângă sender (`src/imprimanta/`); fereastra Imprimanta, a treia filă, cu conexiunile ei ținute;
+  3.6g (conectarea, starea, pauza / oprirea, fișierele din imprimantă; fără schimbare de CSP), 3.6h (trimiterea unui `.gcode`,
+  cu verificarea antetului și a mișcărilor față de patul de 220 × 220 × 250; `http:` în CSP doar cu acordul owner-ului), 3.6i
+  (pe imprimanta owner-ului); siguranța (singură, aplicația doar citește și răspunde `ok`; pornirea cu „Patul e gol?”, pauza pe
+  loc, oprirea cu o confirmare, legătura căzută nu oprește imprimarea, temperaturile doar citite); Moonraker, camera și Marlin
+  mai târziu; fără schemă nouă; ținta de mărime ~8 kB; patru întrebări.
+- **Schița și formularul întrebărilor:** <https://claude.ai/artifact/Rf7msDet5o4ae8ch9AygSj> (privată, a owner-ului; cinci
+  planșe în culorile aplicației: prima dată, imprimă, fișierele și pornirea, oprirea și legătura căzută, trimiterea unui
+  `.gcode`). Răspunsurile stau în baza paginii, colecția `raspunsuri`: `q1`–`q4` (`optiune`, `nota`, `la`), `fapte`
+  (`incercat`, `firmware`, `varianta`, `root`, `ip`, `fisier`, `proba`) și `general`; se citesc cu `ArtifactData` `list`. La
+  publicare, colecția era goală.
+- **Fișa:** rândurile 3.6g, 3.6h și 3.6i în tabel, 3.6g în jurnal (în lucru), rândul imprimantei din coada owner-ului la zi.
+  Numele „3.6g-b” din sarcină nu e un id al roadmap-ului (`RE_ID` primește `3.6g`, `3.4b`, `3.8-0`), deci 3.6h și 3.6i, ca
+  seria 3.6d–3.6f; proba fișei etapei 3 (`documentatie.test.ts`) le cere. Traducerile roadmap-ului: 635 / 0 lipsă. Pragul,
+  neatins: imprimantele 3D nu sunt în ArtCAM / DeskProto.
+- **Rămâne:** răspunsurile owner-ului (ce a încercat, firmware-ul și varianta, IP-ul și cele patru întrebări); apoi codul lui
+  3.6g, cu imprimanta falsă (`test/e2e/imprimantaFalsa.ts`) și ghidul `docs/masina/imprimanta-k1c.md`.

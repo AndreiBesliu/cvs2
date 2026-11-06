@@ -1,6 +1,10 @@
 {
   "schema": 1,
   "texte": {
+    "020ae95616b13a81": {
+      "ro": "**Imprimanta 3D prin WiFi** (în lucru; fără mașină; ADR 0190, propus; „Vreau un worktree care sa lucreze in continuare la conectorul wifi. Inca nu mi se conecteaza imrpimanta”; în worktree-ul `imprimanta`, pe ramura `wip/3.6g-imprimanta`). „Conectează (WiFi)” știe doar controlerele familiei GRBL (8282 și 81, `[ESP800]` sau `?`), deci o K1C nu se găsește și nu se leagă, oricare ar fi adresa. Cercetarea: două K1C (2024, firmware 1.3.x, root din ecran, fără Moonraker din fabrică; 2025, firmware 1.0 / 1.1, fără root, cu un API compatibil Moonraker pe 7125), cu un drum comun, al lui Creality Print și OrcaSlicer: starea și comenzile pe WebSocket-ul de pe 9999 (cadre text JSON, `ok` la fiecare bătaie a inimii, starea pe bucăți; `pause`, `stop`, `opGcodeFile`), urcarea pe HTTP, pe 80 (`/upload`). Din browser: 9999 trece cu `ws:` (deja în CSP) și permisiunea rețelei locale; urcarea cere `http:` în CSP (întrebarea 3). Nemăsurat: dacă 9999 primește o pagină de pe altă origine și dacă 80 are antete CORS (de aflat pe imprimanta owner-ului). Propunerea: fereastra Imprimanta, a treia filă; 3.6g (conectarea, starea, pauza și oprirea, fișierele din imprimantă), 3.6h (trimiterea unui `.gcode`, cu verificarea mișcărilor față de pat), 3.6i (pe imprimantă); singură, aplicația doar citește. Codul vine după răspunsuri.",
+      "en": "**3D printer over WiFi** (in progress; no machine; ADR 0190, proposed; “Vreau un worktree care sa lucreze in continuare la conectorul wifi. Inca nu mi se conecteaza imrpimanta”; in the `imprimanta` worktree, on the `wip/3.6g-imprimanta` branch). “Connect (WiFi)” only knows the GRBL-family controllers (8282 and 81, `[ESP800]` or `?`), so a K1C is neither found nor connected, whatever the address. The research: two K1Cs (2024, firmware 1.3.x, root from the screen, no Moonraker from the factory; 2025, firmware 1.0 / 1.1, no root, with a Moonraker-compatible API on 7125), with one common path, the one Creality Print and OrcaSlicer use: status and commands on the WebSocket on 9999 (JSON text frames, `ok` to every heartbeat, the status in pieces; `pause`, `stop`, `opGcodeFile`), the upload over HTTP, on 80 (`/upload`). From the browser: 9999 gets through with `ws:` (already in the CSP) and the local network permission; the upload needs `http:` in the CSP (question 3). Not measured yet: whether 9999 accepts a page from another origin and whether 80 sends CORS headers (to find out on the owner’s printer). The proposal: the Printer window, a third tab; 3.6g (connecting, status, pause and stop, the files on the printer), 3.6h (sending a `.gcode`, with the moves checked against the bed), 3.6i (on the printer); on its own, the app only reads. The code comes after the answers."
+    },
     "02292bc5bd879195": {
       "ro": "buzunar + rest, insulă, găuri în pași, elice",
       "en": "pocket + rest, island, peck holes, helix"
@@ -293,6 +297,10 @@
       "ro": "Un singur post",
       "en": "A single post"
     },
+    "1b64dd62ea9b4333": {
+      "ro": "Trimiterea unui `.gcode` gata feliat la imprimantă",
+      "en": "Sending a ready-sliced `.gcode` to the printer"
+    },
     "1c2122dc6058fc5b": {
       "ro": "Biarcele",
       "en": "Biarcs"
@@ -340,6 +348,10 @@
     "2021cb0a946f06c5": {
       "ro": "Scalarea unui arc peste latura documentului",
       "en": "Scaling an arc past the document side"
+    },
+    "20f9b7e3f0e87cb5": {
+      "ro": "3.6g, 3.6h, 3.6i",
+      "en": "3.6g, 3.6h, 3.6i"
     },
     "211a91d78cbda042": {
       "ro": "Buzunar cu mai multe freze; Găurire; Ordinea + un fișier pe sculă; Animația traseului; §10 Găurire în pași",
@@ -664,10 +676,6 @@
     "3e46274cb0ba0363": {
       "ro": "Senderul prin WiFi (ADR 0119): transportul WebSocket lângă Web Serial, peste același flux; profilurile controlerelor (FluidNC, grblHAL, podul ESP3D); adresa (un IP privat sau un nume `.local`), cu permisiunea rețelei locale din Chrome și Edge 147; „Conectează” cu USB sau WiFi și avertismentul la cădere; proba pe emulator, în spatele unui WebSocket local",
       "en": "The sender over WiFi (ADR 0119): the WebSocket transport next to Web Serial, over the same stream; the controller profiles (FluidNC, grblHAL, the ESP3D bridge); the address (a private IP or a `.local` name), with the local network permission of Chrome and Edge 147; “Connect” with USB or WiFi and the warning about a drop; the probe on the emulator, behind a local WebSocket"
-    },
-    "3e9cd247d407387f": {
-      "ro": "Imprimanta 3D (Creality K1C, prin WiFi; răspunsul din 03.11 la ADR 0119, întrebarea 4): adresa ei în rețea și o imprimare de probă; ce mai cere firmware-ul se află la felie",
-      "en": "The 3D printer (Creality K1C, over WiFi; the 03.11 answer to ADR 0119, question 4): its network address and a test print; whatever else the firmware needs is found out in the slice"
     },
     "3f19b83fdc63d738": {
       "ro": "Regula `nonzero` la ușă",
@@ -1057,10 +1065,6 @@
       "ro": "CI rapid",
       "en": "Rapid CI"
     },
-    "67ff5cb20bcf9309": {
-      "ro": "feliile imprimantelor",
-      "en": "the printer slices"
-    },
     "681462eed9b23fdd": {
       "ro": "Bancul vizual v1, cu martorii lui (gata pe 16.10: `npm run banc`, pagina `/banc/` pe instanța de test; unealta de otrăvuri comisă, `docs/otravuri.md`)",
       "en": "Visual bench v1, with its controls (done on 16.10: `npm run banc`, the `/banc/` page on the test instance; the poison tool committed, `docs/otravuri.md`)"
@@ -1232,6 +1236,10 @@
     "7a561c49522909ee": {
       "ro": "**Simularea și verificarea;** calibrarea; celelalte contracte",
       "en": "**Simulation and verification;** calibration; the other contracts"
+    },
+    "7ac268af8f7477e9": {
+      "ro": "Imprimanta 3D pe imprimanta owner-ului",
+      "en": "The 3D printer on the owner’s printer"
     },
     "7adba96b4237b0b0": {
       "ro": "**V-carve-ul unei piese, o singură regiune** (fără mașină; precizarea din ADR 0112; „continua cu altceva”, din limita scrisă în ADR 0112). Un text cu operațiile importului, trecute pe V-carve rând cu rând în fereastra exportului, se săpa în două regiuni („O” ca un disc plin). Acum regiunea V-carve-ului e a contururilor unei piese dintr-o instanță cu aceleași valori (freza, adâncimea, pasul, sensul, fundul plat), ca buzunarele de aceeași adâncime (ADR 0073); cu valori diferite, regiunile rămân ale lor. **Treceri:** (1) proba întâi (inelul R10 / R6 pe două operații dă mișcările unei singure operații; căzută înainte), apoi cheia regiunii în lucrare (`src/cam/job.ts`).",
@@ -1485,6 +1493,10 @@
       "ro": "Personalul, fila Erori și Diagnoza (ADR 0040): pagina `/admin` la cerere (164 kB, cu bugetul ei; pornirea 99,0 / 100 kB), login Google, rolul din `staff/{uid}`, fila Erori cu „Rezolvat” prin callable și audit în aceeași tranzacție, Diagnoza (7 verificări), TTL de 90 de zile, regulile noi publicate. 17 teste pe emulator, 3 e2e pe emulatoare (login-ul emulatorului de Auth inclus), 3 e2e fără configurație, 13 unitare; 7 sabotaje, prinse unde trebuie, cu martorii trecuți (un martor picat a arătat primul apel lent al callable-ului: termen de 30 s). **Pe test:** pagina pornește până la fereastra Google, fără încălcări de CSP.",
       "en": "Staff, the Errors tab and Diagnostics (ADR 0040): the `/admin` page on demand (164 kB, with its own budget; startup 99.0 / 100 kB), Google login, the role from `staff/{uid}`, the Errors tab with “Resolved” through a callable and the audit in the same transaction, Diagnostics (7 checks), a 90-day TTL, the new rules published. 17 tests on the emulator, 3 e2e on emulators (the Auth emulator's login included), 3 e2e without configuration, 13 unit tests; 7 sabotages, caught where they should be, with the controls passing (a failed control revealed the callable's slow first call: a 30 s deadline). **On test:** the page starts up to the Google window, with no CSP violations."
     },
+    "930a66cc69face6b": {
+      "ro": "Imprimanta 3D pe imprimanta owner-ului, după ghid (`docs/masina/imprimanta-k1c.md`): starea, pauza și reluarea pe o imprimare scurtă, trimiterea unui fișier; transcrierea cadrelor, rejucată pe imprimanta falsă",
+      "en": "The 3D printer on the owner’s printer, following the guide (`docs/masina/imprimanta-k1c.md`): the status, pausing and resuming a short print, sending a file; the transcript of the frames, replayed on the fake printer"
+    },
     "9349481461342270": {
       "ro": "Offsetul formelor în desen, adus din etapa 6",
       "en": "Offsetting shapes in drawing, brought forward from stage 6"
@@ -1584,6 +1596,10 @@
     "9c3bf9eb00f8f5b8": {
       "ro": "**Aldinul și cursivul sintetic, aduse din etapa 7** (fără mașină; ADR 0123; worktree-ul `wip/7.5-text`, la cererea owner-ului: „vreau sa deschidem worktrees pentru urmatoarele etape”, „porneste worktrees”). În panoul textului, bifele **Aldin** (îngroșarea pe fiecare parte, propusă 3 % din înălțime) și **Cursiv** (înclinarea, propusă 12°), pentru orice font. Cursivul înclină fiecare literă față de linia ei de bază, exact. Aldinul așază literele la înălțimea miezului, h − 2d, le îngroașă cu d prin fațada offsetului (`offsetFigura`, nouă: o figură par-impar, în ambele sensuri, prin `Shape` din cavalier, cu ieșirea verificată și fără bucăți pierdute) și le mută cu (d, d): H de 20 mm rămâne de 20 mm, avansul crește cu 2d, colțurile de afară se rotunjesc. Literele îngroșate se țin în memorie (fără ea, offsetul costa 0,4–0,5 s pe 70 de litere, la fiecare tastă). Blocul ține `aldin` și `cursiv` (câmpuri păstrate, nu schemă nouă); scalarea uniformă crește îngroșarea. Pornirea 98,5 → 98,6 (cu ușa 102,0 → 102,2 / 110 kB), totalul 441,2 → 444,6 / 500 (~1,3 kB din `Shape`, adusă acum și pe firul principal). **Probele:** oracolul fontTools (5 cazuri, 41 de litere, ~218 000 de puncte clasificate independent, în miez sau la cel mult d de el; cutiile exacte; 3 cazuri de cursiv, contur cu contur), pe hârtie (H de 20 mm cu 0,6: colțul dinăuntru ascuțit, cel de afară rotunjit; cursivul de 12°), fațada (pătratul cu gol, golul închis, unirea, insula), blocul, previzualizarea (arcele), e2e-ul panoului. **Otrăvurile** din `test/otravuri/7.5.py`: 38 / 38 prinse din prima (32 pe probele unitare, 6 de interfață, prin e2e, cu un harnaș local pe portul worktree-ului).",
       "en": "**Synthetic bold and italic, brought forward from stage 7** (no machine; ADR 0123; the `wip/7.5-text` worktree, at the owner's request: “I want us to open worktrees for the next stages”, “start the worktrees”). In the text panel, the **Bold** tick (the thickening on each side, suggested at 3 % of the height) and the **Italic** tick (the slant, suggested at 12°), for any font. Italic slants each letter about its own baseline, exactly. Bold lays the letters out at the core height, h − 2d, thickens them by d through the offset facade (`offsetFigura`, new: an even-odd figure, both ways, through cavalier's `Shape`, with the output checked and no lost pieces) and moves them by (d, d): a 20 mm H stays 20 mm, the advance grows by 2d, the outer corners are rounded. Thickened letters are kept in memory (without it, the offset cost 0.4–0.5 s for 70 letters, on every key). The block keeps `aldin` and `cursiv` (kept fields, not a new schema); uniform scaling grows the thickening. Startup 98.5 → 98.6 (with the door 102.0 → 102.2 / 110 kB), total 441.2 → 444.6 / 500 (~1.3 kB from `Shape`, now brought onto the main thread too). **Tests:** the fontTools oracle (5 cases, 41 letters, ~218,000 points classified independently, in the core or within d of it; the exact boxes; 3 italic cases, outline by outline), on paper (a 20 mm H with 0.6: the inner corner sharp, the outer one rounded; the 12° italic), the facade (the square with a hole, the hole closing, the merge, the island), the block, the preview (the arcs), the panel's e2e. **Mutations** from `test/otravuri/7.5.py`: 38 / 38 caught first time (32 on the unit tests, 6 in the interface, through e2e, with a local harness on the worktree's port)."
+    },
+    "9cd4fd9101c1317f": {
+      "ro": "Imprimanta 3D (Creality K1C, prin WiFi; ADR 0190, propus pe ramura `wip/3.6g-imprimanta`): ce ai încercat (butonul, adresa, mesajul, o captură), firmware-ul și varianta (K1C sau K1C 2025), dacă e rootată, IP-ul ei, de unde venea fișierul cu avertismentul CC5000; apoi răspunsurile la cele patru întrebări (unde stă, ordinea feliilor, `http:` în CSP, camera), recomandările fiind primele variante; la 3.6i, o imprimare scurtă de probă",
+      "en": "The 3D printer (Creality K1C, over WiFi; ADR 0190, proposed on the `wip/3.6g-imprimanta` branch): what you tried (the button, the address, the message, a screenshot), the firmware and the variant (K1C or K1C 2025), whether it is rooted, its IP, where the file with the CC5000 warning came from; then the answers to the four questions (where it lives, the order of the slices, `http:` in the CSP, the camera), the recommendations being the first options; at 3.6i, a short test print"
     },
     "9d07669c55d80ab1": {
       "ro": "Scalarea unei piese importate cu arce plate",
@@ -1748,6 +1764,10 @@
     "ac0858ac19654dfe": {
       "ro": "Importul, partea 2: Corel, WMF (+ EMF peste prag), DWG ca mesaj",
       "en": "Import, part 2: Corel, WMF (+ EMF beyond the threshold), DWG as a message"
+    },
+    "ac5adfada9351f98": {
+      "ro": "Trimiterea unui `.gcode` gata feliat la imprimantă (ADR 0190 §C.7, §D): urcarea pe HTTP (`/upload`), verificată în lista fișierelor; verificarea fișierului (antetul feliatorului, mișcările față de patul de 220 × 220 × 250); pornirea cu confirmare; `http:` în CSP, doar cu acordul owner-ului",
+      "en": "Sending a ready-sliced `.gcode` to the printer (ADR 0190 §C.7, §D): the upload over HTTP (`/upload`), checked in the file list; the file check (the slicer header, the moves against the 220 × 220 × 250 bed); starting with confirmation; `http:` in the CSP, only with the owner’s consent"
     },
     "ac777cee41886503": {
       "ro": "lista de lansare (`BRIEF.md` §8)",
@@ -2065,6 +2085,10 @@
       "ro": "Fișa plăcii 4 și placa de regresie definită.",
       "en": "The plate 4 file and the regression plate defined."
     },
+    "d2f90d7cd8eae964": {
+      "ro": "Imprimanta 3D prin WiFi",
+      "en": "3D printer over WiFi"
+    },
     "d30ff102a8448021": {
       "ro": "Imaginea podului ESP3D",
       "en": "The ESP3D bridge image"
@@ -2221,10 +2245,6 @@
       "ro": "Intrările cu rampă",
       "en": "Ramped lead-ins"
     },
-    "e0a776831728cfac": {
-      "ro": "când vin imprimantele",
-      "en": "when the printers come"
-    },
     "e0b5b9a288063b7e": {
       "ro": "Selecția cu dreptunghi, ca în CAD",
       "en": "Rectangle selection, as in CAD"
@@ -2240,6 +2260,10 @@
     "e1f70cb6ba59f161": {
       "ro": "Senderul",
       "en": "The sender"
+    },
+    "e1fdb87217567bf8": {
+      "ro": "Imprimanta 3D prin WiFi (ADR 0190, propus; cererea owner-ului din 06.11): Creality K1C pe protocolul ei din fabrică (WebSocket-ul de pe 9999, cadre text JSON, `ok` la bătăile inimii); fereastra Imprimanta, cu conexiunile ei ținute și căutarea pe 9999; starea (duza, patul, progresul, timpul, fișierul, eroarea), Pauză / Reia / Oprește, fișierele din imprimantă, pornite cu confirmare; legătura căzută nu oprește imprimarea; proba pe o imprimantă falsă, cu protocolul ei pe hârtie",
+      "en": "3D printer over WiFi (ADR 0190, proposed; the owner’s request of 06.11): the Creality K1C on its factory protocol (the WebSocket on 9999, JSON text frames, `ok` to the heartbeats); the Printer window, with its own saved connections and the search on 9999; the status (nozzle, bed, progress, time, file, error), Pause / Resume / Stop, the files on the printer, started with confirmation; a dropped connection does not stop the print; tested on a fake printer, with its protocol on paper"
     },
     "e24c29e67b38945a": {
       "ro": "**Importul WMF, adus din etapa 26** (fără mașină; ADR 0117; decizia owner-ului din 07.10: „WMF propriu”; subsesiune, în worktree-ul `wip/26.A-import-wmf`, pornită la „suntem pe aplicatie, haide sa pornim worktrees”). „Importă SVG / DXF / PDF / AI / EPS / WMF…” citește metafișierul Windows: polilinia, poligonul, PolyPolygon, dreptunghiul și cel rotunjit, elipsa, arcul, chord-ul, pie-ul și lanțul de LineTo, cu transformarea GDI (fereastra, vizorul, mutările, scările, modurile de mapare, ISOTROPIC, SaveDC / RestoreDC). Antetul placeable e o pagină: desenul stă pe foaie unde e în cadru, la 25,4 / inch mm pe unitate. Fără antet, unitatea se alege în fereastră (implicit 1/96 țol, ca LibreOffice) și desenul vine în colțul foii. Cercul iese din arce exacte, elipsa în cubice. O formă nevăzută (penița și pensula nule) se sare; textul, imaginile, operațiile raster, regiunile, decupajele și înregistrările necunoscute se sar, numărate; EMF-ul e refuzat cu motiv. Totul la cerere: pornirea neschimbată, 98,4 (cu ușa 101,9 / 110); totalul 433,1 → 437,6 / 450 kB. **Treceri:** (1) ADR-ul, cititorul, corpusul Python (11 fișiere, fiecare redat de GDI pe „Microsoft Print to PDF” și recitit cu PyMuPDF; CI-ul îl regenerează fără GDI și cere aceiași octeți), dialogul, manualul, e2e-ul. Găsite de oracolul GDI: arcul e orar când maparea oglindește doar axa X (cu ambele axe întoarse, tot trigonometric); capătul unui arc pus pe o axă e un artefact al GDI-ului; fundalul opac al textului e un dreptunghi plin; modurile metrice ale imprimantei vin din mm întregi (desfăcute în oracol). Găsit de probe: un RoundRect cu un colț nul pornea din colțul rotunjit. Prima măsurătoare a pornirii a dat 98,5 (+50 de octeți: eticheta, `accept`, unitatea aleasă), adusă la 98,4 (+27). Mutațiile: **59 / 59**: 56 pe probele unitare (5 au scăpat întâi și au primit probe: formele nevăzute cu numărul punctelor greșit, ISOTROPIC fără extinderi, cadrul decalat fără fereastra fișierului, o înregistrare fără parametri de 2 cuvinte) și 3 prin e2e, pe portul 4177. Sonda locală pe 128 de cliparturi Office (nu intră în repo): toate citite; ce desenează GDI peste 0,1 mm stă pe căile ușii, la cel mult 0,081 mm, și invers.",
