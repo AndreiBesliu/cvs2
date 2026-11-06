@@ -76,6 +76,8 @@ implicit n-are dreptul de export, eșecul apare în fila Erori și în Diagnoză
 | Ștergerea celor 15 ramuri vechi de pe `origin` (toate unite în `main` sau salvate în `Apps\cncvs2-arhiva\`), cu `git push origin --delete wip/10.1-vectori wip/13.A-b-masina-in-fundal wip/13.A-sender-ecran wip/14.B-b-sugestie-editor wip/14.B-sugestii wip/26.A-import-wmf wip/3.2-raportor wip/3.6d-wifi wip/3.6f-wifi wip/5.1b-oracol-buzunar wip/5.1c-oracol-document wip/7.4-fonturi-variabile wip/7.5-text wip/9.4-pdf wip/9.5-import-eps`: modul automat al asistentului refuză ștergerea ramurilor de pe GitHub | un repo fără ramuri moarte | oricând |
 | O placă de probă tăiată dintr-o lucrare trimisă din Planificatorul Trenuleț prin primire (ADR 0126), pe adresa principală a instanței de test (unită în `main` pe 06.11) | 3.S pe live (acolo primirea e oprită până atunci) | înainte să pornim primirea pe live |
 | Răspunsurile la cele cinci întrebări din ADR 0138 (textul, restul pragului): ce înseamnă pt, lățimea și înălțimea în procente, mânerele pe un text, de unde și în ce se dă spațierea literelor alese; recomandările sunt primele variante | 7.9↑ și 7.9↑b | acum |
+| Răspunsurile la cele șase întrebări din ADR 0170 (incrustațiile în V; propus pe ramura `wip/12.1-incrustatii`, în sesiunea liniei: ADR-ul și feliile ei se văd aici abia după unirea în `main`) | 12.1↑ | acum |
+| Răspunsurile la cele șase întrebări din ADR 0180 (tăierea și conversia vectorilor; propus pe ramura `wip/10.3-taiere-conversie`): formularul din schița sesiunii liniei, apoi „gata” în sesiune | 10.3↑ | acum |
 
 ## Inventarul proiectului live (19.10, doar citiri)
 

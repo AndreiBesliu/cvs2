@@ -1077,6 +1077,10 @@
       "ro": "**Harta importurilor și o publicare care aduce doar ce s-a schimbat** (fără mașină; ADR 0098; „Da, repar-o”, după măsurătoarea de pe test: o publicare fără cod re-aducea 38 din 71 de fișiere, ~72 % din octeți). Bucățile se importă după nume stabile (`build.chunkImportMap`, Vite 8.3.3, experimental), traduse de harta din `index.html`; amprenta exactă a hărții intră în CSP (meta-ul și antetul de pe Hosting), tot fără `unsafe-inline`; versiunea stă în antetul paginii, nu în JavaScript. Proba din poartă: un build cu altă versiune schimbă doar `index.html` și `sw.js` (înainte: 78 de fișiere). Pornirea și totalul neschimbate (96,3 / 100, 326,1 / 400 kB). **Treceri:** (1) harta, CSP-ul, versiunea; găsit pe drum: Vite pune harta după transformările `post` ale paginii (amprenta se scrie în `generateBundle`), iar cu CSP-ul mai lung codarea paginii ajunsese la octetul 996 din 1 024 (meta-urile stau acum după `<meta charset>`). Mutațiile: **16 / 16** din prima (9 pe probele unitare, 5 pe poarta build-ului, 2 în fereastră, pe e2e).",
       "en": "**The import map and a publish that fetches only what changed** (no machine; ADR 0098; “Da, repar-o”, after the measurement on test: a publish without code fetched 38 of 71 files again, ~72% of the bytes). The chunks import each other by stable names (`build.chunkImportMap`, Vite 8.3.3, experimental), translated by the map in `index.html`; the map's exact hash goes into the CSP (the meta and the Hosting header), still without `unsafe-inline`; the version sits in the page header, not in JavaScript. The gate's probe: a build with another version changes only `index.html` and `sw.js` (before: 78 files). Startup and total unchanged (96.3 / 100, 326.1 / 400 kB). **Passes:** (1) the map, the CSP, the version; found on the way: Vite inserts the map after the page's `post` transforms (the hash is written in `generateBundle`), and with the longer CSP the page encoding had reached byte 996 of 1,024 (the build's metas now sit after `<meta charset>`). Mutations: **16 / 16** on the first run (9 on the unit tests, 5 on the build gate, 2 in the window, on e2e)."
     },
+    "69e999864c6d5599": {
+      "ro": "10.3↑",
+      "en": "10.3↑"
+    },
     "6acd2ce3f75f8abf": {
       "ro": "Intrările și ieșirile",
       "en": "Lead-ins and lead-outs"
@@ -1144,6 +1148,10 @@
     "722173dd11c9f709": {
       "ro": "**Loc în bugetul JavaScript** (ADR 0086; „Fă loc în bugetul JavaScript: mută la cerere ce se poate (de exemplu panoul mașinii sau textele lui), fără să ridici plafonul, și spune-mi cât s-a câștigat.”). Măsurat pe hărțile de surse: „la cerere” nu scade totalul (poarta numără toate bucățile, toate în precache), deci panoul mașinii, deja la cerere, n-avea ce câștiga; textele modulelor la cerere (editarea, exportul, mașina, importul, carcasa, traseul, simularea) erau ~24 kB, cu ambele limbi în fiecare bucată. Acum sunt date: `mesaje/<modul>.json`, ambele limbi, în precache, generate din dicționarele TypeScript; modulul își cere mesajele la evaluare, iar încărcarea lui le așteaptă (`cuMesaje`, verificat de compilator). **Totalul: 328,2 → 304,3 / 330 kB (−23,9)**; pornirea 95,9 → 96,0; precache-ul întreg +1,4 kB. Plafonul neschimbat. **Treceri:** (1) generatorul, aducerea, poarta; găsit pe drum: încărcătorul în pornire (+0,3 kB, scos: fiecare modul își exportă promisiunea), o cerere căzută uitată prea devreme (proba a prins-o: acum se reîncearcă la așteptare), un fișier pe limbă (29,4 kB, apoi unul pe modul: 25,6), booleanul (Shift + clic înainte ca editarea să se monteze: mesajele ei vin acum în paralel cu bucata, proba așteaptă bara).",
       "en": "**Room in the JavaScript budget** (ADR 0086; “Fă loc în bugetul JavaScript: mută la cerere ce se poate (de exemplu panoul mașinii sau textele lui), fără să ridici plafonul, și spune-mi cât s-a câștigat.”). Measured on the source maps: “on demand” does not lower the total (the gate counts every chunk, all in the precache), so the machine panel, already on demand, had nothing to gain; the texts of the on-demand modules (editing, export, machine, import, shell, toolpath, simulation) were ~24 kB, with both languages in each chunk. Now they are data: `mesaje/<modul>.json`, both languages, in the precache, generated from the TypeScript dictionaries; a module asks for its texts when it is evaluated, and loading it waits for them (`cuMesaje`, checked by the compiler). **The total: 328.2 → 304.3 / 330 kB (−23.9)**; startup 95.9 → 96.0; the whole precache +1.4 kB. The cap unchanged. **Passes:** (1) the generator, the loading, the gate; found on the way: the loader at startup (+0.3 kB, removed: each module exports its promise), a failed request forgotten too early (the test caught it: it is now retried when awaited), one file per language (29.4 kB, then one per module: 25.6), the boolean test (Shift + click before editing was mounted: its texts now come in parallel with the chunk, the test waits for the bar)."
+    },
+    "723d6b9057046d74": {
+      "ro": "Mărimea textului în puncte și inch",
+      "en": "Text size in points and inches"
     },
     "725f8ee2c813cc01": {
       "ro": "**Meniul contului** (fără mașină; ADR 0120). La captura ferestrei contului rămase pe „Opening the account…”, owner-ul a cerut „ar trebui sa fie un meniu mai conventional pentru account area.” și „si trebuie sa pui acolo si manualul si sugestiile”, apoi „Da, fă-l” la schiță. Butonul **Cont** deschide acum un meniu, sub el. Logat, butonul arată inițialele și primul nume, iar capul meniului numele și planul de azi, din contul ținut, fără server: meniul se deschide pe loc, iar serverul îl întreabă doar panoul. Rândurile: **Contul meu…** sau **Intră sau creează cont…** (panoul de până acum), **Manualul** (F1), **Trimite o sugestie…** (în afara live) și **Ieși din cont**. Tastele sunt ale meniului de clic dreapta, dintr-o singură funcție. „?” și Sugestie au ieșit din extensia barei; F1 a rămas. La zi și manualul (ro, en) și ADR-urile 0058, 0111 și 0116. **Probele:** pe hârtie (rândurile, capul în ambele limbi, inițialele); poarta manualului, pentru fiecare rând; e2e (meniul, tastele, logarea, contul ținut și ieșirea); emulatoarele (planul schimbat pe server ajunge în cap, iar ieșirea din meniu închide și contul Firebase); 21 de otrăvuri țintite, toate prinse (14 pe logica meniului, 7 de interfață, prin e2e).",
@@ -1312,6 +1320,10 @@
     "80dbf4e9d8b95734": {
       "ro": "Insulele buzunarului, aduse din etapa 5",
       "en": "Pocket islands, brought forward from stage 5"
+    },
+    "810672f10fa3ef6f": {
+      "ro": "Răspunsurile la cele șase întrebări din ADR 0170 (incrustațiile în V; propus pe ramura `wip/12.1-incrustatii`, în sesiunea liniei: ADR-ul și feliile ei se văd aici abia după unirea în `main`)",
+      "en": "The answers to the six questions in ADR 0170 (V inlays; proposed on the `wip/12.1-incrustatii` branch, in the line’s session: its ADR and slices show here only after the merge into `main`)"
     },
     "8108a6373dfdea25": {
       "ro": "14.B↑: fila Sugestii",
@@ -1740,6 +1752,10 @@
     "ac777cee41886503": {
       "ro": "lista de lansare (`BRIEF.md` §8)",
       "en": "the launch list (`BRIEF.md` §8)"
+    },
+    "ad308da7dec96a99": {
+      "ro": "Răspunsurile la cele șase întrebări din ADR 0180 (tăierea și conversia vectorilor; propus pe ramura `wip/10.3-taiere-conversie`): formularul din schița sesiunii liniei, apoi „gata” în sesiune",
+      "en": "The answers to the six questions in ADR 0180 (vector trimming and conversion; proposed on the `wip/10.3-taiere-conversie` branch): the form in the line session’s sketch, then “gata” in the session"
     },
     "ad3e364dd5baa9bc": {
       "ro": "**Imaginea podului ESP3D** (fără mașină; ADR 0119, „Da, pregătește” la „Îți pregătesc configurarea ESP3D (fișierul și pașii de compilare)?”). Workflow-ul `pod-esp3d`, pornit de mână, compilează pe GitHub ESP3D 3.0.2 pentru mașina cu GRBL 1.1h, cu trei schimbări: ținta implicită GRBL (cu altă țintă, `?`, `!` și `~` așteaptă capătul liniei), GRBL pe Serial2 (GPIO16 / GPIO17) și socket-ul de date pe 8282. Rețeaua atelierului nu intră în imagine: se pune la prima pornire, din pagina podului. ESP3D 3.1 rămâne afară, fiindcă are alt socket de date. `scripts/pod-esp3d.ts` verifică întâi în sursă faptele de care depinde profilul aplicației, schimbă fiecare rând exact o dată și adaugă o unitate de probă, compilată cu sursa. Imaginea unică (de la 0x0) e verificată bucată cu bucată, iar esptool o validează și el. Ghidul owner-ului, `docs/masina/pod-esp3d.md`: scrierea din browser, rețeaua, firele, aplicația. **Probele:** 10 teste pe hârtie; faptele și diff-ul de trei rânduri pe sursa reală; compilarea, cu unitatea de probă; imaginea verificată. Prima rulare s-a oprit, cu motivul, la adresa aplicației, care lipsea din metadatele PlatformIO; acum vine din tabela de partiții, ca la platformă. Nedovedit până la 3.6e: pornirea pe placă.",
@@ -2453,6 +2469,10 @@
       "ro": "placa de regresie",
       "en": "the regression plate"
     },
+    "fa16917dee0d3b45": {
+      "ro": "12.1↑",
+      "en": "12.1↑"
+    },
     "fa41f158f389cb8e": {
       "ro": "Import 3D; Zone; Decupare 3D; **Degroșare 3D; Finisare paralelă** (închise pe STL)",
       "en": "3D import; Zones; 3D trimming; **3D roughing; Parallel finishing** (closed on STL)"
@@ -2476,6 +2496,10 @@
     "fccd32764b724581": {
       "ro": "**Importul și exportul cu vectori reali**; reparațiile cavalier",
       "en": "**Import and export with real vectors**; the cavalier fixes"
+    },
+    "fd187f6e7097a463": {
+      "ro": "Extensia e „pornită” abia după ce pagina ei e gata",
+      "en": "The extension is “started” only once its page is ready"
     },
     "fd24b6d3ddb56f60": {
       "ro": "Elipsa e un cerc sub o matrice neuniformă",

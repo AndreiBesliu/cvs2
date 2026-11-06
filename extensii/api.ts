@@ -147,9 +147,12 @@ export interface HostApi {
   };
 }
 
-/** Spațiul extensiei: desenează în containerul primit (corpul cadrului). */
+/**
+ * Spațiul extensiei: desenează în containerul primit (corpul cadrului). O pagină pusă asincron întoarce promisiunea ei: gazda
+ * spune „pornit” abia după ea, când pagina e gata de folosit (ADR 0139).
+ */
 export interface Spatiu {
-  deschide(container: HTMLElement): void;
+  deschide(container: HTMLElement): void | Promise<void>;
 }
 
 /** Ce exportă modulul de intrare al unei extensii. */

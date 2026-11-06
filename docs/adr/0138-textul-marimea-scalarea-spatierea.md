@@ -1,4 +1,4 @@
-# ADR 0138: Textul: mărimea în puncte și inch, lățimea și înălțimea în procente, spațierea literelor alese (feliile 7.9↑, 7.9↑b)
+# ADR 0138: Mărimea textului în puncte și inch, proporțiile literelor, spațierea literelor alese (feliile 7.9↑, 7.9↑b)
 
 **Starea:** acceptat pe 06.11.2026, cu recomandările („Yes, 1a–5a”, la „Accept the recommendations in ADR 0138 (1a 2a 3a
 4a 5a)?”), pentru feliile 7.9↑ (gata pe 06.11) și 7.9↑b, aduse din etapa 7, fără mașină, pe linia principală. Propus în
