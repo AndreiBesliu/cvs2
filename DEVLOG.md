@@ -5986,3 +5986,36 @@ test nu s-a atins; ramura nu e împinsă.
 - **CI:** rapidă verde pe `79fc159` (ramura WIP, 42093259095) și pe `33fd695` (42176322020); completă verde pe `33fd695` (42176335437, 41 min); suita e2e întreagă, local, 322 / 322.
 - **Publicat pe test:** `33fd695` (42181200327; prima încercare, 42180847182, a căzut la eliberarea versiunii de Hosting, cu HTTP 500 de la Firebase, și a mers la a doua, fără nicio schimbare). Verificat pe <https://cncvectorstudio-test.web.app>: versiunea `33fd695d81fb`, alegerea „Conectează (WiFi)”, pasul 1 al asistentului (în română) și capitolul „Mașina” din manual, cu butoanele noi; fără căutări în rețeaua owner-ului.
 - **Rămâne:** podul real în rețeaua atelierului, configurat din asistent (3.6e, cu placa owner-ului).
+
+## 2026-11-06 — Felia 12.1↑ pornită: incrustația în V (ADR 0170, propus) (Model: Claude Opus 5.5)
+
+**Prompt:** „vreau sa deschidem worktrees pentru alte etape sau felii”, apoi alegerea liniei „Inlays, stage 12” (owner-ul, în
+sesiunea principală). Sarcina de la sesiunea principală: linia incrustațiilor (etapa 12, rândul de prag „Inlay în V și cu
+pereți drepți”), în worktree-ul `C:\Users\besli\cncvs2-lucru\incrustatii`, ramura `wip/12.1-incrustatii` din `main`
+(`bf91fb1`), e2e-ul pe 4174 și rețeaua de loopback `127.0.1`, ADR-urile 0170–0179, documentul v20, canalul `incrustatii`; întâi
+cercetarea și un ADR propus, cu întrebările grupate și schița, codul după răspunsuri.
+**Started:** 06.11, 12:45. **Completed:** 06.11, 13:30 (cercetarea, ADR-ul și schița; codul lui 12.1↑ așteaptă răspunsurile).
+
+- **Locul de lucru:** worktree-ul, cu joncțiunile `node_modules` și `functions\node_modules` spre checkout-ul principal;
+  `.tmp/pw.config.ts` cu portul 4174 în comandă, `url` și `baseURL`; `.tmp/emu.ts` copiat. Emulatoarele nu s-au rulat (porturile
+  4400 / 4500 erau ocupate de altă sesiune).
+- **Baza, pe `bf91fb1`:** compilatoarele (aplicația, planificatorul, funcțiile), importurile, traducerile, licențele, 8 449 de
+  teste unitare (0 căderi, 8 sărite), build-ul determinist (pornirea 101,4 cu ușa 104,9 / 110 kB, totalul 503,1 / 550, /admin
+  105,4 / 200), e2e 349 / 350 pe 4174: singura cădere e `raportor.spec.ts:101`, care cere adresa `http://localhost:4173/`
+  (cunoscută din linia verificării vectorilor, nu ține de felie).
+- **Cercetarea:** fizica pe hârtie a incrustației în V (locașul la min(D, d/t), dopul oglindit săpat de la S = D − g; întors,
+  dopul se oprește la S, pereții se ating pe S·t de la contur, sub dop rămâne g, între plăci H; exemplul V60 Ø6, D = 3, g = 0,5,
+  H = 2: S = 2,5, contactul pe 1,443 mm, dopul săpat la 4,5 sub conul de 5,196); criteriile din prag (DeskProto: V90,
+  adâncimea 4, spațiul 1 → suprapunerea 3,0 și câte 1,0 mm); ediția întâi (modelul cu limita automată, oracolul fizic pe 10
+  forme, ce strica potrivirea: conul scurt, crestele, formele care se ating, frezele diferite; decuparea neterminată de pe
+  `wip/inlay-traseu-decupare`); ce are cvs2 (V-carve-ul pe distanța exactă, fundul plat, oracolul simulării cu cititorul lui de
+  G-code; lipsesc adâncimea de start și foile multiple, etapa 11).
+- **ADR 0170, propus:** perechea declarată în document (`incrustatie` pe operația V-carve, documentul v20); dopul calculat din
+  desen la fiecare export, oglindit pe X, pe semifabricatul lui (cutia + 5 mm, XY0 în colțul lui, Z0 pe fața lui), cu fața
+  coborâtă la S + H de freza dreaptă și pereții săpați de V de la adâncimea de start; refuzurile; oracolul potrivirii
+  (`test/oracles/incrustatie.ts`) și otrăvurile scrise întâi; feliile 12.1↑ … 12.1↑e. Șase întrebări, cu recomandarea întâi.
+- **Schița:** cinci planșe, <https://claude.ai/artifact/GKxS4iWgdjLghybs2FYxPK> (panoul cu rolul nou, exportul cu locașul și dopul,
+  potrivirea în secțiune, dopul în vederea 3D, întrebările), în culorile aplicației.
+- **În fișă:** rândul 12.1↑ (în lucru) și rândul răspunsurilor în coada owner-ului; în prag, rândul incrustațiilor trece „în
+  lucru”; ADR-ul în index.
+- **Rămâne:** răspunsurile owner-ului, apoi codul lui 12.1↑ (proba scrisă întâi).
