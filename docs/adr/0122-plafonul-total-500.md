@@ -1,7 +1,8 @@
 # ADR 0122: Plafonul total al aplicației, 450 → 500 kB
 
 **Starea:** acceptat pe 02.11.2026, de owner („Da, 500 kB”, la „Ridic plafonul total al pachetului la 500 kB?”), la felia
-3.R. **Schimbă:** plafonul total din `scripts/build-determinist.ts` (ADR 0109, care îl ridicase la 450 kB). Celelalte
+3.R. **Schimbă:** plafonul total din `scripts/build-determinist.ts` (ADR 0109, care îl ridicase la 450 kB). **Schimbat de:**
+ADR 0137 (550 kB, din 06.11, la unirea liniei pluginului). Celelalte
 plafoane rămân, între ele pornirea (110 kB, ADR 0100), ușa (8 kB), `/admin` (200 kB) și contul (32 kB).
 
 **Problema.** După felia 15.B↑a, totalul era 441,2 / 450 kB, deci rămâneau 8,8 kB. Din 30.10 (ADR 0109: 411,8 kB), totalul

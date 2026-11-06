@@ -504,6 +504,10 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   scriere în pod cere răspunsul „ok”**, nu doar starea: o valoare goală (sau `json`) e o citire. Proba cap-coadă are podul
   fals în `test/e2e/controlerWebSocket.ts` (`pod`), cu `esp3d.local` rezolvat de browser la 127.0.0.1 și podul pe 8282 (spec-ul
   merge pe rând). **Pornirea 100,4 (cu ușa 103,9 / 110 kB), totalul 483,8 / 500, /admin 105,3 / 200.**
+  **Linia pluginului unită în `main` pe 06.11** (feliile 3.S, 3.Xa–3.Xe și 3.Ta–3.Tf, ADR 0126–0129 și 0160–0167, făcute în
+  worktree-ul `trenulet`): gazda extensiilor, Planificatorul Trenuleț ca extensie, numit acum **Easy 3Draw**, primirea
+  lucrărilor, senderul și formele prin `HostApi`. **Plafonul total 550 kB (ADR 0137, decizia owner-ului).** **Pornirea 101,4
+  (cu ușa 104,9 / 110 kB), totalul 503,1 / 550, /admin 105,4 / 200.**
   **Primirea lucrărilor de la alte aplicații (ADR 0126, felia 3.S, prima a liniei Trenuleț)** gata pe 02.11, în worktree-ul
   `wip/trenulet`: butonul „Trimite la cvs2” al Planificatorului Trenuleț deschide aplicația la `#primeste-lucrare` și vorbește
   protocolul „cvs2-lucrare” v1. **În pornire stă doar verificarea ancorei și a lui `window.opener`, în afara live;** ascultarea
@@ -708,6 +712,9 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 06.11.2026: **plafonul total 550 kB** („Yes, 550 kB”, la „Raise the total bundle cap to 550 kB (new ADR), keeping startup
+  at 110 kB?”): după unirea liniei pluginului, totalul era 503,1 / 500 kB; gazda extensiilor (~15 kB) trebuie să meargă și
+  offline, deci rămâne în precache. ADR 0137; pornirea rămâne 110 kB.
 - 06.11.2026: **linia pluginului (Trenuleț, acum „Easy 3Draw”) unită în `main`** („Yes, merge it”, la „Merge wip/trenulet
   (43 commits, with the plugin's sources) into main and push it to the public repo?”, după încheierea liniei pe 05.11: „Aici nu
   mai facem nimic, am terminat si vom face unirea cu main”): feliile 3.S, 3.Xa–3.Xe și 3.Ta–3.Tf (ADR 0126–0129, 0160–0167)
