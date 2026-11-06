@@ -258,12 +258,22 @@ const BUCATA_MASINII = /\/assets\/PanouMasina-[^/]*\.js$/;
 const MESAJELE_MASINII = /\/mesaje\/masina\.json$/;
 
 test('Mașina e adusă în fundal după pornire (13.A↑b): se deschide plină, chiar dacă bucata ei a dispărut între timp de pe server', async ({ page }) => {
+  // Fereastra e gata când bucata ei și TOATE mesajele cerute până atunci au venit (`mesajeGata` le așteaptă pe toate, nu doar
+  // pe ale mașinii): sub încărcarea suitei întregi, un clic dat la primul răspuns ajungea înaintea lor (3.6f).
+  const inCurs = new Set<string>();
+  const urmarita = (u: string): boolean => /\/mesaje\/[a-z]+\.json$/.test(u) || BUCATA_MASINII.test(u);
+  page.on('request', (r) => { if (urmarita(r.url())) inCurs.add(r.url()); });
+  page.on('requestfinished', (r) => { inCurs.delete(r.url()); });
+  page.on('requestfailed', (r) => { inCurs.delete(r.url()); });
   const adusa = page.waitForResponse(BUCATA_MASINII);
   const mesaje = page.waitForResponse(MESAJELE_MASINII);
   await page.goto('/');
   // Fără niciun clic pe Mașina: bucata și mesajele ei vin singure, după pornire.
   await adusa;
   await mesaje;
+  await expect.poll(() => inCurs.size, { timeout: 10_000 }).toBe(0);
+  // Promisiunile aplicației (citirea JSON-ului, apoi `masinaGata`) se încheie după ultimul octet primit.
+  await page.evaluate(() => new Promise((gata) => { setTimeout(gata, 200); }));
   // Acum fișierele „dispar” de pe server, ca după o publicare nouă: primul clic nu mai are ce cere.
   await page.route(BUCATA_MASINII, (r) => r.abort());
   await page.route(MESAJELE_MASINII, (r) => r.abort());
