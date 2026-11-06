@@ -391,7 +391,7 @@ test('panoul textului spune ce lipsește: caracterele pe care fontul nu le are, 
   await expect(page.getByTestId('text-motiv')).toHaveText('2 caractere lipsesc din font și nu se desenează: ☃');
   await expect(page.locator('[data-text="adauga"]')).toBeEnabled();
   await page.locator('[data-text="inaltime"]').fill('0');
-  await expect(page.getByTestId('text-motiv')).toHaveText('Înălțimea e un număr între 0,1 și 1 000 mm.');
+  await expect(page.getByTestId('text-motiv')).toHaveText('Mărimea trebuie să dea majuscule între 0,1 și 1 000 mm.');
   await expect(page.locator('[data-text="adauga"]')).toBeDisabled();
   // Escape închide panoul: unealta Selecție.
   await page.keyboard.press('Escape');
@@ -468,4 +468,78 @@ test('textul pe curbă (ADR 0108): clic pe conturul unui cerc R50, „LEMN” ur
   const ys = (d4.piese[1]!.radacina.copii ?? []).flatMap((g) => (g.copii ?? []).flatMap((e) => (e.forma?.varfuri ?? []).map((v) => v.p.y)));
   expect(Math.min(...ys)).toBeCloseTo(0, 9);
   expect(Math.max(...ys)).toBeCloseTo(10, 9);
+});
+
+test('mărimea, proporțiile și crenarea (ADR 0138): 20 mm sunt 79,74 pt, păstrați exact; „LEMN” la 50 % are jumătate din lățime; 72 pt dau 18,06 mm; crenarea oprită, 150 %; după reîncărcare, panoul le are', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-unealta="text"]').click();
+  await page.locator('[data-text="continut"]').fill('LEMN');
+  // Unitatea: 20 mm de majusculă sunt 79,74 pt cu Roboto; numărul se convertește, iar textul rămâne exact cel de 20 mm.
+  const unitate = page.locator('select[data-text="unitate"]');
+  await expect(unitate).toBeEnabled();
+  await unitate.selectOption('pt');
+  await expect(page.locator('[data-text="inaltime"]')).toHaveValue('79.74');
+  await expect(page.getByTestId('text-marime')).toHaveText('Majusculele: 20 mm');
+  // Înapoi în mm, aceeași majusculă exactă (nu cea din 79,74 pt rotunjite), apoi iar în pt.
+  await unitate.selectOption('mm');
+  await expect(page.locator('[data-text="inaltime"]')).toHaveValue('20');
+  await unitate.selectOption('pt');
+  await expect(page.locator('[data-text="inaltime"]')).toHaveValue('79.74');
+  await page.locator('[data-text="latime"]').fill('50');
+  await expect(page.getByTestId('text-proportii')).toHaveCount(0);
+  let la = await ecran(page, await vedere(page));
+  const a = la(150, 150);
+  await page.mouse.click(a.x, a.y);
+  await page.click('[data-text="adauga"]');
+  const d1 = await documentSalvat(page, 1) as Doc;
+  const t1 = d1.piese[0]!.radacina;
+  expect(t1.text).toMatchObject({ continut: 'LEMN', unitate: 'pt', proportii: { latime: 50, inaltime: 100 } });
+  expect(t1.text!['inaltime'] as number).toBeCloseTo(20, 12);
+  // Același text, la 100 %: de două ori mai lat, cu aceleași majuscule.
+  await page.locator('[data-text="latime"]').fill('100');
+  la = await ecran(page, await vedere(page));
+  const b = la(150, 100);
+  await page.mouse.click(b.x, b.y);
+  await page.click('[data-text="adauga"]');
+  const d2 = await documentSalvat(page, 2) as Doc;
+  const t2 = d2.piese[1]!.radacina;
+  expect(t2.text!['proportii']).toBeUndefined();
+  const lat = (n: Nod): number => { const xs = (n.copii ?? []).flatMap((g) => abscise(g)); return Math.max(...xs) - Math.min(...xs); };
+  expect(lat(t1) * 2).toBeCloseTo(lat(t2), 9);
+  for (const n of [t1, t2]) expect(Math.max(...(n.copii ?? []).flatMap((g) => ordonate(g)))).toBeCloseTo(20, 9);
+
+  // 72 pt dau 18,0578125 mm; „AV” fără crenare, la 150 % înălțime: majusculele tăiate de 27,09 mm, spuse sub câmpuri.
+  await page.locator('[data-text="inaltime"]').fill('72');
+  await expect(page.getByTestId('text-marime')).toHaveText('Majusculele: 18,06 mm');
+  await page.locator('[data-text="continut"]').fill('AV');
+  await page.locator('[data-text="inaltime-litere"]').fill('150');
+  await page.locator('[data-text="crenare"]').uncheck();
+  await expect(page.getByTestId('text-proportii')).toHaveText('Majusculele tăiate: 27,09 mm');
+  la = await ecran(page, await vedere(page));
+  const c = la(150, 50);
+  await page.mouse.click(c.x, c.y);
+  await page.click('[data-text="adauga"]');
+  const d3 = await documentSalvat(page, 3) as Doc;
+  const t3 = d3.piese[2]!.radacina;
+  expect(t3.text).toMatchObject({ continut: 'AV', unitate: 'pt', crenare: false, proportii: { latime: 100, inaltime: 150 } });
+  expect(t3.text!['inaltime'] as number).toBeCloseTo(18.0578125, 9);
+  expect(Math.max(...(t3.copii ?? []).flatMap((g) => ordonate(g)))).toBeCloseTo(18.0578125 * 1.5, 9);
+
+  // După reîncărcare, textul ales își aduce unitatea, mărimea scrisă, proporțiile și crenarea.
+  await page.reload();
+  await page.locator('[data-unealta="text"]').click();
+  for (const [k, pt, latime, inaltime, crenare] of [[0, '79.74', '50', '100', true], [2, '72', '100', '150', false]] as const) {
+    la = await ecran(page, await vedere(page));
+    const inst = d3.foi[0]!.instante[k]!;
+    const varf = d3.piese[k]!.radacina.copii![0]!.copii![0]!.forma!.varfuri[0]!.p;
+    const pe = la(inst.x + varf.x, inst.y + varf.y);
+    await page.mouse.click(pe.x, pe.y);
+    await expect(page.getByTestId('text-stare')).toContainText('Editezi textul ales');
+    await expect(unitate).toHaveValue('pt');
+    await expect(page.locator('[data-text="inaltime"]')).toHaveValue(pt);
+    await expect(page.locator('[data-text="latime"]')).toHaveValue(latime);
+    await expect(page.locator('[data-text="inaltime-litere"]')).toHaveValue(inaltime);
+    if (crenare) await expect(page.locator('[data-text="crenare"]')).toBeChecked();
+    else await expect(page.locator('[data-text="crenare"]')).not.toBeChecked();
+  }
 });

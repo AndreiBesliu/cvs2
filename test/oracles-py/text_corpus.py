@@ -514,16 +514,25 @@ def aseaza(font, p, linie=False):
     h = p['inaltime']
     d = 0 if linie else p.get('aldin', 0)
     panta = math.tan(math.radians(p.get('cursiv', 0)))
-    miez = h - 2 * d
+    # Proporțiile literelor (ADR 0138 §2), scrise din nou: majuscula tăiată e h × înălțimea, miezul aldinului ea − 2d, iar pe
+    # orizontală (contururi, avansuri, crenare) în plus raportul lățime / înălțime. Rândurile stau după majuscula tăiată,
+    # coloanele textului vertical după h × lățimea. Crenarea oprită (ADR 0138 §3): între litere, doar spațierea.
+    pr = p.get('proportii') or {'latime': 100, 'inaltime': 100}
+    sx, sy = pr['latime'] / 100, pr['inaltime'] / 100
+    H = h * sy
+    miez = H - 2 * d
     mm = lambda u: (u * miez) / cap
-    rand_mm = ((asc - desc + gap) * h) / cap * p['interlinie']
+    mmx = mm if sx == sy else (lambda u: (u * miez * (sx / sy)) / cap)
+    crenare_pornita = p.get('crenare', True) is not False
+    rand_mm = ((asc - desc + gap) * H) / cap * p['interlinie']
+    coloane_mm = ((asc - desc + gap) * (h * sx)) / cap * p['interlinie']
     glife, lipsa, stricate, randuri = [], 0, 0, []
 
     def litera(g, ox, oy):
         """Contururile glifei `g` cu originea pe linia de bază în (ox, oy), în mm, înclinate de cursiv față de linia ei de
         bază; None: glifa nu se poate da (în SVG, una cu arce)."""
         def harta(q):
-            return [ox + mm(q[0]) + panta * mm(q[1]), oy + mm(q[1])]
+            return [ox + mmx(q[0]) + panta * mm(q[1]), oy + mm(q[1])]
         conturi = cont(g)
         if conturi is None:
             return None
@@ -575,10 +584,10 @@ def aseaza(font, p, linie=False):
         # una sub alta: vârful primei în y = 0, apoi fiecare cutie sub cea de deasupra la max(0, em − h) + spațierea.
         # Alinierea mută coloana: sus (stânga), la mijloc (centru) sau cu baza în y = 0 (dreapta). Fiecare literă se
         # centrează pe axă după cutia ei. Fără crenare.
-        em = upem * h / cap
-        spatiu = max(0.0, em - h) + p['spatiere']
+        em = upem * H / cap
+        spatiu = max(0.0, em - H) + p['spatiere']
         for r, rand in enumerate(randuri_text):
-            axa = r * rand_mm
+            axa = r * coloane_mm
             celule = []
             for ch in rand:
                 if ord(ch) < 0x20 and ch != '\t':
@@ -598,7 +607,7 @@ def aseaza(font, p, linie=False):
                 celule.append((ch, g, cs, cut))
             baze = []
             for k, (ch, g, cs, cut) in enumerate(celule):
-                sus = cut[3] if cut else h
+                sus = cut[3] if cut else H
                 if k == 0:
                     baze.append(-sus)
                 else:
@@ -612,8 +621,8 @@ def aseaza(font, p, linie=False):
                     continue
                 tx, ty = axa - (cut[0] + cut[2]) / 2, baze[indice] + dy
                 glife.append({'caracter': ch, 'rand': r, 'contururi': [muta_contur(c, tx, ty) for c in cs], '_x': tx,
-                              '_avans': mm(av(g)) + 2 * d, '_indice': indice, '_baza': ty, '_cutie': cut})
-        return {'glife': glife, 'lipsa': lipsa, '_stricate': stricate, '_randuri': randuri, '_metrici': {'rand': rand_mm, 'coborare': mm(desc)}}
+                              '_avans': mmx(av(g)) + 2 * d, '_indice': indice, '_baza': ty, '_cutie': cut})
+        return {'glife': glife, 'lipsa': lipsa, '_stricate': stricate, '_randuri': randuri, '_metrici': {'rand': coloane_mm, 'coborare': mm(desc)}}
     for r, rand in enumerate(randuri_text):
         litere, x, ant = [], 0.0, None
         for ch in rand:
@@ -624,9 +633,9 @@ def aseaza(font, p, linie=False):
                 lipsa += 1
                 continue
             if ant is not None:
-                x += mm(cren(ant, g)) + p['spatiere']
+                x += (mmx(cren(ant, g)) if crenare_pornita else 0) + p['spatiere']
             litere.append((ch, g, x))
-            x += mm(av(g)) + 2 * d
+            x += mmx(av(g)) + 2 * d
             ant = g
         dx = 0 if p['aliniere'] == 'stanga' else (-x / 2 if p['aliniere'] == 'centru' else -x)
         randuri.append({'latime': x, 'caractere': len(litere), 'dx': dx})
@@ -638,7 +647,7 @@ def aseaza(font, p, linie=False):
                 stricate += 1
                 continue
             if cs:
-                glife.append({'caracter': ch, 'rand': r, 'contururi': cs, '_x': x0 + dx, '_avans': mm(av(g)) + 2 * d, '_indice': indice})
+                glife.append({'caracter': ch, 'rand': r, 'contururi': cs, '_x': x0 + dx, '_avans': mmx(av(g)) + 2 * d, '_indice': indice})
     return {'glife': glife, 'lipsa': lipsa, '_stricate': stricate, '_randuri': randuri, '_metrici': {'rand': rand_mm, 'coborare': mm(desc)}}
 
 
@@ -650,6 +659,12 @@ def cutie_text(asez, d):
         a, b, c, e = cutie_miez(g)
         x0, y0, x1, y1 = min(x0, a), min(y0, b), max(x1, c + 2 * d), max(y1, e + 2 * d)
     return x0, y0, x1, y1
+
+
+def majuscula_taiata(p):
+    """Majuscula tăiată (ADR 0138 §2): înălțimea cerută × înălțimea literelor; fără proporții, chiar înălțimea cerută."""
+    pr = p.get('proportii')
+    return p['inaltime'] * (pr['inaltime'] / 100) if pr else p['inaltime']
 
 
 def inaltime_in_caseta(font, p, linie=False):
@@ -672,7 +687,8 @@ def inaltime_in_caseta(font, p, linie=False):
         x0, y0, x1, y1 = cutie_text(asezat(h), d)
         return x1 - x0 <= c['latime'] and y1 - y0 <= c['inaltime']
 
-    jos = max(0.1, d / 0.2)
+    # Aldinul e cel mult o cincime din majuscula tăiată (h × înălțimea literelor, ADR 0138 §2).
+    jos = max(0.1, d / 0.2 / ((p.get('proportii') or {'inaltime': 100})['inaltime'] / 100))
     sus = min(c['ceruta'], 1000.0) if c['fel'] == 'limita' else 1000.0
     if sus < jos or not incape(jos):
         return None
@@ -1087,6 +1103,10 @@ CAZURI_CURBA = [
     ('inchis-cubice-orar', 'test/fixtures/text/inter-subset.otf', {'continut': 'HAMBURGEFONTSIV', 'inaltime': 6, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga'},
      cubice(True, (0, 30, K, 30, 30, K), (30, 0, 30, -K, K, -30), (0, -30, -K, -30, -30, -K), (-30, 0, -30, K, -K, 30)),
      {'s': 20, 'pozitie': 'centru'}, 1e-9),
+    # Cu proporțiile literelor (ADR 0138 §2): literele scalate pe curbă, centrate pe majuscula tăiată.
+    ('cerc-proportii', 'public/fonturi/roboto.ttf', {'continut': 'LEMN', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru',
+                                                     'proportii': {'latime': 70, 'inaltime': 130}},
+     cerc(40), {'s': 20, 'pozitie': 'centru'}, 1e-9),
 ]
 
 
@@ -1097,7 +1117,7 @@ def cazuri_pe_curba():
         font = TTFont(os.path.join(RAD, fisier))
         asez = aseaza(font, p)
         curba = {'contur': contur, 'distanta': 0, 'invers': False, 'orientare': 'rotita', 'intinsa': False, **poz}
-        glife, harti, c = pe_curba(asez, curba, p['inaltime'], p['aliniere'])
+        glife, harti, c = pe_curba(asez, curba, majuscula_taiata(p), p['aliniere'])
         rez[nume] = {'font': fisier, 'parametri': p, 'curba': curba, 'tol': tol, 'glife': glife, '_harti': harti, '_curba': c}
     return rez
 
@@ -2038,6 +2058,9 @@ CAZURI_CASETA = [
                                                 'cursiv': 12, 'caseta': {'fel': 'scala', 'latime': 120, 'inaltime': 60}}),
     ('caseta-cff', 'inter-subset.otf', {'continut': 'AVATAR', 'inaltime': 10, 'spatiere': -0.5, 'interlinie': 1, 'aliniere': 'dreapta',
                                         'caseta': {'fel': 'scala', 'latime': 60, 'inaltime': 15}}),
+    # Cu proporțiile literelor (ADR 0138 §2): caseta încadrează literele scalate.
+    ('caseta-proportii', 'roboto.ttf', {'continut': 'HHH', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                        'proportii': {'latime': 50, 'inaltime': 50}, 'caseta': {'fel': 'scala', 'latime': 100, 'inaltime': 50}}),
 ]
 CAZURI_CASETA_LINIE = [
     ('caseta-linie', 'relief-singleline.ttf', {'continut': 'HOTEL\nOK', 'inaltime': 30, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'centru',
@@ -2062,6 +2085,8 @@ def probe_caseta_pe_hartie(cz):
     assert abs(h('caseta-limita-micsorat') - 100 * 1456 / 4039) < 1e-9
     assert abs(h('caseta-randuri') - 50 * 1456 / 4157) < 1e-9, h('caseta-randuri')
     assert abs(h('caseta-vertical') - 30 * 1456 / 1119) < 1e-9, h('caseta-vertical')
+    # Cu literele la 50 % × 50 % (ADR 0138 §2): „HHH” are 4039 · h · 0,5 / 1456 în lățime, majusculele h · 0,5; lățimea leagă.
+    assert abs(h('caseta-proportii') - 200 * 1456 / 4039) < 1e-9, h('caseta-proportii')
     # Textul scalat umple caseta pe latura care leagă și încape pe cealaltă.
     for n in ('caseta-HHH', 'caseta-serif-centru', 'caseta-cff', 'caseta-vertical'):
         x0, y0, x1, y1 = cutie_text(cz[n], 0)
@@ -2168,6 +2193,92 @@ def fonturi_verticale():
     for date in v.values():
         date['stricate'] = date['_stricate']
     probe_vertical_pe_hartie(v)
+    return {'cazuri': fara_interne(v)}
+
+
+# Proporțiile literelor și crenarea oprită (ADR 0138): lățimea și înălțimea în procente, pe fonturile corpusului (TrueType,
+# serif centrat cu rânduri și spațiere, CFF cu cursiv, cu o singură linie), textul vertical, crenarea oprită (și cu proporții).
+CAZURI_PROPORTII = [
+    ('proportii-LEMN-50', 'roboto.ttf', {'continut': 'LEMN', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                         'proportii': {'latime': 50, 'inaltime': 100}}),
+    ('proportii-inalt', 'roboto.ttf', {'continut': 'HOTEL\nHog', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                       'proportii': {'latime': 100, 'inaltime': 150}}),
+    ('proportii-serif-centru', 'droid-serif.ttf', {'continut': 'Ușă de\nstejar', 'inaltime': 12, 'spatiere': 0.5, 'interlinie': 1.2,
+                                                   'aliniere': 'centru', 'proportii': {'latime': 80, 'inaltime': 120}}),
+    ('proportii-cff-cursiv', 'inter-subset.otf', {'continut': 'AVATAR', 'inaltime': 10, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'dreapta',
+                                                  'cursiv': 12, 'proportii': {'latime': 70, 'inaltime': 100}}),
+    ('proportii-vertical', 'roboto.ttf', {'continut': 'HI T\nT', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                          'vertical': True, 'proportii': {'latime': 60, 'inaltime': 140}}),
+    ('fara-crenare', 'roboto.ttf', {'continut': 'AVATAR TAVAN', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                    'crenare': False}),
+    ('fara-crenare-proportii', 'inter-subset.otf', {'continut': 'AVATAR\nTo', 'inaltime': 10, 'spatiere': 0.3, 'interlinie': 1,
+                                                    'aliniere': 'centru', 'crenare': False, 'proportii': {'latime': 120, 'inaltime': 90}}),
+]
+# Cu o singură linie (`linie=True`): Relief, lățit și înălțat.
+CAZURI_PROPORTII_LINIE = [
+    ('proportii-linie', 'relief-singleline.ttf', {'continut': 'HOTEL', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga',
+                                                  'proportii': {'latime': 50, 'inaltime': 200}}),
+]
+
+
+def puncte_text(asez):
+    """Toate punctele contururilor unei așezări (startul, capetele și punctele de control ale segmentelor), în ordine."""
+    out = []
+    for g in asez['glife']:
+        for c in g['contururi']:
+            out.append(tuple(c['start']))
+            for s in c['segmente']:
+                out.extend((s[i], s[i + 1]) for i in range(1, len(s), 2))
+    return out
+
+
+def probe_proportii_pe_hartie(cz, fonturi):
+    """Pe hârtie (ADR 0138), față de același text la 100 %: fără spațiere, proporțiile scalează fiecare punct al literelor.
+    - „LEMN” la 50 % lățime: x pe jumătate, y la fel; L stă între 0 și 20 mm (majusculele rămân de 20 mm);
+    - „HOTEL↵Hog” la 150 % înălțime: x la fel, y × 1,5 (și rândul al doilea), H de 15 mm;
+    - AVATAR cursiv (12°), la dreapta, la 70 % lățime: x − y · tan 12° scalat cu 0,7, y la fel;
+    - vertical, 60 % × 140 %: x × 0,6 (axele coloanelor și centrarea pe ele), y × 1,4 (literele și golurile dintre ele);
+    - Relief la 50 % × 200 %: x × 0,5, y × 2;
+    - crenarea oprită: rândul are exact suma avansurilor × 20 / 1456, iar cu crenarea (AV, VA, AT, TA) e mai strâmt."""
+    def la_100(nume):
+        p = {k: v for k, v in cz[nume]['parametri'].items() if k != 'proportii'}
+        return aseaza(fonturi[nume], p, linie=cz[nume]['linie'])
+    panta = math.tan(math.radians(12))
+    for nume, fx, fy in (('proportii-LEMN-50', lambda x, y: 0.5 * x, None), ('proportii-inalt', None, 1.5),
+                         ('proportii-vertical', lambda x, y: 0.6 * x, 1.4), ('proportii-linie', lambda x, y: 0.5 * x, 2.0),
+                         ('proportii-cff-cursiv', lambda x, y: 0.7 * (x - panta * y) + panta * y, None)):
+        a, b = puncte_text(la_100(nume)), puncte_text(cz[nume])
+        assert len(a) == len(b) and len(a) > 20, (nume, len(a), len(b))
+        for (x0, y0), (x1, y1) in zip(a, b):
+            ex = fx(x0, y0) if fx else x0
+            ey = y0 * fy if fy else y0
+            assert abs(x1 - ex) < 1e-9 and abs(y1 - ey) < 1e-9, (nume, (x0, y0), (x1, y1), (ex, ey))
+
+    def sus(nume, caracter):
+        return cutie(next(g for g in cz[nume]['glife'] if g['caracter'] == caracter))[3]
+    assert abs(sus('proportii-LEMN-50', 'L') - 20) < 1e-12 and abs(sus('proportii-inalt', 'H') - 15) < 1e-12
+    font = fonturi['fara-crenare']
+    hmtx, cmap = font['hmtx'], font.getBestCmap()
+    suma = sum(hmtx[cmap[ord(ch)]][0] for ch in 'AVATAR TAVAN') * 20 / 1456
+    fara = cz['fara-crenare']['_randuri'][0]['latime']
+    assert abs(fara - suma) < 1e-9, (fara, suma)
+    cu = aseaza(font, {k: v for k, v in cz['fara-crenare']['parametri'].items() if k != 'crenare'})['_randuri'][0]['latime']
+    assert cu < suma - 1, (cu, suma)
+
+
+def fonturi_proportii():
+    """Cazurile proporțiilor literelor și ale crenării oprite (ADR 0138), cu probele pe hârtie."""
+    v, fonturi = {}, {}
+    for lista, linie in ((CAZURI_PROPORTII, False), (CAZURI_PROPORTII_LINIE, True)):
+        for nume, fisier, p in lista:
+            cale = cale_fixtura(fisier)
+            font = TTFont(cale)
+            fonturi[nume] = font
+            v[nume] = {'font': os.path.relpath(cale, RAD).replace('\\', '/'), 'parametri': p, 'majuscula': majuscula(font), 'linie': linie,
+                       **aseaza(font, p, linie=linie)}
+    for date in v.values():
+        date['stricate'] = date['_stricate']
+    probe_proportii_pe_hartie(v, fonturi)
     return {'cazuri': fara_interne(v)}
 
 
@@ -2355,6 +2466,9 @@ CAZURI_ALDIN = [
     ('aldin-cursiv-serif', 'droid-serif.ttf', {'continut': 'Ușă de stejar', 'inaltime': 15, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.4, 'cursiv': 12}, 0.2),
     # CFF (cubice), cu crenarea, spațierea negativă și cursivul spre stânga.
     ('aldin-cff', 'inter-subset.otf', {'continut': 'AVATAR To', 'inaltime': 12, 'spatiere': -0.2, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.3, 'cursiv': -8}, 0.15),
+    # Cu proporțiile literelor (ADR 0138 §2): miezul e majuscula tăiată − 2d, îngroșat la fel pe toate laturile.
+    ('aldin-proportii', 'roboto.ttf', {'continut': 'HO', 'inaltime': 20, 'spatiere': 0, 'interlinie': 1, 'aliniere': 'stanga', 'aldin': 0.6,
+                                       'proportii': {'latime': 70, 'inaltime': 120}}, 0.25),
 ]
 
 # Glifele, brute: punctele fiecărui contur (x, y, pe curbă), în unitățile fontului, cum le dă fontTools. Variantele își
@@ -2472,10 +2586,11 @@ def main():
     svg = fonturi_svg(linii)
     verticale = fonturi_verticale()
     casete = fonturi_caseta()
+    proportii = fonturi_proportii()
     asteptat = fara_interne(asteptat)
     for nume, date in (('crenari', crenari), ('glife', brute), ('asteptat', asteptat), ('structura', structura), ('pe-curba', fara_interne(curba)),
                        ('variabile', variabile()), ('aldin', fara_interne(aldine)), ('linie', {'recunoastere': recunoastere, 'cazuri': fara_interne(linii)}),
-                       ('svg', svg), ('vertical', verticale), ('caseta', casete)):
+                       ('svg', svg), ('vertical', verticale), ('caseta', casete), ('proportii', proportii)):
         with open(os.path.join(DEST, f'{nume}.json'), 'w', encoding='utf-8', newline='\n') as out:
             json.dump(date, out, ensure_ascii=False, separators=(',', ':'))
             out.write('\n')

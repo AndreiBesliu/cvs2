@@ -6,7 +6,8 @@
  * fără sens pentru tăiere se păstrează și de o versiune care nu-l cunoaște (ADR 0024), care taie la fel. Amprenta
  * contururilor leagă blocul de geometrie: dacă ele se schimbă altfel decât prin text (o editare de noduri, o înclinare, o
  * versiune veche a aplicației), blocul nu mai e valid, iar piesa rămâne doar vectori. Scalarea uniformă (`transformare.ts`)
- * îl ține la zi: înălțimea și spațierea cresc cu ea, iar amprenta se recalculează.
+ * îl ține la zi: înălțimea și spațierea cresc cu ea, iar amprenta se recalculează; una neuniformă, doar pe un text drept fără
+ * aldin (ADR 0138 §4), prin lățimea literelor.
  */
 import * as v from 'valibot';
 import { amprentaSir } from './amprenta.ts';
@@ -33,7 +34,12 @@ export const LIMITE_TEXT = {
   aldinMinim: 0.01, aldinRaport: 0.2, cursiv: 45,
   /** Caseta textului (ADR 0142): lățimea și înălțimea ei, în mm. */
   casetaMinima: 0.1, casetaMaxima: 10_000,
+  /** Lățimea și înălțimea literelor (ADR 0138 §2), în procente. */
+  procentMinim: 10, procentMaxim: 1_000,
 } as const;
+
+/** Unitățile mărimii în afară de mm (ADR 0138 §1): pt e mărimea fontului (em-ul), in e majuscula, ca mm. */
+export const UNITATI_TEXT = ['pt', 'in'] as const;
 
 const numar = (min: number, max: number) => v.pipe(v.number(), v.finite(), v.minValue(min), v.maxValue(max));
 
@@ -80,6 +86,14 @@ export const SchemaCasetaText = v.variant('fel', [
   v.object({ fel: v.literal('scala'), latime: marimeCaseta, inaltime: marimeCaseta }),
 ]);
 
+/** Proporțiile literelor (ADR 0138 §2): lățimea și înălțimea, în procente, față de literele fontului la mărimea cerută. */
+const procent = numar(LIMITE_TEXT.procentMinim, LIMITE_TEXT.procentMaxim);
+export const SchemaProportiiText = v.object({ latime: procent, inaltime: procent });
+
+/** Majuscula tăiată a unui bloc (ADR 0138 §2), în mm: înălțimea cerută × înălțimea literelor. */
+export const majusculaBloc = (b: { readonly inaltime: number; readonly proportii?: { readonly inaltime: number } | undefined }): number =>
+  (b.proportii ? b.inaltime * (b.proportii.inaltime / 100) : b.inaltime);
+
 export const SchemaBlocText = v.pipe(
   v.object({
     continut: v.pipe(v.string(), v.minLength(1), v.maxLength(LIMITE_TEXT.caractere)),
@@ -100,9 +114,16 @@ export const SchemaBlocText = v.pipe(
     vertical: v.optional(v.literal(true)),
     /** Încadrarea în casetă (ADR 0142); `inaltime` e atunci cea care a încăput. Lipsă: înălțimea cerută. */
     caseta: v.optional(SchemaCasetaText),
+    /** Unitatea în care omul a scris mărimea (ADR 0138 §1), doar pentru panou: `inaltime` rămâne majuscula în mm. Lipsă: mm. */
+    unitate: v.optional(v.picklist(UNITATI_TEXT)),
+    /** Proporțiile literelor (ADR 0138 §2), în procente; lipsă: 100 și 100. */
+    proportii: v.optional(SchemaProportiiText),
+    /** Crenarea fontului (ADR 0138 §3): `false` o oprește; lipsă: pornită. */
+    crenare: v.optional(v.literal(false)),
     amprenta: v.pipe(v.string(), v.maxLength(64)),
   }),
-  v.check((b) => b.aldin === undefined || b.aldin <= aldinMaxim(b.inaltime), 'aldinul trece de o cincime din înălțime'),
+  // Aldinul e cel mult o cincime din majuscula tăiată (ADR 0123, ADR 0138 §2).
+  v.check((b) => b.aldin === undefined || b.aldin <= aldinMaxim(majusculaBloc(b)), 'aldinul trece de o cincime din înălțime'),
   // Un text vertical stă drept: literele una sub alta nu urmează o curbă (ADR 0141).
   v.check((b) => !(b.vertical && b.curba), 'textul vertical nu stă pe o curbă'),
   // Un text în casetă stă drept: caseta e a unui text care nu urmează o curbă (ADR 0142).
@@ -131,21 +152,23 @@ export function blocText(radacina: Nod): BlocText | null {
 }
 
 /**
- * Rădăcina scalată (`dupa`) a unei rădăcini cu bloc (`inainte`), cu scara locală (lx, ly): la o scalare uniformă, blocul
- * crește cu ea (înălțimea, spațierea) și primește amprenta noilor contururi; altfel (o scalare neuniformă) piesa devine
- * vectori, fără bloc. O rădăcină fără bloc valid trece neschimbată.
+ * Rădăcina scalată (`dupa`) a unei rădăcini cu bloc (`inainte`), cu scara (lx, ly) în axele contururilor blocului: la o
+ * scalare uniformă, blocul crește cu ea (înălțimea, spațierea) și primește amprenta noilor contururi; la una neuniformă, un
+ * text drept fără aldin rămâne text (ADR 0138 §4, `scalatNeuniform`), altfel piesa devine vectori, fără bloc. O rădăcină fără
+ * bloc valid trece neschimbată.
  */
 export function blocScalat(inainte: Nod, dupa: Nod, lx: number, ly: number, uniforma: boolean): Nod {
   const b = blocText(inainte);
   if (!b || dupa.tip !== 'grup') return dupa;
   const { text: _vechi, ...fara } = dupa as Nod & { text?: unknown };
-  if (!uniforma || !(lx > 0) || !(ly > 0)) return fara;
+  if (!(lx > 0) || !(ly > 0)) return fara;
+  if (!uniforma) return scalatNeuniform(b, dupa, fara, lx, ly);
   const s = lx;
   const inaltime = b.inaltime * s;
   if (inaltime < LIMITE_TEXT.inaltimeMinima || inaltime > LIMITE_TEXT.inaltimeMaxima || Math.abs(b.spatiere * s) > LIMITE_TEXT.spatiere) return fara;
   // Aldinul crește cu textul (cursivul e un unghi: rămâne); sub rezoluție, contururile rămân doar vectori.
   const aldin = b.aldin === undefined ? undefined : b.aldin * s;
-  if (aldin !== undefined && aldin > 0 && (aldin < LIMITE_TEXT.aldinMinim || aldin > aldinMaxim(inaltime))) return fara;
+  if (aldin !== undefined && aldin > 0 && (aldin < LIMITE_TEXT.aldinMinim || aldin > aldinMaxim(majusculaBloc({ inaltime, proportii: b.proportii })))) return fara;
   // Curba unui text pe curbă crește cu el (coordonatele piesei se înmulțesc, ancora rămâne în origine, pe curbă).
   const p = (q: { readonly x: number; readonly y: number }) => ({ x: q.x * s, y: q.y * s });
   const curba = b.curba && {
@@ -167,4 +190,31 @@ export function blocScalat(inainte: Nod, dupa: Nod, lx: number, ly: number, unif
       amprenta: amprentaContururi(dupa.copii),
     },
   };
+}
+
+/**
+ * Scalarea neuniformă (lx, ly) a unui text (ADR 0138 §4). Un text drept (nu pe o curbă), fără aldin, scalat așa e exact un
+ * text cu alt bloc: mărimea × ly, lățimea literelor × lx / ly (înălțimea lor rămâne), spațierea × lx (la textul vertical,
+ * unde golurile sunt pe verticală, × ly), cursivul cu unghiul atan(tan θ · lx / ly) (o înclinare x + p·y scalată devine
+ * p · lx / ly), caseta × (lx, ly); amprenta e a contururilor scalate, ca la scalarea uniformă. Cu aldin (îngroșarea scalată
+ * nu mai e aceeași pe toate laturile), pe o curbă (literele de pe o curbă scalată nu sunt literele scalate) sau dacă blocul
+ * nou iese din margini (procentele, cursivul peste 45°), piesa devine vectori, ca înainte.
+ */
+function scalatNeuniform(b: BlocText, dupa: Nod & { readonly tip: 'grup' }, fara: Nod, lx: number, ly: number): Nod {
+  if (b.curba || (b.aldin ?? 0) > 0) return fara;
+  const r = lx / ly;
+  const pr = b.proportii ?? { latime: 100, inaltime: 100 };
+  const latime = pr.latime * r;
+  const proportii = latime === 100 && pr.inaltime === 100 ? undefined : { latime, inaltime: pr.inaltime };
+  const cursiv = b.cursiv ? (Math.atan(Math.tan(b.cursiv * (Math.PI / 180)) * r) * 180) / Math.PI : undefined;
+  const caseta = b.caseta && (b.caseta.fel === 'limita'
+    ? { ...b.caseta, latime: b.caseta.latime * lx, inaltime: b.caseta.inaltime * ly, ceruta: b.caseta.ceruta * ly }
+    : { ...b.caseta, latime: b.caseta.latime * lx, inaltime: b.caseta.inaltime * ly });
+  const { proportii: _p, cursiv: _c, ...rest } = b;
+  const text = {
+    ...rest, inaltime: b.inaltime * ly, spatiere: b.spatiere * (b.vertical ? ly : lx),
+    ...(proportii ? { proportii } : {}), ...(cursiv !== undefined ? { cursiv } : {}), ...(caseta ? { caseta } : {}),
+    amprenta: amprentaContururi(dupa.copii),
+  };
+  return v.safeParse(SchemaBlocText, text).success ? { ...dupa, text } : fara;
 }

@@ -1,7 +1,8 @@
 # ADR 0138: Textul: mărimea în puncte și inch, lățimea și înălțimea în procente, spațierea literelor alese (feliile 7.9↑, 7.9↑b)
 
-**Starea:** propus pe 06.11.2026, pentru feliile 7.9↑ și 7.9↑b (aduse din etapa 7), fără mașină, pe linia principală, cât
-liniile paralele (incrustațiile, ADR 0170; tăierea vectorilor, ADR 0180) își așteaptă răspunsurile. Cererea owner-ului: „Ok,
+**Starea:** acceptat pe 06.11.2026, cu recomandările („Yes, 1a–5a”, la „Accept the recommendations in ADR 0138 (1a 2a 3a
+4a 5a)?”), pentru feliile 7.9↑ (gata pe 06.11) și 7.9↑b, aduse din etapa 7, fără mașină, pe linia principală. Propus în
+aceeași zi, cât liniile paralele (incrustațiile, ADR 0170; tăierea vectorilor, ADR 0180) își așteptau răspunsurile, la „Ok,
 o sa le raspund, aici poti sa continui”. **Completează:** ADR 0105 (textul: mărimea e înălțimea majusculei; blocul), ADR 0123
 (aldinul și cursivul), ADR 0141 (textul vertical), ADR 0142 (caseta), ADR 0052 (mânerele de scalare). **Documentul:**
 neschimbat (v19): câmpurile noi stau în blocul textului, care nu e o schemă a documentului (ADR 0105 §4); ce se taie rămân
@@ -55,9 +56,9 @@ deci nu se mai poate edita.
 4. **Mânerele pe un text** (7.9↑; întrebarea 3). O scalare neuniformă (lx, ly, în axele piesei) a unui text drept, fără aldin,
    îl păstrează text: mărimea × ly, lățimea × lx / ly, spațierea și spațierile literelor alese × lx (la textul vertical, × ly),
    cursivul cu unghiul atan(tan θ · lx / ly), caseta × (lx, ly), iar amprenta e a contururilor scalate (ca la scalarea uniformă,
-   ADR 0105 §4). Un text cu aldin, pe o curbă sau care ar ieși din margini (procentele, cursivul peste 45°) devine vectori, ca
-   azi: îngroșarea scalată neuniform nu mai e d pe toate laturile, iar literele de pe o curbă scalată nu sunt literele
-   scalate.
+   ADR 0105 §4). Un text pe o curbă sau care ar ieși din margini (procentele, cursivul peste 45°) devine vectori, ca azi:
+   literele de pe o curbă scalată nu sunt literele scalate. Unul cu aldin nu se scalează neuniform deloc, tot ca azi:
+   literele lui sunt linii și arce, iar mânerele refuză arcele la o scalare neuniformă (`neuniform-arc`, ADR 0052).
 5. **Spațierea literelor alese** (felia 7.9↑b; întrebările 4 și 5). În câmpul textului, omul alege literele (cu mausul sau cu
    Shift + săgeți). Rândul „Între literele alese” arată spațiul adăugat între ele (gol, dacă diferă) și îl schimbă pe toate
    deodată: câmpul (mm), butoanele − / + și Alt + ← / → (0,1 mm, ca în programele de grafică), cu cursorul între două litere
@@ -86,7 +87,8 @@ deci nu se mai poate edita.
   font, pe hârtie).
 - **Corpusul textului (Python, fontTools):** cazuri noi în `test/oracles-py/text_corpus.py` (lățimea și înălțimea, cu cursiv,
   vertical, în casetă și pe curbă; crenarea oprită; spațierile literelor alese), cu fixturile regenerate și comise: oracolul
-  așază literele din fontTools, fără cititorul aplicației.
+  așază literele din fontTools, fără cititorul aplicației. În 7.9↑: `CAZURI_PROPORTII` (`proportii.json`, proba din
+  `test/unit/text.proportii.test.ts`), plus `caseta-proportii`, `cerc-proportii` și `aldin-proportii` în corpusurile lor.
 - **Mânerele:** scalarea neuniformă a unui text drept dă aceleași contururi (sub 1e-9 mm) ca textul așezat din nou cu blocul
   nou; cu aldin sau pe o curbă, vectori.
 - **Ușa:** un bloc cu câmpurile noi, salvat și redeschis, se editează fără pierderi; un bloc vechi dă textul de azi, octet cu
@@ -111,12 +113,21 @@ deci nu se mai poate edita.
 5. **Spațiul literelor alese, în ce:** a) mm, ca spațierea textului (recomandat: se măsoară pe placă și crește cu textul la
    scalarea din mânere); b) miimi de em: rămâne pe măsura literelor și când schimbi mărimea din panou.
 
+## Răspunsurile owner-ului (06.11)
+
+„Yes, 1a–5a”, deci recomandările:
+1. „1a”: pt e mărimea fontului, cu majusculele care rezultă arătate sub câmp; mm și inch rămân majuscula;
+2. „2a”: lățimea și înălțimea literelor, amândouă în procente; mărimea e majuscula la 100 %;
+3. „3a”: la o scalare neuniformă din mânere, un text drept fără aldin rămâne text;
+4. „4a”: spațierea literelor alese se dă din panou (7.9↑b);
+5. „5a”: spațiul literelor alese e în mm, ca spațierea textului.
+
 ## Ce am respins
 
 - **Toate câmpurile panoului în inch:** unitatea pe toată aplicația ține de setările omului (planul), nu de un câmp; aici doar
   mărimea, ca în ArtCAM.
 - **Scalarea neuniformă cu aldin, păstrată:** îngroșarea scalată nu mai e aceeași pe toate laturile, deci textul așezat din nou
-  ar ieși altfel decât cel scalat.
+  ar ieși altfel decât cel scalat (azi, oricum refuzată: literele aldine au arce).
 - **Spațierea literelor alese ca o mutare după așezare:** caseta, curba și alinierea n-ar mai vedea-o; ea intră în aceeași
   adunare ca spațierea textului.
 - **Spațierile ținute după locul de pe foaie:** o editare a textului le-ar muta pe alte litere.
