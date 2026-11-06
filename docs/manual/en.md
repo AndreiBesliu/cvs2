@@ -570,8 +570,8 @@ the pieces stay open: a circle cut through its centre gives two half circles, on
 The pieces keep their cutting role: a square cut on the outside gives two rectangles that are also cut on the outside. An
 open piece of a closed shape is cut on the same side of the bit (outside or inside, following the drawing direction). A
 pocket, a V-carve and drilling need a closed shape, so they leave the open pieces, and the panel says how many. A shape
-placed several times on the sheet is not cut from here. The cut is a single undo step (Ctrl+Z) and is also in the palette,
-as **Cut vectors** (Ctrl+K).
+placed several times on the sheet is not cut from here. Each cut (**Cut vectors**, from the panel) is a single undo step
+(Ctrl+Z).
 
 ## Checking vectors
 %% capitol: verificare

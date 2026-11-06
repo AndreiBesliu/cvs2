@@ -209,6 +209,16 @@ test('cercul tăiat orizontal prin centru: tăietura cade în nodurile lui; dou�
   }
 });
 
+test('o linie la 5e-10 mm de nodurile cercului îl taie o singură dată acolo, ca prin noduri (nu și pe arc, încă o dată)', () => {
+  const d = docDin(stoc, cercF('c', 200, 200));
+  const { dupa, r } = taiat(d, cerere(Y(200 + 5e-10), ['c']));
+  for (const id of r.ids) {
+    const c = contururi(dupa, id)[0] as Contur;
+    aproape(arie(c), (Math.PI * 2500) / 2, 1e-6, 'semidiscul');
+    assert.equal(c.varfuri.length, 2, 'arcul și coarda, fără un nod în plus');
+  }
+});
+
 test('o cubică tăiată exact: tăietura pe linie, iar cele două jumătăți refac curba (de Casteljau)', () => {
   const lacrima: FormaDoc = {
     tip: 'cale', inchis: true, varfuri: [
@@ -349,6 +359,16 @@ test('buzunarul: pe bucățile închise rămâne pe ambele jumătăți; de pe ce
   const deschis = taiat(d, cerere(X(50), ['a'], false));
   assert.equal(deschis.r.scoase, 2);
   for (const id of deschis.r.ids) assert.deepEqual(piesa(deschis.dupa, id).operatii, []);
+});
+
+test('buzunarul pus pe o cale deschisă pleacă și de pe bucățile ei (ADR 0180 §7), numărat', () => {
+  const d0 = docDin(stoc, forma('l', cale(false, [0, 0], [100, 0], [100, 100])));
+  const p0 = d0.piese[0];
+  assert.ok(p0);
+  const d: Document = { ...d0, piese: [{ ...p0, operatii: [{ ...(p0.operatii[0] as Operatie), tip: 'buzunar', latura: 'interior', pasLateral: 2.4 }] }] };
+  const { dupa, r } = taiat(d, cerere(X(50), ['l']));
+  assert.equal(r.scoase, 2);
+  for (const id of r.ids) assert.deepEqual(piesa(dupa, id).operatii, []);
 });
 
 test('doar instanțele prin care trece linia se taie; celelalte rămân la locul lor', () => {

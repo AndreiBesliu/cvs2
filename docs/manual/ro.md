@@ -553,8 +553,8 @@ Fără bifă, bucățile rămân deschise: un cerc tăiat prin centru dă două 
 Bucățile își păstrează rolul de tăiere: un pătrat tăiat pe exterior dă două dreptunghiuri tăiate tot pe exterior. O bucată
 deschisă dintr-o formă închisă e tăiată pe aceeași parte a frezei (pe afară sau pe dinăuntru, după sensul desenului).
 Buzunarul, V-carve-ul și găurirea cer o formă închisă, deci pleacă de pe bucățile deschise, iar panoul spune câte. O formă
-pusă de mai multe ori pe foaie nu se taie de aici. Tăierea e un singur pas de anulare (Ctrl+Z) și se găsește și în paletă,
-ca **Taie vectorii** (Ctrl+K).
+pusă de mai multe ori pe foaie nu se taie de aici. Fiecare tăiere (**Taie vectorii**, din panou) e un singur pas de anulare
+(Ctrl+Z).
 
 ## Verificarea vectorilor
 %% capitol: verificare
