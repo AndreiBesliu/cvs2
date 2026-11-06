@@ -1,8 +1,9 @@
 # ADR 0180 — Tăierea și conversia vectorilor
 
-**Starea:** propus pe 06.11.2026, pentru feliile 10.3↑–10.3↑d (aduse din etapa 10), fără mașină, în worktree-ul `taiere`
-(ramura `wip/10.3-taiere-conversie`). Cererea owner-ului, din 06.11: „vreau sa deschidem worktrees pentru alte etape sau
-felii”, apoi „Vector trim/convert, stage 10”. **Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
+**Starea:** acceptat pe 06.11.2026 (propus în aceeași zi), pentru feliile 10.3↑–10.3↑e (aduse din etapa 10), fără mașină, în
+worktree-ul `taiere` (ramura `wip/10.3-taiere-conversie`). Cererea owner-ului, din 06.11: „vreau sa deschidem worktrees pentru
+alte etape sau felii”, apoi „Vector trim/convert, stage 10”. Răspunsurile lui, din formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a,
+cu două note (la §3 și la „Se redeschide dacă”). **Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
 (biarcele), ADR 0067 (booleanul), ADR 0103 (degruparea), ADR 0124 §15 („Taie la intersecții” vine cu rândul ăsta).
 **Documentul:** neschimbat (v19): rezultatul e din tipurile de azi (căile din linii, arce și cubice; cercul; dreptunghiul).
 
@@ -32,7 +33,7 @@ ca biarce la 0,001 mm, cu multe linii scurte, fără ca omul să poată alege o 
 - **Pe hârtie** [calculat]: poligonul regulat cu 64 de laturi înscris în cercul R50 se abate de cerc cu săgeata coardei,
   50·(1 − cos(π/64)) = 0,0602 mm, la mijlocul laturilor; cercul cel mai apropiat de el are R49,9699, cu abaterea 0,0301.
 
-## Decizia propusă
+## Decizia
 
 1. **Două butoane în extensia barei, după Boolean:** **Taie** (panoul tăierii: „Taie cu…”, „Decupează la…”, „Taie la
    intersecții”) și **Convertește** (Arce, Netezește, În cerc, În dreptunghi). Fiecare e și o acțiune în registru (paleta,
@@ -46,36 +47,41 @@ ca biarce la 0,001 mm, cu multe linii scurte, fără ca omul să poată alege o 
    Casteljau. Restul vârfurilor rămân la bit, iar câmpurile elementului (numele, cele necunoscute) se păstrează. Doar o trecere
    taie: o atingere fără trecere nu taie (panoul o spune), iar un cuțit care merge pe o latură a formei se refuză.
 3. **Taie cu…** linia verticală X = …, orizontală Y = … (mm ai foii), un ghidaj al foii sau ultima formă aleasă (Shift + clic,
-   ca la copierea pe curbă, ADR 0066). **Închide bucățile**, bifată implicit: fiecare parte a unei forme închise se închide pe
-   tăietură. O piesă cu găuri se citește ca regiune (par-impar): un inel tăiat în două dă două „U”-uri închise, nu patru jumătăți
-   suprapuse. Fără bifă, bucățile rămân deschise. Cuțitul rămâne neschimbat.
+   ca la copierea pe curbă, ADR 0066). **Închide bucățile**, bifată implicit și ținută în browser (ca Lipirea): fiecare parte a
+   unei forme închise se închide pe tăietură. O piesă cu găuri se citește ca regiune (par-impar): un inel tăiat în două dă două
+   „U”-uri închise, nu patru jumătăți suprapuse. Fără bifă, bucățile rămân deschise (nota owner-ului la întrebarea 2: „vreau
+   optiunea ca taierea sa nu inchida forma/vectorul. vreau si o unealta care daca tai de exemplu un cerc pe jumate, operatia
+   creeaza doua arce de cerc egale cu jumate din cerc, independente una de alta”): un cerc tăiat prin centru dă două forme
+   separate, fiecare un singur arc de 180°, exact (cercul se taie pe cercul lui, nu pe cele două arce ale desenului).
+   Cuțitul rămâne neschimbat.
 4. **Decupează la** ultima formă aleasă, închisă (o piesă cu mai multe contururi e regiunea lor, par-impar): **Păstrează**
    înăuntru / în afară; **formele care trec granița** se taie (implicit), se șterg sau rămân întregi. Cu „Închide bucățile”, o
    formă închisă tăiată rămâne închisă pe graniță (un dreptunghi decupat la un cerc devine partea lor comună). Granița rămâne.
 5. **Taie la intersecții** (ADR 0124 §15): formele alese se taie în toate locurile lor comune (treceri, atingeri, capetele care
    cad pe altă formă). Buclele unei singure forme rămân ale verificării („Desparte”, ADR 0124 §13).
-6. **Unde ajung bucățile** (întrebarea 2): după operație. Linia dreaptă împarte fiecare formă aleasă în două forme, ce e de o
+6. **Unde ajung bucățile** (răspunsul 2a): după operație. Linia dreaptă împarte fiecare formă aleasă în două forme, ce e de o
    parte și ce e de cealaltă (contururile netăiate ale unei piese merg cu partea lor); o formă închisă drept cuțit, ce e în ea și ce
    e în afara ei; o cale deschisă drept cuțit desparte doar contururile pe care le trece. Decuparea lasă fiecare formă cu ce rămâne
    din ea (fără nimic rămas, forma pleacă). „Taie la intersecții” face din fiecare bucată o formă, ca s-o poți alege și șterge.
    Formele noi stau exact unde erau, ca la degrupare (ADR 0103 §2).
-7. **Operațiile bucăților** (întrebarea 3): bucățile își păstrează rolul. O bucată deschisă dintr-o formă închisă e tăiată pe
+7. **Operațiile bucăților** (răspunsul 3a): bucățile își păstrează rolul. O bucată deschisă dintr-o formă închisă e tăiată pe
    aceeași parte a frezei: exteriorul devine partea din afară, stânga sau dreapta după sensul desenului (ADR 0037 §3), interiorul
    cea dinăuntru. Buzunarul, V-carve-ul și găurirea cer o formă închisă: de pe o bucată deschisă se scot, iar panoul o spune.
 8. **Arce în locul curbelor.** Fiecare cubică devine linii și arce sub toleranța aleasă, prin biarcele din ADR 0033; liniile și
-   arcele rămân. Cu întrebarea 6 (a): și șirurile de linii scurte care stau pe un cerc (o polilinie dintr-un DXF) devin arce;
+   arcele rămân. Și șirurile de linii scurte care stau pe un cerc (o polilinie dintr-un DXF) devin arce (răspunsul 6a);
    colțurile și liniile lungi rămân.
 9. **Netezește.** Șirurile de linii devin curbe netede (cubice potrivite direct pe ele, nu simplificate întâi), sub toleranță;
    colțurile ascuțite rămân colțuri, liniile peste „Păstrează liniile mai lungi de” (implicit 5 mm) rămân linii, arcele rămân arce.
    Fiecare contur separat: o literă cu găuri nu se sudează.
-10. **În cerc / În dreptunghi** (întrebarea 4): „doar dacă e”: forma devine cercul (sau dreptunghiul, cu colțurile rotunjite dacă
+10. **În cerc / În dreptunghi** (răspunsul 4a): „doar dacă e”: forma devine cercul (sau dreptunghiul, cu colțurile rotunjite dacă
     le are) doar dacă stă toată la cel mult toleranța de el, altfel refuzul spune abaterea; „cu mărimea dată”: orice formă închisă
     devine cercul de diametrul dat sau dreptunghiul dat, cu centrul în centrul cutiei ei (semnele de găurire dintr-un DXF devin
     cercuri Ø8, găuribile). Forma își păstrează elementul și operațiile; dacă una nu se mai potrivește (găurirea pe un dreptunghi),
     conversia acelei forme se refuză, cu motivul. Căile deschise se sar (numărate).
 11. **Toleranța** stă pe fiecare rând al panoului Convertește, între 0,001 și 1 mm (ca la verificare): implicit 0,01 mm la Arce și
     Netezește (fidelitatea desenului), 0,1 mm la În cerc și În dreptunghi (o gaură de lemn). Se măsoară pe toată forma, în ambele
-    sensuri (nodurile și laturile), nu doar pe noduri (lecția din ediția întâi). Cercul ales din poligon: întrebarea 5.
+    sensuri (nodurile și laturile), nu doar pe noduri (lecția din ediția întâi). Cercul din poligon trece prin noduri (răspunsul
+    5a): un Ø100 desenat cu 64 de laturi rămâne Ø100, iar abaterea față de laturi (0,06 mm) trebuie să încapă în toleranță.
 12. **Refuzurile, cu motiv:** o piesă pusă de mai multe ori (ca la reparații, decizia 8a din ADR 0124), un cuțit care nu atinge
     nicio formă, un cuțit care nu trece de tot printr-o formă de închis, plafoanele documentului (judecate de schema lui, pe
     documentul de după).
@@ -84,12 +90,17 @@ ca biarce la 0,001 mm, cu multe linii scurte, fără ca omul să poată alege o 
 14. **Mărimea.** Plafonul total e comun (503,1 / 550 kB pe `main`, cu trei linii pe el): linia ține creșterea sub ~10 kB.
     Calculul stă în workerul CAM (cavalier e acolo), panourile vin la cerere; pornirea nu se schimbă.
 
-## Feliile propuse
+## Feliile
 
-- **10.3↑:** tăierea exactă (§2), „Taie cu…” (§3) și „Taie la intersecții” (§5), cu panoul Taie.
-- **10.3↑b:** „Decupează la…” (§4), pe aceeași tăiere.
-- **10.3↑c:** În cerc, În dreptunghi (§10) și Arce (§8), cu panoul Convertește.
-- **10.3↑d:** Netezește (§9).
+Ordinea din răspunsul 1a. La acceptare, prima felie propusă s-a despărțit în două: tăierea cu o linie dreaptă are locurile de
+tăiere direct, pe fiecare segment, pe când cuțitul-formă și „Taie la intersecții” cer locurile din cavalier, rafinate cu Newton.
+
+- **10.3↑:** tăierea exactă cu o linie dreaptă (§2): „Taie cu” linia verticală, orizontală sau un ghidaj (§3), cu închiderea la
+  alegere, bucățile după operație (§6) și rolul păstrat (§7); panoul Taie.
+- **10.3↑b:** „Taie cu” ultima formă aleasă (§3) și „Taie la intersecții” (§5).
+- **10.3↑c:** „Decupează la…” (§4).
+- **10.3↑d:** În cerc, În dreptunghi (§10) și Arce (§8), cu panoul Convertește.
+- **10.3↑e:** Netezește (§9).
 
 Fiecare felie: proba scrisă întâi, oracolul independent, documentul de după trecut prin ușă, manualul în ambele limbi pentru
 fiecare buton, otrăvurile țintite, publicarea pe canalul `taiere`.
@@ -108,7 +119,10 @@ fiecare buton, otrăvurile țintite, publicarea pe canalul `taiere`.
 - **E2e:** fiecare buton, pe un DXF importat, cu anularea.
 - **Otrăvurile țintite** (`test/otravuri/10.3.py`, …), rulate într-o clonă a ramurii în afara Drive-ului.
 
-## Întrebările (owner)
+## Întrebările pentru owner și răspunsurile lui
+
+Formularul lor, cu desenele înainte / după, e pagina „Tăierea și conversia vectorilor” (privată, a owner-ului). **Răspunsurile,
+din 06.11:** 1a, 2a, 3a, 4a, 5a, 6a, adică recomandările, cu nota de la 2 (§3) și nota generală („Se redeschide dacă”).
 
 1. **Ordinea feliilor:** a) întâi tăierea (Taie cu…, închiderea, Taie la intersecții), apoi decuparea, apoi conversia (cerc,
    dreptunghi, arce), la urmă netezirea (recomandat: tăierea e nucleul refolosit de decupare); b) întâi conversia (cercurile din
@@ -137,5 +151,7 @@ fiecare buton, otrăvurile țintite, publicarea pe canalul `taiere`.
 ## Se redeschide dacă
 
 - owner-ul răspunde altfel la întrebări;
+- încercările pe desene reale cer altceva (nota owner-ului: „aici va trebui sa testam si sa ajustam pe viitor, pentru cand avem
+  situatiile concrete”);
 - se discută unirea căilor (ADR 0124 §14);
 - vin planșele (etapa 11): o piesă pusă de mai multe ori primește opțiuni, nu doar refuzul (principiul owner-ului din 02.11).

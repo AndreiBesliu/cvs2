@@ -723,6 +723,16 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
 
 ## Decizii luate
 
+- 06.11.2026: **tăierea și conversia vectorilor: răspunsurile la ADR 0180** (formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a,
+  cu notele „vreau optiunea ca taierea sa nu inchida forma/vectorul. vreau si o unealta care daca tai de exemplu un cerc pe
+  jumate, operatia creeaza doua arce de cerc egale cu jumate din cerc, independente una de alta.” și „aici va trebui sa testam
+  si sa ajustam pe viitor, pentru cand avem situatiile concrete”): întâi tăierea, apoi decuparea, conversia și netezirea;
+  linia dreaptă împarte fiecare formă aleasă în două forme, decuparea lasă forma cu ce rămâne, „Taie la intersecții” face din
+  fiecare bucată o formă; bucățile își păstrează rolul (o bucată deschisă, tăiată pe aceeași parte a frezei; buzunarul,
+  V-carve-ul și găurirea pleacă de pe ea); la cerc și dreptunghi, „doar dacă e” și „cu mărimea dată”; cercul din poligon trece
+  prin noduri; „Arce” face arce și din liniile scurte. „Închide bucățile” e la alegere (bifa ținută în browser): fără ea, un
+  cerc tăiat prin centru dă două forme separate, câte un arc de 180°. Linia lucrează în worktree-ul `taiere` (ADR 0180–0189),
+  în feliile 10.3↑–10.3↑e.
 - 06.11.2026: **textul, restul pragului, pe linia principală** („Ok, o sa le raspund, aici poti sa continui”, cât liniile
   paralele își așteaptă răspunsurile): feliile 7.9↑ și 7.9↑b, cu ADR 0138 (cercetarea, schița, cinci întrebări), acceptat cu
   recomandările („Yes, 1a–5a”): pt e mărimea fontului, mm și inch rămân majuscula; lățimea și înălțimea literelor în procente;
