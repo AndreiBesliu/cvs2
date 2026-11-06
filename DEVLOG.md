@@ -6060,8 +6060,12 @@ trebui sa testam si sa ajustam pe viitor, pentru cand avem situatiile concrete�
   Extensia avea deja ~1 070 px pe `main` (butonul „3D” ieșea din fereastră); între 40 și 75 rem trece acum pe două rânduri
   când nu mai încape. Pe telefon, extensia rămâne cum era (un singur rând, mai lat decât ecranul, ca pe `main`): de spus
   owner-ului.
-- **Probele:** `taiere.test.ts` (21), `taiere.oracol.test.ts` (oracolul independent din `test/oracles/taiere.ts`, 160 de
+- **Probele:** `taiere.test.ts` (23), `taiere.oracol.test.ts` (oracolul independent din `test/oracles/taiere.ts`, 160 de
   cazuri din sămânță, cu martorul lui; o mutație a perechilor de corzi pică și aici, și pe hârtie), `taiere.spec.ts` (2, Edge),
   listele de acțiuni și manualul.
 - **Mărimea:** față de un build curat al lui `920078b`: pornirea 101,4 (cu ușa 104,9 / 110 kB), neschimbată; totalul 504,5 →
   511,3 / 550 kB: workerul CAM +4,5 kB (din care modulul rolului ~0,7 kB), panoul 1,9 kB, editarea +0,4 kB.
+- **Otrăvurile** (`test/otravuri/10.3.py`, 28), în clona `C:\Users\besli\cncvs2-lucru\otravuri-taiere`, cele e2e pe portul
+  4179: prima rulare (`aaf69d7`): 26 prinse; L10 (un nod la 5e-10 mm de linie, numărat de două ori pe arc) și O05 (buzunarul
+  pus pe o cale deschisă) au scăpat, deci două probe noi în `taiere.test.ts`; pe `17c51d7`: L10 și O05 prinse, 28 / 28. Manualul
+  nu mai spune „și în paletă”: acțiunea pornește din panou.
