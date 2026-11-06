@@ -19,22 +19,22 @@
   color: var(--t-slab);
 }
 
+/* Un rând: bifa, eticheta (se rupe pe două rânduri, dacă trebuie), câmpul, unitatea; unitatea nu mai sare sub câmp. */
 .rand-taiere {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 5.5rem 1.75rem;
   align-items: center;
-  gap: var(--sp-2);
+  gap: var(--sp-1) var(--sp-2);
   font-size: var(--fs-2);
 }
 
 .rand-taiere .camp-taiere {
-  width: 7rem;
+  width: 100%;
   min-width: 0;
 }
 
 .rand-taiere select.camp-taiere {
-  width: auto;
-  max-width: 100%;
+  grid-column: 3 / span 2;
 }
 
 .bifa-taiere {

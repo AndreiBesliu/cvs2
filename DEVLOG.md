@@ -6069,3 +6069,9 @@ trebui sa testam si sa ajustam pe viitor, pentru cand avem situatiile concrete�
   4179: prima rulare (`aaf69d7`): 26 prinse; L10 (un nod la 5e-10 mm de linie, numărat de două ori pe arc) și O05 (buzunarul
   pus pe o cale deschisă) au scăpat, deci două probe noi în `taiere.test.ts`; pe `17c51d7`: L10 și O05 prinse, 28 / 28. Manualul
   nu mai spune „și în paletă”: acțiunea pornește din panou.
+- **Emulatoarele:** 81 / 81 și 21 / 21 pe `9a965a7` (prima rulare a căzut în două probe doar fiindcă am comis `9a965a7` cât
+  rula: probele raportorului și ale tichetelor cer versiunea din build = HEAD).
+- **Publicat pe canalul `taiere`:** <https://cncvectorstudio-test--taiere-7mmspw7e.web.app> (până pe 06.12). Verificat acolo, la
+  1280 px: versiunea, butonul Taie între Boolean și Verifică vectorii, linia la X = 70 pe un dreptunghi și tăierea lui în două
+  forme, alese. Tot acolo, „mm” de după câmpul Y trecea pe rândul următor: rândurile panoului sunt acum o grilă (bifa, eticheta,
+  câmpul, unitatea), fiecare pe o linie în ambele limbi; canalul, republicat cu reparația.
