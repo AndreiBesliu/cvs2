@@ -45,6 +45,7 @@ import type { Jurnal } from './jurnalErori.ts';
 import { capMeniuCont, initiale, numeButon, randuriMeniuCont, type IdMeniuCont } from './meniuCont.ts';
 import { useRaportariNecitite } from './raportariNecitite.ts';
 import type { StareVerificare } from './PanouVerificare.tsx';
+import type { LinieTaiere } from './PanouTaiere.tsx';
 
 /** Mesajele modulului, ca date (ADR 0086): cine îl încarcă le așteaptă (`cuMesaje`); un refuz îl vede tot el. */
 export const mesaje = mesajeGata();
@@ -192,6 +193,15 @@ const PanouVerificare = lazy(() => import('./PanouVerificare.tsx').then(cuMesaje
 const MarcajeVerificare = lazy(() => import('./PanouVerificare.tsx').then(cuMesaje).then((m) => ({ default: m.MarcajeVerificare }), () => ({ default: () => null })));
 
 /**
+ * Tăierea vectorilor (ADR 0180 §3, felia 10.3↑): panoul Taie și linia de pe pânză, o bucată adusă la primul clic pe butonul ei.
+ * Dacă nu vine, panoul o spune.
+ */
+const PanouTaiere = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((m) => ({ default: m.PanouTaiere }), () => ({
+  default: () => <p className="motiv-retea" role="status" data-testid="taiere-neincarcata">{t('editare.taiere.neincarcata')}</p>,
+})));
+const LiniaTaierii = lazy(() => import('./PanouTaiere.tsx').then(cuMesaje).then((m) => ({ default: m.LiniaTaierii }), () => ({ default: () => null })));
+
+/**
  * Ușa interfeței de acum, pentru ajutorul după context (F1): o fereastră a aplicației deschisă (exportul, importul,
  * paleta), apoi fereastra care acoperă Proiectarea (Mașina, ADR 0132 §8, sau a unei extensii, ADR 0160 §A), apoi vederea 3D,
  * altfel unealta aleasă. Id-urile sunt cele din `%% acopera:` ale manualului.
@@ -224,7 +234,7 @@ function scrieLocal(cheie: string, valoare: string): void {
   }
 }
 
-type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie'>>;
+type Extra = Partial<Pick<ContextDocument, 'ghidajeNoi' | 'deplasari' | 'deplasare' | 'formaNoua' | 'transformare' | 'alese' | 'retea' | 'formaEditata' | 'sterge' | 'nodEditat' | 'textNou' | 'reparatie' | 'taiere'>>;
 
 /** Ca la pânză: cât de departe de contur prinde un clic (px) și de la cât începe o tragere (px). */
 const TOLERANTA_CLIC_PX = 4;
@@ -335,7 +345,7 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   // Copierea în rețea (ADR 0061): panoul din extensia barei, formularul lui (ținut în browser) și rețeaua citită din el.
   // Panoul deschis din extensia barei, unul singur: rețeaua (ADR 0061), offsetul (ADR 0064), înclinarea (ADR 0065), exportul
   // vectorilor (ADR 0088).
-  const [panou, setPanou] = useState<'retea' | 'offset' | 'inclinare' | 'vectori' | 'verificare' | null>(null);
+  const [panou, setPanou] = useState<'retea' | 'offset' | 'inclinare' | 'vectori' | 'verificare' | 'taiere' | null>(null);
   const panouRef = useRef(panou);
   panouRef.current = panou;
   const panouRetea = panou === 'retea', panouOffset = panou === 'offset', panouInclinare = panou === 'inclinare', panouVectori = panou === 'vectori';
@@ -343,6 +353,10 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
   const panouVerificare = panou === 'verificare';
   const [verificare, setVerificare] = useState<StareVerificare | null>(null);
   useEffect(() => { if (!panouVerificare) setVerificare(null); }, [panouVerificare]);
+  // Tăierea (ADR 0180): linia de pe pânză ține cât panoul e deschis.
+  const panouTaiere = panou === 'taiere';
+  const [linieTaiere, setLinieTaiere] = useState<LinieTaiere>(null);
+  useEffect(() => { if (!panouTaiere) setLinieTaiere(null); }, [panouTaiere]);
   const [formRetea, setFormRetea] = useState<FormularRetea>(formularSalvat);
   // Pe curbă (ADR 0066): curba e ultima formă aleasă (Shift + clic după formele de copiat).
   const curbaAleasa = selectie.length > 0 ? selectie[selectie.length - 1]! : null;
@@ -1083,6 +1097,11 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
           <MarcajeVerificare stare={verificare} vedere={vedere} marime={marime} />
         </Suspense>
       ) : null}
+      {panouTaiere && linieTaiere && !vedere3d ? (
+        <Suspense fallback={null}>
+          <LiniaTaierii linie={linieTaiere} vedere={vedere} marime={marime} />
+        </Suspense>
+      ) : null}
       {cadru ? (
         <svg className="rigle-desen" width={marime.latime} height={marime.inaltime} aria-hidden="true" data-testid="cadru-selectie" data-fel={felCadru(cadru.a.x, cadru.b.x)}>
           <rect className={`cadru-${felCadru(cadru.a.x, cadru.b.x)}`} x={Math.min(cadru.a.x, cadru.b.x) + 0.5} y={Math.min(cadru.a.y, cadru.b.y) + 0.5}
@@ -1249,6 +1268,24 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {motivDegrupare ? <span className="motiv-extensie" role="status" data-testid="motiv-degrupare">{motivDegrupare}</span> : null}
           </span>
         );
+        // Tăierea vectorilor (ADR 0180): formele alese, cu o linie dreaptă; panoul și calculul vin la cerere.
+        const taiereSectiune = (
+          <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.taiere.sectiune')} data-testid="extensie-taiere">
+            <button type="button" className="aliniaza" aria-expanded={panouTaiere} aria-controls="panou-taiere" title={t('editare.taiere')}
+              aria-label={t('editare.taiere')} data-editare="taiere" disabled={p.doarCitire} onClick={() => { setPanou(panouTaiere ? null : 'taiere'); }}>
+              <IconaTaiere />
+            </button>
+            {panouTaiere ? (
+              <CadruTaiere onInchide={() => { setPanou(null); }}>
+                <Suspense fallback={<p className="motiv-retea" role="status">{t('editare.taiere.incarca')}</p>}>
+                  <PanouTaiere doc={doc} selectie={selectie} ghidaje={ghidaje}
+                    centru={p.cutie ? { x: (p.cutie.minX + p.cutie.maxX) / 2, y: (p.cutie.minY + p.cutie.maxY) / 2 } : null}
+                    onLinie={setLinieTaiere} onTaie={(r) => ruleaza('document.taie', { taiere: () => r })} onInchide={() => { setPanou(null); }} />
+                </Suspense>
+              </CadruTaiere>
+            ) : null}
+          </span>
+        );
         // Verificarea vectorilor (ADR 0124): pe formele alese (la bifă) sau pe toată foaia; panoul și calculul vin la cerere.
         const verificareSectiune = (
           <span className="sectiune-extensie sectiune-retea" role="toolbar" aria-label={t('editare.verificare.sectiune')} data-testid="extensie-verificare">
@@ -1331,6 +1368,8 @@ export function Editare(p: ProprietatiEditare): ReactElement | null {
             {offsetSectiune}
             <span className="separator" aria-hidden="true" />
             {booleanSectiune}
+            <span className="separator" aria-hidden="true" />
+            {taiereSectiune}
             <span className="separator" aria-hidden="true" />
             {verificareSectiune}
             <span className="separator" aria-hidden="true" />
@@ -2457,6 +2496,34 @@ function IconaOffset(): ReactElement {
       <rect x="5" y="5" width="6" height="6" rx="0.5" />
       <rect x="1.8" y="1.8" width="12.4" height="12.4" rx="3.2" className="contur" strokeDasharray="2 1.5" />
     </svg>
+  );
+}
+
+/** Tăierea vectorilor (ADR 0180): o foarfecă. */
+function IconaTaiere(): ReactElement {
+  return (
+    <svg className="icona-aliniere" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="4" cy="12" r="2.2" className="contur" />
+      <circle cx="12" cy="12" r="2.2" className="contur" />
+      <path d="M5.6 10.4 12 1.5M10.4 10.4 4 1.5" className="contur" />
+    </svg>
+  );
+}
+
+/** Cadrul panoului Taie (ADR 0180 §3), ca panourile vecine: sub butonul lui, ținut în fereastră; Esc îl închide. */
+function CadruTaiere({ onInchide, children }: { readonly onInchide: () => void; readonly children: ReactNode }): ReactElement {
+  const radacina = useRef<HTMLDivElement | null>(null);
+  useInFereastra(radacina);
+  return (
+    <div className="insula panou-retea panou-taiere" id="panou-taiere" ref={radacina} role="group" aria-label={t('editare.taiere.sectiune')}
+      data-testid="panou-taiere" onKeyDown={(e) => {
+        if (e.key !== 'Escape') return;
+        e.preventDefault();
+        e.stopPropagation();
+        onInchide();
+      }}>
+      {children}
+    </div>
   );
 }
 

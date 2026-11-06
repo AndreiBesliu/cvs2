@@ -1090,6 +1090,18 @@ nav button[aria-pressed='true'] {
 }
 
 /*
+ * Între telefon și 75rem, extensia trece pe două rânduri când nu mai încape (la 1024 px are ~1 120 px): altfel ultimele
+ * secțiuni (Verifică vectorii, 3D) ieșeau din fereastră, fără niciun mod de a ajunge la ele (felia 10.3↑, ADR 0180).
+ * Telefonul își păstrează aranjamentul lui (ADR 0132 §10).
+ */
+@media (min-width: 40.0625rem) and (max-width: 75rem) {
+  .extensie {
+    flex-wrap: wrap;
+    max-width: calc(100% - var(--r-3));
+  }
+}
+
+/*
  * Sub 95rem, „Caută o comandă” rămâne doar cu iconița (numele îl păstrează cititorul de ecran, scurtătura o spune sfatul):
  * bara de acțiuni, centrată pe fereastră, nu mai încape altfel între marcă și unelte (la 1280 px, 62 px peste „Exportă”).
  */

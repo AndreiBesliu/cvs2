@@ -1,0 +1,61 @@
+/*
+ * Panoul Taie (ADR 0180 §3, felia 10.3↑) și linia de tăiere de pe pânză. Doar tokenurile temei; stratul de pe pânză nu prinde
+ * evenimente. Panoul are lățimea vecinilor (`.panou-retea`).
+ */
+.campuri-taiere {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.campuri-taiere legend {
+  padding: 0;
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.rand-taiere {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-2);
+}
+
+.rand-taiere .camp-taiere {
+  width: 7rem;
+  min-width: 0;
+}
+
+.rand-taiere select.camp-taiere {
+  width: auto;
+  max-width: 100%;
+}
+
+.bifa-taiere {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-2);
+}
+
+.stare-taiere {
+  margin: 0;
+  font-size: var(--fs-2);
+  color: var(--t-slab);
+}
+
+.linia-taierii {
+  pointer-events: none;
+}
+
+.linia-taierii line {
+  stroke: var(--rosu);
+  stroke-width: 1.5;
+  stroke-dasharray: 8 4;
+}

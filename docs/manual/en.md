@@ -547,6 +547,32 @@ A **WMF** (the Windows metafile: old clipart, exports from CorelDRAW, Office or 
 - a WMF has no Bézier curves: a circle a program drew freehand becomes a polygon, and is imported as one;
 - an EMF (the 32-bit metafile) is refused: save it as WMF, SVG or PDF.
 
+## Cutting vectors
+%% capitol: taiere
+%% acopera: editare.taiere, document.taie
+
+**Cut** (the scissors button, after the booleans and ungrouping, in the toolbar extension) divides the chosen shapes with a
+straight line:
+- **Vertical line X =** or **Horizontal line Y =**, the position in sheet millimetres (it starts in the middle of the chosen
+  shapes);
+- **Guide**: one of the sheet guides, dragged from the ruler.
+
+While the panel is open, the line shows on the canvas, dotted. **Cut** turns each shape the line crosses into two shapes:
+what is on one side of the line and what is on the other, each chosen after the cut, in its place. A shape the line does not
+cross stays as it is. The cut is exact: an arc is cut into two arcs of the same circle, a curve stays on its curve, and the
+nodes the line does not touch stay unchanged. Only a crossing cuts: a circle tangent to the line or a corner that only
+touches it is not cut.
+
+**Close the pieces** (ticked by default; the app remembers the choice): each side of a closed shape is closed along the
+cut, with a straight line. A shape with holes is read as a region: a ring cut in two gives two closed “U” shapes. Unticked,
+the pieces stay open: a circle cut through its centre gives two half circles, one arc each.
+
+The pieces keep their cutting role: a square cut on the outside gives two rectangles that are also cut on the outside. An
+open piece of a closed shape is cut on the same side of the bit (outside or inside, following the drawing direction). A
+pocket, a V-carve and drilling need a closed shape, so they leave the open pieces, and the panel says how many. A shape
+placed several times on the sheet is not cut from here. The cut is a single undo step (Ctrl+Z) and is also in the palette,
+as **Cut vectors** (Ctrl+K).
+
 ## Checking vectors
 %% capitol: verificare
 %% acopera: editare.verificare, document.repara

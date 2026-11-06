@@ -6038,3 +6038,30 @@ cu întrebările grupate (recomandarea întâi) și schița interfeței, înaint
   independent; șase întrebări.
 - **Schița și formularul întrebărilor:** <https://claude.ai/artifact/U8aNobZggHbXjNCXitTGEY> (privată, a owner-ului; răspunsurile stau în baza paginii, colecția
   `raspunsuri`: `q1`–`q6` cu `optiune`, `nota`, `la`, și `general`).
+
+## 2026-11-06 — Felia 10.3↑: tăierea cu o linie dreaptă (ADR 0180, acceptat) (Model: Claude Opus 5.5)
+
+**Prompt:** „Răspund în formular”, apoi „ok, am raspuns” (formularul schiței ADR 0180: 1a, 2a, 3a, 4a, 5a, 6a, cu nota la
+întrebarea 2: „vreau optiunea ca taierea sa nu inchida forma/vectorul. vreau si o unealta care daca tai de exemplu un cerc pe
+jumate, operatia creeaza doua arce de cerc egale cu jumate din cerc, independente una de alta.” și nota generală: „aici va
+trebui sa testam si sa ajustam pe viitor, pentru cand avem situatiile concrete”).
+**Started:** 06.11, 16:55 (la răspunsuri). **Completed:** 06.11, 20:15.
+
+- **Înainte:** `main` (`920078b`, cu 7.9↑) unit în ramură (`3f0c147`, DEVLOG-ul și coada owner-ului, ambele rânduri
+  păstrate); deciziile în ADR 0180 (acceptat), CLAUDE.md și fișă (`af20f88`). Prima felie propusă s-a despărțit: 10.3↑ e
+  tăierea cu o linie dreaptă; cuțitul-formă și „Taie la intersecții” trec în 10.3↑b.
+- **Codul:** `src/model/taiere.ts` (nou: locurile de tăiere direct pe segmente, bucățile exacte cu `adaugaNod`, cercul pe
+  cercul lui, închiderea prin corzile împerecheate de-a lungul liniei, rolul păstrat sau latura frezei pe bucățile deschise),
+  cererea `taiere` în workerul CAM (`protocolCam`, `calculCam`, `bazinCam`, `taieVectorii`), acțiunea `document.taie` (comanda
+  `degrupeaza`, doar pe documentul de la clic), panoul `src/app/PanouTaiere.tsx` cu linia de pe pânză, butonul Taie în
+  extensia barei, textele (29 în editare, `actiune.taie` în dicționarele de bază), capitolul „Tăierea vectorilor” în manual,
+  ambele limbi (28 de capitole, 85 de uși).
+- **Ce a ieșit la porți:** la 1024 px, butonul nou împingea „Verifică vectorii” în afara ferestrei (proba lui 10.1↑ a căzut).
+  Extensia avea deja ~1 070 px pe `main` (butonul „3D” ieșea din fereastră); între 40 și 75 rem trece acum pe două rânduri
+  când nu mai încape. Pe telefon, extensia rămâne cum era (un singur rând, mai lat decât ecranul, ca pe `main`): de spus
+  owner-ului.
+- **Probele:** `taiere.test.ts` (21), `taiere.oracol.test.ts` (oracolul independent din `test/oracles/taiere.ts`, 160 de
+  cazuri din sămânță, cu martorul lui; o mutație a perechilor de corzi pică și aici, și pe hârtie), `taiere.spec.ts` (2, Edge),
+  listele de acțiuni și manualul.
+- **Mărimea:** față de un build curat al lui `920078b`: pornirea 101,4 (cu ușa 104,9 / 110 kB), neschimbată; totalul 504,5 →
+  511,3 / 550 kB: workerul CAM +4,5 kB (din care modulul rolului ~0,7 kB), panoul 1,9 kB, editarea +0,4 kB.

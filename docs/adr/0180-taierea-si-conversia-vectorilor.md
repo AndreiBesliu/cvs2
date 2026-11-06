@@ -3,7 +3,8 @@
 **Starea:** acceptat pe 06.11.2026 (propus în aceeași zi), pentru feliile 10.3↑–10.3↑e (aduse din etapa 10), fără mașină, în
 worktree-ul `taiere` (ramura `wip/10.3-taiere-conversie`). Cererea owner-ului, din 06.11: „vreau sa deschidem worktrees pentru
 alte etape sau felii”, apoi „Vector trim/convert, stage 10”. Răspunsurile lui, din formularul schiței: 1a, 2a, 3a, 4a, 5a, 6a,
-cu două note (la §3 și la „Se redeschide dacă”). **Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
+cu două note (la §3 și la „Se redeschide dacă”). **Felia 10.3↑** (tăierea cu o linie dreaptă, §2, §3, §6, §7) gata pe
+06.11. **Completează:** ADR 0062 (un nod nou, exact, pe linie, arc și cubică), ADR 0033
 (biarcele), ADR 0067 (booleanul), ADR 0103 (degruparea), ADR 0124 §15 („Taie la intersecții” vine cu rândul ăsta).
 **Documentul:** neschimbat (v19): rezultatul e din tipurile de azi (căile din linii, arce și cubice; cercul; dreptunghiul).
 

@@ -471,6 +471,20 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   aplică într-un pas, doar dacă documentul e încă același. **Bucla se taie exact, în coordonatele elementului, cu
   parametrii celor două drumuri prin încrucișare (`adaugaNod`): restul vârfurilor rămân la bit; o reparație nouă păstrează
   regula și se probează la fel, cu documentul de după trecut prin ușă.**
+  **Tăierea cu o linie dreaptă (ADR 0180, felia 10.3↑, adusă din etapa 10)** gata pe 06.11, în worktree-ul `taiere` (ramura
+  `wip/10.3-taiere-conversie`), după răspunsurile owner-ului (1a–6a): **Taie** (foarfeca, în extensia barei, după boolean)
+  împarte formele alese cu linia verticală X, orizontală Y sau un ghidaj al foii: fiecare formă prin care trece linia devine
+  două forme, ce e de o parte și ce e de cealaltă, alese; „Închide bucățile” e la alegere (ținută în browser,
+  `cncvs2.taiere-inchide`): un inel dă două „U”-uri, iar fără bifă un cerc tăiat prin centru dă două semicercuri, câte un arc.
+  Calculul pur e `src/model/taiere.ts`, în workerul CAM (cererea `taiere`, prin `taieVectorii` din `actiuniExportCalcul.ts`);
+  acțiunea `document.taie` aplică comanda `degrupeaza` (o instanță înlocuită de părțile ei) doar dacă documentul e încă cel de
+  la clic; panoul vine la cerere (`src/app/PanouTaiere.tsx`), cu linia punctată pe pânză. **Locurile de tăiere se calculează
+  direct pe segmente (linia, arcul, cubica pe bucăți monotone), bucățile se taie exact cu `adaugaNod`, restul vârfurilor
+  rămân la bit, iar rolul piesei (`rolPiesei`, `grupeRol`) se păstrează pe părți.** Oracolul independent e
+  `test/oracles/taiere.ts` (corpusul din sămânță, `taiere.oracol.test.ts`): o tăiere care strică acoperirea, partea sau aria
+  cade acolo. **Între 40 și 75 rem, extensia barei trece pe două rânduri când nu mai încape** (la 1024 px are ~1 120 px; pe
+  `main`, „3D” ieșea deja din fereastră); telefonul a rămas cum era. **Pornirea 101,4 (cu ușa 104,9 / 110 kB), totalul
+  504,5 → 511,3 / 550 kB** (workerul CAM +4,5 kB, panoul 1,9 kB).
   **Degajările aceleiași bucle (ADR 0134, felia 3.U, rămasă din etapa 2)** gata pe 04.11: §5 din ADR 0032 are două condiții
   noi, după cele de până acum: d, pereții piesei (discul de pe drum nu trece de un perete care nu vine din V, iar la sub
   1 mm de el punctul discului cel mai apropiat nu e în K) și e, degajările aceleiași bucle (doi candidați la sub D + 1,
