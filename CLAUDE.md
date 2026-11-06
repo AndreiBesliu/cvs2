@@ -492,7 +492,7 @@ haotic. Ținta nu e o aplicație mai simplă, ci una mai bună, făcută corect 
   buclă), cu cazurile pe hârtie în `CAZURI_DEG_0135` și corpusul din sămânță `corpusDegajariArce`; pe hârtie, cât intră
   o degajare într-un perete-arc se măsoară radial (`CercHartie`). **Pornirea 100,4 (cu ușa 103,9 / 110 kB), totalul
   476,0 / 500, /admin 105,3 / 200.**
-  **Conectarea prin WiFi, mai ușoară (ADR 0136, felia 3.6f)** gata pe 05.11, cu răspunsurile owner-ului: „Conectează (WiFi)”
+  **Conectarea prin WiFi, mai ușoară (ADR 0136, felia 3.6f)** gata pe 06.11, cu răspunsurile owner-ului: „Conectează (WiFi)”
   arată conexiunile ținute în browser, fiecare cu rețeaua ei (prin rețeaua atelierului, după nume, cu ultimul IP ca rezervă;
   direct, prin rețeaua proprie a podului; o adresă scrisă de mână), din care omul alege, fără conectare singură; „Caută
   mașina” (numele știute, deodată) și, la clic, „Caută în toată rețeaua” (/24, întâi portul 8282, apoi 81, câte 32 de gazde); pașii unui eșec;
